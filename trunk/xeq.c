@@ -1,0 +1,3572 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifndef REALBUILD
+#include <unistd.h>
+#endif
+
+#define XEQ_INTERNAL 1
+#include "xeq.h"
+#include "decn.h"
+#include "complex.h"
+#include "stats.h"
+#include "display.h"
+#include "consts.h"
+#include "int.h"
+#include "date.h"
+#include "lcd.h"
+#include "xrom.h"
+#include "alpha.h"
+
+
+#define CMDLINELEN	23
+#define NUMBANKREGS	5
+#define NUMBANKFLAGS	16
+
+#define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
+
+struct state state;
+
+const char *disp_msg = NULL;
+
+/* Define storage for the machine's registers.
+*/
+decimal64 regs[NUMREG];
+static decimal64 bank_regs[NUMBANKREGS];
+
+
+/* Define storage for the machine's program space.
+ */
+static s_opcode _prog[NUMPROG];
+//#define prog	(_prog-1)
+static s_opcode *const prog = _prog - 1;
+
+/* We need various different maths contexts.
+ * More efficient to define these globally and reuse them as needed.
+ */
+decContext *g_ctx, *g_ctx64;
+
+
+/* Storage space for our user flags */
+static unsigned short bank_flags;
+static unsigned char flags[(NUMFLG+7) >> 3];
+
+/* Alpha register gets its own space */
+char alpha[NUMALPHA+1];
+
+
+/* The program return stack */
+static unsigned short int retstk[RET_STACK_SIZE];
+#define retstkptr	(state.retstk_ptr)
+
+
+static char cmdline[CMDLINELEN + 1];
+
+
+unsigned int get_bank_flags(void) {
+	return bank_flags;
+}
+
+void set_bank_flags(unsigned int f) {
+	bank_flags = f;
+}
+
+static void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	state.version = 1;
+	if (!state.runmode)
+		display();
+}
+
+unsigned int state_pc(void) {	return state.state_pc;	}
+void set_pc(unsigned int pc) {
+	if (pc >= state.last_prog)
+		pc = state.last_prog - 1;
+	if (!isXROM(pc) && pc > 1 && isDBL(prog[pc-1]))
+		pc--;
+	state.state_pc = pc;
+}
+
+
+/* Return the program memory location specified.
+ */
+opcode getprog(int n) {
+	opcode r;
+
+	if (isXROM(n))
+		return xrom[n & ~XROM_MASK];
+	if (n >= state.last_prog || n > NUMPROG)
+		return EMPTY_PROGRAM_OPCODE;
+	if (n == 0)
+		return OP_NIL | OP_NOP;
+	r = prog[n];
+	if (isDBL(r))
+		r |= prog[n+1] << 16;
+	return r;
+}
+
+
+static int running(void) {
+	return state.state_running;
+}
+
+static void set_running(int running) {
+	if (running) {
+		set_dot(RCL_annun);
+		state.state_running = 1;
+	} else {
+		clr_dot(RCL_annun);
+		state.state_running = 0;
+	}
+}
+
+
+/* Set a flag to indicate that a complex operation has taken place
+ * This only happens if we're not in a program.
+ */
+static void set_was_complex(void) {
+	if (! running())
+		state.wascomplex = 1;
+}
+
+
+/* Produce a warning and stop
+ */
+static void warn(const enum errors e) {
+}
+
+/* Produce an error and stop
+ */
+void err(const enum errors e) {
+	state.error = e;
+	if (running()) {
+		set_running(0);
+		decpc();			// back up to errant statement
+	}
+}
+
+
+/* Doing something in the wrong mode */
+static void bad_mode_error(void) {
+	err(ERR_BAD_MODE);
+}
+
+
+/* User commands to produce warnings and errors */
+static void cmderr(unsigned int arg, enum rarg op) {
+	err(arg);
+}
+
+#ifdef DEBUG
+#include <stdlib.h>
+static void error(const char *fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+	vprintf(fmt, ap);
+	va_end(ap);
+	putchar('\n');
+	exit(1);
+}
+
+#define illegal(op)	do { err(ERR_PROG_BAD); printf("illegal opcode 0x%08x\n", op); } while (0)
+#else
+#define illegal(op)	do { err(ERR_PROG_BAD); } while (0)
+#endif
+
+/* Check if a value is bogus and error out if so.
+ */
+static int check_special(const decNumber *x) {
+	if (decNumberIsSpecial(x)) {
+		if (! get_user_flag(NAN_FLAG)) {
+			if (decNumberIsNaN(x))
+				err(ERR_DOMAIN);
+			else if (decNumberIsNegative(x))
+				err(ERR_MINFINITY);
+			else
+				err(ERR_INFINITY);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+
+int stack_size(void) {
+	if (isXROM(state_pc()))
+		return 4;
+	return state.stack_depth?8:4;
+}
+
+static decimal64 *get_stack(int pos) {
+	return regs + TOPREALREG + pos;
+}
+
+static decimal64 *get_stack_top(void) {
+	return get_stack(stack_size()-1);
+}
+
+/* Lift the stack one level.
+ */
+void lift(void) {
+	const int n = stack_size();
+	int i;
+
+	for (i=n-1; i>0; i--)
+		*get_stack(i) = *get_stack(i-1);
+}
+
+static void lower(void) {
+	const int n = stack_size();
+	int i;
+
+	for (i=1; i<n; i++)
+		*get_stack(i-1) = *get_stack(i);
+}
+
+static void lift2(void) {
+	const int n = stack_size();
+	int i;
+
+	for (i=n-1; i>1; i--)
+		*get_stack(i) = *get_stack(i-2);
+}
+
+static void lower2(void) {
+	const int n = stack_size();
+	int i;
+
+	for (i=2; i<n; i++)
+		*get_stack(i-2) = *get_stack(i);
+}
+
+
+static void lastX(decimal64 *x, decimal64 *nul, decContext *ctx64) {
+	*x = regL;
+}
+
+void setlastX(void) {
+	regL = regX;
+}
+
+
+
+static void lastXY(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	*x = regL;
+	*y = regI;
+}
+
+static void setlastXY(void) {
+	setlastX();
+	regI = regY;
+}
+
+
+void getX(decNumber *x) {
+	decimal64ToNumber(&regX, x);
+}
+
+static void setX(const decNumber *x) {
+	decNumber xn;
+
+	if (! check_special(x)) {
+		decNumberNormalize(&xn, x, g_ctx);
+		decimal64FromNumber(&regX, &xn, g_ctx64);
+	}
+}
+
+void getY(decNumber *y) {
+	decimal64ToNumber(&regY, y);
+}
+
+static void setY(const decNumber *y) {
+	decNumber yn;
+
+	if (! check_special(y)) {
+		decNumberNormalize(&yn, y, g_ctx);
+		decimal64FromNumber(&regY, &yn, g_ctx64);
+	}
+}
+
+void setXY(const decNumber *x, const decNumber *y) {
+	setX(x);
+	setY(y);
+}
+
+static void getZ(decNumber *z) {
+	decimal64ToNumber(&regZ, z);
+}
+
+static void getT(decNumber *q) {
+	decimal64ToNumber(&regT, q);
+}
+
+
+void getXY(decNumber *x, decNumber *y) {
+	getX(x);
+	getY(y);
+}
+
+void getYZ(decNumber *y, decNumber *z) {
+	getY(y);
+	getZ(z);
+}
+
+static void roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	const decimal64 r = regX;
+	lower();
+	*get_stack_top() = r;
+}
+
+static void roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	const decimal64 r = *get_stack_top();
+	lift();
+	regX = r;
+}
+
+static void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	roll_down(NULL, NULL, NULL);
+	roll_down(NULL, NULL, NULL);
+}
+
+static void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	roll_up(NULL, NULL, NULL);
+	roll_up(NULL, NULL, NULL);
+}
+
+static void swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	swap_reg(&regX, &regY);
+}
+
+static void cpx_swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	swap_reg(&regX, &regZ);
+	swap_reg(&regY, &regT);
+}
+
+static void cpx_enter(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	decimal64 x = regX, y = regY;
+	cpx_roll_up(NULL, NULL, NULL);
+	regX = x;
+	regY = y;
+}
+
+static void cpx_fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	const int n = stack_size();
+	int i;
+
+	for (i=2; i<n; i++)
+		if (i & 1)	*get_stack(i) = regY;
+		else		*get_stack(i) = regX;
+}
+
+static void fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	const int n = stack_size();
+	int i;
+
+	for (i=1; i<n; i++)
+		*get_stack(i) = regX;
+}
+
+static void drop(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	lower();
+}
+
+static void dropxy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	lower();
+	lower();
+}
+
+static void dropy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	decimal64 x = regX;
+	lower();
+	regX = x;
+}
+
+
+int is_intmode(void) {
+	return state.intm;
+}
+
+/* Increment the passed PC.  Account for wrap around but nothing else.
+ * Return the updated PC.
+ */
+static unsigned int inc(const unsigned int pc) {
+	const unsigned int off = isDBL(getprog(pc))?2:1;
+	const unsigned int npc = pc + off;
+	if (isXROM(pc)) {
+		if (pc >= addrXROM(xrom_size - 1))
+			return addrXROM(0);
+		return npc;
+	}
+	if (npc >= state.last_prog) {
+		return 0;
+		//if (!running() || pc >= state.last_prog)
+			//return 0;
+	}
+	return npc;
+}
+
+unsigned int dec(unsigned int pc) {
+	if (isXROM(pc) && pc == addrXROM(0))
+		return addrXROM(xrom_size - 1);
+	if (pc == 0)
+		pc = state.last_prog;
+	if (pc > 2 && isDBL(prog[pc-2]))
+		pc--;
+	return pc-1;
+}
+
+/* Increment the PC keeping account of wrapping around and stopping
+ * programs on such.  Return non-zero if we did an implicit return.
+ */
+void incpc(void) {
+	const unsigned short int pc = inc(state_pc());
+
+	state.state_pc = pc;
+	if (pc == 0 && running())
+		state.implicit_rtn = 1;
+}
+
+void decpc(void) {
+	state.state_pc = dec(state_pc());
+	set_running(0);
+}
+
+/* Zero out the stack
+ */
+static void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+	if (is_intmode())
+		d64fromInt(&regX, 0);
+	else
+		regX = CONSTANT_INT(OP_ZERO);
+	fill(NULL, NULL, NULL);
+	regL = regX;
+	regI = regX;
+
+	state.eol = 0;
+	state.state_lift = 1;
+}
+
+/* Reset all flags to off/false
+ */
+static void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+	xset(flags, 0, sizeof(flags));
+}
+
+/* Zero out all registers including the stack and lastx
+ */	
+static void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+	int i;
+
+	if (is_intmode())
+		d64fromInt(regs, 0);
+	else
+		regs[0] = CONSTANT_INT(OP_ZERO);
+
+	for (i=1; i<TOPREALREG; i++)
+		regs[i] = regs[0];
+
+	for (i=TOPREALREG+stack_size(); i<NUMREG; i++)
+		regs[i] = regs[0];
+
+	state.eol = 0;
+	state.state_lift = 1;
+}
+
+/* Clear the program space
+ */
+void clrprog(void) {
+	int i;
+
+	for (i=1; i<=NUMPROG; i++)
+		prog[i] = EMPTY_PROGRAM_OPCODE;
+	state.state_pc = 0;
+	retstkptr = 0;
+	state.last_prog = 1;
+}
+
+/* Clear all - programs and registers
+ */
+void clrall(decimal64 *a, decimal64 *b, decContext *nulc) {
+	int i;
+
+	sigma_clear(NULL, NULL, NULL);
+	clrreg(NULL, NULL, NULL);
+	clrstk(NULL, NULL, NULL);
+	clralpha(NULL, NULL, NULL);
+	clrflags(NULL, NULL, NULL);
+	clrprog();
+
+	/* Clear out the banked registers and flags */
+	for (i=0; i<NUMBANKREGS; i++)
+		bank_regs[i] = regs[0];
+	bank_flags = 0;
+
+	state.shifts = SHIFT_N;
+	state.test = TST_NONE;
+
+	disp_msg = NULL;
+}
+
+/* Clear everything
+ */
+void reset(decimal64 *a, decimal64 *b, decContext *nulc) {
+	xset(&state, 0, sizeof(state));
+	clrall(NULL, NULL, NULL);
+
+	state.runmode = 1;
+	state.magic = MagicMarker;
+#ifdef REALBUILD
+	state.contrast = 9;
+#endif
+	//state.stack_depth = 0;
+}
+
+/* Convert a possibly signed string to an integer
+ */
+int s_to_i(const char *s) {
+	int x = 0;
+	int neg;
+
+	if (*s == '-') {
+		s++;
+		neg = 1;
+	} else {
+		if (*s == '+')
+			s++;
+		neg = 0;
+	}
+
+	for (;;) {
+		const char c = *s++;
+
+		if (c < '0' || c > '9')
+			break;
+		x = 10 * x + (c - '0');
+	}
+	if (neg)
+		return -x;
+	return x;
+}
+
+/* Convert a string in the given base to an unsigned integer
+ */
+unsigned long long int s_to_ull(const char *s, int base) {
+	unsigned long long int x = 0;
+
+	for (;;) {
+		unsigned int n;
+		const char c = *s++;
+
+		if (c >= '0' && c <= '9')
+			n = c - '0';
+		else if (c >= 'A' && c <= 'F')
+			n = c - 'A' + 10;
+		else
+			break;
+		if (n >= base)
+			break;
+		x = x * base + n;
+	}
+	return x;
+}
+
+const char *get_cmdline(void) {
+	if (state.eol) {
+		cmdline[state.eol] = '\0';
+		return cmdline;
+	}
+	return NULL;
+}
+
+
+static int fract_convert_number(decNumber *x, const char *s) {
+	if (*s == '\0') {
+		err(ERR_DOMAIN);
+		return 1;
+	}
+	decNumberFromString(x, s, g_ctx);
+	return check_special(x);
+}
+
+/* Process the command line if any
+ */
+static void process_cmdline(void) {
+	decNumber a, b, x, t, z;
+
+	if (state.eol) {
+		const unsigned int cmdlinedot = state.cmdlinedot;
+		cmdline[state.eol] = '\0';
+		state.eol = 0;
+		if (state.state_lift)
+			lift();
+		state.state_lift = 1;
+		state.cmdlinedot = 0;
+		state.cmdlineeex = 0;
+		if (is_intmode()) {
+			const int sgn = (cmdline[0] == '-')?1:0;
+			unsigned long long int x = s_to_ull(cmdline+sgn, int_base());
+			d64fromInt(&regX, build_value(x, sgn));
+		} else if (state.fract && cmdlinedot > 0) {
+			char *d0, *d1;
+			int neg;
+
+			if (cmdline[0] == '-') {
+				neg = 1;
+				d0 = cmdline+1;
+			} else {
+				neg = 0;
+				d0 = cmdline;
+			}
+			d1 = find_char(cmdline, '.');
+			*d1++ = '\0';
+			// if (*d1 == '\0') goto real;
+			if (cmdlinedot == 2) {
+				char *d2 = find_char(d1, '.');
+				*d2++ = '\0';
+				// if (*d2 == '\0') cmdlinedot--; else
+				if (fract_convert_number(&b, d2))
+					return;
+			}
+			if (fract_convert_number(&z, d0))	return;
+			if (fract_convert_number(&a, d1))	return;
+			if (cmdlinedot == 2) {
+				if (decNumberIsZero(&b)) {
+					err(ERR_DOMAIN);
+					return;
+				}
+				decNumberDivide(&t, &a, &b, g_ctx);
+				decNumberAdd(&x, &z, &t, g_ctx);
+			} else {
+				if (decNumberIsZero(&a)) {
+					err(ERR_DOMAIN);
+					return;
+				}
+				decNumberDivide(&x, &z, &a, g_ctx);
+			}
+			if (neg)
+				decNumberMinus(&x, &x, g_ctx);
+			setX(&x);
+		} else {
+			decNumberFromString(&x, cmdline, g_ctx);
+			if (state.hms)
+				decNumberHMS2HR(&x, &x, g_ctx);
+			setX(&x);
+		}
+	}
+}
+
+void process_cmdline_set_lift(void) {
+	process_cmdline();
+	state.state_lift = 1;
+}
+
+
+/* Wrapper routine to extract a specific register from a number.
+ * Since we've some bank switched registers, we detect xROM space
+ * here and return the alternate registers if required.
+ */
+decimal64 *get_reg_n(int n) {
+	if (isXROM(state_pc()) && n < NUMBANKREGS)
+		return bank_regs + n;
+	return regs + (n % NUMREG);
+}
+
+void get_reg_n_as_dn(int n, decNumber *x) {
+	decimal64ToNumber(get_reg_n(n), x);
+}
+
+void put_reg_n(int n, const decNumber *x) {
+	if (! check_special(x))
+		decimal64FromNumber(get_reg_n(n), x, g_ctx64);
+}
+
+long long int get_reg_n_as_int(int n) {
+	return d64toInt(get_reg_n(n));
+}
+
+void put_reg_n_from_int(int n, const long long int x) {
+	d64fromInt(get_reg_n(n), x);
+}
+
+void reg_put_int(int n, unsigned long long int val, int sgn) {
+	put_int(val, sgn, get_reg_n(n));
+}
+
+//unsigned long long int reg_get_int(int n, int *sgn) {
+//	return get_int(get_reg_n(n), sgn);
+//}
+
+
+/* Put an integer into the specified real
+ */
+void put_int(unsigned long long int val, int sgn, decimal64 *x) {
+	if (is_intmode()) {
+		d64fromInt(x, build_value(val, sgn));
+	} else {
+		decNumber t;
+
+		ullint_to_dn(&t, val, g_ctx);
+		if (sgn)
+			decNumberMinus(&t, &t, g_ctx);
+		decimal64FromNumber(x, &t, g_ctx64);
+	}
+}
+
+unsigned long long int get_int(const decimal64 *x, int *sgn) {
+	if (is_intmode()) {
+		return extract_value(d64toInt(x), sgn);
+	} else {
+		decNumber n;
+
+		decimal64ToNumber(x, &n);
+		return dn_to_ull(&n, g_ctx, sgn);
+	}
+}
+
+/* Some conversion routines to take decimal64s and produce integers
+ */
+long long int d64toInt(const decimal64 *n) {
+#if MAX_WORD_SIZE < 52
+	decNumber t;
+	char buf[50];
+	int sgn;
+
+	decimal64ToNumber(n, &t);
+	if (decNumberIsZero(&t))
+		return 0;
+	if (decNumberIsSpecial(&t))
+		return 0;
+	if (decNumberIsNegative(&t)) {
+		decNumberMinus(&t, &t, g_ctx);
+		sgn = 1;
+	} else
+		sgn = 0;
+	decNumberToString(&t, buf);
+	return build_value(s_to_ull(buf, 10), sgn);
+#else
+	long long int x;
+
+	xcopy(&x, n, sizeof(x));
+	return x;
+#endif
+}
+
+void d64fromInt(decimal64 *n, const long long int z) {
+#if MAX_WORD_SIZE < 52
+	int sgn;
+	unsigned long long int nv;
+	char buf[30];
+	decNumber t;
+
+	nv = extract_value(z, &sgn);
+
+	ullint_to_dn(&t, nv, g_ctx);
+	if (sgn)
+		decNumberMinus(&t, &t, g_ctx);
+	decimal64FromNumber(n, &t, g_ctx64);
+#else
+	xcopy(n, &z, sizeof(decimal64));
+#endif
+}
+
+/***************************************************************************
+ * Monadic function handling.
+ */
+
+/* Dispatch routine for monadic operations.
+ * Since these functions take an argument from the X register, save it in
+ * lastx and then replace it with their result, we can factor out the common
+ * stack manipulatin code.
+ */
+static void monadic(const opcode op) {
+
+	process_cmdline_set_lift();
+
+	unsigned int f = argKIND(op);
+	if (f < num_monfuncs) {
+		if (is_intmode()) {
+			if (monfuncs[f].monint != NULL) {
+				long long int x = d64toInt(&regX);
+				x = (*monfuncs[f].monint)(x);
+				setlastX();
+				d64fromInt(&regX, x);
+			} else
+				bad_mode_error();
+		} else {
+			if (monfuncs[f].mondreal != NULL) {
+				decNumber x, r;
+
+				getX(&x);
+
+				(*monfuncs[f].mondreal)(&r, &x, g_ctx);
+
+				setlastX();
+				setX(&r);
+			} else
+				bad_mode_error();
+		}
+	} else
+		illegal(op);
+}
+
+static void monadic_cmplex(const opcode op) {
+	decNumber x, y, rx, ry;
+
+	process_cmdline_set_lift();
+
+	unsigned int f = argKIND(op);
+
+	if (f < num_monfuncs) {
+		if (monfuncs[f].mondcmplx != NULL) {
+			getXY(&x, &y);
+
+			(*monfuncs[f].mondcmplx)(&rx, &ry, &x, &y, g_ctx);
+
+			setlastXY();
+			setXY(&rx, &ry);
+			set_was_complex();
+		} else
+			bad_mode_error();
+	} else
+		illegal(op);
+}
+
+/***************************************************************************
+ * Dyadic function handling.
+ */
+
+/* Dispatch routine for dyadic operations.
+ * Again, these functions have a common argument decode and record and
+ * common stack manipulation.
+ */
+static void dyadic(const opcode op) {
+
+	process_cmdline_set_lift();
+
+	unsigned int f = argKIND(op);
+	if (f < num_dyfuncs) {
+		if (is_intmode()) {
+			if (dyfuncs[f].dydint != NULL) {
+				long long int x = d64toInt(&regX);
+				long long int y = d64toInt(&regY);
+				x = (*dyfuncs[f].dydint)(y, x);
+				setlastX();
+				lower();
+				d64fromInt(&regX, x);
+			} else
+				bad_mode_error();
+		} else {
+			if (dyfuncs[f].dydreal != NULL) {
+				decNumber x, y, r;
+
+				getXY(&x, &y);
+
+				(*dyfuncs[f].dydreal)(&r, &y, &x, g_ctx);
+
+				setlastX();
+				lower();
+				setX(&r);
+			} else
+				bad_mode_error();
+		}
+	} else
+		illegal(op);
+}
+
+static void dyadic_cmplex(const opcode op) {
+	decNumber x1, y1, x2, y2, xr, yr;
+
+	process_cmdline_set_lift();
+
+	unsigned int f = argKIND(op);
+	if (f < num_dyfuncs) {
+		if (dyfuncs[f].dydcmplx != NULL) {
+			getXY(&x1, &y1);
+			getZ(&x2);
+			getT(&y2);
+
+			(*dyfuncs[f].dydcmplx)(&xr, &yr, &x2, &y2, &x1, &y1, g_ctx);
+
+			setlastXY();
+			lower2();
+			setXY(&xr, &yr);
+			set_was_complex();
+		} else
+			bad_mode_error();
+	} else
+		illegal(op);
+}
+/***************************************************************************
+ * Triadic function handling.
+ */
+
+/* Dispatch routine for dyadic operations.
+ * Again, these functions have a common argument decode and record and
+ * common stack manipulation.
+ */
+static void triadic(const opcode op) {
+	process_cmdline_set_lift();
+
+	unsigned int f = argKIND(op);
+	if (f < num_trifuncs) {
+		if (is_intmode()) {
+			if (trifuncs[f].triint != NULL) {
+				long long int x = d64toInt(&regX);
+				long long int y = d64toInt(&regY);
+				long long int z = d64toInt(&regZ);
+				x = (*trifuncs[f].triint)(z, y, x);
+				setlastX();
+				lower();
+				lower();
+				d64fromInt(&regX, x);
+			} else
+				bad_mode_error();
+		} else {
+			if (trifuncs[f].trireal != NULL) {
+				decNumber x, y, z, r;
+
+				getXY(&x, &y);
+				getZ(&z);
+
+				(*trifuncs[f].trireal)(&r, &z, &y, &x, g_ctx);
+
+				setlastX();
+				lower();
+				lower();
+				setX(&r);
+			} else
+				bad_mode_error();
+		}
+	} else
+		illegal(op);
+}
+
+
+/* Commands to allow access to constants
+ */
+static void cmdconst(unsigned int arg, enum rarg op) {
+	if (is_intmode()) {
+		bad_mode_error();
+		return;
+	}
+	lift();
+	regX = CONSTANT(arg);
+}
+
+static void cmdconstcmplx(unsigned int arg, enum rarg op) {
+	if (is_intmode()) {
+		bad_mode_error();
+		return;
+	}
+	lift2();
+	regX = CONSTANT(arg);
+	regY = CONSTANT_INT(OP_ZERO);
+}
+
+/* Commands to allow access to internal constants
+ */
+static void cmdconstint(unsigned int arg, enum rarg op) {
+	if (is_intmode()) {
+		bad_mode_error();
+		return;
+	}
+	lift();
+	regX = CONSTANT_INT(arg);
+}
+
+/* Store/recall code here.
+ * These two are pretty much the same so we define some utility routines first.
+ */
+
+/* Do a basic STO/RCL arithmetic operation.
+ */
+static int storcl_op(unsigned short opr, const decimal64 *yr, decNumber *r, int rev) {
+	decNumber x, y;
+
+	if (rev) {
+		getX(&y);
+		decimal64ToNumber(yr, &x);
+	} else {
+		getX(&x);
+		decimal64ToNumber(yr, &y);
+	}
+
+	switch (opr) {
+	case 1:
+		decNumberAdd(r, &y, &x, g_ctx64);
+		break;
+	case 2:
+		decNumberSubtract(r, &y, &x, g_ctx64);
+		break;
+	case 3:
+		decNumberMultiply(r, &y, &x, g_ctx64);
+		break;
+	case 4:
+		decNumberDivide(r, &y, &x, g_ctx64);
+		break;
+	case 5:
+		decNumberMin(r, &y, &x, g_ctx);
+		break;
+	case 6:
+		decNumberMax(r, &y, &x, g_ctx);
+		break;
+	default:
+		return 1;
+	}
+	return 0;
+}
+
+static int storcl_intop(unsigned short opr, const decimal64 *yr, long long int *r, int rev) {
+	long long int x, y;
+
+	x = d64toInt(&regX);
+	y = d64toInt(yr);
+
+	if (rev) {
+		const long long int t = x;
+		x = y;
+		y = t;
+	}
+
+	switch (opr) {
+	case 1:
+		*r = intAdd(y, x);
+		break;
+	case 2:
+		*r = intSubtract(y, x);
+		break;
+	case 3:
+		*r = intMultiply(y, x);
+		break;
+	case 4:
+		*r = intDivide(y, x);
+		break;
+	case 5:
+		*r = intMin(y, x);
+		break;
+	case 6:
+		*r = intMax(y, x);
+		break;
+	default:
+		return 1;
+	}
+	return 0;
+}
+
+/* We've got a STO operation to do.
+ */
+static void cmdsto(unsigned int arg, enum rarg op) {
+	decimal64 *rn = get_reg_n(arg);
+
+	if (op == RARG_STO) {
+		*rn = regX;
+	} else {
+		if (is_intmode()) {
+			long long int r;
+
+			if (storcl_intop(op - RARG_STO, rn, &r, 0))
+				illegal(op);
+			d64fromInt(rn, r);
+		} else {
+			decNumber r;
+
+			if (storcl_op(op - RARG_STO, rn, &r, 0))
+				illegal(op);
+			decimal64FromNumber(rn, &r, g_ctx64);
+		}
+	}
+}
+
+/* We've got a RCL operation to do.
+ */
+static void cmdrcl(unsigned int arg, enum rarg op) {
+	const decimal64 *rn = get_reg_n(arg);
+
+	if (op == RARG_RCL) {
+		decimal64 temp = *rn;
+		lift();
+		regX = temp;
+	} else {
+		if (is_intmode()) {
+			long long int r;
+
+			if (storcl_intop(op - RARG_RCL, rn, &r, 1))
+				illegal(op);
+			setlastX();
+			d64fromInt(&regX, r);
+		} else {
+			decNumber r;
+
+			if (storcl_op(op - RARG_RCL, rn, &r, 1))
+				illegal(op);
+			setlastX();
+			setX(&r);
+		}
+	}
+}
+
+/* And the complex equivalents for the above.
+ * We pair registers arg & arg+1 to provide a complex number
+ */
+static int storcl_cop(unsigned short opr,
+		const decimal64 *y1r, const decimal64 *y2r,
+		decNumber *r1, decNumber *r2) {
+	decNumber x1, x2, y1, y2;
+
+	getXY(&x1, &x2);
+	decimal64ToNumber(y1r, &y1);
+	decimal64ToNumber(y2r, &y2);
+
+	switch (opr) {
+	case 1:
+		cmplxAdd(r1, r2, &y1, &y2, &x1, &x2, g_ctx64);
+		break;
+	case 2:
+		cmplxSubtract(r1, r2, &y1, &y2, &x1, &x2, g_ctx64);
+		break;
+	case 3:
+		cmplxMultiply(r1, r2, &y1, &y2, &x1, &x2, g_ctx);
+		break;
+	case 4:
+		cmplxDivide(r1, r2, &y1, &y2, &x1, &x2, g_ctx);
+		break;
+	default:
+		return 1;
+	}
+	return 0;
+}
+
+static void cmdcsto(unsigned int arg, enum rarg op) {
+	decNumber r1, r2;
+	decimal64 *t1, *t2;
+
+	t1 = get_reg_n(arg);
+	t2 = get_reg_n(arg+1);
+
+	if (op == RARG_CSTO) {
+		*t1 = regX;
+		*t2 = regY;
+	} else {
+		if (is_intmode())
+			bad_mode_error();
+		else if (storcl_cop(op - RARG_STO, t1, t2, &r1, &r2))
+			illegal(op);
+		else {
+			decimal64FromNumber(t1, &r1, g_ctx64);
+			decimal64FromNumber(t2, &r2, g_ctx64);
+		}
+	}
+	set_was_complex();
+}
+
+static void cmdcrcl(unsigned int arg, enum rarg op) {
+	decNumber r1, r2;
+	const decimal64 *t1, *t2;
+
+	t1 = get_reg_n(arg);
+	t2 = get_reg_n(arg+1);
+
+	if (op == RARG_CRCL) {
+		lift2();
+		regX = *t1;
+		regY = *t2;
+	} else {
+		if (is_intmode())
+			bad_mode_error();
+		else if (storcl_cop(op - RARG_CRCL, t1, t2, &r1, &r2))
+			illegal(op);
+		else {
+			setlastXY();
+			setXY(&r1, &r2);
+		}
+	}
+	set_was_complex();
+}
+
+/* SWAP x with the specified register
+ */
+void swap_reg(decimal64 *a, decimal64 *b) {
+	decimal64 t;
+
+	t = *a;
+	*a = *b;
+	*b = t;
+}
+
+static void cmdswap(unsigned int arg, enum rarg op) {
+	swap_reg(&regX, get_reg_n(arg));
+	if (op == RARG_CSWAP) {
+		swap_reg(&regY, get_reg_n(arg+1));
+		set_was_complex();
+	}
+}
+
+
+/* View a specified register
+ */
+static void cmdview(unsigned int arg, enum rarg op) {
+	format_reg(get_reg_n(arg), NULL);
+	display();
+}
+
+
+/* Set the stack size */
+static void set_stack_size4(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+	state.stack_depth = 0;
+}
+static void set_stack_size8(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+	state.stack_depth = 1;
+}
+
+/* Get the stack size */
+static void get_stack_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+	put_int(stack_size(), 0, a);
+}
+
+static void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+	put_int(word_size(), 0, a);
+}
+
+/* Save and restore the entire stack to sequential registers */
+static int check_stack_overlap(unsigned int arg, int *nout) {
+	const int n = stack_size();
+
+	if (arg + n <= TOPREALREG) {
+		*nout = n;
+		return 1;
+	}
+	err(ERR_STK_CLASH);
+	return 0;
+}
+
+static void cmdstostk(unsigned int arg, enum rarg op) {
+	int i, n;
+
+	if (check_stack_overlap(arg, &n))
+		for (i=0; i<n; i++)
+			*get_reg_n(arg+i) = *get_stack(i);
+}
+
+static void cmdrclstk(unsigned int arg, enum rarg op) {
+	int i, n;
+
+	if (check_stack_overlap(arg, &n))
+		for (i=0; i<n; i++)
+			*get_stack(i) = *get_reg_n(arg+i);
+}
+
+
+/* Search from the given position for the specified numeric label.
+ */
+static unsigned int find_opcode_from(unsigned short int pc, const opcode l, int quiet) {
+	unsigned short int z = pc;
+	unsigned short int max;
+	unsigned short int min;
+
+	if (isXROM(z)) {
+		min = addrXROM(0);
+		max = addrXROM(xrom_size);
+	} else {
+		if (z == 0)
+			z++;
+		min = 1;
+		max = state.last_prog;
+	}
+
+	while (z < max && z != 0)
+		if (getprog(z) == l)
+			return z;
+		else
+			z = inc(z);
+	for (z = min; z<pc; z = inc(z))
+		if (getprog(z) == l)
+			return z;
+	if (!quiet)
+		err(ERR_NO_LBL);
+	return 0;
+}
+
+unsigned int find_label_from(unsigned short int pc, unsigned int arg, int quiet) {
+	return find_opcode_from(pc, OP_RARG + (RARG_LBL << RARG_OPSHFT) + arg, quiet);
+}
+
+/* Handle a GTO/GSB instruction
+ */
+static void gsbgto(unsigned short int pc, int gsb, unsigned short int oldpc) {
+	state.state_pc = pc;
+	if (gsb) {
+		if (running()) {
+			if (!state.implicit_rtn) {
+				retstk[retstkptr++] = oldpc;
+				if (retstkptr >= RET_STACK_SIZE) {
+					err(ERR_XEQ_NEST);
+					retstkptr = 0;
+					set_running(0);
+				}
+			}
+		} else {
+			retstkptr = 0;
+			set_running(1);
+		}
+	}
+	state.implicit_rtn = 0;
+}
+
+static void cmdgtocommon(int gsb, unsigned short int pc) {
+	const unsigned short int oldpc = state_pc();
+
+	if (pc == 0)
+		set_running(0);
+	else
+		gsbgto(pc, gsb, oldpc);
+}
+
+static void cmdgto(unsigned int arg, enum rarg op) {
+	cmdgtocommon(op != RARG_GTO, find_label_from(state_pc(), arg, 0));
+}
+
+static void cmdmultigto(const opcode o, enum multiops mopr) {
+	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
+	unsigned short int lbl = find_opcode_from(state_pc(), dest, 0);
+	cmdgtocommon(mopr != DBL_GTO, lbl);
+}
+
+static void xromargcommon(int lbl, unsigned short int userpc) {
+	const unsigned short int oldpc = state_pc();
+
+	if (userpc == 0)
+		return;
+
+	const unsigned short int pc = find_label_from(addrXROM(0), lbl, 1);
+
+	state.usrpc = userpc;
+	gsbgto(pc, 1, oldpc);
+}
+
+void xromarg(unsigned int arg, enum rarg op) {
+	xromargcommon(ENTRY_SIGMA - (op - RARG_SUM), find_label_from(state_pc(), arg, 0));
+}
+
+static void multixromarg(const opcode o, enum multiops mopr) {
+	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
+	unsigned short int lbl = find_opcode_from(state_pc(), dest, 0);
+	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), lbl);
+}
+
+#ifdef INCLUDE_MODULAR
+static void xrommplus(decimal64 *a, decimal64 *b, decContext *nulc) {
+	xromargcommon(ENTRY_MADD, 0xffff);
+}
+
+static void xrommminus(decimal64 *a, decimal64 *b, decContext *nulc) {
+	xromargcommon(ENTRY_MSUB, 0xffff);
+}
+
+static void xrommsq(decimal64 *a, decimal64 *b, decContext *nulc) {
+	xromargcommon(ENTRY_MSQ, 0xffff);
+}
+
+static void xrommmul(decimal64 *a, decimal64 *b, decContext *nulc) {
+	xromargcommon(ENTRY_MMUL, 0xffff);
+}
+#endif
+
+
+static void cmddisp(unsigned int arg, enum rarg op) {
+	state.dispdigs = arg;
+	if (op == RARG_FIX)		state.dispmode = MODE_FIX;
+	else if (op == RARG_SCI)	state.dispmode = MODE_SCI;
+	else if (op == RARG_ENG)	state.dispmode = MODE_ENG;
+	// RARG_DISP just falls through having had its work done already
+}
+
+
+/* Metric / Imperial conversion code */
+decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber s;
+
+	decNumberMultiply(&s, x, &const_9on5, ctx);
+	return decNumberAdd(r, &s, &const_32, ctx);
+}
+
+decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber s;
+
+	decNumberSubtract(&s, x, &const_32, ctx);
+	return decNumberDivide(r, &s, &const_9on5, ctx);
+}
+
+void do_conv(decNumber *r, unsigned int arg, const decNumber *x, decContext *ctx) {
+	decNumber m;
+	const unsigned int conv = arg / 2;
+	const unsigned int dirn = arg & 1;
+
+	if (conv > NUM_CONSTS_CONV) {
+		decNumberCopy(r, x);
+		return;
+	}
+
+	decimal64ToNumber(&CONSTANT_CONV(conv), &m);
+	
+	if (dirn == 0)		// metric to imperial
+		decNumberDivide(r, x, &m, ctx);
+	else			// imperial to metric
+		decNumberMultiply(r, x, &m, ctx);
+}
+
+static void cmdconv(unsigned int arg, enum rarg op) {
+	decNumber x, r;
+
+	if (is_intmode())
+		return;
+
+	getX(&x);
+	do_conv(&r, arg, &x, g_ctx);
+	setlastX();
+	setX(&r);
+}
+
+#ifdef REALBUILD
+static void cmdcontrast(unsigned int arg, enum rarg op) {
+	state.contrast = arg & 0xf;
+}
+#endif
+
+/* Finish up a test -- if the value is non-zero, the test passes.
+ * If it is zero, the test fails.
+ */
+void fin_tst(const int a) {
+	if (a) {
+		if (!running())
+			disp_msg = "true";
+	} else {
+		if (running()) {
+			if (! state.implicit_rtn)
+				incpc();
+		} else
+			disp_msg = "false";
+	}
+}
+
+
+
+/* We've encountered a CHS while entering the command line.
+ */
+static void cmdlinechs(void) {
+	if (state.cmdlineeex) {
+		int pos = state.cmdlineeex + 1;
+		if (state.eol < pos) {
+			if (state.eol < CMDLINELEN)
+				cmdline[state.eol++] = '-';
+		} else if (cmdline[pos] == '-') {
+			if (state.eol != pos)
+				xcopy(cmdline + pos, cmdline + pos + 1, state.eol-pos);
+			state.eol--;
+		} else if (state.eol < CMDLINELEN) {
+			xcopy(cmdline+pos+1, cmdline+pos, state.eol-pos);
+			cmdline[pos] = '-';
+			state.eol++;
+		}
+	} else {
+		if (cmdline[0] == '-') {
+			if (state.eol > 1)
+				xcopy(cmdline, cmdline+1, state.eol);
+			state.eol--;
+		} else if (state.eol < CMDLINELEN) {
+			xcopy(cmdline+1, cmdline, state.eol);
+			cmdline[0] = '-';
+			state.eol++;
+		}
+	}
+}
+
+
+/* Output a niladic function.
+ */
+static void niladic(const opcode op) {
+	const unsigned int idx = argKIND(op);
+
+	process_cmdline();
+	if (idx < num_niladics) {
+		if (niladics[idx].niladicf != NULL) {
+			decimal64 *x = NULL, *y = NULL;
+
+			switch (niladics[idx].numresults) {
+			case 2:	lift();
+				y = &regY;
+			case 1:	x = &regX;
+				if (state.state_lift)
+					lift();
+			default:
+				if (niladics[idx].niladicf != NULL)
+					(*niladics[idx].niladicf)(x, y, g_ctx64);
+				break;
+			}
+		}
+	} else
+		illegal(op);
+	state.state_lift = 1;
+}
+
+
+/* Execute a tests command
+ */
+static void do_tst(const decimal64 *cmp, const enum tst_op op, int cnst) {
+	int a = 0;
+	int iszero, isneg;
+
+	process_cmdline_set_lift();
+
+	if (is_intmode()) {
+		unsigned long long int xv, yv;
+		int xs, ys;
+
+		xv = extract_value(d64toInt(&regX), &xs);
+		if (cnst >= 0) {
+			yv = cnst;
+			ys = 1;
+		} else
+			yv = extract_value(d64toInt(cmp), &ys);
+
+		if (xv == 0 && yv == 0)
+			iszero = 1;
+		else
+			iszero = (xv == yv) && (xs == ys);
+
+		if (xs == ys) {		// same sign
+			if (xs)		// both negative
+				isneg = xv > yv;
+			else		// both positive
+				isneg = xv < yv;
+		} else
+			isneg = xs;	// opposite signs
+	} else {
+		decNumber t, x, r;
+
+		getX(&x);
+		if (decNumberIsNaN(&x))
+			goto flse;
+
+		decimal64ToNumber(cmp, &t);
+		if (decNumberIsNaN(&t))
+			goto flse;
+
+		decNumberCompare(&r, &x, &t, g_ctx);
+		iszero = decNumberIsZero(&r);
+		isneg = decNumberIsNegative(&r);
+	}
+
+	switch (op) {
+	case TST_EQ:	a = iszero;		break;
+	case TST_NE:	a = !iszero;		break;
+	case TST_LT:	a = isneg && !iszero;	break;
+	case TST_LE:	a = isneg || iszero;	break;
+	case TST_GT:	a = !isneg && !iszero;	break;
+	case TST_GE:	a = !isneg || iszero;	break;
+	default:	a = 0;			break;
+	}
+
+flse:	fin_tst(a);
+}
+
+static void cmdtest(unsigned int arg, enum rarg op) {
+	do_tst(get_reg_n(arg), (enum tst_op)(op - RARG_TEST_EQ), -1);
+}
+
+static void do_ztst(const decimal64 *r, const decimal64 *i, const enum tst_op op) {
+	int c = 0;
+	decNumber x, y, t, a, b;
+	int eq = 1;
+
+	process_cmdline_set_lift();
+
+	if (is_intmode()) {
+		err(ERR_BAD_MODE);
+		return;
+	}
+	getXY(&x, &y);
+	if (decNumberIsNaN(&x) || decNumberIsNaN(&y))
+		goto flse;
+	decimal64ToNumber(r, &a);
+	decimal64ToNumber(i, &b);
+	if (decNumberIsNaN(&a) || decNumberIsNaN(&b))
+		goto flse;
+	decNumberCompare(&t, &x, &a, g_ctx);
+	if (!decNumberIsZero(&t))
+		eq = 0;
+	else {
+		decNumberCompare(&t, &y, &b, g_ctx);
+		if (!decNumberIsZero(&t))
+			eq = 0;
+	}
+	if (op == TST_EQ)
+		c = eq;
+	else
+		c = !eq;
+flse:	fin_tst(c);
+}
+
+static void cmdztest(unsigned int arg, enum rarg op) {
+	do_ztst(get_reg_n(arg), get_reg_n(arg+1), (enum tst_op)(op - RARG_TEST_ZEQ));
+}
+
+static void cmdloopz(unsigned int arg, enum rarg op) {
+	if (is_intmode()) {
+		long long int x = get_reg_n_as_int(arg);
+		int xs;
+		unsigned long long int xv;
+
+		if (op == RARG_ISZ)
+			x = intAdd(x, 1LL);
+		else
+			x = intSubtract(x, 1LL);
+		put_reg_n_from_int(x, arg);
+
+		xv = extract_value(x, &xs);
+		fin_tst(xv != 0);
+	} else {
+		decNumber x, y;
+
+		get_reg_n_as_dn(arg, &x);
+		if (op == RARG_ISZ)
+			dn_inc(&x, g_ctx);
+		else
+			dn_dec(&x, g_ctx);
+		put_reg_n(arg, &x);
+		decNumberTrunc(&y, &x, g_ctx);
+		fin_tst(! decNumberIsZero(&y));
+	}
+}
+
+static void cmdloop(unsigned int arg, enum rarg op) {
+	if (is_intmode()) {
+		long long int x = get_reg_n_as_int(arg);
+		int xs;
+		unsigned long long int xv;
+
+		if (op == RARG_ISG)
+			x = intAdd(x, 1LL);
+		else
+			x = intSubtract(x, 1LL);
+		put_reg_n_from_int(x, arg);
+
+		xv = extract_value(x, &xs);
+		if (op == RARG_ISG)
+			fin_tst(xs == 0 && xv > 0);	// > 0
+		else
+			fin_tst(xs != 0 || xv == 0);	// <= 0
+		return;
+	} else {
+		decNumber x, i, f, n, u;
+
+		get_reg_n_as_dn(arg, &x);
+
+		// Break the number into the important bits
+		// nnnnn.fffii
+		decNumberAbs(&f, &x, g_ctx);
+		decNumberTrunc(&n, &f, g_ctx);			// n = nnnnn
+		decNumberSubtract(&u, &f, &n, g_ctx);		// u = .fffii
+		if (decNumberIsNegative(&x))
+			decNumberMinus(&n, &n, g_ctx);
+		decNumberMultiply(&i, &u, &const_1000, g_ctx);	// i = fff.ii
+		decNumberTrunc(&f, &i, g_ctx);			// f = fff
+		decNumberSubtract(&i, &i, &f, g_ctx);		// i = .ii		
+		decNumberMultiply(&x, &i, &const_100, g_ctx);
+		decNumberTrunc(&i, &x, g_ctx);			// i = ii
+		if (decNumberIsZero(&i))
+			decNumberCopy(&i, &const_1);
+
+		if (op == RARG_ISG) {
+			decNumberAdd(&n, &n, &i, g_ctx);
+			decNumberCompare(&x, &f, &n, g_ctx);
+			fin_tst(! decNumberIsNegative(&x));
+		} else {
+			decNumberSubtract(&n, &n, &i, g_ctx);
+			decNumberCompare(&x, &f, &n, g_ctx);
+			fin_tst(decNumberIsNegative(&x));
+		}
+
+		// Finally rebuild the result
+		if (decNumberIsNegative(&n)) {
+			decNumberSubtract(&x, &n, &u, g_ctx);
+		} else
+			decNumberAdd(&x, &n, &u, g_ctx);
+		put_reg_n(arg, &x);
+	}
+}
+
+/* Return a pointer to the byte with the indicated flag in it.
+ * also return a byte with the relevant bit mask set up.
+ * Also, handle bank switched flags in xROM code.
+ */
+static unsigned char *flag_byte(const int n, unsigned char *mask) {
+	if (n < 0 || n >= NUMFLG)
+		return NULL;
+	*mask = 1 << (n % 8);
+	if (isXROM(state_pc()) && n < NUMBANKFLAGS)
+		return ((unsigned char *)&bank_flags) + n / 8;
+	return flags + n / 8;
+}
+
+int get_user_flag(const int n) {
+	unsigned char mask;
+	const unsigned char *const f = flag_byte(n, &mask);
+
+	return f != NULL && (*f & mask)?1:0;
+}
+
+void set_user_flag(const int n) {
+	unsigned char mask;
+	unsigned char *const f = flag_byte(n, &mask);
+
+	if (f != NULL)
+		*f |= mask;
+}
+
+void clr_user_flag(const int n) {
+	unsigned char mask;
+	unsigned char *const f = flag_byte(n, &mask);
+
+	if (f != NULL)
+		*f &= ~mask;
+}
+
+static void cmdflag(unsigned int arg, enum rarg op) {
+	unsigned char mask;
+	unsigned char *const f = flag_byte(arg, &mask);
+	int flg = *f & mask;
+
+	switch (op) {
+	case RARG_SF:	flg = 1;			break;
+	case RARG_CF:	flg = 0;			break;
+	case RARG_FF:	flg = flg?0:1;			break;
+
+	case RARG_FS:	fin_tst(flg);			return;
+	case RARG_FC:	fin_tst(! flg);			return;
+
+	case RARG_FSC:	fin_tst(flg);	flg = 0;	break;
+	case RARG_FSS:	fin_tst(flg);	flg = 1;	break;
+	case RARG_FSF:	fin_tst(flg);	flg = flg?0:1;	break;
+
+	case RARG_FCC:	fin_tst(! flg);	flg = 0;	break;
+	case RARG_FCS:	fin_tst(! flg);	flg = 1;	break;
+	case RARG_FCF:	fin_tst(! flg);	flg = flg?0:1;	break;
+
+	default:					return;
+	}
+
+	// And write the value back
+	if (flg)
+		*f |= mask;
+	else
+		*f &= ~mask;
+}
+
+static void intws(unsigned int arg, enum rarg op) {
+	state.int_len = arg;
+}
+
+
+/* Convert from a real to a fraction
+ */
+
+void get_maxdenom(decNumber *d) {
+	const unsigned int dm = state.denom_max;
+	int_to_dn(d, dm==0?9999:dm, g_ctx);
+}
+
+static void op_2frac(decimal64 *x, decimal64 *b, decContext *ctx64) {
+	decNumber z, n, d, t;
+
+	if (state.intm) {
+		d64fromInt(x, 1);
+		return;
+	}
+
+	getY(&z);			// Stack has been lifted already
+	decNumber2Fraction(&n, &d, &z, g_ctx);
+	setXY(&d, &n);			// Set numerator and denominator
+	if (state.runmode) {
+		decNumberDivide(&t, &n, &d, g_ctx);
+		decNumberCompare(&n, &t, &z, ctx64);
+		if (decNumberIsZero(&n))
+			disp_msg = "y/x =";
+		else if (decNumberIsNegative(&n))
+			disp_msg = "y/x \017";
+		else
+			disp_msg = "y/x \020";
+	}
+}
+
+static void op_fracdenom(decimal64 *a, decimal64 *b, decContext *nulc) {
+	int s;
+	unsigned long long int i;
+
+	i = get_int(&regX, &s);
+	if (i > 9999)
+		state.denom_max = 0;
+	else if (i != 1)
+		state.denom_max = i;
+	else {
+		setlastX();
+		put_int(state.denom_max, 0, &regX);
+	}
+}
+
+static void op_denany(decimal64 *a, decimal64 *b, decContext *nulc) {
+	state.denom_mode = DENOM_ANY;
+}
+
+static void op_denfix(decimal64 *a, decimal64 *b, decContext *nulc) {
+	state.denom_mode = DENOM_FIXED;
+}
+
+static void op_denfac(decimal64 *a, decimal64 *b, decContext *nulc) {
+	state.denom_mode = DENOM_FACTOR;
+}
+
+/* Switching from an integer mode to real mode requires us
+ * to make an effort at converting x and y into a real numbers
+ * x' = y . 2^x
+ */
+static void int2dn(decNumber *x, decimal64 *a) {
+	int s;
+	unsigned long long int v = extract_value(d64toInt(a), &s);
+
+	ullint_to_dn(x, v, g_ctx);
+	if (s)
+		decNumberMinus(x, x, g_ctx);
+}
+
+static void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
+	decNumber x, y, z;
+
+	if (is_intmode()) {
+		state.intm = 0;
+		state.int_len = 0;
+
+		int2dn(&x, &regX);
+		int2dn(&y, &regY);
+		clrstk(NULL, NULL, NULL);
+		decNumberPower(&z, &const_2, &x, g_ctx);
+		decNumberMultiply(&x, &z, &y, g_ctx);
+		set_overflow(decNumberIsInfinite(&x));
+		decimal64FromNumber(&regX, &x, g_ctx64);
+	}
+	state.hms = 0;
+	state.fract = 0;
+}
+
+static void op_hms(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	op_float(NULL, NULL, NULL);
+	state.hms = 1;
+}
+
+static void op_fract(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	op_float(NULL, NULL, NULL);
+	state.fract = 1;
+}
+
+static void op_fracimp(decimal64 *a, decimal64 *b, decContext *nulc) {
+	op_fract(a, b, nulc);
+	state.improperfrac = 1;
+}
+
+static void op_fracpro(decimal64 *a, decimal64 *b, decContext *nulc) {
+	op_fract(a, b, nulc);
+	state.improperfrac = 0;
+}
+
+static int is_digit(const char c) {
+	if (c >= '0' && c <= '9')
+		return 1;
+	return 0;
+}
+
+static int is_xdigit(const char c) {
+	if (is_digit(c) || (c >= 'A' && c <= 'F'))
+		return 1;
+	return 0;
+}
+
+/* Process a single digit.
+ */
+static void digit(int c) {
+	const int intm = is_intmode();
+	int i, j;
+	int lim = 12;
+
+	if (state.eol >= CMDLINELEN) {
+		warn(ERR_TOO_LONG);
+		return;
+	}
+	if (intm) {
+		if (c >= int_base()) {
+			warn(ERR_DIGIT);
+			return;
+		}
+		for (i=j=0; i<state.eol; i++)
+			j += is_xdigit(cmdline[i]);
+		if (j == lim) {
+			warn(ERR_TOO_LONG);
+			return;
+		}
+		if (c >= 10) {
+			cmdline[state.eol++] = c - 10 + 'A';
+			return;
+		}
+	} else {
+		if (c >= 10) {
+			warn(ERR_DIGIT);
+			return;
+		}
+		for (i=j=0; i<state.eol; i++)
+			if (cmdline[i] == 'E') {
+				lim++;
+				break;
+			} else
+				j += is_digit(cmdline[i]);
+		if (j == lim) {
+			warn(ERR_TOO_LONG);
+			return;
+		}
+	}
+
+	cmdline[state.eol++] = c + '0';
+	cmdline[state.eol] = '\0';
+
+	if (! intm && state.cmdlineeex) {
+		char *p = &cmdline[state.cmdlineeex + 1];
+		int emax = 384;
+		int n;
+
+		/* Figure out the range limit for the exponent */
+		if (*p == '-') {
+			p++;
+			emax = 383;
+		}
+
+		/* Now, check if the current exponent exceeds the range.
+		 * If so, shift it back a digit and validate a second time
+		 * in case the first digit is too large.
+		 */
+		for (n=0; n<2; n++) {
+			if (s_to_i(p) > emax) {
+				int i;
+
+				for (i=0; p[i] != '\0'; i++)
+					p[i] = p[i+1];
+				state.eol--;
+				cmdline[state.eol] = '\0';
+			} else
+				break;
+		}
+	}
+}
+
+
+/* Decode and process the specials.  These are niladic functions and
+ * commands with non-standard stack operation.
+ */
+static void specials(const opcode op) {
+	int opm = argKIND(op);
+
+	switch (opm) {
+	case OP_0 ... OP_F:
+		digit(opm - OP_0);
+		break;
+
+	case OP_DOT:
+		if (is_intmode())
+			break;
+		if (state.cmdlinedot < (state.fract + !state.improperfrac) && !state.cmdlineeex &&
+				state.eol < CMDLINELEN) {
+			if (state.eol == 0 || cmdline[state.eol-1] == '.')
+				digit(0);
+			state.cmdlinedot++;
+			cmdline[state.eol++] = '.';
+		}
+		break;
+
+	case OP_EEX:
+		if (is_intmode() || state.fract || state.hms)
+			break;
+		if (!state.cmdlineeex && state.eol < CMDLINELEN) {
+			if (state.eol == 0)
+				digit(1);
+			state.cmdlineeex = state.eol;
+			cmdline[state.eol++] = 'E';
+		}
+		break;
+
+	case OP_CHS:
+		if (state.eol)
+			cmdlinechs();
+		else if (is_intmode()) {
+			d64fromInt(&regX, intChs(d64toInt(&regX)));
+			state.state_lift = 1;
+		} else {
+			decNumber x, r;
+
+			getX(&x);
+			decNumberMinus(&r, &x, g_ctx);
+			setX(&r);
+			state.state_lift = 1;
+		}
+		break;
+
+	case OP_CLX:
+		if (state.eol) {
+			state.eol--;
+			if (cmdline[state.eol] == 'E')
+				state.cmdlineeex = 0;
+			else if (cmdline[state.eol] == '.')
+				state.cmdlinedot--;
+		} else {
+			if (is_intmode())
+				d64fromInt(&regX, 0);
+			else
+				regX = CONSTANT_INT(OP_ZERO);
+			state.state_lift = 0;
+		}
+		break;
+
+	case OP_ENTER:
+		process_cmdline();
+		lift();
+		state.state_lift = 0;
+		break;
+
+	case OP_SIGMAPLUS:
+		if (is_intmode())
+			break;
+		process_cmdline();
+		state.state_lift = 0;
+		setlastX();
+		sigma_plus(g_ctx);
+		sigma_N(&regX, NULL, g_ctx64);
+		break;
+
+	case OP_SIGMAMINUS:
+		if (is_intmode())
+			break;
+		process_cmdline();
+		state.state_lift = 0;
+		setlastX();
+		sigma_minus(g_ctx);
+		sigma_N(&regX, NULL, g_ctx64);
+		break;
+
+	// Conditional tests vs registers....
+	case OP_Xeq0:	case OP_Xlt0:	case OP_Xgt0:
+	case OP_Xne0:	case OP_Xle0:	case OP_Xge0:
+		do_tst(&CONSTANT_INT(OP_ZERO), (enum tst_op)(opm - OP_Xeq0), 0);
+		break;
+	case OP_Zeq0: case OP_Zne0:
+		do_ztst(&CONSTANT_INT(OP_ZERO), &CONSTANT_INT(OP_ZERO), (enum tst_op)(opm - OP_Zeq0));
+		break;
+
+	case OP_Xeq1:	case OP_Xlt1:	case OP_Xgt1:
+	case OP_Xne1:	case OP_Xle1:	case OP_Xge1:
+		do_tst(&CONSTANT_INT(OP_ONE), (enum tst_op)(opm - OP_Xeq1), 1);
+		break;
+	case OP_Zeq1:	case OP_Zne1:
+		do_ztst(&CONSTANT_INT(OP_ONE), &CONSTANT_INT(OP_ZERO), (enum tst_op)(opm - OP_Zeq1));
+		break;
+
+	default:
+		illegal(op);
+	}
+}
+
+enum trig_modes get_trig_mode(void) {
+	if (state.cmplx)
+		return TRIG_RAD;
+	//if (state.hyp)	return TRIG_RAD;
+	if (state.hms)
+		return TRIG_DEG;
+	return state.trigmode;
+}
+
+static void set_trig_mode(enum trig_modes m) {
+	state.trigmode = m;
+}
+
+static void op_deg(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	set_trig_mode(TRIG_DEG);
+}
+
+static void op_rad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	state.hms = 0;
+	set_trig_mode(TRIG_RAD);
+}
+
+static void op_grad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	state.hms = 0;
+	set_trig_mode(TRIG_GRAD);
+}
+
+static void op_all(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	state.dispmode = MODE_STD;
+	state.dispdigs = 0;
+}
+
+static void op_radixcom(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	state.fraccomma = 1;
+}
+
+static void op_radixdot(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	state.fraccomma = 0;
+}
+
+static void op_thousands_off(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	state.nothousands = 1;
+}
+
+static void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	state.nothousands = 0;
+}
+
+static void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	if (running()) {
+		display();
+#ifndef REALBUILD
+		sleep(1);
+#endif
+	}
+}
+
+static void op_2comp(decimal64 *a, decimal64 *b, decContext *nulc) {
+	state.int_mode = MODE_2COMP;
+}
+
+static void op_1comp(decimal64 *a, decimal64 *b, decContext *nulc) {
+	state.int_mode = MODE_1COMP;
+}
+
+static void op_unsigned(decimal64 *a, decimal64 *b, decContext *nulc) {
+	state.int_mode = MODE_UNSIGNED;
+}
+
+static void op_signmant(decimal64 *a, decimal64 *b, decContext *nulc) {
+	state.int_mode = MODE_SGNMANT;
+}
+
+/* Switch to integer mode.
+ * If we're coming from real mode we do funny stuff with the stack,
+ * if we're already in int mode we leave alone.
+ *
+ * We take the real X register and put it into the x and y registers
+ * such that the mantissa is in y and the exponent is in x.  There
+ * is also an additional condition that 2^31 <= |y| < 2^32.
+ *
+ * Since the word size gets reset when we enter real mode, there is
+ * plenty of space to do this and overflow isn't possible -- we have
+ * to account for zero, infinities and NaNs.
+ */
+static void check_int_switch(void) {
+	decNumber x, y, z;
+	int ex;			/* exponent |ex| < 1000 */
+	unsigned long int m;	/* Mantissa 32 bits */
+	int sgn, i;
+
+	if (!is_intmode()) {
+		getX(&x);
+		lift();
+		if (decNumberIsSpecial(&x)) {
+			/* Specials all have 0 mantissa and a coded exponent
+			 * We cannot use +/- a number for the infinities since
+			 * we might be in unsigned mode so we code them as 1 & 2.
+			 * NaN's get 3.
+			 */
+			d64fromInt(&regY, 0);
+			if (decNumberIsNaN(&x))
+				d64fromInt(&regX, 3);
+			else if (decNumberIsNegative(&x))
+				d64fromInt(&regX, 2);
+			else
+				d64fromInt(&regX, 1);
+
+		} else if (decNumberIsZero(&x)) {
+			/* 0 exponent, 0 mantissa -- although this can be negative zero */
+			d64fromInt(&regY, build_value(0, decNumberIsNegative(&x)?1:0));
+			d64fromInt(&regX, 0);
+		} else {
+			/* Deal with the sign */
+			if (decNumberIsNegative(&x)) {
+				decNumberMinus(&x, &x, g_ctx);
+				sgn = 1;
+			} else
+				sgn = 0;
+			/* Figure the exponent */
+			decNumberLog2(&y, &x, g_ctx);
+			decNumberTrunc(&z, &y, g_ctx);
+			ex = dn_to_int(&z, g_ctx);
+			/* On to the mantissa */
+			decNumberPow2(&y, &z, g_ctx);
+			decNumberDivide(&z, &x, &y, g_ctx);
+			m = 1;
+			decNumberFrac(&y, &z, g_ctx);
+			for (i=0; i<31; i++) {
+				decNumberMultiply(&z, &y, &const_2, g_ctx);
+				decNumberTrunc(&y, &z, g_ctx);
+				m += m;
+				if (! decNumberIsZero(&y))
+					m++;
+				decNumberFrac(&y, &z, g_ctx);
+			}
+			ex -= 31;
+			/* Finally, round up if required */
+			decNumberMultiply(&z, &y, &const_2, g_ctx);
+			decNumberTrunc(&y, &z, g_ctx);
+			if (! decNumberIsZero(&y)) {
+				m++;
+				if (m == 0) {
+					ex++;
+					m = 0x80000000;
+				}
+			}
+			/* The mantissa */
+			d64fromInt(&regY, build_value(m, sgn));
+			/* The exponent */
+			if (ex < 0) {
+				ex = -ex;
+				sgn = 1;
+			} else
+				sgn = 0;
+			d64fromInt(&regX, build_value(ex, sgn));
+		}
+		state.intm = 1;
+	}
+}
+
+static void set_base(unsigned int b) {
+	state.int_base = b - 1;
+	check_int_switch();
+}
+
+static void set_int_base(unsigned int arg, enum rarg op) {
+	if (arg < 2) {
+		if (arg == 0)
+			op_float(NULL, NULL, NULL);
+		else
+			op_fract(NULL, NULL, NULL);
+	} else
+		set_base(arg);
+}
+
+static void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx) {
+	state.date_mode = DATE_YMD;
+}
+
+static void date_dmy(decimal64 *a, decimal64 *nul, decContext *ctx) {
+	state.date_mode = DATE_DMY;
+}
+
+static void date_mdy(decimal64 *a, decimal64 *nul, decContext *ctx) {
+	state.date_mode = DATE_MDY;
+}
+
+static void time_24(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	state.t12 = 0;
+}
+
+static void time_12(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	state.t12 = 1;
+}
+
+/* Save and restore used state.
+ */
+static void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64) {
+	unsigned long long int n = 0;
+	int posn = 0;
+	decNumber r;
+
+#define SB(f, p)					\
+		n |= (state.f) << posn;			\
+		posn += (p)
+#include "statebits.h"
+#undef SB
+	if (state.intm) {
+		if (word_size() < posn)
+			err(ERR_INT_SIZE);
+		else
+			d64fromInt(x, n);
+	} else {
+		ullint_to_dn(&r, n, g_ctx);
+		decimal64FromNumber(x, &r, g_ctx);
+	}
+}
+
+static void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+	unsigned long long int n;
+	int sgn;
+	decNumber x;
+
+	if (state.intm) {
+	/* Figure out the number of bits required.  This is optimised
+	 * into a single constant assignment.
+	 */
+		int nb = 0;
+#define SB(f, p)	nb += (p);
+#include "statebits.h"
+#undef SB
+		if (word_size() < nb) {
+			err(ERR_INT_SIZE);
+			return;
+		}
+		n = d64toInt(&regX);
+	} else {
+		getX(&x);
+		n = dn_to_ull(&x, g_ctx, &sgn);
+	}
+
+#define SB(f, p)					\
+		(state.f) = n & ((1 << (p)) - 1);	\
+		n >>= (p)
+#include "statebits.h"
+#undef SB
+}
+
+static void do_rtn(int plus1) {
+	if (retstkptr > 0) {
+		state.state_pc = retstk[--retstkptr];
+		retstk[retstkptr] = 0;
+		if (plus1)
+			incpc();
+	} else {
+		set_running(0);
+		state.state_pc = 0;
+	}
+}
+
+static void op_rtn(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	if (!state.implicit_rtn)
+		do_rtn(0);
+}
+
+static void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	if (!state.implicit_rtn)
+		do_rtn(1);
+}
+
+static void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	set_running(1 - running());
+}
+
+static void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	set_running(0);
+	alpha_view(NULL, NULL, NULL);
+}
+
+static void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc) {
+	gsbgto(state.usrpc, 1, state_pc());
+}
+
+
+/* Test if a number is prime */
+static void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc) {
+	int sgn;
+
+	fin_tst(isPrime(get_int(&regX, &sgn)) && sgn == 0);
+}
+
+/* Test is a number is infinite.
+ */
+static void isInfinite(decimal64 *a, decimal64 *b, decContext *nulc) {
+	decNumber x;
+
+	getX(&x);
+	fin_tst(!is_intmode() && decNumberIsInfinite(&x));
+}
+
+/* Test for NaN.
+ * this could be done by testing x != x, but having a special command
+ * for it reads easier.
+ */
+static void isNan(decimal64 *a, decimal64 *b, decContext *nulc) {
+	decNumber x;
+
+	getX(&x);
+	fin_tst(!is_intmode() && decNumberIsNaN(&x));
+}
+
+static void isSpecial(decimal64 *a, decimal64 *b, decContext *nulc) {
+	decNumber x;
+
+	getX(&x);
+	fin_tst(!is_intmode() && decNumberIsSpecial(&x));
+}
+
+
+/* Bulk register operations */
+static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d) {
+	decNumber x, y;
+	int rsrc, num, rdest, q;
+
+	if (is_intmode())
+		return 1;
+	getX(&x);
+	if (decNumberIsNegative(&x) && !decNumberIsZero(&x)) {
+		err(ERR_RANGE);
+		return 1;
+	}
+	decNumberTrunc(&y, &x, g_ctx);
+	*s = rsrc = dn_to_int(&y, g_ctx);
+	if (rsrc >= TOPREALREG) {
+		err(ERR_RANGE);
+		return 1;
+	}
+	decNumberFrac(&y, &x, g_ctx);
+	decNumberMultiply(&x, &y, &const_100, g_ctx);
+	decNumberTrunc(&y, &x, g_ctx);
+	*n = num = dn_to_int(&y, g_ctx);
+	if (d != NULL) {
+		decNumberFrac(&y, &x, g_ctx);
+		decNumberMultiply(&x, &y, &const_100, g_ctx);
+		decNumberTrunc(&y, &x, g_ctx);
+		*d = rdest = dn_to_int(&y, g_ctx);
+		if (num == 0) {
+			/* Calculate the maxium non-ovelapping size */
+			if (rsrc > rdest) {
+				num = TOPREALREG - rsrc;
+				q = rsrc - rdest;
+			} else {
+				num = TOPREALREG - rdest;
+				q = rdest - rsrc;
+			}
+			if (num > q)
+				num = q;
+			*n = num;
+		} else if (rsrc+num > TOPREALREG || rdest+num > TOPREALREG) {
+			err(ERR_RANGE);
+			return 1;
+		}
+	} else {
+		if (num == 0) {
+			*n = TOPREALREG - rsrc;
+		} else if (rsrc+num > TOPREALREG) {
+			err(ERR_RANGE);
+			return 1;
+		}
+	}
+	return 0;
+}
+
+static void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc) {
+	unsigned int s, d, n;
+
+	if (reg_decode(&s, &n, &d) || s == d)
+		return;
+	xcopy(regs+d, regs+s, n*sizeof(regs[0]));
+}
+
+static void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
+	unsigned int s, d, n, i;
+
+	if (reg_decode(&s, &n, &d) || s == d)
+		return;
+	if (s < d && (s+n) > d)
+		err(ERR_RANGE);
+	else if (d < s && (d+n) > s)
+		err(ERR_RANGE);
+	else {
+		for (i=0; i<n; i++)
+			swap_reg(regs+s+i, regs+d+i);
+	}
+}
+
+static void op_regclr(decimal64 *a, decimal64 *b, decContext *nulc) {
+	unsigned int s, n, i;
+
+	if (reg_decode(&s, &n, NULL))
+		return;
+	for (i=0; i<n; i++)
+		regs[i+s] = CONSTANT_INT(OP_ZERO);
+}
+
+static void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	unsigned int s, n;
+	decNumber pivot, a, t;
+	int beg[10], end[10], i;
+
+	if (reg_decode(&s, &n, NULL) || n == 1)
+		return;
+
+	/*( Non-recursive quickqort */
+	beg[0] = s;
+	end[0] = s + n;
+	i = 0;
+	while (i>=0) {
+		int L = beg[i];
+		int R = end[i] - 1;
+		if (L<R) {
+			const decimal64 pvt = regs[L];
+			decimal64ToNumber(&pvt, &pivot);
+			while (L<R) {
+				while (L<R) {
+					decimal64ToNumber(regs+R, &a);
+					decNumberCompare(&t, &a, &pivot, g_ctx);
+					if (decNumberIsNegative(&t) && !decNumberIsZero(&t))
+						break;
+					R--;
+				}
+				if (L<R)
+					regs[L++] = regs[R];
+				while (L<R) {
+					decimal64ToNumber(regs+L, &a);
+					decNumberCompare(&t, &pivot, &a, g_ctx);
+					if (decNumberIsNegative(&t) && !decNumberIsZero(&t))
+						break;
+					L++;
+				}
+				if (L<R)
+					regs[R--] = regs[L];
+			}
+			regs[L] = pvt;
+			if (L - beg[i] < end[i] - (L+1)) {
+				beg[i+1] = beg[i];
+				end[i+1] = L;
+				beg[i] = L+1;
+			} else {
+				beg[i+1] = L+1;
+				end[i+1] = end[i];
+				end[i] = L;
+			}
+			i++;
+		} else
+			i--;
+	}
+}
+
+
+/* Handle a command that takes an argument.  The argument is encoded
+ * in the low order bits of the opcode.  We also have to take
+ * account of the indirction flag and various limits -- we always work modulo
+ * the limit.
+ */
+static void rargs(const opcode op) {
+	int arg = op & RARG_MASK;
+	int ind = op & RARG_IND;
+	const unsigned int cmd = (op & ~OP_RARG) >> RARG_OPSHFT;
+	decNumber x;
+	const unsigned int lim = argcmds[cmd].lim?:256;
+
+	process_cmdline_set_lift();
+
+	if (cmd >= num_argcmds) {
+		illegal(op);
+		return;
+	}
+	if (argcmds[cmd].f == NULL)
+		return;
+	if (ind && argcmds[cmd].indirectokay) {
+		if (is_intmode()) {
+			arg = get_reg_n_as_int(arg);
+		} else {
+			get_reg_n_as_dn(arg, &x);
+			arg = dn_to_int(&x, g_ctx);
+		}
+	} else {
+		if (lim > 128 && ind)		// put the top bit back in
+			arg |= RARG_IND;
+	}
+	if (arg < 0 || arg >= lim)
+		err(ind?ERR_RANGE:ERR_PROG_BAD);
+	else
+		(argcmds[cmd].f)(arg, (enum rarg)cmd);
+}
+
+static void multi(const opcode op) {
+	const int cmd = opDBL(op);
+
+	process_cmdline_set_lift();
+
+	if (cmd >= num_multicmds) {
+		illegal(op);
+		return;
+	}
+	if (multicmds[cmd].f == NULL)	// LBL does nothing
+		return;
+	(multicmds[cmd].f)(op, (enum multiops)cmd);
+}
+
+
+/* Print a single program step nicely.
+ */
+static void print_step(char *tracebuf, const opcode op) {
+	char buf[16], *p;
+	const unsigned short int pc = state_pc();
+
+	if (isXROM(pc)) {
+		tracebuf[0] = 'x';
+		p = num_arg_0(tracebuf+1, pc - addrXROM(0), 3);
+		*p++ = ' ';
+	} else if (pc == 0) {
+		scopy(tracebuf, "000:");
+		return;
+	} else {
+		p = num_arg_0(tracebuf, pc, 3);
+		*p++ = ':';
+	}
+	scopy_char(p, prt(op, buf), '\0');
+}
+
+
+/* When stuff gets done, there are some bits of state that need
+ * to be reset -- SHOW, ->base change the display mode until something
+ * happens.  This should be called on that something.
+ */
+void reset_volatile_state(void) {
+	if (state.implicit_rtn)
+		process_cmdline_set_lift();
+	state.int_window = 0;
+	state.int_winl = 0;
+	state.int_winr = 0;
+	state.implicit_rtn = 0;
+
+	state.smode = SDISP_NORMAL;
+}
+
+
+/* Main dispatch routine that decodes the top level of the opcode and
+ * goes to the appropriate lower level dispatch routine.
+ */
+void xeq(const opcode op) {
+	const int ss = stack_size();
+	const int nreg = ss + 2;
+	decimal64 save[nreg];
+	struct state old = state;
+	enum errors er;
+
+#ifndef REALBUILD
+	if (state.trace) {
+		char buf[16];
+		static char tracebuf[24];
+
+		if (running())
+			print_step(tracebuf, op);
+		else
+			sprintf(tracebuf, "%04X:%s", op, prt(op, buf));
+		disp_msg = tracebuf;
+	}
+#endif
+
+	if (ss == 4)
+		xcopy(save, &regX, nreg * sizeof(decimal64));
+	else	xcopy(save, get_stack(ss-2), nreg * sizeof(decimal64));
+	if (isDBL(op))
+		multi(op);
+	else if (isRARG(op))
+		rargs(op);
+	else {
+		switch (opKIND(op)) {
+		case KIND_SPEC:	specials(op);	break;
+		case KIND_NIL:	niladic(op);	break;
+		case KIND_MON:	monadic(op);	break;
+		case KIND_DYA:	dyadic(op);	break;
+		case KIND_TRI:	triadic(op);	break;
+		case KIND_CMON:	monadic_cmplex(op);	break;
+		case KIND_CDYA:	dyadic_cmplex(op);	break;
+		default:	illegal(op);
+		}
+	}
+
+	if ((er = state.error) != ERR_NONE) {
+		if (ss == 4)
+			xcopy(&regX, save, nreg * sizeof(decimal64));
+		else	xcopy(get_stack(ss-2), save, nreg * sizeof(decimal64));
+		state = old;
+		state.error = er;
+		set_running(0);
+		retstkptr = 0;
+		bank_flags = 0;
+		if (isXROM(state_pc()))
+			set_pc(0);
+		process_cmdline_set_lift();
+	} else if (state.implicit_rtn) {
+		do_rtn(0);
+	}
+	reset_volatile_state();
+}
+
+/* Execute a single step and return.
+ */
+static void xeq_single(void) {
+	const opcode op = getprog(state_pc());
+
+	incpc();
+	xeq(op);
+}
+
+/* Check to see if we're running a program and if so execute it
+ * to completion.
+ */
+void xeqprog(void) {
+	while (running())
+		xeq_single();
+}
+
+/* Single step routine
+ */
+void xeqone(char *tracebuf) {
+	const opcode op = getprog(state_pc());
+#ifdef REALBUILD
+	const unsigned int trace = 0;
+#else
+	unsigned int trace = state.trace;
+#endif
+
+	set_running(1);
+#ifndef REALBUILD
+	state.trace = 0;
+#endif
+	print_step(tracebuf, op);
+	disp_msg = tracebuf;
+	state.disp_small = 1;
+	incpc();
+	xeq(op);
+
+	/* Now if we've stepped into the xROM area, keep going until
+	 * we break free.
+	 */
+	while (!trace && isXROM(state_pc()))
+		xeq_single();
+
+	set_running(0);
+#ifndef REALBUILD
+	state.trace = trace;
+#endif
+}
+
+/* Store into program space.
+ */
+void stoprog(const opcode c) {
+	int i;
+	int off;
+
+	if (isXROM(state_pc()))
+		return;
+	off = isDBL(c)?2:1;
+	if (state.last_prog + off > NUMPROG+1) {
+		return;
+	}
+	state.last_prog += off;
+	incpc();
+	const unsigned short int pc = state_pc();
+	for (i=state.last_prog; i>pc; i--)
+		prog[i] = prog[i-off];
+	if (pc != 0) {
+		if (isDBL(c))
+			prog[pc + 1] = c >> 16;
+		prog[pc] = c;
+	}
+}
+
+
+/* Delete the current step in the program
+ */
+void delprog(void) {
+	int i;
+	const unsigned short pc = state_pc();
+	int off;
+
+	if (pc == 0 || isXROM(pc))
+		return;
+	off = isDBL(prog[pc])?2:1;
+	for (i=pc; i<state.last_prog-1; i++)
+		prog[i] = prog[i+off];
+	do {
+		prog[state.last_prog] =  EMPTY_PROGRAM_OPCODE;
+		state.last_prog--;
+	} while (--off);
+	decpc();
+}
+
+
+void xeq_init_contexts(void) {
+	/* Initialise our standard contexts.
+	 * We have to disable traps and bump the digits for internal calculations.
+	 */
+	decContextDefault(g_ctx, DEC_INIT_BASE);
+	g_ctx->traps = 0;
+	g_ctx->digits = DECNUMDIGITS;
+	g_ctx->emax=DEC_MAX_MATH;
+	g_ctx->emin=-DEC_MAX_MATH;
+	g_ctx->round = DEC_ROUND_HALF_EVEN;
+
+	decContextDefault(g_ctx64, DEC_INIT_DECIMAL64);
+	g_ctx64->traps = 0;
+}
+
+
+#ifdef DEBUG
+extern unsigned char remap_chars(unsigned char ch);
+
+static int compare(s_opcode a1, s_opcode a2, int cata) {
+	char b1[16], b2[16];
+	const unsigned char *s1, *s2;
+	int i;
+	const int alpha = cata == CATALOGUE_ALPHA;
+
+	xset(b1, 0, sizeof(b1));
+	xset(b2, 0, sizeof(b2));
+	s1 = (unsigned char *)catcmd(a1, b1);
+	s2 = (unsigned char *)catcmd(a2, b2);
+	if (alpha) {
+		if (*s1 == 0240) s1++;
+		if (*s2 == 0240) s2++;
+	}
+	if (*s1 == COMPLEX_PREFIX) s1++;
+	if (*s2 == COMPLEX_PREFIX) s2++;
+
+	for (i=0;;i++) {
+		unsigned char c1 = *s1++;
+		unsigned char c2 = *s2++;
+		c1 = remap_chars(c1);
+		c2 = remap_chars(c2);
+
+		if (c1 != c2) {
+			if (c1 > c2) {
+				return 1;
+			}
+			return 0;
+		} else if (c1 == '\0')
+			break;
+	}
+	return 0;
+}
+
+static void check_cat(const enum catalogues cata, const char *name) {
+	int i;
+	char b1[16], b2[16];
+	const int oldcata = state.catalogue;
+	int n;
+
+	state.catalogue = cata;
+	n = current_catalogue_max();
+	for (i=1; i<n; i++) {
+		opcode cold = current_catalogue(i-1);
+		opcode c = current_catalogue(i);
+		if (compare(cold, c, cata))
+			error("catalogue %s row %d / %d: %04o / %04o (%s / %s)", name, i, i+1,
+					0xff & cold, 0xff & c,
+					catcmd(cold, b1), catcmd(c, b2));
+	}
+	state.catalogue = oldcata;
+}
+
+static void check_const_cat(void) {
+	int i;
+	char b1[16], b2[16];
+
+	for (i=1; i<NUM_CONSTS; i++) {
+		if (compare(CONST(i-1), CONST(i), 0))
+			error("constants row %d / %d: %s / %s", i, i+1,
+					catcmd(CONST(i-1), b1), catcmd(CONST(i), b2));
+	}
+}
+#endif
+
+/* Main initialisation routine that sets things up for us.
+ */
+void xeq_init(void) {
+	reset(NULL, NULL, NULL);
+
+
+#ifdef DEBUG
+	/* Sanity check the function table indices.
+	 * These indicies must correspond exactly with the enum definition.
+	 * This code validates that this is true and prints error messages
+	 * if it isn't.
+	 */
+	int i;
+	for (i=0; i<num_monfuncs; i++)
+		if (monfuncs[i].n != i)
+			error("monadic function table row %d: %6s", i, monfuncs[i].fname);
+	for (i=0; i<num_dyfuncs; i++)
+		if (dyfuncs[i].n != i)
+			error("dyadic function table row %d: %6s", i, dyfuncs[i].fname);
+	for (i=0; i<num_trifuncs; i++)
+		if (trifuncs[i].n != i)
+			error("triadic function table row %d: %6s", i, trifuncs[i].fname);
+	for (i=0; i<num_niladics; i++)
+		if (niladics[i].n != i)
+			error("niladic function table row %d: %6s", i, niladics[i].nname);
+	for (i=0; i<num_argcmds; i++)
+		if (argcmds[i].n != i)
+			error("argument command table row %d: %6s", i, argcmds[i].cmd);
+	for (i=0; i<num_multicmds; i++)
+		if (multicmds[i].n != i)
+			error("multi command table row %d: %6s", i, multicmds[i].cmd);
+	check_const_cat();
+	check_cat(CATALOGUE_COMPLEX, "complex");
+	check_cat(CATALOGUE_STATS, "statistics");
+	check_cat(CATALOGUE_PROB, "probability");
+	check_cat(CATALOGUE_PROG, "programme");
+	check_cat(CATALOGUE_MODE, "mode");
+	check_cat(CATALOGUE_TEST, "tests");
+	check_cat(CATALOGUE_INT, "int");
+	check_cat(CATALOGUE_ALPHA, "alpha");
+	check_cat(CATALOGUE_ALPHA_LETTERS_UPPER, "alpha special upper case letters");
+	check_cat(CATALOGUE_ALPHA_LETTERS_LOWER, "alpha special lower letters");
+	check_cat(CATALOGUE_ALPHA_SYMBOLS, "alpha symbols");
+	check_cat(CATALOGUE_ALPHA_COMPARES, "alpha compares");
+	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");
+	check_cat(CATALOGUE_ALPHA_STATS, "alpha stats");
+	check_cat(CATALOGUE_CONV, "conversion");
+	check_cat(CATALOGUE_NORMAL, "float");
+#endif
+}
+
+/* Define our table of monadic functions.
+ * These must be in the same order as the monadic function enum but we'll
+ * validate this only if debugging is enabled.
+ */
+const struct monfunc monfuncs[] = {
+#ifdef DEBUG
+#define FUNC(name, d, c, i, fn) { .n = name, .mondreal = d, .mondcmplx = c, .monint = i, .fname = fn },
+#else
+#define FUNC(name, d, c, i, fn) { d, c, i, fn },
+#endif
+	FUNC(OP_FRAC,	&decNumberFrac,		&cmplxFrac,	&intFP,		"FP")
+	FUNC(OP_FLOOR,	&decNumberFloor,	NULL,		&intIP,		"FLOOR")
+	FUNC(OP_CEIL,	&decNumberCeil,		NULL,		&intIP,		"CEIL")
+	FUNC(OP_ROUND,	&decNumberRound,	NULL,		&intIP,		"RNDINT")
+	FUNC(OP_TRUNC,	&decNumberTrunc,	&cmplxTrunc,	&intIP,		"IP")
+	FUNC(OP_ABS,	&decNumberAbs,		&cmplxAbs,	&intAbs,	"ABS")
+	FUNC(OP_RND,	&decNumberRnd,		&cmplxRnd,	&intIP,		"ROUND")
+	FUNC(OP_SIGN,	&decNumberSign,		&cmplxSign,	&intSign,	"SIGN")
+	FUNC(OP_LN,	&decNumberLn,		&cmplxLn,	NULL,		"LN")
+	FUNC(OP_EXP,	&decNumberExp,		&cmplxExp,	NULL,		"e\234")
+	FUNC(OP_SQRT,	&decNumberSquareRoot,	&cmplxSqrt,	&intSqrt,	"\003")
+	FUNC(OP_RECIP,	&decNumberRecip,	&cmplxRecip,	NULL,		"1/x")
+	FUNC(OP_LOG,	&decNumberLog10,	&cmplxLog,	&intLog10,	"LOG\271\270")
+	FUNC(OP_LG2,	&decNumberLog2,		&cmplxLog2,	&intLog2,	"LOG\272")
+	FUNC(OP_2POWX,	&decNumberPow2,		&cmplx2x,	&int2pow,	"2\234")
+	FUNC(OP_10POWX,	&decNumberPow10,	&cmplx10x,	&int10pow,	"10\234")
+	FUNC(OP_LN1P,	&decNumberLn1p,		&cmplxLn1p,	NULL,		"LN1+")
+	FUNC(OP_EXPM1,	&decNumberExpm1,	&cmplxExpm1,	NULL,		"e\234-1")
+	FUNC(OP_LAMW,	&decNumberLamW,		&cmplxlamW,	NULL,		"W")
+	FUNC(OP_INVW,	&decNumberInvW,		&cmplxInvW,	NULL,		"W\235")
+	FUNC(OP_SQR,	&decNumberSquare,	&cmplxSqr,	&intSqr,	"x\232")
+#ifdef INCLUDE_CUBES
+	FUNC(OP_CUBE,	&decNumberCube,		&cmplxCube,	&intCube,	"CUBE")
+	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intCubeRoot,	"CUBERT")
+#endif
+	FUNC(OP_FIB,	&decNumberFib,		&cmplxFib,	&intFib,	"FIB")
+	FUNC(OP_2DEG,	&decNumber2Deg,		NULL,		NULL,		"\015DEG")
+	FUNC(OP_2RAD,	&decNumber2Rad,		NULL,		NULL,		"\015RAD")
+	FUNC(OP_2GRAD,	&decNumber2Grad,	NULL,		NULL,		"\015GRAD")
+	FUNC(OP_SIN,	&decNumberSin,		&cmplxSin,	NULL,		"SIN")
+	FUNC(OP_COS,	&decNumberCos,		&cmplxCos,	NULL,		"COS")
+	FUNC(OP_TAN,	&decNumberTan,		&cmplxTan,	NULL,		"TAN")
+	FUNC(OP_ASIN,	&decNumberArcSin,	&cmplxAsin,	NULL,		"ASIN")
+	FUNC(OP_ACOS,	&decNumberArcCos,	&cmplxAcos,	NULL,		"ACOS")
+	FUNC(OP_ATAN,	&decNumberArcTan,	&cmplxAtan,	NULL,		"ATAN")
+	FUNC(OP_SINC,	&decNumberSinc,		&cmplxSinc,	NULL,		"SINC")
+	FUNC(OP_SINH,	&decNumberSinh,		&cmplxSinh,	NULL,		"SINH")
+	FUNC(OP_COSH,	&decNumberCosh,		&cmplxCosh,	NULL,		"COSH")
+	FUNC(OP_TANH,	&decNumberTanh,		&cmplxTanh,	NULL,		"TANH")
+	FUNC(OP_ASINH,	&decNumberArcSinh,	&cmplxAsinh,	NULL,		"ASINH")
+	FUNC(OP_ACOSH,	&decNumberArcCosh,	&cmplxAcosh,	NULL,		"ACOSH")
+	FUNC(OP_ATANH,	&decNumberArcTanh,	&cmplxAtanh,	NULL,		"ATANH")
+	FUNC(OP_FACT,	&decNumberFactorial,	&cmplxFactorial,NULL,		"x!")
+	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	NULL,		"\202")
+	FUNC(OP_LNGAMMA,&decNumberLnGamma,	&cmplxLnGamma,	NULL,		"LN\202")
+#ifdef INCLUDE_DIGAMMA
+	FUNC(OP_PSI,	&decNumberPsi,		&cmplxPsi,	NULL,		"\226")
+#endif
+#ifdef INCLUDE_DBLFACT
+	FUNC(OP_DBLFACT,&decNumberDblFactorial,	&cmplxDblFactorial,NULL,	"x!!")
+#endif
+#ifdef INCLUDE_SUBFACT
+	FUNC(OP_SUBFACT,&decNumberSubFactorial,	NULL,		NULL,	"!n")
+#endif
+	FUNC(OP_DEG2RAD,&decNumberD2R,		NULL,		NULL,		"D\015R")
+	FUNC(OP_RAD2DEG,&decNumberR2D,		NULL,		NULL,		"R\015D")
+	FUNC(OP_CCHS,	&decNumberMinus,	&cmplxMinus,	&intChs,	"+/-")
+	FUNC(OP_CCONJ,	NULL,			&cmplxConj,	NULL,		"CONJ")
+	FUNC(OP_ERF,	&decNumberERF,		NULL,		NULL,		"ERF")
+	FUNC(OP_cdf_Q,	&cdf_Q,			NULL,		NULL,		"Q(x)")
+	FUNC(OP_qf_Q,	&qf_Q,			NULL,		NULL,		"Q\235(p)")
+	FUNC(OP_cdf_chi2, &cdf_chi2,		NULL,		NULL,		"\225\232")
+	FUNC(OP_qf_chi2,  &qf_chi2,		NULL,		NULL,		"\225\232INV")
+	FUNC(OP_cdf_T,	&cdf_T,			NULL,		NULL,		"t(x)")
+	FUNC(OP_qf_T,	&qf_T,			NULL,		NULL,		"t\235(p)")
+	FUNC(OP_cdf_F,	&cdf_F,			NULL,		NULL,		"F(x)")
+	FUNC(OP_qf_F,	&qf_F,			NULL,		NULL,		"F\235(p)")
+	FUNC(OP_cdf_WB,	&cdf_WB,		NULL,		NULL,		"Wb(x)")
+	FUNC(OP_qf_WB,	&qf_WB,			NULL,		NULL,		"Wb\235(p)")
+	FUNC(OP_cdf_EXP,&cdf_EXP,		NULL,		NULL,		"Ex(t)")
+	FUNC(OP_qf_EXP,	&qf_EXP,		NULL,		NULL,		"Ex\235(p)")
+	FUNC(OP_cdf_B,	&cdf_B,			NULL,		NULL,		"B(k)")
+	FUNC(OP_qf_B,	&qf_B,			NULL,		NULL,		"B\235(p)")
+	FUNC(OP_cdf_P,	&cdf_P,			NULL,		NULL,		"P(k)")
+	FUNC(OP_qf_P,	&qf_P,			NULL,		NULL,		"P\235(p)")
+	FUNC(OP_cdf_G,	&cdf_G,			NULL,		NULL,		"Ge(k)")
+	FUNC(OP_qf_G,	&qf_G,			NULL,		NULL,		"Ge\235(p)")
+	FUNC(OP_cdf_N,	&cdf_normal,		NULL,		NULL,		"N(x)")
+	FUNC(OP_qf_N,	&qf_normal,		NULL,		NULL,		"N\235(p)")
+	FUNC(OP_xhat,	&stats_xhat,		NULL,		NULL,		"\031")
+	FUNC(OP_yhat,	&stats_yhat,		NULL,		NULL,		"\032")
+	FUNC(OP_sigper,	&stats_sigper,		NULL,		NULL,		"%\221")
+	FUNC(OP_PERCNT,	&decNumberPercent,	NULL,		NULL,		"%")
+	FUNC(OP_PERCHG,	&decNumberPerchg,	NULL,		NULL,		"\203%")
+	FUNC(OP_PERTOT,	&decNumberPertot,	NULL,		NULL,		"%T")
+	FUNC(OP_HMS2,	&decNumberHMS2HR,	NULL,		NULL,		"\015HR")
+	FUNC(OP_2HMS,	&decNumberHR2HMS,	NULL,		NULL,		"\015H.MS")
+	FUNC(OP_NOT,	&decNumberNot,		NULL,		&intNot,	"NOT")
+	FUNC(OP_BITCNT,	NULL,			NULL,		&intNumBits,	"nBITS")
+	FUNC(OP_MIRROR,	NULL,			NULL,		&intMirror,	"MIRROR")
+	FUNC(OP_DOWK,	&dateDayOfWeek,		NULL,		NULL,		"DAY")
+	FUNC(OP_D2J,	&dateToJ,		NULL,		NULL,		"D\015J")
+	FUNC(OP_J2D,	&dateFromJ,		NULL,		NULL,		"J\015D")
+	FUNC(OP_DEGC_F,	&convC2F,		NULL,		NULL,		"\005C\015\005F")
+	FUNC(OP_DEGF_C,	&convF2C,		NULL,		NULL,		"\005F\015\005C")
+#ifdef INCLUDE_ZETA
+	FUNC(OP_ZETA,	&decNumberZeta,		&cmplxZeta,	NULL,		"\245")
+#endif
+#ifdef INCLUDE_EASTER
+	FUNC(OP_EASTER,	&dateEaster,		NULL,		NULL,		"EASTER")
+#endif
+	FUNC(OP_stpsolve,&step_slv,		NULL,		NULL,		"stpslv")
+#undef FUNC
+};
+const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
+
+
+/* Define our table of dyadic functions.
+ * These must be in the same order as the dyadic function enum but we'll
+ * validate this only if debugging is enabled.
+ */
+const struct dyfunc dyfuncs[] = {
+#ifdef DEBUG
+#define FUNC(name, d, c, i, fn) { .n = name, .dydreal = d, .dydcmplx = c, .dydint = i, .fname = fn },
+#else
+#define FUNC(name, d, c, i, fn) { .dydreal = d, .dydcmplx = c, .dydint = i, .fname = fn },
+#endif
+	FUNC(OP_POW,	&decNumberPower,	&cmplxPower,	&intPower,	"y\234")
+	FUNC(OP_ADD,	&decNumberAdd,		&cmplxAdd,	&intAdd,	"+")
+	FUNC(OP_SUB,	&decNumberSubtract,	&cmplxSubtract,	&intSubtract,	"-")
+	FUNC(OP_MUL,	&decNumberMultiply,	&cmplxMultiply,	&intMultiply,	"\034")
+	FUNC(OP_DIV,	&decNumberDivide,	&cmplxDivide,	&intDivide,	"/")
+	FUNC(OP_MOD,	&decNumberRemainder,	NULL,		&intMod,	"MOD")
+	FUNC(OP_LOGXY,	&decNumberLogxy,	&cmplxLogxy,	NULL,		"LOGy")
+	FUNC(OP_MIN,	&decNumberMin,		NULL,		&intMin,	"MIN")
+	FUNC(OP_MAX,	&decNumberMax,		NULL,		&intMax,	"MAX")
+	FUNC(OP_ATAN2,	&decNumberArcTan2,	NULL,		NULL,		"ANGLE")
+	FUNC(OP_BETA,	&decNumberBeta,		&cmplxBeta,	NULL,		"\241")
+	FUNC(OP_LNBETA,	&decNumberLnBeta,	&cmplxLnBeta,	NULL,		"LN\241")
+	FUNC(OP_GAMMAP,	&decNumberGammap,	NULL,		NULL,		"I\202")
+#ifdef INCLUDE_ELLIPTIC
+	FUNC(OP_SN,	&decNumberSN,		&cmplxSN,	NULL,		"SN")
+	FUNC(OP_CN,	&decNumberCN,		&cmplxCN,	NULL,		"CN")
+	FUNC(OP_DN,	&decNumberDN,		&cmplxDN,	NULL,		"DN")
+#endif
+#ifdef INCLUDE_BESSEL
+#ifdef COMPLEX_BESSEL
+	FUNC(OP_BSJN,	&decNumberBSJN,		&cmplxBSJN,	NULL,		"J\275")
+	FUNC(OP_BSIN,	&decNumberBSIN,		&cmplxBSIN,	NULL,		"I\275")
+	FUNC(OP_BSYN,	&decNumberBSYN,		&cmplxBSYN,	NULL,		"Y\275")
+	FUNC(OP_BSKN,	&decNumberBSKN,		&cmplxBSKN,	NULL,		"K\275")
+#else
+	FUNC(OP_BSJN,	&decNumberBSJN,		NULL,		NULL,		"J\275")
+	FUNC(OP_BSIN,	&decNumberBSIN,		NULL,		NULL,		"I\275")
+	FUNC(OP_BSYN,	&decNumberBSYN,		NULL,		NULL,		"Y\275")
+	FUNC(OP_BSKN,	&decNumberBSKN,		NULL,		NULL,		"K\275")
+#endif
+#endif
+	FUNC(OP_COMB,	&decNumberComb,		&cmplxComb,	NULL,		"COMB")
+	FUNC(OP_PERM,	&decNumberPerm,		&cmplxPerm,	NULL,		"PERM")
+	FUNC(OP_PERAD,	&decNumberPerAdd,	NULL,		NULL,		"%+")
+	FUNC(OP_PERSB,	&decNumberPerSub,	NULL,		NULL,		"%-")
+	FUNC(OP_PERMG,	&decNumberPerMargin,	NULL,		NULL,		"%+MG")
+	FUNC(OP_MARGIN,	&decNumberMargin,	NULL,		NULL,		"%MG")
+	FUNC(OP_PARAL,	&decNumberParallel,	&cmplxParallel,	NULL,		"||")
+#ifdef INCLUDE_AGM
+	FUNC(OP_AGM,	&decNumberAGM,		&cmplxAGM,	NULL,		"AGM")
+#endif
+	FUNC(OP_HMSADD,	&decNumberHMSAdd,	NULL,		NULL,		"H.MS+")
+	FUNC(OP_HMSSUB,	&decNumberHMSSub,	NULL,		NULL,		"H.MS-")
+	FUNC(OP_GCD,	&decNumberGCD,		NULL,		&intGCD,	"GCD")
+	FUNC(OP_LCM,	&decNumberLCM,		NULL,		&intLCM,	"LCM")
+	FUNC(OP_LAND,	&decNumberAnd,		NULL,		&intAnd,	"AND")
+	FUNC(OP_LOR,	&decNumberOr,		NULL,		&intOr,		"OR")
+	FUNC(OP_LXOR,	&decNumberXor,		NULL,		&intXor,	"XOR")
+	FUNC(OP_LNAND,	&decNumberNand,		NULL,		&intNand,	"NAND")
+	FUNC(OP_LNOR,	&decNumberNor,		NULL,		&intNor,	"NOR")
+	FUNC(OP_LXNOR,	&decNumberNxor,		NULL,		&intEquiv,	"XNOR")
+	FUNC(OP_DTADD,	&dateAdd,		NULL,		NULL,		"DAYS+")
+	FUNC(OP_DTDIF,	&dateDelta,		NULL,		NULL,		"\203DAYS")
+#undef FUNC
+};
+const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
+
+
+/* Define our table of triadic functions.
+ * These must be in the same order as the triadic function enum but we'll
+ * validate this only if debugging is enabled.
+ */
+const struct trifunc trifuncs[] = {
+#ifdef DEBUG
+#define FUNC(name, d, i, fn) { .n = name, .trireal = d, .triint = i, .fname = fn },
+#else
+#define FUNC(name, d, i, fn) { .trireal = d, .triint = i, .fname = fn },
+#endif
+	FUNC(OP_BETAI,		&betai,		NULL,		"I\241")
+	FUNC(OP_DBL_DIV, 	NULL,		&intDblDiv,	"DBL/")
+	FUNC(OP_DBL_MOD, 	NULL,		&intDblRmdr,	"DBLR")
+#ifdef INCLUDE_MULADD
+	FUNC(OP_MULADD, 	&decNumberMAdd,	&intMAdd,	"\034+")
+#endif
+	FUNC(OP_PERMRR,		&decNemberPerMRR, NULL,		"%MRR")
+#undef FUNC
+};
+const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
+
+
+const struct niladic niladics[] = {
+#ifdef DEBUG
+#define FUNC0(name, d, fn) { .n = name, .numresults = 0, .niladicf = d, .nname = fn },
+#define FUNC1(name, d, fn) { .n = name, .numresults = 1, .niladicf = d, .nname = fn },
+#define FUNC2(name, d, fn) { .n = name, .numresults = 2, .niladicf = d, .nname = fn },
+#else
+#define FUNC0(name, d, fn) { .numresults = 0, .niladicf = d, .nname = fn },
+#define FUNC1(name, d, fn) { .numresults = 1, .niladicf = d, .nname = fn },
+#define FUNC2(name, d, fn) { .numresults = 2, .niladicf = d, .nname = fn },
+#endif
+	FUNC0(OP_NOP,		NULL,			"NOP")
+	FUNC0(OP_VERSION,	&version,		"VERS")
+	FUNC1(OP_STKSIZE,	&get_stack_size,	"SSIZE?")
+	FUNC0(OP_STK4,		&set_stack_size4,	"SSIZE4")
+	FUNC0(OP_STK8,		&set_stack_size8,	"SSIZE8")
+	FUNC1(OP_INTSIZE,	&get_word_size,		"WSIZE?")
+	FUNC1(OP_LASTX,		&lastX,			"LASTx")
+	FUNC2(OP_LASTXY,	&lastXY,		"\024LASTx")
+	FUNC0(OP_SWAP,		&swap,			"x\027y")
+	FUNC0(OP_CSWAP,		&cpx_swap,		"\024x\027y")
+	FUNC0(OP_RDOWN,		&roll_down,		"R\017")
+	FUNC0(OP_RUP,		&roll_up,		"R\020")
+	FUNC0(OP_CRDOWN,	&cpx_roll_down,		"\024R\017")
+	FUNC0(OP_CRUP,		&cpx_roll_up,		"\024R\020")
+	FUNC0(OP_CENTER,	&cpx_enter,		"\024ENTER")
+	FUNC0(OP_FILL,		&fill,			"FILL")
+	FUNC0(OP_CFILL,		&cpx_fill,		"\024FILL")
+	FUNC0(OP_DROP,		&drop,			"DROP")
+	FUNC0(OP_DROPY,		&dropy,			"DROPY")
+	FUNC0(OP_DROPXY,	&dropxy,		"\024DROP")
+	FUNC1(OP_sigmaX,	&sigma_X,		"\221x")
+	FUNC1(OP_sigmaY,	&sigma_Y,		"\221y")
+	FUNC1(OP_sigmaX2,	&sigma_XX,		"\221x\232")
+	FUNC1(OP_sigmaY2,	&sigma_YY,		"\221y\232")
+	FUNC1(OP_sigma_XY,	&sigma_XY,		"\221xy")
+	FUNC1(OP_sigmaN,	&sigma_N,		"n\221")
+	FUNC1(OP_sigmalnX,	&sigma_lnX,		"\221lnX")
+	FUNC1(OP_sigmalnXlnX,	&sigma_lnXlnX,		"\221ln\232X")
+	FUNC1(OP_sigmalnY,	&sigma_lnY,		"\221lnY")
+	FUNC1(OP_sigmalnYlnY,	&sigma_lnYlnY,		"\221ln\232Y")
+	FUNC1(OP_sigmalnXlnY,	&sigma_lnXlnY,		"\221lnXY")
+	FUNC1(OP_sigmaXlnY,	&sigma_XlnY,		"\221XlnY")
+	FUNC1(OP_sigmaYlnX,	&sigma_YlnX,		"\221YlnX")
+	FUNC2(OP_statS,		&stats_s,		"s")
+	FUNC2(OP_statSigma,	&stats_sigma,		"\261")
+	FUNC2(OP_statMEAN,	&stats_mean,		"\001")
+	FUNC1(OP_statWMEAN,	&stats_wmean,		"\001w")
+	FUNC1(OP_statR,		&stats_correlation,	"CORR")
+	FUNC2(OP_statLR,	&stats_LR,		"LR")
+	FUNC2(OP_statSErr,	&stats_SErr,		"SERR")
+	FUNC0(OP_EXPF,		&stats_mode_expf,	"ExpF")
+	FUNC0(OP_LINF,		&stats_mode_linf,	"LinF")
+	FUNC0(OP_LOGF,		&stats_mode_logf,	"LogF")
+	FUNC0(OP_PWRF,		&stats_mode_pwrf,	"PowerF")
+	FUNC0(OP_BEST,		&stats_mode_best,	"BestF")
+	FUNC1(OP_RANDOM,	&stats_random,		"RAND#")
+	FUNC0(OP_STORANDOM,	&stats_sto_random,	"SEED")
+	FUNC0(OP_DEG,		&op_deg,		"DEG")
+	FUNC0(OP_RAD,		&op_rad,		"RAD")
+	FUNC0(OP_GRAD,		&op_grad,		"GRAD")
+	FUNC0(OP_ALL,		&op_all,		"ALL")
+	FUNC0(OP_RTN,		&op_rtn,		"RTN")
+	FUNC0(OP_RTNp1,		&op_rtnp1,		"rtn+1")
+	FUNC0(OP_RS,		&op_rs,			"STOP")
+	FUNC0(OP_PROMPT,	&op_prompt,		"PROMPT")
+	FUNC0(OP_SIGMACLEAR,	&sigma_clear,		"CL\221")
+	FUNC0(OP_CLREG,		&clrreg,		"CLREG")
+	FUNC0(OP_CLSTK,		&clrstk,		"CLSTK")
+	FUNC0(OP_CLALL,		NULL,			"CLALL")
+	FUNC0(OP_RESET,		NULL,			"RESET")
+	FUNC0(OP_CLFLAGS,	&clrflags,		"CLFLAG")
+	FUNC0(OP_R2P,		&op_r2p,		"\015POL")
+	FUNC0(OP_P2R,		&op_p2r,		"\015REC")
+	FUNC0(OP_FRACDENOM,	&op_fracdenom,		"DENMAX")
+	FUNC1(OP_2FRAC,		&op_2frac,		"DECOMP")
+	FUNC0(OP_DENFIX,	&op_denfix,		"DENFIX")
+	FUNC0(OP_DENFAC,	&op_denfac,		"DENFAC")
+	FUNC0(OP_DENANY,	&op_denany,		"DENANY")
+	FUNC0(OP_FRACIMPROPER,	&op_fracimp,		"IMPFRC")
+	FUNC0(OP_FRACPROPER,	&op_fracpro,		"PROFRC")
+	FUNC0(OP_RADDOT,	&op_radixdot,		"RDX.")
+	FUNC0(OP_RADCOM,	&op_radixcom,		"RDX,")
+	FUNC0(OP_THOUS_ON,	&op_thousands_on,	"E3ON")
+	FUNC0(OP_THOUS_OFF,	&op_thousands_off,	"E3OFF")
+	FUNC0(OP_PAUSE,		&op_pause,		"PAUSE")
+	FUNC0(OP_2COMP,		&op_2comp,		"2COMPL")
+	FUNC0(OP_1COMP,		&op_1comp,		"1COMPL")
+	FUNC0(OP_UNSIGNED,	&op_unsigned,		"UNSIGN")
+	FUNC0(OP_SIGNMANT,	&op_signmant,		"SIGNMT")
+	FUNC0(OP_FLOAT,		&op_float,		"FLOAT")
+	FUNC0(OP_HMS,		&op_hms,		"H.MS")
+	FUNC0(OP_FRACT,		&op_fract,		"FRACT")
+	FUNC1(OP_LJ,		&intLJ,			"LJ")
+	FUNC1(OP_RJ,		&intRJ,			"RJ")
+	FUNC0(OP_DBL_MUL, 	&intDblMul,		"DBL\034")
+	FUNC2(OP_RCLSIGMA,	&sigma_sum,		"SUM")
+	FUNC0(OP_DATEYMD,	&date_ymd,		"Y.MD")
+	FUNC0(OP_DATEDMY,	&date_dmy,		"D.MY")
+	FUNC0(OP_DATEMDY,	&date_mdy,		"M.DY")
+	FUNC0(OP_ISLEAP,	&date_isleap,		"LEAP?")
+	FUNC0(OP_ALPHADAY,	&date_alphaday,		"\240DAY")
+	FUNC0(OP_ALPHAMONTH,	&date_alphamonth,	"\240MONTH")
+	FUNC0(OP_ALPHADATE,	&date_alphadate,	"\240DATE")
+	FUNC0(OP_ALPHATIME,	&date_alphatime,	"\240TIME")
+	FUNC1(OP_DATE,		&date_date,		"DATE")
+	FUNC1(OP_TIME,		&date_time,		"TIME")
+	FUNC0(OP_24HR,		&time_24,		"24H")
+	FUNC0(OP_12HR,		&time_12,		"12H")
+	FUNC0(OP_SETDATE,	&date_setdate,		"SETDAT")
+	FUNC0(OP_SETTIME,	&date_settime,		"SETTIM")
+	FUNC0(OP_CLRALPHA,	&clralpha,		"CL\240")
+	FUNC0(OP_VIEWALPHA,	&alpha_view,		"\240VIEW")
+	FUNC1(OP_ALPHALEN,	&alpha_length,		"\240LENG")
+	FUNC1(OP_ALPHATOX,	&alpha_tox,		"\240\015x")
+	FUNC0(OP_XTOALPHA,	&alpha_fromx,		"x\015\240")
+	FUNC0(OP_ALPHAON,	&alpha_on,		"\240ON")
+	FUNC0(OP_ALPHAOFF,	&alpha_off,		"\240OFF")
+	FUNC0(OP_REGCOPY,	&op_regcopy,		"R-COPY")
+	FUNC0(OP_REGSWAP,	&op_regswap,		"R-SWAP")
+	FUNC0(OP_REGCLR,	&op_regclr,		"R-CLR")
+	FUNC0(OP_REGSORT,	&op_regsort,		"R-SORT")
+	FUNC1(OP_RCLFLAG,	&op_rclflag,		"RCLM")
+	FUNC0(OP_STOFLAG,	&op_stoflag,		"STOM")
+	FUNC0(OP_GSBuser,	&do_usergsb,		"usr")
+	FUNC0(OP_XisInf,	&isInfinite,		"\237?")
+	FUNC0(OP_XisNaN,	&isNan,			"NaN?")
+	FUNC0(OP_XisSpecial,	&isSpecial,		"spec?")
+	FUNC0(OP_XisPRIME,	&XisPrime,		"PRIME?")
+	FUNC0(OP_inisolve,	&init_slv,		"inislv")
+#ifdef INCLUDE_MODULAR
+	FUNC0(OP_MPLUS,		&xrommplus,		"M+")
+	FUNC0(OP_MMINUS,	&xrommminus,		"M-")
+	FUNC0(OP_MMULTIPLY,	&xrommmul,		"M\034")
+	FUNC0(OP_MSQ,		&xrommsq,		"M\232")
+#endif
+#undef FUNC0
+#undef FUNC1
+#undef FUNC2
+};
+
+const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
+
+const struct argcmd argcmds[] = {
+#ifdef DEBUG
+#define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
+	{ .n = name, .f = func, .lim = limit, .indirectokay = ind, .notzero = nz, .stckreg = stk, .cmplx = cpx, .cmd = nm },
+#else
+#define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
+	{ .f = func, .lim = limit, .indirectokay = ind, .notzero = nz, .stckreg = stk, .cmplx = cpx, .cmd = nm },
+#endif
+#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0)
+#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 1, 0)
+#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 1, 1)
+#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0)
+#define CMDnoZ(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0)
+	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
+	CMDnoI(RARG_CONST_CMPLX,&cmdconstcmplx,	NUM_CONSTS,		"\024CNST")
+	CMD(RARG_CONST_INT,	&cmdconstint,	NUM_CONSTS_INT,		"iC")
+	CMDnoI(RARG_ERROR,	&cmderr,	MAX_ERROR,		"err")
+	CMDstk(RARG_STO, 	&cmdsto,	NUMREG,			"STO")
+	CMDstk(RARG_STO_PL, 	&cmdsto,	NUMREG,			"STO+")
+	CMDstk(RARG_STO_MI, 	&cmdsto,	NUMREG,			"STO-")
+	CMDstk(RARG_STO_MU, 	&cmdsto,	NUMREG,			"STO\034")
+	CMDstk(RARG_STO_DV, 	&cmdsto,	NUMREG,			"STO/")
+	CMDstk(RARG_STO_MIN,	&cmdsto,	NUMREG,			"STO\017")
+	CMDstk(RARG_STO_MAX,	&cmdsto,	NUMREG,			"STO\020")
+	CMDstk(RARG_RCL, 	&cmdrcl,	NUMREG,			"RCL")
+	CMDstk(RARG_RCL_PL, 	&cmdrcl,	NUMREG,			"RCL+")
+	CMDstk(RARG_RCL_MI, 	&cmdrcl,	NUMREG,			"RCL-")
+	CMDstk(RARG_RCL_MU, 	&cmdrcl,	NUMREG,			"RCL\034")
+	CMDstk(RARG_RCL_DV, 	&cmdrcl,	NUMREG,			"RCL/")
+	CMDstk(RARG_RCL_MIN,	&cmdrcl,	NUMREG,			"RCL\017")
+	CMDstk(RARG_RCL_MAX,	&cmdrcl,	NUMREG,			"RCL\020")
+	CMDstk(RARG_SWAP,	&cmdswap,	NUMREG,			"x\027")
+	CMDcstk(RARG_CSTO, 	&cmdcsto,	NUMREG,			"\024STO")
+	CMDcstk(RARG_CSTO_PL, 	&cmdcsto,	NUMREG,			"\024STO+")
+	CMDcstk(RARG_CSTO_MI, 	&cmdcsto,	NUMREG,			"\024STO-")
+	CMDcstk(RARG_CSTO_MU, 	&cmdcsto,	NUMREG,			"\024STO\034")
+	CMDcstk(RARG_CSTO_DV, 	&cmdcsto,	NUMREG,			"\024STO/")
+	CMDcstk(RARG_CRCL, 	&cmdcrcl,	NUMREG,			"\024RCL")
+	CMDcstk(RARG_CRCL_PL, 	&cmdcrcl,	NUMREG,			"\024RCL+")
+	CMDcstk(RARG_CRCL_MI, 	&cmdcrcl,	NUMREG,			"\024RCL-")
+	CMDcstk(RARG_CRCL_MU, 	&cmdcrcl,	NUMREG,			"\024RCL\034")
+	CMDcstk(RARG_CRCL_DV, 	&cmdcrcl,	NUMREG,			"\024RCL/")
+	CMDcstk(RARG_CSWAP,	&cmdswap,	NUMREG,			"\024x\027")
+	CMDstk(RARG_VIEW,	&cmdview,	NUMREG,			"VIEW")
+	CMD(RARG_STOSTK,	&cmdstostk,	TOPREALREG-STACK_SIZE+1,"\015STK")
+	CMD(RARG_RCLSTK,	&cmdrclstk,	TOPREALREG-STACK_SIZE+1,"\016STK")
+	CMDnoI(RARG_ALPHA,	&cmdalpha,	0,			"")
+	CMDstk(RARG_AREG,	&alpha_reg,	NUMREG,			"\240RC#")
+	CMDstk(RARG_ASTO,	&alpha_sto,	NUMREG,			"\240STO")
+	CMDstk(RARG_ARCL,	&alpha_rcl,	NUMREG,			"\240RCL")
+	CMDstk(RARG_AIP,	&alpha_ip,	NUMREG,			"\240IP")
+	CMDnoZ(RARG_ALRL,	&alpha_shift_l,	NUMALPHA,		"\240RL")
+	CMDnoZ(RARG_ALRR,	&alpha_rot_r,	NUMALPHA,		"\240RR")
+	CMDnoZ(RARG_ALSL,	&alpha_shift_l,	NUMALPHA+1,		"\240SL")
+	CMDnoZ(RARG_ALSR,	&alpha_shift_r,	NUMALPHA+1,		"\240SR")
+	CMDstk(RARG_TEST_EQ,	&cmdtest,	NUMREG,			"x=?")
+	CMDstk(RARG_TEST_NE,	&cmdtest,	NUMREG,			"x\013?")
+	CMDstk(RARG_TEST_LT,	&cmdtest,	NUMREG,			"x<?")
+	CMDstk(RARG_TEST_LE,	&cmdtest,	NUMREG,			"x\011?")
+	CMDstk(RARG_TEST_GT,	&cmdtest,	NUMREG,			"x>?")
+	CMDstk(RARG_TEST_GE,	&cmdtest,	NUMREG,			"x\012?")
+	CMDcstk(RARG_TEST_ZEQ,	&cmdztest,	NUMREG,			"\024x=?")
+	CMDcstk(RARG_TEST_ZNE,	&cmdztest,	NUMREG,			"\024x\013?")
+	CMDstk(RARG_DSE,	&cmdloop,	NUMREG,			"DSE")
+	CMDstk(RARG_ISG,	&cmdloop,	NUMREG,			"ISG")
+	CMDstk(RARG_DSZ,	&cmdloopz,	NUMREG,			"DSZ")
+	CMDstk(RARG_ISZ,	&cmdloopz,	NUMREG,			"ISZ")
+	CMDnoI(RARG_LBL,	NULL,		NUMLBL,			"LBL")
+	CMD(RARG_XEQ,		&cmdgto,	NUMLBL,			"XEQ")
+	CMD(RARG_GTO,		&cmdgto,	NUMLBL,			"GTO")
+	CMD(RARG_SUM,		&xromarg,	NUMLBL,			"\221")
+	CMD(RARG_PROD,		&xromarg,	NUMLBL,			"\217")
+	CMD(RARG_SOLVE,		&xromarg,	NUMLBL,			"SLV")
+	CMD(RARG_INTG,		&xromarg,	NUMLBL,			"INT")
+
+	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX")
+	CMD(RARG_SCI,		&cmddisp,	DISPLAY_DIGITS,		"SCI")
+	CMD(RARG_ENG,		&cmddisp,	DISPLAY_DIGITS,		"ENG")
+	CMD(RARG_DISP,		&cmddisp,	DISPLAY_DIGITS,		"DISP")
+	CMD(RARG_SF,		&cmdflag,	NUMFLG,			"SF")
+	CMD(RARG_CF,		&cmdflag,	NUMFLG,			"CF")
+	CMD(RARG_FF,		&cmdflag,	NUMFLG,			"FF")
+	CMD(RARG_FS,		&cmdflag,	NUMFLG,			"FS?")
+	CMD(RARG_FC,		&cmdflag,	NUMFLG,			"FC?")
+	CMD(RARG_FSC,		&cmdflag,	NUMFLG,			"FS?C")
+	CMD(RARG_FSS,		&cmdflag,	NUMFLG,			"FS?S")
+	CMD(RARG_FSF,		&cmdflag,	NUMFLG,			"FS?F")
+	CMD(RARG_FCC,		&cmdflag,	NUMFLG,			"FC?C")
+	CMD(RARG_FCS,		&cmdflag,	NUMFLG,			"FC?S")
+	CMD(RARG_FCF,		&cmdflag,	NUMFLG,			"FC?F")
+	CMD(RARG_WS,		&intws,		MAX_WORD_SIZE+1,	"WSIZE")
+	CMDnoZ(RARG_RL,		&introt,	MAX_WORD_SIZE,		"RL")
+	CMDnoZ(RARG_RR,		&introt,	MAX_WORD_SIZE,		"RR")
+	CMDnoZ(RARG_RLC,	&introt,	MAX_WORD_SIZE+1,	"RLC")
+	CMDnoZ(RARG_RRC,	&introt,	MAX_WORD_SIZE+1,	"RRC")
+	CMDnoZ(RARG_SL,		&introt,	MAX_WORD_SIZE+1,	"SL")
+	CMDnoZ(RARG_SR,		&introt,	MAX_WORD_SIZE+1,	"SR")
+	CMDnoZ(RARG_ASR,	&introt,	MAX_WORD_SIZE+1,	"ASR")
+	CMD(RARG_SB,		&intbits,	MAX_WORD_SIZE,		"SB")
+	CMD(RARG_CB,		&intbits,	MAX_WORD_SIZE,		"CB")
+	CMD(RARG_FB,		&intbits,	MAX_WORD_SIZE,		"FB")
+	CMD(RARG_BS,		&intbits,	MAX_WORD_SIZE,		"BS?")
+	CMD(RARG_BC,		&intbits,	MAX_WORD_SIZE,		"BC?")
+	CMD(RARG_MASKL,		&intmsks,	MAX_WORD_SIZE+1,	"MASKL")
+	CMD(RARG_MASKR,		&intmsks,	MAX_WORD_SIZE+1,	"MASKR")
+	CMD(RARG_BASE,		&set_int_base,	17,			"BASE")
+
+	CMDnoI(RARG_CONV,	&cmdconv,	NUM_CONSTS_CONV*2,	"conv")
+#ifdef REALBUILD
+	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CNTRST")
+#endif
+
+#undef CMDnoZ
+#undef CMDnoI
+#undef CMDstk
+#undef CMD
+#undef allCMD
+};
+const unsigned short num_argcmds = sizeof(argcmds) / sizeof(struct argcmd);
+
+
+const struct multicmd multicmds[] = {
+#ifdef DEBUG
+#define CMD(name, func, nm)			\
+	{ .n = name, .f = func, .cmd = nm },
+#else
+#define CMD(name, func, nm)			\
+	{ .f = func, .cmd = nm },
+#endif
+	CMD(DBL_LBL,	NULL,		"LBL")
+	CMD(DBL_XEQ,	&cmdmultigto,	"XEQ")
+	CMD(DBL_GTO,	&cmdmultigto,	"GTO")
+	CMD(DBL_SUM,	&multixromarg,	"\221")
+	CMD(DBL_PROD,	&multixromarg,	"\217")
+	CMD(DBL_SOLVE,	&multixromarg,	"SLV")
+	CMD(DBL_INTG,	&multixromarg,	"INT")
+#ifdef MULTI_ALPHA
+	CMD(DBL_ALPHA,	&multialpha,	"\240")
+#endif
+//	CMD(DBL_NUMBER,	NULL,		"#")
+#undef CMD
+};
+const unsigned short num_multicmds = sizeof(multicmds) / sizeof(struct multicmd);
+
+
+/* Some utilities to replace the various string and mem functions.
+ * This one does something akin to memmove and memcpy.
+ */
+void xcopy(void *d, const void *s, int n) {
+	char *dp = d;
+	const char *sp = s;
+
+	if (sp > dp)
+		while (n--)
+			*dp++ = *sp++;
+	else if (sp < dp)
+		while (n--)
+			dp[n] = sp[n];
+}
+
+/* And a little something to set memory to a value.
+ */
+void xset(void *d, const char c, int n) {
+	char *dp = d;
+	while (n--)
+		*dp++ = c;
+}
+
+
+/* Return the length of a string */
+int slen(const char *s) {
+	const char *p;
+
+	for (p=s; *p != '\0'; p++);
+	return p-s;
+}
+
+/* Find a character in a string -- strchr */
+char *find_char(const char *s, const char c) {
+	do
+		if (*s == c)
+			return (char *)s;
+	while (*s++);
+	return NULL;
+}
+
+/* Copy a string across and return a pointer to the terminating null
+ */
+char *scopy(char *d, const char *s) {
+	while (*s != '\0')
+		*d++ = *s++;
+	*d = '\0';
+	return d;
+}
+
+
+/* Copy a string to a given size limit and null terminate
+ */
+const char *sncopy(char *d, const char *s, int n) {
+	const char *const d0 = d;
+
+	while (n-- && *s != '\0')
+		*d++ = *s++;
+	*d = '\0';
+	return d0;
+}
+
+
+/* Copy a string to the buffer and append a character.
+ */
+char *scopy_char(char *d, const char *s, const char c) {
+	d = scopy(d, s);
+	*d++ = c;
+	return d;
+}
+
+char *scopy_spc(char *d, const char *s) {
+	return scopy_char(d, s, ' ');
+}
+
+char *sncopy_char(char *d, const char *s, int n, const char c) {
+	while (n-- && *s != '\0')
+		*d++ = *s++;
+	*d++ = c;
+	return d;
+}
+
+char *sncopy_spc(char *d, const char *s, int n) {
+	return sncopy_char(d, s, n, ' ');
+}
+
+/* Convert an n digit number to a string with leading zeros
+ */
+char *num_arg_0(char *d, unsigned int arg, int n) {
+	int i;
+
+	for (i=0; i<n; i++) {
+		d[n-i-1] = '0' + arg % 10;
+		arg /= 10;
+	}
+	return d + n;
+}
+
+char *num_arg(char *d, unsigned int arg) {
+	char buf[24];
+	char *p = buf;
+
+	do {
+		*p++ = '0' + arg % 10;
+		arg /= 10;
+	} while (arg != 0);
+
+	while (--p >= buf)
+		*d++ = *p;
+	return d;
+}
+
+
+static unsigned int crc_step(unsigned int crc, unsigned char byte, unsigned int ct[256]) {
+	return ct[0xff & (crc^byte)] ^ (crc >> 8);
+}
+
+static unsigned int crc_step2(unsigned int crc, unsigned short s, unsigned int ct[256]) {
+	unsigned int t = crc_step(crc, s & 0xff, ct);
+	return crc_step(t, s >> 8, ct);
+}
+
+unsigned int checksum_code(void) {
+	unsigned int ct[256];
+	int i;
+	unsigned int crc = 0;
+	unsigned short n = state.last_prog;
+
+	/* Build up a CRC table */
+	for (i=0; i<256; i++) {
+		unsigned int r = i;
+		int j;
+		for (j=8; j > 0; j--) {
+			const unsigned int s = r>>1;
+			r = (r&1)?(s^0xEDB88320):s;
+		}
+		ct[i] = r;
+	}
+
+	/* Now calculate the checksum */
+	crc = crc_step2(0, n, ct);
+	for (i=1; i<n; i++)
+		crc = crc_step2(crc, prog[i], ct);
+	return crc;
+}

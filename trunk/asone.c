@@ -1,0 +1,25 @@
+
+#ifdef REALBUILD
+#include "hp/lcd.c"
+#include "hp/main.c"
+#include "hp/keyboard.c"
+#include "hp/rtc.c"
+#include "hp/timer.c"
+#endif
+
+#include "alpha.c"
+#include "complex.c"
+#include "consts.c"
+#include "date.c"
+#include "decn.c"
+#include "display.c"
+#include "int.c"
+#include "keys.c"
+#include "lcd.c"
+#include "prt.c"
+#include "stats.c"
+#include "xeq.c"
+#include "xrom.c"
+#include "decNumber/decNumber.c"
+#include "decNumber/decContext.c"
+#include "decNumber/decimal64.c"

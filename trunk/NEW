@@ -1,0 +1,61 @@
+New (and existing functions) and their sizes:
+
+Jacobi elliptic functions SN, CN & DN			1780 bytes
+	real and complex.
+
+Bessel functions of first and second kinds		4470 bytes
+	Jn & In real and complex (argument and order).
+	Yn & Kn real and complex (argument and order).
+
+Digamma function (PSI)					1384 bytes
+	real and complex.
+	needed for bessel functions of second kind of integer order.
+
+Zeta							2012 bytes
+	real and complex.
+
+cube / cube root					576 bytes
+	integer, real and complex.
+
+x!!							288 bytes
+	real and complex.
+
+EASTER							384 bytes
+
+Fused multiply/add					96 bytes
+	integer and real.
+	The real version can be replaced by complex multiply.
+	x+y*z can be done via (y, x) * (z, -1) at a pinch.
+
+AGM							528 bytes
+	limit of arithmetic geometric mean.
+
+PRIME?							576 bytes
+	Conditional test for X being prime.
+	Exact for x < 66049, Miller-Rabin with 40 iterations otherwise.
+	P(claiming a composite is prime) = 2^-80 (approximately)
+
+	This routine also includes overflow resistant code for
+	(a * b) mod c and (a ^ b) mod c which could also be exposed
+	if required.
+
+
+None of these are counting the catalogue and function table overheads.
+Two bytes for a catalogue entry (one for each catalogue it is in) and
+12-20 bytes for a function table entry (but only one of these).
+i.e. not terribly significant.
+
+
+My preferences for these would be to include the first five and PRIME?
+These are all moderately useful functions.
+
+
+Futures:
+
+Bessel functions for complex argument and order working or removed.  Removing
+them will more than halve the space requirement.
+
+Hankel functions (bessel functions of the third kind):
+
+	H1(n,z) = Jn(z) + i Yn(z)
+	H2(n,z) = Jn(z) - i Yn(z)
