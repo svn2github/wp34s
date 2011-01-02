@@ -1,0 +1,164 @@
+
+
+sqrt(a + i b) = +- (sqrt(r + a) + i sqrt(r - a) sign(b)) sqrt(2) / 2
+		where r = sqrt(a^2 + b^2)
+
+
+Complex power:
+
+To summarize, given
+
+    x = a + i * b
+    y = c + i * d
+
+Then
+
+    x^y = row^c * e^-d * theta * [cos(c * theta + d * ln row) + i * sin(c * theta + d * ln row)]
+
+where,
+
+    row = sqrt(a2 + b2)
+    theta = arctan( b/a )      assure theta is in the correct quadrant
+
+
+
+
+(a + i b) + (c + i d) = (a + c) + i (b + d)
+
+(a + i b) - (c + i d) = (a - c) + i (b - d)
+
+(a + i b) * (c + i d) = (a * c - b * d) + i (a * d + b * c)
+
+(a + i b) / (c + i d) = (a*c + b*d) / (c*c + d*d) + i (b*c - a*d) / (c*c + d*d)
+
+ln(a + i b) = ln(sqrt(a*a + b*b)) + i (2*arctan(signum(b)) - arctan(a/b))
+
+signum(b) = 1 if b>0, 0 if b=0, -1 if b<0
+
+sin(a + i b) = sin(a) cosh(b) + i cos(a) sinh(b)
+
+cos(a + i b) = cos(a) cosh(b) - i sin(a) sinh(b)
+
+tan(a + i b) = (sin(a) cosh(b) + i cos(a) sinh(b)) / (cos(a) cosh(b) - i sin(a) sinh(b))
+
+arcsin(z) = k PI + (-1)^k . asin(beta) + i (-1)^k ln(alpha+sqrt(alpha^2-1))
+arccos(z) = 2k PI +- (acos(beta) - i ln(alpha+sqrt(alpha^2-1)))
+where
+	alpha = 1/2 sqrt((x+1)^2+y^2) + 1/2 sqrt((x-1)^2+y^2)
+	beta  = 1/2 sqrt((x+1)^2+y^2) - 1/2 sqrt((x-1)^2+y^2)
+
+arctan(z) = k PI + 0.5 atan(2a / (1-a^2-b^2) + i/4 ln((a^2+(b+1)^2)/(a^2+(b-1)^2))
+
+sinh(a) = (e^(a) - e^(-a))/2
+
+cosh(a) = (e^(a) + e^(-a))/2
+
+tanh(a) = sinh(a) / cosh(a)
+
+arcsinh(a) = ln(a + sqrt(a^2 +1))
+
+arccosh(a) = ln(a + sqrt(a^2 -1)) ; a>=1
+
+arctanh(a) = (1/2)ln((1+a)/(1-a)) ; abs(a)<1
+
+sinh(a + i b) = sinh(a) cos(b) + i cosh(a) sin(b)
+
+cosh(a + i b) = cosh(a) cos(b) + i sinh(a) sin(b)
+
+tanh(a + i b) = (tanh(a) + i tan(b))/(1 + i tanh(a) tan(b))
+
+arcsinh(a + i b) = ln((a + i b) + sqrt((a + i b) (a + i b) + 1)
+
+arccosh(a + i b) = ln((a + i b) + sqrt((a + i b) (a + i b) - 1)
+
+arctanh(a + i b) = (1/2)*ln((1 + (a + i b))/(1 - (a + i b)))
+
+
+Comb(x, y) = gamma(x+1) / (gamma(y+1).gamma(x-y+1))
+	   = 1 / ( (x+1).beta(x-y+1, y+1) )
+
+Perm(x, y) = gamma(x+1) / gamma(x-y+1)
+
+
+For lambert's W:
+
+	http://en.wikipedia.org/wiki/Lambert_W_function
+	http://ioannis.virtualcomposer2000.com/math/LWExpansion.html
+	http://ioannis.virtualcomposer2000.com/math/LWCalculating.html
+
+The inverse function is W-1(z) = z . e^z for real or complex z
+
+
+Reimann Zeta function:
+
+	zeta(3 + i0) = 1.202057 + i0
+	zeta(3 + i0.1) = 1.200861 - i0.019750
+	zeta(0.5 + i33) = -0.044787 + i0.081399
+	zeta(1 + i33) = 0.418661 + i0.0244871
+	zeta(1 + i123456789) = 0.274378 - i0.582564
+
+See An Efficient Algorithm for the Riemann Zeta Function by P. Borwein
+Canadian Mathematical Society Conference Proceedings.  Algorithm 2.
+
+
+
+Kahan summation algorithm:
+
+  function kahanSum(input, n)
+   var sum = input[1]
+   var c = 0.0          //A running compensation for lost low-order bits.
+   for i = 2 to n
+    y = input[i] - c    //So far, so good: c is zero.
+    t = sum + y         //Alas, sum is big, y small, so low-order digits of y are lost.
+    c = (t - sum) - y   //(t - sum) recovers the high-order part of y; subtracting y recovers -(low part of y)
+    sum = t             //Algebraically, c should always be zero. Beware eagerly optimising compilers!
+   next i               //Next time around, the lost low part will be added to y in a fresh attempt.
+  return sum
+  
+We do all internal stuff at more than double precision so this mightn't be
+required but if there are stability problems, the use of this algorithm should
+be considered.
+
+
+
+
+Date and time functions:
+	http://en.wikipedia.org/wiki/Julian_day
+	http://www.hermetic.ch/cal_stud/jdn.htm#comp
+
+
+
+Complex Jacobi elliptic functions:
+
+http://mathworld.wolfram.com/JacobiEllipticFunctions.html
+
+denom = 1 - dn(u, k)^2 * sn(v, k')^2
+
+sn(u+iv, k, k') = sn(u, k) . dn(v, k') / denom
+		  + i . cn(u, k) . dn(u, k) . sn(v, k') . cn(v, k') / denom
+
+cn(u+iv, k, k') = cn(u, k) . cn(v, k') / denom
+		  - i . sn(u, k) . dn(u, k) . sn(v, k') . dn(v, k') / denom
+
+dn(u+iv, k, k') = dn(u, k) . cn(v, k') . dn(v, k') / denom
+		  - i . k^2 . sn(u, k) . cn(u, k) . sn(v, k') / denom
+
+
+
+Digamma function: psi(x)
+
+	= ln x - 1/2x + sum(n=2,20,2) Bn . x^-n		when x>8
+
+n	2	4	6	8	10	12		14	16		18		20
+Bn	1/12	-1/120	1/252	-1/240	1/132	-691/32760	1/12	-3617/8160	43867/14364	-174611/6600
+
+	psi(x+1) = psi(x) + 1/x			i.e. psi(x) = psi(x+1) - 1/x
+	psi(1-x) - psi(x) = PI cot(PI x)	i.e. psi(x) = psi(1-x) - PI cot(PI x)
+
+
+
+complex bessel functions Jn and In:
+	S = U(0) + U(1) + ..... + U(k) + ...
+	with  U(0) = 1 and U(k) = - U(k-1) [(z/2)^2] / [k(k+n)]
+	Finally, S is multiplied by  [(z/2)^n ] / Gamma(n+1)
+for In, leading minus in the U series is omitted.

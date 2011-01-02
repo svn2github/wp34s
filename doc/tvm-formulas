@@ -1,0 +1,14 @@
+Variables:
+	PMT	payment
+	PV	present value
+	FV	future value
+	N	number of periods
+	I	interest rate per period
+	k	1 if payment at end of perios, 1+I at beginning
+
+PMT = ( PV + (PV + FV) / ( (1+I)^N - 1 ) ) . -I/k
+FV = PMT . k / I - (1+I)^N . ( PV + PMT . k / I )
+PV = ( PMT . k / I - FV ) / (1+I)^N - PMT . k / I
+
+for N & I solve:
+	0 = PV . (1+I)^N +  PMT . k . ( (1+I)^N - 1 ) / I  + FV
