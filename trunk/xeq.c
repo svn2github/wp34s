@@ -3303,7 +3303,7 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisNaN,	&isNan,			"NaN?")
 	FUNC0(OP_XisSpecial,	&isSpecial,		"spec?")
 	FUNC0(OP_XisPRIME,	&XisPrime,		"PRIME?")
-	FUNC0(OP_XisINT,	&XisInt,		"IP?")
+	FUNC0(OP_XisINT,	&XisInt,		"INT?")
 	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
 	FUNC0(OP_inisolve,	&init_slv,		"inislv")
 #ifdef INCLUDE_MODULAR

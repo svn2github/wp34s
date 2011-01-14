@@ -342,14 +342,10 @@ static int process_f_shifted(const keycode c) {
 	case K33:	return OP_DYA | OP_POW;
 	case K34:	return OP_MON | OP_RECIP;
 
-	case K40:
-		return OP_NIL | OP_statMEAN;
-	case K41:
-		return OP_MON | OP_cdf_Q;
-	case K42:
-		return OP_DYA | OP_COMB;
-	case K43:
-		return OP_MON | OP_yhat;
+	case K40:	return OP_DYA | OP_COMB;
+	case K41:	return OP_MON | OP_cdf_Q;
+	case K42:	return OP_NIL | OP_statMEAN;
+	case K43:	return OP_MON | OP_yhat;
 	case K44:	return OP_MON | OP_SQRT;
 
 	case K50:
@@ -406,9 +402,9 @@ static int process_g_shifted(const keycode c) {
 	case K33:	return OP_DYA | OP_LOGXY;
 	case K34:	return OP_DYA | OP_PARAL;
 
-	case K40:	return OP_NIL | OP_statS;
+	case K40:       return OP_DYA | OP_PERM;
 	case K41:	return OP_MON | OP_qf_Q;
-	case K42:       return OP_DYA | OP_PERM;
+	case K42:	return OP_NIL | OP_statS;
 	case K43:       return OP_NIL | OP_statR;
 	case K44:	return OP_MON | OP_SQR;
 
@@ -440,9 +436,9 @@ static int process_h_shifted(const keycode c) {
 	state.shifts = SHIFT_N;
 	switch (c) {
 	case K00:	return OP_SPEC | OP_SIGMAMINUS;
-	case K01:	init_arg(RARG_SF);	break;
-	case K02:	init_arg(RARG_CF);	break;
-	case K03:	init_arg(RARG_FS);	break;
+	case K01:	init_arg(RARG_FIX);	break;
+	case K02:	init_arg(RARG_SCI);	break;
+	case K03:	init_arg(RARG_ENG);	break;
 	case K04:	
 		init_cat(CATALOGUE_CONV);
 		break;
@@ -462,7 +458,12 @@ static int process_h_shifted(const keycode c) {
 		return OP_NIL | OP_DROP;
 	case K21:	init_arg(RARG_SWAP);	break;	// x<>
 	case K22:	return OP_MON | OP_NOT;
-	case K23:	return CONST(OP_PI);
+	case K23:
+		if (state.runmode)
+			set_pc(0);
+		else
+			init_confirm(confirm_clprog);
+		break;
 	case K24:	return OP_SPEC | OP_CLX;
 
 	case K30:	init_arg(RARG_GTO);		break;
@@ -471,9 +472,9 @@ static int process_h_shifted(const keycode c) {
 	case K33:	return OP_DYA | OP_LXOR;
 	case K34:	return OP_DYA | OP_MOD;
 
-	case K40:	init_cat(CATALOGUE_STATS);	break;
+	case K40:	return OP_MON | OP_FACT;
 	case K41:	init_cat(CATALOGUE_PROB);	break;
-	case K42:	return OP_MON | OP_FACT;
+	case K42:	init_cat(CATALOGUE_STATS);	break;
 	case K43:	return OP_NIL | OP_statLR;
 	case K44:	state.status = 1;		break;
 
@@ -482,12 +483,7 @@ static int process_h_shifted(const keycode c) {
 		break;
 	case K51:	init_cat(CATALOGUE_TEST);	break;
 	case K52:	init_cat(CATALOGUE_PROG);	break;
-	case K53:
-		if (state.runmode)
-			set_pc(0);
-		else
-			init_confirm(confirm_clprog);
-		break;
+	case K53:	return CONST(OP_PI);
 	case K54:	return OP_DYA | OP_PERSB;
 
 	case K60:	set_smode(SDISP_SHOW);		break;
@@ -563,7 +559,7 @@ static int process_f_shifted_cmplex(const keycode c) {
 	case K33:	return OP_CDYA | OP_POW;
 	case K34:	return OP_CMON | OP_RECIP;
 
-	case K42:	return OP_CDYA | OP_COMB;
+	case K40:	return OP_CDYA | OP_COMB;
 	case K44:	return OP_CMON | OP_SQRT;
 
 	case K51:
@@ -581,7 +577,7 @@ static int process_f_shifted_cmplex(const keycode c) {
 	case K05:
 	case K10:	case K11:	case K12:
 	case K20:	case K21:	case K22:	case K23:	case K24:
-	case K40:	case K41:			case K43:
+			case K41:	case K42:	case K43:
 	case K50:			case K52:	case K53:	case K54:
 							case K63:	case K64:
 		state.shifts = SHIFT_F;
@@ -613,7 +609,7 @@ static int process_g_shifted_cmplx(const keycode c) {
 	case K33:	return OP_CDYA | OP_LOGXY;
 	case K34:	return OP_CDYA | OP_PARAL;
 
-	case K42:	return OP_CDYA | OP_PERM;
+	case K40:	return OP_CDYA | OP_PERM;
 	case K44:	return OP_CMON | OP_SQR;
 
 	case K51:
@@ -631,7 +627,7 @@ static int process_g_shifted_cmplx(const keycode c) {
 		case K05:
 	case K10:	case K11:	case K12:
 			case K21:	case K22:	case K23:	case K24:
-	case K40:	case K41:			case K43:
+			case K41:	case K42:	case K43:
 	case K50:			case K52:	case K53:	case K54:
 							case K63:	case K64:
 		state.cmplx = 1;
@@ -656,7 +652,7 @@ static int process_h_shifted_cmplx(const keycode c) {
 	case K22:	return OP_CMON | OP_CCONJ;
 	case K23:	return CONST_CMPLX(OP_PI);
 
-	case K42:	return OP_CMON | OP_FACT;	// z!
+	case K40:	return OP_CMON | OP_FACT;	// z!
 
 	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K52:	init_cat(CATALOGUE_PROG);	break;
@@ -668,7 +664,7 @@ static int process_h_shifted_cmplx(const keycode c) {
 	case K10:
 									case K24:
 	case K30:	case K31:	case K32:	case K33:	case K34:
-	case K40:	case K41:			case K43:	case K44:
+			case K41:	case K42:	case K43:	case K44:
 			case K51:			case K53:	case K54:
 			case K61:	case K62:	case K63:	case K64:
 		state.cmplx = 1;
