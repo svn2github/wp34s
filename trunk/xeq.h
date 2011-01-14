@@ -399,7 +399,7 @@ enum {
 	OP_REGCOPY, OP_REGSWAP, OP_REGCLR, OP_REGSORT,
 	OP_RCLFLAG, OP_STOFLAG,
 	OP_GSBuser,
-	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
+	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME, OP_XisINT, OP_XisFRAC,
 	OP_inisolve,
 #ifdef INCLUDE_MODULAR
 	OP_MPLUS, OP_MMINUS, OP_MMULTIPLY, OP_MSQ,
@@ -431,6 +431,7 @@ enum rarg {
 	RARG_TEST_EQ, RARG_TEST_NE, RARG_TEST_LT,	/* Must be in the same order as enuim test_op */
 			RARG_TEST_LE, RARG_TEST_GT, RARG_TEST_GE,
 	RARG_TEST_ZEQ, RARG_TEST_ZNE,
+	RARG_SKIP, RARG_BACK,
 	RARG_DSE, RARG_ISG,
 	RARG_DSZ, RARG_ISZ,
 
@@ -677,9 +678,9 @@ extern opcode getprog(int n);
 extern void stoprog(opcode);
 extern void delprog(void);
 extern unsigned int dec(unsigned int);
-extern void incpc(void);
+extern int incpc(void);
 extern void decpc(void);
-extern unsigned int find_label_from(unsigned short int, unsigned int, int);
+extern unsigned int find_label_from(unsigned int, unsigned int, int);
 extern void fin_tst(const int);
 extern unsigned int checksum_code(void);
 

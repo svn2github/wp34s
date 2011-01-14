@@ -91,12 +91,16 @@ static void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 }
 
 unsigned int state_pc(void) {	return state.state_pc;	}
+static void raw_set_pc(unsigned int pc) {
+	state.state_pc = pc;
+}
+
 void set_pc(unsigned int pc) {
 	if (pc >= state.last_prog)
 		pc = state.last_prog - 1;
 	if (!isXROM(pc) && pc > 1 && isDBL(prog[pc-1]))
 		pc--;
-	state.state_pc = pc;
+	raw_set_pc(pc);
 }
 
 
@@ -122,14 +126,14 @@ static int running(void) {
 	return state.state_running;
 }
 
-static void set_running(int running) {
-	if (running) {
-		set_dot(RCL_annun);
-		state.state_running = 1;
-	} else {
-		clr_dot(RCL_annun);
-		state.state_running = 0;
-	}
+static void set_running_off() {
+	clr_dot(RCL_annun);
+	state.state_running = 0;
+}
+
+static void set_running_on() {
+	set_dot(RCL_annun);
+	state.state_running = 1;
 }
 
 
@@ -152,7 +156,7 @@ static void warn(const enum errors e) {
 void err(const enum errors e) {
 	state.error = e;
 	if (running()) {
-		set_running(0);
+		set_running_off();
 		decpc();			// back up to errant statement
 	}
 }
@@ -428,19 +432,20 @@ unsigned int dec(unsigned int pc) {
 }
 
 /* Increment the PC keeping account of wrapping around and stopping
- * programs on such.  Return non-zero if we did an implicit return.
+ * programs on such.  Return non-zero if we wrapped.
  */
-void incpc(void) {
-	const unsigned short int pc = inc(state_pc());
+int incpc(void) {
+	const unsigned int pc = inc(state_pc());
 
-	state.state_pc = pc;
+	raw_set_pc(pc);
 	if (pc == 0 && running())
 		state.implicit_rtn = 1;
+	return pc == 0;
 }
 
 void decpc(void) {
-	state.state_pc = dec(state_pc());
-	set_running(0);
+	raw_set_pc(dec(state_pc()));
+	set_running_off();
 }
 
 /* Zero out the stack
@@ -491,7 +496,7 @@ void clrprog(void) {
 
 	for (i=1; i<=NUMPROG; i++)
 		prog[i] = EMPTY_PROGRAM_OPCODE;
-	state.state_pc = 0;
+	raw_set_pc(0);
 	retstkptr = 0;
 	state.last_prog = 1;
 }
@@ -1270,10 +1275,10 @@ static void cmdrclstk(unsigned int arg, enum rarg op) {
 
 /* Search from the given position for the specified numeric label.
  */
-static unsigned int find_opcode_from(unsigned short int pc, const opcode l, int quiet) {
-	unsigned short int z = pc;
-	unsigned short int max;
-	unsigned short int min;
+static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet) {
+	unsigned int z = pc;
+	unsigned int max;
+	unsigned int min;
 
 	if (isXROM(z)) {
 		min = addrXROM(0);
@@ -1298,14 +1303,14 @@ static unsigned int find_opcode_from(unsigned short int pc, const opcode l, int 
 	return 0;
 }
 
-unsigned int find_label_from(unsigned short int pc, unsigned int arg, int quiet) {
+unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
 	return find_opcode_from(pc, OP_RARG + (RARG_LBL << RARG_OPSHFT) + arg, quiet);
 }
 
 /* Handle a GTO/GSB instruction
  */
-static void gsbgto(unsigned short int pc, int gsb, unsigned short int oldpc) {
-	state.state_pc = pc;
+static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
+	raw_set_pc(pc);
 	if (gsb) {
 		if (running()) {
 			if (!state.implicit_rtn) {
@@ -1313,22 +1318,22 @@ static void gsbgto(unsigned short int pc, int gsb, unsigned short int oldpc) {
 				if (retstkptr >= RET_STACK_SIZE) {
 					err(ERR_XEQ_NEST);
 					retstkptr = 0;
-					set_running(0);
+					set_running_off();
 				}
 			}
 		} else {
 			retstkptr = 0;
-			set_running(1);
+			set_running_on();
 		}
 	}
 	state.implicit_rtn = 0;
 }
 
-static void cmdgtocommon(int gsb, unsigned short int pc) {
-	const unsigned short int oldpc = state_pc();
+static void cmdgtocommon(int gsb, unsigned int pc) {
+	const unsigned int oldpc = state_pc();
 
 	if (pc == 0)
-		set_running(0);
+		set_running_off();
 	else
 		gsbgto(pc, gsb, oldpc);
 }
@@ -1339,17 +1344,17 @@ static void cmdgto(unsigned int arg, enum rarg op) {
 
 static void cmdmultigto(const opcode o, enum multiops mopr) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	unsigned short int lbl = find_opcode_from(state_pc(), dest, 0);
+	unsigned int lbl = find_opcode_from(state_pc(), dest, 0);
 	cmdgtocommon(mopr != DBL_GTO, lbl);
 }
 
-static void xromargcommon(int lbl, unsigned short int userpc) {
-	const unsigned short int oldpc = state_pc();
+static void xromargcommon(int lbl, unsigned int userpc) {
+	const unsigned int oldpc = state_pc();
 
 	if (userpc == 0)
 		return;
 
-	const unsigned short int pc = find_label_from(addrXROM(0), lbl, 1);
+	const unsigned int pc = find_label_from(addrXROM(0), lbl, 1);
 
 	state.usrpc = userpc;
 	gsbgto(pc, 1, oldpc);
@@ -1361,7 +1366,7 @@ void xromarg(unsigned int arg, enum rarg op) {
 
 static void multixromarg(const opcode o, enum multiops mopr) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	unsigned short int lbl = find_opcode_from(state_pc(), dest, 0);
+	unsigned int lbl = find_opcode_from(state_pc(), dest, 0);
 	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), lbl);
 }
 
@@ -1461,12 +1466,27 @@ void fin_tst(const int a) {
 }
 
 
+/* Skip a number of instructions forwards */
+static void cmdskip(unsigned int arg, enum rarg op) {
+	while (arg-- > 0 && !incpc());
+}
+
+/* Skip backwards */
+static void cmdback(unsigned int arg, enum rarg op) {
+	unsigned int pc = state_pc();
+	while (arg-- > 0 && pc != 0)
+		pc = dec(pc);
+	raw_set_pc(pc);
+	if (pc == 0)
+		set_running_off();
+}
+
 
 /* We've encountered a CHS while entering the command line.
  */
 static void cmdlinechs(void) {
 	if (state.cmdlineeex) {
-		int pos = state.cmdlineeex + 1;
+		const int pos = state.cmdlineeex + 1;
 		if (state.eol < pos) {
 			if (state.eol < CMDLINELEN)
 				cmdline[state.eol++] = '-';
@@ -2342,13 +2362,13 @@ static void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 
 static void do_rtn(int plus1) {
 	if (retstkptr > 0) {
-		state.state_pc = retstk[--retstkptr];
+		raw_set_pc(retstk[--retstkptr]);
 		retstk[retstkptr] = 0;
 		if (plus1)
 			incpc();
 	} else {
-		set_running(0);
-		state.state_pc = 0;
+		set_running_off();
+		raw_set_pc(0);
 	}
 }
 
@@ -2363,11 +2383,12 @@ static void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 }
 
 static void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	set_running(1 - running());
+	if (running())	set_running_off();
+	else		set_running_on();
 }
 
 static void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	set_running(0);
+	set_running_off();
 	alpha_view(NULL, NULL, NULL);
 }
 
@@ -2375,6 +2396,22 @@ static void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc) {
 	gsbgto(state.usrpc, 1, state_pc());
 }
 
+
+/* Test if a number is an integer */
+static void XisInt(decimal64 *a, decimal64 *b, decContext *nulc) {
+	decNumber x;
+
+	getX(&x);
+	fin_tst(is_intmode() || is_int(&x, g_ctx));
+}
+
+/* Test if a number has a fractional component */
+static void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
+	decNumber x;
+
+	getX(&x);
+	fin_tst(!is_intmode() && !is_int(&x, g_ctx));
+}
 
 /* Test if a number is prime */
 static void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc) {
@@ -2608,7 +2645,7 @@ static void multi(const opcode op) {
  */
 static void print_step(char *tracebuf, const opcode op) {
 	char buf[16], *p;
-	const unsigned short int pc = state_pc();
+	const unsigned int pc = state_pc();
 
 	if (isXROM(pc)) {
 		tracebuf[0] = 'x';
@@ -2690,7 +2727,7 @@ void xeq(const opcode op) {
 		else	xcopy(get_stack(ss-2), save, nreg * sizeof(decimal64));
 		state = old;
 		state.error = er;
-		set_running(0);
+		set_running_off();
 		retstkptr = 0;
 		bank_flags = 0;
 		if (isXROM(state_pc()))
@@ -2729,7 +2766,7 @@ void xeqone(char *tracebuf) {
 	unsigned int trace = state.trace;
 #endif
 
-	set_running(1);
+	set_running_on();
 #ifndef REALBUILD
 	state.trace = 0;
 #endif
@@ -2745,7 +2782,7 @@ void xeqone(char *tracebuf) {
 	while (!trace && isXROM(state_pc()))
 		xeq_single();
 
-	set_running(0);
+	set_running_off();
 #ifndef REALBUILD
 	state.trace = trace;
 #endif
@@ -2765,7 +2802,7 @@ void stoprog(const opcode c) {
 	}
 	state.last_prog += off;
 	incpc();
-	const unsigned short int pc = state_pc();
+	const unsigned int pc = state_pc();
 	for (i=state.last_prog; i>pc; i--)
 		prog[i] = prog[i-off];
 	if (pc != 0) {
@@ -2780,7 +2817,7 @@ void stoprog(const opcode c) {
  */
 void delprog(void) {
 	int i;
-	const unsigned short pc = state_pc();
+	const unsigned pc = state_pc();
 	int off;
 
 	if (pc == 0 || isXROM(pc))
@@ -3266,6 +3303,8 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisNaN,	&isNan,			"NaN?")
 	FUNC0(OP_XisSpecial,	&isSpecial,		"spec?")
 	FUNC0(OP_XisPRIME,	&XisPrime,		"PRIME?")
+	FUNC0(OP_XisINT,	&XisInt,		"IP?")
+	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
 	FUNC0(OP_inisolve,	&init_slv,		"inislv")
 #ifdef INCLUDE_MODULAR
 	FUNC0(OP_MPLUS,		&xrommplus,		"M+")
@@ -3343,6 +3382,8 @@ const struct argcmd argcmds[] = {
 	CMDstk(RARG_TEST_GE,	&cmdtest,	NUMREG,			"x\012?")
 	CMDcstk(RARG_TEST_ZEQ,	&cmdztest,	NUMREG,			"\024x=?")
 	CMDcstk(RARG_TEST_ZNE,	&cmdztest,	NUMREG,			"\024x\013?")
+	CMDcstk(RARG_SKIP,	&cmdskip,	100,			"SKIP")
+	CMDcstk(RARG_BACK,	&cmdback,	100,			"BACK")
 	CMDstk(RARG_DSE,	&cmdloop,	NUMREG,			"DSE")
 	CMDstk(RARG_ISG,	&cmdloop,	NUMREG,			"ISG")
 	CMDstk(RARG_DSZ,	&cmdloopz,	NUMREG,			"DSZ")
@@ -3551,7 +3592,7 @@ unsigned int checksum_code(void) {
 	unsigned int ct[256];
 	int i;
 	unsigned int crc = 0;
-	unsigned short n = state.last_prog;
+	unsigned int n = state.last_prog;
 
 	/* Build up a CRC table */
 	for (i=0; i<256; i++) {
