@@ -338,7 +338,7 @@ static const s_opcode test_catalogue[] = {
 static const s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_STOSTK,	"\015STK")
 	RARGCMD(RARG_RCLSTK,	"\016STK")
-	RARGCMD(RARG_BACK,	"BACK")
+//	RARGCMD(RARG_BACK,	"BACK")
 	RARGCMD(RARG_CF,	"CF")
 	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_DROPY,		"DROPY")
@@ -355,7 +355,7 @@ static const s_opcode prog_catalogue[] = {
 	NILIC(OP_REGSWAP,	"R-SWAP")
 	NILIC(OP_RCLFLAG,	"RCLM")
 	RARGCMD(RARG_SF,	"SF")
-	RARGCMD(RARG_SKIP,	"SKIP")
+//	RARGCMD(RARG_SKIP,	"SKIP")
 	NILIC(OP_STOFLAG,	"STOM")
 	NILIC(OP_ALPHAOFF,	"\240OFF")
 	NILIC(OP_ALPHAON,	"\240ON")
