@@ -523,6 +523,7 @@ static int process_normal_cmplx(const keycode c) {
 
 	case K34:	return OP_CDYA | OP_DIV;
 	case K44:	return OP_CDYA | OP_MUL;
+	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K54:	return OP_CDYA | OP_SUB;
 	case K60:	break;
 	case K64:	return OP_CDYA | OP_ADD;
@@ -531,7 +532,7 @@ static int process_normal_cmplx(const keycode c) {
 							case K23:
 	case K30:	case K31:	case K32:	case K33:
 	case K40:	case K41:	case K42:	case K43:
-	case K50:	case K51:	case K52:	case K53:
+			case K51:	case K52:	case K53:
 			case K61:	case K62:	case K63:
 		state.cmplx = 1;
 		break;
@@ -562,6 +563,7 @@ static int process_f_shifted_cmplex(const keycode c) {
 	case K40:	return OP_CDYA | OP_COMB;
 	case K44:	return OP_CMON | OP_SQRT;
 
+	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K51:
 		state.cmplx = 1;
 		state.test = TST_EQ;
@@ -578,7 +580,7 @@ static int process_f_shifted_cmplex(const keycode c) {
 	case K10:	case K11:	case K12:
 	case K20:	case K21:	case K22:	case K23:	case K24:
 			case K41:	case K42:	case K43:
-	case K50:			case K52:	case K53:	case K54:
+					case K52:	case K53:	case K54:
 							case K63:	case K64:
 		state.shifts = SHIFT_F;
 		state.cmplx = 1;
@@ -612,6 +614,7 @@ static int process_g_shifted_cmplx(const keycode c) {
 	case K40:	return OP_CDYA | OP_PERM;
 	case K44:	return OP_CMON | OP_SQR;
 
+	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K51:
 		state.cmplx = 1;
 		state.test = TST_NE;
@@ -628,7 +631,7 @@ static int process_g_shifted_cmplx(const keycode c) {
 	case K10:	case K11:	case K12:
 			case K21:	case K22:	case K23:	case K24:
 			case K41:	case K42:	case K43:
-	case K50:			case K52:	case K53:	case K54:
+					case K52:	case K53:	case K54:
 							case K63:	case K64:
 		state.cmplx = 1;
 		state.shifts = SHIFT_G;
