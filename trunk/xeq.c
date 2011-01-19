@@ -2413,6 +2413,22 @@ static void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
 	fin_tst(!is_intmode() && !is_int(&x, g_ctx));
 }
 
+/* Test if a complex number is an integer */
+static void ZisInt(decimal64 *a, decimal64 *b, decContext *nulc) {
+	decNumber x, y;
+
+	getXY(&x, &y);
+	fin_tst(is_intmode() || (is_int(&x, g_ctx) && is_int(&y, g_ctx)));
+}
+
+/* Test if a complex number has a fractional component */
+static void ZisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
+	decNumber x, y;
+
+	getXY(&x, &y);
+	fin_tst(!is_intmode() && (!is_int(&x, g_ctx) || !is_int(&y, g_ctx)));
+}
+
 /* Test if a number is prime */
 static void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc) {
 	int sgn;
@@ -3305,6 +3321,8 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisPRIME,	&XisPrime,		"PRIME?")
 	FUNC0(OP_XisINT,	&XisInt,		"INT?")
 	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
+	FUNC0(OP_ZisINT,	&ZisInt,		"\024INT?")
+	FUNC0(OP_ZisFRAC,	&ZisFrac,		"\024FP?")
 	FUNC0(OP_inisolve,	&init_slv,		"inislv")
 #ifdef INCLUDE_MODULAR
 	FUNC0(OP_MPLUS,		&xrommplus,		"M+")
