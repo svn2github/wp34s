@@ -1849,7 +1849,7 @@ static const char *map32[32] = {
 	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "space", "grad",
 	"+/-", "<=", ">=", "!=", "euro", "->", "<-", "v",
 	"^", "f-shift", "g-shift", "h-shift", "cmplx", "-->", "<--", "<->",
-	"sz", "xhat", "yhat", NULL, "times", NULL, "pound", "yen"
+	"sz", "x-hat", "y-hat", NULL, "times", NULL, "pound", "yen"
 };
 
 static const char *maptop[129] = {
@@ -1857,7 +1857,7 @@ static const char *maptop[129] = {
 	"ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA", "ETA", "THETA",
 	"IOTA", "KAPPA", "LAMBDA", "MU", "NU", "XI", "OMICRON", "PI",
 	"RHO", "SIGMA", "TAU", "UPSILON", "PHI", "CHI", "PSI", "OMEGA",
-	"sub-B", "sub-mu", "^2", "sub-infinity", "^x", "^-1", "hbar", "infinity",
+	"sub-B", "sub-mu", "^2", "sub-infinity", "^x", "^-1", "h-bar", "infinity",
 	"alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta",
 	"iota", "kappa", "lambda", "mu", "nu", "xi", "omicron", "pi",
 	"rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega",

@@ -119,7 +119,6 @@ static const s_opcode catalogue[] = {
 	MON(OP_DBLFACT,		"x!!")
 #endif
 	DYA(OP_LXNOR,		"XNOR")
-	NILIC(OP_DATEYMD,	"Y.MD")
 #ifdef INCLUDE_BESSEL
 	DYA(OP_BSYN,		"Yn")
 #endif
@@ -386,6 +385,7 @@ static const s_opcode mode_catalogue[] = {
 	NILIC(OP_STK8,		"SSIZE8")
 	NILIC(OP_UNSIGNED,	"UNSIGN")
 	RARGCMD(RARG_WS,	"WSIZ")
+	NILIC(OP_DATEYMD,	"Y.MD")
 };
 
 static const s_opcode alpha_catalogue[] = {
@@ -493,14 +493,14 @@ static const char alpha_arrows[] = {
 	015,	016,	017,	020,	027,	//  arrows
 	003,	004,	005,			// sqrt, integral, degree
 	0235,	0232,				// ^-1, ^2
-	0236,					// h bar
+	0236,					// h-bar
 	0234,					// ^x
 	'^',	0237				// ^, infinity
 };
 
 static const char alpha_stats[] = {
-	031,	001,				// x hat, x bar
-	032,	002,				// y hat, y bar
+	031,	001,				// x-hat, x-bar
+	032,	002,				// y-hat, y-bar
 };
 
 static const char alpha_letters_upper[] = {
