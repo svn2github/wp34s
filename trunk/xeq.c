@@ -1413,6 +1413,31 @@ decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx) {
 	return decNumberDivide(r, &s, &const_9on5, ctx);
 }
 
+decNumber *convDB2AR(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+	decNumberMultiply(&t, x, &const_0_05, ctx);
+	return decNumberPow10(r, &t, ctx);
+}
+
+decNumber *convAR2DB(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+	decNumberLog10(&t, x, ctx);
+	return decNumberMultiply(r, &t, &const_20, ctx);
+}
+
+decNumber *convDB2PR(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+	decNumberMultiply(&t, x, &const_0_1, ctx);
+	return decNumberPow10(r, &t, ctx);
+}
+
+decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+	decNumberLog10(&t, x, ctx);
+	return decNumberMultiply(r, &t, &const_10, ctx);
+}
+
+/* Scale conversions */
 void do_conv(decNumber *r, unsigned int arg, const decNumber *x, decContext *ctx) {
 	decNumber m;
 	const unsigned int conv = arg / 2;
@@ -3089,6 +3114,10 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_J2D,	&dateFromJ,		NULL,		NULL,		"J\015D")
 	FUNC(OP_DEGC_F,	&convC2F,		NULL,		NULL,		"\005C\015\005F")
 	FUNC(OP_DEGF_C,	&convF2C,		NULL,		NULL,		"\005F\015\005C")
+	FUNC(OP_DB_AR,	&convDB2AR,		NULL,		NULL,		"dB\015AR")
+	FUNC(OP_AR_DB,	&convAR2DB,		NULL,		NULL,		"AR\015dB")
+	FUNC(OP_DB_PR,	&convDB2PR,		NULL,		NULL,		"dB\015PR")
+	FUNC(OP_PR_DB,	&convPR2DB,		NULL,		NULL,		"PR\015dB")
 #ifdef INCLUDE_ZETA
 	FUNC(OP_ZETA,	&decNumberZeta,		&cmplxZeta,	NULL,		"\245")
 #endif

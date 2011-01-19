@@ -314,6 +314,7 @@ enum {
 	OP_DOWK, OP_D2J, OP_J2D,
 
 	OP_DEGC_F, OP_DEGF_C,
+	OP_DB_AR, OP_AR_DB, OP_DB_PR, OP_PR_DB,
 #ifdef INCLUDE_ZETA
 	OP_ZETA,
 #endif

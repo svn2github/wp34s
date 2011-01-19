@@ -1187,11 +1187,13 @@ void display(void) {
 			decimal64 z;
 
 			getX(&x);
-			if (op == (OP_MON | OP_DEGC_F))
-				convC2F(&r, &x, g_ctx);
-			else if (op == (OP_MON | OP_DEGF_C))
-				convF2C(&r, &x, g_ctx);
-			else
+			if (opKIND(op) == KIND_MON) {
+				const unsigned int f = argKIND(op);
+				if (f < num_monfuncs && monfuncs[f].mondreal != NULL) {
+					(*monfuncs[f].mondreal)(&r, &x, g_ctx);
+				} else
+					set_NaN(&r);
+			} else
 				do_conv(&r, op & RARG_MASK, &x, g_ctx);
 			decNumberNormalize(&r, &r, g_ctx);
 			decimal64FromNumber(&z, &r, g_ctx64);
