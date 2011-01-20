@@ -99,10 +99,8 @@ static const s_opcode catalogue[] = {
 	DYA(OP_LNAND,		"NAND")
 	DYA(OP_LNOR,		"NOR")
 	MON(OP_RAD2DEG,		"R\015D")
-	NILIC(OP_RADCOM,	"RDX,")
-	NILIC(OP_RADDOT,	"RDX.")
 	NILIC(OP_RESET,		"RESET")
-	MON(OP_ROUND,		"RNDINT")
+	MON(OP_ROUND,		"ROUNDI")
 	NILIC(OP_SETDATE,	"SETDAT")
 	NILIC(OP_SETTIME,	"SETTIM")
 	MON(OP_SIGN,		"SIGN")
@@ -112,7 +110,6 @@ static const s_opcode catalogue[] = {
 #endif
 	NILIC(OP_TIME,		"TIME")
 	NILIC(OP_VERSION,	"VERS")
-	RARGCMD(RARG_VIEW,	"VIEW")
 	MON(OP_LAMW,		"W")
 	MON(OP_INVW,		"W\235")
 #ifdef INCLUDE_DBLFACT
@@ -295,7 +292,6 @@ static const s_opcode int_catalogue[] = {
 	NILIC(OP_VERSION,	"VERS")
 	DYA(OP_LXNOR,		"XNOR")
 //	NILIC(OP_ALPHAAPP,	"\240APP")
-	NILIC(OP_ALPHADATE,	"\240DATE")
 	RARGCMD(RARG_AIP,	"\240IP")
 	NILIC(OP_ALPHALEN,	"\240LENG")
 	RARGCMD(RARG_AREG,	"\240RC#")
@@ -305,7 +301,6 @@ static const s_opcode int_catalogue[] = {
 	RARGCMD(RARG_ALSL,	"\240SL")
 	RARGCMD(RARG_ALSR,	"\240SR")
 	RARGCMD(RARG_ASTO,	"\240STO")
-	NILIC(OP_ALPHATIME,	"\240TIME")
 //	NILIC(OP_AVIEW,		"\240VIEW")
 };
 
@@ -374,12 +369,12 @@ static const s_opcode mode_catalogue[] = {
 	NILIC(OP_DENFAC,	"DENMFAC")
 	NILIC(OP_DENFIX,	"DENFIX")
 	NILIC(OP_FRACDENOM,	"DENMAX")
+	RARGCMD(RARG_DISP,	"DISP")
 	NILIC(OP_THOUS_OFF,	"E3OFF")
 	NILIC(OP_THOUS_ON,	"E3ON")
-	RARGCMD(RARG_ENG,	"ENG")
-	RARGCMD(RARG_FIX,	"FIX")
 	NILIC(OP_DATEMDY,	"M.DY")
-	RARGCMD(RARG_SCI,	"SCI")
+	NILIC(OP_RADCOM,	"RDX,")
+	NILIC(OP_RADDOT,	"RDX.")
 	NILIC(OP_SIGNMANT,	"SIGNMT")
 	NILIC(OP_STK4,		"SSIZE4")
 	NILIC(OP_STK8,		"SSIZE8")
@@ -391,6 +386,7 @@ static const s_opcode mode_catalogue[] = {
 static const s_opcode alpha_catalogue[] = {
 //	NILIC(OP_ALPHAAPP,	"\240APP")
 	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLREG,		"CLREG")
 	NILIC(OP_ALPHADATE,	"\240DATE")
 	NILIC(OP_ALPHADAY,	"\240DAY")
 	RARGCMD(RARG_AIP,	"\240IP")
@@ -403,6 +399,7 @@ static const s_opcode alpha_catalogue[] = {
 	RARGCMD(RARG_ALSL,	"\240SL")
 	RARGCMD(RARG_ALSR,	"\240SR")
 	NILIC(OP_ALPHATIME,	"\240TIME")
+	NILIC(OP_VERSION,	"VERS")
 //	NILIC(OP_AVIEW,		"\240VIEW")
 };
 
@@ -416,6 +413,7 @@ static const s_opcode conv_catalogue[] = {
 	CONV(OP_W_HPUK,		1, "bhp->W")
 	CONV(OP_J_BTU,		1, "Btu->J")
 	CONV(OP_J_CAL,		1, "Cal->J")
+	CONV(OP_L_CUBFT,	1, "cft->L")
 	CONV(OP_CM_INCH,	0, "cm->inch")
 	MON(OP_DB_AR,		   "dB->AR")
 	MON(OP_DB_PR,		   "dB->PR")
@@ -431,6 +429,7 @@ static const s_opcode conv_catalogue[] = {
 	CONV(OP_HA_ACRE,	0, "ha->acre")
 	CONV(OP_W_HPe,		1, "HPe->W")
 	CONV(OP_CM_INCH,	1, "inch->cm")
+	CONV(OP_Pa_inhg,	1, "inhg->Pa")
 	CONV(OP_J_BTU,		0, "J->Btu")
 	CONV(OP_J_CAL,		0, "J->Cal")
 	CONV(OP_J_kWh,		0, "J->kW.h")
@@ -441,6 +440,7 @@ static const s_opcode conv_catalogue[] = {
 	CONV(OP_KM_NMI,		0, "km->nmile")
 	CONV(OP_KM_PC,		0, "km->pc")
 	CONV(OP_J_kWh,		1, "kW.h->J")
+	CONV(OP_L_CUBFT,	0, "L->cft")
 	CONV(OP_L_GALUK,	0, "L->galUK")
 	CONV(OP_L_GALUS,	0, "L->galUS")
 	CONV(OP_KM_LY,		1, "l.y.->km")
@@ -459,9 +459,11 @@ static const s_opcode conv_catalogue[] = {
 	CONV(OP_KM_NMI,		1, "nmile->km")
 	CONV(OP_G_OZ,		1, "oz->g")
 	CONV(OP_Pa_ATM,		0, "Pa->ATM")
-	CONV(OP_Pa_mbar,	0, "Pa->bar")
+	CONV(OP_Pa_inhg,	0, "Pa->inHg")
+	CONV(OP_Pa_mbar,	0, "Pa->mbar")
 	CONV(OP_Pa_mmHg,	0, "Pa->mmHg")
 	CONV(OP_Pa_psi,		0, "Pa->psi")
+	CONV(OP_Pa_torr,	0, "Pa->torr")
 	CONV(OP_KM_PC,		1, "pc->km")
 	MON(OP_PR_DB,		   "PR->dB")
 	CONV(OP_W_HP,		1, "PS(HP)->W")
@@ -470,6 +472,7 @@ static const s_opcode conv_catalogue[] = {
 	CONV(OP_T_SHTON,	0, "t->sh ton")
 	CONV(OP_T_TON,		0, "t->ton")
 	CONV(OP_T_TON,		1, "ton->t")
+	CONV(OP_Pa_torr,	1, "torr->Pa")
 	CONV(OP_G_TOZ,		1, "tr oz->g")
 	CONV(OP_W_HPUK,		0, "W->bhp")
 	CONV(OP_W_HPe,		0, "W->HPe")
@@ -480,8 +483,8 @@ static const s_opcode conv_catalogue[] = {
 
 /* The alpha mode menus to access all the weird characters */
 static const char alpha_symbols[] = {
-	',',	'"',	'#',	'&',	'\'',	'`',	'*',	':',
-	';',	'@',	'\\',	'_',	'|',	'~'
+	',',	'"',	'#',	'`',	'*',	':',
+	';',	'?',	'@',	'\\',	'_',	'~'
 };
 
 static const char alpha_compares[] = {
@@ -490,8 +493,7 @@ static const char alpha_compares[] = {
 };
 
 static const char alpha_arrows[] = {
-	015,	016,	017,	020,	027,	//  arrows
-	003,	004,	005,			// sqrt, integral, degree
+	004,	005,				// integral, degree
 	0235,	0232,				// ^-1, ^2
 	0236,					// h-bar
 	0234,					// ^x
@@ -499,8 +501,13 @@ static const char alpha_arrows[] = {
 };
 
 static const char alpha_stats[] = {
+	0270,	0271,	0272,			// sub-0, sub-1, sub-2
+	0327,	0230,	0273,			// sub-A, sub-B, sub-c
+	0274,	0377,				// sub-e, sub-k
+	0275,	0276,	0277,			// sub-n, sub-p, sub-u
 	031,	001,				// x-hat, x-bar
 	032,	002,				// y-hat, y-bar
+	0231,	0233,				// sub-mu, sub-infinity
 };
 
 static const char alpha_letters_upper[] = {

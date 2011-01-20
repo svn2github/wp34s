@@ -324,7 +324,7 @@ static int process_f_shifted(const keycode c) {
 
 	case K10:	return OP_NIL | OP_HMS;
 	case K11:	return OP_NIL | OP_FLOAT;
-	case K12:	init_arg(RARG_DISP);	break;
+	case K12:	return OP_NIL | OP_TIME;
 
 	case K20:
 		process_cmdline_set_lift();
@@ -871,12 +871,6 @@ static int process_alpha(const keycode c) {
 	state.shifts = SHIFT_N;
 
 	switch (c) {
-	case K00:
-		if (oldstate == SHIFT_H) {
-			init_cat(CATALOGUE_ALPHA_STATS);
-			return STATE_UNFINISHED;
-		}
-		break;
 #ifdef SEQUENTIAL_ROWS
 	case K01:
 	case K02:
@@ -950,6 +944,14 @@ fkey:		if (oldstate != SHIFT_F)
 		else
 			break;
 		return STATE_UNFINISHED;
+
+	case K40:
+		if (oldstate == SHIFT_H) {
+			init_cat(CATALOGUE_ALPHA_STATS);
+			return STATE_UNFINISHED;
+		}
+		break;
+
 	case K44:
 		if (oldstate == SHIFT_H) {
 			state.status = 1;

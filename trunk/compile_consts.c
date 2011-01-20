@@ -354,6 +354,7 @@ struct constsml conversions[] = {
 	CONV("g",	"tr oz",	"G_TOZ",	"31.10348"),
 	CONV("l",	"galUK",	"L_GALUK",	"4.54609"),
 	CONV("l",	"galUS",	"L_GALUS",	"3.785412"),		/* US liquid gallon */
+	CONV("l",	"cft",		"L_CUBFT",	"28.31685"),
 	CONV("ml",	"flozUK",	"ML_FLOZUK",	"28.41306"),
 	CONV("ml",	"flozUS",	"ML_FLOZUS",	"29.57353"),
 	CONV("cm",	"inch",		"CM_INCH",	"2.54"),
@@ -375,6 +376,8 @@ struct constsml conversions[] = {
 	CONV("Pa",	"mbar",		"Pa_mbar",	"100"),
 	CONV("Pa",	"mmHg",		"Pa_mmHg",	"133.3224"),
 	CONV("Pa",	"psi",		"Pa_psi",	"6894.757"),
+	CONV("Pa",	"inHg",		"Pa_inhg",	"3386.389"),
+	CONV("Pa",	"torr",		"Pa_torr",	"133.3224"),
 	CONV("W",	"bhp",		"W_HPUK",	"745.6999"),
 	CONV("W",	"PS(hp)",	"W_HP",		"735.4988"),
 	CONV("W",	"HP\274",	"W_HPe",	"746"),
