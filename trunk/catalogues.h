@@ -46,7 +46,6 @@ static const s_opcode catalogue[] = {
 	MON(OP_CEIL,		"CEIL")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLREG,		"CLREG")
-	NILIC(OP_CLSTK,		"CLSTK")
 #ifdef INCLUDE_ELLIPTIC
 	DYA(OP_CN,		"CN")
 #endif
@@ -72,8 +71,6 @@ static const s_opcode catalogue[] = {
 	MON(OP_FLOOR,		"FLOOR")
 	NILIC(OP_FRACT,		"FRACT")
 	DYA(OP_GCD,		"GCD")
-	DYA(OP_HMSADD,		"H.MS+")
-	DYA(OP_HMSSUB,		"H.MS-")
 #ifdef INCLUDE_BESSEL
 	DYA(OP_BSIN,		"In")
 #endif
@@ -312,13 +309,11 @@ static const s_opcode test_catalogue[] = {
 	RARGCMD(RARG_FCF,	"FC?F")
 	RARGCMD(RARG_FCS,	"FC?S")
 	NILIC(OP_XisFRAC,	"FP?")
-	NILIC(OP_ZisFRAC,	"\024FP?")
 	RARGCMD(RARG_FS,	"FS?")
 	RARGCMD(RARG_FSC,	"FS?C")
 	RARGCMD(RARG_FSF,	"FS?F")
 	RARGCMD(RARG_FSS,	"FS?S")
 	NILIC(OP_XisINT,	"INT?")
-	NILIC(OP_ZisINT,	"\024INT?")
 	NILIC(OP_ISLEAP,	"LEAP?")
 	NILIC(OP_XisNaN,	"NaN?")
 	NILIC(OP_XisPRIME,	"PRIME?")
@@ -337,9 +332,12 @@ static const s_opcode prog_catalogue[] = {
 //	RARGCMD(RARG_BACK,	"BACK")
 	RARGCMD(RARG_CF,	"CF")
 	NILIC(OP_CLFLAGS,	"CLFLAG")
+	NILIC(OP_CLSTK,		"CLSTK")
 	NILIC(OP_DROPY,		"DROPY")
 	RARGCMD(RARG_DSZ,	"DSZ")
 	RARGCMD(RARG_FF,	"FF")
+	DYA(OP_HMSADD,		"H.MS+")
+	DYA(OP_HMSSUB,		"H.MS-")
 	RARGCMD(RARG_ISZ,	"ISZ")
 	NILIC(OP_NOP,		"NOP")
 	// OFF

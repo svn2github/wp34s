@@ -401,7 +401,7 @@ enum {
 	OP_RCLFLAG, OP_STOFLAG,
 	OP_GSBuser,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
-	OP_XisINT, OP_XisFRAC, OP_ZisINT, OP_ZisFRAC,
+	OP_XisINT, OP_XisFRAC,
 	OP_inisolve,
 #ifdef INCLUDE_MODULAR
 	OP_MPLUS, OP_MMINUS, OP_MMULTIPLY, OP_MSQ,
