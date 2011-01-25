@@ -152,7 +152,7 @@ static const unsigned char alphamap[][6] = {
 	[K02] = { "CC\202\0c\242"	},	[K03] = { "D\003\203?d\243"	},
 	[K04] = { "E\015\204\015e\244"	},	[K05] = { "F\024\224\043f\264"	},
 	[K10] = { "G\0\202\020g\242"	},	[K11] = { "H\0\225\016h\265"	},
-	[K12] = { "I\017\210\020i\250"	},	[K20] = { "\0\240\0\0\0\0"	},
+	[K12] = { "I\0\210\0i\250"	},	[K20] = { "\0\240\0\0\0\0"	},
 	[K21] = { "J\027\206\027j\246"	},	[K22] = { "K\010\211\\k\251"	},
 	[K23] = { "L\246\212\257l\252"	},	[K24] = { "\0\0\0\0\0\0"	},
 	[K30] = { "\0{}\0\0}"		},	[K31] = { "M7\213&m\253"	},
@@ -907,6 +907,15 @@ fkey:		if (oldstate != SHIFT_F)
 			return OP_NIL | OP_VIEWALPHA;
 		break;
 
+	case K12:
+		if (oldstate == SHIFT_F)
+			init_cat(CATALOGUE_ALPHA_SUBSCRIPTS);
+		else if (oldstate == SHIFT_H)
+			init_cat(CATALOGUE_ALPHA_SUPERSCRIPTS);
+		else
+			break;
+		return STATE_UNFINISHED;
+
 	case K_ARROW:	// Alpha comparison characters
 		if (oldstate == SHIFT_F) {
 			init_cat(CATALOGUE_ALPHA_ARROWS);
@@ -1384,6 +1393,8 @@ int current_catalogue_max(void) {
 		[CATALOGUE_ALPHA_STATS]		= sizeof(alpha_stats),
 		[CATALOGUE_ALPHA_LETTERS_UPPER]	= sizeof(alpha_letters_upper),
 		[CATALOGUE_ALPHA_LETTERS_LOWER]	= sizeof(alpha_letters_lower),
+		[CATALOGUE_ALPHA_SUPERSCRIPTS]	= sizeof(alpha_superscripts),
+		[CATALOGUE_ALPHA_SUBSCRIPTS]	= sizeof(alpha_subscripts),
 	};
 	return catalogue_sizes[state.catalogue];
 }
@@ -1429,6 +1440,10 @@ opcode current_catalogue(int n) {
 		return alpha_code(n, alpha_letters_upper);
 	case CATALOGUE_ALPHA_LETTERS_LOWER:
 		return alpha_code(n, alpha_letters_lower);
+	case CATALOGUE_ALPHA_SUPERSCRIPTS:
+		return alpha_code(n, alpha_superscripts);
+	case CATALOGUE_ALPHA_SUBSCRIPTS:
+		return alpha_code(n, alpha_subscripts);
 
 	case CATALOGUE_COMPLEX:
 		return cplx_catalogue[n];
@@ -1984,6 +1999,8 @@ int main(int argc, char *argv[]) {
 			dump_menu("alpha", "", CATALOGUE_ALPHA);
 			dump_menu("alpha special letters upper", "", CATALOGUE_ALPHA_LETTERS_UPPER);
 			dump_menu("alpha special letters lower", "", CATALOGUE_ALPHA_LETTERS_LOWER);
+			dump_menu("alpha superscripts", "", CATALOGUE_ALPHA_SUPERSCRIPTS);
+			dump_menu("alpha subscripts", "", CATALOGUE_ALPHA_SUBSCRIPTS);
 			dump_menu("alpha symbols", "", CATALOGUE_ALPHA_SYMBOLS);
 			dump_menu("alpha compares", "", CATALOGUE_ALPHA_COMPARES);
 			dump_menu("alpha arrows", "", CATALOGUE_ALPHA_ARROWS);

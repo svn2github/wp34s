@@ -2984,6 +2984,8 @@ void xeq_init(void) {
 	check_cat(CATALOGUE_ALPHA, "alpha");
 	check_cat(CATALOGUE_ALPHA_LETTERS_UPPER, "alpha special upper case letters");
 	check_cat(CATALOGUE_ALPHA_LETTERS_LOWER, "alpha special lower letters");
+	check_cat(CATALOGUE_ALPHA_SUPERSCRIPTS, "alpha superscripts");
+	check_cat(CATALOGUE_ALPHA_SUBSCRIPTS, "alpha subscripts");
 	check_cat(CATALOGUE_ALPHA_SYMBOLS, "alpha symbols");
 	check_cat(CATALOGUE_ALPHA_COMPARES, "alpha compares");
 	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");

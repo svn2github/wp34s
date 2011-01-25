@@ -491,20 +491,27 @@ static const char alpha_compares[] = {
 };
 
 static const char alpha_arrows[] = {
+	017,	020,				// up arrow, down arrow
 	004,	005,				// integral, degree
-	0235,	0232,				// ^-1, ^2
 	0236,					// h-bar
-	0234,					// ^x
 	'^',	0237				// ^, infinity
 };
 
 static const char alpha_stats[] = {
+	031,	001,				// x-hat, x-bar
+	032,	002,				// y-hat, y-bar
+};
+
+static const char alpha_superscripts[] = {
+	0235,	0232,				// ^-1, ^2
+	0234,					// ^x
+};
+
+static const char alpha_subscripts[] = {
 	0270,	0271,	0272,			// sub-0, sub-1, sub-2
 	0327,	0230,	0273,			// sub-A, sub-B, sub-c
 	0274,	0377,				// sub-e, sub-k
 	0275,	0276,	0277,			// sub-n, sub-p, sub-u
-	031,	001,				// x-hat, x-bar
-	032,	002,				// y-hat, y-bar
 	0231,	0233,				// sub-mu, sub-infinity
 };
 
