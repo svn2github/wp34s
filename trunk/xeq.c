@@ -2438,16 +2438,30 @@ static void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
 	fin_tst(!is_intmode() && !is_int(&x, g_ctx));
 }
 
+/* Utility routine that checks if the X register is even or odd or neither.
+ * Returns positive if even, zero if odd, -1 for special, -2 for fractional.
+ */
+static int evenX() {
+	decNumber x, y;
+
+	getX(&x);
+	if (decNumberIsSpecial(&x))
+		return -1;
+	decNumberRemainder(&y, &x, &const_2, g_ctx);
+	if (decNumberIsZero(&y))
+		return 1;
+	decNumberCompare(&x, &y, &const_1, g_ctx);
+	if (decNumberIsZero(&x))
+		return 0;
+	return -2;
+}
+
 /* Test if a number is an even integer */
 static void XisEven(decimal64 *a, decimal64 *b, decContext *nulc) {
 	if (is_intmode()) {
 		fin_tst((d64toInt(&regX) & 1) == 0);
 	} else {
-		decNumber x;
-		int sgn;
-
-		getX(&x);
-		fin_tst(is_int(&x, g_ctx) && (dn_to_ull(&x, g_ctx, &sgn) & 1) == 0);
+		fin_tst(evenX() == 1);
 	}
 }
 
@@ -2456,11 +2470,7 @@ static void XisOdd(decimal64 *a, decimal64 *b, decContext *nulc) {
 	if (is_intmode()) {
 		fin_tst((d64toInt(&regX) & 1) != 0);
 	} else {
-		decNumber x;
-		int sgn;
-
-		getX(&x);
-		fin_tst(is_int(&x, g_ctx) && (dn_to_ull(&x, g_ctx, &sgn) & 1) != 0);
+		fin_tst(evenX() == 0);
 	}
 }
 
