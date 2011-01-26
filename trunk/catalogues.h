@@ -304,6 +304,7 @@ static const s_opcode int_catalogue[] = {
 static const s_opcode test_catalogue[] = {
 	RARGCMD(RARG_BC,	"BC?")
 	RARGCMD(RARG_BS,	"BS?")
+	NILIC(OP_XisEVEN,	"EVEN?")
 	RARGCMD(RARG_FC,	"FC?")
 	RARGCMD(RARG_FCC,	"FC?C")
 	RARGCMD(RARG_FCF,	"FC?F")
@@ -316,6 +317,7 @@ static const s_opcode test_catalogue[] = {
 	NILIC(OP_XisINT,	"INT?")
 	NILIC(OP_ISLEAP,	"LEAP?")
 	NILIC(OP_XisNaN,	"NaN?")
+	NILIC(OP_XisODD,	"ODD?")
 	NILIC(OP_XisPRIME,	"PRIME?")
 	NILIC(OP_STKSIZE,	"SSIZE?")
 	NILIC(OP_INTSIZE,	"WSIZE?")

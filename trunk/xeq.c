@@ -2438,6 +2438,32 @@ static void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
 	fin_tst(!is_intmode() && !is_int(&x, g_ctx));
 }
 
+/* Test if a number is an even integer */
+static void XisEven(decimal64 *a, decimal64 *b, decContext *nulc) {
+	if (is_intmode()) {
+		fin_tst((d64toInt(&regX) & 1) == 0);
+	} else {
+		decNumber x;
+		int sgn;
+
+		getX(&x);
+		fin_tst(is_int(&x, g_ctx) && (dn_to_ull(&x, g_ctx, &sgn) & 1) == 0);
+	}
+}
+
+/* Test if a number is an odd integer */
+static void XisOdd(decimal64 *a, decimal64 *b, decContext *nulc) {
+	if (is_intmode()) {
+		fin_tst((d64toInt(&regX) & 1) != 0);
+	} else {
+		decNumber x;
+		int sgn;
+
+		getX(&x);
+		fin_tst(is_int(&x, g_ctx) && (dn_to_ull(&x, g_ctx, &sgn) & 1) != 0);
+	}
+}
+
 /* Test if a number is prime */
 static void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc) {
 	int sgn;
@@ -3336,6 +3362,8 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisPRIME,	&XisPrime,		"PRIME?")
 	FUNC0(OP_XisINT,	&XisInt,		"INT?")
 	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
+	FUNC0(OP_XisEVEN,	&XisEven,		"EVEN?")
+	FUNC0(OP_XisODD,	&XisOdd,		"ODD?")
 	FUNC0(OP_inisolve,	&init_slv,		"inislv")
 #ifdef INCLUDE_MODULAR
 	FUNC0(OP_MPLUS,		&xrommplus,		"M+")
