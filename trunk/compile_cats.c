@@ -14,6 +14,10 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define COMPILE_CATALOGUES
+
+#include "consts.h"
+#include "xeq.h"
 
 #define CST(op, n)		RARG(RARG_CONST, op),
 #define CCST(op, n)		RARG(RARG_CONST_CMPLX, op),
@@ -26,8 +30,9 @@
 #define RARGCMD(op, n)		OP_RARG | ((op) << RARG_OPSHFT),
 #define CONV(n, d, name)	(OP_RARG | ((RARG_CONV) << RARG_OPSHFT)) + (n)*2 + (d),
 
+#define static	/**/
 
-static const s_opcode catalogue[] = {
+static s_opcode catalogue[] = {
 #ifdef INCLUDE_SUBFACT
 	MON(OP_SUBFACT,		"!n")
 #endif
@@ -142,7 +147,7 @@ static const s_opcode catalogue[] = {
 #endif
 };
 
-static const s_opcode cplx_catalogue[] = {
+static s_opcode cplx_catalogue[] = {
 #ifdef INCLUDE_AGM
 	CDYA(OP_AGM,		"AGM")
 #endif
@@ -190,7 +195,7 @@ static const s_opcode cplx_catalogue[] = {
 #endif
 };
 
-static const s_opcode stats_catalogue[] = {
+static s_opcode stats_catalogue[] = {
 	MON(OP_sigper,		"%\221")
 	NILIC(OP_BEST,		"BESTF")
 	MON(OP_ERF,		"ERF")
@@ -224,7 +229,7 @@ static const s_opcode stats_catalogue[] = {
 	NILIC(OP_sigmaYlnX,	"\221YlnX")
 };
 
-static const s_opcode prob_catalogue[] = {
+static s_opcode prob_catalogue[] = {
 	MON(OP_cdf_B,		"B(n)")
 	MON(OP_qf_B,		"B\235(p)")
 	MON(OP_cdf_EXP,		"Ex(x)")
@@ -245,7 +250,7 @@ static const s_opcode prob_catalogue[] = {
 	MON(OP_qf_chi2,		"\225\232INV")
 };
 
-static const s_opcode int_catalogue[] = {
+static s_opcode int_catalogue[] = {
 #ifdef INCLUDE_MULADD
 	TRI(OP_MULADD,		"\034+")
 #endif
@@ -301,7 +306,7 @@ static const s_opcode int_catalogue[] = {
 //	NILIC(OP_AVIEW,		"\240VIEW")
 };
 
-static const s_opcode test_catalogue[] = {
+static s_opcode test_catalogue[] = {
 	RARGCMD(RARG_BC,	"BC?")
 	RARGCMD(RARG_BS,	"BS?")
 	NILIC(OP_XisEVEN,	"EVEN?")
@@ -328,7 +333,7 @@ static const s_opcode test_catalogue[] = {
 	NILIC(OP_XisInf,	"\237?")
 };
 
-static const s_opcode prog_catalogue[] = {
+static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_STOSTK,	"\015STK")
 	RARGCMD(RARG_RCLSTK,	"\016STK")
 //	RARGCMD(RARG_BACK,	"BACK")
@@ -357,7 +362,7 @@ static const s_opcode prog_catalogue[] = {
 	NILIC(OP_ALPHAON,	"\240ON")
 };
 
-static const s_opcode mode_catalogue[] = {
+static s_opcode mode_catalogue[] = {
 	NILIC(OP_12HR,		"12H")
 	NILIC(OP_1COMP,		"1COMPL")
 	NILIC(OP_24HR,		"24H")
@@ -383,7 +388,7 @@ static const s_opcode mode_catalogue[] = {
 	NILIC(OP_DATEYMD,	"Y.MD")
 };
 
-static const s_opcode alpha_catalogue[] = {
+static s_opcode alpha_catalogue[] = {
 //	NILIC(OP_ALPHAAPP,	"\240APP")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLREG,		"CLREG")
@@ -403,7 +408,7 @@ static const s_opcode alpha_catalogue[] = {
 //	NILIC(OP_AVIEW,		"\240VIEW")
 };
 
-static const s_opcode conv_catalogue[] = {
+static s_opcode conv_catalogue[] = {
 	MON(OP_DEGC_F,		   "degC->degF")
 	MON(OP_DEGF_C,		   "degF->degC")
 	CONV(OP_HA_ACRE,	1, "acre->ha")
@@ -482,34 +487,34 @@ static const s_opcode conv_catalogue[] = {
 
 
 /* The alpha mode menus to access all the weird characters */
-static const char alpha_symbols[] = {
+static unsigned char alpha_symbols[] = {
 	',',	'"',	'#',	'`',	'*',	':',
 	';',	'?',	'@',	'\\',	'_',	'~'
 };
 
-static const char alpha_compares[] = {
+static unsigned char alpha_compares[] = {
 	'<',	'\011',	'=',	'\013',	'\012',	'>',
 	'[',    ']',	'{',	'}'
 };
 
-static const char alpha_arrows[] = {
+static unsigned char alpha_arrows[] = {
 	017,	020,				// up arrow, down arrow
 	004,	005,				// integral, degree
 	0236,					// h-bar
 	'^',	0237				// ^, infinity
 };
 
-static const char alpha_stats[] = {
+static unsigned char alpha_stats[] = {
 	031,	001,				// x-hat, x-bar
 	032,	002,				// y-hat, y-bar
 };
 
-static const char alpha_superscripts[] = {
+static unsigned char alpha_superscripts[] = {
 	0235,	0232,				// ^-1, ^2
 	0234,					// ^x
 };
 
-static const char alpha_subscripts[] = {
+static unsigned char alpha_subscripts[] = {
 	0270,	0271,	0272,			// sub-0, sub-1, sub-2
 	0327,	0230,	0273,			// sub-A, sub-B, sub-c
 	0274,	0377,				// sub-e, sub-k
@@ -517,7 +522,7 @@ static const char alpha_subscripts[] = {
 	0231,	0233,				// sub-mu, sub-infinity
 };
 
-static const char alpha_letters_upper[] = {
+static unsigned char alpha_letters_upper[] = {
 	0300, 0301, 0302, 0303, 0304,		// A
 	0305, 0306, 0307,			// C
 	0310, 0311, 0312, 0313,			// E
@@ -530,7 +535,7 @@ static const char alpha_letters_upper[] = {
 	0335, 0336,				// Y
 	0337					// Z
 };
-static const char alpha_letters_lower[] = {
+static unsigned char alpha_letters_lower[] = {
 	0340, 0341, 0342, 0343, 0344,		// A
 	0345, 0346, 0347,			// C
 	0350, 0351, 0352, 0353,			// E
@@ -543,3 +548,170 @@ static const char alpha_letters_lower[] = {
 	0374, 0375,				// Y
 	0376					// Z
 };
+
+
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "charmap.c"
+#include "commands.c"
+#include "string.c"
+#include "prt.c"
+#include "consts.c"
+
+#include "decNumber.c"
+#include "decContext.c"
+#include "decimal64.c"
+
+
+static const char *gpl[] = {
+	"This file is part of 34S.",
+	"",
+	"34S is free software: you can redistribute it and/or modify",
+	"it under the terms of the GNU General Public License as published by",
+	"the Free Software Foundation, either version 3 of the License, or",
+	"(at your option) any later version.",
+	"",
+	"34S is distributed in the hope that it will be useful,",
+	"but WITHOUT ANY WARRANTY; without even the implied warranty of",
+	"MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the",
+	"GNU General Public License for more details.",
+	"",
+	"You should have received a copy of the GNU General Public License",
+	"along with 34S.  If not, see <http://www.gnu.org/licenses/>.",
+	"",
+	"",
+	"This file is automatically generated.  Changes will not be preserved.",
+	NULL
+};
+
+static void gpl_text(const char *start, const char *middle, const char *end) {
+	int i;
+
+	for (i=0; gpl[i] != NULL; i++)
+		printf("%s%s\n", i==0?start:middle, gpl[i]);
+	printf("%s\n\n", end);
+}
+
+
+void unpack(const char *b, int *u) {
+	while (*b != 0 && *b != ' ') {
+		*u++ = remap_chars(0xff & *b++);
+	}
+	*u = -1;
+}
+
+int compare_codes(s_opcode c1, s_opcode c2, int ignorealpha) {
+	char b1[16], b2[16];
+	int u1[16], u2[16];
+	const char *p1, *p2;
+	int i;
+
+	for (i=0; i<16; i++)
+		b1[i] = b2[i] = 0;
+	p1 = prt(c1, b1);
+	p2 = prt(c2, b2);
+
+	if (ignorealpha) {
+		if (*p1 == '\240') p1++;
+		if (*p2 == '\240') p2++;
+	}
+
+	unpack(p1, u1);
+	unpack(p2, u2);
+
+//printf("compage: %s vs %s\n", p1, p2);
+	for (i=0; i<16; i++) {
+		if (u1[i] < u2[i]) return -1;
+		else if (u1[i] > u2[i]) return 1;
+		else if (u1[i] == -1) return 0;
+	}
+	return 0;
+}
+
+static void emit_catalogue(const char *name, s_opcode cat[], int num_cat, int ignorealpha) {
+	int i, j;
+	unsigned int c2[num_cat];
+
+	for (i=0; i<num_cat; i++)
+		c2[i] = cat[i];
+
+	for (i=0; i<num_cat; i++) {
+		int mj = -1;
+		for (j=0; j<num_cat; j++) {
+			if (c2[j] == 0xffffff)
+				continue;
+			if (mj == -1 || compare_codes(c2[j], c2[mj], ignorealpha) < 0) {
+				mj = j;
+			}
+		}
+		cat[i] = c2[mj];
+		c2[mj] = 0xffffff;
+	}
+
+	printf("static const s_opcode %s[] = {", name);
+	for (i=0; i<num_cat; i++)
+		printf("%s0x%04x,", (i%6) == 0?"\n\t":" ", cat[i] & 0xffff);
+	printf("\n};\n\n");
+}
+
+
+static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
+	int i, j;
+	unsigned int c2[num_cat];
+
+	for (i=0; i<num_cat; i++)
+		c2[i] = cat[i];
+
+	for (i=0; i<num_cat; i++) {
+		unsigned int min = 0xffffff;
+		int mj = -1;
+		for (j=0; j<num_cat; j++) {
+			if (c2[j] == 0xffffff)
+				continue;
+			unsigned int c = remap_chars(c2[j]);
+			if (c < min) {
+				min = c;
+				mj = j;
+			}
+		}
+		cat[i] = c2[mj];
+		c2[mj] = 0xffffff;
+	}
+
+	//qsort(cat, num_cat, 1, &alpha_compare);
+	printf("static const char %s[] = {", name);
+	for (i=0; i<num_cat; i++)
+		printf("%s0%03o,", (i%8) == 0?"\n\t":" ", cat[i] & 0xff);
+	printf("\n};\n\n");
+}
+
+
+#define CAT(n)		emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode), 0)
+#define ALPHA(n)	emit_alpha(#n , n, sizeof(n))
+
+int main(int argc, char *argv[]) {
+	gpl_text("/* ", " * ", " */");
+
+	CAT(catalogue);
+	CAT(cplx_catalogue);
+	CAT(stats_catalogue);
+	CAT(prob_catalogue);
+	CAT(int_catalogue);
+	CAT(test_catalogue);
+	CAT(prog_catalogue);
+	CAT(mode_catalogue);
+	emit_catalogue("alpha_catalogue", alpha_catalogue, sizeof(alpha_catalogue) / sizeof(s_opcode), 1);
+	CAT(conv_catalogue);
+
+	ALPHA(alpha_symbols);
+	ALPHA(alpha_compares);
+	ALPHA(alpha_arrows);
+	ALPHA(alpha_stats);
+	ALPHA(alpha_superscripts);
+	ALPHA(alpha_subscripts);
+	ALPHA(alpha_letters_upper);
+	ALPHA(alpha_letters_lower);
+
+	return 0;
+}

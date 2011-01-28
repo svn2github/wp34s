@@ -746,7 +746,123 @@ extern int s_to_i(const char *);
 unsigned long long int s_to_ull(const char *, int);
 
 extern void do_conv(decNumber *, unsigned int, const decNumber *, decContext *);
-extern decNumber *convC2F(decNumber *, const decNumber *, decContext *);
-extern decNumber *convF2C(decNumber *, const decNumber *, decContext *);
+
+extern unsigned char remap_chars(unsigned char);
+
+
+/* Command functions */
+extern void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void cmderr(unsigned int arg, enum rarg op);
+extern void lastX(decimal64 *x, decimal64 *nul, decContext *ctx64);
+extern void lastXY(decimal64 *x, decimal64 *nul, decContext *ctx64);
+extern void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void cpx_swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void cpx_enter(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void cpx_fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void drop(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void dropxy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void dropy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void cmdconst(unsigned int arg, enum rarg op);
+extern void cmdconstcmplx(unsigned int arg, enum rarg op);
+extern void cmdconstint(unsigned int arg, enum rarg op);
+extern void cmdsto(unsigned int arg, enum rarg op);
+extern void cmdrcl(unsigned int arg, enum rarg op);
+extern void cmdcsto(unsigned int arg, enum rarg op);
+extern void cmdcrcl(unsigned int arg, enum rarg op);
+extern void cmdswap(unsigned int arg, enum rarg op);
+extern void cmdview(unsigned int arg, enum rarg op);
+extern void set_stack_size4(decimal64 *a, decimal64 *nul2, decContext *ctx64);
+extern void set_stack_size8(decimal64 *a, decimal64 *nul2, decContext *ctx64);
+extern void get_stack_size(decimal64 *a, decimal64 *nul2, decContext *ctx64);
+extern void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64);
+extern void cmdstostk(unsigned int arg, enum rarg op);
+extern void cmdrclstk(unsigned int arg, enum rarg op);
+extern void cmdgto(unsigned int arg, enum rarg op);
+extern void cmdmultigto(const opcode o, enum multiops mopr);
+extern void xromarg(unsigned int arg, enum rarg op);
+extern void multixromarg(const opcode o, enum multiops mopr);
+extern void cmddisp(unsigned int arg, enum rarg op);
+extern void cmdskip(unsigned int arg, enum rarg op);
+extern void cmdback(unsigned int arg, enum rarg op);
+extern void cmdtest(unsigned int arg, enum rarg op);
+extern void cmdztest(unsigned int arg, enum rarg op);
+extern void cmdloopz(unsigned int arg, enum rarg op);
+extern void cmdloop(unsigned int arg, enum rarg op);
+extern void cmdflag(unsigned int arg, enum rarg op);
+extern void intws(unsigned int arg, enum rarg op);
+extern void op_2frac(decimal64 *x, decimal64 *b, decContext *ctx64);
+extern void op_fracdenom(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_denany(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_denfix(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_denfac(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_float(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_hms(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_fract(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_fracimp(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_fracpro(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_deg(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_rad(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_grad(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_all(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_radixcom(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_radixdot(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_thousands_off(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_2comp(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_1comp(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_unsigned(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_signmant(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void set_int_base(unsigned int arg, enum rarg op);
+extern void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx);
+extern void date_dmy(decimal64 *a, decimal64 *nul, decContext *ctx);
+extern void date_mdy(decimal64 *a, decimal64 *nul, decContext *ctx);
+extern void time_24(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void time_12(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64);
+extern void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void op_rtn(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void XisInt(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void XisEven(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void XisOdd(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void isSpecial(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void isNan(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void isInfinite(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_regclr(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void cmdconv(unsigned int arg, enum rarg op);
+extern void roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
+extern void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
+extern void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
+
+extern decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *convDB2AR(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *convAR2DB(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *convDB2PR(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx);
+
+#ifdef REALBUILD
+extern void cmdcontrast(unsigned int arg, enum rarg op);
+#endif
+#ifdef INCLUDE_MODULAR
+extern void xrommplus(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void xrommminus(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void xrommsq(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void xrommmul(decimal64 *a, decimal64 *b, decContext *nulc);
+#endif
 
 #endif

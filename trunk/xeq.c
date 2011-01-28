@@ -84,7 +84,7 @@ void set_bank_flags(unsigned int f) {
 	bank_flags = f;
 }
 
-static void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	state.version = 1;
 	if (!state.runmode)
 		display();
@@ -169,7 +169,7 @@ static void bad_mode_error(void) {
 
 
 /* User commands to produce warnings and errors */
-static void cmderr(unsigned int arg, enum rarg op) {
+void cmderr(unsigned int arg, enum rarg op) {
 	err(arg);
 }
 
@@ -256,7 +256,7 @@ static void lower2(void) {
 }
 
 
-static void lastX(decimal64 *x, decimal64 *nul, decContext *ctx64) {
+void lastX(decimal64 *x, decimal64 *nul, decContext *ctx64) {
 	*x = regL;
 }
 
@@ -266,7 +266,7 @@ void setlastX(void) {
 
 
 
-static void lastXY(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void lastXY(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	*x = regL;
 	*y = regI;
 }
@@ -327,45 +327,45 @@ void getYZ(decNumber *y, decNumber *z) {
 	getZ(z);
 }
 
-static void roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	const decimal64 r = regX;
 	lower();
 	*get_stack_top() = r;
 }
 
-static void roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	const decimal64 r = *get_stack_top();
 	lift();
 	regX = r;
 }
 
-static void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	roll_down(NULL, NULL, NULL);
 	roll_down(NULL, NULL, NULL);
 }
 
-static void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	roll_up(NULL, NULL, NULL);
 	roll_up(NULL, NULL, NULL);
 }
 
-static void swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	swap_reg(&regX, &regY);
 }
 
-static void cpx_swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void cpx_swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	swap_reg(&regX, &regZ);
 	swap_reg(&regY, &regT);
 }
 
-static void cpx_enter(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void cpx_enter(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	decimal64 x = regX, y = regY;
 	cpx_roll_up(NULL, NULL, NULL);
 	regX = x;
 	regY = y;
 }
 
-static void cpx_fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void cpx_fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	const int n = stack_size();
 	int i;
 
@@ -374,7 +374,7 @@ static void cpx_fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 		else		*get_stack(i) = regX;
 }
 
-static void fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	const int n = stack_size();
 	int i;
 
@@ -382,16 +382,16 @@ static void fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 		*get_stack(i) = regX;
 }
 
-static void drop(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void drop(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	lower();
 }
 
-static void dropxy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void dropxy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	lower();
 	lower();
 }
 
-static void dropy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void dropy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	decimal64 x = regX;
 	lower();
 	regX = x;
@@ -450,7 +450,7 @@ void decpc(void) {
 
 /* Zero out the stack
  */
-static void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	if (is_intmode())
 		d64fromInt(&regX, 0);
 	else
@@ -465,13 +465,13 @@ static void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 
 /* Reset all flags to off/false
  */
-static void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	xset(flags, 0, sizeof(flags));
 }
 
 /* Zero out all registers including the stack and lastx
  */	
-static void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	int i;
 
 	if (is_intmode())
@@ -961,7 +961,7 @@ static void triadic(const opcode op) {
 
 /* Commands to allow access to constants
  */
-static void cmdconst(unsigned int arg, enum rarg op) {
+void cmdconst(unsigned int arg, enum rarg op) {
 	if (is_intmode()) {
 		bad_mode_error();
 		return;
@@ -970,7 +970,7 @@ static void cmdconst(unsigned int arg, enum rarg op) {
 	regX = CONSTANT(arg);
 }
 
-static void cmdconstcmplx(unsigned int arg, enum rarg op) {
+void cmdconstcmplx(unsigned int arg, enum rarg op) {
 	if (is_intmode()) {
 		bad_mode_error();
 		return;
@@ -982,7 +982,7 @@ static void cmdconstcmplx(unsigned int arg, enum rarg op) {
 
 /* Commands to allow access to internal constants
  */
-static void cmdconstint(unsigned int arg, enum rarg op) {
+void cmdconstint(unsigned int arg, enum rarg op) {
 	if (is_intmode()) {
 		bad_mode_error();
 		return;
@@ -1072,7 +1072,7 @@ static int storcl_intop(unsigned short opr, const decimal64 *yr, long long int *
 
 /* We've got a STO operation to do.
  */
-static void cmdsto(unsigned int arg, enum rarg op) {
+void cmdsto(unsigned int arg, enum rarg op) {
 	decimal64 *rn = get_reg_n(arg);
 
 	if (op == RARG_STO) {
@@ -1096,7 +1096,7 @@ static void cmdsto(unsigned int arg, enum rarg op) {
 
 /* We've got a RCL operation to do.
  */
-static void cmdrcl(unsigned int arg, enum rarg op) {
+void cmdrcl(unsigned int arg, enum rarg op) {
 	const decimal64 *rn = get_reg_n(arg);
 
 	if (op == RARG_RCL) {
@@ -1153,7 +1153,7 @@ static int storcl_cop(unsigned short opr,
 	return 0;
 }
 
-static void cmdcsto(unsigned int arg, enum rarg op) {
+void cmdcsto(unsigned int arg, enum rarg op) {
 	decNumber r1, r2;
 	decimal64 *t1, *t2;
 
@@ -1176,7 +1176,7 @@ static void cmdcsto(unsigned int arg, enum rarg op) {
 	set_was_complex();
 }
 
-static void cmdcrcl(unsigned int arg, enum rarg op) {
+void cmdcrcl(unsigned int arg, enum rarg op) {
 	decNumber r1, r2;
 	const decimal64 *t1, *t2;
 
@@ -1210,7 +1210,7 @@ void swap_reg(decimal64 *a, decimal64 *b) {
 	*b = t;
 }
 
-static void cmdswap(unsigned int arg, enum rarg op) {
+void cmdswap(unsigned int arg, enum rarg op) {
 	swap_reg(&regX, get_reg_n(arg));
 	if (op == RARG_CSWAP) {
 		swap_reg(&regY, get_reg_n(arg+1));
@@ -1221,26 +1221,26 @@ static void cmdswap(unsigned int arg, enum rarg op) {
 
 /* View a specified register
  */
-static void cmdview(unsigned int arg, enum rarg op) {
+void cmdview(unsigned int arg, enum rarg op) {
 	format_reg(get_reg_n(arg), NULL);
 	display();
 }
 
 
 /* Set the stack size */
-static void set_stack_size4(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+void set_stack_size4(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	state.stack_depth = 0;
 }
-static void set_stack_size8(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+void set_stack_size8(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	state.stack_depth = 1;
 }
 
 /* Get the stack size */
-static void get_stack_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+void get_stack_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	put_int(stack_size(), 0, a);
 }
 
-static void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	put_int(word_size(), 0, a);
 }
 
@@ -1256,7 +1256,7 @@ static int check_stack_overlap(unsigned int arg, int *nout) {
 	return 0;
 }
 
-static void cmdstostk(unsigned int arg, enum rarg op) {
+void cmdstostk(unsigned int arg, enum rarg op) {
 	int i, n;
 
 	if (check_stack_overlap(arg, &n))
@@ -1264,7 +1264,7 @@ static void cmdstostk(unsigned int arg, enum rarg op) {
 			*get_reg_n(arg+i) = *get_stack(i);
 }
 
-static void cmdrclstk(unsigned int arg, enum rarg op) {
+void cmdrclstk(unsigned int arg, enum rarg op) {
 	int i, n;
 
 	if (check_stack_overlap(arg, &n))
@@ -1338,11 +1338,11 @@ static void cmdgtocommon(int gsb, unsigned int pc) {
 		gsbgto(pc, gsb, oldpc);
 }
 
-static void cmdgto(unsigned int arg, enum rarg op) {
+void cmdgto(unsigned int arg, enum rarg op) {
 	cmdgtocommon(op != RARG_GTO, find_label_from(state_pc(), arg, 0));
 }
 
-static void cmdmultigto(const opcode o, enum multiops mopr) {
+void cmdmultigto(const opcode o, enum multiops mopr) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
 	unsigned int lbl = find_opcode_from(state_pc(), dest, 0);
 	cmdgtocommon(mopr != DBL_GTO, lbl);
@@ -1364,32 +1364,32 @@ void xromarg(unsigned int arg, enum rarg op) {
 	xromargcommon(ENTRY_SIGMA - (op - RARG_SUM), find_label_from(state_pc(), arg, 0));
 }
 
-static void multixromarg(const opcode o, enum multiops mopr) {
+void multixromarg(const opcode o, enum multiops mopr) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
 	unsigned int lbl = find_opcode_from(state_pc(), dest, 0);
 	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), lbl);
 }
 
 #ifdef INCLUDE_MODULAR
-static void xrommplus(decimal64 *a, decimal64 *b, decContext *nulc) {
+void xrommplus(decimal64 *a, decimal64 *b, decContext *nulc) {
 	xromargcommon(ENTRY_MADD, 0xffff);
 }
 
-static void xrommminus(decimal64 *a, decimal64 *b, decContext *nulc) {
+void xrommminus(decimal64 *a, decimal64 *b, decContext *nulc) {
 	xromargcommon(ENTRY_MSUB, 0xffff);
 }
 
-static void xrommsq(decimal64 *a, decimal64 *b, decContext *nulc) {
+void xrommsq(decimal64 *a, decimal64 *b, decContext *nulc) {
 	xromargcommon(ENTRY_MSQ, 0xffff);
 }
 
-static void xrommmul(decimal64 *a, decimal64 *b, decContext *nulc) {
+void xrommmul(decimal64 *a, decimal64 *b, decContext *nulc) {
 	xromargcommon(ENTRY_MMUL, 0xffff);
 }
 #endif
 
 
-static void cmddisp(unsigned int arg, enum rarg op) {
+void cmddisp(unsigned int arg, enum rarg op) {
 	state.dispdigs = arg;
 	if (op == RARG_FIX)		state.dispmode = MODE_FIX;
 	else if (op == RARG_SCI)	state.dispmode = MODE_SCI;
@@ -1456,7 +1456,7 @@ void do_conv(decNumber *r, unsigned int arg, const decNumber *x, decContext *ctx
 		decNumberMultiply(r, x, &m, ctx);
 }
 
-static void cmdconv(unsigned int arg, enum rarg op) {
+void cmdconv(unsigned int arg, enum rarg op) {
 	decNumber x, r;
 
 	if (is_intmode())
@@ -1469,7 +1469,7 @@ static void cmdconv(unsigned int arg, enum rarg op) {
 }
 
 #ifdef REALBUILD
-static void cmdcontrast(unsigned int arg, enum rarg op) {
+void cmdcontrast(unsigned int arg, enum rarg op) {
 	state.contrast = arg & 0xf;
 }
 #endif
@@ -1492,12 +1492,12 @@ void fin_tst(const int a) {
 
 
 /* Skip a number of instructions forwards */
-static void cmdskip(unsigned int arg, enum rarg op) {
+void cmdskip(unsigned int arg, enum rarg op) {
 	while (arg-- > 0 && !incpc());
 }
 
 /* Skip backwards */
-static void cmdback(unsigned int arg, enum rarg op) {
+void cmdback(unsigned int arg, enum rarg op) {
 	unsigned int pc = state_pc();
 	while (arg-- > 0 && pc != 0)
 		pc = dec(pc);
@@ -1626,7 +1626,7 @@ static void do_tst(const decimal64 *cmp, const enum tst_op op, int cnst) {
 flse:	fin_tst(a);
 }
 
-static void cmdtest(unsigned int arg, enum rarg op) {
+void cmdtest(unsigned int arg, enum rarg op) {
 	do_tst(get_reg_n(arg), (enum tst_op)(op - RARG_TEST_EQ), -1);
 }
 
@@ -1663,11 +1663,11 @@ static void do_ztst(const decimal64 *r, const decimal64 *i, const enum tst_op op
 flse:	fin_tst(c);
 }
 
-static void cmdztest(unsigned int arg, enum rarg op) {
+void cmdztest(unsigned int arg, enum rarg op) {
 	do_ztst(get_reg_n(arg), get_reg_n(arg+1), (enum tst_op)(op - RARG_TEST_ZEQ));
 }
 
-static void cmdloopz(unsigned int arg, enum rarg op) {
+void cmdloopz(unsigned int arg, enum rarg op) {
 	if (is_intmode()) {
 		long long int x = get_reg_n_as_int(arg);
 		int xs;
@@ -1695,7 +1695,7 @@ static void cmdloopz(unsigned int arg, enum rarg op) {
 	}
 }
 
-static void cmdloop(unsigned int arg, enum rarg op) {
+void cmdloop(unsigned int arg, enum rarg op) {
 	if (is_intmode()) {
 		long long int x = get_reg_n_as_int(arg);
 		int xs;
@@ -1788,7 +1788,7 @@ void clr_user_flag(const int n) {
 		*f &= ~mask;
 }
 
-static void cmdflag(unsigned int arg, enum rarg op) {
+void cmdflag(unsigned int arg, enum rarg op) {
 	unsigned char mask;
 	unsigned char *const f = flag_byte(arg, &mask);
 	int flg = *f & mask;
@@ -1819,7 +1819,7 @@ static void cmdflag(unsigned int arg, enum rarg op) {
 		*f &= ~mask;
 }
 
-static void intws(unsigned int arg, enum rarg op) {
+void intws(unsigned int arg, enum rarg op) {
 	state.int_len = arg;
 }
 
@@ -1832,7 +1832,7 @@ void get_maxdenom(decNumber *d) {
 	int_to_dn(d, dm==0?9999:dm, g_ctx);
 }
 
-static void op_2frac(decimal64 *x, decimal64 *b, decContext *ctx64) {
+void op_2frac(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	decNumber z, n, d, t;
 
 	if (state.intm) {
@@ -1855,7 +1855,7 @@ static void op_2frac(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	}
 }
 
-static void op_fracdenom(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_fracdenom(decimal64 *a, decimal64 *b, decContext *nulc) {
 	int s;
 	unsigned long long int i;
 
@@ -1870,15 +1870,15 @@ static void op_fracdenom(decimal64 *a, decimal64 *b, decContext *nulc) {
 	}
 }
 
-static void op_denany(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_denany(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.denom_mode = DENOM_ANY;
 }
 
-static void op_denfix(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_denfix(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.denom_mode = DENOM_FIXED;
 }
 
-static void op_denfac(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_denfac(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.denom_mode = DENOM_FACTOR;
 }
 
@@ -1895,7 +1895,7 @@ static void int2dn(decNumber *x, decimal64 *a) {
 		decNumberMinus(x, x, g_ctx);
 }
 
-static void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x, y, z;
 
 	if (is_intmode()) {
@@ -1914,22 +1914,22 @@ static void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.fract = 0;
 }
 
-static void op_hms(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_hms(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	op_float(NULL, NULL, NULL);
 	state.hms = 1;
 }
 
-static void op_fract(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_fract(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	op_float(NULL, NULL, NULL);
 	state.fract = 1;
 }
 
-static void op_fracimp(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_fracimp(decimal64 *a, decimal64 *b, decContext *nulc) {
 	op_fract(a, b, nulc);
 	state.improperfrac = 1;
 }
 
-static void op_fracpro(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_fracpro(decimal64 *a, decimal64 *b, decContext *nulc) {
 	op_fract(a, b, nulc);
 	state.improperfrac = 0;
 }
@@ -2149,42 +2149,42 @@ static void set_trig_mode(enum trig_modes m) {
 	state.trigmode = m;
 }
 
-static void op_deg(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_deg(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	set_trig_mode(TRIG_DEG);
 }
 
-static void op_rad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_rad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	state.hms = 0;
 	set_trig_mode(TRIG_RAD);
 }
 
-static void op_grad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_grad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	state.hms = 0;
 	set_trig_mode(TRIG_GRAD);
 }
 
-static void op_all(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_all(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	state.dispmode = MODE_STD;
 	state.dispdigs = 0;
 }
 
-static void op_radixcom(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_radixcom(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	state.fraccomma = 1;
 }
 
-static void op_radixdot(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_radixdot(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	state.fraccomma = 0;
 }
 
-static void op_thousands_off(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_thousands_off(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	state.nothousands = 1;
 }
 
-static void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	state.nothousands = 0;
 }
 
-static void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (running()) {
 		display();
 #ifndef REALBUILD
@@ -2193,19 +2193,19 @@ static void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	}
 }
 
-static void op_2comp(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_2comp(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.int_mode = MODE_2COMP;
 }
 
-static void op_1comp(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_1comp(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.int_mode = MODE_1COMP;
 }
 
-static void op_unsigned(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_unsigned(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.int_mode = MODE_UNSIGNED;
 }
 
-static void op_signmant(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_signmant(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.int_mode = MODE_SGNMANT;
 }
 
@@ -2302,7 +2302,7 @@ static void set_base(unsigned int b) {
 	check_int_switch();
 }
 
-static void set_int_base(unsigned int arg, enum rarg op) {
+void set_int_base(unsigned int arg, enum rarg op) {
 	if (arg < 2) {
 		if (arg == 0)
 			op_float(NULL, NULL, NULL);
@@ -2312,29 +2312,29 @@ static void set_int_base(unsigned int arg, enum rarg op) {
 		set_base(arg);
 }
 
-static void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx) {
+void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx) {
 	state.date_mode = DATE_YMD;
 }
 
-static void date_dmy(decimal64 *a, decimal64 *nul, decContext *ctx) {
+void date_dmy(decimal64 *a, decimal64 *nul, decContext *ctx) {
 	state.date_mode = DATE_DMY;
 }
 
-static void date_mdy(decimal64 *a, decimal64 *nul, decContext *ctx) {
+void date_mdy(decimal64 *a, decimal64 *nul, decContext *ctx) {
 	state.date_mode = DATE_MDY;
 }
 
-static void time_24(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void time_24(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	state.t12 = 0;
 }
 
-static void time_12(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void time_12(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	state.t12 = 1;
 }
 
 /* Save and restore used state.
  */
-static void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64) {
+void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	unsigned long long int n = 0;
 	int posn = 0;
 	decNumber r;
@@ -2355,7 +2355,7 @@ static void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	}
 }
 
-static void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	unsigned long long int n;
 	int sgn;
 	decNumber x;
@@ -2397,33 +2397,33 @@ static void do_rtn(int plus1) {
 	}
 }
 
-static void op_rtn(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_rtn(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (!state.implicit_rtn)
 		do_rtn(0);
 }
 
-static void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (!state.implicit_rtn)
 		do_rtn(1);
 }
 
-static void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (running())	set_running_off();
 	else		set_running_on();
 }
 
-static void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	set_running_off();
 	alpha_view(NULL, NULL, NULL);
 }
 
-static void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc) {
+void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc) {
 	gsbgto(state.usrpc, 1, state_pc());
 }
 
 
 /* Test if a number is an integer */
-static void XisInt(decimal64 *a, decimal64 *b, decContext *nulc) {
+void XisInt(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x;
 
 	getX(&x);
@@ -2431,7 +2431,7 @@ static void XisInt(decimal64 *a, decimal64 *b, decContext *nulc) {
 }
 
 /* Test if a number has a fractional component */
-static void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
+void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x;
 
 	getX(&x);
@@ -2457,7 +2457,7 @@ static int evenX() {
 }
 
 /* Test if a number is an even integer */
-static void XisEven(decimal64 *a, decimal64 *b, decContext *nulc) {
+void XisEven(decimal64 *a, decimal64 *b, decContext *nulc) {
 	if (is_intmode()) {
 		fin_tst((d64toInt(&regX) & 1) == 0);
 	} else {
@@ -2466,7 +2466,7 @@ static void XisEven(decimal64 *a, decimal64 *b, decContext *nulc) {
 }
 
 /* Test if a number is an odd integer */
-static void XisOdd(decimal64 *a, decimal64 *b, decContext *nulc) {
+void XisOdd(decimal64 *a, decimal64 *b, decContext *nulc) {
 	if (is_intmode()) {
 		fin_tst((d64toInt(&regX) & 1) != 0);
 	} else {
@@ -2475,7 +2475,7 @@ static void XisOdd(decimal64 *a, decimal64 *b, decContext *nulc) {
 }
 
 /* Test if a number is prime */
-static void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc) {
+void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc) {
 	int sgn;
 
 	fin_tst(isPrime(get_int(&regX, &sgn)) && sgn == 0);
@@ -2483,7 +2483,7 @@ static void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 /* Test is a number is infinite.
  */
-static void isInfinite(decimal64 *a, decimal64 *b, decContext *nulc) {
+void isInfinite(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x;
 
 	getX(&x);
@@ -2494,14 +2494,14 @@ static void isInfinite(decimal64 *a, decimal64 *b, decContext *nulc) {
  * this could be done by testing x != x, but having a special command
  * for it reads easier.
  */
-static void isNan(decimal64 *a, decimal64 *b, decContext *nulc) {
+void isNan(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x;
 
 	getX(&x);
 	fin_tst(!is_intmode() && decNumberIsNaN(&x));
 }
 
-static void isSpecial(decimal64 *a, decimal64 *b, decContext *nulc) {
+void isSpecial(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x;
 
 	getX(&x);
@@ -2563,7 +2563,7 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d) {
 	return 0;
 }
 
-static void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc) {
 	unsigned int s, d, n;
 
 	if (reg_decode(&s, &n, &d) || s == d)
@@ -2571,7 +2571,7 @@ static void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc) {
 	xcopy(regs+d, regs+s, n*sizeof(regs[0]));
 }
 
-static void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
 	unsigned int s, d, n, i;
 
 	if (reg_decode(&s, &n, &d) || s == d)
@@ -2586,7 +2586,7 @@ static void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
 	}
 }
 
-static void op_regclr(decimal64 *a, decimal64 *b, decContext *nulc) {
+void op_regclr(decimal64 *a, decimal64 *b, decContext *nulc) {
 	unsigned int s, n, i;
 
 	if (reg_decode(&s, &n, NULL))
@@ -2595,7 +2595,7 @@ static void op_regclr(decimal64 *a, decimal64 *b, decContext *nulc) {
 		regs[i+s] = CONSTANT_INT(OP_ZERO);
 }
 
-static void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	unsigned int s, n;
 	decNumber pivot, a, t;
 	int beg[10], end[10], i;
@@ -2959,7 +2959,7 @@ static void check_cat(const enum catalogues cata, const char *name) {
 		opcode cold = current_catalogue(i-1);
 		opcode c = current_catalogue(i);
 		if (compare(cold, c, cata))
-			error("catalogue %s row %d / %d: %04o / %04o (%s / %s)", name, i, i+1,
+			error("catalogue %s row %04x / %04x  %d / %d: %04o / %04o (%s / %s)", name, cold, c, i-1, i,
 					0xff & cold, 0xff & c,
 					catcmd(cold, b1), catcmd(c, b2));
 	}
@@ -3029,622 +3029,6 @@ void xeq_init(void) {
 	check_cat(CATALOGUE_CONV, "conversion");
 	check_cat(CATALOGUE_NORMAL, "float");
 #endif
-}
-
-/* Define our table of monadic functions.
- * These must be in the same order as the monadic function enum but we'll
- * validate this only if debugging is enabled.
- */
-const struct monfunc monfuncs[] = {
-#ifdef DEBUG
-#define FUNC(name, d, c, i, fn) { .n = name, .mondreal = d, .mondcmplx = c, .monint = i, .fname = fn },
-#else
-#define FUNC(name, d, c, i, fn) { d, c, i, fn },
-#endif
-	FUNC(OP_FRAC,	&decNumberFrac,		&cmplxFrac,	&intFP,		"FP")
-	FUNC(OP_FLOOR,	&decNumberFloor,	NULL,		&intIP,		"FLOOR")
-	FUNC(OP_CEIL,	&decNumberCeil,		NULL,		&intIP,		"CEIL")
-	FUNC(OP_ROUND,	&decNumberRound,	NULL,		&intIP,		"ROUNDI")
-	FUNC(OP_TRUNC,	&decNumberTrunc,	&cmplxTrunc,	&intIP,		"IP")
-	FUNC(OP_ABS,	&decNumberAbs,		&cmplxAbs,	&intAbs,	"ABS")
-	FUNC(OP_RND,	&decNumberRnd,		&cmplxRnd,	&intIP,		"ROUND")
-	FUNC(OP_SIGN,	&decNumberSign,		&cmplxSign,	&intSign,	"SIGN")
-	FUNC(OP_LN,	&decNumberLn,		&cmplxLn,	NULL,		"LN")
-	FUNC(OP_EXP,	&decNumberExp,		&cmplxExp,	NULL,		"e\234")
-	FUNC(OP_SQRT,	&decNumberSquareRoot,	&cmplxSqrt,	&intSqrt,	"\003")
-	FUNC(OP_RECIP,	&decNumberRecip,	&cmplxRecip,	NULL,		"1/x")
-	FUNC(OP_LOG,	&decNumberLog10,	&cmplxLog,	&intLog10,	"LOG\271\270")
-	FUNC(OP_LG2,	&decNumberLog2,		&cmplxLog2,	&intLog2,	"LOG\272")
-	FUNC(OP_2POWX,	&decNumberPow2,		&cmplx2x,	&int2pow,	"2\234")
-	FUNC(OP_10POWX,	&decNumberPow10,	&cmplx10x,	&int10pow,	"10\234")
-	FUNC(OP_LN1P,	&decNumberLn1p,		&cmplxLn1p,	NULL,		"LN1+x")
-	FUNC(OP_EXPM1,	&decNumberExpm1,	&cmplxExpm1,	NULL,		"e\234-1")
-	FUNC(OP_LAMW,	&decNumberLamW,		&cmplxlamW,	NULL,		"W")
-	FUNC(OP_INVW,	&decNumberInvW,		&cmplxInvW,	NULL,		"W\235")
-	FUNC(OP_SQR,	&decNumberSquare,	&cmplxSqr,	&intSqr,	"x\232")
-#ifdef INCLUDE_CUBES
-	FUNC(OP_CUBE,	&decNumberCube,		&cmplxCube,	&intCube,	"CUBE")
-	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intCubeRoot,	"CUBERT")
-#endif
-	FUNC(OP_FIB,	&decNumberFib,		&cmplxFib,	&intFib,	"FIB")
-	FUNC(OP_2DEG,	&decNumber2Deg,		NULL,		NULL,		"\015DEG")
-	FUNC(OP_2RAD,	&decNumber2Rad,		NULL,		NULL,		"\015RAD")
-	FUNC(OP_2GRAD,	&decNumber2Grad,	NULL,		NULL,		"\015GRAD")
-	FUNC(OP_SIN,	&decNumberSin,		&cmplxSin,	NULL,		"SIN")
-	FUNC(OP_COS,	&decNumberCos,		&cmplxCos,	NULL,		"COS")
-	FUNC(OP_TAN,	&decNumberTan,		&cmplxTan,	NULL,		"TAN")
-	FUNC(OP_ASIN,	&decNumberArcSin,	&cmplxAsin,	NULL,		"ASIN")
-	FUNC(OP_ACOS,	&decNumberArcCos,	&cmplxAcos,	NULL,		"ACOS")
-	FUNC(OP_ATAN,	&decNumberArcTan,	&cmplxAtan,	NULL,		"ATAN")
-	FUNC(OP_SINC,	&decNumberSinc,		&cmplxSinc,	NULL,		"SINC")
-	FUNC(OP_SINH,	&decNumberSinh,		&cmplxSinh,	NULL,		"SINH")
-	FUNC(OP_COSH,	&decNumberCosh,		&cmplxCosh,	NULL,		"COSH")
-	FUNC(OP_TANH,	&decNumberTanh,		&cmplxTanh,	NULL,		"TANH")
-	FUNC(OP_ASINH,	&decNumberArcSinh,	&cmplxAsinh,	NULL,		"ASINH")
-	FUNC(OP_ACOSH,	&decNumberArcCosh,	&cmplxAcosh,	NULL,		"ACOSH")
-	FUNC(OP_ATANH,	&decNumberArcTanh,	&cmplxAtanh,	NULL,		"ATANH")
-	FUNC(OP_FACT,	&decNumberFactorial,	&cmplxFactorial,NULL,		"x!")
-	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	NULL,		"\202")
-	FUNC(OP_LNGAMMA,&decNumberLnGamma,	&cmplxLnGamma,	NULL,		"LN\202")
-#ifdef INCLUDE_DIGAMMA
-	FUNC(OP_PSI,	&decNumberPsi,		&cmplxPsi,	NULL,		"\226")
-#endif
-#ifdef INCLUDE_DBLFACT
-	FUNC(OP_DBLFACT,&decNumberDblFactorial,	&cmplxDblFactorial,NULL,	"x!!")
-#endif
-#ifdef INCLUDE_SUBFACT
-	FUNC(OP_SUBFACT,&decNumberSubFactorial,	NULL,		NULL,	"!n")
-#endif
-	FUNC(OP_DEG2RAD,&decNumberD2R,		NULL,		NULL,		"D\015R")
-	FUNC(OP_RAD2DEG,&decNumberR2D,		NULL,		NULL,		"R\015D")
-	FUNC(OP_CCHS,	&decNumberMinus,	&cmplxMinus,	&intChs,	"+/-")
-	FUNC(OP_CCONJ,	NULL,			&cmplxConj,	NULL,		"CONJ")
-	FUNC(OP_ERF,	&decNumberERF,		NULL,		NULL,		"ERF")
-	FUNC(OP_cdf_Q,	&cdf_Q,			NULL,		NULL,		"Q(x)")
-	FUNC(OP_qf_Q,	&qf_Q,			NULL,		NULL,		"Q\235(p)")
-	FUNC(OP_cdf_chi2, &cdf_chi2,		NULL,		NULL,		"\265\232")
-	FUNC(OP_qf_chi2,  &qf_chi2,		NULL,		NULL,		"\265\232INV")
-	FUNC(OP_cdf_T,	&cdf_T,			NULL,		NULL,		"t(x)")
-	FUNC(OP_qf_T,	&qf_T,			NULL,		NULL,		"t\235(p)")
-	FUNC(OP_cdf_F,	&cdf_F,			NULL,		NULL,		"F(x)")
-	FUNC(OP_qf_F,	&qf_F,			NULL,		NULL,		"F\235(p)")
-	FUNC(OP_cdf_WB,	&cdf_WB,		NULL,		NULL,		"Wb(t)")
-	FUNC(OP_qf_WB,	&qf_WB,			NULL,		NULL,		"Wb\235(p)")
-	FUNC(OP_cdf_EXP,&cdf_EXP,		NULL,		NULL,		"Ex(t)")
-	FUNC(OP_qf_EXP,	&qf_EXP,		NULL,		NULL,		"Ex\235(p)")
-	FUNC(OP_cdf_B,	&cdf_B,			NULL,		NULL,		"B(m)")
-	FUNC(OP_qf_B,	&qf_B,			NULL,		NULL,		"B\235(p)")
-	FUNC(OP_cdf_P,	&cdf_P,			NULL,		NULL,		"P(m)")
-	FUNC(OP_qf_P,	&qf_P,			NULL,		NULL,		"P\235(p)")
-	FUNC(OP_cdf_G,	&cdf_G,			NULL,		NULL,		"Ge(m)")
-	FUNC(OP_qf_G,	&qf_G,			NULL,		NULL,		"Ge\235(p)")
-	FUNC(OP_cdf_N,	&cdf_normal,		NULL,		NULL,		"N(x)")
-	FUNC(OP_qf_N,	&qf_normal,		NULL,		NULL,		"N\235(p)")
-	FUNC(OP_xhat,	&stats_xhat,		NULL,		NULL,		"\031")
-	FUNC(OP_yhat,	&stats_yhat,		NULL,		NULL,		"\032")
-	FUNC(OP_sigper,	&stats_sigper,		NULL,		NULL,		"%\221")
-	FUNC(OP_PERCNT,	&decNumberPercent,	NULL,		NULL,		"%")
-	FUNC(OP_PERCHG,	&decNumberPerchg,	NULL,		NULL,		"\203%")
-	FUNC(OP_PERTOT,	&decNumberPertot,	NULL,		NULL,		"%T")
-	FUNC(OP_HMS2,	&decNumberHMS2HR,	NULL,		NULL,		"\015HR")
-	FUNC(OP_2HMS,	&decNumberHR2HMS,	NULL,		NULL,		"\015H.MS")
-	FUNC(OP_NOT,	&decNumberNot,		NULL,		&intNot,	"NOT")
-	FUNC(OP_BITCNT,	NULL,			NULL,		&intNumBits,	"nBITS")
-	FUNC(OP_MIRROR,	NULL,			NULL,		&intMirror,	"MIRROR")
-	FUNC(OP_DOWK,	&dateDayOfWeek,		NULL,		NULL,		"DAY")
-	FUNC(OP_D2J,	&dateToJ,		NULL,		NULL,		"D\015J")
-	FUNC(OP_J2D,	&dateFromJ,		NULL,		NULL,		"J\015D")
-	FUNC(OP_DEGC_F,	&convC2F,		NULL,		NULL,		"\005C\015\005F")
-	FUNC(OP_DEGF_C,	&convF2C,		NULL,		NULL,		"\005F\015\005C")
-	FUNC(OP_DB_AR,	&convDB2AR,		NULL,		NULL,		"dB\015AR")
-	FUNC(OP_AR_DB,	&convAR2DB,		NULL,		NULL,		"AR\015dB")
-	FUNC(OP_DB_PR,	&convDB2PR,		NULL,		NULL,		"dB\015PR")
-	FUNC(OP_PR_DB,	&convPR2DB,		NULL,		NULL,		"PR\015dB")
-#ifdef INCLUDE_ZETA
-	FUNC(OP_ZETA,	&decNumberZeta,		&cmplxZeta,	NULL,		"\245")
-#endif
-#ifdef INCLUDE_EASTER
-	FUNC(OP_EASTER,	&dateEaster,		NULL,		NULL,		"EASTER")
-#endif
-	FUNC(OP_stpsolve,&step_slv,		NULL,		NULL,		"stpslv")
-#undef FUNC
-};
-const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
-
-
-/* Define our table of dyadic functions.
- * These must be in the same order as the dyadic function enum but we'll
- * validate this only if debugging is enabled.
- */
-const struct dyfunc dyfuncs[] = {
-#ifdef DEBUG
-#define FUNC(name, d, c, i, fn) { .n = name, .dydreal = d, .dydcmplx = c, .dydint = i, .fname = fn },
-#else
-#define FUNC(name, d, c, i, fn) { .dydreal = d, .dydcmplx = c, .dydint = i, .fname = fn },
-#endif
-	FUNC(OP_POW,	&decNumberPower,	&cmplxPower,	&intPower,	"y\234")
-	FUNC(OP_ADD,	&decNumberAdd,		&cmplxAdd,	&intAdd,	"+")
-	FUNC(OP_SUB,	&decNumberSubtract,	&cmplxSubtract,	&intSubtract,	"-")
-	FUNC(OP_MUL,	&decNumberMultiply,	&cmplxMultiply,	&intMultiply,	"\034")
-	FUNC(OP_DIV,	&decNumberDivide,	&cmplxDivide,	&intDivide,	"/")
-	FUNC(OP_MOD,	&decNumberRemainder,	NULL,		&intMod,	"MOD")
-	FUNC(OP_LOGXY,	&decNumberLogxy,	&cmplxLogxy,	NULL,		"LOGy")
-	FUNC(OP_MIN,	&decNumberMin,		NULL,		&intMin,	"MIN")
-	FUNC(OP_MAX,	&decNumberMax,		NULL,		&intMax,	"MAX")
-	FUNC(OP_ATAN2,	&decNumberArcTan2,	NULL,		NULL,		"ANGLE")
-	FUNC(OP_BETA,	&decNumberBeta,		&cmplxBeta,	NULL,		"\241")
-	FUNC(OP_LNBETA,	&decNumberLnBeta,	&cmplxLnBeta,	NULL,		"LN\241")
-	FUNC(OP_GAMMAP,	&decNumberGammap,	NULL,		NULL,		"I\202")
-#ifdef INCLUDE_ELLIPTIC
-	FUNC(OP_SN,	&decNumberSN,		&cmplxSN,	NULL,		"SN")
-	FUNC(OP_CN,	&decNumberCN,		&cmplxCN,	NULL,		"CN")
-	FUNC(OP_DN,	&decNumberDN,		&cmplxDN,	NULL,		"DN")
-#endif
-#ifdef INCLUDE_BESSEL
-#ifdef COMPLEX_BESSEL
-	FUNC(OP_BSJN,	&decNumberBSJN,		&cmplxBSJN,	NULL,		"J\275")
-	FUNC(OP_BSIN,	&decNumberBSIN,		&cmplxBSIN,	NULL,		"I\275")
-	FUNC(OP_BSYN,	&decNumberBSYN,		&cmplxBSYN,	NULL,		"Y\275")
-	FUNC(OP_BSKN,	&decNumberBSKN,		&cmplxBSKN,	NULL,		"K\275")
-#else
-	FUNC(OP_BSJN,	&decNumberBSJN,		NULL,		NULL,		"J\275")
-	FUNC(OP_BSIN,	&decNumberBSIN,		NULL,		NULL,		"I\275")
-	FUNC(OP_BSYN,	&decNumberBSYN,		NULL,		NULL,		"Y\275")
-	FUNC(OP_BSKN,	&decNumberBSKN,		NULL,		NULL,		"K\275")
-#endif
-#endif
-	FUNC(OP_COMB,	&decNumberComb,		&cmplxComb,	NULL,		"COMB")
-	FUNC(OP_PERM,	&decNumberPerm,		&cmplxPerm,	NULL,		"PERM")
-	FUNC(OP_PERAD,	&decNumberPerAdd,	NULL,		NULL,		"%+")
-	FUNC(OP_PERSB,	&decNumberPerSub,	NULL,		NULL,		"%-")
-	FUNC(OP_PERMG,	&decNumberPerMargin,	NULL,		NULL,		"%+MG")
-	FUNC(OP_MARGIN,	&decNumberMargin,	NULL,		NULL,		"%MG")
-	FUNC(OP_PARAL,	&decNumberParallel,	&cmplxParallel,	NULL,		"||")
-#ifdef INCLUDE_AGM
-	FUNC(OP_AGM,	&decNumberAGM,		&cmplxAGM,	NULL,		"AGM")
-#endif
-	FUNC(OP_HMSADD,	&decNumberHMSAdd,	NULL,		NULL,		"H.MS+")
-	FUNC(OP_HMSSUB,	&decNumberHMSSub,	NULL,		NULL,		"H.MS-")
-	FUNC(OP_GCD,	&decNumberGCD,		NULL,		&intGCD,	"GCD")
-	FUNC(OP_LCM,	&decNumberLCM,		NULL,		&intLCM,	"LCM")
-	FUNC(OP_LAND,	&decNumberAnd,		NULL,		&intAnd,	"AND")
-	FUNC(OP_LOR,	&decNumberOr,		NULL,		&intOr,		"OR")
-	FUNC(OP_LXOR,	&decNumberXor,		NULL,		&intXor,	"XOR")
-	FUNC(OP_LNAND,	&decNumberNand,		NULL,		&intNand,	"NAND")
-	FUNC(OP_LNOR,	&decNumberNor,		NULL,		&intNor,	"NOR")
-	FUNC(OP_LXNOR,	&decNumberNxor,		NULL,		&intEquiv,	"XNOR")
-	FUNC(OP_DTADD,	&dateAdd,		NULL,		NULL,		"DAYS+")
-	FUNC(OP_DTDIF,	&dateDelta,		NULL,		NULL,		"\203DAYS")
-#undef FUNC
-};
-const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
-
-
-/* Define our table of triadic functions.
- * These must be in the same order as the triadic function enum but we'll
- * validate this only if debugging is enabled.
- */
-const struct trifunc trifuncs[] = {
-#ifdef DEBUG
-#define FUNC(name, d, i, fn) { .n = name, .trireal = d, .triint = i, .fname = fn },
-#else
-#define FUNC(name, d, i, fn) { .trireal = d, .triint = i, .fname = fn },
-#endif
-	FUNC(OP_BETAI,		&betai,		NULL,		"I\241")
-	FUNC(OP_DBL_DIV, 	NULL,		&intDblDiv,	"DBL/")
-	FUNC(OP_DBL_MOD, 	NULL,		&intDblRmdr,	"DBLR")
-#ifdef INCLUDE_MULADD
-	FUNC(OP_MULADD, 	&decNumberMAdd,	&intMAdd,	"\034+")
-#endif
-	FUNC(OP_PERMRR,		&decNemberPerMRR, NULL,		"%MRR")
-#undef FUNC
-};
-const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
-
-
-const struct niladic niladics[] = {
-#ifdef DEBUG
-#define FUNC0(name, d, fn) { .n = name, .numresults = 0, .niladicf = d, .nname = fn },
-#define FUNC1(name, d, fn) { .n = name, .numresults = 1, .niladicf = d, .nname = fn },
-#define FUNC2(name, d, fn) { .n = name, .numresults = 2, .niladicf = d, .nname = fn },
-#else
-#define FUNC0(name, d, fn) { .numresults = 0, .niladicf = d, .nname = fn },
-#define FUNC1(name, d, fn) { .numresults = 1, .niladicf = d, .nname = fn },
-#define FUNC2(name, d, fn) { .numresults = 2, .niladicf = d, .nname = fn },
-#endif
-	FUNC0(OP_NOP,		NULL,			"NOP")
-	FUNC0(OP_VERSION,	&version,		"VERS")
-	FUNC1(OP_STKSIZE,	&get_stack_size,	"SSIZE?")
-	FUNC0(OP_STK4,		&set_stack_size4,	"SSIZE4")
-	FUNC0(OP_STK8,		&set_stack_size8,	"SSIZE8")
-	FUNC1(OP_INTSIZE,	&get_word_size,		"WSIZE?")
-	FUNC1(OP_LASTX,		&lastX,			"LASTx")
-	FUNC2(OP_LASTXY,	&lastXY,		"\024LASTx")
-	FUNC0(OP_SWAP,		&swap,			"x\027y")
-	FUNC0(OP_CSWAP,		&cpx_swap,		"\024x\027y")
-	FUNC0(OP_RDOWN,		&roll_down,		"R\017")
-	FUNC0(OP_RUP,		&roll_up,		"R\020")
-	FUNC0(OP_CRDOWN,	&cpx_roll_down,		"\024R\017")
-	FUNC0(OP_CRUP,		&cpx_roll_up,		"\024R\020")
-	FUNC0(OP_CENTER,	&cpx_enter,		"\024ENTER")
-	FUNC0(OP_FILL,		&fill,			"FILL")
-	FUNC0(OP_CFILL,		&cpx_fill,		"\024FILL")
-	FUNC0(OP_DROP,		&drop,			"DROP")
-	FUNC0(OP_DROPY,		&dropy,			"DROPY")
-	FUNC0(OP_DROPXY,	&dropxy,		"\024DROP")
-	FUNC1(OP_sigmaX,	&sigma_X,		"\221x")
-	FUNC1(OP_sigmaY,	&sigma_Y,		"\221y")
-	FUNC1(OP_sigmaX2,	&sigma_XX,		"\221x\232")
-	FUNC1(OP_sigmaY2,	&sigma_YY,		"\221y\232")
-	FUNC1(OP_sigma_XY,	&sigma_XY,		"\221xy")
-	FUNC1(OP_sigmaN,	&sigma_N,		"n\221")
-	FUNC1(OP_sigmalnX,	&sigma_lnX,		"\221lnX")
-	FUNC1(OP_sigmalnXlnX,	&sigma_lnXlnX,		"\221ln\232X")
-	FUNC1(OP_sigmalnY,	&sigma_lnY,		"\221lnY")
-	FUNC1(OP_sigmalnYlnY,	&sigma_lnYlnY,		"\221ln\232Y")
-	FUNC1(OP_sigmalnXlnY,	&sigma_lnXlnY,		"\221lnXY")
-	FUNC1(OP_sigmaXlnY,	&sigma_XlnY,		"\221XlnY")
-	FUNC1(OP_sigmaYlnX,	&sigma_YlnX,		"\221YlnX")
-	FUNC2(OP_statS,		&stats_s,		"s")
-	FUNC2(OP_statSigma,	&stats_sigma,		"\261")
-	FUNC2(OP_statMEAN,	&stats_mean,		"\001")
-	FUNC1(OP_statWMEAN,	&stats_wmean,		"\001w")
-	FUNC1(OP_statR,		&stats_correlation,	"CORR")
-	FUNC2(OP_statLR,	&stats_LR,		"LR")
-	FUNC2(OP_statSErr,	&stats_SErr,		"SERR")
-	FUNC0(OP_EXPF,		&stats_mode_expf,	"ExpF")
-	FUNC0(OP_LINF,		&stats_mode_linf,	"LinF")
-	FUNC0(OP_LOGF,		&stats_mode_logf,	"LogF")
-	FUNC0(OP_PWRF,		&stats_mode_pwrf,	"PowerF")
-	FUNC0(OP_BEST,		&stats_mode_best,	"BestF")
-	FUNC1(OP_RANDOM,	&stats_random,		"RAND#")
-	FUNC0(OP_STORANDOM,	&stats_sto_random,	"SEED")
-	FUNC0(OP_DEG,		&op_deg,		"DEG")
-	FUNC0(OP_RAD,		&op_rad,		"RAD")
-	FUNC0(OP_GRAD,		&op_grad,		"GRAD")
-	FUNC0(OP_ALL,		&op_all,		"ALL")
-	FUNC0(OP_RTN,		&op_rtn,		"RTN")
-	FUNC0(OP_RTNp1,		&op_rtnp1,		"rtn+1")
-	FUNC0(OP_RS,		&op_rs,			"STOP")
-	FUNC0(OP_PROMPT,	&op_prompt,		"PROMPT")
-	FUNC0(OP_SIGMACLEAR,	&sigma_clear,		"CL\221")
-	FUNC0(OP_CLREG,		&clrreg,		"CLREG")
-	FUNC0(OP_CLSTK,		&clrstk,		"CLSTK")
-	FUNC0(OP_CLALL,		NULL,			"CLALL")
-	FUNC0(OP_RESET,		NULL,			"RESET")
-	FUNC0(OP_CLFLAGS,	&clrflags,		"CLFLAG")
-	FUNC0(OP_R2P,		&op_r2p,		"\015POL")
-	FUNC0(OP_P2R,		&op_p2r,		"\015REC")
-	FUNC0(OP_FRACDENOM,	&op_fracdenom,		"DENMAX")
-	FUNC1(OP_2FRAC,		&op_2frac,		"DECOMP")
-	FUNC0(OP_DENFIX,	&op_denfix,		"DENFIX")
-	FUNC0(OP_DENFAC,	&op_denfac,		"DENFAC")
-	FUNC0(OP_DENANY,	&op_denany,		"DENANY")
-	FUNC0(OP_FRACIMPROPER,	&op_fracimp,		"IMPFRC")
-	FUNC0(OP_FRACPROPER,	&op_fracpro,		"PROFRC")
-	FUNC0(OP_RADDOT,	&op_radixdot,		"RDX.")
-	FUNC0(OP_RADCOM,	&op_radixcom,		"RDX,")
-	FUNC0(OP_THOUS_ON,	&op_thousands_on,	"E3ON")
-	FUNC0(OP_THOUS_OFF,	&op_thousands_off,	"E3OFF")
-	FUNC0(OP_PAUSE,		&op_pause,		"PAUSE")
-	FUNC0(OP_2COMP,		&op_2comp,		"2COMPL")
-	FUNC0(OP_1COMP,		&op_1comp,		"1COMPL")
-	FUNC0(OP_UNSIGNED,	&op_unsigned,		"UNSIGN")
-	FUNC0(OP_SIGNMANT,	&op_signmant,		"SIGNMT")
-	FUNC0(OP_FLOAT,		&op_float,		"FLOAT")
-	FUNC0(OP_HMS,		&op_hms,		"H.MS")
-	FUNC0(OP_FRACT,		&op_fract,		"FRACT")
-	FUNC1(OP_LJ,		&intLJ,			"LJ")
-	FUNC1(OP_RJ,		&intRJ,			"RJ")
-	FUNC0(OP_DBL_MUL, 	&intDblMul,		"DBL\034")
-	FUNC2(OP_RCLSIGMA,	&sigma_sum,		"SUM")
-	FUNC0(OP_DATEYMD,	&date_ymd,		"Y.MD")
-	FUNC0(OP_DATEDMY,	&date_dmy,		"D.MY")
-	FUNC0(OP_DATEMDY,	&date_mdy,		"M.DY")
-	FUNC0(OP_ISLEAP,	&date_isleap,		"LEAP?")
-	FUNC0(OP_ALPHADAY,	&date_alphaday,		"\240DAY")
-	FUNC0(OP_ALPHAMONTH,	&date_alphamonth,	"\240MONTH")
-	FUNC0(OP_ALPHADATE,	&date_alphadate,	"\240DATE")
-	FUNC0(OP_ALPHATIME,	&date_alphatime,	"\240TIME")
-	FUNC1(OP_DATE,		&date_date,		"DATE")
-	FUNC1(OP_TIME,		&date_time,		"TIME")
-	FUNC0(OP_24HR,		&time_24,		"24H")
-	FUNC0(OP_12HR,		&time_12,		"12H")
-	FUNC0(OP_SETDATE,	&date_setdate,		"SETDAT")
-	FUNC0(OP_SETTIME,	&date_settime,		"SETTIM")
-	FUNC0(OP_CLRALPHA,	&clralpha,		"CL\240")
-	FUNC0(OP_VIEWALPHA,	&alpha_view,		"\240VIEW")
-	FUNC1(OP_ALPHALEN,	&alpha_length,		"\240LENG")
-	FUNC1(OP_ALPHATOX,	&alpha_tox,		"\240\015x")
-	FUNC0(OP_XTOALPHA,	&alpha_fromx,		"x\015\240")
-	FUNC0(OP_ALPHAON,	&alpha_on,		"\240ON")
-	FUNC0(OP_ALPHAOFF,	&alpha_off,		"\240OFF")
-	FUNC0(OP_REGCOPY,	&op_regcopy,		"R-COPY")
-	FUNC0(OP_REGSWAP,	&op_regswap,		"R-SWAP")
-	FUNC0(OP_REGCLR,	&op_regclr,		"R-CLR")
-	FUNC0(OP_REGSORT,	&op_regsort,		"R-SORT")
-	FUNC1(OP_RCLFLAG,	&op_rclflag,		"RCLM")
-	FUNC0(OP_STOFLAG,	&op_stoflag,		"STOM")
-	FUNC0(OP_GSBuser,	&do_usergsb,		"usr")
-	FUNC0(OP_XisInf,	&isInfinite,		"\237?")
-	FUNC0(OP_XisNaN,	&isNan,			"NaN?")
-	FUNC0(OP_XisSpecial,	&isSpecial,		"spec?")
-	FUNC0(OP_XisPRIME,	&XisPrime,		"PRIME?")
-	FUNC0(OP_XisINT,	&XisInt,		"INT?")
-	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
-	FUNC0(OP_XisEVEN,	&XisEven,		"EVEN?")
-	FUNC0(OP_XisODD,	&XisOdd,		"ODD?")
-	FUNC0(OP_inisolve,	&init_slv,		"inislv")
-#ifdef INCLUDE_MODULAR
-	FUNC0(OP_MPLUS,		&xrommplus,		"M+")
-	FUNC0(OP_MMINUS,	&xrommminus,		"M-")
-	FUNC0(OP_MMULTIPLY,	&xrommmul,		"M\034")
-	FUNC0(OP_MSQ,		&xrommsq,		"M\232")
-#endif
-#undef FUNC0
-#undef FUNC1
-#undef FUNC2
-};
-
-const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
-
-const struct argcmd argcmds[] = {
-#ifdef DEBUG
-#define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
-	{ .n = name, .f = func, .lim = limit, .indirectokay = ind, .notzero = nz, .stckreg = stk, .cmplx = cpx, .cmd = nm },
-#else
-#define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
-	{ .f = func, .lim = limit, .indirectokay = ind, .notzero = nz, .stckreg = stk, .cmplx = cpx, .cmd = nm },
-#endif
-#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0)
-#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 1, 0)
-#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 1, 1)
-#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0)
-#define CMDnoZ(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0)
-	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
-	CMDnoI(RARG_CONST_CMPLX,&cmdconstcmplx,	NUM_CONSTS,		"\024CNST")
-	CMD(RARG_CONST_INT,	&cmdconstint,	NUM_CONSTS_INT,		"iC")
-	CMDnoI(RARG_ERROR,	&cmderr,	MAX_ERROR,		"err")
-	CMDstk(RARG_STO, 	&cmdsto,	NUMREG,			"STO")
-	CMDstk(RARG_STO_PL, 	&cmdsto,	NUMREG,			"STO+")
-	CMDstk(RARG_STO_MI, 	&cmdsto,	NUMREG,			"STO-")
-	CMDstk(RARG_STO_MU, 	&cmdsto,	NUMREG,			"STO\034")
-	CMDstk(RARG_STO_DV, 	&cmdsto,	NUMREG,			"STO/")
-	CMDstk(RARG_STO_MIN,	&cmdsto,	NUMREG,			"STO\017")
-	CMDstk(RARG_STO_MAX,	&cmdsto,	NUMREG,			"STO\020")
-	CMDstk(RARG_RCL, 	&cmdrcl,	NUMREG,			"RCL")
-	CMDstk(RARG_RCL_PL, 	&cmdrcl,	NUMREG,			"RCL+")
-	CMDstk(RARG_RCL_MI, 	&cmdrcl,	NUMREG,			"RCL-")
-	CMDstk(RARG_RCL_MU, 	&cmdrcl,	NUMREG,			"RCL\034")
-	CMDstk(RARG_RCL_DV, 	&cmdrcl,	NUMREG,			"RCL/")
-	CMDstk(RARG_RCL_MIN,	&cmdrcl,	NUMREG,			"RCL\017")
-	CMDstk(RARG_RCL_MAX,	&cmdrcl,	NUMREG,			"RCL\020")
-	CMDstk(RARG_SWAP,	&cmdswap,	NUMREG,			"x\027")
-	CMDcstk(RARG_CSTO, 	&cmdcsto,	NUMREG,			"\024STO")
-	CMDcstk(RARG_CSTO_PL, 	&cmdcsto,	NUMREG,			"\024STO+")
-	CMDcstk(RARG_CSTO_MI, 	&cmdcsto,	NUMREG,			"\024STO-")
-	CMDcstk(RARG_CSTO_MU, 	&cmdcsto,	NUMREG,			"\024STO\034")
-	CMDcstk(RARG_CSTO_DV, 	&cmdcsto,	NUMREG,			"\024STO/")
-	CMDcstk(RARG_CRCL, 	&cmdcrcl,	NUMREG,			"\024RCL")
-	CMDcstk(RARG_CRCL_PL, 	&cmdcrcl,	NUMREG,			"\024RCL+")
-	CMDcstk(RARG_CRCL_MI, 	&cmdcrcl,	NUMREG,			"\024RCL-")
-	CMDcstk(RARG_CRCL_MU, 	&cmdcrcl,	NUMREG,			"\024RCL\034")
-	CMDcstk(RARG_CRCL_DV, 	&cmdcrcl,	NUMREG,			"\024RCL/")
-	CMDcstk(RARG_CSWAP,	&cmdswap,	NUMREG,			"\024x\027")
-	CMDstk(RARG_VIEW,	&cmdview,	NUMREG,			"VIEW")
-	CMD(RARG_STOSTK,	&cmdstostk,	TOPREALREG-STACK_SIZE+1,"\015STK")
-	CMD(RARG_RCLSTK,	&cmdrclstk,	TOPREALREG-STACK_SIZE+1,"\016STK")
-	CMDnoI(RARG_ALPHA,	&cmdalpha,	0,			"")
-	CMDstk(RARG_AREG,	&alpha_reg,	NUMREG,			"\240RC#")
-	CMDstk(RARG_ASTO,	&alpha_sto,	NUMREG,			"\240STO")
-	CMDstk(RARG_ARCL,	&alpha_rcl,	NUMREG,			"\240RCL")
-	CMDstk(RARG_AIP,	&alpha_ip,	NUMREG,			"\240IP")
-	CMDnoZ(RARG_ALRL,	&alpha_shift_l,	NUMALPHA,		"\240RL")
-	CMDnoZ(RARG_ALRR,	&alpha_rot_r,	NUMALPHA,		"\240RR")
-	CMDnoZ(RARG_ALSL,	&alpha_shift_l,	NUMALPHA+1,		"\240SL")
-	CMDnoZ(RARG_ALSR,	&alpha_shift_r,	NUMALPHA+1,		"\240SR")
-	CMDstk(RARG_TEST_EQ,	&cmdtest,	NUMREG,			"x=?")
-	CMDstk(RARG_TEST_NE,	&cmdtest,	NUMREG,			"x\013?")
-	CMDstk(RARG_TEST_LT,	&cmdtest,	NUMREG,			"x<?")
-	CMDstk(RARG_TEST_LE,	&cmdtest,	NUMREG,			"x\011?")
-	CMDstk(RARG_TEST_GT,	&cmdtest,	NUMREG,			"x>?")
-	CMDstk(RARG_TEST_GE,	&cmdtest,	NUMREG,			"x\012?")
-	CMDcstk(RARG_TEST_ZEQ,	&cmdztest,	NUMREG,			"\024x=?")
-	CMDcstk(RARG_TEST_ZNE,	&cmdztest,	NUMREG,			"\024x\013?")
-	CMDcstk(RARG_SKIP,	&cmdskip,	100,			"SKIP")
-	CMDcstk(RARG_BACK,	&cmdback,	100,			"BACK")
-	CMDstk(RARG_DSE,	&cmdloop,	NUMREG,			"DSE")
-	CMDstk(RARG_ISG,	&cmdloop,	NUMREG,			"ISG")
-	CMDstk(RARG_DSZ,	&cmdloopz,	NUMREG,			"DSZ")
-	CMDstk(RARG_ISZ,	&cmdloopz,	NUMREG,			"ISZ")
-	CMDnoI(RARG_LBL,	NULL,		NUMLBL,			"LBL")
-	CMD(RARG_XEQ,		&cmdgto,	NUMLBL,			"XEQ")
-	CMD(RARG_GTO,		&cmdgto,	NUMLBL,			"GTO")
-	CMD(RARG_SUM,		&xromarg,	NUMLBL,			"\221")
-	CMD(RARG_PROD,		&xromarg,	NUMLBL,			"\217")
-	CMD(RARG_SOLVE,		&xromarg,	NUMLBL,			"SLV")
-	CMD(RARG_INTG,		&xromarg,	NUMLBL,			"INT")
-
-	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX")
-	CMD(RARG_SCI,		&cmddisp,	DISPLAY_DIGITS,		"SCI")
-	CMD(RARG_ENG,		&cmddisp,	DISPLAY_DIGITS,		"ENG")
-	CMD(RARG_DISP,		&cmddisp,	DISPLAY_DIGITS,		"DISP")
-	CMD(RARG_SF,		&cmdflag,	NUMFLG,			"SF")
-	CMD(RARG_CF,		&cmdflag,	NUMFLG,			"CF")
-	CMD(RARG_FF,		&cmdflag,	NUMFLG,			"FF")
-	CMD(RARG_FS,		&cmdflag,	NUMFLG,			"FS?")
-	CMD(RARG_FC,		&cmdflag,	NUMFLG,			"FC?")
-	CMD(RARG_FSC,		&cmdflag,	NUMFLG,			"FS?C")
-	CMD(RARG_FSS,		&cmdflag,	NUMFLG,			"FS?S")
-	CMD(RARG_FSF,		&cmdflag,	NUMFLG,			"FS?F")
-	CMD(RARG_FCC,		&cmdflag,	NUMFLG,			"FC?C")
-	CMD(RARG_FCS,		&cmdflag,	NUMFLG,			"FC?S")
-	CMD(RARG_FCF,		&cmdflag,	NUMFLG,			"FC?F")
-	CMD(RARG_WS,		&intws,		MAX_WORD_SIZE+1,	"WSIZE")
-	CMDnoZ(RARG_RL,		&introt,	MAX_WORD_SIZE,		"RL")
-	CMDnoZ(RARG_RR,		&introt,	MAX_WORD_SIZE,		"RR")
-	CMDnoZ(RARG_RLC,	&introt,	MAX_WORD_SIZE+1,	"RLC")
-	CMDnoZ(RARG_RRC,	&introt,	MAX_WORD_SIZE+1,	"RRC")
-	CMDnoZ(RARG_SL,		&introt,	MAX_WORD_SIZE+1,	"SL")
-	CMDnoZ(RARG_SR,		&introt,	MAX_WORD_SIZE+1,	"SR")
-	CMDnoZ(RARG_ASR,	&introt,	MAX_WORD_SIZE+1,	"ASR")
-	CMD(RARG_SB,		&intbits,	MAX_WORD_SIZE,		"SB")
-	CMD(RARG_CB,		&intbits,	MAX_WORD_SIZE,		"CB")
-	CMD(RARG_FB,		&intbits,	MAX_WORD_SIZE,		"FB")
-	CMD(RARG_BS,		&intbits,	MAX_WORD_SIZE,		"BS?")
-	CMD(RARG_BC,		&intbits,	MAX_WORD_SIZE,		"BC?")
-	CMD(RARG_MASKL,		&intmsks,	MAX_WORD_SIZE+1,	"MASKL")
-	CMD(RARG_MASKR,		&intmsks,	MAX_WORD_SIZE+1,	"MASKR")
-	CMD(RARG_BASE,		&set_int_base,	17,			"BASE")
-
-	CMDnoI(RARG_CONV,	&cmdconv,	NUM_CONSTS_CONV*2,	"conv")
-#ifdef REALBUILD
-	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CNTRST")
-#endif
-
-#undef CMDnoZ
-#undef CMDnoI
-#undef CMDstk
-#undef CMD
-#undef allCMD
-};
-const unsigned short num_argcmds = sizeof(argcmds) / sizeof(struct argcmd);
-
-
-const struct multicmd multicmds[] = {
-#ifdef DEBUG
-#define CMD(name, func, nm)			\
-	{ .n = name, .f = func, .cmd = nm },
-#else
-#define CMD(name, func, nm)			\
-	{ .f = func, .cmd = nm },
-#endif
-	CMD(DBL_LBL,	NULL,		"LBL")
-	CMD(DBL_XEQ,	&cmdmultigto,	"XEQ")
-	CMD(DBL_GTO,	&cmdmultigto,	"GTO")
-	CMD(DBL_SUM,	&multixromarg,	"\221")
-	CMD(DBL_PROD,	&multixromarg,	"\217")
-	CMD(DBL_SOLVE,	&multixromarg,	"SLV")
-	CMD(DBL_INTG,	&multixromarg,	"INT")
-#ifdef MULTI_ALPHA
-	CMD(DBL_ALPHA,	&multialpha,	"\240")
-#endif
-//	CMD(DBL_NUMBER,	NULL,		"#")
-#undef CMD
-};
-const unsigned short num_multicmds = sizeof(multicmds) / sizeof(struct multicmd);
-
-
-/* Some utilities to replace the various string and mem functions.
- * This one does something akin to memmove and memcpy.
- */
-void xcopy(void *d, const void *s, int n) {
-	char *dp = d;
-	const char *sp = s;
-
-	if (sp > dp)
-		while (n--)
-			*dp++ = *sp++;
-	else if (sp < dp)
-		while (n--)
-			dp[n] = sp[n];
-}
-
-/* And a little something to set memory to a value.
- */
-void xset(void *d, const char c, int n) {
-	char *dp = d;
-	while (n--)
-		*dp++ = c;
-}
-
-
-/* Return the length of a string */
-int slen(const char *s) {
-	const char *p;
-
-	for (p=s; *p != '\0'; p++);
-	return p-s;
-}
-
-/* Find a character in a string -- strchr */
-char *find_char(const char *s, const char c) {
-	do
-		if (*s == c)
-			return (char *)s;
-	while (*s++);
-	return NULL;
-}
-
-/* Copy a string across and return a pointer to the terminating null
- */
-char *scopy(char *d, const char *s) {
-	while (*s != '\0')
-		*d++ = *s++;
-	*d = '\0';
-	return d;
-}
-
-
-/* Copy a string to a given size limit and null terminate
- */
-const char *sncopy(char *d, const char *s, int n) {
-	const char *const d0 = d;
-
-	while (n-- && *s != '\0')
-		*d++ = *s++;
-	*d = '\0';
-	return d0;
-}
-
-
-/* Copy a string to the buffer and append a character.
- */
-char *scopy_char(char *d, const char *s, const char c) {
-	d = scopy(d, s);
-	*d++ = c;
-	return d;
-}
-
-char *scopy_spc(char *d, const char *s) {
-	return scopy_char(d, s, ' ');
-}
-
-char *sncopy_char(char *d, const char *s, int n, const char c) {
-	while (n-- && *s != '\0')
-		*d++ = *s++;
-	*d++ = c;
-	return d;
-}
-
-char *sncopy_spc(char *d, const char *s, int n) {
-	return sncopy_char(d, s, n, ' ');
-}
-
-/* Convert an n digit number to a string with leading zeros
- */
-char *num_arg_0(char *d, unsigned int arg, int n) {
-	int i;
-
-	for (i=0; i<n; i++) {
-		d[n-i-1] = '0' + arg % 10;
-		arg /= 10;
-	}
-	return d + n;
-}
-
-char *num_arg(char *d, unsigned int arg) {
-	char buf[24];
-	char *p = buf;
-
-	do {
-		*p++ = '0' + arg % 10;
-		arg /= 10;
-	} while (arg != 0);
-
-	while (--p >= buf)
-		*d++ = *p;
-	return d;
 }
 
 

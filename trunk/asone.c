@@ -7,6 +7,8 @@
 #include "hp/timer.c"
 #endif
 
+#include "charmap.c"
+#include "commands.c"
 #include "alpha.c"
 #include "complex.c"
 #include "consts.c"

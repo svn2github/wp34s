@@ -65,7 +65,8 @@ CFLAGS += -DINCLUDE_SUBFACT
 #CFLAGS += -DINCLUDE_MODULAR
 
 OBJS := keys.o display.o xeq.o prt.o decn.o complex.o stats.o \
-		lcd.o int.o date.o xrom.o consts.o alpha.o
+		lcd.o int.o date.o xrom.o consts.o alpha.o charmap.o \
+		commands.o string.o
 SRCS := $(OBJS:.o=.c)
 
 LIBS := -L. -lconsts
@@ -115,8 +116,9 @@ endif
 all: calc
 clean:
 	rm -f calc asone *.o
-	rm -fr consts $(CNSTS) consts.h consts.c lcdmap.h
+	rm -fr consts $(CNSTS) consts.h consts.c lcdmap.h catalogues.h
 	rm -fr compile_consts compile_consts.dSYM lcdgen lcdgen.dSYM
+	rm -rf compile_cats compile_cats.dSYM
 	@make -C decNumber clean
 	@make -C utilities clean
 tgz:
@@ -133,9 +135,12 @@ asone: asone.c consts.c Makefile decNumber/decNumber.a lcdmap.h
 decNumber/decNumber.a:
 	+@make -C decNumber
 
-consts.c consts.h: compile_consts
+consts.c consts.h: compile_consts Makefile
 	./compile_consts
 	make -j2 -C consts
+
+catalogues.h: compile_cats Makefile
+	./compile_cats >catalogues.h
 
 lcdmap.h: lcdgen
 	./lcdgen >$@
@@ -144,10 +149,15 @@ compile_consts: compile_consts.c Makefile
 	$(HOSTCC) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
 lcdgen: lcdgen.c Makefile lcd.h
 	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
+compile_cats: compile_cats.c Makefile consts.h xeq.h charmap.c commands.c \
+		string.c prt.c consts.c Makefile
+	$(HOSTCC) $(CFLAGS) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
 
 xeq.h: statebits.h
 	@touch xeq.h
 alpha.o: alpha.c alpha.h xeq.h decn.h int.h display.h consts.h Makefile
+charmap.o: charmap.c xeq.h Makefile
+commands.o: commands.c xeq.h Makefile
 complex.o: complex.c decn.h complex.h xeq.h consts.h Makefile
 consts.o: consts.c consts.h Makefile
 date.o: date.c date.h consts.h decn.h xeq.h alpha.h Makefile
@@ -159,6 +169,7 @@ lcd.o: lcd.c lcd.h xeq.h display.h lcdmap.h Makefile
 keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h int.h Makefile
 prt.o: prt.c xeq.h consts.h display.h Makefile
 stats.o: stats.c xeq.h decn.h stats.h consts.h int.h Makefile
+string.o: string.c xeq.h Makefile
 xeq.o: xeq.c xeq.h alpha.h decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h statebits.h Makefile
 xrom.o: xrom.c xrom.h xeq.h consts.h Makefile

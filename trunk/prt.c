@@ -97,7 +97,11 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 		instr[0] = opm - OP_A + 'A';
 		return instr;
 
+#ifdef COMPILE_CATALOGUES
+	case OP_DOT:	return ".";
+#else
 	case OP_DOT:	return state.fraccomma?",":".";
+#endif
 	case OP_CHS:	return "+/-";
 	case OP_CLX:	return "CLx";
 	case OP_ENTER:	return "ENTER\020";
