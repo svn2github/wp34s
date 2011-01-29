@@ -30,8 +30,6 @@
 #define RARGCMD(op, n)		OP_RARG | ((op) << RARG_OPSHFT),
 #define CONV(n, d, name)	(OP_RARG | ((RARG_CONV) << RARG_OPSHFT)) + (n)*2 + (d),
 
-#define static	/**/
-
 static s_opcode catalogue[] = {
 #ifdef INCLUDE_SUBFACT
 	MON(OP_SUBFACT,		"!n")
