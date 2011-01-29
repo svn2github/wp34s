@@ -25,3 +25,4 @@
 #include "decNumber/decNumber.c"
 #include "decNumber/decContext.c"
 #include "decNumber/decimal64.c"
+#include "string.c"
