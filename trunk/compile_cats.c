@@ -599,7 +599,10 @@ void unpack(const char *b, int *u) {
 	*u = -1;
 }
 
-int compare_codes(s_opcode c1, s_opcode c2, int ignorealpha) {
+static int g_ignorealpha = 0;
+static int compare_cat(const void *v1, const void *v2) {
+	const s_opcode c1 = *(const s_opcode *)v1;
+	const s_opcode c2 = *(const s_opcode *)v2;
 	char b1[16], b2[16];
 	int u1[16], u2[16];
 	const char *p1, *p2;
@@ -610,7 +613,7 @@ int compare_codes(s_opcode c1, s_opcode c2, int ignorealpha) {
 	p1 = prt(c1, b1);
 	p2 = prt(c2, b2);
 
-	if (ignorealpha) {
+	if (g_ignorealpha) {
 		if (*p1 == '\240') p1++;
 		if (*p2 == '\240') p2++;
 	}
@@ -618,7 +621,6 @@ int compare_codes(s_opcode c1, s_opcode c2, int ignorealpha) {
 	unpack(p1, u1);
 	unpack(p2, u2);
 
-//printf("compage: %s vs %s\n", p1, p2);
 	for (i=0; i<16; i++) {
 		if (u1[i] < u2[i]) return -1;
 		else if (u1[i] > u2[i]) return 1;
@@ -627,25 +629,10 @@ int compare_codes(s_opcode c1, s_opcode c2, int ignorealpha) {
 	return 0;
 }
 
-static void emit_catalogue(const char *name, s_opcode cat[], int num_cat, int ignorealpha) {
-	int i, j;
-	unsigned int c2[num_cat];
+static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
+	int i;
 
-	for (i=0; i<num_cat; i++)
-		c2[i] = cat[i];
-
-	for (i=0; i<num_cat; i++) {
-		int mj = -1;
-		for (j=0; j<num_cat; j++) {
-			if (c2[j] == 0xffffff)
-				continue;
-			if (mj == -1 || compare_codes(c2[j], c2[mj], ignorealpha) < 0) {
-				mj = j;
-			}
-		}
-		cat[i] = c2[mj];
-		c2[mj] = 0xffffff;
-	}
+	qsort(cat, num_cat, sizeof(s_opcode), compare_cat);
 
 	printf("static const s_opcode %s[] = {", name);
 	for (i=0; i<num_cat; i++)
@@ -685,7 +672,7 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 }
 
 
-#define CAT(n)		emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode), 0)
+#define CAT(n)		emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode))
 #define ALPHA(n)	emit_alpha(#n , n, sizeof(n))
 
 int main(int argc, char *argv[]) {
@@ -699,7 +686,9 @@ int main(int argc, char *argv[]) {
 	CAT(test_catalogue);
 	CAT(prog_catalogue);
 	CAT(mode_catalogue);
-	emit_catalogue("alpha_catalogue", alpha_catalogue, sizeof(alpha_catalogue) / sizeof(s_opcode), 1);
+	g_ignorealpha = 1;
+	CAT(alpha_catalogue);
+	g_ignorealpha = 0;
 	CAT(conv_catalogue);
 
 	ALPHA(alpha_symbols);
