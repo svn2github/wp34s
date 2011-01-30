@@ -490,19 +490,20 @@ static s_opcode conv_catalogue[] = {
 /* The alpha mode menus to access all the weird characters */
 static unsigned char alpha_symbols[] = {
 	',',	'"',	'#',	'`',	'*',	':',
-	';',	'?',	'@',	'\\',	'_',	'~'
+	';',	'?',	'@',	'`',	'_',	'~',
 };
 
 static unsigned char alpha_compares[] = {
 	'<',	'\011',	'=',	'\013',	'\012',	'>',
-	'[',    ']',	'{',	'}'
+	'[',	']',	'{',	'}',
 };
 
 static unsigned char alpha_arrows[] = {
+	015,	016,				// left arrow, right arrow
 	017,	020,				// up arrow, down arrow
-	004,	005,				// integral, degree
+	004,					// integral
 	0236,					// h-bar
-	'^',	0237				// ^, infinity
+	'^',	0237,				// ^, infinity
 };
 
 static unsigned char alpha_stats[] = {
@@ -513,6 +514,7 @@ static unsigned char alpha_stats[] = {
 static unsigned char alpha_superscripts[] = {
 	0235,	0232,				// ^-1, ^2
 	0234,					// ^x
+	0005,					// degree
 };
 
 static unsigned char alpha_subscripts[] = {
@@ -534,7 +536,7 @@ static unsigned char alpha_letters_upper[] = {
 	0326,					// S
 	0330, 0331, 0332, 0333, 0334,		// U
 	0335, 0336,				// Y
-	0337					// Z
+	0337,					// Z
 };
 static unsigned char alpha_letters_lower[] = {
 	0340, 0341, 0342, 0343, 0344,		// A
@@ -547,7 +549,7 @@ static unsigned char alpha_letters_lower[] = {
 	0366, 0030,				// S
 	0370, 0371, 0372, 0373, 0374,		// U
 	0375, 0376,				// Y
-	0377					// Z
+	0377,					// Z
 };
 
 
@@ -654,7 +656,7 @@ static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 	int i, j;
 	unsigned int c, c2[1000];
-    
+
 	for (i=0; i<num_cat; i++)
 		c2[i] = cat[i];
 
@@ -664,7 +666,7 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 		for (j=0; j<num_cat; j++) {
 			if (c2[j] == 0xffffff)
 				continue;
-        	c = remap_chars(c2[j]);
+			c = remap_chars(c2[j]);
 			if (c < min) {
 				min = c;
 				mj = j;
