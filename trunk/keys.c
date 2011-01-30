@@ -1767,8 +1767,11 @@ static int remap(const int c) {
 
 	case 'q':	return K00;
 	case 'w':	return K01;
+	case 'B':	return K01;
 	case 'e':	return K02;
+	case 'C':	return K02;
 	case 'r':	return K03;
+	case 'D':	return K03;
 	case 't':	return K04;
 	case 'y':	return K05;
 
