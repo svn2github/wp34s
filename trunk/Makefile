@@ -87,6 +87,7 @@ endif
 
 ifdef USECURSES
 LIBS += -lcurses
+#LIBS += /sw/lib/libncurses.a
 CFLAGS += -DUSECURSES
 endif
 

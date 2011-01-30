@@ -517,7 +517,7 @@ static unsigned char alpha_superscripts[] = {
 static unsigned char alpha_subscripts[] = {
 	0270,	0271,	0272,			// sub-0, sub-1, sub-2
 	0327,	0230,	0273,			// sub-A, sub-B, sub-c
-	0274,	0377,				// sub-e, sub-k
+	0274,	0367,	0033,			// sub-e, sub-k, sub-n
 	0275,	0276,	0277,			// sub-n, sub-p, sub-u
 	0231,	0233,				// sub-mu, sub-infinity
 };
@@ -544,9 +544,9 @@ static unsigned char alpha_letters_lower[] = {
 	0361, 0362, 0363, 0364,			// O
 	0365,					// R
 	0366, 0030,				// S
-	0367, 0370, 0371, 0372, 0373,		// U
-	0374, 0375,				// Y
-	0376					// Z
+	0370, 0371, 0372, 0373, 0374,		// U
+	0375, 0376,				// Y
+	0377					// Z
 };
 
 

@@ -11,6 +11,8 @@ struct ch {
 };
 #define NCH	(sizeof(chars) / sizeof(struct ch))
 
+#include "../charmap.c"
+
 int main() {
 	int i, j, k;
 
@@ -20,7 +22,7 @@ int main() {
 		for (k=0; k<6; k++)
 			gap[k] = 0;
 
-		printf("Character %d\n", i);
+		printf("Character %d  sort position %u\n", i, remap_chars(0xff & i));
 		for (j=0; j<6; j++) {
 			printf("\t%d\t", j);
 			for (k=0; k<chars[i].width; k++) {

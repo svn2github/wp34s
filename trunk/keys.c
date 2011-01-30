@@ -1815,7 +1815,7 @@ static const char *map32[32] = {
 	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "space", "grad",
 	"+/-", "<=", ">=", "!=", "euro", "->", "<-", "v",
 	"^", "f-shift", "g-shift", "h-shift", "cmplx", "-->", "<--", "<->",
-	"sz", "x-hat", "y-hat", NULL, "times", NULL, "pound", "yen"
+	"sz", "x-hat", "y-hat", "sub-m", "times", NULL, "pound", "yen"
 };
 
 static const char *maptop[129] = {
@@ -1834,8 +1834,8 @@ static const char *maptop[129] = {
 	"U-grave", "U-acute", "U-tilde", "U-umlaut", "U-dot", "Y-acute", "Y-trema", "Z-hook",
 	"a-grave", "a-acute", "a-tilde", "a-umlaut", "a-dot", "c-acute", "c-hook", "c-cedilla",
 	"e-grave", "e-acute", "e-tilde", "e-trema", "i-grave", "i-acute", "i-tilde", "i-trema",
-	"n-tilde", "o-grave", "o-acute", "o-tilde", "o-umlaut", "r-hook", "s-hook", "u-grave",
-	"u-acute", "u-tilde", "u-umlaut", "u-dot", "y-acute", "y-trema", "z-hook", "sub-k"
+	"n-tilde", "o-grave", "o-acute", "o-tilde", "o-umlaut", "r-hook", "s-hook", "sub-k",
+	"u-grave", "u-acute", "u-tilde", "u-umlaut", "u-dot", "y-acute", "y-trema", "z-hook"
 };
 
 const char *pretty(unsigned char z) {
