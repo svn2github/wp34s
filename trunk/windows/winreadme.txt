@@ -44,7 +44,6 @@ http://pdcurses.sourceforge.net/
 
 * GENERAL
 
-there are quite a few scary warnings whilst compiling. maybe these should be
-looked at :-)
+some compilation warnings remain
 
 
