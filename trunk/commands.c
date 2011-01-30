@@ -32,9 +32,9 @@
 const struct monfunc monfuncs[] = {
 #ifdef COMPILE_CATALOGUES
 #define PTR	((void *)1)
-#define FUNC(name, d, c, i, fn) { .mondreal = PTR, .mondcmplx = PTR, .monint = PTR, .fname = fn },
+#define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
 #elif DEBUG
-#define FUNC(name, d, c, i, fn) { .n = name, .mondreal = d, .mondcmplx = c, .monint = i, .fname = fn },
+#define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
 #else
 #define FUNC(name, d, c, i, fn) { d, c, i, fn },
 #endif
@@ -155,12 +155,13 @@ const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
  */
 const struct dyfunc dyfuncs[] = {
 #ifdef COMPILE_CATALOGUES
-#define FUNC(name, d, c, i, fn) { .dydreal = PTR, .dydcmplx = PTR, .dydint = PTR, .fname = fn },
+#define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
 #elif DEBUG
-#define FUNC(name, d, c, i, fn) { .n = name, .dydreal = d, .dydcmplx = c, .dydint = i, .fname = fn },
+#define FUNC(name, d, c, i, fn) { name, d, c, i,  },
 #else
-#define FUNC(name, d, c, i, fn) { .dydreal = d, .dydcmplx = c, .dydint = i, .fname = fn },
+#define FUNC(name, d, c, i, fn) { d, c, i, fn },
 #endif
+
 	FUNC(OP_POW,	&decNumberPower,	&cmplxPower,	&intPower,	"y\234")
 	FUNC(OP_ADD,	&decNumberAdd,		&cmplxAdd,	&intAdd,	"+")
 	FUNC(OP_SUB,	&decNumberSubtract,	&cmplxSubtract,	&intSubtract,	"-")
@@ -225,11 +226,11 @@ const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
  */
 const struct trifunc trifuncs[] = {
 #ifdef COMPILE_CATALOGUES
-#define FUNC(name, d, i, fn) { .trireal = PTR, .triint = PTR, .fname = fn },
+#define FUNC(name, d, i, fn) { PTR, PTR, fn },
 #elif DEBUG
-#define FUNC(name, d, i, fn) { .n = name, .trireal = d, .triint = i, .fname = fn },
+#define FUNC(name, d, i, fn) { name, d, i, fn },
 #else
-#define FUNC(name, d, i, fn) { .trireal = d, .triint = i, .fname = fn },
+#define FUNC(name, d, i, fn) { d, i, fn },
 #endif
 	FUNC(OP_BETAI,		&betai,		NULL,		"I\241")
 	FUNC(OP_DBL_DIV, 	NULL,		&intDblDiv,	"DBL/")
@@ -245,17 +246,17 @@ const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
 
 const struct niladic niladics[] = {
 #ifdef COMPILE_CATALOGUES
-#define FUNC0(name, d, fn) { .numresults = 0, .niladicf = PTR, .nname = fn },
-#define FUNC1(name, d, fn) { .numresults = 1, .niladicf = PTR, .nname = fn },
-#define FUNC2(name, d, fn) { .numresults = 2, .niladicf = PTR, .nname = fn },
+#define FUNC0(name, d, fn) { PTR, 0, fn },
+#define FUNC1(name, d, fn) { PTR, 1, fn },
+#define FUNC2(name, d, fn) { PTR, 2, fn },
 #elif DEBUG
-#define FUNC0(name, d, fn) { .n = name, .numresults = 0, .niladicf = d, .nname = fn },
-#define FUNC1(name, d, fn) { .n = name, .numresults = 1, .niladicf = d, .nname = fn },
-#define FUNC2(name, d, fn) { .n = name, .numresults = 2, .niladicf = d, .nname = fn },
+#define FUNC0(name, d, fn) { name, d, 0, fn },
+#define FUNC1(name, d, fn) { name, d, 1, fn },
+#define FUNC2(name, d, fn) { name, d, 2, fn },
 #else
-#define FUNC0(name, d, fn) { .numresults = 0, .niladicf = d, .nname = fn },
-#define FUNC1(name, d, fn) { .numresults = 1, .niladicf = d, .nname = fn },
-#define FUNC2(name, d, fn) { .numresults = 2, .niladicf = d, .nname = fn },
+#define FUNC0(name, d, fn) { d, 0, fn },
+#define FUNC1(name, d, fn) { d, 1, fn },
+#define FUNC2(name, d, fn) { d, 2, fn },
 #endif
 	FUNC0(OP_NOP,		NULL,			"NOP")
 	FUNC0(OP_VERSION,	&version,		"VERS")
@@ -396,13 +397,13 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 const struct argcmd argcmds[] = {
 #ifdef COMPILE_CATALOGUES
 #define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
-	{ .f = PTR, .lim = limit, .indirectokay = ind, .notzero = 0, .stckreg = stk, .cmplx = cpx, .cmd = nm },
+	{ PTR, limit, ind, 0, stk, cpx, nm },
 #elif DEBUG
 #define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
-	{ .n = name, .f = func, .lim = limit, .indirectokay = ind, .notzero = nz, .stckreg = stk, .cmplx = cpx, .cmd = nm },
+	{ name, func, limit, ind, nz, stk, cpx, nm },
 #else
 #define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
-	{ .f = func, .lim = limit, .indirectokay = ind, .notzero = nz, .stckreg = stk, .cmplx = cpx, .cmd = nm },
+	{ func, limit, ind, nz, stk, cpx, nm },
 #endif
 #define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0)
 #define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 1, 0)
@@ -522,13 +523,13 @@ const unsigned short num_argcmds = sizeof(argcmds) / sizeof(struct argcmd);
 const struct multicmd multicmds[] = {
 #ifdef COMPILE_CATALOGUES
 #define CMD(name, func, nm)			\
-	{ .f = PTR, .cmd = nm },
+	{ PTR, nm },
 #elif DEBUG
 #define CMD(name, func, nm)			\
-	{ .n = name, .f = func, .cmd = nm },
+	{ name, func, nm },
 #else
 #define CMD(name, func, nm)			\
-	{ .f = func, .cmd = nm },
+	{ func, nm },
 #endif
 	CMD(DBL_LBL,	NULL,		"LBL")
 	CMD(DBL_XEQ,	&cmdmultigto,	"XEQ")

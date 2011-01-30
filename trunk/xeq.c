@@ -15,8 +15,13 @@
  */
 
 #ifndef REALBUILD
+#ifdef WIN32
+#include <stdlib.h>  // sleep
+#define sleep _sleep
+#else
 #include <unistd.h>
 #endif
+#endif // REALBUILD
 
 #define XEQ_INTERNAL 1
 #include "xeq.h"
@@ -797,9 +802,10 @@ void d64fromInt(decimal64 *n, const long long int z) {
  */
 static void monadic(const opcode op) {
 
+    unsigned int f;
 	process_cmdline_set_lift();
 
-	unsigned int f = argKIND(op);
+	f = argKIND(op);
 	if (f < num_monfuncs) {
 		if (is_intmode()) {
 			if (monfuncs[f].monint != NULL) {
@@ -828,10 +834,11 @@ static void monadic(const opcode op) {
 
 static void monadic_cmplex(const opcode op) {
 	decNumber x, y, rx, ry;
+    unsigned int f;
 
 	process_cmdline_set_lift();
 
-	unsigned int f = argKIND(op);
+	f = argKIND(op);
 
 	if (f < num_monfuncs) {
 		if (monfuncs[f].mondcmplx != NULL) {
@@ -858,9 +865,10 @@ static void monadic_cmplex(const opcode op) {
  */
 static void dyadic(const opcode op) {
 
+    unsigned int f;
 	process_cmdline_set_lift();
 
-	unsigned int f = argKIND(op);
+	f = argKIND(op);
 	if (f < num_dyfuncs) {
 		if (is_intmode()) {
 			if (dyfuncs[f].dydint != NULL) {
@@ -892,10 +900,11 @@ static void dyadic(const opcode op) {
 
 static void dyadic_cmplex(const opcode op) {
 	decNumber x1, y1, x2, y2, xr, yr;
+    unsigned int f;
 
 	process_cmdline_set_lift();
 
-	unsigned int f = argKIND(op);
+	f = argKIND(op);
 	if (f < num_dyfuncs) {
 		if (dyfuncs[f].dydcmplx != NULL) {
 			getXY(&x1, &y1);
@@ -922,9 +931,10 @@ static void dyadic_cmplex(const opcode op) {
  * common stack manipulation.
  */
 static void triadic(const opcode op) {
+    unsigned int f;
 	process_cmdline_set_lift();
 
-	unsigned int f = argKIND(op);
+	f = argKIND(op);
 	if (f < num_trifuncs) {
 		if (is_intmode()) {
 			if (trifuncs[f].triint != NULL) {
@@ -1350,12 +1360,12 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 
 static void xromargcommon(int lbl, unsigned int userpc) {
 	const unsigned int oldpc = state_pc();
+    unsigned int pc;
 
 	if (userpc == 0)
 		return;
 
-	const unsigned int pc = find_label_from(addrXROM(0), lbl, 1);
-
+	pc = find_label_from(addrXROM(0), lbl, 1);
 	state.usrpc = userpc;
 	gsbgto(pc, 1, oldpc);
 }
@@ -1765,14 +1775,14 @@ static unsigned char *flag_byte(const int n, unsigned char *mask) {
 	return flags + n / 8;
 }
 
-int get_user_flag(const int n) {
+int get_user_flag(int n) {
 	unsigned char mask;
 	const unsigned char *const f = flag_byte(n, &mask);
 
 	return f != NULL && (*f & mask)?1:0;
 }
 
-void set_user_flag(const int n) {
+void set_user_flag(int n) {
 	unsigned char mask;
 	unsigned char *const f = flag_byte(n, &mask);
 
@@ -1780,7 +1790,7 @@ void set_user_flag(const int n) {
 		*f |= mask;
 }
 
-void clr_user_flag(const int n) {
+void clr_user_flag(int n) {
 	unsigned char mask;
 	unsigned char *const f = flag_byte(n, &mask);
 
@@ -2029,7 +2039,16 @@ static void specials(const opcode op) {
 	int opm = argKIND(op);
 
 	switch (opm) {
-	case OP_0 ... OP_F:
+	case OP_0:
+	case OP_1:
+	case OP_2:
+	case OP_3:
+	case OP_4:
+	case OP_5:
+	case OP_6:
+	case OP_7:
+	case OP_8:
+	case OP_9:
 		digit(opm - OP_0);
 		break;
 
@@ -2185,12 +2204,12 @@ void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 }
 
 void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	if (running()) {
-		display();
+    if (running()) {
+        display();
 #ifndef REALBUILD
-		sleep(1);
-#endif
-	}
+        sleep(1);
+#endif 
+    }
 }
 
 void op_2comp(decimal64 *a, decimal64 *b, decContext *nulc) {
@@ -2660,7 +2679,8 @@ static void rargs(const opcode op) {
 	int ind = op & RARG_IND;
 	const unsigned int cmd = (op & ~OP_RARG) >> RARG_OPSHFT;
 	decNumber x;
-	const unsigned int lim = argcmds[cmd].lim?:256;
+	unsigned int lim = argcmds[cmd].lim;
+        if (!lim) lim = 256; // default
 
 	process_cmdline_set_lift();
 
@@ -2739,65 +2759,68 @@ void reset_volatile_state(void) {
 }
 
 
+#define MAX_STACK_SIZE  8
+
 /* Main dispatch routine that decodes the top level of the opcode and
  * goes to the appropriate lower level dispatch routine.
  */
-void xeq(const opcode op) {
-	const int ss = stack_size();
-	const int nreg = ss + 2;
-	decimal64 save[nreg];
-	struct state old = state;
-	enum errors er;
+void xeq(opcode op) 
+{
+    const int ss = stack_size();
+    const int nreg = ss + 2;
+    struct state old = state;
+    enum errors er;
+    decimal64 save[MAX_STACK_SIZE+2]; // XX
 
 #ifndef REALBUILD
-	if (state.trace) {
-		char buf[16];
-		static char tracebuf[24];
+    if (state.trace) {
+        char buf[16];
+        static char tracebuf[24];
 
-		if (running())
-			print_step(tracebuf, op);
-		else
-			sprintf(tracebuf, "%04X:%s", op, prt(op, buf));
-		disp_msg = tracebuf;
-	}
+        if (running())
+            print_step(tracebuf, op);
+        else
+            sprintf(tracebuf, "%04X:%s", op, prt(op, buf));
+        disp_msg = tracebuf;
+    }
 #endif
 
-	if (ss == 4)
-		xcopy(save, &regX, nreg * sizeof(decimal64));
-	else	xcopy(save, get_stack(ss-2), nreg * sizeof(decimal64));
-	if (isDBL(op))
-		multi(op);
-	else if (isRARG(op))
-		rargs(op);
-	else {
-		switch (opKIND(op)) {
-		case KIND_SPEC:	specials(op);	break;
-		case KIND_NIL:	niladic(op);	break;
-		case KIND_MON:	monadic(op);	break;
-		case KIND_DYA:	dyadic(op);	break;
-		case KIND_TRI:	triadic(op);	break;
-		case KIND_CMON:	monadic_cmplex(op);	break;
-		case KIND_CDYA:	dyadic_cmplex(op);	break;
-		default:	illegal(op);
-		}
-	}
+    if (ss == 4)
+        xcopy(save, &regX, nreg * sizeof(decimal64));
+    else	xcopy(save, get_stack(ss-2), nreg * sizeof(decimal64));
+    if (isDBL(op))
+        multi(op);
+    else if (isRARG(op))
+        rargs(op);
+    else {
+        switch (opKIND(op)) {
+        case KIND_SPEC:	specials(op);	break;
+        case KIND_NIL:	niladic(op);	break;
+        case KIND_MON:	monadic(op);	break;
+        case KIND_DYA:	dyadic(op);	break;
+        case KIND_TRI:	triadic(op);	break;
+        case KIND_CMON:	monadic_cmplex(op);	break;
+        case KIND_CDYA:	dyadic_cmplex(op);	break;
+        default:	illegal(op);
+        }
+    }
 
-	if ((er = state.error) != ERR_NONE) {
-		if (ss == 4)
-			xcopy(&regX, save, nreg * sizeof(decimal64));
-		else	xcopy(get_stack(ss-2), save, nreg * sizeof(decimal64));
-		state = old;
-		state.error = er;
-		set_running_off();
-		retstkptr = 0;
-		bank_flags = 0;
-		if (isXROM(state_pc()))
-			set_pc(0);
-		process_cmdline_set_lift();
-	} else if (state.implicit_rtn) {
-		do_rtn(0);
-	}
-	reset_volatile_state();
+    if ((er = state.error) != ERR_NONE) {
+        if (ss == 4)
+            xcopy(&regX, save, nreg * sizeof(decimal64));
+        else	xcopy(get_stack(ss-2), save, nreg * sizeof(decimal64));
+        state = old;
+        state.error = er;
+        set_running_off();
+        retstkptr = 0;
+        bank_flags = 0;
+        if (isXROM(state_pc()))
+            set_pc(0);
+        process_cmdline_set_lift();
+    } else if (state.implicit_rtn) {
+        do_rtn(0);
+    }
+    reset_volatile_state();
 }
 
 /* Execute a single step and return.
@@ -2851,9 +2874,10 @@ void xeqone(char *tracebuf) {
 
 /* Store into program space.
  */
-void stoprog(const opcode c) {
+void stoprog(opcode c) {
 	int i;
 	int off;
+    unsigned int pc;
 
 	if (isXROM(state_pc()))
 		return;
@@ -2863,7 +2887,7 @@ void stoprog(const opcode c) {
 	}
 	state.last_prog += off;
 	incpc();
-	const unsigned int pc = state_pc();
+	pc = state_pc();
 	for (i=state.last_prog; i>pc; i--)
 		prog[i] = prog[i-off];
 	if (pc != 0) {

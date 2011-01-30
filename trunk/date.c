@@ -66,6 +66,8 @@ static int JDN(int year, int month, int day) {
  */
 static void JDN2(int J, int *year, int *month, int *day) {
 	int b, c;
+    int y;
+    int d, e, m;
 
 	if (J >= 2361222) {	// Gregorian
 		const int a = J + 32044;
@@ -77,13 +79,14 @@ static void JDN2(int J, int *year, int *month, int *day) {
 		c = J + 32082;
 	}
 
-	const int d = (4*c+3)/1461;
-	const int e = c - (1461*d)/4;
-	const int m = (5*e+2)/153;
+	d = (4*c+3)/1461;
+	e = c - (1461*d)/4;
+	m = (5*e+2)/153;
 
 	*day   = e - (153*m+2)/5 + 1;
 	*month = m + 3 - 12*(m/10);
-	int y = b + d - 4800 + m/10;
+
+	y = b + d - 4800 + m/10;
 //	if (y <= 0)	y--;
 	*year = y;
 }

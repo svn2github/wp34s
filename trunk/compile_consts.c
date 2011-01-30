@@ -17,7 +17,11 @@
 
 #include <stdio.h>
 #include <string.h>
+#ifndef WIN32
 #include <unistd.h>
+#else
+#include <direct.h> // mkdir
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <ctype.h>
@@ -28,9 +32,15 @@
 
 #define xcopy memcpy
 
+#ifdef WIN32
+// windows will link with decnumber.lib
+#include "decNumber.h"
+#include "decimal64.h"
+#else
 #include "decNumber.c"
 #include "decContext.c"
 #include "decimal64.c"
+#endif
 
 static FILE *fh;
 
@@ -467,10 +477,10 @@ static void output(FILE *fm, const char *name, const decNumber *d) {
 			"\tdecNumberUnit lsu[%d];\n"
 			"} "
 			"const_%s = {\n"
-			"\t.digits = %d,\n"
-			"\t.exponent = %d,\n"
-			"\t.bits = %u,\n"
-			"\t.lsu = { ",
+			"\t%d,\n"
+			"\t%d,\n"
+			"\t%u,\n"
+			"\t{ ",
 		num, name, d->digits, d->exponent, d->bits);
 	for (i=0; i<num; i++) {
 		if (i != 0)
@@ -497,7 +507,11 @@ static void const_big(void) {
 	decContext ctx;
 	FILE *fm;
 
-	mkdir("consts", 0755);
+	mkdir("consts"
+#ifndef WIN32
+        ,0755
+#endif
+        );
 	if (chdir("consts") == -1)
 		exit(1);
 	fm = fopen("Makefile", "w");
@@ -533,7 +547,7 @@ static void const_big(void) {
 static void put_name(FILE *f, const char *name) {
 	while (*name != '\0') {
 		const char ch = *name;
-		if (isprint(ch) && (ch & 0x80) == 0)
+		if ((ch & 0x80) == 0 && isprint(ch))
 			putc(ch, f);
 		else
 			fprintf(f, "\\%03o", 0xff & ch);

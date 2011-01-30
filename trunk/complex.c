@@ -968,6 +968,7 @@ void cmplxBeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	cmplxExp(rx, ry, &s1, &s2, ctx);
 }
 
+#ifdef INCLUDE_DIGAMMA
 // Digamma function
 extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const decNumber *bin, decContext *ctx) {
 	decNumber a, b, t1, t2, r1, r2, x_2x, x_2y;
@@ -1022,6 +1023,7 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 		cmplxMultiply(&r1, &r2, &r1, &r2, &x_2x, &x_2y, ctx);
 	}
 }
+#endif 
 
 
 #ifdef INCLUDE_ZETA

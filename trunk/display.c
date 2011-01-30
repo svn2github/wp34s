@@ -52,23 +52,28 @@ static const char S7_fract_GT[] = " Gt";
  * top line, the second in the bottom.  If the second is empty, "Error"
  * is displayed instead.  To get a blank lower line, include a space.
  */
-static const char *const error_table[] = {
-	[ERR_BAD_DATE] =	"bad date\0",
-	[ERR_PROG_BAD] =	"undefined\0Op-CODE",
-	[ERR_DOMAIN] =		"domain\0",
-	[ERR_INFINITY] =	"+\237\0",
-	[ERR_MINFINITY] =	"-\237\0",
-	[ERR_NO_LBL] =		"no such\0LABEL",
-	[ERR_XEQ_NEST] =	">8\006\006\006levels\0nEStED",
-	[ERR_XROM_NEST] =	"SLV \004 \221 \217\0nEStED",
-	[ERR_RANGE] =		"out of range\0",
-	[ERR_DIGIT] =		"bad digit\0",
-	[ERR_TOO_LONG] =	"too long\0",
-	[ERR_BAD_MODE] =	"bad mode\0",
-	[ERR_INT_SIZE] =	"word size\0too SMmALL",
-	[ERR_STK_CLASH] =	"stack\0CLASH",
+
+// NB: this MUST be in the same order as `enum errors'
+static const char *const error_table[] = 
+{
+    // manually get the order correct!
+    0, 
+    "domain\0",
+    "bad date\0",
+    "undefined\0Op-CODE",
+    "+\237\0",
+    "-\237\0",
+    "no such\0LABEL",
+    "SLV \004 \221 \217\0nEStED",
+    "out of range\0",
+    "bad digit\0",
+    "too long\0",
+    ">8\006\006\006levels\0nEStED",
+    "stack\0CLASH",	
+    "bad mode\0",
+    "word size\0too SMmALL",
 #ifndef REALBUILD
-	[ERR_UNSETTABLE] =	"unsettable\0",
+    "unsettable\0",
 #endif
 };
 
@@ -121,13 +126,29 @@ static const unsigned long chars[512] = {
 #define D_BR 32
 #define D_BOTTOM 64
 
+static const unsigned char digtbl[] = {
+
+#ifndef WIN32
+
 /* Our table of limited characters.
  * Faster to define this as a table of bit patterns where the character is
  * the index, rather than storing the character and the pattern and search
  * though the list.  Code space is 20 - 30 bytes larger doing it this way.
  */
-const unsigned char digtbl[] = {
+
 #define DIG(ch, bits) [ch] = (bits)
+
+#else // WIN32
+
+    // windows will just lay down each char then the codes and 
+    // search
+
+#define DIG(ch, bits) ch, bits
+
+#endif
+
+    // lay down the table...
+
 	DIG(' ',		0),
 	DIG('-',		D_MIDDLE),
 	DIG('0',		D_TOP | D_TL | D_TR | D_BL | D_BR | D_BOTTOM),
@@ -203,11 +224,32 @@ const unsigned char digtbl[] = {
 	DIG(6,			D_MIDDLE | D_BOTTOM),
 	DIG(7,			D_TOP | D_MIDDLE | D_BOTTOM),
 	DIG(8,			D_TL | D_TR | D_BL | D_BR),		// Status central separator
-#undef DIG
 };
+
+#undef DIG
 #define N_DIGTBL	(sizeof(digtbl) / sizeof(*digtbl))
 
+#ifndef WIN32
+static int getdig(int ch)
+{
+    // perform index lookup
+    return digtbl[ch&0xff];
+}
 
+#else // WIN32
+
+static int getdig(int ch)
+{
+    // have to search table. remember the table is in pairs (key, code)
+    int i;
+    for (i = 0; i < N_DIGTBL; i += 2)
+    {
+        if (ch == digtbl[i])
+            return digtbl[i+1]; // found
+    }
+    return 0; // fail
+}
+#endif
 
 static void dot(int n, int on) {
 	if (on)	set_dot(n);
@@ -216,14 +258,16 @@ static void dot(int n, int on) {
 
 
 /* Set a digit in positions [base, base+6] */
-static void set_dig(int base, char ch) {
-	int i;
-
-	for (i=6; i>=0; i--) {
-		if (digtbl[ch&0xff] & (1 << i))
-			set_dot(base);
-		base++;
-	}
+static void set_dig(int base, char ch) 
+{
+    int i;
+    unsigned char c = getdig(ch);
+    for (i=6; i>=0; i--) 
+    {
+        if (c & (1 << i))
+            set_dot(base);
+        base++;
+    }
 }
 
 static char *set_dig_s(int base, char ch, char *res) {
@@ -528,8 +572,8 @@ static void set_int_x(decimal64 *rgx, char *res) {
 				buf[i] = DIGITS[r];
 			}
 		} else {
+            int n;
 			v = (unsigned long long int)vs;
-			int n;
 
 			if (b == 2)         n = ws;
 			else if (b == 8)    n = (ws + 2) / 3;

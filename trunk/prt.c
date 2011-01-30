@@ -89,11 +89,25 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 	char buf[16];
 
 	switch (opm) {
-	case OP_0 ... OP_9:
+	case OP_0:
+	case OP_1:
+	case OP_2:
+	case OP_3:
+	case OP_4:
+	case OP_5:
+	case OP_6:
+	case OP_7:
+	case OP_8:
+	case OP_9:
 		instr[0] = opm - OP_0 + '0';
 		return instr;
 
-	case OP_A ... OP_F:
+	case OP_A:
+	case OP_B:
+	case OP_C:
+	case OP_D:
+	case OP_E:
+	case OP_F:
 		instr[0] = opm - OP_A + 'A';
 		return instr;
 
@@ -219,12 +233,13 @@ static const char *prt_multi(const opcode op, char *instr) {
 	return instr;
 }
 
-const char *prt(const opcode op, char *instr) {
+const char *prt(opcode op, char *instr) {
 	xset(instr, '\0', 16);
 	if (isDBL(op))
 		return prt_multi(op, instr);
 	if (isRARG(op))
 		return prt_rargs(op, instr);
+    {
 	const unsigned int arg = argKIND(op);
 	switch (opKIND(op)) {
 	case KIND_SPEC:	return prt_specials(arg, instr);
@@ -235,10 +250,10 @@ const char *prt(const opcode op, char *instr) {
 	case KIND_CMON:	return prt_monadic_cmplx(arg, instr);
 	case KIND_CDYA:	return prt_dyadic_cmplx(arg, instr);
 	}
-	return "???";
+    return "???";}
 }
 
-const char *catcmd(const opcode op, char instr[16]) {
+const char *catcmd(opcode op, char instr[16]) {
 	unsigned int f;
 
 	xset(instr, '\0', 16);

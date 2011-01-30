@@ -33,23 +33,15 @@
 
 
 typedef enum {
-#if 0
-	K00 = 0,  K01 = 1,  K02 = 2,  K03 = 3,  K04 = 4,  K05 = 5,
-	K10 = 6,  K11 = 7,  K12 = 8
-#define K13	9		/* Shift keys aren't in the enum since they are handled */
-#define K14	10		/* Directly in the main key processing loop */
-#define K15	11
-	K20 = 12, K21 = 13, K22 = 14, K23 = 15, K24 = 16,
-	K30 = 18, K31 = 19, K32 = 20, K33 = 21, K34 = 22,
-	K40 = 24, K41 = 25, K42 = 26, K43 = 27, K44 = 28,
-	K50 = 30, K51 = 31, K52 = 32, K53 = 33, K54 = 34,
-	K60 = 36, K61 = 37, K62 = 38, K63 = 39, K64 = 40,
-#else
 /* Keyboard mapping to commands */
 #define KEY(r,c)	(((r) << 3) | (c))
 
+// decode row and column, opposite to KEY
+#define KEYROW(_c)      ((_c) >> 3)
+#define KEYCOL(_c)      ((_c) & 0x7)
+
 	K00 = KEY(0, 0),  K01 = KEY(0, 1),  K02 = KEY(0, 2),
-			K03 = KEY(0, 3),  K04 = KEY(0, 4),  K05 = KEY(0, 5),
+        K03 = KEY(0, 3),  K04 = KEY(0, 4),  K05 = KEY(0, 5),
 	K10 = KEY(1, 0),  K11 = KEY(1, 1),  K12 = KEY(1, 2),
 #define K13	KEY(1, 3)
 #define K14	KEY(1, 4)
@@ -59,7 +51,6 @@ typedef enum {
 	K40 = KEY(4, 0),  K41 = KEY(4, 1),  K42 = KEY(4, 2),  K43 = KEY(4, 3),  K44 = KEY(4, 4),
 	K50 = KEY(5, 0),  K51 = KEY(5, 1),  K52 = KEY(5, 2),  K53 = KEY(5, 3),  K54 = KEY(5, 4),
 	K60 = KEY(6, 0),  K61 = KEY(6, 1),  K62 = KEY(6, 2),  K63 = KEY(6, 3),  K64 = KEY(6, 4)
-#endif
 } keycode;
 
 
@@ -148,33 +139,67 @@ static void set_smode(const enum single_disp d) {
  * the two lower case planes.
  */
 static const unsigned char alphamap[][6] = {
-	[K00] = { "A\221\200\221a\240"	},	[K01] = { "BB\201\043b\241"	},
-	[K02] = { "CC\202\0c\242"	},	[K03] = { "D\003\203?d\243"	},
-	[K04] = { "E\015\204\015e\244"	},	[K05] = { "F\024\224\043f\264"	},
-	[K10] = { "G\0\202\020g\242"	},	[K11] = { "H\0\225\016h\265"	},
-	[K12] = { "I\0\210\0i\250"	},	[K20] = { "\0\240\0\0\0\0"	},
-	[K21] = { "J\027\206\027j\246"	},	[K22] = { "K\010\211\\k\251"	},
-	[K23] = { "L\246\212\257l\252"	},	[K24] = { "\0\0\0\0\0\0"	},
-	[K30] = { "\0{}\0\0}"		},	[K31] = { "M7\213&m\253"	},
-	[K32] = { "N8\214|n\254"	},	[K33] = { "O9\227\013o\267"	},
-	[K34] = { "P/\217\235p\257"	},	[K40] = { "\020[]\0\0]"		},
-	[K41] = { "Q4\216?q\256"	},	[K42] = { "R5\220\0r\260"	},
-	[K43] = { "S6\221$s\261"	},	[K44] = { "T\034\207\217t\247"	},
-	[K50] = { "\017()\0\0)"		},	[K51] = { "1\0\0\0\0\0"	},
-	[K52] = { "U2\0\014u\0"		},	[K53] = { "V3\0\036v\0"		},
-	[K54] = { "W-\222%w\262"	},	[K60] = { "\0\0\0 \0\0"		},
-	[K61] = { "00\226\0\0\266"	},	[K62] = { "X.\215\0x\255"	},
-	[K63] = { "Y\0\223\037y\263"	},	[K64] = { "Z+\205%z\245"	}
+
+    "A\221\200\221a\240", // K00
+    "BB\201\043b\241",  
+    "CC\202\0c\242",
+    "D\003\203?d\243",    // K03
+    "E\015\204\015e\244",       
+    "F\024\224\043f\264",  // K05
+    
+    "G\0\202\020g\242", // K10
+    "H\0\225\016h\265", // K11
+    "I\0\210\0i\250", // K12
+    "?", 
+    "?",
+    "?", // K15
+    
+    "\0\240\0\0\0\0", // K20
+    "J\027\206\027j\246", // K21
+    "K\010\211\\k\251",
+    "L\246\212\257l\252",
+    "\0\0\0\0\0\0", // K24
+    "?", // K25
+
+    "\0{}\0\0}", // K30
+    "M7\213&m\253", // K31
+    "N8\214|n\254", // K32
+    "O9\227\013o\267", // K33
+    "P/\217\235p\257", // K34
+    "?", // K35
+
+    "\020[]\0\0]", // K40
+    "Q4\216?q\256", // K41
+    "R5\220\0r\260",
+    "S6\221$s\261",
+    "T\034\207\217t\247", // K44
+    "?", // K45
+    
+    "\017()\0\0)", // K50
+    "1\0\0\0\0\0", // K51
+    "U2\0\014u\0",
+    "V3\0\036v\0",
+    "W-\222%w\262", // K54
+    "?", // K55
+
+    "\0\0\0 \0\0", // K60
+    "00\226\0\0\266",
+    "X.\215\0x\255",
+    "Y\0\223\037y\263",
+    "Z+\205%z\245", // K64
+    "?", // K65
 };
 
-static unsigned char keycode_to_alpha(const keycode c, unsigned int s) {
-	if (state.alphashift) {
-		if (s == SHIFT_N)
-			s = SHIFT_LC_N;
-		else if (s == SHIFT_G)
-			s = SHIFT_LC_G;
-	}
-	return alphamap[c][s];
+static unsigned char keycode_to_alpha(const keycode c, unsigned int s) 
+{
+    if (state.alphashift) 
+    {
+        if (s == SHIFT_N)
+            s = SHIFT_LC_N;
+        else if (s == SHIFT_G)
+            s = SHIFT_LC_G;
+    }
+    return alphamap[KEYROW(c)*6 + KEYCOL(c)][s];
 }
 
 static int check_f_key(int n, const int dflt) {
@@ -458,12 +483,7 @@ static int process_h_shifted(const keycode c) {
 		return OP_NIL | OP_DROP;
 	case K21:	init_arg(RARG_SWAP);	break;	// x<>
 	case K22:	return OP_MON | OP_NOT;
-	case K23:
-		if (state.runmode)
-			set_pc(0);
-		else
-			init_confirm(confirm_clprog);
-		break;
+	case K23:	return CONST(OP_PI);
 	case K24:	return OP_SPEC | OP_CLX;
 
 	case K30:	init_arg(RARG_GTO);		break;
@@ -472,9 +492,9 @@ static int process_h_shifted(const keycode c) {
 	case K33:	return OP_DYA | OP_LXOR;
 	case K34:	return OP_DYA | OP_MOD;
 
-	case K40:	return OP_MON | OP_FACT;
+	case K40:	init_cat(CATALOGUE_STATS);	break;
 	case K41:	init_cat(CATALOGUE_PROB);	break;
-	case K42:	init_cat(CATALOGUE_STATS);	break;
+	case K42:	return OP_MON | OP_FACT;
 	case K43:	return OP_NIL | OP_statLR;
 	case K44:	state.status = 1;		break;
 
@@ -483,7 +503,12 @@ static int process_h_shifted(const keycode c) {
 		break;
 	case K51:	init_cat(CATALOGUE_TEST);	break;
 	case K52:	init_cat(CATALOGUE_PROG);	break;
-	case K53:	return CONST(OP_PI);
+	case K53:
+		if (state.runmode)
+			set_pc(0);
+		else
+			init_confirm(confirm_clprog);
+		break;
 	case K54:	return OP_DYA | OP_PERSB;
 
 	case K60:	set_smode(SDISP_SHOW);		break;
@@ -1373,28 +1398,32 @@ static int process_test(const keycode c) {
  * likely be the most space efficient method.
  */
 int current_catalogue_max(void) {
+
 	// A quick table of catalogue sizes
-	static const unsigned char catalogue_sizes[] = {
-		[CATALOGUE_CONST]		= NUM_CONSTS,
-		[CATALOGUE_COMPLEX_CONST]	= NUM_CONSTS,
-		[CATALOGUE_INT]			= sizeof(int_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_COMPLEX]		= sizeof(cplx_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_NORMAL]		= sizeof(catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_STATS]		= sizeof(stats_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_PROB]		= sizeof(prob_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_TEST]		= sizeof(test_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_PROG]		= sizeof(prog_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_MODE]		= sizeof(mode_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_CONV]		= sizeof(conv_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_ALPHA]		= sizeof(alpha_catalogue) / sizeof(const s_opcode),
-		[CATALOGUE_ALPHA_SYMBOLS]	= sizeof(alpha_symbols),
-		[CATALOGUE_ALPHA_COMPARES]	= sizeof(alpha_compares),
-		[CATALOGUE_ALPHA_ARROWS]	= sizeof(alpha_arrows),
-		[CATALOGUE_ALPHA_STATS]		= sizeof(alpha_stats),
-		[CATALOGUE_ALPHA_LETTERS_UPPER]	= sizeof(alpha_letters_upper),
-		[CATALOGUE_ALPHA_LETTERS_LOWER]	= sizeof(alpha_letters_lower),
-		[CATALOGUE_ALPHA_SUPERSCRIPTS]	= sizeof(alpha_superscripts),
-		[CATALOGUE_ALPHA_SUBSCRIPTS]	= sizeof(alpha_subscripts),
+    // NB: the order here MUST match that in `enum catalogues' 
+	static const unsigned char catalogue_sizes[] = 
+        {
+            0, // NONE
+            sizeof(catalogue) / sizeof(const s_opcode),
+            sizeof(cplx_catalogue) / sizeof(const s_opcode),
+            sizeof(stats_catalogue) / sizeof(const s_opcode),
+            sizeof(prob_catalogue) / sizeof(const s_opcode),
+            sizeof(int_catalogue) / sizeof(const s_opcode),
+            sizeof(prog_catalogue) / sizeof(const s_opcode),
+            sizeof(test_catalogue) / sizeof(const s_opcode),
+            sizeof(mode_catalogue) / sizeof(const s_opcode),
+            sizeof(alpha_catalogue) / sizeof(const s_opcode),
+            sizeof(alpha_symbols),
+            sizeof(alpha_compares),
+            sizeof(alpha_arrows),
+            sizeof(alpha_stats),
+            sizeof(alpha_letters_upper),
+            sizeof(alpha_letters_lower),
+            sizeof(alpha_superscripts),
+            sizeof(alpha_subscripts),
+            NUM_CONSTS,
+            NUM_CONSTS,
+            sizeof(conv_catalogue) / sizeof(const s_opcode),
 	};
 	return catalogue_sizes[state.catalogue];
 }

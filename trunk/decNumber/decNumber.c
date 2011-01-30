@@ -280,8 +280,10 @@ uInt decAllocBytes=0;              // count of bytes allocated
 // harness completes a set of tests).  This checking may be unreliable
 // if the testing is done in a multi-thread environment.
 #else
+#ifndef WIN32
 #define malloc(a) __builtin_alloca(a)
 #define free(a)
+#endif // !WIN32
 #endif
 
 #if DECCHECK

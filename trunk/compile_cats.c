@@ -559,9 +559,16 @@ static unsigned char alpha_letters_lower[] = {
 #include "prt.c"
 #include "consts.c"
 
+
+#ifdef WIN32
+// windows will link
+#include "decNumber.h"
+#include "decimal64.h"
+#else
 #include "decNumber.c"
 #include "decContext.c"
 #include "decimal64.c"
+#endif
 
 
 static const char *gpl[] = {
@@ -636,17 +643,17 @@ static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 
 	qsort(cat, num_cat, sizeof(s_opcode), &compare_cat);
 
-	printf("static const s_opcode %s[] = {", name);
-	for (i=0; i<num_cat; i++)
-		printf("%s0x%04x,", (i%6) == 0?"\n\t":" ", cat[i] & 0xffff);
-	printf("\n};\n\n");
-}
+    printf("static const s_opcode %s[] = {", name);
+    for (i=0; i<num_cat; i++)
+        printf("%s0x%04x,", (i%6) == 0?"\n\t":" ", cat[i] & 0xffff);
+    printf("\n};\n\n");
+ }
 
 
 static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 	int i, j;
-	unsigned int c2[num_cat];
-
+        unsigned int* c2 = malloc(num_cat*sizeof(unsigned int));
+    
 	for (i=0; i<num_cat; i++)
 		c2[i] = cat[i];
 
@@ -656,11 +663,11 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 		for (j=0; j<num_cat; j++) {
 			if (c2[j] == 0xffffff)
 				continue;
-			unsigned int c = remap_chars(c2[j]);
+            {unsigned int c = remap_chars(c2[j]);
 			if (c < min) {
 				min = c;
 				mj = j;
-			}
+            }}
 		}
 		cat[i] = c2[mj];
 		c2[mj] = 0xffffff;
@@ -672,6 +679,8 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 	for (i=0; i<num_cat; i++)
 		printf("%s0%03o,", (i%8) == 0?"\n\t":" ", cat[i] & 0xff);
 	printf("\n};\n\n");
+
+        free(c2);
 }
 
 

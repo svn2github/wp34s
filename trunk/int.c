@@ -77,10 +77,11 @@ static void restore_flags(int co) {
  */
 long long int mask_value(const long long int v) {
 	const int ws = word_size();
+    long long int mask;
 
 	if (MAX_WORD_SIZE == 64 && ws == 64)
 		return v;
-	const long long int mask = (1LL << ws) - 1;
+	mask = (1LL << ws) - 1;
 	return v & mask;
 }
 
@@ -105,7 +106,7 @@ unsigned long long int extract_value(const long long int val, int *const sign) {
 		return v;
 	}
 
-	const long long int tbm = topbit_mask();
+    {const long long int tbm = topbit_mask();
 
 	if (v & tbm) {
 		*sign = 1;
@@ -117,7 +118,7 @@ unsigned long long int extract_value(const long long int val, int *const sign) {
 			v ^= tbm;
 	} else
 		*sign = 0;
-	return mask_value(v);
+    return mask_value(v);}
 }
 
 /* Helper routine to construct a value from the magnitude and sign
@@ -196,11 +197,13 @@ long long int intAdd(long long int y, long long int x) {
 		overflow = 0;
 
 	if (mode == MODE_SGNMANT) {
-	set_carry(overflow);
+	
 
-	const long long int tbm = topbit_mask();
+    const long long int tbm = topbit_mask();
 	const long long int x2 = (x & tbm)?-(x ^ tbm):x;
 	const long long int y2 = (y & tbm)?-(y ^ tbm):y;
+
+    set_carry(overflow);
 
 	v = y2 + x2;
 	if (v & tbm)
@@ -239,13 +242,13 @@ long long int intSubtract(long long int y, long long int x) {
 		set_carry((sx == 0 && sy == 0 && xv > yv) ||
 				(sx != 0 && sy != 0 && xv < yv));
 
-		const long long int tbm = topbit_mask();
+        {const long long int tbm = topbit_mask();
 		const long long int x2 = (x & tbm)?-(x ^ tbm):x;
 		const long long int y2 = (y & tbm)?-(y ^ tbm):y;
 
 		v = y2 - x2;
 		if (v & tbm)
-			v = -v | tbm;
+            v = -v | tbm;}
 	} else {
 		int borrow;
 
@@ -849,8 +852,9 @@ static long long int intLSR(long long int x) {
 }
 
 static long long int intASR(long long int x) {
-	set_carry(x & 1);
+
 	const long long int tbm = topbit_mask();
+    	set_carry(x & 1);
 	if (x & tbm) {
 		return mask_value((x >> 1) | tbm);
 	} else {
@@ -900,7 +904,7 @@ void introt(unsigned arg, enum rarg op) {
 		err(ERR_BAD_MODE);
 		return;
 	}
-	long long int (*f)(long long int);
+    {long long int (*f)(long long int);
 	int mod;
 	const int ws = word_size();
 	long long int x = d64toInt(&regX);
@@ -927,7 +931,7 @@ void introt(unsigned arg, enum rarg op) {
 		for (i=0; i<arg; i++)
 			x = (*f)(x);
 	}
-	d64fromInt(&regX, mask_value(x));
+    d64fromInt(&regX, mask_value(x));}
 }
 
 
@@ -963,14 +967,14 @@ long long int intSqrt(long long int x) {
 		set_carry(0);
 		return 0;
 	}
-	unsigned long long int n0 = v / 2 + 1;
+    {unsigned long long int n0 = v / 2 + 1;
 	unsigned long long int n1 = v / n0 + n0 / 2;
 	while (n1 < n0) {
 		n0 = n1;
 		n1 = (n0 + v / n0) / 2;
 	}
 	set_carry((n1 * n1 != v)?1:0);
-	return build_value(n1, sx);
+    return build_value(n1, sx);}
 }
 
 #ifdef INCLUDE_CUBES
@@ -1078,7 +1082,7 @@ long long int int2pow(long long int x) {
 	if (sx)
 		return 0;
 
-	unsigned int ws = word_size();
+    {unsigned int ws = word_size();
 	if (int_mode() != MODE_UNSIGNED)
 		ws--;
 	if (v >= ws) {
@@ -1087,7 +1091,7 @@ long long int int2pow(long long int x) {
 		return 0;
 	}
 
-	return 1LL << (unsigned int)(v & 0xff);
+    return 1LL << (unsigned int)(v & 0xff);}
 }
 
 
@@ -1209,7 +1213,7 @@ void intbits(unsigned arg, enum rarg op) {
 		err(ERR_BAD_MODE);
 		return;
 	}
-	const long long int m =  (arg >= word_size())?0:(1LL << arg);
+    {const long long int m =  (arg >= word_size())?0:(1LL << arg);
 	long long int x = d64toInt(&regX);
 
 	switch (op) {
@@ -1222,7 +1226,7 @@ void intbits(unsigned arg, enum rarg op) {
 		return;
 	}
 
-	d64fromInt(&regX, x);
+    d64fromInt(&regX, x);}
 }
 
 long long int intFib(long long int x) {
