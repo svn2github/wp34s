@@ -238,12 +238,13 @@ long long int intSubtract(long long int y, long long int x) {
 		calc_overflow(xv, yv, mode, sy);
 
 	if (mode == MODE_SGNMANT) {
+        long long int x2, y2;
 		set_carry((sx == 0 && sy == 0 && xv > yv) ||
 				(sx != 0 && sy != 0 && xv < yv));
 
 		tbm = topbit_mask();
-		const long long int x2 = (x & tbm)?-(x ^ tbm):x;
-		const long long int y2 = (y & tbm)?-(y ^ tbm):y;
+		x2 = (x & tbm)?-(x ^ tbm):x;
+		y2 = (y & tbm)?-(y ^ tbm):y;
 
 		v = y2 - x2;
 		if (v & tbm)
