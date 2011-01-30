@@ -157,7 +157,7 @@ const struct dyfunc dyfuncs[] = {
 #ifdef COMPILE_CATALOGUES
 #define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
 #elif DEBUG
-#define FUNC(name, d, c, i, fn) { name, d, c, i,  },
+#define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
 #else
 #define FUNC(name, d, c, i, fn) { d, c, i, fn },
 #endif

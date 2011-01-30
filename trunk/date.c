@@ -65,9 +65,7 @@ static int JDN(int year, int month, int day) {
 /* Convert a julian day number to day, month and year.
  */
 static void JDN2(int J, int *year, int *month, int *day) {
-	int b, c;
-    int y;
-    int d, e, m;
+	int b, c, y, d, e, m;
 
 	if (J >= 2361222) {	// Gregorian
 		const int a = J + 32044;
