@@ -91,7 +91,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="building catalogues.h"
-				CommandLine="del catalogues.h&#x0D;&#x0A;$(OutDir)\catalogs.exe &gt; catalogues.h"
+				CommandLine="del catalogues.h&#x0D;&#x0A;$(OutDir)\catalogs.exe &gt; catalogues.h&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -119,6 +119,9 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="1"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="2"
 				AdditionalIncludeDirectories="../consts;../pdcurses;../../decNumber"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USECURSES"
 				StringPooling="true"
@@ -172,7 +175,7 @@
 			<Tool
 				Name="VCPostBuildEventTool"
 				Description="building catalogues.h"
-				CommandLine="del catalogues.h&#x0D;&#x0A;$(OutDir)\catalogs.exe &gt; catalogues.h"
+				CommandLine="del catalogues.h&#x0D;&#x0A;$(OutDir)\catalogs.exe &gt; catalogues.h&#x0D;&#x0A;"
 			/>
 		</Configuration>
 	</Configurations>

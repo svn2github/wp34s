@@ -3003,6 +3003,7 @@ void xeq_init(void) {
 
 
 #ifdef DEBUG
+    {
 	/* Sanity check the function table indices.
 	 * These indicies must correspond exactly with the enum definition.
 	 * This code validates that this is true and prints error messages
@@ -3046,6 +3047,7 @@ void xeq_init(void) {
 	check_cat(CATALOGUE_ALPHA_STATS, "alpha stats");
 	check_cat(CATALOGUE_CONV, "conversion");
 	check_cat(CATALOGUE_NORMAL, "float");
+    }
 #endif
 }
 
