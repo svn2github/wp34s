@@ -381,7 +381,7 @@ struct constsml conversions[] = {
 	CONV("N",	"lbf",		"N_LBF",	"4.448222"),
 	CONV("J",	"Btu",		"J_BTU",	"1055.056"),
 	CONV("J",	"cal",		"J_CAL",	"4.1868"),
-	CONV("J",	"kW.h",		"J_kWh",	"3600000"),
+	CONV("J",	"kWh",		"J_kWh",	"3600000"),
 	CONV("Pa",	"atm",		"Pa_ATM",	"101325"),
 	CONV("Pa",	"mbar",		"Pa_mbar",	"100"),
 	CONV("Pa",	"mmHg",		"Pa_mmHg",	"133.3224"),
@@ -391,8 +391,8 @@ struct constsml conversions[] = {
 	CONV("W",	"bhp",		"W_HPUK",	"745.6999"),
 	CONV("W",	"PS(hp)",	"W_HP",		"735.4988"),
 	CONV("W",	"HP\274",	"W_HPe",	"746"),
-	CONV("t",	"ton",		"T_TON",	"1.016047"),
-	CONV("t",	"sh ton",	"T_SHTON",	"0.9071847"),
+	CONV("t",	"tons",		"T_TON",	"1.016047"),
+	CONV("t",	"s.tons",	"T_SHTON",	"0.9071847"),
 
 	CONV(NULL, NULL, NULL, NULL)
 };

@@ -490,7 +490,7 @@ static s_opcode conv_catalogue[] = {
 /* The alpha mode menus to access all the weird characters */
 static unsigned char alpha_symbols[] = {
 	',',	'"',	'#',	'`',	'*',	':',
-	';',	'?',	'@',	'`',	'_',	'~',
+	';',	'?',	'@',	'\'',	'_',	'~',
 };
 
 static unsigned char alpha_compares[] = {
