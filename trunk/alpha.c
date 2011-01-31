@@ -131,7 +131,7 @@ void alpha_length(decimal64 *x, decimal64 *b, decContext *ctx64) {
 /* Shift or rotate alpha register arg positions
  */
 void alpha_shift_l(unsigned int arg, enum rarg op) {
-	int i;
+	unsigned int i;
 	const int rot = (op == RARG_ALRL);
 
 	for (i=0; i<arg; i++) {
@@ -142,7 +142,7 @@ void alpha_shift_l(unsigned int arg, enum rarg op) {
 }
 
 void alpha_shift_r(unsigned int arg, enum rarg op) {
-	int i;
+	unsigned int i;
 
 	for (i=0; i<arg; i++) {
 		xcopy(alpha+1, alpha, NUMALPHA-1);
@@ -151,7 +151,7 @@ void alpha_shift_r(unsigned int arg, enum rarg op) {
 }
 
 void alpha_rot_r(unsigned int arg, enum rarg op) {
-	int i;
+	unsigned int i;
 	const int al = alen();
 
 	if (al)

@@ -572,7 +572,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 				buf[i] = DIGITS[r];
 			}
 		} else {
-            int n;
+			int n;
 			v = (unsigned long long int)vs;
 
 			if (b == 2)         n = ws;
@@ -592,7 +592,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			*res++ = buf[i];
 	} else {
 		buf[i] = '\0';
-		if (i >= 12 * state.int_window + 11)
+		if (i >= (int)(12 * state.int_window + 11))
 			state.int_winl = 1;
 		if (state.int_window > 0)
 			state.int_winr = 1;
@@ -1337,7 +1337,7 @@ static void set_status_sized(const char *str, int smallp) {
 		const unsigned char ch = *str++;
 		const unsigned short c = ch | szmask;
 		//const unsigned char *cmap;
-		unsigned int width;
+		int width;
 		unsigned char cmap[6];
 
 		//cmap = &charset[c][0];

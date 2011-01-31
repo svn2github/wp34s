@@ -25,7 +25,7 @@
 extern unsigned long long int extract_value(const long long int val, int *const sign);
 extern long long int build_value(const unsigned long long int x, const int sign);
 extern long long int mask_value(const long long int);
-extern int word_size(void);
+extern unsigned int word_size(void);
 extern unsigned int int_base(void);
 extern enum arithmetic_modes int_mode(void);
 

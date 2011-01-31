@@ -167,7 +167,7 @@ extern char alpha[NUMALPHA+1];
 
 
 /* Macros to access program ROM */
-#define XROM_MASK	(0x4000)
+#define XROM_MASK	(0x4000u)
 #define isXROM(pc)	((pc) & XROM_MASK)
 #define addrXROM(pc)	((pc) | XROM_MASK)
 
@@ -686,7 +686,7 @@ extern void clrprog(void);
 extern void clrall(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void reset(decimal64 *a, decimal64 *b, decContext *nulc);
 
-extern opcode getprog(int n);
+extern opcode getprog(unsigned int n);
 extern void stoprog(opcode);
 extern void delprog(void);
 extern unsigned int dec(unsigned int);
@@ -752,7 +752,7 @@ extern char *num_arg(char *, unsigned int);		// number, no leading zeros
 extern char *num_arg_0(char *, unsigned int, int);	// n digit number, leading zeros
 
 extern int s_to_i(const char *);
-unsigned long long int s_to_ull(const char *, int);
+unsigned long long int s_to_ull(const char *, unsigned int);
 
 extern void do_conv(decNumber *, unsigned int, const decNumber *, decContext *);
 

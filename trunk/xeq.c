@@ -111,7 +111,7 @@ void set_pc(unsigned int pc) {
 
 /* Return the program memory location specified.
  */
-opcode getprog(int n) {
+opcode getprog(unsigned int n) {
 	opcode r;
 
 	if (isXROM(n))
@@ -572,7 +572,7 @@ int s_to_i(const char *s) {
 
 /* Convert a string in the given base to an unsigned integer
  */
-unsigned long long int s_to_ull(const char *s, int base) {
+unsigned long long int s_to_ull(const char *s, unsigned int base) {
 	unsigned long long int x = 0;
 
 	for (;;) {
@@ -1251,7 +1251,7 @@ void get_stack_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 }
 
 void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
-	put_int(word_size(), 0, a);
+	put_int((int)word_size(), 0, a);
 }
 
 /* Save and restore the entire stack to sequential registers */
@@ -1521,7 +1521,7 @@ void cmdback(unsigned int arg, enum rarg op) {
  */
 static void cmdlinechs(void) {
 	if (state.cmdlineeex) {
-		const int pos = state.cmdlineeex + 1;
+		const unsigned int pos = state.cmdlineeex + 1;
 		if (state.eol < pos) {
 			if (state.eol < CMDLINELEN)
 				cmdline[state.eol++] = '-';
@@ -1958,7 +1958,7 @@ static int is_xdigit(const char c) {
 
 /* Process a single digit.
  */
-static void digit(int c) {
+static void digit(unsigned int c) {
 	const int intm = is_intmode();
 	int i, j;
 	int lim = 12;
@@ -1972,7 +1972,7 @@ static void digit(int c) {
 			warn(ERR_DIGIT);
 			return;
 		}
-		for (i=j=0; i<state.eol; i++)
+		for (i=j=0; i<(int)state.eol; i++)
 			j += is_xdigit(cmdline[i]);
 		if (j == lim) {
 			warn(ERR_TOO_LONG);
@@ -1987,7 +1987,7 @@ static void digit(int c) {
 			warn(ERR_DIGIT);
 			return;
 		}
-		for (i=j=0; i<state.eol; i++)
+		for (i=j=0; i<(int)state.eol; i++)
 			if (cmdline[i] == 'E') {
 				lim++;
 				break;
@@ -2351,7 +2351,7 @@ void time_12(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
  */
 void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	unsigned long long int n = 0;
-	int posn = 0;
+	unsigned int posn = 0;
 	decNumber r;
 
 #define SB(f, p)					\
@@ -2379,7 +2379,7 @@ void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	/* Figure out the number of bits required.  This is optimised
 	 * into a single constant assignment.
 	 */
-		int nb = 0;
+		unsigned int nb = 0;
 #define SB(f, p)	nb += (p);
 #include "statebits.h"
 #undef SB
@@ -2671,7 +2671,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
  * the limit.
  */
 static void rargs(const opcode op) {
-	int arg = op & RARG_MASK;
+	unsigned int arg = op & RARG_MASK;
 	int ind = op & RARG_IND;
 	const unsigned int cmd = (op & ~OP_RARG) >> RARG_OPSHFT;
 	decNumber x;
@@ -2697,7 +2697,7 @@ static void rargs(const opcode op) {
 		if (lim > 128 && ind)		// put the top bit back in
 			arg |= RARG_IND;
 	}
-	if (arg < 0 || arg >= lim)
+	if (arg >= lim)
 		err(ind?ERR_RANGE:ERR_PROG_BAD);
 	else
 		(argcmds[cmd].f)(arg, (enum rarg)cmd);
@@ -2882,7 +2882,7 @@ void stoprog(opcode c) {
 	state.last_prog += off;
 	incpc();
 	pc = state_pc();
-	for (i=state.last_prog; i>pc; i--)
+	for (i=state.last_prog; i>(int)pc; i--)
 		prog[i] = prog[i-off];
 	if (pc != 0) {
 		if (isDBL(c))
@@ -2902,7 +2902,7 @@ void delprog(void) {
 	if (pc == 0 || isXROM(pc))
 		return;
 	off = isDBL(prog[pc])?2:1;
-	for (i=pc; i<state.last_prog-1; i++)
+	for (i=pc; i<(int)state.last_prog-1; i++)
 		prog[i] = prog[i+off];
 	do {
 		prog[state.last_prog] =  EMPTY_PROGRAM_OPCODE;
@@ -3065,7 +3065,7 @@ unsigned int checksum_code(void) {
 	unsigned int ct[256];
 	int i;
 	unsigned int crc = 0;
-	unsigned int n = state.last_prog;
+	int n = state.last_prog;
 
 	/* Build up a CRC table */
 	for (i=0; i<256; i++) {

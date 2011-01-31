@@ -33,10 +33,11 @@ enum arithmetic_modes int_mode(void) {
 	return MODE_UNSIGNED;
 }
 
-int word_size(void) {
-	if (state.int_len >= MAX_WORD_SIZE || state.int_len == 0)
+unsigned int word_size(void) {
+	unsigned int il = state.int_len;
+	if (il >= MAX_WORD_SIZE || il == 0)
 		return MAX_WORD_SIZE;
-	return state.int_len;
+	return il;
 }
 
 int get_carry(void) {
@@ -76,7 +77,7 @@ static void restore_flags(int co) {
 /* Utility routine for trimming a value to the current word size
  */
 long long int mask_value(const long long int v) {
-	const int ws = word_size();
+	const unsigned int ws = word_size();
 	long long int mask;
 
 	if (MAX_WORD_SIZE == 64 && ws == 64)
@@ -89,7 +90,7 @@ long long int mask_value(const long long int v) {
  * bit from a number.
  */
 static long long int topbit_mask(void) {
-	const int ws = word_size();
+	const unsigned int ws = word_size();
 	long long int bit = 1LL << (ws - 1);
 	return bit;
 }
@@ -288,7 +289,7 @@ long long int intMultiply(long long int y, long long int x) {
 			set_overflow(1);
 		if (sx ^ sy) {
 			if (mode == MODE_2COMP)
-				v = -u;
+				v = -(signed long long int)u;
 			else if (mode == MODE_1COMP)
 				v = ~u;
 			else // if (mode == MODE_SGNMANT)
@@ -337,7 +338,7 @@ long long int intDivide(long long int y, long long int x) {
 			set_overflow(1);
 		if (sx ^ sy) {
 			if (mode == MODE_2COMP)
-				v = -r;
+				v = -(signed long long int)r;
 			else if (mode == MODE_1COMP)
 				v = ~r;
 			else // if (mode == MODE_SGNMANT)
@@ -365,10 +366,10 @@ long long int intMod(long long int y, long long int x) {
 	if (sy) {
 		switch (mode) {
 		default:
-		case MODE_2COMP:    v = -r;                 break;
-		case MODE_1COMP:    v = ~r;                 break;
-		case MODE_UNSIGNED: v = r;                  break;
-		case MODE_SGNMANT:  v = r ^ topbit_mask();  break;
+		case MODE_2COMP:    v = -(signed long long int)r;	break;
+		case MODE_1COMP:    v = ~r;				break;
+		case MODE_UNSIGNED: v = r;				break;
+		case MODE_SGNMANT:  v = r ^ topbit_mask();		break;
 		}
 	} else
 		v = r;
@@ -720,7 +721,7 @@ static void divmnu(unsigned short q[], unsigned short r[],
 static unsigned long long int divmod(const long long int z, const long long int y,
 		const long long int x, int *sx, int *sy, unsigned long long *rem) {
 	unsigned long long int d, h, l;
-	const int ws = word_size();
+	const unsigned int ws = word_size();
 	unsigned short denom[4];
 	unsigned short numer[8];
 	unsigned short quot[5];
@@ -898,10 +899,10 @@ static long long int intRRC(long long int x) {
 /* Like the above but taking the count argument from the opcode.
  * Also possibly register indirect but that is dealt with elsewhere.
  */
-void introt(unsigned arg, enum rarg op) {
+void introt(unsigned int arg, enum rarg op) {
 	long long int (*f)(long long int);
-	int mod;
-	int ws;
+	unsigned int mod;
+	unsigned int ws;
 	long long int x;
 	unsigned int i;
 	
@@ -1019,7 +1020,7 @@ long long int intPower(long long int y, long long int x) {
 	unsigned long long int vx = extract_value(x, &sx);
 	unsigned long long int vy = extract_value(y, &sy);
 	unsigned long long int r = 1;
-	int ws, i;
+	unsigned int ws, i;
 
 	if (vx == 0 && vy == 0) {
 		err(ERR_DOMAIN);
@@ -1137,8 +1138,8 @@ long long int int10pow(long long int x) {
  */
 long long int intMirror(long long int x) {
 	long long int r = 0;
-	int n = word_size();
-	int i;
+	unsigned int n = word_size();
+	unsigned int i;
 
 	if (x == 0)
 		return 0;
@@ -1183,7 +1184,7 @@ void intRJ(decimal64 *x, decimal64 *nul, decContext *ctx) {
  * If the n is negative, the mask is created at the other end of the
  * word.
  */
-void intmsks(unsigned arg, enum rarg op) {
+void intmsks(unsigned int arg, enum rarg op) {
 	long long int mask;
 	long long int x;
 	unsigned int i;
@@ -1212,7 +1213,7 @@ void intmsks(unsigned arg, enum rarg op) {
 
 
 /* Set, clear, flip and test bits */
-void intbits(unsigned arg, enum rarg op) {
+void intbits(unsigned int arg, enum rarg op) {
 	long long int m, x;
 	if (!is_intmode()) {
 		err(ERR_BAD_MODE);
