@@ -508,15 +508,12 @@ static unsigned char alpha_arrows[] = {
 	'^',	0237,				// ^, infinity
 };
 
-static unsigned char alpha_stats[] = {
-	031,	001,				// x-hat, x-bar
-	032,	002,				// y-hat, y-bar
-};
-
 static unsigned char alpha_superscripts[] = {
 	0235,	0232,				// ^-1, ^2
 	0234,					// ^x
 	0005,					// degree
+	031,	001,				// x-hat, x-bar
+	032,	002,				// y-hat, y-bar
 };
 
 static unsigned char alpha_subscripts[] = {
@@ -709,7 +706,6 @@ int main(int argc, char *argv[]) {
 	ALPHA(alpha_symbols);
 	ALPHA(alpha_compares);
 	ALPHA(alpha_arrows);
-	ALPHA(alpha_stats);
 	ALPHA(alpha_superscripts);
 	ALPHA(alpha_subscripts);
 	ALPHA(alpha_letters_upper);

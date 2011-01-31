@@ -3044,7 +3044,6 @@ void xeq_init(void) {
 	check_cat(CATALOGUE_ALPHA_SYMBOLS, "alpha symbols");
 	check_cat(CATALOGUE_ALPHA_COMPARES, "alpha compares");
 	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");
-	check_cat(CATALOGUE_ALPHA_STATS, "alpha stats");
 	check_cat(CATALOGUE_CONV, "conversion");
 	check_cat(CATALOGUE_NORMAL, "float");
     }

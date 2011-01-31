@@ -962,13 +962,6 @@ fkey:		if (oldstate != SHIFT_F)
 			break;
 		return STATE_UNFINISHED;
 
-	case K40:
-		if (oldstate == SHIFT_H) {
-			init_cat(CATALOGUE_ALPHA_STATS);
-			return STATE_UNFINISHED;
-		}
-		break;
-
 	case K44:
 		if (oldstate == SHIFT_H) {
 			state.status = 1;
@@ -1398,7 +1391,6 @@ int current_catalogue_max(void) {
 		sizeof(alpha_symbols),
 		sizeof(alpha_compares),
 		sizeof(alpha_arrows),
-		sizeof(alpha_stats),
 		sizeof(alpha_letters_upper),
 		sizeof(alpha_letters_lower),
 		sizeof(alpha_superscripts),
@@ -1445,8 +1437,6 @@ opcode current_catalogue(int n) {
 		return alpha_code(n, alpha_compares);
 	case CATALOGUE_ALPHA_ARROWS:
 		return alpha_code(n, alpha_arrows);
-	case CATALOGUE_ALPHA_STATS:
-		return alpha_code(n, alpha_stats);
 	case CATALOGUE_ALPHA_LETTERS_UPPER:
 		return alpha_code(n, alpha_letters_upper);
 	case CATALOGUE_ALPHA_LETTERS_LOWER:
@@ -1967,7 +1957,6 @@ int main(int argc, char *argv[]) {
 			dump_menu("alpha symbols", "", CATALOGUE_ALPHA_SYMBOLS);
 			dump_menu("alpha compares", "", CATALOGUE_ALPHA_COMPARES);
 			dump_menu("alpha arrows", "", CATALOGUE_ALPHA_ARROWS);
-			dump_menu("alpha statistics", "", CATALOGUE_ALPHA_STATS);
 			dump_menu("programming", "", CATALOGUE_PROG);
 			dump_menu("modes", "", CATALOGUE_MODE);
 			dump_menu("test", "", CATALOGUE_TEST);
