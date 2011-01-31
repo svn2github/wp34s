@@ -1222,7 +1222,10 @@ void display(void) {
 		const opcode op = current_catalogue(state.digval);
 		char b2[16];
 		bp = scopy(bp, catcmd(op, b2));
-		set_status(buf);
+		if (buf[0] == COMPLEX_PREFIX && buf[1] == COMPLEX_PREFIX)
+			set_status(buf+1);
+		else
+			set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
 			set_x(&CONSTANT(state.digval), NULL, 1);
 			skip = 1;

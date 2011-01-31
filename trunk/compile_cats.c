@@ -161,6 +161,7 @@ static s_opcode cplx_catalogue[] = {
 #ifdef INCLUDE_ELLIPTIC
 	CDYA(OP_DN,		"DN")
 #endif
+	NILIC(OP_DROPXY,	"DROP")
 	CMON(OP_EXPM1,		"e^x-1")
 	CMON(OP_FIB,		"FIB")
 #ifdef COMPLEX_BESSEL
@@ -341,6 +342,7 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_CF,	"CF")
 	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_CLSTK,		"CLSTK")
+	NILIC(OP_DROP,		"DROP")
 	NILIC(OP_DROPY,		"DROPY")
 	RARGCMD(RARG_DSZ,	"DSZ")
 	RARGCMD(RARG_FF,	"FF")

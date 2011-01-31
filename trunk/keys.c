@@ -659,7 +659,6 @@ static int process_h_shifted_cmplx(const keycode c) {
 		break;
 	case K12:	return OP_NIL | OP_CRUP;
 
-	case K20:	return OP_NIL | OP_DROPXY;
 	case K21:	init_arg(RARG_CSWAP);	break;	// x<>
 	case K22:	return OP_CMON | OP_CCONJ;
 	case K23:	return CONST_CMPLX(OP_PI);
@@ -674,7 +673,7 @@ static int process_h_shifted_cmplx(const keycode c) {
 
 	case K00:	case K01:	case K02:	case K03:	case K04:	case K05:
 	case K10:
-									case K24:
+	case K20:							case K24:
 	case K30:	case K31:	case K32:	case K33:	case K34:
 			case K41:	case K42:	case K43:	case K44:
 			case K51:			case K53:	case K54:
