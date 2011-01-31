@@ -262,6 +262,17 @@ static decNumber * decRoundOperand(const decNumber *, decContext *, uInt *);
 #define SPECIALARG  (rhs->bits & DECSPECIAL)
 #define SPECIALARGS ((lhs->bits | rhs->bits) & DECSPECIAL)
 
+static void* xmalloc(unsigned int n) 
+{
+    //malloc wrapper for use by decNumber.
+    return (void*)malloc(n);
+}
+
+static void xfree(void* p)
+{
+    free(p);
+}
+
 /* Diagnostic macros, etc. */
 #if DECALLOC
 // Handle malloc/free accounting.  If enabled, our accountable routines
@@ -283,6 +294,9 @@ uInt decAllocBytes=0;              // count of bytes allocated
 #ifndef WIN32
 #define malloc(a) __builtin_alloca(a)
 #define free(a)
+#else // WIN32
+#define malloc(a) xmalloc(a)
+#define free(a)  xfree(a)
 #endif // !WIN32
 #endif
 
@@ -4762,7 +4776,7 @@ static Int decCompare(const decNumber *lhs, const decNumber *rhs,
 static Int decUnitCompare(const Unit *a, Int alength,
                           const Unit *b, Int blength, Int exp) {
   Unit  *acc;                      // accumulator for result
-  Unit  accbuff[SD2U(DECBUFFER+1)];// local buffer
+  Unit  accbuff[SD2U(DECBUFFER+3)];// local buffer
   Unit  *allocacc=NULL;            // -> allocated acc buffer, iff allocated
   Int   accunits, need;            // units in use or needed for acc
   const Unit *l, *r, *u;           // work
@@ -6491,6 +6505,7 @@ Flag decCheckNumber(const decNumber *dn, decContext *set) {
   return 0;              // it's OK
   } // decCheckNumber
 #endif
+
 
 #if DECALLOC
 #undef malloc

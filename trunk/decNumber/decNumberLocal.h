@@ -27,7 +27,7 @@
   #define DECNLAUTHOR   "Mike Cowlishaw"              /* Who to blame */
 
   /* Tuning parameter */
-  #define DECBUFFER 36        // Maximum size basis for local buffers.
+  #define DECBUFFER 44        // Maximum size basis for local buffers.
                               // Should be a common maximum precision
                               // rounded up to a multiple of 4; must
                               // be zero or positive.

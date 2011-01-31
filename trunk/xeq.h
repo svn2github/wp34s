@@ -32,7 +32,11 @@
  * guard digits for my liking.
  */
 //#define DECNUMDIGITS 24
+
+// Note: when changing this, consider adjusting DECBUFFER in DecNumberLocal.h
+// to size the temp buffer size and avoid malloc/free
 #define DECNUMDIGITS 39		/* 32 bytes per real for 28 .. 33, 36 bytes for 34 .. 39 */
+
 
 #include "decNumber/decNumber.h"
 #include "decNumber/decContext.h"
