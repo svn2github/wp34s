@@ -262,17 +262,6 @@ static decNumber * decRoundOperand(const decNumber *, decContext *, uInt *);
 #define SPECIALARG  (rhs->bits & DECSPECIAL)
 #define SPECIALARGS ((lhs->bits | rhs->bits) & DECSPECIAL)
 
-static void* xmalloc(unsigned int n) 
-{
-    //malloc wrapper for use by decNumber.
-    return (void*)malloc(n);
-}
-
-static void xfree(void* p)
-{
-    free(p);
-}
-
 /* Diagnostic macros, etc. */
 #if DECALLOC
 // Handle malloc/free accounting.  If enabled, our accountable routines
@@ -295,6 +284,18 @@ uInt decAllocBytes=0;              // count of bytes allocated
 #define malloc(a) __builtin_alloca(a)
 #define free(a)
 #else // WIN32
+
+static void* xmalloc(unsigned int n) 
+{
+    //malloc wrapper for use by decNumber.
+    return (void*)malloc(n);
+}
+
+static void xfree(void* p)
+{
+    free(p);
+}
+
 #define malloc(a) xmalloc(a)
 #define free(a)  xfree(a)
 #endif // !WIN32
