@@ -502,7 +502,8 @@ static unsigned char alpha_compares[] = {
 
 static unsigned char alpha_arrows[] = {
 	015,	016,				// left arrow, right arrow
-	017,	020,				// up arrow, down arrow
+	017,	020,				// up arrow, down arrow,
+	025,	026,				// int mode scrolling arrows left & right
 	004,					// integral
 	0236,					// h-bar
 	'^',	0237,				// ^, infinity
