@@ -505,7 +505,6 @@ static unsigned char alpha_arrows[] = {
 	017,	020,				// up arrow, down arrow,
 	025,	026,				// int mode scrolling arrows left & right
 	004,					// integral
-	0236,					// h-bar
 	'^',	0237,				// ^, infinity
 };
 
@@ -542,6 +541,7 @@ static unsigned char alpha_letters_lower[] = {
 	0340, 0341, 0342, 0343, 0344,		// A
 	0345, 0346, 0347,			// C
 	0350, 0351, 0352, 0353,			// E
+	0236,					// h-bar
 	0354, 0355, 0356, 0357,			// I
 	0360,					// N
 	0361, 0362, 0363, 0364,			// O
