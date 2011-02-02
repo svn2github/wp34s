@@ -249,9 +249,9 @@ enum eKind {
 #define opDBL(op)	(((op) >> DBL_SHIFT) & 0xf)
 
 enum tst_op {
-	TST_EQ=0,	TST_NE=1,
-	TST_LT=2,	TST_LE=3,
-	TST_GT=4,	TST_GE=5
+	TST_EQ=0,	TST_NE=1,	TST_APX=2,
+	TST_LT=3,	TST_LE=4,
+	TST_GT=5,	TST_GE=6,
 };
 #define TST_NONE	7
 
@@ -434,9 +434,11 @@ enum rarg {
 	RARG_ALPHA, RARG_AREG, RARG_ASTO, RARG_ARCL,
 	RARG_AIP, RARG_ALRL, RARG_ALRR, RARG_ALSL, RARG_ALSR,
 
-	RARG_TEST_EQ, RARG_TEST_NE, RARG_TEST_LT,	/* Must be in the same order as enuim test_op */
-			RARG_TEST_LE, RARG_TEST_GT, RARG_TEST_GE,
-	RARG_TEST_ZEQ, RARG_TEST_ZNE,
+	RARG_TEST_EQ, RARG_TEST_NE, RARG_TEST_APX,	/* Must be in the same order as enum tst_op */
+			RARG_TEST_LT, RARG_TEST_LE,
+			RARG_TEST_GT, RARG_TEST_GE,
+			
+	RARG_TEST_ZEQ, RARG_TEST_ZNE, //RARG_TEST_ZAPX,
 	RARG_SKIP, RARG_BACK,
 	RARG_DSE, RARG_ISG,
 	RARG_DSZ, RARG_ISZ,
@@ -474,10 +476,10 @@ enum specials {
 	OP_0, OP_1, OP_2, OP_3, OP_4, OP_5, OP_6, OP_7, OP_8, OP_9,
 			OP_A, OP_B, OP_C, OP_D, OP_E, OP_F,
 	OP_SIGMAPLUS, OP_SIGMAMINUS,
-	OP_Xeq0, OP_Xne0, OP_Xlt0, OP_Xgt0, OP_Xle0, OP_Xge0,
-	OP_Xeq1, OP_Xne1, OP_Xlt1, OP_Xgt1, OP_Xle1, OP_Xge1,
-	OP_Zeq0, OP_Zne0,
-	OP_Zeq1, OP_Zne1,
+	OP_Xeq0, OP_Xne0, OP_Xapx0, OP_Xlt0, OP_Xgt0, OP_Xle0, OP_Xge0,
+	OP_Xeq1, OP_Xne1, OP_Xapx1, OP_Xlt1, OP_Xgt1, OP_Xle1, OP_Xge1,
+	OP_Zeq0, OP_Zne0, OP_Zapx0,
+	OP_Zeq1, OP_Zne1, OP_Zapx1,
 	SPECIAL_MAX
 };
 

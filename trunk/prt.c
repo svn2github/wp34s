@@ -80,7 +80,7 @@ static const char *prt_tst(const char *r, const enum tst_op op, char *instr, int
 	if (cmplx)
 		*p++ = COMPLEX_PREFIX;
 	*p++ = 'x';
-	*p++ = "=\013<\011>\012"[op];
+	*p++ = "=\013~<\011>\012"[op];
 	*scopy(p, r) = '?';
 	return instr;
 }
@@ -115,15 +115,19 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 
 	case OP_Xeq0:	case OP_Xlt0:	case OP_Xle0:
 	case OP_Xne0:	case OP_Xgt0:	case OP_Xge0:
+	case OP_Xapx0:
 		return prt_tst("0", (enum tst_op)(opm - OP_Xeq0), instr, 0);
 	case OP_Zeq0:	case OP_Zne0:
+	//case OP_Zapx0:
 		xset(buf, '\0', sizeof(buf));
 		return prt_tst("0", (enum tst_op)(opm - OP_Zeq0), instr, 1);
 
 	case OP_Xeq1:	case OP_Xlt1:	case OP_Xle1:
 	case OP_Xne1:	case OP_Xgt1:	case OP_Xge1:
+	case OP_Xapx1:
 		return prt_tst("1", (enum tst_op)(opm - OP_Xeq1), instr, 0);
 	case OP_Zeq1:	case OP_Zne1:
+	//case OP_Zapx1:
 		xset(buf, '\0', sizeof(buf));
 		return prt_tst("1", (enum tst_op)(opm - OP_Zeq1), instr, 1);
 	}

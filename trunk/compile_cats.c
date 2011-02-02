@@ -329,10 +329,12 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_INTSIZE,	"WSIZE?")
 	NILIC(OP_XisInf,	"\237?")
 
+	RARGCMD(RARG_TEST_APX,	"x~?")
 	RARGCMD(RARG_TEST_LT,	"x<?")
 	RARGCMD(RARG_TEST_LE,	"x<=?")
 	RARGCMD(RARG_TEST_GE,	"x>=?")
 	RARGCMD(RARG_TEST_GT,	"x>?")
+//	RARGCMD(RARG_TEST_ZAPX,	"cx~?")
 };
 
 static s_opcode prog_catalogue[] = {

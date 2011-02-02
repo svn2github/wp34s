@@ -1618,12 +1618,17 @@ static void do_tst(const decimal64 *cmp, const enum tst_op op, int cnst) {
 		if (decNumberIsNaN(&t))
 			goto flse;
 
+		if (op == TST_APX) {
+			decNumberRnd(&x, &x, g_ctx);
+			decNumberRnd(&t, &t, g_ctx);
+		}
 		decNumberCompare(&r, &x, &t, g_ctx);
 		iszero = decNumberIsZero(&r);
 		isneg = decNumberIsNegative(&r);
 	}
 
 	switch (op) {
+	case TST_APX:
 	case TST_EQ:	a = iszero;		break;
 	case TST_NE:	a = !iszero;		break;
 	case TST_LT:	a = isneg && !iszero;	break;
@@ -1658,6 +1663,14 @@ static void do_ztst(const decimal64 *r, const decimal64 *i, const enum tst_op op
 	decimal64ToNumber(i, &b);
 	if (decNumberIsNaN(&a) || decNumberIsNaN(&b))
 		goto flse;
+#if 0
+	if (op == TST_APX) {
+		decNumberRnd(&x, &x, g_ctx);
+		decNumberRnd(&y, &y, g_ctx);
+		decNumberRnd(&a, &a, g_ctx);
+		decNumberRnd(&b, &b, g_ctx);
+	}
+#endif
 	decNumberCompare(&t, &x, &a, g_ctx);
 	if (!decNumberIsZero(&t))
 		eq = 0;
@@ -1666,7 +1679,7 @@ static void do_ztst(const decimal64 *r, const decimal64 *i, const enum tst_op op
 		if (!decNumberIsZero(&t))
 			eq = 0;
 	}
-	if (op == TST_EQ)
+	if (op != TST_NE)
 		c = eq;
 	else
 		c = !eq;
@@ -2132,17 +2145,21 @@ static void specials(const opcode op) {
 	// Conditional tests vs registers....
 	case OP_Xeq0:	case OP_Xlt0:	case OP_Xgt0:
 	case OP_Xne0:	case OP_Xle0:	case OP_Xge0:
+	case OP_Xapx0:
 		do_tst(&CONSTANT_INT(OP_ZERO), (enum tst_op)(opm - OP_Xeq0), 0);
 		break;
 	case OP_Zeq0: case OP_Zne0:
+	//case OP_Zapr0:
 		do_ztst(&CONSTANT_INT(OP_ZERO), &CONSTANT_INT(OP_ZERO), (enum tst_op)(opm - OP_Zeq0));
 		break;
 
 	case OP_Xeq1:	case OP_Xlt1:	case OP_Xgt1:
 	case OP_Xne1:	case OP_Xle1:	case OP_Xge1:
+	case OP_Xapx1:
 		do_tst(&CONSTANT_INT(OP_ONE), (enum tst_op)(opm - OP_Xeq1), 1);
 		break;
 	case OP_Zeq1:	case OP_Zne1:
+	//case OP_Zapx1:
 		do_ztst(&CONSTANT_INT(OP_ONE), &CONSTANT_INT(OP_ZERO), (enum tst_op)(opm - OP_Zeq1));
 		break;
 

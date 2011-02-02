@@ -1214,7 +1214,7 @@ void display(void) {
 		set_status(buf);
 	} else if (state.test != TST_NONE) {
 		*bp++ = 'x';
-		*bp++ = "=\013<\011>\012"[state.test];
+		*bp++ = "=\013~<\011>\012"[state.test];
 		*bp++ = '_';
 		*bp++ = '?';
 		set_status(buf);
