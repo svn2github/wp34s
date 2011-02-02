@@ -262,6 +262,32 @@ static decNumber * decRoundOperand(const decNumber *, decContext *, uInt *);
 #define SPECIALARG  (rhs->bits & DECSPECIAL)
 #define SPECIALARGS ((lhs->bits | rhs->bits) & DECSPECIAL)
 
+#ifdef WIN32
+
+static char xPool[1024];
+static char* xPtr = xPool;
+
+/* specialised malloc/free used for alloca replacement, either for
+ * windows or other compilers not supporting alloca.
+ */ 
+static void* xmalloc(unsigned int n) 
+{
+    char* p = xPtr;
+    if (p + n <= xPool + sizeof(xPool))
+        xPtr += n;
+    else
+        p = 0;
+
+    return p;
+}
+
+static void xfree(void* a)
+{
+    if ((char*)a < xPtr) xPtr = (char*)a;
+}
+
+#endif // WIN32
+
 /* Diagnostic macros, etc. */
 #if DECALLOC
 // Handle malloc/free accounting.  If enabled, our accountable routines
@@ -284,18 +310,6 @@ uInt decAllocBytes=0;              // count of bytes allocated
 #define malloc(a) __builtin_alloca(a)
 #define free(a)
 #else // WIN32
-
-static void* xmalloc(unsigned int n) 
-{
-    //malloc wrapper for use by decNumber.
-    return (void*)malloc(n);
-}
-
-static void xfree(void* p)
-{
-    free(p);
-}
-
 #define malloc(a) xmalloc(a)
 #define free(a)  xfree(a)
 #endif // !WIN32
