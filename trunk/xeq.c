@@ -1620,7 +1620,8 @@ static void do_tst(const decimal64 *cmp, const enum tst_op op, int cnst) {
 
 		if (op == TST_APX) {
 			decNumberRnd(&x, &x, g_ctx);
-			decNumberRnd(&t, &t, g_ctx);
+			if (cnst < 0)
+				decNumberRnd(&t, &t, g_ctx);
 		}
 		decNumberCompare(&r, &x, &t, g_ctx);
 		iszero = decNumberIsZero(&r);
