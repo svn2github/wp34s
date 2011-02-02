@@ -454,7 +454,7 @@ const struct argcmd argcmds[] = {
 	CMDnoZ(RARG_ALSR,	&alpha_shift_r,	NUMALPHA+1,		"\240SR")
 	CMDstk(RARG_TEST_EQ,	&cmdtest,	NUMREG,			"x=?")
 	CMDstk(RARG_TEST_NE,	&cmdtest,	NUMREG,			"x\013?")
-	CMDstk(RARG_TEST_APX,	&cmdtest,	NUMREG,			"x~?")
+	CMDstk(RARG_TEST_APX,	&cmdtest,	NUMREG,			"x\035?")
 	CMDstk(RARG_TEST_LT,	&cmdtest,	NUMREG,			"x<?")
 	CMDstk(RARG_TEST_LE,	&cmdtest,	NUMREG,			"x\011?")
 	CMDstk(RARG_TEST_GT,	&cmdtest,	NUMREG,			"x>?")

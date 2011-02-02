@@ -80,7 +80,7 @@ static const char *prt_tst(const char *r, const enum tst_op op, char *instr, int
 	if (cmplx)
 		*p++ = COMPLEX_PREFIX;
 	*p++ = 'x';
-	*p++ = "=\013~<\011>\012"[op];
+	*p++ = "=\013\035<\011>\012"[op];
 	*scopy(p, r) = '?';
 	return instr;
 }
