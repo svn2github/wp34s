@@ -430,8 +430,8 @@ static s_opcode conv_catalogue[] = {
 	CONV(OP_J_kWh,		1, "kW.h->J")
 	CONV(OP_KG_LBM, 	0, "kg->lbm")
 	CONV(OP_KG_LBM, 	1, "lb->kg")
-	CONV(OP_KM_AU,		0, "km->au")
-	CONV(OP_KM_AU,		1, "au->km")
+	CONV(OP_KM_AU,		0, "km->AU")
+	CONV(OP_KM_AU,		1, "AU->km")
 	CONV(OP_KM_LY,		0, "km->l.y.")
 	CONV(OP_KM_LY,		1, "l.y.->km")
 	CONV(OP_KM_MILE,	0, "km->mile")
@@ -454,8 +454,6 @@ static s_opcode conv_catalogue[] = {
 	CONV(OP_M_FATHOM,	1, "fathom->m")
 	CONV(OP_M_FEET,		0, "m->feet")
 	CONV(OP_M_FEET,		1, "feet->m")
-//	CONV(OP_M_SQFEET,	0, "m^2->feet^2")
-//	CONV(OP_M_SQFEET,	1, "feet^2->m^2")
 	CONV(OP_M_YARD,		0, "m->yard")
 	CONV(OP_M_YARD,		1, "yard->m")
 	CONV(OP_N_LBF,		0, "N->lbf")
@@ -472,8 +470,8 @@ static s_opcode conv_catalogue[] = {
 	CONV(OP_Pa_psi,		1, "psi->Pa")
 	CONV(OP_Pa_torr,	0, "Pa->torr")
 	CONV(OP_Pa_torr,	1, "torr->Pa")
-	CONV(OP_T_SHTON,	0, "t->sh ton")
-	CONV(OP_T_SHTON,	1, "sh ton->t")
+	CONV(OP_T_SHTON,	0, "t->sh.ton")
+	CONV(OP_T_SHTON,	1, "sh.ton->t")
 	CONV(OP_T_TON,		0, "t->ton")
 	CONV(OP_T_TON,		1, "ton->t")
 	CONV(OP_W_HP,		0, "W->PS(HP)")
@@ -488,6 +486,10 @@ static s_opcode conv_catalogue[] = {
 	MON(OP_DEGC_F,		   "degC->degF")
 	MON(OP_DEGF_C,		   "degF->degC")
 	MON(OP_PR_DB,		   "PR->dB")
+//	CONV(OP_M_SQUARE,	0, "m^2->square")
+//	CONV(OP_M_SQUARE,	1, "suare->m^2")
+//	CONV(OP_M_PERCH,	0, "m^2->perch")
+//	CONV(OP_M_PERCH,	1, "perch->m^2")
 };
 
 
@@ -498,8 +500,8 @@ static unsigned char alpha_symbols[] = {
 };
 
 static unsigned char alpha_compares[] = {
-	'<',	'\011',	'=',	'\013',	'\012',	'>',
-	'[',	']',	'{',	'}',
+	'<',	'\011',	'=',	'\012',	'>',
+	'[',	']',	'{',	'}',	'\035',
 };
 
 static unsigned char alpha_arrows[] = {

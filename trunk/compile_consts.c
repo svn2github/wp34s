@@ -361,7 +361,7 @@ struct constsml constsint[] = {
 struct constsml conversions[] = {
 	CONV("kg",	"lb",		"KG_LBM",	"0.4535924"),
 	CONV("g",	"oz",		"G_OZ",		"28.34952"),
-	CONV("g",	"tr oz",	"G_TOZ",	"31.10348"),
+	CONV("g",	"tr.oz",	"G_TOZ",	"31.10348"),
 	CONV("l",	"galUK",	"L_GALUK",	"4.54609"),
 	CONV("l",	"galUS",	"L_GALUS",	"3.785412"),		/* US liquid gallon */
 	CONV("l",	"cft",		"L_CUBFT",	"28.31685"),
@@ -374,9 +374,10 @@ struct constsml conversions[] = {
 	CONV("km",	"miles",	"KM_MILE",	"1.609344"),
 	CONV("km",	"l.y.",		"KM_LY",	"9.46073E12"),
 	CONV("km",	"pc",		"KM_PC",	"3.085678E13"),
-	CONV("km",	"au",		"KM_AU",	"1.495979E8"),
+	CONV("km",	"AU",		"KM_AU",	"1.495979E8"),
 	CONV("km",	"nmi",		"KM_NMI",	"1.852"),
-//	CONV("m\232",	"feet\232",	"M_SQFEET",	"0.09290304"),
+//	CONV("m\232",	"square",	"M_SQUARE",	"9.290304"),
+//	CONV("m\232",	"perch",	"M_PERCH",	"25.29285264"),
 	CONV("ha",	"acres",	"HA_ACRE",	"0.4046873"),
 	CONV("N",	"lbf",		"N_LBF",	"4.448222"),
 	CONV("J",	"Btu",		"J_BTU",	"1055.056"),

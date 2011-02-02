@@ -133,10 +133,10 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_J2D,	&dateFromJ,		NULL,		NULL,		"J\015D")
 	FUNC(OP_DEGC_F,	&convC2F,		NULL,		NULL,		"\005C\015\005F")
 	FUNC(OP_DEGF_C,	&convF2C,		NULL,		NULL,		"\005F\015\005C")
-	FUNC(OP_DB_AR,	&convDB2AR,		NULL,		NULL,		"dB\015AR")
-	FUNC(OP_AR_DB,	&convAR2DB,		NULL,		NULL,		"AR\015dB")
-	FUNC(OP_DB_PR,	&convDB2PR,		NULL,		NULL,		"dB\015PR")
-	FUNC(OP_PR_DB,	&convPR2DB,		NULL,		NULL,		"PR\015dB")
+	FUNC(OP_DB_AR,	&convDB2AR,		NULL,		NULL,		"dB\015ar.")
+	FUNC(OP_AR_DB,	&convAR2DB,		NULL,		NULL,		"ar.\015dB")
+	FUNC(OP_DB_PR,	&convDB2PR,		NULL,		NULL,		"dB\015pr.")
+	FUNC(OP_PR_DB,	&convPR2DB,		NULL,		NULL,		"pr.\015dB")
 #ifdef INCLUDE_ZETA
 	FUNC(OP_ZETA,	&decNumberZeta,		&cmplxZeta,	NULL,		"\245")
 #endif
