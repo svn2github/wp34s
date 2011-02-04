@@ -591,13 +591,14 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		while (--i >= 0)
 			*res++ = buf[i];
 	} else {
+		const int window = state.int_window;
 		buf[i] = '\0';
 		if (i >= (int)(12 * state.int_window + 11))
 			state.int_winl = 1;
 		if (state.int_window > 0)
 			state.int_winr = 1;
 
-		j = state.int_window * 12;	// 12 digits at a time
+		j = window * 12;	// 12 digits at a time
 		for (k=0; k<12; k++)
 			if (buf[j+k] == '\0')
 				break;
@@ -605,6 +606,9 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			set_dig(dig, buf[j++]);
 			dig -= SEGS_PER_DIGIT;
 		}
+		for (k=0; k < (i+11)/12; k++)
+			if (k != window)
+				set_decimal(SEGS_PER_DIGIT*(11-k), DECIMAL_DOT, NULL);
 	}
 }
 
