@@ -641,7 +641,6 @@ extern struct state {
 	unsigned int confirm : 2;	// Confirmation of operation required
 	unsigned int dot : 1;		// misc use
 	unsigned int improperfrac : 1;	// proper or improper fraction display
-	unsigned int fraccomma : 1;	// . or , for decimal
 	unsigned int nothousands : 1;	// , or nothing for thousands separator
 
 	unsigned int ind : 1;		// Indirection STO or RCL
