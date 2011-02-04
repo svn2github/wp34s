@@ -407,6 +407,14 @@ int is_intmode(void) {
 	return state.intm;
 }
 
+void showlead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+	state.leadzero = 1;
+}
+
+void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+	state.leadzero = 0;
+}
+
 /* Increment the passed PC.  Account for wrap around but nothing else.
  * Return the updated PC.
  */

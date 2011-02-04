@@ -392,6 +392,7 @@ enum {
 	OP_PAUSE,
 	OP_2COMP, OP_1COMP, OP_UNSIGNED, OP_SIGNMANT,
 	OP_FLOAT, OP_HMS, OP_FRACT,
+	OP_LEAD0, OP_TRIM0,
 	OP_LJ, OP_RJ,
 	OP_DBL_MUL,
 	OP_RCLSIGMA,
@@ -663,6 +664,7 @@ extern struct state {
 
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode
+	unsigned int leadzero : 1;	// forced display of leading zeros in int mode
 } state;
 
 
@@ -860,6 +862,8 @@ extern void roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
+extern void showlead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
+extern void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx);

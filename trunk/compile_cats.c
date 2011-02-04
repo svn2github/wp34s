@@ -368,13 +368,13 @@ static s_opcode prog_catalogue[] = {
 };
 
 static s_opcode mode_catalogue[] = {
-	NILIC(OP_12HR,		"12H")
 	NILIC(OP_1COMP,		"1COMPL")
-	NILIC(OP_24HR,		"24H")
 	NILIC(OP_2COMP,		"2COMPL")
+	NILIC(OP_SIGNMANT,	"SIGNMT")
+	NILIC(OP_UNSIGNED,	"UNSIGN")
+	RARGCMD(RARG_WS,	"WSIZ")
 	NILIC(OP_ALL,		"ALL")
 	RARGCMD(RARG_BASE,	"BASE")
-	NILIC(OP_DATEDMY,	"D.MY")
 	NILIC(OP_DENANY,	"DENANY")
 	NILIC(OP_DENFAC,	"DENMFAC")
 	NILIC(OP_DENFIX,	"DENFIX")
@@ -382,15 +382,17 @@ static s_opcode mode_catalogue[] = {
 	RARGCMD(RARG_DISP,	"DISP")
 	NILIC(OP_THOUS_OFF,	"E3OFF")
 	NILIC(OP_THOUS_ON,	"E3ON")
+	NILIC(OP_DATEDMY,	"D.MY")
 	NILIC(OP_DATEMDY,	"M.DY")
+	NILIC(OP_DATEYMD,	"Y.MD")
+	NILIC(OP_12HR,		"12H")
+	NILIC(OP_24HR,		"24H")
 	NILIC(OP_RADCOM,	"RDX,")
 	NILIC(OP_RADDOT,	"RDX.")
-	NILIC(OP_SIGNMANT,	"SIGNMT")
 	NILIC(OP_STK4,		"SSIZE4")
 	NILIC(OP_STK8,		"SSIZE8")
-	NILIC(OP_UNSIGNED,	"UNSIGN")
-	RARGCMD(RARG_WS,	"WSIZ")
-	NILIC(OP_DATEYMD,	"Y.MD")
+	NILIC(OP_LEAD0,		"SHOW 0")
+	NILIC(OP_TRIM0,		"HIDE 0")
 };
 
 static s_opcode alpha_catalogue[] = {
@@ -507,7 +509,6 @@ static unsigned char alpha_compares[] = {
 static unsigned char alpha_arrows[] = {
 	015,	016,				// left arrow, right arrow
 	017,	020,				// up arrow, down arrow,
-	025,	026,				// int mode scrolling arrows left & right
 	004,					// integral
 	'^',	0237,				// ^, infinity
 };

@@ -415,8 +415,6 @@ static void annunicators(void) {
 		}
 		p = scopy(p, q);
 		p = scopy(p, (get_trig_mode() == TRIG_GRAD)?"\006\006\007":" \006\006\006");
-//		if (state.fract)
-//			p = scopy(p, "/c");
 	} else {
 		switch(int_mode()) {
 		default:
@@ -435,8 +433,6 @@ static void annunicators(void) {
 			n += 2;
 		while (n-- > 0)
 			*p++ = '\006';
-		if (state.int_winr || state.int_winl)
-			*p++ = 024 + state.int_winr + 2 * state.int_winl;
 	}
 
 skip:	*p = '\0';
@@ -511,7 +507,6 @@ static void disp_x(const char *p) {
 static const char DIGITS[] = "0123456789ABCDEF";
 
 static void set_int_x(decimal64 *rgx, char *res) {
-	const int leadzero = 0;
 	const int ws = word_size();
 	unsigned int b;
 	const long long int value = d64toInt(rgx);
@@ -562,10 +557,10 @@ static void set_int_x(decimal64 *rgx, char *res) {
 				vs |= ~mask;
 		}
 
-		if (!leadzero && vs == 0) {
+		if (!state.leadzero && vs == 0) {
 			set_dig_s(dig, '0', res);
 			return;
-		} else if (!leadzero) {
+		} else if (!state.leadzero) {
 			v = (unsigned long long int)vs;
 			for (i=0; v != 0; i++) {
 				const int r = v % b;
