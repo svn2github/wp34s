@@ -18,7 +18,7 @@
 #define __XEQ_H__
 
 /* Version number */
-#define VERSION_STRING	"1.12"
+#define VERSION_STRING	"1.13"
 
 
 /* Define the length of our extended precision numbers.
