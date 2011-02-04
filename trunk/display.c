@@ -23,7 +23,7 @@
 #include "decn.h"
 
 enum seperator_modes { SEP_NONE, SEP_COMMA, SEP_DOT };
-enum decimal_modes { DECIMAL_DOT, DECIMAL_COMMA };
+enum decimal_modes { DECIMAL_DOT, DECIMAL_COMMA, DECIMAL_DASH };
 
 static void set_status_sized(const char *, int);
 static void set_status(const char *);
@@ -340,10 +340,11 @@ static void carry_overflow(void) {
  */
 static char *set_decimal(const int posn, const enum decimal_modes decimal, char *res) {
 	if (res) {
-		*res++ = (decimal == DECIMAL_COMMA)?',':'.';
+		*res++ = (decimal == DECIMAL_DOT)?'.':',';
 	} else {
-		set_dot(posn+7);
-		if (decimal == DECIMAL_COMMA)
+		if (decimal != DECIMAL_DASH)
+			set_dot(posn+7);
+		if (decimal != DECIMAL_DOT)
 			set_dot(posn+8);
 	}
 	return res;
@@ -607,8 +608,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			dig -= SEGS_PER_DIGIT;
 		}
 		for (k=0; k < (i+11)/12; k++)
-			if (k != window)
-				set_decimal(SEGS_PER_DIGIT*(11-k), DECIMAL_DOT, NULL);
+			set_decimal(SEGS_PER_DIGIT*(11-k), k != window?DECIMAL_DASH:DECIMAL_COMMA, NULL);
 	}
 }
 
