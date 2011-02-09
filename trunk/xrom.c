@@ -144,10 +144,10 @@
 #define XROM_EXITp1		42
 #define SLV_FEQUAL_EXPAND	50
 #define SLV_LOOP		51
-#define SIGMA_LOOP		52
-#define PI_LOOP			53
-#define GKLOOP			54
-#define KLOOP			55
+//#define SIGMA_LOOP		52
+//#define PI_LOOP			53
+//#define GKLOOP			54
+//#define KLOOP			55
 
 /* Flags - global */
 #define F_XROM			0
@@ -362,7 +362,7 @@ const s_opcode xrom[] = {
 		iCONST(GKL)
 		STO(I)
 
-		LBL(GKLOOP)
+		//LBL(GKLOOP)
 			GSB(4)
 			GSBUSER
 			TST_SPECIAL
@@ -375,7 +375,7 @@ const s_opcode xrom[] = {
 				GTO(8)
 			GSB(7)
 			ISG(I)
-				GTO(GKLOOP)
+			BACK(12)	//GTO(GKLOOP)
 		RCL(HALF_LEN)
 		STO_MU(GAUSS)
 
@@ -393,7 +393,7 @@ const s_opcode xrom[] = {
 		iCONST(KL)
 		STO(I)
 
-		LBL(KLOOP)
+		//LBL(KLOOP)
 			GSB(4)
 			GSBUSER
 			TST_SPECIAL
@@ -406,7 +406,7 @@ const s_opcode xrom[] = {
 				GTO(2)
 			GSB(6)
 			ISG(I)
-				GTO(KLOOP)
+			BACK(12)	//GTO(KLOOP)
 		RCL(HALF_LEN)
 		STO_MU(KRONROD)
 
@@ -451,7 +451,7 @@ const s_opcode xrom[] = {
 		PLUS
 		RCL(st(Y))
 		RCL(st(X))
-		iCONSTIND(st(T))	// gi, f, f, I+1
+		iCONSTIND(st(Z))	// gi, f, f, I+1
 		TIMES			// gi*f, f, I+1, I+1
 		STO_PL(GAUSS)
 		ONE			// 1, gi*f, f, I+1
@@ -517,16 +517,14 @@ const s_opcode xrom[] = {
 		STO(PRODSUM)
 		ZERO
 		STO(C)
-		GTO(1)
-	LBL(SIGMA_LOOP)
+		SKIP(15)	//GTO(1)
+	//LBL(SIGMA_LOOP)
 		RCL(I)
 		TRUNC
 		FILL
 		GSBUSER
 		TST_SPECIAL
 			GTO(8)
-//		TST0(eq)		// No point summing zeros
-//			GTO(1)
 		RCL_MI(C)		// Kahan sum y = Xn - c
 		ENTER			// y y . .
 		RCL_PL(PRODSUM)		// t = sum + y  y . .
@@ -536,9 +534,9 @@ const s_opcode xrom[] = {
 		STO(C)
 		SWAPXY
 		STO(PRODSUM)
-	LBL(1)
+	//LBL(1)
 		DSE(I)
-		GTO(SIGMA_LOOP)
+		BACK(17)	//GTO(SIGMA_LOOP)
 		ZERO			// Clean up and exit
 		RCL(SAV_I)
 		RCL(PRODSUM)
@@ -563,8 +561,8 @@ const s_opcode xrom[] = {
 		TST_SPECIAL
 			GTO(8)
 		STO(PRODSUM)
-		GTO(1)
-	LBL(PI_LOOP)
+		SKIP(7)	//GTO(1)
+	//LBL(PI_LOOP)
 		RCL(I)
 		TRUNC
 		FILL
@@ -572,9 +570,9 @@ const s_opcode xrom[] = {
 		TST_SPECIAL
 			GTO(8)
 		STO_MU(PRODSUM)
-	LBL(1)
+	//LBL(1)
 		DSE(I)
-		GTO(PI_LOOP)
+		BACK(9)	//GTO(PI_LOOP)
 		ZERO
 		RCL(SAV_I)
 		RCL(PRODSUM)
