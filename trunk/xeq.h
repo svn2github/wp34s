@@ -659,8 +659,7 @@ extern struct state {
 	unsigned int trace : 1;
 #endif
 	unsigned int disp_small : 1;	// Display the status message in small font
-	unsigned int int_winl : 1;	// Is there a window left
-	unsigned int int_winr : 1;	// Is there a window right
+	unsigned int int_maxw : 3;	// maximum available window
 
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode

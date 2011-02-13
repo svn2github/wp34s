@@ -211,7 +211,8 @@ static const unsigned char digtbl[] = {
 	DIG('\'',		D_TL),					// minute
 	DIG('"',		D_TL | D_TR),				// second
 	DIG('/',		D_TR | D_MIDDLE | D_BL),		// fraction vinculum
-	DIG('<',		D_TR | D_MIDDLE | D_BR),		// fraction continuation
+	DIG('<',		D_MIDDLE | D_BR),			// fraction continuation (left arrow)
+	DIG('>',		D_BL | D_MIDDLE),			// right arrow
 	DIG('_',		D_BOTTOM),
 	DIG('=',		D_MIDDLE | D_BOTTOM),
 
@@ -374,7 +375,7 @@ static void set_seperator(int posn, const enum seperator_modes sep, char *res) {
  * Spaces are 5 pixels wide, \006 is a single pixel space.
  */
 static void annunicators(void) {
-	char buf[20], *p = buf, *q;
+	char buf[42], *p = buf, *q;
 	int n;
 
 	/* Set the shift key indicator */
@@ -418,21 +419,28 @@ static void annunicators(void) {
 	} else {
 		switch(int_mode()) {
 		default:
-		case MODE_2COMP:	q = "2c";		break;
+		case MODE_2COMP:	q = "2c\006";		break;
 		case MODE_UNSIGNED:	q = "un\006";		break;
-		case MODE_1COMP:	q = "\0061c\006";	break;
+		case MODE_1COMP:	q = "\0061c\006\006";	break;
 		case MODE_SGNMANT:	q = "sm";		break;
 		}
 		q = scopy(p, q);
 		*q++ = '\006';
 		p = num_arg_0(q, word_size(), 2);
-		n = 1;
-		if (*q == '1')
-			n += 2;
-		if (q[1] == '1')
-			n += 2;
-		while (n-- > 0)
-			*p++ = '\006';
+
+		if (state.int_maxw > 0) {
+			n = 4 + 2 * (5 - state.int_maxw);
+			if (*q == '1')
+				n += 2;
+			if (q[1] == '1')
+				n += 2;
+			while (n-- > 0)
+				*p++ = '\006';
+
+			for (n=state.int_maxw; n>=0; n--)
+				*p++ = state.int_window == n ? '|':'\'';
+		}
+
 	}
 
 skip:	*p = '\0';
@@ -526,8 +534,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 	}
 
 	if (!res) {
-		state.int_winl = 0;
-		state.int_winr = 0;
+		state.int_maxw = 0;
 		carry_overflow();
 	}
 
@@ -588,11 +595,8 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			*res++ = buf[i];
 	} else {
 		const int window = state.int_window;
+		state.int_maxw = i / 12;
 		buf[i] = '\0';
-		if (i >= (int)(12 * state.int_window + 11))
-			state.int_winl = 1;
-		if (state.int_window > 0)
-			state.int_winr = 1;
 
 		j = window * 12;	// 12 digits at a time
 		for (k=0; k<12; k++)
@@ -602,8 +606,6 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			set_dig(dig, buf[j++]);
 			dig -= SEGS_PER_DIGIT;
 		}
-		for (k=0; k < (i+11)/12; k++)
-			set_decimal(SEGS_PER_DIGIT*(11-k), k != window?DECIMAL_DASH:DECIMAL_COMMA, NULL);
 	}
 }
 

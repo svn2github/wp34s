@@ -359,7 +359,7 @@ static int process_f_shifted(const keycode c) {
 	case K44:	return OP_MON | OP_SQRT;
 
 	case K50:
-		if (state.intm && state.int_winl)
+		if (state.intm && state.int_maxw > state.int_window)
 			state.int_window++;
 		break;
 	case K51:	state.test = TST_EQ;	break;
@@ -419,7 +419,7 @@ static int process_g_shifted(const keycode c) {
 	case K44:	return OP_MON | OP_SQR;
 
 	case K50:	
-		if (state.intm && state.int_winr)
+		if (state.intm && state.int_maxw > 0 && state.int_window > 0)
 			state.int_window--;
 		break;
 	case K51:	state.test = TST_NE;	break;

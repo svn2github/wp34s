@@ -2773,8 +2773,7 @@ void reset_volatile_state(void) {
 	if (state.implicit_rtn)
 		process_cmdline_set_lift();
 	state.int_window = 0;
-	state.int_winl = 0;
-	state.int_winr = 0;
+	state.int_maxw = 0;
 	state.implicit_rtn = 0;
 
 	state.smode = SDISP_NORMAL;
