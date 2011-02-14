@@ -1818,7 +1818,7 @@ static int remap(const int c) {
 static const char *map32[32] = {
 	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "space", "grad",
 	"+/-", "<=", ">=", "!=", "euro", "->", "<-", "v",
-	"^", "f-shift", "g-shift", "h-shift", "cmplx", "-->", "<--", "<->",
+	"^", "f-shift", "g-shift", "h-shift", "cmplx", "O-slash", "o-slash", "<->",
 	"sz", "x-hat", "y-hat", "sub-m", "times", NULL, "pound", "yen"
 };
 
