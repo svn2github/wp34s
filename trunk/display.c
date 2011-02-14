@@ -211,8 +211,8 @@ static const unsigned char digtbl[] = {
 	DIG('\'',		D_TL),					// minute
 	DIG('"',		D_TL | D_TR),				// second
 	DIG('/',		D_TR | D_MIDDLE | D_BL),		// fraction vinculum
-	DIG('<',		D_MIDDLE | D_BR),			// fraction continuation (left arrow)
-	DIG('>',		D_BL | D_MIDDLE),			// right arrow
+	DIG('<',		D_BL | D_BOTTOM),			// fraction continuation (left arrow)
+	DIG('>',		D_BR | D_BOTTOM),			// right arrow
 	DIG('_',		D_BOTTOM),
 	DIG('=',		D_MIDDLE | D_BOTTOM),
 
