@@ -23,20 +23,20 @@ CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions -fno-defer-pop
 # Optional routines to include...
 
 # Include the aritmetic/geometric mean iteration
-CFLAGS += -DINCLUDE_AGM
+#CFLAGS += -DINCLUDE_AGM
 
 # Include Reiman's Zeta function for real and complex arguments
-CFLAGS += -DINCLUDE_ZETA
+#CFLAGS += -DINCLUDE_ZETA
 
 # Incude the digamma function
-CFLAGS += -DINCLUDE_DIGAMMA
+#CFLAGS += -DINCLUDE_DIGAMMA
 
 # Include Jacobi's Elliptical Functions: SN, CN & DN for real & complex arguments
-CFLAGS += -DINCLUDE_ELLIPTIC
+#CFLAGS += -DINCLUDE_ELLIPTIC
 
 # Include Bessel functions of first and second kind
 # Second kind functions of integer order need digamma
-CFLAGS += -DINCLUDE_BESSEL -DINCLUDE_DIGAMMA
+#CFLAGS += -DINCLUDE_BESSEL -DINCLUDE_DIGAMMA
 #CFLAGS += -DCOMPLEX_BESSEL
 
 # Inlcude a fused multiply add instruction
@@ -47,10 +47,10 @@ CFLAGS += -DINCLUDE_BESSEL -DINCLUDE_DIGAMMA
 #CFLAGS += -DINCLUDE_CUBES
 
 # Include the !! function defined over the complex plane
-CFLAGS += -DINCLUDE_DBLFACT
+#CFLAGS += -DINCLUDE_DBLFACT
 
 # Include the !! function defined over the reals
-CFLAGS += -DINCLUDE_SUBFACT
+#CFLAGS += -DINCLUDE_SUBFACT
 
 # Inlcude multi-character alpha constants (not keystroke programmable)
 #CFLAGS += -DMULTI_ALPHA
