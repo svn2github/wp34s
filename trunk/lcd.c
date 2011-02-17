@@ -396,7 +396,7 @@ void show_flags(void) {
   			MOVE(18, FLAG_BASE+1);
   			PRINTF("[running]");
   		}
-		MOVE(70, 3);
+		MOVE(70, 5);
 		PRINTF("iw = %u/%u", state.int_window, state.int_maxw);
 		MOVE(30, FLAG_BASE+1);
 		PRINTF("shft = %u", cur_shift());
