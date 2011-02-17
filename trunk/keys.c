@@ -742,11 +742,11 @@ static int process_arrow(const keycode c) {
 		break;
 
 	case K22:
-		set_smode((oldstate == SHIFT_G)?SDISP_OCT:SDISP_BIN);
+		set_smode((oldstate != SHIFT_F)?SDISP_OCT:SDISP_BIN);
 		process_cmdline_set_lift();
 		break;
 	case K23:
-		set_smode((oldstate == SHIFT_G)?SDISP_HEX:SDISP_DEC);
+		set_smode((oldstate != SHIFT_F)?SDISP_HEX:SDISP_DEC);
 		process_cmdline_set_lift();
 		break;
 
@@ -760,9 +760,8 @@ static int process_arrow(const keycode c) {
 		break;
 
 	case K05:
-		if (oldstate == SHIFT_F || oldstate == SHIFT_G)
-			return OP_NIL | OP_2FRAC;
-		// falling through
+		return OP_NIL | OP_2FRAC;
+
 	default:
 		state.arrow = 1;
 		state.shifts = oldstate;
