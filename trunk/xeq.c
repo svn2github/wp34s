@@ -1699,32 +1699,40 @@ void cmdztest(unsigned int arg, enum rarg op) {
 	do_ztst(get_reg_n(arg), get_reg_n(arg+1), (enum tst_op)(op - RARG_TEST_ZEQ));
 }
 
-void cmdloopz(unsigned int arg, enum rarg op) {
+static int incdec(unsigned int arg, int inc) {
 	if (is_intmode()) {
 		long long int x = get_reg_n_as_int(arg);
 		int xs;
 		unsigned long long int xv;
 
-		if (op == RARG_ISZ)
+		if (inc)
 			x = intAdd(x, 1LL);
 		else
 			x = intSubtract(x, 1LL);
 		put_reg_n_from_int(x, arg);
 
 		xv = extract_value(x, &xs);
-		fin_tst(xv != 0);
+		return xv != 0;
 	} else {
 		decNumber x, y;
 
 		get_reg_n_as_dn(arg, &x);
-		if (op == RARG_ISZ)
+		if (inc)
 			dn_inc(&x, g_ctx);
 		else
 			dn_dec(&x, g_ctx);
 		put_reg_n(arg, &x);
 		decNumberTrunc(&y, &x, g_ctx);
-		fin_tst(! decNumberIsZero(&y));
+		return ! decNumberIsZero(&y);
 	}
+}
+
+void cmdlincdec(unsigned int arg, enum rarg op) {
+	incdec(arg, op == RARG_INC);
+}
+
+void cmdloopz(unsigned int arg, enum rarg op) {
+	fin_tst(incdec(arg, op == RARG_ISZ));
 }
 
 void cmdloop(unsigned int arg, enum rarg op) {

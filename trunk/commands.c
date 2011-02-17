@@ -470,6 +470,8 @@ const struct argcmd argcmds[] = {
 	CMDstk(RARG_ISG,	&cmdloop,	NUMREG,			"ISG")
 	CMDstk(RARG_DSZ,	&cmdloopz,	NUMREG,			"DSZ")
 	CMDstk(RARG_ISZ,	&cmdloopz,	NUMREG,			"ISZ")
+	CMDstk(RARG_DEC,	&cmdlincdec,	NUMREG,			"DEC")
+	CMDstk(RARG_INC,	&cmdlincdec,	NUMREG,			"INC")
 	CMDnoI(RARG_LBL,	NULL,		NUMLBL,			"LBL")
 	CMD(RARG_XEQ,		&cmdgto,	NUMLBL,			"XEQ")
 	CMD(RARG_GTO,		&cmdgto,	NUMLBL,			"GTO")

@@ -443,6 +443,7 @@ enum rarg {
 	RARG_SKIP, RARG_BACK,
 	RARG_DSE, RARG_ISG,
 	RARG_DSZ, RARG_ISZ,
+	RARG_DEC, RARG_INC,
 
 	/* These 5 must be sequential and in the same order as the DBL_ commands */
 	RARG_LBL, RARG_XEQ, RARG_GTO,
@@ -803,6 +804,7 @@ extern void cmdskip(unsigned int arg, enum rarg op);
 extern void cmdback(unsigned int arg, enum rarg op);
 extern void cmdtest(unsigned int arg, enum rarg op);
 extern void cmdztest(unsigned int arg, enum rarg op);
+extern void cmdlincdec(unsigned int arg, enum rarg op);
 extern void cmdloopz(unsigned int arg, enum rarg op);
 extern void cmdloop(unsigned int arg, enum rarg op);
 extern void cmdflag(unsigned int arg, enum rarg op);
