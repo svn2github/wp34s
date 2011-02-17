@@ -296,23 +296,23 @@ void show_stack(void) {
 		return;
 
 	// Stack display smashes the stack registers
+	for (i=4; i<STACK_SIZE; i++) {
+		MOVE(26, 8-i);
+		PRINTF("%c ", i<stack_size()?'*':' ');
+		dispreg(REGNAMES[i], &regs[regX_idx+i]);
+	}
+	MOVE(53, 2);	dispreg(REGNAMES[regJ_idx-regX_idx], &regJ);
+	MOVE(53, 1);	dispreg(REGNAMES[regK_idx-regX_idx], &regK);
 	for (i=0; i<4; i++) {
 		MOVE(0, 4-i);
 		dispreg(REGNAMES[i], &regs[regX_idx+i]);
 	}
-	MOVE(40, 4);
+	MOVE(53, 4);
 	dispreg(REGNAMES[regL_idx-regX_idx], &regL);
-	MOVE(40, 3);
+	MOVE(53, 3);
 	dispreg(REGNAMES[regI_idx-regX_idx], &regI);
-	MOVE(40, 1);
+	MOVE(53, 0);
 	PRINTF("stack depth: %d", stack_size());
-	for (i=4; i<STACK_SIZE; i++) {
-		MOVE(0, 21+i);
-		PRINTF("%c ", i<stack_size()?'*':' ');
-		dispreg(REGNAMES[i], &regs[regX_idx+i]);
-	}
-	MOVE(40, 25);	dispreg(REGNAMES[regJ_idx-regX_idx], &regJ);
-	MOVE(40, 26);	dispreg(REGNAMES[regK_idx-regX_idx], &regK);
 #endif
 }
 
