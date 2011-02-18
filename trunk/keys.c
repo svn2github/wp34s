@@ -759,8 +759,8 @@ static int process_arrow(const keycode c) {
 		state.shifts = oldstate;
 		break;
 
-	case K05:
-		return OP_NIL | OP_2FRAC;
+//	case K05:
+//		return OP_NIL | OP_2FRAC;
 
 	default:
 		state.arrow = 1;
