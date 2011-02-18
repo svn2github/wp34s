@@ -142,8 +142,7 @@
 #define XROM_CHECK		40
 #define XROM_EXIT		41
 #define XROM_EXITp1		42
-#define SLV_FEQUAL_EXPAND	50
-#define SLV_LOOP		51
+//#define SLV_LOOP		51
 //#define SIGMA_LOOP		52
 //#define PI_LOOP			53
 //#define GKLOOP			54
@@ -198,44 +197,36 @@ const s_opcode xrom[] = {
 		FILL
 		GSBUSER
 		STO(FA)
-		RND
-		TST0(eq)
+		TST0(apx)
 			GTO(2)
 
 		RCL(B)
 		FILL
 		GSBUSER
 		STO(FB)
-		RND
-		TST0(eq)
+		TST0(apx)
 			GTO(3)
 		init_solve
 
-	LBL(SLV_LOOP)
+//	LBL(SLV_LOOP)
 		RCL(C)
 		FILL
 		GSBUSER
 		FILL
-		RND
-		TST0(eq)
+		TST0(apx)
 			GTO(1)
-		SWAPXY
-		FILL
 		solve_step
 		TST0(ne)		// Check for failure to complete
 			GTO(5)
 		RCL(B)
-		RND
-		RCL(A)
-		RND
-		TST(EQ, st(Y))
+		TST(APX, A)
 			GTO(6)
-		GTO(SLV_LOOP)
+//		GTO(SLV_LOOP)
+		BACK(13)
 	LBL(6)				// Limits are narrow -- either solved or pole
 		RCL(st(Z))
 		FILL
-		RND
-		TST0(ne)
+		TST0(apx)
 			GTO(7)
 		GSB(8)
 		EXIT
@@ -275,8 +266,8 @@ const s_opcode xrom[] = {
 		ZERO
 		STO(st(L))
 		RCL(st(Z))
-		RCL(A)
 		RCL(B)
+		RCL(C)
 		EXIT
 	LBL(3)				// Initial estimate good
 		RCL(FB)
