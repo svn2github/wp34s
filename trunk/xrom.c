@@ -83,6 +83,9 @@
 #define FCpC(f)		xRARG(FCC, f)
 #define FCpF(f)		xRARG(FCF, f)
 
+#define SLVI(f)		xRARG(INISOLVE, f)
+#define SLVS(f)		xRARG(SOLVESTEP, f)
+
 // Define the constants we know about
 #define PI		xCONST(PI)
 #define ZERO		iCONST(ZERO)
@@ -100,11 +103,9 @@
 #define CLSTK		NILADIC(CLSTK)
 #define STOP		NILADIC(RS)
 #define PAUSE		NILADIC(PAUSE)
-#define SOLVE_STEP	NILADIC(SOLVESTEP)
 #define TST_INFINITE	NILADIC(XisInf)
 #define TST_NaN		NILADIC(XisNaN)
 #define TST_SPECIAL	NILADIC(XisSpecial)
-#define init_solve	NILADIC(inisolve)
 
 // Mondaic functions
 #define RECIP		MONADIC(RECIP)
@@ -115,7 +116,6 @@
 #define FRAC		MONADIC(FRAC)
 #define TRUNC		MONADIC(TRUNC)
 #define SQUARE		MONADIC(SQR)
-#define solve_step	MONADIC(stpsolve)
 
 // Dyadic functions
 #define PLUS		DYADIC(ADD)
@@ -206,7 +206,7 @@ const s_opcode xrom[] = {
 		STO(FB)
 		TST0(apx)
 			GTO(3)
-		init_solve
+		SLVI(0)
 
 //	LBL(SLV_LOOP)
 		RCL(C)
@@ -215,7 +215,7 @@ const s_opcode xrom[] = {
 		FILL
 		TST0(apx)
 			GTO(1)
-		solve_step
+		SLVS(0)
 		TST0(ne)		// Check for failure to complete
 			GTO(5)
 		RCL(B)

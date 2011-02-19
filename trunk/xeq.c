@@ -286,7 +286,7 @@ void getX(decNumber *x) {
 	decimal64ToNumber(&regX, x);
 }
 
-static void setX(const decNumber *x) {
+void setX(const decNumber *x) {
 	decNumber xn;
 
 	if (! check_special(x)) {
@@ -1810,6 +1810,11 @@ int get_user_flag(int n) {
 	const unsigned char *const f = flag_byte(n, &mask);
 
 	return f != NULL && (*f & mask)?1:0;
+}
+
+void put_user_flag(int n, int f) {
+	if (f)	set_user_flag(n);
+	else	clr_user_flag(n);
 }
 
 void set_user_flag(int n) {

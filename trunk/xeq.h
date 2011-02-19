@@ -325,7 +325,6 @@ enum {
 #ifdef INCLUDE_EASTER
 	OP_EASTER,
 #endif
-	OP_stpsolve
 };
     
 // Dyadic functions
@@ -407,7 +406,6 @@ enum {
 	OP_GSBuser,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
-	OP_inisolve,
 #ifdef INCLUDE_MODULAR
 	OP_MPLUS, OP_MMINUS, OP_MMULTIPLY, OP_MSQ,
 #endif
@@ -464,8 +462,11 @@ enum rarg {
 	RARG_BASE,
 
 	RARG_CONV,
+
+	RARG_INISOLVE, RARG_SOLVESTEP,
+
 #ifdef REALBUILD
-	RARG_CONTRAST
+	RARG_CONTRAST,
 #endif
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
@@ -710,6 +711,7 @@ extern const char *catcmd(opcode, char *);
 
 extern void getX(decNumber *x);
 extern void getY(decNumber *y);
+extern void setX(const decNumber *x);
 
 extern void getXY(decNumber *x, decNumber *y);
 extern void getYZ(decNumber *x, decNumber *y);
@@ -742,7 +744,8 @@ extern void get_maxdenom(decNumber *);
 extern int get_user_flag(int);
 extern void set_user_flag(int);
 extern void clr_user_flag(int);
-
+extern void put_user_flag(int n, int f);
+	
 extern void xcopy(void *, const void *, int);
 extern void xset(void *, const char, int);
 extern char *find_char(const char *, const char);

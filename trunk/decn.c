@@ -2419,22 +2419,6 @@ decNumber *decNumberBSKN(decNumber *res, const decNumber *alpha, const decNumber
 
 /* Sovler code from here */
 
-static void get_bank_registers(decNumber *r0, decNumber *r1, decNumber *r2, decNumber *r3, decNumber *r4) {
-	if (r0) get_reg_n_as_dn(0, r0);
-	if (r1) get_reg_n_as_dn(1, r1);
-	if (r2) get_reg_n_as_dn(2, r2);
-	if (r3) get_reg_n_as_dn(3, r3);
-	if (r4) get_reg_n_as_dn(4, r4);
-}
-
-static void set_bank_registers(const decNumber *r0, const decNumber *r1, const decNumber *r2, const decNumber *r3, const decNumber *r4) {
-	if (r0) put_reg_n(0, r0);
-	if (r1) put_reg_n(1, r1);
-	if (r2) put_reg_n(2, r2);
-	if (r3) put_reg_n(3, r3);
-	if (r4) put_reg_n(4, r4);
-}
-
 
 /* Secant iteration */
 static void solve_secant(decNumber *s, const decNumber *a, const decNumber *b, const decNumber *fa, const decNumber *fb, decContext *ctx) {
@@ -2605,10 +2589,16 @@ static int slv_compare(const decNumber *a, const decNumber *b, decContext *ctx) 
  * If we've bracketed, the upper bits are an iteration counter.
  * If not, we encode more state:
  */
-#define _FLAG_BRACKET	2
-#define _FLAG_CONST	4
+#define _FLAG_BRACKET_N	1
+#define _FLAG_CONST_N	2
 #ifdef USE_RIDDERS
-#define _FLAG_BISECT	8
+#define _FLAG_BISECT_N	3
+#endif
+
+#define _FLAG_BRACKET	(1 << _FLAG_BRACKET_N)
+#define _FLAG_CONST	(1 << _FLAG_CONST_N)
+#ifdef USE_RIDDERS
+#define _FLAG_BISECT	(1 << _FLAG_BISECT_N)
 #endif
 
 #define SLV_COUNT(f)		((f) >> 8)
@@ -2788,29 +2778,45 @@ cnst:			flags |= _FLAG_CONST;
 	*flagp = flags;
 }
 
-void init_slv(decimal64 *n1, decimal64 *n2, decContext *ctx64) {
-	decNumber a, b, c, fa, fb;
-	unsigned int flags = get_bank_flags();
 
-	get_bank_registers(&a, &b, NULL, &fa, &fb);
-	solver_init(&c, &a, &b, &fa, &fb, g_ctx, &flags);
-	set_bank_registers(&a, &b, &c, &fa, &fb);
-	set_bank_flags(flags);
-}
-
-decNumber *step_slv(decNumber *res, const decNumber *fc, decContext *ctx) {
-	decNumber a, b, c, fa, fb;
-	unsigned int flags = get_bank_flags();
+// User code interface to the solver
+void solver(unsigned int arg, enum rarg op) {
+	decNumber a, b, c, fa, fb, fc;
+	unsigned int flags = 0;
 	int r;
 
-	get_bank_registers(&a, &b, &c, &fa, &fb);
+	get_reg_n_as_dn(arg + 0, &a);
+	get_reg_n_as_dn(arg + 1, &b);
+	get_reg_n_as_dn(arg + 3, &fa);
+	get_reg_n_as_dn(arg + 4, &fb);
 
-	r = solver_step(&a, &b, &c, &fa, &fb, fc, ctx, &flags);
+	if (get_user_flag(arg + _FLAG_BRACKET_N))
+		flags |= _FLAG_BRACKET;
+	if (get_user_flag(arg + _FLAG_CONST_N))
+		flags |= _FLAG_CONST;
+#ifdef USE_RIDDERS
+	if (get_user_flag(arg + _FLAG_BISECT_N))
+		flags |= _FLAG_BISECT;
+#endif
 
-	set_bank_registers(&a, &b, &c, &fa, &fb);
-	set_bank_flags(flags);
-	if (r == 0)
-		return decNumberZero(res);
-	else
-		return decNumberCopy(res, &const_1);
+	if (op == RARG_INISOLVE) {
+		solver_init(&c, &a, &b, &fa, &fb, g_ctx, &flags);
+	} else {
+		get_reg_n_as_dn(arg + 2, &c);
+		getX(&fc);
+		r = solver_step(&a, &b, &c, &fa, &fb, &fc, g_ctx, &flags);
+		setX(r==0?&const_0:&const_1);
+	}
+
+	put_reg_n(arg + 0, &a);
+	put_reg_n(arg + 1, &b);
+	put_reg_n(arg + 2, &c);
+	put_reg_n(arg + 3, &fa);
+	put_reg_n(arg + 4, &fb);
+
+	put_user_flag(arg + _FLAG_BRACKET_N, flags & _FLAG_BRACKET);
+	put_user_flag(arg + _FLAG_CONST_N, flags & _FLAG_CONST);
+#ifdef USE_RIDDERS
+	put_user_flag(arg + _FLAG_BISECT_N, flags & _FLAG_BISECT);
+#endif
 }

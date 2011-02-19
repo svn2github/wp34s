@@ -143,7 +143,6 @@ const struct monfunc monfuncs[] = {
 #ifdef INCLUDE_EASTER
 	FUNC(OP_EASTER,	&dateEaster,		NULL,		NULL,		"EASTER")
 #endif
-	FUNC(OP_stpsolve,&step_slv,		NULL,		NULL,		"stpslv")
 #undef FUNC
 };
 const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
@@ -382,7 +381,6 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
 	FUNC0(OP_XisEVEN,	&XisEven,		"EVEN?")
 	FUNC0(OP_XisODD,	&XisOdd,		"ODD?")
-	FUNC0(OP_inisolve,	&init_slv,		"inislv")
 #ifdef INCLUDE_MODULAR
 	FUNC0(OP_MPLUS,		&xrommplus,		"M+")
 	FUNC0(OP_MMINUS,	&xrommminus,		"M-")
@@ -513,6 +511,9 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_BASE,		&set_int_base,	17,			"BASE")
 
 	CMDnoI(RARG_CONV,	&cmdconv,	NUM_CONSTS_CONV*2,	"conv")
+
+	CMD(RARG_INISOLVE,	&solver,	NUMREG,			"SLVI")
+	CMD(RARG_SOLVESTEP,	&solver,	NUMREG,			"SLVS")
 #ifdef REALBUILD
 	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CNTRST")
 #endif

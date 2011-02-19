@@ -181,10 +181,9 @@ extern void set_neginf(decNumber *);
 extern void dn_inc(decNumber *, decContext *);
 extern void dn_dec(decNumber *, decContext *);
 
-extern void init_slv(decimal64 *n1, decimal64 *n2, decContext *ctx64);
-extern decNumber *step_slv(decNumber *r, const decNumber *fc, decContext *ctx);
-
 extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, decContext *, unsigned int *);
 extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, decContext *, unsigned int *);
+
+extern void solver(unsigned int arg, enum rarg op);
 
 #endif
