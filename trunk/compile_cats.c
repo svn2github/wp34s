@@ -340,7 +340,6 @@ static s_opcode test_catalogue[] = {
 static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_STOSTK,	"\015STK")
 	RARGCMD(RARG_RCLSTK,	"\016STK")
-//	RARGCMD(RARG_BACK,	"BACK")
 	RARGCMD(RARG_CF,	"CF")
 	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_CLSTK,		"CLSTK")
@@ -363,11 +362,24 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_REGSWAP,	"R-SWAP")
 	NILIC(OP_RCLFLAG,	"RCLM")
 	RARGCMD(RARG_SF,	"SF")
-//	RARGCMD(RARG_SKIP,	"SKIP")
 	NILIC(OP_STOFLAG,	"STOM")
 	NILIC(OP_ALPHAOFF,	"\240OFF")
 	NILIC(OP_ALPHAON,	"\240ON")
 };
+
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+static s_opcode internal_catalogue[] = {
+	RARGCMD(RARG_CONST_INT,	"iC")
+	RARGCMD(RARG_INISOLVE,	"SLVI")
+	RARGCMD(RARG_SOLVESTEP,	"SLVS")
+	RARGCMD(RARG_BACK,	"BACK")
+	RARGCMD(RARG_SKIP,	"SKIP")
+	NILIC(OP_RTNp1,		"RTN+1")
+	NILIC(OP_XisSpecial,	"SPEC?")
+	NILIC(OP_GSBuser,	"XEQUSR")
+	NILIC(OP_CLRuser,	"CLRUSR")
+};
+#endif
 
 static s_opcode mode_catalogue[] = {
 	NILIC(OP_1COMP,		"1COMPL")
@@ -710,6 +722,9 @@ int main(int argc, char *argv[]) {
 	CAT(alpha_catalogue);
 	g_ignorealpha = 0;
 	CAT(conv_catalogue);
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+	CAT(internal_catalogue);
+#endif
 
 	ALPHA(alpha_symbols);
 	ALPHA(alpha_compares);

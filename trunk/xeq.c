@@ -2472,9 +2472,14 @@ void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 }
 
 void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc) {
-	gsbgto(state.usrpc, 1, state_pc());
+	unsigned int usrpc = state.usrpc;
+	if (usrpc != 0)
+		gsbgto(usrpc, 1, state_pc());
 }
 
+void do_userclear(decimal64 *a, decimal64 *b, decContext *nulc) {
+	state.usrpc = 0;
+}
 
 /* Test if a number is an integer */
 void XisInt(decimal64 *a, decimal64 *b, decContext *nulc) {
@@ -3084,6 +3089,9 @@ void xeq_init(void) {
 	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");
 	check_cat(CATALOGUE_CONV, "conversion");
 	check_cat(CATALOGUE_NORMAL, "float");
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+	check_cat(CATALOGUE_INTERNAL, "internal");
+#endif
     }
 #endif
 }

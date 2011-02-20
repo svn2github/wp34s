@@ -22,6 +22,9 @@ CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions -fno-defer-pop
 
 # Optional routines to include...
 
+# Include a catalogue of the internal commands
+CFLAGS += -DINCLUDE_INTERNAL_CATALOGUE
+
 # Include the aritmetic/geometric mean iteration
 #CFLAGS += -DINCLUDE_AGM
 

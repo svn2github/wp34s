@@ -403,7 +403,7 @@ enum {
 	OP_ALPHATOX, OP_XTOALPHA, OP_ALPHAON, OP_ALPHAOFF,
 	OP_REGCOPY, OP_REGSWAP, OP_REGCLR, OP_REGSORT,
 	OP_RCLFLAG, OP_STOFLAG,
-	OP_GSBuser,
+	OP_GSBuser, OP_CLRuser,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 #ifdef INCLUDE_MODULAR
@@ -577,7 +577,10 @@ enum catalogues
 	CATALOGUE_ALPHA_SUBSCRIPTS,
 	CATALOGUE_CONST,
 	CATALOGUE_COMPLEX_CONST,
-	CATALOGUE_CONV
+	CATALOGUE_CONV,
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+	CATALOGUE_INTERNAL,
+#endif
 };
 
 enum shifts {
@@ -848,6 +851,7 @@ extern void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void do_userclear(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void XisInt(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void XisEven(decimal64 *a, decimal64 *b, decContext *nulc);

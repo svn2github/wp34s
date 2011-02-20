@@ -671,7 +671,12 @@ static int process_h_shifted_cmplx(const keycode c) {
 	case K60:	break;
 
 
-	case K00:	case K01:	case K02:	case K03:	case K04:	case K05:
+	case K05:
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+		init_cat(CATALOGUE_INTERNAL);
+		break;
+#endif		
+	case K00:	case K01:	case K02:	case K03:	case K04:
 	case K10:
 	case K20:							case K24:
 	case K30:	case K31:	case K32:	case K33:	case K34:
@@ -1397,6 +1402,9 @@ int current_catalogue_max(void) {
 		NUM_CONSTS,
 		NUM_CONSTS,
 		sizeof(conv_catalogue) / sizeof(const s_opcode),
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+		sizeof(internal_catalogue) / sizeof(const s_opcode),
+#endif
 	};
 	return catalogue_sizes[state.catalogue];
 }
@@ -1459,6 +1467,11 @@ opcode current_catalogue(int n) {
 
 	case CATALOGUE_MODE:
 		return mode_catalogue[n];
+
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+	case CATALOGUE_INTERNAL:
+		return internal_catalogue[n];
+#endif
 
 	case CATALOGUE_TEST:
 		return test_catalogue[n];
@@ -1962,6 +1975,9 @@ int main(int argc, char *argv[]) {
 			dump_menu("conversions", "", CATALOGUE_CONV);
 			dump_menu("constants", "# ", CATALOGUE_CONST);
 			dump_menu("complex constants", "[cmplx]# ", CATALOGUE_COMPLEX_CONST);
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+			dump_menu("internals", "", CATALOGUE_INTERNAL);
+#endif
 		}
 		for (c=0; c<65536; c++) {
 			if (isDBL(c) && (c & 0xff))	/* Don't show all multi-word instructions */
