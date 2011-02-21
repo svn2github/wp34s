@@ -70,6 +70,8 @@
 #define DSE(r)		xRARG(DSE, r)
 #define ISZ(r)		xRARG(ISZ, r)
 #define DSZ(r)		xRARG(DSZ, r)
+#define INC(r)		xRARG(INC, r)
+#define DEC(r)		xRARG(DEC, r)
 #define TST(c, r)	xRARG(TEST_ ## c, r)
 #define SF(f)		xRARG(SF, f)
 #define CF(f)		xRARG(CF, f)
