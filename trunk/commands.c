@@ -513,8 +513,8 @@ const struct argcmd argcmds[] = {
 
 	CMDnoI(RARG_CONV,	&cmdconv,	NUM_CONSTS_CONV*2,	"conv")
 
-	CMD(RARG_INISOLVE,	&solver,	NUMREG,			"SLVI")
-	CMD(RARG_SOLVESTEP,	&solver,	NUMREG,			"SLVS")
+	CMD(RARG_INISOLVE,	&solver,	TOPREALREG-10+1,	"SLVI")
+	CMD(RARG_SOLVESTEP,	&solver,	TOPREALREG-10+1,	"SLVS")
 #ifdef REALBUILD
 	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CNTRST")
 #endif

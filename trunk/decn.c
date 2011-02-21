@@ -2589,30 +2589,33 @@ static int slv_compare(const decNumber *a, const decNumber *b, decContext *ctx) 
  * If we've bracketed, the upper bits are an iteration counter.
  * If not, we encode more state:
  */
-#define _FLAG_BRACKET_N	1
-#define _FLAG_CONST_N	2
-#ifdef USE_RIDDERS
-#define _FLAG_BISECT_N	3
-#endif
 
-#define _FLAG_BRACKET	(1 << _FLAG_BRACKET_N)
-#define _FLAG_CONST	(1 << _FLAG_CONST_N)
+#define _FLAG_BRACKET	(1)
+#define _FLAG_CONST	(2)
 #ifdef USE_RIDDERS
-#define _FLAG_BISECT	(1 << _FLAG_BISECT_N)
+#define _FLAG_BISECT	(4)
 #endif
-
 #define SLV_COUNT(f)		((f) >> 8)
 #define SLV_SET_COUNT(f, c)	(((f) & 0xff) | ((c) << 8))
 
 #define IS_BRACKET(f)		((f) & _FLAG_BRACKET)
+#define SET_BRACKET(f)		(f) |= _FLAG_BRACKET
+#define CLEAR_BRACKET(f)	(f) &= ~_FLAG_BRACKET
 #define BRACKET_MAXCOUNT	150
 
-#define IS_CONST(f)		(((f) & _FLAG_CONST))
+#define IS_CONST(f)		((f) & _FLAG_CONST)
+#define SET_CONST(f)		(f) |= _FLAG_CONST
+#define CLEAR_CONST(f)		(f) &= ~_FLAG_CONST
 #define CONST_MAXCOUNT		20
 
 #define IS_ONESIDE(f)		(((f) & (_FLAG_BRACKET + _FLAG_CONST)) == 0)
 #define ONESIDE_MAXCOUNT	100
 
+#ifdef USE_RIDDERS
+#define IS_BISECT(f)		((f) & _FLAG_BISECT)
+#define CLEAR_BISECT(f)		(f) &= ~_FLAG_BISECT
+#define SET_BISECT(f)		(f) |= _FLAG_BISECT
+#endif
 
 int solver_step(decNumber *a, decNumber *b, decNumber *c,
 		decNumber *fa, decNumber *fb, const decNumber *fc, decContext *ctx,
@@ -2622,9 +2625,8 @@ int solver_step(decNumber *a, decNumber *b, decNumber *c,
 	unsigned int state = *statep;
 	int count, r;
 #ifdef USE_RIDDERS
-	const int was_bisect = state & _FLAG_BISECT;
-
-	state &= ~_FLAG_BISECT;
+	const int was_bisect = IS_BISECT(state);
+	CLEAR_BISECT(state);
 #endif
 	if (IS_BRACKET(state)) {
 		count = SLV_COUNT(state);
@@ -2657,15 +2659,15 @@ brcket:
 		if (solve_bracket(&q, &y, c, ctx)) {
 			solve_bisect(&q, a, b, ctx);
 #ifdef USE_RIDDERS
-			state |= _FLAG_BISECT;
+			SET_BISECT(state);
 #endif
 		}
 	} else {
 		s1 = decNumberIsNegative(fc);
 		s2 = decNumberIsNegative(fb);
 		if (s1 != s2) {
-			state |= _FLAG_BRACKET;
-			state &= ~_FLAG_CONST;
+			SET_BRACKET(state);
+			CLEAR_CONST(state);
 			r = -1;
 			goto brcket;
 		}
@@ -2677,7 +2679,7 @@ brcket:
 			decNumberCompare(&x, fb, fc, ctx);
 			if (! decNumberIsZero(&x)) {
 				state = SLV_SET_COUNT(state, 0);
-				state &= ~_FLAG_CONST;
+				CLEAR_CONST(state);
 				r = -1;
 				goto nonconst;
 			}
@@ -2739,7 +2741,7 @@ failed:
 void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNumber *fb, decContext *ctx, unsigned int *flagp) {
 	int sa, sb;
 	decNumber x, y;
-	unsigned int flags = 1 & *flagp;
+	unsigned int flags = 0;
 
 	decNumberCompare(&x, b, a, g_ctx);
 	if (decNumberIsZero(&x)) {
@@ -2755,7 +2757,7 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 	if (sa == sb) {				// Same side of line
 		decNumberCompare(&y, fa, fb, g_ctx);
 		if (decNumberIsZero(&y)) {	// Worse equal...
-cnst:			flags |= _FLAG_CONST;
+cnst:			SET_CONST(flags);
 			decNumberMultiply(&x, a, &const_2, g_ctx);
 			if (decNumberIsNegative(&x))
 				decNumberSubtract(c, &x, &const_10, g_ctx);
@@ -2766,12 +2768,12 @@ cnst:			flags |= _FLAG_CONST;
 			limit_jump(c, a, b, g_ctx);
 		}
 	} else {
-		flags |= _FLAG_BRACKET;
+		SET_BRACKET(flags);
 		solve_secant(c, a, b, fa, fb, g_ctx);
 		if (solve_bracket(c, a, b, g_ctx)) {
 			solve_bisect(c, a, b, g_ctx);
 #ifdef USE_RIDDERS
-			flags |= _FLAG_BISECT;
+			SET_BISECT(flags);
 #endif
 		}
 	}
@@ -2779,10 +2781,18 @@ cnst:			flags |= _FLAG_CONST;
 }
 
 
+// User code flag numbers
+#define _FLAG_BRACKET_N	8
+#define _FLAG_CONST_N	9
+#ifdef USE_RIDDERS
+#define _FLAG_BISECT_N	10
+#endif
+#define _FLAG_COUNT_N	0	/* 0 - 7, eight flags in all */
+
 // User code interface to the solver
 void solver(unsigned int arg, enum rarg op) {
 	decNumber a, b, c, fa, fb, fc;
-	unsigned int flags = 0;
+	unsigned int flags;
 	int r;
 
 	get_reg_n_as_dn(arg + 0, &a);
@@ -2790,19 +2800,25 @@ void solver(unsigned int arg, enum rarg op) {
 	get_reg_n_as_dn(arg + 3, &fa);
 	get_reg_n_as_dn(arg + 4, &fb);
 
-	if (get_user_flag(arg + _FLAG_BRACKET_N))
-		flags |= _FLAG_BRACKET;
-	if (get_user_flag(arg + _FLAG_CONST_N))
-		flags |= _FLAG_CONST;
-#ifdef USE_RIDDERS
-	if (get_user_flag(arg + _FLAG_BISECT_N))
-		flags |= _FLAG_BISECT;
-#endif
-
 	if (op == RARG_INISOLVE) {
 		solver_init(&c, &a, &b, &fa, &fb, g_ctx, &flags);
 	} else {
 		get_reg_n_as_dn(arg + 2, &c);
+		flags = 0;
+		for (r=0; r<8; r++)
+			if (get_user_flag(arg + r + _FLAG_COUNT_N))
+				flags |= 1<<r;
+		flags = SLV_SET_COUNT(0, flags);
+
+		if (get_user_flag(arg + _FLAG_BRACKET_N))
+			SET_BRACKET(flags);
+		if (get_user_flag(arg + _FLAG_CONST_N))
+			SET_CONST(flags);
+#ifdef USE_RIDDERS
+		if (get_user_flag(arg + _FLAG_BISECT_N))
+			SET_BISECT(flags);
+#endif
+
 		getX(&fc);
 		r = solver_step(&a, &b, &c, &fa, &fb, &fc, g_ctx, &flags);
 		setX(r==0?&const_0:&const_1);
@@ -2814,9 +2830,12 @@ void solver(unsigned int arg, enum rarg op) {
 	put_reg_n(arg + 3, &fa);
 	put_reg_n(arg + 4, &fb);
 
-	put_user_flag(arg + _FLAG_BRACKET_N, flags & _FLAG_BRACKET);
-	put_user_flag(arg + _FLAG_CONST_N, flags & _FLAG_CONST);
+	put_user_flag(arg + _FLAG_BRACKET_N, IS_BRACKET(flags));
+	put_user_flag(arg + _FLAG_CONST_N, IS_CONST(flags));
 #ifdef USE_RIDDERS
-	put_user_flag(arg + _FLAG_BISECT_N, flags & _FLAG_BISECT);
+	put_user_flag(arg + _FLAG_BISECT_N, IS_BISECT(flags));
 #endif
+	flags = SLV_COUNT(flags);
+	for (r=0; r<8; r++)
+		put_user_flag(arg + r + _FLAG_COUNT_N, flags & (1<<r));
 }

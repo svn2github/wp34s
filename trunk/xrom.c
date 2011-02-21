@@ -158,7 +158,7 @@
 //#define KLOOP			55
 
 /* Flags - global */
-#define F_XROM			0
+#define F_XROM			15
 
 /* Now the xrom table itself.
  *
@@ -194,11 +194,6 @@ const s_opcode xrom[] = {
 #define FA		(3 + SOLVE_REG_BASE)
 #define FB		(4 + SOLVE_REG_BASE)
 
-/* Flag use */
-#define S		1
-#define T		2
-
-
 	LBL(ENTRY_SOLVE)
 		ENTRY
 		DECM
@@ -216,9 +211,9 @@ const s_opcode xrom[] = {
 		TST0(apx)
 			GTO(3)
 		SLVI(0)
+		RCL(C)
 
 //	LBL(SLV_LOOP)
-		RCL(C)
 		FILL
 		GSBUSER
 		FILL
@@ -227,11 +222,13 @@ const s_opcode xrom[] = {
 		SLVS(0)
 		TST0(ne)		// Check for failure to complete
 			GTO(5)
-		RCL(B)
+		RCL(C)
 		TST(APX, A)
 			GTO(6)
+		TST(APX, B)
+			GTO(6)
 //		GTO(SLV_LOOP)
-		BACK(13)
+		BACK(14)
 	LBL(6)				// Limits are narrow -- either solved or pole
 		RCL(st(Z))
 		FILL
