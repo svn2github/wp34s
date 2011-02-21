@@ -228,7 +228,7 @@ const s_opcode xrom[] = {
 		TST(APX, B)
 			GTO(6)
 //		GTO(SLV_LOOP)
-		BACK(14)
+		BACK(13)
 	LBL(6)				// Limits are narrow -- either solved or pole
 		RCL(st(Z))
 		FILL
@@ -372,7 +372,7 @@ const s_opcode xrom[] = {
 				GTO(8)
 			GSB(7)
 			ISG(I)
-			BACK(12)	//GTO(GKLOOP)
+			BACK(11)	//GTO(GKLOOP)
 		RCL(HALF_LEN)
 		STO_MU(GAUSS)
 
@@ -403,7 +403,7 @@ const s_opcode xrom[] = {
 				GTO(2)
 			GSB(6)
 			ISG(I)
-			BACK(12)	//GTO(KLOOP)
+			BACK(11)	//GTO(KLOOP)
 		RCL(HALF_LEN)
 		STO_MU(KRONROD)
 
@@ -533,7 +533,7 @@ const s_opcode xrom[] = {
 		STO(PRODSUM)
 	//LBL(1)
 		DSE(I)
-		BACK(17)	//GTO(SIGMA_LOOP)
+		BACK(16)	//GTO(SIGMA_LOOP)
 		ZERO			// Clean up and exit
 		RCL(SAV_I)
 		RCL(PRODSUM)
@@ -569,7 +569,7 @@ const s_opcode xrom[] = {
 		STO_MU(PRODSUM)
 	//LBL(1)
 		DSE(I)
-		BACK(9)	//GTO(PI_LOOP)
+		BACK(8)	//GTO(PI_LOOP)
 		ZERO
 		RCL(SAV_I)
 		RCL(PRODSUM)

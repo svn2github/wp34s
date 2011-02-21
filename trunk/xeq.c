@@ -1517,6 +1517,7 @@ void cmdskip(unsigned int arg, enum rarg op) {
 /* Skip backwards */
 void cmdback(unsigned int arg, enum rarg op) {
 	unsigned int pc = state_pc();
+        arg++;
 	while (arg-- > 0 && pc != 0)
 		pc = dec(pc);
 	raw_set_pc(pc);
