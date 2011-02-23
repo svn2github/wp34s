@@ -418,7 +418,7 @@ void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 /* Increment the passed PC.  Account for wrap around but nothing else.
  * Return the updated PC.
  */
-static unsigned int inc(const unsigned int pc) {
+unsigned int inc(const unsigned int pc) {
 	const unsigned int off = isDBL(getprog(pc))?2:1;
 	const unsigned int npc = pc + off;
 	if (isXROM(pc)) {
@@ -2474,12 +2474,9 @@ void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 
 void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc) {
 	unsigned int usrpc = state.usrpc;
-	if (usrpc != 0)
-		gsbgto(usrpc, 1, state_pc());
-}
-
-void do_userclear(decimal64 *a, decimal64 *b, decContext *nulc) {
-	state.usrpc = 0;
+	const unsigned int pc = state_pc();
+	if (usrpc != 0 && isXROM(pc))
+		gsbgto(usrpc, 1, pc);
 }
 
 /* Test if a number is an integer */

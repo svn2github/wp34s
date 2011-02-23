@@ -170,7 +170,8 @@ display.o: display.c xeq.h display.h consts.h lcd.h int.h charset.h \
 		decn.h alpha.h decn.h Makefile
 int.o: int.c int.h xeq.h Makefile
 lcd.o: lcd.c lcd.h xeq.h display.h lcdmap.h Makefile
-keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h int.h Makefile
+keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
+		int.h xrom.h Makefile
 prt.o: prt.c xeq.h consts.h display.h Makefile
 stats.o: stats.c xeq.h decn.h stats.h consts.h int.h Makefile
 string.o: string.c xeq.h Makefile

@@ -72,9 +72,6 @@ static const char *const error_table[] =
     "stack\0CLASH",	
     "bad mode\0",
     "word size\0too SMmALL",
-#ifndef REALBUILD
-    "unsettable\0",
-#endif
 };
 
 

@@ -99,7 +99,6 @@
 #define RTN		NILADIC(RTN)
 #define RTNp1		NILADIC(RTNp1)
 #define GSBUSER		NILADIC(GSBuser)
-#define CLUSER		NILADIC(CLRuser)
 #define AVIEW		NILADIC(VIEWALPHA)
 #define DECM		NILADIC(FLOAT)
 #define CLSTK		NILADIC(CLSTK)
@@ -140,18 +139,11 @@
 #define EXIT		GTO(XROM_EXIT)
 #define EXITp1		GTO(XROM_EXITp1)
 
-#if defined(INCLUDE_MODULAR)
-#define EXIT_NO_CLEAR	GTO(XROM_EXIT_NO_CLEAR)
-#endif
-
 
 /* Labels - global */
 #define XROM_CHECK		40
 #define XROM_EXIT		41
 #define XROM_EXITp1		42
-#ifdef EXIT_NO_CLEAR
-#define XROM_EXIT_NO_CLEAR	43
-#endif
 //#define SLV_LOOP		51
 //#define SIGMA_LOOP		52
 //#define PI_LOOP			53
@@ -616,7 +608,7 @@ const s_opcode xrom[] = {
 		STO_PL(st(Y))
 		SWAP(st(L))
 		MOD
-		EXIT_NO_CLEAR
+		EXIT
 
 	LBL(ENTRY_MSUB)
 		ENTRY
@@ -624,7 +616,7 @@ const s_opcode xrom[] = {
 		MINUS
 		ROLLU
 		MOD
-		EXIT_NO_CLEAR
+		EXIT
 
 	LBL(ENTRY_MMUL)
 #define R_SAV	0
@@ -680,7 +672,7 @@ const s_opcode xrom[] = {
 		ENTER
 		ENTER
 		ROLLU
-		EXIT_NO_CLEAR
+		EXIT
 #undef R_M
 #undef R_N
 
@@ -728,7 +720,7 @@ const s_opcode xrom[] = {
 		RCL(st(Y))
 		SWAPXY
 		ROLLU
-		EXIT_NO_CLEAR
+		EXIT
 
 #undef SAV
 #endif
@@ -741,15 +733,10 @@ const s_opcode xrom[] = {
 		ERROR(ERR_XROM_NEST)
 
 	LBL(XROM_EXIT)			// Clear xrom flag and return
-		CLUSER
-#ifdef XROM_EXIT_NO_CLEAR
-	LBL(XROM_EXIT_NO_CLEAR)
-#endif
 		CF(F_XROM)
 		RTN
 
 	LBL(XROM_EXITp1)		// Clear xrom falg and return with skip
-		CLUSER
 		CF(F_XROM)
 		RTNp1
 };

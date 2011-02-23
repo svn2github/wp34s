@@ -1831,7 +1831,7 @@ static const char *map32[32] = {
 	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "space", "grad",
 	"+/-", "<=", ">=", "!=", "euro", "->", "<-", "v",
 	"^", "f-shift", "g-shift", "h-shift", "cmplx", "O-slash", "o-slash", "<->",
-	"sz", "x-hat", "y-hat", "sub-m", "times", NULL, "pound", "yen"
+	"sz", "x-hat", "y-hat", "sub-m", "times", "approx", "pound", "yen"
 };
 
 static const char *maptop[129] = {
@@ -1951,11 +1951,36 @@ static void dump_menu(const char *name, const char *prefix, const enum catalogue
 	state.catalogue = oldcata;
 }
 
+#include "xrom.h"
+static void dump_xrom(void) {
+	unsigned int pc = addrXROM(0);
+	const unsigned int max = addrXROM(xrom_size);
+
+	printf("dumping %u XROM instructions:\n", max-pc);
+	do {
+		char instr[16];
+		const opcode op = getprog(pc);
+		const char *p = prt(op, instr);
+		printf("%04u %04x ", pc, op);
+		pc = inc(pc);
+		while (*p != '\0') {
+			char c = *p++;
+			const char *q = pretty(c);
+			if (q == NULL) putchar(c);
+			else printf("[%s]", q);
+		}
+		putchar('\n');
+	} while (pc != addrXROM(0));
+}
 
 int main(int argc, char *argv[]) {
 	int c, n = 0;
 	if (argc > 1) {
 		if (argc == 2) {
+			if (argv[1][0] == 'x' && argv[1][1] == 'r' && argv[1][2] == 'o' && argv[1][3] == 'm' && argv[1][4] == '\0') {
+				dump_xrom();
+				return 0;
+			}
 			dump_menu("float", "", CATALOGUE_NORMAL);
 			dump_menu("complex", "[cmplx]", CATALOGUE_COMPLEX);
 			dump_menu("statistics", "", CATALOGUE_STATS);

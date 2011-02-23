@@ -403,7 +403,7 @@ enum {
 	OP_ALPHATOX, OP_XTOALPHA, OP_ALPHAON, OP_ALPHAOFF,
 	OP_REGCOPY, OP_REGSWAP, OP_REGCLR, OP_REGSORT,
 	OP_RCLFLAG, OP_STOFLAG,
-	OP_GSBuser, OP_CLRuser,
+	OP_GSBuser,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 #ifdef INCLUDE_MODULAR
@@ -506,9 +506,6 @@ enum errors {
 	ERR_XROM_NEST,	ERR_RANGE,	ERR_DIGIT,
 	ERR_TOO_LONG,	ERR_XEQ_NEST,	ERR_STK_CLASH,
 	ERR_BAD_MODE,	ERR_INT_SIZE,
-#ifndef REALBUILD
-	ERR_UNSETTABLE,
-#endif
 	MAX_ERROR
 };
 
@@ -699,6 +696,7 @@ extern void reset(decimal64 *a, decimal64 *b, decContext *nulc);
 extern opcode getprog(unsigned int n);
 extern void stoprog(opcode);
 extern void delprog(void);
+extern unsigned int inc(const unsigned int);
 extern unsigned int dec(unsigned int);
 extern int incpc(void);
 extern void decpc(void);
