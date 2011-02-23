@@ -90,7 +90,6 @@
 // Define the constants we know about
 #define PI		xCONST(PI)
 #define ZERO		iCONST(ZERO)
-#define ONE		iCONST(ONE)
 #define E		xCONST(CNSTE)
 #define NAN		xCONST(NAN)
 #define INFINITY	xCONST(INF)
@@ -433,31 +432,26 @@ const s_opcode xrom[] = {
 		RTN
 
 	LBL(6)				// Do a Kronrod accumulation, f(xi) in X
-		RCL(I)			// I, f, ?, ?
-		ONE			// 1, I, f, ?
-		PLUS			// I+1, f, ?, ?
+		RCL(I)			// i, f, ?, ?
+		INC(st(X))		// i+1, f, ?, ?
 		iCONSTIND(st(X))	// ki, i+1, f, ?
 		STO(st(L))
-		RCL(st(Z))
-		FILL
-		LASTX
-		TIMES
+		RCL(st(Z))		// f, ki, i+1, f
+		FILL			// f, f, f, f
+		RCL_MU(st(L))		// ki*f, f, f, f
 		STO_PL(KRONROD)
 		RTN
 	LBL(7)				// Gauus Kronrod accumulation, f(xi) in X
 		RCL(I)
-		ONE
-		PLUS
-		RCL(st(Y))
-		RCL(st(X))
+		INC(st(X))		// I+1, f, ?, ?
+		RCL(st(Y))		// f, I+1, f, ?
+		RCL(st(X))		// f, f, I+1, f
 		iCONSTIND(st(Z))	// gi, f, f, I+1
-		TIMES			// gi*f, f, I+1, I+1
+		INC(st(T))		// gi, f, f, I+2
+		TIMES			// gi*f, f, I+2, I+2
 		STO_PL(GAUSS)
-		ONE			// 1, gi*f, f, I+1
-		STO_PL(st(T))		// 1, gi*f, f, I+2
-		DROP
-		DROP
-		iCONSTIND(st(T))	// ki, f, I+2, I+2
+		DROP			// f, I+2, I+2, I+2
+		iCONSTIND(st(Z))	// ki, f, I+2, I+2
 		TIMES			// ki*f, I+2, I+2, I+2
 		STO_PL(KRONROD)
 		RTN

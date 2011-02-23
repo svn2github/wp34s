@@ -314,8 +314,8 @@ struct constsml constsint[] = {
 	CONSTANT("zero",	"ZERO",		"0"),
 	CONSTANT("one",		"ONE",		"1"),
 
-	CONSTANT("gkloop",	"KL",		"5.01402"),
-	CONSTANT("kloop",	"GKL",		"15.02903"),
+	CONSTANT("kloop",	"KL",		"5.01402"),
+	CONSTANT("gkloop",	"GKL",		"15.02903"),
 
 	CONSTANT("wgk10",	"WGK10",	"0.149445554002916905664936468389821"),
 
