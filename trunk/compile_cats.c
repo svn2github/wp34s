@@ -32,69 +32,34 @@
 #define CONV(n, d, name)	(OP_RARG | ((RARG_CONV) << RARG_OPSHFT)) + (n)*2 + (d),
 
 static s_opcode catalogue[] = {
-#ifdef INCLUDE_SUBFACT
-	MON(OP_SUBFACT,		"!n")
-#endif
-#ifdef INCLUDE_MULADD
-	TRI(OP_MULADD,		"\034+")
-#endif
 	DYA(OP_PERMG,		"%+MG")
 	DYA(OP_MARGIN,		"%MG")
 	TRI(OP_PERMRR,		"%MRR")
 	MON(OP_PERTOT,		"%T")
 	MON(OP_sigper,		"%\221")
-#ifdef INCLUDE_AGM
-	DYA(OP_AGM,		"AGM")
-#endif
 	DYA(OP_ATAN2,		"ANGLE")
 	MON(OP_CEIL,		"CEIL")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLREG,		"CLREG")
-#ifdef INCLUDE_ELLIPTIC
-	DYA(OP_CN,		"CN")
-#endif
-#ifdef INCLUDE_CUBES
-	MON(OP_CUBE,		"CUBE")
-	MON(OP_CUBERT,		"CUBERT")
-#endif
 	MON(OP_D2J,		"D\015J")
 	MON(OP_DEG2RAD,		"D\015R")
 	NILIC(OP_DATE,		"DATE")
 	MON(OP_DOWK,		"DAY")
 	DYA(OP_DTADD,		"DAYS+")
 	NILIC(OP_2FRAC,		"DECOMP")
-#ifdef INCLUDE_ELLIPTIC
-	DYA(OP_DN,		"DN")
-#endif
-#ifdef INCLUDE_EASTER
-	MON(OP_EASTER,		"EASTER")
-#endif
 	MON(OP_ERF,		"ERF")
 	MON(OP_EXPM1,		"e^x-1")
 	MON(OP_FIB,		"FIB")
 	MON(OP_FLOOR,		"FLOOR")
 	NILIC(OP_FRACT,		"FRACT")
 	DYA(OP_GCD,		"GCD")
-#ifdef INCLUDE_BESSEL
-	DYA(OP_BSIN,		"In")
-#endif
 	TRI(OP_BETAI,		"I\241")
 	DYA(OP_GAMMAP,		"I\202")
 	MON(OP_J2D,		"J\015D")
-#ifdef INCLUDE_BESSEL
-	DYA(OP_BSJN,		"Jn")
-	DYA(OP_BSKN,		"Kn")
-#endif
 	DYA(OP_LCM,		"LCM")
 	MON(OP_LN1P,		"LN1P")
 	DYA(OP_LNBETA,		"LN\241")
 	MON(OP_LNGAMMA,		"LN\202")
-#ifdef INCLUDE_MODULAR
-	NILIC(OP_MMULTIPLY,	"M\034")
-	NILIC(OP_MPLUS,		"M+")
-	NILIC(OP_MMINUS,	"M-")
-	NILIC(OP_MSQ,		"M^2")
-#endif
 	DYA(OP_MAX,		"MAX")
 	DYA(OP_MIN,		"MIN")
 	DYA(OP_LNAND,		"NAND")
@@ -106,20 +71,11 @@ static s_opcode catalogue[] = {
 	NILIC(OP_SETTIME,	"SETTIM")
 	MON(OP_SIGN,		"SIGN")
 	MON(OP_SINC,		"SINC")
-#ifdef INCLUDE_ELLIPTIC
-	DYA(OP_SN,		"SN")
-#endif
 	NILIC(OP_TIME,		"TIME")
 	NILIC(OP_VERSION,	"VERS")
 	MON(OP_LAMW,		"W")
 	MON(OP_INVW,		"W\235")
-#ifdef INCLUDE_DBLFACT
-	MON(OP_DBLFACT,		"x!!")
-#endif
 	DYA(OP_LXNOR,		"XNOR")
-#ifdef INCLUDE_BESSEL
-	DYA(OP_BSYN,		"Yn")
-#endif
 //	NILIC(OP_ALPHAAPP,	"\240APP")
 	NILIC(OP_ALPHADATE,	"\240DATE")
 	NILIC(OP_ALPHADAY,	"\240DAY")
@@ -138,60 +94,84 @@ static s_opcode catalogue[] = {
 	DYA(OP_BETA,		"\241")
 	MON(OP_GAMMA,		"\202")
 	DYA(OP_DTDIF,		"\203DAYS")
+#ifdef INCLUDE_AGM
+	DYA(OP_AGM,		"AGM")
+#endif
+#ifdef INCLUDE_SUBFACT
+	MON(OP_SUBFACT,		"!n")
+#endif
+#ifdef INCLUDE_DBLFACT
+	MON(OP_DBLFACT,		"x!!")
+#endif
+#ifdef INCLUDE_MULADD
+	TRI(OP_MULADD,		"\034+")
+#endif
+#ifdef INCLUDE_ELLIPTIC
+	DYA(OP_CN,		"CN")
+	DYA(OP_DN,		"DN")
+	DYA(OP_SN,		"SN")
+#endif
+#ifdef INCLUDE_EASTER
+	MON(OP_EASTER,		"EASTER")
+#endif
+#ifdef INCLUDE_CUBES
+	MON(OP_CUBE,		"CUBE")
+	MON(OP_CUBERT,		"CUBERT")
+#endif
 #ifdef INCLUDE_ZETA
 	MON(OP_ZETA,		"\245")
 #endif
 #ifdef INCLUDE_DIGAMMA
 	MON(OP_PSI,		"\226")
 #endif
+#ifdef INCLUDE_BESSEL
+	DYA(OP_BSIN,		"In")
+	DYA(OP_BSJN,		"Jn")
+	DYA(OP_BSKN,		"Kn")
+	DYA(OP_BSYN,		"Yn")
+#endif
 };
 
 static s_opcode cplx_catalogue[] = {
-#ifdef INCLUDE_AGM
-	CDYA(OP_AGM,		"AGM")
-#endif
-#ifdef INCLUDE_ELLIPTIC
-	CDYA(OP_CN,		"CN")
-#endif
 	CMON(OP_CCONJ,		"CONJ")
-#ifdef INCLUDE_CUBES
-	CMON(OP_CUBE,		"CUBE")
-	CMON(OP_CUBERT,		"CUBERT")
-#endif
-#ifdef INCLUDE_ELLIPTIC
-	CDYA(OP_DN,		"DN")
-#endif
 	NILIC(OP_DROPXY,	"DROP")
 	CMON(OP_EXPM1,		"e^x-1")
 	CMON(OP_FIB,		"FIB")
-#ifdef COMPLEX_BESSEL
-	CDYA(OP_BSIN,		"In")
-	CDYA(OP_BSJN,		"Jn")
-	CDYA(OP_BSKN,		"Kn")
-#endif
 	CMON(OP_LN1P,		"LN1P")
 	CDYA(OP_LNBETA,		"LN\241")
 	CMON(OP_LNGAMMA,	"LN\202")
 	CMON(OP_SIGN,		"SIGN")
 	CMON(OP_SINC,		"SINC")
-#ifdef INCLUDE_ELLIPTIC
-	CDYA(OP_SN,		"SN")
-#endif
 	CMON(OP_LAMW,		"W")
 	CMON(OP_INVW,		"W\235")
+	CDYA(OP_BETA,		"\241")
+	CMON(OP_GAMMA,		"\202")
+#ifdef INCLUDE_AGM
+	CDYA(OP_AGM,		"AGM")
+#endif
+#ifdef INCLUDE_CUBES
+	CMON(OP_CUBE,		"CUBE")
+	CMON(OP_CUBERT,		"CUBERT")
+#endif
 #ifdef INCLUDE_DBLFACT
 	CMON(OP_DBLFACT,	"x!!")
 #endif
-#ifdef COMPLEX_BESSEL
-	CDYA(OP_BSYN,		"Yn")
-#endif
-	CDYA(OP_BETA,		"\241")
-	CMON(OP_GAMMA,		"\202")
 #ifdef INCLUDE_ZETA
 	CMON(OP_ZETA,		"\245")
 #endif
 #ifdef INCLUDE_DIGAMMA
 	CMON(OP_PSI,		"\226")
+#endif
+#ifdef COMPLEX_BESSEL
+	CDYA(OP_BSIN,		"In")
+	CDYA(OP_BSJN,		"Jn")
+	CDYA(OP_BSKN,		"Kn")
+	CDYA(OP_BSYN,		"Yn")
+#endif
+#ifdef INCLUDE_ELLIPTIC
+	CDYA(OP_CN,		"CN")
+	CDYA(OP_DN,		"DN")
+	CDYA(OP_SN,		"SN")
 #endif
 };
 
@@ -251,18 +231,11 @@ static s_opcode prob_catalogue[] = {
 };
 
 static s_opcode int_catalogue[] = {
-#ifdef INCLUDE_MULADD
-	TRI(OP_MULADD,		"\034+")
-#endif
 	RARGCMD(RARG_ASR,	"ASR")
 	RARGCMD(RARG_CB,	"CB")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_CLREG,		"CLREG")
-#ifdef INCLUDE_CUBES
-	MON(OP_CUBE,		"CUBE")
-	MON(OP_CUBERT,		"CUBERT")
-#endif
 	NILIC(OP_DBL_MUL,	"DBL\034")
 	TRI(OP_DBL_DIV, 	"DBL/")
 	TRI(OP_DBL_MOD, 	"DBLR")
@@ -304,6 +277,13 @@ static s_opcode int_catalogue[] = {
 	RARGCMD(RARG_ALSR,	"\240SR")
 	RARGCMD(RARG_ASTO,	"\240STO")
 //	NILIC(OP_AVIEW,		"\240VIEW")
+#ifdef INCLUDE_MULADD
+	TRI(OP_MULADD,		"\034+")
+#endif
+#ifdef INCLUDE_CUBES
+	MON(OP_CUBE,		"CUBE")
+	MON(OP_CUBERT,		"CUBERT")
+#endif
 };
 
 static s_opcode test_catalogue[] = {

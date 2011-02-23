@@ -406,9 +406,6 @@ enum {
 	OP_GSBuser,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
-#ifdef INCLUDE_MODULAR
-	OP_MPLUS, OP_MMINUS, OP_MMULTIPLY, OP_MSQ,
-#endif
 };
 
 
@@ -880,12 +877,6 @@ extern decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx);
 
 #ifdef REALBUILD
 extern void cmdcontrast(unsigned int arg, enum rarg op);
-#endif
-#ifdef INCLUDE_MODULAR
-extern void xrommplus(decimal64 *a, decimal64 *b, decContext *nulc);
-extern void xrommminus(decimal64 *a, decimal64 *b, decContext *nulc);
-extern void xrommsq(decimal64 *a, decimal64 *b, decContext *nulc);
-extern void xrommmul(decimal64 *a, decimal64 *b, decContext *nulc);
 #endif
 
 #endif

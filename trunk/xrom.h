@@ -26,12 +26,10 @@
 #define ENTRY_SOLVE	97
 #define ENTRY_INTEGRATE	96
 
-#ifdef INCLUDE_MODULAR
-#define ENTRY_MADD	95
-#define ENTRY_MSUB	94
-#define ENTRY_MMUL	93
-#define ENTRY_MSQ	92
-#endif
+/* Labels - global */
+#define XROM_CHECK		40
+#define XROM_EXIT		41
+#define XROM_EXITp1		42
 
 extern const s_opcode xrom[];
 extern const unsigned short int xrom_size;

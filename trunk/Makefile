@@ -64,9 +64,6 @@ CFLAGS += -DINCLUDE_INTERNAL_CATALOGUE
 # Include code to use a Ridder's method step after a bisection in the solver.
 #CFLAGS += -DUSE_RIDDERS
 
-# Include some user code modular arithmetic routines (+, -, * and square)
-#CFLAGS += -DINCLUDE_MODULAR
-
 OBJS := keys.o display.o xeq.o prt.o decn.o complex.o stats.o \
 		lcd.o int.o date.o xrom.o consts.o alpha.o charmap.o \
 		commands.o string.o

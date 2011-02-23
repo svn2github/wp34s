@@ -1952,16 +1952,50 @@ static void dump_menu(const char *name, const char *prefix, const enum catalogue
 }
 
 #include "xrom.h"
+static struct {
+	opcode op;
+	const char *name;
+} xrom_labels[] = {
+#define XL(n, s)	{ RARG(RARG_LBL, (n) & RARG_MASK), s },
+#define XE(n, s)	{ RARG(RARG_ERROR, (n) & RARG_MASK), s },
+	XL(ENTRY_SIGMA, "Entry: SUMMATION")
+	XL(ENTRY_PI, "Entry: PRODUCT")
+	XL(ENTRY_SOLVE, "Entry: SOLVE")
+	XL(ENTRY_INTEGRATE, "Entry: INTEGRATE")
+	XL(XROM_CHECK, "Internal: Common entry code")
+	XL(XROM_EXIT, "Internal: Normal exit code")
+	XL(XROM_EXITp1, "Internal: Abnormal exit code")
+	XE(ERR_DOMAIN, "Error: Domain Error")
+	XE(ERR_BAD_DATE, "Error: Bad Date Error")
+	XE(ERR_PROG_BAD, "Error: Undefined Op-code")
+	XE(ERR_INFINITY, "Error: +infinity")
+	XE(ERR_MINFINITY, "Error: -infinity")
+	XE(ERR_NO_LBL, "Error: no such label")
+	XE(ERR_XROM_NEST, "Error: Slv integrate sum product nested")
+	XE(ERR_RANGE, "Error: out of range error")
+	XE(ERR_DIGIT, "Error: bad digit error")
+	XE(ERR_TOO_LONG, "Error: too long error")
+	XE(ERR_XEQ_NEST, "Error: >8 levels nested")
+	XE(ERR_STK_CLASH, "Error: stack clash")
+	XE(ERR_BAD_MODE, "Error: bad mode error")
+	XE(ERR_INT_SIZE, "Error: word size too small")
+#undef XE
+#undef XL
+};
+#define num_xrom_labels		(sizeof(xrom_labels) / sizeof(*xrom_labels))
+
 static void dump_xrom(void) {
 	unsigned int pc = addrXROM(0);
 	const unsigned int max = addrXROM(xrom_size);
 
-	printf("dumping %u XROM instructions:\n", max-pc);
+	printf("%u XROM instructions\n\n", max-pc);
+	printf("ADDR  MNEMONIC\t\tComment\n\n");
 	do {
 		char instr[16];
 		const opcode op = getprog(pc);
 		const char *p = prt(op, instr);
-		printf("%04u %04x ", pc, op);
+		int i;
+		printf("%04x  ", pc);
 		pc = inc(pc);
 		while (*p != '\0') {
 			char c = *p++;
@@ -1969,6 +2003,9 @@ static void dump_xrom(void) {
 			if (q == NULL) putchar(c);
 			else printf("[%s]", q);
 		}
+		for (i=0; i<num_xrom_labels; i++)
+			if (xrom_labels[i].op == op)
+				printf("\t\t%s", xrom_labels[i].name);
 		putchar('\n');
 	} while (pc != addrXROM(0));
 }

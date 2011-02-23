@@ -381,12 +381,6 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
 	FUNC0(OP_XisEVEN,	&XisEven,		"EVEN?")
 	FUNC0(OP_XisODD,	&XisOdd,		"ODD?")
-#ifdef INCLUDE_MODULAR
-	FUNC0(OP_MPLUS,		&xrommplus,		"M+")
-	FUNC0(OP_MMINUS,	&xrommminus,		"M-")
-	FUNC0(OP_MMULTIPLY,	&xrommmul,		"M\034")
-	FUNC0(OP_MSQ,		&xrommsq,		"M\232")
-#endif
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2

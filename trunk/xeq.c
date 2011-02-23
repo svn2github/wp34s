@@ -1388,24 +1388,6 @@ void multixromarg(const opcode o, enum multiops mopr) {
 	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), lbl);
 }
 
-#ifdef INCLUDE_MODULAR
-void xrommplus(decimal64 *a, decimal64 *b, decContext *nulc) {
-	xromargcommon(ENTRY_MADD, 0xffff);
-}
-
-void xrommminus(decimal64 *a, decimal64 *b, decContext *nulc) {
-	xromargcommon(ENTRY_MSUB, 0xffff);
-}
-
-void xrommsq(decimal64 *a, decimal64 *b, decContext *nulc) {
-	xromargcommon(ENTRY_MSQ, 0xffff);
-}
-
-void xrommmul(decimal64 *a, decimal64 *b, decContext *nulc) {
-	xromargcommon(ENTRY_MMUL, 0xffff);
-}
-#endif
-
 
 void cmddisp(unsigned int arg, enum rarg op) {
 	state.dispdigs = arg;

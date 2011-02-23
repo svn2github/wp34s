@@ -42,7 +42,6 @@
 
 // Commands that take an argument
 #define ERROR(n)	xRARG(ERROR, n)
-#define WARNING(n)	xRARG(WARNING, n)
 #define LBL(n)		xRARG(LBL, n)
 #define GTO(n)		xRARG(GTO, n)
 #define GSB(n)		xRARG(XEQ, n)
@@ -139,16 +138,6 @@
 #define EXIT		GTO(XROM_EXIT)
 #define EXITp1		GTO(XROM_EXITp1)
 
-
-/* Labels - global */
-#define XROM_CHECK		40
-#define XROM_EXIT		41
-#define XROM_EXITp1		42
-//#define SLV_LOOP		51
-//#define SIGMA_LOOP		52
-//#define PI_LOOP			53
-//#define GKLOOP			54
-//#define KLOOP			55
 
 /* Flags - global */
 #define F_XROM			15
@@ -522,15 +511,7 @@ const s_opcode xrom[] = {
 	//LBL(1)
 		DSE(I)
 		BACK(16)	//GTO(SIGMA_LOOP)
-		ZERO			// Clean up and exit
-		RCL(SAV_I)
-		RCL(PRODSUM)
-		SWAPXY
-		STO(st(L))
-		ENTER
-		DROP
-		DROP
-		EXIT
+		GTO(7)
 
 // Product code
 	LBL(ENTRY_PI)
@@ -558,34 +539,19 @@ const s_opcode xrom[] = {
 	//LBL(1)
 		DSE(I)
 		BACK(8)	//GTO(PI_LOOP)
-		ZERO
+	LBL(7)
 		RCL(SAV_I)
-		RCL(PRODSUM)
-		SWAPXY
 		STO(st(L))
-		ENTER
-		DROP
-		DROP
+		ZERO
+		FILL
+		RCL(PRODSUM)
 		EXIT
 
-	LBL(8)
-		TST_NaN
-			GTO(0)
-		RCL(SAV_I)		// Infinite result
-		DROP
-		STO(st(L))
-		DROP
-		ZERO
-		ZERO
-		ZERO
-		ROLLU
-		EXIT
-	LBL(0)				// NaN result
+	LBL(8)				// NaN result
 		RCL(SAV_I)
 		STO(st(L))
 		ZERO
-		ZERO
-		ZERO
+		FILL
 		NAN
 		EXIT
 	LBL(9)				// Exit in error
@@ -598,132 +564,6 @@ const s_opcode xrom[] = {
 #undef PRODSUM
 #undef C
 #undef SAV_I
-
-/**************************************************************************/
-/* Modular arithmetic routines */
-#ifdef INCLUDE_MODULAR
-	LBL(ENTRY_MADD)
-		ENTRY
-		MINUS
-		STO_PL(st(Y))
-		SWAP(st(L))
-		MOD
-		EXIT
-
-	LBL(ENTRY_MSUB)
-		ENTRY
-		ROLLD
-		MINUS
-		ROLLU
-		MOD
-		EXIT
-
-	LBL(ENTRY_MMUL)
-#define R_SAV	0
-#define R_N	1
-#define R_M	2
-		ENTRY
-		ROLLU
-		STO(R_SAV)
-		ROLLD
-		STO(R_N)
-		ROLLD
-		STO(st(Z))
-		EEX
-		DIG(8)
-		MOD
-		STO_MI(st(Z))
-		STO(R_M)
-		SWAPXY
-		STO(st(Y))
-		LASTX
-		MOD
-		STO_MI(st(Y))
-		STO_MU(st(T))
-		SWAP(R_M)
-		STO_MU(R_M)
-		SWAPXY
-		STO_MU(st(Z))
-		TIMES
-		RCL(R_N)
-		MOD
-		SWAPXY
-		LASTX
-		CHS
-		MOD
-		PLUS
-		RCL(R_N)
-		MOD
-		SWAPXY
-		LASTX
-		CHS
-		MOD
-		PLUS
-		RCL(R_N)
-		MOD
-		RCL(R_M)
-		LASTX
-		CHS
-		MOD
-		PLUS
-		RCL(R_N)
-		MOD
-		RCL(R_SAV)
-		ENTER
-		ENTER
-		ROLLU
-		EXIT
-#undef R_M
-#undef R_N
-
-	LBL(ENTRY_MSQ)
-		ENTRY
-		ROLLD
-		ROLLD
-		CSTO(R_SAV)
-		ROLLD
-		ROLLD
-		RCL(st(Y))
-		EEX
-		DIG(8)
-		MOD
-		STO_MI(st(Z))
-		STO(st(T))
-		SQUARE
-		SWAPXY
-		MOD
-		SWAPXY
-		STO_MU(st(Z))
-		STO_MU(st(X))
-		LASTX
-		CHS
-		MOD
-		STO_PL(st(Y))
-		SWAP(st(L))
-		CHS
-		MOD
-		SWAPXY
-		LASTX
-		MOD
-		RCL(st(X))
-		LASTX
-		MINUS
-		STO_PL(st(Y))
-		SWAP(st(L))
-		CHS
-		MOD
-		STO_PL(st(Y))
-		SWAP(st(L))
-		CHS
-		MOD
-		CRCL(R_SAV)
-		RCL(st(Y))
-		SWAPXY
-		ROLLU
-		EXIT
-
-#undef SAV
-#endif
 
 /**************************************************************************/
 
