@@ -1956,8 +1956,8 @@ static struct {
 	opcode op;
 	const char *name;
 } xrom_labels[] = {
-#define XL(n, s)	{ RARG(RARG_LBL, (n) & RARG_MASK), s },
-#define XE(n, s)	{ RARG(RARG_ERROR, (n) & RARG_MASK), s },
+#define X(op, n, s)	{ RARG(RARG_ ## op, (n) & RARG_MASK), s},
+#define XL(n, s)	X(LBL, n, s)
 	XL(ENTRY_SIGMA, "Entry: SUMMATION")
 	XL(ENTRY_PI, "Entry: PRODUCT")
 	XL(ENTRY_SOLVE, "Entry: SOLVE")
@@ -1965,6 +1965,13 @@ static struct {
 	XL(XROM_CHECK, "Internal: Common entry code")
 	XL(XROM_EXIT, "Internal: Normal exit code")
 	XL(XROM_EXITp1, "Internal: Abnormal exit code")
+#undef XL
+#define XG(n, s)	X(GTO, n, s)	X(XEQ, n, s)
+	XG(XROM_CHECK, "-> Common entry code")
+	XG(XROM_EXIT, "-> Normal exit code")
+	XG(XROM_EXITp1, "-> Abnormal exit code")
+#undef XG
+#define XE(n, s)	X(ERROR, n, s)
 	XE(ERR_DOMAIN, "Error: Domain Error")
 	XE(ERR_BAD_DATE, "Error: Bad Date Error")
 	XE(ERR_PROG_BAD, "Error: Undefined Op-code")
@@ -1980,7 +1987,7 @@ static struct {
 	XE(ERR_BAD_MODE, "Error: bad mode error")
 	XE(ERR_INT_SIZE, "Error: word size too small")
 #undef XE
-#undef XL
+#undef X
 };
 #define num_xrom_labels		(sizeof(xrom_labels) / sizeof(*xrom_labels))
 
