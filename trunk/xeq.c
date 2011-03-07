@@ -1692,7 +1692,7 @@ static int incdec(unsigned int arg, int inc) {
 			x = intAdd(x, 1LL);
 		else
 			x = intSubtract(x, 1LL);
-		put_reg_n_from_int(x, arg);
+		put_reg_n_from_int(arg, x);
 
 		xv = extract_value(x, &xs);
 		return xv != 0;
@@ -1728,7 +1728,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 			x = intAdd(x, 1LL);
 		else
 			x = intSubtract(x, 1LL);
-		put_reg_n_from_int(x, arg);
+		put_reg_n_from_int(arg, x);
 
 		xv = extract_value(x, &xs);
 		if (op == RARG_ISG)
