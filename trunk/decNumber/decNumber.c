@@ -160,6 +160,7 @@
 #endif
 #include "decNumber.h"             // base number library
 #include "decNumberLocal.h"        // decNumber local types, etc.
+#include <string.h>                // form xcopy == memcpy
 
 /* Constants */
 // Public constant array: powers of ten (powers[n]==10**n, 0<=n<=9)

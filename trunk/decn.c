@@ -19,6 +19,8 @@
 #include "consts.h"
 #include "complex.h"
 
+#undef alpha  // no need to access alpha register here, collides with variables
+
 #if 0
 #include <stdio.h>
 static FILE *debugf = NULL;
