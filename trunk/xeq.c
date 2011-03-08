@@ -2995,7 +2995,8 @@ static void check_const_cat(void) {
 /* Main initialisation routine that sets things up for us.
  */
 void xeq_init(void) {
-	reset(NULL, NULL, NULL);
+	if (state.magic != MagicMarker)
+		reset(NULL, NULL, NULL);
 
 
 #ifdef DEBUG
