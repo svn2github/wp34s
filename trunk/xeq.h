@@ -617,7 +617,6 @@ struct _state {
 
 	unsigned int catalogue : 5;	// In catalogue mode
 	unsigned int int_base : 4;	// Integer input/output base
-	//unsigned int int_mode : 2;	// Integer sign mode
 	unsigned int test : 3;		// Waiting for a test command entry
 	unsigned int int_window : 3;	// Which window to display 0=rightmost
 	unsigned int gtodot : 1;	// GTO . sequence met
