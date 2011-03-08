@@ -37,27 +37,12 @@
 #include "alpha.h"
 
 
-#define CMDLINELEN	23
-#define NUMBANKREGS	5
-#define NUMBANKFLAGS	16
-
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
-
-struct state state;
-
-const char *disp_msg = NULL;
-
-/* Define storage for the machine's registers.
-*/
-decimal64 regs[NUMREG];
-static decimal64 bank_regs[NUMBANKREGS];
 
 
 /* Define storage for the machine's program space.
  */
-static s_opcode _prog[NUMPROG];
-//#define prog	(_prog-1)
-static s_opcode *const prog = _prog - 1;
+#define prog	((s_opcode *)(PersistentRam._prog - 1))
 
 /* We need various different maths contexts.
  * More efficient to define these globally and reuse them as needed.
@@ -65,20 +50,7 @@ static s_opcode *const prog = _prog - 1;
 decContext *g_ctx, *g_ctx64;
 
 
-/* Storage space for our user flags */
-static unsigned short bank_flags;
-static unsigned char flags[(NUMFLG+7) >> 3];
-
-/* Alpha register gets its own space */
-char alpha[NUMALPHA+1];
-
-
-/* The program return stack */
-static unsigned short int retstk[RET_STACK_SIZE];
 #define retstkptr	(state.retstk_ptr)
-
-
-static char cmdline[CMDLINELEN + 1];
 
 
 unsigned int get_bank_flags(void) {
@@ -479,7 +451,7 @@ void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 /* Reset all flags to off/false
  */
 void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	xset(flags, 0, sizeof(flags));
+	xset(user_flags, 0, sizeof(user_flags));
 }
 
 /* Zero out all registers including the stack and lastx
@@ -549,6 +521,7 @@ void reset(decimal64 *a, decimal64 *b, decContext *nulc) {
 	state.contrast = 9;
 #endif
 	//state.stack_depth = 0;
+	disp_msg = NULL;
 }
 
 /* Convert a possibly signed string to an integer
@@ -1785,7 +1758,7 @@ static unsigned char *flag_byte(const int n, unsigned char *mask) {
 	*mask = 1 << (n % 8);
 	if (isXROM(state_pc()) && n < NUMBANKFLAGS)
 		return ((unsigned char *)&bank_flags) + n / 8;
-	return flags + n / 8;
+	return user_flags + n / 8;
 }
 
 int get_user_flag(int n) {
@@ -2712,7 +2685,7 @@ static void rargs(const opcode op) {
 		return;
 	if (ind && argcmds[cmd].indirectokay) {
 		if (is_intmode()) {
-			arg = get_reg_n_as_int(arg);
+			arg = (unsigned int) get_reg_n_as_int(arg);
 		} else {
 			get_reg_n_as_dn(arg, &x);
 			arg = dn_to_int(&x, g_ctx);
@@ -2786,7 +2759,7 @@ void xeq(opcode op)
 	const int ss = stack_size();
 	const int nreg = ss + 2;
 	decimal64 save[STACK_SIZE+2];
-	struct state old = state;
+	struct _state old = state;
 	enum errors er;
 
 #ifndef REALBUILD
@@ -2958,13 +2931,13 @@ static int compare(s_opcode a1, s_opcode a2, int cata) {
 	char b1[16], b2[16];
 	const unsigned char *s1, *s2;
 	int i;
-	const int alpha = cata == CATALOGUE_ALPHA;
+	const int cat_alpha = cata == CATALOGUE_ALPHA;
 
 	xset(b1, 0, sizeof(b1));
 	xset(b2, 0, sizeof(b2));
 	s1 = (unsigned char *)catcmd(a1, b1);
 	s2 = (unsigned char *)catcmd(a2, b2);
-	if (alpha) {
+	if (cat_alpha) {
 		if (*s1 == 0240) s1++;
 		if (*s2 == 0240) s2++;
 	}

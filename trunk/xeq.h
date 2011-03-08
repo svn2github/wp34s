@@ -18,7 +18,7 @@
 #define __XEQ_H__
 
 /* Version number */
-#define VERSION_STRING	"1.13"
+#define VERSION_STRING	"1.14"
 
 
 /* Define the length of our extended precision numbers.
@@ -143,9 +143,6 @@ extern const struct multicmd multicmds[];
 extern const unsigned short num_multicmds;
 
 
-
-extern const char *disp_msg;
-
 extern decContext *g_ctx, *g_ctx64;
 
 
@@ -167,7 +164,10 @@ extern int current_catalogue_max(void);
 #define NUMFLG		103	/* Number of flags */
 
 #define NUMALPHA	31	/* Number of characters in alpha */
-extern char alpha[NUMALPHA+1];
+
+#define CMDLINELEN	23
+#define NUMBANKREGS	5
+#define NUMBANKFLAGS	16
 
 
 /* Macros to access program ROM */
@@ -179,8 +179,6 @@ extern char alpha[NUMALPHA+1];
 /* Stack lives in the register set */
 #define NUMREG		(TOPREALREG+STACK_SIZE+EXTRA_REG)/* Number of registers */
 #define TOPREALREG	(100)				/* Non-stack last register */
-
-extern decimal64 regs[NUMREG];
 
 #define REGNAMES	"XYZTABCDLIJK"
 
@@ -585,7 +583,7 @@ enum shifts {
 
 #define MagicMarker 0x1357fdb9
 
-extern struct state {
+struct _state {
 	unsigned long int magic;	// Magic marker to detect failed RAM
 
 // User noticable state
@@ -629,7 +627,7 @@ extern struct state {
 	unsigned int cmdlinedot : 2;	// XEQ internal - don't use
 	unsigned int state_running : 1;	// XEQ internal - don't use
 
-	unsigned int alpha : 1;		// Alpha shift key pressed
+	unsigned int alphas : 1;	// Alpha shift key pressed
 	unsigned int cmplx : 1;		// Complex prefix pressed
 	unsigned int wascomplex : 1;	// Previous operation was complex
 	unsigned int arrow : 1;		// Conversion in progress
@@ -663,8 +661,50 @@ extern struct state {
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode
 	unsigned int leadzero : 1;	// forced display of leading zeros in int mode
-} state;
+};
 
+extern struct _ram {
+	struct _state	_state;
+	const char *_disp_msg;
+
+	/* Random number seeds
+	 */
+	unsigned long int _rand_s1, _rand_s2, _rand_s3;
+
+	/* Define storage for the machine's registers.
+	 */
+	decimal64 _regs[NUMREG];
+	decimal64 _bank_regs[NUMBANKREGS];
+
+	/* Define storage for the machine's program space.
+	 */
+	s_opcode _prog[NUMPROG];
+
+	/* The program return stack */
+	unsigned short int _retstk[RET_STACK_SIZE];
+
+	/* Storage space for our user flags */
+	unsigned short _bank_flags;
+	unsigned char _user_flags[(NUMFLG+7) >> 3];
+
+	/* Alpha register gets its own space */
+	char _alpha[NUMALPHA+1];
+
+	char _cmdline[CMDLINELEN + 1];
+} PersistentRam;
+
+#define state		(PersistentRam._state)
+#define disp_msg	(PersistentRam._disp_msg)
+#define alpha		(PersistentRam._alpha)
+#define regs		(PersistentRam._regs)
+#define bank_regs	(PersistentRam._bank_regs)
+#define bank_flags	(PersistentRam._bank_flags)
+#define user_flags	(PersistentRam._user_flags)
+#define cmdline		(PersistentRam._cmdline)
+#define retstk		(PersistentRam._retstk)
+#define rand_s1		(PersistentRam._rand_s1)
+#define rand_s2		(PersistentRam._rand_s2)
+#define rand_s3		(PersistentRam._rand_s3)
 
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);

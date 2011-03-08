@@ -2622,17 +2622,17 @@ int solver_step(decNumber *a, decNumber *b, decNumber *c,
 		unsigned int *statep) {
 	decNumber q, x, y, z;
 	int s1, s2;
-	unsigned int state = *statep;
+	unsigned int slv_state = *statep;
 	int count, r;
 #ifdef USE_RIDDERS
-	const int was_bisect = IS_BISECT(state);
-	CLEAR_BISECT(state);
+	const int was_bisect = IS_BISECT(slv_state);
+	CLEAR_BISECT(slv_state);
 #endif
-	if (IS_BRACKET(state)) {
-		count = SLV_COUNT(state);
+	if (IS_BRACKET(slv_state)) {
+		count = SLV_COUNT(slv_state);
 		if (count >= BRACKET_MAXCOUNT)
 			goto failed;
-		state = SLV_SET_COUNT(state, count+1);
+		slv_state = SLV_SET_COUNT(slv_state, count+1);
 brcket:
 #ifdef USE_RIDDERS
 
@@ -2659,31 +2659,31 @@ brcket:
 		if (solve_bracket(&q, &y, c, ctx)) {
 			solve_bisect(&q, a, b, ctx);
 #ifdef USE_RIDDERS
-			SET_BISECT(state);
+			SET_BISECT(slv_state);
 #endif
 		}
 	} else {
 		s1 = decNumberIsNegative(fc);
 		s2 = decNumberIsNegative(fb);
 		if (s1 != s2) {
-			SET_BRACKET(state);
-			CLEAR_CONST(state);
+			SET_BRACKET(slv_state);
+			CLEAR_CONST(slv_state);
 			r = -1;
 			goto brcket;
 		}
-		if (IS_CONST(state)) {
-			count = SLV_COUNT(state);
+		if (IS_CONST(slv_state)) {
+			count = SLV_COUNT(slv_state);
 			if (count >= CONST_MAXCOUNT)
 				goto failed;
 
 			decNumberCompare(&x, fb, fc, ctx);
 			if (! decNumberIsZero(&x)) {
-				state = SLV_SET_COUNT(state, 0);
-				CLEAR_CONST(state);
+				slv_state = SLV_SET_COUNT(slv_state, 0);
+				CLEAR_CONST(slv_state);
 				r = -1;
 				goto nonconst;
 			}
-			state = SLV_SET_COUNT(state, count+1);
+			slv_state = SLV_SET_COUNT(slv_state, count+1);
 			if (count & 1) {
 				decNumberCopy(b, c);
 				decNumberCopy(fb, fc);
@@ -2700,10 +2700,10 @@ brcket:
 				decNumberAdd(&q, &x, &const_10, g_ctx);
 			}
 		} else {
-			count = SLV_COUNT(state);
+			count = SLV_COUNT(slv_state);
 			if (count >= ONESIDE_MAXCOUNT)
 				goto failed;
-			state = SLV_SET_COUNT(state, count+1);
+			slv_state = SLV_SET_COUNT(slv_state, count+1);
 nonconst:
 			r = solve_quadratic(&q, a, b, c, fa, fb, fc, ctx);
 			//MORE: need to check if the new point is worse than the old.
@@ -2731,10 +2731,10 @@ nonconst:
 	if (slv_compare(a, &q, ctx)) goto failed;
 	if (slv_compare(b, &q, ctx)) goto failed;
 	decNumberCopy(c, &q);
-	*statep = state;
+	*statep = slv_state;
 	return 0;
 failed:
-	*statep = state;
+	*statep = slv_state;
 	return -1;
 }
 

@@ -47,8 +47,6 @@
 #define sigmaXlnY	(regs[98])
 #define sigmaYlnX	(regs[99])
 
-static unsigned long int rand_s1, rand_s2, rand_s3;
-
 
 static void correlation(decNumber *, const enum sigma_modes);
 
@@ -527,7 +525,7 @@ void stats_sto_random(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 		 s = d64toInt(&regX) & 0xffffffff;
 	} else {
 		getX(&x);
-		s = dn_to_ull(&x, g_ctx64, &z);
+		s = (unsigned long int) dn_to_ull(&x, g_ctx64, &z);
 	}
 	taus_seed(s);
 }

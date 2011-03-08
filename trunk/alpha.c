@@ -97,7 +97,7 @@ void alpha_ip(unsigned int arg, enum rarg op) {
 	int sgn;
 
 	if (is_intmode()) {
-		n = extract_value(get_reg_n_as_int(arg), &sgn);
+		n = (unsigned int) extract_value(get_reg_n_as_int(arg), &sgn);
 		// should convert this using the current display mode...
 	} else {
 		decNumber x;
@@ -242,11 +242,11 @@ void alpha_rcl(unsigned int arg, enum rarg op) {
 /* Turn alpha mode on and off
  */
 void alpha_on(decimal64 *a, decimal64 *b, decContext *ctx64) {
-	state.alpha = 1;
+	state.alphas = 1;
 }
 
 void alpha_off(decimal64 *a, decimal64 *b, decContext *ctx64) {
-	state.alpha = 0;
+	state.alphas = 0;
 }
 
 /* Input one character and append to alpha

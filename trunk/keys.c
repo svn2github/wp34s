@@ -93,7 +93,7 @@ static void init_cat(enum catalogues cat) {
 }
 
 static void init_state(void) {
-	struct state s;
+	struct _state s;
 	xset(&s, 0, sizeof(s));
 
 #define C(n)	s.n = state.n
@@ -116,7 +116,7 @@ static void init_state(void) {
 	s.shifts = SHIFT_N;
 	s.test = TST_NONE;
 
-	xcopy(&state, &s, sizeof(struct state));
+	xcopy(&state, &s, sizeof(struct _state));
 }
 
 static void init_confirm(enum confirmations n) {
@@ -338,7 +338,7 @@ static int process_f_shifted(const keycode c) {
 
 	case K20:
 		process_cmdline_set_lift();
-		state.alpha = 1;
+		state.alphas = 1;
 		break;
 
 	case K21:	return OP_NIL | OP_ALPHATOX;
@@ -946,7 +946,7 @@ fkey:		if (oldstate != SHIFT_F)
 	case K20:	// Enter - maybe exit alpha mode
 		if (oldstate == SHIFT_F)
 			break;
-		state.alpha = 0;
+		state.alphas = 0;
 		state.alphashift = 0;
 		return STATE_UNFINISHED;
 
@@ -1688,7 +1688,7 @@ static int process(const int c) {
 	if (state.multi)
 		return process_multi((const keycode)c);
 
-	if (state.alpha)
+	if (state.alphas)
 		return process_alpha((const keycode)c);
 
 	if (state.arrow)
@@ -1733,7 +1733,7 @@ void process_keycode(int c) {
 	case STATE_BACKSPACE:
 		if (! state.runmode)
 			delprog();
-		else if (state.alpha) {
+		else if (state.alphas) {
 			char *p = find_char(alpha, '\0');
 			if (p > alpha)
 				*--p = '\0';
@@ -1760,6 +1760,15 @@ void init_34s(void) {
 }
 
 #ifndef REALBUILD
+
+#ifndef WINGUI
+/*
+ *  Create the persistant RAM area
+ *  The Windows GUI does this automatically
+ */
+struct _ram PersistentRam;
+#endif
+
 static int remap(const int c) {
 	switch (c) {
 	case 'F':	return K_F;
@@ -2017,6 +2026,25 @@ static void dump_xrom(void) {
 	} while (pc != addrXROM(0));
 }
 
+#ifndef WINGUI
+/*
+ *  Save/Load state
+ */
+void save_state( void )
+{
+	FILE *f = fopen( "wp34s.dat", "wb" );
+	if ( f == NULL ) return;
+	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
+}
+
+void load_state( void )
+{
+	FILE *f = fopen( "wp34s.dat", "rb" );
+	if ( f == NULL ) return;
+	fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
+}
+#endif
+
 int main(int argc, char *argv[]) {
 	int c, n = 0;
 	if (argc > 1) {
@@ -2064,6 +2092,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	load_state();
 	init_34s();
 	if (setuptty(0) == 0) {
 		display();
@@ -2084,6 +2113,7 @@ int main(int argc, char *argv[]) {
 		}
 		setuptty(1);
 	}
+	save_state();
 	return 0;
 }
 #endif

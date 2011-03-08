@@ -402,7 +402,7 @@ static void annunicators(void) {
 		goto skip;
 	}
 
-	if (!state.runmode && state.alpha) {
+	if (!state.runmode && state.alphas) {
 		*p++ = '\240';
 		*p++ = ':';
 	} else if (!is_intmode()) {
@@ -1145,8 +1145,8 @@ void display(void) {
 	 */
 	dot(RPN, 1);
 	dot(BEG, state_pc() == 0);
-	dot(INPUT,  cata || state.alpha || state.confirm);
-	dot(DOWN_ARR, (state.alpha || state.multi) && state.alphashift);
+	dot(INPUT,  cata || state.alphas || state.confirm);
+	dot(DOWN_ARR, (state.alphas || state.multi) && state.alphashift);
 	dot(BIG_EQ, cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST);
 
 	/* Set the trig mode indicator 360 or RAD.  Grad is handled elsewhere.
@@ -1258,7 +1258,7 @@ void display(void) {
 			} else
 				set_status(disp_msg);
 			disp_msg = NULL;
-		} else if (state.alpha) {
+		} else if (state.alphas) {
 #if 0
 			set_digits_string("AlpHA", 0);
 #endif
@@ -1288,7 +1288,7 @@ void display(void) {
 			} else {
 				set_exp(NUMPROG + 1 - state.last_prog, 1, NULL);
 #if 0
-				bp = scopy_spc(buf, state.alpha?"AlpHA":" StEp");
+				bp = scopy_spc(buf, state.alphas?"AlpHA":" StEp");
 				*bp++ = ' ';
 				num_arg_0(bp, state_pc(), 3);
 #else
