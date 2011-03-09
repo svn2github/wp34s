@@ -20,7 +20,7 @@
 /* Some utility routines to extract bits of long longs */
 
 unsigned int int_base(void) {
-	unsigned int b = state.int_base + 1;
+	unsigned int b = State.int_base + 1;
 	if (b < 2)
 		return 10;
 	return b;
@@ -29,12 +29,12 @@ unsigned int int_base(void) {
 enum arithmetic_modes int_mode(void) {
 	unsigned int b = int_base();
 	if (b == 10 || (b & (b-1)) == 0)
-		return state.int_mode;
+		return State.int_mode;
 	return MODE_UNSIGNED;
 }
 
 unsigned int word_size(void) {
-	unsigned int il = state.int_len;
+	unsigned int il = State.int_len;
 	if (il >= MAX_WORD_SIZE || il == 0)
 		return MAX_WORD_SIZE;
 	return il;
@@ -843,12 +843,12 @@ long long int intSign(long long int x) {
  */
 
 static long long int intLSL(long long int x) {
-	set_carry(topbit_mask() & x);
+	set_carry(0 != (topbit_mask() & x));
 	return mask_value((x << 1) & ~1);
 }
 
 static long long int intLSR(long long int x) {
-	set_carry(x & 1);
+	set_carry(0 != (x & 1));
 	return mask_value((x >> 1) & ~topbit_mask());
 }
 
@@ -1303,7 +1303,7 @@ static int modulo(const unsigned long long int a, unsigned long long int b, cons
 		y = mulmod(y, y, c);
 		b /= 2;
 	}
-	return x % c;
+	return (int) (x % c);
 }
 
 /* Test if a number is prime or not using a Miller-Rabin test */

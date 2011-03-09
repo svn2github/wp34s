@@ -19,8 +19,6 @@
 #include "consts.h"
 #include "complex.h"
 
-#undef alpha  // no need to access alpha register here, collides with variables
-
 #if 0
 #include <stdio.h>
 static FILE *debugf = NULL;
@@ -1020,8 +1018,8 @@ void op_r2p(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &y);
-	cmplxToPolar(&rx, &ry, &x, &y, g_ctx);
-	cvt_rad2(&y, &ry, g_ctx);
+	cmplxToPolar(&rx, &ry, &x, &y, Ctx);
+	cvt_rad2(&y, &ry, Ctx);
 	setlastX();
 	setXY(&rx, &y);
 }
@@ -1030,8 +1028,8 @@ void op_p2r(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &ry);
-	cvt_2rad(&y, &ry, NULL, NULL, NULL, NULL, g_ctx);
-	cmplxFromPolar(&rx, &ry, &x, &y, g_ctx);
+	cvt_2rad(&y, &ry, NULL, NULL, NULL, NULL, Ctx);
+	cmplxFromPolar(&rx, &ry, &x, &y, Ctx);
 	setlastX();
 	setXY(&rx, &ry);
 }	
@@ -1831,21 +1829,21 @@ decNumber *decNumberNxor(decNumber *res, const decNumber *x, const decNumber *y,
 
 
 decNumber *decNumberRnd(decNumber *res, const decNumber *x, decContext *ctx) {
-	int numdig = state.dispdigs + 1;
+	int numdig = State.dispdigs + 1;
 	decContext c;
 	decNumber p10;
 	decNumber t, u;
-	enum display_modes dmode = state.dispmode;
+	enum display_modes dmode = State.dispmode;
 
 	if (decNumberIsSpecial(x))
 		return decNumberCopy(res, x);
 
-	if (state.fract) {
+	if (State.fract) {
 		decNumber2Fraction(&t, &u, x, ctx);
 		return decNumberDivide(res, &t, &u, ctx);
 	}
 
-	if (state.hms) {
+	if (State.hms) {
 		dmode = MODE_FIX;
 		numdig = 7;
 	}
@@ -1891,7 +1889,7 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x, decConte
 		return;
 	}
 
-	dm = state.denom_mode;
+	dm = State.denom_mode;
 	get_maxdenom(&maxd);
 
 	decNumberZero(&dold);
@@ -2691,15 +2689,15 @@ brcket:
 				decNumberCopy(fb, fc);
 				if (decNumberIsNegative(a))
 					decNumberMultiply(&x, a, &const_2, ctx);
-				else	decNumberMultiply(&x, a, &const_0_5, g_ctx);
-				decNumberSubtract(&q, &x, &const_10, g_ctx);
+				else	decNumberMultiply(&x, a, &const_0_5, Ctx);
+				decNumberSubtract(&q, &x, &const_10, Ctx);
 			} else {
 				decNumberCopy(a, c);
 				decNumberCopy(fa, fc);
 				if (decNumberIsNegative(b))
 					decNumberMultiply(&x, b, &const_0_5, ctx);
-				else	decNumberMultiply(&x, b, &const_2, g_ctx);
-				decNumberAdd(&q, &x, &const_10, g_ctx);
+				else	decNumberMultiply(&x, b, &const_2, Ctx);
+				decNumberAdd(&q, &x, &const_10, Ctx);
 			}
 		} else {
 			count = SLV_COUNT(slv_state);
@@ -2709,9 +2707,9 @@ brcket:
 nonconst:
 			r = solve_quadratic(&q, a, b, c, fa, fb, fc, ctx);
 			//MORE: need to check if the new point is worse than the old.
-			decNumberAbs(&x, fa, g_ctx);
-			decNumberAbs(&y, fb, g_ctx);
-			decNumberCompare(&z, &x, &y, g_ctx);
+			decNumberAbs(&x, fa, Ctx);
+			decNumberAbs(&y, fb, Ctx);
+			decNumberCompare(&z, &x, &y, Ctx);
 			if (decNumberIsNegative(&z)) {
 				decNumberCopy(a, c);
 				decNumberCopy(fa, fc);
@@ -2719,7 +2717,7 @@ nonconst:
 				decNumberCopy(b, c);
 				decNumberCopy(fb, fc);
 			}
-			decNumberCompare(&x, b, a, g_ctx);
+			decNumberCompare(&x, b, a, Ctx);
 			if (decNumberIsNegative(&x)) {
 				decNumberSwap(a, b);
 				decNumberSwap(fa, fb);
@@ -2745,10 +2743,10 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 	decNumber x, y;
 	unsigned int flags = 0;
 
-	decNumberCompare(&x, b, a, g_ctx);
+	decNumberCompare(&x, b, a, Ctx);
 	if (decNumberIsZero(&x)) {
-		decNumberAdd(b, a, &const_10, g_ctx);
-		decNumberMultiply(fb, fa, &const_10, g_ctx);
+		decNumberAdd(b, a, &const_10, Ctx);
+		decNumberMultiply(fb, fa, &const_10, Ctx);
 		goto cnst;
 	} else if (decNumberIsNegative(&x)) {
 		decNumberSwap(a, b);
@@ -2757,23 +2755,23 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 	sa = decNumberIsNegative(fa);
 	sb = decNumberIsNegative(fb);
 	if (sa == sb) {				// Same side of line
-		decNumberCompare(&y, fa, fb, g_ctx);
+		decNumberCompare(&y, fa, fb, Ctx);
 		if (decNumberIsZero(&y)) {	// Worse equal...
 cnst:			SET_CONST(flags);
-			decNumberMultiply(&x, a, &const_2, g_ctx);
+			decNumberMultiply(&x, a, &const_2, Ctx);
 			if (decNumberIsNegative(&x))
-				decNumberSubtract(c, &x, &const_10, g_ctx);
+				decNumberSubtract(c, &x, &const_10, Ctx);
 			else
-				decNumberAdd(c, &x, &const_10, g_ctx);
+				decNumberAdd(c, &x, &const_10, Ctx);
 		} else {
-			solve_secant(c, a, b, fa, fb, g_ctx);
-			limit_jump(c, a, b, g_ctx);
+			solve_secant(c, a, b, fa, fb, Ctx);
+			limit_jump(c, a, b, Ctx);
 		}
 	} else {
 		SET_BRACKET(flags);
-		solve_secant(c, a, b, fa, fb, g_ctx);
-		if (solve_bracket(c, a, b, g_ctx)) {
-			solve_bisect(c, a, b, g_ctx);
+		solve_secant(c, a, b, fa, fb, Ctx);
+		if (solve_bracket(c, a, b, Ctx)) {
+			solve_bisect(c, a, b, Ctx);
 #ifdef USE_RIDDERS
 			SET_BISECT(flags);
 #endif
@@ -2803,7 +2801,7 @@ void solver(unsigned int arg, enum rarg op) {
 	get_reg_n_as_dn(arg + 4, &fb);
 
 	if (op == RARG_INISOLVE) {
-		solver_init(&c, &a, &b, &fa, &fb, g_ctx, &flags);
+		solver_init(&c, &a, &b, &fa, &fb, Ctx, &flags);
 	} else {
 		get_reg_n_as_dn(arg + 2, &c);
 		flags = 0;
@@ -2822,7 +2820,7 @@ void solver(unsigned int arg, enum rarg op) {
 #endif
 
 		getX(&fc);
-		r = solver_step(&a, &b, &c, &fa, &fb, &fc, g_ctx, &flags);
+		r = solver_step(&a, &b, &c, &fa, &fb, &fc, Ctx, &flags);
 		setX(r==0?&const_0:&const_1);
 	}
 

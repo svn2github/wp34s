@@ -189,7 +189,7 @@ static decNumber *build_date(decNumber *res, int year, int month, int day, decCo
 	int_to_dn(&m, month, ctx);
 	int_to_dn(&d, day, ctx);
 
-	switch (state.date_mode) {
+	switch (State.date_mode) {
 	case DATE_YMD:
 		decNumberMultiply(&x, &d, &const_0_01, ctx);
 		decNumberAdd(&d, &x, &m, ctx);
@@ -214,7 +214,7 @@ static decNumber *build_date(decNumber *res, int year, int month, int day, decCo
 
 	if (bc)
 		decNumberMinus(res, res, ctx);
-	day_of_week(year, month, day, &disp_msg);
+	day_of_week(year, month, day, &DispMsg);
 	return res;
 }
 
@@ -241,7 +241,7 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day, dec
 	decNumberTrunc(&a, &z, ctx);			// a = ff
 	fp = dn_to_int(&a, ctx);
 	decNumberSubtract(&z, &z, &a, ctx);		// z = .rrrr
-	switch (state.date_mode) {
+	switch (State.date_mode) {
 	default:
 	case DATE_YMD:
 		y = ip;
@@ -344,7 +344,7 @@ static void easter(int year, int *month, int *day) {
 decNumber *dateEaster(decNumber *res, const decNumber *x, decContext *ctx) {
 	int y;
 
-	if (state.int_mode)
+	if (State.int_mode)
 		set_NaN(res);
 	else {
 		if (find_year(x, &y, ctx)) {
@@ -368,11 +368,11 @@ void date_isleap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	int y, t = 0;
 	decNumber x;
 
-	if (state.int_mode)
+	if (State.int_mode)
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
-		if (! find_year(&x, &y, g_ctx))
+		if (! find_year(&x, &y, Ctx))
 			t = isleap(y);
 		fin_tst(t);
 	}
@@ -387,7 +387,7 @@ decNumber *dateDayOfWeek(decNumber *res, const decNumber *x, decContext *ctx) {
 	if (decNumberIsSpecial(x) || extract_date(x, &y, &m, &d, ctx))
 		set_NaN(res);
 	else
-		int_to_dn(res, day_of_week(y, m, d, &disp_msg), ctx);
+		int_to_dn(res, day_of_week(y, m, d, &DispMsg), ctx);
 	return res;
 }
 
@@ -407,11 +407,11 @@ void date_alphaday(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	const char *msg;
 	static const char days[7*3] = "SUNMONTUEWEDTHUFRISAT";
 
-	if (state.int_mode)
+	if (State.int_mode)
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
-		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d, g_ctx))
+		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d, Ctx))
 			add_string("???");
 		else {
 			day_of_week(y, m, d, &msg);
@@ -426,11 +426,11 @@ void date_alphamonth(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	const char *msg;
 	static const char mons[12*3] = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
 
-	if (state.int_mode)
+	if (State.int_mode)
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
-		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d, g_ctx))
+		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d, Ctx))
 			add_string("???");
 		else {
 			day_of_week(y, m, d, &msg);
@@ -511,7 +511,7 @@ decNumber *dateFromJ(decNumber *res, const decNumber *x, decContext *ctx) {
 }
 
 
-/* Date and times to the alpha register */
+/* Date and times to the Alpha register */
 void date_alphadate(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	decNumber x;
 	int d, m, y;
@@ -520,11 +520,11 @@ void date_alphadate(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 
 	getX(&x);
 	xset(buf, '\0', sizeof(buf));
-	if (extract_date(&x, &y, &m, &d, g_ctx)) {
+	if (extract_date(&x, &y, &m, &d, Ctx)) {
 		err(ERR_BAD_DATE);
 		return;
 	}
-	switch (state.date_mode) {
+	switch (State.date_mode) {
 	default:
 		p = num_arg(buf, y);
 		*p++ = '-';
@@ -557,13 +557,13 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	char buf[16], *p;
 	int a;
 	const char *suffix;
-	decContext *ctx = g_ctx;
+	decContext *ctx = Ctx;
 
 	xset(buf, '\0', sizeof(buf));
 	getX(&x);
 	decNumberTrunc(&y, &x, ctx);
 	a = dn_to_int(&y, ctx);
-	if (state.t12) {
+	if (State.t12) {
 		if (a >= 12) {
 			a -= 12;
 			suffix = " PM";
@@ -656,14 +656,14 @@ void date_date(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumber z;
 
 	query_date(&d, &m, &y);
-	build_date(&z, y, m, d, g_ctx);
+	build_date(&z, y, m, d, Ctx);
 	decimal64FromNumber(r, &z, ctx64);
 }
 
 void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	unsigned int h, m, s;
 	decNumber a, b, c;
-	decContext *ctx = g_ctx;
+	decContext *ctx = Ctx;
 
 	query_time(&s, &m, &h);
 	int_to_dn(&a, s, ctx);
@@ -673,7 +673,7 @@ void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumberMultiply(&b, &c, &const_0_01, ctx);
 	int_to_dn(&a, h, ctx);
 	decNumberAdd(&c, &b, &a, ctx);
-	if (state.hms)
+	if (State.hms)
 		decNumberHMS2HR(&c, &c, ctx);
 	decimal64FromNumber(r, &c, ctx64);
 }
@@ -684,7 +684,7 @@ void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumber x;
 
 	getX(&x);
-	if (extract_date(&x, &y, &m, &d, g_ctx)) {
+	if (extract_date(&x, &y, &m, &d, Ctx)) {
 		err(ERR_BAD_DATE);
 		return;
 	}
@@ -705,10 +705,10 @@ void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 void date_settime(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	int s, m, h;
 	decNumber x, y;
-	decContext *ctx = g_ctx;
+	decContext *ctx = Ctx;
 
 	getX(&x);
-	if (state.hms)
+	if (State.hms)
 		decNumberHR2HMS(&x, &x, ctx);
 	h = dn_to_int(decNumberTrunc(&y, &x, ctx), ctx) & 0x3f;
 	decNumberFrac(&y, &x, ctx);

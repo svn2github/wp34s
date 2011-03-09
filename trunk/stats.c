@@ -32,43 +32,43 @@
 #include "int.h"
 
 
-#define sigmaX	(regs[87])
-#define sigmaXX	(regs[88])
-#define sigmaY	(regs[89])
-#define sigmaYY	(regs[90])
-#define sigmaXY	(regs[91])
-#define sigmaN	(regs[92])
+#define sigmaX	(Regs[87])
+#define sigmaXX	(Regs[88])
+#define sigmaY	(Regs[89])
+#define sigmaYY	(Regs[90])
+#define sigmaXY	(Regs[91])
+#define sigmaN	(Regs[92])
 
-#define sigmalnX	(regs[93])
-#define sigmalnXlnX	(regs[94])
-#define sigmalnY	(regs[95])
-#define sigmalnYlnY	(regs[96])
-#define sigmalnXlnY	(regs[97])
-#define sigmaXlnY	(regs[98])
-#define sigmaYlnX	(regs[99])
+#define sigmalnX	(Regs[93])
+#define sigmalnXlnX	(Regs[94])
+#define sigmalnY	(Regs[95])
+#define sigmalnYlnY	(Regs[96])
+#define sigmalnXlnY	(Regs[97])
+#define sigmaXlnY	(Regs[98])
+#define sigmaYlnX	(Regs[99])
 
 
 static void correlation(decNumber *, const enum sigma_modes);
 
 
 void stats_mode_expf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	state.sigma_mode = SIGMA_EXP;
+	State.sigma_mode = SIGMA_EXP;
 }
 
 void stats_mode_linf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	state.sigma_mode = SIGMA_LINEAR;
+	State.sigma_mode = SIGMA_LINEAR;
 }
 
 void stats_mode_logf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	state.sigma_mode = SIGMA_LOG;
+	State.sigma_mode = SIGMA_LOG;
 }
 
 void stats_mode_pwrf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	state.sigma_mode = SIGMA_POWER;
+	State.sigma_mode = SIGMA_POWER;
 }
 
 void stats_mode_best(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	state.sigma_mode = SIGMA_BEST;
+	State.sigma_mode = SIGMA_BEST;
 }
 
 
@@ -98,7 +98,7 @@ static void sigop(decimal64 *r, const decNumber *a, decContext *ctx, decNumber *
 
 	decimal64ToNumber(r, &t);
 	(*op)(&u, &t, a, ctx);
-	decimal64FromNumber(r, &u, g_ctx64);
+	decimal64FromNumber(r, &u, Ctx64);
 }
 
 
@@ -110,7 +110,7 @@ static void mulop(decimal64 *r, const decNumber *a, const decNumber *b, decConte
 	decNumberMultiply(&t, a, b, ctx);
 	decimal64ToNumber(r, &v);
 	(*op)(&u, &v, &t, ctx);
-	decimal64FromNumber(r, &u, g_ctx64);
+	decimal64FromNumber(r, &u, Ctx64);
 }
 
 
@@ -129,7 +129,7 @@ static void sigma_helper(decContext *ctx, decNumber *(*op)(decNumber *, const de
 	mulop(&sigmaYY, &y, &y, ctx, op);
 	mulop(&sigmaXY, &x, &y, ctx, op);
 
-//	if (state.sigma_mode == SIGMA_LINEAR)
+//	if (State.sigma_mode == SIGMA_LINEAR)
 //		return;
 
 	decNumberLn(&lx, &x, ctx);
@@ -161,13 +161,13 @@ static enum sigma_modes determine_best(void) {
 	decNumber b, c, d;
 
 	correlation(&c, SIGMA_LINEAR);
-	decNumberAbs(&b, &c, g_ctx);
+	decNumberAbs(&b, &c, Ctx);
 	for (i=SIGMA_LOG; i<= SIGMA_POWER; i++) {
 		correlation(&d, i);
 
 		if (! decNumberIsNaN(&d)) {
-			decNumberAbs(&c, &d, g_ctx);
-			decNumberCompare(&d, &b, &c, g_ctx);
+			decNumberAbs(&c, &d, Ctx);
+			decNumberCompare(&d, &b, &c, Ctx);
 			if (decNumberIsNegative(&d)) {
 				decNumberCopy(&b, &c);
 				m = i;
@@ -192,27 +192,27 @@ static void get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sx
 
 	switch (mode) {
 	default:			// Linear
-		disp_msg = "Linear";
+		DispMsg = "Linear";
 		xy = &sigmaXY;
 		lnx = lny = 0;
 		break;
 
 	case SIGMA_LOG:
-		disp_msg = "Log";
+		DispMsg = "Log";
 		xy = &sigmaYlnX;
 		lnx = 1;
 		lny = 0;
 		break;
 
 	case SIGMA_EXP:
-		disp_msg = "Exp";
+		DispMsg = "Exp";
 		xy = &sigmaXlnY;
 		lnx = 0;
 		lny = 1;
 		break;
 
 	case SIGMA_POWER:
-		disp_msg = "Power";
+		DispMsg = "Power";
 		xy = &sigmalnXlnY;
 		lnx = lny = 1;
 		break;
@@ -297,10 +297,10 @@ void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
 
 	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_LINEAR);
 
-	decNumberDivide(&t, &sx, &N, g_ctx);
+	decNumberDivide(&t, &sx, &N, Ctx);
 	decimal64FromNumber(y, &t, ctx64);
 
-	decNumberDivide(&t, &sy, &N, g_ctx);
+	decNumberDivide(&t, &sy, &N, Ctx);
 	decimal64FromNumber(x, &t, ctx64);
 }
 
@@ -311,7 +311,7 @@ void stats_wmean(decimal64 *x, decimal64 *nul, decContext *ctx64) {
 
 	get_sigmas(NULL, NULL, &y, NULL, NULL, &xy, SIGMA_LINEAR);
 
-	decNumberDivide(&t, &xy, &y, g_ctx);
+	decNumberDivide(&t, &xy, &y, Ctx);
 	decimal64FromNumber(x, &t, ctx64);
 }
 
@@ -341,9 +341,9 @@ void stats_s(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber sx, sxx, sy, syy;
 
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_LINEAR);
-	decNumberSubtract(&nm1, &N, &const_1, g_ctx);
-	do_s(x, ctx64, &sxx, &sx, &N, &nm1, NULL, g_ctx);
-	do_s(y, ctx64, &syy, &sy, &N, &nm1, NULL, g_ctx);
+	decNumberSubtract(&nm1, &N, &const_1, Ctx);
+	do_s(x, ctx64, &sxx, &sx, &N, &nm1, NULL, Ctx);
+	do_s(y, ctx64, &syy, &sy, &N, &nm1, NULL, Ctx);
 }
 
 
@@ -353,8 +353,8 @@ void stats_sigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber sx, sxx, sy, syy;
 
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_LINEAR);
-	do_s(x, ctx64, &sxx, &sx, &N, &N, NULL, g_ctx);
-	do_s(y, ctx64, &syy, &sy, &N, &N, NULL, g_ctx);
+	do_s(x, ctx64, &sxx, &sx, &N, &N, NULL, Ctx);
+	do_s(y, ctx64, &syy, &sy, &N, &N, NULL, Ctx);
 }
 
 
@@ -364,10 +364,10 @@ void stats_SErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber sx, sxx, sy, syy;
 
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_LINEAR);
-	decNumberSubtract(&nm1, &N, &const_1, g_ctx);
-	decNumberSquareRoot(&rtN, &N, g_ctx);
-	do_s(x, ctx64, &sxx, &sx, &N, &nm1, &rtN, g_ctx);
-	do_s(y, ctx64, &syy, &sy, &N, &nm1, &rtN, g_ctx);
+	decNumberSubtract(&nm1, &N, &const_1, Ctx);
+	decNumberSquareRoot(&rtN, &N, Ctx);
+	do_s(x, ctx64, &sxx, &sx, &N, &nm1, &rtN, Ctx);
+	do_s(y, ctx64, &syy, &sy, &N, &nm1, &rtN, Ctx);
 }
 
 decNumber *stats_sigper(decNumber *res, const decNumber *x, decContext *ctx) {
@@ -387,25 +387,25 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, &sxy, m);
 
-	decNumberMultiply(t, &N, &sxx, g_ctx);
-	decNumberSquare(&u, &sx, g_ctx);
-	decNumberSubtract(&v, t, &u, g_ctx);
-	decNumberMultiply(t, &N, &syy, g_ctx);
-	decNumberSquare(&u, &sy, g_ctx);
-	decNumberSubtract(&w, t, &u, g_ctx);
-	decNumberMultiply(t, &v, &w, g_ctx);
-	decNumberSquareRoot(&w, t, g_ctx);
-	decNumberMultiply(t, &N, &sxy, g_ctx);
-	decNumberMultiply(&u, &sx, &sy, g_ctx);
-	decNumberSubtract(&v, t, &u, g_ctx);
-	decNumberDivide(t, &v, &w, g_ctx);
+	decNumberMultiply(t, &N, &sxx, Ctx);
+	decNumberSquare(&u, &sx, Ctx);
+	decNumberSubtract(&v, t, &u, Ctx);
+	decNumberMultiply(t, &N, &syy, Ctx);
+	decNumberSquare(&u, &sy, Ctx);
+	decNumberSubtract(&w, t, &u, Ctx);
+	decNumberMultiply(t, &v, &w, Ctx);
+	decNumberSquareRoot(&w, t, Ctx);
+	decNumberMultiply(t, &N, &sxy, Ctx);
+	decNumberMultiply(&u, &sx, &sy, Ctx);
+	decNumberSubtract(&v, t, &u, Ctx);
+	decNumberDivide(t, &v, &w, Ctx);
 }
 
 
 void stats_correlation(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumber t;
 
-	correlation(&t, state.sigma_mode);
+	correlation(&t, State.sigma_mode);
 	decimal64FromNumber(r, &t, ctx64);
 }
 
@@ -415,7 +415,7 @@ static void do_LR(decNumber *B, decNumber *A, decContext *ctx) {
 	decNumber N, u, v, denom;
 	decNumber sx, sy, sxx, sxy;
 
-	get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, state.sigma_mode);
+	get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, State.sigma_mode);
 
 	decNumberMultiply(B, &N, &sxx, ctx);
 	decNumberSquare(&u, &sx, ctx);
@@ -436,7 +436,7 @@ static void do_LR(decNumber *B, decNumber *A, decContext *ctx) {
 void stats_LR(decimal64 *bout, decimal64 *aout, decContext *ctx64) {
 	decNumber a, b;
 
-	do_LR(&b, &a, g_ctx);
+	do_LR(&b, &a, Ctx);
 	decimal64FromNumber(aout, &a, ctx64);
 	decimal64FromNumber(bout, &b, ctx64);
 }
@@ -469,11 +469,11 @@ static unsigned long int taus_get(void) {
 #define MASK 0xffffffffUL
 #define TAUSWORTHE(s,a,b,c,d) (((s & c) << d) & MASK) ^ ((((s << a) & MASK) ^ s) >> b)
 
-  rand_s1 = TAUSWORTHE (rand_s1, 13, 19, 4294967294UL, 12);
-  rand_s2 = TAUSWORTHE (rand_s2,  2, 25, 4294967288UL, 4);
-  rand_s3 = TAUSWORTHE (rand_s3,  3, 11, 4294967280UL, 17);
+  RandS1 = TAUSWORTHE (RandS1, 13, 19, 4294967294UL, 12);
+  RandS2 = TAUSWORTHE (RandS2,  2, 25, 4294967288UL, 4);
+  RandS3 = TAUSWORTHE (RandS3,  3, 11, 4294967280UL, 17);
 
-  return rand_s1 ^ rand_s2 ^ rand_s3;
+  return RandS1 ^ RandS2 ^ RandS3;
 }
 
 static void taus_seed(unsigned long int s) {
@@ -482,14 +482,14 @@ static void taus_seed(unsigned long int s) {
 	if (s == 0)
 		s = 1;
 #define LCG(n) ((69069 * n) & 0xffffffffUL)
-	rand_s1 = LCG (s);
-	if (rand_s1 < 2) rand_s1 += 2UL;
+	RandS1 = LCG (s);
+	if (RandS1 < 2) RandS1 += 2UL;
 
-	rand_s2 = LCG (rand_s1);
-	if (rand_s2 < 8) rand_s2 += 8UL;
+	RandS2 = LCG (RandS1);
+	if (RandS2 < 8) RandS2 += 8UL;
 
-	rand_s3 = LCG (rand_s2);
-	if (rand_s3 < 16) rand_s3 += 16UL;
+	RandS3 = LCG (RandS2);
+	if (RandS3 < 16) RandS3 += 16UL;
 #undef LCG
 
 	for (i=0; i<6; i++)
@@ -501,7 +501,7 @@ void stats_random(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	unsigned long int s;
 	decNumber y, z;
 
-	if (rand_s1 == 0 && rand_s2 == 0 && rand_s3 == 0)
+	if (RandS1 == 0 && RandS2 == 0 && RandS3 == 0)
 		taus_seed(0);
 	s = taus_get();
 
@@ -509,8 +509,8 @@ void stats_random(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	if (is_intmode())
 		d64fromInt(r, build_value(s, 0));
 	else {
-		ullint_to_dn(&z, s, g_ctx);
-		decNumberMultiply(&y, &z, &const_randfac, g_ctx);
+		ullint_to_dn(&z, s, Ctx);
+		decNumberMultiply(&y, &z, &const_randfac, Ctx);
 		decimal64FromNumber(r, &y, ctx64);
 	}
 }
@@ -525,7 +525,7 @@ void stats_sto_random(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 		 s = d64toInt(&regX) & 0xffffffff;
 	} else {
 		getX(&x);
-		s = (unsigned long int) dn_to_ull(&x, g_ctx64, &z);
+		s = (unsigned long int) dn_to_ull(&x, Ctx64, &z);
 	}
 	taus_seed(s);
 }
@@ -677,7 +677,7 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 	dist_one_param(&v);
 	if (decNumberIsNaN(x) || decNumberIsSpecial(&v) ||
 			decNumberIsNegative(&v) || decNumberIsZero(&v) ||
-			!is_int(&v, g_ctx)) {
+			!is_int(&v, Ctx)) {
 		set_NaN(r);
 		return r;
 	}
@@ -697,7 +697,7 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 	dist_one_param(&v);
 	if (decNumberIsNaN(x) || decNumberIsNaN(&v) ||
 			decNumberIsNegative(&v) || decNumberIsZero(&v) ||
-			!is_int(&v, g_ctx)) {
+			!is_int(&v, Ctx)) {
 		set_NaN(r);
 		return r;
 	}

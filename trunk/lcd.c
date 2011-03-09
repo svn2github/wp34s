@@ -292,20 +292,20 @@ void show_stack(void) {
 #ifdef USECURSES
 	int i;
 
-	if (!state.flags)
+	if (!State.flags)
 		return;
 
 	// Stack display smashes the stack registers
 	for (i=4; i<STACK_SIZE; i++) {
 		MOVE(26, 8-i);
 		PRINTF("%c ", i<stack_size()?'*':' ');
-		dispreg(REGNAMES[i], &regs[regX_idx+i]);
+		dispreg(REGNAMES[i], &Regs[regX_idx+i]);
 	}
 	MOVE(53, 2);	dispreg(REGNAMES[regJ_idx-regX_idx], &regJ);
 	MOVE(53, 1);	dispreg(REGNAMES[regK_idx-regX_idx], &regK);
 	for (i=0; i<4; i++) {
 		MOVE(0, 4-i);
-		dispreg(REGNAMES[i], &regs[regX_idx+i]);
+		dispreg(REGNAMES[i], &Regs[regX_idx+i]);
 	}
 	MOVE(53, 4);
 	dispreg(REGNAMES[regL_idx-regX_idx], &regL);
@@ -318,7 +318,7 @@ void show_stack(void) {
 
 void show_flags(void) {
 #ifndef REALBUILD
-	if (!state.flags)
+	if (!State.flags)
 		return;
 	MOVE(0, 0);
 	PRINTF("   ");
@@ -329,18 +329,18 @@ void show_flags(void) {
 	case SHIFT_H:	PRINTF("[h-shift]");	break;
 	default:				break;
 	}
-	if (state.hyp) {
+	if (State.hyp) {
 		MOVE(40, 0);
-		if (state.dot)
+		if (State.dot)
 			PRINTF("[hyp]");
 		else
 			PRINTF("[hyp-1]");
 	}
-	if (state.cmplx) {
+	if (State.cmplx) {
 		MOVE(20, 0);
 		PRINTF("[cmplx]");
 	}
-	if (!state.runmode) {
+	if (!State.runmode) {
 		MOVE(30, 0);
 		PRINTF("[prog]");
 	}
@@ -348,81 +348,80 @@ void show_flags(void) {
 
 #ifdef USECURSES
 #define FLAG_BASE	5
-//	if (state.flags) {
+//	if (State.flags) {
 		MOVE(10, FLAG_BASE);
-		if (state.rarg)
+		if (State.rarg)
 			PRINTF("[rcmd]");
-		else if (state.arrow)
+		else if (State.arrow)
 			PRINTF("[arr]");
-		if (state.dot) {
+		if (State.dot) {
 			MOVE(18, FLAG_BASE);
 			PRINTF("[dot]");
 		}
-		if (state.ind) {
+		if (State.ind) {
 			MOVE(24, FLAG_BASE);
 			PRINTF("[ind]");
 		}
-		if (state.trace) {
+		if (State.trace) {
 			MOVE(30, FLAG_BASE);
 			PRINTF("[trace]");
 		}
-		if (state.cmplx) {
+		if (State.cmplx) {
 			MOVE(40, FLAG_BASE);
 			PRINTF("[cmplx]");
 		}
-		if (state.catalogue) {
+		if (State.catalogue) {
 			MOVE(50, FLAG_BASE);
-			PRINTF("[cat %03u]", state.catalogue);
+			PRINTF("[cat %03u]", State.catalogue);
 		}
-		if (state.hms) {
+		if (State.hms) {
 			MOVE(64, FLAG_BASE);
 			PRINTF("[H.MS]");
 		}
-		if (state.fract) {
+		if (State.fract) {
 			MOVE(71, FLAG_BASE);
 			PRINTF("[FRACT]");
 		}
-		if (state.multi) {
+		if (State.multi) {
 			MOVE(71, FLAG_BASE+1);
 			PRINTF("[MULTI]");
 		}
 		MOVE(50, FLAG_BASE+1);
-		PRINTF("[lp %03u]", state.last_prog);
-  		if (state.state_lift) {
+		PRINTF("[lp %03u]", State.last_prog);
+  		if (State.state_lift) {
   			MOVE(10, FLAG_BASE+1);
   			PRINTF("[lift]");
   		}
-  		if (state.state_running) {
+  		if (State.state_running) {
   			MOVE(18, FLAG_BASE+1);
   			PRINTF("[running]");
   		}
 		MOVE(70, 5);
-		PRINTF("iw = %u/%u", state.int_window, state.int_maxw);
+		PRINTF("iw = %u/%u", State.int_window, State.int_maxw);
 		MOVE(30, FLAG_BASE+1);
 		PRINTF("shft = %u", cur_shift());
 		MOVE(40, FLAG_BASE+1);
-		PRINTF("trig = %u", state.trigmode);
+		PRINTF("trig = %u", State.trigmode);
 //		MOVE(60, FLAG_BASE+1);
-//		PRINTF("apos = %u", state.alpha_pos);
+//		PRINTF("apos = %u", State.alpha_pos);
 		MOVE(10, FLAG_BASE+2);
 		PRINTF("numdig = %u   alpha '%-31s'   bflags = %03o-%03o",
-				state.numdigit, alpha, get_bank_flags() >> 8,
+				State.numdigit, Alpha, get_bank_flags() >> 8,
 				get_bank_flags() & 0xff);
 		MOVE(10, FLAG_BASE+3);
-		PRINTF("digval = %u", state.digval);
+		PRINTF("digval = %u", State.digval);
 		MOVE(23, FLAG_BASE+3);
 		PRINTF("pc = %03u", state_pc());
 		MOVE(45, FLAG_BASE+3);
 		PRINTF("cmddot = %u  cmdeex = %u  eol = %u",
-				state.cmdlinedot, state.cmdlineeex, state.eol);
+				State.cmdlinedot, State.cmdlineeex, State.eol);
 #if 0
 		MOVE(0, 30);
-		PRINTF("retstk = %u", state.retstk_ptr);
+		PRINTF("RetStk = %u", State.retstk_ptr);
 		int i;
-		extern unsigned short int retstk[RET_STACK_SIZE];
 		for (i=0; i<RET_STACK_SIZE; i++) {
 			MOVE(4, 31+i);
-			PRINTF("[%d] = %u", i, retstk[i]);
+			PRINTF("[%d] = %u", i, RetStk[i]);
 		}
 #endif
 //	}

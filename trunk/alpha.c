@@ -25,8 +25,8 @@
 /* Append a single character to the alpha register
  */
 static char *internal_add_char(char *a, char c) {
-	if (a == alpha+NUMALPHA)
-		*scopy(alpha, alpha+1) = c;
+	if (a == Alpha+NUMALPHA)
+		*scopy(Alpha, Alpha+1) = c;
 	else {
 		*a++ = c;
 		*a = '\0';
@@ -35,40 +35,40 @@ static char *internal_add_char(char *a, char c) {
 }
 
 static void add_char(char c) {
-	internal_add_char(find_char(alpha, '\0'), c);
+	internal_add_char(find_char(Alpha, '\0'), c);
 }
 
 
-/* Append a string to the alpha register.
+/* Append a string to the Alpha register.
  */
 void add_string(const char *s) {
-	char *a = find_char(alpha, '\0');
+	char *a = find_char(Alpha, '\0');
 
 	while (*s != '\0')
 		a = internal_add_char(a, *s++);
 }
 
 
-/* Clear the alpha register
+/* Clear the Alpha register
  */
 void clralpha(decimal64 *a, decimal64 *b, decContext *nulc) {
 	int i;
 
 	for (i=0; i<=NUMALPHA; i++)
-		alpha[i] = '\0';
+		Alpha[i] = '\0';
 }
 
 
-/* Display the alpha register
+/* Display the Alpha register
  */
 void alpha_view(decimal64 *a, decimal64 *b, decContext *nulc) {
-	disp_msg = alpha;
+	DispMsg = Alpha;
 	display();
-	disp_msg = alpha;
+	DispMsg = Alpha;
 }
 
 
-/* Append the character from the given register or passed arg to alpha
+/* Append the character from the given register or passed arg to Alpha
  */
 void cmdalpha(unsigned int arg, enum rarg op) {
 	add_char(arg & 0xff);
@@ -76,7 +76,7 @@ void cmdalpha(unsigned int arg, enum rarg op) {
 
 
 #ifdef MULTI_ALPHA
-/* Multiple append to alpha */
+/* Multiple append to Alpha */
 void multialpha(opcode op, enum multiops mopr) {
 	char buf[4];
 
@@ -89,7 +89,7 @@ void multialpha(opcode op, enum multiops mopr) {
 #endif
 
 
-/* Append integer value to alpha
+/* Append integer value to Alpha
  */
 void alpha_ip(unsigned int arg, enum rarg op) {
 	unsigned int n;
@@ -104,7 +104,7 @@ void alpha_ip(unsigned int arg, enum rarg op) {
 		int z;
 
 		get_reg_n_as_dn(arg, &x);
-		z = dn_to_int(&x, g_ctx64);
+		z = dn_to_int(&x, Ctx64);
 		n = z<0?-z:z;
 		sgn = z<0;
 	}
@@ -118,26 +118,26 @@ void alpha_ip(unsigned int arg, enum rarg op) {
 }
 
 
-/* Return length of alpha register
+/* Return length of Alpha register
  */
 static int alen(void) {
-	return find_char(alpha, '\0') - alpha;
+	return find_char(Alpha, '\0') - Alpha;
 }
 
 void alpha_length(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	put_int(alen(), 0, x);
 }
 
-/* Shift or rotate alpha register arg positions
+/* Shift or rotate Alpha register arg positions
  */
 void alpha_shift_l(unsigned int arg, enum rarg op) {
 	unsigned int i;
 	const int rot = (op == RARG_ALRL);
 
 	for (i=0; i<arg; i++) {
-		const char c = rot?alpha[0]:'\0';
+		const char c = rot?Alpha[0]:'\0';
 
-		*scopy(alpha, alpha+1) = c;
+		*scopy(Alpha, Alpha+1) = c;
 	}
 }
 
@@ -145,8 +145,8 @@ void alpha_shift_r(unsigned int arg, enum rarg op) {
 	unsigned int i;
 
 	for (i=0; i<arg; i++) {
-		xcopy(alpha+1, alpha, NUMALPHA-1);
-		alpha[0] = ' ';
+		xcopy(Alpha+1, Alpha, NUMALPHA-1);
+		Alpha[0] = ' ';
 	}
 }
 
@@ -156,17 +156,17 @@ void alpha_rot_r(unsigned int arg, enum rarg op) {
 
 	if (al)
 		for (i=0; i<arg; i++) {
-			const char c = alpha[al-1];
-			xcopy(alpha+1, alpha, al-1);
-			alpha[0] = c;
+			const char c = Alpha[al-1];
+			xcopy(Alpha+1, Alpha, al-1);
+			Alpha[0] = c;
 		}
 }
 
-/* Take first character from alpha and return its code in X.
- * remove the character from alpha
+/* Take first character from Alpha and return its code in X.
+ * remove the character from Alpha
  */
 void alpha_tox(decimal64 *a, decimal64 *b, decContext *ctx64) {
-	put_int(alpha[0] & 0xff, 0, a);
+	put_int(Alpha[0] & 0xff, 0, a);
 	alpha_shift_l(1, RARG_ALSL);
 }
 
@@ -174,12 +174,12 @@ void alpha_fromx(decimal64 *a, decimal64 *b, decContext *ctx64) {
 	decNumber x, y;
 
 	getX(&x);
-	decNumberAbs(&y, &x, g_ctx);
-	decNumberRemainder(&x, &y, &const_256, g_ctx);
-	add_char(dn_to_int(&x, g_ctx));
+	decNumberAbs(&y, &x, Ctx);
+	decNumberRemainder(&x, &y, &const_256, Ctx);
+	add_char(dn_to_int(&x, Ctx));
 }
 
-/* Recall a register and append to alpha.
+/* Recall a register and append to Alpha.
  * This honours the current display mode.
  */
 void alpha_reg(unsigned int arg, enum rarg op) {
@@ -200,15 +200,15 @@ static int char_per_reg(void) {
 }
 
 
-/* Sto start of alpha register into arg
+/* Sto start of Alpha register into arg
  */
 void alpha_sto(unsigned int arg, enum rarg op) {
 	unsigned long long int z = 0;
 	int i;
 	const int n = char_per_reg();
 
-	for (i=0; alpha[i] != '\0' && i<n; i++)
-		z = (z << 8) | (0xff & alpha[i]);
+	for (i=0; Alpha[i] != '\0' && i<n; i++)
+		z = (z << 8) | (0xff & Alpha[i]);
 	reg_put_int(arg, z, 0);
 }
 
@@ -231,7 +231,7 @@ char *alpha_rcl_s(const decimal64 *reg, char buf[12]) {
 	return p;
 }
 
-/* RCL register containing alpha characters into alpha
+/* RCL register containing alpha characters into Alpha
  */
 void alpha_rcl(unsigned int arg, enum rarg op) {
 	char buf[12];
@@ -242,11 +242,11 @@ void alpha_rcl(unsigned int arg, enum rarg op) {
 /* Turn alpha mode on and off
  */
 void alpha_on(decimal64 *a, decimal64 *b, decContext *ctx64) {
-	state.alphas = 1;
+	State.alphas = 1;
 }
 
 void alpha_off(decimal64 *a, decimal64 *b, decContext *ctx64) {
-	state.alphas = 0;
+	State.alphas = 0;
 }
 
 /* Input one character and append to alpha

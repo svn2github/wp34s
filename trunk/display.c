@@ -311,12 +311,12 @@ static void carry_overflow(void) {
 	unsigned int b;
 
 	// Figure out the base
-	switch (state.smode) {
+	switch (State.smode) {
 	case SDISP_BIN:	b = 2;		break;
 	case SDISP_OCT:	b = 8;		break;
 	case SDISP_DEC:	b = 10;		break;
 	case SDISP_HEX:	b = 16;		break;
-	default:	b = state.int_base+1;	break;
+	default:	b = State.int_base+1;	break;
 	}
 
 	// Display the base as the first exponent digit
@@ -379,9 +379,9 @@ static void annunicators(void) {
 	switch (cur_shift()) {
 	default:
 	case SHIFT_N:
-		if (state.wascomplex) {
+		if (State.wascomplex) {
 			*p++ = 'C';
-			state.wascomplex = 0;
+			State.wascomplex = 0;
 		} else
 			p = scopy(p, " \006");
 		break;
@@ -390,23 +390,23 @@ static void annunicators(void) {
 	case SHIFT_H:	p = scopy(p, "\023\006");	break;
 	}
 
-	if (state.cmplx) {
+	if (State.cmplx) {
 		*p++ = ' ';
 		*p++ = COMPLEX_PREFIX;
 		goto skip;
 	}
 
-	if (state.arrow) {
+	if (State.arrow) {
 		*p++ = ' ';
 		*p++ = '\015';
 		goto skip;
 	}
 
-	if (!state.runmode && state.alphas) {
+	if (!State.runmode && State.alphas) {
 		*p++ = '\240';
 		*p++ = ':';
 	} else if (!is_intmode()) {
-		switch (state.date_mode) {
+		switch (State.date_mode) {
 		case DATE_DMY:	q = "D.MY";	break;
 		case DATE_MDY:	q = "M.DY";	break;
 		default:	q = "    \006";	break;
@@ -425,8 +425,8 @@ static void annunicators(void) {
 		*q++ = '\006';
 		p = num_arg_0(q, word_size(), 2);
 
-		if (state.int_maxw > 0) {
-			n = 4 + 2 * (5 - state.int_maxw);
+		if (State.int_maxw > 0) {
+			n = 4 + 2 * (5 - State.int_maxw);
 			if (*q == '1')
 				n += 2;
 			if (q[1] == '1')
@@ -434,8 +434,8 @@ static void annunicators(void) {
 			while (n-- > 0)
 				*p++ = '\006';
 
-			for (n=state.int_maxw; n>=0; n--)
-				*p++ = state.int_window == n ? '|':'\'';
+			for (n=State.int_maxw; n>=0; n--)
+				*p++ = State.int_window == n ? '|':'\'';
 		}
 
 	}
@@ -450,11 +450,11 @@ static void disp_x(const char *p) {
 	enum seperator_modes seperator = SEP_COMMA;
 	int gotdot = -1;
 
-	if (state.fraccomma) {
+	if (State.fraccomma) {
 		decimal = DECIMAL_COMMA;
 		seperator = SEP_DOT;
 	}
-	if (state.nothousands)
+	if (State.nothousands)
 		seperator = SEP_NONE;
 
 	if (*p == '-') {
@@ -522,7 +522,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 	int sign;
 	int dig = SEGS_PER_DIGIT * 11;
 
-	switch (state.smode) {
+	switch (State.smode) {
 	case SDISP_BIN:	b = 2;		break;
 	case SDISP_OCT:	b = 8;		break;
 	case SDISP_DEC:	b = 10;		break;
@@ -531,7 +531,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 	}
 
 	if (!res) {
-		state.int_maxw = 0;
+		State.int_maxw = 0;
 		carry_overflow();
 	}
 
@@ -561,10 +561,10 @@ static void set_int_x(decimal64 *rgx, char *res) {
 				vs |= ~mask;
 		}
 
-		if (!state.leadzero && vs == 0) {
+		if (!State.leadzero && vs == 0) {
 			set_dig_s(dig, '0', res);
 			return;
-		} else if (!state.leadzero) {
+		} else if (!State.leadzero) {
 			v = (unsigned long long int)vs;
 			for (i=0; v != 0; i++) {
 				const int r = v % b;
@@ -591,8 +591,8 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		while (--i >= 0)
 			*res++ = buf[i];
 	} else {
-		const int window = state.int_window;
-		state.int_maxw = i / 12;
+		const int window = State.int_window;
+		State.int_maxw = i / 12;
 		buf[i] = '\0';
 
 		j = window * 12;	// 12 digits at a time
@@ -656,20 +656,20 @@ static char *hms_process(decNumber *res, const decNumber *x, const decNumber *mu
 	unsigned int v;
 
 	if (mult != NULL)
-		decNumberMultiply(&r, x, mult, g_ctx);
+		decNumberMultiply(&r, x, mult, Ctx);
 	else	decNumberCopy(&r, x);
 	if (res != NULL) {
 		// Rounding step
-		decContext c = *g_ctx;
+		decContext c = *Ctx;
 		c.round = DEC_ROUND_HALF_UP;
 		c.digits = 6;
 
 		decNumberFrac(res, &r, &c);
-		decNumberTrunc(&s, &r, g_ctx);
+		decNumberTrunc(&s, &r, Ctx);
 	} else
-		decNumberRound(&s, &r, g_ctx);
+		decNumberRound(&s, &r, Ctx);
 
-	v = dn_to_int(&s, g_ctx);
+	v = dn_to_int(&s, Ctx);
 
 	for (i=0; i<n; i++) {
 		if (v == 0)
@@ -710,17 +710,17 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 		return;
 	}
 
-	decNumberRemainder(&x, &y, &const_9000, g_ctx);
-	decNumberAbs(&a, &y, g_ctx);
+	decNumberRemainder(&x, &y, &const_9000, Ctx);
+	decNumberAbs(&a, &y, Ctx);
 	if (decNumberIsNegative(&x)) {
 		if (res != NULL)
 			*res += '-';
 		else
 			set_dot(MANT_SIGN);
-		decNumberMinus(&x, &x, g_ctx);
+		decNumberMinus(&x, &x, Ctx);
 	}
 
-	decNumberHR2HMS(&y, &x, g_ctx);
+	decNumberHR2HMS(&y, &x, Ctx);
 	
 	// degrees
 	res = hms_process(&x, &y, NULL, res, &j, 4, 1);
@@ -744,11 +744,11 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 	// j += SEGS_PER_EXP_DIGIT;
 
 	// Check for values too big or small
-	decNumberCompare(&x, &const_9000, &a, g_ctx);
+	decNumberCompare(&x, &const_9000, &a, Ctx);
 	if (decNumberIsNegative(&x) || decNumberIsZero(&x)) {
 		res = set_dig_s(exp_last, 'o', res);
 	} else {
-		decNumberCompare(&x, &a, &const_0_0000005, g_ctx);
+		decNumberCompare(&x, &a, &const_0_0000005, Ctx);
 		if (decNumberIsNegative(&x)) {
 			res = set_dig_s(exp_last, 'u', res);
 		}
@@ -764,11 +764,11 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 	decimal64ToNumber(rgx, &w);
 	if (check_special_dn(&w, res))
 		return 1;
-	decNumberAbs(&x, &w, g_ctx);
-	decNumberCompare(&d, &const_100000, &x, g_ctx);
+	decNumberAbs(&x, &w, Ctx);
+	decNumberCompare(&d, &const_100000, &x, Ctx);
 	if (decNumberIsNegative(&d) || decNumberIsZero(&d))
 		return 0;
-	decNumberCompare(&d, &x, &const_0_00001, g_ctx);
+	decNumberCompare(&d, &x, &const_0_00001, Ctx);
 	if (decNumberIsNegative(&d))
 		return 0;
 	if (decNumberIsNegative(&w)) {
@@ -777,25 +777,25 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 		else
 			set_dot(MANT_SIGN);
 	}
-	decNumberFrac(&w, &x, g_ctx);
-	decNumber2Fraction(&n, &d, &w, g_ctx);	/* Get the number as a numerator & denominator */
+	decNumberFrac(&w, &x, Ctx);
+	decNumber2Fraction(&n, &d, &w, Ctx);	/* Get the number as a numerator & denominator */
 
-	decNumberDivide(&t, &n, &d, g_ctx);
-	decNumberCompare(&t, &t, &w, g_ctx64);
-	decNumberTrunc(&w, &x, g_ctx);		/* Extract the whole part */
+	decNumberDivide(&t, &n, &d, Ctx);
+	decNumberCompare(&t, &t, &w, Ctx64);
+	decNumberTrunc(&w, &x, Ctx);		/* Extract the whole part */
 
-	if (!state.improperfrac) {
+	if (!State.improperfrac) {
 		if (!decNumberIsZero(&w)) {
-			p = num_arg(p, dn_to_int(&w, g_ctx));
+			p = num_arg(p, dn_to_int(&w, Ctx));
 			*p++ = ' ';
 		}
 	} else {
-		decNumberMultiply(&x, &w, &d, g_ctx);
-		decNumberAdd(&n, &n, &x, g_ctx);
+		decNumberMultiply(&x, &w, &d, Ctx);
+		decNumberAdd(&n, &n, &x, Ctx);
 	}
-	p = num_arg(p, dn_to_int(&n, g_ctx));
+	p = num_arg(p, dn_to_int(&n, Ctx));
 	*p++ = '/';
-	p = num_arg(p, dn_to_int(&d, g_ctx));
+	p = num_arg(p, dn_to_int(&d, Ctx));
 	*p = '\0';
 	if ((p - 12) > buf) {
 		p -= 12;
@@ -836,24 +836,24 @@ static void set_x(const decimal64 *rgx, char *res, int nohms) {
 	const char *q;
 	int count, i;
 	int extra_digits = 0;
-	int dd = state.dispdigs;
-	int mode = state.dispmode;
+	int dd = State.dispdigs;
+	int mode = State.dispmode;
 	enum decimal_modes decimal = DECIMAL_DOT;
 	enum seperator_modes seperator = SEP_COMMA;
 	char c;
 
-	if (state.fraccomma) {
+	if (State.fraccomma) {
 		decimal = DECIMAL_COMMA;
 		seperator = SEP_DOT;
 	}
-	if (state.nothousands)
+	if (State.nothousands)
 		seperator = SEP_NONE;
 
-	if (!nohms && !state.smode && ! state.cmplx) {
-		if (state.hms) {
+	if (!nohms && !State.smode && ! State.cmplx) {
+		if (State.hms) {
 			set_x_hms(rgx, res, decimal);
 			return;
-		} else if (state.fract) {
+		} else if (State.fract) {
 			if (set_x_fract(rgx, res))
 				return;
 		}
@@ -864,7 +864,7 @@ static void set_x(const decimal64 *rgx, char *res, int nohms) {
 
 	decimal64ToString(rgx, x);
 
-	if (state.smode == SDISP_SHOW)
+	if (State.smode == SDISP_SHOW)
 		mode = MODE_STD;
 
 	if (mode == MODE_STD)
@@ -1084,7 +1084,7 @@ void format_reg(decimal64 *r, char *buf) {
 static void show_status(void) {
 	int i;
 	int j = SEGS_PER_DIGIT;
-	int base = 10 * (state.status - 1);
+	int base = 10 * (State.status - 1);
 	char buf[12], *p;
 
 	buf[0] = 'F';
@@ -1125,7 +1125,7 @@ static void show_alpha(void) {
 	char buf[12];
 
 	set_status(alpha_rcl_s(&regX, buf));
-	state.arrow_alpha = 0;
+	State.arrow_alpha = 0;
 }
 
 void display(void) {
@@ -1134,7 +1134,7 @@ void display(void) {
 	const char *p;
 	int annuc = 0;
 	const enum trig_modes tm = get_trig_mode();
-	const enum catalogues cata = state.catalogue;
+	const enum catalogues cata = State.catalogue;
 	int skip = 0;
 
 	reset_disp();
@@ -1145,8 +1145,8 @@ void display(void) {
 	 */
 	dot(RPN, 1);
 	dot(BEG, state_pc() == 0);
-	dot(INPUT,  cata || state.alphas || state.confirm);
-	dot(DOWN_ARR, (state.alphas || state.multi) && state.alphashift);
+	dot(INPUT,  cata || State.alphas || State.confirm);
+	dot(DOWN_ARR, (State.alphas || State.multi) && State.alphashift);
 	dot(BIG_EQ, cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST);
 
 	/* Set the trig mode indicator 360 or RAD.  Grad is handled elsewhere.
@@ -1155,13 +1155,13 @@ void display(void) {
 	dot(RAD, !is_intmode() && tm == TRIG_RAD);
 
 	xset(buf, '\0', sizeof(buf));
-	if (state.cmplx) {
+	if (State.cmplx) {
 		*bp++ = COMPLEX_PREFIX;
 		set_status(buf);
 	}
-	if (state.error != ERR_NONE) {
-		const enum errors e = (const enum errors)state.error;
-		state.error = 0;
+	if (State.error != ERR_NONE) {
+		const enum errors e = (const enum errors)State.error;
+		State.error = 0;
 		p = error_table[e];
 		set_status(p);
 		p = find_char(p, '\0')+1;
@@ -1169,55 +1169,55 @@ void display(void) {
 			p = S7_ERROR;
 		set_digits_string(p, 0);
 		goto skpall;
-	} else if (state.version) {
+	} else if (State.version) {
 		set_digits_string("pAULI WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
 		set_decimal(SEGS_PER_DIGIT * 4, DECIMAL_COMMA, NULL);
 		set_status("34s " VERSION_STRING);
 		goto nostk;
-	} else if (state.confirm) {
+	} else if (State.confirm) {
 		set_status(S_SURE);
-	} else if (state.hyp) {
+	} else if (State.hyp) {
 		bp = scopy(bp, "HYP");
-		if (! state.dot)
+		if (! State.dot)
 			*bp++ = '\235';
 		set_status(buf);
-	} else if (state.gtodot) {
+	} else if (State.gtodot) {
 		bp = scopy_char(bp, argcmds[RARG_GTO].cmd, '.');
-		if (state.numdigit > 0)
-			bp = num_arg_0(bp, (unsigned int)state.digval, (int)state.numdigit);
-		for (i=state.numdigit; i<3; i++)
+		if (State.numdigit > 0)
+			bp = num_arg_0(bp, (unsigned int)State.digval, (int)State.numdigit);
+		for (i=State.numdigit; i<3; i++)
 			*bp++ = '_';
 		set_status(buf);
-	} else if (state.multi) {
-		bp = scopy_char(bp, multicmds[state.base].cmd, '\'');
-		if (state.numdigit > 0) {
-			*bp++ = state.digval;
-			if (state.numdigit > 1)
-				*bp++ = state.digval2;
+	} else if (State.multi) {
+		bp = scopy_char(bp, multicmds[State.base].cmd, '\'');
+		if (State.numdigit > 0) {
+			*bp++ = State.digval;
+			if (State.numdigit > 1)
+				*bp++ = State.digval2;
 		}
 		set_status(buf);
-	} else if (state.rarg) {
+	} else if (State.rarg) {
 		/* Commands with arguments */
-		bp = scopy_char(bp, argcmds[state.base].cmd, state.ind?'\015':' ');
-		if (state.dot) {
+		bp = scopy_char(bp, argcmds[State.base].cmd, State.ind?'\015':' ');
+		if (State.dot) {
 			*bp++ = 's';
 			*bp++ = '_';
 		} else {
-			if (state.numdigit > 0)
-				bp = num_arg_0(bp, (unsigned int)state.digval, (int)state.numdigit);
-			for (i=state.numdigit; i<2; i++)
+			if (State.numdigit > 0)
+				bp = num_arg_0(bp, (unsigned int)State.digval, (int)State.numdigit);
+			for (i=State.numdigit; i<2; i++)
 				*bp++ = '_';
 		}
 		set_status(buf);
-	} else if (state.test != TST_NONE) {
+	} else if (State.test != TST_NONE) {
 		*bp++ = 'x';
-		*bp++ = "=\013\035<\011>\012"[state.test];
+		*bp++ = "=\013\035<\011>\012"[State.test];
 		*bp++ = '_';
 		*bp++ = '?';
 		set_status(buf);
 	} else if (cata) {
-		const opcode op = current_catalogue(state.digval);
+		const opcode op = current_catalogue(State.digval);
 		char b2[16];
 		bp = scopy(bp, catcmd(op, b2));
 		if (buf[0] == COMPLEX_PREFIX && buf[1] == COMPLEX_PREFIX)
@@ -1225,9 +1225,9 @@ void display(void) {
 		else
 			set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
-			set_x(&CONSTANT(state.digval), NULL, 1);
+			set_x(&CONSTANT(State.digval), NULL, 1);
 			skip = 1;
-		} else if (cata == CATALOGUE_CONV && state.runmode) {
+		} else if (cata == CATALOGUE_CONV && State.runmode) {
 			decNumber x, r;
 			decimal64 z;
 
@@ -1235,34 +1235,34 @@ void display(void) {
 			if (opKIND(op) == KIND_MON) {
 				const unsigned int f = argKIND(op);
 				if (f < num_monfuncs && monfuncs[f].mondreal != NULL) {
-					(*monfuncs[f].mondreal)(&r, &x, g_ctx);
+					(*monfuncs[f].mondreal)(&r, &x, Ctx);
 				} else
 					set_NaN(&r);
 			} else
-				do_conv(&r, op & RARG_MASK, &x, g_ctx);
-			decNumberNormalize(&r, &r, g_ctx);
-			decimal64FromNumber(&z, &r, g_ctx64);
+				do_conv(&r, op & RARG_MASK, &x, Ctx);
+			decNumberNormalize(&r, &r, Ctx);
+			decimal64FromNumber(&z, &r, Ctx64);
 			set_x(&z, NULL, 1);
 			skip = 1;
 		}
-	} else if (state.status) {
+	} else if (State.status) {
 		show_status();
 		skip = 1;
-	} else if (state.arrow_alpha) {
+	} else if (State.arrow_alpha) {
 		show_alpha();
-	} else if (state.runmode) {
-		if (disp_msg) {
-			if (state.disp_small) {
-				set_status_sized(disp_msg, 1);
-				state.disp_small = 0;
+	} else if (State.runmode) {
+		if (DispMsg) {
+			if (State.disp_small) {
+				set_status_sized(DispMsg, 1);
+				State.disp_small = 0;
 			} else
-				set_status(disp_msg);
-			disp_msg = NULL;
-		} else if (state.alphas) {
+				set_status(DispMsg);
+			DispMsg = NULL;
+		} else if (State.alphas) {
 #if 0
 			set_digits_string("AlpHA", 0);
 #endif
-			set_status_right(alpha);
+			set_status_right(Alpha);
 		} else {
 			annuc = 1;
 		}
@@ -1274,7 +1274,7 @@ void display(void) {
 		else
 			set_status("");
 		set_dot(STO_annun);
-		if (state.smode == SDISP_SHOW) {
+		if (State.smode == SDISP_SHOW) {
 			unsigned int crc = checksum_code();
 			j = SEGS_PER_DIGIT * 0;
 			for (i=0; i<8; i++) {
@@ -1286,9 +1286,9 @@ void display(void) {
 			if (isXROM(state_pc())) {
 				num_arg_0(scopy_spc(buf, "l1B "), state_pc() - addrXROM(0), 5);
 			} else {
-				set_exp(NUMPROG + 1 - state.last_prog, 1, NULL);
+				set_exp(NUMPROG + 1 - State.last_prog, 1, NULL);
 #if 0
-				bp = scopy_spc(buf, state.alphas?"AlpHA":" StEp");
+				bp = scopy_spc(buf, State.alphas?"AlpHA":" StEp");
 				*bp++ = ' ';
 				num_arg_0(bp, state_pc(), 3);
 #else
@@ -1298,13 +1298,13 @@ void display(void) {
 			for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)
 				set_dig(i, *bp);
 		}
-		if (cur_shift() != SHIFT_N || state.cmplx || state.arrow)
+		if (cur_shift() != SHIFT_N || State.cmplx || State.arrow)
 			annuc = 1;
 		goto nostk;
 	}
 	show_stack();
 nostk:	show_flags();
-	if (!skip && state.runmode && !state.version) {
+	if (!skip && State.runmode && !State.version) {
 		p = get_cmdline();
 		if (p == NULL)
 			format_reg(&regX, NULL);
@@ -1314,8 +1314,8 @@ nostk:	show_flags();
 	if (annuc)
 		annunicators();
 skpall:	finish_display();
-	state.version = 0;
-	state.smode = SDISP_NORMAL;
+	State.version = 0;
+	State.smode = SDISP_NORMAL;
 }
 
 

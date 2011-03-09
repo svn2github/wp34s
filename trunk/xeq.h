@@ -143,7 +143,7 @@ extern const struct multicmd multicmds[];
 extern const unsigned short num_multicmds;
 
 
-extern decContext *g_ctx, *g_ctx64;
+extern decContext *Ctx, *Ctx64;
 
 
 /* Return the specified opcode in the position indicated in the current
@@ -163,7 +163,7 @@ extern int current_catalogue_max(void);
 #define NUMLBL		103	/* Number of program labels */
 #define NUMFLG		103	/* Number of flags */
 
-#define NUMALPHA	31	/* Number of characters in alpha */
+#define NUMALPHA	31	/* Number of characters in Alpha */
 
 #define CMDLINELEN	23
 #define NUMBANKREGS	5
@@ -195,18 +195,18 @@ extern int current_catalogue_max(void);
 #define regJ_idx	(TOPREALREG+10)
 #define regK_idx	(TOPREALREG+11)
 
-#define regX	(regs[regX_idx])
-#define regY	(regs[regY_idx])
-#define regZ	(regs[regZ_idx])
-#define regT	(regs[regT_idx])
-#define regA	(regs[regA_idx])
-#define regB	(regs[regB_idx])
-#define regC	(regs[regC_idx])
-#define regD	(regs[regD_idx])
-#define regL	(regs[regL_idx])
-#define regI	(regs[regI_idx])
-#define regJ	(regs[regJ_idx])
-#define regK	(regs[regK_idx])
+#define regX	(Regs[regX_idx])
+#define regY	(Regs[regY_idx])
+#define regZ	(Regs[regZ_idx])
+#define regT	(Regs[regT_idx])
+#define regA	(Regs[regA_idx])
+#define regB	(Regs[regB_idx])
+#define regC	(Regs[regC_idx])
+#define regD	(Regs[regD_idx])
+#define regL	(Regs[regL_idx])
+#define regI	(Regs[regI_idx])
+#define regJ	(Regs[regJ_idx])
+#define regK	(Regs[regK_idx])
 
 
 /* Define the operation codes and various masks to simplify access to them all
@@ -581,7 +581,7 @@ enum shifts {
 	SHIFT_LC_N, SHIFT_LC_G		// Two lower case planes
 };
 
-#define MagicMarker 0x1357fdb9
+#define MAGIC_MARKER 0x1357fdb9
 
 struct _state {
 	unsigned long int magic;	// Magic marker to detect failed RAM
@@ -663,7 +663,7 @@ struct _state {
 };
 
 extern struct _ram {
-	struct _state	_state;
+	struct _state _state;
 	const char *_disp_msg;
 
 	/* Random number seeds
@@ -692,18 +692,18 @@ extern struct _ram {
 	char _cmdline[CMDLINELEN + 1];
 } PersistentRam;
 
-#define state		(PersistentRam._state)
-#define disp_msg	(PersistentRam._disp_msg)
-#define alpha		(PersistentRam._alpha)
-#define regs		(PersistentRam._regs)
-#define bank_regs	(PersistentRam._bank_regs)
-#define bank_flags	(PersistentRam._bank_flags)
-#define user_flags	(PersistentRam._user_flags)
-#define cmdline		(PersistentRam._cmdline)
-#define retstk		(PersistentRam._retstk)
-#define rand_s1		(PersistentRam._rand_s1)
-#define rand_s2		(PersistentRam._rand_s2)
-#define rand_s3		(PersistentRam._rand_s3)
+#define State		(PersistentRam._state)
+#define DispMsg		(PersistentRam._disp_msg)
+#define Alpha		(PersistentRam._alpha)
+#define Regs		(PersistentRam._regs)
+#define BankRegs	(PersistentRam._bank_regs)
+#define BankFlags	(PersistentRam._bank_flags)
+#define UserFlags	(PersistentRam._user_flags)
+#define Cmdline		(PersistentRam._cmdline)
+#define RetStk		(PersistentRam._retstk)
+#define RandS1		(PersistentRam._rand_s1)
+#define RandS2		(PersistentRam._rand_s2)
+#define RandS3		(PersistentRam._rand_s3)
 
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);

@@ -47,34 +47,34 @@
 /* We need various different maths contexts.
  * More efficient to define these globally and reuse them as needed.
  */
-decContext *g_ctx, *g_ctx64;
+decContext *Ctx, *Ctx64;
 
 
-#define retstkptr	(state.retstk_ptr)
+#define RetStkPtr	(State.retstk_ptr)
 
 
 unsigned int get_bank_flags(void) {
-	return bank_flags;
+	return BankFlags;
 }
 
 void set_bank_flags(unsigned int f) {
-	bank_flags = f;
+	BankFlags = f;
 }
 
 void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
-	state.version = 1;
-	if (!state.runmode)
+	State.version = 1;
+	if (!State.runmode)
 		display();
 }
 
-unsigned int state_pc(void) {	return state.state_pc;	}
+unsigned int state_pc(void) {	return State.state_pc;	}
 static void raw_set_pc(unsigned int pc) {
-	state.state_pc = pc;
+	State.state_pc = pc;
 }
 
 void set_pc(unsigned int pc) {
-	if (pc >= state.last_prog)
-		pc = state.last_prog - 1;
+	if (pc >= State.last_prog)
+		pc = State.last_prog - 1;
 	if (!isXROM(pc) && pc > 1 && isDBL(prog[pc-1]))
 		pc--;
 	raw_set_pc(pc);
@@ -88,7 +88,7 @@ opcode getprog(unsigned int n) {
 
 	if (isXROM(n))
 		return xrom[n & ~XROM_MASK];
-	if (n >= state.last_prog || n > NUMPROG)
+	if (n >= State.last_prog || n > NUMPROG)
 		return EMPTY_PROGRAM_OPCODE;
 	if (n == 0)
 		return OP_NIL | OP_NOP;
@@ -100,17 +100,17 @@ opcode getprog(unsigned int n) {
 
 
 static int running(void) {
-	return state.state_running;
+	return State.state_running;
 }
 
 static void set_running_off() {
 	clr_dot(RCL_annun);
-	state.state_running = 0;
+	State.state_running = 0;
 }
 
 static void set_running_on() {
 	set_dot(RCL_annun);
-	state.state_running = 1;
+	State.state_running = 1;
 }
 
 
@@ -119,7 +119,7 @@ static void set_running_on() {
  */
 static void set_was_complex(void) {
 	if (! running())
-		state.wascomplex = 1;
+		State.wascomplex = 1;
 }
 
 
@@ -131,7 +131,7 @@ static void warn(const enum errors e) {
 /* Produce an error and stop
  */
 void err(const enum errors e) {
-	state.error = e;
+	State.error = e;
 	if (running()) {
 		set_running_off();
 		decpc();			// back up to errant statement
@@ -187,11 +187,11 @@ static int check_special(const decNumber *x) {
 int stack_size(void) {
 	if (isXROM(state_pc()))
 		return 4;
-	return state.stack_depth?8:4;
+	return State.stack_depth?8:4;
 }
 
 static decimal64 *get_stack(int pos) {
-	return regs + TOPREALREG + pos;
+	return Regs + TOPREALREG + pos;
 }
 
 static decimal64 *get_stack_top(void) {
@@ -262,8 +262,8 @@ void setX(const decNumber *x) {
 	decNumber xn;
 
 	if (! check_special(x)) {
-		decNumberNormalize(&xn, x, g_ctx);
-		decimal64FromNumber(&regX, &xn, g_ctx64);
+		decNumberNormalize(&xn, x, Ctx);
+		decimal64FromNumber(&regX, &xn, Ctx64);
 	}
 }
 
@@ -275,8 +275,8 @@ static void setY(const decNumber *y) {
 	decNumber yn;
 
 	if (! check_special(y)) {
-		decNumberNormalize(&yn, y, g_ctx);
-		decimal64FromNumber(&regY, &yn, g_ctx64);
+		decNumberNormalize(&yn, y, Ctx);
+		decimal64FromNumber(&regY, &yn, Ctx64);
 	}
 }
 
@@ -376,15 +376,15 @@ void dropy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 
 
 int is_intmode(void) {
-	return state.intm;
+	return State.intm;
 }
 
 void showlead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	state.leadzero = 1;
+	State.leadzero = 1;
 }
 
 void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	state.leadzero = 0;
+	State.leadzero = 0;
 }
 
 /* Increment the passed PC.  Account for wrap around but nothing else.
@@ -398,9 +398,9 @@ unsigned int inc(const unsigned int pc) {
 			return addrXROM(0);
 		return npc;
 	}
-	if (npc >= state.last_prog) {
+	if (npc >= State.last_prog) {
 		return 0;
-		//if (!running() || pc >= state.last_prog)
+		//if (!running() || pc >= State.last_prog)
 			//return 0;
 	}
 	return npc;
@@ -410,7 +410,7 @@ unsigned int dec(unsigned int pc) {
 	if (isXROM(pc) && pc == addrXROM(0))
 		return addrXROM(xrom_size - 1);
 	if (pc == 0)
-		pc = state.last_prog;
+		pc = State.last_prog;
 	if (pc > 2 && isDBL(prog[pc-2]))
 		pc--;
 	return pc-1;
@@ -424,7 +424,7 @@ int incpc(void) {
 
 	raw_set_pc(pc);
 	if (pc == 0 && running())
-		state.implicit_rtn = 1;
+		State.implicit_rtn = 1;
 	return pc == 0;
 }
 
@@ -444,14 +444,14 @@ void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	regL = regX;
 	regI = regX;
 
-	state.eol = 0;
-	state.state_lift = 1;
+	State.eol = 0;
+	State.state_lift = 1;
 }
 
 /* Reset all flags to off/false
  */
 void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
-	xset(user_flags, 0, sizeof(user_flags));
+	xset(UserFlags, 0, sizeof(UserFlags));
 }
 
 /* Zero out all registers including the stack and lastx
@@ -460,18 +460,18 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	int i;
 
 	if (is_intmode())
-		d64fromInt(regs, 0);
+		d64fromInt(Regs, 0);
 	else
-		regs[0] = CONSTANT_INT(OP_ZERO);
+		Regs[0] = CONSTANT_INT(OP_ZERO);
 
 	for (i=1; i<TOPREALREG; i++)
-		regs[i] = regs[0];
+		Regs[i] = Regs[0];
 
 	for (i=TOPREALREG+stack_size(); i<NUMREG; i++)
-		regs[i] = regs[0];
+		Regs[i] = Regs[0];
 
-	state.eol = 0;
-	state.state_lift = 1;
+	State.eol = 0;
+	State.state_lift = 1;
 }
 
 /* Clear the program space
@@ -482,8 +482,8 @@ void clrprog(void) {
 	for (i=1; i<=NUMPROG; i++)
 		prog[i] = EMPTY_PROGRAM_OPCODE;
 	raw_set_pc(0);
-	retstkptr = 0;
-	state.last_prog = 1;
+	RetStkPtr = 0;
+	State.last_prog = 1;
 }
 
 /* Clear all - programs and registers
@@ -500,28 +500,28 @@ void clrall(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 	/* Clear out the banked registers and flags */
 	for (i=0; i<NUMBANKREGS; i++)
-		bank_regs[i] = regs[0];
-	bank_flags = 0;
+		BankRegs[i] = Regs[0];
+	BankFlags = 0;
 
-	state.shifts = SHIFT_N;
-	state.test = TST_NONE;
+	State.shifts = SHIFT_N;
+	State.test = TST_NONE;
 
-	disp_msg = NULL;
+	DispMsg = NULL;
 }
 
 /* Clear everything
  */
 void reset(decimal64 *a, decimal64 *b, decContext *nulc) {
-	xset(&state, 0, sizeof(state));
+	xset(&State, 0, sizeof(State));
 	clrall(NULL, NULL, NULL);
 
-	state.runmode = 1;
-	state.magic = MagicMarker;
+	State.runmode = 1;
+	State.magic = MAGIC_MARKER;
 #ifdef REALBUILD
-	state.contrast = 9;
+	State.contrast = 9;
 #endif
-	//state.stack_depth = 0;
-	disp_msg = NULL;
+	//State.stack_depth = 0;
+	DispMsg = NULL;
 }
 
 /* Convert a possibly signed string to an integer
@@ -574,9 +574,9 @@ unsigned long long int s_to_ull(const char *s, unsigned int base) {
 }
 
 const char *get_cmdline(void) {
-	if (state.eol) {
-		cmdline[state.eol] = '\0';
-		return cmdline;
+	if (State.eol) {
+		Cmdline[State.eol] = '\0';
+		return Cmdline;
 	}
 	return NULL;
 }
@@ -587,7 +587,7 @@ static int fract_convert_number(decNumber *x, const char *s) {
 		err(ERR_DOMAIN);
 		return 1;
 	}
-	decNumberFromString(x, s, g_ctx);
+	decNumberFromString(x, s, Ctx);
 	return check_special(x);
 }
 
@@ -596,31 +596,31 @@ static int fract_convert_number(decNumber *x, const char *s) {
 static void process_cmdline(void) {
 	decNumber a, b, x, t, z;
 
-	if (state.eol) {
-		const unsigned int cmdlinedot = state.cmdlinedot;
-		cmdline[state.eol] = '\0';
-		state.eol = 0;
-		if (state.state_lift)
+	if (State.eol) {
+		const unsigned int cmdlinedot = State.cmdlinedot;
+		Cmdline[State.eol] = '\0';
+		State.eol = 0;
+		if (State.state_lift)
 			lift();
-		state.state_lift = 1;
-		state.cmdlinedot = 0;
-		state.cmdlineeex = 0;
+		State.state_lift = 1;
+		State.cmdlinedot = 0;
+		State.cmdlineeex = 0;
 		if (is_intmode()) {
-			const int sgn = (cmdline[0] == '-')?1:0;
-			unsigned long long int x = s_to_ull(cmdline+sgn, int_base());
+			const int sgn = (Cmdline[0] == '-')?1:0;
+			unsigned long long int x = s_to_ull(Cmdline+sgn, int_base());
 			d64fromInt(&regX, build_value(x, sgn));
-		} else if (state.fract && cmdlinedot > 0) {
+		} else if (State.fract && cmdlinedot > 0) {
 			char *d0, *d1;
 			int neg;
 
-			if (cmdline[0] == '-') {
+			if (Cmdline[0] == '-') {
 				neg = 1;
-				d0 = cmdline+1;
+				d0 = Cmdline+1;
 			} else {
 				neg = 0;
-				d0 = cmdline;
+				d0 = Cmdline;
 			}
-			d1 = find_char(cmdline, '.');
+			d1 = find_char(Cmdline, '.');
 			*d1++ = '\0';
 			// if (*d1 == '\0') goto real;
 			if (cmdlinedot == 2) {
@@ -637,22 +637,22 @@ static void process_cmdline(void) {
 					err(ERR_DOMAIN);
 					return;
 				}
-				decNumberDivide(&t, &a, &b, g_ctx);
-				decNumberAdd(&x, &z, &t, g_ctx);
+				decNumberDivide(&t, &a, &b, Ctx);
+				decNumberAdd(&x, &z, &t, Ctx);
 			} else {
 				if (decNumberIsZero(&a)) {
 					err(ERR_DOMAIN);
 					return;
 				}
-				decNumberDivide(&x, &z, &a, g_ctx);
+				decNumberDivide(&x, &z, &a, Ctx);
 			}
 			if (neg)
-				decNumberMinus(&x, &x, g_ctx);
+				decNumberMinus(&x, &x, Ctx);
 			setX(&x);
 		} else {
-			decNumberFromString(&x, cmdline, g_ctx);
-			if (state.hms)
-				decNumberHMS2HR(&x, &x, g_ctx);
+			decNumberFromString(&x, Cmdline, Ctx);
+			if (State.hms)
+				decNumberHMS2HR(&x, &x, Ctx);
 			setX(&x);
 		}
 	}
@@ -660,7 +660,7 @@ static void process_cmdline(void) {
 
 void process_cmdline_set_lift(void) {
 	process_cmdline();
-	state.state_lift = 1;
+	State.state_lift = 1;
 }
 
 
@@ -670,8 +670,8 @@ void process_cmdline_set_lift(void) {
  */
 decimal64 *get_reg_n(int n) {
 	if (isXROM(state_pc()) && n < NUMBANKREGS)
-		return bank_regs + n;
-	return regs + (n % NUMREG);
+		return BankRegs + n;
+	return Regs + (n % NUMREG);
 }
 
 void get_reg_n_as_dn(int n, decNumber *x) {
@@ -680,7 +680,7 @@ void get_reg_n_as_dn(int n, decNumber *x) {
 
 void put_reg_n(int n, const decNumber *x) {
 	if (! check_special(x))
-		decimal64FromNumber(get_reg_n(n), x, g_ctx64);
+		decimal64FromNumber(get_reg_n(n), x, Ctx64);
 }
 
 long long int get_reg_n_as_int(int n) {
@@ -708,10 +708,10 @@ void put_int(unsigned long long int val, int sgn, decimal64 *x) {
 	} else {
 		decNumber t;
 
-		ullint_to_dn(&t, val, g_ctx);
+		ullint_to_dn(&t, val, Ctx);
 		if (sgn)
-			decNumberMinus(&t, &t, g_ctx);
-		decimal64FromNumber(x, &t, g_ctx64);
+			decNumberMinus(&t, &t, Ctx);
+		decimal64FromNumber(x, &t, Ctx64);
 	}
 }
 
@@ -722,7 +722,7 @@ unsigned long long int get_int(const decimal64 *x, int *sgn) {
 		decNumber n;
 
 		decimal64ToNumber(x, &n);
-		return dn_to_ull(&n, g_ctx, sgn);
+		return dn_to_ull(&n, Ctx, sgn);
 	}
 }
 
@@ -740,7 +740,7 @@ long long int d64toInt(const decimal64 *n) {
 	if (decNumberIsSpecial(&t))
 		return 0;
 	if (decNumberIsNegative(&t)) {
-		decNumberMinus(&t, &t, g_ctx);
+		decNumberMinus(&t, &t, Ctx);
 		sgn = 1;
 	} else
 		sgn = 0;
@@ -763,10 +763,10 @@ void d64fromInt(decimal64 *n, const long long int z) {
 
 	nv = extract_value(z, &sgn);
 
-	ullint_to_dn(&t, nv, g_ctx);
+	ullint_to_dn(&t, nv, Ctx);
 	if (sgn)
-		decNumberMinus(&t, &t, g_ctx);
-	decimal64FromNumber(n, &t, g_ctx64);
+		decNumberMinus(&t, &t, Ctx);
+	decimal64FromNumber(n, &t, Ctx64);
 #else
 	xcopy(n, &z, sizeof(decimal64));
 #endif
@@ -802,7 +802,7 @@ static void monadic(const opcode op) {
 
 				getX(&x);
 
-				(*monfuncs[f].mondreal)(&r, &x, g_ctx);
+				(*monfuncs[f].mondreal)(&r, &x, Ctx);
 
 				setlastX();
 				setX(&r);
@@ -825,7 +825,7 @@ static void monadic_cmplex(const opcode op) {
 		if (monfuncs[f].mondcmplx != NULL) {
 			getXY(&x, &y);
 
-			(*monfuncs[f].mondcmplx)(&rx, &ry, &x, &y, g_ctx);
+			(*monfuncs[f].mondcmplx)(&rx, &ry, &x, &y, Ctx);
 
 			setlastXY();
 			setXY(&rx, &ry);
@@ -867,7 +867,7 @@ static void dyadic(const opcode op) {
 
 				getXY(&x, &y);
 
-				(*dyfuncs[f].dydreal)(&r, &y, &x, g_ctx);
+				(*dyfuncs[f].dydreal)(&r, &y, &x, Ctx);
 
 				setlastX();
 				lower();
@@ -892,7 +892,7 @@ static void dyadic_cmplex(const opcode op) {
 			getZ(&x2);
 			getT(&y2);
 
-			(*dyfuncs[f].dydcmplx)(&xr, &yr, &x2, &y2, &x1, &y1, g_ctx);
+			(*dyfuncs[f].dydcmplx)(&xr, &yr, &x2, &y2, &x1, &y1, Ctx);
 
 			setlastXY();
 			lower2();
@@ -936,7 +936,7 @@ static void triadic(const opcode op) {
 				getXY(&x, &y);
 				getZ(&z);
 
-				(*trifuncs[f].trireal)(&r, &z, &y, &x, g_ctx);
+				(*trifuncs[f].trireal)(&r, &z, &y, &x, Ctx);
 
 				setlastX();
 				lower();
@@ -1001,22 +1001,22 @@ static int storcl_op(unsigned short opr, const decimal64 *yr, decNumber *r, int 
 
 	switch (opr) {
 	case 1:
-		decNumberAdd(r, &y, &x, g_ctx64);
+		decNumberAdd(r, &y, &x, Ctx64);
 		break;
 	case 2:
-		decNumberSubtract(r, &y, &x, g_ctx64);
+		decNumberSubtract(r, &y, &x, Ctx64);
 		break;
 	case 3:
-		decNumberMultiply(r, &y, &x, g_ctx64);
+		decNumberMultiply(r, &y, &x, Ctx64);
 		break;
 	case 4:
-		decNumberDivide(r, &y, &x, g_ctx64);
+		decNumberDivide(r, &y, &x, Ctx64);
 		break;
 	case 5:
-		decNumberMin(r, &y, &x, g_ctx);
+		decNumberMin(r, &y, &x, Ctx);
 		break;
 	case 6:
-		decNumberMax(r, &y, &x, g_ctx);
+		decNumberMax(r, &y, &x, Ctx);
 		break;
 	default:
 		return 1;
@@ -1080,7 +1080,7 @@ void cmdsto(unsigned int arg, enum rarg op) {
 
 			if (storcl_op(op - RARG_STO, rn, &r, 0))
 				illegal(op);
-			decimal64FromNumber(rn, &r, g_ctx64);
+			decimal64FromNumber(rn, &r, Ctx64);
 		}
 	}
 }
@@ -1127,16 +1127,16 @@ static int storcl_cop(unsigned short opr,
 
 	switch (opr) {
 	case 1:
-		cmplxAdd(r1, r2, &y1, &y2, &x1, &x2, g_ctx64);
+		cmplxAdd(r1, r2, &y1, &y2, &x1, &x2, Ctx64);
 		break;
 	case 2:
-		cmplxSubtract(r1, r2, &y1, &y2, &x1, &x2, g_ctx64);
+		cmplxSubtract(r1, r2, &y1, &y2, &x1, &x2, Ctx64);
 		break;
 	case 3:
-		cmplxMultiply(r1, r2, &y1, &y2, &x1, &x2, g_ctx);
+		cmplxMultiply(r1, r2, &y1, &y2, &x1, &x2, Ctx);
 		break;
 	case 4:
-		cmplxDivide(r1, r2, &y1, &y2, &x1, &x2, g_ctx);
+		cmplxDivide(r1, r2, &y1, &y2, &x1, &x2, Ctx);
 		break;
 	default:
 		return 1;
@@ -1160,8 +1160,8 @@ void cmdcsto(unsigned int arg, enum rarg op) {
 		else if (storcl_cop(op - RARG_STO, t1, t2, &r1, &r2))
 			illegal(op);
 		else {
-			decimal64FromNumber(t1, &r1, g_ctx64);
-			decimal64FromNumber(t2, &r2, g_ctx64);
+			decimal64FromNumber(t1, &r1, Ctx64);
+			decimal64FromNumber(t2, &r2, Ctx64);
 		}
 	}
 	set_was_complex();
@@ -1220,10 +1220,10 @@ void cmdview(unsigned int arg, enum rarg op) {
 
 /* Set the stack size */
 void set_stack_size4(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
-	state.stack_depth = 0;
+	State.stack_depth = 0;
 }
 void set_stack_size8(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
-	state.stack_depth = 1;
+	State.stack_depth = 1;
 }
 
 /* Get the stack size */
@@ -1278,7 +1278,7 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 		if (z == 0)
 			z++;
 		min = 1;
-		max = state.last_prog;
+		max = State.last_prog;
 	}
 
 	while (z < max && z != 0)
@@ -1304,20 +1304,20 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 	raw_set_pc(pc);
 	if (gsb) {
 		if (running()) {
-			if (!state.implicit_rtn) {
-				retstk[retstkptr++] = oldpc;
-				if (retstkptr >= RET_STACK_SIZE) {
+			if (!State.implicit_rtn) {
+				RetStk[RetStkPtr++] = oldpc;
+				if (RetStkPtr >= RET_STACK_SIZE) {
 					err(ERR_XEQ_NEST);
-					retstkptr = 0;
+					RetStkPtr = 0;
 					set_running_off();
 				}
 			}
 		} else {
-			retstkptr = 0;
+			RetStkPtr = 0;
 			set_running_on();
 		}
 	}
-	state.implicit_rtn = 0;
+	State.implicit_rtn = 0;
 }
 
 static void cmdgtocommon(int gsb, unsigned int pc) {
@@ -1347,7 +1347,7 @@ static void xromargcommon(int lbl, unsigned int userpc) {
 		return;
 
 	pc = find_label_from(addrXROM(0), lbl, 1);
-	state.usrpc = userpc;
+	State.usrpc = userpc;
 	gsbgto(pc, 1, oldpc);
 }
 
@@ -1363,10 +1363,10 @@ void multixromarg(const opcode o, enum multiops mopr) {
 
 
 void cmddisp(unsigned int arg, enum rarg op) {
-	state.dispdigs = arg;
-	if (op == RARG_FIX)		state.dispmode = MODE_FIX;
-	else if (op == RARG_SCI)	state.dispmode = MODE_SCI;
-	else if (op == RARG_ENG)	state.dispmode = MODE_ENG;
+	State.dispdigs = arg;
+	if (op == RARG_FIX)		State.dispmode = MODE_FIX;
+	else if (op == RARG_SCI)	State.dispmode = MODE_SCI;
+	else if (op == RARG_ENG)	State.dispmode = MODE_ENG;
 	// RARG_DISP just falls through having had its work done already
 }
 
@@ -1436,14 +1436,14 @@ void cmdconv(unsigned int arg, enum rarg op) {
 		return;
 
 	getX(&x);
-	do_conv(&r, arg, &x, g_ctx);
+	do_conv(&r, arg, &x, Ctx);
 	setlastX();
 	setX(&r);
 }
 
 #ifdef REALBUILD
 void cmdcontrast(unsigned int arg, enum rarg op) {
-	state.contrast = arg & 0xf;
+	State.contrast = arg & 0xf;
 }
 #endif
 
@@ -1453,13 +1453,13 @@ void cmdcontrast(unsigned int arg, enum rarg op) {
 void fin_tst(const int a) {
 	if (a) {
 		if (!running())
-			disp_msg = "true";
+			DispMsg = "true";
 	} else {
 		if (running()) {
-			if (! state.implicit_rtn)
+			if (! State.implicit_rtn)
 				incpc();
 		} else
-			disp_msg = "false";
+			DispMsg = "false";
 	}
 }
 
@@ -1484,29 +1484,29 @@ void cmdback(unsigned int arg, enum rarg op) {
 /* We've encountered a CHS while entering the command line.
  */
 static void cmdlinechs(void) {
-	if (state.cmdlineeex) {
-		const unsigned int pos = state.cmdlineeex + 1;
-		if (state.eol < pos) {
-			if (state.eol < CMDLINELEN)
-				cmdline[state.eol++] = '-';
-		} else if (cmdline[pos] == '-') {
-			if (state.eol != pos)
-				xcopy(cmdline + pos, cmdline + pos + 1, state.eol-pos);
-			state.eol--;
-		} else if (state.eol < CMDLINELEN) {
-			xcopy(cmdline+pos+1, cmdline+pos, state.eol-pos);
-			cmdline[pos] = '-';
-			state.eol++;
+	if (State.cmdlineeex) {
+		const unsigned int pos = State.cmdlineeex + 1;
+		if (State.eol < pos) {
+			if (State.eol < CMDLINELEN)
+				Cmdline[State.eol++] = '-';
+		} else if (Cmdline[pos] == '-') {
+			if (State.eol != pos)
+				xcopy(Cmdline + pos, Cmdline + pos + 1, State.eol-pos);
+			State.eol--;
+		} else if (State.eol < CMDLINELEN) {
+			xcopy(Cmdline+pos+1, Cmdline+pos, State.eol-pos);
+			Cmdline[pos] = '-';
+			State.eol++;
 		}
 	} else {
-		if (cmdline[0] == '-') {
-			if (state.eol > 1)
-				xcopy(cmdline, cmdline+1, state.eol);
-			state.eol--;
-		} else if (state.eol < CMDLINELEN) {
-			xcopy(cmdline+1, cmdline, state.eol);
-			cmdline[0] = '-';
-			state.eol++;
+		if (Cmdline[0] == '-') {
+			if (State.eol > 1)
+				xcopy(Cmdline, Cmdline+1, State.eol);
+			State.eol--;
+		} else if (State.eol < CMDLINELEN) {
+			xcopy(Cmdline+1, Cmdline, State.eol);
+			Cmdline[0] = '-';
+			State.eol++;
 		}
 	}
 }
@@ -1526,17 +1526,17 @@ static void niladic(const opcode op) {
 			case 2:	lift();
 				y = &regY;
 			case 1:	x = &regX;
-				if (state.state_lift)
+				if (State.state_lift)
 					lift();
 			default:
 				if (niladics[idx].niladicf != NULL)
-					(*niladics[idx].niladicf)(x, y, g_ctx64);
+					(*niladics[idx].niladicf)(x, y, Ctx64);
 				break;
 			}
 		}
 	} else
 		illegal(op);
-	state.state_lift = 1;
+	State.state_lift = 1;
 }
 
 
@@ -1583,11 +1583,11 @@ static void do_tst(const decimal64 *cmp, const enum tst_op op, int cnst) {
 			goto flse;
 
 		if (op == TST_APX) {
-			decNumberRnd(&x, &x, g_ctx);
+			decNumberRnd(&x, &x, Ctx);
 			if (cnst < 0)
-				decNumberRnd(&t, &t, g_ctx);
+				decNumberRnd(&t, &t, Ctx);
 		}
-		decNumberCompare(&r, &x, &t, g_ctx);
+		decNumberCompare(&r, &x, &t, Ctx);
 		iszero = decNumberIsZero(&r);
 		isneg = decNumberIsNegative(&r);
 	}
@@ -1630,17 +1630,17 @@ static void do_ztst(const decimal64 *r, const decimal64 *i, const enum tst_op op
 		goto flse;
 #if 0
 	if (op == TST_APX) {
-		decNumberRnd(&x, &x, g_ctx);
-		decNumberRnd(&y, &y, g_ctx);
-		decNumberRnd(&a, &a, g_ctx);
-		decNumberRnd(&b, &b, g_ctx);
+		decNumberRnd(&x, &x, Ctx);
+		decNumberRnd(&y, &y, Ctx);
+		decNumberRnd(&a, &a, Ctx);
+		decNumberRnd(&b, &b, Ctx);
 	}
 #endif
-	decNumberCompare(&t, &x, &a, g_ctx);
+	decNumberCompare(&t, &x, &a, Ctx);
 	if (!decNumberIsZero(&t))
 		eq = 0;
 	else {
-		decNumberCompare(&t, &y, &b, g_ctx);
+		decNumberCompare(&t, &y, &b, Ctx);
 		if (!decNumberIsZero(&t))
 			eq = 0;
 	}
@@ -1674,11 +1674,11 @@ static int incdec(unsigned int arg, int inc) {
 
 		get_reg_n_as_dn(arg, &x);
 		if (inc)
-			dn_inc(&x, g_ctx);
+			dn_inc(&x, Ctx);
 		else
-			dn_dec(&x, g_ctx);
+			dn_dec(&x, Ctx);
 		put_reg_n(arg, &x);
-		decNumberTrunc(&y, &x, g_ctx);
+		decNumberTrunc(&y, &x, Ctx);
 		return ! decNumberIsZero(&y);
 	}
 }
@@ -1716,34 +1716,34 @@ void cmdloop(unsigned int arg, enum rarg op) {
 
 		// Break the number into the important bits
 		// nnnnn.fffii
-		decNumberAbs(&f, &x, g_ctx);
-		decNumberTrunc(&n, &f, g_ctx);			// n = nnnnn
-		decNumberSubtract(&u, &f, &n, g_ctx);		// u = .fffii
+		decNumberAbs(&f, &x, Ctx);
+		decNumberTrunc(&n, &f, Ctx);			// n = nnnnn
+		decNumberSubtract(&u, &f, &n, Ctx);		// u = .fffii
 		if (decNumberIsNegative(&x))
-			decNumberMinus(&n, &n, g_ctx);
-		decNumberMultiply(&i, &u, &const_1000, g_ctx);	// i = fff.ii
-		decNumberTrunc(&f, &i, g_ctx);			// f = fff
-		decNumberSubtract(&i, &i, &f, g_ctx);		// i = .ii		
-		decNumberMultiply(&x, &i, &const_100, g_ctx);
-		decNumberTrunc(&i, &x, g_ctx);			// i = ii
+			decNumberMinus(&n, &n, Ctx);
+		decNumberMultiply(&i, &u, &const_1000, Ctx);	// i = fff.ii
+		decNumberTrunc(&f, &i, Ctx);			// f = fff
+		decNumberSubtract(&i, &i, &f, Ctx);		// i = .ii		
+		decNumberMultiply(&x, &i, &const_100, Ctx);
+		decNumberTrunc(&i, &x, Ctx);			// i = ii
 		if (decNumberIsZero(&i))
 			decNumberCopy(&i, &const_1);
 
 		if (op == RARG_ISG) {
-			decNumberAdd(&n, &n, &i, g_ctx);
-			decNumberCompare(&x, &f, &n, g_ctx);
+			decNumberAdd(&n, &n, &i, Ctx);
+			decNumberCompare(&x, &f, &n, Ctx);
 			fin_tst(! decNumberIsNegative(&x));
 		} else {
-			decNumberSubtract(&n, &n, &i, g_ctx);
-			decNumberCompare(&x, &f, &n, g_ctx);
+			decNumberSubtract(&n, &n, &i, Ctx);
+			decNumberCompare(&x, &f, &n, Ctx);
 			fin_tst(decNumberIsNegative(&x));
 		}
 
 		// Finally rebuild the result
 		if (decNumberIsNegative(&n)) {
-			decNumberSubtract(&x, &n, &u, g_ctx);
+			decNumberSubtract(&x, &n, &u, Ctx);
 		} else
-			decNumberAdd(&x, &n, &u, g_ctx);
+			decNumberAdd(&x, &n, &u, Ctx);
 		put_reg_n(arg, &x);
 	}
 }
@@ -1757,8 +1757,8 @@ static unsigned char *flag_byte(const int n, unsigned char *mask) {
 		return NULL;
 	*mask = 1 << (n % 8);
 	if (isXROM(state_pc()) && n < NUMBANKFLAGS)
-		return ((unsigned char *)&bank_flags) + n / 8;
-	return user_flags + n / 8;
+		return ((unsigned char *)&BankFlags) + n / 8;
+	return UserFlags + n / 8;
 }
 
 int get_user_flag(int n) {
@@ -1821,7 +1821,7 @@ void cmdflag(unsigned int arg, enum rarg op) {
 }
 
 void intws(unsigned int arg, enum rarg op) {
-	state.int_len = arg;
+	State.int_len = arg;
 }
 
 
@@ -1829,30 +1829,30 @@ void intws(unsigned int arg, enum rarg op) {
  */
 
 void get_maxdenom(decNumber *d) {
-	const unsigned int dm = state.denom_max;
-	int_to_dn(d, dm==0?9999:dm, g_ctx);
+	const unsigned int dm = State.denom_max;
+	int_to_dn(d, dm==0?9999:dm, Ctx);
 }
 
 void op_2frac(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	decNumber z, n, d, t;
 
-	if (state.intm) {
+	if (State.intm) {
 		d64fromInt(x, 1);
 		return;
 	}
 
 	getY(&z);			// Stack has been lifted already
-	decNumber2Fraction(&n, &d, &z, g_ctx);
+	decNumber2Fraction(&n, &d, &z, Ctx);
 	setXY(&d, &n);			// Set numerator and denominator
-	if (state.runmode) {
-		decNumberDivide(&t, &n, &d, g_ctx);
+	if (State.runmode) {
+		decNumberDivide(&t, &n, &d, Ctx);
 		decNumberCompare(&n, &t, &z, ctx64);
 		if (decNumberIsZero(&n))
-			disp_msg = "y/x =";
+			DispMsg = "y/x =";
 		else if (decNumberIsNegative(&n))
-			disp_msg = "y/x \017";
+			DispMsg = "y/x \017";
 		else
-			disp_msg = "y/x \020";
+			DispMsg = "y/x \020";
 	}
 }
 
@@ -1862,25 +1862,25 @@ void op_fracdenom(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 	i = get_int(&regX, &s);
 	if (i > 9999)
-		state.denom_max = 0;
+		State.denom_max = 0;
 	else if (i != 1)
-		state.denom_max = i;
+		State.denom_max = (unsigned int) i;
 	else {
 		setlastX();
-		put_int(state.denom_max, 0, &regX);
+		put_int(State.denom_max, 0, &regX);
 	}
 }
 
 void op_denany(decimal64 *a, decimal64 *b, decContext *nulc) {
-	state.denom_mode = DENOM_ANY;
+	State.denom_mode = DENOM_ANY;
 }
 
 void op_denfix(decimal64 *a, decimal64 *b, decContext *nulc) {
-	state.denom_mode = DENOM_FIXED;
+	State.denom_mode = DENOM_FIXED;
 }
 
 void op_denfac(decimal64 *a, decimal64 *b, decContext *nulc) {
-	state.denom_mode = DENOM_FACTOR;
+	State.denom_mode = DENOM_FACTOR;
 }
 
 /* Switching from an integer mode to real mode requires us
@@ -1891,48 +1891,48 @@ static void int2dn(decNumber *x, decimal64 *a) {
 	int s;
 	unsigned long long int v = extract_value(d64toInt(a), &s);
 
-	ullint_to_dn(x, v, g_ctx);
+	ullint_to_dn(x, v, Ctx);
 	if (s)
-		decNumberMinus(x, x, g_ctx);
+		decNumberMinus(x, x, Ctx);
 }
 
 void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x, y, z;
 
 	if (is_intmode()) {
-		state.intm = 0;
-		state.int_len = 0;
+		State.intm = 0;
+		State.int_len = 0;
 
 		int2dn(&x, &regX);
 		int2dn(&y, &regY);
 		clrstk(NULL, NULL, NULL);
-		decNumberPower(&z, &const_2, &x, g_ctx);
-		decNumberMultiply(&x, &z, &y, g_ctx);
+		decNumberPower(&z, &const_2, &x, Ctx);
+		decNumberMultiply(&x, &z, &y, Ctx);
 		set_overflow(decNumberIsInfinite(&x));
-		decimal64FromNumber(&regX, &x, g_ctx64);
+		decimal64FromNumber(&regX, &x, Ctx64);
 	}
-	state.hms = 0;
-	state.fract = 0;
+	State.hms = 0;
+	State.fract = 0;
 }
 
 void op_hms(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	op_float(NULL, NULL, NULL);
-	state.hms = 1;
+	State.hms = 1;
 }
 
 void op_fract(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	op_float(NULL, NULL, NULL);
-	state.fract = 1;
+	State.fract = 1;
 }
 
 void op_fracimp(decimal64 *a, decimal64 *b, decContext *nulc) {
 	op_fract(a, b, nulc);
-	state.improperfrac = 1;
+	State.improperfrac = 1;
 }
 
 void op_fracpro(decimal64 *a, decimal64 *b, decContext *nulc) {
 	op_fract(a, b, nulc);
-	state.improperfrac = 0;
+	State.improperfrac = 0;
 }
 
 static int is_digit(const char c) {
@@ -1954,7 +1954,7 @@ static void digit(unsigned int c) {
 	int i, j;
 	int lim = 12;
 
-	if (state.eol >= CMDLINELEN) {
+	if (State.eol >= CMDLINELEN) {
 		warn(ERR_TOO_LONG);
 		return;
 	}
@@ -1963,14 +1963,14 @@ static void digit(unsigned int c) {
 			warn(ERR_DIGIT);
 			return;
 		}
-		for (i=j=0; i<(int)state.eol; i++)
-			j += is_xdigit(cmdline[i]);
+		for (i=j=0; i<(int)State.eol; i++)
+			j += is_xdigit(Cmdline[i]);
 		if (j == lim) {
 			warn(ERR_TOO_LONG);
 			return;
 		}
 		if (c >= 10) {
-			cmdline[state.eol++] = c - 10 + 'A';
+			Cmdline[State.eol++] = c - 10 + 'A';
 			return;
 		}
 	} else {
@@ -1978,23 +1978,23 @@ static void digit(unsigned int c) {
 			warn(ERR_DIGIT);
 			return;
 		}
-		for (i=j=0; i<(int)state.eol; i++)
-			if (cmdline[i] == 'E') {
+		for (i=j=0; i<(int)State.eol; i++)
+			if (Cmdline[i] == 'E') {
 				lim++;
 				break;
 			} else
-				j += is_digit(cmdline[i]);
+				j += is_digit(Cmdline[i]);
 		if (j == lim) {
 			warn(ERR_TOO_LONG);
 			return;
 		}
 	}
 
-	cmdline[state.eol++] = c + '0';
-	cmdline[state.eol] = '\0';
+	Cmdline[State.eol++] = c + '0';
+	Cmdline[State.eol] = '\0';
 
-	if (! intm && state.cmdlineeex) {
-		char *p = &cmdline[state.cmdlineeex + 1];
+	if (! intm && State.cmdlineeex) {
+		char *p = &Cmdline[State.cmdlineeex + 1];
 		int emax = 384;
 		int n;
 
@@ -2014,8 +2014,8 @@ static void digit(unsigned int c) {
 
 				for (i=0; p[i] != '\0'; i++)
 					p[i] = p[i+1];
-				state.eol--;
-				cmdline[state.eol] = '\0';
+				State.eol--;
+				Cmdline[State.eol] = '\0';
 			} else
 				break;
 		}
@@ -2042,82 +2042,82 @@ static void specials(const opcode op) {
 	case OP_DOT:
 		if (is_intmode())
 			break;
-		if (state.cmdlinedot < (state.fract + !state.improperfrac) && !state.cmdlineeex &&
-				state.eol < CMDLINELEN) {
-			if (state.eol == 0 || cmdline[state.eol-1] == '.')
+		if (State.cmdlinedot < (State.fract + !State.improperfrac) && !State.cmdlineeex &&
+				State.eol < CMDLINELEN) {
+			if (State.eol == 0 || Cmdline[State.eol-1] == '.')
 				digit(0);
-			state.cmdlinedot++;
-			cmdline[state.eol++] = '.';
+			State.cmdlinedot++;
+			Cmdline[State.eol++] = '.';
 		}
 		break;
 
 	case OP_EEX:
-		if (is_intmode() || state.fract || state.hms)
+		if (is_intmode() || State.fract || State.hms)
 			break;
-		if (!state.cmdlineeex && state.eol < CMDLINELEN) {
-			if (state.eol == 0)
+		if (!State.cmdlineeex && State.eol < CMDLINELEN) {
+			if (State.eol == 0)
 				digit(1);
-			state.cmdlineeex = state.eol;
-			cmdline[state.eol++] = 'E';
+			State.cmdlineeex = State.eol;
+			Cmdline[State.eol++] = 'E';
 		}
 		break;
 
 	case OP_CHS:
-		if (state.eol)
+		if (State.eol)
 			cmdlinechs();
 		else if (is_intmode()) {
 			d64fromInt(&regX, intChs(d64toInt(&regX)));
-			state.state_lift = 1;
+			State.state_lift = 1;
 		} else {
 			decNumber x, r;
 
 			getX(&x);
-			decNumberMinus(&r, &x, g_ctx);
+			decNumberMinus(&r, &x, Ctx);
 			setX(&r);
-			state.state_lift = 1;
+			State.state_lift = 1;
 		}
 		break;
 
 	case OP_CLX:
-		if (state.eol) {
-			state.eol--;
-			if (cmdline[state.eol] == 'E')
-				state.cmdlineeex = 0;
-			else if (cmdline[state.eol] == '.')
-				state.cmdlinedot--;
+		if (State.eol) {
+			State.eol--;
+			if (Cmdline[State.eol] == 'E')
+				State.cmdlineeex = 0;
+			else if (Cmdline[State.eol] == '.')
+				State.cmdlinedot--;
 		} else {
 			if (is_intmode())
 				d64fromInt(&regX, 0);
 			else
 				regX = CONSTANT_INT(OP_ZERO);
-			state.state_lift = 0;
+			State.state_lift = 0;
 		}
 		break;
 
 	case OP_ENTER:
 		process_cmdline();
 		lift();
-		state.state_lift = 0;
+		State.state_lift = 0;
 		break;
 
 	case OP_SIGMAPLUS:
 		if (is_intmode())
 			break;
 		process_cmdline();
-		state.state_lift = 0;
+		State.state_lift = 0;
 		setlastX();
-		sigma_plus(g_ctx);
-		sigma_N(&regX, NULL, g_ctx64);
+		sigma_plus(Ctx);
+		sigma_N(&regX, NULL, Ctx64);
 		break;
 
 	case OP_SIGMAMINUS:
 		if (is_intmode())
 			break;
 		process_cmdline();
-		state.state_lift = 0;
+		State.state_lift = 0;
 		setlastX();
-		sigma_minus(g_ctx);
-		sigma_N(&regX, NULL, g_ctx64);
+		sigma_minus(Ctx);
+		sigma_N(&regX, NULL, Ctx64);
 		break;
 
 	// Conditional tests vs registers....
@@ -2147,16 +2147,16 @@ static void specials(const opcode op) {
 }
 
 enum trig_modes get_trig_mode(void) {
-	if (state.cmplx)
+	if (State.cmplx)
 		return TRIG_RAD;
-	//if (state.hyp)	return TRIG_RAD;
-	if (state.hms)
+	//if (State.hyp)	return TRIG_RAD;
+	if (State.hms)
 		return TRIG_DEG;
-	return state.trigmode;
+	return State.trigmode;
 }
 
 static void set_trig_mode(enum trig_modes m) {
-	state.trigmode = m;
+	State.trigmode = m;
 }
 
 void op_deg(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
@@ -2164,59 +2164,62 @@ void op_deg(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 }
 
 void op_rad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	state.hms = 0;
+	State.hms = 0;
 	set_trig_mode(TRIG_RAD);
 }
 
 void op_grad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	state.hms = 0;
+	State.hms = 0;
 	set_trig_mode(TRIG_GRAD);
 }
 
 void op_all(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	state.dispmode = MODE_STD;
-	state.dispdigs = 0;
+	State.dispmode = MODE_STD;
+	State.dispdigs = 0;
 }
 
 void op_radixcom(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	state.fraccomma = 1;
+	State.fraccomma = 1;
 }
 
 void op_radixdot(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	state.fraccomma = 0;
+	State.fraccomma = 0;
 }
 
 void op_thousands_off(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	state.nothousands = 1;
+	State.nothousands = 1;
 }
 
 void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	state.nothousands = 0;
+	State.nothousands = 0;
 }
 
 void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (running()) {
 		display();
 #ifndef REALBUILD
+#ifdef WIN32
+#pragma warning(disable:4996)
+#endif
 		sleep(1);
 #endif
 	}
 }
 
 void op_2comp(decimal64 *a, decimal64 *b, decContext *nulc) {
-	state.int_mode = MODE_2COMP;
+	State.int_mode = MODE_2COMP;
 }
 
 void op_1comp(decimal64 *a, decimal64 *b, decContext *nulc) {
-	state.int_mode = MODE_1COMP;
+	State.int_mode = MODE_1COMP;
 }
 
 void op_unsigned(decimal64 *a, decimal64 *b, decContext *nulc) {
-	state.int_mode = MODE_UNSIGNED;
+	State.int_mode = MODE_UNSIGNED;
 }
 
 void op_signmant(decimal64 *a, decimal64 *b, decContext *nulc) {
-	state.int_mode = MODE_SGNMANT;
+	State.int_mode = MODE_SGNMANT;
 }
 
 /* Switch to integer mode.
@@ -2261,31 +2264,31 @@ static void check_int_switch(void) {
 		} else {
 			/* Deal with the sign */
 			if (decNumberIsNegative(&x)) {
-				decNumberMinus(&x, &x, g_ctx);
+				decNumberMinus(&x, &x, Ctx);
 				sgn = 1;
 			} else
 				sgn = 0;
 			/* Figure the exponent */
-			decNumberLog2(&y, &x, g_ctx);
-			decNumberTrunc(&z, &y, g_ctx);
-			ex = dn_to_int(&z, g_ctx);
+			decNumberLog2(&y, &x, Ctx);
+			decNumberTrunc(&z, &y, Ctx);
+			ex = dn_to_int(&z, Ctx);
 			/* On to the mantissa */
-			decNumberPow2(&y, &z, g_ctx);
-			decNumberDivide(&z, &x, &y, g_ctx);
+			decNumberPow2(&y, &z, Ctx);
+			decNumberDivide(&z, &x, &y, Ctx);
 			m = 1;
-			decNumberFrac(&y, &z, g_ctx);
+			decNumberFrac(&y, &z, Ctx);
 			for (i=0; i<31; i++) {
-				decNumberMultiply(&z, &y, &const_2, g_ctx);
-				decNumberTrunc(&y, &z, g_ctx);
+				decNumberMultiply(&z, &y, &const_2, Ctx);
+				decNumberTrunc(&y, &z, Ctx);
 				m += m;
 				if (! decNumberIsZero(&y))
 					m++;
-				decNumberFrac(&y, &z, g_ctx);
+				decNumberFrac(&y, &z, Ctx);
 			}
 			ex -= 31;
 			/* Finally, round up if required */
-			decNumberMultiply(&z, &y, &const_2, g_ctx);
-			decNumberTrunc(&y, &z, g_ctx);
+			decNumberMultiply(&z, &y, &const_2, Ctx);
+			decNumberTrunc(&y, &z, Ctx);
 			if (! decNumberIsZero(&y)) {
 				m++;
 				if (m == 0) {
@@ -2303,12 +2306,12 @@ static void check_int_switch(void) {
 				sgn = 0;
 			d64fromInt(&regX, build_value(ex, sgn));
 		}
-		state.intm = 1;
+		State.intm = 1;
 	}
 }
 
 static void set_base(unsigned int b) {
-	state.int_base = b - 1;
+	State.int_base = b - 1;
 	check_int_switch();
 }
 
@@ -2323,26 +2326,26 @@ void set_int_base(unsigned int arg, enum rarg op) {
 }
 
 void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx) {
-	state.date_mode = DATE_YMD;
+	State.date_mode = DATE_YMD;
 }
 
 void date_dmy(decimal64 *a, decimal64 *nul, decContext *ctx) {
-	state.date_mode = DATE_DMY;
+	State.date_mode = DATE_DMY;
 }
 
 void date_mdy(decimal64 *a, decimal64 *nul, decContext *ctx) {
-	state.date_mode = DATE_MDY;
+	State.date_mode = DATE_MDY;
 }
 
 void time_24(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
-	state.t12 = 0;
+	State.t12 = 0;
 }
 
 void time_12(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
-	state.t12 = 1;
+	State.t12 = 1;
 }
 
-/* Save and restore used state.
+/* Save and restore used State.
  */
 void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	unsigned long long int n = 0;
@@ -2350,18 +2353,18 @@ void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	decNumber r;
 
 #define SB(f, p)					\
-		n |= (state.f) << posn;			\
+		n |= (State.f) << posn;			\
 		posn += (p)
 #include "statebits.h"
 #undef SB
-	if (state.intm) {
+	if (State.intm) {
 		if (word_size() < posn)
 			err(ERR_INT_SIZE);
 		else
 			d64fromInt(x, n);
 	} else {
-		ullint_to_dn(&r, n, g_ctx);
-		decimal64FromNumber(x, &r, g_ctx);
+		ullint_to_dn(&r, n, Ctx);
+		decimal64FromNumber(x, &r, Ctx);
 	}
 }
 
@@ -2370,7 +2373,7 @@ void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	int sgn;
 	decNumber x;
 
-	if (state.intm) {
+	if (State.intm) {
 	/* Figure out the number of bits required.  This is optimised
 	 * into a single constant assignment.
 	 */
@@ -2385,20 +2388,20 @@ void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 		n = d64toInt(&regX);
 	} else {
 		getX(&x);
-		n = dn_to_ull(&x, g_ctx, &sgn);
+		n = dn_to_ull(&x, Ctx, &sgn);
 	}
 
 #define SB(f, p)					\
-		(state.f) = n & ((1 << (p)) - 1);	\
+		(State.f) = n & ((1 << (p)) - 1);	\
 		n >>= (p)
 #include "statebits.h"
 #undef SB
 }
 
 static void do_rtn(int plus1) {
-	if (retstkptr > 0) {
-		raw_set_pc(retstk[--retstkptr]);
-		retstk[retstkptr] = 0;
+	if (RetStkPtr > 0) {
+		raw_set_pc(RetStk[--RetStkPtr]);
+		RetStk[RetStkPtr] = 0;
 		if (plus1)
 			incpc();
 	} else {
@@ -2408,12 +2411,12 @@ static void do_rtn(int plus1) {
 }
 
 void op_rtn(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	if (!state.implicit_rtn)
+	if (!State.implicit_rtn)
 		do_rtn(0);
 }
 
 void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	if (!state.implicit_rtn)
+	if (!State.implicit_rtn)
 		do_rtn(1);
 }
 
@@ -2428,7 +2431,7 @@ void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 }
 
 void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc) {
-	unsigned int usrpc = state.usrpc;
+	unsigned int usrpc = State.usrpc;
 	const unsigned int pc = state_pc();
 	if (usrpc != 0 && isXROM(pc))
 		gsbgto(usrpc, 1, pc);
@@ -2439,7 +2442,7 @@ void XisInt(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x;
 
 	getX(&x);
-	fin_tst(is_intmode() || is_int(&x, g_ctx));
+	fin_tst(is_intmode() || is_int(&x, Ctx));
 }
 
 /* Test if a number has a fractional component */
@@ -2447,7 +2450,7 @@ void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
 	decNumber x;
 
 	getX(&x);
-	fin_tst(!is_intmode() && !is_int(&x, g_ctx));
+	fin_tst(!is_intmode() && !is_int(&x, Ctx));
 }
 
 /* Utility routine that checks if the X register is even or odd or neither.
@@ -2459,10 +2462,10 @@ static int evenX() {
 	getX(&x);
 	if (decNumberIsSpecial(&x))
 		return -1;
-	decNumberRemainder(&y, &x, &const_2, g_ctx);
+	decNumberRemainder(&y, &x, &const_2, Ctx);
 	if (decNumberIsZero(&y))
 		return 1;
-	decNumberCompare(&x, &y, &const_1, g_ctx);
+	decNumberCompare(&x, &y, &const_1, Ctx);
 	if (decNumberIsZero(&x))
 		return 0;
 	return -2;
@@ -2533,21 +2536,21 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d) {
 		err(ERR_RANGE);
 		return 1;
 	}
-	decNumberTrunc(&y, &x, g_ctx);
-	*s = rsrc = dn_to_int(&y, g_ctx);
+	decNumberTrunc(&y, &x, Ctx);
+	*s = rsrc = dn_to_int(&y, Ctx);
 	if (rsrc >= TOPREALREG) {
 		err(ERR_RANGE);
 		return 1;
 	}
-	decNumberFrac(&y, &x, g_ctx);
-	decNumberMultiply(&x, &y, &const_100, g_ctx);
-	decNumberTrunc(&y, &x, g_ctx);
-	*n = num = dn_to_int(&y, g_ctx);
+	decNumberFrac(&y, &x, Ctx);
+	decNumberMultiply(&x, &y, &const_100, Ctx);
+	decNumberTrunc(&y, &x, Ctx);
+	*n = num = dn_to_int(&y, Ctx);
 	if (d != NULL) {
-		decNumberFrac(&y, &x, g_ctx);
-		decNumberMultiply(&x, &y, &const_100, g_ctx);
-		decNumberTrunc(&y, &x, g_ctx);
-		*d = rdest = dn_to_int(&y, g_ctx);
+		decNumberFrac(&y, &x, Ctx);
+		decNumberMultiply(&x, &y, &const_100, Ctx);
+		decNumberTrunc(&y, &x, Ctx);
+		*d = rdest = dn_to_int(&y, Ctx);
 		if (num == 0) {
 			/* Calculate the maxium non-ovelapping size */
 			if (rsrc > rdest) {
@@ -2580,7 +2583,7 @@ void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 	if (reg_decode(&s, &n, &d) || s == d)
 		return;
-	xcopy(regs+d, regs+s, n*sizeof(regs[0]));
+	xcopy(Regs+d, Regs+s, n*sizeof(Regs[0]));
 }
 
 void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
@@ -2594,7 +2597,7 @@ void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
 		err(ERR_RANGE);
 	else {
 		for (i=0; i<n; i++)
-			swap_reg(regs+s+i, regs+d+i);
+			swap_reg(Regs+s+i, Regs+d+i);
 	}
 }
 
@@ -2604,7 +2607,7 @@ void op_regclr(decimal64 *a, decimal64 *b, decContext *nulc) {
 	if (reg_decode(&s, &n, NULL))
 		return;
 	for (i=0; i<n; i++)
-		regs[i+s] = CONSTANT_INT(OP_ZERO);
+		Regs[i+s] = CONSTANT_INT(OP_ZERO);
 }
 
 void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
@@ -2623,29 +2626,29 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 		int L = beg[i];
 		int R = end[i] - 1;
 		if (L<R) {
-			const decimal64 pvt = regs[L];
+			const decimal64 pvt = Regs[L];
 			decimal64ToNumber(&pvt, &pivot);
 			while (L<R) {
 				while (L<R) {
-					decimal64ToNumber(regs+R, &a);
-					decNumberCompare(&t, &a, &pivot, g_ctx);
+					decimal64ToNumber(Regs+R, &a);
+					decNumberCompare(&t, &a, &pivot, Ctx);
 					if (decNumberIsNegative(&t) && !decNumberIsZero(&t))
 						break;
 					R--;
 				}
 				if (L<R)
-					regs[L++] = regs[R];
+					Regs[L++] = Regs[R];
 				while (L<R) {
-					decimal64ToNumber(regs+L, &a);
-					decNumberCompare(&t, &pivot, &a, g_ctx);
+					decimal64ToNumber(Regs+L, &a);
+					decNumberCompare(&t, &pivot, &a, Ctx);
 					if (decNumberIsNegative(&t) && !decNumberIsZero(&t))
 						break;
 					L++;
 				}
 				if (L<R)
-					regs[R--] = regs[L];
+					Regs[R--] = Regs[L];
 			}
-			regs[L] = pvt;
+			Regs[L] = pvt;
 			if (L - beg[i] < end[i] - (L+1)) {
 				beg[i+1] = beg[i];
 				end[i+1] = L;
@@ -2688,7 +2691,7 @@ static void rargs(const opcode op) {
 			arg = (unsigned int) get_reg_n_as_int(arg);
 		} else {
 			get_reg_n_as_dn(arg, &x);
-			arg = dn_to_int(&x, g_ctx);
+			arg = dn_to_int(&x, Ctx);
 		}
 	} else {
 		if (lim > 128 && ind)		// put the top bit back in
@@ -2741,13 +2744,13 @@ static void print_step(char *tracebuf, const opcode op) {
  * happens.  This should be called on that something.
  */
 void reset_volatile_state(void) {
-	if (state.implicit_rtn)
+	if (State.implicit_rtn)
 		process_cmdline_set_lift();
-	state.int_window = 0;
-	state.int_maxw = 0;
-	state.implicit_rtn = 0;
+	State.int_window = 0;
+	State.int_maxw = 0;
+	State.implicit_rtn = 0;
 
-	state.smode = SDISP_NORMAL;
+	State.smode = SDISP_NORMAL;
 }
 
 
@@ -2759,11 +2762,11 @@ void xeq(opcode op)
 	const int ss = stack_size();
 	const int nreg = ss + 2;
 	decimal64 save[STACK_SIZE+2];
-	struct _state old = state;
+	struct _state old = State;
 	enum errors er;
 
 #ifndef REALBUILD
-	if (state.trace) {
+	if (State.trace) {
 		char buf[16];
 		static char tracebuf[24];
 
@@ -2771,7 +2774,7 @@ void xeq(opcode op)
 			print_step(tracebuf, op);
 		else
 			sprintf(tracebuf, "%04X:%s", op, prt(op, buf));
-		disp_msg = tracebuf;
+		DispMsg = tracebuf;
 	}
 #endif
 
@@ -2795,19 +2798,19 @@ void xeq(opcode op)
 		}
 	}
 
-	if ((er = state.error) != ERR_NONE) {
+	if ((er = State.error) != ERR_NONE) {
 		if (ss == 4)
 			xcopy(&regX, save, nreg * sizeof(decimal64));
 		else	xcopy(get_stack(ss-2), save, nreg * sizeof(decimal64));
-		state = old;
-		state.error = er;
+		State = old;
+		State.error = er;
 		set_running_off();
-		retstkptr = 0;
-		bank_flags = 0;
+		RetStkPtr = 0;
+		BankFlags = 0;
 		if (isXROM(state_pc()))
 			set_pc(0);
 		process_cmdline_set_lift();
-	} else if (state.implicit_rtn) {
+	} else if (State.implicit_rtn) {
 		do_rtn(0);
 	}
 	reset_volatile_state();
@@ -2837,16 +2840,16 @@ void xeqone(char *tracebuf) {
 #ifdef REALBUILD
 	const unsigned int trace = 0;
 #else
-	unsigned int trace = state.trace;
+	unsigned int trace = State.trace;
 #endif
 
 	set_running_on();
 #ifndef REALBUILD
-	state.trace = 0;
+	State.trace = 0;
 #endif
 	print_step(tracebuf, op);
-	disp_msg = tracebuf;
-	state.disp_small = 1;
+	DispMsg = tracebuf;
+	State.disp_small = 1;
 	incpc();
 	xeq(op);
 
@@ -2858,7 +2861,7 @@ void xeqone(char *tracebuf) {
 
 	set_running_off();
 #ifndef REALBUILD
-	state.trace = trace;
+	State.trace = trace;
 #endif
 }
 
@@ -2872,13 +2875,13 @@ void stoprog(opcode c) {
 	if (isXROM(state_pc()))
 		return;
 	off = isDBL(c)?2:1;
-	if (state.last_prog + off > NUMPROG+1) {
+	if (State.last_prog + off > NUMPROG+1) {
 		return;
 	}
-	state.last_prog += off;
+	State.last_prog += off;
 	incpc();
 	pc = state_pc();
-	for (i=state.last_prog; i>(int)pc; i--)
+	for (i=State.last_prog; i>(int)pc; i--)
 		prog[i] = prog[i-off];
 	if (pc != 0) {
 		if (isDBL(c))
@@ -2898,11 +2901,11 @@ void delprog(void) {
 	if (pc == 0 || isXROM(pc))
 		return;
 	off = isDBL(prog[pc])?2:1;
-	for (i=pc; i<(int)state.last_prog-1; i++)
+	for (i=pc; i<(int)State.last_prog-1; i++)
 		prog[i] = prog[i+off];
 	do {
-		prog[state.last_prog] =  EMPTY_PROGRAM_OPCODE;
-		state.last_prog--;
+		prog[State.last_prog] =  EMPTY_PROGRAM_OPCODE;
+		State.last_prog--;
 	} while (--off);
 	decpc();
 }
@@ -2912,15 +2915,15 @@ void xeq_init_contexts(void) {
 	/* Initialise our standard contexts.
 	 * We have to disable traps and bump the digits for internal calculations.
 	 */
-	decContextDefault(g_ctx, DEC_INIT_BASE);
-	g_ctx->traps = 0;
-	g_ctx->digits = DECNUMDIGITS;
-	g_ctx->emax=DEC_MAX_MATH;
-	g_ctx->emin=-DEC_MAX_MATH;
-	g_ctx->round = DEC_ROUND_HALF_EVEN;
+	decContextDefault(Ctx, DEC_INIT_BASE);
+	Ctx->traps = 0;
+	Ctx->digits = DECNUMDIGITS;
+	Ctx->emax=DEC_MAX_MATH;
+	Ctx->emin=-DEC_MAX_MATH;
+	Ctx->round = DEC_ROUND_HALF_EVEN;
 
-	decContextDefault(g_ctx64, DEC_INIT_DECIMAL64);
-	g_ctx64->traps = 0;
+	decContextDefault(Ctx64, DEC_INIT_DECIMAL64);
+	Ctx64->traps = 0;
 }
 
 
@@ -2964,10 +2967,10 @@ static int compare(s_opcode a1, s_opcode a2, int cata) {
 static void check_cat(const enum catalogues cata, const char *name) {
 	int i;
 	char b1[16], b2[16];
-	const int oldcata = state.catalogue;
+	const int oldcata = State.catalogue;
 	int n;
 
-	state.catalogue = cata;
+	State.catalogue = cata;
 	n = current_catalogue_max();
 	for (i=1; i<n; i++) {
 		opcode cold = current_catalogue(i-1);
@@ -2977,7 +2980,7 @@ static void check_cat(const enum catalogues cata, const char *name) {
 					0xff & cold, 0xff & c,
 					catcmd(cold, b1), catcmd(c, b2));
 	}
-	state.catalogue = oldcata;
+	State.catalogue = oldcata;
 }
 
 static void check_const_cat(void) {
@@ -2995,7 +2998,7 @@ static void check_const_cat(void) {
 /* Main initialisation routine that sets things up for us.
  */
 void xeq_init(void) {
-	if (state.magic != MagicMarker)
+	if (State.magic != MAGIC_MARKER)
 		reset(NULL, NULL, NULL);
 
 
@@ -3064,7 +3067,7 @@ unsigned int checksum_code(void) {
 	unsigned int ct[256];
 	int i;
 	unsigned int crc = 0;
-	int n = state.last_prog;
+	int n = State.last_prog;
 
 	/* Build up a CRC table */
 	for (i=0; i<256; i++) {
