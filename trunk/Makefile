@@ -120,7 +120,7 @@ endif
 
 all: calc
 clean:
-	rm -f calc asone *.o
+	rm -f calc asone *.o wp34s.dat
 	rm -fr consts $(CNSTS) consts.h consts.c lcdmap.h catalogues.h
 	rm -fr compile_consts compile_consts.dSYM lcdgen lcdgen.dSYM
 	rm -rf compile_cats compile_cats.dSYM
