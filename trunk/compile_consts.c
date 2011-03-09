@@ -21,6 +21,9 @@
 #include <unistd.h>
 #else
 #include <direct.h> // mkdir
+#define mkdir _mkdir
+#define chdir _chdir
+#define unlink _unlink
 #endif
 #include <sys/stat.h>
 #include <sys/types.h>
