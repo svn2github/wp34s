@@ -80,7 +80,11 @@ USECURSES := 1
 ifeq ($(shell uname),Linux)
 CC := gcc
 else
+ifeq ($(shell uname),Darwin)
+CC := gcc
+else
 CC := gcc-4
+endif
 endif
 endif
 
