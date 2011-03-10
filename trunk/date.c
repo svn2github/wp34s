@@ -557,12 +557,11 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	char buf[16], *p;
 	int a;
 	const char *suffix;
-	decContext *ctx = Ctx;
 
 	xset(buf, '\0', sizeof(buf));
 	getX(&x);
-	decNumberTrunc(&y, &x, ctx);
-	a = dn_to_int(&y, ctx);
+	decNumberTrunc(&y, &x, Ctx);
+	a = dn_to_int(&y, Ctx);
 	if (State.t12) {
 		if (a >= 12) {
 			a -= 12;
@@ -575,15 +574,15 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 		suffix = "";
 	p = num_arg(buf, a);
 	*p++ = ':';
-	decNumberFrac(&y, &x, ctx);
-	decNumberMultiply(&x, &y, &const_60, ctx);
-	decNumberTrunc(&y, &x, ctx);
-	p = num_arg_0(p, dn_to_int(&y, ctx), 2);
+	decNumberFrac(&y, &x, Ctx);
+	decNumberMultiply(&x, &y, &const_60, Ctx);
+	decNumberTrunc(&y, &x, Ctx);
+	p = num_arg_0(p, dn_to_int(&y, Ctx), 2);
 	*p++ = ':';
-	decNumberFrac(&y, &x, ctx);
-	decNumberMultiply(&x, &y, &const_60, ctx);
-	decNumberRound(&y, &x, ctx);
-	p = num_arg_0(p, dn_to_int(&y, ctx), 2);
+	decNumberFrac(&y, &x, Ctx);
+	decNumberMultiply(&x, &y, &const_60, Ctx);
+	decNumberRound(&y, &x, Ctx);
+	p = num_arg_0(p, dn_to_int(&y, Ctx), 2);
 	scopy(p, suffix);
 	add_string(buf);
 }
@@ -663,18 +662,17 @@ void date_date(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	unsigned int h, m, s;
 	decNumber a, b, c;
-	decContext *ctx = Ctx;
 
 	query_time(&s, &m, &h);
-	int_to_dn(&a, s, ctx);
-	decNumberMultiply(&b, &a, &const_0_01, ctx);
-	int_to_dn(&a, m, ctx);
-	decNumberAdd(&c, &a, &b, ctx);
-	decNumberMultiply(&b, &c, &const_0_01, ctx);
-	int_to_dn(&a, h, ctx);
-	decNumberAdd(&c, &b, &a, ctx);
+	int_to_dn(&a, s, Ctx);
+	decNumberMultiply(&b, &a, &const_0_01, Ctx);
+	int_to_dn(&a, m, Ctx);
+	decNumberAdd(&c, &a, &b, Ctx);
+	decNumberMultiply(&b, &c, &const_0_01, Ctx);
+	int_to_dn(&a, h, Ctx);
+	decNumberAdd(&c, &b, &a, Ctx);
 	if (State.hms)
-		decNumberHMS2HR(&c, &c, ctx);
+		decNumberHMS2HR(&c, &c, Ctx);
 	decimal64FromNumber(r, &c, ctx64);
 }
 
@@ -705,18 +703,17 @@ void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 void date_settime(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	int s, m, h;
 	decNumber x, y;
-	decContext *ctx = Ctx;
 
 	getX(&x);
 	if (State.hms)
-		decNumberHR2HMS(&x, &x, ctx);
-	h = dn_to_int(decNumberTrunc(&y, &x, ctx), ctx) & 0x3f;
-	decNumberFrac(&y, &x, ctx);
-	decNumberMultiply(&x, &y, &const_100, ctx);
-	m = dn_to_int(decNumberTrunc(&y, &x, ctx), ctx) & 0x7f;
-	decNumberTrunc(&y, &x, ctx);
-	decNumberMultiply(&x, &y, &const_100, ctx);
-	s = dn_to_int(decNumberRound(&x, &y, ctx), ctx) & 0x7f;
+		decNumberHR2HMS(&x, &x, Ctx);
+	h = dn_to_int(decNumberTrunc(&y, &x, Ctx), Ctx) & 0x3f;
+	decNumberFrac(&y, &x, Ctx);
+	decNumberMultiply(&x, &y, &const_100, Ctx);
+	m = dn_to_int(decNumberTrunc(&y, &x, Ctx), Ctx) & 0x7f;
+	decNumberTrunc(&y, &x, Ctx);
+	decNumberMultiply(&x, &y, &const_100, Ctx);
+	s = dn_to_int(decNumberRound(&x, &y, Ctx), Ctx) & 0x7f;
 #ifdef REALBUILD
 	AT91F_RTC_Set_Time(s, m, h);
 #endif
