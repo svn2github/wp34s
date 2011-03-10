@@ -521,7 +521,7 @@ void reset(decimal64 *a, decimal64 *b, decContext *nulc) {
 	State.contrast = 9;
 #endif
 	//State.stack_depth = 0;
-	DispMsg = NULL;
+	DispMsg = "Erased";
 }
 
 /* Convert a possibly signed string to an integer

@@ -106,15 +106,26 @@ static void init_state(void) {
 	C(sigma_mode);
 	C(intm);
 	C(int_len);
+        C(t12);
+        C(stack_depth);
 	C(dispdigs);
 	C(trigmode);
 	C(dispmode);
 	C(int_base);
 	C(int_mode);
 	C(date_mode);
+	C(denom_mode);
+        C(denom_max);
+        C(improperfrac);
+        C(nothousands);
+        C(leadzero);
+        C(fract);
+        C(hms);
 #undef C
 	s.shifts = SHIFT_N;
 	s.test = TST_NONE;
+
+        s.magic = MAGIC_MARKER;
 
 	xcopy(&State, &s, sizeof(struct _state));
 }
@@ -2048,6 +2059,11 @@ void load_state( void )
 
 int main(int argc, char *argv[]) {
 	int c, n = 0;
+	decContext ctx, ctx64;
+
+	Ctx = &ctx;
+	Ctx64 = &ctx64;
+	xeq_init_contexts();
 	if (argc > 1) {
 		if (argc == 2) {
 			if (argv[1][0] == 'x' && argv[1][1] == 'r' && argv[1][2] == 'o' && argv[1][3] == 'm' && argv[1][4] == '\0') {
