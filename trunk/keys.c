@@ -1754,6 +1754,7 @@ void process_keycode(int c) {
 
 void init_34s(void) {
 	xeq_init();
+        init_state();
 #ifdef REALBUILD
 	display();
 #endif
