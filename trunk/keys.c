@@ -1837,14 +1837,14 @@ static int remap(const int c) {
  * The first table is for characters below space and the second for those
  * >=127 (del).
  */
-static const char *map32[32] = {
+static const char *const map32[32] = {
 	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "space", "grad",
 	"+/-", "<=", ">=", "!=", "euro", "->", "<-", "v",
 	"^", "f-shift", "g-shift", "h-shift", "cmplx", "O-slash", "o-slash", "<->",
 	"sz", "x-hat", "y-hat", "sub-m", "times", "approx", "pound", "yen"
 };
 
-static const char *maptop[129] = {
+static const char *const maptop[129] = {
 	"del",
 	"ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA", "ETA", "THETA",
 	"IOTA", "KAPPA", "LAMBDA", "MU", "NU", "XI", "OMICRON", "PI",
@@ -1962,9 +1962,9 @@ static void dump_menu(const char *name, const char *prefix, const enum catalogue
 }
 
 #include "xrom.h"
-static struct {
+static const struct {
 	opcode op;
-	const char *name;
+	const char *const name;
 } xrom_labels[] = {
 #define X(op, n, s)	{ RARG(RARG_ ## op, (n) & RARG_MASK), s},
 #define XL(n, s)	X(LBL, n, s)
