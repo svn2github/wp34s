@@ -123,131 +123,13 @@ static const unsigned long chars[512] = {
 #define D_BR 32
 #define D_BOTTOM 64
 
-static const unsigned char digtbl[] = {
+#include "charset7.h"
 
-#ifndef WIN32
-
-/* Our table of limited characters.
- * Faster to define this as a table of bit patterns where the character is
- * the index, rather than storing the character and the pattern and search
- * though the list.  Code space is 20 - 30 bytes larger doing it this way.
- */
-
-#define DIG(ch, bits) [ch] = (bits)
-
-#else // WIN32
-
-    // windows will just lay down each char then the codes and 
-    // search
-
-#define DIG(ch, bits) ch, bits
-
-#endif
-
-    // lay down the table...
-
-	DIG(' ',		0),
-	DIG('-',		D_MIDDLE),
-	DIG('0',		D_TOP | D_TL | D_TR | D_BL | D_BR | D_BOTTOM),
-	DIG('1',		D_TR | D_BR),
-	DIG('2',		D_TOP | D_TR | D_MIDDLE | D_BL | D_BOTTOM),
-	DIG('3',		D_TOP | D_TR | D_MIDDLE | D_BR | D_BOTTOM),
-	DIG('4',		D_TL | D_TR | D_MIDDLE | D_BR),
-	DIG('5',		D_TOP | D_TL | D_MIDDLE | D_BR | D_BOTTOM),
-	DIG('6',		D_TOP | D_TL | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
-	DIG('7',		D_TOP | D_TR | D_BR),
-	DIG('8',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
-	DIG('9',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BR | D_BOTTOM),
-
-	DIG('A',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BL | D_BR),
-	DIG('a',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BL | D_BR),
-	DIG('B',		D_TL | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
-	DIG('b',		D_TL | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
-	DIG('C',		D_TOP | D_TL | D_BL | D_BOTTOM),
-	DIG('c',		D_MIDDLE | D_BL | D_BOTTOM),
-	DIG('D',		D_TR | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
-	DIG('d',		D_TR | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
-	DIG('E',		D_TOP | D_TL | D_MIDDLE | D_BL | D_BOTTOM),
-	DIG('e',		D_TOP | D_TL | D_MIDDLE | D_BL | D_BOTTOM),
-	DIG('F',		D_TOP | D_TL | D_MIDDLE | D_BL),
-	DIG('f',		D_TOP | D_TL | D_MIDDLE | D_BL),
-	DIG('G',		D_TOP | D_TL | D_BL | D_BR | D_BOTTOM),
-	DIG('g',		D_TOP | D_TL | D_BL | D_BR | D_BOTTOM),
-	DIG('H',		D_TL | D_TR | D_MIDDLE | D_BL | D_BR),
-	DIG('h',		D_TL | D_MIDDLE | D_BL | D_BR),
-	DIG('I',		D_TL | D_BL),
-	DIG('i',		D_TR | D_BR),
-	DIG('J',		D_TR | D_BL | D_BR | D_BOTTOM),
-	DIG('j',		D_TR | D_BL | D_BR | D_BOTTOM),
-	DIG('L',		D_TL | D_BL | D_BOTTOM),
-	DIG('l',		D_TL | D_BL | D_BOTTOM),
-	DIG('M',		D_TOP | D_TL | D_TR | D_BL),		// left half of M
-	DIG('m',		D_TOP | D_TL | D_TR | D_BR),		// right half of M
-	DIG('N',		D_TOP | D_TL | D_TR | D_BL | D_BR),
-	DIG('n',		D_TOP | D_TL | D_TR | D_BL | D_BR),
-	DIG('O',		D_TOP | D_TL | D_TR | D_BL | D_BR | D_BOTTOM),
-	DIG('o',		D_MIDDLE | D_BL | D_BR | D_BOTTOM),
-	DIG('P',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BL),
-	DIG('p',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BL),
-	DIG('Q',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BR),
-	DIG('q',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BR),
-	DIG('R',		D_MIDDLE | D_BL),
-	DIG('r',		D_MIDDLE | D_BL),
-	DIG('S',		D_TOP | D_TL | D_MIDDLE | D_BR | D_BOTTOM),
-	DIG('s',		D_TOP | D_TL | D_MIDDLE | D_BR | D_BOTTOM),
-	DIG('T',		D_TL | D_MIDDLE | D_BL | D_BOTTOM),
-	DIG('t',		D_TL | D_MIDDLE | D_BL | D_BOTTOM),
-	DIG('U',		D_TL | D_TR | D_BL | D_BR | D_BOTTOM),
-	DIG('u',		D_BL | D_BR | D_BOTTOM),
-	DIG('W',		D_TL | D_BL | D_BR | D_BOTTOM),		// left half of W
-	DIG('w',		D_TR | D_BL | D_BR | D_BOTTOM),		// also right half of W
-	DIG('Y',		D_TL | D_TR | D_MIDDLE | D_BR | D_BOTTOM),
-	DIG('y',		D_TL | D_TR | D_MIDDLE | D_BR | D_BOTTOM),
-
-	DIG('@',		D_TOP | D_TL | D_TR | D_MIDDLE),	// degree
-	DIG('\'',		D_TL),					// minute
-	DIG('"',		D_TL | D_TR),				// second
-	DIG('/',		D_TR | D_MIDDLE | D_BL),		// fraction vinculum
-	DIG('<',		D_BL | D_BOTTOM),			// fraction continuation (left arrow)
-	DIG('>',		D_BR | D_BOTTOM),			// right arrow
-	DIG('_',		D_BOTTOM),
-	DIG('=',		D_MIDDLE | D_BOTTOM),
-
-	DIG(0,			0),					// In status display these are all
-	DIG(1,			D_TOP),					// possible combinations of horozintal
-	DIG(2,			D_MIDDLE),				// segments in a binary numbering pattern
-	DIG(3,			D_TOP | D_MIDDLE),
-	DIG(4,			D_BOTTOM),
-	DIG(5,			D_TOP | D_BOTTOM),
-	DIG(6,			D_MIDDLE | D_BOTTOM),
-	DIG(7,			D_TOP | D_MIDDLE | D_BOTTOM),
-	DIG(8,			D_TL | D_TR | D_BL | D_BR),		// Status central separator
-};
-
-#undef DIG
-#define N_DIGTBL	(sizeof(digtbl) / sizeof(*digtbl))
-
-#ifndef WIN32
 static int getdig(int ch)
 {
     // perform index lookup
     return digtbl[ch&0xff];
 }
-
-#else // WIN32
-
-static int getdig(int ch)
-{
-    // have to search table. remember the table is in pairs (key, code)
-    int i;
-    for (i = 0; i < N_DIGTBL; i += 2)
-    {
-        if (ch == digtbl[i])
-            return digtbl[i+1]; // found
-    }
-    return 0; // fail
-}
-#endif
 
 static void dot(int n, int on) {
 	if (on)	set_dot(n);
@@ -260,7 +142,7 @@ static void set_dig(int base, char ch)
 {
     int i;
     unsigned char c = getdig(ch);
-    for (i=6; i>=0; i--) 
+    for (i=6; i>=0; i--)
     {
         if (c & (1 << i))
             set_dot(base);
