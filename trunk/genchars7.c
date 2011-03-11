@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 
 #define DIG(ch, bits) { ch, # bits }

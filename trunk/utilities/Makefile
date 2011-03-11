@@ -1,6 +1,6 @@
 .PHONY: clean all
 
-PROGS := gl zc font genchars7
+PROGS := gl zc font
 
 all: $(PROGS)
 
@@ -12,9 +12,6 @@ zc: zetaconsts.c Makefile
 
 font: font.c Makefile ../charset.h
 	cc -o font font.c
-
-genchars7: genchars7.c Makefile
-	cc -o genchars7 genchars7.c
 
 clean:
 	rm -f *.o $(PROGS)

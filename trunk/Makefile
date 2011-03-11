@@ -122,8 +122,9 @@ all: calc
 clean:
 	rm -f calc asone *.o wp34s.dat
 	rm -fr consts $(CNSTS) consts.h consts.c lcdmap.h catalogues.h
+	rm -fr charset7.h
 	rm -fr compile_consts compile_consts.dSYM lcdgen lcdgen.dSYM
-	rm -rf compile_cats compile_cats.dSYM
+	rm -rf compile_cats compile_cats.dSYM genchars7 genchars7.dSYM
 	@make -C decNumber clean
 	@make -C utilities clean
 tgz:
@@ -150,9 +151,14 @@ catalogues.h: compile_cats Makefile
 lcdmap.h: lcdgen
 	./lcdgen >$@
 
+charset7.h: genchars7
+	./genchars7 > $@
+
 compile_consts: compile_consts.c Makefile
 	$(HOSTCC) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
 lcdgen: lcdgen.c Makefile lcd.h
+	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
+lcdgen: genchars7.c Makefile
 	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
 compile_cats: compile_cats.c Makefile consts.h xeq.h charmap.c commands.c \
 		string.c prt.c consts.c Makefile
@@ -168,7 +174,7 @@ consts.o: consts.c consts.h Makefile
 date.o: date.c date.h consts.h decn.h xeq.h alpha.h Makefile
 decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile
 display.o: display.c xeq.h display.h consts.h lcd.h int.h charset.h \
-		decn.h alpha.h decn.h Makefile
+		decn.h alpha.h decn.h charset7.h Makefile
 int.o: int.c int.h xeq.h Makefile
 lcd.o: lcd.c lcd.h xeq.h display.h lcdmap.h Makefile
 keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
