@@ -1,0 +1,43 @@
+See http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=700
+
+This is the WP-34s version of the eight queens solver from that article:
+
+	001: LBL B
+	002: CLREG
+	003: 8
+	004: STO 11
+	005: RCL 11
+	006: x=? 00
+	007: SKIP 22
+	008: INC 00
+	009: STO ->00
+	010: INC 10
+	011: RCL 00
+	012: STO 09
+	013: DEC 09
+	014: RCL 09
+	015: x=0?
+	016: BACK 11
+	017: RCL ->00
+	018: RCL- ->09
+	019: x=0?
+	020: SKIP 05
+	021: ABS
+	022: RCL 00
+	023: RCL- 09
+	024: x<>? Y
+	025: BACK 12
+	026: DSE ->00
+	027: BACK 17
+	028: DSE 00
+	029: BACK 03
+	030: RCL 10
+	031: RTN
+
+When run the output is 876 in X.
+
+
+1/ x<>?	is a test for inequality.
+
+2/ ->	is the indirection arror.  It is preceeded by a space which isn't
+	shown on the calcuator's display).
