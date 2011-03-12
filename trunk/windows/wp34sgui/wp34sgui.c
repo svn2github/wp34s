@@ -21,68 +21,77 @@
  *
  * Module written by MvC
  */
+#include <windows.h>
+#include <string.h>
+
+#include "emulator_dll.h"
+
 #include "builddate.h"
 #define T_PERSISTANT_RAM_DEFINED
 #define reset _reset
 #include "application.h"
 #include "display.h"
 
-char MyName[] = "wp34s Scientific Calculator " VERSION_STRING;
 
 static int EmulatorFlags;
 
-void init(TMyApplication *MyApplication)
+/*
+ *  Main entry point
+ *  Update the callback pointers and start application
+ */
+int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow )
 {
-	extern void init_34s(void);
+	start_emulator( hInstance, hPrevInstance, pCmdLine, nCmdShow,
+		       "wp34s Scientific Calculator " VERSION_STRING,
+		       BuildDate,
+		       init, _reset, KeyPress, updatescreen, 
+		       NULL,
+		       GetFlag, SetFlag, ClearFlag,
+		       NULL,
+		       GetBottomLine,
+		       NULL );
+}
+
+void init(TMyApplication *MyApp)
+{
 	init_34s();
 }
 
-void KeyPress(TMyApplication *MyApplication,int i)
+void _reset(TMyApplication *MyApp,bool keep)
+{
+	memset( MyApp, 0, PERSISTENT_RAM_SIZE );
+	init_34s();
+}
+
+void KeyPress(TMyApplication *MyApp,int i)
 {
 	process_keycode( i );
 }
 
-void updatescreen(TMyApplication *MyApplication,bool forceUpdate)
+void updatescreen(TMyApplication *MyApp,bool forceUpdate)
 {
-	extern void UpdateDlgScreen(bool force);
 	display();
 	UpdateDlgScreen(false);
 }
 
-bool ScrollTopLine(TMyApplication *MyApplication)
-{
-	return false;
-}
-
-bool GetFlag(TMyApplication *MyApplication, int flag)
+bool GetFlag(TMyApplication *MyApp, int flag)
 {
 	return 0 != ( EmulatorFlags & flag );
 }
 
-void SetFlag(TMyApplication *MyApplication, int flag)
+void SetFlag(TMyApplication *MyApp, int flag)
 {
 	EmulatorFlags |= flag;
 }
 
-void ClearFlag(TMyApplication *MyApplication, int flag)
+void ClearFlag(TMyApplication *MyApp, int flag)
 {
 	EmulatorFlags &= ~flag;
 }
 
-unsigned short GetOffset(TMyApplication *MyApplication)
-{
-	return 0;
-}
 
-char *GetBottomLine(TMyApplication *MyApplication)
+char *GetBottomLine(TMyApplication *MyApp)
 {
 	return (char *) DispMsg;
 }
-
-bool CheckCommunication()
-{
-	return false;
-}
-
-
 
