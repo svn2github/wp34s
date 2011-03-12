@@ -157,34 +157,20 @@ catalogues.h: compile_cats Makefile features.h
 lcdmap.h: lcdgen
 	./lcdgen >$@
 
-<<<<<<< .mine
 charset7.h: genchars7
 	./genchars7 >$@
 
 compile_consts: compile_consts.c Makefile features.h
-=======
-charset7.h: genchars7
-	./genchars7 > $@
-
-compile_consts: compile_consts.c Makefile
->>>>>>> .r105
 	$(HOSTCC) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
 
 lcdgen: lcdgen.c Makefile lcd.h
 	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
-<<<<<<< .mine
 
 genchars7: genchars7.c Makefile lcd.h
 	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
 
 compile_cats: compile_cats.c consts.h xeq.h charmap.c commands.c \
 		string.c prt.c consts.c Makefile features.h
-=======
-genchars7: genchars7.c Makefile
-	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
-compile_cats: compile_cats.c Makefile consts.h xeq.h charmap.c commands.c \
-		string.c prt.c consts.c Makefile
->>>>>>> .r105
 	$(HOSTCC) $(CFLAGS) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
 
 xeq.h: statebits.h
