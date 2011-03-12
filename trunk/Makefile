@@ -21,9 +21,11 @@
 CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions -fno-defer-pop
 
 # Optional routines to include...
+###########################################################################
+# It's better to do this in features.h to assure consistency between builds
 
 # Include a catalogue of the internal commands
-CFLAGS += -DINCLUDE_INTERNAL_CATALOGUE
+#CFLAGS += -DINCLUDE_INTERNAL_CATALOGUE
 
 # Include the aritmetic/geometric mean iteration
 #CFLAGS += -DINCLUDE_AGM
@@ -63,6 +65,7 @@ CFLAGS += -DINCLUDE_INTERNAL_CATALOGUE
 
 # Include code to use a Ridder's method step after a bisection in the solver.
 #CFLAGS += -DUSE_RIDDERS
+###########################################################################
 
 OBJS := keys.o display.o xeq.o prt.o decn.o complex.o stats.o \
 		lcd.o int.o date.o xrom.o consts.o alpha.o charmap.o \
@@ -82,6 +85,7 @@ CC := gcc
 else
 ifeq ($(shell uname),Darwin)
 CC := gcc
+CFLAGS += -m32
 else
 CC := gcc-4
 endif
@@ -121,7 +125,8 @@ endif
 all: calc
 clean:
 	rm -f calc asone *.o wp34s.dat
-	rm -fr consts $(CNSTS) consts.h consts.c lcdmap.h catalogues.h
+	rm -fr consts $(CNSTS) consts.h consts.c lcdmap.h catalogues.h \
+		charset7.h
 	rm -fr charset7.h
 	rm -fr compile_consts compile_consts.dSYM lcdgen lcdgen.dSYM
 	rm -rf compile_cats compile_cats.dSYM genchars7 genchars7.dSYM
@@ -135,54 +140,73 @@ tgz:
 calc: decNumber/decNumber.a $(OBJS)
 	$(CC) $(CFLAGS) -g -o $@ $(OBJS) $(LIBDN) $(LIBS)
 
-asone: asone.c catalogues.h Makefile decNumber/decNumber.a lcdmap.h $(SRCS)
+asone: asone.c catalogues.h Makefile decNumber/decNumber.a lcdmap.h features.h \
+		$(SRCS) 
 	$(CC) $(CFLAGS) -IdecNumber -g -o calc $< $(LIBS) -fwhole-program
 
 decNumber/decNumber.a:
 	+@make -C decNumber
 
-consts.c consts.h: compile_consts Makefile
+consts.c consts.h: compile_consts Makefile features.h
 	./compile_consts
 	make -j2 -C consts
 
-catalogues.h: compile_cats Makefile
+catalogues.h: compile_cats Makefile features.h
 	./compile_cats >catalogues.h
 
 lcdmap.h: lcdgen
 	./lcdgen >$@
 
+<<<<<<< .mine
+charset7.h: genchars7
+	./genchars7 >$@
+
+compile_consts: compile_consts.c Makefile features.h
+=======
 charset7.h: genchars7
 	./genchars7 > $@
 
 compile_consts: compile_consts.c Makefile
+>>>>>>> .r105
 	$(HOSTCC) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
+
 lcdgen: lcdgen.c Makefile lcd.h
 	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
+<<<<<<< .mine
+
+genchars7: genchars7.c Makefile lcd.h
+	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
+
+compile_cats: compile_cats.c consts.h xeq.h charmap.c commands.c \
+		string.c prt.c consts.c Makefile features.h
+=======
 genchars7: genchars7.c Makefile
 	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
 compile_cats: compile_cats.c Makefile consts.h xeq.h charmap.c commands.c \
 		string.c prt.c consts.c Makefile
+>>>>>>> .r105
 	$(HOSTCC) $(CFLAGS) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
 
 xeq.h: statebits.h
 	@touch xeq.h
-alpha.o: alpha.c alpha.h xeq.h decn.h int.h display.h consts.h Makefile
-charmap.o: charmap.c xeq.h Makefile
-commands.o: commands.c xeq.h Makefile
-complex.o: complex.c decn.h complex.h xeq.h consts.h Makefile
-consts.o: consts.c consts.h Makefile
-date.o: date.c date.h consts.h decn.h xeq.h alpha.h Makefile
-decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile
+alpha.o: alpha.c alpha.h xeq.h decn.h int.h display.h consts.h Makefile \
+		features.h
+charmap.o: charmap.c xeq.h Makefile features.h
+commands.o: commands.c xeq.h Makefile features.h
+complex.o: complex.c decn.h complex.h xeq.h consts.h Makefile features.h
+consts.o: consts.c consts.h Makefile features.h
+date.o: date.c date.h consts.h decn.h xeq.h alpha.h Makefile features.h
+decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile features.h
 display.o: display.c xeq.h display.h consts.h lcd.h int.h charset.h \
-		decn.h alpha.h decn.h charset7.h Makefile
-int.o: int.c int.h xeq.h Makefile
-lcd.o: lcd.c lcd.h xeq.h display.h lcdmap.h Makefile
+		charset7.h decn.h alpha.h decn.h Makefile features.h
+int.o: int.c int.h xeq.h Makefile features.h
+lcd.o: lcd.c lcd.h xeq.h display.h lcdmap.h Makefile features.h
 keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
-		int.h xrom.h Makefile
-prt.o: prt.c xeq.h consts.h display.h Makefile
-stats.o: stats.c xeq.h decn.h stats.h consts.h int.h Makefile
-string.o: string.c xeq.h Makefile
+		int.h xrom.h Makefile features.h
+prt.o: prt.c xeq.h consts.h display.h Makefile features.h
+stats.o: stats.c xeq.h decn.h stats.h consts.h int.h Makefile features.h
+string.o: string.c xeq.h Makefile features.h
 xeq.o: xeq.c xeq.h alpha.h decn.h complex.h int.h lcd.h stats.h \
-		display.h consts.h date.h statebits.h Makefile
-xrom.o: xrom.c xrom.h xeq.h consts.h Makefile
+		display.h consts.h date.h statebits.h Makefile features.h
+xrom.o: xrom.c xrom.h xeq.h consts.h Makefile features.h
 
