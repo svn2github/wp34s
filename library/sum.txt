@@ -1,0 +1,82 @@
+This file is part of 34S.
+
+34S is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+34S is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+
+This code is the source for the internal sigma/sum routine.
+
+The only change of note is the call to the user's routine is done as GSB 00
+instead of XEQUSR.
+
+
+	001: LBL B
+	002: SPEC?
+	003: SKIP 34
+	004: STO 00
+	005: STO 03		// Save for LastX
+	006: IP			// First function call is separate
+	007: FILL		// to avoid Kahan summing from zero
+	008: XEQ 00		// six extra instructions save nine
+	009: SPEC?		// from executing
+	010: SKIP 26
+	011: STO 01
+	012: iC 00		// Zero
+	013: STO 02
+	014: SKIP 14		// Skip to the DSE at the end of the loop
+	015: RCL 00		// Main summing loop start
+	016: IP
+	017: FILL
+	018: XEQ 00
+	019: SPEC?
+	020: SKIP 16
+	021: RCL- 02		// Kahan sum y = Xn - c
+	022: ENTER		// y y . .
+	023: RCL+ 01		// t = sum + y  y . .
+	024: ENTER		// t t y .
+	025: RCL- 01		// t-sum  t y .
+	026: RCL- Z		// (t-sum)-y  t y .
+	027: X<>Y
+	028: cSTO 01
+	029: DSE 00
+	030: BACK 15		// Back to the start of the loop above
+	031: RCL 03		// Normal exit
+	032: STO L
+	033: iC 00		// Zero
+	034: FILL
+	035: RCL 01
+	036: RTN
+	037: RCL 03		// Function returned an infinity or NaN
+	038: STO L		// Come here if we started with infinity or NaN
+	039: iC 00		// Zero
+	040: FILL
+	041: # NaN
+	042: RTN
+	043: LBL 00		// The function to be summed goes here
+	044: RTN
+
+This routine just loops around a standard DSE loop executing the function and 
+Kahan summing it into the accumulator (for added accuracy when summing many small
+values).
+
+Registers used:
+	00	DSE loop counter (user supplied)
+	01	Summation
+	02	Summation carry
+	03	Saved initial loop counter (goes into L on exit)
+
+Labels used:
+	B	Main entry point (never targetted)
+	00	User's function to sum
