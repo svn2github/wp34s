@@ -141,6 +141,7 @@ static void set_smode(const enum single_disp d) {
 
 /* Mapping from key position to alpha in the four key planes plus
  * the two lower case planes.
+ * MvC: added fillers to adjust modified key codes
  */
 static const unsigned char alphamap[][6] = {
     "A\221\200\221a\240", // K00
@@ -162,24 +163,28 @@ static const unsigned char alphamap[][6] = {
     "K\010\211\\k\251",
     "L\246\212\257l\252",
     "\0\0\0\0\0\0", // K24
+    "\0\0\0\0\0\0", // K25, nonexistent
 
     "\0{}\0\0}", // K30
     "M7\213&m\253", // K31
     "N8\214|n\254", // K32
     "O9\227\013o\267", // K33
     "P/\217\235p\257", // K34
+    "\0\0\0\0\0\0", // K35, nonexistent
 
     "\020[]\0\0]", // K40
     "Q4\216?q\256", // K41
     "R5\220\0r\260",
     "S6\221$s\261",
     "T\034\207\217t\247", // K44
+    "\0\0\0\0\0\0", // K45, nonexistent
     
     "\017()\0\0)", // K50
     "1\0\0\0\0\0", // K51
     "U2\0\014u\0",
     "V3\0\036v\0",
     "W-\222%w\262", // K54
+    "\0\0\0\0\0\0", // K55, nonexistent
 
     "\0\0\0 \0\0", // K60
     "00\226\0\0\266",
