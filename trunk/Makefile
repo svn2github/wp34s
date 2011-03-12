@@ -158,7 +158,7 @@ compile_consts: compile_consts.c Makefile
 	$(HOSTCC) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
 lcdgen: lcdgen.c Makefile lcd.h
 	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
-lcdgen: genchars7.c Makefile
+genchars7: genchars7.c Makefile
 	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
 compile_cats: compile_cats.c Makefile consts.h xeq.h charmap.c commands.c \
 		string.c prt.c consts.c Makefile
