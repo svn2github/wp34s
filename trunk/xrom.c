@@ -206,19 +206,19 @@ const s_opcode xrom[] = {
 			GTO(5)
 		RCL(C)
 		TST(APX, A)
-			GTO(6)
+			SKIP(3)	//GTO(6)
 		TST(APX, B)
-			GTO(6)
+			SKIP(1)	//GTO(6)
 //		GTO(SLV_LOOP)
 		BACK(13)
-	LBL(6)				// Limits are narrow -- either solved or pole
+	//LBL(6)				// Limits are narrow -- either solved or pole
 		RCL(st(Z))
 		FILL
 		TST0(apx)
-			GTO(7)
+			SKIP(2)	//GTO(7)
 		GSB(8)
 		EXIT
-	LBL(7)
+	//LBL(7)
 		GSB(8)
 		EXITp1
 	LBL(8)
@@ -234,7 +234,7 @@ const s_opcode xrom[] = {
 		RCL(FB)
 		ABS
 		TST(LT, st(Y))
-			GTO(5)
+			SKIP(7)	//GTO(5)
 		RCL(st(T))
 		STO(st(L))
 		ZERO
@@ -242,7 +242,7 @@ const s_opcode xrom[] = {
 		RCL(A)
 		RCL(C)
 		EXITp1
-	LBL(5)
+	//LBL(5)
 		RCL(st(T))
 		STO(st(L))
 		ZERO
@@ -260,11 +260,11 @@ const s_opcode xrom[] = {
 	LBL(3)				// Initial estimate good
 		RCL(FB)
 		RCL(B)
-		GTO(0)
+		SKIP(3)	// GTO(0)
 	LBL(2)
 		RCL(FA)
 		RCL(A)
-	LBL(0)
+	//LBL(0)
 		RCL(st(X))
 		ZERO
 		STO(st(L))
@@ -393,8 +393,7 @@ const s_opcode xrom[] = {
 		/* Set up the stack for our output */
 		GSB(3)
 		RCL(KRONROD)
-		RCL(GAUSS)
-		MINUS			// err, l, u, ?, G
+		RCL_MI(GAUSS)		// err, l, u, ?, G
 		RCL(KRONROD)		// K, err, l, u, G		
 		EXIT
 
@@ -491,7 +490,7 @@ const s_opcode xrom[] = {
 		STO(PRODSUM)
 		ZERO
 		STO(C)
-		SKIP(15)	//GTO(1)
+		SKIP(14)	//GTO(1)
 	//LBL(SIGMA_LOOP)
 		RCL(I)
 		TRUNC
@@ -505,12 +504,11 @@ const s_opcode xrom[] = {
 		ENTER			// t t y .
 		RCL_MI(PRODSUM)		// t-sum  t y .
 		RCL_MI(st(Z))		// (t-sum)-y  t y .
-		STO(C)
 		SWAPXY
-		STO(PRODSUM)
+		CSTO(PRODSUM)
 	//LBL(1)
 		DSE(I)
-		BACK(16)	//GTO(SIGMA_LOOP)
+		BACK(15)	//GTO(SIGMA_LOOP)
 		GTO(7)
 
 // Product code
@@ -549,14 +547,10 @@ const s_opcode xrom[] = {
 
 	LBL(8)				// NaN result
 		RCL(SAV_I)
+	LBL(9)				// Exit in error
 		STO(st(L))
 		ZERO
 		FILL
-		NAN
-		EXIT
-	LBL(9)				// Exit in error
-		STO(st(L))
-		DROP
 		NAN
 		EXIT
 
