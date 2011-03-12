@@ -46,6 +46,10 @@
 #include "Skin.h"
 #include "graphics.h"
 
+unsigned int LcdData[20];
+unsigned int SavedLcdData[20];
+
+
 CVirtualLCD m_VirtualLCD;
 
 IMPLEMENT_DYNAMIC(CVirtualLCD, CStatic)
@@ -398,8 +402,6 @@ int CVirtualLCD::hpGetHeight()
 	return (rc.bottom-rc.top);	
 }
 
-unsigned int LcdData[20];
-unsigned int SavedLcdData[20];
 
 void CVirtualLCD::UpdateScreenContent()
 {

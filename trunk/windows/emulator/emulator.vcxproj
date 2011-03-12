@@ -17,12 +17,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
     <UseOfMfc>Static</UseOfMfc>
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <UseOfMfc>Dynamic</UseOfMfc>
+    <UseOfMfc>Static</UseOfMfc>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -35,18 +35,23 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
     <IncludePath>..\..\hp;$(IncludePath)</IncludePath>
+    <TargetExt>.dll</TargetExt>
+    <TargetName>$(ProjectName)_d</TargetName>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)bin\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
     <IncludePath>..\..\hp;$(IncludePath)</IncludePath>
+    <TargetExt>.dll</TargetExt>
+    <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -54,41 +59,51 @@
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <WarningLevel>Level3</WarningLevel>
-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <CompileAs>CompileAsCpp</CompileAs>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <CompileAs>Default</CompileAs>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Lib />
     <Lib>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalOptions>atlsd.lib nafxcwd.lib %(AdditionalOptions)</AdditionalOptions>
     </Lib>
+    <Link />
+    <Link />
     <Link>
-      <AdditionalDependencies>..\emulator\$(Configuration)\HP20b_Emulator.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Nafxcwd.lib;Libcmtd.lib</AdditionalDependencies>
     </Link>
     <Link>
-      <IgnoreSpecificDefaultLibraries>mfc100.lib;mfc100d.lib;mfcs100.lib;mfcs100d.lib;atls.lib;atlsd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>Nafxcwd.lib;Libcmtd.lib</IgnoreSpecificDefaultLibraries>
+    </Link>
+    <Link>
+      <AddModuleNamesToAssembly>
+      </AddModuleNamesToAssembly>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;VCPTEST_SYSTEM;HP20b;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <StructMemberAlignment>4Bytes</StructMemberAlignment>
     </ClCompile>
     <Lib>
       <TargetMachine>MachineX86</TargetMachine>
       <AdditionalOptions>mfc100.lib mfcs100.lib atls.lib %(AdditionalOptions)</AdditionalOptions>
     </Lib>
+    <Link />
+    <Link />
     <Link>
-      <AdditionalDependencies>..\emulator\$(Configuration)\HP20b_Emulator.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Nafxcw.lib;Libcmt.lib</AdditionalDependencies>
     </Link>
     <Link>
-      <IgnoreSpecificDefaultLibraries>mfc100.lib;mfc100d.lib;mfcs100.lib;mfcs100d.lib;atls.lib;atlsd.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <IgnoreSpecificDefaultLibraries>Nafxcw.lib;Libcmt.lib</IgnoreSpecificDefaultLibraries>
+      <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\hp\system.c" />
+    <ClCompile Include="emulator_dll.c" />
     <ClCompile Include="HP20b_c.cpp" />
     <ClCompile Include="HP20b_cDlg.cpp" />
     <ClCompile Include="skin.cpp" />
@@ -97,6 +112,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\hp\application.h" />
     <ClInclude Include="..\..\hp\types.h" />
+    <ClInclude Include="emulator_dll.h" />
     <ClInclude Include="HP20b_c.h" />
     <ClInclude Include="HP20b_cDlg.h" />
     <ClInclude Include="resource.h" />

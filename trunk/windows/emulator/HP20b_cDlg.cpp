@@ -52,7 +52,7 @@ static char THIS_FILE[] = __FILE__;
 
 // Added by MvC
 // Name of application as global string
-extern "C" char MyName[];
+extern "C" __declspec(dllexport) char MyName[];
 
 
 /////////////////////////////////////////////////////////////////////////////
