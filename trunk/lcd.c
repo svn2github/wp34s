@@ -19,7 +19,7 @@
 #include "display.h"
 #include "xeq.h"
 
-#ifdef REALBUILD
+#if defined(REALBUILD)
 #include "hp.h"
 #endif
 
@@ -47,27 +47,38 @@ void clr_dot(int n) {
 #else
 
 static const unsigned char lcd_addr[] = {
-#define M(p, a, b)	[p] = a/4
+#define M(p, a, b)	/* [p] = */ a/4
 #include "lcdmap.h"
 #undef M
 };
 
 static const unsigned char lcd_bit[] = {
-#define M(p, a, b)	[p] = b
+#define M(p, a, b)	/* [p] = */ b
 #include "lcdmap.h"
 #undef M
 };
 
 void set_dot(int n) {
-	const unsigned int m = 1 << lcd_bit[n];
-
-	AT91C_SLCDC_MEM[lcd_addr[n]] |= m;
+	unsigned int m;
+	
+	if ( n >= 0 && n <= 141 ) {
+		m = 1 << lcd_bit[n];
+		AT91C_SLCDC_MEM[lcd_addr[n]] |= m;
+	}
+	else {
+		*((char *)NULL)=0;
+	}
 }
 
 void clr_dot(int n) {
-	const unsigned int m = 1 << lcd_bit[n];
-
-	AT91C_SLCDC_MEM[lcd_addr[n]] &= ~m;
+	unsigned int m;
+	if ( n >= 0 && n <= 141 ) {
+		m = 1 << lcd_bit[n];
+		AT91C_SLCDC_MEM[lcd_addr[n]] &= ~m;
+	}
+	else {
+		*((char *)NULL)=0;
+	}
 }
 
 void set_status_grob(unsigned long long int grob[6]) {
@@ -98,7 +109,7 @@ void set_status_grob(unsigned long long int grob[6]) {
 #endif
 
 int setuptty(int reset) {
-#ifndef REALBUILD
+#if !defined(REALBUILD) && !defined(WINGUI)
 #ifdef USECURSES
 	if (reset)
 		endwin();
@@ -159,7 +170,7 @@ void reset_disp(void) {
 #ifdef USECURSES
 	erase();
 	MOVE(0, 4);
-#elif !defined(REALBUILD)
+#elif !defined(REALBUILD) && !defined(WINGUI)
 	putchar('\r');
 	for (i=0; i<70; i++)
 		putchar(' ');
@@ -317,7 +328,7 @@ void show_stack(void) {
 }
 
 void show_flags(void) {
-#ifndef REALBUILD
+#if !defined(REALBUILD) && !defined(WINGUI)
 	if (!State.flags)
 		return;
 	MOVE(0, 0);
@@ -434,12 +445,12 @@ void finish_display(void) {
 	show_disp();
 	MOVE(0, 0);
 	refresh();
-#elif !defined(REALBUILD)
+#elif !defined(REALBUILD) && !defined(WINGUI)
 	putchar('\r');
 #endif
 }
 
-#ifndef REALBUILD
+#if !defined(REALBUILD) && !defined(WINGUI)
 /* Take a string and cleanse all non-printing characters from it.
  * Replace them with the usual [xxx] sequences.
  */
@@ -463,7 +474,7 @@ static char *cleanse(const char *s) {
 #endif
 
 void show_progtrace(char *buf) {
-#ifndef REALBUILD
+#if !defined(REALBUILD) && !defined(WINGUI)
 	int pc = state_pc();
 
 #ifdef USECURSES

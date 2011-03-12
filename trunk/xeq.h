@@ -20,6 +20,10 @@
 /* Version number */
 #define VERSION_STRING	"1.14"
 
+/*
+ * Optional features are defined in features.h
+ */
+#include "features.h"
 
 /* Define the length of our extended precision numbers.
  * This must be greater than the length of the compressed reals we store
@@ -50,13 +54,6 @@ enum multiops;
 #define CARRY_FLAG	101	/* C = carry */
 #define OVERFLOW_FLAG	100	/* B = excess/exceed */
 #define NAN_FLAG	102	/* D = danger */
-
-
-/* Define to include Reimann's Zeta function.
- * This adds circa 2kb to a thumb image and 3kb to a x86 image
- */
-//#define INCLUDE_ZETA
-
 
 #define NAME_LEN	6	/* Length of command names */
 
@@ -583,6 +580,11 @@ enum shifts {
 
 #define MAGIC_MARKER 0x1357fdb9
 
+#ifdef WIN32
+#pragma pack(push)
+#pragma pack(1)
+#endif
+
 struct _state {
 	unsigned long int magic;	// Magic marker to detect failed RAM
 
@@ -593,10 +595,7 @@ struct _state {
 
 	unsigned int base : 8;		// Base value for a command with an argument
 
-	unsigned int error : 4;		// Did an error occur, if so what code?
-	unsigned int status : 4;	// display status screen line
-
-	unsigned char digval2 : 8;
+	unsigned int digval2 : 8;
 	unsigned int digval : 10;
 	unsigned int numdigit : 4;
 	unsigned int shifts : 2;
@@ -629,6 +628,7 @@ struct _state {
 	unsigned int alphas : 1;	// Alpha shift key pressed
 	unsigned int cmplx : 1;		// Complex prefix pressed
 	unsigned int wascomplex : 1;	// Previous operation was complex
+
 	unsigned int arrow : 1;		// Conversion in progress
 	unsigned int multi : 1;		// Multi-word instruction being entered
 	unsigned int alphashift : 1;	// Alpha shifted to lower case
@@ -636,61 +636,95 @@ struct _state {
 	unsigned int implicit_rtn : 1;	// End of program is an implicit return
 	unsigned int hyp : 1;		// Entering a HYP or HYP-1 operation
 	unsigned int confirm : 2;	// Confirmation of operation required
+
 	unsigned int dot : 1;		// misc use
 	unsigned int improperfrac : 1;	// proper or improper fraction display
 	unsigned int nothousands : 1;	// , or nothing for thousands separator
-
 	unsigned int ind : 1;		// Indirection STO or RCL
 	unsigned int arrow_alpha : 1;	// display alpha conversion
 	unsigned int rarg : 1;		// In argument accept mode
 	unsigned int runmode : 1;	// Program mode or run mode
 	unsigned int flags : 1;		// Display state flags
-#ifdef REALBUILD
-	unsigned int testmode : 1;
-	unsigned int off : 1;
-	unsigned int contrast : 4;	// Display contrast
-	unsigned int LowPower : 1;	// low power detected
-	unsigned int LowPowerCount : 16;
-#else
-	unsigned int trace : 1;
-#endif
+
 	unsigned int disp_small : 1;	// Display the status message in small font
 	unsigned int int_maxw : 3;	// maximum available window
 
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode
 	unsigned int leadzero : 1;	// forced display of leading zeros in int mode
+
+#ifndef REALBUILD
+	unsigned int trace : 1;
+#else
+	unsigned int testmode : 1;
+#endif
+	unsigned int error : 4;		// Did an error occur, if so what code?
+	unsigned int status : 4;	// display status screen line
+
+	unsigned int LowPowerCount : 16;
+
+	unsigned int contrast : 4;	// Display contrast
+	unsigned int off : 1;
+	unsigned int LowPower : 1;	// low power detected
+
 };
 
-extern struct _ram {
-	struct _state _state;
-	const char *_disp_msg;
+#ifdef WIN32
+#pragma pack(pop)
+#endif
 
-	/* Random number seeds
-	 */
-	unsigned long int _rand_s1, _rand_s2, _rand_s3;
+typedef struct _ram {
 
-	/* Define storage for the machine's registers.
+	/* 
+	 * Define storage for the machine's registers.
 	 */
 	decimal64 _regs[NUMREG];
 	decimal64 _bank_regs[NUMBANKREGS];
 
-	/* Define storage for the machine's program space.
+	/*
+	 * Define storage for the machine's program space.
 	 */
 	s_opcode _prog[NUMPROG];
 
-	/* The program return stack */
+	/*
+	 * Generic state
+	 */
+	struct _state _state;
+
+	/*
+	 * What to display in message area
+	 */
+	const char *_disp_msg;
+
+	/*
+	 * Random number seeds
+	 */
+	unsigned long int _rand_s1, _rand_s2, _rand_s3;
+
+	/* 
+	 * The program return stack 
+	 */
 	unsigned short int _retstk[RET_STACK_SIZE];
 
-	/* Storage space for our user flags */
+	/* 
+	 * Storage space for our user flags 
+	 */
 	unsigned short _bank_flags;
 	unsigned char _user_flags[(NUMFLG+7) >> 3];
 
-	/* Alpha register gets its own space */
+	/*
+	 *  Alpha register gets its own space 
+	 */
 	char _alpha[NUMALPHA+1];
 
+	/*
+	 *  What the user was just typing in
+	 */
 	char _cmdline[CMDLINELEN + 1];
-} PersistentRam;
+
+} TPersistentRam;
+
+extern TPersistentRam PersistentRam;
 
 #define State		(PersistentRam._state)
 #define DispMsg		(PersistentRam._disp_msg)

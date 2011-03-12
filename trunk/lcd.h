@@ -52,7 +52,7 @@ extern void show_stack(void);
 
 #define BITMAP_WIDTH		43
 
-#ifndef REALBUILD
+#if !defined(REALBUILD) && !defined(WINGUI)
 #ifdef USECURSES
 #include <curses.h>
 #define GETCHAR	getch
@@ -72,4 +72,15 @@ extern void show_stack(void);
 #endif
 #endif
 #endif
+
+#if defined(WINGUI)
+// The symbols are declared in VirtualLCD.cpp
+extern void WindowsBlink(int a);
+extern void WindowsSwapBuffers();
+extern unsigned int LcdData[20];
+#undef AT91C_SLCDC_MEM
+static unsigned int * const AT91C_SLCDC_MEM=LcdData;
+#define Lcd_Enable()
+#endif
+
 #endif

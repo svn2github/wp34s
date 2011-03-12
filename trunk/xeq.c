@@ -21,6 +21,7 @@
 #else
 #include <unistd.h>
 #endif
+#include <stdio.h>   // (s)printf
 #endif // REALBUILD
 
 #define XEQ_INTERNAL 1
@@ -150,7 +151,7 @@ void cmderr(unsigned int arg, enum rarg op) {
 	err(arg);
 }
 
-#ifdef DEBUG
+#if defined(DEBUG) && !defined(WINGUI)
 #include <stdlib.h>
 static void error(const char *fmt, ...) {
 	va_list ap;
@@ -517,9 +518,7 @@ void reset(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 	State.runmode = 1;
 	State.magic = MAGIC_MARKER;
-#ifdef REALBUILD
 	State.contrast = 9;
-#endif
 	//State.stack_depth = 0;
 	DispMsg = "Erased";
 }
@@ -1441,11 +1440,9 @@ void cmdconv(unsigned int arg, enum rarg op) {
 	setX(&r);
 }
 
-#ifdef REALBUILD
 void cmdcontrast(unsigned int arg, enum rarg op) {
 	State.contrast = arg & 0xf;
 }
-#endif
 
 /* Finish up a test -- if the value is non-zero, the test passes.
  * If it is zero, the test fails.
@@ -2927,7 +2924,7 @@ void xeq_init_contexts(void) {
 }
 
 
-#ifdef DEBUG
+#if defined(DEBUG) && !defined(WINGUI)
 extern unsigned char remap_chars(unsigned char ch);
 
 static int compare(s_opcode a1, s_opcode a2, int cata) {
@@ -3002,7 +2999,7 @@ void xeq_init(void) {
 		reset(NULL, NULL, NULL);
 
 
-#ifdef DEBUG
+#if defined(DEBUG) && !defined(WINGUI)
     {
 	/* Sanity check the function table indices.
 	 * These indicies must correspond exactly with the enum definition.

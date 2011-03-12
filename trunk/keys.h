@@ -14,7 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef __KEYS_H__
+#ifndef __KEYS_H__
 #define __KEYS_H__
 
 typedef unsigned char key_t;

@@ -115,6 +115,15 @@ static const unsigned long chars[512] = {
 /* Define a limited character set for the 7-segment portion of the
  * display.
  */
+#if defined(REALBUILD) || defined(WINGUI)
+#define D_TOP 64
+#define D_TL 32
+#define D_TR 8
+#define D_MIDDLE 16
+#define D_BL 4
+#define D_BR 1
+#define D_BOTTOM 2
+#else
 #define D_TOP 1
 #define D_TL 2
 #define D_TR 4
@@ -122,6 +131,7 @@ static const unsigned long chars[512] = {
 #define D_BL 16
 #define D_BR 32
 #define D_BOTTOM 64
+#endif
 
 #include "charset7.h"
 
@@ -373,7 +383,7 @@ static void disp_x(const char *p) {
 			gotdot = i;
 		for (;;) {
 			gotdot -= 3 * SEGS_PER_DIGIT;
-			if (gotdot < 0)
+			if (gotdot <= 0)                    // MvC: was '<', caused crash
 				break;
 			set_seperator(gotdot, seperator, NULL);
 		}
@@ -1210,7 +1220,7 @@ static void set_status_sized(const char *str, int smallp) {
 	unsigned int x = 0;
 	int i, j;
 	const unsigned short szmask = smallp?0x100:0;
-#ifdef REALBUILD
+#if defined(REALBUILD) || defined(WINGUI)
 	unsigned long long mat[6];
 
 	xset(mat, 0, sizeof(mat));
@@ -1234,7 +1244,7 @@ static void set_status_sized(const char *str, int smallp) {
 			for (j=0; j<width; j++) {
 				if (x+j >= BITMAP_WIDTH)
 					break;
-#ifdef REALBUILD
+#if defined(REALBUILD) || defined(WINGUI)
 				if (cmap[i] & (1 << j))
 					mat[i] |= 1LL << (x+j);
 #else
@@ -1243,7 +1253,7 @@ static void set_status_sized(const char *str, int smallp) {
 			}
 		x += width;
 	}
-#ifdef REALBUILD
+#if defined(REALBUILD) || defined(WINGUI)
 	set_status_grob(mat);
 #else
 	for (i=MATRIX_BASE + 6*x; i<400; i++)
