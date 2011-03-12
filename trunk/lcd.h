@@ -77,9 +77,14 @@ extern void show_stack(void);
 // The symbols are declared in VirtualLCD.cpp
 extern void WindowsBlink(int a);
 extern void WindowsSwapBuffers();
-extern unsigned int LcdData[20];
+#ifdef _WINDLL
+#define EXPORT __declspec(dllexport)
+#else
+#define EXPORT __declspec(dllimport)
+#endif
+extern EXPORT unsigned int LcdData[20];
 #undef AT91C_SLCDC_MEM
-static unsigned int * const AT91C_SLCDC_MEM=LcdData;
+#define AT91C_SLCDC_MEM LcdData
 #define Lcd_Enable()
 #endif
 
