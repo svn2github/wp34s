@@ -115,7 +115,6 @@ static const unsigned long chars[512] = {
 /* Define a limited character set for the 7-segment portion of the
  * display.
  */
-#if defined(REALBUILD) || defined(WINGUI)
 #define D_TOP 64
 #define D_TL 32
 #define D_TR 8
@@ -123,15 +122,6 @@ static const unsigned long chars[512] = {
 #define D_BL 4
 #define D_BR 1
 #define D_BOTTOM 2
-#else
-#define D_TOP 1
-#define D_TL 2
-#define D_TR 4
-#define D_MIDDLE 8
-#define D_BL 16
-#define D_BR 32
-#define D_BOTTOM 64
-#endif
 
 #include "charset7.h"
 

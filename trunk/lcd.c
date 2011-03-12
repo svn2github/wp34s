@@ -188,29 +188,29 @@ void show_disp(void) {
 	for (i=0; i<DISPLAY_DIGITS; i++) {
 		p = i*SEGS_PER_DIGIT;
 		x = 3+5*i;
-		if (dots[p+6]) {
+		if (dots[p]) {
 			MOVE(x+1, dig_base);	PRINTF("--");
 		}
-		if (dots[p+5]) {
+		if (dots[p+1]) {
 			MOVE(x, dig_base+1);	PRINTF("|");
 			MOVE(x, dig_base+2);	PRINTF("|");
 		}
-		if (dots[p+4]) {
+		if (dots[p+3]) {
 			MOVE(x+3, dig_base+1);	PRINTF("|");
 			MOVE(x+3, dig_base+2);	PRINTF("|");
 		}
-		if (dots[p+3]) {
+		if (dots[p+2]) {
 			MOVE(x+1, dig_base+3);	PRINTF("--");
 		}
-		if (dots[p+2]) {
+		if (dots[p+4]) {
 			MOVE(x, dig_base+4);	PRINTF("|");
 			MOVE(x, dig_base+5);	PRINTF("|");
 		}
-		if (dots[p+1]) {
+		if (dots[p+6]) {
 			MOVE(x+3, dig_base+4);	PRINTF("|");
 			MOVE(x+3, dig_base+5);	PRINTF("|");
 		}
-		if (dots[p]) {
+		if (dots[p+5]) {
 			MOVE(x+1, dig_base+6);	PRINTF("--");
 		}
 		if (dots[p+7]) {
@@ -224,25 +224,25 @@ void show_disp(void) {
 	for (i=0; i<3; i++) {
 		p = i*7+108;
 		x = 66 + i * 4;
-		if (dots[p+6]) {
+		if (dots[p]) {
 			MOVE(x+1, dig_base-1);	PRINTF("-");
 		}
-		if (dots[p+5]) {
+		if (dots[p+1]) {
 			MOVE(x, dig_base);	PRINTF("|");
 		}
-		if (dots[p+4]) {
+		if (dots[p+3]) {
 			MOVE(x+2, dig_base);	PRINTF("|");
 		}
-		if (dots[p+3]) {
+		if (dots[p+2]) {
 			MOVE(x+1, dig_base+1);	PRINTF("-");
 		}
-		if (dots[p+2]) {
+		if (dots[p+4]) {
 			MOVE(x, dig_base+2);	PRINTF("|");
 		}
-		if (dots[p+1]) {
+		if (dots[p+6]) {
 			MOVE(x+2, dig_base+2);	PRINTF("|");
 		}
-		if (dots[p]) {
+		if (dots[p+5]) {
 			MOVE(x+1, dig_base+3);	PRINTF("-");
 		}
 	}
