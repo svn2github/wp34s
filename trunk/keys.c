@@ -31,6 +31,7 @@
 /* Define this if the keycodes map rows sequentially */
 #define SEQUENTIAL_ROWS
 
+// MvC: changed keycodes for rows with just 5 keys to match HP SDK
 
 typedef enum {
 	K00 = 0,  K01 = 1,  K02 = 2,  K03 = 3,  K04 = 4,  K05 = 5,
@@ -39,10 +40,10 @@ typedef enum {
 #define K14	10		/* Directly in the main key processing loop */
 #define K15	11
 	K20 = 12, K21 = 13, K22 = 14, K23 = 15, K24 = 16,
-	K30 = 17, K31 = 18, K32 = 19, K33 = 20, K34 = 21,
-	K40 = 22, K41 = 23, K42 = 24, K43 = 25, K44 = 26,
-	K50 = 27, K51 = 28, K52 = 29, K53 = 30, K54 = 31,
-	K60 = 32, K61 = 33, K62 = 34, K63 = 35, K64 = 36,
+	K30 = 18, K31 = 19, K32 = 20, K33 = 21, K34 = 22,
+	K40 = 24, K41 = 25, K42 = 26, K43 = 27, K44 = 28,
+	K50 = 30, K51 = 31, K52 = 32, K53 = 33, K54 = 34,
+	K60 = 36, K61 = 37, K62 = 38, K63 = 39, K64 = 40,
 } keycode;
 
 
@@ -1842,6 +1843,7 @@ static int remap(const int c) {
 	return K_UNKNOWN;
 }
 
+#ifndef WINGUI
 #include <stdio.h>
 
 /* Mappings from our internal character codes to readable strings.
@@ -2038,7 +2040,6 @@ static void dump_xrom(void) {
 	} while (pc != addrXROM(0));
 }
 
-#ifndef WINGUI
 /*
  *  Save/Load state
  */
@@ -2047,6 +2048,10 @@ void save_state( void )
 	FILE *f = fopen( "wp34s.dat", "wb" );
 	if ( f == NULL ) return;
 	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
+#ifdef DEBUG
+	printf( "sizeof struct _state = %ld\n", sizeof( struct _state ) );
+	printf( "sizeof pointer = %ld\n", sizeof( char * ) );
+#endif
 }
 
 void load_state( void )
@@ -2055,7 +2060,6 @@ void load_state( void )
 	if ( f == NULL ) return;
 	fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
 }
-#endif
 
 int main(int argc, char *argv[]) {
 	int c, n = 0;
@@ -2133,4 +2137,5 @@ int main(int argc, char *argv[]) {
 	save_state();
 	return 0;
 }
+#endif
 #endif
