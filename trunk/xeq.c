@@ -2834,6 +2834,7 @@ void xeqprog(void) {
 			dot(RCL_annun, state);
 			state = 1 - state;
 			count = 0;
+                        finish_display();
 		}
 	}
 	set_running_off();
