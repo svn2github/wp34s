@@ -969,8 +969,8 @@ static void show_status(void) {
 	int base = 10 * (State.status - 1);
 	char buf[12], *p;
 
-	buf[0] = 'F';
-	p = num_arg_0(buf+1, base, 2);
+        p = scopy(buf, "FL ");
+	p = num_arg_0(p, base, 2);
 	*p++ = '-';
 	i = base+29>=NUMFLG?NUMFLG-1:base+29;
 	if (i < 100)
