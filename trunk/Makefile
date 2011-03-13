@@ -141,7 +141,7 @@ calc: decNumber/decNumber.a $(OBJS)
 	$(CC) $(CFLAGS) -g -o $@ $(OBJS) $(LIBDN) $(LIBS)
 
 asone: asone.c catalogues.h Makefile decNumber/decNumber.a lcdmap.h features.h \
-		$(SRCS) 
+		$(SRCS) charset7.h
 	$(CC) $(CFLAGS) -IdecNumber -g -o calc $< $(LIBS) -fwhole-program
 
 decNumber/decNumber.a:

@@ -17,8 +17,6 @@
 #ifndef __KEYS_H__
 #define __KEYS_H__
 
-typedef unsigned char key_t;
-
 enum {
 	KEY_11=0, KEY_12, KEY_13, KEY_14, KEY_15,
 		KEY_16, KEY_17, KEY_18, KEY_19, KEY_10,
