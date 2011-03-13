@@ -275,7 +275,6 @@ const struct niladic niladics[] = {
 	FUNC0(OP_FILL,		&fill,			"FILL")
 	FUNC0(OP_CFILL,		&cpx_fill,		"\024FILL")
 	FUNC0(OP_DROP,		&drop,			"DROP")
-	FUNC0(OP_DROPY,		&dropy,			"DROPY")
 	FUNC0(OP_DROPXY,	&dropxy,		"\024DROP")
 	FUNC1(OP_sigmaX,	&sigma_X,		"\221x")
 	FUNC1(OP_sigmaY,	&sigma_Y,		"\221y")

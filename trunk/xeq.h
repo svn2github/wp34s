@@ -366,7 +366,7 @@ enum {
 	OP_NOP=0, OP_VERSION, OP_STKSIZE, OP_STK4, OP_STK8, OP_INTSIZE,
 	OP_LASTX, OP_LASTXY,
 	OP_SWAP, OP_CSWAP, OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
-	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPY, OP_DROPXY,
+	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPXY,
 	OP_sigmaX, OP_sigmaY, OP_sigmaX2, OP_sigmaY2, OP_sigma_XY,
 	OP_sigmaN,
 	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
@@ -857,7 +857,6 @@ extern void cpx_fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void fill(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void drop(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void dropxy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
-extern void dropy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void cmdconst(unsigned int arg, enum rarg op);
 extern void cmdconstcmplx(unsigned int arg, enum rarg op);
 extern void cmdconstint(unsigned int arg, enum rarg op);

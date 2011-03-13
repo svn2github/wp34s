@@ -63,7 +63,7 @@ static struct pair {
 	DIG('M',		D_TOP | D_TL | D_TR | D_BL),		// left half of M
 	DIG('m',		D_TOP | D_TL | D_TR | D_BR),		// right half of M
 	DIG('N',		D_TOP | D_TL | D_TR | D_BL | D_BR),
-	DIG('n',		D_TOP | D_TL | D_TR | D_BL | D_BR),
+	DIG('n',		D_MIDDLE | D_BL | D_BR),
 	DIG('O',		D_TOP | D_TL | D_TR | D_BL | D_BR | D_BOTTOM),
 	DIG('o',		D_MIDDLE | D_BL | D_BR | D_BOTTOM),
 	DIG('P',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BL),

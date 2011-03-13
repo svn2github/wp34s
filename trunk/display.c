@@ -37,7 +37,7 @@ static void set_status_right(const char *);
 static const char S_SURE[] = "Sure?";
 
 static const char S7_ERROR[] = "Error";		/* Default lower line error display */
-static const char S7_NaN[] = "nOt nUMmBer";	/* Displaying NaN in lower line */
+static const char S7_NaN[] = "NO NUMmBer";	/* Displaying NaN in lower line */
 static const char S7_INF[] = "infinity";	/* Displaying infinity in lower line */
 
 static const char S7_STEP[] = " Step ";		/* Step marker in program mode (lower line) */
@@ -64,11 +64,11 @@ static const char *const error_table[] =
     "+\237\0",
     "-\237\0",
     "no such\0LABEL",
-    "SLV \004 \221 \217\0nEStED",
+    "SLV \004 \221 \217\0NEStED",
     "out of range\0",
     "bad digit\0",
     "too long\0",
-    ">8\006\006\006levels\0nEStED",
+    ">8\006\006\006levels\0NEStED",
     "stack\0CLASH",	
     "bad mode\0",
     "word size\0too SMmALL",

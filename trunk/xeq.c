@@ -369,12 +369,6 @@ void dropxy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	lower();
 }
 
-void dropy(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
-	decimal64 x = regX;
-	lower();
-	regX = x;
-}
-
 
 int is_intmode(void) {
 	return State.intm;

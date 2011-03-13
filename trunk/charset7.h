@@ -128,7 +128,7 @@ static const unsigned char digtbl[122] = {
 	0                                                           /*  k   */,
 	D_TL | D_BL | D_BOTTOM                                      /*  l   */,
 	D_TOP | D_TL | D_TR | D_BR                                  /*  m   */,
-	D_TOP | D_TL | D_TR | D_BL | D_BR                           /*  n   */,
+	D_MIDDLE | D_BL | D_BR                                      /*  n   */,
 	D_MIDDLE | D_BL | D_BR | D_BOTTOM                           /*  o   */,
 	D_TOP | D_TL | D_TR | D_MIDDLE | D_BL                       /*  p   */,
 	D_TOP | D_TL | D_TR | D_MIDDLE | D_BR                       /*  q   */,
