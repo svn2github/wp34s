@@ -101,14 +101,22 @@
     <None Include="..\..\Makefile" />
     <None Include="..\..\NEW" />
     <None Include="..\..\TODO" />
-    <None Include="..\bin\mfc100.dll" />
-    <None Include="..\bin\msvcp100.dll" />
-    <None Include="..\bin\msvcr100.dll" />
+    <None Include="..\bin\emulator.dll" />
+    <None Include="..\bin\emulator.exp" />
+    <None Include="..\bin\emulator_d.dll" />
+    <None Include="..\bin\emulator_d.exp" />
+    <None Include="..\bin\emulator_d.pdb" />
+    <None Include="..\bin\wp34s.exe" />
+    <None Include="..\bin\wp34sgui.exe" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\asone.c" />
     <ClCompile Include="..\..\genchars7.c" />
     <ClCompile Include="..\..\lcdgen.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\bin\emulator.lib" />
+    <Library Include="..\bin\emulator_d.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
