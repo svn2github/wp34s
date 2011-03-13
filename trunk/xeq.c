@@ -40,6 +40,11 @@
 
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
 
+/* Define the number of program steps that are executed between flashing the
+ * RCL annunicator.
+ */
+#define PROG_STEPS_PER_FLASH	(1000)
+
 
 /* Define storage for the machine's program space.
  */
@@ -2820,8 +2825,21 @@ static void xeq_single(void) {
  * to completion.
  */
 void xeqprog(void) {
-	while (running())
+	int state = 0, count = 0;
+
+	set_dot(RCL_annun);
+	while (running()) {
 		xeq_single();
+		if (++count >= PROG_STEPS_PER_FLASH) {
+			state = 1 - state;
+			count = 0;
+			if (state == 0)
+				set_dot(RCL_annun);
+			else
+				clr_dot(RCL_annun);
+		}
+	}
+	clr_dot(RCL_annun);
 }
 
 /* Single step routine
