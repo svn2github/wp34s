@@ -25,6 +25,17 @@
  */
 #include "features.h"
 
+/*
+ * Define endianess if not on GCC
+ */
+#ifndef LITTLE_ENDIAN
+#define LITTLE_ENDIAN 1234
+#define BIG_ENDIAN 4321
+#ifdef WIN32
+#define BYTE_ORDER LITTLE_ENDIAN
+#endif
+#endif
+
 /* Define the length of our extended precision numbers.
  * This must be greater than the length of the compressed reals we store
  * on the stack and in registers (currently 16 digits).
