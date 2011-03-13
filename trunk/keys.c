@@ -1017,7 +1017,7 @@ fkey:		if (oldstate != SHIFT_F)
 		return STATE_UNFINISHED;
 
 	case K62:	// Alpha maths symbol characters
-		if (oldstate == SHIFT_G) {
+		if (oldstate == SHIFT_H) {
 			init_cat(CATALOGUE_ALPHA_SYMBOLS);
 			return STATE_UNFINISHED;
 		}
