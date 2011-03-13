@@ -46,9 +46,7 @@
 #include "Skin.h"
 #include "graphics.h"
 
-unsigned int LcdData[20];
 unsigned int SavedLcdData[20];
-
 
 CVirtualLCD m_VirtualLCD;
 
@@ -475,7 +473,7 @@ void CVirtualLCD::On0p5secondTimer()
 
 bool CVirtualLCD::On0p2firstTimer()
 {
-  bool r= ScrollTopLine(MyApplication);
+  bool r= ScrollTopLine();
 	UpdateScreenContent();
   return r;
 }

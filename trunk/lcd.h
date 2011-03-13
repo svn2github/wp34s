@@ -82,7 +82,7 @@ extern void WindowsSwapBuffers();
 #else
 #define EXPORT __declspec(dllimport)
 #endif
-extern EXPORT unsigned int LcdData[20];
+extern unsigned int LcdData[20];
 #undef AT91C_SLCDC_MEM
 #define AT91C_SLCDC_MEM LcdData
 #define Lcd_Enable()

@@ -735,11 +735,7 @@ typedef struct _ram {
 
 } TPersistentRam;
 
-#ifdef WINGUI
-extern __declspec(dllimport) TPersistentRam PersistentRam;
-#else
 extern TPersistentRam PersistentRam;
-#endif
 
 #define State		(PersistentRam._state)
 #define DispMsg		(PersistentRam._disp_msg)

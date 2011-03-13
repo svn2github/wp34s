@@ -52,7 +52,7 @@ static char THIS_FILE[] = __FILE__;
 
 // Added by MvC
 // Name of application as global string
-extern "C" __declspec(dllexport) char MyName[];
+extern "C" char *MyName;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -256,7 +256,7 @@ unsigned long __stdcall CalculationThread(void *p)
     while (true)
     {
       int k;
-      if ((k= KeyBuffGetKey())!=-1) { ClearFlag(MyApplication, VirtualKey); KeyPress(MyApplication, k); continue; }
+      if ((k= KeyBuffGetKey())!=-1) { ClearFlag(VirtualKey); KeyPress(k); continue; }
       if (CheckCommunication()) // If we received something, we are WAY likely to receive some more
       {
         QueryPerformanceCounter(&a);
@@ -271,7 +271,7 @@ unsigned long __stdcall CalculationThread(void *p)
       break;
     }
     LastScreenUpdate.QuadPart= 0;
-    updatescreen(MyApplication, false);
+    UpdateScreen(false);
   }
 }
 
@@ -448,30 +448,29 @@ BOOL CHP20b_cDlg::OnInitDialog()
 			pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, strAboutMenu);
 		}
 	}
-  UpdateSkinMenu();
+	UpdateSkinMenu();
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-  // Added by MvC
-  SetWindowText(MyName);
+	SetWindowText(MyName);
 	
 	dlg= this;
 
 	((CHP20b_cApp *)AfxGetApp())->m_hwndDialog = m_hWnd;
 
-  initKeyBuffer();
-	init(MyApplication);
+	initKeyBuffer();
+	Init();
 #ifdef HP40b
-  initFlashCache();
-  initEvaluatorData();
+	initFlashCache();
+	initEvaluatorData();
 #endif
-	if (!ReadHP20bState()) LoadSkin(NULL); // load saved state file if exists ....
-  SetFlag(MyApplication, TestSystem);
+	if (! ReadRegistry() ) LoadSkin(NULL); // load skins
+	SetFlag(TestSystem);
 
-	updatescreen(MyApplication, true);
+	UpdateScreen(true);
 	KeyEvent= CreateEvent(NULL, false, false, "");
 
 	unsigned long id;
@@ -579,9 +578,9 @@ HCURSOR CHP20b_cDlg::OnQueryDragIcon()
 void CHP20b_cDlg::keypress(int a)
 {
   //  if user has clicked the Off MyApplication key
-  if(a == KEYON && GetFlag(MyApplication, shift) && ((System.KeyboardMap&&(1<<KEYSHIFT))==0)) // On Key
+  if(a == KEYON && GetFlag(shift) && ((System.KeyboardMap&&(1<<KEYSHIFT))==0)) // On Key
   {
-	  ClearFlag(MyApplication, shift);
+	  ClearFlag(shift);
 	  DestroyWindow(); // Close Application 
 	  return;
   }
@@ -600,7 +599,7 @@ void CHP20b_cDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     keypress(nChar); 
   else {
     m_VirtualLCD.UpdateScreenContent(); // copy the graphics on the PC screen
-    if (GetOffset(MyApplication)!=OffsetNoScroll)
+    if (GetOffset()!=OffsetNoScroll)
       m_VirtualLCD.hpStartTimerScrollLines(TIME_SCROLLING); 
     else
       m_VirtualLCD.hpStopTimerScrollLines(); 
@@ -694,50 +693,6 @@ void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
 	}
 }
 
-/***************************************************************
-** 
-**  Dump the current HP20b State to the file.
-**
-***************************************************************/
-char *GetSAVEFILE(char *b)
-{
-  char tmp[ 256 ];
-  GetEnvironmentVariable("APPDATA", b, 256);
-  strcat(b, "\\");
-  strncpy( tmp, MyName, sizeof(tmp) );
-  strtok(tmp, " " );
-  strcat(b, tmp);
-  strcat(b, ".dat");
-  return b;
-}
-
-void CHP20b_cDlg::SaveHP20bState()
-{
-	FILE *fp;
-  char buf [300];
-	fp = fopen(GetSAVEFILE(buf), "wb");
-	if (!fp)
-		return ;
-	fwrite(&PersistentRam, sizeof(PersistentRam),1,fp);
-	fclose(fp);
-}
-/***************************************************************
-** 
-**  Responsible to read the last saved state
-**
-***************************************************************/
-//
-bool CHP20b_cDlg::ReadHP20bState()
-{
-	FILE *fp;
-  char buf [300];
-	fp = fopen(GetSAVEFILE(buf), "rb");
-	if (!fp) return false;
-	fread(&PersistentRam, sizeof(PersistentRam),1,fp);
-	fclose(fp);
-  UpdateDlgScreen(false);
-  return ReadRegistry();
-}
 
 /***************************************************************
 ** 
@@ -748,8 +703,8 @@ bool CHP20b_cDlg::ReadHP20bState()
 void CHP20b_cDlg::OnDestroy()
 {
 	CDialog::OnDestroy();
-	SaveHP20bState();
 	WriteToRegistry();
+	Shutdown();
 	if(Pipe!= NULL) { CloseHandle(Pipe); Pipe = NULL; }
 }
 
@@ -876,7 +831,7 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
   } else { if (r!=NULL) DeleteObject(r); 
 		// Forcing to send SHIFT key to calculator firmware
     System.KeyboardMap&= ~((u64)1<<Skin.mright);
-    updatescreen(MyApplication, true);
+    UpdateScreen(true);
 	}
 
 	CDialog::OnRButtonUp(nFlags, point);
@@ -950,8 +905,8 @@ LPARAM CHP20b_cDlg::OnMouseLeave(WPARAM wp, LPARAM lp)
 //
 void CHP20b_cDlg::OnHP20bOnOFF()
 {
-  reset(MyApplication, false);
-  updatescreen(MyApplication, true);
+  Reset(false);
+  UpdateScreen(true);
 }
 
 /***************************************************************
@@ -973,8 +928,8 @@ void CHP20b_cDlg::OnHP20bCopytoclipboard()
 void CHP20b_cDlg::OnHP20bResetState()
 {
 	if(AfxMessageBox("Are you sure that you want to reset the calculator?", MB_YESNO | MB_ICONINFORMATION) == IDYES){
-		reset(MyApplication, false);
-		updatescreen(MyApplication, true);
+		Reset(false);
+		UpdateScreen(true);
 	}
 }
 
@@ -1109,7 +1064,7 @@ void CHP20b_cDlg::OnBuy()
 //
 void CHP20b_cDlg::OnEditCopyNumber()
 {
-	m_VirtualLCD.hpCopyToClipboard(GetBottomLine(MyApplication));
+	m_VirtualLCD.hpCopyToClipboard(GetBottomLine());
 }
 
 /***************************************************************
@@ -1150,7 +1105,7 @@ void CHP20b_cDlg::OnEditPasteNumber()
 			  }
 			}
 		}
-    updatescreen(MyApplication, true);
+    UpdateScreen(true);
 	}
 }
 

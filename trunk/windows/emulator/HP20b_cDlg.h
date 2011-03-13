@@ -107,8 +107,6 @@ protected:
 private:
 	void MakeTestSystemReady();
 	void ShowHP20bTitlebar();
-	void SaveHP20bState();
-	bool ReadHP20bState();
 	void HP20bKeyDown(WPARAM wKeyCode);
 	void HP20bKeyUp	(WPARAM wKeyCode);
 	void ForceHP20bKeyUp(WPARAM wKeyCode);

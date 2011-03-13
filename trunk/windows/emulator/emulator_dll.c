@@ -10,23 +10,26 @@
 #include <string.h>
 
 #include "emulator_dll.h"
-#include "application.h"
 
-EXPORT u64 BuildDate;
+/*
+ *  (Mostly) pointers to data and functions in the main module
+ */
+char *MyName;
+long long BuildDate;
+unsigned int *LcdData;
 
-char EXPORT MyName[ 256 ];  // should be long enough
-
-static void  (*P_init)(TMyApplication*);
-static void  (*P_reset)(TMyApplication*,bool);
-static void  (*P_KeyPress)(TMyApplication*,int);
-static void  (*P_updatescreen)(TMyApplication*,bool);
-static bool  (*P_ScrollTopLine)(TMyApplication*);
-static bool  (*P_GetFlag)(TMyApplication*,int);
-static void  (*P_SetFlag)(TMyApplication*,int);
-static void  (*P_ClearFlag)(TMyApplication*,int);
-static short (*P_GetOffset)(TMyApplication*);
-static char *(*P_GetBottomLine)(TMyApplication*);
-static bool  (*P_CheckCommunication)();
+static void  (*P_Init)(void);
+static void  (*P_Reset)(bool);
+static void  (*P_Shutdown)(void);
+static void  (*P_KeyPress)(int);
+static void  (*P_UpdateScreen)(bool);
+static bool  (*P_ScrollTopLine)(void);
+static bool  (*P_GetFlag)(int);
+static void  (*P_SetFlag)(int);
+static void  (*P_ClearFlag)(int);
+static short (*P_GetOffset)(void);
+static char *(*P_GetBottomLine)(void);
+static bool  (*P_CheckCommunication)(void);
 static int EmulatorFlags;
 
 /*
@@ -35,10 +38,12 @@ static int EmulatorFlags;
 int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow,
 		    char *name,
 		    long long builddate,
-		    void *p_init,
-		    void *p_reset,
+		    unsigned int *p_LcdData,
+		    void *p_Init,
+		    void *p_Reset,
+		    void *p_Shutdown,
 		    void *p_KeyPress,
-		    void *p_updatescreen,
+		    void *p_UpdateScreen,
 		    void *p_ScrollTopLine,
 		    void *p_GetFlag,
 		    void *p_SetFlag,
@@ -47,20 +52,22 @@ int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 		    void *p_GetBottomLine,
 		    void *p_CheckCommunication )
 {
-	strncpy( MyName, name, sizeof( MyName - 1 ) );
+	MyName = name;
 	BuildDate = builddate;
+	LcdData = p_LcdData;
 
-	P_init               = (void (*)(TMyApplication*))      p_init;
-	P_reset              = (void (*)(TMyApplication*,bool)) p_reset;
-	P_KeyPress           = (void (*)(TMyApplication*,int))  p_KeyPress;
-	P_updatescreen       = (void (*)(TMyApplication*,bool)) p_updatescreen;
-	P_ScrollTopLine      = (bool (*)(TMyApplication*))      p_ScrollTopLine;
-	P_GetFlag            = (bool (*)(TMyApplication*,int))  p_GetFlag;
-	P_SetFlag            = (void (*)(TMyApplication*,int))  p_SetFlag;
-	P_ClearFlag          = (void (*)(TMyApplication*,int))  p_ClearFlag;
-	P_GetOffset          = (short (*)(TMyApplication*))     p_GetOffset;
-	P_GetBottomLine      = (char *(*)(TMyApplication*))     p_GetBottomLine;
-	P_CheckCommunication = (bool (*)())                     p_CheckCommunication;
+	P_Init               = (void (*)(void))  p_Init;
+	P_Reset              = (void (*)(bool))  p_Reset;
+	P_Shutdown           = (void (*)(void))  p_Shutdown;
+	P_KeyPress           = (void (*)(int))   p_KeyPress;
+	P_UpdateScreen       = (void (*)(bool))  p_UpdateScreen;
+	P_ScrollTopLine      = (bool (*)(void))  p_ScrollTopLine;
+	P_GetFlag            = (bool (*)(int))   p_GetFlag;
+	P_SetFlag            = (void (*)(int))   p_SetFlag;
+	P_ClearFlag          = (void (*)(int))   p_ClearFlag;
+	P_GetOffset          = (short (*)(void)) p_GetOffset;
+	P_GetBottomLine      = (char *(*)(void)) p_GetBottomLine;
+	P_CheckCommunication = (bool (*)(void))  p_CheckCommunication;
 
 	/*
 	 *  Delegate to WinMain
@@ -69,63 +76,68 @@ int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 }
 
 
-void init(TMyApplication *MyApp)
+void Init(void)
 {
-	if ( P_init ) P_init( MyApp );
+	if ( P_Init ) P_Init();
 }
 
-void reset(TMyApplication *MyApp,bool KeepTestMode)
+void Shutdown(void)
 {
-	if ( P_reset ) P_reset( MyApp, KeepTestMode );
+	if ( P_Shutdown ) P_Shutdown();
 }
 
-void KeyPress(TMyApplication *MyApp,int i)
+void Reset( bool KeepTestMode )
 {
-	if ( P_KeyPress ) P_KeyPress( MyApp, i );
+	if ( P_Reset ) P_Reset(KeepTestMode );
 }
 
-void updatescreen(TMyApplication *MyApp,bool forceUpdate)
+void KeyPress( int i )
 {
-	if ( P_updatescreen ) P_updatescreen( MyApp, forceUpdate );
+	if ( P_KeyPress ) P_KeyPress( i );
 }
 
-bool ScrollTopLine(TMyApplication *MyApp)
+void UpdateScreen( bool forceUpdate )
 {
-	if ( P_ScrollTopLine ) return P_ScrollTopLine( MyApp );
+	if ( P_UpdateScreen ) P_UpdateScreen( forceUpdate );
+}
+
+bool ScrollTopLine( void )
+{
+	if ( P_ScrollTopLine ) return P_ScrollTopLine();
 	return false;
 }
 
-bool GetFlag(TMyApplication *MyApp, int flag)
+bool GetFlag( int flag )
 {
-	if ( P_GetFlag ) return P_GetFlag( MyApp, flag );
+	if ( P_GetFlag ) return P_GetFlag( flag );
 	return 0 != ( EmulatorFlags & flag );
 }
 
-void SetFlag(TMyApplication *MyApp, int flag)
+void SetFlag( int flag )
 {
 	EmulatorFlags |= flag;
-	if ( P_SetFlag ) P_SetFlag( MyApp, flag );
+	if ( P_SetFlag ) P_SetFlag( flag );
 }
 
-void ClearFlag(TMyApplication *MyApp, int flag)
+void ClearFlag( int flag )
 {
 	EmulatorFlags &= ~flag;
-	if ( P_ClearFlag ) P_ClearFlag( MyApp, flag );
+	if ( P_ClearFlag ) P_ClearFlag( flag );
 }
 
-unsigned short GetOffset(TMyApplication *MyApp)
+unsigned short GetOffset( void )
 {
-	if ( P_GetOffset ) return P_GetOffset( MyApp );
+	if ( P_GetOffset ) return P_GetOffset();
 	return 0;
 }
 
-char *GetBottomLine(TMyApplication *MyApp)
+char *GetBottomLine( void )
 {
-	if ( P_GetBottomLine ) return P_GetBottomLine( MyApp );
+	if ( P_GetBottomLine ) return P_GetBottomLine();
 	return "0";
 }
 
-bool CheckCommunication()
+bool CheckCommunication( void )
 {
 	if ( P_CheckCommunication ) return P_CheckCommunication();
 	return false;

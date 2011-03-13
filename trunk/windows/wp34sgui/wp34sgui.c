@@ -23,17 +23,21 @@
  */
 #include <windows.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "emulator_dll.h"
 
 #include "builddate.h"
 #define T_PERSISTANT_RAM_DEFINED
-#define reset _reset
 #include "application.h"
 #include "display.h"
 
-
+/*
+ *  setup the LCD area and perstent RAM
+ */
 static int EmulatorFlags;
+unsigned int LcdData[ 20 ];
+
 
 /*
  *  Main entry point
@@ -42,55 +46,85 @@ static int EmulatorFlags;
 int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow )
 {
 	start_emulator( hInstance, hPrevInstance, pCmdLine, nCmdShow,
-		       "wp34s Scientific Calculator " VERSION_STRING,
-		       BuildDate,
-		       init, _reset, KeyPress, updatescreen, 
-		       NULL,
-		       GetFlag, SetFlag, ClearFlag,
-		       NULL,
-		       GetBottomLine,
-		       NULL );
+		        "wp34s Scientific Calculator " VERSION_STRING,
+		        BuildDate,
+		        LcdData,
+		        Init, Reset, Shutdown,
+		        KeyPress, UpdateScreen, 
+		        NULL,
+		        GetFlag, SetFlag, ClearFlag,
+		        NULL,
+		        GetBottomLine,
+		        NULL );
 }
 
-void init(TMyApplication *MyApp)
+/*
+ *  Load/Reset/Save state
+ */
+void Init( void )
 {
+	FILE *f = fopen( "wp34s.dat", "rb" );
+	if ( f != NULL ) {
+		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
+		fclose( f );
+	}
 	init_34s();
 }
 
-void _reset(TMyApplication *MyApp,bool keep)
+void Reset( bool keep )
 {
-	memset( MyApp, 0, PERSISTENT_RAM_SIZE );
+	memset( &PersistentRam, 0, sizeof( PersistentRam ) );
 	init_34s();
 }
 
-void KeyPress(TMyApplication *MyApp,int i)
+void Shutdown( void )
+{
+	FILE *f = fopen( "wp34s.dat", "wb" );
+	if ( f == NULL ) return;
+	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
+	fclose( f );
+}
+
+/*
+ *  main action is here
+ */
+void KeyPress( int i )
 {
 	process_keycode( i );
+	if ( i == 10 ) {
+		// g shift
+		EmulatorFlags ^= shift;
+	}
 }
 
-void updatescreen(TMyApplication *MyApp,bool forceUpdate)
+void UpdateScreen( bool forceUpdate )
 {
-	display();
-	UpdateDlgScreen(false);
+	if ( forceUpdate ) {
+		UpdateDlgScreen( true );
+	}
 }
 
-bool GetFlag(TMyApplication *MyApp, int flag)
+/*
+ *  some helper fuctions
+ */
+bool GetFlag( int flag )
 {
 	return 0 != ( EmulatorFlags & flag );
 }
 
-void SetFlag(TMyApplication *MyApp, int flag)
+void SetFlag( int flag )
 {
+	flag &= ~shift; // We handle shift differently then the 20b
 	EmulatorFlags |= flag;
 }
 
-void ClearFlag(TMyApplication *MyApp, int flag)
+void ClearFlag( int flag)
 {
 	EmulatorFlags &= ~flag;
 }
 
 
-char *GetBottomLine(TMyApplication *MyApp)
+char *GetBottomLine( void )
 {
 	return (char *) DispMsg;
 }

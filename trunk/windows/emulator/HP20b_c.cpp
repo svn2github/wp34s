@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 TPersistentRam PersistentRam;
 
 // Window Title
-extern "C" __declspec(dllexport) char MyName[];
+extern "C" char *MyName;
 
 
 /////////////////////////////////////////////////////////////////////////////

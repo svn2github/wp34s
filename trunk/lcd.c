@@ -65,9 +65,11 @@ void set_dot(int n) {
 		m = 1 << lcd_bit[n];
 		AT91C_SLCDC_MEM[lcd_addr[n]] |= m;
 	}
+#ifdef DEBUG
 	else {
 		*((char *)NULL)=0;
 	}
+#endif
 }
 
 void clr_dot(int n) {
@@ -76,9 +78,11 @@ void clr_dot(int n) {
 		m = 1 << lcd_bit[n];
 		AT91C_SLCDC_MEM[lcd_addr[n]] &= ~m;
 	}
+#ifdef DEBUG
 	else {
 		*((char *)NULL)=0;
 	}
+#endif
 }
 
 void set_status_grob(unsigned long long int grob[6]) {
@@ -445,7 +449,10 @@ void finish_display(void) {
 	show_disp();
 	MOVE(0, 0);
 	refresh();
-#elif !defined(REALBUILD) && !defined(WINGUI)
+#elif defined(WINGUI)
+	void EXPORT UpdateDlgScreen(int force);
+	UpdateDlgScreen(1);
+#else
 	putchar('\r');
 #endif
 }

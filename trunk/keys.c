@@ -1773,20 +1773,19 @@ void process_keycode(int c) {
 void init_34s(void) {
 	xeq_init();
         init_state();
-#ifdef REALBUILD
+#if defined(REALBUILD) || defined(WINGUI)
 	display();
 #endif
 }
 
 #ifndef REALBUILD
 
-#ifndef WINGUI
 /*
  *  Create the persistant RAM area
- *  The Windows GUI does this automatically
  */
 struct _ram PersistentRam;
-#endif
+
+#ifndef WINGUI
 
 static int remap(const int c) {
 	switch (c) {
@@ -1849,7 +1848,6 @@ static int remap(const int c) {
 	return K_UNKNOWN;
 }
 
-#ifndef WINGUI
 #include <stdio.h>
 
 /* Mappings from our internal character codes to readable strings.

@@ -84,50 +84,36 @@ typedef struct _ram {
 } TPersistentRam;
 #endif
 
-#ifdef INCLUDE_MYAPPLICATION
-#include "myapplication.h"
-#else
-typedef TPersistentRam TMyApplication;
-#endif
-
 #ifdef _ARM_
-static TMyApplication *const MyApplication = (TMyApplication *) AT91C_ISRAM_2;
+static TPersistentRam *const PersistentRam = (TPersistenRam *) AT91C_ISRAM_2;
 #else
 #undef EXPORT
-#ifdef _WINDLL
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __declspec(dllimport)
-#endif
-extern EXPORT TPersistentRam PersistentRam;
-#define MyApplication ((TMyApplication *) &PersistentRam)
 #endif
 
 #define MagicMarker 0x12BC67D9FE3954AF // stored in RAM to check if RAM is still valid after a reboot
 
-bool IsShift(void);
-void init(TMyApplication *MyApp);                   // initialization of the calculator keeps memory if possible.. 
-void reset(TMyApplication *MyApp,bool KeepTestMode); // reset everything to zero (except the test system ON/OFF if KeepTestMode=true
-void KeyPress(TMyApplication *MyApp,int i);        // call when the user presses a key to get action. returns true if calc needs to be turned off
-void InternalKeyPress(TMyApplication *MyApp,int key); // same as above, but does not handle shifts...
-void updatescreen(TMyApplication *MyApp,bool forceUpdate);
-bool ScrollTopLine(TMyApplication *MyApp);  // function to be called every 200 ms when the screen needs scrolling... returns true if it needs to continue scrolling
-bool GetFlag(TMyApplication *MyApp, int flag);
-void SetFlag(TMyApplication *MyApp, int flag);
-void SetFlag2(TMyApplication *MyApp, int flag, bool setclear);
-void ClearFlag(TMyApplication *MyApp, int flag);
-#ifndef _ARM_
-unsigned short GetOffset(TMyApplication *MyApp);
-char *GetBottomLine(TMyApplication *MyApp);
-#endif
-bool CheckCommunication();
 #ifdef _WINDLL
-extern EXPORT u64 BuildDate;
-#else
-extern u64 const BuildDate;
+extern u64 BuildDate;
+#endif
+
+bool IsShift(void);
+void Init(void);                   // initialization of the calculator keeps memory if possible.. 
+void Reset(bool KeepTestMode); // reset everything to zero (except the test system ON/OFF if KeepTestMode=true
+void Shutdown(void);           // turn off, save state
+void KeyPress(int i);        // call when the user presses a key to get action. returns true if calc needs to be turned off
+void InternalKeyPress(int key); // same as above, but does not handle shifts...
+void UpdateScreen(bool forceUpdate);
+bool ScrollTopLine(void);  // function to be called every 200 ms when the screen needs scrolling... returns true if it needs to continue scrolling
+bool GetFlag(int flag);
+void SetFlag(int flag);
+void SetFlag2(int flag, bool setclear);
+void ClearFlag(int flag);
+#ifndef _ARM_
+unsigned short GetOffset(void);
+char *GetBottomLine(void);
 #endif
 void SendString(char const *s);
-bool CheckCommunication();
+bool CheckCommunication(void);
 void SendChar(u8 c);
 void SendCharNoForce(u8 c);
 void SendChars(u8 const *b, u32 size, bool ForceSend);
