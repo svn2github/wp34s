@@ -173,7 +173,7 @@ static const unsigned char alphamap[][6] = {
     "P/\217\235p\257", // K34
     "\0\0\0\0\0\0", // K35, nonexistent
 
-    "\020[]\0\0]", // K40
+    "\020[]!\020]", // K40
     "Q4\216?q\256", // K41
     "R5\220\0r\260",
     "S6\221$s\261",
@@ -188,7 +188,7 @@ static const unsigned char alphamap[][6] = {
     "\0\0\0\0\0\0", // K55, nonexistent
 
     "\0\0\0 \0\0", // K60
-    "00\226\0\0\266",
+    "00\226 \0\266",
     "X.\215\0x\255",
     "Y\0\223\037y\263",
     "Z+\205%z\245", // K64
@@ -1017,7 +1017,7 @@ fkey:		if (oldstate != SHIFT_F)
 		return STATE_UNFINISHED;
 
 	case K62:	// Alpha maths symbol characters
-		if (oldstate == SHIFT_F) {
+		if (oldstate == SHIFT_G) {
 			init_cat(CATALOGUE_ALPHA_SYMBOLS);
 			return STATE_UNFINISHED;
 		}
