@@ -2827,17 +2827,19 @@ static void xeq_single(void) {
 void xeqprog(void) {
 	int state = 0, count = 0;
 
-        set_running_on();
+	set_dot(RCL_annun);
+	finish_display();
 	while (running()) {
 		xeq_single();
 		if (++count >= PROG_STEPS_PER_FLASH) {
 			dot(RCL_annun, state);
 			state = 1 - state;
 			count = 0;
-                        finish_display();
+			finish_display();
 		}
 	}
-	set_running_off();
+	clr_dot(RCL_annun);
+	finish_display();
 }
 
 /* Single step routine
