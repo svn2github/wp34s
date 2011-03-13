@@ -2053,8 +2053,8 @@ void save_state( void )
 	if ( f == NULL ) return;
 	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
 #ifdef DEBUG
-	printf( "sizeof struct _state = %ld\n", sizeof( struct _state ) );
-	printf( "sizeof pointer = %ld\n", sizeof( char * ) );
+	printf( "sizeof struct _state = %d\n", (int)sizeof( struct _state ) );
+	printf( "sizeof pointer = %d\n", (int)sizeof( char * ) );
 #endif
 }
 

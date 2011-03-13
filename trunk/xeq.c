@@ -2033,7 +2033,7 @@ static void specials(const opcode op) {
 	case OP_DOT:
 		if (is_intmode())
 			break;
-		if (State.cmdlinedot < (State.fract + !State.improperfrac) && !State.cmdlineeex &&
+		if (State.cmdlinedot < (State.fract + 1) && !State.cmdlineeex &&
 				State.eol < CMDLINELEN) {
 			if (State.eol == 0 || Cmdline[State.eol-1] == '.')
 				digit(0);
