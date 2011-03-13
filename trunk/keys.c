@@ -122,6 +122,7 @@ static void init_state(void) {
         C(leadzero);
         C(fract);
         C(hms);
+	C(alphas);
 #undef C
 	s.shifts = SHIFT_N;
 	s.test = TST_NONE;
@@ -1662,7 +1663,7 @@ static int process(const int c) {
 	 * common across all modes.  Shifted modes need to check this themselves
 	 * if required.
 	 */
-	if (c == K60 && s == SHIFT_N && ! State.catalogue) {
+	if (c == K60 && s == SHIFT_N) {
 		init_state();
 		return STATE_UNFINISHED;
 	}
