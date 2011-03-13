@@ -131,7 +131,7 @@ static int getdig(int ch)
     return digtbl[ch&0xff];
 }
 
-static void dot(int n, int on) {
+void dot(int n, int on) {
 	if (on)	set_dot(n);
 	else	clr_dot(n);
 }
