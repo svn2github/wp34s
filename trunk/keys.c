@@ -925,9 +925,12 @@ fkey:		if (oldstate != SHIFT_F)
 #endif
 
 	case K10:	// STO
-		if (oldstate != SHIFT_F)
+		if (oldstate == SHIFT_F)
+			init_arg(RARG_ASTO);
+		else if (oldstate == SHIFT_H)
+			return OP_NIL | OP_VIEWALPHA;
+		else
 			break;
-		init_arg(RARG_ASTO);
 		return STATE_UNFINISHED;
 
 	case K11:	// RCL - maybe view
@@ -935,7 +938,7 @@ fkey:		if (oldstate != SHIFT_F)
 			init_arg(RARG_ARCL);
 			return STATE_UNFINISHED;
 		} else if (oldstate == SHIFT_H)
-			return OP_NIL | OP_VIEWALPHA;
+			return OP_NIL | OP_ALPHATIME;
 		break;
 
 	case K12:
