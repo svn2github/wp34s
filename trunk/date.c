@@ -428,18 +428,21 @@ decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y, decCo
 	int j;
 	int yr, m, d;
 
+	if (is_intmode()) {
+		err(ERR_BAD_DATE);
+		return res;
+	}
 	if (decNumberIsSpecial(x) || decNumberIsSpecial(y) || ! is_int(y, ctx)) {
 err:		set_NaN(res);
 		return res;
-	} else {
-		if (extract_date(x, &yr, &m, &d, ctx))
-			goto err;
-		j = dn_to_int(y, ctx) + JDN(yr, m, d);
-		if (j < 0)
-			goto err;
-		JDN2(j, &yr, &m, &d);
-		return build_date(res, yr, m, d, ctx);
 	}
+	if (extract_date(x, &yr, &m, &d, ctx))
+		goto err;
+	j = dn_to_int(y, ctx) + JDN(yr, m, d);
+	if (j < 0)
+		goto err;
+	JDN2(j, &yr, &m, &d);
+	return build_date(res, yr, m, d, ctx);
 }
 
 
@@ -449,7 +452,9 @@ err:		set_NaN(res);
 decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
 	int d, m, yr, j1, j2;
 
-	if (decNumberIsSpecial(x) || decNumberIsSpecial(y))
+	if (is_intmode())
+		err(ERR_BAD_DATE);
+	else if (decNumberIsSpecial(x) || decNumberIsSpecial(y))
 err:		set_NaN(res);
 	else {
 		if (extract_date(x, &yr, &m, &d, ctx))
@@ -467,7 +472,9 @@ err:		set_NaN(res);
 /* Conversion routines from Julian days to and from dates
  */
 decNumber *dateToJ(decNumber *res, const decNumber *x, decContext *ctx) {
-	if (decNumberIsSpecial(x))
+	if (is_intmode())
+		err(ERR_BAD_DATE);
+	else if (decNumberIsSpecial(x))
 err:		set_NaN(res);
 	else {
 		int y, m, d;
@@ -480,7 +487,9 @@ err:		set_NaN(res);
 }
 
 decNumber *dateFromJ(decNumber *res, const decNumber *x, decContext *ctx) {
-	if (decNumberIsSpecial(x))
+	if (is_intmode())
+		err(ERR_BAD_DATE);
+	else if (decNumberIsSpecial(x))
 		set_NaN(res);
 	else {
 		const int j = dn_to_int(x, ctx);
