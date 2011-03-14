@@ -93,7 +93,11 @@ void KeyPress( int i )
 	process_keycode( i );
 	if ( i == 10 ) {
 		// g shift
+		// emulator traps shift+on to exit
 		EmulatorFlags ^= shift;
+	}
+	else {
+		EmulatorFlags &= ~shift;
 	}
 }
 
