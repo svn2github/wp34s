@@ -150,7 +150,7 @@ static const unsigned char alphamap[41][6] = {
         { 'B',  'B',  0201, '#',  'b',  0241,  },  // K01
         { 'C',  'C',  0202, 0000, 'c',  0242,  },  // K02
         { 'D',  0003, 0203, '?',  'd',  0243,  },  // K03
-        { 'E',  0015, 0204, 0015, 'e',  0244,  },  // K04
+        { 'E',  0015, 0204, 0000, 'e',  0244,  },  // K04
         { 'F',  0024, 0224, '#',  'f',  0264,  },  // K05
 
         { 'G',  0000, 0202, 0020, 'g',  0242,  },  // K10
@@ -161,7 +161,7 @@ static const unsigned char alphamap[41][6] = {
         { 0, 0, 0, 0, 0, 0 },
 
         { 0000, 0240, 0000, 0000, 0000, 0000,  },  // K20
-        { 'J',  0027, 0206, 0027, 'j',  0246,  },  // K21
+        { 'J',  0000, 0206, 0027, 'j',  0246,  },  // K21
         { 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
         { 'L',  0246, 0212, 0257, 'l',  0252,  },  // K23
         { 0, 0, 0, 0, 0, 0 },
@@ -971,6 +971,13 @@ fkey:		if (oldstate != SHIFT_F)
 		State.alphas = 0;
 		State.alphashift = 0;
 		return STATE_UNFINISHED;
+
+	case K21:
+		if (oldstate == SHIFT_F)
+			return OP_NIL | OP_ALPHATOX;
+		else if (oldstate == SHIFT_G)
+			return OP_NIL | OP_XTOALPHA;
+		break;
 
 	case K24:	// Clx - backspace, clear Alpha
 		if (oldstate == SHIFT_F)
