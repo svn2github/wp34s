@@ -52,11 +52,11 @@ extern "C" char *MyName;
 // CHP20b_cApp
 
 BEGIN_MESSAGE_MAP(CHP20b_cApp, CWinApp)
-	//{{AFX_MSG_MAP(CHP20b_cApp)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG
-	//ON_COMMAND(ID_HELP, CWinApp::OnHelp)
+        //{{AFX_MSG_MAP(CHP20b_cApp)
+                // NOTE - the ClassWizard will add and remove mapping macros here.
+                //    DO NOT EDIT what you see in these blocks of generated code!
+        //}}AFX_MSG
+        //ON_COMMAND(ID_HELP, CWinApp::OnHelp)
   ON_COMMAND(ID_CALCULATOR_MANAGEHPCALCULATOREMULATORS, CHP20b_cApp::OnCalculatorManagehpcalculatoremulators)
 END_MESSAGE_MAP()
 
@@ -65,8 +65,8 @@ END_MESSAGE_MAP()
 
 CHP20b_cApp::CHP20b_cApp()
 {
-	// Place all significant initialization in InitInstance
-	m_hwndDialog = NULL;
+        // Place all significant initialization in InitInstance
+        m_hwndDialog = NULL;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -79,55 +79,55 @@ CHP20b_cApp theApp;
 
 BOOL CHP20b_cApp::InitInstance()
 {
-	// Standard initialization
-	// If you are not using these features and wish to reduce the size
-	//  of your final executable, you should remove from the following
-	//  the specific initialization routines you do not need.
+        // Standard initialization
+        // If you are not using these features and wish to reduce the size
+        //  of your final executable, you should remove from the following
+        //  the specific initialization routines you do not need.
 
 #ifdef _AFXDLL
-//	Enable3dControls();			// Call this when using MFC in a shared DLL
+//      Enable3dControls();                     // Call this when using MFC in a shared DLL
 #else
-//	Enable3dControlsStatic();	// Call this when linking to MFC statically
+//      Enable3dControlsStatic();       // Call this when linking to MFC statically
 #endif
-	
-	//First free the string allocated by MFC at CWinApp startup.
-	//The string is allocated before InitInstance is called.
-	free((void*)m_pszAppName);
-	//Change the name of the application file.
-	//The CWinApp destructor will free the memory.
-	m_pszAppName = _tcsdup( MyName );
-	
-	CHP20b_cDlg dlg;
-	m_pMainWnd = &dlg;
-	
-	int nResponse = dlg.DoModal();
-	if (nResponse == IDOK)
-	{
-		//  dismissed with OK
-	}
-	else if (nResponse == IDCANCEL)
-	{
-		//  dismissed with Cancel
-	}
+        
+        //First free the string allocated by MFC at CWinApp startup.
+        //The string is allocated before InitInstance is called.
+        free((void*)m_pszAppName);
+        //Change the name of the application file.
+        //The CWinApp destructor will free the memory.
+        m_pszAppName = _tcsdup( MyName );
+        
+        CHP20b_cDlg dlg;
+        m_pMainWnd = &dlg;
+        
+        int nResponse = dlg.DoModal();
+        if (nResponse == IDOK)
+        {
+                //  dismissed with OK
+        }
+        else if (nResponse == IDCANCEL)
+        {
+                //  dismissed with Cancel
+        }
 
-	// Since the dialog has been closed, return FALSE so that we exit the
-	//  application, rather than start the application's message pump.
-	return FALSE;
+        // Since the dialog has been closed, return FALSE so that we exit the
+        //  application, rather than start the application's message pump.
+        return FALSE;
 }
 
 BOOL CHP20b_cApp::ProcessMessageFilter(int code, LPMSG lpMsg)
 {
-	if (m_hwndDialog != NULL)
-	{
-		if ((lpMsg->hwnd == m_hwndDialog) || ::IsChild(m_hwndDialog, lpMsg->hwnd))
-		{
-			if (lpMsg->message == WM_KEYDOWN)
-				::SendMessage(m_hwndDialog, WM_KEYDOWN, lpMsg->wParam, lpMsg->lParam);
-			if (lpMsg->message == WM_KEYUP)
-				::SendMessage(m_hwndDialog, WM_KEYUP, lpMsg->wParam, lpMsg->lParam);
-		}
-	}
-	return CWinApp::ProcessMessageFilter(code, lpMsg);
+        if (m_hwndDialog != NULL)
+        {
+                if ((lpMsg->hwnd == m_hwndDialog) || ::IsChild(m_hwndDialog, lpMsg->hwnd))
+                {
+                        if (lpMsg->message == WM_KEYDOWN)
+                                ::SendMessage(m_hwndDialog, WM_KEYDOWN, lpMsg->wParam, lpMsg->lParam);
+                        if (lpMsg->message == WM_KEYUP)
+                                ::SendMessage(m_hwndDialog, WM_KEYUP, lpMsg->wParam, lpMsg->lParam);
+                }
+        }
+        return CWinApp::ProcessMessageFilter(code, lpMsg);
 }
 
 void CHP20b_cApp::OnCalculatorManagehpcalculatoremulators()
