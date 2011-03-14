@@ -1740,6 +1740,13 @@ void process_keycode(int c) {
 	char tracebuf[25];
 	decContext ctx, ctx64;
 
+	if ( c == -1 ) {
+		/*
+		 *  Heartbeat processing goes here
+		 */
+		return;
+	}
+
 	Ctx = &ctx;
 	Ctx64 = &ctx64;
 	xeq_init_contexts();

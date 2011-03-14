@@ -733,6 +733,12 @@ typedef struct _ram {
 	 */
 	char _cmdline[CMDLINELEN + 1];
 
+	/*
+	 *  A ticker, incremented every 100ms
+	 *  This should never overflow
+	 */
+	long long _ticker;
+
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
@@ -749,6 +755,7 @@ extern TPersistentRam PersistentRam;
 #define RandS1		(PersistentRam._rand_s1)
 #define RandS2		(PersistentRam._rand_s2)
 #define RandS3		(PersistentRam._rand_s3)
+#define Ticker          (PersistentRam._ticker)
 
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);
