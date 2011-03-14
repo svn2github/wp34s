@@ -188,8 +188,8 @@ static const unsigned char alphamap[41][6] = {
         { 'W',  '-',  0222, '%',  'w',  0262,  },  // K54
         { 0, 0, 0, 0, 0, 0 },
 
-        { 0000, 0000, 0000, ' ',  0000, 0000,  },  // K60
-        { '0',  '0',  0226, 0000, '0',  0266,  },  // K61
+        { 0000, 0000, 0000, 0000, 0000, 0000,  },  // K60
+        { '0',  '0',  0226, ' ',  '0',  0266,  },  // K61
         { 'X',  '.',  0215, 0000, 'x',  0255,  },  // K62
         { 'Y',  0000, 0223, 0037, 'y',  0263,  },  // K63
         { 'Z',  '+',  0205, '%',  'z',  0245,  },  // K64
@@ -1020,17 +1020,9 @@ fkey:		if (oldstate != SHIFT_F)
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
 		if (oldstate == SHIFT_F)
 			State.alphashift = 1 - State.alphashift;
-		else if (oldstate == SHIFT_H) {
-			ch = ' ';
-			goto gotc;
-		} else
+		else
 			init_state();
 		return STATE_UNFINISHED;
-
-	case K61:
-		if (oldstate == SHIFT_H)
-			return OP_NIL | OP_PAUSE;
-		break;
 
 	case K62:	// Alpha maths symbol characters
 		if (oldstate == SHIFT_H) {
@@ -1054,7 +1046,7 @@ fkey:		if (oldstate != SHIFT_F)
 		State.shifts = oldstate;
 		return STATE_UNFINISHED;
 	}
-gotc:	return RARG(RARG_ALPHA, ch & 0xff);
+	return RARG(RARG_ALPHA, ch & 0xff);
 }
 
 /* Code to handle all commands with arguments */
@@ -1310,10 +1302,7 @@ static int process_multi(const keycode c) {
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
 		if (oldstate == SHIFT_F)
 			State.alphashift = 1 - State.alphashift;
-		else if (oldstate == SHIFT_H) {
-			ch = ' ';
-			goto gotc;
-		} else
+		else
 			init_state();
 		return STATE_UNFINISHED;
 
@@ -1327,7 +1316,7 @@ static int process_multi(const keycode c) {
 		State.shifts = oldstate;
 		return STATE_UNFINISHED;
 	}
-gotc:	if (State.numdigit == 0) {
+	if (State.numdigit == 0) {
 		State.digval = ch;
 		State.numdigit = 1;
 		return STATE_UNFINISHED;
