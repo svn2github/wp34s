@@ -539,6 +539,7 @@ enum trig_modes {
 	TRIG_DEG=0,	TRIG_RAD,	TRIG_GRAD
 };
 extern enum trig_modes get_trig_mode(void);
+extern void set_trig_mode(enum trig_modes m);
 
 // Date modes
 enum date_modes {

@@ -1174,6 +1174,7 @@ decNumber *decNumber2Deg(decNumber *res, const decNumber *x, decContext *ctx) {
 		decNumberMultiply(res, x, &const_0_9, ctx);
 		break;
 	}
+        set_trig_mode(TRIG_DEG);
 	return res;
 }
 
@@ -1183,6 +1184,7 @@ decNumber *decNumber2Rad(decNumber *res, const decNumber *x, decContext *ctx) {
 	case TRIG_RAD:	decNumberCopy(res, x);		break;
 	case TRIG_GRAD:	decNumberG2R(res, x, ctx);	break;
 	}
+        set_trig_mode(TRIG_RAD);
 	return res;
 }
 
@@ -1194,6 +1196,7 @@ decNumber *decNumber2Grad(decNumber *res, const decNumber *x, decContext *ctx) {
 	case TRIG_RAD:	decNumberR2G(res, x, ctx);	break;
 	case TRIG_GRAD:	decNumberCopy(res, x);		break;
 	}
+        set_trig_mode(TRIG_GRAD);
 	return res;
 }
 

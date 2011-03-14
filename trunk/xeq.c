@@ -2152,7 +2152,7 @@ enum trig_modes get_trig_mode(void) {
 	return State.trigmode;
 }
 
-static void set_trig_mode(enum trig_modes m) {
+void set_trig_mode(enum trig_modes m) {
 	State.trigmode = m;
 }
 
