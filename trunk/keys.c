@@ -145,6 +145,7 @@ static void set_smode(const enum single_disp d) {
  * MvC: added fillers to adjust modified key codes
  */
 static const unsigned char alphamap[41][6] = {
+	/*upper f-sft g-sft h-sft lower g-shf lower */
         { 'A',  0221, 0200, 0221, 'a',  0240,  },  // K00
         { 'B',  'B',  0201, '#',  'b',  0241,  },  // K01
         { 'C',  'C',  0202, 0000, 'c',  0242,  },  // K02
@@ -181,14 +182,14 @@ static const unsigned char alphamap[41][6] = {
         { 0, 0, 0, 0, 0, 0 },
 
         { 0017, '(',  ')',  0000, 0000, ')',   },  // K50
-        { '1',  0000, 0000, 0000, 0000, 0000,  },  // K51
+        { '1',  0000, 0000, 0000, '1',  0000,  },  // K51
         { 'U',  '2',  0000, 0014, 'u',  0000,  },  // K52
         { 'V',  '3',  0000, 0036, 'v',  0000,  },  // K53
         { 'W',  '-',  0222, '%',  'w',  0262,  },  // K54
         { 0, 0, 0, 0, 0, 0 },
 
         { 0000, 0000, 0000, ' ',  0000, 0000,  },  // K60
-        { '0',  '0',  0226, ' ',  0000, 0266,  },  // K61
+        { '0',  '0',  0226, ' ',  '0',  0266,  },  // K61
         { 'X',  '.',  0215, 0000, 'x',  0255,  },  // K62
         { 'Y',  0000, 0223, 0037, 'y',  0263,  },  // K63
         { 'Z',  '+',  0205, '%',  'z',  0245,  },  // K64
@@ -1000,7 +1001,7 @@ fkey:		if (oldstate != SHIFT_F)
 		break;
 
 	case K51:	// Alpha comparison characters
-		if (oldstate == SHIFT_F) {
+		if (oldstate == SHIFT_H) {
 			init_cat(CATALOGUE_ALPHA_COMPARES);
 			return STATE_UNFINISHED;
 		}
@@ -1015,6 +1016,11 @@ fkey:		if (oldstate != SHIFT_F)
 		} else
 			init_state();
 		return STATE_UNFINISHED;
+
+	case K61:
+		if (oldstate == SHIFT_H)
+			return OP_NIL | OP_PAUSE;
+		break;
 
 	case K62:	// Alpha maths symbol characters
 		if (oldstate == SHIFT_H) {

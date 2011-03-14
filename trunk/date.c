@@ -146,23 +146,7 @@ static int day_of_week(int year, int month, int day, const char **msg) {
 	const char *const days = "\007\016\025\035\047\060\067"
 				"Sunday\0Monday\0Tuesday\0Wednesday\0"
 				"Thursday\0Friday\0Saturday";
-#if 0
-	/* Pretty sure this code is faster than the JDN conversion but since we have
-	 * to have that conversion anyway, we might as well use it here too to save
-	 * some code size.
-	 */
-	const int k = year % 100;
-	const int j = year / 100;
-
-	if (isGregorian(year, month, day))
-		h = j/4 + 5*j;
-	else
-		h = 5 + 6*j;
-	h += day + ((month+1)*26)/10 + k + k/4;
-	h = (h+6) % 7;
-#else
 	h = (JDN(year, month, day)+1) % 7;
-#endif
 	if (msg != NULL)
 		*msg = days + ((unsigned char *)days)[h];
 	return h!=0?h:7;
@@ -403,19 +387,16 @@ static void copy3(const char *p) {
 
 void date_alphaday(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	decNumber x;
-	int y, m, d;
-	const char *msg;
-	static const char days[7*3] = "SUNMONTUEWEDTHUFRISAT";
-
+	int y, m, d, dow;
 	if (State.int_mode)
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
 		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d, Ctx))
-			add_string("???");
+			err(ERR_BAD_DATE);
 		else {
-			day_of_week(y, m, d, &msg);
-			copy3(days + 3*d);
+			dow = day_of_week(y, m, d, NULL);
+			copy3("MONTUEWEDTHUFRISATSUN" + 3*(dow-1));
 		}
 	}
 }
@@ -423,7 +404,6 @@ void date_alphaday(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 void date_alphamonth(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	decNumber x;
 	int y, m, d;
-	const char *msg;
 	static const char mons[12*3] = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
 
 	if (State.int_mode)
@@ -431,9 +411,8 @@ void date_alphamonth(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	else {
 		getX(&x);
 		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d, Ctx))
-			add_string("???");
+			err(ERR_BAD_DATE);
 		else {
-			day_of_week(y, m, d, &msg);
 			copy3(mons + 3*m - 3);
 		}
 	}
