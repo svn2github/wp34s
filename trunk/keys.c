@@ -27,8 +27,9 @@
 #define STATE_UNFINISHED	-1
 #define STATE_BACKSPACE		-2
 #define STATE_SST		-3
-#define STATE_RUNNING		-4
-#define STATE_IGNORE		-5
+#define STATE_BST		-4
+#define STATE_RUNNING		-5
+#define STATE_IGNORE		-6
 
 /* Define this if the keycodes map rows sequentially */
 #define SEQUENTIAL_ROWS
@@ -286,9 +287,8 @@ static int process_normal(const keycode c) {
 	case K34:	return OP_DYA | OP_DIV;
 
 	case K40:					// BST
-		reset_volatile_state();
-		decpc();
-		break;
+		return STATE_BST;
+
 
 #ifdef SEQUENTIAL_ROWS
 	case K41:	case K42:	case K43:
@@ -1774,11 +1774,11 @@ void process_keycode(int c) {
 	c = process(c);
 	switch (c) {
 	case STATE_SST:
-		reset_volatile_state();
-		if (State.runmode)
-			xeqone(tracebuf);
-		else
-			incpc();
+		xeq_sst(tracebuf);
+		break;
+
+	case STATE_BST:
+		xeq_bst(tracebuf);
 		break;
 
 	case STATE_BACKSPACE:

@@ -863,6 +863,8 @@ extern unsigned char remap_chars(unsigned char);
 /* Control program execution */
 extern int running(void);
 extern void set_running_off(void);
+extern void xeq_sst(char *tracebuf);
+extern void xeq_bst(char *tracebuf);
 
 /* Command functions */
 extern void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);

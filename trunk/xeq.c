@@ -2886,6 +2886,25 @@ void xeqone(char *tracebuf) {
 #endif
 }
 
+/* Single step
+ */
+void xeq_sst(char *tracebuf) {
+	reset_volatile_state();
+	if (State.runmode)
+		xeqone(tracebuf);
+	else
+		incpc();
+}
+
+/* Back step
+ */
+void xeq_bst(char *tracebuf) {
+	reset_volatile_state();
+	decpc();
+	print_step(tracebuf, getprog(state_pc()));
+	DispMsg = tracebuf;
+}
+
 /* Store into program space.
  */
 void stoprog(opcode c) {
