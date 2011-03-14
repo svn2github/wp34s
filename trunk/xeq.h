@@ -680,6 +680,8 @@ struct _state {
 	unsigned int off : 1;
 	unsigned int LowPower : 1;	// low power detected
 
+	unsigned int pause : 4;         // count down for programmed pause
+
 };
 
 #ifdef WIN32
@@ -858,6 +860,9 @@ extern void do_conv(decNumber *, unsigned int, const decNumber *, decContext *);
 
 extern unsigned char remap_chars(unsigned char);
 
+/* Control program execution */
+extern int running(void);
+extern void set_running_off(void);
 
 /* Command functions */
 extern void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);

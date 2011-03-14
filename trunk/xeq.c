@@ -105,17 +105,18 @@ opcode getprog(unsigned int n) {
 }
 
 
-static int running(void) {
+int running(void) {
 	return State.state_running;
 }
 
-static void set_running_off() {
-	clr_dot(RCL_annun);
+void set_running_off() {
+	// clr_dot(RCL_annun);
 	State.state_running = 0;
+	State.pause = 0;
 }
 
 static void set_running_on() {
-	set_dot(RCL_annun);
+	// set_dot(RCL_annun);
 	State.state_running = 1;
 }
 
@@ -2193,7 +2194,10 @@ void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (running()) {
 		display();
-#ifndef REALBUILD
+#if defined(REALBUILD) || defined(WINGUI)
+		// decremented in the low level heartbeat
+		State.pause = 10;
+#else
 #ifdef WIN32
 #pragma warning(disable:4996)
 #endif
@@ -2822,31 +2826,32 @@ static void xeq_single(void) {
 }
 
 /* Check to see if we're running a program and if so execute it
- * to completion.
+ * for a while.
  *
- * TODO: Break program execution in smaller pieces and allow keyboard handling
- *       to trap R/S or EXIT. The changing Ticker value can be used for this.
- *       Just exit this routine at every tick with state_running still on.
- *       The keyboard handler than simply resumes execution or stops it on certain keys.
  */
-void xeqprog(void) {
+void xeqprog(void) 
+{
 	int state = 0;
-	long long last_ticker;
+	long long last_ticker = Ticker;
 
-	set_dot(RCL_annun);
-	finish_display();
-	last_ticker = Ticker;
-	while (running()) {
-		xeq_single();
-		if ((int) (Ticker - last_ticker) > TICKS_PER_FLASH) {
-			dot(RCL_annun, state);
-			state = 1 - state;
-			last_ticker = Ticker;
-			finish_display();
+	if ( running() ) {
+#if defined(REALBUILD) || defined(WINGUI)
+		state = ((int) last_ticker % (2*TICKS_PER_FLASH) < TICKS_PER_FLASH);
+#else
+		state = 1;
+#endif
+		dot(RCL_annun, state);
+		finish_display();
+
+		while (!State.pause && running() && ((int) Ticker - last_ticker) < 2) {
+			xeq_single();
 		}
 	}
-	clr_dot(RCL_annun);
-	finish_display();
+	if (!running()) {
+		// Program has terminated
+		clr_dot(RCL_annun);
+		finish_display();
+	}
 }
 
 /* Single step routine

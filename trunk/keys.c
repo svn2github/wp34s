@@ -27,6 +27,8 @@
 #define STATE_UNFINISHED	-1
 #define STATE_BACKSPACE		-2
 #define STATE_SST		-3
+#define STATE_RUNNING		-4
+#define STATE_IGNORE		-5
 
 /* Define this if the keycodes map rows sequentially */
 #define SEQUENTIAL_ROWS
@@ -1664,6 +1666,32 @@ static int process_status(const keycode c) {
 static int process(const int c) {
 	const enum shifts s = cur_shift();
 
+	if (c == K_HEARTBEAT) {
+		/*
+		 *  Heartbeat processing goes here.
+		 *  This is totally thread safe!
+		 *  For example, the Ticker value could be converted to a register.
+		 */
+
+		/*
+		 *  Do nothing if not running a program
+		 */
+		if (!running())
+			return STATE_IGNORE;
+	}
+
+	if (running()) {
+		/*
+		 *  Abort a running program with R/S
+		 */
+		if (c == K63) {
+			set_running_off();
+			return STATE_UNFINISHED;
+		}
+		return STATE_RUNNING;		// continue execution
+	}
+
+
 	/* Check for ON in the unshifted state -- this is a reset sequence
 	 * common across all modes.  Shifted modes need to check this themselves
 	 * if required.
@@ -1740,15 +1768,6 @@ void process_keycode(int c) {
 	char tracebuf[25];
 	decContext ctx, ctx64;
 
-	if ( c == K_HEARTBEAT ) {
-		/*
-		 *  Heartbeat processing goes here.
-		 *  This is totally thread safe!
-		 *  For example, the Ticker value could be converted to a register.
-		 */
-		return;
-	}
-
 	Ctx = &ctx;
 	Ctx64 = &ctx64;
 	xeq_init_contexts();
@@ -1772,16 +1791,27 @@ void process_keycode(int c) {
 		}
 		break;
 
+	case STATE_RUNNING:
+		xeqprog();  // continue execution
+		break;
+
+	case STATE_UNFINISHED:
+	case STATE_IGNORE:
+		break;
+
 	default:
 		if (State.runmode) {
 			xeq(c);
 			xeqprog();
 		} else
 			stoprog(c);
-	case STATE_UNFINISHED:
-		break;
 	}
-	display();
+	if (!running() && c != STATE_IGNORE ) {
+		// The condition "running()" is still questionable. 
+		// Do we want the display updated while a program runs?
+		// A probable solution is a user controlable system flag
+		display();
+	}
 }
 
 void init_34s(void) {
