@@ -723,6 +723,7 @@ static void set_x(const decimal64 *rgx, char *res, int nohms) {
 	enum decimal_modes decimal = DECIMAL_DOT;
 	enum seperator_modes seperator = SEP_COMMA;
 	char c;
+        int negative = 0;
 
 	if (State.fraccomma) {
 		decimal = DECIMAL_COMMA;
@@ -766,8 +767,7 @@ static void set_x(const decimal64 *rgx, char *res, int nohms) {
 		clr_dot(MANT_SIGN);
 	}
 	if (*q == '-') {
-		if (res) *res++ = '-';
-		else set_dot(MANT_SIGN);
+		negative = 1;
 		q++;
 	} else if (*q == '+')
 		q++;
@@ -940,6 +940,15 @@ static void set_x(const decimal64 *rgx, char *res, int nohms) {
 	if (odig > DISPLAY_DIGITS)
 		odig = DISPLAY_DIGITS;
 	j = (DISPLAY_DIGITS - odig) * SEGS_PER_DIGIT;
+	if (negative) {
+		if (res) *res++ = '-';
+		else {
+			if (j == 0)
+				set_dot(MANT_SIGN);
+			else
+				set_dig(j - SEGS_PER_DIGIT, '-');
+		}
+	}
 	for (i=0; (c = x[i]) != '\0' && j < SEGS_EXP_BASE; i++) {
 		if (c == '.') {
 			res = set_decimal(j-SEGS_PER_DIGIT, decimal, res);
