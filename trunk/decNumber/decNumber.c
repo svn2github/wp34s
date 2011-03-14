@@ -265,7 +265,7 @@ static decNumber * decRoundOperand(const decNumber *, decContext *, uInt *);
 
 #ifdef WIN32
 
-static char xPool[1024];
+static char xPool[2048];
 static char* xPtr = xPool;
 
 /* specialised malloc/free used for alloca replacement, either for
