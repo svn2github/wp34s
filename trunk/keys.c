@@ -1740,9 +1740,11 @@ void process_keycode(int c) {
 	char tracebuf[25];
 	decContext ctx, ctx64;
 
-	if ( c == -1 ) {
+	if ( c == K_HEARTBEAT ) {
 		/*
-		 *  Heartbeat processing goes here
+		 *  Heartbeat processing goes here.
+		 *  This is totally thread safe!
+		 *  For example, the Ticker value could be converted to a register.
 		 */
 		return;
 	}

@@ -40,10 +40,10 @@
 
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
 
-/* Define the number of program steps that are executed between flashing the
+/* Define the number of program Ticks that must elapse between flashing the
  * RCL annunicator.
  */
-#define PROG_STEPS_PER_FLASH	(1000)
+#define TICKS_PER_FLASH	(5)
 
 
 /* Define storage for the machine's program space.
@@ -2823,18 +2823,25 @@ static void xeq_single(void) {
 
 /* Check to see if we're running a program and if so execute it
  * to completion.
+ *
+ * TODO: Break program execution in smaller pieces and allow keyboard handling
+ *       to trap R/S or EXIT. The changing Ticker value can be used for this.
+ *       Just exit this routine at every tick with state_running still on.
+ *       The keyboard handler than simply resumes execution or stops it on certain keys.
  */
 void xeqprog(void) {
-	int state = 0, count = 0;
+	int state = 0;
+	long long last_ticker;
 
 	set_dot(RCL_annun);
 	finish_display();
+	last_ticker = Ticker;
 	while (running()) {
 		xeq_single();
-		if (++count >= PROG_STEPS_PER_FLASH) {
+		if ((int) (Ticker - last_ticker) > TICKS_PER_FLASH) {
 			dot(RCL_annun, state);
 			state = 1 - state;
-			count = 0;
+			last_ticker = Ticker;
 			finish_display();
 		}
 	}

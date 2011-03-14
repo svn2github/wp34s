@@ -46,6 +46,9 @@ int EXPORT start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR p
 
 void EXPORT UpdateDlgScreen(int force);
 
+void EXPORT AddKey(int k);
+
+
 #ifdef __cplusplus
 }
 #endif

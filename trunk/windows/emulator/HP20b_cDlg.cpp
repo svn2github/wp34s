@@ -83,14 +83,14 @@ public CDialog
   private:
   CString GetVersionInfo();
 };
-CAboutDlg :: CAboutDlg(): CDialog(CAboutDlg :: IDD)
+CAboutDlg::CAboutDlg(): CDialog(CAboutDlg::IDD)
 { 
   //{{AFX_DATA_INIT(CAboutDlg)
   //}}AFX_DATA_INIT
 }
-void CAboutDlg :: DoDataExchange(CDataExchange *pDX)
+void CAboutDlg::DoDataExchange(CDataExchange *pDX)
 { 
-  CDialog         :: DoDataExchange(pDX);
+  CDialog        ::DoDataExchange(pDX);
   //{{AFX_DATA_MAP(CAboutDlg)
   //}}AFX_DATA_MAP
 }
@@ -100,7 +100,7 @@ void CAboutDlg :: DoDataExchange(CDataExchange *pDX)
 ** 
 ***************************************************************/
 //
-BOOL CAboutDlg :: OnInitDialog()
+BOOL CAboutDlg::OnInitDialog()
 { 
   SetDlgItemText(IDC_STATIC_VER_INFO, GetVersionInfo());
   return TRUE;
@@ -112,7 +112,7 @@ BOOL CAboutDlg :: OnInitDialog()
 ** 
 ***************************************************************/
 //
-CString CAboutDlg :: GetVersionInfo()
+CString CAboutDlg::GetVersionInfo()
 { 
   CString ret_val;
   u64   b = BuildDate & (u64)0xfffffffffffffff;
@@ -135,11 +135,11 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CHP20b_cDlg dialog
-CHP20b_cDlg :: CHP20b_cDlg(CWnd *pParent        /*=NULL*/
+CHP20b_cDlg::CHP20b_cDlg(CWnd *pParent        /*=NULL*/
 )
 
 :
-CDialog(CHP20b_cDlg :: IDD, pParent)
+CDialog(CHP20b_cDlg::IDD, pParent)
 { 
   //{{AFX_DATA_INIT(CHP20b_cDlg)
   m_nHP20bKeyDown = - 1;
@@ -150,12 +150,12 @@ CDialog(CHP20b_cDlg :: IDD, pParent)
   // Note that LoadIcon does not require a subsequent DestroyIcon in Win32
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
-CHP20b_cDlg :: ~CHP20b_cDlg()
+CHP20b_cDlg::~CHP20b_cDlg()
 { 
 }
-void CHP20b_cDlg :: DoDataExchange(CDataExchange *pDX)
+void CHP20b_cDlg::DoDataExchange(CDataExchange *pDX)
 { 
-  CDialog         :: DoDataExchange(pDX);
+  CDialog::DoDataExchange(pDX);
 
   //{{AFX_DATA_MAP(CHP20b_cDlg)
   DDX_Control(pDX, IDC_VIRTUAL_LCD, m_VirtualLCD);
@@ -173,31 +173,31 @@ ON_WM_LBUTTONUP()
 ON_WM_LBUTTONDOWN()
 ON_WM_RBUTTONUP()
 ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
-ON_COMMAND(ID_HP20b_RESETSTATE, CHP20b_cDlg :: OnHP20bResetState)
+ON_COMMAND(ID_HP20b_RESETSTATE, CHP20b_cDlg::OnHP20bResetState)
 //}}AFX_MSG_MAP
-ON_COMMAND(ID_HP20b_COPYTOCLIPBOARD, CHP20b_cDlg :: 
+ON_COMMAND(ID_HP20b_COPYTOCLIPBOARD, CHP20b_cDlg::
      OnHP20bCopytoclipboard)
 ON_WM_ACTIVATE()
 ON_WM_LBUTTONDBLCLK()
-ON_COMMAND(ID_HP20b_EXIT, CHP20b_cDlg :: OnHP20bExit)
-ON_COMMAND(ID_HP20b_SHOWCAPTION, CHP20b_cDlg :: OnHP20bShowTitlebar)
+ON_COMMAND(ID_HP20b_EXIT, CHP20b_cDlg::OnHP20bExit)
+ON_COMMAND(ID_HP20b_SHOWCAPTION, CHP20b_cDlg::OnHP20bShowTitlebar)
 //ON_WM_NCLBUTTONUP()
-ON_COMMAND(ID_HELP_ABOUTBOX, CHP20b_cDlg :: OnHelpAboutbox)
-ON_COMMAND(ID_HELP_HP20BBUSINESSCONSULTANT, CHP20b_cDlg :: 
+ON_COMMAND(ID_HELP_ABOUTBOX, CHP20b_cDlg::OnHelpAboutbox)
+ON_COMMAND(ID_HELP_HP20BBUSINESSCONSULTANT, CHP20b_cDlg::
      OnHelpHp20bbusinessconsultant)
-ON_COMMAND(ID_BUY, CHP20b_cDlg :: OnBuy)
-ON_COMMAND(ID_EDIT_COPY_NUMBER, CHP20b_cDlg :: OnEditCopyNumber)
-ON_COMMAND(ID_EDIT_PASTE_NUMBER, CHP20b_cDlg :: OnEditPasteNumber)
-ON_COMMAND(ID_HP20b_SHOWCAPTION_MENU, CHP20b_cDlg :: 
+ON_COMMAND(ID_BUY, CHP20b_cDlg::OnBuy)
+ON_COMMAND(ID_EDIT_COPY_NUMBER, CHP20b_cDlg::OnEditCopyNumber)
+ON_COMMAND(ID_EDIT_PASTE_NUMBER, CHP20b_cDlg::OnEditPasteNumber)
+ON_COMMAND(ID_HP20b_SHOWCAPTION_MENU, CHP20b_cDlg::
      OnHP20bShowcaptionMenu)
 ON_WM_MOVE()
 ON_WM_RBUTTONDOWN()
 ON_WM_RBUTTONDBLCLK()
-ON_COMMAND(ID_CALCULATOR_ASSIGNASDEFAULTHPCALCULATOR, CHP20b_cDlg :: 
+ON_COMMAND(ID_CALCULATOR_ASSIGNASDEFAULTHPCALCULATOR, CHP20b_cDlg::
      OnCalculatorAssignasdefaulthpcalculator)
-ON_COMMAND(ID_CALCULATOR_MANAGEHPCALCULATOREMULATORS, CHP20b_cDlg :: 
+ON_COMMAND(ID_CALCULATOR_MANAGEHPCALCULATOREMULATORS, CHP20b_cDlg::
      OnCalculatorManagehpcalculatoremulators)
-ON_COMMAND(ID_HELP_HP20BEMULATORHELP, CHP20b_cDlg :: 
+ON_COMMAND(ID_HELP_HP20BEMULATORHELP, CHP20b_cDlg::
      OnHelpHp20bemulatorhelp)
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
@@ -498,11 +498,11 @@ int GetChar2(u32 timeout)
   }
   return C;
 }
-BOOL CHP20b_cDlg :: OnInitDialog()
+BOOL CHP20b_cDlg::OnInitDialog()
 { 
   QueryPerformanceFrequency(&PerformanceFrequency);
   LastScreenUpdate.QuadPart = 0;
-  CDialog         :: OnInitDialog();
+  CDialog        ::OnInitDialog();
 
   CheckMenuForManager();
   // IDM_ABOUTBOX must be in the system command range.
@@ -573,10 +573,10 @@ BOOL CHP20b_cDlg :: OnInitDialog()
 ** 
 ***************************************************************/
 //
-void CHP20b_cDlg :: CheckMenuForManager()
+void CHP20b_cDlg::CheckMenuForManager()
 { 
 }
-void CHP20b_cDlg :: OnSysCommand(UINT nID, LPARAM lParam)
+void CHP20b_cDlg::OnSysCommand(UINT nID, LPARAM lParam)
 { 
   if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
     CAboutDlg dlgAbout;
@@ -589,7 +589,7 @@ void CHP20b_cDlg :: OnSysCommand(UINT nID, LPARAM lParam)
       if (nID == SC_KEYMENU)
         return;
 
-    CDialog         :: OnSysCommand(nID, lParam);
+    CDialog        ::OnSysCommand(nID, lParam);
   }
 }
 /***************************************************************
@@ -599,7 +599,7 @@ void CHP20b_cDlg :: OnSysCommand(UINT nID, LPARAM lParam)
 **
 ***************************************************************/
 //
-BOOL CHP20b_cDlg :: PreTranslateMessage(MSG *pMsg)
+BOOL CHP20b_cDlg::PreTranslateMessage(MSG *pMsg)
 { 
   if ((pMsg->wParam - VK_F1 + 1) == 10        /*VK_F10*/
   ) {
@@ -623,12 +623,12 @@ BOOL CHP20b_cDlg :: PreTranslateMessage(MSG *pMsg)
       if (SkinCommand(pMsg))
         return 1;
 
-  return CDialog :: PreTranslateMessage(pMsg);
+  return CDialog::PreTranslateMessage(pMsg);
 }
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
-void CHP20b_cDlg :: OnPaint()
+void CHP20b_cDlg::OnPaint()
 { 
   if (IsIconic()) {
     CPaintDC  dc(this);
@@ -650,16 +650,16 @@ void CHP20b_cDlg :: OnPaint()
     dc.DrawIcon(x, y, m_hIcon);
   }
   else {
-    CDialog         :: OnPaint();
+    CDialog        ::OnPaint();
   }
 }
 // The system calls this to obtain the cursor to display while the user drags
 //  the minimized window.
-HCURSOR CHP20b_cDlg :: OnQueryDragIcon()
+HCURSOR CHP20b_cDlg::OnQueryDragIcon()
 { 
   return (HCURSOR) m_hIcon;
 }
-void CHP20b_cDlg :: keypress(int a)
+void CHP20b_cDlg::keypress(int a)
 { 
   //  if user has clicked the Off MyApplication key
   if (a == KEYON && GetFlag(shift) && ((System.KeyboardMap && (1 << KEYSHIFT)) == 0)) // On Key
@@ -675,7 +675,7 @@ void CHP20b_cDlg :: keypress(int a)
   AddKeyInBuffer(a);
   SetEvent(KeyEvent);
 }
-void CHP20b_cDlg :: OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
+void CHP20b_cDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 { 
   if (nChar != '[')
     keypress(nChar);
@@ -697,10 +697,10 @@ void CHP20b_cDlg :: OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: ForceHP20bKeyUp(WPARAM wKeyCode)
+void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
 { 
   if (m_listKeyCode.size() > 0) {
-    list< WPARAM > :: iterator iter;
+    list< WPARAM >::iterator iter;
     bool already_exists = false;
 
     for (iter = m_listKeyCode.begin(); iter != m_listKeyCode.end(); ++iter) {
@@ -729,7 +729,7 @@ void CHP20b_cDlg :: ForceHP20bKeyUp(WPARAM wKeyCode)
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: HP20bKeyDown(WPARAM wKeyCode)
+void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
 { 
   ForceHP20bKeyUp(wKeyCode);
   if (m_Touch_Base == NONE) {
@@ -740,10 +740,10 @@ void CHP20b_cDlg :: HP20bKeyDown(WPARAM wKeyCode)
         m_rgnPressedButton = Skin.hpGetKeyRegion( wKeyCode, m_bShiftKeyPressed, &m_nHP20bKeyDown);
         if (m_rgnPressedButton != 0) {
           keypress(m_nHP20bKeyDown);
-          HDC   hDC = :: GetDC( m_Background.m_hWnd);
+          HDC   hDC =::GetDC( m_Background.m_hWnd);
 
           InvertRgn(hDC, m_rgnPressedButton);
-          :: ReleaseDC(m_Background.m_hWnd, hDC);
+         ::ReleaseDC(m_Background.m_hWnd, hDC);
           m_Touch_Base = KEYBOARD;
         }
       }
@@ -757,16 +757,16 @@ void CHP20b_cDlg :: HP20bKeyDown(WPARAM wKeyCode)
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: HP20bKeyUp(WPARAM wKeyCode)
+void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
 { 
   if (wKeyCode == VK_LSHIFT || wKeyCode == VK_RSHIFT || wKeyCode == VK_SHIFT)
     m_bShiftKeyPressed = false;
 
   if (m_nHP20bKeyDown >= 0) {
-    HDC   hDC = :: GetDC(m_Background.m_hWnd);
+    HDC   hDC =::GetDC(m_Background.m_hWnd);
 
     InvertRgn(hDC, m_rgnPressedButton);
-    :: ReleaseDC(m_Background.m_hWnd, hDC);
+   ::ReleaseDC(m_Background.m_hWnd, hDC);
     DeleteObject(m_rgnPressedButton);
     System.KeyboardMap &= ~((u64)1 << m_nHP20bKeyDown);
     m_nHP20bKeyDown = - 1;
@@ -779,9 +779,9 @@ void CHP20b_cDlg :: HP20bKeyUp(WPARAM wKeyCode)
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnDestroy()
+void CHP20b_cDlg::OnDestroy()
 { 
-  CDialog :: OnDestroy();
+  CDialog::OnDestroy();
 
   WriteToRegistry();
   Shutdown();
@@ -798,13 +798,13 @@ void CHP20b_cDlg :: OnDestroy()
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnLButtonUp(UINT nFlags, CPoint point)
+void CHP20b_cDlg::OnLButtonUp(UINT nFlags, CPoint point)
 { 
   if (NULL != m_rgnPressedButton && MOUSE == m_Touch_Base) {
-    HDC   hDC = :: GetDC(m_Background.m_hWnd);
+    HDC   hDC =::GetDC(m_Background.m_hWnd);
 
     InvertRgn(hDC, m_rgnPressedButton);
-    :: ReleaseDC(m_Background.m_hWnd, hDC);
+   ::ReleaseDC(m_Background.m_hWnd, hDC);
     DeleteObject(m_rgnPressedButton);
     System.KeyboardMap &= ~((u64)1 << m_nCurKeyPadNum);
     m_rgnPressedButton = NULL;
@@ -813,7 +813,7 @@ void CHP20b_cDlg :: OnLButtonUp(UINT nFlags, CPoint point)
   if (MOUSE == m_Touch_Base)
     m_Touch_Base = NONE;
 
-  CDialog :: OnLButtonUp(nFlags, point);
+  CDialog::OnLButtonUp(nFlags, point);
 }
 /***************************************************************
 ** 
@@ -823,7 +823,7 @@ void CHP20b_cDlg :: OnLButtonUp(UINT nFlags, CPoint point)
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnLButtonDown(UINT nFlags, CPoint point)
+void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
 { 
   if (m_Touch_Base == NONE) {
     m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
@@ -833,10 +833,10 @@ void CHP20b_cDlg :: OnLButtonDown(UINT nFlags, CPoint point)
         if (m_Background.m_hWnd == 0)
           return;
 
-        HDC   hDC = :: GetDC(m_Background.m_hWnd);
+        HDC   hDC =::GetDC(m_Background.m_hWnd);
 
         InvertRgn(hDC, m_rgnPressedButton);
-        :: ReleaseDC(m_Background.m_hWnd, hDC);
+       ::ReleaseDC(m_Background.m_hWnd, hDC);
         //track when the mouse pointer leaves a window
         TRACKMOUSEEVENT tme;
 
@@ -858,7 +858,7 @@ void CHP20b_cDlg :: OnLButtonDown(UINT nFlags, CPoint point)
     m_Touch_Base = NONE;
     SendMessage(WM_NCLBUTTONDOWN, HTCAPTION, 0);
   }
-  CDialog :: OnLButtonDown(nFlags, point);
+  CDialog::OnLButtonDown(nFlags, point);
 }
 /***************************************************************
 ** 
@@ -869,15 +869,15 @@ void CHP20b_cDlg :: OnLButtonDown(UINT nFlags, CPoint point)
 //
 UINT SkinListCounter;
 bool SkinList(_TCHAR *fullfilename, _TCHAR *filename, void *p);
-void CHP20b_cDlg :: OnRButtonUp(UINT nFlags, CPoint point)
+void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
 { 
   LONG code;
   HRGN r = Skin.hpGetKeyRegion(&point, &code);
   if (NULL != r && code == - 1) {
-    HDC   hDC = :: GetDC(m_Background.m_hWnd);
+    HDC   hDC =::GetDC(m_Background.m_hWnd);
 
     InvertRgn(hDC, r);
-    :: ReleaseDC(m_Background.m_hWnd, hDC);
+   ::ReleaseDC(m_Background.m_hWnd, hDC);
     DeleteObject(r);
     CMenu *pMenu = new CMenu;
 
@@ -917,7 +917,7 @@ void CHP20b_cDlg :: OnRButtonUp(UINT nFlags, CPoint point)
     System.KeyboardMap &= ~((u64)1 << Skin.mright);
     UpdateScreen(true);
   }
-  CDialog :: OnRButtonUp(nFlags, point);
+  CDialog::OnRButtonUp(nFlags, point);
 }
 /***************************************************************
 ** 
@@ -927,17 +927,17 @@ void CHP20b_cDlg :: OnRButtonUp(UINT nFlags, CPoint point)
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnRButtonDown(UINT nFlags, CPoint point)
+void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
 { 
   // TODO: Add your message handler code here and/or call default
 
   LONG code;
   HRGN r = Skin.hpGetKeyRegion(&point, &code);
   if (NULL != r && code == - 1) {
-    HDC hDC = :: GetDC(m_Background.m_hWnd);
+    HDC hDC =::GetDC(m_Background.m_hWnd);
 
     InvertRgn(hDC, r);
-    :: ReleaseDC(m_Background.m_hWnd, hDC);
+   ::ReleaseDC(m_Background.m_hWnd, hDC);
     //track when the mouse pointer leaves a window
     TRACKMOUSEEVENT tme;
 
@@ -953,7 +953,7 @@ void CHP20b_cDlg :: OnRButtonDown(UINT nFlags, CPoint point)
     if (Skin.mright != - 1)
       keypress(Skin.mright);
   }
-  CDialog :: OnRButtonDown(nFlags, point);
+  CDialog::OnRButtonDown(nFlags, point);
 }
 /***************************************************************
 ** 
@@ -963,12 +963,12 @@ void CHP20b_cDlg :: OnRButtonDown(UINT nFlags, CPoint point)
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnRButtonDblClk(UINT nFlags, CPoint point)
+void CHP20b_cDlg::OnRButtonDblClk(UINT nFlags, CPoint point)
 { 
   if (Skin.mright != - 1)
     keypress(Skin.mright);
 
-  CDialog :: OnRButtonDblClk(nFlags, point);
+  CDialog::OnRButtonDblClk(nFlags, point);
 }
 /***************************************************************
 ** 
@@ -977,7 +977,7 @@ void CHP20b_cDlg :: OnRButtonDblClk(UINT nFlags, CPoint point)
 ***************************************************************/
 //
 
-LPARAM CHP20b_cDlg :: OnMouseLeave(WPARAM wp, LPARAM lp)
+LPARAM CHP20b_cDlg::OnMouseLeave(WPARAM wp, LPARAM lp)
 { 
   SendMessage(WM_LBUTTONUP, 0, 0);
   SendMessage(WM_RBUTTONUP, 0, 0);
@@ -990,7 +990,7 @@ LPARAM CHP20b_cDlg :: OnMouseLeave(WPARAM wp, LPARAM lp)
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnHP20bOnOFF()
+void CHP20b_cDlg::OnHP20bOnOFF()
 { 
   Reset(false);
   UpdateScreen(true);
@@ -1001,7 +1001,7 @@ void CHP20b_cDlg :: OnHP20bOnOFF()
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnHP20bCopytoclipboard()
+void CHP20b_cDlg::OnHP20bCopytoclipboard()
 { 
   m_VirtualLCD.hpCopyToClipboard();
 }
@@ -1010,7 +1010,7 @@ void CHP20b_cDlg :: OnHP20bCopytoclipboard()
 **  Called when the user presses 'Reset State' sub-menu
 **
 ***************************************************************/
-void CHP20b_cDlg :: OnHP20bResetState()
+void CHP20b_cDlg::OnHP20bResetState()
 { 
   if (AfxMessageBox(
         "Are you sure that you want to reset the calculator?", 
@@ -1028,26 +1028,26 @@ void CHP20b_cDlg :: OnHP20bResetState()
 **
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnLButtonDblClk(UINT nFlags, CPoint point)
+void CHP20b_cDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
 { 
   m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
   if (NULL != m_rgnPressedButton) {
     m_Touch_Base = MOUSE;
     keypress(m_nCurKeyPadNum);
-    HDC   hDC = :: GetDC(m_Background.m_hWnd);
+    HDC   hDC =::GetDC(m_Background.m_hWnd);
 
     InvertRgn(hDC, m_rgnPressedButton);
-    :: ReleaseDC(m_Background.m_hWnd, hDC);
+   ::ReleaseDC(m_Background.m_hWnd, hDC);
     System.KeyboardMap &= ~((u64)1 << m_nCurKeyPadNum);
   }
-  CDialog :: OnLButtonDblClk(nFlags, point);
+  CDialog::OnLButtonDblClk(nFlags, point);
 }
 /***************************************************************
 ** 
 **  Called when the user presses 'Exit' sub-menu
 **  
 ***************************************************************/
-void CHP20b_cDlg :: OnHP20bExit()
+void CHP20b_cDlg::OnHP20bExit()
 { 
   SendMessage(WM_CLOSE, 0, 0);
 }
@@ -1056,7 +1056,7 @@ void CHP20b_cDlg :: OnHP20bExit()
 **  Called when the user presses 'Hide Titlebar' sub-menu
 **  
 ***************************************************************/
-void CHP20b_cDlg :: OnHP20bShowTitlebar()
+void CHP20b_cDlg::OnHP20bShowTitlebar()
 { 
   ShowHP20bTitlebar();
   // check/uncheck main menu
@@ -1075,7 +1075,7 @@ void CHP20b_cDlg :: OnHP20bShowTitlebar()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg :: ShowHP20bTitlebar()
+void CHP20b_cDlg::ShowHP20bTitlebar()
 { 
   if (m_bHideTitlebar) {
                   // Display title bar
@@ -1118,7 +1118,7 @@ void CHP20b_cDlg :: ShowHP20bTitlebar()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnHelpAboutbox()
+void CHP20b_cDlg::OnHelpAboutbox()
 { 
   CAboutDlg dlg;
 
@@ -1130,7 +1130,7 @@ void CHP20b_cDlg :: OnHelpAboutbox()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnHelpHp20bbusinessconsultant()
+void CHP20b_cDlg::OnHelpHp20bbusinessconsultant()
 { 
   HINSTANCE h = ShellExecute(NULL, "open", 
            "HP_20b_Online_Manual.pdf", NULL, 
@@ -1149,7 +1149,7 @@ void CHP20b_cDlg :: OnHelpHp20bbusinessconsultant()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnBuy()
+void CHP20b_cDlg::OnBuy()
 { 
   // Open default web browser
   ShellExecute(NULL, "open", "http://www.hp.com/calculators", 
@@ -1161,7 +1161,7 @@ void CHP20b_cDlg :: OnBuy()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnEditCopyNumber()
+void CHP20b_cDlg::OnEditCopyNumber()
 { 
   m_VirtualLCD.hpCopyToClipboard(GetBottomLine());
 }
@@ -1212,7 +1212,7 @@ const keydefs[] =
   { 'A', KEYANS}, 
   { 0, 0}
 };
-void CHP20b_cDlg :: OnEditPasteNumber()
+void CHP20b_cDlg::OnEditPasteNumber()
 { 
   // reterive clipboard data 
   CString         val = m_VirtualLCD.hpCopyToHP20b();
@@ -1250,7 +1250,7 @@ void CHP20b_cDlg :: OnEditPasteNumber()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg :: WriteToRegistry()
+void CHP20b_cDlg::WriteToRegistry()
 { 
   RECT    rect;
   HKEY    hKey, hkResult;
@@ -1301,7 +1301,7 @@ void CHP20b_cDlg :: WriteToRegistry()
 **  
 ***************************************************************/
 //
-bool CHP20b_cDlg :: ReadRegistry()
+bool CHP20b_cDlg::ReadRegistry()
 { 
   int   left, top;
   HKEY    hKey;
@@ -1374,7 +1374,7 @@ bool CHP20b_cDlg :: ReadRegistry()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnHP20bShowcaptionMenu()
+void CHP20b_cDlg::OnHP20bShowcaptionMenu()
 { 
   ShowHP20bTitlebar();
   // check/uncheck main menu
@@ -1399,9 +1399,9 @@ void CHP20b_cDlg :: OnHP20bShowcaptionMenu()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg :: OnMove(int x, int y)
+void CHP20b_cDlg::OnMove(int x, int y)
 { 
-  CDialog         :: OnMove(x, y);
+  CDialog        ::OnMove(x, y);
   if (m_bHideTitlebar) {
     static int  oldYPos = 1;
 
@@ -1412,13 +1412,13 @@ void CHP20b_cDlg :: OnMove(int x, int y)
     oldYPos = y;
   }
 }
-void CHP20b_cDlg :: OnCalculatorAssignasdefaulthpcalculator()
+void CHP20b_cDlg::OnCalculatorAssignasdefaulthpcalculator()
 { 
 }
-void CHP20b_cDlg :: OnCalculatorManagehpcalculatoremulators()
+void CHP20b_cDlg::OnCalculatorManagehpcalculatoremulators()
 { 
 }
-void CHP20b_cDlg :: OnHelpHp20bemulatorhelp()
+void CHP20b_cDlg::OnHelpHp20bemulatorhelp()
 { 
   HINSTANCE h = ShellExecute(NULL, "open", "20bHelpFile.chm", NULL, NULL, SW_SHOWNORMAL);
   // Returns a value greater than 32 if successful, or an error value 
@@ -1429,7 +1429,7 @@ void CHP20b_cDlg :: OnHelpHp20bemulatorhelp()
 
 // TODO: Add your command handler code here
 }
-void CHP20b_cDlg :: LoadSkin(char *skin)
+void CHP20b_cDlg::LoadSkin(char *skin)
 { 
   Skin.SkinLoad(skin);
   if (Skin.error != 0) {
@@ -1441,7 +1441,7 @@ void CHP20b_cDlg :: LoadSkin(char *skin)
   }
   m_Background.SetBitmap(Skin.bitmap);
   m_VirtualLCD.hpInitBitmap();
-  :: GetWindowRect(m_VirtualLCD.m_hWnd, &m_VirtualLCD.m_rcOrgLCDPos);
+ ::GetWindowRect(m_VirtualLCD.m_hWnd, &m_VirtualLCD.m_rcOrgLCDPos);
   ScreenToClient(&m_VirtualLCD.m_rcOrgLCDPos);
   RECT r1, r2;
 
@@ -1453,8 +1453,8 @@ void CHP20b_cDlg :: LoadSkin(char *skin)
                      GetWindowLong(m_hWnd, GWL_EXSTYLE));
   r1.bottom = r1.top + r2.bottom - r2.top;
   r1.right = r1.left + r2.right - r2.left;
-  :: MoveWindow(m_Background.m_hWnd, 0, 0, Skin.size.x, Skin.size.y, true);
-  :: MoveWindow(m_VirtualLCD.m_hWnd, Skin.screen.left, Skin.screen.top, 
+ ::MoveWindow(m_Background.m_hWnd, 0, 0, Skin.size.x, Skin.size.y, true);
+ ::MoveWindow(m_VirtualLCD.m_hWnd, Skin.screen.left, Skin.screen.top, 
                 Skin.screen.right, Skin.screen.bottom, true);
   MoveWindow(&r1, true);
   m_bHideTitlebar = !m_bHideTitlebar;
@@ -1498,7 +1498,7 @@ bool SkinList(_TCHAR *fullfilename, _TCHAR *filename, void *p)
   free(pt);
   return false;
 }
-void CHP20b_cDlg :: UpdateSkinMenu()
+void CHP20b_cDlg::UpdateSkinMenu()
 { 
   CMenu *pMenu = GetMenu();
 
@@ -1519,7 +1519,7 @@ void CHP20b_cDlg :: UpdateSkinMenu()
   }
   DrawMenuBar();
 }
-bool CHP20b_cDlg :: SkinCommand(MSG *pMsg)
+bool CHP20b_cDlg::SkinCommand(MSG *pMsg)
 { 
   // Remove "Special Keys"  menu
   CMenu *pMenu = GetMenu();
@@ -1554,4 +1554,15 @@ bool CHP20b_cDlg :: SkinCommand(MSG *pMsg)
   }
   return false;
 }
+
+// Added by MvC
+// Makes keyboard buffer accessible from outside DLL
+
+void AddKey(int k)
+{
+  AddKeyInBuffer(k & 0xff);
+  SetEvent(KeyEvent);
+}
+
+
 

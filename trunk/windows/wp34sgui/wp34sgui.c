@@ -39,11 +39,6 @@ static int EmulatorFlags;
 unsigned int LcdData[ 20 ];
 
 /*
- *  Flag to avoid reentrant calls to process_keycode
- */
-static int busy = -1;
-
-/*
  *  Main entry point
  *  Update the callback pointers and start application
  */
@@ -84,24 +79,17 @@ void Init( void )
 		fclose( f );
 	}
 	init_34s();
-	busy = 0;
 }
 
 void Reset( bool keep )
 {
-	busy = -1;
 	memset( &PersistentRam, 0, sizeof( PersistentRam ) );
 	init_34s();
-	busy = 0;
 }
 
 void Shutdown( void )
 {
-	FILE *f;
-
-	while ( busy > 0 ) Sleep( 10 );
-	busy = -1;
-	f = fopen( "wp34s.dat", "wb" );
+	FILE *f = fopen( "wp34s.dat", "wb" );
 	if ( f == NULL ) return;
 	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
 	fclose( f );
@@ -112,7 +100,6 @@ void Shutdown( void )
  */
 void KeyPress( int i )
 {
-	++busy;
 	process_keycode( i );
 	if ( i == 10 ) {
 		// g shift
@@ -121,12 +108,6 @@ void KeyPress( int i )
 	}
 	else {
 		EmulatorFlags &= ~shift;
-	}
-	while ( --busy > 0 ) {
-		/*
-		 *  Emulate missing heartbeats
-		 */
-		process_keycode( -1 );
 	}
 }
 
@@ -171,9 +152,6 @@ unsigned long __stdcall HeartbeatThread( void *p )
 	while( 1 ) {
 		Sleep( 100 );
 		++Ticker;
-		if ( busy != -1 && busy++ == 0 ) {
-			process_keycode( -1 );
-			--busy;
-		}
+		AddKey( K_HEARTBEAT );
 	}
 }

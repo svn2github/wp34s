@@ -589,6 +589,8 @@ enum shifts {
 	SHIFT_LC_N, SHIFT_LC_G		// Two lower case planes
 };
 
+#define K_HEARTBEAT 99			// Pseudo key, "pressed" every 100ms
+
 #define MAGIC_MARKER 0x1357fdb9
 
 #ifdef WIN32
@@ -737,7 +739,7 @@ typedef struct _ram {
 	 *  A ticker, incremented every 100ms
 	 *  This should never overflow
 	 */
-	long long _ticker;
+	volatile long long _ticker;
 
 } TPersistentRam;
 
