@@ -644,14 +644,12 @@ void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 
 	query_time(&s, &m, &h);
 	int_to_dn(&a, s, Ctx);
-	decNumberMultiply(&b, &a, &const_0_01, Ctx);
+	decNumberDivide(&b, &a, &const_60, Ctx);
 	int_to_dn(&a, m, Ctx);
 	decNumberAdd(&c, &a, &b, Ctx);
-	decNumberMultiply(&b, &c, &const_0_01, Ctx);
+	decNumberDivide(&b, &c, &const_60, Ctx);
 	int_to_dn(&a, h, Ctx);
 	decNumberAdd(&c, &b, &a, Ctx);
-	if (State.hms)
-		decNumberHMS2HR(&c, &c, Ctx);
 	decimal64FromNumber(r, &c, ctx64);
 }
 
