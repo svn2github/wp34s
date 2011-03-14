@@ -14,28 +14,32 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// #define DUMP1
+
 #include "decn.h"
 #include "xeq.h"
 #include "consts.h"
 #include "complex.h"
 
-#if 0
+#ifdef DUMP1
 #include <stdio.h>
 static FILE *debugf = NULL;
 
 static void open_debug(void) {
 	if (debugf == NULL) {
-		debugf = fopen("/dev/ttys001", "w");
+		debugf = fopen("wp34s.log", "w");
 	}
 }
 static void dump1(const decNumber *a, const char *msg) {
-	char b[1000];
+	char b[2000];
 
 	open_debug();
 	decNumberToString(a, b);
-	fprintf(debugf, "%s: %s\n", msg?:"???", b);
+	fprintf(debugf, "%s: %s\n", msg ? msg : "???", b);
 	fflush(debugf);
 }
+#else
+#define dump1(a,b)
 #endif
 
 
