@@ -629,7 +629,7 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 	decNumberCompare(&x, &const_9000, &a, Ctx);
 	if (decNumberIsNegative(&x) || decNumberIsZero(&x)) {
 		res = set_dig_s(exp_last, 'o', res);
-	} else {
+	} else if (! decNumberIsZero(&a)) {
 		decNumberCompare(&x, &a, &const_0_0000005, Ctx);
 		if (decNumberIsNegative(&x)) {
 			res = set_dig_s(exp_last, 'u', res);
