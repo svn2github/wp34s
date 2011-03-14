@@ -198,7 +198,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 	} else {
 		if (!argcmds[cmd].indirectokay)
 			return "???";
-		if (arg >= regX_idx && arg <= regI_idx)
+		if (arg >= regX_idx && arg <= regK_idx)
 			*sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\015') = REGNAMES[arg-regX_idx];
 		else if (arg < NUMREG)
 			num_arg_0(sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\015'), arg, 2);
