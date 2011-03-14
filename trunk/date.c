@@ -211,6 +211,9 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day, dec
 	int bc, ip, fp, y, m, d;
 	decNumber z, a;
 
+	if (is_intmode())
+		return 1;
+
 	if (decNumberIsNegative(x)) {
 		decNumberMinus(&z, x, ctx);
 		bc = 0;
@@ -328,7 +331,7 @@ static void easter(int year, int *month, int *day) {
 decNumber *dateEaster(decNumber *res, const decNumber *x, decContext *ctx) {
 	int y;
 
-	if (State.int_mode)
+	if (is_intmode())
 		set_NaN(res);
 	else {
 		if (find_year(x, &y, ctx)) {
@@ -352,7 +355,7 @@ void date_isleap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	int y, t = 0;
 	decNumber x;
 
-	if (State.int_mode)
+	if (is_intmode())
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
@@ -388,7 +391,7 @@ static void copy3(const char *p) {
 void date_alphaday(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	decNumber x;
 	int y, m, d, dow;
-	if (State.int_mode)
+	if (is_intmode())
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
@@ -406,7 +409,7 @@ void date_alphamonth(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	int y, m, d;
 	static const char mons[12*3] = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
 
-	if (State.int_mode)
+	if (is_intmode())
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
@@ -537,33 +540,37 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	int a;
 	const char *suffix;
 
-	xset(buf, '\0', sizeof(buf));
-	getX(&x);
-	decNumberTrunc(&y, &x, Ctx);
-	a = dn_to_int(&y, Ctx);
-	if (State.t12) {
-		if (a >= 12) {
-			a -= 12;
-			suffix = " PM";
+	if (is_intmode())
+		err(ERR_BAD_DATE);
+	else {
+		xset(buf, '\0', sizeof(buf));
+		getX(&x);
+		decNumberTrunc(&y, &x, Ctx);
+		a = dn_to_int(&y, Ctx);
+		if (State.t12) {
+			if (a >= 12) {
+				a -= 12;
+				suffix = " PM";
+			} else
+				suffix = " AM";
+			if (a == 0)
+				a = 12;
 		} else
-			suffix = " AM";
-		if (a == 0)
-			a = 12;
-	} else
-		suffix = "";
-	p = num_arg(buf, a);
-	*p++ = ':';
-	decNumberFrac(&y, &x, Ctx);
-	decNumberMultiply(&x, &y, &const_60, Ctx);
-	decNumberTrunc(&y, &x, Ctx);
-	p = num_arg_0(p, dn_to_int(&y, Ctx), 2);
-	*p++ = ':';
-	decNumberFrac(&y, &x, Ctx);
-	decNumberMultiply(&x, &y, &const_60, Ctx);
-	decNumberRound(&y, &x, Ctx);
-	p = num_arg_0(p, dn_to_int(&y, Ctx), 2);
-	scopy(p, suffix);
-	add_string(buf);
+			suffix = "";
+		p = num_arg(buf, a);
+		*p++ = ':';
+		decNumberFrac(&y, &x, Ctx);
+		decNumberMultiply(&x, &y, &const_60, Ctx);
+		decNumberTrunc(&y, &x, Ctx);
+		p = num_arg_0(p, dn_to_int(&y, Ctx), 2);
+		*p++ = ':';
+		decNumberFrac(&y, &x, Ctx);
+		decNumberMultiply(&x, &y, &const_60, Ctx);
+		decNumberRound(&y, &x, Ctx);
+		p = num_arg_0(p, dn_to_int(&y, Ctx), 2);
+		scopy(p, suffix);
+		add_string(buf);
+	}
 }
 
 

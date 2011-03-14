@@ -19,7 +19,7 @@
 #include "consts.h"
 #include "complex.h"
 
-#if 0
+#if 1
 #include <stdio.h>
 static FILE *debugf = NULL;
 
@@ -29,7 +29,7 @@ static void open_debug(void) {
 	}
 }
 static void dump1(const decNumber *a, const char *msg) {
-	char b[100];
+	char b[1000];
 
 	open_debug();
 	decNumberToString(a, b);
@@ -541,12 +541,15 @@ static void mod2pi(decNumber *res, const decNumber *x, decContext *ctx) {
 	} out;
 
 	decContext big;
-
+dump1(x, "x");
+dump1(&const_2PI, "2pi");
 	big = *ctx;
 	big.digits = MOD_DIGITS;
 
 	decNumberRemainder(&out.n, x, &const_2PI, &big);
+dump1(&out.n, "out.n");
 	decNumberPlus(res, &out.n, ctx);
+dump1(res, "result");
 }
 
 
