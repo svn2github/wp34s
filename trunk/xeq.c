@@ -2901,8 +2901,10 @@ void xeq_sst(char *tracebuf) {
 void xeq_bst(char *tracebuf) {
 	reset_volatile_state();
 	decpc();
-	print_step(tracebuf, getprog(state_pc()));
-	DispMsg = tracebuf;
+	if (! State.runmode) {
+		print_step(tracebuf, getprog(state_pc()));
+		DispMsg = tracebuf;
+	}
 }
 
 /* Store into program space.
