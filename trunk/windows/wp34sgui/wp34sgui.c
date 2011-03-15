@@ -101,14 +101,6 @@ void Shutdown( void )
 void KeyPress( int i )
 {
 	process_keycode( i );
-	if ( i == 10 ) {
-		// g shift
-		// emulator traps shift+on to exit
-		EmulatorFlags ^= shift;
-	}
-	else {
-		EmulatorFlags &= ~shift;
-	}
 }
 
 void UpdateScreen( bool forceUpdate )
@@ -123,6 +115,16 @@ void UpdateScreen( bool forceUpdate )
  */
 bool GetFlag( int flag )
 {
+	if ( flag & shift ) {
+		// Special handling of shift key
+		if ( State.shifts == SHIFT_G ) {
+			EmulatorFlags |= shift;
+		}
+		else {
+			EmulatorFlags &= ~shift;
+		}
+	}
+
 	return 0 != ( EmulatorFlags & flag );
 }
 
@@ -134,6 +136,7 @@ void SetFlag( int flag )
 
 void ClearFlag( int flag)
 {
+	flag &= ~shift; // We handle shift differently then the 20b
 	EmulatorFlags &= ~flag;
 }
 
