@@ -1021,7 +1021,7 @@ static void show_alpha(void) {
 
 void display(void) {
 	int i, j;
-	char buf[32], *bp = buf;
+	char buf[40], *bp = buf;
 	const char *p;
 	int annuc = 0;
 	const enum trig_modes tm = get_trig_mode();
@@ -1154,7 +1154,13 @@ void display(void) {
 #if 0
 			set_digits_string("AlpHA", 0);
 #endif
-			set_status_right(Alpha);
+			bp = scopy(buf, Alpha);
+			i = cur_shift();
+			if (i != SHIFT_N) {
+				*bp++ = 021 + i - SHIFT_F;
+				*bp++ = '\0';
+			}
+			set_status_right(buf);
 		} else {
 			annuc = 1;
 		}
