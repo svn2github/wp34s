@@ -289,9 +289,9 @@ static void annunicators(void) {
 		*p++ = ':';
 	} else if (!is_intmode()) {
 		switch (State.date_mode) {
-		case DATE_DMY:	q = "D.MY";	break;
-		case DATE_MDY:	q = "M.DY";	break;
-		default:	q = "    \006";	break;
+		case DATE_DMY:	q = "d.my\006\006";	break;
+		case DATE_MDY:	q = "m.dy\006\006";	break;
+		default:	q = "    \006";		break;
 		}
 		p = scopy(p, q);
 		p = scopy(p, (get_trig_mode() == TRIG_GRAD)?"\006\006\007":" \006\006\006");
