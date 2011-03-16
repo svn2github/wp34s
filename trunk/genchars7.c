@@ -91,6 +91,10 @@ static struct pair {
 	DIG('>',		D_BR | D_BOTTOM),			// right arrow
 	DIG('_',		D_BOTTOM),
 	DIG('=',		D_MIDDLE | D_BOTTOM),
+	DIG('[',		D_TOP | D_TL | D_BL | D_BOTTOM),
+	DIG(']',		D_TOP | D_TR | D_BR | D_BOTTOM),
+	DIG('(',		D_TOP | D_TL | D_BL | D_BOTTOM),
+	DIG(')',		D_TOP | D_TR | D_BR | D_BOTTOM),
 
 	DIG(0,			0),					// In status display these are all
 	DIG(1,			D_TOP),					// possible combinations of horozintal
