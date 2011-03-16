@@ -97,9 +97,7 @@
     </Link>
     <PostBuildEvent>
       <Message>building catalogues.h</Message>
-      <Command>del catalogues.h
-$(OutDir)catalogs.exe &gt; catalogues.h
-</Command>
+      <Command>$(OutDir)catalogs.exe &gt; ..\..\catalogues.h</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
