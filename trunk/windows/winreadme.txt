@@ -1,3 +1,8 @@
+*
+* This file is a bit outdated
+* You'll need VC++ 2010 to fully build everything
+*
+
 * This is where the windows port lives.
 
 The Windows version is build using MSVC++ 2005. load the SLN file and build. i
