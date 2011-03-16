@@ -1113,6 +1113,7 @@ void display(void) {
 		const opcode op = current_catalogue(State.digval);
 		char b2[16];
 		bp = scopy(bp, catcmd(op, b2));
+		scopy(bp, "\006\006?");
 		if (buf[0] == COMPLEX_PREFIX && buf[1] == COMPLEX_PREFIX)
 			set_status(buf+1);
 		else
