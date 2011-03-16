@@ -943,7 +943,7 @@ fkey:		if (oldstate != SHIFT_F)
 			init_arg(RARG_ARCL);
 			return STATE_UNFINISHED;
 		} else if (oldstate == SHIFT_H)
-			return OP_NIL | OP_ALPHATIME;
+			return OP_NIL | OP_TIME;
 		break;
 
 	case K12:
