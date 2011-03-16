@@ -698,8 +698,6 @@ void date_settime(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumber x, y;
 
 	getX(&x);
-	if (State.hms)
-		decNumberHR2HMS(&x, &x, Ctx);
 	h = dn_to_int(decNumberTrunc(&y, &x, Ctx), Ctx) & 0x3f;
 	decNumberFrac(&y, &x, Ctx);
 	decNumberMultiply(&x, &y, &const_100, Ctx);

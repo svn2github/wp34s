@@ -336,7 +336,6 @@ const struct niladic niladics[] = {
 	FUNC0(OP_UNSIGNED,	&op_unsigned,		"UNSIGN")
 	FUNC0(OP_SIGNMANT,	&op_signmant,		"SIGNMT")
 	FUNC0(OP_FLOAT,		&op_float,		"DECM")
-	FUNC0(OP_HMS,		&op_hms,		"H.MS")
 	FUNC0(OP_FRACT,		&op_fract,		"FRACT")
 	FUNC0(OP_LEAD0,		&showlead0,		"LZON")
 	FUNC0(OP_TRIM0,		&hidelead0,		"LZOFF")

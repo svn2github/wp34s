@@ -124,7 +124,6 @@ static void init_state(void) {
         C(nothousands);
         C(leadzero);
         C(fract);
-        C(hms);
 	C(alphas);
 #undef C
 	s.shifts = SHIFT_N;
@@ -353,13 +352,17 @@ static int process_f_shifted(const keycode c) {
 	case K_CMPLX:
 		return OP_NIL | OP_FRACPROPER;
 
-	case K10:	return OP_NIL | OP_HMS;
+	case K10:
+		if (State.runmode)
+			State.hms = 1;
+		process_cmdline_set_lift();
+		break;
 	case K11:	return OP_NIL | OP_FLOAT;
 	case K12:	return OP_NIL | OP_RANDOM;
 
 	case K20:
-		process_cmdline_set_lift();
 		State.alphas = 1;
+		process_cmdline_set_lift();
 		break;
 
 	case K21:	return OP_NIL | OP_ALPHATOX;
@@ -524,8 +527,8 @@ static int process_h_shifted(const keycode c) {
 		return OP_NIL | OP_RADCOM;
 
 	case K63:					// Program<->Run mode
-		process_cmdline_set_lift();
 		State.runmode = 1 - State.runmode;
+		process_cmdline_set_lift();
 		break;
 	case K64:	return OP_DYA | OP_PERAD;
 	}

@@ -650,8 +650,6 @@ static void process_cmdline(void) {
 			setX(&x);
 		} else {
 			decNumberFromString(&x, Cmdline, Ctx);
-			if (State.hms)
-				decNumberHMS2HR(&x, &x, Ctx);
 			setX(&x);
 		}
 	}
@@ -1908,13 +1906,7 @@ void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
 		set_overflow(decNumberIsInfinite(&x));
 		decimal64FromNumber(&regX, &x, Ctx64);
 	}
-	State.hms = 0;
 	State.fract = 0;
-}
-
-void op_hms(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	op_float(NULL, NULL, NULL);
-	State.hms = 1;
 }
 
 void op_fract(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
@@ -2049,7 +2041,7 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_EEX:
-		if (is_intmode() || State.fract || State.hms)
+		if (is_intmode() || State.fract)
 			break;
 		if (!State.cmdlineeex && State.eol < CMDLINELEN) {
 			if (State.eol == 0)
@@ -2147,8 +2139,6 @@ enum trig_modes get_trig_mode(void) {
 	if (State.cmplx)
 		return TRIG_RAD;
 	//if (State.hyp)	return TRIG_RAD;
-	if (State.hms)
-		return TRIG_DEG;
 	return State.trigmode;
 }
 
@@ -2161,12 +2151,10 @@ void op_deg(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 }
 
 void op_rad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	State.hms = 0;
 	set_trig_mode(TRIG_RAD);
 }
 
 void op_grad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	State.hms = 0;
 	set_trig_mode(TRIG_GRAD);
 }
 

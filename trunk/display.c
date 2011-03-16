@@ -706,7 +706,7 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
  * We have to account for the various display modes and numbers of
  * digits.
  */
-static void set_x(const decimal64 *rgx, char *res, int nohms) {
+static void set_x(const decimal64 *rgx, char *res) {
 	char x[50], *obp = x;
 	int odig = 0;
 	int show_exp = 0;
@@ -732,9 +732,10 @@ static void set_x(const decimal64 *rgx, char *res, int nohms) {
 	if (State.nothousands)
 		seperator = SEP_NONE;
 
-	if (!nohms && !State.smode && ! State.cmplx) {
+	if (!State.smode && ! State.cmplx) {
 		if (State.hms) {
 			set_x_hms(rgx, res, decimal);
+			State.hms = 0;
 			return;
 		} else if (State.fract) {
 			if (set_x_fract(rgx, res))
@@ -968,7 +969,7 @@ void format_reg(decimal64 *r, char *buf) {
 	if (is_intmode())
 		set_int_x(r, buf);
 	else
-		set_x(r, buf, 0);
+		set_x(r, buf);
 }
 
 /* Display the status screen */
@@ -1117,7 +1118,7 @@ void display(void) {
 		else
 			set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
-			set_x(&CONSTANT(State.digval), NULL, 1);
+			set_x(&CONSTANT(State.digval), NULL);
 			skip = 1;
 		} else if (cata == CATALOGUE_CONV && State.runmode) {
 			decNumber x, r;
@@ -1134,7 +1135,7 @@ void display(void) {
 				do_conv(&r, op & RARG_MASK, &x, Ctx);
 			decNumberNormalize(&r, &r, Ctx);
 			decimal64FromNumber(&z, &r, Ctx64);
-			set_x(&z, NULL, 1);
+			set_x(&z, NULL);
 			skip = 1;
 		}
 	} else if (State.status) {

@@ -1849,11 +1849,6 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x, decContext *ctx) {
 		return decNumberDivide(res, &t, &u, ctx);
 	}
 
-	if (State.hms) {
-		dmode = MODE_FIX;
-		numdig = 7;
-	}
-
 	if (dmode == MODE_STD)
 		return decNumberCopy(res, x);
 
