@@ -291,9 +291,9 @@
 	C( 5, 4, 2, 15, 2, 4, 0 ),		/* small left arrow */
 	C( 4, 2, 2, 2, 7, 2, 0 ),		/* small down arrow */
 	C( 4, 2, 7, 2, 2, 2, 0 ),		/* small up arrow = 0420 */
-	C( 4, 6, 2, 7, 2, 2, 0 ),		/* small shift f */
-	C( 4, 6, 5, 7, 4, 3, 0 ),		/* small shift g */
-	C( 4, 1, 1, 7, 5, 5, 0 ),		/* small shift h */
+	C( 4, 6, 2, 7, 2, 0, 0 ),		/* small shift f */
+	C( 4, 7, 5, 4, 3, 0, 0 ),		/* small shift g */
+	C( 4, 1, 7, 5, 0, 0, 0 ),		/* small shift h */
 	C( 3, 3, 1, 3, 0, 0, 0 ),		/* small complex prefix */
 	C( 6, 0, 0, 0, 8, 31, 8 ),		/* small -> */
 	C( 6, 2, 31, 2, 0, 0, 0 ),		/* small <- */
