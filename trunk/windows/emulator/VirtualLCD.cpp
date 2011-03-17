@@ -452,10 +452,10 @@ void CVirtualLCD::UpdateScreenContent()
         } else
           for (int n=0; n<Skin.lowres[r*40+c].NbPoly; n++)
 					  Polygon(m_hMyDC, Skin.lowres[r*40+c].poly[n].points, Skin.lowres[r*40+c].poly[n].NbPoints);
-        if (Skin.lowres[r*40+c].NbPoly==-1)
+        if (Skin.highres[r*40+c].NbPoly==-1)
         {
           TSourceGraphic *sg= (TSourceGraphic*)&Skin.highres[r*40+c];
-          BitBlt(m_hMyDC, sg->p[0], sg->p[1], sg->p[2], sg->p[3], Skin.dc, sg->p[4], sg->p[5], SRCCOPY);
+          BitBlt(m_hMemDC, sg->p[0], sg->p[1], sg->p[2], sg->p[3], Skin.dc, sg->p[4], sg->p[5], SRCCOPY);
         } else
           for (int n=0; n<Skin.highres[r*40+c].NbPoly; n++)
 					  Polygon(m_hMemDC, Skin.highres[r*40+c].poly[n].points, Skin.highres[r*40+c].poly[n].NbPoints);

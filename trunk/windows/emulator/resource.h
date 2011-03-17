@@ -42,8 +42,8 @@
 #define ID_SPECIALKEYS_ON32805          32805
 #define ID_HELP_HP                      32806
 #define ID_HELP_ABOUT                   32807
-#define ID_HELP_HP20BBUSINESSCONSULTANT 32808
-#define ID_BUY                          32809
+#define ID_HELP_MANUAL                  32808
+#define ID_HELP_WEBSITE                 32809
 #define ID_HELP_ABOUTBOX                32810
 #define ID_HP20b_SHOWCAPTION_MENU       32811
 #define ID_HP20b_PCCALC2                32812

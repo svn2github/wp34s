@@ -130,6 +130,41 @@ void UpdateRS232();
 #define UpdateRS232()
 #endif
 
+#ifdef wp34s
+#define KEYf 9
+#define KEYSHIFT KEYf
+#define KEYg 10
+#define KEYh 11
+#define KEYENTER 12
+#define KEYINPUT KEYENTER
+#define KEYCHS 14
+#define KEYPLUSMOINS KEYCHS
+#define KEYEEX 15
+#define KEYBACK 16
+#define KEY7 19
+#define KEY8 20
+#define KEY9 21
+#define KEYDIV 22
+#define KEYUP 24
+#define KEY4 25
+#define KEY5 26
+#define KEY6 27
+#define KEYMUL 28
+#define KEYDOWN 30
+#define KEY1 31
+#define KEY2 32
+#define KEY3 33
+#define KEYMINUS 34
+#define KEYEXIT 36
+#define KEYON KEYEXIT
+#define KEY0 37
+#define KEYDOT 38
+#define KEYPLUS 40
+
+#define KEYSHIFTPLAN 42
+
+#else // HP 20b
+
 #define KEYN 0
 #define KEYI 1
 #define KEYPV 2
@@ -266,6 +301,7 @@ void UpdateRS232();
 #define KEYTESTNEQ (41+KEYSHIFTPLAN*2)
 #define KEYTESTEQ (42+KEYSHIFTPLAN*2)
 
+#endif
 #ifdef __cplusplus
 }
 #endif

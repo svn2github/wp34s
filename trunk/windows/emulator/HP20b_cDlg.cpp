@@ -28,6 +28,17 @@
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //  ----------------------------------------------------------------------------
 
+#ifdef wp34s
+#define MANUAL "wp34s_Manual.pdf"
+#define WEBSITE "http://wp34s.sourceforge.net/"
+#define REGKEY "wp34s"
+#else
+#define MANUAL "HP_20b_Online_Manual.pdf"
+#define WEBSITE "http://www.hp.com/calculators"
+#define WEBSITE 
+#define REGKEY "hp20b"
+#endif
+
 # include "stdafx.h"
 # include "HP20b_c.h"
 # include "HP20b_cDlg.h"
@@ -183,9 +194,9 @@ ON_COMMAND(ID_HP20b_EXIT, CHP20b_cDlg::OnHP20bExit)
 ON_COMMAND(ID_HP20b_SHOWCAPTION, CHP20b_cDlg::OnHP20bShowTitlebar)
 //ON_WM_NCLBUTTONUP()
 ON_COMMAND(ID_HELP_ABOUTBOX, CHP20b_cDlg::OnHelpAboutbox)
-ON_COMMAND(ID_HELP_HP20BBUSINESSCONSULTANT, CHP20b_cDlg::
+ON_COMMAND(ID_HELP_MANUAL, CHP20b_cDlg::
      OnHelpHp20bbusinessconsultant)
-ON_COMMAND(ID_BUY, CHP20b_cDlg::OnBuy)
+ON_COMMAND(ID_HELP_WEBSITE, CHP20b_cDlg::OnBuy)
 ON_COMMAND(ID_EDIT_COPY_NUMBER, CHP20b_cDlg::OnEditCopyNumber)
 ON_COMMAND(ID_EDIT_PASTE_NUMBER, CHP20b_cDlg::OnEditPasteNumber)
 ON_COMMAND(ID_HP20b_SHOWCAPTION_MENU, CHP20b_cDlg::
@@ -259,7 +270,6 @@ static void retrashto(int largest)
 unsigned long __stdcall CalculationThread(void *p)
 { 
   stackTrash();
-  LARGE_INTEGER a, b;
 
   while (1) {
     WaitForSingleObject(KeyEvent, INFINITE);
@@ -271,6 +281,8 @@ unsigned long __stdcall CalculationThread(void *p)
         KeyPress(k);
         continue;
       }
+#ifndef wp34s
+      LARGE_INTEGER a, b;
       if (CheckCommunication()) {
         // If we received something, we are WAY likely to receive some more
         QueryPerformanceCounter(&a);
@@ -287,12 +299,15 @@ unsigned long __stdcall CalculationThread(void *p)
         }
         continue;
       }
+#endif
       break;
     }
     LastScreenUpdate.QuadPart = 0;
     UpdateScreen(false);
   }
 }
+
+#ifndef wp34s
 bool CommunicationPipeConnected = false;
 HANDLE    ComunicationNamedPipe;
 unsigned long __stdcall CommunicationThread(void *p)
@@ -343,9 +358,7 @@ bool Is40b()
   return false;
 # endif
 }
-//51079 Executed in 114479 ms [446/s] before optim
-//51079 Executed in 160732 ms [317/s]
-//51079 Executed in 31569 ms [1617/s] after optimization...
+
 u32 GetChars(u8 *b, u32 nb, u32 timeout)
 { 
   static int  p1 = 0, p2 = 0;
@@ -498,13 +511,17 @@ int GetChar2(u32 timeout)
   }
   return C;
 }
+#endif
+
 BOOL CHP20b_cDlg::OnInitDialog()
 { 
   QueryPerformanceFrequency(&PerformanceFrequency);
   LastScreenUpdate.QuadPart = 0;
   CDialog        ::OnInitDialog();
 
+#ifndef wp34s
   CheckMenuForManager();
+#endif
   // IDM_ABOUTBOX must be in the system command range.
   ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
   ASSERT(IDM_ABOUTBOX < 0xF000);
@@ -543,6 +560,8 @@ BOOL CHP20b_cDlg::OnInitDialog()
   unsigned long id;
 
   CreateThread(NULL, 1024 *16, CalculationThread, NULL, 0, &id);
+
+#ifndef wp34s
   int   i = 0;
   char    name[50];
 
@@ -565,8 +584,12 @@ BOOL CHP20b_cDlg::OnInitDialog()
     ;
 
   CreateThread(NULL, 0, CommunicationThread, NULL, 0, &id);
+#endif
+
   return TRUE;              // return TRUE  unless you set the focus to a control
 }
+
+#ifndef wp34s
 /***************************************************************
 ** 
 ** Function is responsible to remove Test System related menus  
@@ -576,6 +599,8 @@ BOOL CHP20b_cDlg::OnInitDialog()
 void CHP20b_cDlg::CheckMenuForManager()
 { 
 }
+#endif
+
 void CHP20b_cDlg::OnSysCommand(UINT nID, LPARAM lParam)
 { 
   if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
@@ -671,7 +696,9 @@ void CHP20b_cDlg::keypress(int a)
   m_VirtualLCD.hpStopTimerScrollLines();
   m_VirtualLCD.hpStopTimerBlinkCur();
   System.KeyboardMap |= (u64)1 << a;
+#ifndef wp34s
   SendChar(a);
+#endif
   AddKeyInBuffer(a);
   SetEvent(KeyEvent);
 }
@@ -1130,18 +1157,16 @@ void CHP20b_cDlg::OnHelpAboutbox()
 **  
 ***************************************************************/
 //
-void CHP20b_cDlg::OnHelpHp20bbusinessconsultant()
-{ 
-  HINSTANCE h = ShellExecute(NULL, "open", 
-           "HP_20b_Online_Manual.pdf", NULL, 
-           NULL, SW_SHOWNORMAL);
-  // Returns a value greater than 32 if successful, or an error value 
-  // that is less than or equal to 32 otherwise
-  if ((int) h <= 32)
-    AfxMessageBox(
-            "The help file HP_20b_Online_Manual.pdf was not found", 
-            MB_OK | MB_ICONINFORMATION);
 
+void CHP20b_cDlg::OnHelpHp20bbusinessconsultant()
+{
+  _TCHAR path[MAX_PATH], buf[MAX_PATH];
+  GetModuleFileName(NULL, path, MAX_PATH);
+  _TCHAR *b= NULL; _TCHAR *B= path;
+  while (*B) if (*B++=='\\') b= B; *b= 0;
+  sprintf(buf, "start /b %s%s", path, MANUAL);
+
+  system( buf );
 }
 /***************************************************************
 ** 
@@ -1152,8 +1177,7 @@ void CHP20b_cDlg::OnHelpHp20bbusinessconsultant()
 void CHP20b_cDlg::OnBuy()
 { 
   // Open default web browser
-  ShellExecute(NULL, "open", "http://www.hp.com/calculators", 
-         NULL, NULL, SW_SHOWNORMAL);
+  ShellExecute(NULL, "open", WEBSITE, NULL, NULL, SW_SHOWNORMAL);
 }
 /***************************************************************
 ** 
@@ -1177,6 +1201,26 @@ struct {
 }
 const keydefs[] = 
 {
+#ifdef wp34s
+  { '0', KEY0}, 
+  { '1', KEY1}, 
+  { '2', KEY2}, 
+  { '3', KEY3}, 
+  { '4', KEY4}, 
+  { '5', KEY5}, 
+  { '6', KEY6}, 
+  { '7', KEY7}, 
+  { '8', KEY8}, 
+  { '9', KEY9}, 
+  { 'e', KEYEEX}, 
+  { 'E', KEYEEX}, 
+  { '-', KEYCHS}, 
+  { '.', KEYDOT}, 
+  { '+', KEYPLUS}, 
+  { '*', KEYMUL}, 
+  { '/', KEYDIV}, 
+  { ' ', - 1}, 
+#else
   { '0', KEY0}, 
   { '1', KEY1}, 
   { '2', KEY2}, 
@@ -1210,33 +1254,34 @@ const keydefs[] =
   { 'c', KEYCOMB}, 
   { '=', KEYEQUAL}, 
   { 'A', KEYANS}, 
+#endif
   { 0, 0}
 };
 void CHP20b_cDlg::OnEditPasteNumber()
 { 
   // reterive clipboard data 
-  CString         val = m_VirtualLCD.hpCopyToHP20b();
+  CString val = m_VirtualLCD.hpCopyToHP20b();
 
   if (!val.IsEmpty()) {
     // fire keyboard events 
     for (int i = 0; i < val.GetLength(); i++) {
-      int   oo = val.GetAt(i);
-      int   j = 0;
+      int oo = val.GetAt(i);
+      int j = 0;
 
       while (keydefs[j].c != 0 && keydefs[j].c != oo)
         j++;
 
       if (keydefs[j].c == oo) {
-        int   k = keydefs[j].keys;
+        int k = keydefs[j].keys;
 
-        while (k != 0) {
-          if ((k & 0xff) >= KEYXPPYR) {
-            k = k - KEYXPPYR;
+        while (k > 0) {
+          if ((k & 0xff) > KEYSHIFTPLAN) {
+            k = k - KEYSHIFTPLAN;
             AddKeyInBuffer(KEYSHIFT);
           }
           AddKeyInBuffer(k & 0xff);
           SetEvent(KeyEvent);
-          k   >>= 8;
+          k >>= 8;
         }
       }
     }
@@ -1266,7 +1311,7 @@ void CHP20b_cDlg::WriteToRegistry()
            NULL) == ERROR_SUCCESS) {
       HKEY    hkResult1;
 
-      if (RegCreateKeyEx(hkResult, "hp20b", 0, NULL, 
+      if (RegCreateKeyEx(hkResult, REGKEY, 0, NULL, 
              REG_OPTION_NON_VOLATILE, 
              KEY_ALL_ACCESS, NULL, &
              hkResult1, NULL) == 
@@ -1310,7 +1355,7 @@ bool CHP20b_cDlg::ReadRegistry()
 
   // read registy and reterive values
   if (RegOpenKeyEx(HKEY_CURRENT_USER, 
-       "SOFTWARE\\Hewlett-Packard\\hp20b", 0, 
+       "SOFTWARE\\Hewlett-Packard\\" REGKEY, 0, 
        KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
     if (RegQueryValueEx(hKey, "left", NULL, NULL, (LPBYTE)
             data, &dwBufLen) == ERROR_SUCCESS)
