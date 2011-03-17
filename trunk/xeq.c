@@ -110,13 +110,12 @@ int running(void) {
 }
 
 void set_running_off() {
-	// clr_dot(RCL_annun);
 	State.state_running = 0;
 	State.pause = 0;
 }
 
 static void set_running_on() {
-	// set_dot(RCL_annun);
+	display();
 	State.state_running = 1;
 }
 
