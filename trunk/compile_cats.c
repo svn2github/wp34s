@@ -16,6 +16,7 @@
 
 #define COMPILE_CATALOGUES
 #undef DEBUG
+#define NOCURSES
 
 #include "consts.h"
 #include "xeq.h"

@@ -52,7 +52,7 @@ extern void show_stack(void);
 
 #define BITMAP_WIDTH		43
 
-#if !defined(REALBUILD) && !defined(WINGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(NOCURSES)
 #ifdef USECURSES
 #include <curses.h>
 #define GETCHAR	getch

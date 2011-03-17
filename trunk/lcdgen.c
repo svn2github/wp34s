@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 
+#define NOCURSES
 #include "lcd.h"
 
 #define AT91C_SLCDC_MEM 0xFFFB4200
