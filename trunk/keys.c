@@ -971,7 +971,7 @@ fkey:		if (oldstate != SHIFT_F)
 		break;
 
 	case K20:	// Enter - maybe exit alpha mode
-		if (oldstate == SHIFT_F)
+		if (oldstate != SHIFT_H)
 			break;
 		State.alphas = 0;
 		State.alphashift = 0;
