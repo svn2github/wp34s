@@ -524,34 +524,20 @@ static int check_special_x(const decimal64 *rgx, char *res) {
 }
 
 
-/* Perform a single step of the H.MS display.
- * Multiply the number by mult (optional).
- * Store the fractional part of this into res (optional).
- * Divide this by div (optional).
- * Format and display.
+/* Extract the two lowest integral digits from the number
  */
-static char *hms_process(decNumber *res, const decNumber *x, const decNumber *mult,
-				char *str, int *jin, int n, int spaces) {
-	decNumber r, s;
+static void hms_step(decNumber *res, decNumber *x, unsigned int *v) {
+	decNumber n;
+
+	decNumberRemainder(&n, x, &const_100, Ctx);
+	*v = dn_to_int(&n, Ctx);
+	decNumberDivide(&n, x, &const_100, Ctx);
+	decNumberTrunc(res, &n, Ctx);
+}
+
+static char *hms_render(unsigned int v, char *str, int *jin, int n, int spaces) {
 	char b[32];
 	int i, j;
-	unsigned int v;
-
-	if (mult != NULL)
-		decNumberMultiply(&r, x, mult, Ctx);
-	else	decNumberCopy(&r, x);
-	if (res != NULL) {
-		// Rounding step
-		decContext c = *Ctx;
-		c.round = DEC_ROUND_HALF_UP;
-		c.digits = 6;
-
-		decNumberFrac(res, &r, &c);
-		decNumberTrunc(&s, &r, Ctx);
-	} else
-		decNumberRound(&s, &r, Ctx);
-
-	v = dn_to_int(&s, Ctx);
 
 	for (i=0; i<n; i++) {
 		if (v == 0)
@@ -581,9 +567,10 @@ static char *hms_process(decNumber *res, const decNumber *x, const decNumber *mu
  * HMS is hhh[degrees]mm'ss.ss" fixed formated modulo reduced to range
  */
 static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes decimal) {
-	decNumber x, y, a;
+	decNumber x, y, a, t, u;
 	int j=0;
 	const int exp_last = SEGS_EXP_BASE + 2*SEGS_PER_EXP_DIGIT;
+	unsigned int hr, min, sec, fs;
 
 	decimal64ToNumber(rgx, &y);
 	if (check_special_dn(&y, res)) {
@@ -603,23 +590,32 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 	}
 
 	decNumberHR2HMS(&y, &x, Ctx);
-	
+	decNumberMultiply(&t, &y, &const_1e6, Ctx);
+	decNumberRound(&u, &t, Ctx);
+
+	hms_step(&t, &u, &fs);
+	hms_step(&u, &t, &sec);
+	hms_step(&t, &u, &min);
+	hr = dn_to_int(&t, Ctx);
+	if (sec >= 60) { sec -= 60; min++;	}
+	if (min >= 60) { min -= 60; hr++;	}
+
 	// degrees
-	res = hms_process(&x, &y, NULL, res, &j, 4, 1);
+	res = hms_render(hr, res, &j, 4, 1);
 	res = set_dig_s(j, '@', res);
 	j += SEGS_PER_DIGIT;
 
 	// minutes
-	res = hms_process(&y, &x, &const_100, res, &j, 2, 1);
+	res = hms_render(min, res, &j, 2, 1);
 	res = set_dig_s(j, '\'', res);
 	j += SEGS_PER_DIGIT;
 
 	// seconds
-	res = hms_process(&x, &y, &const_100, res, &j, 2, 1);
+	res = hms_render(sec, res, &j, 2, 1);
 	res = set_decimal(j - SEGS_PER_DIGIT, decimal, res);
 
 	// Fractional seconds
-	res = hms_process(NULL, &x, &const_100, res, &j, 2, 0);
+	res = hms_render(fs, res, &j, 2, 0);
 
 	// We're now pointing at the exponent's first digit...
 	res = set_dig_s(j, '"', res);
