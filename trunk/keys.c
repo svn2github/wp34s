@@ -1175,6 +1175,10 @@ static int process_arg(const keycode c) {
 			init_arg(0);
 			State.rarg = 0;
 			State.gtodot = 1;
+		} else if (base == RARG_FIX || base == RARG_SCI || base == RARG_ENG) {
+			init_arg(0);
+			State.rarg = 0;
+			return OP_NIL | OP_ALL;
 		}
 		break;
 	case K63:		// Y
