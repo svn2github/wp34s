@@ -1311,8 +1311,6 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 		} else {
 			RetStkPtr = 0;
 			set_running_on();
-			display();  // will get rid of any temporary display
-
 		}
 	}
 	State.implicit_rtn = 0;
@@ -2411,11 +2409,7 @@ void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 
 void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (running())	set_running_off();
-	else {
-		set_running_on();
-		display();  // will get rid of any temporary display
-	}
-
+	else		set_running_on();
 }
 
 void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
