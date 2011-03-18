@@ -2047,6 +2047,9 @@ static void specials(const opcode op) {
 				digit(1);
 			State.cmdlineeex = State.eol;
 			Cmdline[State.eol++] = 'E';
+			Cmdline[State.eol++] = '0';
+			Cmdline[State.eol++] = '0';
+			Cmdline[State.eol++] = '0';
 		}
 		break;
 
