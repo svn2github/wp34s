@@ -86,6 +86,8 @@ else
 ifeq ($(shell uname),Darwin)
 CC := gcc
 CFLAGS += -m32
+LIBS += /sw/lib/libncurses.a
+CFLAGS += -DUSECURSES
 else
 CC := gcc-4
 endif
@@ -94,9 +96,10 @@ endif
 
 
 ifdef USECURSES
+ifneq ($(shell uname),Darwin)
 LIBS += -lcurses
-#LIBS += /sw/lib/libncurses.a
 CFLAGS += -DUSECURSES
+endif
 endif
 
 ifndef REALBUILD
