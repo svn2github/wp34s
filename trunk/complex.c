@@ -709,8 +709,12 @@ void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *
 	decNumber u;
 
 	if (decNumberIsZero(b)) {
-		if (decNumberIsZero(a) || decNumberIsNegative(a)) {
+		if (decNumberIsZero(a)) {
 			cmplx_NaN(rx, ry);
+		} else if (decNumberIsNegative(a)) {
+			decNumberMinus(&u, a, ctx);
+			decNumberLn(rx, &u, ctx);
+			decNumberPI(ry);
 		} else {
 			decNumberZero(ry);
 			decNumberLn(rx, a, ctx);
