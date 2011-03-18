@@ -1543,7 +1543,7 @@ bool SkinList(_TCHAR *fullfilename, _TCHAR *filename, void *p)
 
   mi.dwTypeData = pt;
   mi.cch = strlen(pt);
-  pSub->InsertMenuItemA(0, &mi, true);
+  pSub->InsertMenuItemA(pSub->GetMenuItemCount(), &mi, true);
   free(pt);
   return false;
 }
