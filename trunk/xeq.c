@@ -2889,6 +2889,7 @@ void xeq_bst(char *tracebuf) {
 	reset_volatile_state();
 	decpc();
 	if (State.runmode) {
+		State.disp_small = 1;
 		print_step(tracebuf, getprog(state_pc()));
 		DispMsg = tracebuf;
 	}
