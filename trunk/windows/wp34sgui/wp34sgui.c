@@ -64,6 +64,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 		        NULL,
 		        GetFlag, SetFlag, ClearFlag,
 		        NULL,
+			GetTopLine,
 		        GetBottomLine,
 		        NULL );
 }
@@ -141,9 +142,16 @@ void ClearFlag( int flag)
 }
 
 
+char *GetTopLine( void )
+{
+ 	return (char *) (DispMsg == NULL ? Alpha : DispMsg);
+}
+
+
 char *GetBottomLine( void )
 {
-	return (char *) DispMsg;
+	static char buffer[ 30 ];
+	return (char *) decimal64ToString( &regX, buffer );
 }
 
 

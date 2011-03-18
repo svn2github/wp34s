@@ -111,6 +111,7 @@ void ClearFlag(int flag);
 #ifndef _ARM_
 unsigned short GetOffset(void);
 char *GetBottomLine(void);
+char *GetTopLine(void);
 #endif
 void SendString(char const *s);
 bool CheckCommunication(void);

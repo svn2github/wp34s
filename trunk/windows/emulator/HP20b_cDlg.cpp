@@ -198,6 +198,7 @@ ON_COMMAND(ID_HELP_MANUAL, CHP20b_cDlg::
      OnHelpHp20bbusinessconsultant)
 ON_COMMAND(ID_HELP_WEBSITE, CHP20b_cDlg::OnBuy)
 ON_COMMAND(ID_EDIT_COPY_NUMBER, CHP20b_cDlg::OnEditCopyNumber)
+ON_COMMAND(ID_EDIT_COPY_TEXTLINE, CHP20b_cDlg::OnEditCopyTextline)
 ON_COMMAND(ID_EDIT_PASTE_NUMBER, CHP20b_cDlg::OnEditPasteNumber)
 ON_COMMAND(ID_HP20b_SHOWCAPTION_MENU, CHP20b_cDlg::
      OnHP20bShowcaptionMenu)
@@ -1188,6 +1189,16 @@ void CHP20b_cDlg::OnBuy()
 void CHP20b_cDlg::OnEditCopyNumber()
 { 
   m_VirtualLCD.hpCopyToClipboard(GetBottomLine());
+}
+/***************************************************************
+** 
+**  Called when the user presses 'Copy Textline' sub-menu
+**  
+***************************************************************/
+//
+void CHP20b_cDlg::OnEditCopyTextline()
+{ 
+  m_VirtualLCD.hpCopyToClipboard(GetTopLine());
 }
 /***************************************************************
 ** 

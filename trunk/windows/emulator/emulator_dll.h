@@ -41,6 +41,7 @@ int EXPORT start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR p
 			   void *p_SetFlag,
 			   void *p_ClearFlag,
 			   void *p_GetOffset,
+			   void *p_GetTopLine,
 			   void *p_GetBottomLine,
 			   void *p_CheckCommunication );
 

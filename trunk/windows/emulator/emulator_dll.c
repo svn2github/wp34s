@@ -28,6 +28,7 @@ static bool  (*P_GetFlag)(int);
 static void  (*P_SetFlag)(int);
 static void  (*P_ClearFlag)(int);
 static short (*P_GetOffset)(void);
+static char *(*P_GetTopLine)(void);
 static char *(*P_GetBottomLine)(void);
 static bool  (*P_CheckCommunication)(void);
 static int EmulatorFlags;
@@ -49,6 +50,7 @@ int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 		    void *p_SetFlag,
 		    void *p_ClearFlag,
 		    void *p_GetOffset,
+		    void *p_GetTopLine,
 		    void *p_GetBottomLine,
 		    void *p_CheckCommunication )
 {
@@ -66,6 +68,7 @@ int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	P_SetFlag            = (void (*)(int))   p_SetFlag;
 	P_ClearFlag          = (void (*)(int))   p_ClearFlag;
 	P_GetOffset          = (short (*)(void)) p_GetOffset;
+	P_GetTopLine         = (char *(*)(void)) p_GetTopLine;
 	P_GetBottomLine      = (char *(*)(void)) p_GetBottomLine;
 	P_CheckCommunication = (bool (*)(void))  p_CheckCommunication;
 
@@ -135,6 +138,12 @@ char *GetBottomLine( void )
 {
 	if ( P_GetBottomLine ) return P_GetBottomLine();
 	return "0";
+}
+
+char *GetTopLine( void )
+{
+	if ( P_GetTopLine ) return P_GetTopLine();
+	return "";
 }
 
 bool CheckCommunication( void )
