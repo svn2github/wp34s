@@ -2888,7 +2888,7 @@ void xeq_sst(char *tracebuf) {
 void xeq_bst(char *tracebuf) {
 	reset_volatile_state();
 	decpc();
-	if (! State.runmode) {
+	if (State.runmode) {
 		print_step(tracebuf, getprog(state_pc()));
 		DispMsg = tracebuf;
 	}
