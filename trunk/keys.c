@@ -676,12 +676,9 @@ static int process_h_shifted_cmplx(const keycode c) {
 	set_shift(SHIFT_N);
 	State.cmplx = 0;
 	switch (c) {
-	case K11:
-		if (! State.intm)
-			init_cat(CATALOGUE_COMPLEX_CONST);
-		break;
 	case K12:	return OP_NIL | OP_CRUP;
 
+	case K20:	init_cat(CATALOGUE_COMPLEX_CONST);	break;
 	case K21:	init_arg(RARG_CSWAP);	break;	// x<>
 	case K22:	return OP_CMON | OP_CCONJ;
 
@@ -703,11 +700,11 @@ static int process_h_shifted_cmplx(const keycode c) {
 		break;
 
 	case K00:	case K01:	case K02:	case K03:	case K04:
-	case K10:
-	case K20:							case K24:
+	case K10:	case K11:
+							case K23:	case K24:
 	case K30:	case K31:	case K32:	case K33:	case K34:
 			case K41:	case K42:	case K43:	case K44:
-			case K51:			case K53:	case K54:
+			case K51:					case K54:
 			case K61:	case K62:	case K63:	case K64:
 		break;
 	}
