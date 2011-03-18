@@ -151,7 +151,10 @@ char *GetTopLine( void )
 char *GetBottomLine( void )
 {
 	static char buffer[ 30 ];
-	return (char *) decimal64ToString( &regX, buffer );
+	xset( buffer, '\0', sizeof( buffer ) );
+//  decimal64ToString( &regX, buffer );
+	format_reg( &regX, buffer );
+    return buffer;
 }
 
 

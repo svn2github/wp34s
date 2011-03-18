@@ -1227,9 +1227,7 @@ const keydefs[] =
   { 'E', KEYEEX}, 
   { '-', KEYCHS}, 
   { '.', KEYDOT}, 
-  { '+', KEYPLUS}, 
-  { '*', KEYMUL}, 
-  { '/', KEYDIV}, 
+  { ',', KEYDOT}, 
   { ' ', - 1}, 
 #else
   { '0', KEY0}, 
@@ -1270,15 +1268,17 @@ const keydefs[] =
 };
 void CHP20b_cDlg::OnEditPasteNumber()
 { 
-  // reterive clipboard data 
+  // retrieve clipboard data 
   CString val = m_VirtualLCD.hpCopyToHP20b();
+  bool pushsign = false;
 
+  val.Trim();
   if (!val.IsEmpty()) {
     // fire keyboard events 
     for (int i = 0; i < val.GetLength(); i++) {
       int oo = val.GetAt(i);
       int j = 0;
-
+      
       while (keydefs[j].c != 0 && keydefs[j].c != oo)
         j++;
 
@@ -1290,8 +1290,17 @@ void CHP20b_cDlg::OnEditPasteNumber()
             k = k - KEYSHIFTPLAN;
             AddKeyInBuffer(KEYSHIFT);
           }
-          AddKeyInBuffer(k & 0xff);
-          SetEvent(KeyEvent);
+	  if ((k & 0xff) == KEYCHS && i == 0) {
+            pushsign = true;
+	  }
+          else {
+            AddKeyInBuffer(k & 0xff);
+            if (pushsign) {
+              pushsign = false;
+              AddKeyInBuffer(KEYCHS);
+	    }
+            SetEvent(KeyEvent);
+	  }
           k >>= 8;
         }
       }
