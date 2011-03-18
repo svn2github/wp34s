@@ -503,7 +503,7 @@ void clrall(decimal64 *a, decimal64 *b, decContext *nulc) {
 		BankRegs[i] = Regs[0];
 	BankFlags = 0;
 
-	State.shifts = SHIFT_N;
+	set_shift(SHIFT_N);
 	State.test = TST_NONE;
 
 	DispMsg = NULL;

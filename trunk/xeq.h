@@ -769,6 +769,7 @@ extern const char *get_cmdline(void);
 
 extern int is_intmode(void);
 extern enum shifts cur_shift(void);
+extern void set_shift(enum shifts);
 
 extern void reset_volatile_state(void);
 extern void xeq(opcode);
