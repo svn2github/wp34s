@@ -684,12 +684,12 @@ static int process_h_shifted_cmplx(const keycode c) {
 
 	case K21:	init_arg(RARG_CSWAP);	break;	// x<>
 	case K22:	return OP_CMON | OP_CCONJ;
-	case K23:	return CONST_CMPLX(OP_PI);
 
 	case K40:	return OP_CMON | OP_FACT;	// z!
 
 	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K52:	init_cat(CATALOGUE_PROG);	break;
+	case K53:	return CONST_CMPLX(OP_PI);
 
 	case K60:	break;
 
