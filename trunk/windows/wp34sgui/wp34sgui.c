@@ -46,6 +46,13 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 {
 	unsigned long id;
 	extern unsigned long __stdcall HeartbeatThread( void *p );
+	int revision;
+	static char revision_string[] = SVN_REVISION;
+
+	/*
+	 *  Get the revision information and put it into the build date
+	 */
+	revision = atoi( revision_string + 7 );
 
 	/*
 	 *  Create the heartbeat at 100ms
@@ -57,7 +64,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	 */
 	start_emulator( hInstance, hPrevInstance, pCmdLine, nCmdShow,
 		        "wp34s Scientific Calculator " VERSION_STRING,
-		        BuildDate,
+		        BuildDate | ( revision << 12 ),
 		        LcdData,
 		        Init, Reset, Shutdown,
 		        KeyPress, UpdateScreen, 

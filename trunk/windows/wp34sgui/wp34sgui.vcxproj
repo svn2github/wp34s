@@ -75,10 +75,10 @@
       <AdditionalDependencies>..\bin\emulator_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>CreateDate.exe builddate.h xeq.h</Command>
+      <Command>Prebuild.cmd</Command>
     </PreBuildEvent>
     <PreBuildEvent>
-      <Message>Create Timestamp for About Dialog</Message>
+      <Message>Create version info for About dialogue</Message>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy ..\..\..\doc\ENTER_20b_1_14.pdf $(TargetDir)wp34s_Manual.pdf</Command>
@@ -120,8 +120,8 @@
       <AdditionalDependencies>..\bin\emulator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>CreateDate.exe builddate.h xeq.h</Command>
-      <Message>Create Timestamp for About Dialog</Message>
+      <Command>Prebuild.cmd</Command>
+      <Message>Create version info for About dialogue</Message>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>copy ..\..\..\doc\ENTER_20b_1_14.pdf $(TargetDir)wp34s_Manual.pdf</Command>
@@ -129,6 +129,7 @@
     <PostBuildEvent>
       <Message>Copying manual to bin directory</Message>
     </PostBuildEvent>
+    <PreLinkEvent />
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\consts\allconsts.c" />
@@ -206,6 +207,8 @@
     <None Include="..\bin\wp34s_LED.bmp" />
     <None Include="..\bin\wp34s_medium.bmp" />
     <None Include="CreateDate.exe" />
+    <None Include="Prebuild.cmd" />
+    <None Include="touch.exe" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

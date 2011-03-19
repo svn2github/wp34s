@@ -129,15 +129,17 @@ CString CAboutDlg::GetVersionInfo()
   CString ret_val;
   u64   b = BuildDate & (u64)0xfffffffffffffff;
 
+  int   m, d, y, r;
+
+  r = (int)((b & (u64)0x000000000ffff000) >> 12);
+
   if ((b & 0xfff) != 0)
     b <<= 4;
-
-  int   m, d, y;
-
+  
   m = (int)((b & (u64)0xff00000000000000) >> 56);
   d = (int)((b & (u64)0x00ff000000000000) >> 48);
   y = (int)((b & (u64)0x0000ffff00000000) >> 32);
-  ret_val.Format("Build date %x-%x-%x", y, m, d);
+  ret_val.Format("Build date %x-%x-%x (%d)", y, m, d, r);
   return ret_val;
 }
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)

@@ -5,3 +5,4 @@ unsigned long long const BuildDate
 @ "version"
 #endif
 = 0x7319201100000000;
+#define SVN_REVISION "$Rev:: 256   $"
