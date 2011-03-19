@@ -114,6 +114,7 @@ void CAboutDlg::DoDataExchange(CDataExchange *pDX)
 BOOL CAboutDlg::OnInitDialog()
 { 
   SetDlgItemText(IDC_STATIC_VER_INFO, GetVersionInfo());
+  SetDlgItemText(IDC_STATIC_MY_NAME, MyName);
   return TRUE;
 }
 /***************************************************************
@@ -136,7 +137,7 @@ CString CAboutDlg::GetVersionInfo()
   m = (int)((b & (u64)0xff00000000000000) >> 56);
   d = (int)((b & (u64)0x00ff000000000000) >> 48);
   y = (int)((b & (u64)0x0000ffff00000000) >> 32);
-  ret_val.Format("Version %x %x %x", y, m, d);
+  ret_val.Format("Build date %x-%x-%x", y, m, d);
   return ret_val;
 }
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)

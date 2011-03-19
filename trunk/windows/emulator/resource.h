@@ -16,6 +16,7 @@
 #define IDC_VIRTUAL_LCD                 1040
 #define IDC_STATIC_BG                   1051
 #define IDC_STATIC_VER_INFO             1052
+#define IDC_STATIC_MY_NAME              1053
 #define ID_HP20b_RESETSTATE             32771
 #define ID_HP20b_ON                     32772
 #define ID_HP20b_COPYTOCLIPBOARD        32783
