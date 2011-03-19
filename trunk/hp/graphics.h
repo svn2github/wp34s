@@ -62,7 +62,7 @@ extern unsigned int LcdData[20];
 void EXPORT UpdateDlgScreen(bool force);
 void EXPORT WindowsBlink(bool a);
 void EXPORT WindowsSwapBuffers();
-void EXPORT AddKey(int k);
+void EXPORT AddKey(int k,bool ifnotfull);
 #else
 #define UpdateScreenContent()
 #define WindowsBlink(a)

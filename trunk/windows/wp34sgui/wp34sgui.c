@@ -169,6 +169,15 @@ unsigned long __stdcall HeartbeatThread( void *p )
 		if ( State.pause ) {
 			--State.pause;
 		}
-		AddKey( K_HEARTBEAT );
+		AddKey( K_HEARTBEAT, true );  // add only if buffewr is empty
 	}
+}
+
+
+/*
+ *  Check if something is waiting for attention
+ */
+int is_key_pressed(void)
+{
+	return !KeyBuffEmpty();  // in DLL
 }

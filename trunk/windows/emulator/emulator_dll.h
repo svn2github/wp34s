@@ -47,8 +47,9 @@ int EXPORT start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR p
 
 void EXPORT UpdateDlgScreen(int force);
 
-void EXPORT AddKey(int k);
+void EXPORT AddKey(int k,bool ifnotfull);
 
+int  EXPORT KeyBuffEmpty(void);
 
 #ifdef __cplusplus
 }

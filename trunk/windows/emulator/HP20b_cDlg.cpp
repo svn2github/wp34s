@@ -1627,10 +1627,12 @@ bool CHP20b_cDlg::SkinCommand(MSG *pMsg)
 // Added by MvC
 // Makes keyboard buffer accessible from outside DLL
 
-void AddKey(int k)
+void AddKey(int k, bool ifnotfull)
 {
-  AddKeyInBuffer(k & 0xff);
-  SetEvent(KeyEvent);
+  if (!ifnotfull || KeyBuffRoom() >= 2) {
+    AddKeyInBuffer(k & 0xff);
+    SetEvent(KeyEvent);
+  }
 }
 
 

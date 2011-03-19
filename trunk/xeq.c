@@ -2833,7 +2833,7 @@ void xeqprog(void)
 		dot(RCL_annun, state);
 		finish_display();
 
-		while (!State.pause && running() && ((int) Ticker - last_ticker) < 2) {
+		while (!State.pause && running() && !is_key_pressed()) {
 			xeq_single();
 		}
 	}

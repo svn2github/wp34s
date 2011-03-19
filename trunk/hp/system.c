@@ -86,6 +86,13 @@ void AddKeyInBuffer(int k)
   }
 }
 
+// Returns room in buffer
+int KeyBuffRoom(void)
+{
+  int room = System.BufRead - System.BufWrite;
+  return room <= 0 ? room + MAXKEYBUFSIZE : room;
+}
+
 #ifdef _ARM_
 #include "board.h"
 #include "main.h"

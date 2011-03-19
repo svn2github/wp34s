@@ -82,22 +82,32 @@ static u64 const KeyPlusInKeyMap= (u64)1<<(6*6+4);
 static u64 const OnKeyInKeyMap= (u64)1<<36;
 
 extern TSystem System;
-int KeyBuffGetKey();         //!<  returns -1 if there is no keys in the buffer
-int KeyBuffPeek();           //!<  returns -1 if there is no keys in the buffer, else return the key, but does not remove it from buffer
-int KeyBuffEmpty();          //!< returns true/false if there is a key in the buffer or not...
+#ifdef _WINDLL
+#define EXPORT __declspec(dllexport)
+#else
+#ifdef WINGUI
+#define EXPORT __declspec(dllimport)
+#else
+#define EXPORT 
+#endif
+#endif
+int EXPORT KeyBuffGetKey();         //!<  returns -1 if there is no keys in the buffer
+int EXPORT KeyBuffPeek();           //!<  returns -1 if there is no keys in the buffer, else return the key, but does not remove it from buffer
+int EXPORT KeyBuffEmpty();          //!< returns true/false if there is a key in the buffer or not...
+int EXPORT KeyBuffRoom();           //!< returns free space in keyboard buffer
 /*! \fn void KeyboardBufferClear()
     \brief remove all keys from keyboard buffer
 */
-void KeyboardBufferClear();
+void EXPORT KeyboardBufferClear();
 /*! \fn void AddKeyInBuffer(int k)
     \brief puts a key in the keyboard buffer.
 
      Can be used to "simulate" a key press.
     \param k specifies the key to be added to the keyboard buffer
 */
-void AddKeyInBuffer(int k);
+void EXPORT AddKeyInBuffer(int k);
 
-void initKeyBuffer();
+void EXPORT initKeyBuffer();
 
 #define ShiftDown() ((System.KeyboardMap&((u64)1<<30))!=0)
 

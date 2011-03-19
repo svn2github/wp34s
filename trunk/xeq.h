@@ -975,6 +975,9 @@ extern decNumber *convAR2DB(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convDB2PR(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx);
 
+/* system functions */
+extern int is_key_pressed(void);
+
 #ifdef REALBUILD
 extern void cmdcontrast(unsigned int arg, enum rarg op);
 #endif
