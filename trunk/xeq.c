@@ -2822,10 +2822,10 @@ static void xeq_single(void) {
 void xeqprog(void) 
 {
 	int state = 0;
-	long long last_ticker = Ticker;
 
 	if ( running() ) {
 #if defined(REALBUILD) || defined(WINGUI)
+		long long last_ticker = Ticker;
 		state = ((int) last_ticker % (2*TICKS_PER_FLASH) < TICKS_PER_FLASH);
 #else
 		state = 1;
