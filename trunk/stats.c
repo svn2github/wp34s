@@ -902,9 +902,10 @@ decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 static int qf_eval(decNumber *diff, const decNumber *pt, const decNumber *x, decContext *ctx,
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
-	decNumber z;
+	decNumber z, prob;
 
-	(*f)(&z, pt, ctx);
+	(*f)(&prob, pt, ctx);
+        decNumberLn(&z, &prob, ctx);
 	decNumberSubtract(diff, &z, x, ctx);
 	if (decNumberIsZero(diff))
 		return 0;
@@ -937,27 +938,29 @@ static int check_probability(decNumber *r, const decNumber *x, decContext *ctx, 
 }
 
 static decNumber *qf_search(decNumber *r,
-				const decNumber *x, decContext *ctx, const decNumber *lower,
+				const decNumber *xin, decContext *ctx, const decNumber *lower,
 				const decNumber *samp_low, const decNumber *samp_high,
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
-	decNumber t, u, v, tv, uv, vv;
+	decNumber t, u, v, tv, uv, vv, x;
 	unsigned int flags = 0;
 
-	if (check_probability(r, x, ctx, lower))
+	if (check_probability(r, xin, ctx, lower))
 	    return r;
+
+        decNumberLn(&x, xin, ctx);
 
 	// Evaluate the first two points which are given to us.
 	decNumberCopy(&t, samp_low);
-	if (qf_eval(&tv, &t, x, ctx, f) == 0)
+	if (qf_eval(&tv, &t, &x, ctx, f) == 0)
 		return decNumberCopy(r, &t);
 
 	decNumberCopy(&u, samp_high);
-	if (qf_eval(&uv, &u, x, ctx, f) == 0)
+	if (qf_eval(&uv, &u, &x, ctx, f) == 0)
 		return decNumberCopy(r, &u);
 
 	solver_init(&v, &t, &u, &tv, &uv, ctx, &flags);
 	do
-		if (qf_eval(&vv, &v, x, ctx, f) == 0)
+		if (qf_eval(&vv, &v, &x, ctx, f) == 0)
 			break;
 	while (solver_step(&t, &u, &v, &tv, &uv, &vv, ctx, &flags) == 0);
 	return decNumberCopy(r, &v);
