@@ -27,6 +27,7 @@ extern decContext *get_ctx64(decContext *);
 
 extern void decNumberSwap(decNumber *a, decNumber *b);
 
+extern const decNumber *small_int(int i);
 extern void int_to_dn(decNumber *, int, decContext *);
 extern int dn_to_int(const decNumber *, decContext *);
 extern void ullint_to_dn(decNumber *, unsigned long long int, decContext *);

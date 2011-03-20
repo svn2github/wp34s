@@ -61,6 +61,12 @@ static const decNumber *const small_ints[MAX_SMALL_INT+1] = {
 	&const_30
 };
 
+const decNumber *small_int(int i) {
+	if (i >= 0 && i<= MAX_SMALL_INT)
+		return small_ints[i];
+	return NULL;
+}
+
 void ullint_to_dn(decNumber *x, unsigned long long int n, decContext *ctx) {
 	/* Check to see if the number is small enough to be in our table */
 	if (n <= MAX_SMALL_INT) {
