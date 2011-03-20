@@ -913,12 +913,38 @@ static int qf_eval(decNumber *diff, const decNumber *pt, const decNumber *x, dec
 	return 1;
 }
 
+static int check_probability(decNumber *r, const decNumber *x, decContext *ctx, const decNumber *lower) {
+	decNumber t;
+
+	/* Range check the probability input */
+	if (decNumberIsZero(x)) {
+	    if (lower != NULL)
+		decNumberCopy(r, lower);
+	    else
+		set_neginf(r);
+	    return 1;
+	}
+	decNumberCompare(&t, &const_1, x, ctx);
+	if (decNumberIsZero(&t)) {
+	    set_inf(r);
+	    return 1;
+	}
+	if (decNumberIsNegative(&t) || decNumberIsNegative(x)) {
+	    set_NaN(r);
+	    return 1;
+	}
+	return 0;
+}
+
 static decNumber *qf_search(decNumber *r,
 				const decNumber *x, decContext *ctx, const decNumber *lower,
 				const decNumber *samp_low, const decNumber *samp_high,
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
 	decNumber t, u, v, tv, uv, vv;
 	unsigned int flags = 0;
+
+	if (check_probability(r, x, ctx, lower))
+	    return r;
 
 	// Evaluate the first two points which are given to us.
 	decNumberCopy(&t, samp_low);
@@ -985,20 +1011,14 @@ decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber t, u, k, lam;
 
+	if (check_probability(r, p, ctx, &const_0))
+	    return r;
 	dist_two_param(&k, &lam);
 	decNumberSubtract(&t, &const_1, p, ctx);
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
 			decNumberIsNegative(&k) || decNumberIsZero(&k) ||
-			decNumberIsNegative(&lam) || decNumberIsZero(&lam) ||
-			(decNumberIsNegative(p) && !decNumberIsZero(p)) ||
-			(decNumberIsNegative(&t) && !decNumberIsZero(&t))) {
+			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
 		set_NaN(r);
-		return r;
-	}
-	if (decNumberIsZero(p))
-		return decNumberZero(r);
-	if (decNumberIsZero(&t)) {
-		set_inf(r);
 		return r;
 	}
 
@@ -1019,19 +1039,13 @@ decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
 decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber t, u, lam;
 
+	if (check_probability(r, p, ctx, &const_0))
+	    return r;
 	dist_one_param(&lam);
 	decNumberSubtract(&t, &const_1, p, ctx);
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) ||
-			decNumberIsNegative(&lam) || decNumberIsZero(&lam) ||
-			(decNumberIsNegative(p) && !decNumberIsZero(p)) ||
-			(decNumberIsNegative(&t) && !decNumberIsZero(&t))) {
+			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
 		set_NaN(r);
-		return r;
-	}
-	if (decNumberIsZero(p))
-		return decNumberZero(r);
-	if (decNumberIsZero(&t)) {
-		set_inf(r);
 		return r;
 	}
 
