@@ -1456,10 +1456,11 @@ void CHP20b_cDlg::OnHP20bShowcaptionMenu()
              | MF_UNCHECKED);
 
   AfxMessageBox(
-          "Right click on the HP logo and uncheck 'Hide Titlebar'\r\nto display the titlebar again.\r\n"
 #ifdef wp34s
+          "Right click on the wp logo and uncheck 'Hide Titlebar'\r\nto display the titlebar again.\r\n"
           "To close the calculator, turn it OFF with (blue) g + EXIT.", 
 #else
+          "Right click on the HP logo and uncheck 'Hide Titlebar'\r\nto display the titlebar again.\r\n"
           "To close the calculator, turn it OFF with (blue) shift + ON/CE.", 
 #endif
           MB_OK | MB_ICONINFORMATION);
