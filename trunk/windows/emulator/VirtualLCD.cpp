@@ -105,30 +105,29 @@ void CVirtualLCD::hpInitBitmap(void)
   if (m_hBrush!=0) DeleteObject(m_hBrush);
   if (m_hBrushRepaint!=0) DeleteObject(m_hBrushRepaint);
 
-	HDC hdc= ::GetDC(m_hWnd);
+  HDC hdc= ::GetDC(m_hWnd);
   m_hBitmap= CreateCompatibleBitmap(hdc, Skin.HighResScreen.x, Skin.HighResScreen.y);
-  m_hMyBitmap		=	CreateCompatibleBitmap(hdc, Skin.screen.right,Skin.screen.bottom);
-	::ReleaseDC(m_hWnd, hdc);
+  m_hMyBitmap= CreateCompatibleBitmap(hdc, Skin.screen.right,Skin.screen.bottom);
+  ::ReleaseDC(m_hWnd, hdc);
 	
-	if(!m_hBitmap)return ;
-	if (!m_hMyBitmap)	return ;
+  if(!m_hBitmap)return ;
+  if (!m_hMyBitmap)	return ;
 
-	m_hMemDC	= CreateCompatibleDC (::GetDC(m_hWnd)) ;
-	if(!m_hMemDC) return;
+  m_hMemDC	= CreateCompatibleDC (::GetDC(m_hWnd)) ;
+  if(!m_hMemDC) return;
 
-	m_hMyDC	= CreateCompatibleDC (::GetDC(m_hWnd)) ;
-	if(!m_hMyDC) return;
+  m_hMyDC	= CreateCompatibleDC (::GetDC(m_hWnd)) ;
+  if(!m_hMyDC) return;
 
-	SelectObject (m_hMemDC, m_hBitmap);
-	SelectObject (m_hMyDC, m_hMyBitmap);
+  SelectObject (m_hMemDC, m_hBitmap);
+  SelectObject (m_hMyDC, m_hMyBitmap);
 	
   m_hBrush	= CreateSolidBrush(Skin.screenfore);
-	if(!m_hBrush)	return;
-
-	SelectObject (m_hMemDC, m_hBrush);
-	SelectObject (m_hMyDC, m_hBrush);
-	
   m_hBrushRepaint = CreateSolidBrush(Skin.screenback);
+  if(!m_hBrush)	return;
+
+  SelectObject (m_hMemDC, m_hBrush);
+  SelectObject (m_hMyDC, m_hBrush);
 
 }
 
@@ -333,12 +332,12 @@ void CVirtualLCD::hpStopTimerScrollLines()
 //
 void CVirtualLCD::OnPaint()
 {
-	CPaintDC dc(this); // device context for painting
+  CPaintDC dc(this); // device context for painting
   RECT r={0, 0, Skin.screen.right, Skin.screen.bottom};
-	if(m_hBrushRepaint){
-		FillRect(dc, &r,m_hBrushRepaint);
-		UpdateScreenContent();
-	}
+  if(m_hBrushRepaint){
+    FillRect(dc, &r,m_hBrushRepaint);
+    UpdateScreenContent();
+  }
 }
 /***************************************************************
 ** 
@@ -431,19 +430,25 @@ void CVirtualLCD::UpdateScreenContent()
 	    }
 	    CloseHandle(h);
 	*/
-	u64 *e= (u64 *)AT91C_SLCDC_MEM;
+  u64 *e= (u64 *)AT91C_SLCDC_MEM;
   RECT re={0, 0, Skin.HighResScreen.x, Skin.HighResScreen.y};
-	FillRect(m_hMemDC, &re, m_hBrushRepaint);
+  FillRect(m_hMemDC, &re, m_hBrushRepaint);
 
   re.right=Skin.screen.right; re.bottom=Skin.screen.bottom;
-	FillRect(m_hMyDC, &re, m_hBrushRepaint);
+  FillRect(m_hMyDC, &re, m_hBrushRepaint);
+
+  SelectObject(m_hMemDC, GetStockObject(DC_PEN));
+  SetDCPenColor(m_hMemDC, Skin.screenfore);
+
+  SelectObject(m_hMyDC, GetStockObject(DC_PEN));
+  SetDCPenColor(m_hMyDC, Skin.screenfore);
 
   if (Skin.NbHighResPoly<400 || Skin.NbLowResPoly<400) return;
-	SetPolyFillMode(m_hMyDC, WINDING);
-	SetPolyFillMode(m_hMemDC, WINDING);
-	for (int r=0; r<10; r++)
-		for (int c=0; c<40; c++)
-			if ((e[r]&((u64)1<<c))!=0)	
+  SetPolyFillMode(m_hMyDC, WINDING);
+  SetPolyFillMode(m_hMemDC, WINDING);
+  for (int r=0; r<10; r++)
+    for (int c=0; c<40; c++)
+      if ((e[r]&((u64)1<<c))!=0)	
       {
         if (Skin.lowres[r*40+c].NbPoly==-1)
         {
@@ -451,18 +456,18 @@ void CVirtualLCD::UpdateScreenContent()
           BitBlt(m_hMyDC, sg->p[0], sg->p[1], sg->p[2], sg->p[3], Skin.dc, sg->p[4], sg->p[5], SRCCOPY);
         } else
           for (int n=0; n<Skin.lowres[r*40+c].NbPoly; n++)
-					  Polygon(m_hMyDC, Skin.lowres[r*40+c].poly[n].points, Skin.lowres[r*40+c].poly[n].NbPoints);
+            Polygon(m_hMyDC, Skin.lowres[r*40+c].poly[n].points, Skin.lowres[r*40+c].poly[n].NbPoints);
         if (Skin.highres[r*40+c].NbPoly==-1)
         {
           TSourceGraphic *sg= (TSourceGraphic*)&Skin.highres[r*40+c];
           BitBlt(m_hMemDC, sg->p[0], sg->p[1], sg->p[2], sg->p[3], Skin.dc, sg->p[4], sg->p[5], SRCCOPY);
         } else
           for (int n=0; n<Skin.highres[r*40+c].NbPoly; n++)
-					  Polygon(m_hMemDC, Skin.highres[r*40+c].poly[n].points, Skin.highres[r*40+c].poly[n].NbPoints);
+            Polygon(m_hMemDC, Skin.highres[r*40+c].poly[n].points, Skin.highres[r*40+c].poly[n].NbPoints);
       }
-	HDC hdc= ::GetDC(m_hWnd);
+  HDC hdc= ::GetDC(m_hWnd);
   BitBlt(hdc, 0,0, Skin.screen.right,Skin.screen.bottom, m_hMyDC, 0,0, SRCCOPY);
-	::ReleaseDC(m_hWnd, hdc);
+  ::ReleaseDC(m_hWnd, hdc);
 }
 
 void CVirtualLCD::On0p5secondTimer()

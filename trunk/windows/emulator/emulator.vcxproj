@@ -82,7 +82,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <ResourceCompile>
-      <ResourceOutputFileName>$(IntDir)emulator.res</ResourceOutputFileName>
+      <ResourceOutputFileName>res\emulator.res</ResourceOutputFileName>
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -103,6 +103,9 @@
       <IgnoreSpecificDefaultLibraries>Nafxcw.lib;Libcmt.lib</IgnoreSpecificDefaultLibraries>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <ResourceCompile>
+      <ResourceOutputFileName>res\emulator.res</ResourceOutputFileName>
+    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\hp\system.c" />
@@ -126,10 +129,7 @@
     <ClInclude Include="VirtualLCD.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="HP20b_c.rc">
-      <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">res\$(TargetName).res</ResourceOutputFileName>
-      <ResourceOutputFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">res\$(TargetName).res</ResourceOutputFileName>
-    </ResourceCompile>
+    <ResourceCompile Include="HP20b_c.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\HP20b_c.ico" />
