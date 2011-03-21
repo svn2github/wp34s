@@ -20,52 +20,6 @@
 
 CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions -fno-defer-pop
 
-# Optional routines to include...
-###########################################################################
-# It's better to do this in features.h to assure consistency between builds
-
-# Include a catalogue of the internal commands
-#CFLAGS += -DINCLUDE_INTERNAL_CATALOGUE
-
-# Include the aritmetic/geometric mean iteration
-#CFLAGS += -DINCLUDE_AGM
-
-# Include Reiman's Zeta function for real and complex arguments
-#CFLAGS += -DINCLUDE_ZETA
-
-# Incude the digamma function
-#CFLAGS += -DINCLUDE_DIGAMMA
-
-# Include Jacobi's Elliptical Functions: SN, CN & DN for real & complex arguments
-#CFLAGS += -DINCLUDE_ELLIPTIC
-
-# Include Bessel functions of first and second kind
-# Second kind functions of integer order need digamma
-#CFLAGS += -DINCLUDE_BESSEL -DINCLUDE_DIGAMMA
-#CFLAGS += -DCOMPLEX_BESSEL
-
-# Inlcude a fused multiply add instruction
-# This isn't vital since this can be done using a complex addition.
-#CFLAGS += -DINCLUDE_MULADD
-
-# Include cube and cube root functions
-#CFLAGS += -DINCLUDE_CUBES
-
-# Include the !! function defined over the complex plane
-#CFLAGS += -DINCLUDE_DBLFACT
-
-# Include the !! function defined over the reals
-#CFLAGS += -DINCLUDE_SUBFACT
-
-# Inlcude multi-character alpha constants (not keystroke programmable)
-#CFLAGS += -DMULTI_ALPHA
-
-# Include a date function to determine the date of Easter in a given year
-#CFLAGS += -DINCLUDE_EASTER
-
-# Include code to use a Ridder's method step after a bisection in the solver.
-#CFLAGS += -DUSE_RIDDERS
-###########################################################################
 
 OBJS := keys.o display.o xeq.o prt.o decn.o complex.o stats.o \
 		lcd.o int.o date.o xrom.o consts.o alpha.o charmap.o \
