@@ -970,6 +970,7 @@ static decNumber *qf_search(decNumber *r,
 /* Quantile functions call the above solving code to invert the CDF
  */
 decNumber *qf_Q(decNumber *r, const decNumber *x, decContext *ctx) {
+	// An initial guess of sqrt(-2*ln x) could be tried.
 	return qf_search(r, x, ctx, NULL, &const__4, &const_7, &cdf_Q);
 }
 
