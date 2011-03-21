@@ -597,6 +597,8 @@ static void process_cmdline(void) {
 	if (State.eol) {
 		const unsigned int cmdlinedot = State.cmdlinedot;
 		Cmdline[State.eol] = '\0';
+		if (Cmdline[State.eol-1] == 'E')
+			Cmdline[State.eol-1] = '\0';
 		State.eol = 0;
 		if (State.state_lift)
 			lift();
@@ -607,10 +609,11 @@ static void process_cmdline(void) {
 			const int sgn = (Cmdline[0] == '-')?1:0;
 			unsigned long long int x = s_to_ull(Cmdline+sgn, int_base());
 			d64fromInt(&regX, build_value(x, sgn));
-		} else if (State.fract && cmdlinedot > 0) {
+		} else if (cmdlinedot == 2 || (State.fract && cmdlinedot)) {
 			char *d0, *d1;
 			int neg;
 
+			State.fract = 1;
 			if (Cmdline[0] == '-') {
 				neg = 1;
 				d0 = Cmdline+1;
@@ -2030,8 +2033,7 @@ static void specials(const opcode op) {
 	case OP_DOT:
 		if (is_intmode())
 			break;
-		if (State.cmdlinedot < (State.fract + 1) && !State.cmdlineeex &&
-				State.eol < CMDLINELEN) {
+		if (State.cmdlinedot < 2 && !State.cmdlineeex && State.eol < CMDLINELEN) {
 			if (State.eol == 0 || Cmdline[State.eol-1] == '.')
 				digit(0);
 			State.cmdlinedot++;
@@ -2040,16 +2042,13 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_EEX:
-		if (is_intmode() || State.fract)
+		if (is_intmode() || State.fract || State.cmdlinedot == 2)
 			break;
 		if (!State.cmdlineeex && State.eol < CMDLINELEN) {
 			if (State.eol == 0)
 				digit(1);
 			State.cmdlineeex = State.eol;
 			Cmdline[State.eol++] = 'E';
-			Cmdline[State.eol++] = '0';
-			Cmdline[State.eol++] = '0';
-			Cmdline[State.eol++] = '0';
 		}
 		break;
 
