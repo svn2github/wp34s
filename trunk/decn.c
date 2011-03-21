@@ -413,10 +413,10 @@ decNumber *decNumberLog2(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *decNumberLogxy(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
-	decNumber ly;
+	decNumber lx;
 
-	decNumberLn(&ly, y, ctx);
-	return do_log(r, x, &ly, ctx);
+	decNumberLn(&lx, x, ctx);
+	return do_log(r, y, &lx, ctx);
 }
 
 decNumber *decNumberPow2(decNumber *r, const decNumber *x, decContext *ctx) {

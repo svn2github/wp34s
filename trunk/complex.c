@@ -624,7 +624,7 @@ void cmplxLogxy(decNumber *rx, decNumber *ry,
 
 	cmplxLn(&la, &lb, a, b, ctx);
 	cmplxLn(&lc, &ld, c, d, ctx);
-	cmplxDivide(rx, ry, &lc, &ld, &la, &lb, ctx);
+	cmplxDivide(rx, ry, &la, &lb, &lc, &ld, ctx);
 }
 
 void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
