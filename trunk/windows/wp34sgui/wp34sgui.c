@@ -109,7 +109,7 @@ void Shutdown( void )
 void KeyPress( int i )
 {
 	process_keycode( i );
-	Keyticks = 0;
+	if ( i != K_HEARTBEAT ) Keyticks = 0;
 }
 
 void UpdateScreen( bool forceUpdate )
