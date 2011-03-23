@@ -1670,6 +1670,12 @@ static int process(const int c) {
 		 */
 
 		/*
+		 * Turn on the RPN annunciator as a visual feedback
+		 */
+		dot(RPN, 1);
+		finish_display();		
+
+		/*
 		 *  Do nothing if not running a program
 		 */
 		if (!running())
@@ -1687,6 +1693,11 @@ static int process(const int c) {
 		return STATE_RUNNING;		// continue execution
 	}
 
+	/*
+	 * Turn off the RPN annunciator as a visual feedback
+	 */
+	dot(RPN, 0);
+	finish_display();
 
 	/* Check for ON in the unshifted state -- this is a reset sequence
 	 * common across all modes.  Shifted modes need to check this themselves

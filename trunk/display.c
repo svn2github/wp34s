@@ -1031,7 +1031,7 @@ void display(void) {
 	 * typing lower case in alpha mode.  Turn the big equals if we're
 	 * browsing constants.
 	 */
-	dot(RPN, 1);
+	// dot(RPN, 1); Mved to keys.c for visual feedback
 	dot(BEG, state_pc() == 0);
 	dot(INPUT,  cata || State.alphas || State.confirm);
 	dot(DOWN_ARR, (State.alphas || State.multi) && State.alphashift);
