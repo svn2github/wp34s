@@ -682,6 +682,7 @@ struct _state {
 	unsigned int LowPower : 1;	// low power detected
 
 	unsigned int pause : 4;         // count down for programmed pause
+	unsigned int busy_blink : 1;    // short blink of PRN annunciator with every key
 
 };
 

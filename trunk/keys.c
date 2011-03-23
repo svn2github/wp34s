@@ -1670,9 +1670,10 @@ static int process(const int c) {
 		 */
 
 		/*
-		 * Turn on the RPN annunciator as a visual feedback
+		 * Toggle the RPN annunciator as a visual feedback
 		 */
-		dot(RPN, 1);
+		dot(RPN, !State.busy_blink);
+		State.busy_blink = 0;
 		finish_display();		
 
 		/*
@@ -1696,6 +1697,7 @@ static int process(const int c) {
 	/*
 	 * Turn off the RPN annunciator as a visual feedback
 	 */
+	State.busy_blink = 1;
 	dot(RPN, 0);
 	finish_display();
 
