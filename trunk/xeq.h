@@ -745,6 +745,12 @@ typedef struct _ram {
 	 */
 	volatile long long _ticker;
 
+	/*
+	 *  Another ticker wich is reset on every keystroke
+	 *  In fact, it counts the time between keystrokes
+	 */
+	volatile unsigned short _keyticks;
+
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
@@ -761,7 +767,8 @@ extern TPersistentRam PersistentRam;
 #define RandS1		(PersistentRam._rand_s1)
 #define RandS2		(PersistentRam._rand_s2)
 #define RandS3		(PersistentRam._rand_s3)
-#define Ticker          (PersistentRam._ticker)
+#define Ticker      (PersistentRam._ticker)
+#define Keyticks    (PersistentRam._keyticks)
 
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);

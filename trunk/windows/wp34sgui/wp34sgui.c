@@ -109,6 +109,7 @@ void Shutdown( void )
 void KeyPress( int i )
 {
 	process_keycode( i );
+	Keyticks = 0;
 }
 
 void UpdateScreen( bool forceUpdate )
@@ -175,6 +176,9 @@ unsigned long __stdcall HeartbeatThread( void *p )
 		++Ticker;
 		if ( State.pause ) {
 			--State.pause;
+		}
+		if ( ++Keyticks > 1000 ) {
+			Keyticks = 1000;
 		}
 		AddKey( K_HEARTBEAT, true );  // add only if buffewr is empty
 	}
