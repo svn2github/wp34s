@@ -1583,6 +1583,8 @@ static int process_catalogue(const keycode c) {
 	set_shift(SHIFT_N);
 	if (ch == '\0')
 		return STATE_UNFINISHED;
+	if (Keyticks >= 30)
+		State.eol = 0;	// keyboard search timed out
 	if (State.eol < 10)
 		Cmdline[State.eol++] = ch;
 
