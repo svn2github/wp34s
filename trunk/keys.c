@@ -1594,7 +1594,7 @@ search:
 		const char *cmd = catcmd(current_catalogue(dv), buf);
 		int i;
 
-		if (*cmd == COMPLEX_PREFIX || (*cmd == 0240 && State.catalogue == CATALOGUE_ALPHA))
+		if (*cmd == COMPLEX_PREFIX || (*cmd == (char)0240 && State.catalogue == CATALOGUE_ALPHA))
 			cmd++;
 		for (i=0; cmd[i] != '\0'; i++) {
 			unsigned char c2 = remap_chars(cmd[i]);
