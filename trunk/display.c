@@ -1202,7 +1202,7 @@ void display(void) {
 nostk:	show_flags();
 	if (!skip && State.runmode && !State.version) {
 		p = get_cmdline();
-		if (p == NULL)
+		if (p == NULL || cata)
 			format_reg(&regX, NULL);
 		else
 			disp_x(p);

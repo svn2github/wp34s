@@ -93,6 +93,8 @@ static void init_arg(const enum rarg base) {
 }
 
 static void init_cat(enum catalogues cat) {
+	if (cat == CATALOGUE_NONE)
+		State.eol = 0;
 	process_cmdline_set_lift();
 	State.catalogue = cat;
 	State.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
@@ -1508,7 +1510,6 @@ opcode current_catalogue(int n) {
 
 static int process_catalogue(const keycode c) {
 	unsigned int dv;
-	int last = -1;
 	unsigned char ch;
 	const int ctmax = current_catalogue_max();
 
@@ -1544,7 +1545,15 @@ static int process_catalogue(const keycode c) {
 			init_cat(CATALOGUE_NONE);
 			return STATE_UNFINISHED;
 
-		case K24:
+		case K24:			// backspace
+			if (State.eol > 0) {
+				if (--State.eol > 0)
+					break;
+				State.digval = 0;
+			} else
+				init_cat(CATALOGUE_NONE);
+			return STATE_UNFINISHED;
+
 		case K60:
 			init_cat(CATALOGUE_NONE);
 			return STATE_UNFINISHED;
@@ -1554,42 +1563,52 @@ static int process_catalogue(const keycode c) {
 				State.digval--;
 			else
 				State.digval = ctmax-1;
+			State.eol = 0;
 			return STATE_UNFINISHED;
 
 		case K50:
 			if ((int) ++State.digval >= ctmax)
 				State.digval = 0;
+			State.eol = 0;
 			return STATE_UNFINISHED;
 
 		default:
+			/* We've got a key press, map it to a character and try to
+			 * jump to the appropriate catalogue entry.
+			 */
+			ch = remap_chars(keycode_to_alpha(c, cur_shift()));
+			set_shift(SHIFT_N);
+			if (ch == '\0')
+				return STATE_UNFINISHED;
+			if (State.eol < 10)
+				Cmdline[State.eol++] = ch;
 			break;
 		}
 	}
 
-	/* We've got a key press, map it to a character and try to
-	 * jump to the appropriate catalogue entry.
-	 */
-	ch = remap_chars(keycode_to_alpha(c, cur_shift()));
-	set_shift(SHIFT_N);
-	if (ch == '\0')
-		return STATE_UNFINISHED;
+	/* Search for the current buffer in the catalogue */
+	Cmdline[State.eol] = '\0';
 	for (dv = 0; (int) dv < ctmax; dv++) {
 		char buf[16];
 		const char *cmd = catcmd(current_catalogue(dv), buf);
-		unsigned char c2 = *cmd;
+		int i;
 
-		if (c2 == COMPLEX_PREFIX || (c2 == 0240 && State.catalogue == CATALOGUE_ALPHA))
-			c2 = cmd[1];
-		c2 = remap_chars(c2);
-		last = -1;
-		if (ch <= c2) {
+		if (*cmd == COMPLEX_PREFIX || (*cmd == 0240 && State.catalogue == CATALOGUE_ALPHA))
+			cmd++;
+		for (i=0; cmd[i] != '\0'; i++) {
+			unsigned char c2 = remap_chars(cmd[i]);
+			if (c2 > Cmdline[i]) {
+				State.digval = dv;
+				return STATE_UNFINISHED;
+			} else if (c2 < Cmdline[i])
+				break;
+		}
+		if (cmd[i] == '\0') {
 			State.digval = dv;
 			return STATE_UNFINISHED;
 		}
 	}
-	if (last >= 0)
-		State.digval = last;
-
+	State.digval = ctmax-1;
 	return STATE_UNFINISHED;
 }
 
