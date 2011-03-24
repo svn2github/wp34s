@@ -162,3 +162,34 @@ complex Bessel functions Jn and In:
 	with  U(0) = 1 and U(k) = - U(k-1) [(z/2)^2] / [k(k+n)]
 	Finally, S is multiplied by  [(z/2)^n ] / Gamma(n+1)
 for In, leading minus in the U series is omitted.
+
+
+
+
+
+Normal distribution continued fraction:
+
+The normal CDF now is more precise, but full machine precision is not
+achieved. Especially in the tails (x >= 2) this could be done easily
+with a simple continued fraction expansion. Unoptimized pseudo-code:
+
+   n := 4 + 100 div (x-1)  ; see below
+   s := 1/n
+   for c := n-1 downto 1 do
+       s := c / (s + x)
+   s := s + x
+   cdf := pdf(x) / s
+
+I tried to determine a rule for the number of terms n, depending on x
+and the desired accuracy (d digits). As far as I can tell on a system
+working with usual binary double precision numbers (15-16 valid decimals)
+this value can be estimated for d = 8...16 digits quite exactly by
+
+   k >= 17 + d * (d-5) / 2   (the example uses k = 100 for d ~= 16)
+   n >= 4 + int(k / (x-1))
+
+This should return the value for s with d valid digits and an error
+near 0,2 ULP. With 39 internal digits on the 34s the desired 16-digit
+result can be evaluated without effort, since the required pdf and its
+exp(-0,5*x^2) can be evaluated with sufficient precision. All this is
+calculated in virtually no time.
