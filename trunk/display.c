@@ -146,6 +146,8 @@ static void set_dig(int base, char ch)
     {
         if (c & (1 << i))
             set_dot(base);
+		else
+			clr_dot(base);
         base++;
     }
 }
@@ -1025,6 +1027,7 @@ void display(void) {
 	const enum catalogues cata = State.catalogue;
 	int skip = 0;
 
+	State.temp_display = 0;  // force redisplay
 	reset_disp();
 
 	/* Turn INPUT on for alpha mode.  Turn down arrow on if we're

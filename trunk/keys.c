@@ -1838,7 +1838,7 @@ void process_keycode(int c) {
 		} else
 			stoprog(c);
 	}
-	if (!running() && c != STATE_IGNORE ) {
+	if (!running() && c != STATE_IGNORE && c != STATE_SST ) {
 		// The condition "running()" is still questionable. 
 		// Do we want the display updated while a program runs?
 		// A probable solution is a user controlable system flag

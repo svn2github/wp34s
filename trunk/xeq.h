@@ -683,6 +683,7 @@ struct _state {
 
 	unsigned int pause : 4;         // count down for programmed pause
 	unsigned int busy_blink : 1;    // short blink of PRN annunciator with every key
+	unsigned int temp_display : 1;  // temporary display (not X)
 
 };
 

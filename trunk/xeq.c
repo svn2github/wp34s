@@ -1214,6 +1214,7 @@ void cmdswap(unsigned int arg, enum rarg op) {
 void cmdview(unsigned int arg, enum rarg op) {
 	format_reg(get_reg_n(arg), NULL);
 	finish_display();
+	State.temp_display = 1;
 }
 
 
@@ -2182,7 +2183,8 @@ void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 
 void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (running()) {
-		display();
+		if (!State.temp_display)
+			display();
 #if defined(REALBUILD) || defined(WINGUI)
 		// decremented in the low level heartbeat
 		State.pause = 10;
