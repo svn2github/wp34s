@@ -1548,7 +1548,7 @@ static int process_catalogue(const keycode c) {
 		case K24:			// backspace
 			if (State.eol > 0) {
 				if (--State.eol > 0)
-					break;
+					goto search;
 				State.digval = 0;
 			} else
 				init_cat(CATALOGUE_NONE);
@@ -1573,20 +1573,21 @@ static int process_catalogue(const keycode c) {
 			return STATE_UNFINISHED;
 
 		default:
-			/* We've got a key press, map it to a character and try to
-			 * jump to the appropriate catalogue entry.
-			 */
-			ch = remap_chars(keycode_to_alpha(c, cur_shift()));
-			set_shift(SHIFT_N);
-			if (ch == '\0')
-				return STATE_UNFINISHED;
-			if (State.eol < 10)
-				Cmdline[State.eol++] = ch;
 			break;
 		}
 	}
+	/* We've got a key press, map it to a character and try to
+	 * jump to the appropriate catalogue entry.
+	 */
+	ch = remap_chars(keycode_to_alpha(c, cur_shift()));
+	set_shift(SHIFT_N);
+	if (ch == '\0')
+		return STATE_UNFINISHED;
+	if (State.eol < 10)
+		Cmdline[State.eol++] = ch;
 
 	/* Search for the current buffer in the catalogue */
+search:
 	Cmdline[State.eol] = '\0';
 	for (dv = 0; (int) dv < ctmax; dv++) {
 		char buf[16];
