@@ -1044,7 +1044,7 @@ void display(void) {
 	dot(RAD, !is_intmode() && tm == TRIG_RAD);
 
 	xset(buf, '\0', sizeof(buf));
-	if (State.cmplx) {
+	if (State.cmplx  && !cata) {
 		*bp++ = COMPLEX_PREFIX;
 		set_status(buf);
 	}
@@ -1108,12 +1108,14 @@ void display(void) {
 	} else if (cata) {
 		const opcode op = current_catalogue(State.digval);
 		char b2[16];
+		const char *p;
+
 		bp = scopy(bp, "\177\006\006");
-		bp = scopy(bp, catcmd(op, b2));
-		if (buf[0] == COMPLEX_PREFIX && buf[1] == COMPLEX_PREFIX)
-			set_status(buf+1);
-		else
-			set_status(buf);
+		p = catcmd(op, b2);
+		if (*p != COMPLEX_PREFIX && State.cmplx)
+			*bp++ = COMPLEX_PREFIX;
+		bp = scopy(bp, p);
+		set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
 			set_x(&CONSTANT(State.digval), NULL);
 			skip = 1;
