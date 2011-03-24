@@ -1589,7 +1589,7 @@ static int process_catalogue(const keycode c) {
 	/* Search for the current buffer in the catalogue */
 search:
 	Cmdline[State.eol] = '\0';
-	for (dv = 0; (int) dv < ctmax; dv++) {
+	for (dv = 0; dv < (unsigned int)ctmax; dv++) {
 		char buf[16];
 		const char *cmd = catcmd(current_catalogue(dv), buf);
 		int i;
@@ -1597,11 +1597,12 @@ search:
 		if (*cmd == COMPLEX_PREFIX || (*cmd == (char)0240 && State.catalogue == CATALOGUE_ALPHA))
 			cmd++;
 		for (i=0; cmd[i] != '\0'; i++) {
-			unsigned char c2 = remap_chars(cmd[i]);
-			if (c2 > Cmdline[i]) {
+			const unsigned char c = remap_chars(cmd[i]);
+			const unsigned char cl = 0xff&Cmdline[i];
+			if (c > cl) {
 				State.digval = dv;
 				return STATE_UNFINISHED;
-			} else if (c2 < Cmdline[i])
+			} else if (c < cl)
 				break;
 		}
 		if (cmd[i] == '\0') {
