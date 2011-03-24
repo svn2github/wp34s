@@ -89,7 +89,7 @@ static s_opcode catalogue[] = {
 	RARGCMD(RARG_ALSR,	"\240SR")
 	RARGCMD(RARG_ASTO,	"\240STO")
 	NILIC(OP_ALPHATIME,	"\240TIME")
-//	NILIC(OP_AVIEW,		"\240VIEW")
+	NILIC(OP_VIEWALPHA,	"\240VIEW")
 	DYA(OP_BETA,		"\241")
 	MON(OP_GAMMA,		"\202")
 	DYA(OP_DTDIF,		"\203DAYS")
@@ -273,7 +273,7 @@ static s_opcode int_catalogue[] = {
 	RARGCMD(RARG_ALSL,	"\240SL")
 	RARGCMD(RARG_ALSR,	"\240SR")
 	RARGCMD(RARG_ASTO,	"\240STO")
-//	NILIC(OP_AVIEW,		"\240VIEW")
+	NILIC(OP_VIEWALPHA,	"\240VIEW")
 #ifdef INCLUDE_MULADD
 	TRI(OP_MULADD,		"\034+")
 #endif
@@ -402,7 +402,7 @@ static s_opcode alpha_catalogue[] = {
 	RARGCMD(RARG_ALSR,	"\240SR")
 	NILIC(OP_ALPHATIME,	"\240TIME")
 	NILIC(OP_VERSION,	"VERS")
-//	NILIC(OP_AVIEW,		"\240VIEW")
+	NILIC(OP_VIEWALPHA,	"\240VIEW")
 };
 
 static s_opcode conv_catalogue[] = {
