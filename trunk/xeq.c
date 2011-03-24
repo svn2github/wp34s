@@ -1213,7 +1213,7 @@ void cmdswap(unsigned int arg, enum rarg op) {
  */
 void cmdview(unsigned int arg, enum rarg op) {
 	format_reg(get_reg_n(arg), NULL);
-	display();
+	finish_display();
 }
 
 
