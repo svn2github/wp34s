@@ -1546,7 +1546,7 @@ static int process_catalogue(const keycode c) {
 			return STATE_UNFINISHED;
 
 		case K24:			// backspace
-			if (State.eol > 0) {
+			if (State.eol > 0 && Keyticks < 30) {
 				if (--State.eol > 0)
 					goto search;
 				State.digval = 0;
