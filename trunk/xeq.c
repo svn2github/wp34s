@@ -2972,16 +2972,11 @@ static int compare(s_opcode a1, s_opcode a2, int cata) {
 	char b1[16], b2[16];
 	const unsigned char *s1, *s2;
 	int i;
-	const int cat_alpha = cata == CATALOGUE_ALPHA;
 
 	xset(b1, 0, sizeof(b1));
 	xset(b2, 0, sizeof(b2));
 	s1 = (unsigned char *)catcmd(a1, b1);
 	s2 = (unsigned char *)catcmd(a2, b2);
-	if (cat_alpha) {
-		if (*s1 == 0240) s1++;
-		if (*s2 == 0240) s2++;
-	}
 	if (*s1 == COMPLEX_PREFIX) s1++;
 	if (*s2 == COMPLEX_PREFIX) s2++;
 

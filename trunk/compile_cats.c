@@ -606,7 +606,6 @@ void unpack(const char *b, int *u) {
 	*u = -1;
 }
 
-static int g_ignorealpha = 0;
 static int compare_cat(const void *v1, const void *v2) {
 	const s_opcode c1 = *(const s_opcode *)v1;
 	const s_opcode c2 = *(const s_opcode *)v2;
@@ -619,11 +618,6 @@ static int compare_cat(const void *v1, const void *v2) {
 		b1[i] = b2[i] = 0;
 	p1 = prt(c1, b1);
 	p2 = prt(c2, b2);
-
-	if (g_ignorealpha) {
-		if (*p1 == '\240') p1++;
-		if (*p2 == '\240') p2++;
-	}
 
 	unpack(p1, u1);
 	unpack(p2, u2);
@@ -694,9 +688,7 @@ int main(int argc, char *argv[]) {
 	CAT(test_catalogue);
 	CAT(prog_catalogue);
 	CAT(mode_catalogue);
-	g_ignorealpha = 1;
 	CAT(alpha_catalogue);
-	g_ignorealpha = 0;
 	CAT(conv_catalogue);
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CAT(internal_catalogue);
