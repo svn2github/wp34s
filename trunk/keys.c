@@ -1587,8 +1587,8 @@ static int process_catalogue(const keycode c) {
 		State.eol = 0;	// keyboard search timed out
 	if (State.eol < 10)
 		Cmdline[State.eol++] = ch;
-
 	/* Search for the current buffer in the catalogue */
+
 search:
 	Cmdline[State.eol] = '\0';
 	for (dv = 0; dv < (unsigned int)ctmax; dv++) {
@@ -1607,7 +1607,7 @@ search:
 			} else if (c < cl)
 				break;
 		}
-		if (cmd[i] == '\0') {
+		if (Cmdline[i] == '\0') {
 			State.digval = dv;
 			return STATE_UNFINISHED;
 		}
