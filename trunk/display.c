@@ -1027,7 +1027,6 @@ void display(void) {
 	const enum catalogues cata = State.catalogue;
 	int skip = 0;
 
-	State.temp_display = 0;  // force redisplay
 	reset_disp();
 
 	/* Turn INPUT on for alpha mode.  Turn down arrow on if we're
@@ -1208,7 +1207,7 @@ nostk:	show_flags();
 	if (!skip && State.runmode && !State.version) {
 		p = get_cmdline();
 		if (p == NULL || cata)
-			format_reg(&regX, NULL);
+			format_reg(get_reg_n(State.show_register), NULL);
 		else
 			disp_x(p);
 	}
@@ -1217,6 +1216,7 @@ nostk:	show_flags();
 skpall:	finish_display();
 	State.version = 0;
 	State.smode = SDISP_NORMAL;
+	State.show_register = regX_idx;
 }
 
 

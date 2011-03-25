@@ -1212,9 +1212,9 @@ void cmdswap(unsigned int arg, enum rarg op) {
 /* View a specified register
  */
 void cmdview(unsigned int arg, enum rarg op) {
-	format_reg(get_reg_n(arg), NULL);
-	finish_display();
-	State.temp_display = 1;
+	State.show_register = arg;
+	display();
+	State.show_register = arg;
 }
 
 
@@ -2183,8 +2183,6 @@ void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 
 void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (running()) {
-		if (!State.temp_display)
-			display();
 #if defined(REALBUILD) || defined(WINGUI)
 		// decremented in the low level heartbeat
 		State.pause = 10;
@@ -2742,6 +2740,7 @@ void reset_volatile_state(void) {
 	State.implicit_rtn = 0;
 
 	State.smode = SDISP_NORMAL;
+	State.show_register = regX_idx;
 }
 
 

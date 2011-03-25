@@ -417,6 +417,8 @@ void show_flags(void) {
 		PRINTF("shft = %u", cur_shift());
 		MOVE(40, FLAG_BASE+1);
 		PRINTF("trig = %u", State.trigmode);
+                MOVE(60, FLAG_BASE+1);
+                PRINTF("r = %u", State.show_register);
 //		MOVE(60, FLAG_BASE+1);
 //		PRINTF("apos = %u", State.alpha_pos);
 		MOVE(10, FLAG_BASE+2);
