@@ -298,10 +298,10 @@ void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_LINEAR);
 
 	decNumberDivide(&t, &sx, &N, Ctx);
-	decimal64FromNumber(y, &t, ctx64);
+	decimal64FromNumber(x, &t, ctx64);
 
 	decNumberDivide(&t, &sy, &N, Ctx);
-	decimal64FromNumber(x, &t, ctx64);
+	decimal64FromNumber(y, &t, ctx64);
 }
 
 
