@@ -659,26 +659,35 @@ static void dist_two_param(decNumber *a, decNumber *b) {
 }
 
 
+// Normal(0,1) PDF
+// 1/sqrt(2 PI) . exp(-x^2/2)
+static decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
+	decNumber r, t;
+
+	decNumberSquare(&t, x, ctx);
+	decNumberMultiply(&r, &t, &const_0_5, ctx);
+	decNumberMinus(&t, &r, ctx);
+	decNumberExp(&r, &t, ctx);
+	return decNumberMultiply(q, &r, &const_recipsqrt2PI, ctx);
+}
+
 // Normal(0,1) CDF function using the Error Function and a transformation
 decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
-	decNumber t, u, v;
-	unsigned int i;
+	decNumber t, u;
 
 	decNumberAdd(&u, x, &const_10, ctx);
 	if (decNumberIsNegative(&u)) {
-		// Avoid a 1 + (almost) -1.
-		decNumberMinus(&v, x, ctx);
-		decNumberAdd(&u, &v, &const_Q_65, ctx);
-
-		for (i=4; i>0; i--) {
-			decNumberDivide(&t, small_int(i), &u, ctx);
-			decNumberAdd(&u, &v, &t, ctx);
+		// For big negative arguments, use a continued fraction expansion
+		int n = 21;
+		decNumberRecip(&t, small_int(n), ctx);
+		while (--n > 0) {
+			decNumberAdd(&u, x, &t, ctx);
+			decNumberDivide(&t, small_int(n), &u, ctx);
 		}
-		decNumberMultiply(&t, &v, x, ctx);
-		decNumberMultiply(&v, &t, &const_0_5, ctx);
-		decNumberExp(&t, &v, ctx);
-		decNumberDivide(&v, &t, &u, ctx);
-		return decNumberMultiply(q, &v, &const_Q_adj, ctx);
+		decNumberAdd(&u, &t, x, ctx);
+		pdf_Q(&t, x, ctx);
+		decNumberDivide(q, &t, &u, ctx);
+		return decNumberMinus(q, q, ctx);
 	} else	{
 		decNumberMultiply(&t, x, &const_root2on2, ctx);
 		decNumberERF(&u, &t, ctx);
