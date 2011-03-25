@@ -200,3 +200,35 @@ near 0,2 ULP. With 39 internal digits on the 34s the desired 16-digit
 result can be evaluated without effort, since the required pdf and its
 exp(-0,5*x^2) can be evaluated with sufficient precision. All this is
 calculated in virtually no time.
+
+
+
+
+
+Numeric Differentiation
+
+order 4 equation:
+
+df/dx   = (1/12h).[ f(x-2h) - 8.f(x-h) + 8.f(x+h) - f(x+2h) ] + O(h^4)
+d2f/dx2 = (1/12h^2).[ - f(x-2h) + 16.f(x-h) - 30.f(x) +16.f(x+h) - f(x+2h) ] + O(h^4)
+
+exact for polynomials up to quartics.
+
+
+order 6 equation:
+
+f '(x) ~ [ - f(x-3h) + 9 f(x-2h) - 45 f(x-h) + 45 f(x+h) - 9 f(x+2h) + f(x+3h) ] / ( 60 h )
+f ''(x) ~ [ 2 f(x-3h) - 27 f(x-2h) + 270 f(x-h) - 490 f(x) + 270 f(x+h) - 27 f(x+2h) + 2 f(x+3h) ] / ( 180 h^2 )
+
+exact for polynomials of degree < 7
+
+
+order 10 equation:
+
+df/dx = (1/2520.h).[ 2100.( f1 - f-1 ) - 600.( f2 - f-2 ) + 150.( f3 - f-3 ) - 25.( f4 - f-4 ) + 2.( f5 - f-5 ) ] + O(h^10)
+d2f/dx2 = (1/25200.h^2).[ -73766 f0 + 42000.( f1 + f-1 ) - 6000.( f2 + f-2 ) + 1000.( f3 + f-3 ) - 125.( f4 + f-4 ) + 8.( f5 + f-5 ) ] + O(h^10)
+
+where f(x+kh) = fk
+
+exact for polynomials of degree < 11
+
