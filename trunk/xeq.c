@@ -2183,6 +2183,7 @@ void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 
 void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (running()) {
+		display();
 #if defined(REALBUILD) || defined(WINGUI)
 		// decremented in the low level heartbeat
 		State.pause = 10;
