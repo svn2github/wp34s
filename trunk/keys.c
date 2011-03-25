@@ -107,7 +107,6 @@ static void init_state(void) {
 	xset(&s, 0, sizeof(s));
 
 #define C(n)	s.n = State.n
-	// C(runmode);
 #ifndef REALBUILD
 	C(trace);
 #endif
@@ -130,7 +129,6 @@ static void init_state(void) {
         C(nothousands);
         C(leadzero);
         C(fract);
-	C(alphas);
 #undef C
 	s.shifts = SHIFT_N;
 	s.test = TST_NONE;
