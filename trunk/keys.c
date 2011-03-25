@@ -134,6 +134,7 @@ static void init_state(void) {
 #undef C
 	s.shifts = SHIFT_N;
 	s.test = TST_NONE;
+	s.show_register = regX_idx;
 
         s.magic = MAGIC_MARKER;
 
@@ -1838,7 +1839,7 @@ void process_keycode(int c) {
 		} else
 			stoprog(c);
 	}
-	if (!running() && c != STATE_IGNORE && c != STATE_SST ) {
+	if (!running() && c != STATE_IGNORE) {
 		// The condition "running()" is still questionable. 
 		// Do we want the display updated while a program runs?
 		// A probable solution is a user controlable system flag

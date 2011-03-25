@@ -2740,7 +2740,6 @@ void reset_volatile_state(void) {
 	State.implicit_rtn = 0;
 
 	State.smode = SDISP_NORMAL;
-	State.show_register = regX_idx;
 }
 
 
