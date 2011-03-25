@@ -2705,7 +2705,7 @@ static void rargs(const opcode op) {
 		if (lim > 128 && ind)		// put the top bit back in
 			arg |= RARG_IND;
 	}
-	if (arg >= lim)
+	if (arg >= lim || (arg == 0 && argcmds[cmd].notzero))
 		err(ind?ERR_RANGE:ERR_PROG_BAD);
 	else
 		(argcmds[cmd].f)(arg, (enum rarg)cmd);
