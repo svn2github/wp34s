@@ -82,6 +82,7 @@
 #define FCpS(f)		xRARG(FCS, f)
 #define FCpC(f)		xRARG(FCC, f)
 #define FCpF(f)		xRARG(FCF, f)
+#define PAUSE(f)	xRARG(PAUSE, f)
 
 #define SLVI(f)		xRARG(INISOLVE, f)
 #define SLVS(f)		xRARG(SOLVESTEP, f)
@@ -102,7 +103,6 @@
 #define DECM		NILADIC(FLOAT)
 #define CLSTK		NILADIC(CLSTK)
 #define STOP		NILADIC(RS)
-#define PAUSE		NILADIC(PAUSE)
 #define TST_INFINITE	NILADIC(XisInf)
 #define TST_NaN		NILADIC(XisNaN)
 #define TST_SPECIAL	NILADIC(XisSpecial)

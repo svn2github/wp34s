@@ -330,7 +330,6 @@ const struct niladic niladics[] = {
 	FUNC0(OP_RADCOM,	&op_radixcom,		"RDX,")
 	FUNC0(OP_THOUS_ON,	&op_thousands_on,	"E3ON")
 	FUNC0(OP_THOUS_OFF,	&op_thousands_off,	"E3OFF")
-	FUNC0(OP_PAUSE,		&op_pause,		"PAUSE")
 	FUNC0(OP_2COMP,		&op_2comp,		"2COMPL")
 	FUNC0(OP_1COMP,		&op_1comp,		"1COMPL")
 	FUNC0(OP_UNSIGNED,	&op_unsigned,		"UNSIGN")
@@ -507,6 +506,7 @@ const struct argcmd argcmds[] = {
 
 	CMD(RARG_INISOLVE,	&solver,	TOPREALREG-10+1,	"SLVI")
 	CMD(RARG_SOLVESTEP,	&solver,	TOPREALREG-10+1,	"SLVS")
+	CMD(RARG_PAUSE,		&op_pause,	100,			"PAUSE")
 #ifdef REALBUILD
 	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CNTRST")
 #endif

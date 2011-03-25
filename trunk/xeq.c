@@ -2197,17 +2197,19 @@ void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	State.nothousands = 0;
 }
 
-void op_pause(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_pause(unsigned int arg, enum rarg op) {
 	if (running()) {
 		display();
 #if defined(REALBUILD) || defined(WINGUI)
 		// decremented in the low level heartbeat
-		State.pause = 10;
+		State.pause = arg;
 #else
 #ifdef WIN32
 #pragma warning(disable:4996)
+		sleep(arg/10);
+#else
+		usleep(arg * 100000);
 #endif
-		sleep(1);
 #endif
 	}
 }

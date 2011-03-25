@@ -526,7 +526,7 @@ static int process_h_shifted(const keycode c) {
 	case K54:	return OP_DYA | OP_PERSB;
 
 	case K60:	set_smode(SDISP_SHOW);		break;
-	case K61:	return OP_NIL | OP_PAUSE;
+	case K61:	init_arg(RARG_PAUSE);		break;
 	case K62:
 		if (State.fraccomma)
 			return OP_NIL | OP_RADDOT;
