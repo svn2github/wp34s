@@ -1840,9 +1840,6 @@ void process_keycode(int c) {
 			stoprog(c);
 	}
 	if (!running() && c != STATE_IGNORE) {
-		// The condition "running()" is still questionable. 
-		// Do we want the display updated while a program runs?
-		// A probable solution is a user controlable system flag
 		display();
 	}
 }
