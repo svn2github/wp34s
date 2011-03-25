@@ -446,8 +446,8 @@ enum rarg {
 	RARG_DSZ, RARG_ISZ,
 	RARG_DEC, RARG_INC,
 
-	/* These 5 must be sequential and in the same order as the DBL_ commands */
-	RARG_LBL, RARG_XEQ, RARG_GTO,
+	/* These 8 must be sequential and in the same order as the DBL_ commands */
+	RARG_LBL, RARG_LBLP, RARG_XEQ, RARG_GTO,
 	RARG_SUM, RARG_PROD, RARG_SOLVE, RARG_INTG,
 
 	RARG_FIX, RARG_SCI, RARG_ENG, RARG_DISP,
@@ -491,7 +491,7 @@ enum specials {
 
 // Double sized instructions
 enum multiops {
-	DBL_LBL=0, DBL_XEQ, DBL_GTO,
+	DBL_LBL=0, DBL_LBLP, DBL_XEQ, DBL_GTO,
 	DBL_SUM, DBL_PROD, DBL_SOLVE, DBL_INTG,
 #ifdef MULTI_ALPHA
 	DBL_ALPHA,
@@ -908,6 +908,8 @@ extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);
 extern void cmdgto(unsigned int arg, enum rarg op);
 extern void cmdmultigto(const opcode o, enum multiops mopr);
+extern void cmdlblp(unsigned int arg, enum rarg op);
+extern void cmdmultilblp(const opcode o, enum multiops mopr);
 extern void xromarg(unsigned int arg, enum rarg op);
 extern void multixromarg(const opcode o, enum multiops mopr);
 extern void cmddisp(unsigned int arg, enum rarg op);

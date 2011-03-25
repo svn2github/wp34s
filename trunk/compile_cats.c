@@ -356,6 +356,7 @@ static s_opcode internal_catalogue[] = {
 	NILIC(OP_RTNp1,		"RTN+1")
 	NILIC(OP_XisSpecial,	"SPEC?")
 	NILIC(OP_GSBuser,	"XEQUSR")
+	RARGCMD(RARG_LBLP,	"LBL?")
 	RARGCMD(RARG_ERROR,	"ERR")
 };
 #endif

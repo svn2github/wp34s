@@ -1335,8 +1335,18 @@ static void cmdgtocommon(int gsb, unsigned int pc) {
 		gsbgto(pc, gsb, oldpc);
 }
 
+void cmdlblp(unsigned int arg, enum rarg op) {
+	fin_tst(find_label_from(0, arg, 1) != 0);
+}
+
 void cmdgto(unsigned int arg, enum rarg op) {
 	cmdgtocommon(op != RARG_GTO, find_label_from(state_pc(), arg, 0));
+}
+
+void cmdmultilblp(const opcode o, enum multiops mopr) {
+	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
+	unsigned int lbl = find_opcode_from(0, dest, 1);
+	fin_tst(lbl != 0);
 }
 
 void cmdmultigto(const opcode o, enum multiops mopr) {

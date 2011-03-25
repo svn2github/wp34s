@@ -463,6 +463,7 @@ const struct argcmd argcmds[] = {
 	CMDstk(RARG_DEC,	&cmdlincdec,	NUMREG,			"DEC")
 	CMDstk(RARG_INC,	&cmdlincdec,	NUMREG,			"INC")
 	CMDnoI(RARG_LBL,	NULL,		NUMLBL,			"LBL")
+	CMD(RARG_LBLP,		&cmdlblp,	NUMLBL,			"LBL?")
 	CMD(RARG_XEQ,		&cmdgto,	NUMLBL,			"XEQ")
 	CMD(RARG_GTO,		&cmdgto,	NUMLBL,			"GTO")
 	CMD(RARG_SUM,		&xromarg,	NUMLBL,			"\221")
@@ -531,6 +532,7 @@ const struct multicmd multicmds[] = {
 	{ func, nm },
 #endif
 	CMD(DBL_LBL,	NULL,		"LBL")
+	CMD(DBL_LBLP,	&cmdmultilblp,	"LBL?")
 	CMD(DBL_XEQ,	&cmdmultigto,	"XEQ")
 	CMD(DBL_GTO,	&cmdmultigto,	"GTO")
 	CMD(DBL_SUM,	&multixromarg,	"\221")
