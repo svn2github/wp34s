@@ -107,7 +107,7 @@ static void init_state(void) {
 	xset(&s, 0, sizeof(s));
 
 #define C(n)	s.n = State.n
-	C(runmode);
+	// C(runmode);
 #ifndef REALBUILD
 	C(trace);
 #endif
@@ -135,6 +135,7 @@ static void init_state(void) {
 	s.shifts = SHIFT_N;
 	s.test = TST_NONE;
 	s.show_register = regX_idx;
+	s.runmode = 1;
 
         s.magic = MAGIC_MARKER;
 
@@ -1709,9 +1710,9 @@ static int process(const int c) {
 
 	if (running()) {
 		/*
-		 *  Abort a running program with R/S
+		 *  Abort a running program with R/S or EXIT
 		 */
-		if (c == K63) {
+		if (c == K60 || c == K63) {
 			set_running_off();
 			return STATE_UNFINISHED;
 		}
