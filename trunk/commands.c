@@ -387,24 +387,23 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 
 const struct argcmd argcmds[] = {
 #ifdef COMPILE_CATALOGUES
-#define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
-	{ PTR, limit, ind, 0, stk, cpx, nm },
+#define allCMD(name, func, limit, nm, ind, stk, cpx)					\
+	{ PTR, limit, ind, stk, cpx, nm },
 #elif DEBUG
-#define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
-	{ name, func, limit, ind, nz, stk, cpx, nm },
+#define allCMD(name, func, limit, nm, ind, stk, cpx)					\
+	{ name, func, limit, ind, stk, cpx, nm },
 #else
-#define allCMD(name, func, limit, nm, ind, nz, stk, cpx)					\
-	{ func, limit, ind, nz, stk, cpx, nm },
+#define allCMD(name, func, limit, nm, ind, stk, cpx)					\
+	{ func, limit, ind, stk, cpx, nm },
 #endif
-#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0)
-#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 1, 0)
-#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 1, 1)
-#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0)
-#define CMDnoZ(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0)
+#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0)
+#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0)
+#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1)
+#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0)
 	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
 	CMDnoI(RARG_CONST_CMPLX,&cmdconstcmplx,	NUM_CONSTS,		"\024CNST")
 	CMD(RARG_CONST_INT,	&cmdconstint,	NUM_CONSTS_INT,		"iC")
-	CMDnoZ(RARG_ERROR,	&cmderr,	MAX_ERROR,		"ERR")
+	CMD(RARG_ERROR,		&cmderr,	MAX_ERROR,		"ERR")
 	CMDstk(RARG_STO, 	&cmdsto,	NUMREG,			"STO")
 	CMDstk(RARG_STO_PL, 	&cmdsto,	NUMREG,			"STO+")
 	CMDstk(RARG_STO_MI, 	&cmdsto,	NUMREG,			"STO-")
@@ -439,10 +438,10 @@ const struct argcmd argcmds[] = {
 	CMDstk(RARG_ASTO,	&alpha_sto,	NUMREG,			"\240STO")
 	CMDstk(RARG_ARCL,	&alpha_rcl,	NUMREG,			"\240RCL")
 	CMDstk(RARG_AIP,	&alpha_ip,	NUMREG,			"\240IP")
-	CMDnoZ(RARG_ALRL,	&alpha_shift_l,	NUMALPHA,		"\240RL")
-	CMDnoZ(RARG_ALRR,	&alpha_rot_r,	NUMALPHA,		"\240RR")
-	CMDnoZ(RARG_ALSL,	&alpha_shift_l,	NUMALPHA+1,		"\240SL")
-	CMDnoZ(RARG_ALSR,	&alpha_shift_r,	NUMALPHA+1,		"\240SR")
+	CMD(RARG_ALRL,		&alpha_shift_l,	NUMALPHA,		"\240RL")
+	CMD(RARG_ALRR,		&alpha_rot_r,	NUMALPHA,		"\240RR")
+	CMD(RARG_ALSL,		&alpha_shift_l,	NUMALPHA+1,		"\240SL")
+	CMD(RARG_ALSR,		&alpha_shift_r,	NUMALPHA+1,		"\240SR")
 	CMDstk(RARG_TEST_EQ,	&cmdtest,	NUMREG,			"x=?")
 	CMDstk(RARG_TEST_NE,	&cmdtest,	NUMREG,			"x\013?")
 	CMDstk(RARG_TEST_APX,	&cmdtest,	NUMREG,			"x\035?")
@@ -453,8 +452,8 @@ const struct argcmd argcmds[] = {
 	CMDcstk(RARG_TEST_ZEQ,	&cmdztest,	NUMREG,			"\024x=?")
 	CMDcstk(RARG_TEST_ZNE,	&cmdztest,	NUMREG,			"\024x\013?")
 //	CMDcstk(RARG_TEST_ZAPX,	&cmdztest,	NUMREG,			"\024x~?")
-	CMDnoZ(RARG_SKIP,	&cmdskip,	100,			"SKIP")
-	CMDnoZ(RARG_BACK,	&cmdback,	100,			"BACK")
+	CMD(RARG_SKIP,		&cmdskip,	100,			"SKIP")
+	CMD(RARG_BACK,		&cmdback,	100,			"BACK")
 	CMDstk(RARG_DSE,	&cmdloop,	NUMREG,			"DSE")
 	CMDstk(RARG_ISG,	&cmdloop,	NUMREG,			"ISG")
 	CMDstk(RARG_DSZ,	&cmdloopz,	NUMREG,			"DSZ")
@@ -486,13 +485,13 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_FCS,		&cmdflag,	NUMFLG,			"FC?S")
 	CMD(RARG_FCF,		&cmdflag,	NUMFLG,			"FC?F")
 	CMD(RARG_WS,		&intws,		MAX_WORD_SIZE+1,	"WSIZE")
-	CMDnoZ(RARG_RL,		&introt,	MAX_WORD_SIZE,		"RL")
-	CMDnoZ(RARG_RR,		&introt,	MAX_WORD_SIZE,		"RR")
-	CMDnoZ(RARG_RLC,	&introt,	MAX_WORD_SIZE+1,	"RLC")
-	CMDnoZ(RARG_RRC,	&introt,	MAX_WORD_SIZE+1,	"RRC")
-	CMDnoZ(RARG_SL,		&introt,	MAX_WORD_SIZE+1,	"SL")
-	CMDnoZ(RARG_SR,		&introt,	MAX_WORD_SIZE+1,	"SR")
-	CMDnoZ(RARG_ASR,	&introt,	MAX_WORD_SIZE+1,	"ASR")
+	CMD(RARG_RL,		&introt,	MAX_WORD_SIZE,		"RL")
+	CMD(RARG_RR,		&introt,	MAX_WORD_SIZE,		"RR")
+	CMD(RARG_RLC,		&introt,	MAX_WORD_SIZE+1,	"RLC")
+	CMD(RARG_RRC,		&introt,	MAX_WORD_SIZE+1,	"RRC")
+	CMD(RARG_SL,		&introt,	MAX_WORD_SIZE+1,	"SL")
+	CMD(RARG_SR,		&introt,	MAX_WORD_SIZE+1,	"SR")
+	CMD(RARG_ASR,		&introt,	MAX_WORD_SIZE+1,	"ASR")
 	CMD(RARG_SB,		&intbits,	MAX_WORD_SIZE,		"SB")
 	CMD(RARG_CB,		&intbits,	MAX_WORD_SIZE,		"CB")
 	CMD(RARG_FB,		&intbits,	MAX_WORD_SIZE,		"FB")
@@ -511,7 +510,6 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CNTRST")
 #endif
 
-#undef CMDnoZ
 #undef CMDnoI
 #undef CMDstk
 #undef CMD

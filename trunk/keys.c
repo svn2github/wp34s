@@ -1069,8 +1069,6 @@ static int arg_digit(int n) {
 	} else {
 		if ((int) val >= mx)
 			return STATE_UNFINISHED;
-		if (argcmds[base].notzero && val == 0 && !State.ind)
-			return STATE_UNFINISHED;
 	}
 	State.digval = val;
 	State.numdigit++;

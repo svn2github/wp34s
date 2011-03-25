@@ -132,7 +132,6 @@ struct argcmd {
 	void (*f)(unsigned int, enum rarg);
 	unsigned char lim;
 	unsigned int indirectokay:1;
-	unsigned int notzero:1;
 	unsigned int stckreg:1;
 	unsigned int cmplx:1;
 	const char cmd[NAME_LEN];
