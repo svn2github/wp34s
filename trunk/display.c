@@ -37,7 +37,7 @@ static void set_status_right(const char *);
 static const char S_SURE[] = "Sure?";
 
 static const char S7_ERROR[] = "Error";		/* Default lower line error display */
-static const char S7_NaN[] = "NOt NUMmerIc";	/* Displaying NaN in lower line */
+static const char S7_NaN[] = "not nuMmerIc";	/* Displaying NaN in lower line */
 static const char S7_INF[] = "infinity";	/* Displaying infinity in lower line */
 
 static const char S7_STEP[] = " Step ";		/* Step marker in program mode (lower line) */
