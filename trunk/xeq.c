@@ -1351,7 +1351,7 @@ void cmdmultilblp(const opcode o, enum multiops mopr) {
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	unsigned int lbl = find_opcode_from(state_pc(), dest, 0);
+	unsigned int lbl = find_opcode_from(0, dest, 0);
 	cmdgtocommon(mopr != DBL_GTO, lbl);
 }
 
@@ -1373,7 +1373,7 @@ void xromarg(unsigned int arg, enum rarg op) {
 
 void multixromarg(const opcode o, enum multiops mopr) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	unsigned int lbl = find_opcode_from(state_pc(), dest, 0);
+	unsigned int lbl = find_opcode_from(0, dest, 0);
 	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), lbl);
 }
 
