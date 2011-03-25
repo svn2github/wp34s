@@ -617,7 +617,6 @@ void CHP20b_cDlg::OnSysCommand(UINT nID, LPARAM lParam)
     if (m_bHideTitlebar)
       if (nID == SC_KEYMENU)
         return;
-
     CDialog        ::OnSysCommand(nID, lParam);
   }
 }
@@ -1429,8 +1428,7 @@ bool CHP20b_cDlg::ReadRegistry()
                MF_BYCOMMAND | MF_CHECKED);
     else
       pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, 
-               MF_BYCOMMAND | 
-               MF_UNCHECKED);
+               MF_BYCOMMAND | MF_UNCHECKED);
 
     return true;
   }
@@ -1449,11 +1447,9 @@ void CHP20b_cDlg::OnHP20bShowcaptionMenu()
   CMenu   *pMenu = GetMenu();
 
   if (m_bHideTitlebar)
-    pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, MF_BYCOMMAND
-             | MF_CHECKED);
+    pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, MF_BYCOMMAND | MF_CHECKED);
   else
-    pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, MF_BYCOMMAND
-             | MF_UNCHECKED);
+    pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, MF_BYCOMMAND | MF_UNCHECKED);
 
   AfxMessageBox(
 #ifdef wp34s
@@ -1474,7 +1470,9 @@ void CHP20b_cDlg::OnHP20bShowcaptionMenu()
 //
 void CHP20b_cDlg::OnMove(int x, int y)
 { 
-  CDialog        ::OnMove(x, y);
+  CDialog::OnMove(x, y);
+#if 0
+  // Removed by MvC: breaks minimize/restore from taskbar
   if (m_bHideTitlebar) {
     static int  oldYPos = 1;
 
@@ -1484,6 +1482,7 @@ void CHP20b_cDlg::OnMove(int x, int y)
     }
     oldYPos = y;
   }
+#endif
 }
 void CHP20b_cDlg::OnCalculatorAssignasdefaulthpcalculator()
 { 
