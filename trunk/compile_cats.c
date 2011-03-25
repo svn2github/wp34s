@@ -312,6 +312,8 @@ static s_opcode test_catalogue[] = {
 	RARGCMD(RARG_TEST_GE,	"x>=?")
 	RARGCMD(RARG_TEST_GT,	"x>?")
 //	RARGCMD(RARG_TEST_ZAPX,	"cx~?")
+
+	RARGCMD(RARG_LBLP,	"LBL?")
 };
 
 static s_opcode prog_catalogue[] = {
@@ -356,7 +358,6 @@ static s_opcode internal_catalogue[] = {
 	NILIC(OP_RTNp1,		"RTN+1")
 	NILIC(OP_XisSpecial,	"SPEC?")
 	NILIC(OP_GSBuser,	"XEQUSR")
-	RARGCMD(RARG_LBLP,	"LBL?")
 	RARGCMD(RARG_ERROR,	"ERR")
 };
 #endif
