@@ -175,11 +175,17 @@ static void error(const char *fmt, ...) {
 /* Check if a value is bogus and error out if so.
  */
 static int check_special(const decNumber *x) {
-	if (decNumberIsSpecial(x)) {
+	decNumber y;
+	decimal64 z;
+
+	decimal64FromNumber(&z, x, Ctx64);
+	decimal64ToNumber(&z, &y);
+
+	if (decNumberIsSpecial(&y)) {
 		if (! get_user_flag(NAN_FLAG)) {
-			if (decNumberIsNaN(x))
+			if (decNumberIsNaN(&y))
 				err(ERR_DOMAIN);
-			else if (decNumberIsNegative(x))
+			else if (decNumberIsNegative(&y))
 				err(ERR_MINFINITY);
 			else
 				err(ERR_INFINITY);
