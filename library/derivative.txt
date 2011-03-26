@@ -1,0 +1,169 @@
+This file is part of 34S.
+
+34S is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+34S is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+
+This code is the source for the internal integration routine.
+
+The only change of note is the call to the user's routine is done as XEQ 00
+instead of XEQUSR.
+
+
+	001: LBL B
+	002: SPEC?
+	003: GTO 09
+	004: STO 03
+	005: LBL?'deltaX'
+	007: SKIP 04
+	008: EEX
+	009: +/-
+	010: 6
+	011: SKIP 02
+	012: FILL
+	013: XEQ'deltaX'
+	015: STO 04
+	016: 1
+	017: XEQ 06
+	018: GTO 09
+	019: STO 01			// f(x+h) - f(x-h)
+	020: 2
+	021: XEQ 06
+	022: GTO 09
+	023: STO 02			// f(x+2h) - f(x-2h)
+	024: 3
+	025: XEQ 06			// f(x+3h)-f(x-3h)
+	026: GTO 08			// Provide a four ponint estimate
+	027: 4				// Calculate a six point estimate
+	028: 5
+	029: RCL* 01
+	030: 9
+	031: RCL* 02
+	032: -
+	033: +
+	034: 6
+	035: 0
+	036: RCL* 04
+	037: /
+	038: x<> 01			// Save the six point estimate
+	039: 2
+	040: 1
+	041: mbar->Pa			// *100
+	042: *
+	043: 6
+	044: mbar->Pa
+	045: RCL* 02
+	046: -
+	047: 1
+	048: 5
+	049: 0
+	050: RCL* 00
+	051: +
+	052: STO 02			// Ten point estimate accumulator
+	053: 4
+	054: XEQ 06			// f(x+4h) - f(x-4h)
+	055: GTO 07
+	056: 2
+	057: 5
+	058: *
+	059: STO- 02
+	060: 5
+	061: XEQ 06
+	062: GTO 07
+	063: RCL+ 00
+	064: RCL+ 02
+	065: 2
+	066: 5
+	067: 2
+	068: 0
+	069: RCL* 04
+	070: /
+	071: STO L
+	072: iC 0
+	073: FILL
+	074: RCL 03
+	075: X<> L
+	076: RTN
+	077: LBL 06			// Eval f(X + k h) k on stack
+	078: STO 00
+	079: RCL* 04
+	080: RCL+ 03
+	081: FILL
+	082: XEQ 00			// f(x + k h)
+	083: SPEC?
+	084: RTN
+	085: X<> 00
+	086: +/-
+	087: RCL* 04
+	088: RCL+ 03
+	089: FILL
+	090: XEQ 00
+	091: SPEC?
+	092: RTN
+	093: STO- 00
+	094: RCL 00
+	095: RTN+1
+	096: LBL 07			// Return six point estimate
+	097: RCL 03
+	098: STO L
+	099: iC 0
+	100: FILL
+	101: RCL 01
+	102: RTN
+	103: LBL 08			// Return the four point estimate
+	104: 8
+	105: RCL* 01
+	106: RCL- 02
+	107: 1
+	108: 2
+	109: RCL* 04
+	110: /
+	111: STO L
+	112: iC 0
+	113: FILL
+	114: RCL 03
+	115: X<> L
+	116: RTN
+	117: LBL 09			// Bad input, can't do anything
+	118: STO L
+	119: iC 0
+	120: FILL
+	121: # NaN
+	122: RTN
+	123: LBL 00			// User's subroutine
+	124: RTN
+Checksum: 5e249a94
+
+
+Three different approximations are used to estimate the derivative of the
+function at a point.  The highest order estimate requires ten samples.  If
+any of the four outer most samlpes fail to evaulate, a six point estimate 
+is used instead (the six points correspond to the internal six points of
+the ten point estimate).  If either of the outser most points fail to
+evaluate properly, a four point estimate is made using the remaining points.
+
+On entry the point to evaluate the derivate at is in the X register.
+On exit, the point is in L and the estimate is in X.  Y, Z and T are cleared.
+
+
+Register use:
+	00	Temporary function evaluation & differences
+	01	Temporary then the six point result
+	02	Temporary then the ten point accumulation
+	03	X
+	04	h
+
+No flags are used.  Two levels of the subroutine stack are required.
+
