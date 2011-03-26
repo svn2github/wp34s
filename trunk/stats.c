@@ -162,7 +162,7 @@ static enum sigma_modes determine_best(void) {
 
 	correlation(&c, SIGMA_LINEAR);
 	decNumberAbs(&b, &c, Ctx);
-	for (i=SIGMA_LOG; i<= SIGMA_POWER; i++) {
+	for (i=SIGMA_LINEAR+1; i<SIGMA_BEST; i++) {
 		correlation(&d, i);
 
 		if (! decNumberIsNaN(&d)) {
@@ -193,6 +193,7 @@ static void get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sx
 	switch (mode) {
 	default:			// Linear
 		DispMsg = "Linear";
+	case SIGMA_QUIET_LINEAR:
 		xy = &sigmaXY;
 		lnx = lny = 0;
 		break;
@@ -295,7 +296,7 @@ void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber N, t;
 	decNumber sx, sy;
 
-	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_LINEAR);
+	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 
 	decNumberDivide(&t, &sx, &N, Ctx);
 	decimal64FromNumber(x, &t, ctx64);
@@ -309,7 +310,7 @@ void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
 void stats_wmean(decimal64 *x, decimal64 *nul, decContext *ctx64) {
 	decNumber xy, y, t;
 
-	get_sigmas(NULL, NULL, &y, NULL, NULL, &xy, SIGMA_LINEAR);
+	get_sigmas(NULL, NULL, &y, NULL, NULL, &xy, SIGMA_QUIET_LINEAR);
 
 	decNumberDivide(&t, &xy, &y, Ctx);
 	decimal64FromNumber(x, &t, ctx64);
@@ -340,7 +341,7 @@ void stats_s(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber N, nm1;
 	decNumber sx, sxx, sy, syy;
 
-	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_LINEAR);
+	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
 	decNumberSubtract(&nm1, &N, &const_1, Ctx);
 	do_s(x, ctx64, &sxx, &sx, &N, &nm1, NULL, Ctx);
 	do_s(y, ctx64, &syy, &sy, &N, &nm1, NULL, Ctx);
@@ -352,7 +353,7 @@ void stats_sigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber N;
 	decNumber sx, sxx, sy, syy;
 
-	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_LINEAR);
+	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
 	do_s(x, ctx64, &sxx, &sx, &N, &N, NULL, Ctx);
 	do_s(y, ctx64, &syy, &sy, &N, &N, NULL, Ctx);
 }
@@ -363,7 +364,7 @@ void stats_SErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber N, nm1, rtN;
 	decNumber sx, sxx, sy, syy;
 
-	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_LINEAR);
+	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
 	decNumberSubtract(&nm1, &N, &const_1, Ctx);
 	decNumberSquareRoot(&rtN, &N, Ctx);
 	do_s(x, ctx64, &sxx, &sx, &N, &nm1, &rtN, Ctx);
@@ -373,7 +374,7 @@ void stats_SErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
 decNumber *stats_sigper(decNumber *res, const decNumber *x, decContext *ctx) {
 	decNumber sx, t;
 
-	get_sigmas(NULL, &sx, NULL, NULL, NULL, NULL, SIGMA_LINEAR);
+	get_sigmas(NULL, &sx, NULL, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 	decNumberDivide(&t, x, &sx, ctx);
 	return decNumberMultiply(res, &t, &const_100, ctx);
 }

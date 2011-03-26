@@ -555,7 +555,8 @@ enum denom_modes {
 enum sigma_modes {
 	SIGMA_LINEAR=0,		SIGMA_EXP,
 	SIGMA_POWER,		SIGMA_LOG,
-	SIGMA_BEST
+	SIGMA_BEST,
+	SIGMA_QUIET_LINEAR
 };
 
 enum catalogues 
