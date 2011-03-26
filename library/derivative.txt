@@ -147,15 +147,17 @@ instead of XEQUSR.
 Checksum: 5e249a94
 
 
-Three different approximations are used to estimate the derivative of the
-function at a point.  The highest order estimate requires ten samples.  If
-any of the four outer most samlpes fail to evaulate, a six point estimate 
-is used instead (the six points correspond to the internal six points of
-the ten point estimate).  If either of the outser most points fail to
-evaluate properly, a four point estimate is made using the remaining points.
+Three different approximations are used to estimate the derivative
+of the function at a point.  The highest order estimate requires
+ten samples.  If any of the four outer most samlpes fail to evaulate,
+a six point estimate is used instead (the six points correspond to
+the internal six points of the ten point estimate).  If either of
+the outser most points fail to evaluate properly, a four point
+estimate is made using the remaining points.
 
 On entry the point to evaluate the derivate at is in the X register.
-On exit, the point is in L and the estimate is in X.  Y, Z and T are cleared.
+On exit, the point is in L and the estimate is in X.  Y, Z and T are
+cleared.
 
 
 Register use:
@@ -167,3 +169,7 @@ Register use:
 
 No flags are used.  Two levels of the subroutine stack are required.
 
+
+Define the subroutine [delta]X to provide the step distance between
+the evaluation points.  If this subroutine isn't defined, 1e-6 will
+be used.
