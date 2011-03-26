@@ -51,6 +51,19 @@
 static void correlation(decNumber *, const enum sigma_modes);
 
 
+static int check_data(int n) {
+	decNumber r, s;
+
+	decimal64ToNumber(&sigmaN, &r);
+	decNumberCompare(&s, &r, small_int(n), Ctx);
+	if (decNumberIsNegative(&s) && ! decNumberIsZero(&s)) {
+		err(ERR_MORE_POINTS);
+		return 1;
+	}
+	return 0;
+}
+
+
 void stats_mode_expf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	State.sigma_mode = SIGMA_EXP;
 }
@@ -299,6 +312,8 @@ void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber N, t;
 	decNumber sx, sy;
 
+	if (check_data(1))
+		return;
 	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 
 	decNumberDivide(&t, &sx, &N, Ctx);
@@ -313,6 +328,8 @@ void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
 void stats_wmean(decimal64 *x, decimal64 *nul, decContext *ctx64) {
 	decNumber xy, y, t;
 
+	if (check_data(1))
+		return;
 	get_sigmas(NULL, NULL, &y, NULL, NULL, &xy, SIGMA_QUIET_LINEAR);
 
 	decNumberDivide(&t, &xy, &y, Ctx);
@@ -344,6 +361,8 @@ void stats_s(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber N, nm1;
 	decNumber sx, sxx, sy, syy;
 
+	if (check_data(2))
+		return;
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
 	decNumberSubtract(&nm1, &N, &const_1, Ctx);
 	do_s(x, ctx64, &sxx, &sx, &N, &nm1, NULL, Ctx);
@@ -356,6 +375,8 @@ void stats_sigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber N;
 	decNumber sx, sxx, sy, syy;
 
+	if (check_data(2))
+		return;
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
 	do_s(x, ctx64, &sxx, &sx, &N, &N, NULL, Ctx);
 	do_s(y, ctx64, &syy, &sy, &N, &N, NULL, Ctx);
@@ -367,6 +388,8 @@ void stats_SErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	decNumber N, nm1, rtN;
 	decNumber sx, sxx, sy, syy;
 
+	if (check_data(2))
+		return;
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
 	decNumberSubtract(&nm1, &N, &const_1, Ctx);
 	decNumberSquareRoot(&rtN, &N, Ctx);
@@ -418,6 +441,8 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 void stats_correlation(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumber t;
 
+	if (check_data(2))
+		return;
 	correlation(&t, State.sigma_mode);
 	decimal64FromNumber(r, &t, ctx64);
 }
@@ -449,6 +474,8 @@ static void do_LR(decNumber *B, decNumber *A, decContext *ctx) {
 void stats_LR(decimal64 *bout, decimal64 *aout, decContext *ctx64) {
 	decNumber a, b;
 
+	if (check_data(2))
+		return;
 	do_LR(&b, &a, Ctx);
 	decimal64FromNumber(aout, &a, ctx64);
 	decimal64FromNumber(bout, &b, ctx64);
@@ -458,6 +485,8 @@ void stats_LR(decimal64 *bout, decimal64 *aout, decContext *ctx64) {
 decNumber *stats_xhat(decNumber *res, const decNumber *y, decContext *ctx) {
 	decNumber a, b, t;
 
+	if (check_data(2))
+		return NULL;
 	do_LR(&b, &a, ctx);
 	decNumberSubtract(&t, y, &b, ctx);
 	decNumberDivide(res, &a, &t, ctx);
@@ -468,6 +497,8 @@ decNumber *stats_xhat(decNumber *res, const decNumber *y, decContext *ctx) {
 decNumber *stats_yhat(decNumber *res, const decNumber *x, decContext *ctx) {
 	decNumber a, b, t;
 
+	if (check_data(2))
+		return NULL;
 	do_LR(&b, &a, ctx);
 	decNumberMultiply(&t, x, &a, ctx);
 	decNumberAdd(res, &t, &b, ctx);
