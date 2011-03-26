@@ -403,6 +403,15 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 	decNumberMultiply(&u, &sx, &sy, Ctx);
 	decNumberSubtract(&v, t, &u, Ctx);
 	decNumberDivide(t, &v, &w, Ctx);
+
+	decNumberCompare(&u, &const_1, t, Ctx);
+	if (decNumberIsNegative(&u))
+		decNumberCopy(t, &const_1);
+	else {
+		decNumberCompare(&u, t, &const__1, Ctx);
+		if (decNumberIsNegative(&u))
+			decNumberCopy(t, &const__1);
+	}
 }
 
 
