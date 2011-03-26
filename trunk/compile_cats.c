@@ -512,6 +512,7 @@ static unsigned char alpha_superscripts[] = {
 	0005,					// degree
 	031,	001,				// x-hat, x-bar
 	032,	002,				// y-hat, y-bar
+	024,					// complex prefix
 };
 
 static unsigned char alpha_subscripts[] = {
