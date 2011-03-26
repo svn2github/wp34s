@@ -107,9 +107,6 @@ static void init_state(void) {
 	xset(&s, 0, sizeof(s));
 
 #define C(n)	s.n = State.n
-#ifndef REALBUILD
-	C(trace);
-#endif
 	C(fraccomma);
 	C(last_prog);
 	C(sigma_mode);

@@ -31,6 +31,7 @@
 #define SPECIAL(n)	(OP_SPEC | OP_ ## n),
 #define xMULTI(n,a,b,c)	(OP_DBL | ((DBL_ ## n) << DBL_SHIFT) | ((a) & 0xff)), \
 			((b) & 0xff) | (((c) << 8) & 0xff00),
+#define xCONV(n, d)	(OP_RARG | ((RARG_CONV) << RARG_OPSHFT)) + (OP_ ## n)*2 + (d),
 
 // Specials
 #define ENTER		SPECIAL(ENTER)
@@ -138,6 +139,9 @@
 #define CFILL		NILADIC(CFILL)
 #define CENTER		NILADIC(CENTER)
 #define DROP		NILADIC(DROP)
+
+// Metric/imperial conversions
+#define MBAR2PA		xCONV(Pa_mbar, 1)
 
 // Other short cuts
 #define ENTRY		GSB(XROM_CHECK)
@@ -621,12 +625,10 @@ const s_opcode xrom[] = {
 		SWAP(E2)		// Six point stimate in E2 & start ten point estimate
 		DIG(2)
 		DIG(1)
-		DIG(0)
-		DIG(0)
+		MBAR2PA			// * 100 = 2100
 		TIMES
 		DIG(6)
-		DIG(0)
-		DIG(0)
+		MBAR2PA			// * 100 = 600
 		RCL_MU(E1)
 		MINUS
 		DIG(1)
