@@ -71,8 +71,6 @@ void stats_mode_best(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	State.sigma_mode = SIGMA_BEST;
 }
 
-
-
 void sigma_clear(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	sigmaN = CONSTANT_INT(OP_ZERO);
 	sigmaX = CONSTANT_INT(OP_ZERO);
@@ -156,21 +154,24 @@ void sigma_minus(decContext *ctx) {
 /* Loop through the various modes and work out
  * which has the highest absolute correlation.
  */
-static enum sigma_modes determine_best(void) {
+static enum sigma_modes determine_best(const decNumber *n) {
 	enum sigma_modes m = SIGMA_LINEAR, i;
 	decNumber b, c, d;
 
-	correlation(&c, SIGMA_LINEAR);
-	decNumberAbs(&b, &c, Ctx);
-	for (i=SIGMA_LINEAR+1; i<SIGMA_BEST; i++) {
-		correlation(&d, i);
+	decNumberCompare(&b, &const_2, n, Ctx);
+	if (decNumberIsNegative(&b) && !decNumberIsZero(&b)) {
+		correlation(&c, SIGMA_LINEAR);
+		decNumberAbs(&b, &c, Ctx);
+		for (i=SIGMA_LINEAR+1; i<SIGMA_BEST; i++) {
+			correlation(&d, i);
 
-		if (! decNumberIsNaN(&d)) {
-			decNumberAbs(&c, &d, Ctx);
-			decNumberCompare(&d, &b, &c, Ctx);
-			if (decNumberIsNegative(&d)) {
-				decNumberCopy(&b, &c);
-				m = i;
+			if (! decNumberIsNaN(&d)) {
+				decNumberAbs(&c, &d, Ctx);
+				decNumberCompare(&d, &b, &c, Ctx);
+				if (decNumberIsNegative(&d) && !decNumberIsZero(&d)) {
+					decNumberCopy(&b, &c);
+					m = i;
+				}
 			}
 		}
 	}
@@ -186,9 +187,11 @@ static void get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sx
 			decNumber *sxy, enum sigma_modes mode) {
 	decimal64 *xy;
 	int lnx, lny;
+	decNumber n;
 
+	decimal64ToNumber(&sigmaN, &n);
 	if (mode == SIGMA_BEST)
-		mode = determine_best();
+		mode = determine_best(&n);
 
 	switch (mode) {
 	default:			// Linear
@@ -220,7 +223,7 @@ static void get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sx
 	}
 
 	if (N != NULL)
-		decimal64ToNumber(&sigmaN, N);
+		decNumberCopy(N, &n);
 	if (sx != NULL)
 		decimal64ToNumber(lnx?&sigmalnX:&sigmaX, sx);
 	if (sy != NULL)
