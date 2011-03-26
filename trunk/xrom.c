@@ -29,6 +29,8 @@
 #define MONADIC(n)	(OP_MON | (OP_ ## n)),
 #define DYADIC(n)	(OP_DYA | (OP_ ## n)),
 #define SPECIAL(n)	(OP_SPEC | OP_ ## n),
+#define xMULTI(n,a,b,c)	(OP_DBL | ((DBL_ ## n) << DBL_SHIFT) | ((a) & 0xff)), \
+			((b) & 0xff) | (((c) << 8) & 0xff00),
 
 // Specials
 #define ENTER		SPECIAL(ENTER)
@@ -39,6 +41,10 @@
 #define DIG(n)		(OP_SPEC | (OP_0 + (n))),
 #define TST0(t)		(OP_SPEC | (OP_X ## t ## 0)),
 #define TST1(t)		(OP_SPEC | (OP_X ## t ## 1)),
+
+// Multiword commands
+#define DLBLP(a, b, c)	xMULTI(LBLP, a, b, c)
+#define DXEQ(a, b, c)	xMULTI(XEQ, a, b, c)
 
 // Commands that take an argument
 #define ERROR(n)	xRARG(ERROR, n)
@@ -558,6 +564,26 @@ const s_opcode xrom[] = {
 #undef PRODSUM
 #undef C
 #undef SAV_I
+
+/**************************************************************************/
+/* Numerical differentiation */
+
+#define DERIVATIVE_REG_BASE	0
+#define E3	(0 + DERIVATIVE_REG_BASE)
+#define E2	(1 + DERIVATIVE_REG_BASE)
+#define E1	(2 + DERIVATIVE_REG_BASE)
+#define X	(3 + DERIVATIVE_REG_BASE)
+#define H	(4 + DERIVATIVE_REG_BASE)
+
+	LBL(ENTRY_DERIVATIVE)
+		ENTRY
+		DECM
+		EXIT
+#undef H
+#undef X
+#undef E1
+#undef E2
+#undef E3
 
 /**************************************************************************/
 

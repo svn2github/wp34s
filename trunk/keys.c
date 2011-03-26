@@ -2060,6 +2060,7 @@ static const struct {
 	XL(ENTRY_PI, "Entry: PRODUCT")
 	XL(ENTRY_SOLVE, "Entry: SOLVE")
 	XL(ENTRY_INTEGRATE, "Entry: INTEGRATE")
+	XL(ENTRY_DERIVATIVE, "Entry: DERIVATIVE")
 	XL(XROM_CHECK, "Internal: Common entry code")
 	XL(XROM_EXIT, "Internal: Normal exit code")
 	XL(XROM_EXITp1, "Internal: Abnormal exit code")
@@ -2092,15 +2093,22 @@ static const struct {
 static void dump_xrom(void) {
 	unsigned int pc = addrXROM(0);
 	const unsigned int max = addrXROM(xrom_size);
+	int dbl = 0, sngl = 0;
 
-	printf("%u XROM instructions\n\n", max-pc);
 	printf("ADDR  MNEMONIC\t\tComment\n\n");
 	do {
 		char instr[16];
 		const opcode op = getprog(pc);
 		const char *p = prt(op, instr);
 		int i;
-		printf("%04x  ", pc);
+		if (isDBL(op)) {
+			dbl++;
+			printf("%04x: %08x  ", pc, op);
+		} else {
+			sngl++;
+			printf("%04x: %04x      ", pc, op);
+		}
+		//printf("%04x: %04x  ", pc, op);
 		pc = inc(pc);
 		while (*p != '\0') {
 			char c = *p++;
@@ -2113,6 +2121,7 @@ static void dump_xrom(void) {
 				printf("\t\t%s", xrom_labels[i].name);
 		putchar('\n');
 	} while (pc != addrXROM(0));
+	printf("%u XROM words\n%d single word instructions\n%d double word instructions\n", max-pc, sngl, dbl);
 }
 
 /*

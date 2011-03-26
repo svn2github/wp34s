@@ -92,8 +92,12 @@ void set_pc(unsigned int pc) {
 opcode getprog(unsigned int n) {
 	opcode r;
 
-	if (isXROM(n))
-		return xrom[n & ~XROM_MASK];
+	if (isXROM(n)) {
+		r = xrom[n & ~XROM_MASK];
+		if (isDBL(r))
+			r |= xrom[(n+1) & ~XROM_MASK] << 16;
+		return r;
+	}
 	if (n >= State.last_prog || n > NUMPROG)
 		return EMPTY_PROGRAM_OPCODE;
 	if (n == 0)
