@@ -575,9 +575,183 @@ const s_opcode xrom[] = {
 #define X	(3 + DERIVATIVE_REG_BASE)
 #define H	(4 + DERIVATIVE_REG_BASE)
 
-	LBL(ENTRY_DERIVATIVE)
+	LBL(ENTRY_DERIV)
 		ENTRY
 		DECM
+		TST_SPECIAL
+			GTO(9)
+		STO(X)
+		DLBLP('\243', 'X', 0)
+		SKIP(4)
+		EEX			// default dX is 0.000001
+		CHS
+		DIG(6)
+		SKIP(2)
+		FILL
+		DXEQ('\243', 'X', 0)	// User supplied dX
+		STO(H)
+
+		DIG(2)
+		RCL_MU(H)
+		STO(E2)
+		RCL_PL(X)
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(9)
+		STO(E1)		// f(x+2h)
+		RCL(X)
+		RCL_MI(E2)
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(9)
+		STO_MI(E1)		// f(x+2h) - f(x-2h)
+
+		RCL(X)
+		RCL_PL(H)
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(9)
+		STO(E2)			// f(x-h)
+		RCL(X)
+		RCL_MI(H)
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(9)
+		STO_MI(E2)		// f(x-h) - f(x+h)
+
+		// At this point we can do a four point estimate if something goes awry
+		DIG(3)
+		RCL_MU(H)
+		RCL_PL(X)
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(8)
+		STO(E3)			// (fx+3h)
+		RCL(X)
+		DIG(3)
+		RCL_MU(H)
+		MINUS
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(8)
+		STO_MI(E3)		// f(x+3h)-f(x-3h)
+
+		// At this point we can do the six point estimate - calculate it now
+		DIG(4)
+		DIG(5)
+		RCL_MU(E2)
+		DIG(9)
+		RCL_MU(E1)
+		MINUS
+		RCL_PL(E3)
+		DIG(6)
+		DIG(0)
+		RCL_MU(H)
+		DIVISION
+		SWAP(E2)		// Six point stimate in E2 & start ten point estimate
+		DIG(2)
+		DIG(1)
+		DIG(0)
+		DIG(0)
+		TIMES
+		DIG(6)
+		DIG(0)
+		DIG(0)
+		RCL_MU(E1)
+		MINUS
+		DIG(1)
+		DIG(5)
+		DIG(0)
+		RCL_MU(E3)
+		PLUS
+		STO(E1)			// Ten point estimate to end up in E1
+
+		DIG(4)
+		RCL_MU(H)
+		RCL_PL(X)
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(7)
+		STO(E3)			// f(x+4h)
+		RCL(X)
+		DIG(4)
+		RCL_MU(H)
+		MINUS
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(7)
+		STO_MI(E3)		// f(x+4h) - f(x-4h)
+		DIG(2)
+		DIG(5)
+		RCL_MU(E3)
+		STO_MI(E1)
+		DIG(5)
+		RCL_MU(H)
+		RCL_PL(X)
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(7)
+		STO(E3)
+		RCL(X)
+		DIG(5)
+		RCL_MU(H)
+		MINUS
+		FILL
+		GSBUSER
+		TST_SPECIAL
+			GTO(7)
+		STO_MI(E3)
+		DIG(2)
+		RCL_MU(E3)
+		RCL_PL(E1)
+		DIG(2)
+		DIG(5)
+		DIG(2)
+		DIG(0)
+		RCL_MU(H)
+		DIVISION
+		STO(st(L))
+		ZERO
+		FILL
+		RCL(X)
+		SWAP(st(L))
+		EXIT
+	LBL(7)				// Six point estimate
+		RCL(X)
+		STO(st(L))
+		ZERO
+		FILL
+		RCL(E2)
+		EXIT
+	LBL(8)				// Four point estimate from registers
+		DIG(8)
+		RCL_MU(E2)		// 8 * (f(x+h) - f(x-h))
+		RCL_MI(E1)		// 8 * (f(x+h) - f(x-h)) - f(x+2h) + f(x-2h)
+		DIG(1)
+		DIG(2)
+		RCL_MU(H)
+		DIVISION
+		STO(st(L))
+		ZERO
+		FILL
+		RCL(X)
+		SWAP(st(L))
+		EXIT
+	LBL(9)				// Bad input, can't even do a four point estimate
+		RCL(X)
+		STO(st(L))
+		ZERO
+		FILL
+		NAN
 		EXIT
 #undef H
 #undef X

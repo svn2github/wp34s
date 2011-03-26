@@ -446,7 +446,8 @@ enum rarg {
 
 	/* These 8 must be sequential and in the same order as the DBL_ commands */
 	RARG_LBL, RARG_LBLP, RARG_XEQ, RARG_GTO,
-	RARG_SUM, RARG_PROD, RARG_SOLVE, RARG_INTG,
+	RARG_SUM, RARG_PROD, RARG_SOLVE, RARG_DERIV,
+	RARG_INTG,
 
 	RARG_FIX, RARG_SCI, RARG_ENG, RARG_DISP,
 
@@ -491,7 +492,8 @@ enum specials {
 // Double sized instructions
 enum multiops {
 	DBL_LBL=0, DBL_LBLP, DBL_XEQ, DBL_GTO,
-	DBL_SUM, DBL_PROD, DBL_SOLVE, DBL_INTG,
+	DBL_SUM, DBL_PROD, DBL_SOLVE, DBL_DERIV,
+	DBL_INTG,
 #ifdef MULTI_ALPHA
 	DBL_ALPHA,
 #endif

@@ -24,8 +24,8 @@
 #define ENTRY_SIGMA	99	/* Same order: as RARG_SUM, RARG_PROD, RARG_SOLVE, RARG_INTG */
 #define ENTRY_PI	98
 #define ENTRY_SOLVE	97
-#define ENTRY_INTEGRATE	96
-#define ENTRY_DERIVATIVE 95
+#define ENTRY_DERIV	96
+#define ENTRY_INTEGRATE	95
 
 /* Labels - global */
 #define XROM_CHECK		40
