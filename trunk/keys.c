@@ -2100,10 +2100,10 @@ static void dump_xrom(void) {
 		int i;
 		if (isDBL(op)) {
 			dbl++;
-			printf("%04x: %08x  ", pc, op);
+			printf("%04x: %04x %04x  ", pc, op & 0xffff, (op >> 16)&0xffff);
 		} else {
 			sngl++;
-			printf("%04x: %04x      ", pc, op);
+			printf("%04x: %04x       ", pc, op);
 		}
 		//printf("%04x: %04x  ", pc, op);
 		pc = inc(pc);
