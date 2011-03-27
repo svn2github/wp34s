@@ -410,7 +410,7 @@ unsigned int dec(unsigned int pc) {
 		return addrXROM(xrom_size - 1);
 	if (pc == 0)
 		pc = State.last_prog;
-	if (pc > 2 && isDBL(prog[pc-2]))
+	if (((isXROM(pc) && pc > addrXROM(1)) || pc>2) && isDBL(getprog(pc-2)))
 		pc--;
 	return pc-1;
 }
