@@ -330,6 +330,7 @@ const s_opcode xrom[] = {
 			GTO(8)
 		TST(EQ, st(Y))		// Check if range is zero
 			GTO(9)
+		SWAPXY
 
 		/* Compute (x-y)/2 and (x+y)/2 */
 		CENTER
