@@ -53,6 +53,7 @@ static s_opcode catalogue[] = {
 	MON(OP_FIB,		"FIB")
 	MON(OP_FLOOR,		"FLOOR")
 	RARGCMD(RARG_DERIV,	"f'(x)")
+	RARGCMD(RARG_2DERIV,	"f\"(x)")
 	DYA(OP_GCD,		"GCD")
 	TRI(OP_BETAI,		"I\241")
 	DYA(OP_GAMMAP,		"I\202")

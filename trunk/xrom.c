@@ -579,21 +579,94 @@ const s_opcode xrom[] = {
 #define X	(3 + DERIVATIVE_REG_BASE)
 #define H	(4 + DERIVATIVE_REG_BASE)
 
+#define F_SECOND	0
+
+	LBL(ENTRY_2DERIV)
+		ENTRY
+		DECM
+		TST_SPECIAL
+			GTO(9)
+		SF(F_SECOND)
+		GSB(5)
+
+		DIG(1)
+		GSB(6)			// f(x+h) + f(x-h)
+			GTO(9)
+		DIG(1)
+		DIG(6)
+		TIMES
+		STO(E2)			// order four estimate
+		DIG(4)
+		DIG(2)
+		EEX
+		DIG(3)
+		RCL_MU(E3)
+		STO(E1)			// order ten estimate
+
+		DIG(0)
+		GSB(6)			// f(x)
+			GTO(9)
+		DIG(3)
+		DIG(0)
+		TIMES
+		STO_MI(E2)
+		DIG(7)
+		DIG(3)
+		DIG(7)
+		DIG(6)
+		DIG(6)
+		RCL_MU(E3)
+		STO_MI(E1)
+
+		DIG(2)
+		GSB(6)			// f(x+2h) + f(x-2h)
+			GTO(9)
+		STO_MI(E2)
+		DIG(6)
+		EEX
+		DIG(3)
+		TIMES
+		STO_MI(E1)
+
+		DIG(3)			// f(x+3h) + f(x-3h)
+		GSB(6)
+			GTO(3)
+		EEX
+		DIG(3)
+		TIMES
+		STO_PL(E1)
+
+		DIG(4)			// f(x+4h) + f(x-4h)
+		GSB(6)
+			GTO(3)
+		DIG(1)
+		DIG(2)
+		DIG(5)
+		TIMES
+		STO_MI(E1)
+
+		DIG(5)			// f(x+5h) + f(x-5h)
+		GSB(6)
+			GTO(3)
+		DIG(8)
+		TIMES
+		RCL_PL(E1)
+		DIG(2)
+		DIG(5)
+		DIG(2)
+		MBAR2PA			// * 100 = 25200
+		RCL_MU(H)
+		RCL_MU(H)
+		DIVISION
+		GTO(4)
+
 	LBL(ENTRY_DERIV)
 		ENTRY
 		DECM
 		TST_SPECIAL
 			GTO(9)
-		STO(X)
-		DLBLP('\243', 'X', 0)
-		SKIP(4)
-		EEX			// default dX is 0.000001
-		CHS
-		DIG(6)
-		SKIP(2)
-		FILL
-		DXEQ('\243', 'X', 0)	// User supplied dX
-		STO(H)
+		CF(F_SECOND)
+		GSB(5)
 
 		DIG(1)
 		GSB(6)
@@ -657,12 +730,7 @@ const s_opcode xrom[] = {
 		DIG(0)
 		RCL_MU(H)
 		DIVISION
-		STO(st(L))
-		ZERO
-		FILL
-		RCL(X)
-		SWAP(st(L))
-		EXIT
+		GTO(4)
 
 	LBL(6)				// Eval f(X + k h) k on stack
 		STO(E3)
@@ -673,6 +741,8 @@ const s_opcode xrom[] = {
 		TST_SPECIAL
 			RTN
 		SWAP(E3)
+		TST0(eq)
+			SKIP(10)
 		CHS
 		RCL_MU(H)
 		RCL_PL(X)
@@ -680,17 +750,24 @@ const s_opcode xrom[] = {
 		GSBUSER			// f(x - k h)
 		TST_SPECIAL
 			RTN
+		FSp(F_SECOND)
+			CHS
 		STO_MI(E3)
 		RCL(E3)			// f(x + k h) - f(x - k h)
 		RTNp1
 
-	LBL(7)				// Six point estimate return
-		RCL(X)
-		STO(st(L))
-		ZERO
+	LBL(5)				// Determine our default h
+		STO(X)
+		DLBLP('\243', 'X', 0)
+		SKIP(3)
+		DOT
+		DIG(1)			// default h = 0.1
+		SKIP(2)
 		FILL
-		RCL(E2)
-		EXIT
+		DXEQ('\243', 'X', 0)	// User supplied dX
+		STO(H)
+		RTN
+
 	LBL(8)				// Four point estimate from registers
 		DIG(8)
 		RCL_MU(E2)		// 8 * (f(x+h) - f(x-h))
@@ -699,24 +776,32 @@ const s_opcode xrom[] = {
 		DIG(2)
 		RCL_MU(H)
 		DIVISION
+		GTO(4)
+	LBL(9)				// Bad input, can't even do a four point estimate
+		NAN
+		GTO(4)
+	LBL(3)				// four point estimate of the second
+		DIG(1)			// derivative
+		DIG(2)
+		RCL_MU(H)
+		RCL_MU(H)
+		RECIP
+		STO_MU(E2)
+	LBL(7)				// Six point estimate return
+		RCL(E2)
+	LBL(4)				// Common return with value on stack
 		STO(st(L))
 		ZERO
 		FILL
 		RCL(X)
 		SWAP(st(L))
 		EXIT
-	LBL(9)				// Bad input, can't even do a four point estimate
-		RCL(X)
-		STO(st(L))
-		ZERO
-		FILL
-		NAN
-		EXIT
 #undef H
 #undef X
 #undef E1
 #undef E2
 #undef E3
+#undef F_SECOND
 
 /**************************************************************************/
 

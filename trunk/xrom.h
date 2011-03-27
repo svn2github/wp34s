@@ -25,7 +25,8 @@
 #define ENTRY_PI	98
 #define ENTRY_SOLVE	97
 #define ENTRY_DERIV	96
-#define ENTRY_INTEGRATE	95
+#define ENTRY_2DERIV	95
+#define ENTRY_INTEGRATE	94
 
 /* Labels - global */
 #define XROM_CHECK		40
