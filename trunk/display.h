@@ -33,6 +33,8 @@
 
 extern int setuptty(int reset);
 extern void display(void);
+extern void set_running_off(void);
+extern void set_running_on(void);
 
 extern void format_reg(decimal64 *r, char *buf);
 extern void dot(int n, int on);

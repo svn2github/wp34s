@@ -113,17 +113,6 @@ int running(void) {
 	return State.state_running;
 }
 
-void set_running_off() {
-	State.state_running = 0;
-	State.pause = 0;
-}
-
-static void set_running_on() {
-	display();
-	State.state_running = 1;
-}
-
-
 /* Set a flag to indicate that a complex operation has taken place
  * This only happens if we're not in a program.
  */

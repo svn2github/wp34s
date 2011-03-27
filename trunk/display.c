@@ -1314,3 +1314,16 @@ static void set_status_right(const char *str) {
 	set_status_sized(p+1, toolarge);
 }
 
+void set_running_off() {
+	State.state_running = 0;
+	State.pause = 0;
+}
+
+void set_running_on() {
+	reset_disp();
+	set_status("Running");
+	set_digits_string("PrograMm", 0);
+	finish_display();
+	State.state_running = 1;
+}
+
