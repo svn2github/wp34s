@@ -410,9 +410,9 @@ unsigned int dec(unsigned int pc) {
 		return addrXROM(xrom_size - 1);
 	if (pc == 0)
 		pc = State.last_prog;
-	if (((isXROM(pc) && pc > addrXROM(1)) || pc>2) && isDBL(getprog(pc-2)))
+	if (--pc > 1 && pc != addrXROM(0) && isDBL(getprog(pc-1)))
 		pc--;
-	return pc-1;
+	return pc;
 }
 
 /* Increment the PC keeping account of wrapping around and stopping
