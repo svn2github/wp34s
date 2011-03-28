@@ -172,7 +172,7 @@ extern int current_catalogue_max(void);
 
 #define NUMALPHA	31	/* Number of characters in Alpha */
 
-#define CMDLINELEN	23
+#define CMDLINELEN	19	/* 12 mantissa + dot + sign + E + sign + 3 exponent = 19 */
 #define NUMBANKREGS	5
 #define NUMBANKFLAGS	16
 
