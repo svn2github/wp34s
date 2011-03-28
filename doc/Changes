@@ -1,0 +1,19 @@
+This is a list of things to consider doing differently.
+
+Merge the function tables.  Currently, there are tables for monadic,
+dyadic, triadic, niladic and argument functions.  It would be better to
+merge these into one or two tables (two: one for argument functions,
+one for everything else).  The tables would contain information like
+the number of arguments accepted, the number of values returned, weather
+last X is set and if stack lift shold be anabled.  This would streamline
+and simplify functions -- at a cost of a slightly more complex dispatch
+mechanism.  It would also remove all the special cases.
+
+
+Secondly, implement a small interpretive language for defining functions.
+Keystroke programs are much smaller than the associated C code but they
+are limited by both the small stack and the limited precision we permit.
+Ideally a small simple language with a large suite of primatives operating
+at full precision.
+
+
