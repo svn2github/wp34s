@@ -293,6 +293,7 @@ const struct niladic niladics[] = {
 	FUNC2(OP_statSigma,	&stats_sigma,		"\261")
 	FUNC2(OP_statMEAN,	&stats_mean,		"\001")
 	FUNC1(OP_statWMEAN,	&stats_wmean,		"\001w")
+	FUNC2(OP_statGMEAN,	&stats_gmean,		"GMEAN")
 	FUNC1(OP_statR,		&stats_correlation,	"CORR")
 	FUNC2(OP_statLR,	&stats_LR,		"LR")
 	FUNC2(OP_statSErr,	&stats_SErr,		"SERR")

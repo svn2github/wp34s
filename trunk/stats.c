@@ -230,6 +230,7 @@ static void get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sx
 
 	case SIGMA_POWER:
 		DispMsg = "Power";
+	case SIGMA_QUIET_POWER:
 		xy = &sigmalnXlnY;
 		lnx = lny = 1;
 		break;
@@ -308,32 +309,50 @@ void sigma_sum(decimal64 *x, decimal64 *y, decContext *ctx64) {
 }
 
 
+static void mean_common(decimal64 *res, const decNumber *x, const decNumber *n, int exp) {
+	decNumber t, u, *p = &t;
+
+	decNumberDivide(&t, x, n, Ctx);
+	if (exp)
+		decNumberExp(p=&u, &t, Ctx);
+	decimal64FromNumber(res, p, Ctx64);
+}
+
 void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	decNumber N, t;
+	decNumber N;
 	decNumber sx, sy;
 
 	if (check_data(1))
 		return;
 	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 
-	decNumberDivide(&t, &sx, &N, Ctx);
-	decimal64FromNumber(x, &t, ctx64);
-
-	decNumberDivide(&t, &sy, &N, Ctx);
-	decimal64FromNumber(y, &t, ctx64);
+	mean_common(x, &sx, &N, 0);
+	mean_common(y, &sy, &N, 0);
 }
 
 
 // weighted mean sigmaXY / sigmaY
 void stats_wmean(decimal64 *x, decimal64 *nul, decContext *ctx64) {
-	decNumber xy, y, t;
+	decNumber xy, y;
 
 	if (check_data(1))
 		return;
 	get_sigmas(NULL, NULL, &y, NULL, NULL, &xy, SIGMA_QUIET_LINEAR);
 
-	decNumberDivide(&t, &xy, &y, Ctx);
-	decimal64FromNumber(x, &t, ctx64);
+	mean_common(x, &xy, &y, 0);
+}
+
+// geometric mean e^(sigmaLnX / N)
+void stats_gmean(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	decNumber N;
+	decNumber sx, sy;
+
+	if (check_data(1))
+		return;
+	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_QUIET_POWER);
+
+	mean_common(x, &sx, &N, 1);
+	mean_common(y, &sy, &N, 1);
 }
 
 // Standard deviations and standard errors

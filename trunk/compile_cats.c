@@ -190,6 +190,7 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_RCLSIGMA,	"SUM")
 	MON(OP_xhat,		"\031")
 	NILIC(OP_statWMEAN,	"x-barw")
+	NILIC(OP_statGMEAN,	"GMEAN")
 	DYA(OP_BETA,		"\241")
 	MON(OP_GAMMA,		"\202")
 	NILIC(OP_statSigma,	"\261")

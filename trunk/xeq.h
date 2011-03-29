@@ -381,7 +381,7 @@ enum {
 	OP_sigmaN,
 	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
 		OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,
-	OP_statS, OP_statSigma, OP_statMEAN, OP_statWMEAN,
+	OP_statS, OP_statSigma, OP_statMEAN, OP_statWMEAN, OP_statGMEAN,
 		OP_statR, OP_statLR, OP_statSErr,
 	OP_EXPF, OP_LINF, OP_LOGF, OP_PWRF, OP_BEST,
 	OP_RANDOM, OP_STORANDOM,
@@ -556,7 +556,7 @@ enum sigma_modes {
 	SIGMA_LINEAR=0,		SIGMA_EXP,
 	SIGMA_POWER,		SIGMA_LOG,
 	SIGMA_BEST,
-	SIGMA_QUIET_LINEAR
+	SIGMA_QUIET_LINEAR,	SIGMA_QUIET_POWER
 };
 
 enum catalogues 

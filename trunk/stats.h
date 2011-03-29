@@ -25,6 +25,7 @@ extern void sigma_minus(decContext *);
 
 extern void stats_mean(decimal64 *, decimal64 *, decContext *);
 extern void stats_wmean(decimal64 *, decimal64 *, decContext *);
+extern void stats_gmean(decimal64 *, decimal64 *, decContext *);
 extern void stats_s(decimal64 *, decimal64 *, decContext *);
 extern void stats_sigma(decimal64 *, decimal64 *, decContext *);
 extern decNumber *stats_xhat(decNumber *, const decNumber *, decContext *);
