@@ -356,64 +356,71 @@ void stats_gmean(decimal64 *x, decimal64 *y, decContext *ctx64) {
 }
 
 // Standard deviations and standard errors
-static void do_s(decimal64 *s, decContext *ctx64,
+static void do_s(decimal64 *s,
 		const decNumber *sxx, const decNumber *sx,
 		const decNumber *N, const decNumber *denom, 
-		const decNumber *divsr, decContext *ctx) {
-	decNumber t, u;
+		int rootn, int exp) {
+	decNumber t, u, v, *p;
 
-	decNumberSquare(&t, sx, ctx);
-	decNumberDivide(&u, &t, N, ctx);
-	decNumberSubtract(&t, sxx, &u, ctx);
-	decNumberDivide(&u, &t, denom, ctx);
-	decNumberSquareRoot(&t, &u, ctx);
+	decNumberSquare(&t, sx, Ctx);
+	decNumberDivide(&u, &t, N, Ctx);
+	decNumberSubtract(&t, sxx, &u, Ctx);
+	decNumberDivide(&u, &t, denom, Ctx);
+	decNumberSquareRoot(p = &t, &u, Ctx);
 
-	if (divsr != NULL)
-		decNumberDivide(&t, &t, divsr, ctx);
+	if (rootn) {
+		decNumberSquareRoot(&u, N, Ctx);
+		decNumberDivide(p = &v, &t, &u, Ctx);
+	}
+	if (exp) {
+		decNumberExp(&u, p, Ctx);
+		p = &u;
+	}
+	decimal64FromNumber(s, p, Ctx64);
+}
 
-	decimal64FromNumber(s, &t, ctx64);
+static void S(decimal64 *x, decimal64 *y, enum sigma_modes mode, int sub1, int rootn, int exp) {
+	decNumber N, nm1, *n = &N;
+	decNumber sx, sxx, sy, syy;
+
+	if (check_data(2))
+		return;
+	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, mode);
+	if (sub1)
+		decNumberSubtract(n = &nm1, &N, &const_1, Ctx);
+	do_s(x, &sxx, &sx, &N, n, rootn, exp);
+	do_s(y, &syy, &sy, &N, n, rootn, exp);
+}
+
+// sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
+void stats_s(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	S(x, y, SIGMA_QUIET_LINEAR, 1, 0, 0);
+}
+
+// [sigma]x = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / n)
+void stats_sigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	S(x, y, SIGMA_QUIET_LINEAR, 0, 0, 0);
+}
+
+// serr = sx / sqrt(n)
+void stats_SErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	S(x, y, SIGMA_QUIET_LINEAR, 1, 1, 0);
 }
 
 
 // sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
-void stats_s(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	decNumber N, nm1;
-	decNumber sx, sxx, sy, syy;
-
-	if (check_data(2))
-		return;
-	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
-	decNumberSubtract(&nm1, &N, &const_1, Ctx);
-	do_s(x, ctx64, &sxx, &sx, &N, &nm1, NULL, Ctx);
-	do_s(y, ctx64, &syy, &sy, &N, &nm1, NULL, Ctx);
+void stats_gs(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	S(x, y, SIGMA_QUIET_POWER, 1, 0, 0);
 }
-
 
 // [sigma]x = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / n)
-void stats_sigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	decNumber N;
-	decNumber sx, sxx, sy, syy;
-
-	if (check_data(2))
-		return;
-	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
-	do_s(x, ctx64, &sxx, &sx, &N, &N, NULL, Ctx);
-	do_s(y, ctx64, &syy, &sy, &N, &N, NULL, Ctx);
+void stats_gsigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	S(x, y, SIGMA_QUIET_POWER, 0, 0, 0);
 }
 
-
 // serr = sx / sqrt(n)
-void stats_SErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	decNumber N, nm1, rtN;
-	decNumber sx, sxx, sy, syy;
-
-	if (check_data(2))
-		return;
-	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, SIGMA_QUIET_LINEAR);
-	decNumberSubtract(&nm1, &N, &const_1, Ctx);
-	decNumberSquareRoot(&rtN, &N, Ctx);
-	do_s(x, ctx64, &sxx, &sx, &N, &nm1, &rtN, Ctx);
-	do_s(y, ctx64, &syy, &sy, &N, &nm1, &rtN, Ctx);
+void stats_gSErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	S(x, y, SIGMA_QUIET_POWER, 1, 1, 0);
 }
 
 decNumber *stats_sigper(decNumber *res, const decNumber *x, decContext *ctx) {
