@@ -1,152 +1,205 @@
 # This file is part of 34S.
 # 
-# 34S is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
+# 34S is free software:	you can	redistribute it	and/or modify
+# it under the terms of	the GNU	General	Public License as published by
+# the Free Software Foundation,	either version 3 of the	License, or
 # (at your option) any later version.
 # 
-# 34S is distributed in the hope that it will be useful,
+# 34S is distributed in	the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+# along	with 34S.  If not, see <http://www.gnu.org/licenses/>.
 
 .EXPORT_ALL_VARIABLES:
 
 # Define to build the real thing
-#REALBUILD := 1
+#REALBUILD = 1
 
-CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions -fno-defer-pop
+BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions \
+	-fno-defer-pop -fno-exceptions
 
+# Settings for Unix like environments with gcc
+# Creates the Console version of the emulator
+# To build the GUI version on Windows use Microsoft Visual C++ Express
+
+SYSTEM := $(shell uname)
+
+CFLAGS = $(BASE_CFLAGS)
+CFLAGS += -O0 -DUSECURSES -DDEBUG
+OUTPUTDIR := $(SYSTEM)
+UTILITIES := $(SYSTEM)
+CC := gcc
+AR := ar
+RANLIB := ranlib
+EXE :=
+STARTUP :=
+LDFLAGS :=
+
+ifndef REALBUILD
+# Select the correct parameters and libs for various Unix flavours
+ifeq ($(SYSTEM),Linux)
+LIBS +=	-lcurses
+else
+ifeq ($(SYSTEM),Darwin)
+# MacOS - use static ncurses lib if found
+CFLAGS += -m32
+NCURSES := $(shell find /sw/lib -name libncurses.a)
+ifneq "$(NCURSES)" ""
+LIBS += $(NCURSES)
+else
+LIBS += -lcurses
+endif
+else
+# Any other Unix
+LIBS +=	-lcurses
+endif
+endif
+endif
+
+HOSTCC := $(CC)
+HOSTAR := $(AR)
+HOSTRANLIB := $(RANLIB)
+HOSTCFLAGS := -Wall -Werror -O1 -g
+
+ifdef REALBUILD
+
+# Settings for the Yagarto tool	chain under Windows
+# A standard Windows gcc is needed for building	the generated files.
+# MinGW	will do	nicely
+
+OUTPUTDIR := realbuild
+CFLAGS := $(BASE_CFLAGS) -mthumb -Os -DREALBUILD -Dat91sam7l128 -Iatmel
+LDFLAGS := -nostartfiles -Wl,--gc-sections,-Map=$(OUTPUTDIR)/Mapfile.txt
+CROSS_COMPILE := arm-none-eabi-
+CC := $(CROSS_COMPILE)gcc
+AR := $(CROSS_COMPILE)ar
+RANLIB := $(CROSS_COMPILE)ranlib
+SIZE := $(CROSS_COMPILE)size
+STRIP := $(CROSS_COMPILE)strip
+OBJCOPY	:= $(CROSS_COMPILE)objcopy
+LIBS +=	-nostdlib -lgcc
+EXE := .exe
+STARTUP := -T atmel/at91sam7l128/flash.lds atmel/board_cstartup.S \
+	$(OUTPUTDIR)/board_lowlevel.o $(OUTPUTDIR)/board_memories.o
+
+endif
+
+# Files	and libraries
 
 OBJS := keys.o display.o xeq.o prt.o decn.o complex.o stats.o \
 		lcd.o int.o date.o xrom.o consts.o alpha.o charmap.o \
 		commands.o string.o
 SRCS := $(OBJS:.o=.c)
+OBJS := $(OBJS:%.o=$(OUTPUTDIR)/%.o)
 
-LIBS := -L. -lconsts
-LIBDN := -LdecNumber -ldecNumber
+LIBS += -L$(OUTPUTDIR) -lconsts
+LIBDN := -L$(OUTPUTDIR) -ldecNumber
+CNSTS := $(OUTPUTDIR)/libconsts.a
 
-ifdef REALBUILD
-CFLAGS += -Os
-else
-CFLAGS += -O0 -g
-USECURSES := 1
-ifeq ($(shell uname),Linux)
-CC := gcc
-else
-ifeq ($(shell uname),Darwin)
-CC := gcc
-CFLAGS += -m32
-LIBS += /sw/lib/libncurses.a
-CFLAGS += -DUSECURSES
-else
-CC := gcc-4
-endif
-endif
-endif
+# Targets and rules
 
-
-ifdef USECURSES
-ifneq ($(shell uname),Darwin)
-LIBS += -lcurses
-CFLAGS += -DUSECURSES
-endif
-endif
-
-ifndef REALBUILD
-CFLAGS += -DDEBUG
-endif
-
-CNSTS := libconsts.a
-
-# Choose the cross compiler arm-elf is hpgcc, the other choice is a slightly
-# later gcc which produces circa 1% smaller code.
-CROSS := arm-elf-
-#CROSS := arm-linux-20070808-
-HOSTCC := gcc
-ifdef REALBUILD
-CC := $(CROSS)gcc -mthumb
-RANLIB := $(CROSS)ranlib
-AR := $(CROSS)ar
-CFLAGS += -DREALBUILD
-LIBS += -nostdlib -lgcc
-else
-RANLIB := ranlib
-endif
-
-.PHONY: clean tgz asone
+.PHONY:	clean tgz asone
 
 all: calc
+calc: $(OUTPUTDIR) $(OUTPUTDIR)/calc
+
 clean:
-	rm -f calc asone *.o wp34s.dat
-	rm -fr consts $(CNSTS) consts.h consts.c catalogues.h
-	rm -fr compile_consts lcdgen compile_cats genchars7 *.dSYM
+	rm -fr $(OUTPUTDIR)
+	rm -fr consts.h	consts.c catalogues.h
+	rm -fr *.dSYM
 	@make -C decNumber clean
 	@make -C utilities clean
+
 tgz:
 	@make clean
 	rm -f sci.tgz
-	tar czf sci.tgz *
+	tar czf	sci.tgz	*
 
-calc: decNumber/decNumber.a $(OBJS)
-	$(CC) $(CFLAGS) -g -o $@ $(OBJS) $(LIBDN) $(LIBS)
+$(OUTPUTDIR):
+	mkdir $@
 
-asone: asone.c catalogues.h Makefile decNumber/decNumber.a lcdmap.h features.h \
-		$(SRCS) charset7.h
-	$(CC) $(CFLAGS) -IdecNumber -g -o calc $< $(LIBS) -fwhole-program
+ifdef REALBUILD
+$(UTILITIES):
+	mkdir $@
+endif
 
-decNumber/decNumber.a:
+asone: asone.c catalogues.h Makefile $(OUTPUTDIR)/decNumber.a \
+		lcdmap.h features.h $(SRCS) charset7.h \
+		$(OUTPUTDIR)/board_lowlevel.o \
+		$(OUTPUTDIR)/board_memories.o $(OUTPUTDIR)
+	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
+		$(STARTUP) $< $(LIBS) -fwhole-program 
+
+$(OUTPUTDIR)/calc: $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS) $(OUTPUTDIR)
+	$(CC) $(CFLAGS)	$(LDFLAGS) -o $@ $(STARTUP) $(OBJS) $(LIBDN) $(LIBS)
+
+$(OUTPUTDIR)/decNumber.a: $(OUTPUTDIR)
 	+@make -C decNumber
 
-consts.c consts.h: compile_consts Makefile features.h
-	./compile_consts
-	make -j2 -C consts
+consts.c consts.h $(OUTPUTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
+		Makefile features.h
+	cd $(UTILITIES) \
+		&& ./compile_consts "../" "../$(OUTPUTDIR)/" \
+		&& make "CFLAGS=$(CFLAGS) -I.." -j2 -C consts
 
-catalogues.h: compile_cats Makefile features.h
-	./compile_cats >catalogues.h
+catalogues.h: $(UTILITIES)/compile_cats$(EXE) Makefile features.h
+	$(UTILITIES)/compile_cats >catalogues.h
 
-lcdmap.h: lcdgen
-	./lcdgen >$@
+lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
+	$(UTILITIES)/lcdgen >$@
 
-charset7.h: genchars7
-	./genchars7 >$@
+charset7.h: $(UTILITIES)/genchars7$(EXE)
+	$(UTILITIES)/genchars7 >$@
 
-compile_consts: compile_consts.c Makefile features.h
-	$(HOSTCC) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
+$(UTILITIES)/compile_consts$(EXE): compile_consts.c Makefile features.h
+	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
 
-lcdgen: lcdgen.c Makefile lcd.h
-	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
+$(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
+		commands.c string.c prt.c consts.c Makefile features.h
+	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
 
-genchars7: genchars7.c Makefile lcd.h
-	$(HOSTCC) -g -O1 -o $@ $<  -Wall -Werror
+$(UTILITIES)/lcdgen$(EXE): lcdgen.c Makefile lcd.h
+	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-compile_cats: compile_cats.c consts.h xeq.h charmap.c commands.c \
-		string.c prt.c consts.c Makefile features.h
-	$(HOSTCC) $(CFLAGS) -IdecNumber -g -O1 -o $@ $<  -Wall -Werror
+$(UTILITIES)/genchars7$(EXE): genchars7.c Makefile lcd.h
+	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 xeq.h: statebits.h
 	@touch xeq.h
-alpha.o: alpha.c alpha.h xeq.h decn.h int.h display.h consts.h Makefile \
-		features.h
-charmap.o: charmap.c xeq.h Makefile features.h
-commands.o: commands.c xeq.h Makefile features.h
-complex.o: complex.c decn.h complex.h xeq.h consts.h Makefile features.h
-consts.o: consts.c consts.h Makefile features.h
-date.o: date.c date.h consts.h decn.h xeq.h alpha.h Makefile features.h
-decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile features.h
-display.o: display.c xeq.h display.h consts.h lcd.h int.h charset.h \
-		charset7.h decn.h alpha.h decn.h Makefile features.h
-int.o: int.c int.h xeq.h Makefile features.h
-lcd.o: lcd.c lcd.h xeq.h display.h lcdmap.h Makefile features.h
-keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
+
+vpath %.c = . atmel
+$(OUTPUTDIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(OUTPUTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
+		atmel/board.h Makefile
+$(OUTPUTDIR)/board_memories.o: atmel/board_memories.c atmel/board_memories.h \
+		atmel/board.h Makefile
+$(OUTPUTDIR)/alpha.o: alpha.c alpha.h xeq.h decn.h int.h display.h consts.h \
+		Makefile features.h
+$(OUTPUTDIR)/charmap.o:	charmap.c xeq.h	Makefile features.h
+$(OUTPUTDIR)/commands.o: commands.c xeq.h Makefile features.h
+$(OUTPUTDIR)/complex.o:	complex.c decn.h complex.h xeq.h consts.h \
+		Makefile features.h
+$(OUTPUTDIR)/consts.o: consts.c	consts.h Makefile features.h
+$(OUTPUTDIR)/date.o: date.c date.h consts.h decn.h xeq.h alpha.h \
+		Makefile features.h
+$(OUTPUTDIR)/decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile features.h
+$(OUTPUTDIR)/display.o:	display.c xeq.h	display.h consts.h lcd.h int.h \
+		charset.h charset7.h decn.h alpha.h decn.h Makefile features.h
+$(OUTPUTDIR)/int.o: int.c int.h	xeq.h Makefile features.h
+$(OUTPUTDIR)/lcd.o: lcd.c lcd.h	xeq.h display.h	lcdmap.h Makefile features.h
+$(OUTPUTDIR)/keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h Makefile features.h
-prt.o: prt.c xeq.h consts.h display.h Makefile features.h
-stats.o: stats.c xeq.h decn.h stats.h consts.h int.h Makefile features.h
-string.o: string.c xeq.h Makefile features.h
-xeq.o: xeq.c xeq.h alpha.h decn.h complex.h int.h lcd.h stats.h \
+$(OUTPUTDIR)/prt.o: prt.c xeq.h	consts.h display.h Makefile features.h
+$(OUTPUTDIR)/stats.o: stats.c xeq.h decn.h stats.h consts.h int.h \
+		Makefile features.h
+$(OUTPUTDIR)/string.o: string.c	xeq.h Makefile features.h
+$(OUTPUTDIR)/xeq.o: xeq.c xeq.h	alpha.h	decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h statebits.h Makefile features.h
-xrom.o: xrom.c xrom.h xeq.h consts.h Makefile features.h
+$(OUTPUTDIR)/xrom.o: xrom.c xrom.h xeq.h consts.h Makefile features.h
+
 

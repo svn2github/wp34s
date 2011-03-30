@@ -86,6 +86,9 @@
     <None Include="..\..\..\doc\layout" />
     <None Include="..\..\..\doc\tvm-formulas" />
     <None Include="..\..\..\revision.txt" />
+    <None Include="..\..\atmel\at91sam7l128\flash.lds" />
+    <None Include="..\..\atmel\board.mak" />
+    <None Include="..\..\atmel\board_cstartup.S" />
     <None Include="..\..\COPYING" />
     <None Include="..\..\linux-build-arm" />
     <None Include="..\..\mac-build-arm" />
@@ -105,12 +108,34 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\asone.c" />
+    <ClCompile Include="..\..\atmel\aic.c" />
+    <ClCompile Include="..\..\atmel\board_lowlevel.c" />
+    <ClCompile Include="..\..\atmel\board_memories.c" />
+    <ClCompile Include="..\..\atmel\dbgu.c" />
+    <ClCompile Include="..\..\atmel\pit.c" />
+    <ClCompile Include="..\..\atmel\pmc.c" />
+    <ClCompile Include="..\..\atmel\rtc.c" />
+    <ClCompile Include="..\..\atmel\slcdc.c" />
+    <ClCompile Include="..\..\atmel\supc.c" />
     <ClCompile Include="..\..\genchars7.c" />
     <ClCompile Include="..\..\lcdgen.c" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\bin\emulator.lib" />
     <Library Include="..\bin\emulator_d.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\atmel\aic.h" />
+    <ClInclude Include="..\..\atmel\at91sam7l128\AT91SAM7L128.h" />
+    <ClInclude Include="..\..\atmel\board.h" />
+    <ClInclude Include="..\..\atmel\board_lowlevel.h" />
+    <ClInclude Include="..\..\atmel\board_memories.h" />
+    <ClInclude Include="..\..\atmel\dbgu.h" />
+    <ClInclude Include="..\..\atmel\pit.h" />
+    <ClInclude Include="..\..\atmel\pmc.h" />
+    <ClInclude Include="..\..\atmel\rtc.h" />
+    <ClInclude Include="..\..\atmel\slcdc.h" />
+    <ClInclude Include="..\..\atmel\supc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

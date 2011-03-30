@@ -2224,7 +2224,7 @@ static void decToString(const decNumber *dn, char *string, Flag eng) {
     }
   if (dn->bits&DECSPECIAL) {       // Is a special value
 #ifndef xcopy
-    extern void xcopy(void *, const void *, int);
+    extern void *xcopy(void *, const void *, int);
 #endif
     if (decNumberIsInfinite(dn)) {
       xcopy(c, "Infinity", sizeof("Infinity"));

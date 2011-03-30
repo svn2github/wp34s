@@ -19,6 +19,9 @@
     <Filter Include="Artwork\HP">
       <UniqueIdentifier>{93928e77-d466-41e5-8d81-5034f72ffabf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Atmel sources">
+      <UniqueIdentifier>{c315ab66-c52a-4bf7-95c6-d78dcad5a593}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\..\artwork\wp34s_medium.xcf">
@@ -129,6 +132,15 @@
     <None Include="..\..\..\artwork\Keyboard-compact.png">
       <Filter>Artwork</Filter>
     </None>
+    <None Include="..\..\atmel\board.mak">
+      <Filter>Atmel sources</Filter>
+    </None>
+    <None Include="..\..\atmel\board_cstartup.S">
+      <Filter>Atmel sources</Filter>
+    </None>
+    <None Include="..\..\atmel\at91sam7l128\flash.lds">
+      <Filter>Atmel sources</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\asone.c">
@@ -140,6 +152,33 @@
     <ClCompile Include="..\..\genchars7.c">
       <Filter>Various Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\atmel\aic.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\atmel\board_lowlevel.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\atmel\board_memories.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\atmel\dbgu.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\atmel\pit.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\atmel\pmc.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\atmel\rtc.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\atmel\slcdc.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\atmel\supc.c">
+      <Filter>Atmel sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\bin\emulator.lib">
@@ -148,5 +187,40 @@
     <Library Include="..\bin\emulator_d.lib">
       <Filter>Windows Binaries</Filter>
     </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\atmel\supc.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\aic.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\board.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\board_lowlevel.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\board_memories.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\dbgu.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\pit.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\pmc.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\rtc.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\slcdc.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\atmel\at91sam7l128\AT91SAM7L128.h">
+      <Filter>Atmel sources</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

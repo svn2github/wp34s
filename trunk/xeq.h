@@ -855,8 +855,8 @@ extern void set_user_flag(int);
 extern void clr_user_flag(int);
 extern void put_user_flag(int n, int f);
 	
-extern void xcopy(void *, const void *, int);
-extern void xset(void *, const char, int);
+extern void *xcopy(void *, const void *, int);
+extern void *xset(void *, const char, int);
 extern char *find_char(const char *, const char);
 extern char *scopy(char *, const char *);		// copy string return pointer to *end*
 extern const char *sncopy(char *, const char *, int);	// copy string return pointer to *start*
