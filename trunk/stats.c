@@ -1189,6 +1189,8 @@ decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
 decNumber *qf_logistic(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber a, b, mu, s;
 
+	if (check_probability(r, p, ctx, NULL))
+	    return r;
 	dist_two_param(&mu, &s);
 	decNumberSubtract(&a, p, &const_0_5, ctx);
 	decNumberMultiply(&b, &a, &const_2, ctx);
@@ -1197,3 +1199,58 @@ decNumber *qf_logistic(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumberMultiply(&a, &b, &s, ctx);
 	return decNumberAdd(r, &a, &mu, ctx);
 }
+
+/* Cauchy distribution */
+decNumber *cdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber a, b, x0, gamma;
+
+	dist_two_param(&x0, &gamma);
+	decNumberSubtract(&a, x, &x0, ctx);
+	decNumberDivide(&b, &a, &gamma, ctx);
+	decNumberArcTan(&a, &b, ctx);
+	decNumberDivide(&b, &a, &const_PI, ctx);
+	return decNumberAdd(r, &b, &const_0_5, ctx);
+}
+
+decNumber *qf_cauchy(decNumber *r, const decNumber *p, decContext *ctx) {
+	decNumber a, b, x0, gamma;
+
+	if (check_probability(r, p, ctx, NULL))
+	    return r;
+	dist_two_param(&x0, &gamma);
+	decNumberSubtract(&a, p, &const_0_5, ctx);
+	decNumberMultiply(&b, &a, &const_PI, ctx);
+	decNumberTan(&a, &b, ctx);
+	decNumberMultiply(&b, &a, &gamma, ctx);
+	return decNumberAdd(r, &b, &x0, ctx);
+}
+
+/* Rayleigh distribution */
+decNumber *cdf_rayleigh(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber a, b, sigma;
+
+	if (decNumberIsNegative(x) && ! decNumberIsZero(x)) {
+		set_NaN(r);
+		return r;
+	}
+	dist_one_param(&sigma);
+	decNumberDivide(&a, x, &sigma, ctx);
+	decNumberSquare(&b, &a, ctx);
+	decNumberMultiply(&a, &b, &const__0_5, ctx);
+	decNumberExpm1(&b, &a, ctx);
+	return decNumberMinus(r, &b, ctx);
+}
+
+decNumber *qf_rayleigh(decNumber *r, const decNumber *p, decContext *ctx) {
+	decNumber a, b, sigma;
+
+	if (check_probability(r, p, ctx, &const_0))
+	    return r;
+	dist_one_param(&sigma);
+	decNumberMinus(&b, p, ctx);
+	decNumberLn1p(&a, &b, ctx);
+	decNumberMultiply(&b, &a, &const__2, ctx);
+	decNumberSquareRoot(&a, &b, ctx);
+	return decNumberMultiply(r, &a, &sigma, ctx);
+}
+

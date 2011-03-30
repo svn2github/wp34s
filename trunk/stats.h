@@ -114,4 +114,12 @@ extern decNumber *qf_lognormal(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_logistic(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_logistic(decNumber *, const decNumber *, decContext *);
 
+/* Cauchy distribution x0, gamma in registers J and K */
+extern decNumber *cdf_cauchy(decNumber *, const decNumber *, decContext *);
+extern decNumber *qf_cauchy(decNumber *, const decNumber *, decContext *);
+
+/* Rayleigh distribution sigma in register J */
+extern decNumber *cdf_rayleigh(decNumber *, const decNumber *, decContext *);
+extern decNumber *qf_rayleigh(decNumber *, const decNumber *, decContext *);
+
 #endif
