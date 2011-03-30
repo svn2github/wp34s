@@ -1172,3 +1172,28 @@ decNumber *qf_lognormal(decNumber *r, const decNumber *p, decContext *ctx) {
 	qf_normal(&lr, p, ctx);
 	return decNumberExp(r, &lr, ctx);
 }
+
+/* Logistic with specified mean and spread */
+decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber a, b, mu, s;
+
+	dist_two_param(&mu, &s);
+	decNumberSubtract(&a, x, &mu, ctx);
+	decNumberDivide(&b, &a, &s, ctx);
+	decNumberMultiply(&a, &b, &const_0_5, ctx);
+	decNumberTanh(&b, &a, ctx);
+	decNumberMultiply(&a, &b, &const_0_5, ctx);
+	return decNumberAdd(r, &a, &const_0_5, ctx);
+}
+
+decNumber *qf_logistic(decNumber *r, const decNumber *p, decContext *ctx) {
+	decNumber a, b, mu, s;
+
+	dist_two_param(&mu, &s);
+	decNumberSubtract(&a, p, &const_0_5, ctx);
+	decNumberMultiply(&b, &a, &const_2, ctx);
+	decNumberArcTanh(&a, &b, ctx);
+	decNumberMultiply(&b, &a, &const_2, ctx);
+	decNumberMultiply(&a, &b, &s, ctx);
+	return decNumberAdd(r, &a, &mu, ctx);
+}

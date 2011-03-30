@@ -70,44 +70,48 @@ extern decNumber *betai(decNumber *, const decNumber *, const decNumber *, const
 extern decNumber *cdf_Q(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_Q(decNumber *, const decNumber *, decContext *);
 
-/* Chi squared n distribution r in register 01 */
+/* Chi squared n distribution r in register J */
 extern decNumber *cdf_chi2(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_chi2(decNumber *, const decNumber *, decContext *);
 
-/* Student's T distribution with n df, n in register 01 */
+/* Student's T distribution with n df, n in register J */
 extern decNumber *cdf_T(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_T(decNumber *, const decNumber *, decContext *);
 
-/* F distribution with v1 and v2 df, v1 & v2 in registers 01 and 02 */
+/* F distribution with v1 and v2 df, v1 & v2 in registers J and K */
 extern decNumber *cdf_F(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_F(decNumber *, const decNumber *, decContext *);
 
-/* Weibull distribution with parameters k and lambda in registers 01 and 02 */
+/* Weibull distribution with parameters k and lambda in registers J and K */
 extern decNumber *cdf_WB(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_WB(decNumber *, const decNumber *, decContext *);
 
-/* Exponential distribution with parameter lambda in register 01 */
+/* Exponential distribution with parameter lambda in register J */
 extern decNumber *cdf_EXP(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_EXP(decNumber *, const decNumber *, decContext *);
 
-/* Poisson distribution with parameter lambda (in register 01) */
+/* Poisson distribution with parameter lambda (in register J) */
 extern decNumber *cdf_P(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_P(decNumber *, const decNumber *, decContext *);
 
-/* Geometric distribution with parameter p (in register 01) */
+/* Geometric distribution with parameter p (in register J) */
 extern decNumber *cdf_G(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_G(decNumber *, const decNumber *, decContext *);
 
-/* Binomial distribution (n, p) in registers 01 and 02 */
+/* Binomial distribution (n, p) in registers J and K */
 extern decNumber *cdf_B(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_B(decNumber *, const decNumber *, decContext *);
 
-/* Normal distribution m, sigma from stack */
+/* Normal distribution m, sigma in registers J and K */
 extern decNumber *cdf_normal(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_normal(decNumber *, const decNumber *, decContext *);
 
-/* Lognormal distribution m, sigma from stack */
+/* Lognormal distribution m, sigma in registers J and K */
 extern decNumber *cdf_lognormal(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_lognormal(decNumber *, const decNumber *, decContext *);
+
+/* Lognormal distribution m, sigma in registers J and K */
+extern decNumber *cdf_logistic(decNumber *, const decNumber *, decContext *);
+extern decNumber *qf_logistic(decNumber *, const decNumber *, decContext *);
 
 #endif

@@ -119,6 +119,8 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_qf_N,	&qf_normal,		NULL,		NULL,		"N\235(p)")
 	FUNC(OP_cdf_LN,	&cdf_lognormal,		NULL,		NULL,		"Ln(x)")
 	FUNC(OP_qf_LN,	&qf_lognormal,		NULL,		NULL,		"Ln\235(p)")
+	FUNC(OP_cdf_LG,	&cdf_logistic,		NULL,		NULL,		"Lg(x)")
+	FUNC(OP_qf_LG,	&qf_logistic,		NULL,		NULL,		"Lg\235(p)")
 	FUNC(OP_xhat,	&stats_xhat,		NULL,		NULL,		"\031")
 	FUNC(OP_yhat,	&stats_yhat,		NULL,		NULL,		"\032")
 	FUNC(OP_sigper,	&stats_sigper,		NULL,		NULL,		"%\221")
