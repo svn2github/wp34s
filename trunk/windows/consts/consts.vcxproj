@@ -100,12 +100,10 @@ move /Y allconsts.out allconsts.c
     </Link>
     <PostBuildEvent>
       <Message>building consts</Message>
-      <Command>cd "$(ProjectDir)\..\.."
-$(OutDir)consts.exe
-cd $(ProjectDir)\..\..\consts
-del allconsts.c
-type *.c &gt; allconsts.out
-move /Y allconsts.out allconsts.c
+      <Command>cd "$(ProjectDir)"
+$(OutDir)consts.exe ..\..\
+del ..\..\allconsts.c
+type consts\*.c &gt; ..\..\allconsts.c 2&gt;nul
 </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

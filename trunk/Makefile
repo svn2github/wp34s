@@ -31,6 +31,7 @@ CFLAGS = $(BASE_CFLAGS)
 CFLAGS += -O0 -DUSECURSES -DDEBUG
 OUTPUTDIR := $(SYSTEM)
 UTILITIES := $(SYSTEM)
+DIRS := $(SYSTEM)
 CC := gcc
 AR := ar
 RANLIB := ranlib
@@ -71,6 +72,7 @@ ifdef REALBUILD
 # MinGW	will do	nicely
 
 OUTPUTDIR := realbuild
+DIRS += $(OUTPUTDIR)
 CFLAGS := $(BASE_CFLAGS) -mthumb -Os -DREALBUILD -Dat91sam7l128 -Iatmel
 LDFLAGS := -nostartfiles -Wl,--gc-sections,-Map=$(OUTPUTDIR)/Mapfile.txt
 CROSS_COMPILE := arm-none-eabi-
@@ -94,9 +96,12 @@ OBJS := keys.o display.o xeq.o prt.o decn.o complex.o stats.o \
 		commands.o string.o
 SRCS := $(OBJS:.o=.c)
 OBJS := $(OBJS:%.o=$(OUTPUTDIR)/%.o)
+HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h date.h \
+		decn.h display.h features.h hp.h int.h keys.h lcd.h lcdmap.h \
+		statebits.h stats.h xeq.h xrom.h
 
 LIBS += -L$(OUTPUTDIR) -lconsts
-LIBDN := -LdecNumber/$(OUTPUTDIR) -ldecNumber
+LIBDN := -ldecNumber
 CNSTS := $(OUTPUTDIR)/libconsts.a
 
 # Targets and rules
@@ -106,38 +111,43 @@ CNSTS := $(OUTPUTDIR)/libconsts.a
 all: calc
 calc: $(OUTPUTDIR) $(OUTPUTDIR)/calc
 
+ifdef REALBUILD
+flash: $(OUTPUTDIR)/calc.img
+endif
+
 clean:
-	rm -fr $(OUTPUTDIR)
-	rm -fr consts.h	consts.c catalogues.h
-	rm -fr *.dSYM
-	@make -C decNumber clean
-	@make -C utilities clean
+	-rm -fr $(OUTPUTDIR)
+	-rm -fr consts.h	consts.c catalogues.h
+	-rm -fr *.dSYM
+	-@make -C decNumber clean
+	-@make -C utilities clean
 
 tgz:
 	@make clean
 	rm -f sci.tgz
 	tar czf	sci.tgz	*
 
-$(OUTPUTDIR):
+$(DIRS):
 	mkdir $@
 
 ifdef REALBUILD
-$(UTILITIES):
-	mkdir $@
+$(OUTPUTDIR)/calc.img: asone
+	$(OBJCOPY) -O binary $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.bin
+	$(SIZE) $$^ $(OUTPUTDIR)/calc >$(OUTPUTDIR)/sizes.txt
 endif
 
-asone: asone.c catalogues.h Makefile $(OUTPUTDIR)/decNumber.a \
+asone: $(DIRS) asone.c $(HEADERS) Makefile \
 		lcdmap.h features.h $(SRCS) charset7.h \
 		$(OUTPUTDIR)/board_lowlevel.o \
-		$(OUTPUTDIR)/board_memories.o $(OUTPUTDIR)
+		$(OUTPUTDIR)/board_memories.o 
 	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
-		$(STARTUP) $< $(LIBS) -fwhole-program 
+		$(STARTUP) asone.c $(LIBS) -fwhole-program 
 
-$(OUTPUTDIR)/calc: $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS) $(OUTPUTDIR)
+$(OUTPUTDIR)/calc: $(DIRS) $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS)
 	$(CC) $(CFLAGS)	$(LDFLAGS) -o $@ $(STARTUP) $(OBJS) $(LIBDN) $(LIBS)
 
-$(OUTPUTDIR)/decNumber.a: $(OUTPUTDIR)
-	+@make -C decNumber
+$(OUTPUTDIR)/decNumber.a:
+	+@make OUTPUTDIR=../$(OUTPUTDIR) -C decNumber
 
 consts.c consts.h $(OUTPUTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		Makefile features.h

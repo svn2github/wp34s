@@ -23,7 +23,7 @@ clean:
 $(OUTPUTDIR):
 	mkdir $@
 
-$(OUTPUTDIR)/$(LIB): $(OBJS) $(OUTPUTDIR)
+$(OUTPUTDIR)/$(LIB): $(OBJS) 
 	-rm -f $@
 	$(AR) -r $@ $(OBJS)
 	$(RANLIB) $@
