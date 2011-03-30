@@ -571,8 +571,8 @@ static unsigned char alpha_letters_lower[] = {
 #include "consts.c"
 
 
-#ifdef WIN32
-// windows will link
+#if defined(WIN32) && !defined(__GNUC__)
+// Visual C under windows will link
 #include "decNumber.h"
 #include "decimal64.h"
 #else
