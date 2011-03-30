@@ -222,6 +222,8 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_qf_G,		"G/235(p)")
 	MON(OP_cdf_N,		"N(x)")
 	MON(OP_qf_N,		"N\235(p)")
+	MON(OP_cdf_LN,		"LN(x)")
+	MON(OP_qf_LN,		"LN\235(p)")
 	MON(OP_cdf_P,		"P(n)")
 	MON(OP_qf_P,		"P/235(p)")
 	MON(OP_cdf_T,		"t(x)")

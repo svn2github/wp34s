@@ -310,6 +310,7 @@ enum {
 	OP_cdf_P, OP_qf_P,
 	OP_cdf_G, OP_qf_G,
 	OP_cdf_N, OP_qf_N,
+	OP_cdf_LN, OP_qf_LN,
 	OP_xhat, OP_yhat,
 	OP_sigper,
 	OP_PERCNT, OP_PERCHG, OP_PERTOT,// % operations -- really dyadic but leave the Y register unchanged

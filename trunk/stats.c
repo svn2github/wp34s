@@ -1157,3 +1157,18 @@ decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
 	return decNumberAdd(r, &b, &mu, ctx);
 }
 
+
+/* Log normal with specified mean and variance */
+decNumber *cdf_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber lx;
+
+	decNumberLn(&lx, x, ctx);
+	return cdf_normal(r, &lx, ctx);
+}
+
+decNumber *qf_lognormal(decNumber *r, const decNumber *p, decContext *ctx) {
+	decNumber lr;
+
+	qf_normal(&lr, p, ctx);
+	return decNumberExp(r, &lr, ctx);
+}

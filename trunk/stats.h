@@ -102,8 +102,12 @@ extern decNumber *qf_G(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_B(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_B(decNumber *, const decNumber *, decContext *);
 
-/* Normal distribution m, sigma from stack (but preserved) */
+/* Normal distribution m, sigma from stack */
 extern decNumber *cdf_normal(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_normal(decNumber *, const decNumber *, decContext *);
+
+/* Lognormal distribution m, sigma from stack */
+extern decNumber *cdf_lognormal(decNumber *, const decNumber *, decContext *);
+extern decNumber *qf_lognormal(decNumber *, const decNumber *, decContext *);
 
 #endif
