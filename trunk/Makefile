@@ -132,7 +132,7 @@ $(DIRS):
 
 ifdef REALBUILD
 $(OUTPUTDIR)/calc.img: asone
-	$(OBJCOPY) -O binary $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.bin
+	$(OBJCOPY) -O binary $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.binx
 	$(SIZE) $$^ $(OUTPUTDIR)/calc >$(OUTPUTDIR)/sizes.txt
 endif
 
