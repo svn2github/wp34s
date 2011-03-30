@@ -96,7 +96,7 @@ SRCS := $(OBJS:.o=.c)
 OBJS := $(OBJS:%.o=$(OUTPUTDIR)/%.o)
 
 LIBS += -L$(OUTPUTDIR) -lconsts
-LIBDN := -L$(OUTPUTDIR) -ldecNumber
+LIBDN := -LdecNumber/$(OUTPUTDIR) -ldecNumber
 CNSTS := $(OUTPUTDIR)/libconsts.a
 
 # Targets and rules
