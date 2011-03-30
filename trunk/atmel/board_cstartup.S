@@ -85,6 +85,7 @@ fiqHandler:
 //------------------------------------------------------------------------------
 /// Handles incoming interrupt requests by branching to the corresponding
 /// handler, as defined in the AIC. Supports interrupt nesting.
+//  The code resides in RAM so that it works even with flash disabled
 //------------------------------------------------------------------------------
 irqHandler:
 
@@ -129,13 +130,13 @@ resetHandler:
         ldr     r0, =resetVector
 
 /* Set pc to actual code location (i.e. not in remap zone) */
-	    ldr     pc, =1f
+	ldr     pc, =1f
 
 /* Perform low-level initialization of the chip using LowLevelInit() */
 1:
         ldr     r4, =_sstack
         mov     sp, r4
-	    ldr     r0, =LowLevelInit
+        ldr     r0, =LowLevelInit
         mov     lr, pc
         bx      r0
 
@@ -179,7 +180,7 @@ relocate:
         bcc     1b
 
 /* Clear the zero segment */
-	    ldr     r0, =_szero
+        ldr     r0, =_szero
         ldr     r1, =_ezero
         mov     r2, #0
 1:

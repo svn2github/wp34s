@@ -75,20 +75,16 @@ ifdef REALBUILD
 OUTPUTDIR := realbuild
 DIRS += $(OUTPUTDIR)
 CFLAGS := $(BASE_CFLAGS) -mthumb -Os -DREALBUILD -Dat91sam7l128 -Iatmel
-LDFLAGS := -nostartfiles -Wl,--gc-sections,-Map=$(OUTPUTDIR)/Mapfile.txt
+LDFLAGS := -nostartfiles 
 CROSS_COMPILE := arm-none-eabi-
 CC := $(CROSS_COMPILE)gcc
 AR := $(CROSS_COMPILE)ar
 RANLIB := $(CROSS_COMPILE)ranlib
-SIZE := $(CROSS_COMPILE)size
-STRIP := $(CROSS_COMPILE)strip
+# SIZE := $(CROSS_COMPILE)size
+# STRIP := $(CROSS_COMPILE)strip
 OBJCOPY	:= $(CROSS_COMPILE)objcopy
 LIBS +=	-nostdlib -lgcc
 EXE := .exe
-STARTUP := atmel/board_cstartup.S \
-	$(OUTPUTDIR)/board_lowlevel.o $(OUTPUTDIR)/board_memories.o
-LDCTRL := atmel/at91sam7l128/flash.lds
-LDFLAGS += -T $(LDCTRL)
 
 endif
 
@@ -106,6 +102,15 @@ HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h date.h \
 LIBS += -L$(OUTPUTDIR) -lconsts
 LIBDN := -ldecNumber
 CNSTS := $(OUTPUTDIR)/libconsts.a
+
+ifdef REALBUILD
+STARTUP := atmel/board_cstartup.S \
+	$(OUTPUTDIR)/board_lowlevel.o $(OUTPUTDIR)/board_memories.o
+LDCTRL := atmel/at91sam7l128/flash.lds
+MAPFILE = $(OUTPUTDIR)/mapfile.txt
+SUMMARY = $(OUTPUTDIR)/summary.txt
+LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
+endif
 
 # Targets and rules
 
@@ -136,7 +141,10 @@ $(DIRS):
 ifdef REALBUILD
 $(OUTPUTDIR)/calc.bin: asone
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.bin
-	$(SIZE) $$^ $(OUTPUTDIR)/calc >$(OUTPUTDIR)/sizes.txt
+	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
+	grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 endif
 
 asone: $(DIRS) asone.c $(HEADERS) $(SRCS) $(STARTUP) $(LDCTRL) Makefile
@@ -150,7 +158,7 @@ $(OUTPUTDIR)/calc: $(DIRS) $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS) \
 $(OUTPUTDIR)/decNumber.a:
 	+@make OUTPUTDIR=../$(OUTPUTDIR) -C decNumber
 
-consts.c consts.h $(OUTPUTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
+consts.c $(OUTPUTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		Makefile features.h
 	cd $(UTILITIES) \
 		&& ./compile_consts "../" "../$(OUTPUTDIR)/" \

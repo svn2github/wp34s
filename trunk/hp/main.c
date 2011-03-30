@@ -55,7 +55,7 @@ static void UpdateRS232() { }
 
 //static const int SlowClock= 32768; // slow clock speed, for the moment, 11khz, but will move to 32Khz in the new chips
 int SlowClock;    // slow clock speed ~32Khz
-int CpuSpeed;	  // current CPU speed
+int CpuSpeed;     // current CPU speed
 int BaseCpuSpeed; // internal RC speed, mesured using oscilator
 int RealCpuSpeed; // real speed the CPU is set at, canbe different from the "freq" parametter due to discreete frequency range
 
@@ -157,7 +157,7 @@ static void TurnCalcOff()
 // calc in low power mode,
 // everything is off except RAM, screen, RTC (for 5 minutes auto power off) and keyboard,
 // wait for any key or RTC timer...
-static void PutCalcIdle()
+void PutCalcIdle()
 {
   AT91C_BASE_AIC->AIC_IDCR= ~0; // disable all interrupts...
   Printk("calc idle, wait for kbd or RTC\r\n");
@@ -193,7 +193,7 @@ static void SetCPUSpeed(int freq) // set the cpu frequency, input is in Mhz and 
                            // frequency of <= 0 reset base frequency.
                            // the minimum frequency is around 40Khz
 {
-  if (state.testmode) freq= 36000000; // if in test system mode stay at high speed all the time...
+  if (State.testmode) freq= 36000000; // if in test system mode stay at high speed all the time...
   if (freq<=0) freq= BaseCpuSpeed;
   if (freq>36000000) freq= 36000000;
   if (freq==CpuSpeed) return; // if no changes, return...
@@ -344,35 +344,35 @@ int TestVoltage(int min, int max)
 }
 //************************ Main function ***************************************
 
-static void ServiceBOD(void)
+void ServiceBOD(void)
 {
   if (AT91C_BASE_SUPC->SUPC_BOMR==0) return;
   if ((AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_BROWNOUT )!=0) // if battery lower than current BOD value
   {
-    if ((state.LowPowerCount>>5)<=21-19) // if <= than 2.1V turn calc off
+    if ((State.LowPowerCount>>5)<=21-19) // if <= than 2.1V turn calc off
       TurnCalcOff(); 
     else { // counts the number of consecutive readings >= 2.4V and <2.4V, if more than 31 in a row, change the low power flag
-      if (state.LowPower)
+      if (State.LowPower)
       {
-        if ((state.LowPowerCount>>5)>24-19) state.LowPowerCount++; else state.LowPowerCount= 0;
-        if ((state.LowPowerCount&31)>30) { state.LowPower = 0; state.LowPowerCount= 0; }
+        if ((State.LowPowerCount>>5)>24-19) State.LowPowerCount++; else State.LowPowerCount= 0;
+        if ((State.LowPowerCount&31)>30) { State.LowPower = 0; State.LowPowerCount= 0; }
       } else {
-        if ((state.LowPowerCount>>5)<=24-19) state.LowPowerCount++; else state.LowPowerCount= 0;
-        if ((state.LowPowerCount&31)>30) { state.LowPower = 1; state.LowPowerCount= 0; }
+        if ((State.LowPowerCount>>5)<=24-19) State.LowPowerCount++; else State.LowPowerCount= 0;
+        if ((State.LowPowerCount&31)>30) { State.LowPower = 1; State.LowPowerCount= 0; }
       }
     }
-  } else state.LowPowerCount+= 0x20;
+  } else State.LowPowerCount+= 0x20;
   AT91C_BASE_SUPC->SUPC_BOMR = 0;  // stop BOD
 }
 
-static int GetKeySpeed(int k)
+int GetKeySpeed(int k)
 {
   if (k==2 || k==7 || k==8 || k==12 || k==18 || k==24 || k==40 ) return 36000000;
   else return 5000000;
 }
 
 static char const * const MainResetCause[6]= {"Power Up", "Normal WakeUp", "Watchdog", "SW Reset", "NRST pin", "Brown Out"};
-int main()
+int main(void)
 {
   IOInit(); // initialize all the IOs as needed...
   
@@ -395,7 +395,7 @@ int main()
   Printk(MainResetCause[(AT91C_BASE_RSTC->RSTC_RSR>>8)&0x7]);
   if (((AT91C_BASE_RSTC->RSTC_RSR>>8)&0x7)!=1)
   {
-    disp_msg = MainResetCause[(AT91C_BASE_RSTC->RSTC_RSR>>8)&0x7];
+    DispMsg = MainResetCause[(AT91C_BASE_RSTC->RSTC_RSR>>8)&0x7];
     display();
     Wait(500);
   }
@@ -405,21 +405,22 @@ int main()
   Keyboard_Init();                        
 
   // init RS232 if  the testsystem is ON
-  if (state.testmode) UpdateRS232();
+  if (State.testmode) UpdateRS232();
   
   // setup battery level detection
-  AT91C_BASE_SUPC->SUPC_BOMR = AT91C_SUPC_BODSMPL_CONTINUOUS|(state.LowPowerCount>>5);
+  AT91C_BASE_SUPC->SUPC_BOMR = AT91C_SUPC_BODSMPL_CONTINUOUS|(State.LowPowerCount>>5);
 
   // reset of calc (if needed...)
-  if (((AT91C_BASE_RSTC->RSTC_RSR>>8)&7)==0) state.magic = 0; // if master reset pressed, force full logical reset
-  if (state.magic != MagicMarker)
+  if (((AT91C_BASE_RSTC->RSTC_RSR>>8)&7)==0) State.magic = 0; // if master reset pressed, force full logical reset
+  if (State.magic != MAGIC_MARKER)
   {
     init_34s();
-    Lcd_Enable(state.contrast);
+    Lcd_Enable(State.contrast);
   } else   // init LCD
-    Lcd_Enable(state.contrast);
+    Lcd_Enable(State.contrast);
 
-  if (state.testmode)
+#if 0 // To be redone
+  if (State.testmode)
   {
     disp_msg = "TST RST!";
     display();
@@ -444,15 +445,36 @@ int main()
       SetCPUSpeed(GetKeySpeed(k));         // reset to internal oscilator 2mhz...
       ServiceBOD();
     }
-    
     //if in test system mode, loop continously waiting for input, do not go in sleep mode...
-    if (state.testmode) continue;
-    if (AT91F_RTC_AlarmOccured()) state.off = 1;   // 5 minute timer: auto power off
-    if (state.off) TurnCalcOff();   
+    if (State.testmode) continue;
+    if (AT91F_RTC_AlarmOccured()) State.off = 1;   // 5 minute timer: auto power off
+    if (State.off) TurnCalcOff();   
     if (System.KeyboardMap==0LL) PutCalcIdle(); // if no keys are down, and no scrolling idle the calc waiting for keypress or 5 minute timer...
     // go in wait mode, waiting for timers to tick (key press timers 0 and 1 or scrolling timer 2)
     AT91C_BASE_PMC->PMC_SCDR= 1; // stop CPU clock...
   }
-
+#endif    
+  return 0;
 }
 
+__attribute__((externally_visible)) void abort( void ) {
+    for (;;);
+}
+
+void wait( unsigned int s ) {
+    while(s--);
+}
+
+__attribute__((section(".backup"))) TPersistentRam PersistentRam;
+
+// Ugly hack to get rid of unwinding code: http://embdev.net/topic/201054
+__attribute__((externally_visible)) void __aeabi_unwind_cpp_pr0(void) {};
+__attribute__((externally_visible)) void __aeabi_unwind_cpp_pr1(void) {};
+__attribute__((externally_visible)) void __aeabi_unwind_cpp_pr2(void) {};
+
+// Test Linker
+
+#if 0
+__attribute__((externally_visible)) unsigned char empty_bss_hog[ 2000 ];
+__attribute__((externally_visible)) const unsigned char full_data_hog[ 25000 ] = "full_data_hog";
+#endif
