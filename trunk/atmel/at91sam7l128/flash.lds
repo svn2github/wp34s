@@ -48,37 +48,44 @@ SECTIONS
     {
         . = ALIGN(4);
         _sfixed = .;
+        *(.vectors)
         *(.text*)
         *(.rodata*)
         . = ALIGN(4);
         _efixed = .;
     } >flash
 
-    .ARM.extab : AT (_efixed)
-	{
-        *(.ARM.extab*)
-		__extab_end = .;
-	} >flash
-    
-	.ARM.exidx : AT (__extab_end)
-	{
-        __exidx_start = .;
-        *(.ARM.exidx*)
-        __exidx_end = .;
-	} >flash
-
-    .relocate : AT (__exidx_end)
+    .relocate : AT (_efixed)
     {
         . = ALIGN(4);
         _srelocate = .;
-        *(.vectors)
         *(.ramfunc)
         *(.data)
         . = ALIGN(4);
         _erelocate = .;
     } >sram
 
-    .backup : AT (_erelocate)
+    .ARM.extab (NOLOAD) :
+    {
+        *(.ARM.extab*)
+    } >flash
+    
+    .ARM.exidx (NOLOAD) :
+    {
+        __exidx_start = .;
+        *(.ARM.exidx*)
+        __exidx_end = .;
+    } >flash
+
+    .bss (NOLOAD) : 
+    {
+        _szero = .;
+        *(.bss)
+        . = ALIGN(4);
+        _ezero = .;
+    } >sram
+
+    .backup (NOLOAD) :
     {
         . = ALIGN(4);
         _sbackup = .;
@@ -87,14 +94,6 @@ SECTIONS
         _ebackup = .;
     } >backupsram
 
-    .bss (NOLOAD) : {
-        _szero = .;
-        *(.bss)
-        . = ALIGN(4);
-        _ezero = .;
-    } >sram
-
     _sstack = 0x201000;
 }
 end = .;
-

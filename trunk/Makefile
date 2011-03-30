@@ -38,6 +38,7 @@ RANLIB := ranlib
 EXE :=
 STARTUP :=
 LDFLAGS :=
+LDCTRL :=
 
 ifndef REALBUILD
 # Select the correct parameters and libs for various Unix flavours
@@ -84,8 +85,10 @@ STRIP := $(CROSS_COMPILE)strip
 OBJCOPY	:= $(CROSS_COMPILE)objcopy
 LIBS +=	-nostdlib -lgcc
 EXE := .exe
-STARTUP := -T atmel/at91sam7l128/flash.lds atmel/board_cstartup.S \
+STARTUP := atmel/board_cstartup.S \
 	$(OUTPUTDIR)/board_lowlevel.o $(OUTPUTDIR)/board_memories.o
+LDCTRL := atmel/at91sam7l128/flash.lds
+LDFLAGS += -T $(LDCTRL)
 
 endif
 
@@ -112,12 +115,12 @@ all: calc
 calc: $(OUTPUTDIR) $(OUTPUTDIR)/calc
 
 ifdef REALBUILD
-flash: $(OUTPUTDIR)/calc.img
+flash: $(OUTPUTDIR)/calc.bin
 endif
 
 clean:
 	-rm -fr $(OUTPUTDIR)
-	-rm -fr consts.h	consts.c catalogues.h
+	-rm -fr consts.h consts.c allconsts.c catalogues.h
 	-rm -fr *.dSYM
 	-@make -C decNumber clean
 	-@make -C utilities clean
@@ -131,19 +134,17 @@ $(DIRS):
 	mkdir $@
 
 ifdef REALBUILD
-$(OUTPUTDIR)/calc.img: asone
-	$(OBJCOPY) -O binary $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.binx
+$(OUTPUTDIR)/calc.bin: asone
+	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.bin
 	$(SIZE) $$^ $(OUTPUTDIR)/calc >$(OUTPUTDIR)/sizes.txt
 endif
 
-asone: $(DIRS) asone.c $(HEADERS) Makefile \
-		lcdmap.h features.h $(SRCS) charset7.h \
-		$(OUTPUTDIR)/board_lowlevel.o \
-		$(OUTPUTDIR)/board_memories.o 
+asone: $(DIRS) asone.c $(HEADERS) $(SRCS) $(STARTUP) $(LDCTRL) Makefile
 	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program 
 
-$(OUTPUTDIR)/calc: $(DIRS) $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS)
+$(OUTPUTDIR)/calc: $(DIRS) $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS) \
+		$(STARTUP) $(LDCTRL) Makefile
 	$(CC) $(CFLAGS)	$(LDFLAGS) -o $@ $(STARTUP) $(OBJS) $(LIBDN) $(LIBS)
 
 $(OUTPUTDIR)/decNumber.a:
