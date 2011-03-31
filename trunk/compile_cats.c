@@ -358,6 +358,7 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_STOFLAG,	"STOM")
 	NILIC(OP_ALPHAOFF,	"\240OFF")
 	NILIC(OP_ALPHAON,	"\240ON")
+	NILIC(OP_OFF,		"OFF")
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE

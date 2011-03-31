@@ -73,6 +73,10 @@ void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 		display();
 }
 
+void cmd_off(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+	shutdown();
+}
+
 unsigned int state_pc(void) {	return State.state_pc;	}
 static void raw_set_pc(unsigned int pc) {
 	State.state_pc = pc;

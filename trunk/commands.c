@@ -265,6 +265,7 @@ const struct niladic niladics[] = {
 #endif
 	FUNC0(OP_NOP,		NULL,			"NOP")
 	FUNC0(OP_VERSION,	&version,		"VERS")
+	FUNC0(OP_OFF,		&cmd_off,		"OFF")
 	FUNC1(OP_STKSIZE,	&get_stack_size,	"SSIZE?")
 	FUNC0(OP_STK4,		&set_stack_size4,	"SSIZE4")
 	FUNC0(OP_STK8,		&set_stack_size8,	"SSIZE8")
