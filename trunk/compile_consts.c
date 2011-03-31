@@ -671,7 +671,7 @@ int main(int argc, char *argv[])
 		// Path for libconsts.a in makefile
 		libconsts = argv[2];
 	}
-        fh = fopen(tmp, "w");
+        fh = fopen(consts_h, "w");
         gpl_text(fh, "/* ", " * ", " */");
         fprintf(fh,     "#ifndef __CONSTS_H__\n"
                         "#define __CONSTS_H__\n"
@@ -687,10 +687,5 @@ int main(int argc, char *argv[])
         const_big();
         fprintf(fh,     "\n#endif\n");
         fclose(fh);
-        if (compare_files(tmp, consts_h)) {
-                unlink(consts_h);
-                rename(tmp, consts_h);
-        } else
-                unlink(tmp);
         return 0;
 }

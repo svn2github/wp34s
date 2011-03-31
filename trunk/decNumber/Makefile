@@ -9,25 +9,24 @@ SRCS  = decContext.c decNumber.c decPacked.c
 #SRCS += decimal128.c decimal32.c decimal64.c
 SRCS += decimal64.c
 
-OBJS = $(SRCS:%.c=$(OUTPUTDIR)/%.o)
+OBJS = $(SRCS:%.c=$(OBJECTDIR)/%.o)
 
-gpath %.o = $(OUTPUTDIR)
+gpath %.o = $(OBJECTDIR)
 
-all: $(OUTPUTDIR) $(OUTPUTDIR)/$(LIB)
+all: $(OBJECTDIR) $(OBJECTDIR)/$(LIB)
 
 .PHONY: clean
 clean:
-	rm -f Makefile.deps
-	rm -rf $(OUTPUTDIR)
+	rm -rf $(OBJECTDIR)
 
-$(OUTPUTDIR):
+$(OBJECTDIR):
 	mkdir $@
 
-$(OUTPUTDIR)/$(LIB): $(OBJS) 
+$(OBJECTDIR)/$(LIB): $(OBJS) 
 	-rm -f $@
 	$(AR) -r $@ $(OBJS)
 	$(RANLIB) $@
 
-$(OUTPUTDIR)/%.o: %.c
+$(OBJECTDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 

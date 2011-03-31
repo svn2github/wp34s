@@ -22,16 +22,22 @@ BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions \
 	-fno-defer-pop -fno-exceptions
 
 # Settings for Unix like environments with gcc
-# Creates the Console version of the emulator
-# To build the GUI version on Windows use Microsoft Visual C++ Express
+# Creates the Console version of the emulator or the real thing
+# To build the GUI version on Windows use Microsoft Visual C++ (Express)
 
 SYSTEM := $(shell uname)
+ifeq "$(SYSTEM)" ""
+SYSTEM := Output
+endif
+ifeq "$(SYSTEM)" "windows32"
+# Force REALBUILD on windows under MinGW
+REALBUILD := 1
+endif
 
 CFLAGS = $(BASE_CFLAGS)
 CFLAGS += -O0 -DUSECURSES -DDEBUG
 OUTPUTDIR := $(SYSTEM)
 UTILITIES := $(SYSTEM)
-DIRS := $(SYSTEM)
 CC := gcc
 AR := ar
 RANLIB := ranlib
@@ -73,7 +79,6 @@ ifdef REALBUILD
 # MinGW	will do	nicely
 
 OUTPUTDIR := realbuild
-DIRS += $(OUTPUTDIR)
 CFLAGS := $(BASE_CFLAGS) -mthumb -Os -DREALBUILD -Dat91sam7l128 -Iatmel
 LDFLAGS := -nostartfiles 
 CROSS_COMPILE := arm-none-eabi-
@@ -88,49 +93,57 @@ EXE := .exe
 
 endif
 
+OBJECTDIR := $(OUTPUTDIR)/obj
+DIRS := $(OUTPUTDIR) $(OBJECTDIR)
+ifdef REALBUILD
+DIRS += $(UTILITIES)
+endif
+
 # Files	and libraries
 
-OBJS := keys.o display.o xeq.o prt.o decn.o complex.o stats.o \
-		lcd.o int.o date.o xrom.o consts.o alpha.o charmap.o \
-		commands.o string.o
-SRCS := $(OBJS:.o=.c)
-OBJS := $(OBJS:%.o=$(OUTPUTDIR)/%.o)
+SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
+		lcd.c int.c date.c xrom.c consts.c alpha.c charmap.c \
+		commands.c string.c
+
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h date.h \
 		decn.h display.h features.h hp.h int.h keys.h lcd.h lcdmap.h \
 		statebits.h stats.h xeq.h xrom.h
 
-LIBS += -L$(OUTPUTDIR) -lconsts
+OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
+LIBS += -L$(OBJECTDIR) -lconsts
 LIBDN := -ldecNumber
-CNSTS := $(OUTPUTDIR)/libconsts.a
+CNSTS := $(OBJECTDIR)/libconsts.a
 
 ifdef REALBUILD
 STARTUP := atmel/board_cstartup.S \
-	$(OUTPUTDIR)/board_lowlevel.o $(OUTPUTDIR)/board_memories.o
+	$(OBJECTDIR)/board_lowlevel.o $(OBJECTDIR)/board_memories.o
 LDCTRL := atmel/at91sam7l128/flash.lds
-MAPFILE = $(OUTPUTDIR)/mapfile.txt
-SUMMARY = $(OUTPUTDIR)/summary.txt
+MAPFILE := $(OUTPUTDIR)/mapfile.txt
+SUMMARY := $(OUTPUTDIR)/summary.txt
+MAPFILE2 := $(MAPFILE:%.txt=%2.txt)
+SUMMARY2 := $(SUMMARY:%.txt=%2.txt)
 LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
-OBJS += $(OUTPUTDIR)/hp.o
+OBJS += $(OBJECTDIR)/hp.o
 endif
 
 # Targets and rules
 
-.PHONY:	clean tgz asone
-
-all: calc
-calc: $(OUTPUTDIR) $(OUTPUTDIR)/calc
+.PHONY:	clean tgz asone flash flash2
 
 ifdef REALBUILD
-flash: $(OUTPUTDIR)/calc.bin
-flash2: $(OUTPUTDIR)/calc2.bin
+all: flash
+flash: $(DIRS) $(OUTPUTDIR)/calc.bin
+flash2: $(DIRS) $(OUTPUTDIR)/calc2.bin
+else
+all: calc
+calc: $(DIRS) $(OUTPUTDIR)/calc
 endif
 
 clean:
-	-rm -fr $(OUTPUTDIR)
+	-rm -fr $(DIRS)
 	-rm -fr consts.h consts.c allconsts.c catalogues.h
-	-rm -fr *.dSYM
-	-@make -C decNumber clean
-	-@make -C utilities clean
+#	-make -C decNumber clean
+#	-make -C utilities clean
 
 tgz:
 	@make clean
@@ -141,39 +154,42 @@ $(DIRS):
 	mkdir $@
 
 ifdef REALBUILD
-$(OUTPUTDIR)/calc.bin: asone
-	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.bin
+
+# Targets flash and flash2 for different build processes
+
+$(OUTPUTDIR)/calc.bin: asone.c $(HEADERS) $(SRCS) $(STARTUP) $(LDCTRL) Makefile
+	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
+		$(STARTUP) asone.c $(LIBS) -fwhole-program 
+	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
 	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 
-$(OUTPUTDIR)/calc2.bin: $(DIRS) $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS) \
+$(OUTPUTDIR)/calc2.bin: $(OBJECTDIR)/libdecNumber.a $(CNSTS) $(OBJS) \
 		$(STARTUP) $(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	$(LDFLAGS)2 -o $(OUTPUTDIR)/calc2 $(STARTUP) $(OBJS) \
-		$(LIBDN) $(LIBS)
-	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc2 $(OUTPUTDIR)/calc2.bin
-	grep "^\.fixed"    $(MAPFILE)2 | tail -n 1 >  $(SUMMARY)2
-	grep "^\.relocate" $(MAPFILE)2 | tail -n 1 >> $(SUMMARY)2
-	grep "^\.bss"      $(MAPFILE)2 | tail -n 1 >> $(SUMMARY)2
-	grep "^\.backup"   $(MAPFILE)2 | tail -n 1 >> $(SUMMARY)2
+	$(CC) $(CFLAGS)	$(LDFLAGS:$(MAPFILE)=$(MAPFILE2)) -o $(OUTPUTDIR)/calc2 \
+		$(STARTUP) $(OBJS) $(LIBDN) $(LIBS)
+	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc2 $@
+	grep "^\.fixed"    $(MAPFILE2) | tail -n 1 >  $(SUMMARY2)
+	grep "^\.relocate" $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
+	grep "^\.bss"      $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
+	grep "^\.backup"   $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
+else
+
+# Target calc, console emulator
+
+$(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNumber.a $(CNSTS) \
+		$(STARTUP) $(LDCTRL) Makefile
+	$(CC) $(CFLAGS)	$(LDFLAGS) -o $@ $(OBJS) $(LIBDN) $(LIBS)
 endif
 
-asone: $(DIRS) asone.c $(HEADERS) $(SRCS) $(STARTUP) $(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
-		$(STARTUP) asone.c $(LIBS) -fwhole-program 
+# Build generated files
 
-$(OUTPUTDIR)/calc: $(DIRS) $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS) \
-		$(STARTUP) $(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	$(LDFLAGS) -o $@ $(STARTUP) $(OBJS) $(LIBDN) $(LIBS)
-
-$(OUTPUTDIR)/decNumber.a:
-	+@make OUTPUTDIR=../$(OUTPUTDIR) -C decNumber
-
-consts.c $(OUTPUTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
+consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		Makefile features.h
 	cd $(UTILITIES) \
-		&& ./compile_consts "../" "../$(OUTPUTDIR)/" \
+		&& ./compile_consts "../" "../$(OBJECTDIR)/" \
 		&& make "CFLAGS=$(CFLAGS) -I.." -j2 -C consts
 
 catalogues.h: $(UTILITIES)/compile_cats$(EXE) Makefile features.h
@@ -201,37 +217,43 @@ $(UTILITIES)/genchars7$(EXE): genchars7.c Makefile lcd.h
 xeq.h: statebits.h
 	@touch xeq.h
 
-vpath %.c = . atmel
-$(OUTPUTDIR)/%.o: %.c
+# Build libs and objects
+
+$(OBJECTDIR)/libdecNumber.a:
+	+@make OBJECTDIR=../$(OBJECTDIR) -C decNumber
+
+vpath %.c = atmel
+$(OBJECTDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(OUTPUTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
-		atmel/board.h Makefile
-$(OUTPUTDIR)/board_memories.o: atmel/board_memories.c atmel/board_memories.h \
-		atmel/board.h Makefile
-$(OUTPUTDIR)/alpha.o: alpha.c alpha.h xeq.h decn.h int.h display.h consts.h \
+$(OBJECTDIR)/alpha.o: alpha.c alpha.h xeq.h decn.h int.h display.h consts.h \
 		Makefile features.h
-$(OUTPUTDIR)/charmap.o:	charmap.c xeq.h	Makefile features.h
-$(OUTPUTDIR)/commands.o: commands.c xeq.h Makefile features.h
-$(OUTPUTDIR)/complex.o:	complex.c decn.h complex.h xeq.h consts.h \
+$(OBJECTDIR)/charmap.o:	charmap.c xeq.h	Makefile features.h
+$(OBJECTDIR)/commands.o: commands.c xeq.h Makefile features.h
+$(OBJECTDIR)/complex.o:	complex.c decn.h complex.h xeq.h consts.h \
 		Makefile features.h
-$(OUTPUTDIR)/consts.o: consts.c	consts.h Makefile features.h
-$(OUTPUTDIR)/date.o: date.c date.h consts.h decn.h xeq.h alpha.h \
+$(OBJECTDIR)/consts.o: consts.c	consts.h Makefile features.h
+$(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h alpha.h \
 		Makefile features.h
-$(OUTPUTDIR)/decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile features.h
-$(OUTPUTDIR)/display.o:	display.c xeq.h	display.h consts.h lcd.h int.h \
+$(OBJECTDIR)/decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile features.h
+$(OBJECTDIR)/display.o:	display.c xeq.h	display.h consts.h lcd.h int.h \
 		charset.h charset7.h decn.h alpha.h decn.h Makefile features.h
-$(OUTPUTDIR)/int.o: int.c int.h	xeq.h Makefile features.h
-$(OUTPUTDIR)/lcd.o: lcd.c lcd.h	xeq.h display.h	lcdmap.h Makefile features.h
-$(OUTPUTDIR)/keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
+$(OBJECTDIR)/int.o: int.c int.h	xeq.h Makefile features.h
+$(OBJECTDIR)/lcd.o: lcd.c lcd.h	xeq.h display.h	lcdmap.h Makefile features.h
+$(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h Makefile features.h
-$(OUTPUTDIR)/prt.o: prt.c xeq.h	consts.h display.h Makefile features.h
-$(OUTPUTDIR)/stats.o: stats.c xeq.h decn.h stats.h consts.h int.h \
+$(OBJECTDIR)/prt.o: prt.c xeq.h	consts.h display.h Makefile features.h
+$(OBJECTDIR)/stats.o: stats.c xeq.h decn.h stats.h consts.h int.h \
 		Makefile features.h
-$(OUTPUTDIR)/string.o: string.c	xeq.h Makefile features.h
-$(OUTPUTDIR)/xeq.o: xeq.c xeq.h	alpha.h	decn.h complex.h int.h lcd.h stats.h \
+$(OBJECTDIR)/string.o: string.c	xeq.h Makefile features.h
+$(OBJECTDIR)/xeq.o: xeq.c xeq.h	alpha.h	decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h statebits.h Makefile features.h
-$(OUTPUTDIR)/xrom.o: xrom.c xrom.h xeq.h consts.h Makefile features.h
+$(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h consts.h Makefile features.h
 
-$(OUTPUTDIR)/hp.o: hp.c hp/lcd.c hp/main.c hp/keyboard.c hp/rtc.c hp/timer.c
-
+ifdef REALBUILD
+$(OBJECTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
+		atmel/board.h Makefile
+$(OBJECTDIR)/board_memories.o: atmel/board_memories.c atmel/board_memories.h \
+		atmel/board.h Makefile
+$(OBJECTDIR)/hp.o: hp.c hp/lcd.c hp/main.c hp/keyboard.c hp/rtc.c hp/timer.c
+endif
