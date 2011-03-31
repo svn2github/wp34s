@@ -42,7 +42,6 @@ CC := gcc
 AR := ar
 RANLIB := ranlib
 EXE :=
-STARTUP :=
 LDFLAGS :=
 LDCTRL :=
 
@@ -90,7 +89,6 @@ RANLIB := $(CROSS_COMPILE)ranlib
 OBJCOPY	:= $(CROSS_COMPILE)objcopy
 LIBS +=	-nostdlib -lgcc
 EXE := .exe
-
 endif
 
 OBJECTDIR := $(OUTPUTDIR)/obj
@@ -124,6 +122,8 @@ MAPFILE2 := $(MAPFILE:%.txt=%2.txt)
 SUMMARY2 := $(SUMMARY:%.txt=%2.txt)
 LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
 OBJS += $(OBJECTDIR)/hp.o
+else
+MAIN := $(OBJECTDIR)/console.o
 endif
 
 # Targets and rules
@@ -180,8 +180,8 @@ else
 # Target calc, console emulator
 
 $(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNumber.a $(CNSTS) \
-		$(STARTUP) $(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	$(LDFLAGS) -o $@ $(OBJS) $(LIBDN) $(LIBS)
+		$(MAIN) $(LDCTRL) Makefile
+	$(CC) $(CFLAGS)	$(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
 endif
 
 # Build generated files
@@ -256,4 +256,7 @@ $(OBJECTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
 $(OBJECTDIR)/board_memories.o: atmel/board_memories.c atmel/board_memories.h \
 		atmel/board.h Makefile
 $(OBJECTDIR)/hp.o: hp.c hp/lcd.c hp/main.c hp/keyboard.c hp/rtc.c hp/timer.c
+else
+$(OBJECTDIR)/console.o: console.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
+		int.h xrom.h Makefile features.h
 endif
