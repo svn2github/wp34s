@@ -1471,9 +1471,9 @@ void CHP20b_cDlg::OnHP20bShowcaptionMenu()
 void CHP20b_cDlg::OnMove(int x, int y)
 { 
   CDialog::OnMove(x, y);
-#if 0
-  // Removed by MvC: breaks minimize/restore from taskbar
-  if (m_bHideTitlebar) {
+#if 1
+  // Changed by MvC: broke minimize/restore from taskbar
+  if (m_bHideTitlebar && x != -32000 && y != -32000) {
     static int  oldYPos = 1;
 
     if (oldYPos < 0) {
