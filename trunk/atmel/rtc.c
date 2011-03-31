@@ -27,14 +27,16 @@
  * ----------------------------------------------------------------------------
  */
 
+/*
+ *  Version for wp34s - no trace or debug
+ */
+
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
 
 #include "rtc.h"
 #include <board.h>
-#include <utility/assert.h>
-#include <utility/trace.h>
 
 //------------------------------------------------------------------------------
 //         Exported functions
@@ -46,10 +48,6 @@
 //------------------------------------------------------------------------------
 void RTC_SetHourMode(unsigned int mode)
 {
-    SANITY_CHECK((mode & 0xFFFFFFFE) == 0);
-
-    TRACE_DEBUG("RTC_SetHourMode()\n\r");
-
     AT91C_BASE_RTC->RTC_MR = mode;
 }
 
@@ -59,10 +57,6 @@ void RTC_SetHourMode(unsigned int mode)
 //------------------------------------------------------------------------------
 void RTC_EnableIt(unsigned int sources)
 {
-    SANITY_CHECK((sources & ~0x1F) == 0);
-
-    TRACE_DEBUG("RTC_EnableIt()\n\r");
-
     AT91C_BASE_RTC->RTC_IER = sources;
 }
 
@@ -72,10 +66,6 @@ void RTC_EnableIt(unsigned int sources)
 //------------------------------------------------------------------------------
 void RTC_DisableIt(unsigned int sources)
 {
-    SANITY_CHECK((sources & ~0x1F) == 0);
-
-    TRACE_DEBUG("RTC_DisableIt()\n\r");
-
     AT91C_BASE_RTC->RTC_IDR = sources;
 }
 
@@ -88,12 +78,6 @@ void RTC_DisableIt(unsigned int sources)
 void RTC_SetTime(unsigned char hour, unsigned char minute, unsigned char second)
 {
     unsigned int time;
-
-    SANITY_CHECK(hour < 24);
-    SANITY_CHECK(minute < 60);
-    SANITY_CHECK(second < 60);
-
-    TRACE_DEBUG("RTC_SetTime(%02d:%02d:%02d)\n\r", hour, minute, second);
 
     time = (second % 10) | ((second / 10) << 4)
            | ((minute % 10) << 8) | ((minute / 10) << 12);
@@ -116,7 +100,6 @@ void RTC_SetTime(unsigned char hour, unsigned char minute, unsigned char second)
     AT91C_BASE_RTC->RTC_SCCR = AT91C_RTC_ACKUPD;
     AT91C_BASE_RTC->RTC_TIMR = time;
     AT91C_BASE_RTC->RTC_CR &= ~AT91C_RTC_UPDTIM;
-    SANITY_CHECK((AT91C_BASE_RTC->RTC_CR & AT91C_RTC_UPDTIM) != AT91C_RTC_UPDTIM);
 }
 
 //------------------------------------------------------------------------------
@@ -131,10 +114,6 @@ void RTC_GetTime(
     unsigned char *pSecond)
 {
     unsigned int time;
-
-    SANITY_CHECK(pHour || pMinute || pSecond);
-
-    TRACE_DEBUG("RTC_GetTime()\n\r");
 
     // Get current RTC time
     time = AT91C_BASE_RTC->RTC_TIMR;
@@ -184,12 +163,6 @@ void RTC_SetTimeAlarm(
     unsigned char *pSecond)
 {
     unsigned int alarm = 0;
-
-    SANITY_CHECK(!pHour || ((*pHour & 0x80) == 0));
-    SANITY_CHECK(!pMinute || (*pMinute < 60));
-    SANITY_CHECK(!pSecond || (*pSecond < 60));
-
-    TRACE_DEBUG("RTC_SetTimeAlarm()\n\r");
 
     // Hour
     if (pHour) {
@@ -279,11 +252,6 @@ void RTC_SetDate(
 {
     unsigned int date;
 
-    SANITY_CHECK((year >= 1900) && (year <= 2099));
-    SANITY_CHECK((month >= 1) && (month <= 12));
-    SANITY_CHECK((day >= 1) && (day <= 31));
-    SANITY_CHECK((week >= 1) && (week <= 7));
-
     // Convert values to date register value
     date = ((year / 100) % 10)
            | ((year / 1000) << 4)
@@ -312,11 +280,6 @@ void RTC_SetDate(
 void RTC_SetDateAlarm(unsigned char *pMonth, unsigned char *pDay)
 {
     unsigned int alarm = 0;
-
-    SANITY_CHECK(!pMonth || ((*pMonth >= 1) && (*pMonth <= 12)));
-    SANITY_CHECK(!pDay || ((*pDay >= 1) && (*pDay <= 31)));
-
-    TRACE_DEBUG("RTC_SetDateAlarm()\n\r");
 
     // Compute alarm field value
     if (pMonth) {

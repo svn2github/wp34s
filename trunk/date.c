@@ -21,7 +21,7 @@
 #include "alpha.h"
 
 #ifdef REALBUILD
-#include "hp.h"
+#include "atmel/rtc.h"
 #else
 #include <time.h>
 #endif
@@ -584,39 +584,15 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 
 
 /* These routines get the real time and day from the RTC */
-#ifdef REALBUILD
-static unsigned int fromBCD(unsigned int x) {
-	unsigned int res = 0;
-	unsigned int mult = 1;
-
-	while (x != 0) {
-		res += (x & 0xf) * mult;
-		x >>= 4;
-		mult *= 10;
-	}
-	return res;
-}
-#endif
-
-static unsigned int toBCD(unsigned int x) {
-	unsigned int mult = 1;
-	unsigned int res = 0;
-
-	while (x != 0) {
-		res += (x % 10) * mult;
-		x /= 10;
-		mult *= 10;
-	}
-	return res;
-}
 
 static void query_time(unsigned int *s, unsigned int *m, unsigned int *h) {
 #ifdef REALBUILD
-	const unsigned long int dt = AT91F_RTC_Get_Time();
-
-	*s = fromBCD(dt & 0x7f);
-	*m = fromBCD((dt >> 8) & 0x7f);
-	*h = fromBCD((dt >> 16) & 0x3f);
+	unsigned char hour, minute, second;
+	
+	RTC_GetTime(&hour, &minute, &second);
+	*s = second;
+	*m = minute;
+	*h = hour;
 #else
 	time_t now = time(NULL);
 	struct tm *dt = localtime(&now);
@@ -629,11 +605,14 @@ static void query_time(unsigned int *s, unsigned int *m, unsigned int *h) {
 
 static void query_date(unsigned int *d, unsigned int *m, unsigned int *y) {
 #ifdef REALBUILD
-	const unsigned long int dt = AT91F_RTC_Get_Date();
+	unsigned char day, month, dow;
+	unsigned short year;
+	
+	RTC_GetDate( &year, &month, &day, &dow );
 
-	*y = fromBCD((dt >> 8) & 0xff) + 100 * fromBCD(dt & 0x7f);
-	*m = fromBCD((dt >> 16) & 0x1f);
-	*d = fromBCD((dt >> 24) & 0x3f);
+	*y = year;
+	*m = month;
+	*d = day;
 #else
 	time_t now = time(NULL);
 	struct tm *dt = localtime(&now);
@@ -671,7 +650,6 @@ void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 
 void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	int d, m, y, dow;
-	unsigned long int val;
 	decNumber x;
 
 	getX(&x);
@@ -680,16 +658,9 @@ void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 		return;
 	}
 	dow = day_of_week(y, m, d, NULL);
-	d = toBCD(d);
-	m = toBCD(m);
-	y = toBCD(y);
-	val = (y >> 8) & 0x7f;		// Century
-	val |= (y & 0xff) << 8;		// Year in century
-	val |= (m & 0x1f) << 16;	// Month
-	val |= (d & 0x3f) << 24;	// Day
-	val |= (dow & 7) << 21;		// Day of week -- optional
 #ifdef REALBUILD
-	AT91F_RTC_Set_Date(val);
+	RTC_SetDate((unsigned short) y, (unsigned char) m,
+		    (unsigned char) d, (unsigned char) dow);
 #endif
 }
 
@@ -706,6 +677,6 @@ void date_settime(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumberMultiply(&x, &y, &const_100, Ctx);
 	s = dn_to_int(decNumberRound(&x, &y, Ctx), Ctx) & 0x7f;
 #ifdef REALBUILD
-	AT91F_RTC_Set_Time(s, m, h);
+	RTC_SetTime((unsigned char) h, (unsigned char) m, (unsigned char) s);
 #endif
 }

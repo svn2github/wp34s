@@ -15,190 +15,50 @@
  */
 
 /*
- * This is some glue to make the Windows GUI work with wp34s
- * Some functions will move to more generic modules later
- * when the real hardware port will be attacked
- *
+ * This is the main module for the real hardware
  * Module written by MvC
  */
-#define shutdown _shutdown
-#include <windows.h>
-#undef shutdown
-#include <string.h>
-#include <stdio.h>
-
-#include "emulator_dll.h"
-
-#include "builddate.h"
-#define T_PERSISTANT_RAM_DEFINED
-#include "application.h"
-#include "display.h"
+#include "xeq.h"
 
 /*
- *  setup the LCD area and perstent RAM
+ *  setup the perstent RAM
  */
-unsigned int LcdData[ 20 ];
+#ifdef __GNUC__
+__attribute__((section(".backup")))
+#endif
 TPersistentRam PersistentRam;
 
-/*
- *  Used by Emulator only
- */
-static int EmulatorFlags;
 
-/*
- *  Main entry point
- *  Update the callback pointers and start application
- */
-int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine, int nCmdShow )
-{
-	unsigned long id;
-	extern unsigned long __stdcall HeartbeatThread( void *p );
-	int revision;
-	static char revision_string[] = SVN_REVISION;
-
-	/*
-	 *  Get the revision information and put it into the build date
-	 */
-	revision = atoi( revision_string + 7 );
-
-	/*
-	 *  Create the heartbeat at 100ms
-	 */
-	CreateThread(NULL, 1024 * 16, HeartbeatThread, NULL, 0, &id);
-
-	/*
-	 *  Start the emulator
-	 */
-	start_emulator( hInstance, hPrevInstance, pCmdLine, nCmdShow,
-		        "wp34s Scientific Calculator " VERSION_STRING,
-		        BuildDate | ( revision << 12 ),
-		        LcdData,
-		        Init, Reset, Shutdown,
-		        KeyPress, UpdateScreen, 
-		        NULL,
-		        GetFlag, SetFlag, ClearFlag,
-		        NULL,
-			GetTopLine,
-		        GetBottomLine,
-		        NULL );
-}
-
-/*
- *  Load/Reset/Save state
- */
-void Init( void )
-{
-	FILE *f = fopen( "wp34s.dat", "rb" );
-	if ( f != NULL ) {
-		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
-		fclose( f );
-	}
-	init_34s();
-}
-
-void Reset( bool keep )
-{
-	memset( &PersistentRam, 0, sizeof( PersistentRam ) );
-	init_34s();
-}
-
-void Shutdown( void )
-{
-	FILE *f = fopen( "wp34s.dat", "wb" );
-	if ( f == NULL ) return;
-	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
-	fclose( f );
-}
-
-/*
- *  main action is here
- */
-void KeyPress( int i )
-{
-	process_keycode( i );
-	if ( i != K_HEARTBEAT ) Keyticks = 0;
-}
-
-void UpdateScreen( bool forceUpdate )
-{
-	if ( forceUpdate ) {
-		UpdateDlgScreen( true );
-	}
-}
-
-/*
- *  some helper fuctions
- */
-bool GetFlag( int flag )
-{
-	if ( flag & shift ) {
-		// Special handling of shift key
-		if ( State.shifts == SHIFT_G ) {
-			EmulatorFlags |= shift;
-		}
-		else {
-			EmulatorFlags &= ~shift;
-		}
-	}
-
-	return 0 != ( EmulatorFlags & flag );
-}
-
-void SetFlag( int flag )
-{
-	flag &= ~shift; // We handle shift differently then the 20b
-	EmulatorFlags |= flag;
-}
-
-void ClearFlag( int flag)
-{
-	flag &= ~shift; // We handle shift differently then the 20b
-	EmulatorFlags &= ~flag;
-}
-
-
-char *GetTopLine( void )
-{
- 	return (char *) (DispMsg == NULL ? Alpha : DispMsg);
-}
-
-
-char *GetBottomLine( void )
-{
-	static char buffer[ 30 ];
-	xset( buffer, '\0', sizeof( buffer ) );
-//	decimal64ToString( &regX, buffer );
-	format_reg( &regX, buffer );
-	return buffer;
-}
-
-
+#if 0
 /*
  *  The Heartbeat
  */
-unsigned long __stdcall HeartbeatThread( void *p )
+void HeartbeatThread( void )
 {
-	while( 1 ) {
-		Sleep( 100 );
-		++Ticker;
-		if ( State.pause ) {
-			--State.pause;
-		}
-		if ( ++Keyticks > 1000 ) {
-			Keyticks = 1000;
-		}
-		AddKey( K_HEARTBEAT, true );  // add only if buffewr is empty
-	}
+        while( 1 ) {
+                Sleep( 100 );
+                ++Ticker;
+                if ( State.pause ) {
+                        --State.pause;
+                }
+                if ( ++Keyticks > 1000 ) {
+                        Keyticks = 1000;
+                }
+                AddKey( K_HEARTBEAT, true );  // add only if buffer is empty
+        }
 }
+#endif
+
 
 // These are called from the application
+
 
 /*
  *  Check if something is waiting for attention
  */
 int is_key_pressed(void)
 {
-	return !KeyBuffEmpty();  // in DLL
+        return 0;
 }
 
 
@@ -207,8 +67,6 @@ int is_key_pressed(void)
  */
 void shutdown( void )
 {
-	Shutdown();
-	ExitEmulator();
 }
 
 
@@ -218,3 +76,32 @@ void shutdown( void )
 void watchdog( void )
 {
 }
+
+
+/*
+ *  Main program as seen from C
+ */
+int main(void)
+{
+        /*
+                init hardware (LCD, timer, etc.)
+                forever
+                        if key then
+                                full_speed
+                                while key process_keycode
+                        else idle
+        */
+        process_keycode(0);
+        return 0;
+}
+
+
+#ifdef __GNUC__
+/*
+ *  Get rid of any exception handler code
+ */
+#define VISIBLE extern __attribute__((externally_visible))
+VISIBLE void __aeabi_unwind_cpp_pr0(void) {};
+VISIBLE void __aeabi_unwind_cpp_pr1(void) {};
+VISIBLE void __aeabi_unwind_cpp_pr2(void) {};
+#endif

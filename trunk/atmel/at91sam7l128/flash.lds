@@ -92,7 +92,5 @@ SECTIONS
         *(.ARM.extab*)
         *(.ARM.exidx*)
     } 
-    
-
 }
 end = .;

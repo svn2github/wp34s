@@ -14,8 +14,17 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ *  This file is compiled "en block" for better space optimization
+ */
 #ifdef REALBUILD
+#ifdef __GNUC__
+__attribute__((externally_visible)) void LowLevelInit(void);
+#endif
 #include "main.c"
+#include "atmel/board_lowlevel.c"
+#include "atmel/board_memories.c"
+#include "atmel/rtc.c"
 #else
 #include "console.c"
 #endif

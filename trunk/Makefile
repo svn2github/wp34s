@@ -104,7 +104,7 @@ SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		commands.c string.c
 
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h date.h \
-		decn.h display.h features.h hp.h int.h keys.h lcd.h lcdmap.h \
+		decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
 		statebits.h stats.h xeq.h xrom.h
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
@@ -113,8 +113,12 @@ LIBDN := -ldecNumber
 CNSTS := $(OBJECTDIR)/libconsts.a
 
 ifdef REALBUILD
-STARTUP := atmel/board_cstartup.S \
-	$(OBJECTDIR)/board_lowlevel.o $(OBJECTDIR)/board_memories.o
+STARTUP := atmel/board_cstartup.S
+ATSRCS := board_lowlevel.c board_memories.c rtc.c
+ATOBJS := $(ATSRCS:%.c=$(OBJECTDIR)/%.o)
+ATSRCS := $(ATSRCS:%.c=atmel/%.c)
+ATHDRS := $(ATSRCS:%.c=%.h) atmel/board.h atmel/at91sam7l128/AT91SAM7L128.h 
+
 LDCTRL := atmel/at91sam7l128/flash.lds
 MAPFILE := $(OUTPUTDIR)/mapfile.txt
 SUMMARY := $(OUTPUTDIR)/summary.txt
@@ -157,8 +161,9 @@ ifdef REALBUILD
 
 # Targets flash and flash2 for different build processes
 
-$(OUTPUTDIR)/calc.bin: asone.c $(HEADERS) $(SRCS) $(STARTUP) $(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
+$(OUTPUTDIR)/calc.bin: asone.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
+		$(LDCTRL) Makefile
+	$(CC) $(CFLAGS)	-IdecNumber -Iatmel -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program 
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
 	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
@@ -166,10 +171,10 @@ $(OUTPUTDIR)/calc.bin: asone.c $(HEADERS) $(SRCS) $(STARTUP) $(LDCTRL) Makefile
 	grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 
-$(OUTPUTDIR)/calc2.bin: $(OBJECTDIR)/libdecNumber.a $(CNSTS) $(OBJS) \
-		$(STARTUP) $(LDCTRL) Makefile
+$(OUTPUTDIR)/calc2.bin: $(OBJECTDIR)/libdecNumber.a $(CNSTS) $(OBJS) $(MAIN)\
+		$(ATOBJS) $(STARTUP) $(LDCTRL) Makefile
 	$(CC) $(CFLAGS)	$(LDFLAGS:$(MAPFILE)=$(MAPFILE2)) -o $(OUTPUTDIR)/calc2 \
-		$(STARTUP) $(OBJS) $(LIBDN) $(LIBS)
+		$(STARTUP) $(MAIN) $(OBJS) $(ATOBJS) $(LIBDN) $(LIBS)
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc2 $@
 	grep "^\.fixed"    $(MAPFILE2) | tail -n 1 >  $(SUMMARY2)
 	grep "^\.relocate" $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
@@ -233,13 +238,14 @@ $(OBJECTDIR)/commands.o: commands.c xeq.h Makefile features.h
 $(OBJECTDIR)/complex.o:	complex.c decn.h complex.h xeq.h consts.h \
 		Makefile features.h
 $(OBJECTDIR)/consts.o: consts.c	consts.h Makefile features.h
-$(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h alpha.h \
+$(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h alpha.h atmel/rtc.h \
 		Makefile features.h
 $(OBJECTDIR)/decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile features.h
 $(OBJECTDIR)/display.o:	display.c xeq.h	display.h consts.h lcd.h int.h \
 		charset.h charset7.h decn.h alpha.h decn.h Makefile features.h
 $(OBJECTDIR)/int.o: int.c int.h	xeq.h Makefile features.h
-$(OBJECTDIR)/lcd.o: lcd.c lcd.h	xeq.h display.h	lcdmap.h Makefile features.h
+$(OBJECTDIR)/lcd.o: lcd.c lcd.h	xeq.h display.h	lcdmap.h atmel/board.h \
+		Makefile features.h
 $(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h Makefile features.h
 $(OBJECTDIR)/prt.o: prt.c xeq.h	consts.h display.h Makefile features.h
@@ -255,6 +261,9 @@ $(OBJECTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
 		atmel/board.h Makefile
 $(OBJECTDIR)/board_memories.o: atmel/board_memories.c atmel/board_memories.h \
 		atmel/board.h Makefile
+$(OBJECTDIR)/rtc.o: atmel/rtc.c atmel/rtc.h \
+		atmel/board.h Makefile
+
 $(OBJECTDIR)/main.o: main.c xeq.h
 else
 $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \

@@ -20,7 +20,7 @@
 #include "xeq.h"
 
 #if defined(REALBUILD)
-#include "hp.h"
+#include "atmel/board.h"
 #endif
 
 #ifdef USECURSES
