@@ -425,10 +425,7 @@ static int process_g_shifted(const keycode c) {
 	case K53:	init_arg(RARG_SUM);	break;
 	case K54:	return OP_MON | OP_PERCNT;
 
-	case K60:
-		init_state();
-		break;
-
+	case K60:       return OP_NIL | OP_OFF;
 	case K61:	return OP_MON | OP_RND;
 	case K62:	return OP_MON | OP_FRAC;
 	case K63:	return OP_NIL | OP_RTN;
