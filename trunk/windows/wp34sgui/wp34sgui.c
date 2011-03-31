@@ -21,7 +21,9 @@
  *
  * Module written by MvC
  */
+#define shutdown _shutdown
 #include <windows.h>
+#undef shutdown
 #include <string.h>
 #include <stdio.h>
 
@@ -35,8 +37,13 @@
 /*
  *  setup the LCD area and perstent RAM
  */
-static int EmulatorFlags;
 unsigned int LcdData[ 20 ];
+TPersistentRam PersistentRam;
+
+/*
+ *  Used by Emulator only
+ */
+static int EmulatorFlags;
 
 /*
  *  Main entry point
@@ -160,9 +167,9 @@ char *GetBottomLine( void )
 {
 	static char buffer[ 30 ];
 	xset( buffer, '\0', sizeof( buffer ) );
-//  decimal64ToString( &regX, buffer );
+//	decimal64ToString( &regX, buffer );
 	format_reg( &regX, buffer );
-    return buffer;
+	return buffer;
 }
 
 
@@ -184,6 +191,7 @@ unsigned long __stdcall HeartbeatThread( void *p )
 	}
 }
 
+// These are called from the application
 
 /*
  *  Check if something is waiting for attention
@@ -191,4 +199,22 @@ unsigned long __stdcall HeartbeatThread( void *p )
 int is_key_pressed(void)
 {
 	return !KeyBuffEmpty();  // in DLL
+}
+
+
+/*
+ *  Shut down the emulator from the application
+ */
+void shutdown( void )
+{
+	Shutdown();
+	ExitEmulator();
+}
+
+
+/*
+ *  Serve the watch dog
+ */
+void watchdog( void )
+{
 }

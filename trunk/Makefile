@@ -190,7 +190,7 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		Makefile features.h
 	cd $(UTILITIES) \
 		&& ./compile_consts "../" "../$(OBJECTDIR)/" \
-		&& make "CFLAGS=$(CFLAGS) -I.." -j2 -C consts
+		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 
 catalogues.h: $(UTILITIES)/compile_cats$(EXE) Makefile features.h
 	$(UTILITIES)/compile_cats >catalogues.h

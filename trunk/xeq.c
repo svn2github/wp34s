@@ -2827,12 +2827,6 @@ static void xeq_single(void) {
 	xeq(op);
 }
 
-#if !defined(REALBUILD) && !defined(WINGUI)
-int is_key_pressed() {
-	return 0;
-}
-#endif
-
 /* Check to see if we're running a program and if so execute it
  * for a while.
  *

@@ -480,7 +480,7 @@ static void output(FILE *fm, const char *name, const decNumber *d) {
         fc = fopen(tmpname, "w");
         gpl_text(fc, "/* ", " * ", " */");
         num = ((d->digits+DECDPUN-1)/DECDPUN);
-        fprintf(fc,     "#include \"../decNumber/decNumber.h\"\n"
+        fprintf(fc,     "#include \"decNumber/decNumber.h\"\n"
                         "\n"
                         "const struct {\n"
                         "\tint32_t digits;\n"

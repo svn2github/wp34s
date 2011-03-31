@@ -1638,5 +1638,12 @@ void AddKey(int k, bool ifnotfull)
   }
 }
 
+// Allow exit from application
+
+void ExitEmulator(void)
+{
+  dlg->DestroyWindow();
+}
+
 
 

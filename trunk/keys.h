@@ -17,6 +17,7 @@
 #ifndef __KEYS_H__
 #define __KEYS_H__
 
+#if 0
 enum {
 	KEY_11=0, KEY_12, KEY_13, KEY_14, KEY_15,
 		KEY_16, KEY_17, KEY_18, KEY_19, KEY_10,
@@ -33,6 +34,28 @@ enum {
 	KEY_SHIFT_g = 0x80,
 	KEY_SHIFT_m = 0xc0
 };
+#endif
 
+// MvC: changed keycodes for rows with just 5 keys to match HP SDK
+
+typedef enum {
+	K00 = 0,  K01 = 1,  K02 = 2,  K03 = 3,  K04 = 4,  K05 = 5,
+	K10 = 6,  K11 = 7,  K12 = 8,
+#define K13	9		/* Shift keys aren't in the enum since they are handled */
+#define K14	10		/* Directly in the main key processing loop */
+#define K15	11
+	K20 = 12, K21 = 13, K22 = 14, K23 = 15, K24 = 16,
+	K30 = 18, K31 = 19, K32 = 20, K33 = 21, K34 = 22,
+	K40 = 24, K41 = 25, K42 = 26, K43 = 27, K44 = 28,
+	K50 = 30, K51 = 31, K52 = 32, K53 = 33, K54 = 34,
+	K60 = 36, K61 = 37, K62 = 38, K63 = 39, K64 = 40,
+} keycode;
+
+#define K_UNKNOWN	-1
+#define K_F		K13
+#define K_G		K14
+#define K_H		K15
+#define K_ARROW		K04
+#define K_CMPLX		K05
 
 #endif

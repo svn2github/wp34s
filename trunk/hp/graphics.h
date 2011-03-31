@@ -63,6 +63,7 @@ void EXPORT UpdateDlgScreen(bool force);
 void EXPORT WindowsBlink(bool a);
 void EXPORT WindowsSwapBuffers();
 void EXPORT AddKey(int k,bool ifnotfull);
+void EXPORT ExitEmulator(void);
 #else
 #define UpdateScreenContent()
 #define WindowsBlink(a)
