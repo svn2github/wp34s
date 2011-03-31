@@ -121,7 +121,7 @@ SUMMARY := $(OUTPUTDIR)/summary.txt
 MAPFILE2 := $(MAPFILE:%.txt=%2.txt)
 SUMMARY2 := $(SUMMARY:%.txt=%2.txt)
 LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
-OBJS += $(OBJECTDIR)/hp.o
+MAIN := $(OBJECTDIR)/main.o
 else
 MAIN := $(OBJECTDIR)/console.o
 endif
@@ -255,7 +255,7 @@ $(OBJECTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
 		atmel/board.h Makefile
 $(OBJECTDIR)/board_memories.o: atmel/board_memories.c atmel/board_memories.h \
 		atmel/board.h Makefile
-$(OBJECTDIR)/hp.o: hp.c hp/lcd.c hp/main.c hp/keyboard.c hp/rtc.c hp/timer.c
+$(OBJECTDIR)/main.o: main.c xeq.h
 else
 $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h Makefile features.h

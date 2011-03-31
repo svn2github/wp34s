@@ -45,6 +45,10 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</GenerateManifest>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</GenerateManifest>
+    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</PostBuildEventUseInBuild>
+    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Build</CustomBuildBeforeTargets>
+    <CustomBuildBeforeTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Build</CustomBuildBeforeTargets>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -67,12 +71,27 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>building consts</Message>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>cd "$(ProjectDir)"
 $(OutDir)consts.exe ..\..\
 del ..\..\allconsts.c
-type consts\*.c &gt; ..\..\allconsts.c 2&gt;nul</Command>
-    </PostBuildEvent>
+type consts\*.c &gt; ..\..\allconsts.c 2&gt;nul
+</Command>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Building consts</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>..\..\consts.h;..\..\consts.c;..\..\allconsts.c</Outputs>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Inputs>$(OutDir)consts.exe;%(Inputs)</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -96,13 +115,27 @@ type consts\*.c &gt; ..\..\allconsts.c 2&gt;nul</Command>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>building consts</Message>
+      <Message>
+      </Message>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>cd "$(ProjectDir)"
 $(OutDir)consts.exe ..\..\
 del ..\..\allconsts.c
 type consts\*.c &gt; ..\..\allconsts.c 2&gt;nul
 </Command>
-    </PostBuildEvent>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Message>Building consts</Message>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Outputs>..\..\consts.h;..\..\consts.c;..\..\allconsts.c</Outputs>
+    </CustomBuildStep>
+    <CustomBuildStep>
+      <Inputs>$(OutDir)consts.exe;%(Inputs)</Inputs>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\compile_consts.c" />

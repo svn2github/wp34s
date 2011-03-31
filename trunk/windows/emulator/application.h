@@ -73,12 +73,12 @@ extern "C" {
  */
 #ifdef _ARM_
 #include "board.h"
-#define PERSISTANT_RAM_SIZE AT91C_ISRAM_2_SIZE
+#define PERSISTENT_RAM_SIZE AT91C_ISRAM_2_SIZE
 #else
 #define PERSISTENT_RAM_SIZE 2048
 #endif
 
-#ifndef T_PERSISTANT_RAM_DEFINED
+#ifndef T_PERSISTENT_RAM_DEFINED
 typedef struct _ram {
 	unsigned char ram[ PERSISTENT_RAM_SIZE ];
 } TPersistentRam;

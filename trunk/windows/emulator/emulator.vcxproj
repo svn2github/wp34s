@@ -39,7 +39,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
-    <IncludePath>..\..\hp;$(IncludePath)</IncludePath>
     <TargetExt>.dll</TargetExt>
     <TargetName>$(ProjectName)_d</TargetName>
     <LinkIncremental>false</LinkIncremental>
@@ -49,7 +48,6 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IntDir>$(ProjectDir)$(Configuration)\</IntDir>
-    <IncludePath>..\..\hp;$(IncludePath)</IncludePath>
     <TargetExt>.dll</TargetExt>
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
@@ -108,24 +106,24 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\hp\system.c" />
     <ClCompile Include="emulator_dll.c" />
     <ClCompile Include="HP20b_c.cpp" />
     <ClCompile Include="HP20b_cDlg.cpp" />
     <ClCompile Include="skin.cpp" />
+    <ClCompile Include="system.c" />
     <ClCompile Include="VirtualLCD.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\hp\application.h" />
-    <ClInclude Include="..\..\hp\graphics.h" />
-    <ClInclude Include="..\..\hp\system.h" />
-    <ClInclude Include="..\..\hp\types.h" />
+    <ClInclude Include="application.h" />
     <ClInclude Include="emulator_dll.h" />
+    <ClInclude Include="graphics.h" />
     <ClInclude Include="HP20b_c.h" />
     <ClInclude Include="HP20b_cDlg.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="skin.h" />
     <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="system.h" />
+    <ClInclude Include="types.h" />
     <ClInclude Include="VirtualLCD.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

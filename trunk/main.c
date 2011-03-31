@@ -21,12 +21,17 @@
  *
  * Module written by MvC
  */
+#define shutdown _shutdown
+#include <windows.h>
+#undef shutdown
 #include <string.h>
 #include <stdio.h>
 
 #include "emulator_dll.h"
 
 #include "builddate.h"
+#define T_PERSISTANT_RAM_DEFINED
+#include "application.h"
 #include "display.h"
 
 /*
@@ -202,7 +207,7 @@ int is_key_pressed(void)
  */
 void shutdown( void )
 {
-	// Shutdown();
+	Shutdown();
 	ExitEmulator();
 }
 

@@ -42,10 +42,10 @@
 # include "stdafx.h"
 # include "HP20b_c.h"
 # include "HP20b_cDlg.h"
-# include <application.h>
-# include <system.h>
+# include "application.h"
+# include "system.h"
 # include "skin.h"
-# include <graphics.h>
+# include "graphics.h"
 
 //#include "atlimage.h"
 
@@ -1642,7 +1642,7 @@ void AddKey(int k, bool ifnotfull)
 
 void ExitEmulator(void)
 {
-  dlg->DestroyWindow();
+  SendMessage(dlg->m_hWnd, WM_CLOSE, 0, 0);
 }
 
 

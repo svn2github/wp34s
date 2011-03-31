@@ -31,7 +31,7 @@
 #include "stdafx.h"
 #include "HP20b_c.h"
 #include "HP20b_cDlg.h"
-#include <application.h>
+#include "application.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
