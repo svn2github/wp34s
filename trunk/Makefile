@@ -110,6 +110,7 @@ LDCTRL := atmel/at91sam7l128/flash.lds
 MAPFILE = $(OUTPUTDIR)/mapfile.txt
 SUMMARY = $(OUTPUTDIR)/summary.txt
 LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
+OBJS += $(OUTPUTDIR)/hp.o
 endif
 
 # Targets and rules
@@ -121,6 +122,7 @@ calc: $(OUTPUTDIR) $(OUTPUTDIR)/calc
 
 ifdef REALBUILD
 flash: $(OUTPUTDIR)/calc.bin
+flash2: $(OUTPUTDIR)/calc2.bin
 endif
 
 clean:
@@ -145,6 +147,16 @@ $(OUTPUTDIR)/calc.bin: asone
 	grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+
+$(OUTPUTDIR)/calc2.bin: $(DIRS) $(OUTPUTDIR)/decNumber.a $(CNSTS) $(OBJS) \
+		$(STARTUP) $(LDCTRL) Makefile
+	$(CC) $(CFLAGS)	$(LDFLAGS)2 -o $(OUTPUTDIR)/calc2 $(STARTUP) $(OBJS) \
+		$(LIBDN) $(LIBS)
+	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc2 $(OUTPUTDIR)/calc2.bin
+	grep "^\.fixed"    $(MAPFILE)2 | tail -n 1 >  $(SUMMARY)2
+	grep "^\.relocate" $(MAPFILE)2 | tail -n 1 >> $(SUMMARY)2
+	grep "^\.bss"      $(MAPFILE)2 | tail -n 1 >> $(SUMMARY)2
+	grep "^\.backup"   $(MAPFILE)2 | tail -n 1 >> $(SUMMARY)2
 endif
 
 asone: $(DIRS) asone.c $(HEADERS) $(SRCS) $(STARTUP) $(LDCTRL) Makefile
@@ -221,4 +233,5 @@ $(OUTPUTDIR)/xeq.o: xeq.c xeq.h	alpha.h	decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h statebits.h Makefile features.h
 $(OUTPUTDIR)/xrom.o: xrom.c xrom.h xeq.h consts.h Makefile features.h
 
+$(OUTPUTDIR)/hp.o: hp.c hp/lcd.c hp/main.c hp/keyboard.c hp/rtc.c hp/timer.c
 

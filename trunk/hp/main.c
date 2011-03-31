@@ -465,6 +465,10 @@ void wait( unsigned int s ) {
     while(s--);
 }
 
+int is_key_pressed( void ) {
+	return 0;
+}
+
 __attribute__((section(".backup"))) TPersistentRam PersistentRam;
 
 // Ugly hack to get rid of unwinding code: http://embdev.net/topic/201054
