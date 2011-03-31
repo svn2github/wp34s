@@ -728,6 +728,38 @@ static void dist_two_param(decNumber *a, decNumber *b) {
 	get_reg_n_as_dn(regK_idx, b);
 }
 
+static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
+	if (decNumberIsSpecial(n) ||
+			decNumberIsNegative(n) ||
+			decNumberIsZero(n) ||
+			(!zero && decNumberIsZero(n)) ||
+			(intg && !is_int(n, Ctx))) {
+		//set_NaN(r);
+		decNumberZero(r);
+		State.error = ERR_BAD_PARAM;
+		return 1;
+	}
+	return 0;
+}
+#define param_positive(r, n)		(param_verify(r, n, 0, 0))
+#define param_positive_int(r, n)	(param_verify(r, n, 0, 1))
+#define param_nonnegative(r, n)		(param_verify(r, n, 1, 0))
+#define param_nonnegative_int(r, n)	(param_verify(r, n, 1, 1))
+
+static int param_range01(decNumber *r, const decNumber *p) {
+	decNumber h;
+
+	decNumberCompare(&h, &const_1, p, Ctx);
+	if (decNumberIsSpecial(p) || (decNumberIsNegative(p) && !decNumberIsZero(p)) ||
+			(decNumberIsNegative(&h) && !decNumberIsZero(&h))) {
+		//set_NaN(r);
+		decNumberZero(r);
+		err(ERR_BAD_PARAM);
+		return 1;
+	}
+	return 0;
+}
+
 
 // Normal(0,1) PDF
 // 1/sqrt(2 PI) . exp(-x^2/2)
@@ -772,9 +804,9 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber a, b, v;
 
 	dist_one_param(&v);
-	if (decNumberIsNaN(x) || decNumberIsSpecial(&v) ||
-			decNumberIsNegative(&v) || decNumberIsZero(&v) ||
-			!is_int(&v, Ctx)) {
+	if (param_positive_int(r, &v))
+		return r;
+	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -792,9 +824,9 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber t, u, z, v;
 
 	dist_one_param(&v);
-	if (decNumberIsNaN(x) || decNumberIsNaN(&v) ||
-			decNumberIsNegative(&v) || decNumberIsZero(&v) ||
-			!is_int(&v, Ctx)) {
+	if (param_positive(r, &v))
+		return r;
+	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -820,10 +852,9 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber t, u, w, v1, v2;
 
 	dist_two_param(&v1, &v2);
-	if (decNumberIsNaN(x) || decNumberIsSpecial(&v1) || decNumberIsSpecial(&v2) ||
-			decNumberIsNegative(&v1) || decNumberIsZero(&v1) ||
-			decNumberIsNegative(&v2) || decNumberIsZero(&v2) ||
-			!is_int(&v1, ctx) || !is_int(&v2, ctx)) {
+	if (param_positive(r, &v1) || param_positive(r, &v2))
+		return r;
+	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -846,10 +877,10 @@ decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber k, lam, t;
 
 	dist_two_param(&k, &lam);
+	if (param_positive(r, &k) || param_positive(r, &lam))
+		return r;
 
-	if (decNumberIsNaN(x) || decNumberIsSpecial(&k) || decNumberIsSpecial(&lam) ||
-			decNumberIsNegative(&k) || decNumberIsZero(&k) ||
-			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
+	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -871,8 +902,9 @@ decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber lam, t, u;
 
 	dist_one_param(&lam);
-	if (decNumberIsNaN(x) || decNumberIsSpecial(&lam) ||
-			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
+	if (param_positive(r, &lam))
+		return r;
+	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -893,12 +925,9 @@ decNumber *cdf_B_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber n, p, t, u, v;
 
 	dist_two_param(&p, &n);
-	decNumberCompare(&t, &const_1, &p, ctx);
-	if (decNumberIsNaN(x) || decNumberIsSpecial(&n) || decNumberIsSpecial(&p) ||
-			decNumberIsNegative(&p) || decNumberIsZero(&p) ||
-			decNumberIsNegative(&t) || decNumberIsZero(&t) ||
-			(decNumberIsNegative(&n) && !decNumberIsZero(&n)) ||
-			!is_int(&n, ctx)) {
+	if (param_nonnegative_int(r, &n) || param_range01(r, &p))
+		return r;
+	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -925,11 +954,11 @@ decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 decNumber *cdf_P_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber lambda, t, u;
 
-	dist_two_param(&t, &u);		// n
+	dist_two_param(&t, &u);		// t=probability, u=count
+	if (param_range01(r, &t) || param_nonnegative_int(r, &u))
+		return r;
 	decNumberMultiply(&lambda, &t, &u, ctx);
-	if (decNumberIsNaN(x) || decNumberIsSpecial(&lambda) ||
-			(decNumberIsNegative(&lambda) && !decNumberIsZero(&lambda)) ||
-			!is_int(&lambda, ctx)) {
+	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -950,16 +979,15 @@ decNumber *cdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 	return cdf_P_helper(r, &t, ctx);
 }
 
-/* Poisson cdf f(k, lam) = 1 - iGamma(floor(k+1), lam) / floor(k)! k>=0
+/* Geometric cdf
  */
 decNumber *cdf_G_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber p, t, u;
 
 	dist_one_param(&p);
-	decNumberCompare(&t, &const_1, &p, ctx);
-	if (decNumberIsNaN(x) || decNumberIsSpecial(&p) ||
-			decNumberIsNegative(&p) || decNumberIsZero(&p) ||
-			decNumberIsNegative(&t) || decNumberIsZero(&t)) {
+	if (param_range01(r, &p))
+		return r;
+	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -1032,6 +1060,10 @@ static decNumber *qf_search(decNumber *r,
 	decNumberCopy(&t, samp_low);
 	if (qf_eval(&tv, &t, &x, ctx, f) == 0)
 		return decNumberCopy(r, &t);
+	if (State.error == ERR_BAD_PARAM) {
+		decNumberZero(r);
+		return r;
+	}
 
 	decNumberCopy(&u, samp_high);
 	if (qf_eval(&uv, &u, &x, ctx, f) == 0)
@@ -1094,9 +1126,11 @@ decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber t, u, k, lam;
 
+	dist_two_param(&k, &lam);
+	if (param_positive(r, &k) || param_positive(r, &lam))
+		return r;
 	if (check_probability(r, p, ctx, &const_0))
 	    return r;
-	dist_two_param(&k, &lam);
 	decNumberSubtract(&t, &const_1, p, ctx);
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
 			decNumberIsNegative(&k) || decNumberIsZero(&k) ||
@@ -1122,9 +1156,11 @@ decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
 decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber t, u, lam;
 
+	dist_one_param(&lam);
+	if (param_positive(r, &lam))
+		return r;
 	if (check_probability(r, p, ctx, &const_0))
 	    return r;
-	dist_one_param(&lam);
 	decNumberSubtract(&t, &const_1, p, ctx);
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) ||
 			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
@@ -1137,12 +1173,13 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 	return decNumberMinus(r, &t, ctx);
 }
 
-
 /* Normal with specified mean and variance */
 decNumber *cdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber a, b, mu, var;
 
 	dist_two_param(&mu, &var);
+	if (param_positive(r, &var))
+		return r;
 	decNumberSubtract(&a, x, &mu, ctx);
 	decNumberDivide(&b, &a, &var, ctx);
 	return cdf_Q(r, &b, ctx);
@@ -1152,6 +1189,8 @@ decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber a, b, mu, var;
 
 	qf_Q(&a, p, ctx);
+	if (param_positive(r, &var))
+		return r;
 	dist_two_param(&mu, &var);
 	decNumberMultiply(&b, &a, &var, ctx);
 	return decNumberAdd(r, &b, &mu, ctx);
@@ -1178,6 +1217,8 @@ decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber a, b, mu, s;
 
 	dist_two_param(&mu, &s);
+	if (param_positive(r, &s))
+		return r;
 	decNumberSubtract(&a, x, &mu, ctx);
 	decNumberDivide(&b, &a, &s, ctx);
 	decNumberMultiply(&a, &b, &const_0_5, ctx);
@@ -1189,9 +1230,11 @@ decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
 decNumber *qf_logistic(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber a, b, mu, s;
 
+	dist_two_param(&mu, &s);
+	if (param_positive(r, &s))
+		return r;
 	if (check_probability(r, p, ctx, NULL))
 	    return r;
-	dist_two_param(&mu, &s);
 	decNumberSubtract(&a, p, &const_0_5, ctx);
 	decNumberMultiply(&b, &a, &const_2, ctx);
 	decNumberArcTanh(&a, &b, ctx);
@@ -1205,6 +1248,8 @@ decNumber *cdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber a, b, x0, gamma;
 
 	dist_two_param(&x0, &gamma);
+	if (param_positive(r, &gamma))
+		return r;
 	decNumberSubtract(&a, x, &x0, ctx);
 	decNumberDivide(&b, &a, &gamma, ctx);
 	decNumberArcTan(&a, &b, ctx);
@@ -1215,9 +1260,11 @@ decNumber *cdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
 decNumber *qf_cauchy(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber a, b, x0, gamma;
 
+	dist_two_param(&x0, &gamma);
+	if (param_positive(r, &gamma))
+		return r;
 	if (check_probability(r, p, ctx, NULL))
 	    return r;
-	dist_two_param(&x0, &gamma);
 	decNumberSubtract(&a, p, &const_0_5, ctx);
 	decNumberMultiply(&b, &a, &const_PI, ctx);
 	decNumberTan(&a, &b, ctx);

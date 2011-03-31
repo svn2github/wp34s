@@ -72,7 +72,8 @@ static const char *const error_table[] =
     "stack\0CLASH",	
     "bad mode\0",
     "word size\0too SMmALL",
-    "too few\0dAtA Points"
+    "too few\0dAtA Points",
+    "invalid\0ParaMmEtEr",
 };
 
 

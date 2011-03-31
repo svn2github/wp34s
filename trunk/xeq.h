@@ -514,6 +514,7 @@ enum errors {
 	ERR_XROM_NEST,	ERR_RANGE,	ERR_DIGIT,
 	ERR_TOO_LONG,	ERR_XEQ_NEST,	ERR_STK_CLASH,
 	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
+	ERR_BAD_PARAM,
 	MAX_ERROR
 };
 
@@ -678,7 +679,7 @@ struct _state {
 #else
 	unsigned int testmode : 1;
 #endif
-	unsigned int error : 4;		// Did an error occur, if so what code?
+	unsigned int error : 5;		// Did an error occur, if so what code?
 	unsigned int status : 4;	// display status screen line
 
 	unsigned int LowPowerCount : 16;
