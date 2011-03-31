@@ -993,6 +993,8 @@ extern decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx);
 
 /* system functions */
 extern int is_key_pressed(void);
+extern void watchdog(void);
+extern void shutdown(void);
 
 #ifdef REALBUILD
 extern void cmdcontrast(unsigned int arg, enum rarg op);
