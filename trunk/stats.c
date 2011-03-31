@@ -1188,10 +1188,10 @@ decNumber *cdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
 decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumber a, b, mu, var;
 
-	qf_Q(&a, p, ctx);
+	dist_two_param(&mu, &var);
 	if (param_positive(r, &var))
 		return r;
-	dist_two_param(&mu, &var);
+	qf_Q(&a, p, ctx);
 	decNumberMultiply(&b, &a, &var, ctx);
 	return decNumberAdd(r, &b, &mu, ctx);
 }
