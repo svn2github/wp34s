@@ -18,6 +18,7 @@
  *  This is the console emulator part
  */
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "xeq.h" 
 #include "keys.h"
@@ -104,7 +105,6 @@ static int remap(const int c) {
 	return K_UNKNOWN;
 }
 
-#include <stdio.h>
 
 /* Mappings from our internal character codes to readable strings.
  * The first table is for characters below space and the second for those
