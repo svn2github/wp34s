@@ -33,7 +33,6 @@
 
 #include "supc.h"
 #include <board.h>
-#include <utility/assert.h>
 
 //------------------------------------------------------------------------------
 //         Local definitions
@@ -79,7 +78,6 @@ void SUPC_DisableSlcd(void)
 //------------------------------------------------------------------------------
 void SUPC_SetSlcdVoltage(unsigned int voltage)
 {
-    SANITY_CHECK((voltage & ~AT91C_SUPC_LCDOUT) == 0);
     AT91C_BASE_SUPC->SUPC_MR = SUPC_KEY | (AT91C_BASE_SUPC->SUPC_MR & ~AT91C_SUPC_LCDOUT) | voltage;
 }
 
@@ -115,7 +113,6 @@ void SUPC_DisableFlash(void)
 //------------------------------------------------------------------------------
 void SUPC_SetVoltageOutput(unsigned int voltage)
 {
-    SANITY_CHECK((voltage & ~AT91C_SUPC_VRVDD) == 0);
     AT91C_BASE_SUPC->SUPC_MR = SUPC_KEY | (AT91C_BASE_SUPC->SUPC_MR & ~AT91C_SUPC_VRVDD) | voltage;
 }
 
@@ -176,7 +173,6 @@ void SUPC_DisableRtc(void)
 //-----------------------------------------------------------------------------
 void SUPC_SetBodSampling(unsigned int mode)
 {
-    SANITY_CHECK((mode & ~AT91C_SUPC_BODSMPL) == 0);
     AT91C_BASE_SUPC->SUPC_BOMR &= ~AT91C_SUPC_BODSMPL;
     AT91C_BASE_SUPC->SUPC_BOMR |= mode;
 }
@@ -205,7 +201,6 @@ void SUPC_Shutdown(void)
 //------------------------------------------------------------------------------
 void SUPC_SetWakeUpSources(unsigned int sources)
 {
-    SANITY_CHECK((sources & ~0x0000000B) == 0);
     AT91C_BASE_SUPC->SUPC_WUMR &= ~0x0000000B;
     AT91C_BASE_SUPC->SUPC_WUMR |= sources;
 }
@@ -216,7 +211,6 @@ void SUPC_SetWakeUpSources(unsigned int sources)
 //------------------------------------------------------------------------------
 void SUPC_SetWakeUpInputs(unsigned int inputs)
 {
-    SANITY_CHECK((inputs & ~0xFFFF) == 0);
     AT91C_BASE_SUPC->SUPC_WUIR &= ~0xFFFF;
     AT91C_BASE_SUPC->SUPC_WUIR |= inputs;
 }

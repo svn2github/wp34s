@@ -33,7 +33,6 @@
 
 #include "slcdc.h"
 #include <board.h>
-#include <utility/assert.h>
 
 #include <string.h>
 
@@ -61,12 +60,6 @@ void SLCDC_Configure(
     unsigned int bias,
     unsigned int timeSetting)
 {
-    SANITY_CHECK((commons > 0) && (commons <= 10));
-    SANITY_CHECK((segments > 0) && (segments <= 40));
-    SANITY_CHECK((bias & ~AT91C_SLCDC_BIAS) == 0);
-    SANITY_CHECK((timeSetting & ~(0xF << 16)) == 0);  
-    SANITY_CHECK((timeSetting >> 16) < 0x0A);
-
     // Enable peripheral clock
     AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_SLCD;
     AT91C_BASE_SLCDC->SLCDC_MR = (commons - 1) | ((segments - 1) << 8) | bias | timeSetting;
@@ -129,9 +122,6 @@ void SLCDC_DisableLowPowerMode(void)
 //------------------------------------------------------------------------------
 void SLCDC_SetFrameFreq(unsigned int prescalerValue, unsigned int dividerValue)
 {
-    SANITY_CHECK((prescalerValue & ~AT91C_SLCDC_PRESC) == 0);
-    SANITY_CHECK((dividerValue & (~(0x07 << 8))) == 0);
-
     AT91C_BASE_SLCDC->SLCDC_FRR = prescalerValue | dividerValue;
 }
 
@@ -143,8 +133,6 @@ void SLCDC_SetDisplayMode(unsigned int mode)
 {
     unsigned int value;
 
-    SANITY_CHECK(mode < 8);
-           
     value = AT91C_BASE_SLCDC->SLCDC_DR;
     value &= ~AT91C_SLCDC_DISPMODE;
     value |= mode;
@@ -160,8 +148,6 @@ void SLCDC_SetBlinkFreq(unsigned int frequency)
 {
     unsigned int value;
 
-    SANITY_CHECK((frequency & ~(0xFF << 8)) == 0);
-
     value = AT91C_BASE_SLCDC->SLCDC_DR;
     value &= ~AT91C_SLCDC_BLKFREQ;
     value |= frequency;           
@@ -174,8 +160,6 @@ void SLCDC_SetBlinkFreq(unsigned int frequency)
 //------------------------------------------------------------------------------
 void SLCDC_EnableInterrupts(unsigned int sources)
 {
-    SANITY_CHECK((sources & 0xFFFFFFFA) == 0);
-
     AT91C_BASE_SLCDC->SLCDC_IER = sources;
 }
 
@@ -185,8 +169,6 @@ void SLCDC_EnableInterrupts(unsigned int sources)
 //------------------------------------------------------------------------------
 void SLCDC_DisableInterrupts(unsigned int sources)
 {
-    SANITY_CHECK((sources & 0xFFFFFFFA) == 0);
-
     AT91C_BASE_SLCDC->SLCDC_IDR = sources;
 }
 
