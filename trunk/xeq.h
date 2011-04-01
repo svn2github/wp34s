@@ -300,7 +300,7 @@ enum {
 	OP_DEG2RAD, OP_RAD2DEG,
 	OP_CCHS, OP_CCONJ,		// CHS and Conjugate
 	OP_ERF,
-	OP_cdf_Q, OP_qf_Q,
+	OP_pdf_Q, OP_cdf_Q, OP_qf_Q,
 	OP_cdf_chi2, OP_qf_chi2,
 	OP_cdf_T, OP_qf_T,
 	OP_cdf_F, OP_qf_F,
@@ -309,10 +309,10 @@ enum {
 	OP_cdf_B, OP_qf_B,
 	OP_cdf_P, OP_qf_P,
 	OP_cdf_G, OP_qf_G,
-	OP_cdf_N, OP_qf_N,
-	OP_cdf_LN, OP_qf_LN,
+	OP_pdf_N, OP_cdf_N, OP_qf_N,
+	OP_pdf_LN, OP_cdf_LN, OP_qf_LN,
 	OP_cdf_LG, OP_qf_LG,
-	OP_cdf_C, OP_qf_C,
+	OP_pdf_C, OP_cdf_C, OP_qf_C,
 	OP_xhat, OP_yhat,
 	OP_sigper,
 	OP_PERCNT, OP_PERCHG, OP_PERTOT,// % operations -- really dyadic but leave the Y register unchanged

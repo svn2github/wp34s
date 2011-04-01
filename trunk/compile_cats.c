@@ -214,6 +214,7 @@ static s_opcode stats_catalogue[] = {
 static s_opcode prob_catalogue[] = {
 	MON(OP_cdf_B,		"B(n)")
 	MON(OP_qf_B,		"B\235(p)")
+	MON(OP_pdf_C,		"Cap(x)")
 	MON(OP_cdf_C,		"Ca(x)")
 	MON(OP_qf_C,		"Ca\235(p)")
 	MON(OP_cdf_EXP,		"Ex(x)")
@@ -224,8 +225,10 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_qf_G,		"G/235(p)")
 	MON(OP_cdf_LG,		"Lg(x)")
 	MON(OP_qf_LG,		"Lg\235(p)")
+	MON(OP_pdf_LN,		"Lnp(x)")
 	MON(OP_cdf_LN,		"Ln(x)")
 	MON(OP_qf_LN,		"Ln\235(p)")
+	MON(OP_pdf_N,		"Np(x)")
 	MON(OP_cdf_N,		"N(x)")
 	MON(OP_qf_N,		"N\235(p)")
 	MON(OP_cdf_P,		"P(n)")
@@ -236,6 +239,7 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_qf_WB,		"WB/235(p)")
 	MON(OP_cdf_chi2,	"\225\232")
 	MON(OP_qf_chi2,		"\225\232INV")
+	MON(OP_pdf_Q,		"\224p(x)")
 };
 
 static s_opcode int_catalogue[] = {

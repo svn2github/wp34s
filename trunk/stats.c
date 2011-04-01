@@ -763,7 +763,7 @@ static int param_range01(decNumber *r, const decNumber *p) {
 
 // Normal(0,1) PDF
 // 1/sqrt(2 PI) . exp(-x^2/2)
-static decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
+decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 	decNumber r, t;
 
 	decNumberSquare(&t, x, ctx);
@@ -1174,15 +1174,32 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 }
 
 /* Normal with specified mean and variance */
-decNumber *cdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber a, b, mu, var;
+static int normal_xform(decNumber *r, decNumber *q, const decNumber *x, decNumber *var, decContext *ctx) {
+	decNumber a, mu;
 
-	dist_two_param(&mu, &var);
-	if (param_positive(r, &var))
-		return r;
+	dist_two_param(&mu, var);
+	if (param_positive(r, var))
+		return 1;
 	decNumberSubtract(&a, x, &mu, ctx);
-	decNumberDivide(&b, &a, &var, ctx);
-	return cdf_Q(r, &b, ctx);
+	decNumberDivide(q, &a, var, ctx);
+	return 0;
+}
+
+decNumber *pdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber q, var, s;
+
+	if (normal_xform(r, &q, x, &var, ctx))
+		return r;
+	pdf_Q(&s, &q, ctx);
+	return decNumberDivide(r, &s, &var, ctx);
+}
+
+decNumber *cdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber q, var;
+
+	if (normal_xform(r, &q, x, &var, ctx))
+		return r;
+	return cdf_Q(r, &q, ctx);
 }
 
 decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
@@ -1198,6 +1215,14 @@ decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
 
 
 /* Log normal with specified mean and variance */
+decNumber *pdf_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t, lx;
+
+	decNumberLn(&lx, x, ctx);
+	pdf_normal(&t, &lx, ctx);
+	return decNumberDivide(r, &t, x, ctx);
+}
+
 decNumber *cdf_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber lx;
 
@@ -1244,14 +1269,34 @@ decNumber *qf_logistic(decNumber *r, const decNumber *p, decContext *ctx) {
 }
 
 /* Cauchy distribution */
-decNumber *cdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber a, b, x0, gamma;
+static int cauchy_xform(decNumber *r, decNumber *c, const decNumber *x, decNumber *gamma, decContext *ctx) {
+	decNumber a, x0;
 
-	dist_two_param(&x0, &gamma);
-	if (param_positive(r, &gamma))
-		return r;
+	dist_two_param(&x0, gamma);
+	if (param_positive(r, gamma))
+		return 1;
 	decNumberSubtract(&a, x, &x0, ctx);
-	decNumberDivide(&b, &a, &gamma, ctx);
+	decNumberDivide(c, &a, gamma, ctx);
+	return 0;
+}
+
+decNumber *pdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber a, b, gamma;
+
+	if (cauchy_xform(r, &b, x, &gamma, ctx))
+		return r;
+	decNumberSquare(&a, &b, ctx);
+	decNumberAdd(&b, &a, &const_1, ctx);
+	decNumberMultiply(&a, &b, &const_PI, ctx);
+	decNumberMultiply(&b, &a, &gamma, ctx);
+	return decNumberRecip(r, &b, ctx);
+}
+
+decNumber *cdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber a, b, gamma;
+
+	if (cauchy_xform(r, &b, x, &gamma, ctx))
+		return r;
 	decNumberArcTan(&a, &b, ctx);
 	decNumberDivide(&b, &a, &const_PI, ctx);
 	return decNumberAdd(r, &b, &const_0_5, ctx);

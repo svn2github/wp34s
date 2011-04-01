@@ -67,6 +67,7 @@ extern void stats_sto_random(decimal64 *, decimal64 *, decContext *);
 extern decNumber *betai(decNumber *, const decNumber *, const decNumber *, const decNumber *, decContext *);
 
 /* Normal (0, 1) distribution */
+extern decNumber *pdf_Q(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_Q(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_Q(decNumber *, const decNumber *, decContext *);
 
@@ -103,10 +104,12 @@ extern decNumber *cdf_B(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_B(decNumber *, const decNumber *, decContext *);
 
 /* Normal distribution m, sigma in registers J and K */
+extern decNumber *pdf_normal(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_normal(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_normal(decNumber *, const decNumber *, decContext *);
 
 /* Lognormal distribution m, sigma in registers J and K */
+extern decNumber *pdf_lognormal(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_lognormal(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_lognormal(decNumber *, const decNumber *, decContext *);
 
@@ -115,6 +118,7 @@ extern decNumber *cdf_logistic(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_logistic(decNumber *, const decNumber *, decContext *);
 
 /* Cauchy distribution x0, gamma in registers J and K */
+extern decNumber *pdf_cauchy(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_cauchy(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_cauchy(decNumber *, const decNumber *, decContext *);
 
