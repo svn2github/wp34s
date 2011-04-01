@@ -20,6 +20,8 @@
  */
 #include "xeq.h"
 
+#include "atmel/board.h"
+
 /*
  *  setup the perstent RAM
  */
@@ -75,6 +77,7 @@ void shutdown( void )
  */
 void watchdog( void )
 {
+	AT91C_BASE_WDTC->WDTC_WDCR=0xA5000001;
 }
 
 
@@ -84,7 +87,13 @@ void watchdog( void )
 int main(void)
 {
         /*
-                init hardware (LCD, timer, etc.)
+         * init hardware (LCD, timer, etc.)
+	 */
+
+
+
+
+	/*
                 forever
                         if key then
                                 full_speed

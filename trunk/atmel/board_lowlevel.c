@@ -120,6 +120,7 @@ void LowLevelInit(void)
     #error No chip definition ?
 #endif
 
+#ifdef XTAL
     // Enable external oscillator (on first boot only, after that command does nothing)
     gLowLevelInitSupcStatus = AT91C_BASE_SUPC->SUPC_SR;
     if ((gLowLevelInitSupcStatus & AT91C_SUPC_OSCSEL) != AT91C_SUPC_OSCSEL) {
@@ -127,6 +128,7 @@ void LowLevelInit(void)
         AT91C_BASE_SUPC->SUPC_CR = (0xA5 << 24) | AT91C_SUPC_XTALSEL;
         while ((AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL) != AT91C_SUPC_OSCSEL);
     }
+#endif
 
     // Switch to slow clock if necessary (so PLL frequency can be changed)
     if ((AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS) == AT91C_PMC_CSS_PLL_CLK) {
@@ -161,8 +163,10 @@ void LowLevelInit(void)
     // Enable Debug mode
     AT91C_BASE_AIC->AIC_DCR = AT91C_AIC_DCR_PROT;
 
+#ifdef NOWD
     // Watchdog initialization
     AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
+#endif
 
     // Remap the internal SRAM at 0x0
     BOARD_RemapRam();

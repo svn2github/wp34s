@@ -18,6 +18,12 @@
 # Define to build the real thing
 #REALBUILD = 1
 
+# Define to disable the watchdog
+#NOWD = 1
+
+# Define to use a crystal oscillator on slow clock after hardware modification
+#XTAL = 1
+
 BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions \
 	-fno-defer-pop -fno-exceptions
 
@@ -79,6 +85,12 @@ ifdef REALBUILD
 
 OUTPUTDIR := realbuild
 CFLAGS := $(BASE_CFLAGS) -mthumb -Os -DREALBUILD -Dat91sam7l128 -Iatmel
+ifdef NOWD
+CFLAGS += -DNOWD
+endif
+ifdef XTAL
+CFLAGS += -DXTAL
+endif
 LDFLAGS := -nostartfiles 
 CROSS_COMPILE := arm-none-eabi-
 CC := $(CROSS_COMPILE)gcc
@@ -114,7 +126,7 @@ CNSTS := $(OBJECTDIR)/libconsts.a
 
 ifdef REALBUILD
 STARTUP := atmel/board_cstartup.S
-ATSRCS := board_lowlevel.c board_memories.c rtc.c
+ATSRCS := board_lowlevel.c board_memories.c aic.c pit.c pmc.c rtc.c slcdc.c supc.c 
 ATOBJS := $(ATSRCS:%.c=$(OBJECTDIR)/%.o)
 ATSRCS := $(ATSRCS:%.c=atmel/%.c)
 ATHDRS := $(ATSRCS:%.c=%.h) atmel/board.h atmel/at91sam7l128/AT91SAM7L128.h 
