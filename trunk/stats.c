@@ -898,16 +898,37 @@ decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 
 /* Exponential distribution cdf = 1 - exp(-lambda . x)
  */
-decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
+static int exponential_xform(decNumber *r, decNumber *lam, const decNumber *x, decContext *ctx) {
+	dist_one_param(lam);
+	if (param_positive(r, lam))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	return 0;
+}
+
+decNumber *pdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber lam, t, u;
 
-	dist_one_param(&lam);
-	if (param_positive(r, &lam))
+	if (exponential_xform(r, &lam, x, ctx))
 		return r;
-	if (decNumberIsNaN(x)) {
+	if (decNumberIsNegative(x) && !decNumberIsZero(x)) {
 		set_NaN(r);
 		return r;
 	}
+	decNumberMultiply(&t, &lam, x, ctx);
+	decNumberMinus(&u, &t, ctx);
+	decNumberExp(&t, &u, ctx);
+	return decNumberMultiply(r, &t, &lam, ctx);
+}
+
+decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber lam, t, u;
+
+	if (exponential_xform(r, &lam, x, ctx))
+		return r;
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))

@@ -108,6 +108,7 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_qf_F,	&qf_F,			NULL,		NULL,		"F\235(p)")
 	FUNC(OP_cdf_WB,	&cdf_WB,		NULL,		NULL,		"Wb(t)")
 	FUNC(OP_qf_WB,	&qf_WB,			NULL,		NULL,		"Wb\235(p)")
+	FUNC(OP_pdf_EXP,&pdf_EXP,		NULL,		NULL,		"Exp(t)")
 	FUNC(OP_cdf_EXP,&cdf_EXP,		NULL,		NULL,		"Ex(t)")
 	FUNC(OP_qf_EXP,	&qf_EXP,		NULL,		NULL,		"Ex\235(p)")
 	FUNC(OP_cdf_B,	&cdf_B,			NULL,		NULL,		"B(m)")

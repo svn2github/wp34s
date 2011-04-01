@@ -88,6 +88,7 @@ extern decNumber *cdf_WB(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_WB(decNumber *, const decNumber *, decContext *);
 
 /* Exponential distribution with parameter lambda in register J */
+extern decNumber *pdf_EXP(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_EXP(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_EXP(decNumber *, const decNumber *, decContext *);
 

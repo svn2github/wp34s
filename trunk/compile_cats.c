@@ -217,6 +217,7 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_pdf_C,		"Cap(x)")
 	MON(OP_cdf_C,		"Ca(x)")
 	MON(OP_qf_C,		"Ca\235(p)")
+	MON(OP_pdf_EXP,		"Exp(x)")
 	MON(OP_cdf_EXP,		"Ex(x)")
 	MON(OP_qf_EXP,		"Ex/235(p)")
 	MON(OP_cdf_F,		"F(x)")
