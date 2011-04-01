@@ -114,6 +114,7 @@ extern decNumber *cdf_lognormal(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_lognormal(decNumber *, const decNumber *, decContext *);
 
 /* Lognormal distribution m, sigma in registers J and K */
+extern decNumber *pdf_logistic(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_logistic(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_logistic(decNumber *, const decNumber *, decContext *);
 

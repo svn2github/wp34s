@@ -1238,15 +1238,35 @@ decNumber *qf_lognormal(decNumber *r, const decNumber *p, decContext *ctx) {
 }
 
 /* Logistic with specified mean and spread */
-decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber a, b, mu, s;
-
-	dist_two_param(&mu, &s);
-	if (param_positive(r, &s))
-		return r;
+static int logistic_xform(decNumber *r, decNumber *c, const decNumber *x, decNumber *s, decContext *ctx) {
+	decNumber mu, a, b;
+	
+	dist_two_param(&mu, s);
+	if (param_positive(r, s))
+		return 1;
 	decNumberSubtract(&a, x, &mu, ctx);
-	decNumberDivide(&b, &a, &s, ctx);
-	decNumberMultiply(&a, &b, &const_0_5, ctx);
+	decNumberDivide(&b, &a, s, ctx);
+	decNumberMultiply(c, &b, &const_0_5, ctx);
+	return 0;
+}
+
+decNumber *pdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber a, b, s;
+
+	if (logistic_xform(r, &a, x, &s, ctx))
+		return r;
+	decNumberCosh(&b, &a, ctx);
+	decNumberSquare(&a, &b, ctx);
+	decNumberMultiply(&b, &a, &const_4, ctx);
+	decNumberMultiply(&a, &b, &s, ctx);
+	return decNumberRecip(r, &a, ctx);
+}
+
+decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber a, b, s;
+
+	if (logistic_xform(r, &a, x, &s, ctx))
+		return r;
 	decNumberTanh(&b, &a, ctx);
 	decNumberMultiply(&a, &b, &const_0_5, ctx);
 	return decNumberAdd(r, &a, &const_0_5, ctx);

@@ -122,6 +122,7 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_pdf_LN,	&pdf_lognormal,		NULL,		NULL,		"Lnp(x)")
 	FUNC(OP_cdf_LN,	&cdf_lognormal,		NULL,		NULL,		"Ln(x)")
 	FUNC(OP_qf_LN,	&qf_lognormal,		NULL,		NULL,		"Ln\235(p)")
+	FUNC(OP_pdf_LG,	&pdf_logistic,		NULL,		NULL,		"Lgp(x)")
 	FUNC(OP_cdf_LG,	&cdf_logistic,		NULL,		NULL,		"Lg(x)")
 	FUNC(OP_qf_LG,	&qf_logistic,		NULL,		NULL,		"Lg\235(p)")
 	FUNC(OP_pdf_C,	&pdf_cauchy,		NULL,		NULL,		"Cap(x)")

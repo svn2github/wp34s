@@ -311,7 +311,7 @@ enum {
 	OP_cdf_G, OP_qf_G,
 	OP_pdf_N, OP_cdf_N, OP_qf_N,
 	OP_pdf_LN, OP_cdf_LN, OP_qf_LN,
-	OP_cdf_LG, OP_qf_LG,
+	OP_pdf_LG, OP_cdf_LG, OP_qf_LG,
 	OP_pdf_C, OP_cdf_C, OP_qf_C,
 	OP_xhat, OP_yhat,
 	OP_sigper,
