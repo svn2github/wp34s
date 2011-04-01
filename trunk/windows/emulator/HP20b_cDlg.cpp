@@ -1470,19 +1470,20 @@ void CHP20b_cDlg::OnHP20bShowcaptionMenu()
 //
 void CHP20b_cDlg::OnMove(int x, int y)
 { 
-  CDialog::OnMove(x, y);
-#if 1
   // Changed by MvC: broke minimize/restore from taskbar
-  if (m_bHideTitlebar && x != -32000 && y != -32000) {
-    static int  oldYPos = 1;
-
-    if (oldYPos < 0) {
-      SetWindowPos(NULL, x - 3, oldYPos - (:: GetSystemMetrics(SM_CYCAPTION)+ 3), 
-                   0, 0, SWP_NOSIZE | SWP_NOZORDER);
+  static int  oldYPos = 1;
+  CDialog::OnMove(x, y);
+  if (m_bHideTitlebar && y > -10000) {
+    if (oldYPos < 0 && y == -1) {
+      int captY = ::GetSystemMetrics(SM_CYCAPTION);
+      int newYPos = oldYPos - captY + 2;
+      if ( newYPos < - (Skin.screen.top + captY) )
+        newYPos = - (Skin.screen.top + captY);
+      SetWindowPos(NULL, x - 3, newYPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+      y = newYPos;
     }
     oldYPos = y;
   }
-#endif
 }
 void CHP20b_cDlg::OnCalculatorAssignasdefaulthpcalculator()
 { 
@@ -1513,7 +1514,7 @@ void CHP20b_cDlg::LoadSkin(char *skin)
   }
   m_Background.SetBitmap(Skin.bitmap);
   m_VirtualLCD.hpInitBitmap();
- ::GetWindowRect(m_VirtualLCD.m_hWnd, &m_VirtualLCD.m_rcOrgLCDPos);
+  ::GetWindowRect(m_VirtualLCD.m_hWnd, &m_VirtualLCD.m_rcOrgLCDPos);
   ScreenToClient(&m_VirtualLCD.m_rcOrgLCDPos);
   RECT r1, r2;
 
