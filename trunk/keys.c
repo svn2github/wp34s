@@ -985,6 +985,8 @@ fkey:		if (oldstate != SHIFT_F)
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
 		if (oldstate == SHIFT_F)
 			State.alphashift = 1 - State.alphashift;
+		else if (oldstate == SHIFT_G)
+			return OP_NIL | OP_OFF;
 		else
 			init_state();
 		return STATE_UNFINISHED;
