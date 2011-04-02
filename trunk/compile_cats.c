@@ -75,7 +75,6 @@ static s_opcode catalogue[] = {
 	MON(OP_LAMW,		"W")
 	MON(OP_INVW,		"W\235")
 	DYA(OP_LXNOR,		"XNOR")
-//	NILIC(OP_ALPHAAPP,	"\240APP")
 	NILIC(OP_ALPHADATE,	"\240DATE")
 	NILIC(OP_ALPHADAY,	"\240DAY")
 	RARGCMD(RARG_AIP,	"\240IP")
@@ -279,7 +278,6 @@ static s_opcode int_catalogue[] = {
 	RARGCMD(RARG_SR,	"SR")
 	NILIC(OP_VERSION,	"VERS")
 	DYA(OP_LXNOR,		"XNOR")
-//	NILIC(OP_ALPHAAPP,	"\240APP")
 	RARGCMD(RARG_AIP,	"\240IP")
 	NILIC(OP_ALPHALEN,	"\240LENG")
 	RARGCMD(RARG_AREG,	"\240RC#")
@@ -350,8 +348,6 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_INC,	"INC")
 	RARGCMD(RARG_ISZ,	"ISZ")
 	NILIC(OP_NOP,		"NOP")
-	// OFF
-	// ON
 	NILIC(OP_PROMPT,	"PROMPT")
 	NILIC(OP_REGCLR,	"R-CLR")
 	NILIC(OP_REGCOPY,	"R-COPY")
@@ -407,7 +403,6 @@ static s_opcode mode_catalogue[] = {
 };
 
 static s_opcode alpha_catalogue[] = {
-//	NILIC(OP_ALPHAAPP,	"\240APP")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLREG,		"CLREG")
 	NILIC(OP_ALPHADATE,	"\240DATE")

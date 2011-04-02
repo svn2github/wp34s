@@ -22,16 +22,16 @@
 #define INCLUDE_INTERNAL_CATALOGUE
 
 // Include the aritmetic/geometric mean iteration real and complex versions
-//#define INCLUDE_AGM
+#define INCLUDE_AGM
 
 // Include Reiman's Zeta function for real and complex arguments
-//#define INCLUDE_ZETA
+#define INCLUDE_ZETA
 
 // Incude the digamma function for real and complex arguments
-//#define INCLUDE_DIGAMMA
+#define INCLUDE_DIGAMMA
 
 // Include Jacobi's Elliptical Functions: SN, CN & DN for real & complex arguments
-//#define INCLUDE_ELLIPTIC
+#define INCLUDE_ELLIPTIC
 
 // Include Bessel functions of first and second kind
 // Complex versions aren't working properly yet.
@@ -55,10 +55,10 @@
 //#define INCLUDE_CUBES
 
 // Include the x!! function defined over the complex plane
-//#define INCLUDE_DBLFACT
+#define INCLUDE_DBLFACT
 
 // Include the !n function defined over the reals (integers)
-//#define INCLUDE_SUBFACT
+#define INCLUDE_SUBFACT
 
 // Inlcude multi-character alpha constants (not keystroke programmable)
 //#define MULTI_ALPHA
