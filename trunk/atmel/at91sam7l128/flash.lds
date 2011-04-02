@@ -41,7 +41,8 @@ MEMORY
 {
     sram (W!RX) :       ORIGIN = 0x200000, LENGTH = 0x1000
     backupsram (W!RX) : ORIGIN = 0x300000, LENGTH = 0x800
-    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000
+    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x1F800
+    xrom  (R) :         ORIGIN = 0x11F800, LENGTH = 0x800
 }
 
 SECTIONS
@@ -66,6 +67,11 @@ SECTIONS
         . = ALIGN(4);
         _erelocate = .;
     } >sram
+
+    .xrom : 
+    {
+	*(.xrom)
+    } >xrom
 
     .bss (NOLOAD) : 
     {

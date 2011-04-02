@@ -180,6 +180,7 @@ $(OUTPUTDIR)/calc.bin: asone.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS)
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
 	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	grep "^\.xrom"     $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 
@@ -190,6 +191,7 @@ $(OUTPUTDIR)/calc2.bin: $(OBJECTDIR)/libdecNumber.a $(CNSTS) $(OBJS) $(MAIN)\
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc2 $@
 	grep "^\.fixed"    $(MAPFILE2) | tail -n 1 >  $(SUMMARY2)
 	grep "^\.relocate" $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
+	grep "^\.xrom"     $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
 	grep "^\.bss"      $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
 	grep "^\.backup"   $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
 else

@@ -162,6 +162,11 @@
  * Banked registers are 0 - 4
  * Banked flags are 0 - 7
  */
+#if defined(REALBUILD) && defined(__GNUC__)
+// Special section name so that we can shuffle the code around in flash 
+// with the linker
+__attribute__((section(".xrom")))
+#endif
 const s_opcode xrom[] = {
 	/* Solve code.
 	 *
