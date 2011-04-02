@@ -1386,6 +1386,7 @@ void cmddisp(unsigned int arg, enum rarg op) {
 	else if (op == RARG_SCI)	State.dispmode = MODE_SCI;
 	else if (op == RARG_ENG)	State.dispmode = MODE_ENG;
 	// RARG_DISP just falls through having had its work done already
+	State.fract = 0;
 }
 
 
@@ -2182,14 +2183,17 @@ void op_grad(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 void op_all(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	State.dispmode = MODE_STD;
 	State.dispdigs = 0;
+	State.fract = 0;
 }
 
 void op_radixcom(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	State.fraccomma = 1;
+	State.fract = 0;
 }
 
 void op_radixdot(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	State.fraccomma = 0;
+	State.fract = 0;
 }
 
 void op_thousands_off(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
@@ -2202,10 +2206,12 @@ void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 
 void op_fixsci(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	State.fixeng = 0;
+	State.fract = 0;
 }
 
 void op_fixeng(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	State.fixeng = 1;
+	State.fract = 0;
 }
 
 
