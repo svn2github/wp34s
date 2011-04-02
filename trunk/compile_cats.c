@@ -128,6 +128,7 @@ static s_opcode catalogue[] = {
 	DYA(OP_BSKN,		"Kn")
 	DYA(OP_BSYN,		"Yn")
 #endif
+	NILIC(OP_TVM,		"TVM")
 };
 
 static s_opcode cplx_catalogue[] = {

@@ -28,6 +28,9 @@
 #define ENTRY_2DERIV	95
 #define ENTRY_INTEGRATE	94
 
+#define ENTRY_TVM	89
+
+
 /* Labels - global */
 #define XROM_CHECK		40
 #define XROM_EXIT		41

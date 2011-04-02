@@ -400,6 +400,8 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
 	FUNC0(OP_XisEVEN,	&XisEven,		"EVEN?")
 	FUNC0(OP_XisODD,	&XisOdd,		"ODD?")
+
+	FUNC0(OP_TVM,		&xrom_tvm,		"TVM")
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2

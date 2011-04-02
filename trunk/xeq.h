@@ -417,6 +417,8 @@ enum {
 	OP_GSBuser,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
+
+	OP_TVM,
 };
 
 
@@ -998,6 +1000,8 @@ extern decNumber *convDB2AR(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convAR2DB(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convDB2PR(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx);
+
+extern void xrom_tvm(decimal64 *a, decimal64 *b, decContext *nulc);
 
 /* system functions */
 extern int is_key_pressed(void);

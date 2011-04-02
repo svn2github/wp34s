@@ -1352,16 +1352,18 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 	cmdgtocommon(mopr != DBL_GTO, lbl);
 }
 
-static void xromargcommon(int lbl, unsigned int userpc) {
+static void do_xrom(int lbl) {
 	const unsigned int oldpc = state_pc();
-	unsigned int pc;
+	const unsigned int pc = find_label_from(addrXROM(0), lbl, 1);
 
-	if (userpc == 0)
-		return;
-
-	pc = find_label_from(addrXROM(0), lbl, 1);
-	State.usrpc = userpc;
 	gsbgto(pc, 1, oldpc);
+}
+
+static void xromargcommon(int lbl, unsigned int userpc) {
+	if (userpc != 0) {
+		State.usrpc = userpc;
+		do_xrom(lbl);
+	}
 }
 
 void xromarg(unsigned int arg, enum rarg op) {
@@ -1374,6 +1376,9 @@ void multixromarg(const opcode o, enum multiops mopr) {
 	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), lbl);
 }
 
+void xrom_tvm(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+	do_xrom(ENTRY_TVM);
+}
 
 void cmddisp(unsigned int arg, enum rarg op) {
 	State.dispdigs = arg;

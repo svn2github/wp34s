@@ -130,6 +130,7 @@
 #define TIMES		DYADIC(MUL)
 #define DIVISION	DYADIC(DIV)
 #define MOD		DYADIC(MOD)
+#define POWER		DYADIC(POW)
 
 // Stack manipulation shortcuts
 #define SWAPXY		NILADIC(SWAP)
@@ -818,6 +819,43 @@ const s_opcode xrom[] = {
 	LBL(XROM_EXITp1)		// Clear xrom falg and return with skip
 		CF(F_XROM)
 		RTNp1
+
+/**************************************************************************/
+#define R_PMT	80
+#define R_PV	81
+#define R_FV	82
+#define R_I	83
+#define R_N	84
+
+#define F_BEG	80
+
+	LBL(ENTRY_TVM)
+		RCL(R_PMT)
+		RCL(R_PV)
+		RCL_PL(R_FV)
+		DIG(1)
+		RCL_PL(R_I)
+		RCL(R_N)
+		POWER
+		DEC(st(X))
+		DIVISION
+		RCL_PL(R_PV)
+		RCL_MU(R_I)
+		FCp(F_BEG)
+			SKIP(3)
+		RCL(R_I)
+		INC(st(X))
+		DIVISION
+		PLUS
+		RTN
+	
+
+#undef F_BEG
+#undef R_N
+#undef R_I
+#undef R_FV
+#undef R_PV
+#undef R_PMT
 };
 
 const unsigned short int xrom_size = sizeof(xrom) / sizeof(const s_opcode);
