@@ -838,6 +838,22 @@ static void set_x(const decimal64 *rgx, char *res) {
 			count++;
 		// Too big or too small to fit on display
 		if (exp >= DISPLAY_DIGITS || exp < (count - DISPLAY_DIGITS)) {
+			switch ((exp % 3) * State.fixeng) {
+			case -1:
+			case 2:
+				*obp++ = *p++;
+				odig++;
+				dd--;
+				exp--;
+			case -2:
+			case 1:
+				*obp++ = *p++;
+				odig++;
+				dd--;
+				exp--;
+			case 0:
+				;
+			};
 			*obp++ = *p++;
 			odig++;
 			*obp++ = '.';
