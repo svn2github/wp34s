@@ -853,7 +853,6 @@ const s_opcode xrom[] = {
 		DIVISION
 		PLUS
 		RTN
-	
 
 #undef F_BEG
 #undef R_N
