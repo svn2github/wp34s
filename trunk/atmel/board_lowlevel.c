@@ -108,8 +108,12 @@ void defaultIrqHandler(void)
 /// Performs the low-level initialization of the chip. This includes EFC, master
 /// clock, AIC & watchdog configuration, as well as memory remapping.
 //------------------------------------------------------------------------------
+
+#define NOPLL
+
 void LowLevelInit(void)
 {
+#ifndef NOPLL
     volatile unsigned int i;
 
     // Set flash wait states in the EFC
@@ -118,6 +122,7 @@ void LowLevelInit(void)
     AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_3FWS;
 #else
     #error No chip definition ?
+#endif
 #endif
 
 #ifdef XTAL
@@ -129,6 +134,8 @@ void LowLevelInit(void)
         while ((AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL) != AT91C_SUPC_OSCSEL);
     }
 #endif
+
+#ifndef NOPLL // We leave the clock as is here and do the switch in main();
 
     // Switch to slow clock if necessary (so PLL frequency can be changed)
     if ((AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS) == AT91C_PMC_CSS_PLL_CLK) {
@@ -159,6 +166,7 @@ void LowLevelInit(void)
 
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
+#endif // NOPLL
 
     // Enable Debug mode
     AT91C_BASE_AIC->AIC_DCR = AT91C_AIC_DCR_PROT;

@@ -53,10 +53,11 @@ void PIT_Init(unsigned int period, unsigned int pit_frequency)
 //------------------------------------------------------------------------------
 /// Set the Periodic Interval Value of the PIT.
 /// \param piv  PIV value to set.
+//  MvC: Mask inverted!
 //------------------------------------------------------------------------------
 void PIT_SetPIV(unsigned int piv)
 {
-    AT91C_BASE_PITC->PITC_PIMR = (AT91C_BASE_PITC->PITC_PIMR & AT91C_PITC_PIV)
+    AT91C_BASE_PITC->PITC_PIMR = (AT91C_BASE_PITC->PITC_PIMR & ~AT91C_PITC_PIV)
                                  | piv;
 }
 
