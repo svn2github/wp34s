@@ -1078,6 +1078,32 @@ static int arg_storcl(const unsigned int n, int cmplx) {
 	return 0;
 }
 
+static int process_arg_dot(const unsigned int base) {
+	int r = STATE_UNFINISHED;
+	if (State.dot || argcmds[base].stckreg || State.ind)
+		return arg_eval(regX_idx);
+	switch (base) {
+	case RARG_FIX:	r = OP_NIL | OP_ALL;	break;
+	case RARG_SCI:	r = OP_NIL | OP_FIXSCI;	break;
+	case RARG_ENG:	r = OP_NIL | OP_FIXENG;	break;
+
+	case RARG_GTO:
+		// Special GTO . sequence
+		if (State.numdigit == 0 && ! State.ind) {
+			State.gtodot = 1;
+			break;
+		}
+		return r;
+
+	default:
+		return r;
+	}
+	/* Clean up and return the specified code */
+	init_arg(0);
+	State.rarg = 0;
+	return r;
+}
+
 static int process_arg(const keycode c) {
 	unsigned int base = State.base;
 
@@ -1136,19 +1162,7 @@ static int process_arg(const keycode c) {
 				return arg_eval(regK_idx);
 		break;
 	case K62:		// X
-		if (State.dot || argcmds[base].stckreg || State.ind)
-			return arg_eval(regX_idx);
-		if (base == RARG_GTO && State.numdigit == 0 && ! State.ind) {
-			// Special GTO . sequence
-			init_arg(0);
-			State.rarg = 0;
-			State.gtodot = 1;
-		} else if (base == RARG_FIX) {
-			init_arg(0);
-			State.rarg = 0;
-			return OP_NIL | OP_ALL;
-		}
-		break;
+		return process_arg_dot(base);
 	case K63:		// Y
 		if (State.dot || argcmds[base].stckreg || State.ind)
 			if (!argcmds[base].cmplx)
