@@ -400,6 +400,8 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_STK8,		"SSIZE8")
 	NILIC(OP_LEAD0,		"SHOW 0")
 	NILIC(OP_TRIM0,		"HIDE 0")
+	NILIC(OP_FIXSCI,	"FIXSCI")
+	NILIC(OP_FIXENG,	"FIXENG")
 };
 
 static s_opcode alpha_catalogue[] = {

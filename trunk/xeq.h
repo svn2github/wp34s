@@ -397,6 +397,7 @@ enum {
 	OP_FRACDENOM, OP_2FRAC, OP_DENFIX, OP_DENFAC, OP_DENANY,
 	OP_FRACIMPROPER, OP_FRACPROPER,
 	OP_RADDOT, OP_RADCOM, OP_THOUS_ON, OP_THOUS_OFF,
+	OP_FIXSCI, OP_FIXENG,
 	OP_2COMP, OP_1COMP, OP_UNSIGNED, OP_SIGNMANT,
 	OP_FLOAT, OP_FRACT,
 	OP_LEAD0, OP_TRIM0,
@@ -672,6 +673,7 @@ struct _state {
 
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode
+	unsigned int fixeng : 1;	// Fix flips to ENG instead of SCI
 	unsigned int leadzero : 1;	// forced display of leading zeros in int mode
 
 #ifndef REALBUILD
@@ -946,6 +948,8 @@ extern void op_radixcom(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void op_radixdot(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void op_thousands_off(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_fixsci(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_fixeng(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void op_pause(unsigned int arg, enum rarg op);
 extern void op_2comp(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_1comp(decimal64 *a, decimal64 *b, decContext *nulc);

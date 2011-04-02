@@ -347,6 +347,8 @@ const struct niladic niladics[] = {
 	FUNC0(OP_RADCOM,	&op_radixcom,		"RDX,")
 	FUNC0(OP_THOUS_ON,	&op_thousands_on,	"E3ON")
 	FUNC0(OP_THOUS_OFF,	&op_thousands_off,	"E3OFF")
+	FUNC0(OP_FIXSCI,	&op_fixsci,		"FIXSCI")
+	FUNC0(OP_FIXENG,	&op_fixeng,		"FIXENG")
 	FUNC0(OP_2COMP,		&op_2comp,		"2COMPL")
 	FUNC0(OP_1COMP,		&op_1comp,		"1COMPL")
 	FUNC0(OP_UNSIGNED,	&op_unsigned,		"UNSIGN")

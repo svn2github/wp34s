@@ -2195,6 +2195,15 @@ void op_thousands_on(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	State.nothousands = 0;
 }
 
+void op_fixsci(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	State.fixeng = 0;
+}
+
+void op_fixeng(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+	State.fixeng = 1;
+}
+
+
 void op_pause(unsigned int arg, enum rarg op) {
 	if (running()) {
 		display();

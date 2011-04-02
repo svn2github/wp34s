@@ -795,7 +795,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 
 	if (mode == MODE_FIX) {
 		if (exp > (DISPLAY_DIGITS - 1) || exp < -dd)
-			mode = MODE_SCI;
+			mode = State.fixeng?MODE_ENG:MODE_SCI;
 		else {
 			extra_digits = exp;
 			/* We might have push the fixed decimals off the
@@ -816,7 +816,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 			mantissa[0] = '1';
 			exp++;
 			if (mode == MODE_FIX && exp > (DISPLAY_DIGITS - 1)) {
-				mode = MODE_SCI;
+				mode = State.fixeng?MODE_ENG:MODE_SCI;
 				extra_digits = 0;
 			}
 		} else {

@@ -88,6 +88,7 @@ static void init_state(void) {
 	C(dispdigs);
 	C(trigmode);
 	C(dispmode);
+	C(fixeng);
 	C(int_base);
 	C(int_mode);
 	C(date_mode);
