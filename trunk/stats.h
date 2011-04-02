@@ -47,6 +47,7 @@ extern void sigma_Y(decimal64 *, decimal64 *, decContext *);
 extern void sigma_XX(decimal64 *, decimal64 *, decContext *);
 extern void sigma_YY(decimal64 *, decimal64 *, decContext *);
 extern void sigma_XY(decimal64 *, decimal64 *, decContext *);
+extern void sigma_X2Y(decimal64 *, decimal64 *, decContext *);
 
 extern void sigma_lnX(decimal64 *, decimal64 *, decContext *);
 extern void sigma_lnXlnX(decimal64 *, decimal64 *, decContext *);

@@ -294,6 +294,7 @@ const struct niladic niladics[] = {
 	FUNC1(OP_sigmaX2,	&sigma_XX,		"\221x\232")
 	FUNC1(OP_sigmaY2,	&sigma_YY,		"\221y\232")
 	FUNC1(OP_sigma_XY,	&sigma_XY,		"\221xy")
+	FUNC1(OP_sigmaX2Y,	&sigma_X2Y,		"\221x\232y")
 	FUNC1(OP_sigmaN,	&sigma_N,		"n\221")
 	FUNC1(OP_sigmalnX,	&sigma_lnX,		"\221lnx")
 	FUNC1(OP_sigmalnXlnX,	&sigma_lnXlnX,		"\221ln\232x")

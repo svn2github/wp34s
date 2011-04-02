@@ -209,6 +209,7 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_sigmaX2,	"\221x\232")
 	NILIC(OP_sigmaXlnY,	"\221XlnY")
 	NILIC(OP_sigma_XY,	"\221xy")
+	NILIC(OP_sigmaX2Y,	"\221x\232y")
 	NILIC(OP_sigmaY,	"\221y")
 	NILIC(OP_sigmaY2,	"\221y\232")
 	NILIC(OP_sigmaYlnX,	"\221YlnX")

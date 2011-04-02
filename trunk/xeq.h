@@ -380,7 +380,7 @@ enum {
 	OP_LASTX, OP_LASTXY,
 	OP_SWAP, OP_CSWAP, OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
 	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPXY,
-	OP_sigmaX, OP_sigmaY, OP_sigmaX2, OP_sigmaY2, OP_sigma_XY,
+	OP_sigmaX, OP_sigmaY, OP_sigmaX2, OP_sigmaY2, OP_sigma_XY, OP_sigmaX2Y,
 	OP_sigmaN,
 	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
 		OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,

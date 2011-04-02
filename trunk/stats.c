@@ -285,6 +285,10 @@ void sigma_XY(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	*x = sigmaXY;
 }
 
+void sigma_X2Y(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	*x = sigmaXXY;
+}
+
 void sigma_lnX(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	*x = sigmalnX;
 }
