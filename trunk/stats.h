@@ -30,12 +30,15 @@ extern void stats_s(decimal64 *, decimal64 *, decContext *);
 extern void stats_sigma(decimal64 *, decimal64 *, decContext *);
 extern void stats_gs(decimal64 *, decimal64 *, decContext *);
 extern void stats_gsigma(decimal64 *, decimal64 *, decContext *);
+extern void stats_ws(decimal64 *, decimal64 *, decContext *);
+extern void stats_wsigma(decimal64 *, decimal64 *, decContext *);
 extern decNumber *stats_xhat(decNumber *, const decNumber *, decContext *);
 extern decNumber *stats_yhat(decNumber *, const decNumber *, decContext *);
 extern void stats_correlation(decimal64 *, decimal64 *, decContext *);
 extern void stats_LR(decimal64 *, decimal64 *, decContext *);
 extern void stats_SErr(decimal64 *, decimal64 *, decContext *);
 extern void stats_gSErr(decimal64 *, decimal64 *, decContext *);
+extern void stats_wSErr(decimal64 *, decimal64 *, decContext *);
 extern decNumber *stats_sigper(decNumber *, const decNumber *, decContext *);
 
 extern void sigma_N(decimal64 *, decimal64 *, decContext *);

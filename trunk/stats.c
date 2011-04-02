@@ -32,6 +32,8 @@
 #include "int.h"
 
 
+#define sigmaXXY	(Regs[86])
+
 #define sigmaX	(Regs[87])
 #define sigmaXX	(Regs[88])
 #define sigmaY	(Regs[89])
@@ -50,17 +52,22 @@
 
 static void correlation(decNumber *, const enum sigma_modes);
 
+static int check_number(const decNumber *r, int n) {
+	decNumber s;
 
-static int check_data(int n) {
-	decNumber r, s;
-
-	decimal64ToNumber(&sigmaN, &r);
-	decNumberCompare(&s, &r, small_int(n), Ctx);
+	decNumberCompare(&s, r, small_int(n), Ctx);
 	if (decNumberIsNegative(&s) && ! decNumberIsZero(&s)) {
 		err(ERR_MORE_POINTS);
 		return 1;
 	}
 	return 0;
+}
+
+static int check_data(int n) {
+	decNumber r;
+
+	decimal64ToNumber(&sigmaN, &r);
+	return check_number(&r, n);
 }
 
 
@@ -139,6 +146,9 @@ static void sigma_helper(decContext *ctx, decNumber *(*op)(decNumber *, const de
 	mulop(&sigmaXX, &x, &x, ctx, op);
 	mulop(&sigmaYY, &y, &y, ctx, op);
 	mulop(&sigmaXY, &x, &y, ctx, op);
+
+	decNumberSquare(&lx, &x, ctx);
+	mulop(&sigmaXXY, &lx, &y, ctx, op);
 
 //	if (State.sigma_mode == SIGMA_LINEAR)
 //		return;
@@ -379,14 +389,14 @@ static void do_s(decimal64 *s,
 	decimal64FromNumber(s, p, Ctx64);
 }
 
-static void S(decimal64 *x, decimal64 *y, enum sigma_modes mode, int sub1, int rootn, int exp) {
+static void S(decimal64 *x, decimal64 *y, enum sigma_modes mode, int sample, int rootn, int exp) {
 	decNumber N, nm1, *n = &N;
 	decNumber sx, sxx, sy, syy;
 
 	if (check_data(2))
 		return;
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, mode);
-	if (sub1)
+	if (sample)
 		decNumberSubtract(n = &nm1, &N, &const_1, Ctx);
 	do_s(x, &sxx, &sx, &N, n, rootn, exp);
 	do_s(y, &syy, &sy, &N, n, rootn, exp);
@@ -422,6 +432,45 @@ void stats_gsigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
 void stats_gSErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
 	S(x, y, SIGMA_QUIET_POWER, 1, 1, 0);
 }
+
+
+// Weighted standard deviation
+void WS(decimal64 *x, int sample, int rootn) {
+	decNumber sxxy, sy, sxy, syy;
+	decNumber t, u, v, w, *p;
+
+	get_sigmas(NULL, NULL, &sy, NULL, &syy, &sxy, SIGMA_QUIET_LINEAR);
+	if (check_number(&sy, 2))
+		return;
+	decimal64ToNumber(&sigmaXXY, &sxxy);
+
+	decNumberMultiply(&t, &sy, &sxxy, Ctx);
+	decNumberSquare(&u, &sxy, Ctx);
+	decNumberSubtract(&v, &t, &u, Ctx);
+	decNumberSquare(p = &t, &sy, Ctx);
+	if (sample)
+		decNumberSubtract(p = &u, &t, &syy, Ctx);
+	decNumberDivide(&w, &v, p, Ctx);
+	decNumberSquareRoot(p = &u, &w, Ctx);
+	if (rootn) {
+		decNumberSquareRoot(&t, &sy, Ctx);
+		decNumberDivide(p = &v, &u, &t, Ctx);
+	}
+	decimal64FromNumber(x, p, Ctx64);
+}
+
+void stats_ws(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	WS(x, 1, 0);
+}
+
+void stats_wsigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	WS(x, 0, 0);
+}
+
+void stats_wSErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
+	WS(x, 1, 1);
+}
+
 
 decNumber *stats_sigper(decNumber *res, const decNumber *x, decContext *ctx) {
 	decNumber sx, t;
