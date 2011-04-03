@@ -361,6 +361,14 @@ enum {
 	OP_GCD, OP_LCM,
 	OP_LAND, OP_LOR, OP_LXOR, OP_LNAND, OP_LNOR, OP_LXNOR,
 	OP_DTADD, OP_DTDIF,
+
+	// Orthogonal polynomials -- must be in the same order as the enum below
+	OP_LEGENDRE_PN,
+	OP_CHEBYCHEV_TN,
+	OP_CHEBYCHEV_UN,
+	OP_LAGUERRE,
+	OP_HERMITE_HE,
+	OP_HERMITE_H,
 };
 
 // Triadic functions
@@ -371,6 +379,7 @@ enum {
 	OP_MULADD,
 #endif
 	OP_PERMRR,
+	OP_GEN_LAGUERRE,
 };  
 
 // Niladic functions
@@ -475,15 +484,6 @@ enum rarg {
 	RARG_CONV,
 
 	RARG_INISOLVE, RARG_SOLVESTEP,
-
-	// Orthogonal polynomials -- must be in the same order as the enum below
-	RARG_LEGENDRE_PN,
-	RARG_CHEBYCHEV_TN,
-	RARG_CHEBYCHEV_UN,
-	RARG_LAGUERRE,
-	RARG_GEN_LAGUERRE,
-	RARG_HERMITE_HE,
-	RARG_HERMITE_H,
 
 	RARG_PAUSE,
 #ifdef REALBUILD
@@ -807,7 +807,6 @@ extern TPersistentRam PersistentRam;
 
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);
-extern void lower(void);
 
 extern const char *get_cmdline(void);
 

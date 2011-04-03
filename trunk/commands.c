@@ -226,6 +226,13 @@ const struct dyfunc dyfuncs[] = {
 	FUNC(OP_LXNOR,	&decNumberNxor,		NULL,		&intEquiv,	"XNOR")
 	FUNC(OP_DTADD,	&dateAdd,		NULL,		NULL,		"DAYS+")
 	FUNC(OP_DTDIF,	&dateDelta,		NULL,		NULL,		"\203DAYS")
+
+	FUNC(OP_LEGENDRE_PN,	&decNumberPolyPn,	NULL,	NULL,		"P\275")
+	FUNC(OP_CHEBYCHEV_TN,	&decNumberPolyTn,	NULL,	NULL,		"T\275")
+	FUNC(OP_CHEBYCHEV_UN,	&decNumberPolyUn,	NULL,	NULL,		"U\275")
+	FUNC(OP_LAGUERRE,	&decNumberPolyLn,	NULL,	NULL,		"L\275")
+	FUNC(OP_HERMITE_HE,	&decNumberPolyHEn,	NULL,	NULL,		"H\275")
+	FUNC(OP_HERMITE_H,	&decNumberPolyHn,	NULL,	NULL,		"H\275\276")
 #undef FUNC
 };
 const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
@@ -250,6 +257,7 @@ const struct trifunc trifuncs[] = {
 	FUNC(OP_MULADD, 	&decNumberMAdd,	&intMAdd,	"\034+")
 #endif
 	FUNC(OP_PERMRR,		&decNemberPerMRR, NULL,		"%MRR")
+        FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha, NULL,    "L\275\240")
 #undef FUNC
 };
 const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
@@ -532,14 +540,6 @@ const struct argcmd argcmds[] = {
 
 	CMD(RARG_INISOLVE,	&solver,	TOPREALREG-10+1,	"SLVI")
 	CMD(RARG_SOLVESTEP,	&solver,	TOPREALREG-10+1,	"SLVS")
-
-	CMD(RARG_LEGENDRE_PN,	&ortho_poly,	128,			"P\275")
-	CMD(RARG_CHEBYCHEV_TN,	&ortho_poly,	128,			"T\275")
-	CMD(RARG_CHEBYCHEV_UN,	&ortho_poly,	128,			"U\275")
-	CMD(RARG_LAGUERRE,	&ortho_poly,	128,			"L\275")
-	CMD(RARG_GEN_LAGUERRE,	&ortho_poly,	128,			"L\275\240")
-	CMD(RARG_HERMITE_HE,	&ortho_poly,	128,			"H\275")
-	CMD(RARG_HERMITE_H,	&ortho_poly,	128,			"H\275\276")
 
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
 #ifdef REALBUILD

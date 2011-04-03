@@ -2851,78 +2851,78 @@ void solver(unsigned int arg, enum rarg op) {
 /* Orthogonal polynomial evaluations                                  */
 /**********************************************************************/
 
-void ortho_poly(unsigned int arg, enum rarg op) {
-	decNumber x, param, t0, t1, t, u, v, A, B, C, dA;
-	const enum eOrthoPolys type = (enum eOrthoPolys)(op - RARG_LEGENDRE_PN);
-	unsigned int i;
+static decNumber *ortho_poly(decNumber *r, const decNumber *param, const decNumber *rn, const decNumber *x, decContext *ctx, const enum eOrthoPolys type) {
+	decNumber t0, t1, t, u, v, A, B, C, dA;
+	unsigned int i, n;
 	int incA, incB, incC;
 
 	// Get argument and parameter
-	getX(&x);
-	setlastX();
-	if (decNumberIsSpecial(&x)) {
-error:		set_NaN(&t1);
-		goto fin;
+	if (decNumberIsSpecial(x) || decNumberIsSpecial(rn) || (decNumberIsNegative(rn) && !decNumberIsZero(rn))) {
+error:		set_NaN(r);
+		return r;
 	}
+	n = dn_to_int(rn, ctx);
+	if (n > 1000)
+		goto error;
 	if (type == ORTHOPOLY_GEN_LAGUERRE) {
-		getY(&param);
-		lower();
-		if (decNumberIsSpecial(&param))
+		if (decNumberIsSpecial(param))
 			goto error;
-		decNumberAdd(&t, &param, &const_1, Ctx);
+		decNumberAdd(&t, param, &const_1, ctx);
 		if (decNumberIsNegative(&t) || decNumberIsZero(&t))
 			goto error;
 	} else
-		decNumberZero(&param);
+		param = &const_0;
 
 	// Initialise the first two values t0 and t1
 	switch (type) {
 	default:
-		decNumberCopy(&t1, &x);
+		decNumberCopy(&t1, x);
 		break;
 	case ORTHOPOLY_CHEBYCHEV_UN:
-		decNumberMultiply(&t1, &x, &const_2, Ctx);
+		decNumberMultiply(&t1, x, &const_2, ctx);
 		break;
 	case ORTHOPOLY_LAGUERRE:
 	case ORTHOPOLY_GEN_LAGUERRE:
-		decNumberAdd(&t, &const_1, &param, Ctx);
-		decNumberSubtract(&t1, &t, &x, Ctx);
+		decNumberAdd(&t, &const_1, param, ctx);
+		decNumberSubtract(&t1, &t, x, ctx);
 		break;
 	case ORTHOPOLY_HERMITE_H:
-		decNumberMultiply(&t1, &x, &const_2, Ctx);
+		decNumberMultiply(&t1, x, &const_2, ctx);
 		break;
 	}
 	decNumberCopy(&t0, &const_1);
 
-	if (arg < 2) {
-		if (arg == 0)
-			decNumberCopy(&t1, &t0);
-		goto fin;
+	if (n < 2) {
+		if (n == 0)
+			decNumberCopy(r, &t0);
+		else
+			decNumberCopy(r, &t1);
+		return r;
 	}
 
 	// Prepare for the iteration
 	decNumberCopy(&dA, &const_2);
 	decNumberCopy(&C, &const_1);
 	decNumberCopy(&B, &const_1);
-	decNumberMultiply(&A, &x, &const_2, Ctx);
+	decNumberMultiply(&A, x, &const_2, ctx);
 	incA = incB = incC = 0;
 	switch (type) {
 	case ORTHOPOLY_LEGENDRE_PN:
 		incA = incB = incC = 1;
-		decNumberAdd(&A, &A, &x, Ctx);
-		decNumberMultiply(&dA, &x, &const_2, Ctx);
+		decNumberAdd(&A, &A, x, ctx);
+		decNumberMultiply(&dA, x, &const_2, ctx);
 		break;
 	case ORTHOPOLY_CHEBYCHEV_TN:	break;
 	case ORTHOPOLY_CHEBYCHEV_UN:	break;
 	case ORTHOPOLY_GEN_LAGUERRE:
-		decNumberAdd(&B, &B, &param, Ctx);
+		decNumberAdd(&B, &B, param, ctx);
 	case ORTHOPOLY_LAGUERRE:
 		incA = incB = incC = 1;
-		decNumberAdd(&t, &const_3, &param, Ctx);
-		decNumberSubtract(&A, &t, &x, Ctx);
+		decNumberAdd(&t, &const_3, param, ctx);
+		decNumberSubtract(&A, &t, x, ctx);
 		break;
 	case ORTHOPOLY_HERMITE_HE:
-		decNumberCopy(&A, &x);
+		decNumberCopy(&A, x);
 		incB = 1;
 		break;
 	case ORTHOPOLY_HERMITE_H:
@@ -2932,20 +2932,49 @@ error:		set_NaN(&t1);
 	}
 
 	// Iterate
-	for (i=2; i<=arg; i++) {
-		decNumberMultiply(&t, &t1, &A, Ctx);
-		decNumberMultiply(&u, &t0, &B, Ctx);
-		decNumberSubtract(&v, &t, &u, Ctx);
+	for (i=2; i<=n; i++) {
+		decNumberMultiply(&t, &t1, &A, ctx);
+		decNumberMultiply(&u, &t0, &B, ctx);
+		decNumberSubtract(&v, &t, &u, ctx);
 		decNumberCopy(&t0, &t1);
 		if (incC) {
-			decNumberAdd(&C, &C, &const_1, Ctx);
-			decNumberDivide(&t1, &v, &C, Ctx);
+			decNumberAdd(&C, &C, &const_1, ctx);
+			decNumberDivide(&t1, &v, &C, ctx);
 		} else
 			decNumberCopy(&t1, &v);
 		if (incA)
-			decNumberAdd(&A, &A, &dA, Ctx);
+			decNumberAdd(&A, &A, &dA, ctx);
 		if (incB)
-			decNumberAdd(&B, &B, small_int(incB), Ctx);
+			decNumberAdd(&B, &B, small_int(incB), ctx);
 	}
-fin:	setX(&t1);
+	return decNumberCopy(r, &t1);
 }
+
+decNumber *decNumberPolyPn(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
+	return ortho_poly(r, NULL, y, x, ctx, ORTHOPOLY_LEGENDRE_PN);
+}
+
+decNumber *decNumberPolyTn(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
+	return ortho_poly(r, NULL, y, x, ctx, ORTHOPOLY_CHEBYCHEV_TN);
+}
+
+decNumber *decNumberPolyUn(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
+	return ortho_poly(r, NULL, y, x, ctx, ORTHOPOLY_CHEBYCHEV_UN);
+}
+
+decNumber *decNumberPolyLn(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
+	return ortho_poly(r, NULL, y, x, ctx, ORTHOPOLY_LAGUERRE);
+}
+
+decNumber *decNumberPolyLnAlpha(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx) {
+	return ortho_poly(r, z, y, x, ctx, ORTHOPOLY_GEN_LAGUERRE);
+}
+
+decNumber *decNumberPolyHEn(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
+	return ortho_poly(r, NULL, y, x, ctx, ORTHOPOLY_HERMITE_HE);
+}
+
+decNumber *decNumberPolyHn(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
+	return ortho_poly(r, NULL, y, x, ctx, ORTHOPOLY_HERMITE_H);
+}
+

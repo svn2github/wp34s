@@ -186,6 +186,13 @@ extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, dec
 extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, decContext *, unsigned int *);
 
 extern void solver(unsigned int arg, enum rarg op);
-extern void ortho_poly(unsigned int arg, enum rarg op);
+
+extern decNumber *decNumberPolyPn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPolyTn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPolyUn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPolyLn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPolyLnAlpha(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPolyHEn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPolyHn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
 
 #endif

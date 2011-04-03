@@ -217,7 +217,7 @@ void lift(void) {
 		*get_stack(i) = *get_stack(i-1);
 }
 
-void lower(void) {
+static void lower(void) {
 	const int n = stack_size();
 	int i;
 
