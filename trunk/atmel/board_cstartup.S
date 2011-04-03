@@ -27,6 +27,8 @@
  * ----------------------------------------------------------------------------
  */
 
+ /* =====> File adapted to wp34s by Marcus von Cube <===== */
+
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
@@ -49,28 +51,31 @@
 #define F_BIT            0x40
 
 //------------------------------------------------------------------------------
-//         Startup routine
+//      Startup routine
 //------------------------------------------------------------------------------
 
-            .align      4
-            .arm
+        .align      4
+        .arm
         
 /* Exception vectors
  *******************/
-            .section    .vectors, "a"
+
+        .section    .vectors, "a"
+
+// =====> MvC: All vectors except irq point to reset
 
 resetVector:
         ldr     pc, =resetHandler       /* Reset */
 undefVector:
-        b       undefVector             /* Undefined instruction */
+        b       resetVector             /* Undefined instruction */
 swiVector:
-        b       swiVector               /* Software interrupt */
+        b       resetVector             /* Software interrupt */
 prefetchAbortVector:
-        b       prefetchAbortVector     /* Prefetch abort */
+        b       resetVector             /* Prefetch abort */
 dataAbortVector:
-        b       dataAbortVector         /* Data abort */
+        b       resetVector             /* Data abort */
 reservedVector:
-        b       reservedVector          /* Reserved for future use */
+        b       resetVector             /* Reserved for future use */
 irqVector:
         b       irqHandler              /* Interrupt */
 fiqVector:
@@ -78,9 +83,10 @@ fiqVector:
 //------------------------------------------------------------------------------
 /// Handles a fast interrupt request by branching to the address defined in the
 /// AIC.
+// =====> MvC: Reset
 //------------------------------------------------------------------------------
 fiqHandler:
-        b       fiqHandler
+        b       resetVector
 	
 //------------------------------------------------------------------------------
 /// Handles incoming interrupt requests by branching to the corresponding
@@ -120,8 +126,8 @@ irqHandler:
 //------------------------------------------------------------------------------
 /// Initializes the chip and branches to the main() function.
 //------------------------------------------------------------------------------
-            .section    .text
-            .global     entry
+        .section    .text
+        .global     entry, resetHandler
 
 entry:
 resetHandler:
@@ -205,7 +211,7 @@ relocate:
         mov     lr, pc
         bx      r0
 
-/* Loop indefinitely when program is finished */
+/* Reset when program is finished */
 1:
         b       1b
 

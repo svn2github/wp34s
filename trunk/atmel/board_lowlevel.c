@@ -35,6 +35,8 @@
 /// Provides the low-level initialization function that gets called on chip
 /// startup.
 ///
+/// =====> File adapted to wp34s by Marcus von Cube <=====
+///
 /// !Usage
 ///
 /// LowLevelInit() is called in #board_cstartup.S#.
@@ -50,6 +52,20 @@
 //------------------------------------------------------------------------------
 //         Local definitions
 //------------------------------------------------------------------------------
+
+// Set this if you have a modified board fitted with a crystal
+//#define XTAL
+
+// We do not need the default Interrupt handlers here
+#define FIQ_HANDLER resetHandler
+#define IRQ_HANDLER resetHandler
+#define SPU_HANDLER resetHandler
+extern void resetHandler(void);
+
+// Do not initialize the PLL, leave clock at 2 MHz
+#define NOPLL  
+
+#ifndef NOPLL
 /// PLL frequency range.
 #define BOARD_CKGR_PLL          AT91C_CKGR_OUT_2
 
@@ -64,6 +80,7 @@
 
 /// Master clock prescaler value.
 #define BOARD_PRESCALER         0
+#endif
 
 //------------------------------------------------------------------------------
 //         Global variables
@@ -76,6 +93,7 @@ unsigned int gLowLevelInitSupcStatus;
 //         Local functions
 //------------------------------------------------------------------------------
 
+#ifndef SPU_HANDLER
 //------------------------------------------------------------------------------
 /// Default spurious interrupt handler. Infinite loop.
 //------------------------------------------------------------------------------
@@ -83,7 +101,10 @@ void defaultSpuriousHandler(void)
 {
     while (1);
 }
+#define SPU_HANDLER defaultSpuriousHandler
+#endif
 
+#ifndef FIQ_HANDLER
 //------------------------------------------------------------------------------
 /// Default handler for fast interrupt requests. Infinite loop.
 //------------------------------------------------------------------------------
@@ -91,7 +112,10 @@ void defaultFiqHandler(void)
 {
     while (1);
 }
+#define FIQ_HANDLER defaultFiqHandler
+#endif
 
+#ifndef IRQ_HANDLER
 //------------------------------------------------------------------------------
 /// Default handler for standard interrupt requests. Infinite loop.
 //------------------------------------------------------------------------------
@@ -99,6 +123,8 @@ void defaultIrqHandler(void)
 {
     while (1);
 }
+#define IRQ_HANDLER defaultIrqHandler
+#endif
 
 //------------------------------------------------------------------------------
 //         Exported functions
@@ -109,13 +135,11 @@ void defaultIrqHandler(void)
 /// clock, AIC & watchdog configuration, as well as memory remapping.
 //------------------------------------------------------------------------------
 
-#define NOPLL
-
 void LowLevelInit(void)
 {
-#ifndef NOPLL
     volatile unsigned int i;
 
+#ifndef NOPLL
     // Set flash wait states in the EFC
     // 48MHz = 1 wait state
 #if defined(at91sam7l64) || defined(at91sam7l128)
@@ -152,28 +176,38 @@ void LowLevelInit(void)
     AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_PLL_CLK;
     while ((AT91C_BASE_PMC->PMC_SR & AT91C_PMC_MCKRDY) == 0);
 
+#endif // NOPLL
+
     // Initialize AIC
     AT91C_BASE_AIC->AIC_IDCR = 0xFFFFFFFF;
-    AT91C_BASE_AIC->AIC_SVR[0] = (unsigned int) defaultFiqHandler;
+    AT91C_BASE_AIC->AIC_SVR[0] = (unsigned int) FIQ_HANDLER;
     for (i = 1; i < 31; i++) {
 
-        AT91C_BASE_AIC->AIC_SVR[i] = (unsigned int) defaultIrqHandler;
+        AT91C_BASE_AIC->AIC_SVR[i] = (unsigned int) IRQ_HANDLER;
     }
-    AT91C_BASE_AIC->AIC_SPU = (unsigned int) defaultSpuriousHandler;
+    AT91C_BASE_AIC->AIC_SPU = (unsigned int) SPU_HANDLER;
 
     // Unstack nested interrupts
     for (i = 0; i < 8 ; i++) {
 
         AT91C_BASE_AIC->AIC_EOICR = 0;
     }
-#endif // NOPLL
 
     // Enable Debug mode
     AT91C_BASE_AIC->AIC_DCR = AT91C_AIC_DCR_PROT;
 
 #ifdef NOWD
     // Watchdog initialization
+    // Can only be changed once after reset
     AT91C_BASE_WDTC->WDTC_WDMR = AT91C_WDTC_WDDIS;
+#else
+    // Settings borrowed from HP20b SDK
+    AT91C_BASE_WDTC->WDTC_WDMR = 
+        (AT91C_WDTC_WDV/8)    // (WDTC) Watchdog Timer Restart set to 2 second
+      |  AT91C_WDTC_WDRSTEN   // (WDTC) Watchdog Reset Enable
+      |  AT91C_WDTC_WDD       // (WDTC) Watchdog Delta Value
+      |  AT91C_WDTC_WDDBGHLT  // (WDTC) Watchdog Debug Halt
+    ;
 #endif
 
     // Remap the internal SRAM at 0x0

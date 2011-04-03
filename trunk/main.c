@@ -23,6 +23,7 @@
 #include "atmel/board.h"
 #include "atmel/pit.h"
 #include "atmel/supc.h"
+#include "atmel/slcdc.h"
 
 #define BACKUP_SRAM  __attribute__((section(".backup")))
 #define RAM_FUNCTION __attribute__((section(".ramfunc")))
@@ -62,7 +63,8 @@ TPersistentRam PersistentRam;
  */
 unsigned int ClockSpeed;
 unsigned int Heartbeats;
-int IdleMode;
+unsigned int Contrast;
+
 
 /*
  *  Go to idle mode
@@ -70,8 +72,6 @@ int IdleMode;
  */
 RAM_FUNCTION void go_idle( void )
 {
-	IdleMode = 1;
-
 	/*
 	 *  Disable flash memory in order to save power
 	 */
@@ -94,11 +94,96 @@ void scan_keyboard( void )
 
 
 /*
+ *  Setup the LCD controller
+ */
+void enable_lcd( void )
+{
+	if ( Contrast != 0 ) {
+		/*
+		 *  LCD is running
+		 */
+		return;
+	}
+
+	/*
+	 *  Switch LCD on in supply controller and clear the RAM
+	 */
+	SUPC_EnableSlcd( 1 );
+	SLCDC_Clear();
+
+	/*
+	 *  Configure it for 10 commons and 40 segments, non blinking
+	 */
+	SLCDC_Configure( 10, 40, AT91C_SLCDC_BIAS_1_3, AT91C_SLCDC_BUFTIME_8_Tsclk );
+	SLCDC_SetFrameFreq( AT91C_SLCDC_PRESC_SCLK_16, AT91C_SLCDC_DIV_2 );
+	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
+
+	/*
+	 *  Set contrast and enable the display
+	 */
+	set_contrast( State.contrast + 1 );
+	SLCDC_Enable();
+}
+
+
+/*
+ *  Set the contrast
+ */
+void set_contrast( unsigned int contrast )
+{
+	if ( contrast == Contrast ) {
+		/*
+		 *  No change
+		 */
+		return;
+	}
+
+	/*
+	 *  Update supply controller settings
+	 */
+	SUPC_SetSlcdVoltage( ( contrast - 1 ) & 0x0f );
+
+	Contrast = contrast;
+}
+
+
+/*
+ *  Stop the LCD controller
+ */
+void disable_lcd( void )
+{
+	/*
+	 *  Disable the controller itself
+	 */
+	SLCDC_Disable();
+
+	/*
+	 *  Turn it off in supply controller
+	 */
+	SUPC_DisableSlcd();
+	Contrast = 0;
+}
+
+
+/*
  *  Set clock speed to one of 4 fixed values:
  *  0 (idle), 32.768 kHz, 2 MHz, 32.768 MHz
  */
-void set_speed( int speed )
+void set_speed( unsigned int speed )
 {
+	/*
+	 *  Table of supported speeds
+	 */
+	static int speeds[ SPEED_HIGH + 1 ] = 
+		{ 0, 32768, 2000000, 32768 * ( 1 + PLLMUL ) };
+
+	if ( speed > SPEED_HIGH || speeds[ speed ] == ClockSpeed ) {
+		/*
+		 *  Invalid or no change
+		 */
+		return;
+	}
+
 	switch ( speed ) {
 
 	case SPEED_NULL:
@@ -116,8 +201,7 @@ void set_speed( int speed )
 		// No wait states for flash read
 		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
 		// Turn off unneccesary oscilators
-
-		ClockSpeed = 32768;
+		// TODO
 		break;
 
 	case SPEED_MEDIUM:
@@ -128,7 +212,8 @@ void set_speed( int speed )
 		wait_for_clock();
 		// No wait states for flash read
 		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
-		ClockSpeed = 2000000;
+		// Turn off the PLL
+		// TODO
 		break;
 
 	case SPEED_HIGH:
@@ -153,9 +238,9 @@ void set_speed( int speed )
 		// Switch to PLL
 		AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_PLL_CLK;
 		wait_for_clock();
-		ClockSpeed = 32768 * ( 1 + PLLMUL );
 		break;
 	}
+	ClockSpeed = speeds[ speed ];
 
 	/*
 	 *  Now we have to reprogram the PIT
@@ -196,15 +281,29 @@ RAM_FUNCTION void heartbeat_irq( void )
 	int count;
 
 	/*
-	 * Flash memeory might be disabled, turn it on again
+	 *  Flash memory might be disabled, turn it on again
 	 */
-#if 0
 	if ( ClockSpeed == 0 ) {
-		SUPC
-#endif
+		SUPC_EnableFlash( 2 );  // ~ 130 microseconds wakeup at 32768 Hz
+	}
+
+	/*
+	 *  Get the number of missed interrupts
+	 */
 	Heartbeats += PIT_GetPIVR() >> 20;
 	count = Heartbeats >> HEARTBEAT_SHIFT;
 	Heartbeats &= HEARTBEAT_MASK;
+
+	/*
+	 *  Adjust the display contrast if it has been changed
+	 */
+	if ( State.contrast != Contrast ) {
+		/*
+		 *  The saved value ranges from 0 to 15.
+		 *  We use values 1 to 16 or 0 which means off
+		 */
+		set_contrast( State.contrast + 1 );
+	}
 
 	/*
 	 *  The keyboard is scanned every 50ms for debounce and repeat
@@ -213,12 +312,12 @@ RAM_FUNCTION void heartbeat_irq( void )
 
 	if ( count != 0 ) {
 		/*
-		 *  Need for speed
+		 *  Need for more speed
 		 */
 		set_speed( SPEED_MEDIUM );
 
 		/*
-		 *  servicee the missung 100ms heart beats
+		 *  Service the missed 100ms heart beats
 		 */
 		while ( count-- ) {
 			user_heartbeat();
@@ -241,10 +340,24 @@ int is_key_pressed(void)
 
 
 /*
- *  Shut down the emulator from the application
+ *  Turn everything except the backup sram off
  */
 void shutdown( void )
 {
+	/*
+	 *  Turn off display gracefully
+	 */
+	disable_lcd();
+
+	/*
+	 *  Backup sram power is still needed
+	 */
+	SUPC_EnableSram();
+
+	/*
+	 *  Off we go...
+	 */
+	SUPC_DisableVoltageRegulator();
 }
 
 
@@ -266,7 +379,9 @@ int main(void)
         /*
          * init hardware (LCD, timer, etc.)
 	 */
-
+	set_speed( SPEED_MEDIUM );
+	enable_lcd();
+	SUPC_EnableRtc();
 
 
 
