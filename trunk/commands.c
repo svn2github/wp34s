@@ -351,8 +351,8 @@ const struct niladic niladics[] = {
 	FUNC0(OP_RADCOM,	&op_radixcom,		"RDX,")
 	FUNC0(OP_THOUS_ON,	&op_thousands_on,	"E3ON")
 	FUNC0(OP_THOUS_OFF,	&op_thousands_off,	"E3OFF")
-	FUNC0(OP_FIXSCI,	&op_fixsci,		"FIXSCI")
-	FUNC0(OP_FIXENG,	&op_fixeng,		"FIXENG")
+	FUNC0(OP_FIXSCI,	&op_fixsci,		"SCIOVR")
+	FUNC0(OP_FIXENG,	&op_fixeng,		"ENGOVR")
 	FUNC0(OP_2COMP,		&op_2comp,		"2COMPL")
 	FUNC0(OP_1COMP,		&op_1comp,		"1COMPL")
 	FUNC0(OP_UNSIGNED,	&op_unsigned,		"UNSIGN")
@@ -532,6 +532,15 @@ const struct argcmd argcmds[] = {
 
 	CMD(RARG_INISOLVE,	&solver,	TOPREALREG-10+1,	"SLVI")
 	CMD(RARG_SOLVESTEP,	&solver,	TOPREALREG-10+1,	"SLVS")
+
+	CMD(RARG_LEGENDRE_PN,	&ortho_poly,	128,			"P\275")
+	CMD(RARG_CHEBYCHEV_TN,	&ortho_poly,	128,			"T\275")
+	CMD(RARG_CHEBYCHEV_UN,	&ortho_poly,	128,			"U\275")
+	CMD(RARG_LAGUERRE,	&ortho_poly,	128,			"L\275")
+	CMD(RARG_GEN_LAGUERRE,	&ortho_poly,	128,			"L\275\240")
+	CMD(RARG_HERMITE_HE,	&ortho_poly,	128,			"HE\275")
+	CMD(RARG_HERMITE_H,	&ortho_poly,	128,			"H\275")
+
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
 #ifdef REALBUILD
 	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CNTRST")

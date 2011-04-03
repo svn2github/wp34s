@@ -2846,3 +2846,115 @@ void solver(unsigned int arg, enum rarg op) {
 	for (r=0; r<8; r++)
 		put_user_flag(arg + r + _FLAG_COUNT_N, flags & (1<<r));
 }
+
+/**********************************************************************/
+/* Orthogonal polynomial evaluations                                  */
+/**********************************************************************/
+
+void ortho_poly(unsigned int arg, enum rarg op) {
+	decNumber x, param, t0, t1, t, u, v, A, B, C, dA;
+	const enum eOrthoPolys type = (enum eOrthoPolys)(op - RARG_LEGENDRE_PN);
+	unsigned int i;
+	int incA, incB, incC;
+
+	// Get argument and parameter
+	getX(&x);
+	setlastX();
+	if (decNumberIsSpecial(&x)) {
+error:		set_NaN(&t1);
+		goto fin;
+	}
+	if (type == ORTHOPOLY_GEN_LAGUERRE) {
+		getY(&param);
+		lower();
+		if (decNumberIsSpecial(&param))
+			goto error;
+		decNumberAdd(&t, &param, &const_1, Ctx);
+		if (decNumberIsNegative(&t) || decNumberIsZero(&t))
+			goto error;
+	} else
+		decNumberZero(&param);
+
+	// Initialise the first two values t0 and t1
+	switch (type) {
+	default:
+		decNumberCopy(&t1, &x);
+		break;
+	case ORTHOPOLY_CHEBYCHEV_UN:
+		decNumberMultiply(&t1, &x, &const_2, Ctx);
+		break;
+	case ORTHOPOLY_LAGUERRE:
+	case ORTHOPOLY_GEN_LAGUERRE:
+		decNumberAdd(&t, &const_1, &param, Ctx);
+		decNumberSubtract(&t1, &t, &x, Ctx);
+		break;
+	case ORTHOPOLY_HERMITE_H:
+		decNumberMultiply(&t1, &x, &const_2, Ctx);
+		break;
+	}
+	decNumberCopy(&t0, &const_1);
+
+	if (arg < 2) {
+		if (arg == 0)
+			decNumberCopy(&t1, &t0);
+		goto fin;
+	}
+
+	// Prepare for the iteration
+	decNumberCopy(&dA, &const_2);
+	decNumberCopy(&C, &const_1);
+	decNumberCopy(&B, &const_1);
+	decNumberMultiply(&A, &x, &const_2, Ctx);
+	incA = incB = incC = 0;
+	switch (type) {
+	case ORTHOPOLY_LEGENDRE_PN:
+		incA = incB = incC = 1;
+		decNumberAdd(&A, &A, &x, Ctx);
+		decNumberMultiply(&dA, &x, &const_2, Ctx);
+		break;
+	case ORTHOPOLY_CHEBYCHEV_TN:	break;
+	case ORTHOPOLY_CHEBYCHEV_UN:	break;
+	case ORTHOPOLY_GEN_LAGUERRE:
+		decNumberAdd(&B, &B, &param, Ctx);
+	case ORTHOPOLY_LAGUERRE:
+		incA = incB = incC = 1;
+		decNumberAdd(&t, &const_3, &param, Ctx);
+		decNumberSubtract(&A, &t, &x, Ctx);
+		break;
+	case ORTHOPOLY_HERMITE_HE:
+		decNumberCopy(&A, &x);
+		incB = 1;
+		break;
+	case ORTHOPOLY_HERMITE_H:
+		decNumberCopy(&B, &const_2);
+		incB = 2;
+		break;
+	}
+
+	// Iterate
+	for (i=2; i<=arg; i++) {
+		decNumberMultiply(&t, &t1, &A, Ctx);
+		decNumberMultiply(&u, &t0, &B, Ctx);
+		decNumberSubtract(&v, &t, &u, Ctx);
+		decNumberCopy(&t0, &t1);
+		if (incC) {
+			decNumberAdd(&C, &C, &const_1, Ctx);
+			decNumberDivide(&t1, &v, &C, Ctx);
+		} else
+			decNumberCopy(&t1, &v);
+		if (incA)
+			decNumberAdd(&A, &A, &dA, Ctx);
+		if (incB)
+			decNumberAdd(&B, &B, small_int(incB), Ctx);
+	}
+fin:	setX(&t1);
+}
+/*
+	case ORTHOPOLY_LEGENDRE_PN:
+	case ORTHOPOLY_CHEBYCHEV_TN:
+	case ORTHOPOLY_CHEBYCHEV_UN:
+	case ORTHOPOLY_LAGUERRE:
+	case ORTHOPOLY_GEN_LAGUERRE:
+	case ORTHOPOLY_HERMITE_HE:
+	case ORTHOPOLY_HERMITE_H:
+		*/

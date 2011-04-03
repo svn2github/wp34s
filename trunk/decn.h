@@ -186,5 +186,6 @@ extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, dec
 extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, decContext *, unsigned int *);
 
 extern void solver(unsigned int arg, enum rarg op);
+extern void ortho_poly(unsigned int arg, enum rarg op);
 
 #endif

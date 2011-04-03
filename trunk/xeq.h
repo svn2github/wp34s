@@ -476,6 +476,15 @@ enum rarg {
 
 	RARG_INISOLVE, RARG_SOLVESTEP,
 
+	// Orthogonal polynomials -- must be in the same order as the enum below
+	RARG_LEGENDRE_PN,
+	RARG_CHEBYCHEV_TN,
+	RARG_CHEBYCHEV_UN,
+	RARG_LAGUERRE,
+	RARG_GEN_LAGUERRE,
+	RARG_HERMITE_HE,
+	RARG_HERMITE_H,
+
 	RARG_PAUSE,
 #ifdef REALBUILD
 	RARG_CONTRAST,
@@ -601,6 +610,18 @@ enum shifts {
 	SHIFT_F, SHIFT_G, SHIFT_H,
 	SHIFT_LC_N, SHIFT_LC_G		// Two lower case planes
 };
+
+// Orthogonal polynomial types
+enum eOrthoPolys {
+	ORTHOPOLY_LEGENDRE_PN,
+	ORTHOPOLY_CHEBYCHEV_TN,
+	ORTHOPOLY_CHEBYCHEV_UN,
+	ORTHOPOLY_LAGUERRE,
+	ORTHOPOLY_GEN_LAGUERRE,
+	ORTHOPOLY_HERMITE_HE,
+	ORTHOPOLY_HERMITE_H,
+};
+
 
 #define K_HEARTBEAT 99			// Pseudo key, "pressed" every 100ms
 
@@ -786,6 +807,7 @@ extern TPersistentRam PersistentRam;
 
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);
+extern void lower(void);
 
 extern const char *get_cmdline(void);
 

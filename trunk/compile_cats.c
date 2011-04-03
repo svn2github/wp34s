@@ -129,6 +129,14 @@ static s_opcode catalogue[] = {
 	DYA(OP_BSYN,		"Yn")
 #endif
 	NILIC(OP_TVM,		"TVM")
+
+	RARGCMD(RARG_LEGENDRE_PN,   "P\275")
+	RARGCMD(RARG_CHEBYCHEV_TN,  "T\275")
+	RARGCMD(RARG_CHEBYCHEV_UN,  "U\275")
+	RARGCMD(RARG_LAGUERRE,      "L\275")
+	RARGCMD(RARG_GEN_LAGUERRE,  "L\275\240")
+	RARGCMD(RARG_HERMITE_HE,    "HE\275")
+	RARGCMD(RARG_HERMITE_H,     "H\275")
 };
 
 static s_opcode cplx_catalogue[] = {
