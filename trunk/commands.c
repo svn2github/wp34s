@@ -538,8 +538,8 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_CHEBYCHEV_UN,	&ortho_poly,	128,			"U\275")
 	CMD(RARG_LAGUERRE,	&ortho_poly,	128,			"L\275")
 	CMD(RARG_GEN_LAGUERRE,	&ortho_poly,	128,			"L\275\240")
-	CMD(RARG_HERMITE_HE,	&ortho_poly,	128,			"HE\275")
-	CMD(RARG_HERMITE_H,	&ortho_poly,	128,			"H\275")
+	CMD(RARG_HERMITE_HE,	&ortho_poly,	128,			"H\275")
+	CMD(RARG_HERMITE_H,	&ortho_poly,	128,			"H\275\276")
 
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
 #ifdef REALBUILD
