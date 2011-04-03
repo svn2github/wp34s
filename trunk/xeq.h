@@ -611,17 +611,6 @@ enum shifts {
 	SHIFT_LC_N, SHIFT_LC_G		// Two lower case planes
 };
 
-// Orthogonal polynomial types
-enum eOrthoPolys {
-	ORTHOPOLY_LEGENDRE_PN,
-	ORTHOPOLY_CHEBYCHEV_TN,
-	ORTHOPOLY_CHEBYCHEV_UN,
-	ORTHOPOLY_LAGUERRE,
-	ORTHOPOLY_GEN_LAGUERRE,
-	ORTHOPOLY_HERMITE_HE,
-	ORTHOPOLY_HERMITE_H,
-};
-
 
 #define K_HEARTBEAT 99			// Pseudo key, "pressed" every 100ms
 

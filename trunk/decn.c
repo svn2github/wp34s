@@ -2851,6 +2851,16 @@ void solver(unsigned int arg, enum rarg op) {
 /* Orthogonal polynomial evaluations                                  */
 /**********************************************************************/
 
+// Orthogonal polynomial types
+enum eOrthoPolys {
+	ORTHOPOLY_LEGENDRE_PN,
+	ORTHOPOLY_CHEBYCHEV_TN,
+	ORTHOPOLY_CHEBYCHEV_UN,
+	ORTHOPOLY_GEN_LAGUERRE,
+	ORTHOPOLY_HERMITE_HE,
+	ORTHOPOLY_HERMITE_H,
+};
+
 static decNumber *ortho_poly(decNumber *r, const decNumber *param, const decNumber *rn, const decNumber *x, decContext *ctx, const enum eOrthoPolys type) {
 	decNumber t0, t1, t, u, v, A, B, C, dA;
 	unsigned int i, n;
@@ -2864,14 +2874,16 @@ error:		set_NaN(r);
 	n = dn_to_int(rn, ctx);
 	if (n > 1000)
 		goto error;
-	if (type == ORTHOPOLY_GEN_LAGUERRE) {
+//	if (type == ORTHOPOLY_GEN_LAGUERRE) {
+	if (param != NULL) {
 		if (decNumberIsSpecial(param))
 			goto error;
 		decNumberAdd(&t, param, &const_1, ctx);
 		if (decNumberIsNegative(&t) || decNumberIsZero(&t))
 			goto error;
-	} else
-		param = &const_0;
+	}
+//	} else
+//		param = &const_0;
 
 	// Initialise the first two values t0 and t1
 	switch (type) {
@@ -2881,7 +2893,6 @@ error:		set_NaN(r);
 	case ORTHOPOLY_CHEBYCHEV_UN:
 		decNumberMultiply(&t1, x, &const_2, ctx);
 		break;
-	case ORTHOPOLY_LAGUERRE:
 	case ORTHOPOLY_GEN_LAGUERRE:
 		decNumberAdd(&t, &const_1, param, ctx);
 		decNumberSubtract(&t1, &t, x, ctx);
@@ -2916,7 +2927,6 @@ error:		set_NaN(r);
 	case ORTHOPOLY_CHEBYCHEV_UN:	break;
 	case ORTHOPOLY_GEN_LAGUERRE:
 		decNumberAdd(&B, &B, param, ctx);
-	case ORTHOPOLY_LAGUERRE:
 		incA = incB = incC = 1;
 		decNumberAdd(&t, &const_3, param, ctx);
 		decNumberSubtract(&A, &t, x, ctx);
@@ -2963,7 +2973,7 @@ decNumber *decNumberPolyUn(decNumber *r, const decNumber *y, const decNumber *x,
 }
 
 decNumber *decNumberPolyLn(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
-	return ortho_poly(r, NULL, y, x, ctx, ORTHOPOLY_LAGUERRE);
+	return ortho_poly(r, &const_0, y, x, ctx, ORTHOPOLY_GEN_LAGUERRE);
 }
 
 decNumber *decNumberPolyLnAlpha(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx) {
