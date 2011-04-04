@@ -398,6 +398,7 @@ enum {
 		OP_statMEAN, OP_statWMEAN, OP_statGMEAN,
 		OP_statR, OP_statLR,
 		OP_statSErr, OP_statGSErr, OP_statWSErr,
+		OP_statCOV, OP_statSxy, OP_statgCOV, OP_statgSxy,
 	OP_EXPF, OP_LINF, OP_LOGF, OP_PWRF, OP_BEST,
 	OP_RANDOM, OP_STORANDOM,
 	OP_DEG, OP_RAD, OP_GRAD,

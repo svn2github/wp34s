@@ -185,6 +185,10 @@ static s_opcode cplx_catalogue[] = {
 static s_opcode stats_catalogue[] = {
 	MON(OP_sigper,		"%\221")
 	NILIC(OP_BEST,		"BESTF")
+	NILIC(OP_statCOV,	"COV")
+	NILIC(OP_statSxy,	"sxy")
+	NILIC(OP_statgCOV,	"COVg")
+	NILIC(OP_statgSxy,	"sxyg")
 	MON(OP_ERF,		"ERF")
 	NILIC(OP_EXPF,		"EXPF")
 	NILIC(OP_LINF,		"LINF")

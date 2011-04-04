@@ -393,13 +393,13 @@ static void do_s(decimal64 *s,
 	decimal64FromNumber(s, p, Ctx64);
 }
 
-static void S(decimal64 *x, decimal64 *y, enum sigma_modes mode, int sample, int rootn, int exp) {
+static void S(decimal64 *x, decimal64 *y, int sample, int rootn, int exp) {
 	decNumber N, nm1, *n = &N;
 	decNumber sx, sxx, sy, syy;
 
 	if (check_data(2))
 		return;
-	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, mode);
+	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, exp?SIGMA_QUIET_POWER:SIGMA_QUIET_LINEAR);
 	if (sample)
 		decNumberSubtract(n = &nm1, &N, &const_1, Ctx);
 	do_s(x, &sxx, &sx, &N, n, rootn, exp);
@@ -408,33 +408,33 @@ static void S(decimal64 *x, decimal64 *y, enum sigma_modes mode, int sample, int
 
 // sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
 void stats_s(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	S(x, y, SIGMA_QUIET_LINEAR, 1, 0, 0);
+	S(x, y, 1, 0, 0);
 }
 
 // [sigma]x = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / n)
 void stats_sigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	S(x, y, SIGMA_QUIET_LINEAR, 0, 0, 0);
+	S(x, y, 0, 0, 0);
 }
 
 // serr = sx / sqrt(n)
 void stats_SErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	S(x, y, SIGMA_QUIET_LINEAR, 1, 1, 0);
+	S(x, y, 1, 1, 0);
 }
 
 
 // sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
 void stats_gs(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	S(x, y, SIGMA_QUIET_POWER, 1, 0, 0);
+	S(x, y, 1, 0, 1);
 }
 
 // [sigma]x = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / n)
 void stats_gsigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	S(x, y, SIGMA_QUIET_POWER, 0, 0, 0);
+	S(x, y, 0, 0, 1);
 }
 
 // serr = sx / sqrt(n)
 void stats_gSErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	S(x, y, SIGMA_QUIET_POWER, 1, 1, 0);
+	S(x, y, 1, 1, 1);
 }
 
 
@@ -526,6 +526,42 @@ void stats_correlation(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decimal64FromNumber(r, &t, ctx64);
 }
 
+
+static void covariance(decimal64 *r, int sample, int exp) {
+	decNumber N, t, u, v, *p = &u;
+	decNumber sx, sy, sxy;
+
+	if (check_data(2))
+		return;
+	get_sigmas(&N, &sx, &sy, NULL, NULL, &sxy, exp?SIGMA_QUIET_POWER:SIGMA_QUIET_LINEAR);
+	decNumberMultiply(&t, &sx, &sy, Ctx);
+	decNumberDivide(&u, &t, &N, Ctx);
+	decNumberSubtract(&t, &sxy, &u, Ctx);
+	if (sample) {
+		decNumberSubtract(&v, &N, &const_1, Ctx);
+		decNumberDivide(&u, &t, &v, Ctx);
+	} else
+		decNumberDivide(&u, &t, &N, Ctx);
+	if (exp)
+		decNumberExp(p = &v, &u, Ctx);
+	decimal64FromNumber(r, &u, Ctx64);
+}
+
+void stats_COV(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+	covariance(r, 0, 0);
+}
+
+void stats_Sxy(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+	covariance(r, 1, 0);
+}
+
+void stats_gCOV(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+	covariance(r, 0, 1);
+}
+
+void stats_gSxy(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+	covariance(r, 1, 1);
+}
 
 // y = B . x + A
 static void do_LR(decNumber *B, decNumber *A, decContext *ctx) {
