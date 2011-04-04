@@ -178,14 +178,12 @@ void cmplxToPolar(decNumber *r, decNumber *t, const decNumber *x, const decNumbe
 }
 
 
-#ifdef INCLUDE_CUBES
 // ( a + i * b ) ^ r
 static void cmplxPowerReal(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *r, decContext *ctx) {
 	cmplxPower(rx, ry, a, b, r, &const_0, ctx);
 }
-#endif
 
 static void cmplxRealPower(decNumber *rx, decNumber *ry,
 		const decNumber *r,
@@ -314,7 +312,6 @@ void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	}
 }
 
-#ifdef INCLUDE_CUBES
 // (a + ib)^3 = (a^2 + b^2) + i ( 2 * a * b ) . ( a + i b )
 void cmplxCube(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
 	decNumber s1, s2;
@@ -330,7 +327,6 @@ void cmplxCubeRoot(decNumber *rx, decNumber *ry, const decNumber *a, const decNu
 	decNumberRecip(&t, &const_3, ctx);
 	cmplxPowerReal(rx, ry, a, b, &t, ctx);
 }
-#endif
 
 
 // sin(a + i b) = sin(a) cosh(b) + i cos(a) sinh(b)

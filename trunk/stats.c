@@ -527,13 +527,13 @@ void stats_correlation(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 }
 
 
-static void covariance(decimal64 *r, int sample, int exp) {
-	decNumber N, t, u, v, *p = &u;
+static void covariance(decimal64 *r, int sample) {
+	decNumber N, t, u, v;
 	decNumber sx, sy, sxy;
 
 	if (check_data(2))
 		return;
-	get_sigmas(&N, &sx, &sy, NULL, NULL, &sxy, exp?SIGMA_QUIET_POWER:SIGMA_QUIET_LINEAR);
+	get_sigmas(&N, &sx, &sy, NULL, NULL, &sxy, State.sigma_mode);
 	decNumberMultiply(&t, &sx, &sy, Ctx);
 	decNumberDivide(&u, &t, &N, Ctx);
 	decNumberSubtract(&t, &sxy, &u, Ctx);
@@ -542,25 +542,15 @@ static void covariance(decimal64 *r, int sample, int exp) {
 		decNumberDivide(&u, &t, &v, Ctx);
 	} else
 		decNumberDivide(&u, &t, &N, Ctx);
-	if (exp)
-		decNumberExp(p = &v, &u, Ctx);
 	decimal64FromNumber(r, &u, Ctx64);
 }
 
 void stats_COV(decimal64 *r, decimal64 *nul, decContext *ctx64) {
-	covariance(r, 0, 0);
+	covariance(r, 0);
 }
 
 void stats_Sxy(decimal64 *r, decimal64 *nul, decContext *ctx64) {
-	covariance(r, 1, 0);
-}
-
-void stats_gCOV(decimal64 *r, decimal64 *nul, decContext *ctx64) {
-	covariance(r, 0, 1);
-}
-
-void stats_gSxy(decimal64 *r, decimal64 *nul, decContext *ctx64) {
-	covariance(r, 1, 1);
+	covariance(r, 1);
 }
 
 // y = B . x + A

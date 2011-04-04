@@ -42,6 +42,8 @@ static s_opcode catalogue[] = {
 	MON(OP_CEIL,		"CEIL")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLREG,		"CLREG")
+	MON(OP_CUBE,		"CUBE")
+	MON(OP_CUBERT,		"CUBERT")
 	MON(OP_D2J,		"D\015J")
 	MON(OP_DEG2RAD,		"D\015R")
 	NILIC(OP_DATE,		"DATE")
@@ -112,10 +114,6 @@ static s_opcode catalogue[] = {
 #ifdef INCLUDE_EASTER
 	MON(OP_EASTER,		"EASTER")
 #endif
-#ifdef INCLUDE_CUBES
-	MON(OP_CUBE,		"CUBE")
-	MON(OP_CUBERT,		"CUBERT")
-#endif
 #ifdef INCLUDE_ZETA
 	MON(OP_ZETA,		"\245")
 #endif
@@ -141,6 +139,8 @@ static s_opcode catalogue[] = {
 
 static s_opcode cplx_catalogue[] = {
 	CMON(OP_CCONJ,		"CONJ")
+	MON(OP_CUBE,		"CUBE")
+	MON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DROPXY,	"DROP")
 	CMON(OP_EXPM1,		"e^x-1")
 	CMON(OP_FIB,		"FIB")
@@ -155,10 +155,6 @@ static s_opcode cplx_catalogue[] = {
 	CMON(OP_GAMMA,		"\202")
 #ifdef INCLUDE_AGM
 	CDYA(OP_AGM,		"AGM")
-#endif
-#ifdef INCLUDE_CUBES
-	CMON(OP_CUBE,		"CUBE")
-	CMON(OP_CUBERT,		"CUBERT")
 #endif
 #ifdef INCLUDE_DBLFACT
 	CMON(OP_DBLFACT,	"x!!")
@@ -187,8 +183,6 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_BEST,		"BESTF")
 	NILIC(OP_statCOV,	"COV")
 	NILIC(OP_statSxy,	"sxy")
-	NILIC(OP_statgCOV,	"COVg")
-	NILIC(OP_statgSxy,	"sxyg")
 	MON(OP_ERF,		"ERF")
 	NILIC(OP_EXPF,		"EXPF")
 	NILIC(OP_LINF,		"LINF")
@@ -266,6 +260,8 @@ static s_opcode int_catalogue[] = {
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_CLREG,		"CLREG")
+	MON(OP_CUBE,		"CUBE")
+	MON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DBL_MUL,	"DBL\034")
 	TRI(OP_DBL_DIV, 	"DBL/")
 	TRI(OP_DBL_MOD, 	"DBLR")
@@ -307,10 +303,6 @@ static s_opcode int_catalogue[] = {
 	NILIC(OP_VIEWALPHA,	"\240VIEW")
 #ifdef INCLUDE_MULADD
 	TRI(OP_MULADD,		"\034+")
-#endif
-#ifdef INCLUDE_CUBES
-	MON(OP_CUBE,		"CUBE")
-	MON(OP_CUBERT,		"CUBERT")
 #endif
 };
 

@@ -469,7 +469,6 @@ long long int intSqr(long long int x) {
 	return intMultiply(x, x);
 }
 
-#ifdef INCLUDE_CUBES
 long long int intCube(long long int x) {
 	long long int y = intMultiply(x, x);
 	int overflow = get_overflow();
@@ -479,7 +478,6 @@ long long int intCube(long long int x) {
 		set_overflow(1);
 	return y;
 }
-#endif
 
 
 long long int intChs(long long int x) {
@@ -981,7 +979,6 @@ long long int intSqrt(long long int x) {
 	return build_value(n1, sx);
 }
 
-#ifdef INCLUDE_CUBES
 /* Integer cube root
  */
 long long int intCubeRoot(long long int v) {
@@ -1011,7 +1008,7 @@ long long int intCubeRoot(long long int v) {
 	set_carry((y*y*y != w)?1:0);
 	return build_value(y, sx);
 }
-#endif
+
 
 /* Integer power y^x
  */

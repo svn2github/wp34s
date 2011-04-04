@@ -272,9 +272,7 @@ enum {
 	OP_LN1P, OP_EXPM1,
 	OP_LAMW, OP_INVW,
 	OP_SQR,
-#ifdef INCLUDE_CUBES
 	OP_CUBE, OP_CUBERT,
-#endif
 
 	OP_FIB,
 
@@ -398,7 +396,7 @@ enum {
 		OP_statMEAN, OP_statWMEAN, OP_statGMEAN,
 		OP_statR, OP_statLR,
 		OP_statSErr, OP_statGSErr, OP_statWSErr,
-		OP_statCOV, OP_statSxy, OP_statgCOV, OP_statgSxy,
+	OP_statCOV, OP_statSxy,
 	OP_EXPF, OP_LINF, OP_LOGF, OP_PWRF, OP_BEST,
 	OP_RANDOM, OP_STORANDOM,
 	OP_DEG, OP_RAD, OP_GRAD,

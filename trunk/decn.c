@@ -516,7 +516,6 @@ decNumber *decNumberSquare(decNumber *r, const decNumber *x, decContext *ctx) {
 	return decNumberMultiply(r, x, x, ctx);
 }
 
-#ifdef INCLUDE_CUBES
 /* Cube - again could be done more efficiently */
 decNumber *decNumberCube(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber z;
@@ -538,7 +537,6 @@ decNumber *decNumberCubeRoot(decNumber *r, const decNumber *x, decContext *ctx) 
 	}
 	return decNumberPower(r, x, &third, ctx);
 }
-#endif
 
 
 static void mod2pi(decNumber *res, const decNumber *x, decContext *ctx) {

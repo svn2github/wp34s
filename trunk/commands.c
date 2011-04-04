@@ -59,10 +59,8 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_LAMW,	&decNumberLamW,		&cmplxlamW,	NULL,		"W")
 	FUNC(OP_INVW,	&decNumberInvW,		&cmplxInvW,	NULL,		"W\235")
 	FUNC(OP_SQR,	&decNumberSquare,	&cmplxSqr,	&intSqr,	"x\232")
-#ifdef INCLUDE_CUBES
 	FUNC(OP_CUBE,	&decNumberCube,		&cmplxCube,	&intCube,	"CUBE")
 	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intCubeRoot,	"CUBERT")
-#endif
 	FUNC(OP_FIB,	&decNumberFib,		&cmplxFib,	&intFib,	"FIB")
 	FUNC(OP_2DEG,	&decNumber2Deg,		NULL,		NULL,		"\015DEG")
 	FUNC(OP_2RAD,	&decNumber2Rad,		NULL,		NULL,		"\015RAD")
@@ -327,8 +325,6 @@ const struct niladic niladics[] = {
 	FUNC1(OP_statWSErr,	&stats_wSErr,		"SERRw")
 	FUNC1(OP_statCOV,	&stats_COV,		"COV")
 	FUNC1(OP_statSxy,	&stats_Sxy,		"sxy")
-	FUNC1(OP_statgCOV,	&stats_gCOV,		"COVg")
-	FUNC1(OP_statgSxy,	&stats_gSxy,		"sxyg")
 	FUNC0(OP_EXPF,		&stats_mode_expf,	"ExpF")
 	FUNC0(OP_LINF,		&stats_mode_linf,	"LinF")
 	FUNC0(OP_LOGF,		&stats_mode_logf,	"LogF")

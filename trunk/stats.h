@@ -37,8 +37,6 @@ extern decNumber *stats_yhat(decNumber *, const decNumber *, decContext *);
 extern void stats_correlation(decimal64 *, decimal64 *, decContext *);
 extern void stats_COV(decimal64 *, decimal64 *, decContext *);
 extern void stats_Sxy(decimal64 *, decimal64 *, decContext *);
-extern void stats_gCOV(decimal64 *, decimal64 *, decContext *);
-extern void stats_gSxy(decimal64 *, decimal64 *, decContext *);
 extern void stats_LR(decimal64 *, decimal64 *, decContext *);
 extern void stats_SErr(decimal64 *, decimal64 *, decContext *);
 extern void stats_gSErr(decimal64 *, decimal64 *, decContext *);

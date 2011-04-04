@@ -51,9 +51,6 @@
 // This isn't vital since this can be done using a complex addition.
 //#define INCLUDE_MULADD
 
-// Include cube and cube root functions for reals, complex and integers
-#define INCLUDE_CUBES
-
 // Include the x!! function defined over the complex plane
 //#define INCLUDE_DBLFACT
 
