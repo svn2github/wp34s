@@ -1014,6 +1014,8 @@ extern void xrom_tvm(decimal64 *a, decimal64 *b, decContext *nulc);
 
 /* system functions */
 extern int is_key_pressed(void);
+extern int get_key(void);
+extern int put_key(int k);
 extern void watchdog(void);
 extern void shutdown(void);
 
