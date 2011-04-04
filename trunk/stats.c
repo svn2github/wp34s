@@ -771,6 +771,30 @@ decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const dec
 }
 
 
+static int check_probability(decNumber *r, const decNumber *x, decContext *ctx, const decNumber *lower) {
+	decNumber t;
+
+	/* Range check the probability input */
+	if (decNumberIsZero(x)) {
+	    if (lower != NULL)
+		decNumberCopy(r, lower);
+	    else
+		set_neginf(r);
+	    return 1;
+	}
+	decNumberCompare(&t, &const_1, x, ctx);
+	if (decNumberIsZero(&t)) {
+	    set_inf(r);
+	    return 1;
+	}
+	if (decNumberIsNegative(&t) || decNumberIsNegative(x) || decNumberIsSpecial(x)) {
+	    set_NaN(r);
+	    return 1;
+	}
+	return 0;
+}
+
+
 /* Get parameters for a distribution */
 static void dist_one_param(decNumber *a) {
 	get_reg_n_as_dn(regJ_idx, a);
@@ -1055,32 +1079,51 @@ decNumber *cdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 
 /* Geometric cdf
  */
-decNumber *cdf_G_helper(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber p, t, u;
-
-	dist_one_param(&p);
-	if (param_range01(r, &p))
-		return r;
-	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
-	}
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
-		return decNumberZero(r);
-	if (decNumberIsInfinite(x))
-		return decNumberCopy(r, &const_1);
-
-	decNumberSubtract(&t, &const_1, &p, ctx);
-	decNumberPower(&u, &t, x, ctx);
-	return decNumberSubtract(r, &const_1, &u, ctx);
+static int geometric_param(decNumber *r, decNumber *p, const decNumber *x, decContext *ctx) {
+        dist_one_param(p);
+        if (param_range01(r, p))
+                return 1;
+        if (decNumberIsNaN(x)) {
+                set_NaN(r);
+                return 1;
+        }
+        return 0;
 }
 
 decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
+        decNumber p, t, u;
 
-	decNumberFloor(&t, x, ctx);
-	return cdf_G_helper(r, &t, ctx);
+        if (geometric_param(r, &p, x, ctx))
+                return r;
+        if (! is_int(x, ctx)) {
+                set_NaN(r);
+                return r;
+        }
+        if (decNumberIsNegative(x) || decNumberIsZero(x))
+                return decNumberZero(r);
+        if (decNumberIsInfinite(x))
+                return decNumberCopy(r, &const_1);
+
+        decNumberSubtract(&t, &const_1, &p, ctx);
+        decNumberPower(&u, &t, x, ctx);
+        return decNumberSubtract(r, &const_1, &u, ctx);
 }
+
+decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
+        decNumber p, t, u, v;
+
+        if (geometric_param(r, &p, x, ctx))
+                return r;
+        if (check_probability(r, x, ctx, &const_0))
+                return r;
+        decNumberSubtract(&t, &const_1, x, ctx);
+        decNumberLn(&v, &t, ctx);
+        decNumberSubtract(&u, &const_1, &p, ctx);
+        decNumberLn(&t, &u, ctx);
+        return decNumberDivide(r, &v, &t, ctx);
+}
+
+
 static int qf_eval(decNumber *diff, const decNumber *pt, const decNumber *x, decContext *ctx,
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
 	decNumber z, prob;
@@ -1093,29 +1136,6 @@ static int qf_eval(decNumber *diff, const decNumber *pt, const decNumber *x, dec
 	if (decNumberIsNegative(diff))
 		return -1;
 	return 1;
-}
-
-static int check_probability(decNumber *r, const decNumber *x, decContext *ctx, const decNumber *lower) {
-	decNumber t;
-
-	/* Range check the probability input */
-	if (decNumberIsZero(x)) {
-	    if (lower != NULL)
-		decNumberCopy(r, lower);
-	    else
-		set_neginf(r);
-	    return 1;
-	}
-	decNumberCompare(&t, &const_1, x, ctx);
-	if (decNumberIsZero(&t)) {
-	    set_inf(r);
-	    return 1;
-	}
-	if (decNumberIsNegative(&t) || decNumberIsNegative(x)) {
-	    set_NaN(r);
-	    return 1;
-	}
-	return 0;
 }
 
 static decNumber *qf_search(decNumber *r,
@@ -1181,9 +1201,9 @@ decNumber *qf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 	return discrete_qf(r, x, ctx, &cdf_P_helper);
 }
 
-decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
-	return discrete_qf(r, x, ctx, &cdf_G_helper);
-}
+//decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
+//	return discrete_qf(r, x, ctx, &cdf_G_helper);
+//}
 
 decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	return discrete_qf(r, x, ctx, &cdf_B_helper);
