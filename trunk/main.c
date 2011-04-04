@@ -54,9 +54,9 @@
 				 != AT91C_PMC_MCKRDY )
 
 /*
- *  setup the perstent RAM
+ *  Setup the perstent RAM
  */
-TPersistentRam PersistentRam;
+BACKUP_SRAM TPersistentRam PersistentRam;
 
 /*
  *  Local data
@@ -94,6 +94,27 @@ void scan_keyboard( void )
 
 
 /*
+ *  Set the contrast
+ */
+void set_contrast( unsigned int contrast )
+{
+	if ( contrast == Contrast ) {
+		/*
+		 *  No change
+		 */
+		return;
+	}
+
+	/*
+	 *  Update supply controller settings
+	 */
+	SUPC_SetSlcdVoltage( ( contrast - 1 ) & 0x0f );
+
+	Contrast = contrast;
+}
+
+
+/*
  *  Setup the LCD controller
  */
 void enable_lcd( void )
@@ -123,27 +144,6 @@ void enable_lcd( void )
 	 */
 	set_contrast( State.contrast + 1 );
 	SLCDC_Enable();
-}
-
-
-/*
- *  Set the contrast
- */
-void set_contrast( unsigned int contrast )
-{
-	if ( contrast == Contrast ) {
-		/*
-		 *  No change
-		 */
-		return;
-	}
-
-	/*
-	 *  Update supply controller settings
-	 */
-	SUPC_SetSlcdVoltage( ( contrast - 1 ) & 0x0f );
-
-	Contrast = contrast;
 }
 
 

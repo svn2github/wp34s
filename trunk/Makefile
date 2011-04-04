@@ -173,7 +173,7 @@ ifdef REALBUILD
 
 # Targets flash and flash2 for different build processes
 
-$(OUTPUTDIR)/calc.bin: asone.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
+$(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(LDCTRL) Makefile
 	$(CC) $(CFLAGS)	-IdecNumber -Iatmel -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program 

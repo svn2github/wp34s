@@ -1474,10 +1474,10 @@ void CHP20b_cDlg::OnMove(int x, int y)
   static int  oldYPos = 1;
   CDialog::OnMove(x, y);
   if (m_bHideTitlebar && y > -10000) {
-    if (oldYPos < 0 && y == -1) {
+    if (oldYPos < 0 && (y - oldYPos) > 10 && y > -5 && y < 5) {
       int captY = ::GetSystemMetrics(SM_CYCAPTION);
       int newYPos = oldYPos - captY + 2;
-      if ( newYPos < - (Skin.screen.top + captY) )
+      if (newYPos < - (Skin.screen.top + captY))
         newYPos = - (Skin.screen.top + captY);
       SetWindowPos(NULL, x - 3, newYPos, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
       y = newYPos;
