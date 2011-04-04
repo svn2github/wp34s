@@ -52,7 +52,7 @@
 //#define INCLUDE_MULADD
 
 // Include cube and cube root functions for reals, complex and integers
-//#define INCLUDE_CUBES
+#define INCLUDE_CUBES
 
 // Include the x!! function defined over the complex plane
 //#define INCLUDE_DBLFACT
