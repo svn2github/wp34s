@@ -1472,9 +1472,14 @@ void CHP20b_cDlg::OnMove(int x, int y)
 { 
   // Changed by MvC: broke minimize/restore from taskbar
   static int  oldYPos = 1;
+#if 0
+  static FILE *trace;
+  if ( trace == NULL ) trace = fopen("wp34strace.dat","w");
+  fprintf(trace,"(%d,%d)\n",x,y);
+#endif
   CDialog::OnMove(x, y);
   if (m_bHideTitlebar && y > -10000) {
-    if (oldYPos < 0 && (y - oldYPos) > 10 && y > -5 && y < 5) {
+    if (oldYPos < 0 && (y == -1 || y == -5)) {
       int captY = ::GetSystemMetrics(SM_CYCAPTION);
       int newYPos = oldYPos - captY + 2;
       if (newYPos < - (Skin.screen.top + captY))
