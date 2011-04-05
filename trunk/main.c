@@ -127,24 +127,41 @@ void scan_keyboard( void )
 		/*
 		 *  Assemble the input
 		 */
-		int r, i, on;
+		int r, i;
 		for ( r = 1, i = 0; i < 8; r <<= 1, ++i ) {
 			/*
-			 *  Set each column to zero and read the row image
+			 *  Set each column to zero and read the row image.
+			 *  The input is inverted on read. 1s are pressed keys now.
 			 */
 			AT91C_BASE_PIOC->PIO_CODR = r;
 			short_wait( 1 );
-			k = AT91C_BASE_PIOC->PIO_PDSR & KEY_COLS_MASK; 
+			k = ~AT91C_BASE_PIOC->PIO_PDSR & KEY_COLS_MASK; 
 			AT91C_BASE_PIOC->PIO_SODR = r;
 			/*
 			 *  Adjust the result
 			 */
-			on = k & KEY_ON_MASK;
+			if ( i == 7 && k & KEY_ON_MASK) {
+				/*
+				 *  Add ON key to bit image
+				 */
+				k |= 1 << KEY_COLS_SHIFT; 
+			}
+			/*
+			 *  Some bit shuffling required, columns are on bits 11-15 & 26.
+			 *  These are configurable as wakeup pins, what we don't use here.
+			 */
 			k >>= KEY_COLS_SHIFT;
 			k = ( k >> KEY_COL5_SHIFT ) | k;
-			KbData.c[ i ] &= (unsigned char) ( KbData.c[ i ] ^ k );
+			KbData.c[ i ] = (unsigned char) ( ~KbData.c[ i ] & k );
+
+			/*
+			 *  Mask with debounce image
+			 */
+
+			/*
+			 *  Store new debounce image
+			 */
 		}
-		if ( on == 0 ) {
 	}
 
 
@@ -156,16 +173,6 @@ void scan_keyboard( void )
 	// Disable clock
 	AT91C_BASE_PMC->PMC_PCDR = 1 << AT91C_ID_PIOC;
 
-
-
-
-	/*
-	 *  Mask with debounce image
-	 */
-
-	/*
-	 *  Store new debounce image
-	 */
 
 	/*
 	 *  Decode
