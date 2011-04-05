@@ -60,6 +60,7 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  *  Local data
  */
 unsigned int ClockSpeed;
+int SpeedSetting;
 unsigned int Heartbeats;
 unsigned int Contrast;
 
@@ -71,10 +72,9 @@ unsigned int Contrast;
 #define KEY_BUFF_MASK ( KEY_BUFF_LEN - 1 )
 signed char KeyBuffer[ KEY_BUFF_LEN ];
 int KbRead, KbWrite, KbCount;
-union _ll {
-	unsigned char c[ 8 ];
-	unsigned long long ll;
-} KbData, KbDebounce;
+long long KbData, KbDebounce, KbRepeatKey;
+int KbRepeatCount;
+#define KEY_REPEAT_MASK 0x0000010100000000LL   // only Up and Down repeat
 
 #define KEY_ROWS_MASK 0x0000007f
 #define KEY_COLS_MASK 0x0400f800
@@ -97,7 +97,13 @@ int short_wait( int count )
  */
 void scan_keyboard( void )
 {
-	int k;
+	int i, k;
+	unsigned char m;
+	union _ll {
+		unsigned char c[ 8 ];
+		unsigned long long ll;
+	} keys;
+	long long last_keys;
 
 	/*
 	 *  Program the PIO pins in PIOC
@@ -121,13 +127,13 @@ void scan_keyboard( void )
 		/*
 		 *  No key is down
 		 */
-		KbData.ll = 0ll;
+		keys.ll = 0LL;
 	}
 	else {
 		/*
 		 *  Assemble the input
 		 */
-		int r, i;
+		int r;
 		for ( r = 1, i = 0; i < 8; r <<= 1, ++i ) {
 			/*
 			 *  Set each column to zero and read the row image.
@@ -137,6 +143,7 @@ void scan_keyboard( void )
 			short_wait( 1 );
 			k = ~AT91C_BASE_PIOC->PIO_PDSR & KEY_COLS_MASK; 
 			AT91C_BASE_PIOC->PIO_SODR = r;
+
 			/*
 			 *  Adjust the result
 			 */
@@ -146,25 +153,31 @@ void scan_keyboard( void )
 				 */
 				k |= 1 << KEY_COLS_SHIFT; 
 			}
+
 			/*
-			 *  Some bit shuffling required, columns are on bits 11-15 & 26.
-			 *  These are configurable as wakeup pins, what we don't use here.
+			 *  Some bit shuffling required: Columns are on bits 11-15 & 26.
+			 *  These are configurable as wakeup pins, a feature we don't use here.
 			 */
 			k >>= KEY_COLS_SHIFT;
 			k = ( k >> KEY_COL5_SHIFT ) | k;
-			KbData.c[ i ] = (unsigned char) ( ~KbData.c[ i ] & k );
-
-			/*
-			 *  Mask with debounce image
-			 */
-
-			/*
-			 *  Store new debounce image
-			 */
+			keys.c[ i ] = (unsigned char) k;
 		}
 	}
 
+	/*
+	 *  Store new images
+	 */
+	last_keys = KbDebounce;
+	KbDebounce = KbData;
+	KbData = keys.ll;
 
+	/*
+	 *  A key is newly pressed, if
+	 *  a) it wasn't pressed last time we checked
+	 *  b) it has the same value as the debounce value
+	 */
+	keys.ll &= !last_keys && KbDebounce;
+	
 	/*
 	 *  Reprogram PIO
 	 */
@@ -173,15 +186,62 @@ void scan_keyboard( void )
 	// Disable clock
 	AT91C_BASE_PMC->PMC_PCDR = 1 << AT91C_ID_PIOC;
 
+	/*
+	 *  Handle repeating arrow keys
+	 */
+	if ( KbData == KbRepeatKey ) {
+		/*
+		 *  One of the repeating keys is still down
+		 */
+		++KbRepeatCount;
+		if ( KbRepeatCount == 10 
+		  || ( KbRepeatCount > 10 && ( ( KbRepeatCount - 10 ) & 3 ) == 0 ) )
+		{
+			/*
+			 *  This should repeat after half a second at 5 per second
+			 */
+			keys.ll = KbRepeatKey;
+		}
+	}
+	else {
+		/*
+		 *  Restart the repeat for new key
+		 */
+		KbRepeatCount = 0;
+		KbRepeatKey = keys.ll & KEY_REPEAT_MASK;
+	}
 
 	/*
 	 *  Decode
 	 */
+	k = 0;
+	for ( i = 0; i < 7; ++i ) {
+		/*
+		 *  Handle each row
+		 */
+		for ( m = 1; m != 0x40; m <<= 1 ) {
+			/*
+			 *  Handle each column
+			 */
+			if ( keys.c[ i ] & m ) {
+				/*
+				 *  First key found exits loop;
+				 */
+				i = 7;
+				break;
+			}
+			/*
+			 *  Try next code
+			 */
+			++k;
+		}
+	}
+
 
 	/*
 	 *  Add to buffer
 	 */
-
+	put_key( k );
 }
 
 
@@ -297,6 +357,7 @@ void set_speed( unsigned int speed )
 	static int speeds[ SPEED_HIGH + 1 ] = 
 		{ 0, 32768, 2000000, 32768 * ( 1 + PLLMUL ) };
 
+	SpeedSetting = speed;
 	if ( speed > SPEED_HIGH || speeds[ speed ] == ClockSpeed ) {
 		/*
 		 *  Invalid or no change
@@ -390,14 +451,29 @@ void set_speed( unsigned int speed )
  */
 void user_heartbeat( void )
 {
+	/*
+	 *  Application ticker in 10th of seconds
+	 */
 	++Ticker;
+
 	if ( State.pause ) {
+		/*
+		 *  The PSE handler checks this value
+		 */
 	        --State.pause;
 	}
+
+	/*
+	 *  Allow keyboard timeout handling
+	 */
 	if ( ++Keyticks > 1000 ) {
 		Keyticks = 1000;
 	}
-        put_key( K_HEARTBEAT );  // add only if buffer is empty
+
+	/*
+	 *  Put a dummy keycode in buffer to wake up application
+	 */
+        put_key( K_HEARTBEAT );
 }
 
 
@@ -407,14 +483,20 @@ void user_heartbeat( void )
  */
 RAM_FUNCTION void heartbeat_irq( void )
 {
-	int count;
+	int count, old_speed;
 	
 	/*
 	 *  Flash memory might be disabled, turn it on again
 	 */
-	if ( ClockSpeed == 0 ) {
+	if ( SpeedSetting == SPEED_NULL ) {
 		SUPC_EnableFlash( 2 );  // ~ 130 microseconds wakeup at 32768 Hz
 	}
+
+	/*
+	 *  Set speed to 2MHz for all irq handling. This ensures consistent timing
+	 */
+	old_speed = SpeedSetting;
+	set_speed( SPEED_MEDIUM );
 
 	/*
 	 *  Since all system peripherals are tied to the same IRQ source 1
@@ -424,9 +506,29 @@ RAM_FUNCTION void heartbeat_irq( void )
 		/*
 		 *  Add other sources here
 		 */
+		// ...
+
+		/*
+		 *  Set speed to higher level if that was what we came from
+		 */
+		if ( old_speed > SpeedSetting ) {
+			set_speed( old_speed );
+		}
 		return;
 	}
 	
+	/*
+	 *  The keyboard is scanned every 50ms for debounce and repeat
+	 */
+	scan_keyboard();
+
+	/*
+	 *  Set speed to higher level if that was what we came from
+	 */
+	if ( old_speed > SpeedSetting ) {
+		set_speed( old_speed );
+	}
+
 	/*
 	 *  Get the number of missed interrupts
 	 */
@@ -434,28 +536,7 @@ RAM_FUNCTION void heartbeat_irq( void )
 	count = Heartbeats >> HEARTBEAT_SHIFT;
 	Heartbeats &= HEARTBEAT_MASK;
 
-	/*
-	 *  Adjust the display contrast if it has been changed
-	 */
-	if ( State.contrast != Contrast ) {
-		/*
-		 *  The saved value ranges from 0 to 15.
-		 *  We use values 1 to 16 or 0 which means off
-		 */
-		set_contrast( State.contrast + 1 );
-	}
-
-	/*
-	 *  The keyboard is scanned every 50ms for debounce and repeat
-	 */
-	scan_keyboard();
-
 	if ( count != 0 ) {
-		/*
-		 *  Need for more speed
-		 */
-		set_speed( SPEED_MEDIUM );
-
 		/*
 		 *  Service the missed 100ms heart beats
 		 */
@@ -542,11 +623,13 @@ int get_key( void )
 	KbRead = ( KbRead + 1 ) & KEY_BUFF_MASK;
 	--KbCount;
 	unlock();
+	return k;
 }
 
 
 /*
  *  Add a key to the buffer
+ *  Returns 0 in case of failure or number of keys in buffer
  */
 int put_key( int k )
 {
@@ -554,20 +637,21 @@ int put_key( int k )
 		/*
 		 *  Sorry, no room
 		 */
-		return;
+		return 0;
 	}
 
 	if ( k == K_HEARTBEAT && KbCount != 0 ) {
 		/*
 		 *  Don't fill the buffer with heartbeats
 		 */
-		return;
+		return 0;
 	}
 	lock();
 	KbWrite = ( KbWrite + 1 ) & KEY_BUFF_MASK;
 	KeyBuffer[ KbWrite ] = (unsigned char) k;
 	++KbCount;
 	unlock();
+	return KbCount;
 }
 
 
@@ -622,20 +706,41 @@ int main(void)
 	 */
 	while( 1 ) {
                 int k;
+
 		while ( !is_key_pressed() ) {
 			/*
-			 *  Save power
+			 *  Save power if nothing in queue
 			 */
 			go_idle();
 		}
+
+		/*
+		 *  Read out the keyboard queue
+		 */
 		k = get_key();
+
 		if ( k != K_HEARTBEAT ) {
 			/*
 			 *  Increase the speed of operation
 			 */
 			set_speed( SPEED_HIGH );
 		}
+
+		/*
+		 *  Handle the input
+		 */
 		process_keycode( k );
+
+		/*
+		 *  Adjust the display contrast if it has been changed
+		 */
+		if ( State.contrast != Contrast ) {
+			/*
+			 *  The saved value ranges from 0 to 15.
+			 *  We use values 1 to 16 or 0 which means off
+			 */
+			set_contrast( State.contrast + 1 );
+		}
 	}
         return 0;
 }
