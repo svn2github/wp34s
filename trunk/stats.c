@@ -976,17 +976,40 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 
 /* Weibull distribution cdf = 1 - exp(-(x/lambda)^k)
  */
+static int weibull_param(decNumber *r, decNumber *k, decNumber *lam, const decNumber *x, decContext *ctx) {
+	dist_two_param(k, lam);
+	if (param_positive(r, k) || param_positive(r, lam))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	return 0;
+}
+
+decNumber *pdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber k, lam, t, u, v, q;
+
+	if (weibull_param(r, &k, &lam, x, ctx))
+		return r;
+	if (decNumberIsNegative(x) && ! decNumberIsZero(x)) {
+		decNumberZero(r);
+		return r;
+	}
+	decNumberDivide(&q, x, &lam, ctx);
+	decNumberPower(&u, &q, &k, ctx);		// (x/lam)^k
+	decNumberDivide(&t, &u, &q, ctx);		// (x/lam)^(k-1)
+	decNumberExp(&v, &u, ctx);
+	decNumberDivide(&q, &t, &v, ctx);
+	decNumberDivide(&t, &q, &lam, ctx);
+	return decNumberMultiply(r, &t, &k, ctx);
+}
+
 decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber k, lam, t;
 
-	dist_two_param(&k, &lam);
-	if (param_positive(r, &k) || param_positive(r, &lam))
+	if (weibull_param(r, &k, &lam, x, ctx))
 		return r;
-
-	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
-	}
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
@@ -998,6 +1021,37 @@ decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumberExp(&lam, &t, ctx);
 	return decNumberSubtract(r, &const_1, &lam, ctx);
 }
+
+/* Weibull distribution quantile function:
+ *	p = 1 - exp(-(x/lambda)^k)
+ *	exp(-(x/lambda)^k) = 1 - p
+ *	-(x/lambda)^k = ln(1-p)
+ * Thus, the qf is:
+ *	x = (-ln(1-p) ^ (1/k)) * lambda
+ * So no searching is required.
+ */
+decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
+	decNumber t, u, k, lam;
+
+	if (weibull_param(r, &k, &lam, p, ctx))
+		return r;
+	if (check_probability(r, p, ctx, &const_0))
+	    return r;
+	decNumberSubtract(&t, &const_1, p, ctx);
+	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
+			decNumberIsNegative(&k) || decNumberIsZero(&k) ||
+			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
+		set_NaN(r);
+		return r;
+	}
+
+	decNumberLn(&u, &t, ctx);
+	decNumberMinus(&t, &u, ctx);
+	decNumberRecip(&u, &k, ctx);
+	decNumberPower(&k, &t, &u, ctx);
+	return decNumberMultiply(r, &lam, &k, ctx);
+}
+
 
 /* Exponential distribution cdf = 1 - exp(-lambda . x)
  */
@@ -1045,16 +1099,22 @@ decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 
 /* Binomial cdf f(k; n, p) = iBeta(n-floor(k), 1+floor(k); 1-p)
  */
+static int binomial_param(decNumber *r, decNumber *p, decNumber *n, const decNumber *x, decContext *ctx) {
+	dist_two_param(p, n);
+	if (param_nonnegative_int(r, n) || param_range01(r, p))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	return 0;
+}
+
 decNumber *cdf_B_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber n, p, t, u, v;
 
-	dist_two_param(&p, &n);
-	if (param_nonnegative_int(r, &n) || param_range01(r, &p))
+	if (binomial_param(r, &p, &n, x, ctx))
 		return r;
-	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
-	}
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
@@ -1066,6 +1126,29 @@ decNumber *cdf_B_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	return betai(r, &v, &u, &t, ctx);
 }
 
+decNumber *pdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber n, p, t, u, v;
+
+	if (binomial_param(r, &p, &n, x, ctx))
+		return r;
+	if (! is_int(x, ctx)) {
+		decNumberZero(r);
+		return r;
+	}
+
+	decNumberSubtract(&u, &n, x, ctx);
+	if (decNumberIsNegative(&u) && !decNumberIsZero(&u)) {
+		decNumberZero(r);
+		return r;
+	}
+	decNumberSubtract(&t, &const_1, &p, ctx);
+	decNumberPower(&v, &t, &u, ctx);
+	decNumberComb(&t, &n, x, ctx);
+	decNumberMultiply(&u, &t, &v, ctx);
+	decNumberPower(&t, &p, x, ctx);
+	return decNumberMultiply(r, &t, &u, ctx);
+}
+
 decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber t;
 
@@ -1075,17 +1158,24 @@ decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 
 /* Poisson cdf f(k, lam) = 1 - iGamma(floor(k+1), lam) / floor(k)! k>=0
  */
+static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x, decContext *ctx) {
+	decNumber prob, count;
+
+	dist_two_param(&prob, &count);
+	if (param_range01(r, &prob) || param_nonnegative_int(r, &count))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	decNumberMultiply(lambda, &prob, &count, ctx);
+	return 0;
+}
+
 decNumber *cdf_P_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber lambda, t, u;
 
-	dist_two_param(&t, &u);		// t=probability, u=count
-	if (param_range01(r, &t) || param_nonnegative_int(r, &u))
-		return r;
-	decNumberMultiply(&lambda, &t, &u, ctx);
-	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
-	}
+	poisson_param(r, &lambda, x, ctx);
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
@@ -1094,6 +1184,22 @@ decNumber *cdf_P_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumberAdd(&u, x, &const_1, ctx);
 	decNumberGammap(&t, &u, &lambda, ctx);
 	return decNumberSubtract(r, &const_1, &t, ctx);
+}
+
+decNumber *pdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber lambda, t, u, v;
+
+	if (poisson_param(r, &lambda, x, ctx))
+		return r;
+	if (! is_int(x, ctx)) {
+		decNumberZero(r);
+		return r;
+	}
+	decNumberPower(&t, &lambda, x, ctx);
+	decNumberFactorial(&u, x, ctx);
+	decNumberDivide(&v, &t, &u, ctx);
+	decNumberExp(&t, &lambda, ctx);
+	return decNumberDivide(r, &v, &t, ctx);
 }
 
 decNumber *cdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
@@ -1116,14 +1222,29 @@ static int geometric_param(decNumber *r, decNumber *p, const decNumber *x, decCo
         return 0;
 }
 
+decNumber *pdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber p, t, u, v;
+
+	if (geometric_param(r, &p, x, ctx))
+		return r;
+        if (! is_int(x, ctx)) {
+		decNumberZero(r);
+		return r;
+        }
+	decNumberSubtract(&t, &const_1, &p, ctx);
+	decNumberSubtract(&u, x, &const_1, ctx);
+	decNumberPower(&v, &t, &u, ctx);
+	return decNumberMultiply(r, &v, &p, ctx);
+}
+
 decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
-        decNumber p, t, u;
+        decNumber p, t, u, ipx;
 
         if (geometric_param(r, &p, x, ctx))
                 return r;
         if (! is_int(x, ctx)) {
-                set_NaN(r);
-                return r;
+		decNumberFloor(&ipx, x, ctx);
+		x = &ipx;
         }
         if (decNumberIsNegative(x) || decNumberIsZero(x))
                 return decNumberZero(r);
@@ -1227,43 +1348,8 @@ decNumber *qf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 	return discrete_qf(r, x, ctx, &cdf_P_helper);
 }
 
-//decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
-//	return discrete_qf(r, x, ctx, &cdf_G_helper);
-//}
-
 decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	return discrete_qf(r, x, ctx, &cdf_B_helper);
-}
-
-/* Weibull distribution quantile function:
- *	p = 1 - exp(-(x/lambda)^k)
- *	exp(-(x/lambda)^k) = 1 - p
- *	-(x/lambda)^k = ln(1-p)
- * Thus, the qf is:
- *	x = (-ln(1-p) ^ (1/k)) * lambda
- * So no searching is required.
- */
-decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
-	decNumber t, u, k, lam;
-
-	dist_two_param(&k, &lam);
-	if (param_positive(r, &k) || param_positive(r, &lam))
-		return r;
-	if (check_probability(r, p, ctx, &const_0))
-	    return r;
-	decNumberSubtract(&t, &const_1, p, ctx);
-	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
-			decNumberIsNegative(&k) || decNumberIsZero(&k) ||
-			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
-		set_NaN(r);
-		return r;
-	}
-
-	decNumberLn(&u, &t, ctx);
-	decNumberMinus(&t, &u, ctx);
-	decNumberRecip(&u, &k, ctx);
-	decNumberPower(&k, &t, &u, ctx);
-	return decNumberMultiply(r, &lam, &k, ctx);
 }
 
 /* Exponential distribution quantile function:

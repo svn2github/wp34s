@@ -139,8 +139,8 @@ static s_opcode catalogue[] = {
 
 static s_opcode cplx_catalogue[] = {
 	CMON(OP_CCONJ,		"CONJ")
-	MON(OP_CUBE,		"CUBE")
-	MON(OP_CUBERT,		"CUBERT")
+	CMON(OP_CUBE,		"CUBE")
+	CMON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DROPXY,	"DROP")
 	CMON(OP_EXPM1,		"e^x-1")
 	CMON(OP_FIB,		"FIB")
@@ -222,6 +222,7 @@ static s_opcode stats_catalogue[] = {
 };
 
 static s_opcode prob_catalogue[] = {
+	MON(OP_pdf_B,		"Binom\276")
 	MON(OP_cdf_B,		"B(n)")
 	MON(OP_qf_B,		"B\235(p)")
 	MON(OP_pdf_C,		"Cap(x)")
@@ -232,8 +233,9 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_qf_EXP,		"Ex/235(p)")
 	MON(OP_cdf_F,		"F(x)")
 	MON(OP_qf_F,		"F/235(p)")
-	MON(OP_cdf_G,		"G(n)")
-	MON(OP_qf_G,		"G/235(p)")
+	MON(OP_pdf_G,		"Geom\276")
+	MON(OP_cdf_G,		"Geom")
+	MON(OP_qf_G,		"Geom/235")
 	MON(OP_pdf_LG,		"Lgp(x)")
 	MON(OP_cdf_LG,		"Lg(x)")
 	MON(OP_qf_LG,		"Lg\235(p)")
@@ -243,10 +245,12 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_pdf_N,		"Np(x)")
 	MON(OP_cdf_N,		"N(x)")
 	MON(OP_qf_N,		"N\235(p)")
+	MON(OP_pdf_P,		"P\276")
 	MON(OP_cdf_P,		"P(n)")
 	MON(OP_qf_P,		"P/235(p)")
 	MON(OP_cdf_T,		"t(x)")
 	MON(OP_qf_T,		"t/235(p)")
+	MON(OP_pdf_WB,		"WB\276")
 	MON(OP_cdf_WB,		"WB(x)")
 	MON(OP_qf_WB,		"WB/235(p)")
 	MON(OP_cdf_chi2,	"\225\232")

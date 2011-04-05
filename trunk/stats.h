@@ -90,6 +90,7 @@ extern decNumber *cdf_F(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_F(decNumber *, const decNumber *, decContext *);
 
 /* Weibull distribution with parameters k and lambda in registers J and K */
+extern decNumber *pdf_WB(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_WB(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_WB(decNumber *, const decNumber *, decContext *);
 
@@ -99,14 +100,17 @@ extern decNumber *cdf_EXP(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_EXP(decNumber *, const decNumber *, decContext *);
 
 /* Poisson distribution with parameter lambda (in register J) */
+extern decNumber *pdf_P(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_P(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_P(decNumber *, const decNumber *, decContext *);
 
 /* Geometric distribution with parameter p (in register J) */
+extern decNumber *pdf_G(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_G(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_G(decNumber *, const decNumber *, decContext *);
 
 /* Binomial distribution (n, p) in registers J and K */
+extern decNumber *pdf_B(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_B(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_B(decNumber *, const decNumber *, decContext *);
 
