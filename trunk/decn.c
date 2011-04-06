@@ -2869,6 +2869,8 @@ static decNumber *ortho_poly(decNumber *r, const decNumber *param, const decNumb
 error:		set_NaN(r);
 		return r;
 	}
+	if (! is_int(rn, ctx))
+		goto error;
 	n = dn_to_int(rn, ctx);
 	if (n > 1000)
 		goto error;
