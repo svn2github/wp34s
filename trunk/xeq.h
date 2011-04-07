@@ -689,23 +689,23 @@ struct _state {
 	unsigned int fixeng : 1;	// Fix flips to ENG instead of SCI
 	unsigned int leadzero : 1;	// forced display of leading zeros in int mode
 
+	unsigned int error : 5;		// Did an error occur, if so what code?
+	unsigned int status : 4;	// display status screen line
+
+	unsigned int pause : 7;         // count down for programmed pause
+	unsigned int busy_blink : 1;    // short blink of PRN annunciator with every key
+	unsigned int show_register : 7; // temporary display (not X)
+
+	unsigned int contrast : 4;	// Display contrast
+	unsigned int off : 1;
+	unsigned int LowPower : 1;	// low power detected
+	unsigned int LowPowerCount : 16;
+
 #ifndef REALBUILD
 	unsigned int trace : 1;
 #else
 	unsigned int testmode : 1;
 #endif
-	unsigned int error : 5;		// Did an error occur, if so what code?
-	unsigned int status : 4;	// display status screen line
-
-	unsigned int LowPowerCount : 16;
-
-	unsigned int contrast : 4;	// Display contrast
-	unsigned int off : 1;
-	unsigned int LowPower : 1;	// low power detected
-
-	unsigned int pause : 7;         // count down for programmed pause
-	unsigned int busy_blink : 1;    // short blink of PRN annunciator with every key
-	unsigned int show_register : 7; // temporary display (not X)
 
 };
 
@@ -769,7 +769,7 @@ typedef struct _ram {
 	volatile long long _ticker;
 
 	/*
-	 *  Another ticker wich is reset on every keystroke
+	 *  Another ticker which is reset on every keystroke
 	 *  In fact, it counts the time between keystrokes
 	 */
 	volatile unsigned short _keyticks;
@@ -1018,6 +1018,7 @@ extern int get_key(void);
 extern int put_key(int k);
 extern void watchdog(void);
 extern void shutdown(void);
+extern int is_debug(void);
 
 #ifdef REALBUILD
 extern void cmdcontrast(unsigned int arg, enum rarg op);

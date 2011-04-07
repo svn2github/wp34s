@@ -357,6 +357,13 @@ void set_speed( unsigned int speed )
 	static int speeds[ SPEED_HIGH + 1 ] = 
 		{ 0, 32768, 2000000, 32768 * ( 1 + PLLMUL ) };
 
+	if ( is_debug() ) {
+		/*
+		 *  Allow JTAG debugging
+		 */
+		speed = SPEED_HIGH;
+	}
+
 	SpeedSetting = speed;
 	if ( speed > SPEED_HIGH || speeds[ speed ] == ClockSpeed ) {
 		/*
@@ -668,7 +675,12 @@ void shutdown( void )
 	/*
 	 *  Off we go...
 	 */
-	SUPC_DisableVoltageRegulator();
+	if ( !is_debug() ) {
+		SUPC_DisableVoltageRegulator();
+	}
+	else {
+		while ( 1 );
+	}
 }
 
 
@@ -678,6 +690,17 @@ void shutdown( void )
 void watchdog( void )
 {
 	AT91C_BASE_WDTC->WDTC_WDCR=0xA5000001;
+}
+
+
+/*
+ *  Is debugger active ?
+ *  The flag is set via the JTAG probe
+ */
+int is_debug( void )
+{
+#define DEBUG_FLAG ((char *)(&PersistentRam))[ 0x7ff ]
+	return 1 || DEBUG_FLAG == 0xA5;
 }
 
 
@@ -711,7 +734,7 @@ int main(void)
 			/*
 			 *  Save power if nothing in queue
 			 */
-			go_idle();
+			set_speed( SPEED_NULL );
 		}
 
 		/*
