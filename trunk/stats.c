@@ -876,28 +876,52 @@ decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 	return decNumberMultiply(q, &r, &const_recipsqrt2PI, ctx);
 }
 
-// Normal(0,1) CDF function using the Error Function and a transformation
+// Normal(0,1) CDF function
 decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
-	decNumber t, u;
+	decNumber t, u, v, a, x2, d, absx;
+	int i;
 
-	decNumberAdd(&u, x, &const_10, ctx);
+	decNumberAbs(&absx, x, ctx);
+	decNumberCompare(&u, &const_10, &absx, ctx);
 	if (decNumberIsNegative(&u)) {
-		// For big negative arguments, use a continued fraction expansion
-		int n = 21;
-		decNumberRecip(&t, small_int(n), ctx);
-		while (--n > 0) {
-			decNumberAdd(&u, x, &t, ctx);
-			decNumberDivide(&t, small_int(n), &u, ctx);
+		if (decNumberIsNegative(x)) {
+			// Large and negative
+			int n = 21;
+			decNumberRecip(&t, small_int(n), ctx);
+			while (--n > 0) {
+				decNumberAdd(&u, x, &t, ctx);
+				decNumberDivide(&t, small_int(n), &u, ctx);
+			}
+			decNumberAdd(&u, &t, x, ctx);
+			pdf_Q(&t, x, ctx);
+			decNumberDivide(q, &t, &u, ctx);
+			if (! decNumberIsNegative(q))
+				return decNumberSubtract(q, &const_1, q, ctx);
+			return decNumberMinus(q, q, ctx);
 		}
-		decNumberAdd(&u, &t, x, ctx);
-		pdf_Q(&t, x, ctx);
-		decNumberDivide(q, &t, &u, ctx);
-		return decNumberMinus(q, q, ctx);
-	} else	{
-		decNumberMultiply(&t, x, &const_root2on2, ctx);
-		decNumberERF(&u, &t, ctx);
-		decNumberAdd(&t, &u, &const_1, ctx);
-		return decNumberMultiply(q, &t, &const_0_5, ctx);
+		// Large and positive
+		decNumberCopy(q, &const_1);
+		return q;
+	} else {
+		decNumberSquare(&x2, &absx, ctx);
+		decNumberCopy(&t, &absx);
+		decNumberCopy(&a, &absx);
+		decNumberCopy(&d, &const_3);
+		for (i=0;i<500; i++) {
+			decNumberMultiply(&u, &t, &x2, ctx);
+			decNumberDivide(&t, &u, &d, ctx);
+			decNumberAdd(&u, &a, &t, ctx);
+			decNumberCompare(&v, &u, &a, ctx);
+			if (decNumberIsZero(&v))
+				break;
+			decNumberCopy(&a, &u);
+			decNumberAdd(&d, &d, &const_2, ctx);
+		}
+		pdf_Q(&u, &absx, ctx);
+		decNumberMultiply(&v, &a, &u, ctx);
+		if (decNumberIsNegative(x))
+			return decNumberSubtract(q, &const_0_5, &v, ctx);
+		return decNumberAdd(q, &const_0_5, &v, ctx);
 	}
 }
 
