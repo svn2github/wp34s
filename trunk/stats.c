@@ -878,6 +878,7 @@ decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 
 // Normal(0,1) CDF function
 decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
+#if 0
 	decNumber t, u, v, a, x2, d, absx;
 	int i;
 
@@ -923,6 +924,28 @@ decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 			return decNumberSubtract(q, &const_0_5, &v, ctx);
 		return decNumberAdd(q, &const_0_5, &v, ctx);
 	}
+#else
+        decNumber t, u;
+	decNumberAdd(&u, x, &const_10, ctx);
+	if (decNumberIsNegative(&u)) {
+		// For big negative arguments, use a continued fraction expansion
+		int n = 21;
+		decNumberRecip(&t, small_int(n), ctx);
+		while (--n > 0) {
+			decNumberAdd(&u, x, &t, ctx);
+			decNumberDivide(&t, small_int(n), &u, ctx);
+		}
+		decNumberAdd(&u, &t, x, ctx);
+		pdf_Q(&t, x, ctx);
+		decNumberDivide(q, &t, &u, ctx);
+		return decNumberMinus(q, q, ctx);
+	} else  {
+		decNumberMultiply(&t, x, &const_root2on2, ctx);
+		decNumberERF(&u, &t, ctx);
+		decNumberAdd(&t, &u, &const_1, ctx);
+		return decNumberMultiply(q, &t, &const_0_5, ctx);
+	}
+#endif
 }
 
 

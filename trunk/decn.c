@@ -1951,7 +1951,7 @@ decNumber *decNumberFib(decNumber *res, const decNumber *x, decContext *ctx) {
 
 
 static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, const decNumber *gln, decContext *ctx) {
-	decNumber ap, del, sum, t, u, v;
+	decNumber ap, del, sum, t, u;
 	int i;
 
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
@@ -1963,12 +1963,9 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 		dn_inc(&ap, ctx);
 		decNumberDivide(&t, x, &ap, ctx);
 		decNumberMultiply(&del, &del, &t, ctx);
-		decNumberAdd(&sum, &sum, &del, ctx);
-		decNumberAbs(&t, &sum, ctx);
-		decNumberMultiply(&u, &t, &const_1e_10, ctx);
-		decNumberAbs(&t, &del, ctx);
-		decNumberCompare(&v, &t, &u, ctx);
-		if (decNumberIsNegative(&v)) {
+		decNumberAdd(&t, &sum, &del, ctx);
+		decNumberCompare(&u, &t, &sum, ctx);
+		if (decNumberIsZero(&u)) {
 			decNumberLn(&t, x, ctx);
 			decNumberMultiply(&u, &t, a, ctx);
 			decNumberSubtract(&t, &u, x, ctx);
@@ -1976,6 +1973,7 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 			decNumberExp(&t, &u, ctx);
 			return decNumberMultiply(res, &sum, &t, ctx);
 		}
+		decNumberCopy(&sum, &t);
 	}
 	return decNumberZero(res);
 }
@@ -1998,24 +1996,28 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 		decNumberMultiply(&t, &an, &d, ctx);
 		decNumberAdd(&v, &t, &b, ctx);
 		decNumberAbs(&t, &v, ctx);
-		decNumberCompare(&u, &t, &const_1e_32, ctx);
-		if (decNumberIsNegative(&u))
-			decNumberCopy(&d, &const_1e32);
-		else
-			decNumberRecip(&d, &v, ctx);
-		decNumberDivide(&t, &an, &c, ctx);
-		decNumberAdd(&c, &b, &t, ctx);
-		decNumberAbs(&t, &c, ctx);
-		decNumberCompare(&u, &t, &const_1e_32, ctx);
-		if (decNumberIsNegative(&u))
-			decNumberCopy(&c, &const_1e_32);
+			decNumberCompare(&u, &t, &const_1e_32, ctx);
+			if (decNumberIsNegative(&u))
+				decNumberCopy(&d, &const_1e32);
+			else
+				decNumberRecip(&d, &v, ctx);
+			decNumberDivide(&t, &an, &c, ctx);
+			decNumberAdd(&c, &b, &t, ctx);
+			decNumberAbs(&t, &c, ctx);
+			decNumberCompare(&u, &t, &const_1e_32, ctx);
+			if (decNumberIsNegative(&u))
+				decNumberCopy(&c, &const_1e_32);
 		decNumberMultiply(&t, &d, &c, ctx);
-		decNumberMultiply(&h, &h, &t, ctx);
-		decNumberSubtract(&u, &t, &const_1, ctx);
-		decNumberAbs(&t, &u, ctx);
-		decNumberCompare(&u, &t, &const_1e_32, ctx);
-		if (decNumberIsNegative(&u))
+		decNumberMultiply(&u, &h, &t, ctx);
+		decNumberCompare(&t, &h, &u, ctx);
+		if (decNumberIsZero(&t))
 			break;
+		decNumberCopy(&h, &u);
+//		decNumberSubtract(&u, &t, &const_1, ctx);
+//		decNumberAbs(&t, &u, ctx);
+//		decNumberCompare(&u, &t, &const_1e_32, ctx);
+//		if (decNumberIsNegative(&u))
+//			break;
 	}
 	decNumberLn(&t, x, ctx);
 	decNumberMultiply(&u, &t, a, ctx);
