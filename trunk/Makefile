@@ -194,6 +194,8 @@ $(OUTPUTDIR)/calc2.bin: $(OBJECTDIR)/libdecNumber.a $(CNSTS) $(OBJS) $(MAIN)\
 	grep "^\.xrom"     $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
 	grep "^\.bss"      $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
 	grep "^\.backup"   $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
+
+include openocd/Makefile
 else
 
 # Target calc, console emulator
