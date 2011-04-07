@@ -1959,7 +1959,7 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 	decNumberCopy(&ap, a);
 	decNumberRecip(&sum, a, ctx);
 	decNumberCopy(&del, &sum);
-	for (i=0; i<100; i++) {
+	for (i=0; i<500; i++) {
 		dn_inc(&ap, ctx);
 		decNumberDivide(&t, x, &ap, ctx);
 		decNumberMultiply(&del, &del, &t, ctx);
@@ -1990,7 +1990,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 	decNumberRecip(&d, &b, ctx);
 	decNumberCopy(&h, &d);
 	decNumberZero(&i);
-	for (n=0; n<100; n++) {
+	for (n=0; n<500; n++) {
 		dn_inc(&i, ctx);
 		decNumberSubtract(&t, a, &i, ctx);		// t = a-i
 		decNumberMultiply(&an, &i, &t, ctx);		// an = -i (i-a)

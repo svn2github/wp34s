@@ -702,8 +702,9 @@ static void ib_step(decNumber *d, decNumber *c, const decNumber *aa, decContext 
 	check_low(c, ctx);
 }
 
+
 static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *x, decContext *ctx) {
-	decNumber aa, c, d, apb, am1, ap1, m, m2;
+	decNumber aa, c, d, apb, am1, ap1, m, m2, oldr;
 	int i;
 	decNumber t, u, v, w;
 
@@ -718,7 +719,8 @@ static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const d
 	decNumberRecip(&d, &t, ctx);			// d = 1/t
 	decNumberCopy(r, &d);				// res = d
 	decNumberZero(&m);
-	for (i=0; i<100; i++) {
+	for (i=0; i<500; i++) {
+		decNumberCopy(&oldr, r);
 		dn_inc(&m, ctx);			// m = i+1
 		decNumberMultiply(&m2, &m, &const_2, ctx);
 		decNumberSubtract(&t, b, &m, ctx);
@@ -743,10 +745,8 @@ static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const d
 		ib_step(&d, &c, &aa, ctx);
 		decNumberMultiply(&v, &d, &c, ctx);
 		decNumberMultiply(r, r, &v, ctx);	// r *= d*c
-		decNumberSubtract(&t, &v, &const_1, ctx);
-		decNumberAbs(&u, &t, ctx);
-		decNumberCompare(&t, &u, &const_1e_10, ctx);
-		if (decNumberIsNegative(&t))
+		decNumberCompare(&u, &oldr, r, ctx);
+		if (decNumberIsZero(&u))
 			break;
 	}
 }
@@ -1196,6 +1196,7 @@ static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x, de
 	return 0;
 }
 
+// Evaluate via: exp(x Ln(lambda) - lambda - sum(i=1, k, Ln(i)))
 decNumber *cdf_P_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber lambda, t, u;
 
