@@ -20,24 +20,34 @@
 /* Some utility routines to extract bits of long longs */
 
 unsigned int int_base(void) {
+#ifndef TINY_BUILD
 	unsigned int b = State.int_base + 1;
 	if (b < 2)
 		return 10;
 	return b;
+#else
+	return 10;
+#endif
 }
 
 enum arithmetic_modes int_mode(void) {
+#ifndef TINY_BUILD
 	unsigned int b = int_base();
 	if (b == 10 || (b & (b-1)) == 0)
 		return State.int_mode;
+#endif
 	return MODE_UNSIGNED;
 }
 
 unsigned int word_size(void) {
+#ifndef TINY_BUILD
 	unsigned int il = State.int_len;
 	if (il >= MAX_WORD_SIZE || il == 0)
 		return MAX_WORD_SIZE;
 	return il;
+#else
+	return MAX_WORD_SIZE;
+#endif
 }
 
 int get_carry(void) {
@@ -45,10 +55,12 @@ int get_carry(void) {
 }
 
 void set_carry(int c) {
+#ifndef TINY_BUILD
 	if (c)
 		set_user_flag(CARRY_FLAG);
 	else
 		clr_user_flag(CARRY_FLAG);
+#endif
 }
 
 int get_overflow(void) {
@@ -56,12 +68,15 @@ int get_overflow(void) {
 }
 
 void set_overflow(int o) {
+#ifndef TINY_BUILD
 	if (o)
 		set_user_flag(OVERFLOW_FLAG);
 	else
 		clr_user_flag(OVERFLOW_FLAG);
+#endif
 }
 
+#ifndef TINY_BUILD
 /* Some utility routines for saving and restoring carry and overflow.
  * Some operations don't change these flags but their subcomponents might.
  */
@@ -73,10 +88,12 @@ static void restore_flags(int co) {
 	set_carry(co & 1);
 	set_overflow(co & 2);
 }
+#endif
 
 /* Utility routine for trimming a value to the current word size
  */
 long long int mask_value(const long long int v) {
+#ifndef TINY_BUILD
 	const unsigned int ws = word_size();
 	long long int mask;
 
@@ -84,8 +101,12 @@ long long int mask_value(const long long int v) {
 		return v;
 	mask = (1LL << ws) - 1;
 	return v & mask;
+#else
+	return v;
+#endif
 }
 
+#ifndef TINY_BUILD
 /* Ulility routine for returning a bit mask to get the topmost (sign)
  * bit from a number.
  */
@@ -94,11 +115,13 @@ static long long int topbit_mask(void) {
 	long long int bit = 1LL << (ws - 1);
 	return bit;
 }
+#endif
 
 /* Utility routine to convert a binary integer into separate sign and
  * value components.  The sign returned is 1 for negative and 0 for positive.
  */
 unsigned long long int extract_value(const long long int val, int *const sign) {
+#ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	long long int v = mask_value(val);
 	long long int tbm;
@@ -121,11 +144,16 @@ unsigned long long int extract_value(const long long int val, int *const sign) {
 	} else
 		*sign = 0;
     return mask_value(v);
+#else
+    *sign = 0;
+    return val;
+#endif
 }
 
 /* Helper routine to construct a value from the magnitude and sign
  */
 long long int build_value(const unsigned long long int x, const int sign) {
+#ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	long long int v = mask_value(x);
 
@@ -137,9 +165,13 @@ long long int build_value(const unsigned long long int x, const int sign) {
 	if (mode == MODE_1COMP)
 		return mask_value(~v);
 	return v | topbit_mask();
+#else
+	return x;
+#endif
 }
 
 
+#ifndef TINY_BUILD
 /* Helper routine for addition and subtraction that detemines the proper
  * setting for the overflow bit.  This routine should only be called when
  * the signs of the operands are the same for addition and different
@@ -182,9 +214,11 @@ static int calc_overflow(unsigned long long int xv,
 	set_overflow(1);
 	return 1;
 }
+#endif
 
 
 long long int intAdd(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
@@ -225,9 +259,13 @@ long long int intAdd(long long int y, long long int x) {
 			v++;
 	}
 	return mask_value(v);
+#else
+	return y+x;
+#endif
 }
 
 long long int intSubtract(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
@@ -268,9 +306,13 @@ long long int intSubtract(long long int y, long long int x) {
 			v--;
 	}
 	return mask_value(v);
+#else
+	return y-x;
+#endif
 }
 
 long long int intMultiply(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	unsigned long long int u;
 	int sx, sy;
@@ -298,8 +340,12 @@ long long int intMultiply(long long int y, long long int x) {
 			v = u;
 	}
 	return mask_value(v);
+#else
+	return x*y;
+#endif
 }
 
+#ifndef TINY_BUILD
 static void err_div0(unsigned long long int num, int sn, int sd) {
 	if (num == 0)
 		err(ERR_DOMAIN);
@@ -308,8 +354,10 @@ static void err_div0(unsigned long long int num, int sn, int sd) {
 	else
 		err(ERR_MINFINITY);
 }
+#endif
 
 long long int intDivide(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
@@ -347,9 +395,13 @@ long long int intDivide(long long int y, long long int x) {
 			v = r;
 	}
 	return mask_value(v);
+#else
+	return y/x;
+#endif
 }
 
 long long int intMod(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
@@ -374,10 +426,14 @@ long long int intMod(long long int y, long long int x) {
 	} else
 		v = r;
 	return mask_value(v);
+#else
+	return y%x;
+#endif
 }
 
 
 long long int intMin(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	int sx, sy;
 	const unsigned long long int xv = extract_value(x, &sx);
 	const unsigned long long int yv = extract_value(y, &sy);
@@ -393,9 +449,13 @@ long long int intMin(long long int y, long long int x) {
 			return x;
 	}
 	return y;
+#else
+	return 0;
+#endif
 }
 
 long long int intMax(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
@@ -411,11 +471,15 @@ long long int intMax(long long int y, long long int x) {
 			return y;
 	}
 	return x;
+#else
+	return 0;
+#endif
 }
 
 
 #ifdef INCLUDE_MULADD
 long long int intMAdd(long long int z, long long int y, long long int x) {
+#ifndef TINY_BUILD
 	long long int t = intMultiply(x, y);
 	const int of = get_overflow();
 
@@ -423,10 +487,14 @@ long long int intMAdd(long long int z, long long int y, long long int x) {
 	if (of)
 		set_overflow(1);
 	return t;
+#else
+	return 0;
+#endif
 }
 #endif
 
 
+#ifndef TINY_BUILD
 static unsigned long long int int_gcd(unsigned long long int a, unsigned long long int b) {
 	while (b != 0) {
 		const unsigned long long int t = b;
@@ -435,8 +503,10 @@ static unsigned long long int int_gcd(unsigned long long int a, unsigned long lo
 	}
 	return a;
 }
+#endif
 
 long long int intGCD(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
@@ -450,9 +520,13 @@ long long int intGCD(long long int y, long long int x) {
 	else
 		v = int_gcd(xv, yv);
 	return build_value(v, sign);
+#else
+	return 0;
+#endif
 }
 
 long long int intLCM(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
@@ -463,6 +537,9 @@ long long int intLCM(long long int y, long long int x) {
 		return build_value(0, sign);
 	gcd = int_gcd(xv, yv);
 	return intMultiply(mask_value(xv / gcd), build_value(yv, sign));
+#else
+	return 0;
+#endif
 }
 
 long long int intSqr(long long int x) {
@@ -470,6 +547,7 @@ long long int intSqr(long long int x) {
 }
 
 long long int intCube(long long int x) {
+#ifndef TINY_BUILD
 	long long int y = intMultiply(x, x);
 	int overflow = get_overflow();
 
@@ -477,10 +555,14 @@ long long int intCube(long long int x) {
 	if (overflow)
 		set_overflow(1);
 	return y;
+#else
+	return 0;
+#endif
 }
 
 
 long long int intChs(long long int x) {
+#ifndef TINY_BUILD
 	long long int y;
 
 	set_overflow(0);
@@ -503,9 +585,13 @@ long long int intChs(long long int x) {
 		break;
 	}
 	return mask_value(y);
+#else
+	return x;
+#endif
 }
 
 long long int intAbs(long long int x) {
+#ifndef TINY_BUILD
 	set_overflow(0);
 	switch (int_mode()) {
 	case MODE_UNSIGNED:
@@ -530,8 +616,12 @@ long long int intAbs(long long int x) {
 		break;
 	}
 	return mask_value(x);
+#else
+	return x;
+#endif
 }
 
+#ifndef TINY_BUILD
 static void breakup(unsigned long long int x, unsigned short xv[4]) {
 	xv[0] = x & 0xffff;
 	xv[1] = (x >> 16) & 0xffff;
@@ -545,8 +635,10 @@ static unsigned long long int packup(unsigned short int x[4]) {
 			(((unsigned long int)x[1]) << 16) |
 			x[0];
 }
+#endif
 
 void intDblMul(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+#ifndef TINY_BUILD
 	unsigned long long int xv, yv;
 	int s;	
 	unsigned short int xa[4], ya[4];
@@ -604,9 +696,11 @@ void intDblMul(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	d64fromInt(&regY, mask_value(yv));
 	d64fromInt(&regX, build_value(xv, s));
 	set_overflow(0);
+#endif
 }
 
 
+#ifndef TINY_BUILD
 static int nlz(unsigned short int x) {
    int n;
 
@@ -766,22 +860,31 @@ static unsigned long long int divmod(const long long int z, const long long int 
 	*rem = packup(rmdr);
 	return packup(quot);
 }
+#endif
 
 long long int intDblDiv(long long int z, long long int y, long long int x) {
+#ifndef TINY_BUILD
 	unsigned long long int q, r;
 	int sx, sy;
 
 	q = divmod(z, y, x, &sx, &sy, &r);
 	set_carry(r != 0);
 	return build_value(q, sx != sy);
+#else
+	return 0;
+#endif
 }
 
 long long int intDblRmdr(long long int z, long long int y, long long int x) {
+#ifndef TINY_BUILD
 	unsigned long long int r;
 	int sx, sy;
 
 	divmod(z, y, x, &sx, &sy, &r);
 	return build_value(r, sy);
+#else
+	return 0;
+#endif
 }
 
 
@@ -825,6 +928,7 @@ long long int intIP(long long int x) {
 
 
 long long int intSign(long long int x) {
+#ifndef TINY_BUILD
 	int sgn;
 	unsigned long long int v = extract_value(x, &sgn);
 
@@ -833,6 +937,9 @@ long long int intSign(long long int x) {
 	else
 		v = 1;
 	return build_value(v, sgn);
+#else
+	return 1;
+#endif
 }
 
 
@@ -840,6 +947,7 @@ long long int intSign(long long int x) {
  * The multi-bit shifts vector through these.
  */
 
+#ifndef TINY_BUILD
 static long long int intLSL(long long int x) {
 	set_carry(0 != (topbit_mask() & x));
 	return mask_value((x << 1) & ~1);
@@ -892,12 +1000,13 @@ static long long int intRRC(long long int x) {
 		x |= topbit_mask();
 	return mask_value(x);
 }
-
+#endif
 
 /* Like the above but taking the count argument from the opcode.
  * Also possibly register indirect but that is dealt with elsewhere.
  */
 void introt(unsigned int arg, enum rarg op) {
+#ifndef TINY_BUILD
 	long long int (*f)(long long int);
 	unsigned int mod;
 	unsigned int ws;
@@ -933,9 +1042,11 @@ void introt(unsigned int arg, enum rarg op) {
 			x = (*f)(x);
 	}
 	d64fromInt(&regX, mask_value(x));
+#endif
 }
 
 
+#ifndef TINY_BUILD
 /* Some code to count bits.  We start with a routine to count bits in a single
  * 32 bit word and call this twice.
  */
@@ -948,15 +1059,21 @@ static unsigned int count32bits(unsigned long int v) {
 static unsigned int count64bits(long long int x) {
 	return count32bits(x & 0xffffffff) + count32bits((x >> 32) & 0xffffffff);
 }
+#endif
 
 long long int intNumBits(long long int x) {
+#ifndef TINY_BUILD
 	return mask_value(count64bits(x));
+#else
+	return 0;
+#endif
 }
 
 
 /* Integer floor(sqrt())
  */
 long long int intSqrt(long long int x) {
+#ifndef TINY_BUILD
 	int sx;
 	unsigned long long int v = extract_value(x, &sx);
 	unsigned long long int n0, n1;
@@ -977,11 +1094,15 @@ long long int intSqrt(long long int x) {
 	}
 	set_carry((n1 * n1 != v)?1:0);
 	return build_value(n1, sx);
+#else
+	return 0;
+#endif
 }
 
 /* Integer cube root
  */
 long long int intCubeRoot(long long int v) {
+#ifndef TINY_BUILD
 	int sx;
 	unsigned long long int w = extract_value(v, &sx);
 	unsigned long long int x, y, b, bs, y2;
@@ -1007,12 +1128,16 @@ long long int intCubeRoot(long long int v) {
 	}
 	set_carry((y*y*y != w)?1:0);
 	return build_value(y, sx);
+#else
+	return 0;
+#endif
 }
 
 
 /* Integer power y^x
  */
 long long int intPower(long long int y, long long int x) {
+#ifndef TINY_BUILD
 	int sx, sy, sr;
 	unsigned long long int vx = extract_value(x, &sx);
 	unsigned long long int vy = extract_value(y, &sy);
@@ -1050,12 +1175,16 @@ long long int intPower(long long int y, long long int x) {
 		vy *= vy;
 	}
 	return build_value(r, sr);
+#else
+	return 0;
+#endif
 }
 
 
 /* Integer floor(log2())
  */
 long long int intLog2(long long int x) {
+#ifndef TINY_BUILD
 	int sx;
 	unsigned long long int v = extract_value(x, &sx);
 	unsigned int r = 0;
@@ -1069,12 +1198,16 @@ long long int intLog2(long long int x) {
 		while (v >>= 1)
 			r++;
 	return build_value(r, sx);
+#else
+	return 0;
+#endif
 }
 
 
 /* 2^x
  */
 long long int int2pow(long long int x) {
+#ifndef TINY_BUILD
 	int sx;
 	unsigned long long int v = extract_value(x, &sx);
 	unsigned int ws;
@@ -1094,12 +1227,16 @@ long long int int2pow(long long int x) {
 	}
 
 	return 1LL << (unsigned int)(v & 0xff);
+#else
+	return 0;
+#endif
 }
 
 
 /* Integer floor(log10())
  */
 long long int intLog10(long long int x) {
+#ifndef TINY_BUILD
 	int sx;
 	unsigned long long int v = extract_value(x, &sx);
 	int r = 0;
@@ -1117,23 +1254,31 @@ long long int intLog10(long long int x) {
 	}
 	set_carry(c || v != 1);
 	return build_value(r, sx);
+#else
+	return 0;
+#endif
 }
 
 
 /* 10^x
  */
 long long int int10pow(long long int x) {
+#ifndef TINY_BUILD
 	const long long int r = intPower(10, x);
 
 	set_overflow(intLog10(r) != x);
 
 	return r;
+#else
+	return 0;
+#endif
 }
 
 
 /* Mirror - reverse the bits in the word
  */
 long long int intMirror(long long int x) {
+#ifndef TINY_BUILD
 	long long int r = 0;
 	unsigned int n = word_size();
 	unsigned int i;
@@ -1145,9 +1290,13 @@ long long int intMirror(long long int x) {
 		if (x & (1LL << i))
 			r |= 1LL << (n-i-1);
 	return r;
+#else
+	return 0;
+#endif
 }
 
 
+#ifndef TINY_BUILD
 /* Justify to the end of the register
  */
 static void justify(decimal64 *ct,
@@ -1167,13 +1316,18 @@ static void justify(decimal64 *ct,
 	}
 	d64fromInt(ct, (long long int)c);
 }
+#endif
 
 void intLJ(decimal64 *x, decimal64 *nul, decContext *ctx) {
+#ifndef TINY_BUILD
 	justify(x, &intLSL, topbit_mask());
+#endif
 }
 
 void intRJ(decimal64 *x, decimal64 *nul, decContext *ctx) {
+#ifndef TINY_BUILD
 	justify(x, &intLSR, 1LL);
+#endif
 }
 
 
@@ -1182,6 +1336,7 @@ void intRJ(decimal64 *x, decimal64 *nul, decContext *ctx) {
  * word.
  */
 void intmsks(unsigned int arg, enum rarg op) {
+#ifndef TINY_BUILD
 	long long int mask;
 	long long int x;
 	unsigned int i;
@@ -1206,11 +1361,13 @@ void intmsks(unsigned int arg, enum rarg op) {
 		}
 	}
 	d64fromInt(&regX, x);
+#endif
 }
 
 
 /* Set, clear, flip and test bits */
 void intbits(unsigned int arg, enum rarg op) {
+#ifndef TINY_BUILD
 	long long int m, x;
 	if (!is_intmode()) {
 		err(ERR_BAD_MODE);
@@ -1230,9 +1387,11 @@ void intbits(unsigned int arg, enum rarg op) {
 	}
 
 	d64fromInt(&regX, x);
+#endif
 }
 
 long long int intFib(long long int x) {
+#ifndef TINY_BUILD
 	int sx, s;
 	unsigned long long int v = extract_value(x, &sx);
 	const enum arithmetic_modes mode = int_mode();
@@ -1276,9 +1435,13 @@ long long int intFib(long long int x) {
 		a1 = anew;
 	}
 	return build_value(a1, s);
+#else
+	return 0;
+#endif
 }
 
 
+#ifndef TINY_BUILD
 /* Calculate (a . b) mod c taking care to avoid overflow */
 static unsigned long long mulmod(const unsigned long long int a, unsigned long long int b, const unsigned long long int c) {
 	unsigned long long int x=0, y=a%c;
@@ -1302,9 +1465,11 @@ static int modulo(const unsigned long long int a, unsigned long long int b, cons
 	}
 	return (int) (x % c);
 }
+#endif
 
 /* Test if a number is prime or not using a Miller-Rabin test */
 int isPrime(unsigned long long int p) {
+#ifndef TINY_BUILD
 	int i;
 	unsigned long long int s;
 	int a, step;
@@ -1354,5 +1519,6 @@ int isPrime(unsigned long long int p) {
 			return 0;
 		a += step;
 	}
+#endif
 	return 1;
 }
