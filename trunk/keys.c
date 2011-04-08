@@ -73,7 +73,7 @@ static void init_cat(enum catalogues cat) {
 	set_shift(SHIFT_N);
 }
 
-static void init_state(void) {
+void init_state(void) {
 	struct _state s;
 	xset(&s, 0, sizeof(s));
 
