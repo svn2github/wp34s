@@ -18,9 +18,13 @@
  *  Select optional features here
  */
 
+// Build a tiny version of the device
+//#define TINY_BUILD
+
 // Include a catalogue of the internal commands
 #define INCLUDE_INTERNAL_CATALOGUE
 
+#ifndef TINY_BUILD
 // Include the aritmetic/geometric mean iteration real and complex versions
 //#define INCLUDE_AGM
 
@@ -66,3 +70,5 @@
 // Include code to use a Ridder's method step after a bisection in the solver.
 // This increases code size and doesn't see to help the colver's convergence.
 //#define USE_RIDDERS
+
+#endif

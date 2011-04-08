@@ -51,6 +51,7 @@ void cmplx_NaN(decNumber *x, decNumber *y) {
 	set_NaN(y);
 }
 
+#ifndef TINY_BUILD
 static void cmplxCopy(decNumber *rx, decNumber *ry, const decNumber *x, const decNumber *y) {
 	decNumberCopy(rx, x);
 	decNumberCopy(ry, y);
@@ -97,6 +98,7 @@ static void cmplxDivideRealBy(decNumber *rx, decNumber *ry,
 	decNumberMinus(&t3, &t2, ctx);
 	decNumberDivide(ry, &t3, &den, ctx);
 }
+#endif
 
 // (a + i b) + (c + i d) = (a + c) + i (b + d)
 void cmplxAdd(decNumber *rx, decNumber *ry,
@@ -178,29 +180,36 @@ void cmplxToPolar(decNumber *r, decNumber *t, const decNumber *x, const decNumbe
 }
 
 
+
+#ifndef TINY_BUILD
 // ( a + i * b ) ^ r
 static void cmplxPowerReal(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *r, decContext *ctx) {
 	cmplxPower(rx, ry, a, b, r, &const_0, ctx);
 }
+#endif
 
 static void cmplxRealPower(decNumber *rx, decNumber *ry,
 		const decNumber *r,
 		const decNumber *a, const decNumber *b,
 		decContext *ctx) {
+#ifndef TINY_BUILD
 	cmplxPower(rx, ry, r, &const_0, a, b, ctx);
+#endif
 }
 
 // a ^ b = e ^ (b ln(a))
 void cmplxPower(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber e1, e2, f1, f2;
 
 	cmplxLn(&e1, &e2, a, b, ctx);
 	cmplxMultiply(&f1, &f2, &e1, &e2, c, d, ctx);
 	cmplxExp(rx, ry, &f1, &f2, ctx);
+#endif
 }
 
 
@@ -212,6 +221,7 @@ void cmplxAbs(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 
 // sign(a + i b) = (a + i b) / |a + i b|
 void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber z;
 
 	if (decNumberIsSpecial(a) || decNumberIsSpecial(b)) {
@@ -240,6 +250,7 @@ void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		cmplxR(&z, a, b, ctx);
 		cmplxDivideReal(rx, ry, a, b, &z, ctx);
 	}
+#endif
 }
 
 // - (a + i b) = - a - i b
@@ -256,6 +267,7 @@ void cmplxConj(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 
 // 1 / (c + i d) = c / (c*c + d*d) + i (- d) / (c*c + d*d)
 void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t, u, v, den;
 
 	decNumberMultiply(&u, c, c, ctx);
@@ -265,10 +277,12 @@ void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *c, const decNumbe
 
 	decNumberDivide(rx, c, &den, ctx);
 	decNumberDivide(ry, &t, &den, ctx);
+#endif
 }
 
 // (a + ib)^2 = (a^2 - b^2) + i ( 2 * a * b )
 void cmplxSqr(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t, u, v;
 
 	decNumberSquare(&t, a, ctx);
@@ -277,11 +291,13 @@ void cmplxSqr(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 
 	decNumberSubtract(rx, &t, &u, ctx);
 	decNumberAdd(ry, &v, &v, ctx);
+#endif
 }
 
 // sqrt(a + i b) = +- (sqrt(r + a) + i sqrt(r - a) sign(b)) sqrt(2) / 2
 //		where r = sqrt(a^2 + b^2)
 void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber fac, t1, u, v;
 
 	if (decNumberIsZero(b)) {
@@ -310,28 +326,34 @@ void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		decNumberSquareRoot(&t1, &v, ctx);
 		decNumberMultiply(rx, &t1, &const_root2on2, ctx);
 	}
+#endif
 }
 
 // (a + ib)^3 = (a^2 + b^2) + i ( 2 * a * b ) . ( a + i b )
 void cmplxCube(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2;
 
 	cmplxSqr(&s1, &s2, a, b, ctx);
 	cmplxMultiply(rx, ry, &s1, &s2, a, b, ctx);
+#endif
 }
 
 // Fairly naive implementation...
 void cmplxCubeRoot(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t;
 
 	decNumberRecip(&t, &const_3, ctx);
 	cmplxPowerReal(rx, ry, a, b, &t, ctx);
+#endif
 }
 
 
 // sin(a + i b) = sin(a) cosh(b) + i cos(a) sinh(b)
 // cos(a + i b) = cos(a) cosh(b) - i sin(a) sinh(b)
 static void cmplx_sincos(const decNumber *a, const decNumber *b, decNumber *sx, decNumber *sy, decNumber *cx, decNumber *cy, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber sa, ca, sb, cb;
 
 	if (decNumberIsZero(a) && decNumberIsInfinite(b)) {
@@ -350,6 +372,7 @@ static void cmplx_sincos(const decNumber *a, const decNumber *b, decNumber *sx, 
 			decNumberMinus(cy, &ca, ctx);
 		}
 	}
+#endif
 }
 
 // sin(a + i b) = sin(a) cosh(b) + i cos(a) sinh(b)
@@ -364,6 +387,7 @@ void cmplxCos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 
 // tan(a + i b) = (sin(a) cosh(b) + i cos(a) sinh(b)) / (cos(a) cosh(b) - i sin(a) sinh(b))
 void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber sb, cb;
 	decNumber t1, t2, t3;
 
@@ -384,12 +408,14 @@ void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 
 		cmplxDivide(rx, ry, &t1, &t2, &t3, &cb, ctx);
 	}
+#endif
 }
 
 // Helper for arcsin and arccos.
 // alpha = 1/2 sqrt((x+1)^2+y^2) + 1/2 sqrt((x-1)^2+y^2)
 // beta  = 1/2 sqrt((x+1)^2+y^2) - 1/2 sqrt((x-1)^2+y^2)
 // la = ln(alpha + sqrt(alpha^2-1)
+#ifndef TINY_BUILD
 static void asinacos_chelper(decNumber *la, decNumber *b, const decNumber *x, const decNumber *y, decContext *ctx) {
 	decNumber y2, x1, r, s, t;
 
@@ -416,27 +442,33 @@ static void asinacos_chelper(decNumber *la, decNumber *b, const decNumber *x, co
 	decNumberAdd(&s, &r, &t, ctx);
 	decNumberLn(la, &s, ctx);
 }
+#endif
 
 // arcsin(z) = k PI + (-1)^k . asin(beta) + i (-1)^k ln(alpha+sqrt(alpha^2-1))
 void cmplxAsin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber beta;
 
 	asinacos_chelper(ry, &beta, a, b, ctx);
 	do_asin(rx, &beta, ctx);
+#endif
 }
 
 // arccos(z) = 2k PI +- (acos(beta) - i ln(alpha+sqrt(alpha^2-1)))
 void cmplxAcos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber beta;
 
 	asinacos_chelper(ry, &beta, a, b, ctx);
 	decNumberMinus(ry, ry, ctx);
 	do_acos(rx, &beta, ctx);
+#endif
 }
 
 // atan(z) = k PI + 0.5 atan(2a / (1-a^2-b^2) + i/4 ln((a^2+(b+1)^2)/(a^2+(b-1)^2))
 //		z^2 <>-1
 void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2, u, v1, v2;
 
 	decNumberAdd(&t1, b, &const_1, ctx);
@@ -452,10 +484,12 @@ void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	decNumberMultiply(&s1, &const_0_5, &t2, ctx);
 	decNumberMinus(rx, &s1, ctx);
 	decNumberMultiply(ry, &const_0_5, &t1, ctx);
+#endif
 }
 
 // sinc(a + i b) = sin(a + i b) / (a + i b)
 void cmplxSinc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2;
 
 	if (decNumberIsZero(b)) {
@@ -465,11 +499,13 @@ void cmplxSinc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		cmplxSin(&s1, &s2, a, b, ctx);
 		cmplxDivide(rx, ry, &s1, &s2, a, b, ctx);
 	}
+#endif
 }
 
 // sinh(a + i b) = sinh(a) cos(b) + i cosh(a) sin(b)
 // cosh(a + i b) = cosh(a) cos(b) + i sinh(a) sin(b)
 static void cmplx_sinhcosh(const decNumber *a, const decNumber *b, decNumber *sx, decNumber *sy, decNumber *cx, decNumber *cy, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber sa, ca, sb, cb;
 
 	if (decNumberIsZero(b)) {
@@ -485,6 +521,7 @@ static void cmplx_sinhcosh(const decNumber *a, const decNumber *b, decNumber *sx
 		if (cx != NULL)	decNumberMultiply(cx, &ca, &cb, ctx);
 		if (cy != NULL)	decNumberMultiply(cy, &sa, &sb, ctx);
 	}
+#endif
 }
 
 // sinh(a + i b) = sinh(a) cos(b) + i cosh(a) sin(b)
@@ -499,6 +536,7 @@ void cmplxCosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 
 // tanh(a + i b) = (tanh(a) + i tan(b))/(1 + i tanh(a) tan(b))
 void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber ta, tb, t2;
 
 	if (decNumberIsZero(b)) {
@@ -512,9 +550,11 @@ void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 
 		cmplxDivide(rx, ry, &ta, &tb, &const_1, &t2, ctx);
 	}
+#endif
 }
 
 static void cmplx_asinhacosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx, const decNumber *add) {
+#ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2;
 
 	cmplxSqr(&s1, &t2, a, b, ctx);
@@ -526,6 +566,7 @@ static void cmplx_asinhacosh(decNumber *rx, decNumber *ry, const decNumber *a, c
 	decNumberAdd(&t2, &s2, b, ctx);
 
 	cmplxLn(rx, ry, &t1, &t2, ctx);
+#endif
 }
 
 // arcsinh(a + i b) = ln((a + i b) + sqrt((a + i b) (a + i b) + 1)
@@ -540,6 +581,7 @@ void cmplxAcosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 
 // arctanh(a + i b) = (1/2)*ln((1 + (a + i b))/(1 - (a + i b)))
 void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2;
 
 	decNumberAdd(&t1, a, &const_1, ctx);
@@ -549,10 +591,12 @@ void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 	cmplxLn(&t1, &t2, &s1, &s2, ctx);
 
 	cmplxMultiplyReal(rx, ry, &t1, &t2, &const_0_5, ctx);
+#endif
 }
 
 
 void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t;
 
 	if (decNumberIsZero(b)) {
@@ -566,9 +610,11 @@ void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	}
 	decNumberAdd(&t, a, &const_1, ctx);
 	cmplxLn(rx, ry, &t, b, ctx);
+#endif
 }
 
 void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t;
 
 	if (decNumberIsZero(b)) {
@@ -582,10 +628,12 @@ void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 	}
 	cmplxExp(&t, ry, a, b, ctx);
 	decNumberSubtract(rx, &t, &const_1, ctx);
+#endif
 }
 
 
 void cmplx_do_log(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *base, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2;
 
 	if (decNumberIsInfinite(a) || decNumberIsInfinite(b)) {
@@ -595,6 +643,7 @@ void cmplx_do_log(decNumber *rx, decNumber *ry, const decNumber *a, const decNum
 		cmplxLn(&s1, &s2, a, b, ctx);
 		cmplxDivideReal(rx, ry, &s1, &s2, base, ctx);
 	}
+#endif
 }
 
 void cmplxLog(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
@@ -616,14 +665,17 @@ void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *
 void cmplxLogxy(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber la, lb, lc, ld;
 
 	cmplxLn(&la, &lb, a, b, ctx);
 	cmplxLn(&lc, &ld, c, d, ctx);
 	cmplxDivide(rx, ry, &la, &lb, &lc, &ld, ctx);
+#endif
 }
 
 void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2, u1, u2, v1, v2, w1, w2;
 	int i;
 
@@ -690,18 +742,22 @@ void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		cmplxDivide(&t1, &t2, &v1, &v2, &w1, &w2, ctx);
 		cmplxSubtract(rx, ry, rx, ry, &t1, &t2, ctx);		// wj+1
 	}
+#endif
 }
 
 void cmplxInvW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t1, t2;
 
 	cmplxExp(&t1, &t2, a, b, ctx);
 	cmplxMultiply(rx, ry, &t1, &t2, a, b, ctx);
+#endif
 }
 
 // ln(a + i b) = ln(sqrt(a*a + b*b)) + i (2*arctan(signum(b)) - arctan(a/b))
 // signum(b) = 1 if b>0, 0 if b=0, -1 if b<0, atan(1) = pi/4
 void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber u;
 
 	if (decNumberIsZero(b)) {
@@ -731,10 +787,12 @@ void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *
 		cmplxToPolar(&u, ry, a, b, ctx);
 		decNumberLn(rx, &u, ctx);
 	}
+#endif
 }
 
 // e ^ ( a + i b ) = e^a cos(b) + i e^a sin(b)
 void cmplxExp(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber e, s, c;
 
 	if (decNumberIsZero(b)) {
@@ -748,8 +806,10 @@ void cmplxExp(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 		decNumberMultiply(rx, &e, &c, ctx);
 		decNumberMultiply(ry, &e, &s, ctx);
 	}
+#endif
 }
 
+#ifndef TINY_BUILD
 static int cmplx_perm_helper(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *c, const decNumber *d, decContext *ctx) {
 	decNumber n, m, s1, s2;
 
@@ -767,11 +827,13 @@ static int cmplx_perm_helper(decNumber *rx, decNumber *ry, const decNumber *a, c
 	cmplxSubtract(rx, ry, &s1, &s2, &n, &m, ctx);
 	return 1;
 }
+#endif
 
 /* Calculate permutations:
  * C(x, y) = P(x, y) / y! = x! / ( (x-y)! y! )
  */
 void cmplxComb(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber r1, r2, n, m, s1, s2;
 	const int code = cmplx_perm_helper(&r1, &r2, a, b, c, d, ctx);
 
@@ -783,12 +845,14 @@ void cmplxComb(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		cmplxExp(rx, ry, &n, &m, ctx);
 	} else
 		cmplxCopy(rx, ry, &r1, &r2);
+#endif
 }
 
 /* Calculate permutations:
  * P(x, y) = x! / (x-y)!
  */
 void cmplxPerm(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t1, t2;
 	const int code = cmplx_perm_helper(&t1, &t2, a, b, c, d, ctx);
 
@@ -796,9 +860,11 @@ void cmplxPerm(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		cmplxExp(rx, ry, &t1, &t2, ctx);
 	else
 		cmplxCopy(rx, ry, &t1, &t2);
+#endif
 }
 
 
+#ifndef TINY_BUILD
 static void c_lg(decNumber *rx, decNumber *ry, const decNumber *x, const decNumber *y, decContext *ctx) {
 	decNumber s1, s2, t1, t2, u1, u2, v1, v2;
 	int k;
@@ -822,9 +888,11 @@ static void c_lg(decNumber *rx, decNumber *ry, const decNumber *x, const decNumb
 	cmplxMultiply(&v1, &v2, &u1, y, &t1, &t2, ctx);
 	cmplxAdd(rx, ry, &v1, &v2, &s1, &s2, ctx);
 }
+#endif
 
 
 void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNumber *y, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber x, s1, s2, t1, t2, u1, u2;
 	int reflec = 0;
 
@@ -873,9 +941,11 @@ void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNum
 		cmplxMultiply(&u1, &u2, &s1, &s2, rx, ry, ctx);
 		cmplxDivideRealBy(rx, ry, &const_PI, &u1, &u2, ctx);
 	}
+#endif
 }
 
 void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNumber *y, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber x, s1, s2, t1, t2, u1, u2;
 	int reflec = 0;
 
@@ -924,17 +994,21 @@ void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decN
 		cmplxLn(&t1, &t2, &u1, &u2, ctx);
 		cmplxSubtract(rx, ry, &t1, &t2, rx, ry, ctx);
 	}
+#endif
 }
 
 void cmplxFactorial(decNumber *rx, decNumber *ry, const decNumber *xin, const decNumber *y, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber x;
 
 	decNumberAdd(&x, xin, &const_1, ctx);
 	cmplxGamma(rx, ry, &x, y, ctx);
+#endif
 }
 
 #ifdef INCLUDE_DBLFACT
 void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t, u1, u2, v1, v2, w1, w2;
 
 	decNumberAdd(&t, a, &const_1, ctx);
@@ -945,11 +1019,13 @@ void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const d
 	decNumberAdd(&t, &v1, &const_1, ctx);
 	cmplxGamma(&w1, &w2, &t, &v2, ctx);
 	cmplxMultiply(rx, ry, &w1, &w2, &u1, &u2, ctx);
+#endif
 }
 #endif
 
 // Beta(a, b) = exp(lngamma(a) + lngamma(b) - lngamma(a+b))
 void cmplxLnBeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2, u1, u2;
 
 	cmplxLnGamma(&s1, &s2, a, b, ctx);
@@ -958,19 +1034,23 @@ void cmplxLnBeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumb
 	cmplxAdd(&s1, &s2, a, b, c, d, ctx);
 	cmplxLnGamma(&t1, &t2, &s1, &s2, ctx);
 	cmplxSubtract(rx, ry, &u1, &u2, &t1, &t2, ctx);
+#endif
 }
 
 // Beta(a, b) = exp(lngamma(a) + lngamma(b) - lngamma(a+b))
 void cmplxBeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2;
 
 	cmplxLnBeta(&s1, &s2, a, b, c, d, ctx);
 	cmplxExp(rx, ry, &s1, &s2, ctx);
+#endif
 }
 
 #ifdef INCLUDE_DIGAMMA
 // Digamma function
 extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const decNumber *bin, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber a, b, t1, t2, r1, r2, x_2x, x_2y;
 	int i;
 
@@ -1022,12 +1102,14 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 		cmplxAdd(rx, ry, rx, ry, &t1, &t2, ctx);
 		cmplxMultiply(&r1, &r2, &r1, &r2, &x_2x, &x_2y, ctx);
 	}
+#endif
 }
 #endif 
 
 
 #ifdef INCLUDE_ZETA
 /* Riemann's Zeta function */
+#ifndef TINY_BUILD
 static void c_zeta_step(decNumber *sx, decNumber *sy,
 		const decNumber *x, const decNumber *y,
 		const decNumber *dc, decNumber *k, decContext *ctx) {
@@ -1038,9 +1120,11 @@ static void c_zeta_step(decNumber *sx, decNumber *sy,
 	cmplxDivideRealBy(&t1, &t2, dc, &s1, &s2, ctx);
 	cmplxAdd(sx, sy, sx, sy, &t1, &t2, ctx);
 }
+#endif
 
 void cmplxZeta(decNumber *rx, decNumber *ry,
 		const decNumber *xin, const decNumber *yin, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s1, s2, x, y, u1, u2, reflecfac1, reflecfac2, sum1, sum2, t1, t2;
 	int reflec, i;
 
@@ -1099,6 +1183,7 @@ void cmplxZeta(decNumber *rx, decNumber *ry,
 	/* Finally, undo the reflection if required */
 	if (reflec)
 		cmplxMultiply(rx, ry, &reflecfac1, &reflecfac2, rx, ry, ctx);
+#endif
 }
 #endif /* INCLUDE_ZETA */
 
@@ -1106,17 +1191,20 @@ void cmplxZeta(decNumber *rx, decNumber *ry,
 void cmplxParallel(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber p1, p2, s1, s2;
 
 	cmplxMultiply(&p1, &p2, a, b, c, d, ctx);
 	cmplxAdd(&s1, &s2, a, b, c, d, ctx);
 	cmplxDivide(rx, ry, &p1, &p2, &s1, &s2, ctx);
+#endif
 }
 
 #ifdef INCLUDE_AGM
 void cmplxAGM(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber x1, x2, y1, y2, t1, t2, u1, u2;
 	int n;
 
@@ -1144,6 +1232,7 @@ void cmplxAGM(decNumber *rx, decNumber *ry,
 		cmplxCopy(&x1, &x2, &u1, &u2);
 	}
 nan:	cmplx_NaN(rx, ry);
+#endif
 }
 #endif
 
@@ -1164,6 +1253,7 @@ void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 }
 
 void cmplxFib(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber r1, r2, s1, s2, t1, t2;
 
 	cmplxRealPower(&r1, &r2, &const_phi, a, b, ctx);
@@ -1172,9 +1262,11 @@ void cmplxFib(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 	cmplxDivide(&t1, &t2, &s1, &s2, &r1, &r2, ctx);
 	cmplxSubtract(&s1, &s2, &r1, &r2, &t1, &t2, ctx);
 	cmplxMultiplyReal(rx, ry, &s1, &s2, &const_recipsqrt5, ctx);
+#endif
 }
 
 #ifdef INCLUDE_ELLIPTIC
+#ifndef TINY_BUILD
 static void elliptic_setup(decNumber *r,
 		decNumber *snuk, decNumber *cnuk, decNumber *dnuk,
 		decNumber *snvki, decNumber *cnvki, decNumber *dnvki,
@@ -1190,6 +1282,7 @@ static void elliptic_setup(decNumber *r,
 	decNumberSubtract(&a, &const_1, r, ctx);
 	decNumberRecip(r, &a, ctx);
 }
+#endif
 
 
 // SN(u + i v, k + i ki) = sn(u, k) . dn(v, ki) / denom
@@ -1199,6 +1292,7 @@ static void elliptic_setup(decNumber *r,
 void cmplxSN(decNumber *rx, decNumber *ry,
 		const decNumber *u, const decNumber *v,
 		const decNumber *k, const decNumber *ki, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber denom, snuk, cnuk, dnuk, snvki, cnvki, dnvki;
 	decNumber a, b;
 
@@ -1213,6 +1307,7 @@ void cmplxSN(decNumber *rx, decNumber *ry,
 	decNumberMultiply(&b, &a, &snvki, ctx);
 	decNumberMultiply(&a, &b, &cnvki, ctx);
 	decNumberMultiply(ry, &a, &denom, ctx);
+#endif
 }
 
 
@@ -1223,6 +1318,7 @@ void cmplxSN(decNumber *rx, decNumber *ry,
 void cmplxCN(decNumber *rx, decNumber *ry,
 		const decNumber *u, const decNumber *v,
 		const decNumber *k, const decNumber *ki, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber denom, snuk, cnuk, dnuk, snvki, cnvki, dnvki;
 	decNumber a, b;
 
@@ -1238,6 +1334,7 @@ void cmplxCN(decNumber *rx, decNumber *ry,
 	decNumberMultiply(&a, &b, &dnvki, ctx);
 	decNumberMultiply(&b, &a, &denom, ctx);
 	decNumberMinus(ry, &b, ctx);
+#endif
 }
 
 
@@ -1248,6 +1345,7 @@ void cmplxCN(decNumber *rx, decNumber *ry,
 void cmplxDN(decNumber *rx, decNumber *ry,
 		const decNumber *u, const decNumber *v,
 		const decNumber *k, const decNumber *ki, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber denom, snuk, cnuk, dnuk, snvki, cnvki, dnvki;
 	decNumber a, b;
 
@@ -1265,10 +1363,12 @@ void cmplxDN(decNumber *rx, decNumber *ry,
 	decNumberMultiply(&b, &a, &cnuk, ctx);
 	decNumberMultiply(&a, &b, &snvki, ctx);
 	decNumberMultiply(ry, &a, &denom, ctx);
+#endif
 }
 #endif
 
 #ifdef COMPLEX_BESSEL
+#ifndef TINY_BUILD
 static void cmplx_bessel(decNumber *rx, decNumber *ry,
 			const decNumber *nx, const decNumber *ny,
 			const decNumber *xx, const decNumber *xy, decContext *ctx, const int neg) {
@@ -1305,10 +1405,12 @@ static void cmplx_bessel(decNumber *rx, decNumber *ry,
 	}
 	cmplx_NaN(rx, ry);
 }
+#endif
 
 void cmplxBSJN(decNumber *rx, decNumber *ry,
 		const decNumber *alphax, const decNumber *alphay,
 		const decNumber *xx, const decNumber *xy, decContext *ctx) {
+#ifndef TINY_BUILD
 	if (decNumberIsZero(xy) && decNumberIsZero(alphay)) {
 		decNumberBSJN(rx, alphax, xx, ctx);
 		if (decNumberIsNaN(rx))
@@ -1319,11 +1421,13 @@ void cmplxBSJN(decNumber *rx, decNumber *ry,
 		cmplx_NaN(rx, ry);
 	else
 		cmplx_bessel(rx, ry, alphax, alphay, xx, xy, ctx, 1);
+#endif
 }
 
 void cmplxBSIN(decNumber *rx, decNumber *ry,
 		const decNumber *alphax, const decNumber *alphay,
 		const decNumber *xx, const decNumber *xy, decContext *ctx) {
+#ifndef TINY_BUILD
 	if (decNumberIsZero(xy) && decNumberIsZero(alphay)) {
 		decNumberBSIN(rx, alphax, xx, ctx);
 		if (decNumberIsNaN(rx))
@@ -1334,10 +1438,12 @@ void cmplxBSIN(decNumber *rx, decNumber *ry,
 		cmplx_NaN(rx, ry);
 	else
 		cmplx_bessel(rx, ry, alphax, alphay, xx, xy, ctx, 0);
+#endif
 }
 
 
 // See A&S page 360 section 9.1.11
+#ifndef TINY_BUILD
 static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumber *n, const decNumber *x, const decNumber *y, decContext *ctx, int modified) {
 	const decNumber *const factor = modified?&const_0_5:&const__1onPI;
 	decNumber xon2x, xon2y, xon2nx, xon2ny, x2on4x, x2on4y;
@@ -1436,6 +1542,7 @@ static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumb
 	if (!modified && n_neg)
 		cmplxMinus(rx, ry, rx, ry, ctx);
 }
+#endif
 
 
 // Yv(z) = ( Jv(z).cos(v PI) - J-v(z) ) / sin(v PI)
@@ -1443,6 +1550,7 @@ static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumb
 void cmplxBSYN(decNumber *rx, decNumber *ry,
 		const decNumber *vx, const decNumber *vy,
 		const decNumber *xx, const decNumber *xy, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t1, t2, sx, sy, cx, cy, jnx, jny, jmx, jmy;
 #if 0
 	if (decNumberIsZero(xy) && decNumberIsZero(vy)) {
@@ -1467,6 +1575,7 @@ void cmplxBSYN(decNumber *rx, decNumber *ry,
 		cmplxSubtract(&jnx, &jny, &t1, &t2, &jmx, &jmy, ctx);
 		cmplxDivide(rx, ry, &jnx, &jny, &sx, &sy, ctx);
 	}
+#endif
 }
 
 // Kn(x) = PI/2 . (I-n(x) - In(x)) / sin(n PI)
@@ -1474,6 +1583,7 @@ void cmplxBSYN(decNumber *rx, decNumber *ry,
 void cmplxBSKN(decNumber *rx, decNumber *ry,
 		const decNumber *vx, const decNumber *vy,
 		const decNumber *xx, const decNumber *xy, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t1, t2, inx, iny, imx, imy;
 
 #if 0
@@ -1499,6 +1609,7 @@ void cmplxBSKN(decNumber *rx, decNumber *ry,
 		cmplxSin(&t1, &t2, &inx, &iny, ctx);
 		cmplxDivide(rx, ry, &imx, &imy, &t1, &t2, ctx);
 	}
+#endif
 }
 
 #endif
