@@ -512,18 +512,17 @@ void clrall(decimal64 *a, decimal64 *b, decContext *nulc) {
 	DispMsg = NULL;
 }
 
+
 /* Clear everything
  */
 void reset(decimal64 *a, decimal64 *b, decContext *nulc) {
-	xset(&State, 0, sizeof(State));
-	clrall(NULL, NULL, NULL);
-
-	State.runmode = 1;
-	State.magic = MAGIC_MARKER;
+	xset(&PersistentRam, 0, sizeof( PersistentRam ));
+	clrall(NULL,NULL,NULL);
+	init_state();
 	State.contrast = 9;
-	//State.stack_depth = 0;
 	DispMsg = "Erased";
 }
+
 
 /* Convert a possibly signed string to an integer
  */

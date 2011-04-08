@@ -21,7 +21,9 @@
 #ifdef __GNUC__
 __attribute__((externally_visible)) void LowLevelInit(void);
 #endif
+#pragma GCC optimize 0
 #include "main.c"
+#pragma GCC optimize "s"
 #include "atmel/board_lowlevel.c"
 #include "atmel/board_memories.c"
 #include "atmel/aic.c"
@@ -41,7 +43,9 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "consts.c"
 #include "date.c"
 #include "decn.c"
+#pragma GCC optimize 0
 #include "display.c"
+#pragma GCC optimize "s"
 #include "int.c"
 #include "keys.c"
 #include "lcd.c"

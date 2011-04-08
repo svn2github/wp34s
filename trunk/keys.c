@@ -98,6 +98,7 @@ static void init_state(void) {
         C(nothousands);
         C(leadzero);
         C(fract);
+        C(contrast);
 #undef C
 	s.shifts = SHIFT_N;
 	s.test = TST_NONE;
@@ -1830,7 +1831,7 @@ void process_keycode(int c) {
 
 void init_34s(void) {
 	xeq_init();
-        init_state();
+	init_state();
 #if defined(REALBUILD) || defined(WINGUI)
 	display();
 #endif

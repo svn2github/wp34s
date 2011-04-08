@@ -87,8 +87,10 @@ int KbRepeatCount;
  */
 int short_wait( int count )
 {
-	while ( count-- );
-	return count;
+	static volatile int c;
+	c = count;
+	while ( c-- );
+	return c;
 }
 
 
@@ -186,62 +188,63 @@ void scan_keyboard( void )
 	// Disable clock
 	AT91C_BASE_PMC->PMC_PCDR = 1 << AT91C_ID_PIOC;
 
-	/*
-	 *  Handle repeating arrow keys
-	 */
-	if ( KbData == KbRepeatKey ) {
+	if ( keys.ll != 0 ) {
 		/*
-		 *  One of the repeating keys is still down
+		 *  Handle repeating keys (arrows)
 		 */
-		++KbRepeatCount;
-		if ( KbRepeatCount == 10 
-		  || ( KbRepeatCount > 10 && ( ( KbRepeatCount - 10 ) & 3 ) == 0 ) )
-		{
+		if ( KbData == KbRepeatKey ) {
 			/*
-			 *  This should repeat after half a second at 5 per second
+			 *  One of the repeating keys is still down
 			 */
-			keys.ll = KbRepeatKey;
-		}
-	}
-	else {
-		/*
-		 *  Restart the repeat for new key
-		 */
-		KbRepeatCount = 0;
-		KbRepeatKey = keys.ll & KEY_REPEAT_MASK;
-	}
-
-	/*
-	 *  Decode
-	 */
-	k = 0;
-	for ( i = 0; i < 7; ++i ) {
-		/*
-		 *  Handle each row
-		 */
-		for ( m = 1; m != 0x40; m <<= 1 ) {
-			/*
-			 *  Handle each column
-			 */
-			if ( keys.c[ i ] & m ) {
+			++KbRepeatCount;
+			if ( KbRepeatCount == 10
+			  || ( KbRepeatCount > 10 && ( ( KbRepeatCount - 10 ) & 3 ) == 0 ) )
+			{
 				/*
-				 *  First key found exits loop;
+				 *  This should repeat after half a second at 5 per second
 				 */
-				i = 7;
-				break;
+				keys.ll = KbRepeatKey;
 			}
+		}
+		else {
 			/*
-			 *  Try next code
+			 *  Restart the repeat for new key
 			 */
-			++k;
+			KbRepeatCount = 0;
+			KbRepeatKey = keys.ll & KEY_REPEAT_MASK;
+		}
+
+		/*
+		 *  Decode
+		 */
+		k = 0;
+		for ( i = 0; i < 7; ++i ) {
+			/*
+			 *  Handle each row
+			 */
+			for ( m = 1; m != 0x40; m <<= 1 ) {
+				/*
+				 *  Handle each column
+				 */
+				if ( keys.c[ i ] & m ) {
+					/*
+					 *  First key found exits loop;
+					 */
+					i = 7;
+
+					/*
+					 *  Add key to buffer
+					 */
+					put_key( k );
+					break;
+				}
+				/*
+				 *  Try next code
+				 */
+				++k;
+			}
 		}
 	}
-
-
-	/*
-	 *  Add to buffer
-	 */
-	put_key( k );
 }
 
 
@@ -357,11 +360,11 @@ void set_speed( unsigned int speed )
 	static int speeds[ SPEED_HIGH + 1 ] = 
 		{ 0, 32768, 2000000, 32768 * ( 1 + PLLMUL ) };
 
-	if ( is_debug() ) {
+	if ( is_debug() && speed < SPEED_MEDIUM ) {
 		/*
 		 *  Allow JTAG debugging
 		 */
-		speed = SPEED_HIGH;
+		speed = SPEED_MEDIUM;
 	}
 
 	SpeedSetting = speed;
@@ -390,14 +393,14 @@ void set_speed( unsigned int speed )
 		// No wait states for flash read
 		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
 		
-		// Turn off unneccesary oscillators (PLL and main)
+		// Turn off unnecessary oscillators (PLL and main)
 		disable_pll();
 		disable_mclk();
 		break;
 
 	case SPEED_MEDIUM:
 		/*
-		 *  2 MHz interal RC clock
+		 *  2 MHz internal RC clock
 		 */
 		enable_mclk();
 		AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_MAIN_CLK;
@@ -778,3 +781,4 @@ VISIBLE void __aeabi_unwind_cpp_pr0(void) {};
 VISIBLE void __aeabi_unwind_cpp_pr1(void) {};
 VISIBLE void __aeabi_unwind_cpp_pr2(void) {};
 #endif
+
