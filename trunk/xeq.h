@@ -298,9 +298,9 @@ enum {
 	OP_DEG2RAD, OP_RAD2DEG,
 	OP_CCHS, OP_CCONJ,		// CHS and Conjugate
 	OP_ERF,
-	OP_pdf_Q, OP_cdf_Q, OP_qf_Q,
+	OP_pdf_Q, OP_cdf_Q, OP_cdfu_Q, OP_qf_Q,
 	OP_cdf_chi2, OP_qf_chi2,
-	OP_cdf_T, OP_qf_T,
+	OP_cdf_T, OP_cdfu_T, OP_qf_T,
 	OP_cdf_F, OP_qf_F,
 	OP_pdf_WB, OP_cdf_WB, OP_qf_WB,
 	OP_pdf_EXP, OP_cdf_EXP, OP_qf_EXP,

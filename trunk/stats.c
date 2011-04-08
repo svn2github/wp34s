@@ -940,6 +940,14 @@ decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 	return NULL;
 #endif
 }
+
+decNumber *cdfu_Q(decNumber *q, const decNumber *x, decContext *ctx) {
+	decNumber t;
+
+	decNumberMinus(&t, x, ctx);
+	return cdf_Q(q, &t, ctx);
+}
+
 /* qf_Q
 	If the solver is used two quite good initial guesses can
 	be evaluated this way:
@@ -1018,6 +1026,14 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 	return NULL;
 #endif
 }
+
+decNumber *cdfu_T(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+
+	decNumberMinus(&t, x, ctx);
+	return cdf_Q(r, &t, ctx);
+}
+
 
 decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
@@ -1403,6 +1419,7 @@ decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 
 
 #ifndef TINY_BUILD
+// Ln 1 + (cdf(x)-p)/p
 static int qf_eval(decNumber *diff, const decNumber *pt, const decNumber *x, decContext *ctx,
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
 	decNumber z, prob;
@@ -1412,8 +1429,6 @@ static int qf_eval(decNumber *diff, const decNumber *pt, const decNumber *x, dec
 	decNumberSubtract(diff, &z, x, ctx);
 	if (decNumberIsZero(diff))
 		return 0;
-	if (decNumberIsNegative(diff))
-		return -1;
 	return 1;
 }
 #endif
@@ -1423,7 +1438,7 @@ static decNumber *qf_search(decNumber *r,
 				const decNumber *samp_low, const decNumber *samp_high,
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
 #ifndef TINY_BUILD
-	decNumber t, u, v, tv, uv, vv, x;
+	decNumber t, u, v, tv, uv, vv, x, a;
 	unsigned int flags = 0;
 
 	if (check_probability(r, xin, ctx, lower))
@@ -1445,10 +1460,18 @@ static decNumber *qf_search(decNumber *r,
 		return decNumberCopy(r, &u);
 
 	solver_init(&v, &t, &u, &tv, &uv, ctx, &flags);
-	do
+	do {
+		// If we got below the minimum, do a bisection step instead
+		if (lower != NULL) {
+			decNumberCompare(&a, &v, lower, ctx);
+			if (decNumberIsNegative(&a) || decNumberIsZero(&a)) {
+				decNumberAdd(&a, &t, &u, ctx);
+				decNumberMultiply(&v, &a, &const_0_5, ctx);
+			}
+		}
 		if (qf_eval(&vv, &v, &x, ctx, f) == 0)
 			break;
-	while (solver_step(&t, &u, &v, &tv, &uv, &vv, ctx, &flags) == 0);
+	} while (solver_step(&t, &u, &v, &tv, &uv, &vv, ctx, &flags) == 0);
 	return decNumberCopy(r, &v);
 #else
 	return NULL;
@@ -1464,7 +1487,7 @@ decNumber *qf_Q(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
-	return qf_search(r, x, ctx, &const_0, &const_0, &const_20, &cdf_chi2);
+	return qf_search(r, x, ctx, &const_0, &const_1e_32, &const_5, &cdf_chi2);
 }
 
 decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {

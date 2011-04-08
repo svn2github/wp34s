@@ -75,6 +75,7 @@ extern decNumber *betai(decNumber *, const decNumber *, const decNumber *, const
 /* Normal (0, 1) distribution */
 extern decNumber *pdf_Q(decNumber *, const decNumber *, decContext *);
 extern decNumber *cdf_Q(decNumber *, const decNumber *, decContext *);
+extern decNumber *cdfu_Q(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_Q(decNumber *, const decNumber *, decContext *);
 
 /* Chi squared n distribution r in register J */
@@ -83,6 +84,7 @@ extern decNumber *qf_chi2(decNumber *, const decNumber *, decContext *);
 
 /* Student's T distribution with n df, n in register J */
 extern decNumber *cdf_T(decNumber *, const decNumber *, decContext *);
+extern decNumber *cdfu_T(decNumber *, const decNumber *, decContext *);
 extern decNumber *qf_T(decNumber *, const decNumber *, decContext *);
 
 /* F distribution with v1 and v2 df, v1 & v2 in registers J and K */
