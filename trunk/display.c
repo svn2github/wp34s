@@ -1036,6 +1036,8 @@ static void show_alpha(void) {
 	State.arrow_alpha = 0;
 }
 
+#pragma GCC optimize 0
+
 void display(void) {
 	int i, j;
 	char buf[40], *bp = buf;
@@ -1330,6 +1332,8 @@ static void set_status_right(const char *str) {
 	}
 	set_status_sized(p+1, toolarge);
 }
+
+#pragma GCC optimize "s"
 
 void set_running_off() {
 	State.state_running = 0;

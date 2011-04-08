@@ -21,6 +21,7 @@
 #ifdef __GNUC__
 __attribute__((externally_visible)) void LowLevelInit(void);
 #endif
+#define TINY_BUILD
 #pragma GCC optimize 0
 #include "main.c"
 #pragma GCC optimize "s"
@@ -43,17 +44,19 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "consts.c"
 #include "date.c"
 #include "decn.c"
-#pragma GCC optimize 0
 #include "display.c"
-#pragma GCC optimize "s"
 #include "int.c"
+#pragma GCC optimize 0
 #include "keys.c"
+#pragma GCC optimize "s"
 #include "lcd.c"
 #include "prt.c"
 #include "stats.c"
+#include "string.c"
+//#pragma GCC optimize 0
 #include "xeq.c"
+#pragma GCC optimize "s"
 #include "xrom.c"
 #include "decNumber/decNumber.c"
 #include "decNumber/decContext.c"
 #include "decNumber/decimal64.c"
-#include "string.c"

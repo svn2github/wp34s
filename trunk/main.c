@@ -178,7 +178,7 @@ void scan_keyboard( void )
 	 *  a) it wasn't pressed last time we checked
 	 *  b) it has the same value as the debounce value
 	 */
-	keys.ll &= !last_keys && KbDebounce;
+	keys.ll &= ( ~last_keys & KbDebounce );
 	
 	/*
 	 *  Reprogram PIO

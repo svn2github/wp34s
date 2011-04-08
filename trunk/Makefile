@@ -19,7 +19,7 @@
 #REALBUILD = 1
 
 # Define to disable the watchdog
-#NOWD = 1
+NOWD = 1
 
 # Define to use a crystal oscillator on slow clock after hardware modification
 #XTAL = 1

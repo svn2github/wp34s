@@ -635,10 +635,10 @@ static void const_small(FILE *fh) {
         if (f == NULL)
                 exit(1);
         gpl_text(f, "/* ", " * ", " */");
-        fprintf(f,      "#if BYTE_ORDER == LITTLE_ENDIAN\n"
-                        "#define B(b1,b2,b3,b4,b5,b6,b7,b8) {{ b8,b7,b6,b5,b4,b3,b2,b1 }}\n"
-                        "#else\n"
+        fprintf(f,      "#if BYTE_ORDER == BIG_ENDIAN\n"
                         "#define B(b1,b2,b3,b4,b5,b6,b7,b8) {{ b1,b2,b3,b4,b5,b6,b7,b8 }}\n"
+                        "#else\n"
+                        "#define B(b1,b2,b3,b4,b5,b6,b7,b8) {{ b8,b7,b6,b5,b4,b3,b2,b1 }}\n"
                         "#endif\n\n"
                         "#include \"consts.h\"\n\n");
         const_small_tbl(f, 1, constsml, "cnsts", "NUM_CONSTS",
