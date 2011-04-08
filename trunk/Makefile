@@ -91,6 +91,7 @@ endif
 ifdef XTAL
 CFLAGS += -DXTAL
 endif
+CFLAGS += -DNO_BACKUP_INIT
 LDFLAGS := -nostartfiles 
 CROSS_COMPILE := arm-none-eabi-
 CC := $(CROSS_COMPILE)gcc

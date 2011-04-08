@@ -30,8 +30,8 @@
 #define RAM_FUNCTION __attribute__((section(".ramfunc")))
 
 // Heartbeat frequency in ms
-#define PIT_PERIOD 50 
-#define HEARTBEAT_SHIFT 1   // factor 2 compared to 100ms user heartbeat
+#define PIT_PERIOD 25
+#define HEARTBEAT_SHIFT 2   // factor 4 compared to 100ms user heartbeat
 #define HEARTBEAT_MASK ~(0xffffffff<<HEARTBEAT_SHIFT) 
 
 /*
@@ -60,9 +60,10 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  *  Local data
  */
 unsigned int ClockSpeed;
-int SpeedSetting;
+int SpeedSetting, DesiredSpeedSetting;
 unsigned int Heartbeats;
 unsigned int Contrast;
+unsigned int InIrq;
 
 /*
  *  Definitions for the keyboard scan
@@ -77,7 +78,7 @@ int KbRepeatCount;
 #define KEY_REPEAT_MASK 0x0000010100000000LL   // only Up and Down repeat
 
 #define KEY_ROWS_MASK 0x0000007f
-#define KEY_COLS_MASK 0x0400f800
+#define KEY_COLS_MASK 0x0400fC00
 #define KEY_COLS_SHIFT 11
 #define KEY_COL5_SHIFT 10
 #define KEY_ON_MASK   0x00000400
@@ -108,6 +109,11 @@ void scan_keyboard( void )
 	long long last_keys;
 
 	/*
+	 *  Assume no key is down
+	 */
+	keys.ll = 0LL;
+
+	/*
 	 *  Program the PIO pins in PIOC
 	 */
 	// Enable clock
@@ -122,21 +128,15 @@ void scan_keyboard( void )
 	 */
 	AT91C_BASE_PIOC->PIO_CODR = KEY_ROWS_MASK;
 	short_wait( 1 );
-	k = AT91C_BASE_PIOC->PIO_PDSR;
+	k = ~AT91C_BASE_PIOC->PIO_PDSR;
 	AT91C_BASE_PIOC->PIO_SODR = KEY_ROWS_MASK;
 
-	if ( KEY_COLS_MASK == ( k & KEY_COLS_MASK ) ) {
+	if ( 0 != ( k & KEY_COLS_MASK ) ) {
 		/*
-		 *  No key is down
-		 */
-		keys.ll = 0LL;
-	}
-	else {
-		/*
-		 *  Assemble the input
+		 *  Some keys may be pressed: Assemble the input
 		 */
 		int r;
-		for ( r = 1, i = 0; i < 8; r <<= 1, ++i ) {
+		for ( r = 1, i = 0; i < 7; r <<= 1, ++i ) {
 			/*
 			 *  Set each column to zero and read the row image.
 			 *  The input is inverted on read. 1s are pressed keys now.
@@ -149,7 +149,7 @@ void scan_keyboard( void )
 			/*
 			 *  Adjust the result
 			 */
-			if ( i == 7 && k & KEY_ON_MASK) {
+			if ( i == 6 && k & KEY_ON_MASK ) {
 				/*
 				 *  Add ON key to bit image
 				 */
@@ -188,32 +188,32 @@ void scan_keyboard( void )
 	// Disable clock
 	AT91C_BASE_PMC->PMC_PCDR = 1 << AT91C_ID_PIOC;
 
-	if ( keys.ll != 0 ) {
+	/*
+	 *  Handle repeating keys (arrows)
+	 */
+	if ( keys.ll == 0 && KbData == KbRepeatKey ) {
 		/*
-		 *  Handle repeating keys (arrows)
+		 *  One of the repeating keys is still down
 		 */
-		if ( KbData == KbRepeatKey ) {
+		++KbRepeatCount;
+		if ( KbRepeatCount == 20
+		  || ( KbRepeatCount > 20 && ( ( KbRepeatCount - 20 ) & 7 ) == 0 ) )
+		{
 			/*
-			 *  One of the repeating keys is still down
+			 *  This should repeat after half a second at 5 per second
 			 */
-			++KbRepeatCount;
-			if ( KbRepeatCount == 10
-			  || ( KbRepeatCount > 10 && ( ( KbRepeatCount - 10 ) & 3 ) == 0 ) )
-			{
-				/*
-				 *  This should repeat after half a second at 5 per second
-				 */
-				keys.ll = KbRepeatKey;
-			}
+			keys.ll = KbRepeatKey;
 		}
-		else {
-			/*
-			 *  Restart the repeat for new key
-			 */
-			KbRepeatCount = 0;
-			KbRepeatKey = keys.ll & KEY_REPEAT_MASK;
-		}
+	}
+	else {
+		/*
+		 *  Restart the repeat for new key
+		 */
+		KbRepeatCount = 0;
+		KbRepeatKey = keys.ll & KEY_REPEAT_MASK;
+	}
 
+	if ( keys.ll != 0 ) {
 		/*
 		 *  Decode
 		 */
@@ -351,6 +351,9 @@ RAM_FUNCTION void go_idle( void )
 /*
  *  Set clock speed to one of 4 fixed values:
  *  0 (idle), 32.768 kHz, 2 MHz, 32.768 MHz
+ *
+ *  Since the PIT depends on the speed setting, changes work only reliably
+ *  while in the interrupt service routine.
  */
 void set_speed( unsigned int speed )
 {
@@ -367,85 +370,97 @@ void set_speed( unsigned int speed )
 		speed = SPEED_MEDIUM;
 	}
 
-	SpeedSetting = speed;
-	if ( speed > SPEED_HIGH || speeds[ speed ] == ClockSpeed ) {
+	if ( !InIrq ) {
 		/*
-		 *  Invalid or no change
+		 *  Postpone the speed switch until next interrupt
 		 */
-		return;
+		DesiredSpeedSetting = speed;
 	}
-
-	switch ( speed ) {
-
-	case SPEED_NULL:
+	else {
 		/*
-		 *  Turn off the processor clock
+		 *  Set new speed
 		 */
-		// fall through
+		SpeedSetting = speed;
+		if ( speed > SPEED_HIGH || speeds[ speed ] == ClockSpeed ) {
+			/*
+			 *  Invalid or no change
+			 */
+			return;
+		}
 
-	case SPEED_SLOW:
-		/*
-		 *  32.768 KHz oscillator
-		 */
-		AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_SLOW_CLK;
-		wait_for_clock();
+		switch ( speed ) {
 
-		// No wait states for flash read
-		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
-		
-		// Turn off unnecessary oscillators (PLL and main)
-		disable_pll();
-		disable_mclk();
-		break;
+		case SPEED_NULL:
+			/*
+			 *  Turn off the processor clock
+			 */
+			// fall through
 
-	case SPEED_MEDIUM:
-		/*
-		 *  2 MHz internal RC clock
-		 */
-		enable_mclk();
-		AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_MAIN_CLK;
-		wait_for_clock();
-		
-		// No wait states needed for flash read
-		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
-		
-		// Turn off the PLL
-		disable_pll();
-		break;
-
-	case SPEED_HIGH:
-		/*
-		 *  32.768 MHz PLL, derived from 32 KHz slow clock
-		 */
-		// Maximum wait states for flash reads
-		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_3FWS;
-
-		if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS ) 
-			== AT91C_PMC_CSS_PLL_CLK ) 
-		{
-			// Intermediate switch to slow clock
+		case SPEED_SLOW:
+			/*
+			 *  32.768 KHz oscillator
+			 */
 			AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_SLOW_CLK;
 			wait_for_clock();
+
+			// No wait states for flash read
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
+
+			// Turn off unnecessary oscillators (PLL and main)
+			disable_pll();
+			disable_mclk();
+			break;
+
+		case SPEED_MEDIUM:
+			/*
+			 *  2 MHz internal RC clock
+			 */
+			enable_mclk();
+			AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_MAIN_CLK;
+			wait_for_clock();
+
+			// No wait states needed for flash read
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
+
+			// Turn off the PLL
+			disable_pll();
+			break;
+
+		case SPEED_HIGH:
+			/*
+			 *  32.768 MHz PLL, derived from 32 KHz slow clock
+			 */
+			// Maximum wait states for flash reads
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_3FWS;
+
+			if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS )
+				== AT91C_PMC_CSS_PLL_CLK )
+			{
+				// Intermediate switch to slow clock
+				AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_SLOW_CLK;
+				wait_for_clock();
+			}
+			// Initialize PLL at 32MHz
+			AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
+						 | ( PLLMUL << 16 ) | PLLDIV;
+			while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
+
+			// Switch to PLL
+			AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_PLL_CLK;
+			wait_for_clock();
+
+			// Turn off main clock
+			disable_mclk();
+			break;
 		}
-		// Initialize PLL at 32MHz
-		AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-					 | ( PLLMUL << 16 ) | PLLDIV;
-		while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
+		ClockSpeed = speeds[ speed ];
 
-		// Switch to PLL
-		AT91C_BASE_PMC->PMC_MCKR = AT91C_PMC_CSS_PLL_CLK;
-		wait_for_clock();
+		/*
+		 *  Now we have to reprogram the PIT
+		 */
+		PIT_SetPIV( ( ( PIT_PERIOD * ClockSpeed ) / 1000 + 8 ) >> 4 );
 
-		// Turn off main clock
-		disable_mclk();
-		break;
 	}
-	ClockSpeed = speeds[ speed ];
-
-	/*
-	 *  Now we have to reprogram the PIT
-	 */
-	PIT_SetPIV( ( ( PIT_PERIOD * ClockSpeed ) / 1000 + 8 ) >> 4 );
 
 	/*
 	 *  Go idle if requested
@@ -493,8 +508,10 @@ void user_heartbeat( void )
  */
 RAM_FUNCTION void heartbeat_irq( void )
 {
-	int count, old_speed;
+	int count;
 	
+	InIrq = 1;
+
 	/*
 	 *  Flash memory might be disabled, turn it on again
 	 */
@@ -505,7 +522,6 @@ RAM_FUNCTION void heartbeat_irq( void )
 	/*
 	 *  Set speed to 2MHz for all irq handling. This ensures consistent timing
 	 */
-	old_speed = SpeedSetting;
 	set_speed( SPEED_MEDIUM );
 
 	/*
@@ -519,24 +535,25 @@ RAM_FUNCTION void heartbeat_irq( void )
 		// ...
 
 		/*
-		 *  Set speed to higher level if that was what we came from
+		 *  Set speed to desired speed
 		 */
-		if ( old_speed > SpeedSetting ) {
-			set_speed( old_speed );
+		if ( DesiredSpeedSetting != SpeedSetting ) {
+			set_speed( DesiredSpeedSetting );
 		}
+		InIrq = 0;
 		return;
 	}
 	
 	/*
-	 *  The keyboard is scanned every 50ms for debounce and repeat
+	 *  The keyboard is scanned every 25ms for debounce and repeat
 	 */
 	scan_keyboard();
 
 	/*
-	 *  Set speed to higher level if that was what we came from
+	 *  Set speed to desired speed
 	 */
-	if ( old_speed > SpeedSetting ) {
-		set_speed( old_speed );
+	if ( DesiredSpeedSetting != SpeedSetting ) {
+		set_speed( DesiredSpeedSetting );
 	}
 
 	/*
@@ -554,6 +571,7 @@ RAM_FUNCTION void heartbeat_irq( void )
 			user_heartbeat();
 		}
 	}
+	InIrq = 0;
 }
 
 
@@ -563,6 +581,8 @@ RAM_FUNCTION void heartbeat_irq( void )
  */
 void enable_heartbeat()
 {
+	InIrq = 0;
+
 	/*
 	 *  Tell the interrupt controller where to go
 	 */
@@ -589,14 +609,14 @@ void enable_heartbeat()
  */
 void lock( void )
 {
-	if ( AT91C_BASE_AIC->AIC_ISR != AT91C_ID_SYS ) {
+	if ( !InIrq ) {
 		AIC_DisableIT( AT91C_ID_SYS );
 	}
 }
 
 void unlock( void )
 {
-	if ( AT91C_BASE_AIC->AIC_ISR != AT91C_ID_SYS ) {
+	if ( !InIrq ) {
 		AIC_EnableIT( AT91C_ID_SYS );
 	}
 }
@@ -657,8 +677,8 @@ int put_key( int k )
 		return 0;
 	}
 	lock();
-	KbWrite = ( KbWrite + 1 ) & KEY_BUFF_MASK;
 	KeyBuffer[ KbWrite ] = (unsigned char) k;
+	KbWrite = ( KbWrite + 1 ) & KEY_BUFF_MASK;
 	++KbCount;
 	unlock();
 	return KbCount;
@@ -678,12 +698,7 @@ void shutdown( void )
 	/*
 	 *  Off we go...
 	 */
-	if ( !is_debug() ) {
-		SUPC_DisableVoltageRegulator();
-	}
-	else {
-		while ( 1 );
-	}
+	SUPC_DisableVoltageRegulator();
 }
 
 
@@ -716,7 +731,9 @@ int main(void)
         /*
          * Initialize the hardware (clock, LCD, RTC, timer, backup)
 	 */
+	InIrq = 1; // force speed setting
 	set_speed( SPEED_MEDIUM );
+	InIrq = 0;
 	enable_lcd();
 	SUPC_EnableRtc();
 	enable_heartbeat();

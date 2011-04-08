@@ -146,6 +146,7 @@ resetHandler:
         mov     lr, pc
         bx      r0
 
+#ifndef NO_BACKUP_INIT
 /* Check if we were in backup mode */
         ldr     r0, =AT91C_BASE_RSTC+RSTC_RSR
         ldr     r0, [r0]
@@ -173,7 +174,7 @@ initialize:
         ldrne   r3, [r0], #4
         strne   r3, [r1], #4
         bne     1b
-
+#endif
 /* Initialize the relocate segment */
 relocate:
         ldr     r0, =_efixed
