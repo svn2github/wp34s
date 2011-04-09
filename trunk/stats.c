@@ -1108,6 +1108,12 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 #endif
 }
 
+decNumber *cdfu_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+
+	cdf_chi2(&t, x, ctx);
+	return decNumberSubtract(r, &const_1, &t, ctx);
+}
 
 decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
@@ -1246,6 +1252,13 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 #else
 	return NULL;
 #endif
+}
+
+decNumber *cdfu_F(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+
+	cdf_F(&t, x, ctx);
+	return decNumberSubtract(r, &const_1, &t, ctx);
 }
 
 decNumber *qf_F(decNumber *r, const decNumber *x, decContext *ctx) {
@@ -1512,6 +1525,13 @@ decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	return cdf_B_helper(&t, x, ctx);
 }
 
+decNumber *cdfu_B(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+
+	cdf_B(&t, x, ctx);
+	return decNumberSubtract(r, &const_1, &t, ctx);
+}
+
 decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	// MORE: provide reasonable initial estaimtes
 	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_B_helper);
@@ -1580,6 +1600,13 @@ decNumber *cdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	decNumberFloor(&t, x, ctx);
 	return cdf_P_helper(r, &t, ctx);
+}
+
+decNumber *cdfu_P(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+
+	cdf_P(&t, x, ctx);
+	return decNumberSubtract(r, &const_1, &t, ctx);
 }
 
 decNumber *qf_P(decNumber *r, const decNumber *x, decContext *ctx) {
