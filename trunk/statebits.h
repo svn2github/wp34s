@@ -23,6 +23,7 @@
  */
 
 	SB(dispmode, 2);	// Display mode (ALL, FIX, SCI, ENG)
+	SB(fixeng, 1);		// Fix flips to ENG instead of SCI
 	SB(dispdigs, 4);	// Display digits
 
 	SB(trigmode, 2);	// Trig mode (DEG, RAD, GRAD)

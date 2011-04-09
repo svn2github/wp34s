@@ -686,7 +686,6 @@ struct _state {
 
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode
-	unsigned int fixeng : 1;	// Fix flips to ENG instead of SCI
 	unsigned int leadzero : 1;	// forced display of leading zeros in int mode
 
 	unsigned int error : 5;		// Did an error occur, if so what code?
