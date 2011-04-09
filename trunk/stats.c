@@ -771,7 +771,7 @@ decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const dec
 		decNumberLnBeta(&u, a, b, ctx);
 		decNumberLn(&v, x, ctx);		// v = ln(x)
 		decNumberMultiply(&t, a, &v, ctx);
-		decNumberSubtract(&v, &t, &u, ctx);		// v = lng(...)+a.ln(x)
+		decNumberSubtract(&v, &t, &u, ctx);	// v = lng(...)+a.ln(x)
 		decNumberSubtract(&y, &const_1, x, ctx);// y = 1-x
 		decNumberLn(&u, &y, ctx);		// u = ln(1-x)
 		decNumberMultiply(&t, &u, b, ctx);
@@ -925,12 +925,6 @@ static decNumber *qf_search(decNumber *r,
 #endif
 }
 
-decNumber *discrete_qf(decNumber *r, const decNumber *x, decContext *ctx,
-		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
-	return qf_search(r, x, ctx, 1, &const_0, &const_20, f);
-}
-
-
 
 // Normal(0,1) PDF
 // 1/sqrt(2 PI) . exp(-x^2/2)
@@ -1009,21 +1003,13 @@ decNumber *cdfu_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 }
 
 
-decNumber *qf_Q(decNumber *r, const decNumber *xin, decContext *ctx) {
 #ifndef TINY_BUILD
-	int invert;
+static void qf_Q_ests(decNumber *low, decNumber *high, const decNumber *x, const decNumber *x05, decContext *ctx) {
+	const int invert = decNumberIsNegative(x05);
 	decNumber a, b, xc;
-	const decNumber *x = xin;
 
-	if (check_probability(r, x, ctx, 0))
-		return r;
-	decNumberSubtract(&b, &const_0_5, x, ctx);
-	if (decNumberIsZero(&b)) {
-		decNumberZero(r);
-		return r;
-	}
-	if ((invert = decNumberIsNegative(&b))) {
-		decNumberSubtract(&xc, &const_1, xin, ctx);
+	if (invert) {
+		decNumberSubtract(&xc, &const_1, x, ctx);
 		x = &xc;
 	}
 
@@ -1035,17 +1021,37 @@ decNumber *qf_Q(decNumber *r, const decNumber *xin, decContext *ctx) {
 		decNumberMultiply(&b, &a, &const__2, ctx);
 		decNumberSubtract(&a, &b, &const_e, ctx);
 		decNumberSquareRoot(&b, &a, ctx);
-		decNumberMinus(&b, &b, ctx);
-		decNumberAdd(&a, &b, &const_0_25, ctx);
+		decNumberMinus(high, &b, ctx);
+		if (low != NULL)
+			decNumberAdd(low, high, &const_0_25, ctx);
 	} else {
 		// 3 * (1/2 - x)
-		decNumberMultiply(&a, &b, &const__3, ctx);
-		decNumberMultiply(&b, &a, &const_5on6, ctx);
+		decNumberMultiply(high, x05, &const__3, ctx);
+		if (low != NULL)
+			decNumberMultiply(low, high, &const_5on6, ctx);
+	}
+	if (invert) {
+		decNumberMinus(high, high, ctx);
+		if (low != NULL)
+			decNumberMinus(low, low, ctx);
+	}
+}
+#endif
+
+decNumber *qf_Q(decNumber *r, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
+	decNumber a, b;
+
+	if (check_probability(r, x, ctx, 0))
+		return r;
+	decNumberSubtract(&b, &const_0_5, x, ctx);
+	if (decNumberIsZero(&b)) {
+		decNumberZero(r);
+		return r;
 	}
 
+	qf_Q_ests(&a, &b, x, &b, ctx);
 	qf_search(r, x, ctx, 0, &a, &b, &cdf_Q);
-	if (invert)
-		decNumberMinus(r, r, ctx);
 	return r;
 #else
 	return NULL;
@@ -1080,6 +1086,7 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 
 
 decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber a, b, c, q, v;
 
 	dist_one_param(&v);
@@ -1098,6 +1105,9 @@ decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumberMultiply(&a, &b, &const_0_25, ctx);	// lower estimate
 	decNumberMultiply(&b, &a, &const_e, ctx);
 	return qf_search(r, x, ctx, 1, &a, &b, &cdf_chi2);
+#else
+	return NULL;
+#endif
 }
 
 
@@ -1141,9 +1151,8 @@ decNumber *cdfu_T(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber a, b, c, d, v, xcc;
-	int invert;
-	const decNumber *xc = x;
+#ifndef TINY_BUILD
+	decNumber a, b, c, d, v;
 
 	dist_one_param(&v);
 	if (param_positive(r, &v))
@@ -1179,27 +1188,12 @@ decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 		return r;
 	}
 
-	if ((invert = decNumberIsNegative(&b))) {
-		decNumberSubtract(&xcc, &const_1, x, ctx);
-		xc = &xcc;
-	}
-	decNumberCompare(&c, xc, &const_0_15, ctx);
-	if (decNumberIsNegative(&c)) {
-		// sqrt(-2*ln(x) - e)
-		decNumberLn(&c, xc, ctx);
-		decNumberMultiply(&b, &c, &const__2, ctx);
-		decNumberSubtract(&c, &b, &const_e, ctx);
-		decNumberSquareRoot(&b, &c, ctx);
-		decNumberMinus(&c, &b, ctx);
-		decNumberAdd(&b, &c, &const_0_25, ctx);
-	} else {
-		// 3 * (1/2 - x)
-		decNumberMultiply(&b, &b, &const__3, ctx);
-	}
-	if (invert)
-		decNumberMinus(&b, &b, ctx);
+	qf_Q_ests(NULL, &b, x, &b, ctx);
 
 	return qf_search(r, x, ctx, 0, &a, &b, &cdf_T);
+#else
+	return NULL;
+#endif
 }
 
 		
@@ -1231,6 +1225,7 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *qf_F(decNumber *r, const decNumber *x, decContext *ctx) {
+	// MORE: provide reasonable initial estaimtes
 	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_F);
 }
 
@@ -1452,6 +1447,7 @@ decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
+	// MORE: provide reasonable initial estaimtes
 	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_B_helper);
 }
 
@@ -1521,6 +1517,7 @@ decNumber *cdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *qf_P(decNumber *r, const decNumber *x, decContext *ctx) {
+	// MORE: provide reasonable initial estaimtes
 	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_P_helper);
 }
 
