@@ -49,6 +49,31 @@
 #define sigmaXlnY	(Regs[98])
 #define sigmaYlnX	(Regs[99])
 
+//#define DUMP1
+#ifdef DUMP1
+#include <stdio.h>
+static FILE *debugf = NULL;
+
+static void open_debug(void) {
+	if (debugf == NULL) {
+		debugf = fopen("/dev/ttys001", "w");
+	}
+}
+static void dump1(const decNumber *a, const char *msg) {
+	char buf[2000], *b = buf;
+
+	open_debug();
+	if (decNumberIsNaN(a)) b= "NaN";
+	else if (decNumberIsInfinite(a)) b = decNumberIsNegative(a)?"-inf":"inf";
+	else
+		decNumberToString(a, b);
+	fprintf(debugf, "%s: %s\n", msg ? msg : "???", b);
+	fflush(debugf);
+}
+#else
+#define dump1(a,b)
+#endif
+
 
 static void correlation(decNumber *, const enum sigma_modes);
 
@@ -844,7 +869,6 @@ static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
 			decNumberIsZero(n) ||
 			(!zero && decNumberIsZero(n)) ||
 			(intg && !is_int(n, Ctx))) {
-		//set_NaN(r);
 		decNumberZero(r);
 		State.error = ERR_BAD_PARAM;
 		return 1;
@@ -1268,6 +1292,12 @@ decNumber *pdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+	cdfu_WB(&t, x, ctx);
+	return decNumberSubtract(r, &const_1, &t, ctx);
+}
+
+decNumber *cdfu_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber k, lam, t;
 
@@ -1281,8 +1311,7 @@ decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumberDivide(&t, x, &lam, ctx);
 	decNumberPower(&lam, &t, &k, ctx);
 	decNumberMinus(&t, &lam, ctx);
-	decNumberExp(&lam, &t, ctx);
-	return decNumberSubtract(r, &const_1, &lam, ctx);
+	return decNumberExp(r, &t, ctx);
 #else
 	return NULL;
 #endif
@@ -1358,20 +1387,57 @@ decNumber *pdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+	cdfu_EXP(&t, x, ctx);
+	return decNumberSubtract(r, &const_1, &t, ctx);
+}
+
+decNumber *cdfu_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber lam, t, u;
 
 	if (exponential_xform(r, &lam, x, ctx))
 		return r;
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
-		return decNumberZero(r);
-	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
+	if (decNumberIsInfinite(x))
+		return decNumberZero(r);
 
 	decNumberMultiply(&t, &lam, x, ctx);
 	decNumberMinus(&u, &t, ctx);
-	decNumberExp(&t, &u, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
+	return decNumberExp(r, &u, ctx);
+#else
+	return NULL;
+#endif
+}
+
+
+/* Exponential distribution quantile function:
+ *	p = 1 - exp(-lambda . x)
+ *	exp(-lambda . x) = 1 - p
+ *	-lambda . x = ln(1 - p)
+ * Thus, the quantile function is:
+ *	x = ln(1-p)/-lambda
+ */
+decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
+#ifndef TINY_BUILD
+	decNumber t, u, lam;
+
+	dist_one_param(&lam);
+	if (param_positive(r, &lam))
+		return r;
+	if (check_probability(r, p, ctx, 1))
+	    return r;
+	decNumberSubtract(&t, &const_1, p, ctx);
+	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) ||
+			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
+		set_NaN(r);
+		return r;
+	}
+
+	decNumberLn(&u, &t, ctx);
+	decNumberDivide(&t, &u, &lam, ctx);
+	return decNumberMinus(r, &t, ctx);
 #else
 	return NULL;
 #endif
@@ -1557,8 +1623,15 @@ decNumber *pdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber t;
+
+	cdfu_G(&t, x, ctx);
+	return decNumberSubtract(r, &const_1, &t, ctx);
+}
+
+decNumber *cdfu_G(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
-        decNumber p, t, u, ipx;
+        decNumber p, t, ipx;
 
         if (geometric_param(r, &p, x, ctx))
                 return r;
@@ -1567,13 +1640,12 @@ decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 		x = &ipx;
         }
         if (decNumberIsNegative(x) || decNumberIsZero(x))
-                return decNumberZero(r);
-        if (decNumberIsInfinite(x))
                 return decNumberCopy(r, &const_1);
+        if (decNumberIsInfinite(x))
+                return decNumberZero(r);
 
         decNumberSubtract(&t, &const_1, &p, ctx);
-        decNumberPower(&u, &t, x, ctx);
-        return decNumberSubtract(r, &const_1, &u, ctx);
+        return decNumberPower(r, &t, x, ctx);
 #else
 	return NULL;
 #endif
@@ -1592,38 +1664,6 @@ decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
         decNumberSubtract(&u, &const_1, &p, ctx);
         decNumberLn(&t, &u, ctx);
         return decNumberDivide(r, &v, &t, ctx);
-#else
-	return NULL;
-#endif
-}
-
-
-/* Exponential distribution quantile function:
- *	p = 1 - exp(-lambda . x)
- *	exp(-lambda . x) = 1 - p
- *	-lambda . x = ln(1 - p)
- * Thus, the quantile function is:
- *	x = ln(1-p)/-lambda
- */
-decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
-#ifndef TINY_BUILD
-	decNumber t, u, lam;
-
-	dist_one_param(&lam);
-	if (param_positive(r, &lam))
-		return r;
-	if (check_probability(r, p, ctx, 1))
-	    return r;
-	decNumberSubtract(&t, &const_1, p, ctx);
-	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) ||
-			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
-		set_NaN(r);
-		return r;
-	}
-
-	decNumberLn(&u, &t, ctx);
-	decNumberDivide(&t, &u, &lam, ctx);
-	return decNumberMinus(r, &t, ctx);
 #else
 	return NULL;
 #endif
@@ -1668,6 +1708,18 @@ decNumber *cdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
 #endif
 }
 
+decNumber *cdfu_normal(decNumber *r, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
+	decNumber q, var;
+
+	if (normal_xform(r, &q, x, &var, ctx))
+		return r;
+	return cdfu_Q(r, &q, ctx);
+#else
+	return NULL;
+#endif
+}
+
 decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber a, b, mu, var;
@@ -1703,6 +1755,17 @@ decNumber *cdf_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	decNumberLn(&lx, x, ctx);
 	return cdf_normal(r, &lx, ctx);
+#else
+	return NULL;
+#endif
+}
+
+decNumber *cdfu_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
+	decNumber lx;
+
+	decNumberLn(&lx, x, ctx);
+	return cdfu_normal(r, &lx, ctx);
 #else
 	return NULL;
 #endif
@@ -1758,6 +1821,20 @@ decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
 		return r;
 	decNumberTanh(&b, &a, ctx);
 	decNumberMultiply(&a, &b, &const_0_5, ctx);
+	return decNumberAdd(r, &a, &const_0_5, ctx);
+#else
+	return NULL;
+#endif
+}
+
+decNumber *cdfu_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
+	decNumber a, b, s;
+
+	if (logistic_xform(r, &a, x, &s, ctx))
+		return r;
+	decNumberTanh(&b, &a, ctx);
+	decNumberMultiply(&a, &b, &const__0_5, ctx);
 	return decNumberAdd(r, &a, &const_0_5, ctx);
 #else
 	return NULL;
@@ -1820,9 +1897,23 @@ decNumber *cdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (cauchy_xform(r, &b, x, &gamma, ctx))
 		return r;
-	decNumberArcTan(&a, &b, ctx);
+	do_atan(&a, &b, ctx);
 	decNumberDivide(&b, &a, &const_PI, ctx);
 	return decNumberAdd(r, &b, &const_0_5, ctx);
+#else
+	return NULL;
+#endif
+}
+
+decNumber *cdfu_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
+	decNumber a, b, gamma;
+
+	if (cauchy_xform(r, &b, x, &gamma, ctx))
+		return r;
+	do_atan(&a, &b, ctx);
+	decNumberDivide(&b, &a, &const_PI, ctx);
+	return decNumberSubtract(r, &const_0_5, &b, ctx);
 #else
 	return NULL;
 #endif

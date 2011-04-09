@@ -31,10 +31,13 @@ static void open_debug(void) {
 	}
 }
 static void dump1(const decNumber *a, const char *msg) {
-	char b[2000];
+	char buf[2000], *b = buf;
 
 	open_debug();
-	decNumberToString(a, b);
+	if (decNumberIsNaN(a)) b= "NaN";
+	else if (decNumberIsInfinite(a)) b = decNumberIsNegative(a)?"-inf":"inf";
+	else
+		decNumberToString(a, b);
 	fprintf(debugf, "%s: %s\n", msg ? msg : "???", b);
 	fflush(debugf);
 }
