@@ -1240,7 +1240,7 @@ void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 
 /* Get the current ticker value */
 void op_ticks(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
-#ifdef REALBULID
+#if defined(WINGUI) || defined(REALBUILD)
 	put_int(Ticker, 0, a);
 #else
 	struct timeval tv;
