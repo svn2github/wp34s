@@ -20,6 +20,7 @@
 #define sleep _sleep
 #else
 #include <unistd.h>
+#include <sys/time.h>
 #endif
 #include <stdio.h>   // (s)printf
 #endif // REALBUILD
@@ -1235,6 +1236,18 @@ void get_stack_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 
 void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	put_int((int)word_size(), 0, a);
+}
+
+/* Get the current ticker value */
+void op_ticks(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+#ifdef REALBULID
+	put_int(Ticker, 0, a);
+#else
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	long long int t = tv.tv_sec * 10ll + tv.tv_usec / 100000;
+	put_int(t, 0, a);
+#endif
 }
 
 /* Save and restore the entire stack to sequential registers */
