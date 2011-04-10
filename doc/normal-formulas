@@ -1,0 +1,143 @@
+
+Normal distribution continued fraction:
+
+The normal CDF now is more precise, but full machine precision is not
+achieved. Especially in the tails (x >= 2) this could be done easily
+with a simple continued fraction expansion. Unoptimized pseudo-code:
+
+   n := 4 + 100 div (x-1)  ; see below
+   s := 1/n
+   for c := n-1 downto 1 do
+       s := c / (s + x)
+   s := s + x
+   cdf := pdf(x) / s
+
+I tried to determine a rule for the number of terms n, depending on x
+and the desired accuracy (d digits). As far as I can tell on a system
+working with usual binary double precision numbers (15-16 valid decimals)
+this value can be estimated for d = 8...16 digits quite exactly by
+
+   k >= 17 + d * (d-5) / 2   (the example uses k = 100 for d ~= 16)
+   n >= 4 + int(k / (x-1))
+
+This should return the value for s with d valid digits and an error
+near 0,2 ULP. With 39 internal digits on the 34s the desired 16-digit
+result can be evaluated without effort, since the required pdf and its
+exp(-0,5*x^2) can be evaluated with sufficient precision. All this is
+calculated in virtually no time.
+
+
+----------------------------------------------------------------------
+
+
+So the two initial guesses are somewhat off. There are various simple
+ways to fix this for the normal quantile:
+
+    * Determine a high-quality estimate by using a known approximation,
+    such as the good old Hastings method (absolute error < 0,00045). Or,
+    even better, the Bailey method (cf. Applied Statistics vol. 30 no. 3,
+    1981), or an improved version I worked out some time ago. ;-) After
+    this, a few Newton iterations will provide the exact quantile. Or,
+    even better, two or three Newton-Halley steps, which is trivially
+    simple here, giving about 2-3 times the number of correct digits
+    with each step. Of course also the solver can be used instead.
+
+    * If the solver is used two quite good initial guesses can be
+    evaluated this way:
+
+          0,5 >= p >= 0,15         0,15 >= p > 0
+          -----------------------------------------------
+          a = 3 * (0,5 - p)        a = sqrt(-2*ln(p) - e)
+          b = a * 5/6              b = a - 1/4
+
+      The exact result is in this interval. The two guesses differ only
+      by 20% resp. by merely 0,25 so that the solver will find the result
+      fast with only a few iterations.
+
+Addendum: I just tried the solver in a WP34s user program with the two
+initial guesses mentioned above, solving for the root of the equation
+ln 1 + (cdf(x)-p)/p to avoid problems in the far tails, using the ln1+x
+function. The results are returned immediately and the values I checked
+show about 15 valid digits (out of the 16 used for all calculations).
+
+
+----------------------------------------------------------------------
+
+
+The mentioned formulas for the two initial guesses are very simple. But
+they approximate the exact value with a relative error less than 20%
+resp. an absolut error less than 0,25. With a little more effort we can
+easily provide two better guesses which can nail down the true value
+with an absolute error in the order of 10^-5 to 10^-8 (!) in the far
+tails (p =< 10^-10). This is possible because here the quantile can be
+evaluated by a series - the farther out in the tail, the less terms are
+required, especially with a little tweaking of the "exact" series. ;-)
+So it comes down to the question how much effort (and memory) can be
+spent for two even better initial guesses which would require, say,
+only 1/2 or 1/3 the number of iterations.
+
+Here's a quick and dirty improvement for the far tail. It's a slight
+modification of the original formula, now providing two guesses that
+are only 0,09 or even merely 0,025 apart:
+
+    0,15 >= p > 0
+    -----------------------
+    a = sqrt(-2*ln(p) - e)
+    b = a - 1/4
+    if a >= 4,5 then a = a - 1/a ; b = a - 1/11
+
+or, even better, but on a smaller interval:
+
+    if a >= 9 then a = a - a^-(3/4) ; b = a - 1/40
+
+On the other hand, in the very center (i. e. p close to 0,5 resp. z close
+to zero) using the solver will cause problems because there are multiple
+z-values that will return the same 16-digit CDF. I would suggest the
+following solution:
+
+Near p = 0,5 the quantile can easily be calculated directly (!) by a
+simple series:
+
+     u  =  sqrt(2*Pi) * (p - 0,5)
+                 1          7         127         4369         243649
+     z  =  u +  -- u^3  +  -- u^5  +  --- u^7  +  ---- u^9  +  ------ u^11  +  ...
+                3!         5!          7!          9!           11!
+
+The nominators of the coefficients are integer series A002067.
+
+For 0,495...0,505 (or |u| =< 0,0125) an exact 16-digit results requires
+only four terms, i.e. up to u^7. With one more term (u^9) the result is
+exact for p = 0,486...514 (or |u| =< 0,035).
+
+This leads to the following algorithm (assuming p =< 0,5):
+
+    if p > 0,15 then
+       u = sqrt(2*Pi) * (p - 0,5)
+       a = u + (u^3)/6 + (u^5)*7/120 + (u^7)*127/5040
+       if p > 0,495
+         then return a and quit   ; a already is exact
+         else
+              b = a * 1,006
+              return solverresult(a, b)
+       end if
+    else     ; p =< 0,15
+       a = sqrt(-2 * ln(p) - e)
+       b = a - 1/4
+       if a >= 9 then   ; far tail
+          a = a - a^-(3/4)
+          b = a - 1/40
+       end if
+       return solverresult (a, b)
+    end if
+
+In other words: for p > 0,15 determine a very good first guess. If p is
+close enough to 0,5 this guess already is exact, so simply return it as
+the final result. Otherwise provide a second guess slightly higher and
+let the solver do the rest. Which is done very quickly since the error
+is less than 0,6%. In the tails determine two reasonably good guesses,
+and in the far tails two even better ones that reduce the remaining
+error by a factor of 10.
+
+
+
+
