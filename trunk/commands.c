@@ -170,7 +170,7 @@ const struct monfunc monfuncs[] = {
 #endif
 #ifdef INCLUDE_BERNOULLI
 	FUNC(OP_Bn,	&decNumberBernBn,	NULL,		NULL,		"B\275")
-	FUNC(OP_BnS,	&decNumberBernBnS,	NULL,		NULL,		"B*\275")
+	FUNC(OP_BnS,	&decNumberBernBnS,	NULL,		NULL,		"B\275*")
 #endif
 #ifdef INCLUDE_EASTER
 	FUNC(OP_EASTER,	&dateEaster,		NULL,		NULL,		"EASTER")
