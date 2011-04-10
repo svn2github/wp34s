@@ -142,16 +142,17 @@ void dot(int n, int on) {
 /* Set a digit in positions [base, base+6] */
 static void set_dig(int base, char ch) 
 {
-    int i;
-    unsigned char c = getdig(ch);
-    for (i=6; i>=0; i--)
-    {
-        if (c & (1 << i))
-            set_dot(base);
+	int i;
+	unsigned char c = getdig(ch);
+	for (i=6; i>=0; i--)
+	{
+//		dot(base, c & (1 << i));
+		if (c & (1 << i))
+			set_dot(base);
 		else
 			clr_dot(base);
-        base++;
-    }
+		base++;
+	}
 }
 
 static char *set_dig_s(int base, char ch, char *res) {
@@ -990,7 +991,7 @@ void format_reg(decimal64 *r, char *buf) {
 
 /* Display the status screen */
 static void show_status(void) {
-	int i;
+	int i, n;
 	int j = SEGS_PER_DIGIT;
 	int base = 10 * (State.status - 1);
 	char buf[12], *p;
@@ -1002,7 +1003,7 @@ static void show_status(void) {
 	if (i < 100)
 		p = num_arg_0(p, i, 2);
 	else
-		*p++ = (i-100) + 'B';
+		*p++ = (i-100) + 'A';
 	*p = '\0';
 	set_status(buf);
 	set_decimal(0, DECIMAL_DOT, NULL);
@@ -1021,9 +1022,16 @@ static void show_status(void) {
 	set_seperator(SEGS_PER_DIGIT * 5, SEP_DOT, NULL);
 
 	j = SEGS_EXP_BASE;
-	for (i=0; i<3; i++) {
-		set_dig(j, find_label_from(1, 100+i, 1)?('B'+i):'_');
-		j += SEGS_PER_EXP_DIGIT;
+	for (n=i=0; i<4; i++) {
+		if (find_label_from(1, 100+i, 1)) {
+			if (++n == 4) {
+				set_dig(SEGS_EXP_BASE + SEGS_PER_EXP_DIGIT, 'L');
+				set_dig(SEGS_EXP_BASE + 2*SEGS_PER_EXP_DIGIT, 'L');
+			} else {
+				set_dig(j, 'A'+i);
+				j += SEGS_PER_EXP_DIGIT;
+			}
+		}
 	}
 }
 
