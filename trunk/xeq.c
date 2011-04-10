@@ -2481,19 +2481,26 @@ void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc) {
 /* Utility routine that checks if the X register is even or odd or neither.
  * Returns positive if even, zero if odd, -1 for special, -2 for fractional.
  */
-static int evenX() {
-	decNumber x, y;
+int is_even(const decNumber *x) {
+	decNumber y, z;
 
-	getX(&x);
-	if (decNumberIsSpecial(&x))
+	if (decNumberIsSpecial(x))
 		return -1;
-	decNumberRemainder(&y, &x, &const_2, Ctx);
+	decNumberAbs(&z, x, Ctx);
+	decNumberRemainder(&y, &z, &const_2, Ctx);
 	if (decNumberIsZero(&y))
 		return 1;
-	decNumberCompare(&x, &y, &const_1, Ctx);
-	if (decNumberIsZero(&x))
+	decNumberCompare(&z, &y, &const_1, Ctx);
+	if (decNumberIsZero(&z))
 		return 0;
 	return -2;
+}
+
+static int evenX() {
+	decNumber x;
+
+	getX(&x);
+	return is_even(&x);
 }
 
 /* Test if a number is an even integer */

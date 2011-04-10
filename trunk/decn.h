@@ -52,6 +52,7 @@ extern decNumber *decNumberSign(decNumber *r, const decNumber *x, decContext *ct
 extern decNumber *decNumberGCD(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx);
 extern decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx);
 
+extern decNumber *decNumberPow_1(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberPow2(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberPow10(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberLn1p(decNumber *r, const decNumber *x, decContext *ctx);
@@ -194,5 +195,8 @@ extern decNumber *decNumberPolyLn(decNumber *res, const decNumber *y, const decN
 extern decNumber *decNumberPolyLnAlpha(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberPolyHEn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberPolyHn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
+
+extern decNumber *decNumberBernBn(decNumber *res, const decNumber *n, decContext *);
+extern decNumber *decNumberBernBnS(decNumber *res, const decNumber *n, decContext *);
 
 #endif

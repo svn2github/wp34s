@@ -33,12 +33,15 @@
 #define CONV(n, d, name)	(OP_RARG | ((RARG_CONV) << RARG_OPSHFT)) + (n)*2 + (d),
 
 static s_opcode catalogue[] = {
+	MON(OP__1POW,		"-1^x")
 	DYA(OP_PERMG,		"%+MG")
 	DYA(OP_MARGIN,		"%MG")
 	TRI(OP_PERMRR,		"%MRR")
 	MON(OP_PERTOT,		"%T")
 	MON(OP_sigper,		"%\221")
 	DYA(OP_ATAN2,		"ANGLE")
+	MON(OP_Bn,		"B[sub-n]")
+	MON(OP_BnS,		"B*[sub-n]")
 	MON(OP_CEIL,		"CEIL")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLREG,		"CLREG")
@@ -272,6 +275,7 @@ static s_opcode prob_catalogue[] = {
 };
 
 static s_opcode int_catalogue[] = {
+	MON(OP__1POW,		"-1^x")
 	RARGCMD(RARG_ASR,	"ASR")
 	RARGCMD(RARG_CB,	"CB")
 	NILIC(OP_CLALL,		"CLALL")

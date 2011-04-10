@@ -267,7 +267,7 @@ enum {
 	OP_FRAC = 0, OP_FLOOR, OP_CEIL, OP_ROUND, OP_TRUNC,
 	OP_ABS, OP_RND, OP_SIGN,
 
-	OP_LN, OP_EXP, OP_SQRT, OP_RECIP,
+	OP_LN, OP_EXP, OP_SQRT, OP_RECIP, OP__1POW,
 	OP_LOG, OP_LG2, OP_2POWX, OP_10POWX,
 	OP_LN1P, OP_EXPM1,
 	OP_LAMW, OP_INVW,
@@ -327,6 +327,9 @@ enum {
 	OP_DB_AR, OP_AR_DB, OP_DB_PR, OP_PR_DB,
 #ifdef INCLUDE_ZETA
 	OP_ZETA,
+#endif
+#ifdef INCLUDE_BERNOULLI
+	OP_Bn, OP_BnS,
 #endif
 #ifdef INCLUDE_EASTER
 	OP_EASTER,
@@ -886,6 +889,7 @@ extern int slen(const char *);
 extern char *num_arg(char *, unsigned int);		// number, no leading zeros
 extern char *num_arg_0(char *, unsigned int, int);	// n digit number, leading zeros
 
+extern int is_even(const decNumber *x);
 extern int s_to_i(const char *);
 unsigned long long int s_to_ull(const char *, unsigned int);
 

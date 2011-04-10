@@ -29,7 +29,14 @@
 //#define INCLUDE_AGM
 
 // Include Reiman's Zeta function for real and complex arguments
-//#define INCLUDE_ZETA
+#define INCLUDE_ZETA
+
+// Include Bernoulli numbers as functions
+#define INCLUDE_BERNOULLI
+
+#if defined(INCLUDE_BERNOULLI) && ! defined(INCLUDE_ZETA)
+#define INCLUDE_ZETA
+#endif
 
 // Incude the digamma function for real and complex arguments
 //#define INCLUDE_DIGAMMA

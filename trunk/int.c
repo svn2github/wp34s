@@ -1275,6 +1275,20 @@ long long int int10pow(long long int x) {
 }
 
 
+/* -1^x
+ */
+long long int int_1pow(long long int x) {
+#ifndef TINY_BUILD
+	int sx;
+	unsigned long long int xv = extract_value(x, &sx);
+	set_overflow((int_mode() == MODE_UNSIGNED) ? 1 : 0);
+	return build_value((unsigned long long int)1, (xv & 1)?1:0);
+#else
+	return 0;
+#endif
+}
+
+
 /* Mirror - reverse the bits in the word
  */
 long long int intMirror(long long int x) {

@@ -74,6 +74,7 @@ extern long long int int2pow(long long int x);
 extern long long int intLog10(long long int x);
 extern long long int int10pow(long long int x);
 extern long long int intFib(long long int x);
+extern long long int int_1pow(long long int x);
 
 extern int isPrime(unsigned long long int x);
 

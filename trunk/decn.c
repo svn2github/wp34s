@@ -430,6 +430,16 @@ decNumber *decNumberPow10(decNumber *r, const decNumber *x, decContext *ctx) {
 	return decNumberPower(r, &const_10, x, ctx);
 }
 
+decNumber *decNumberPow_1(decNumber *r, const decNumber *x, decContext *ctx) {
+	int even = is_even(x);
+	if (even == 1)
+		return decNumberCopy(r, &const_1);
+	if (even == 0)
+		return decNumberCopy(r, &const__1);
+	set_NaN(r);
+	return r;
+}
+
 decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber s, t, u, v, w;
 	int i;
@@ -2993,3 +3003,41 @@ decNumber *decNumberPolyHn(decNumber *r, const decNumber *y, const decNumber *x,
 	return ortho_poly(r, NULL, y, x, ctx, ORTHOPOLY_HERMITE_H);
 }
 
+
+#ifdef INCLUDE_BERNOULLI
+decNumber *decNumberBernBn(decNumber *r, const decNumber *n, decContext *ctx) {
+	decNumber a, b;
+
+	if (decNumberIsZero(n))
+		return decNumberCopy(r, &const_1);
+	if (! is_int(n, ctx) || decNumberIsNegative(n)) {
+		set_NaN(r);
+		return r;
+	}
+	decNumberSubtract(&a, &const_1, n, ctx);
+	if (decNumberIsZero(&a))
+		return decNumberCopy(r, &const__0_5);
+	if (is_even(n)) {
+		decNumberZeta(&b, &a, ctx);
+		decNumberMultiply(&a, &b, n, ctx);
+		return decNumberMinus(r, &a, ctx);
+	}
+	decNumberZero(r);
+	return r;
+	
+}
+
+decNumber *decNumberBernBnS(decNumber *r, const decNumber *n, decContext *ctx) {
+	decNumber a;
+
+	if (decNumberIsZero(n)) {
+		set_NaN(r);
+		return r;
+	}
+	decNumberMultiply(&a, n, &const_2, ctx);
+	decNumberBernBn(r, &a, ctx);
+	if (is_even(n))
+		decNumberMinus(r, r, ctx);
+	return r;
+}
+#endif
