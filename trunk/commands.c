@@ -50,7 +50,7 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_EXP,	&decNumberExp,		&cmplxExp,	NULL,		"e\234")
 	FUNC(OP_SQRT,	&decNumberSquareRoot,	&cmplxSqrt,	&intSqrt,	"\003")
 	FUNC(OP_RECIP,	&decNumberRecip,	&cmplxRecip,	NULL,		"1/x")
-	FUNC(OP__1POW,	&decNumberPow_1,	NULL,		&int_1pow,	"-1\234")
+	FUNC(OP__1POW,	&decNumberPow_1,	NULL,		&int_1pow,	"(-1)\234")
 	FUNC(OP_LOG,	&decNumberLog10,	&cmplxLog,	&intLog10,	"LOG\271\270")
 	FUNC(OP_LG2,	&decNumberLog2,		&cmplxLog2,	&intLog2,	"LOG\272")
 	FUNC(OP_2POWX,	&decNumberPow2,		&cmplx2x,	&int2pow,	"2\234")
