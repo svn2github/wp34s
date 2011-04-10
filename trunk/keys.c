@@ -185,7 +185,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int s)
 }
 
 static int check_f_key(int n, const int dflt) {
-	int code = 99 + n;
+	const int code = 100 + n;
 
 	if (find_label_from(1, code, 1))
 		return RARG(RARG_XEQ, code);
@@ -204,7 +204,7 @@ static int process_normal(const keycode c) {
 	case K00:
 		if (intltr(10))
 			return OP_SPEC | OP_A;
-		return OP_SPEC | OP_SIGMAPLUS;
+		return check_f_key(0, OP_SPEC | OP_SIGMAPLUS);
 	case K01:
 		if (intltr(11))
 			return OP_SPEC | OP_B;
@@ -442,7 +442,7 @@ static int process_g_shifted(const keycode c) {
 static int process_h_shifted(const keycode c) {
 	set_shift(SHIFT_N);
 	switch (c) {
-	case K00:	return OP_SPEC | OP_SIGMAMINUS;
+	case K00:	return OP_NIL | OP_ALL;
 	case K01:	init_arg(RARG_FIX);	break;
 	case K02:	init_arg(RARG_SCI);	break;
 	case K03:	init_arg(RARG_ENG);	break;
@@ -490,7 +490,7 @@ static int process_h_shifted(const keycode c) {
 	case K51:	init_cat(CATALOGUE_TEST);	break;
 	case K52:	init_cat(CATALOGUE_PROG);	break;
 	case K53:	return CONST(OP_PI);
-	case K54:	return OP_DYA | OP_PERSB;
+	case K54:	return OP_SPEC | OP_SIGMAMINUS;
 
 	case K60:	set_smode(SDISP_SHOW);		break;
 	case K61:	init_arg(RARG_PAUSE);		break;
@@ -503,7 +503,7 @@ static int process_h_shifted(const keycode c) {
 		State.runmode = 1 - State.runmode;
 		process_cmdline_set_lift();
 		break;
-	case K64:	return OP_DYA | OP_PERAD;
+	case K64:	return OP_SPEC | OP_SIGMAPLUS;
 	}
 	return STATE_UNFINISHED;
 }
@@ -1084,7 +1084,6 @@ static int process_arg_dot(const unsigned int base) {
 	if (State.dot || argcmds[base].stckreg || State.ind)
 		return arg_eval(regX_idx);
 	switch (base) {
-	case RARG_FIX:	r = OP_NIL | OP_ALL;	break;
 	case RARG_SCI:	r = OP_NIL | OP_FIXSCI;	break;
 	case RARG_ENG:	r = OP_NIL | OP_FIXENG;	break;
 
@@ -1199,28 +1198,28 @@ static int process_arg(const keycode c) {
 	case K00:
 		if (State.dot || argcmds[base].stckreg || State.ind)
 			return arg_eval(regA_idx);
-		break;
+		return arg_fkey(0);
 	case K02:
 		if (State.dot || argcmds[base].stckreg || State.ind)
 			return arg_eval(regC_idx);
-		return arg_fkey(1);	// F2
+		return arg_fkey(2);	// F2
 #ifdef SEQUENTIAL_ROWS
 	case K01:	case K03:
 		if (State.dot || argcmds[base].stckreg || State.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regB_idx + c - K01);
-		return arg_fkey(c - K01);
+		return arg_fkey(c - K00);
 #else
 	case K01:
 		if (State.dot || argcmds[base].stckreg || State.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regB_idx);
-		return arg_fkey(0);	// F1
+		return arg_fkey(1);	// F1
 	case K03:
 		if (State.dot || argcmds[base].stckreg || State.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regD_idx);
-		return arg_fkey(2);	// F3
+		return arg_fkey(3);	// F3
 #endif
 
 	case K20:				// Enter is a short cut finisher

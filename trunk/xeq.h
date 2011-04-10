@@ -62,9 +62,10 @@ enum multiops;
 
 /* Define some system flag to user flag mappings
  */
-#define CARRY_FLAG	101	/* C = carry */
-#define OVERFLOW_FLAG	100	/* B = excess/exceed */
-#define NAN_FLAG	102	/* D = danger */
+#define A_FLAG		100	/* A = ??? */
+#define CARRY_FLAG	102	/* C = carry */
+#define OVERFLOW_FLAG	101	/* B = excess/exceed */
+#define NAN_FLAG	103	/* D = danger */
 
 #define NAME_LEN	6	/* Length of command names */
 
@@ -167,8 +168,8 @@ extern int current_catalogue_max(void);
 #define EXTRA_REG	4
 #define RET_STACK_SIZE	8	/* Depth of return stack */
 #define NUMPROG		476	/* Number of program steps */
-#define NUMLBL		103	/* Number of program labels */
-#define NUMFLG		103	/* Number of flags */
+#define NUMLBL		104	/* Number of program labels */
+#define NUMFLG		104	/* Number of flags */
 
 #define NUMALPHA	31	/* Number of characters in Alpha */
 

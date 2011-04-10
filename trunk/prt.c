@@ -188,7 +188,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			if (arg >= regX_idx && arg <= regK_idx && argcmds[cmd].stckreg) {
 				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = REGNAMES[arg-regX_idx];
 			} else if (arg >= 100) {
-				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = 'B'+arg-100;
+				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = 'A'+arg-100;
 			} else {
 				num_arg_0(sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN), arg, 2);
 			}

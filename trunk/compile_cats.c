@@ -37,6 +37,8 @@ static s_opcode catalogue[] = {
 	DYA(OP_PERMG,		"%+MG")
 	DYA(OP_MARGIN,		"%MG")
 	TRI(OP_PERMRR,		"%MRR")
+	DYA(OP_PERAD,		"%+")
+	DYA(OP_PERSB,		"%-")
 	MON(OP_PERTOT,		"%T")
 	MON(OP_sigper,		"%\221")
 	DYA(OP_ATAN2,		"ANGLE")
