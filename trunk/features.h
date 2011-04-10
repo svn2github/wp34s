@@ -19,7 +19,7 @@
  */
 
 // Build a tiny version of the device
-//#define TINY_BUILD
+// #define TINY_BUILD
 
 // Include a catalogue of the internal commands
 #define INCLUDE_INTERNAL_CATALOGUE
@@ -29,10 +29,10 @@
 //#define INCLUDE_AGM
 
 // Include Rieman's Zeta function for real and complex arguments
-// #define INCLUDE_ZETA
+#define INCLUDE_ZETA
 
 // Include Bernoulli numbers as functions
-// #define INCLUDE_BERNOULLI
+#define INCLUDE_BERNOULLI
 
 #if defined(INCLUDE_BERNOULLI) && ! defined(INCLUDE_ZETA)
 #define INCLUDE_ZETA

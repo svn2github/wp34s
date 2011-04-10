@@ -441,6 +441,7 @@ decNumber *decNumberPow_1(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s, t, u, v, w;
 	int i;
 
@@ -513,6 +514,9 @@ decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx) {
 		decNumberSubtract(r, r, &t, ctx);	// wj+1
 	}
 	return r;
+#else
+	return NULL;
+#endif
 }
 
 decNumber *decNumberInvW(decNumber *r, const decNumber *x, decContext *ctx) {
@@ -1457,14 +1461,17 @@ decNumber *decNumberBeta(decNumber *res, const decNumber *x, const decNumber *y,
 }
 
 #ifdef INCLUDE_DIGAMMA
+#ifndef TINY_BUILD
 const decNumber *const digamma_consts[10] = {
 	&const_digammaC02,	&const_digammaC04,	&const_digammaC06,
 	&const_digammaC08,	&const_digammaC10,	&const_digammaC12,
 	&const_digammaC02,	&const_digammaC16,	&const_digammaC18,
 	&const_digammaC20
 };
+#endif
 
 decNumber *decNumberPsi(decNumber *res, const decNumber *xin, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber x_2, t, r, x;
 	int i;
 
@@ -1520,6 +1527,9 @@ decNumber *decNumberPsi(decNumber *res, const decNumber *xin, decContext *ctx) {
 		decNumberMultiply(&r, &r, &x_2, ctx);
 	}
 	return res;
+#else
+	return NULL;
+#endif
 }
 #endif
 
@@ -1545,6 +1555,7 @@ decNumber *decNumberPsi(decNumber *res, const decNumber *xin, decContext *ctx) {
 
     \zeta(6) =  \frac{\pi^6}{945} \approx 1.0173;\! 
 */
+#ifndef TINY_BUILD
 const decNumber *const zeta_consts[30] = {
 	&const_zetaC00, &const_zetaC01, &const_zetaC02, &const_zetaC03,
 	&const_zetaC04, &const_zetaC05, &const_zetaC06, &const_zetaC07,
@@ -1565,8 +1576,10 @@ static void zeta_step(decNumber *sum, const decNumber *x,
 	decNumberDivide(&t, dc, &s, ctx);
 	decNumberAdd(sum, sum, &t, ctx);
 }
+#endif
 
 decNumber *decNumberZeta(decNumber *res, const decNumber *xin, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber s, x, u, reflecfac, sum, t;
 	int reflec, i;
 
@@ -1627,6 +1640,9 @@ decNumber *decNumberZeta(decNumber *res, const decNumber *xin, decContext *ctx) 
 	if (reflec)
 		decNumberMultiply(res, &reflecfac, res, ctx);
 	return res;
+#else
+	return NULL;
+#endif
 }
 #endif /* INCLUDE_ZETA */
 
@@ -2090,6 +2106,7 @@ decNumber *decNumberERF(decNumber *res, const decNumber *x, decContext *ctx) {
 #define ELLIPTIC_N	16
 
 void dn_elliptic(decNumber *sn, decNumber *cn, decNumber *dn, const decNumber *u, const decNumber *m, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber a, b, e, f, g;
 	decNumber s_n, c_n, d_n;
 	decNumber MU[ELLIPTIC_N], NU[ELLIPTIC_N], C[ELLIPTIC_N], D[ELLIPTIC_N];
@@ -2195,6 +2212,7 @@ void dn_elliptic(decNumber *sn, decNumber *cn, decNumber *dn, const decNumber *u
 #undef nu
 #undef c
 #undef d
+#endif
 }
 
 decNumber *decNumberSN(decNumber *res, const decNumber *k, const decNumber *u, decContext *ctx) {
@@ -2215,6 +2233,7 @@ decNumber *decNumberDN(decNumber *res, const decNumber *k, const decNumber *u, d
 
 
 #ifdef INCLUDE_BESSEL
+#ifndef TINY_BUILD
 static decNumber *dn_bessel(decNumber *res, const decNumber *alpha, const decNumber *x, decContext *ctx, const int neg) {
 	decNumber q, r, m;
 	decNumber x2on4, term, gfac;
@@ -2248,8 +2267,10 @@ static decNumber *dn_bessel(decNumber *res, const decNumber *alpha, const decNum
 	set_NaN(res);
 	return res;
 }
+#endif
 
 decNumber *decNumberBSJN(decNumber *res, const decNumber *alpha, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber a;
 
 	if (decNumberIsNaN(alpha) || decNumberIsSpecial(x))
@@ -2267,9 +2288,13 @@ decNumber *decNumberBSJN(decNumber *res, const decNumber *alpha, const decNumber
 		dn_bessel(res, alpha, x, ctx, 1);
 	}
 	return res;
+#else
+	return NULL;
+#endif
 }
 
 decNumber *decNumberBSIN(decNumber *res, const decNumber *alpha, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber a;
 
 	if (decNumberIsNaN(alpha) || decNumberIsNaN(x))
@@ -2289,8 +2314,12 @@ decNumber *decNumberBSIN(decNumber *res, const decNumber *alpha, const decNumber
 		dn_bessel(res, alpha, x, ctx, 0);
 	}
 	return res;
+#else
+	return NULL;
+#endif
 }
 
+#ifndef TINY_BUILD
 // See A&S page 360 section 9.1.11
 static void bessel2_int_series(decNumber *res, const decNumber *n, const decNumber *x, decContext *ctx, int modified) {
 	const decNumber *const factor = modified?&const_0_5:&const__1onPI;
@@ -2384,9 +2413,11 @@ static void bessel2_int_series(decNumber *res, const decNumber *n, const decNumb
 	if (!modified && n_neg)
 		decNumberMinus(res, res, ctx);
 }
+#endif
 
 
 decNumber *decNumberBSYN(decNumber *res, const decNumber *alpha, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t, u, s, c;
 
 	if (decNumberIsNaN(alpha) || decNumberIsSpecial(x))
@@ -2407,9 +2438,13 @@ decNumber *decNumberBSYN(decNumber *res, const decNumber *alpha, const decNumber
 	} else
 		bessel2_int_series(res, alpha, x, ctx, 0);
 	return res;
+#else
+	return NULL;
+#endif
 }
 
 decNumber *decNumberBSKN(decNumber *res, const decNumber *alpha, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber t, u, v;
 
 	if (decNumberIsNaN(alpha) || decNumberIsNaN(x))
@@ -2433,6 +2468,9 @@ decNumber *decNumberBSKN(decNumber *res, const decNumber *alpha, const decNumber
 	} else
 		bessel2_int_series(res, alpha, x, ctx, 1);
 	return res;
+#else
+	return NULL;
+#endif
 }
 #endif
 
@@ -2875,6 +2913,7 @@ enum eOrthoPolys {
 };
 
 static decNumber *ortho_poly(decNumber *r, const decNumber *param, const decNumber *rn, const decNumber *x, decContext *ctx, const enum eOrthoPolys type) {
+#ifndef TINY_BUILD
 	decNumber t0, t1, t, u, v, A, B, C, dA;
 	unsigned int i, n;
 	int incA, incB, incC;
@@ -2973,6 +3012,9 @@ error:		set_NaN(r);
 			decNumberAdd(&B, &B, small_int(incB), ctx);
 	}
 	return decNumberCopy(r, &t1);
+#else
+	return NULL;
+#endif
 }
 
 decNumber *decNumberPolyPn(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
@@ -3006,6 +3048,7 @@ decNumber *decNumberPolyHn(decNumber *r, const decNumber *y, const decNumber *x,
 
 #ifdef INCLUDE_BERNOULLI
 decNumber *decNumberBernBn(decNumber *r, const decNumber *n, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber a, b;
 
 	if (decNumberIsZero(n))
@@ -3024,10 +3067,13 @@ decNumber *decNumberBernBn(decNumber *r, const decNumber *n, decContext *ctx) {
 	}
 	decNumberZero(r);
 	return r;
-	
+#else
+	return NULL;
+#endif
 }
 
 decNumber *decNumberBernBnS(decNumber *r, const decNumber *n, decContext *ctx) {
+#ifndef TINY_BUILD
 	decNumber a;
 
 	if (decNumberIsZero(n)) {
@@ -3039,5 +3085,8 @@ decNumber *decNumberBernBnS(decNumber *r, const decNumber *n, decContext *ctx) {
 	if (is_even(n))
 		decNumberMinus(r, r, ctx);
 	return r;
+#else
+	return NULL;
+#endif
 }
 #endif
