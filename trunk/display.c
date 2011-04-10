@@ -478,7 +478,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			*res++ = buf[i];
 	} else {
 		const int window = State.int_window;
-		State.int_maxw = i / 12;
+		State.int_maxw = (i-1) / 12;
 		buf[i] = '\0';
 
 		j = window * 12;	// 12 digits at a time
