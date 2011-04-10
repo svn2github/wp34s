@@ -4201,6 +4201,7 @@ decNumber * decLnOp(decNumber *res, const decNumber *rhs,
     // Here, rhs is positive, finite, and in range
 
     // lookaside fastpath code for ln(2) and ln(10) at common lengths
+#if 0
     if (rhs->exponent==0 && set->digits<=40) {
       #if DECDPUN==1
       if (rhs->lsu[0]==0 && rhs->lsu[1]==1 && rhs->digits==2) { // ln(10)
@@ -4219,6 +4220,7 @@ decNumber * decLnOp(decNumber *res, const decNumber *rhs,
         *status|=(DEC_Inexact | DEC_Rounded);
         break;}
       } // integer and short
+#endif
 
     // Determine the working precision.  This is normally the
     // requested precision + 2, with a minimum of 9.  However, if
