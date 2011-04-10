@@ -1707,19 +1707,20 @@ typedef struct _AT91S_SLCDC {
 #define 	AT91C_SLCDC_DISPMODE_BLINK                (0x3) // (SLCDC) Turn all pixel alternatively off to the state defined in SCLD memory at LCDBLKFREQ frequency
 #define 	AT91C_SLCDC_DISPMODE_INVERTED             (0x4) // (SLCDC) All pixel are set in the inverted state as defined in SCLD memory
 #define 	AT91C_SLCDC_DISPMODE_INVERTED_BLINK       (0x5) // (SLCDC) Turn all pixel alternatively off to the opposite state defined in SCLD memory at LCDBLKFREQ frequency
+#define		AT91C_SLCDC_DISPMODE_LOAD_ONLY 		  (0x6) // (SLCDC) Load the display buffer without displaying it.
 #define AT91C_SLCDC_BLKFREQ   (0xFF <<  8) // (SLCDC) Blinking frequency
 // -------- SLCDC_SR : (SLCDC Offset: 0x10) SLCDC Status  Register --------
 #define AT91C_SLCDC_ENA       (0x1 <<  0) // (SLCDC) Enable status
 // -------- SLCDC_IER : (SLCDC Offset: 0x20) SLCDC Interrupt Enable Register --------
 #define AT91C_SLCDC_ENDFRAME  (0x1 <<  0) // (SLCDC) End of Frame
-#define AT91C_SLCDC_BKPER     (0x1 <<  1) // (SLCDC) Blank Periode
+#define AT91C_SLCDC_BKPER     (0x1 <<  1) // (SLCDC) Blank Period
 #define AT91C_SLCDC_DIS       (0x1 <<  2) // (SLCDC) Disable
 // -------- SLCDC_IDR : (SLCDC Offset: 0x24) SLCDC Interrupt Disable Register --------
 // -------- SLCDC_IMR : (SLCDC Offset: 0x28) SLCDC Interrupt Mask Register --------
 // -------- SLCDC_ISR : (SLCDC Offset: 0x2c) SLCDC Interrupt Status Register --------
 
 // *****************************************************************************
-//              SOFTWARE API DEFINITION  FOR Analog to Digital Convertor
+//              SOFTWARE API DEFINITION  FOR Analog to Digital Converter
 // *****************************************************************************
 #ifndef __ASSEMBLY__
 typedef struct _AT91S_ADC {

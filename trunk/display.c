@@ -1047,6 +1047,7 @@ void display(void) {
 	const enum catalogues cata = State.catalogue;
 	int skip = 0;
 
+	load_display();  // Changes are not (yet) reflected on the real LCD
 	reset_disp();
 
 	/* Turn INPUT on for alpha mode.  Turn down arrow on if we're

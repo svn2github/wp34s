@@ -22,6 +22,7 @@ extern void set_dot(int n);
 extern void clr_dot(int n);
 extern void set_status_grob(unsigned long long int grob[6]);
 extern void show_disp(void);
+extern void load_display(void);
 extern void finish_display(void);
 extern void show_flags(void);
 extern void reset_disp(void);

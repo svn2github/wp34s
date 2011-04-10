@@ -176,7 +176,7 @@ ifdef REALBUILD
 
 $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	-IdecNumber -Iatmel -o $(OUTPUTDIR)/calc $(LDFLAGS) \
+	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program 
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
 	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)

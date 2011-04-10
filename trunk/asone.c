@@ -21,8 +21,8 @@
 #ifdef __GNUC__
 __attribute__((externally_visible)) void LowLevelInit(void);
 #endif
-#define TINY_BUILD
-#pragma GCC optimize 0
+//#define TINY_BUILD
+#pragma GCC optimize 1
 #include "main.c"
 #pragma GCC optimize "s"
 #include "atmel/board_lowlevel.c"
@@ -46,16 +46,12 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "decn.c"
 #include "display.c"
 #include "int.c"
-#pragma GCC optimize 0
 #include "keys.c"
-#pragma GCC optimize "s"
 #include "lcd.c"
 #include "prt.c"
 #include "stats.c"
 #include "string.c"
-//#pragma GCC optimize 0
 #include "xeq.c"
-#pragma GCC optimize "s"
 #include "xrom.c"
 #include "decNumber/decNumber.c"
 #include "decNumber/decContext.c"

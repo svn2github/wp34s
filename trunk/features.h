@@ -28,11 +28,11 @@
 // Include the aritmetic/geometric mean iteration real and complex versions
 //#define INCLUDE_AGM
 
-// Include Reiman's Zeta function for real and complex arguments
-#define INCLUDE_ZETA
+// Include Rieman's Zeta function for real and complex arguments
+// #define INCLUDE_ZETA
 
 // Include Bernoulli numbers as functions
-#define INCLUDE_BERNOULLI
+// #define INCLUDE_BERNOULLI
 
 #if defined(INCLUDE_BERNOULLI) && ! defined(INCLUDE_ZETA)
 #define INCLUDE_ZETA

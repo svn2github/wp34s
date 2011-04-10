@@ -21,6 +21,7 @@
 
 #if defined(REALBUILD)
 #include "atmel/board.h"
+#include "atmel/slcdc.h"
 #endif
 
 #ifdef USECURSES
@@ -167,7 +168,7 @@ void reset_disp(void) {
         int i;
 
         clr_dot(STO_annun);
-        clr_dot(RCL_annun);
+        //clr_dot(RCL_annun);
         for (i=0; i<=EXP_SIGN; i++)
                 clr_dot(i);
 
@@ -448,8 +449,16 @@ void show_flags(void) {
 #endif
 }
 
+void load_display(void) {
+#ifdef REALBUILD
+	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_LOAD_ONLY );
+#endif
+}
+
 void finish_display(void) {
-#ifndef REALBUILD
+#ifdef REALBUILD
+	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
+#else
 #ifdef USECURSES
         show_disp();
         MOVE(0, 0);
