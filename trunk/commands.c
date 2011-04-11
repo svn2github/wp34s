@@ -31,12 +31,12 @@
  */
 const struct monfunc monfuncs[] = {
 #ifdef COMPILE_CATALOGUES
-#define PTR	((void *)1)
+#define PTR	FUNCPTR((void *)1)
 #define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
 #elif DEBUG
-#define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
+#define FUNC(name, d, c, i, fn) { name, FUNCPTR(d), FUNCPTR(c), FUNCPTR(i), fn },
 #else
-#define FUNC(name, d, c, i, fn) { d, c, i, fn },
+#define FUNC(name, d, c, i, fn) { FUNCPTR(d), FUNCPTR(c), FUNCPTR(i), fn },
 #endif
 	FUNC(OP_FRAC,	&decNumberFrac,		&cmplxFrac,	&intFP,		"FP")
 	FUNC(OP_FLOOR,	&decNumberFloor,	NULL,		&intIP,		"FLOOR")
@@ -188,9 +188,9 @@ const struct dyfunc dyfuncs[] = {
 #ifdef COMPILE_CATALOGUES
 #define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
 #elif DEBUG
-#define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
+#define FUNC(name, d, c, i, fn) { name, FUNCPTR(d), FUNCPTR(c), FUNCPTR(i), fn },
 #else
-#define FUNC(name, d, c, i, fn) { d, c, i, fn },
+#define FUNC(name, d, c, i, fn) { FUNCPTR(d), FUNCPTR(c), FUNCPTR(i), fn },
 #endif
 
 	FUNC(OP_POW,	&decNumberPower,	&cmplxPower,	&intPower,	"y\234")
@@ -226,8 +226,6 @@ const struct dyfunc dyfuncs[] = {
 #endif
 	FUNC(OP_COMB,	&decNumberComb,		&cmplxComb,	NULL,		"COMB")
 	FUNC(OP_PERM,	&decNumberPerm,		&cmplxPerm,	NULL,		"PERM")
-	FUNC(OP_PERAD,	&decNumberPerAdd,	NULL,		NULL,		"%+")
-	FUNC(OP_PERSB,	&decNumberPerSub,	NULL,		NULL,		"%-")
 	FUNC(OP_PERMG,	&decNumberPerMargin,	NULL,		NULL,		"%+MG")
 	FUNC(OP_MARGIN,	&decNumberMargin,	NULL,		NULL,		"%MG")
 	FUNC(OP_PARAL,	&decNumberParallel,	&cmplxParallel,	NULL,		"||")
@@ -266,9 +264,9 @@ const struct trifunc trifuncs[] = {
 #ifdef COMPILE_CATALOGUES
 #define FUNC(name, d, i, fn) { PTR, PTR, fn },
 #elif DEBUG
-#define FUNC(name, d, i, fn) { name, d, i, fn },
+#define FUNC(name, d, i, fn) { name, FUNCPTR(d), FUNCPTR(i), fn },
 #else
-#define FUNC(name, d, i, fn) { d, i, fn },
+#define FUNC(name, d, i, fn) { FUNCPTR(d), FUNCPTR(i), fn },
 #endif
 	FUNC(OP_BETAI,		&betai,		NULL,		"I\241")
 	FUNC(OP_DBL_DIV, 	NULL,		&intDblDiv,	"DBL/")
@@ -289,13 +287,13 @@ const struct niladic niladics[] = {
 #define FUNC1(name, d, fn) { PTR, 1, fn },
 #define FUNC2(name, d, fn) { PTR, 2, fn },
 #elif DEBUG
-#define FUNC0(name, d, fn) { name, d, 0, fn },
-#define FUNC1(name, d, fn) { name, d, 1, fn },
-#define FUNC2(name, d, fn) { name, d, 2, fn },
+#define FUNC0(name, d, fn) { name, FUNCPTR(d), 0, fn },
+#define FUNC1(name, d, fn) { name, FUNCPTR(d), 1, fn },
+#define FUNC2(name, d, fn) { name, FUNCPTR(d), 2, fn },
 #else
-#define FUNC0(name, d, fn) { d, 0, fn },
-#define FUNC1(name, d, fn) { d, 1, fn },
-#define FUNC2(name, d, fn) { d, 2, fn },
+#define FUNC0(name, d, fn) { FUNCPTR(d), 0, fn },
+#define FUNC1(name, d, fn) { FUNCPTR(d), 1, fn },
+#define FUNC2(name, d, fn) { FUNCPTR(d), 2, fn },
 #endif
 	FUNC0(OP_NOP,		NULL,			"NOP")
 	FUNC0(OP_VERSION,	&version,		"VERS")
@@ -447,10 +445,10 @@ const struct argcmd argcmds[] = {
 	{ PTR, limit, ind, stk, cpx, nm },
 #elif DEBUG
 #define allCMD(name, func, limit, nm, ind, stk, cpx)					\
-	{ name, func, limit, ind, stk, cpx, nm },
+	{ name, FUNCPTR(func), limit, ind, stk, cpx, nm },
 #else
 #define allCMD(name, func, limit, nm, ind, stk, cpx)					\
-	{ func, limit, ind, stk, cpx, nm },
+	{ FUNCPTR(func), limit, ind, stk, cpx, nm },
 #endif
 #define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0)
 #define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0)
@@ -583,10 +581,10 @@ const struct multicmd multicmds[] = {
 	{ PTR, nm },
 #elif DEBUG
 #define CMD(name, func, nm)			\
-	{ name, func, nm },
+	{ name, FUNCPTR(func), nm },
 #else
 #define CMD(name, func, nm)			\
-	{ func, nm },
+	{ FUNCPTR(func), nm },
 #endif
 	CMD(DBL_LBL,	NULL,		"LBL")
 	CMD(DBL_LBLP,	&cmdmultilblp,	"LBL?")

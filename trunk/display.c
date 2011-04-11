@@ -1157,8 +1157,11 @@ void display(void) {
 			getX(&x);
 			if (opKIND(op) == KIND_MON) {
 				const unsigned int f = argKIND(op);
-				if (f < num_monfuncs && monfuncs[f].mondreal != NULL) {
-					(*monfuncs[f].mondreal)(&r, &x, Ctx);
+				if (f < num_monfuncs && ! FUNCNULL(monfuncs[f].mondreal)) {
+//					(*(void (*)(decNumber *, const decNumber *, decContext *))FUNCADDR(monfuncs[f].mondreal))(&r, &x, Ctx);
+					CALL(monfuncs[f].mondreal, void, (decNumber *, const decNumber *, decContext *))
+							(&r, &x, Ctx);
+//					(*monfuncs[f].mondreal)(&r, &x, Ctx);
 				} else
 					set_NaN(&r);
 			} else

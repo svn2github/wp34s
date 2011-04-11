@@ -1677,26 +1677,6 @@ decNumber *decNumberPertot(decNumber *res, const decNumber *x, decContext *ctx) 
 	return res;
 }
 
-// %+ = x + x * y / 100
-decNumber *decNumberPerAdd(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
-	decNumber a, b;
-
-	decNumberMultiply(&a, y, &const_0_01, ctx);
-	decNumberMultiply(&b, &a, x, ctx);
-	decNumberAdd(res, x, &b, ctx);
-	return res;
-}
-
-// %- = x - x * y / 100
-decNumber *decNumberPerSub(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
-	decNumber a, b;
-
-	decNumberMultiply(&a, y, &const_0_01, ctx);
-	decNumberMultiply(&b, &a, x, ctx);
-	decNumberSubtract(res, x, &b, ctx);
-	return res;
-}
-
 // Markup Margin = y / ( 1 - x / 100 )
 decNumber *decNumberPerMargin(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx) {
 	decNumber a, b;

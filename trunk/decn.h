@@ -145,8 +145,6 @@ extern decNumber *decNumberPerm(decNumber *res, const decNumber *x, const decNum
 extern decNumber *decNumberPercent(decNumber *res, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberPerchg(decNumber *res, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberPertot(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPerAdd(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberPerSub(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
 extern decNumber *decNumberPerMargin(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
 extern decNumber *decNumberMargin(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
 extern decNumber *decNemberPerMRR(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx);

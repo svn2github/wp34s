@@ -72,14 +72,29 @@ enum multiops;
 typedef unsigned int opcode;
 typedef unsigned short int s_opcode;
 
+#ifdef REALBUILD
+typedef unsigned short functionptr;
+#define FUNCPTR(x)	((((void *)x) - 0x00100000) / 2)
+#define FUNCADDR(x)	((x) * 2 + 0x00100000)
+#define FUNCNULL(x)	((x) == 0)
+#define CALL(x, r, a)	(*(r (*)a) FUNCADDR(x))
+#else
+typedef void *functionptr;
+#define FUNCPTR(x)	(x)
+#define FUNCADDR(x)	(x)
+#define FUNCNULL(x)	((x) == NULL)
+#define CALL(x, r, a)	(*(r (*)a) FUNCADDR(x))
+#endif
+
+
 /* Table of monadic functions */
 struct monfunc {
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	decNumber *(*mondreal)(decNumber *, const decNumber *, decContext *);
-	void (*mondcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber *, decContext *);
-	long long int (*monint)(long long int);
+	functionptr mondreal;
+	functionptr mondcmplx;
+	functionptr monint;
 	const char fname[NAME_LEN];
 };
 extern const struct monfunc monfuncs[];
@@ -90,10 +105,9 @@ struct dyfunc {
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	decNumber *(*dydreal)(decNumber *, const decNumber *, const decNumber *, decContext *);
-	void (*dydcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber*,
-				const decNumber *, const decNumber *, decContext *);
-	long long int (*dydint)(long long int, long long int);
+	functionptr dydreal;
+	functionptr dydcmplx;
+	functionptr dydint;
 	const char fname[NAME_LEN];
 };
 extern const struct dyfunc dyfuncs[];
@@ -104,8 +118,8 @@ struct trifunc {
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	decNumber *(*trireal)(decNumber *, const decNumber *, const decNumber *, const decNumber *, decContext *);
-	long long int (*triint)(long long int, long long int, long long int);
+	functionptr trireal;
+	functionptr triint;
 	const char fname[NAME_LEN];
 };
 extern const struct trifunc trifuncs[];
@@ -117,7 +131,7 @@ struct niladic {
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	void (*niladicf)(decimal64 *, decimal64 *, decContext *);
+	functionptr niladicf;
 	unsigned int numresults : 2;
 	const char nname[NAME_LEN];
 };
@@ -130,7 +144,7 @@ struct argcmd {
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	void (*f)(unsigned int, enum rarg);
+	functionptr f;
 	unsigned char lim;
 	unsigned int indirectokay:1;
 	unsigned int stckreg:1;
@@ -144,7 +158,7 @@ struct multicmd {
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	void (*f)(opcode, enum multiops);
+	functionptr f;
 	const char cmd[NAME_LEN];
 };
 extern const struct multicmd multicmds[];
@@ -354,7 +368,7 @@ enum {
 	OP_BSJN, OP_BSIN, OP_BSYN, OP_BSKN,
 #endif
 	OP_COMB, OP_PERM,
-	OP_PERAD, OP_PERSB, OP_PERMG, OP_MARGIN,
+	OP_PERMG, OP_MARGIN,
 	OP_PARAL,
 #ifdef INCLUDE_AGM
 	OP_AGM,
