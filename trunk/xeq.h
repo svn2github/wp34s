@@ -436,7 +436,7 @@ enum {
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 
 	OP_TVM,
-	OP_TICKS,
+	OP_TICKS, OP_VOLTAGE,
 };
 
 
@@ -1014,6 +1014,7 @@ extern void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void showlead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void op_ticks(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_voltage(decimal64 *a, decimal64 *b, decContext *nulc);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx);

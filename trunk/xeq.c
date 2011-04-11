@@ -1250,6 +1250,25 @@ void op_ticks(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 #endif
 }
 
+/* Display the battery voltage */
+void op_voltage(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+	decNumber t, u;
+#ifdef REALBUILD
+	unsigned long long int v = 19 + Voltage;
+#else
+	unsigned long long int v = 32;
+#endif
+
+	if (is_intmode()) {
+		put_int(v, 0, a);
+	} else {
+		ullint_to_dn(&t, v, Ctx);
+		decNumberMultiply(&u, &t, &const_0_1, Ctx);
+		decimal64FromNumber(a, &u, ctx64);
+	}
+}
+
+
 /* Save and restore the entire stack to sequential registers */
 static int check_stack_overlap(unsigned int arg, int *nout) {
 	const int n = stack_size();

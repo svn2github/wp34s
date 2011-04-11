@@ -140,6 +140,7 @@ static s_opcode catalogue[] = {
 	TRI(OP_GEN_LAGUERRE,  "L\275\240")
 	DYA(OP_HERMITE_HE,    "HE\275")
 	DYA(OP_HERMITE_H,     "H\275")
+	NILIC(OP_VOLTAGE,     "VOLTS")
 };
 
 static s_opcode cplx_catalogue[] = {
@@ -300,6 +301,7 @@ static s_opcode int_catalogue[] = {
 	RARGCMD(RARG_SL,	"SL")
 	RARGCMD(RARG_SR,	"SR")
 	NILIC(OP_VERSION,	"VERS")
+	NILIC(OP_VOLTAGE,	"VOLTS")
 	DYA(OP_LXNOR,		"XNOR")
 	RARGCMD(RARG_AIP,	"\240IP")
 	NILIC(OP_ALPHALEN,	"\240LENG")
