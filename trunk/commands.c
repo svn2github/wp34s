@@ -552,7 +552,7 @@ const struct argcmd argcmds[] = {
 
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
 #ifdef REALBUILD
-	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CNTRST")
+	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CTRS")
 #endif
 
 #undef CMDnoI
