@@ -25,7 +25,7 @@
 #define INCLUDE_INTERNAL_CATALOGUE
 
 #ifndef TINY_BUILD
-// Include the aritmetic/geometric mean iteration real and complex versions
+// Include the arithmetic/geometric mean iteration real and complex versions
 //#define INCLUDE_AGM
 
 // Include Rieman's Zeta function for real and complex arguments
@@ -68,7 +68,7 @@
 // Include the !n function defined over the reals (integers)
 //#define INCLUDE_SUBFACT
 
-// Inlcude multi-character alpha constants (not keystroke programmable)
+// Include multi-character alpha constants (not keystroke programmable)
 //#define MULTI_ALPHA
 
 // Include a date function to determine the date of Easter in a given year

@@ -15,7 +15,7 @@
  */
 
 /*
- *  This file is compiled "en block" for better space optimization
+ *  This file is compiled "en block" for better space optimisation
  */
 #ifdef REALBUILD
 #ifdef __GNUC__

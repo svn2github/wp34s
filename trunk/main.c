@@ -19,6 +19,8 @@
  * Module written by MvC
  */
 #include "xeq.h"
+#include "display.h"
+#include "lcd.h"
 
 #include "board.h"
 #include "aic.h"
@@ -30,45 +32,78 @@
 #define RAM_FUNCTION __attribute__((section(".ramfunc")))
 
 /*
- *  Heartbeat frequency in ms
- *  And Auto Power Down threshold
- */
-#define PIT_PERIOD 25
-#define APD_TICKS 1800 // 3 minutes
-
-/*
  *  CPU speed settings
  */
 #define SPEED_IDLE    0
 #define SPEED_M_IDLE  1
 #define SPEED_MEDIUM  2
-#define SPEED_HIGH    3
+#define SPEED_H_LOW_V 3
+#define SPEED_HIGH    4
+
+/*
+ *  SUPC Voltages
+ */
+#define SUPC_VDD_155 (0x2 <<9)
+#define SUPC_VDD_165 (0x3 <<9)
+#define SUPC_VDD_175 (0x4 <<9)
+#define SUPC_VDD_180 (0x5 <<9)
+
+/*
+ *  BOD detector voltages
+ */
+#define SUPC_BOD_1_9V 0
+#define SUPC_BOD_2_0V 1
+#define SUPC_BOD_2_1V 2
+#define SUPC_BOD_2_2V 3
+#define SUPC_BOD_2_3V 4
+#define SUPC_BOD_2_4V 5
+#define SUPC_BOD_2_5V 6
+#define SUPC_BOD_2_6V 7
+#define SUPC_BOD_2_7V 8
+#define SUPC_BOD_2_8V 9
+#define SUPC_BOD_2_9V 10
+#define SUPC_BOD_3_0V 11
+#define SUPC_BOD_3_1V 12
+#define SUPC_BOD_3_2V 13
+#define SUPC_BOD_3_3V 14
+#define SUPC_BOD_3_4V 15
 
 /// PLL frequency range.
 #define CKGR_PLL          AT91C_CKGR_OUT_2
 /// PLL startup time (in number of slow clock ticks).
 #define PLLCOUNT          AT91C_CKGR_PLLCOUNT
-/// PLL MUL value.
-#define PLLMUL            999
+/// PLL MUL values.
+#define PLLMUL_10         304
+#define PLLMUL_32         999
 /// PLL DIV value.
 #define PLLDIV            1
 
 /*
- *  Setup the perstent RAM
+ *  Heart beat frequency in ms
+ *  And Auto Power Down threshold
+ */
+#define PIT_PERIOD 25
+#define APD_TICKS 1800 // 3 minutes
+#define APD_VOLTAGE SUPC_BOD_2_1V
+#define LOW_VOLTAGE SUPC_BOD_2_4V
+
+/*
+ *  Setup the persistent RAM
  */
 BACKUP_SRAM TPersistentRam PersistentRam;
 
 /*
  *  Local data
  */
-volatile unsigned int ClockSpeed;
-volatile int SpeedSetting, DesiredSpeedSetting;
-unsigned int Heartbeats;
-unsigned int Contrast;
-volatile unsigned int InIrq;
 volatile unsigned int StartupTicks;
 volatile unsigned int PivValue;
-volatile int FlashOff;
+volatile unsigned int ClockSpeed;
+volatile unsigned short Heartbeats;
+volatile unsigned char SpeedSetting, DesiredSpeedSetting;
+unsigned char Contrast;
+volatile unsigned char FlashOff;
+volatile unsigned char InIrq;
+volatile unsigned char Voltage;
 
 /*
  *  Definitions for the keyboard scan
@@ -79,24 +114,27 @@ volatile int FlashOff;
 #define KEY_COL5_SHIFT 10
 #define KEY_ON_MASK   0x00000400
 #define KEY_REPEAT_MASK 0x0000010100000000LL   // only Up and Down repeat
+#define KEY_REPEAT_START 20
+#define KEY_REPEAT_NEXT 28
 #define KEY_BUFF_SHIFT 4
 #define KEY_BUFF_LEN ( 1 << KEY_BUFF_SHIFT )
 #define KEY_BUFF_MASK ( KEY_BUFF_LEN - 1 )
 
 signed char KeyBuffer[ KEY_BUFF_LEN ];
-int KbRead, KbWrite, KbCount;
+volatile char KbRead, KbWrite, KbCount;
+volatile char OnKeyPressed;
+short int KbRepeatCount;
 long long KbData, KbDebounce, KbRepeatKey;
-int KbRepeatCount;
 
 /*
  *  Short wait to allow output lines to settle
  */
-int short_wait( int count )
+void short_wait( int count )
 {
-	static volatile int c;
-	c = count;
-	while ( c-- );
-	return c;
+	while ( count-- ) {
+		// Exclude from optimisation
+		asm("");
+	}
 }
 
 
@@ -117,6 +155,7 @@ void scan_keyboard( void )
 	 *  Assume no key is down
 	 */
 	keys.ll = 0LL;
+	OnKeyPressed = 0;
 
 	/*
 	 *  Program the PIO pins in PIOC
@@ -154,17 +193,18 @@ void scan_keyboard( void )
 			/*
 			 *  Adjust the result
 			 */
-			if ( i == 6 && k & KEY_ON_MASK && StartupTicks > 5 ) {
+			OnKeyPressed = 0 != ( k & KEY_ON_MASK );
+			if ( i == 6 && OnKeyPressed && StartupTicks > 5 ) {
 				/*
 				 *  Add ON key to bit image.
 				 *  Avoid registering ON directly on power up.
 				 */
-				k |= 1 << KEY_COLS_SHIFT; 
+				k |= 1 << KEY_COLS_SHIFT;
 			}
 
 			/*
 			 *  Some bit shuffling required: Columns are on bits 11-15 & 26.
-			 *  These are configurable as wakeup pins, a feature we don't use here.
+			 *  These are configurable as wake up pins, a feature we don't use here.
 			 */
 			k >>= KEY_COLS_SHIFT;
 			k = ( k >> KEY_COL5_SHIFT ) | k;
@@ -187,7 +227,7 @@ void scan_keyboard( void )
 	keys.ll &= ( ~last_keys & KbDebounce );
 	
 	/*
-	 *  Reprogram PIO
+	 *  Program PIO
 	 */
 	// All as input
 	AT91C_BASE_PIOC->PIO_ODR = KEY_ROWS_MASK | KEY_COLS_MASK;
@@ -202,13 +242,14 @@ void scan_keyboard( void )
 		 *  One of the repeating keys is still down
 		 */
 		++KbRepeatCount;
-		if ( KbRepeatCount == 20
-		  || ( KbRepeatCount > 20 && ( ( KbRepeatCount - 20 ) & 7 ) == 0 ) )
-		{
-			/*
-			 *  This should repeat after half a second at 5 per second
-			 */
+		if ( KbRepeatCount == KEY_REPEAT_START ) {
+			// Start repeat
 			keys.ll = KbRepeatKey;
+		}
+		else if ( KbRepeatCount == KEY_REPEAT_NEXT ) {
+			// Continue repeat
+			keys.ll = KbRepeatKey;
+			KbRepeatCount = KEY_REPEAT_START;
 		}
 	}
 	else {
@@ -342,10 +383,48 @@ RAM_FUNCTION void go_idle( void )
 	}
 
 	/*
+	 *  Voltage regulator to deep mode
+	 */
+	SUPC_EnableDeepMode();
+
+	/*
 	 *  Disable the processor clock and go to sleep
 	 */
 	AT91C_BASE_PMC->PMC_SCDR = AT91C_PMC_PCK;
 	while ( ( AT91C_BASE_PMC->PMC_SCSR & AT91C_PMC_PCK ) != AT91C_PMC_PCK );
+}
+
+
+/*
+ *  Brown out detection
+ */
+void enable_brownout( void )
+{
+	/*
+	 *  Set detector to the current voltage level
+	 */
+	if ( Voltage == 0 ) {
+		Voltage = SUPC_BOD_3_4V;
+	}
+	AT91C_BASE_SUPC->SUPC_BOMR = AT91C_SUPC_BODSMPL_CONTINUOUS | Voltage;
+}
+
+
+void disable_brownout( void )
+{
+	/*
+	 *  Reset detector
+	 */
+	AT91C_BASE_SUPC->SUPC_BOMR = 0;
+}
+
+
+int is_brownout( void )
+{
+	/*
+	 *  Test for BOD
+	 */
+	return AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_BROWNOUT;
 }
 
 
@@ -358,6 +437,9 @@ RAM_FUNCTION void go_idle( void )
 #define disable_mclk() ( AT91C_BASE_PMC->PMC_MOR = 0x370000 )
 #define enable_mclk()  ( AT91C_BASE_PMC->PMC_MOR = 0x370001 )
 
+/*
+ *  Set the master clock register in two steps
+ */
 static void set_mckr( int pres, int css )
 {
 	int mckr = AT91C_BASE_PMC->PMC_MCKR;
@@ -374,10 +456,10 @@ static void set_mckr( int pres, int css )
 
 /*
  *  Set clock speed to one of 4 fixed values:
- *  SPEED_IDLE, SPEED_M_IDLE, SPEED_MEDIUM, SPEED_HIGH
+ *  SPEED_IDLE, SPEED_M_IDLE, SPEED_MEDIUM, SPEED_H_LOW_V, SPEED_HIGH
  *  In the idle modes, the CPU clock will be turned off.
  *
- *  Physical speeds are 2 MHZ / 64, 2 MHz, 32.768 MHz
+ *  Physical speeds are 2 MHZ / 64, 2 MHz, 10 MHz, 32.768 MHz
  *  Using the slow clock doesn't seem to work for unknown reasons.
  *  Therefore, the main clock with a divider is used as slowest clock.
  *
@@ -390,8 +472,16 @@ void set_speed_hw( unsigned int speed )
 	/*
 	 *  Table of supported speeds
 	 */
-	static int speeds[ SPEED_HIGH + 1 ] = 
-		{ 2000000 / 64 , 2000000, 2000000, 32768 * ( 1 + PLLMUL ) };
+	static const int speeds[ SPEED_HIGH + 1 ] =
+		{ 2000000 / 64 , 2000000, 2000000,
+		  32768 * ( 1 + PLLMUL_10 ), 32768 * ( 1 + PLLMUL_32 ) };
+
+	/*
+	 *  If low voltage reduce maximum speed to 10 MHz
+	 */
+	if ( speed == SPEED_HIGH && Voltage <= LOW_VOLTAGE ) {
+		speed = SPEED_H_LOW_V;
+	}
 
 	/*
 	 *  Set new speed, called from timer interrupt
@@ -423,6 +513,9 @@ void set_speed_hw( unsigned int speed )
 
 		// Turn off the unused oscillators
 		disable_pll();
+
+		// Save power
+		SUPC_SetVoltageOutput( SUPC_VDD_155 );
 		break;
 
 	case SPEED_M_IDLE:
@@ -438,14 +531,31 @@ void set_speed_hw( unsigned int speed )
 
 		// Turn off the PLL
 		disable_pll();
+
+		// save power
+		SUPC_SetVoltageOutput( SUPC_VDD_155 );
+
 		break;
+
+	case SPEED_H_LOW_V:
+		/*
+		 *  10 MHz PLL, used in case of low battery
+		 */
 
 	case SPEED_HIGH:
 		/*
 		 *  32.768 MHz PLL, derived from 32 KHz slow clock
 		 */
-		// Maximum wait states for flash reads
-		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_3FWS;
+
+		if ( speed == SPEED_H_LOW_V ) {
+			// No wait state necessary at 10 MHz
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
+		}
+		else {
+			// With VDD=1.8, 1 wait state for flash reads is enough.
+			SUPC_SetVoltageOutput( SUPC_VDD_180 );
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
+		}
 
 		if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS )
 			== AT91C_PMC_CSS_PLL_CLK )
@@ -454,9 +564,16 @@ void set_speed_hw( unsigned int speed )
 			enable_mclk();
 			set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
 		}
-		// Initialize PLL at 32MHz
-		AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-					 | ( PLLMUL << 16 ) | PLLDIV;
+		if ( speed == SPEED_H_LOW_V ) {
+			// Initialise PLL at 10MHz
+			AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
+						| ( PLLMUL_10 << 16 ) | PLLDIV;
+		}
+		else {
+			// Initialise PLL at 32MHz
+			AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
+						| ( PLLMUL_32 << 16 ) | PLLDIV;
+		}
 		while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
 
 		// Switch to PLL
@@ -464,10 +581,15 @@ void set_speed_hw( unsigned int speed )
 
 		// Turn off main clock
 		disable_mclk();
+
+		if ( speed == SPEED_H_LOW_V ) {
+			// Save battery, we are already low
+			SUPC_SetVoltageOutput( SUPC_VDD_155 );
+		}
 		break;
 	}
 	/*
-	 *  Now we have to reprogram the PIT.
+	 *  Now we have to re-program the PIT.
 	 *  The next interrupt is scheduled just one period after now.
 	 */
 	cpiv = PIT_GetPIIR() & AT91C_PITC_CPIV;
@@ -539,9 +661,6 @@ void user_heartbeat( void )
 	if ( Keyticks < APD_TICKS ) {
 		++Keyticks;
 	}
-	else {
-		shutdown();
-	}
 
 	/*
 	 *  Put a dummy key code in buffer to wake up application
@@ -558,6 +677,11 @@ RAM_FUNCTION void heartbeat_irq( void )
 {
 	int count;
 	
+	/*
+	 *  Voltage regulator to normal mode
+	 */
+	SUPC_DisableDeepMode();
+
 	InIrq = 1;
 
 	/*
@@ -571,6 +695,12 @@ RAM_FUNCTION void heartbeat_irq( void )
 	 *  Set speed to 2MHz for all irq handling. This ensures consistent timing
 	 */
 	set_speed_hw( SPEED_MEDIUM );
+
+	/*
+	 *  Prepare voltage detection
+	 */
+	++Voltage;
+	enable_brownout();
 
 	/*
 	 *  Since all system peripherals are tied to the same IRQ source 1
@@ -603,8 +733,21 @@ RAM_FUNCTION void heartbeat_irq( void )
 				user_heartbeat();
 			}
 		}
+
 	}
 	
+	/*
+	 *  Check battery voltage
+	 */
+	while ( is_brownout() && --Voltage >= 0 ) {
+		/*
+		 *  This will decrease the threshold by one step
+		 */
+		enable_brownout();
+		short_wait( 1 );
+	}
+	disable_brownout();
+
 	/*
 	 *  Set hardware speed to desired speed
 	 */
@@ -689,7 +832,7 @@ int get_key( void )
 		return -1;
 	}
 	lock();
-	k =  KeyBuffer[ KbRead ];
+	k =  KeyBuffer[ (int) KbRead ];
 	KbRead = ( KbRead + 1 ) & KEY_BUFF_MASK;
 	--KbCount;
 	unlock();
@@ -717,7 +860,7 @@ int put_key( int k )
 		return 0;
 	}
 	lock();
-	KeyBuffer[ KbWrite ] = (unsigned char) k;
+	KeyBuffer[ (int) KbWrite ] = (unsigned char) k;
 	KbWrite = ( KbWrite + 1 ) & KEY_BUFF_MASK;
 	++KbCount;
 	unlock();
@@ -730,6 +873,13 @@ int put_key( int k )
  */
 void shutdown( void )
 {
+	/*
+	 *  Wait for key release
+	 */
+	while ( OnKeyPressed ) {
+		go_idle();
+	}
+
 	/*
 	 *  Turn off display gracefully
 	 */
@@ -770,7 +920,7 @@ int is_debug( void )
 int main(void)
 {
         /*
-         * Initialize the hardware (clock, backup RAM, LCD, RTC, timer)
+         * Initialise the hardware (clock, backup RAM, LCD, RTC, timer)
 	 */
 	set_speed_hw( SPEED_MEDIUM );
 	SUPC_EnableSram();
@@ -791,7 +941,7 @@ int main(void)
 	SUPC_SetWakeUpSources( AT91C_SUPC_FWUPEN );
 
 	/*
-	 *  Initialize the software
+	 *  Initialise the software
 	 */
 	init_34s();
 
@@ -819,15 +969,25 @@ int main(void)
 			 *  Increase the speed of operation
 			 */
 			set_speed( SPEED_HIGH );
+			Keyticks = 0;
 		}
 
 		/*
 		 *  Handle the input
 		 */
 		process_keycode( k );
-		if ( k != K_HEARTBEAT ) {
-			Keyticks = 0;
+
+		if ( Keyticks >= APD_TICKS || Voltage <= APD_VOLTAGE ) {
+			/*
+			 *  We have a reason to power the device off
+			 */
+			if ( !is_debug() ) shutdown();
 		}
+
+		/*
+		 *  Take care of the low battery indicator
+		 */
+		dot( BATTERY, Voltage <= LOW_VOLTAGE );
 
 		/*
 		 *  Adjust the display contrast if it has been changed
