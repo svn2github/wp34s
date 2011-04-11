@@ -29,19 +29,19 @@ static const char *make_complex(const char *str, char *instr) {
 }
 
 static const char *prt_monadic(const unsigned int f, char *instr) {
-	if (f < num_monfuncs && (! FUNCNULL(monfuncs[f].mondreal) || ! FUNCNULL(monfuncs[f].monint)))
+	if (f < num_monfuncs && (monfuncs[f].mondreal != NULL || monfuncs[f].monint != NULL))
 		return sncopy(instr, monfuncs[f].fname, NAME_LEN);
 	return "???";
 }
 
 static const char *prt_dyadic(const unsigned int f, char *instr) {
-	if (f < num_dyfuncs && (! FUNCNULL(dyfuncs[f].dydreal) || ! FUNCNULL(dyfuncs[f].dydint)))
+	if (f < num_dyfuncs && (dyfuncs[f].dydreal != NULL || dyfuncs[f].dydint != NULL))
 		return sncopy(instr, dyfuncs[f].fname, NAME_LEN);
 	return "???";
 }
 
 static const char *prt_triadic(const unsigned int f, char *instr) {
-	if (f < num_trifuncs && (! FUNCNULL(trifuncs[f].trireal) || ! FUNCNULL(trifuncs[f].triint)))
+	if (f < num_trifuncs && (trifuncs[f].trireal != NULL || trifuncs[f].triint != NULL))
 		return sncopy(instr, trifuncs[f].fname, NAME_LEN);
 	return "???";
 }
@@ -49,8 +49,8 @@ static const char *prt_triadic(const unsigned int f, char *instr) {
 static const char *prt_monadic_cmplx(const unsigned int f, char *instr) {
 	char buf[NAME_LEN + 1];
 
-	if (f < num_monfuncs && ! FUNCNULL(monfuncs[f].mondcmplx)) {
-		if (FUNCNULL(monfuncs[f].mondreal))
+	if (f < num_monfuncs && monfuncs[f].fname != NULL && monfuncs[f].mondcmplx != NULL) {
+		if (monfuncs[f].mondreal == NULL)
 			return monfuncs[f].fname;
 		
 		return make_complex(sncopy(buf, monfuncs[f].fname, NAME_LEN), instr);
@@ -61,8 +61,8 @@ static const char *prt_monadic_cmplx(const unsigned int f, char *instr) {
 static const char *prt_dyadic_cmplx(const unsigned int f, char *instr) {
 	char buf[NAME_LEN + 1];
 
-	if (f < num_dyfuncs && ! FUNCNULL(dyfuncs[f].dydcmplx)) {
-		if (FUNCNULL(dyfuncs[f].dydreal))
+	if (f < num_dyfuncs && dyfuncs[f].fname != NULL && dyfuncs[f].dydcmplx != NULL) {
+		if (dyfuncs[f].dydreal == NULL)
 			return dyfuncs[f].fname;
 		return make_complex(sncopy(buf, dyfuncs[f].fname, NAME_LEN), instr);
 	}

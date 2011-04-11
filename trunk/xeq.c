@@ -791,21 +791,20 @@ static void monadic(const opcode op) {
 	f = argKIND(op);
 	if (f < num_monfuncs) {
 		if (is_intmode()) {
-			if (! FUNCNULL(monfuncs[f].monint)) {
+			if (monfuncs[f].monint != NULL) {
 				long long int x = d64toInt(&regX);
-				x = CALL(monfuncs[f].monint, long long int, (long long int))(x);
+				x = (*monfuncs[f].monint)(x);
 				setlastX();
 				d64fromInt(&regX, x);
 			} else
 				bad_mode_error();
 		} else {
-			if (! FUNCNULL(monfuncs[f].mondreal)) {
+			if (monfuncs[f].mondreal != NULL) {
 				decNumber x, r;
 
 				getX(&x);
 
-				CALL(monfuncs[f].mondreal, void, (decNumber *, const decNumber *, decContext *))
-						(&r, &x, Ctx);
+				(*monfuncs[f].mondreal)(&r, &x, Ctx);
 
 				setlastX();
 				setX(&r);
@@ -825,11 +824,10 @@ static void monadic_cmplex(const opcode op) {
 	f = argKIND(op);
 
 	if (f < num_monfuncs) {
-		if (! FUNCNULL(monfuncs[f].mondcmplx)) {
+		if (monfuncs[f].mondcmplx != NULL) {
 			getXY(&x, &y);
 
-			CALL(monfuncs[f].mondcmplx, void, (decNumber *, decNumber *, const decNumber *, const decNumber *, decContext *))
-					(&rx, &ry, &x, &y, Ctx);
+			(*monfuncs[f].mondcmplx)(&rx, &ry, &x, &y, Ctx);
 
 			setlastXY();
 			setXY(&rx, &ry);
@@ -856,23 +854,22 @@ static void dyadic(const opcode op) {
 	f = argKIND(op);
 	if (f < num_dyfuncs) {
 		if (is_intmode()) {
-			if (! FUNCNULL(dyfuncs[f].dydint)) {
+			if (dyfuncs[f].dydint != NULL) {
 				long long int x = d64toInt(&regX);
 				long long int y = d64toInt(&regY);
-				x = CALL(dyfuncs[f].dydint, long long int, (long long int, long long int))(y, x);
+				x = (*dyfuncs[f].dydint)(y, x);
 				setlastX();
 				lower();
 				d64fromInt(&regX, x);
 			} else
 				bad_mode_error();
 		} else {
-			if (! FUNCNULL(dyfuncs[f].dydreal)) {
+			if (dyfuncs[f].dydreal != NULL) {
 				decNumber x, y, r;
 
 				getXY(&x, &y);
 
-				CALL(dyfuncs[f].dydreal, void, (decNumber *, const decNumber *, const decNumber *, decContext *))
-						(&r, &y, &x, Ctx);
+				(*dyfuncs[f].dydreal)(&r, &y, &x, Ctx);
 
 				setlastX();
 				lower();
@@ -892,14 +889,12 @@ static void dyadic_cmplex(const opcode op) {
 
 	f = argKIND(op);
 	if (f < num_dyfuncs) {
-		if (! FUNCNULL(dyfuncs[f].dydcmplx)) {
+		if (dyfuncs[f].dydcmplx != NULL) {
 			getXY(&x1, &y1);
 			getZ(&x2);
 			getT(&y2);
 
-			CALL(dyfuncs[f].dydcmplx, void, (decNumber *, decNumber *, const decNumber *, const decNumber*,
-				const decNumber *, const decNumber *, decContext *))
-					(&xr, &yr, &x2, &y2, &x1, &y1, Ctx);
+			(*dyfuncs[f].dydcmplx)(&xr, &yr, &x2, &y2, &x1, &y1, Ctx);
 
 			setlastXY();
 			lower2();
@@ -925,12 +920,11 @@ static void triadic(const opcode op) {
 	f = argKIND(op);
 	if (f < num_trifuncs) {
 		if (is_intmode()) {
-			if (! FUNCNULL(trifuncs[f].triint)) {
+			if (trifuncs[f].triint != NULL) {
 				long long int x = d64toInt(&regX);
 				long long int y = d64toInt(&regY);
 				long long int z = d64toInt(&regZ);
-				x = CALL(trifuncs[f].triint, long long int, (long long int, long long int, long long int))
-						(z, y, x);
+				x = (*trifuncs[f].triint)(z, y, x);
 				setlastX();
 				lower();
 				lower();
@@ -938,14 +932,13 @@ static void triadic(const opcode op) {
 			} else
 				bad_mode_error();
 		} else {
-			if (! FUNCNULL(trifuncs[f].trireal)) {
+			if (trifuncs[f].trireal != NULL) {
 				decNumber x, y, z, r;
 
 				getXY(&x, &y);
 				getZ(&z);
 
-				CALL(trifuncs[f].trireal, void, (decNumber *, const decNumber *, const decNumber *, const decNumber *, decContext *))
-						(&r, &z, &y, &x, Ctx);
+				(*trifuncs[f].trireal)(&r, &z, &y, &x, Ctx);
 
 				setlastX();
 				lower();
@@ -1566,9 +1559,8 @@ static void niladic(const opcode op) {
 				if (State.state_lift)
 					lift();
 			default:
-				if (! FUNCNULL(niladics[idx].niladicf))
-					CALL(niladics[idx].niladicf, void, (decimal64 *, decimal64 *, decContext *))
-							(x, y, Ctx64);
+				if (niladics[idx].niladicf != NULL)
+					(*niladics[idx].niladicf)(x, y, Ctx64);
 				break;
 			}
 		}
@@ -2737,7 +2729,7 @@ static void rargs(const opcode op) {
 		illegal(op);
 		return;
 	}
-	if (FUNCNULL(argcmds[cmd].f))
+	if (argcmds[cmd].f == NULL)
 		return;
 	if (ind && argcmds[cmd].indirectokay) {
 		if (is_intmode()) {
@@ -2753,8 +2745,7 @@ static void rargs(const opcode op) {
 	if (arg >= lim)
 		err(ind?ERR_RANGE:ERR_PROG_BAD);
 	else
-		CALL(argcmds[cmd].f, void, (unsigned int, enum rarg))
-				(arg, (enum rarg)cmd);
+		(argcmds[cmd].f)(arg, (enum rarg)cmd);
 }
 
 static void multi(const opcode op) {
@@ -2766,10 +2757,9 @@ static void multi(const opcode op) {
 		illegal(op);
 		return;
 	}
-	if (FUNCNULL(multicmds[cmd].f))	// LBL does nothing
+	if (multicmds[cmd].f == NULL)	// LBL does nothing
 		return;
-	CALL(multicmds[cmd].f, void, (opcode, enum multiops))
-			(op, (enum multiops)cmd);
+	(multicmds[cmd].f)(op, (enum multiops)cmd);
 }
 
 
