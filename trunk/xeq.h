@@ -701,14 +701,9 @@ struct _state {
 	unsigned int show_register : 7; // temporary display (not X)
 
 	unsigned int contrast : 4;	// Display contrast
-	unsigned int off : 1;
-	unsigned int LowPower : 1;	// low power detected
-	unsigned int LowPowerCount : 16;
 
 #ifndef REALBUILD
 	unsigned int trace : 1;
-#else
-	unsigned int testmode : 1;
 #endif
 
 };
