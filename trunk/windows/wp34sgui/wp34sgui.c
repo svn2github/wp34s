@@ -30,10 +30,15 @@
 #include "display.h"
 
 /*
- *  setup the LCD area and perstent RAM
+ *  Setup the LCD area and persistent RAM
  */
 unsigned int LcdData[ 20 ];
 TPersistentRam PersistentRam;
+
+/*
+ *  More data (see main.c of real build)
+ */
+volatile unsigned char Voltage = 0xa;
 
 /*
  *  Used by Emulator only

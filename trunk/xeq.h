@@ -794,8 +794,13 @@ extern TPersistentRam PersistentRam;
 #define RandS1		(PersistentRam._rand_s1)
 #define RandS2		(PersistentRam._rand_s2)
 #define RandS3		(PersistentRam._rand_s3)
-#define Ticker      (PersistentRam._ticker)
-#define Keyticks    (PersistentRam._keyticks)
+#define Ticker		(PersistentRam._ticker)
+#define Keyticks	(PersistentRam._keyticks)
+
+/*
+ *  No so persistent runtime data
+ */
+extern volatile unsigned char Voltage;
 
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);
