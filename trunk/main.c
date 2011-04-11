@@ -21,6 +21,7 @@
 #include "xeq.h"
 #include "display.h"
 #include "lcd.h"
+#include "keys.h"
 
 #include "board.h"
 #include "aic.h"
@@ -67,6 +68,7 @@
 #define SUPC_BOD_3_2V 13
 #define SUPC_BOD_3_3V 14
 #define SUPC_BOD_3_4V 15
+#define SUPC_BOD_MAX  15
 
 /// PLL frequency range.
 #define CKGR_PLL          AT91C_CKGR_OUT_2
@@ -103,7 +105,7 @@ volatile unsigned char SpeedSetting, DesiredSpeedSetting;
 unsigned char Contrast;
 volatile unsigned char FlashOff;
 volatile unsigned char InIrq;
-volatile unsigned char Voltage;
+volatile unsigned char Voltage = SUPC_BOD_3_0V;
 
 /*
  *  Definitions for the keyboard scan
@@ -398,34 +400,58 @@ RAM_FUNCTION void go_idle( void )
 /*
  *  Brown out detection
  */
-void enable_brownout( void )
+void detect_voltage( void )
 {
+	static char threshold = 1;
+
 	/*
-	 *  Set detector to the current voltage level
+	 *  Check if brownout state has changed
+	 *  while cycling through all possible values in descending order.
+	 *  Called every 25 ms.
 	 */
-	if ( Voltage == 0 ) {
-		Voltage = SUPC_BOD_3_4V;
+	if ( threshold == -1 ) {
+		/*
+		 *  First call
+		 */
+		threshold = SUPC_BOD_MAX;
 	}
-	AT91C_BASE_SUPC->SUPC_BOMR = AT91C_SUPC_BODSMPL_CONTINUOUS | Voltage;
-}
+	else {
+		/*
+		 *  Get current status and decrease Threshold value
+		 */
+		unsigned char brownout =
+			0 != ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_BROWNOUT );
 
+		if ( !brownout ) {
+			/*
+			 *  Voltage must be above the current threshold
+			 */
+			Voltage = threshold;
 
-void disable_brownout( void )
-{
+			/*
+			 *  Start over
+			 */
+			threshold = SUPC_BOD_MAX;
+		}
+		else if ( threshold == 0 ) {
+			/*
+			 *  Start over with highest threshold
+			 */
+			threshold = SUPC_BOD_MAX;
+		}
+		else {
+			/*
+			 *  Decrease threshold and wait for next measurement
+			 */
+			--threshold;
+		}
+	}
 	/*
-	 *  Reset detector
+	 *  Set detector to new threshold
 	 */
-	AT91C_BASE_SUPC->SUPC_BOMR = 0;
+	AT91C_BASE_SUPC->SUPC_BOMR = AT91C_SUPC_BODSMPL_CONTINUOUS | threshold;
 }
 
-
-int is_brownout( void )
-{
-	/*
-	 *  Test for BOD
-	 */
-	return AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_BROWNOUT;
-}
 
 
 /*
@@ -678,6 +704,18 @@ RAM_FUNCTION void heartbeat_irq( void )
 	int count;
 	
 	/*
+	 *  Since all system peripherals are tied to the same IRQ source 1
+	 *  we need to check, if this is really the PIT interrupt
+	 */
+	if ( !PIT_GetStatus() ) {
+		/*
+		 *  Add other sources here
+		 */
+		// ...
+		return;
+	}
+
+	/*
 	 *  Voltage regulator to normal mode
 	 */
 	SUPC_DisableDeepMode();
@@ -697,56 +735,30 @@ RAM_FUNCTION void heartbeat_irq( void )
 	set_speed_hw( SPEED_MEDIUM );
 
 	/*
-	 *  Prepare voltage detection
+	 *  Voltage detection state machine
 	 */
-	++Voltage;
-	enable_brownout();
+	detect_voltage();
 
 	/*
-	 *  Since all system peripherals are tied to the same IRQ source 1
-	 *  we need to check, if this is really the PIT interrupt
+	 *  The keyboard is scanned every 25ms for debounce and repeat
 	 */
-	if ( !PIT_GetStatus() ) {
-		/*
-		 *  Add other sources here
-		 */
-		// ...
-	}
-	else {
-		/*
-		 *  The keyboard is scanned every 33ms for debounce and repeat
-		 */
-		scan_keyboard();
+	scan_keyboard();
 
-		/*
-		 *  Get the number of missed interrupts
-		 */
-		Heartbeats += PIT_GetPIVR() >> 20;
-		count = Heartbeats / ( 100 / PIT_PERIOD );
-		Heartbeats -= ( 100 / PIT_PERIOD ) * count;
+	/*
+	 *  Get the number of missed interrupts
+	 */
+	Heartbeats += PIT_GetPIVR() >> 20;
+	count = Heartbeats / ( 100 / PIT_PERIOD );
+	Heartbeats -= ( 100 / PIT_PERIOD ) * count;
 
-		if ( count != 0 ) {
-			/*
-			 *  Service the outstanding 100ms heart beats
-			 */
-			while ( count-- ) {
-				user_heartbeat();
-			}
+	if ( count != 0 ) {
+		/*
+		 *  Service the outstanding 100ms heart beats
+		 */
+		while ( count-- ) {
+			user_heartbeat();
 		}
-
 	}
-	
-	/*
-	 *  Check battery voltage
-	 */
-	while ( is_brownout() && --Voltage >= 0 ) {
-		/*
-		 *  This will decrease the threshold by one step
-		 */
-		enable_brownout();
-		short_wait( 1 );
-	}
-	disable_brownout();
 
 	/*
 	 *  Set hardware speed to desired speed
@@ -927,6 +939,7 @@ int main(void)
 	Keyticks = 0;
 	enable_lcd();
 	SUPC_EnableRtc();
+	detect_voltage();
 	enable_heartbeat();
 
 	/*
@@ -966,16 +979,44 @@ int main(void)
 
 		if ( k != K_HEARTBEAT ) {
 			/*
-			 *  Increase the speed of operation
+			 *  Check for special key combinations
 			 */
-			set_speed( SPEED_HIGH );
+			if ( OnKeyPressed && k != K60 ) {
+
+				switch( k ) {
+
+				case K64:
+					// Increase contrast
+					if ( State.contrast != 15 ) {
+						++State.contrast;
+					}
+					break;
+
+				case K54:
+					// Decrease contrast
+					if ( State.contrast != 0 ) {
+						--State.contrast;
+					}
+					break;
+				}
+				// No further processing
+				k = -1;
+			}
+			if ( k != -1 ) {
+				/*
+				 *  Increase the speed of operation
+				 */
+				set_speed( SPEED_HIGH );
+			}
 			Keyticks = 0;
 		}
 
 		/*
 		 *  Handle the input
 		 */
-		process_keycode( k );
+		if ( k != -1 ) {
+			process_keycode( k );
+		}
 
 		if ( Keyticks >= APD_TICKS || Voltage <= APD_VOLTAGE ) {
 			/*

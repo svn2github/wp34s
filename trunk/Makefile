@@ -86,6 +86,7 @@ ifdef REALBUILD
 OUTPUTDIR := realbuild
 CFLAGS := $(BASE_CFLAGS) -mthumb -mcpu=arm7tdmi -Os
 CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
+HOSTCFLAGS += -DREALBUILD
 ifdef NOWD
 CFLAGS += -DNOWD
 endif
