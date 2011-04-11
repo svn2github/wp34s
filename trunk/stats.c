@@ -1019,13 +1019,6 @@ decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 #endif
 }
 
-decNumber *cdfu_Q(decNumber *q, const decNumber *x, decContext *ctx) {
-	decNumber t;
-
-	decNumberMinus(&t, x, ctx);
-	return cdf_Q(q, &t, ctx);
-}
-
 
 #ifndef TINY_BUILD
 static void qf_Q_ests(decNumber *low, decNumber *high, const decNumber *x, const decNumber *x05, decContext *ctx) {
@@ -1108,13 +1101,6 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 #endif
 }
 
-decNumber *cdfu_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
-
-	cdf_chi2(&t, x, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
-}
-
 decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber a, b, c, q, v;
@@ -1171,13 +1157,6 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 #else
 	return NULL;
 #endif
-}
-
-decNumber *cdfu_T(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
-
-	decNumberMinus(&t, x, ctx);
-	return cdf_Q(r, &t, ctx);
 }
 
 decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
@@ -1254,13 +1233,6 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 #endif
 }
 
-decNumber *cdfu_F(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
-
-	cdf_F(&t, x, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
-}
-
 decNumber *qf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 	// MORE: provide reasonable initial estaimtes
 	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_F);
@@ -1305,12 +1277,6 @@ decNumber *pdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
-	cdfu_WB(&t, x, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
-}
-
-decNumber *cdfu_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber k, lam, t;
 
@@ -1324,11 +1290,13 @@ decNumber *cdfu_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumberDivide(&t, x, &lam, ctx);
 	decNumberPower(&lam, &t, &k, ctx);
 	decNumberMinus(&t, &lam, ctx);
-	return decNumberExp(r, &t, ctx);
+	decNumberExpm1(&lam, &t, ctx);
+	return decNumberMinus(r, &lam, ctx);
 #else
 	return NULL;
 #endif
 }
+
 
 /* Weibull distribution quantile function:
  *	p = 1 - exp(-(x/lambda)^k)
@@ -1400,12 +1368,6 @@ decNumber *pdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
-	cdfu_EXP(&t, x, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
-}
-
-decNumber *cdfu_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber lam, t, u;
 
@@ -1418,7 +1380,8 @@ decNumber *cdfu_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	decNumberMultiply(&t, &lam, x, ctx);
 	decNumberMinus(&u, &t, ctx);
-	return decNumberExp(r, &u, ctx);
+	decNumberExpm1(&t, &u, ctx);
+	return decNumberMinus(r, &t, ctx);
 #else
 	return NULL;
 #endif
@@ -1525,13 +1488,6 @@ decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	return cdf_B_helper(&t, x, ctx);
 }
 
-decNumber *cdfu_B(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
-
-	cdf_B(&t, x, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
-}
-
 decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	// MORE: provide reasonable initial estaimtes
 	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_B_helper);
@@ -1602,13 +1558,6 @@ decNumber *cdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 	return cdf_P_helper(r, &t, ctx);
 }
 
-decNumber *cdfu_P(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
-
-	cdf_P(&t, x, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
-}
-
 decNumber *qf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 	// MORE: provide reasonable initial estaimtes
 	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_P_helper);
@@ -1650,15 +1599,8 @@ decNumber *pdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber t;
-
-	cdfu_G(&t, x, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
-}
-
-decNumber *cdfu_G(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
-        decNumber p, t, ipx;
+        decNumber p, t, u, ipx;
 
         if (geometric_param(r, &p, x, ctx))
                 return r;
@@ -1672,7 +1614,10 @@ decNumber *cdfu_G(decNumber *r, const decNumber *x, decContext *ctx) {
                 return decNumberZero(r);
 
         decNumberSubtract(&t, &const_1, &p, ctx);
-        return decNumberPower(r, &t, x, ctx);
+	decNumberLn(&u, &t, ctx);
+	decNumberMultiply(&t, &u, x, ctx);
+	decNumberExpm1(&u, &t, ctx);
+	return decNumberMinus(r, &u, ctx);
 #else
 	return NULL;
 #endif
@@ -1735,18 +1680,6 @@ decNumber *cdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
 #endif
 }
 
-decNumber *cdfu_normal(decNumber *r, const decNumber *x, decContext *ctx) {
-#ifndef TINY_BUILD
-	decNumber q, var;
-
-	if (normal_xform(r, &q, x, &var, ctx))
-		return r;
-	return cdfu_Q(r, &q, ctx);
-#else
-	return NULL;
-#endif
-}
-
 decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber a, b, mu, var;
@@ -1787,16 +1720,6 @@ decNumber *cdf_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
 #endif
 }
 
-decNumber *cdfu_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
-#ifndef TINY_BUILD
-	decNumber lx;
-
-	decNumberLn(&lx, x, ctx);
-	return cdfu_normal(r, &lx, ctx);
-#else
-	return NULL;
-#endif
-}
 
 decNumber *qf_lognormal(decNumber *r, const decNumber *p, decContext *ctx) {
 #ifndef TINY_BUILD
@@ -1848,20 +1771,6 @@ decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
 		return r;
 	decNumberTanh(&b, &a, ctx);
 	decNumberMultiply(&a, &b, &const_0_5, ctx);
-	return decNumberAdd(r, &a, &const_0_5, ctx);
-#else
-	return NULL;
-#endif
-}
-
-decNumber *cdfu_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
-#ifndef TINY_BUILD
-	decNumber a, b, s;
-
-	if (logistic_xform(r, &a, x, &s, ctx))
-		return r;
-	decNumberTanh(&b, &a, ctx);
-	decNumberMultiply(&a, &b, &const__0_5, ctx);
 	return decNumberAdd(r, &a, &const_0_5, ctx);
 #else
 	return NULL;
@@ -1927,20 +1836,6 @@ decNumber *cdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
 	do_atan(&a, &b, ctx);
 	decNumberDivide(&b, &a, &const_PI, ctx);
 	return decNumberAdd(r, &b, &const_0_5, ctx);
-#else
-	return NULL;
-#endif
-}
-
-decNumber *cdfu_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
-#ifndef TINY_BUILD
-	decNumber a, b, gamma;
-
-	if (cauchy_xform(r, &b, x, &gamma, ctx))
-		return r;
-	do_atan(&a, &b, ctx);
-	decNumberDivide(&b, &a, &const_PI, ctx);
-	return decNumberSubtract(r, &const_0_5, &b, ctx);
 #else
 	return NULL;
 #endif
