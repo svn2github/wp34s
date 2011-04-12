@@ -1713,7 +1713,7 @@ static int process(const int c) {
 	 * common across all modes.  Shifted modes need to check this themselves
 	 * if required.
 	 */
-	if (c == K60 && s == SHIFT_N) {
+	if (c == K60 && s == SHIFT_N && ! State.catalogue) {
 		init_state();
 		return STATE_UNFINISHED;
 	}
