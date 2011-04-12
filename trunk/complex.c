@@ -1176,9 +1176,9 @@ void cmplxZeta(decNumber *rx, decNumber *ry,
 
 	cmplxSubtractFromReal(&t1, &t2, &const_1, &x, &y, ctx);
 	cmplxRealPower(&u1, &u2, &const_2, &t1, &t2, ctx);
-	cmplxSubtractFromReal(&t1, &t2, &const_1, &u1, &u2, ctx);
-	cmplxMultiplyReal(&u1, &u2, &t1, &t2, &const_zeta_dn, ctx);
-	cmplxDivide(rx, ry, &sum1, &sum2, &u1, &u2, ctx);
+	dn_dec(&u1, ctx);
+	cmplxMultiplyReal(&t1, &t2, &u1, &u2, &const_zeta_dn, ctx);
+	cmplxDivide(rx, ry, &sum1, &sum2, &t1, &t2, ctx);
 
 	/* Finally, undo the reflection if required */
 	if (reflec)
