@@ -13,10 +13,16 @@
  * You should have received a copy of the GNU General Public License
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+#ifndef FEATURES_H__
+#define FEATURES_H__
 /*
  *  Select optional features here
  */
+
+// Define this to use inline quick check macros for determining
+// a bit of information about decNumbers.  Enabling this will create
+// larger possibly slightly faster code.
+// #define DECNUMBER_QUICK_MACROS
 
 // Build a tiny version of the device
 // #define TINY_BUILD
@@ -78,4 +84,5 @@
 // This increases code size and doesn't see to help the colver's convergence.
 //#define USE_RIDDERS
 
+#endif
 #endif

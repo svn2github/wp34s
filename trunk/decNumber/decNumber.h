@@ -1,3 +1,4 @@
+#include "../features.h"
 /* ------------------------------------------------------------------ */
 /* Decimal Number arithmetic module header                            */
 /* ------------------------------------------------------------------ */
@@ -133,6 +134,7 @@
   const char * decNumberVersion(void);
   decNumber  * decNumberZero(decNumber *);
 
+#ifdef DECNUMBER_QUICK_MACROS
   // Macros
   #define decNumberIsZero(dn)     (*(dn)->lsu==0 \
                                    && (dn)->digits==1 \
@@ -142,5 +144,13 @@
   #define decNumberIsQNaN(dn)     (((dn)->bits&(DECNAN))!=0)
   #define decNumberIsSNaN(dn)     (((dn)->bits&(DECSNAN))!=0)
   #define decNumberIsInfinite(dn) (((dn)->bits&DECINF)!=0)
+#else
+extern int decNumberIsZero(const decNumber *dn);
+extern int decNumberIsNegative(const decNumber *dn);
+extern int decNumberIsNaN(const decNumber *dn) ;
+extern int decNumberIsQNaN(const decNumber *dn);
+extern int decNumberIsSNaN(const decNumber *dn);
+extern int decNumberIsInfinite(const decNumber *dn);
+#endif
 
 #endif
