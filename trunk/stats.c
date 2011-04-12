@@ -1485,7 +1485,7 @@ decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber t;
 
 	decNumberFloor(&t, x, ctx);
-	return cdf_B_helper(&t, x, ctx);
+	return cdf_B_helper(r, &t, ctx);
 }
 
 decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
