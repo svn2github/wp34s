@@ -1349,8 +1349,13 @@ void set_running_off() {
 
 void set_running_on() {
 	reset_disp();
+#if 1
 	set_status("Running");
 	set_digits_string("PrograMm", 0);
+#else
+	set_status("Program");
+	set_digits_string("running", 0);
+#endif
 	finish_display();
 	State.state_running = 1;
 }

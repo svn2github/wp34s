@@ -98,6 +98,7 @@ void Init( void )
 		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
 		fclose( f );
 	}
+	DispMsg = NULL;
 	init_34s();
 }
 
