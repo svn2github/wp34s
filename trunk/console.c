@@ -36,6 +36,9 @@
 #define CH_REFRESH	12	/* ^L */
 
 
+volatile unsigned short Keyticks;
+
+
 /*
  *  Create the persistant RAM area
  */
