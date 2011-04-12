@@ -521,13 +521,6 @@ static int check_special_dn(const decNumber *x, char *res) {
 	return 0;
 }
 
-static int check_special_x(const decimal64 *rgx, char *res) {
-	decNumber x;
-
-	decimal64ToNumber(rgx, &x);
-	return check_special_dn(&x, res);
-}
-
 
 /* Extract the two lowest integral digits from the number
  */
@@ -725,6 +718,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 	enum seperator_modes seperator = SEP_COMMA;
 	char c;
         int negative = 0;
+	decNumber z;
 
 	if (State.fraccomma) {
 		decimal = DECIMAL_COMMA;
@@ -744,10 +738,14 @@ static void set_x(const decimal64 *rgx, char *res) {
 		}
 	}
 
-	if (check_special_x(rgx, res))
+	decimal64ToNumber(rgx, &z);
+	if (check_special_dn(&z, res))
 		return;
 
-	decimal64ToString(rgx, x);
+	if (decNumberIsZero(&z)) {
+		x[0] = '0';	x[1] = '\0';
+	} else
+		decimal64ToString(rgx, x);
 
 	if (State.smode == SDISP_SHOW)
 		mode = MODE_STD;
