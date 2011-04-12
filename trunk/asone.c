@@ -22,9 +22,9 @@
 __attribute__((externally_visible)) void LowLevelInit(void);
 #endif
 //#define TINY_BUILD
-#pragma GCC optimize 1
+//#pragma GCC optimize 1
 #include "main.c"
-#pragma GCC optimize "s"
+//#pragma GCC optimize "s"
 #include "atmel/board_lowlevel.c"
 #include "atmel/board_memories.c"
 #include "atmel/aic.c"

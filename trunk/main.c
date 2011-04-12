@@ -31,6 +31,7 @@
 
 #define BACKUP_SRAM  __attribute__((section(".backup")))
 #define RAM_FUNCTION __attribute__((section(".ramfunc")))
+#define NO_INLINE    __attribute__((noinline))
 
 /*
  *  CPU speed settings
@@ -97,15 +98,15 @@ BACKUP_SRAM TPersistentRam PersistentRam;
 /*
  *  Local data
  */
-volatile unsigned int StartupTicks;
-volatile unsigned int PivValue;
 volatile unsigned int ClockSpeed;
-volatile unsigned short Heartbeats;
+volatile unsigned short PivValue;
 volatile unsigned char SpeedSetting, DesiredSpeedSetting;
+volatile unsigned char Heartbeats;
+volatile unsigned short int StartupTicks;
 unsigned char Contrast;
 volatile unsigned char FlashOff;
 volatile unsigned char InIrq;
-volatile unsigned char Voltage = SUPC_BOD_3_0V;
+volatile unsigned char Voltage;
 
 /*
  *  Definitions for the keyboard scan
@@ -126,7 +127,10 @@ signed char KeyBuffer[ KEY_BUFF_LEN ];
 volatile char KbRead, KbWrite, KbCount;
 volatile char OnKeyPressed;
 short int KbRepeatCount;
+volatile unsigned short Keyticks;
 long long KbData, KbDebounce, KbRepeatKey;
+short int BodThreshold;
+short int BodTimer;
 
 /*
  *  Short wait to allow output lines to settle
@@ -143,7 +147,7 @@ void short_wait( int count )
 /*
  *  Scan the keyboard
  */
-void scan_keyboard( void )
+NO_INLINE void scan_keyboard( void )
 {
 	int i, k;
 	unsigned char m;
@@ -402,18 +406,24 @@ RAM_FUNCTION void go_idle( void )
  */
 void detect_voltage( void )
 {
-	static char threshold = 1;
+	/*
+	 *  Don't be active all the time
+	 */
+	if ( BodTimer > 0 ) {
+		--BodTimer;
+		return;
+	}
 
 	/*
 	 *  Check if brownout state has changed
 	 *  while cycling through all possible values in descending order.
 	 *  Called every 25 ms.
 	 */
-	if ( threshold == -1 ) {
+	if ( BodThreshold == -1 ) {
 		/*
 		 *  First call
 		 */
-		threshold = SUPC_BOD_MAX;
+		BodThreshold = Voltage = SUPC_BOD_3_0V;
 	}
 	else {
 		/*
@@ -426,30 +436,36 @@ void detect_voltage( void )
 			/*
 			 *  Voltage must be above the current threshold
 			 */
-			Voltage = threshold;
+			Voltage = BodThreshold;
 
 			/*
 			 *  Start over
 			 */
-			threshold = SUPC_BOD_MAX;
+			BodThreshold = SUPC_BOD_MAX;
+
+			/*
+			 *  But wait a second before next loop with BOD disabled
+			 */
+			BodTimer = 400;
+			AT91C_BASE_SUPC->SUPC_BOMR = 0;
 		}
-		else if ( threshold == 0 ) {
+		else if ( BodThreshold == 0 ) {
 			/*
 			 *  Start over with highest threshold
 			 */
-			threshold = SUPC_BOD_MAX;
+			BodThreshold = SUPC_BOD_MAX;
 		}
 		else {
 			/*
 			 *  Decrease threshold and wait for next measurement
 			 */
-			--threshold;
+			--BodThreshold;
 		}
 	}
 	/*
 	 *  Set detector to new threshold
 	 */
-	AT91C_BASE_SUPC->SUPC_BOMR = AT91C_SUPC_BODSMPL_CONTINUOUS | threshold;
+	AT91C_BASE_SUPC->SUPC_BOMR = AT91C_SUPC_BODSMPL_CONTINUOUS | BodThreshold;
 }
 
 
@@ -494,7 +510,6 @@ static void set_mckr( int pres, int css )
  */
 void set_speed_hw( unsigned int speed )
 {
-	int cpiv;
 	/*
 	 *  Table of supported speeds
 	 */
@@ -513,16 +528,14 @@ void set_speed_hw( unsigned int speed )
 	 *  Set new speed, called from timer interrupt
 	 */
 	SpeedSetting = speed;
-	if ( speed > SPEED_HIGH || speeds[ speed ] == ClockSpeed ) {
+	if ( speeds[ speed ] == ClockSpeed ) {
 		/*
 		 *  Invalid or no change.
-		 *  The PIV may be a little off from the last speed change.
 		 */
-		PIT_SetPIV( PivValue );
 		return;
 	}
 	ClockSpeed = speeds[ speed ];
-	PivValue = ( ( PIT_PERIOD * ClockSpeed ) / 1000 + 8 ) >> 4;
+	PivValue = ( PIT_PERIOD * ClockSpeed + 8000 ) / 16000;
 
 	switch ( speed ) {
 
@@ -558,8 +571,8 @@ void set_speed_hw( unsigned int speed )
 		// Turn off the PLL
 		disable_pll();
 
-		// save power
-		SUPC_SetVoltageOutput( SUPC_VDD_155 );
+		// save a little power
+		SUPC_SetVoltageOutput( SUPC_VDD_165 );
 
 		break;
 
@@ -572,6 +585,7 @@ void set_speed_hw( unsigned int speed )
 		/*
 		 *  32.768 MHz PLL, derived from 32 KHz slow clock
 		 */
+		SUPC_SetVoltageOutput( SUPC_VDD_180 );
 
 		if ( speed == SPEED_H_LOW_V ) {
 			// No wait state necessary at 10 MHz
@@ -579,8 +593,8 @@ void set_speed_hw( unsigned int speed )
 		}
 		else {
 			// With VDD=1.8, 1 wait state for flash reads is enough.
-			SUPC_SetVoltageOutput( SUPC_VDD_180 );
-			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
+			// I nevertheless prefer 2
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_2FWS;
 		}
 
 		if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS )
@@ -610,16 +624,10 @@ void set_speed_hw( unsigned int speed )
 
 		if ( speed == SPEED_H_LOW_V ) {
 			// Save battery, we are already low
-			SUPC_SetVoltageOutput( SUPC_VDD_155 );
+			SUPC_SetVoltageOutput( SUPC_VDD_165 );
 		}
 		break;
 	}
-	/*
-	 *  Now we have to re-program the PIT.
-	 *  The next interrupt is scheduled just one period after now.
-	 */
-	cpiv = PIT_GetPIIR() & AT91C_PITC_CPIV;
-	PIT_SetPIV( PivValue + cpiv );
 }
 
 
@@ -682,9 +690,12 @@ void user_heartbeat( void )
 
 	/*
 	 *  Allow keyboard timeout handling.
-	 *  HAndles Auto Power Down (APD)
+	 *  Handles Auto Power Down (APD)
 	 */
-	if ( Keyticks < APD_TICKS ) {
+	if ( running() ) {
+		Keyticks = 0;
+	}
+	else if ( Keyticks < APD_TICKS ) {
 		++Keyticks;
 	}
 
@@ -694,40 +705,16 @@ void user_heartbeat( void )
         put_key( K_HEARTBEAT );
 }
 
-
+//#pragma GCC optimize 1
 /*
  *  The PIT interrupt
  *  It starts at a slow clock when called in idle mode
  */
-RAM_FUNCTION void heartbeat_irq( void )
+NO_INLINE void PIT_interrupt( void )
 {
-	int count;
+	int cpiv;
 	
-	/*
-	 *  Since all system peripherals are tied to the same IRQ source 1
-	 *  we need to check, if this is really the PIT interrupt
-	 */
-	if ( !PIT_GetStatus() ) {
-		/*
-		 *  Add other sources here
-		 */
-		// ...
-		return;
-	}
-
-	/*
-	 *  Voltage regulator to normal mode
-	 */
-	SUPC_DisableDeepMode();
-
 	InIrq = 1;
-
-	/*
-	 *  Flash memory might be disabled, turn it on again
-	 */
-	if ( FlashOff ) {
-		SUPC_EnableFlash( 2 );  // ~ 130 microseconds wakeup at 32768 Hz
-	}
 
 	/*
 	 *  Set speed to 2MHz for all irq handling. This ensures consistent timing
@@ -747,17 +734,12 @@ RAM_FUNCTION void heartbeat_irq( void )
 	/*
 	 *  Get the number of missed interrupts
 	 */
-	Heartbeats += PIT_GetPIVR() >> 20;
-	count = Heartbeats / ( 100 / PIT_PERIOD );
-	Heartbeats -= ( 100 / PIT_PERIOD ) * count;
-
-	if ( count != 0 ) {
+	if ( ++Heartbeats == 100 / PIT_PERIOD ) {
 		/*
-		 *  Service the outstanding 100ms heart beats
+		 *  Service the 100ms heart beat
 		 */
-		while ( count-- ) {
-			user_heartbeat();
-		}
+		user_heartbeat();
+		Heartbeats = 0;
 	}
 
 	/*
@@ -766,8 +748,55 @@ RAM_FUNCTION void heartbeat_irq( void )
 	if ( DesiredSpeedSetting != SpeedSetting ) {
 		set_speed_hw( DesiredSpeedSetting );
 	}
+
+	/*
+	 *  Now we have to re-program the PIT.
+	 *  The next interrupt is scheduled just one period after now.
+	 */
+	cpiv = PIT_GetPIVR() & AT91C_PITC_CPIV;
+	PIT_SetPIV( cpiv + PivValue );
+
 	InIrq = 0;
 }
+
+
+/*
+ *  The system interrupt handler
+ *  It starts at a slow clock when called in idle mode
+ */
+RAM_FUNCTION void system_irq( void )
+{
+	/*
+	 *  Voltage regulator to normal mode
+	 */
+	SUPC_DisableDeepMode();
+
+	/*
+	 *  Flash memory might be disabled, turn it on again
+	 */
+	if ( FlashOff ) {
+		unsigned int t = 2 + ( 3 * ClockSpeed ) / 100000;
+		SUPC_EnableFlash( t );  // minimum 60 microseconds wake up time
+	}
+
+	/*
+	 *  Since all system peripherals are tied to the same IRQ source 1
+	 *  we need to check, for the source of the interrupt
+	 */
+	if ( PIT_GetStatus() ) {
+		/*
+		 *  PIT
+		 */
+		PIT_interrupt();
+	}
+	else {
+		/*
+		 *  Add other sources here
+		 */
+		// ...
+	}
+}
+//#pragma GCC optimize "s"
 
 
 /*
@@ -784,7 +813,7 @@ void enable_heartbeat()
 	AIC_ConfigureIT( AT91C_ID_SYS, 
 		         AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL 
 		         | AT91C_AIC_PRIOR_HIGHEST,
-		         heartbeat_irq );
+		         system_irq );
 	/*
 	 *  Enable IRQ 1
 	 */
@@ -793,6 +822,7 @@ void enable_heartbeat()
 	/*
 	 *  Enable the PIT and its interrupt
 	 */
+	PIT_SetPIV( PivValue );
 	PIT_EnableIT();
 	PIT_Enable();
 }
@@ -937,6 +967,8 @@ int main(void)
 	set_speed_hw( SPEED_MEDIUM );
 	SUPC_EnableSram();
 	Keyticks = 0;
+	BodThreshold = -1;
+	BodTimer = 0;
 	enable_lcd();
 	SUPC_EnableRtc();
 	detect_voltage();
@@ -945,7 +977,7 @@ int main(void)
 	/*
 	 *  Force DEBUG mode for JTAG debugging
 	 */
-	// DEBUG_FLAG = 0xA5;
+	DEBUG_FLAG = 0; // 0xA5;
 
 	/*
 	 *  Allow wake up on ON key
@@ -979,21 +1011,25 @@ int main(void)
 
 		if ( k != K_HEARTBEAT ) {
 			/*
-			 *  Check for special key combinations
+			 *  A real key was pressed
 			 */
-			if ( OnKeyPressed && k != K60 ) {
+			Keyticks = 0;
 
+			if ( OnKeyPressed && k != K60 && !running() ) {
+				/*
+				 *  Check for special key combinations
+				 */
 				switch( k ) {
 
 				case K64:
-					// Increase contrast
+					// ON+ Increase contrast
 					if ( State.contrast != 15 ) {
 						++State.contrast;
 					}
 					break;
 
 				case K54:
-					// Decrease contrast
+					// ON- Decrease contrast
 					if ( State.contrast != 0 ) {
 						--State.contrast;
 					}
@@ -1002,14 +1038,18 @@ int main(void)
 				// No further processing
 				k = -1;
 			}
-			if ( k != -1 ) {
-				/*
-				 *  Increase the speed of operation
-				 */
-				set_speed( SPEED_HIGH );
-			}
-			Keyticks = 0;
 		}
+		if ( ( k != K_HEARTBEAT && k != -1 ) || running() ) {
+			/*
+			 *  Increase the speed of operation
+			 */
+			set_speed( SPEED_HIGH );
+		}
+
+		/*
+		 *  Take care of the low battery indicator
+		 */
+		dot( BATTERY, Voltage <= LOW_VOLTAGE );
 
 		/*
 		 *  Handle the input
@@ -1018,17 +1058,14 @@ int main(void)
 			process_keycode( k );
 		}
 
-		if ( Keyticks >= APD_TICKS || Voltage <= APD_VOLTAGE ) {
+		if ( Keyticks >= APD_TICKS || ( Voltage <= APD_VOLTAGE ) ) {
 			/*
 			 *  We have a reason to power the device off
 			 */
-			if ( !is_debug() ) shutdown();
+			if ( !is_debug() && StartupTicks >= 10 ) {
+				shutdown();
+			}
 		}
-
-		/*
-		 *  Take care of the low battery indicator
-		 */
-		dot( BATTERY, Voltage <= LOW_VOLTAGE );
 
 		/*
 		 *  Adjust the display contrast if it has been changed

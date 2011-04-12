@@ -772,12 +772,6 @@ typedef struct _ram {
 	 */
 	volatile long long _ticker;
 
-	/*
-	 *  Another ticker which is reset on every keystroke
-	 *  In fact, it counts the time between keystrokes
-	 */
-	volatile unsigned short _keyticks;
-
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
@@ -795,7 +789,12 @@ extern TPersistentRam PersistentRam;
 #define RandS2		(PersistentRam._rand_s2)
 #define RandS3		(PersistentRam._rand_s3)
 #define Ticker		(PersistentRam._ticker)
-#define Keyticks	(PersistentRam._keyticks)
+
+/*
+ *  Another ticker which is reset on every keystroke
+ *  In fact, it counts the time between keystrokes
+ */
+extern volatile unsigned short Keyticks;
 
 /*
  *  No so persistent runtime data
