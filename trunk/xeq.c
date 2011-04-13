@@ -3187,8 +3187,13 @@ unsigned int checksum_code(void) {
 }
 
 int checksum_all(void) {
+#if 0
 	const unsigned int oldcrc = State.crc;
 	State.crc = 0xa581;
 	State.crc = crc_checksum((unsigned short int *)&PersistentRam, sizeof(PersistentRam)/sizeof(unsigned short int));
 	return oldcrc != State.crc;
+#else
+	State.crc = 0;
+	return 0;
+#endif
 }
