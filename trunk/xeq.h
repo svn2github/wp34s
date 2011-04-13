@@ -818,6 +818,7 @@ extern void xeqone(char *);
 extern void xeq_init(void);
 extern void xeq_init_contexts(void);
 extern void init_34s(void);
+extern void wakeup_34s(void);
 extern void process_keycode(int);
 
 extern unsigned int state_pc(void);

@@ -363,6 +363,7 @@ void watchdog(void)
 int main(int argc, char *argv[]) {
 	int c, n = 0;
 	decContext ctx, ctx64;
+	int warm = 0;
 
 	Ctx = &ctx;
 	Ctx64 = &ctx64;
@@ -372,6 +373,10 @@ int main(int argc, char *argv[]) {
 			if (argv[1][0] == 'x' && argv[1][1] == 'r' && argv[1][2] == 'o' && argv[1][3] == 'm' && argv[1][4] == '\0') {
 				dump_xrom();
 				return 0;
+			}
+			if (argv[1][0] == 'w' && argv[1][1] == 'a' && argv[1][2] == 'k' && argv[1][3] == 'e' && argv[1][4] == '\0') {
+				warm = 1;
+				goto skipargs;
 			}
 			dump_menu("float", "", CATALOGUE_NORMAL);
 			dump_menu("complex", "[cmplx]", CATALOGUE_COMPLEX);
@@ -411,9 +416,12 @@ int main(int argc, char *argv[]) {
 		printf("\tspecial commands %d\n", SPECIAL_MAX);
 		return 0;
 	}
-
+skipargs:
 	load_state();
-	init_34s();
+	if (warm)
+		wakeup_34s();
+	else
+		init_34s();
 	if (setuptty(0) == 0) {
 		display();
 		while ((c = GETCHAR()) != GETCHAR_ERR && c != CH_QUIT) {
