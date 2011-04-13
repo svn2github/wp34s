@@ -46,7 +46,7 @@ static void dump1(const decNumber *a, const char *msg) {
 #endif
 
 
-#define MOD_DIGITS  800
+#define MOD_DIGITS  450
 
 
 /* Define a table of small integers.
