@@ -3161,7 +3161,7 @@ static unsigned int crc_step2(unsigned int crc, unsigned short s, unsigned int c
 
 static unsigned int crc_checksum(unsigned short int *base, unsigned int n) {
 	unsigned int ct[256];
-	int i;
+	unsigned int i;
 	unsigned int crc = 0;
 
 	/* Build up a CRC table */
