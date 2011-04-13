@@ -105,9 +105,8 @@ void init_state(void) {
 	s.show_register = regX_idx;
 	s.runmode = 1;
 
-        s.magic = MAGIC_MARKER;
-
 	xcopy(&State, &s, sizeof(struct _state));
+	checksum_all();
 }
 
 static void init_confirm(enum confirmations n) {

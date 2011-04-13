@@ -339,6 +339,7 @@ void load_state( void )
 
 void shutdown( void )
 {
+	checksum_all();
 	setuptty( 1 );
 	save_state();
 	exit( 0 );
@@ -439,6 +440,6 @@ skipargs:
 		}
 		setuptty(1);
 	}
-	save_state();
+	shutdown();
 	return 0;
 }

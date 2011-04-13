@@ -3094,7 +3094,7 @@ static void check_const_cat(void) {
 /* Main initialisation routine that sets things up for us.
  */
 void xeq_init(void) {
-	if (State.magic != MAGIC_MARKER)
+	if (checksum_all())
 		reset(NULL, NULL, NULL);
 
 
@@ -3159,11 +3159,10 @@ static unsigned int crc_step2(unsigned int crc, unsigned short s, unsigned int c
 	return crc_step(t, s >> 8, ct);
 }
 
-unsigned int checksum_code(void) {
+static unsigned int crc_checksum(unsigned short int *base, unsigned int n) {
 	unsigned int ct[256];
 	int i;
 	unsigned int crc = 0;
-	int n = State.last_prog;
 
 	/* Build up a CRC table */
 	for (i=0; i<256; i++) {
@@ -3179,6 +3178,17 @@ unsigned int checksum_code(void) {
 	/* Now calculate the checksum */
 	crc = crc_step2(0, n, ct);
 	for (i=1; i<n; i++)
-		crc = crc_step2(crc, prog[i], ct);
+		crc = crc_step2(crc, base[i], ct);
 	return crc;
+}
+
+unsigned int checksum_code(void) {
+	return crc_checksum(prog, State.last_prog);
+}
+
+int checksum_all(void) {
+	const unsigned int oldcrc = State.crc;
+	State.crc = 0xa581;
+	State.crc = crc_checksum((unsigned short int *)&PersistentRam, sizeof(PersistentRam)/sizeof(unsigned short int));
+	return oldcrc != State.crc;
 }

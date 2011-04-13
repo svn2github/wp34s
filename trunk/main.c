@@ -916,6 +916,11 @@ int put_key( int k )
 void shutdown( void )
 {
 	/*
+	 *  Ensure the RAM checksum is correct
+	 */
+	checksum_all();
+
+	/*
 	 *  Wait for key release
 	 */
 	while ( OnKeyPressed ) {

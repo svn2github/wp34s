@@ -631,7 +631,7 @@ enum shifts {
 #endif
 
 struct _state {
-	unsigned long int magic;	// Magic marker to detect failed RAM
+	unsigned int crc;		// Magic marker to detect failed RAM
 
 // User noticable state
 #define SB(f, p)	unsigned int f : p
@@ -837,6 +837,7 @@ extern void decpc(void);
 extern unsigned int find_label_from(unsigned int, unsigned int, int);
 extern void fin_tst(const int);
 extern unsigned int checksum_code(void);
+extern int checksum_all(void);
 
 extern unsigned int get_bank_flags(void);
 extern void set_bank_flags(unsigned int);
