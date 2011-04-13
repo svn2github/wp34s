@@ -418,9 +418,7 @@ int main(int argc, char *argv[]) {
 	}
 skipargs:
 	load_state();
-	if (warm)
-		wakeup_34s();
-	else
+	if (!warm)
 		init_34s();
 	if (setuptty(0) == 0) {
 		display();

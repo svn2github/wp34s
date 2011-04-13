@@ -1836,9 +1836,3 @@ void init_34s(void) {
 #endif
 }
 
-void wakeup_34s(void) {
-	xeq_init();
-#if defined(REALBUILD) || defined(WINGUI)
-	display();
-#endif
-}
