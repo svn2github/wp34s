@@ -668,12 +668,16 @@ static int cvt_2rad(decNumber *res, const decNumber *x,
 		break;
 	case TRIG_DEG:
 		decNumberRemainder(&fm, x, &const_360, ctx);
+                if (decNumberIsNegative(&fm))
+                    decNumberAdd(&fm, &fm, &const_360, ctx);
 		if (r0 != NULL && right_angle(res, &fm, &const_90, r0, r1, r2, r3, ctx))
 			return 0;
 		decNumberD2R(res, &fm, ctx);
 		break;
 	case TRIG_GRAD:
 		decNumberRemainder(&fm, x, &const_400, ctx);
+                if (decNumberIsNegative(&fm))
+                    decNumberAdd(&fm, &fm, &const_400, ctx);
 		if (r0 != NULL && right_angle(res, &fm, &const_100, r0, r1, r2, r3, ctx))
 			return 0;
 		decNumberG2R(res, &fm, ctx);
