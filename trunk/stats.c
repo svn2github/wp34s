@@ -1442,7 +1442,8 @@ decNumber *cdf_B_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 		return r;
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
 		return decNumberZero(r);
-	if (decNumberIsInfinite(x))
+	decNumberCompare(&t, &n, x, ctx);
+	if (decNumberIsNegative(&t) && ! decNumberIsZero(&t))
 		return decNumberCopy(r, &const_1);
 
 	decNumberAdd(&u, x, &const_1, ctx);
@@ -1489,8 +1490,11 @@ decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
-	// MORE: provide reasonable initial estaimtes
-	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_B_helper);
+	decNumber p, n;
+
+	if (binomial_param(r, &p, &n, x, ctx))
+		return r;
+	return qf_search(r, x, ctx, 1, &const_0, &n, &cdf_B_helper);
 }
 
 
