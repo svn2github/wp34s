@@ -17,6 +17,7 @@
 #ifndef REALBUILD
 #ifdef WIN32
 #include <stdlib.h>  // sleep
+#include "win32.h"
 #define sleep _sleep
 #else
 #include <unistd.h>
@@ -37,7 +38,6 @@
 #include "lcd.h"
 #include "xrom.h"
 #include "alpha.h"
-
 
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
 
@@ -1241,12 +1241,13 @@ void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 /* Get the current ticker value */
 void op_ticks(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 #if defined(WINGUI) || defined(REALBUILD)
-	put_int(Ticker, 0, a);
+    put_int(Ticker, 0, a);
 #else
-	struct timeval tv;
-	gettimeofday(&tv, NULL);
-	long long int t = tv.tv_sec * 10ll + tv.tv_usec / 100000;
-	put_int(t, 0, a);
+    struct timeval tv;
+    long long int t;
+    gettimeofday(&tv, NULL);
+    t = tv.tv_sec * 10 + tv.tv_usec / 100000;
+    put_int(t, 0, a);
 #endif
 }
 

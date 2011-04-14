@@ -213,17 +213,17 @@ endif
 consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		Makefile features.h
 	cd $(UTILITIES) \
-		&& ./compile_consts "../" "../$(OBJECTDIR)/" \
+		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
 		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 
 catalogues.h: $(UTILITIES)/compile_cats$(EXE) Makefile features.h
-	$(UTILITIES)/compile_cats >catalogues.h
+	$(UTILITIES)/compile_cats$(EXE) >catalogues.h
 
 lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
-	$(UTILITIES)/lcdgen >$@
+	$(UTILITIES)/lcdgen$(EXE) >$@
 
 charset7.h: $(UTILITIES)/genchars7$(EXE)
-	$(UTILITIES)/genchars7 >$@
+	$(UTILITIES)/genchars7$(EXE) >$@
 
 $(UTILITIES)/compile_consts$(EXE): compile_consts.c Makefile features.h
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<

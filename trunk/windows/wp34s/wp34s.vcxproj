@@ -50,7 +50,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>../pdcurses;../catalogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../pdcurses;../catalogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USECURSES;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
@@ -75,7 +75,7 @@
       <IntrinsicFunctions>false</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
-      <AdditionalIncludeDirectories>../pdcurses;../catalogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..;../pdcurses;../catalogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USECURSES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>
@@ -119,6 +119,7 @@
     <ClCompile Include="..\..\string.c" />
     <ClCompile Include="..\..\xeq.c" />
     <ClCompile Include="..\..\xrom.c" />
+    <ClCompile Include="..\win32.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\alpha.h" />
@@ -137,6 +138,7 @@
     <ClInclude Include="..\..\stats.h" />
     <ClInclude Include="..\..\xeq.h" />
     <ClInclude Include="..\..\xrom.h" />
+    <ClInclude Include="..\win32.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\catalogs\catalogs.vcxproj">
