@@ -1022,7 +1022,10 @@ int main(void)
 
 	/*
 	 *  Initialise the software
+	 *  CRC checking the RAM is a bit slow so we speed up.
+	 *  Idling will slow us down again.
 	 */
+	set_speed( SPEED_HIGH );
 	init_34s();
 
 	/*
