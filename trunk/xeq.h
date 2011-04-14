@@ -776,6 +776,12 @@ typedef struct _ram {
 	 */
 	volatile long long _ticker;
 
+	/*
+	 *  Timeout values for deep sleep mode
+	 */
+	unsigned short _deep_sleep_marker;
+	unsigned short _last_active_second;
+
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
