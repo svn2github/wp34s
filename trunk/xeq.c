@@ -3150,50 +3150,36 @@ void xeq_init(void) {
 }
 
 
-static unsigned int crc_step(unsigned int crc, unsigned char byte, unsigned int ct[256]) {
-	return ct[0xff & (crc^byte)] ^ (crc >> 8);
-}
-
-static unsigned int crc_step2(unsigned int crc, unsigned short s, unsigned int ct[256]) {
-	unsigned int t = crc_step(crc, s & 0xff, ct);
-	return crc_step(t, s >> 8, ct);
-}
-
-static unsigned int crc_checksum(unsigned short int *base, unsigned int n) {
-	unsigned int ct[256];
+/* The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
+ */
+static unsigned short int crc16(void *base, unsigned int length) {
+	unsigned short int crc = 0;
+	unsigned char *d = (unsigned char *)base;
 	unsigned int i;
-	unsigned int crc = 0;
 
-	/* Build up a CRC table */
-	for (i=0; i<256; i++) {
-		unsigned int r = i;
-		int j;
-		for (j=8; j > 0; j--) {
-			const unsigned int s = r>>1;
-			r = (r&1)?(s^0xEDB88320):s;
-		}
-		ct[i] = r;
+	for (i=0; i<length; i++) {
+		crc  = ((unsigned char)(crc >> 8)) | (crc << 8);
+		crc ^= *d++;
+		crc ^= ((unsigned char)(crc & 0xff)) >> 4;
+		crc ^= crc << 12;
+		crc ^= (crc & 0xff) << 5;
 	}
-
-	/* Now calculate the checksum */
-	crc = crc_step2(0, n, ct);
-	for (i=1; i<n; i++)
-		crc = crc_step2(crc, base[i], ct);
 	return crc;
 }
 
-unsigned int checksum_code(void) {
-	return crc_checksum(prog, State.last_prog);
+
+unsigned short int checksum_code(void) {
+	return crc16(PersistentRam._prog, State.last_prog * 2 - 2);
 }
 
 int checksum_all(void) {
 #if 0
-	const unsigned int oldcrc = State.crc;
-	State.crc = 0xa581;
-	State.crc = crc_checksum((unsigned short int *)&PersistentRam, sizeof(PersistentRam)/sizeof(unsigned short int));
-	return oldcrc != State.crc;
+	const unsigned short int oldcrc = PersistentRam._crc;
+	PersistentRam._crc = 0xa581;
+	PersistentRam._crc = crc16(&PersistentRam, sizeof(PersistentRam));
+	return oldcrc != PersistentRam._crc;
 #else
-	State.crc = 0;
+	PersistentRam.crc = 0;
 	return 0;
 #endif
 }

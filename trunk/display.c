@@ -1202,9 +1202,9 @@ void display(void) {
 			set_status("");
 		set_dot(STO_annun);
 		if (State.smode == SDISP_SHOW) {
-			unsigned int crc = checksum_code();
+			unsigned short int crc = checksum_code();
 			j = SEGS_PER_DIGIT * 0;
-			for (i=0; i<8; i++) {
+			for (i=0; i<4; i++) {
 				set_dig(j, "0123456789ABCDEF"[crc & 0xf]);
 				crc >>= 4;
 				j += SEGS_PER_DIGIT;

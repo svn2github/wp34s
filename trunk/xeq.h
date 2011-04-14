@@ -631,8 +631,6 @@ enum shifts {
 #endif
 
 struct _state {
-	unsigned int crc;		// Magic marker to detect failed RAM
-
 // User noticable state
 #define SB(f, p)	unsigned int f : p
 #include "statebits.h"
@@ -772,6 +770,7 @@ typedef struct _ram {
 	 */
 	volatile long long _ticker;
 
+	unsigned short int crc;		// Magic marker to detect failed RAM
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
@@ -836,7 +835,7 @@ extern int incpc(void);
 extern void decpc(void);
 extern unsigned int find_label_from(unsigned int, unsigned int, int);
 extern void fin_tst(const int);
-extern unsigned int checksum_code(void);
+extern unsigned short int checksum_code(void);
 extern int checksum_all(void);
 
 extern unsigned int get_bank_flags(void);
