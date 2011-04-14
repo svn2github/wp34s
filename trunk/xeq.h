@@ -786,19 +786,21 @@ typedef struct _ram {
 
 extern TPersistentRam PersistentRam;
 
-#define State		(PersistentRam._state)
-#define DispMsg		(PersistentRam._disp_msg)
-#define Alpha		(PersistentRam._alpha)
-#define Regs		(PersistentRam._regs)
-#define BankRegs	(PersistentRam._bank_regs)
-#define BankFlags	(PersistentRam._bank_flags)
-#define UserFlags	(PersistentRam._user_flags)
-#define Cmdline		(PersistentRam._cmdline)
-#define RetStk		(PersistentRam._retstk)
-#define RandS1		(PersistentRam._rand_s1)
-#define RandS2		(PersistentRam._rand_s2)
-#define RandS3		(PersistentRam._rand_s3)
-#define Ticker		(PersistentRam._ticker)
+#define State		 (PersistentRam._state)
+#define DispMsg		 (PersistentRam._disp_msg)
+#define Alpha		 (PersistentRam._alpha)
+#define Regs		 (PersistentRam._regs)
+#define BankRegs	 (PersistentRam._bank_regs)
+#define BankFlags	 (PersistentRam._bank_flags)
+#define UserFlags	 (PersistentRam._user_flags)
+#define Cmdline		 (PersistentRam._cmdline)
+#define RetStk		 (PersistentRam._retstk)
+#define RandS1		 (PersistentRam._rand_s1)
+#define RandS2		 (PersistentRam._rand_s2)
+#define RandS3		 (PersistentRam._rand_s3)
+#define Ticker		 (PersistentRam._ticker)
+#define DeepSleepMarker  (PersistentRam._deep_sleep_marker)
+#define LastActiveSecond (PersistentRam._last_active_second)
 
 /*
  *  Another ticker which is reset on every keystroke
