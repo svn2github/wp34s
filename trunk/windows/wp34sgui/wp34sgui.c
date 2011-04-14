@@ -112,6 +112,7 @@ void Shutdown( void )
 {
 	FILE *f = fopen( "wp34s.dat", "wb" );
 	if ( f == NULL ) return;
+	checksum_all();
 	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
 	fclose( f );
 }

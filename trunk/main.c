@@ -18,6 +18,8 @@
  * This is the main module for the real hardware
  * Module written by MvC
  */
+#define SPEED_ANNUNCIATOR LIT_EQ
+
 #include "xeq.h"
 #include "display.h"
 #include "lcd.h"
@@ -77,7 +79,8 @@
 #define PLLCOUNT          AT91C_CKGR_PLLCOUNT
 /// PLL MUL values.
 #define PLLMUL_10         304
-#define PLLMUL_32         999
+//#define PLLMUL         999
+#define PLLMUL            1144
 /// PLL DIV value.
 #define PLLDIV            1
 
@@ -117,6 +120,9 @@ volatile unsigned char Voltage;
 #define KEY_COL5_SHIFT 10
 #define KEY_ON_MASK   0x00000400
 #define KEY_REPEAT_MASK 0x0000010100000000LL   // only Up and Down repeat
+#define KEY_SHIFT_F_MASK 0x0000000000000800LL
+#define KEY_SHIFT_G_MASK 0x0000000000001000LL
+#define KEY_SHIFT_H_MASK 0x0000000000002000LL
 #define KEY_REPEAT_START 20
 #define KEY_REPEAT_NEXT 28
 #define KEY_BUFF_SHIFT 4
@@ -170,7 +176,7 @@ NO_INLINE void scan_keyboard( void )
 	AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOC;
 	// Rows as open drain output
 	AT91C_BASE_PIOC->PIO_OER = KEY_ROWS_MASK;
-	AT91C_BASE_PIOC->PIO_MDDR = KEY_ROWS_MASK;
+	AT91C_BASE_PIOC->PIO_MDER = KEY_ROWS_MASK;
 	
 	/*
 	 *  Quick check
@@ -284,6 +290,21 @@ NO_INLINE void scan_keyboard( void )
 					 *  First key found exits loop;
 					 */
 					i = 7;
+
+					if ( State.shifts == SHIFT_N ) {
+						/*
+						 *  Insert Shift key if f,g,h still down
+						 */
+						if ( k != K_F && ( KbData & KEY_SHIFT_F_MASK ) ) {
+							put_key( K_F );
+						}
+						else if ( k != K_G && ( KbData & KEY_SHIFT_G_MASK ) ) {
+							put_key( K_G );
+						}
+						else if ( k != K_H && ( KbData & KEY_SHIFT_H_MASK ) ) {
+							put_key( K_H );
+						}
+					}
 
 					/*
 					 *  Add key to buffer
@@ -515,7 +536,7 @@ void set_speed_hw( unsigned int speed )
 	 */
 	static const int speeds[ SPEED_HIGH + 1 ] =
 		{ 2000000 / 64 , 2000000, 2000000,
-		  32768 * ( 1 + PLLMUL_10 ), 32768 * ( 1 + PLLMUL_32 ) };
+		  32768 * ( 1 + PLLMUL_10 ), 32768 * ( 1 + PLLMUL ) };
 
 	/*
 	 *  If low voltage reduce maximum speed to 10 MHz
@@ -527,6 +548,11 @@ void set_speed_hw( unsigned int speed )
 	/*
 	 *  Set new speed, called from timer interrupt
 	 */
+#ifdef SPEED_ANNUNCIATOR
+	if ( SpeedSetting >= SPEED_MEDIUM ) {
+		clr_dot( SPEED_ANNUNCIATOR );
+	}
+#endif
 	SpeedSetting = speed;
 	if ( speeds[ speed ] == ClockSpeed ) {
 		/*
@@ -585,6 +611,9 @@ void set_speed_hw( unsigned int speed )
 		/*
 		 *  32.768 MHz PLL, derived from 32 KHz slow clock
 		 */
+#ifdef SPEED_ANNUNCIATOR
+		set_dot( SPEED_ANNUNCIATOR );
+#endif
 		SUPC_SetVoltageOutput( SUPC_VDD_180 );
 
 		if ( speed == SPEED_H_LOW_V ) {
@@ -593,8 +622,7 @@ void set_speed_hw( unsigned int speed )
 		}
 		else {
 			// With VDD=1.8, 1 wait state for flash reads is enough.
-			// I nevertheless prefer 2
-			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_2FWS;
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
 		}
 
 		if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS )
@@ -612,7 +640,7 @@ void set_speed_hw( unsigned int speed )
 		else {
 			// Initialise PLL at 32MHz
 			AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-						| ( PLLMUL_32 << 16 ) | PLLDIV;
+						| ( PLLMUL << 16 ) | PLLDIV;
 		}
 		while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
 
@@ -717,9 +745,11 @@ NO_INLINE void PIT_interrupt( void )
 	InIrq = 1;
 
 	/*
-	 *  Set speed to 2MHz for all irq handling. This ensures consistent timing
+	 *  Set speed to a minimum of 2 MHz for all irq handling.
 	 */
-	set_speed_hw( SPEED_MEDIUM );
+	if ( SpeedSetting < SPEED_MEDIUM ) {
+		set_speed_hw( SPEED_MEDIUM );
+	}
 
 	/*
 	 *  Voltage detection state machine

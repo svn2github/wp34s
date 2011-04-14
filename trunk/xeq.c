@@ -3173,13 +3173,13 @@ unsigned short int checksum_code(void) {
 }
 
 int checksum_all(void) {
-#if 0
-	const unsigned short int oldcrc = PersistentRam._crc;
-	PersistentRam._crc = 0xa581;
-	PersistentRam._crc = crc16(&PersistentRam, sizeof(PersistentRam));
-	return oldcrc != PersistentRam._crc;
+#if 1
+	unsigned short int oldcrc = PersistentRam.crc;
+	PersistentRam.crc = 0xa581;
+	PersistentRam.crc = crc16(&PersistentRam, sizeof(PersistentRam) - sizeof(Ticker));
+	return oldcrc != PersistentRam.crc;
 #else
-	PersistentRam.crc = 0;
+	PersistentRam.crc = 0x5aa5;
 	return 0;
 #endif
 }

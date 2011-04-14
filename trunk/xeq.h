@@ -765,12 +765,17 @@ typedef struct _ram {
 	char _cmdline[CMDLINELEN + 1];
 
 	/*
+	 *  Magic marker to detect failed RAM
+	 */
+	unsigned short int crc;
+
+	/*
 	 *  A ticker, incremented every 100ms
 	 *  This should never overflow
+	 *  Excluded from checksum
 	 */
 	volatile long long _ticker;
 
-	unsigned short int crc;		// Magic marker to detect failed RAM
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
