@@ -35,6 +35,9 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #define RAM_FUNCTION __attribute__((section(".ramfunc")))
 #define NO_INLINE    __attribute__((noinline))
 
+// This helps saving precious stack space in IRQs
+#define IRQ_STATIC // static
+
 /*
  *  CPU speed settings
  */
@@ -155,6 +158,9 @@ const char *get_revision( void )
  */
 void short_wait( int count )
 {
+	if ( SpeedSetting > SPEED_MEDIUM ) {
+		count *= 10;
+	}
 	while ( count-- ) {
 		// Exclude from optimisation
 		asm("");
@@ -167,13 +173,13 @@ void short_wait( int count )
  */
 NO_INLINE void scan_keyboard( void )
 {
-	int i, k;
-	unsigned char m;
-	union _ll {
+	IRQ_STATIC int i, k;
+	IRQ_STATIC unsigned char m;
+	IRQ_STATIC union _ll {
 		unsigned char c[ 8 ];
 		unsigned long long ll;
 	} keys;
-	long long last_keys;
+	IRQ_STATIC long long last_keys;
 
 	/*
 	 *  Assume no key is down
@@ -752,8 +758,6 @@ void user_heartbeat( void )
  */
 NO_INLINE void PIT_interrupt( void )
 {
-	int cpiv;
-	
 	InIrq = 1;
 
 	/*
@@ -795,8 +799,7 @@ NO_INLINE void PIT_interrupt( void )
 	 *  Now we have to re-program the PIT.
 	 *  The next interrupt is scheduled just one period after now.
 	 */
-	cpiv = PIT_GetPIVR() & AT91C_PITC_CPIV;
-	PIT_SetPIV( cpiv + PivValue );
+	PIT_SetPIV( ( PIT_GetPIVR() & AT91C_PITC_CPIV ) + PivValue );
 
 	InIrq = 0;
 }
@@ -920,7 +923,7 @@ int get_key( void )
 	KbRead = ( KbRead + 1 ) & KEY_BUFF_MASK;
 	--KbCount;
 	unlock();
-	return k;
+	return k - 1;
 }
 
 
@@ -937,6 +940,10 @@ int put_key( int k )
 		return 0;
 	}
 
+	if ( k == 0 ) {
+		short_wait( 1 );
+	}
+
 	if ( k == K_HEARTBEAT && KbCount != 0 ) {
 		/*
 		 *  Don't fill the buffer with heartbeats
@@ -944,7 +951,7 @@ int put_key( int k )
 		return 0;
 	}
 	lock();
-	KeyBuffer[ (int) KbWrite ] = (unsigned char) k;
+	KeyBuffer[ (int) KbWrite ] = (unsigned char) k + 1;
 	KbWrite = ( KbWrite + 1 ) & KEY_BUFF_MASK;
 	++KbCount;
 	unlock();
@@ -1008,6 +1015,11 @@ int is_debug( void )
  */
 int main(void)
 {
+	/*
+	 *  Fill RAM with 0x5A for debugging
+	 */
+	xset( (void *) 0x200200, 0x5A, 0x800 );
+
         /*
          * Initialise the hardware (clock, backup RAM, LCD, RTC, timer)
 	 */
@@ -1115,6 +1127,10 @@ int main(void)
 		 */
 		if ( k != -1 ) {
 			process_keycode( k );
+
+			if ( k == 0 ) {
+				dot( BATTERY, 1 );
+			}
 		}
 
 		if ( Keyticks >= APD_TICKS || ( Voltage <= APD_VOLTAGE ) ) {

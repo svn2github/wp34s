@@ -32,6 +32,7 @@
 //------------------------------------------------------------------------------
 //         Headers
 //------------------------------------------------------------------------------
+#define IRQ_IN_SVC_MODE
 
 #define __ASSEMBLY__
 #include "board.h"
@@ -40,7 +41,12 @@
 //         Definitions
 //------------------------------------------------------------------------------
 
+#ifdef IRQ_IN_SVC_MODE
 #define IRQ_STACK_SIZE   8*3*4
+#else
+// Reserve a larger stack because we run IRQs in IRQ mode, not in SVC mode here
+#define IRQ_STACK_SIZE	 256
+#endif
 
 #define ARM_MODE_ABT     0x17
 #define ARM_MODE_FIQ     0x11
@@ -106,13 +112,20 @@ irqHandler:
         ldr     r0, [r14, #AIC_IVR]
         str     lr, [r14, #AIC_IVR]
 
+#ifdef IRQ_IN_SVC_MODE
 /* Branch to interrupt handler in Supervisor mode */
         msr     CPSR_c, #ARM_MODE_SVC
+#else
+/* Leave mode as is */
+#endif
         stmfd   sp!, {r1-r3, r4, r12, lr}
         mov     lr, pc
         bx      r0
         ldmia   sp!, {r1-r3, r4, r12, lr}
+#ifdef IRQ_IN_SVC_MODE
+/* Switch back to IRQ mode */
         msr     CPSR_c, #ARM_MODE_IRQ | I_BIT
+#endif
 
 /* Acknowledge interrupt */
         ldr     lr, =AT91C_BASE_AIC
