@@ -14,7 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define DUMP1
+// #define DUMP1
 
 #include "decn.h"
 #include "xeq.h"
@@ -420,10 +420,7 @@ decNumber *decNumberPower(decNumber *r, const decNumber *x, const decNumber *y, 
 	if (decNumberIsNegative(y) && !isxint)
 		return set_NaN(r);
 	decNumberLn(&t, x, ctx);
-dump1(x, "x");dump1(y, "y");dump1(&t, "ln");
 	decNumberMultiply(&s, &t, y, ctx);
-dump1(&s, "prod");
-dump1(decNumberExp(r, &s, ctx), "exp");
 	return decNumberExp(r, &s, ctx);
 }
 
@@ -498,8 +495,7 @@ decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumberDivide(&t, &const_4, &s, ctx);
 	decNumberAGM(&s, &t, &const_1, ctx);
 	decNumberDivide(&t, &const_PIon2, &s, ctx);
-	decNumberMultiply(&s, &const_100, &const_ln2, ctx);
-	decNumberSubtract(r, &t, &s, ctx);
+	decNumberSubtract(r, &t, &const_100ln2, ctx);
 	if (invert)
 		decNumberMinus(r, r, ctx);
 	return r;
