@@ -31,8 +31,6 @@
 #define INCLUDE_INTERNAL_CATALOGUE
 
 #ifndef TINY_BUILD
-// Include the arithmetic/geometric mean iteration real and complex versions
-//#define INCLUDE_AGM
 
 // Include Rieman's Zeta function for real and complex arguments
 #define INCLUDE_ZETA

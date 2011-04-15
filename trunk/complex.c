@@ -1200,7 +1200,6 @@ void cmplxParallel(decNumber *rx, decNumber *ry,
 #endif
 }
 
-#ifdef INCLUDE_AGM
 void cmplxAGM(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d, decContext *ctx) {
@@ -1234,7 +1233,6 @@ void cmplxAGM(decNumber *rx, decNumber *ry,
 nan:	cmplx_NaN(rx, ry);
 #endif
 }
-#endif
 
 void cmplxRnd(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
 	decNumberRnd(rx, a, ctx);

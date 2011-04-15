@@ -226,14 +226,14 @@ static decNumber * decExpOp(decNumber *, const decNumber *,
 static void        decFinalize(decNumber *, decContext *, Int *, uInt *);
 static Int         decGetDigits(Unit *, Int);
 static Int         decGetInt(const decNumber *);
-static decNumber * decLnOp(decNumber *, const decNumber *,
-                              decContext *, uInt *);
+//static decNumber * decLnOp(decNumber *, const decNumber *,
+//                              decContext *, uInt *);
 static decNumber * decMultiplyOp(decNumber *, const decNumber *,
                               const decNumber *, decContext *,
                               uInt *);
 static decNumber * decNaNs(decNumber *, const decNumber *,
                               const decNumber *, uInt *);
-static decNumber * decPutInt(decNumber *, Int);
+//static decNumber * decPutInt(decNumber *, Int);
 static decNumber * decQuantizeOp(decNumber *, const decNumber *,
                               const decNumber *, decContext *, Flag,
                               uInt *);
@@ -832,6 +832,7 @@ decNumber * decNumberExp(decNumber *res, const decNumber *rhs,
 /* (+11) range needed by Ln, Log10, etc. (which may have to be able   */
 /* to calculate at p+e+2).                                            */
 /* ------------------------------------------------------------------ */
+#if 0
 decNumber * decNumberLn(decNumber *res, const decNumber *rhs,
                         decContext *set) {
   uInt status=0;                   // accumulator
@@ -870,6 +871,7 @@ decNumber * decNumberLn(decNumber *res, const decNumber *rhs,
   if (status!=0) decStatus(res, status, set);
   return res;
   } // decNumberLn
+#endif
 
 #if 0
 /* ------------------------------------------------------------------ */
@@ -1239,6 +1241,7 @@ decNumber * decNumberNormalize(decNumber *res, const decNumber *rhs,
 /* almost always be correctly rounded, but may be up to 1 ulp in      */
 /* error in rare cases.                                               */
 /* ------------------------------------------------------------------ */
+#if 0
 decNumber * decNumberPower(decNumber *res, const decNumber *lhs,
                            const decNumber *rhs, decContext *set) {
   #if DECSUBSET
@@ -1562,6 +1565,7 @@ decNumber * decNumberPower(decNumber *res, const decNumber *lhs,
   if (status!=0) decStatus(res, status, set);
   return res;
   } // decNumberPower
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decNumberQuantize -- force exponent to requested value             */
@@ -4083,6 +4087,7 @@ decNumber * decExpOp(decNumber *res, const decNumber *rhs,
 /*           where x is truncated (NB) into the range 10 through 99,  */
 /*           and then c = k>>2 and e = k&3.                           */
 /* ------------------------------------------------------------------ */
+#if 0
 const uShort LNnn[90]={9016,  8652,  8316,  8008,  7724,  7456,  7208,
   6972,  6748,  6540,  6340,  6148,  5968,  5792,  5628,  5464,  5312,
   5164,  5020,  4884,  4748,  4620,  4496,  4376,  4256,  4144,  4032,
@@ -4375,6 +4380,7 @@ decNumber * decLnOp(decNumber *res, const decNumber *rhs,
   // [status is handled by caller]
   return res;
   } // decLnOp
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decQuantizeOp  -- force exponent to requested value                */
@@ -6117,6 +6123,7 @@ static Int decGetInt(const decNumber *dn) {
 /*                                                                    */
 /* Returns res, an integral value; no error is possible.              */
 /* ------------------------------------------------------------------ */
+#if 0
 static decNumber *decPutInt(decNumber *res, Int in) {
   Unit *up;                             // work pointer
 
@@ -6142,6 +6149,7 @@ static decNumber *decPutInt(decNumber *res, Int in) {
   res->digits=decGetDigits(res->lsu, up-res->lsu);
   return res;
   } // decPutInt
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decBiStr -- compare string with pairwise options                   */

@@ -14,7 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// #define DUMP1
+#define DUMP1
 
 #include "decn.h"
 #include "xeq.h"
@@ -27,7 +27,7 @@ static FILE *debugf = NULL;
 
 static void open_debug(void) {
 	if (debugf == NULL) {
-		debugf = fopen("wp34s.log", "w");
+		debugf = fopen("/dev/ttys001", "w");
 	}
 }
 static void dump1(const decNumber *a, const char *msg) {
@@ -133,17 +133,18 @@ unsigned long long int dn_to_ull(const decNumber *x, decContext *ctx, int *sgn) 
 }
 
 
-void set_NaN(decNumber *x) {
+decNumber *set_NaN(decNumber *x) {
 	if (x != NULL)
 		decNumberCopy(x, &const_NaN);
+	return x;
 }
 
-void set_inf(decNumber *x) {
-	decNumberCopy(x, &const_inf);
+decNumber *set_inf(decNumber *x) {
+	return decNumberCopy(x, &const_inf);
 }
 
-void set_neginf(decNumber *x) {
-	decNumberCopy(x, &const__inf);
+decNumber *set_neginf(decNumber *x) {
+	return decNumberCopy(x, &const__inf);
 }
 
 
@@ -356,6 +357,77 @@ decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y, de
 
 /* The extra logrithmetic and power functions */
 
+/* Raise y^x */
+decNumber *decNumberPower(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx) {
+	decNumber s, t;
+	int isxint, xodd;
+
+	if (decNumberIsZero(decNumberCompare(&t, &const_1, y, ctx)))
+		return decNumberCopy(r, &const_1);
+	if (decNumberIsZero(x))
+		return decNumberCopy(r, &const_1);
+	if (decNumberIsZero(y) && (decNumberIsNegative(x) || decNumberIsZero(x)))
+		return set_NaN(r);
+
+	if (decNumberIsNaN(x) || decNumberIsNaN(y))
+		return set_NaN(r);
+
+	isxint = is_int(x, ctx);
+	if (decNumberIsZero(y)) {
+		xodd = isxint && is_even(x) == 0;
+		if (decNumberIsNegative(x)) {
+			if (xodd && decNumberIsNegative(y))
+				return set_neginf(r);
+			return set_inf(r);
+		}
+		if (xodd)
+			return decNumberCopy(r, y);
+		return decNumberZero(r);
+	}
+	if (decNumberIsInfinite(x)) {
+		decNumberCompare(&t, y, &const__1, ctx);
+		if (decNumberIsZero(&t))
+			return decNumberCopy(r, &const_1);
+		decNumberAbs(&t, y, ctx);
+		decNumberCompare(&s, &t, &const_1, ctx);
+		if (decNumberIsNegative(x)) {
+			if (decNumberIsNegative(&s))
+				return set_inf(r);
+			return decNumberZero(r);
+		}
+		if (decNumberIsNegative(&s))
+			return decNumberZero(r);
+		return set_inf(r);
+	}
+	if (decNumberIsInfinite(y)) {
+		if (decNumberIsNegative(y)) {
+			xodd = isxint && is_even(x) == 0;
+			if (decNumberIsNegative(x)) {
+				decNumberZero(r);
+				if (xodd)
+					return decNumberMinus(r, r, ctx);
+				return r;
+			}
+			if (xodd)
+				return set_neginf(r);
+			return set_inf(r);
+		}
+		if (decNumberIsNegative(x))
+			return decNumberZero(r);
+		return set_inf(r);
+	}
+
+	if (decNumberIsNegative(y) && !isxint)
+		return set_NaN(r);
+	decNumberLn(&t, x, ctx);
+dump1(x, "x");dump1(y, "y");dump1(&t, "ln");
+	decNumberMultiply(&s, &t, y, ctx);
+dump1(&s, "prod");
+dump1(decNumberExp(r, &s, ctx), "exp");
+	return decNumberExp(r, &s, ctx);
+}
+
+
 /* ln(1+x) */
 decNumber *decNumberLn1p(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber u, v, w;
@@ -409,6 +481,28 @@ decNumber *do_log(decNumber *r, const decNumber *x, const decNumber *base, decCo
 	}
 	decNumberLn(&y, x, ctx);
 	return decNumberDivide(r, &y, base, ctx);
+}
+
+decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber s, t, rx;
+	int invert;
+
+	decNumberCompare(&t, x, &const_1, ctx);
+	invert = decNumberIsNegative(&t);
+	if (invert) {
+		invert = 1;
+		decNumberRecip(&rx, x, ctx);
+		x = &rx;
+	}
+	decNumberMultiply(&s, x, &const_2pow100, ctx);
+	decNumberDivide(&t, &const_4, &s, ctx);
+	decNumberAGM(&s, &t, &const_1, ctx);
+	decNumberDivide(&t, &const_PIon2, &s, ctx);
+	decNumberMultiply(&s, &const_100, &const_ln2, ctx);
+	decNumberSubtract(r, &t, &s, ctx);
+	if (invert)
+		decNumberMinus(r, r, ctx);
+	return r;
 }
 
 decNumber *decNumberLog2(decNumber *r, const decNumber *x, decContext *ctx) {
@@ -1774,7 +1868,6 @@ decNumber *decNumberParallel(decNumber *res, const decNumber *x, const decNumber
 	return res;
 }
 
-#ifdef INCLUDE_AGM
 decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
 	int n;
 	decNumber a, g, t, u;
@@ -1808,7 +1901,6 @@ decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y, 
 nan:	set_NaN(res);
 	return res;
 }
-#endif
 
 
 /* Logical operations on decNumbers.

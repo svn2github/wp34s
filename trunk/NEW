@@ -21,13 +21,6 @@ Fused multiply/add					96 bytes
 	The real version can be replaced by complex multiply.
 	x+y*z can be done via (y, x) * (z, -1) at a pinch.
 
-AGM							528 bytes
-	limit of arithmetic geometric mean.
-
-	PRIME? routine includes overflow resistant code for
-	(a * b) mod c and (a ^ b) mod c which could also be exposed
-	if required.
-
 
 None of these are counting the catalogue and function table overheads.
 Two bytes for a catalogue entry (one for each catalogue it is in) and

@@ -99,9 +99,7 @@ static s_opcode catalogue[] = {
 	DYA(OP_BETA,		"\241")
 	MON(OP_GAMMA,		"\202")
 	DYA(OP_DTDIF,		"\203DAYS")
-#ifdef INCLUDE_AGM
 	DYA(OP_AGM,		"AGM")
-#endif
 #ifdef INCLUDE_SUBFACT
 	MON(OP_SUBFACT,		"!n")
 #endif
@@ -159,9 +157,7 @@ static s_opcode cplx_catalogue[] = {
 	CMON(OP_INVW,		"W\235")
 	CDYA(OP_BETA,		"\241")
 	CMON(OP_GAMMA,		"\202")
-#ifdef INCLUDE_AGM
 	CDYA(OP_AGM,		"AGM")
-#endif
 #ifdef INCLUDE_DBLFACT
 	CMON(OP_DBLFACT,	"x!!")
 #endif

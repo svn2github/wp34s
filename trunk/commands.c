@@ -216,9 +216,7 @@ const struct dyfunc dyfuncs[] = {
 	FUNC(OP_PERMG,	&decNumberPerMargin,	NULL,		NULL,		"%+MG")
 	FUNC(OP_MARGIN,	&decNumberMargin,	NULL,		NULL,		"%MG")
 	FUNC(OP_PARAL,	&decNumberParallel,	&cmplxParallel,	NULL,		"||")
-#ifdef INCLUDE_AGM
 	FUNC(OP_AGM,	&decNumberAGM,		&cmplxAGM,	NULL,		"AGM")
-#endif
 	FUNC(OP_HMSADD,	&decNumberHMSAdd,	NULL,		NULL,		"H.MS+")
 	FUNC(OP_HMSSUB,	&decNumberHMSSub,	NULL,		NULL,		"H.MS-")
 	FUNC(OP_GCD,	&decNumberGCD,		NULL,		&intGCD,	"GCD")

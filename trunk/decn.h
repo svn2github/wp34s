@@ -175,9 +175,9 @@ extern void do_atan(decNumber *, const decNumber *, decContext *);
 
 extern void dn_elliptic(decNumber *sn, decNumber *cn, decNumber *dn, const decNumber *u, const decNumber *k, decContext *ctx);
 
-extern void set_NaN(decNumber *);
-extern void set_inf(decNumber *);
-extern void set_neginf(decNumber *);
+extern decNumber *set_NaN(decNumber *);
+extern decNumber *set_inf(decNumber *);
+extern decNumber *set_neginf(decNumber *);
 
 extern void dn_inc(decNumber *, decContext *);
 extern void dn_dec(decNumber *, decContext *);

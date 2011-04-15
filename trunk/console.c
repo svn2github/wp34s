@@ -38,6 +38,8 @@
 
 volatile unsigned short Keyticks;
 
+static const char SvnRevision[ 12 ] = "$Rev:: 621 $";
+
 
 /*
  *  Create the persistant RAM area
@@ -442,4 +444,12 @@ skipargs:
 	}
 	shutdown();
 	return 0;
+}
+
+/*
+ *  Tell the revision number (must not be optimised out!)
+ */
+const char *get_revision( void )
+{
+	return SvnRevision + 7;
 }
