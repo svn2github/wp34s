@@ -374,88 +374,85 @@ decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y, de
 
 /* Raise y^x */
 decNumber *decNumberPower(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
-	decNumber s, t;
-	int isxint, xodd;
+	decNumber s, t, my;
+	int isxint, xodd, ynegative;
+	int negate = 0;
 
-    /* please delete dead code once assimilated and this comment!
-     * tests here were for x & y, the wrong way around, except final log was correct.
-     * a number of tests dominated others and so these are dead code.
-     *
-     * added 0^0 = NaN, this test can be removed if 0^0 = 1 is desired (HP claim 0^0 = 1 in latest models)
-     * 
-     * some cases that can be added:
-     *   (-y)^x, when x is integral
-     *    0^Inf = NaN
-     *   
-     * -- hugh
-     */
+	if (decNumberIsZero(decNumberCompare(&t, &const_1, y, ctx)))
+		return decNumberCopy(r, &const_1);		// 1^x = 1
+
+	if (decNumberIsZero(x))
+		return decNumberCopy(r, &const_1);		// y^0 = 1
 
 	if (decNumberIsNaN(x) || decNumberIsNaN(y))
 		return set_NaN(r);
 
-	if (decNumberIsZero(decNumberCompare(&t, &const_1, y, ctx)))
-            return decNumberCopy(r, &const_1); // 1^x = 1
-
 	if (decNumberIsZero(decNumberCompare(&t, &const_1, x, ctx)))
-        return decNumberCopy(r, y); // y^1 = y
-
-	if (decNumberIsZero(x)) {
-        if (decNumberIsZero(y)) return set_NaN(r); // 0^0 = NaN
-        return decNumberCopy(r, &const_1); // y^0 = 1
-    }
+		return decNumberCopy(r, y); // y^1 = y
 
 	isxint = is_int(x, ctx);
 	if (decNumberIsInfinite(x)) {
-#if 0
-        // dead code
 		decNumberCompare(&t, y, &const__1, ctx);
 		if (decNumberIsZero(&t))
-			return decNumberCopy(r, &const_1);
-#endif
+			return decNumberCopy(r, &const_1);	// -1 ^ +/-inf = 1
+
 		decNumberAbs(&t, y, ctx);
 		decNumberCompare(&s, &t, &const_1, ctx);
 		if (decNumberIsNegative(x)) {
 			if (decNumberIsNegative(&s))
-				return set_inf(r);
-			return decNumberZero(r);
+				return set_inf(r);		// y^-inf |y|<1 = +inf
+			return decNumberZero(r);		// y^-inf |y|>1 = +0
 		}
 		if (decNumberIsNegative(&s))
-			return decNumberZero(r);
-		return set_inf(r);
+			return decNumberZero(r);		// y^inf |y|<1 = +0
+		return set_inf(r);				// y^inf |y|>1 = +inf
 	}
+
+	ynegative = decNumberIsNegative(y);
 	if (decNumberIsInfinite(y)) {
-		if (decNumberIsNegative(y)) {
+		if (ynegative) {
 			xodd = isxint && is_even(x) == 0;
 			if (decNumberIsNegative(x)) {
-				decNumberZero(r);
-				if (xodd)
-					return decNumberMinus(r, r, ctx);
+				decNumberZero(r);		// -inf^x x<0 = +0
+				if (xodd)			// -inf^x odd x<0 = -0
+					return decNumberCopy(r, &const__0);
 				return r;
 			}
 			if (xodd)
-				return set_neginf(r);
-			return set_inf(r);
+				return set_neginf(r);		// -inf^x odd x>0 = -inf
+			return set_inf(r);			// -inf^x x>0 = +inf
 		}
 		if (decNumberIsNegative(x))
-			return decNumberZero(r);
-		return set_inf(r);
+			return decNumberZero(r);		// +inf^x x<0 = +0
+		return set_inf(r);				// +inf^x x>0 = +inf
 	}
 
 	if (decNumberIsZero(y)) {
-		// xodd = isxint && is_even(x) == 0; // dead
+		xodd = isxint && is_even(x) == 0;
 		if (decNumberIsNegative(x)) {
-			// if (xodd && decNumberIsNegative(y)) return set_neginf(r); // dead
-			return set_inf(r);
+			if (xodd && ynegative)
+				return set_neginf(r);		// -0^x odd x<0 = -inf
+			return set_inf(r);			// 0^x x<0 = +inf
 		}
-		// if (xodd) return decNumberCopy(r, y); // dead
-		return decNumberZero(r);
+		if (xodd && ynegative)
+			return decNumberCopy(r, &const__0);	// -0^x odd x>0 = -/+0
+		return decNumberZero(r);			// 0^x x>0 = +0
 	}
 
-	if (decNumberIsNegative(y) && !isxint)
-		return set_NaN(r);
+	if (ynegative) {
+		if (!isxint)
+			return set_NaN(r);			// y^x y<0, x not odd int = NaN
+		if (is_even(x) == 0)				// y^x, y<0, x odd = - ((-y)^x)
+			negate = 1;
+		decNumberMinus(&my, y, ctx);
+		y = &my;
+	}
 	decNumberLn(&t, y, ctx);
 	decNumberMultiply(&s, &t, x, ctx);
-	return decNumberExp(r, &s, ctx);
+	decNumberExp(r, &s, ctx);
+	if (negate)
+		return decNumberMinus(r, r, ctx);
+	return r;
 }
 
 
@@ -684,8 +681,8 @@ static void mod2pi(decNumber *res, const decNumber *x, decContext *ctx) {
 	 * This structure is likely to be larger than is required.
 	 */
 	struct {
-	    decNumber n;
-	    decNumberUnit extra[((MOD_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
+		decNumber n;
+		decNumberUnit extra[((MOD_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
 	} out;
 
 	decContext big;
