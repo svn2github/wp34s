@@ -373,36 +373,45 @@ decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y, de
 /* The extra logrithmetic and power functions */
 
 /* Raise y^x */
-decNumber *decNumberPower(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx) {
+decNumber *decNumberPower(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
 	decNumber s, t;
 	int isxint, xodd;
 
-	if (decNumberIsZero(decNumberCompare(&t, &const_1, y, ctx)))
-		return decNumberCopy(r, &const_1);
-	if (decNumberIsZero(x))
-		return decNumberCopy(r, &const_1);
-	if (decNumberIsZero(y) && (decNumberIsNegative(x) || decNumberIsZero(x)))
-		return set_NaN(r);
+    /* please delete dead code once assimilated and this comment!
+     * tests here were for x & y, the wrong way around, except final log was correct.
+     * a number of tests dominated others and so these are dead code.
+     *
+     * added 0^0 = NaN, this test can be removed if 0^0 = 1 is desired (HP claim 0^0 = 1 in latest models)
+     * 
+     * some cases that can be added:
+     *   (-y)^x, when x is integral
+     *    0^Inf = NaN
+     *   
+     * -- hugh
+     */
 
 	if (decNumberIsNaN(x) || decNumberIsNaN(y))
 		return set_NaN(r);
 
+	if (decNumberIsZero(decNumberCompare(&t, &const_1, y, ctx)))
+            return decNumberCopy(r, &const_1); // 1^x = 1
+
+	if (decNumberIsZero(decNumberCompare(&t, &const_1, x, ctx)))
+        return decNumberCopy(r, y); // y^1 = y
+
+	if (decNumberIsZero(x)) {
+        if (decNumberIsZero(y)) return set_NaN(r); // 0^0 = NaN
+        return decNumberCopy(r, &const_1); // y^0 = 1
+    }
+
 	isxint = is_int(x, ctx);
-	if (decNumberIsZero(y)) {
-		xodd = isxint && is_even(x) == 0;
-		if (decNumberIsNegative(x)) {
-			if (xodd && decNumberIsNegative(y))
-				return set_neginf(r);
-			return set_inf(r);
-		}
-		if (xodd)
-			return decNumberCopy(r, y);
-		return decNumberZero(r);
-	}
 	if (decNumberIsInfinite(x)) {
+#if 0
+        // dead code
 		decNumberCompare(&t, y, &const__1, ctx);
 		if (decNumberIsZero(&t))
 			return decNumberCopy(r, &const_1);
+#endif
 		decNumberAbs(&t, y, ctx);
 		decNumberCompare(&s, &t, &const_1, ctx);
 		if (decNumberIsNegative(x)) {
@@ -432,10 +441,20 @@ decNumber *decNumberPower(decNumber *r, const decNumber *x, const decNumber *y, 
 		return set_inf(r);
 	}
 
+	if (decNumberIsZero(y)) {
+		// xodd = isxint && is_even(x) == 0; // dead
+		if (decNumberIsNegative(x)) {
+			// if (xodd && decNumberIsNegative(y)) return set_neginf(r); // dead
+			return set_inf(r);
+		}
+		// if (xodd) return decNumberCopy(r, y); // dead
+		return decNumberZero(r);
+	}
+
 	if (decNumberIsNegative(y) && !isxint)
 		return set_NaN(r);
-	decNumberLn(&t, x, ctx);
-	decNumberMultiply(&s, &t, y, ctx);
+	decNumberLn(&t, y, ctx);
+	decNumberMultiply(&s, &t, x, ctx);
 	return decNumberExp(r, &s, ctx);
 }
 
