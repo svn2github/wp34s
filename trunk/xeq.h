@@ -1044,6 +1044,7 @@ extern int put_key(int k);
 extern void watchdog(void);
 extern void shutdown(void);
 extern int is_debug(void);
+extern const char *get_revision(void);
 
 #ifdef REALBUILD
 extern void cmdcontrast(unsigned int arg, enum rarg op);

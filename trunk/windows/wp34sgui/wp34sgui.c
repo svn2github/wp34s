@@ -50,6 +50,16 @@ volatile unsigned short Keyticks;
  */
 static int EmulatorFlags;
 
+static char SvnRevision[] = SVN_REVISION;
+
+/*
+ *  Tell the revision number
+ */
+const char *get_revision( void )
+{
+	return SvnRevision + 7;
+}
+
 /*
  *  Main entry point
  *  Update the callback pointers and start application
@@ -59,12 +69,11 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	unsigned long id;
 	extern unsigned long __stdcall HeartbeatThread( void *p );
 	int revision;
-	static char revision_string[] = SVN_REVISION;
 
 	/*
 	 *  Get the revision information and put it into the build date
 	 */
-	revision = atoi( revision_string + 7 );
+	revision = atoi( SvnRevision + 7 );
 
 	/*
 	 *  Create the heartbeat at 100ms

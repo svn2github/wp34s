@@ -84,7 +84,7 @@ ifdef REALBUILD
 # MinGW	will do	nicely
 
 OUTPUTDIR := realbuild
-CFLAGS := $(BASE_CFLAGS) -mthumb -mcpu=arm7tdmi -Os
+CFLAGS := -mthumb -mcpu=arm7tdmi -Os $(BASE_CFLAGS) 
 CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
 HOSTCFLAGS += -DREALBUILD
 ifdef NOWD
@@ -106,10 +106,12 @@ LIBS +=	-nostdlib -lgcc
 EXE := .exe
 endif
 
+ifdef REALBUILD
+OBJECTDIR := $(OUTPUTDIR)_obj
+DIRS += $(OBJECTDIR) $(UTILITIES)
+else
 OBJECTDIR := $(OUTPUTDIR)/obj
 DIRS := $(OUTPUTDIR) $(OBJECTDIR)
-ifdef REALBUILD
-DIRS += $(UTILITIES)
 endif
 
 # Files	and libraries
@@ -152,7 +154,6 @@ endif
 ifdef REALBUILD
 all: flash
 flash: $(DIRS) $(OUTPUTDIR)/calc.bin
-flash2: $(DIRS) $(OUTPUTDIR)/calc2.bin
 else
 all: calc
 calc: $(DIRS) $(OUTPUTDIR)/calc
@@ -174,10 +175,10 @@ $(DIRS):
 
 ifdef REALBUILD
 
-# Targets flash and flash2 for different build processes
+# Target flash
 
 $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
-		$(LDCTRL) Makefile
+		$(OBJECTDIR)/libconsts.a $(LDCTRL) Makefile
 	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program 
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
@@ -187,18 +188,7 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 
-$(OUTPUTDIR)/calc2.bin: $(OBJECTDIR)/libdecNumber.a $(CNSTS) $(OBJS) $(MAIN)\
-		$(ATOBJS) $(STARTUP) $(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	$(LDFLAGS:$(MAPFILE)=$(MAPFILE2)) -o $(OUTPUTDIR)/calc2 \
-		$(STARTUP) $(MAIN) $(OBJS) $(ATOBJS) $(LIBDN) $(LIBS)
-	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc2 $@
-	grep "^\.fixed"    $(MAPFILE2) | tail -n 1 >  $(SUMMARY2)
-	grep "^\.relocate" $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
-	grep "^\.xrom"     $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
-	grep "^\.bss"      $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
-	grep "^\.backup"   $(MAPFILE2) | tail -n 1 >> $(SUMMARY2)
-
-include openocd/Makefile
+# include openocd/Makefile
 else
 
 # Target calc, console emulator

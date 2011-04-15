@@ -1088,10 +1088,12 @@ void display(void) {
 		set_digits_string(p, 0);
 		goto skpall;
 	} else if (State.version) {
+		char vers[] = "34s " VERSION_STRING" ????";
 		set_digits_string("pAULI WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
 		set_decimal(SEGS_PER_DIGIT * 4, DECIMAL_COMMA, NULL);
-		set_status("34s " VERSION_STRING);
+		xcopy( vers + 9, get_revision(), 4 );
+		set_status(vers);
 		goto nostk;
 	} else if (State.confirm) {
 		set_status(S_SURE);

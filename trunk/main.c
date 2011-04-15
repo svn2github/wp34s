@@ -18,7 +18,7 @@
  * This is the main module for the real hardware
  * Module written by MvC
  */
-#define SPEED_ANNUNCIATOR LIT_EQ
+__attribute__((section(".revision"),externally_visible)) const char SvnRevision[ 12 ] = "$Rev:: 1000$";
 
 #include "xeq.h"
 #include "display.h"
@@ -43,6 +43,7 @@
 #define SPEED_MEDIUM  2
 #define SPEED_H_LOW_V 3
 #define SPEED_HIGH    4
+#define SPEED_ANNUNCIATOR LIT_EQ
 
 /*
  *  SUPC Voltages
@@ -92,6 +93,7 @@
 #define APD_TICKS 1800 // 3 minutes
 #define APD_VOLTAGE SUPC_BOD_2_1V
 #define LOW_VOLTAGE SUPC_BOD_2_4V
+#define DEEP_SLEEP_MARKER 0xA53C
 
 /*
  *  Setup the persistent RAM
@@ -137,6 +139,16 @@ volatile unsigned short Keyticks;
 long long KbData, KbDebounce, KbRepeatKey;
 short int BodThreshold;
 short int BodTimer;
+
+/*
+ *  Tell the revision number (must not be optimised out!)
+ */
+const char *get_revision( void )
+{
+	return SvnRevision + 7;
+}
+
+
 
 /*
  *  Short wait to allow output lines to settle
@@ -1020,13 +1032,22 @@ int main(void)
 	AT91C_BASE_SUPC->SUPC_WUMR = (AT91C_BASE_SUPC->SUPC_WUMR)& ~(0x7u <<12);
 	SUPC_SetWakeUpSources( AT91C_SUPC_FWUPEN );
 
-	/*
-	 *  Initialise the software
-	 *  CRC checking the RAM is a bit slow so we speed up.
-	 *  Idling will slow us down again.
-	 */
-	set_speed( SPEED_HIGH );
-	init_34s();
+	if ( DeepSleepMarker == DEEP_SLEEP_MARKER ) {
+		/*
+		 *  Return from deep sleep
+		 */
+		DeepSleepMarker = 0;
+		// TODO: Check if APD time reached, update Ticker and friends
+	}
+	else {
+		/*
+		 *  Initialise the software on power on.
+		 *  CRC checking the RAM is a bit slow so we speed up.
+		 *  Idling will slow us down again.
+		 */
+		set_speed( SPEED_HIGH );
+		init_34s();
+	}
 
 	/*
 	 *  Wait for event and execute it
