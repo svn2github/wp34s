@@ -599,9 +599,13 @@ static void process_cmdline(void) {
 
 	if (State.eol) {
 		const unsigned int cmdlinedot = State.cmdlinedot;
-		Cmdline[State.eol] = '\0';
-		if (Cmdline[State.eol-1] == 'E')
-			Cmdline[State.eol-1] = '\0';
+		char cmdline[CMDLINELEN + 1];
+
+		xcopy(cmdline, Cmdline, CMDLINELEN + 1);
+
+		cmdline[State.eol] = '\0';
+		if (cmdline[State.eol-1] == 'E')
+			cmdline[State.eol-1] = '\0';
 		State.eol = 0;
 		if (State.state_lift)
 			lift();
@@ -609,22 +613,22 @@ static void process_cmdline(void) {
 		State.cmdlinedot = 0;
 		State.cmdlineeex = 0;
 		if (is_intmode()) {
-			const int sgn = (Cmdline[0] == '-')?1:0;
-			unsigned long long int x = s_to_ull(Cmdline+sgn, int_base());
+			const int sgn = (cmdline[0] == '-')?1:0;
+			unsigned long long int x = s_to_ull(cmdline+sgn, int_base());
 			d64fromInt(&regX, build_value(x, sgn));
 		} else if (cmdlinedot == 2 || (State.fract && cmdlinedot)) {
 			char *d0, *d1;
 			int neg;
 
 			State.fract = 1;
-			if (Cmdline[0] == '-') {
+			if (cmdline[0] == '-') {
 				neg = 1;
-				d0 = Cmdline+1;
+				d0 = cmdline+1;
 			} else {
 				neg = 0;
-				d0 = Cmdline;
+				d0 = cmdline;
 			}
-			d1 = find_char(Cmdline, '.');
+			d1 = find_char(d0, '.');
 			*d1++ = '\0';
 			// if (*d1 == '\0') goto real;
 			if (cmdlinedot == 2) {
@@ -633,14 +637,14 @@ static void process_cmdline(void) {
 				// if (*d2 == '\0') cmdlinedot--; else
 				if (fract_convert_number(&b, d2))
 					return;
-			}
-			if (fract_convert_number(&z, d0))	return;
-			if (fract_convert_number(&a, d1))	return;
-			if (cmdlinedot == 2) {
 				if (decNumberIsZero(&b)) {
 					err(ERR_DOMAIN);
 					return;
 				}
+			}
+			if (fract_convert_number(&z, d0))	return;
+			if (fract_convert_number(&a, d1))	return;
+			if (cmdlinedot == 2) {
 				decNumberDivide(&t, &a, &b, Ctx);
 				decNumberAdd(&x, &z, &t, Ctx);
 			} else {
@@ -654,7 +658,7 @@ static void process_cmdline(void) {
 				decNumberMinus(&x, &x, Ctx);
 			setX(&x);
 		} else {
-			decNumberFromString(&x, Cmdline, Ctx);
+			decNumberFromString(&x, cmdline, Ctx);
 			setX(&x);
 		}
 	}
