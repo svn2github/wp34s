@@ -515,6 +515,8 @@ decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
 	int invert;
 
 	decNumberCompare(&t, x, &const_1, ctx);
+	if (decNumberIsZero(&t))
+		return decNumberZero(r);
 	invert = decNumberIsNegative(&t);
 	if (invert) {
 		invert = 1;
