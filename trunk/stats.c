@@ -787,8 +787,7 @@ decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const dec
 
 	decNumberCompare(&t, &const_1, x, ctx);
 	if (decNumberIsNegative(x) || decNumberIsNegative(&t)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 	if (decNumberIsZero(x) || decNumberIsZero(&t))
 		limit = 1;
@@ -991,8 +990,7 @@ decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 			return decNumberMinus(q, q, ctx);
 		}
 		// Large and positive
-		decNumberCopy(q, &const_1);
-		return q;
+		return decNumberCopy(q, &const_1);
 	} else {
 		decNumberSquare(&x2, &absx, ctx);
 		decNumberCopy(&t, &absx);
@@ -1085,8 +1083,7 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (param_positive_int(r, &v))
 		return r;
 	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
 		return decNumberZero(r);
@@ -1109,8 +1106,7 @@ decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (param_positive_int(r, &v))
 		return r;
 	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 	decNumberMultiply(&a, &v, &const_2, ctx);
 	decNumberSubtract(&b, &a, &const_1, ctx);
@@ -1135,8 +1131,7 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (param_positive(r, &v))
 		return r;
 	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 	if (decNumberIsInfinite(x)) {
 		if (decNumberIsNegative(x))
@@ -1167,13 +1162,11 @@ decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (param_positive(r, &v))
 		return r;
 	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 	decNumberSubtract(&b, &const_0_5, x, ctx);
 	if (decNumberIsZero(&b)) {
-		decNumberZero(r);
-		return r;
+		return decNumberZero(r);
 	}
 	decNumberCompare(&a, &v, &const_1, ctx);
 	if (decNumberIsZero(&a)) {					// special case v = 1
@@ -1193,8 +1186,7 @@ decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	decNumberCompare(&d, &v, &const_2, ctx);			// special case v = 2
 	if (decNumberIsZero(&d)) {
-		decNumberCopy(r, &a);
-		return r;
+		return decNumberCopy(r, &a);
 	}
 
 	qf_Q_ests(NULL, &b, x, &b, ctx);
@@ -1214,8 +1206,7 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (param_positive(r, &v1) || param_positive(r, &v2))
 		return r;
 	if (decNumberIsNaN(x)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 	if (decNumberIsNegative(x) || decNumberIsZero(x))
 		return decNumberZero(r);
@@ -1318,8 +1309,7 @@ decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
 			decNumberIsNegative(&k) || decNumberIsZero(&k) ||
 			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 
 	decNumberLn(&u, &t, ctx);
@@ -1407,8 +1397,7 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 	decNumberSubtract(&t, &const_1, p, ctx);
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) ||
 			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 
 	decNumberLn(&u, &t, ctx);

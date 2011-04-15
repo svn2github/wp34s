@@ -814,8 +814,7 @@ static int cmplx_perm_helper(decNumber *rx, decNumber *ry, const decNumber *a, c
 	decNumber n, m, s1, s2;
 
 	if (decNumberIsSpecial(a) || decNumberIsSpecial(b) || decNumberIsSpecial(c) || decNumberIsSpecial(d)) {
-		set_NaN(rx);
-		set_NaN(ry);
+		cmplx_NaN(rx, ry);
 		return 0;
 	}
 		

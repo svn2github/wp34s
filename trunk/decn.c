@@ -488,8 +488,7 @@ decNumber *do_log(decNumber *r, const decNumber *x, const decNumber *base, decCo
 	decNumber y;
 
 	if (decNumberIsInfinite(x)) {
-		set_inf(r);
-		return r;
+		return set_inf(r);
 	}
 	decNumberLn(&y, x, ctx);
 	return decNumberDivide(r, &y, base, ctx);
@@ -545,8 +544,7 @@ decNumber *decNumberPow_1(decNumber *r, const decNumber *x, decContext *ctx) {
 		return decNumberCopy(r, &const_1);
 	if (even == 0)
 		return decNumberCopy(r, &const__1);
-	set_NaN(r);
-	return r;
+	return set_NaN(r);
 }
 
 decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx) {
@@ -556,18 +554,15 @@ decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (decNumberIsSpecial(x)) {
 		if (decNumberIsNaN(x) || decNumberIsNegative(x))
-			set_NaN(r);
-		else
-			set_inf(r);
-		return r;
+			return set_NaN(r);
+		return set_inf(r);
 	}
 
 	decNumberRecip(&t, &const_e, ctx);
 	decNumberMinus(&s, &t, ctx);	// -1/e
 	decNumberCompare(&t, &s, x, ctx);
 	if (! decNumberIsNegative(&t)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 
 	// Make an initial guess as to the value
@@ -824,7 +819,7 @@ decNumber *decNumberSin(decNumber *res, const decNumber *x, decContext *ctx) {
 	decNumber x2;
 
 	if (decNumberIsSpecial(x))
-		set_NaN(res);
+		return set_NaN(res);
 	else {
 		if (cvt_2rad(&x2, x, &const_0, &const_1, &const_0, &const__1, ctx))
 			sincosTaylor(&x2, res, NULL, ctx);
@@ -838,7 +833,7 @@ decNumber *decNumberCos(decNumber *res, const decNumber *x, decContext *ctx) {
 	decNumber x2;
 
 	if (decNumberIsSpecial(x))
-		set_NaN(res);
+		return set_NaN(res);
 	else {
 		if (cvt_2rad(&x2, x, &const_1, &const_0, &const__1, &const_0, ctx))
 			sincosTaylor(&x2, NULL, res, ctx);
@@ -852,7 +847,7 @@ decNumber *decNumberTan(decNumber *res, const decNumber *x, decContext *ctx) {
 	decNumber x2, s, c;
 
 	if (decNumberIsSpecial(x))
-		set_NaN(res);
+		return set_NaN(res);
 	else {
 		if (cvt_2rad(&x2, x, &const_0, &const_NaN, &const_0, &const_NaN, ctx)) {
 			sincosTaylor(&x2, &s, &c, ctx);
@@ -1043,7 +1038,7 @@ decNumber *decNumberArcTan(decNumber *res, const decNumber *x, decContext *ctx) 
 
 	if (decNumberIsSpecial(x)) {
 		if (decNumberIsNaN(x))
-			set_NaN(res);
+			return set_NaN(res);
 		else {
 			decNumberCopy(res, &const_PIon2);
 			if (decNumberIsNegative(x))
@@ -1061,8 +1056,7 @@ decNumber *do_atan2(decNumber *at, const decNumber *y, const decNumber *x, decCo
 	const int yneg = decNumberIsNegative(y);
 
 	if (decNumberIsNaN(x) || decNumberIsNaN(y)) {
-		set_NaN(at);
-		return at;
+		return set_NaN(at);
 	}
 	if (decNumberIsZero(y)) {
 		if (yneg) {
@@ -1199,22 +1193,20 @@ void dn_sinhcosh(const decNumber *x, decNumber *sinhv, decNumber *coshv, decCont
 decNumber *decNumberSinh(decNumber *res, const decNumber *x, decContext *ctx) {
 	if (decNumberIsSpecial(x)) {
 		if (decNumberIsNaN(x))
-			set_NaN(res);
-		else
-			decNumberCopy(res, x);
-	} else
-		dn_sinhcosh(x, res, NULL, ctx);
+			return set_NaN(res);
+		return decNumberCopy(res, x);
+	}
+	dn_sinhcosh(x, res, NULL, ctx);
 	return res;
 }
 
 decNumber *decNumberCosh(decNumber *res, const decNumber *x, decContext *ctx) {
 	if (decNumberIsSpecial(x)) {
 		if (decNumberIsNaN(x))
-			set_NaN(res);
-		else
-			set_inf(res);
-	} else
-		dn_sinhcosh(x, NULL, res, ctx);
+			return set_NaN(res);
+		return set_inf(res);
+	}
+	dn_sinhcosh(x, NULL, res, ctx);
 	return res;
 }
 
@@ -1223,12 +1215,10 @@ decNumber *decNumberTanh(decNumber *res, const decNumber *x, decContext *ctx) {
 
 	if (decNumberIsSpecial(x)) {
 		if (decNumberIsNaN(x))
-			set_NaN(res);
-		else if (decNumberIsNegative(x))
-			decNumberCopy(res, &const__1);
-		else
-			decNumberCopy(res, &const_1);
-		return res;
+			return set_NaN(res);
+		if (decNumberIsNegative(x))
+			return decNumberCopy(res, &const__1);
+		return decNumberCopy(res, &const_1);
 	}
 	dn_sinhcosh(x, &s, &c, ctx);
 	return decNumberDivide(res, &s, &c, ctx);
@@ -1465,8 +1455,7 @@ decNumber *decNumberSubFactorial(decNumber *r, const decNumber *x, decContext *c
 		decNumberAdd(&t, &u, &const_0_5, ctx);
 		return decNumberFloor(r, &t, ctx);
 	}
-	set_NaN(r);
-	return r;
+	return set_NaN(r);
 }
 #endif
 
@@ -1477,10 +1466,8 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin, decContext *ctx)
 	// Check for special cases
 	if (decNumberIsSpecial(xin)) {
 		if (decNumberIsInfinite(xin) && !decNumberIsNegative(xin))
-			set_inf(res);
-		else
-			set_NaN(res);
-		return res;
+			return set_inf(res);
+		return set_NaN(res);
 	}
 
 	// Correct our argument and begin the inversion if it is negative
@@ -1488,8 +1475,7 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin, decContext *ctx)
 		reflec = 1;
 		decNumberSubtract(&t, &const_1, xin, ctx);
 		if (is_int(&t, ctx)) {
-			set_NaN(res);
-			return res;
+			return set_NaN(res);
 		}
 		decNumberSubtract(&x, &t, &const_1, ctx);
 	} else
@@ -1518,10 +1504,8 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin, decContext *ct
 	// Check for special cases
 	if (decNumberIsSpecial(xin)) {
 		if (decNumberIsInfinite(xin) && !decNumberIsNegative(xin))
-			set_inf(res);
-		else
-			set_NaN(res);
-		return res;
+			return set_inf(res);
+		return set_NaN(res);
 	}
 
 	// Correct out argument and begin the inversion if it is negative
@@ -1529,8 +1513,7 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin, decContext *ct
 		reflec = 1;
 		decNumberSubtract(&t, &const_1, xin, ctx);
 		if (is_int(&t, ctx)) {
-			set_NaN(res);
-			return res;
+			return set_NaN(res);
 		}
 		decNumberSubtract(&x, &t, &const_1, ctx);
 	} else
@@ -1589,19 +1572,15 @@ decNumber *decNumberPsi(decNumber *res, const decNumber *xin, decContext *ctx) {
 	int i;
 
 	if (decNumberIsSpecial(xin)) {
-		if (decNumberIsNaN(xin) || decNumberIsNegative(xin)) {
-			set_NaN(res);
-			return res;
-		} else
-			set_inf(res);
-		return res;
+		if (decNumberIsNaN(xin) || decNumberIsNegative(xin))
+			return set_NaN(res);
+		return set_inf(res);
 	}
 
 	// Check for reflection
 	if (decNumberIsNegative(xin) || decNumberIsZero(xin)) {
 		if (is_int(xin, ctx)) {
-			set_NaN(res);
-			return res;
+			return set_NaN(res);
 		}
 		decNumberMultiply(&x_2, &const_PI, xin, ctx);
 		dn_sincos(&x_2, &t, &r, ctx);
@@ -1698,20 +1677,16 @@ decNumber *decNumberZeta(decNumber *res, const decNumber *xin, decContext *ctx) 
 
 	if (decNumberIsSpecial(xin)) {
 		if (decNumberIsNaN(xin) || decNumberIsNegative(xin))
-			set_NaN(res);
-		else
-			decNumberCopy(res, &const_1);
-		return res;
+			return set_NaN(res);
+		return decNumberCopy(res, &const_1);
 	}
 	if (decNumberIsZero(xin)) {
-		decNumberCopy(res, &const__0_5);
-		return res;
+		return decNumberCopy(res, &const__0_5);
 	}
 	if (decNumberIsNegative(xin)) {
 		decNumberMultiply(&s, xin, &const_0_5, ctx);
 		if (is_int(&s, ctx)) {
-			decNumberZero(res);
-			return res;
+			return decNumberZero(res);
 		}
 	}
 
@@ -2149,8 +2124,7 @@ decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *
 
 	if (decNumberIsNegative(x) || decNumberIsNegative(a) || decNumberIsZero(a) ||
 			decNumberIsNaN(x) || decNumberIsNaN(a) || decNumberIsInfinite(a)) {
-		set_NaN(res);
-		return res;
+		return set_NaN(res);
 	}
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(res, &const_1);
@@ -2173,12 +2147,10 @@ decNumber *decNumberERF(decNumber *res, const decNumber *x, decContext *ctx) {
 
 	if (decNumberIsSpecial(x)) {
 		if (decNumberIsNaN(x))
-			set_NaN(res);
-		else if (decNumberIsNegative(x))
+			return set_NaN(res);
+		if (decNumberIsNegative(x))
 			return decNumberCopy(res, &const__1);
-		else
-			return decNumberCopy(res, &const_1);
-		return res;
+		return decNumberCopy(res, &const_1);
 	}
 	decNumberSquare(&z, x, ctx);
 	decNumberGammap(res, &const_0_5, &z, ctx);
@@ -2352,8 +2324,7 @@ static decNumber *dn_bessel(decNumber *res, const decNumber *alpha, const decNum
 			return res;
 		decNumberCopy(res, &q);
 	}
-	set_NaN(res);
-	return res;
+	return set_NaN(res);
 }
 #endif
 
@@ -2362,19 +2333,17 @@ decNumber *decNumberBSJN(decNumber *res, const decNumber *alpha, const decNumber
 	decNumber a;
 
 	if (decNumberIsNaN(alpha) || decNumberIsSpecial(x))
-		set_NaN(res);
-	else if (decNumberIsZero(x)) {
+		return set_NaN(res);
+	if (decNumberIsZero(x)) {
 		if (decNumberIsZero(alpha))
-			decNumberCopy(res, &const_1);
-		else
-			decNumberZero(res);
-	} else {
-		if (decNumberIsNegative(alpha) && is_int(alpha, ctx)) {
-			decNumberAbs(&a, alpha, ctx);
-			alpha = &a;
-		}
-		dn_bessel(res, alpha, x, ctx, 1);
+			return decNumberCopy(res, &const_1);
+		return decNumberZero(res);
 	}
+	if (decNumberIsNegative(alpha) && is_int(alpha, ctx)) {
+		decNumberAbs(&a, alpha, ctx);
+		alpha = &a;
+	}
+	dn_bessel(res, alpha, x, ctx, 1);
 	return res;
 #else
 	return NULL;
@@ -2386,14 +2355,14 @@ decNumber *decNumberBSIN(decNumber *res, const decNumber *alpha, const decNumber
 	decNumber a;
 
 	if (decNumberIsNaN(alpha) || decNumberIsNaN(x))
-		set_NaN(res);
+		return set_NaN(res);
 	else if (decNumberIsInfinite(x))
-		set_inf(res);
+		return set_inf(res);
 	else if (decNumberIsZero(x)) {
 		if (decNumberIsZero(alpha))
-			decNumberCopy(res, &const_1);
+			return decNumberCopy(res, &const_1);
 		else
-			decNumberZero(res);
+			return decNumberZero(res);
 	} else {
 		if (decNumberIsNegative(alpha) && is_int(alpha, ctx)) {
 			decNumberAbs(&a, alpha, ctx);
@@ -2509,11 +2478,11 @@ decNumber *decNumberBSYN(decNumber *res, const decNumber *alpha, const decNumber
 	decNumber t, u, s, c;
 
 	if (decNumberIsNaN(alpha) || decNumberIsSpecial(x))
-		set_NaN(res);
+		return set_NaN(res);
 	else if (decNumberIsZero(x))
-		set_neginf(res);
+		return set_neginf(res);
 	else if (decNumberIsInfinite(alpha) || decNumberIsNegative(x))
-		set_NaN(res);
+		return set_NaN(res);
 	else if (!is_int(alpha, ctx)) {
 		decNumberMultiply(&t, alpha, &const_PI, ctx);
 		dn_sincos(&t, &s, &c, ctx);
@@ -2536,13 +2505,13 @@ decNumber *decNumberBSKN(decNumber *res, const decNumber *alpha, const decNumber
 	decNumber t, u, v;
 
 	if (decNumberIsNaN(alpha) || decNumberIsNaN(x))
-		set_NaN(res);
+		return set_NaN(res);
 	else if (decNumberIsZero(x))
-		set_inf(res);
+		return set_inf(res);
 	else if (decNumberIsInfinite(alpha) || decNumberIsNegative(x))
-		set_NaN(res);
+		return set_NaN(res);
 	else if (decNumberIsInfinite(x))
-		decNumberZero(res);
+		return decNumberZero(res);
 	else if (!is_int(alpha, ctx)) {
 		dn_bessel(&t, alpha, x, ctx, 0);
 		decNumberMinus(&u, alpha, ctx);
@@ -3008,8 +2977,7 @@ static decNumber *ortho_poly(decNumber *r, const decNumber *param, const decNumb
 
 	// Get argument and parameter
 	if (decNumberIsSpecial(x) || decNumberIsSpecial(rn) || (decNumberIsNegative(rn) && !decNumberIsZero(rn))) {
-error:		set_NaN(r);
-		return r;
+error:		return set_NaN(r);
 	}
 	if (! is_int(rn, ctx))
 		goto error;
@@ -3142,8 +3110,7 @@ decNumber *decNumberBernBn(decNumber *r, const decNumber *n, decContext *ctx) {
 	if (decNumberIsZero(n))
 		return decNumberCopy(r, &const_1);
 	if (! is_int(n, ctx) || decNumberIsNegative(n)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 	decNumberSubtract(&a, &const_1, n, ctx);
 	if (decNumberIsZero(&a))
@@ -3165,8 +3132,7 @@ decNumber *decNumberBernBnS(decNumber *r, const decNumber *n, decContext *ctx) {
 	decNumber a;
 
 	if (decNumberIsZero(n)) {
-		set_NaN(r);
-		return r;
+		return set_NaN(r);
 	}
 	decNumberMultiply(&a, n, &const_2, ctx);
 	decNumberBernBn(r, &a, ctx);
