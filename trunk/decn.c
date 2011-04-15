@@ -1890,8 +1890,7 @@ decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y, 
 			goto nan;
 		if (decNumberIsZero(x) || decNumberIsZero(y))
 			goto nan;
-		set_inf(res);
-		return res;
+		return set_inf(res);
 	}
 	decNumberCopy(&a, x);
 	decNumberCopy(&g, y);
@@ -1903,11 +1902,12 @@ decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y, 
 		decNumberMultiply(&u, &t, &const_0_5, ctx);
 
 		decNumberMultiply(&t, &a, &g, ctx);
+		if (decNumberIsZero(&t))
+			return decNumberZero(res);
 		decNumberSquareRoot(&g, &t, ctx);
 		decNumberCopy(&a, &u);
 	}
-nan:	set_NaN(res);
-	return res;
+nan:	return set_NaN(res);
 }
 
 
