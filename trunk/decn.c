@@ -185,6 +185,21 @@ void dn_dec(decNumber *x, decContext *ctx) {
 	decNumberSubtract(x, x, &const_1, ctx);
 }
 
+static int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol, decContext *ctx) {
+	decNumber a, b;
+
+	decNumberSubtract(&a, x, y, ctx);
+	if (decNumberIsZero(x)) {
+		if (decNumberIsZero(y))
+			return 1;
+		x = y;
+	}
+	decNumberDivide(&b, &a, x, ctx);
+	decNumberAbs(&a, &b, ctx);
+	decNumberCompare(&a, &a, tol, ctx);
+	return decNumberIsNegative(&a);
+}
+
 /* Multiply Add: x + y * z
  */
 #ifdef INCLUDE_MULADD
@@ -1881,10 +1896,7 @@ decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y, 
 	decNumberCopy(&a, x);
 	decNumberCopy(&g, y);
 	for (n=0; n<1000; n++) {
-		decNumberSubtract(&t, &a, &g, ctx);
-		decNumberAbs(&u, &t, ctx);
-		decNumberCompare(&t, &u, &const_1e_32, ctx);
-		if (decNumberIsNegative(&t))
+		if (relative_error(&a, &g, &const_1e_32, ctx))
 			return decNumberCopy(res, &a);
 
 		decNumberAdd(&t, &a, &g, ctx);
