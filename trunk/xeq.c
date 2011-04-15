@@ -3176,8 +3176,8 @@ unsigned short int checksum_code(void) {
 int checksum_all(void) {
 #if 1
 	unsigned short int oldcrc = PersistentRam.crc;
-	PersistentRam.crc = 0xa581;
-	PersistentRam.crc = crc16(&PersistentRam, sizeof(PersistentRam) - sizeof(Ticker));
+	PersistentRam.crc = crc16(&PersistentRam,
+			(char *) &PersistentRam.crc - (char *) &PersistentRam);
 	return oldcrc != PersistentRam.crc;
 #else
 	PersistentRam.crc = 0x5aa5;

@@ -923,7 +923,7 @@ int get_key( void )
 	KbRead = ( KbRead + 1 ) & KEY_BUFF_MASK;
 	--KbCount;
 	unlock();
-	return k - 1;
+	return k;
 }
 
 
@@ -940,10 +940,6 @@ int put_key( int k )
 		return 0;
 	}
 
-	if ( k == 0 ) {
-		short_wait( 1 );
-	}
-
 	if ( k == K_HEARTBEAT && KbCount != 0 ) {
 		/*
 		 *  Don't fill the buffer with heartbeats
@@ -951,7 +947,7 @@ int put_key( int k )
 		return 0;
 	}
 	lock();
-	KeyBuffer[ (int) KbWrite ] = (unsigned char) k + 1;
+	KeyBuffer[ (int) KbWrite ] = (unsigned char) k;
 	KbWrite = ( KbWrite + 1 ) & KEY_BUFF_MASK;
 	++KbCount;
 	unlock();
@@ -1015,11 +1011,12 @@ int is_debug( void )
  */
 int main(void)
 {
+#ifdef STACK_DEBUG
 	/*
 	 *  Fill RAM with 0x5A for debugging
 	 */
 	xset( (void *) 0x200200, 0x5A, 0x800 );
-
+#endif
         /*
          * Initialise the hardware (clock, backup RAM, LCD, RTC, timer)
 	 */
@@ -1127,10 +1124,6 @@ int main(void)
 		 */
 		if ( k != -1 ) {
 			process_keycode( k );
-
-			if ( k == 0 ) {
-				dot( BATTERY, 1 );
-			}
 		}
 
 		if ( Keyticks >= APD_TICKS || ( Voltage <= APD_VOLTAGE ) ) {
