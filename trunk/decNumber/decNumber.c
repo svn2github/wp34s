@@ -871,6 +871,7 @@ decNumber * decNumberLn(decNumber *res, const decNumber *rhs,
   return res;
   } // decNumberLn
 
+#if 0
 /* ------------------------------------------------------------------ */
 /* decNumberLog10 -- logarithm in base 10                             */
 /*                                                                    */
@@ -1034,7 +1035,8 @@ decNumber * decNumberLog10(decNumber *res, const decNumber *rhs,
   if (status!=0) decStatus(res, status, set);
   return res;
   } // decNumberLog10
-
+#endif
+  
 /* ------------------------------------------------------------------ */
 /* decNumberMax -- compare two Numbers and return the maximum         */
 /*                                                                    */

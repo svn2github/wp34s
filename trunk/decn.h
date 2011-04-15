@@ -58,6 +58,7 @@ extern decNumber *decNumberPow10(decNumber *r, const decNumber *x, decContext *c
 extern decNumber *decNumberLn1p(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberExpm1(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberLog2(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberLog10(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberLogxy(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx);
 extern decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberInvW(decNumber *r, const decNumber *x, decContext *ctx);

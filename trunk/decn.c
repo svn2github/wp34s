@@ -415,6 +415,10 @@ decNumber *decNumberLog2(decNumber *r, const decNumber *x, decContext *ctx) {
 	return do_log(r, x, &const_ln2, ctx);
 }
 
+decNumber *decNumberLog10(decNumber *r, const decNumber *x, decContext *ctx) {
+	return do_log(r, x, &const_ln10, ctx);
+}
+
 decNumber *decNumberLogxy(decNumber *r, const decNumber *y, const decNumber *x, decContext *ctx) {
 	decNumber lx;
 
