@@ -553,9 +553,6 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_SOLVESTEP,	&solver,	TOPREALREG-10+1,	"SLVS")
 
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
-#ifdef REALBUILD
-	CMD(RARG_CONTRAST,	&cmdcontrast,	15,			"CTRS")
-#endif
 
 #undef CMDnoI
 #undef CMDstk

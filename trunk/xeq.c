@@ -1496,10 +1496,6 @@ void cmdconv(unsigned int arg, enum rarg op) {
 	setX(&r);
 }
 
-void cmdcontrast(unsigned int arg, enum rarg op) {
-	State.contrast = arg & 0xf;
-}
-
 /* Finish up a test -- if the value is non-zero, the test passes.
  * If it is zero, the test fails.
  */

@@ -493,9 +493,6 @@ enum rarg {
 	RARG_INISOLVE, RARG_SOLVESTEP,
 
 	RARG_PAUSE,
-#ifdef REALBUILD
-	RARG_CONTRAST,
-#endif
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
@@ -1046,9 +1043,5 @@ extern void watchdog(void);
 extern void shutdown(void);
 extern int is_debug(void);
 extern const char *get_revision(void);
-
-#ifdef REALBUILD
-extern void cmdcontrast(unsigned int arg, enum rarg op);
-#endif
 
 #endif
