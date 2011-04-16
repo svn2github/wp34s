@@ -1026,14 +1026,15 @@ void do_acos(decNumber *res, const decNumber *x, decContext *ctx) {
 	decNumberCompare(&z, x, &const_1, ctx);
 	if (decNumberIsZero(&z))
 		decNumberZero(res);
-
-	decNumberMultiply(&z, x, x, ctx);
-	decNumberSubtract(&z, &const_1, &z, ctx);
-	decNumberSquareRoot(&z, &z, ctx);
-	decNumberSubtract(&abx, &const_1, x, ctx);
-	decNumberDivide(&z, &abx, &z, ctx);
-	do_atan(&abx, &z, ctx);
-	decNumberAdd(res, &abx, &abx, ctx);
+    else {
+        decNumberMultiply(&z, x, x, ctx);
+        decNumberSubtract(&z, &const_1, &z, ctx);
+        decNumberSquareRoot(&z, &z, ctx);
+        decNumberSubtract(&abx, &const_1, x, ctx);
+        decNumberDivide(&z, &abx, &z, ctx);
+        do_atan(&abx, &z, ctx);
+        decNumberAdd(res, &abx, &abx, ctx);
+    }
 }
 
 decNumber *decNumberArcSin(decNumber *res, const decNumber *x, decContext *ctx) {
