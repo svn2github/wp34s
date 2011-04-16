@@ -39,6 +39,10 @@ ifeq "$(SYSTEM)" "windows32"
 # Force REALBUILD on windows under MinGW
 REALBUILD := 1
 endif
+ifeq "$(SYSTEM)" "WindowsNT"
+# Force REALBUILD on windows under MinGW / alternate uname utility
+REALBUILD := 1
+endif
 
 CFLAGS = $(BASE_CFLAGS)
 CFLAGS += -O0 -DUSECURSES -DDEBUG
