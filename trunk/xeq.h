@@ -870,7 +870,7 @@ extern int stack_size(void);
 extern void lift(void);
 extern void process_cmdline_set_lift(void);
 
-extern int alen(void);
+extern unsigned int alen(void);
 
 extern long long int d64toInt(const decimal64 *n);
 extern void d64fromInt(decimal64 *n, const long long int z);

@@ -120,7 +120,7 @@ void alpha_ip(unsigned int arg, enum rarg op) {
 
 /* Return length of Alpha register
  */
-int alen(void) {
+unsigned int alen(void) {
 	return find_char(Alpha, '\0') - Alpha;
 }
 
@@ -152,7 +152,7 @@ void alpha_shift_r(unsigned int arg, enum rarg op) {
 
 void alpha_rot_r(unsigned int arg, enum rarg op) {
 	unsigned int i;
-	const int al = alen();
+	const unsigned int al = alen();
 
 	if (al)
 		for (i=0; i<arg; i++) {
