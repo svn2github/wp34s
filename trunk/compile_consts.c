@@ -294,7 +294,7 @@ struct constsml constsml[] = {
         CONSTANT("NaN",         "NAN",          "NaN"),
         CONSTANT("p\270",       "PC_atm",       "101325"),
         CONSTANT("R",           "PC_R",         "8.314472"),
-        CONSTANT("R\274",       "PC_Re",        "2.817940285E-15"),
+        CONSTANT("r\274",       "PC_Re",        "2.817940285E-15"),
         //CONSTANT("R\367",     "PC_Rk",        "25812.80756"),
         CONSTANT("R\233",       "PC_Rinf",      "10973731.5685"),
         CONSTANT("T\270",       "PC_t",         "273.15"),
