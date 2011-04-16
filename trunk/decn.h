@@ -129,6 +129,7 @@ extern const decNumber *const zeta_consts[];
 extern const decNumber *const digamma_consts[];
 
 extern decNumber *decNumberERF(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberERFC(decNumber *res, const decNumber *x, decContext *);
 extern decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *x, decContext *ctx);
 
 extern decNumber *decNumberFib(decNumber *res, const decNumber *x, decContext *ctx);

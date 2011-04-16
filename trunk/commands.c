@@ -96,6 +96,7 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_CCHS,	&decNumberMinus,	&cmplxMinus,	&intChs,	"+/-")
 	FUNC(OP_CCONJ,	NULL,			&cmplxConj,	NULL,		"CONJ")
 	FUNC(OP_ERF,	&decNumberERF,		NULL,		NULL,		"erf")
+	FUNC(OP_ERFC,	&decNumberERFC,		NULL,		NULL,		"erfc")
 	FUNC(OP_pdf_Q,	&pdf_Q,			NULL,		NULL,		"\264(x)")
 	FUNC(OP_cdf_Q,	&cdf_Q,			NULL,		NULL,		"\224(x)")
 	FUNC(OP_qf_Q,	&qf_Q,			NULL,		NULL,		"\224\235(p)")

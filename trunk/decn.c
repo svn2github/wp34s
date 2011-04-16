@@ -20,6 +20,7 @@
 #include "xeq.h"
 #include "consts.h"
 #include "complex.h"
+#include "stats.h"
 
 #ifdef DUMP1
 #include <stdio.h>
@@ -2176,6 +2177,15 @@ decNumber *decNumberERF(decNumber *res, const decNumber *x, decContext *ctx) {
 		return decNumberMinus(res, res, ctx);
 	return res;
 	
+}
+
+decNumber *decNumberERFC(decNumber *res, const decNumber *x, decContext *ctx) {
+	decNumber a, b;
+
+	decNumberDivide(&a, x, &const_root2on2, ctx);
+	decNumberMinus(&b, &a, ctx);
+	cdf_Q(&a, &b, ctx);
+	return decNumberMultiply(res, &a, &const_2, ctx);
 }
 
 
