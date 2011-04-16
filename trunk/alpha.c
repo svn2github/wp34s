@@ -120,7 +120,7 @@ void alpha_ip(unsigned int arg, enum rarg op) {
 
 /* Return length of Alpha register
  */
-static int alen(void) {
+int alen(void) {
 	return find_char(Alpha, '\0') - Alpha;
 }
 

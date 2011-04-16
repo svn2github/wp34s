@@ -702,6 +702,7 @@ struct _state {
 	unsigned int show_register : 7; // temporary display (not X)
 
 	unsigned int contrast : 4;	// Display contrast
+	unsigned int alpha_pos : 3;	// Display position inside alpha
 
 #ifndef REALBUILD
 	unsigned int trace : 1;
@@ -868,6 +869,8 @@ extern void setlastX(void);
 extern int stack_size(void);
 extern void lift(void);
 extern void process_cmdline_set_lift(void);
+
+extern int alen(void);
 
 extern long long int d64toInt(const decimal64 *n);
 extern void d64fromInt(decimal64 *n, const long long int z);

@@ -432,6 +432,8 @@ void show_flags(void) {
                 PRINTF("digval = %u", State.digval);
                 MOVE(23, FLAG_BASE+3);
                 PRINTF("pc = %03u", state_pc());
+		MOVE(34, FLAG_BASE+3);
+		PRINTF("ap = %u", State.alpha_pos);
                 MOVE(45, FLAG_BASE+3);
                 PRINTF("cmddot = %u  cmdeex = %u  eol = %u",
                                 State.cmdlinedot, State.cmdlineeex, State.eol);

@@ -51,6 +51,7 @@ enum shifts cur_shift(void) {
 
 void set_shift(enum shifts s) {
 	State.shifts = s;
+	State.alpha_pos = 0;
 }
 
 
@@ -861,6 +862,8 @@ static int process_gtodot(const keycode c) {
 static int process_alpha(const keycode c) {
 	const enum shifts oldstate = cur_shift();
 	unsigned char ch;
+	unsigned int alpha_pos = State.alpha_pos, n;
+	State.alpha_pos = 0;
 #ifndef SEQUENTIAL_ROWS
 	int idx;
 #endif
@@ -961,6 +964,14 @@ fkey:		if (oldstate != SHIFT_F)
 			break;
 		return STATE_UNFINISHED;
 
+	case K40:
+		if (oldstate == SHIFT_N) {	// Alpha scroll left
+			n = alpha_pos + 1;
+			State.alpha_pos = (6*n < alen()) ? n : alpha_pos;
+			return STATE_UNFINISHED;
+		}
+		break;
+
 	case K44:
 		if (oldstate == SHIFT_H) {
 			State.status = 1;
@@ -968,9 +979,13 @@ fkey:		if (oldstate != SHIFT_F)
 		}
 		break;
 
-
-	case K50:	// Alpha command catalogue
-		if (oldstate == SHIFT_H) {
+	case K50:
+		if (oldstate == SHIFT_N) {	// Alpha scroll right
+			if (alpha_pos > 0)
+				State.alpha_pos = alpha_pos-1;
+			return STATE_UNFINISHED;
+		}
+		if (oldstate == SHIFT_H) {	// Alpha command catalogue
 			init_cat(CATALOGUE_ALPHA);
 			return STATE_UNFINISHED;
 		}

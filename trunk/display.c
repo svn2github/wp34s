@@ -1186,10 +1186,17 @@ void display(void) {
 			set_digits_string("AlpHA", 0);
 #endif
 			bp = scopy(buf, Alpha);
-			i = cur_shift();
-			if (i != SHIFT_N) {
-				*bp++ = 021 + i - SHIFT_F;
-				*bp++ = '\0';
+			j = State.alpha_pos;
+			if (j != 0) {
+				i = slen(buf);
+				j *= 6;
+				buf[j<i?i-j:1] = '\0';
+			} else {
+				i = cur_shift();
+				if (i != SHIFT_N) {
+					*bp++ = 021 + i - SHIFT_F;
+					*bp++ = '\0';
+				}
 			}
 			set_status_right(buf);
 		} else {
