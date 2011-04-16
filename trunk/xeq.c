@@ -2469,6 +2469,7 @@ static void do_rtn(int plus1) {
 	} else {
 		set_running_off();
 		raw_set_pc(0);
+		RetStkPtr = 0;
 	}
 }
 
