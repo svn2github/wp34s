@@ -523,11 +523,11 @@ decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
 		decNumberRecip(&rx, x, ctx);
 		x = &rx;
 	}
-	decNumberMultiply(&s, x, &const_2pow100, ctx);
+	decNumberMultiply(&s, x, &const_2pow60, ctx);
 	decNumberDivide(&t, &const_4, &s, ctx);
 	decNumberAGM(&s, &t, &const_1, ctx);
 	decNumberDivide(&t, &const_PIon2, &s, ctx);
-	decNumberSubtract(r, &t, &const_100ln2, ctx);
+	decNumberSubtract(r, &t, &const_60ln2, ctx);
 	if (invert)
 		decNumberMinus(r, r, ctx);
 	return r;
