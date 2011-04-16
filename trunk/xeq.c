@@ -2461,7 +2461,7 @@ void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 }
 
 static void do_rtn(int plus1) {
-	if (RetStkPtr > 0) {
+	if (running() && RetStkPtr > 0) {
 		raw_set_pc(RetStk[--RetStkPtr]);
 		RetStk[RetStkPtr] = 0;
 		if (plus1)
