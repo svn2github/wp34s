@@ -1106,7 +1106,7 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 #endif 
 
 
-#ifdef INCLUDE_ZETA
+#ifdef INCLUDE_COMPLEX_ZETA
 /* Riemann's Zeta function */
 #ifndef TINY_BUILD
 static void c_zeta_step(decNumber *sx, decNumber *sy,
@@ -1184,7 +1184,7 @@ void cmplxZeta(decNumber *rx, decNumber *ry,
 		cmplxMultiply(rx, ry, &reflecfac1, &reflecfac2, rx, ry, ctx);
 #endif
 }
-#endif /* INCLUDE_ZETA */
+#endif /* INCLUDE_COMPLEX_ZETA */
 
 
 void cmplxParallel(decNumber *rx, decNumber *ry,

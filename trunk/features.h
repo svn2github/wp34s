@@ -32,15 +32,15 @@
 
 #ifndef TINY_BUILD
 
-// Include Rieman's Zeta function for real and complex arguments
+// Include Rieman's Zeta function
+// The complex version isn't accurate for large imaginary numbers
+// and the series approximations I've located thus far converge too slowly.
 #define INCLUDE_ZETA
+// #define INCLUDE_COMPLEX_ZETA
 
 // Include Bernoulli numbers as functions
 #define INCLUDE_BERNOULLI
 
-#if defined(INCLUDE_BERNOULLI) && ! defined(INCLUDE_ZETA)
-#define INCLUDE_ZETA
-#endif
 
 // Incude the digamma function for real and complex arguments
 //#define INCLUDE_DIGAMMA
@@ -52,15 +52,6 @@
 // Complex versions aren't working properly yet.
 //#define INCLUDE_BESSEL
 //#define COMPLEX_BESSEL
-
-#if defined(COMPLEX_BESSEL) && ! defined(INCLUDE_BESSEL)
-// Complex bessel functions require real versions
-#define INCLUDE_BESSEL
-#endif
-#if defined(INCLUDE_BESSEL) && ! defined(INCLUDE_DIGAMMA)
-// Second kind functions of integer order need digamma
-#define INCLUDE_DIGAMMA
-#endif
 
 // Inlcude a fused multiply add instruction
 // This isn't vital since this can be done using a complex addition.
@@ -82,5 +73,29 @@
 // This increases code size and doesn't see to help the colver's convergence.
 //#define USE_RIDDERS
 
+
+/*******************************************************************/
+/* Below here are the automatic defines depending on other defines */
+/*******************************************************************/
+
+#if defined(INCLUDE_COMPLEX_ZETA) && ! defined(INCLUDE_ZETA)
+/* Complex zeta implies real zeta */
+#define INCLUDE_ZETA
 #endif
+
+#if defined(INCLUDE_BERNOULLI) && ! defined(INCLUDE_ZETA)
+/* Bernoulli numbers need real zeta */
+#define INCLUDE_ZETA
 #endif
+
+#if defined(COMPLEX_BESSEL) && ! defined(INCLUDE_BESSEL)
+/* Complex bessel functions require real versions */
+#define INCLUDE_BESSEL
+#endif
+#if defined(INCLUDE_BESSEL) && ! defined(INCLUDE_DIGAMMA)
+/* Second kind functions of integer order need digamma */
+#define INCLUDE_DIGAMMA
+#endif
+
+#endif	/* TINY_BUILD*/
+#endif	/* FEATURES_H__ */

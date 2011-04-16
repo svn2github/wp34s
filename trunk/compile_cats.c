@@ -161,7 +161,7 @@ static s_opcode cplx_catalogue[] = {
 #ifdef INCLUDE_DBLFACT
 	CMON(OP_DBLFACT,	"x!!")
 #endif
-#ifdef INCLUDE_ZETA
+#ifdef INCLUDE_COMPLEX_ZETA
 	CMON(OP_ZETA,		"\245")
 #endif
 #ifdef INCLUDE_DIGAMMA

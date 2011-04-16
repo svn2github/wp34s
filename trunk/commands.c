@@ -153,7 +153,11 @@ const struct monfunc monfuncs[] = {
 	FUNC(OP_DB_PR,	&convDB2PR,		NULL,		NULL,		"dB\015pr.")
 	FUNC(OP_PR_DB,	&convPR2DB,		NULL,		NULL,		"pr.\015dB")
 #ifdef INCLUDE_ZETA
+#ifdef INCLUDE_COMPLEX_ZETA
 	FUNC(OP_ZETA,	&decNumberZeta,		&cmplxZeta,	NULL,		"\245")
+#else
+	FUNC(OP_ZETA,	&decNumberZeta,		NULL,		NULL,		"\245")
+#endif
 #endif
 #ifdef INCLUDE_BERNOULLI
 	FUNC(OP_Bn,	&decNumberBernBn,	NULL,		NULL,		"B\275")
