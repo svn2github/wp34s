@@ -436,7 +436,6 @@ static s_opcode alpha_catalogue[] = {
 	RARGCMD(RARG_ALSR,	"\240SR")
 	NILIC(OP_ALPHATIME,	"\240TIME")
 	NILIC(OP_VERSION,	"VERS")
-	NILIC(OP_VIEWALPHA,	"\240VIEW")
 };
 
 static s_opcode conv_catalogue[] = {
