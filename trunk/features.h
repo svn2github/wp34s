@@ -74,7 +74,7 @@
 //#define USE_RIDDERS
 
 // include code to find integer factors
-//#define INCLUDE_FACTOR
+// #define INCLUDE_FACTOR
 
 
 /*******************************************************************/

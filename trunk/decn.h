@@ -199,4 +199,6 @@ extern decNumber *decNumberPolyHn(decNumber *res, const decNumber *y, const decN
 extern decNumber *decNumberBernBn(decNumber *res, const decNumber *n, decContext *);
 extern decNumber *decNumberBernBnS(decNumber *res, const decNumber *n, decContext *);
 
+extern decNumber *decFactor(decNumber *r, const decNumber *x, decContext *ctx);
+
 #endif

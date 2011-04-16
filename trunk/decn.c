@@ -21,6 +21,7 @@
 #include "consts.h"
 #include "complex.h"
 #include "stats.h"
+#include "int.h"
 
 #ifdef DUMP1
 #include <stdio.h>
@@ -3171,5 +3172,20 @@ decNumber *decNumberBernBnS(decNumber *r, const decNumber *n, decContext *ctx) {
 #else
 	return NULL;
 #endif
+}
+#endif
+
+#ifdef INCLUDE_FACTOR
+decNumber *decFactor(decNumber *r, const decNumber *x, decContext *ctx) {
+	int sgn;
+	unsigned long long int i;
+
+	if (decNumberIsSpecial(x) || ! is_int(x, ctx))
+		return set_NaN(r);
+	i = dn_to_ull(x, ctx, &sgn);
+	ullint_to_dn(r, doFactor(i), ctx);
+	if (sgn)
+		decNumberMinus(r, r, ctx);
+	return r;
 }
 #endif

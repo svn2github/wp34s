@@ -253,7 +253,7 @@ $(OBJECTDIR)/complex.o:	complex.c decn.h complex.h xeq.h consts.h \
 $(OBJECTDIR)/consts.o: consts.c	consts.h Makefile features.h
 $(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h alpha.h atmel/rtc.h \
 		Makefile features.h
-$(OBJECTDIR)/decn.o: decn.c decn.h xeq.h consts.h complex.h Makefile features.h
+$(OBJECTDIR)/decn.o: decn.c decn.h xeq.h consts.h complex.h int.h Makefile features.h
 $(OBJECTDIR)/display.o:	display.c xeq.h	display.h consts.h lcd.h int.h \
 		charset.h charset7.h decn.h alpha.h decn.h Makefile features.h
 $(OBJECTDIR)/int.o: int.c int.h	xeq.h Makefile features.h

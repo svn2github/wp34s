@@ -59,7 +59,7 @@ static s_opcode catalogue[] = {
 	MON(OP_ERFC,		"erfc")
 	MON(OP_EXPM1,		"e^x-1")
 #ifdef INCLUDE_FACTOR
-	NILIC(OP_FACTOR,        "FACTOR")
+	MON(OP_FACTOR,		"FACTOR")
 #endif 
 	MON(OP_FIB,		"FIB")
 	MON(OP_FLOOR,		"FLOOR")
@@ -189,8 +189,6 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_BEST,		"BESTF")
 	NILIC(OP_statCOV,	"COV")
 	NILIC(OP_statSxy,	"sxy")
-	MON(OP_ERF,		"erf")
-	MON(OP_ERFC,		"erfc")
 	NILIC(OP_EXPF,		"EXPF")
 	NILIC(OP_LINF,		"LINF")
 	DYA(OP_LNBETA,		"LN\241")
@@ -290,7 +288,9 @@ static s_opcode int_catalogue[] = {
 	DYA(OP_LNAND,		"NAND")
 	MON(OP_BITCNT,		"nBITS")
 	DYA(OP_LNOR,		"NOR")
-	NILIC(OP_FACTOR,        "FACTOR")
+#ifdef INCLUDE_FACTOR
+	MON(OP_FACTOR,		"FACTOR")
+#endif 
 	NILIC(OP_RESET,		"RESET")
 	NILIC(OP_RJ,		"RJ")
 	RARGCMD(RARG_RL,	"RL")

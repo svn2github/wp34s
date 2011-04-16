@@ -91,7 +91,8 @@ extern long long int intDblDiv(long long int, long long int, long long int);
 extern long long int intDblRmdr(long long int, long long int, long long int);
 
 #ifdef INCLUDE_FACTOR
-extern unsigned long long intFactor(unsigned long long);
+extern unsigned long long int doFactor(unsigned long long int);
+extern long long int intFactor(long long int);
 #endif
 
 
