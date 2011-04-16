@@ -1073,7 +1073,7 @@ long long int intNumBits(long long int x) {
 /* Integer floor(sqrt())
  */
 long long int intSqrt(long long int x) {
-#ifndef TINY_BUILD
+#if !defined(TINY_BUILD) || defined(INCLUDE_FACTOR)
 	int sx;
 	unsigned long long int v = extract_value(x, &sx);
 	unsigned long long int n0, n1;
@@ -1536,3 +1536,109 @@ int isPrime(unsigned long long int p) {
 #endif
 	return 1;
 }
+
+#ifdef INCLUDE_FACTOR
+
+#define MAX_TERMS       32
+
+static unsigned int ad[MAX_TERMS];
+static int nd;
+
+typedef unsigned long long Num;
+
+static int dscanInit(Num n, unsigned int d0)
+{
+    /* initialise the coefficient array, given our starting divisor d0 */
+    Num v = n;
+    nd = 0;
+    while (v >= d0)
+    {
+        Num q = v/d0;
+        unsigned int r = (unsigned int)(v - q*d0);
+        ad[nd++] = r;
+        if (nd == MAX_TERMS) return 0; // bail
+        v = q;
+    }
+    ad[nd++] = (int)v;
+    return nd;
+}
+
+static int dscanOdd(unsigned int d, unsigned int limit)
+{
+    /* given starting odd `d', skip two divisors at a time and thus
+     * scan only the odd numbers.
+     */
+    int i, j;
+    while (ad[0])
+    {
+        d += 2;
+        if (d > limit) return 0; // limit reached
+        for (i = nd-2; i >= 0; --i)
+        {
+            for (j = i; j < nd-1; ++j)
+            {
+                int v = ad[j] - ad[j+1] - ad[j+1];
+                if (v < 0)
+                {
+                    v += d;
+                    --ad[j+1];
+                    if (v < 0)
+                    {
+                        v += d;
+                        --ad[j+1];
+                    }
+                }
+                ad[j] = v;
+            }
+            if (!ad[j]) --nd;
+        }
+    }
+    return d;
+}
+
+unsigned long long intFactor(unsigned long long n)
+{
+    /* find the least prime factor of `n'.
+     * numbers up to 10^14 can be factored. worst case about 30 seconds
+     * on realbuild.
+     * 
+     * returns least prime factor or `n' if prime.
+     * returns 0 if failed to find factor.
+     */
+     
+    unsigned int d;
+    unsigned int dmax = 10000000; // biggest factor, 10^7
+    unsigned int rt;
+    unsigned int limit;
+
+    // eliminate cases < 7
+    if (n <= 2) return n;
+    if (n % 3 == 0) return 3;
+    if (n % 5 == 0) return 5;
+
+    d = 7;
+    rt = (unsigned int)intSqrt(n);
+    limit = rt;
+    if (limit > dmax)
+        limit = dmax; // max time about 30 seconds
+
+    if (dscanInit(n, d))
+    {
+        // find factor or return 0 if limit reached
+        d = dscanOdd(d, limit);
+        if (!d)
+        {
+            // no factor found, if limit reached, we've failed
+            // otherwise `n' is prime
+            if (limit == dmax) 
+                n = 0; // fail
+        }
+        else n = d; // is factor
+    }
+    else 
+        n = 0; // fail
+
+    return n;
+}
+#endif // INCLUDE_FACTOR
+

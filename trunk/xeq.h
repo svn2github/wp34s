@@ -435,6 +435,9 @@ enum {
 
 	OP_TVM,
 	OP_TICKS, OP_VOLTAGE,
+#ifdef INCLUDE_FACTOR
+        OP_FACTOR,
+#endif
 };
 
 
@@ -1008,6 +1011,7 @@ extern void XisFrac(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void XisEven(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void XisOdd(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void XFactor(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void isSpecial(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void isNan(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void isInfinite(decimal64 *a, decimal64 *b, decContext *nulc);

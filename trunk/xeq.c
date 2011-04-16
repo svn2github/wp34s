@@ -2589,6 +2589,17 @@ void isSpecial(decimal64 *a, decimal64 *b, decContext *nulc) {
 	fin_tst(!is_intmode() && decNumberIsSpecial(&x));
 }
 
+#ifdef INCLUDE_FACTOR
+/* find least prime factor */
+void XFactor(decimal64 *a, decimal64 *b, decContext *nulc) 
+{
+    int sgn;
+    unsigned long long n = intFactor(get_int(&regX, &sgn));
+    put_int(n, sgn, a);
+        
+}
+#endif // INCLUDE_FACTOR
+
 
 /* Bulk register operations */
 static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d) {

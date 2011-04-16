@@ -73,6 +73,9 @@
 // This increases code size and doesn't see to help the colver's convergence.
 //#define USE_RIDDERS
 
+// include code to find integer factors
+//#define INCLUDE_FACTOR
+
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
