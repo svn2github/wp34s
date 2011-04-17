@@ -833,6 +833,7 @@ extern void process_keycode(int);
 
 extern unsigned int state_pc(void);
 extern void set_pc(unsigned int);
+extern unsigned int user_pc(void);
 
 extern void clrprog(void);
 extern void clrall(decimal64 *a, decimal64 *b, decContext *nulc);

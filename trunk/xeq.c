@@ -437,6 +437,22 @@ void decpc(void) {
 	set_running_off();
 }
 
+/* Determine where in program space the PC really is
+ */
+unsigned int user_pc(void) {
+	unsigned int pc = state_pc();
+	unsigned int n = 0;
+	unsigned int base;
+
+	base = isXROM(pc) ? addrXROM(0) : 0;
+
+	while (base < pc) {
+		n++;
+		base = inc(base);
+	}
+	return n;
+}
+
 /* Zero out the stack
  */
 void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {

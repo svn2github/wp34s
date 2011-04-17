@@ -504,6 +504,9 @@ void show_progtrace(char *buf) {
 #ifdef USECURSES
         int i;
 
+        if (!State.flags)
+                return;
+
         for (i=4; i>0 && pc >= 0; i--) {
                 MOVE(0, i);
                 if (pc) {
