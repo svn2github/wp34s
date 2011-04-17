@@ -207,7 +207,7 @@ static enum sigma_modes determine_best(const decNumber *n) {
 	decNumber b, c, d;
 
 	decNumberCompare(&b, &const_2, n, Ctx);
-	if (decNumberIsNegative(&b) && !decNumberIsZero(&b)) {
+	if (dn_lt0(&b)) {
 		correlation(&c, SIGMA_LINEAR);
 		decNumberAbs(&b, &c, Ctx);
 		for (i=SIGMA_LINEAR+1; i<SIGMA_BEST; i++) {
@@ -216,7 +216,7 @@ static enum sigma_modes determine_best(const decNumber *n) {
 			if (! decNumberIsNaN(&d)) {
 				decNumberAbs(&c, &d, Ctx);
 				decNumberCompare(&d, &b, &c, Ctx);
-				if (decNumberIsNegative(&d) && !decNumberIsZero(&d)) {
+				if (dn_lt0(&d)) {
 					decNumberCopy(&b, &c);
 					m = i;
 				}
@@ -864,8 +864,7 @@ static void dist_two_param(decNumber *a, decNumber *b) {
 
 static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
 	if (decNumberIsSpecial(n) ||
-			decNumberIsNegative(n) ||
-			decNumberIsZero(n) ||
+			dn_le0(n) ||
 			(!zero && decNumberIsZero(n)) ||
 			(intg && !is_int(n, Ctx))) {
 		decNumberZero(r);
@@ -883,8 +882,7 @@ static int param_range01(decNumber *r, const decNumber *p) {
 	decNumber h;
 
 	decNumberCompare(&h, &const_1, p, Ctx);
-	if (decNumberIsSpecial(p) || (decNumberIsNegative(p) && !decNumberIsZero(p)) ||
-			(decNumberIsNegative(&h) && !decNumberIsZero(&h))) {
+	if (decNumberIsSpecial(p) || dn_lt0(p) || dn_lt0(&h)) {
 		decNumberZero(r);
 		err(ERR_BAD_PARAM);
 		return 1;
@@ -935,7 +933,7 @@ static decNumber *qf_search(decNumber *r,
 	solver_init(&v, &t, &u, &tv, &uv, ctx, &flags);
 	do {
 		// If we got below the minimum, do a bisection step instead
-		if (min_zero && (decNumberIsNegative(&v) || decNumberIsZero(&v))) {
+		if (min_zero && dn_le0(&v)) {
 			decNumberMin(&a, &t, &u, ctx);
 			decNumberMultiply(&v, &a, &const_0_5, ctx);
 		}
@@ -1085,7 +1083,7 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (decNumberIsNaN(x)) {
 		return set_NaN(r);
 	}
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
+	if (dn_le0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
@@ -1208,7 +1206,7 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (decNumberIsNaN(x)) {
 		return set_NaN(r);
 	}
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
+	if (dn_le0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
@@ -1251,7 +1249,7 @@ decNumber *pdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (weibull_param(r, &k, &lam, x, ctx))
 		return r;
-	if (decNumberIsNegative(x) && ! decNumberIsZero(x)) {
+	if (dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
 	}
@@ -1273,7 +1271,7 @@ decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (weibull_param(r, &k, &lam, x, ctx))
 		return r;
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
+	if (dn_le0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
@@ -1307,8 +1305,7 @@ decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
 	    return r;
 	decNumberSubtract(&t, &const_1, p, ctx);
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
-			decNumberIsNegative(&k) || decNumberIsZero(&k) ||
-			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
+			dn_le0(&k) || dn_le0(&lam)) {
 		return set_NaN(r);
 	}
 
@@ -1344,7 +1341,7 @@ decNumber *pdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (exponential_xform(r, &lam, x, ctx))
 		return r;
-	if (decNumberIsNegative(x) && !decNumberIsZero(x)) {
+	if (dn_lt0(x)) {
 		set_NaN(r);
 		return r;
 	}
@@ -1363,10 +1360,10 @@ decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (exponential_xform(r, &lam, x, ctx))
 		return r;
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
-		return decNumberCopy(r, &const_1);
-	if (decNumberIsInfinite(x))
+	if (dn_le0(x))
 		return decNumberZero(r);
+	if (decNumberIsInfinite(x))
+		return decNumberCopy(r, &const_1);
 
 	decNumberMultiply(&t, &lam, x, ctx);
 	decNumberMinus(&u, &t, ctx);
@@ -1395,8 +1392,7 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 	if (check_probability(r, p, ctx, 1))
 	    return r;
 	decNumberSubtract(&t, &const_1, p, ctx);
-	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) ||
-			decNumberIsNegative(&lam) || decNumberIsZero(&lam)) {
+	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || dn_le0(&lam)) {
 		return set_NaN(r);
 	}
 
@@ -1429,10 +1425,9 @@ decNumber *cdf_B_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (binomial_param(r, &p, &n, x, ctx))
 		return r;
-	if (decNumberIsNegative(x) && !decNumberIsZero(x))
+	if (dn_lt0(x))
 		return decNumberZero(r);
-	decNumberCompare(&t, &n, x, ctx);
-	if (decNumberIsNegative(&t) && ! decNumberIsZero(&t))
+	if (dn_lt0(decNumberCompare(&t, &n, x, ctx)))
 		return decNumberCopy(r, &const_1);
 
 	decNumberAdd(&u, x, &const_1, ctx);
@@ -1456,7 +1451,7 @@ decNumber *pdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
 	}
 
 	decNumberSubtract(&u, &n, x, ctx);
-	if (decNumberIsNegative(&u) && !decNumberIsZero(&u)) {
+	if (dn_lt0(&u) || dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
 	}
@@ -1511,7 +1506,7 @@ decNumber *cdf_P_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber lambda, t, u;
 
 	poisson_param(r, &lambda, x, ctx);
-	if (decNumberIsNegative(x) && !decNumberIsZero(x))
+	if (dn_lt0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
@@ -1530,7 +1525,7 @@ decNumber *pdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (poisson_param(r, &lambda, x, ctx))
 		return r;
-	if (! is_int(x, ctx)) {
+	if (! is_int(x, ctx) || dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
 	}
@@ -1578,7 +1573,7 @@ decNumber *pdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (geometric_param(r, &p, x, ctx))
 		return r;
-        if (! is_int(x, ctx)) {
+        if (! is_int(x, ctx) || dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
         }
@@ -1601,7 +1596,7 @@ decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 		decNumberFloor(&ipx, x, ctx);
 		x = &ipx;
         }
-        if (decNumberIsNegative(x) || decNumberIsZero(x))
+        if (dn_le0(x))
                 return decNumberZero(r);
         if (decNumberIsInfinite(x))
                 return decNumberCopy(r, &const_1);

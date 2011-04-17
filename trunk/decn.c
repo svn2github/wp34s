@@ -51,6 +51,15 @@ static void dump1(const decNumber *a, const char *msg) {
 #define MOD_DIGITS  450
 
 
+/* Some basic conditional tests */
+int dn_lt0(const decNumber *x) {
+	return decNumberIsNegative(x) && ! decNumberIsZero(x);
+}
+int dn_le0(const decNumber *x) {
+	return decNumberIsNegative(x) || decNumberIsZero(x);
+}
+
+
 /* Define a table of small integers.
  * This should be equal or larger than any of the summation integers required in the
  * various series approximations to avoid needless computation.

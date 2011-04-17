@@ -25,6 +25,9 @@
 extern decContext *get_ctx(decContext *);
 extern decContext *get_ctx64(decContext *);
 
+extern int dn_lt0(const decNumber *x);
+extern int dn_le0(const decNumber *x);
+
 extern void decNumberSwap(decNumber *a, decNumber *b);
 
 extern const decNumber *small_int(int i);
