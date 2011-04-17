@@ -80,8 +80,7 @@ static void correlation(decNumber *, const enum sigma_modes);
 static int check_number(const decNumber *r, int n) {
 	decNumber s;
 
-	decNumberCompare(&s, r, small_int(n), Ctx);
-	if (decNumberIsNegative(&s) && ! decNumberIsZero(&s)) {
+	if (dn_lt0(decNumberCompare(&s, r, small_int(n), Ctx))) {
 		err(ERR_MORE_POINTS);
 		return 1;
 	}

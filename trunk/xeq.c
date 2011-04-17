@@ -2629,7 +2629,7 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d) {
 	if (is_intmode())
 		return 1;
 	getX(&x);
-	if (decNumberIsNegative(&x) && !decNumberIsZero(&x)) {
+	if (dn_lt0(&x)) {
 		err(ERR_RANGE);
 		return 1;
 	}
@@ -2728,8 +2728,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 			while (L<R) {
 				while (L<R) {
 					decimal64ToNumber(Regs+R, &a);
-					decNumberCompare(&t, &a, &pivot, Ctx);
-					if (decNumberIsNegative(&t) && !decNumberIsZero(&t))
+					if (dn_lt0(decNumberCompare(&t, &a, &pivot, Ctx)))
 						break;
 					R--;
 				}
@@ -2737,8 +2736,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 					Regs[L++] = Regs[R];
 				while (L<R) {
 					decimal64ToNumber(Regs+L, &a);
-					decNumberCompare(&t, &pivot, &a, Ctx);
-					if (decNumberIsNegative(&t) && !decNumberIsZero(&t))
+					if (dn_lt0(decNumberCompare(&t, &pivot, &a, Ctx)))
 						break;
 					L++;
 				}

@@ -621,7 +621,7 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 
 	// Check for values too big or small
 	decNumberCompare(&x, &const_9000, &a, Ctx);
-	if (decNumberIsNegative(&x) || decNumberIsZero(&x)) {
+	if (dn_le0(&x)) {
 		res = set_dig_s(exp_last, 'o', res);
 	} else if (! decNumberIsZero(&a)) {
 		decNumberCompare(&x, &a, &const_0_0000005, Ctx);
@@ -642,7 +642,7 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 		return 1;
 	decNumberAbs(&x, &w, Ctx);
 	decNumberCompare(&d, &const_100000, &x, Ctx);
-	if (decNumberIsNegative(&d) || decNumberIsZero(&d))
+	if (dn_le0(&d))
 		return 0;
 	decNumberCompare(&d, &x, &const_0_00001, Ctx);
 	if (decNumberIsNegative(&d))

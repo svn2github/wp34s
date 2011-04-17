@@ -58,6 +58,9 @@ int dn_lt0(const decNumber *x) {
 int dn_le0(const decNumber *x) {
 	return decNumberIsNegative(x) || decNumberIsZero(x);
 }
+int dn_gt0(const decNumber *x) {
+	return ! decNumberIsNegative(x) && ! decNumberIsZero(x);
+}
 
 
 /* Define a table of small integers.
@@ -931,7 +934,7 @@ void do_atan(decNumber *res, const decNumber *x, decContext *ctx) {
 
 	// reduce range to 0 <= a < 1, using atan(x) = pi/2 - atan(1/x)
 	decNumberCompare(&b, &a, &const_1, ctx);
-	invert = !decNumberIsNegative(&b) && !decNumberIsZero(&b);
+	invert = dn_gt0(&b);
 	if (invert)
 		decNumberDivide(&a, &const_1, &a, ctx);
 
@@ -1001,7 +1004,7 @@ void do_asin(decNumber *res, const decNumber *x, decContext *ctx) {
 
 	decNumberAbs(&abx, x, ctx);
 	decNumberCompare(&z, &abx, &const_1, ctx);
-	if (!decNumberIsNegative(&z) && !decNumberIsZero(&z)) {
+	if (dn_gt0(&z)) {
 		set_NaN(res);
 		return;
 	}
@@ -1027,7 +1030,7 @@ void do_acos(decNumber *res, const decNumber *x, decContext *ctx) {
 	decNumberAbs(&abx, x, ctx);
 	decNumberCompare(&z, &abx, &const_1, ctx);
 
-	if (!decNumberIsNegative(&z) && !decNumberIsZero(&z)) {
+	if (dn_gt0(&z)) {
 		set_NaN(res);
 		return;
 	}
@@ -1608,7 +1611,7 @@ decNumber *decNumberPsi(decNumber *res, const decNumber *xin, decContext *ctx) {
 	}
 
 	// Check for reflection
-	if (decNumberIsNegative(xin) || decNumberIsZero(xin)) {
+	if (dn_le0(xin)) {
 		if (is_int(xin, ctx)) {
 			return set_NaN(res);
 		}
@@ -2076,7 +2079,7 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 	decNumber ap, del, sum, t, u;
 	int i;
 
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
+	if (dn_le0(x))
 		return decNumberZero(res);
 	decNumberCopy(&ap, a);
 	decNumberRecip(&sum, a, ctx);
@@ -2152,7 +2155,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *x, decContext *ctx) {
 	decNumber z, lga;
 
-	if (decNumberIsNegative(x) || decNumberIsNegative(a) || decNumberIsZero(a) ||
+	if (decNumberIsNegative(x) || dn_le0(a) ||
 			decNumberIsNaN(x) || decNumberIsNaN(a) || decNumberIsInfinite(a)) {
 		return set_NaN(res);
 	}
@@ -3015,7 +3018,7 @@ static decNumber *ortho_poly(decNumber *r, const decNumber *param, const decNumb
 	int incA, incB, incC;
 
 	// Get argument and parameter
-	if (decNumberIsSpecial(x) || decNumberIsSpecial(rn) || (decNumberIsNegative(rn) && !decNumberIsZero(rn))) {
+	if (decNumberIsSpecial(x) || decNumberIsSpecial(rn) || dn_lt0(rn)) {
 error:		return set_NaN(r);
 	}
 	if (! is_int(rn, ctx))
@@ -3028,7 +3031,7 @@ error:		return set_NaN(r);
 		if (decNumberIsSpecial(param))
 			goto error;
 		decNumberAdd(&t, param, &const_1, ctx);
-		if (decNumberIsNegative(&t) || decNumberIsZero(&t))
+		if (dn_le0(&t))
 			goto error;
 	}
 //	} else

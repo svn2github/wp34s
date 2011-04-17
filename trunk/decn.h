@@ -25,6 +25,7 @@
 extern decContext *get_ctx(decContext *);
 extern decContext *get_ctx64(decContext *);
 
+extern int dn_gt0(const decNumber *x);
 extern int dn_lt0(const decNumber *x);
 extern int dn_le0(const decNumber *x);
 

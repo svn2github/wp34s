@@ -1059,7 +1059,7 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 	}
 
 	// Reflection if negative real part
-	if (decNumberIsNegative(ain) || decNumberIsZero(ain)) {
+	if (dn_le0(ain)) {
 		if (decNumberIsZero(bin) && is_int(ain, ctx)) {
 			cmplx_NaN(rx, ry);
 			return;
