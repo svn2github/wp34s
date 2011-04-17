@@ -766,7 +766,7 @@ typedef struct _ram {
 	/*
 	 *  Magic marker to detect failed RAM
 	 */
-	unsigned short int crc;
+	unsigned short int _crc;
 
 	/*
 	 *  A ticker, incremented every 100ms

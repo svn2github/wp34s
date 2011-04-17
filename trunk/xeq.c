@@ -3175,13 +3175,9 @@ unsigned short int checksum_code(void) {
 }
 
 int checksum_all(void) {
-#if 1
-	unsigned short int oldcrc = PersistentRam.crc;
-	PersistentRam.crc = crc16(&PersistentRam,
-			(char *) &PersistentRam.crc - (char *) &PersistentRam);
-	return oldcrc != PersistentRam.crc;
-#else
-	PersistentRam.crc = 0x5aa5;
-	return 0;
-#endif
+	unsigned short int oldcrc = PersistentRam._crc;
+	PersistentRam._crc = 0x5aa5;
+	PersistentRam._crc = crc16(&PersistentRam,
+			(char *) &PersistentRam._ticker - (char *) &PersistentRam);
+	return oldcrc != PersistentRam._crc;
 }
