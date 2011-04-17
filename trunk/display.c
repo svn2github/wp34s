@@ -1223,13 +1223,7 @@ void display(void) {
 				num_arg_0(scopy_spc(buf, "l1B "), state_pc() - addrXROM(0), 5);
 			} else {
 				set_exp(NUMPROG + 1 - State.last_prog, 1, NULL);
-#if 0
-				bp = scopy_spc(buf, State.alphas?"AlpHA":" StEp");
-				*bp++ = ' ';
-				num_arg_0(bp, state_pc(), 3);
-#else
 				num_arg_0(scopy_spc(buf, S7_STEP), state_pc(), 3);
-#endif
 			}
 			for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)
 				set_dig(i, *bp);
