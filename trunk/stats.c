@@ -1602,9 +1602,9 @@ decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 		x = &ipx;
         }
         if (decNumberIsNegative(x) || decNumberIsZero(x))
-                return decNumberCopy(r, &const_1);
-        if (decNumberIsInfinite(x))
                 return decNumberZero(r);
+        if (decNumberIsInfinite(x))
+                return decNumberCopy(r, &const_1);
 
         decNumberSubtract(&t, &const_1, &p, ctx);
 	decNumberLn(&u, &t, ctx);
