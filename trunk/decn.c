@@ -3158,6 +3158,16 @@ decNumber *decNumberBernBn(decNumber *r, const decNumber *n, decContext *ctx) {
 	if (decNumberIsZero(&a))
 		return decNumberCopy(r, &const__0_5);
 	if (is_even(n)) {
+#if 0
+		// Values 306 and larger give infinite results, this is shortcut code
+		// to save some time -- using 360 as the threshold to reuse a constant.
+		if (decNumberIsNegative(decNumberCompare(&b, &const_360, n, ctx))) {
+			decNumberMultiply(&b, n, &const_0_5, ctx);
+			if (is_even(&b))
+				return set_neginf(r);
+			return set_inf(r);
+		}
+#endif
 		decNumberZeta(&b, &a, ctx);
 		decNumberMultiply(&a, &b, n, ctx);
 		return decNumberMinus(r, &a, ctx);
