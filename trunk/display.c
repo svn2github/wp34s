@@ -1064,7 +1064,7 @@ void display(void) {
 	dot(BEG, state_pc() == 0);
 	dot(INPUT,  cata || State.alphas || State.confirm);
 	dot(DOWN_ARR, (State.alphas || State.multi) && State.alphashift);
-	dot(BIG_EQ, cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST);
+	//dot(BIG_EQ, cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST);
         //dot(LIT_EQ, cata);
 
 	/* Set the trig mode indicator 360 or RAD.  Grad is handled elsewhere.
