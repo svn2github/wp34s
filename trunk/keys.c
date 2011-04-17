@@ -793,6 +793,7 @@ static int gtodot_fkey(int n) {
 
 static int process_gtodot(const keycode c) {
 	int pc = -1;
+	unsigned int rawpc;
 
 	switch (c) {
 	case K61:	pc = gtodot_digit(0);	break;
@@ -819,18 +820,21 @@ static int process_gtodot(const keycode c) {
 #endif
 
 #ifdef SEQUENTIAL_ROWS
-	case K02:	case K03:	case K04:
-		pc = gtodot_fkey(c - K01);
-		break;
+	case K00:	case K01:	case K02:	case K03:
+		rawpc = gtodot_fkey(c - K00);
+		goto fin;
 #else
-	case K02:	pc = gtodot_fkey(0);	break;
-	case K03:	pc = gtodot_fkey(1);	break;
-	case K04:	pc = gtodot_fkey(2);	break;
+	case K00:	rawpc = gtodot_fkey(0);	goto fin;
+	case K01:	rawpc = gtodot_fkey(1);	goto fin;
+	case K02:	rawpc = gtodot_fkey(2);	goto fin;
+	case K03:	rawpc = gtodot_fkey(3);	goto fin;
 #endif
 
 	case K62:		// .
-		if (State.numdigit == 0)
-			pc = 0;
+		if (State.numdigit == 0) {
+			rawpc = 0;
+			goto fin;
+		}
 		break;
 
 	case K20:		// ENTER - short circuit processing
@@ -848,7 +852,8 @@ static int process_gtodot(const keycode c) {
 		return STATE_UNFINISHED;
 	}
 	if (pc >= 0) {
-		set_pc(pc);
+		rawpc = find_user_pc(pc);
+fin:		set_pc(rawpc);
 		State.gtodot = 0;
 		State.digval = 0;
 		State.numdigit = 0;

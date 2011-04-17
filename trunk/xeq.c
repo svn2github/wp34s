@@ -453,6 +453,21 @@ unsigned int user_pc(void) {
 	return n;
 }
 
+/* Given a target user PC, figure out the real matching PC
+ */
+unsigned int find_user_pc(unsigned int target) {
+	unsigned int base = 0;
+	unsigned int n = 0;
+
+	while (n++ < target) {
+		unsigned oldbase = base;
+		base = inc(oldbase);
+		if (base == 0)
+			return oldbase;
+	}
+	return base;
+}
+
 /* Zero out the stack
  */
 void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
