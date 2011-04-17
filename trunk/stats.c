@@ -1429,7 +1429,7 @@ decNumber *cdf_B_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 
 	if (binomial_param(r, &p, &n, x, ctx))
 		return r;
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
+	if (decNumberIsNegative(x) && !decNumberIsZero(x))
 		return decNumberZero(r);
 	decNumberCompare(&t, &n, x, ctx);
 	if (decNumberIsNegative(&t) && ! decNumberIsZero(&t))
@@ -1511,7 +1511,7 @@ decNumber *cdf_P_helper(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber lambda, t, u;
 
 	poisson_param(r, &lambda, x, ctx);
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
+	if (decNumberIsNegative(x) && !decNumberIsZero(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
