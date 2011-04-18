@@ -41,4 +41,7 @@ extern void date_settime(decimal64 *, decimal64 *, decContext *);
 extern void date_setdate(decimal64 *, decimal64 *, decContext *);
 extern void date_24(decimal64 *, decimal64 *, decContext *);
 
+extern void jg1582(decimal64 *, decimal64 *, decContext *);
+extern void jg1752(decimal64 *, decimal64 *, decContext *);
+
 #endif

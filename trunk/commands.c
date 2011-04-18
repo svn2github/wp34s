@@ -389,6 +389,8 @@ const struct niladic niladics[] = {
 	FUNC0(OP_DATEYMD,	&date_ymd,		"Y.MD")
 	FUNC0(OP_DATEDMY,	&date_dmy,		"D.MY")
 	FUNC0(OP_DATEMDY,	&date_mdy,		"M.DY")
+	FUNC0(OP_JG1752,	&jg1752,		"JG1752")
+	FUNC0(OP_JG1582,	&jg1582,		"JG1582")
 	FUNC0(OP_ISLEAP,	&date_isleap,		"LEAP?")
 	FUNC0(OP_ALPHADAY,	&date_alphaday,		"\240DAY")
 	FUNC0(OP_ALPHAMONTH,	&date_alphamonth,	"\240MONTH")

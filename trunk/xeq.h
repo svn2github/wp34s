@@ -424,8 +424,8 @@ enum {
 	OP_LJ, OP_RJ,
 	OP_DBL_MUL,
 	OP_RCLSIGMA,
-	OP_DATEYMD, OP_DATEDMY, OP_DATEMDY, OP_ISLEAP,
-	OP_ALPHADAY, OP_ALPHAMONTH, OP_ALPHADATE, OP_ALPHATIME,
+	OP_DATEYMD, OP_DATEDMY, OP_DATEMDY, OP_JG1752, OP_JG1582,
+	OP_ISLEAP, OP_ALPHADAY, OP_ALPHAMONTH, OP_ALPHADATE, OP_ALPHATIME,
 	OP_DATE, OP_TIME, OP_24HR, OP_12HR,
 	OP_SETDATE, OP_SETTIME,
 	OP_CLRALPHA, OP_VIEWALPHA, OP_ALPHALEN,
@@ -686,6 +686,7 @@ struct _state {
 	unsigned int rarg : 1;		// In argument accept mode
 	unsigned int runmode : 1;	// Program mode or run mode
 	unsigned int flags : 1;		// Display state flags
+	unsigned int jg1582 : 1;	// Julian/Gregorian change over in 1582 instead of 1752
 
 	unsigned int disp_small : 1;	// Display the status message in small font
 	unsigned int int_maxw : 3;	// maximum available window

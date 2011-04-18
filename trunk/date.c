@@ -26,20 +26,38 @@
 #include <time.h>
 #endif
 
+
+void jg1582(decimal64 *a, decimal64 *b, decContext *c) {
+	State.jg1582 = 1;
+}
+
+void jg1752(decimal64 *a, decimal64 *b, decContext *c) {
+	State.jg1582 = 0;
+}
+
+
 /* Test if a date is Gregorian or Julian
- * We do this naively by assuming the change happened after the
- * 2nd of September 1752 (the next day being the 14th).
  */
 static int isGregorian(int year, int month, int day) {
-	if (year > 1752)
+	int y, m, d;
+	if (State.jg1582) {
+		y = 1582;
+		m = 10;
+		d = 15;
+	} else {
+		y = 1752;
+		m = 9;
+		d = 14;
+	}
+	if (year > y)
 		return 1;
-	if (year < 1752)
+	if (year < y)
 		return 0;
-	if (month < 9)
+	if (month < m)
 		return 0;
-	if (month > 9)
+	if (month > m)
 		return 1;
-	if (day < 14)		// 3 .. 13 don't exist, but call them Julian
+	if (day < d)
 		return 0;
 	return 1;
 }
@@ -66,8 +84,9 @@ static int JDN(int year, int month, int day) {
  */
 static void JDN2(int J, int *year, int *month, int *day) {
 	int b, c, y, d, e, m;
+	int jgthreshold = State.jg1582 ? 2299161 : 2361222;
 
-	if (J >= 2361222) {	// Gregorian
+	if (J >= jgthreshold) {	// Gregorian
 		const int a = J + 32044;
 		b = (4*a+3)/146097;
 		c = a - (b*146097)/4;
@@ -106,7 +125,7 @@ static int isleap(int year) {
 	return 0;
 }
 
-
+#if 0
 /* Given a year and month, return the number of days in that month.
  * This is primarily used to range check days.
  */
@@ -118,22 +137,37 @@ static int month_lengths(int year, int month) {
 		return isleap(year)?29:28;
 	}
 }
+#endif
 
 
 /* Validate that a date is in fact within our calculation range.
  */
 static int check_date(int year, int month, int day) {
+	int y, m, d;
+
+	if (year < -4799 || year > 9999)
+		return -1;
+	JDN2(JDN(year, month, day), &y, &m, &d);
+	if (year == y && month == m && day == d)
+		return 0;
+	return -1;
+#if 0
 	if (year < -4799 || year > 9999)
 		return -1;
 	if (month < 1 || month > 12)
 		return -1;
 	if (day < 1 || day > month_lengths(year, month))
 		return -1;
-	if (year == 1752 && month == 9) {
-		if (day > 2 && day < 14)
-			return -1;
+	if (State.jg1582) {
+		if (year == 
+	} else {
+		if (year == 1752 && month == 9) {
+			if (day > 2 && day < 14)
+				return -1;
+		}
 	}
 	return 0;
+#endif
 }
 
 

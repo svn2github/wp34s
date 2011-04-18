@@ -100,6 +100,7 @@ void init_state(void) {
         C(leadzero);
         C(fract);
         C(contrast);
+	C(jg1582);
 #undef C
 	s.shifts = SHIFT_N;
 	s.test = TST_NONE;

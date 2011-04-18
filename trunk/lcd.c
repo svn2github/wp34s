@@ -336,117 +336,117 @@ void show_stack(void) {
 
 void show_flags(void) {
 #if !defined(REALBUILD) && !defined(WINGUI)
-        if (!State.flags)
-                return;
-        MOVE(0, 0);
-        PRINTF("   ");
-        MOVE(10, 0);
-        switch (cur_shift()) {
-        case SHIFT_F:   PRINTF("[f-shift]");    break;
-        case SHIFT_G:   PRINTF("[g-shift]");    break;
-        case SHIFT_H:   PRINTF("[h-shift]");    break;
-        default:                                break;
-        }
-        if (State.hyp) {
-                MOVE(40, 0);
-                if (State.dot)
-                        PRINTF("[hyp]");
-                else
-                        PRINTF("[hyp-1]");
-        }
-        if (State.cmplx) {
-                MOVE(20, 0);
-                PRINTF("[cmplx]");
-        }
-        if (!State.runmode) {
-                MOVE(30, 0);
-                PRINTF("[prog]");
-        }
-        MOVE(0, 0);
+	if (!State.flags)
+		return;
+	MOVE(0, 0);
+	PRINTF("   ");
+	MOVE(10, 0);
+	switch (cur_shift()) {
+	case SHIFT_F:   PRINTF("[f-shift]");    break;
+	case SHIFT_G:   PRINTF("[g-shift]");    break;
+	case SHIFT_H:   PRINTF("[h-shift]");    break;
+	default:                                break;
+	}
+	if (State.hyp) {
+		MOVE(40, 0);
+		if (State.dot)
+			PRINTF("[hyp]");
+		else
+			PRINTF("[hyp-1]");
+	}
+	if (State.cmplx) {
+		MOVE(20, 0);
+		PRINTF("[cmplx]");
+	}
+	if (!State.runmode) {
+		MOVE(30, 0);
+		PRINTF("[prog]");
+	}
+	MOVE(0, 0);
 
 #ifdef USECURSES
 #define FLAG_BASE       5
-//      if (State.flags) {
-                MOVE(10, FLAG_BASE);
-                if (State.rarg)
-                        PRINTF("[rcmd]");
-                else if (State.arrow)
-                        PRINTF("[arr]");
-                if (State.dot) {
-                        MOVE(18, FLAG_BASE);
-                        PRINTF("[dot]");
-                }
-                if (State.ind) {
-                        MOVE(24, FLAG_BASE);
-                        PRINTF("[ind]");
-                }
-                if (State.trace) {
-                        MOVE(30, FLAG_BASE);
-                        PRINTF("[trace]");
-                }
-                if (State.cmplx) {
-                        MOVE(40, FLAG_BASE);
-                        PRINTF("[cmplx]");
-                }
-                if (State.catalogue) {
-                        MOVE(50, FLAG_BASE);
-                        PRINTF("[cat %03u]", State.catalogue);
-                }
-                if (State.hms) {
-                        MOVE(64, FLAG_BASE);
-                        PRINTF("[H.MS]");
-                }
-                if (State.fract) {
-                        MOVE(71, FLAG_BASE);
-                        PRINTF("[FRACT]");
-                }
-                if (State.multi) {
-                        MOVE(71, FLAG_BASE+1);
-                        PRINTF("[MULTI]");
-                }
-                MOVE(50, FLAG_BASE+1);
-                PRINTF("[lp %03u]", State.last_prog);
-                if (State.state_lift) {
-                        MOVE(10, FLAG_BASE+1);
-                        PRINTF("[lift]");
-                }
-                if (State.state_running) {
-                        MOVE(18, FLAG_BASE+1);
-                        PRINTF("[running]");
-                }
-                MOVE(70, 5);
-                PRINTF("iw = %u/%u", State.int_window, State.int_maxw);
-                MOVE(30, FLAG_BASE+1);
-                PRINTF("shft = %u", cur_shift());
-                MOVE(40, FLAG_BASE+1);
-                PRINTF("trig = %u", State.trigmode);
-                MOVE(60, FLAG_BASE+1);
-                PRINTF("r = %u", State.show_register);
-//              MOVE(60, FLAG_BASE+1);
-//              PRINTF("apos = %u", State.alpha_pos);
-                MOVE(10, FLAG_BASE+2);
-                PRINTF("numdig = %u   alpha '%-31s'   bflags = %03o-%03o",
-                                State.numdigit, Alpha, get_bank_flags() >> 8,
-                                get_bank_flags() & 0xff);
-                MOVE(10, FLAG_BASE+3);
-                PRINTF("digval = %u", State.digval);
-                MOVE(23, FLAG_BASE+3);
-                PRINTF("pc = %03u", state_pc());
-		MOVE(34, FLAG_BASE+3);
-		PRINTF("ap = %u", State.alpha_pos);
-                MOVE(45, FLAG_BASE+3);
-                PRINTF("cmddot = %u  cmdeex = %u  eol = %u",
-                                State.cmdlinedot, State.cmdlineeex, State.eol);
+	MOVE(10, FLAG_BASE);
+	if (State.rarg)
+		PRINTF("[rcmd]");
+	else if (State.arrow)
+		PRINTF("[arr]");
+	if (State.dot) {
+		MOVE(18, FLAG_BASE);
+		PRINTF("[dot]");
+	}
+	if (State.ind) {
+		MOVE(24, FLAG_BASE);
+		PRINTF("[ind]");
+	}
+	if (State.trace) {
+		MOVE(30, FLAG_BASE);
+		PRINTF("[trace]");
+	}
+	if (State.cmplx) {
+		MOVE(40, FLAG_BASE);
+		PRINTF("[cmplx]");
+	}
+	if (State.catalogue) {
+		MOVE(50, FLAG_BASE);
+		PRINTF("[cat %03u]", State.catalogue);
+	}
+	if (State.hms) {
+		MOVE(64, FLAG_BASE);
+		PRINTF("[H.MS]");
+	}
+	if (State.fract) {
+		MOVE(71, FLAG_BASE);
+		PRINTF("[FRACT]");
+	}
+	if (State.multi) {
+		MOVE(71, FLAG_BASE+1);
+		PRINTF("[MULTI]");
+	}
+	MOVE(50, FLAG_BASE+1);
+	PRINTF("[lp %03u]", State.last_prog);
+	if (State.state_lift) {
+		MOVE(10, FLAG_BASE+1);
+		PRINTF("[lift]");
+	}
+	if (State.state_running) {
+		MOVE(18, FLAG_BASE+1);
+		PRINTF("[running]");
+	}
+	MOVE(70, 5);
+	PRINTF("iw = %u/%u", State.int_window, State.int_maxw);
+	MOVE(30, FLAG_BASE+1);
+	PRINTF("shft = %u", cur_shift());
+	MOVE(40, FLAG_BASE+1);
+	PRINTF("trig = %u", State.trigmode);
+	MOVE(60, FLAG_BASE+1);
+	PRINTF("r = %u", State.show_register);
+//	MOVE(60, FLAG_BASE+1);
+//	PRINTF("apos = %u", State.alpha_pos);
+	MOVE(10, FLAG_BASE+2);
+	PRINTF("numdig = %u   alpha '%-31s'   bflags = %03o-%03o",
+			State.numdigit, Alpha, get_bank_flags() >> 8,
+			get_bank_flags() & 0xff);
+	MOVE(10, FLAG_BASE+3);
+	PRINTF("digval = %u", State.digval);
+	MOVE(23, FLAG_BASE+3);
+	PRINTF("pc = %03u", state_pc());
+	MOVE(34, FLAG_BASE+3);
+	PRINTF("ap = %u", State.alpha_pos);
+	MOVE(45, FLAG_BASE+3);
+	PRINTF("cmddot = %u  cmdeex = %u  eol = %u",
+			State.cmdlinedot, State.cmdlineeex, State.eol);
+	MOVE(1, FLAG_BASE+3);
+	PRINTF("JG=%d", State.jg1582?1582:1752);
 #if 0
-                MOVE(0, 30);
-                PRINTF("RetStk = %u", State.retstk_ptr);
-                int i;
-                for (i=0; i<RET_STACK_SIZE; i++) {
-                        MOVE(4, 31+i);
-                        PRINTF("[%d] = %u", i, RetStk[i]);
-                }
+	MOVE(0, 30);
+	PRINTF("RetStk = %u", State.retstk_ptr);
+	int i;
+	for (i=0; i<RET_STACK_SIZE; i++) {
+		MOVE(4, 31+i);
+		PRINTF("[%d] = %u", i, RetStk[i]);
+	}
 #endif
-//      }
 #endif
 #endif
 }
