@@ -89,5 +89,7 @@ extern void SLCDC_EnableInterrupts(unsigned int sources);
 
 extern void SLCDC_DisableInterrupts(unsigned int sources);
 
+extern int SLCDC_GetInterruptStatus(void);
+
 #endif //#ifndef SLCDC_H
 

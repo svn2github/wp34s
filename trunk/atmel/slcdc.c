@@ -172,3 +172,12 @@ void SLCDC_DisableInterrupts(unsigned int sources)
     AT91C_BASE_SLCDC->SLCDC_IDR = sources;
 }
 
+//------------------------------------------------------------------------------
+/// Reads the SLCDC interrupt status register (Added by MvC)
+//------------------------------------------------------------------------------
+int SLCDC_GetInterruptStatus(void)
+{
+    return AT91C_BASE_SLCDC->SLCDC_ISR;
+}
+
+

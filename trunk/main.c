@@ -20,12 +20,6 @@
  */
 __attribute__((section(".revision"),externally_visible)) const char SvnRevision[ 12 ] = "$Rev::     $";
 
-/*
- *  Define only one of these
- */
-#define USE_LCD_INTERRUPT
-//#define USE_PIT_INTERRUPT
-
 #include "xeq.h"
 #include "display.h"
 #include "lcd.h"
@@ -34,9 +28,6 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #include "board.h"
 #include "aic.h"
 #include "supc.h"
-#ifdef USE_PIT_INTERRUPT
-#include "pit.h"
-#endif
 #include "slcdc.h"
 
 #define BACKUP_SRAM  __attribute__((section(".backup")))
@@ -50,10 +41,9 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
  *  CPU speed settings
  */
 #define SPEED_IDLE    0
-#define SPEED_M_IDLE  1
-#define SPEED_MEDIUM  2
-#define SPEED_H_LOW_V 3
-#define SPEED_HIGH    4
+#define SPEED_MEDIUM  1
+#define SPEED_H_LOW_V 2
+#define SPEED_HIGH    3
 #define SPEED_ANNUNCIATOR LIT_EQ
 
 /*
@@ -100,9 +90,6 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
  *  Heart beat frequency in ms
  *  And Auto Power Down threshold
  */
-#ifdef USE_PIT_INTERRUPT
-#define PIT_PERIOD 25 // desired interrupt rate in ms
-#endif
 #define APD_TICKS 1800 // 3 minutes
 #define APD_VOLTAGE SUPC_BOD_2_1V
 #define LOW_VOLTAGE SUPC_BOD_2_4V
@@ -118,14 +105,8 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  */
 volatile unsigned int ClockSpeed;
 volatile unsigned char SpeedSetting;
-#ifdef USE_PIT_INTERRUPT
-unsigned int DesiredSpeedSetting;
-volatile unsigned short PivValue;
-#endif
 volatile unsigned char Heartbeats;
-#ifdef USE_LCD_INTERRUPT
 unsigned char UserHeartbeatCountDown;
-#endif
 volatile unsigned short int StartupTicks;
 unsigned char Contrast;
 volatile unsigned char FlashOff;
@@ -553,24 +534,28 @@ static void set_mckr( int pres, int css )
 
 /*
  *  Set clock speed to one of 4 fixed values:
- *  SPEED_IDLE, SPEED_M_IDLE, SPEED_MEDIUM, SPEED_H_LOW_V, SPEED_HIGH
+ *  SPEED_IDLE, SPEED_MEDIUM, SPEED_H_LOW_V, SPEED_HIGH
  *  In the idle modes, the CPU clock will be turned off.
  *
  *  Physical speeds are 2 MHZ / 64, 2 MHz, 10 MHz, 32.768 MHz
  *  Using the slow clock doesn't seem to work for unknown reasons.
  *  Therefore, the main clock with a divider is used as slowest clock.
- *
- *  Since the PIT depends on the speed setting, changes work only reliably
- *  while in the interrupt service routine.
  */
-void set_speed_hw( unsigned int speed )
+void set_speed( unsigned int speed )
 {
 	/*
 	 *  Table of supported speeds
 	 */
 	static const int speeds[ SPEED_HIGH + 1 ] =
-		{ 2000000 / 64 , 2000000, 2000000,
+		{ 2000000 / 64 , 2000000,
 		  32768 * ( 1 + PLLMUL_10 ), 32768 * ( 1 + PLLMUL ) };
+
+	if ( speed < SPEED_MEDIUM && ( is_debug() || StartupTicks < 10 ) ) {
+		/*
+		 *  Allow JTAG debugging
+		 */
+		speed = SPEED_MEDIUM;
+	}
 
 	/*
 	 *  If low voltage reduce maximum speed to 10 MHz
@@ -595,9 +580,6 @@ void set_speed_hw( unsigned int speed )
 		return;
 	}
 	ClockSpeed = speeds[ speed ];
-#ifdef USE_PIT_INTERRUPT
-	PivValue = ( PIT_PERIOD * ClockSpeed + 8000 ) / 16000;
-#endif
 
 	switch ( speed ) {
 
@@ -619,7 +601,6 @@ void set_speed_hw( unsigned int speed )
 		SUPC_SetVoltageOutput( SUPC_VDD_155 );
 		break;
 
-	case SPEED_M_IDLE:
 	case SPEED_MEDIUM:
 		/*
 		 *  2 MHz internal RC clock
@@ -692,39 +673,8 @@ void set_speed_hw( unsigned int speed )
 		}
 		break;
 	}
-}
 
-
-/*
- *  Set clock speed to one of 4 fixed values:
- *  SPEED_IDLE, SPEED_M_IDLE, SPEED_MEDIUM, SPEED_HIGH
- *  In the idle modes, the CPU clock gets turned off.
- *
- *  Since the PIT depends on the speed setting, changes work only reliably
- *  while in the interrupt service routine.
- *  This part only sets the desired speed for the hardware speed setting above.
- */
-void set_speed( unsigned int speed )
-{
-	if ( ( is_debug() || StartupTicks < 10 ) && speed < SPEED_MEDIUM ) {
-		/*
-		 *  Allow JTAG debugging
-		 */
-		speed = SPEED_MEDIUM;
-	}
-
-#ifdef USE_PIT_INTERRUPT
-	/*
-	 *  Postpone the speed switch until next interrupt
-	 */
-	DesiredSpeedSetting = speed;
-#else
-	/*
-	 *  LCD timing is independent from speed so we can safely switch here
-	 */
-	set_speed_hw( speed );
-#endif
-	if ( speed <= SPEED_M_IDLE ) {
+	if ( speed == SPEED_IDLE ) {
 		/*
 		 *  Save power
 		 */
@@ -763,10 +713,7 @@ void user_heartbeat( void )
 	 *  Allow keyboard timeout handling.
 	 *  Handles Auto Power Down (APD)
 	 */
-	if ( running() ) {
-		Keyticks = 0;
-	}
-	else if ( Keyticks < APD_TICKS ) {
+	if ( Keyticks < APD_TICKS ) {
 		++Keyticks;
 	}
 
@@ -776,62 +723,6 @@ void user_heartbeat( void )
         put_key( K_HEARTBEAT );
 }
 
-#ifdef USE_PIT_INTERRUPT
-/*
- *  The PIT interrupt
- *  It starts at a slow clock when called in idle mode
- */
-NO_INLINE void PIT_interrupt( void )
-{
-	InIrq = 1;
-
-	/*
-	 *  Set speed to a minimum of 2 MHz for all irq handling.
-	 */
-	if ( SpeedSetting < SPEED_MEDIUM ) {
-		set_speed_hw( SPEED_MEDIUM );
-	}
-
-	/*
-	 *  Voltage detection state machine
-	 */
-	detect_voltage();
-
-	/*
-	 *  The keyboard is scanned every 25ms for debounce and repeat
-	 */
-	scan_keyboard();
-
-	/*
-	 *  Get the number of missed interrupts
-	 */
-	if ( ++Heartbeats == 100 / PIT_PERIOD ) {
-		/*
-		 *  Service the 100ms heart beat
-		 */
-		user_heartbeat();
-		Heartbeats = 0;
-	}
-
-	/*
-	 *  Set hardware speed to desired speed
-	 */
-	if ( DesiredSpeedSetting != SpeedSetting ) {
-		set_speed_hw( DesiredSpeedSetting );
-	}
-
-	/*
-	 *  Now we have to re-program the PIT.
-	 *  The next interrupt is scheduled just one period after now.
-	 */
-	PIT_SetPIV( ( PIT_GetPIVR() & AT91C_PITC_CPIV ) + PivValue );
-
-	InIrq = 0;
-}
-#endif
-
-
-#ifdef USE_LCD_INTERRUPT
 /*
  *  The SLCDC ENDFRAME interrupt
  *  Called every 640 slow clocks (about 51 Hz)
@@ -840,13 +731,6 @@ NO_INLINE void PIT_interrupt( void )
 NO_INLINE void LCD_interrupt( void )
 {
 	InIrq = 1;
-
-	/*
-	 *  Set speed to a minimum of 2 MHz for all irq handling.
-	 */
-	if ( SpeedSetting < SPEED_MEDIUM ) {
-		set_speed_hw( SPEED_MEDIUM );
-	}
 
 	Heartbeats = ( Heartbeats + 1 ) & 0x7f;
 	if ( Heartbeats & 1 ) {
@@ -881,11 +765,8 @@ NO_INLINE void LCD_interrupt( void )
 			UserHeartbeatCountDown = 5;
 		}
 	}
-
 	InIrq = 0;
 }
-
-#endif
 
 
 /*
@@ -905,13 +786,19 @@ RAM_FUNCTION void irq_common( void )
 		unsigned int t = 2 + ( 3 * ClockSpeed ) / 100000;
 		SUPC_EnableFlash( t );  // minimum 60 microseconds wake up time
 	}
+
+	/*
+	 *  Set speed to a minimum of 2 MHz for all irq handling.
+	 */
+	if ( SpeedSetting < SPEED_MEDIUM ) {
+		set_speed( SPEED_MEDIUM );
+	}
 }
 
 
-#ifdef USE_PIT_INTERRUPT
+#ifdef USE_SYSTEM_IRQ
 /*
  *  The system interrupt handler
- *  It starts at a slow clock when called in idle mode
  */
 RAM_FUNCTION void system_irq( void )
 {
@@ -939,7 +826,6 @@ RAM_FUNCTION void system_irq( void )
 
 /*
  *  The SLCDC interrupt handler
- *  It starts at a slow clock when called in idle mode
  */
 RAM_FUNCTION void SLCDC_irq( void )
 {
@@ -962,7 +848,7 @@ void enable_interrupts()
 	InIrq = 0;
 	int prio = 7;
 
-#ifdef USE_PIT_INTERRUPT
+#ifdef USE_SYSTEM_IRQ
 	/*
 	 *  Tell the interrupt controller where to go
 	 *  This is for all system peripherals
@@ -974,18 +860,9 @@ void enable_interrupts()
 	 *  Enable IRQ 1
 	 */
 	AIC_EnableIT( AT91C_ID_SYS );
-
-	/*
-	 *  Enable the PIT and its interrupt
-	 *  Speed setting should already be done
-	 */
-	PIT_SetPIV( PivValue );
-	PIT_EnableIT();
-	PIT_Enable();
 	--prio;
 #endif
 
-#ifdef USE_LCD_INTERRUPT
 	/*
 	 *  Tell the interrupt controller where to go
 	 *  This is for the SLCDC
@@ -1004,7 +881,6 @@ void enable_interrupts()
 	SLCDC_EnableInterrupts( AT91C_SLCDC_ENDFRAME );
 	UserHeartbeatCountDown = 5;
 	// --prio;
-#endif
 }
 
 
@@ -1155,7 +1031,7 @@ int main(void)
         /*
          * Initialise the hardware (clock, backup RAM, LCD, RTC, timer)
 	 */
-	set_speed_hw( SPEED_MEDIUM );
+	set_speed( SPEED_MEDIUM );
 	SUPC_EnableSram();
 	Keyticks = 0;
 	BodThreshold = -1;
@@ -1202,9 +1078,8 @@ int main(void)
 		while ( !is_key_pressed() ) {
 			/*
 			 *  Save power if nothing in queue
-			 *  Clock is slowed down after 2 seconds of inactivity
 			 */
-			set_speed( Keyticks < 20 ? SPEED_M_IDLE : SPEED_IDLE );
+			set_speed( SPEED_IDLE );
 		}
 
 		/*
@@ -1216,8 +1091,6 @@ int main(void)
 			/*
 			 *  A real key was pressed
 			 */
-			Keyticks = 0;
-
 			if ( OnKeyPressed && k != K60 && !running() ) {
 				/*
 				 *  Check for special key combinations
@@ -1259,9 +1132,12 @@ int main(void)
 		 */
 		if ( k != -1 ) {
 			process_keycode( k );
+			if ( k != K_HEARTBEAT ) {
+				Keyticks = 0;
+			}
 		}
 
-		if ( Keyticks >= APD_TICKS || ( Voltage <= APD_VOLTAGE ) ) {
+		if ( Voltage <= APD_VOLTAGE || ( !running() && Keyticks >= APD_TICKS ) ) {
 			/*
 			 *  We have a reason to power the device off
 			 */

@@ -28,7 +28,6 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "atmel/board_lowlevel.c"
 #include "atmel/board_memories.c"
 #include "atmel/aic.c"
-#include "atmel/pit.c"
 #include "atmel/pmc.c"
 #include "atmel/rtc.c"
 #include "atmel/slcdc.c"

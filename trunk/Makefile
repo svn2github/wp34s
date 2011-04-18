@@ -135,7 +135,7 @@ CNSTS := $(OBJECTDIR)/libconsts.a
 
 ifdef REALBUILD
 STARTUP := atmel/board_cstartup.S
-ATSRCS := board_lowlevel.c board_memories.c aic.c pit.c pmc.c rtc.c slcdc.c supc.c 
+ATSRCS := board_lowlevel.c board_memories.c aic.c pmc.c rtc.c slcdc.c supc.c 
 ATOBJS := $(ATSRCS:%.c=$(OBJECTDIR)/%.o)
 ATSRCS := $(ATSRCS:%.c=atmel/%.c)
 ATHDRS := $(ATSRCS:%.c=%.h) atmel/board.h atmel/at91sam7l128/AT91SAM7L128.h 
