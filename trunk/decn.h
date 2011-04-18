@@ -138,9 +138,11 @@ extern decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decN
 
 extern decNumber *decNumberFib(decNumber *res, const decNumber *x, decContext *ctx);
 
+extern decNumber *decNumberD2G(decNumber *res, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberD2R(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberR2D(decNumber *res, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberG2D(decNumber *res, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberG2R(decNumber *res, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberR2D(decNumber *res, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberR2G(decNumber *res, const decNumber *x, decContext *ctx);
 
 extern void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x, decContext *ctx);

@@ -1310,7 +1310,7 @@ decNumber *decNumberD2R(decNumber *res, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *decNumberR2D(decNumber *res, const decNumber *x, decContext *ctx) {
-	return decNumberMultiply(res, x, &const_PIunder180, ctx);
+	return decNumberDivide(res, x, &const_PIon180, ctx);
 }
 
 
@@ -1319,17 +1319,22 @@ decNumber *decNumberG2R(decNumber *res, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *decNumberR2G(decNumber *res, const decNumber *x, decContext *ctx) {
-	return decNumberMultiply(res, x, &const_PIunder200, ctx);
+	return decNumberDivide(res, x, &const_PIon200, ctx);
 }
 
+decNumber *decNumberG2D(decNumber *res, const decNumber *x, decContext *ctx) {
+	return decNumberMultiply(res, x, &const_0_9, ctx);
+}
+
+decNumber *decNumberD2G(decNumber *res, const decNumber *x, decContext *ctx) {
+	return decNumberDivide(res, x, &const_0_9, ctx);
+}
 
 decNumber *decNumber2Deg(decNumber *res, const decNumber *x, decContext *ctx) {
 	switch (get_trig_mode()) {
 	case TRIG_DEG:	decNumberCopy(res, x);		break;
 	case TRIG_RAD:	decNumberR2D(res, x, ctx);	break;
-	case TRIG_GRAD:
-		decNumberMultiply(res, x, &const_0_9, ctx);
-		break;
+	case TRIG_GRAD:	decNumberG2D(res, x, ctx);	break;
 	}
         set_trig_mode(TRIG_DEG);
 	return res;
@@ -1347,9 +1352,7 @@ decNumber *decNumber2Rad(decNumber *res, const decNumber *x, decContext *ctx) {
 
 decNumber *decNumber2Grad(decNumber *res, const decNumber *x, decContext *ctx) {
 	switch (get_trig_mode()) {
-	case TRIG_DEG:
-		decNumberDivide(res, x, &const_0_9, ctx);
-		break;
+	case TRIG_DEG:	decNumberD2G(res, x, ctx);	break;
 	case TRIG_RAD:	decNumberR2G(res, x, ctx);	break;
 	case TRIG_GRAD:	decNumberCopy(res, x);		break;
 	}

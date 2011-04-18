@@ -93,6 +93,10 @@ const struct monfunc monfuncs[] = {
 #endif
 	FUNC(OP_DEG2RAD,&decNumberD2R,		NULL,		NULL,		"D\015R")
 	FUNC(OP_RAD2DEG,&decNumberR2D,		NULL,		NULL,		"R\015D")
+	FUNC(OP_DEG2GRD,&decNumberD2G,		NULL,		NULL,		"D\015G")
+	FUNC(OP_GRD2DEG,&decNumberG2D,		NULL,		NULL,		"G\015D")
+	FUNC(OP_RAD2GRD,&decNumberR2G,		NULL,		NULL,		"R\015G")
+	FUNC(OP_GRD2RAD,&decNumberG2R,		NULL,		NULL,		"G\015R")
 	FUNC(OP_CCHS,	&decNumberMinus,	&cmplxMinus,	&intChs,	"+/-")
 	FUNC(OP_CCONJ,	NULL,			&cmplxConj,	NULL,		"CONJ")
 	FUNC(OP_ERF,	&decNumberERF,		NULL,		NULL,		"erf")

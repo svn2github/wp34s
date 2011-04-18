@@ -50,7 +50,6 @@ static s_opcode catalogue[] = {
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	MON(OP_D2J,		"D\015J")
-	MON(OP_DEG2RAD,		"D\015R")
 	NILIC(OP_DATE,		"DATE")
 	MON(OP_DOWK,		"DAY")
 	DYA(OP_DTADD,		"DAYS+")
@@ -75,7 +74,6 @@ static s_opcode catalogue[] = {
 	DYA(OP_MIN,		"MIN")
 	DYA(OP_LNAND,		"NAND")
 	DYA(OP_LNOR,		"NOR")
-	MON(OP_RAD2DEG,		"R\015D")
 	NILIC(OP_RESET,		"RESET")
 	MON(OP_ROUND,		"ROUNDI")
 	NILIC(OP_SETDATE,	"SETDAT")
@@ -104,6 +102,12 @@ static s_opcode catalogue[] = {
 	MON(OP_GAMMA,		"\202")
 	DYA(OP_DTDIF,		"\203DAYS")
 	DYA(OP_AGM,		"AGM")
+	MON(OP_DEG2RAD,		"D\015R")
+	MON(OP_RAD2DEG,		"R\015D")
+	MON(OP_DEG2GRD,		"D\015G")
+	MON(OP_GRD2DEG,		"G\015D")
+	MON(OP_RAD2GRD,		"R\015G")
+	MON(OP_GRD2RAD,		"G\015R")
 #ifdef INCLUDE_SUBFACT
 	MON(OP_SUBFACT,		"!n")
 #endif
