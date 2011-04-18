@@ -283,31 +283,30 @@ struct constsml constsml[] = {
         CONSTANT("h",           "PC_PLANK",     "6.62606876E-34"),
         CONSTANT("\236",        "PC_hon2PI",    "1.054571596E-34"),
         CONSTANT("k",           "PC_k",         "1.3806503E-23"),
-	CONSTANT("L",		"PC_PlanckL",	"1.616252e-35"),	// Base Planck unit of length
-	CONSTANT("M",		"PC_PlanckM",	"2.17644e-8"),		// Base Planck unit of mass
+	CONSTANT("l\276",	"PC_PlanckL",	"1.616252e-35"),	// Base Planck unit of length
         CONSTANT("m\274",       "PC_me",        "9.10938188E-31"),
         CONSTANT("m\275",       "PC_mn",        "1.67492716E-27"),
+	CONSTANT("M\276",	"PC_PlanckM",	"2.17644e-8"),		// Base Planck unit of mass
         CONSTANT("m\276",       "PC_mp",        "1.67262158E-27"),
         CONSTANT("m\277",       "PC_mu",        "1.66053873E-27"),
         CONSTANT("m\231",       "PC_mMu",       "1.88353109E-28"),
         CONSTANT("N\327",       "PC_Na",        "6.02214199E23"),
         CONSTANT("NaN",         "NAN",          "NaN"),
         CONSTANT("p\270",       "PC_atm",       "101325"),
-	CONSTANT("Q",		"PC_PlanckQ",	"1.875545870e-18"),	// Base Planck unit of charge
+	CONSTANT("q\276",	"PC_PlanckQ",	"1.875545870e-18"),	// Base Planck unit of charge
         CONSTANT("R",           "PC_R",         "8.314472"),
         CONSTANT("r\274",       "PC_Re",        "2.817940285E-15"),
         //CONSTANT("R\367",     "PC_Rk",        "25812.80756"),
         CONSTANT("R\233",       "PC_Rinf",      "10973731.5685"),
-	CONSTANT("T",		"PC_PlanckT",	"5.39124e-44"),		// Base Planck unit of time
         CONSTANT("T\270",       "PC_t",         "273.15"),
-        CONSTANT("t\276",       "PC_tp",        "5.39124E-44"),
+        CONSTANT("t\276",       "PC_tp",        "5.39124E-44"),		// Base Planck unit of time
+	CONSTANT("T\276",	"PC_PlanckTh",	"1.416785e32"),		// Base Planck unit of temperature
         CONSTANT("V\033",       "PC_Vm",        "0.022413996"),
         CONSTANT("Z\270",       "PC_Zo",        "376.730313461"),
         CONSTANT("\240",        "PC_alpha",     "7.297352533E-3"),
         CONSTANT("\242EM",      "EULER",        "0.5772156649015328606065120900824024310421593359399235988"),
         CONSTANT("\242\276",    "PC_gamP",      "267522212"),
         CONSTANT("\244\270",    "PC_eps0",      "8.854187817E-12"),
-	CONSTANT("\207",	"PC_PlanckTh",	"1.416785e32"),		// Base Planck unit of temperature
         //CONSTANT("\207",      "PC_MILLS",     "1.3063778838630806904686144926026057129167845851567136443680537599664340537668265988215014037011973957"),
         //CONSTANT("\252",      "PC_lam",       "0.62432998854355087099293638310083724417964262018"),
         CONSTANT("\252\273",    "PC_lamC",      "2.426310215E-12"),
