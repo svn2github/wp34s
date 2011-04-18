@@ -104,7 +104,7 @@ __attribute__ ((section (".ramfunc"))) // GCC
 void SUPC_DisableFlash(void)
 {
     AT91C_BASE_SUPC->SUPC_MR = SUPC_KEY | (AT91C_BASE_SUPC->SUPC_MR & ~AT91C_SUPC_FLASHON);
-    while ((AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_FLASHS) == AT91C_SUPC_FLASHS);
+    // while ((AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_FLASHS) == AT91C_SUPC_FLASHS);
 }
 
 //------------------------------------------------------------------------------

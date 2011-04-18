@@ -104,12 +104,12 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  *  Local data
  */
 volatile unsigned int ClockSpeed;
+volatile unsigned short FlashWakeupTime;
 volatile unsigned char SpeedSetting;
 volatile unsigned char Heartbeats;
 unsigned char UserHeartbeatCountDown;
 volatile unsigned short int StartupTicks;
 unsigned char Contrast;
-volatile unsigned char FlashOff;
 volatile unsigned char InIrq;
 volatile unsigned char Voltage;
 
@@ -416,18 +416,17 @@ void disable_lcd( void )
 RAM_FUNCTION void go_idle( void )
 {
 	/*
-	 *  Disable flash memory in order to save power
-	 *  ** Disabled for now **
-	 */
-	if ( 0 && SpeedSetting == SPEED_IDLE ) {
-		SUPC_DisableFlash();
-		FlashOff = 1;
-	}
-
-	/*
 	 *  Voltage regulator to deep mode
 	 */
 	SUPC_EnableDeepMode();
+
+	/*
+	 *  Disable flash memory in order to save power
+	 */
+	if ( 1 && SpeedSetting == SPEED_IDLE ) {
+		FlashWakeupTime = (unsigned short) 2; // ( 2 + ( 3 * ClockSpeed ) / 100000 );
+		SUPC_DisableFlash();
+	}
 
 	/*
 	 *  Disable the processor clock and go to sleep
@@ -775,17 +774,17 @@ NO_INLINE void LCD_interrupt( void )
 RAM_FUNCTION void irq_common( void )
 {
 	/*
+	 *  Flash memory might be disabled, turn it on again
+	 */
+	if ( FlashWakeupTime != 0 ) {
+		SUPC_EnableFlash( FlashWakeupTime );  // minimum 60 microseconds wake up time
+		FlashWakeupTime = 0;
+	}
+
+	/*
 	 *  Voltage regulator to normal mode
 	 */
 	SUPC_DisableDeepMode();
-
-	/*
-	 *  Flash memory might be disabled, turn it on again
-	 */
-	if ( FlashOff ) {
-		unsigned int t = 2 + ( 3 * ClockSpeed ) / 100000;
-		SUPC_EnableFlash( t );  // minimum 60 microseconds wake up time
-	}
 
 	/*
 	 *  Set speed to a minimum of 2 MHz for all irq handling.
@@ -827,7 +826,7 @@ RAM_FUNCTION void system_irq( void )
 /*
  *  The SLCDC interrupt handler
  */
-RAM_FUNCTION void SLCDC_irq( void )
+RAM_FUNCTION void SLCD_irq( void )
 {
 	irq_common();
 
@@ -869,7 +868,7 @@ void enable_interrupts()
 	 */
 	AIC_ConfigureIT( AT91C_ID_SLCD,
 		         AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL | prio,
-		         SLCDC_irq );
+		         SLCD_irq );
 	/*
 	 *  Enable IRQ 11
 	 */
