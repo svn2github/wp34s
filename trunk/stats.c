@@ -899,8 +899,8 @@ static int qf_eval(decNumber *fx, const decNumber *x, const decNumber *p, decCon
 	decNumberSubtract(&b, &a, p, ctx);
 	if (decNumberIsZero(&b))
 		return 0;
-	decNumberLn1p(&a, &b, ctx);
-	decNumberDivide(fx, &a, p, ctx);
+	decNumberDivide(&a, &b, p, ctx);
+	decNumberLn1p(fx, &a, ctx);
 	return 1;
 }
 #endif
@@ -965,29 +965,33 @@ decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 // Normal(0,1) CDF function
 decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
-	decNumber t, u, v, a, x2, d, absx;
+	decNumber t, u, v, a, x2, d, absx, n;
 	int i;
 
 	decNumberAbs(&absx, x, ctx);
-	decNumberCompare(&u, &const_10, &absx, ctx);
+	decNumberCompare(&u, &const_PI, &absx, ctx);	// We need a number about 3.2 and this is close enough
 	if (decNumberIsNegative(&u)) {
-		if (decNumberIsNegative(x)) {
-			// Large and negative
-			int n = 21;
-			decNumberRecip(&t, small_int(n), ctx);
-			while (--n > 0) {
-				decNumberAdd(&u, x, &t, ctx);
-				decNumberDivide(&t, small_int(n), &u, ctx);
-			}
-			decNumberAdd(&u, &t, x, ctx);
-			pdf_Q(&t, x, ctx);
-			decNumberDivide(q, &t, &u, ctx);
-			if (! decNumberIsNegative(q))
-				return decNumberSubtract(q, &const_1, q, ctx);
-			return decNumberMinus(q, q, ctx);
-		}
-		// Large and positive
-		return decNumberCopy(q, &const_1);
+		decNumberMinus(&x2, &absx, ctx);
+		//n = ceil(5 + k / (|x| - 1))
+		decNumberSubtract(&v, &absx, &const_1, ctx);
+		decNumberDivide(&t, &const_256, &v, ctx);
+		decNumberAdd(&u, &t, &const_4, ctx);
+		decNumberCeil(&n, &u, ctx);
+		decNumberZero(&t);
+		do {
+			decNumberAdd(&u, x, &t, ctx);
+			decNumberDivide(&t, &n, &u, ctx);
+			dn_dec(&n, ctx);
+		} while (! decNumberIsZero(&n));
+
+		decNumberAdd(&u, &t, x, ctx);
+		pdf_Q(&t, x, ctx);
+		decNumberDivide(q, &t, &u, ctx);
+		if (! decNumberIsNegative(q))
+			decNumberSubtract(q, &const_1, q, ctx);
+		if (decNumberIsNegative(x))
+			decNumberMinus(q, q, ctx);
+		return q;
 	} else {
 		decNumberSquare(&x2, &absx, ctx);
 		decNumberCopy(&t, &absx);
