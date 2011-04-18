@@ -20,6 +20,12 @@
  */
 __attribute__((section(".revision"),externally_visible)) const char SvnRevision[ 12 ] = "$Rev::     $";
 
+/*
+ *  Define only one of these
+ */
+#define USE_LCD_INTERRUPT
+//#define USE_PIT_INTERRUPT
+
 #include "xeq.h"
 #include "display.h"
 #include "lcd.h"
@@ -27,8 +33,10 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 
 #include "board.h"
 #include "aic.h"
-#include "pit.h"
 #include "supc.h"
+#ifdef USE_PIT_INTERRUPT
+#include "pit.h"
+#endif
 #include "slcdc.h"
 
 #define BACKUP_SRAM  __attribute__((section(".backup")))
@@ -92,7 +100,9 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
  *  Heart beat frequency in ms
  *  And Auto Power Down threshold
  */
-#define PIT_PERIOD 25
+#ifdef USE_PIT_INTERRUPT
+#define PIT_PERIOD 25 // desired interrupt rate in ms
+#endif
 #define APD_TICKS 1800 // 3 minutes
 #define APD_VOLTAGE SUPC_BOD_2_1V
 #define LOW_VOLTAGE SUPC_BOD_2_4V
@@ -107,9 +117,15 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  *  Local data
  */
 volatile unsigned int ClockSpeed;
+volatile unsigned char SpeedSetting;
+#ifdef USE_PIT_INTERRUPT
+unsigned int DesiredSpeedSetting;
 volatile unsigned short PivValue;
-volatile unsigned char SpeedSetting, DesiredSpeedSetting;
+#endif
 volatile unsigned char Heartbeats;
+#ifdef USE_LCD_INTERRUPT
+unsigned char UserHeartbeatCountDown;
+#endif
 volatile unsigned short int StartupTicks;
 unsigned char Contrast;
 volatile unsigned char FlashOff;
@@ -579,7 +595,9 @@ void set_speed_hw( unsigned int speed )
 		return;
 	}
 	ClockSpeed = speeds[ speed ];
+#ifdef USE_PIT_INTERRUPT
 	PivValue = ( PIT_PERIOD * ClockSpeed + 8000 ) / 16000;
+#endif
 
 	switch ( speed ) {
 
@@ -695,10 +713,17 @@ void set_speed( unsigned int speed )
 		speed = SPEED_MEDIUM;
 	}
 
+#ifdef USE_PIT_INTERRUPT
 	/*
 	 *  Postpone the speed switch until next interrupt
 	 */
 	DesiredSpeedSetting = speed;
+#else
+	/*
+	 *  LCD timing is independent from speed so we can safely switch here
+	 */
+	set_speed_hw( speed );
+#endif
 	if ( speed <= SPEED_M_IDLE ) {
 		/*
 		 *  Save power
@@ -751,7 +776,7 @@ void user_heartbeat( void )
         put_key( K_HEARTBEAT );
 }
 
-//#pragma GCC optimize 1
+#ifdef USE_PIT_INTERRUPT
 /*
  *  The PIT interrupt
  *  It starts at a slow clock when called in idle mode
@@ -803,13 +828,70 @@ NO_INLINE void PIT_interrupt( void )
 
 	InIrq = 0;
 }
+#endif
+
+
+#ifdef USE_LCD_INTERRUPT
+/*
+ *  The SLCDC ENDFRAME interrupt
+ *  Called every 640 slow clocks (about 51 Hz)
+ *  It starts at a slow clock when called in idle mode
+ */
+NO_INLINE void LCD_interrupt( void )
+{
+	InIrq = 1;
+
+	/*
+	 *  Set speed to a minimum of 2 MHz for all irq handling.
+	 */
+	if ( SpeedSetting < SPEED_MEDIUM ) {
+		set_speed_hw( SPEED_MEDIUM );
+	}
+
+	Heartbeats = ( Heartbeats + 1 ) & 0x7f;
+	if ( Heartbeats & 1 ) {
+		/*
+		 *  The keyboard is scanned every 25ms for debounce and repeat
+		 */
+		scan_keyboard();
+	}
+
+	/*
+	 *  Voltage detection state machine
+	 */
+	detect_voltage();
+
+	/*
+	 *  Count down to next 100ms user heart beat
+	 */
+	if ( --UserHeartbeatCountDown == 0 ) {
+		/*
+		 *  Service the 100ms user heart beat
+		 */
+		user_heartbeat();
+
+		/*
+		 *  Schedule the next one so that there are 50 calls in 5 seconds
+		 *  We need to skip 3 ticks in 128 cycles
+		 */
+		if ( Heartbeats ==  40 || Heartbeats ==  81 || Heartbeats == 122 ) {
+			UserHeartbeatCountDown = 6;
+		}
+		else {
+			UserHeartbeatCountDown = 5;
+		}
+	}
+
+	InIrq = 0;
+}
+
+#endif
 
 
 /*
- *  The system interrupt handler
- *  It starts at a slow clock when called in idle mode
+ *  Common functionality for all interrupt handling
  */
-RAM_FUNCTION void system_irq( void )
+RAM_FUNCTION void irq_common( void )
 {
 	/*
 	 *  Voltage regulator to normal mode
@@ -823,6 +905,17 @@ RAM_FUNCTION void system_irq( void )
 		unsigned int t = 2 + ( 3 * ClockSpeed ) / 100000;
 		SUPC_EnableFlash( t );  // minimum 60 microseconds wake up time
 	}
+}
+
+
+#ifdef USE_PIT_INTERRUPT
+/*
+ *  The system interrupt handler
+ *  It starts at a slow clock when called in idle mode
+ */
+RAM_FUNCTION void system_irq( void )
+{
+	irq_common();
 
 	/*
 	 *  Since all system peripherals are tied to the same IRQ source 1
@@ -841,23 +934,41 @@ RAM_FUNCTION void system_irq( void )
 		// ...
 	}
 }
-//#pragma GCC optimize "s"
+#endif
 
 
 /*
- *  Enable the PIT to generate interrupts
- *  Do this after setting the speed so that the PIV value is already set.
+ *  The SLCDC interrupt handler
+ *  It starts at a slow clock when called in idle mode
  */
-void enable_heartbeat()
+RAM_FUNCTION void SLCDC_irq( void )
+{
+	irq_common();
+
+	if ( SLCDC_GetInterruptStatus() & AT91C_SLCDC_ENDFRAME ) {
+		/*
+		 *  SLCDC ENDFRAME
+		 */
+		LCD_interrupt();
+	}
+}
+
+
+/*
+ *  Enable the interrupt sources
+ */
+void enable_interrupts()
 {
 	InIrq = 0;
+	int prio = 7;
 
+#ifdef USE_PIT_INTERRUPT
 	/*
 	 *  Tell the interrupt controller where to go
+	 *  This is for all system peripherals
 	 */
 	AIC_ConfigureIT( AT91C_ID_SYS, 
-		         AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL 
-		         | AT91C_AIC_PRIOR_HIGHEST,
+		         AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL | prio,
 		         system_irq );
 	/*
 	 *  Enable IRQ 1
@@ -866,10 +977,34 @@ void enable_heartbeat()
 
 	/*
 	 *  Enable the PIT and its interrupt
+	 *  Speed setting should already be done
 	 */
 	PIT_SetPIV( PivValue );
 	PIT_EnableIT();
 	PIT_Enable();
+	--prio;
+#endif
+
+#ifdef USE_LCD_INTERRUPT
+	/*
+	 *  Tell the interrupt controller where to go
+	 *  This is for the SLCDC
+	 */
+	AIC_ConfigureIT( AT91C_ID_SLCD,
+		         AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL | prio,
+		         SLCDC_irq );
+	/*
+	 *  Enable IRQ 11
+	 */
+	AIC_EnableIT( AT91C_ID_SLCD );
+
+	/*
+	 *  Use the LCD frame rate for speed independent interrupt timing
+	 */
+	SLCDC_EnableInterrupts( AT91C_SLCDC_ENDFRAME );
+	UserHeartbeatCountDown = 5;
+	// --prio;
+#endif
 }
 
 
@@ -1028,7 +1163,7 @@ int main(void)
 	enable_lcd();
 	SUPC_EnableRtc();
 	detect_voltage();
-	enable_heartbeat();
+	enable_interrupts();
 
 	/*
 	 *  Force DEBUG mode for JTAG debugging
