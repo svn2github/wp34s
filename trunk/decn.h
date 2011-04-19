@@ -74,6 +74,9 @@ extern decNumber *decNumberCubeRoot(decNumber *r, const decNumber *x, decContext
 extern decNumber *decNumber2Deg(decNumber *res, const decNumber *x, decContext *);
 extern decNumber *decNumber2Rad(decNumber *res, const decNumber *x, decContext *);
 extern decNumber *decNumber2Grad(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberDeg2(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberRad2(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberGrad2(decNumber *res, const decNumber *x, decContext *);
 
 extern decNumber *decNumberSin(decNumber *res, const decNumber *x, decContext *);
 extern decNumber *decNumberCos(decNumber *res, const decNumber *x, decContext *);

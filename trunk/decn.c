@@ -1336,7 +1336,6 @@ decNumber *decNumber2Deg(decNumber *res, const decNumber *x, decContext *ctx) {
 	case TRIG_RAD:	decNumberR2D(res, x, ctx);	break;
 	case TRIG_GRAD:	decNumberG2D(res, x, ctx);	break;
 	}
-        set_trig_mode(TRIG_DEG);
 	return res;
 }
 
@@ -1346,7 +1345,6 @@ decNumber *decNumber2Rad(decNumber *res, const decNumber *x, decContext *ctx) {
 	case TRIG_RAD:	decNumberCopy(res, x);		break;
 	case TRIG_GRAD:	decNumberG2R(res, x, ctx);	break;
 	}
-        set_trig_mode(TRIG_RAD);
 	return res;
 }
 
@@ -1356,7 +1354,33 @@ decNumber *decNumber2Grad(decNumber *res, const decNumber *x, decContext *ctx) {
 	case TRIG_RAD:	decNumberR2G(res, x, ctx);	break;
 	case TRIG_GRAD:	decNumberCopy(res, x);		break;
 	}
-        set_trig_mode(TRIG_GRAD);
+	return res;
+}
+
+decNumber *decNumberDeg2(decNumber *res, const decNumber *x, decContext *ctx) {
+	switch (get_trig_mode()) {
+	case TRIG_DEG:	decNumberCopy(res, x);		break;
+	case TRIG_RAD:	decNumberD2R(res, x, ctx);	break;
+	case TRIG_GRAD:	decNumberD2G(res, x, ctx);	break;
+	}
+	return res;
+}
+
+decNumber *decNumberRad2(decNumber *res, const decNumber *x, decContext *ctx) {
+	switch (get_trig_mode()) {
+	case TRIG_DEG:	decNumberR2D(res, x, ctx);	break;
+	case TRIG_RAD:	decNumberCopy(res, x);		break;
+	case TRIG_GRAD:	decNumberR2G(res, x, ctx);	break;
+	}
+	return res;
+}
+
+decNumber *decNumberGrad2(decNumber *res, const decNumber *x, decContext *ctx) {
+	switch (get_trig_mode()) {
+	case TRIG_DEG:	decNumberG2D(res, x, ctx);	break;
+	case TRIG_RAD:	decNumberG2R(res, x, ctx);	break;
+	case TRIG_GRAD:	decNumberCopy(res, x);		break;
+	}
 	return res;
 }
 
