@@ -466,11 +466,6 @@ void shutdown( void )
 	checksum_all();
 
 	/*
-	 *  Avoid APD on next power up
-	 */
-	Keyticks = 0;
-
-	/*
 	 *  Disable IRQ 11 in AIC and SLCD
 	 */
 	AIC_DisableIT( AT91C_ID_SLCD );
@@ -1162,6 +1157,8 @@ int main(void)
 		unsigned char minute, second;
 		int elapsed_time;
 
+		DeepSleepMarker = 0;
+
 		/*
 		 *  Setup hardware
 		 */
@@ -1186,10 +1183,10 @@ int main(void)
 			/*
 			 *  APD timeout
 			 */
+			Keyticks = 0;
 			shutdown();
 		}
 		StartupTicks = 10; // Allow power off and on key detection
-		DeepSleepMarker = 0;
 	}
 	else
 #endif
