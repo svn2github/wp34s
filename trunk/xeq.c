@@ -2914,6 +2914,20 @@ static void xeq_single(void) {
 	xeq(op);
 }
 
+/* Continue execution trough xrom code
+ */
+static void xeq_xrom(void) {
+#ifndef REALBUILD
+	if (State.trace)
+		return;
+#endif
+	/* Now if we've stepped into the xROM area, keep going until
+	 * we break free.
+	 */
+	while (isXROM(state_pc()))
+		xeq_single();
+}
+
 /* Check to see if we're running a program and if so execute it
  * for a while.
  *
@@ -2932,8 +2946,12 @@ void xeqprog(void)
 		dot(RCL_annun, state);
 		finish_display();
 
-		while (!State.pause && running() && !is_key_pressed()) {
+		while (!State.pause && running()) {
 			xeq_single();
+			if (is_key_pressed()) {
+				xeq_xrom();
+				break;
+			}
 		}
 	}
 	if (!running()) {
@@ -2947,9 +2965,7 @@ void xeqprog(void)
  */
 void xeqone(char *tracebuf) {
 	const opcode op = getprog(state_pc());
-#ifdef REALBUILD
-	const unsigned int trace = 0;
-#else
+#ifndef REALBUILD
 	unsigned int trace = State.trace;
 #endif
 
@@ -2963,11 +2979,7 @@ void xeqone(char *tracebuf) {
 	incpc();
 	xeq(op);
 
-	/* Now if we've stepped into the xROM area, keep going until
-	 * we break free.
-	 */
-	while (!trace && isXROM(state_pc()))
-		xeq_single();
+	xeq_xrom();
 
 	set_running_off();
 #ifndef REALBUILD
