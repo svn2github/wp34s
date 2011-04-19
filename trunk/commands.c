@@ -94,12 +94,12 @@ const struct monfunc monfuncs[] = {
 #ifdef INCLUDE_SUBFACT
 	FUNC(OP_SUBFACT,&decNumberSubFactorial,	NULL,		NULL,	"!n")
 #endif
-	FUNC(OP_DEG2RAD,&decNumberD2R,		NULL,		NULL,		"D\015R")
-	FUNC(OP_RAD2DEG,&decNumberR2D,		NULL,		NULL,		"R\015D")
-	FUNC(OP_DEG2GRD,&decNumberD2G,		NULL,		NULL,		"D\015G")
-	FUNC(OP_GRD2DEG,&decNumberG2D,		NULL,		NULL,		"G\015D")
-	FUNC(OP_RAD2GRD,&decNumberR2G,		NULL,		NULL,		"R\015G")
-	FUNC(OP_GRD2RAD,&decNumberG2R,		NULL,		NULL,		"G\015R")
+	FUNC(OP_DEG2RAD,&decNumberD2R,		NULL,		NULL,		"\005\015rad")
+	FUNC(OP_RAD2DEG,&decNumberR2D,		NULL,		NULL,		"rad\015\005")
+	FUNC(OP_DEG2GRD,&decNumberD2G,		NULL,		NULL,		"\005\015G")
+	FUNC(OP_GRD2DEG,&decNumberG2D,		NULL,		NULL,		"G\015\005")
+	FUNC(OP_RAD2GRD,&decNumberR2G,		NULL,		NULL,		"rad\015G")
+	FUNC(OP_GRD2RAD,&decNumberG2R,		NULL,		NULL,		"G\015rad")
 	FUNC(OP_CCHS,	&decNumberMinus,	&cmplxMinus,	&intChs,	"+/-")
 	FUNC(OP_CCONJ,	NULL,			&cmplxConj,	NULL,		"CONJ")
 	FUNC(OP_ERF,	&decNumberERF,		NULL,		NULL,		"erf")

@@ -102,8 +102,6 @@ static s_opcode catalogue[] = {
 	MON(OP_GAMMA,		"\202")
 	DYA(OP_DTDIF,		"\203DAYS")
 	DYA(OP_AGM,		"AGM")
-	MON(OP_DEG2RAD,		"D\015R")
-	MON(OP_RAD2DEG,		"R\015D")
 	MON(OP_DEG2,		"DED\015")
 	MON(OP_RAD2,		"RAD\015")
 	MON(OP_GRAD2,		"GRAD\015")
