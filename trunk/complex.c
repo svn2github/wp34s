@@ -662,6 +662,10 @@ void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *
 	cmplxRealPower(rx, ry, &const_2, a, b, ctx);
 }
 
+void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx) {
+	cmplxRealPower(rx, ry, &const__1, a, b, ctx);
+}
+
 void cmplxLogxy(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d, decContext *ctx) {

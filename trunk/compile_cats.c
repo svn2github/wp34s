@@ -149,6 +149,7 @@ static s_opcode catalogue[] = {
 };
 
 static s_opcode cplx_catalogue[] = {
+	CMON(OP__1POW,		"(-1)^x")
 	CMON(OP_CCONJ,		"CONJ")
 	CMON(OP_CUBE,		"CUBE")
 	CMON(OP_CUBERT,		"CUBERT")

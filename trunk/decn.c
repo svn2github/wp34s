@@ -14,8 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// #define DUMP1
-
 #include "decn.h"
 #include "xeq.h"
 #include "consts.h"
@@ -23,6 +21,8 @@
 #include "stats.h"
 #include "int.h"
 
+
+// #define DUMP1
 #ifdef DUMP1
 #include <stdio.h>
 static FILE *debugf = NULL;
@@ -50,6 +50,8 @@ static void dump1(const decNumber *a, const char *msg) {
 
 #define MOD_DIGITS  450
 
+/* Forward declaration */
+static void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c, decContext *ctx);
 
 /* Some basic conditional tests */
 int dn_lt0(const decNumber *x) {
@@ -572,11 +574,16 @@ decNumber *decNumberPow10(decNumber *r, const decNumber *x, decContext *ctx) {
 
 decNumber *decNumberPow_1(decNumber *r, const decNumber *x, decContext *ctx) {
 	int even = is_even(x);
+	decNumber t, u;
+
 	if (even == 1)
 		return decNumberCopy(r, &const_1);
 	if (even == 0)
 		return decNumberCopy(r, &const__1);
-	return set_NaN(r);
+	decNumberRemainder(&u, x, &const_2, ctx);
+	decNumberMultiply(&t, &u, &const_PI, ctx);
+	sincosTaylor(&t, NULL, r, ctx);
+	return r;
 }
 
 decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx) {
