@@ -141,3 +141,38 @@ error by a factor of 10.
 
 
 
+
+And another one:
+
+
+And here it is - I designed a rational approximation, hand crafted to meet our needs. ;-) It has the following properties:
+
+    It works for probabilities down to 1E-500 or |z| up to 48.
+    It requires only four numeric constants with just two or three significant digits.
+    No special care has been taken of the center (z very close to zero) since here the exact quantile can be evaluated easily.
+    It returns an estimate for |z| which is slightly high (in absolute terms). The absolute error is greater than 0,0001 and less than 0,0036. So this estimate and a second guess 0,0037 lower define an interval that definitely includes the exact quantile. 
+
+So the normal quantile can now be evaluated this way:
+
+if p > 0,5
+   then
+      signflag = false
+      q = 1 - p
+   else
+      signflag = true
+      q = p
+   endif
+if q >= 0,495
+   then  ; use series and determine exact result
+      t = (0,5 - q)^2 * 2 * Pi     
+      z = (127/5040*t + 7/120)*t + 1/6)*t + 1) * sqrt(t)
+   else  ; use solver with two close guesses a and b
+      t = sqrt(-2 * ln(q))
+      a = t - (0,373*t + 2,37)/((0,068*t + 1,1)*t + 1)
+      b = a - 0,0037
+      z = solver(a, b)
+   endif
+if signflag then z = -z
+return z
+
+
