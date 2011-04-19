@@ -755,7 +755,7 @@ typedef struct _AT91S_SUPC {
 #define 	AT91C_SUPC_FWUPDBC_512_SLCK             (0x3 <<  8) // (SUPC) An enabled Wake Up input  shall be low for at least 512 SLCK periods
 #define 	AT91C_SUPC_FWUPDBC_4096_SLCK            (0x4 <<  8) // (SUPC) An enabled Wake Up input  shall be low for at least 4096 SLCK periods
 #define 	AT91C_SUPC_FWUPDBC_32768_SLCK           (0x5 <<  8) // (SUPC) An enabled Wake Up input  shall be low for at least 32768 SLCK periods
-#define AT91C_SUPC_WKUPDBC    (0x7 << 12) // (SUPC) Force Wake Up debouncer
+#define AT91C_SUPC_WKUPDBC    (0x7 << 12) // (SUPC) Wake Up Input debouncer
 #define 	AT91C_SUPC_WKUPDBC_IMMEDIATE            (0x0 << 12) // (SUPC) Immediate, No debouncing, detected active at least one Slow clock edge
 #define 	AT91C_SUPC_WKUPDBC_3_SLCK               (0x1 << 12) // (SUPC) FWUP shall be low for at least 3 SLCK periods
 #define 	AT91C_SUPC_WKUPDBC_32_SLCK              (0x2 << 12) // (SUPC) FWUP shall be low for at least 32 SLCK periods

@@ -29,9 +29,10 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #include "aic.h"
 #include "supc.h"
 #include "slcdc.h"
+#include "rtc.h"
 
 #define BACKUP_SRAM  __attribute__((section(".backup")))
-#define RAM_FUNCTION __attribute__((section(".ramfunc")))
+#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
 #define NO_INLINE    __attribute__((noinline))
 
 // This helps saving precious stack space in IRQs
@@ -41,10 +42,12 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
  *  CPU speed settings
  */
 #define SPEED_IDLE    0
-#define SPEED_MEDIUM  1
-#define SPEED_H_LOW_V 2
-#define SPEED_HIGH    3
+#define SPEED_SLOW    1
+#define SPEED_MEDIUM  2
+#define SPEED_H_LOW_V 3
+#define SPEED_HIGH    4
 #define SPEED_ANNUNCIATOR LIT_EQ
+void set_speed( unsigned int speed );
 
 /*
  *  SUPC Voltages
@@ -94,6 +97,8 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #define APD_VOLTAGE SUPC_BOD_2_1V
 #define LOW_VOLTAGE SUPC_BOD_2_4V
 #define DEEP_SLEEP_MARKER 0xA53C
+#define ALLOW_DEEP_SLEEP 1   // undef to disable
+#define TICKS_BEFORE_DEEP_SLEEP 2
 
 /*
  *  Setup the persistent RAM
@@ -105,19 +110,23 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  */
 volatile unsigned int ClockSpeed;
 volatile unsigned short FlashWakeupTime;
+volatile unsigned short StartupTicks;
 volatile unsigned char SpeedSetting;
 volatile unsigned char Heartbeats;
 unsigned char UserHeartbeatCountDown;
-volatile unsigned short int StartupTicks;
 unsigned char Contrast;
 volatile unsigned char InIrq;
 volatile unsigned char Voltage;
+#ifdef SPEED_ANNUNCIATOR
+unsigned char SpeedAnnunciatorOn;
+#endif
 
 /*
  *  Definitions for the keyboard scan
  */
 #define KEY_ROWS_MASK 0x0000007f
 #define KEY_COLS_MASK 0x0400fC00
+#define KEY_WAKEUP_MASK 0x1f80
 #define KEY_COLS_SHIFT 11
 #define KEY_COL5_SHIFT 10
 #define KEY_ON_MASK   0x00000400
@@ -135,10 +144,10 @@ signed char KeyBuffer[ KEY_BUFF_LEN ];
 volatile char KbRead, KbWrite, KbCount;
 volatile char OnKeyPressed;
 short int KbRepeatCount;
-volatile unsigned short Keyticks;
 long long KbData, KbDebounce, KbRepeatKey;
 short int BodThreshold;
 short int BodTimer;
+
 
 /*
  *  Tell the revision number (must not be optimised out!)
@@ -190,8 +199,11 @@ NO_INLINE void scan_keyboard( void )
 	// Enable clock
 	AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOC;
 	// Rows as open drain output
-	AT91C_BASE_PIOC->PIO_OER = KEY_ROWS_MASK;
+	AT91C_BASE_PIOC->PIO_OER =  KEY_ROWS_MASK;
 	AT91C_BASE_PIOC->PIO_MDER = KEY_ROWS_MASK;
+	// No pull ups on outputs, only on keyboard inputs
+	AT91C_BASE_PIOC->PIO_PPUDR = ~KEY_COLS_MASK;
+	AT91C_BASE_PIOC->PIO_PPUER =  KEY_COLS_MASK;
 	
 	/*
 	 *  Quick check
@@ -338,38 +350,10 @@ NO_INLINE void scan_keyboard( void )
 
 
 /*
- *  Set the contrast
- */
-void set_contrast( unsigned int contrast )
-{
-	if ( contrast == Contrast ) {
-		/*
-		 *  No change
-		 */
-		return;
-	}
-
-	/*
-	 *  Update supply controller settings
-	 */
-	SUPC_SetSlcdVoltage( ( contrast - 1 ) & 0x0f );
-
-	Contrast = contrast;
-}
-
-
-/*
  *  Setup the LCD controller
  */
 void enable_lcd( void )
 {
-	if ( Contrast != 0 ) {
-		/*
-		 *  LCD is running
-		 */
-		return;
-	}
-
 	/*
 	 *  Switch LCD on in supply controller and clear the RAM
 	 */
@@ -386,7 +370,7 @@ void enable_lcd( void )
 	/*
 	 *  Set contrast and enable the display
 	 */
-	set_contrast( State.contrast + 1 );
+	SUPC_SetSlcdVoltage( Contrast = State.contrast );
 	SLCDC_Enable();
 }
 
@@ -411,10 +395,17 @@ void disable_lcd( void )
 
 /*
  *  Go to idle mode
- *  // Runs from SRAM to be able to turn of flash
+ *  Runs from SRAM to be able to turn off flash
  */
 RAM_FUNCTION void go_idle( void )
 {
+	if ( is_debug() ) {
+		/*
+		 *  Idle and off modes cannot be debugged
+		 */
+		return;
+	}
+
 	/*
 	 *  Voltage regulator to deep mode
 	 */
@@ -423,10 +414,8 @@ RAM_FUNCTION void go_idle( void )
 	/*
 	 *  Disable flash memory in order to save power
 	 */
-	if ( 1 && SpeedSetting == SPEED_IDLE ) {
-		FlashWakeupTime = (unsigned short) 2; // ( 2 + ( 3 * ClockSpeed ) / 100000 );
-		SUPC_DisableFlash();
-	}
+	FlashWakeupTime = (unsigned short) 2; // ( 2 + ( 3 * ClockSpeed ) / 100000 );
+	SUPC_DisableFlash();
 
 	/*
 	 *  Disable the processor clock and go to sleep
@@ -434,6 +423,157 @@ RAM_FUNCTION void go_idle( void )
 	AT91C_BASE_PMC->PMC_SCDR = AT91C_PMC_PCK;
 	while ( ( AT91C_BASE_PMC->PMC_SCSR & AT91C_PMC_PCK ) != AT91C_PMC_PCK );
 }
+
+
+/*
+ *  Common part of shutdown() and deep_sleep()
+ */
+void turn_off( void )
+{
+	/*
+	 *  Disable any unused oscillators and let the rest go slow
+	 */
+	set_speed( SPEED_SLOW );
+
+	/*
+	 *  Turn off the BOD, if it was still on
+	 */
+	AT91C_BASE_SUPC->SUPC_BOMR = 0;
+
+	/*
+	 *  Off we go...
+	 */
+	SUPC_DisableVoltageRegulator();
+}
+
+
+/*
+ *  Turn everything except the backup sram off
+ */
+void shutdown( void )
+{
+	/*
+	 *  Wait for ON key release
+	 */
+	while ( OnKeyPressed ) {
+		set_speed( SPEED_IDLE );
+	}
+
+	/*
+	 *  Ensure the RAM checksum is correct
+	 */
+	set_speed( SPEED_HIGH );
+	checksum_all();
+
+	/*
+	 *  Avoid APD on next power up
+	 */
+	Keyticks = 0;
+
+	/*
+	 *  Disable IRQ 11 in AIC and SLCD
+	 */
+	AIC_DisableIT( AT91C_ID_SLCD );
+	SLCDC_DisableInterrupts( AT91C_SLCDC_ENDFRAME );
+
+	/*
+	 *  Allow wake up on ON key only, set debouncer to 0.125 sec
+	 */
+	AT91C_BASE_SUPC->SUPC_WUMR = AT91C_SUPC_FWUPDBC_4096_SLCK | AT91C_SUPC_FWUPEN;
+	AT91C_BASE_SUPC->SUPC_WUIR = 0;
+
+	/*
+	 *  Turn off display gracefully
+	 */
+	disable_lcd();
+
+	/*
+	 *  Turn off
+	 */
+	turn_off();
+}
+
+
+#ifdef ALLOW_DEEP_SLEEP
+/*
+ *  Go to deep sleep mode.
+ *  Wait for keyboard or RTC to wake up.
+ */
+void deep_sleep( void )
+{
+	unsigned char minute, second;
+	int wakeup_time;
+
+	DeepSleepMarker = DEEP_SLEEP_MARKER;
+
+	/*
+	 *  Disable IRQ 11 in AIC and SLCD
+	 */
+	AIC_DisableIT( AT91C_ID_SLCD );
+	SLCDC_DisableInterrupts( AT91C_SLCDC_ENDFRAME );
+
+	/*
+	 *  What time is it?
+	 */
+	RTC_GetTime( NULL, &minute, &second );
+	LastActiveSecond = (unsigned short) minute * 60 + second;
+
+	/*
+	 *  Set RTC-Alarm for wake up at next event
+	 *  At the moment, this is just APD (Auto Power Down)
+	 */
+	wakeup_time = LastActiveSecond + ( APD_TICKS - Keyticks ) / 10 + 1;
+	wakeup_time %= 3600;
+	minute = (unsigned char) ( wakeup_time / 60 );
+	second = (unsigned char) ( wakeup_time % 60 );
+
+	/*
+	 *  Program the alarm
+	 */
+	RTC_SetTimeAlarm( NULL, &minute, &second );
+
+	/*
+	 *  All keyboard rows as open drain output
+	 *  All the rest as input
+	 */
+	AT91C_BASE_PIOC->PIO_ODR = ~KEY_ROWS_MASK;
+	AT91C_BASE_PIOC->PIO_OER =  KEY_ROWS_MASK;
+	AT91C_BASE_PIOC->PIO_MDER = KEY_ROWS_MASK;
+
+	/*
+	 *  No pull ups on outputs, only on keyboard inputs
+	 */
+	AT91C_BASE_PIOC->PIO_PPUDR = ~KEY_COLS_MASK;
+	AT91C_BASE_PIOC->PIO_PPUER =  KEY_COLS_MASK;
+
+	/*
+	 *  All outputs low
+	 */
+	AT91C_BASE_PIOC->PIO_CODR =  KEY_ROWS_MASK;
+
+	/*
+	 *  Prepare keyboard wake up
+	 */
+	AT91C_BASE_SUPC->SUPC_WUIR = KEY_WAKEUP_MASK;
+
+	/*
+	 *  Prepare RTC and ON key wake up
+	 *  Set debouncers to minimum value
+	 */
+	AT91C_BASE_SUPC->SUPC_WUMR = AT91C_SUPC_FWUPEN | AT91C_SUPC_RTCEN;
+
+#ifdef SPEED_ANNUNCIATOR
+	if ( SpeedAnnunciatorOn ) {
+		clr_dot( SPEED_ANNUNCIATOR );
+	}
+#endif
+
+	/*
+	 *  Turn off
+	 */
+	turn_off();
+}
+#endif
 
 
 /*
@@ -564,13 +704,8 @@ void set_speed( unsigned int speed )
 	}
 
 	/*
-	 *  Set new speed, called from timer interrupt
+	 *  Set new speed
 	 */
-#ifdef SPEED_ANNUNCIATOR
-	if ( SpeedSetting >= SPEED_MEDIUM ) {
-		clr_dot( SPEED_ANNUNCIATOR );
-	}
-#endif
 	SpeedSetting = speed;
 	if ( speeds[ speed ] == ClockSpeed ) {
 		/*
@@ -583,6 +718,7 @@ void set_speed( unsigned int speed )
 	switch ( speed ) {
 
 	case SPEED_IDLE:
+	case SPEED_SLOW:
 		/*
 		 *  Turn the clock almost off
 		 *  System will go idle from main loop
@@ -627,9 +763,6 @@ void set_speed( unsigned int speed )
 		/*
 		 *  32.768 MHz PLL, derived from 32 KHz slow clock
 		 */
-#ifdef SPEED_ANNUNCIATOR
-		set_dot( SPEED_ANNUNCIATOR );
-#endif
 		SUPC_SetVoltageOutput( SUPC_VDD_180 );
 
 		if ( speed == SPEED_H_LOW_V ) {
@@ -722,10 +855,10 @@ void user_heartbeat( void )
         put_key( K_HEARTBEAT );
 }
 
+
 /*
- *  The SLCDC ENDFRAME interrupt
+ *  The SLCD ENDFRAME interrupt
  *  Called every 640 slow clocks (about 51 Hz)
- *  It starts at a slow clock when called in idle mode
  */
 NO_INLINE void LCD_interrupt( void )
 {
@@ -734,20 +867,34 @@ NO_INLINE void LCD_interrupt( void )
 	Heartbeats = ( Heartbeats + 1 ) & 0x7f;
 	if ( Heartbeats & 1 ) {
 		/*
+		 *  Set speed to a minimum of 2 MHz for all irq handling.
+		 */
+		if ( SpeedSetting < SPEED_MEDIUM ) {
+			set_speed( SPEED_MEDIUM );
+		}
+
+		/*
 		 *  The keyboard is scanned every 25ms for debounce and repeat
 		 */
 		scan_keyboard();
-	}
 
-	/*
-	 *  Voltage detection state machine
-	 */
-	detect_voltage();
+		/*
+		 *  Voltage detection state machine
+		 */
+		detect_voltage();
+	}
 
 	/*
 	 *  Count down to next 100ms user heart beat
 	 */
 	if ( --UserHeartbeatCountDown == 0 ) {
+		/*
+		 *  Set speed to a minimum of 2 MHz for all irq handling.
+		 */
+		if ( SpeedSetting < SPEED_MEDIUM ) {
+			set_speed( SPEED_MEDIUM );
+		}
+
 		/*
 		 *  Service the 100ms user heart beat
 		 */
@@ -785,13 +932,6 @@ RAM_FUNCTION void irq_common( void )
 	 *  Voltage regulator to normal mode
 	 */
 	SUPC_DisableDeepMode();
-
-	/*
-	 *  Set speed to a minimum of 2 MHz for all irq handling.
-	 */
-	if ( SpeedSetting < SPEED_MEDIUM ) {
-		set_speed( SPEED_MEDIUM );
-	}
 }
 
 
@@ -802,6 +942,13 @@ RAM_FUNCTION void irq_common( void )
 RAM_FUNCTION void system_irq( void )
 {
 	irq_common();
+
+	/*
+	 *  Set speed to a minimum of 2 MHz for all irq handling.
+	 */
+	if ( SpeedSetting < SPEED_MEDIUM ) {
+		set_speed( SPEED_MEDIUM );
+	}
 
 	/*
 	 *  Since all system peripherals are tied to the same IRQ source 1
@@ -884,20 +1031,20 @@ void enable_interrupts()
 
 
 /*
- *  Lock / unlock by disabling / enabling the PIT interrupt.
+ *  Lock / unlock by disabling / enabling the periodic interrupt.
  *  Do nothing if called inside the interrupt handler
  */
 void lock( void )
 {
 	if ( !InIrq ) {
-		AIC_DisableIT( AT91C_ID_SYS );
+		AIC_DisableIT( AT91C_ID_SLCD );
 	}
 }
 
 void unlock( void )
 {
 	if ( !InIrq ) {
-		AIC_EnableIT( AT91C_ID_SYS );
+		AIC_EnableIT( AT91C_ID_SLCD );
 	}
 }
 
@@ -966,35 +1113,6 @@ int put_key( int k )
 
 
 /*
- *  Turn everything except the backup sram off
- */
-void shutdown( void )
-{
-	/*
-	 *  Ensure the RAM checksum is correct
-	 */
-	checksum_all();
-
-	/*
-	 *  Wait for key release
-	 */
-	while ( OnKeyPressed ) {
-		go_idle();
-	}
-
-	/*
-	 *  Turn off display gracefully
-	 */
-	disable_lcd();
-
-	/*
-	 *  Off we go...
-	 */
-	SUPC_DisableVoltageRegulator();
-}
-
-
-/*
  *  Serve the watch dog
  */
 void watchdog( void )
@@ -1027,46 +1145,91 @@ int main(void)
 	 */
 	xset( (void *) 0x200200, 0x5A, 0x800 );
 #endif
-        /*
-         * Initialise the hardware (clock, backup RAM, LCD, RTC, timer)
-	 */
-	set_speed( SPEED_MEDIUM );
-	SUPC_EnableSram();
-	Keyticks = 0;
-	BodThreshold = -1;
-	BodTimer = 0;
-	enable_lcd();
-	SUPC_EnableRtc();
-	detect_voltage();
-	enable_interrupts();
-
 	/*
 	 *  Force DEBUG mode for JTAG debugging
 	 */
 	DEBUG_FLAG = 0; // 0xA5;
 
+#ifdef ALLOW_DEEP_SLEEP
 	/*
-	 *  Allow wake up on ON key
+	 *  Initialisation depends on the wake up reason
 	 */
-	AT91C_BASE_SUPC->SUPC_WUMR = (AT91C_BASE_SUPC->SUPC_WUMR)& ~(0x7u <<12);
-	SUPC_SetWakeUpSources( AT91C_SUPC_FWUPEN );
-
 	if ( DeepSleepMarker == DEEP_SLEEP_MARKER ) {
 		/*
 		 *  Return from deep sleep
+		 *  RTC and LCD are still running
 		 */
+		unsigned char minute, second;
+		int elapsed_time;
+
+		/*
+		 *  Setup hardware
+		 */
+		set_speed( SPEED_MEDIUM );
+		RTC_SetTimeAlarm( NULL, NULL, NULL );
+
+		/*
+		 *  How long have we slept?
+		 */
+		RTC_GetTime( NULL, &minute, &second );
+		elapsed_time = (int) minute * 60 + second - LastActiveSecond;
+		if ( elapsed_time < 0 ) {
+			elapsed_time += 3600;
+		}
+
+		/*
+		 *  Update Ticker and friends
+		 */
+		elapsed_time *= 10;
+		Ticker += elapsed_time;
+		if ( ( Keyticks += elapsed_time ) > APD_TICKS ) {
+			/*
+			 *  APD timeout
+			 */
+			shutdown();
+		}
+		StartupTicks = 10; // Allow power off and on key detection
 		DeepSleepMarker = 0;
-		// TODO: Check if APD time reached, update Ticker and friends
 	}
-	else {
+	else
+#endif
+	{
 		/*
 		 *  Initialise the software on power on.
 		 *  CRC checking the RAM is a bit slow so we speed up.
 		 *  Idling will slow us down again.
 		 */
 		set_speed( SPEED_HIGH );
+
+		/*
+		 *  Turn on LCD, RTC and backup SRAM
+		 */
+		SUPC_EnableRtc();
+		enable_lcd();
+		SUPC_EnableSram();
+
+		/*
+		 *  Initialise software
+		 */
 		init_34s();
+
+		/*
+		 *  Initialise APD
+		 */
+		Keyticks = 0;
 	}
+
+	/*
+	 *  Start periodic interrupts
+	 */
+	BodThreshold = -1;
+	detect_voltage();
+	enable_interrupts();
+
+#ifdef SPEED_ANNUNCIATOR
+	SpeedAnnunciatorOn = 1;
+	dot( SPEED_ANNUNCIATOR, SpeedAnnunciatorOn );
+#endif
 
 	/*
 	 *  Wait for event and execute it
@@ -1074,9 +1237,33 @@ int main(void)
 	while( 1 ) {
                 int k;
 
+		/*
+		 *  Adjust the display contrast if it has been changed
+		 */
+		if ( State.contrast != Contrast ) {
+			SUPC_SetSlcdVoltage( Contrast = State.contrast );
+		}
+
 		while ( !is_key_pressed() ) {
 			/*
 			 *  Save power if nothing in queue
+			 */
+#ifdef ALLOW_DEEP_SLEEP
+			/*
+			 *  Test if we can turn ourself completely off
+			 */
+			if ( !is_debug() && !running() && KbData == 0LL
+			     && State.pause == 0 && Keyticks >= TICKS_BEFORE_DEEP_SLEEP )
+			{
+				/*
+				 *  Yes, goto deep sleep. Will never return.
+				 */
+				set_dot( RPN ); // Might be off from last key press
+				deep_sleep();
+			}
+#endif
+			/*
+			 *  Normal idle mode. Each interrupt wakes us up.
 			 */
 			set_speed( SPEED_IDLE );
 		}
@@ -1143,17 +1330,6 @@ int main(void)
 			if ( !is_debug() && StartupTicks >= 10 ) {
 				shutdown();
 			}
-		}
-
-		/*
-		 *  Adjust the display contrast if it has been changed
-		 */
-		if ( State.contrast != Contrast ) {
-			/*
-			 *  The saved value ranges from 0 to 15.
-			 *  We use values 1 to 16 or 0 which means off
-			 */
-			set_contrast( State.contrast + 1 );
 		}
 	}
         return 0;

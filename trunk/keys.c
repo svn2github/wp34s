@@ -108,7 +108,6 @@ void init_state(void) {
 	s.runmode = 1;
 
 	xcopy(&State, &s, sizeof(struct _state));
-	checksum_all();
 }
 
 static void init_confirm(enum confirmations n) {
