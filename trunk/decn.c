@@ -477,14 +477,12 @@ decNumber *decNumberLn1p(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber u, v, w;
 
 	if (decNumberIsSpecial(x) || decNumberIsZero(x)) {
-		decNumberCopy(r, x);
-		return r;
+		return decNumberCopy(r, x);
 	}
 	decNumberAdd(&u, x, &const_1, ctx);
 	decNumberSubtract(&v, &u, &const_1, ctx);
 	if (decNumberIsZero(&v)) {
-		decNumberCopy(r, x);
-		return r;
+		return decNumberCopy(r, x);
 	}
 	decNumberDivide(&w, x, &v, ctx);
 	decNumberLn(&v, &u, ctx);
@@ -496,19 +494,16 @@ decNumber *decNumberExpm1(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber u, v, w;
 
 	if (decNumberIsSpecial(x)) {
-		decNumberCopy(r, x);
-		return r;
+		return decNumberCopy(r, x);
 	}
 	decNumberExp(&u, x, ctx);
 	decNumberSubtract(&v, &u, &const_1, ctx);
 	if (decNumberIsZero(&v)) {
-		decNumberCopy(r, x);
-		return r;
+		return decNumberCopy(r, x);
 	}
 	decNumberCompare(&w, &v, &const__1, ctx);
 	if (decNumberIsZero(&w)) {
-		decNumberCopy(r, &const__1);
-		return r;
+		return decNumberCopy(r, &const__1);
 	}
 	decNumberMultiply(&w, &v, x, ctx);
 	decNumberLn(&v, &u, ctx);

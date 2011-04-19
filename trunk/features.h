@@ -21,7 +21,7 @@
 
 // Define this to use inline quick check macros for determining
 // a bit of information about decNumbers.  Enabling this will create
-// larger possibly slightly faster code.
+// larger faster code.
 #define DECNUMBER_QUICK_MACROS
 
 // Build a tiny version of the device
