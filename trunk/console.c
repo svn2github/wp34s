@@ -36,8 +36,6 @@
 #define CH_REFRESH	12	/* ^L */
 
 
-volatile unsigned short Keyticks;
-
 static const char SvnRevision[ 12 ] = "$Rev:: 621 $";
 
 
