@@ -673,10 +673,10 @@ void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 
 	query_time(&s, &m, &h);
 	int_to_dn(&a, s, Ctx);
-	decNumberDivide(&b, &a, &const_60, Ctx);
+	decNumberDivide(&b, &a, &const_100, Ctx);
 	int_to_dn(&a, m, Ctx);
 	decNumberAdd(&c, &a, &b, Ctx);
-	decNumberDivide(&b, &c, &const_60, Ctx);
+	decNumberDivide(&b, &c, &const_100, Ctx);
 	int_to_dn(&a, h, Ctx);
 	decNumberAdd(&c, &b, &a, Ctx);
 	decimal64FromNumber(r, &c, ctx64);
