@@ -231,7 +231,7 @@ NO_INLINE void scan_keyboard( void )
 	 *  Set all rows to low and test if any key input is low
 	 */
 	AT91C_BASE_PIOC->PIO_CODR = KEY_ROWS_MASK;
-	short_wait( 1 );
+	short_wait( 2 );
 	k = ~AT91C_BASE_PIOC->PIO_PDSR;
 	AT91C_BASE_PIOC->PIO_SODR = KEY_ROWS_MASK;
 
@@ -246,7 +246,7 @@ NO_INLINE void scan_keyboard( void )
 			 *  The input is inverted on read. 1s are pressed keys now.
 			 */
 			AT91C_BASE_PIOC->PIO_CODR = r;
-			short_wait( 1 );
+			short_wait( 2 );
 			k = ~AT91C_BASE_PIOC->PIO_PDSR & KEY_COLS_MASK; 
 			AT91C_BASE_PIOC->PIO_SODR = r;
 
@@ -540,7 +540,7 @@ void deep_sleep( void )
 	 *  Set RTC-Alarm for wake up at next event
 	 *  At the moment, this is just APD (Auto Power Down)
 	 */
-	wakeup_time = LastActiveSecond + ( APD_TICKS - Keyticks ) / 10 + 1;
+	wakeup_time = LastActiveSecond + ( APD_TICKS - Keyticks ) / 10 + 10;
 	wakeup_time %= 3600;
 	minute = (unsigned char) ( wakeup_time / 60 );
 	second = (unsigned char) ( wakeup_time % 60 );
