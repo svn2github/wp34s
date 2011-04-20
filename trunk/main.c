@@ -132,6 +132,7 @@ volatile unsigned char SpeedSetting;
 volatile unsigned char Heartbeats;
 unsigned char UserHeartbeatCountDown;
 unsigned char Contrast;
+volatile unsigned char LcdFadeOut;
 volatile unsigned char InIrq;
 volatile unsigned char Voltage;
 #ifdef SPEED_ANNUNCIATOR
@@ -476,17 +477,29 @@ void turn_off( void )
 void shutdown( void )
 {
 	/*
-	 *  Wait for ON key release
+	 *  Let Interrupt fade out the display
 	 */
-	while ( OnKeyPressed ) {
-		set_speed( SPEED_IDLE );
-	}
+	LcdFadeOut = Contrast;
+	DispMsg = "Bye...";
+	display();
 
 	/*
 	 *  Ensure the RAM checksum is correct
 	 */
 	set_speed( SPEED_HIGH );
 	checksum_all();
+
+	/*
+	 *  Wait for ON key release and LCD to go blank
+	 */
+	while ( OnKeyPressed || LcdFadeOut ) {
+		set_speed( SPEED_IDLE );
+	}
+
+	/*
+	 *  Turn off display gracefully
+	 */
+	disable_lcd();
 
 	/*
 	 *  Disable IRQ 11 in AIC and SLCD
@@ -499,11 +512,6 @@ void shutdown( void )
 	 */
 	AT91C_BASE_SUPC->SUPC_WUMR = AT91C_SUPC_FWUPDBC_4096_SLCK | AT91C_SUPC_FWUPEN;
 	AT91C_BASE_SUPC->SUPC_WUIR = 0;
-
-	/*
-	 *  Turn off display gracefully
-	 */
-	disable_lcd();
 
 	/*
 	 *  Turn off
@@ -521,6 +529,13 @@ void deep_sleep( void )
 {
 	unsigned char minute, second;
 	int wakeup_time;
+
+	if ( Keyticks >= APD_TICKS ) {
+		/*
+		 *  No point in going to deep sleep if we have reached the APD timeout
+		 */
+		shutdown();
+	}
 
 	DeepSleepMarker = DEEP_SLEEP_MARKER;
 
@@ -540,7 +555,7 @@ void deep_sleep( void )
 	 *  Set RTC-Alarm for wake up at next event
 	 *  At the moment, this is just APD (Auto Power Down)
 	 */
-	wakeup_time = LastActiveSecond + ( APD_TICKS - Keyticks ) / 10 + 10;
+	wakeup_time = LastActiveSecond + ( APD_TICKS - Keyticks ) / 10 + 1;
 	wakeup_time %= 3600;
 	minute = (unsigned char) ( wakeup_time / 60 );
 	second = (unsigned char) ( wakeup_time % 60 );
@@ -582,6 +597,9 @@ void deep_sleep( void )
 
 #ifdef SPEED_ANNUNCIATOR
 	if ( SpeedAnnunciatorOn ) {
+		/*
+		 *  "Alive" indicator off
+		 */
 		clr_dot( SPEED_ANNUNCIATOR );
 	}
 #endif
@@ -892,7 +910,7 @@ NO_INLINE void LCD_interrupt( void )
 		}
 
 		/*
-		 *  The keyboard is scanned every 25ms for debounce and repeat
+		 *  The keyboard is scanned every 40ms for debounce and repeat
 		 */
 		scan_keyboard();
 
@@ -900,6 +918,13 @@ NO_INLINE void LCD_interrupt( void )
 		 *  Voltage detection state machine
 		 */
 		detect_voltage();
+
+		/*
+		 *  Fade out the display
+		 */
+		if ( LcdFadeOut ) {
+			SUPC_SetSlcdVoltage( --LcdFadeOut );
+		}
 	}
 
 	/*
@@ -1152,6 +1177,27 @@ int is_debug( void )
 }
 
 
+#if 0
+void show_keyticks(void)
+{
+	char buffer[ 6 ];
+	int i = 5;
+	int d, r;
+
+	r = Keyticks;
+	buffer[ i ] = '\0';
+	while ( r != 0 ) {
+		d = r % 10;
+		r = r / 10;
+		buffer[ --i ] = d + '0';
+	}
+	DispMsg = buffer + i;
+	display();
+}
+#else
+#define show_keyticks()
+#endif
+
 
 /*
  *  Main program as seen from C
@@ -1193,7 +1239,7 @@ int main(void)
 		/*
 		 *  Setup hardware
 		 */
-		set_speed( SPEED_MEDIUM );
+		// set_speed( SPEED_MEDIUM );
 		RTC_SetTimeAlarm( NULL, NULL, NULL );
 
 		/*
@@ -1206,24 +1252,30 @@ int main(void)
 		}
 
 		/*
-		 *  Update Ticker and friends
-		 */
-		elapsed_time *= 10;
-		Ticker += elapsed_time;
-		if ( ( Keyticks += elapsed_time ) > APD_TICKS ) {
-			/*
-			 *  APD timeout
-			 */
-			Keyticks = 0;
-			shutdown();
-		}
-		StartupTicks = 10; // Allow power off and on key detection
-
-		/*
 		 *  Do an initial keyboard scan since a pressed key is the most
 		 *  common wake up reason
 		 */
 		scan_keyboard();
+
+		/*
+		 *  Update Ticker and friends
+		 */
+		elapsed_time *= 10;
+		Ticker += elapsed_time;
+		if ( (int) Keyticks + elapsed_time >= APD_TICKS ) {
+			/*
+			 *  APD timeout
+			 */
+			if ( KbData == 0LL ) {
+				shutdown();
+			}
+			Keyticks = APD_TICKS;
+		}
+		else {
+			Keyticks += elapsed_time;
+		}
+		StartupTicks = 10; // Allow power off and on key detection
+		show_keyticks();
 	}
 	else
 #endif
@@ -1287,12 +1339,14 @@ int main(void)
 			 *  Test if we can turn ourself completely off
 			 */
 			if ( !is_debug() && !running() && KbData == 0LL
-			     && State.pause == 0 && Keyticks >= TICKS_BEFORE_DEEP_SLEEP )
+			     && State.pause == 0 && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
+			     && StartupTicks >= 10 )
 			{
 				/*
 				 *  Yes, goto deep sleep. Will never return.
 				 */
 				set_dot( RPN ); // Might be off from last key press
+				show_keyticks();
 				deep_sleep();
 			}
 #endif
