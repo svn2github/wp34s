@@ -25,18 +25,14 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #include "lcd.h"
 #include "keys.h"
 
+#ifndef at91sam7l128
+#define at91sam7l128 1
+#endif
 #include "board.h"
 #include "aic.h"
 #include "supc.h"
 #include "slcdc.h"
 #include "rtc.h"
-
-#define BACKUP_SRAM  __attribute__((section(".backup")))
-#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
-#define NO_INLINE    __attribute__((noinline))
-
-// This helps saving precious stack space in IRQs
-#define IRQ_STATIC // static
 
 /*
  *  CPU speed settings
@@ -52,10 +48,10 @@ void set_speed( unsigned int speed );
 /*
  *  SUPC Voltages
  */
-#define SUPC_VDD_155 (0x2 <<9)
-#define SUPC_VDD_165 (0x3 <<9)
-#define SUPC_VDD_175 (0x4 <<9)
-#define SUPC_VDD_180 (0x5 <<9)
+#define SUPC_VDD_155 (0x2 << 9)
+#define SUPC_VDD_165 (0x3 << 9)
+#define SUPC_VDD_175 (0x4 << 9)
+#define SUPC_VDD_180 (0x5 << 9)
 
 /*
  *  BOD detector voltages
@@ -92,13 +88,35 @@ void set_speed( unsigned int speed );
 /*
  *  Heart beat frequency in ms
  *  And Auto Power Down threshold
+ *  Deep sleep and idle settings
  */
 #define APD_TICKS 1800 // 3 minutes
 #define APD_VOLTAGE SUPC_BOD_2_1V
 #define LOW_VOLTAGE SUPC_BOD_2_4V
 #define DEEP_SLEEP_MARKER 0xA53C
 #define ALLOW_DEEP_SLEEP 1   // undef to disable
-#define TICKS_BEFORE_DEEP_SLEEP 2
+#define TICKS_BEFORE_DEEP_SLEEP 5
+// #define ALLOW_DISABLE_FLASH
+
+#define BACKUP_SRAM  __attribute__((section(".backup")))
+
+#ifdef ALLOW_DISABLE_FLASH
+/*
+ *  Being able to turn the flash off requires special measures
+ */
+#define NO_INLINE    __attribute__((noinline))
+#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
+#else
+/*
+ *  Flash is always on, no need for these special measures
+ */
+#define NO_INLINE
+#define RAM_FUNCTION
+#endif
+
+// This helps saving precious stack space in IRQs
+#define IRQ_STATIC // static
+
 
 /*
  *  Setup the persistent RAM
@@ -109,7 +127,6 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  *  Local data
  */
 volatile unsigned int ClockSpeed;
-volatile unsigned short FlashWakeupTime;
 volatile unsigned short StartupTicks;
 volatile unsigned char SpeedSetting;
 volatile unsigned char Heartbeats;
@@ -119,6 +136,9 @@ volatile unsigned char InIrq;
 volatile unsigned char Voltage;
 #ifdef SPEED_ANNUNCIATOR
 unsigned char SpeedAnnunciatorOn;
+#endif
+#ifdef ALLOW_DISABLE_FLASH
+unsigned char FlashWakeupTime;
 #endif
 
 /*
@@ -154,6 +174,7 @@ short int BodTimer;
  */
 const char *get_revision( void )
 {
+	asm( "" );
 	return SvnRevision + 7;
 }
 
@@ -411,11 +432,13 @@ RAM_FUNCTION void go_idle( void )
 	 */
 	SUPC_EnableDeepMode();
 
+#ifdef ALLOW_DISABLE_FLASH
 	/*
 	 *  Disable flash memory in order to save power
 	 */
 	FlashWakeupTime = (unsigned short) 2; // ( 2 + ( 3 * ClockSpeed ) / 100000 );
 	SUPC_DisableFlash();
+#endif
 
 	/*
 	 *  Disable the processor clock and go to sleep
@@ -915,6 +938,7 @@ NO_INLINE void LCD_interrupt( void )
  */
 RAM_FUNCTION void irq_common( void )
 {
+#ifdef ALLOW_DISABLE_FLASH
 	/*
 	 *  Flash memory might be disabled, turn it on again
 	 */
@@ -922,7 +946,7 @@ RAM_FUNCTION void irq_common( void )
 		SUPC_EnableFlash( FlashWakeupTime );  // minimum 60 microseconds wake up time
 		FlashWakeupTime = 0;
 	}
-
+#endif
 	/*
 	 *  Voltage regulator to normal mode
 	 */
@@ -1187,6 +1211,12 @@ int main(void)
 			shutdown();
 		}
 		StartupTicks = 10; // Allow power off and on key detection
+
+		/*
+		 *  Do an initial keyboard scan since a pressed key is the most
+		 *  common wake up reason
+		 */
+		scan_keyboard();
 	}
 	else
 #endif
@@ -1216,17 +1246,17 @@ int main(void)
 		Keyticks = 0;
 	}
 
+#ifdef SPEED_ANNUNCIATOR
+	SpeedAnnunciatorOn = 1;
+	dot( SPEED_ANNUNCIATOR, SpeedAnnunciatorOn );
+#endif
+
 	/*
 	 *  Start periodic interrupts
 	 */
 	BodThreshold = -1;
 	detect_voltage();
 	enable_interrupts();
-
-#ifdef SPEED_ANNUNCIATOR
-	SpeedAnnunciatorOn = 1;
-	dot( SPEED_ANNUNCIATOR, SpeedAnnunciatorOn );
-#endif
 
 	/*
 	 *  Wait for event and execute it
