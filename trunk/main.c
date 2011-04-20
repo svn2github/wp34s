@@ -1158,6 +1158,13 @@ int is_debug( void )
  */
 int main(void)
 {
+	/*
+	 *  Don't let the user wait too long.
+	 *  We go to 10 MHz here as a compromise between power draw
+	 *  and reaction time for the user
+	 */
+	set_speed( SPEED_H_LOW_V );
+
 #ifdef STACK_DEBUG
 	/*
 	 *  Fill RAM with 0x5A for debugging
