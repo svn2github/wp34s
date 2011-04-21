@@ -3139,13 +3139,15 @@ static void check_const_cat(void) {
 
 /* Main initialisation routine that sets things up for us.
  */
-void xeq_init(void) {
-	if (checksum_all())
+void init_34s(void) {
+	if (checksum_all()) {
 		reset(NULL, NULL, NULL);
+		init_state();
+	}
 
-
-#if defined(DEBUG) && !defined(WINGUI)
-    {
+#if defined(REALBUILD) || defined(WINGUI)
+	display();
+#else
 	/* Sanity check the function table indices.
 	 * These indicies must correspond exactly with the enum definition.
 	 * This code validates that this is true and prints error messages
@@ -3191,7 +3193,6 @@ void xeq_init(void) {
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	check_cat(CATALOGUE_INTERNAL, "internal");
 #endif
-    }
 #endif
 }
 

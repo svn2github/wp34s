@@ -1847,11 +1847,5 @@ void process_keycode(int c) {
 	}
 }
 
-void init_34s(void) {
-	xeq_init();
-	init_state();
-#if defined(REALBUILD) || defined(WINGUI)
-	display();
-#endif
-}
+
 
