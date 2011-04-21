@@ -132,7 +132,7 @@ static void logTestNear1()
 {
     Bf* bf = ln;
     Mf* mf = log;
-    runTest(90, 110, bf, mf);
+    runTest(99, 101, bf, mf);
 }
 
 static void expTest()
@@ -147,7 +147,10 @@ static void sinTest()
 {
     Bf* bf = sin;
     Mf* mf = sin;
-    runTest(-20, 20, bf, mf);
+
+    Dec ba = atan(Dec(1))*4;
+    MAPM ma = atan(MAPM(1))*4;
+    _runTest(-ba, ba, -ma, ma, bf, mf, 1001);
 }
 
 static void cosTest()
@@ -213,10 +216,10 @@ int main()
     // more need adding..
 
     //logTest();
-    //logTestNear1();
+    logTestNear1();
     //sinTest();
     //cosTest();
-    tanTest();
+    //tanTest();
     //expTest();
     //asinTest();
     //acosTest();
