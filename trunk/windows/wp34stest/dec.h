@@ -49,6 +49,9 @@ public:
     Dec& operator/=(const Dec& a)
     { decNumberDivide(&_v, &_v, &a._v, Ctx);  return *this; }
 
+    Dec operator-() const
+    { decNumber r; decNumberMinus(&r, &_v, Ctx); return r; }
+
     const char* asString() const
     {
         // value only valid immediately after call and not threadsafe
@@ -66,6 +69,10 @@ public:
     Dec tan() const { decNumber r; decNumberTan(&r, &_v, Ctx); return r; }
     Dec exp() const { decNumber r; decNumberExp(&r, &_v, Ctx); return r; }
 
+    Dec asin() const { decNumber r; decNumberArcSin(&r, &_v, Ctx); return r; }
+    Dec acos() const { decNumber r; decNumberArcCos(&r, &_v, Ctx); return r; }
+    Dec atan() const { decNumber r; decNumberArcTan(&r, &_v, Ctx); return r; }
+
 
 private:
 
@@ -78,4 +85,7 @@ inline Dec sin(const Dec& v) { return v.sin(); }
 inline Dec cos(const Dec& v) { return v.cos(); }
 inline Dec tan(const Dec& v) { return v.tan(); }
 inline Dec exp(const Dec& v) { return v.exp(); }
+inline Dec asin(const Dec& v) { return v.asin(); }
+inline Dec acos(const Dec& v) { return v.acos(); }
+inline Dec atan(const Dec& v) { return v.atan(); }
 

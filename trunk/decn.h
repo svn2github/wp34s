@@ -210,4 +210,7 @@ extern decNumber *decNumberBernBnS(decNumber *res, const decNumber *n, decContex
 
 extern decNumber *decFactor(decNumber *r, const decNumber *x, decContext *ctx);
 
+extern decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx);
+
+
 #endif

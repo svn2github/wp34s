@@ -54,14 +54,11 @@ static void print(const Dec& b)
     printf("%s", b.asString());
 }
 
-void runTest(int a, int b, Bf* bf, Mf* mf, int n = 1000)
+
+
+void _runTest(Dec ba, Dec bb, MAPM ma, MAPM mb,
+              Bf* bf, Mf* mf, int n = 1000)
 {
-    Dec ba(a), bb(b);
-    MAPM ma(a), mb(b);
-
-    ba /= 100; bb /= 100;
-    ma /= 100; mb /= 100;
-
     Dec bd = (bb - ba)/n;
     MAPM md = (mb - ma)/n;
 
@@ -69,7 +66,7 @@ void runTest(int a, int b, Bf* bf, Mf* mf, int n = 1000)
     MAPM epos;
     MAPM epmval;
     Dec  epbval;
-    while (ma < mb)
+    while (ma <= mb)
     {
         print(ba); printf("\t");
 
@@ -104,6 +101,17 @@ void runTest(int a, int b, Bf* bf, Mf* mf, int n = 1000)
     printf("max error = "); print(emax); printf(" at "); print(epos); printf("\n");
     printf("Dec val = "); print(epbval); printf("\n");
     printf("MAPM val = "); print(epmval); printf("\n");
+}
+
+void runTest(int a, int b, Bf* bf, Mf* mf, int n = 1000)
+{
+    Dec ba(a), bb(b);
+    MAPM ma(a), mb(b);
+
+    ba /= 100; bb /= 100;
+    ma /= 100; mb /= 100;
+
+    _runTest(ba, bb, ma, mb, bf, mf, n);
 }
 
 static void sqrtTest(int mx)
@@ -149,11 +157,36 @@ static void cosTest()
     runTest(-20, 20, bf, mf);
 }
 
+
 static void tanTest()
 {
     Bf* bf = cos;
     Mf* mf = cos;
-    runTest(-3, 3, bf, mf);
+
+    Dec ba = atan(Dec(1))*4;
+    MAPM ma = atan(MAPM(1))*4;
+    _runTest(-ba, ba, -ma, ma, bf, mf, 1001);
+}
+
+static void asinTest()
+{
+    Bf* bf = asin;
+    Mf* mf = asin;
+    runTest(-100, 100, bf, mf);
+}
+
+static void acosTest()
+{
+    Bf* bf = acos;
+    Mf* mf = acos;
+    runTest(-100, 100, bf, mf);
+}
+
+static void atanTest()
+{
+    Bf* bf = atan;
+    Mf* mf = atan;
+    runTest(-10000, 10000, bf, mf);
 }
 
 
@@ -183,8 +216,11 @@ int main()
     //logTestNear1();
     //sinTest();
     //cosTest();
-    //tanTest();
-    expTest();
+    tanTest();
+    //expTest();
+    //asinTest();
+    //acosTest();
+    //atanTest();
  
     return 0;
 }
