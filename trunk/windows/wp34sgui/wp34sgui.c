@@ -43,7 +43,7 @@ volatile unsigned char Voltage = 0xa;
 /*
  *  Keyboard time out ticker
  */
-volatile unsigned short Keyticks;
+//volatile unsigned short Keyticks;
 
 /*
  *  Used by Emulator only

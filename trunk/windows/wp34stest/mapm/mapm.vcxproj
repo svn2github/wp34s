@@ -1,0 +1,117 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{AA5C473D-87CF-4DB2-911E-B4D256D85466}</ProjectGuid>
+    <RootNamespace>mapm</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Configuration)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="MAPM5SIN.C" />
+    <ClCompile Include="MAPM_ADD.C" />
+    <ClCompile Include="MAPM_CPI.C" />
+    <ClCompile Include="MAPM_DIV.C" />
+    <ClCompile Include="MAPM_EXP.C" />
+    <ClCompile Include="MAPM_FAM.C" />
+    <ClCompile Include="MAPM_FFT.C" />
+    <ClCompile Include="MAPM_FLR.C" />
+    <ClCompile Include="MAPM_FPF.C" />
+    <ClCompile Include="MAPM_GCD.C" />
+    <ClCompile Include="MAPM_LG2.C" />
+    <ClCompile Include="MAPM_LG3.C" />
+    <ClCompile Include="MAPM_LG4.C" />
+    <ClCompile Include="MAPM_LOG.C" />
+    <ClCompile Include="MAPM_MUL.C" />
+    <ClCompile Include="MAPM_POW.C" />
+    <ClCompile Include="MAPM_RCP.C" />
+    <ClCompile Include="MAPM_RND.C" />
+    <ClCompile Include="MAPM_SET.C" />
+    <ClCompile Include="MAPM_SIN.C" />
+    <ClCompile Include="MAPMASIN.C" />
+    <ClCompile Include="MAPMASN0.C" />
+    <ClCompile Include="MAPMCBRT.C" />
+    <ClCompile Include="MAPMCNST.C" />
+    <ClCompile Include="MAPMFACT.C" />
+    <ClCompile Include="MAPMFMUL.C" />
+    <ClCompile Include="MAPMGUES.C" />
+    <ClCompile Include="MAPMHASN.C" />
+    <ClCompile Include="MAPMHSIN.C" />
+    <ClCompile Include="MAPMIPWR.C" />
+    <ClCompile Include="MAPMISTR.C" />
+    <ClCompile Include="MAPMPWR2.C" />
+    <ClCompile Include="MAPMRSIN.C" />
+    <ClCompile Include="MAPMSQRT.C" />
+    <ClCompile Include="MAPMSTCK.C" />
+    <ClCompile Include="MAPMUTIL.C" />
+    <ClCompile Include="MAPMUTL1.C" />
+    <ClCompile Include="MAPMUTL2.C" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="M_APM.H" />
+    <ClInclude Include="M_APM_LC.H" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
