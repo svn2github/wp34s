@@ -362,6 +362,7 @@ const struct niladic niladics[] = {
 	FUNC0(OP_PROMPT,	&op_prompt,		"PROMPT")
 	FUNC0(OP_SIGMACLEAR,	&sigma_clear,		"CL\221")
 	FUNC0(OP_CLREG,		&clrreg,		"CLREG")
+	FUNC0(OP_rCLX,		&clrx,			"CLx")
 	FUNC0(OP_CLSTK,		&clrstk,		"CLSTK")
 	FUNC0(OP_CLALL,		NULL,			"CLALL")
 	FUNC0(OP_RESET,		NULL,			"RESET")

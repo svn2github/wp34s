@@ -470,7 +470,7 @@ static int process_h_shifted(const keycode c) {
 		else
 			init_confirm(confirm_clprog);
 		break;
-	case K24:	return OP_SPEC | OP_CLX;
+	case K24:	return OP_NIL | OP_rCLX;
 
 	case K30:	init_arg(RARG_GTO);		break;
 	case K31:	return OP_DYA | OP_LAND;

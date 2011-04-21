@@ -412,7 +412,7 @@ enum {
 	OP_DEG, OP_RAD, OP_GRAD,
 	OP_ALL, OP_RTN, OP_RTNp1,
 	OP_RS, OP_PROMPT,
-	OP_SIGMACLEAR, OP_CLREG, OP_CLSTK, OP_CLALL, OP_RESET, OP_CLFLAGS,
+	OP_SIGMACLEAR, OP_CLREG, OP_rCLX, OP_CLSTK, OP_CLALL, OP_RESET, OP_CLFLAGS,
 	OP_R2P, OP_P2R,
 	OP_FRACDENOM, OP_2FRAC, OP_DENFIX, OP_DENFAC, OP_DENANY,
 	OP_FRACIMPROPER, OP_FRACPROPER,
@@ -1026,6 +1026,7 @@ extern void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void cmdconv(unsigned int arg, enum rarg op);
 extern void roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
+extern void clrx(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx);

@@ -468,13 +468,24 @@ unsigned int find_user_pc(unsigned int target) {
 	return base;
 }
 
-/* Zero out the stack
+/* Zero the X register
  */
-void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+static void set_zero(decimal64 *x) {
 	if (is_intmode())
 		d64fromInt(&regX, 0);
 	else
 		regX = CONSTANT_INT(OP_ZERO);
+}
+
+void clrx(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+	set_zero(&regX);
+	State.state_lift = 0;
+}
+
+/* Zero out the stack
+ */
+void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+	set_zero(&regX);
 	fill(NULL, NULL, NULL);
 	regL = regX;
 	regI = regX;
@@ -494,10 +505,7 @@ void clrflags(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	int i;
 
-	if (is_intmode())
-		d64fromInt(Regs, 0);
-	else
-		Regs[0] = CONSTANT_INT(OP_ZERO);
+	set_zero(& (Regs[0]));
 
 	for (i=1; i<TOPREALREG; i++)
 		Regs[i] = Regs[0];
@@ -2159,13 +2167,8 @@ static void specials(const opcode op) {
 				State.cmdlineeex = 0;
 			else if (Cmdline[State.eol] == '.')
 				State.cmdlinedot--;
-		} else {
-			if (is_intmode())
-				d64fromInt(&regX, 0);
-			else
-				regX = CONSTANT_INT(OP_ZERO);
-			State.state_lift = 0;
-		}
+		} else
+			clrx(NULL, NULL, NULL);
 		break;
 
 	case OP_ENTER:
