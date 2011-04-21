@@ -155,8 +155,8 @@ unsigned char FlashWakeupTime;
 #define KEY_SHIFT_F_MASK 0x0000000000000800LL
 #define KEY_SHIFT_G_MASK 0x0000000000001000LL
 #define KEY_SHIFT_H_MASK 0x0000000000002000LL
-#define KEY_REPEAT_START 20
-#define KEY_REPEAT_NEXT 28
+#define KEY_REPEAT_START 25
+#define KEY_REPEAT_NEXT 35
 #define KEY_BUFF_SHIFT 4
 #define KEY_BUFF_LEN ( 1 << KEY_BUFF_SHIFT )
 #define KEY_BUFF_MASK ( KEY_BUFF_LEN - 1 )
@@ -180,7 +180,6 @@ const char *get_revision( void )
 }
 
 
-
 /*
  *  Short wait to allow output lines to settle
  */
@@ -192,6 +191,25 @@ void short_wait( int count )
 	while ( count-- ) {
 		// Exclude from optimisation
 		asm("");
+	}
+}
+
+
+/*
+ *  Lock / unlock by disabling / enabling the periodic interrupt.
+ *  Do nothing if called inside the interrupt handler
+ */
+void lock( void )
+{
+	if ( !InIrq ) {
+		AIC_DisableIT( AT91C_ID_SLCD );
+	}
+}
+
+void unlock( void )
+{
+	if ( !InIrq ) {
+		AIC_EnableIT( AT91C_ID_SLCD );
 	}
 }
 
@@ -486,7 +504,7 @@ void shutdown( void )
 	/*
 	 *  Ensure the RAM checksum is correct
 	 */
-	set_speed( SPEED_HIGH );
+	set_speed( SPEED_H_LOW_V );
 	checksum_all();
 
 	/*
@@ -555,14 +573,15 @@ void deep_sleep( void )
 	 *  Set RTC-Alarm for wake up at next event
 	 *  At the moment, this is just APD (Auto Power Down)
 	 */
-	wakeup_time = LastActiveSecond + ( APD_TICKS - Keyticks ) / 10 + 1;
+	wakeup_time = LastActiveSecond + ( APD_TICKS - Keyticks ) / 10 + 2;
 	wakeup_time %= 3600;
 	minute = (unsigned char) ( wakeup_time / 60 );
 	second = (unsigned char) ( wakeup_time % 60 );
 
 	/*
-	 *  Program the alarm
+	 *  Clear all events in the RTC and program the alarm
 	 */
+	AT91C_BASE_RTC->RTC_SCCR = AT91C_BASE_RTC->RTC_SR;
 	RTC_SetTimeAlarm( NULL, &minute, &second );
 
 	/*
@@ -739,16 +758,18 @@ void set_speed( unsigned int speed )
 		speed = SPEED_H_LOW_V;
 	}
 
-	/*
-	 *  Set new speed
-	 */
-	SpeedSetting = speed;
 	if ( speeds[ speed ] == ClockSpeed ) {
 		/*
 		 *  Invalid or no change.
 		 */
 		return;
 	}
+
+	/*
+	 *  Set new speed
+	 */
+	lock();
+	SpeedSetting = speed;
 	ClockSpeed = speeds[ speed ];
 
 	switch ( speed ) {
@@ -841,6 +862,7 @@ void set_speed( unsigned int speed )
 		}
 		break;
 	}
+	unlock();
 
 	if ( speed == SPEED_IDLE ) {
 		/*
@@ -900,20 +922,20 @@ NO_INLINE void LCD_interrupt( void )
 {
 	InIrq = 1;
 
+	/*
+	 *  Set speed to a minimum of 2 MHz for all irq handling.
+	 */
+	if ( SpeedSetting < SPEED_MEDIUM ) {
+		set_speed( SPEED_MEDIUM );
+	}
+
+	/*
+	 *  The keyboard is scanned every 20ms for debounce and repeat
+	 */
+	scan_keyboard();
+
 	Heartbeats = ( Heartbeats + 1 ) & 0x7f;
 	if ( Heartbeats & 1 ) {
-		/*
-		 *  Set speed to a minimum of 2 MHz for all irq handling.
-		 */
-		if ( SpeedSetting < SPEED_MEDIUM ) {
-			set_speed( SPEED_MEDIUM );
-		}
-
-		/*
-		 *  The keyboard is scanned every 40ms for debounce and repeat
-		 */
-		scan_keyboard();
-
 		/*
 		 *  Voltage detection state machine
 		 */
@@ -932,13 +954,6 @@ NO_INLINE void LCD_interrupt( void )
 	 */
 	if ( --UserHeartbeatCountDown == 0 ) {
 		/*
-		 *  Set speed to a minimum of 2 MHz for all irq handling.
-		 */
-		if ( SpeedSetting < SPEED_MEDIUM ) {
-			set_speed( SPEED_MEDIUM );
-		}
-
-		/*
 		 *  Service the 100ms user heart beat
 		 */
 		user_heartbeat();
@@ -954,6 +969,7 @@ NO_INLINE void LCD_interrupt( void )
 			UserHeartbeatCountDown = 5;
 		}
 	}
+
 	InIrq = 0;
 }
 
@@ -976,6 +992,22 @@ RAM_FUNCTION void irq_common( void )
 	 *  Voltage regulator to normal mode
 	 */
 	SUPC_DisableDeepMode();
+}
+
+
+/*
+ *  The SLCDC interrupt handler
+ */
+RAM_FUNCTION void SLCD_irq( void )
+{
+	irq_common();
+
+	if ( SLCDC_GetInterruptStatus() & AT91C_SLCDC_ENDFRAME ) {
+		/*
+		 *  SLCDC ENDFRAME
+		 */
+		LCD_interrupt();
+	}
 }
 
 
@@ -1012,22 +1044,6 @@ RAM_FUNCTION void system_irq( void )
 	}
 }
 #endif
-
-
-/*
- *  The SLCDC interrupt handler
- */
-RAM_FUNCTION void SLCD_irq( void )
-{
-	irq_common();
-
-	if ( SLCDC_GetInterruptStatus() & AT91C_SLCDC_ENDFRAME ) {
-		/*
-		 *  SLCDC ENDFRAME
-		 */
-		LCD_interrupt();
-	}
-}
 
 
 /*
@@ -1071,25 +1087,6 @@ void enable_interrupts()
 	SLCDC_EnableInterrupts( AT91C_SLCDC_ENDFRAME );
 	UserHeartbeatCountDown = 5;
 	// --prio;
-}
-
-
-/*
- *  Lock / unlock by disabling / enabling the periodic interrupt.
- *  Do nothing if called inside the interrupt handler
- */
-void lock( void )
-{
-	if ( !InIrq ) {
-		AIC_DisableIT( AT91C_ID_SLCD );
-	}
-}
-
-void unlock( void )
-{
-	if ( !InIrq ) {
-		AIC_EnableIT( AT91C_ID_SLCD );
-	}
 }
 
 
@@ -1239,7 +1236,6 @@ int main(void)
 		/*
 		 *  Setup hardware
 		 */
-		// set_speed( SPEED_MEDIUM );
 		RTC_SetTimeAlarm( NULL, NULL, NULL );
 
 		/*
@@ -1251,11 +1247,14 @@ int main(void)
 			elapsed_time += 3600;
 		}
 
-		/*
-		 *  Do an initial keyboard scan since a pressed key is the most
-		 *  common wake up reason
-		 */
-		scan_keyboard();
+		if ( AT91C_BASE_SUPC->SUPC_SR & ( AT91C_SUPC_FWUPS | AT91C_SUPC_WKUPS ) ) {
+			/*
+			 *  Do an initial keyboard scan since this was a keyboard wake up
+			 */
+			scan_keyboard();
+		}
+
+
 
 		/*
 		 *  Update Ticker and friends
