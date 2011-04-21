@@ -143,20 +143,10 @@ void UpdateScreen( bool forceUpdate )
 }
 
 /*
- *  some helper fuctions
+ *  some helper functions
  */
 bool GetFlag( int flag )
 {
-	if ( flag & shift ) {
-		// Special handling of shift key
-		if ( State.shifts == SHIFT_G ) {
-			EmulatorFlags |= shift;
-		}
-		else {
-			EmulatorFlags &= ~shift;
-		}
-	}
-
 	return 0 != ( EmulatorFlags & flag );
 }
 
