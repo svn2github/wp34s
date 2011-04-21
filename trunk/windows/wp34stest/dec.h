@@ -76,6 +76,7 @@ public:
     Dec sinh() const { decNumber r; decNumberSinh(&r, &_v, Ctx); return r; }
     Dec cosh() const { decNumber r; decNumberCosh(&r, &_v, Ctx); return r; }
     Dec tanh() const { decNumber r; decNumberTanh(&r, &_v, Ctx); return r; }
+    Dec factorial() const { decNumber r; decNumberFactorial(&r, &_v, Ctx); return r; }
 
 
 private:
@@ -95,4 +96,5 @@ inline Dec atan(const Dec& v) { return v.atan(); }
 inline Dec sinh(const Dec& v) { return v.sinh(); }
 inline Dec cosh(const Dec& v) { return v.cosh(); }
 inline Dec tanh(const Dec& v) { return v.tanh(); }
+inline Dec factorial(const Dec& v) { return v.factorial(); }
 

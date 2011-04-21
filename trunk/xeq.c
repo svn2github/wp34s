@@ -3140,6 +3140,7 @@ static void check_const_cat(void) {
 /* Main initialisation routine that sets things up for us.
  */
 void init_34s(void) {
+
 	if (checksum_all()) {
 		reset(NULL, NULL, NULL);
 		init_state();
@@ -3148,12 +3149,14 @@ void init_34s(void) {
 #if defined(REALBUILD) || defined(WINGUI)
 	display();
 #else
+#ifdef DEBUG
+	{
+		int i;
 	/* Sanity check the function table indices.
 	 * These indicies must correspond exactly with the enum definition.
 	 * This code validates that this is true and prints error messages
 	 * if it isn't.
 	 */
-	int i;
 	for (i=0; i<num_monfuncs; i++)
 		if (monfuncs[i].n != i)
 			error("monadic function table row %d: %6s", i, monfuncs[i].fname);
@@ -3192,6 +3195,8 @@ void init_34s(void) {
 	check_cat(CATALOGUE_NORMAL, "float");
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	check_cat(CATALOGUE_INTERNAL, "internal");
+#endif
+	}
 #endif
 #endif
 }

@@ -9,6 +9,7 @@
 
 #include "dec.h"
 #include "m_apm.h"
+#include "gamma.h"
 
 // need these
 struct _ram PersistentRam;
@@ -198,6 +199,13 @@ static void sinhTest()
     _runTest(0, ba, 0, ma, bf, mf, 1001);
 }
 
+static void gammaTest()
+{
+    Bf* bf = factorial;
+    Mf* mf = gammaFactorialSlow<MAPM>;
+    runTest(1, 6900, bf, mf);
+}
+
 
 int main()
 {
@@ -231,7 +239,8 @@ int main()
     //asinTest();
     //acosTest();
     //atanTest();
-    sinhTest();
+    //sinhTest();
+    gammaTest();
  
     return 0;
 }
