@@ -135,7 +135,7 @@ const struct addr_map annun[] = {
 	{ "104",	0xfffb4228,	0x80000000 }, // digit 11 segment f
 	{ "105",	0xfffb4224,	0x1 }, // digit 11 segment g
 	{ "106",	0xfffb422c,	0x2 }, // digit 11 segment h
-	{ "107",	0xfffb421c,	0x1 }, // digit 11 segment i
+	{ "107",	0xfffb422c,	0x1 }, // digit 11 segment i
 	{ "108",	0xfffb4214,	0x4 }, // digit 12 segment a
 	{ "109",	0xfffb4214,	0x2 }, // digit 12 segment b
 	{ "110",	0xfffb4224,	0x4 }, // digit 12 segment c
