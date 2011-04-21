@@ -10,28 +10,15 @@
 #include "dec.h"
 #include "m_apm.h"
 
-// need this
+// need these
 struct _ram PersistentRam;
-const char *pretty(unsigned char z) 
-{
-    return NULL;
-}
-void shutdown( void )
-{
-    exit( 0 );
-}
-int is_key_pressed(void) 
-{
-    return 0;
-}
-
+const char *pretty(unsigned char z) { return 0; }
+void shutdown( void ) { exit( 0 ); }
+int is_key_pressed(void) { return 0; }
 void watchdog(void)  {}
+const char *get_revision( void ) { return "test"; }
 
-const char *get_revision( void )
-{
-    return "test";
-}
-
+// we have one context and this points to it
 static decContext* Ctx;
 
 typedef Dec Bf(const Dec&);
@@ -53,7 +40,6 @@ static void print(const Dec& b)
 {
     printf("%s", b.asString());
 }
-
 
 
 void _runTest(Dec ba, Dec bb, MAPM ma, MAPM mb,
@@ -99,7 +85,7 @@ void _runTest(Dec ba, Dec bb, MAPM ma, MAPM mb,
         ma += md;
     }
     printf("max error = "); print(emax); printf(" at "); print(epos); printf("\n");
-    printf("Dec val = "); print(epbval); printf("\n");
+    printf("Dec val  = "); print(epbval); printf("\n");
     printf("MAPM val = "); print(epmval); printf("\n");
 }
 
@@ -135,11 +121,21 @@ static void logTestNear1()
     runTest(99, 101, bf, mf);
 }
 
+static void logTestVeryNear1()
+{
+    Bf* bf = ln;
+    Mf* mf = log;
+
+    Dec ba = Dec(1)/1000000;
+    MAPM ma = MAPM(1)/1000000;
+    _runTest(1-ba, 1+ba, 1-ma, 1+ma, bf, mf, 1001);
+}
+
 static void expTest()
 {
     Bf* bf = exp;
     Mf* mf = exp;
-    runTest(0, 10000, bf, mf);
+    runTest(0, 101, bf, mf);
 }
 
 
@@ -192,6 +188,16 @@ static void atanTest()
     runTest(-10000, 10000, bf, mf);
 }
 
+static void sinhTest()
+{
+    Bf* bf = sinh;
+    Mf* mf = sinh;
+
+    Dec ba = Dec(1)/1000000;
+    MAPM ma = MAPM(1)/1000000;
+    _runTest(0, ba, 0, ma, bf, mf, 1001);
+}
+
 
 int main()
 {
@@ -216,7 +222,8 @@ int main()
     // more need adding..
 
     //logTest();
-    logTestNear1();
+    //logTestNear1();
+    //logTestVeryNear1();
     //sinTest();
     //cosTest();
     //tanTest();
@@ -224,6 +231,7 @@ int main()
     //asinTest();
     //acosTest();
     //atanTest();
+    sinhTest();
  
     return 0;
 }

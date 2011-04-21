@@ -73,6 +73,10 @@ public:
     Dec acos() const { decNumber r; decNumberArcCos(&r, &_v, Ctx); return r; }
     Dec atan() const { decNumber r; decNumberArcTan(&r, &_v, Ctx); return r; }
 
+    Dec sinh() const { decNumber r; decNumberSinh(&r, &_v, Ctx); return r; }
+    Dec cosh() const { decNumber r; decNumberCosh(&r, &_v, Ctx); return r; }
+    Dec tanh() const { decNumber r; decNumberTanh(&r, &_v, Ctx); return r; }
+
 
 private:
 
@@ -88,4 +92,7 @@ inline Dec exp(const Dec& v) { return v.exp(); }
 inline Dec asin(const Dec& v) { return v.asin(); }
 inline Dec acos(const Dec& v) { return v.acos(); }
 inline Dec atan(const Dec& v) { return v.atan(); }
+inline Dec sinh(const Dec& v) { return v.sinh(); }
+inline Dec cosh(const Dec& v) { return v.cosh(); }
+inline Dec tanh(const Dec& v) { return v.tanh(); }
 
