@@ -186,7 +186,7 @@ const char *get_revision( void )
 void short_wait( int count )
 {
 	if ( SpeedSetting > SPEED_MEDIUM ) {
-		count *= 10;
+		count *= 16;
 	}
 	while ( count-- ) {
 		// Exclude from optimisation
