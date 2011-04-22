@@ -201,7 +201,7 @@ void dn_dec(decNumber *x, decContext *ctx) {
 	decNumberSubtract(x, x, &const_1, ctx);
 }
 
-static int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol, decContext *ctx) {
+int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol, decContext *ctx) {
 	decNumber a, b;
 
 	decNumberSubtract(&a, x, y, ctx);

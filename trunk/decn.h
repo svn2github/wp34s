@@ -41,6 +41,8 @@ extern void decNumberPI(decNumber *pi);
 extern void decNumberPIon2(decNumber *pion2);
 extern int is_int(const decNumber *, decContext *);
 
+extern int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol, decContext *ctx);
+
 extern decNumber *decNumberMAdd(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx);
 
 extern decNumber *decNumberRnd(decNumber *r, const decNumber *x, decContext *ctx);

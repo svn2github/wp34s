@@ -963,11 +963,12 @@ decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 }
 
 // Normal(0,1) CDF function
-decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
+decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x, decContext *ctx) {
 	decNumber t, u, v, a, x2, d, absx, n;
 	int i;
 
+	pdf_Q(pdf, x, ctx);
 	decNumberAbs(&absx, x, ctx);
 	decNumberCompare(&u, &const_PI, &absx, ctx);	// We need a number about 3.2 and this is close enough
 	if (decNumberIsNegative(&u)) {
@@ -985,8 +986,7 @@ decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 		} while (! decNumberIsZero(&n));
 
 		decNumberAdd(&u, &t, x, ctx);
-		pdf_Q(&t, x, ctx);
-		decNumberDivide(q, &t, &u, ctx);
+		decNumberDivide(q, pdf, &u, ctx);
 		if (! decNumberIsNegative(q))
 			decNumberSubtract(q, &const_1, q, ctx);
 		if (decNumberIsNegative(x))
@@ -1007,12 +1007,18 @@ decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 			decNumberCopy(&a, &u);
 			decNumberAdd(&d, &d, &const_2, ctx);
 		}
-		pdf_Q(&u, &absx, ctx);
-		decNumberMultiply(&v, &a, &u, ctx);
+		decNumberMultiply(&v, &a, pdf, ctx);
 		if (decNumberIsNegative(x))
 			return decNumberSubtract(q, &const_0_5, &v, ctx);
 		return decNumberAdd(q, &const_0_5, &v, ctx);
 	}
+}
+#endif
+
+decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
+	decNumber t;
+	return cdf_Q_helper(q, &t, x, ctx);
 #else
 	return NULL;
 #endif
@@ -1020,43 +1026,45 @@ decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 
 
 #ifndef TINY_BUILD
-static void qf_Q_ests(decNumber *low, decNumber *high, const decNumber *x, const decNumber *x05, decContext *ctx) {
+static void qf_Q_est(decNumber *est, const decNumber *x, const decNumber *x05, decContext *ctx) {
 	const int invert = decNumberIsNegative(x05);
-	decNumber a, b, xc;
+	decNumber a, b, u, xc;
 
 	if (invert) {
 		decNumberSubtract(&xc, &const_1, x, ctx);
 		x = &xc;
 	}
 
-	// Initial estimates that bracket the solution
-	decNumberCompare(&a, x, &const_0_15, ctx);
+	decNumberCompare(&a, x, &const_0_2, ctx);
 	if (decNumberIsNegative(&a)) {
-		// sqrt(-2*ln(x) - e)
 		decNumberLn(&a, x, ctx);
-		decNumberMultiply(&b, &a, &const__2, ctx);
-		decNumberSubtract(&a, &b, &const_e, ctx);
+		decNumberMultiply(&u, &a, &const__2, ctx);
+		decNumberSubtract(&a, &u, &const_1, ctx);
 		decNumberSquareRoot(&b, &a, ctx);
-		decNumberMinus(high, &b, ctx);
-		if (low != NULL)
-			decNumberAdd(low, high, &const_0_25, ctx);
+		decNumberMultiply(&a, &b, &const_sqrt2PI, ctx);
+		decNumberMultiply(&b, &a, x, ctx);
+		decNumberLn(&a, &b, ctx);
+		decNumberMultiply(&b, &a, &const__2, ctx);
+		decNumberSquareRoot(&a, &b, ctx);
+		decNumberDivide(&b, &const_0_2, &u, ctx);
+		decNumberAdd(est, &a, &b, ctx);
+		if (!invert)
+			decNumberMinus(est, est, ctx);
 	} else {
-		// 3 * (1/2 - x)
-		decNumberMultiply(high, x05, &const__3, ctx);
-		if (low != NULL)
-			decNumberMultiply(low, high, &const_5on6, ctx);
-	}
-	if (invert) {
-		decNumberMinus(high, high, ctx);
-		if (low != NULL)
-			decNumberMinus(low, low, ctx);
+		decNumberMultiply(&a, &const_sqrt2PI, x05, ctx);
+		decNumberCube(&b, &a, ctx);
+		decNumberDivide(&u, &b, &const_6, ctx);
+		decNumberAdd(est, &u, &a, ctx);
+		decNumberMinus(est, est, ctx);
 	}
 }
 #endif
 
 decNumber *qf_Q(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
-	decNumber a, b;
+	decNumber a, b, t, cdf, pdf;
+	int i;
+
 
 	if (check_probability(r, x, ctx, 0))
 		return r;
@@ -1066,9 +1074,21 @@ decNumber *qf_Q(decNumber *r, const decNumber *x, decContext *ctx) {
 		return r;
 	}
 
-	qf_Q_ests(&a, &b, x, &b, ctx);
-	qf_search(r, x, ctx, 0, &a, &b, &cdf_Q);
-	return r;
+	qf_Q_est(r, x, &b, ctx);
+	for (i=0; i<10; i++) {
+		cdf_Q_helper(&cdf, &pdf, r, ctx);
+		decNumberSubtract(&a, &cdf, x, ctx);
+		decNumberDivide(&t, &a, &pdf, ctx);
+		decNumberMultiply(&a, &t, r, ctx);
+		decNumberMultiply(&b, &a, &const_0_5, ctx);
+		decNumberSubtract(&a, &b, &const_1, ctx);
+		decNumberDivide(&b, &t, &a, ctx);
+		decNumberAdd(&a, &b, r, ctx);
+		if (relative_error(&a, r, &const_1e_32, ctx))
+			break;
+		decNumberCopy(r, &a);
+	}
+	return decNumberCopy(r, &a);
 #else
 	return NULL;
 #endif
@@ -1190,7 +1210,7 @@ decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 		return decNumberCopy(r, &a);
 	}
 
-	qf_Q_ests(NULL, &b, x, &b, ctx);
+	qf_Q_est(&b, x, &b, ctx);
 
 	return qf_search(r, x, ctx, 0, &a, &b, &cdf_T);
 #else
