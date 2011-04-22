@@ -788,6 +788,11 @@ typedef struct _ram {
 	unsigned short _deep_sleep_marker;
 	unsigned short _last_active_second;
 
+	/*
+	 *  Last measured voltage
+	 */
+	unsigned char _voltage;
+
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
@@ -809,12 +814,11 @@ extern TPersistentRam PersistentRam;
 #define Keyticks         (PersistentRam._keyticks)
 #define DeepSleepMarker  (PersistentRam._deep_sleep_marker)
 #define LastActiveSecond (PersistentRam._last_active_second)
+#define Voltage          (PersistentRam._voltage)
 
 /*
- *  No so persistent runtime data
+ *  Function prototypes
  */
-extern volatile unsigned char Voltage;
-
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);
 

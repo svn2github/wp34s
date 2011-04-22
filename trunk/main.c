@@ -42,7 +42,8 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #define SPEED_MEDIUM  2
 #define SPEED_H_LOW_V 3
 #define SPEED_HIGH    4
-#define SPEED_ANNUNCIATOR LIT_EQ
+#define SLEEP_ANNUNCIATOR LIT_EQ
+#define SPEED_ANNUNCIATOR 107
 void set_speed( unsigned int speed );
 
 /*
@@ -134,9 +135,8 @@ unsigned char UserHeartbeatCountDown;
 unsigned char Contrast;
 volatile unsigned char LcdFadeOut;
 volatile unsigned char InIrq;
-volatile unsigned char Voltage;
-#ifdef SPEED_ANNUNCIATOR
-unsigned char SpeedAnnunciatorOn;
+#ifdef SLEEP_ANNUNCIATOR
+unsigned char SleepAnnunciatorOn;
 #endif
 #ifdef ALLOW_DISABLE_FLASH
 unsigned char FlashWakeupTime;
@@ -614,12 +614,12 @@ void deep_sleep( void )
 	 */
 	AT91C_BASE_SUPC->SUPC_WUMR = AT91C_SUPC_FWUPEN | AT91C_SUPC_RTCEN;
 
-#ifdef SPEED_ANNUNCIATOR
-	if ( SpeedAnnunciatorOn ) {
+#ifdef SLEEP_ANNUNCIATOR
+	if ( SleepAnnunciatorOn ) {
 		/*
 		 *  "Alive" indicator off
 		 */
-		clr_dot( SPEED_ANNUNCIATOR );
+		dot( SLEEP_ANNUNCIATOR, 0 );
 	}
 #endif
 
@@ -653,7 +653,10 @@ void detect_voltage( void )
 		/*
 		 *  First call
 		 */
-		BodThreshold = Voltage = SUPC_BOD_3_0V;
+		if ( Voltage == 0 ) {
+			Voltage = SUPC_BOD_3_0V;
+		}
+		BodThreshold = Voltage;
 	}
 	else {
 		/*
@@ -669,9 +672,11 @@ void detect_voltage( void )
 			Voltage = BodThreshold;
 
 			/*
-			 *  Start over
+			 *  Try next higher value
 			 */
-			BodThreshold = SUPC_BOD_MAX;
+			if ( BodThreshold < SUPC_BOD_MAX ) {
+				++BodThreshold;
+			}
 
 			/*
 			 *  But wait a second before next loop with BOD disabled
@@ -862,6 +867,11 @@ void set_speed( unsigned int speed )
 		}
 		break;
 	}
+
+#ifdef SPEED_ANNUNCIATOR
+	dot( SPEED_ANNUNCIATOR, speed > SPEED_MEDIUM );
+#endif
+
 	unlock();
 
 	if ( speed == SPEED_IDLE ) {
@@ -1304,9 +1314,9 @@ int main(void)
 		Keyticks = 0;
 	}
 
-#ifdef SPEED_ANNUNCIATOR
-	SpeedAnnunciatorOn = 1;
-	dot( SPEED_ANNUNCIATOR, SpeedAnnunciatorOn );
+#ifdef SLEEP_ANNUNCIATOR
+	SleepAnnunciatorOn = 1;
+	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
 #endif
 
 	/*
