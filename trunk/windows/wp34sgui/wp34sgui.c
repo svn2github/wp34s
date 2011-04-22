@@ -38,7 +38,7 @@ TPersistentRam PersistentRam;
 /*
  *  More data (see main.c of real build)
  */
-volatile unsigned char Voltage = 0xa;
+//volatile unsigned char Voltage = 0xa;
 
 /*
  *  Keyboard time out ticker
