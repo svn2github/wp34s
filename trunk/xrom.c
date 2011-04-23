@@ -134,6 +134,7 @@
 
 // Stack manipulation shortcuts
 #define SWAPXY		NILADIC(SWAP)
+#define CSWAPXY		NILADIC(CSWAP)
 #define ROLLD		NILADIC(RDOWN)
 #define ROLLU		NILADIC(RUP)
 #define FILL		NILADIC(FILL)
@@ -284,7 +285,7 @@ const s_opcode xrom[] = {
 		RCL(st(X))
 		ZERO
 		STO(st(L))
-		ROLLU
+		CSWAPXY
 		EXIT
 
 #undef A
