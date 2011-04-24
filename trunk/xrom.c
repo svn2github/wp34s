@@ -123,6 +123,7 @@
 #define FRAC		MONADIC(FRAC)
 #define TRUNC		MONADIC(TRUNC)
 #define SQUARE		MONADIC(SQR)
+#define SQRT		MONADIC(SQRT)
 
 // Dyadic functions
 #define PLUS		DYADIC(ADD)
@@ -825,6 +826,28 @@ const s_opcode xrom[] = {
 	LBL(XROM_EXITp1)		// Clear xrom falg and return with skip
 		CF(F_XROM)
 		RTNp1
+
+
+/**************************************************************************/
+/* Fairly minimal quadratic solver by Gerson W. Barbosa that remains
+ * numerically quite stable.
+ */
+	LBL(ENTRY_QUAD)
+		RCL_DV(st(Z))
+		SWAP(st(Z))
+		STO_PL(st(X))
+		DIVISION
+		CHS
+		STO(st(Z))
+		SQUARE
+		SWAPXY
+		MINUS
+		SQRT
+		STO(st(L))
+		SWAPXY
+		STO_PL(st(Y))
+		RCL_MI(st(L))
+	RTN
 
 /**************************************************************************/
 #define R_PMT	80

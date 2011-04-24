@@ -434,6 +434,7 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisODD,	&XisOdd,		"ODD?")
 
 	FUNC0(OP_TVM,		&xrom_tvm,		"TVM")
+	FUNC0(OP_QUAD,		&xrom_quad,		"QUAD")
 	FUNC1(OP_TICKS,		&op_ticks,		"TICKS")
 	FUNC1(OP_VOLTAGE,	&op_voltage,		"BATT")
 #undef FUNC0

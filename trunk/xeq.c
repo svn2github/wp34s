@@ -1455,6 +1455,10 @@ void xrom_tvm(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	do_xrom(ENTRY_TVM);
 }
 
+void xrom_quad(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
+	do_xrom(ENTRY_QUAD);
+}
+
 void cmddisp(unsigned int arg, enum rarg op) {
 	State.dispdigs = arg;
 	if (op == RARG_FIX)		State.dispmode = MODE_FIX;
