@@ -42,7 +42,7 @@ MEMORY
     sram (W!RX) :       ORIGIN = 0x200000, LENGTH = 0x1000
     backupsram (W!RX) : ORIGIN = 0x300000, LENGTH = 0x800
     flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x1FBFC
-    xrom  (R) :         ORIGIN = 0x11FBF0, LENGTH = 0x404
+    xrom  (R) :         ORIGIN = 0x11FBD0, LENGTH = 0x424
     revision (R) :      ORIGIN = 0x11FFF4, LENGTH = 12
 }
 
