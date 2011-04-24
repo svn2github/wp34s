@@ -1395,17 +1395,21 @@ enum perm_opts { PERM_INVALID=0, PERM_INTG, PERM_NORMAL };
 static enum perm_opts perm_helper(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx) {
 	decNumber n, s;
 
-	if (decNumberIsInfinite(x)) {
-		if (decNumberIsInfinite(y))
-			set_NaN(r);
-		else
+	if (decNumberIsSpecial(x) || decNumberIsSpecial(y) || dn_lt0(x) || dn_lt0(y)) {
+		if (decNumberIsInfinite(x) && !decNumberIsInfinite(y))
 			set_inf(r);
+		else
+			set_NaN(r);
 		return PERM_INVALID;
 	}
 	decNumberAdd(&n, x, &const_1, ctx);	// x+1
 	decNumberLnGamma(&s, &n, ctx);		// lnGamma(x+1) = Ln x!
 
 	decNumberSubtract(r, &n, y, ctx);	// x-y+1
+	if (dn_le0(r)) {
+		set_NaN(r);
+		return PERM_INVALID;
+	}
 	decNumberLnGamma(&n, r, ctx);		// LnGamma(x-y+1) = Ln (x-y)!
 	decNumberSubtract(r, &s, &n, ctx);
 
