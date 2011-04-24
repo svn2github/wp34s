@@ -2944,25 +2944,18 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 		decNumberCompare(&y, fa, fb, Ctx);
 		if (decNumberIsZero(&y)) {	// Worse equal...
 cnst:			SET_CONST(flags);
-			decNumberMultiply(&x, a, &const_2, Ctx);
-			if (decNumberIsNegative(&x))
-				decNumberSubtract(c, &x, &const_10, Ctx);
-			else
-				decNumberAdd(c, &x, &const_10, Ctx);
-		} else {
-			// Both estimates are the same side of the line
-			// but different.
-#if 1
-			// A bisection step puts a degree of trust in the user's
-			// estimates.
-			solve_bisect(c, a, b, Ctx);
-#else
-			// A secant step, this runs the risk of flying off
-			// into infinity and having to work its way back again.
-			solve_secant(c, a, b, fa, fb, Ctx);
-			limit_jump(c, a, b, Ctx);
-#endif
 		}
+		// Both estimates are the same side of the line.
+#if 1
+		// A bisection step puts a degree of trust in the user's
+		// estimates.
+		solve_bisect(c, a, b, Ctx);
+#else
+		// A secant step, this runs the risk of flying off
+		// into infinity and having to work its way back again.
+		solve_secant(c, a, b, fa, fb, Ctx);
+		limit_jump(c, a, b, Ctx);
+#endif
 	} else {
 		SET_BRACKET(flags);
 		solve_secant(c, a, b, fa, fb, Ctx);
