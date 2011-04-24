@@ -2950,8 +2950,18 @@ cnst:			SET_CONST(flags);
 			else
 				decNumberAdd(c, &x, &const_10, Ctx);
 		} else {
+			// Both estimates are the same side of the line
+			// but different.
+#if 1
+			// A bisection step puts a degree of trust in the user's
+			// estimates.
+			solve_bisect(c, a, b, Ctx);
+#else
+			// A secant step, this runs the risk of flying off
+			// into infinity and having to work its way back again.
 			solve_secant(c, a, b, fa, fb, Ctx);
 			limit_jump(c, a, b, Ctx);
+#endif
 		}
 	} else {
 		SET_BRACKET(flags);
