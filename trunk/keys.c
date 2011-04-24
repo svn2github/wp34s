@@ -241,8 +241,7 @@ static int process_normal(const keycode c) {
 		return OP_NIL | OP_RDOWN;
 
 	case K20:	return OP_SPEC | OP_ENTER;
-	case K21:					// swap
-		return OP_NIL | OP_SWAP;
+	case K21:	return OP_NIL | OP_SWAP;	// x<>y
 	case K22:	return OP_SPEC | OP_CHS;	// CHS
 	case K23:	return OP_SPEC | OP_EEX;	// EEX
 	case K24:
