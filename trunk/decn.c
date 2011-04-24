@@ -694,7 +694,7 @@ decNumber *decNumberCubeRoot(decNumber *r, const decNumber *x, decContext *ctx) 
 }
 
 
-static void mod2pi(decNumber *res, const decNumber *x, decContext *ctx) {
+static void bigmod(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
 	/* Declare a structure large enough to hold a really long number.
 	 * This structure is likely to be larger than is required.
 	 */
@@ -707,7 +707,7 @@ static void mod2pi(decNumber *res, const decNumber *x, decContext *ctx) {
 	big = *ctx;
 	big.digits = MOD_DIGITS;
 
-	decNumberRemainder(&out.n, x, &const_2PI, &big);
+	decNumberRemainder(&out.n, x, y, &big);
 	decNumberPlus(res, &out.n, ctx);
 }
 
@@ -802,10 +802,10 @@ static int cvt_2rad(decNumber *res, const decNumber *x,
 
 	switch (get_trig_mode()) {
 	case TRIG_RAD:
-		mod2pi(res, x, ctx);
+		bigmod(res, x, &const_2PI, ctx);
 		break;
 	case TRIG_DEG:
-		decNumberRemainder(&fm, x, &const_360, ctx);
+		bigmod(&fm, x, &const_360, ctx);
                 if (decNumberIsNegative(&fm))
                     decNumberAdd(&fm, &fm, &const_360, ctx);
 		if (r0 != NULL && right_angle(res, &fm, &const_90, r0, r1, r2, r3, ctx))
@@ -813,7 +813,7 @@ static int cvt_2rad(decNumber *res, const decNumber *x,
 		decNumberD2R(res, &fm, ctx);
 		break;
 	case TRIG_GRAD:
-		decNumberRemainder(&fm, x, &const_400, ctx);
+		bigmod(&fm, x, &const_400, ctx);
                 if (decNumberIsNegative(&fm))
                     decNumberAdd(&fm, &fm, &const_400, ctx);
 		if (r0 != NULL && right_angle(res, &fm, &const_100, r0, r1, r2, r3, ctx))
@@ -844,7 +844,7 @@ void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv,
 	if (decNumberIsSpecial(v))
 		cmplx_NaN(sinv, cosv);
 	else {
-		mod2pi(&x, v, ctx);
+		bigmod(&x, v, &const_2PI, ctx);
 		sincosTaylor(&x, sinv, cosv, ctx);
 	}
 }
