@@ -175,7 +175,7 @@ void alpha_fromx(decimal64 *a, decimal64 *b, decContext *ctx64) {
 
 	getX(&x);
 	decNumberAbs(&y, &x, Ctx);
-	decNumberRemainder(&x, &y, &const_256, Ctx);
+	decNumberMod(&x, &y, &const_256, Ctx);
 	add_char(dn_to_int(&x, Ctx));
 }
 

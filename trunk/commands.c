@@ -200,7 +200,7 @@ const struct dyfunc dyfuncs[] = {
 	FUNC(OP_SUB,	&decNumberSubtract,	&cmplxSubtract,	&intSubtract,	"-")
 	FUNC(OP_MUL,	&decNumberMultiply,	&cmplxMultiply,	&intMultiply,	"\034")
 	FUNC(OP_DIV,	&decNumberDivide,	&cmplxDivide,	&intDivide,	"/")
-	FUNC(OP_MOD,	&decNumberRemainder,	NULL,		&intMod,	"MOD")
+	FUNC(OP_MOD,	&decNumberMod,		NULL,		&intMod,	"MOD")
 	FUNC(OP_LOGXY,	&decNumberLogxy,	&cmplxLogxy,	NULL,		"LOGx")
 	FUNC(OP_MIN,	&decNumberMin,		NULL,		&intMin,	"MIN")
 	FUNC(OP_MAX,	&decNumberMax,		NULL,		&intMax,	"MAX")

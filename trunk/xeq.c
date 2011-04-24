@@ -2559,7 +2559,7 @@ int is_even(const decNumber *x) {
 	if (decNumberIsSpecial(x))
 		return -1;
 	decNumberAbs(&z, x, Ctx);
-	decNumberRemainder(&y, &z, &const_2, Ctx);
+	decNumberMod(&y, &z, &const_2, Ctx);
 	if (decNumberIsZero(&y))
 		return 1;
 	decNumberCompare(&z, &y, &const_1, Ctx);

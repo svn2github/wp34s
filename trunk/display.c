@@ -527,7 +527,7 @@ static int check_special_dn(const decNumber *x, char *res) {
 static void hms_step(decNumber *res, decNumber *x, unsigned int *v) {
 	decNumber n;
 
-	decNumberRemainder(&n, x, &const_100, Ctx);
+	decNumberMod(&n, x, &const_100, Ctx);
 	*v = dn_to_int(&n, Ctx);
 	decNumberDivide(&n, x, &const_100, Ctx);
 	decNumberTrunc(res, &n, Ctx);
@@ -577,7 +577,7 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 		return;
 	}
 
-	decNumberRemainder(&x, &y, &const_9000, Ctx);
+	decNumberMod(&x, &y, &const_9000, Ctx);
 	decNumberAbs(&a, &y, Ctx);
 	if (decNumberIsNegative(&x)) {
 		if (res != NULL)

@@ -325,7 +325,7 @@ static void dn_gcd(decNumber *r, const decNumber *x, const decNumber *y, decCont
 	decNumberCopy(r, x);
 	while (! decNumberIsZero(&b)) {
 		decNumberCopy(&t, &b);
-		decNumberRemainder(&b, r, &t, ctx);
+		decNumberMod(&b, r, &t, ctx);
 		decNumberCopy(r, &t);
 	}
 }
@@ -575,7 +575,7 @@ decNumber *decNumberPow_1(decNumber *r, const decNumber *x, decContext *ctx) {
 		return decNumberCopy(r, &const_1);
 	if (even == 0)
 		return decNumberCopy(r, &const__1);
-	decNumberRemainder(&u, x, &const_2, ctx);
+	decNumberMod(&u, x, &const_2, ctx);
 	decNumberMultiply(&t, &u, &const_PI, ctx);
 	sincosTaylor(&t, NULL, r, ctx);
 	return r;
@@ -694,7 +694,7 @@ decNumber *decNumberCubeRoot(decNumber *r, const decNumber *x, decContext *ctx) 
 }
 
 
-static void bigmod(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
+decNumber *decNumberMod(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
 	/* Declare a structure large enough to hold a really long number.
 	 * This structure is likely to be larger than is required.
 	 */
@@ -708,7 +708,7 @@ static void bigmod(decNumber *res, const decNumber *x, const decNumber *y, decCo
 	big.digits = MOD_DIGITS;
 
 	decNumberRemainder(&out.n, x, y, &big);
-	decNumberPlus(res, &out.n, ctx);
+	return decNumberPlus(res, &out.n, ctx);
 }
 
 
@@ -802,10 +802,10 @@ static int cvt_2rad(decNumber *res, const decNumber *x,
 
 	switch (get_trig_mode()) {
 	case TRIG_RAD:
-		bigmod(res, x, &const_2PI, ctx);
+		decNumberMod(res, x, &const_2PI, ctx);
 		break;
 	case TRIG_DEG:
-		bigmod(&fm, x, &const_360, ctx);
+		decNumberMod(&fm, x, &const_360, ctx);
                 if (decNumberIsNegative(&fm))
                     decNumberAdd(&fm, &fm, &const_360, ctx);
 		if (r0 != NULL && right_angle(res, &fm, &const_90, r0, r1, r2, r3, ctx))
@@ -813,7 +813,7 @@ static int cvt_2rad(decNumber *res, const decNumber *x,
 		decNumberD2R(res, &fm, ctx);
 		break;
 	case TRIG_GRAD:
-		bigmod(&fm, x, &const_400, ctx);
+		decNumberMod(&fm, x, &const_400, ctx);
                 if (decNumberIsNegative(&fm))
                     decNumberAdd(&fm, &fm, &const_400, ctx);
 		if (r0 != NULL && right_angle(res, &fm, &const_100, r0, r1, r2, r3, ctx))
@@ -844,7 +844,7 @@ void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv,
 	if (decNumberIsSpecial(v))
 		cmplx_NaN(sinv, cosv);
 	else {
-		bigmod(&x, v, &const_2PI, ctx);
+		decNumberMod(&x, v, &const_2PI, ctx);
 		sincosTaylor(&x, sinv, cosv, ctx);
 	}
 }
@@ -1549,7 +1549,7 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin, decContext *ctx)
 	// Finally invert if we started with a negative argument
 	if (reflec) {
 		// figure out xin * PI mod 2PI
-		decNumberRemainder(&s, xin, &const_2, ctx);
+		decNumberMod(&s, xin, &const_2, ctx);
 		decNumberMultiply(&t, &const_PI, &s, ctx);
 		sincosTaylor(&t, &s, &u, ctx);
 		decNumberMultiply(&u, &s, res, ctx);
@@ -1586,7 +1586,7 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin, decContext *ct
 	// Finally invert if we started with a negative argument
 	if (reflec) {
 		// Figure out S * PI mod 2PI
-		decNumberRemainder(&u, &s, &const_2, ctx);
+		decNumberMod(&u, &s, &const_2, ctx);
 		decNumberMultiply(&t, &const_PI, &u, ctx);
 		sincosTaylor(&t, &s, &u, ctx);
 		decNumberDivide(&u, &const_PI, &s, ctx);
@@ -1760,7 +1760,7 @@ decNumber *decNumberZeta(decNumber *res, const decNumber *xin, decContext *ctx) 
 		reflec = 1;
 		decNumberSubtract(&x, &const_1, xin, ctx);
 		// Figure out xin * PI / 2 mod 2PI
-		decNumberRemainder(&s, xin, &const_4, ctx);
+		decNumberMod(&s, xin, &const_4, ctx);
 		decNumberMultiply(&u, &const_PIon2, &s, ctx);
 		sincosTaylor(&u, &s, res, ctx);
 		decNumberPower(res, &const_2, xin, ctx);
