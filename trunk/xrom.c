@@ -46,6 +46,7 @@
 // Multiword commands
 #define DLBLP(a, b, c)	xMULTI(LBLP, a, b, c)
 #define DXEQ(a, b, c)	xMULTI(XEQ, a, b, c)
+#define DLBL(a, b, c)	xMULTI(LBL, a, b, c)
 
 // Commands that take an argument
 #define ERROR(n)	xRARG(ERROR, n)
@@ -767,14 +768,14 @@ const s_opcode xrom[] = {
 
 	LBL(5)				// Determine our default h
 		STO(X)
-		DLBLP('\243', 'X', 0)
-		SKIP(3)
-		DOT
-		DIG(1)			// default h = 0.1
-		SKIP(2)
 		FILL
 		DXEQ('\243', 'X', 0)	// User supplied dX
 		STO(H)
+		RTN
+
+	DLBL('\243', 'X', 0)
+		DOT
+		DIG(1)			// default h = 0.1
 		RTN
 
 	LBL(8)				// Four point estimate from registers

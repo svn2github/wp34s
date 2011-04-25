@@ -1421,9 +1421,16 @@ void cmdmultilblp(const opcode o, enum multiops mopr) {
 	fin_tst(lbl != 0);
 }
 
+#include <stdio.h>
 void cmdmultigto(const opcode o, enum multiops mopr) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	unsigned int lbl = find_opcode_from(0, dest, 0);
+	unsigned int lbl = find_opcode_from(0, dest, 1);
+
+	if (lbl == 0)
+		lbl = find_opcode_from(addrXROM(0), dest, 1);
+	if (lbl == 0)
+		err(ERR_NO_LBL);
+
 	cmdgtocommon(mopr != DBL_GTO, lbl);
 }
 
