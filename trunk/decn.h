@@ -46,6 +46,7 @@ extern int relative_error(const decNumber *x, const decNumber *y, const decNumbe
 extern decNumber *decNumberMAdd(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx);
 
 extern decNumber *decNumberMod(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
+extern decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
 
 extern decNumber *decNumberRnd(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *decNumberRecip(decNumber *r, const decNumber *x, decContext *ctx);

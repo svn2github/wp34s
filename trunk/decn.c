@@ -48,7 +48,9 @@ static void dump1(const decNumber *a, const char *msg) {
 #endif
 
 
-#define MOD_DIGITS  450
+#define MOD_DIGITS	450		/* Big enough for 1e384 mod small integer */
+#define BIGMOD_DIGITS	820		/* Big enough for maxreal mod minreal */
+
 
 /* Forward declaration */
 static void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c, decContext *ctx);
@@ -706,6 +708,24 @@ decNumber *decNumberMod(decNumber *res, const decNumber *x, const decNumber *y, 
 	decContext big;
 	big = *ctx;
 	big.digits = MOD_DIGITS;
+
+	decNumberRemainder(&out.n, x, y, &big);
+	return decNumberPlus(res, &out.n, ctx);
+}
+
+
+decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
+	/* Declare a structure large enough to hold a really long number.
+	 * This structure is likely to be larger than is required.
+	 */
+	struct {
+		decNumber n;
+		decNumberUnit extra[((BIGMOD_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
+	} out;
+
+	decContext big;
+	big = *ctx;
+	big.digits = BIGMOD_DIGITS;
 
 	decNumberRemainder(&out.n, x, y, &big);
 	return decNumberPlus(res, &out.n, ctx);
