@@ -1468,10 +1468,6 @@ void multixromarg(const opcode o, enum multiops mopr) {
 	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), lbl);
 }
 
-void xrom_tvm(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
-	do_xrom(ENTRY_TVM);
-}
-
 void xrom_quad(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	do_xrom(ENTRY_QUAD);
 }

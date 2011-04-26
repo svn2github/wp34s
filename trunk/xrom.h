@@ -28,8 +28,7 @@
 #define ENTRY_2DERIV	95
 #define ENTRY_INTEGRATE	94
 
-#define ENTRY_TVM	89
-#define ENTRY_QUAD	88
+#define ENTRY_QUAD	89
 
 
 /* Labels - global */

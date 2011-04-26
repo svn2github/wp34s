@@ -859,7 +859,7 @@ const s_opcode xrom[] = {
 
 #define F_BEG	80
 
-	LBL(ENTRY_TVM)
+	DLBL('T', 'V', 'M')
 		RCL(R_PMT)
 		RCL(R_PV)
 		RCL_PL(R_FV)

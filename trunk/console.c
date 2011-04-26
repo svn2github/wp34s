@@ -250,7 +250,6 @@ static const struct {
 	XL(ENTRY_INTEGRATE, "Entry: INTEGRATE")
 	XL(ENTRY_DERIV, "Entry: DERIVATIVE")
 	XL(ENTRY_2DERIV, "Entry: SECOND DERIVATIVE")
-	XL(ENTRY_TVM, "Entry: TVM")
 	XL(ENTRY_QUAD, "Entry: QUADRATIC SOLVER")
 	XL(XROM_CHECK, "Internal: Common entry code")
 	XL(XROM_EXIT, "Internal: Normal exit code")

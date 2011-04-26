@@ -134,7 +134,6 @@ static s_opcode catalogue[] = {
 	DYA(OP_BSKN,		"Kn")
 	DYA(OP_BSYN,		"Yn")
 #endif
-	NILIC(OP_TVM,		"TVM")
 	NILIC(OP_QUAD,		"QUAD")
 
 	DYA(OP_LEGENDRE_PN,   "P\275")

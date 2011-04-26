@@ -436,7 +436,7 @@ enum {
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 
-	OP_TVM, OP_QUAD,
+	OP_QUAD,
 	OP_TICKS, OP_VOLTAGE,
 };
 
