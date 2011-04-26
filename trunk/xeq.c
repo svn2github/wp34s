@@ -1436,6 +1436,10 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 
 	if (lbl == 0)
 		err(ERR_NO_LBL);
+	if (!running() && isXROM(lbl)) {
+		lbl = 0;
+		err(ERR_RANGE);
+	}
 
 	cmdgtocommon(mopr != DBL_GTO, lbl);
 }
