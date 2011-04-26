@@ -1348,9 +1348,10 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 	unsigned int z = pc;
 	unsigned int max;
 	unsigned int min;
+	unsigned int xrombase = addrXROM(0);
 
 	if (isXROM(z)) {
-		min = addrXROM(0);
+		min = xrombase;
 		max = addrXROM(xrom_size);
 	} else {
 		if (z == 0)
@@ -1362,8 +1363,11 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 	while (z < max && z != 0)
 		if (getprog(z) == l)
 			return z;
-		else
+		else {
 			z = inc(z);
+			if (z == xrombase)
+				break;
+		}
 	for (z = min; z<pc; z = inc(z))
 		if (getprog(z) == l)
 			return z;
@@ -1415,18 +1419,21 @@ void cmdgto(unsigned int arg, enum rarg op) {
 	cmdgtocommon(op != RARG_GTO, find_label_from(state_pc(), arg, 0));
 }
 
-void cmdmultilblp(const opcode o, enum multiops mopr) {
+static unsigned int findmultilbl(const opcode o) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
 	unsigned int lbl = find_opcode_from(0, dest, 1);
-	fin_tst(lbl != 0);
+	if (lbl == 0)
+		lbl = find_opcode_from(addrXROM(0), dest, 1);
+	return lbl;
+}
+
+void cmdmultilblp(const opcode o, enum multiops mopr) {
+	fin_tst(findmultilbl(o) != 0);
 }
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
-	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	unsigned int lbl = find_opcode_from(0, dest, 1);
+	unsigned int lbl = findmultilbl(o);
 
-	if (lbl == 0)
-		lbl = find_opcode_from(addrXROM(0), dest, 1);
 	if (lbl == 0)
 		err(ERR_NO_LBL);
 
