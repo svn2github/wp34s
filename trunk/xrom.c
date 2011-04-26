@@ -144,8 +144,9 @@
 #define CENTER		NILADIC(CENTER)
 #define DROP		NILADIC(DROP)
 
-// Metric/imperial conversions
-#define MBAR2PA		xCONV(Pa_mbar, 1)
+// Metric/imperial conversions (repurposed)
+#define MUL100	xCONV(Pa_mbar, 1)
+#define DIV100	xCONV(Pa_mbar, 0)
 
 // Other short cuts
 #define ENTRY		GSB(XROM_CHECK)
@@ -664,7 +665,7 @@ const s_opcode xrom[] = {
 		DIG(2)
 		DIG(5)
 		DIG(2)
-		MBAR2PA			// * 100 = 25200
+		MUL100			// * 100 = 25200
 		RCL_MU(H)
 		RCL_MU(H)
 		DIVISION
@@ -708,10 +709,10 @@ const s_opcode xrom[] = {
 		SWAP(E2)		// Six point stimate in E2 & start ten point estimate
 		DIG(2)
 		DIG(1)
-		MBAR2PA			// * 100 = 2100
+		MUL100			// * 100 = 2100
 		TIMES
 		DIG(6)
-		MBAR2PA			// * 100 = 600
+		MUL100			// * 100 = 600
 		RCL_MU(E1)
 		MINUS
 		DIG(1)
