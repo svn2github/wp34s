@@ -176,3 +176,51 @@ if signflag then z = -z
 return z
 
 
+
+
+
+
+
+
+Student's T estimate:
+
+The second important distribution we should take a closer look at now is
+Student's t-distribution. I have been experimenting a while with several
+approaches, and I finally got a result that I think is fine as a first
+estimate. Use at your own risk, expect any error you can imagine, but
+try this:
+
+    * For df = 1 or 2 degrees of freedom the quantile can be determined
+    directly.
+      This also is the case for n = 4, it only requires a bit care at
+      very low t (close to zero) or p close to 0,5.
+
+    * For other degrees of freedom, i.e. df >= 3, the following method
+    provides a nice first estimate. As usual, p is assumed to be less
+    than 0,5 and t > 0.
+
+         if -ln(p) < 1,7 * df then
+             x = guess_normal(p)
+             u = (x^3 + x) / 4 / df
+             v = (x^5 / 12 + x^3 / 4) / df^2
+             t = x + u + v
+         else
+             u = p * df * sqrt(Pi / (df/2 - 1/4))
+             t = sqrt(df) / u^(1/df)
+         end if
+
+Here guess_normal is the well-known first estimate of the normal quantile
+(with the slight modification 1/u^2 instead of 0,2/u, as mentioned
+earlier). According to my results this estimate for t differs from the
+exact value by something like typically +/- 1...2%, in some cases a
+bit more.
+
+This single estimate now can be used for a Newton-iteration - the first
+derivative simply is the Student PDF, so we get
+
+                   tCDF(t) - p
+   t_new  =  t  -  -----------
+                     tPDF(t)
+
+If two guesses are required (e.g. for the 34s solver) we can simply use
+1.1*t and 0.9*t (or something similar).
