@@ -2118,6 +2118,11 @@ static void digit(unsigned int c) {
 }
 
 
+void set_entry() {
+	State.entryp = 1;
+}
+
+
 /* Decode and process the specials.  These are niladic functions and
  * commands with non-standard stack operation.
  */
@@ -2131,6 +2136,7 @@ static void specials(const opcode op) {
 	case OP_9:	case OP_A:	case OP_B:
 	case OP_C:	case OP_D:	case OP_E:
 	case OP_F:
+		set_entry();
 		digit(opm - OP_0);
 		break;
 
@@ -2142,6 +2148,7 @@ static void specials(const opcode op) {
 				digit(0);
 			State.cmdlinedot++;
 			Cmdline[State.eol++] = '.';
+			set_entry();
 		}
 		break;
 
@@ -2153,6 +2160,7 @@ static void specials(const opcode op) {
 				digit(1);
 			State.cmdlineeex = State.eol;
 			Cmdline[State.eol++] = 'E';
+			set_entry();
 		}
 		break;
 
@@ -2695,6 +2703,9 @@ void isSpecial(decimal64 *a, decimal64 *b, decContext *nulc) {
 	fin_tst(!is_intmode() && decNumberIsSpecial(&x));
 }
 
+void op_entryp(decimal64 *a, decimal64 *b, decContext *nulc) {
+	fin_tst(State.entryp);
+}
 
 /* Bulk register operations */
 static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d) {
@@ -3044,7 +3055,7 @@ void xeqone(char *tracebuf) {
 	unsigned int trace = State.trace;
 #endif
 
-	set_running_on();
+	set_running_on_sst();
 #ifndef REALBUILD
 	State.trace = 0;
 #endif
@@ -3056,7 +3067,7 @@ void xeqone(char *tracebuf) {
 
 	xeq_xrom();
 
-	set_running_off();
+	set_running_off_sst();
 #ifndef REALBUILD
 	State.trace = trace;
 #endif

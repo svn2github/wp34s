@@ -353,6 +353,7 @@ static s_opcode test_catalogue[] = {
 //	RARGCMD(RARG_TEST_ZAPX,	"cx~?")
 
 	RARGCMD(RARG_LBLP,	"LBL?")
+	NILIC(OP_ENTRYP,	"ENTRY?")
 };
 
 static s_opcode prog_catalogue[] = {

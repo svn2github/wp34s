@@ -434,6 +434,7 @@ enum {
 	OP_GSBuser,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
+	OP_ENTRYP,
 
 	OP_TICKS, OP_VOLTAGE,
 	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND,
@@ -705,6 +706,7 @@ struct _state {
 
 	unsigned int contrast : 4;	// Display contrast
 	unsigned int alpha_pos : 3;	// Display position inside alpha
+	unsigned int entryp : 1;	// Has the user entered something since the last program stop
 
 #ifndef REALBUILD
 	unsigned int trace : 1;
@@ -838,6 +840,7 @@ extern void xeq_init(void);
 extern void xeq_init_contexts(void);
 extern void init_34s(void);
 extern void process_keycode(int);
+extern void set_entry(void);
 
 extern unsigned int state_pc(void);
 extern void set_pc(unsigned int);
@@ -1027,6 +1030,7 @@ extern void XisPrime(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void isSpecial(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void isNan(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void isInfinite(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_entryp(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_regclr(decimal64 *a, decimal64 *b, decContext *nulc);

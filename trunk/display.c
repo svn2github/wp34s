@@ -1346,9 +1346,18 @@ static void set_status_right(const char *str) {
 
 //#pragma GCC optimize "s"
 
-void set_running_off() {
+void set_running_off_sst() {
 	State.state_running = 0;
 	State.pause = 0;
+}
+
+void set_running_on_sst() {
+	State.state_running = 1;
+}
+
+void set_running_off() {
+	set_running_off_sst();
+	State.entryp = 0;
 }
 
 void set_running_on() {
@@ -1361,6 +1370,6 @@ void set_running_on() {
 	set_digits_string("running", 0);
 #endif
 	finish_display();
-	State.state_running = 1;
+	set_running_on_sst();
 }
 

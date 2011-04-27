@@ -72,6 +72,7 @@ void alpha_view(decimal64 *a, decimal64 *b, decContext *nulc) {
  */
 void cmdalpha(unsigned int arg, enum rarg op) {
 	add_char(arg & 0xff);
+	set_entry();
 }
 
 
