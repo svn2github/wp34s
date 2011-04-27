@@ -434,6 +434,7 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_SETUK,		"SETUK")
 	NILIC(OP_SETUSA,	"SETUSA")
 	NILIC(OP_SETIND,	"SETIND")
+	NILIC(OP_SETCHN,	"SETCHN")
 };
 
 static s_opcode alpha_catalogue[] = {

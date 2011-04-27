@@ -437,7 +437,7 @@ enum {
 	OP_ENTRYP,
 
 	OP_TICKS, OP_VOLTAGE,
-	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND,
+	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN,
 
 	OP_QUAD,
 };
@@ -572,7 +572,7 @@ extern void set_trig_mode(enum trig_modes m);
 
 // Date modes
 enum date_modes {
-	DATE_YMD=0,	DATE_DMY,	DATE_MDY
+	DATE_DMY=0,	DATE_YMD,	DATE_MDY
 };
 
 // Fraction denominator modes
@@ -1009,6 +1009,7 @@ extern void op_seteur(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void op_setuk(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void op_setusa(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void op_setind(decimal64 *a, decimal64 *nul, decContext *ctx);
+extern void op_setchn(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void date_dmy(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void date_mdy(decimal64 *a, decimal64 *nul, decContext *ctx);

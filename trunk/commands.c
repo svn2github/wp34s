@@ -440,6 +440,7 @@ const struct niladic niladics[] = {
 	FUNC0(OP_SETUK,		&op_setuk,		"SETUK")
 	FUNC0(OP_SETUSA,	&op_setusa,		"SETUSA")
 	FUNC0(OP_SETIND,	&op_setind,		"SETIND")
+	FUNC0(OP_SETCHN,	&op_setchn,		"SETCHN")
 
 	FUNC0(OP_QUAD,		&xrom_quad,		"SLVQ")
 #undef FUNC0

@@ -2443,8 +2443,8 @@ enum {
 	LOCALE_TIME_24=2,	LOCALE_TIME_12=0,
 	LOCALE_THOUS_OFF=4,	LOCALE_THOUS_ON=0,
 	LOCALE_JG1582=8,	LOCALE_JG1752=0,
-	LOCALE_DATE_MDY=16,	LOCALE_DATE_DMY=0
-	//LOCALE_DATE_YMD=32,
+	LOCALE_DATE_MDY=16,	LOCALE_DATE_DMY=0,
+	LOCALE_DATE_YMD=32,
 };
 
 static void set_locale(int flags) {
@@ -2461,7 +2461,7 @@ static void set_locale(int flags) {
 	else					jg1752(NULL,NULL,NULL);
 
 	if (flags & LOCALE_DATE_MDY)		date_mdy(NULL,NULL,NULL);
-	//else if (flags & LOCALE_DATE_YMD)	date_ymd(NULL,NULL,NULL);
+	else if (flags & LOCALE_DATE_YMD)	date_ymd(NULL,NULL,NULL);
 	else					date_dmy(NULL,NULL,NULL);
 }
 
@@ -2496,6 +2496,15 @@ void op_setind(decimal64 *a, decimal64 *nul, decContext *ctx) {
 			LOCALE_JG1752 |
 			LOCALE_DATE_DMY);
 }
+
+void op_setchn(decimal64 *a, decimal64 *nul, decContext *ctx) {
+	set_locale(	LOCALE_RADIX_DOT |
+			LOCALE_THOUS_OFF |
+			LOCALE_TIME_24 |
+			LOCALE_JG1752 |
+			LOCALE_DATE_YMD);
+}
+
 
 void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx) {
 	State.date_mode = DATE_YMD;

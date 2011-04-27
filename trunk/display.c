@@ -294,7 +294,8 @@ static void annunicators(void) {
 		*p++ = ':';
 	} else if (!is_intmode()) {
 		switch (State.date_mode) {
-		case DATE_DMY:	q = "d.my\006\006";	break;
+		//case DATE_DMY:	q = "d.my\006\006";	break;
+		case DATE_YMD:	q = "y.md\006\006";	break;
 		case DATE_MDY:	q = "m.dy\006\006";	break;
 		default:	q = "    \006";		break;
 		}
