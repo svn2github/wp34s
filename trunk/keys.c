@@ -327,11 +327,7 @@ static int process_f_shifted(const keycode c) {
 	case K_CMPLX:
 		return OP_NIL | OP_FRACPROPER;
 
-	case K10:
-		if (State.runmode)
-			State.hms = 1;
-		process_cmdline_set_lift();
-		break;
+	case K10:	return OP_NIL | OP_HMS;
 	case K11:	return OP_NIL | OP_FLOAT;
 	case K12:	return OP_NIL | OP_RANDOM;
 

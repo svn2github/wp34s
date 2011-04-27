@@ -2018,6 +2018,12 @@ void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
 		decimal64FromNumber(&regX, &x, Ctx64);
 	}
 	State.fract = 0;
+        State.hms = 0;
+}
+
+void op_hms(decimal64 *a, decimal64 *b, decContext *nulc) {
+	op_float(a, b, nulc);
+	State.hms = 1;
 }
 
 void op_fract(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {

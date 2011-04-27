@@ -419,7 +419,7 @@ enum {
 	OP_RADDOT, OP_RADCOM, OP_THOUS_ON, OP_THOUS_OFF,
 	OP_FIXSCI, OP_FIXENG,
 	OP_2COMP, OP_1COMP, OP_UNSIGNED, OP_SIGNMANT,
-	OP_FLOAT, OP_FRACT,
+	OP_FLOAT, OP_HMS, OP_FRACT,
 	OP_LEAD0, OP_TRIM0,
 	OP_LJ, OP_RJ,
 	OP_DBL_MUL,
@@ -983,6 +983,7 @@ extern void op_denany(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_denfix(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_denfac(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_float(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_hms(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_fract(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
 extern void op_fracimp(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_fracpro(decimal64 *a, decimal64 *b, decContext *nulc);
