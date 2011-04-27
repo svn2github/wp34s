@@ -103,7 +103,6 @@
 #define INFINITY	xCONST(INF)
 
 // And the useful niladic routines
-#define LASTX		NILADIC(LASTX)
 #define RTN		NILADIC(RTN)
 #define RTNp1		NILADIC(RTNp1)
 #define GSBUSER		NILADIC(GSBuser)

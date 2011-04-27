@@ -394,7 +394,6 @@ enum {
 enum {
 	OP_NOP=0, OP_VERSION, OP_OFF,
 	OP_STKSIZE, OP_STK4, OP_STK8, OP_INTSIZE,
-	OP_LASTX, OP_LASTXY,
 	OP_SWAP, OP_CSWAP, OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
 	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPXY,
 	OP_sigmaX, OP_sigmaY, OP_sigmaX2, OP_sigmaY2, OP_sigma_XY, OP_sigmaX2Y,
@@ -937,8 +936,6 @@ extern void xeq_bst(char *tracebuf);
 extern void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void cmd_off(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void cmderr(unsigned int arg, enum rarg op);
-extern void lastX(decimal64 *x, decimal64 *nul, decContext *ctx64);
-extern void lastXY(decimal64 *x, decimal64 *nul, decContext *ctx64);
 extern void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);
 extern void swap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64);

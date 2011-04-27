@@ -243,19 +243,8 @@ static void lower2(void) {
 }
 
 
-void lastX(decimal64 *x, decimal64 *nul, decContext *ctx64) {
-	*x = regL;
-}
-
 void setlastX(void) {
 	regL = regX;
-}
-
-
-
-void lastXY(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	*x = regL;
-	*y = regI;
 }
 
 static void setlastXY(void) {

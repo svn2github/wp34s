@@ -302,8 +302,6 @@ const struct niladic niladics[] = {
 	FUNC0(OP_STK4,		&set_stack_size4,	"SSIZE4")
 	FUNC0(OP_STK8,		&set_stack_size8,	"SSIZE8")
 	FUNC1(OP_INTSIZE,	&get_word_size,		"WSIZE?")
-	FUNC1(OP_LASTX,		&lastX,			"LASTx")
-	FUNC2(OP_LASTXY,	&lastXY,		"\024LASTx")
 	FUNC0(OP_SWAP,		&swap,			"x\027y")
 	FUNC0(OP_CSWAP,		&cpx_swap,		"\024x\027y")
 	FUNC0(OP_RDOWN,		&roll_down,		"R\017")
