@@ -1248,8 +1248,10 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *qf_F(decNumber *r, const decNumber *x, decContext *ctx) {
+	if (decNumberIsZero(x))
+		return decNumberZero(r);
 	// MORE: provide reasonable initial estaimtes
-	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_F);
+	return qf_search(r, x, ctx, 1, &const_1e_10, &const_20, &cdf_F);
 }
 
 
