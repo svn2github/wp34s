@@ -910,7 +910,7 @@ static decNumber *qf_search(decNumber *r,
 				const decNumber *samp_low, const decNumber *samp_high,
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
 #ifndef TINY_BUILD
-	decNumber t, u, v, tv, uv, vv, a;
+	decNumber t, u, v, tv, uv, vv, a, oldv;
 	unsigned int flags = 0;
 
 	if (check_probability(r, x, ctx, min_zero))
@@ -930,6 +930,7 @@ static decNumber *qf_search(decNumber *r,
 		return decNumberCopy(r, &u);
 
 	solver_init(&v, &t, &u, &tv, &uv, ctx, &flags);
+	set_NaN(&oldv);
 	do {
 		// If we got below the minimum, do a bisection step instead
 		if (min_zero && dn_le0(&v)) {
@@ -938,6 +939,9 @@ static decNumber *qf_search(decNumber *r,
 		}
 		if (qf_eval(&vv, &v, x, ctx, f) == 0)
 			break;
+		if (relative_error(&v, &oldv, &const_1e_24, ctx))
+			break;
+		decNumberCopy(&oldv, &v);
 	} while (solver_step(&t, &u, &v, &tv, &uv, &vv, ctx, &flags) == 0);
 	return decNumberCopy(r, &v);
 #else

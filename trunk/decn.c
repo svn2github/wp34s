@@ -206,12 +206,12 @@ void dn_dec(decNumber *x, decContext *ctx) {
 int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol, decContext *ctx) {
 	decNumber a, b;
 
-	decNumberSubtract(&a, x, y, ctx);
 	if (decNumberIsZero(x)) {
 		if (decNumberIsZero(y))
 			return 1;
 		x = y;
 	}
+	decNumberSubtract(&a, x, y, ctx);
 	decNumberDivide(&b, &a, x, ctx);
 	decNumberAbs(&a, &b, ctx);
 	decNumberCompare(&a, &a, tol, ctx);
