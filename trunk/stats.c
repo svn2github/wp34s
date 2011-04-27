@@ -1143,17 +1143,24 @@ decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 #endif
 }
 
+static int t_param(decNumber *r, decNumber *v, const decNumber *x, decContext *ctx) {
+	dist_one_param(v);
+	if (param_positive(r, v))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	return 0;
+}
+
 
 decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber t, u, z, v;
 
-	dist_one_param(&v);
-	if (param_positive(r, &v))
+	if (t_param(r, &v, x, ctx))
 		return r;
-	if (decNumberIsNaN(x)) {
-		return set_NaN(r);
-	}
 	if (decNumberIsInfinite(x)) {
 		if (decNumberIsNegative(x))
 			return decNumberZero(r);
@@ -1179,12 +1186,8 @@ decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber a, b, c, d, v;
 
-	dist_one_param(&v);
-	if (param_positive(r, &v))
+	if (t_param(r, &v, x, ctx))
 		return r;
-	if (decNumberIsNaN(x)) {
-		return set_NaN(r);
-	}
 	decNumberSubtract(&b, &const_0_5, x, ctx);
 	if (decNumberIsZero(&b)) {
 		return decNumberZero(r);
@@ -1217,8 +1220,7 @@ decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 	return NULL;
 #endif
 }
-
-		
+	
 decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber t, u, w, v1, v2;
