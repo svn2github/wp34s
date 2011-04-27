@@ -436,8 +436,10 @@ enum {
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 
-	OP_QUAD,
 	OP_TICKS, OP_VOLTAGE,
+	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND,
+
+	OP_QUAD,
 };
 
 
@@ -1003,6 +1005,10 @@ extern void op_1comp(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_unsigned(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_signmant(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void set_int_base(unsigned int arg, enum rarg op);
+extern void op_seteur(decimal64 *a, decimal64 *nul, decContext *ctx);
+extern void op_setuk(decimal64 *a, decimal64 *nul, decContext *ctx);
+extern void op_setusa(decimal64 *a, decimal64 *nul, decContext *ctx);
+extern void op_setind(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void date_dmy(decimal64 *a, decimal64 *nul, decContext *ctx);
 extern void date_mdy(decimal64 *a, decimal64 *nul, decContext *ctx);

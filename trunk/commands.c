@@ -434,9 +434,15 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XisEVEN,	&XisEven,		"EVEN?")
 	FUNC0(OP_XisODD,	&XisOdd,		"ODD?")
 
-	FUNC0(OP_QUAD,		&xrom_quad,		"SLVQ")
 	FUNC1(OP_TICKS,		&op_ticks,		"TICKS")
 	FUNC1(OP_VOLTAGE,	&op_voltage,		"BATT")
+
+	FUNC0(OP_SETEUR,	&op_seteur,		"SETEUR")
+	FUNC0(OP_SETUK,		&op_setuk,		"SETUK")
+	FUNC0(OP_SETUSA,	&op_setusa,		"SETUSA")
+	FUNC0(OP_SETIND,	&op_setind,		"SETIND")
+
+	FUNC0(OP_QUAD,		&xrom_quad,		"SLVQ")
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2

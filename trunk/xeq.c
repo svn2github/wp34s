@@ -2440,6 +2440,66 @@ void set_int_base(unsigned int arg, enum rarg op) {
 		set_base(arg);
 }
 
+
+enum {
+	LOCALE_RADIX_COM=1,	LOCALE_RADIX_DOT=0,
+	LOCALE_TIME_24=2,	LOCALE_TIME_12=0,
+	LOCALE_THOUS_OFF=4,	LOCALE_THOUS_ON=0,
+	LOCALE_JG1582=8,	LOCALE_JG1752=0,
+	LOCALE_DATE_YMD=16,
+	LOCALE_DATE_DMY=32,	LOCALE_DATE_MDY=0
+};
+
+static void set_locale(int flags) {
+	if (flags & LOCALE_RADIX_COM)		op_radixcom(NULL,NULL,NULL);
+	else					op_radixdot(NULL,NULL,NULL);
+
+	if (flags & LOCALE_TIME_24)		time_24(NULL,NULL,NULL);
+	else					time_12(NULL,NULL,NULL);
+
+	if (flags & LOCALE_THOUS_OFF)		op_thousands_off(NULL,NULL,NULL);
+	else					op_thousands_on(NULL,NULL,NULL);
+
+	if (flags & LOCALE_JG1582)		jg1582(NULL,NULL,NULL);
+	else					jg1752(NULL,NULL,NULL);
+
+	if (flags & LOCALE_DATE_YMD)		date_ymd(NULL,NULL,NULL);
+	else if (flags & LOCALE_DATE_DMY)	date_dmy(NULL,NULL,NULL);
+	else					date_mdy(NULL,NULL,NULL);
+}
+
+void op_seteur(decimal64 *a, decimal64 *nul, decContext *ctx) {
+	set_locale(	LOCALE_RADIX_COM |
+			LOCALE_THOUS_ON |
+			LOCALE_TIME_24 |
+			LOCALE_JG1582 |
+			LOCALE_DATE_YMD);
+}
+
+void op_setuk(decimal64 *a, decimal64 *nul, decContext *ctx) {
+	set_locale(	LOCALE_RADIX_DOT |
+			LOCALE_THOUS_ON |
+			LOCALE_TIME_12 |
+			LOCALE_JG1752 |
+			LOCALE_DATE_DMY);
+}
+
+void op_setusa(decimal64 *a, decimal64 *nul, decContext *ctx) {
+	set_locale(	LOCALE_RADIX_DOT |
+			LOCALE_THOUS_ON |
+			LOCALE_TIME_12 |
+			LOCALE_JG1752 |
+			LOCALE_DATE_MDY);
+}
+
+void op_setind(decimal64 *a, decimal64 *nul, decContext *ctx) {
+	set_locale(	LOCALE_RADIX_DOT |
+			LOCALE_THOUS_OFF |
+			LOCALE_TIME_24 |
+			LOCALE_JG1752 |
+			LOCALE_DATE_YMD);
+}
+
 void date_ymd(decimal64 *a, decimal64 *nul, decContext *ctx) {
 	State.date_mode = DATE_YMD;
 }
