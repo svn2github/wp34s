@@ -435,8 +435,6 @@ const struct niladic niladics[] = {
 
 	FUNC1(OP_TICKS,		&op_ticks,		"TICKS")
 	FUNC1(OP_VOLTAGE,	&op_voltage,		"BATT")
-	FUNC1(OP_GETKEY,	&op_getkey,		"GETKEY")
-	FUNC0(OP_KEYP,		&op_keyp,		"KEY?")
 
 	FUNC0(OP_SETEUR,	&op_seteur,		"SETEUR")
 	FUNC0(OP_SETUK,		&op_setuk,		"SETUK")
@@ -576,6 +574,7 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_SOLVESTEP,	&solver,	TOPREALREG-10+1,	"SLVS")
 
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
+	CMD(RARG_KEY,		&op_keyp,	NUMREG,			"KEY?")
 
 #undef CMDnoI
 #undef CMDstk

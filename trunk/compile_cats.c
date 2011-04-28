@@ -354,7 +354,6 @@ static s_opcode test_catalogue[] = {
 
 	RARGCMD(RARG_LBLP,	"LBL?")
 	NILIC(OP_ENTRYP,	"ENTRY?")
-	NILIC(OP_KEYP,		"KEY?")
 };
 
 static s_opcode prog_catalogue[] = {
@@ -374,7 +373,7 @@ static s_opcode prog_catalogue[] = {
 	DYA(OP_HMSSUB,		"H.MS-")
 	RARGCMD(RARG_INC,	"INC")
 	RARGCMD(RARG_ISZ,	"ISZ")
-	NILIC(OP_GETKEY,	"GETKEY")
+	RARGCMD(RARG_KEY,	"KEY?")
 	NILIC(OP_NOP,		"NOP")
 	NILIC(OP_PROMPT,	"PROMPT")
 	NILIC(OP_REGCLR,	"R-CLR")

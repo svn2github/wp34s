@@ -436,7 +436,7 @@ enum {
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 	OP_ENTRYP,
 
-	OP_TICKS, OP_VOLTAGE, OP_GETKEY, OP_KEYP,
+	OP_TICKS, OP_VOLTAGE,
 	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN,
 
 	OP_QUAD,
@@ -497,7 +497,7 @@ enum rarg {
 
 	RARG_INISOLVE, RARG_SOLVESTEP,
 
-	RARG_PAUSE,
+	RARG_PAUSE, RARG_KEY,
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
@@ -1047,8 +1047,7 @@ extern void showlead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void op_ticks(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_voltage(decimal64 *a, decimal64 *b, decContext *nulc);
-extern void op_getkey(decimal64 *a, decimal64 *b, decContext *nulc);
-extern void op_keyp(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_keyp(unsigned int arg, enum rarg op);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx);

@@ -1301,11 +1301,13 @@ void op_voltage(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	}
 }
 
-void op_getkey(decimal64 *a, decimal64 *b, decContext *nulc) {
-	int k, s;
-
+/* Check if a keystroke is pending in the buffer, if so return it to the specified
+ * register, if not skip the next step.
+ */
+void op_keyp(unsigned int arg, enum rarg op) {
+	int cond = is_real_key_pressed();
 	if (is_real_key_pressed()) {
-		k = get_key();
+		int s, k = get_key();
 		if (k == K_HEARTBEAT) {
 			k = get_key();
 			put_key(K_HEARTBEAT);
@@ -1313,13 +1315,11 @@ void op_getkey(decimal64 *a, decimal64 *b, decContext *nulc) {
 		s = 0;
 		if (k == -1)
 			k = s = 1;
-	} else
-		k = s = 1;
-	put_int(k, s, a);
-}
-
-void op_keyp(decimal64 *a, decimal64 *b, decContext *nulc) {
-	fin_tst(is_real_key_pressed());
+		else
+			k += 7;		// adjust to 1,1 base position
+		reg_put_int(arg, k, s);
+	}
+	fin_tst(cond);
 }
 
 /* Save and restore the entire stack to sequential registers */
