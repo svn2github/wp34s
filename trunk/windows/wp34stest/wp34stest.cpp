@@ -18,6 +18,10 @@ void shutdown( void ) { exit( 0 ); }
 int is_key_pressed(void) { return 0; }
 void watchdog(void)  {}
 const char *get_revision( void ) { return "test"; }
+int is_real_key_pressed(void) { return 0; }
+int get_key(void) {return 0; }
+int put_key( int k ) {return k;}
+
 
 // we have one context and this points to it
 static decContext* Ctx;

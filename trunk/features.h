@@ -70,11 +70,11 @@
 //#define INCLUDE_EASTER
 
 // Include code to use a Ridder's method step after a bisection in the solver.
-// This increases code size and doesn't see to help the colver's convergence.
+// This increases code size and doesn't see to help the solver's convergence.
 //#define USE_RIDDERS
 
 // include code to find integer factors
-// #define INCLUDE_FACTOR
+//#define INCLUDE_FACTOR
 
 
 /*******************************************************************/

@@ -1544,23 +1544,8 @@ int isPrime(unsigned long long int p) {
 
 #ifndef TINY_BUILD
 
-#define MAX_TERMS       32
-static int dscanInit(unsigned long long int n, unsigned int d0, unsigned int ad[])
-{
-	/* initialise the coefficient array, given our starting divisor d0 */
-	unsigned long long int v = n;
-	int nd = 0;
-	while (v >= d0)
-	{
-		unsigned long long int q = v/d0;
-		unsigned int r = (unsigned int)(v - q*d0);
-		ad[nd++] = r;
-		if (nd == MAX_TERMS) return 0; // bail
-			v = q;
-	}
-	ad[nd++] = (int)v;
-	return nd;
-}
+// only need 8 terms for factors > 256
+#define MAX_TERMS       8
 
 static int dscanOdd(unsigned int d, unsigned int limit, int nd, unsigned int ad[MAX_TERMS])
 {
@@ -1604,7 +1589,12 @@ unsigned long long doFactor(unsigned long long n)
 	* on realbuild.
 	* 
 	* returns least prime factor or `n' if prime.
-	* returns 0 if failed to find factor.
+	* returns 0 if failed to find factor. 
+        *
+        * we will only fail if we have a 14 digit number with a factor > dmax (1e7). 
+        * since we have a 12 digit display, this ought to be good, but actually more digits are
+        * held internally. for example 10000019*1000079 displays as scientific, but actually all
+        * the digits are held. this example will return 0.
 	*/
 
 	unsigned int d;
@@ -1613,12 +1603,9 @@ unsigned long long doFactor(unsigned long long n)
 	unsigned int limit;
 
 	unsigned int ad[MAX_TERMS];
-	int nd = 0;
-	int i;
-
-	for (i=0; i<MAX_TERMS; i++)
-		ad[i] = 0;
-
+	int nd; 
+	int i, j;
+        unsigned char* cp;
 
 	// eliminate small cases < 257
 	if (n <= 2) return n;
@@ -1629,30 +1616,51 @@ unsigned long long doFactor(unsigned long long n)
 	if (n <= QUICK_CHECK)		// the number is prime
 		return n;
 
-	d = 7;
 	rt = (unsigned int)intSqrt(n);
 	limit = rt;
 	if (limit > dmax)
 		limit = dmax; // max time about 30 seconds
 
-	nd = dscanInit(n, d, ad);
-	if (nd)
-	{
-		// find factor or return 0 if limit reached
-		d = dscanOdd(d, limit, nd, ad);
-		if (!d)
-		{
-			// no factor found, if limit reached, we've failed
-			// otherwise `n' is prime
-			if (limit == dmax) 
-				n = 0; // fail
-		}
-		else n = d; // is factor
-	}
-	else 
-		n = 0; // fail
+        // starting factor for search
+	d = 257;
 
-	return n;
+        // since we've eliminated all factors < 257, convert
+        // the initial number to bytes to get base 256
+	// XX ASSUME little endian here.
+        cp = (unsigned char*)&n;
+        nd = 0;
+        for (i = 0; i < sizeof(n); ++i)
+            if ((ad[i] = *cp++) != 0) ++nd;
+
+        // and slide to 257
+        for (i = nd-2; i >= 0; --i)
+        {
+            for (j = i; j < nd-1; ++j)
+            {
+                if ((ad[j] -= ad[j+1]) < 0)
+                {
+                    ad[j] += d;
+                    --ad[j+1];
+                }
+            }
+            if (!ad[j]) --nd;
+        }
+        
+        if (ad[0])
+        {
+            // find factor or return 0 if limit reached
+            d = dscanOdd(d, limit, nd, ad);
+            if (!d)
+            {
+                // no factor found, if limit reached, we've failed
+                // otherwise `n' is prime
+                if (limit == dmax) 
+                    n = 0; // fail
+            }
+        }
+
+        if (d) n = d;
+        return n;
 #else
 	return 0;
 #endif
