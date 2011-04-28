@@ -2317,20 +2317,18 @@ void op_fixeng(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 
 
 void op_pause(unsigned int arg, enum rarg op) {
-	if (running()) {
-		display();
+	display();
 #if defined(REALBUILD) || defined(WINGUI)
-		// decremented in the low level heartbeat
-		State.pause = arg;
+	// decremented in the low level heartbeat
+	State.pause = arg;
 #else
 #ifdef WIN32
 #pragma warning(disable:4996)
-		sleep(arg/10);
+	sleep(arg/10);
 #else
-		usleep(arg * 100000);
+	usleep(arg * 100000);
 #endif
 #endif
-	}
 }
 
 void op_2comp(decimal64 *a, decimal64 *b, decContext *nulc) {
@@ -3046,7 +3044,7 @@ void xeqprog(void)
 {
 	int state = 0;
 
-	if ( running() ) {
+	if ( running() || State.pause ) {
 #if defined(REALBUILD) || defined(WINGUI)
 		long long last_ticker = Ticker;
 		state = ((int) last_ticker % (2*TICKS_PER_FLASH) < TICKS_PER_FLASH);
@@ -3064,7 +3062,7 @@ void xeqprog(void)
 			}
 		}
 	}
-	if (!running()) {
+	if (!running() && !State.pause) {
 		// Program has terminated
 		clr_dot(RCL_annun);
 		finish_display();

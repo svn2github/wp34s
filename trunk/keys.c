@@ -1701,11 +1701,11 @@ static int process(const int c) {
 		/*
 		 *  Do nothing if not running a program
 		 */
-		if (!running())
+		if (!running() && !State.pause)
 			return STATE_IGNORE;
 	}
 
-	if (running()) {
+	if (running() || State.pause ) {
 		/*
 		 *  Abort a running program with R/S or EXIT
 		 */
@@ -1717,7 +1717,8 @@ static int process(const int c) {
 			LastKey = (char) (c + 1);	// Store for KEY?
 			State.pause = 0;		// leave PSE statement
 		}
-		return STATE_RUNNING;			// continue execution
+		// continue execution if really running, else ignore (PSE)
+		return STATE_RUNNING;
 	}
 
 	/*

@@ -1349,7 +1349,6 @@ static void set_status_right(const char *str) {
 
 void set_running_off_sst() {
 	State.state_running = 0;
-	State.pause = 0;
 }
 
 void set_running_on_sst() {
