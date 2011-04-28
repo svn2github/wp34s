@@ -213,6 +213,23 @@ int is_real_key_pressed(void)
 }
 
 /*
+ *  Get key from buffer
+ */
+int get_key(void)
+{
+	return KeyBuffGetKey();
+}
+
+/*
+ *  Add key to buffer
+ */
+int put_key(int k)
+{
+	return AddKeyInBuffer( k );
+}
+
+
+/*
  *  Shut down the emulator from the application
  */
 void shutdown( void )
