@@ -1304,16 +1304,22 @@ void op_voltage(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 void op_getkey(decimal64 *a, decimal64 *b, decContext *nulc) {
 	int k, s;
 
-	if (is_key_pressed()) {
-		k = 0xff & get_key();
+	if (is_real_key_pressed()) {
+		k = get_key();
+		if (k == K_HEARTBEAT) {
+			k = get_key();
+			put_key(K_HEARTBEAT);
+		}
 		s = 0;
+		if (k == -1)
+			k = s = 1;
 	} else
-		s = k = 1;
+		k = s = 1;
 	put_int(k, s, a);
 }
 
 void op_keyp(decimal64 *a, decimal64 *b, decContext *nulc) {
-	fin_tst(is_key_pressed());
+	fin_tst(is_real_key_pressed());
 }
 
 /* Save and restore the entire stack to sequential registers */

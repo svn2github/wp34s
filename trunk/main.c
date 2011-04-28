@@ -1114,6 +1114,19 @@ int is_key_pressed( void )
 }
 
 
+/* Check if something other than a heartbeat is in the buffer
+ */
+int is_real_key_pressed( void )
+{
+	int i;
+	lock();
+	if ((i = KbCount) == 1 && KeyBuffer[ (int) KbRead ] == K_HEARTBEAT)
+		i = 0;
+	unlock();
+	return i;
+}
+
+
 /*
  *  Get a key
  */
