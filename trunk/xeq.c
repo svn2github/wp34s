@@ -56,6 +56,10 @@
  */
 decContext *Ctx, *Ctx64;
 
+/*
+ *  Last keycode + 1 detected while running
+ */
+char LastKey;
 
 #define RetStkPtr	(State.retstk_ptr)
 
@@ -1305,19 +1309,10 @@ void op_voltage(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
  * register, if not skip the next step.
  */
 void op_keyp(unsigned int arg, enum rarg op) {
-	int cond = is_real_key_pressed();
-	if (is_real_key_pressed()) {
-		int s, k = get_key();
-		if (k == K_HEARTBEAT) {
-			k = get_key();
-			put_key(K_HEARTBEAT);
-		}
-		s = 0;
-		if (k == -1)
-			k = s = 1;
-		else
-			k += 7;		// adjust to 1,1 base position
-		reg_put_int(arg, k, s);
+	int cond = LastKey == 0;
+	if (!cond) {
+		reg_put_int(arg, LastKey - 1, 0);
+		LastKey = 0;
 	}
 	fin_tst(cond);
 }

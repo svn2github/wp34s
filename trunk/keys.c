@@ -1713,7 +1713,11 @@ static int process(const int c) {
 			set_running_off();
 			return STATE_UNFINISHED;
 		}
-		return STATE_RUNNING;		// continue execution
+		if ( c != K_HEARTBEAT ) {
+			LastKey = (char) (c + 1);	// Store for KEY?
+			State.pause = 0;		// leave PSE statement
+		}
+		return STATE_RUNNING;			// continue execution
 	}
 
 	/*

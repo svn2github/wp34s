@@ -355,11 +355,6 @@ int is_key_pressed(void)
 	return 0;
 }
 
-int is_real_key_pressed(void) 
-{
-	return 0;
-}
-
 int get_key(void)
 {
 	return 0;

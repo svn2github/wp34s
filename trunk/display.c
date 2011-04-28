@@ -1372,5 +1372,6 @@ void set_running_on() {
 #endif
 	finish_display();
 	set_running_on_sst();
+	LastKey = 0;
 }
 

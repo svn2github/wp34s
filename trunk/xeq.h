@@ -820,6 +820,11 @@ extern TPersistentRam PersistentRam;
 #define Voltage          (PersistentRam._voltage)
 
 /*
+ *  Last keycode detected while running
+ */
+char LastKey;
+
+/*
  *  Function prototypes
  */
 extern void err(const enum errors);
@@ -1061,7 +1066,6 @@ extern void xrom_quad(decimal64 *a, decimal64 *b, decContext *nulc);
 
 /* system functions */
 extern int is_key_pressed(void);
-extern int is_real_key_pressed(void);
 extern int get_key(void);
 extern int put_key(int k);
 extern void watchdog(void);

@@ -207,11 +207,6 @@ int is_key_pressed(void)
 	return !KeyBuffEmpty();  // in DLL
 }
 
-int is_real_key_pressed(void)
-{
-	return !KeyBuffEmpty();  // in DLL
-}
-
 /*
  *  Get key from buffer
  */
