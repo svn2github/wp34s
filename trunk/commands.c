@@ -435,6 +435,8 @@ const struct niladic niladics[] = {
 
 	FUNC1(OP_TICKS,		&op_ticks,		"TICKS")
 	FUNC1(OP_VOLTAGE,	&op_voltage,		"BATT")
+	FUNC1(OP_GETKEY,	&op_getkey,		"GETKEY")
+	FUNC0(OP_KEYP,		&op_keyp,		"KEY?")
 
 	FUNC0(OP_SETEUR,	&op_seteur,		"SETEUR")
 	FUNC0(OP_SETUK,		&op_setuk,		"SETUK")
