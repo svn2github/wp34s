@@ -822,7 +822,7 @@ extern TPersistentRam PersistentRam;
 /*
  *  Last keycode detected while running
  */
-char LastKey;
+extern char LastKey;
 
 /*
  *  Function prototypes

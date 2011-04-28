@@ -574,7 +574,7 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_SOLVESTEP,	&solver,	TOPREALREG-10+1,	"SLVS")
 
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
-	CMD(RARG_KEY,		&op_keyp,	NUMREG,			"KEY?")
+	CMDstk(RARG_KEY,	&op_keyp,	NUMREG,			"KEY?")
 
 #undef CMDnoI
 #undef CMDstk
