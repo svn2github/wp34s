@@ -1482,21 +1482,24 @@ static int modulo(const unsigned long long int a, unsigned long long int b, cons
 #endif
 
 /* Test if a number is prime or not using a Miller-Rabin test */
+#ifndef TINY_BUILD
+static const unsigned char primes[] = {
+	3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
+	37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
+	79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
+	131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
+	181, 191, 193, 197, 199, 211, 223, 227, 229, 233,
+	239, 241, 251, /* 257 */
+};
+#define N_PRIMES	(sizeof(primes) / sizeof(unsigned char))
+#define QUICK_CHECK	(257*257-1)
+#endif
+
 int isPrime(unsigned long long int p) {
 #ifndef TINY_BUILD
 	int i;
 	unsigned long long int s;
 	int a, step;
-	static const unsigned char primes[] = {
-		3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
-		37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
-		79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
-		131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
-		181, 191, 193, 197, 199, 211, 223, 227, 229, 233,
-		239, 241, 251, /* 257 */
-	};
-#define N_PRIMES	(sizeof(primes) / sizeof(unsigned char))
-#define QUICK_CHECK	(257*257-1)
 #define PRIME_ITERATION	40
 
 	/* Quick check for p <= 2 and evens */
@@ -1617,10 +1620,14 @@ unsigned long long doFactor(unsigned long long n)
 		ad[i] = 0;
 
 
-	// eliminate cases < 7
+	// eliminate small cases < 257
 	if (n <= 2) return n;
-	if (n % 3 == 0) return 3;
-	if (n % 5 == 0) return 5;
+	for (i=0; i<N_PRIMES; i++) {
+		if (n % primes[i] == 0)
+			return primes[i];
+	}
+	if (n <= QUICK_CHECK)		// the number is prime
+		return n;
 
 	d = 7;
 	rt = (unsigned int)intSqrt(n);
