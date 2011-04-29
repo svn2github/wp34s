@@ -106,7 +106,7 @@ RANLIB := $(CROSS_COMPILE)ranlib
 # SIZE := $(CROSS_COMPILE)size
 # STRIP := $(CROSS_COMPILE)strip
 OBJCOPY	:= $(CROSS_COMPILE)objcopy
-LIBS +=	-nostdlib -lgcc
+LIBS +=	-nostdlib -L$(OUTPUTDIR)/lib -lgcc
 EXE := .exe
 endif
 
