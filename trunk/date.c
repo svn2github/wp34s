@@ -242,7 +242,7 @@ static decNumber *build_date(decNumber *res, int year, int month, int day, decCo
  * don't go out of range.
  */
 static int extract_date(const decNumber *x, int *year, int *month, int *day, decContext *ctx) {
-	int bc, ip, fp, y, m, d;
+	int /* bc, */ ip, fp, y, m, d;
 	decNumber z, a;
 
 	if (is_intmode())
@@ -250,10 +250,10 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day, dec
 
 	if (decNumberIsNegative(x)) {
 		decNumberMinus(&z, x, ctx);
-		bc = 0;
+		// bc = 0;
 	} else {
 		decNumberCopy(&z, x);
-		bc = 1;
+		// bc = 1;
 	}
 	decNumberTrunc(&a, &z, ctx);			// a = iii	z = iii.ffrrrr
 	ip = dn_to_int(&a, ctx);
