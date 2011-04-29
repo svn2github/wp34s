@@ -1842,7 +1842,7 @@ void process_keycode(int c) {
 		} else
 			stoprog(c);
 	}
-	if (!running() && c != STATE_IGNORE) {
+	if (!running() && !State.pause && c != STATE_IGNORE) {
 		display();
 	}
 }
