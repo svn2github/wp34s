@@ -1484,7 +1484,7 @@ static int modulo(const unsigned long long int a, unsigned long long int b, cons
 /* Test if a number is prime or not using a Miller-Rabin test */
 #ifndef TINY_BUILD
 static const unsigned char primes[] = {
-	3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
+	2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
 	37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
 	79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
 	131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
@@ -1507,7 +1507,7 @@ int isPrime(unsigned long long int p) {
 	if ((p&1) == 0)	return 0;
 
 	/* Quick check for divisibility by small primes */
-	for (i=0; i<N_PRIMES; i++)
+	for (i=1; i<N_PRIMES; i++)
 		if (p == primes[i])
 			return 1;
 		else if ((p % primes[i]) == 0)
@@ -1574,7 +1574,7 @@ static int dscanOdd(unsigned int d, unsigned int limit, int nd, unsigned int ad[
 }
 #endif
 
-unsigned long long doFactor(unsigned long long n)
+unsigned long long int doFactor(unsigned long long int n)
 {
 #ifndef TINY_BUILD
 	/* find the least prime factor of `n'.
@@ -1602,7 +1602,8 @@ unsigned long long doFactor(unsigned long long n)
 
 	// eliminate small cases < 257
 	if (n <= 2) return n;
-	for (i=0; i<N_PRIMES; i++) {
+	if ((n & 1) == 0) return 2;
+	for (i=1; i<N_PRIMES; i++) {
 		if (n % primes[i] == 0)
 			return primes[i];
 	}
