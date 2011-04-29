@@ -1499,8 +1499,7 @@ int isPrime(unsigned long long int p) {
 #ifndef TINY_BUILD
 	int i;
 	unsigned long long int s;
-	int a, step;
-#define PRIME_ITERATION	40
+#define PRIME_ITERATION	15
 
 	/* Quick check for p <= 2 and evens */
 	if (p < 2)	return 0;
@@ -1516,25 +1515,19 @@ int isPrime(unsigned long long int p) {
 	if (p < QUICK_CHECK)
 		return 1;
 
-	a = 4;
-	step = ((QUICK_CHECK - a) / PRIME_ITERATION);
-	if ((step & 1) == 0)
-		step--;
-
 	s = p - 1;
 	while ((s&1) == 0)
 		s /= 2;
 
 	for(i=0; i<PRIME_ITERATION; i++) {
 		unsigned long long int temp = s;
-		unsigned long long int mod = modulo(a, temp, p);
+		unsigned long long int mod = modulo(primes[i], temp, p);
 		while (temp != p-1 && mod != 1 && mod != p-1) {
 			mod = mulmod(mod, mod, p);
 			temp += temp;
 		}
 		if(mod!=p-1 && temp%2==0)
 			return 0;
-		a += step;
 	}
 #endif
 	return 1;
