@@ -1422,12 +1422,12 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 		return r;
 	if (check_probability(r, p, ctx, 1))
 	    return r;
-	decNumberSubtract(&t, &const_1, p, ctx);
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || dn_le0(&lam)) {
 		return set_NaN(r);
 	}
 
-	decNumberLn(&u, &t, ctx);
+	decNumberMinus(&t, p, ctx);
+	decNumberLn1p(&u, &t, ctx);
 	decNumberDivide(&t, &u, &lam, ctx);
 	return decNumberMinus(r, &t, ctx);
 #else
@@ -1632,8 +1632,8 @@ decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
         if (decNumberIsInfinite(x))
                 return decNumberCopy(r, &const_1);
 
-        decNumberSubtract(&t, &const_1, &p, ctx);
-	decNumberLn(&u, &t, ctx);
+	decNumberMinus(&t, &p, ctx);
+	decNumberLn1p(&u, &t, ctx);
 	decNumberMultiply(&t, &u, x, ctx);
 	decNumberExpm1(&u, &t, ctx);
 	return decNumberMinus(r, &u, ctx);
@@ -1650,10 +1650,10 @@ decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
                 return r;
         if (check_probability(r, x, ctx, 1))
                 return r;
-        decNumberSubtract(&t, &const_1, x, ctx);
-        decNumberLn(&v, &t, ctx);
-        decNumberSubtract(&u, &const_1, &p, ctx);
-        decNumberLn(&t, &u, ctx);
+	decNumberMinus(&t, x, ctx);
+        decNumberLn1p(&v, &t, ctx);
+	decNumberMinus(&u, &p, ctx);
+        decNumberLn1p(&t, &u, ctx);
         return decNumberDivide(r, &v, &t, ctx);
 #else
 	return NULL;
