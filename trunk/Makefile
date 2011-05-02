@@ -1,17 +1,17 @@
 # This file is part of 34S.
 # 
-# 34S is free software:	you can	redistribute it	and/or modify
-# it under the terms of	the GNU	General	Public License as published by
-# the Free Software Foundation,	either version 3 of the	License, or
+# 34S is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 # 
-# 34S is distributed in	the hope that it will be useful,
+# 34S is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along	with 34S.  If not, see <http://www.gnu.org/licenses/>.
+# along with 34S.  If not, see <http://www.gnu.org/licenses/>.
 
 .EXPORT_ALL_VARIABLES:
 
@@ -26,6 +26,7 @@ NOWD = 1
 
 BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-inline-functions \
 	-fno-defer-pop -fno-exceptions
+OPT_CFLAGS := -Os
 
 # Settings for Unix like environments with gcc
 # Creates the Console version of the emulator or the real thing
@@ -35,12 +36,13 @@ SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
 SYSTEM := Output
 endif
-ifeq "$(SYSTEM)" "windows32"
+ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
 # Force REALBUILD on windows under MinGW
-REALBUILD := 1
+SYSTEM := windows32
 endif
-ifeq "$(SYSTEM)" "WindowsNT"
+ifeq "$(findstring indows,$(SYSTEM))" "indows"
 # Force REALBUILD on windows under MinGW / alternate uname utility
+SYSTEM := windows32
 REALBUILD := 1
 endif
 
@@ -58,7 +60,7 @@ LDCTRL :=
 ifndef REALBUILD
 # Select the correct parameters and libs for various Unix flavours
 ifeq ($(SYSTEM),Linux)
-LIBS +=	-lcurses
+LIBS += -lcurses
 else
 ifeq ($(SYSTEM),Darwin)
 # MacOS - use static ncurses lib if found
@@ -71,7 +73,7 @@ LIBS += -lcurses
 endif
 else
 # Any other Unix
-LIBS +=	-lcurses
+LIBS += -lcurses
 endif
 endif
 endif
@@ -83,12 +85,12 @@ HOSTCFLAGS := -Wall -Werror -O1 -g
 
 ifdef REALBUILD
 
-# Settings for the Yagarto tool	chain under Windows
-# A standard Windows gcc is needed for building	the generated files.
-# MinGW	will do	nicely
+# Settings for the Yagarto tool chain under Windows
+# A standard Windows gcc is needed for building the generated files.
+# MinGW will do nicely
 
 OUTPUTDIR := realbuild
-CFLAGS := -mthumb -mcpu=arm7tdmi -Os $(BASE_CFLAGS) 
+CFLAGS := -mthumb -mcpu=arm7tdmi $(OPT_CFLAGS) $(BASE_CFLAGS) 
 CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
 HOSTCFLAGS += -DREALBUILD
 ifdef NOWD
@@ -105,8 +107,8 @@ AR := $(CROSS_COMPILE)ar
 RANLIB := $(CROSS_COMPILE)ranlib
 # SIZE := $(CROSS_COMPILE)size
 # STRIP := $(CROSS_COMPILE)strip
-OBJCOPY	:= $(CROSS_COMPILE)objcopy
-LIBS +=	-nostdlib -L$(OUTPUTDIR)/lib -lgcc
+OBJCOPY := $(CROSS_COMPILE)objcopy
+LIBS += -nostdlib -L$(OUTPUTDIR)/lib -lgcc
 EXE := .exe
 endif
 
@@ -118,7 +120,7 @@ OBJECTDIR := $(OUTPUTDIR)/obj
 DIRS := $(OUTPUTDIR) $(OBJECTDIR)
 endif
 
-# Files	and libraries
+# Files and libraries
 
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c xrom.c consts.c alpha.c charmap.c \
@@ -153,7 +155,7 @@ endif
 
 # Targets and rules
 
-.PHONY:	clean tgz asone flash flash2
+.PHONY: clean tgz asone flash flash2
 
 ifdef REALBUILD
 all: flash
@@ -166,13 +168,13 @@ endif
 clean:
 	-rm -fr $(DIRS)
 	-rm -fr consts.h consts.c allconsts.c catalogues.h
-#	-make -C decNumber clean
-#	-make -C utilities clean
+#       -make -C decNumber clean
+#       -make -C utilities clean
 
 tgz:
 	@make clean
 	rm -f sci.tgz
-	tar czf	sci.tgz	*
+	tar czf sci.tgz *
 
 $(DIRS):
 	mkdir $@
@@ -183,12 +185,11 @@ ifdef REALBUILD
 
 $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(OBJECTDIR)/libconsts.a $(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	-IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
-		$(STARTUP) asone.c $(LIBS) -fwhole-program 
+	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
+		$(STARTUP) asone.c $(LIBS) -fwhole-program
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
 	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	grep "^\.xrom"     $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 
@@ -199,7 +200,7 @@ else
 
 $(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNumber.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
-	$(CC) $(CFLAGS)	$(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
 endif
 
 # Build generated files
@@ -246,26 +247,26 @@ $(OBJECTDIR)/%.o: %.c
 
 $(OBJECTDIR)/alpha.o: alpha.c alpha.h xeq.h decn.h int.h display.h consts.h \
 		Makefile features.h
-$(OBJECTDIR)/charmap.o:	charmap.c xeq.h	Makefile features.h
+$(OBJECTDIR)/charmap.o: charmap.c xeq.h Makefile features.h
 $(OBJECTDIR)/commands.o: commands.c xeq.h Makefile features.h
-$(OBJECTDIR)/complex.o:	complex.c decn.h complex.h xeq.h consts.h \
+$(OBJECTDIR)/complex.o: complex.c decn.h complex.h xeq.h consts.h \
 		Makefile features.h
-$(OBJECTDIR)/consts.o: consts.c	consts.h Makefile features.h
+$(OBJECTDIR)/consts.o: consts.c consts.h Makefile features.h
 $(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h alpha.h atmel/rtc.h \
 		Makefile features.h
 $(OBJECTDIR)/decn.o: decn.c decn.h xeq.h consts.h complex.h int.h Makefile features.h
-$(OBJECTDIR)/display.o:	display.c xeq.h	display.h consts.h lcd.h int.h \
+$(OBJECTDIR)/display.o: display.c xeq.h display.h consts.h lcd.h int.h \
 		charset.h charset7.h decn.h alpha.h decn.h Makefile features.h
-$(OBJECTDIR)/int.o: int.c int.h	xeq.h Makefile features.h
-$(OBJECTDIR)/lcd.o: lcd.c lcd.h	xeq.h display.h	lcdmap.h atmel/board.h \
+$(OBJECTDIR)/int.o: int.c int.h xeq.h Makefile features.h
+$(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h display.h lcdmap.h atmel/board.h \
 		Makefile features.h
 $(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h Makefile features.h
-$(OBJECTDIR)/prt.o: prt.c xeq.h	consts.h display.h Makefile features.h
+$(OBJECTDIR)/prt.o: prt.c xeq.h consts.h display.h Makefile features.h
 $(OBJECTDIR)/stats.o: stats.c xeq.h decn.h stats.h consts.h int.h \
 		Makefile features.h
-$(OBJECTDIR)/string.o: string.c	xeq.h Makefile features.h
-$(OBJECTDIR)/xeq.o: xeq.c xeq.h	alpha.h	decn.h complex.h int.h lcd.h stats.h \
+$(OBJECTDIR)/string.o: string.c xeq.h Makefile features.h
+$(OBJECTDIR)/xeq.o: xeq.c xeq.h alpha.h decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h statebits.h Makefile features.h
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h consts.h Makefile features.h
 
@@ -282,3 +283,4 @@ else
 $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h Makefile features.h
 endif
+
