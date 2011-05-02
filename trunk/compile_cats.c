@@ -608,6 +608,7 @@ static unsigned char alpha_letters_lower[] = {
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "charmap.c"
 #include "commands.c"
