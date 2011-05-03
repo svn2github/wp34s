@@ -41,6 +41,9 @@
 #define TEST_GT		4
 #define TEST_GE		5
 
+/* Short blink of PRN annunciator with every key */
+int BusyBlink;
+
 enum confirmations {
 	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog
 };
@@ -66,7 +69,7 @@ static void init_arg(const enum rarg base) {
 
 static void init_cat(enum catalogues cat) {
 	if (cat == CATALOGUE_NONE)
-		State.eol = 0;
+		CmdLineLength = 0;
 	process_cmdline_set_lift();
 	State.catalogue = cat;
 	State.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
@@ -1540,8 +1543,8 @@ static int process_catalogue(const keycode c) {
 			return STATE_UNFINISHED;
 
 		case K24:			// backspace
-			if (State.eol > 0 && Keyticks < 30) {
-				if (--State.eol > 0)
+			if (CmdLineLength > 0 && Keyticks < 30) {
+				if (--CmdLineLength > 0)
 					goto search;
 				State.digval = 0;
 			} else
@@ -1557,13 +1560,13 @@ static int process_catalogue(const keycode c) {
 				State.digval--;
 			else
 				State.digval = ctmax-1;
-			State.eol = 0;
+			CmdLineLength = 0;
 			return STATE_UNFINISHED;
 
 		case K50:
 			if ((int) ++State.digval >= ctmax)
 				State.digval = 0;
-			State.eol = 0;
+			CmdLineLength = 0;
 			return STATE_UNFINISHED;
 
 		default:
@@ -1578,13 +1581,13 @@ static int process_catalogue(const keycode c) {
 	if (ch == '\0')
 		return STATE_UNFINISHED;
 	if (Keyticks >= 30)
-		State.eol = 0;	// keyboard search timed out
-	if (State.eol < 10)
-		Cmdline[State.eol++] = ch;
+		CmdLineLength = 0;	// keyboard search timed out
+	if (CmdLineLength < 10)
+		Cmdline[CmdLineLength++] = ch;
 	/* Search for the current buffer in the catalogue */
 
 search:
-	Cmdline[State.eol] = '\0';
+	Cmdline[CmdLineLength] = '\0';
 	for (dv = 0; dv < (unsigned int)ctmax; dv++) {
 		char buf[16];
 		const char *cmd = catcmd(current_catalogue(dv), buf);

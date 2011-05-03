@@ -22,6 +22,8 @@
 #if defined(REALBUILD)
 #include "atmel/board.h"
 #include "atmel/slcdc.h"
+
+volatile int WaitForLcd;
 #endif
 
 #ifdef USECURSES
@@ -167,6 +169,7 @@ int setuptty(int reset) {
 void reset_disp(void) {
         int i;
 
+        wait_for_display();
         clr_dot(STO_annun);
         //clr_dot(RCL_annun);
         for (i=0; i<=EXP_SIGN; i++)
@@ -435,7 +438,7 @@ void show_flags(void) {
 	PRINTF("ap = %u", State.alpha_pos);
 	MOVE(45, FLAG_BASE+3);
 	PRINTF("cmddot = %u  cmdeex = %u  eol = %u",
-			State.cmdlinedot, State.cmdlineeex, State.eol);
+			CmdLineDot, CmdLineEex, CmdLineLength);
 	MOVE(1, FLAG_BASE+3);
 	PRINTF("JG=%d", State.jg1582?1582:1752);
 #if 0
@@ -451,15 +454,19 @@ void show_flags(void) {
 #endif
 }
 
-void load_display(void) {
+void wait_for_display(void)
+{
 #ifdef REALBUILD
-	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_LOAD_ONLY );
+	while( WaitForLcd ) {
+		idle();
+	}
 #endif
 }
 
 void finish_display(void) {
 #ifdef REALBUILD
 	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
+	WaitForLcd = 1;
 #else
 #ifdef USECURSES
         show_disp();

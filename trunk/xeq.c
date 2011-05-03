@@ -46,6 +46,10 @@
  */
 #define TICKS_PER_FLASH	(5)
 
+/*
+ *  Timer for a programmed pause
+ */
+volatile int Pause;
 
 /* Define storage for the machine's program space.
  */
@@ -478,7 +482,7 @@ void clrstk(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	regL = regX;
 	regI = regX;
 
-	State.eol = 0;
+	CmdLineLength = 0;
 	State.state_lift = 1;
 }
 
@@ -501,7 +505,7 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	for (i=TOPREALREG+stack_size(); i<NUMREG; i++)
 		Regs[i] = Regs[0];
 
-	State.eol = 0;
+	CmdLineLength = 0;
 	State.state_lift = 1;
 }
 
@@ -602,8 +606,8 @@ unsigned long long int s_to_ull(const char *s, unsigned int base) {
 }
 
 const char *get_cmdline(void) {
-	if (State.eol) {
-		Cmdline[State.eol] = '\0';
+	if (CmdLineLength) {
+		Cmdline[CmdLineLength] = '\0';
 		return Cmdline;
 	}
 	return NULL;
@@ -624,21 +628,21 @@ static int fract_convert_number(decNumber *x, const char *s) {
 static void process_cmdline(void) {
 	decNumber a, b, x, t, z;
 
-	if (State.eol) {
-		const unsigned int cmdlinedot = State.cmdlinedot;
+	if (CmdLineLength) {
+		const unsigned int cmdlinedot = CmdLineDot;
 		char cmdline[CMDLINELEN + 1];
 
 		xcopy(cmdline, Cmdline, CMDLINELEN + 1);
 
-		cmdline[State.eol] = '\0';
-		if (cmdline[State.eol-1] == 'E')
-			cmdline[State.eol-1] = '\0';
-		State.eol = 0;
+		cmdline[CmdLineLength] = '\0';
+		if (cmdline[CmdLineLength-1] == 'E')
+			cmdline[CmdLineLength-1] = '\0';
+		CmdLineLength = 0;
 		if (State.state_lift)
 			lift();
 		State.state_lift = 1;
-		State.cmdlinedot = 0;
-		State.cmdlineeex = 0;
+		CmdLineDot = 0;
+		CmdLineEex = 0;
 		if (is_intmode()) {
 			const int sgn = (cmdline[0] == '-')?1:0;
 			unsigned long long int x = s_to_ull(cmdline+sgn, int_base());
@@ -1590,29 +1594,29 @@ void cmdback(unsigned int arg, enum rarg op) {
 /* We've encountered a CHS while entering the command line.
  */
 static void cmdlinechs(void) {
-	if (State.cmdlineeex) {
-		const unsigned int pos = State.cmdlineeex + 1;
-		if (State.eol < pos) {
-			if (State.eol < CMDLINELEN)
-				Cmdline[State.eol++] = '-';
+	if (CmdLineEex) {
+		const unsigned int pos = CmdLineEex + 1;
+		if (CmdLineLength < pos) {
+			if (CmdLineLength < CMDLINELEN)
+				Cmdline[CmdLineLength++] = '-';
 		} else if (Cmdline[pos] == '-') {
-			if (State.eol != pos)
-				xcopy(Cmdline + pos, Cmdline + pos + 1, State.eol-pos);
-			State.eol--;
-		} else if (State.eol < CMDLINELEN) {
-			xcopy(Cmdline+pos+1, Cmdline+pos, State.eol-pos);
+			if (CmdLineLength != pos)
+				xcopy(Cmdline + pos, Cmdline + pos + 1, CmdLineLength-pos);
+			CmdLineLength--;
+		} else if (CmdLineLength < CMDLINELEN) {
+			xcopy(Cmdline+pos+1, Cmdline+pos, CmdLineLength-pos);
 			Cmdline[pos] = '-';
-			State.eol++;
+			CmdLineLength++;
 		}
 	} else {
 		if (Cmdline[0] == '-') {
-			if (State.eol > 1)
-				xcopy(Cmdline, Cmdline+1, State.eol);
-			State.eol--;
-		} else if (State.eol < CMDLINELEN) {
-			xcopy(Cmdline+1, Cmdline, State.eol);
+			if (CmdLineLength > 1)
+				xcopy(Cmdline, Cmdline+1, CmdLineLength);
+			CmdLineLength--;
+		} else if (CmdLineLength < CMDLINELEN) {
+			xcopy(Cmdline+1, Cmdline, CmdLineLength);
 			Cmdline[0] = '-';
-			State.eol++;
+			CmdLineLength++;
 		}
 	}
 }
@@ -2060,7 +2064,7 @@ static void digit(unsigned int c) {
 	int i, j;
 	int lim = 12;
 
-	if (State.eol >= CMDLINELEN) {
+	if (CmdLineLength >= CMDLINELEN) {
 		warn(ERR_TOO_LONG);
 		return;
 	}
@@ -2069,14 +2073,14 @@ static void digit(unsigned int c) {
 			warn(ERR_DIGIT);
 			return;
 		}
-		for (i=j=0; i<(int)State.eol; i++)
+		for (i=j=0; i<(int)CmdLineLength; i++)
 			j += is_xdigit(Cmdline[i]);
 		if (j == lim) {
 			warn(ERR_TOO_LONG);
 			return;
 		}
 		if (c >= 10) {
-			Cmdline[State.eol++] = c - 10 + 'A';
+			Cmdline[CmdLineLength++] = c - 10 + 'A';
 			return;
 		}
 	} else {
@@ -2084,7 +2088,7 @@ static void digit(unsigned int c) {
 			warn(ERR_DIGIT);
 			return;
 		}
-		for (i=j=0; i<(int)State.eol; i++)
+		for (i=j=0; i<(int)CmdLineLength; i++)
 			if (Cmdline[i] == 'E') {
 				lim++;
 				break;
@@ -2096,11 +2100,11 @@ static void digit(unsigned int c) {
 		}
 	}
 
-	Cmdline[State.eol++] = c + '0';
-	Cmdline[State.eol] = '\0';
+	Cmdline[CmdLineLength++] = c + '0';
+	Cmdline[CmdLineLength] = '\0';
 
-	if (! intm && State.cmdlineeex) {
-		char *p = &Cmdline[State.cmdlineeex + 1];
+	if (! intm && CmdLineEex) {
+		char *p = &Cmdline[CmdLineEex + 1];
 		int emax = 384;
 		int n;
 
@@ -2120,8 +2124,8 @@ static void digit(unsigned int c) {
 
 				for (i=0; p[i] != '\0'; i++)
 					p[i] = p[i+1];
-				State.eol--;
-				Cmdline[State.eol] = '\0';
+				CmdLineLength--;
+				Cmdline[CmdLineLength] = '\0';
 			} else
 				break;
 		}
@@ -2154,29 +2158,29 @@ static void specials(const opcode op) {
 	case OP_DOT:
 		if (is_intmode())
 			break;
-		if (State.cmdlinedot < 2 && !State.cmdlineeex && State.eol < CMDLINELEN) {
-			if (State.eol == 0 || Cmdline[State.eol-1] == '.')
+		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < CMDLINELEN) {
+			if (CmdLineLength == 0 || Cmdline[CmdLineLength-1] == '.')
 				digit(0);
-			State.cmdlinedot++;
-			Cmdline[State.eol++] = '.';
+			CmdLineDot++;
+			Cmdline[CmdLineLength++] = '.';
 			set_entry();
 		}
 		break;
 
 	case OP_EEX:
-		if (is_intmode() || State.fract || State.cmdlinedot == 2)
+		if (is_intmode() || State.fract || CmdLineDot == 2)
 			break;
-		if (!State.cmdlineeex && State.eol < CMDLINELEN) {
-			if (State.eol == 0)
+		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
+			if (CmdLineLength == 0)
 				digit(1);
-			State.cmdlineeex = State.eol;
-			Cmdline[State.eol++] = 'E';
+			CmdLineEex = CmdLineLength;
+			Cmdline[CmdLineLength++] = 'E';
 			set_entry();
 		}
 		break;
 
 	case OP_CHS:
-		if (State.eol)
+		if (CmdLineLength)
 			cmdlinechs();
 		else if (is_intmode()) {
 			d64fromInt(&regX, intChs(d64toInt(&regX)));
@@ -2192,12 +2196,12 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_CLX:
-		if (State.eol) {
-			State.eol--;
-			if (Cmdline[State.eol] == 'E')
-				State.cmdlineeex = 0;
-			else if (Cmdline[State.eol] == '.')
-				State.cmdlinedot--;
+		if (CmdLineLength) {
+			CmdLineLength--;
+			if (Cmdline[CmdLineLength] == 'E')
+				CmdLineEex = 0;
+			else if (Cmdline[CmdLineLength] == '.')
+				CmdLineDot--;
 		} else
 			clrx(NULL, NULL, NULL);
 		break;

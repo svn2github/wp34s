@@ -40,9 +40,10 @@ static const char SvnRevision[ 12 ] = "$Rev:: 621 $";
 
 
 /*
- *  Create the persistant RAM area
+ *  Create the persistent and not so persistent RAM areas
  */
-struct _ram PersistentRam;
+TPersistentRam PersistentRam;
+TStateWhileOn StateWhileOn;
 
 /*
  *  PC keys to calculator keys

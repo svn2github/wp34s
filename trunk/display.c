@@ -1054,14 +1054,12 @@ void display(void) {
 	const enum catalogues cata = State.catalogue;
 	int skip = 0;
 
-	load_display();  // Changes are not (yet) reflected on the real LCD
 	reset_disp();
 
 	/* Turn INPUT on for alpha mode.  Turn down arrow on if we're
 	 * typing lower case in alpha mode.  Turn the big equals if we're
 	 * browsing constants.
 	 */
-	// dot(RPN, 1); Mved to keys.c for visual feedback
 	dot(BEG, state_pc() == 0);
 	dot(INPUT,  cata || State.alphas || State.confirm);
 	dot(DOWN_ARR, (State.alphas || State.multi) && State.alphashift);

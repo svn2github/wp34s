@@ -126,8 +126,8 @@ SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c xrom.c consts.c alpha.c charmap.c \
 		commands.c string.c
 
-HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h date.h \
-		decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
+HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
+		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
 		statebits.h stats.h xeq.h xrom.h
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)

@@ -877,6 +877,7 @@ extern int put_key(int k);
 extern void watchdog(void);
 extern void shutdown(void);
 extern int is_debug(void);
+extern void idle(void);
 extern const char *get_revision(void);
 
 #endif

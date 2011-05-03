@@ -43,7 +43,7 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #define SPEED_H_LOW_V 3
 #define SPEED_HIGH    4
 #define SLEEP_ANNUNCIATOR LIT_EQ
-#define SPEED_ANNUNCIATOR 107
+// #define SPEED_ANNUNCIATOR 107
 void set_speed( unsigned int speed );
 
 /*
@@ -410,7 +410,8 @@ void enable_lcd( void )
 	 */
 	SLCDC_Configure( 10, 40, AT91C_SLCDC_BIAS_1_3, AT91C_SLCDC_BUFTIME_8_Tsclk );
 	SLCDC_SetFrameFreq( AT91C_SLCDC_PRESC_SCLK_16, AT91C_SLCDC_DIV_2 );
-	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
+	//SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
+	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_LOAD_ONLY );
 
 	/*
 	 *  Set contrast and enable the display
@@ -500,9 +501,15 @@ void turn_off( void )
 void shutdown( void )
 {
 	/*
+	 *  CmdLine will be lost, process it first
+	 */
+	process_cmdline_set_lift();
+	init_state();
+
+	/*
 	 *  Let Interrupt fade out the display
 	 */
-	LcdFadeOut = Contrast;
+	LcdFadeOut = State.contrast;
 	DispMsg = "Bye...";
 	display();
 
@@ -545,6 +552,56 @@ void shutdown( void )
 
 #ifdef ALLOW_DEEP_SLEEP
 /*
+ *  We use the LCD display buffer memory (50 bytes) for saving some state.
+ *  Only even registers have full 32 bits, odd registers have only 8 bits.
+ */
+void save_state_to_lcd_memory( int save )
+{
+	int *ip, *lcd;
+	int i;
+	const int size = sizeof( StateWhileOn );
+	const int max_i = size > 40 ? 10 : size / 4;
+
+	/*
+	 *  10 words into even registers
+	 */
+	ip = (int *) &StateWhileOn;
+	lcd = (int *) AT91C_SLCDC_MEM;
+
+	for ( i = 0; i < max_i; ++i ) {
+		if ( save ) {
+			*lcd = *ip;
+		}
+		else {
+			*ip = *lcd;
+		}
+		++ip;
+		lcd += 2; // Skip odd registers
+	}
+
+	/*
+	 *  10 bytes into odd registers
+	 */
+	if ( size > 40 ) {
+
+		char *cp = (char *) ip;
+		lcd = (int *) AT91C_SLCDC_MEM + 1;
+
+		for ( i = 0; i < size - 40; ++i ) {
+			if ( save ) {
+				*lcd = *cp;
+			}
+			else {
+				*cp = (char) *lcd;
+			}
+			++cp;
+			lcd += 2; // Skip even registers
+		}
+	}
+}
+
+
+/*
  *  Go to deep sleep mode.
  *  Wait for keyboard or RTC to wake up.
  */
@@ -560,6 +617,13 @@ void deep_sleep( void )
 		shutdown();
 	}
 
+	if ( WaitForLcd ) {
+		/*
+		 *  LCD is still busy, ignore the call
+		 */
+		return;
+	}
+
 	DeepSleepMarker = DEEP_SLEEP_MARKER;
 
 	/*
@@ -573,6 +637,11 @@ void deep_sleep( void )
 	 */
 	RTC_GetTime( NULL, &minute, &second );
 	LastActiveSecond = (unsigned short) minute * 60 + second;
+
+	/*
+	 *  Use SLCD memory to save some state
+	 */
+	save_state_to_lcd_memory( 1 );
 
 	/*
 	 *  Set RTC-Alarm for wake up at next event
@@ -618,15 +687,6 @@ void deep_sleep( void )
 	 *  Set debouncers to minimum value
 	 */
 	AT91C_BASE_SUPC->SUPC_WUMR = AT91C_SUPC_FWUPEN | AT91C_SUPC_RTCEN;
-
-#ifdef SLEEP_ANNUNCIATOR
-	if ( SleepAnnunciatorOn ) {
-		/*
-		 *  "Alive" indicator off
-		 */
-		dot( SLEEP_ANNUNCIATOR, 0 );
-	}
-#endif
 
 	/*
 	 *  Turn off
@@ -945,6 +1005,20 @@ NO_INLINE void LCD_interrupt( void )
 	}
 
 	/*
+	 *  Wait for LCD controller to copy the user buffer to the display buffer.
+	 *  Then turn off the automatic update.
+	 *  WaitForLcd is set to 1 by finish_display()
+	 */
+	if ( WaitForLcd ) {
+		if ( ++WaitForLcd == 3 ) {
+			SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_LOAD_ONLY );
+		}
+		else if ( WaitForLcd == 4 ){
+			WaitForLcd = 0;
+		}
+	}
+
+	/*
 	 *  The keyboard is scanned every 20ms for debounce and repeat
 	 */
 	scan_keyboard();
@@ -1178,6 +1252,16 @@ void watchdog( void )
 
 
 /*
+ *  Go idle to save power.
+ *  Called from a busy loop waiting for an interrupt to do something.
+ */
+void idle(void)
+{
+	set_speed( SPEED_IDLE );
+}
+
+
+/*
  *  Is debugger active ?
  *  The flag is set via the JTAG probe
  */
@@ -1249,6 +1333,13 @@ int main(void)
 		DeepSleepMarker = 0;
 
 		/*
+		 *  We've used SLCD memory to save some state, restore it and reinitialise display
+		 */
+		save_state_to_lcd_memory( 0 );
+		display();
+		WaitForLcd = 0;  // Don't waste time
+
+		/*
 		 *  Setup hardware
 		 */
 		RTC_SetTimeAlarm( NULL, NULL, NULL );
@@ -1269,8 +1360,6 @@ int main(void)
 			scan_keyboard();
 		}
 
-
-
 		/*
 		 *  Update Ticker and friends
 		 */
@@ -1280,9 +1369,6 @@ int main(void)
 			/*
 			 *  APD timeout
 			 */
-			if ( KbData == 0LL ) {
-				shutdown();
-			}
 			Keyticks = APD_TICKS;
 		}
 		else {
@@ -1353,14 +1439,35 @@ int main(void)
 			 *  Test if we can turn ourself completely off
 			 */
 			if ( !is_debug() && !running() && KbData == 0LL
-			     && Pause == 0 && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
-			     && StartupTicks >= 10 )
+			     && Pause == 0 && StartupTicks >= 10
+			     && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
+			     && Keyticks < APD_TICKS )
 			{
 				/*
 				 *  Yes, goto deep sleep. Will never return.
 				 */
-				set_dot( RPN ); // Might be off from last key press
-				show_keyticks();
+#ifdef SLEEP_ANNUNCIATOR
+				if ( SleepAnnunciatorOn ) {
+					/*
+					 *  "Alive" indicator off
+					 */
+					dot( SLEEP_ANNUNCIATOR, 0 );
+					SleepAnnunciatorOn = 0;
+				}
+#endif
+				dot( RPN, 1 );		// might still be off
+				show_keyticks();	// debugging
+				finish_display();
+				while ( WaitForLcd ) {
+					/*
+					 *  We have to wait for the LCD to update.
+					 *  While we wait, the user might have pressed a key.
+					 */
+					set_speed( SPEED_IDLE );
+					if ( is_key_pressed() ) {
+						goto key_pressed;
+					}
+				}
 				deep_sleep();
 			}
 #endif
@@ -1373,6 +1480,7 @@ int main(void)
 		/*
 		 *  Read out the keyboard queue
 		 */
+	key_pressed:
 		k = get_key();
 
 		if ( k != K_HEARTBEAT ) {

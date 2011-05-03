@@ -60,9 +60,6 @@ struct _state {
 	unsigned int int_window : 3;	// Which window to display 0=rightmost
 	unsigned int gtodot : 1;	// GTO . sequence met
 
-	unsigned int eol : 5;		// XEQ internal - don't use
-	unsigned int cmdlineeex : 5;	// XEQ internal - don't use
-	unsigned int cmdlinedot : 2;	// XEQ internal - don't use
 	unsigned int state_running : 1;	// XEQ internal - don't use
 
 	unsigned int alphas : 1;	// Alpha shift key pressed
@@ -132,11 +129,6 @@ typedef struct _ram {
 	struct _state _state;
 
 	/*
-	 * What to display in message area
-	 */
-	const char *_disp_msg;
-
-	/*
 	 * Random number seeds
 	 */
 	unsigned long int _rand_s1, _rand_s2, _rand_s3;
@@ -172,7 +164,6 @@ typedef struct _ram {
 extern TPersistentRam PersistentRam;
 
 #define State		 (PersistentRam._state)
-#define DispMsg		 (PersistentRam._disp_msg)
 #define Alpha		 (PersistentRam._alpha)
 #define Regs		 (PersistentRam._regs)
 #define BankRegs	 (PersistentRam._bank_regs)
@@ -190,51 +181,64 @@ extern TPersistentRam PersistentRam;
  */
 typedef struct _while_on {
 	/*
+	 * What to display in message area
+	 */
+	const char *_disp_msg;
+
+	/*
 	 *  A ticker, incremented every 100ms
 	 */
-	volatile long _ticker;
+	volatile unsigned long _ticker;
 
 	/*
 	 *  Another ticker which is reset on every keystroke
 	 *  In fact, it counts the time between keystrokes
 	 */
-	unsigned short _keyticks;
+	volatile unsigned short _keyticks;
 
 	/*
-	 *  Timeout values for deep sleep mode
+	 *  Time at entering deep sleep mode
 	 */
 	unsigned short _last_active_second;
 
 	/*
 	 *  Last measured voltage
 	 */
-	unsigned char _voltage;
-
-	/*
-	 *  What the user was just typing in
-	 */
-	char _cmdline[CMDLINELEN + 1];
+	volatile unsigned char _voltage;
 
 	/*
 	 *  Most recent key pressed while program is running
 	 */
 	char _last_key;
 
+	/*
+	 *  What the user was just typing in
+	 */
+	unsigned char _cmdlinelength;	// XEQ internal - don't use
+	unsigned char _cmdlineeex;	// XEQ internal - don't use
+	unsigned char _cmdlinedot;	// XEQ internal - don't use
+
+	char _cmdline[CMDLINELEN + 1];
+
 } TStateWhileOn;
 
 extern TStateWhileOn StateWhileOn;
 
+#define DispMsg		 (StateWhileOn._disp_msg)
 #define Ticker		 (StateWhileOn._ticker)
 #define Keyticks         (StateWhileOn._keyticks)
 #define LastActiveSecond (StateWhileOn._last_active_second)
 #define Voltage          (StateWhileOn._voltage)
-#define Cmdline		 (StateWhileOn._cmdline)
 #define LastKey		 (StateWhileOn._last_key)
+#define CmdLineLength	 (StateWhileOn._cmdlinelength)
+#define CmdLineEex	 (StateWhileOn._cmdlineeex)
+#define CmdLineDot	 (StateWhileOn._cmdlinedot)
+#define Cmdline		 (StateWhileOn._cmdline)
 
 /*
  *  More state, only kept while not idle
  */
-unsigned char Pause;         // count down for programmed pause
-unsigned char BusyBlink;     // short blink of PRN annunciator with every key
+extern volatile int Pause;         // count down for programmed pause
+extern volatile int WaitForLcd;	   // Sync with display refresh
 
 #endif /* DATA_H_ */
