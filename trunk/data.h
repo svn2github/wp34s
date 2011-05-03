@@ -92,13 +92,11 @@ struct _state {
 
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode
-	unsigned int leadzero : 1;	// forced display of leading zeros in int mode
+	unsigned int leadzero : 1;	// forced display of leading zeros in integer mode
 
 	unsigned int error : 5;		// Did an error occur, if so what code?
 	unsigned int status : 4;	// display status screen line
 
-	unsigned int pause : 7;         // count down for programmed pause
-	unsigned int busy_blink : 1;    // short blink of PRN annunciator with every key
 	unsigned int show_register : 7; // temporary display (not X)
 
 	unsigned int contrast : 4;	// Display contrast
@@ -160,38 +158,14 @@ typedef struct _ram {
 	char _alpha[NUMALPHA+1];
 
 	/*
-	 *  What the user was just typing in
-	 */
-	char _cmdline[CMDLINELEN + 1];
-
-	/*
 	 *  Magic marker to detect failed RAM
 	 */
-	unsigned short int _crc;
+	unsigned short _crc;
 
 	/*
-	 *  A ticker, incremented every 100ms
-	 *  This should never overflow
-	 *  Excluded from checksum
-	 */
-	volatile long long _ticker;
-
-	/*
-	 *  Another ticker which is reset on every keystroke
-	 *  In fact, it counts the time between keystrokes
-	 */
-	unsigned short _keyticks;
-
-	/*
-	 *  Timeout values for deep sleep mode
+	 *  Magic marker for deep sleep mode
 	 */
 	unsigned short _deep_sleep_marker;
-	unsigned short _last_active_second;
-
-	/*
-	 *  Last measured voltage
-	 */
-	unsigned char _voltage;
 
 } TPersistentRam;
 
@@ -204,21 +178,63 @@ extern TPersistentRam PersistentRam;
 #define BankRegs	 (PersistentRam._bank_regs)
 #define BankFlags	 (PersistentRam._bank_flags)
 #define UserFlags	 (PersistentRam._user_flags)
-#define Cmdline		 (PersistentRam._cmdline)
 #define RetStk		 (PersistentRam._retstk)
 #define RandS1		 (PersistentRam._rand_s1)
 #define RandS2		 (PersistentRam._rand_s2)
 #define RandS3		 (PersistentRam._rand_s3)
 #define Crc              (PersistentRam._crc)
-#define Ticker		 (PersistentRam._ticker)
-#define Keyticks         (PersistentRam._keyticks)
 #define DeepSleepMarker  (PersistentRam._deep_sleep_marker)
-#define LastActiveSecond (PersistentRam._last_active_second)
-#define Voltage          (PersistentRam._voltage)
 
 /*
- *  Last key code detected while running
+ *  State that may get lost while the calculator is visibly off
  */
-extern char LastKey;
+typedef struct _while_on {
+	/*
+	 *  A ticker, incremented every 100ms
+	 */
+	volatile long _ticker;
+
+	/*
+	 *  Another ticker which is reset on every keystroke
+	 *  In fact, it counts the time between keystrokes
+	 */
+	unsigned short _keyticks;
+
+	/*
+	 *  Timeout values for deep sleep mode
+	 */
+	unsigned short _last_active_second;
+
+	/*
+	 *  Last measured voltage
+	 */
+	unsigned char _voltage;
+
+	/*
+	 *  What the user was just typing in
+	 */
+	char _cmdline[CMDLINELEN + 1];
+
+	/*
+	 *  Most recent key pressed while program is running
+	 */
+	char _last_key;
+
+} TStateWhileOn;
+
+extern TStateWhileOn StateWhileOn;
+
+#define Ticker		 (StateWhileOn._ticker)
+#define Keyticks         (StateWhileOn._keyticks)
+#define LastActiveSecond (StateWhileOn._last_active_second)
+#define Voltage          (StateWhileOn._voltage)
+#define Cmdline		 (StateWhileOn._cmdline)
+#define LastKey		 (StateWhileOn._last_key)
+
+/*
+ *  More state, only kept while not idle
+ */
+unsigned char Pause;         // count down for programmed pause
+unsigned char BusyBlink;     // short blink of PRN annunciator with every key
 
 #endif /* DATA_H_ */

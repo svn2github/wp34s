@@ -187,8 +187,8 @@ unsigned long __stdcall HeartbeatThread( void *p )
 	while( 1 ) {
 		Sleep( 100 );
 		++Ticker;
-		if ( State.pause ) {
-			--State.pause;
+		if ( Pause ) {
+			--Pause;
 		}
 		if ( ++Keyticks > 1000 ) {
 			Keyticks = 1000;

@@ -1689,8 +1689,8 @@ static int process(const int c) {
 		/*
 		 *  Toggle the RPN annunciator as a visual feedback
 		 */
-		dot(RPN, !State.busy_blink);
-		State.busy_blink = 0;
+		dot(RPN, !BusyBlink);
+		BusyBlink = 0;
 		finish_display();
 
 		/*
@@ -1701,11 +1701,11 @@ static int process(const int c) {
 		/*
 		 *  Do nothing if not running a program
 		 */
-		if (!running() && !State.pause)
+		if (!running() && !Pause)
 			return STATE_IGNORE;
 	}
 
-	if (running() || State.pause ) {
+	if (running() || Pause ) {
 		/*
 		 *  Abort a running program with R/S or EXIT
 		 */
@@ -1715,7 +1715,7 @@ static int process(const int c) {
 		}
 		if ( c != K_HEARTBEAT ) {
 			LastKey = (char) (c + 1);	// Store for KEY?
-			State.pause = 0;		// leave PSE statement
+			Pause = 0;			// leave PSE statement
 		}
 		// continue execution if really running, else ignore (PSE)
 		return STATE_RUNNING;
@@ -1724,7 +1724,7 @@ static int process(const int c) {
 	/*
 	 * Turn off the RPN annunciator as a visual feedback
 	 */
-	State.busy_blink = 1;
+	BusyBlink = 1;
 	dot(RPN, 0);
 	finish_display();
 
@@ -1842,7 +1842,7 @@ void process_keycode(int c) {
 		} else
 			stoprog(c);
 	}
-	if (!running() && !State.pause && c != STATE_IGNORE) {
+	if (!running() && !Pause && c != STATE_IGNORE) {
 		display();
 	}
 }

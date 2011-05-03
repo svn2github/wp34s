@@ -125,6 +125,11 @@ void set_speed( unsigned int speed );
 BACKUP_SRAM TPersistentRam PersistentRam;
 
 /*
+ *  Data that is saved in the SLCD controller during deep sleep
+ */
+TStateWhileOn StateWhileOn;
+
+/*
  *  Local data
  */
 volatile unsigned int ClockSpeed;
@@ -902,11 +907,11 @@ void user_heartbeat( void )
 	 */
 	++Ticker;
 
-	if ( State.pause ) {
+	if ( Pause ) {
 		/*
 		 *  The PSE handler checks this value
 		 */
-	        --State.pause;
+	        --Pause;
 	}
 
 	/*
@@ -1348,7 +1353,7 @@ int main(void)
 			 *  Test if we can turn ourself completely off
 			 */
 			if ( !is_debug() && !running() && KbData == 0LL
-			     && State.pause == 0 && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
+			     && Pause == 0 && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
 			     && StartupTicks >= 10 )
 			{
 				/*

@@ -56,11 +56,6 @@
  */
 decContext *Ctx, *Ctx64;
 
-/*
- *  Last keycode + 1 detected while running
- */
-char LastKey;
-
 #define RetStkPtr	(State.retstk_ptr)
 
 
@@ -2321,7 +2316,7 @@ void op_pause(unsigned int arg, enum rarg op) {
 	display();
 #if defined(REALBUILD) || defined(WINGUI)
 	// decremented in the low level heartbeat
-	State.pause = arg;
+	Pause = arg;
 #else
 #ifdef WIN32
 #pragma warning(disable:4996)
@@ -3045,7 +3040,7 @@ void xeqprog(void)
 {
 	int state = 0;
 
-	if ( running() || State.pause ) {
+	if ( running() || Pause ) {
 #if defined(REALBUILD) || defined(WINGUI)
 		long long last_ticker = Ticker;
 		state = ((int) last_ticker % (2*TICKS_PER_FLASH) < TICKS_PER_FLASH);
@@ -3055,7 +3050,7 @@ void xeqprog(void)
 		dot(RCL_annun, state);
 		finish_display();
 
-		while (!State.pause && running()) {
+		while (!Pause && running()) {
 			xeq_single();
 			if (is_key_pressed()) {
 				xeq_xrom();
@@ -3063,7 +3058,7 @@ void xeqprog(void)
 			}
 		}
 	}
-	if (!running() && !State.pause) {
+	if (!running() && !Pause) {
 		// Program has terminated
 		clr_dot(RCL_annun);
 		finish_display();
@@ -3334,6 +3329,6 @@ int checksum_all(void) {
 	unsigned short int oldcrc = PersistentRam._crc;
 	PersistentRam._crc = 0x5aa5;
 	PersistentRam._crc = crc16(&PersistentRam,
-			(char *) &PersistentRam._ticker - (char *) &PersistentRam);
+			(char *) &PersistentRam._deep_sleep_marker - (char *) &PersistentRam);
 	return oldcrc != PersistentRam._crc;
 }
