@@ -647,8 +647,8 @@ static void process_cmdline(void) {
 			const int sgn = (cmdline[0] == '-')?1:0;
 			unsigned long long int x = s_to_ull(cmdline+sgn, int_base());
 			d64fromInt(&regX, build_value(x, sgn));
-		} else if (cmdlinedot == 2 || (State.fract && cmdlinedot)) {
-			char *d0, *d1;
+		} else if (cmdlinedot == 2) {
+			char *d0, *d1, *d2;
 			int neg;
 
 			State.fract = 1;
@@ -661,17 +661,13 @@ static void process_cmdline(void) {
 			}
 			d1 = find_char(d0, '.');
 			*d1++ = '\0';
-			// if (*d1 == '\0') goto real;
-			if (cmdlinedot == 2) {
-				char *d2 = find_char(d1, '.');
-				*d2++ = '\0';
-				// if (*d2 == '\0') cmdlinedot--; else
-				if (fract_convert_number(&b, d2))
-					return;
-				if (decNumberIsZero(&b)) {
-					err(ERR_DOMAIN);
-					return;
-				}
+			d2 = find_char(d1, '.');
+			*d2++ = '\0';
+			if (fract_convert_number(&b, d2))
+				return;
+			if (decNumberIsZero(&b)) {
+				err(ERR_DOMAIN);
+				return;
 			}
 			if (fract_convert_number(&z, d0))	return;
 			if (fract_convert_number(&a, d1))	return;
