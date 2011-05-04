@@ -208,10 +208,10 @@ static void dump_menu(const char *name, const char *prefix, const enum catalogue
 	const char *p;
 	const char *buf;
 	const char *m;
-	const int oldcata = State.catalogue;
+	const int oldcata = State2.catalogue;
 	int n;
 
-	State.catalogue = cata;
+	State2.catalogue = cata;
 	n = current_catalogue_max();
 	printf("%s catalogue:\n", name);
 	for (i=0; i<n; i++) {
@@ -235,7 +235,7 @@ static void dump_menu(const char *name, const char *prefix, const enum catalogue
 		printf("\n");
 	}
 	printf("\n");
-	State.catalogue = oldcata;
+	State2.catalogue = oldcata;
 }
 
 #include "xrom.h"
@@ -438,10 +438,10 @@ skipargs:
 		while ((c = GETCHAR()) != GETCHAR_ERR && c != CH_QUIT) {
 #ifdef USECURSES
 			if (c == CH_TRACE) {
-				State.trace = 1 - State.trace;
+				State2.trace = 1 - State2.trace;
 				display();
 			} else if (c == CH_FLAGS) {
-				State.flags = 1 - State.flags;
+				State2.flags = 1 - State2.flags;
 				display();
 			} else if (c == CH_REFRESH) {
 				clear();

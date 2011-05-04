@@ -198,7 +198,7 @@ static void carry_overflow(void) {
 	unsigned int b;
 
 	// Figure out the base
-	switch (State.smode) {
+	switch (State2.smode) {
 	case SDISP_BIN:	b = 2;		break;
 	case SDISP_OCT:	b = 8;		break;
 	case SDISP_DEC:	b = 10;		break;
@@ -266,9 +266,9 @@ static void annunicators(void) {
 	switch (cur_shift()) {
 	default:
 	case SHIFT_N:
-		if (State.wascomplex) {
+		if (State2.wascomplex) {
 			*p++ = 'C';
-			State.wascomplex = 0;
+			State2.wascomplex = 0;
 		} else
 			p = scopy(p, " \006");
 		break;
@@ -277,19 +277,19 @@ static void annunicators(void) {
 	case SHIFT_H:	p = scopy(p, "\023\006");	break;
 	}
 
-	if (State.cmplx) {
+	if (State2.cmplx) {
 		*p++ = ' ';
 		*p++ = COMPLEX_PREFIX;
 		goto skip;
 	}
 
-	if (State.arrow) {
+	if (State2.arrow) {
 		*p++ = ' ';
 		*p++ = '\015';
 		goto skip;
 	}
 
-	if (!State.runmode && State.alphas) {
+	if (!State2.runmode && State2.alphas) {
 		*p++ = '\240';
 		*p++ = ':';
 	} else if (!is_intmode()) {
@@ -323,7 +323,7 @@ static void annunicators(void) {
 				*p++ = '\006';
 
 			for (n=State.int_maxw; n>=0; n--)
-				*p++ = State.int_window == n ? '|':'\'';
+				*p++ = State2.int_window == n ? '|':'\'';
 		}
 
 	}
@@ -410,7 +410,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 	int sign;
 	int dig = SEGS_PER_DIGIT * 11;
 
-	switch (State.smode) {
+	switch (State2.smode) {
 	case SDISP_BIN:	b = 2;		break;
 	case SDISP_OCT:	b = 8;		break;
 	case SDISP_DEC:	b = 10;		break;
@@ -479,7 +479,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		while (--i >= 0)
 			*res++ = buf[i];
 	} else {
-		const int window = State.int_window;
+		const int window = State2.int_window;
 		State.int_maxw = (i-1) / 12;
 		buf[i] = '\0';
 
@@ -728,7 +728,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 	if (State.nothousands)
 		seperator = SEP_NONE;
 
-	if (!State.smode && ! State.cmplx) {
+	if (!State2.smode && ! State2.cmplx) {
 		if (State.hms) {
 			set_x_hms(rgx, res, decimal);
 			State.hms = 0;
@@ -748,7 +748,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 	} else
 		decimal64ToString(rgx, x);
 
-	if (State.smode == SDISP_SHOW)
+	if (State2.smode == SDISP_SHOW)
 		mode = MODE_STD;
 
 	if (mode == MODE_STD)
@@ -992,7 +992,7 @@ void format_reg(decimal64 *r, char *buf) {
 static void show_status(void) {
 	int i, n;
 	int j = SEGS_PER_DIGIT;
-	int base = 10 * (State.status - 1);
+	int base = 10 * (State2.status - 1);
 	char buf[12], *p;
 
         p = scopy(buf, "FL ");
@@ -1040,7 +1040,7 @@ static void show_alpha(void) {
 	char buf[12];
 
 	set_status(alpha_rcl_s(&regX, buf));
-	State.arrow_alpha = 0;
+	State2.arrow_alpha = 0;
 }
 
 //#pragma GCC optimize 0
@@ -1051,7 +1051,7 @@ void display(void) {
 	const char *p;
 	int annuc = 0;
 	const enum trig_modes tm = get_trig_mode();
-	const enum catalogues cata = State.catalogue;
+	const enum catalogues cata = State2.catalogue;
 	int skip = 0;
 
 	reset_disp();
@@ -1061,8 +1061,8 @@ void display(void) {
 	 * browsing constants.
 	 */
 	dot(BEG, state_pc() == 0);
-	dot(INPUT,  cata || State.alphas || State.confirm);
-	dot(DOWN_ARR, (State.alphas || State.multi) && State.alphashift);
+	dot(INPUT,  cata || State2.alphas || State2.confirm);
+	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
 	//dot(BIG_EQ, cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST);
         //dot(LIT_EQ, cata);
 
@@ -1072,13 +1072,13 @@ void display(void) {
 	dot(RAD, !is_intmode() && tm == TRIG_RAD);
 
 	xset(buf, '\0', sizeof(buf));
-	if (State.cmplx  && !cata) {
+	if (State2.cmplx  && !cata) {
 		*bp++ = COMPLEX_PREFIX;
 		set_status(buf);
 	}
-	if (State.error != ERR_NONE) {
-		const enum errors e = (const enum errors)State.error;
-		State.error = 0;
+	if (Error != ERR_NONE) {
+		const enum errors e = (const enum errors)Error;
+		Error = 0;
 		p = error_table[e];
 		set_status(p);
 		p = find_char(p, '\0')+1;
@@ -1086,7 +1086,7 @@ void display(void) {
 			p = S7_ERROR;
 		set_digits_string(p, 0);
 		goto skpall;
-	} else if (State.version) {
+	} else if (State2.version) {
 		char vers[] = "34s " VERSION_STRING" ????";
 		set_digits_string("pAULI WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
@@ -1094,62 +1094,62 @@ void display(void) {
 		xcopy( vers + 9, get_revision(), 4 );
 		set_status(vers);
 		goto nostk;
-	} else if (State.confirm) {
+	} else if (State2.confirm) {
 		set_status(S_SURE);
-	} else if (State.hyp) {
+	} else if (State2.hyp) {
 		bp = scopy(bp, "HYP");
-		if (! State.dot)
+		if (! State2.dot)
 			*bp++ = '\235';
 		set_status(buf);
-	} else if (State.gtodot) {
+	} else if (State2.gtodot) {
 		bp = scopy_char(bp, argcmds[RARG_GTO].cmd, '.');
-		if (State.numdigit > 0)
-			bp = num_arg_0(bp, (unsigned int)State.digval, (int)State.numdigit);
-		for (i=State.numdigit; i<3; i++)
+		if (State2.numdigit > 0)
+			bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
+		for (i=State2.numdigit; i<3; i++)
 			*bp++ = '_';
 		set_status(buf);
-	} else if (State.multi) {
+	} else if (State2.multi) {
 		bp = scopy_char(bp, multicmds[State.base].cmd, '\'');
-		if (State.numdigit > 0) {
-			*bp++ = State.digval;
-			if (State.numdigit > 1)
-				*bp++ = State.digval2;
+		if (State2.numdigit > 0) {
+			*bp++ = (char) State2.digval;
+			if (State2.numdigit > 1)
+				*bp++ = State2.digval2;
 		}
 		set_status(buf);
-	} else if (State.rarg) {
+	} else if (State2.rarg) {
 		/* Commands with arguments */
-		bp = scopy_char(bp, argcmds[State.base].cmd, State.ind?'\015':' ');
-		if (State.dot) {
+		bp = scopy_char(bp, argcmds[State.base].cmd, State2.ind?'\015':' ');
+		if (State2.dot) {
 			*bp++ = 's';
 			*bp++ = '_';
 		} else {
-			if (State.numdigit > 0)
-				bp = num_arg_0(bp, (unsigned int)State.digval, (int)State.numdigit);
-			for (i=State.numdigit; i<2; i++)
+			if (State2.numdigit > 0)
+				bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
+			for (i=State2.numdigit; i<2; i++)
 				*bp++ = '_';
 		}
 		set_status(buf);
-	} else if (State.test != TST_NONE) {
+	} else if (State2.test != TST_NONE) {
 		*bp++ = 'x';
-		*bp++ = "=\013\035<\011>\012"[State.test];
+		*bp++ = "=\013\035<\011>\012"[State2.test];
 		*bp++ = '_';
 		*bp++ = '?';
 		set_status(buf);
 	} else if (cata) {
-		const opcode op = current_catalogue(State.digval);
+		const opcode op = current_catalogue(State2.digval);
 		char b2[16];
 		const char *p;
 
 		bp = scopy(bp, "\177\006\006");
 		p = catcmd(op, b2);
-		if (*p != COMPLEX_PREFIX && State.cmplx)
+		if (*p != COMPLEX_PREFIX && State2.cmplx)
 			*bp++ = COMPLEX_PREFIX;
 		bp = scopy(bp, p);
 		set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
-			set_x(&CONSTANT(State.digval), NULL);
+			set_x(&CONSTANT(State2.digval), NULL);
 			skip = 1;
-		} else if (cata == CATALOGUE_CONV && State.runmode) {
+		} else if (cata == CATALOGUE_CONV && State2.runmode) {
 			decNumber x, r;
 			decimal64 z;
 
@@ -1167,25 +1167,25 @@ void display(void) {
 			set_x(&z, NULL);
 			skip = 1;
 		}
-	} else if (State.status) {
+	} else if (State2.status) {
 		show_status();
 		skip = 1;
-	} else if (State.arrow_alpha) {
+	} else if (State2.arrow_alpha) {
 		show_alpha();
-	} else if (State.runmode) {
+	} else if (State2.runmode) {
 		if (DispMsg) {
-			if (State.disp_small) {
+			if (State2.disp_small) {
 				set_status_sized(DispMsg, 1);
-				State.disp_small = 0;
+				State2.disp_small = 0;
 			} else
 				set_status(DispMsg);
 			DispMsg = NULL;
-		} else if (State.alphas) {
+		} else if (State2.alphas) {
 #if 0
 			set_digits_string("AlpHA", 0);
 #endif
 			bp = scopy(buf, Alpha);
-			j = State.alpha_pos;
+			j = State2.alpha_pos;
 			if (j != 0) {
 				i = slen(buf);
 				j *= 6;
@@ -1209,7 +1209,7 @@ void display(void) {
 		else
 			set_status("");
 		set_dot(STO_annun);
-		if (State.smode == SDISP_SHOW) {
+		if (State2.smode == SDISP_SHOW) {
 			unsigned short int crc = checksum_code();
 			j = SEGS_PER_DIGIT * 0;
 			for (i=0; i<4; i++) {
@@ -1228,25 +1228,25 @@ void display(void) {
 			for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)
 				set_dig(i, *bp);
 		}
-		if (cur_shift() != SHIFT_N || State.cmplx || State.arrow)
+		if (cur_shift() != SHIFT_N || State2.cmplx || State2.arrow)
 			annuc = 1;
 		goto nostk;
 	}
 	show_stack();
 nostk:	show_flags();
-	if (!skip && State.runmode && !State.version) {
+	if (!skip && State2.runmode && !State2.version) {
 		p = get_cmdline();
 		if (p == NULL || cata)
-			format_reg(get_reg_n(State.show_register), NULL);
+			format_reg(get_reg_n(ShowRegister), NULL);
 		else
 			disp_x(p);
 	}
 	if (annuc)
 		annunicators();
 skpall:	finish_display();
-	State.version = 0;
-	State.smode = SDISP_NORMAL;
-	State.show_register = regX_idx;
+	State2.version = 0;
+	State2.smode = SDISP_NORMAL;
+	ShowRegister = regX_idx;
 }
 
 

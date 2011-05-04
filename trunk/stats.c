@@ -865,7 +865,7 @@ static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
 			(!zero && decNumberIsZero(n)) ||
 			(intg && !is_int(n, Ctx))) {
 		decNumberZero(r);
-		State.error = ERR_BAD_PARAM;
+		Error = ERR_BAD_PARAM;
 		return 1;
 	}
 	return 0;
@@ -918,7 +918,7 @@ static decNumber *qf_search(decNumber *r,
 	decNumberCopy(&t, samp_low);
 	if (qf_eval(&tv, &t, x, ctx, f) == 0)
 		return decNumberCopy(r, &t);
-	if (State.error == ERR_BAD_PARAM) {
+	if (Error == ERR_BAD_PARAM) {
 		decNumberZero(r);
 		return r;
 	}

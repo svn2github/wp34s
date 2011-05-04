@@ -243,11 +243,11 @@ void alpha_rcl(unsigned int arg, enum rarg op) {
 /* Turn alpha mode on and off
  */
 void alpha_on(decimal64 *a, decimal64 *b, decContext *ctx64) {
-	State.alphas = 1;
+	State2.alphas = 1;
 }
 
 void alpha_off(decimal64 *a, decimal64 *b, decContext *ctx64) {
-	State.alphas = 0;
+	State2.alphas = 0;
 }
 
 /* Input one character and append to alpha

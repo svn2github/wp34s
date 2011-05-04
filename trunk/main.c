@@ -100,6 +100,7 @@ void set_speed( unsigned int speed );
 // #define ALLOW_DISABLE_FLASH
 
 #define BACKUP_SRAM  __attribute__((section(".backup")))
+#define SLCDCMEM     __attribute__((section(".slcdcmem")))
 
 #ifdef ALLOW_DISABLE_FLASH
 /*
@@ -127,7 +128,7 @@ BACKUP_SRAM TPersistentRam PersistentRam;
 /*
  *  Data that is saved in the SLCD controller during deep sleep
  */
-TStateWhileOn StateWhileOn;
+SLCDCMEM TStateWhileOn StateWhileOn;
 
 /*
  *  Local data
@@ -363,7 +364,7 @@ NO_INLINE void scan_keyboard( void )
 					 */
 					i = 7;
 
-					if ( State.shifts == SHIFT_N ) {
+					if ( State2.shifts == SHIFT_N ) {
 						/*
 						 *  Insert Shift key if f,g,h still down
 						 */
@@ -560,7 +561,7 @@ void save_state_to_lcd_memory( int save )
 	int *ip, *lcd;
 	int i;
 	const int size = sizeof( StateWhileOn );
-	const int max_i = size > 40 ? 10 : size / 4;
+	const int max_i = size > 40 ? 10 : ( size + 3 ) >> 2;
 
 	/*
 	 *  10 words into even registers
@@ -580,7 +581,7 @@ void save_state_to_lcd_memory( int save )
 	}
 
 	/*
-	 *  10 bytes into odd registers
+	 *  Up to 10 bytes into odd registers
 	 */
 	if ( size > 40 ) {
 

@@ -22,81 +22,79 @@
 #ifndef DATA_H_
 #define DATA_H_
 
-#ifdef WIN32
 #pragma pack(push)
-#pragma pack(1)
-#endif
+#pragma pack(4)
 
+/*
+ *  State that must be saved across power off
+ */
 struct _state {
 // User noticeable state
 #define SB(f, p)	unsigned int f : p
 #include "statebits.h"
 #undef SB
 
-	unsigned short numdigit;
-	unsigned short shifts;
-	unsigned short digval;
-	unsigned char  digval2;
-
+	unsigned short state_pc;	// XEQ internal - don't use
+	unsigned short last_prog;	// Position of the last program statement
+	unsigned short usrpc;		// XEQ internal - don't use
+	unsigned char retstk_ptr;	// XEQ internal - don't use
 	unsigned char base;		// Base value for a command with an argument
+	unsigned char contrast;		// Display contrast
+	unsigned char int_len;		// Length of Integers
 
 	unsigned int denom_mode : 2;	// Fractions denominator mode
 	unsigned int denom_max : 14;	// Maximum denominator
 
-	unsigned int last_prog : 9;	// Position of the last program statement
-	unsigned int int_len : 6;	// Length of Integers
 	unsigned int intm : 1;		// In integer mode
+	unsigned int int_maxw : 3;	// maximum available window
 
-	unsigned int state_pc : 15;	// XEQ internal - don't use
-	unsigned int state_lift : 1;	// XEQ internal - don't use
-
-	unsigned int retstk_ptr : 4;	// XEQ internal - don't use
-	unsigned int usrpc : 9;		// XEQ internal - don't use
-	unsigned int smode : 3;		// Single short display mode
-
-	unsigned int catalogue : 5;	// In catalogue mode
 	unsigned int int_base : 4;	// Integer input/output base
-	unsigned int test : 3;		// Waiting for a test command entry
-	unsigned int int_window : 3;	// Which window to display 0=rightmost
-	unsigned int gtodot : 1;	// GTO . sequence met
-
-	unsigned int alphas : 1;	// Alpha shift key pressed
-	unsigned int cmplx : 1;		// Complex prefix pressed
-	unsigned int wascomplex : 1;	// Previous operation was complex
-
-	unsigned int arrow : 1;		// Conversion in progress
-	unsigned int multi : 1;		// Multi-word instruction being entered
-	unsigned int alphashift : 1;	// Alpha shifted to lower case
-	unsigned int version : 1;	// Version display mode
 	unsigned int implicit_rtn : 1;	// End of program is an implicit return
-	unsigned int hyp : 1;		// Entering a HYP or HYP-1 operation
-	unsigned int confirm : 2;	// Confirmation of operation required
 
-	unsigned int dot : 1;		// misc use
 	unsigned int improperfrac : 1;	// proper or improper fraction display
 	unsigned int nothousands : 1;	// , or nothing for thousands separator
-	unsigned int ind : 1;		// Indirection STO or RCL
-	unsigned int arrow_alpha : 1;	// display alpha conversion
-	unsigned int rarg : 1;		// In argument accept mode
-	unsigned int runmode : 1;	// Program mode or run mode
-	unsigned int flags : 1;		// Display state flags
 	unsigned int jg1582 : 1;	// Julian/Gregorian change over in 1582 instead of 1752
-
-	unsigned int disp_small : 1;	// Display the status message in small font
-	unsigned int int_maxw : 3;	// maximum available window
 
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode
 	unsigned int leadzero : 1;	// forced display of leading zeros in integer mode
-
-	unsigned int error : 5;		// Did an error occur, if so what code?
-	unsigned int status : 4;	// display status screen line
-
-	unsigned int show_register : 7; // temporary display (not X)
-
-	unsigned int contrast : 4;	// Display contrast
-	unsigned int alpha_pos : 3;	// Display position inside alpha
 	unsigned int entryp : 1;	// Has the user entered something since the last program stop
+	unsigned int state_lift : 1;	// XEQ internal - don't use
+
+};
+
+/*
+ *  State that may be lost on power off
+ */
+struct _state2 {
+
+	unsigned short digval;
+	unsigned char digval2;
+	unsigned char status;		// display status screen line
+	unsigned char alpha_pos;	// Display position inside alpha
+	unsigned char catalogue;	// In catalogue mode
+	unsigned char numdigit;
+	unsigned char shifts;		// f, g, or h shift?
+	unsigned int smode : 3;		// Single short display mode
+	unsigned int confirm : 2;	// Confirmation of operation required
+	unsigned int test : 3;		// Waiting for a test command entry
+	unsigned int int_window : 3;	// Which window to display 0=rightmost
+	unsigned int gtodot : 1;	// GTO . sequence met
+	unsigned int cmplx : 1;		// Complex prefix pressed
+	unsigned int wascomplex : 1;	// Previous operation was complex
+	unsigned int arrow : 1;		// Conversion in progress
+	unsigned int multi : 1;		// Multi-word instruction being entered
+	unsigned int version : 1;	// Version display mode
+	unsigned int hyp : 1;		// Entering a HYP or HYP-1 operation
+	unsigned int dot : 1;		// misc use
+	unsigned int ind : 1;		// Indirection STO or RCL
+	unsigned int arrow_alpha : 1;	// display alpha conversion
+	unsigned int alphas : 1;        // Alpha shift key pressed
+	unsigned int alphashift : 1;	// Alpha shifted to lower case
+	unsigned int rarg : 1;		// In argument accept mode
+	unsigned int runmode : 1;	// Program mode or run mode
+	unsigned int flags : 1;		// Display state flags
+	unsigned int disp_small : 1;	// Display the status message in small font
 
 #ifndef REALBUILD
 	unsigned int trace : 1;
@@ -104,9 +102,6 @@ struct _state {
 
 };
 
-#ifdef WIN32
-#pragma pack(pop)
-#endif
 
 typedef struct _ram {
 
@@ -122,14 +117,14 @@ typedef struct _ram {
 	s_opcode _prog[NUMPROG];
 
 	/*
-	 * Generic state
-	 */
-	struct _state _state;
-
-	/*
 	 * Random number seeds
 	 */
 	unsigned long int _rand_s1, _rand_s2, _rand_s3;
+
+	/*
+	 * Generic state
+	 */
+	struct _state _state;
 
 	/*
 	 * The program return stack
@@ -157,6 +152,11 @@ typedef struct _ram {
 	 */
 	unsigned short _deep_sleep_marker;
 
+	/*
+	 *  A ticker, incremented every 100ms
+	 */
+	volatile unsigned long _ticker;
+
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
@@ -173,20 +173,21 @@ extern TPersistentRam PersistentRam;
 #define RandS3		 (PersistentRam._rand_s3)
 #define Crc              (PersistentRam._crc)
 #define DeepSleepMarker  (PersistentRam._deep_sleep_marker)
+#define Ticker		 (PersistentRam._ticker)
 
 /*
  *  State that may get lost while the calculator is visibly off
  */
 typedef struct _while_on {
 	/*
+	 * Generic state (2)
+	 */
+	struct _state2 _state2;
+
+	/*
 	 * What to display in message area
 	 */
 	const char *_disp_msg;
-
-	/*
-	 *  A ticker, incremented every 100ms
-	 */
-	volatile unsigned long _ticker;
 
 	/*
 	 *  Another ticker which is reset on every keystroke
@@ -222,8 +223,10 @@ typedef struct _while_on {
 
 extern TStateWhileOn StateWhileOn;
 
+#pragma pack(pop)
+
+#define State2		 (StateWhileOn._state2)
 #define DispMsg		 (StateWhileOn._disp_msg)
-#define Ticker		 (StateWhileOn._ticker)
 #define Keyticks         (StateWhileOn._keyticks)
 #define LastActiveSecond (StateWhileOn._last_active_second)
 #define Voltage          (StateWhileOn._voltage)
@@ -239,5 +242,7 @@ extern TStateWhileOn StateWhileOn;
 extern volatile int WaitForLcd;	   // Sync with display refresh
 extern volatile int Pause;         // Count down for programmed pause
 extern int Running;		   // Program is active
+extern int Error;		   // Did an error occur, if so what code?
+extern int ShowRegister; 	   // temporary display (not X)
 
 #endif /* DATA_H_ */

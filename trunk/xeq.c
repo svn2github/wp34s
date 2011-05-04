@@ -56,7 +56,18 @@ int Running;
  */
 volatile int Pause;
 
-/* Define storage for the machine's program space.
+/*
+ *  Error code
+ */
+int Error;
+
+/*
+ *  Temporary display (not X)
+ */
+int ShowRegister;
+
+/*
+ *  Define storage for the machine's program space.
  */
 #define prog	((s_opcode *)(PersistentRam._prog - 1))
 
@@ -77,8 +88,8 @@ void set_bank_flags(unsigned int f) {
 }
 
 void version(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
-	State.version = 1;
-	if (!State.runmode)
+	State2.version = 1;
+	if (!State2.runmode)
 		display();
 }
 
@@ -127,7 +138,7 @@ opcode getprog(unsigned int n) {
  */
 static void set_was_complex(void) {
 	if (! Running)
-		State.wascomplex = 1;
+		State2.wascomplex = 1;
 }
 
 
@@ -139,7 +150,7 @@ static void warn(const enum errors e) {
 /* Produce an error and stop
  */
 void err(const enum errors e) {
-	State.error = e;
+	Error = e;
 	if (Running) {
 		set_running_off();
 		decpc();			// back up to errant statement
@@ -540,7 +551,7 @@ void clrall(decimal64 *a, decimal64 *b, decContext *nulc) {
 	BankFlags = 0;
 
 	set_shift(SHIFT_N);
-	State.test = TST_NONE;
+	State2.test = TST_NONE;
 
 	DispMsg = NULL;
 }
@@ -1247,9 +1258,9 @@ void cmdswap(unsigned int arg, enum rarg op) {
 /* View a specified register
  */
 void cmdview(unsigned int arg, enum rarg op) {
-	State.show_register = arg;
+	ShowRegister = arg;
 	display();
-	State.show_register = arg;
+	ShowRegister = arg;
 }
 
 
@@ -1951,7 +1962,7 @@ void op_2frac(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	getY(&z);			// Stack has been lifted already
 	decNumber2Fraction(&n, &d, &z, Ctx);
 	setXY(&d, &n);			// Set numerator and denominator
-	if (State.runmode) {
+	if (State2.runmode) {
 		decNumberDivide(&t, &n, &d, Ctx);
 		decNumberCompare(&n, &t, &z, ctx64);
 		if (decNumberIsZero(&n))
@@ -2256,9 +2267,9 @@ static void specials(const opcode op) {
 }
 
 enum trig_modes get_trig_mode(void) {
-	if (State.cmplx)
+	if (State2.cmplx)
 		return TRIG_RAD;
-	//if (State.hyp)	return TRIG_RAD;
+	//if (State2.hyp)	return TRIG_RAD;
 	return State.trigmode;
 }
 
@@ -2946,11 +2957,11 @@ static void print_step(char *tracebuf, const opcode op) {
 void reset_volatile_state(void) {
 	if (State.implicit_rtn)
 		process_cmdline_set_lift();
-	State.int_window = 0;
+	State2.int_window = 0;
 	State.int_maxw = 0;
 	State.implicit_rtn = 0;
 
-	State.smode = SDISP_NORMAL;
+	State2.smode = SDISP_NORMAL;
 }
 
 
@@ -2964,7 +2975,7 @@ void xeq(opcode op)
 	enum errors er;
 
 #ifndef REALBUILD
-	if (State.trace) {
+	if (State2.trace) {
 		char buf[16];
 		static char tracebuf[24];
 
@@ -2994,10 +3005,10 @@ void xeq(opcode op)
 		}
 	}
 
-	if ((er = State.error) != ERR_NONE) {
+	if ((er = Error) != ERR_NONE) {
 		xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
 		State = old;
-		State.error = er;
+		Error = er;
 		set_running_off();
 		RetStkPtr = 0;
 		BankFlags = 0;
@@ -3023,7 +3034,7 @@ static void xeq_single(void) {
  */
 static void xeq_xrom(void) {
 #ifndef REALBUILD
-	if (State.trace)
+	if (State2.trace)
 		return;
 #endif
 	/* Now if we've stepped into the xROM area, keep going until
@@ -3071,16 +3082,16 @@ void xeqprog(void)
 void xeqone(char *tracebuf) {
 	const opcode op = getprog(state_pc());
 #ifndef REALBUILD
-	unsigned int trace = State.trace;
+	unsigned int trace = State2.trace;
 #endif
 
 	set_running_on_sst();
 #ifndef REALBUILD
-	State.trace = 0;
+	State2.trace = 0;
 #endif
 	print_step(tracebuf, op);
 	DispMsg = tracebuf;
-	State.disp_small = 1;
+	State2.disp_small = 1;
 	incpc();
 	xeq(op);
 
@@ -3088,7 +3099,7 @@ void xeqone(char *tracebuf) {
 
 	set_running_off_sst();
 #ifndef REALBUILD
-	State.trace = trace;
+	State2.trace = trace;
 #endif
 }
 
@@ -3096,7 +3107,7 @@ void xeqone(char *tracebuf) {
  */
 void xeq_sst(char *tracebuf) {
 	reset_volatile_state();
-	if (State.runmode)
+	if (State2.runmode)
 		xeqone(tracebuf);
 	else
 		incpc();
@@ -3107,8 +3118,8 @@ void xeq_sst(char *tracebuf) {
 void xeq_bst(char *tracebuf) {
 	reset_volatile_state();
 	decpc();
-	if (State.runmode) {
-		State.disp_small = 1;
+	if (State2.runmode) {
+		State2.disp_small = 1;
 		print_step(tracebuf, getprog(state_pc()));
 		DispMsg = tracebuf;
 	}
@@ -3211,10 +3222,10 @@ static int compare(s_opcode a1, s_opcode a2, int cata) {
 static void check_cat(const enum catalogues cata, const char *name) {
 	int i;
 	char b1[16], b2[16];
-	const int oldcata = State.catalogue;
+	const int oldcata = State2.catalogue;
 	int n;
 
-	State.catalogue = cata;
+	State2.catalogue = cata;
 	n = current_catalogue_max();
 	for (i=1; i<n; i++) {
 		opcode cold = current_catalogue(i-1);
@@ -3224,7 +3235,7 @@ static void check_cat(const enum catalogues cata, const char *name) {
 					0xff & cold, 0xff & c,
 					catcmd(cold, b1), catcmd(c, b2));
 	}
-	State.catalogue = oldcata;
+	State2.catalogue = oldcata;
 }
 
 static void check_const_cat(void) {
@@ -3245,8 +3256,8 @@ void init_34s(void) {
 
 	if (checksum_all()) {
 		reset(NULL, NULL, NULL);
-		init_state();
 	}
+	init_state();
 
 #if defined(REALBUILD) || defined(WINGUI)
 	display();

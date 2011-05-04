@@ -49,31 +49,31 @@ enum confirmations {
 };
 
 enum shifts cur_shift(void) {
-	return (enum shifts) State.shifts;
+	return (enum shifts) State2.shifts;
 }
 
 void set_shift(enum shifts s) {
-	State.shifts = s;
-	State.alpha_pos = 0;
+	State2.shifts = s;
+	State2.alpha_pos = 0;
 }
 
 
 static void init_arg(const enum rarg base) {
 	State.base = base;
-	State.ind = 0;
-	State.digval = 0;
-	State.numdigit = 0;
-	State.rarg = 1;
-	State.dot = 0;
+	State2.ind = 0;
+	State2.digval = 0;
+	State2.numdigit = 0;
+	State2.rarg = 1;
+	State2.dot = 0;
 }
 
 static void init_cat(enum catalogues cat) {
 	if (cat == CATALOGUE_NONE)
 		CmdLineLength = 0;
 	process_cmdline_set_lift();
-	State.catalogue = cat;
-	State.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
-	State.digval = 0;
+	State2.catalogue = cat;
+	State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
+	State2.digval = 0;
 	set_shift(SHIFT_N);
 }
 
@@ -105,20 +105,20 @@ void init_state(void) {
         C(contrast);
 	C(jg1582);
 #undef C
-	s.shifts = SHIFT_N;
-	s.test = TST_NONE;
-	s.show_register = regX_idx;
-	s.runmode = 1;
-
 	xcopy(&State, &s, sizeof(struct _state));
+
+	State2.shifts = SHIFT_N;
+	State2.test = TST_NONE;
+	State2.runmode = 1;
+	ShowRegister = regX_idx;
 }
 
 static void init_confirm(enum confirmations n) {
-	State.confirm = n;
+	State2.confirm = n;
 }
 
 static void set_smode(const enum single_disp d) {
-	State.smode = (State.smode == d)?SDISP_NORMAL:d;
+	State2.smode = (State2.smode == d)?SDISP_NORMAL:d;
 }
 
 /* Mapping from key position to alpha in the four key planes plus
@@ -178,7 +178,7 @@ static const unsigned char alphamap[41][6] = {
 
 static unsigned char keycode_to_alpha(const keycode c, unsigned int s) 
 {
-	if (State.alphashift) {
+	if (State2.alphashift) {
 		if (s == SHIFT_N)
 			s = SHIFT_LC_N;
 		else if (s == SHIFT_G)
@@ -223,13 +223,13 @@ static int process_normal(const keycode c) {
 	case K_ARROW:
 		if (intltr(14))
 			return OP_SPEC | OP_E;
-		State.arrow = 1;
+		State2.arrow = 1;
 		break;
 	case K_CMPLX:
 		if (intltr(15))
 			return OP_SPEC | OP_F;
 		if (!State.intm)
-			State.cmplx = 1;
+			State2.cmplx = 1;
 		break;
 
 	case K10:					// STO
@@ -248,7 +248,7 @@ static int process_normal(const keycode c) {
 	case K22:	return OP_SPEC | OP_CHS;	// CHS
 	case K23:	return OP_SPEC | OP_EEX;	// EEX
 	case K24:
-		if (State.runmode)
+		if (State2.runmode)
 			return OP_SPEC | OP_CLX;
 		return STATE_BACKSPACE;
 
@@ -305,9 +305,9 @@ static int process_f_shifted(const keycode c) {
 	case K00:
 		if (intltr(10))
 			return OP_SPEC | OP_SIGMAPLUS;
-		State.hyp = 1;
-		State.dot = 1;
-		State.cmplx = 0;
+		State2.hyp = 1;
+		State2.dot = 1;
+		State2.cmplx = 0;
 		break;
 	case K01:
 		if (intltr(11))
@@ -323,7 +323,7 @@ static int process_f_shifted(const keycode c) {
 		return OP_MON | OP_TAN;
 	case K_ARROW:
 		if (intltr(14)) {
-			State.arrow = 1;
+			State2.arrow = 1;
 			break;
 		}
 		return OP_NIL | OP_P2R;
@@ -335,7 +335,7 @@ static int process_f_shifted(const keycode c) {
 	case K12:	return OP_NIL | OP_RANDOM;
 
 	case K20:
-		State.alphas = 1;
+		State2.alphas = 1;
 		process_cmdline_set_lift();
 		break;
 
@@ -357,10 +357,10 @@ static int process_f_shifted(const keycode c) {
 	case K44:	return OP_MON | OP_SQRT;
 
 	case K50:
-		if (State.intm && State.int_maxw > State.int_window)
-			State.int_window++;
+		if (State.intm && State.int_maxw > State2.int_window)
+			State2.int_window++;
 		break;
-	case K51:	State.test = TST_EQ;	break;
+	case K51:	State2.test = TST_EQ;	break;
 	case K52:	init_arg(RARG_SOLVE);	break;
 	case K53:	init_arg(RARG_PROD);	break;
 	case K54:	return OP_MON | OP_PERCHG;
@@ -384,9 +384,9 @@ static int process_g_shifted(const keycode c) {
 	set_shift(SHIFT_N);
 	switch (c) {
 	case K00:
-		State.hyp = 1;
-		State.dot = 0;
-		State.cmplx = 0;
+		State2.hyp = 1;
+		State2.dot = 0;
+		State2.cmplx = 0;
 		break;
 	case K01:	return OP_MON | OP_ASIN;
 	case K02:	return OP_MON | OP_ACOS;
@@ -417,10 +417,10 @@ static int process_g_shifted(const keycode c) {
 	case K44:	return OP_MON | OP_SQR;
 
 	case K50:	
-		if (State.intm && State.int_maxw > 0 && State.int_window > 0)
-			State.int_window--;
+		if (State.intm && State.int_maxw > 0 && State2.int_window > 0)
+			State2.int_window--;
 		break;
-	case K51:	State.test = TST_NE;	break;
+	case K51:	State2.test = TST_NE;	break;
 	case K52:	init_arg(RARG_INTG);	break;
 	case K53:	init_arg(RARG_SUM);	break;
 	case K54:	return OP_MON | OP_PERCNT;
@@ -463,7 +463,7 @@ static int process_h_shifted(const keycode c) {
 	case K21:	init_arg(RARG_SWAP);	break;	// x<>
 	case K22:	return OP_MON | OP_NOT;
 	case K23:
-		if (State.runmode)
+		if (State2.runmode)
 			set_pc(0);
 		else
 			init_confirm(confirm_clprog);
@@ -480,7 +480,7 @@ static int process_h_shifted(const keycode c) {
 	case K41:	init_cat(CATALOGUE_PROB);	break;
 	case K42:	init_cat(CATALOGUE_STATS);	break;
 	case K43:	return OP_NIL | OP_statLR;
-	case K44:	State.status = 1;		break;
+	case K44:	State2.status = 1;		break;
 
 	case K50:
 		init_cat(State.intm?CATALOGUE_INT:CATALOGUE_NORMAL);
@@ -498,7 +498,7 @@ static int process_h_shifted(const keycode c) {
 		return OP_NIL | OP_RADCOM;
 
 	case K63:					// Program<->Run mode
-		State.runmode = 1 - State.runmode;
+		State2.runmode = 1 - State2.runmode;
 		process_cmdline_set_lift();
 		break;
 	case K64:	return OP_SPEC | OP_SIGMAPLUS;
@@ -508,7 +508,7 @@ static int process_h_shifted(const keycode c) {
 
 
 static int process_normal_cmplx(const keycode c) {
-	State.cmplx = 0;
+	State2.cmplx = 0;
 	switch (c) {
 	case K01:	return check_f_key(1, OP_CMON | OP_RECIP);
 	case K02:	return check_f_key(2, OP_CDYA | OP_POW);
@@ -545,12 +545,12 @@ static int process_normal_cmplx(const keycode c) {
 
 static int process_f_shifted_cmplex(const keycode c) {
 	set_shift(SHIFT_N);
-	State.cmplx = 0;
+	State2.cmplx = 0;
 	switch (c) {
 	case K00:
-		State.hyp = 1;
-		State.dot = 1;
-		State.cmplx = 1;
+		State2.hyp = 1;
+		State2.dot = 1;
+		State2.cmplx = 1;
 		break;
 	case K01:	return OP_CMON | OP_SIN;
 	case K02:	return OP_CMON | OP_COS;
@@ -569,8 +569,8 @@ static int process_f_shifted_cmplex(const keycode c) {
 
 	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K51:
-		State.cmplx = 1;
-		State.test = TST_EQ;
+		State2.cmplx = 1;
+		State2.test = TST_EQ;
 		break;
 
 	case K60:
@@ -592,12 +592,12 @@ static int process_f_shifted_cmplex(const keycode c) {
 
 static int process_g_shifted_cmplx(const keycode c) {
 	set_shift(SHIFT_N);
-	State.cmplx = 0;
+	State2.cmplx = 0;
 	switch (c) {
 	case K00:
-		State.hyp = 1;
-		State.dot = 0;
-		State.cmplx = 1;
+		State2.hyp = 1;
+		State2.dot = 0;
+		State2.cmplx = 1;
 		break;
 	case K01:	return OP_CMON | OP_ASIN;
 	case K02:	return OP_CMON | OP_ACOS;
@@ -618,8 +618,8 @@ static int process_g_shifted_cmplx(const keycode c) {
 
 	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K51:
-		State.cmplx = 1;
-		State.test = TST_NE;
+		State2.cmplx = 1;
+		State2.test = TST_NE;
 		break;
 
 	case K60:
@@ -641,7 +641,7 @@ static int process_g_shifted_cmplx(const keycode c) {
 
 static int process_h_shifted_cmplx(const keycode c) {
 	set_shift(SHIFT_N);
-	State.cmplx = 0;
+	State2.cmplx = 0;
 	switch (c) {
 	case K12:	return OP_NIL | OP_CRUP;
 
@@ -681,19 +681,19 @@ static int process_h_shifted_cmplx(const keycode c) {
 
 /* Fairly simple routine for dealing with the HYP prefix.
  * This setting can only be followed by 4, 5, or 6 to specify
- * the function.  The inverse routines use the code too, the State.dot
+ * the function.  The inverse routines use the code too, the State2.dot
  * is 1 for normal and 0 for inverse hyperbolic.  We also have to
  * deal with the complex versions and the handling of that key and
  * the ON key are dealt with by our caller.
  */
 static int process_hyp(const keycode c) {
-	const int cmplx = State.cmplx;
-	const int dot = State.dot;
+	const int cmplx = State2.cmplx;
+	const int dot = State2.dot;
 	const opcode x = cmplx?OP_CMON:OP_MON;
 
-	State.hyp = 0;
-	State.cmplx = 0;
-	State.dot = 0;
+	State2.hyp = 0;
+	State2.cmplx = 0;
+	State2.dot = 0;
 
 	switch (c) {
 	case K01:	return x + (dot?OP_SINH:OP_ASINH);
@@ -704,9 +704,9 @@ static int process_hyp(const keycode c) {
 	case K24:
 		break;
 	default:
-		State.hyp = 1;
-		State.cmplx = cmplx;
-		State.dot = dot;
+		State2.hyp = 1;
+		State2.cmplx = cmplx;
+		State2.dot = dot;
 		break;
 	}
 	return STATE_UNFINISHED;
@@ -717,7 +717,7 @@ static int process_arrow(const keycode c) {
 	const enum shifts oldstate = cur_shift();
 
 	set_shift(SHIFT_N);
-	State.arrow = 0;
+	State2.arrow = 0;
 	switch (c) {
 	case K10:
 		if (oldstate == SHIFT_N || oldstate == SHIFT_G)
@@ -731,7 +731,7 @@ static int process_arrow(const keycode c) {
 
 	case K20:
 		if (oldstate == SHIFT_N || oldstate == SHIFT_F)
-			State.arrow_alpha = 1;
+			State2.arrow_alpha = 1;
 		break;
 
 	case K22:
@@ -766,17 +766,17 @@ static int process_arrow(const keycode c) {
 /* Process a GTO . sequence
  */
 static int gtodot_digit(const int n) {
-	unsigned int dv = State.digval;
+	unsigned int dv = State2.digval;
 	const unsigned int val = dv * 10 + n;
 
-	State.numdigit++;
-	if (State.numdigit == 2) {		// two digits starting large
+	State2.numdigit++;
+	if (State2.numdigit == 2) {		// two digits starting large
 		if (val > NUMPROG / 10)
 			return val;
 	}
-	if (State.numdigit == 3)
+	if (State2.numdigit == 3)
 		return val;
-	State.digval = val;
+	State2.digval = val;
 	return -1;
 }
 
@@ -829,22 +829,22 @@ static int process_gtodot(const keycode c) {
 #endif
 
 	case K62:		// .
-		if (State.numdigit == 0) {
+		if (State2.numdigit == 0) {
 			rawpc = 0;
 			goto fin;
 		}
 		break;
 
 	case K20:		// ENTER - short circuit processing
-		pc = State.digval;
+		pc = State2.digval;
 		break;
 
 	case K24:		// backspace
-		if (State.numdigit == 0) {
+		if (State2.numdigit == 0) {
 			pc = state_pc();
 		} else {
-			State.numdigit--;
-			State.digval /= 10;
+			State2.numdigit--;
+			State2.digval /= 10;
 		}
 	default:
 		return STATE_UNFINISHED;
@@ -852,9 +852,9 @@ static int process_gtodot(const keycode c) {
 	if (pc >= 0) {
 		rawpc = find_user_pc(pc);
 fin:		set_pc(rawpc);
-		State.gtodot = 0;
-		State.digval = 0;
-		State.numdigit = 0;
+		State2.gtodot = 0;
+		State2.digval = 0;
+		State2.numdigit = 0;
 	}
 	return STATE_UNFINISHED;
 }
@@ -865,8 +865,8 @@ fin:		set_pc(rawpc);
 static int process_alpha(const keycode c) {
 	const enum shifts oldstate = cur_shift();
 	unsigned char ch;
-	unsigned int alpha_pos = State.alpha_pos, n;
-	State.alpha_pos = 0;
+	unsigned int alpha_pos = State2.alpha_pos, n;
+	State2.alpha_pos = 0;
 #ifndef SEQUENTIAL_ROWS
 	int idx;
 #endif
@@ -931,7 +931,7 @@ fkey:		if (oldstate != SHIFT_F)
 
 	case K_CMPLX:	// Complex character menu
 		if (oldstate == SHIFT_F) {
-			init_cat(State.alphashift?CATALOGUE_ALPHA_LETTERS_LOWER:
+			init_cat(State2.alphashift?CATALOGUE_ALPHA_LETTERS_LOWER:
 						CATALOGUE_ALPHA_LETTERS_UPPER);
 			return STATE_UNFINISHED;
 		}
@@ -940,8 +940,8 @@ fkey:		if (oldstate != SHIFT_F)
 	case K20:	// Enter - maybe exit alpha mode
 		if (oldstate == SHIFT_G)
 			break;
-		State.alphas = 0;
-		State.alphashift = 0;
+		State2.alphas = 0;
+		State2.alphashift = 0;
 		return STATE_UNFINISHED;
 
 	case K21:
@@ -970,14 +970,14 @@ fkey:		if (oldstate != SHIFT_F)
 	case K40:
 		if (oldstate == SHIFT_N) {	// Alpha scroll left
 			n = alpha_pos + 1;
-			State.alpha_pos = (6*n < alen()) ? n : alpha_pos;
+			State2.alpha_pos = (6*n < alen()) ? n : alpha_pos;
 			return STATE_UNFINISHED;
 		}
 		break;
 
 	case K44:
 		if (oldstate == SHIFT_H) {
-			State.status = 1;
+			State2.status = 1;
 			return STATE_UNFINISHED;
 		}
 		break;
@@ -985,7 +985,7 @@ fkey:		if (oldstate != SHIFT_F)
 	case K50:
 		if (oldstate == SHIFT_N) {	// Alpha scroll right
 			if (alpha_pos > 0)
-				State.alpha_pos = alpha_pos-1;
+				State2.alpha_pos = alpha_pos-1;
 			return STATE_UNFINISHED;
 		}
 		if (oldstate == SHIFT_H) {	// Alpha command catalogue
@@ -1003,7 +1003,7 @@ fkey:		if (oldstate != SHIFT_F)
 
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
 		if (oldstate == SHIFT_F)
-			State.alphashift = 1 - State.alphashift;
+			State2.alphashift = 1 - State2.alphashift;
 		else if (oldstate == SHIFT_G)
 			return OP_NIL | OP_OFF;
 		else
@@ -1036,29 +1036,29 @@ fkey:		if (oldstate != SHIFT_F)
 /* Code to handle all commands with arguments */
 static int arg_eval(unsigned int dv) {
 	const int r = OP_RARG + ((State.base) << 8) +
-			(State.ind?RARG_IND:0) + dv;
+			(State2.ind?RARG_IND:0) + dv;
 	init_arg(0);
-	State.rarg = 0;
+	State2.rarg = 0;
 	return r;
 }
 
 static int arg_digit(int n) {
 	const unsigned int base = State.base;
-	const int mx = State.ind ? NUMREG : argcmds[base].lim;
-	const unsigned int val = State.digval * 10 + n;
+	const int mx = State2.ind ? NUMREG : argcmds[base].lim;
+	const unsigned int val = State2.digval * 10 + n;
 
 	if (val == TOPREALREG-1 && argcmds[base].cmplx)
 		return STATE_UNFINISHED;
-	if (State.numdigit == 0) {
+	if (State2.numdigit == 0) {
 		if (n * 10 >= mx)
 			return arg_eval(n);
 	} else {
 		if ((int) val >= mx)
 			return STATE_UNFINISHED;
 	}
-	State.digval = val;
-	State.numdigit++;
-	if (State.numdigit == 2)
+	State2.digval = val;
+	State2.numdigit++;
+	if (State2.numdigit == 2)
 		return arg_eval(val);
 	return STATE_UNFINISHED;
 }
@@ -1067,7 +1067,7 @@ static int arg_fkey(int n) {
 	const unsigned int b = State.base;
 
 	if ((b >= RARG_LBL && b <= RARG_INTG) || (b >= RARG_SF && b <= RARG_FCF)) {
-		if (State.ind || State.numdigit > 0)
+		if (State2.ind || State2.numdigit > 0)
 			return STATE_UNFINISHED;
 		if (argcmds[State.base].lim <= 100)
 			return STATE_UNFINISHED;
@@ -1098,7 +1098,7 @@ static int arg_storcl(const unsigned int n, int cmplx) {
 
 static int process_arg_dot(const unsigned int base) {
 	int r = STATE_UNFINISHED;
-	if (State.dot || argcmds[base].stckreg || State.ind)
+	if (State2.dot || argcmds[base].stckreg || State2.ind)
 		return arg_eval(regX_idx);
 	switch (base) {
 	case RARG_SCI:	r = OP_NIL | OP_FIXSCI;	break;
@@ -1106,8 +1106,8 @@ static int process_arg_dot(const unsigned int base) {
 
 	case RARG_GTO:
 		// Special GTO . sequence
-		if (State.numdigit == 0 && ! State.ind) {
-			State.gtodot = 1;
+		if (State2.numdigit == 0 && ! State2.ind) {
+			State2.gtodot = 1;
 			break;
 		}
 		return r;
@@ -1117,7 +1117,7 @@ static int process_arg_dot(const unsigned int base) {
 	}
 	/* Clean up and return the specified code */
 	init_arg(0);
-	State.rarg = 0;
+	State2.rarg = 0;
 	return r;
 }
 
@@ -1126,7 +1126,7 @@ static int process_arg(const keycode c) {
 
 	if (base >= num_argcmds) {
 		init_arg(0);
-		State.rarg = 0;
+		State2.rarg = 0;
 		return STATE_UNFINISHED;
 	}
 	switch (c) {
@@ -1151,45 +1151,45 @@ static int process_arg(const keycode c) {
 #endif
 
 	case K_ARROW:		// arrow
-		if (!State.dot && argcmds[base].indirectokay) {
-			State.ind = 1 - State.ind;
-			if (State.ind == 0 && !argcmds[base].stckreg)
-				State.dot = 0;
+		if (!State2.dot && argcmds[base].indirectokay) {
+			State2.ind = 1 - State2.ind;
+			if (State2.ind == 0 && !argcmds[base].stckreg)
+				State2.dot = 0;
 		}
 		break;
 
 	case K_CMPLX:
 	case K12:	  // I (lastY)
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regI_idx);
 		break;
 
 	case K23:	  // L (lastX)
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			return arg_eval(regL_idx);
 		break;
 	case K21:	// J
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			return arg_eval(regJ_idx);
 		break;
 	case K22:	// K
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regK_idx);
 		break;
 	case K62:		// X
 		return process_arg_dot(base);
 	case K63:		// Y
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regY_idx);
 		break;
 
 	/* STO and RCL can take an arithmetic argument */
 	case K64:		// Z register
-		if (State.dot || ( ! arg_storcl(RARG_STO_PL - RARG_STO, 1) &&
-					(argcmds[base].stckreg || State.ind)))
+		if (State2.dot || ( ! arg_storcl(RARG_STO_PL - RARG_STO, 1) &&
+					(argcmds[base].stckreg || State2.ind)))
 			return arg_eval(regZ_idx);
 		break;
 	case K54:
@@ -1197,8 +1197,8 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K44:		// T register
-		if (State.dot || ( ! arg_storcl(RARG_STO_MU - RARG_STO, 1) &&
-					(argcmds[base].stckreg || State.ind)))
+		if (State2.dot || ( ! arg_storcl(RARG_STO_MU - RARG_STO, 1) &&
+					(argcmds[base].stckreg || State2.ind)))
 			if (!argcmds[base].cmplx)
 				return arg_eval(regT_idx);
 		break;
@@ -1213,50 +1213,50 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K00:
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			return arg_eval(regA_idx);
 		return arg_fkey(0);
 	case K02:
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			return arg_eval(regC_idx);
 		return arg_fkey(2);	// F2
 #ifdef SEQUENTIAL_ROWS
 	case K01:	case K03:
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regB_idx + c - K01);
 		return arg_fkey(c - K00);
 #else
 	case K01:
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regB_idx);
 		return arg_fkey(1);	// F1
 	case K03:
-		if (State.dot || argcmds[base].stckreg || State.ind)
+		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regD_idx);
 		return arg_fkey(3);	// F3
 #endif
 
 	case K20:				// Enter is a short cut finisher
-		if (State.numdigit == 0 && !State.ind && !State.dot) {
+		if (State2.numdigit == 0 && !State2.ind && !State2.dot) {
 			if (base >= RARG_LBL && base <= RARG_INTG) {
 				init_arg(base - RARG_LBL);
-				State.multi = 1;
-				State.rarg = 0;
+				State2.multi = 1;
+				State2.rarg = 0;
 			} else if (argcmds[base].stckreg)
-				State.dot = 1;
-		} else if (State.numdigit > 0)
-			return arg_eval(State.digval);
-		else if (argcmds[base].stckreg || State.ind)
-			State.dot = 1 - State.dot;
+				State2.dot = 1;
+		} else if (State2.numdigit > 0)
+			return arg_eval(State2.digval);
+		else if (argcmds[base].stckreg || State2.ind)
+			State2.dot = 1 - State2.dot;
 		break;
 
 	case K60:
 	case K24:
 		init_arg(0);
-		State.rarg = 0;
+		State2.rarg = 0;
 		break;
 
 	default:
@@ -1278,29 +1278,29 @@ static int process_multi(const keycode c) {
 	case K20:	// Enter - exit multi mode, maybe return a result
 		if (oldstate == SHIFT_F)
 			break;
-		State.multi = 0;
-		if (State.numdigit == 0) {
+		State2.multi = 0;
+		if (State2.numdigit == 0) {
 			return STATE_UNFINISHED;
-		} else if (State.numdigit == 1) {
-			return OP_DBL + (State.base << DBL_SHIFT) + State.digval;
+		} else if (State2.numdigit == 1) {
+			return OP_DBL + (State.base << DBL_SHIFT) + State2.digval;
 		} else {
-			return OP_DBL + (State.base << DBL_SHIFT) + State.digval +
-				(State.digval2 << 16);
+			return OP_DBL + (State.base << DBL_SHIFT) + State2.digval +
+				(State2.digval2 << 16);
 		}
 
 	case K24:	// Clx - backspace, clear alpha
 		if (oldstate == SHIFT_N || oldstate == SHIFT_F) {
-			if (State.numdigit == 0)
-				State.multi = 0;
+			if (State2.numdigit == 0)
+				State2.multi = 0;
 			else
-				State.numdigit--;
+				State2.numdigit--;
 			return STATE_UNFINISHED;
 		}
 		break;
 
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
 		if (oldstate == SHIFT_F)
-			State.alphashift = 1 - State.alphashift;
+			State2.alphashift = 1 - State2.alphashift;
 		else
 			init_state();
 		return STATE_UNFINISHED;
@@ -1313,27 +1313,27 @@ static int process_multi(const keycode c) {
 	ch = keycode_to_alpha(c, oldstate);
 	if (ch == 0)
 		return STATE_UNFINISHED;
-	if (State.numdigit == 0) {
-		State.digval = ch;
-		State.numdigit = 1;
+	if (State2.numdigit == 0) {
+		State2.digval = ch;
+		State2.numdigit = 1;
 		return STATE_UNFINISHED;
-	} else if (State.numdigit == 1) {
-		State.digval2 = ch;
-		State.numdigit = 2;
+	} else if (State2.numdigit == 1) {
+		State2.digval2 = ch;
+		State2.numdigit = 2;
 		return STATE_UNFINISHED;
 	}
-	State.multi = 0;
-	return OP_DBL + (State.base << DBL_SHIFT) + State.digval +
-			(State.digval2 << 16) + (ch << 24);
+	State2.multi = 0;
+	return OP_DBL + (State.base << DBL_SHIFT) + State2.digval +
+			(State2.digval2 << 16) + (ch << 24);
 }
 
 
 static int process_test(const keycode c) {
-	int r = State.test;
-	int cmpx = State.cmplx;
+	int r = State2.test;
+	int cmpx = State2.cmplx;
 
-	State.test = TST_NONE;
-	State.cmplx = 0;
+	State2.test = TST_NONE;
+	State2.cmplx = 0;
 	switch (c) {
 	case K_CMPLX:
 	case K12:
@@ -1387,8 +1387,8 @@ static int process_test(const keycode c) {
 	default:
 		break;
 	}
-	State.test = r;
-	State.cmplx = cmpx;
+	State2.test = r;
+	State2.cmplx = cmpx;
 	return STATE_UNFINISHED;
 }
 
@@ -1426,7 +1426,7 @@ int current_catalogue_max(void) {
 		sizeof(internal_catalogue) / sizeof(const s_opcode),
 #endif
 	};
-	return catalogue_sizes[State.catalogue];
+	return catalogue_sizes[State2.catalogue];
 }
 
 
@@ -1441,7 +1441,7 @@ static opcode alpha_code(int n, const char tbl[]) {
 /* Return the opcode for entry n from the current catalogue
  */
 opcode current_catalogue(int n) {
-	switch (State.catalogue) {
+	switch (State2.catalogue) {
 	default:
 		return OP_NIL | OP_NOP;
 
@@ -1514,7 +1514,7 @@ static int process_catalogue(const keycode c) {
 		switch (c) {
 		case K30:			// XEQ accepts command
 		case K20:			// Enter accepts command
-			dv = State.digval;
+			dv = State2.digval;
 			if ((int) dv < ctmax) {
 				const opcode op = current_catalogue(dv);
 
@@ -1526,7 +1526,7 @@ static int process_catalogue(const keycode c) {
 					if (rarg == RARG_CONST || rarg == RARG_CONST_CMPLX || rarg == RARG_CONV || rarg == RARG_ALPHA)
 						return op;
 					if (rarg >= RARG_TEST_EQ && rarg <= RARG_TEST_GE) {
-						State.test = TST_EQ + (rarg - RARG_TEST_EQ);
+						State2.test = TST_EQ + (rarg - RARG_TEST_EQ);
 						return STATE_UNFINISHED;
 					}
 					init_arg(rarg);
@@ -1546,7 +1546,7 @@ static int process_catalogue(const keycode c) {
 			if (CmdLineLength > 0 && Keyticks < 30) {
 				if (--CmdLineLength > 0)
 					goto search;
-				State.digval = 0;
+				State2.digval = 0;
 			} else
 				init_cat(CATALOGUE_NONE);
 			return STATE_UNFINISHED;
@@ -1556,16 +1556,16 @@ static int process_catalogue(const keycode c) {
 			return STATE_UNFINISHED;
 
 		case K40:
-			if (State.digval > 0)
-				State.digval--;
+			if (State2.digval > 0)
+				State2.digval--;
 			else
-				State.digval = ctmax-1;
+				State2.digval = ctmax-1;
 			CmdLineLength = 0;
 			return STATE_UNFINISHED;
 
 		case K50:
-			if ((int) ++State.digval >= ctmax)
-				State.digval = 0;
+			if ((int) ++State2.digval >= ctmax)
+				State2.digval = 0;
 			CmdLineLength = 0;
 			return STATE_UNFINISHED;
 
@@ -1599,17 +1599,17 @@ search:
 			const unsigned char c = remap_chars(cmd[i]);
 			const unsigned char cl = 0xff&Cmdline[i];
 			if (c > cl) {
-				State.digval = dv;
+				State2.digval = dv;
 				return STATE_UNFINISHED;
 			} else if (c < cl)
 				break;
 		}
 		if (Cmdline[i] == '\0') {
-			State.digval = dv;
+			State2.digval = dv;
 			return STATE_UNFINISHED;
 		}
 	}
-	State.digval = ctmax-1;
+	State2.digval = ctmax-1;
 	return STATE_UNFINISHED;
 }
 
@@ -1617,20 +1617,20 @@ search:
 static int process_confirm(const keycode c) {
 	switch (c) {
 	case K63:			// Yes
-		switch (State.confirm) {
+		switch (State2.confirm) {
 		case confirm_clall:	clrall(NULL, NULL, NULL);	break;
 		case confirm_reset:	reset(NULL, NULL, NULL);	break;
 		case confirm_clprog:	clrprog();
 		}
-		State.confirm = confirm_none;
-		State.digval = 0;
+		State2.confirm = confirm_none;
+		State2.digval = 0;
 		break;
 
 	//case K60:
 	case K24:
 	case K32:			// No
-		State.confirm = 0;
-		State.digval = 0;
+		State2.confirm = 0;
+		State2.digval = 0;
 		break;
 	default:			// No state change
 		break;
@@ -1639,7 +1639,7 @@ static int process_confirm(const keycode c) {
 }
 
 static int process_status(const keycode c) {
-	int n = State.status - 1;
+	int n = State2.status - 1;
 
 	switch (c) {
 	case K61:	n = 0;	break;
@@ -1675,7 +1675,7 @@ static int process_status(const keycode c) {
 	default:
 		n = -1; 
 	}
-	State.status = n+1;
+	State2.status = n+1;
 	return STATE_UNFINISHED;
 }
 
@@ -1735,27 +1735,27 @@ static int process(const int c) {
 	 * common across all modes.  Shifted modes need to check this themselves
 	 * if required.
 	 */
-	if (c == K60 && s == SHIFT_N && ! State.catalogue) {
+	if (c == K60 && s == SHIFT_N && ! State2.catalogue) {
 		init_state();
 		return STATE_UNFINISHED;
 	}
 
-	if (State.status)
+	if (State2.status)
 		return process_status((const keycode)c);
 
-	if (State.confirm)
+	if (State2.confirm)
 		return process_confirm((const keycode)c);
 
-	if (State.rarg)
+	if (State2.rarg)
 		return process_arg((const keycode)c);
 
-	if (State.gtodot)
+	if (State2.gtodot)
 		return process_gtodot((const keycode)c);
 
-	if (State.hyp)
+	if (State2.hyp)
 		return process_hyp((const keycode)c);
 
-	if (State.test != TST_NONE)
+	if (State2.test != TST_NONE)
 		return process_test((const keycode)c);
 
 	// Process shift keys directly
@@ -1772,19 +1772,19 @@ static int process(const int c) {
 		return STATE_UNFINISHED;
 	}
 
-	if (State.catalogue)
+	if (State2.catalogue)
 		return process_catalogue((const keycode)c);
 
-	if (State.multi)
+	if (State2.multi)
 		return process_multi((const keycode)c);
 
-	if (State.alphas)
+	if (State2.alphas)
 		return process_alpha((const keycode)c);
 
-	if (State.arrow)
+	if (State2.arrow)
 		return process_arrow((const keycode)c);
 
-	if (State.cmplx) {
+	if (State2.cmplx) {
 		if (s == SHIFT_F)
 			return process_f_shifted_cmplex((const keycode)c);
 		if (s == SHIFT_G)
@@ -1821,9 +1821,9 @@ void process_keycode(int c) {
 		break;
 
 	case STATE_BACKSPACE:
-		if (! State.runmode)
+		if (! State2.runmode)
 			delprog();
-		else if (State.alphas) {
+		else if (State2.alphas) {
 			char *p = find_char(Alpha, '\0');
 			if (p > Alpha)
 				*--p = '\0';
@@ -1839,7 +1839,7 @@ void process_keycode(int c) {
 		break;
 
 	default:
-		if (State.runmode) {
+		if (State2.runmode) {
 			xeq(c);
 			xeqprog();
 		} else

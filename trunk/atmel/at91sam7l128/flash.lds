@@ -89,8 +89,15 @@ SECTIONS
 
     .bss (NOLOAD) : 
     {
+        . = ALIGN(4);
         _szero = .;
         *(.bss)
+    } >sram
+    
+    .slcdcmem (NOLOAD) :
+    {
+        . = ALIGN(4);
+    	*(.slcdcmem)
         . = ALIGN(4);
         _ezero = .;
     } >sram
