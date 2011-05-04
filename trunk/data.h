@@ -29,11 +29,6 @@
  *  State that must be saved across power off
  */
 struct _state {
-// User noticeable state
-#define SB(f, p)	unsigned int f : p
-#include "statebits.h"
-#undef SB
-
 	unsigned short state_pc;	// XEQ internal - don't use
 	unsigned short last_prog;	// Position of the last program statement
 	unsigned short usrpc;		// XEQ internal - don't use
@@ -55,11 +50,15 @@ struct _state {
 	unsigned int nothousands : 1;	// , or nothing for thousands separator
 	unsigned int jg1582 : 1;	// Julian/Gregorian change over in 1582 instead of 1752
 
-	unsigned int hms : 1;		// H.MS mode
 	unsigned int fract : 1;		// Fractions mode
 	unsigned int leadzero : 1;	// forced display of leading zeros in integer mode
 	unsigned int entryp : 1;	// Has the user entered something since the last program stop
 	unsigned int state_lift : 1;	// XEQ internal - don't use
+
+// User noticeable state
+#define SB(f, p)	unsigned int f : p
+#include "statebits.h"
+#undef SB
 
 };
 
@@ -95,6 +94,7 @@ struct _state2 {
 	unsigned int runmode : 1;	// Program mode or run mode
 	unsigned int flags : 1;		// Display state flags
 	unsigned int disp_small : 1;	// Display the status message in small font
+	unsigned int hms : 1;		// H.MS mode
 
 #ifndef REALBUILD
 	unsigned int trace : 1;

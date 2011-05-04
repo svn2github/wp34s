@@ -729,9 +729,9 @@ static void set_x(const decimal64 *rgx, char *res) {
 		seperator = SEP_NONE;
 
 	if (!State2.smode && ! State2.cmplx) {
-		if (State.hms) {
+		if (State2.hms) {
 			set_x_hms(rgx, res, decimal);
-			State.hms = 0;
+			State2.hms = 0;
 			return;
 		} else if (State.fract) {
 			if (set_x_fract(rgx, res))

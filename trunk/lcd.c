@@ -394,7 +394,7 @@ void show_flags(void) {
 		MOVE(50, FLAG_BASE);
 		PRINTF("[cat %03u]", State2.catalogue);
 	}
-	if (State.hms) {
+	if (State2.hms) {
 		MOVE(64, FLAG_BASE);
 		PRINTF("[H.MS]");
 	}

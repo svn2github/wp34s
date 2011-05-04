@@ -107,7 +107,8 @@ void init_state(void) {
 #undef C
 	xcopy(&State, &s, sizeof(struct _state));
 
-	State2.shifts = SHIFT_N;
+	xset(&State2, 0, sizeof(State2));
+	//State2.shifts = SHIFT_N;
 	State2.test = TST_NONE;
 	State2.runmode = 1;
 	ShowRegister = regX_idx;
