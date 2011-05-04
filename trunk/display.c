@@ -1346,11 +1346,11 @@ static void set_status_right(const char *str) {
 //#pragma GCC optimize "s"
 
 void set_running_off_sst() {
-	State.state_running = 0;
+	Running = 0;
 }
 
 void set_running_on_sst() {
-	State.state_running = 1;
+	Running = 1;
 }
 
 void set_running_off() {

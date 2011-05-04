@@ -1704,11 +1704,11 @@ static int process(const int c) {
 		/*
 		 *  Do nothing if not running a program
 		 */
-		if (!running() && !Pause)
+		if (!Running && !Pause)
 			return STATE_IGNORE;
 	}
 
-	if (running() || Pause ) {
+	if (Running || Pause ) {
 		/*
 		 *  Abort a running program with R/S or EXIT
 		 */
@@ -1845,7 +1845,7 @@ void process_keycode(int c) {
 		} else
 			stoprog(c);
 	}
-	if (!running() && !Pause && c != STATE_IGNORE) {
+	if (!Running && !Pause && c != STATE_IGNORE) {
 		display();
 	}
 }

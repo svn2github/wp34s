@@ -33,12 +33,12 @@ struct _state {
 #include "statebits.h"
 #undef SB
 
-	unsigned int base : 8;		// Base value for a command with an argument
+	unsigned short numdigit;
+	unsigned short shifts;
+	unsigned short digval;
+	unsigned char  digval2;
 
-	unsigned int digval2 : 8;
-	unsigned int digval : 10;
-	unsigned int numdigit : 4;
-	unsigned int shifts : 2;
+	unsigned char base;		// Base value for a command with an argument
 
 	unsigned int denom_mode : 2;	// Fractions denominator mode
 	unsigned int denom_max : 14;	// Maximum denominator
@@ -59,8 +59,6 @@ struct _state {
 	unsigned int test : 3;		// Waiting for a test command entry
 	unsigned int int_window : 3;	// Which window to display 0=rightmost
 	unsigned int gtodot : 1;	// GTO . sequence met
-
-	unsigned int state_running : 1;	// XEQ internal - don't use
 
 	unsigned int alphas : 1;	// Alpha shift key pressed
 	unsigned int cmplx : 1;		// Complex prefix pressed
@@ -238,7 +236,8 @@ extern TStateWhileOn StateWhileOn;
 /*
  *  More state, only kept while not idle
  */
-extern volatile int Pause;         // count down for programmed pause
 extern volatile int WaitForLcd;	   // Sync with display refresh
+extern volatile int Pause;         // Count down for programmed pause
+extern int Running;		   // Program is active
 
 #endif /* DATA_H_ */

@@ -1438,7 +1438,7 @@ int main(void)
 			/*
 			 *  Test if we can turn ourself completely off
 			 */
-			if ( !is_debug() && !running() && KbData == 0LL
+			if ( !is_debug() && !Running && KbData == 0LL
 			     && Pause == 0 && StartupTicks >= 10
 			     && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
 			     && Keyticks < APD_TICKS )
@@ -1487,7 +1487,7 @@ int main(void)
 			/*
 			 *  A real key was pressed
 			 */
-			if ( OnKeyPressed && k != K60 && !running() ) {
+			if ( OnKeyPressed && k != K60 && !Running ) {
 				/*
 				 *  Check for special key combinations
 				 */
@@ -1511,7 +1511,7 @@ int main(void)
 				k = -1;
 			}
 		}
-		if ( ( k != K_HEARTBEAT && k != -1 ) || running() ) {
+		if ( ( k != K_HEARTBEAT && k != -1 ) || Running ) {
 			/*
 			 *  Increase the speed of operation
 			 */
@@ -1533,7 +1533,7 @@ int main(void)
 			}
 		}
 
-		if ( Voltage <= APD_VOLTAGE || ( !running() && Keyticks >= APD_TICKS ) ) {
+		if ( Voltage <= APD_VOLTAGE || ( !Running && Keyticks >= APD_TICKS ) ) {
 			/*
 			 *  We have a reason to power the device off
 			 */

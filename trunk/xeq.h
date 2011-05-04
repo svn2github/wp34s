@@ -742,7 +742,6 @@ extern void do_conv(decNumber *, unsigned int, const decNumber *, decContext *);
 extern unsigned char remap_chars(unsigned char);
 
 /* Control program execution */
-extern int running(void);
 extern void xeq_sst(char *tracebuf);
 extern void xeq_bst(char *tracebuf);
 

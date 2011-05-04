@@ -42,9 +42,14 @@
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
 
 /* Define the number of program Ticks that must elapse between flashing the
- * RCL annunicator.
+ * RCL annunciator.
  */
 #define TICKS_PER_FLASH	(5)
+
+/*
+ *  A program is running
+ */
+int Running;
 
 /*
  *  Timer for a programmed pause
@@ -55,7 +60,7 @@ volatile int Pause;
  */
 #define prog	((s_opcode *)(PersistentRam._prog - 1))
 
-/* We need various different maths contexts.
+/* We need various different math contexts.
  * More efficient to define these globally and reuse them as needed.
  */
 decContext *Ctx, *Ctx64;
@@ -117,15 +122,11 @@ opcode getprog(unsigned int n) {
 }
 
 
-int running(void) {
-	return State.state_running;
-}
-
 /* Set a flag to indicate that a complex operation has taken place
  * This only happens if we're not in a program.
  */
 static void set_was_complex(void) {
-	if (! running())
+	if (! Running)
 		State.wascomplex = 1;
 }
 
@@ -139,7 +140,7 @@ static void warn(const enum errors e) {
  */
 void err(const enum errors e) {
 	State.error = e;
-	if (running()) {
+	if (Running) {
 		set_running_off();
 		decpc();			// back up to errant statement
 	}
@@ -396,7 +397,7 @@ unsigned int inc(const unsigned int pc) {
 	}
 	if (npc >= State.last_prog) {
 		return 0;
-		//if (!running() || pc >= State.last_prog)
+		//if (!Running || pc >= State.last_prog)
 			//return 0;
 	}
 	return npc;
@@ -419,7 +420,7 @@ int incpc(void) {
 	const unsigned int pc = inc(state_pc());
 
 	raw_set_pc(pc);
-	if (pc == 0 && running())
+	if (pc == 0 && Running)
 		State.implicit_rtn = 1;
 	return pc == 0;
 }
@@ -1385,7 +1386,7 @@ unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
 static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 	raw_set_pc(pc);
 	if (gsb) {
-		if (running()) {
+		if (Running) {
 			if (!State.implicit_rtn) {
 				RetStk[RetStkPtr++] = oldpc;
 				if (RetStkPtr >= RET_STACK_SIZE) {
@@ -1436,7 +1437,7 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 
 	if (lbl == 0)
 		err(ERR_NO_LBL);
-	if (!running() && isXROM(lbl)) {
+	if (!Running && isXROM(lbl)) {
 		lbl = 0;
 		err(ERR_RANGE);
 	}
@@ -1557,10 +1558,10 @@ void cmdconv(unsigned int arg, enum rarg op) {
  */
 void fin_tst(const int a) {
 	if (a) {
-		if (!running())
+		if (!Running)
 			DispMsg = "true";
 	} else {
-		if (running()) {
+		if (Running) {
 			if (! State.implicit_rtn)
 				incpc();
 		} else
@@ -2589,7 +2590,7 @@ void op_stoflag(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 }
 
 static void do_rtn(int plus1) {
-	if (running() && RetStkPtr > 0) {
+	if (Running && RetStkPtr > 0) {
 		raw_set_pc(RetStk[--RetStkPtr]);
 		RetStk[RetStkPtr] = 0;
 		if (plus1)
@@ -2612,7 +2613,7 @@ void op_rtnp1(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 }
 
 void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
-	if (running())	set_running_off();
+	if (Running)	set_running_off();
 	else		set_running_on();
 }
 
@@ -2967,7 +2968,7 @@ void xeq(opcode op)
 		char buf[16];
 		static char tracebuf[24];
 
-		if (running())
+		if (Running)
 			print_step(tracebuf, op);
 		else
 			sprintf(tracebuf, "%04X:%s", op, prt(op, buf));
@@ -3040,7 +3041,7 @@ void xeqprog(void)
 {
 	int state = 0;
 
-	if ( running() || Pause ) {
+	if ( Running || Pause ) {
 #if defined(REALBUILD) || defined(WINGUI)
 		long long last_ticker = Ticker;
 		state = ((int) last_ticker % (2*TICKS_PER_FLASH) < TICKS_PER_FLASH);
@@ -3050,7 +3051,7 @@ void xeqprog(void)
 		dot(RCL_annun, state);
 		finish_display();
 
-		while (!Pause && running()) {
+		while (!Pause && Running) {
 			xeq_single();
 			if (is_key_pressed()) {
 				xeq_xrom();
@@ -3058,7 +3059,7 @@ void xeqprog(void)
 			}
 		}
 	}
-	if (!running() && !Pause) {
+	if (!Running && !Pause) {
 		// Program has terminated
 		clr_dot(RCL_annun);
 		finish_display();

@@ -412,7 +412,7 @@ void show_flags(void) {
 		MOVE(10, FLAG_BASE+1);
 		PRINTF("[lift]");
 	}
-	if (State.state_running) {
+	if (Running) {
 		MOVE(18, FLAG_BASE+1);
 		PRINTF("[running]");
 	}
