@@ -70,8 +70,6 @@ static void dump1(const decNumber *a, const char *msg) {
 	fprintf(debugf, "%s: %s\n", msg ? msg : "???", b);
 	fflush(debugf);
 }
-#else
-#define dump1(a,b)
 #endif
 
 
@@ -937,12 +935,13 @@ static decNumber *qf_search(decNumber *r,
 			decNumberMin(&a, &t, &u, ctx);
 			decNumberMultiply(&v, &a, &const_0_5, ctx);
 		}
-		if (qf_eval(&vv, &v, x, ctx, f) == 0)
+		if (qf_eval(&vv, &v, x, ctx, f) == 0 || decNumberIsNaN(&vv))
 			break;
 		if (relative_error(&v, &oldv, &const_1e_24, ctx))
 			break;
 		decNumberCopy(&oldv, &v);
 	} while (solver_step(&t, &u, &v, &tv, &uv, &vv, ctx, &flags) == 0);
+
 	return decNumberCopy(r, &v);
 #else
 	return NULL;
@@ -1195,6 +1194,56 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 #endif
 }
 
+#ifndef TINY_BUILD
+static void qf_T_est(decNumber *r, const decNumber *df, const decNumber *p, const decNumber *p05, decContext *ctx) {
+	const int invert = decNumberIsNegative(p05);
+	int negate;
+	decNumber a, b, u, pc, pc05, x, x2, x3;
+
+	if (invert) {
+		decNumberSubtract(&pc, &const_1, p, ctx);
+		p = &pc;
+		decNumberMinus(&pc05, p05, ctx);
+		p05 = &pc05;
+	}
+	decNumberLn(&a, p, ctx);
+	decNumberMinus(&a, &a, ctx);
+	decNumberMultiply(&b, df, &const_1_7, ctx);
+	if (dn_lt0(decNumberCompare(&u, &a, &b, ctx))) {
+		qf_Q_est(&x, p, p05, ctx);
+		decNumberSquare(&x2, &x, ctx);
+		decNumberMultiply(&x3, &x2, &x, ctx);
+		decNumberAdd(&a, &x, &x3, ctx);
+		decNumberMultiply(&b, &a, &const_0_25, ctx);
+		decNumberDivide(&a, &b, df, ctx);
+		decNumberAdd(r, &a, &x, ctx);
+
+		decNumberDivide(&a, &x2, &const_3, ctx);
+		dn_inc(&a, ctx);
+		decNumberMultiply(&b, &a, &x3, ctx);
+		decNumberMultiply(&a, &b, &const_0_25, ctx);
+		decNumberSquare(&b, df, ctx);
+		decNumberDivide(&u, &a, &b, ctx);
+		decNumberAdd(r, r, &u, ctx);
+		negate = invert;
+	} else {
+		decNumberMultiply(&x2, df, &const_2, ctx);
+		decNumberSubtract(&b, &x2, &const_1, ctx);
+		decNumberDivide(&a, &const_PI, &b, ctx);
+		decNumberSquareRoot(&b, &a, ctx);
+		decNumberMultiply(&a, &b, &x2, ctx);
+		decNumberMultiply(&b, &a, p, ctx);
+		decNumberRecip(&a, df, ctx);
+		decNumberPower(&u, &b, &a, ctx);
+		decNumberSquareRoot(&a, df, ctx);
+		decNumberDivide(r, &a, &u, ctx);
+		negate = !invert;
+	}
+	if (negate)
+		decNumberMinus(r, r, ctx);
+}
+#endif
+
 decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber a, b, c, d, v;
@@ -1205,6 +1254,9 @@ decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (decNumberIsZero(&b)) {
 		return decNumberZero(r);
 	}
+	if (decNumberIsInfinite(&v))					// Normal in the limit
+		return qf_Q(r, x, ctx);
+
 	decNumberCompare(&a, &v, &const_1, ctx);
 	if (decNumberIsZero(&a)) {					// special case v = 1
 		decNumberMultiply(&a, &b, &const_PI, ctx);
@@ -1212,21 +1264,22 @@ decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 		decNumberDivide(&a, &c, &d, ctx);			// lower = tan(pi (x - 1/2))
 		return decNumberMinus(r, &a, ctx);
 	}
-	decNumberSubtract(&a, &const_1, x, ctx);
-	decNumberMultiply(&c, &a, x, ctx);
-	decNumberMultiply(&d, &c, &const_4, ctx);			// alpha = 4p(1-p)
-
-	decNumberDivide(&c, &const_2, &d, ctx);
-	decNumberSquareRoot(&a, &c, ctx);
-	decNumberMultiply(&c, &a, &b, ctx);
-	decNumberMultiply(&a, &c, &const__2, ctx);
-
 	decNumberCompare(&d, &v, &const_2, ctx);			// special case v = 2
 	if (decNumberIsZero(&d)) {
-		return decNumberCopy(r, &a);
+		decNumberSubtract(&a, &const_1, x, ctx);
+		decNumberMultiply(&c, &a, x, ctx);
+		decNumberMultiply(&d, &c, &const_4, ctx);		// alpha = 4p(1-p)
+
+		decNumberDivide(&c, &const_2, &d, ctx);
+		decNumberSquareRoot(&a, &c, ctx);
+		decNumberMultiply(&c, &a, &b, ctx);
+		decNumberMultiply(r, &c, &const__2, ctx);
 	}
 
-	qf_Q_est(&b, x, &b, ctx);
+	// common case v >= 3
+	qf_T_est(&c, &v, x, &b, ctx);
+	decNumberDivide(&b, &c, &const_0_9, ctx);
+	decNumberMultiply(&a, &c, &const_0_9, ctx);
 
 	return qf_search(r, x, ctx, 0, &a, &b, &cdf_T);
 #else
