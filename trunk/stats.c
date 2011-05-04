@@ -950,6 +950,15 @@ static decNumber *qf_search(decNumber *r,
 }
 
 
+/* Evaluate Ln(1 - x) accurately
+ */
+decNumber *dn_ln1m(decNumber *r, const decNumber *x, decContext *ctx) {
+	decNumber a;
+	decNumberMinus(&a, x, ctx);
+	return decNumberLn1p(r, &a, ctx);
+}
+
+
 // Normal(0,1) PDF
 // 1/sqrt(2 PI) . exp(-x^2/2)
 decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
@@ -1426,8 +1435,9 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 		return set_NaN(r);
 	}
 
-	decNumberMinus(&t, p, ctx);
-	decNumberLn1p(&u, &t, ctx);
+//	decNumberMinus(&t, p, ctx);
+//	decNumberLn1p(&u, &t, ctx);
+	dn_ln1m(&u, p, ctx);
 	decNumberDivide(&t, &u, &lam, ctx);
 	return decNumberMinus(r, &t, ctx);
 #else
@@ -1632,8 +1642,9 @@ decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
         if (decNumberIsInfinite(x))
                 return decNumberCopy(r, &const_1);
 
-	decNumberMinus(&t, &p, ctx);
-	decNumberLn1p(&u, &t, ctx);
+//	decNumberMinus(&t, &p, ctx);
+//	decNumberLn1p(&u, &t, ctx);
+	dn_ln1m(&u, &p, ctx);
 	decNumberMultiply(&t, &u, x, ctx);
 	decNumberExpm1(&u, &t, ctx);
 	return decNumberMinus(r, &u, ctx);
@@ -1644,16 +1655,18 @@ decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 
 decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
-        decNumber p, t, u, v;
+        decNumber p, t, v;
 
         if (geometric_param(r, &p, x, ctx))
                 return r;
         if (check_probability(r, x, ctx, 1))
                 return r;
-	decNumberMinus(&t, x, ctx);
-        decNumberLn1p(&v, &t, ctx);
-	decNumberMinus(&u, &p, ctx);
-        decNumberLn1p(&t, &u, ctx);
+//	decNumberMinus(&t, x, ctx);
+//	decNumberLn1p(&v, &t, ctx);
+//	decNumberMinus(&u, &p, ctx);
+//	decNumberLn1p(&t, &u, ctx);
+	dn_ln1m(&v, x, ctx);
+	dn_ln1m(&t, &p, ctx);
         return decNumberDivide(r, &v, &t, ctx);
 #else
 	return NULL;
