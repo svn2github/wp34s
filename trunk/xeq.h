@@ -699,6 +699,9 @@ extern unsigned int alen(void);
 extern long long int d64toInt(const decimal64 *n);
 extern void d64fromInt(decimal64 *n, const long long int z);
 
+extern int get_tag_n(int n);
+extern void set_tag_n(int n, int tag);
+
 extern decimal64 *get_reg_n(int);
 extern long long int get_reg_n_as_int(int);
 extern void put_reg_n_from_int(int, const long long int);

@@ -712,7 +712,31 @@ void process_cmdline_set_lift(void) {
 /* Wrapper routine to extract a specific register from a number.
  * Since we've some bank switched registers, we detect xROM space
  * here and return the alternate registers if required.
+ * Tags are handled accordingly.
  */
+int get_tag_n(int n) {
+	int shift;
+	if (isXROM(state_pc()) && n < NUMBANKREGS)
+		return 0;
+	n %= NUMREG;
+	// we have 4 bits per tag and 8 tags per integer
+	shift = (n & 0x07) << 2;
+	return (Tags[(n >> 3)] >> shift) & 0x07;
+}
+
+void set_tag_n(int n, int tag) {
+	int shift;
+	if (isXROM(state_pc()) && n < NUMBANKREGS)
+		return;
+	n %= NUMREG;
+	tag &= 0x07;
+	// we have 4 bits per tag and 8 tags per integer
+	shift = (n & 0x07) << 2;
+	n >>= 3;
+	Tags[n] = (Tags[n] & ~(0x07 << shift)) | (tag << shift);
+}
+
+
 decimal64 *get_reg_n(int n) {
 	if (isXROM(state_pc()) && n < NUMBANKREGS)
 		return BankRegs + n;
@@ -770,6 +794,7 @@ unsigned long long int get_int(const decimal64 *x, int *sgn) {
 		return dn_to_ull(&n, Ctx, sgn);
 	}
 }
+
 
 /* Some conversion routines to take decimal64s and produce integers
  */
@@ -3318,7 +3343,7 @@ void init_34s(void) {
 /* The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
  */
 static unsigned short int crc16(void *base, unsigned int length) {
-	unsigned short int crc = 0;
+	unsigned short int crc = 0x5aa5;
 	unsigned char *d = (unsigned char *)base;
 	unsigned int i;
 
@@ -3339,8 +3364,7 @@ unsigned short int checksum_code(void) {
 
 int checksum_all(void) {
 	unsigned short int oldcrc = PersistentRam._crc;
-	PersistentRam._crc = 0x5aa5;
 	PersistentRam._crc = crc16(&PersistentRam,
-			(char *) &PersistentRam._deep_sleep_marker - (char *) &PersistentRam);
+				   (char *) &PersistentRam._crc - (char *) &PersistentRam);
 	return oldcrc != PersistentRam._crc;
 }

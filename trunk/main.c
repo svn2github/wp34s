@@ -625,7 +625,8 @@ void deep_sleep( void )
 		return;
 	}
 
-	DeepSleepMarker = DEEP_SLEEP_MARKER;
+	Crc = DEEP_SLEEP_MARKER;
+	State.deep_sleep = 1;
 
 	/*
 	 *  Disable IRQ 11 in AIC and SLCD
@@ -1323,7 +1324,7 @@ int main(void)
 	/*
 	 *  Initialisation depends on the wake up reason
 	 */
-	if ( DeepSleepMarker == DEEP_SLEEP_MARKER ) {
+	if ( State.deep_sleep && Crc == DEEP_SLEEP_MARKER ) {
 		/*
 		 *  Return from deep sleep
 		 *  RTC and LCD are still running
@@ -1331,7 +1332,7 @@ int main(void)
 		unsigned char minute, second;
 		int elapsed_time;
 
-		DeepSleepMarker = 0;
+		State.deep_sleep = 0;
 
 		/*
 		 *  We've used SLCD memory to save some state, restore it and reinitialise display
