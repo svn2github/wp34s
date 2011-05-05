@@ -35,7 +35,7 @@
 
   /* Conditional code flags -- set these to 1 for best performance */
   #define DECENDIAN 1         // 1=concrete formats are endian
-  #define DECUSE64  1         // 1 to allow use of 64-bit integers
+  #define DECUSE64  0         // 1 to allow use of 64-bit integers
 
   /* Conditional check flags -- set these to 0 for best performance */
   #define DECCHECK  0         // 1 to enable robust checking

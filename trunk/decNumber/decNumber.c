@@ -3429,7 +3429,7 @@ static decNumber * decDivideOp(decNumber *res,
 /* fastpath, buffers are also always needed for the chunked copies of */
 /* of the operand coefficients.                                       */
 /* ------------------------------------------------------------------ */
-// #define FASTMUL (DECUSE64 && DECDPUN<5)
+#define FASTMUL (DECUSE64 && DECDPUN<5)
 static decNumber * decMultiplyOp(decNumber *res, const decNumber *lhs,
                                  const decNumber *rhs, decContext *set,
                                  uInt *status) {
