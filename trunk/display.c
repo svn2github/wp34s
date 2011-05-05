@@ -56,24 +56,24 @@ static const char S7_fract_GT[] = " Gt";
 // NB: this MUST be in the same order as `enum errors'
 static const char *const error_table[] = 
 {
-    // manually get the order correct!
-    0, 
-    "domain\0",
-    "bad date\0",
-    "undefined\0Op-CODE",
-    "+\237\0",
-    "-\237\0",
-    "no such\0LABEL",
-    "SLV \004 \221 \217\0NEStED",
-    "out of range\0",
-    "bad digit\0",
-    "too long\0",
-    ">8\006\006\006levels\0NEStED",
-    "stack\0CLASH",	
-    "bad mode\0",
-    "word size\0too SMmALL",
-    "too few\0dAtA Points",
-    "invalid\0ParaMmEtEr",
+	// manually get the order correct!
+	0, 
+	"domain\0",
+	"bad date\0",
+	"undefined\0Op-CODE",
+	"+\237\0",
+	"-\237\0",
+	"no such\0LABEL",
+	"SLV \004 \221 \217\0NEStED",
+	"out of range\0",
+	"bad digit\0",
+	"too long\0",
+	">8\006\006\006levels\0NEStED",
+	"stack\0CLASH",	
+	"bad mode\0",
+	"word size\0too SMmALL",
+	"too few\0dAtA Points",
+	"invalid\0ParaMmEtEr",
 };
 
 
