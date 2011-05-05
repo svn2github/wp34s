@@ -101,16 +101,19 @@ void set_speed( unsigned int speed );
 
 #define BACKUP_SRAM  __attribute__((section(".backup")))
 #define SLCDCMEM     __attribute__((section(".slcdcmem")))
+#define USER_FLASH   __attribute__((section(".userflash")))
 
+#define FORCE_RAM    __attribute__((section(".ramfunc"),noinline))
 #ifdef ALLOW_DISABLE_FLASH
 /*
  *  Being able to turn the flash off requires special measures
  */
 #define NO_INLINE    __attribute__((noinline))
-#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
+#define RAM_FUNCTION FORCE_RAM
 #else
 /*
- *  Flash is always on, no need for these special measures
+ *  Flash is always on, no need for these special measures.
+ *  FORCE_RAM stays in place for flash programming.
  */
 #define NO_INLINE
 #define RAM_FUNCTION
@@ -129,6 +132,11 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  *  Data that is saved in the SLCD controller during deep sleep
  */
 SLCDCMEM TStateWhileOn StateWhileOn;
+
+/*
+ *  Same data as in persistent RAM but in flash memory
+ */
+USER_FLASH TPersistentRam UserFlash;
 
 /*
  *  Local data
@@ -1264,6 +1272,74 @@ void idle(void)
 
 
 /*
+ *  Program the flash. Must be done from RAM.
+ *  Returns 0 if OK or non zero on error.
+ */
+FORCE_RAM int program_flash( int page_no, int buffer[ 64 ] )
+{
+	int *f = (int *) 0x100000;  // anywhere in flash is OK
+
+	lock();  // No interrupts, please!
+
+	/*
+	 *  Copy the source to the flash write buffer
+	 */
+	while ( f != (int *) 0x100100 ) {
+		*f++ = *buffer++;
+	}
+
+	/*
+	 *  Command the controller to erase and write the page
+	 */
+	AT91C_BASE_MC->MC_FCR = 0x5A000003 | ( page_no << 8 );
+	while ( ( AT91C_BASE_MC->MC_FSR & 1 ) == 0 ) {
+		// wait for flash controller to do its work
+	}
+
+	unlock(); // Done!
+	return ( AT91C_BASE_MC->MC_FSR >> 1 );
+}
+
+
+/*
+ *  Simple backup / restore
+ *  Started with ON+"B" or ON+"R"
+ */
+void flash_backup(void)
+{
+	int *p = (int *) &PersistentRam;
+	int i, err = 0;
+
+	set_speed( SPEED_HIGH );
+	process_cmdline_set_lift();
+	init_state();
+	checksum_all();
+
+	for ( i = 504; i < 512 && err == 0; ++i ) {
+		err = program_flash( i, p );
+		p += 64;
+	}
+	DispMsg = err ? "Error" : "Backed up";
+	display();
+}
+
+
+void flash_restore(void)
+{
+	set_speed( SPEED_HIGH );
+	if ( checksum_flash() ) {
+		DispMsg = "Invalid";
+	}
+	else {
+		xcopy( &PersistentRam, &UserFlash, sizeof( PersistentRam ) );
+		init_state();
+		DispMsg = "Restored";
+	}
+	display();
+}
+
+
+/*
  *  Is debugger active ?
  *  The flag is set via the JTAG probe
  */
@@ -1276,6 +1352,9 @@ int is_debug( void )
 
 
 #if 0
+/*
+ *  For debugging
+ */
 void show_keyticks(void)
 {
 	char buffer[ 6 ];
@@ -1496,17 +1575,27 @@ int main(void)
 				switch( k ) {
 
 				case K64:
-					// ON+ Increase contrast
+					// ON-"+" Increase contrast
 					if ( State.contrast != 15 ) {
 						++State.contrast;
 					}
 					break;
 
 				case K54:
-					// ON- Decrease contrast
+					// ON-"-" Decrease contrast
 					if ( State.contrast != 0 ) {
 						--State.contrast;
 					}
+					break;
+
+				case K01:
+					// ON-"B" Backup to flash
+					flash_backup();
+					break;
+
+				case K42:
+					// ON-"R" Restore from backup
+					flash_restore();
 					break;
 				}
 				// No further processing

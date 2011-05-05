@@ -55,6 +55,8 @@ struct _state {
 	unsigned int entryp : 1;	// Has the user entered something since the last program stop
 	unsigned int state_lift : 1;	// XEQ internal - don't use
 
+	unsigned int deep_sleep : 1;    // Used to wake up correctly
+
 // User noticeable state
 #define SB(f, p)	unsigned int f : p
 #include "statebits.h"
@@ -103,12 +105,16 @@ struct _state2 {
 };
 
 
+/*
+ *  This data is stored in battery backed up SRAM.
+ *  The total size is limited to 2 KB.
+ */
 typedef struct _ram {
-
 	/*
 	 * Define storage for the machine's registers.
 	 */
 	decimal64 _regs[NUMREG];
+	unsigned long _tags[(NUMREG+7)/8];	// 4 tag bits per register
 	decimal64 _bank_regs[NUMBANKREGS];
 
 	/*
@@ -147,23 +153,14 @@ typedef struct _ram {
 	 */
 	unsigned short _crc;
 
-	/*
-	 *  Magic marker for deep sleep mode
-	 */
-	unsigned short _deep_sleep_marker;
-
-	/*
-	 *  A ticker, incremented every 100ms
-	 */
-	volatile unsigned long _ticker;
-
 } TPersistentRam;
 
-extern TPersistentRam PersistentRam;
+extern TPersistentRam PersistentRam, UserFlash;
 
 #define State		 (PersistentRam._state)
 #define Alpha		 (PersistentRam._alpha)
 #define Regs		 (PersistentRam._regs)
+#define Tags		 (PersistentRam._tags)
 #define BankRegs	 (PersistentRam._bank_regs)
 #define BankFlags	 (PersistentRam._bank_flags)
 #define UserFlags	 (PersistentRam._user_flags)
@@ -172,11 +169,12 @@ extern TPersistentRam PersistentRam;
 #define RandS2		 (PersistentRam._rand_s2)
 #define RandS3		 (PersistentRam._rand_s3)
 #define Crc              (PersistentRam._crc)
-#define DeepSleepMarker  (PersistentRam._deep_sleep_marker)
-#define Ticker		 (PersistentRam._ticker)
 
 /*
- *  State that may get lost while the calculator is visibly off
+ *  State that may get lost while the calculator is visibly off.
+ *  This is saved to SLCD memory during deep sleep. The total size
+ *  is restricted to 50 bytes. Current size is 49 bytes, so the space
+ *  is pretty much exhausted.
  */
 typedef struct _while_on {
 	/*
@@ -188,6 +186,11 @@ typedef struct _while_on {
 	 * What to display in message area
 	 */
 	const char *_disp_msg;
+
+	/*
+	 *  A ticker, incremented every 100ms
+	 */
+	volatile unsigned long _ticker;
 
 	/*
 	 *  Another ticker which is reset on every keystroke
@@ -227,6 +230,7 @@ extern TStateWhileOn StateWhileOn;
 
 #define State2		 (StateWhileOn._state2)
 #define DispMsg		 (StateWhileOn._disp_msg)
+#define Ticker		 (StateWhileOn._ticker)
 #define Keyticks         (StateWhileOn._keyticks)
 #define LastActiveSecond (StateWhileOn._last_active_second)
 #define Voltage          (StateWhileOn._voltage)

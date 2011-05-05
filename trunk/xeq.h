@@ -673,6 +673,8 @@ extern unsigned int find_label_from(unsigned int, unsigned int, int);
 extern void fin_tst(const int);
 extern unsigned short int checksum_code(void);
 extern int checksum_all(void);
+extern int checksum_all(void);
+extern int checksum_flash(void);
 
 extern unsigned int get_bank_flags(void);
 extern void set_bank_flags(unsigned int);

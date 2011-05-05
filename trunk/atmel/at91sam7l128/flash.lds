@@ -46,9 +46,9 @@ MEMORY
     flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x1FBFC
     xrom  (R) :         ORIGIN = 0x11FBD0, LENGTH = 0x424
 */
-    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 12
-
-    revision (R) :      ORIGIN = 0x11FFF4, LENGTH = 12
+    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 0x800 - 12
+    revision (R) :      ORIGIN = 0x11f7f4, LENGTH = 12
+    userflash (R) :     ORIGIN = 0x11f800, LENGTH = 0x800
 }
 
 SECTIONS
@@ -86,6 +86,11 @@ SECTIONS
     {
 	*(.revision)
     } >revision
+    
+    .userflash (NOLOAD) :
+    {
+	*(.userflash)
+    } >userflash
 
     .bss (NOLOAD) : 
     {

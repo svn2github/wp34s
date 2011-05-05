@@ -3364,7 +3364,15 @@ unsigned short int checksum_code(void) {
 
 int checksum_all(void) {
 	unsigned short int oldcrc = PersistentRam._crc;
-	PersistentRam._crc = crc16(&PersistentRam,
-				   (char *) &PersistentRam._crc - (char *) &PersistentRam);
+	PersistentRam._crc =
+		crc16(&PersistentRam, (char *) &PersistentRam._crc - (char *) &PersistentRam);
 	return oldcrc != PersistentRam._crc;
 }
+
+#ifdef REALBUILD
+int checksum_flash(void) {
+	unsigned short int crc =
+		crc16(&UserFlash, (char *) &UserFlash._crc - (char *) &UserFlash);
+	return crc != UserFlash._crc;
+}
+#endif
