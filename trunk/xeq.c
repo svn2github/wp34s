@@ -1964,7 +1964,14 @@ void cmdflag(unsigned int arg, enum rarg op) {
 }
 
 void intws(unsigned int arg, enum rarg op) {
+	int im = is_intmode();
+	long long int v;
+
+	if (im)
+		v = d64toInt(&regX);
 	State.int_len = arg;
+	if (im)
+		d64fromInt(&regX, mask_value(v));	
 }
 
 
