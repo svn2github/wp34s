@@ -134,8 +134,8 @@
   // Public powers of of ten array (powers[n]==10**n, 0<=n<=10)
   extern const uInt powers[10];
   // Public lookup table used by the D2U macro (see below)
-  #define DECMAXD2U 49
-  extern const uByte d2utable[DECMAXD2U+1];
+//  #define DECMAXD2U 49
+//  extern const uByte d2utable[DECMAXD2U+1];
 
   /* ----- Macros ----- */
   // ISZERO -- return true if decNumber dn is a zero
@@ -153,6 +153,14 @@
   #define X10(i)  (((i)<<1)+((i)<<3))
   #define X100(i) (((i)<<2)+((i)<<5)+((i)<<6))
 
+  // SD2U -- static D2U macro (for compile-time calculation)
+#define SD2U(d) (((d)+DECDPUN-1)/DECDPUN)
+
+#if 1
+#define D2U(d) SD2U(d)
+#else
+  // WTF!
+
   // D2U -- return the number of Units needed to hold d digits
   // (runtime version, with table lookaside for small d)
   #if DECDPUN==8
@@ -162,8 +170,8 @@
   #else
     #define D2U(d) ((d)<=DECMAXD2U?d2utable[d]:((d)+DECDPUN-1)/DECDPUN)
   #endif
-  // SD2U -- static D2U macro (for compile-time calculation)
-  #define SD2U(d) (((d)+DECDPUN-1)/DECDPUN)
+#endif
+
 
   // MSUDIGITS -- returns digits in msu, calculated using D2U
   #define MSUDIGITS(d) ((d)-(D2U(d)-1)*DECDPUN)

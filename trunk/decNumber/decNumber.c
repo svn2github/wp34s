@@ -167,7 +167,7 @@
 const uInt powers[10]={1, 10, 100, 1000, 10000, 100000, 1000000,
                        10000000, 100000000, 1000000000};
 // Public lookup table used by the D2U macro
-const uByte d2utable[DECMAXD2U+1]=D2UTABLE;
+//const uByte d2utable[DECMAXD2U+1]=D2UTABLE;
 
 // Local constants
 #define DIVIDE    0x80             // Divide operators
@@ -249,6 +249,10 @@ static decNumber * decTrim(decNumber *, Flag, Int *);
 static Int         decUnitAddSub(const Unit *, Int, const Unit *, Int, Int,
                               Unit *, Int);
 static Int         decUnitCompare(const Unit *, Int, const Unit *, Int, Int);
+
+#ifndef xcopy
+    extern void *xcopy(void *, const void *, int);
+#endif
 
 #if !DECSUBSET
 /* decFinish == decFinalize when no subset arithmetic needed */
@@ -2116,6 +2120,16 @@ decNumber * decNumberToIntegralValue(decNumber *res, const decNumber *rhs,
 /* All fields are updated as required.  This is a utility operation,  */
 /* so special values are unchanged and no error is possible.          */
 /* ------------------------------------------------------------------ */
+#if 0
+decNumber * decNumberCopy(decNumber *dest, const decNumber *src) 
+{
+    // this works in the emulator, but not on the real build.
+    // it should, but why not?
+    
+    int n = sizeof(decNumber) + (D2U(src->digits)-1)*sizeof(Unit);
+    return (decNumber*)xcopy(dest, src, n);
+}
+#else
 decNumber * decNumberCopy(decNumber *dest, const decNumber *src) {
 
   #if DECCHECK
@@ -2143,6 +2157,7 @@ decNumber * decNumberCopy(decNumber *dest, const decNumber *src) {
     }
   return dest;
   } // decNumberCopy
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decNumberTrim -- remove insignificant zeros                        */
@@ -2229,9 +2244,7 @@ static void decToString(const decNumber *dn, char *string, Flag eng) {
     c++;
     }
   if (dn->bits&DECSPECIAL) {       // Is a special value
-#ifndef xcopy
-    extern void *xcopy(void *, const void *, int);
-#endif
+
     if (decNumberIsInfinite(dn)) {
       xcopy(c, "Infinity", sizeof("Infinity"));
 //      strcpy(c, "Infinity");
@@ -3416,7 +3429,7 @@ static decNumber * decDivideOp(decNumber *res,
 /* fastpath, buffers are also always needed for the chunked copies of */
 /* of the operand coefficients.                                       */
 /* ------------------------------------------------------------------ */
-#define FASTMUL (DECUSE64 && DECDPUN<5)
+// #define FASTMUL (DECUSE64 && DECDPUN<5)
 static decNumber * decMultiplyOp(decNumber *res, const decNumber *lhs,
                                  const decNumber *rhs, decContext *set,
                                  uInt *status) {

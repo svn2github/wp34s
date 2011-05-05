@@ -13,6 +13,8 @@
 
 // need these
 struct _ram PersistentRam;
+TStateWhileOn StateWhileOn;
+
 const char *pretty(unsigned char z) { return 0; }
 void shutdown( void ) { exit( 0 ); }
 int is_key_pressed(void) { return 0; }
