@@ -1,0 +1,50 @@
+Commands to handle the flash memory on the real calculator
+==========================================================
+
+Hold down ON and press one of the following keys:
+
+B - Backup:  This creates a copy of the RAM in flash memory.
+
+R - Restore: This restores a previously created backup. 
+             R is on the '5' key.
+
+S - SAM-BA:  Clears the GPNVM1 bit and turns the calculator off.
+             S is on the '6' key.
+             ATTENTION: You can now only boot into SAM-BA mode!
+             Without the SAM-BA software and the cable, you're lost!
+
+Do an ON+B before you want to flash a new release! After flashing,
+your backup should still be in place if you didn't press the ERASE
+button on the cable but used ON+S instead to get into SAM-BA boot mode.
+
+
+How to transfer data between the calculator and your PC
+=======================================================
+
+The whole RAM is saved to address 0x11F800 (relative address 0x1F800)
+with ON+B. This can be copied to your PC or loaded from it.
+
+1. From calculator to PC
+
+   a) Do an ON+B, then ON+S, then RESET with the cable connected.
+   b) Press ON once and start SAM-BA on the PC. It should connect.
+   c) Set the start address to 0x11F800 and the size to 0x800
+   d) Enter a file name in the receive field.
+   e) You can now receive the file with SAM-BA.
+   f) Move it under the name wp34s.dat into your emulator directory.
+   g) The emulator should accept the file. Your registers and programs
+      will than be in place.
+   h) To get your calculator back in business, start the "Boot from flash"
+      script in SAM-BA, the same procedure you should know from flashing
+      the firmware.
+   i) Power the calculator up and perform a restore with ON+R.
+
+2. From PC to calculator
+
+   a) Perform steps (a) to (c) from above. No need to set the size.
+   b) Point SAM-BA to your wp34s.dat file from the emulator.
+   c) You can now send the short file with SAM-BA.
+   d) Perform steps (h) and (i) from above.
+
+   As an option, you can concatenate the flash image file calc.bin with
+   your wp34s.dat file and send the result to the calculator as a whole.
