@@ -2120,13 +2120,10 @@ decNumber * decNumberToIntegralValue(decNumber *res, const decNumber *rhs,
 /* All fields are updated as required.  This is a utility operation,  */
 /* so special values are unchanged and no error is possible.          */
 /* ------------------------------------------------------------------ */
-#if 0
+#if 1
 decNumber * decNumberCopy(decNumber *dest, const decNumber *src) 
 {
-    // this works in the emulator, but not on the real build.
-    // it should, but why not?
-    
-    int n = sizeof(decNumber) + (D2U(src->digits)-1)*sizeof(Unit);
+    int n = (char*)(src->lsu + D2U(src->digits)) - (char*)src;
     return (decNumber*)xcopy(dest, src, n);
 }
 #else
