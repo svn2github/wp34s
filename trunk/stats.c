@@ -14,17 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Implement statistical functions.
- * The data collection and analysis commands have two different options
- * possible.  The first is to use numerically stable incrementally updating
- * algorithms.  The second is to use higher precisions accumulation variables
- * and hope that they retain sufficient accuracy for the task.
- *
- * I've chosen the latter route since our intermediate variables are well over
- * twice the number of digits and have a much much larger exponent range so
- * we should be safe.
- */
-
 #include "xeq.h"
 #include "decn.h"
 #include "stats.h"
