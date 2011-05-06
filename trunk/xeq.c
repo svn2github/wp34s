@@ -1964,9 +1964,6 @@ void cmdflag(unsigned int arg, enum rarg op) {
 }
 
 void intws(unsigned int arg, enum rarg op) {
-#if 0
-	// Alternative code that converts the entire stack and last x to the
-	// new size
 	if (is_intmode()) {
 		int i, ss = stack_size();
 		unsigned int oldlen = State.int_len;
@@ -1982,8 +1979,7 @@ void intws(unsigned int arg, enum rarg op) {
 		State.int_len = arg;
 		put_reg_n_from_int(regL_idx, mask_value(v));
 	} else
-#endif
-	State.int_len = arg;
+	    State.int_len = arg;
 }
 
 
