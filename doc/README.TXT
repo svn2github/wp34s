@@ -1,4 +1,4 @@
-March 2011
+May 2011
 
 
 This is an alpha demo of the WP34S calculator firmware for HP's 20b
@@ -29,3 +29,6 @@ The emulator does not run under Windows 2000 and likely never will.
 The PC keyboard to calculator keyboard mapping isn't entirely obvious.
 
 We are working on the precision of some functions.
+
+The displayed revision numbers in the VERS screen may differ between the manual,
+the flash image and the emulator.
