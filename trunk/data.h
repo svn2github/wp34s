@@ -40,6 +40,9 @@ struct _state {
 	unsigned int denom_mode : 2;	// Fractions denominator mode
 	unsigned int denom_max : 14;	// Maximum denominator
 
+	unsigned int last_cat : 5;	// Most recent catalogue browsed
+	unsigned int last_catpos : 7;	// Last position in said catalogue
+
 	unsigned int intm : 1;		// In integer mode
 	unsigned int int_maxw : 3;	// maximum available window
 
@@ -61,49 +64,7 @@ struct _state {
 #define SB(f, p)	unsigned int f : p
 #include "statebits.h"
 #undef SB
-
 };
-
-/*
- *  State that may be lost on power off
- */
-struct _state2 {
-
-	unsigned short digval;
-	unsigned char digval2;
-	unsigned char status;		// display status screen line
-	unsigned char alpha_pos;	// Display position inside alpha
-	unsigned char catalogue;	// In catalogue mode
-	unsigned char numdigit;
-	unsigned char shifts;		// f, g, or h shift?
-	unsigned int smode : 3;		// Single short display mode
-	unsigned int confirm : 2;	// Confirmation of operation required
-	unsigned int test : 3;		// Waiting for a test command entry
-	unsigned int int_window : 3;	// Which window to display 0=rightmost
-	unsigned int gtodot : 1;	// GTO . sequence met
-	unsigned int cmplx : 1;		// Complex prefix pressed
-	unsigned int wascomplex : 1;	// Previous operation was complex
-	unsigned int arrow : 1;		// Conversion in progress
-	unsigned int multi : 1;		// Multi-word instruction being entered
-	unsigned int version : 1;	// Version display mode
-	unsigned int hyp : 1;		// Entering a HYP or HYP-1 operation
-	unsigned int dot : 1;		// misc use
-	unsigned int ind : 1;		// Indirection STO or RCL
-	unsigned int arrow_alpha : 1;	// display alpha conversion
-	unsigned int alphas : 1;        // Alpha shift key pressed
-	unsigned int alphashift : 1;	// Alpha shifted to lower case
-	unsigned int rarg : 1;		// In argument accept mode
-	unsigned int runmode : 1;	// Program mode or run mode
-	unsigned int flags : 1;		// Display state flags
-	unsigned int disp_small : 1;	// Display the status message in small font
-	unsigned int hms : 1;		// H.MS mode
-
-#ifndef REALBUILD
-	unsigned int trace : 1;
-#endif
-
-};
-
 
 /*
  *  This data is stored in battery backed up SRAM.
@@ -170,6 +131,47 @@ extern TPersistentRam PersistentRam, UserFlash;
 #define RandS3		 (PersistentRam._rand_s3)
 #define Crc              (PersistentRam._crc)
 
+
+/*
+ *  State that may be lost on power off
+ */
+struct _state2 {
+
+	unsigned short digval;
+	unsigned char digval2;
+	unsigned char status;		// display status screen line
+	unsigned char alpha_pos;	// Display position inside alpha
+	unsigned char catalogue;	// In catalogue mode
+	unsigned char numdigit;
+	unsigned char shifts;		// f, g, or h shift?
+	unsigned int smode : 3;		// Single short display mode
+	unsigned int confirm : 2;	// Confirmation of operation required
+	unsigned int test : 3;		// Waiting for a test command entry
+	unsigned int int_window : 3;	// Which window to display 0=rightmost
+	unsigned int gtodot : 1;	// GTO . sequence met
+	unsigned int cmplx : 1;		// Complex prefix pressed
+	unsigned int wascomplex : 1;	// Previous operation was complex
+	unsigned int arrow : 1;		// Conversion in progress
+	unsigned int multi : 1;		// Multi-word instruction being entered
+	unsigned int version : 1;	// Version display mode
+	unsigned int hyp : 1;		// Entering a HYP or HYP-1 operation
+	unsigned int dot : 1;		// misc use
+	unsigned int ind : 1;		// Indirection STO or RCL
+	unsigned int arrow_alpha : 1;	// display alpha conversion
+	unsigned int alphas : 1;        // Alpha shift key pressed
+	unsigned int alphashift : 1;	// Alpha shifted to lower case
+	unsigned int rarg : 1;		// In argument accept mode
+	unsigned int runmode : 1;	// Program mode or run mode
+	unsigned int flags : 1;		// Display state flags
+	unsigned int disp_small : 1;	// Display the status message in small font
+	unsigned int hms : 1;		// H.MS mode
+
+#ifndef REALBUILD
+	unsigned int trace : 1;
+#endif
+
+};
+
 /*
  *  State that may get lost while the calculator is visibly off.
  *  This is saved to SLCD memory during deep sleep. The total size
@@ -177,11 +179,6 @@ extern TPersistentRam PersistentRam, UserFlash;
  *  is pretty much exhausted.
  */
 typedef struct _while_on {
-	/*
-	 * Generic state (2)
-	 */
-	struct _state2 _state2;
-
 	/*
 	 * What to display in message area
 	 */
@@ -202,6 +199,11 @@ typedef struct _while_on {
 	 *  Time at entering deep sleep mode
 	 */
 	unsigned short _last_active_second;
+
+	/*
+	 * Generic state (2)
+	 */
+	struct _state2 _state2;
 
 	/*
 	 *  Last measured voltage
@@ -226,8 +228,6 @@ typedef struct _while_on {
 
 extern TStateWhileOn StateWhileOn;
 
-#pragma pack(pop)
-
 #define State2		 (StateWhileOn._state2)
 #define DispMsg		 (StateWhileOn._disp_msg)
 #define Ticker		 (StateWhileOn._ticker)
@@ -239,6 +239,8 @@ extern TStateWhileOn StateWhileOn;
 #define CmdLineEex	 (StateWhileOn._cmdlineeex)
 #define CmdLineDot	 (StateWhileOn._cmdlinedot)
 #define Cmdline		 (StateWhileOn._cmdline)
+
+#pragma pack(pop)
 
 /*
  *  More state, only kept while not idle

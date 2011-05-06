@@ -64,7 +64,7 @@ int Error;
 /*
  *  Temporary display (not X)
  */
-int ShowRegister;
+int ShowRegister = regX_idx;
 
 /*
  *  Define storage for the machine's program space.

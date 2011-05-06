@@ -1340,6 +1340,24 @@ void flash_restore(void)
 
 
 /*
+ *  Set the boot bit to ROM
+ */
+FORCE_RAM void sam_ba_boot(void)
+{
+	lock();
+	/*
+	 *  Command the controller to clear GPNVM1
+	 */
+	AT91C_BASE_MC->MC_FCR = 0x5A00010C;
+	while ( ( AT91C_BASE_MC->MC_FSR & 1 ) == 0 ) {
+		// wait for flash controller to do its work
+	}
+	unlock();
+	shutdown();
+}
+
+
+/*
  *  Is debugger active ?
  *  The flag is set via the JTAG probe
  */
@@ -1596,6 +1614,11 @@ int main(void)
 				case K42:
 					// ON-"R" Restore from backup
 					flash_restore();
+					break;
+
+				case K43:
+					// ON-"S" SAM-BA boot
+					sam_ba_boot();
 					break;
 				}
 				// No further processing

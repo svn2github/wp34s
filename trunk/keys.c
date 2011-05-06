@@ -68,12 +68,22 @@ static void init_arg(const enum rarg base) {
 }
 
 static void init_cat(enum catalogues cat) {
-	if (cat == CATALOGUE_NONE)
+	if (cat == CATALOGUE_NONE) {
+		// Save last catalogue for a later restore
+		State.last_cat = State2.catalogue;
+		State.last_catpos = State2.digval;
 		CmdLineLength = 0;
+	}
 	process_cmdline_set_lift();
 	State2.catalogue = cat;
 	State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
-	State2.digval = 0;
+	if (cat != CATALOGUE_NONE && State.last_cat == cat) {
+		// Same catalogue again, restore position
+		State2.digval = State.last_catpos;
+	}
+	else {
+		State2.digval = 0;
+	}
 	set_shift(SHIFT_N);
 }
 
@@ -1516,6 +1526,7 @@ static int process_catalogue(const keycode c) {
 		case K30:			// XEQ accepts command
 		case K20:			// Enter accepts command
 			dv = State2.digval;
+
 			if ((int) dv < ctmax) {
 				const opcode op = current_catalogue(dv);
 
