@@ -5,8 +5,8 @@ This is an alpha demo of the WP34S calculator firmware for HP's 20b
 and 30b hardware.  Being alpha software, there will be problems and
 rough edges.  Please show a bit of tolerance and patience in this
 regard.  This demo will run under Windows (XP SP2 and later) or
-using WINE on Linux and Macintosh computers.
-
+using WINE on Linux and Macintosh computers. A ROM file for use on the
+real hardware is provided, too.
 
 Before asking questions or posting bug reports, please read the
 included manual.  Not all of the many features of this powerful
