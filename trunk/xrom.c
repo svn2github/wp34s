@@ -43,11 +43,6 @@
 #define TST0(t)		(OP_SPEC | (OP_X ## t ## 0)),
 #define TST1(t)		(OP_SPEC | (OP_X ## t ## 1)),
 
-// Multiword commands
-#define DLBLP(a, b, c)	xMULTI(LBLP, a, b, c)
-#define DXEQ(a, b, c)	xMULTI(XEQ, a, b, c)
-#define DLBL(a, b, c)	xMULTI(LBL, a, b, c)
-
 // Commands that take an argument
 #define ERROR(n)	xRARG(ERROR, n)
 #define LBL(n)		xRARG(LBL, n)
@@ -95,6 +90,23 @@
 #define SLVI(f)		xRARG(INISOLVE, f)
 #define SLVS(f)		xRARG(SOLVESTEP, f)
 
+// Multiword commands
+#define DLBLP(a, b, c)	xMULTI(LBLP, a, b, c)
+#define DXEQ(a, b, c)	xMULTI(XEQ, a, b, c)
+#define DLBL(a, b, c)	xMULTI(LBL, a, b, c)
+
+// Alpha commands
+#define alpha1(c)	xRARG(ALPHA, c)
+#define alpha2(a, b)	alpha1(a)  alpha1(b)
+#ifdef MULTI_ALPHA
+#define alpha3(a, b, c)	xMULTI(ALPHA, a, b, c)
+#else
+#define alpha3(a, b, c)	alpha1(a)  alpha1(b)  alpha1(c)
+#endif
+#define alpha4(a,b,c,d)	alpha3(a,b,c)  alpha1(d)
+#define alpha5(a,b,c,d,e)	alpha3(a,b,c)  alpha2(d,e)
+#define alpha6(a,b,c,d,e,f)	alpha3(a,b,c)  alpha3(d,e,f)
+
 // Define the constants we know about
 #define PI		xCONST(PI)
 #define ZERO		iCONST(ZERO)
@@ -109,6 +121,7 @@
 #define AVIEW		NILADIC(VIEWALPHA)
 #define DECM		NILADIC(FLOAT)
 #define CLSTK		NILADIC(CLSTK)
+#define CLALPHA		NILADIC(CLRALPHA)
 #define STOP		NILADIC(RS)
 #define TST_INFINITE	NILADIC(XisInf)
 #define TST_NaN		NILADIC(XisNaN)
@@ -885,6 +898,24 @@ const s_opcode xrom[] = {
 #undef R_FV
 #undef R_PV
 #undef R_PMT
+
+/**************************************************************************/
+	DLBL('W', 'H', 'O')
+		CLALPHA
+		alpha5('W', 'P', '-', '3', '4')
+		GSB(0)
+		alpha2('b', 'y')
+		GSB(0)
+		alpha5('P', 'a', 'u', 'l', 'i')
+		GSB(0)
+		alpha6('W', 'a', 'l', 't', 'e', 'r')
+		GSB(0)
+		alpha6('M', 'a', 'r', 'c', 'u', 's')
+	LBL(0)
+		AVIEW
+		PAUSE(8)
+		CLALPHA
+	RTN
 };
 
 const unsigned short int xrom_size = sizeof(xrom) / sizeof(const s_opcode);
