@@ -902,8 +902,7 @@ const s_opcode xrom[] = {
 /**************************************************************************/
 	DLBL('W', 'H', 'O')
 		CLALPHA
-		alpha5('W', 'P', '-', '3', '4')
-		GSB(0)
+		GSB(1)
 		alpha2('b', 'y')
 		GSB(0)
 		alpha5('P', 'a', 'u', 'l', 'i')
@@ -911,6 +910,9 @@ const s_opcode xrom[] = {
 		alpha6('W', 'a', 'l', 't', 'e', 'r')
 		GSB(0)
 		alpha6('M', 'a', 'r', 'c', 'u', 's')
+		GSB(0)
+	LBL(1)
+		alpha6('W', 'P', '-', '3', '4', 'S')
 	LBL(0)
 		AVIEW
 		PAUSE(8)
