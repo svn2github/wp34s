@@ -1369,6 +1369,14 @@ int is_debug( void )
 }
 
 
+void toggle_debug( void )
+{
+	DEBUG_FLAG = is_debug() ? 0 : 0xA5;
+	DispMsg = is_debug() ? "Debug ON" : "Debug OFF";
+	display();
+}
+
+
 #if 0
 /*
  *  For debugging
@@ -1430,6 +1438,7 @@ int main(void)
 		int elapsed_time;
 
 		State.deep_sleep = 0;
+		Crc = 0;
 
 		/*
 		 *  We've used SLCD memory to save some state, restore it and reinitialise display
@@ -1592,6 +1601,12 @@ int main(void)
 				 */
 				switch( k ) {
 
+				case K24:
+					// ON + <-
+					Crc = 0;
+					init_34s();
+					break;
+
 				case K64:
 					// ON-"+" Increase contrast
 					if ( State.contrast != 15 ) {
@@ -1614,6 +1629,11 @@ int main(void)
 				case K42:
 					// ON-"R" Restore from backup
 					flash_restore();
+					break;
+
+				case K03:
+					// ON+"D" Toggle Debug flag
+					toggle_debug();
 					break;
 
 				case K43:

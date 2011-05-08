@@ -2993,7 +2993,6 @@ cnst:			SET_CONST(flags);
 	*flagp = flags;
 }
 
-
 // User code flag numbers
 #define _FLAG_BRACKET_N	8
 #define _FLAG_CONST_N	9

@@ -142,6 +142,11 @@ ATOBJS := $(ATSRCS:%.c=$(OBJECTDIR)/%.o)
 ATSRCS := $(ATSRCS:%.c=atmel/%.c)
 ATHDRS := $(ATSRCS:%.c=%.h) atmel/board.h atmel/at91sam7l128/AT91SAM7L128.h 
 
+DNSRCS := decNumber.c decContext.c decimal64.c 
+DNOBJS := $(DNSRCS:%.c=$(OBJECTDIR)/%.o)
+DNSRCS := $(DNSRCS:%.c=decNumber/%.c)
+DNHDRS := $(DNSRCS:%.c=%.h) 
+
 LDCTRL := atmel/at91sam7l128/flash.lds
 MAPFILE := $(OUTPUTDIR)/mapfile.txt
 SUMMARY := $(OUTPUTDIR)/summary.txt
@@ -184,7 +189,7 @@ ifdef REALBUILD
 # Target flash
 
 $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
-		$(OBJECTDIR)/libconsts.a $(LDCTRL) Makefile
+		$(DNSRCS) $(DNHDRS) $(OBJECTDIR)/libconsts.a $(LDCTRL) Makefile
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
