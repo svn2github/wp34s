@@ -3081,7 +3081,7 @@ static void xeq_xrom(void) {
 	/* Now if we've stepped into the xROM area, keep going until
 	 * we break free.
 	 */
-	while (isXROM(state_pc()))
+	while (!Pause && isXROM(state_pc()))
 		xeq_single();
 }
 
