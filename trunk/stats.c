@@ -929,7 +929,7 @@ static decNumber *qf_search(decNumber *r,
 		if (relative_error(&v, &oldv, &const_1e_24, ctx))
 			break;
 		decNumberCopy(&oldv, &v);
-	} while (solver_step(&t, &u, &v, &tv, &uv, &vv, ctx, &flags) == 0);
+	} while (solver_step(&t, &u, &v, &tv, &uv, &vv, ctx, &flags, &relative_error) == 0);
 
 	return decNumberCopy(r, &v);
 #else
@@ -1159,6 +1159,7 @@ static int t_param(decNumber *r, decNumber *v, const decNumber *x, decContext *c
 decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber t, u, z, v;
+	int invert;
 
 	if (t_param(r, &v, x, ctx))
 		return r;
@@ -1169,15 +1170,18 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 	}
 	if (decNumberIsInfinite(&v))			// Normal in the limit
 		return cdf_Q(r, x, ctx);
-
+	if (decNumberIsZero(x))
+		return decNumberCopy(r, &const_0_5);
+	invert = ! decNumberIsNegative(x);
 	decNumberSquare(&t, x, ctx);
 	decNumberAdd(&u, &t, &v, ctx);
-	decNumberSquareRoot(&z, &u, ctx);
-	decNumberAdd(&t, &z, x, ctx);
-	decNumberDivide(&u, &t, &z, ctx);
-	decNumberMultiply(&t, &u, &const_0_5, ctx);
+	decNumberDivide(&t, &v, &u, ctx);
 	decNumberMultiply(&u, &v, &const_0_5, ctx);
-	return betai(r, &u, &u, &t, ctx);
+	betai(&z, &u, &const_0_5, &t, ctx);
+	decNumberMultiply(r, &const_0_5, &z, ctx);
+	if (invert)
+		decNumberSubtract(r, &const_1, r, ctx);
+	return r;
 #else
 	return NULL;
 #endif

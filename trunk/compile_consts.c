@@ -328,6 +328,11 @@ struct constsml constsml[] = {
 	CONSTANT("\224",	"PHI",		"1.61803398874989484820458683436563811772030917980576"),
 	CONSTANT("\224\270",	"PC_phi0",	"2.067833636E-15"),
 	CONSTANT("\237",	"INF",		"inf"),
+#if 0
+	CONSTANT("Z",		"PC_apery",	"1.20205690315959"),	// Apery's constant = zeta(3)
+	CONSTANT("Gaus",	"PC_gauss",	"0.834626841674043"),	// Gauss's constant = 1 / AGM(1, sqrt(2))
+	CONSTANT("Cat",		"PC_catalan",	"0.915965594177219"),	// Catalan's constant
+#endif
 	CONSTANT(NULL, NULL, NULL)
 };
 

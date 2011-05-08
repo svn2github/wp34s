@@ -198,7 +198,7 @@ extern void dn_inc(decNumber *, decContext *);
 extern void dn_dec(decNumber *, decContext *);
 
 extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, decContext *, unsigned int *);
-extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, decContext *, unsigned int *);
+extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, decContext *, unsigned int *, int (*)(const decNumber *, const decNumber *, const decNumber *, decContext *));
 
 extern void solver(unsigned int arg, enum rarg op);
 

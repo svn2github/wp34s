@@ -2781,15 +2781,15 @@ void decNumberSwap(decNumber *a, decNumber *b) {
 }
 
 
-/* Compare two numbers to see if they are mostly equal
+/* Compare two numbers to see if they are mostly equal.
+ * Return non-zero if they are the same.
  */
-static int slv_compare(const decNumber *a, const decNumber *b, decContext *ctx) {
+static int slv_compare(const decNumber *a, const decNumber *b, const decNumber *tol, decContext *ctx) {
 	decNumber ar, br, c;
 
 	decNumberRnd(&ar, a, ctx);
 	decNumberRnd(&br, b, ctx);
-	decNumberCompare(&c, &ar, &br, ctx);
-	return decNumberIsZero(&c);
+	return decNumberIsZero(decNumberCompare(&c, &ar, &br, ctx));
 }
 
 /* Define how with use the flags.
@@ -2829,7 +2829,7 @@ static int slv_compare(const decNumber *a, const decNumber *b, decContext *ctx) 
 
 int solver_step(decNumber *a, decNumber *b, decNumber *c,
 		decNumber *fa, decNumber *fb, const decNumber *fc, decContext *ctx,
-		unsigned int *statep) {
+		unsigned int *statep, int (*compare)(const decNumber *, const decNumber *, const decNumber *, decContext *)) {
 	decNumber q, x, y, z;
 	int s1, s2;
 	unsigned int slv_state = *statep;
@@ -2937,9 +2937,9 @@ nonconst:
 			limit_jump(&q, a, b, ctx);
 		}
 	}
-	if (slv_compare(c, &q, ctx)) goto failed;
-	if (slv_compare(a, &q, ctx)) goto failed;
-	if (slv_compare(b, &q, ctx)) goto failed;
+	if (compare(c, &q, &const_1e_24, ctx)) goto failed;
+	if (compare(a, &q, &const_1e_24, ctx)) goto failed;
+	if (compare(b, &q, &const_1e_24, ctx)) goto failed;
 	decNumberCopy(c, &q);
 	*statep = slv_state;
 	return 0;
@@ -3033,7 +3033,7 @@ void solver(unsigned int arg, enum rarg op) {
 #endif
 
 		getX(&fc);
-		r = solver_step(&a, &b, &c, &fa, &fb, &fc, Ctx, &flags);
+		r = solver_step(&a, &b, &c, &fa, &fb, &fc, Ctx, &flags, &slv_compare);
 		setX(r==0?&const_0:&const_1);
 	}
 
