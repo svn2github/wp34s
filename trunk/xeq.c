@@ -1470,15 +1470,16 @@ void cmdmultilblp(const opcode o, enum multiops mopr) {
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
 	unsigned int lbl = findmultilbl(o);
+	int is_gsb = mopr != DBL_GTO;
 
 	if (lbl == 0)
 		err(ERR_NO_LBL);
-	if (!Running && isXROM(lbl)) {
+	if (!Running && isXROM(lbl) && ! is_gsb) {
 		lbl = 0;
 		err(ERR_RANGE);
 	}
 
-	cmdgtocommon(mopr != DBL_GTO, lbl);
+	cmdgtocommon(is_gsb, lbl);
 }
 
 static void do_xrom(int lbl) {
