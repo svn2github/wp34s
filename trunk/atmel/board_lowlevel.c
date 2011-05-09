@@ -203,7 +203,8 @@ void LowLevelInit(void)
 #else
     // Settings borrowed from HP20b SDK
     AT91C_BASE_WDTC->WDTC_WDMR = 
-        (AT91C_WDTC_WDV/8)    // (WDTC) Watchdog Timer Restart set to 2 second
+        (AT91C_WDTC_WDV/2)    // (WDTC) Watchdog Timer Restart set to 8 second
+                              // used to be 2 seconds but we've long running code
       |  AT91C_WDTC_WDRSTEN   // (WDTC) Watchdog Reset Enable
       |  AT91C_WDTC_WDD       // (WDTC) Watchdog Delta Value
       |  AT91C_WDTC_WDDBGHLT  // (WDTC) Watchdog Debug Halt
@@ -211,6 +212,6 @@ void LowLevelInit(void)
 #endif
 
     // Remap the internal SRAM at 0x0
-    BOARD_RemapRam();
+    // BOARD_RemapRam();
 }
 

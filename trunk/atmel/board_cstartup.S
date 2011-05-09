@@ -66,7 +66,8 @@
 /* Exception vectors
  *******************/
 
-        .section    .vectors, "a"
+//        .section    .vectors, "a"
+	.section .text
 
 // =====> MvC: All vectors except irq point to reset
 

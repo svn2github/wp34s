@@ -103,24 +103,8 @@ void set_speed( unsigned int speed );
 #define SLCDCMEM     __attribute__((section(".slcdcmem")))
 #define USER_FLASH   __attribute__((section(".userflash")))
 
-#define FORCE_RAM    __attribute__((section(".ramfunc"),noinline))
-#ifdef ALLOW_DISABLE_FLASH
-/*
- *  Being able to turn the flash off requires special measures
- */
-#define NO_INLINE    __attribute__((noinline))
-#define RAM_FUNCTION FORCE_RAM
-#else
-/*
- *  Flash is always on, no need for these special measures.
- *  FORCE_RAM stays in place for flash programming.
- */
-#define NO_INLINE
-#define RAM_FUNCTION
-#endif
-
-// This helps saving precious stack space in IRQs
-#define IRQ_STATIC // static
+#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
+//#define NO_INLINE    __attribute__((noinline))
 
 
 /*
@@ -149,6 +133,7 @@ unsigned char UserHeartbeatCountDown;
 unsigned char Contrast;
 volatile unsigned char LcdFadeOut;
 volatile unsigned char InIrq;
+unsigned char DebugFlag;
 #ifdef SLEEP_ANNUNCIATOR
 unsigned char SleepAnnunciatorOn;
 #endif
@@ -232,15 +217,15 @@ void unlock( void )
 /*
  *  Scan the keyboard
  */
-NO_INLINE void scan_keyboard( void )
+void scan_keyboard( void )
 {
-	IRQ_STATIC int i, k;
-	IRQ_STATIC unsigned char m;
-	IRQ_STATIC union _ll {
+	int i, k;
+	unsigned char m;
+	union _ll {
 		unsigned char c[ 8 ];
 		unsigned long long ll;
 	} keys;
-	IRQ_STATIC long long last_keys;
+	long long last_keys;
 
 	/*
 	 *  Assume no key is down
@@ -462,7 +447,7 @@ void disable_lcd( void )
  *  Go to idle mode
  *  Runs from SRAM to be able to turn off flash
  */
-RAM_FUNCTION void go_idle( void )
+void go_idle( void )
 {
 	if ( is_debug() ) {
 		/*
@@ -475,14 +460,6 @@ RAM_FUNCTION void go_idle( void )
 	 *  Voltage regulator to deep mode
 	 */
 	SUPC_EnableDeepMode();
-
-#ifdef ALLOW_DISABLE_FLASH
-	/*
-	 *  Disable flash memory in order to save power
-	 */
-	FlashWakeupTime = (unsigned short) 2; // ( 2 + ( 3 * ClockSpeed ) / 100000 );
-	SUPC_DisableFlash();
-#endif
 
 	/*
 	 *  Disable the processor clock and go to sleep
@@ -1017,7 +994,7 @@ void user_heartbeat( void )
  *  The SLCD ENDFRAME interrupt
  *  Called every 640 slow clocks (about 51 Hz)
  */
-NO_INLINE void LCD_interrupt( void )
+void LCD_interrupt( void )
 {
 	InIrq = 1;
 
@@ -1088,32 +1065,11 @@ NO_INLINE void LCD_interrupt( void )
 
 
 /*
- *  Common functionality for all interrupt handling
- */
-RAM_FUNCTION void irq_common( void )
-{
-#ifdef ALLOW_DISABLE_FLASH
-	/*
-	 *  Flash memory might be disabled, turn it on again
-	 */
-	if ( FlashWakeupTime != 0 ) {
-		SUPC_EnableFlash( FlashWakeupTime );  // minimum 60 microseconds wake up time
-		FlashWakeupTime = 0;
-	}
-#endif
-	/*
-	 *  Voltage regulator to normal mode
-	 */
-	SUPC_DisableDeepMode();
-}
-
-
-/*
  *  The SLCDC interrupt handler
  */
-RAM_FUNCTION void SLCD_irq( void )
+void SLCD_irq( void )
 {
-	irq_common();
+	SUPC_DisableDeepMode();
 
 	if ( SLCDC_GetInterruptStatus() & AT91C_SLCDC_ENDFRAME ) {
 		/*
@@ -1130,7 +1086,7 @@ RAM_FUNCTION void SLCD_irq( void )
  */
 RAM_FUNCTION void system_irq( void )
 {
-	irq_common();
+	SUPC_DisableDeepMode();
 
 	/*
 	 *  Set speed to a minimum of 2 MHz for all irq handling.
@@ -1286,32 +1242,44 @@ void idle(void)
 
 
 /*
- *  Program the flash. Must be done from RAM.
- *  Returns 0 if OK or non zero on error.
+ *  Issue a command to the flash controller. Must be done from RAM.
+ *  Returns 0 if OK or non zero on error. Re-enables interrupts.
  */
-FORCE_RAM int program_flash( int page_no, int buffer[ 64 ] )
+RAM_FUNCTION int flash_command( unsigned int cmd )
 {
-	int *f = (int *) 0x100000;  // anywhere in flash is OK
-
 	lock();  // No interrupts, please!
 
-	/*
-	 *  Copy the source to the flash write buffer
-	 */
-	while ( f != (int *) 0x100100 ) {
-		*f++ = *buffer++;
-	}
-
-	/*
-	 *  Command the controller to erase and write the page
-	 */
-	AT91C_BASE_MC->MC_FCR = 0x5A000003 | ( page_no << 8 );
+	AT91C_BASE_MC->MC_FCR = cmd;
 	while ( ( AT91C_BASE_MC->MC_FSR & 1 ) == 0 ) {
 		// wait for flash controller to do its work
 	}
 
 	unlock(); // Done!
 	return ( AT91C_BASE_MC->MC_FSR >> 1 );
+}
+
+
+/*
+ *  Program the flash.
+ *  Returns 0 if OK or non zero on error.
+ */
+int program_flash( int page_no, int buffer[ 64 ] )
+{
+	int *f = (int *) 0x100000;  // anywhere in flash is OK
+
+	/*
+	 *  Copy the source to the flash write buffer
+	 *  If buffer isn't given, assume the copying is already done.
+	 */
+	while ( buffer != NULL && f != (int *) 0x100100 ) {
+		*f++ = *buffer++;
+	}
+
+	/*
+	 *  Command the controller to erase and write the page.
+	 *  Will re-enable interrupts, too.
+	 */
+	return flash_command( 0x5A000003 | ( page_no << 8 ) );
 }
 
 
@@ -1356,36 +1324,29 @@ void flash_restore(void)
 /*
  *  Set the boot bit to ROM
  */
-FORCE_RAM void sam_ba_boot(void)
+void sam_ba_boot(void)
 {
-	lock();
 	/*
 	 *  Command the controller to clear GPNVM1
 	 */
-	AT91C_BASE_MC->MC_FCR = 0x5A00010C;
-	while ( ( AT91C_BASE_MC->MC_FSR & 1 ) == 0 ) {
-		// wait for flash controller to do its work
-	}
-	unlock();
+	flash_command( 0x5A00010C );
 	shutdown();
 }
 
 
 /*
  *  Is debugger active ?
- *  The flag is set via the JTAG probe
+ *  The flag is set via ON+D
  */
-#define DEBUG_FLAG ((char *)(&PersistentRam))[ 0x7ff ]
-
 int is_debug( void )
 {
-	return DEBUG_FLAG == 0xA5;
+	return DebugFlag == 0xA5;
 }
 
 
 void toggle_debug( void )
 {
-	DEBUG_FLAG = is_debug() ? 0 : 0xA5;
+	DebugFlag = is_debug() ? 0 : 0xA5;
 	DispMsg = is_debug() ? "Debug ON" : "Debug OFF";
 	display();
 }
@@ -1437,7 +1398,7 @@ int main(void)
 	/*
 	 *  Force DEBUG mode for JTAG debugging
 	 */
-	DEBUG_FLAG = 0; // 0xA5;
+	DebugFlag = 0; // 0xA5;
 
 #ifdef ALLOW_DEEP_SLEEP
 	/*

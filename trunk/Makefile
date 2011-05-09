@@ -182,7 +182,7 @@ tgz:
 	tar czf sci.tgz *
 
 $(DIRS):
-	mkdir $@
+	mkdir -p -v $@
 
 ifdef REALBUILD
 
