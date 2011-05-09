@@ -189,9 +189,10 @@ ifdef REALBUILD
 # Target flash
 
 $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
-		$(DNSRCS) $(DNHDRS) $(OBJECTDIR)/libconsts.a $(LDCTRL) Makefile
+		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNumber.a \
+		$(LDCTRL) Makefile
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
-		$(STARTUP) asone.c $(LIBS) -fwhole-program
+		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
 	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
@@ -244,8 +245,8 @@ xeq.h: statebits.h
 
 # Build libs and objects
 
-$(OBJECTDIR)/libdecNumber.a:
-	+@make OBJECTDIR=../$(OBJECTDIR) -C decNumber
+$(OBJECTDIR)/libdecNumber.a: $(DNSRCS) $(DNHDRS)
+	+@make OBJECTDIR=../$(OBJECTDIR) "CFLAGS=$(CFLAGS)" -C decNumber
 
 vpath %.c = atmel
 $(OBJECTDIR)/%.o: %.c

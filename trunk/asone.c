@@ -52,8 +52,8 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "string.c"
 #include "xeq.c"
 #include "xrom.c"
-//#pragma GCC optimize 2
+#if 0
 #include "decNumber/decNumber.c"
-//#pragma GCC optimize "s"
 #include "decNumber/decContext.c"
 #include "decNumber/decimal64.c"
+#endif

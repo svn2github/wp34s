@@ -1014,7 +1014,7 @@ void LCD_interrupt( void )
 		if ( ++WaitForLcd == 3 ) {
 			SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_LOAD_ONLY );
 		}
-		else if ( WaitForLcd == 4 ){
+		else if ( WaitForLcd >= 4 ){
 			WaitForLcd = 0;
 		}
 	}

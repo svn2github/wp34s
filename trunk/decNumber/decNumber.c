@@ -250,9 +250,9 @@ static Int         decUnitAddSub(const Unit *, Int, const Unit *, Int, Int,
                               Unit *, Int);
 static Int         decUnitCompare(const Unit *, Int, const Unit *, Int, Int);
 
-#ifndef xcopy
-    extern void *xcopy(void *, const void *, int);
-#endif
+//#ifndef xcopy
+//    extern void *xcopy(void *, const void *, int);
+//#endif
 
 #if !DECSUBSET
 /* decFinish == decFinalize when no subset arithmetic needed */
@@ -2120,11 +2120,11 @@ decNumber * decNumberToIntegralValue(decNumber *res, const decNumber *rhs,
 /* All fields are updated as required.  This is a utility operation,  */
 /* so special values are unchanged and no error is possible.          */
 /* ------------------------------------------------------------------ */
-#if 1
+#if 0
 decNumber * decNumberCopy(decNumber *dest, const decNumber *src) 
 {
     int n = (char*)(src->lsu + D2U(src->digits)) - (char*)src;
-    return (decNumber*)xcopy(dest, src, n);
+    return (decNumber*) memcpy(dest, src, n);
 }
 #else
 decNumber * decNumberCopy(decNumber *dest, const decNumber *src) {
@@ -2243,7 +2243,7 @@ static void decToString(const decNumber *dn, char *string, Flag eng) {
   if (dn->bits&DECSPECIAL) {       // Is a special value
 
     if (decNumberIsInfinite(dn)) {
-      xcopy(c, "Infinity", sizeof("Infinity"));
+      memcpy(c, "Infinity", sizeof("Infinity"));
 //      strcpy(c, "Infinity");
       return;}
     // a NaN
@@ -2251,7 +2251,7 @@ static void decToString(const decNumber *dn, char *string, Flag eng) {
       *c='s';
       c++;
       }
-    xcopy(c, "NaN", sizeof("NaN"));
+    memcpy(c, "NaN", sizeof("NaN"));
 //    strcpy(c, "NaN");
     c+=3;                          // step past
     // if not a clean non-zero coefficient, that's all there is in a
