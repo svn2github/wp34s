@@ -43,7 +43,7 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #define SPEED_H_LOW_V 3
 #define SPEED_HIGH    4
 #define SLEEP_ANNUNCIATOR LIT_EQ
-// #define SPEED_ANNUNCIATOR 107
+// #define SPEED_ANNUNCIATOR BIG_EQ
 void set_speed( unsigned int speed );
 
 /*
@@ -325,7 +325,7 @@ void scan_keyboard( void )
 	/*
 	 *  Handle repeating keys (arrows)
 	 */
-	if ( keys.ll == 0 && KbData == KbRepeatKey ) {
+	if ( keys.ll == 0 && KbData == KbRepeatKey && KbCount <= 2 ) {
 		/*
 		 *  One of the repeating keys is still down
 		 */
@@ -1234,10 +1234,13 @@ void watchdog( void )
 /*
  *  Go idle to save power.
  *  Called from a busy loop waiting for an interrupt to do something.
+ *  The original speed is restored.
  */
-void idle(void)
+void idle( void )
 {
+	int old_speed = SpeedSetting;
 	set_speed( SPEED_IDLE );
+	set_speed( old_speed );
 }
 
 
@@ -1247,14 +1250,10 @@ void idle(void)
  */
 RAM_FUNCTION int flash_command( unsigned int cmd )
 {
-	lock();  // No interrupts, please!
-
 	AT91C_BASE_MC->MC_FCR = cmd;
 	while ( ( AT91C_BASE_MC->MC_FSR & 1 ) == 0 ) {
 		// wait for flash controller to do its work
 	}
-
-	unlock(); // Done!
 	return ( AT91C_BASE_MC->MC_FSR >> 1 );
 }
 
@@ -1266,6 +1265,9 @@ RAM_FUNCTION int flash_command( unsigned int cmd )
 int program_flash( int page_no, int buffer[ 64 ] )
 {
 	int *f = (int *) 0x100000;  // anywhere in flash is OK
+	int res;
+
+	lock();  // No interrupts, please!
 
 	/*
 	 *  Copy the source to the flash write buffer
@@ -1279,7 +1281,9 @@ int program_flash( int page_no, int buffer[ 64 ] )
 	 *  Command the controller to erase and write the page.
 	 *  Will re-enable interrupts, too.
 	 */
-	return flash_command( 0x5A000003 | ( page_no << 8 ) );
+	res = flash_command( 0x5A000003 | ( page_no << 8 ) );
+	unlock();
+	return res;
 }
 
 
@@ -1329,7 +1333,9 @@ void sam_ba_boot(void)
 	/*
 	 *  Command the controller to clear GPNVM1
 	 */
+	lock();
 	flash_command( 0x5A00010C );
+	unlock();
 	shutdown();
 }
 
@@ -1416,11 +1422,20 @@ int main(void)
 		Crc = 0;
 
 		/*
-		 *  We've used SLCD memory to save some state, restore it and reinitialise display
+		 *  We've used SLCD memory to save some state, restore it.
+		 *  Before we can reinitialise the display the contexts
+		 *  need to be defined (used in some catalogues).
 		 */
 		save_state_to_lcd_memory( 0 );
-		display();
-		WaitForLcd = 0;  // Don't waste time
+		set_speed( SPEED_HIGH ); // needed for display();
+		{
+			decContext ctx, ctx64;
+			Ctx = &ctx;
+			Ctx64 = &ctx64;
+			xeq_init_contexts();
+			display();
+			WaitForLcd = 0;
+		}
 
 		/*
 		 *  Setup hardware
