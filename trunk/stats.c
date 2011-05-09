@@ -897,7 +897,7 @@ static decNumber *qf_search(decNumber *r,
 				const decNumber *samp_low, const decNumber *samp_high,
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
 #ifndef TINY_BUILD
-	decNumber t, u, v, tv, uv, vv, a, oldv;
+	decNumber t, u, v, tv, uv, vv, oldv;
 	unsigned int flags = 0;
 
 	if (check_probability(r, x, ctx, min_zero))
@@ -921,8 +921,8 @@ static decNumber *qf_search(decNumber *r,
 	do {
 		// If we got below the minimum, do a bisection step instead
 		if (min_zero && dn_le0(&v)) {
-			decNumberMin(&a, &t, &u, ctx);
-			decNumberMultiply(&v, &a, &const_0_5, ctx);
+			decNumberMin(&v, &t, &u, ctx);
+			decNumberMultiply(&v, &v, &const_0_5, ctx);
 		}
 		if (qf_eval(&vv, &v, x, ctx, f) == 0 || decNumberIsNaN(&vv))
 			break;
@@ -1158,7 +1158,7 @@ static int t_param(decNumber *r, decNumber *v, const decNumber *x, decContext *c
 
 decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
-	decNumber t, u, z, v;
+	decNumber t, v;
 	int invert;
 
 	if (t_param(r, &v, x, ctx))
@@ -1174,11 +1174,11 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 		return decNumberCopy(r, &const_0_5);
 	invert = ! decNumberIsNegative(x);
 	decNumberSquare(&t, x, ctx);
-	decNumberAdd(&u, &t, &v, ctx);
-	decNumberDivide(&t, &v, &u, ctx);
-	decNumberMultiply(&u, &v, &const_0_5, ctx);
-	betai(&z, &u, &const_0_5, &t, ctx);
-	decNumberMultiply(r, &const_0_5, &z, ctx);
+	decNumberAdd(r, &t, &v, ctx);
+	decNumberDivide(&t, &v, r, ctx);
+	decNumberMultiply(r, &v, &const_0_5, ctx);
+	betai(&v, r, &const_0_5, &t, ctx);
+	decNumberMultiply(r, &const_0_5, &v, ctx);
 	if (invert)
 		decNumberSubtract(r, &const_1, r, ctx);
 	return r;
