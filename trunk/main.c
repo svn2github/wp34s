@@ -159,6 +159,7 @@ unsigned char FlashWakeupTime;
 /*
  *  Definitions for the keyboard scan
  */
+#define DEBOUNCE_ON_LOW 1 // alternate debouncer
 #define KEY_ROWS_MASK 0x0000007f
 #define KEY_COLS_MASK 0x0400fC00
 #define KEY_WAKEUP_MASK 0x1f80
@@ -312,12 +313,21 @@ NO_INLINE void scan_keyboard( void )
 	KbDebounce = KbData;
 	KbData = keys.ll;
 
+#ifdef DEBOUNCE_ON_LOW
+	/*
+	 *  A key is newly pressed, if
+	 *  a) it wasn't pressed the last two times checked
+	 *  b) it is pressed now
+	 */
+	keys.ll &= ( ~last_keys & ~KbDebounce );
+#else
 	/*
 	 *  A key is newly pressed, if
 	 *  a) it wasn't pressed last time we checked
 	 *  b) it has the same value as the debounce value
 	 */
 	keys.ll &= ( ~last_keys & KbDebounce );
+#endif
 	
 	/*
 	 *  Program PIO
@@ -626,10 +636,14 @@ void deep_sleep( void )
 		shutdown();
 	}
 
-	if ( WaitForLcd ) {
+	lock();
+	scan_keyboard();
+
+	if ( WaitForLcd || KbData ) {
 		/*
-		 *  LCD is still busy, ignore the call
+		 *  LCD is still busy or a key is down, ignore the call
 		 */
+		unlock();
 		return;
 	}
 
@@ -1566,7 +1580,7 @@ int main(void)
 				dot( RPN, 1 );		// might still be off
 				show_keyticks();	// debugging
 				finish_display();
-				while ( WaitForLcd ) {
+				while ( WaitForLcd || KbData != 0 ) {
 					/*
 					 *  We have to wait for the LCD to update.
 					 *  While we wait, the user might have pressed a key.
