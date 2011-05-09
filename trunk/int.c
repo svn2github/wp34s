@@ -156,15 +156,23 @@ long long int build_value(const unsigned long long int x, const int sign) {
 #ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	long long int v = mask_value(x);
+	unsigned long long int tbm;
 
-	if (sign == 0 || mode == MODE_UNSIGNED)
+	if (mode == MODE_UNSIGNED)
+		return v;
+
+	tbm = topbit_mask();
+	if (mode == MODE_2COMP && sign && v == tbm)
+		return v;
+	v &= ~ tbm;
+	if (sign == 0)
 		return v;
 
 	if (mode == MODE_2COMP)
 		return mask_value(-(signed long long int)v);
 	if (mode == MODE_1COMP)
 		return mask_value(~v);
-	return v | topbit_mask();
+	return v | tbm;
 #else
 	return x;
 #endif
@@ -318,28 +326,13 @@ long long int intMultiply(long long int y, long long int x) {
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
-	long long int v;
 
 	u = mask_value(xv * yv);
 	set_overflow(u / yv != xv);
 
-	if (mode == MODE_UNSIGNED)
-		v = u;
-	else {
-		const long long int tbm = topbit_mask();
-		if (u & tbm)
-			set_overflow(1);
-		if (sx ^ sy) {
-			if (mode == MODE_2COMP)
-				v = -(signed long long int)u;
-			else if (mode == MODE_1COMP)
-				v = ~u;
-			else // if (mode == MODE_SGNMANT)
-				v = u ^ tbm;
-		} else
-			v = u;
-	}
-	return mask_value(v);
+	if (mode != MODE_UNSIGNED && (u & topbit_mask()))
+		set_overflow(1);
+	return build_value(u, sx ^ sy);
 #else
 	return x*y;
 #endif
@@ -364,7 +357,6 @@ long long int intDivide(long long int y, long long int x) {
 	unsigned long long int yv = extract_value(y, &sy);
 	unsigned long long int r;
 	long long int tbm;
-	long long int v;
 
 	if (xv == 0) {
 		err_div0(yv, sy, sx);
@@ -375,26 +367,15 @@ long long int intDivide(long long int y, long long int x) {
 	// Set carry if there is a remainder
 	set_carry(r * xv != yv);
 
-	if (mode == MODE_UNSIGNED)
-		v = r;
-	else {
+	if (mode != MODE_UNSIGNED) {
 		tbm = topbit_mask();
 		if (r & tbm)
 			set_carry(1);
 		// Special case for 0x8000...00 / -1 in 2's complement
 		if (mode == MODE_2COMP && sx && xv == 1 && y == tbm)
 			set_overflow(1);
-		if (sx ^ sy) {
-			if (mode == MODE_2COMP)
-				v = -(signed long long int)r;
-			else if (mode == MODE_1COMP)
-				v = ~r;
-			else // if (mode == MODE_SGNMANT)
-				v = r ^ tbm;
-		} else
-			v = r;
 	}
-	return mask_value(v);
+	return build_value(r, sx ^ sy);
 #else
 	return y/x;
 #endif
@@ -402,30 +383,16 @@ long long int intDivide(long long int y, long long int x) {
 
 long long int intMod(long long int y, long long int x) {
 #ifndef TINY_BUILD
-	const enum arithmetic_modes mode = int_mode();
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
-	unsigned long long int r;
-	long long int v;
 
 	if (xv == 0) {
 		err_div0(yv, sy, sx);
 		return 0;
 	}
-	r = yv % xv;
 
-	if (sy) {
-		switch (mode) {
-		default:
-		case MODE_2COMP:    v = -(signed long long int)r;	break;
-		case MODE_1COMP:    v = ~r;				break;
-		case MODE_UNSIGNED: v = r;				break;
-		case MODE_SGNMANT:  v = r ^ topbit_mask();		break;
-		}
-	} else
-		v = r;
-	return mask_value(v);
+	return build_value(yv % xv, sy);
 #else
 	return y%x;
 #endif
