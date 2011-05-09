@@ -192,7 +192,7 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNumber.a \
 		$(LDCTRL) Makefile
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
-		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber -save-temps
+		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
 	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
