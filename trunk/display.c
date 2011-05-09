@@ -407,7 +407,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 	unsigned long long int v;
 	char buf[MAX_WORD_SIZE + 1];
 	int i, j, k;
-	int sign;
+	int sign = 0;
 	int dig = SEGS_PER_DIGIT * 11;
 
 	switch (State2.smode) {
@@ -427,10 +427,6 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		v = extract_value(value, &sign);
 		if (int_mode() == MODE_2COMP && sign == 1 && v == 0)
 			v = value;
-		if (sign) {
-			if (res) *res++ = '-';
-			else	set_dot(MANT_SIGN);
-		}
 		if (v == 0) {
 			set_dig_s(dig, '0', res);
 			return;
@@ -476,6 +472,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 
 	/* At this point i is the number of digits in the output */
 	if (res) {
+		if (sign) *res++ = '-';
 		while (--i >= 0)
 			*res++ = buf[i];
 	} else {
@@ -490,6 +487,11 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		while (--k >= 0) {
 			set_dig(dig, buf[j++]);
 			dig -= SEGS_PER_DIGIT;
+		}
+		if (sign) {
+			if (dig >= 0)
+				set_dig(dig, '-');
+			else	set_dot(MANT_SIGN);
 		}
 	}
 }
