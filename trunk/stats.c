@@ -1235,45 +1235,56 @@ static void qf_T_est(decNumber *r, const decNumber *df, const decNumber *p, cons
 	if (negate)
 		decNumberMinus(r, r, ctx);
 }
-#endif
 
-decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
-#ifndef TINY_BUILD
-	decNumber a, b, c, d, v;
+static int qf_T_init(decNumber *r, decNumber *a, decNumber *b, const decNumber *x, decContext *ctx) {
+	decNumber c, d, v;
 
 	if (t_param(r, &v, x, ctx))
-		return r;
-	decNumberSubtract(&b, &const_0_5, x, ctx);
-	if (decNumberIsZero(&b)) {
-		return decNumberZero(r);
+		return 1;
+	decNumberSubtract(b, &const_0_5, x, ctx);
+	if (decNumberIsZero(b)) {
+		decNumberZero(r);
+		return 1;
 	}
-	if (decNumberIsInfinite(&v))					// Normal in the limit
-		return qf_Q(r, x, ctx);
+	if (decNumberIsInfinite(&v)) {					// Normal in the limit
+		qf_Q(r, x, ctx);
+		return 1;
+	}
 
-	decNumberCompare(&a, &v, &const_1, ctx);
-	if (decNumberIsZero(&a)) {					// special case v = 1
-		decNumberMultiply(&a, &b, &const_PI, ctx);
-		dn_sincos(&a, &c, &d, ctx);
-		decNumberDivide(&a, &c, &d, ctx);			// lower = tan(pi (x - 1/2))
-		return decNumberMinus(r, &a, ctx);
+	decNumberCompare(a, &v, &const_1, ctx);
+	if (decNumberIsZero(a)) {					// special case v = 1
+		decNumberMultiply(a, b, &const_PI, ctx);
+		dn_sincos(a, &c, &d, ctx);
+		decNumberDivide(a, &c, &d, ctx);			// lower = tan(pi (x - 1/2))
+		decNumberMinus(r, a, ctx);
+		return 1;
 	}
 	decNumberCompare(&d, &v, &const_2, ctx);			// special case v = 2
 	if (decNumberIsZero(&d)) {
-		decNumberSubtract(&a, &const_1, x, ctx);
-		decNumberMultiply(&c, &a, x, ctx);
+		decNumberSubtract(a, &const_1, x, ctx);
+		decNumberMultiply(&c, a, x, ctx);
 		decNumberMultiply(&d, &c, &const_4, ctx);		// alpha = 4p(1-p)
 
 		decNumberDivide(&c, &const_2, &d, ctx);
-		decNumberSquareRoot(&a, &c, ctx);
-		decNumberMultiply(&c, &a, &b, ctx);
+		decNumberSquareRoot(a, &c, ctx);
+		decNumberMultiply(&c, a, b, ctx);
 		decNumberMultiply(r, &c, &const__2, ctx);
 	}
 
 	// common case v >= 3
-	qf_T_est(&c, &v, x, &b, ctx);
-	decNumberDivide(&b, &c, &const_0_9, ctx);
-	decNumberMultiply(&a, &c, &const_0_9, ctx);
+	qf_T_est(&c, &v, x, b, ctx);
+	decNumberDivide(b, &c, &const_0_9, ctx);
+	decNumberMultiply(a, &c, &const_0_9, ctx);
+	return 0;
+}
+#endif
 
+decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
+#ifndef TINY_BUILD
+	decNumber a, b;
+
+	if (qf_T_init(r, &a, &b, x, ctx))
+		return r;
 	return qf_search(r, x, ctx, 0, &a, &b, &cdf_T);
 #else
 	return NULL;
