@@ -1328,6 +1328,24 @@ void flash_restore(void)
 
 
 /*
+ *  Turn on crystal oscillator for better clock accuracy.
+ *  Crystal must be installed, of course!
+ */
+void turn_on_crystal( void )
+{
+	DispMsg = "XTAL ?";
+	display();
+	if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
+		AT91C_BASE_SUPC->SUPC_CR = (0xA5 << 24) | AT91C_SUPC_XTALSEL;
+		while ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL );
+		set_speed( SPEED_HIGH );
+		DispMsg = "XTAL ON";
+		display();
+	}
+}
+
+
+/*
  *  Set the boot bit to ROM and turn off the device.
  *  Next power ON goes into SAM-BA mode.
  */
@@ -1616,6 +1634,11 @@ int main(void)
 				case K03:
 					// ON+"D" Toggle Debug flag
 					toggle_debug();
+					break;
+
+				case K62:
+					// ON+"X" turn on Crystal
+					turn_on_crystal();
 					break;
 
 				case K43:
