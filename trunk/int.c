@@ -156,23 +156,15 @@ long long int build_value(const unsigned long long int x, const int sign) {
 #ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	long long int v = mask_value(x);
-	unsigned long long int tbm;
 
-	if (mode == MODE_UNSIGNED)
-		return v;
-
-	tbm = topbit_mask();
-	if (mode == MODE_2COMP && sign && v == tbm)
-		return v;
-	v &= ~ tbm;
-	if (sign == 0)
+	if (sign == 0 || mode == MODE_UNSIGNED)
 		return v;
 
 	if (mode == MODE_2COMP)
 		return mask_value(-(signed long long int)v);
 	if (mode == MODE_1COMP)
 		return mask_value(~v);
-	return v | tbm;
+	return v | topbit_mask();
 #else
 	return x;
 #endif
@@ -332,7 +324,7 @@ long long int intMultiply(long long int y, long long int x) {
 
 	if (mode != MODE_UNSIGNED && (u & topbit_mask()))
 		set_overflow(1);
-	return build_value(u, sx ^ sy);
+	return build_value(u & ~topbit_mask(), sx ^ sy);
 #else
 	return x*y;
 #endif
