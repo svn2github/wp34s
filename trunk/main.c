@@ -570,6 +570,7 @@ void save_state_to_lcd_memory( int save )
 		}
 		else {
 			*ip = *lcd;
+			*lcd = 0;
 		}
 		++ip;
 		lcd += 2; // Skip odd registers
@@ -589,6 +590,7 @@ void save_state_to_lcd_memory( int save )
 			}
 			else {
 				*cp = (char) *lcd;
+				*lcd = 0;
 			}
 			++cp;
 			lcd += 2; // Skip even registers
@@ -1326,7 +1328,8 @@ void flash_restore(void)
 
 
 /*
- *  Set the boot bit to ROM
+ *  Set the boot bit to ROM and turn off the device.
+ *  Next power ON goes into SAM-BA mode.
  */
 void sam_ba_boot(void)
 {
@@ -1335,8 +1338,7 @@ void sam_ba_boot(void)
 	 */
 	lock();
 	flash_command( 0x5A00010C );
-	unlock();
-	shutdown();
+	SUPC_Shutdown();
 }
 
 
@@ -1427,14 +1429,21 @@ int main(void)
 		 *  need to be defined (used in some catalogues).
 		 */
 		save_state_to_lcd_memory( 0 );
-		set_speed( SPEED_HIGH ); // needed for display();
-		{
+		if ( !State2.no_redisplay ) {
+			/*
+			 *  Redisplay may be costly, especially in CONV catalogue.
+			 *  So it's not always carried out.
+			 */
+			set_speed( SPEED_HIGH );
 			decContext ctx, ctx64;
 			Ctx = &ctx;
 			Ctx64 = &ctx64;
 			xeq_init_contexts();
 			display();
 			WaitForLcd = 0;
+		}
+		else {
+			State2.no_redisplay = 0;
 		}
 
 		/*

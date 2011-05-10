@@ -1089,7 +1089,7 @@ void display(void) {
 		set_digits_string(p, 0);
 		goto skpall;
 	} else if (State2.version) {
-		char vers[] = "34s " VERSION_STRING" ????";
+		char vers[] = "34s " VERSION_STRING " ????";
 		set_digits_string("pAULI WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
 		set_decimal(SEGS_PER_DIGIT * 4, DECIMAL_COMMA, NULL);
@@ -1160,6 +1160,7 @@ void display(void) {
 				const unsigned int f = argKIND(op);
 				if (f < num_monfuncs && monfuncs[f].mondreal != NULL) {
 					(*monfuncs[f].mondreal)(&r, &x, Ctx);
+					State2.no_redisplay = 1; // no display() on wake up
 				} else
 					set_NaN(&r);
 			} else
