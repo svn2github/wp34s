@@ -129,8 +129,8 @@ static const unsigned long chars[512] = {
 
 static int getdig(int ch)
 {
-    // perform index lookup
-    return digtbl[ch&0xff];
+	// perform index lookup
+	return digtbl[ch&0xff];
 }
 
 void dot(int n, int on) {
@@ -379,7 +379,7 @@ static void disp_x(const char *p) {
 			gotdot = i;
 		for (;;) {
 			gotdot -= 3 * SEGS_PER_DIGIT;
-			if (gotdot <= 0)                    // MvC: was '<', caused crash
+			if (gotdot <= 0)			// MvC: was '<', caused crash
 				break;
 			set_seperator(gotdot, seperator, NULL);
 		}
@@ -459,9 +459,9 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			int n;
 			v = (unsigned long long int)vs;
 
-			if (b == 2)         n = ws;
-			else if (b == 8)    n = (ws + 2) / 3;
-			else                n = (ws + 3) / 4;
+			if (b == 2)		n = ws;
+			else if (b == 8)	n = (ws + 2) / 3;
+			else			n = (ws + 3) / 4;
 			for (i=0; i<n; i++) {
 				const int r = v % b;
 				v /= b;
@@ -720,7 +720,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 	enum decimal_modes decimal = DECIMAL_DOT;
 	enum seperator_modes seperator = SEP_COMMA;
 	char c;
-        int negative = 0;
+	int negative = 0;
 	decNumber z;
 
 	if (State.fraccomma) {
@@ -791,7 +791,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 		if (*q == '.') {
 			q++;
 			while (*q >= '0' && *q <= '9')
-        			*p++ = *q++;
+				*p++ = *q++;
 		}
 	}
 
@@ -810,7 +810,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 
 	// Round the mantissa to the number of digits desired
 	p = mantissa + dd + extra_digits + 1;
-	if (*p >= '5') {    // Round up
+	if (*p >= '5') {	// Round up
 		*p = '0';
 		for (r = mantissa; *r == '9'; r++);
 		if (r == p) {   // Special case 9.9999999
@@ -871,14 +871,14 @@ static void set_x(const decimal64 *rgx, char *res) {
 				*obp++ = *p++;
 				odig++;
 			}
+			*obp++ = '.';
 			if (count > (exp + 1)) {
-				*obp++ = '.';
 				for (i=exp+1; i<count; i++) {
 					*obp++ = *p++;
 					odig++;
 				}
 			}
-		} else {                // All digits to right of decimal point
+		} else {		// All digits to right of decimal point
 			*obp++ = '0';
 			odig++;
 			*obp++ = '.';
@@ -895,7 +895,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 
 	case MODE_FIX:
 		j = 0;
-		if (exp >= 0) {         // Some digits to left of decimal point
+		if (exp >= 0) {		// Some digits to left of decimal point
 			for (i=0; i<=exp; i++) {
 				if (i > 0 && (exp - i) % 3 == 2)
 					*obp++ = ',';
@@ -907,7 +907,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 				*obp++ = *p++;
 				odig++;
 			}
-		} else {                // All digits to right of decimal point
+		} else {		// All digits to right of decimal point
 			*obp++ = '0';
 			odig++;
 			*obp++ = '.';
@@ -980,6 +980,8 @@ static void set_x(const decimal64 *rgx, char *res) {
 	}
 	if (show_exp)
 		set_exp(exp, 0, res);
+	if (obp[-1] == '.')
+		set_decimal((DISPLAY_DIGITS - 1) * SEGS_PER_DIGIT, decimal, res);
 }
 
 
@@ -997,7 +999,7 @@ static void show_status(void) {
 	int base = 10 * (State2.status - 1);
 	char buf[12], *p;
 
-        p = scopy(buf, "FL ");
+	p = scopy(buf, "FL ");
 	p = num_arg_0(p, base, 2);
 	*p++ = '-';
 	i = base+29>=NUMFLG?NUMFLG-1:base+29;
@@ -1066,7 +1068,7 @@ void display(void) {
 	dot(INPUT,  cata || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
 	//dot(BIG_EQ, cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST);
-        //dot(LIT_EQ, cata);
+	//dot(LIT_EQ, cata);
 
 	/* Set the trig mode indicator 360 or RAD.  Grad is handled elsewhere.
 	 */
