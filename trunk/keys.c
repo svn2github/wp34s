@@ -1550,8 +1550,8 @@ static int process_catalogue(const keycode c) {
 					else
 						return op;
 				}
-			}
-			init_cat(CATALOGUE_NONE);
+			} else
+				init_cat(CATALOGUE_NONE);
 			return STATE_UNFINISHED;
 
 		case K24:			// backspace
