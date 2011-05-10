@@ -172,12 +172,8 @@ void alpha_tox(decimal64 *a, decimal64 *b, decContext *ctx64) {
 }
 
 void alpha_fromx(decimal64 *a, decimal64 *b, decContext *ctx64) {
-	decNumber x, y;
-
-	getX(&x);
-	decNumberAbs(&y, &x, Ctx);
-	decNumberMod(&x, &y, &const_256, Ctx);
-	add_char(dn_to_int(&x, Ctx));
+	int s;
+	add_char(0xff & get_int(&regX, &s));
 }
 
 /* Recall a register and append to Alpha.
