@@ -534,13 +534,11 @@ long long int intChs(long long int x) {
 	int sx;
 	unsigned long long int xv = extract_value(x, &sx);
 
-	set_overflow(0);
-	if (mode == MODE_UNSIGNED) {
-		xv = -(signed long long int)xv;
+	if (mode == MODE_UNSIGNED || (mode == MODE_2COMP && x == topbit_mask())) {
 		set_overflow(1);
+		return mask_value(-(signed long long int)xv);
 	}
-	if (mode == MODE_2COMP && x == topbit_mask())
-		set_overflow(1);
+	set_overflow(0);
 	return build_value(xv, !sx);
 #else
 	return x;
@@ -553,8 +551,10 @@ long long int intAbs(long long int x) {
 	unsigned long long int xv = extract_value(x, &sx);
 
 	set_overflow(0);
-	if (int_mode() == MODE_2COMP && x == topbit_mask())
+	if (int_mode() == MODE_2COMP && x == topbit_mask()) {
 		set_overflow(1);
+		return x;
+	}
 	return build_value(xv, 0);
 #else
 	return x;
