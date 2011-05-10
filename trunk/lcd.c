@@ -465,8 +465,11 @@ void wait_for_display(void)
 
 void finish_display(void) {
 #ifdef REALBUILD
-	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
-	WaitForLcd = 1;
+	if ( !State2.invalid_disp ) {
+		// Display only valid screen data
+		SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
+		WaitForLcd = 1;
+	}
 #else
 #ifdef USECURSES
         show_disp();

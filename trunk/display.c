@@ -1160,7 +1160,6 @@ void display(void) {
 				const unsigned int f = argKIND(op);
 				if (f < num_monfuncs && monfuncs[f].mondreal != NULL) {
 					(*monfuncs[f].mondreal)(&r, &x, Ctx);
-					State2.no_redisplay = 1; // no display() on wake up
 				} else
 					set_NaN(&r);
 			} else
@@ -1246,10 +1245,12 @@ nostk:	show_flags();
 	}
 	if (annuc)
 		annunicators();
-skpall:	finish_display();
+skpall:
 	State2.version = 0;
 	State2.smode = SDISP_NORMAL;
+	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;
+	finish_display();
 }
 
 

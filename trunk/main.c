@@ -1425,26 +1425,9 @@ int main(void)
 
 		/*
 		 *  We've used SLCD memory to save some state, restore it.
-		 *  Before we can reinitialise the display the contexts
-		 *  need to be defined (used in some catalogues).
 		 */
 		save_state_to_lcd_memory( 0 );
-		if ( !State2.no_redisplay ) {
-			/*
-			 *  Redisplay may be costly, especially in CONV catalogue.
-			 *  So it's not always carried out.
-			 */
-			set_speed( SPEED_HIGH );
-			decContext ctx, ctx64;
-			Ctx = &ctx;
-			Ctx64 = &ctx64;
-			xeq_init_contexts();
-			display();
-			WaitForLcd = 0;
-		}
-		else {
-			State2.no_redisplay = 0;
-		}
+		State2.invalid_disp = 1;
 
 		/*
 		 *  Setup hardware

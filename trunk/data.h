@@ -165,7 +165,7 @@ struct _state2 {
 	unsigned int flags : 1;		// Display state flags
 	unsigned int disp_small : 1;	// Display the status message in small font
 	unsigned int hms : 1;		// H.MS mode
-	unsigned int no_redisplay : 1;  // Avoid slow redisplay on wake up
+	unsigned int invalid_disp : 1;  // Display contents is invalid
 #ifndef REALBUILD
 	unsigned int trace : 1;
 #endif
