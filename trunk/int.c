@@ -530,28 +530,18 @@ long long int intCube(long long int x) {
 
 long long int intChs(long long int x) {
 #ifndef TINY_BUILD
-	long long int y;
+	const enum arithmetic_modes mode = int_mode();
+	int sx;
+	unsigned long long int xv = extract_value(x, &sx);
 
 	set_overflow(0);
-	switch (int_mode()) {
-	case MODE_UNSIGNED:
+	if (mode == MODE_UNSIGNED) {
+		xv = -(signed long long int)xv;
 		set_overflow(1);
-	default:
-	case MODE_2COMP:
-		if (x == topbit_mask())
-			set_overflow(1);
-		y = -x;
-		break;
-
-	case MODE_1COMP:
-		y = ~x;
-		break;
-
-	case MODE_SGNMANT:
-		y = x ^ topbit_mask();
-		break;
 	}
-	return mask_value(y);
+	if (mode == MODE_2COMP && x == topbit_mask())
+		set_overflow(1);
+	return build_value(xv, !sx);
 #else
 	return x;
 #endif
@@ -559,30 +549,13 @@ long long int intChs(long long int x) {
 
 long long int intAbs(long long int x) {
 #ifndef TINY_BUILD
+	int sx;
+	unsigned long long int xv = extract_value(x, &sx);
+
 	set_overflow(0);
-	switch (int_mode()) {
-	case MODE_UNSIGNED:
-		break;
-
-	case MODE_2COMP:
-		if (x > 0)
-			break;
-		if (x == topbit_mask())
-			set_overflow(1);
-		x = -x;
-		break;
-
-	case MODE_1COMP:
-		if (x & topbit_mask())
-			x = ~x;
-		break;
-
-	case MODE_SGNMANT:
-		if (x & topbit_mask())
-			x = x ^ topbit_mask();
-		break;
-	}
-	return mask_value(x);
+	if (int_mode() == MODE_2COMP && x == topbit_mask())
+		set_overflow(1);
+	return build_value(xv, 0);
 #else
 	return x;
 #endif
