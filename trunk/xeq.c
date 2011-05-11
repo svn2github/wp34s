@@ -708,7 +708,7 @@ void process_cmdline_set_lift(void) {
 	State.state_lift = 1;
 }
 
-
+#ifdef TAGGING
 /* Wrapper routine to extract a specific register from a number.
  * Since we've some bank switched registers, we detect xROM space
  * here and return the alternate registers if required.
@@ -735,7 +735,7 @@ void set_tag_n(int n, int tag) {
 	n >>= 3;
 	Tags[n] = (Tags[n] & ~(0x07 << shift)) | (tag << shift);
 }
-
+#endif
 
 decimal64 *get_reg_n(int n) {
 	if (isXROM(state_pc()) && n < NUMBANKREGS)

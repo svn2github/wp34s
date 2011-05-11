@@ -75,7 +75,9 @@ typedef struct _ram {
 	 * Define storage for the machine's registers.
 	 */
 	decimal64 _regs[NUMREG];
+#ifdef TAGGING
 	unsigned long _tags[(NUMREG+7)/8];	// 4 tag bits per register
+#endif
 	decimal64 _bank_regs[NUMBANKREGS];
 
 	/*

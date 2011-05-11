@@ -18,7 +18,7 @@
 #define __XEQ_H__
 
 /* Version number */
-#define VERSION_STRING	"1.17"
+#define VERSION_STRING	"1.18"
 
 /*
  * Optional features are defined in features.h
@@ -164,10 +164,15 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
+// #define TAGGING
+#ifdef TAGGGING
+#define NUMPROG		478	/* Number of program steps */
+#else
+#define NUMPROG		506	/* Even more steps :-) */
+#endif
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define RET_STACK_SIZE	8	/* Depth of return stack */
-#define NUMPROG		476	/* Number of program steps */
 #define NUMLBL		104	/* Number of program labels */
 #define NUMFLG		104	/* Number of flags */
 

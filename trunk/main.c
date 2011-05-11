@@ -1333,15 +1333,12 @@ void flash_restore(void)
  */
 void turn_on_crystal( void )
 {
-	DispMsg = "XTAL ?";
-	display();
 	if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
 		AT91C_BASE_SUPC->SUPC_CR = (0xA5 << 24) | AT91C_SUPC_XTALSEL;
 		while ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL );
-		set_speed( SPEED_HIGH );
-		DispMsg = "XTAL ON";
-		display();
 	}
+	DispMsg = "XTAL ON";
+	display();
 }
 
 
@@ -1408,6 +1405,9 @@ void show_keyticks(void)
  */
 int main(void)
 {
+	char confirm_counter = 0;
+	char last_key_combo = 0;
+
 	/*
 	 *  Don't let the user wait too long.
 	 *  We go to 10 MHz here as a compromise between power draw
@@ -1542,6 +1542,12 @@ int main(void)
 			/*
 			 *  Save power if nothing in queue
 			 */
+			if ( !OnKeyPressed && confirm_counter == 1 ) {
+				// ON key was released
+				confirm_counter = 0;
+				DispMsg = NULL;
+				display();
+			}
 #ifdef ALLOW_DEEP_SLEEP
 			/*
 			 *  Test if we can turn ourself completely off
@@ -1597,15 +1603,17 @@ int main(void)
 			 */
 			if ( OnKeyPressed && k != K60 && !Running ) {
 				/*
-				 *  Check for special key combinations
+				 *  Check for special key combinations.
+				 *  Critical keys have to be pressed twice.
 				 */
+				if ( k != last_key_combo ) {
+					confirm_counter = 1;
+					last_key_combo = k;
+				}
+				else {
+					++confirm_counter;
+				}
 				switch( k ) {
-
-				case K24:
-					// ON + <-
-					Crc = 0;
-					init_34s();
-					break;
 
 				case K64:
 					// ON-"+" Increase contrast
@@ -1621,14 +1629,41 @@ int main(void)
 					}
 					break;
 
+				case K24:
+					// ON + <-
+					if ( confirm_counter == 1 ) {
+						DispMsg = "Erase?";
+						display();
+					}
+					else {
+						Crc = 0;
+						init_34s();
+						confirm_counter = 0;
+					}
+					break;
+
 				case K01:
 					// ON-"B" Backup to flash
-					flash_backup();
+					if ( confirm_counter == 1 ) {
+						DispMsg = "Backup?";
+						display();
+					}
+					else {
+						flash_backup();
+						confirm_counter = 0;
+					}
 					break;
 
 				case K42:
 					// ON-"R" Restore from backup
-					flash_restore();
+					if ( confirm_counter == 1 ) {
+						DispMsg = "Restore?";
+						display();
+					}
+					else {
+						flash_restore();
+						confirm_counter = 0;
+					}
 					break;
 
 				case K03:
@@ -1638,12 +1673,27 @@ int main(void)
 
 				case K62:
 					// ON+"X" turn on Crystal
-					turn_on_crystal();
+					if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
+						if ( confirm_counter == 1 ) {
+							DispMsg = "XTAL?";
+							display();
+						}
+						else {
+							turn_on_crystal();
+							confirm_counter = 0;
+						}
+					}
 					break;
 
 				case K43:
 					// ON-"S" SAM-BA boot
-					sam_ba_boot();
+					if ( confirm_counter == 1 ) {
+						DispMsg = "SAM-BA?";
+						display();
+					}
+					else {
+						sam_ba_boot();
+					}
 					break;
 				}
 				// No further processing
@@ -1669,6 +1719,7 @@ int main(void)
 			process_keycode( k );
 			if ( k != K_HEARTBEAT ) {
 				Keyticks = 0;
+				confirm_counter = 0;
 			}
 		}
 
