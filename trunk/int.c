@@ -277,7 +277,7 @@ long long int intSubtract(long long int y, long long int x) {
 		calc_overflow(xv, yv, mode, sy);
 
 	if (mode == MODE_SGNMANT) {
-        long long int x2, y2;
+		long long int x2, y2;
 		set_carry((sx == 0 && sy == 0 && xv > yv) ||
 				(sx != 0 && sy != 0 && xv < yv));
 
@@ -973,6 +973,7 @@ void introt(unsigned int arg, enum rarg op) {
 		for (i=0; i<arg; i++)
 			x = (*f)(x);
 	}
+	setlastX();
 	d64fromInt(&regX, mask_value(x));
 #endif
 }
@@ -1249,8 +1250,11 @@ static void justify(decimal64 *ct,
 			long long int (*shift)(long long int),
 			const long long int mask) {
 	unsigned int c = 0;
-	long long int v = d64toInt(&regY);
+	long long int v;
 
+	v = d64toInt(&regX);
+	setlastX();
+	lift();
 	if (v != 0) {
 		const int flags = save_flags();
 		while ((v & mask) == 0) {
@@ -1323,9 +1327,9 @@ void intbits(unsigned int arg, enum rarg op) {
 	x = d64toInt(&regX);
 
 	switch (op) {
-	case RARG_SB:	x |= m;		break;
-	case RARG_CB:	x &= ~m;	break;
-	case RARG_FB:	x ^= m;		break;
+	case RARG_SB:	x |= m;		setlastX();		break;
+	case RARG_CB:	x &= ~m;	setlastX();		break;
+	case RARG_FB:	x ^= m;		setlastX();		break;
 	case RARG_BS:	fin_tst((x&m)?1:0);			break;
 	case RARG_BC:	fin_tst((m != 0 && (x&m) != 0)?0:1);	break;
 	default:
@@ -1470,7 +1474,7 @@ int isPrime(unsigned long long int p) {
 #ifndef TINY_BUILD
 
 // only need 8 terms for factors > 256
-#define MAX_TERMS       8
+#define MAX_TERMS	8
 
 static int dscanOdd(unsigned int d, unsigned int limit, int nd, unsigned int ad[MAX_TERMS])
 {
@@ -1515,11 +1519,11 @@ unsigned long long int doFactor(unsigned long long int n)
 	* 
 	* returns least prime factor or `n' if prime.
 	* returns 0 if failed to find factor. 
-        *
-        * we will only fail if we have a 14 digit number with a factor > dmax (1e7). 
-        * since we have a 12 digit display, this ought to be good, but actually more digits are
-        * held internally. for example 10000019*1000079 displays as scientific, but actually all
-        * the digits are held. this example will return 0.
+	*
+	* we will only fail if we have a 14 digit number with a factor > dmax (1e7). 
+	* since we have a 12 digit display, this ought to be good, but actually more digits are
+	* held internally. for example 10000019*1000079 displays as scientific, but actually all
+	* the digits are held. this example will return 0.
 	*/
 
 	unsigned int d;
