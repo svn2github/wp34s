@@ -647,7 +647,7 @@ static void process_cmdline(void) {
 		xcopy(cmdline, Cmdline, CMDLINELEN + 1);
 
 		cmdline[CmdLineLength] = '\0';
-		if (cmdline[CmdLineLength-1] == 'E')
+		if (!is_intmode() && cmdline[CmdLineLength-1] == 'E')
 			cmdline[CmdLineLength-1] = '\0';
 		CmdLineLength = 0;
 		if (State.state_lift)
