@@ -52,6 +52,11 @@
 int Running;
 
 /*
+ *  A program has just stopped
+ */
+int JustStopped;
+
+/*
  *  Timer for a programmed pause
  */
 volatile int Pause;
@@ -3141,6 +3146,8 @@ void xeqprog(void)
 		// Program has terminated
 		clr_dot(RCL_annun);
 		finish_display();
+		// Avoid accidental restart with R/S
+		JustStopped = 1;
 	}
 }
 

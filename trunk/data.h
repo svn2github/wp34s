@@ -253,6 +253,7 @@ extern TStateWhileOn StateWhileOn;
 extern volatile int WaitForLcd;	   // Sync with display refresh
 extern volatile int Pause;         // Count down for programmed pause
 extern int Running;		   // Program is active
+extern int JustStopped;            // set on program stop to ignore the next R/S key in the buffer
 extern int Error;		   // Did an error occur, if so what code?
 extern int ShowRegister; 	   // temporary display (not X)
 

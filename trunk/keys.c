@@ -1714,13 +1714,20 @@ static int process(const int c) {
 		watchdog();
 
 		/*
+		 *  If buffer is empty re-allow R/S to start a program
+		 */
+		if ( JustStopped && !is_key_pressed() ) {
+			JustStopped = 0;
+		}
+
+		/*
 		 *  Do nothing if not running a program
 		 */
 		if (!Running && !Pause)
 			return STATE_IGNORE;
 	}
 
-	if (Running || Pause ) {
+	if (Running || Pause) {
 		/*
 		 *  Abort a running program with R/S or EXIT
 		 */
@@ -1750,6 +1757,11 @@ static int process(const int c) {
 	if (c == K60 && s == SHIFT_N && ! State2.catalogue) {
 		init_state();
 		return STATE_UNFINISHED;
+	}
+	if ( c == K63 && JustStopped ) {
+		// Avoid an accidental restart with R/S
+		JustStopped = 0;
+		return STATE_IGNORE;
 	}
 
 	if (State2.status)
