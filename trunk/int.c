@@ -571,6 +571,7 @@ static unsigned long long int packup(unsigned short int x[4]) {
 
 void intDblMul(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 #ifndef TINY_BUILD
+	const enum arithmetic_modes mode = int_mode();
 	unsigned long long int xv, yv;
 	int s;	
 	unsigned short int xa[4], ya[4];
@@ -625,8 +626,22 @@ void intDblMul(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 		xv = (xv << (64-i)) | (yv >> i);
 
 	setlastX();
+
+	if (s != 0) {
+		if (mode == MODE_2COMP) {
+			yv = mask_value(1 + ~yv);
+			xv = ~xv;
+			if (yv == 0)
+				xv++;
+		} else if (mode == MODE_1COMP) {
+			yv = ~yv;
+			xv = ~xv;
+		} else
+			xv |= topbit_mask();
+	}
+
 	d64fromInt(&regY, mask_value(yv));
-	d64fromInt(&regX, build_value(xv, s));
+	d64fromInt(&regX, mask_value(xv));
 	set_overflow(0);
 #endif
 }
@@ -744,8 +759,10 @@ static void divmnu(unsigned short q[], unsigned short r[],
 
 static unsigned long long int divmod(const long long int z, const long long int y,
 		const long long int x, int *sx, int *sy, unsigned long long *rem) {
-	unsigned long long int d, h, l;
+	const enum arithmetic_modes mode = int_mode();
 	const unsigned int ws = word_size();
+	const long long int tbm = topbit_mask();
+	unsigned long long int d, h, l;
 	unsigned short denom[4];
 	unsigned short numer[8];
 	unsigned short quot[5];
@@ -754,7 +771,23 @@ static unsigned long long int divmod(const long long int z, const long long int 
 	int num_numer;
 
 	l = (unsigned long long int)z;		// Numerator low
-	h = extract_value(y, sy);		// Numerator high
+	h = (unsigned long long int)y;		// Numerator high
+	if (mode != MODE_UNSIGNED && (h & tbm) != 0) {
+		if (mode == MODE_2COMP) {
+			l = mask_value(1 + ~l);
+			h = ~h;
+			if (l == 0)
+				h++;
+			h = mask_value(h);
+		} else if (mode == MODE_1COMP) {
+			l = mask_value(~l);
+			h = mask_value(~h);
+		} else {
+			h ^= tbm;
+		}
+		*sy = 1;
+	} else
+		*sy = 0;
 	d = extract_value(x, sx);		// Demonimator
 	if (d == 0) {
 		err_div0(h|l, *sx, *sy);
@@ -762,7 +795,7 @@ static unsigned long long int divmod(const long long int z, const long long int 
 	}
 
 	if (ws != 64) {
-		l |= h >> (64 - ws);
+		l |= h << ws;
 		h >>= (64 - ws);
 	}
 
