@@ -170,6 +170,8 @@ struct _state2 {
 	unsigned int invalid_disp : 1;  // Display contents is invalid
 #ifndef REALBUILD
 	unsigned int trace : 1;
+#else
+	unsigned int test_flag : 1;	// Test flag for various software tests
 #endif
 
 };
@@ -231,6 +233,7 @@ typedef struct _while_on {
 extern TStateWhileOn StateWhileOn;
 
 #define State2		 (StateWhileOn._state2)
+#define TestFlag	 (State2.test_flag)
 #define DispMsg		 (StateWhileOn._disp_msg)
 #define Ticker		 (StateWhileOn._ticker)
 #define Keyticks         (StateWhileOn._keyticks)

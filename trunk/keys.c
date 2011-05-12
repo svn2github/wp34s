@@ -1691,6 +1691,7 @@ static int process_status(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
+
 static int process(const int c) {
 	const enum shifts s = cur_shift();
 
@@ -1698,7 +1699,6 @@ static int process(const int c) {
 		/*
 		 *  Heartbeat processing goes here.
 		 *  This is totally thread safe!
-		 *  For example, the Ticker value could be converted to a register.
 		 */
 
 		/*
@@ -1709,7 +1709,7 @@ static int process(const int c) {
 		finish_display();
 
 		/*
-		 *  Serve the hardware watch dog
+		 *  Serve the watchdog
 		 */
 		watchdog();
 

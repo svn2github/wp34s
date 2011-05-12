@@ -57,6 +57,11 @@ int Running;
 volatile int Pause;
 
 /*
+ *  Some long running function has called busy();
+ */
+int Busy;
+
+/*
  *  Error code
  */
 int Error;
@@ -3003,6 +3008,27 @@ void reset_volatile_state(void) {
 	State.implicit_rtn = 0;
 
 	State2.smode = SDISP_NORMAL;
+}
+
+
+/*
+ *  Called by any long running function
+ */
+void busy(void)
+{
+	/*
+	 *  Serve the hardware watch dog
+	 */
+	watchdog();
+
+	/*
+	 *  Indicate busy state to the user
+	 */
+	if ( !Busy && !Running ) {
+		Busy = 1;
+		DispMsg = "wait...";
+		display();
+	}
 }
 
 

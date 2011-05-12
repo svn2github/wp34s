@@ -203,7 +203,7 @@ void LowLevelInit(void)
 #else
     // Settings borrowed from HP20b SDK
     AT91C_BASE_WDTC->WDTC_WDMR = 
-        (AT91C_WDTC_WDV/2)    // (WDTC) Watchdog Timer Restart set to 8 second
+        (AT91C_WDTC_WDV/2)    // (WDTC) Watchdog Timer Restart set to 8 seconds
                               // used to be 2 seconds but we've long running code
       |  AT91C_WDTC_WDRSTEN   // (WDTC) Watchdog Reset Enable
       |  AT91C_WDTC_WDD       // (WDTC) Watchdog Delta Value

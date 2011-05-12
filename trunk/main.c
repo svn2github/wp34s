@@ -80,7 +80,7 @@ void set_speed( unsigned int speed );
 /// PLL startup time (in number of slow clock ticks).
 #define PLLCOUNT          AT91C_CKGR_PLLCOUNT
 /// PLL MUL values.
-#define PLLMUL_10         304
+#define PLLMUL_LOW_V      304
 //#define PLLMUL         999
 #define PLLMUL            1144
 /// PLL DIV value.
@@ -94,7 +94,7 @@ void set_speed( unsigned int speed );
 #define APD_TICKS 1800 // 3 minutes
 #define APD_VOLTAGE SUPC_BOD_2_1V
 #define LOW_VOLTAGE SUPC_BOD_2_4V
-#define DEEP_SLEEP_MARKER 0xA53C
+#define MAGIC_MARKER 0xA53C
 #define ALLOW_DEEP_SLEEP 1   // undef to disable
 #define TICKS_BEFORE_DEEP_SLEEP 5
 // #define ALLOW_DISABLE_FLASH
@@ -626,7 +626,7 @@ void deep_sleep( void )
 		return;
 	}
 
-	Crc = DEEP_SLEEP_MARKER;
+	Crc = MAGIC_MARKER;
 	State.deep_sleep = 1;
 
 	/*
@@ -705,6 +705,13 @@ void deep_sleep( void )
 void detect_voltage( void )
 {
 	/*
+	 *  Test low voltage conditions
+	 */
+	if ( is_test_mode() ) {
+		Voltage = LOW_VOLTAGE - 1;
+	}
+
+	/*
 	 *  Don't be active all the time
 	 */
 	if ( BodTimer > 0 ) {
@@ -747,9 +754,9 @@ void detect_voltage( void )
 			}
 
 			/*
-			 *  But wait a second before next loop with BOD disabled
+			 *  Wait some time before next loop with BOD disabled
 			 */
-			BodTimer = 400;
+			BodTimer = 25;
 			AT91C_BASE_SUPC->SUPC_BOMR = 0;
 		}
 		else if ( BodThreshold == 0 ) {
@@ -815,7 +822,7 @@ void set_speed( unsigned int speed )
 	 */
 	static const int speeds[ SPEED_HIGH + 1 ] =
 		{ 2000000 / 64 , 2000000,
-		  32768 * ( 1 + PLLMUL_10 ), 32768 * ( 1 + PLLMUL ) };
+		  32768 * ( 1 + PLLMUL_LOW_V ), 32768 * ( 1 + PLLMUL ) };
 
 	if ( speed < SPEED_MEDIUM && ( is_debug() || StartupTicks < 10 ) ) {
 		/*
@@ -886,20 +893,22 @@ void set_speed( unsigned int speed )
 
 	case SPEED_H_LOW_V:
 		/*
-		 *  10 MHz PLL, used in case of low battery
+		 *  19 MHz PLL, used in case of low battery
 		 */
 
 	case SPEED_HIGH:
 		/*
-		 *  32.768 MHz PLL, derived from 32 KHz slow clock
+		 *  37.5 MHz PLL, derived from 32 KHz slow clock
 		 */
 		SUPC_SetVoltageOutput( SUPC_VDD_180 );
-
+#if 1
 		if ( speed == SPEED_H_LOW_V ) {
 			// No wait state necessary at 10 MHz
 			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
 		}
-		else {
+		else
+#endif
+		{
 			// With VDD=1.8, 1 wait state for flash reads is enough.
 			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
 		}
@@ -914,7 +923,7 @@ void set_speed( unsigned int speed )
 		if ( speed == SPEED_H_LOW_V ) {
 			// Initialise PLL at 10MHz
 			AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-						| ( PLLMUL_10 << 16 ) | PLLDIV;
+						| ( PLLMUL_LOW_V << 16 ) | PLLDIV;
 		}
 		else {
 			// Initialise PLL at 32MHz
@@ -929,15 +938,18 @@ void set_speed( unsigned int speed )
 		// Turn off main clock
 		disable_mclk();
 
+#if 1
 		if ( speed == SPEED_H_LOW_V ) {
 			// Save battery, we are already low
 			SUPC_SetVoltageOutput( SUPC_VDD_165 );
 		}
+#endif
 		break;
 	}
 
 #ifdef SPEED_ANNUNCIATOR
 	dot( SPEED_ANNUNCIATOR, speed > SPEED_MEDIUM );
+	finish_display();
 #endif
 
 	unlock();
@@ -952,7 +964,7 @@ void set_speed( unsigned int speed )
 
 
 /*
- *  The 100ms heartbeat, called from the PIT interrupt
+ *  The 100ms heartbeat, called from the SLCDC end frame interrupt
  */
 void user_heartbeat( void )
 {
@@ -1229,7 +1241,9 @@ int put_key( int k )
  */
 void watchdog( void )
 {
+#ifndef NOWD
 	AT91C_BASE_WDTC->WDTC_WDCR=0xA5000001;
+#endif
 }
 
 
@@ -1327,6 +1341,7 @@ void flash_restore(void)
 }
 
 
+#ifndef XTAL
 /*
  *  Turn on crystal oscillator for better clock accuracy.
  *  Crystal must be installed, of course!
@@ -1340,6 +1355,7 @@ void turn_on_crystal( void )
 	DispMsg = "XTAL ON";
 	display();
 }
+#endif
 
 
 /*
@@ -1371,6 +1387,24 @@ void toggle_debug( void )
 {
 	DebugFlag = is_debug() ? 0 : 0xA5;
 	DispMsg = is_debug() ? "Debug ON" : "Debug OFF";
+	display();
+}
+
+
+/*
+ *  Is test mode active ?
+ *  The flag is set via ON+1
+ */
+int is_test_mode( void )
+{
+	return TestFlag;
+}
+
+
+void toggle_test_mode( void )
+{
+	TestFlag = !TestFlag;
+	DispMsg = is_test_mode() ? "Test ON" : "Test OFF";
 	display();
 }
 
@@ -1410,7 +1444,7 @@ int main(void)
 
 	/*
 	 *  Don't let the user wait too long.
-	 *  We go to 10 MHz here as a compromise between power draw
+	 *  We go to 19 MHz here as a compromise between power draw
 	 *  and reaction time for the user
 	 */
 	set_speed( SPEED_H_LOW_V );
@@ -1430,7 +1464,7 @@ int main(void)
 	/*
 	 *  Initialisation depends on the wake up reason
 	 */
-	if ( State.deep_sleep && Crc == DEEP_SLEEP_MARKER ) {
+	if ( State.deep_sleep && Crc == MAGIC_MARKER ) {
 		/*
 		 *  Return from deep sleep
 		 *  RTC and LCD are still running
@@ -1439,7 +1473,6 @@ int main(void)
 		int elapsed_time;
 
 		State.deep_sleep = 0;
-		Crc = 0;
 
 		/*
 		 *  We've used SLCD memory to save some state, restore it.
@@ -1505,18 +1538,26 @@ int main(void)
 		/*
 		 *  Initialise software
 		 */
-		init_34s();
+		if ( Crc != MAGIC_MARKER ) {
+			/*
+			 *  Will perform a full init if checksum is bad
+			 */
+			init_34s();
+		}
+		else {
+			/*
+			 *  Assume a reset, try to protect memory
+			 */
+			init_state();
+			DispMsg = "Reset";
+			display();
+		}
 
 		/*
 		 *  Initialise APD
 		 */
 		Keyticks = 0;
 	}
-
-#ifdef SLEEP_ANNUNCIATOR
-	SleepAnnunciatorOn = 1;
-	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
-#endif
 
 	/*
 	 *  Start periodic interrupts
@@ -1525,6 +1566,11 @@ int main(void)
 	detect_voltage();
 	enable_interrupts();
 
+#ifdef SLEEP_ANNUNCIATOR
+	SleepAnnunciatorOn = 1;
+	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
+	finish_display();
+#endif
 	/*
 	 *  Wait for event and execute it
 	 */
@@ -1620,6 +1666,7 @@ int main(void)
 					if ( State.contrast != 15 ) {
 						++State.contrast;
 					}
+					confirm_counter = 0;
 					break;
 
 				case K54:
@@ -1627,6 +1674,7 @@ int main(void)
 					if ( State.contrast != 0 ) {
 						--State.contrast;
 					}
+					confirm_counter = 0;
 					break;
 
 				case K24:
@@ -1669,8 +1717,16 @@ int main(void)
 				case K03:
 					// ON+"D" Toggle Debug flag
 					toggle_debug();
+					confirm_counter = 0;
 					break;
 
+				case K51:
+					// ON-1 Toggle test flag
+					toggle_test_mode();
+					confirm_counter = 0;
+					break;
+
+#ifndef XTAL
 				case K62:
 					// ON+"X" turn on Crystal
 					if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
@@ -1684,6 +1740,7 @@ int main(void)
 						}
 					}
 					break;
+#endif
 
 				case K43:
 					// ON-"S" SAM-BA boot
@@ -1695,6 +1752,7 @@ int main(void)
 						sam_ba_boot();
 					}
 					break;
+
 				}
 				// No further processing
 				k = -1;

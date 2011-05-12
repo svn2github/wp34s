@@ -628,8 +628,6 @@ enum shifts {
 
 #define K_HEARTBEAT 99			// Pseudo key, "pressed" every 100ms
 
-#define MAGIC_MARKER 0x1357fdb9
-
 /*
  *  All more or less persistent global data
  */
@@ -880,12 +878,14 @@ extern void xrom_tvm(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void xrom_quad(decimal64 *a, decimal64 *b, decContext *nulc);
 
 /* system functions */
+extern void busy(void);
 extern int is_key_pressed(void);
 extern int get_key(void);
 extern int put_key(int k);
 extern void watchdog(void);
 extern void shutdown(void);
 extern int is_debug(void);
+extern int is_test_mode();
 extern void idle(void);
 extern const char *get_revision(void);
 
