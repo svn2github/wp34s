@@ -882,6 +882,7 @@ static int qf_eval(decNumber *fx, const decNumber *x, const decNumber *p, decCon
 		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
 	decNumber a, b;
 
+	busy();
 	(*f)(&a, x, ctx);
 	decNumberSubtract(&b, &a, p, ctx);
 	if (decNumberIsZero(&b))
@@ -919,7 +920,6 @@ static decNumber *qf_search(decNumber *r,
 	solver_init(&v, &t, &u, &tv, &uv, ctx, &flags);
 	set_NaN(&oldv);
 	do {
-		busy();
 		// If we got below the minimum, do a bisection step instead
 		if (min_zero && dn_le0(&v)) {
 			decNumberMin(&v, &t, &u, ctx);

@@ -1624,6 +1624,7 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin, decContext *ct
 decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
 	decNumber s, t, u;
 
+	busy();
 	decNumberLnGamma(&s, x, ctx);
 	decNumberLnGamma(&t, y, ctx);
 	decNumberAdd(&u, &s, &t, ctx);
@@ -1749,6 +1750,7 @@ static void zeta_step(decNumber *sum, const decNumber *x,
 		const decNumber *dc, decNumber *k, decContext *ctx) {
 	decNumber t, s;
 
+	busy();
 	dn_inc(k, ctx);
 	decNumberPower(&s, k, x, ctx);
 	decNumberDivide(&t, dc, &s, ctx);

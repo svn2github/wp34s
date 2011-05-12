@@ -1031,6 +1031,7 @@ void cmplxLnBeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumb
 #ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2, u1, u2;
 
+	busy();
 	cmplxLnGamma(&s1, &s2, a, b, ctx);
 	cmplxLnGamma(&t1, &t2, c, d, ctx);
 	cmplxAdd(&u1, &u2, &s1, &s2, &t1, &t2, ctx);
@@ -1118,6 +1119,7 @@ static void c_zeta_step(decNumber *sx, decNumber *sy,
 		const decNumber *dc, decNumber *k, decContext *ctx) {
 	decNumber t1, t2, s1, s2;
 
+	busy();
 	dn_inc(k, ctx);
 	cmplxRealPower(&s1, &s2, k, x, y, ctx);
 	cmplxDivideRealBy(&t1, &t2, dc, &s1, &s2, ctx);
