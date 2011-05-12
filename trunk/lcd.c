@@ -187,6 +187,7 @@ void reset_disp(void) {
         putchar(' ');
 #endif
 #endif
+        State2.invalid_disp = 0;
 }
 
 void show_disp(void) {
