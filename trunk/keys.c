@@ -474,9 +474,10 @@ static int process_h_shifted(const keycode c) {
 	case K21:	init_arg(RARG_SWAP);	break;	// x<>
 	case K22:	return OP_MON | OP_NOT;
 	case K23:
-		if (State2.runmode)
+		if (State2.runmode) {
 			set_pc(0);
-		else
+			clrretstk();
+		} else
 			init_confirm(confirm_clprog);
 		break;
 	case K24:	return OP_NIL | OP_rCLX;

@@ -531,6 +531,13 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 	State.state_lift = 1;
 }
 
+/* Clear the subroutine return stack
+ */
+void clrretstk(void) {
+	RetStkPtr = 0;
+	set_bank_flags(0);
+}
+
 /* Clear the program space
  */
 void clrprog(void) {
@@ -539,8 +546,8 @@ void clrprog(void) {
 	for (i=1; i<=NUMPROG; i++)
 		prog[i] = EMPTY_PROGRAM_OPCODE;
 	raw_set_pc(0);
-	RetStkPtr = 0;
 	State.last_prog = 1;
+	clrretstk();
 }
 
 /* Clear all - programs and registers
