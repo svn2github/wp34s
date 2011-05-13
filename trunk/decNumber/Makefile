@@ -20,7 +20,7 @@ clean:
 	rm -rf $(OBJECTDIR)
 
 $(OBJECTDIR):
-	mkdir $@
+	mkdir -p $@
 
 $(OBJECTDIR)/$(LIB): $(OBJS) 
 	-rm -f $@
