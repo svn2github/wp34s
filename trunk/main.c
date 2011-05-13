@@ -506,8 +506,7 @@ void shutdown( void )
 	 *  Let Interrupt fade out the display
 	 */
 	LcdFadeOut = State.contrast;
-	DispMsg = "Bye...";
-	display();
+	message( "Bye...", "" );
 
 	/*
 	 *  Ensure the RAM checksum is correct
@@ -1321,7 +1320,7 @@ void flash_backup(void)
 		err = program_flash( i, p );
 		p += 64;
 	}
-	DispMsg = err ? "Error" : "Backed up";
+	DispMsg = err ? "Error" : "Saved";
 	display();
 }
 
@@ -1349,6 +1348,7 @@ void flash_restore(void)
 void turn_on_crystal( void )
 {
 	if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
+		message( "Wait...", "" );
 		AT91C_BASE_SUPC->SUPC_CR = (0xA5 << 24) | AT91C_SUPC_XTALSEL;
 		while ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL );
 	}
@@ -1386,8 +1386,7 @@ int is_debug( void )
 void toggle_debug( void )
 {
 	DebugFlag = is_debug() ? 0 : 0xA5;
-	DispMsg = is_debug() ? "Debug ON" : "Debug OFF";
-	display();
+	message( is_debug() ? "Debug ON" : "Debug OFF", NULL );
 }
 
 
@@ -1404,8 +1403,7 @@ int is_test_mode( void )
 void toggle_test_mode( void )
 {
 	TestFlag = !TestFlag;
-	DispMsg = is_test_mode() ? "Test ON" : "Test OFF";
-	display();
+	message( is_test_mode() ? "Test ON" : "Test OFF", NULL );
 }
 
 
@@ -1426,8 +1424,7 @@ void show_keyticks(void)
 		r = r / 10;
 		buffer[ --i ] = d + '0';
 	}
-	DispMsg = buffer + i;
-	display();
+	message( buffer + i, NULL );
 }
 #else
 #define show_keyticks()
@@ -1591,7 +1588,7 @@ int main(void)
 			if ( !OnKeyPressed && confirm_counter == 1 ) {
 				// ON key was released
 				confirm_counter = 0;
-				DispMsg = NULL;
+				DispMsg = "Cancelled";
 				display();
 			}
 #ifdef ALLOW_DEEP_SLEEP
@@ -1680,8 +1677,7 @@ int main(void)
 				case K24:
 					// ON + <-
 					if ( confirm_counter == 1 ) {
-						DispMsg = "Erase?";
-						display();
+						message( "Erase?", "ALL" );
 					}
 					else {
 						Crc = 0;
@@ -1693,8 +1689,7 @@ int main(void)
 				case K01:
 					// ON-"B" Backup to flash
 					if ( confirm_counter == 1 ) {
-						DispMsg = "Backup?";
-						display();
+						message( "Backup?", "to FLASH" );
 					}
 					else {
 						flash_backup();
@@ -1705,8 +1700,7 @@ int main(void)
 				case K42:
 					// ON-"R" Restore from backup
 					if ( confirm_counter == 1 ) {
-						DispMsg = "Restore?";
-						display();
+						message( "Restore?", "FLASH" );
 					}
 					else {
 						flash_restore();
@@ -1731,22 +1725,21 @@ int main(void)
 					// ON+"X" turn on Crystal
 					if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
 						if ( confirm_counter == 1 ) {
-							DispMsg = "XTAL?";
-							display();
+							message( "XTAL?", "INSTALLED" );
+							break;
 						}
 						else {
 							turn_on_crystal();
-							confirm_counter = 0;
 						}
 					}
+					confirm_counter = 0;
 					break;
 #endif
 
 				case K43:
 					// ON-"S" SAM-BA boot
 					if ( confirm_counter == 1 ) {
-						DispMsg = "SAM-BA?";
-						display();
+						message( "SAM-BA?", "boot" );
 					}
 					else {
 						sam_ba_boot();

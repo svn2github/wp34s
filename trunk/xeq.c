@@ -2889,7 +2889,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	if (reg_decode(&s, &n, NULL) || n == 1)
 		return;
 
-	/*( Non-recursive quickqort */
+	/*( Non-recursive quicksort */
 	beg[0] = s;
 	end[0] = s + n;
 	i = 0;
@@ -3038,8 +3038,7 @@ void busy(void)
 	 */
 	if ( !Busy && !Running ) {
 		Busy = 1;
-		DispMsg = "wait...";
-		display();
+		message( "Wait...", NULL );
 	}
 }
 

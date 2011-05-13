@@ -37,6 +37,7 @@ extern void set_running_off_sst(void);
 extern void set_running_on_sst(void);
 extern void set_running_off(void);
 extern void set_running_on(void);
+extern void message(const char *str1, const char *str2);
 
 extern void format_reg(decimal64 *r, char *buf);
 extern void dot(int n, int on);

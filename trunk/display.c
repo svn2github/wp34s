@@ -1047,33 +1047,38 @@ static void show_alpha(void) {
 	State2.arrow_alpha = 0;
 }
 
-//#pragma GCC optimize 0
-
-void display(void) {
-	int i, j;
-	char buf[40], *bp = buf;
-	const char *p;
-	int annuc = 0;
+static void set_annunciators(void)
+{
 	const enum trig_modes tm = get_trig_mode();
-	const enum catalogues cata = State2.catalogue;
-	int skip = 0;
-
-	reset_disp();
 
 	/* Turn INPUT on for alpha mode.  Turn down arrow on if we're
 	 * typing lower case in alpha mode.  Turn the big equals if we're
 	 * browsing constants.
 	 */
 	dot(BEG, state_pc() == 0);
-	dot(INPUT,  cata || State2.alphas || State2.confirm);
+	dot(INPUT, State2.catalogue || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
-	//dot(BIG_EQ, cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST);
-	//dot(LIT_EQ, cata);
 
 	/* Set the trig mode indicator 360 or RAD.  Grad is handled elsewhere.
 	 */
 	dot(DEG, !is_intmode() && tm == TRIG_DEG);
 	dot(RAD, !is_intmode() && tm == TRIG_RAD);
+}
+
+/*
+ *  Update the display
+ */
+void display(void) {
+	int i, j;
+	char buf[40], *bp = buf;
+	const char *p;
+	int annuc = 0;
+	const enum catalogues cata = State2.catalogue;
+	int skip = 0;
+
+	// Clear display and set annunciators
+	reset_disp();
+	set_annunciators();
 
 	xset(buf, '\0', sizeof(buf));
 	if (State2.cmplx  && !cata) {
@@ -1327,6 +1332,28 @@ static void set_status(const char *str) {
 }
 
 
+/*
+ *  Display messages (global function)
+ */
+extern void message(const char *str1, const char *str2)
+{
+	if ( State2.invalid_disp && str2 == NULL ) {
+		// Complete redraw neccessary
+		DispMsg = str1;
+		display();
+	}
+	else {
+		if ( str2 != NULL ) {
+			reset_disp();
+			set_annunciators();
+			set_digits_string( str2, 0 );
+		}
+		set_status( str1 );
+		finish_display();
+	}
+}
+
+
 /* Display the right hand characters from the given string.
  * Trying to fit as many as possible into the bitmap area,
  * and reduce font size if required.
@@ -1362,10 +1389,13 @@ void set_running_on_sst() {
 void set_running_off() {
 	set_running_off_sst();
 	State.entryp = 0;
+	dot( RCL_annun, 0);
 }
 
 void set_running_on() {
 	reset_disp();
+	set_annunciators();
+	dot( BEG, 0 );
 #if 1
 	set_status("Running");
 	set_digits_string("PrograMm", 0);
