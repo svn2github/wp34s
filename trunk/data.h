@@ -22,6 +22,8 @@
 #ifndef DATA_H_
 #define DATA_H_
 
+#define MAGIC_MARKER 0xA53C
+
 #pragma pack(push)
 #pragma pack(4)
 

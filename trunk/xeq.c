@@ -3417,11 +3417,15 @@ unsigned short int checksum_code(void) {
 	return crc16(PersistentRam._prog, State.last_prog * 2 - 2);
 }
 
+/*
+ *  The magic marker is always valid. 
+ *  This eases manipulating state files.
+ */
 int checksum_all(void) {
 	unsigned short int oldcrc = PersistentRam._crc;
 	PersistentRam._crc =
 		crc16(&PersistentRam, (char *) &PersistentRam._crc - (char *) &PersistentRam);
-	return oldcrc != PersistentRam._crc;
+	return oldcrc != PersistentRam._crc && oldcrc != MAGIC_MARKER;
 }
 
 #ifdef REALBUILD

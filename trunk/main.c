@@ -94,7 +94,6 @@ void set_speed( unsigned int speed );
 #define APD_TICKS 1800 // 3 minutes
 #define APD_VOLTAGE SUPC_BOD_2_1V
 #define LOW_VOLTAGE SUPC_BOD_2_4V
-#define MAGIC_MARKER 0xA53C
 #define ALLOW_DEEP_SLEEP 1   // undef to disable
 #define TICKS_BEFORE_DEEP_SLEEP 5
 // #define ALLOW_DISABLE_FLASH
