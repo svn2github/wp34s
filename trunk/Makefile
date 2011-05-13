@@ -160,7 +160,7 @@ endif
 
 # Targets and rules
 
-.PHONY: clean tgz asone flash flash2
+.PHONY: clean tgz asone flash version
 
 ifdef REALBUILD
 all: flash
@@ -169,6 +169,9 @@ else
 all: calc
 calc: $(DIRS) $(OUTPUTDIR)/calc
 endif
+
+version:
+	@$(CC) --version
 
 clean:
 	-rm -fr $(DIRS)
@@ -194,11 +197,12 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
-	grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
-	grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	grep "^\.slcdcmem" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
+	@grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.slcdcmem" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@cat $(SUMMARY)
 
 # include openocd/Makefile
 else
