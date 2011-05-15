@@ -1473,24 +1473,24 @@ void cmdgto(unsigned int arg, enum rarg op) {
 	cmdgtocommon(op != RARG_GTO, find_label_from(state_pc(), arg, 0));
 }
 
-static unsigned int findmultilbl(const opcode o) {
+static unsigned int findmultilbl(const opcode o, int quiet) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
 	unsigned int lbl = find_opcode_from(0, dest, 1);
 	if (lbl == 0)
 		lbl = find_opcode_from(addrXROM(0), dest, 1);
+	if (lbl == 0 && ! quiet)
+		err(ERR_NO_LBL);
 	return lbl;
 }
 
 void cmdmultilblp(const opcode o, enum multiops mopr) {
-	fin_tst(findmultilbl(o) != 0);
+	fin_tst(findmultilbl(o, 1) != 0);
 }
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
-	unsigned int lbl = findmultilbl(o);
+	unsigned int lbl = findmultilbl(o, 0);
 	int is_gsb = mopr != DBL_GTO;
 
-	if (lbl == 0)
-		err(ERR_NO_LBL);
 	if (!Running && isXROM(lbl) && ! is_gsb) {
 		lbl = 0;
 		err(ERR_RANGE);
@@ -1518,9 +1518,7 @@ void xromarg(unsigned int arg, enum rarg op) {
 }
 
 void multixromarg(const opcode o, enum multiops mopr) {
-	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	unsigned int lbl = find_opcode_from(0, dest, 0);
-	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), lbl);
+	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), findmultilbl(o, 0));
 }
 
 void xrom_quad(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
