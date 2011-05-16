@@ -1,0 +1,99 @@
+This program donated by Jeff O.
+
+This is the classic four digit number guessing game.
+After each guess you get feedback based on the number of numbers that are correct
+and the number that are correct but are in the wrong position.
+
+
+Program Listing
+
+Step Command	Comment
+001  LBL C	Label C for "Code Breaker"
+002  CLx	clear x to get zero to store in 1 - 5, 10
+003  STO 01	
+004  STO 02	
+005  STO 03	
+006  STO 04	
+007  STO 05	
+008  STO 10	set display mode Fix 1 so scores are presented as x.x
+009  FIX 01	
+010  1  	enter 1 for first digit of 10
+011  0  	enter 0 for second digit of 10
+012  STO 06	Store constant 10 in register 6
+013  4  	enter 4
+014  STO I	Store 4 in I for loop index and indirect storage.
+015  LBL 02	Label 2
+016  4  	enter 4
+017  RAN#	generate random number, 4 pushed to Y
+018  RCLx 06	Multiply times 10 to get a digit left of decimal point
+019  IP 	drop fractional portion
+020  x=?->Y	check random number against register pointed to ny Y
+021  GTO 02	if equal, go back and generate new number
+022  DSZ Y	decrement Y register, skip when zero
+023  BACK 03	jump back three steps to compare digit to next register pointed
+		to by Y
+024  STO->I	If random number is not equal to any existing digit, store in
+		register pointed to by I
+025  DSE I	Decrement index
+026  GTO 02	Go back to random number generator to store next digit
+027  LBL 03	Label 3
+028  RCL 10	Recall 10, count of guesses for guessing portion
+029  RCL 05	Recall 5, score of guess for guessing portion
+030  STOP	Stop, display 0.0 after
+031  STO 09	Store 4 digit guess in register 9
+032  STO 08	Store second copy of guess
+033  CLx	Clear x for 0 in x
+034  STO 05	Store in register 5, which will hold score for the current guess
+035  4  	Enter 4 
+036  STO I	Store 4 in I for loop index and indirect recalling.
+037  LBL 08	Label 8
+038  RCL 09	Recall guess
+039  RCL/ 06	Divide guess by 10
+040  STO 09	Store back in register 9
+041  FP 	Take fractional part
+042  RCLx 06	Multiply times 10 to get a digit left of decimal point
+043  IP 	drop fractional portion
+044  x=?->I	Compare to digit pointed to by I
+045  GTO 04	If equal, go to scoring for correct digit in correct location
+046  4  	enter 4
+047  x<>y	
+048  x=?->Y	Compare to digit pointed to by Y
+049  GTO 05	if equal, go to scoring for correct digit in incorrect location
+050  DSZ Y	decrement Y register, skip when zero
+051  BACK 03	jump back three steps to compare digit to next register pointed
+052  0  	to by Y enter 0 to indicate digit not in number
+053  SKIP 05	Go to scoring
+054  LBL 04	Label 04
+055  SKIP 02	skip two steps to enter 1 for correct digit in correct location
+056  LBL 05	Label 05
+057  .  	enter decimal point
+058  1  	enter 1 (for .1 for guess digit in number in incorrect 
+     		location, 1 for correct digit in correct location.)
+059  STO+ 05	Add 1, .1 or 0 to score
+060  DSE I	Decrement index
+061  GTO 08	Go to Label 08 to extract next guess digit
+062  INC 10	Increment register 10, count of guesses
+063  RCL 08	Recall original guess
+064  GTO 03	Go to label 03 to display score and count of guesses
+
+
+
+To play: Press C to execute program label C. The calculator will generate
+a random four digit number with no repeated digits, zero not allowed,
+then stop and display 0.0. Key in a four digit guess, (e.g. 1234, 9753,
+etc.) and press R/S. The calculator will compare your guess to the secret
+number it generated and return a score in the following format:
+
+	x.y
+
+where x is the number of digits in your guess that are both in the secret
+number and in the correct position, and y is the number of digits which
+are in the secret number but not in the correct position. So, for example,
+if the secret number is 3214 and you guess 1234, the score will be 2.2,
+as the 2 and 4 are in the correct positions and the 1 and 3 are in the
+number but in the incorrect position in your guess. After each guess,
+pressing x<>y will show the number of guesses so far. Keep entering
+guesses until 4.0 is displayed, indicating you have solved the puzzle.
+
+The guess will be in register Z in case you forget what you just guessed.
+
