@@ -707,6 +707,7 @@ void detect_voltage( void )
 	 */
 	if ( is_test_mode() ) {
 		Voltage = LOW_VOLTAGE - 1;
+		return;
 	}
 
 	/*
@@ -1260,7 +1261,7 @@ void idle( void )
 
 /*
  *  Issue a command to the flash controller. Must be done from RAM.
- *  Returns 0 if OK or non zero on error. Re-enables interrupts.
+ *  Returns zero if OK or non zero on error.
  */
 RAM_FUNCTION int flash_command( unsigned int cmd )
 {
@@ -1304,6 +1305,7 @@ int program_flash( int page_no, int buffer[ 64 ] )
 /*
  *  Simple backup / restore
  *  Started with ON+"B" or ON+"R"
+ *  The backup area is the last 2KB of flash (pages 504 to 511)
  */
 void flash_backup(void)
 {
@@ -1761,6 +1763,12 @@ int main(void)
 		 *  Take care of the low battery indicator
 		 */
 		dot( BATTERY, Voltage <= LOW_VOLTAGE );
+		if ( SpeedSetting == SPEED_HIGH && Voltage <= LOW_VOLTAGE ) {
+			/*
+			 *  Reduce speed
+			 */
+			set_speed( SPEED_H_LOW_V );
+		}
 
 		/*
 		 *  Handle the input
