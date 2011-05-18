@@ -707,10 +707,11 @@ void date_settime(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumberFrac(&y, &x, Ctx);
 	decNumberMultiply(&x, &y, &const_100, Ctx);
 	m = dn_to_int(decNumberTrunc(&y, &x, Ctx), Ctx) & 0x7f;
-	decNumberTrunc(&y, &x, Ctx);
+	decNumberFrac(&y, &x, Ctx);
 	decNumberMultiply(&x, &y, &const_100, Ctx);
-	s = dn_to_int(decNumberRound(&x, &y, Ctx), Ctx) & 0x7f;
+	s = dn_to_int(decNumberRound(&y, &x, Ctx), Ctx) & 0x7f;
 #ifdef REALBUILD
+	busy();
 	RTC_SetTime((unsigned char) h, (unsigned char) m, (unsigned char) s);
 #endif
 }

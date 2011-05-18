@@ -1442,7 +1442,7 @@ int main(void)
 
 	/*
 	 *  Don't let the user wait too long.
-	 *  We go to 19 MHz here as a compromise between power draw
+	 *  We go to 10 MHz here as a compromise between power draw
 	 *  and reaction time for the user
 	 */
 	set_speed( SPEED_H_LOW_V );
