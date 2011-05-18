@@ -693,6 +693,7 @@ void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	}
 	dow = day_of_week(y, m, d, NULL);
 #ifdef REALBUILD
+	busy();
 	RTC_SetDate((unsigned short) y, (unsigned char) m,
 		    (unsigned char) d, (unsigned char) dow);
 #endif
