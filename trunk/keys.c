@@ -94,6 +94,7 @@ void init_state(void) {
 #define C(n)	s.n = State.n
 	C(fraccomma);
 	C(last_prog);
+        C(state_pc);
 	C(sigma_mode);
 	C(intm);
 	C(int_len);
