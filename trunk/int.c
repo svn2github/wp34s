@@ -322,7 +322,9 @@ long long int intMultiply(long long int y, long long int x) {
 	u = mask_value(xv * yv);
 	set_overflow(u / yv != xv);
 
-	if (mode != MODE_UNSIGNED && (u & topbit_mask()))
+        if (mode == MODE_UNSIGNED)
+            return mask_value(u);
+	if ((u & topbit_mask()) != 0)
 		set_overflow(1);
 	return build_value(u & ~topbit_mask(), sx ^ sy);
 #else
