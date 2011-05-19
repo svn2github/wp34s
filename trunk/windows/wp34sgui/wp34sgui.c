@@ -228,22 +228,3 @@ void shutdown( void )
 }
 
 
-/*
- *  Serve the watch dog
- */
-void watchdog( void )
-{
-}
-
-
-/*
- *  Is debugger active ?
- */
-int is_debug( void )
-{
-#ifdef DEBUG
-	return 1;
-#else
-	return 0;
-#endif
-}

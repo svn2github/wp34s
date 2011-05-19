@@ -1561,6 +1561,7 @@ int main(void)
 						message( "Erase?", "ALL" );
 					}
 					else {
+						set_speed( SPEED_HIGH );
 						Crc = 0;
 						init_34s();
 						confirm_counter = 0;
@@ -1580,6 +1581,7 @@ int main(void)
 						message( "Backup?", "to FLASH" );
 					}
 					else {
+						set_speed( SPEED_HIGH );
 						flash_backup();
 						confirm_counter = 0;
 					}
@@ -1591,6 +1593,7 @@ int main(void)
 						message( "Restore?", "FLASH" );
 					}
 					else {
+						set_speed( SPEED_HIGH );
 						flash_restore();
 						confirm_counter = 0;
 					}

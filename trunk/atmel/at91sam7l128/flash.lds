@@ -48,7 +48,7 @@ MEMORY
 */
     flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 0x1000 - 12
     revision (R) :      ORIGIN = 0x11eff4, LENGTH = 12
-    userflash (R) :     ORIGIN = 0x11f800, LENGTH = 0x1000
+    userflash (R) :     ORIGIN = 0x11f000, LENGTH = 0x1000
 }
 
 SECTIONS

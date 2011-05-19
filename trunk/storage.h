@@ -49,8 +49,8 @@ int load_program(int region);
 int swap_program(int region);
 
 #ifndef REALBUILD
-extern save_state(void);
-extern load_state(void);
+extern void save_state(void);
+extern void load_state(void);
 #endif
 
 #endif

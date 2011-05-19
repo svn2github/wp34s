@@ -18,8 +18,8 @@
  * This module handles all load/save operations in the real build or emulator
  * Module written by MvC
  */
-#include "storage.h"
 #include "xeq.h"
+#include "storage.h"
 #include "display.h"
 
 #ifdef REALBUILD
@@ -29,6 +29,7 @@
 #else
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define BACKUP_SRAM
 #define SLCDCMEM
 #define USER_FLASH
@@ -133,7 +134,7 @@ int program_flash( int page_no, int buffer[ 64 ] )
 {
 	char name[ 20 ];
 	int r;
-	file *f;
+	FILE *f;
 
 	page_no -= PAGE_BEGIN;
 	if ( page_no < PAGE_BACKUP - PAGE_BEGIN ) {
@@ -142,7 +143,7 @@ int program_flash( int page_no, int buffer[ 64 ] )
 	}
 	else {
 		r = NUMBER_OF_FLASH_REGIONS;
-		scopy( name, BACKUP_FILE );
+		strcpy( name, BACKUP_FILE );
 	}
 	f = fopen( name, "rb+" );
 	if ( f == NULL ) return 1;
@@ -171,7 +172,6 @@ void flash_backup(void)
 	int *p = (int *) &PersistentRam;
 	int i, err = 0;
 
-	set_speed( SPEED_HIGH );
 	process_cmdline_set_lift();
 	init_state();
 	checksum_all();
@@ -187,7 +187,6 @@ void flash_backup(void)
 
 void flash_restore(void)
 {
-	set_speed( SPEED_HIGH );
 	if ( checksum_backup() ) {
 		DispMsg = "Invalid";
 	}

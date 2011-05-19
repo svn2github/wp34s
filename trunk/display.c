@@ -15,6 +15,7 @@
  */
 
 #include "xeq.h" 
+#include "storage.h"
 #include "display.h"
 #include "lcd.h"
 #include "int.h"
