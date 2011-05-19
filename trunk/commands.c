@@ -24,6 +24,7 @@
 #include "consts.h"
 #include "alpha.h"
 #include "lcd.h"
+#include "storage.h"
 
 /* Define our table of monadic functions.
  * These must be in the same order as the monadic function enum but we'll
@@ -575,6 +576,10 @@ const struct argcmd argcmds[] = {
 
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
 	CMDstk(RARG_KEY,	&op_keyp,	NUMREG,			"KEY?")
+
+	CMD(RARG_PSAVE,		&save_program,	NUMBER_OF_FLASH_REGIONS,	"PSTO")
+	CMD(RARG_PLOAD,		&load_program,	NUMBER_OF_FLASH_REGIONS,	"PRCL")
+	CMD(RARG_PSWAP,		&swap_program,	NUMBER_OF_FLASH_REGIONS,	"P\027")
 
 #undef CMDnoI
 #undef CMDstk

@@ -260,7 +260,7 @@ $(OBJECTDIR)/%.o: %.c
 $(OBJECTDIR)/alpha.o: alpha.c alpha.h xeq.h data.h decn.h int.h display.h consts.h \
 		Makefile features.h
 $(OBJECTDIR)/charmap.o: charmap.c xeq.h data.h Makefile features.h
-$(OBJECTDIR)/commands.o: commands.c xeq.h data.h Makefile features.h
+$(OBJECTDIR)/commands.o: commands.c xeq.h data.h storage.h Makefile features.h
 $(OBJECTDIR)/complex.o: complex.c decn.h complex.h xeq.h data.h consts.h \
 		Makefile features.h
 $(OBJECTDIR)/consts.o: consts.c consts.h Makefile features.h
@@ -268,7 +268,7 @@ $(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h data.h alpha.h atmel/rt
 		Makefile features.h
 $(OBJECTDIR)/decn.o: decn.c decn.h xeq.h data.h consts.h complex.h int.h Makefile features.h
 $(OBJECTDIR)/display.o: display.c xeq.h data.h display.h consts.h lcd.h int.h \
-		charset.h charset7.h decn.h alpha.h decn.h Makefile features.h
+		charset.h charset7.h decn.h alpha.h decn.h storage.h Makefile features.h
 $(OBJECTDIR)/int.o: int.c int.h xeq.h data.h Makefile features.h
 $(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h data.h display.h lcdmap.h atmel/board.h \
 		Makefile features.h
@@ -278,9 +278,9 @@ $(OBJECTDIR)/prt.o: prt.c xeq.h data.h consts.h display.h Makefile features.h
 $(OBJECTDIR)/stats.o: stats.c xeq.h data.h decn.h stats.h consts.h int.h \
 		Makefile features.h
 $(OBJECTDIR)/string.o: string.c xeq.h data.h Makefile features.h
-$(OBJECTDIR)/storage.o: storage.c xeq.h data.h Makefile features.h
+$(OBJECTDIR)/storage.o: storage.c xeq.h data.h storage.h Makefile features.h
 $(OBJECTDIR)/xeq.o: xeq.c xeq.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
-		display.h consts.h date.h statebits.h Makefile features.h
+		display.h consts.h date.h statebits.h storage.h Makefile features.h
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h data.h consts.h Makefile features.h
 
 ifdef REALBUILD
@@ -294,6 +294,6 @@ $(OBJECTDIR)/rtc.o: atmel/rtc.c atmel/rtc.h \
 $(OBJECTDIR)/main.o: main.c xeq.h data.h
 else
 $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h data.h keys.h consts.h display.h lcd.h \
-		int.h xrom.h Makefile features.h
+		int.h xrom.h storage.h Makefile features.h
 endif
 

@@ -222,23 +222,27 @@ static int write_region( int r, FLASH_REGION *fr )
  *  Save the user program area to a region.
  *  Returns an error if failed.
  */
-int save_program( int r )
+static int internal_save_program(unsigned int r)
 {
 	int len = State.last_prog * 2 - 2;
 	FLASH_REGION region;
 
-	if ( r < 0 || r > NUMBER_OF_FLASH_REGIONS ) {
-		return ERR_RANGE;
-	}
 	xset( &region, 0xff, sizeof( region ) );
 	region.type = REGION_TYPE_PROGRAM;
 	region.length = len;
 	region.crc = checksum_code();
 	xcopy( region.data, Prog, len );
 	if ( 0 != write_region( r, &region ) ) {
-		return ERR_IO;
+		err( ERR_IO );
+                return 1;
 	}
-	return 0;
+        return 0;
+}
+
+
+void save_program( unsigned int r, enum rarg op )
+{
+	internal_save_program(r);
 }
 
 
@@ -246,24 +250,21 @@ int save_program( int r )
  *  Load the user program area from a region.
  *  Returns an error if invalid.
  */
-int load_program( int r )
+void load_program( unsigned int r, enum rarg op )
 {
 	FLASH_REGION *fr = UserFlash.region + r;
 	int len = fr->length;
 
-	if ( r < 0 || r > NUMBER_OF_FLASH_REGIONS ) {
-		return ERR_RANGE;
-	}
 	if ( fr->type != REGION_TYPE_PROGRAM || checksum_region( r ) ) {
 		/*
 		 *  Not a valid program region
 		 */
-		return ERR_INVALID;
+		err( ERR_INVALID );
+		return;
 	}
 	clrprog();
 	xcopy( Prog, fr->data, len );
 	State.last_prog = len / 2 + 1;
-	return 0;
 }
 
 
@@ -273,22 +274,18 @@ int load_program( int r )
  *
  *  Attention: This needs a lot of stack space!
  */
-int swap_program( int r )
+void swap_program( unsigned int r, enum rarg op )
 {
 	FLASH_REGION *fr = UserFlash.region + r;
 	FLASH_REGION region;
 	int len = fr->length;
-	int err;
-
-	if ( r < 0 || r > NUMBER_OF_FLASH_REGIONS ) {
-		return ERR_RANGE;
-	}
 
 	if ( fr->type != REGION_TYPE_PROGRAM || checksum_region( r ) ) {
 		/*
 		 *  Not a valid program region
 		 */
-		return ERR_INVALID;
+		err( ERR_INVALID );
+		return;
 	}
 	/*
 	 *  Temporary copy
@@ -298,10 +295,8 @@ int swap_program( int r )
 	/*
 	 *  Save current program
 	 */
-	err = save_program( r );
-	if ( err != 0 ) {
-		return err;
-	}
+	if ( internal_save_program( r ) )
+            return;
 
 	/*
 	 *  Restore temporary copy
@@ -309,7 +304,6 @@ int swap_program( int r )
 	clrprog();
 	xcopy( Prog, region.data, len );
 	State.last_prog = len / 2 + 1;
-	return 0;
 }
 
 

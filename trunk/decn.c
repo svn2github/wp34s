@@ -1624,9 +1624,10 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin, decContext *ct
 decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
 	decNumber s, t, u;
 
-	busy();
 	decNumberLnGamma(&s, x, ctx);
+	busy();
 	decNumberLnGamma(&t, y, ctx);
+	busy();
 	decNumberAdd(&u, &s, &t, ctx);
 	decNumberAdd(&s, x, y, ctx);
 	decNumberLnGamma(&t, &s, ctx);

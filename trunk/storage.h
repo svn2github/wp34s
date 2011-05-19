@@ -41,12 +41,12 @@ extern int checksum_region(int r);
 extern int checksum_all(void);
 extern int checksum_backup(void);
 
-void flash_backup(void);
-void flash_restore(void);
-void sam_ba_boot(void);
-int save_program(int region);
-int load_program(int region);
-int swap_program(int region);
+extern void flash_backup(void);
+extern void flash_restore(void);
+extern void sam_ba_boot(void);
+extern void save_program(unsigned int region, enum rarg op);
+extern void load_program(unsigned int region, enum rarg op);
+extern void swap_program(unsigned int region, enum rarg op);
 
 #ifndef REALBUILD
 extern void save_state(void);

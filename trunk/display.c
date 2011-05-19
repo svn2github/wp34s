@@ -74,9 +74,9 @@ static const char *const error_table[] =
 	"bad mode\0",
 	"word size\0too SMmALL",
 	"too few\0dAtA Points",
-	"invalid\0ParaMmEtEr"
+	"invalid\0ParaMmEtEr",
 	"I/O\0Error",
-	"Invalid\0dAtA"
+	"Invalid\0dAtA",
 };
 
 

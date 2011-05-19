@@ -1031,9 +1031,10 @@ void cmplxLnBeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumb
 #ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2, u1, u2;
 
-	busy();
 	cmplxLnGamma(&s1, &s2, a, b, ctx);
+	busy();
 	cmplxLnGamma(&t1, &t2, c, d, ctx);
+	busy();
 	cmplxAdd(&u1, &u2, &s1, &s2, &t1, &t2, ctx);
 	cmplxAdd(&s1, &s2, a, b, c, d, ctx);
 	cmplxLnGamma(&t1, &t2, &s1, &s2, ctx);

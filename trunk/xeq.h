@@ -503,6 +503,7 @@ enum rarg {
 	RARG_INISOLVE, RARG_SOLVESTEP,
 
 	RARG_PAUSE, RARG_KEY,
+	RARG_PSAVE, RARG_PLOAD, RARG_PSWAP,
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
