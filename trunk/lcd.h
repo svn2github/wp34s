@@ -24,7 +24,6 @@ extern void set_status_grob(unsigned long long int grob[6]);
 extern void show_disp(void);
 extern void wait_for_display(void);
 extern void finish_display(void);
-extern void idle();
 extern void show_flags(void);
 extern void reset_disp(void);
 extern void show_progtrace(char *buf);

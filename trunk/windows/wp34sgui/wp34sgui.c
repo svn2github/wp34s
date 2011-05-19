@@ -28,6 +28,7 @@
 
 #include "builddate.h"
 #include "display.h"
+#include "storage.h"
 
 /*
  *  Setup the LCD area, persistent RAM and not so persistent RAM
@@ -103,11 +104,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
  */
 void Init( void )
 {
-	FILE *f = fopen( "wp34s.dat", "rb" );
-	if ( f != NULL ) {
-		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
-		fclose( f );
-	}
+	load_state();
 	DispMsg = NULL;
 	init_34s();
 }
@@ -120,13 +117,7 @@ void Reset( bool keep )
 
 void Shutdown( void )
 {
-	FILE *f = fopen( "wp34s.dat", "wb" );
-	if ( f == NULL ) return;
-	process_cmdline_set_lift();
-	init_state();
-	checksum_all();
-	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
-	fclose( f );
+	save_state();
 }
 
 /*

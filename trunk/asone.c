@@ -49,6 +49,7 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "lcd.c"
 #include "prt.c"
 #include "stats.c"
+#include "storage.c"
 #include "string.c"
 #include "xeq.c"
 #include "xrom.c"

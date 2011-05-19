@@ -26,6 +26,7 @@
 #include "lcd.h"
 #include "int.h"
 #include "consts.h"
+#include "storage.h"
 
 #include "catalogues.h"
 
@@ -37,13 +38,6 @@
 
 
 static const char SvnRevision[ 12 ] = "$Rev:: 621 $";
-
-
-/*
- *  Create the persistent and not so persistent RAM areas
- */
-TPersistentRam PersistentRam;
-TStateWhileOn StateWhileOn;
 
 /*
  *  PC keys to calculator keys
@@ -315,30 +309,6 @@ static void dump_xrom(void) {
 	printf("%u XROM words\n%d single word instructions\n%d double word instructions\n", max-pc, sngl, dbl);
 }
 
-/*
- *  Save/Load state
- */
-void save_state( void )
-{
-	FILE *f = fopen( "wp34s.dat", "wb" );
-	if ( f == NULL ) return;
-	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
-#ifdef DEBUG
-	printf( "sizeof struct _state = %d\n", (int)sizeof( struct _state ) );
-	printf( "sizeof RAM = %d (%d free)\n", (int)sizeof(PersistentRam), 2048 - (int)sizeof(PersistentRam));
-	printf( "sizeof pointer = %d\n", (int)sizeof( char * ) );
-	printf( "sizeof decNumber = %d\n", (int)sizeof(decNumber));
-	printf( "sizeof decContext = %d\n", (int)sizeof(decContext));
-#endif
-}
-
-void load_state( void )
-{
-	FILE *f = fopen( "wp34s.dat", "rb" );
-	if ( f == NULL ) return;
-	fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
-}
-
 void shutdown( void )
 {
 	checksum_all();
@@ -364,10 +334,6 @@ int get_key(void)
 int put_key( int k )
 {
 	return k;
-}
-
-void watchdog(void) 
-{
 }
 
 /*

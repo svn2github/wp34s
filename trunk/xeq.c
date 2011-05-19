@@ -28,6 +28,7 @@
 
 #define XEQ_INTERNAL 1
 #include "xeq.h"
+#include "storage.h"
 #include "decn.h"
 #include "complex.h"
 #include "stats.h"
@@ -3392,44 +3393,3 @@ void init_34s(void) {
 #endif
 }
 
-
-/* The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
- */
-static unsigned short int crc16(void *base, unsigned int length) {
-	unsigned short int crc = 0x5aa5;
-	unsigned char *d = (unsigned char *)base;
-	unsigned int i;
-
-	for (i=0; i<length; i++) {
-		crc  = ((unsigned char)(crc >> 8)) | (crc << 8);
-		crc ^= *d++;
-		crc ^= ((unsigned char)(crc & 0xff)) >> 4;
-		crc ^= crc << 12;
-		crc ^= (crc & 0xff) << 5;
-	}
-	return crc;
-}
-
-
-unsigned short int checksum_code(void) {
-	return crc16(PersistentRam._prog, State.last_prog * 2 - 2);
-}
-
-/*
- *  The magic marker is always valid. 
- *  This eases manipulating state files.
- */
-int checksum_all(void) {
-	unsigned short int oldcrc = PersistentRam._crc;
-	PersistentRam._crc =
-		crc16(&PersistentRam, (char *) &PersistentRam._crc - (char *) &PersistentRam);
-	return oldcrc != PersistentRam._crc && oldcrc != MAGIC_MARKER;
-}
-
-#ifdef REALBUILD
-int checksum_flash(void) {
-	unsigned short int crc =
-		crc16(&UserFlash, (char *) &UserFlash._crc - (char *) &UserFlash);
-	return crc != UserFlash._crc;
-}
-#endif

@@ -24,6 +24,7 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #include "display.h"
 #include "lcd.h"
 #include "keys.h"
+#include "storage.h"
 
 #ifndef at91sam7l128
 #define at91sam7l128 1
@@ -96,30 +97,9 @@ void set_speed( unsigned int speed );
 #define LOW_VOLTAGE SUPC_BOD_2_4V
 #define ALLOW_DEEP_SLEEP 1   // undef to disable
 #define TICKS_BEFORE_DEEP_SLEEP 5
-// #define ALLOW_DISABLE_FLASH
 
-#define BACKUP_SRAM  __attribute__((section(".backup")))
-#define SLCDCMEM     __attribute__((section(".slcdcmem")))
-#define USER_FLASH   __attribute__((section(".userflash")))
-
-#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
+//#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
 //#define NO_INLINE    __attribute__((noinline))
-
-
-/*
- *  Setup the persistent RAM
- */
-BACKUP_SRAM TPersistentRam PersistentRam;
-
-/*
- *  Data that is saved in the SLCD controller during deep sleep
- */
-SLCDCMEM TStateWhileOn StateWhileOn;
-
-/*
- *  Same data as in persistent RAM but in flash memory
- */
-USER_FLASH TPersistentRam UserFlash;
 
 /*
  *  Local data
@@ -135,9 +115,6 @@ volatile unsigned char InIrq;
 unsigned char DebugFlag;
 #ifdef SLEEP_ANNUNCIATOR
 unsigned char SleepAnnunciatorOn;
-#endif
-#ifdef ALLOW_DISABLE_FLASH
-unsigned char FlashWakeupTime;
 #endif
 
 /*
@@ -1259,88 +1236,6 @@ void idle( void )
 }
 
 
-/*
- *  Issue a command to the flash controller. Must be done from RAM.
- *  Returns zero if OK or non zero on error.
- */
-RAM_FUNCTION int flash_command( unsigned int cmd )
-{
-	AT91C_BASE_MC->MC_FCR = cmd;
-	while ( ( AT91C_BASE_MC->MC_FSR & 1 ) == 0 ) {
-		// wait for flash controller to do its work
-	}
-	return ( AT91C_BASE_MC->MC_FSR >> 1 );
-}
-
-
-/*
- *  Program the flash.
- *  Returns 0 if OK or non zero on error.
- */
-int program_flash( int page_no, int buffer[ 64 ] )
-{
-	int *f = (int *) 0x100000;  // anywhere in flash is OK
-	int res;
-
-	lock();  // No interrupts, please!
-
-	/*
-	 *  Copy the source to the flash write buffer
-	 *  If buffer isn't given, assume the copying is already done.
-	 */
-	while ( buffer != NULL && f != (int *) 0x100100 ) {
-		*f++ = *buffer++;
-	}
-
-	/*
-	 *  Command the controller to erase and write the page.
-	 *  Will re-enable interrupts, too.
-	 */
-	res = flash_command( 0x5A000003 | ( page_no << 8 ) );
-	unlock();
-	return res;
-}
-
-
-/*
- *  Simple backup / restore
- *  Started with ON+"B" or ON+"R"
- *  The backup area is the last 2KB of flash (pages 504 to 511)
- */
-void flash_backup(void)
-{
-	int *p = (int *) &PersistentRam;
-	int i, err = 0;
-
-	set_speed( SPEED_HIGH );
-	process_cmdline_set_lift();
-	init_state();
-	checksum_all();
-
-	for ( i = 504; i < 512 && err == 0; ++i ) {
-		err = program_flash( i, p );
-		p += 64;
-	}
-	DispMsg = err ? "Error" : "Saved";
-	display();
-}
-
-
-void flash_restore(void)
-{
-	set_speed( SPEED_HIGH );
-	if ( checksum_flash() ) {
-		DispMsg = "Invalid";
-	}
-	else {
-		xcopy( &PersistentRam, &UserFlash, sizeof( PersistentRam ) );
-		init_state();
-		DispMsg = "Restored";
-	}
-	display();
-}
-
-
 #ifndef XTAL
 /*
  *  Turn on crystal oscillator for better clock accuracy.
@@ -1357,21 +1252,6 @@ void turn_on_crystal( void )
 	display();
 }
 #endif
-
-
-/*
- *  Set the boot bit to ROM and turn off the device.
- *  Next power ON goes into SAM-BA mode.
- */
-void sam_ba_boot(void)
-{
-	/*
-	 *  Command the controller to clear GPNVM1
-	 */
-	lock();
-	flash_command( 0x5A00010C );
-	SUPC_Shutdown();
-}
 
 
 /*

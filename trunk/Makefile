@@ -124,11 +124,11 @@ endif
 
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c xrom.c consts.c alpha.c charmap.c \
-		commands.c string.c
+		commands.c string.c storage.c
 
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
-		statebits.h stats.h xeq.h xrom.h
+		statebits.h stats.h xeq.h xrom.h storage.h
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 LIBS += -L$(OBJECTDIR) -lconsts
@@ -197,11 +197,12 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
-	@grep "^\.fixed"    $(MAPFILE) | tail -n 1 >  $(SUMMARY)
-	@grep "^\.relocate" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.bss"      $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.slcdcmem" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.backup"   $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.fixed"     $(MAPFILE) | tail -n 1 >  $(SUMMARY)
+	@grep "^\.relocate"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.bss"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.slcdcmem"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.userflash" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.backup"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@cat $(SUMMARY)
 
 # include openocd/Makefile
@@ -277,6 +278,7 @@ $(OBJECTDIR)/prt.o: prt.c xeq.h data.h consts.h display.h Makefile features.h
 $(OBJECTDIR)/stats.o: stats.c xeq.h data.h decn.h stats.h consts.h int.h \
 		Makefile features.h
 $(OBJECTDIR)/string.o: string.c xeq.h data.h Makefile features.h
+$(OBJECTDIR)/storage.o: storage.c xeq.h data.h Makefile features.h
 $(OBJECTDIR)/xeq.o: xeq.c xeq.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h statebits.h Makefile features.h
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h data.h consts.h Makefile features.h

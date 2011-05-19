@@ -542,7 +542,7 @@ enum errors {
 	ERR_XROM_NEST,	ERR_RANGE,	ERR_DIGIT,
 	ERR_TOO_LONG,	ERR_XEQ_NEST,	ERR_STK_CLASH,
 	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
-	ERR_BAD_PARAM,
+	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
 	MAX_ERROR
 };
 
@@ -675,10 +675,6 @@ extern int incpc(void);
 extern void decpc(void);
 extern unsigned int find_label_from(unsigned int, unsigned int, int);
 extern void fin_tst(const int);
-extern unsigned short int checksum_code(void);
-extern int checksum_all(void);
-extern int checksum_all(void);
-extern int checksum_flash(void);
 
 extern unsigned int get_bank_flags(void);
 extern void set_bank_flags(unsigned int);
@@ -883,11 +879,22 @@ extern void busy(void);
 extern int is_key_pressed(void);
 extern int get_key(void);
 extern int put_key(int k);
-extern void watchdog(void);
 extern void shutdown(void);
-extern int is_debug(void);
-extern int is_test_mode();
-extern void idle(void);
 extern const char *get_revision(void);
+#ifdef REALBUILD
+extern void lock(void);
+extern void unlock(void);
+extern void watchdog(void);
+extern void idle(void);
+extern int is_debug(void);
+extern int is_test_mode(void);
+#else
+#define lock()
+#define unlock()
+#define watchdog()
+#define idle()
+#define is_debug() 0
+#define is_test_mode() 0
+#endif
 
 #endif

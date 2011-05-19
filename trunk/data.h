@@ -120,13 +120,14 @@ typedef struct _ram {
 
 } TPersistentRam;
 
-extern TPersistentRam PersistentRam, UserFlash;
+extern TPersistentRam PersistentRam;
 
 #define State		 (PersistentRam._state)
 #define Alpha		 (PersistentRam._alpha)
 #define Regs		 (PersistentRam._regs)
 #define Tags		 (PersistentRam._tags)
 #define BankRegs	 (PersistentRam._bank_regs)
+#define Prog		 (PersistentRam._prog)
 #define BankFlags	 (PersistentRam._bank_flags)
 #define UserFlags	 (PersistentRam._user_flags)
 #define RetStk		 (PersistentRam._retstk)
