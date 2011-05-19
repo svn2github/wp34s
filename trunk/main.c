@@ -1687,6 +1687,13 @@ int main(void)
 					}
 					break;
 
+				case K62:
+					// ON + . toggle radix mark
+					State.fraccomma = !State.fraccomma;
+					DispMsg = State.fraccomma ? "RDX," : "RDX.";
+					display();
+					break;
+
 				case K01:
 					// ON-"B" Backup to flash
 					if ( confirm_counter == 1 ) {
@@ -1722,8 +1729,8 @@ int main(void)
 					break;
 
 #ifndef XTAL
-				case K62:
-					// ON+"X" turn on Crystal
+				case K11:
+					// ON+RCL (ON+TIME) turn on Crystal
 					if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
 						if ( confirm_counter == 1 ) {
 							message( "XTAL?", "INSTALLED" );
