@@ -647,7 +647,7 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 	decNumberCompare(&d, &const_100000, &x, Ctx);
 	if (dn_le0(&d))
 		return 0;
-	decNumberCompare(&d, &x, &const_0_00001, Ctx);
+	decNumberCompare(&d, &x, &const_0_0001, Ctx);
 	if (decNumberIsNegative(&d))
 		return 0;
 	if (decNumberIsNegative(&w)) {
