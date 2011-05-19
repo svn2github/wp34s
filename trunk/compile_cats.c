@@ -407,6 +407,8 @@ static s_opcode internal_catalogue[] = {
 #endif
 
 static s_opcode mode_catalogue[] = {
+	NILIC(OP_RADCOM,	"RDX,")
+	NILIC(OP_RADDOT,	"RDX.")
 	NILIC(OP_1COMP,		"1COMPL")
 	NILIC(OP_2COMP,		"2COMPL")
 	NILIC(OP_SIGNMANT,	"SIGNMT")
