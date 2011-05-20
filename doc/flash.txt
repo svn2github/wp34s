@@ -1,7 +1,7 @@
 Commands to handle the flash memory on the real calculator
 ==========================================================
 
-Hold down ON and press one of the following keys:
+Hold down ON (EXIT) and press one of the following keys:
 
 STO - Backup:  This creates a copy of the RAM in flash memory.
 
@@ -11,6 +11,9 @@ S - SAM-BA:    Clears the GPNVM1 bit and turns the calculator off.
                S is on the '6' key.
                ATTENTION: You can now only boot into SAM-BA mode!
                Without the SAM-BA software and the cable, you're lost!
+
+These ON key combinations have to be pressed twice in a row without
+releasing the ON key to be executed.
 
 Do an ON+STO before you want to flash a new release! After flashing,
 your backup should still be in place if you didn't press the ERASE
@@ -47,7 +50,9 @@ with ON+STO. This can be copied to your PC or loaded from it.
    h) To get your calculator back in business, start the "Boot from flash"
       script in SAM-BA, the same procedure you should know from flashing
       the firmware.
-   i) Power the calculator up and perform a restore with ON+R.
+   i) Power the calculator up and perform a restore with ON+RCL. The
+      latest version does the restore automatically when RAM is not
+      valid.
 
 2. From PC to calculator
 
@@ -71,4 +76,3 @@ C:\wp34s>copy /b calc.bin+wp34s-0.dat+wp34s-1.dat+wp34s.dat calc-full.bin
 
 The resulting file can be programmed into flash and all data is readily
 available.
- 
