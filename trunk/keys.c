@@ -1063,7 +1063,7 @@ static int arg_digit(int n) {
 	if (val == TOPREALREG-1 && argcmds[base].cmplx)
 		return STATE_UNFINISHED;
 	if (State2.numdigit == 0) {
-		if (n * 10 >= mx)
+		if (n * 10 >= mx || mx < 10 )
 			return arg_eval(n);
 	} else {
 		if ((int) val >= mx)

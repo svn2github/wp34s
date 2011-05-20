@@ -146,9 +146,12 @@ int program_flash( int page_no, int buffer[ 64 ] )
 		strcpy( name, BACKUP_FILE );
 	}
 	f = fopen( name, "rb+" );
+	if ( f == NULL ) fopen( name, "wb+" );
 	if ( f == NULL ) return 1;
-	fseek( f, r * 256, SEEK_SET );
-	fwrite( buffer, 256, 1, f );
+	fseek( f, page_no * 256, SEEK_SET );
+	if ( 1 != fwrite( buffer, 256, 1, f ) ) {
+		return 1;
+	}
 	fclose( f );
 
 	/*
@@ -242,7 +245,7 @@ static int internal_save_program(unsigned int r)
 
 void save_program( unsigned int r, enum rarg op )
 {
-	internal_save_program(r);
+	internal_save_program( r );
 }
 
 
@@ -295,8 +298,9 @@ void swap_program( unsigned int r, enum rarg op )
 	/*
 	 *  Save current program
 	 */
-	if ( internal_save_program( r ) )
-            return;
+	if ( internal_save_program( r ) ) {
+		return;
+	}
 
 	/*
 	 *  Restore temporary copy
