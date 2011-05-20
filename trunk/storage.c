@@ -184,7 +184,6 @@ void flash_backup(void)
 		p += 64;
 	}
 	DispMsg = err ? "Error" : "Saved";
-	display();
 }
 
 
@@ -198,7 +197,6 @@ void flash_restore(void)
 		init_state();
 		DispMsg = "Restored";
 	}
-	display();
 }
 
 

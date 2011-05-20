@@ -1248,7 +1248,7 @@ void turn_on_crystal( void )
 		AT91C_BASE_SUPC->SUPC_CR = (0xA5 << 24) | AT91C_SUPC_XTALSEL;
 		while ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL );
 	}
-	DispMsg = "XTAL ON";
+	DispMsg = "OK";
 	display();
 }
 #endif
@@ -1420,7 +1420,10 @@ int main(void)
 			/*
 			 *  Will perform a full init if checksum is bad
 			 */
-			init_34s();
+			if ( init_34s() && !checksum_backup() ) {
+				// restore recent backup after power on clear
+				flash_restore();
+			}
 		}
 		else {
 			/*
@@ -1428,7 +1431,6 @@ int main(void)
 			 */
 			init_state();
 			DispMsg = "Reset";
-			display();
 		}
 
 		/*
@@ -1443,6 +1445,11 @@ int main(void)
 	BodThreshold = -1;
 	detect_voltage();
 	enable_interrupts();
+	if ( !State2.invalid_disp ) {
+		// This is not a wakeup from deep sleep but a power on
+		// We need to refresh the display.
+		display();
+	}
 
 #ifdef SLEEP_ANNUNCIATOR
 	SleepAnnunciatorOn = 1;
@@ -1575,26 +1582,28 @@ int main(void)
 					display();
 					break;
 
-				case K01:
-					// ON-"B" Backup to flash
+				case K10:
+					// ON-STO Backup to flash
 					if ( confirm_counter == 1 ) {
 						message( "Backup?", "to FLASH" );
 					}
 					else {
 						set_speed( SPEED_HIGH );
 						flash_backup();
+						display();
 						confirm_counter = 0;
 					}
 					break;
 
-				case K42:
-					// ON-"R" Restore from backup
+				case K11:
+					// ON-RCL Restore from backup
 					if ( confirm_counter == 1 ) {
 						message( "Restore?", "FLASH" );
 					}
 					else {
 						set_speed( SPEED_HIGH );
 						flash_restore();
+						display();
 						confirm_counter = 0;
 					}
 					break;
@@ -1612,11 +1621,11 @@ int main(void)
 					break;
 
 #ifndef XTAL
-				case K11:
-					// ON+RCL (ON+TIME) turn on Crystal
+				case K02:
+					// ON+C turn on Crystal
 					if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
 						if ( confirm_counter == 1 ) {
-							message( "XTAL?", "INSTALLED" );
+							message( "Crystal?", "Installed" );
 							break;
 						}
 						else {

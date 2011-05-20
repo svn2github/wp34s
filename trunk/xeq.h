@@ -653,7 +653,7 @@ extern void xeqprog(void);
 extern void xeqone(char *);
 extern void xeq_init(void);
 extern void xeq_init_contexts(void);
-extern void init_34s(void);
+extern int init_34s(void);
 extern void process_keycode(int);
 extern void set_entry(void);
 

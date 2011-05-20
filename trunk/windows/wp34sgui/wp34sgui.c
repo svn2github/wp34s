@@ -107,6 +107,7 @@ void Init( void )
 	load_state();
 	DispMsg = NULL;
 	init_34s();
+	display();
 }
 
 void Reset( bool keep )

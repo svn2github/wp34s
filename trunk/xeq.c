@@ -3330,18 +3330,17 @@ static void check_const_cat(void) {
 #endif
 
 /* Main initialisation routine that sets things up for us.
+ * Returns a nonzero result if it has cleared ram.
  */
-void init_34s(void) {
-
-	if (checksum_all()) {
+int init_34s(void)
+{
+	int cleared = checksum_all();
+	if ( cleared ) {
 		reset(NULL, NULL, NULL);
 	}
 	init_state();
 
-#if defined(REALBUILD) || defined(WINGUI)
-	display();
-#else
-#ifdef DEBUG
+#if !defined(REALBUILD) && !defined(WINGUI) && defined(DEBUG)
 	{
 		int i;
 	/* Sanity check the function table indices.
@@ -3390,6 +3389,6 @@ void init_34s(void) {
 #endif
 	}
 #endif
-#endif
+	return cleared;
 }
 
