@@ -3,30 +3,40 @@ Commands to handle the flash memory on the real calculator
 
 Hold down ON and press one of the following keys:
 
-B - Backup:  This creates a copy of the RAM in flash memory.
+STO - Backup:  This creates a copy of the RAM in flash memory.
 
-R - Restore: This restores a previously created backup. 
-             R is on the '5' key.
+RCL - Restore: This restores a previously created backup. 
 
-S - SAM-BA:  Clears the GPNVM1 bit and turns the calculator off.
-             S is on the '6' key.
-             ATTENTION: You can now only boot into SAM-BA mode!
-             Without the SAM-BA software and the cable, you're lost!
+S - SAM-BA:    Clears the GPNVM1 bit and turns the calculator off.
+               S is on the '6' key.
+               ATTENTION: You can now only boot into SAM-BA mode!
+               Without the SAM-BA software and the cable, you're lost!
 
-Do an ON+B before you want to flash a new release! After flashing,
+Do an ON+STO before you want to flash a new release! After flashing,
 your backup should still be in place if you didn't press the ERASE
 button on the cable but used ON+S instead to get into SAM-BA boot mode.
 
+There are additoonal commands in the program functions catalogue:
+
+PSTO n   Store program in region n. n is 0 or 1. A region is a
+         block of flash memeory that can hold a copy of the
+	 user program area. In a later version, alphanumeric
+         labels in flash can be called with XEQ. This allows
+         creation of libraries.
+
+PRCL n   Restore region n to the program area where data can be edited.
+
+P<> n    Swap the current program with the contents of region n.
 
 How to transfer data between the calculator and your PC
 =======================================================
 
 The whole RAM is saved to address 0x11F800 (relative address 0x1F800)
-with ON+B. This can be copied to your PC or loaded from it.
+with ON+STO. This can be copied to your PC or loaded from it.
 
 1. From calculator to PC
 
-   a) Do an ON+B, then ON+S, then RESET with the cable connected.
+   a) Do an ON+STO, then ON+S, then RESET with the cable connected.
    b) Press ON once and start SAM-BA on the PC. It should connect.
    c) Set the start address to 0x11F800 and the size to 0x800
    d) Enter a file name in the receive field.
@@ -46,5 +56,19 @@ with ON+B. This can be copied to your PC or loaded from it.
    c) You can now send the short file with SAM-BA.
    d) Perform steps (h) and (i) from above.
 
-   As an option, you can concatenate the flash image file calc.bin with
-   your wp34s.dat file and send the result to the calculator as a whole.
+The program regions accessible with the commands PSTO, PRCL and P<> are
+stored at addresses 0x11F000 and 0x11F400 respectively and have a length
+of 0x400 (1 KB) each. The emulator creates files wp32s-#.dat, # being the
+region number. You can handle these files the same way as the complete
+state file from the emulator. The regions have identical formatting and
+can be swapped by copying their data to the "wrong" place. The backup
+area is formatted differently. 
+
+If you want to get your emulator data into the calculator in one go,
+do the following in Windows:
+
+C:\wp34s>copy /b calc.bin+wp34s-0.dat+wp34s-1.dat+wp34s.dat calc-full.bin
+
+The resulting file can be programmed into flash and all data is readily
+available.
+ 
