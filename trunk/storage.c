@@ -136,23 +136,21 @@ int program_flash( int page_no, int buffer[ 64 ] )
 	char name[ 20 ];
 	int r;
 	FILE *f;
-	int page;
 
 	page_no -= PAGE_BEGIN;
 	if ( page_no < PAGE_BACKUP - PAGE_BEGIN ) {
 		r = page_no / SIZE_REGION;
-		page = page_no % SIZE_REGION;
+		page_no %= SIZE_REGION;
 		sprintf( name, REGION_FILE, r );
 	}
 	else {
 		r = NUMBER_OF_FLASH_REGIONS;
 		strcpy( name, BACKUP_FILE );
-		page = page_no;
 	}
 	f = fopen( name, "rb+" );
 	if ( f == NULL ) f = fopen( name, "wb+" );
 	if ( f == NULL ) return 1;
-	fseek( f, page * PAGE_SIZE, SEEK_SET );
+	fseek( f, page_no * PAGE_SIZE, SEEK_SET );
 	if ( 1 != fwrite( buffer, PAGE_SIZE, 1, f ) ) {
 		return 1;
 	}
