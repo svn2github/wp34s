@@ -268,6 +268,7 @@ void load_program( unsigned int r, enum rarg op )
 	clrprog();
 	xcopy( Prog, fr->data, len );
 	State.last_prog = len / 2 + 1;
+	set_running_off();
 }
 
 
@@ -308,6 +309,7 @@ void swap_program( unsigned int r, enum rarg op )
 	clrprog();
 	xcopy( Prog, region.data, len );
 	State.last_prog = len / 2 + 1;
+	set_running_off();
 }
 
 
