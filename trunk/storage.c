@@ -335,7 +335,7 @@ void swap_program( unsigned int r, enum rarg op )
 
 static int internal_save_registers(unsigned int r)
 {
-	int len = NUMREG * sizeof(decimal64);
+	int len = TOPREALREG * sizeof(decimal64);
 	FLASH_REGION region;
 
 	xset( &region, 0xff, sizeof( region ) );
