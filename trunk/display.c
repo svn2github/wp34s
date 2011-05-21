@@ -1135,9 +1135,10 @@ void display(void) {
 			*bp++ = 's';
 			*bp++ = '_';
 		} else {
+			const int maxdigits = State2.ind || argcmds[State.base].lim >= 10 ? 2 : 1;
 			if (State2.numdigit > 0)
 				bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
-			for (i=State2.numdigit; i<2; i++)
+			for (i=State2.numdigit; i<maxdigits; i++)
 				*bp++ = '_';
 		}
 		set_status(buf);
