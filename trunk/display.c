@@ -1230,9 +1230,14 @@ void display(void) {
 				j += SEGS_PER_DIGIT;
 			}
 		} else {
-			unsigned upc = user_pc();
-			if (isXROM(state_pc())) {
+			unsigned int upc = user_pc();
+			unsigned int pc = state_pc();
+			if (isXROM(pc)) {
 				num_arg_0(scopy_spc(buf, "l1B "), upc, 5);
+			} else if (isLIB(pc)) {
+				scopy(buf, "PG 00-");
+				num_arg_0(buf+3, nLIB(pc)-1, 2);
+				num_arg_0(buf+6, 1+upc, 3);
 			} else {
 				set_exp(NUMPROG + 1 - State.last_prog, 1, NULL);
 				num_arg_0(scopy_spc(buf, S7_STEP), upc, 3);

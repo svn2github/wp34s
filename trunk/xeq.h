@@ -184,9 +184,29 @@ extern int current_catalogue_max(void);
 
 
 /* Macros to access program ROM */
-#define XROM_MASK	(0x4000u)
+#define XROM_MASK	(0x8000u)
 #define isXROM(pc)	((pc) & XROM_MASK)
 #define addrXROM(pc)	((pc) | XROM_MASK)
+
+/* Macros to access flash library space */
+#if NUMPROG > 511
+#define LIB_MASK	(0x7c00u)
+#define LIB_SHIFT	(10)
+#else
+#define LIB_MASK	(0x7e00u)
+#define LIB_SHIFT	(9)
+#endif
+
+#define LIB_MAX		(15 - LIB_SHIFT)
+#define LIB_ADDR_MASK	((1 << (LIB_SHIFT)) - 1)
+#define isLIB(pc)	((pc) & LIB_MASK)
+#define nLIB(pc)	(((pc) & LIB_MASK) >> LIB_SHIFT)
+#define addrLIB(pc, n)	((pc) | ((n) << LIB_SHIFT))
+#define startLIB(pc)	((pc) & ~LIB_ADDR_MASK)
+#define offsetLIB(pc)	((pc) & LIB_ADDR_MASK)
+#define sizeLIB(n)	(UserFlash.region[(n)-1].length / sizeof(s_opcode))
+
+#define isRAM(pc)	(((pc) & (XROM_MASK | LIB_MASK)) == 0)
 
 
 /* Stack lives in the register set */

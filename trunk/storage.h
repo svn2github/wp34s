@@ -26,7 +26,7 @@ typedef struct _flash_region {
 	unsigned int crc : 16;
 	unsigned int type : 1;        // 1 for data, zero for program
 	unsigned int length : 15;
-	char data[ 1024 - 2 - 2 ];
+	unsigned short data[ (1024 - 2 - 2) / sizeof(unsigned short) ];
 } FLASH_REGION;
 
 typedef struct _user_flash {

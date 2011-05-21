@@ -60,6 +60,7 @@ USER_FLASH TUserFlash UserFlash;
  */
 #define SIZE_REGION   4
 #define SIZE_BACKUP   8
+#define PAGE_SIZE     256
 #define PAGE_END      512
 #define PAGE_BACKUP   (PAGE_END - SIZE_BACKUP)
 #define PAGE_BEGIN    (PAGE_BACKUP - SIZE_REGION * NUMBER_OF_FLASH_REGIONS)
@@ -139,6 +140,7 @@ int program_flash( int page_no, int buffer[ 64 ] )
 	page_no -= PAGE_BEGIN;
 	if ( page_no < PAGE_BACKUP - PAGE_BEGIN ) {
 		r = page_no / SIZE_REGION;
+		page_no %= SIZE_REGION;
 		sprintf( name, REGION_FILE, r );
 	}
 	else {
@@ -146,10 +148,10 @@ int program_flash( int page_no, int buffer[ 64 ] )
 		strcpy( name, BACKUP_FILE );
 	}
 	f = fopen( name, "rb+" );
-	if ( f == NULL ) fopen( name, "wb+" );
+	if ( f == NULL ) f = fopen( name, "wb+" );
 	if ( f == NULL ) return 1;
-	fseek( f, page_no * 256, SEEK_SET );
-	if ( 1 != fwrite( buffer, 256, 1, f ) ) {
+	fseek( f, page_no * PAGE_SIZE, SEEK_SET );
+	if ( 1 != fwrite( buffer, PAGE_SIZE, 1, f ) ) {
 		return 1;
 	}
 	fclose( f );
@@ -157,7 +159,7 @@ int program_flash( int page_no, int buffer[ 64 ] )
 	/*
 	 *  Since flash is readable memory we have to emulate this, too
 	 */
-	memcpy( (char *) &UserFlash + 256 * page_no, buffer, 256 );
+	memcpy( (char *) &UserFlash + PAGE_SIZE * page_no, buffer, PAGE_SIZE );
 	return 0;
 }
 
@@ -225,7 +227,7 @@ static int write_region( int r, FLASH_REGION *fr )
  */
 static int internal_save_program(unsigned int r)
 {
-	int len = State.last_prog * 2 - 2;
+	int len = State.last_prog * sizeof(unsigned short) - sizeof(unsigned short);
 	FLASH_REGION region;
 
 	xset( &region, 0xff, sizeof( region ) );
@@ -411,21 +413,22 @@ void load_state( void )
 		fclose( f );
 	}
 	for ( i = 0; i < NUMBER_OF_FLASH_REGIONS + 1; ++i ) {
-		p = (char *) &UserFlash + i * SIZE_REGION;
+		p = ((char *) &UserFlash) + i * SIZE_REGION * PAGE_SIZE;
 		if ( i < NUMBER_OF_FLASH_REGIONS ) {
-			l = SIZE_REGION;
+			l = SIZE_REGION * PAGE_SIZE;
 			sprintf( name, REGION_FILE, i );
 		}
 		else {
-			l = SIZE_BACKUP;
+			l = SIZE_BACKUP * PAGE_SIZE;
 			strcpy( name, BACKUP_FILE );
 		}
 		f = fopen( name, "rb" );
 		if ( f == NULL ) {
 			memset( p, 0xff, l );
-			continue;
+		} else {
+			fread( p, l, 1, f );
+			fclose(f);
 		}
-		fread( p, l, 1, f );
 	}
 }
 #endif

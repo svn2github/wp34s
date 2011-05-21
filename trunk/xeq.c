@@ -113,14 +113,6 @@ static void raw_set_pc(unsigned int pc) {
 	State.state_pc = pc;
 }
 
-void set_pc(unsigned int pc) {
-	if (pc >= State.last_prog)
-		pc = State.last_prog - 1;
-	if (!isXROM(pc) && pc > 1 && isDBL(prog[pc-1]))
-		pc--;
-	raw_set_pc(pc);
-}
-
 
 /* Return the program memory location specified.
  */
@@ -133,6 +125,13 @@ opcode getprog(unsigned int n) {
 			r |= xrom[(n+1) & ~XROM_MASK] << 16;
 		return r;
 	}
+	if (isLIB(n)) {
+		unsigned int lib = nLIB(n);
+		r = UserFlash.region[lib-1].data[offsetLIB(n)];
+		if (isDBL(r))
+			r |= UserFlash.region[lib-1].data[offsetLIB(n) + 1] << 16;
+		return r;
+	}
 	if (n >= State.last_prog || n > NUMPROG)
 		return EMPTY_PROGRAM_OPCODE;
 	if (n == 0)
@@ -143,6 +142,24 @@ opcode getprog(unsigned int n) {
 	return r;
 }
 
+
+void set_pc(unsigned int pc) {
+	if (isRAM(pc)) {
+		if (pc >= State.last_prog)
+			pc = State.last_prog - 1;
+		if (pc > 1 && isDBL(prog[pc-1]))
+			pc--;
+	} else if (isLIB(pc)) {
+		const unsigned int n = startLIB(pc) + sizeLIB(nLIB(pc));
+		if (n == 0)
+			pc = 0;
+		else if (pc > n-1)
+			pc = n-1;
+		if (pc > startLIB(pc) && isDBL(getprog(pc-1)))
+			pc--;
+	}
+	raw_set_pc(pc);
+}
 
 /* Set a flag to indicate that a complex operation has taken place
  * This only happens if we're not in a program.
@@ -412,9 +429,15 @@ void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 unsigned int inc(const unsigned int pc) {
 	const unsigned int off = isDBL(getprog(pc))?2:1;
 	const unsigned int npc = pc + off;
+
 	if (isXROM(pc)) {
 		if (pc >= addrXROM(xrom_size - 1))
 			return addrXROM(0);
+		return npc;
+	}
+	if (isLIB(pc)) {
+		if (pc >= startLIB(pc) + sizeLIB(nLIB(pc)) - 1)
+			return startLIB(pc);
 		return npc;
 	}
 	if (npc >= State.last_prog) {
@@ -428,6 +451,8 @@ unsigned int inc(const unsigned int pc) {
 unsigned int dec(unsigned int pc) {
 	if (isXROM(pc) && pc == addrXROM(0))
 		return addrXROM(xrom_size - 1);
+	if (isLIB(pc) && pc == startLIB(pc))
+		return startLIB(pc) + sizeLIB(nLIB(pc)) - 1;
 	if (pc == 0)
 		pc = State.last_prog;
 	if (--pc > 1 && pc != addrXROM(0) && isDBL(getprog(pc-1)))
@@ -439,18 +464,21 @@ unsigned int dec(unsigned int pc) {
  * programs on such.  Return non-zero if we wrapped.
  */
 int incpc(void) {
-	const unsigned int pc = inc(state_pc());
+	const unsigned int opc = state_pc();
+	const unsigned int pc = inc(opc);
+	const int wrapped = pc < opc;
 
 	raw_set_pc(pc);
-	if (pc == 0 && Running)
+	if (wrapped && Running)
 		State.implicit_rtn = 1;
-	return pc == 0;
+	return wrapped;
 }
 
 void decpc(void) {
 	raw_set_pc(dec(state_pc()));
 	set_running_off();
 }
+
 
 /* Determine where in program space the PC really is
  */
@@ -459,7 +487,12 @@ unsigned int user_pc(void) {
 	unsigned int n = 0;
 	unsigned int base;
 
-	base = isXROM(pc) ? addrXROM(0) : 0;
+	if (isRAM(pc))
+		base = 0;
+	else if (isXROM(pc))
+		base = addrXROM(0);
+	else
+		base = startLIB(pc);
 
 	while (base < pc) {
 		n++;
@@ -471,17 +504,20 @@ unsigned int user_pc(void) {
 /* Given a target user PC, figure out the real matching PC
  */
 unsigned int find_user_pc(unsigned int target) {
-	unsigned int base = 0;
-	unsigned int n = 0;
+	unsigned int upc = state_pc();
+	const int libp = isLIB(upc);
+	unsigned int base = libp ? startLIB(upc) : 0;
+	unsigned int n = libp ? 1 : 0;
 
 	while (n++ < target) {
-		unsigned oldbase = base;
+		const unsigned int oldbase = base;
 		base = inc(oldbase);
-		if (base == 0)
+		if (base < oldbase)
 			return oldbase;
 	}
 	return base;
 }
+
 
 /* Zero the X register
  */
@@ -1403,14 +1439,20 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 	unsigned int z = pc;
 	unsigned int max;
 	unsigned int min;
-	unsigned int xrombase = addrXROM(0);
+	unsigned int base;
 
 	if (isXROM(z)) {
-		min = xrombase;
+		base = addrXROM(0);
+		min = base;
 		max = addrXROM(xrom_size);
+	} else if (isLIB(z)) {
+		base = startLIB(pc);
+		min = base;
+		max = min + sizeLIB(nLIB(z));
 	} else {
 		if (z == 0)
 			z++;
+		base = 0xffff;
 		min = 1;
 		max = State.last_prog;
 	}
@@ -1420,7 +1462,7 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 			return z;
 		else {
 			z = inc(z);
-			if (z == xrombase)
+			if (z == base)
 				break;
 		}
 	for (z = min; z<pc; z = inc(z))
@@ -1477,6 +1519,11 @@ void cmdgto(unsigned int arg, enum rarg op) {
 static unsigned int findmultilbl(const opcode o, int quiet) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
 	unsigned int lbl = find_opcode_from(0, dest, 1);
+	int i;
+
+	for (i=1; lbl == 0 && i<=NUMBER_OF_FLASH_REGIONS; i++)
+		if (UserFlash.region[i-1].type == REGION_TYPE_PROGRAM)
+			lbl = find_opcode_from(addrLIB(0, i), dest, 1);
 	if (lbl == 0)
 		lbl = find_opcode_from(addrXROM(0), dest, 1);
 	if (lbl == 0 && ! quiet)
@@ -2996,6 +3043,12 @@ static void print_step(char *tracebuf, const opcode op) {
 		tracebuf[0] = 'x';
 		p = num_arg_0(tracebuf+1, pc - addrXROM(0), 3);
 		*p++ = ' ';
+	} else if (isLIB(pc)) {
+		tracebuf[0] = 'f';
+		p = num_arg_0(tracebuf+1, nLIB(pc), 2);
+		*p++ = ' ';
+		p = num_arg_0(p, pc - startLIB(pc), 3);
+		*p++ = ' ';
 	} else if (pc == 0) {
 		scopy(tracebuf, "000:");
 		return;
@@ -3211,7 +3264,7 @@ void stoprog(opcode c) {
 	int off;
 	unsigned int pc;
 
-	if (isXROM(state_pc()))
+	if (!isRAM(state_pc()))
 		return;
 	off = isDBL(c)?2:1;
 	if (State.last_prog + off > NUMPROG+1) {
@@ -3237,7 +3290,7 @@ void delprog(void) {
 	const unsigned pc = state_pc();
 	int off;
 
-	if (pc == 0 || isXROM(pc))
+	if (pc == 0 || !isRAM(pc))
 		return;
 	off = isDBL(prog[pc])?2:1;
 	for (i=pc; i<(int)State.last_prog-1; i++)
