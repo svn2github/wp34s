@@ -47,6 +47,9 @@ extern void sam_ba_boot(void);
 extern void save_program(unsigned int region, enum rarg op);
 extern void load_program(unsigned int region, enum rarg op);
 extern void swap_program(unsigned int region, enum rarg op);
+extern void save_registers(unsigned int region, enum rarg op);
+extern void load_registers(unsigned int region, enum rarg op);
+extern void swap_registers(unsigned int region, enum rarg op);
 
 #ifndef REALBUILD
 extern void save_state(void);

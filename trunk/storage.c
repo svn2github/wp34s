@@ -136,21 +136,23 @@ int program_flash( int page_no, int buffer[ 64 ] )
 	char name[ 20 ];
 	int r;
 	FILE *f;
+	int page;
 
 	page_no -= PAGE_BEGIN;
 	if ( page_no < PAGE_BACKUP - PAGE_BEGIN ) {
 		r = page_no / SIZE_REGION;
-		page_no %= SIZE_REGION;
+		page = page_no % SIZE_REGION;
 		sprintf( name, REGION_FILE, r );
 	}
 	else {
 		r = NUMBER_OF_FLASH_REGIONS;
 		strcpy( name, BACKUP_FILE );
+		page = page_no;
 	}
 	f = fopen( name, "rb+" );
 	if ( f == NULL ) f = fopen( name, "wb+" );
 	if ( f == NULL ) return 1;
-	fseek( f, page_no * PAGE_SIZE, SEEK_SET );
+	fseek( f, page * PAGE_SIZE, SEEK_SET );
 	if ( 1 != fwrite( buffer, PAGE_SIZE, 1, f ) ) {
 		return 1;
 	}
@@ -159,11 +161,31 @@ int program_flash( int page_no, int buffer[ 64 ] )
 	/*
 	 *  Since flash is readable memory we have to emulate this, too
 	 */
-	memcpy( (char *) &UserFlash + PAGE_SIZE * page_no, buffer, PAGE_SIZE );
+	memcpy( ((char *) &UserFlash) + PAGE_SIZE * page_no, buffer, PAGE_SIZE );
 	return 0;
 }
 
 #endif
+
+
+/*
+ *  The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
+ */
+static unsigned short int crc16( void *base, unsigned int length )
+{
+	unsigned short int crc = 0x5aa5;
+	unsigned char *d = (unsigned char *) base;
+	unsigned int i;
+
+	for ( i = 0; i < length; ++i ) {
+		crc  = ( (unsigned char)( crc >> 8 ) ) | ( crc << 8 );
+		crc ^= *d++;
+		crc ^= ( (unsigned char)( crc & 0xff ) ) >> 4;
+		crc ^= crc << 12;
+		crc ^= ( crc & 0xff ) << 5;
+	}
+	return crc;
+}
 
 
 /*
@@ -313,25 +335,70 @@ void swap_program( unsigned int r, enum rarg op )
 }
 
 
-/*
- *  The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
- */
-unsigned short crc16( void *base, unsigned int length )
+static int internal_save_registers(unsigned int r)
 {
-	unsigned short int crc = 0x5aa5;
-	unsigned char *d = (unsigned char *) base;
-	unsigned int i;
+	int len = NUMREG * sizeof(decimal64);
+	FLASH_REGION region;
 
-	for ( i = 0; i < length; ++i ) {
-		crc  = ( (unsigned char)( crc >> 8 ) ) | ( crc << 8 );
-		crc ^= *d++;
-		crc ^= ( (unsigned char)( crc & 0xff ) ) >> 4;
-		crc ^= crc << 12;
-		crc ^= ( crc & 0xff ) << 5;
+	xset( &region, 0xff, sizeof( region ) );
+	region.type = REGION_TYPE_DATA;
+	region.length = len;
+	region.crc = crc16(Regs, len);
+	xcopy( region.data, Regs, len );
+	if ( 0 != write_region( r, &region ) ) {
+		err( ERR_IO );
+                return 1;
 	}
-	return crc;
+        return 0;
 }
 
+void save_registers(unsigned int r, enum rarg op)
+{
+	internal_save_registers(r);
+}
+
+void load_registers(unsigned int r, enum rarg op)
+{
+	FLASH_REGION *fr = UserFlash.region + r;
+	int len = fr->length;
+
+	if ( fr->type != REGION_TYPE_DATA || checksum_region( r ) ) {
+		/*
+		 *  Not a valid register region
+		 */
+		err( ERR_INVALID );
+		return;
+	}
+	xcopy( Regs, fr->data, len );
+}
+
+void swap_registers(unsigned int r, enum rarg op)
+{
+	FLASH_REGION *fr = UserFlash.region + r;
+	FLASH_REGION region;
+	int len = fr->length;
+
+	if ( fr->type != REGION_TYPE_DATA || checksum_region( r ) ) {
+		err( ERR_INVALID );
+		return;
+	}
+	/*
+	 *  Temporary copy
+	 */
+	xcopy( &region, fr, sizeof( region ) );
+
+	/*
+	 *  Save current program
+	 */
+	if ( internal_save_registers( r ) ) {
+		return;
+	}
+
+	/*
+	 *  Restore temporary copy
+	 */
+	xcopy( Regs, region.data, len );
+}
 
 /*
  *  Checksum the program area

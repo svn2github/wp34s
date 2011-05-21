@@ -524,6 +524,7 @@ enum rarg {
 
 	RARG_PAUSE, RARG_KEY,
 	RARG_PSAVE, RARG_PLOAD, RARG_PSWAP,
+	RARG_RSAVE, RARG_RLOAD, RARG_RSWAP,
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
