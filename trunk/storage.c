@@ -338,7 +338,12 @@ unsigned short crc16( void *base, unsigned int length )
  */
 unsigned short int checksum_code(void)
 {
-	return crc16( PersistentRam._prog, State.last_prog * 2 - 2 );
+	const unsigned short int pc = state_pc();
+	int n;
+	if (! isLIB(pc))
+		return crc16( PersistentRam._prog, (State.last_prog-1) * sizeof(unsigned short int) );
+	n = nLIB(pc) - 1;
+	return crc16(UserFlash.region[n].data, UserFlash.region[n].length);
 }
 
 
