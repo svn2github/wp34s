@@ -204,7 +204,7 @@ extern int current_catalogue_max(void);
 #define addrLIB(pc, n)	((pc) | ((n) << LIB_SHIFT))
 #define startLIB(pc)	((pc) & ~LIB_ADDR_MASK)
 #define offsetLIB(pc)	((pc) & LIB_ADDR_MASK)
-#define sizeLIB(n)	(UserFlash.region[(n)-1].length / sizeof(s_opcode))
+#define sizeLIB(n)	(UserFlash.region[(n)-1].length / sizeof(unsigned short))
 
 #define isRAM(pc)	(((pc) & (XROM_MASK | LIB_MASK)) == 0)
 
