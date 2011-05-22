@@ -444,6 +444,8 @@ const struct niladic niladics[] = {
 	FUNC0(OP_SETCHN,	&op_setchn,		"SETCHN")
 
 	FUNC0(OP_QUAD,		&xrom_quad,		"SLVQ")
+	FUNC0(OP_XEQALPHA,	&op_xeqalpha,		"XEQ\240")
+	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2
@@ -584,6 +586,8 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_RLOAD,		&load_registers,NUMBER_OF_FLASH_REGIONS,	"RRCL")
 	CMD(RARG_RSWAP,		&swap_registers,NUMBER_OF_FLASH_REGIONS,	"R\027")
 
+	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,	NUMREG,			"\240XEQ")
+	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,	NUMREG,			"\240GTO")
 #undef CMDnoI
 #undef CMDstk
 #undef CMD

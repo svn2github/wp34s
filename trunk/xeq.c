@@ -1578,6 +1578,17 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 	cmdgtocommon(is_gsb, lbl);
 }
 
+
+void cmdalphagto(unsigned int arg, enum rarg op) {
+}
+
+void op_gtoalpha(decimal64 *a, decimal64 *b, decContext *nulc) {
+}
+
+void op_xeqalpha(decimal64 *a, decimal64 *b, decContext *nulc) {
+}
+
+
 static void do_xrom(int lbl) {
 	const unsigned int oldpc = state_pc();
 	const unsigned int pc = find_label_from(addrXROM(0), lbl, 1);

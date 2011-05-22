@@ -465,6 +465,7 @@ enum {
 	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN,
 
 	OP_QUAD,
+	OP_XEQALPHA, OP_GTOALPHA,
 };
 
 
@@ -525,6 +526,8 @@ enum rarg {
 	RARG_PAUSE, RARG_KEY,
 	RARG_PSAVE, RARG_PLOAD, RARG_PSWAP,
 	RARG_RSAVE, RARG_RLOAD, RARG_RSWAP,
+
+	RARG_ALPHAXEQ, RARG_ALPHAGTO,
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
@@ -802,6 +805,9 @@ extern void get_word_size(decimal64 *a, decimal64 *nul2, decContext *ctx64);
 extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);
 extern void cmdgto(unsigned int arg, enum rarg op);
+extern void cmdalphagto(unsigned int arg, enum rarg op);
+extern void op_gtoalpha(decimal64 *a, decimal64 *b, decContext *nulc);
+extern void op_xeqalpha(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void cmdmultigto(const opcode o, enum multiops mopr);
 extern void cmdlblp(unsigned int arg, enum rarg op);
 extern void cmdmultilblp(const opcode o, enum multiops mopr);
