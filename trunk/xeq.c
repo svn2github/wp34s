@@ -573,6 +573,7 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 void clrretstk(void) {
 	RetStkPtr = 0;
 	set_bank_flags(0);
+	raw_set_pc(0);
 }
 
 /* Clear the program space
@@ -582,7 +583,6 @@ void clrprog(void) {
 
 	for (i=1; i<=NUMPROG; i++)
 		prog[i] = EMPTY_PROGRAM_OPCODE;
-	raw_set_pc(0);
 	State.last_prog = 1;
 	clrretstk();
 }
@@ -1433,6 +1433,25 @@ void cmdrclstk(unsigned int arg, enum rarg op) {
 }
 
 
+/* Check if a PC in the return stack lives in a specified segment.
+ * Return non-zero if the PC or the return stack are in the specified segment.
+ */
+int check_return_stack_segment(int segment) {
+	int i;
+	segment = (segment < 0) ? 0 : (segment+1);
+
+	for (i=-1; i<RetStkPtr; i++) {
+		const unsigned int p = (i>=0)?RetStk[i]:state_pc();
+		if (segment == 0) {
+			if (isRAM(p) && p != 0)
+				return 1;
+		} else if (isLIB(p) && nLIB(p) == segment)
+			return 1;
+	}
+	return 0;
+}
+
+
 /* Search from the given position for the specified numeric label.
  */
 static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet) {
@@ -1476,6 +1495,7 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
 	return find_opcode_from(pc, OP_RARG + (RARG_LBL << RARG_OPSHFT) + arg, quiet);
 }
+
 
 /* Handle a GTO/GSB instruction
  */
@@ -2842,18 +2862,29 @@ void op_entryp(decimal64 *a, decimal64 *b, decContext *nulc) {
 }
 
 /* Bulk register operations */
-static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d) {
+static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *segment) {
 	decNumber x, y;
-	int rsrc, num, rdest, q;
+	int rsrc, num, rdest, q, seg;
 
 	if (is_intmode())
 		return 1;
 	getX(&x);
 	if (dn_lt0(&x)) {
+		if (segment != NULL) {
+			decNumberMinus(&y, &x, Ctx);
+			decNumberMultiply(&x, &y, &const_0_01, Ctx);
+			decNumberTrunc(&y, &x, Ctx);
+			*segment = seg = dn_to_int(&y, Ctx);
+			decNumberFrac(&y, &x, Ctx);
+			decNumberMultiply(&x, &y, &const_100, Ctx);
+			if (seg < NUMBER_OF_FLASH_REGIONS && UserFlash.region[seg].type == REGION_TYPE_DATA)
+				goto okay;
+		}
 		err(ERR_RANGE);
 		return 1;
-	}
-	decNumberTrunc(&y, &x, Ctx);
+	} else if (segment != NULL)
+		*segment = -1;
+okay:	decNumberTrunc(&y, &x, Ctx);
 	*s = rsrc = dn_to_int(&y, Ctx);
 	if (rsrc >= TOPREALREG) {
 		err(ERR_RANGE);
@@ -2897,16 +2928,20 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d) {
 
 void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc) {
 	unsigned int s, d, n;
+	int seg;
 
-	if (reg_decode(&s, &n, &d) || s == d)
+	if (reg_decode(&s, &n, &d, &seg) || s == d)
 		return;
-	xcopy(Regs+d, Regs+s, n*sizeof(Regs[0]));
+	if (seg < 0)
+		xcopy(Regs+d, Regs+s, n*sizeof(Regs[0]));
+	else
+		xcopy(Regs+d, UserFlash.region[seg].data+(s*sizeof(Regs[0])/sizeof(unsigned short)), n*sizeof(Regs[0]));
 }
 
 void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
 	unsigned int s, d, n, i;
 
-	if (reg_decode(&s, &n, &d) || s == d)
+	if (reg_decode(&s, &n, &d, NULL) || s == d)
 		return;
 	if (s < d && (s+n) > d)
 		err(ERR_RANGE);
@@ -2921,7 +2956,7 @@ void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
 void op_regclr(decimal64 *a, decimal64 *b, decContext *nulc) {
 	unsigned int s, n, i;
 
-	if (reg_decode(&s, &n, NULL))
+	if (reg_decode(&s, &n, NULL, NULL))
 		return;
 	for (i=0; i<n; i++)
 		Regs[i+s] = CONSTANT_INT(OP_ZERO);
@@ -2932,7 +2967,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	decNumber pivot, a, t;
 	int beg[10], end[10], i;
 
-	if (reg_decode(&s, &n, NULL) || n == 1)
+	if (reg_decode(&s, &n, NULL, NULL) || n == 1)
 		return;
 
 	/*( Non-recursive quicksort */

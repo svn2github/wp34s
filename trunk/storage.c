@@ -241,6 +241,11 @@ static int write_region( int r, FLASH_REGION *fr )
 }
 
 
+static void program_cleanup(void) {
+	if (! Running)
+		clrretstk();
+}
+
 /*
  *  Save the user program area to a region.
  *  Returns an error if failed.
@@ -250,6 +255,11 @@ static int internal_save_program(unsigned int r)
 	int len = State.last_prog * sizeof(unsigned short) - sizeof(unsigned short);
 	FLASH_REGION region;
 
+	program_cleanup();
+	if (check_return_stack_segment(r)) {
+		err( ERR_INVALID );
+		return 1;
+	}
 	xset( &region, 0xff, sizeof( region ) );
 	region.type = REGION_TYPE_PROGRAM;
 	region.length = len;
@@ -278,7 +288,8 @@ void load_program( unsigned int r, enum rarg op )
 	FLASH_REGION *fr = UserFlash.region + r;
 	int len = fr->length;
 
-	if ( fr->type != REGION_TYPE_PROGRAM || checksum_region( r ) ) {
+	program_cleanup();
+	if ( fr->type != REGION_TYPE_PROGRAM || checksum_region( r ) || check_return_stack_segment(-1)) {
 		/*
 		 *  Not a valid program region
 		 */
@@ -304,7 +315,8 @@ void swap_program( unsigned int r, enum rarg op )
 	FLASH_REGION region;
 	int len = fr->length;
 
-	if ( fr->type != REGION_TYPE_PROGRAM || checksum_region( r ) ) {
+	program_cleanup();
+	if ( fr->type != REGION_TYPE_PROGRAM || checksum_region( r )  || check_return_stack_segment(-1)) {
 		/*
 		 *  Not a valid program region
 		 */

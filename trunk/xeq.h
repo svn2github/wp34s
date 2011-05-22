@@ -682,6 +682,7 @@ extern unsigned int state_pc(void);
 extern void set_pc(unsigned int);
 extern unsigned int user_pc(void);
 extern unsigned int find_user_pc(unsigned int);
+extern int check_return_stack_segment(int);
 
 extern void clrretstk(void);
 extern void clrprog(void);
