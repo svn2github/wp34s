@@ -165,10 +165,6 @@
 #define EXIT		GTO(XROM_EXIT)
 #define EXITp1		GTO(XROM_EXITp1)
 
-
-/* Flags - global */
-#define F_XROM			15
-
 /* Now the xrom table itself.
  *
  * Global labels are from 10 and up.

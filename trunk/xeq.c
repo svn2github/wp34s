@@ -1436,21 +1436,32 @@ void cmdrclstk(unsigned int arg, enum rarg op) {
 /* Check if a PC in the return stack lives in a specified segment.
  * Return non-zero if the PC or the return stack are in the specified segment.
  */
-int check_return_stack_segment(int segment) {
-	int i;
-	segment = (segment < 0) ? 0 : (segment+1);
-
-	for (i=-1; i<RetStkPtr; i++) {
-		const unsigned int p = (i>=0)?RetStk[i]:state_pc();
-		if (segment == 0) {
-			if (isRAM(p) && p != 0)
-				return 1;
-		} else if (isLIB(p) && nLIB(p) == segment)
+static int check_one(int s, unsigned int p) {
+	if (s == 0) {
+		if (isRAM(p) && p != 0)
 			return 1;
-	}
+	} else if (isLIB(p) && nLIB(p) == s)
+		return 1;
 	return 0;
 }
 
+int check_return_stack_segment(int segment) {
+	int i;
+	int s = (segment < 0) ? 0 : (segment+1);
+
+	if (check_one(s, state_pc()))
+		return 1;
+
+	for (i=0; i<RetStkPtr; i++)
+		if (check_one(s, RetStk[i]))
+			return 1;
+
+	unsigned char *p = ((unsigned char *)&BankFlags) + F_XROM / 8;
+	if (((1 << (F_XROM % 8)) & *p) != 0)
+		if (check_one(s, State.usrpc))
+			return 1;
+	return 0;
+}
 
 /* Search from the given position for the specified numeric label.
  */

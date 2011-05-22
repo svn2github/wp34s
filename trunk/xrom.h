@@ -36,6 +36,10 @@
 #define XROM_EXIT		41
 #define XROM_EXITp1		42
 
+
+/* Flags - global */
+#define F_XROM			15
+
 extern const s_opcode xrom[];
 extern const unsigned short int xrom_size;
 
