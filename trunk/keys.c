@@ -20,7 +20,7 @@
 #include "lcd.h"
 #include "int.h"
 #include "consts.h"
-
+#include "storage.h"
 #include "catalogues.h"
 
 
@@ -40,6 +40,9 @@
 #define TEST_LE		3
 #define TEST_GT		4
 #define TEST_GE		5
+
+static void advance_to_next_label(unsigned int pc);
+
 
 /* Short blink of PRN annunciator with every key */
 int BusyBlink;
@@ -463,8 +466,17 @@ static int process_h_shifted(const keycode c) {
 		init_cat(CATALOGUE_MODE);
 		break;
 
-	case K10:	init_arg(RARG_VIEW);	break;
-	case K11:	return OP_NIL | OP_TIME;
+//	case K10:	init_arg(RARG_VIEW);	break;
+//	case K11:	return OP_NIL | OP_TIME;
+	case K10:
+		init_cat(CATALOGUE_FLASH);
+		break;
+
+	case K11:
+		State2.labellist = 1;
+		advance_to_next_label(0);
+		break;
+
 	case K12:					// R^
 		return OP_NIL | OP_RUP;
 
@@ -911,8 +923,8 @@ fkey:		if (oldstate != SHIFT_F)
 	case K10:	// STO
 		if (oldstate == SHIFT_F)
 			init_arg(RARG_ASTO);
-		else if (oldstate == SHIFT_H)
-			return OP_NIL | OP_VIEWALPHA;
+//		else if (oldstate == SHIFT_H)
+//			return OP_NIL | OP_VIEWALPHA;
 		else
 			break;
 		return STATE_UNFINISHED;
@@ -1434,6 +1446,7 @@ int current_catalogue_max(void) {
 		NUM_CONSTS,
 		NUM_CONSTS,
 		sizeof(conv_catalogue) / sizeof(const s_opcode),
+		sizeof(flash_catalogue) / sizeof(const s_opcode),
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		sizeof(internal_catalogue) / sizeof(const s_opcode),
 #endif
@@ -1499,6 +1512,9 @@ opcode current_catalogue(int n) {
 
 	case CATALOGUE_MODE:
 		return mode_catalogue[n];
+
+	case CATALOGUE_FLASH:
+		return flash_catalogue[n];
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	case CATALOGUE_INTERNAL:
@@ -1692,6 +1708,154 @@ static int process_status(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
+static int is_label_at(unsigned int pc) {
+	const unsigned int op = getprog(pc);
+
+	return (isDBL(op) && opDBL(op) == DBL_LBL);
+}
+
+static unsigned int advance_to_next_code_segment(int n) {
+	for (;;) {
+		unsigned int pc;
+
+		if (++n >= NUMBER_OF_FLASH_REGIONS)
+			return addrXROM(0);
+		pc = addrLIB(0, n);
+		if (UserFlash.region[n].type == REGION_TYPE_PROGRAM)
+			return pc;
+	}
+}
+
+static void advance_to_next_label(unsigned int pc) {
+	for (;;) {
+		for (;;) {
+			const unsigned int oldpc = pc;
+			pc = inc(pc);
+			if (pc < oldpc)
+				break;
+			if (is_label_at(pc)) {
+				State2.digval = pc;
+				return;
+			}
+		}
+		if (isXROM(pc))
+			pc = 0;
+		else {
+			pc = advance_to_next_code_segment(nLIB(pc));
+			if (is_label_at(pc)) {
+				State2.digval = pc;
+				return;
+			}
+		}
+	}
+}
+
+static unsigned int advance_to_previous_code_segment(int n) {
+	for (;;) {
+		unsigned int pc;
+		if (--n == 0)
+			return 0;
+		pc = addrLIB(0, n);
+		if (UserFlash.region[n].type == REGION_TYPE_PROGRAM)
+			return pc;
+	}
+}
+
+static void advance_to_previous_label(unsigned int pc) {
+	for (;;) {
+		for (;;) {
+			const unsigned int oldpc = pc;
+			pc = dec(pc);
+			if (pc > oldpc)
+				break;
+			if (is_label_at(pc)) {
+				State2.digval = pc;
+				return;
+			}
+		}
+		if (isRAM(pc))
+			pc = addrXROM(0);
+		else if (isXROM(pc))
+			pc = advance_to_previous_code_segment(NUMBER_OF_FLASH_REGIONS);
+		else
+			pc = advance_to_previous_code_segment(nLIB(pc));
+		pc = dec(pc);
+		if (is_label_at(pc)) {
+			State2.digval = pc;
+			return;
+		}
+	}
+}
+
+static int process_labellist(const keycode c) {
+	unsigned int pc = State2.digval;
+	int n;
+
+	switch (c) {
+	case K62:				// Jump to XROM
+		advance_to_next_label(addrXROM(0));
+		return STATE_UNFINISHED;
+
+	// Digits take you to that segment
+#ifdef SEQUENTIAL_ROWS
+	case K51:	case K52:	case K53:
+		n = c - K51 + 1;
+		goto digit;
+	case K41:	case K42:	case K43:
+		n = c - K41 + 4;
+		goto digit;
+	case K31:	case K32:	case K33:
+		n = c - K31 + 7;
+		goto digit;
+#else
+	case K51:	n = 1;	goto digit;
+	case K52:	n = 2;	goto digit;
+	case K53:	n = 3;	goto digit;
+	case K41:	n = 4;	goto digit;
+	case K42:	n = 5;	goto digit;
+	case K43:	n = 6;	goto digit;
+	case K31:	n = 7;	goto digit;
+	case K32:	n = 8;	goto digit;
+	case K33:	n = 9;	goto digit;
+#endif
+	case K61:	n = 0;
+digit:		pc = advance_to_next_code_segment(n);
+		if (! is_label_at(pc))
+			advance_to_next_label(pc);
+		else
+			State2.digval = pc;
+		return STATE_UNFINISHED;
+
+	case K50:			// Find next label
+		advance_to_next_label(pc);
+		return STATE_UNFINISHED;
+
+	case K40:			// Find previous label
+		advance_to_previous_label(pc);
+		return STATE_UNFINISHED;
+
+	case K20:			// GTO
+		State2.digval = 0;
+		State2.labellist = 0;
+		return (getprog(pc) & 0xfffff0ff) + (DBL_GTO << DBL_SHIFT);
+
+	case K30:			// XEQ
+	case K63:			// R/S
+		State2.digval = 0;
+		State2.labellist = 0;
+		return (getprog(pc) & 0xfffff0ff) + (DBL_XEQ << DBL_SHIFT);
+
+	case K24:			// Exit doing nothing
+	case K60:
+		break;
+	default:
+		return STATE_UNFINISHED;
+	}
+	State2.digval = 0;
+	State2.labellist = 0;
+	return STATE_UNFINISHED;
+}
+
 
 static int process(const int c) {
 	const enum shifts s = cur_shift();
@@ -1767,6 +1931,9 @@ static int process(const int c) {
 
 	if (State2.status)
 		return process_status((const keycode)c);
+
+	if (State2.labellist)
+		return process_labellist((const keycode)c);
 
 	if (State2.confirm)
 		return process_confirm((const keycode)c);

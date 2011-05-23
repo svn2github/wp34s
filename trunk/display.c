@@ -1040,6 +1040,28 @@ static void show_status(void) {
 }
 
 
+/* Display the list of alpha labels */
+static void show_label(void) {
+	char buf[16], *bp;
+	unsigned short int pc = State2.digval;
+	unsigned int op = getprog(pc);
+	int i;
+
+	set_status(prt((opcode)op, buf));
+	xset(buf, '\0', 16);
+	if (isXROM(pc)) {
+		scopy(buf, "l1B");
+	} else if (isLIB(pc)) {
+		scopy(buf, "PG ");
+		num_arg_0(buf+3, nLIB(pc)-1, 2);
+	} else {
+		scopy(buf, "rAMm");
+	}
+	for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)
+		set_dig(i, *bp);
+}
+
+
 /* Display the X register as alpha */
 static void show_alpha(void) {
 	char buf[12];
@@ -1180,6 +1202,9 @@ void display(void) {
 		}
 	} else if (State2.status) {
 		show_status();
+		skip = 1;
+	} else if (State2.labellist) {
+		show_label();
 		skip = 1;
 	} else if (State2.arrow_alpha) {
 		show_alpha();

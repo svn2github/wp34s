@@ -436,7 +436,7 @@ unsigned int inc(const unsigned int pc) {
 		return npc;
 	}
 	if (isLIB(pc)) {
-		if (pc >= startLIB(pc) + sizeLIB(nLIB(pc)) - 1)
+		if (pc >= startLIB(pc) + sizeLIB(nLIB(pc)) - 2)
 			return startLIB(pc);
 		return npc;
 	}
@@ -449,11 +449,19 @@ unsigned int inc(const unsigned int pc) {
 }
 
 unsigned int dec(unsigned int pc) {
-	if (isXROM(pc) && pc == addrXROM(0))
-		return addrXROM(xrom_size - 1);
-	if (isLIB(pc) && pc == startLIB(pc))
-		return startLIB(pc) + sizeLIB(nLIB(pc)) - 1;
-	if (pc == 0)
+	if (isXROM(pc)) {
+		if (pc == addrXROM(0))
+			return addrXROM(xrom_size - 1);
+		if (--pc != addrXROM(0) && isDBL(getprog(pc-1)))
+			pc--;
+		return pc;
+	} else if (isLIB(pc)) {
+		if (pc == startLIB(pc))
+			pc = startLIB(pc) + sizeLIB(nLIB(pc));
+		if (--pc > startLIB(pc) && isDBL(getprog(pc-1)))
+			pc--;
+		return pc;
+	} else if (pc == 0)
 		pc = State.last_prog;
 	if (--pc > 1 && pc != addrXROM(0) && isDBL(getprog(pc-1)))
 		pc--;
@@ -3565,6 +3573,7 @@ int init_34s(void)
 	check_cat(CATALOGUE_ALPHA_COMPARES, "alpha compares");
 	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");
 	check_cat(CATALOGUE_CONV, "conversion");
+	check_cat(CATALOGUE_FLASH, "flash");
 	check_cat(CATALOGUE_NORMAL, "float");
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	check_cat(CATALOGUE_INTERNAL, "internal");

@@ -141,7 +141,6 @@ extern TPersistentRam PersistentRam;
  *  State that may be lost on power off
  */
 struct _state2 {
-
 	unsigned short digval;
 	unsigned char digval2;
 	unsigned char status;		// display status screen line
@@ -171,6 +170,7 @@ struct _state2 {
 	unsigned int disp_small : 1;	// Display the status message in small font
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int invalid_disp : 1;  // Display contents is invalid
+	unsigned int labellist : 1;	// Displaying the alpha label navigator
 #ifndef REALBUILD
 	unsigned int trace : 1;
 #else

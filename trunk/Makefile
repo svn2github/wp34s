@@ -273,7 +273,7 @@ $(OBJECTDIR)/int.o: int.c int.h xeq.h data.h Makefile features.h
 $(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h data.h display.h lcdmap.h atmel/board.h \
 		Makefile features.h
 $(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h data.h keys.h consts.h display.h lcd.h \
-		int.h xrom.h Makefile features.h
+		int.h xrom.h storage.h Makefile features.h
 $(OBJECTDIR)/prt.o: prt.c xeq.h data.h consts.h display.h Makefile features.h
 $(OBJECTDIR)/stats.o: stats.c xeq.h data.h decn.h stats.h consts.h int.h \
 		Makefile features.h

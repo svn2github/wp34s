@@ -432,7 +432,7 @@ void show_flags(void) {
 			State2.numdigit, Alpha, get_bank_flags() >> 8,
 			get_bank_flags() & 0xff);
 	MOVE(10, FLAG_BASE+3);
-	PRINTF("digval = %u", State2.digval);
+	PRINTF("digval=%u", State2.digval);
 	MOVE(23, FLAG_BASE+3);
 	PRINTF("pc = %03u", state_pc());
 	MOVE(34, FLAG_BASE+3);
