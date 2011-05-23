@@ -1566,10 +1566,7 @@ void cmdmultilblp(const opcode o, enum multiops mopr) {
 	fin_tst(findmultilbl(o, 1) != 0);
 }
 
-void cmdmultigto(const opcode o, enum multiops mopr) {
-	unsigned int lbl = findmultilbl(o, 0);
-	int is_gsb = mopr != DBL_GTO;
-
+static void do_multigto(int is_gsb, unsigned int lbl) {
 	if (!Running && isXROM(lbl) && ! is_gsb) {
 		lbl = 0;
 		err(ERR_RANGE);
@@ -1578,14 +1575,47 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 	cmdgtocommon(is_gsb, lbl);
 }
 
+void cmdmultigto(const opcode o, enum multiops mopr) {
+	unsigned int lbl = findmultilbl(o, 0);
+	int is_gsb = mopr != DBL_GTO;
+
+	do_multigto(is_gsb, lbl);
+}
+
+
+static void branchtoalpha(int is_gsb, char buf[]) {
+	unsigned int op, lbl;
+
+	op = OP_DBL + (DBL_LBL << DBL_SHIFT);
+	op |= buf[0] & 0xff;
+	op |= (buf[1] & 0xff) << 16;
+	op |= (buf[2] & 0xff) << 24;
+	lbl = findmultilbl(op, 0);
+
+	do_multigto(is_gsb, lbl);
+}
 
 void cmdalphagto(unsigned int arg, enum rarg op) {
+	char buf[12];
+
+	xset(buf, '\0', sizeof(buf));
+	branchtoalpha(op != RARG_ALPHAGTO, alpha_rcl_s(get_reg_n(arg), buf));
+}
+
+static void do_branchalpha(int is_gsb) {
+	char buf[4];
+
+	xcopy(buf, Alpha, 3);
+	buf[4] = '\0';
+	branchtoalpha(is_gsb, buf);
 }
 
 void op_gtoalpha(decimal64 *a, decimal64 *b, decContext *nulc) {
+	do_branchalpha(0);
 }
 
 void op_xeqalpha(decimal64 *a, decimal64 *b, decContext *nulc) {
+	do_branchalpha(1);
 }
 
 

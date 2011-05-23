@@ -211,7 +211,7 @@ void alpha_sto(unsigned int arg, enum rarg op) {
 
 
 /* Alpha recall a register and convert it in to the supplied
- * buffer and return a point to the first character (which won't
+ * buffer and return a pointer to the first character (which won't
  * always be the start of the buffer.
  */
 char *alpha_rcl_s(const decimal64 *reg, char buf[12]) {
