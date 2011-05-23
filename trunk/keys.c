@@ -1718,7 +1718,7 @@ static unsigned int advance_to_next_code_segment(int n) {
 	for (;;) {
 		unsigned int pc;
 
-		if (++n >= NUMBER_OF_FLASH_REGIONS)
+		if (++n > NUMBER_OF_FLASH_REGIONS)
 			return addrXROM(0);
 		pc = addrLIB(0, n);
 		if (UserFlash.region[n].type == REGION_TYPE_PROGRAM)
