@@ -643,8 +643,17 @@ static void const_small_tbl(FILE *f, const int incname, const struct constsml ct
 			"};\n\n");
 }
 
+
+static const unsigned char charlengths[512+5] = {
+#define C(len, a, b, c, x, y, z)	len
+#include "charset.h"
+#undef C
+	0, 0, 0, 0, 0
+};
+
 static void const_small(FILE *fh) {
 	FILE *f;
+	int i, n=1;
 
 	f = fopen(consts_c, "w");
 	if (f == NULL)
@@ -667,6 +676,17 @@ static void const_small(FILE *fh) {
 				"CONSTANT_CONV", "CONST_CONV", "RARG_CONST_CONV", NULL,
 				"Table of metric/imperial conversion constants");
 	fprintf(f, "\n#undef B\n\n");
+
+	fprintf(f, "const unsigned short int charlengthtbl[%d] = {\n\t", (512 + 4) / 5);
+	for (i=0; i<512; i+=5) {
+		unsigned short val;
+		int j;
+		for (j=4; j>=0; j--)
+			val = (val << 3) + (7 & charlengths[i+j]);
+		fprintf(f, "%5u,%s", val, (n%8)==0?"\n\t":" ");
+		n++;
+	}
+	fprintf(f, "\n};\n\n");
 	fclose(f);
 }
 
@@ -698,6 +718,7 @@ int main(int argc, char *argv[])
 			"#define METRIC_NAMELEN 2\n"
 			"#define IMPERIAL_NAMELEN 6\n"
 			"\n\n");
+	fprintf(fh, "extern const unsigned short int charlengthtbl[];\n\n");
 	const_small(fh);
 	fprintf(fh, "\n\n");
 	const_big();

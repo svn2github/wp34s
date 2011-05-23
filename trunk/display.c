@@ -105,11 +105,9 @@ static void unpack6(unsigned long s, unsigned char d[6]) {
 			((c & 31) << 15) | ((x & 31) << 10) |	\
 			((y & 31) << 5) | (z & 31)	)
 
-static const unsigned char charlengths[512] = {
-#define C(len, a, b, c, x, y, z)	len
-#include "charset.h"
-#undef C
-};
+static unsigned int charlengths(unsigned int c) {
+	return (charlengthtbl[c/5] >> (3*(c%5))) & 7;
+}
 
 static const unsigned long chars[512] = {
 #define C(len, a, b, c, x, y, z)	pack6(a, b, c, x, y, z)
@@ -1293,7 +1291,7 @@ static void set_status_sized(const char *str, int smallp) {
 		unsigned char cmap[6];
 
 		//cmap = &charset[c][0];
-		width = charlengths[c];
+		width = charlengths(c);
 		if (x + width > BITMAP_WIDTH+1)
 			return;
 
@@ -1328,7 +1326,7 @@ static int string_too_large(const char *s) {
 	int x = 0;
 	while (*s != '\0') {
 		const unsigned char c = *s++;
-		x += charlengths[c];
+		x += charlengths(c);
 	}
 	return x > BITMAP_WIDTH+1;
 }
@@ -1378,7 +1376,7 @@ static void set_status_right(const char *str) {
 		const unsigned char ch = *p;
 		const unsigned short c = ch | szmask;
 
-		x += charlengths[c];
+		x += charlengths(c);
 		if (x > BITMAP_WIDTH+1)
 			break;
 	}

@@ -232,7 +232,7 @@ lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
 charset7.h: $(UTILITIES)/genchars7$(EXE)
 	$(UTILITIES)/genchars7$(EXE) >$@
 
-$(UTILITIES)/compile_consts$(EXE): compile_consts.c Makefile features.h
+$(UTILITIES)/compile_consts$(EXE): compile_consts.c Makefile features.h charset.h
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
