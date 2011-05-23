@@ -679,7 +679,7 @@ static void const_small(FILE *fh) {
 
 	fprintf(f, "const unsigned short int charlengthtbl[%d] = {\n\t", (512 + 4) / 5);
 	for (i=0; i<512; i+=5) {
-		unsigned short val;
+		unsigned short val = 0;
 		int j;
 		for (j=4; j>=0; j--)
 			val = (val << 3) + (7 & charlengths[i+j]);
