@@ -1447,6 +1447,7 @@ static int check_one(int s, unsigned int p) {
 
 int check_return_stack_segment(int segment) {
 	int i;
+	unsigned char *p;
 	int s = (segment < 0) ? 0 : (segment+1);
 
 	if (check_one(s, state_pc()))
@@ -1456,7 +1457,7 @@ int check_return_stack_segment(int segment) {
 		if (check_one(s, RetStk[i]))
 			return 1;
 
-	unsigned char *p = ((unsigned char *)&BankFlags) + F_XROM / 8;
+	p = ((unsigned char *)&BankFlags) + F_XROM / 8;
 	if (((1 << (F_XROM % 8)) & *p) != 0)
 		if (check_one(s, State.usrpc))
 			return 1;
@@ -1606,7 +1607,7 @@ static void do_branchalpha(int is_gsb) {
 	char buf[4];
 
 	xcopy(buf, Alpha, 3);
-	buf[4] = '\0';
+	buf[3] = '\0';
 	branchtoalpha(is_gsb, buf);
 }
 
