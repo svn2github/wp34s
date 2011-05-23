@@ -1730,7 +1730,7 @@ static void advance_to_next_label(unsigned int pc) {
 		for (;;) {
 			const unsigned int oldpc = pc;
 			pc = inc(pc);
-			if (pc < oldpc)
+			if (pc <= oldpc)
 				break;
 			if (is_label_at(pc)) {
 				State2.digval = pc;
@@ -1738,7 +1738,7 @@ static void advance_to_next_label(unsigned int pc) {
 			}
 		}
 		if (isXROM(pc))
-			pc = 0;
+			pc = LastProg > 1 ? 0 : advance_to_next_code_segment(0);
 		else {
 			pc = advance_to_next_code_segment(nLIB(pc));
 			if (is_label_at(pc)) {
@@ -1753,7 +1753,7 @@ static unsigned int advance_to_previous_code_segment(int n) {
 	for (;;) {
 		unsigned int pc;
 		if (--n == 0)
-			return 0;
+			return LastProg > 1 ? 0 : addrXROM(0);
 		pc = addrLIB(0, n);
 		if ( is_prog_region( n ) )
 			return pc;
