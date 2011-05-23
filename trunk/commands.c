@@ -579,15 +579,17 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
 	CMDstk(RARG_KEY,	&op_keyp,	NUMREG,			"KEY?")
 
+	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,	NUMREG,			"\240XEQ")
+	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,	NUMREG,			"\240GTO")
+
 	CMD(RARG_PSAVE,		&save_program,	NUMBER_OF_FLASH_REGIONS,	"PSTO")
 	CMD(RARG_PLOAD,		&load_program,	NUMBER_OF_FLASH_REGIONS,	"PRCL")
 	CMD(RARG_PSWAP,		&swap_program,	NUMBER_OF_FLASH_REGIONS,	"P\027")
+	CMD(RARG_RLOAD,		&load_registers, 1,				"RRCL")
+#if 0
 	CMD(RARG_RSAVE,		&save_registers,NUMBER_OF_FLASH_REGIONS,	"RSTO")
-	CMD(RARG_RLOAD,		&load_registers,NUMBER_OF_FLASH_REGIONS,	"RRCL")
 	CMD(RARG_RSWAP,		&swap_registers,NUMBER_OF_FLASH_REGIONS,	"R\027")
-
-	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,	NUMREG,			"\240XEQ")
-	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,	NUMREG,			"\240GTO")
+#endif
 #undef CMDnoI
 #undef CMDstk
 #undef CMD

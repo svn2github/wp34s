@@ -31,14 +31,6 @@
  *  State that must be saved across power off
  */
 struct _state {
-	unsigned short state_pc;	// XEQ internal - don't use
-	unsigned short last_prog;	// Position of the last program statement
-	unsigned short usrpc;		// XEQ internal - don't use
-	unsigned char retstk_ptr;	// XEQ internal - don't use
-	unsigned char base;		// Base value for a command with an argument
-	unsigned char contrast;		// Display contrast
-	unsigned char int_len;		// Length of Integers
-
 	unsigned int denom_mode : 2;	// Fractions denominator mode
 	unsigned int denom_max : 14;	// Maximum denominator
 
@@ -66,6 +58,15 @@ struct _state {
 #define SB(f, p)	unsigned int f : p
 #include "statebits.h"
 #undef SB
+	/*
+	 *  Not bit fields
+	 */
+	unsigned short state_pc;	// XEQ internal - don't use
+	unsigned short usrpc;		// XEQ internal - don't use
+	unsigned char retstk_ptr;	// XEQ internal - don't use
+	unsigned char base;		// Base value for a command with an argument
+	unsigned char contrast;		// Display contrast
+	unsigned char int_len;		// Length of Integers
 };
 
 /*
@@ -74,36 +75,42 @@ struct _state {
  */
 typedef struct _ram {
 	/*
-	 * Define storage for the machine's registers.
+	 *  Header information for the program space.
+	 *  A flash region looks the same.
 	 */
-	decimal64 _regs[NUMREG];
-#ifdef TAGGING
-	unsigned long _tags[(NUMREG+7)/8];	// 4 tag bits per register
-#endif
-	decimal64 _bank_regs[NUMBANKREGS];
+	unsigned short _crc_prog;	// checksum
+	unsigned short _last_prog;	// Position of the last program statement
 
 	/*
-	 * Define storage for the machine's program space.
+	 *  Define storage for the machine's program space.
+	 *  It spans almost 1 KB, leaving just 8 bytes at the end.
 	 */
 	s_opcode _prog[NUMPROG];
 
 	/*
-	 * Random number seeds
-	 */
-	unsigned long int _rand_s1, _rand_s2, _rand_s3;
-
-	/*
-	 * Generic state
-	 */
-	struct _state _state;
-
-	/*
-	 * The program return stack
+	 *  The program return stack.
 	 */
 	unsigned short int _retstk[RET_STACK_SIZE];
 
 	/*
-	 * Storage space for our user flags
+	 *  Define storage for the machine's registers.
+	 */
+	decimal64 _regs[NUMREG];
+
+	decimal64 _bank_regs[NUMBANKREGS];
+
+	/*
+	 *  Random number seeds
+	 */
+	unsigned long int _rand_s1, _rand_s2, _rand_s3;
+
+	/*
+	 *  Generic state
+	 */
+	struct _state _state;
+
+	/*
+	 *  Storage space for our user flags
 	 */
 	unsigned short _bank_flags;
 	unsigned char _user_flags[(NUMFLG+7) >> 3];
@@ -115,6 +122,8 @@ typedef struct _ram {
 
 	/*
 	 *  Magic marker to detect failed RAM
+	 *  The CRC excludes the program space which has its own checksum
+	 *  And the return stack which may get clobbered by a PSTO command
 	 */
 	unsigned short _crc;
 
@@ -123,6 +132,8 @@ typedef struct _ram {
 extern TPersistentRam PersistentRam;
 
 #define State		 (PersistentRam._state)
+#define CrcProg		 (PersistentRam._crc_prog)
+#define LastProg	 (PersistentRam._last_prog)
 #define Alpha		 (PersistentRam._alpha)
 #define Regs		 (PersistentRam._regs)
 #define Tags		 (PersistentRam._tags)

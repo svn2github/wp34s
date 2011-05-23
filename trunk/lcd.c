@@ -408,7 +408,7 @@ void show_flags(void) {
 		PRINTF("[MULTI]");
 	}
 	MOVE(50, FLAG_BASE+1);
-	PRINTF("[lp %03u]", State.last_prog);
+	PRINTF("[lp %03u]", LastProg);
 	if (State.state_lift) {
 		MOVE(10, FLAG_BASE+1);
 		PRINTF("[lift]");

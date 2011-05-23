@@ -1246,7 +1246,9 @@ void display(void) {
 			set_status("");
 		set_dot(STO_annun);
 		if (State2.smode == SDISP_SHOW) {
-			unsigned short int crc = checksum_code();
+			unsigned short int crc;
+			checksum_code();
+			crc = CrcProg;
 			j = SEGS_PER_DIGIT * 0;
 			for (i=0; i<4; i++) {
 				set_dig(j, "0123456789ABCDEF"[crc & 0xf]);
@@ -1263,7 +1265,7 @@ void display(void) {
 				num_arg_0(buf+3, nLIB(pc)-1, 2);
 				num_arg_0(buf+6, 1+upc, 3);
 			} else {
-				set_exp(NUMPROG + 1 - State.last_prog, 1, NULL);
+				set_exp(NUMPROG + 1 - LastProg, 1, NULL);
 				num_arg_0(scopy_spc(buf, S7_STEP), upc, 3);
 			}
 			for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)

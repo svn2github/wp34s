@@ -40,8 +40,6 @@
 #include "xrom.h"
 #include "alpha.h"
 
-#define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
-
 /* Define the number of program Ticks that must elapse between flashing the
  * RCL annunciator.
  */
@@ -80,7 +78,7 @@ int ShowRegister = regX_idx;
 /*
  *  Define storage for the machine's program space.
  */
-#define prog	((s_opcode *)(PersistentRam._prog - 1))
+#define Prog_1	((s_opcode *)(Prog - 1))
 
 /* We need various different math contexts.
  * More efficient to define these globally and reuse them as needed.
@@ -114,40 +112,43 @@ static void raw_set_pc(unsigned int pc) {
 }
 
 
+/*
+ *  Get an opcode, check for double length codes
+ */
+static opcode get_opcode( const s_opcode *loc )
+{
+	opcode r = *loc;
+	if ( isDBL(r) ) {
+		r |= loc[1] << 16;
+	}
+	return r;
+}
+
+
 /* Return the program memory location specified.
  */
 opcode getprog(unsigned int n) {
-	opcode r;
 
 	if (isXROM(n)) {
-		r = xrom[n & ~XROM_MASK];
-		if (isDBL(r))
-			r |= xrom[(n+1) & ~XROM_MASK] << 16;
-		return r;
+		return get_opcode(xrom + (n & ~XROM_MASK) );
 	}
 	if (isLIB(n)) {
-		unsigned int lib = nLIB(n);
-		r = UserFlash.region[lib-1].data[offsetLIB(n)];
-		if (isDBL(r))
-			r |= UserFlash.region[lib-1].data[offsetLIB(n) + 1] << 16;
-		return r;
+		FLASH_REGION *fr = &flash_region(nLIB(n));
+		return get_opcode(fr->prog + offsetLIB(n));
 	}
-	if (n >= State.last_prog || n > NUMPROG)
+	if (n >= LastProg || n > NUMPROG)
 		return EMPTY_PROGRAM_OPCODE;
 	if (n == 0)
 		return OP_NIL | OP_NOP;
-	r = prog[n];
-	if (isDBL(r))
-		r |= prog[n+1] << 16;
-	return r;
+	return get_opcode( Prog + n - 1 );
 }
 
 
 void set_pc(unsigned int pc) {
 	if (isRAM(pc)) {
-		if (pc >= State.last_prog)
-			pc = State.last_prog - 1;
-		if (pc > 1 && isDBL(prog[pc-1]))
+		if (pc >= LastProg)
+			pc = LastProg - 1;
+		if (pc > 1 && isDBL(Prog_1[pc-1]))
 			pc--;
 	} else if (isLIB(pc)) {
 		const unsigned int n = startLIB(pc) + sizeLIB(nLIB(pc));
@@ -440,9 +441,9 @@ unsigned int inc(const unsigned int pc) {
 			return startLIB(pc);
 		return npc;
 	}
-	if (npc >= State.last_prog) {
+	if (npc >= LastProg) {
 		return 0;
-		//if (!Running || pc >= State.last_prog)
+		//if (!Running || pc >= LastProg)
 			//return 0;
 	}
 	return npc;
@@ -458,11 +459,12 @@ unsigned int dec(unsigned int pc) {
 	} else if (isLIB(pc)) {
 		if (pc == startLIB(pc))
 			pc = startLIB(pc) + sizeLIB(nLIB(pc));
-		if (--pc > startLIB(pc) && isDBL(getprog(pc-1)))
-			pc--;
+		--pc;
+		if (pc > startLIB(pc) && isDBL(getprog(pc-1)))
+			--pc;
 		return pc;
 	} else if (pc == 0)
-		pc = State.last_prog;
+		pc = LastProg;
 	if (--pc > 1 && pc != addrXROM(0) && isDBL(getprog(pc-1)))
 		pc--;
 	return pc;
@@ -590,8 +592,8 @@ void clrprog(void) {
 	int i;
 
 	for (i=1; i<=NUMPROG; i++)
-		prog[i] = EMPTY_PROGRAM_OPCODE;
-	State.last_prog = 1;
+		Prog_1[i] = EMPTY_PROGRAM_OPCODE;
+	LastProg = 1;
 	clrretstk();
 }
 
@@ -770,34 +772,6 @@ void process_cmdline_set_lift(void) {
 	State.state_lift = 1;
 }
 
-#ifdef TAGGING
-/* Wrapper routine to extract a specific register from a number.
- * Since we've some bank switched registers, we detect xROM space
- * here and return the alternate registers if required.
- * Tags are handled accordingly.
- */
-int get_tag_n(int n) {
-	int shift;
-	if (isXROM(state_pc()) && n < NUMBANKREGS)
-		return 0;
-	n %= NUMREG;
-	// we have 4 bits per tag and 8 tags per integer
-	shift = (n & 0x07) << 2;
-	return (Tags[(n >> 3)] >> shift) & 0x07;
-}
-
-void set_tag_n(int n, int tag) {
-	int shift;
-	if (isXROM(state_pc()) && n < NUMBANKREGS)
-		return;
-	n %= NUMREG;
-	tag &= 0x07;
-	// we have 4 bits per tag and 8 tags per integer
-	shift = (n & 0x07) << 2;
-	n >>= 3;
-	Tags[n] = (Tags[n] & ~(0x07 << shift)) | (tag << shift);
-}
-#endif
 
 decimal64 *get_reg_n(int n) {
 	if (isXROM(state_pc()) && n < NUMBANKREGS)
@@ -1493,7 +1467,7 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 			z++;
 		base = 0xffff;
 		min = 1;
-		max = State.last_prog;
+		max = LastProg;
 	}
 
 	while (z < max && z != 0)
@@ -1561,9 +1535,10 @@ static unsigned int findmultilbl(const opcode o, int quiet) {
 	unsigned int lbl = find_opcode_from(0, dest, 1);
 	int i;
 
-	for (i=1; lbl == 0 && i<=NUMBER_OF_FLASH_REGIONS; i++)
-		if (UserFlash.region[i-1].type == REGION_TYPE_PROGRAM)
+	for (i=1; lbl == 0 && i < NUMBER_OF_FLASH_REGIONS; i++) {
+		if ( is_prog_region(i) )
 			lbl = find_opcode_from(addrLIB(0, i), dest, 1);
+	}
 	if (lbl == 0)
 		lbl = find_opcode_from(addrXROM(0), dest, 1);
 	if (lbl == 0 && ! quiet)
@@ -2979,7 +2954,7 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *se
 			*segment = seg = dn_to_int(&y, Ctx);
 			decNumberFrac(&y, &x, Ctx);
 			decNumberMultiply(&x, &y, &const_100, Ctx);
-			if (seg < NUMBER_OF_FLASH_REGIONS && UserFlash.region[seg].type == REGION_TYPE_DATA)
+			if (seg == 0)  // We can only copy from the backup
 				goto okay;
 		}
 		err(ERR_RANGE);
@@ -3037,7 +3012,7 @@ void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc) {
 	if (seg < 0)
 		xcopy(Regs+d, Regs+s, n*sizeof(Regs[0]));
 	else
-		xcopy(Regs+d, UserFlash.region[seg].data+(s*sizeof(Regs[0])/sizeof(unsigned short)), n*sizeof(Regs[0]));
+		xcopy(Regs+d, UserFlash.backup._regs+s, n*sizeof(Regs[0]));
 }
 
 void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {
@@ -3404,18 +3379,18 @@ void stoprog(opcode c) {
 	if (!isRAM(state_pc()))
 		return;
 	off = isDBL(c)?2:1;
-	if (State.last_prog + off > NUMPROG+1) {
+	if (LastProg + off > NUMPROG+1) {
 		return;
 	}
-	State.last_prog += off;
+	LastProg += off;
 	incpc();
 	pc = state_pc();
-	for (i=State.last_prog; i>(int)pc; i--)
-		prog[i] = prog[i-off];
+	for (i=LastProg; i>(int)pc; i--)
+		Prog_1[i] = Prog_1[i-off];
 	if (pc != 0) {
 		if (isDBL(c))
-			prog[pc + 1] = c >> 16;
-		prog[pc] = c;
+			Prog_1[pc + 1] = c >> 16;
+		Prog_1[pc] = c;
 	}
 }
 
@@ -3429,12 +3404,12 @@ void delprog(void) {
 
 	if (pc == 0 || !isRAM(pc))
 		return;
-	off = isDBL(prog[pc])?2:1;
-	for (i=pc; i<(int)State.last_prog-1; i++)
-		prog[i] = prog[i+off];
+	off = isDBL(Prog_1[pc])?2:1;
+	for (i=pc; i<(int)LastProg-1; i++)
+		Prog_1[i] = Prog_1[i+off];
 	do {
-		prog[State.last_prog] =  EMPTY_PROGRAM_OPCODE;
-		State.last_prog--;
+		Prog_1[LastProg] =  EMPTY_PROGRAM_OPCODE;
+		LastProg--;
 	} while (--off);
 	decpc();
 }

@@ -96,7 +96,6 @@ void init_state(void) {
 
 #define C(n)	s.n = State.n
 	C(fraccomma);
-	C(last_prog);
         C(state_pc);
 	C(sigma_mode);
 	C(intm);
@@ -1721,7 +1720,7 @@ static unsigned int advance_to_next_code_segment(int n) {
 		if (++n > NUMBER_OF_FLASH_REGIONS)
 			return addrXROM(0);
 		pc = addrLIB(0, n);
-		if (UserFlash.region[n].type == REGION_TYPE_PROGRAM)
+		if ( is_prog_region( n ) )
 			return pc;
 	}
 }
@@ -1756,7 +1755,7 @@ static unsigned int advance_to_previous_code_segment(int n) {
 		if (--n == 0)
 			return 0;
 		pc = addrLIB(0, n);
-		if (UserFlash.region[n].type == REGION_TYPE_PROGRAM)
+		if ( is_prog_region( n ) )
 			return pc;
 	}
 }

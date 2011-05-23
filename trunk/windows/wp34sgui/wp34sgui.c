@@ -104,7 +104,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
  */
 void Init( void )
 {
-	load_state();
+	load_statefile();
 	DispMsg = NULL;
 	init_34s();
 	display();
@@ -118,7 +118,7 @@ void Reset( bool keep )
 
 void Shutdown( void )
 {
-	save_state();
+	save_statefile();
 }
 
 /*

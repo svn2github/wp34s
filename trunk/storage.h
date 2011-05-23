@@ -19,27 +19,30 @@
 
 #define REGION_TYPE_PROGRAM 0
 #define REGION_TYPE_DATA 1
-#define NUMBER_OF_FLASH_REGIONS 2
-#define BACKUP_REGION (NUMBER_OF_FLASH_REGIONS + 1)
+#define NUMBER_OF_FLASH_REGIONS 4
+#define BACKUP_REGION 1
 
 typedef struct _flash_region {
-	unsigned int crc : 16;
-	unsigned int type : 1;        // 1 for data, zero for program
-	unsigned int length : 15;
-	unsigned short data[ (1024 - 2 - 2) / sizeof(unsigned short) ];
+	unsigned short crc;
+	unsigned short last_prog;
+	s_opcode prog[ 512 - 2 ];
 } FLASH_REGION;
 
 typedef struct _user_flash {
-	FLASH_REGION region[ NUMBER_OF_FLASH_REGIONS ];
+	FLASH_REGION region[ NUMBER_OF_FLASH_REGIONS - 2 ];
 	TPersistentRam backup;
 } TUserFlash;
 
 extern TUserFlash UserFlash;
 
-extern unsigned short checksum_code(void);
+#define flash_region(n) (UserFlash.region[ NUMBER_OF_FLASH_REGIONS - 1 - n ])
+
+extern int checksum_code(void);
 extern int checksum_region(int r);
 extern int checksum_all(void);
 extern int checksum_backup(void);
+extern int is_prog_region(unsigned int region);
+extern int is_data_region(unsigned int region);
 
 extern void flash_backup(void);
 extern void flash_restore(void);
@@ -52,8 +55,8 @@ extern void load_registers(unsigned int region, enum rarg op);
 extern void swap_registers(unsigned int region, enum rarg op);
 
 #ifndef REALBUILD
-extern void save_state(void);
-extern void load_state(void);
+extern void save_statefile(void);
+extern void load_statefile(void);
 #endif
 
 #endif

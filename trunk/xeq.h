@@ -164,12 +164,7 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
-// #define TAGGING
-#ifdef TAGGGING
-#define NUMPROG		478	/* Number of program steps */
-#else
 #define NUMPROG		506	/* Even more steps :-) */
-#endif
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define RET_STACK_SIZE	8	/* Depth of return stack */
@@ -204,7 +199,7 @@ extern int current_catalogue_max(void);
 #define addrLIB(pc, n)	((pc) | ((n) << LIB_SHIFT))
 #define startLIB(pc)	((pc) & ~LIB_ADDR_MASK)
 #define offsetLIB(pc)	((pc) & LIB_ADDR_MASK)
-#define sizeLIB(n)	(UserFlash.region[(n)-1].length / sizeof(unsigned short))
+#define sizeLIB(n)	(UserFlash.region[NUMBER_OF_FLASH_REGIONS-1-(n)].last_prog-1)
 
 #define isRAM(pc)	(((pc) & (XROM_MASK | LIB_MASK)) == 0)
 
@@ -468,6 +463,7 @@ enum {
 	OP_XEQALPHA, OP_GTOALPHA,
 };
 
+#define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
 
 /* Command that can take an argument */
 enum rarg {
@@ -524,10 +520,13 @@ enum rarg {
 	RARG_INISOLVE, RARG_SOLVESTEP,
 
 	RARG_PAUSE, RARG_KEY,
-	RARG_PSAVE, RARG_PLOAD, RARG_PSWAP,
-	RARG_RSAVE, RARG_RLOAD, RARG_RSWAP,
-
 	RARG_ALPHAXEQ, RARG_ALPHAGTO,
+
+	RARG_PLOAD, RARG_PSAVE, RARG_PSWAP,
+	RARG_RLOAD, 
+#if 0
+	RARG_RSAVE, RARG_RSWAP,
+#endif
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 

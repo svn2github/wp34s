@@ -18,25 +18,29 @@
  * This module handles all load/save operations in the real build or emulator
  * Module written by MvC
  */
-#include "xeq.h"
-#include "storage.h"
-#include "display.h"
-
 #ifdef REALBUILD
 #define BACKUP_SRAM  __attribute__((section(".backup")))
 #define SLCDCMEM     __attribute__((section(".slcdcmem")))
 #define USER_FLASH   __attribute__((section(".userflash")))
+#ifndef NULL
+#define NULL 0
+#endif
 #else
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #define BACKUP_SRAM
 #define SLCDCMEM
 #define USER_FLASH
 #define STATE_FILE "wp34s.dat"
 #define REGION_FILE "wp34s-%d.dat"
-#define BACKUP_FILE "wp34s-backup.dat"
+#define REPAIR_CRC_ON_LOAD
 #endif
+
+#include "xeq.h"
+#include "storage.h"
+#include "display.h"
 
 /*
  *  Setup the persistent RAM
@@ -58,12 +62,13 @@ USER_FLASH TUserFlash UserFlash;
 /*
  *  Define some pages in flash memory for user access
  */
-#define SIZE_REGION   4
-#define SIZE_BACKUP   8
-#define PAGE_SIZE     256
-#define PAGE_END      512
-#define PAGE_BACKUP   (PAGE_END - SIZE_BACKUP)
-#define PAGE_BEGIN    (PAGE_BACKUP - SIZE_REGION * NUMBER_OF_FLASH_REGIONS)
+#define SIZE_REGION	 4
+#define SIZE_BACKUP	 8
+#define PAGE_SIZE	 256
+#define PAGE_END	 512
+#define PAGE_BACKUP	 (PAGE_END - SIZE_BACKUP)
+#define PAGE_BEGIN	 (PAGE_END - SIZE_REGION * NUMBER_OF_FLASH_REGIONS)
+#define region_page( r ) (PAGE_BEGIN + (NUMBER_OF_FLASH_REGIONS - 1 - r) * SIZE_REGION)
 
 #ifdef REALBUILD
 #define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
@@ -72,7 +77,7 @@ USER_FLASH TUserFlash UserFlash;
  *  Issue a command to the flash controller. Must be done from RAM.
  *  Returns zero if OK or non zero on error.
  */
-RAM_FUNCTION int flash_command( unsigned int cmd )
+static RAM_FUNCTION int flash_command( unsigned int cmd )
 {
 	AT91C_BASE_MC->MC_FCR = cmd;
 	while ( ( AT91C_BASE_MC->MC_FSR & 1 ) == 0 ) {
@@ -83,31 +88,37 @@ RAM_FUNCTION int flash_command( unsigned int cmd )
 
 
 /*
- *  Program the flash.
+ *  Program the flash starting at page page_no
  *  Returns 0 if OK or non zero on error.
+ *  If length % 256 != 0 the rest is preserved
  */
-int program_flash( int page_no, int buffer[ 64 ] )
+static int program_flash( int page_no, void *buffer, int length )
 {
-	int *f = (int *) 0x100000;  // anywhere in flash is OK
-	int res;
+	char *flash = (char *) ( 0x100000 | ( page_no << 8 ) ); 
+	char *b = (char *) buffer;
+	int i;
 
 	lock();  // No interrupts, please!
 
-	/*
-	 *  Copy the source to the flash write buffer
-	 *  If buffer isn't given, assume the copying is already done.
-	 */
-	while ( buffer != NULL && f != (int *) 0x100100 ) {
-		*f++ = *buffer++;
-	}
+	while ( length > 0 ) {
+		/*
+		 *  Copy the source to the flash write buffer
+		 */
+		for ( i = 0; i < PAGE_SIZE; ++i, ++flash, ++b ) {
+			*flash = i < length ? *b : *flash;
+		}
 
-	/*
-	 *  Command the controller to erase and write the page.
-	 *  Will re-enable interrupts, too.
-	 */
-	res = flash_command( 0x5A000003 | ( page_no << 8 ) );
+		/*
+		 *  Command the controller to erase and write the page.
+		 */
+		i = flash_command( 0x5A000003 | ( page_no << 8 ) );
+		if ( i ) break;
+
+		length -= PAGE_SIZE;
+		++page_no;
+	}
 	unlock();
-	return res;
+	return i;
 }
 
 
@@ -131,61 +142,57 @@ void sam_ba_boot(void)
 /*
  *  Emulate the flash in a file wp34s-<n>.dat
  */
-int program_flash( int page_no, int buffer[ 64 ] )
+static int program_flash( int page_no, void *buffer, int length )
 {
 	char name[ 20 ];
+	char *dest;
+	int r_last = -1;
 	int r;
-	FILE *f;
-	int page;
-
-	page_no -= PAGE_BEGIN;
-	if ( page_no < PAGE_BACKUP - PAGE_BEGIN ) {
-		r = page_no / SIZE_REGION;
-		page = page_no % SIZE_REGION;
-		sprintf( name, REGION_FILE, r );
-	}
-	else {
-		r = NUMBER_OF_FLASH_REGIONS;
-		page = page_no;
-		strcpy( name, BACKUP_FILE );
-	}
-	f = fopen( name, "rb+" );
-	if ( f == NULL ) f = fopen( name, "wb+" );
-	if ( f == NULL ) return 1;
-	fseek( f, page * PAGE_SIZE, SEEK_SET );
-	if ( 1 != fwrite( buffer, PAGE_SIZE, 1, f ) ) {
-		return 1;
-	}
-	fclose( f );
+	FILE *f = NULL;
 
 	/*
-	 *  Since flash is readable memory we have to emulate this, too
+	 *  Copy the source to the destination memory
 	 */
-	memcpy( ((char *) &UserFlash) + PAGE_SIZE * page_no, buffer, PAGE_SIZE );
+	page_no -= PAGE_BEGIN;
+	dest = (char *) &UserFlash + PAGE_SIZE * page_no;
+
+	memcpy( dest, buffer, length );
+
+	/*
+	 *  Update the correct region file(s)
+	 */
+	while ( length > 0 ) {
+
+		r = NUMBER_OF_FLASH_REGIONS - 1 - page_no / SIZE_REGION;
+
+		if ( r != r_last ) {
+			if ( f != NULL ) {
+				fclose( f );
+			}
+			sprintf( name, REGION_FILE, r );
+
+			f = fopen( name, "rb+" );
+			if ( f == NULL ) {
+				f = fopen( name, "wb+" );
+			}
+			if ( f == NULL ) {
+				return 1;
+			}
+		}
+		fseek( f, ( page_no % SIZE_REGION ) * PAGE_SIZE, SEEK_SET );
+		if ( 1 != fwrite( dest, PAGE_SIZE, 1, f ) ) {
+			fclose( f );
+			return 1;
+		}
+		r_last = r;
+		++page_no;
+		length -= PAGE_SIZE;
+	}
+	fclose( f );
 	return 0;
 }
 
 #endif
-
-
-/*
- *  The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
- */
-static unsigned short int crc16( void *base, unsigned int length )
-{
-	unsigned short int crc = 0x5aa5;
-	unsigned char *d = (unsigned char *) base;
-	unsigned int i;
-
-	for ( i = 0; i < length; ++i ) {
-		crc  = ( (unsigned char)( crc >> 8 ) ) | ( crc << 8 );
-		crc ^= *d++;
-		crc ^= ( (unsigned char)( crc & 0xff ) ) >> 4;
-		crc ^= crc << 12;
-		crc ^= ( crc & 0xff ) << 5;
-	}
-	return crc;
-}
 
 
 /*
@@ -194,20 +201,18 @@ static unsigned short int crc16( void *base, unsigned int length )
  *  The backup area is the last 2KB of flash (pages 504 to 511)
  *  The commands will eventually be added to a menu in the emulator.
  */
-void flash_backup(void)
+void flash_backup( void )
 {
-	int *p = (int *) &PersistentRam;
-	int i, err = 0;
-
 	process_cmdline_set_lift();
 	init_state();
 	checksum_all();
 
-	for ( i = PAGE_BACKUP; i < PAGE_BACKUP + SIZE_BACKUP && err == 0; ++i ) {
-		err = program_flash( i, p );
-		p += 64;
+	if ( program_flash( PAGE_BACKUP, &PersistentRam, SIZE_BACKUP * PAGE_SIZE ) ) {
+		DispMsg = "Error";
 	}
-	DispMsg = err ? "Error" : "Saved";
+	else {
+		DispMsg = "Saved";
+	}
 }
 
 
@@ -225,49 +230,50 @@ void flash_restore(void)
 
 
 /*
- *  Write a region to flash
+ *  The total region size is (number of program steps + 2) * 2
+ *  The value of last_prog is 1 more then the number of steps 
+ */
+static int region_length( FLASH_REGION *fr )
+{
+	return sizeof( short ) * ( fr->last_prog + 1 );
+}
+
+
+/*
+ *  Write a region to flash.
  */
 static int write_region( int r, FLASH_REGION *fr )
 {
-	int *ip = (int *) fr;
-	int i;
-	r *= SIZE_REGION;
-	r += PAGE_BEGIN;
-	for ( i = 0; i < SIZE_REGION; ++i ) {
-		if ( 0 != program_flash( r + i, ip ) ) {
-			return ERR_IO;
-		}
-		ip += 64; // next page
+	if ( program_flash( region_page( r ), fr, region_length( fr ) ) ) {
+		return ERR_IO;
 	}
 	return 0;
 }
 
 
-static void program_cleanup(void) {
-	if (! Running)
+/*
+ *  Cleanup the return stack if needed
+ */
+static void program_cleanup( void ) 
+{
+	if ( !Running ) {
 		clrretstk();
+	}
 }
+
 
 /*
  *  Save the user program area to a region.
  *  Returns an error if failed.
  */
-static int internal_save_program(unsigned int r)
+static int internal_save_program( unsigned int r, FLASH_REGION *fr )
 {
-	int len = State.last_prog * sizeof(unsigned short) - sizeof(unsigned short);
-	FLASH_REGION region;
-
 	program_cleanup();
-	if (check_return_stack_segment(r)) {
+	if ( check_return_stack_segment( r ) ) {
 		err( ERR_INVALID );
 		return 1;
 	}
-	xset( &region, 0xff, sizeof( region ) );
-	region.type = REGION_TYPE_PROGRAM;
-	region.length = len;
-	region.crc = checksum_code();
-	xcopy( region.data, Prog, len );
-	if ( 0 != write_region( r, &region ) ) {
+	if ( write_region( r, (FLASH_REGION *) fr ) ) {
 		err( ERR_IO );
                 return 1;
 	}
@@ -275,9 +281,36 @@ static int internal_save_program(unsigned int r)
 }
 
 
+/*
+ *  Save the user program area to a region. Called by PSTO.
+ */
 void save_program( unsigned int r, enum rarg op )
 {
-	internal_save_program( r );
+	checksum_code();
+	internal_save_program( r, (FLASH_REGION *) &CrcProg );
+}
+
+
+/*
+ *  Load the user program area from a region.
+ *  Returns an error if invalid.
+ */
+static int internal_load_program( unsigned int r )
+{
+	FLASH_REGION *fr = &flash_region( r );
+
+	program_cleanup();
+	if ( checksum_region( r ) || check_return_stack_segment( -1 ) ) {
+		/*
+		 *  Not a valid program region
+		 */
+		err( ERR_INVALID );
+		return 1;
+	}
+	clrprog();
+	xcopy( &CrcProg, fr, region_length( fr ) );
+	set_running_off();
+	return 0;
 }
 
 
@@ -287,66 +320,62 @@ void save_program( unsigned int r, enum rarg op )
  */
 void load_program( unsigned int r, enum rarg op )
 {
-	FLASH_REGION *fr = UserFlash.region + r;
-	int len = fr->length;
-
-	program_cleanup();
-	if ( fr->type != REGION_TYPE_PROGRAM || checksum_region( r ) || check_return_stack_segment(-1)) {
-		/*
-		 *  Not a valid program region
-		 */
-		err( ERR_INVALID );
-		return;
-	}
-	clrprog();
-	xcopy( Prog, fr->data, len );
-	State.last_prog = len / 2 + 1;
-	set_running_off();
+	internal_load_program( r );
 }
 
 
 /*
  *  Swap the user program area with a region.
  *  Returns an error if invalid or error.
- *
- *  Attention: This needs a lot of stack space!
  */
 void swap_program( unsigned int r, enum rarg op )
 {
-	FLASH_REGION *fr = UserFlash.region + r;
+	FLASH_REGION *fr = &flash_region( r );
 	FLASH_REGION region;
-	int len = fr->length;
+	int l = region_length( fr );
 
-	program_cleanup();
-	if ( fr->type != REGION_TYPE_PROGRAM || checksum_region( r )  || check_return_stack_segment(-1)) {
+	/*
+	 *  Temporary copy of current program
+	 */
+	xcopy( &region, &CrcProg, l );
+
+	/*
+	 *  Load program from flash
+	 */
+	if ( internal_load_program( r ) ) {
+		err( ERR_INVALID );
+	}
+
+	/*
+	 *  Save current program from temporary copy
+	 */
+	if ( internal_save_program( r, &region ) ) {
 		/*
-		 *  Not a valid program region
+		 *  Flash failure, recover
+		 */
+		xcopy( &CrcProg, &region, l );
+		return;
+	}
+}
+
+
+/*
+ *  Load registers from backup
+ */
+void load_registers(unsigned int r, enum rarg op)
+{
+	if ( r != 0 || checksum_backup() ) {
+		/*
+		 *  Not a valid backup region
 		 */
 		err( ERR_INVALID );
 		return;
 	}
-	/*
-	 *  Temporary copy
-	 */
-	xcopy( &region, fr, sizeof( region ) );
-
-	/*
-	 *  Save current program
-	 */
-	if ( internal_save_program( r ) ) {
-		return;
-	}
-
-	/*
-	 *  Restore temporary copy
-	 */
-	clrprog();
-	xcopy( Prog, region.data, len );
-	State.last_prog = len / 2 + 1;
-	set_running_off();
+	xcopy( Regs, UserFlash.backup._regs, sizeof( Regs ) );
 }
 
 
+#if 0
 static int internal_save_registers(unsigned int r)
 {
 	int len = TOPREALREG * sizeof(decimal64);
@@ -369,24 +398,10 @@ void save_registers(unsigned int r, enum rarg op)
 	internal_save_registers(r);
 }
 
-void load_registers(unsigned int r, enum rarg op)
-{
-	FLASH_REGION *fr = UserFlash.region + r;
-	int len = fr->length;
-
-	if ( fr->type != REGION_TYPE_DATA || checksum_region( r ) ) {
-		/*
-		 *  Not a valid register region
-		 */
-		err( ERR_INVALID );
-		return;
-	}
-	xcopy( Regs, fr->data, len );
-}
 
 void swap_registers(unsigned int r, enum rarg op)
 {
-	FLASH_REGION *fr = UserFlash.region + r;
+	FLASH_REGION *fr = &flash_region( r );
 	FLASH_REGION region;
 	int len = fr->length;
 
@@ -411,43 +426,51 @@ void swap_registers(unsigned int r, enum rarg op)
 	 */
 	xcopy( Regs, region.data, len );
 }
+#endif
+
 
 /*
- *  Checksum the program area
+ *  The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
  */
-unsigned short int checksum_code(void)
+static unsigned short int crc16( void *base, unsigned int length )
 {
-	const unsigned short int pc = state_pc();
-	int n;
-	if (! isLIB(pc))
-		return crc16( PersistentRam._prog, (State.last_prog-1) * sizeof(unsigned short int) );
-	n = nLIB(pc) - 1;
-	return crc16(UserFlash.region[n].data, UserFlash.region[n].length);
+	unsigned short int crc = 0x5aa5;
+	unsigned char *d = (unsigned char *) base;
+	unsigned int i;
+
+	for ( i = 0; i < length; ++i ) {
+		crc  = ( (unsigned char)( crc >> 8 ) ) | ( crc << 8 );
+		crc ^= *d++;
+		crc ^= ( (unsigned char)( crc & 0xff ) ) >> 4;
+		crc ^= crc << 12;
+		crc ^= ( crc & 0xff ) << 5;
+	}
+	return crc;
 }
 
 
 /*
- *  Checksum the persistent RAM area.
- *  The magic marker is always valid. This eases manipulating state files.
+ *  Compute a checksum and compare it against the stored sum
  */
-int checksum_all( void )
+static int test_checksum( void *data, unsigned int length, unsigned short oldcrc, unsigned short *pcrc )
 {
-	unsigned short int oldcrc = PersistentRam._crc;
-	PersistentRam._crc =
-		crc16( &PersistentRam, (char *) &PersistentRam._crc - (char *) &PersistentRam );
-	return oldcrc != PersistentRam._crc && oldcrc != MAGIC_MARKER;
+	unsigned short crc;
+	crc = crc16( data, length );
+	if ( pcrc != NULL ) {
+		*pcrc = crc;
+	}
+	return crc != oldcrc && oldcrc != MAGIC_MARKER;
 }
 
 
 /*
- *  Checksum the backup flash region
+ *  Checksum the program area.
+ *  This always computes the checksum of the program in RAM.
+ *  The checksum of any program in flash can simply be read out.
  */
-int checksum_backup( void )
+int checksum_code( void )
 {
-	unsigned short int crc =
-		crc16( &( UserFlash.backup ),
-			(char *) &( UserFlash.backup._crc ) - (char *) &( UserFlash.backup ) );
-	return crc != UserFlash.backup._crc && crc != MAGIC_MARKER;
+	return test_checksum( Prog, ( LastProg - 1 ) * sizeof( s_opcode ), CrcProg, &CrcProg );
 }
 
 
@@ -456,17 +479,62 @@ int checksum_backup( void )
  */
 int checksum_region( int r )
 {
-	FLASH_REGION *fr = UserFlash.region + r;
-	unsigned short int crc = crc16( fr->data, fr->length );
-	return crc != fr->crc && crc != MAGIC_MARKER;
+	FLASH_REGION *fr = &flash_region( r );
+	int l = ( fr->last_prog - 1 ) * sizeof( s_opcode );
+	return l >= 0  && l <= 1024 - 4 
+	    && test_checksum( fr->prog, l, fr->crc, NULL );
+}
+
+
+/*
+ *  Checksum the persistent RAM area (registers and state only)
+ *  The magic marker is always valid. This eases manipulating state files.
+ */
+int checksum_data( void )
+{
+	return test_checksum( &Regs, (char *) &Crc - (char *) &Regs, Crc, &Crc );
+}
+
+
+/*
+ *  Checksum all RAM
+ */
+int checksum_all( void )
+{
+	return checksum_data() || checksum_code();
+}
+
+/*
+ *  Checksum the backup flash region
+ */
+int checksum_backup( void )
+{
+	return test_checksum( &( UserFlash.backup._regs ),
+			      (char *) &( UserFlash.backup._crc ) - (char *) &( UserFlash.backup._regs ),
+			      UserFlash.backup._crc, NULL );
+}
+
+/*
+ *  Flash region type
+ */
+extern int is_prog_region( unsigned int r )
+{
+	FLASH_REGION *fr = &flash_region( r );
+
+	return r > 0 && fr->last_prog >= 1 && fr->last_prog <= NUMPROG + 1;
+}
+
+extern int is_data_region( unsigned int r )
+{
+	return r == 0;
 }
 
 
 #ifndef REALBUILD
 /*
- *  Save/Load state to a file (only for emulator(s)
+ *  Save/Load state to a file (only for emulator(s))
  */
-void save_state( void )
+void save_statefile( void )
 {
 	FILE *f = fopen( STATE_FILE, "wb" );
 	if ( f == NULL ) return;
@@ -488,7 +556,7 @@ void save_state( void )
 /*
  *  Load both the RAM file and the flash emulation images
  */
-void load_state( void )
+void load_statefile( void )
 {
 	char name[ 20 ];
 	int i, l;
@@ -498,22 +566,30 @@ void load_state( void )
 		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
 		fclose( f );
 	}
-	for ( i = 0; i < NUMBER_OF_FLASH_REGIONS + 1; ++i ) {
-		p = ((char *) &UserFlash) + i * SIZE_REGION * PAGE_SIZE;
-		if ( i < NUMBER_OF_FLASH_REGIONS ) {
-			l = SIZE_REGION * PAGE_SIZE;
-			sprintf( name, REGION_FILE, i );
-		}
-		else {
-			l = SIZE_BACKUP * PAGE_SIZE;
-			strcpy( name, BACKUP_FILE );
-		}
+	for ( i = 0; i < NUMBER_OF_FLASH_REGIONS; ++i ) {
+		p = (char *) &flash_region( i );
+		l = SIZE_REGION * PAGE_SIZE;
+		memset( p, 0xff, l );
+		sprintf( name, REGION_FILE, i );
 		f = fopen( name, "rb" );
-		if ( f == NULL ) {
-			memset( p, 0xff, l );
-		} else {
+		if ( f != NULL ) {
 			fread( p, l, 1, f );
 			fclose(f);
+#ifdef REPAIR_CRC_ON_LOAD
+			if ( checksum_region( i ) ) {
+				FLASH_REGION *fr = &flash_region( i );
+				int l;
+				for ( l = 0; l <= NUMPROG; ++l ) {
+					if ( fr->prog[ l ] == 0xffff
+					  || fr->prog[ l ] == EMPTY_PROGRAM_OPCODE ) 
+					{
+						break;
+					}
+				}
+				fr->last_prog = l + 1;
+				fr->crc = crc16( fr->prog, 2 * l );
+			}
+#endif
 		}
 	}
 }

@@ -313,7 +313,7 @@ void shutdown( void )
 {
 	checksum_all();
 	setuptty( 1 );
-	save_state();
+	save_statefile();
 	exit( 0 );
 }
 
@@ -397,7 +397,7 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 skipargs:
-	load_state();
+	load_statefile();
 	if (!warm)
 		init_34s();
 	if (setuptty(0) == 0) {
