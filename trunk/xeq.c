@@ -2182,6 +2182,7 @@ void op_denfac(decimal64 *a, decimal64 *b, decContext *nulc) {
  * to make an effort at converting x and y into a real numbers
  * x' = y . 2^x
  */
+#ifdef HP16C_MODE_CHANGE
 static void int2dn(decNumber *x, decimal64 *a) {
 	int s;
 	unsigned long long int v = extract_value(d64toInt(a), &s);
@@ -2190,14 +2191,30 @@ static void int2dn(decNumber *x, decimal64 *a) {
 	if (s)
 		decNumberMinus(x, x, Ctx);
 }
+#else
+static void float_mode_convert(decimal64 *r) {
+	decNumber x;
+	int s;
+	unsigned long long int v = extract_value(d64toInt(r), &s);
+
+	ullint_to_dn(&x, v, Ctx);
+	if (s)
+		decNumberMinus(&x, &x, Ctx);
+	decimal64FromNumber(r, &x, Ctx64);
+}
+#endif
 
 void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
+#ifdef HP16C_MODE_CHANGE
 	decNumber x, y, z;
+#else
+	int i;
+#endif
 
 	if (is_intmode()) {
 		State.intm = 0;
 		State.int_len = 0;
-
+#ifdef HP16C_MODE_CHANGE
 		int2dn(&x, &regX);
 		int2dn(&y, &regY);
 		clrstk(NULL, NULL, NULL);
@@ -2205,6 +2222,11 @@ void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
 		decNumberMultiply(&x, &z, &y, Ctx);
 		set_overflow(decNumberIsInfinite(&x));
 		decimal64FromNumber(&regX, &x, Ctx64);
+#else
+		for (i=0; i<stack_size(); i++)
+			float_mode_convert(get_stack(i));
+		float_mode_convert(&regL);
+#endif
 	}
 	State.fract = 0;
         State2.hms = 0;
@@ -2544,13 +2566,26 @@ void op_signmant(decimal64 *a, decimal64 *b, decContext *nulc) {
  * plenty of space to do this and overflow isn't possible -- we have
  * to account for zero, infinities and NaNs.
  */
-static void check_int_switch(void) {
-	decNumber x, y, z;
-	int ex;			/* exponent |ex| < 1000 */
-	unsigned long int m;	/* Mantissa 32 bits */
-	int sgn, i;
+#ifndef HP16C_MODE_CHANGE
+static void int_mode_convert(decimal64 *r) {
+	decNumber x;
+	int s;
+	unsigned long long int n;
 
+	decimal64ToNumber(r, &x);
+	n = dn_to_ull(&x, Ctx, &s);
+	d64fromInt(r, build_value(n, s));
+}
+#endif
+
+static void check_int_switch(void) {
 	if (!is_intmode()) {
+#ifdef HP16C_MODE_CHANGE
+		decNumber x, y, z;
+		int ex;			/* exponent |ex| < 1000 */
+		unsigned long int m;	/* Mantissa 32 bits */
+		int sgn, i;
+
 		getX(&x);
 		lift();
 		if (decNumberIsSpecial(&x)) {
@@ -2616,6 +2651,12 @@ static void check_int_switch(void) {
 				sgn = 0;
 			d64fromInt(&regX, build_value(ex, sgn));
 		}
+#else
+		int i;
+		for (i=0; i<stack_size(); i++)
+			int_mode_convert(get_stack(i));
+		int_mode_convert(&regL);
+#endif
 		State.intm = 1;
 	}
 }

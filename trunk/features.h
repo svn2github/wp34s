@@ -73,9 +73,15 @@
 // This increases code size and doesn't see to help the solver's convergence.
 //#define USE_RIDDERS
 
-// include code to find integer factors
+// Include code to find integer factors
 //#define INCLUDE_FACTOR
 
+// Define this to support HP16c integer/real mode conversions.
+// The 16c breaks a real into a mantissa and base two exponent on entry
+// to integer mode and reverses the process on exit.  It clears the rest of
+// the stack.  The alternative (which is much smaller), converts the stack and
+// last X on the mode switch (so e.g. 34 stays 34).
+// #define HP16C_MODE_CHANGE
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
