@@ -362,9 +362,9 @@ void swap_program( unsigned int r, enum rarg op )
 /*
  *  Load registers from backup
  */
-void load_registers(unsigned int r, enum rarg op)
+void load_registers(decimal64 *nul1, decimal64 *nul2, decContext *ctx)
 {
-	if ( r != 0 || checksum_backup() ) {
+	if ( checksum_backup() ) {
 		/*
 		 *  Not a valid backup region
 		 */
@@ -373,60 +373,6 @@ void load_registers(unsigned int r, enum rarg op)
 	}
 	xcopy( Regs, UserFlash.backup._regs, sizeof( Regs ) );
 }
-
-
-#if 0
-static int internal_save_registers(unsigned int r)
-{
-	int len = TOPREALREG * sizeof(decimal64);
-	FLASH_REGION region;
-
-	xset( &region, 0xff, sizeof( region ) );
-	region.type = REGION_TYPE_DATA;
-	region.length = len;
-	region.crc = crc16(Regs, len);
-	xcopy( region.data, Regs, len );
-	if ( 0 != write_region( r, &region ) ) {
-		err( ERR_IO );
-                return 1;
-	}
-        return 0;
-}
-
-void save_registers(unsigned int r, enum rarg op)
-{
-	internal_save_registers(r);
-}
-
-
-void swap_registers(unsigned int r, enum rarg op)
-{
-	FLASH_REGION *fr = &flash_region( r );
-	FLASH_REGION region;
-	int len = fr->length;
-
-	if ( fr->type != REGION_TYPE_DATA || checksum_region( r ) ) {
-		err( ERR_INVALID );
-		return;
-	}
-	/*
-	 *  Temporary copy
-	 */
-	xcopy( &region, fr, sizeof( region ) );
-
-	/*
-	 *  Save current program
-	 */
-	if ( internal_save_registers( r ) ) {
-		return;
-	}
-
-	/*
-	 *  Restore temporary copy
-	 */
-	xcopy( Regs, region.data, len );
-}
-#endif
 
 
 /*

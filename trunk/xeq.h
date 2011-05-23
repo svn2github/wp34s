@@ -461,6 +461,7 @@ enum {
 
 	OP_QUAD,
 	OP_XEQALPHA, OP_GTOALPHA,
+        OP_RLOAD,
 };
 
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
@@ -523,10 +524,6 @@ enum rarg {
 	RARG_ALPHAXEQ, RARG_ALPHAGTO,
 
 	RARG_PLOAD, RARG_PSAVE, RARG_PSWAP,
-	RARG_RLOAD, 
-#if 0
-	RARG_RSAVE, RARG_RSWAP,
-#endif
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
