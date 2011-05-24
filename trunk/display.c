@@ -999,6 +999,7 @@ static void show_status(void) {
 	int j = SEGS_PER_DIGIT;
 	int base = 10 * (State2.status - 1);
 	char buf[12], *p;
+	unsigned int pc;
 
 	p = scopy(buf, "FL ");
 	p = num_arg_0(p, base, 2);
@@ -1026,8 +1027,11 @@ static void show_status(void) {
 	set_seperator(SEGS_PER_DIGIT * 5, SEP_DOT, NULL);
 
 	j = SEGS_EXP_BASE;
+	pc = state_pc();
+	if (isXROM(pc))
+		pc = 1;
 	for (n=i=0; i<4; i++) {
-		if (find_label_from(1, 100+i, 1)) {
+		if (find_label_from(pc, 100+i, 1)) {
 			if (++n == 4) {
 				set_dig(SEGS_EXP_BASE + SEGS_PER_EXP_DIGIT, 'L');
 				set_dig(SEGS_EXP_BASE + 2*SEGS_PER_EXP_DIGIT, 'L');

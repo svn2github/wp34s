@@ -14,7 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "xeq.h" 
+#include "xeq.h"
 #include "keys.h"
 #include "display.h"
 #include "lcd.h"
@@ -203,8 +203,11 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int s)
 
 static int check_f_key(int n, const int dflt) {
 	const int code = 100 + n;
+	unsigned int pc = state_pc();
 
-	if (find_label_from(1, code, 1))
+	if(isXROM(pc))
+		pc = 1;
+	if (find_label_from(pc, code, 1))
 		return RARG(RARG_XEQ, code);
 	return dflt;
 }
@@ -805,8 +808,11 @@ static int gtodot_digit(const int n) {
 
 static int gtodot_fkey(int n) {
 	const int code = 100 + n;
+	unsigned int pc = state_pc();
 
-	unsigned int pc = find_label_from(1, code, 0);
+	if(isXROM(pc))
+		pc = 1;
+	pc = find_label_from(pc, code, 0);
 	if (pc > 0)
 		return pc;
 	return state_pc();
@@ -1834,6 +1840,16 @@ digit:		pc = advance_to_next_code_segment(n);
 		return STATE_UNFINISHED;
 
 	case K20:			// GTO
+#if 0
+		if (State2.runmode) {
+			if (! isXROM(pc)) {
+				State2.digval = 0;
+				State2.labellist = 0;
+				set_pc(pc);
+			}
+			return STATE_UNFINISHED;
+		}
+#endif
 		State2.digval = 0;
 		State2.labellist = 0;
 		return (getprog(pc) & 0xfffff0ff) + (DBL_GTO << DBL_SHIFT);
@@ -1842,6 +1858,13 @@ digit:		pc = advance_to_next_code_segment(n);
 	case K63:			// R/S
 		State2.digval = 0;
 		State2.labellist = 0;
+#if 0
+		if (State2.runmode) {
+			clrretstk();
+			gsbgto(pc, 1, 0);			
+			return OP_NIL | OP_NOP;
+		}
+#endif
 		return (getprog(pc) & 0xfffff0ff) + (DBL_XEQ << DBL_SHIFT);
 
 	case K24:			// Exit doing nothing

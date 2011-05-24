@@ -1523,7 +1523,7 @@ static void cmdgtocommon(int gsb, unsigned int pc) {
 }
 
 void cmdlblp(unsigned int arg, enum rarg op) {
-	fin_tst(find_label_from(0, arg, 1) != 0);
+	fin_tst(find_label_from(state_pc(), arg, 1) != 0);
 }
 
 void cmdgto(unsigned int arg, enum rarg op) {
