@@ -1532,10 +1532,11 @@ void cmdgto(unsigned int arg, enum rarg op) {
 
 static unsigned int findmultilbl(const opcode o, int quiet) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	unsigned int lbl = find_opcode_from(0, dest, 1);
+	unsigned int lbl;
 	int i;
 
-	for (i=1; lbl == 0 && i < NUMBER_OF_FLASH_REGIONS; i++) {
+	lbl = find_opcode_from(0, dest, 1);
+	for (i=NUMBER_OF_FLASH_REGIONS-1; lbl == 0 && i > 0; i--) {
 		if ( is_prog_region(i) )
 			lbl = find_opcode_from(addrLIB(0, i), dest, 1);
 	}
