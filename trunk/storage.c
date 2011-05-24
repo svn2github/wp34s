@@ -34,7 +34,7 @@
 #define SLCDCMEM
 #define USER_FLASH
 #define STATE_FILE "wp34s.dat"
-#define REGION_FILE "wp34s-%d.dat"
+#define REGION_FILE "wp34s-%c.dat"
 #define REPAIR_CRC_ON_LOAD
 #endif
 
@@ -169,7 +169,7 @@ static int program_flash( int page_no, void *buffer, int length )
 			if ( f != NULL ) {
 				fclose( f );
 			}
-			sprintf( name, REGION_FILE, r );
+			sprintf( name, REGION_FILE, r == 0 ? 'R' : r + '0' - 1 );
 
 			f = fopen( name, "rb+" );
 			if ( f == NULL ) {
@@ -535,7 +535,7 @@ void load_statefile( void )
 		p = (char *) &flash_region( i );
 		l = SIZE_REGION * PAGE_SIZE;
 		memset( p, 0xff, l );
-		sprintf( name, REGION_FILE, i );
+		sprintf( name, REGION_FILE, i == 0 ? 'R' : i + '0' - 1 );
 		f = fopen( name, "rb" );
 		if ( f != NULL ) {
 			fread( p, l, 1, f );
