@@ -1589,7 +1589,7 @@ int main(void)
 					}
 					else {
 						set_speed( SPEED_HIGH );
-						flash_backup();
+						flash_backup(NULL, NULL, NULL);
 						display();
 						confirm_counter = 0;
 					}
@@ -1602,7 +1602,7 @@ int main(void)
 					}
 					else {
 						set_speed( SPEED_HIGH );
-						flash_restore();
+						flash_restore(NULL, NULL, NULL);
 						display();
 						confirm_counter = 0;
 					}

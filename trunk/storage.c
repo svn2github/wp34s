@@ -201,7 +201,7 @@ static int program_flash( int page_no, void *buffer, int length )
  *  The backup area is the last 2KB of flash (pages 504 to 511)
  *  The commands will eventually be added to a menu in the emulator.
  */
-void flash_backup( void )
+void flash_backup( decimal64 *nul1, decimal64 *nul2, decContext *ctx )
 {
 	process_cmdline_set_lift();
 	init_state();
@@ -216,7 +216,7 @@ void flash_backup( void )
 }
 
 
-void flash_restore(void)
+void flash_restore(decimal64 *nul1, decimal64 *nul2, decContext *ctx)
 {
 	if ( checksum_backup() ) {
 		DispMsg = "Invalid";
@@ -378,6 +378,11 @@ void load_registers(decimal64 *nul1, decimal64 *nul2, decContext *ctx)
 		return;
 	}
 	xcopy( Regs, UserFlash.backup._regs, sizeof( Regs ) );
+}
+
+
+void load_state(decimal64 *nul1, decimal64 *nul2, decContext *ctx)
+{
 }
 
 

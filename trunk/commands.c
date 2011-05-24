@@ -447,6 +447,9 @@ const struct niladic niladics[] = {
 	FUNC0(OP_XEQALPHA,	&op_xeqalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")
 	FUNC0(OP_RLOAD,		&load_registers,	"RRCL")
+	FUNC0(OP_SLOAD,		&load_state,		"SRCL")
+	FUNC0(OP_BACKUP,	&flash_backup,		"SAVE")
+	FUNC0(OP_RESTORE,	&flash_restore,		"LOAD")
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2
