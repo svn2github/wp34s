@@ -2939,29 +2939,24 @@ void op_entryp(decimal64 *a, decimal64 *b, decContext *nulc) {
 }
 
 /* Bulk register operations */
-static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *segment) {
+static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *negative) {
 	decNumber x, y;
-	int rsrc, num, rdest, q, seg;
+	int rsrc, num, rdest, q;
 
 	if (is_intmode())
 		return 1;
 	getX(&x);
 	if (dn_lt0(&x)) {
-		if (segment != NULL) {
-			decNumberMinus(&y, &x, Ctx);
-			decNumberMultiply(&x, &y, &const_0_01, Ctx);
-			decNumberTrunc(&y, &x, Ctx);
-			*segment = seg = dn_to_int(&y, Ctx);
-			decNumberFrac(&y, &x, Ctx);
-			decNumberMultiply(&x, &y, &const_100, Ctx);
-			if (seg == 0)  // We can only copy from the backup
-				goto okay;
+		if (negative != NULL) {
+			decNumberMinus(&x, &x, Ctx);
+			*negative = 1;
+		} else {
+			err(ERR_RANGE);
+			return 1;
 		}
-		err(ERR_RANGE);
-		return 1;
-	} else if (segment != NULL)
-		*segment = -1;
-okay:	decNumberTrunc(&y, &x, Ctx);
+	} else if (negative != NULL)
+		*negative = 0;
+	decNumberTrunc(&y, &x, Ctx);
 	*s = rsrc = dn_to_int(&y, Ctx);
 	if (rsrc >= TOPREALREG) {
 		err(ERR_RANGE);
@@ -3005,14 +3000,14 @@ okay:	decNumberTrunc(&y, &x, Ctx);
 
 void op_regcopy(decimal64 *a, decimal64 *b, decContext *nulc) {
 	unsigned int s, d, n;
-	int seg;
+	int negative;
 
-	if (reg_decode(&s, &n, &d, &seg) || s == d)
+	if (reg_decode(&s, &n, &d, &negative) || s == d)
 		return;
-	if (seg < 0)
-		xcopy(Regs+d, Regs+s, n*sizeof(Regs[0]));
-	else
+	if (negative)
 		xcopy(Regs+d, UserFlash.backup._regs+s, n*sizeof(Regs[0]));
+	else
+		xcopy(Regs+d, Regs+s, n*sizeof(Regs[0]));
 }
 
 void op_regswap(decimal64 *a, decimal64 *b, decContext *nulc) {

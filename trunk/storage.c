@@ -286,6 +286,7 @@ static int internal_save_program( unsigned int r, FLASH_REGION *fr )
  */
 void save_program( unsigned int r, enum rarg op )
 {
+	r++;
 	checksum_code();
 	internal_save_program( r, (FLASH_REGION *) &CrcProg );
 }
@@ -320,6 +321,7 @@ static int internal_load_program( unsigned int r )
  */
 void load_program( unsigned int r, enum rarg op )
 {
+	r++;
 	internal_load_program( r );
 }
 
@@ -330,9 +332,13 @@ void load_program( unsigned int r, enum rarg op )
  */
 void swap_program( unsigned int r, enum rarg op )
 {
-	FLASH_REGION *fr = &flash_region( r );
+	FLASH_REGION *fr;
 	FLASH_REGION region;
-	int l = region_length( fr );
+	int l;
+
+	r++;
+	fr = &flash_region( r );
+	l = region_length( fr );
 
 	/*
 	 *  Temporary copy of current program

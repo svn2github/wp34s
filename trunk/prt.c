@@ -190,7 +190,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			} else if (arg >= 100) {
 				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = 'A'+arg-100;
 			} else {
-				num_arg_0(sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN), arg, 2);
+				num_arg_0(sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN), arg, argcmds[cmd].lim < 10 ? 1 : 2);
 			}
 		}
 	} else {
