@@ -1580,6 +1580,7 @@ int main(void)
 						Crc = 0;
 						init_34s();
 						confirm_counter = 0;
+						display();
 					}
 					break;
 

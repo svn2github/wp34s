@@ -91,21 +91,23 @@ static RAM_FUNCTION int flash_command( unsigned int cmd )
  *  Program the flash starting at page page_no
  *  Returns 0 if OK or non zero on error.
  *  If length % 256 != 0 the rest is preserved
+ *  This is exact to 4 bytes only!
  */
 static int program_flash( int page_no, void *buffer, int length )
 {
-	char *flash = (char *) ( 0x100000 | ( page_no << 8 ) ); 
-	char *b = (char *) buffer;
+	int *flash = (int *) ( 0x100000 | ( page_no << 8 ) );
+	int *ip = (int *) buffer;
 	int i;
 
 	lock();  // No interrupts, please!
 
+	length = ( length + 3 ) / 4;
 	while ( length > 0 ) {
 		/*
 		 *  Copy the source to the flash write buffer
 		 */
-		for ( i = 0; i < PAGE_SIZE; ++i, ++flash, ++b ) {
-			*flash = i < length ? *b : *flash;
+		for ( i = 0; i < PAGE_SIZE / 4; ++i, ++flash, ++ip ) {
+			*flash = i < length ? *ip : *flash;
 		}
 
 		/*
@@ -186,6 +188,7 @@ static int program_flash( int page_no, void *buffer, int length )
 		}
 		r_last = r;
 		++page_no;
+		dest += PAGE_SIZE;
 		length -= PAGE_SIZE;
 	}
 	fclose( f );
@@ -301,7 +304,9 @@ static int internal_load_program( unsigned int r )
 	FLASH_REGION *fr = &flash_region( r );
 
 	program_cleanup();
-	if ( checksum_region( r ) || check_return_stack_segment( -1 ) ) {
+	if ( checksum_region( r ) || check_return_stack_segment( -1 )
+	     || fr->last_prog > NUMPROG + 1 )
+	{
 		/*
 		 *  Not a valid program region
 		 */
@@ -416,6 +421,7 @@ static unsigned short int crc16( void *base, unsigned int length )
 
 /*
  *  Compute a checksum and compare it against the stored sum
+ *  Returns non zero value if failure
  */
 static int test_checksum( void *data, unsigned int length, unsigned short oldcrc, unsigned short *pcrc )
 {
@@ -430,8 +436,9 @@ static int test_checksum( void *data, unsigned int length, unsigned short oldcrc
 
 /*
  *  Checksum the program area.
- *  This always computes the checksum of the program in RAM.
+ *  This always computes and sets the checksum of the program in RAM.
  *  The checksum of any program in flash can simply be read out.
+ *  Returns non zero value if failure
  */
 int checksum_code( void )
 {
@@ -441,19 +448,20 @@ int checksum_code( void )
 
 /*
  *  Checksum a user flash region
+ *  Returns non zero value if failure
  */
 int checksum_region( int r )
 {
 	FLASH_REGION *fr = &flash_region( r );
 	int l = ( fr->last_prog - 1 ) * sizeof( s_opcode );
-	return l >= 0  && l <= 1024 - 4 
-	    && test_checksum( fr->prog, l, fr->crc, NULL );
+	return l < 0 || l > sizeof( fr->prog ) || test_checksum( fr->prog, l, fr->crc, NULL );
 }
 
 
 /*
  *  Checksum the persistent RAM area (registers and state only)
  *  The magic marker is always valid. This eases manipulating state files.
+ *  Returns non zero value if failure
  */
 int checksum_data( void )
 {
@@ -463,6 +471,7 @@ int checksum_data( void )
 
 /*
  *  Checksum all RAM
+ *  Returns non zero value if failure
  */
 int checksum_all( void )
 {
@@ -471,6 +480,7 @@ int checksum_all( void )
 
 /*
  *  Checksum the backup flash region
+ *  Returns non zero value if failure
  */
 int checksum_backup( void )
 {

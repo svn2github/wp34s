@@ -999,7 +999,7 @@ fkey:		if (oldstate != SHIFT_F)
 	case K40:
 		if (oldstate == SHIFT_N) {	// Alpha scroll left
 			n = alpha_pos + 1;
-			State2.alpha_pos = (6*n < alen()) ? n : alpha_pos;
+			State2.alpha_pos = ( n < ( alen() + 5 ) / 6 ) ? n : alpha_pos;
 			return STATE_UNFINISHED;
 		}
 		break;

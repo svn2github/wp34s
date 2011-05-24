@@ -1229,15 +1229,22 @@ void display(void) {
 			if (j != 0) {
 				i = slen(buf);
 				j *= 6;
-				buf[j<i?i-j:1] = '\0';
+				if ( i - j >= 12 ) {
+					buf[ (i - j) ] = '\0';
+					set_status_right(buf);
+				}
+				else {
+					set_status(buf);
+				}
 			} else {
 				i = cur_shift();
 				if (i != SHIFT_N) {
 					*bp++ = 021 + i - SHIFT_F;
 					*bp++ = '\0';
 				}
+				set_status_right(buf);
+
 			}
-			set_status_right(buf);
 		} else {
 			annuc = 1;
 		}
@@ -1324,7 +1331,7 @@ static void set_status_sized(const char *str, int smallp) {
 		//cmap = &charset[c][0];
 		width = charlengths(c);
 		if (x + width > BITMAP_WIDTH+1)
-			return;
+			break;
 
 		/* Decode the packed character bytes */
 		unpack6(chars[c], cmap);
