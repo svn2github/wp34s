@@ -197,9 +197,8 @@ static int program_flash( int page_no, void *buffer, int length )
 
 /*
  *  Simple backup / restore
- *  Started with ON+"B" or ON+"R"
+ *  Started with ON+"B" or ON+"R" or the SAVE/LOAD commands
  *  The backup area is the last 2KB of flash (pages 504 to 511)
- *  The commands will eventually be added to a menu in the emulator.
  */
 void flash_backup( decimal64 *nul1, decimal64 *nul2, decContext *ctx )
 {
@@ -208,6 +207,7 @@ void flash_backup( decimal64 *nul1, decimal64 *nul2, decContext *ctx )
 	checksum_all();
 
 	if ( program_flash( PAGE_BACKUP, &PersistentRam, SIZE_BACKUP * PAGE_SIZE ) ) {
+		err( ERR_IO );
 		DispMsg = "Error";
 	}
 	else {
@@ -219,6 +219,7 @@ void flash_backup( decimal64 *nul1, decimal64 *nul2, decContext *ctx )
 void flash_restore(decimal64 *nul1, decimal64 *nul2, decContext *ctx)
 {
 	if ( checksum_backup() ) {
+		err( ERR_INVALID );
 		DispMsg = "Invalid";
 	}
 	else {
@@ -286,9 +287,8 @@ static int internal_save_program( unsigned int r, FLASH_REGION *fr )
  */
 void save_program( unsigned int r, enum rarg op )
 {
-	r++;
 	checksum_code();
-	internal_save_program( r, (FLASH_REGION *) &CrcProg );
+	internal_save_program( r + 1, (FLASH_REGION *) &CrcProg );
 }
 
 
@@ -321,8 +321,7 @@ static int internal_load_program( unsigned int r )
  */
 void load_program( unsigned int r, enum rarg op )
 {
-	r++;
-	internal_load_program( r );
+	internal_load_program( r + 1 );
 }
 
 
@@ -336,7 +335,7 @@ void swap_program( unsigned int r, enum rarg op )
 	FLASH_REGION region;
 	int l;
 
-	r++;
+	++r;
 	fr = &flash_region( r );
 	l = region_length( fr );
 
@@ -383,6 +382,15 @@ void load_registers(decimal64 *nul1, decimal64 *nul2, decContext *ctx)
 
 void load_state(decimal64 *nul1, decimal64 *nul2, decContext *ctx)
 {
+	if ( checksum_backup() ) {
+		/*
+		 *  Not a valid backup region
+		 */
+		err( ERR_INVALID );
+		return;
+	}
+	xcopy( &RandS1, &UserFlash.backup._rand_s1, (char *) &Crc - (char *) &RandS1 );
+	init_state();
 }
 
 

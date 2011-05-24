@@ -1420,9 +1420,17 @@ int main(void)
 			/*
 			 *  Will perform a full init if checksum is bad
 			 */
-			if ( init_34s() && !checksum_backup() ) {
-				// restore recent backup after power on clear
-				flash_restore();
+			if ( init_34s() ) {
+				if ( checksum_backup() ) {
+					// No valid backup, create an empty one
+					const char *p = DispMsg;
+					flash_backup( NULL, NULL, NULL );
+					DispMsg = p;
+				}
+				else {
+					// restore recent backup after power on clear
+					flash_restore( NULL, NULL, NULL );
+				}
 			}
 		}
 		else {
@@ -1589,7 +1597,7 @@ int main(void)
 					}
 					else {
 						set_speed( SPEED_HIGH );
-						flash_backup(NULL, NULL, NULL);
+						flash_backup( NULL, NULL, NULL );
 						display();
 						confirm_counter = 0;
 					}
@@ -1602,7 +1610,7 @@ int main(void)
 					}
 					else {
 						set_speed( SPEED_HIGH );
-						flash_restore(NULL, NULL, NULL);
+						flash_restore( NULL, NULL, NULL );
 						display();
 						confirm_counter = 0;
 					}
