@@ -116,7 +116,7 @@ static int program_flash( int page_no, void *buffer, int length )
 		i = flash_command( 0x5A000003 | ( page_no << 8 ) );
 		if ( i ) break;
 
-		length -= PAGE_SIZE;
+		length -= PAGE_SIZE / 4;
 		++page_no;
 	}
 	unlock();
@@ -223,7 +223,7 @@ void flash_restore(decimal64 *nul1, decimal64 *nul2, decContext *ctx)
 {
 	if ( checksum_backup() ) {
 		err( ERR_INVALID );
-		DispMsg = "Invalid";
+		// DispMsg = "Invalid";
 	}
 	else {
 		xcopy( &PersistentRam, &( UserFlash.backup ), sizeof( PersistentRam ) );
@@ -554,7 +554,7 @@ void load_statefile( void )
 			if ( checksum_region( i ) ) {
 				FLASH_REGION *fr = &flash_region( i );
 				int l;
-				for ( l = 0; l <= NUMPROG; ++l ) {
+				for ( l = 0; l < NUMPROG; ++l ) {
 					if ( fr->prog[ l ] == 0xffff
 					  || fr->prog[ l ] == EMPTY_PROGRAM_OPCODE ) 
 					{

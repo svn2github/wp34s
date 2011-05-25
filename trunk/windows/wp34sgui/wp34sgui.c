@@ -114,6 +114,7 @@ void Reset( bool keep )
 {
 	memset( &PersistentRam, 0, sizeof( PersistentRam ) );
 	init_34s();
+	display();
 }
 
 void Shutdown( void )
