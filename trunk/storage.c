@@ -475,7 +475,7 @@ int checksum_data( void )
  */
 int checksum_all( void )
 {
-	return checksum_data() || checksum_code();
+	return checksum_data() + checksum_code();
 }
 
 /*
