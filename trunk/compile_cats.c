@@ -358,6 +358,7 @@ static s_opcode test_catalogue[] = {
 
 	RARGCMD(RARG_LBLP,	"LBL?")
 	NILIC(OP_ENTRYP,	"ENTRY?")
+	RARGCMD(RARG_KEY,	"KEY?")
 };
 
 static s_opcode prog_catalogue[] = {
@@ -370,14 +371,12 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_DROP,		"DROP")
 	RARGCMD(RARG_DSZ,	"DSZ")
 	RARGCMD(RARG_FF,	"FF")
-	NILIC(OP_FRACT,		"FRACT")
 	RARGCMD(RARG_DERIV,	"f'(x)")
 	RARGCMD(RARG_2DERIV,	"f\"(x)")
 	DYA(OP_HMSADD,		"H.MS+")
 	DYA(OP_HMSSUB,		"H.MS-")
 	RARGCMD(RARG_INC,	"INC")
 	RARGCMD(RARG_ISZ,	"ISZ")
-	RARGCMD(RARG_KEY,	"KEY?")
 	NILIC(OP_NOP,		"NOP")
 	NILIC(OP_PROMPT,	"PROMPT")
 	NILIC(OP_REGCLR,	"R-CLR")
@@ -449,6 +448,7 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_STK8,		"SSIZE8")
 	NILIC(OP_LEAD0,		"SHOW 0")
 	NILIC(OP_TRIM0,		"HIDE 0")
+	NILIC(OP_FRACT,		"FRACT")
 
 	NILIC(OP_SETEUR,	"SETEUR")
 	NILIC(OP_SETUK,		"SETUK")
