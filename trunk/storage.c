@@ -445,7 +445,8 @@ static int test_checksum( void *data, unsigned int length, unsigned short oldcrc
  */
 int checksum_code( void )
 {
-	return test_checksum( Prog, ( LastProg - 1 ) * sizeof( s_opcode ), CrcProg, &CrcProg );
+	return LastProg < 1 || LastProg > NUMPROG 
+		|| test_checksum( Prog, ( LastProg - 1 ) * sizeof( s_opcode ), CrcProg, &CrcProg );
 }
 
 
