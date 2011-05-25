@@ -465,7 +465,7 @@ static int process_h_shifted(const keycode c) {
 		init_cat(CATALOGUE_CONV);
 		break;
 	case K05:
-		init_cat(CATALOGUE_MODE);
+		init_cat(State.intm?CATALOGUE_INT_MODE:CATALOGUE_MODE);
 		break;
 
 //	case K10:	init_arg(RARG_VIEW);	break;
@@ -1452,6 +1452,7 @@ int current_catalogue_max(void) {
 		NUM_CONSTS,
 		sizeof(conv_catalogue) / sizeof(const s_opcode),
 		sizeof(flash_catalogue) / sizeof(const s_opcode),
+		sizeof(int_mode_catalogue) / sizeof(const s_opcode),
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		sizeof(internal_catalogue) / sizeof(const s_opcode),
 #endif
@@ -1517,6 +1518,9 @@ opcode current_catalogue(int n) {
 
 	case CATALOGUE_MODE:
 		return mode_catalogue[n];
+
+	case CATALOGUE_INT_MODE:
+		return int_mode_catalogue[n];
 
 	case CATALOGUE_FLASH:
 		return flash_catalogue[n];

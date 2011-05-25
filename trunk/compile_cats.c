@@ -424,11 +424,15 @@ static s_opcode internal_catalogue[] = {
 static s_opcode mode_catalogue[] = {
 	NILIC(OP_RADCOM,	"RDX,")
 	NILIC(OP_RADDOT,	"RDX.")
+#if 1
 	NILIC(OP_1COMP,		"1COMPL")
 	NILIC(OP_2COMP,		"2COMPL")
 	NILIC(OP_SIGNMANT,	"SIGNMT")
 	NILIC(OP_UNSIGNED,	"UNSIGN")
-	RARGCMD(RARG_WS,	"WSIZ")
+	RARGCMD(RARG_WS,	"WSIZE")
+	NILIC(OP_LEAD0,		"SHOW 0")
+	NILIC(OP_TRIM0,		"HIDE 0")
+#endif
 	RARGCMD(RARG_BASE,	"BASE")
 	NILIC(OP_DENANY,	"DENANY")
 	NILIC(OP_DENFAC,	"DENMFAC")
@@ -446,8 +450,6 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_24HR,		"24H")
 	NILIC(OP_STK4,		"SSIZE4")
 	NILIC(OP_STK8,		"SSIZE8")
-	NILIC(OP_LEAD0,		"SHOW 0")
-	NILIC(OP_TRIM0,		"HIDE 0")
 	NILIC(OP_FRACT,		"FRACT")
 
 	NILIC(OP_SETEUR,	"SETEUR")
@@ -455,6 +457,19 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_SETUSA,	"SETUSA")
 	NILIC(OP_SETIND,	"SETIND")
 	NILIC(OP_SETCHN,	"SETCHN")
+};
+
+static s_opcode int_mode_catalogue[] = {
+	NILIC(OP_1COMP,		"1COMPL")
+	NILIC(OP_2COMP,		"2COMPL")
+	NILIC(OP_SIGNMANT,	"SIGNMT")
+	NILIC(OP_UNSIGNED,	"UNSIGN")
+	RARGCMD(RARG_WS,	"WSIZ")
+	RARGCMD(RARG_BASE,	"BASE")
+	NILIC(OP_STK4,		"SSIZE4")
+	NILIC(OP_STK8,		"SSIZE8")
+	NILIC(OP_LEAD0,		"SHOW 0")
+	NILIC(OP_TRIM0,		"HIDE 0")
 };
 
 static s_opcode alpha_catalogue[] = {
@@ -767,6 +782,7 @@ int main(int argc, char *argv[]) {
 	CAT(test_catalogue);
 	CAT(prog_catalogue);
 	CAT(mode_catalogue);
+	CAT(int_mode_catalogue);
 	CAT(alpha_catalogue);
 	CAT(conv_catalogue);
 	CAT(flash_catalogue);
