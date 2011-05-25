@@ -2197,7 +2197,7 @@ void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 	if (is_intmode()) {
 		State.intm = 0;
-		State.int_len = 0;
+		// State.int_len = 0;
 #ifdef HP16C_MODE_CHANGE
 		int2dn(&x, &regX);
 		int2dn(&y, &regY);
