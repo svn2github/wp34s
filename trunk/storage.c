@@ -168,6 +168,9 @@ static int program_flash( int page_no, void *buffer, int length )
 		r = NUMBER_OF_FLASH_REGIONS - 1 - page_no / SIZE_REGION;
 
 		if ( r != r_last ) {
+			if ( length < 1024 ) {
+				length = 1024;
+			}
 			if ( f != NULL ) {
 				fclose( f );
 			}

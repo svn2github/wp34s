@@ -16,25 +16,56 @@ These ON key combinations have to be pressed twice in a row without
 releasing the ON key to be executed.
 
 Do an ON+STO before you want to flash a new release! After flashing,
-your backup should still be in place if you didn't press the ERASE
-button on the cable but used ON+S instead to get into SAM-BA boot mode.
+your backup should still be in place if you didn't accidently press the
+ERASE button on the cable but used ON+S instead to get into SAM-BA boot 
+mode.
 
-There are additional commands in the program functions catalogue:
+There are additional commands in the I/O catalogue (f+STO):
 
-PSTO n   Store program in region n. n is 0 or 1. A region is a
+PSTO n   Store program in region n. n is 0 to 2. A region is a
          block of flash memory that can hold a copy of the
-	 user program area. In a later version, alphanumeric
-         labels in flash can be called with XEQ. This allows
-         creation of libraries.
+         user program area. Alphanumeric labels in flash can be
+         called with XEQ. This allows creation of libraries.
+         Use the new label browser (f+RCL) to see the labels.
+         Region 0 is the same region that is stored with the backup.
 
 PRCL n   Restore region n to the program area where data can be edited.
 
 P<> n    Swap the current program with the contents of region n.
 
+LOAD     Executes ON+RCL. This is available on the emulator, too.
+
+SAVE     Executes ON+STO. See above.
+
+RRCL     Recall the register data only from a previously created backup.
+
+SRCL     Recall the setup data only from a previously created backup.
+
+You can recall a group of registers from the backup with the command
+R-COPY from the program catalogue. Just give it a negative value in X
+and the source block will be fetched from flash instead of RAM.
+
+
+Mapping from memory regions to emulator state files
+===================================================
+
+Region  Flash address  state file   Remark
+---------------------------------------------------------------------
+unnamed   0x11fc00     wp34s-R.dat  Registers and state of the backup
+   0      0x11f800     wp34s-0.dat  User program of the backup
+   1      0x11f400     wp34s-1.dat  Generic user Program region
+   2      0x11f000     wp34s-0.dat  ditto
+  RAM                  wp34s.dat    Emulator image of the RAM area
+
+wp34s.dat is only written on exit of the emulator software.
+wp34s-?.dat is written each time a flash command is executed.
+All files are only read into memory on emulator startup.
+
+
 How to transfer data between the calculator and your PC
 =======================================================
 
-The whole RAM is saved to address 0x11F800 (relative address 0x1F800)
+The whole RAM is saved to address 0x11f800 (relative address 0x1f800)
 with ON+STO. This can be copied to your PC or loaded from it.
 
 1. From calculator to PC
@@ -50,9 +81,8 @@ with ON+STO. This can be copied to your PC or loaded from it.
    h) To get your calculator back in business, start the "Boot from flash"
       script in SAM-BA, the same procedure you should know from flashing
       the firmware.
-   i) Power the calculator up and perform a restore with ON+RCL. The
-      latest version does the restore automatically when RAM is not
-      valid.
+   i) Reset and power the calculator up and perform a restore with ON+RCL.
+      The latest version does the restore automatically when RAM is lost.
 
 2. From PC to calculator
 
@@ -62,17 +92,22 @@ with ON+STO. This can be copied to your PC or loaded from it.
    d) Perform steps (h) and (i) from above.
 
 The program regions accessible with the commands PSTO, PRCL and P<> are
-stored at addresses 0x11F000 and 0x11F400 respectively and have a length
-of 0x400 (1 KB) each. The emulator creates files wp32s-#.dat, # being the
-region number. You can handle these files the same way as the complete
+stored at addresses 0x11f000 and above (see table above) and have a length
+of 0x400 (1 KB) each. The emulator creates files 'wp32s-?.dat', '?' being 
+the region number. You can handle these files the same way as the complete
 state file from the emulator. The regions have identical formatting and
-can be swapped by copying their data to the "wrong" place. The backup
-area is formatted differently. 
+can be swapped by copying their data to the "wrong" place. The register
+and state portion of the backup area at 0x11fc00 is formatted differently. 
 
 If you want to get your emulator data into the calculator in one go,
 do the following in Windows:
 
-C:\wp34s>copy /b calc.bin+wp34s-0.dat+wp34s-1.dat+wp34s.dat calc-full.bin
+copy /b calc.bin+wp34s-2.dat+wp34s-1.dat+wp34s.dat calc-full.bin
+
+As an alternative the following will copy the backup data instead of the
+RAM state file:
+
+copy /b calc.bin+wp34s-2.dat+wp34s-1.dat+wp34s-0.dat+wp34s-R.dat calc-full.bin
 
 The resulting file can be programmed into flash and all data is readily
 available.
