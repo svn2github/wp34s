@@ -1775,7 +1775,7 @@ static void advance_to_previous_label(unsigned int pc) {
 		for (;;) {
 			const unsigned int oldpc = pc;
 			pc = dec(pc);
-			if (pc > oldpc)
+			if (pc >= oldpc)
 				break;
 			if (is_label_at(pc)) {
 				State2.digval = pc;
@@ -1844,16 +1844,6 @@ digit:		pc = advance_to_next_code_segment(n);
 		return STATE_UNFINISHED;
 
 	case K20:			// GTO
-#if 0
-		if (State2.runmode) {
-			if (! isXROM(pc)) {
-				State2.digval = 0;
-				State2.labellist = 0;
-				set_pc(pc);
-			}
-			return STATE_UNFINISHED;
-		}
-#endif
 		State2.digval = 0;
 		State2.labellist = 0;
 		return (getprog(pc) & 0xfffff0ff) + (DBL_GTO << DBL_SHIFT);
@@ -1862,13 +1852,6 @@ digit:		pc = advance_to_next_code_segment(n);
 	case K63:			// R/S
 		State2.digval = 0;
 		State2.labellist = 0;
-#if 0
-		if (State2.runmode) {
-			clrretstk();
-			gsbgto(pc, 1, 0);			
-			return OP_NIL | OP_NOP;
-		}
-#endif
 		return (getprog(pc) & 0xfffff0ff) + (DBL_XEQ << DBL_SHIFT);
 
 	case K24:			// Exit doing nothing
