@@ -388,12 +388,31 @@ int main(int argc, char *argv[]) {
 		}
 		printf("total number of opcodes %d\n", n);
 		printf("\tniladic commands %d\n", num_niladics);
-		printf("\tmonadic commands %d\n", num_monfuncs);
-		printf("\tdyadic commands %d\n", num_dyfuncs);
-		printf("\ttriadic commands %d\n", num_trifuncs);
+
+		for (n=c=0; c<num_monfuncs; c++) {
+			if (monfuncs[c].mondreal != NULL) n++;
+			if (monfuncs[c].mondcmplx != NULL) n++;
+			if (monfuncs[c].monint != NULL) n++;
+		}
+		printf("\tmonadic commands %d with %d functions\n", num_monfuncs, n);
+
+		for (n=c=0; c<num_dyfuncs; c++) {
+			if (dyfuncs[c].dydreal != NULL) n++;
+			if (dyfuncs[c].dydcmplx != NULL) n++;
+			if (dyfuncs[c].dydint != NULL) n++;
+		}
+		printf("\tdyadic commands %d with %d functions\n", num_dyfuncs, n);
+
+		for (n=c=0; c<num_trifuncs; c++) {
+			if (trifuncs[c].trireal != NULL) n++;
+			if (trifuncs[c].triint != NULL) n++;
+		}
+		printf("\ttriadic commands %d with %d functions\n", num_trifuncs, n);
+
 		printf("\targument commands %d\n", num_argcmds);
 		printf("\tmultiword commands %d\n", num_multicmds);
 		printf("\tspecial commands %d\n", SPECIAL_MAX);
+
 		return 0;
 	}
 skipargs:
