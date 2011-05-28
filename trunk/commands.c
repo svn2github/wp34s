@@ -589,6 +589,18 @@ const struct argcmd argcmds[] = {
 	CMD(RARG_PLOAD,		&load_program,	NUMBER_OF_FLASH_REGIONS-1,	"PRCL")
 	CMD(RARG_PSAVE,		&save_program,	NUMBER_OF_FLASH_REGIONS-1,	"PSTO")
 	CMD(RARG_PSWAP,		&swap_program,	NUMBER_OF_FLASH_REGIONS-1,	"P\027")
+	CMDstk(RARG_FLRCL, 	&cmdflashrcl,	NUMREG,			"RCF")
+	CMDstk(RARG_FLRCL_PL, 	&cmdflashrcl,	NUMREG,			"RCF+")
+	CMDstk(RARG_FLRCL_MI, 	&cmdflashrcl,	NUMREG,			"RCF-")
+	CMDstk(RARG_FLRCL_MU, 	&cmdflashrcl,	NUMREG,			"RCF\034")
+	CMDstk(RARG_FLRCL_DV, 	&cmdflashrcl,	NUMREG,			"RCF/")
+	CMDstk(RARG_FLRCL_MIN,	&cmdflashrcl,	NUMREG,			"RCF\017")
+	CMDstk(RARG_FLRCL_MAX,	&cmdflashrcl,	NUMREG,			"RCF\020")
+	CMDcstk(RARG_FLCRCL, 	&cmdflashcrcl,	NUMREG,			"\024RCF")
+	CMDcstk(RARG_FLCRCL_PL,	&cmdflashcrcl,	NUMREG,			"\024RCF+")
+	CMDcstk(RARG_FLCRCL_MI, &cmdflashcrcl,	NUMREG,			"\024RCF-")
+	CMDcstk(RARG_FLCRCL_MU, &cmdflashcrcl,	NUMREG,			"\024RCF\034")
+	CMDcstk(RARG_FLCRCL_DV, &cmdflashcrcl,	NUMREG,			"\024RCF/")
 #undef CMDnoI
 #undef CMDstk
 #undef CMD

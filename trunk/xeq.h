@@ -524,6 +524,9 @@ enum rarg {
 	RARG_ALPHAXEQ, RARG_ALPHAGTO,
 
 	RARG_PLOAD, RARG_PSAVE, RARG_PSWAP,
+	RARG_FLRCL, RARG_FLRCL_PL, RARG_FLRCL_MI, RARG_FLRCL_MU, RARG_FLRCL_DV,
+			RARG_FLRCL_MIN, RARG_FLRCL_MAX,
+	RARG_FLCRCL, RARG_FLCRCL_PL, RARG_FLCRCL_MI, RARG_FLCRCL_MU, RARG_FLCRCL_DV,
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
@@ -795,6 +798,8 @@ extern void cmdrcl(unsigned int arg, enum rarg op);
 extern void cmdcsto(unsigned int arg, enum rarg op);
 extern void cmdcrcl(unsigned int arg, enum rarg op);
 extern void cmdswap(unsigned int arg, enum rarg op);
+extern void cmdflashrcl(unsigned int arg, enum rarg op);
+extern void cmdflashcrcl(unsigned int arg, enum rarg op);
 extern void cmdview(unsigned int arg, enum rarg op);
 extern void set_stack_size4(decimal64 *a, decimal64 *nul2, decContext *ctx64);
 extern void set_stack_size8(decimal64 *a, decimal64 *nul2, decContext *ctx64);

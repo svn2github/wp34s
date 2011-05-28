@@ -1193,9 +1193,7 @@ void cmdsto(unsigned int arg, enum rarg op) {
 
 /* We've got a RCL operation to do.
  */
-void cmdrcl(unsigned int arg, enum rarg op) {
-	const decimal64 *rn = get_reg_n(arg);
-
+static void do_rcl(const decimal64 *rn, enum rarg op) {
 	if (op == RARG_RCL) {
 		decimal64 temp = *rn;
 		lift();
@@ -1217,6 +1215,14 @@ void cmdrcl(unsigned int arg, enum rarg op) {
 			setX(&r);
 		}
 	}
+}
+
+void cmdrcl(unsigned int arg, enum rarg op) {
+	do_rcl(get_reg_n(arg), op);
+}
+
+void cmdflashrcl(unsigned int arg, enum rarg op) {
+	do_rcl(UserFlash.backup._regs+arg, op - RARG_FLRCL + RARG_RCL);
 }
 
 /* And the complex equivalents for the above.
@@ -1273,12 +1279,8 @@ void cmdcsto(unsigned int arg, enum rarg op) {
 	set_was_complex();
 }
 
-void cmdcrcl(unsigned int arg, enum rarg op) {
+static void do_crcl(const decimal64 *t1, const decimal64 *t2, enum rarg op) {
 	decNumber r1, r2;
-	const decimal64 *t1, *t2;
-
-	t1 = get_reg_n(arg);
-	t2 = get_reg_n(arg+1);
 
 	if (op == RARG_CRCL) {
 		lift2();
@@ -1296,6 +1298,23 @@ void cmdcrcl(unsigned int arg, enum rarg op) {
 	}
 	set_was_complex();
 }
+
+void cmdcrcl(unsigned int arg, enum rarg op) {
+	const decimal64 *t1, *t2;
+
+	t1 = get_reg_n(arg);
+	t2 = get_reg_n(arg+1);
+	do_crcl(t1, t2, op);
+}
+
+void cmdflashcrcl(unsigned int arg, enum rarg op) {
+	const decimal64 *t1, *t2;
+
+	t1 = UserFlash.backup._regs+arg;
+	t2 = t1+1;
+	do_crcl(t1, t2, op - RARG_FLCRCL + RARG_CRCL);
+}
+
 
 /* SWAP x with the specified register
  */

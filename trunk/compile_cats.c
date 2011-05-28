@@ -410,6 +410,18 @@ static s_opcode flash_catalogue[] = {
 	NILIC(OP_SLOAD,		"SRCL")
 	NILIC(OP_BACKUP,	"SAVE")
 	NILIC(OP_RESTORE,	"LOAD")
+	RARGCMD(RARG_FLRCL, 	"RCF")
+	RARGCMD(RARG_FLRCL_PL, 	"RCF+")
+	RARGCMD(RARG_FLRCL_MI, 	"RCF-")
+	RARGCMD(RARG_FLRCL_MU, 	"RCF\034")
+	RARGCMD(RARG_FLRCL_DV, 	"RCF/")
+	RARGCMD(RARG_FLRCL_MIN,	"RCF\017")
+	RARGCMD(RARG_FLRCL_MAX, "RCF\020")
+	RARGCMD(RARG_FLCRCL, 	"\024RCF")
+	RARGCMD(RARG_FLCRCL_PL,	"\024RCF+")
+	RARGCMD(RARG_FLCRCL_MI,	"\024RCF-")
+	RARGCMD(RARG_FLCRCL_MU, "\024RCF\034")
+	RARGCMD(RARG_FLCRCL_DV,	"\024RCF/")
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
@@ -707,11 +719,15 @@ static int compare_cat(const void *v1, const void *v2) {
 	int u1[16], u2[16];
 	const char *p1, *p2;
 	int i;
+	int p1c = 0, p2c = 0;
 
 	for (i=0; i<16; i++)
 		b1[i] = b2[i] = 0;
 	p1 = prt(c1, b1);
 	p2 = prt(c2, b2);
+
+	if (*p1 == COMPLEX_PREFIX) { p1++; p1c = 1; }
+	if (*p2 == COMPLEX_PREFIX) { p2++; p2c = 1; }
 
 	unpack(p1, u1);
 	unpack(p2, u2);
@@ -719,8 +735,10 @@ static int compare_cat(const void *v1, const void *v2) {
 	for (i=0; i<16; i++) {
 		if (u1[i] < u2[i]) return -1;
 		else if (u1[i] > u2[i]) return 1;
-		else if (u1[i] == -1) return 0;
+		else if (u1[i] == -1) break;
 	}
+	if (p1c) return 1;
+	if (p2c) return -1;
 	return 0;
 }
 
