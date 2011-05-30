@@ -72,6 +72,11 @@ enum multiops;
 typedef unsigned int opcode;
 typedef unsigned short int s_opcode;
 
+#if defined(REALBUILD) && !defined(COMPILE_CATALOGUES)
+#pragma pack(push)
+#pragma pack(2)
+#endif
+
 /* Table of monadic functions */
 struct monfunc {
 #ifdef DEBUG
@@ -118,7 +123,7 @@ struct niladic {
 	unsigned short n;
 #endif
 	void (*niladicf)(decimal64 *, decimal64 *, decContext *);
-	unsigned int numresults : 2;
+	unsigned char numresults;
 	const char nname[NAME_LEN];
 };
 extern const struct niladic niladics[];
@@ -131,10 +136,10 @@ struct argcmd {
 	unsigned short n;
 #endif
 	void (*f)(unsigned int, enum rarg);
-	unsigned char lim;
-	unsigned int indirectokay:1;
-	unsigned int stckreg:1;
-	unsigned int cmplx:1;
+	unsigned int lim : 8;
+	unsigned int indirectokay : 1;
+	unsigned int stckreg : 1;
+	unsigned int cmplx : 1;
 	const char cmd[NAME_LEN];
 };
 extern const struct argcmd argcmds[];
@@ -150,6 +155,9 @@ struct multicmd {
 extern const struct multicmd multicmds[];
 extern const unsigned short num_multicmds;
 
+#if defined(REALBUILD) && !defined(COMPILE_CATALOGUES)
+#pragma pack(pop)
+#endif
 
 extern decContext *Ctx, *Ctx64;
 

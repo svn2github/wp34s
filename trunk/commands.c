@@ -26,6 +26,7 @@
 #include "lcd.h"
 #include "storage.h"
 
+
 /* Define our table of monadic functions.
  * These must be in the same order as the monadic function enum but we'll
  * validate this only if debugging is enabled.
@@ -638,3 +639,6 @@ const struct multicmd multicmds[] = {
 };
 const unsigned short num_multicmds = sizeof(multicmds) / sizeof(struct multicmd);
 
+#if defined(REALBUILD) && !defined(COMPILE_CATALOGUES)
+#pragma pack(4)
+#endif

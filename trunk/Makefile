@@ -90,7 +90,7 @@ ifdef REALBUILD
 # MinGW will do nicely
 
 OUTPUTDIR := realbuild
-CFLAGS := -mthumb -mcpu=arm7tdmi $(OPT_CFLAGS) $(BASE_CFLAGS) 
+CFLAGS := -mthumb -mcpu=arm7tdmi $(OPT_CFLAGS) $(BASE_CFLAGS)
 CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
 HOSTCFLAGS += -DREALBUILD
 ifdef NOWD
