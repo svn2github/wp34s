@@ -468,12 +468,12 @@ static int process_h_shifted(const keycode c) {
 		init_cat(State.intm?CATALOGUE_INT_MODE:CATALOGUE_MODE);
 		break;
 
-	case K10:	init_arg(RARG_VIEW);	break;
-
-	case K11:
+	case K10:
 		State2.labellist = 1;
 		advance_to_next_label(0);
 		break;
+
+	case K11:	init_arg(RARG_VIEW);	break;
 
 	case K12:					// R^
 		return OP_NIL | OP_RUP;
@@ -924,8 +924,6 @@ fkey:		if (oldstate != SHIFT_F)
 	case K10:	// STO
 		if (oldstate == SHIFT_F)
 			init_arg(RARG_ASTO);
-		else if (oldstate == SHIFT_H)
-			return OP_NIL | OP_VIEWALPHA;
 		else
 			break;
 		return STATE_UNFINISHED;
@@ -935,7 +933,7 @@ fkey:		if (oldstate != SHIFT_F)
 			init_arg(RARG_ARCL);
 			return STATE_UNFINISHED;
 		} else if (oldstate == SHIFT_H)
-			return OP_NIL | OP_TIME;
+			return OP_NIL | OP_VIEWALPHA;
 		break;
 
 	case K12:
