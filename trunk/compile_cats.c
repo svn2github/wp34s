@@ -81,9 +81,7 @@ static s_opcode catalogue[] = {
 	NILIC(OP_SETTIME,	"SETTIM")
 	MON(OP_SIGN,		"SIGN")
 	MON(OP_SINC,		"SINC")
-	NILIC(OP_TIME,		"TIME")
 	NILIC(OP_VERSION,	"VERS")
-	RARGCMD(RARG_VIEW,	"VIEW")
 	MON(OP_LAMW,		"W")
 	MON(OP_INVW,		"W\235")
 	DYA(OP_LXNOR,		"XNOR")
@@ -147,6 +145,14 @@ static s_opcode catalogue[] = {
 	DYA(OP_HERMITE_HE,    "HE\275")
 	DYA(OP_HERMITE_H,     "H\275")
 	NILIC(OP_VOLTAGE,     "BATT")
+	RARGCMD(RARG_PSAVE,	"PSTO")
+	RARGCMD(RARG_PLOAD,	"PRCL")
+	RARGCMD(RARG_PSWAP,	"P<>")
+	NILIC(OP_RLOAD,		"RRCL")
+	NILIC(OP_SLOAD,		"SRCL")
+	NILIC(OP_BACKUP,	"SAVE")
+	NILIC(OP_RESTORE,	"LOAD")
+	RARGCMD(RARG_FLRCL, 	"RCF")
 };
 
 static s_opcode cplx_catalogue[] = {
@@ -187,6 +193,7 @@ static s_opcode cplx_catalogue[] = {
 	CDYA(OP_DN,		"DN")
 	CDYA(OP_SN,		"SN")
 #endif
+	RARGCMD(RARG_FLCRCL, 	"\024RCF")
 };
 
 static s_opcode stats_catalogue[] = {
@@ -323,6 +330,14 @@ static s_opcode int_catalogue[] = {
 #ifdef INCLUDE_MULADD
 	TRI(OP_MULADD,		"\034+")
 #endif
+	RARGCMD(RARG_PSAVE,	"PSTO")
+	RARGCMD(RARG_PLOAD,	"PRCL")
+	RARGCMD(RARG_PSWAP,	"P<>")
+	NILIC(OP_RLOAD,		"RRCL")
+	NILIC(OP_SLOAD,		"SRCL")
+	NILIC(OP_BACKUP,	"SAVE")
+	NILIC(OP_RESTORE,	"LOAD")
+	RARGCMD(RARG_FLRCL, 	"RCF")
 };
 
 static s_opcode test_catalogue[] = {
@@ -389,6 +404,7 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_SF,	"SF")
 	NILIC(OP_STOFLAG,	"STOM")
 	NILIC(OP_TICKS,		"TICKS")
+	NILIC(OP_TIME,		"TIME")
 	NILIC(OP_ALPHAOFF,	"\240OFF")
 	NILIC(OP_ALPHAON,	"\240ON")
 	NILIC(OP_OFF,		"OFF")
@@ -400,28 +416,6 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_GTOALPHA,	"GTO\240")
 	RARGCMD(RARG_ALPHAXEQ,	"\240XEQ")
 	RARGCMD(RARG_ALPHAGTO,	"\240GTO")
-};
-
-static s_opcode flash_catalogue[] = {
-	RARGCMD(RARG_PSAVE,	"PSTO")
-	RARGCMD(RARG_PLOAD,	"PRCL")
-	RARGCMD(RARG_PSWAP,	"P<>")
-	NILIC(OP_RLOAD,		"RRCL")
-	NILIC(OP_SLOAD,		"SRCL")
-	NILIC(OP_BACKUP,	"SAVE")
-	NILIC(OP_RESTORE,	"LOAD")
-	RARGCMD(RARG_FLRCL, 	"RCF")
-	RARGCMD(RARG_FLRCL_PL, 	"RCF+")
-	RARGCMD(RARG_FLRCL_MI, 	"RCF-")
-	RARGCMD(RARG_FLRCL_MU, 	"RCF\034")
-	RARGCMD(RARG_FLRCL_DV, 	"RCF/")
-	RARGCMD(RARG_FLRCL_MIN,	"RCF\017")
-	RARGCMD(RARG_FLRCL_MAX, "RCF\020")
-	RARGCMD(RARG_FLCRCL, 	"\024RCF")
-	RARGCMD(RARG_FLCRCL_PL,	"\024RCF+")
-	RARGCMD(RARG_FLCRCL_MI,	"\024RCF-")
-	RARGCMD(RARG_FLCRCL_MU, "\024RCF\034")
-	RARGCMD(RARG_FLCRCL_DV,	"\024RCF/")
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
@@ -499,7 +493,6 @@ static s_opcode alpha_catalogue[] = {
 	RARGCMD(RARG_ALSL,	"\240SL")
 	RARGCMD(RARG_ALSR,	"\240SR")
 	NILIC(OP_ALPHATIME,	"\240TIME")
-	NILIC(OP_VIEWALPHA,	"\240VIEW")
 	NILIC(OP_VERSION,	"VERS")
 };
 
@@ -803,7 +796,6 @@ int main(int argc, char *argv[]) {
 	CAT(int_mode_catalogue);
 	CAT(alpha_catalogue);
 	CAT(conv_catalogue);
-	CAT(flash_catalogue);
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CAT(internal_catalogue);
 #endif

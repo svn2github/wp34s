@@ -3563,7 +3563,6 @@ int init_34s(void)
 	check_cat(CATALOGUE_ALPHA_COMPARES, "alpha compares");
 	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");
 	check_cat(CATALOGUE_CONV, "conversion");
-	check_cat(CATALOGUE_FLASH, "flash");
 	check_cat(CATALOGUE_NORMAL, "float");
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	check_cat(CATALOGUE_INTERNAL, "internal");

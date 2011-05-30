@@ -374,7 +374,6 @@ int main(int argc, char *argv[]) {
 			dump_menu("modes", "", CATALOGUE_MODE);
 			dump_menu("test", "", CATALOGUE_TEST);
 			dump_menu("conversions", "", CATALOGUE_CONV);
-			dump_menu("flash", "", CATALOGUE_FLASH);
 			dump_menu("constants", "# ", CATALOGUE_CONST);
 			dump_menu("complex constants", "[cmplx]# ", CATALOGUE_COMPLEX_CONST);
 #ifdef INCLUDE_INTERNAL_CATALOGUE

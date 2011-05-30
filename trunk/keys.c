@@ -468,11 +468,7 @@ static int process_h_shifted(const keycode c) {
 		init_cat(State.intm?CATALOGUE_INT_MODE:CATALOGUE_MODE);
 		break;
 
-//	case K10:	init_arg(RARG_VIEW);	break;
-//	case K11:	return OP_NIL | OP_TIME;
-	case K10:
-		init_cat(CATALOGUE_FLASH);
-		break;
+	case K10:	init_arg(RARG_VIEW);	break;
 
 	case K11:
 		State2.labellist = 1;
@@ -928,8 +924,8 @@ fkey:		if (oldstate != SHIFT_F)
 	case K10:	// STO
 		if (oldstate == SHIFT_F)
 			init_arg(RARG_ASTO);
-//		else if (oldstate == SHIFT_H)
-//			return OP_NIL | OP_VIEWALPHA;
+		else if (oldstate == SHIFT_H)
+			return OP_NIL | OP_VIEWALPHA;
 		else
 			break;
 		return STATE_UNFINISHED;
@@ -1105,19 +1101,22 @@ static int arg_fkey(int n) {
 	return STATE_UNFINISHED;
 }
 
+static int arg_storcl_check(const unsigned int b, const int cmplx) {
+	return (b == RARG_STO || b == RARG_RCL || b == RARG_FLRCL ||
+			(cmplx && (b == RARG_CSTO || b == RARG_CRCL || b == RARG_FLCRCL)));
+}
+
 static int arg_storcl(const unsigned int n, int cmplx) {
 	unsigned int b = State.base;
 
-	if (b == RARG_STO || b == RARG_RCL ||
-			(cmplx && (b == RARG_CSTO || b == RARG_CRCL))) {
+	if (arg_storcl_check(b, cmplx)) {
 		State.base += n;
 		return 1;
 	}
 	/* And we can turn off the operation too */
 	if (b >= n) {
 		b -= n;
-		if (b == RARG_STO || b == RARG_RCL ||
-				(cmplx && (b == RARG_CSTO || b == RARG_CRCL))) {
+		if (arg_storcl_check(b, cmplx)) {
 			State.base = b;
 			return 1;
 		}
@@ -1451,7 +1450,6 @@ int current_catalogue_max(void) {
 		NUM_CONSTS,
 		NUM_CONSTS,
 		sizeof(conv_catalogue) / sizeof(const s_opcode),
-		sizeof(flash_catalogue) / sizeof(const s_opcode),
 		sizeof(int_mode_catalogue) / sizeof(const s_opcode),
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		sizeof(internal_catalogue) / sizeof(const s_opcode),
@@ -1521,9 +1519,6 @@ opcode current_catalogue(int n) {
 
 	case CATALOGUE_INT_MODE:
 		return int_mode_catalogue[n];
-
-	case CATALOGUE_FLASH:
-		return flash_catalogue[n];
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	case CATALOGUE_INTERNAL:
