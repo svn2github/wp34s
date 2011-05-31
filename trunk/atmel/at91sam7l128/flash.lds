@@ -49,10 +49,17 @@ MEMORY
     flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 0x1000 - 12
     revision (R) :      ORIGIN = 0x11eff4, LENGTH = 12
     userflash (R) :     ORIGIN = 0x11f000, LENGTH = 0x1000
+    
+    cmdtab (R) :        ORIGIN = 0x0f0000, LENGTH = 0x10000
 }
 
 SECTIONS
-{  
+{
+    .cmdtab :
+    {
+    	*(.cmdtab)
+    } >cmdtab 
+      
     .fixed : 
     {
         . = ALIGN(4);

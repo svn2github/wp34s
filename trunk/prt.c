@@ -29,19 +29,19 @@ static const char *make_complex(const char *str, char *instr) {
 }
 
 static const char *prt_monadic(const unsigned int f, char *instr) {
-	if (f < num_monfuncs && (monfuncs[f].mondreal != NULL || monfuncs[f].monint != NULL))
+	if (f < num_monfuncs && (monfuncs[f].mondreal != FNULL || monfuncs[f].monint != FNULL))
 		return sncopy(instr, monfuncs[f].fname, NAME_LEN);
 	return "???";
 }
 
 static const char *prt_dyadic(const unsigned int f, char *instr) {
-	if (f < num_dyfuncs && (dyfuncs[f].dydreal != NULL || dyfuncs[f].dydint != NULL))
+	if (f < num_dyfuncs && (dyfuncs[f].dydreal != FNULL || dyfuncs[f].dydint != FNULL))
 		return sncopy(instr, dyfuncs[f].fname, NAME_LEN);
 	return "???";
 }
 
 static const char *prt_triadic(const unsigned int f, char *instr) {
-	if (f < num_trifuncs && (trifuncs[f].trireal != NULL || trifuncs[f].triint != NULL))
+	if (f < num_trifuncs && (trifuncs[f].trireal != FNULL || trifuncs[f].triint != FNULL))
 		return sncopy(instr, trifuncs[f].fname, NAME_LEN);
 	return "???";
 }
@@ -49,8 +49,8 @@ static const char *prt_triadic(const unsigned int f, char *instr) {
 static const char *prt_monadic_cmplx(const unsigned int f, char *instr) {
 	char buf[NAME_LEN + 1];
 
-	if (f < num_monfuncs && monfuncs[f].fname != NULL && monfuncs[f].mondcmplx != NULL) {
-		if (monfuncs[f].mondreal == NULL)
+	if (f < num_monfuncs && monfuncs[f].fname != FNULL && monfuncs[f].mondcmplx != FNULL) {
+		if (monfuncs[f].mondreal == FNULL)
 			return monfuncs[f].fname;
 		
 		return make_complex(sncopy(buf, monfuncs[f].fname, NAME_LEN), instr);
@@ -61,8 +61,8 @@ static const char *prt_monadic_cmplx(const unsigned int f, char *instr) {
 static const char *prt_dyadic_cmplx(const unsigned int f, char *instr) {
 	char buf[NAME_LEN + 1];
 
-	if (f < num_dyfuncs && dyfuncs[f].fname != NULL && dyfuncs[f].dydcmplx != NULL) {
-		if (dyfuncs[f].dydreal == NULL)
+	if (f < num_dyfuncs && dyfuncs[f].fname != FNULL && dyfuncs[f].dydcmplx != FNULL) {
+		if (dyfuncs[f].dydreal == FNULL)
 			return dyfuncs[f].fname;
 		return make_complex(sncopy(buf, dyfuncs[f].fname, NAME_LEN), instr);
 	}
@@ -129,7 +129,6 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 	case OP_Zeq1:	case OP_Zne1:
 	//case OP_Zapx1:
 		xset(buf, '\0', sizeof(buf));
-		return prt_tst("1", (enum tst_op)(opm - OP_Zeq1), instr, 1);
 	}
 	return "???";
 }
