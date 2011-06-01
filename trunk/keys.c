@@ -1922,7 +1922,13 @@ static int process(const int c) {
 	 * if required.
 	 */
 	if (c == K60 && s == SHIFT_N && ! State2.catalogue) {
-		init_state();
+		if (CmdLineLength) {
+			CmdLineLength = 0;
+			CmdLineEex = 0;
+			CmdLineDot = 0;
+		}
+		else
+			init_state();
 		return STATE_UNFINISHED;
 	}
 	if ( c == K63 && JustStopped ) {
