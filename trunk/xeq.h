@@ -83,8 +83,8 @@ typedef unsigned short int s_opcode;
  *  Pointers are offset to zero and shifted to the right to fit in a short
  *  This macro reverses the operation.
  */
-#define CALL(f) (*((void (*)())(0x100000 | ( f << 1 ))))
-#define ICALL(f) (*((long long (*)())(0x100000 | ( f << 1 ))))
+#define CALL(f) (*((void (*)())(0x100001 | ( f << 1 ))))
+#define ICALL(f) (*((long long (*)())(0x100001 | ( f << 1 ))))
 #define FNULL 0
 #ifdef POST_PROCESSING
 #define _CONST /**/
