@@ -386,31 +386,31 @@ int main(int argc, char *argv[]) {
 			n += dumpop(c, argc > 2);
 		}
 		printf("total number of opcodes %d\n", n);
-		printf("\tniladic commands %d\n", num_niladics);
+		printf("\tniladic commands %d\n", NUM_NILADIC);
 
 		for (n=c=0; c<num_monfuncs; c++) {
 			if (monfuncs[c].mondreal != NULL) n++;
 			if (monfuncs[c].mondcmplx != NULL) n++;
 			if (monfuncs[c].monint != NULL) n++;
 		}
-		printf("\tmonadic commands %d with %d functions\n", num_monfuncs, n);
+		printf("\tmonadic commands %d with %d functions\n", NUM_MONADIC, n);
 
 		for (n=c=0; c<num_dyfuncs; c++) {
 			if (dyfuncs[c].dydreal != NULL) n++;
 			if (dyfuncs[c].dydcmplx != NULL) n++;
 			if (dyfuncs[c].dydint != NULL) n++;
 		}
-		printf("\tdyadic commands %d with %d functions\n", num_dyfuncs, n);
+		printf("\tdyadic commands %d with %d functions\n", NUM_DYADIC, n);
 
 		for (n=c=0; c<num_trifuncs; c++) {
 			if (trifuncs[c].trireal != NULL) n++;
 			if (trifuncs[c].triint != NULL) n++;
 		}
-		printf("\ttriadic commands %d with %d functions\n", num_trifuncs, n);
+		printf("\ttriadic commands %d with %d functions\n", NUM_TRIADIC, n);
 
-		printf("\targument commands %d\n", num_argcmds);
-		printf("\tmultiword commands %d\n", num_multicmds);
-		printf("\tspecial commands %d\n", SPECIAL_MAX);
+		printf("\targument commands %d\n", NUM_RARG);
+		printf("\tmultiword commands %d\n", NUM_MULTI);
+		printf("\tspecial commands %d\n", NUM_SPECIAL);
 
 		return 0;
 	}

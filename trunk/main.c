@@ -1320,6 +1320,11 @@ int main(void)
 	char confirm_counter = 0;
 	char last_key_combo = 0;
 
+#ifdef SHORT_POINTERS
+	// Dummy access for optimiser
+	xcopy( (void *) &command_info, &command_info, 0 );
+#endif
+
 	/*
 	 *  Don't let the user wait too long.
 	 *  We go to 10 MHz here as a compromise between power draw

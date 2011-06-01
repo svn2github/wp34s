@@ -72,13 +72,68 @@ enum multiops;
 typedef unsigned int opcode;
 typedef unsigned short int s_opcode;
 
-#if defined(REALBUILD) && !defined(COMPILE_CATALOGUES)
+#if (defined(REALBUILD) || defined(POST_PROCESSING)) && !defined(COMPILE_CATALOGUES)
 #pragma pack(push)
 #pragma pack(2)
+#define SHORT_POINTERS
+#endif
+
+#ifdef SHORT_POINTERS
+/*
+ *  Pointers are offset to zero and shifted to the right to fit in a short
+ *  This macro reverses the operation.
+ */
+#define CALL(f) (*((void (*)())(0x100000 | ( f << 1 ))))
+#define ICALL(f) (*((long long (*)())(0x100000 | ( f << 1 ))))
+#define FNULL 0
+#ifdef POST_PROCESSING
+#define _CONST /**/
+#else
+#define _CONST const
+#endif
+extern _CONST struct _command_info {
+	_CONST struct monfunc *p_monfuncs;
+	_CONST struct monfunc_cmdtab *p_monfuncs_ct;
+	_CONST struct dyfunc *p_dyfuncs;
+	_CONST struct dyfunc_cmdtab *p_dyfuncs_ct;
+	_CONST struct trifunc *p_trifuncs;
+	_CONST struct trifunc_cmdtab *p_trifuncs_ct;
+	_CONST struct niladic *p_niladics;
+	_CONST struct niladic_cmdtab *p_niladics_ct;
+	_CONST struct argcmd *p_argcmds;
+	_CONST struct argcmd_cmdtab *p_argcmds_ct;
+	_CONST struct multicmd *p_multicmds;
+	_CONST struct multicmd_cmdtab *p_multicmds_ct;
+} command_info;
+#else
+#define CALL(f) (*f)
+#define ICALL(f) (*f)
+#define FNULL NULL
 #endif
 
 /* Table of monadic functions */
-struct monfunc {
+#ifdef SHORT_POINTERS
+/*
+ *  Define a shorter version of the structure.
+ *  Will be filled by post-processor.
+ */
+struct monfunc
+{
+	unsigned short mondreal, mondcmplx, monint;
+	_CONST char fname[NAME_LEN];
+};
+
+/*
+ *  The full version goes to the .cmdtab segment
+ */
+struct monfunc_cmdtab
+#else
+/*
+ *  No tricks version
+ */
+struct monfunc
+#endif
+{
 #ifdef DEBUG
 	unsigned short n;
 #endif
@@ -91,7 +146,28 @@ extern const struct monfunc monfuncs[];
 extern const unsigned short num_monfuncs;
 
 /* Table of dyadic functions */
-struct dyfunc {
+#ifdef SHORT_POINTERS
+/*
+ *  Define a shorter version of the structure.
+ *  Will be filled by post-processor.
+ */
+struct dyfunc
+{
+	unsigned short dydreal, dydcmplx, dydint;
+	_CONST char fname[NAME_LEN];
+};
+
+/*
+ *  The full version goes to the .cmdtab segment
+ */
+struct dyfunc_cmdtab
+#else
+/*
+ *  No tricks version
+ */
+struct dyfunc
+#endif
+{
 #ifdef DEBUG
 	unsigned short n;
 #endif
@@ -105,7 +181,28 @@ extern const struct dyfunc dyfuncs[];
 extern const unsigned short num_dyfuncs;
 
 /* Table of triadic functions */
-struct trifunc {
+#ifdef SHORT_POINTERS
+/*
+ *  Define a shorter version of the structure.
+ *  Will be filled by post-processor.
+ */
+struct trifunc
+{
+	unsigned short trireal, triint;
+	_CONST char fname[NAME_LEN];
+};
+
+/*
+ *  The full version goes to the .cmdtab segment
+ */
+struct trifunc_cmdtab
+#else
+/*
+ *  No tricks version
+ */
+struct trifunc
+#endif
+{
 #ifdef DEBUG
 	unsigned short n;
 #endif
@@ -118,7 +215,29 @@ extern const unsigned short num_trifuncs;
 
 
 /* Table of niladic functions */
-struct niladic {
+#ifdef SHORT_POINTERS
+/*
+ *  Define a shorter version of the structure.
+ *  Will be filled by post-processor.
+ */
+struct niladic
+{
+	unsigned short niladicf;
+	unsigned char numresults;
+	_CONST char nname[NAME_LEN];
+};
+
+/*
+ *  The full version goes to the .cmdtab segment
+ */
+struct niladic_cmdtab
+#else
+/*
+ *  No tricks version
+ */
+struct niladic
+#endif
+{
 #ifdef DEBUG
 	unsigned short n;
 #endif
@@ -131,7 +250,32 @@ extern const unsigned short num_niladics;
 
 
 /* Table of argument taking commands */
-struct argcmd {
+#ifdef SHORT_POINTERS
+/*
+ *  Define a shorter version of the structure.
+ *  Will be filled by post-processor.
+ */
+struct argcmd
+{
+	unsigned short f;
+	unsigned int lim : 8;
+	unsigned int indirectokay : 1;
+	unsigned int stckreg : 1;
+	unsigned int cmplx : 1;
+	_CONST char cmd[NAME_LEN];
+};
+
+/*
+ *  The full version goes to the .cmdtab segment
+ */
+struct argcmd_cmdtab
+#else
+/*
+ *  No tricks version
+ */
+struct argcmd
+#endif
+{
 #ifdef DEBUG
 	unsigned short n;
 #endif
@@ -145,7 +289,28 @@ struct argcmd {
 extern const struct argcmd argcmds[];
 extern const unsigned short num_argcmds;
 
-struct multicmd {
+#ifdef SHORT_POINTERS
+/*
+ *  Define a shorter version of the structure.
+ *  Will be filled by post-processor.
+ */
+struct multicmd
+{
+	unsigned short f;
+	_CONST char cmd[NAME_LEN];
+};
+
+/*
+ *  The full version goes to the .cmdtab segment
+ */
+struct multicmd_cmdtab
+#else
+/*
+ *  No tricks version
+ */
+struct multicmd
+#endif
+{
 #ifdef DEBUG
 	unsigned short n;
 #endif
@@ -266,7 +431,7 @@ enum eKind {
 #define OP_DYA	(KIND_DYA << KIND_SHIFT)		/* Dyadic operations */
 #define OP_TRI	(KIND_TRI << KIND_SHIFT)		/* Dyadic operations */
 #define OP_CMON	(KIND_CMON << KIND_SHIFT)		/* Complex Monadic operation */
-#define OP_CDYA	(KIND_CDYA << KIND_SHIFT)		/* Complex Dyadic operaion */
+#define OP_CDYA	(KIND_CDYA << KIND_SHIFT)		/* Complex Dyadic operation */
 
 #define OP_DBL	0x1000			/* Double sized instructions */
 
@@ -371,6 +536,7 @@ enum {
 #ifdef INCLUDE_FACTOR
         OP_FACTOR,
 #endif
+        NUM_MONADIC     // Last entry defines number of operations
 };
     
 // Dyadic functions
@@ -405,6 +571,7 @@ enum {
 	OP_LAGUERRE,
 	OP_HERMITE_HE,
 	OP_HERMITE_H,
+        NUM_DYADIC     // Last entry defines number of operations
 };
 
 // Triadic functions
@@ -416,6 +583,7 @@ enum {
 #endif
 	OP_PERMRR,
 	OP_GEN_LAGUERRE,
+        NUM_TRIADIC     // Last entry defines number of operations
 };  
 
 // Niladic functions
@@ -470,6 +638,7 @@ enum {
 	OP_QUAD,
 	OP_XEQALPHA, OP_GTOALPHA,
         OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
+        NUM_NILADIC     // Last entry defines number of operations
 };
 
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
@@ -535,6 +704,7 @@ enum rarg {
 	RARG_FLRCL, RARG_FLRCL_PL, RARG_FLRCL_MI, RARG_FLRCL_MU, RARG_FLRCL_DV,
 			RARG_FLRCL_MIN, RARG_FLRCL_MAX,
 	RARG_FLCRCL, RARG_FLCRCL_PL, RARG_FLCRCL_MI, RARG_FLCRCL_MU, RARG_FLCRCL_DV,
+        NUM_RARG     // Last entry defines number of operations
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
@@ -550,7 +720,7 @@ enum specials {
 	OP_Xeq1, OP_Xne1, OP_Xapx1, OP_Xlt1, OP_Xgt1, OP_Xle1, OP_Xge1,
 	OP_Zeq0, OP_Zne0, OP_Zapx0,
 	OP_Zeq1, OP_Zne1, OP_Zapx1,
-	SPECIAL_MAX
+	NUM_SPECIAL
 };
 
 // Double sized instructions
@@ -562,6 +732,7 @@ enum multiops {
 	DBL_ALPHA,
 #endif
 	//DBL_NUMBER,
+        NUM_MULTI     // Last entry defines number of operations
 };
 
 

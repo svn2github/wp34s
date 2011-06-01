@@ -14,6 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if COMMANDS_PASS != 2
 #include "xeq.h"
 #include "decn.h"
 #include "complex.h"
@@ -25,20 +26,61 @@
 #include "alpha.h"
 #include "lcd.h"
 #include "storage.h"
+#endif
 
+#ifdef SHORT_POINTERS
+#ifndef COMMANDS_PASS
+#define COMMANDS_PASS 1
+#else
+/*
+ *  This is pass 2 of the compile.
+ *
+ *  Create a dummy segment and store the full blown tables there
+ */
+#define CMDTAB __attribute__((section(".cmdtab"),used))
+
+/*
+ *  Help the post-processor to find the data in the flash image
+ */
+extern const struct monfunc_cmdtab monfuncs_ct[];
+extern const struct dyfunc_cmdtab dyfuncs_ct[];
+extern const struct trifunc_cmdtab trifuncs_ct[];
+extern const struct niladic_cmdtab niladics_ct[];
+extern const struct argcmd_cmdtab argcmds_ct[];
+extern const struct multicmd_cmdtab multicmds_ct[];
+
+CMDTAB __attribute__((externally_visible))
+const struct _command_info command_info = {
+	monfuncs,  monfuncs_ct,
+	dyfuncs,   dyfuncs_ct,
+	trifuncs,  trifuncs_ct,
+	niladics,  niladics_ct,
+	argcmds,   argcmds_ct,
+	multicmds, multicmds_ct,
+};
+
+#endif
+#endif
 
 /* Define our table of monadic functions.
  * These must be in the same order as the monadic function enum but we'll
  * validate this only if debugging is enabled.
  */
-const struct monfunc monfuncs[] = {
 #ifdef COMPILE_CATALOGUES
 #define PTR	((void *)1)
 #define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
 #elif DEBUG
 #define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
+#elif COMMANDS_PASS == 1
+#define FUNC(name, d, c, i, fn) { 0xaa55, 0x55aa, 0xa55a, fn },
 #else
 #define FUNC(name, d, c, i, fn) { d, c, i, fn },
+#endif
+
+#if COMMANDS_PASS == 2
+CMDTAB const struct monfunc_cmdtab monfuncs_ct[ NUM_MONADIC ] = {
+#else
+const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #endif
 	FUNC(OP_FRAC,	&decNumberFrac,		&cmplxFrac,	&intFP,		"FP")
 	FUNC(OP_FLOOR,	&decNumberFloor,	NULL,		&intIP,		"FLOOR")
@@ -181,22 +223,31 @@ const struct monfunc monfuncs[] = {
 #endif
 #undef FUNC
 };
+#if COMMANDS_PASS != 2
 const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
+#endif
 
 
 /* Define our table of dyadic functions.
  * These must be in the same order as the dyadic function enum but we'll
  * validate this only if debugging is enabled.
  */
-const struct dyfunc dyfuncs[] = {
 #ifdef COMPILE_CATALOGUES
+#define PTR	((void *)1)
 #define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
 #elif DEBUG
 #define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
+#elif COMMANDS_PASS == 1
+#define FUNC(name, d, c, i, fn) { 0xaa55, 0x55aa, 0xa55a, fn },
 #else
 #define FUNC(name, d, c, i, fn) { d, c, i, fn },
 #endif
 
+#if COMMANDS_PASS == 2
+CMDTAB const struct dyfunc_cmdtab dyfuncs_ct[ NUM_DYADIC ] = {
+#else
+const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
+#endif
 	FUNC(OP_POW,	&decNumberPower,	&cmplxPower,	&intPower,	"y\234")
 	FUNC(OP_ADD,	&decNumberAdd,		&cmplxAdd,	&intAdd,	"+")
 	FUNC(OP_SUB,	&decNumberSubtract,	&cmplxSubtract,	&intSubtract,	"-")
@@ -255,20 +306,29 @@ const struct dyfunc dyfuncs[] = {
 	FUNC(OP_HERMITE_H,	&decNumberPolyHn,	NULL,	NULL,		"H\275\276")
 #undef FUNC
 };
+#if COMMANDS_PASS != 2
 const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
-
+#endif
 
 /* Define our table of triadic functions.
  * These must be in the same order as the triadic function enum but we'll
  * validate this only if debugging is enabled.
  */
-const struct trifunc trifuncs[] = {
 #ifdef COMPILE_CATALOGUES
+#define PTR	((void *)1)
 #define FUNC(name, d, i, fn) { PTR, PTR, fn },
 #elif DEBUG
 #define FUNC(name, d, i, fn) { name, d, i, fn },
+#elif COMMANDS_PASS == 1
+#define FUNC(name, d, i, fn) { 0xaa55, 0xa55a, fn },
 #else
 #define FUNC(name, d, i, fn) { d, i, fn },
+#endif
+
+#if COMMANDS_PASS == 2
+CMDTAB const struct trifunc_cmdtab trifuncs_ct[ NUM_TRIADIC ] = {
+#else
+const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #endif
 	FUNC(OP_BETAI,		&betai,		NULL,		"I\241")
 	FUNC(OP_DBL_DIV, 	NULL,		&intDblDiv,	"DBL/")
@@ -280,10 +340,12 @@ const struct trifunc trifuncs[] = {
         FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha, NULL,    "L\275\240")
 #undef FUNC
 };
+
+#if COMMANDS_PASS != 2
 const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
+#endif
 
 
-const struct niladic niladics[] = {
 #ifdef COMPILE_CATALOGUES
 #define FUNC0(name, d, fn) { PTR, 0, fn },
 #define FUNC1(name, d, fn) { PTR, 1, fn },
@@ -292,10 +354,20 @@ const struct niladic niladics[] = {
 #define FUNC0(name, d, fn) { name, d, 0, fn },
 #define FUNC1(name, d, fn) { name, d, 1, fn },
 #define FUNC2(name, d, fn) { name, d, 2, fn },
+#elif COMMANDS_PASS == 1
+#define FUNC0(name, d, fn) { 0xaa55, 0, fn },
+#define FUNC1(name, d, fn) { 0xaa55, 1, fn },
+#define FUNC2(name, d, fn) { 0xaa55, 2, fn },
 #else
 #define FUNC0(name, d, fn) { d, 0, fn },
 #define FUNC1(name, d, fn) { d, 1, fn },
 #define FUNC2(name, d, fn) { d, 2, fn },
+#endif
+
+#if COMMANDS_PASS == 2
+CMDTAB const struct niladic_cmdtab niladics_ct[ NUM_NILADIC ] = {
+#else
+const struct niladic niladics[ NUM_NILADIC ] = {
 #endif
 	FUNC0(OP_NOP,		NULL,			"NOP")
 	FUNC0(OP_VERSION,	&version,		"VERS")
@@ -456,15 +528,20 @@ const struct niladic niladics[] = {
 #undef FUNC2
 };
 
+#if COMMANDS_PASS != 2
 const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
+#endif
 
-const struct argcmd argcmds[] = {
+
 #ifdef COMPILE_CATALOGUES
 #define allCMD(name, func, limit, nm, ind, stk, cpx)					\
 	{ PTR, limit, ind, stk, cpx, nm },
 #elif DEBUG
 #define allCMD(name, func, limit, nm, ind, stk, cpx)					\
 	{ name, func, limit, ind, stk, cpx, nm },
+#elif COMMANDS_PASS == 1
+#define allCMD(name, func, limit, nm, ind, stk, cpx)					\
+	{ 0xaa55, limit, ind, stk, cpx, nm },
 #else
 #define allCMD(name, func, limit, nm, ind, stk, cpx)					\
 	{ func, limit, ind, stk, cpx, nm },
@@ -473,6 +550,12 @@ const struct argcmd argcmds[] = {
 #define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0)
 #define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1)
 #define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0)
+
+#if COMMANDS_PASS == 2
+CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
+#else
+const struct argcmd argcmds[ NUM_RARG ] = {
+#endif
 	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
 	CMDnoI(RARG_CONST_CMPLX,&cmdconstcmplx,	NUM_CONSTS,		"\024CNST")
 	CMD(RARG_CONST_INT,	&cmdconstint,	NUM_CONSTS_INT,		"iC")
@@ -607,19 +690,30 @@ const struct argcmd argcmds[] = {
 #undef CMD
 #undef allCMD
 };
+
+#if COMMANDS_PASS != 2
 const unsigned short num_argcmds = sizeof(argcmds) / sizeof(struct argcmd);
+#endif
 
 
-const struct multicmd multicmds[] = {
 #ifdef COMPILE_CATALOGUES
 #define CMD(name, func, nm)			\
 	{ PTR, nm },
 #elif DEBUG
 #define CMD(name, func, nm)			\
 	{ name, func, nm },
+#elif COMMANDS_PASS == 1
+#define CMD(name, func, nm)			\
+	{ 0xaa55, nm },
 #else
 #define CMD(name, func, nm)			\
 	{ func, nm },
+#endif
+
+#if COMMANDS_PASS == 2
+CMDTAB const struct multicmd_cmdtab multicmds_ct[ NUM_MULTI ] = {
+#else
+const struct multicmd multicmds[ NUM_MULTI ] = {
 #endif
 	CMD(DBL_LBL,	NULL,		"LBL")
 	CMD(DBL_LBLP,	&cmdmultilblp,	"LBL?")
@@ -637,8 +731,19 @@ const struct multicmd multicmds[] = {
 //	CMD(DBL_NUMBER,	NULL,		"#")
 #undef CMD
 };
-const unsigned short num_multicmds = sizeof(multicmds) / sizeof(struct multicmd);
 
-#if defined(REALBUILD) && !defined(COMPILE_CATALOGUES)
-#pragma pack(4)
+#if COMMANDS_PASS != 2
+const unsigned short num_multicmds = sizeof(multicmds) / sizeof(struct multicmd);
+#endif
+
+
+/*
+ *  We need to include the same file a second time with updated #defines.
+ *  This will create the structures in the CMDTAB segment with all pointers filled in.
+ */
+#if COMMANDS_PASS == 1
+#undef COMMANDS_PASS
+#define COMMANDS_PASS 2
+#include "commands.c"
+#undef COMMANDS_PASS
 #endif

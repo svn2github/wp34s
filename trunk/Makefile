@@ -108,6 +108,7 @@ RANLIB := $(CROSS_COMPILE)ranlib
 # SIZE := $(CROSS_COMPILE)size
 # STRIP := $(CROSS_COMPILE)strip
 OBJCOPY := $(CROSS_COMPILE)objcopy
+NM := $(CROSS_COMPILE)nm
 LIBS += -nostdlib -lgcc
 EXE := .exe
 endif
@@ -150,8 +151,7 @@ DNHDRS := $(DNSRCS:%.c=%.h)
 LDCTRL := atmel/at91sam7l128/flash.lds
 MAPFILE := $(OUTPUTDIR)/mapfile.txt
 SUMMARY := $(OUTPUTDIR)/summary.txt
-MAPFILE2 := $(MAPFILE:%.txt=%2.txt)
-SUMMARY2 := $(SUMMARY:%.txt=%2.txt)
+SYMBOLS := $(OUTPUTDIR)/symbols.txt
 LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
 MAIN := $(OBJECTDIR)/main.o
 else
@@ -193,15 +193,19 @@ ifdef REALBUILD
 
 $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNumber.a \
-		$(LDCTRL) Makefile
+		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE)
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber
-	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $@
+	$(NM) -n $(OUTPUTDIR)/calc >$(SYMBOLS)
+	$(NM) -S $(OUTPUTDIR)/calc >>$(SYMBOLS)
+	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.tmp 
+	$(UTILITIES)/post_process$(EXE) $(OUTPUTDIR)/calc.tmp $@
 	@grep "^\.fixed"     $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	@grep "^\.relocate"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.bss"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.slcdcmem"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.userflash" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.cmdtab"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.backup"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@cat $(SUMMARY)
 
@@ -243,6 +247,9 @@ $(UTILITIES)/lcdgen$(EXE): lcdgen.c Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 $(UTILITIES)/genchars7$(EXE): genchars7.c Makefile lcd.h
+	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
+
+$(UTILITIES)/post_process$(EXE): post_process.c Makefile xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 xeq.h: statebits.h

@@ -1193,9 +1193,10 @@ void display(void) {
 			getX(&x);
 			if (opKIND(op) == KIND_MON) {
 				const unsigned int f = argKIND(op);
-				if (f < num_monfuncs && monfuncs[f].mondreal != NULL) {
-					(*monfuncs[f].mondreal)(&r, &x, Ctx);
-				} else
+				if (f < num_monfuncs && monfuncs[f].mondreal != FNULL) {
+					CALL(monfuncs[f].mondreal)(&r, &x, Ctx);
+				}
+				else
 					set_NaN(&r);
 			} else
 				do_conv(&r, op & RARG_MASK, &x, Ctx);
