@@ -18,7 +18,9 @@ TStateWhileOn StateWhileOn;
 const char *pretty(unsigned char z) { return 0; }
 void shutdown( void ) { exit( 0 ); }
 int is_key_pressed(void) { return 0; }
+#ifndef watchdog
 void watchdog(void)  {}
+#endif
 const char *get_revision( void ) { return "test"; }
 int is_real_key_pressed(void) { return 0; }
 int get_key(void) {return 0; }
