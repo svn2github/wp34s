@@ -2151,7 +2151,7 @@ void op_2frac(decimal64 *x, decimal64 *b, decContext *ctx64) {
 	setXY(&d, &n);			// Set numerator and denominator
 	if (State2.runmode) {
 		decNumberDivide(&t, &n, &d, Ctx);
-		decNumberCompare(&n, &t, &z, ctx64);
+		decNumberCompare(&n, &t, &z, Ctx64);
 		if (decNumberIsZero(&n))
 			DispMsg = "y/x =";
 		else if (decNumberIsNegative(&n))
