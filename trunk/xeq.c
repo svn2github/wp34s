@@ -214,13 +214,20 @@ static void error(const char *fmt, ...) {
 #define illegal(op)	do { err(ERR_PROG_BAD); } while (0)
 #endif
 
+/* Pack a number into our DPD register format
+ */
+void packed_from_number(decimal64 *r, const decNumber *x) {
+	decimal64FromNumber(r, x, Ctx64);
+}
+
+
 /* Check if a value is bogus and error out if so.
  */
 static int check_special(const decNumber *x) {
 	decNumber y;
 	decimal64 z;
 
-	decimal64FromNumber(&z, x, Ctx64);
+	packed_from_number(&z, x);
 	decimal64ToNumber(&z, &y);
 
 	if (decNumberIsSpecial(&y)) {
@@ -306,7 +313,7 @@ void setX(const decNumber *x) {
 
 	if (! check_special(x)) {
 		decNumberNormalize(&xn, x, Ctx);
-		decimal64FromNumber(&regX, &xn, Ctx64);
+		packed_from_number(&regX, &xn);
 	}
 }
 
@@ -319,7 +326,7 @@ static void setY(const decNumber *y) {
 
 	if (! check_special(y)) {
 		decNumberNormalize(&yn, y, Ctx);
-		decimal64FromNumber(&regY, &yn, Ctx64);
+		packed_from_number(&regY, &yn);
 	}
 }
 
@@ -785,7 +792,7 @@ void get_reg_n_as_dn(int n, decNumber *x) {
 
 void put_reg_n(int n, const decNumber *x) {
 	if (! check_special(x))
-		decimal64FromNumber(get_reg_n(n), x, Ctx64);
+		packed_from_number(get_reg_n(n), x);
 }
 
 long long int get_reg_n_as_int(int n) {
@@ -816,7 +823,7 @@ void put_int(unsigned long long int val, int sgn, decimal64 *x) {
 		ullint_to_dn(&t, val, Ctx);
 		if (sgn)
 			decNumberMinus(&t, &t, Ctx);
-		decimal64FromNumber(x, &t, Ctx64);
+		packed_from_number(x, &t);
 	}
 }
 
@@ -872,7 +879,7 @@ void d64fromInt(decimal64 *n, const long long int z) {
 	ullint_to_dn(&t, nv, Ctx);
 	if (sgn)
 		decNumberMinus(&t, &t, Ctx);
-	decimal64FromNumber(n, &t, Ctx64);
+	packed_from_number(n, &t);
 #else
 	xcopy(n, &z, sizeof(decimal64));
 #endif
@@ -1186,7 +1193,7 @@ void cmdsto(unsigned int arg, enum rarg op) {
 
 			if (storcl_op(op - RARG_STO, rn, &r, 0))
 				illegal(op);
-			decimal64FromNumber(rn, &r, Ctx64);
+			packed_from_number(rn, &r);
 		}
 	}
 }
@@ -1272,8 +1279,8 @@ void cmdcsto(unsigned int arg, enum rarg op) {
 		else if (storcl_cop(op - RARG_STO, t1, t2, &r1, &r2))
 			illegal(op);
 		else {
-			decimal64FromNumber(t1, &r1, Ctx64);
-			decimal64FromNumber(t2, &r2, Ctx64);
+			packed_from_number(t1, &r1);
+			packed_from_number(t2, &r2);
 		}
 	}
 	set_was_complex();
@@ -1388,7 +1395,7 @@ void op_voltage(decimal64 *a, decimal64 *nul2, decContext *ctx64) {
 	} else {
 		ullint_to_dn(&t, v, Ctx);
 		decNumberMultiply(&u, &t, &const_0_1, Ctx);
-		decimal64FromNumber(a, &u, ctx64);
+		packed_from_number(a, &u);
 	}
 }
 
@@ -2203,7 +2210,7 @@ static void float_mode_convert(decimal64 *r) {
 	ullint_to_dn(&x, v, Ctx);
 	if (s)
 		decNumberMinus(&x, &x, Ctx);
-	decimal64FromNumber(r, &x, Ctx64);
+	packed_from_number(r, &x);
 }
 #endif
 
@@ -2224,7 +2231,7 @@ void op_float(decimal64 *a, decimal64 *b, decContext *nulc) {
 		decNumberPower(&z, &const_2, &x, Ctx);
 		decNumberMultiply(&x, &z, &y, Ctx);
 		set_overflow(decNumberIsInfinite(&x));
-		decimal64FromNumber(&regX, &x, Ctx64);
+		packed_from_number(&regX, &x);
 #else
 		for (i=0; i<stack_size(); i++)
 			float_mode_convert(get_stack(i));
@@ -2787,7 +2794,7 @@ void op_rclflag(decimal64 *x, decimal64 *b, decContext *ctx64) {
 			d64fromInt(x, n);
 	} else {
 		ullint_to_dn(&r, n, Ctx);
-		decimal64FromNumber(x, &r, Ctx);
+		packed_from_number(x, &r);
 	}
 }
 

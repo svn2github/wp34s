@@ -664,7 +664,7 @@ void date_date(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 
 	query_date(&d, &m, &y);
 	build_date(&z, y, m, d, Ctx);
-	decimal64FromNumber(r, &z, ctx64);
+	packed_from_number(r, &z);
 }
 
 void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
@@ -679,7 +679,7 @@ void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	decNumberDivide(&b, &c, &const_100, Ctx);
 	int_to_dn(&a, h, Ctx);
 	decNumberAdd(&c, &b, &a, Ctx);
-	decimal64FromNumber(r, &c, ctx64);
+	packed_from_number(r, &c);
 }
 
 void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {

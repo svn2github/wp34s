@@ -1084,6 +1084,8 @@ extern decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx);
 extern void xrom_tvm(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void xrom_quad(decimal64 *a, decimal64 *b, decContext *nulc);
 
+extern void packed_from_number(decimal64 *r, const decNumber *x);
+
 /* system functions */
 extern void busy(void);
 extern int is_key_pressed(void);

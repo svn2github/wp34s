@@ -127,7 +127,7 @@ static void sigop(decimal64 *r, const decNumber *a, decContext *ctx, decNumber *
 
 	decimal64ToNumber(r, &t);
 	(*op)(&u, &t, a, ctx);
-	decimal64FromNumber(r, &u, Ctx64);
+	packed_from_number(r, &u);
 }
 
 
@@ -139,7 +139,7 @@ static void mulop(decimal64 *r, const decNumber *a, const decNumber *b, decConte
 	decNumberMultiply(&t, a, b, ctx);
 	decimal64ToNumber(r, &v);
 	(*op)(&u, &v, &t, ctx);
-	decimal64FromNumber(r, &u, Ctx64);
+	packed_from_number(r, &u);
 }
 
 
@@ -340,7 +340,7 @@ static void mean_common(decimal64 *res, const decNumber *x, const decNumber *n, 
 	decNumberDivide(&t, x, n, Ctx);
 	if (exp)
 		decNumberExp(p=&u, &t, Ctx);
-	decimal64FromNumber(res, p, Ctx64);
+	packed_from_number(res, p);
 }
 
 void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
@@ -401,7 +401,7 @@ static void do_s(decimal64 *s,
 		decNumberExp(&u, p, Ctx);
 		p = &u;
 	}
-	decimal64FromNumber(s, p, Ctx64);
+	packed_from_number(s, p);
 }
 
 static void S(decimal64 *x, decimal64 *y, int sample, int rootn, int exp) {
@@ -471,7 +471,7 @@ void WS(decimal64 *x, int sample, int rootn) {
 		decNumberSquareRoot(&t, &sy, Ctx);
 		decNumberDivide(p = &v, &u, &t, Ctx);
 	}
-	decimal64FromNumber(x, p, Ctx64);
+	packed_from_number(x, p);
 }
 
 void stats_ws(decimal64 *x, decimal64 *y, decContext *ctx64) {
@@ -534,7 +534,7 @@ void stats_correlation(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	if (check_data(2))
 		return;
 	correlation(&t, State.sigma_mode);
-	decimal64FromNumber(r, &t, ctx64);
+	packed_from_number(r, &t);
 }
 
 
@@ -553,7 +553,7 @@ static void covariance(decimal64 *r, int sample) {
 		decNumberDivide(&u, &t, &v, Ctx);
 	} else
 		decNumberDivide(&u, &t, &N, Ctx);
-	decimal64FromNumber(r, &u, Ctx64);
+	packed_from_number(r, &u);
 }
 
 void stats_COV(decimal64 *r, decimal64 *nul, decContext *ctx64) {
@@ -593,8 +593,8 @@ void stats_LR(decimal64 *bout, decimal64 *aout, decContext *ctx64) {
 	if (check_data(2))
 		return;
 	do_LR(&b, &a, Ctx);
-	decimal64FromNumber(aout, &a, ctx64);
-	decimal64FromNumber(bout, &b, ctx64);
+	packed_from_number(aout, &a);
+	packed_from_number(bout, &b);
 }
 
 
@@ -671,7 +671,7 @@ void stats_random(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	else {
 		ullint_to_dn(&z, s, Ctx);
 		decNumberMultiply(&y, &z, &const_randfac, Ctx);
-		decimal64FromNumber(r, &y, ctx64);
+		packed_from_number(r, &y);
 	}
 }
 

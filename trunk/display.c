@@ -1201,7 +1201,7 @@ void display(void) {
 			} else
 				do_conv(&r, op & RARG_MASK, &x, Ctx);
 			decNumberNormalize(&r, &r, Ctx);
-			decimal64FromNumber(&z, &r, Ctx64);
+			packed_from_number(&z, &r);
 			set_x(&z, NULL);
 			skip = 1;
 		}
