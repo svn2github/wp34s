@@ -21,7 +21,6 @@
 #include "stats.h"
 #include "int.h"
 
-#include <stdio.h>
 // #define DUMP1
 #ifdef DUMP1
 #include <stdio.h>
@@ -527,8 +526,8 @@ decNumber *do_log(decNumber *r, const decNumber *x, const decNumber *base, decCo
  *
  * Take advantage of the fact that we store our numbers in the form: m * 10^e
  * so log(m * 10^e) = log(m) + e * log(10)
- * do this so that m is always in the range 0.1 <= m < 2.
- * (this step is omitted currently)
+ * do this so that m is always in the range 0.1 <= m < 2.  However if the number
+ * is already in the range 0.5 .. 1.5, this step is skipped.
  *
  * Then use the fact that ln(x^2) = 2 * ln(x) to range reduce the mantissa
  * into 0.5 <= m < 2.
@@ -539,7 +538,7 @@ decNumber *do_log(decNumber *r, const decNumber *x, const decNumber *base, decCo
  */
 decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
 	decNumber z, t, f, n, m, i, v, w, e;
-//	int expon;
+	int expon;
 
 	if (decNumberIsSpecial(x)) {
 		if (decNumberIsNaN(x) || decNumberIsNegative(x))
@@ -548,18 +547,22 @@ decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
 	}
 	if (dn_le0(x))
 		return set_NaN(r);
-//	if (decNumberIsZero(decNumberCompare(&t, x, &const_1, ctx)))
-//		return decNumberZero(r);
 	decNumberCopy(&z, x);
 	decNumberCopy(&f, &const_2);
-//	expon = z.exponent + z.digits;
-//	z.exponent = -z.digits;
-	
+	decNumberSubtract(&t, x, &const_1, ctx);
+	decNumberAbs(&v, &t, ctx);
+	if (dn_gt0(decNumberCompare(&t, &v, &const_0_5, ctx))) {
+		expon = z.exponent + z.digits;
+		z.exponent = -z.digits;
+	} else
+		expon = 0;
+
+/* The too high case never happens
 	while (dn_le0(decNumberCompare(&t, &const_2, &z, ctx))) {
 		decNumberMultiply(&f, &f, &const_2, ctx);
 		decNumberSquareRoot(&z, &z, ctx);
 	}
-
+*/
 	while (dn_le0(decNumberCompare(&t, &z, &const_0_5, ctx))) {
 		decNumberMultiply(&f, &f, &const_2, ctx);
 		decNumberSquareRoot(&z, &z, ctx);
@@ -580,14 +583,12 @@ decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
 		decNumberCopy(&v, &w);
 		decNumberAdd(&i, &i, &const_2, ctx);
 	}
-#if 0
-	decNumberMultiply(&t, &f, &v, ctx);
+	decNumberMultiply(r, &f, &v, ctx);
+	if (expon == 0)
+		return r;
 	int_to_dn(&e, expon, ctx);
 	decNumberMultiply(&w, &e, &const_ln10, ctx);
-	return decNumberAdd(r, &t, &w, ctx);
-#else
-	return decNumberMultiply(r, &f, &v, ctx);
-#endif
+	return decNumberAdd(r, r, &w, ctx);
 }
 
 decNumber *decNumberLog2(decNumber *r, const decNumber *x, decContext *ctx) {
