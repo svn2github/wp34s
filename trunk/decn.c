@@ -21,7 +21,7 @@
 #include "stats.h"
 #include "int.h"
 
-
+#include <stdio.h>
 // #define DUMP1
 #ifdef DUMP1
 #include <stdio.h>
@@ -523,27 +523,71 @@ decNumber *do_log(decNumber *r, const decNumber *x, const decNumber *base, decCo
 	return decNumberDivide(r, &y, base, ctx);
 }
 
+/* Natural logarithm.
+ *
+ * Take advantage of the fact that we store our numbers in the form: m * 10^e
+ * so log(m * 10^e) = log(m) + e * log(10)
+ * do this so that m is always in the range 0.1 <= m < 2.
+ * (this step is omitted currently)
+ *
+ * Then use the fact that ln(x^2) = 2 * ln(x) to range reduce the mantissa
+ * into 0.5 <= m < 2.
+ *
+ * Finally, apply the series expansion:
+ *   ln(x) = 2(a+a^3/3+a^5/5+...) where a=(x-1)/(x+1)
+ * which converges quickly for an argument near unity.
+ */
 decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber s, t, rx;
-	int invert;
+	decNumber z, t, f, n, m, i, v, w, e;
+//	int expon;
 
-	decNumberCompare(&t, x, &const_1, ctx);
-	if (decNumberIsZero(&t))
-		return decNumberZero(r);
-	invert = decNumberIsNegative(&t);
-	if (invert) {
-		invert = 1;
-		decNumberRecip(&rx, x, ctx);
-		x = &rx;
+	if (decNumberIsSpecial(x)) {
+		if (decNumberIsNaN(x) || decNumberIsNegative(x))
+			return set_NaN(r);
+		return set_inf(r);
 	}
-	decNumberMultiply(&s, x, &const_2pow60, ctx);
-	decNumberDivide(&t, &const_4, &s, ctx);
-	decNumberAGM(&s, &t, &const_1, ctx);
-	decNumberDivide(&t, &const_PIon2, &s, ctx);
-	decNumberSubtract(r, &t, &const_60ln2, ctx);
-	if (invert)
-		decNumberMinus(r, r, ctx);
-	return r;
+	if (dn_le0(x))
+		return set_NaN(r);
+//	if (decNumberIsZero(decNumberCompare(&t, x, &const_1, ctx)))
+//		return decNumberZero(r);
+	decNumberCopy(&z, x);
+	decNumberCopy(&f, &const_2);
+//	expon = z.exponent + z.digits;
+//	z.exponent = -z.digits;
+	
+	while (dn_le0(decNumberCompare(&t, &const_2, &z, ctx))) {
+		decNumberMultiply(&f, &f, &const_2, ctx);
+		decNumberSquareRoot(&z, &z, ctx);
+	}
+
+	while (dn_le0(decNumberCompare(&t, &z, &const_0_5, ctx))) {
+		decNumberMultiply(&f, &f, &const_2, ctx);
+		decNumberSquareRoot(&z, &z, ctx);
+	}
+	decNumberAdd(&t, &z, &const_1, ctx);
+	decNumberSubtract(&v, &z, &const_1, ctx);
+	decNumberDivide(&n, &v, &t, ctx);
+	decNumberCopy(&v, &n);
+	decNumberSquare(&m, &v, ctx);
+	decNumberCopy(&i, &const_3);
+
+	for (;;) {
+		decNumberMultiply(&n, &m, &n, ctx);
+		decNumberDivide(&e, &n, &i, ctx);
+		decNumberAdd(&w, &v, &e, ctx);
+		if (relative_error(&w, &v, &const_1e_24, ctx))
+			break;
+		decNumberCopy(&v, &w);
+		decNumberAdd(&i, &i, &const_2, ctx);
+	}
+#if 0
+	decNumberMultiply(&t, &f, &v, ctx);
+	int_to_dn(&e, expon, ctx);
+	decNumberMultiply(&w, &e, &const_ln10, ctx);
+	return decNumberAdd(r, &t, &w, ctx);
+#else
+	return decNumberMultiply(r, &f, &v, ctx);
+#endif
 }
 
 decNumber *decNumberLog2(decNumber *r, const decNumber *x, decContext *ctx) {
