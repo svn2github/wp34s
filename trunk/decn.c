@@ -578,12 +578,12 @@ decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
 		decNumberMultiply(&n, &m, &n, ctx);
 		decNumberDivide(&e, &n, &i, ctx);
 		decNumberAdd(&w, &v, &e, ctx);
-		if (relative_error(&w, &v, &const_1e_24, ctx))
+		if (relative_error(&w, &v, &const_1e_32, ctx))
 			break;
 		decNumberCopy(&v, &w);
 		decNumberAdd(&i, &i, &const_2, ctx);
 	}
-	decNumberMultiply(r, &f, &v, ctx);
+	decNumberMultiply(r, &f, &w, ctx);
 	if (expon == 0)
 		return r;
 	int_to_dn(&e, expon, ctx);
