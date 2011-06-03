@@ -530,7 +530,7 @@ decNumber *do_log(decNumber *r, const decNumber *x, const decNumber *base, decCo
  * is already in the range 0.5 .. 1.5, this step is skipped.
  *
  * Then use the fact that ln(x^2) = 2 * ln(x) to range reduce the mantissa
- * into 0.5 <= m < 2.
+ * into 1/sqrt(2) <= m < 2.
  *
  * Finally, apply the series expansion:
  *   ln(x) = 2(a+a^3/3+a^5/5+...) where a=(x-1)/(x+1)
@@ -563,7 +563,10 @@ decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx) {
 		decNumberSquareRoot(&z, &z, ctx);
 	}
 */
-	while (dn_le0(decNumberCompare(&t, &z, &const_0_5, ctx))) {
+	// Range reduce the value by repeated square roots.
+	// Making the constant here larger will reduce the number of later
+	// iterations at the expense of more square root operations.
+	while (dn_le0(decNumberCompare(&t, &z, &const_root2on2, ctx))) {
 		decNumberMultiply(&f, &f, &const_2, ctx);
 		decNumberSquareRoot(&z, &z, ctx);
 	}
