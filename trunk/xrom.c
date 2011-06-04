@@ -86,6 +86,8 @@
 #define FCpC(f)		xRARG(FCC, f)
 #define FCpF(f)		xRARG(FCF, f)
 #define PAUSE(f)	xRARG(PAUSE, f)
+#define SR10(f)		xRARG(SRD, f)
+#define SL10(f)		xRARG(SLD, f)
 
 #define SLVI(f)		xRARG(INISOLVE, f)
 #define SLVS(f)		xRARG(SOLVESTEP, f)
@@ -155,10 +157,6 @@
 #define CFILL		NILADIC(CFILL)
 #define CENTER		NILADIC(CENTER)
 #define DROP		NILADIC(DROP)
-
-// Metric/imperial conversions (repurposed)
-#define MUL100	xCONV(Pa_mbar, 1)
-#define DIV100	xCONV(Pa_mbar, 0)
 
 // Other short cuts
 #define ENTRY		GSB(XROM_CHECK)
@@ -673,7 +671,7 @@ const s_opcode xrom[] = {
 		DIG(2)
 		DIG(5)
 		DIG(2)
-		MUL100			// * 100 = 25200
+		SL10(2)			// * 100 = 25200
 		RCL_MU(H)
 		RCL_MU(H)
 		DIVISION
@@ -717,10 +715,10 @@ const s_opcode xrom[] = {
 		SWAP(E2)		// Six point stimate in E2 & start ten point estimate
 		DIG(2)
 		DIG(1)
-		MUL100			// * 100 = 2100
+		SL10(2)			// * 100 = 2100
 		TIMES
 		DIG(6)
-		MUL100			// * 100 = 600
+		SL10(2)			// * 100 = 600
 		RCL_MU(E1)
 		MINUS
 		DIG(1)
