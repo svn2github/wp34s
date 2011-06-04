@@ -631,6 +631,17 @@ decNumber *decNumberPow_1(decNumber *r, const decNumber *x, decContext *ctx) {
 	return r;
 }
 
+void dn_shift10(int n) {
+	decNumber x;
+
+	getX(&x);
+	setlastX();
+	if (decNumberIsSpecial(&x) || decNumberIsZero(&x))
+		return;
+	x.exponent += n;
+	setX(&x);
+}
+
 decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx) {
 #ifndef TINY_BUILD
 	decNumber s, t, u, v, w;

@@ -80,6 +80,8 @@ static s_opcode catalogue[] = {
 	NILIC(OP_SETTIME,	"SETTIM")
 	MON(OP_SIGN,		"SIGN")
 	MON(OP_SINC,		"SINC")
+	RARGCMD(RARG_SL,	"SL")
+	RARGCMD(RARG_SR,	"SR")
 	NILIC(OP_VERSION,	"VERS")
 	MON(OP_LAMW,		"W")
 	MON(OP_INVW,		"W\235")

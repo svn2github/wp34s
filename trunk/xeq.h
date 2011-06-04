@@ -945,7 +945,8 @@ extern char *num_arg_0(char *, unsigned int, int);	// n digit number, leading ze
 
 extern int is_even(const decNumber *x);
 extern int s_to_i(const char *);
-unsigned long long int s_to_ull(const char *, unsigned int);
+extern unsigned long long int s_to_ull(const char *, unsigned int);
+extern void dn_shift10(int n);
 
 extern void do_conv(decNumber *, unsigned int, const decNumber *, decContext *);
 
