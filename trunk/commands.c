@@ -647,8 +647,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_RR,		&introt,	MAX_WORD_SIZE,		"RR")
 	CMD(RARG_RLC,		&introt,	MAX_WORD_SIZE+1,	"RLC")
 	CMD(RARG_RRC,		&introt,	MAX_WORD_SIZE+1,	"RRC")
-	CMD(RARG_SL,		&introt,	100,			"SL")
-	CMD(RARG_SR,		&introt,	100,			"SR")
+	CMD(RARG_SL,		&introt,	MAX_WORD_SIZE+1,	"SL")
+	CMD(RARG_SR,		&introt,	MAX_WORD_SIZE+1,	"SR")
 	CMD(RARG_ASR,		&introt,	MAX_WORD_SIZE+1,	"ASR")
 	CMD(RARG_SB,		&intbits,	MAX_WORD_SIZE,		"SB")
 	CMD(RARG_CB,		&intbits,	MAX_WORD_SIZE,		"CB")
@@ -685,6 +685,9 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstk(RARG_FLCRCL_MI, &cmdflashcrcl,	NUMREG,			"\024RCF-")
 	CMDcstk(RARG_FLCRCL_MU, &cmdflashcrcl,	NUMREG,			"\024RCF\034")
 	CMDcstk(RARG_FLCRCL_DV, &cmdflashcrcl,	NUMREG,			"\024RCF/")
+
+	CMD(RARG_SLD,		&op_shift_digit,100,			"SLD")
+	CMD(RARG_SRD,		&op_shift_digit,100,			"SRD")
 #undef CMDnoI
 #undef CMDstk
 #undef CMD

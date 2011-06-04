@@ -704,6 +704,8 @@ enum rarg {
 	RARG_FLRCL, RARG_FLRCL_PL, RARG_FLRCL_MI, RARG_FLRCL_MU, RARG_FLRCL_DV,
 			RARG_FLRCL_MIN, RARG_FLRCL_MAX,
 	RARG_FLCRCL, RARG_FLCRCL_PL, RARG_FLCRCL_MI, RARG_FLCRCL_MU, RARG_FLCRCL_DV,
+	RARG_SLD, RARG_SRD,
+
         NUM_RARG     // Last entry defines number of operations
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
@@ -946,7 +948,6 @@ extern char *num_arg_0(char *, unsigned int, int);	// n digit number, leading ze
 extern int is_even(const decNumber *x);
 extern int s_to_i(const char *);
 extern unsigned long long int s_to_ull(const char *, unsigned int);
-extern void dn_shift10(int n);
 
 extern void do_conv(decNumber *, unsigned int, const decNumber *, decContext *);
 
@@ -1074,6 +1075,7 @@ extern void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
 extern void op_ticks(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_voltage(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_keyp(unsigned int arg, enum rarg op);
+extern void op_shift_digit(unsigned int n, enum rarg op);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx);

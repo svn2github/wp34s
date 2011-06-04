@@ -2038,6 +2038,28 @@ void cmdloop(unsigned int arg, enum rarg op) {
 	}
 }
 
+
+/* Shift a real number by 10 to the specified power
+ */
+void op_shift_digit(unsigned int n, enum rarg op) {
+	decNumber x;
+	int adjust = n;
+
+	if (is_intmode()) {
+		err(ERR_BAD_MODE);
+		return;
+	}
+	getX(&x);
+	setlastX();
+	if (decNumberIsSpecial(&x) || decNumberIsZero(&x))
+		return;
+	if (op == RARG_SRD)
+		adjust = -adjust;
+	x.exponent += adjust;
+	setX(&x);
+}
+
+
 /* Return a pointer to the byte with the indicated flag in it.
  * also return a byte with the relevant bit mask set up.
  * Also, handle bank switched flags in xROM code.

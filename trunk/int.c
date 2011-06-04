@@ -981,12 +981,7 @@ void introt(unsigned int arg, enum rarg op) {
 	unsigned int i;
 	
 	if (!is_intmode()) {
-		if (op == RARG_SL)
-			dn_shift10((int)arg);
-		else if (op == RARG_SR)
-			dn_shift10(-(int)arg);
-		else
-			err(ERR_BAD_MODE);
+		err(ERR_BAD_MODE);
 		return;
 	}
 	ws = word_size();
