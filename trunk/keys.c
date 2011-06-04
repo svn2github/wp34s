@@ -380,7 +380,7 @@ static int process_f_shifted(const keycode c) {
 	case K51:	State2.test = TST_EQ;	break;
 	case K52:	init_arg(RARG_SOLVE);	break;
 	case K53:	init_arg(RARG_PROD);	break;
-	case K54:	return OP_MON | OP_PERCHG;
+	case K54:	return OP_MON | OP_PERCNT;
 
 	case K60:
 		init_state();
@@ -440,7 +440,7 @@ static int process_g_shifted(const keycode c) {
 	case K51:	State2.test = TST_NE;	break;
 	case K52:	init_arg(RARG_INTG);	break;
 	case K53:	init_arg(RARG_SUM);	break;
-	case K54:	return OP_MON | OP_PERCNT;
+	case K54:	return OP_MON | OP_PERCHG;
 
 	case K60:       return OP_NIL | OP_OFF;
 	case K61:	return OP_MON | OP_RND;
