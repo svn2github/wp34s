@@ -18,7 +18,7 @@
  * This is the main module for the real hardware
  * Module written by MvC
  */
-__attribute__((section(".revision"),externally_visible)) const char SvnRevision[ 12 ] = "$Rev::     $";
+__attribute__((section(".revision"),externally_visible)) const char SvnRevision[ 16 ] = "$Rev:: 1008    $";
 
 #include "xeq.h"
 #include "display.h"
@@ -1267,6 +1267,10 @@ int is_debug( void )
 void toggle_debug( void )
 {
 	DebugFlag = is_debug() ? 0 : 0xA5;
+#ifdef SLEEP_ANNUNCIATOR
+	SleepAnnunciatorOn = is_debug();
+	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
+#endif
 	message( is_debug() ? "Debug ON" : "Debug OFF", NULL );
 }
 
@@ -1466,7 +1470,7 @@ int main(void)
 
 #ifdef SLEEP_ANNUNCIATOR
 	SleepAnnunciatorOn = 1;
-	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
+	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn && DebugFlag );
 	finish_display();
 #endif
 	/*

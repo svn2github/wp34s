@@ -1127,7 +1127,7 @@ void display(void) {
 		set_digits_string("pAULI WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
 		set_decimal(SEGS_PER_DIGIT * 4, DECIMAL_COMMA, NULL);
-		xcopy( vers + 9, get_revision(), 4 );
+		xcopy( vers + 8, get_revision(), 4 );
 		set_status(vers);
 		goto nostk;
 	} else if (State2.confirm) {
