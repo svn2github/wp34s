@@ -686,8 +686,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstk(RARG_FLCRCL_MU, &cmdflashcrcl,	NUMREG,			"\024RCF\034")
 	CMDcstk(RARG_FLCRCL_DV, &cmdflashcrcl,	NUMREG,			"\024RCF/")
 
-	CMD(RARG_SLD,		&op_shift_digit,100,			"SLD")
-	CMD(RARG_SRD,		&op_shift_digit,100,			"SRD")
+	CMD(RARG_SLD,		&op_shift_digit,100,			"S.L")
+	CMD(RARG_SRD,		&op_shift_digit,100,			"S.R")
 #undef CMDnoI
 #undef CMDstk
 #undef CMD
