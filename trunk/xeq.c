@@ -2134,6 +2134,11 @@ void cmdflag(unsigned int arg, enum rarg op) {
 		*f |= mask;
 	else
 		*f &= ~mask;
+
+	if ( arg == A_FLAG ) {
+		dot( BIG_EQ, flg );
+		finish_display();
+	}
 }
 
 void intws(unsigned int arg, enum rarg op) {

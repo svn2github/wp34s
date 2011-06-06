@@ -62,9 +62,9 @@ enum multiops;
 
 /* Define some system flag to user flag mappings
  */
-#define A_FLAG		100	/* A = ??? */
-#define CARRY_FLAG	102	/* C = carry */
+#define A_FLAG		100	/* A = annunciator */
 #define OVERFLOW_FLAG	101	/* B = excess/exceed */
+#define CARRY_FLAG	102	/* C = carry */
 #define NAN_FLAG	103	/* D = danger */
 
 #define NAME_LEN	6	/* Length of command names */

@@ -1085,6 +1085,7 @@ static void set_annunciators(void)
 	dot(BEG, state_pc() == 0);
 	dot(INPUT, State2.catalogue || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
+	dot(BIG_EQ, get_user_flag(A_FLAG));
 
 	/* Set the trig mode indicator 360 or RAD.  Grad is handled elsewhere.
 	 */
