@@ -718,8 +718,12 @@ static void process_cmdline(void) {
 		xcopy(cmdline, Cmdline, CMDLINELEN + 1);
 
 		cmdline[CmdLineLength] = '\0';
-		if (!is_intmode() && cmdline[CmdLineLength-1] == 'E')
-			cmdline[CmdLineLength-1] = '\0';
+		if (!is_intmode()) {
+			if (cmdline[CmdLineLength-1] == 'E')
+				cmdline[CmdLineLength-1] = '\0';
+			else if (CmdLineLength > 1 && cmdline[CmdLineLength-2] == 'E' && cmdline[CmdLineLength-1] == '-')
+				cmdline[CmdLineLength-2] = '\0';
+		}
 		CmdLineLength = 0;
 		if (State.state_lift)
 			lift();
