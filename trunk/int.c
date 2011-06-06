@@ -1326,6 +1326,7 @@ void intmsks(unsigned int arg, enum rarg op) {
 	long long int x;
 	unsigned int i;
 	long long int (*f)(long long int);
+	const int carry = get_carry();
 
 	lift();
 
@@ -1346,6 +1347,7 @@ void intmsks(unsigned int arg, enum rarg op) {
 		}
 	}
 	d64fromInt(&regX, x);
+	set_carry(carry);
 #endif
 }
 
