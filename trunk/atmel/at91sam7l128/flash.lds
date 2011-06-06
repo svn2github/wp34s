@@ -46,9 +46,9 @@ MEMORY
     flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x1FBFC
     xrom  (R) :         ORIGIN = 0x11FBD0, LENGTH = 0x424
 */
-    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 0x1000 - 0x10
-    revision (R) :      ORIGIN = 0x11eff0, LENGTH = 0x10
-    userflash (R) :     ORIGIN = 0x11f000, LENGTH = 0x1000
+    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 0x1400 - 0x10
+    revision (R) :      ORIGIN = 0x11ebf0, LENGTH = 0x10
+    userflash (R) :     ORIGIN = 0x11ec00, LENGTH = 0x1400
     
     cmdtab (R) :        ORIGIN = 0x0f0000, LENGTH = 0x10000
 }

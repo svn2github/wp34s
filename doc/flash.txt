@@ -22,7 +22,7 @@ mode.
 
 There are additional commands in the I/O catalogue (f+STO):
 
-PSTO n   Store program in region n. n is 0 to 2. A region is a
+PSTO n   Store program in region n. n is 0 to 3. A region is a
          block of flash memory that can hold a copy of the
          user program area. Alphanumeric labels in flash can be
          called with XEQ. This allows creation of libraries.
@@ -43,7 +43,10 @@ SRCL     Recall the setup data only from a previously created backup.
 
 You can recall a group of registers from the backup with the command
 R-COPY from the program catalogue. Just give it a negative value in X
-and the source block will be fetched from flash instead of RAM.
+and the source block will be fetched from flash instead of RAM. 
+
+Single registers in flash can be read with RCF and its arithmetic variants
+(RCF+, etc.)
 
 
 Mapping from memory regions to emulator state files
@@ -54,12 +57,14 @@ Region  Flash address  state file   Remark
 unnamed   0x11fc00     wp34s-R.dat  Registers and state of the backup
    0      0x11f800     wp34s-0.dat  User program of the backup
    1      0x11f400     wp34s-1.dat  Generic user Program region
-   2      0x11f000     wp34s-0.dat  ditto
+   2      0x11f000     wp34s-2.dat  ditto
+   3      0x11ec00     wp34s-3.dat  ditto
   RAM                  wp34s.dat    Emulator image of the RAM area
 
 wp34s.dat is only written on exit of the emulator software.
 wp34s-?.dat is written each time a flash command is executed.
-All files are only read into memory on emulator startup.
+All files are only read into memory on emulator startup. If we find
+enough free space in flash we may increase the number of regions.
 
 
 How to transfer data between the calculator and your PC
@@ -102,12 +107,12 @@ and state portion of the backup area at 0x11fc00 is formatted differently.
 If you want to get your emulator data into the calculator in one go,
 do the following in Windows:
 
-copy /b calc.bin+wp34s-2.dat+wp34s-1.dat+wp34s.dat calc-full.bin
+copy /b calc.bin+wp34s-3.dat+wp34s-2.dat+wp34s-1.dat+wp34s.dat calc-full.bin
 
 As an alternative the following will copy the backup data instead of the
 RAM state file:
 
-copy /b calc.bin+wp34s-2.dat+wp34s-1.dat+wp34s-0.dat+wp34s-R.dat calc-full.bin
+copy /b calc.bin+wp34s-3.dat+wp34s-2.dat+wp34s-1.dat+wp34s-0.dat+wp34s-R.dat calc-full.bin
 
 The resulting file can be programmed into flash and all data is readily
 available.
