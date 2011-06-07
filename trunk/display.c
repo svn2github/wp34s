@@ -1221,7 +1221,8 @@ void display(void) {
 				State2.disp_small = 0;
 			} else
 				set_status(DispMsg);
-			DispMsg = NULL;
+			if ( DispMsg != Alpha )
+				DispMsg = NULL;
 		} else if (State2.alphas) {
 #if 0
 			set_digits_string("AlpHA", 0);
@@ -1436,6 +1437,7 @@ void set_running_on_sst() {
 void set_running_off() {
 	set_running_off_sst();
 	State.entryp = 0;
+	Pause = 0;
 	dot( RCL_annun, 0);
 }
 

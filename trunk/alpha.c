@@ -64,7 +64,6 @@ void clralpha(decimal64 *a, decimal64 *b, decContext *nulc) {
 void alpha_view(decimal64 *a, decimal64 *b, decContext *nulc) {
 	DispMsg = Alpha;
 	display();
-	DispMsg = Alpha;
 }
 
 
@@ -244,6 +243,7 @@ void alpha_on(decimal64 *a, decimal64 *b, decContext *ctx64) {
 
 void alpha_off(decimal64 *a, decimal64 *b, decContext *ctx64) {
 	State2.alphas = 0;
+	DispMsg = NULL;
 }
 
 /* Input one character and append to alpha
