@@ -1,8 +1,8 @@
 May 2011
 
 
-This is an alpha demo of the WP34S calculator firmware for HP's 20b
-and 30b hardware.  Being alpha software, there will be problems and
+This is beta firmware for the WP34S calculator.  This is for HP's 20b
+and 30b hardware.  Being beta software, there will be problems and
 rough edges.  Please show a bit of tolerance and patience in this
 regard.  This demo will run under Windows (XP SP2 and later) or
 using WINE on Linux and Macintosh computers. A ROM file for use on the
@@ -27,8 +27,6 @@ Known problems:
 The emulator does not run under Windows 2000 and likely never will.
 
 The PC keyboard to calculator keyboard mapping isn't entirely obvious.
-
-We are working on the precision of some functions.
 
 The displayed revision numbers in the VERS screen may differ between the manual,
 the flash image and the emulator.
