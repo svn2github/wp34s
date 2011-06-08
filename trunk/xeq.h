@@ -706,6 +706,8 @@ enum rarg {
 	RARG_FLCRCL, RARG_FLCRCL_PL, RARG_FLCRCL_MI, RARG_FLCRCL_MU, RARG_FLCRCL_DV,
 	RARG_SLD, RARG_SRD,
 
+	RARG_VIEW_REG,
+
         NUM_RARG     // Last entry defines number of operations
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))

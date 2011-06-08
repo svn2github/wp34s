@@ -125,7 +125,6 @@ void init_state(void) {
 	State2.test = TST_NONE;
 	State2.runmode = 1;
 	ShowRegister = regX_idx;
-	DispMsg = NULL;
 }
 
 static void init_confirm(enum confirmations n) {
@@ -266,10 +265,8 @@ static int process_normal(const keycode c) {
 	case K22:	return OP_SPEC | OP_CHS;	// CHS
 	case K23:	return OP_SPEC | OP_EEX;	// EEX
 	case K24:
-		if (State2.runmode) {
-			DispMsg = NULL;
+		if (State2.runmode)
 			return OP_SPEC | OP_CLX;
-		}
 		return STATE_BACKSPACE;
 
 	case K30:	init_arg(RARG_XEQ);	break;	// XEQ/GSB
@@ -936,7 +933,8 @@ fkey:		if (oldstate != SHIFT_F)
 			init_arg(RARG_ARCL);
 			return STATE_UNFINISHED;
 		} else if (oldstate == SHIFT_H)
-			return OP_NIL | OP_VIEWALPHA;
+			init_arg(RARG_VIEW_REG);
+			return STATE_UNFINISHED;
 		break;
 
 	case K12:
@@ -1274,6 +1272,10 @@ static int process_arg(const keycode c) {
 				init_arg(base - RARG_LBL);
 				State2.multi = 1;
 				State2.rarg = 0;
+			} else if (base == RARG_VIEW || base == RARG_VIEW_REG) {
+				init_arg(0);
+				State2.rarg = 0;
+				return OP_NIL | OP_VIEWALPHA;
 			} else if (argcmds[base].stckreg)
 				State2.dot = 1;
 		} else if (State2.numdigit > 0)
@@ -1904,7 +1906,7 @@ static int process(const int c) {
 		if (c == K60 || c == K63) {
 			set_running_off();
 			Pause = 0;
-			DispMsg = "Stop";
+			DispMsg = "Stopped";
 			return STATE_UNFINISHED;
 		}
 		if ( c != K_HEARTBEAT ) {
@@ -1931,7 +1933,6 @@ static int process(const int c) {
 			CmdLineLength = 0;
 			CmdLineEex = 0;
 			CmdLineDot = 0;
-			DispMsg = NULL;
 		}
 		else
 			init_state();

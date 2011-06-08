@@ -61,10 +61,25 @@ void clralpha(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 /* Display the Alpha register
  */
-void alpha_view(decimal64 *a, decimal64 *b, decContext *nulc) {
+static void alpha_view_common(int reg) {
 	DispMsg = Alpha;
+	ShowRegister = reg;
 	display();
+	DispMsg = Alpha;
+	ShowRegister = reg;
 }
+
+void alpha_view(decimal64 *a, decimal64 *b, decContext *nulc) {
+	alpha_view_common((unsigned int)-1);
+}
+
+/* View a specified register
+ */
+void alpha_view_reg(unsigned int arg, enum rarg op) {
+	alpha_view_common(arg);
+}
+
+
 
 
 /* Append the character from the given register or passed arg to Alpha
@@ -243,7 +258,6 @@ void alpha_on(decimal64 *a, decimal64 *b, decContext *ctx64) {
 
 void alpha_off(decimal64 *a, decimal64 *b, decContext *ctx64) {
 	State2.alphas = 0;
-	DispMsg = NULL;
 }
 
 /* Input one character and append to alpha

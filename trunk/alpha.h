@@ -30,6 +30,7 @@ extern void alpha_shift_r(unsigned int, enum rarg);
 extern void alpha_rot_r(unsigned int, enum rarg);
 
 extern void alpha_view(decimal64 *, decimal64 *, decContext *);
+extern void alpha_view_reg(unsigned int arg, enum rarg op);
 
 extern void alpha_tox(decimal64 *, decimal64 *, decContext *);
 extern void alpha_fromx(decimal64 *, decimal64 *, decContext *);

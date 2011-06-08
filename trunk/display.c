@@ -1221,8 +1221,7 @@ void display(void) {
 				State2.disp_small = 0;
 			} else
 				set_status(DispMsg);
-			if ( DispMsg != Alpha )
-				DispMsg = NULL;
+			DispMsg = NULL;
 		} else if (State2.alphas) {
 #if 0
 			set_digits_string("AlpHA", 0);
@@ -1246,7 +1245,6 @@ void display(void) {
 					*bp++ = '\0';
 				}
 				set_status_right(buf);
-
 			}
 		} else {
 			annuc = 1;
@@ -1293,9 +1291,12 @@ void display(void) {
 nostk:	show_flags();
 	if (!skip && State2.runmode && !State2.version) {
 		p = get_cmdline();
-		if (p == NULL || cata)
-			format_reg(get_reg_n(ShowRegister), NULL);
-		else
+		if (p == NULL || cata) {
+			if (ShowRegister != -1)
+				format_reg(get_reg_n(ShowRegister), NULL);
+			else
+				set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
+		} else
 			disp_x(p);
 	}
 	if (annuc)
@@ -1437,7 +1438,6 @@ void set_running_on_sst() {
 void set_running_off() {
 	set_running_off_sst();
 	State.entryp = 0;
-	Pause = 0;
 	dot( RCL_annun, 0);
 }
 
