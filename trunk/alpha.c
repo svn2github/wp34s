@@ -62,7 +62,7 @@ void clralpha(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 /* Display the Alpha register
  */
-static void alpha_view_common(int reg) {
+void alpha_view_common(int reg) {
 	DispMsg = Alpha;
 	ShowRegister = reg;
 	display();

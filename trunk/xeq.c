@@ -2889,7 +2889,7 @@ void op_rs(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 
 void op_prompt(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	set_running_off();
-	alpha_view(NULL, NULL, NULL);
+	alpha_view_common(regX_idx);
 }
 
 void do_usergsb(decimal64 *a, decimal64 *b, decContext *nulc) {
