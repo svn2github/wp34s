@@ -1228,6 +1228,11 @@ static void do_rcl(const decimal64 *rn, enum rarg op) {
 	}
 }
 
+void cmdreg(unsigned int arg, enum rarg op) {
+	lift();
+	regX = Regs[arg % NUMREG];
+}
+
 void cmdrcl(unsigned int arg, enum rarg op) {
 	do_rcl(get_reg_n(arg), op);
 }

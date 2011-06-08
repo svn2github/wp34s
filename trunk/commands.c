@@ -690,6 +690,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_SRD,		&op_shift_digit,100,			"S.R")
 
 	CMDstk(RARG_VIEW_REG,	&alpha_view_reg,NUMREG,			"VW\240+")
+	CMDstk(RARG_REG,	&cmdreg,	NUMREG,			"REG")
 #undef CMDnoI
 #undef CMDstk
 #undef CMD
