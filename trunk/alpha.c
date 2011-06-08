@@ -56,6 +56,7 @@ void clralpha(decimal64 *a, decimal64 *b, decContext *nulc) {
 
 	for (i=0; i<=NUMALPHA; i++)
 		Alpha[i] = '\0';
+	DispMsg = NULL;
 }
 
 

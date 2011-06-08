@@ -1124,28 +1124,18 @@ static int arg_storcl(const unsigned int n, int cmplx) {
 }
 
 static int process_arg_dot(const unsigned int base) {
-	int r = STATE_UNFINISHED;
 	if (State2.dot || argcmds[base].stckreg || State2.ind)
 		return arg_eval(regX_idx);
-	switch (base) {
-	case RARG_SCI:	r = OP_NIL | OP_FIXSCI;	break;
-	case RARG_ENG:	r = OP_NIL | OP_FIXENG;	break;
 
-	case RARG_GTO:
+	if (base == RARG_GTO) {
 		// Special GTO . sequence
 		if (State2.numdigit == 0 && ! State2.ind) {
 			State2.gtodot = 1;
-			break;
+			init_arg(0);
+			State2.rarg = 0;
 		}
-		return r;
-
-	default:
-		return r;
 	}
-	/* Clean up and return the specified code */
-	init_arg(0);
-	State2.rarg = 0;
-	return r;
+	return STATE_UNFINISHED;
 }
 
 static int process_arg(const keycode c) {
@@ -1271,12 +1261,24 @@ static int process_arg(const keycode c) {
 		return arg_fkey(3);	// F3
 #endif
 
-	case K20:				// Enter is a short cut finisher
+	case K20:				// Enter is a short cut finisher but it also changes a few commands if it is first up
 		if (State2.numdigit == 0 && !State2.ind && !State2.dot) {
 			if (base >= RARG_LBL && base <= RARG_INTG) {
 				init_arg(base - RARG_LBL);
 				State2.multi = 1;
 				State2.rarg = 0;
+			} else if (base == RARG_SCI) {
+				init_arg(0);
+				State2.rarg = 0;
+				return OP_NIL | OP_FIXSCI;
+			} else if (base == RARG_ENG) {
+				init_arg(0);
+				State2.rarg = 0;
+				return OP_NIL | OP_FIXENG;
+			} else if (base == RARG_VIEW || base == RARG_VIEW_REG) {
+				init_arg(0);
+				State2.rarg = 0;
+				return OP_NIL | OP_VIEWALPHA;
 			} else if (argcmds[base].stckreg)
 				State2.dot = 1;
 		} else if (State2.numdigit > 0)
