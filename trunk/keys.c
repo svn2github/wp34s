@@ -1220,6 +1220,11 @@ static int process_arg(const keycode c) {
 			return arg_eval(regZ_idx);
 		break;
 	case K54:
+		if (base == RARG_VIEW || base == RARG_VIEW_REG) {
+			init_arg(0);
+			State2.rarg = 0;
+			return OP_NIL | OP_VIEWALPHA;
+		}
 		arg_storcl(RARG_STO_MI - RARG_STO, 1);
 		break;
 
@@ -1272,10 +1277,6 @@ static int process_arg(const keycode c) {
 				init_arg(base - RARG_LBL);
 				State2.multi = 1;
 				State2.rarg = 0;
-			} else if (base == RARG_VIEW || base == RARG_VIEW_REG) {
-				init_arg(0);
-				State2.rarg = 0;
-				return OP_NIL | OP_VIEWALPHA;
 			} else if (argcmds[base].stckreg)
 				State2.dot = 1;
 		} else if (State2.numdigit > 0)
