@@ -202,6 +202,20 @@ void alpha_reg(unsigned int arg, enum rarg op) {
 	add_string(buf);
 }
 
+/* Translate an indirect address to a letter or two digit register number.
+ * Append the result to Alpha.
+ */
+void cmdregid(unsigned int arg, enum rarg op) {
+	arg %= NUMREG;
+	if (arg < 100) {
+		add_char(arg / 10 + '0');
+		add_char(arg % 10 + '0');
+	}
+	else if (arg >= regX_idx && arg <= regK_idx) {
+		add_char(REGNAMES[arg - regX_idx]);
+	}
+}
+
 
 /* Return the number of characters being stored in a register.
  * For reals this is 6 to match the 41 series.  For integers, it is as
