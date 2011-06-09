@@ -1072,7 +1072,7 @@ static void show_registers(void) {
 
 	xset(buf, '\0', 16);
 	reg = State2.digval2 ? UserFlash.backup._regs : Regs;
-	bp = scopy_spc(buf, State2.digval2?"Fl":"Rg");
+	bp = scopy_spc(buf, State2.digval2?"Fl\006":"Rg");
 
 	if (State2.digval < 100)
 		num_arg_0(bp, State2.digval, 2);
