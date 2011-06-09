@@ -1164,6 +1164,15 @@ int is_key_pressed( void )
 
 
 /*
+ *  Check if a shift key is held down. The argument is one of SHIFT_F, _G, _H.
+ */
+int is_shift_down( int s )
+{
+	return 0 != ( (int) KbData & ( 0x400 << s ) );
+}
+
+
+/*
  *  Get a key
  */
 int get_key( void )

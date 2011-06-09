@@ -221,6 +221,15 @@ int put_key(int k)
 
 
 /*
+ *  Check if a shift key is held down
+ */
+int is_shift_down(int s)
+{
+	return 0;
+}
+
+
+/*
  *  Shut down the emulator from the application
  */
 void shutdown( void )

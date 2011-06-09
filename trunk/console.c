@@ -336,6 +336,12 @@ int put_key( int k )
 	return k;
 }
 
+int is_shift_down(int s)
+{
+	return 0;
+}
+
+
 /*
  *  Main loop
  */
