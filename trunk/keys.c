@@ -940,9 +940,10 @@ fkey:		if (oldstate != SHIFT_F)
 		if (oldstate == SHIFT_F) {
 			init_arg(RARG_ARCL);
 			return STATE_UNFINISHED;
-		} else if (oldstate == SHIFT_H)
+		} else if (oldstate == SHIFT_H) {
 			init_arg(RARG_VIEW_REG);
 			return STATE_UNFINISHED;
+		}
 		break;
 
 	case K12:
