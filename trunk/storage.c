@@ -525,7 +525,8 @@ void save_statefile( void )
 #ifdef DEBUG
 	printf( "sizeof struct _state = %d\n", (int)sizeof( struct _state ) );
 	printf( "sizeof RAM = %d (%d free)\n", (int)sizeof(PersistentRam), 2048 - (int)sizeof(PersistentRam));
-	printf( "sizeof pointer = %d\n", (int)sizeof( char * ) );
+	printf( "sizeof state2 = %d\n", (int)sizeof( struct _state2 ) );
+	printf( "sizeof while on = %d (%d free)\n", (int)sizeof(TStateWhileOn), 55 - (int)sizeof(TStateWhileOn));
 	printf( "sizeof decNumber = %d\n", (int)sizeof(decNumber));
 	printf( "sizeof decContext = %d\n", (int)sizeof(decContext));
 #endif

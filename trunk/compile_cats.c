@@ -33,6 +33,157 @@
 #define RARGCMD(op, n)		OP_RARG | ((op) << RARG_OPSHFT),
 #define CONV(n, d, name)	(OP_RARG | ((RARG_CONV) << RARG_OPSHFT)) + (n)*2 + (d),
 
+
+static s_opcode program_xfcn[] = {
+	MON(OP__1POW,		"(-1)^x")
+	DYA(OP_PERMG,		"%+MG")
+	DYA(OP_MARGIN,		"%MG")
+	TRI(OP_PERMRR,		"%MRR")
+	MON(OP_PERTOT,		"%T")
+	MON(OP_sigper,		"%\221")
+	DYA(OP_ATAN2,		"ANGLE")
+#ifdef INCLUDE_BERNOULLI
+	MON(OP_Bn,		"B[sub-n]")
+	MON(OP_BnS,		"B[sub-n]*")
+#endif
+	MON(OP_CEIL,		"CEIL")
+	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLREG,		"CLREG")
+	MON(OP_CUBE,		"CUBE")
+	MON(OP_CUBERT,		"CUBERT")
+	MON(OP_D2J,		"D\015J")
+	MON(OP_DOWK,		"DAY")
+	DYA(OP_DTADD,		"DAYS+")
+	NILIC(OP_2FRAC,		"DECOMP")
+	MON(OP_ERF,		"erf")
+	MON(OP_ERFC,		"erfc")
+	MON(OP_EXPM1,		"e^x-1")
+#ifdef INCLUDE_FACTOR
+	MON(OP_FACTOR,		"FACTOR")
+#endif 
+	MON(OP_FIB,		"FIB")
+	MON(OP_FLOOR,		"FLOOR")
+	DYA(OP_GCD,		"GCD")
+	TRI(OP_BETAI,		"I\241")
+	DYA(OP_GAMMAP,		"I\202")
+	MON(OP_J2D,		"J\015D")
+	DYA(OP_LCM,		"LCM")
+	MON(OP_LN1P,		"LN1P")
+	DYA(OP_LNBETA,		"LN\241")
+	MON(OP_LNGAMMA,		"LN\202")
+	DYA(OP_MAX,		"MAX")
+	DYA(OP_MIN,		"MIN")
+	DYA(OP_LNAND,		"NAND")
+	DYA(OP_LNOR,		"NOR")
+	NILIC(OP_RESET,		"RESET")
+	MON(OP_ROUND,		"ROUNDI")
+	NILIC(OP_SETDATE,	"SETDAT")
+	NILIC(OP_SETTIME,	"SETTIM")
+	MON(OP_SIGN,		"SIGN")
+	MON(OP_SINC,		"SINC")
+	RARGCMD(RARG_SLD,	"SLD")
+	RARGCMD(RARG_SRD,	"SRD")
+	NILIC(OP_VERSION,	"VERS")
+	MON(OP_LAMW,		"W")
+	MON(OP_INVW,		"W\235")
+	DYA(OP_LXNOR,		"XNOR")
+	NILIC(OP_ALPHADATE,	"\240DATE")
+	NILIC(OP_ALPHADAY,	"\240DAY")
+	RARGCMD(RARG_AIP,	"\240IP")
+	NILIC(OP_ALPHALEN,	"\240LENG")
+	NILIC(OP_ALPHAMONTH,	"\240MONTH")
+	RARGCMD(RARG_AREG,	"\240RC#")
+	RARGCMD(RARG_ARCL,	"\240RCL")
+	RARGCMD(RARG_ALRL,	"\240RL")
+	RARGCMD(RARG_ALRR,	"\240RR")
+	RARGCMD(RARG_ALSL,	"\240SL")
+	RARGCMD(RARG_ALSR,	"\240SR")
+	RARGCMD(RARG_ASTO,	"\240STO")
+	NILIC(OP_ALPHATIME,	"\240TIME")
+	RARGCMD(RARG_VIEW_REG,	"VW\240+")
+	NILIC(OP_VIEWALPHA,	"\240VIEW")
+	DYA(OP_BETA,		"\241")
+	MON(OP_GAMMA,		"\202")
+	DYA(OP_DTDIF,		"\203DAYS")
+	DYA(OP_AGM,		"AGM")
+	MON(OP_DEG2,		"DED\015")
+	MON(OP_RAD2,		"RAD\015")
+	MON(OP_GRAD2,		"GRAD\015")
+#ifdef INCLUDE_SUBFACT
+	MON(OP_SUBFACT,		"!n")
+#endif
+#ifdef INCLUDE_DBLFACT
+	MON(OP_DBLFACT,		"x!!")
+#endif
+#ifdef INCLUDE_MULADD
+	TRI(OP_MULADD,		"\034+")
+#endif
+#ifdef INCLUDE_ELLIPTIC
+	DYA(OP_CN,		"CN")
+	DYA(OP_DN,		"DN")
+	DYA(OP_SN,		"SN")
+#endif
+#ifdef INCLUDE_EASTER
+	MON(OP_EASTER,		"EASTER")
+#endif
+#ifdef INCLUDE_ZETA
+	MON(OP_ZETA,		"\245")
+#endif
+#ifdef INCLUDE_DIGAMMA
+	MON(OP_PSI,		"\226")
+#endif
+#ifdef INCLUDE_BESSEL
+	DYA(OP_BSIN,		"In")
+	DYA(OP_BSJN,		"Jn")
+	DYA(OP_BSKN,		"Kn")
+	DYA(OP_BSYN,		"Yn")
+#endif
+	NILIC(OP_QUAD,		"QUAD")
+
+	DYA(OP_LEGENDRE_PN,   "P\275")
+	DYA(OP_CHEBYCHEV_TN,  "T\275")
+	DYA(OP_CHEBYCHEV_UN,  "U\275")
+	DYA(OP_LAGUERRE,      "L\275")
+	TRI(OP_GEN_LAGUERRE,  "L\275\240")
+	DYA(OP_HERMITE_HE,    "HE\275")
+	DYA(OP_HERMITE_H,     "H\275")
+	NILIC(OP_VOLTAGE,     "BATT")
+	RARGCMD(RARG_PSAVE,	"PSTO")
+	RARGCMD(RARG_PLOAD,	"PRCL")
+	RARGCMD(RARG_PSWAP,	"P<>")
+	NILIC(OP_RLOAD,		"RRCL")
+	NILIC(OP_SLOAD,		"SRCL")
+	NILIC(OP_BACKUP,	"SAVE")
+	NILIC(OP_RESTORE,	"LOAD")
+	RARGCMD(RARG_FLRCL, 	"RCF")
+
+	/* Integer mode commands */
+	RARGCMD(RARG_ASR,	"ASR")
+	RARGCMD(RARG_CB,	"CB")
+	NILIC(OP_CLFLAGS,	"CLFLAG")
+	NILIC(OP_DBL_MUL,	"DBL\034")
+	TRI(OP_DBL_DIV, 	"DBL/")
+	TRI(OP_DBL_MOD, 	"DBLR")
+	RARGCMD(RARG_FB,	"FB")
+	NILIC(OP_LJ,		"LJ")
+	RARGCMD(RARG_MASKL,	"MASKL")
+	RARGCMD(RARG_MASKR,	"MASKR")
+	MON(OP_MIRROR,		"MIRROR")
+	MON(OP_BITCNT,		"nBITS")
+	NILIC(OP_RESET,		"RESET")
+	NILIC(OP_RJ,		"RJ")
+	RARGCMD(RARG_RL,	"RL")
+	RARGCMD(RARG_RLC,	"RLC")
+	RARGCMD(RARG_RR,	"RR")
+	RARGCMD(RARG_RRC,	"RRC")
+	RARGCMD(RARG_SB,	"SB")
+	NILIC(OP_STORANDOM,	"SEED")
+	MON(OP_SIGN,		"SIGN")
+	RARGCMD(RARG_SL,	"SL")
+	RARGCMD(RARG_SR,	"SR")
+};
+
+
 static s_opcode catalogue[] = {
 	MON(OP__1POW,		"(-1)^x")
 	DYA(OP_PERMG,		"%+MG")
@@ -437,7 +588,6 @@ static s_opcode internal_catalogue[] = {
 static s_opcode mode_catalogue[] = {
 	NILIC(OP_RADCOM,	"RDX,")
 	NILIC(OP_RADDOT,	"RDX.")
-#if 1
 	NILIC(OP_1COMP,		"1COMPL")
 	NILIC(OP_2COMP,		"2COMPL")
 	NILIC(OP_SIGNMANT,	"SIGNMT")
@@ -445,7 +595,6 @@ static s_opcode mode_catalogue[] = {
 	RARGCMD(RARG_WS,	"WSIZE")
 	NILIC(OP_LEAD0,		"SHOW 0")
 	NILIC(OP_TRIM0,		"HIDE 0")
-#endif
 	RARGCMD(RARG_BASE,	"BASE")
 	NILIC(OP_DENANY,	"DENANY")
 	NILIC(OP_DENFAC,	"DENMFAC")
@@ -470,19 +619,6 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_SETUSA,	"SETUSA")
 	NILIC(OP_SETIND,	"SETIND")
 	NILIC(OP_SETCHN,	"SETCHN")
-};
-
-static s_opcode int_mode_catalogue[] = {
-	NILIC(OP_1COMP,		"1COMPL")
-	NILIC(OP_2COMP,		"2COMPL")
-	NILIC(OP_SIGNMANT,	"SIGNMT")
-	NILIC(OP_UNSIGNED,	"UNSIGN")
-	RARGCMD(RARG_WS,	"WSIZ")
-	RARGCMD(RARG_BASE,	"BASE")
-	NILIC(OP_STK4,		"SSIZE4")
-	NILIC(OP_STK8,		"SSIZE8")
-	NILIC(OP_LEAD0,		"SHOW 0")
-	NILIC(OP_TRIM0,		"HIDE 0")
 };
 
 static s_opcode alpha_catalogue[] = {
@@ -793,6 +929,7 @@ int main(int argc, char *argv[]) {
 	gpl_text("/* ", " * ", " */");
 
 	CAT(catalogue);
+	CAT(program_xfcn);
 	CAT(cplx_catalogue);
 	CAT(stats_catalogue);
 	CAT(prob_catalogue);
@@ -800,7 +937,6 @@ int main(int argc, char *argv[]) {
 	CAT(test_catalogue);
 	CAT(prog_catalogue);
 	CAT(mode_catalogue);
-	CAT(int_mode_catalogue);
 	CAT(alpha_catalogue);
 	CAT(conv_catalogue);
 #ifdef INCLUDE_INTERNAL_CATALOGUE

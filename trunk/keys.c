@@ -465,7 +465,7 @@ static int process_h_shifted(const keycode c) {
 		init_cat(CATALOGUE_CONV);
 		break;
 	case K05:
-		init_cat(State.intm?CATALOGUE_INT_MODE:CATALOGUE_MODE);
+		init_cat(CATALOGUE_MODE);
 		break;
 
 	case K10:
@@ -505,7 +505,12 @@ static int process_h_shifted(const keycode c) {
 	case K44:	State2.status = 1;		break;
 
 	case K50:
-		init_cat(State.intm?CATALOGUE_INT:CATALOGUE_NORMAL);
+		if (! State2.runmode)
+			init_cat(CATALOGUE_PROGXFCN);
+		else if (is_intmode())
+			init_cat(CATALOGUE_INT);
+		else
+			init_cat(CATALOGUE_NORMAL);
 		break;
 	case K51:	init_cat(CATALOGUE_TEST);	break;
 	case K52:	init_cat(CATALOGUE_PROG);	break;
@@ -1013,7 +1018,10 @@ fkey:		if (oldstate != SHIFT_F)
 			return STATE_UNFINISHED;
 		}
 		if (oldstate == SHIFT_H) {	// Alpha command catalogue
-			init_cat(CATALOGUE_ALPHA);
+			if (! State2.runmode)
+				init_cat(CATALOGUE_PROGXFCN);
+			else
+				init_cat(CATALOGUE_ALPHA);
 			return STATE_UNFINISHED;
 		}
 		break;
@@ -1443,6 +1451,7 @@ int current_catalogue_max(void) {
 		sizeof(prob_catalogue) / sizeof(const s_opcode),
 		sizeof(int_catalogue) / sizeof(const s_opcode),
 		sizeof(prog_catalogue) / sizeof(const s_opcode),
+		sizeof(program_xfcn) / sizeof(const s_opcode),
 		sizeof(test_catalogue) / sizeof(const s_opcode),
 		sizeof(mode_catalogue) / sizeof(const s_opcode),
 		sizeof(alpha_catalogue) / sizeof(const s_opcode),
@@ -1456,7 +1465,6 @@ int current_catalogue_max(void) {
 		NUM_CONSTS,
 		NUM_CONSTS,
 		sizeof(conv_catalogue) / sizeof(const s_opcode),
-		sizeof(int_mode_catalogue) / sizeof(const s_opcode),
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		sizeof(internal_catalogue) / sizeof(const s_opcode),
 #endif
@@ -1520,11 +1528,11 @@ opcode current_catalogue(int n) {
 	case CATALOGUE_PROG:
 		return prog_catalogue[n];
 
+	case CATALOGUE_PROGXFCN:
+		return program_xfcn[n];
+
 	case CATALOGUE_MODE:
 		return mode_catalogue[n];
-
-	case CATALOGUE_INT_MODE:
-		return int_mode_catalogue[n];
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	case CATALOGUE_INTERNAL:
