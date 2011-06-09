@@ -182,6 +182,7 @@ struct _state2 {
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int invalid_disp : 1;  // Display contents is invalid
 	unsigned int labellist : 1;	// Displaying the alpha label navigator
+	unsigned int registerlist : 1;	// Displaying the register's contents
 #ifndef REALBUILD
 	unsigned int trace : 1;
 #else

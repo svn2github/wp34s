@@ -1065,6 +1065,24 @@ static void show_label(void) {
 		set_dig(i, *bp);
 }
 
+/* Display a list of register contents */
+static void show_registers(void) {
+	char buf[16], *bp;
+	decimal64 *reg;
+
+	xset(buf, '\0', 16);
+	reg = State2.digval2 ? UserFlash.backup._regs : Regs;
+	bp = scopy_spc(buf, State2.digval2?"Fl":"Rg");
+
+	if (State2.digval < 100)
+		num_arg_0(bp, State2.digval, 2);
+	else
+		*bp++ = REGNAMES[State2.digval - regX_idx];
+	set_status(buf);
+
+	format_reg(reg + State2.digval, NULL);
+}
+
 
 /* Display the X register as alpha */
 static void show_alpha(void) {
@@ -1211,6 +1229,9 @@ void display(void) {
 		skip = 1;
 	} else if (State2.labellist) {
 		show_label();
+		skip = 1;
+	} else if (State2.registerlist) {
+		show_registers();
 		skip = 1;
 	} else if (State2.arrow_alpha) {
 		show_alpha();

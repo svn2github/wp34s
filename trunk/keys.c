@@ -670,6 +670,13 @@ static int process_h_shifted_cmplx(const keycode c) {
 	set_shift(SHIFT_N);
 	State2.cmplx = 0;
 	switch (c) {
+	case K11:
+		process_cmdline_set_lift();
+		State2.registerlist = 1;
+		State2.digval = regX_idx;
+		State2.digval2 = 0;
+		break;
+
 	case K12:	return OP_NIL | OP_CRUP;
 
 	case K20:	init_cat(CATALOGUE_COMPLEX_CONST);	break;
@@ -694,7 +701,7 @@ static int process_h_shifted_cmplx(const keycode c) {
 		break;
 
 	case K00:	case K01:	case K02:	case K03:	case K04:
-	case K10:	case K11:
+	case K10:
 							case K23:	case K24:
 	case K30:	case K31:	case K32:	case K33:	case K34:
 			case K41:	case K42:	case K43:	case K44:
@@ -1875,6 +1882,102 @@ digit:		pc = advance_to_next_code_segment(n);
 }
 
 
+static int process_registerlist(const keycode c) {
+	int n;
+
+	switch (c) {
+#ifdef SEQUENTIAL_ROWS
+	case K51:	case K52:	case K53:
+		n = c - K51 + 1;
+		goto digit;
+	case K41:	case K42:	case K43:
+		n = c - K41 + 4;
+		goto digit;
+	case K31:	case K32:	case K33:
+		n = c - K31 + 7;
+		goto digit;
+#else
+	case K51:	n = 1;	goto digit;
+	case K52:	n = 2;	goto digit;
+	case K53:	n = 3;	goto digit;
+	case K41:	n = 4;	goto digit;
+	case K42:	n = 5;	goto digit;
+	case K43:	n = 6;	goto digit;
+	case K31:	n = 7;	goto digit;
+	case K32:	n = 8;	goto digit;
+	case K33:	n = 9;	goto digit;
+#endif
+	case K61:	n = 0;
+digit:		if (State2.digval > 100)
+			State2.digval = 0;
+		State2.digval = (State2.digval * 10 + n) % 100;
+		return STATE_UNFINISHED;
+
+#ifdef SEQUENTIAL_ROWS
+	case K00:	case K01:	case K02:	case K03:
+		n = c - K00 + regA_idx;
+		goto reg;
+	case K62:	case K63:	case K64:
+		n = c - K62 + regX_idx;
+		goto reg;
+	case K21:	case K22:
+		n = c - K21 + regJ_idx;
+		goto reg;
+#else
+	case K00:	n = regA_idx;	goto reg;
+	case K01:	n = regB_idx;	goto reg;
+	case K02:	n = regC_idx;	goto reg;
+	case K03:	n = regD_idx;	goto reg;
+	case K62:	n = regX_idx;	goto reg;
+	case K63:	n = regY_idx;	goto reg;
+	case K64:	n = regZ_idx;	goto reg;
+	case K21:	n = regJ_idx;	goto reg;
+	case K22:	n = regK_idx;	goto reg;
+#endif
+	case K44:	n = regT_idx;	goto reg;
+	case K23:	n = regL_idx;	goto reg;
+	case K12:	n = regI_idx;
+reg:
+		State2.digval = n;
+		return STATE_UNFINISHED;
+
+	case K40:
+		if (State2.digval > 0)
+			State2.digval--;
+		else
+			State2.digval = NUMREG-1;
+		return STATE_UNFINISHED;
+
+	case K50:
+		if (State2.digval < NUMREG-1)
+			State2.digval++;
+		else	State2.digval = 0;
+		return STATE_UNFINISHED;
+
+	case K04:
+		State2.digval2 = !State2.digval2;
+		return STATE_UNFINISHED;
+
+	case K11:
+	case K20:
+		n = RARG(State2.digval2?RARG_FLRCL:RARG_RCL, State2.digval);
+		State2.registerlist = 0;
+		State2.digval = 0;
+		State2.digval2 = 0;
+		return n;
+
+	case K24:			// Exit doing nothing
+	case K60:
+		break;
+	default:
+		return STATE_UNFINISHED;
+	}
+	State2.registerlist = 0;
+	State2.digval = 0;
+	State2.digval2 = 0;
+	return STATE_UNFINISHED;
+}
+
 static int process(const int c) {
 	const enum shifts s = cur_shift();
 
@@ -1960,6 +2063,9 @@ static int process(const int c) {
 
 	if (State2.labellist)
 		return process_labellist((const keycode)c);
+
+	if (State2.registerlist)
+		return process_registerlist((const keycode)c);
 
 	if (State2.confirm)
 		return process_confirm((const keycode)c);

@@ -707,8 +707,6 @@ enum rarg {
 	RARG_SLD, RARG_SRD,
 
 	RARG_VIEW_REG,
-	RARG_REG,
-	RARG_REGID,
 
         NUM_RARG     // Last entry defines number of operations
 };
@@ -1080,8 +1078,6 @@ extern void op_ticks(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_voltage(decimal64 *a, decimal64 *b, decContext *nulc);
 extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
-extern void cmdreg(unsigned int arg, enum rarg op);
-extern void cmdregid(unsigned int arg, enum rarg op);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx);
 extern decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx);

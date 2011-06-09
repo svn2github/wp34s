@@ -580,8 +580,6 @@ static s_opcode internal_catalogue[] = {
 	RARGCMD(RARG_INISOLVE,	"SLVI")
 	RARGCMD(RARG_SOLVESTEP,	"SLVS")
 	NILIC(OP_GSBuser,	"XEQUSR")
-	RARGCMD(RARG_REG,	"REG")
-	RARGCMD(RARG_REGID,     "\240RID")
 };
 #endif
 
