@@ -383,7 +383,10 @@ static int process_f_shifted(const keycode c) {
 	case K54:	return OP_MON | OP_PERCNT;
 
 	case K60:
-		init_state();
+		process_cmdline_set_lift();
+		State2.registerlist = 1;
+		State2.digval = regX_idx;
+		State2.digval2 = 0;
 		break;
 
 	case K61:	return OP_MON | OP_ABS;
@@ -670,13 +673,6 @@ static int process_h_shifted_cmplx(const keycode c) {
 	set_shift(SHIFT_N);
 	State2.cmplx = 0;
 	switch (c) {
-	case K11:
-		process_cmdline_set_lift();
-		State2.registerlist = 1;
-		State2.digval = regX_idx;
-		State2.digval2 = 0;
-		break;
-
 	case K12:	return OP_NIL | OP_CRUP;
 
 	case K20:	init_cat(CATALOGUE_COMPLEX_CONST);	break;
@@ -701,7 +697,7 @@ static int process_h_shifted_cmplx(const keycode c) {
 		break;
 
 	case K00:	case K01:	case K02:	case K03:	case K04:
-	case K10:
+	case K10:	case K11:
 							case K23:	case K24:
 	case K30:	case K31:	case K32:	case K33:	case K34:
 			case K41:	case K42:	case K43:	case K44:
