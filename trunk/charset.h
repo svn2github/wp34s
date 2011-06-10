@@ -440,7 +440,7 @@
 	C( 4, 2, 1, 2, 5, 7, 0 ),		/* small delta */
 	C( 4, 6, 1, 6, 1, 6, 0 ),		/* small epsilon */
 	C( 4, 7, 4, 2, 1, 7, 4 ),		/* small zeta */
-	C( 5, 0, 7, 10, 10, 10, 8 ),		/* small eta */
+	C( 5, 0, 7, 10, 10, 8, 8 ),		/* small eta */
 	C( 5, 7, 5, 14, 5, 7, 0 ),		/* small theta */
 	C( 3, 0, 1, 1, 1, 3, 0 ),		/* small iota = 0650 */
 	C( 4, 0, 5, 3, 5, 5, 0 ),		/* small kappa  */
