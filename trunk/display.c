@@ -1237,12 +1237,9 @@ void display(void) {
 		show_alpha();
 	} else if (State2.runmode) {
 		if (DispMsg) {
-			if (State2.disp_small) {
-				set_status_sized(DispMsg, 1);
-				State2.disp_small = 0;
-			} else
-				set_status(DispMsg);
+			set_status(DispMsg);
 			DispMsg = NULL;
+			State2.disp_small = 0;
 		} else if (State2.alphas) {
 #if 0
 			set_digits_string("AlpHA", 0);
@@ -1398,7 +1395,7 @@ static int string_too_large(const char *s) {
 /* Display the given string on the screen.
  */
 static void set_status(const char *str) {
-	set_status_sized(str, string_too_large(str));
+	set_status_sized(str, State2.disp_small || string_too_large(str));
 }
 
 
@@ -1431,8 +1428,8 @@ extern void message(const char *str1, const char *str2)
 static void set_status_right(const char *str) {
 	unsigned int x = 0;
 	const char *p;
-	const int toolarge = string_too_large(str);
-	const unsigned short szmask = toolarge?0x100:0;
+	const int toolarge = State2.disp_small || string_too_large(str);
+	const unsigned short szmask = toolarge ? 0x100 : 0;
 
 	for (p=str; *p != '\0'; p++);
 	while (--p >= str) {

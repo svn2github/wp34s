@@ -1756,9 +1756,8 @@ static unsigned int advance_to_next_code_segment(int n) {
 static void advance_to_next_label(unsigned int pc) {
 	for (;;) {
 		for (;;) {
-			const unsigned int oldpc = pc;
 			pc = inc(pc);
-			if (pc <= oldpc)
+			if (PcWrapped)
 				break;
 			if (is_label_at(pc)) {
 				State2.digval = pc;
@@ -1766,13 +1765,12 @@ static void advance_to_next_label(unsigned int pc) {
 			}
 		}
 		if (isXROM(pc))
-			pc = LastProg > 1 ? 0 : advance_to_next_code_segment(0);
-		else {
+			pc = LastProg > 1 ? 1 : advance_to_next_code_segment(0);
+		else
 			pc = advance_to_next_code_segment(nLIB(pc));
-			if (is_label_at(pc)) {
-				State2.digval = pc;
-				return;
-			}
+		if (is_label_at(pc)) {
+			State2.digval = pc;
+			return;
 		}
 	}
 }
@@ -1791,9 +1789,8 @@ static unsigned int advance_to_previous_code_segment(int n) {
 static void advance_to_previous_label(unsigned int pc) {
 	for (;;) {
 		for (;;) {
-			const unsigned int oldpc = pc;
 			pc = dec(pc);
-			if (pc >= oldpc)
+			if (PcWrapped)
 				break;
 			if (is_label_at(pc)) {
 				State2.digval = pc;

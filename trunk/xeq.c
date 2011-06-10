@@ -71,6 +71,11 @@ int Busy;
 int Error;
 
 /*
+ *  Indication of PC wrap around
+ */
+int PcWrapped;
+
+/*
  *  Temporary display (not X)
  */
 int ShowRegister = regX_idx;
@@ -433,47 +438,63 @@ void hidelead0(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 
 /* Increment the passed PC.  Account for wrap around but nothing else.
  * Return the updated PC.
+ * Set PcWrapped on wrap around
  */
 unsigned int inc(const unsigned int pc) {
 	const unsigned int off = isDBL(getprog(pc))?2:1;
 	const unsigned int npc = pc + off;
 
+	PcWrapped = 0;
 	if (isXROM(pc)) {
-		if (npc >= addrXROM(xrom_size))
+		if (npc >= addrXROM(xrom_size)) {
+			PcWrapped = 1;
 			return addrXROM(0);
-		return npc;
+		}
 	}
-	if (isLIB(pc)) {
-		if (npc >= startLIB(pc) + sizeLIB(nLIB(pc)))
+	else if (isLIB(pc)) {
+		if (npc >= startLIB(pc) + sizeLIB(nLIB(pc))) {
+			PcWrapped = 1;
 			return startLIB(pc);
-		return npc;
+		}
 	}
-	if (npc >= LastProg) {
+	else if (npc >= LastProg) {
+		PcWrapped = 1;
 		return 0;
-		//if (!Running || pc >= LastProg)
-			//return 0;
 	}
 	return npc;
 }
 
+/* Decrement the passed PC.  Account for wrap around but nothing else.
+ * Return the updated PC.
+ * Set PcWrapped on wrap around
+ */
 unsigned int dec(unsigned int pc) {
+	PcWrapped = 0;
 	if (isXROM(pc)) {
-		if (pc == addrXROM(0))
+		if (pc == addrXROM(0)) {
+			PcWrapped = 1;
 			return addrXROM(xrom_size - 1);
+		}
 		if (--pc != addrXROM(0) && isDBL(getprog(pc-1)))
-			pc--;
-		return pc;
-	} else if (isLIB(pc)) {
-		if (pc == startLIB(pc))
+			--pc;
+	} 
+	else if (isLIB(pc)) {
+		if (pc == startLIB(pc)) {
+			PcWrapped = 1;
 			pc = startLIB(pc) + sizeLIB(nLIB(pc));
+		}
 		--pc;
 		if (pc > startLIB(pc) && isDBL(getprog(pc-1)))
 			--pc;
-		return pc;
-	} else if (pc == 0)
-		pc = LastProg;
-	if (--pc > 1 && pc != addrXROM(0) && isDBL(getprog(pc-1)))
-		pc--;
+	} 
+	else {
+		if (pc == 0) {
+			PcWrapped = 1;
+			pc = LastProg;
+		}
+		if (--pc > 1 && isDBL(getprog(pc-1)))
+			--pc;
+	}
 	return pc;
 }
 
@@ -483,12 +504,11 @@ unsigned int dec(unsigned int pc) {
 int incpc(void) {
 	const unsigned int opc = state_pc();
 	const unsigned int pc = inc(opc);
-	const int wrapped = pc < opc;
 
 	raw_set_pc(pc);
-	if (wrapped && Running)
+	if (PcWrapped && Running)
 		State.implicit_rtn = 1;
-	return wrapped;
+	return PcWrapped;
 }
 
 void decpc(void) {
@@ -504,19 +524,21 @@ unsigned int user_pc(void) {
 	unsigned int n = 0;
 	unsigned int base;
 
+	if (isXROM(pc))
+		return pc - addrXROM(0) + 1;
+
 	if (isRAM(pc))
 		base = 0;
-	else if (isXROM(pc))
-		base = addrXROM(0);
-	else
+	else {
 		base = startLIB(pc);
+		n = 1;
+	}
 
 	while (base < pc) {
-		const unsigned int oldbase = base;
-		n++;
+		++n;
 		base = inc(base);
-		if (base <= oldbase)
-			return oldbase;
+		if (PcWrapped)
+			return n - 1;
 	}
 	return n;
 }
@@ -1768,20 +1790,18 @@ void cmdskip(unsigned int arg, enum rarg op) {
 /* Skip backwards */
 void cmdback(unsigned int arg, enum rarg op) {
 	unsigned int pc = state_pc();
-
         if (arg) {
 		State.implicit_rtn = 0;
-		if (Running)
+		if ( Running )
 			pc = dec(pc);
-		while (arg-- > 0) {
-			const unsigned int oldpc = pc;
+		do {
 			pc = dec(pc);
-			if (pc >= oldpc) {
-				set_running_off();
-				return;
-			}
-		}
-		raw_set_pc(pc);
+		} while (--arg && !PcWrapped);
+		if (PcWrapped)
+			State.implicit_rtn = 1;
+		else
+			raw_set_pc(pc);
+
 	}
 }
 
@@ -3211,28 +3231,21 @@ static void multi(const opcode op) {
 
 /* Print a single program step nicely.
  */
-static void print_step(char *tracebuf, const opcode op) {
-	char buf[16], *p;
+static void print_step(char *p, const opcode op) {
+	char buf[16];
 	const unsigned int pc = state_pc();
-	const unsigned int upc = user_pc();
 
 	if (isXROM(pc)) {
-		tracebuf[0] = 'x';
-		p = num_arg_0(tracebuf+1, upc, 3);
-		*p++ = ' ';
+		*p++ = 'x';
 	} else if (isLIB(pc)) {
-		tracebuf[0] = 'f';
-		p = num_arg_0(tracebuf+1, nLIB(pc), 2);
-		*p++ = ' ';
-		p = num_arg_0(p, upc, 3);
+		p = num_arg_0(p, nLIB(pc), 1);
 		*p++ = ' ';
 	} else if (pc == 0) {
-		scopy(tracebuf, "000:");
+		scopy(p, "000:");
 		return;
-	} else {
-		p = num_arg_0(tracebuf, upc, 3);
-		*p++ = ':';
 	}
+	p = num_arg_0(p, user_pc(), 3);
+	*p++ = ':';
 	scopy_char(p, prt(op, buf), '\0');
 }
 
