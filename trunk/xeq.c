@@ -1765,17 +1765,20 @@ void cmdskip(unsigned int arg, enum rarg op) {
 /* Skip backwards */
 void cmdback(unsigned int arg, enum rarg op) {
 	unsigned int pc = state_pc();
-        if (arg++) {
+
+        if (arg) {
 		State.implicit_rtn = 0;
-		if (pc == 0)
-			pc = LastProg;
-		else if (isLIB(pc) && pc == startLIB(pc))
-			pc = startLIB(pc) + sizeLIB(nLIB(pc));
-		while (arg-- > 0 && pc != 0)  // Pauli: here a check needs to be performed for lib space!
+		if (Running)
 			pc = dec(pc);
+		while (arg-- > 0) {
+			const unsigned int oldpc = pc;
+			pc = dec(pc);
+			if (pc >= oldpc) {
+				set_running_off();
+				return;
+			}
+		}
 		raw_set_pc(pc);
-		if (pc == 0)
-			set_running_off();
 	}
 }
 
