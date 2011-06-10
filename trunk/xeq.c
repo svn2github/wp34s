@@ -1766,7 +1766,12 @@ void cmdskip(unsigned int arg, enum rarg op) {
 void cmdback(unsigned int arg, enum rarg op) {
 	unsigned int pc = state_pc();
         if (arg++) {
-		while (arg-- > 0 && pc != 0)
+		State.implicit_rtn = 0;
+		if (pc == 0)
+			pc = LastProg;
+		else if (isLIB(pc) && pc == startLIB(pc))
+			pc = startLIB(pc) + sizeLIB(nLIB(pc));
+		while (arg-- > 0 && pc != 0)  // Pauli: here a check needs to be performed for lib space!
 			pc = dec(pc);
 		raw_set_pc(pc);
 		if (pc == 0)
