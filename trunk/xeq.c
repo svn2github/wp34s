@@ -439,12 +439,12 @@ unsigned int inc(const unsigned int pc) {
 	const unsigned int npc = pc + off;
 
 	if (isXROM(pc)) {
-		if (pc >= addrXROM(xrom_size - 1))
+		if (npc >= addrXROM(xrom_size))
 			return addrXROM(0);
 		return npc;
 	}
 	if (isLIB(pc)) {
-		if (pc >= startLIB(pc) + sizeLIB(nLIB(pc)) - 2)
+		if (npc >= startLIB(pc) + sizeLIB(nLIB(pc)))
 			return startLIB(pc);
 		return npc;
 	}
