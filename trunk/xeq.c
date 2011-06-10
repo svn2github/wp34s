@@ -512,8 +512,11 @@ unsigned int user_pc(void) {
 		base = startLIB(pc);
 
 	while (base < pc) {
+		const unsigned int oldbase = base;
 		n++;
 		base = inc(base);
+		if (base <= oldbase)
+			return oldbase;
 	}
 	return n;
 }
