@@ -3211,22 +3211,23 @@ static void multi(const opcode op) {
 static void print_step(char *tracebuf, const opcode op) {
 	char buf[16], *p;
 	const unsigned int pc = state_pc();
+	const unsigned int upc = user_pc();
 
 	if (isXROM(pc)) {
 		tracebuf[0] = 'x';
-		p = num_arg_0(tracebuf+1, pc - addrXROM(0), 3);
+		p = num_arg_0(tracebuf+1, upc, 3);
 		*p++ = ' ';
 	} else if (isLIB(pc)) {
 		tracebuf[0] = 'f';
 		p = num_arg_0(tracebuf+1, nLIB(pc), 2);
 		*p++ = ' ';
-		p = num_arg_0(p, pc - startLIB(pc), 3);
+		p = num_arg_0(p, upc, 3);
 		*p++ = ' ';
 	} else if (pc == 0) {
 		scopy(tracebuf, "000:");
 		return;
 	} else {
-		p = num_arg_0(tracebuf, pc, 3);
+		p = num_arg_0(tracebuf, upc, 3);
 		*p++ = ':';
 	}
 	scopy_char(p, prt(op, buf), '\0');
