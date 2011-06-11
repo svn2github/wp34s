@@ -2129,9 +2129,7 @@ static int process(const int c) {
 
 void process_keycode(int c) {
 	char tracebuf[25];
-	decContext ctx;
 
-	Ctx = &ctx;
 	xeq_init_contexts();
 	c = process(c);
 	switch (c) {

@@ -27,8 +27,8 @@ int get_key(void) {return 0; }
 int put_key( int k ) {return k;}
 
 
-// we have one context and this points to it
-static decContext* Ctx;
+// we have one context
+static decContext Ctx;
 
 typedef Dec Bf(const Dec&);
 typedef MAPM Mf(const MAPM&);
@@ -217,16 +217,14 @@ static void gammaTest()
 
 int main()
 {
-    decContext ctx;
-    Ctx = &ctx;
 
     // initialise the dec context
-    decContextDefault(Ctx, DEC_INIT_BASE);
-    Ctx->traps = 0;
-    Ctx->digits = DECNUMDIGITS;
-    Ctx->emax=DEC_MAX_MATH;
-    Ctx->emin=-DEC_MAX_MATH;
-    Ctx->round = DEC_ROUND_HALF_EVEN;
+    decContextDefault(&Ctx, DEC_INIT_BASE);
+    Ctx.traps = 0;
+    Ctx.digits = DECNUMDIGITS;
+    Ctx.emax=DEC_MAX_MATH;
+    Ctx.emin=-DEC_MAX_MATH;
+    Ctx.round = DEC_ROUND_HALF_EVEN;
     
     // be sure to be in radians
     State.trigmode = TRIG_RAD;

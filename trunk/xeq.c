@@ -88,7 +88,7 @@ int ShowRegister = regX_idx;
 /* We need various different math contexts.
  * More efficient to define these globally and reuse them as needed.
  */
-decContext *Ctx;
+decContext Ctx;
 
 #define RetStkPtr	(State.retstk_ptr)
 
@@ -321,7 +321,7 @@ void setX(const decNumber *x) {
 	decNumber xn;
 
 	if (! check_special(x)) {
-		decNumberNormalize(&xn, x, Ctx);
+		decNumberNormalize(&xn, x, &Ctx);
 		packed_from_number(&regX, &xn);
 	}
 }
@@ -334,7 +334,7 @@ static void setY(const decNumber *y) {
 	decNumber yn;
 
 	if (! check_special(y)) {
-		decNumberNormalize(&yn, y, Ctx);
+		decNumberNormalize(&yn, y, &Ctx);
 		packed_from_number(&regY, &yn);
 	}
 }
@@ -731,7 +731,7 @@ static int fract_convert_number(decNumber *x, const char *s) {
 		err(ERR_DOMAIN);
 		return 1;
 	}
-	decNumberFromString(x, s, Ctx);
+	decNumberFromString(x, s, &Ctx);
 	return check_special(x);
 }
 
@@ -801,7 +801,7 @@ static void process_cmdline(void) {
 				dn_minus(&x, &x);
 			setX(&x);
 		} else {
-			decNumberFromString(&x, cmdline, Ctx);
+			decNumberFromString(&x, cmdline, &Ctx);
 			setX(&x);
 		}
 	}
@@ -2501,7 +2501,7 @@ static void specials(const opcode op) {
 		process_cmdline();
 		State.state_lift = 0;
 		setlastX();
-		sigma_plus(Ctx);
+		sigma_plus(&Ctx);
 		sigma_N(&regX, NULL);
 		break;
 
@@ -2511,7 +2511,7 @@ static void specials(const opcode op) {
 		process_cmdline();
 		State.state_lift = 0;
 		setlastX();
-		sigma_minus(Ctx);
+		sigma_minus(&Ctx);
 		sigma_N(&regX, NULL);
 		break;
 
@@ -3501,12 +3501,12 @@ void xeq_init_contexts(void) {
 	/* Initialise our standard contexts.
 	 * We have to disable traps and bump the digits for internal calculations.
 	 */
-	decContextDefault(Ctx, DEC_INIT_BASE);
-	Ctx->traps = 0;
-	Ctx->digits = DECNUMDIGITS;
-	Ctx->emax=DEC_MAX_MATH;
-	Ctx->emin=-DEC_MAX_MATH;
-	Ctx->round = DEC_ROUND_HALF_EVEN;
+	decContextDefault(&Ctx, DEC_INIT_BASE);
+	Ctx.traps = 0;
+	Ctx.digits = DECNUMDIGITS;
+	Ctx.emax=DEC_MAX_MATH;
+	Ctx.emin=-DEC_MAX_MATH;
+	Ctx.round = DEC_ROUND_HALF_EVEN;
 }
 
 

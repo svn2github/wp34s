@@ -68,47 +68,47 @@ int dn_gt0(const decNumber *x) {
 /* Some wrapper rountines to save space
  */
 decNumber *dn_add(decNumber *r, const decNumber *a, const decNumber *b) {
-	return decNumberAdd(r, a, b, Ctx);
+	return decNumberAdd(r, a, b, &Ctx);
 }
 
 decNumber *dn_subtract(decNumber *r, const decNumber *a, const decNumber *b) {
-	return decNumberSubtract(r, a, b, Ctx);
+	return decNumberSubtract(r, a, b, &Ctx);
 }
 
 decNumber *dn_multiply(decNumber *r, const decNumber *a, const decNumber *b) {
-	return decNumberMultiply(r, a, b, Ctx);
+	return decNumberMultiply(r, a, b, &Ctx);
 }
 
 decNumber *dn_divide(decNumber *r, const decNumber *a, const decNumber *b) {
-	return decNumberDivide(r, a, b, Ctx);
+	return decNumberDivide(r, a, b, &Ctx);
 }
 
 decNumber *dn_compare(decNumber *r, const decNumber *a, const decNumber *b) {
-	return decNumberCompare(r, a, b, Ctx);
+	return decNumberCompare(r, a, b, &Ctx);
 }
 
 decNumber *dn_min(decNumber *r, const decNumber *a, const decNumber *b) {
-	return decNumberMin(r, a, b, Ctx);
+	return decNumberMin(r, a, b, &Ctx);
 }
 
 decNumber *dn_max(decNumber *r, const decNumber *a, const decNumber *b) {
-	return decNumberMax(r, a, b, Ctx);
+	return decNumberMax(r, a, b, &Ctx);
 }
 
 decNumber *dn_abs(decNumber *r, const decNumber *a) {
-	return decNumberAbs(r, a, Ctx);
+	return decNumberAbs(r, a, &Ctx);
 }
 
 decNumber *dn_minus(decNumber *r, const decNumber *a) {
-	return decNumberMinus(r, a, Ctx);
+	return decNumberMinus(r, a, &Ctx);
 }
 
 decNumber *dn_sqrt(decNumber *r, const decNumber *a) {
-	return decNumberSquareRoot(r, a, Ctx);
+	return decNumberSquareRoot(r, a, &Ctx);
 }
 
 decNumber *dn_exp(decNumber *r, const decNumber *a) {
-	return decNumberExp(r, a, Ctx);
+	return decNumberExp(r, a, &Ctx);
 }
 
 
@@ -177,7 +177,7 @@ int dn_to_int(const decNumber *x) {
 	decNumber y;
 	char buf[64];
 
-	decNumberRescale(&y, x, &const_0, Ctx);
+	decNumberRescale(&y, x, &const_0, &Ctx);
 	decNumberToString(&y, buf);
 	return s_to_i(buf);
 }
@@ -186,7 +186,7 @@ unsigned long long int dn_to_ull(const decNumber *x, int *sgn) {
 	decNumber y;
 	char buf[64];
 
-	decNumberRescale(&y, x, &const_0, Ctx);
+	decNumberRescale(&y, x, &const_0, &Ctx);
 	if (decNumberIsNegative(x)) {
 		dn_minus(&y, &y);
 		*sgn = 1;
@@ -222,7 +222,7 @@ void decNumberPIon2(decNumber *pion2) {
 /* Check if a number is an integer.
  */
 int is_int(const decNumber *x) {
-	enum rounding a = Ctx->round;
+	enum rounding a = Ctx.round;
 	decNumber r, y;
 
 	if (decNumberIsNaN(x))
@@ -230,9 +230,9 @@ int is_int(const decNumber *x) {
 	if (decNumberIsInfinite(x))
 		return 1;
 
-	Ctx->round = DEC_ROUND_DOWN;
-	decNumberToIntegralValue(&y, x, Ctx);
-	Ctx->round = a;
+	Ctx.round = DEC_ROUND_DOWN;
+	decNumberToIntegralValue(&y, x, &Ctx);
+	Ctx.round = a;
 
 	dn_subtract(&r, x, &y);
 	if (! decNumberIsZero(&r))
@@ -304,11 +304,11 @@ static decNumber *dn_recip(decNumber *r, const decNumber *x,
  * the rounding mode properly.
  */
 static decNumber *round2int(decNumber *r, const decNumber *x, int mode) {
-	enum rounding a = Ctx->round;
+	enum rounding a = Ctx.round;
 
-	Ctx->round = mode;
-	decNumberToIntegralValue(r, x, Ctx);
-	Ctx->round = a;
+	Ctx.round = mode;
+	decNumberToIntegralValue(r, x, &Ctx);
+	Ctx.round = a;
 	return r;
 }
 
@@ -800,13 +800,13 @@ decNumber *decNumberMod(decNumber *res, const decNumber *x, const decNumber *y) 
 		decNumberUnit extra[((MOD_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
 	} out;
 
-	int digits = Ctx->digits;
+	int digits = Ctx.digits;
 
-	Ctx->digits = MOD_DIGITS;
-	decNumberRemainder(&out.n, x, y, Ctx);
-	Ctx->digits = digits;
+	Ctx.digits = MOD_DIGITS;
+	decNumberRemainder(&out.n, x, y, &Ctx);
+	Ctx.digits = digits;
 
-	return decNumberPlus(res, &out.n, Ctx);
+	return decNumberPlus(res, &out.n, &Ctx);
 }
 
 
@@ -819,13 +819,13 @@ decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *
 		decNumberUnit extra[((BIGMOD_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
 	} out;
 
-	int digits = Ctx->digits;
+	int digits = Ctx.digits;
 
-	Ctx->digits = BIGMOD_DIGITS;
-	decNumberRemainder(&out.n, x, y, Ctx);
-	Ctx->digits = digits;
+	Ctx.digits = BIGMOD_DIGITS;
+	decNumberRemainder(&out.n, x, y, &Ctx);
+	Ctx.digits = digits;
 
-	return decNumberPlus(res, &out.n, Ctx);
+	return decNumberPlus(res, &out.n, &Ctx);
 }
 
 
@@ -885,7 +885,7 @@ static int right_angle(decNumber *res, const decNumber *x,
 	decNumber r;
 	const decNumber *z;
 
-	decNumberRemainder(&r, x, quad, Ctx);
+	decNumberRemainder(&r, x, quad, &Ctx);
 	if (!decNumberIsZero(&r))
 		return 0;
 
@@ -2144,14 +2144,14 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 
 //	if (dmode == MODE_STD)
 //		numdig = 12;
-	round = Ctx->round;
-	digits = Ctx->digits;
+	round = Ctx.round;
+	digits = Ctx.digits;
 
-	Ctx->round = DEC_ROUND_HALF_UP;
-	Ctx->digits = numdig;
-	decNumberPlus(res, x, Ctx);
-	Ctx->digits = digits;
-	Ctx->round = round;
+	Ctx.round = DEC_ROUND_HALF_UP;
+	Ctx.digits = numdig;
+	decNumberPlus(res, x, &Ctx);
+	Ctx.digits = digits;
+	Ctx.round = round;
 	return res;
 }
 

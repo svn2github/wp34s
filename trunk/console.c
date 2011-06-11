@@ -347,10 +347,8 @@ int is_shift_down(int s)
  */
 int main(int argc, char *argv[]) {
 	int c, n = 0;
-	decContext ctx;
 	int warm = 0;
 
-	Ctx = &ctx;
 	xeq_init_contexts();
 	if (argc > 1) {
 		if (argc == 2) {

@@ -324,8 +324,6 @@ extern const unsigned short num_multicmds;
 #pragma pack(pop)
 #endif
 
-extern decContext *Ctx;
-
 
 /* Return the specified opcode in the position indicated in the current
  * catalogue.

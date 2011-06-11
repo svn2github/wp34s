@@ -7,7 +7,7 @@ extern "C"
 
 // use a class rather than tedious decnumber
 
-extern decContext* Ctx;
+extern decContext Ctx;
 
 class Dec
 {
@@ -21,7 +21,7 @@ public:
     {
         char buf[32];
         sprintf(buf, "%d", v);
-        decNumberFromString(&_v, buf, Ctx);
+        decNumberFromString(&_v, buf, &Ctx);
     }
 
     // operators

@@ -272,5 +272,6 @@ extern int JustStopped;            // set on program stop to ignore the next R/S
 extern int Error;		   // Did an error occur, if so what code?
 extern int ShowRegister; 	   // temporary display (not X)
 extern int PcWrapped;		   // dec() or inc() have rapped around
+extern decContext Ctx;
 
 #endif /* DATA_H_ */

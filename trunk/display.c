@@ -1228,7 +1228,7 @@ void display(void) {
 					set_NaN(&r);
 			} else
 				do_conv(&r, op & RARG_MASK, &x);
-			decNumberNormalize(&r, &r, Ctx);
+			decNumberNormalize(&r, &r, &Ctx);
 			packed_from_number(&z, &r);
 			set_x(&z, NULL);
 			skip = 1;

@@ -1070,7 +1070,7 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 			return;
 		}
 		cmplxMultiplyReal(&r1, &r2, ain, bin, &const_PI);
-		cmplxTan(&t1, &t2, &r1, &r2,Ctx);
+		cmplxTan(&t1, &t2, &r1, &r2,&Ctx);
 		cmplxDivideRealBy(&r1, &r2, &const_PI, &t1, &t2);
 		cmplxSubtractFromReal(&a, &b, &const_1, ain, bin);
 		cmplxMinus(rx, ry, &r1, &r2);
