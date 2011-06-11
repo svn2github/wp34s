@@ -410,7 +410,7 @@ struct constsml conversions[] = {
 	CONV("J",	"cal",		"J_CAL",	"4.1868"),
 	CONV("J",	"kWh",		"J_kWh",	"3600000"),
 	CONV("Pa",	"atm",		"Pa_ATM",	"101325"),
-	CONV("Pa",	"mbar",		"Pa_mbar",	"100"),
+	CONV("Pa",	"bar",		"Pa_bar",	"100000"),
 	CONV("Pa",	"mmHg",		"Pa_mmHg",	"133.3224"),
 	CONV("Pa",	"psi",		"Pa_psi",	"6894.757"),
 	CONV("Pa",	"inHg",		"Pa_inhg",	"3386.389"),
