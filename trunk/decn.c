@@ -2119,6 +2119,8 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 	decNumber p10;
 	decNumber t, u;
 	enum display_modes dmode = State.dispmode;
+	enum rounding round;
+	int digits;
 
 	if (decNumberIsSpecial(x))
 		return decNumberCopy(res, x);
@@ -2142,8 +2144,8 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 
 //	if (dmode == MODE_STD)
 //		numdig = 12;
-	enum rounding round = Ctx->round;
-	int digits = Ctx->digits;
+	round = Ctx->round;
+	digits = Ctx->digits;
 
 	Ctx->round = DEC_ROUND_HALF_UP;
 	Ctx->digits = numdig;

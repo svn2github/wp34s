@@ -813,7 +813,6 @@ decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const dec
 }
 
 
-#ifndef TINY_BUILD
 static int check_probability(decNumber *r, const decNumber *x, int min_zero) {
 	decNumber t;
 
@@ -891,13 +890,11 @@ static int qf_eval(decNumber *fx, const decNumber *x, const decNumber *p,
 	decNumberLn1p(fx, &a);
 	return 1;
 }
-#endif
 
 static decNumber *qf_search(decNumber *r,
 				const decNumber *x, int min_zero,
 				const decNumber *samp_low, const decNumber *samp_high,
 		decNumber *(*f)(decNumber *, const decNumber *)) {
-#ifndef TINY_BUILD
 	decNumber t, u, v, tv, uv, vv, oldv;
 	unsigned int flags = 0;
 
@@ -933,9 +930,6 @@ static decNumber *qf_search(decNumber *r,
 	} while (solver_step(&t, &u, &v, &tv, &uv, &vv, &flags, &relative_error) == 0);
 
 	return decNumberCopy(r, &v);
-#else
-	return NULL;
-#endif
 }
 
 
