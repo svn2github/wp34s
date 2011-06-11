@@ -991,11 +991,14 @@ void format_reg(decimal64 *r, char *buf) {
 
 	if (is_intmode())
 		set_int_x(r, buf);
+#ifndef HP16C_MODE_CHANGE
 	else if (buf == NULL && State2.smode > SDISP_SHOW) {
 		z = *r;
 		int_mode_convert(&z);
 		set_int_x(&z, NULL);
-	} else
+	}
+#endif
+	else
 		set_x(r, buf);
 }
 
