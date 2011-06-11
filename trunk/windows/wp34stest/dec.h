@@ -21,7 +21,7 @@ public:
     {
         char buf[32];
         sprintf(buf, "%d", v);
-        decNumberFromString(&_v, buf);
+        decNumberFromString(&_v, buf, Ctx);
     }
 
     // operators
@@ -67,7 +67,7 @@ public:
     Dec sin() const { decNumber r; decNumberSin(&r, &_v); return r; }
     Dec cos() const { decNumber r; decNumberCos(&r, &_v); return r; }
     Dec tan() const { decNumber r; decNumberTan(&r, &_v); return r; }
-    Dec exp() const { decNumber r; decNumberExp(&r, &_v); return r; }
+    Dec exp() const { decNumber r; dn_exp(&r, &_v); return r; }
 
     Dec asin() const { decNumber r; decNumberArcSin(&r, &_v); return r; }
     Dec acos() const { decNumber r; decNumberArcCos(&r, &_v); return r; }
