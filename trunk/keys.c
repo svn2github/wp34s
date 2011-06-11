@@ -118,6 +118,7 @@ void init_state(void) {
         C(contrast);
 	C(jg1582);
 #undef C
+	s.state_lift = 1;
 	xcopy(&State, &s, sizeof(struct _state));
 
 	xset(&State2, 0, sizeof(State2));
