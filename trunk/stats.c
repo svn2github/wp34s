@@ -872,7 +872,7 @@ static int param_range01(decNumber *r, const decNumber *p) {
 
 // Ln 1 + (cdf(x)-p)/p
 static int qf_eval(decNumber *fx, const decNumber *x, const decNumber *p,
-		decNumber *(*f)(decNumber *, const decNumber *;)) {
+		decNumber *(*f)(decNumber *, const decNumber *)) {
 	decNumber a, b;
 
 	busy();
