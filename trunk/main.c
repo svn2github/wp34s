@@ -1442,12 +1442,12 @@ int main(void)
 				if ( checksum_backup() ) {
 					// No valid backup, create an empty one
 					const char *p = DispMsg;
-					flash_backup( NULL, NULL, NULL );
+					flash_backup( NULL, NULL );
 					DispMsg = p;
 				}
 				else {
 					// restore recent backup after power on clear
-					flash_restore( NULL, NULL, NULL );
+					flash_restore( NULL, NULL );
 				}
 			}
 		}
@@ -1616,7 +1616,7 @@ int main(void)
 					}
 					else {
 						set_speed( SPEED_HIGH );
-						flash_backup( NULL, NULL, NULL );
+						flash_backup( NULL, NULL );
 						display();
 						confirm_counter = 0;
 					}
@@ -1629,7 +1629,7 @@ int main(void)
 					}
 					else {
 						set_speed( SPEED_HIGH );
-						flash_restore( NULL, NULL, NULL );
+						flash_restore( NULL, NULL );
 						display();
 						confirm_counter = 0;
 					}
