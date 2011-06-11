@@ -811,6 +811,10 @@ static int check_probability(decNumber *r, const decNumber *x, int min_zero) {
 	decNumber t;
 
 	/* Range check the probability input */
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
 	if (decNumberIsZero(x)) {
 	    if (min_zero)
 		decNumberCopy(r, &const_0);
@@ -1117,21 +1121,28 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x) {
 	return decNumberGammap(r, &a, &b);
 }
 
+static void qf_chi2_est(decNumber *a, decNumber *b, const decNumber *v, const decNumber *x) {
+	decNumber q, c;
+
+	dn_multiply(a, v, &const_2);
+	dn_subtract(b, a, &const_1);
+	dn_sqrt(a, b);
+	qf_Q(&q, x);
+	dn_add(&c, &q, a);
+	decNumberSquare(b, &c);
+	dn_multiply(a, b, &const_0_25);		// lower estimate
+	dn_multiply(b, a, &const_e);	
+}
+
 decNumber *qf_chi2(decNumber *r, const decNumber *x) {
-	decNumber a, b, c, q, v;
+	decNumber a, b, v;
 
 	if (chi2_param(r, &v, x))
 		return r;
-	dn_multiply(&a, &v, &const_2);
-	dn_subtract(&b, &a, &const_1);
-	dn_sqrt(&a, &b);
-	qf_Q(&q, x);
-	dn_add(&c, &q, &a);
-	decNumberSquare(&b, &c);
-	dn_multiply(&a, &b, &const_0_25);	// lower estimate
-	dn_multiply(&b, &a, &const_e);
+	qf_chi2_est(&a, &b, &v, x);
 	return qf_search(r, x, 1, &a, &b, &cdf_chi2);
 }
+
 
 static int t_param(decNumber *r, decNumber *v, const decNumber *x) {
 	dist_one_param(v);
@@ -1338,15 +1349,17 @@ decNumber *cdf_F(decNumber *r, const decNumber *x) {
 
 	dn_multiply(&t, &v1, x);
 	dn_add(&u, &t, &v2);			// u = v1 * x + v2
-	dn_divide(&w, &t, &u);		// w = (v1 * x) / (v1 * x + v2)
+	dn_divide(&w, &t, &u);			// w = (v1 * x) / (v1 * x + v2)
 	dn_multiply(&t, &v1, &const_0_5);
 	dn_multiply(&u, &v2, &const_0_5);
 	return betai(r, &t, &u, &w);
 }
 
 decNumber *qf_F(decNumber *r, const decNumber *x) {
-	if (decNumberIsZero(x))
-		return decNumberZero(r);
+	decNumber v1, v2;
+
+	if (f_param(r, &v1, &v2, x))
+		return r;
 	// MORE: provide reasonable initial estaimtes
 	return qf_search(r, x, 1, &const_1e_10, &const_20, &cdf_F);
 }
@@ -1416,13 +1429,12 @@ decNumber *qf_WB(decNumber *r, const decNumber *p) {
 		return r;
 	if (check_probability(r, p, 1))
 	    return r;
-	dn_subtract(&t, &const_1, p);
-	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
+	if (decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
 			dn_le0(&k) || dn_le0(&lam)) {
 		return set_NaN(r);
 	}
 
-	dn_ln(&u, &t);
+	dn_ln1m(&u, p);
 	dn_minus(&t, &u);
 	decNumberRecip(&u, &k);
 	dn_power(&k, &t, &u);
@@ -1490,7 +1502,7 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p) {
 		return r;
 	if (check_probability(r, p, 1))
 	    return r;
-	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || dn_le0(&lam)) {
+	if (decNumberIsSpecial(&lam) || dn_le0(&lam)) {
 		return set_NaN(r);
 	}
 
@@ -1671,8 +1683,6 @@ decNumber *cdf_G(decNumber *r, const decNumber *x) {
         if (decNumberIsInfinite(x))
                 return decNumberCopy(r, &const_1);
 
-//	dn_minus(&t, &p);
-//	decNumberLn1p(&u, &t);
 	dn_ln1m(&u, &p);
 	dn_multiply(&t, &u, x);
 	decNumberExpm1(&u, &t);
@@ -1686,10 +1696,6 @@ decNumber *qf_G(decNumber *r, const decNumber *x) {
                 return r;
         if (check_probability(r, x, 1))
                 return r;
-//	dn_minus(&t, x);
-//	decNumberLn1p(&v, &t);
-//	dn_minus(&u, &p);
-//	decNumberLn1p(&t, &u);
 	dn_ln1m(&v, x);
 	dn_ln1m(&t, &p);
         return dn_divide(r, &v, &t);
