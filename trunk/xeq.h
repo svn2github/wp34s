@@ -1091,6 +1091,7 @@ extern void xrom_tvm(decimal64 *a, decimal64 *b);
 extern void xrom_quad(decimal64 *a, decimal64 *b);
 
 extern void packed_from_number(decimal64 *r, const decNumber *x);
+extern void int_mode_convert(decimal64 *r);
 
 /* system functions */
 extern void busy(void);

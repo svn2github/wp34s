@@ -2643,7 +2643,7 @@ void op_signmant(decimal64 *a, decimal64 *b) {
  * to account for zero, infinities and NaNs.
  */
 #ifndef HP16C_MODE_CHANGE
-static void int_mode_convert(decimal64 *r) {
+void int_mode_convert(decimal64 *r) {
 	decNumber x;
 	int s;
 	unsigned long long int n;

@@ -987,9 +987,15 @@ static void set_x(const decimal64 *rgx, char *res) {
 
 
 void format_reg(decimal64 *r, char *buf) {
+	decimal64 z;
+
 	if (is_intmode())
 		set_int_x(r, buf);
-	else
+	else if (buf == NULL && State2.smode > SDISP_SHOW) {
+		z = *r;
+		int_mode_convert(&z);
+		set_int_x(&z, NULL);
+	} else
 		set_x(r, buf);
 }
 
