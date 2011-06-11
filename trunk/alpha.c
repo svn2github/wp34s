@@ -51,7 +51,7 @@ void add_string(const char *s) {
 
 /* Clear the Alpha register
  */
-void clralpha(decimal64 *a, decimal64 *b, decContext *nulc) {
+void clralpha(decimal64 *a, decimal64 *b) {
 	int i;
 
 	for (i=0; i<=NUMALPHA; i++)
@@ -70,7 +70,7 @@ void alpha_view_common(int reg) {
 	ShowRegister = reg;
 }
 
-void alpha_view(decimal64 *a, decimal64 *b, decContext *nulc) {
+void alpha_view(decimal64 *a, decimal64 *b) {
 	alpha_view_common((unsigned int)-1);
 }
 
@@ -120,7 +120,7 @@ void alpha_ip(unsigned int arg, enum rarg op) {
 		int z;
 
 		get_reg_n_as_dn(arg, &x);
-		z = dn_to_int(&x, Ctx64);
+		z = dn_to_int(&x, Ctx);
 		n = z<0?-z:z;
 		sgn = z<0;
 	}
@@ -140,7 +140,7 @@ unsigned int alen(void) {
 	return find_char(Alpha, '\0') - Alpha;
 }
 
-void alpha_length(decimal64 *x, decimal64 *b, decContext *ctx64) {
+void alpha_length(decimal64 *x, decimal64 *b) {
 	put_int(alen(), 0, x);
 }
 
@@ -181,12 +181,12 @@ void alpha_rot_r(unsigned int arg, enum rarg op) {
 /* Take first character from Alpha and return its code in X.
  * remove the character from Alpha
  */
-void alpha_tox(decimal64 *a, decimal64 *b, decContext *ctx64) {
+void alpha_tox(decimal64 *a, decimal64 *b) {
 	put_int(Alpha[0] & 0xff, 0, a);
 	alpha_shift_l(1, RARG_ALSL);
 }
 
-void alpha_fromx(decimal64 *a, decimal64 *b, decContext *ctx64) {
+void alpha_fromx(decimal64 *a, decimal64 *b) {
 	int s;
 	add_char(0xff & get_int(&regX, &s));
 }
@@ -253,11 +253,11 @@ void alpha_rcl(unsigned int arg, enum rarg op) {
 
 /* Turn alpha mode on and off
  */
-void alpha_on(decimal64 *a, decimal64 *b, decContext *ctx64) {
+void alpha_on(decimal64 *a, decimal64 *b) {
 	State2.alphas = 1;
 }
 
-void alpha_off(decimal64 *a, decimal64 *b, decContext *ctx64) {
+void alpha_off(decimal64 *a, decimal64 *b) {
 	State2.alphas = 0;
 }
 

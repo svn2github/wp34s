@@ -27,11 +27,11 @@
 #endif
 
 
-void jg1582(decimal64 *a, decimal64 *b, decContext *c) {
+void jg1582(decimal64 *a, decimal64 *b) {
 	State.jg1582 = 1;
 }
 
-void jg1752(decimal64 *a, decimal64 *b, decContext *c) {
+void jg1752(decimal64 *a, decimal64 *b) {
 	State.jg1582 = 0;
 }
 
@@ -385,7 +385,7 @@ decNumber *dateEaster(decNumber *res, const decNumber *x, decContext *ctx) {
 
 /* Test if a year is a leap year
  */
-void date_isleap(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void date_isleap(decimal64 *nul1, decimal64 *nul2) {
 	int y, t = 0;
 	decNumber x;
 
@@ -422,7 +422,7 @@ static void copy3(const char *p) {
 	add_string(buf);
 }
 
-void date_alphaday(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void date_alphaday(decimal64 *nul1, decimal64 *nul2) {
 	decNumber x;
 	int y, m, d, dow;
 	if (is_intmode())
@@ -438,7 +438,7 @@ void date_alphaday(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	}
 }
 
-void date_alphamonth(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void date_alphamonth(decimal64 *nul1, decimal64 *nul2) {
 	decNumber x;
 	int y, m, d;
 	static const char mons[12*3] = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
@@ -537,7 +537,7 @@ decNumber *dateFromJ(decNumber *res, const decNumber *x, decContext *ctx) {
 
 
 /* Date and times to the Alpha register */
-void date_alphadate(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void date_alphadate(decimal64 *nul1, decimal64 *nul2) {
 	decNumber x;
 	int d, m, y;
 	char buf[16];
@@ -577,7 +577,7 @@ void date_alphadate(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
 	add_string(buf);
 }
 
-void date_alphatime(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void date_alphatime(decimal64 *nul1, decimal64 *nul2) {
 	decNumber x,  y;
 	char buf[16], *p;
 	int a;
@@ -658,7 +658,7 @@ static void query_date(unsigned int *d, unsigned int *m, unsigned int *y) {
 }
 
 
-void date_date(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+void date_date(decimal64 *r, decimal64 *nul) {
 	unsigned int d, m, y;
 	decNumber z;
 
@@ -667,7 +667,7 @@ void date_date(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	packed_from_number(r, &z);
 }
 
-void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+void date_time(decimal64 *r, decimal64 *nul) {
 	unsigned int h, m, s;
 	decNumber a, b, c;
 
@@ -682,7 +682,7 @@ void date_time(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 	packed_from_number(r, &c);
 }
 
-void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+void date_setdate(decimal64 *r, decimal64 *nul) {
 	int d, m, y, dow;
 	decNumber x;
 
@@ -699,7 +699,7 @@ void date_setdate(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 #endif
 }
 
-void date_settime(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+void date_settime(decimal64 *r, decimal64 *nul) {
 	int s, m, h;
 	decNumber x, y;
 

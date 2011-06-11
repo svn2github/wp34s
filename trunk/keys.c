@@ -1674,8 +1674,8 @@ static int process_confirm(const keycode c) {
 	switch (c) {
 	case K63:			// Yes
 		switch (State2.confirm) {
-		case confirm_clall:	clrall(NULL, NULL, NULL);	break;
-		case confirm_reset:	reset(NULL, NULL, NULL);	break;
+		case confirm_clall:	clrall(NULL, NULL);	break;
+		case confirm_reset:	reset(NULL, NULL);	break;
 		case confirm_clprog:	clrprog();
 		}
 		State2.confirm = confirm_none;
@@ -2128,10 +2128,9 @@ static int process(const int c) {
 
 void process_keycode(int c) {
 	char tracebuf[25];
-	decContext ctx, ctx64;
+	decContext ctx;
 
 	Ctx = &ctx;
-	Ctx64 = &ctx64;
 	xeq_init_contexts();
 	c = process(c);
 	switch (c) {

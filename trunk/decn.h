@@ -26,6 +26,19 @@ extern int dn_gt0(const decNumber *x);
 extern int dn_lt0(const decNumber *x);
 extern int dn_le0(const decNumber *x);
 
+extern decNumber *dn_add(decNumber *r, const decNumber *a, const decNumber *b);
+extern decNumber *dn_subtract(decNumber *r, const decNumber *a, const decNumber *b);
+extern decNumber *dn_multiply(decNumber *r, const decNumber *a, const decNumber *b);
+extern decNumber *dn_divide(decNumber *r, const decNumber *a, const decNumber *b);
+extern decNumber *dn_abs(decNumber *r, const decNumber *a);
+/*
+#define decNumberAdd(r, a, b, ctx)	dn_add(r, a, b)
+#define decNumberSubtract(r, a, b, ctx)	dn_subtract(r, a, b)
+#define decNumberMultiply(r, a, b, ctx)	dn_multiply(r, a, b)
+#define decNumberDivide(r, a, b, ctx)	dn_divide(r, a, b)
+#define decNumberAbs(r, a, ctx)		dn_abs(r, a)
+*/
+
 extern void decNumberSwap(decNumber *a, decNumber *b);
 
 extern const decNumber *small_int(int i);
@@ -97,8 +110,8 @@ extern decNumber *decNumberSinc(decNumber *res, const decNumber *x, decContext *
 extern decNumber *do_atan2(decNumber *at, const decNumber *ain, const decNumber *b, decContext *ctx);
 
 
-extern void op_r2p(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
-extern void op_p2r(decimal64 *nul1, decimal64 *nul2, decContext *nulc);
+extern void op_r2p(decimal64 *nul1, decimal64 *nul2);
+extern void op_p2r(decimal64 *nul1, decimal64 *nul2);
 
 extern decNumber *decNumberSinh(decNumber *res, const decNumber *x, decContext *);
 extern decNumber *decNumberCosh(decNumber *res, const decNumber *x, decContext *);

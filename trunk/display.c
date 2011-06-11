@@ -661,7 +661,7 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 	decNumber2Fraction(&n, &d, &w, Ctx);	/* Get the number as a numerator & denominator */
 
 	decNumberDivide(&t, &n, &d, Ctx);
-	decNumberCompare(&t, &t, &w, Ctx64);
+	decNumberCompare(&t, &t, &w, Ctx);
 	decNumberTrunc(&w, &x, Ctx);		/* Extract the whole part */
 
 	if (!State.improperfrac) {

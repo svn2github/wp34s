@@ -81,12 +81,12 @@ extern int isPrime(unsigned long long int x);
 extern long long int intMirror(long long int x);
 extern void intmsks(unsigned arg, enum rarg op);
 
-extern void intLJ(decimal64 *, decimal64 *, decContext *);
-extern void intRJ(decimal64 *, decimal64 *, decContext *);
+extern void intLJ(decimal64 *, decimal64 *);
+extern void intRJ(decimal64 *, decimal64 *);
 
 extern void intbits(unsigned arg, enum rarg op);
 
-extern void intDblMul(decimal64 *, decimal64 *, decContext *);
+extern void intDblMul(decimal64 *, decimal64 *);
 extern long long int intDblDiv(long long int, long long int, long long int);
 extern long long int intDblRmdr(long long int, long long int, long long int);
 

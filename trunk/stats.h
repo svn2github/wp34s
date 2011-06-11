@@ -19,56 +19,56 @@
 
 #define NUMSIGMAREG (13)
 
-extern void sigma_clear(decimal64 *, decimal64 *, decContext *);
+extern void sigma_clear(decimal64 *, decimal64 *);
 extern void sigma_plus(decContext *);
 extern void sigma_minus(decContext *);
 
-extern void stats_mean(decimal64 *, decimal64 *, decContext *);
-extern void stats_wmean(decimal64 *, decimal64 *, decContext *);
-extern void stats_gmean(decimal64 *, decimal64 *, decContext *);
-extern void stats_s(decimal64 *, decimal64 *, decContext *);
-extern void stats_sigma(decimal64 *, decimal64 *, decContext *);
-extern void stats_gs(decimal64 *, decimal64 *, decContext *);
-extern void stats_gsigma(decimal64 *, decimal64 *, decContext *);
-extern void stats_ws(decimal64 *, decimal64 *, decContext *);
-extern void stats_wsigma(decimal64 *, decimal64 *, decContext *);
+extern void stats_mean(decimal64 *, decimal64 *);
+extern void stats_wmean(decimal64 *, decimal64 *);
+extern void stats_gmean(decimal64 *, decimal64 *);
+extern void stats_s(decimal64 *, decimal64 *);
+extern void stats_sigma(decimal64 *, decimal64 *);
+extern void stats_gs(decimal64 *, decimal64 *);
+extern void stats_gsigma(decimal64 *, decimal64 *);
+extern void stats_ws(decimal64 *, decimal64 *);
+extern void stats_wsigma(decimal64 *, decimal64 *);
 extern decNumber *stats_xhat(decNumber *, const decNumber *, decContext *);
 extern decNumber *stats_yhat(decNumber *, const decNumber *, decContext *);
-extern void stats_correlation(decimal64 *, decimal64 *, decContext *);
-extern void stats_COV(decimal64 *, decimal64 *, decContext *);
-extern void stats_Sxy(decimal64 *, decimal64 *, decContext *);
-extern void stats_LR(decimal64 *, decimal64 *, decContext *);
-extern void stats_SErr(decimal64 *, decimal64 *, decContext *);
-extern void stats_gSErr(decimal64 *, decimal64 *, decContext *);
-extern void stats_wSErr(decimal64 *, decimal64 *, decContext *);
+extern void stats_correlation(decimal64 *, decimal64 *);
+extern void stats_COV(decimal64 *, decimal64 *);
+extern void stats_Sxy(decimal64 *, decimal64 *);
+extern void stats_LR(decimal64 *, decimal64 *);
+extern void stats_SErr(decimal64 *, decimal64 *);
+extern void stats_gSErr(decimal64 *, decimal64 *);
+extern void stats_wSErr(decimal64 *, decimal64 *);
 extern decNumber *stats_sigper(decNumber *, const decNumber *, decContext *);
 
-extern void sigma_N(decimal64 *, decimal64 *, decContext *);
-extern void sigma_X(decimal64 *, decimal64 *, decContext *);
-extern void sigma_Y(decimal64 *, decimal64 *, decContext *);
-extern void sigma_XX(decimal64 *, decimal64 *, decContext *);
-extern void sigma_YY(decimal64 *, decimal64 *, decContext *);
-extern void sigma_XY(decimal64 *, decimal64 *, decContext *);
-extern void sigma_X2Y(decimal64 *, decimal64 *, decContext *);
+extern void sigma_N(decimal64 *, decimal64 *);
+extern void sigma_X(decimal64 *, decimal64 *);
+extern void sigma_Y(decimal64 *, decimal64 *);
+extern void sigma_XX(decimal64 *, decimal64 *);
+extern void sigma_YY(decimal64 *, decimal64 *);
+extern void sigma_XY(decimal64 *, decimal64 *);
+extern void sigma_X2Y(decimal64 *, decimal64 *);
 
-extern void sigma_lnX(decimal64 *, decimal64 *, decContext *);
-extern void sigma_lnXlnX(decimal64 *, decimal64 *, decContext *);
-extern void sigma_lnY(decimal64 *, decimal64 *, decContext *);
-extern void sigma_lnYlnY(decimal64 *, decimal64 *, decContext *);
-extern void sigma_lnXlnY(decimal64 *, decimal64 *, decContext *);
-extern void sigma_XlnY(decimal64 *, decimal64 *, decContext *);
-extern void sigma_YlnX(decimal64 *, decimal64 *, decContext *);
+extern void sigma_lnX(decimal64 *, decimal64 *);
+extern void sigma_lnXlnX(decimal64 *, decimal64 *);
+extern void sigma_lnY(decimal64 *, decimal64 *);
+extern void sigma_lnYlnY(decimal64 *, decimal64 *);
+extern void sigma_lnXlnY(decimal64 *, decimal64 *);
+extern void sigma_XlnY(decimal64 *, decimal64 *);
+extern void sigma_YlnX(decimal64 *, decimal64 *);
 
-extern void sigma_sum(decimal64 *, decimal64 *, decContext *);
+extern void sigma_sum(decimal64 *, decimal64 *);
 
-extern void stats_mode_expf(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
-extern void stats_mode_linf(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
-extern void stats_mode_logf(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
-extern void stats_mode_pwrf(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
-extern void stats_mode_best(decimal64 *nul1, decimal64 *nul2, decContext *ctx);
+extern void stats_mode_expf(decimal64 *nul1, decimal64 *nul2);
+extern void stats_mode_linf(decimal64 *nul1, decimal64 *nul2);
+extern void stats_mode_logf(decimal64 *nul1, decimal64 *nul2);
+extern void stats_mode_pwrf(decimal64 *nul1, decimal64 *nul2);
+extern void stats_mode_best(decimal64 *nul1, decimal64 *nul2);
 
-extern void stats_random(decimal64 *, decimal64 *, decContext *);
-extern void stats_sto_random(decimal64 *, decimal64 *, decContext *);
+extern void stats_random(decimal64 *, decimal64 *);
+extern void stats_sto_random(decimal64 *, decimal64 *);
 
 extern decNumber *betai(decNumber *, const decNumber *, const decNumber *, const decNumber *, decContext *);
 

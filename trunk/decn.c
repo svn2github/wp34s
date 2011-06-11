@@ -65,6 +65,28 @@ int dn_gt0(const decNumber *x) {
 	return ! decNumberIsNegative(x) && ! decNumberIsZero(x);
 }
 
+/* Some wrapper rountines to save space
+ */
+decNumber *dn_add(decNumber *r, const decNumber *a, const decNumber *b) {
+	return decNumberAdd(r, a, b, Ctx);
+}
+
+decNumber *dn_subtract(decNumber *r, const decNumber *a, const decNumber *b) {
+	return decNumberSubtract(r, a, b, Ctx);
+}
+
+decNumber *dn_multiply(decNumber *r, const decNumber *a, const decNumber *b) {
+	return decNumberMultiply(r, a, b, Ctx);
+}
+
+decNumber *dn_divide(decNumber *r, const decNumber *a, const decNumber *b) {
+	return decNumberDivide(r, a, b, Ctx);
+}
+
+decNumber *dn_abs(decNumber *r, const decNumber *a) {
+	return decNumberAbs(r, a, Ctx);
+}
+
 
 /* Define a table of small integers.
  * This should be equal or larger than any of the summation integers required in the
@@ -1248,7 +1270,7 @@ decNumber *decNumberArcTan2(decNumber *res, const decNumber *a, const decNumber 
 	return res;	
 }
 
-void op_r2p(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_r2p(decimal64 *nul1, decimal64 *nul2) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &y);
@@ -1258,7 +1280,7 @@ void op_r2p(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
 	setXY(&rx, &y);
 }
 
-void op_p2r(decimal64 *nul1, decimal64 *nul2, decContext *nulc) {
+void op_p2r(decimal64 *nul1, decimal64 *nul2) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &ry);

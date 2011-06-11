@@ -82,27 +82,27 @@ static int check_data(int n) {
 }
 
 
-void stats_mode_expf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void stats_mode_expf(decimal64 *nul1, decimal64 *nul2) {
 	State.sigma_mode = SIGMA_EXP;
 }
 
-void stats_mode_linf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void stats_mode_linf(decimal64 *nul1, decimal64 *nul2) {
 	State.sigma_mode = SIGMA_LINEAR;
 }
 
-void stats_mode_logf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void stats_mode_logf(decimal64 *nul1, decimal64 *nul2) {
 	State.sigma_mode = SIGMA_LOG;
 }
 
-void stats_mode_pwrf(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void stats_mode_pwrf(decimal64 *nul1, decimal64 *nul2) {
 	State.sigma_mode = SIGMA_POWER;
 }
 
-void stats_mode_best(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void stats_mode_best(decimal64 *nul1, decimal64 *nul2) {
 	State.sigma_mode = SIGMA_BEST;
 }
 
-void sigma_clear(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void sigma_clear(decimal64 *nul1, decimal64 *nul2) {
 	sigmaN = CONSTANT_INT(OP_ZERO);
 	sigmaX = CONSTANT_INT(OP_ZERO);
 	sigmaY = CONSTANT_INT(OP_ZERO);
@@ -272,65 +272,65 @@ static void get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sx
 }
 
 
-void sigma_N(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_N(decimal64 *x, decimal64 *y) {
 	*x = sigmaN;
 }
 
-void sigma_X(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_X(decimal64 *x, decimal64 *y) {
 	*x = sigmaX;
 }
 
-void sigma_Y(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_Y(decimal64 *x, decimal64 *y) {
 	*x = sigmaY;
 }
 
-void sigma_XX(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_XX(decimal64 *x, decimal64 *y) {
 	*x = sigmaXX;
 }
 
-void sigma_YY(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_YY(decimal64 *x, decimal64 *y) {
 	*x = sigmaYY;
 }
 
-void sigma_XY(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_XY(decimal64 *x, decimal64 *y) {
 	*x = sigmaXY;
 }
 
-void sigma_X2Y(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_X2Y(decimal64 *x, decimal64 *y) {
 	*x = sigmaXXY;
 }
 
-void sigma_lnX(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_lnX(decimal64 *x, decimal64 *y) {
 	*x = sigmalnX;
 }
 
-void sigma_lnXlnX(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_lnXlnX(decimal64 *x, decimal64 *y) {
 	*x = sigmalnXlnX;
 }
 
-void sigma_lnY(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_lnY(decimal64 *x, decimal64 *y) {
 	*x = sigmalnY;
 }
 
-void sigma_lnYlnY(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_lnYlnY(decimal64 *x, decimal64 *y) {
 	*x = sigmalnYlnY;
 }
 
-void sigma_lnXlnY(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_lnXlnY(decimal64 *x, decimal64 *y) {
 	*x = sigmalnXlnY;
 }
 
-void sigma_XlnY(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_XlnY(decimal64 *x, decimal64 *y) {
 	*x = sigmaXlnY;
 }
 
-void sigma_YlnX(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void sigma_YlnX(decimal64 *x, decimal64 *y) {
 	*x = sigmaYlnX;
 }
 
-void sigma_sum(decimal64 *x, decimal64 *y, decContext *ctx64) {
-	sigma_X(x, NULL, NULL);
-	sigma_Y(y, NULL, NULL);
+void sigma_sum(decimal64 *x, decimal64 *y) {
+	sigma_X(x, NULL);
+	sigma_Y(y, NULL);
 }
 
 
@@ -343,7 +343,7 @@ static void mean_common(decimal64 *res, const decNumber *x, const decNumber *n, 
 	packed_from_number(res, p);
 }
 
-void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_mean(decimal64 *x, decimal64 *y) {
 	decNumber N;
 	decNumber sx, sy;
 
@@ -357,7 +357,7 @@ void stats_mean(decimal64 *x, decimal64 *y, decContext *ctx64) {
 
 
 // weighted mean sigmaXY / sigmaY
-void stats_wmean(decimal64 *x, decimal64 *nul, decContext *ctx64) {
+void stats_wmean(decimal64 *x, decimal64 *nul) {
 	decNumber xy, y;
 
 	if (check_data(1))
@@ -368,7 +368,7 @@ void stats_wmean(decimal64 *x, decimal64 *nul, decContext *ctx64) {
 }
 
 // geometric mean e^(sigmaLnX / N)
-void stats_gmean(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_gmean(decimal64 *x, decimal64 *y) {
 	decNumber N;
 	decNumber sx, sy;
 
@@ -418,33 +418,33 @@ static void S(decimal64 *x, decimal64 *y, int sample, int rootn, int exp) {
 }
 
 // sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
-void stats_s(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_s(decimal64 *x, decimal64 *y) {
 	S(x, y, 1, 0, 0);
 }
 
 // [sigma]x = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / n)
-void stats_sigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_sigma(decimal64 *x, decimal64 *y) {
 	S(x, y, 0, 0, 0);
 }
 
 // serr = sx / sqrt(n)
-void stats_SErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_SErr(decimal64 *x, decimal64 *y) {
 	S(x, y, 1, 1, 0);
 }
 
 
 // sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
-void stats_gs(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_gs(decimal64 *x, decimal64 *y) {
 	S(x, y, 1, 0, 1);
 }
 
 // [sigma]x = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / n)
-void stats_gsigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_gsigma(decimal64 *x, decimal64 *y) {
 	S(x, y, 0, 0, 1);
 }
 
 // serr = sx / sqrt(n)
-void stats_gSErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_gSErr(decimal64 *x, decimal64 *y) {
 	S(x, y, 1, 1, 1);
 }
 
@@ -474,15 +474,15 @@ void WS(decimal64 *x, int sample, int rootn) {
 	packed_from_number(x, p);
 }
 
-void stats_ws(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_ws(decimal64 *x, decimal64 *y) {
 	WS(x, 1, 0);
 }
 
-void stats_wsigma(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_wsigma(decimal64 *x, decimal64 *y) {
 	WS(x, 0, 0);
 }
 
-void stats_wSErr(decimal64 *x, decimal64 *y, decContext *ctx64) {
+void stats_wSErr(decimal64 *x, decimal64 *y) {
 	WS(x, 1, 1);
 }
 
@@ -528,7 +528,7 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 }
 
 
-void stats_correlation(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+void stats_correlation(decimal64 *r, decimal64 *nul) {
 	decNumber t;
 
 	if (check_data(2))
@@ -556,11 +556,11 @@ static void covariance(decimal64 *r, int sample) {
 	packed_from_number(r, &u);
 }
 
-void stats_COV(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+void stats_COV(decimal64 *r, decimal64 *nul) {
 	covariance(r, 0);
 }
 
-void stats_Sxy(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+void stats_Sxy(decimal64 *r, decimal64 *nul) {
 	covariance(r, 1);
 }
 
@@ -587,7 +587,7 @@ static void do_LR(decNumber *B, decNumber *A, decContext *ctx) {
 }
 
 
-void stats_LR(decimal64 *bout, decimal64 *aout, decContext *ctx64) {
+void stats_LR(decimal64 *bout, decimal64 *aout) {
 	decNumber a, b;
 
 	if (check_data(2))
@@ -656,7 +656,7 @@ static void taus_seed(unsigned long int s) {
 		taus_get();
 }
 
-void stats_random(decimal64 *r, decimal64 *nul, decContext *ctx64) {
+void stats_random(decimal64 *r, decimal64 *nul) {
 	// Start by generating the next in sequence
 	unsigned long int s;
 	decNumber y, z;
@@ -676,7 +676,7 @@ void stats_random(decimal64 *r, decimal64 *nul, decContext *ctx64) {
 }
 
 
-void stats_sto_random(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
+void stats_sto_random(decimal64 *nul1, decimal64 *nul2) {
 	unsigned long int s;
 	int z;
 	decNumber x;
@@ -685,7 +685,7 @@ void stats_sto_random(decimal64 *nul1, decimal64 *nul2, decContext *ctx) {
 		 s = d64toInt(&regX) & 0xffffffff;
 	} else {
 		getX(&x);
-		s = (unsigned long int) dn_to_ull(&x, Ctx64, &z);
+		s = (unsigned long int) dn_to_ull(&x, Ctx, &z);
 	}
 	taus_seed(s);
 }

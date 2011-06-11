@@ -571,7 +571,7 @@ static unsigned long long int packup(unsigned short int x[4]) {
 }
 #endif
 
-void intDblMul(decimal64 *nul1, decimal64 *nul2, decContext *ctx64) {
+void intDblMul(decimal64 *nul1, decimal64 *nul2) {
 #ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	unsigned long long int xv, yv;
@@ -1278,7 +1278,6 @@ long long int intMirror(long long int x) {
 }
 
 
-#ifndef TINY_BUILD
 /* Justify to the end of the register
  */
 static void justify(decimal64 *ct,
@@ -1301,18 +1300,13 @@ static void justify(decimal64 *ct,
 	}
 	d64fromInt(ct, (long long int)c);
 }
-#endif
 
-void intLJ(decimal64 *x, decimal64 *nul, decContext *ctx) {
-#ifndef TINY_BUILD
+void intLJ(decimal64 *x, decimal64 *nul) {
 	justify(x, &intLSL, topbit_mask());
-#endif
 }
 
-void intRJ(decimal64 *x, decimal64 *nul, decContext *ctx) {
-#ifndef TINY_BUILD
+void intRJ(decimal64 *x, decimal64 *nul) {
 	justify(x, &intLSR, 1LL);
-#endif
 }
 
 

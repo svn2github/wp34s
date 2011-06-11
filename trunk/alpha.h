@@ -21,20 +21,20 @@
 
 #define CHARS_IN_REG	6
 
-extern void clralpha(decimal64 *, decimal64 *, decContext *);
+extern void clralpha(decimal64 *, decimal64 *);
 extern void cmdalpha(unsigned int, enum rarg);
 extern void alpha_ip(unsigned int, enum rarg);
-extern void alpha_length(decimal64 *, decimal64 *, decContext *);
+extern void alpha_length(decimal64 *, decimal64 *);
 extern void alpha_shift_l(unsigned int, enum rarg);
 extern void alpha_shift_r(unsigned int, enum rarg);
 extern void alpha_rot_r(unsigned int, enum rarg);
 
-extern void alpha_view(decimal64 *, decimal64 *, decContext *);
+extern void alpha_view(decimal64 *, decimal64 *);
 extern void alpha_view_reg(unsigned int arg, enum rarg op);
 extern void alpha_view_common(int reg);
 
-extern void alpha_tox(decimal64 *, decimal64 *, decContext *);
-extern void alpha_fromx(decimal64 *, decimal64 *, decContext *);
+extern void alpha_tox(decimal64 *, decimal64 *);
+extern void alpha_fromx(decimal64 *, decimal64 *);
 extern void alpha_sto(unsigned int, enum rarg);
 extern void alpha_rcl(unsigned int, enum rarg);
 extern char *alpha_rcl_s(const decimal64 *, char buf[12]);
@@ -42,8 +42,8 @@ extern char *alpha_rcl_s(const decimal64 *, char buf[12]);
 extern void multialpha(opcode, enum multiops);
 
 extern void alpha_reg(unsigned int, enum rarg);
-extern void alpha_on(decimal64 *, decimal64 *, decContext *);
-extern void alpha_off(decimal64 *, decimal64 *, decContext *);
+extern void alpha_on(decimal64 *, decimal64 *);
+extern void alpha_off(decimal64 *, decimal64 *);
 
 
 extern void add_string(const char *);
