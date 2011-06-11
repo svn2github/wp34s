@@ -30,7 +30,16 @@ extern decNumber *dn_add(decNumber *r, const decNumber *a, const decNumber *b);
 extern decNumber *dn_subtract(decNumber *r, const decNumber *a, const decNumber *b);
 extern decNumber *dn_multiply(decNumber *r, const decNumber *a, const decNumber *b);
 extern decNumber *dn_divide(decNumber *r, const decNumber *a, const decNumber *b);
+extern decNumber *dn_compare(decNumber *r, const decNumber *a, const decNumber *b);
+extern decNumber *dn_min(decNumber *r, const decNumber *a, const decNumber *b);
+extern decNumber *dn_max(decNumber *r, const decNumber *a, const decNumber *b);
 extern decNumber *dn_abs(decNumber *r, const decNumber *a);
+extern decNumber *dn_minus(decNumber *r, const decNumber *a);
+extern decNumber *dn_plus(decNumber *r, const decNumber *a);
+extern decNumber *dn_sqrt(decNumber *r, const decNumber *a);
+extern decNumber *dn_exp(decNumber *r, const decNumber *a);
+extern decNumber *dn_power(decNumber *r, const decNumber *a, const decNumber *b);
+
 /*
 #define decNumberAdd(r, a, b, ctx)	dn_add(r, a, b)
 #define decNumberSubtract(r, a, b, ctx)	dn_subtract(r, a, b)
@@ -42,190 +51,190 @@ extern decNumber *dn_abs(decNumber *r, const decNumber *a);
 extern void decNumberSwap(decNumber *a, decNumber *b);
 
 extern const decNumber *small_int(int i);
-extern void int_to_dn(decNumber *, int, decContext *);
-extern int dn_to_int(const decNumber *, decContext *);
-extern void ullint_to_dn(decNumber *, unsigned long long int, decContext *);
-extern unsigned long long int dn_to_ull(const decNumber *, decContext *, int *);
+extern void int_to_dn(decNumber *, int);
+extern int dn_to_int(const decNumber *);
+extern void ullint_to_dn(decNumber *, unsigned long long int);
+extern unsigned long long int dn_to_ull(const decNumber *, int *);
 
 extern void decNumberPI(decNumber *pi);
 extern void decNumberPIon2(decNumber *pion2);
-extern int is_int(const decNumber *, decContext *);
+extern int is_int(const decNumber *);
 
-extern int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol, decContext *ctx);
+extern int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol);
 
-extern decNumber *decNumberMAdd(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberMAdd(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x);
 
-extern decNumber *decNumberMod(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
+extern decNumber *decNumberMod(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *y);
 
-extern decNumber *decNumberRnd(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberRecip(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberRnd(decNumber *r, const decNumber *x);
+extern decNumber *decNumberRecip(decNumber *r, const decNumber *x);
 
-extern decNumber *decNumberFloor(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberCeil(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberTrunc(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberRound(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberFrac(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberSign(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberFloor(decNumber *r, const decNumber *x);
+extern decNumber *decNumberCeil(decNumber *r, const decNumber *x);
+extern decNumber *decNumberTrunc(decNumber *r, const decNumber *x);
+extern decNumber *decNumberRound(decNumber *r, const decNumber *x);
+extern decNumber *decNumberFrac(decNumber *r, const decNumber *x);
+extern decNumber *decNumberSign(decNumber *r, const decNumber *x);
 
-extern decNumber *decNumberGCD(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx);
+extern decNumber *decNumberGCD(decNumber *r, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y);
 
-extern decNumber *decNumberPow_1(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPow2(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPow10(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberLn1p(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberExpm1(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberLog2(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberLog10(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberLogxy(decNumber *r, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberLamW(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberInvW(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPow_1(decNumber *r, const decNumber *x);
+extern decNumber *decNumberPow2(decNumber *r, const decNumber *x);
+extern decNumber *decNumberPow10(decNumber *r, const decNumber *x);
+extern decNumber *decNumberLn1p(decNumber *r, const decNumber *x);
+extern decNumber *decNumberExpm1(decNumber *r, const decNumber *x);
+extern decNumber *dn_log2(decNumber *r, const decNumber *x);
+extern decNumber *dn_log10(decNumber *r, const decNumber *x);
+extern decNumber *decNumberLogxy(decNumber *r, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberLamW(decNumber *r, const decNumber *x);
+extern decNumber *decNumberInvW(decNumber *r, const decNumber *x);
 
-extern decNumber *decNumberSquare(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberCube(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberCubeRoot(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberSquare(decNumber *r, const decNumber *x);
+extern decNumber *decNumberCube(decNumber *r, const decNumber *x);
+extern decNumber *decNumberCubeRoot(decNumber *r, const decNumber *x);
 
-extern decNumber *decNumber2Deg(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumber2Rad(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumber2Grad(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberDeg2(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberRad2(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberGrad2(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumber2Deg(decNumber *res, const decNumber *x);
+extern decNumber *decNumber2Rad(decNumber *res, const decNumber *x);
+extern decNumber *decNumber2Grad(decNumber *res, const decNumber *x);
+extern decNumber *decNumberDeg2(decNumber *res, const decNumber *x);
+extern decNumber *decNumberRad2(decNumber *res, const decNumber *x);
+extern decNumber *decNumberGrad2(decNumber *res, const decNumber *x);
 
-extern decNumber *decNumberSin(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberCos(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberTan(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberSin(decNumber *res, const decNumber *x);
+extern decNumber *decNumberCos(decNumber *res, const decNumber *x);
+extern decNumber *decNumberTan(decNumber *res, const decNumber *x);
 #if 0
-extern decNumber *decNumberSec(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberCosec(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberCot(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberSec(decNumber *res, const decNumber *x);
+extern decNumber *decNumberCosec(decNumber *res, const decNumber *x);
+extern decNumber *decNumberCot(decNumber *res, const decNumber *x);
 #endif
-extern decNumber *decNumberArcSin(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberArcCos(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberArcTan(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberArcTan2(decNumber *res, const decNumber *x, const decNumber *y, decContext *);
-extern decNumber *decNumberSinc(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberArcSin(decNumber *res, const decNumber *x);
+extern decNumber *decNumberArcCos(decNumber *res, const decNumber *x);
+extern decNumber *decNumberArcTan(decNumber *res, const decNumber *x);
+extern decNumber *decNumberArcTan2(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberSinc(decNumber *res, const decNumber *x);
 
-extern decNumber *do_atan2(decNumber *at, const decNumber *ain, const decNumber *b, decContext *ctx);
+extern decNumber *do_atan2(decNumber *at, const decNumber *ain, const decNumber *b);
 
 
 extern void op_r2p(decimal64 *nul1, decimal64 *nul2);
 extern void op_p2r(decimal64 *nul1, decimal64 *nul2);
 
-extern decNumber *decNumberSinh(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberCosh(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberTanh(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberSinh(decNumber *res, const decNumber *x);
+extern decNumber *decNumberCosh(decNumber *res, const decNumber *x);
+extern decNumber *decNumberTanh(decNumber *res, const decNumber *x);
 #if 0
-extern decNumber *decNumberSech(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberCosech(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberCoth(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberSech(decNumber *res, const decNumber *x);
+extern decNumber *decNumberCosech(decNumber *res, const decNumber *x);
+extern decNumber *decNumberCoth(decNumber *res, const decNumber *x);
 #endif
-extern decNumber *decNumberArcSinh(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberArcCosh(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberArcTanh(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberArcSinh(decNumber *res, const decNumber *x);
+extern decNumber *decNumberArcCosh(decNumber *res, const decNumber *x);
+extern decNumber *decNumberArcTanh(decNumber *res, const decNumber *x);
 
 /* Elliptic functions */
-extern decNumber *decNumberSN(decNumber *res, const decNumber *k, const decNumber *u, decContext *);
-extern decNumber *decNumberCN(decNumber *res, const decNumber *k, const decNumber *u, decContext *);
-extern decNumber *decNumberDN(decNumber *res, const decNumber *k, const decNumber *u, decContext *);
+extern decNumber *decNumberSN(decNumber *res, const decNumber *k, const decNumber *u);
+extern decNumber *decNumberCN(decNumber *res, const decNumber *k, const decNumber *u);
+extern decNumber *decNumberDN(decNumber *res, const decNumber *k, const decNumber *u);
 
 /* Bessel functions */
-extern decNumber *decNumberBSJN(decNumber *res, const decNumber *, const decNumber *u, decContext *);
-extern decNumber *decNumberBSIN(decNumber *res, const decNumber *, const decNumber *u, decContext *);
-extern decNumber *decNumberBSYN(decNumber *res, const decNumber *, const decNumber *u, decContext *);
-extern decNumber *decNumberBSKN(decNumber *res, const decNumber *, const decNumber *u, decContext *);
+extern decNumber *decNumberBSJN(decNumber *res, const decNumber *, const decNumber *u);
+extern decNumber *decNumberBSIN(decNumber *res, const decNumber *, const decNumber *u);
+extern decNumber *decNumberBSYN(decNumber *res, const decNumber *, const decNumber *u);
+extern decNumber *decNumberBSKN(decNumber *res, const decNumber *, const decNumber *u);
 
-extern decNumber *decNumberFactorial(decNumber *r, const decNumber *xin, decContext *ctx);
-extern decNumber *decNumberDblFactorial(decNumber *r, const decNumber *xin, decContext *ctx);
-extern decNumber *decNumberSubFactorial(decNumber *r, const decNumber *xin, decContext *ctx);
-extern decNumber *decNumberGamma(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberLnGamma(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberPsi(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberBeta(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberZeta(decNumber *res, const decNumber *x, decContext *);
+extern decNumber *decNumberFactorial(decNumber *r, const decNumber *xin);
+extern decNumber *decNumberDblFactorial(decNumber *r, const decNumber *xin);
+extern decNumber *decNumberSubFactorial(decNumber *r, const decNumber *xin);
+extern decNumber *decNumberGamma(decNumber *res, const decNumber *x);
+extern decNumber *decNumberLnGamma(decNumber *res, const decNumber *x);
+extern decNumber *decNumberPsi(decNumber *res, const decNumber *x);
+extern decNumber *decNumberBeta(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberZeta(decNumber *res, const decNumber *x);
 
 extern const decNumber *const gamma_consts[];
 extern const decNumber *const zeta_consts[];
 extern const decNumber *const digamma_consts[];
 
-extern decNumber *decNumberERF(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberERFC(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberERF(decNumber *res, const decNumber *x);
+extern decNumber *decNumberERFC(decNumber *res, const decNumber *x);
+extern decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *x);
 
-extern decNumber *decNumberFib(decNumber *res, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberFib(decNumber *res, const decNumber *x);
 
-extern decNumber *decNumberD2G(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberD2R(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberG2D(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberG2R(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberR2D(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberR2G(decNumber *res, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberD2G(decNumber *res, const decNumber *x);
+extern decNumber *decNumberD2R(decNumber *res, const decNumber *x);
+extern decNumber *decNumberG2D(decNumber *res, const decNumber *x);
+extern decNumber *decNumberG2R(decNumber *res, const decNumber *x);
+extern decNumber *decNumberR2D(decNumber *res, const decNumber *x);
+extern decNumber *decNumberR2G(decNumber *res, const decNumber *x);
 
-extern void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x, decContext *ctx);
+extern void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x);
 
-extern decNumber *decNumberComb(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberPerm(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
+extern decNumber *decNumberComb(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberPerm(decNumber *res, const decNumber *x, const decNumber *y);
 
-extern decNumber *decNumberPercent(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPerchg(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPertot(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPerMargin(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberMargin(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNemberPerMRR(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPercent(decNumber *res, const decNumber *x);
+extern decNumber *decNumberPerchg(decNumber *res, const decNumber *x);
+extern decNumber *decNumberPertot(decNumber *res, const decNumber *x);
+extern decNumber *decNumberPerMargin(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberMargin(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNemberPerMRR(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x);
 
-extern decNumber *decNumberHMS2HR(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberHMSAdd(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberHMSSub(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
+extern decNumber *decNumberHMS2HR(decNumber *res, const decNumber *x);
+extern decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x);
+extern decNumber *decNumberHMSAdd(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberHMSSub(decNumber *res, const decNumber *x, const decNumber *y);
 
-extern decNumber *decNumberParallel(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
+extern decNumber *decNumberParallel(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y);
 
-extern decNumber *decNumberNot(decNumber *res, const decNumber *x, decContext *);
-extern decNumber *decNumberAnd(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberOr(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberXor(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberNand(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberNor(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *decNumberNxor(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
+extern decNumber *decNumberNot(decNumber *res, const decNumber *x);
+extern decNumber *decNumberAnd(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberOr(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberXor(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberNand(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberNor(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *decNumberNxor(decNumber *res, const decNumber *x, const decNumber *y);
 
 
-extern void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv, decContext *ctx);
-extern void dn_sinhcosh(const decNumber *v, decNumber *sinhv, decNumber *coshv, decContext *ctx);
-extern void do_asin(decNumber *, const decNumber *, decContext *);
-extern void do_acos(decNumber *, const decNumber *, decContext *);
-extern void do_atan(decNumber *, const decNumber *, decContext *);
+extern void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv);
+extern void dn_sinhcosh(const decNumber *v, decNumber *sinhv, decNumber *coshv);
+extern void do_asin(decNumber *, const decNumber *);
+extern void do_acos(decNumber *, const decNumber *);
+extern void do_atan(decNumber *, const decNumber *);
 
-extern void dn_elliptic(decNumber *sn, decNumber *cn, decNumber *dn, const decNumber *u, const decNumber *k, decContext *ctx);
+extern void dn_elliptic(decNumber *sn, decNumber *cn, decNumber *dn, const decNumber *u, const decNumber *k);
 
 extern decNumber *set_NaN(decNumber *);
 extern decNumber *set_inf(decNumber *);
 extern decNumber *set_neginf(decNumber *);
 
-extern void dn_inc(decNumber *, decContext *);
-extern void dn_dec(decNumber *, decContext *);
+extern void dn_inc(decNumber *);
+extern void dn_dec(decNumber *);
 
-extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, decContext *, unsigned int *);
-extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, decContext *, unsigned int *, int (*)(const decNumber *, const decNumber *, const decNumber *, decContext *));
+extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, unsigned int *);
+extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, unsigned int *, int (*)(const decNumber *, const decNumber *, const decNumber *));
 
 extern void solver(unsigned int arg, enum rarg op);
 
-extern decNumber *decNumberPolyPn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPolyTn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPolyUn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPolyLn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPolyLnAlpha(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPolyHEn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
-extern decNumber *decNumberPolyHn(decNumber *res, const decNumber *y, const decNumber *x, decContext *ctx);
+extern decNumber *decNumberPolyPn(decNumber *res, const decNumber *y, const decNumber *x);
+extern decNumber *decNumberPolyTn(decNumber *res, const decNumber *y, const decNumber *x);
+extern decNumber *decNumberPolyUn(decNumber *res, const decNumber *y, const decNumber *x);
+extern decNumber *decNumberPolyLn(decNumber *res, const decNumber *y, const decNumber *x);
+extern decNumber *decNumberPolyLnAlpha(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x);
+extern decNumber *decNumberPolyHEn(decNumber *res, const decNumber *y, const decNumber *x);
+extern decNumber *decNumberPolyHn(decNumber *res, const decNumber *y, const decNumber *x);
 
-extern decNumber *decNumberBernBn(decNumber *res, const decNumber *n, decContext *);
-extern decNumber *decNumberBernBnS(decNumber *res, const decNumber *n, decContext *);
+extern decNumber *decNumberBernBn(decNumber *res, const decNumber *n);
+extern decNumber *decNumberBernBnS(decNumber *res, const decNumber *n);
 
-extern decNumber *decFactor(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *decFactor(decNumber *r, const decNumber *x);
 
-extern decNumber *decNumberLn(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *dn_ln(decNumber *r, const decNumber *x);
 
 
 #endif

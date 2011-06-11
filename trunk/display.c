@@ -531,10 +531,10 @@ static int check_special_dn(const decNumber *x, char *res) {
 static void hms_step(decNumber *res, decNumber *x, unsigned int *v) {
 	decNumber n;
 
-	decNumberMod(&n, x, &const_100, Ctx);
-	*v = dn_to_int(&n, Ctx);
-	decNumberDivide(&n, x, &const_100, Ctx);
-	decNumberTrunc(res, &n, Ctx);
+	decNumberMod(&n, x, &const_100);
+	*v = dn_to_int(&n);
+	dn_divide(&n, x, &const_100);
+	decNumberTrunc(res, &n);
 }
 
 static char *hms_render(unsigned int v, char *str, int *jin, int n, int spaces) {
@@ -581,24 +581,24 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 		return;
 	}
 
-	decNumberMod(&x, &y, &const_9000, Ctx);
-	decNumberAbs(&a, &y, Ctx);
+	decNumberMod(&x, &y, &const_9000);
+	dn_abs(&a, &y);
 	if (decNumberIsNegative(&x)) {
 		if (res != NULL)
 			*res += '-';
 		else
 			set_dot(MANT_SIGN);
-		decNumberMinus(&x, &x, Ctx);
+		dn_minus(&x, &x);
 	}
 
-	decNumberHR2HMS(&y, &x, Ctx);
-	decNumberMultiply(&t, &y, &const_1e6, Ctx);
-	decNumberRound(&u, &t, Ctx);
+	decNumberHR2HMS(&y, &x);
+	dn_multiply(&t, &y, &const_1e6);
+	decNumberRound(&u, &t);
 
 	hms_step(&t, &u, &fs);
 	hms_step(&u, &t, &sec);
 	hms_step(&t, &u, &min);
-	hr = dn_to_int(&t, Ctx);
+	hr = dn_to_int(&t);
 	if (sec >= 60) { sec -= 60; min++;	}
 	if (min >= 60) { min -= 60; hr++;	}
 
@@ -624,11 +624,11 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 	// j += SEGS_PER_EXP_DIGIT;
 
 	// Check for values too big or small
-	decNumberCompare(&x, &const_9000, &a, Ctx);
+	dn_compare(&x, &const_9000, &a);
 	if (dn_le0(&x)) {
 		res = set_dig_s(exp_last, 'o', res);
 	} else if (! decNumberIsZero(&a)) {
-		decNumberCompare(&x, &a, &const_0_0000005, Ctx);
+		dn_compare(&x, &a, &const_0_0000005);
 		if (decNumberIsNegative(&x)) {
 			res = set_dig_s(exp_last, 'u', res);
 		}
@@ -644,11 +644,11 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 	decimal64ToNumber(rgx, &w);
 	if (check_special_dn(&w, res))
 		return 1;
-	decNumberAbs(&x, &w, Ctx);
-	decNumberCompare(&d, &const_100000, &x, Ctx);
+	dn_abs(&x, &w);
+	dn_compare(&d, &const_100000, &x);
 	if (dn_le0(&d))
 		return 0;
-	decNumberCompare(&d, &x, &const_0_0001, Ctx);
+	dn_compare(&d, &x, &const_0_0001);
 	if (decNumberIsNegative(&d))
 		return 0;
 	if (decNumberIsNegative(&w)) {
@@ -657,25 +657,25 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 		else
 			set_dot(MANT_SIGN);
 	}
-	decNumberFrac(&w, &x, Ctx);
-	decNumber2Fraction(&n, &d, &w, Ctx);	/* Get the number as a numerator & denominator */
+	decNumberFrac(&w, &x);
+	decNumber2Fraction(&n, &d, &w);	/* Get the number as a numerator & denominator */
 
-	decNumberDivide(&t, &n, &d, Ctx);
-	decNumberCompare(&t, &t, &w, Ctx);
-	decNumberTrunc(&w, &x, Ctx);		/* Extract the whole part */
+	dn_divide(&t, &n, &d);
+	dn_compare(&t, &t, &w);
+	decNumberTrunc(&w, &x);		/* Extract the whole part */
 
 	if (!State.improperfrac) {
 		if (!decNumberIsZero(&w)) {
-			p = num_arg(p, dn_to_int(&w, Ctx));
+			p = num_arg(p, dn_to_int(&w));
 			*p++ = ' ';
 		}
 	} else {
-		decNumberMultiply(&x, &w, &d, Ctx);
-		decNumberAdd(&n, &n, &x, Ctx);
+		dn_multiply(&x, &w, &d);
+		dn_add(&n, &n, &x);
 	}
-	p = num_arg(p, dn_to_int(&n, Ctx));
+	p = num_arg(p, dn_to_int(&n));
 	*p++ = '/';
-	p = num_arg(p, dn_to_int(&d, Ctx));
+	p = num_arg(p, dn_to_int(&d));
 	*p = '\0';
 	if ((p - 12) > buf) {
 		p -= 12;
@@ -1213,12 +1213,12 @@ void display(void) {
 			if (opKIND(op) == KIND_MON) {
 				const unsigned int f = argKIND(op);
 				if (f < num_monfuncs && monfuncs[f].mondreal != FNULL) {
-					CALL(monfuncs[f].mondreal)(&r, &x, Ctx);
+					CALL(monfuncs[f].mondreal)(&r, &x);
 				}
 				else
 					set_NaN(&r);
 			} else
-				do_conv(&r, op & RARG_MASK, &x, Ctx);
+				do_conv(&r, op & RARG_MASK, &x);
 			decNumberNormalize(&r, &r, Ctx);
 			packed_from_number(&z, &r);
 			set_x(&z, NULL);

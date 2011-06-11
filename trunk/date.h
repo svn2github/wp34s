@@ -19,15 +19,15 @@
 
 #include "xeq.h"
 
-extern decNumber *dateDayOfWeek(decNumber *res, const decNumber *x, decContext *ctx);
+extern decNumber *dateDayOfWeek(decNumber *res, const decNumber *x);
 
-extern decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
-extern decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx);
+extern decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y);
+extern decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y);
 
-extern decNumber *dateToJ(decNumber *res, const decNumber *x, decContext *ctx);
-extern decNumber *dateFromJ(decNumber *res, const decNumber *x, decContext *ctx);
+extern decNumber *dateToJ(decNumber *res, const decNumber *x);
+extern decNumber *dateFromJ(decNumber *res, const decNumber *x);
 
-extern decNumber *dateEaster(decNumber *res, const decNumber *x, decContext *ctx);
+extern decNumber *dateEaster(decNumber *res, const decNumber *x);
 extern void date_isleap(decimal64 *, decimal64 *);
 
 extern void date_alphaday(decimal64 *, decimal64 *);

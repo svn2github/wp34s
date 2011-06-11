@@ -67,7 +67,7 @@ static void correlation(decNumber *, const enum sigma_modes);
 static int check_number(const decNumber *r, int n) {
 	decNumber s;
 
-	if (dn_lt0(decNumberCompare(&s, r, small_int(n), Ctx))) {
+	if (dn_lt0(dn_compare(&s, r, small_int(n)))) {
 		err(ERR_MORE_POINTS);
 		return 1;
 	}
@@ -122,66 +122,66 @@ void sigma_clear(decimal64 *nul1, decimal64 *nul2) {
 
 /* Accumulate sigma data.
  */
-static void sigop(decimal64 *r, const decNumber *a, decContext *ctx, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *, decContext *)) {
+static void sigop(decimal64 *r, const decNumber *a, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
 	decNumber t, u;
 
 	decimal64ToNumber(r, &t);
-	(*op)(&u, &t, a, ctx);
+	(*op)(&u, &t, a);
 	packed_from_number(r, &u);
 }
 
 
 /* Multiply a pair of values and accumulate into the sigma data.
  */
-static void mulop(decimal64 *r, const decNumber *a, const decNumber *b, decContext *ctx, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *, decContext *)) {
+static void mulop(decimal64 *r, const decNumber *a, const decNumber *b, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
 	decNumber t, u, v;
 
-	decNumberMultiply(&t, a, b, ctx);
+	dn_multiply(&t, a, b);
 	decimal64ToNumber(r, &v);
-	(*op)(&u, &v, &t, ctx);
+	(*op)(&u, &v, &t);
 	packed_from_number(r, &u);
 }
 
 
 /* Define a helper function to handle sigma+ and sigma-
  */
-static void sigma_helper(decContext *ctx, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *, decContext *)) {
+static void sigma_helper(decContext *ctx, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
 	decNumber x, y;
 	decNumber lx, ly;
 
 	getXY(&x, &y);
 
-	sigop(&sigmaN, &const_1, ctx, op);
-	sigop(&sigmaX, &x, ctx, op);
-	sigop(&sigmaY, &y, ctx, op);
-	mulop(&sigmaXX, &x, &x, ctx, op);
-	mulop(&sigmaYY, &y, &y, ctx, op);
-	mulop(&sigmaXY, &x, &y, ctx, op);
+	sigop(&sigmaN, &const_1, op);
+	sigop(&sigmaX, &x, op);
+	sigop(&sigmaY, &y, op);
+	mulop(&sigmaXX, &x, &x, op);
+	mulop(&sigmaYY, &y, &y, op);
+	mulop(&sigmaXY, &x, &y, op);
 
-	decNumberSquare(&lx, &x, ctx);
-	mulop(&sigmaXXY, &lx, &y, ctx, op);
+	decNumberSquare(&lx, &x);
+	mulop(&sigmaXXY, &lx, &y, op);
 
 //	if (State.sigma_mode == SIGMA_LINEAR)
 //		return;
 
-	decNumberLn(&lx, &x, ctx);
-	decNumberLn(&ly, &y, ctx);
+	dn_ln(&lx, &x);
+	dn_ln(&ly, &y);
 
-	sigop(&sigmalnX, &lx, ctx, op);
-	sigop(&sigmalnY, &ly, ctx, op);
-	mulop(&sigmalnXlnX, &lx, &lx, ctx, op);
-	mulop(&sigmalnYlnY, &ly, &ly, ctx, op);
-	mulop(&sigmalnXlnY, &lx, &ly, ctx, op);
-	mulop(&sigmaXlnY, &x, &ly, ctx, op);
-	mulop(&sigmaYlnX, &y, &lx, ctx, op);
+	sigop(&sigmalnX, &lx, op);
+	sigop(&sigmalnY, &ly, op);
+	mulop(&sigmalnXlnX, &lx, &lx, op);
+	mulop(&sigmalnYlnY, &ly, &ly, op);
+	mulop(&sigmalnXlnY, &lx, &ly, op);
+	mulop(&sigmaXlnY, &x, &ly, op);
+	mulop(&sigmaYlnX, &y, &lx, op);
 }
 
 void sigma_plus(decContext *ctx) {
-	sigma_helper(ctx, &decNumberAdd);
+	sigma_helper(ctx, &dn_add);
 }
 
 void sigma_minus(decContext *ctx) {
-	sigma_helper(ctx, &decNumberSubtract);
+	sigma_helper(ctx, &dn_subtract);
 }
 
 
@@ -192,16 +192,16 @@ static enum sigma_modes determine_best(const decNumber *n) {
 	enum sigma_modes m = SIGMA_LINEAR, i;
 	decNumber b, c, d;
 
-	decNumberCompare(&b, &const_2, n, Ctx);
+	dn_compare(&b, &const_2, n);
 	if (dn_lt0(&b)) {
 		correlation(&c, SIGMA_LINEAR);
-		decNumberAbs(&b, &c, Ctx);
+		dn_abs(&b, &c);
 		for (i=SIGMA_LINEAR+1; i<SIGMA_BEST; i++) {
 			correlation(&d, i);
 
 			if (! decNumberIsNaN(&d)) {
-				decNumberAbs(&c, &d, Ctx);
-				decNumberCompare(&d, &b, &c, Ctx);
+				dn_abs(&c, &d);
+				dn_compare(&d, &b, &c);
 				if (dn_lt0(&d)) {
 					decNumberCopy(&b, &c);
 					m = i;
@@ -337,9 +337,9 @@ void sigma_sum(decimal64 *x, decimal64 *y) {
 static void mean_common(decimal64 *res, const decNumber *x, const decNumber *n, int exp) {
 	decNumber t, u, *p = &t;
 
-	decNumberDivide(&t, x, n, Ctx);
+	dn_divide(&t, x, n);
 	if (exp)
-		decNumberExp(p=&u, &t, Ctx);
+		dn_exp(p=&u, &t);
 	packed_from_number(res, p);
 }
 
@@ -387,18 +387,18 @@ static void do_s(decimal64 *s,
 		int rootn, int exp) {
 	decNumber t, u, v, *p;
 
-	decNumberSquare(&t, sx, Ctx);
-	decNumberDivide(&u, &t, N, Ctx);
-	decNumberSubtract(&t, sxx, &u, Ctx);
-	decNumberDivide(&u, &t, denom, Ctx);
-	decNumberSquareRoot(p = &t, &u, Ctx);
+	decNumberSquare(&t, sx);
+	dn_divide(&u, &t, N);
+	dn_subtract(&t, sxx, &u);
+	dn_divide(&u, &t, denom);
+	dn_sqrt(p = &t, &u);
 
 	if (rootn) {
-		decNumberSquareRoot(&u, N, Ctx);
-		decNumberDivide(p = &v, &t, &u, Ctx);
+		dn_sqrt(&u, N);
+		dn_divide(p = &v, &t, &u);
 	}
 	if (exp) {
-		decNumberExp(&u, p, Ctx);
+		dn_exp(&u, p);
 		p = &u;
 	}
 	packed_from_number(s, p);
@@ -412,7 +412,7 @@ static void S(decimal64 *x, decimal64 *y, int sample, int rootn, int exp) {
 		return;
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, exp?SIGMA_QUIET_POWER:SIGMA_QUIET_LINEAR);
 	if (sample)
-		decNumberSubtract(n = &nm1, &N, &const_1, Ctx);
+		dn_subtract(n = &nm1, &N, &const_1);
 	do_s(x, &sxx, &sx, &N, n, rootn, exp);
 	do_s(y, &syy, &sy, &N, n, rootn, exp);
 }
@@ -459,17 +459,17 @@ void WS(decimal64 *x, int sample, int rootn) {
 		return;
 	decimal64ToNumber(&sigmaXXY, &sxxy);
 
-	decNumberMultiply(&t, &sy, &sxxy, Ctx);
-	decNumberSquare(&u, &sxy, Ctx);
-	decNumberSubtract(&v, &t, &u, Ctx);
-	decNumberSquare(p = &t, &sy, Ctx);
+	dn_multiply(&t, &sy, &sxxy);
+	decNumberSquare(&u, &sxy);
+	dn_subtract(&v, &t, &u);
+	decNumberSquare(p = &t, &sy);
 	if (sample)
-		decNumberSubtract(p = &u, &t, &syy, Ctx);
-	decNumberDivide(&w, &v, p, Ctx);
-	decNumberSquareRoot(p = &u, &w, Ctx);
+		dn_subtract(p = &u, &t, &syy);
+	dn_divide(&w, &v, p);
+	dn_sqrt(p = &u, &w);
 	if (rootn) {
-		decNumberSquareRoot(&t, &sy, Ctx);
-		decNumberDivide(p = &v, &u, &t, Ctx);
+		dn_sqrt(&t, &sy);
+		dn_divide(p = &v, &u, &t);
 	}
 	packed_from_number(x, p);
 }
@@ -487,12 +487,12 @@ void stats_wSErr(decimal64 *x, decimal64 *y) {
 }
 
 
-decNumber *stats_sigper(decNumber *res, const decNumber *x, decContext *ctx) {
+decNumber *stats_sigper(decNumber *res, const decNumber *x) {
 	decNumber sx, t;
 
 	get_sigmas(NULL, &sx, NULL, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
-	decNumberDivide(&t, x, &sx, ctx);
-	return decNumberMultiply(res, &t, &const_100, ctx);
+	dn_divide(&t, x, &sx);
+	return dn_multiply(res, &t, &const_100);
 }
 
 /* Calculate the correlation based on the stats data using the
@@ -504,24 +504,24 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 
 	get_sigmas(&N, &sx, &sy, &sxx, &syy, &sxy, m);
 
-	decNumberMultiply(t, &N, &sxx, Ctx);
-	decNumberSquare(&u, &sx, Ctx);
-	decNumberSubtract(&v, t, &u, Ctx);
-	decNumberMultiply(t, &N, &syy, Ctx);
-	decNumberSquare(&u, &sy, Ctx);
-	decNumberSubtract(&w, t, &u, Ctx);
-	decNumberMultiply(t, &v, &w, Ctx);
-	decNumberSquareRoot(&w, t, Ctx);
-	decNumberMultiply(t, &N, &sxy, Ctx);
-	decNumberMultiply(&u, &sx, &sy, Ctx);
-	decNumberSubtract(&v, t, &u, Ctx);
-	decNumberDivide(t, &v, &w, Ctx);
+	dn_multiply(t, &N, &sxx);
+	decNumberSquare(&u, &sx);
+	dn_subtract(&v, t, &u);
+	dn_multiply(t, &N, &syy);
+	decNumberSquare(&u, &sy);
+	dn_subtract(&w, t, &u);
+	dn_multiply(t, &v, &w);
+	dn_sqrt(&w, t);
+	dn_multiply(t, &N, &sxy);
+	dn_multiply(&u, &sx, &sy);
+	dn_subtract(&v, t, &u);
+	dn_divide(t, &v, &w);
 
-	decNumberCompare(&u, &const_1, t, Ctx);
+	dn_compare(&u, &const_1, t);
 	if (decNumberIsNegative(&u))
 		decNumberCopy(t, &const_1);
 	else {
-		decNumberCompare(&u, t, &const__1, Ctx);
+		dn_compare(&u, t, &const__1);
 		if (decNumberIsNegative(&u))
 			decNumberCopy(t, &const__1);
 	}
@@ -545,14 +545,14 @@ static void covariance(decimal64 *r, int sample) {
 	if (check_data(2))
 		return;
 	get_sigmas(&N, &sx, &sy, NULL, NULL, &sxy, State.sigma_mode);
-	decNumberMultiply(&t, &sx, &sy, Ctx);
-	decNumberDivide(&u, &t, &N, Ctx);
-	decNumberSubtract(&t, &sxy, &u, Ctx);
+	dn_multiply(&t, &sx, &sy);
+	dn_divide(&u, &t, &N);
+	dn_subtract(&t, &sxy, &u);
 	if (sample) {
-		decNumberSubtract(&v, &N, &const_1, Ctx);
-		decNumberDivide(&u, &t, &v, Ctx);
+		dn_subtract(&v, &N, &const_1);
+		dn_divide(&u, &t, &v);
 	} else
-		decNumberDivide(&u, &t, &N, Ctx);
+		dn_divide(&u, &t, &N);
 	packed_from_number(r, &u);
 }
 
@@ -565,25 +565,25 @@ void stats_Sxy(decimal64 *r, decimal64 *nul) {
 }
 
 // y = B . x + A
-static void do_LR(decNumber *B, decNumber *A, decContext *ctx) {
+static void do_LR(decNumber *B, decNumber *A) {
 	decNumber N, u, v, denom;
 	decNumber sx, sy, sxx, sxy;
 
 	get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, State.sigma_mode);
 
-	decNumberMultiply(B, &N, &sxx, ctx);
-	decNumberSquare(&u, &sx, ctx);
-	decNumberSubtract(&denom, B, &u, ctx);
+	dn_multiply(B, &N, &sxx);
+	decNumberSquare(&u, &sx);
+	dn_subtract(&denom, B, &u);
 
-	decNumberMultiply(B, &N, &sxy, ctx);
-	decNumberMultiply(&u, &sx, &sy, ctx);
-	decNumberSubtract(&v, B, &u, ctx);
-	decNumberDivide(A, &v, &denom, ctx);
+	dn_multiply(B, &N, &sxy);
+	dn_multiply(&u, &sx, &sy);
+	dn_subtract(&v, B, &u);
+	dn_divide(A, &v, &denom);
 
-	decNumberMultiply(B, &sxx, &sy, ctx);
-	decNumberMultiply(&u, &sx, &sxy, ctx);
-	decNumberSubtract(&v, B, &u, ctx);
-	decNumberDivide(B, &v, &denom, ctx);
+	dn_multiply(B, &sxx, &sy);
+	dn_multiply(&u, &sx, &sxy);
+	dn_subtract(&v, B, &u);
+	dn_divide(B, &v, &denom);
 }
 
 
@@ -592,32 +592,32 @@ void stats_LR(decimal64 *bout, decimal64 *aout) {
 
 	if (check_data(2))
 		return;
-	do_LR(&b, &a, Ctx);
+	do_LR(&b, &a);
 	packed_from_number(aout, &a);
 	packed_from_number(bout, &b);
 }
 
 
-decNumber *stats_xhat(decNumber *res, const decNumber *y, decContext *ctx) {
+decNumber *stats_xhat(decNumber *res, const decNumber *y) {
 	decNumber a, b, t;
 
 	if (check_data(2))
 		return NULL;
-	do_LR(&b, &a, ctx);
-	decNumberSubtract(&t, y, &b, ctx);
-	decNumberDivide(res, &a, &t, ctx);
+	do_LR(&b, &a);
+	dn_subtract(&t, y, &b);
+	dn_divide(res, &a, &t);
 	return res;
 }
 
 
-decNumber *stats_yhat(decNumber *res, const decNumber *x, decContext *ctx) {
+decNumber *stats_yhat(decNumber *res, const decNumber *x) {
 	decNumber a, b, t;
 
 	if (check_data(2))
 		return NULL;
-	do_LR(&b, &a, ctx);
-	decNumberMultiply(&t, x, &a, ctx);
-	decNumberAdd(res, &t, &b, ctx);
+	do_LR(&b, &a);
+	dn_multiply(&t, x, &a);
+	dn_add(res, &t, &b);
 	return res;
 }
 
@@ -669,8 +669,8 @@ void stats_random(decimal64 *r, decimal64 *nul) {
 	if (is_intmode())
 		d64fromInt(r, build_value(s, 0));
 	else {
-		ullint_to_dn(&z, s, Ctx);
-		decNumberMultiply(&y, &z, &const_randfac, Ctx);
+		ullint_to_dn(&z, s);
+		dn_multiply(&y, &z, &const_randfac);
 		packed_from_number(r, &y);
 	}
 }
@@ -685,79 +685,79 @@ void stats_sto_random(decimal64 *nul1, decimal64 *nul2) {
 		 s = d64toInt(&regX) & 0xffffffff;
 	} else {
 		getX(&x);
-		s = (unsigned long int) dn_to_ull(&x, Ctx, &z);
+		s = (unsigned long int) dn_to_ull(&x, &z);
 	}
 	taus_seed(s);
 }
 
 
 #ifndef TINY_BUILD
-static void check_low(decNumber *d, decContext *ctx) {
+static void check_low(decNumber *d) {
 	decNumber t, u;
 
-	decNumberAbs(&t, d, ctx);
-	decNumberCompare(&u, &t, &const_1e_32, ctx);
+	dn_abs(&t, d);
+	dn_compare(&u, &t, &const_1e_32);
 	if (decNumberIsNegative(&u))
 		decNumberCopy(d, &const_1e_32);
 }
 
 
-static void ib_step(decNumber *d, decNumber *c, const decNumber *aa, decContext *ctx) {
+static void ib_step(decNumber *d, decNumber *c, const decNumber *aa) {
 	decNumber t, u;
 
-	decNumberMultiply(&t, aa, d, ctx);
-	decNumberAdd(&u, &const_1, &t, ctx);	// d = 1+aa*d
-	check_low(&u, ctx);
-	decNumberRecip(d, &u, ctx);
-	decNumberDivide(&t, aa, c, ctx);
-	decNumberAdd(c, &const_1, &t, ctx);	// c = 1+aa/c
-	check_low(c, ctx);
+	dn_multiply(&t, aa, d);
+	dn_add(&u, &const_1, &t);	// d = 1+aa*d
+	check_low(&u);
+	decNumberRecip(d, &u);
+	dn_divide(&t, aa, c);
+	dn_add(c, &const_1, &t);	// c = 1+aa/c
+	check_low(c);
 }
 
 
-static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *x, decContext *ctx) {
+static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *x) {
 	decNumber aa, c, d, apb, am1, ap1, m, m2, oldr;
 	int i;
 	decNumber t, u, v, w;
 
-	decNumberAdd(&ap1, a, &const_1, ctx);		// ap1 = 1+a
-	decNumberSubtract(&am1, a, &const_1, ctx);	// am1 = a-1
-	decNumberAdd(&apb, a, b, ctx);			// apb = a+b
+	dn_add(&ap1, a, &const_1);		// ap1 = 1+a
+	dn_subtract(&am1, a, &const_1);	// am1 = a-1
+	dn_add(&apb, a, b);			// apb = a+b
 	decNumberCopy(&c, &const_1);			// c = 1
-	decNumberDivide(&t, x, &ap1, ctx);
-	decNumberMultiply(&u, &t, &apb, ctx);
-	decNumberSubtract(&t, &const_1, &u, ctx);	// t = 1-apb*x/ap1
-	check_low(&t, ctx);
-	decNumberRecip(&d, &t, ctx);			// d = 1/t
+	dn_divide(&t, x, &ap1);
+	dn_multiply(&u, &t, &apb);
+	dn_subtract(&t, &const_1, &u);	// t = 1-apb*x/ap1
+	check_low(&t);
+	decNumberRecip(&d, &t);			// d = 1/t
 	decNumberCopy(r, &d);				// res = d
 	decNumberZero(&m);
 	for (i=0; i<500; i++) {
 		decNumberCopy(&oldr, r);
-		dn_inc(&m, ctx);			// m = i+1
-		decNumberMultiply(&m2, &m, &const_2, ctx);
-		decNumberSubtract(&t, b, &m, ctx);
-		decNumberMultiply(&u, &t, &m, ctx);
-		decNumberMultiply(&t, &u, x, ctx);	// t = m*(b-m)*x
-		decNumberAdd(&u, &am1, &m2, ctx);
-		decNumberAdd(&v, a, &m2, ctx);
-		decNumberMultiply(&w, &u, &v, ctx);	// w = (am1+m2)*(a+m2)
-		decNumberDivide(&aa, &t, &w, ctx);	// aa = t/w
-		ib_step(&d, &c, &aa, ctx);
-		decNumberMultiply(&t, r, &d, ctx);
-		decNumberMultiply(r, &t, &c, ctx);	// r = r*d*c
-		decNumberAdd(&t, a, &m, ctx);
-		decNumberAdd(&u, &apb, &m, ctx);
-		decNumberMultiply(&w, &t, &u, ctx);
-		decNumberMultiply(&t, &w, x, ctx);
-		decNumberMinus(&w, &t, ctx);		// w = -(a+m)*(apb+m)*x
-		decNumberAdd(&t, a, &m2, ctx);
-		decNumberAdd(&u, &ap1, &m2, ctx);
-		decNumberMultiply(&v, &t, &u, ctx);	// v = (a+m2)*(ap1+m2)
-		decNumberDivide(&aa, &w, &v, ctx);	// aa = w/v
-		ib_step(&d, &c, &aa, ctx);
-		decNumberMultiply(&v, &d, &c, ctx);
-		decNumberMultiply(r, r, &v, ctx);	// r *= d*c
-		decNumberCompare(&u, &oldr, r, ctx);
+		dn_inc(&m);			// m = i+1
+		dn_multiply(&m2, &m, &const_2);
+		dn_subtract(&t, b, &m);
+		dn_multiply(&u, &t, &m);
+		dn_multiply(&t, &u, x);	// t = m*(b-m)*x
+		dn_add(&u, &am1, &m2);
+		dn_add(&v, a, &m2);
+		dn_multiply(&w, &u, &v);	// w = (am1+m2)*(a+m2)
+		dn_divide(&aa, &t, &w);	// aa = t/w
+		ib_step(&d, &c, &aa);
+		dn_multiply(&t, r, &d);
+		dn_multiply(r, &t, &c);	// r = r*d*c
+		dn_add(&t, a, &m);
+		dn_add(&u, &apb, &m);
+		dn_multiply(&w, &t, &u);
+		dn_multiply(&t, &w, x);
+		dn_minus(&w, &t);		// w = -(a+m)*(apb+m)*x
+		dn_add(&t, a, &m2);
+		dn_add(&u, &ap1, &m2);
+		dn_multiply(&v, &t, &u);	// v = (a+m2)*(ap1+m2)
+		dn_divide(&aa, &w, &v);	// aa = w/v
+		ib_step(&d, &c, &aa);
+		dn_multiply(&v, &d, &c);
+		dn_multiply(r, r, &v);	// r *= d*c
+		dn_compare(&u, &oldr, r);
 		if (decNumberIsZero(&u))
 			break;
 	}
@@ -766,46 +766,46 @@ static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const d
 
 /* Regularised incomplete beta function Ix(a, b)
  */
-decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *x, decContext *ctx) {
+decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber t, u, v, w, y;
 	int limit = 0;
 
-	decNumberCompare(&t, &const_1, x, ctx);
+	dn_compare(&t, &const_1, x);
 	if (decNumberIsNegative(x) || decNumberIsNegative(&t)) {
 		return set_NaN(r);
 	}
 	if (decNumberIsZero(x) || decNumberIsZero(&t))
 		limit = 1;
 	else {
-		decNumberLnBeta(&u, a, b, ctx);
-		decNumberLn(&v, x, ctx);		// v = ln(x)
-		decNumberMultiply(&t, a, &v, ctx);
-		decNumberSubtract(&v, &t, &u, ctx);	// v = lng(...)+a.ln(x)
-		decNumberSubtract(&y, &const_1, x, ctx);// y = 1-x
-		decNumberLn(&u, &y, ctx);		// u = ln(1-x)
-		decNumberMultiply(&t, &u, b, ctx);
-		decNumberAdd(&u, &t, &v, ctx);		// u = lng(...)+a.ln(x)+b.ln(1-x)
-		decNumberExp(&w, &u, ctx);
+		decNumberLnBeta(&u, a, b);
+		dn_ln(&v, x);		// v = ln(x)
+		dn_multiply(&t, a, &v);
+		dn_subtract(&v, &t, &u);	// v = lng(...)+a.ln(x)
+		dn_subtract(&y, &const_1, x);// y = 1-x
+		dn_ln(&u, &y);		// u = ln(1-x)
+		dn_multiply(&t, &u, b);
+		dn_add(&u, &t, &v);		// u = lng(...)+a.ln(x)+b.ln(1-x)
+		dn_exp(&w, &u);
 	}
-	decNumberAdd(&v, a, b, ctx);
-	decNumberAdd(&u, &v, &const_2, ctx);		// u = a+b+2
-	decNumberAdd(&t, a, &const_1, ctx);		// t = a+1
-	decNumberDivide(&v, &t, &u, ctx);		// u = (a+1)/(a+b+2)
-	decNumberCompare(&t, x, &v, ctx);
+	dn_add(&v, a, b);
+	dn_add(&u, &v, &const_2);		// u = a+b+2
+	dn_add(&t, a, &const_1);		// t = a+1
+	dn_divide(&v, &t, &u);		// u = (a+1)/(a+b+2)
+	dn_compare(&t, x, &v);
 	if (decNumberIsNegative(&t)) {
 		if (limit)
 			return decNumberZero(r);
-		betacf(&t, a, b, x, ctx);
-		decNumberDivide(&u, &t, a, ctx);
-		return decNumberMultiply(r, &w, &u, ctx);
+		betacf(&t, a, b, x);
+		dn_divide(&u, &t, a);
+		return dn_multiply(r, &w, &u);
 	} else {
 		if (limit)
 			return decNumberCopy(r, &const_1);
-		betacf(&t, b, a, &y, ctx);
-		decNumberDivide(&u, &t, b, ctx);
-		decNumberMultiply(&t, &w, &u, ctx);
-		return decNumberSubtract(r, &const_1, &t, ctx);
+		betacf(&t, b, a, &y);
+		dn_divide(&u, &t, b);
+		dn_multiply(&t, &w, &u);
+		return dn_subtract(r, &const_1, &t);
 	}
 #else
 	return NULL;
@@ -814,7 +814,7 @@ decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const dec
 
 
 #ifndef TINY_BUILD
-static int check_probability(decNumber *r, const decNumber *x, decContext *ctx, int min_zero) {
+static int check_probability(decNumber *r, const decNumber *x, int min_zero) {
 	decNumber t;
 
 	/* Range check the probability input */
@@ -825,7 +825,7 @@ static int check_probability(decNumber *r, const decNumber *x, decContext *ctx, 
 		set_neginf(r);
 	    return 1;
 	}
-	decNumberCompare(&t, &const_1, x, ctx);
+	dn_compare(&t, &const_1, x);
 	if (decNumberIsZero(&t)) {
 	    set_inf(r);
 	    return 1;
@@ -852,7 +852,7 @@ static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
 	if (decNumberIsSpecial(n) ||
 			dn_le0(n) ||
 			(!zero && decNumberIsZero(n)) ||
-			(intg && !is_int(n, Ctx))) {
+			(intg && !is_int(n))) {
 		decNumberZero(r);
 		Error = ERR_BAD_PARAM;
 		return 1;
@@ -867,7 +867,7 @@ static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
 static int param_range01(decNumber *r, const decNumber *p) {
 	decNumber h;
 
-	decNumberCompare(&h, &const_1, p, Ctx);
+	dn_compare(&h, &const_1, p);
 	if (decNumberIsSpecial(p) || dn_lt0(p) || dn_lt0(&h)) {
 		decNumberZero(r);
 		err(ERR_BAD_PARAM);
@@ -878,35 +878,35 @@ static int param_range01(decNumber *r, const decNumber *p) {
 
 
 // Ln 1 + (cdf(x)-p)/p
-static int qf_eval(decNumber *fx, const decNumber *x, const decNumber *p, decContext *ctx,
-		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
+static int qf_eval(decNumber *fx, const decNumber *x, const decNumber *p,
+		decNumber *(*f)(decNumber *, const decNumber *;)) {
 	decNumber a, b;
 
 	busy();
-	(*f)(&a, x, ctx);
-	decNumberSubtract(&b, &a, p, ctx);
+	(*f)(&a, x);
+	dn_subtract(&b, &a, p);
 	if (decNumberIsZero(&b))
 		return 0;
-	decNumberDivide(&a, &b, p, ctx);
-	decNumberLn1p(fx, &a, ctx);
+	dn_divide(&a, &b, p);
+	decNumberLn1p(fx, &a);
 	return 1;
 }
 #endif
 
 static decNumber *qf_search(decNumber *r,
-				const decNumber *x, decContext *ctx, int min_zero,
+				const decNumber *x, int min_zero,
 				const decNumber *samp_low, const decNumber *samp_high,
-		decNumber *(*f)(decNumber *, const decNumber *, decContext *)) {
+		decNumber *(*f)(decNumber *, const decNumber *)) {
 #ifndef TINY_BUILD
 	decNumber t, u, v, tv, uv, vv, oldv;
 	unsigned int flags = 0;
 
-	if (check_probability(r, x, ctx, min_zero))
+	if (check_probability(r, x, min_zero))
 	    return r;
 
 	// Evaluate the first two points which are given to us.
 	decNumberCopy(&t, samp_low);
-	if (qf_eval(&tv, &t, x, ctx, f) == 0)
+	if (qf_eval(&tv, &t, x, f) == 0)
 		return decNumberCopy(r, &t);
 	if (Error == ERR_BAD_PARAM) {
 		decNumberZero(r);
@@ -914,23 +914,23 @@ static decNumber *qf_search(decNumber *r,
 	}
 
 	decNumberCopy(&u, samp_high);
-	if (qf_eval(&uv, &u, x, ctx, f) == 0)
+	if (qf_eval(&uv, &u, x, f) == 0)
 		return decNumberCopy(r, &u);
 
-	solver_init(&v, &t, &u, &tv, &uv, ctx, &flags);
+	solver_init(&v, &t, &u, &tv, &uv, &flags);
 	set_NaN(&oldv);
 	do {
 		// If we got below the minimum, do a bisection step instead
 		if (min_zero && dn_le0(&v)) {
-			decNumberMin(&v, &t, &u, ctx);
-			decNumberMultiply(&v, &v, &const_0_5, ctx);
+			dn_min(&v, &t, &u);
+			dn_multiply(&v, &v, &const_0_5);
 		}
-		if (qf_eval(&vv, &v, x, ctx, f) == 0 || decNumberIsNaN(&vv))
+		if (qf_eval(&vv, &v, x, f) == 0 || decNumberIsNaN(&vv))
 			break;
-		if (relative_error(&v, &oldv, &const_1e_24, ctx))
+		if (relative_error(&v, &oldv, &const_1e_24))
 			break;
 		decNumberCopy(&oldv, &v);
-	} while (solver_step(&t, &u, &v, &tv, &uv, &vv, ctx, &flags, &relative_error) == 0);
+	} while (solver_step(&t, &u, &v, &tv, &uv, &vv, &flags, &relative_error) == 0);
 
 	return decNumberCopy(r, &v);
 #else
@@ -941,24 +941,24 @@ static decNumber *qf_search(decNumber *r,
 
 /* Evaluate Ln(1 - x) accurately
  */
-decNumber *dn_ln1m(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *dn_ln1m(decNumber *r, const decNumber *x) {
 	decNumber a;
-	decNumberMinus(&a, x, ctx);
-	return decNumberLn1p(r, &a, ctx);
+	dn_minus(&a, x);
+	return decNumberLn1p(r, &a);
 }
 
 
 // Normal(0,1) PDF
 // 1/sqrt(2 PI) . exp(-x^2/2)
-decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
+decNumber *pdf_Q(decNumber *q, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber r, t;
 
-	decNumberSquare(&t, x, ctx);
-	decNumberMultiply(&r, &t, &const_0_5, ctx);
-	decNumberMinus(&t, &r, ctx);
-	decNumberExp(&r, &t, ctx);
-	return decNumberMultiply(q, &r, &const_recipsqrt2PI, ctx);
+	decNumberSquare(&t, x);
+	dn_multiply(&r, &t, &const_0_5);
+	dn_minus(&t, &r);
+	dn_exp(&r, &t);
+	return dn_multiply(q, &r, &const_recipsqrt2PI);
 #else
 	return NULL;
 #endif
@@ -966,61 +966,61 @@ decNumber *pdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 
 // Normal(0,1) CDF function
 #ifndef TINY_BUILD
-decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x, decContext *ctx) {
+decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
 	decNumber t, u, v, a, x2, d, absx, n;
 	int i;
 
-	pdf_Q(pdf, x, ctx);
-	decNumberAbs(&absx, x, ctx);
-	decNumberCompare(&u, &const_PI, &absx, ctx);	// We need a number about 3.2 and this is close enough
+	pdf_Q(pdf, x);
+	dn_abs(&absx, x);
+	dn_compare(&u, &const_PI, &absx);	// We need a number about 3.2 and this is close enough
 	if (decNumberIsNegative(&u)) {
-		decNumberMinus(&x2, &absx, ctx);
+		dn_minus(&x2, &absx);
 		//n = ceil(5 + k / (|x| - 1))
-		decNumberSubtract(&v, &absx, &const_1, ctx);
-		decNumberDivide(&t, &const_256, &v, ctx);
-		decNumberAdd(&u, &t, &const_4, ctx);
-		decNumberCeil(&n, &u, ctx);
+		dn_subtract(&v, &absx, &const_1);
+		dn_divide(&t, &const_256, &v);
+		dn_add(&u, &t, &const_4);
+		decNumberCeil(&n, &u);
 		decNumberZero(&t);
 		do {
-			decNumberAdd(&u, x, &t, ctx);
-			decNumberDivide(&t, &n, &u, ctx);
-			dn_dec(&n, ctx);
+			dn_add(&u, x, &t);
+			dn_divide(&t, &n, &u);
+			dn_dec(&n);
 		} while (! decNumberIsZero(&n));
 
-		decNumberAdd(&u, &t, x, ctx);
-		decNumberDivide(q, pdf, &u, ctx);
+		dn_add(&u, &t, x);
+		dn_divide(q, pdf, &u);
 		if (! decNumberIsNegative(q))
-			decNumberSubtract(q, &const_1, q, ctx);
+			dn_subtract(q, &const_1, q);
 		if (decNumberIsNegative(x))
-			decNumberMinus(q, q, ctx);
+			dn_minus(q, q);
 		return q;
 	} else {
-		decNumberSquare(&x2, &absx, ctx);
+		decNumberSquare(&x2, &absx);
 		decNumberCopy(&t, &absx);
 		decNumberCopy(&a, &absx);
 		decNumberCopy(&d, &const_3);
 		for (i=0;i<500; i++) {
-			decNumberMultiply(&u, &t, &x2, ctx);
-			decNumberDivide(&t, &u, &d, ctx);
-			decNumberAdd(&u, &a, &t, ctx);
-			decNumberCompare(&v, &u, &a, ctx);
+			dn_multiply(&u, &t, &x2);
+			dn_divide(&t, &u, &d);
+			dn_add(&u, &a, &t);
+			dn_compare(&v, &u, &a);
 			if (decNumberIsZero(&v))
 				break;
 			decNumberCopy(&a, &u);
-			decNumberAdd(&d, &d, &const_2, ctx);
+			dn_add(&d, &d, &const_2);
 		}
-		decNumberMultiply(&v, &a, pdf, ctx);
+		dn_multiply(&v, &a, pdf);
 		if (decNumberIsNegative(x))
-			return decNumberSubtract(q, &const_0_5, &v, ctx);
-		return decNumberAdd(q, &const_0_5, &v, ctx);
+			return dn_subtract(q, &const_0_5, &v);
+		return dn_add(q, &const_0_5, &v);
 	}
 }
 #endif
 
-decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
+decNumber *cdf_Q(decNumber *q, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber t;
-	return cdf_Q_helper(q, &t, x, ctx);
+	return cdf_Q_helper(q, &t, x);
 #else
 	return NULL;
 #endif
@@ -1028,65 +1028,65 @@ decNumber *cdf_Q(decNumber *q, const decNumber *x, decContext *ctx) {
 
 
 #ifndef TINY_BUILD
-static void qf_Q_est(decNumber *est, const decNumber *x, const decNumber *x05, decContext *ctx) {
+static void qf_Q_est(decNumber *est, const decNumber *x, const decNumber *x05) {
 	const int invert = decNumberIsNegative(x05);
 	decNumber a, b, u, xc;
 
 	if (invert) {
-		decNumberSubtract(&xc, &const_1, x, ctx);
+		dn_subtract(&xc, &const_1, x);
 		x = &xc;
 	}
 
-	decNumberCompare(&a, x, &const_0_2, ctx);
+	dn_compare(&a, x, &const_0_2);
 	if (decNumberIsNegative(&a)) {
-		decNumberLn(&a, x, ctx);
-		decNumberMultiply(&u, &a, &const__2, ctx);
-		decNumberSubtract(&a, &u, &const_1, ctx);
-		decNumberSquareRoot(&b, &a, ctx);
-		decNumberMultiply(&a, &b, &const_sqrt2PI, ctx);
-		decNumberMultiply(&b, &a, x, ctx);
-		decNumberLn(&a, &b, ctx);
-		decNumberMultiply(&b, &a, &const__2, ctx);
-		decNumberSquareRoot(&a, &b, ctx);
-		decNumberDivide(&b, &const_0_2, &u, ctx);
-		decNumberAdd(est, &a, &b, ctx);
+		dn_ln(&a, x);
+		dn_multiply(&u, &a, &const__2);
+		dn_subtract(&a, &u, &const_1);
+		dn_sqrt(&b, &a);
+		dn_multiply(&a, &b, &const_sqrt2PI);
+		dn_multiply(&b, &a, x);
+		dn_ln(&a, &b);
+		dn_multiply(&b, &a, &const__2);
+		dn_sqrt(&a, &b);
+		dn_divide(&b, &const_0_2, &u);
+		dn_add(est, &a, &b);
 		if (!invert)
-			decNumberMinus(est, est, ctx);
+			dn_minus(est, est);
 	} else {
-		decNumberMultiply(&a, &const_sqrt2PI, x05, ctx);
-		decNumberCube(&b, &a, ctx);
-		decNumberDivide(&u, &b, &const_6, ctx);
-		decNumberAdd(est, &u, &a, ctx);
-		decNumberMinus(est, est, ctx);
+		dn_multiply(&a, &const_sqrt2PI, x05);
+		decNumberCube(&b, &a);
+		dn_divide(&u, &b, &const_6);
+		dn_add(est, &u, &a);
+		dn_minus(est, est);
 	}
 }
 #endif
 
-decNumber *qf_Q(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *qf_Q(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber a, b, t, cdf, pdf;
 	int i;
 
 
-	if (check_probability(r, x, ctx, 0))
+	if (check_probability(r, x, 0))
 		return r;
-	decNumberSubtract(&b, &const_0_5, x, ctx);
+	dn_subtract(&b, &const_0_5, x);
 	if (decNumberIsZero(&b)) {
 		decNumberZero(r);
 		return r;
 	}
 
-	qf_Q_est(r, x, &b, ctx);
+	qf_Q_est(r, x, &b);
 	for (i=0; i<10; i++) {
-		cdf_Q_helper(&cdf, &pdf, r, ctx);
-		decNumberSubtract(&a, &cdf, x, ctx);
-		decNumberDivide(&t, &a, &pdf, ctx);
-		decNumberMultiply(&a, &t, r, ctx);
-		decNumberMultiply(&b, &a, &const_0_5, ctx);
-		decNumberSubtract(&a, &b, &const_1, ctx);
-		decNumberDivide(&b, &t, &a, ctx);
-		decNumberAdd(&a, &b, r, ctx);
-		if (relative_error(&a, r, &const_1e_32, ctx))
+		cdf_Q_helper(&cdf, &pdf, r);
+		dn_subtract(&a, &cdf, x);
+		dn_divide(&t, &a, &pdf);
+		dn_multiply(&a, &t, r);
+		dn_multiply(&b, &a, &const_0_5);
+		dn_subtract(&a, &b, &const_1);
+		dn_divide(&b, &t, &a);
+		dn_add(&a, &b, r);
+		if (relative_error(&a, r, &const_1e_32))
 			break;
 		decNumberCopy(r, &a);
 	}
@@ -1098,7 +1098,7 @@ decNumber *qf_Q(decNumber *r, const decNumber *x, decContext *ctx) {
 
 
 // Pv(x) = (x/2)^(v/2) . exp(-x/2) / Gamma(v/2+1) . (1 + sum(x^k/(v+2)(v+4)..(v+2k))
-decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_chi2(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber a, b, v;
 
@@ -1113,15 +1113,15 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
 
-	decNumberMultiply(&a, &v, &const_0_5, ctx);
-	decNumberMultiply(&b, x, &const_0_5, ctx);
-	return decNumberGammap(r, &a, &b, ctx);
+	dn_multiply(&a, &v, &const_0_5);
+	dn_multiply(&b, x, &const_0_5);
+	return decNumberGammap(r, &a, &b);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *qf_chi2(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber a, b, c, q, v;
 
@@ -1131,21 +1131,21 @@ decNumber *qf_chi2(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (decNumberIsNaN(x)) {
 		return set_NaN(r);
 	}
-	decNumberMultiply(&a, &v, &const_2, ctx);
-	decNumberSubtract(&b, &a, &const_1, ctx);
-	decNumberSquareRoot(&a, &b, ctx);
-	qf_Q(&q, x, ctx);
-	decNumberAdd(&c, &q, &a, ctx);
-	decNumberSquare(&b, &c, ctx);
-	decNumberMultiply(&a, &b, &const_0_25, ctx);	// lower estimate
-	decNumberMultiply(&b, &a, &const_e, ctx);
-	return qf_search(r, x, ctx, 1, &a, &b, &cdf_chi2);
+	dn_multiply(&a, &v, &const_2);
+	dn_subtract(&b, &a, &const_1);
+	dn_sqrt(&a, &b);
+	qf_Q(&q, x);
+	dn_add(&c, &q, &a);
+	decNumberSquare(&b, &c);
+	dn_multiply(&a, &b, &const_0_25);	// lower estimate
+	dn_multiply(&b, &a, &const_e);
+	return qf_search(r, x, 1, &a, &b, &cdf_chi2);
 #else
 	return NULL;
 #endif
 }
 
-static int t_param(decNumber *r, decNumber *v, const decNumber *x, decContext *ctx) {
+static int t_param(decNumber *r, decNumber *v, const decNumber *x) {
 	dist_one_param(v);
 	if (param_positive(r, v))
 		return 1;
@@ -1157,12 +1157,12 @@ static int t_param(decNumber *r, decNumber *v, const decNumber *x, decContext *c
 }
 
 
-decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_T(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber t, v;
 	int invert;
 
-	if (t_param(r, &v, x, ctx))
+	if (t_param(r, &v, x))
 		return r;
 	if (decNumberIsInfinite(x)) {
 		if (decNumberIsNegative(x))
@@ -1170,18 +1170,18 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 		return decNumberCopy(r, &const_1);
 	}
 	if (decNumberIsInfinite(&v))			// Normal in the limit
-		return cdf_Q(r, x, ctx);
+		return cdf_Q(r, x);
 	if (decNumberIsZero(x))
 		return decNumberCopy(r, &const_0_5);
 	invert = ! decNumberIsNegative(x);
-	decNumberSquare(&t, x, ctx);
-	decNumberAdd(r, &t, &v, ctx);
-	decNumberDivide(&t, &v, r, ctx);
-	decNumberMultiply(r, &v, &const_0_5, ctx);
-	betai(&v, r, &const_0_5, &t, ctx);
-	decNumberMultiply(r, &const_0_5, &v, ctx);
+	decNumberSquare(&t, x);
+	dn_add(r, &t, &v);
+	dn_divide(&t, &v, r);
+	dn_multiply(r, &v, &const_0_5);
+	betai(&v, r, &const_0_5, &t);
+	dn_multiply(r, &const_0_5, &v);
 	if (invert)
-		decNumberSubtract(r, &const_1, r, ctx);
+		dn_subtract(r, &const_1, r);
 	return r;
 #else
 	return NULL;
@@ -1189,110 +1189,110 @@ decNumber *cdf_T(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 #ifndef TINY_BUILD
-static void qf_T_est(decNumber *r, const decNumber *df, const decNumber *p, const decNumber *p05, decContext *ctx) {
+static void qf_T_est(decNumber *r, const decNumber *df, const decNumber *p, const decNumber *p05) {
 	const int invert = decNumberIsNegative(p05);
 	int negate;
 	decNumber a, b, u, pc, pc05, x, x2, x3;
 
 	if (invert) {
-		decNumberSubtract(&pc, &const_1, p, ctx);
+		dn_subtract(&pc, &const_1, p);
 		p = &pc;
-		decNumberMinus(&pc05, p05, ctx);
+		dn_minus(&pc05, p05);
 		p05 = &pc05;
 	}
-	decNumberLn(&a, p, ctx);
-	decNumberMinus(&a, &a, ctx);
-	decNumberMultiply(&b, df, &const_1_7, ctx);
-	if (dn_lt0(decNumberCompare(&u, &a, &b, ctx))) {
-		qf_Q_est(&x, p, p05, ctx);
-		decNumberSquare(&x2, &x, ctx);
-		decNumberMultiply(&x3, &x2, &x, ctx);
-		decNumberAdd(&a, &x, &x3, ctx);
-		decNumberMultiply(&b, &a, &const_0_25, ctx);
-		decNumberDivide(&a, &b, df, ctx);
-		decNumberAdd(r, &a, &x, ctx);
+	dn_ln(&a, p);
+	dn_minus(&a, &a);
+	dn_multiply(&b, df, &const_1_7);
+	if (dn_lt0(dn_compare(&u, &a, &b))) {
+		qf_Q_est(&x, p, p05);
+		decNumberSquare(&x2, &x);
+		dn_multiply(&x3, &x2, &x);
+		dn_add(&a, &x, &x3);
+		dn_multiply(&b, &a, &const_0_25);
+		dn_divide(&a, &b, df);
+		dn_add(r, &a, &x);
 
-		decNumberDivide(&a, &x2, &const_3, ctx);
-		dn_inc(&a, ctx);
-		decNumberMultiply(&b, &a, &x3, ctx);
-		decNumberMultiply(&a, &b, &const_0_25, ctx);
-		decNumberSquare(&b, df, ctx);
-		decNumberDivide(&u, &a, &b, ctx);
-		decNumberAdd(r, r, &u, ctx);
+		dn_divide(&a, &x2, &const_3);
+		dn_inc(&a);
+		dn_multiply(&b, &a, &x3);
+		dn_multiply(&a, &b, &const_0_25);
+		decNumberSquare(&b, df);
+		dn_divide(&u, &a, &b);
+		dn_add(r, r, &u);
 		negate = invert;
 	} else {
-		decNumberMultiply(&x2, df, &const_2, ctx);
-		decNumberSubtract(&b, &x2, &const_1, ctx);
-		decNumberDivide(&a, &const_PI, &b, ctx);
-		decNumberSquareRoot(&b, &a, ctx);
-		decNumberMultiply(&a, &b, &x2, ctx);
-		decNumberMultiply(&b, &a, p, ctx);
-		decNumberRecip(&a, df, ctx);
-		decNumberPower(&u, &b, &a, ctx);
-		decNumberSquareRoot(&a, df, ctx);
-		decNumberDivide(r, &a, &u, ctx);
+		dn_multiply(&x2, df, &const_2);
+		dn_subtract(&b, &x2, &const_1);
+		dn_divide(&a, &const_PI, &b);
+		dn_sqrt(&b, &a);
+		dn_multiply(&a, &b, &x2);
+		dn_multiply(&b, &a, p);
+		decNumberRecip(&a, df);
+		dn_power(&u, &b, &a);
+		dn_sqrt(&a, df);
+		dn_divide(r, &a, &u);
 		negate = !invert;
 	}
 	if (negate)
-		decNumberMinus(r, r, ctx);
+		dn_minus(r, r);
 }
 
-static int qf_T_init(decNumber *r, decNumber *a, decNumber *b, const decNumber *x, decContext *ctx) {
+static int qf_T_init(decNumber *r, decNumber *a, decNumber *b, const decNumber *x) {
 	decNumber c, d, v;
 
-	if (t_param(r, &v, x, ctx))
+	if (t_param(r, &v, x))
 		return 1;
-	decNumberSubtract(b, &const_0_5, x, ctx);
+	dn_subtract(b, &const_0_5, x);
 	if (decNumberIsZero(b)) {
 		decNumberZero(r);
 		return 1;
 	}
 	if (decNumberIsInfinite(&v)) {					// Normal in the limit
-		qf_Q(r, x, ctx);
+		qf_Q(r, x);
 		return 1;
 	}
 
-	decNumberCompare(a, &v, &const_1, ctx);
+	dn_compare(a, &v, &const_1);
 	if (decNumberIsZero(a)) {					// special case v = 1
-		decNumberMultiply(a, b, &const_PI, ctx);
-		dn_sincos(a, &c, &d, ctx);
-		decNumberDivide(a, &c, &d, ctx);			// lower = tan(pi (x - 1/2))
-		decNumberMinus(r, a, ctx);
+		dn_multiply(a, b, &const_PI);
+		dn_sincos(a, &c, &d);
+		dn_divide(a, &c, &d);			// lower = tan(pi (x - 1/2))
+		dn_minus(r, a);
 		return 1;
 	}
-	decNumberCompare(&d, &v, &const_2, ctx);			// special case v = 2
+	dn_compare(&d, &v, &const_2);			// special case v = 2
 	if (decNumberIsZero(&d)) {
-		decNumberSubtract(a, &const_1, x, ctx);
-		decNumberMultiply(&c, a, x, ctx);
-		decNumberMultiply(&d, &c, &const_4, ctx);		// alpha = 4p(1-p)
+		dn_subtract(a, &const_1, x);
+		dn_multiply(&c, a, x);
+		dn_multiply(&d, &c, &const_4);		// alpha = 4p(1-p)
 
-		decNumberDivide(&c, &const_2, &d, ctx);
-		decNumberSquareRoot(a, &c, ctx);
-		decNumberMultiply(&c, a, b, ctx);
-		decNumberMultiply(r, &c, &const__2, ctx);
+		dn_divide(&c, &const_2, &d);
+		dn_sqrt(a, &c);
+		dn_multiply(&c, a, b);
+		dn_multiply(r, &c, &const__2);
 	}
 
 	// common case v >= 3
-	qf_T_est(&c, &v, x, b, ctx);
-	decNumberDivide(b, &c, &const_0_9, ctx);
-	decNumberMultiply(a, &c, &const_0_9, ctx);
+	qf_T_est(&c, &v, x, b);
+	dn_divide(b, &c, &const_0_9);
+	dn_multiply(a, &c, &const_0_9);
 	return 0;
 }
 #endif
 
-decNumber *qf_T(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *qf_T(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber a, b;
 
-	if (qf_T_init(r, &a, &b, x, ctx))
+	if (qf_T_init(r, &a, &b, x))
 		return r;
-	return qf_search(r, x, ctx, 0, &a, &b, &cdf_T);
+	return qf_search(r, x, 0, &a, &b, &cdf_T);
 #else
 	return NULL;
 #endif
 }
 	
-decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_F(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber t, u, w, v1, v2;
 
@@ -1307,29 +1307,29 @@ decNumber *cdf_F(decNumber *r, const decNumber *x, decContext *ctx) {
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
 
-	decNumberMultiply(&t, &v1, x, ctx);
-	decNumberAdd(&u, &t, &v2, ctx);			// u = v1 * x + v2
-	decNumberDivide(&w, &t, &u, ctx);		// w = (v1 * x) / (v1 * x + v2)
-	decNumberMultiply(&t, &v1, &const_0_5, ctx);
-	decNumberMultiply(&u, &v2, &const_0_5, ctx);
-	return betai(r, &t, &u, &w, ctx);
+	dn_multiply(&t, &v1, x);
+	dn_add(&u, &t, &v2);			// u = v1 * x + v2
+	dn_divide(&w, &t, &u);		// w = (v1 * x) / (v1 * x + v2)
+	dn_multiply(&t, &v1, &const_0_5);
+	dn_multiply(&u, &v2, &const_0_5);
+	return betai(r, &t, &u, &w);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *qf_F(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *qf_F(decNumber *r, const decNumber *x) {
 	if (decNumberIsZero(x))
 		return decNumberZero(r);
 	// MORE: provide reasonable initial estaimtes
-	return qf_search(r, x, ctx, 1, &const_1e_10, &const_20, &cdf_F);
+	return qf_search(r, x, 1, &const_1e_10, &const_20, &cdf_F);
 }
 
 
 /* Weibull distribution cdf = 1 - exp(-(x/lambda)^k)
  */
 #ifndef TINY_BUILD
-static int weibull_param(decNumber *r, decNumber *k, decNumber *lam, const decNumber *x, decContext *ctx) {
+static int weibull_param(decNumber *r, decNumber *k, decNumber *lam, const decNumber *x) {
 	dist_two_param(k, lam);
 	if (param_positive(r, k) || param_positive(r, lam))
 		return 1;
@@ -1341,44 +1341,44 @@ static int weibull_param(decNumber *r, decNumber *k, decNumber *lam, const decNu
 }
 #endif
 
-decNumber *pdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_WB(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber k, lam, t, u, v, q;
 
-	if (weibull_param(r, &k, &lam, x, ctx))
+	if (weibull_param(r, &k, &lam, x))
 		return r;
 	if (dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
 	}
-	decNumberDivide(&q, x, &lam, ctx);
-	decNumberPower(&u, &q, &k, ctx);		// (x/lam)^k
-	decNumberDivide(&t, &u, &q, ctx);		// (x/lam)^(k-1)
-	decNumberExp(&v, &u, ctx);
-	decNumberDivide(&q, &t, &v, ctx);
-	decNumberDivide(&t, &q, &lam, ctx);
-	return decNumberMultiply(r, &t, &k, ctx);
+	dn_divide(&q, x, &lam);
+	dn_power(&u, &q, &k);		// (x/lam)^k
+	dn_divide(&t, &u, &q);		// (x/lam)^(k-1)
+	dn_exp(&v, &u);
+	dn_divide(&q, &t, &v);
+	dn_divide(&t, &q, &lam);
+	return dn_multiply(r, &t, &k);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_WB(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber k, lam, t;
 
-	if (weibull_param(r, &k, &lam, x, ctx))
+	if (weibull_param(r, &k, &lam, x))
 		return r;
 	if (dn_le0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
 
-	decNumberDivide(&t, x, &lam, ctx);
-	decNumberPower(&lam, &t, &k, ctx);
-	decNumberMinus(&t, &lam, ctx);
-	decNumberExpm1(&lam, &t, ctx);
-	return decNumberMinus(r, &lam, ctx);
+	dn_divide(&t, x, &lam);
+	dn_power(&lam, &t, &k);
+	dn_minus(&t, &lam);
+	decNumberExpm1(&lam, &t);
+	return dn_minus(r, &lam);
 #else
 	return NULL;
 #endif
@@ -1393,25 +1393,25 @@ decNumber *cdf_WB(decNumber *r, const decNumber *x, decContext *ctx) {
  *	x = (-ln(1-p) ^ (1/k)) * lambda
  * So no searching is required.
  */
-decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
+decNumber *qf_WB(decNumber *r, const decNumber *p) {
 #ifndef TINY_BUILD
 	decNumber t, u, k, lam;
 
-	if (weibull_param(r, &k, &lam, p, ctx))
+	if (weibull_param(r, &k, &lam, p))
 		return r;
-	if (check_probability(r, p, ctx, 1))
+	if (check_probability(r, p, 1))
 	    return r;
-	decNumberSubtract(&t, &const_1, p, ctx);
+	dn_subtract(&t, &const_1, p);
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
 			dn_le0(&k) || dn_le0(&lam)) {
 		return set_NaN(r);
 	}
 
-	decNumberLn(&u, &t, ctx);
-	decNumberMinus(&t, &u, ctx);
-	decNumberRecip(&u, &k, ctx);
-	decNumberPower(&k, &t, &u, ctx);
-	return decNumberMultiply(r, &lam, &k, ctx);
+	dn_ln(&u, &t);
+	dn_minus(&t, &u);
+	decNumberRecip(&u, &k);
+	dn_power(&k, &t, &u);
+	return dn_multiply(r, &lam, &k);
 #else
 	return NULL;
 #endif
@@ -1421,7 +1421,7 @@ decNumber *qf_WB(decNumber *r, const decNumber *p, decContext *ctx) {
 /* Exponential distribution cdf = 1 - exp(-lambda . x)
  */
 #ifndef TINY_BUILD
-static int exponential_xform(decNumber *r, decNumber *lam, const decNumber *x, decContext *ctx) {
+static int exponential_xform(decNumber *r, decNumber *lam, const decNumber *x) {
 	dist_one_param(lam);
 	if (param_positive(r, lam))
 		return 1;
@@ -1433,40 +1433,40 @@ static int exponential_xform(decNumber *r, decNumber *lam, const decNumber *x, d
 }
 #endif
 
-decNumber *pdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_EXP(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber lam, t, u;
 
-	if (exponential_xform(r, &lam, x, ctx))
+	if (exponential_xform(r, &lam, x))
 		return r;
 	if (dn_lt0(x)) {
 		set_NaN(r);
 		return r;
 	}
-	decNumberMultiply(&t, &lam, x, ctx);
-	decNumberMinus(&u, &t, ctx);
-	decNumberExp(&t, &u, ctx);
-	return decNumberMultiply(r, &t, &lam, ctx);
+	dn_multiply(&t, &lam, x);
+	dn_minus(&u, &t);
+	dn_exp(&t, &u);
+	return dn_multiply(r, &t, &lam);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_EXP(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber lam, t, u;
 
-	if (exponential_xform(r, &lam, x, ctx))
+	if (exponential_xform(r, &lam, x))
 		return r;
 	if (dn_le0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
 
-	decNumberMultiply(&t, &lam, x, ctx);
-	decNumberMinus(&u, &t, ctx);
-	decNumberExpm1(&t, &u, ctx);
-	return decNumberMinus(r, &t, ctx);
+	dn_multiply(&t, &lam, x);
+	dn_minus(&u, &t);
+	decNumberExpm1(&t, &u);
+	return dn_minus(r, &t);
 #else
 	return NULL;
 #endif
@@ -1480,24 +1480,24 @@ decNumber *cdf_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
  * Thus, the quantile function is:
  *	x = ln(1-p)/-lambda
  */
-decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
+decNumber *qf_EXP(decNumber *r, const decNumber *p) {
 #ifndef TINY_BUILD
 	decNumber t, u, lam;
 
 	dist_one_param(&lam);
 	if (param_positive(r, &lam))
 		return r;
-	if (check_probability(r, p, ctx, 1))
+	if (check_probability(r, p, 1))
 	    return r;
 	if (decNumberIsNaN(p) || decNumberIsSpecial(&lam) || dn_le0(&lam)) {
 		return set_NaN(r);
 	}
 
-//	decNumberMinus(&t, p, ctx);
-//	decNumberLn1p(&u, &t, ctx);
-	dn_ln1m(&u, p, ctx);
-	decNumberDivide(&t, &u, &lam, ctx);
-	return decNumberMinus(r, &t, ctx);
+//	dn_minus(&t, p);
+//	decNumberLn1p(&u, &t);
+	dn_ln1m(&u, p);
+	dn_divide(&t, &u, &lam);
+	return dn_minus(r, &t);
 #else
 	return NULL;
 #endif
@@ -1506,7 +1506,7 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p, decContext *ctx) {
 /* Binomial cdf f(k; n, p) = iBeta(n-floor(k), 1+floor(k); 1-p)
  */
 #ifndef TINY_BUILD
-static int binomial_param(decNumber *r, decNumber *p, decNumber *n, const decNumber *x, decContext *ctx) {
+static int binomial_param(decNumber *r, decNumber *p, decNumber *n, const decNumber *x) {
 	dist_two_param(p, n);
 	if (param_nonnegative_int(r, n) || param_range01(r, p))
 		return 1;
@@ -1518,73 +1518,73 @@ static int binomial_param(decNumber *r, decNumber *p, decNumber *n, const decNum
 }
 #endif
 
-decNumber *cdf_B_helper(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_B_helper(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber n, p, t, u, v;
 
-	if (binomial_param(r, &p, &n, x, ctx))
+	if (binomial_param(r, &p, &n, x))
 		return r;
 	if (dn_lt0(x))
 		return decNumberZero(r);
-	if (dn_lt0(decNumberCompare(&t, &n, x, ctx)))
+	if (dn_lt0(dn_compare(&t, &n, x)))
 		return decNumberCopy(r, &const_1);
 
-	decNumberAdd(&u, x, &const_1, ctx);
-	decNumberSubtract(&v, &n, x, ctx);
-	decNumberSubtract(&t, &const_1, &p, ctx);
-	return betai(r, &v, &u, &t, ctx);
+	dn_add(&u, x, &const_1);
+	dn_subtract(&v, &n, x);
+	dn_subtract(&t, &const_1, &p);
+	return betai(r, &v, &u, &t);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *pdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_B(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber n, p, t, u, v;
 
-	if (binomial_param(r, &p, &n, x, ctx))
+	if (binomial_param(r, &p, &n, x))
 		return r;
-	if (! is_int(x, ctx)) {
+	if (! is_int(x)) {
 		decNumberZero(r);
 		return r;
 	}
 
-	decNumberSubtract(&u, &n, x, ctx);
+	dn_subtract(&u, &n, x);
 	if (dn_lt0(&u) || dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
 	}
-	decNumberSubtract(&t, &const_1, &p, ctx);
-	decNumberPower(&v, &t, &u, ctx);
-	decNumberComb(&t, &n, x, ctx);
-	decNumberMultiply(&u, &t, &v, ctx);
-	decNumberPower(&t, &p, x, ctx);
-	return decNumberMultiply(r, &t, &u, ctx);
+	dn_subtract(&t, &const_1, &p);
+	dn_power(&v, &t, &u);
+	decNumberComb(&t, &n, x);
+	dn_multiply(&u, &t, &v);
+	dn_power(&t, &p, x);
+	return dn_multiply(r, &t, &u);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_B(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_B(decNumber *r, const decNumber *x) {
 	decNumber t;
 
-	decNumberFloor(&t, x, ctx);
-	return cdf_B_helper(r, &t, ctx);
+	decNumberFloor(&t, x);
+	return cdf_B_helper(r, &t);
 }
 
-decNumber *qf_B(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *qf_B(decNumber *r, const decNumber *x) {
 	decNumber p, n;
 
-	if (binomial_param(r, &p, &n, x, ctx))
+	if (binomial_param(r, &p, &n, x))
 		return r;
-	return qf_search(r, x, ctx, 1, &const_0, &n, &cdf_B_helper);
+	return qf_search(r, x, 1, &const_0, &n, &cdf_B_helper);
 }
 
 
 /* Poisson cdf f(k, lam) = 1 - iGamma(floor(k+1), lam) / floor(k)! k>=0
  */
 #ifndef TINY_BUILD
-static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x, decContext *ctx) {
+static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x) {
 	decNumber prob, count;
 
 	dist_two_param(&prob, &count);
@@ -1594,67 +1594,67 @@ static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x, de
 		set_NaN(r);
 		return 1;
 	}
-	decNumberMultiply(lambda, &prob, &count, ctx);
+	dn_multiply(lambda, &prob, &count);
 	return 0;
 }
 #endif
 
 // Evaluate via: exp(x Ln(lambda) - lambda - sum(i=1, k, Ln(i)))
-decNumber *cdf_P_helper(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_P_helper(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber lambda, t, u;
 
-	poisson_param(r, &lambda, x, ctx);
+	poisson_param(r, &lambda, x);
 	if (dn_lt0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
 
-	decNumberAdd(&u, x, &const_1, ctx);
-	decNumberGammap(&t, &u, &lambda, ctx);
-	return decNumberSubtract(r, &const_1, &t, ctx);
+	dn_add(&u, x, &const_1);
+	decNumberGammap(&t, &u, &lambda);
+	return dn_subtract(r, &const_1, &t);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *pdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_P(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber lambda, t, u, v;
 
-	if (poisson_param(r, &lambda, x, ctx))
+	if (poisson_param(r, &lambda, x))
 		return r;
-	if (! is_int(x, ctx) || dn_lt0(x)) {
+	if (! is_int(x) || dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
 	}
-	decNumberPower(&t, &lambda, x, ctx);
-	decNumberFactorial(&u, x, ctx);
-	decNumberDivide(&v, &t, &u, ctx);
-	decNumberExp(&t, &lambda, ctx);
-	return decNumberDivide(r, &v, &t, ctx);
+	dn_power(&t, &lambda, x);
+	decNumberFactorial(&u, x);
+	dn_divide(&v, &t, &u);
+	dn_exp(&t, &lambda);
+	return dn_divide(r, &v, &t);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_P(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_P(decNumber *r, const decNumber *x) {
 	decNumber t;
 
-	decNumberFloor(&t, x, ctx);
-	return cdf_P_helper(r, &t, ctx);
+	decNumberFloor(&t, x);
+	return cdf_P_helper(r, &t);
 }
 
-decNumber *qf_P(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *qf_P(decNumber *r, const decNumber *x) {
 	// MORE: provide reasonable initial estaimtes
-	return qf_search(r, x, ctx, 1, &const_0, &const_20, &cdf_P_helper);
+	return qf_search(r, x, 1, &const_0, &const_20, &cdf_P_helper);
 }
 
 
 /* Geometric cdf
  */
 #ifndef TINY_BUILD
-static int geometric_param(decNumber *r, decNumber *p, const decNumber *x, decContext *ctx) {
+static int geometric_param(decNumber *r, decNumber *p, const decNumber *x) {
         dist_one_param(p);
         if (param_range01(r, p))
                 return 1;
@@ -1666,33 +1666,33 @@ static int geometric_param(decNumber *r, decNumber *p, const decNumber *x, decCo
 }
 #endif
 
-decNumber *pdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_G(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber p, t, u, v;
 
-	if (geometric_param(r, &p, x, ctx))
+	if (geometric_param(r, &p, x))
 		return r;
-        if (! is_int(x, ctx) || dn_lt0(x)) {
+        if (! is_int(x) || dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
         }
-	decNumberSubtract(&t, &const_1, &p, ctx);
-	decNumberSubtract(&u, x, &const_1, ctx);
-	decNumberPower(&v, &t, &u, ctx);
-	return decNumberMultiply(r, &v, &p, ctx);
+	dn_subtract(&t, &const_1, &p);
+	dn_subtract(&u, x, &const_1);
+	dn_power(&v, &t, &u);
+	return dn_multiply(r, &v, &p);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_G(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
         decNumber p, t, u, ipx;
 
-        if (geometric_param(r, &p, x, ctx))
+        if (geometric_param(r, &p, x))
                 return r;
-        if (! is_int(x, ctx)) {
-		decNumberFloor(&ipx, x, ctx);
+        if (! is_int(x)) {
+		decNumberFloor(&ipx, x);
 		x = &ipx;
         }
         if (dn_le0(x))
@@ -1700,32 +1700,32 @@ decNumber *cdf_G(decNumber *r, const decNumber *x, decContext *ctx) {
         if (decNumberIsInfinite(x))
                 return decNumberCopy(r, &const_1);
 
-//	decNumberMinus(&t, &p, ctx);
-//	decNumberLn1p(&u, &t, ctx);
-	dn_ln1m(&u, &p, ctx);
-	decNumberMultiply(&t, &u, x, ctx);
-	decNumberExpm1(&u, &t, ctx);
-	return decNumberMinus(r, &u, ctx);
+//	dn_minus(&t, &p);
+//	decNumberLn1p(&u, &t);
+	dn_ln1m(&u, &p);
+	dn_multiply(&t, &u, x);
+	decNumberExpm1(&u, &t);
+	return dn_minus(r, &u);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *qf_G(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
         decNumber p, t, v;
 
-        if (geometric_param(r, &p, x, ctx))
+        if (geometric_param(r, &p, x))
                 return r;
-        if (check_probability(r, x, ctx, 1))
+        if (check_probability(r, x, 1))
                 return r;
-//	decNumberMinus(&t, x, ctx);
-//	decNumberLn1p(&v, &t, ctx);
-//	decNumberMinus(&u, &p, ctx);
-//	decNumberLn1p(&t, &u, ctx);
-	dn_ln1m(&v, x, ctx);
-	dn_ln1m(&t, &p, ctx);
-        return decNumberDivide(r, &v, &t, ctx);
+//	dn_minus(&t, x);
+//	decNumberLn1p(&v, &t);
+//	dn_minus(&u, &p);
+//	decNumberLn1p(&t, &u);
+	dn_ln1m(&v, x);
+	dn_ln1m(&t, &p);
+        return dn_divide(r, &v, &t);
 #else
 	return NULL;
 #endif
@@ -1733,53 +1733,53 @@ decNumber *qf_G(decNumber *r, const decNumber *x, decContext *ctx) {
 
 /* Normal with specified mean and variance */
 #ifndef TINY_BUILD
-static int normal_xform(decNumber *r, decNumber *q, const decNumber *x, decNumber *var, decContext *ctx) {
+static int normal_xform(decNumber *r, decNumber *q, const decNumber *x, decNumber *var) {
 	decNumber a, mu;
 
 	dist_two_param(&mu, var);
 	if (param_positive(r, var))
 		return 1;
-	decNumberSubtract(&a, x, &mu, ctx);
-	decNumberDivide(q, &a, var, ctx);
+	dn_subtract(&a, x, &mu);
+	dn_divide(q, &a, var);
 	return 0;
 }
 #endif
 
-decNumber *pdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_normal(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber q, var, s;
 
-	if (normal_xform(r, &q, x, &var, ctx))
+	if (normal_xform(r, &q, x, &var))
 		return r;
-	pdf_Q(&s, &q, ctx);
-	return decNumberDivide(r, &s, &var, ctx);
+	pdf_Q(&s, &q);
+	return dn_divide(r, &s, &var);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_normal(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_normal(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber q, var;
 
-	if (normal_xform(r, &q, x, &var, ctx))
+	if (normal_xform(r, &q, x, &var))
 		return r;
-	return cdf_Q(r, &q, ctx);
+	return cdf_Q(r, &q);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
+decNumber *qf_normal(decNumber *r, const decNumber *p) {
 #ifndef TINY_BUILD
 	decNumber a, b, mu, var;
 
 	dist_two_param(&mu, &var);
 	if (param_positive(r, &var))
 		return r;
-	qf_Q(&a, p, ctx);
-	decNumberMultiply(&b, &a, &var, ctx);
-	return decNumberAdd(r, &b, &mu, ctx);
+	qf_Q(&a, p);
+	dn_multiply(&b, &a, &var);
+	return dn_add(r, &b, &mu);
 #else
 	return NULL;
 #endif
@@ -1787,36 +1787,36 @@ decNumber *qf_normal(decNumber *r, const decNumber *p, decContext *ctx) {
 
 
 /* Log normal with specified mean and variance */
-decNumber *pdf_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_lognormal(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber t, lx;
 
-	decNumberLn(&lx, x, ctx);
-	pdf_normal(&t, &lx, ctx);
-	return decNumberDivide(r, &t, x, ctx);
+	dn_ln(&lx, x);
+	pdf_normal(&t, &lx);
+	return dn_divide(r, &t, x);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_lognormal(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_lognormal(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber lx;
 
-	decNumberLn(&lx, x, ctx);
-	return cdf_normal(r, &lx, ctx);
+	dn_ln(&lx, x);
+	return cdf_normal(r, &lx);
 #else
 	return NULL;
 #endif
 }
 
 
-decNumber *qf_lognormal(decNumber *r, const decNumber *p, decContext *ctx) {
+decNumber *qf_lognormal(decNumber *r, const decNumber *p) {
 #ifndef TINY_BUILD
 	decNumber lr;
 
-	qf_normal(&lr, p, ctx);
-	return decNumberExp(r, &lr, ctx);
+	qf_normal(&lr, p);
+	return dn_exp(r, &lr);
 #else
 	return NULL;
 #endif
@@ -1824,64 +1824,64 @@ decNumber *qf_lognormal(decNumber *r, const decNumber *p, decContext *ctx) {
 
 /* Logistic with specified mean and spread */
 #ifndef TINY_BUILD
-static int logistic_xform(decNumber *r, decNumber *c, const decNumber *x, decNumber *s, decContext *ctx) {
+static int logistic_xform(decNumber *r, decNumber *c, const decNumber *x, decNumber *s) {
 	decNumber mu, a, b;
 	
 	dist_two_param(&mu, s);
 	if (param_positive(r, s))
 		return 1;
-	decNumberSubtract(&a, x, &mu, ctx);
-	decNumberDivide(&b, &a, s, ctx);
-	decNumberMultiply(c, &b, &const_0_5, ctx);
+	dn_subtract(&a, x, &mu);
+	dn_divide(&b, &a, s);
+	dn_multiply(c, &b, &const_0_5);
 	return 0;
 }
 #endif
 
-decNumber *pdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_logistic(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber a, b, s;
 
-	if (logistic_xform(r, &a, x, &s, ctx))
+	if (logistic_xform(r, &a, x, &s))
 		return r;
-	decNumberCosh(&b, &a, ctx);
-	decNumberSquare(&a, &b, ctx);
-	decNumberMultiply(&b, &a, &const_4, ctx);
-	decNumberMultiply(&a, &b, &s, ctx);
-	return decNumberRecip(r, &a, ctx);
+	decNumberCosh(&b, &a);
+	decNumberSquare(&a, &b);
+	dn_multiply(&b, &a, &const_4);
+	dn_multiply(&a, &b, &s);
+	return decNumberRecip(r, &a);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_logistic(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_logistic(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber a, b, s;
 
-	if (logistic_xform(r, &a, x, &s, ctx))
+	if (logistic_xform(r, &a, x, &s))
 		return r;
-	decNumberTanh(&b, &a, ctx);
-	decNumberMultiply(&a, &b, &const_0_5, ctx);
-	return decNumberAdd(r, &a, &const_0_5, ctx);
+	decNumberTanh(&b, &a);
+	dn_multiply(&a, &b, &const_0_5);
+	return dn_add(r, &a, &const_0_5);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *qf_logistic(decNumber *r, const decNumber *p, decContext *ctx) {
+decNumber *qf_logistic(decNumber *r, const decNumber *p) {
 #ifndef TINY_BUILD
 	decNumber a, b, mu, s;
 
 	dist_two_param(&mu, &s);
 	if (param_positive(r, &s))
 		return r;
-	if (check_probability(r, p, ctx, 0))
+	if (check_probability(r, p, 0))
 	    return r;
-	decNumberSubtract(&a, p, &const_0_5, ctx);
-	decNumberMultiply(&b, &a, &const_2, ctx);
-	decNumberArcTanh(&a, &b, ctx);
-	decNumberMultiply(&b, &a, &const_2, ctx);
-	decNumberMultiply(&a, &b, &s, ctx);
-	return decNumberAdd(r, &a, &mu, ctx);
+	dn_subtract(&a, p, &const_0_5);
+	dn_multiply(&b, &a, &const_2);
+	decNumberArcTanh(&a, &b);
+	dn_multiply(&b, &a, &const_2);
+	dn_multiply(&a, &b, &s);
+	return dn_add(r, &a, &mu);
 #else
 	return NULL;
 #endif
@@ -1889,62 +1889,62 @@ decNumber *qf_logistic(decNumber *r, const decNumber *p, decContext *ctx) {
 
 /* Cauchy distribution */
 #ifndef TINY_BUILD
-static int cauchy_xform(decNumber *r, decNumber *c, const decNumber *x, decNumber *gamma, decContext *ctx) {
+static int cauchy_xform(decNumber *r, decNumber *c, const decNumber *x, decNumber *gamma) {
 	decNumber a, x0;
 
 	dist_two_param(&x0, gamma);
 	if (param_positive(r, gamma))
 		return 1;
-	decNumberSubtract(&a, x, &x0, ctx);
-	decNumberDivide(c, &a, gamma, ctx);
+	dn_subtract(&a, x, &x0);
+	dn_divide(c, &a, gamma);
 	return 0;
 }
 #endif
 
-decNumber *pdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *pdf_cauchy(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber a, b, gamma;
 
-	if (cauchy_xform(r, &b, x, &gamma, ctx))
+	if (cauchy_xform(r, &b, x, &gamma))
 		return r;
-	decNumberSquare(&a, &b, ctx);
-	decNumberAdd(&b, &a, &const_1, ctx);
-	decNumberMultiply(&a, &b, &const_PI, ctx);
-	decNumberMultiply(&b, &a, &gamma, ctx);
-	return decNumberRecip(r, &b, ctx);
+	decNumberSquare(&a, &b);
+	dn_add(&b, &a, &const_1);
+	dn_multiply(&a, &b, &const_PI);
+	dn_multiply(&b, &a, &gamma);
+	return decNumberRecip(r, &b);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *cdf_cauchy(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *cdf_cauchy(decNumber *r, const decNumber *x) {
 #ifndef TINY_BUILD
 	decNumber a, b, gamma;
 
-	if (cauchy_xform(r, &b, x, &gamma, ctx))
+	if (cauchy_xform(r, &b, x, &gamma))
 		return r;
-	do_atan(&a, &b, ctx);
-	decNumberDivide(&b, &a, &const_PI, ctx);
-	return decNumberAdd(r, &b, &const_0_5, ctx);
+	do_atan(&a, &b);
+	dn_divide(&b, &a, &const_PI);
+	return dn_add(r, &b, &const_0_5);
 #else
 	return NULL;
 #endif
 }
 
-decNumber *qf_cauchy(decNumber *r, const decNumber *p, decContext *ctx) {
+decNumber *qf_cauchy(decNumber *r, const decNumber *p) {
 #ifndef TINY_BUILD
 	decNumber a, b, x0, gamma;
 
 	dist_two_param(&x0, &gamma);
 	if (param_positive(r, &gamma))
 		return r;
-	if (check_probability(r, p, ctx, 0))
+	if (check_probability(r, p, 0))
 	    return r;
-	decNumberSubtract(&a, p, &const_0_5, ctx);
-	decNumberMultiply(&b, &a, &const_PI, ctx);
-	decNumberTan(&a, &b, ctx);
-	decNumberMultiply(&b, &a, &gamma, ctx);
-	return decNumberAdd(r, &b, &x0, ctx);
+	dn_subtract(&a, p, &const_0_5);
+	dn_multiply(&b, &a, &const_PI);
+	decNumberTan(&a, &b);
+	dn_multiply(&b, &a, &gamma);
+	return dn_add(r, &b, &x0);
 #else
 	return NULL;
 #endif

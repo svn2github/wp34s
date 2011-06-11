@@ -190,7 +190,7 @@ static int day_of_week(int year, int month, int day, const char **msg) {
 /* Convert a (y, m, d) triple into a decimal number that represents the date.
  * Some care is required for overflow and the like.
  */
-static decNumber *build_date(decNumber *res, int year, int month, int day, decContext *ctx) {
+static decNumber *build_date(decNumber *res, int year, int month, int day) {
 	decNumber y, m, d, x;
 	int bc;
 
@@ -203,35 +203,35 @@ static decNumber *build_date(decNumber *res, int year, int month, int day, decCo
 		bc = 1;
 	} else	bc = 0;
 
-	int_to_dn(&y, year, ctx);
-	int_to_dn(&m, month, ctx);
-	int_to_dn(&d, day, ctx);
+	int_to_dn(&y, year);
+	int_to_dn(&m, month);
+	int_to_dn(&d, day);
 
 	switch (State.date_mode) {
 	case DATE_YMD:
-		decNumberMultiply(&x, &d, &const_0_01, ctx);
-		decNumberAdd(&d, &x, &m, ctx);
-		decNumberMultiply(&x, &d, &const_0_01, ctx);
-		decNumberAdd(res, &y, &x, ctx);
+		dn_multiply(&x, &d, &const_0_01);
+		dn_add(&d, &x, &m);
+		dn_multiply(&x, &d, &const_0_01);
+		dn_add(res, &y, &x);
 		break;
 
 	case DATE_DMY:
-		decNumberMultiply(&x, &y, &const_0_0001, ctx);
-		decNumberAdd(&y, &m, &x, ctx);
-		decNumberMultiply(&x, &y, &const_0_01, ctx);
-		decNumberAdd(res, &d, &x, ctx);
+		dn_multiply(&x, &y, &const_0_0001);
+		dn_add(&y, &m, &x);
+		dn_multiply(&x, &y, &const_0_01);
+		dn_add(res, &d, &x);
 		break;
 
 	case DATE_MDY:
-		decNumberMultiply(&x, &y, &const_0_0001, ctx);
-		decNumberAdd(&y, &d, &x, ctx);
-		decNumberMultiply(&x, &y, &const_0_01, ctx);
-		decNumberAdd(res, &m, &x, ctx);
+		dn_multiply(&x, &y, &const_0_0001);
+		dn_add(&y, &d, &x);
+		dn_multiply(&x, &y, &const_0_01);
+		dn_add(res, &m, &x);
 		break;
 	}
 
 	if (bc)
-		decNumberMinus(res, res, ctx);
+		dn_minus(res, res);
 	day_of_week(year, month, day, &DispMsg);
 	return res;
 }
@@ -241,7 +241,7 @@ static decNumber *build_date(decNumber *res, int year, int month, int day, decCo
  * We have to honour the current date mode and make sure that things
  * don't go out of range.
  */
-static int extract_date(const decNumber *x, int *year, int *month, int *day, decContext *ctx) {
+static int extract_date(const decNumber *x, int *year, int *month, int *day) {
 	int /* bc, */ ip, fp, y, m, d;
 	decNumber z, a;
 
@@ -249,27 +249,27 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day, dec
 		return 1;
 
 	if (decNumberIsNegative(x)) {
-		decNumberMinus(&z, x, ctx);
+		dn_minus(&z, x);
 		// bc = 0;
 	} else {
 		decNumberCopy(&z, x);
 		// bc = 1;
 	}
-	decNumberTrunc(&a, &z, ctx);			// a = iii	z = iii.ffrrrr
-	ip = dn_to_int(&a, ctx);
-	decNumberSubtract(&a, &z, &a, ctx);		// a = .ffrrrr
-	decNumberMultiply(&z, &a, &const_100, ctx);	// z = ff.rrrr
-	decNumberTrunc(&a, &z, ctx);			// a = ff
-	fp = dn_to_int(&a, ctx);
-	decNumberSubtract(&z, &z, &a, ctx);		// z = .rrrr
+	decNumberTrunc(&a, &z);			// a = iii	z = iii.ffrrrr
+	ip = dn_to_int(&a);
+	dn_subtract(&a, &z, &a);		// a = .ffrrrr
+	dn_multiply(&z, &a, &const_100);	// z = ff.rrrr
+	decNumberTrunc(&a, &z);			// a = ff
+	fp = dn_to_int(&a);
+	dn_subtract(&z, &z, &a);		// z = .rrrr
 	switch (State.date_mode) {
 	default:
 	case DATE_YMD:
 		y = ip;
 		m = fp;
-		decNumberMultiply(&a, &z, &const_100, ctx);
-		decNumberTrunc(&z, &a, ctx);
-		d = dn_to_int(&z, ctx);
+		dn_multiply(&a, &z, &const_100);
+		decNumberTrunc(&z, &a);
+		d = dn_to_int(&z);
 		break;
 
 	case DATE_DMY:
@@ -280,9 +280,9 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day, dec
 	case DATE_MDY:
 		m = ip;
 		d = fp;
-year:		decNumberMultiply(&a, &z, &const_10000, ctx);
-		decNumberTrunc(&z, &a, ctx);
-		y = dn_to_int(&z, ctx);
+year:		dn_multiply(&a, &z, &const_10000);
+		decNumberTrunc(&z, &a);
+		y = dn_to_int(&z);
 		break;
 	}
 	/* Make sense of things
@@ -308,16 +308,16 @@ year:		decNumberMultiply(&a, &z, &const_10000, ctx);
  * Otherwise, decode it according to the current date mode and
  * return the year.
  */
-static int find_year(const decNumber *x, int *year, decContext *ctx) {
+static int find_year(const decNumber *x, int *year) {
 	int y;
 
 	if (decNumberIsSpecial(x))
 		return -1;
-	if (is_int(x, ctx)) {
-		y = dn_to_int(x, ctx);
+	if (is_int(x)) {
+		y = dn_to_int(x);
 		if (check_date(y, 1, 1))
 			return -1;
-	} else if (extract_date(x, &y, NULL, NULL, ctx))
+	} else if (extract_date(x, &y, NULL, NULL))
 		return -1;
 	*year = y;
 	return 0;
@@ -362,20 +362,20 @@ static void easter(int year, int *month, int *day) {
  * The input can either be specified as an integer year or as a
  * valid date in the current format.
  */
-decNumber *dateEaster(decNumber *res, const decNumber *x, decContext *ctx) {
+decNumber *dateEaster(decNumber *res, const decNumber *x) {
 	int y;
 
 	if (is_intmode())
 		set_NaN(res);
 	else {
-		if (find_year(x, &y, ctx)) {
+		if (find_year(x, &y)) {
 			set_NaN(res);
 			return res;
 		} else {
 			int m, d;
 
 			easter(y, &m, &d);
-			build_date(res, y, m, d, ctx);
+			build_date(res, y, m, d);
 		}
 	}
 	return res;
@@ -393,7 +393,7 @@ void date_isleap(decimal64 *nul1, decimal64 *nul2) {
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
-		if (! find_year(&x, &y, Ctx))
+		if (! find_year(&x, &y))
 			t = isleap(y);
 		fin_tst(t);
 	}
@@ -402,13 +402,13 @@ void date_isleap(decimal64 *nul1, decimal64 *nul2) {
 
 /* Return the day of the week
  */
-decNumber *dateDayOfWeek(decNumber *res, const decNumber *x, decContext *ctx) {
+decNumber *dateDayOfWeek(decNumber *res, const decNumber *x) {
 	int y, m, d;
 
-	if (decNumberIsSpecial(x) || extract_date(x, &y, &m, &d, ctx))
+	if (decNumberIsSpecial(x) || extract_date(x, &y, &m, &d))
 		set_NaN(res);
 	else
-		int_to_dn(res, day_of_week(y, m, d, &DispMsg), ctx);
+		int_to_dn(res, day_of_week(y, m, d, &DispMsg));
 	return res;
 }
 
@@ -429,7 +429,7 @@ void date_alphaday(decimal64 *nul1, decimal64 *nul2) {
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
-		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d, Ctx))
+		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d))
 			err(ERR_BAD_DATE);
 		else {
 			dow = day_of_week(y, m, d, NULL);
@@ -447,7 +447,7 @@ void date_alphamonth(decimal64 *nul1, decimal64 *nul2) {
 		err(ERR_BAD_DATE);
 	else {
 		getX(&x);
-		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d, Ctx))
+		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d))
 			err(ERR_BAD_DATE);
 		else {
 			copy3(mons + 3*m - 3);
@@ -458,7 +458,7 @@ void date_alphamonth(decimal64 *nul1, decimal64 *nul2) {
 /* Add or subtract days from a date.
  * Convert to Julian days, do the addition or subtraction and convert back.
  */
-decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
+decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y) {
 	int j;
 	int yr, m, d;
 
@@ -466,24 +466,24 @@ decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y, decCo
 		err(ERR_BAD_DATE);
 		return res;
 	}
-	if (decNumberIsSpecial(x) || decNumberIsSpecial(y) || ! is_int(y, ctx)) {
+	if (decNumberIsSpecial(x) || decNumberIsSpecial(y) || ! is_int(y)) {
 err:		set_NaN(res);
 		return res;
 	}
-	if (extract_date(x, &yr, &m, &d, ctx))
+	if (extract_date(x, &yr, &m, &d))
 		goto err;
-	j = dn_to_int(y, ctx) + JDN(yr, m, d);
+	j = dn_to_int(y) + JDN(yr, m, d);
 	if (j < 0)
 		goto err;
 	JDN2(j, &yr, &m, &d);
-	return build_date(res, yr, m, d, ctx);
+	return build_date(res, yr, m, d);
 }
 
 
 /* Days between dates.
  * Convert to Julian days and subtract.
  */
-decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y, decContext *ctx) {
+decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y) {
 	int d, m, yr, j1, j2;
 
 	if (is_intmode())
@@ -491,13 +491,13 @@ decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y, dec
 	else if (decNumberIsSpecial(x) || decNumberIsSpecial(y))
 err:		set_NaN(res);
 	else {
-		if (extract_date(x, &yr, &m, &d, ctx))
+		if (extract_date(x, &yr, &m, &d))
 			goto err;
 		j1 = JDN(yr, m, d);
-		if (extract_date(y, &yr, &m, &d, ctx))
+		if (extract_date(y, &yr, &m, &d))
 			goto err;
 		j2 = JDN(yr, m, d);
-		int_to_dn(res, j2-j1, ctx);
+		int_to_dn(res, j2-j1);
 	}
 	return res;
 }
@@ -505,7 +505,7 @@ err:		set_NaN(res);
 
 /* Conversion routines from Julian days to and from dates
  */
-decNumber *dateToJ(decNumber *res, const decNumber *x, decContext *ctx) {
+decNumber *dateToJ(decNumber *res, const decNumber *x) {
 	if (is_intmode())
 		err(ERR_BAD_DATE);
 	else if (decNumberIsSpecial(x))
@@ -513,24 +513,24 @@ err:		set_NaN(res);
 	else {
 		int y, m, d;
 
-		if (extract_date(x, &y, &m, &d, ctx))
+		if (extract_date(x, &y, &m, &d))
 			goto err;
-		int_to_dn(res, JDN(y, m, d), ctx);
+		int_to_dn(res, JDN(y, m, d));
 	}
 	return res;
 }
 
-decNumber *dateFromJ(decNumber *res, const decNumber *x, decContext *ctx) {
+decNumber *dateFromJ(decNumber *res, const decNumber *x) {
 	if (is_intmode())
 		err(ERR_BAD_DATE);
 	else if (decNumberIsSpecial(x))
 		set_NaN(res);
 	else {
-		const int j = dn_to_int(x, ctx);
+		const int j = dn_to_int(x);
 		int y, m, d;
 
 		JDN2(j, &y, &m, &d);
-		return build_date(res, y, m, d, ctx);
+		return build_date(res, y, m, d);
 	}
 	return res;
 }
@@ -545,7 +545,7 @@ void date_alphadate(decimal64 *nul1, decimal64 *nul2) {
 
 	getX(&x);
 	xset(buf, '\0', sizeof(buf));
-	if (extract_date(&x, &y, &m, &d, Ctx)) {
+	if (extract_date(&x, &y, &m, &d)) {
 		err(ERR_BAD_DATE);
 		return;
 	}
@@ -588,8 +588,8 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2) {
 	else {
 		xset(buf, '\0', sizeof(buf));
 		getX(&x);
-		decNumberTrunc(&y, &x, Ctx);
-		a = dn_to_int(&y, Ctx);
+		decNumberTrunc(&y, &x);
+		a = dn_to_int(&y);
 		if (State.t12) {
 			if (a >= 12) {
 				a -= 12;
@@ -602,15 +602,15 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2) {
 			suffix = "";
 		p = num_arg(buf, a);
 		*p++ = ':';
-		decNumberFrac(&y, &x, Ctx);
-		decNumberMultiply(&x, &y, &const_60, Ctx);
-		decNumberTrunc(&y, &x, Ctx);
-		p = num_arg_0(p, dn_to_int(&y, Ctx), 2);
+		decNumberFrac(&y, &x);
+		dn_multiply(&x, &y, &const_60);
+		decNumberTrunc(&y, &x);
+		p = num_arg_0(p, dn_to_int(&y), 2);
 		*p++ = ':';
-		decNumberFrac(&y, &x, Ctx);
-		decNumberMultiply(&x, &y, &const_60, Ctx);
-		decNumberRound(&y, &x, Ctx);
-		p = num_arg_0(p, dn_to_int(&y, Ctx), 2);
+		decNumberFrac(&y, &x);
+		dn_multiply(&x, &y, &const_60);
+		decNumberRound(&y, &x);
+		p = num_arg_0(p, dn_to_int(&y), 2);
 		scopy(p, suffix);
 		add_string(buf);
 	}
@@ -663,7 +663,7 @@ void date_date(decimal64 *r, decimal64 *nul) {
 	decNumber z;
 
 	query_date(&d, &m, &y);
-	build_date(&z, y, m, d, Ctx);
+	build_date(&z, y, m, d);
 	packed_from_number(r, &z);
 }
 
@@ -672,13 +672,13 @@ void date_time(decimal64 *r, decimal64 *nul) {
 	decNumber a, b, c;
 
 	query_time(&s, &m, &h);
-	int_to_dn(&a, s, Ctx);
-	decNumberDivide(&b, &a, &const_100, Ctx);
-	int_to_dn(&a, m, Ctx);
-	decNumberAdd(&c, &a, &b, Ctx);
-	decNumberDivide(&b, &c, &const_100, Ctx);
-	int_to_dn(&a, h, Ctx);
-	decNumberAdd(&c, &b, &a, Ctx);
+	int_to_dn(&a, s);
+	dn_divide(&b, &a, &const_100);
+	int_to_dn(&a, m);
+	dn_add(&c, &a, &b);
+	dn_divide(&b, &c, &const_100);
+	int_to_dn(&a, h);
+	dn_add(&c, &b, &a);
 	packed_from_number(r, &c);
 }
 
@@ -687,7 +687,7 @@ void date_setdate(decimal64 *r, decimal64 *nul) {
 	decNumber x;
 
 	getX(&x);
-	if (extract_date(&x, &y, &m, &d, Ctx)) {
+	if (extract_date(&x, &y, &m, &d)) {
 		err(ERR_BAD_DATE);
 		return;
 	}
@@ -704,13 +704,13 @@ void date_settime(decimal64 *r, decimal64 *nul) {
 	decNumber x, y;
 
 	getX(&x);
-	h = dn_to_int(decNumberTrunc(&y, &x, Ctx), Ctx) & 0x3f;
-	decNumberFrac(&y, &x, Ctx);
-	decNumberMultiply(&x, &y, &const_100, Ctx);
-	m = dn_to_int(decNumberTrunc(&y, &x, Ctx), Ctx) & 0x7f;
-	decNumberFrac(&y, &x, Ctx);
-	decNumberMultiply(&x, &y, &const_100, Ctx);
-	s = dn_to_int(decNumberRound(&y, &x, Ctx), Ctx) & 0x7f;
+	h = dn_to_int(decNumberTrunc(&y, &x)) & 0x3f;
+	decNumberFrac(&y, &x);
+	dn_multiply(&x, &y, &const_100);
+	m = dn_to_int(decNumberTrunc(&y, &x)) & 0x7f;
+	decNumberFrac(&y, &x);
+	dn_multiply(&x, &y, &const_100);
+	s = dn_to_int(decNumberRound(&y, &x)) & 0x7f;
 #ifdef REALBUILD
 	busy();
 	RTC_SetTime((unsigned char) h, (unsigned char) m, (unsigned char) s);

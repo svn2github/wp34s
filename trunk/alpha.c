@@ -120,7 +120,7 @@ void alpha_ip(unsigned int arg, enum rarg op) {
 		int z;
 
 		get_reg_n_as_dn(arg, &x);
-		z = dn_to_int(&x, Ctx);
+		z = dn_to_int(&x);
 		n = z<0?-z:z;
 		sgn = z<0;
 	}

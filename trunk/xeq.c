@@ -788,17 +788,17 @@ static void process_cmdline(void) {
 			if (fract_convert_number(&z, d0))	return;
 			if (fract_convert_number(&a, d1))	return;
 			if (cmdlinedot == 2) {
-				decNumberDivide(&t, &a, &b, Ctx);
-				decNumberAdd(&x, &z, &t, Ctx);
+				dn_divide(&t, &a, &b);
+				dn_add(&x, &z, &t);
 			} else {
 				if (decNumberIsZero(&a)) {
 					err(ERR_DOMAIN);
 					return;
 				}
-				decNumberDivide(&x, &z, &a, Ctx);
+				dn_divide(&x, &z, &a);
 			}
 			if (neg)
-				decNumberMinus(&x, &x, Ctx);
+				dn_minus(&x, &x);
 			setX(&x);
 		} else {
 			decNumberFromString(&x, cmdline, Ctx);
@@ -853,9 +853,9 @@ void put_int(unsigned long long int val, int sgn, decimal64 *x) {
 	} else {
 		decNumber t;
 
-		ullint_to_dn(&t, val, Ctx);
+		ullint_to_dn(&t, val);
 		if (sgn)
-			decNumberMinus(&t, &t, Ctx);
+			dn_minus(&t, &t);
 		packed_from_number(x, &t);
 	}
 }
@@ -867,7 +867,7 @@ unsigned long long int get_int(const decimal64 *x, int *sgn) {
 		decNumber n;
 
 		decimal64ToNumber(x, &n);
-		return dn_to_ull(&n, Ctx, sgn);
+		return dn_to_ull(&n, sgn);
 	}
 }
 
@@ -886,7 +886,7 @@ long long int d64toInt(const decimal64 *n) {
 	if (decNumberIsSpecial(&t))
 		return 0;
 	if (decNumberIsNegative(&t)) {
-		decNumberMinus(&t, &t, Ctx);
+		dn_minus(&t, &t);
 		sgn = 1;
 	} else
 		sgn = 0;
@@ -909,9 +909,9 @@ void d64fromInt(decimal64 *n, const long long int z) {
 
 	nv = extract_value(z, &sgn);
 
-	ullint_to_dn(&t, nv, Ctx);
+	ullint_to_dn(&t, nv);
 	if (sgn)
-		decNumberMinus(&t, &t, Ctx);
+		dn_minus(&t, &t);
 	packed_from_number(n, &t);
 #else
 	xcopy(n, &z, sizeof(decimal64));
@@ -948,7 +948,7 @@ static void monadic(const opcode op) {
 
 				getX(&x);
 
-				CALL(monfuncs[f].mondreal)(&r, &x, Ctx);
+				CALL(monfuncs[f].mondreal)(&r, &x);
 
 				setlastX();
 				setX(&r);
@@ -971,7 +971,7 @@ static void monadic_cmplex(const opcode op) {
 		if (monfuncs[f].mondcmplx != FNULL) {
 			getXY(&x, &y);
 
-			CALL(monfuncs[f].mondcmplx)(&rx, &ry, &x, &y, Ctx);
+			CALL(monfuncs[f].mondcmplx)(&rx, &ry, &x, &y);
 
 			setlastXY();
 			setXY(&rx, &ry);
@@ -1013,7 +1013,7 @@ static void dyadic(const opcode op) {
 
 				getXY(&x, &y);
 
-				CALL(dyfuncs[f].dydreal)(&r, &y, &x, Ctx);
+				CALL(dyfuncs[f].dydreal)(&r, &y, &x);
 
 				setlastX();
 				lower();
@@ -1038,7 +1038,7 @@ static void dyadic_cmplex(const opcode op) {
 			getZ(&x2);
 			getT(&y2);
 
-			CALL(dyfuncs[f].dydcmplx)(&xr, &yr, &x2, &y2, &x1, &y1, Ctx);
+			CALL(dyfuncs[f].dydcmplx)(&xr, &yr, &x2, &y2, &x1, &y1);
 
 			setlastXY();
 			lower2();
@@ -1082,7 +1082,7 @@ static void triadic(const opcode op) {
 				getXY(&x, &y);
 				getZ(&z);
 
-				CALL(trifuncs[f].trireal)(&r, &z, &y, &x, Ctx);
+				CALL(trifuncs[f].trireal)(&r, &z, &y, &x);
 
 				setlastX();
 				lower();
@@ -1147,22 +1147,22 @@ static int storcl_op(unsigned short opr, const decimal64 *yr, decNumber *r, int 
 
 	switch (opr) {
 	case 1:
-		decNumberAdd(r, &y, &x, Ctx);
+		dn_add(r, &y, &x);
 		break;
 	case 2:
-		decNumberSubtract(r, &y, &x, Ctx);
+		dn_subtract(r, &y, &x);
 		break;
 	case 3:
-		decNumberMultiply(r, &y, &x, Ctx);
+		dn_multiply(r, &y, &x);
 		break;
 	case 4:
-		decNumberDivide(r, &y, &x, Ctx);
+		dn_divide(r, &y, &x);
 		break;
 	case 5:
-		decNumberMin(r, &y, &x, Ctx);
+		dn_min(r, &y, &x);
 		break;
 	case 6:
-		decNumberMax(r, &y, &x, Ctx);
+		dn_max(r, &y, &x);
 		break;
 	default:
 		return 1;
@@ -1279,16 +1279,16 @@ static int storcl_cop(unsigned short opr,
 
 	switch (opr) {
 	case 1:
-		cmplxAdd(r1, r2, &y1, &y2, &x1, &x2, Ctx);
+		cmplxAdd(r1, r2, &y1, &y2, &x1, &x2);
 		break;
 	case 2:
-		cmplxSubtract(r1, r2, &y1, &y2, &x1, &x2, Ctx);
+		cmplxSubtract(r1, r2, &y1, &y2, &x1, &x2);
 		break;
 	case 3:
-		cmplxMultiply(r1, r2, &y1, &y2, &x1, &x2, Ctx);
+		cmplxMultiply(r1, r2, &y1, &y2, &x1, &x2);
 		break;
 	case 4:
-		cmplxDivide(r1, r2, &y1, &y2, &x1, &x2, Ctx);
+		cmplxDivide(r1, r2, &y1, &y2, &x1, &x2);
 		break;
 	default:
 		return 1;
@@ -1426,8 +1426,8 @@ void op_voltage(decimal64 *a, decimal64 *nul2) {
 	if (is_intmode()) {
 		put_int(v, 0, a);
 	} else {
-		ullint_to_dn(&t, v, Ctx);
-		decNumberMultiply(&u, &t, &const_0_1, Ctx);
+		ullint_to_dn(&t, v);
+		dn_multiply(&u, &t, &const_0_1);
 		packed_from_number(a, &u);
 	}
 }
@@ -1700,46 +1700,46 @@ void cmddisp(unsigned int arg, enum rarg op) {
 
 
 /* Metric / Imperial conversion code */
-decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *convC2F(decNumber *r, const decNumber *x) {
 	decNumber s;
 
-	decNumberMultiply(&s, x, &const_9on5, ctx);
-	return decNumberAdd(r, &s, &const_32, ctx);
+	dn_multiply(&s, x, &const_9on5);
+	return dn_add(r, &s, &const_32);
 }
 
-decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *convF2C(decNumber *r, const decNumber *x) {
 	decNumber s;
 
-	decNumberSubtract(&s, x, &const_32, ctx);
-	return decNumberDivide(r, &s, &const_9on5, ctx);
+	dn_subtract(&s, x, &const_32);
+	return dn_divide(r, &s, &const_9on5);
 }
 
-decNumber *convDB2AR(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *convDB2AR(decNumber *r, const decNumber *x) {
 	decNumber t;
-	decNumberMultiply(&t, x, &const_0_05, ctx);
-	return decNumberPow10(r, &t, ctx);
+	dn_multiply(&t, x, &const_0_05);
+	return decNumberPow10(r, &t);
 }
 
-decNumber *convAR2DB(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *convAR2DB(decNumber *r, const decNumber *x) {
 	decNumber t;
-	decNumberLog10(&t, x, ctx);
-	return decNumberMultiply(r, &t, &const_20, ctx);
+	dn_log10(&t, x);
+	return dn_multiply(r, &t, &const_20);
 }
 
-decNumber *convDB2PR(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *convDB2PR(decNumber *r, const decNumber *x) {
 	decNumber t;
-	decNumberMultiply(&t, x, &const_0_1, ctx);
-	return decNumberPow10(r, &t, ctx);
+	dn_multiply(&t, x, &const_0_1);
+	return decNumberPow10(r, &t);
 }
 
-decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx) {
+decNumber *convPR2DB(decNumber *r, const decNumber *x) {
 	decNumber t;
-	decNumberLog10(&t, x, ctx);
-	return decNumberMultiply(r, &t, &const_10, ctx);
+	dn_log10(&t, x);
+	return dn_multiply(r, &t, &const_10);
 }
 
 /* Scale conversions */
-void do_conv(decNumber *r, unsigned int arg, const decNumber *x, decContext *ctx) {
+void do_conv(decNumber *r, unsigned int arg, const decNumber *x) {
 	decNumber m;
 	const unsigned int conv = arg / 2;
 	const unsigned int dirn = arg & 1;
@@ -1752,9 +1752,9 @@ void do_conv(decNumber *r, unsigned int arg, const decNumber *x, decContext *ctx
 	decimal64ToNumber(&CONSTANT_CONV(conv), &m);
 	
 	if (dirn == 0)		// metric to imperial
-		decNumberDivide(r, x, &m, ctx);
+		dn_divide(r, x, &m);
 	else			// imperial to metric
-		decNumberMultiply(r, x, &m, ctx);
+		dn_multiply(r, x, &m);
 }
 
 void cmdconv(unsigned int arg, enum rarg op) {
@@ -1764,7 +1764,7 @@ void cmdconv(unsigned int arg, enum rarg op) {
 		return;
 
 	getX(&x);
-	do_conv(&r, arg, &x, Ctx);
+	do_conv(&r, arg, &x);
 	setlastX();
 	setX(&r);
 }
@@ -1912,11 +1912,11 @@ static void do_tst(const decimal64 *cmp, const enum tst_op op, int cnst) {
 			goto flse;
 
 		if (op == TST_APX) {
-			decNumberRnd(&x, &x, Ctx);
+			decNumberRnd(&x, &x);
 			if (cnst < 0)
-				decNumberRnd(&t, &t, Ctx);
+				decNumberRnd(&t, &t);
 		}
-		decNumberCompare(&r, &x, &t, Ctx);
+		dn_compare(&r, &x, &t);
 		iszero = decNumberIsZero(&r);
 		isneg = decNumberIsNegative(&r);
 	}
@@ -1959,17 +1959,17 @@ static void do_ztst(const decimal64 *r, const decimal64 *i, const enum tst_op op
 		goto flse;
 #if 0
 	if (op == TST_APX) {
-		decNumberRnd(&x, &x, Ctx);
-		decNumberRnd(&y, &y, Ctx);
-		decNumberRnd(&a, &a, Ctx);
-		decNumberRnd(&b, &b, Ctx);
+		decNumberRnd(&x, &x);
+		decNumberRnd(&y, &y);
+		decNumberRnd(&a, &a);
+		decNumberRnd(&b, &b);
 	}
 #endif
-	decNumberCompare(&t, &x, &a, Ctx);
+	dn_compare(&t, &x, &a);
 	if (!decNumberIsZero(&t))
 		eq = 0;
 	else {
-		decNumberCompare(&t, &y, &b, Ctx);
+		dn_compare(&t, &y, &b);
 		if (!decNumberIsZero(&t))
 			eq = 0;
 	}
@@ -2003,11 +2003,11 @@ static int incdec(unsigned int arg, int inc) {
 
 		get_reg_n_as_dn(arg, &x);
 		if (inc)
-			dn_inc(&x, Ctx);
+			dn_inc(&x);
 		else
-			dn_dec(&x, Ctx);
+			dn_dec(&x);
 		put_reg_n(arg, &x);
-		decNumberTrunc(&y, &x, Ctx);
+		decNumberTrunc(&y, &x);
 		return ! decNumberIsZero(&y);
 	}
 }
@@ -2045,34 +2045,34 @@ void cmdloop(unsigned int arg, enum rarg op) {
 
 		// Break the number into the important bits
 		// nnnnn.fffii
-		decNumberAbs(&f, &x, Ctx);
-		decNumberTrunc(&n, &f, Ctx);			// n = nnnnn
-		decNumberSubtract(&u, &f, &n, Ctx);		// u = .fffii
+		dn_abs(&f, &x);
+		decNumberTrunc(&n, &f);			// n = nnnnn
+		dn_subtract(&u, &f, &n);		// u = .fffii
 		if (decNumberIsNegative(&x))
-			decNumberMinus(&n, &n, Ctx);
-		decNumberMultiply(&i, &u, &const_1000, Ctx);	// i = fff.ii
-		decNumberTrunc(&f, &i, Ctx);			// f = fff
-		decNumberSubtract(&i, &i, &f, Ctx);		// i = .ii		
-		decNumberMultiply(&x, &i, &const_100, Ctx);
-		decNumberTrunc(&i, &x, Ctx);			// i = ii
+			dn_minus(&n, &n);
+		dn_multiply(&i, &u, &const_1000);	// i = fff.ii
+		decNumberTrunc(&f, &i);			// f = fff
+		dn_subtract(&i, &i, &f);		// i = .ii		
+		dn_multiply(&x, &i, &const_100);
+		decNumberTrunc(&i, &x);			// i = ii
 		if (decNumberIsZero(&i))
 			decNumberCopy(&i, &const_1);
 
 		if (op == RARG_ISG) {
-			decNumberAdd(&n, &n, &i, Ctx);
-			decNumberCompare(&x, &f, &n, Ctx);
+			dn_add(&n, &n, &i);
+			dn_compare(&x, &f, &n);
 			fin_tst(! decNumberIsNegative(&x));
 		} else {
-			decNumberSubtract(&n, &n, &i, Ctx);
-			decNumberCompare(&x, &f, &n, Ctx);
+			dn_subtract(&n, &n, &i);
+			dn_compare(&x, &f, &n);
 			fin_tst(decNumberIsNegative(&x));
 		}
 
 		// Finally rebuild the result
 		if (decNumberIsNegative(&n)) {
-			decNumberSubtract(&x, &n, &u, Ctx);
+			dn_subtract(&x, &n, &u);
 		} else
-			decNumberAdd(&x, &n, &u, Ctx);
+			dn_add(&x, &n, &u);
 		put_reg_n(arg, &x);
 	}
 }
@@ -2201,7 +2201,7 @@ void intws(unsigned int arg, enum rarg op) {
 
 void get_maxdenom(decNumber *d) {
 	const unsigned int dm = State.denom_max;
-	int_to_dn(d, dm==0?9999:dm, Ctx);
+	int_to_dn(d, dm==0?9999:dm);
 }
 
 void op_2frac(decimal64 *x, decimal64 *b) {
@@ -2213,11 +2213,11 @@ void op_2frac(decimal64 *x, decimal64 *b) {
 	}
 
 	getY(&z);			// Stack has been lifted already
-	decNumber2Fraction(&n, &d, &z, Ctx);
+	decNumber2Fraction(&n, &d, &z);
 	setXY(&d, &n);			// Set numerator and denominator
 	if (State2.runmode) {
-		decNumberDivide(&t, &n, &d, Ctx);
-		decNumberCompare(&n, &t, &z, Ctx);
+		dn_divide(&t, &n, &d);
+		dn_compare(&n, &t, &z);
 		if (decNumberIsZero(&n))
 			DispMsg = "y/x =";
 		else if (decNumberIsNegative(&n))
@@ -2263,9 +2263,9 @@ static void int2dn(decNumber *x, decimal64 *a) {
 	int s;
 	unsigned long long int v = extract_value(d64toInt(a), &s);
 
-	ullint_to_dn(x, v, Ctx);
+	ullint_to_dn(x, v);
 	if (s)
-		decNumberMinus(x, x, Ctx);
+		dn_minus(x, x);
 }
 #else
 static void float_mode_convert(decimal64 *r) {
@@ -2273,9 +2273,9 @@ static void float_mode_convert(decimal64 *r) {
 	int s;
 	unsigned long long int v = extract_value(d64toInt(r), &s);
 
-	ullint_to_dn(&x, v, Ctx);
+	ullint_to_dn(&x, v);
 	if (s)
-		decNumberMinus(&x, &x, Ctx);
+		dn_minus(&x, &x);
 	packed_from_number(r, &x);
 }
 #endif
@@ -2294,8 +2294,8 @@ void op_float(decimal64 *a, decimal64 *b) {
 		int2dn(&x, &regX);
 		int2dn(&y, &regY);
 		clrstk(NULL, NULL, NULL);
-		decNumberPower(&z, &const_2, &x, Ctx);
-		decNumberMultiply(&x, &z, &y, Ctx);
+		decNumberPower(&z, &const_2, &x);
+		dn_multiply(&x, &z, &y);
 		set_overflow(decNumberIsInfinite(&x));
 		packed_from_number(&regX, &x);
 #else
@@ -2472,7 +2472,7 @@ static void specials(const opcode op) {
 			decNumber x, r;
 
 			getX(&x);
-			decNumberMinus(&r, &x, Ctx);
+			dn_minus(&r, &x);
 			setX(&r);
 			State.state_lift = 1;
 		}
@@ -2649,7 +2649,7 @@ static void int_mode_convert(decimal64 *r) {
 	unsigned long long int n;
 
 	decimal64ToNumber(r, &x);
-	n = dn_to_ull(&x, Ctx, &s);
+	n = dn_to_ull(&x, &s);
 	d64fromInt(r, build_value(n, s));
 }
 #endif
@@ -2685,31 +2685,31 @@ static void check_int_switch(void) {
 		} else {
 			/* Deal with the sign */
 			if (decNumberIsNegative(&x)) {
-				decNumberMinus(&x, &x, Ctx);
+				dn_minus(&x, &x);
 				sgn = 1;
 			} else
 				sgn = 0;
 			/* Figure the exponent */
-			decNumberLog2(&y, &x, Ctx);
-			decNumberTrunc(&z, &y, Ctx);
-			ex = dn_to_int(&z, Ctx);
+			decNumberLog2(&y, &x);
+			decNumberTrunc(&z, &y);
+			ex = dn_to_int(&z);
 			/* On to the mantissa */
-			decNumberPow2(&y, &z, Ctx);
-			decNumberDivide(&z, &x, &y, Ctx);
+			decNumberPow2(&y, &z);
+			dn_divide(&z, &x, &y);
 			m = 1;
-			decNumberFrac(&y, &z, Ctx);
+			decNumberFrac(&y, &z);
 			for (i=0; i<31; i++) {
-				decNumberMultiply(&z, &y, &const_2, Ctx);
-				decNumberTrunc(&y, &z, Ctx);
+				dn_multiply(&z, &y, &const_2);
+				decNumberTrunc(&y, &z);
 				m += m;
 				if (! decNumberIsZero(&y))
 					m++;
-				decNumberFrac(&y, &z, Ctx);
+				decNumberFrac(&y, &z);
 			}
 			ex -= 31;
 			/* Finally, round up if required */
-			decNumberMultiply(&z, &y, &const_2, Ctx);
-			decNumberTrunc(&y, &z, Ctx);
+			dn_multiply(&z, &y, &const_2);
+			decNumberTrunc(&y, &z);
 			if (! decNumberIsZero(&y)) {
 				m++;
 				if (m == 0) {
@@ -2859,7 +2859,7 @@ void op_rclflag(decimal64 *x, decimal64 *b) {
 		else
 			d64fromInt(x, n);
 	} else {
-		ullint_to_dn(&r, n, Ctx);
+		ullint_to_dn(&r, n);
 		packed_from_number(x, &r);
 	}
 }
@@ -2884,7 +2884,7 @@ void op_stoflag(decimal64 *nul1, decimal64 *nul2) {
 		n = d64toInt(&regX);
 	} else {
 		getX(&x);
-		n = dn_to_ull(&x, Ctx, &sgn);
+		n = dn_to_ull(&x, &sgn);
 	}
 
 #define SB(f, p)					\
@@ -2939,7 +2939,7 @@ void XisInt(decimal64 *a, decimal64 *b) {
 	decNumber x;
 
 	getX(&x);
-	fin_tst(is_intmode() || is_int(&x, Ctx));
+	fin_tst(is_intmode() || is_int(&x));
 }
 
 /* Test if a number has a fractional component */
@@ -2947,7 +2947,7 @@ void XisFrac(decimal64 *a, decimal64 *b) {
 	decNumber x;
 
 	getX(&x);
-	fin_tst(!is_intmode() && !is_int(&x, Ctx));
+	fin_tst(!is_intmode() && !is_int(&x));
 }
 
 /* Utility routine that checks if the X register is even or odd or neither.
@@ -2958,11 +2958,11 @@ int is_even(const decNumber *x) {
 
 	if (decNumberIsSpecial(x))
 		return -1;
-	decNumberAbs(&z, x, Ctx);
-	decNumberMod(&y, &z, &const_2, Ctx);
+	dn_abs(&z, x);
+	decNumberMod(&y, &z, &const_2);
 	if (decNumberIsZero(&y))
 		return 1;
-	decNumberCompare(&z, &y, &const_1, Ctx);
+	dn_compare(&z, &y, &const_1);
 	if (decNumberIsZero(&z))
 		return 0;
 	return -2;
@@ -3041,7 +3041,7 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *ne
 	getX(&x);
 	if (dn_lt0(&x)) {
 		if (negative != NULL) {
-			decNumberMinus(&x, &x, Ctx);
+			dn_minus(&x, &x);
 			*negative = 1;
 		} else {
 			err(ERR_RANGE);
@@ -3049,21 +3049,21 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *ne
 		}
 	} else if (negative != NULL)
 		*negative = 0;
-	decNumberTrunc(&y, &x, Ctx);
-	*s = rsrc = dn_to_int(&y, Ctx);
+	decNumberTrunc(&y, &x);
+	*s = rsrc = dn_to_int(&y);
 	if (rsrc >= TOPREALREG) {
 		err(ERR_RANGE);
 		return 1;
 	}
-	decNumberFrac(&y, &x, Ctx);
-	decNumberMultiply(&x, &y, &const_100, Ctx);
-	decNumberTrunc(&y, &x, Ctx);
-	*n = num = dn_to_int(&y, Ctx);
+	decNumberFrac(&y, &x);
+	dn_multiply(&x, &y, &const_100);
+	decNumberTrunc(&y, &x);
+	*n = num = dn_to_int(&y);
 	if (d != NULL) {
-		decNumberFrac(&y, &x, Ctx);
-		decNumberMultiply(&x, &y, &const_100, Ctx);
-		decNumberTrunc(&y, &x, Ctx);
-		*d = rdest = dn_to_int(&y, Ctx);
+		decNumberFrac(&y, &x);
+		dn_multiply(&x, &y, &const_100);
+		decNumberTrunc(&y, &x);
+		*d = rdest = dn_to_int(&y);
 		if (num == 0) {
 			/* Calculate the maxium non-ovelapping size */
 			if (rsrc > rdest) {
@@ -3148,7 +3148,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2) {
 			while (L<R) {
 				while (L<R) {
 					decimal64ToNumber(Regs+R, &a);
-					if (dn_lt0(decNumberCompare(&t, &a, &pivot, Ctx)))
+					if (dn_lt0(dn_compare(&t, &a, &pivot)))
 						break;
 					R--;
 				}
@@ -3156,7 +3156,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2) {
 					Regs[L++] = Regs[R];
 				while (L<R) {
 					decimal64ToNumber(Regs+L, &a);
-					if (dn_lt0(decNumberCompare(&t, &pivot, &a, Ctx)))
+					if (dn_lt0(dn_compare(&t, &pivot, &a)))
 						break;
 					L++;
 				}
@@ -3206,7 +3206,7 @@ static void rargs(const opcode op) {
 			arg = (unsigned int) get_reg_n_as_int(arg);
 		} else {
 			get_reg_n_as_dn(arg, &x);
-			arg = dn_to_int(&x, Ctx);
+			arg = dn_to_int(&x);
 		}
 	} else {
 		if (lim > 128 && ind)		// put the top bit back in

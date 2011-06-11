@@ -137,8 +137,8 @@ struct monfunc
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	decNumber *(*mondreal)(decNumber *, const decNumber *, decContext *);
-	void (*mondcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber *, decContext *);
+	decNumber *(*mondreal)(decNumber *, const decNumber *);
+	void (*mondcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber *);
 	long long int (*monint)(long long int);
 	const char fname[NAME_LEN];
 };
@@ -171,9 +171,9 @@ struct dyfunc
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	decNumber *(*dydreal)(decNumber *, const decNumber *, const decNumber *, decContext *);
+	decNumber *(*dydreal)(decNumber *, const decNumber *, const decNumber *);
 	void (*dydcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber*,
-				const decNumber *, const decNumber *, decContext *);
+				const decNumber *, const decNumber *);
 	long long int (*dydint)(long long int, long long int);
 	const char fname[NAME_LEN];
 };
@@ -206,7 +206,7 @@ struct trifunc
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	decNumber *(*trireal)(decNumber *, const decNumber *, const decNumber *, const decNumber *, decContext *);
+	decNumber *(*trireal)(decNumber *, const decNumber *, const decNumber *, const decNumber *);
 	long long int (*triint)(long long int, long long int, long long int);
 	const char fname[NAME_LEN];
 };
@@ -951,7 +951,7 @@ extern int is_even(const decNumber *x);
 extern int s_to_i(const char *);
 extern unsigned long long int s_to_ull(const char *, unsigned int);
 
-extern void do_conv(decNumber *, unsigned int, const decNumber *, decContext *);
+extern void do_conv(decNumber *, unsigned int, const decNumber *);
 
 extern unsigned char remap_chars(unsigned char);
 
@@ -1079,12 +1079,12 @@ extern void op_voltage(decimal64 *a, decimal64 *b);
 extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
 
-extern decNumber *convC2F(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *convF2C(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *convDB2AR(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *convAR2DB(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *convDB2PR(decNumber *r, const decNumber *x, decContext *ctx);
-extern decNumber *convPR2DB(decNumber *r, const decNumber *x, decContext *ctx);
+extern decNumber *convC2F(decNumber *r, const decNumber *x);
+extern decNumber *convF2C(decNumber *r, const decNumber *x);
+extern decNumber *convDB2AR(decNumber *r, const decNumber *x);
+extern decNumber *convAR2DB(decNumber *r, const decNumber *x);
+extern decNumber *convDB2PR(decNumber *r, const decNumber *x);
+extern decNumber *convPR2DB(decNumber *r, const decNumber *x);
 
 extern void xrom_tvm(decimal64 *a, decimal64 *b);
 extern void xrom_quad(decimal64 *a, decimal64 *b);

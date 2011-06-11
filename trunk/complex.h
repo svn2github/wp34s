@@ -20,146 +20,146 @@
 /* Dyadic operation */
 extern void cmplxAdd(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxSubtract(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxMultiply(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxDivide(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxPower(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxLogxy(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 
 /* And some shortcuts to the above for one argument real */
 #if 0
 extern void cmplxDivideReal(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *r, decContext *ctx);
+		const decNumber *r);
 extern void cmplxDivideRealBy(decNumber *rx, decNumber *ry,
 		const decNumber *a,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxMultiplyReal(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *r, decContext *ctx);
+		const decNumber *r);
 extern void cmplxPowerReal(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *r, decContext *ctx);
+		const decNumber *r);
 extern void cmplxPowerReal(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *r, decContext *ctx);
+		const decNumber *r);
 #endif
 
 /* Conversion to and from polar representation */
-extern void cmplxArg(decNumber *arg, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxR(decNumber *r, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxFromPolar(decNumber *x, decNumber *y, const decNumber *r, const decNumber *t, decContext *ctx);
-extern void cmplxToPolar(decNumber *r, decNumber *t, const decNumber *x, const decNumber *y, decContext *ctx);
+extern void cmplxArg(decNumber *arg, const decNumber *a, const decNumber *b);
+extern void cmplxR(decNumber *r, const decNumber *a, const decNumber *b);
+extern void cmplxFromPolar(decNumber *x, decNumber *y, const decNumber *r, const decNumber *t);
+extern void cmplxToPolar(decNumber *r, decNumber *t, const decNumber *x, const decNumber *y);
 
 
 /* Monadic operations */
-extern void cmplxRnd(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxAbs(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxMinus(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxConj(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+extern void cmplxRnd(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxAbs(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxMinus(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxConj(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+extern void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxSqr(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxCube(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxCubeRoot(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+extern void cmplxSqr(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxCube(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxCubeRoot(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxExp(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxLog(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplx10x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxLog2(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxInvW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+extern void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxExp(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxLog(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplx10x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxLog2(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxInvW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxSin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxCos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxAsin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxAcos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxSinc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+extern void cmplxSin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxCos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxAsin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxAcos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxSinc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxSinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxCosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxAsinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxAcosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+extern void cmplxSinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxCosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxAsinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxAcosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxComb(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxPerm(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
-extern void cmplxFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+		const decNumber *c, const decNumber *d);
+extern void cmplxFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxBeta(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxLnBeta(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
-extern void cmplxZeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+		const decNumber *c, const decNumber *d);
+extern void cmplxZeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxParallel(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 extern void cmplxAGM(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d, decContext *ctx);
+		const decNumber *c, const decNumber *d);
 
-extern void cmplxFrac(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
-extern void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+extern void cmplxFrac(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
+extern void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxFib(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, decContext *ctx);
+extern void cmplxFib(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplx_NaN(decNumber *, decNumber *);
 
 /* Jacobi's elliptical functions */
 extern void cmplxSN(decNumber *rx, decNumber *ry,
 		const decNumber *u, const decNumber *v,
-		const decNumber *k, const decNumber *ki, decContext *ctx);
+		const decNumber *k, const decNumber *ki);
 extern void cmplxCN(decNumber *rx, decNumber *ry,
 		const decNumber *u, const decNumber *v,
-		const decNumber *k, const decNumber *ki, decContext *ctx);
+		const decNumber *k, const decNumber *ki);
 extern void cmplxDN(decNumber *rx, decNumber *ry,
 		const decNumber *u, const decNumber *v,
-		const decNumber *k, const decNumber *ki, decContext *ctx);
+		const decNumber *k, const decNumber *ki);
 
 /* Bessel functions of first and second kinds */
 extern void cmplxBSJN(decNumber *rx, decNumber *ry,
 		const decNumber *alphax, const decNumber *alphay,
-		const decNumber *xx, const decNumber *xy, decContext *ctx);
+		const decNumber *xx, const decNumber *xy);
 extern void cmplxBSIN(decNumber *rx, decNumber *ry,
 		const decNumber *alphax, const decNumber *alphay,
-		const decNumber *xx, const decNumber *xy, decContext *ctx);
+		const decNumber *xx, const decNumber *xy);
 extern void cmplxBSYN(decNumber *rx, decNumber *ry,
 		const decNumber *alphax, const decNumber *alphay,
-		const decNumber *xx, const decNumber *xy, decContext *ctx);
+		const decNumber *xx, const decNumber *xy);
 extern void cmplxBSKN(decNumber *rx, decNumber *ry,
 		const decNumber *alphax, const decNumber *alphay,
-		const decNumber *xx, const decNumber *xy, decContext *ctx);
+		const decNumber *xx, const decNumber *xy);
 
 #endif
