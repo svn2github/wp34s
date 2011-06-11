@@ -20,8 +20,8 @@
 #define NUMSIGMAREG (13)
 
 extern void sigma_clear(decimal64 *, decimal64 *);
-extern void sigma_plus(decContext *);
-extern void sigma_minus(decContext *);
+extern void sigma_plus();
+extern void sigma_minus();
 
 extern void stats_mean(decimal64 *, decimal64 *);
 extern void stats_wmean(decimal64 *, decimal64 *);

@@ -145,7 +145,7 @@ static void mulop(decimal64 *r, const decNumber *a, const decNumber *b, decNumbe
 
 /* Define a helper function to handle sigma+ and sigma-
  */
-static void sigma_helper(decContext *ctx, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
+static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
 	decNumber x, y;
 	decNumber lx, ly;
 
@@ -176,12 +176,12 @@ static void sigma_helper(decContext *ctx, decNumber *(*op)(decNumber *, const de
 	mulop(&sigmaYlnX, &y, &lx, op);
 }
 
-void sigma_plus(decContext *ctx) {
-	sigma_helper(ctx, &dn_add);
+void sigma_plus() {
+	sigma_helper(&dn_add);
 }
 
-void sigma_minus(decContext *ctx) {
-	sigma_helper(ctx, &dn_subtract);
+void sigma_minus() {
+	sigma_helper(&dn_subtract);
 }
 
 
