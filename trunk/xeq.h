@@ -530,6 +530,7 @@ enum {
 #ifdef INCLUDE_BERNOULLI
 	OP_Bn, OP_BnS,
 #endif
+	OP_pdf_chi2, OP_pdf_T, OP_pdf_F,
 #ifdef INCLUDE_EASTER
 	OP_EASTER,
 #endif

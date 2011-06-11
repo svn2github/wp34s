@@ -1070,15 +1070,43 @@ decNumber *qf_Q(decNumber *r, const decNumber *x) {
 
 
 // Pv(x) = (x/2)^(v/2) . exp(-x/2) / Gamma(v/2+1) . (1 + sum(x^k/(v+2)(v+4)..(v+2k))
+static int chi2_param(decNumber *r, decNumber *k, const decNumber *x) {
+	dist_one_param(k);
+	if (param_positive_int(r, k))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	return 0;
+}
+
+decNumber *pdf_chi2(decNumber *r, const decNumber *x) {
+	decNumber k, k2, t, s, v;
+
+	if (chi2_param(r, &k, x))
+		return r;
+	if (dn_le0(x))
+		return decNumberZero(r);
+
+	dn_multiply(&s, x, &const__0_5);		// s = -x/2
+	dn_multiply(&k2, &k, &const_0_5);		// k2 = k/2
+	dn_subtract(&k, &k2, &const_1);			// k = k/2-1
+	dn_ln(&t, x);					// t = ln(x)
+	dn_multiply(&v, &k, &t);			// r = (k/2-1) ln(x)
+	dn_add(&k, &s, &v);
+	decNumberLnGamma(&t, &k2);
+	dn_subtract(&s, &k, &t);
+	dn_multiply(&t, &k2, &const_ln2);
+	dn_subtract(&k, &s, &t);
+	return dn_exp(r, &k);
+}
+
 decNumber *cdf_chi2(decNumber *r, const decNumber *x) {
 	decNumber a, b, v;
 
-	dist_one_param(&v);
-	if (param_positive_int(r, &v))
+	if (chi2_param(r, &v, x))
 		return r;
-	if (decNumberIsNaN(x)) {
-		return set_NaN(r);
-	}
 	if (dn_le0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
@@ -1092,12 +1120,8 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x) {
 decNumber *qf_chi2(decNumber *r, const decNumber *x) {
 	decNumber a, b, c, q, v;
 
-	dist_one_param(&v);
-	if (param_positive_int(r, &v))
+	if (chi2_param(r, &v, x))
 		return r;
-	if (decNumberIsNaN(x)) {
-		return set_NaN(r);
-	}
 	dn_multiply(&a, &v, &const_2);
 	dn_subtract(&b, &a, &const_1);
 	dn_sqrt(&a, &b);
@@ -1120,6 +1144,26 @@ static int t_param(decNumber *r, decNumber *v, const decNumber *x) {
 	return 0;
 }
 
+decNumber *pdf_T(decNumber *r, const decNumber *x) {
+	decNumber v, t, u, w;
+
+	if (t_param(r, &v, x))
+		return r;
+	dn_multiply(&t, &v, &const_0_5);		// t=v/2
+	decNumberLnGamma(&w, &t);			// w = lnGamma(v/2)
+	dn_add(&u, &t, &const_0_5);			// u = (v+1)/2
+	decNumberLnGamma(&t, &u);			// t = lnGamma((v+1)/2)
+	dn_subtract(r, &t, &w);				// r = lnGamma((v+1)/2) - lnGamma(v/2)
+	decNumberSquare(&t, x);
+	dn_divide(&w, &t, &v);				// w = x^2 / v
+	decNumberLn1p(&t, &w);				// t = ln (1 + x^2 / v)
+	dn_multiply(&w, &t, &u);			// w = ln (1 + x^2 / v) . (v+1)/2
+	dn_subtract(&t, r, &w);
+	dn_exp(&u, &t);
+	dn_multiply(&w, &v, &const_PI);
+	dn_sqrt(&t, &w);
+	return dn_divide(r, &u, &t);
+}
 
 decNumber *cdf_T(decNumber *r, const decNumber *x) {
 	decNumber t, v;
@@ -1245,16 +1289,48 @@ decNumber *qf_T(decNumber *r, const decNumber *x) {
 		return r;
 	return qf_search(r, x, 0, &a, &b, &cdf_T);
 }
-	
+
+static int f_param(decNumber *r, decNumber *d1, decNumber *d2, const decNumber *x) {
+	dist_two_param(d1, d2);
+	if (param_positive(r, d1) || param_positive(r, d2))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	return 0;
+}
+
+decNumber *pdf_F(decNumber *r, const decNumber *x) {
+	decNumber d1, d2, a, b, c, s;
+
+	if (f_param(r, &d1, &d2, x))
+		return r;
+	dn_ln(&a, &d2);
+	dn_multiply(&s, &a, &d2);
+	dn_multiply(&c, &d1, x);
+	dn_ln(&b, &c);
+	dn_multiply(&a, &b, &d1);
+	dn_add(&s, &s, &a);
+	dn_add(&a, &c, &d2);
+	dn_ln(&b, &a);
+	dn_add(&a, &d1, &d2);
+	dn_multiply(&c, &b, &a);
+	dn_subtract(&a, &s, &c);
+	dn_multiply(&s, &a, &const_0_5);
+	dn_multiply(&a, &d1, &const_0_5);
+	dn_multiply(&b, &d2, &const_0_5);
+	decNumberLnBeta(&c, &a, &b);
+	dn_subtract(&a, &s, &c);
+	dn_exp(&b, &a);
+	return dn_divide(r, &b, x);
+}
+
 decNumber *cdf_F(decNumber *r, const decNumber *x) {
 	decNumber t, u, w, v1, v2;
 
-	dist_two_param(&v1, &v2);
-	if (param_positive(r, &v1) || param_positive(r, &v2))
+	if (f_param(r, &v1, &v2, x))
 		return r;
-	if (decNumberIsNaN(x)) {
-		return set_NaN(r);
-	}
 	if (dn_le0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))

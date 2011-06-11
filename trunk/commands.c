@@ -215,6 +215,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_Bn,	&decNumberBernBn,	NULL,		NULL,		"B\275")
 	FUNC(OP_BnS,	&decNumberBernBnS,	NULL,		NULL,		"B\275*")
 #endif
+	FUNC(OP_pdf_chi2, &pdf_chi2,		NULL,		NULL,		"\265\232\276")
+	FUNC(OP_pdf_T,	&pdf_T,			NULL,		NULL,		"t\276(x)")
+	FUNC(OP_pdf_F,	&pdf_F,			NULL,		NULL,		"F\276(x)")
 #ifdef INCLUDE_EASTER
 	FUNC(OP_EASTER,	&dateEaster,		NULL,		NULL,		"EASTER")
 #endif

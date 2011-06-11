@@ -78,14 +78,17 @@ extern decNumber *cdf_Q(decNumber *, const decNumber *);
 extern decNumber *qf_Q(decNumber *, const decNumber *);
 
 /* Chi squared n distribution r in register J */
+extern decNumber *pdf_chi2(decNumber *, const decNumber *);
 extern decNumber *cdf_chi2(decNumber *, const decNumber *);
 extern decNumber *qf_chi2(decNumber *, const decNumber *);
 
 /* Student's T distribution with n df, n in register J */
+extern decNumber *pdf_T(decNumber *, const decNumber *);
 extern decNumber *cdf_T(decNumber *, const decNumber *);
 extern decNumber *qf_T(decNumber *, const decNumber *);
 
 /* F distribution with v1 and v2 df, v1 & v2 in registers J and K */
+extern decNumber *pdf_F(decNumber *, const decNumber *);
 extern decNumber *cdf_F(decNumber *, const decNumber *);
 extern decNumber *qf_F(decNumber *, const decNumber *);
 
