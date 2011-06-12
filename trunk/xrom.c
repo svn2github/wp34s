@@ -86,6 +86,7 @@
 #define FCpC(f)		xRARG(FCC, f)
 #define FCpF(f)		xRARG(FCF, f)
 #define PAUSE(f)	xRARG(PAUSE, f)
+#define VIEW(f)		xRARG(VIEW, f)
 #define SR10(f)		xRARG(SRD, f)
 #define SL10(f)		xRARG(SLD, f)
 
@@ -905,6 +906,9 @@ const s_opcode xrom[] = {
 		GSB(0)
 		alpha6('M', 'a', 'r', 'c', 'u', 's')
 		GSB(0)
+		GSB(1)
+		VIEW(st(X))
+		RTN
 	LBL(1)
 		alpha6('W', 'P', '-', '3', '4', 'S')
 	LBL(0)
