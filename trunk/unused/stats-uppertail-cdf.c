@@ -44,7 +44,7 @@ decNumber *cdfu_EXP(decNumber *r, const decNumber *x, decContext *ctx) {
 }
 
 decNumber *cdfu_G(decNumber *r, const decNumber *x, decContext *ctx) {
-	decNumber p, t, ipx;
+	decNumber p, t, ipx, u;
 
 	if (geometric_param(r, &p, x, ctx))
 		return r;
@@ -52,13 +52,14 @@ decNumber *cdfu_G(decNumber *r, const decNumber *x, decContext *ctx) {
 		decNumberFloor(&ipx, x, ctx);
 		x = &ipx;
 	}
-	if (decNumberIsNegative(x) || decNumberIsZero(x))
+	if (dn_le0(x))
 		return decNumberCopy(r, &const_1);
 	if (decNumberIsInfinite(x))
 		return decNumberZero(r);
 
-	decNumberSubtract(&t, &const_1, &p, ctx);
-	return decNumberPower(r, &t, x, ctx);
+	dn_ln1m(&t, p);
+	dn_multiply(&u, x, &t);
+	return dn_exp(r, &u);
 }
 
 decNumber *cdfu_normal(decNumber *r, const decNumber *x, decContext *ctx) {
