@@ -461,10 +461,16 @@ static int process_g_shifted(const keycode c) {
 static int process_h_shifted(const keycode c) {
 	set_shift(SHIFT_N);
 	switch (c) {
-	case K00:	return OP_NIL | OP_ALL;
+#ifdef SEQUENTIAL_ROWS
+	case K00:	case K01:	case K02:	case K03:
+		init_arg((c - K00) + RARG_STD);
+		break;
+#else
+	case K00:	init_arg(RARG_STD);	break;
 	case K01:	init_arg(RARG_FIX);	break;
 	case K02:	init_arg(RARG_SCI);	break;
 	case K03:	init_arg(RARG_ENG);	break;
+#endif
 	case K04:	
 		init_cat(CATALOGUE_CONV);
 		break;

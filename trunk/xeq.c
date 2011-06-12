@@ -1691,10 +1691,8 @@ void xrom_quad(decimal64 *a, decimal64 *nul2) {
 
 void cmddisp(unsigned int arg, enum rarg op) {
 	State.dispdigs = arg;
-	if (op == RARG_FIX)		State.dispmode = MODE_FIX;
-	else if (op == RARG_SCI)	State.dispmode = MODE_SCI;
-	else if (op == RARG_ENG)	State.dispmode = MODE_ENG;
-	// RARG_DISP just falls through having had its work done already
+	if (op != RARG_DISP)
+		State.dispmode = (op - RARG_STD) + MODE_STD;
 	State.fract = 0;
 }
 
@@ -2562,12 +2560,6 @@ void op_rad(decimal64 *nul1, decimal64 *nul2) {
 
 void op_grad(decimal64 *nul1, decimal64 *nul2) {
 	set_trig_mode(TRIG_GRAD);
-}
-
-void op_all(decimal64 *nul1, decimal64 *nul2) {
-	State.dispmode = MODE_STD;
-	State.dispdigs = 0;
-	State.fract = 0;
 }
 
 void op_radixcom(decimal64 *nul1, decimal64 *nul2) {

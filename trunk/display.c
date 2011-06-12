@@ -723,6 +723,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 	char c;
 	int negative = 0;
 	decNumber z;
+	int trimzeros = 0;
 
 	if (State.fraccomma) {
 		decimal = DECIMAL_COMMA;
@@ -751,11 +752,23 @@ static void set_x(const decimal64 *rgx, char *res) {
 	} else
 		decimal64ToString(rgx, x);
 
-	if (State2.smode == SDISP_SHOW)
+	if (State2.smode == SDISP_SHOW) {
 		mode = MODE_STD;
-
-	if (mode == MODE_STD)
 		dd = DISPLAY_DIGITS - 1;
+	} else if (mode == MODE_STD) {
+		decNumber b, c;
+
+		decNumberCopy(&b, &const_1);
+		b.exponent -= dd;
+		dn_abs(&c, &z);
+		dn_compare(&b, &c, &b);
+		dn_compare(&c, &const_1, &c);
+		if (dn_gt0(&b) && dn_gt0(&c)) {
+			mode = MODE_FIX;
+			trimzeros = 1;
+		}
+		dd = DISPLAY_DIGITS - 1;
+	}
 
 	xset(mantissa, '0', sizeof(mantissa)-1);
 	mantissa[sizeof(mantissa)-1] = '\0';
@@ -922,6 +935,11 @@ static void set_x(const decimal64 *rgx, char *res) {
 				odig++;
 			}
 		}
+		if (trimzeros)
+			while (obp > x && obp[-1] == '0') {
+				obp--;
+				odig--;
+			}
 		break;
 
 	case MODE_ENG:

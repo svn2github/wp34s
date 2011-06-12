@@ -491,9 +491,9 @@ enum {
 	OP_CCHS, OP_CCONJ,		// CHS and Conjugate
 	OP_ERF, OP_ERFC,
 	OP_pdf_Q, OP_cdf_Q, OP_qf_Q,
-	OP_cdf_chi2, OP_qf_chi2,
-	OP_cdf_T, OP_qf_T,
-	OP_cdf_F, OP_qf_F,
+	OP_pdf_chi2, OP_cdf_chi2, OP_qf_chi2,
+	OP_pdf_T, OP_cdf_T, OP_qf_T,
+	OP_pdf_F,OP_cdf_F, OP_qf_F,
 	OP_pdf_WB, OP_cdf_WB, OP_qf_WB,
 	OP_pdf_EXP, OP_cdf_EXP, OP_qf_EXP,
 	OP_pdf_B, OP_cdf_B, OP_qf_B,
@@ -528,7 +528,6 @@ enum {
 #ifdef INCLUDE_BERNOULLI
 	OP_Bn, OP_BnS,
 #endif
-	OP_pdf_chi2, OP_pdf_T, OP_pdf_F,
 #ifdef INCLUDE_EASTER
 	OP_EASTER,
 #endif
@@ -604,7 +603,7 @@ enum {
 	OP_EXPF, OP_LINF, OP_LOGF, OP_PWRF, OP_BEST,
 	OP_RANDOM, OP_STORANDOM,
 	OP_DEG, OP_RAD, OP_GRAD,
-	OP_ALL, OP_RTN, OP_RTNp1,
+	OP_RTN, OP_RTNp1,
 	OP_RS, OP_PROMPT,
 	OP_SIGMACLEAR, OP_CLREG, OP_rCLX, OP_CLSTK, OP_CLALL, OP_RESET, OP_CLFLAGS,
 	OP_R2P, OP_P2R,
@@ -678,7 +677,7 @@ enum rarg {
 	RARG_SUM, RARG_PROD, RARG_SOLVE, RARG_DERIV, RARG_2DERIV,
 	RARG_INTG,
 
-	RARG_FIX, RARG_SCI, RARG_ENG, RARG_DISP,
+	RARG_STD, RARG_FIX, RARG_SCI, RARG_ENG, RARG_DISP,
 
 	RARG_SF, RARG_CF, RARG_FF, RARG_FS, RARG_FC,
 	RARG_FSC, RARG_FSS, RARG_FSF, RARG_FCC, RARG_FCS, RARG_FCF,
@@ -1020,7 +1019,6 @@ extern void op_fracpro(decimal64 *a, decimal64 *b);
 extern void op_deg(decimal64 *nul1, decimal64 *nul2);
 extern void op_rad(decimal64 *nul1, decimal64 *nul2);
 extern void op_grad(decimal64 *nul1, decimal64 *nul2);
-extern void op_all(decimal64 *nul1, decimal64 *nul2);
 extern void op_radixcom(decimal64 *nul1, decimal64 *nul2);
 extern void op_radixdot(decimal64 *nul1, decimal64 *nul2);
 extern void op_thousands_off(decimal64 *nul1, decimal64 *nul2);

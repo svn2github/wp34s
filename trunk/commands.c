@@ -151,10 +151,13 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_pdf_Q,	&pdf_Q,			NULL,		NULL,		"\264(x)")
 	FUNC(OP_cdf_Q,	&cdf_Q,			NULL,		NULL,		"\224(x)")
 	FUNC(OP_qf_Q,	&qf_Q,			NULL,		NULL,		"\224\235(p)")
+	FUNC(OP_pdf_chi2, &pdf_chi2,		NULL,		NULL,		"\265\232\276")
 	FUNC(OP_cdf_chi2, &cdf_chi2,		NULL,		NULL,		"\265\232")
 	FUNC(OP_qf_chi2,  &qf_chi2,		NULL,		NULL,		"\265\232INV")
+	FUNC(OP_pdf_T,	&pdf_T,			NULL,		NULL,		"t\276(x)")
 	FUNC(OP_cdf_T,	&cdf_T,			NULL,		NULL,		"t(x)")
 	FUNC(OP_qf_T,	&qf_T,			NULL,		NULL,		"t\235(p)")
+	FUNC(OP_pdf_F,	&pdf_F,			NULL,		NULL,		"F\276(x)")
 	FUNC(OP_cdf_F,	&cdf_F,			NULL,		NULL,		"F(x)")
 	FUNC(OP_qf_F,	&qf_F,			NULL,		NULL,		"F\235(p)")
 	FUNC(OP_pdf_WB,	&pdf_WB,		NULL,		NULL,		"Weibl\276")
@@ -215,9 +218,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_Bn,	&decNumberBernBn,	NULL,		NULL,		"B\275")
 	FUNC(OP_BnS,	&decNumberBernBnS,	NULL,		NULL,		"B\275*")
 #endif
-	FUNC(OP_pdf_chi2, &pdf_chi2,		NULL,		NULL,		"\265\232\276")
-	FUNC(OP_pdf_T,	&pdf_T,			NULL,		NULL,		"t\276(x)")
-	FUNC(OP_pdf_F,	&pdf_F,			NULL,		NULL,		"F\276(x)")
 #ifdef INCLUDE_EASTER
 	FUNC(OP_EASTER,	&dateEaster,		NULL,		NULL,		"EASTER")
 #endif
@@ -430,7 +430,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_DEG,		&op_deg,		"DEG")
 	FUNC0(OP_RAD,		&op_rad,		"RAD")
 	FUNC0(OP_GRAD,		&op_grad,		"GRAD")
-	FUNC0(OP_ALL,		&op_all,		"ALL")
 	FUNC0(OP_RTN,		&op_rtn,		"RTN")
 	FUNC0(OP_RTNp1,		&op_rtnp1,		"RTN+1")
 	FUNC0(OP_RS,		&op_rs,			"STOP")
@@ -630,6 +629,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_2DERIV,	&xromarg,	NUMLBL,			"f\"(x)")
 	CMD(RARG_INTG,		&xromarg,	NUMLBL,			"INT")
 
+	CMD(RARG_STD,		&cmddisp,	DISPLAY_DIGITS,		"ALL")
 	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX")
 	CMD(RARG_SCI,		&cmddisp,	DISPLAY_DIGITS,		"SCI")
 	CMD(RARG_ENG,		&cmddisp,	DISPLAY_DIGITS,		"ENG")

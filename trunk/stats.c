@@ -217,8 +217,8 @@ static enum sigma_modes determine_best(const decNumber *n) {
  * If the fit is best, call a routine to figure out which has the highest
  * absolute r.  This entails a recursive call back here.
  */
-static void get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sxx, decNumber *syy,
-			decNumber *sxy, enum sigma_modes mode) {
+static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sxx, decNumber *syy,
+					decNumber *sxy, enum sigma_modes mode) {
 	decimal64 *xy;
 	int lnx, lny;
 	decNumber n;
@@ -269,6 +269,7 @@ static void get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sx
 		decimal64ToNumber(lny?&sigmalnYlnY:&sigmaYY, syy);
 	if (sxy != NULL)
 		decimal64ToNumber(xy, sxy);
+	return mode;
 }
 
 
@@ -565,11 +566,12 @@ void stats_Sxy(decimal64 *r, decimal64 *nul) {
 }
 
 // y = B . x + A
-static void do_LR(decNumber *B, decNumber *A) {
+static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
 	decNumber N, u, v, denom;
 	decNumber sx, sy, sxx, sxy;
+	enum sigma_modes m;
 
-	get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, State.sigma_mode);
+	m = get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, State.sigma_mode);
 
 	dn_multiply(B, &N, &sxx);
 	decNumberSquare(&u, &sx);
@@ -584,6 +586,8 @@ static void do_LR(decNumber *B, decNumber *A) {
 	dn_multiply(&u, &sx, &sxy);
 	dn_subtract(&v, B, &u);
 	dn_divide(B, &v, &denom);
+
+	return m;
 }
 
 
@@ -599,26 +603,66 @@ void stats_LR(decimal64 *bout, decimal64 *aout) {
 
 
 decNumber *stats_xhat(decNumber *res, const decNumber *y) {
-	decNumber a, b, t;
+	decNumber a, b, t, u;
+	enum sigma_modes m;
 
 	if (check_data(2))
 		return NULL;
-	do_LR(&b, &a);
-	dn_subtract(&t, y, &b);
-	dn_divide(res, &a, &t);
-	return res;
+	m = do_LR(&b, &a);
+	switch (m) {
+	default:
+		dn_subtract(&t, y, &b);
+		return dn_divide(res, &a, &t);
+
+	case SIGMA_EXP:
+		dn_ln(&t, y);
+		dn_subtract(&u, &t, &b);
+		return dn_divide(res, &u, &a);
+
+	case SIGMA_LOG:
+		dn_subtract(&t, y, &b);
+		dn_divide(&b, &t, &a);
+		return dn_exp(res, &b);
+
+	case SIGMA_POWER:
+	case SIGMA_QUIET_POWER:
+		dn_ln(&t, y);
+		dn_subtract(&u, &t, &b);
+		dn_divide(&t, &u, &a);
+		return dn_exp(res, &t);
+	}
 }
 
 
 decNumber *stats_yhat(decNumber *res, const decNumber *x) {
-	decNumber a, b, t;
+	decNumber a, b, t, u;
+	enum sigma_modes m;
 
 	if (check_data(2))
 		return NULL;
-	do_LR(&b, &a);
-	dn_multiply(&t, x, &a);
-	dn_add(res, &t, &b);
-	return res;
+	m = do_LR(&b, &a);
+	switch (m) {
+	default:
+		dn_multiply(&t, x, &a);
+		return dn_add(res, &t, &b);
+
+	case SIGMA_EXP:
+		dn_multiply(&t, x, &a);
+		dn_add(&a, &b, &t);
+		return dn_exp(res, &a);
+
+	case SIGMA_LOG:
+		dn_ln(&u, x);
+		dn_multiply(&t, &u, &a);
+		return dn_add(res, &t, &b);
+
+	case SIGMA_POWER:
+	case SIGMA_QUIET_POWER:
+		dn_ln(&t, x);
+		dn_multiply(&u, &t, &a);
+		dn_add(&t, &u, &b);
+		return dn_exp(res, &t);
+	}
 }
 
 
