@@ -1568,16 +1568,15 @@ opcode current_catalogue(int n) {
 
 
 static int process_catalogue(const keycode c) {
-	unsigned int dv;
+	unsigned int dv = State2.digval;
 	unsigned char ch;
 	const int ctmax = current_catalogue_max();
+	const enum shifts s = cur_shift();
 
-	if (cur_shift() == SHIFT_N) {
+	if (s == SHIFT_N) {
 		switch (c) {
 		case K30:			// XEQ accepts command
 		case K20:			// Enter accepts command
-			dv = State2.digval;
-
 			if ((int) dv < ctmax) {
 				const opcode op = current_catalogue(dv);
 
@@ -1635,11 +1634,36 @@ static int process_catalogue(const keycode c) {
 		default:
 			break;
 		}
+	} else if (s == SHIFT_F && c == K01 && State2.catalogue == CATALOGUE_CONV) {
+		/* A small table of commands in pairs containing inverse commands.
+		 * This table could be unsigned characters only storing the monadic kind.
+		 * this saves twelve bytes in the table at a cost of some bytes in the code below.
+		 * Not worth it since the maximum saving will be less than twelve bytes.
+		 */
+		static const unsigned short int conv_mapping[] = {
+			OP_MON | OP_AR_DB,	OP_MON | OP_DB_AR,
+			OP_MON | OP_DB_PR,	OP_MON | OP_PR_DB,
+			OP_MON | OP_DEGC_F,	OP_MON | OP_DEGF_C,
+			OP_MON | OP_DEG2RAD,	OP_MON | OP_RAD2DEG,
+			OP_MON | OP_DEG2GRD,	OP_MON | OP_GRD2DEG,
+			OP_MON | OP_RAD2GRD,	OP_MON | OP_GRD2RAD,
+		};
+		const opcode op = current_catalogue(dv);
+		int i;
+
+		init_cat(CATALOGUE_NONE);
+		if (op & OP_RARG)
+			return op ^ 1;
+		for (i=0; i<sizeof(conv_mapping) / sizeof(conv_mapping[0]); i++)
+			if (op == conv_mapping[i])
+				return conv_mapping[i^1];
+		return STATE_UNFINISHED;		// Unreached
 	}
+
 	/* We've got a key press, map it to a character and try to
 	 * jump to the appropriate catalogue entry.
 	 */
-	ch = remap_chars(keycode_to_alpha(c, cur_shift()));
+	ch = remap_chars(keycode_to_alpha(c, s));
 	set_shift(SHIFT_N);
 	if (ch == '\0')
 		return STATE_UNFINISHED;
