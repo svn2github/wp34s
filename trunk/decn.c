@@ -1363,9 +1363,10 @@ decNumber *decNumberCosh(decNumber *res, const decNumber *x) {
 decNumber *decNumberTanh(decNumber *res, const decNumber *x) {
 	decNumber a, b;
 
-	if (decNumberIsSpecial(x)) {
-		if (decNumberIsNaN(x))
-			return set_NaN(res);
+	if (decNumberIsNaN(x))
+		return set_NaN(res);
+	dn_abs(&a, x);
+	if (decNumberIsNegative(dn_compare(&b, &const_100, &a))) {
 		if (decNumberIsNegative(x))
 			return decNumberCopy(res, &const__1);
 		return decNumberCopy(res, &const_1);
@@ -1418,6 +1419,14 @@ decNumber *decNumberArcCosh(decNumber *res, const decNumber *x) {
 decNumber *decNumberArcTanh(decNumber *res, const decNumber *x) {
 	decNumber y, z;
 
+	if (decNumberIsNaN(x))
+		return set_NaN(res);
+	dn_abs(&y, x);
+	if (decNumberIsZero(dn_compare(&z, &y, &const_1))) {
+		if (decNumberIsNegative(x))
+			return set_neginf(res);
+		return set_inf(res);
+	}
 	// Not the obvious formula but more stable...
 	dn_subtract(&z, &const_1, x);
 	dn_divide(&y, x, &z);
