@@ -1322,21 +1322,21 @@ void op_p2r(decimal64 *nul1, decimal64 *nul2) {
  * reasons.
  */
 void dn_sinhcosh(const decNumber *x, decNumber *sinhv, decNumber *coshv) {
-	decNumber t, u, v, s, r;
-
-	dn_exp(&u, x);			// u = e^x
-	decNumberRecip(&v, &u);			// v = e^-x
+	decNumber t, u, v;
 
 	if (sinhv != NULL) {
-		decNumberExpm1(&t, x);		// t = e^x - 1
-		dn_multiply(&s, &t, &v);	// s = (e^x - 1) / e^x = 1 - e^-x
-		dn_add(&r, &s, &t);		// r = e^x - 1 + 1 - e^-x = e^x - e^-x	
-		dn_multiply(sinhv, &r, &const_0_5);
+		decNumberExpm1(&u, x);
+		dn_multiply(&t, &u, &const_0_5);
+		dn_inc(&u);
+		dn_divide(&v, &t, &u);
+		dn_inc(&u);
+		dn_multiply(sinhv, &u, &v);
 	}
-
 	if (coshv != NULL) {
-		dn_add(&r, &v, &u);		// r = e^x + e^-x
-		dn_multiply(coshv, &r, &const_0_5);
+		dn_exp(&u, x);			// u = e^x
+		decNumberRecip(&v, &u);		// v = e^-x
+		dn_add(&t, &v, &u);		// r = e^x + e^-x
+		dn_multiply(coshv, &t, &const_0_5);
 	}
 }
 
@@ -1361,7 +1361,7 @@ decNumber *decNumberCosh(decNumber *res, const decNumber *x) {
 }
 
 decNumber *decNumberTanh(decNumber *res, const decNumber *x) {
-	decNumber s, c;
+	decNumber a, b;
 
 	if (decNumberIsSpecial(x)) {
 		if (decNumberIsNaN(x))
@@ -1370,8 +1370,10 @@ decNumber *decNumberTanh(decNumber *res, const decNumber *x) {
 			return decNumberCopy(res, &const__1);
 		return decNumberCopy(res, &const_1);
 	}
-	dn_sinhcosh(x, &s, &c);
-	return dn_divide(res, &s, &c);
+	dn_add(&a, x, x);
+	decNumberExpm1(&b, &a);
+	dn_add(&a, &b, &const_2);
+	return dn_divide(res, &b, &a);
 }
 
 
@@ -1392,18 +1394,21 @@ decNumber *decNumberCoth(decNumber *res, const decNumber *x) {
 decNumber *decNumberArcSinh(decNumber *res, const decNumber *x) {
 	decNumber y, z;
 
-	dn_multiply(&y, x, x);	// y = x^2
+	decNumberSquare(&y, x);		// y = x^2
 	dn_add(&z, &y, &const_1);	// z = x^2 + 1
-	dn_sqrt(&y, &z);	// y = sqrt(x^2+1)
-	dn_add(&z, &y, x);		// z = x + sqrt(x^2+1)
-	return dn_ln(res, &z);
+	dn_sqrt(&y, &z);		// y = sqrt(x^2+1)
+	dn_inc(&y);			// y = sqrt(x^2+1)+1
+	dn_divide(&z, x, &y);
+	dn_inc(&z);
+	dn_multiply(&y, x, &z);
+	return decNumberLn1p(res, &y);
 }
 
 
 decNumber *decNumberArcCosh(decNumber *res, const decNumber *x) {
 	decNumber z;
 
-	dn_multiply(res, x, x);	// r = x^2
+	decNumberSquare(res, x);	// r = x^2
 	dn_subtract(&z, res, &const_1);	// z = x^2 + 1
 	dn_sqrt(res, &z);	// r = sqrt(x^2+1)
 	dn_add(&z, res, x);		// z = x + sqrt(x^2+1)
