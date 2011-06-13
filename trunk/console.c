@@ -19,6 +19,7 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
+#include <ctype.h>
 
 #include "xeq.h" 
 #include "keys.h"
@@ -275,12 +276,10 @@ static const struct {
 };
 #define num_xrom_labels		(sizeof(xrom_labels) / sizeof(*xrom_labels))
 
-static void dump_xrom(void) {
-	unsigned int pc = addrXROM(0);
-	const unsigned int max = addrXROM(xrom_size);
+static void dump_code(unsigned int pc, unsigned int max, int annotate) {
 	int dbl = 0, sngl = 0;
 
-	printf("ADDR  MNEMONIC\t\tComment\n\n");
+	printf("ADDR  OPCODE     MNEMONIC%s\n\n", annotate?"\tComment":"");
 	do {
 		char instr[16];
 		const opcode op = getprog(pc);
@@ -301,12 +300,39 @@ static void dump_xrom(void) {
 			if (q == NULL) putchar(c);
 			else printf("[%s]", q);
 		}
-		for (i=0; i<num_xrom_labels; i++)
-			if (xrom_labels[i].op == op)
-				printf("\t\t%s", xrom_labels[i].name);
+		if (annotate)
+			for (i=0; i<num_xrom_labels; i++)
+				if (xrom_labels[i].op == op)
+					printf("\t\t%s", xrom_labels[i].name);
 		putchar('\n');
-	} while (pc != addrXROM(0));
-	printf("%u XROM words\n%d single word instructions\n%d double word instructions\n", max-pc, sngl, dbl);
+	} while (! PcWrapped);
+	if (annotate)
+		printf("%u XROM words\n%d single word instructions\n%d double word instructions\n", max-pc, sngl, dbl);
+}
+
+static void dump_xrom(void) {
+	dump_code(addrXROM(0), addrXROM(xrom_size), 1);
+}
+
+static void dump_ram(void) {
+	if (LastProg > 1)
+		dump_code(1, LastProg, 0);
+	else
+		printf("no RAM program\n");
+}
+
+static void dump_prog(unsigned int n) {
+	unsigned int pc;
+	if (n > NUMBER_OF_FLASH_REGIONS-1)
+		printf("no such program region %u\n", n);
+	else if (! is_prog_region(n+1))
+		printf("region %u is not a program region\n", n);
+	else if (sizeLIB(n+1) == 0)
+		printf("region %u empty\n", n);
+	else {
+		pc = addrLIB(0, n+1);
+		dump_code(pc, pc + sizeLIB(n+1), 0);
+	}
 }
 
 void shutdown( void )
@@ -350,10 +376,19 @@ int main(int argc, char *argv[]) {
 	int warm = 0;
 
 	xeq_init_contexts();
+	load_statefile();
 	if (argc > 1) {
 		if (argc == 2) {
 			if (argv[1][0] == 'x' && argv[1][1] == 'r' && argv[1][2] == 'o' && argv[1][3] == 'm' && argv[1][4] == '\0') {
 				dump_xrom();
+				return 0;
+			}
+			if (argv[1][0] == 'r' && argv[1][1] == 'a' && argv[1][2] == 'm' && argv[1][3] == '\0') {
+				dump_ram();
+				return 0;
+			}
+			if (argv[1][0] == 'p' && argv[1][1] == 'r' && argv[1][2] == 'o' && argv[1][3] == 'g' && isdigit(argv[1][4]) && argv[1][5] == '\0') {
+				dump_prog(argv[1][4] - '0');
 				return 0;
 			}
 			if (argv[1][0] == 'w' && argv[1][1] == 'a' && argv[1][2] == 'k' && argv[1][3] == 'e' && argv[1][4] == '\0') {
@@ -419,7 +454,6 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 skipargs:
-	load_statefile();
 	if (!warm)
 		init_34s();
 	if (setuptty(0) == 0) {
