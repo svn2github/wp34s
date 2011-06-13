@@ -224,3 +224,151 @@ derivative simply is the Student PDF, so we get
 
 If two guesses are required (e.g. for the 34s solver) we can simply use
 1.1*t and 0.9*t (or something similar).
+
+
+
+
+Chi Squared estimate:
+
+
+The following approximation is based on the well-known 1931 Wilson and
+Hilferty transformation (cf Abramovitz and Stegun, 26.4.17). While this
+method gives nice results in the center, it fails for p close to 0 or 1.
+So two additional approximations are used. One of them was adapted from
+Applied Statistics algorithm AS91 by Best and Roberts (1975), including
+some additional later improvements from 1991. The Fortran code is
+available at http://lib.stat.cmu.edu/apstat/91
+
+AS91 evaluates a first initial guess for the Chi^2 quantile which then
+is improved in a Taylor series iteration. For our purpose only an
+initial guess is required, since the rest is done by the 34s solver or a
+dedicated Newton-style algorithm. Since AS91 requires two logs and a
+gamma function for p close to 1, in our case a homebrew approximation
+with similar precision is used instead, requiring only one log. The
+whole thing was finally streamlined and slightly tweaked for best
+results with our initial guess for the normal quantile which is used
+here once again. All in all, with probability p and n degrees of
+freedom, the result looks like this:
+
+function guess_chi(p, n)
+
+nhalf = n/2
+If n > 15 then limit = 0.85 else limit = 1
+
+If p < exp(-limit*n) then     ' modified B+R approx. for p close to 0
+  lng = lngamma(nhalf)
+  ch = 2 * (p * nhalf)^(1/nhalf) * exp(lng/nhalf)
+else
+  x = 0.97 * guess_normal(p) ' Wilson + Hilferty for the center
+  u = 0.2214 / n             ' works better than 2/9 = 0.2222
+  ch = n * (x * sqrt(u) - u + 1) ^ 3
+  If ch > 6*n + 16 then      ' my own adjustment for p close to 1
+     ch = ch * (1 + ln1plusx(-p) / (150*n))
+end if
+
+guess_chi = ch
+
+end function
+
+
+According to my results, for all positive integer n the error is within
+-9%...+7% of the true value. I tested p from 1E-307 up to 1 - 1E-16 and
+n from 1 to 1000 and higher.
+
+Once again, the first guess relies on the same normal estimate procedure
+as it is used in the Normal and Student case. However, please note that
+guess_normal(p) here has to accept any 0 < p < 1 and not just up to 0,5
+as in the Normal and Student case with their symmetric PDF. Since p is
+the left hand integral (from 0 to Chi^2) the sign convention is as
+usual: p < 0,5 has to return a negative guess_normal, and p > 0,5 a
+positive one. As it turned out, the results improve if the normal
+estimate is slightly decreased - which is the reason for the 0,97.
+
+For n = 1 guess_chi may return zero for p very close to zero (near
+1E-200). This is perfectly okay since the estimate here actually agrees
+with the true value in 400 (!) decimal places and the full precision
+result (pi/2 * p^2) simply underflows as well. So, if the guess is zero
+we already have the true value and no further iteration is required
+(which would cause numeric problems anyway).
+
+This implementation returns a valid guess even for large n. On a
+15-digit system I got good results even for n > 1000. In this case the
+term exp(-0.85*n) will soon underflow to zero, which numerically is no
+problem. If an underflow has to be avoided for other reasons, the test
+can be changed to ln(p) < -limit*n.
+
+The estimate still requires one gamma function, or here a lngamma() to
+increase the useable range of n. If n <= 410 is sufficient (the 34s
+Gamma function works up to 205) the estimate for small p can be written
+as  ch = 2 * (p * nhalf * gamma(nhalf))^(1/nhalf). If calling the
+regular Gamma or lnGamma routine is too slow there may be a simple, yet
+effective alternative Gamma function that only has to cover integers and
+half-integers, similar to the short routine for the Chi^2 PDF below.
+
+I tested this initial estimate as a first guess for a Newton
+approximation and obtained 15 valid digits usually within 4 - 7
+iterations, here and there a few more. In this case the Chi^2 PDF is
+required, which again requires gamma(n/2). This means, we could evaluate
+gamma(n/2) once at the beginning of the algorithm and then use it first
+for the estimate and then for the PDF required for the Newton iteration.
+Maybe even a third time for the evaluation of the Chi^2 CDF.
+
+Another option is an optimized routine for the Chi^2 PDF, which may be
+written like this:
+
+function chi_pdf(x, n)
+
+xhalf = x / 2
+nhalf = n / 2
+k = nhalf
+
+If nhalf = int(nhalf) then r = 0.5 else r = 1 / sqrt(2 * pi * x)
+
+while k > 1 do
+  k = k - 1
+  r = r * xhalf / k
+  end
+
+chi_pdf = r * exp(-xhalf)
+
+end function
+
+The while-loop evaluates the quotient (x/2)^(n/2)/gamma(n/2)/x while
+minimizing the danger of overflow. Multiplication with exp(-n/2) finally
+gives the Chi^2 pdf. It should also run faster than a straightforward
+approach that calls an external gamma routine.
+
+Using a Newton iteration, a 16-digit result usually is found with just a
+few iterations. However, there were cases where the method tried to
+adjust the first estimate by more than the actual error. Which in turn
+required numerous iterations before the value was back near the true
+result. I have not yet found out what happens in these cases, but there
+is an easy fix: since the error of the estimate is at most 8 or 9%, the
+delta added to the current estimate cannot exceed this value. It turned
+out that the problem primarily occurs at large n where the potential
+error is even less, so that a maximum correction of 3 or 4% works even
+better and minimizes the number of iterations. The modified Newton
+algorithm now basically looks like this:
+
+function chi_quantile(p, n)
+
+x = guess_chi(p,n)
+
+if x > 0 then   ' for x = 0 (underflow) the result already is exact
+ maxdelta = 0.04 * x
+ repeat
+   delta = (chi_cdf(x, n) - p) / chi_pdf(x, n)
+   if abs(delta) > maxdelta then delta = maxdelta * sign(delta)
+   x = x - delta
+ until abs(delta/x) < 1E-16
+end if
+
+chi_quantile = x
+
+end function
+
+If you want to try the 34s solver, the two estimates may be plus and
+minus 10% of the chi_guess result. However, I think a Newton approach
+will converge substantially faster.
+
+
