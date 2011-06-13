@@ -656,6 +656,8 @@ static s_opcode conv_catalogue[] = {
 	CONV(OP_J_kWh,		0, "J->kW.h")
 	CONV(OP_J_kWh,		1, "kW.h->J")
 	CONV(OP_KG_LBM, 	0, "kg->lbm")
+	CONV(OP_KG_STONE,	1, "stone->kg")
+	CONV(OP_KG_STONE,	0, "kg->stone")
 	CONV(OP_KG_LBM, 	1, "lb->kg")
 	CONV(OP_KM_AU,		0, "km->AU")
 	CONV(OP_KM_AU,		1, "AU->km")

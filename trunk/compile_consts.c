@@ -386,6 +386,7 @@ struct constsml constsint[] = {
  */
 struct constsml conversions[] = {
 	CONV("kg",	"lb",		"KG_LBM",	"0.4535924"),
+	CONV("kg",	"stone",	"KG_STONE",	"6.35029318"),
 	CONV("g",	"oz",		"G_OZ",		"28.34952"),
 	CONV("g",	"tr.oz",	"G_TOZ",	"31.10348"),
 	CONV("l",	"galUK",	"L_GALUK",	"4.54609"),
