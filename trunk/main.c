@@ -1227,7 +1227,7 @@ int put_key( int k )
 void watchdog( void )
 {
 #ifndef NOWD
-	AT91C_BASE_WDTC->WDTC_WDCR=0xA5000001;
+	AT91C_BASE_WDTC->WDTC_WDCR = 0xA5000001;
 #endif
 }
 
