@@ -1165,26 +1165,83 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x) {
 	return decNumberGammap(r, &a, &b);
 }
 
-static void qf_chi2_est(decNumber *a, decNumber *b, const decNumber *v, const decNumber *x) {
-	decNumber q, c;
+static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p) {
+	decNumber a, b, d;
 
-	dn_multiply(a, v, &const_2);
-	dn_subtract(b, a, &const_1);
-	dn_sqrt(a, b);
-	qf_Q(&q, x);
-	dn_add(&c, &q, a);
-	decNumberSquare(b, &c);
-	dn_multiply(a, b, &const_0_25);		// lower estimate
-	dn_multiply(b, a, &const_e);	
+	if (decNumberIsNegative(dn_compare(&a, &const_15, n)))
+		decNumberCopy(&a, &const_0_85);
+	else
+		decNumberCopy(&a, &const_1);
+
+	dn_multiply(&b, &a, n);
+	dn_minus(&a, &b);
+	dn_exp(&b, &a);
+	if (decNumberIsNegative(dn_compare(&a, p, &b))) {
+		dn_multiply(&a, n, &const_0_5);
+		decNumberLnGamma(&b, &a);
+		dn_divide(guess, &b, &a);
+		dn_exp(&b, guess);
+		dn_multiply(guess, p, &a);
+		decNumberRecip(&d, &a);
+		dn_power(&a, guess, &d);
+		dn_multiply(&d, &a, &b);
+		dn_multiply(guess, &d, &const_2);
+	} else {
+		dn_subtract(&b, &const_0_5, p);
+		qf_Q_est(&a, p, &b);
+		dn_multiply(&b, &a, &const_0_97);
+		dn_divide(&a, &const_0_2214, n);
+		// c = n * (b * sqrt(a) - a + 1) ^ 3
+		dn_sqrt(guess, &a);
+		dn_multiply(&d, guess, &b);
+		dn_subtract(guess, &d, &a);
+		dn_inc(guess);
+		decNumberSquare(&d, guess);
+		dn_multiply(&a, &d, guess);
+		dn_multiply(guess, &a, n);
+		dn_multiply(&a, n, &const_6);
+		dn_add(&b, &a, &const_16);
+		if (decNumberIsNegative(dn_compare(&a, &b, guess))) {
+			dn_ln1m(&a, p);
+			dn_multiply(&b, &const_150, n);
+			dn_divide(&d, &a, &b);
+			dn_inc(&d);
+			dn_multiply(guess, guess, &d);
+		}
+	}
 }
 
-decNumber *qf_chi2(decNumber *r, const decNumber *x) {
-	decNumber a, b, v;
+decNumber *qf_chi2(decNumber *r, const decNumber *p) {
+	decNumber x, a, b, d, md;
+	int i;
 
-	if (chi2_param(r, &v, x))
+	if (chi2_param(r, &a, p))
 		return r;
-	qf_chi2_est(&a, &b, &v, x);
-	return qf_search(r, x, 1, &a, &b, &cdf_chi2);
+
+	qf_chi2_est(&x, &a, p);
+	if (decNumberIsZero(&x))
+		return decNumberCopy(r, &x);
+
+	dn_multiply(&md, &x, &const_0_04);
+	for (i=0; i<100; i++) {
+		cdf_chi2(&a, &x);
+		dn_subtract(&b, &a, p);
+		pdf_chi2(&a, &x);
+		dn_divide(&d, &b, &a);			// d = (cdf() - p)/pdf()
+		dn_abs(&a, &d);
+		dn_compare(&b, &md, &a);
+		if (decNumberIsNegative(&b)) {
+			if (decNumberIsNegative(&a))
+				dn_minus(&d, &md);
+			else
+				decNumberPlus(&d, &md, &Ctx);
+		}
+		dn_subtract(&b, &x, &d);
+		if (relative_error(&x, &b, &const_1e_24))
+			break;
+		decNumberCopy(&x, &b);
+	}
+	return decNumberCopy(r, &b);
 }
 
 
