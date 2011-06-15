@@ -270,6 +270,8 @@ const char *catcmd(opcode op, char instr[16]) {
 		switch (opKIND(op)) {
 		default:
 			break;
+		case KIND_SPEC:
+			return prt_specials(f, instr);
 		case KIND_NIL:
 			if (f < num_niladics)
 				return sncopy(instr, niladics[f].nname, NAME_LEN);

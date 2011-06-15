@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "xeq.h" 
 #include "keys.h"
@@ -335,6 +336,75 @@ static void dump_prog(unsigned int n) {
 	}
 }
 
+static void prettify(const char *in, char *out) {
+	const char *p;
+	char c;
+
+	while (*in != '\0') {
+		c = *in++;
+		p = pretty(c);
+		if (p == NULL)
+			*out++ = c;
+		else {
+			*out++ = '[';
+			while (*p != '\0')
+				*out++ = *p++;
+			*out++ = ']';
+		}
+	}
+	*out = '\0';
+}
+
+static void dump_opcodes(void) {
+	int c;
+	char cmdname[16];
+	char cmdpretty[500];
+	const char *p;
+
+	for (c=0; c<65536; c++) {
+		if (isDBL(c)) {
+			const unsigned int cmd = opDBL(c);
+			if ((c & 0xff) != 0)
+				continue;
+			if (cmd >= num_multicmds)
+				continue;
+			xset(cmdname, '\0', 16);
+			xcopy(cmdname, multicmds[cmd].cmd, NAME_LEN);
+			prettify(cmdname, cmdpretty);
+			printf("0x%04x\tmult\t%s\n", c, cmdpretty);
+		} else if (isRARG(c)) {
+			const unsigned int cmd = (c & ~OP_RARG) >> RARG_OPSHFT;
+
+			if (cmd != RARG_ALPHA && (c & RARG_IND) != 0)
+				continue;
+			p = catcmd(c, cmdname);
+			if (strcmp(p, "???") == 0)
+				continue;
+			prettify(p, cmdpretty);
+			if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX || cmd == RARG_CONV || cmd == RARG_ALPHA) {
+				printf("0x%04x\tcmd\t%s\n", c, cmdpretty);
+				continue;
+			}
+			if ((c & 0xff) != 0)
+				continue;
+			printf("0x%04x\targ\t%s\tmax=%u", c, cmdpretty, argcmds[cmd].lim);
+			if (argcmds[cmd].indirectokay)
+				printf(",indirect");
+			if (argcmds[cmd].stckreg)
+				printf(",stack");
+			if (argcmds[cmd].cmplx)
+				printf(",complex");
+			printf("\n");
+		} else {
+			p = catcmd(c, cmdname);
+			if (strcmp(p, "???") == 0)
+				continue;
+			prettify(p, cmdpretty);
+			printf("0x%04x\tcmd\t%s\n", c, cmdpretty);
+		}
+	}
+}
+
 void shutdown( void )
 {
 	checksum_all();
@@ -379,11 +449,11 @@ int main(int argc, char *argv[]) {
 	load_statefile();
 	if (argc > 1) {
 		if (argc == 2) {
-			if (argv[1][0] == 'x' && argv[1][1] == 'r' && argv[1][2] == 'o' && argv[1][3] == 'm' && argv[1][4] == '\0') {
+			if (strcmp(argv[1], "xrom") == 0) {
 				dump_xrom();
 				return 0;
 			}
-			if (argv[1][0] == 'r' && argv[1][1] == 'a' && argv[1][2] == 'm' && argv[1][3] == '\0') {
+			if (strcmp(argv[1], "ram") == 0) {
 				dump_ram();
 				return 0;
 			}
@@ -391,9 +461,13 @@ int main(int argc, char *argv[]) {
 				dump_prog(argv[1][4] - '0');
 				return 0;
 			}
-			if (argv[1][0] == 'w' && argv[1][1] == 'a' && argv[1][2] == 'k' && argv[1][3] == 'e' && argv[1][4] == '\0') {
+			if (strcmp(argv[1], "wake") == 0) {
 				warm = 1;
 				goto skipargs;
+			}
+			if (strcmp(argv[1], "opcodes") == 0) {
+				dump_opcodes();
+				return 0;
 			}
 			dump_menu("float", "", CATALOGUE_NORMAL);
 			dump_menu("complex", "[cmplx]", CATALOGUE_COMPLEX);
