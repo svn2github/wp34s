@@ -1209,24 +1209,24 @@ static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p
 			dn_multiply(guess, guess, &d);
 		}
 	}
+	if (dn_le0(dn_compare(&a, guess, &const_1e_400)))
+		decNumberZero(guess);
 }
 
-decNumber *qf_chi2(decNumber *r, const decNumber *p) {
-	decNumber x, a, b, d, md;
+static decNumber *newton_qf_chi2(decNumber *r, const decNumber *v, const decNumber *p) {
+	decNumber a, b, d, md, prev;
 	int i;
 
-	if (chi2_param(r, &a, p))
-		return r;
-
-	qf_chi2_est(&x, &a, p);
-	if (decNumberIsZero(&x))
-		return decNumberCopy(r, &x);
-
-	dn_multiply(&md, &x, &const_0_04);
+	dn_multiply(&md, r, &const_0_04);
 	for (i=0; i<100; i++) {
-		cdf_chi2(&a, &x);
+		cdf_chi2(&a, r);
 		dn_subtract(&b, &a, p);
-		pdf_chi2(&a, &x);
+		dn_abs(&a, &b);
+		if (i > 0 && decNumberIsNegative(dn_compare(&d, &prev, &a)))
+			return set_NaN(r);
+		decNumberCopy(&prev, &a);
+
+		pdf_chi2(&a, r);
 		dn_divide(&d, &b, &a);			// d = (cdf() - p)/pdf()
 		dn_abs(&a, &d);
 		dn_compare(&b, &md, &a);
@@ -1236,12 +1236,23 @@ decNumber *qf_chi2(decNumber *r, const decNumber *p) {
 			else
 				decNumberPlus(&d, &md, &Ctx);
 		}
-		dn_subtract(&b, &x, &d);
-		if (relative_error(&x, &b, &const_1e_24))
+		decNumberCopy(&b, r);
+		dn_subtract(r, &b, &d);
+		if (relative_error(r, &b, &const_1e_24))
 			break;
-		decNumberCopy(&x, &b);
 	}
-	return decNumberCopy(r, &b);
+	return r;
+}
+
+decNumber *qf_chi2(decNumber *r, const decNumber *p) {
+	decNumber v;
+
+	if (chi2_param(r, &v, p))
+		return r;
+	qf_chi2_est(r, &v, p);
+	if (decNumberIsZero(r))
+		return r;
+	return newton_qf_chi2(r, &v, p);
 }
 
 
@@ -1393,23 +1404,23 @@ static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
 	return 0;
 }
 
-static void newton_qf_T(decNumber *q, const decNumber *p, const decNumber *ndf) {
+static decNumber *newton_qf_T(decNumber *q, const decNumber *p, const decNumber *ndf) {
 	decNumber w, x, z, ndfp1;
 	int i;
 
 	dn_add(&ndfp1, ndf, &const_1);
 	for (i=0; i<30; i++) {
 		// Newton's approximation
-		if (decNumberIsZero(cdf_T(&x, q)))
-			return;
-		dn_subtract(&z, &x, p);
-		pdf_T(&x, q);
+		dn_subtract(&z, cdf_T(&x, q), p);
+		if (decNumberIsZero(pdf_T(&x, q)))
+			break;
 		dn_divide(&w, &z, &x);
 		decNumberCopy(&z, q);
 		dn_subtract(q, &z, &w);
 		if (relative_error(q, &z, &const_1e_24))
 			break;
 	}
+	return q;
 }
 
 decNumber *qf_T(decNumber *r, const decNumber *x) {
@@ -1646,22 +1657,6 @@ static int binomial_param(decNumber *r, decNumber *p, decNumber *n, const decNum
 	return 0;
 }
 
-decNumber *cdf_B_helper(decNumber *r, const decNumber *x) {
-	decNumber n, p, t, u, v;
-
-	if (binomial_param(r, &p, &n, x))
-		return r;
-	if (dn_lt0(x))
-		return decNumberZero(r);
-	if (dn_lt0(dn_compare(&t, &n, x)))
-		return decNumberCopy(r, &const_1);
-
-	dn_add(&u, x, &const_1);
-	dn_subtract(&v, &n, x);
-	dn_subtract(&t, &const_1, &p);
-	return betai(r, &v, &u, &t);
-}
-
 decNumber *pdf_B(decNumber *r, const decNumber *x) {
 	decNumber n, p, t, u, v;
 
@@ -1683,6 +1678,22 @@ decNumber *pdf_B(decNumber *r, const decNumber *x) {
 	dn_multiply(&u, &t, &v);
 	dn_power(&t, &p, x);
 	return dn_multiply(r, &t, &u);
+}
+
+decNumber *cdf_B_helper(decNumber *r, const decNumber *x) {
+	decNumber n, p, t, u, v;
+
+	if (binomial_param(r, &p, &n, x))
+		return r;
+	if (dn_lt0(x))
+		return decNumberZero(r);
+	if (dn_lt0(dn_compare(&t, &n, x)))
+		return decNumberCopy(r, &const_1);
+
+	dn_add(&u, x, &const_1);
+	dn_subtract(&v, &n, x);
+	dn_subtract(&t, &const_1, &p);
+	return betai(r, &v, &u, &t);
 }
 
 decNumber *cdf_B(decNumber *r, const decNumber *x) {
