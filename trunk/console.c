@@ -381,7 +381,15 @@ static void dump_opcodes(void) {
 			if (strcmp(p, "???") == 0)
 				continue;
 			prettify(p, cmdpretty);
-			if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX || cmd == RARG_CONV || cmd == RARG_ALPHA) {
+			if (cmd == RARG_ALPHA) {
+				if ((c & 0xff) == 0)
+					continue;
+				printf("0x%04x\tcmd\t[alpha] %s\n", c, cmdpretty);
+				continue;
+			} else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
+				printf("0x%04x\tcmd\t%s# %s\n", c, cmd == RARG_CONST_CMPLX?"[cmplx]":"", cmdpretty);
+				continue;
+			} else if (cmd == RARG_CONV) {
 				printf("0x%04x\tcmd\t%s\n", c, cmdpretty);
 				continue;
 			}
