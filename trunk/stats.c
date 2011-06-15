@@ -38,7 +38,7 @@
 #define sigmaXlnY	(Regs[98])
 #define sigmaYlnX	(Regs[99])
 
-//#define DUMP1
+// #define DUMP1
 #ifdef DUMP1
 #include <stdio.h>
 static FILE *debugf = NULL;
@@ -1352,54 +1352,73 @@ static void qf_T_est(decNumber *r, const decNumber *df, const decNumber *p, cons
 		dn_minus(r, r);
 }
 
-static int qf_T_init(decNumber *r, decNumber *a, decNumber *b, const decNumber *x) {
-	decNumber c, d, v;
+static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
+	decNumber a, b, c, d;
 
-	if (t_param(r, &v, x))
+	if (t_param(r, v, x))
 		return 1;
-	dn_subtract(b, &const_0_5, x);
-	if (decNumberIsZero(b)) {
+	dn_subtract(&b, &const_0_5, x);
+	if (decNumberIsZero(&b)) {
 		decNumberZero(r);
 		return 1;
 	}
-	if (decNumberIsInfinite(&v)) {					// Normal in the limit
+	if (decNumberIsInfinite(v)) {					// Normal in the limit
 		qf_Q(r, x);
 		return 1;
 	}
 
-	dn_compare(a, &v, &const_1);
-	if (decNumberIsZero(a)) {					// special case v = 1
-		dn_multiply(a, b, &const_PI);
-		dn_sincos(a, &c, &d);
-		dn_divide(a, &c, &d);			// lower = tan(pi (x - 1/2))
-		dn_minus(r, a);
+	dn_compare(&a, v, &const_1);
+	if (decNumberIsZero(&a)) {					// special case v = 1
+		dn_multiply(&a, &b, &const_PI);
+		dn_sincos(&a, &c, &d);
+		dn_divide(&a, &c, &d);			// lower = tan(pi (x - 1/2))
+		dn_minus(r, &a);
 		return 1;
 	}
-	dn_compare(&d, &v, &const_2);			// special case v = 2
+	dn_compare(&d, v, &const_2);			// special case v = 2
 	if (decNumberIsZero(&d)) {
-		dn_subtract(a, &const_1, x);
-		dn_multiply(&c, a, x);
+		dn_subtract(&a, &const_1, x);
+		dn_multiply(&c, &a, x);
 		dn_multiply(&d, &c, &const_4);		// alpha = 4p(1-p)
 
 		dn_divide(&c, &const_2, &d);
-		dn_sqrt(a, &c);
-		dn_multiply(&c, a, b);
+		dn_sqrt(&a, &c);
+		dn_multiply(&c, &a, &b);
 		dn_multiply(r, &c, &const__2);
+		return 1;
 	}
 
 	// common case v >= 3
-	qf_T_est(&c, &v, x, b);
-	dn_divide(b, &c, &const_0_9);
-	dn_multiply(a, &c, &const_0_9);
+	qf_T_est(r, v, x, &b);
 	return 0;
 }
 
-decNumber *qf_T(decNumber *r, const decNumber *x) {
-	decNumber a, b;
+static void newton_qf_T(decNumber *q, const decNumber *p, const decNumber *ndf) {
+	decNumber w, x, z, ndfp1;
+	int i;
 
-	if (qf_T_init(r, &a, &b, x))
+	dn_add(&ndfp1, ndf, &const_1);
+	for (i=0; i<30; i++) {
+		// Newton's approximation
+		if (decNumberIsZero(cdf_T(&x, q)))
+			return;
+		dn_subtract(&z, &x, p);
+		pdf_T(&x, q);
+		dn_divide(&w, &z, &x);
+		decNumberCopy(&z, q);
+		dn_subtract(q, &z, &w);
+		if (relative_error(q, &z, &const_1e_24))
+			break;
+	}
+}
+
+decNumber *qf_T(decNumber *r, const decNumber *x) {
+	decNumber ndf;
+
+	if (qf_T_init(r, &ndf, x))
 		return r;
-	return qf_search(r, x, 0, &a, &b, &cdf_T);
+	newton_qf_T(r, x, &ndf);
+	return r;
 }
 
 static int f_param(decNumber *r, decNumber *d1, decNumber *d2, const decNumber *x) {
