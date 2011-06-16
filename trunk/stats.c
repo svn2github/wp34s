@@ -1173,7 +1173,7 @@ static decNumber *newton_qf_chi2(decNumber *r, const decNumber *v, const decNumb
 	int i;
 
 	dn_multiply(&md, r, &const_0_04);
-	for (i=0; i<100; i++) {
+	for (i=0; i<30; i++) {
 		cdf_chi2_helper(&a, r, v);
 		dn_subtract(&b, &a, p);
 		dn_abs(&a, &b);
@@ -1679,10 +1679,6 @@ decNumber *pdf_B(decNumber *r, const decNumber *x) {
 
 	if (binomial_param(r, &p, &n, x))
 		return r;
-	if (dn_lt0(x)) {
-		decNumberZero(r);
-		return r;
-	}
 	return pdf_B_helper(r, x, &p, &n);
 }
 
@@ -1750,6 +1746,10 @@ static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x) {
 decNumber *pdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambda) {
 	decNumber t, u, v;
 
+	if (dn_lt0(x)) {
+		decNumberZero(r);
+		return r;
+	}
 	dn_power(&t, lambda, x);
 	decNumberFactorial(&u, x);
 	dn_divide(&v, &t, &u);
@@ -1762,10 +1762,6 @@ decNumber *pdf_P(decNumber *r, const decNumber *x) {
 
 	if (poisson_param(r, &lambda, x))
 		return r;
-	if (dn_lt0(x)) {
-		decNumberZero(r);
-		return r;
-	}
 	return pdf_P_helper(r, x, &lambda);
 }
 
