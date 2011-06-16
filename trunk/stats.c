@@ -1679,7 +1679,7 @@ decNumber *pdf_B(decNumber *r, const decNumber *x) {
 
 	if (binomial_param(r, &p, &n, x))
 		return r;
-	if (! is_int(x)) {
+	if (dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
 	}
@@ -1701,12 +1701,11 @@ decNumber *cdf_B_helper(decNumber *r, const decNumber *x, const decNumber *p, co
 }
 
 decNumber *cdf_B(decNumber *r, const decNumber *x) {
-	decNumber t, n, p;
+	decNumber n, p;
 
 	if (binomial_param(r, &p, &n, x))
 		return r;
-	decNumberFloor(&t, x);
-	return cdf_B_helper(r, &t, &p, &n);
+	return cdf_B_helper(r, x, &p, &n);
 }
 
 decNumber *qf_B(decNumber *r, const decNumber *p) {
@@ -1763,7 +1762,7 @@ decNumber *pdf_P(decNumber *r, const decNumber *x) {
 
 	if (poisson_param(r, &lambda, x))
 		return r;
-	if (! is_int(x) || dn_lt0(x)) {
+	if (dn_lt0(x)) {
 		decNumberZero(r);
 		return r;
 	}
@@ -1784,12 +1783,11 @@ decNumber *cdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambd
 }
 
 decNumber *cdf_P(decNumber *r, const decNumber *x) {
-	decNumber t, lambda;
+	decNumber lambda;
 
 	if (poisson_param(r, &lambda, x))
 		return r;
-	decNumberFloor(&t, x);
-	return cdf_P_helper(r, &t, &lambda);
+	return cdf_P_helper(r, x, &lambda);
 }
 
 decNumber *qf_P(decNumber *r, const decNumber *p) {
@@ -1829,36 +1827,33 @@ static int geometric_param(decNumber *r, decNumber *p, const decNumber *x) {
 }
 
 decNumber *pdf_G(decNumber *r, const decNumber *x) {
+	decNumber p, t, v;
+
+	if (geometric_param(r, &p, x))
+		return r;
+	if (dn_lt0(x)) {
+		decNumberZero(r);
+		return r;
+	}
+	dn_ln1m(&t, &p);
+	dn_multiply(&v, &t, x);
+	dn_exp(&t, &v);
+	return dn_multiply(r, &t, &p);
+}
+
+decNumber *cdf_G(decNumber *r, const decNumber *x) {
 	decNumber p, t, u, v;
 
 	if (geometric_param(r, &p, x))
 		return r;
-	if (! is_int(x) || dn_lt0(x)) {
-		decNumberZero(r);
-		return r;
-	}
-	dn_subtract(&t, &const_1, &p);
-	dn_subtract(&u, x, &const_1);
-	dn_power(&v, &t, &u);
-	return dn_multiply(r, &v, &p);
-}
-
-decNumber *cdf_G(decNumber *r, const decNumber *x) {
-	decNumber p, t, u, ipx;
-
-	if (geometric_param(r, &p, x))
-		return r;
-	if (! is_int(x)) {
-		decNumberFloor(&ipx, x);
-		x = &ipx;
-	}
-	if (dn_le0(x))
+	if (dn_lt0(x))
 		return decNumberZero(r);
 	if (decNumberIsInfinite(x))
 		return decNumberCopy(r, &const_1);
 
 	dn_ln1m(&u, &p);
-	dn_multiply(&t, &u, x);
+	dn_add(&v, x, &const_1);
+	dn_multiply(&t, &u, &v);
 	decNumberExpm1(&u, &t);
 	return dn_minus(r, &u);
 }
@@ -1872,7 +1867,9 @@ decNumber *qf_G(decNumber *r, const decNumber *x) {
 		return r;
 	dn_ln1m(&v, x);
 	dn_ln1m(&t, &p);
-	return dn_divide(r, &v, &t);
+	dn_divide(r, &v, &t);
+	dn_dec(r);
+	return r;
 }
 
 /* Normal with specified mean and variance */
