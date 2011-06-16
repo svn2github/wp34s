@@ -1704,27 +1704,56 @@ decNumber *cdf_B(decNumber *r, const decNumber *x) {
 	return cdf_B_helper(r, x, &p, &n);
 }
 
-decNumber *qf_B(decNumber *r, const decNumber *p) {
-	decNumber prob, n, w, x, z;
+static void normal_approximation_via_moment(decNumber *y, const decNumber *p, const decNumber *mu, const decNumber *sigma) {
+	decNumber x, z;
+
+	dn_subtract(&x, &const_0_5, p);
+	qf_Q_est(&z, p, &x);
+	decNumberSquare(&x, &z);
+	dn_dec(&x);
+	dn_divide(y, &x, &const_6);
+	dn_divide(&x, y, sigma);
+	dn_add(y, &x, &z);
+	dn_multiply(&x, y, sigma);
+	dn_add(y, &x, mu);
+}
+
+static void qf_B_est(decNumber *r, const decNumber *p, const decNumber *prob, const decNumber *n) {
+	decNumber mu, sigma;
+
+	dn_multiply(&mu, prob, n);
+	dn_subtract(&sigma, &const_1, p);
+	dn_multiply(r, &mu, &sigma);
+	dn_sqrt(&sigma, r);
+	normal_approximation_via_moment(r, p, &mu, &sigma);
+}
+
+static decNumber *newton_qf_B(decNumber *r, const decNumber *p, const decNumber *prob, const decNumber *n) {
+	decNumber w, x, z;
 	int i;
+
+	for (i=0; i<10; i++) {
+		dn_subtract(&z, cdf_B_helper(&x, r, prob, n), p);
+		if (decNumberIsZero(pdf_B_helper(&x, r, prob, n)))
+			break;
+		dn_divide(&w, &z, &x);
+		decNumberCopy(&z, r);
+		dn_subtract(r, &z, &w);
+		if (relative_error(r, &z, &const_1e_18))
+			break;
+	}
+	return r;
+}
+
+decNumber *qf_B(decNumber *r, const decNumber *p) {
+	decNumber prob, n;
 
 	if (binomial_param(r, &prob, &n, p))
 		return r;
 	if (check_probability(r, p, 1))
 		return r;
-
-	decNumberCopy(r, &const_5);	// Better initial estimate required
-	for (i=0; i<100; i++) {
-		dn_subtract(&z, cdf_B_helper(&x, r, &prob, &n), p);
-		if (decNumberIsZero(pdf_B_helper(&x, r, &prob, &n)))
-			break;
-		dn_divide(&w, &z, &x);
-		decNumberCopy(&z, r);
-		dn_subtract(r, &z, &w);
-		if (relative_error(r, &z, &const_1e_24))
-			break;
-	}
-	return r;
+	qf_B_est(r, p, &prob, &n);
+	return newton_qf_B(r, p, &prob, &n);
 }
 
 /* Poisson cdf f(k, lam) = 1 - iGamma(floor(k+1), lam) / floor(k)! k>=0
@@ -1786,27 +1815,39 @@ decNumber *cdf_P(decNumber *r, const decNumber *x) {
 	return cdf_P_helper(r, x, &lambda);
 }
 
-decNumber *qf_P(decNumber *r, const decNumber *p) {
-	decNumber lambda, x, z, w;
+static void qf_P_est(decNumber *r, const decNumber *p, const decNumber *lambda) {
+	decNumber sigma;
+
+	dn_sqrt(&sigma, lambda);
+	normal_approximation_via_moment(r, p, lambda, &sigma);
+}
+
+static decNumber *search_qf_P(decNumber *r, const decNumber *p, const decNumber *lambda) {
+	decNumber x, z, w;
 	int i;
+
+	for (i=0; i<10; i++) {
+		dn_subtract(&z, cdf_P_helper(&x, r, lambda), p);
+		if (decNumberIsZero(pdf_P_helper(&x, r, lambda)))
+			break;
+		dn_divide(&w, &z, &x);
+		decNumberCopy(&z, r);
+		dn_subtract(r, &z, &w);
+		if (relative_error(r, &z, &const_1e_18))
+			break;
+	}
+	return r;
+}
+
+decNumber *qf_P(decNumber *r, const decNumber *p) {
+	decNumber lambda;
 
 	if (poisson_param(r, &lambda, p))
 		return r;
 	if (check_probability(r, p, 1))
 		return r;
-
-	decNumberCopy(r, &const_5);	// Better initial estimate required
-	for (i=0; i<100; i++) {
-		dn_subtract(&z, cdf_P_helper(&x, r, &lambda), p);
-		if (decNumberIsZero(pdf_P_helper(&x, r, &lambda)))
-			break;
-		dn_divide(&w, &z, &x);
-		decNumberCopy(&z, r);
-		dn_subtract(r, &z, &w);
-		if (relative_error(r, &z, &const_1e_24))
-			break;
-	}
-	return r;
+	qf_P_est(r, p, &lambda);
+	return search_qf_P(r, p, &lambda);
 }
 
 /* Geometric cdf
