@@ -1351,10 +1351,6 @@ int main(void)
 	 */
 	xset( (void *) 0x200200, 0x5A, 0x800 );
 #endif
-	/*
-	 *  Force DEBUG mode for JTAG debugging
-	 */
-	DebugFlag = 0; // 0xA5;
 
 #ifdef ALLOW_DEEP_SLEEP
 	/*
@@ -1375,6 +1371,7 @@ int main(void)
 		 */
 		save_state_to_lcd_memory( 0 );
 		State2.invalid_disp = 1;
+		ShowRegister = regX_idx;
 
 		/*
 		 *  Setup hardware

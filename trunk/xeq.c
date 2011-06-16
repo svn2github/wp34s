@@ -78,7 +78,7 @@ int PcWrapped;
 /*
  *  Temporary display (not X)
  */
-int ShowRegister = regX_idx;
+int ShowRegister;
 
 /*
  *  Define storage for the machine's program space.

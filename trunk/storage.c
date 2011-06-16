@@ -71,6 +71,29 @@ USER_FLASH TUserFlash UserFlash;
 #define region_page( r ) (PAGE_BEGIN + (NUMBER_OF_FLASH_REGIONS - 1 - r) * SIZE_REGION)
 
 #ifdef REALBUILD
+#ifdef NO_RAM_COPY
+
+/*
+ *  We do not copy any static data from flash to RAM at startup and
+ *  thus can't use code in RAM. In order to program flash use the
+ *  IAP feature in ROM instead
+ */
+#define IAP_FUNC ((int (*)(unsigned int)) (*(int *)0x400008))
+
+/*
+ *  Issue a command to the flash controller. Must be done from ROM.
+ *  Returns zero if OK or non zero on error.
+ */
+static int flash_command( unsigned int cmd )
+{
+	return IAP_FUNC( cmd ) >> 1;
+}
+
+#else
+
+/*
+ *  RAM copy is enabled at startup
+ */
 #define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
 
 /*
@@ -85,7 +108,7 @@ static RAM_FUNCTION int flash_command( unsigned int cmd )
 	}
 	return ( AT91C_BASE_MC->MC_FSR >> 1 );
 }
-
+#endif
 
 /*
  *  Program the flash starting at page page_no

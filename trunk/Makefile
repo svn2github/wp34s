@@ -99,7 +99,7 @@ endif
 ifdef XTAL
 CFLAGS += -DXTAL
 endif
-CFLAGS += -DNO_BACKUP_INIT
+CFLAGS += -DNO_BACKUP_INIT -DNO_RAM_COPY
 LDFLAGS := -nostartfiles 
 CROSS_COMPILE := arm-none-eabi-
 CC := $(CROSS_COMPILE)gcc
@@ -195,7 +195,7 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNumber.a \
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE)
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
-		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber
+		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber -save-temps
 	$(NM) -n $(OUTPUTDIR)/calc >$(SYMBOLS)
 	$(NM) -S $(OUTPUTDIR)/calc >>$(SYMBOLS)
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.tmp 

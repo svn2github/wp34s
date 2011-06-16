@@ -189,6 +189,8 @@ initialize:
         strne   r3, [r1], #4
         bne     1b
 #endif
+
+#ifndef NO_RAM_COPY
 /* Initialize the relocate segment */
 relocate:
         ldr     r0, =_efixed
@@ -199,6 +201,7 @@ relocate:
         ldrcc   r3, [r0], #4
         strcc   r3, [r1], #4
         bcc     1b
+#endif
 
 /* Clear the zero segment */
         ldr     r0, =_szero
