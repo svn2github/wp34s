@@ -1436,7 +1436,7 @@ static unsigned long long mulmod(const unsigned long long int a, unsigned long l
 }
 
 /* Calculate (a ^ b) mod c */
-static int modulo(const unsigned long long int a, unsigned long long int b, const unsigned long long int c) {
+static unsigned long long int modulo(const unsigned long long int a, unsigned long long int b, const unsigned long long int c) {
 	unsigned long long int x=1, y=a;
 	while (b > 0) {
 		if ((b & 1))
@@ -1444,22 +1444,18 @@ static int modulo(const unsigned long long int a, unsigned long long int b, cons
 		y = mulmod(y, y, c);
 		b /= 2;
 	}
-	return (int) (x % c);
+	return (x % c);
 }
 #endif
 
 /* Test if a number is prime or not using a Miller-Rabin test */
 #ifndef TINY_BUILD
 static const unsigned char primes[] = {
-	2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31,
-	37, 41, 43, 47, 53, 59, 61, 67, 71, 73,
-	79, 83, 89, 97, 101, 103, 107, 109, 113, 127,
-	131, 137, 139, 149, 151, 157, 163, 167, 173, 179,
-	181, 191, 193, 197, 199, 211, 223, 227, 229, 233,
-	239, 241, 251, /* 257 */
+	2, 3, 5, 7,	11, 13, 17, 19,
+	23, 29, 31, 37,	41, 43, 47, 53,
 };
 #define N_PRIMES	(sizeof(primes) / sizeof(unsigned char))
-#define QUICK_CHECK	(257*257-1)
+#define QUICK_CHECK	(59*59-1)
 #endif
 
 int isPrime(unsigned long long int p) {
