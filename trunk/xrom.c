@@ -910,7 +910,7 @@ const s_opcode xrom[] = {
 		VIEW(st(X))
 		RTN
 	LBL(1)
-		alpha6('W', 'P', '-', '3', '4', 'S')
+		alpha6('W', 'P', ' ', '3', '4', 'S')
 	LBL(0)
 		AVIEW
 #ifdef REALBUILD
