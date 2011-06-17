@@ -392,6 +392,11 @@ static void dump_opcodes(void) {
 			} else if (cmd == RARG_CONV) {
 				printf("0x%04x\tcmd\t%s\n", c, cmdpretty);
 				continue;
+			} else if (cmd == RARG_CONST_INT) {
+				p = prt(c, cmdname);
+				if (strcmp(p, "???") != 0)
+					printf("0x%04x\tcmd\t%s\n", c, p);
+				continue;
 			}
 			if ((c & 0xff) != 0)
 				continue;
