@@ -396,7 +396,8 @@ static void dump_opcodes(void) {
 				p = prt(c, cmdname);
 				if (strcmp(p, "???") != 0)
 					printf("0x%04x\tcmd\t%s\n", c, p);
-				continue;
+				if ((c & 0xff) != 0)
+					continue;
 			}
 			if ((c & 0xff) != 0)
 				continue;
