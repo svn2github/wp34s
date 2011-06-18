@@ -569,9 +569,9 @@ unsigned int find_user_pc(unsigned int target) {
  */
 static void set_zero(decimal64 *x) {
 	if (is_intmode())
-		d64fromInt(&regX, 0);
+		d64fromInt(x, 0);
 	else
-		regX = CONSTANT_INT(OP_ZERO);
+		*x = CONSTANT_INT(OP_ZERO);
 }
 
 void clrx(decimal64 *nul1, decimal64 *nul2) {
