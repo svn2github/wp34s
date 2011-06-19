@@ -376,7 +376,11 @@ static void dump_opcodes(void) {
 			printf("0x%04x\tmult\t%s\n", c, cmdpretty);
 		} else if (isRARG(c)) {
 			const unsigned int cmd = (c & ~OP_RARG) >> RARG_OPSHFT;
+			unsigned int limit;
 
+			if (cmd >= NUM_RARG)
+				continue;
+			limit = argcmds[cmd].lim;
 			if (cmd != RARG_ALPHA && (c & RARG_IND) != 0)
 				continue;
 			p = catcmd(c, cmdname);
@@ -400,10 +404,11 @@ static void dump_opcodes(void) {
 					printf("0x%04x\tcmd\t%s\n", c, p);
 				if ((c & 0xff) != 0)
 					continue;
+				limit = 0;
 			}
 			if ((c & 0xff) != 0)
 				continue;
-			printf("0x%04x\targ\t%s\tmax=%u", c, cmdpretty, argcmds[cmd].lim);
+			printf("0x%04x\targ\t%s\tmax=%u", c, cmdpretty, limit);
 			if (argcmds[cmd].indirectokay)
 				printf(",indirect");
 			if (argcmds[cmd].stckreg)
