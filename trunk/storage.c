@@ -157,8 +157,13 @@ void sam_ba_boot(void)
 	 *  Command the controller to clear GPNVM1
 	 */
 	lock();
+#if 1
 	flash_command( 0x5A00010C );
 	SUPC_Shutdown();
+#else
+#define	SAM_BA ((void (*)(void)) 0x400000)
+	SAM_BA();
+#endif
 }
 
 

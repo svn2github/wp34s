@@ -1574,6 +1574,8 @@ int main(void)
 					// ON-"+" Increase contrast
 					if ( State.contrast != 15 ) {
 						++State.contrast;
+						DispMsg = "+Contrast";
+						display();
 					}
 					confirm_counter = 0;
 					break;
@@ -1582,6 +1584,8 @@ int main(void)
 					// ON-"-" Decrease contrast
 					if ( State.contrast != 0 ) {
 						--State.contrast;
+						DispMsg = "-Contrast";
+						display();
 					}
 					confirm_counter = 0;
 					break;
@@ -1605,6 +1609,7 @@ int main(void)
 					State.fraccomma = !State.fraccomma;
 					DispMsg = State.fraccomma ? "RDX," : "RDX.";
 					display();
+					confirm_counter = 0;
 					break;
 
 				case K10:
