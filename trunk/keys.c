@@ -2196,7 +2196,7 @@ void process_keycode(int c) {
 		} else
 			stoprog(c);
 	}
-	if (!Running && !Pause && c != STATE_IGNORE) {
+	if (!Running && !Pause && !JustStopped && c != STATE_IGNORE) {
 		display();
 	}
 }

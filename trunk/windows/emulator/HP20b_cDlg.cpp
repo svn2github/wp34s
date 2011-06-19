@@ -1167,7 +1167,7 @@ void CHP20b_cDlg::OnHelpHp20bbusinessconsultant()
   GetModuleFileName(NULL, path, MAX_PATH);
   _TCHAR *b= NULL; _TCHAR *B= path;
   while (*B) if (*B++=='\\') b= B; *b= 0;
-  sprintf(buf, "start /b %s%s", path, MANUAL);
+  sprintf(buf, "start /b \"Manual\" \"%s%s\"", path, MANUAL);
 
   system( buf );
 }

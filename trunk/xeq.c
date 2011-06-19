@@ -3389,7 +3389,7 @@ void xeqprog(void)
 	if (!Running && !Pause) {
 		// Program has terminated
 		clr_dot(RCL_annun);
-		finish_display();
+		display();
 		// Avoid accidental restart with R/S
 		JustStopped = 1;
 	}
