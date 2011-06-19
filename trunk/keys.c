@@ -2029,12 +2029,14 @@ static int process(const int c) {
 		 */
 		watchdog();
 
+#if defined(REALBUILD) || defined(WINGUI)
 		/*
 		 *  If buffer is empty re-allow R/S to start a program
 		 */
 		if ( JustStopped && !is_key_pressed() ) {
 			JustStopped = 0;
 		}
+#endif
 
 		/*
 		 *  Do nothing if not running a program
@@ -2082,11 +2084,13 @@ static int process(const int c) {
 			init_state();
 		return STATE_UNFINISHED;
 	}
+#if defined(REALBUILD) || defined(WINGUI)
 	if ( c == K63 && JustStopped ) {
 		// Avoid an accidental restart with R/S
 		JustStopped = 0;
 		return STATE_IGNORE;
 	}
+#endif
 
 	if (State2.status)
 		return process_status((const keycode)c);
@@ -2196,9 +2200,15 @@ void process_keycode(int c) {
 		} else
 			stoprog(c);
 	}
+#if defined(REALBUILD) || defined(WINGUI)
 	if (!Running && !Pause && !JustStopped && c != STATE_IGNORE) {
 		display();
 	}
+#else
+	if (!Running && !Pause && c != STATE_IGNORE) {
+		display();
+	}
+#endif
 }
 
 

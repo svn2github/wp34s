@@ -53,7 +53,9 @@ int Running;
 /*
  *  A program has just stopped
  */
+#if defined(REALBUILD) || defined(WINGUI)
 int JustStopped;
+#endif
 
 /*
  *  Timer for a programmed pause
@@ -3390,8 +3392,10 @@ void xeqprog(void)
 		// Program has terminated
 		clr_dot(RCL_annun);
 		display();
+#if defined(REALBUILD) || defined(WINGUI)
 		// Avoid accidental restart with R/S
 		JustStopped = 1;
+#endif
 	}
 }
 
