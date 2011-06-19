@@ -168,9 +168,11 @@ static int dumpop(const opcode c, int pt) {
 	char tracebuf[25];
 	const char *s, *m;
 
+	if (c == RARG(RARG_ALPHA, 0))
+		return 0;
 	xset(tracebuf, '\0', sizeof(tracebuf));
 	s = prt(c, tracebuf);
-	if (s[0] != '?' || s[1] != '?' || s[2] != '?') {
+	if (strcmp(s, "???") != 0) {
 		char t[100], *q = t;
 		int l = 35;
 		q += sprintf(t, "%04x  ", (unsigned int)c);
@@ -356,7 +358,7 @@ static void prettify(const char *in, char *out) {
 }
 
 static void dump_opcodes(void) {
-	int c;
+	int c, d;
 	char cmdname[16];
 	char cmdpretty[500];
 	const char *p;
@@ -414,6 +416,38 @@ static void dump_opcodes(void) {
 			if (strcmp(p, "???") == 0)
 				continue;
 			prettify(p, cmdpretty);
+			d = argKIND(c);
+			switch (opKIND(c)) {
+			default:
+				break;
+
+			case KIND_MON:
+				if (d < num_monfuncs && (monfuncs[d].mondreal != FNULL || monfuncs[d].monint != FNULL))
+					break;
+				continue;
+
+			case KIND_DYA:
+				if (d < num_dyfuncs && (dyfuncs[d].dydreal != FNULL || dyfuncs[d].dydint != FNULL))
+					break;
+				continue;
+
+			case KIND_CMON:
+				if (d < num_monfuncs && monfuncs[d].mondcmplx != FNULL) {
+					if (cmdname[0] == COMPLEX_PREFIX)
+						break;
+					printf("0x%04x\tcmd\t[cmplx]%s\n", c, cmdpretty);
+				}
+				continue;
+
+			case KIND_CDYA:
+				if (d < num_dyfuncs && dyfuncs[d].dydcmplx != FNULL) {
+					if (cmdname[0] == COMPLEX_PREFIX)
+						break;
+					printf("0x%04x\tcmd\t[cmplx]%s\n", c, cmdpretty);
+				}
+				continue;
+
+			}
 			printf("0x%04x\tcmd\t%s\n", c, cmdpretty);
 		}
 	}
