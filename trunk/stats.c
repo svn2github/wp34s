@@ -1679,6 +1679,8 @@ decNumber *pdf_B(decNumber *r, const decNumber *x) {
 
 	if (binomial_param(r, &p, &n, x))
 		return r;
+	if (!is_int(x))
+		return decNumberZero(r);
 	return pdf_B_helper(r, x, &p, &n);
 }
 
@@ -1697,11 +1699,12 @@ decNumber *cdf_B_helper(decNumber *r, const decNumber *x, const decNumber *p, co
 }
 
 decNumber *cdf_B(decNumber *r, const decNumber *x) {
-	decNumber n, p;
+	decNumber n, p, fx;
 
 	if (binomial_param(r, &p, &n, x))
 		return r;
-	return cdf_B_helper(r, x, &p, &n);
+	decNumberFloor(&fx, x);
+	return cdf_B_helper(r, &fx, &p, &n);
 }
 
 static void normal_approximation_via_moment(decNumber *y, const decNumber *p, const decNumber *mu, const decNumber *sigma) {
@@ -1739,7 +1742,7 @@ static decNumber *newton_qf_B(decNumber *r, const decNumber *p, const decNumber 
 		dn_divide(&w, &z, &x);
 		decNumberCopy(&z, r);
 		dn_subtract(r, &z, &w);
-		if (relative_error(r, &z, &const_1e_18))
+		if (relative_error(r, &z, &const_0_0001))
 			break;
 	}
 	return r;
@@ -1753,7 +1756,8 @@ decNumber *qf_B(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_B_est(r, p, &prob, &n);
-	return newton_qf_B(r, p, &prob, &n);
+	newton_qf_B(r, p, &prob, &n);
+	return decNumberFloor(r, r);
 }
 
 /* Poisson cdf f(k, lam) = 1 - iGamma(floor(k+1), lam) / floor(k)! k>=0
@@ -1791,6 +1795,8 @@ decNumber *pdf_P(decNumber *r, const decNumber *x) {
 
 	if (poisson_param(r, &lambda, x))
 		return r;
+	if (!is_int(x))
+		return decNumberZero(r);
 	return pdf_P_helper(r, x, &lambda);
 }
 
@@ -1808,11 +1814,12 @@ decNumber *cdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambd
 }
 
 decNumber *cdf_P(decNumber *r, const decNumber *x) {
-	decNumber lambda;
+	decNumber lambda, fx;
 
 	if (poisson_param(r, &lambda, x))
 		return r;
-	return cdf_P_helper(r, x, &lambda);
+	decNumberFloor(&fx, x);
+	return cdf_P_helper(r, &fx, &lambda);
 }
 
 static void qf_P_est(decNumber *r, const decNumber *p, const decNumber *lambda) {
@@ -1833,7 +1840,7 @@ static decNumber *search_qf_P(decNumber *r, const decNumber *p, const decNumber 
 		dn_divide(&w, &z, &x);
 		decNumberCopy(&z, r);
 		dn_subtract(r, &z, &w);
-		if (relative_error(r, &z, &const_1e_18))
+		if (relative_error(r, &z, &const_0_0001))
 			break;
 	}
 	return r;
@@ -1847,7 +1854,8 @@ decNumber *qf_P(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_P_est(r, p, &lambda);
-	return search_qf_P(r, p, &lambda);
+	search_qf_P(r, p, &lambda);
+	return decNumberFloor(r, r);
 }
 
 /* Geometric cdf
@@ -1868,7 +1876,7 @@ decNumber *pdf_G(decNumber *r, const decNumber *x) {
 
 	if (geometric_param(r, &p, x))
 		return r;
-	if (dn_lt0(x)) {
+	if (dn_lt0(x) || !is_int(x)) {
 		decNumberZero(r);
 		return r;
 	}
@@ -1889,7 +1897,8 @@ decNumber *cdf_G(decNumber *r, const decNumber *x) {
 		return decNumberCopy(r, &const_1);
 
 	dn_ln1m(&u, &p);
-	dn_add(&v, x, &const_1);
+	decNumberFloor(&t, x);
+	dn_add(&v, &t, &const_1);
 	dn_multiply(&t, &u, &v);
 	decNumberExpm1(&u, &t);
 	return dn_minus(r, &u);
@@ -1904,9 +1913,9 @@ decNumber *qf_G(decNumber *r, const decNumber *x) {
 		return r;
 	dn_ln1m(&v, x);
 	dn_ln1m(&t, &p);
-	dn_divide(r, &v, &t);
-	dn_dec(r);
-	return r;
+	dn_divide(&p, &v, &t);
+	dn_dec(&p);
+	return decNumberFloor(r, &p);
 }
 
 /* Normal with specified mean and variance */
