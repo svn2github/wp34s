@@ -1173,7 +1173,7 @@ static decNumber *newton_qf_chi2(decNumber *r, const decNumber *v, const decNumb
 	int i;
 
 	dn_multiply(&md, r, &const_0_04);
-	for (i=0; i<30; i++) {
+	for (i=0; i<50; i++) {
 		cdf_chi2_helper(&a, r, v);
 		dn_subtract(&b, &a, p);
 		dn_abs(&a, &b);
@@ -1195,6 +1195,7 @@ static decNumber *newton_qf_chi2(decNumber *r, const decNumber *v, const decNumb
 		dn_subtract(r, &b, &d);
 		if (relative_error(r, &b, &const_1e_24))
 			break;
+		busy();
 	}
 	return r;
 }
@@ -1376,7 +1377,7 @@ static decNumber *newton_qf_T(decNumber *q, const decNumber *p, const decNumber 
 	int i;
 
 	dn_add(&ndfp1, ndf, &const_1);
-	for (i=0; i<30; i++) {
+	for (i=0; i<50; i++) {
 		// Newton's approximation
 		dn_subtract(&z, cdf_T_helper(&x, q, ndf), p);
 		if (decNumberIsZero(pdf_T_helper(&x, q, ndf)))
@@ -1386,6 +1387,7 @@ static decNumber *newton_qf_T(decNumber *q, const decNumber *p, const decNumber 
 		dn_subtract(q, &z, &w);
 		if (relative_error(q, &z, &const_1e_24))
 			break;
+		busy();
 	}
 	return q;
 }
@@ -1469,7 +1471,7 @@ static decNumber *newton_qf_F(decNumber *q, const decNumber *p, const decNumber 
 	decNumber w, x, z;
 	int i;
 
-	for (i=0; i<100; i++) {
+	for (i=0; i<50; i++) {
 		// Newton's approximation
 		dn_subtract(&z, cdf_F_helper(&x, q, df1, df2), p);
 		if (decNumberIsZero(pdf_F_helper(&x, q, df1, df2)))
@@ -1479,6 +1481,7 @@ static decNumber *newton_qf_F(decNumber *q, const decNumber *p, const decNumber 
 		dn_subtract(q, &z, &w);
 		if (relative_error(q, &z, &const_1e_24))
 			break;
+		busy();
 	}
 	return q;
 }
@@ -1735,7 +1738,7 @@ static decNumber *newton_qf_B(decNumber *r, const decNumber *p, const decNumber 
 	decNumber w, x, z;
 	int i;
 
-	for (i=0; i<10; i++) {
+	for (i=0; i<50; i++) {
 		dn_subtract(&z, cdf_B_helper(&x, r, prob, n), p);
 		if (decNumberIsZero(pdf_B_helper(&x, r, prob, n)))
 			break;
@@ -1744,6 +1747,7 @@ static decNumber *newton_qf_B(decNumber *r, const decNumber *p, const decNumber 
 		dn_subtract(r, &z, &w);
 		if (relative_error(r, &z, &const_0_0001))
 			break;
+		busy();
 	}
 	return r;
 }
@@ -1833,7 +1837,7 @@ static decNumber *search_qf_P(decNumber *r, const decNumber *p, const decNumber 
 	decNumber x, z, w;
 	int i;
 
-	for (i=0; i<10; i++) {
+	for (i=0; i<50; i++) {
 		dn_subtract(&z, cdf_P_helper(&x, r, lambda), p);
 		if (decNumberIsZero(pdf_P_helper(&x, r, lambda)))
 			break;
@@ -1842,6 +1846,7 @@ static decNumber *search_qf_P(decNumber *r, const decNumber *p, const decNumber 
 		dn_subtract(r, &z, &w);
 		if (relative_error(r, &z, &const_0_0001))
 			break;
+		busy();
 	}
 	return r;
 }
