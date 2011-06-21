@@ -81,9 +81,9 @@ void set_speed( unsigned int speed );
 /// PLL startup time (in number of slow clock ticks).
 #define PLLCOUNT          AT91C_CKGR_PLLCOUNT
 /// PLL MUL values.
-#define PLLMUL_LOW_V      304
+#define PLLMUL_LOW_V      399
 //#define PLLMUL         999
-#define PLLMUL            1144
+#define PLLMUL            1199
 /// PLL DIV value.
 #define PLLDIV            1
 
@@ -145,6 +145,12 @@ long long KbData, KbDebounce, KbRepeatKey;
 short int BodThreshold;
 short int BodTimer;
 
+/*
+ *  DBGU serial I/O definitions
+ */
+#define DBGU_DRXD_PIO_MASK 0x00010000
+#define DBGU_DTXD_PIO_MASK 0x00020000
+#define DBGU_PIO_MASK      0x00030000
 
 /*
  *  Tell the revision number (must not be optimised out!)
@@ -1668,11 +1674,13 @@ int main(void)
 
 				case K43:
 					// ON-"S" SAM-BA boot
-					if ( confirm_counter == 1 ) {
-						message( "SAM-BA?", "boot" );
-					}
-					else {
-						sam_ba_boot();
+					if ( is_debug() ) {
+						if ( confirm_counter == 1 ) {
+							message( "SAM-BA?", "boot" );
+						}
+						else {
+							sam_ba_boot();
+						}
 					}
 					break;
 
