@@ -24,9 +24,7 @@ my $Description = "Assembler/Disassembler for the WP34S calculator.";
 #
 # Language:         Perl script
 #
-my $SVN_Filename          =  '$HeadURL:  $';
 my $SVN_Current_Revision  =  '$Revision: $';
-my $SVN_Last_Updated      =  '$Date:  $';
 #
 #-----------------------------------------------------------------------
 
@@ -45,15 +43,24 @@ my $FLASH_LENGTH = 512;
 my $DEFAULT_FLASH_BLANK_INSTR = "ERR 03";
 my $user_flash_blank_fill = "";
 
-my $INTERNAL_OPCODE_MAP = "--internal table--";
-my $DEFAULT_OPCODE_MAP_FILE = $INTERNAL_OPCODE_MAP;
+my $USE_INTERNAL_OPCODE_MAP = "--internal table--";
+my $DEFAULT_OPCODE_MAP_FILE = $USE_INTERNAL_OPCODE_MAP;
 my $opcode_map_file = $DEFAULT_OPCODE_MAP_FILE;
+
+# If this variable is set to a non-NULL value, it will be used as the filename of the
+# expanded opcode dump file. This *should* be equivalent to the
+my $expanded_op_file = "";
+
+my $comment_marker = "//";
 
 # Number of '*' to prepend to labels in disassembly -- just makes them easier to find.
 my $DEFAULT_STAR_LABELS = 0;
 my $star_labels = $DEFAULT_STAR_LABELS;
 
 my $MAX_FLASH_WORDS = 506;
+my $disable_flash_limit = 0;
+
+my $no_step_numbers = 0;
 
 my $MAGIC_MARKER = 0xA53C;
 my $CRC_INITIALIZER = 0x5aa5;
@@ -67,13 +74,22 @@ my $mode = $DEFAULT_MODE;
 #
 # There are 2 groups of named register offsets; the 112 group (XYZTABCDLIJK) and the 104
 # group (ABCD). We have to extract the opcode's numeric value based on the op-type. The value of
-# max will give us this (112,104,100,etc.). Note that for all values of max<=100, either group is
+# max will give us this (112,111,104,100,etc.). Note that for all values of max<=100, either group is
 # valid since these are purely numeric.
 my @reg_offset_112 = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I", "J", "K");
 my $MAX_INDIRECT_112 = 112;
 my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D");
+my $MAX_INDIRECT_104 = 104;
+
+# The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
 
+# There are several instructions that require a "custom" format for printing the
+# "arg" type descriptor. Access that format through this table.
+my %table_exception_format = ( "PRCL"   => "%01d",
+                               "PSTO"   => "%01d",
+                               "P[<->]" => "%01d",
+                             );
 
 # ---------------------------------------------------------------------
 
@@ -99,20 +115,22 @@ Parameters:
    -o out_binary    Flash image produced by assembler. Required in assembler mode.
    -dis             Disassemble the 'dat' file.
    -opcode file     Opcode file to parse.                       [Default: $DEFAULT_OPCODE_MAP_FILE]
-   -fill fill_hex   Hex value to prefill flash with.            [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
-   -s stars         Stars to prepend to labels in disassembly.  [Default: $DEFAULT_STAR_LABELS]
+   -fill fill_hex   Value to prefill flash with.                [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
+   -s number        Number of asterisks (stars) to prepend to labels in
+                    disassembly mode.                           [Default: $DEFAULT_STAR_LABELS]
    -h               This help script.
 
 Examples:
   \$ $script_name great_circle.wp34s -o wp34s-3.dat
   - Assembles the named WP34S program source file producing a flash image for the WP34S.
 
-  \$ $script_name great_circle.wp34s floating_point.wp34s -o wp34s-1.dat -fill FFFF
-  - Assembles multiple WP34S program source files into a single flash image for the WP34S.
-    Uses FFFF as the optional fill value.
+  \$ $script_name  great_circle.wp34s  floating_point.wp34s  -o wp34s-1.dat  -fill FFFF
+  - Assembles multiple WP34S program source files into a single contiguous flash image for
+    the WP34S. Uses FFFF as the optional fill value. Allows (and encourages) use of library
+    of programs.
 
   \$ $script_name -dis wp34s-1.dat -s 3
-  - Disassembles a flash image from the WP34S. Prepend 3 stars to the front to each label to
+  - Disassembles a flash image from the WP34S. Prepend 3 asterisks to the front to each label to
     make then easier to find in the listing (they are ignored during assembly).
 
   \$ $script_name -dis wp34s-0.dat > test.wp34s ; $script_name test.wp34s -o wp34s-0a.dat
@@ -121,17 +139,27 @@ Examples:
     for the binaries to match.
 
 Notes:
-  1) Line numbers can be used in the source file but they are ignored.
+  1) Step numbers can be used in the source file but they are ignored.
   2) You can name a different opcode table using -opcode. This can be used to translate a source
-     written for a different SVN revison of the WP34S to move it to a modern version. Disassembler
-     the old flash using the old opcode table and reassemble using the default (internal) table.
-     This is also an insurance policy against the opcodes evolving as well. Simply target newer
-     opcode tables as they become available. To generate an opcode table, using the following:
-
+     written for a different SVN revision of the WP34s to move the program to a modern version of
+     the WP34s. Disassemble the old flash using the old opcode table and reassemble using the default
+     (internal) table. This is also an insurance policy against the opcodes evolving as well. Simply
+     target newer opcode tables as they become available. To generate an opcode table, using the
+     following (Linux version shown, Windows is likely similar):
+      \$ svn up
       \$ cd ./trunk
       \$ make
-      \$ ./Linux/calc opcodes > opcodes.map
-      \$ $script_name -dis wp34s-0.dat -opcode opcodes.map > source.wp34s
+      \$ ./Linux/calc opcodes > new_opcodes.map
+      \$ $script_name -dis wp34s-0.dat -opcode new_opcodes.map > source.wp34s
+  3) The prefill-value will be interpreted as decimal if it contains only decimal digits. If it
+     contains any hex digits or it starts with a "0x", it will be interpreted as a hex value. Thus
+     "1234" will be decimal 1234 while "0x1234" will be the decimal value 4660. Both "EFA2" and "0xEFA2"
+     will be interpreted as a hex value as well (61346). The leading "0x" is optional in this case.
+  4) Known issues:
+      - "Escaped" characters used in labels and strings are not dealt with correctly yet. For example,
+        the mnemonic "XEQ'[delta]X'" will currently get translated as "XEQ'[de'". Fixing this will require
+        an "escaped character" to ordinal translation table.
+      - An "[alpha]  " must currently be encoded as "[alpha] [ ]" -- at least for the moment.
 EOM
 
 #######################################################################
@@ -141,7 +169,9 @@ load_opcode_tables($opcode_map_file);
 
 my $flash_blank_fill_hex_str = ($user_flash_blank_fill) ? $user_flash_blank_fill : $mnem2hex{$DEFAULT_FLASH_BLANK_INSTR};
 
-if( $mode eq $ASSEMBLE_MODE ) {
+if( $expanded_op_file ) {
+  expand_opcode_table_to_file( $expanded_op_file );
+} elsif( $mode eq $ASSEMBLE_MODE ) {
   assemble( $outfile, @files );
 } elsif( $mode eq $DISASSEMBLE_MODE ) {
   disassemble( $outfile, @files );
@@ -164,7 +194,7 @@ sub assemble {
     open SRC, $file or die "ERROR: Cannot open source '$file' for reading: $!\n";
     while(<SRC>) {
       # Remove any comments ('#' or '//') and any blank lines.
-      next if /^\s*#/;
+#      next if /^\s*#/;
       next if /^\s*$/;
       next if m<^\s*//>;
       chomp; chomp;
@@ -190,7 +220,7 @@ sub assemble {
           $words[++$next_free_word] = hex2dec($mnem2hex{$_});
         }
       }
-      if( $next_free_word >= $MAX_FLASH_WORDS ) {
+      if( ($next_free_word >= $MAX_FLASH_WORDS) and not $disable_flash_limit ) {
         die "ERROR: Too many program steps encounterd.\n";
       }
       print "\n" if 0; # Possible breakpoint
@@ -220,27 +250,37 @@ sub disassemble {
 
   open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
 
+  print "$comment_marker Source file(s): ", join(", ", @files), "\n";
+
   foreach my $file (@files) {
+    my $double_words = 0;
     open DAT, $file or die "ERROR: Cannot open dat file '$file' for reading: $!\n";
     local $/;
     my @words = unpack("S*", <DAT>);
     my $len = $words[1] - 1;
+    my $total_instructions = 0;
     for( my $k = 0; $k < $len; $k++ ) {
       my $word = $words[$k+2];
+      $total_instructions++;
       # Check if we are in the 2 words opcode range: LBL' to INT'
       if( ($word >= $text_lo_limit) and ($word < $text_hi_limit) ) {
         my $base_op = $word & 0xFF00;
         my (@chars);
         $chars[0] = $word & 0xFF;
         $word = $words[$k+3];
+        $double_words++;
         ($chars[2], $chars[1]) = (($word >> 8), ($word & 0xFF));
-        print_disassemble_text($k, $base_op, @chars);
+        print_disassemble_text($total_instructions, $base_op, @chars);
         $k++;
       } else {
-        print_disassemble_normal($k, $word);
+        print_disassemble_normal($total_instructions, $word);
       }
       print "\n" if 0; # breakpoint
     }
+    print "$comment_marker $total_instructions total instructions used.\n";
+    print "$comment_marker $len total words used.\n";
+    print "$comment_marker ", $len - (2*$double_words), " single word instructions.\n";
+    print "$comment_marker $double_words double word instructions.\n";
     close DAT;
   }
   close OUT;
@@ -260,10 +300,12 @@ sub print_disassemble_normal {
     die "ERROR: Opcode '$hex_str' does not exist at line ", $idx+1, " at print_disassemble_normal\n";
   }
   my $label_flag = (($hex2mnem{$hex_str} =~ /LBL/) and $star_labels) ? "*" x $star_labels : "";
-  if( $debug ) {
-    printf OUT "%03d /* %04s */ %0s%0s\n", $idx+1, $hex_str, $label_flag, $hex2mnem{$hex_str};
+  if( $no_step_numbers ) {
+    printf OUT "%0s%0s\n", $label_flag, $hex2mnem{$hex_str};
+  } elsif( $debug ) {
+    printf OUT "%03d /* %04s */ %0s%0s\n", $idx, $hex_str, $label_flag, $hex2mnem{$hex_str};
   } else {
-    printf OUT "%03d %0s%0s\n", $idx+1, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%03d %0s%0s\n", $idx, $label_flag, $hex2mnem{$hex_str};
   }
   return;
 } # print_disassemble_normal
@@ -282,21 +324,25 @@ sub print_disassemble_text {
     die "ERROR: Opcode '$hex_str' does not exist at line ", $idx+1, " at print_disassemble_text\n";
   }
   my $label_flag = (($hex2mnem{$hex_str} =~ /LBL/) and $star_labels) ? "*" x $star_labels : "";
-  if( $debug ) {
-    printf OUT "%03d /* %04s */ %0s%0s", $idx+1, $hex_str, $label_flag, $hex2mnem{$hex_str};
+  if( $no_step_numbers ) {
+    printf OUT "%0s%0s", $label_flag, $hex2mnem{$hex_str};
+  } elsif( $debug ) {
+    printf OUT "%03d /* %04s */ %0s%0s", $idx, $hex_str, $label_flag, $hex2mnem{$hex_str};
   } else {
-    printf OUT "%03d %0s%0s", $idx+1, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%03d %0s%0s", $idx, $label_flag, $hex2mnem{$hex_str};
   }
   foreach (@chars) {
     print OUT chr($_) if $_;
-  } print OUT "\n";
+  }
+  print OUT "'\n"; # Append the trailing single quote.
   return;
 } # print_disassemble_normal
 
 
 #######################################################################
 #
-# From: http://www.eagleairaust.com.au/code/crc16.htm
+# Compute a CRC16 over the stream of bytes. We have convert the word array to
+# a byte array to do this.
 #
 sub calc_crc16 {
   my @byteArray = wordArray2byteArray(@_);
@@ -308,8 +354,6 @@ sub calc_crc16 {
     $crc ^= ($crc << 12) & 0xFFFF;
     $crc ^= (($crc & 0xFF) << 5) & 0xFFFF;
   }
-# Until we fix this calculation, this might do the "universal" trick.
-#$crc = $MAGIC_MARKER;
   return $crc;
 } # calc_crc16
 
@@ -367,7 +411,10 @@ sub assemble_special_handling {
   # to make them easier to locate.
   $line =~ s/^\*+LBL/LBL/;
 
-  if( $line =~ /\S+\'(\S+)/ ) {
+  # Remove the actual label string so we can look up based on the base mnemonic.
+  # Depending on the revision of the source file, it may or may not have a closing
+  # single quote. Deal with it either way.
+  if( $line =~ /\S+\'(\S+)\'/ ) {
     $text_flag = $1;
     $line =~ s/\'\S+/\'/;
   }
@@ -406,7 +453,7 @@ sub pre_fill_flash {
 #
 sub load_opcode_tables {
   my $file = shift;
-  if( $opcode_map_file ne $INTERNAL_OPCODE_MAP ) {
+  if( $opcode_map_file ne $USE_INTERNAL_OPCODE_MAP ) {
     open DATA, $file or die "ERROR: Cannot open opcode map file '$opcode_map_file' for reading: $!\n";
   }
   while(<DATA>) {
@@ -452,6 +499,17 @@ sub load_opcode_tables {
       my $hex_str = $1;
       my $mnemonic = $2;
       my $line_num = $.;
+
+      # The space character is more than likely to be swallowed by an editor so the only thing
+      # I can think of re-encoding it as "[ ]". This makes it similar to other "escaped" characters
+      # in the mnemonics. A bit ugly but it works.
+      #
+      # (Another possibility is detecting a "bare" [alpha] -- one with no other trailing information
+      # -- and assuming this is a space. I will work on that for next time.)
+# Modified the databse instead. See comments immediately after "__DATA__" section marker.
+#      if( $mnemonic =~ /\[alpha\]\s+$/ ) {
+#        $mnemonic = "[alpha] [ ]";
+#      }
       load_table_entry($hex_str, $mnemonic, $line_num);
 
     # arg-type line
@@ -475,6 +533,23 @@ sub load_opcode_tables {
   close DATA;
   return;
 } # load_opcode_tables
+
+
+#######################################################################
+#
+# Expand the opcode table back into its complete form.
+#
+sub expand_opcode_table_to_file {
+  my $file = shift;
+  local $_;
+  open EXPND, "> $file" or die "ERROR: Cannot open expanded opcode file '$file' for writing: $!\n";
+  for my $hex_str (sort keys %hex2mnem) {
+    print EXPND "$hex_str  ${hex2mnem{$hex_str}}\n";
+  }
+  close EXPND;
+  return;
+} # expand_opcode_table_to_file
+
 
 #######################################################################
 #
@@ -505,7 +580,7 @@ sub parse_arg_type {
   my $indirect_modifier = 0;
   my $stack_modifier = 0;
   my $complex_modifier = 0;
-  
+
   if( $arg =~ /(\S+)\s+/ ) {
     $base_mnemonic = $1;
   } else {
@@ -530,13 +605,18 @@ sub parse_arg_type {
       # group (ABCD). We have to extract the opcode's numeric offset based on the op-type. The value of
       # max will give us this (112,104,100,etc.). Note that for all values of max<=100, either group is
       # valid since these are purely numeric.
-      if( $direct_max == $MAX_INDIRECT_112 ) {
+      if( $direct_max > $MAX_INDIRECT_104 ) {
         $reg_str = $reg_offset_112[$offset];
       } else {
         $reg_str = $reg_offset_104[$offset];
       }
-      # "Correct" the format if it is in the numeric range [0-99].
-      $reg_str = sprintf("%02d", $offset) if $offset < 100;
+      # "Correct" the format if it is in the numeric range [0-99]. However, a few of the instructions
+      # are limited to a single digit. Detect these and format accordingly.
+      if( not exists $table_exception_format{$base_mnemonic} ) {
+        $reg_str = sprintf("%02d", $offset) if $offset < 100;
+      } else {
+        $reg_str = sprintf($table_exception_format{$base_mnemonic}, $offset) if $offset < 100;
+      }
       my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $offset, "$base_mnemonic ", $reg_str);
       load_table_entry($hex_str, $mnemonic, $line_num);
     }
@@ -588,7 +668,6 @@ sub load_table_entry {
   if( not exists $mnem2hex{$mnemonic} ) {
     $mnem2hex{$mnemonic} = lc $op_hex_str;
   } else {
-    my @cc = split "", $mnemonic;
     warn "# WARNING: Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')\n" unless $quiet;
   }
 
@@ -631,7 +710,7 @@ sub dec2hex {
   return ( $hex_str );
 } # dec2hex
 
-sub d2h {
+sub d2h { # Quickie version for use with Perl debugger.
   return dec2hex(@_);
 } # d2h
 
@@ -645,7 +724,7 @@ sub hex2dec {
   return ( $dec );
 } # hex2dec
 
-sub h2d {
+sub h2d { # Quickie version for use with Perl debugger.
   return hex2dec(@_);
 } # h2d
 
@@ -653,6 +732,9 @@ sub h2d {
 #######################################################################
 #
 # Debug stubs
+#
+# Print number of entries in the referenced hash, for example:
+#  "p combien(\%hex2mnem)"
 #
 sub combien {
   my $ref_hash = shift;
@@ -665,9 +747,27 @@ sub combien {
   return;
 } # combien
 
-sub many {
+sub many { # Alias for combien
   return(combien(shift));
 } # many
+
+
+#######################################################################
+#
+# Evaluate a possible hex value from a string.
+#
+sub eval_possible_hex {
+  my $num = shift; # Either a decimal value or a hex string (the latter with or without the leading "0x").
+  my $result = 0;
+  if( $num =~ /^\s*0x/ ) {
+    $result = hex($num);
+  } elsif( $num =~ /[a-f-A-F]+/ ) {
+    $result = hex("0x" . $num);
+  } else {
+    $result = $num;
+  }
+  return $result; # A decimal value
+} # eval_possible_hex
 
 
 #######################################################################
@@ -689,9 +789,6 @@ sub get_options {
       print "$script\n";
       if( $SVN_Current_Revision =~ /Revision: (.+)\s*\$/ ) {
         print "Version: $1\n";
-        if( $SVN_Last_Updated =~ /Date: (.+)\s*\$/ ) {
-          print "Date:    $1\n";
-        }
       }
       die "\n";
     }
@@ -718,12 +815,25 @@ sub get_options {
     }
 
     elsif( ($arg eq '-f') or ($arg eq '-fill') ) {
-      $user_flash_blank_fill = shift(@ARGV);
-      $user_flash_blank_fill =~ s/^0x//;
+      $user_flash_blank_fill = dec2hex(eval_possible_hex(shift(@ARGV)));
+    }
+
+    elsif( $arg eq '-dl' ) {
+      $disable_flash_limit = 1;
+    }
+
+    elsif( $arg eq '-ns' ) {
+      $no_step_numbers = 1;
     }
 
     elsif( $arg eq '-o' ) {
       $outfile = shift(@ARGV);
+    }
+
+    # This is typically only used for debug at the moment. It will dump the expanded tables
+    # into a file of this name. Just having the file named is sufficient to trigger this mode.
+    elsif( ($arg eq '-e') or ($arg eq '-expand') ) {
+      $expanded_op_file = shift(@ARGV);
     }
 
     else {
@@ -732,13 +842,9 @@ sub get_options {
   }
 
   #----------------------------------------------
-  if( ($mode eq $ASSEMBLE_MODE) and ($outfile eq "-") ) {
+  # Verify that we have an output file if we are in assembler mode.
+  if( ($mode eq $ASSEMBLE_MODE) and ($outfile eq "-") and not $expanded_op_file ) {
     warn "ERROR: Must enter an output file name in assembler mode.\n";
-    die  "       Enter '$script_name -h' for help.\n";
-  }
-
-  if( $user_flash_blank_fill ne "" and $user_flash_blank_fill =~ /[0-9a-fA-F]{,4}/ ) {
-    warn "ERROR: Must a valid hex number for flash blank file.\n";
     die  "       Enter '$script_name -h' for help.\n";
   }
 
@@ -746,8 +852,9 @@ sub get_options {
 } # get_options
 
 __DATA__
-# Generated by "./trunk/Linux/calc opcodes" from SVN 1119
-# "Adjusted" to have the iC data split into 2 types of encoding.
+# Generated by "./trunk/Linux/calc opcodes" from SVN 1140
+# Modified the "[alpha]\s{2}" to be "[alpha] [ ]" to make sure that an editor doesn't
+# corrupt an undlimited whitespace location.
 0x0000  cmd ENTER[^]
 0x0001  cmd CLx
 0x0002  cmd EEX
@@ -991,7 +1098,6 @@ __DATA__
 0x0233  cmd rad[->]G
 0x0234  cmd G[->]rad
 0x0235  cmd +/-
-0x0236  cmd CONJ
 0x0237  cmd erf
 0x0238  cmd erfc
 0x0239  cmd [phi](x)
@@ -1098,162 +1204,58 @@ __DATA__
 0x0402  cmd DBLR
 0x0403  cmd %MRR
 0x0404  cmd L[sub-n][alpha]
-0x0500  cmd FP
-0x0501  cmd FLOOR
-0x0502  cmd CEIL
-0x0503  cmd ROUNDI
-0x0504  cmd IP
-0x0505  cmd ABS
-0x0506  cmd ROUND
-0x0507  cmd SIGN
-0x0508  cmd LN
-0x0509  cmd e[^x]
-0x050a  cmd [sqrt]
-0x050b  cmd 1/x
-0x050c  cmd (-1)[^x]
-0x050d  cmd LOG[sub-1][sub-0]
-0x050e  cmd LOG[sub-2]
-0x050f  cmd 2[^x]
-0x0510  cmd 10[^x]
-0x0511  cmd LN1+x
-0x0512  cmd e[^x]-1
-0x0513  cmd W
-0x0514  cmd W[^-1]
-0x0515  cmd x[^2]
-0x0516  cmd CUBE
-0x0517  cmd CUBERT
-0x0518  cmd FIB
-0x0519  cmd [->]DEG
-0x051a  cmd [->]RAD
-0x051b  cmd [->]GRAD
-0x051c  cmd DEG[->]
-0x051d  cmd RAD[->]
-0x051e  cmd GRAD[->]
-0x051f  cmd SIN
-0x0520  cmd COS
-0x0521  cmd TAN
-0x0522  cmd ASIN
-0x0523  cmd ACOS
-0x0524  cmd ATAN
-0x0525  cmd SINC
-0x0526  cmd SINH
-0x0527  cmd COSH
-0x0528  cmd TANH
-0x0529  cmd ASINH
-0x052a  cmd ACOSH
-0x052b  cmd ATANH
-0x052c  cmd x!
-0x052d  cmd [GAMMA]
-0x052e  cmd LN[GAMMA]
-0x052f  cmd [degree][->]rad
-0x0530  cmd rad[->][degree]
-0x0531  cmd [degree][->]G
-0x0532  cmd G[->][degree]
-0x0533  cmd rad[->]G
-0x0534  cmd G[->]rad
-0x0535  cmd +/-
-0x0536  cmd CONJ
-0x0537  cmd erf
-0x0538  cmd erfc
-0x0539  cmd [phi](x)
-0x053a  cmd [PHI](x)
-0x053b  cmd [PHI][^-1](p)
-0x053c  cmd [chi][^2][sub-p]
-0x053d  cmd [chi][^2]
-0x053e  cmd [chi][^2]INV
-0x053f  cmd t[sub-p](x)
-0x0540  cmd t(x)
-0x0541  cmd t[^-1](p)
-0x0542  cmd F[sub-p](x)
-0x0543  cmd F(x)
-0x0544  cmd F[^-1](p)
-0x0545  cmd Weibl[sub-p]
-0x0546  cmd Weibl
-0x0547  cmd Weibl[^-1]
-0x0548  cmd Expon[sub-p]
-0x0549  cmd Expon
-0x054a  cmd Expon[^-1]
-0x054b  cmd Binom[sub-p]
-0x054c  cmd Binom
-0x054d  cmd Binom[^-1]
-0x054e  cmd Poiss[sub-p]
-0x054f  cmd Poiss
-0x0550  cmd Poiss[^-1]
-0x0551  cmd Geom[sub-p]
-0x0552  cmd Geom
-0x0553  cmd Geom[^-1]
-0x0554  cmd Norml[sub-p]
-0x0555  cmd Norml
-0x0556  cmd Norml[^-1]
-0x0557  cmd LgNrm[sub-p]
-0x0558  cmd LgNrm
-0x0559  cmd LgNrm[^-1]
-0x055a  cmd Logis[sub-p]
-0x055b  cmd Logis
-0x055c  cmd Logis[^-1]
-0x055d  cmd Cauch[sub-p]
-0x055e  cmd Cauch
-0x055f  cmd Cauch[^-1]
-0x0560  cmd [x-hat]
-0x0561  cmd [y-hat]
-0x0562  cmd %[SIGMA]
-0x0563  cmd %
-0x0564  cmd [DELTA]%
-0x0565  cmd %T
-0x0566  cmd [->]HR
-0x0567  cmd [->]H.MS
-0x0568  cmd NOT
-0x0569  cmd nBITS
-0x056a  cmd MIRROR
-0x056b  cmd DAY
-0x056c  cmd D[->]J
-0x056d  cmd J[->]D
-0x056e  cmd [degree]C[->][degree]F
-0x056f  cmd [degree]F[->][degree]C
-0x0570  cmd dB[->]ar.
-0x0571  cmd ar.[->]dB
-0x0572  cmd dB[->]pr.
-0x0573  cmd pr.[->]dB
-0x0574  cmd [zeta]
-0x0575  cmd B[sub-n]
-0x0576  cmd B[sub-n]*
-0x0600  cmd y[^x]
-0x0601  cmd +
-0x0602  cmd -
-0x0603  cmd [times]
-0x0604  cmd /
-0x0605  cmd RMDR
-0x0606  cmd LOGx
-0x0607  cmd MIN
-0x0608  cmd MAX
-0x0609  cmd ANGLE
-0x060a  cmd [beta]
-0x060b  cmd LN[beta]
-0x060c  cmd I[GAMMA]
-0x060d  cmd COMB
-0x060e  cmd PERM
-0x060f  cmd %+MG
-0x0610  cmd %MG
-0x0611  cmd ||
-0x0612  cmd AGM
-0x0613  cmd H.MS+
-0x0614  cmd H.MS-
-0x0615  cmd GCD
-0x0616  cmd LCM
-0x0617  cmd AND
-0x0618  cmd OR
-0x0619  cmd XOR
-0x061a  cmd NAND
-0x061b  cmd NOR
-0x061c  cmd XNOR
-0x061d  cmd DAYS+
-0x061e  cmd [DELTA]DAYS
-0x061f  cmd P[sub-n]
-0x0620  cmd T[sub-n]
-0x0621  cmd U[sub-n]
-0x0622  cmd L[sub-n]
-0x0623  cmd H[sub-n]
-0x0624  cmd H[sub-n][sub-p]
+0x0500  cmd [cmplx]FP
+0x0504  cmd [cmplx]IP
+0x0505  cmd [cmplx]ABS
+0x0506  cmd [cmplx]ROUND
+0x0507  cmd [cmplx]SIGN
+0x0508  cmd [cmplx]LN
+0x0509  cmd [cmplx]e[^x]
+0x050a  cmd [cmplx][sqrt]
+0x050b  cmd [cmplx]1/x
+0x050c  cmd [cmplx](-1)[^x]
+0x050d  cmd [cmplx]LOG[sub-1][sub-0]
+0x050e  cmd [cmplx]LOG[sub-2]
+0x050f  cmd [cmplx]2[^x]
+0x0510  cmd [cmplx]10[^x]
+0x0511  cmd [cmplx]LN1+x
+0x0512  cmd [cmplx]e[^x]-1
+0x0513  cmd [cmplx]W
+0x0514  cmd [cmplx]W[^-1]
+0x0515  cmd [cmplx]x[^2]
+0x0516  cmd [cmplx]CUBE
+0x0517  cmd [cmplx]CUBERT
+0x0518  cmd [cmplx]FIB
+0x051f  cmd [cmplx]SIN
+0x0520  cmd [cmplx]COS
+0x0521  cmd [cmplx]TAN
+0x0522  cmd [cmplx]ASIN
+0x0523  cmd [cmplx]ACOS
+0x0524  cmd [cmplx]ATAN
+0x0525  cmd [cmplx]SINC
+0x0526  cmd [cmplx]SINH
+0x0527  cmd [cmplx]COSH
+0x0528  cmd [cmplx]TANH
+0x0529  cmd [cmplx]ASINH
+0x052a  cmd [cmplx]ACOSH
+0x052b  cmd [cmplx]ATANH
+0x052c  cmd [cmplx]x!
+0x052d  cmd [cmplx][GAMMA]
+0x052e  cmd [cmplx]LN[GAMMA]
+0x0535  cmd [cmplx]+/-
+0x0536  cmd [cmplx]CONJ
+0x0600  cmd [cmplx]y[^x]
+0x0601  cmd [cmplx]+
+0x0602  cmd [cmplx]-
+0x0603  cmd [cmplx][times]
+0x0604  cmd [cmplx]/
+0x0606  cmd [cmplx]LOGx
+0x060a  cmd [cmplx][beta]
+0x060b  cmd [cmplx]LN[beta]
+0x060d  cmd [cmplx]COMB
+0x060e  cmd [cmplx]PERM
+0x0611  cmd [cmplx]||
+0x0612  cmd [cmplx]AGM
 0x1000  mult  LBL
 0x1100  mult  LBL?
 0x1200  mult  XEQ
@@ -1371,6 +1373,7 @@ __DATA__
 0x8133  cmd [cmplx]# [PHI][sub-0]
 0x8134  cmd [cmplx]# [infinity]
 0x8200  cmd iC 0
+0x8200  arg iC  max=0,indirect
 0x8201  cmd iC 1
 0x8202  cmd iC 5.01402
 0x8203  cmd iC 15.02903
@@ -1400,7 +1403,6 @@ __DATA__
 0x821b  cmd iC 0.14887433
 0x821c  cmd iC 0.29552422
 0x821d  cmd iC 0.14773910
-0x8200  arg iC  max=0,indirect
 0x8300  arg ERR max=19,indirect
 0x8400  arg STO max=112,indirect,stack
 0x8500  arg STO+  max=112,indirect,stack
@@ -1417,17 +1419,17 @@ __DATA__
 0x9000  arg RCL[v]  max=112,indirect,stack
 0x9100  arg RCL[^]  max=112,indirect,stack
 0x9200  arg x[<->]  max=112,indirect,stack
-0x9300  arg [cmplx]STO  max=112,indirect,stack,complex
-0x9400  arg [cmplx]STO+ max=112,indirect,stack,complex
-0x9500  arg [cmplx]STO- max=112,indirect,stack,complex
-0x9600  arg [cmplx]STO[times] max=112,indirect,stack,complex
-0x9700  arg [cmplx]STO/ max=112,indirect,stack,complex
-0x9800  arg [cmplx]RCL  max=112,indirect,stack,complex
-0x9900  arg [cmplx]RCL+ max=112,indirect,stack,complex
-0x9a00  arg [cmplx]RCL- max=112,indirect,stack,complex
-0x9b00  arg [cmplx]RCL[times] max=112,indirect,stack,complex
-0x9c00  arg [cmplx]RCL/ max=112,indirect,stack,complex
-0x9d00  arg [cmplx]x[<->] max=112,indirect,stack,complex
+0x9300  arg [cmplx]STO  max=111,indirect,stack,complex
+0x9400  arg [cmplx]STO+ max=111,indirect,stack,complex
+0x9500  arg [cmplx]STO- max=111,indirect,stack,complex
+0x9600  arg [cmplx]STO[times] max=111,indirect,stack,complex
+0x9700  arg [cmplx]STO/ max=111,indirect,stack,complex
+0x9800  arg [cmplx]RCL  max=111,indirect,stack,complex
+0x9900  arg [cmplx]RCL+ max=111,indirect,stack,complex
+0x9a00  arg [cmplx]RCL- max=111,indirect,stack,complex
+0x9b00  arg [cmplx]RCL[times] max=111,indirect,stack,complex
+0x9c00  arg [cmplx]RCL/ max=111,indirect,stack,complex
+0x9d00  arg [cmplx]x[<->] max=111,indirect,stack,complex
 0x9e00  arg VIEW  max=112,indirect,stack
 0x9f00  arg STOS  max=97,indirect
 0xa000  arg RCLS  max=97,indirect
@@ -1462,7 +1464,7 @@ __DATA__
 0xa11d  cmd [alpha] [approx]
 0xa11e  cmd [alpha] [pound]
 0xa11f  cmd [alpha] [yen]
-0xa120  cmd [alpha]
+0xa120  cmd [alpha] [ ]
 0xa121  cmd [alpha] !
 0xa122  cmd [alpha] "
 0xa123  cmd [alpha] #
@@ -1701,8 +1703,8 @@ __DATA__
 0xae00  arg x[<=]?  max=112,indirect,stack
 0xaf00  arg x>? max=112,indirect,stack
 0xb000  arg x[>=]?  max=112,indirect,stack
-0xb100  arg [cmplx]x=?  max=112,indirect,stack,complex
-0xb200  arg [cmplx]x[!=]? max=112,indirect,stack,complex
+0xb100  arg [cmplx]x=?  max=111,indirect,stack,complex
+0xb200  arg [cmplx]x[!=]? max=111,indirect,stack,complex
 0xb300  arg SKIP  max=100,indirect
 0xb400  arg BACK  max=100,indirect
 0xb500  arg DSE max=112,indirect,stack
@@ -1837,11 +1839,11 @@ __DATA__
 0xf300  arg RCF/  max=112,indirect,stack
 0xf400  arg RCF[v]  max=112,indirect,stack
 0xf500  arg RCF[^]  max=112,indirect,stack
-0xf600  arg [cmplx]RCF  max=112,indirect,stack,complex
-0xf700  arg [cmplx]RCF+ max=112,indirect,stack,complex
-0xf800  arg [cmplx]RCF- max=112,indirect,stack,complex
-0xf900  arg [cmplx]RCF[times] max=112,indirect,stack,complex
-0xfa00  arg [cmplx]RCF/ max=112,indirect,stack,complex
+0xf600  arg [cmplx]RCF  max=111,indirect,stack,complex
+0xf700  arg [cmplx]RCF+ max=111,indirect,stack,complex
+0xf800  arg [cmplx]RCF- max=111,indirect,stack,complex
+0xf900  arg [cmplx]RCF[times] max=111,indirect,stack,complex
+0xfa00  arg [cmplx]RCF/ max=111,indirect,stack,complex
 0xfb00  arg S.L max=100,indirect
 0xfc00  arg S.R max=100,indirect
 0xfd00  arg VW[alpha]+  max=112,indirect,stack
