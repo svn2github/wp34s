@@ -1249,8 +1249,10 @@ long long int int_1pow(long long int x) {
 #ifndef TINY_BUILD
 	int sx;
 	unsigned long long int xv = extract_value(x, &sx);
-	set_overflow((int_mode() == MODE_UNSIGNED) ? 1 : 0);
-	return build_value((unsigned long long int)1, (xv & 1)?1:0);
+	int odd = xv & 1;
+
+	set_overflow((int_mode() == MODE_UNSIGNED && odd) ? 1 : 0);
+	return build_value((unsigned long long int)1, odd);
 #else
 	return 0;
 #endif
