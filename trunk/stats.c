@@ -38,6 +38,10 @@
 #define sigmaXlnY	(Regs[98])
 #define sigmaYlnX	(Regs[99])
 
+
+#define DISCRETE_TOLERANCE	&const_0_15
+
+
 // #define DUMP1
 #ifdef DUMP1
 #include <stdio.h>
@@ -1647,6 +1651,26 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p) {
 	return dn_minus(r, &t);
 }
 
+/* Utility routine to finialise a discrete distribtuion result that might be
+ * off by one.  The arugments are the best guess of the reslt, the target
+ * probability, the cdf at the best guess, the cdf at the best guess plus one
+ * and the best guess plus one.
+ *
+ * A comparision is made of the best guess and if it is too high, the result
+ * must be the best guess minus one.  Likewise a comparision is made to
+ * determine if the best guess plus one is below the target.
+ */
+static decNumber *discrete_final_check(decNumber *r, const decNumber *p, const decNumber *fr, const decNumber *frp1, const decNumber *rp1) {
+	decNumber a;
+
+	if (decNumberIsNegative(dn_compare(&a, p, fr)))
+		dn_dec(r);
+	else if (dn_le0(dn_compare(&a, frp1, p)))
+		decNumberCopy(r, rp1);
+	return r;
+}
+
+
 /* Binomial cdf f(k; n, p) = iBeta(n-floor(k), 1+floor(k); 1-p)
  */
 static int binomial_param(decNumber *r, decNumber *p, decNumber *n, const decNumber *x) {
@@ -1745,11 +1769,16 @@ static decNumber *newton_qf_B(decNumber *r, const decNumber *p, const decNumber 
 		dn_divide(&w, &z, &x);
 		decNumberCopy(&z, r);
 		dn_subtract(r, &z, &w);
-		if (relative_error(r, &z, &const_0_0001))
+		if (absolute_error(r, &z, DISCRETE_TOLERANCE))
 			break;
 		busy();
 	}
-	return r;
+	decNumberFloor(r, r);
+	cdf_B_helper(&x, r, prob, n);
+	dn_add(&w, r, &const_1);
+	cdf_B_helper(&z, &w, prob, n);
+	discrete_final_check(r, p, &x, &z, &w);
+	return dn_min(r, r, n);
 }
 
 decNumber *qf_B(decNumber *r, const decNumber *p) {
@@ -1760,8 +1789,7 @@ decNumber *qf_B(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_B_est(r, p, &prob, &n);
-	newton_qf_B(r, p, &prob, &n);
-	return decNumberFloor(r, r);
+	return newton_qf_B(r, p, &prob, &n);
 }
 
 /* Poisson cdf f(k, lam) = 1 - iGamma(floor(k+1), lam) / floor(k)! k>=0
@@ -1844,11 +1872,15 @@ static decNumber *search_qf_P(decNumber *r, const decNumber *p, const decNumber 
 		dn_divide(&w, &z, &x);
 		decNumberCopy(&z, r);
 		dn_subtract(r, &z, &w);
-		if (relative_error(r, &z, &const_0_0001))
+		if (absolute_error(r, &z, DISCRETE_TOLERANCE))
 			break;
 		busy();
 	}
-	return r;
+	decNumberFloor(r, r);
+	cdf_P_helper(&x, r, lambda);
+	dn_add(&w, r, &const_1);
+	cdf_P_helper(&z, &w, lambda);
+	return discrete_final_check(r, p, &x, &z, &w);
 }
 
 decNumber *qf_P(decNumber *r, const decNumber *p) {
@@ -1859,8 +1891,7 @@ decNumber *qf_P(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_P_est(r, p, &lambda);
-	search_qf_P(r, p, &lambda);
-	return decNumberFloor(r, r);
+	return search_qf_P(r, p, &lambda);
 }
 
 /* Geometric cdf
@@ -1910,7 +1941,7 @@ decNumber *cdf_G(decNumber *r, const decNumber *x) {
 }
 
 decNumber *qf_G(decNumber *r, const decNumber *x) {
-	decNumber p, t, v;
+	decNumber p, t, v, z;
 
 	if (geometric_param(r, &p, x))
 		return r;
@@ -1920,7 +1951,13 @@ decNumber *qf_G(decNumber *r, const decNumber *x) {
 	dn_ln1m(&t, &p);
 	dn_divide(&p, &v, &t);
 	dn_dec(&p);
-	return decNumberFloor(r, &p);
+	decNumberFloor(r, &p);
+
+	/* Not sure this is absolutely necessary but it can't hurt */
+	cdf_P_helper(&t, r, &p);
+	dn_add(&v, r, &const_1);
+	cdf_P_helper(&z, &v, &p);
+	return discrete_final_check(r, &p, &t, &z, &v);
 }
 
 /* Normal with specified mean and variance */

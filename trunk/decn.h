@@ -61,6 +61,7 @@ extern void decNumberPIon2(decNumber *pion2);
 extern int is_int(const decNumber *);
 
 extern int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol);
+extern int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol);
 
 extern decNumber *decNumberMAdd(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x);
 

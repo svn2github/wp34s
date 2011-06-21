@@ -260,9 +260,17 @@ int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol)
 	dn_subtract(&a, x, y);
 	dn_divide(&b, &a, x);
 	dn_abs(&a, &b);
-	dn_compare(&a, &a, tol);
-	return decNumberIsNegative(&a);
+	return decNumberIsNegative(dn_compare(&a, &a, tol));
 }
+
+int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol) {
+	decNumber a, b;
+
+	dn_subtract(&a, x, y);
+	dn_abs(&b, &a);
+	return decNumberIsNegative(dn_compare(&a, &b, tol));
+}
+
 
 /* Multiply Add: x + y * z
  */
