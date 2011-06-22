@@ -749,6 +749,101 @@ static void check_low(decNumber *d) {
 }
 
 
+/* Utility routine to finialise a discrete distribtuion result that might be
+ * off by one.  The arugments are the best guess of the reslt, the target
+ * probability, the cdf at the best guess, the cdf at the best guess plus one
+ * and the best guess plus one.
+ *
+ * A comparision is made of the best guess and if it is too high, the result
+ * must be the best guess minus one.  Likewise a comparision is made to
+ * determine if the best guess plus one is below the target.
+ */
+static decNumber *discrete_final_check(decNumber *r, const decNumber *p, const decNumber *fr, const decNumber *frp1, const decNumber *rp1) {
+	decNumber a;
+
+	if (decNumberIsNegative(dn_compare(&a, p, fr)))
+		dn_dec(r);
+	else if (dn_le0(dn_compare(&a, frp1, p)))
+		decNumberCopy(r, rp1);
+	return r;
+}
+
+
+/* Optimise an estimate using Newton's method.  For statistical distributions we are fortunate that we've got both the
+ * function and its derivative so this is straightforward.
+ * Since the different distributions need slightly different flavours of this search, we add a parameter to customise.
+ */
+#define NEWTON_DISCRETE		0x0001
+#define NEWTON_NONNEGATIVE	0x0002
+#define NEWTON_MAXSTEP		0x0004
+#define NEWTON_WANDERCHECK	0x0008
+
+static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned short int flags,
+				decNumber *(*pdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
+				decNumber *(*cdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
+				const decNumber *arg1, const decNumber *arg2) {
+	decNumber w, x, z, md, prev;
+	int i;
+	const int discrete = (flags & NEWTON_DISCRETE) != 0;
+	const int nonnegative = (flags & NEWTON_NONNEGATIVE) != 0;
+	const int maxstep = (flags & NEWTON_MAXSTEP) != 0;
+	const int wandercheck = (flags & NEWTON_WANDERCHECK) != 0;
+
+	if (maxstep)
+		dn_multiply(&md, r, &const_0_04);
+
+	for (i=0; i<50; i++) {
+		dn_subtract(&z, (*cdf)(&x, r, arg1, arg2), p);
+
+		// Check if things are getting worse
+		if (wandercheck) {
+			dn_abs(&x, &z);
+			if (i > 0 && decNumberIsNegative(dn_compare(&w, &prev, &x)))
+				return set_NaN(r);
+			decNumberCopy(&prev, &x);
+		}
+
+		if (decNumberIsZero((*pdf)(&x, r, arg1, arg2)))
+			break;
+		dn_divide(&w, &z, &x);
+
+		// Limit the step size if necessary
+		if (maxstep) {
+			dn_abs(&x, &w);
+			if (decNumberIsNegative(dn_compare(&z, &md, &x))) {
+				if (decNumberIsNegative(&w))
+					dn_minus(&w, &md);
+				else
+					decNumberPlus(&w, &md, &Ctx);
+			}
+		}
+
+		// Update estimate
+		decNumberCopy(&z, r);
+		dn_subtract(r, &z, &w);
+
+		// If this distribution doesn't take negative values, limit outselves to positive ones
+		if (nonnegative && decNumberIsNegative(r))
+			dn_multiply(r, &z, &const_0_00001);
+		// Check for finished
+		if (discrete) {
+			if (absolute_error(r, &z, DISCRETE_TOLERANCE))
+				break;
+		} else if (relative_error(r, &z, &const_1e_24))
+			break;
+		busy();
+	}
+	if (discrete) {
+		decNumberFloor(r, r);
+		(*cdf)(&x, r, arg1, arg2);
+		dn_add(&w, r, &const_1);
+		(*cdf)(&z, &w, arg1, arg2);
+		return discrete_final_check(r, p, &x, &z, &w);
+	}
+	return r;
+}
+
+
 static void ib_step(decNumber *d, decNumber *c, const decNumber *aa) {
 	decNumber t, u;
 
@@ -1076,7 +1171,7 @@ static int chi2_param(decNumber *r, decNumber *k, const decNumber *x) {
 	return 0;
 }
 
-decNumber *pdf_chi2_helper(decNumber *r, const decNumber *x, const decNumber *k) {
+decNumber *pdf_chi2_helper(decNumber *r, const decNumber *x, const decNumber *k, const decNumber *null) {
 	decNumber k1, k2, t, s, v;
 
 	if (dn_le0(x))
@@ -1100,10 +1195,10 @@ decNumber *pdf_chi2(decNumber *r, const decNumber *x) {
 
 	if (chi2_param(r, &k, x))
 		return r;
-	return pdf_chi2_helper(r, x, &k);
+	return pdf_chi2_helper(r, x, &k, NULL);
 }
 
-decNumber *cdf_chi2_helper(decNumber *r, const decNumber *x, const decNumber *v) {
+decNumber *cdf_chi2_helper(decNumber *r, const decNumber *x, const decNumber *v, const decNumber *null) {
 	decNumber a, b;
 
 	if (dn_le0(x))
@@ -1121,7 +1216,7 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x) {
 
 	if (chi2_param(r, &v, x))
 		return r;
-	return cdf_chi2_helper(r, x, &v);
+	return cdf_chi2_helper(r, x, &v, NULL);
 }
 
 static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p) {
@@ -1172,38 +1267,6 @@ static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p
 		decNumberZero(guess);
 }
 
-static decNumber *newton_qf_chi2(decNumber *r, const decNumber *v, const decNumber *p) {
-	decNumber a, b, d, md, prev;
-	int i;
-
-	dn_multiply(&md, r, &const_0_04);
-	for (i=0; i<50; i++) {
-		cdf_chi2_helper(&a, r, v);
-		dn_subtract(&b, &a, p);
-		dn_abs(&a, &b);
-		if (i > 0 && decNumberIsNegative(dn_compare(&d, &prev, &a)))
-			return set_NaN(r);
-		decNumberCopy(&prev, &a);
-
-		pdf_chi2_helper(&a, r, v);
-		dn_divide(&d, &b, &a);			// d = (cdf() - p)/pdf()
-		dn_abs(&a, &d);
-		dn_compare(&b, &md, &a);
-		if (decNumberIsNegative(&b)) {
-			if (decNumberIsNegative(&a))
-				dn_minus(&d, &md);
-			else
-				decNumberPlus(&d, &md, &Ctx);
-		}
-		decNumberCopy(&b, r);
-		dn_subtract(r, &b, &d);
-		if (relative_error(r, &b, &const_1e_24))
-			break;
-		busy();
-	}
-	return r;
-}
-
 decNumber *qf_chi2(decNumber *r, const decNumber *p) {
 	decNumber v;
 
@@ -1212,7 +1275,7 @@ decNumber *qf_chi2(decNumber *r, const decNumber *p) {
 	qf_chi2_est(r, &v, p);
 	if (decNumberIsZero(r))
 		return r;
-	return newton_qf_chi2(r, &v, p);
+	return newton_qf(r, p, NEWTON_NONNEGATIVE | NEWTON_MAXSTEP | NEWTON_WANDERCHECK, &pdf_chi2_helper, &cdf_chi2_helper, &v, NULL);
 }
 
 
@@ -1227,7 +1290,7 @@ static int t_param(decNumber *r, decNumber *v, const decNumber *x) {
 	return 0;
 }
 
-decNumber *pdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v) {
+decNumber *pdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v, const decNumber *null) {
 	decNumber t, u, w;
 
 	dn_multiply(&t, v, &const_0_5);			// t=v/2
@@ -1251,10 +1314,10 @@ decNumber *pdf_T(decNumber *r, const decNumber *x) {
 
 	if (t_param(r, &v, x))
 		return r;
-	return pdf_T_helper(r, x, &v);
+	return pdf_T_helper(r, x, &v, NULL);
 }
 
-decNumber *cdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v) {
+decNumber *cdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v, const decNumber *null) {
 	decNumber t, u;
 	int invert;
 
@@ -1284,7 +1347,7 @@ decNumber *cdf_T(decNumber *r, const decNumber *x) {
 
 	if (t_param(r, &v, x))
 		return r;
-	return cdf_T_helper(r, x, &v);
+	return cdf_T_helper(r, x, &v, NULL);
 }
 
 static void qf_T_est(decNumber *r, const decNumber *df, const decNumber *p, const decNumber *p05) {
@@ -1376,33 +1439,12 @@ static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
 	return 0;
 }
 
-static decNumber *newton_qf_T(decNumber *q, const decNumber *p, const decNumber *ndf) {
-	decNumber w, x, z, ndfp1;
-	int i;
-
-	dn_add(&ndfp1, ndf, &const_1);
-	for (i=0; i<50; i++) {
-		// Newton's approximation
-		dn_subtract(&z, cdf_T_helper(&x, q, ndf), p);
-		if (decNumberIsZero(pdf_T_helper(&x, q, ndf)))
-			break;
-		dn_divide(&w, &z, &x);
-		decNumberCopy(&z, q);
-		dn_subtract(q, &z, &w);
-		if (relative_error(q, &z, &const_1e_24))
-			break;
-		busy();
-	}
-	return q;
-}
-
 decNumber *qf_T(decNumber *r, const decNumber *x) {
 	decNumber ndf;
 
 	if (qf_T_init(r, &ndf, x))
 		return r;
-	newton_qf_T(r, x, &ndf);
-	return r;
+	return newton_qf(r, x, 0, &pdf_T_helper, &cdf_T_helper, &ndf, NULL);
 }
 
 static int f_param(decNumber *r, decNumber *d1, decNumber *d2, const decNumber *x) {
@@ -1471,25 +1513,6 @@ decNumber *cdf_F(decNumber *r, const decNumber *x) {
 	return cdf_F_helper(r, x, &v1, &v2);
 }
 
-static decNumber *newton_qf_F(decNumber *q, const decNumber *p, const decNumber *df1, const decNumber *df2) {
-	decNumber w, x, z;
-	int i;
-
-	for (i=0; i<50; i++) {
-		// Newton's approximation
-		dn_subtract(&z, cdf_F_helper(&x, q, df1, df2), p);
-		if (decNumberIsZero(pdf_F_helper(&x, q, df1, df2)))
-			break;
-		dn_divide(&w, &z, &x);
-		decNumberCopy(&z, q);
-		dn_subtract(q, &z, &w);
-		if (relative_error(q, &z, &const_1e_24))
-			break;
-		busy();
-	}
-	return q;
-}
-
 decNumber *qf_F(decNumber *r, const decNumber *x) {
 	decNumber df1, df2;
 
@@ -1499,9 +1522,8 @@ decNumber *qf_F(decNumber *r, const decNumber *x) {
 		return decNumberZero(r);
 
 	decNumberCopy(r, &const_5);		// Need better initial estimate
-	return newton_qf_F(r, x, &df1, &df2);
+	return newton_qf(r, x, NEWTON_NONNEGATIVE, &pdf_F_helper, &cdf_F_helper, &df1, &df2);
 }
-
 
 /* Weibull distribution cdf = 1 - exp(-(x/lambda)^k)
  */
@@ -1651,25 +1673,6 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p) {
 	return dn_minus(r, &t);
 }
 
-/* Utility routine to finialise a discrete distribtuion result that might be
- * off by one.  The arugments are the best guess of the reslt, the target
- * probability, the cdf at the best guess, the cdf at the best guess plus one
- * and the best guess plus one.
- *
- * A comparision is made of the best guess and if it is too high, the result
- * must be the best guess minus one.  Likewise a comparision is made to
- * determine if the best guess plus one is below the target.
- */
-static decNumber *discrete_final_check(decNumber *r, const decNumber *p, const decNumber *fr, const decNumber *frp1, const decNumber *rp1) {
-	decNumber a;
-
-	if (decNumberIsNegative(dn_compare(&a, p, fr)))
-		dn_dec(r);
-	else if (dn_le0(dn_compare(&a, frp1, p)))
-		decNumberCopy(r, rp1);
-	return r;
-}
-
 
 /* Binomial cdf f(k; n, p) = iBeta(n-floor(k), 1+floor(k); 1-p)
  */
@@ -1758,29 +1761,6 @@ static void qf_B_est(decNumber *r, const decNumber *p, const decNumber *prob, co
 	normal_approximation_via_moment(r, p, &mu, &sigma);
 }
 
-static decNumber *newton_qf_B(decNumber *r, const decNumber *p, const decNumber *prob, const decNumber *n) {
-	decNumber w, x, z;
-	int i;
-
-	for (i=0; i<50; i++) {
-		dn_subtract(&z, cdf_B_helper(&x, r, prob, n), p);
-		if (decNumberIsZero(pdf_B_helper(&x, r, prob, n)))
-			break;
-		dn_divide(&w, &z, &x);
-		decNumberCopy(&z, r);
-		dn_subtract(r, &z, &w);
-		if (absolute_error(r, &z, DISCRETE_TOLERANCE))
-			break;
-		busy();
-	}
-	decNumberFloor(r, r);
-	cdf_B_helper(&x, r, prob, n);
-	dn_add(&w, r, &const_1);
-	cdf_B_helper(&z, &w, prob, n);
-	discrete_final_check(r, p, &x, &z, &w);
-	return dn_min(r, r, n);
-}
-
 decNumber *qf_B(decNumber *r, const decNumber *p) {
 	decNumber prob, n;
 
@@ -1789,7 +1769,8 @@ decNumber *qf_B(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_B_est(r, p, &prob, &n);
-	return newton_qf_B(r, p, &prob, &n);
+	newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, &pdf_B_helper, &cdf_B_helper, &prob, &n);
+	return dn_min(r, r, &n);
 }
 
 /* Poisson cdf f(k, lam) = 1 - iGamma(floor(k+1), lam) / floor(k)! k>=0
@@ -1808,7 +1789,7 @@ static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x) {
 	return 0;
 }
 
-decNumber *pdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambda) {
+decNumber *pdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambda, const decNumber *null) {
 	decNumber t, u, v;
 
 	if (dn_lt0(x)) {
@@ -1829,10 +1810,10 @@ decNumber *pdf_P(decNumber *r, const decNumber *x) {
 		return r;
 	if (!is_int(x))
 		return decNumberZero(r);
-	return pdf_P_helper(r, x, &lambda);
+	return pdf_P_helper(r, x, &lambda, NULL);
 }
 
-decNumber *cdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambda) {
+decNumber *cdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambda, const decNumber *null) {
 	decNumber t, u;
 
 	if (dn_lt0(x))
@@ -1851,7 +1832,7 @@ decNumber *cdf_P(decNumber *r, const decNumber *x) {
 	if (poisson_param(r, &lambda, x))
 		return r;
 	decNumberFloor(&fx, x);
-	return cdf_P_helper(r, &fx, &lambda);
+	return cdf_P_helper(r, &fx, &lambda, NULL);
 }
 
 static void qf_P_est(decNumber *r, const decNumber *p, const decNumber *lambda) {
@@ -1861,27 +1842,6 @@ static void qf_P_est(decNumber *r, const decNumber *p, const decNumber *lambda) 
 	normal_approximation_via_moment(r, p, lambda, &sigma);
 }
 
-static decNumber *search_qf_P(decNumber *r, const decNumber *p, const decNumber *lambda) {
-	decNumber x, z, w;
-	int i;
-
-	for (i=0; i<50; i++) {
-		dn_subtract(&z, cdf_P_helper(&x, r, lambda), p);
-		if (decNumberIsZero(pdf_P_helper(&x, r, lambda)))
-			break;
-		dn_divide(&w, &z, &x);
-		decNumberCopy(&z, r);
-		dn_subtract(r, &z, &w);
-		if (absolute_error(r, &z, DISCRETE_TOLERANCE))
-			break;
-		busy();
-	}
-	decNumberFloor(r, r);
-	cdf_P_helper(&x, r, lambda);
-	dn_add(&w, r, &const_1);
-	cdf_P_helper(&z, &w, lambda);
-	return discrete_final_check(r, p, &x, &z, &w);
-}
 
 decNumber *qf_P(decNumber *r, const decNumber *p) {
 	decNumber lambda;
@@ -1891,7 +1851,7 @@ decNumber *qf_P(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_P_est(r, p, &lambda);
-	return search_qf_P(r, p, &lambda);
+	return newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, &pdf_P_helper, &cdf_P_helper, &lambda, NULL);
 }
 
 /* Geometric cdf
@@ -1954,9 +1914,9 @@ decNumber *qf_G(decNumber *r, const decNumber *x) {
 	decNumberFloor(r, &p);
 
 	/* Not sure this is absolutely necessary but it can't hurt */
-	cdf_P_helper(&t, r, &p);
+	cdf_G(&t, r);
 	dn_add(&v, r, &const_1);
-	cdf_P_helper(&z, &v, &p);
+	cdf_G(&z, &v);
 	return discrete_final_check(r, &p, &t, &z, &v);
 }
 
