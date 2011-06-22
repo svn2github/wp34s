@@ -66,9 +66,13 @@ my $MAX_FLASH_WORDS = 506;
 my $disable_flash_limit = 0;
 
 my $no_step_numbers = 0;
+my $zero_last_4 = 0;
 
 my $MAGIC_MARKER = 0xA53C;
 my $CRC_INITIALIZER = 0x5aa5;
+my $use_magic_marker = 0;
+
+my $build_an_empty_image = 0;
 
 my $ASSEMBLE_MODE = "assemble";
 my $DISASSEMBLE_MODE = "disassemble";
@@ -173,7 +177,11 @@ load_opcode_tables($opcode_map_file);
 
 my $flash_blank_fill_hex_str = ($user_flash_blank_fill) ? $user_flash_blank_fill : $mnem2hex{$DEFAULT_FLASH_BLANK_INSTR};
 
-if( $expanded_op_file ) {
+
+if( $build_an_empty_image ) {
+  build_empty_flash_image( $outfile );
+  warn "Built empty flash image...\n";
+} elsif( $expanded_op_file ) {
   write_expanded_opcode_table_to_file( $expanded_op_file );
 } elsif( $dump_escaped_alpha_table ) {
   write_escaped_alpha_table_to_file( $dump_escaped_alpha_table );
@@ -193,39 +201,40 @@ sub assemble {
   my $outfile = shift;
   my @files = @_;
   local $_;
+  my ($crc16);
   my @words = pre_fill_flash($flash_blank_fill_hex_str); # A hex string.
   my $next_free_word = 1;
 
   foreach my $file (@files) {
     open SRC, $file or die "ERROR: Cannot open source '$file' for reading: $!\n";
     while(<SRC>) {
-      # Remove any comments ('#' or '//') and any blank lines.
-#      next if /^\s*#/;
+      $_ = remove_trailing_comments($_);
+
+      # Remove any commented or blank lines.
       next if /^\s*$/;
       next if m<^\s*//>;
       chomp; chomp;
 
-      my $text_flag;
-      ($_, $text_flag) = assemble_special_handling($_);
-      print "\n" if 0; # Possible breakpoint
+      my $alpha_text;
+      ($_, $alpha_text) = assembler_preformat_handling($_);
 
       if( not exists $mnem2hex{$_} ) {
         die "ERROR: Cannot recognize mnemonic at line $. of '$file': $_\n";
       } else {
-        if( $text_flag ) {
+        if( $alpha_text ) {
           # See if the text has any escaped characters in it. Subsitute them if found.
           # There may be more than one so loop until satisfied.
-          while( $text_flag =~ /\[(.+)\]/ ) {
+          while( $alpha_text =~ /\[(.+?)\]/ ) {
             my $escaped_alpha = $1;
             if( exists $escaped_alpha2ord{$escaped_alpha} ) {
               my $char = chr($escaped_alpha2ord{$escaped_alpha});
-              $text_flag =~ s/\[$escaped_alpha\]/$char/;
+              $alpha_text =~ s/\[$escaped_alpha\]/$char/;
             } else {
               die "ERROR: Cannot locate escaped alpha: [$escaped_alpha] in table.\n";
             }
           }
 
-          my @chars = split "", $text_flag;
+          my @chars = split "", $alpha_text;
           $words[++$next_free_word] = hex2dec($mnem2hex{$_}) | ord($chars[0]);
           if( $chars[1] and $chars[2] ) {
             $words[++$next_free_word] = ord($chars[1]) | (ord($chars[2]) << 8);
@@ -241,13 +250,14 @@ sub assemble {
       if( ($next_free_word >= $MAX_FLASH_WORDS) and not $disable_flash_limit ) {
         die "ERROR: Too many program steps encounterd.\n";
       }
-      print "\n" if 0; # Possible breakpoint
     }
   }
   $words[1] = $next_free_word;
-  $words[0] = calc_crc16( @words[2 .. $next_free_word] );
-
+  $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
+  $words[0] = $crc16;
   write_binary( $outfile, @words );
+  print "// CRC16: ", dec2hex4($crc16), "\n";
+  print "// Total words: ", $next_free_word-1, "\n";
 
   return;
 } # assemble
@@ -295,7 +305,6 @@ sub disassemble {
       } else {
         print_disassemble_normal($total_steps, $word);
       }
-      print "\n" if 0; # breakpoint
     }
     print "$comment_marker $total_steps total instructions used.\n";
     print "$comment_marker $len total words used.\n";
@@ -433,30 +442,29 @@ sub write_binary {
 # Handle any lines that need special work. If the opcode is in
 # the range "LBL'" through "INT'" it needs to have the extra
 # label character masked off and a flag set to non-0 to indicate
-# that the opcode is this type. The $text_flag is set to a non-0
+# that the opcode is this type. The $alpha_text is set to a non-0
 # label characters if this is the case.
 #
-sub assemble_special_handling {
+sub assembler_preformat_handling {
   my $line = shift;
-  my $text_flag = 0;
+  my $alpha_text = "";
 
-  $line =~ s/^\d{3}\s+//; # Remove any line numbers.
+  $line =~ s/^\s*\d{3}\:{0,1}\s+//; # Remove any line numbers with or without a colon
   $line =~ s/^\s+//;      # Remove leading whitespace
 
-  # Labels sometimes are displayed with and asterisk -- presumably
-  # to make them easier to locate.
+  # Labels sometimes are displayed with an asterisk to make them easier to locate.
   $line =~ s/^\*+LBL/LBL/;
 
-  # Remove the actual label string so we can look up based on the base mnemonic.
+  # Remove the actual label string so we can do a lookup based on the base mnemonic.
   # Depending on the revision of the source file, it may or may not have a closing
   # single quote. Deal with it either way.
   if( $line =~ /\S+\'(\S+)\'/ ) {
-    $text_flag = $1;
+    $alpha_text = $1;
     $line =~ s/\'\S+/\'/;
   }
 
-  return ($line, $text_flag);
-} # assemble_special_handling
+  return ($line, $alpha_text);
+} # assembler_preformat_handling
 
 
 #######################################################################
@@ -475,10 +483,13 @@ sub pre_fill_flash {
   # Overwrite the 'special' locations.
   $flash[0] = $MAGIC_MARKER;
   $flash[1] = 1;
-#  $flash[-1] = 0;
-#  $flash[-2] = 0;
-#  $flash[-3] = 0;
-#  $flash[-4] = 0;
+  # If strict image compatibility is required, zero these words.
+  if( $zero_last_4 ) {
+    $flash[-1] = 0;
+    $flash[-2] = 0;
+    $flash[-3] = 0;
+    $flash[-4] = 0;
+  }
   return @flash;
 } # pre_fill_flash
 
@@ -541,6 +552,15 @@ sub load_opcode_tables {
       if( /\[alpha\]\s+\[(.+)\]/ ) {
         my $escaped_alpha = $1;
         load_escaped_alpha_tables($hex_str, $escaped_alpha, $line_num);
+      }
+
+      # As a convenience, create a secondary entry for iC commands that have a 2-digit
+      # number. This form can be used instead of entering the longer constant form. For
+      # example, "iC 03" will be accepted as well as "iC 5.01402". Note that the offset
+      # will are in decimal so "iC 12" is treated as "iC 0.56275713" and not "iC 0.03255816",
+      # which would have been the hex offset of 0x12.
+      if( $mnemonic =~ /iC/ ) {
+        load_2digit_iC_entry($hex_str, $mnemonic, $line_num);
       }
 
     # arg-type line
@@ -713,6 +733,22 @@ sub load_escaped_alpha_tables {
 
 #######################################################################
 #
+# Make a duplciate entry for the "iC' menomics to allow a 2-digit offsets version of
+# the mnemonic. Only load this the the mnemonic to hex table to avoid multiple definitions
+# in the hex to mnemonic table.
+#
+sub load_2digit_iC_entry {
+  my $hex_str = shift;
+  my $mnemonic = shift;
+  my $line_num = shift;
+  my $dup_mnemonic = sprintf("iC %02d", hex2dec($hex_str) & 0xFF);
+  load_mnem2hex_entry($hex_str, $dup_mnemonic, $line_num);
+  return;
+} # load_2digit_iC_entry
+
+
+#######################################################################
+#
 # Build an entry pair similar to the older format which includes the opcode (in a hex
 # string) offset by the correct amount and the reconstructed mnemonic name.
 #
@@ -733,46 +769,46 @@ sub load_table_entry {
   my $op_hex_str = shift;
   my $mnemonic = shift;
   my $line_num = shift;
-
-  # No idea why but chomp does not seem to work on these guys so I rolled my own.
-  $mnemonic = myChomp($mnemonic);
-#  chomp $mnemonic;
-#  chomp $mnemonic;
-
-  # Load the mnemonic to hex table
-  if( not exists $mnem2hex{$mnemonic} ) {
-    $mnem2hex{$mnemonic} = lc $op_hex_str;
-  } else {
-    warn "# WARNING: Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')\n" unless $quiet;
-  }
-
-  # Load the hex to mnemonic table
-  if( not exists $hex2mnem{$op_hex_str} ) {
-    $hex2mnem{lc $op_hex_str} = $mnemonic;
-  } else {
-    warn "# WARNING: Duplicate opcode hex: '$op_hex_str' at line $line_num (new defintion: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')\n" unless $quiet;
-  }
+  load_mnem2hex_entry($op_hex_str, $mnemonic, $line_num);
+  load_hex2mnem_entry($op_hex_str, $mnemonic, $line_num);
   return;
 } # load_table_entry
 
 
 #######################################################################
 #
-# No idea why but chomp does not seem to work on some input so I rolled my own.
-# Ugly but it works (late at night)!
+# Load the translation hash table with opcode (as a hex string) and the mnemonic.
 #
-sub myChomp {
-  my $str = shift;
-  my @cc = split "", $str;
-  $str = "";
-  local $_;
-  foreach (@cc) {
-    if( ($_ ne chr(0x0D)) and ($_ ne chr(0x0A)) ) {
-      $str .= $_;
-    }
+sub load_mnem2hex_entry {
+  my $op_hex_str = shift;
+  my $mnemonic = shift;
+  my $line_num = shift;
+
+  if( not exists $mnem2hex{$mnemonic} ) {
+    $mnem2hex{$mnemonic} = lc $op_hex_str;
+  } else {
+    warn "# WARNING: Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')\n" unless $quiet;
   }
-  return $str;
-} # myChomp
+  return;
+} # load_mnem2hex_entry
+
+
+#######################################################################
+#
+# Load the translation hash tables with opcode (as a hex string) and the mnemonic.
+#
+sub load_hex2mnem_entry {
+  my $op_hex_str = shift;
+  my $mnemonic = shift;
+  my $line_num = shift;
+
+  if( not exists $hex2mnem{$op_hex_str} ) {
+    $hex2mnem{lc $op_hex_str} = $mnemonic;
+  } else {
+    warn "# WARNING: Duplicate opcode hex: '$op_hex_str' at line $line_num (new defintion: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')\n" unless $quiet;
+  }
+  return;
+} # load_hex2mnem_entry
 
 
 #######################################################################
@@ -844,6 +880,17 @@ sub many { # Alias for combien
 
 #######################################################################
 #
+# Remove any trailing comments from lines
+#
+sub remove_trailing_comments {
+  my $line = shift;
+  $line =~ s<\s*//.*$><>;
+  return $line;
+} # remove_trailing_comments
+
+
+#######################################################################
+#
 # Evaluate a possible hex value from a string.
 #
 sub eval_possible_hex {
@@ -858,6 +905,25 @@ sub eval_possible_hex {
   }
   return $result; # A decimal value
 } # eval_possible_hex
+
+
+#######################################################################
+#
+# Build an emtpy flash image.
+#
+sub build_empty_flash_image {
+  my $outfile = shift;
+  my ($crc16);
+  my @words = pre_fill_flash($flash_blank_fill_hex_str); # A hex string.
+  my $next_free_word = 1;
+  $words[1] = $next_free_word;
+  $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
+  $words[0] = $crc16;
+  write_binary( $outfile, @words );
+  print "// CRC16: ", dec2hex4($crc16), "\n";
+  print "// Total words: ", $next_free_word-1, "\n";
+  return;
+} # build_empty_flash_image
 
 
 #######################################################################
@@ -920,9 +986,24 @@ sub get_options {
       $outfile = shift(@ARGV);
     }
 
+    # Undocumented debug hook to zero the last 4 words.
+    elsif( $arg eq '-04' ) {
+      $zero_last_4 = 1;
+    }
+
+    # Undocumented debug hook to generate a "universal" CRC.
+    elsif( $arg eq '-magic' ) {
+      $use_magic_marker = 1;
+    }
+
+    # Undocumented debug hook to generate an empty flash image.
+    elsif( $arg eq '-empty' ) {
+      $build_an_empty_image = 1;
+    }
+
     # This is typically only used for debug at the moment. It will dump the expanded tables
     # into a file of this name. Just having the file named is sufficient to trigger this mode.
-    elsif( ($arg eq '-e') or ($arg eq '-expand') ) {
+    elsif( ($arg eq '-e') or ($arg eq '-expand') or ($arg eq '-syntax') ) {
       $expanded_op_file = shift(@ARGV);
     }
 
