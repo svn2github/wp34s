@@ -18,7 +18,7 @@
 #
 #-----------------------------------------------------------------------
 #
-my $Description = "Assembler/Disassembler for the WP34S calculator.";
+my $Description = "Assembler/Disassembler for the WP34s calculator.";
 #
 #-----------------------------------------------------------------------
 #
@@ -34,7 +34,7 @@ use strict;
 
 my $debug = 0;
 my $quiet = 1;
-my (%mnem2hex, %hex2mnem);
+my (%mnem2hex, %hex2mnem, %ord2escaped_alpha, %escaped_alpha2ord);
 my @files = ();
 
 my $outfile = "-";
@@ -48,8 +48,13 @@ my $DEFAULT_OPCODE_MAP_FILE = $USE_INTERNAL_OPCODE_MAP;
 my $opcode_map_file = $DEFAULT_OPCODE_MAP_FILE;
 
 # If this variable is set to a non-NULL value, it will be used as the filename of the
-# expanded opcode dump file. This *should* be equivalent to the
+# expanded opcode dump file. This *should* be equivalent to the "a a" file from the
+# 'calc a a' program.
 my $expanded_op_file = "";
+
+# If this variable is set to a non-NULL value, it will be used as the filename of the
+# dumped escaped alpha table.
+my $dump_escaped_alpha_table = "";
 
 my $comment_marker = "//";
 
@@ -111,26 +116,28 @@ Usage:
    $script_name in_binary -dis > src_file                       # disassembly mode
 
 Parameters:
-   src_file         One or more WP34S program source files.
-   -o out_binary    Flash image produced by assembler. Required in assembler mode.
-   -dis             Disassemble the 'dat' file.
-   -opcode file     Opcode file to parse.                       [Default: $DEFAULT_OPCODE_MAP_FILE]
-   -fill fill_hex   Value to prefill flash with.                [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
-   -s number        Number of asterisks (stars) to prepend to labels in
+   src_file         One or more WP34s program source files. Conventionally, "wp34s" is used
+                    as the filename extension.
+   -o out_binary    Flash image produced by assembler. Required in assembler mode. Conventionally,
+                    "dat" is used as the filename extension.
+   -dis             Disassemble the binary image file.
+   -opcode file     Optional opcode file to parse.              [Default: $DEFAULT_OPCODE_MAP_FILE]
+   -fill fill_hex   Optinal value to prefill flash image with.  [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
+   -s number        Optional number of asterisks (stars) to prepend to labels in
                     disassembly mode.                           [Default: $DEFAULT_STAR_LABELS]
    -h               This help script.
 
 Examples:
   \$ $script_name great_circle.wp34s -o wp34s-3.dat
-  - Assembles the named WP34S program source file producing a flash image for the WP34S.
+  - Assembles the named WP34s program source file producing a flash image for the WP34s.
 
   \$ $script_name  great_circle.wp34s  floating_point.wp34s  -o wp34s-1.dat  -fill FFFF
-  - Assembles multiple WP34S program source files into a single contiguous flash image for
-    the WP34S. Uses FFFF as the optional fill value. Allows (and encourages) use of library
-    of programs.
+  - Assembles multiple WP34s program source files into a single contiguous flash image for
+    the WP34s. Uses FFFF as the optional fill value. Allows (and encourages) use of libraries
+    of programs by concatenating the flash image from several source files.
 
   \$ $script_name -dis wp34s-1.dat -s 3
-  - Disassembles a flash image from the WP34S. Prepend 3 asterisks to the front to each label to
+  - Disassembles a flash image from the WP34s. Prepend 3 asterisks to the front to each label to
     make then easier to find in the listing (they are ignored during assembly).
 
   \$ $script_name -dis wp34s-0.dat > test.wp34s ; $script_name test.wp34s -o wp34s-0a.dat
@@ -139,7 +146,9 @@ Examples:
     for the binaries to match.
 
 Notes:
-  1) Step numbers can be used in the source file but they are ignored.
+  1) Step numbers can be used in the source file but they are ignored. Since they are ignored,
+     it does\'t matter if they are not contiguous (ie: 000, 003, 004) or not monotonic (ie: 000,
+     004, 003). The disassembler does produce step numbers that are both continguous and monotonic.
   2) You can name a different opcode table using -opcode. This can be used to translate a source
      written for a different SVN revision of the WP34s to move the program to a modern version of
      the WP34s. Disassemble the old flash using the old opcode table and reassemble using the default
@@ -155,11 +164,6 @@ Notes:
      contains any hex digits or it starts with a "0x", it will be interpreted as a hex value. Thus
      "1234" will be decimal 1234 while "0x1234" will be the decimal value 4660. Both "EFA2" and "0xEFA2"
      will be interpreted as a hex value as well (61346). The leading "0x" is optional in this case.
-  4) Known issues:
-      - "Escaped" characters used in labels and strings are not dealt with correctly yet. For example,
-        the mnemonic "XEQ'[delta]X'" will currently get translated as "XEQ'[de'". Fixing this will require
-        an "escaped character" to ordinal translation table.
-      - An "[alpha]  " must currently be encoded as "[alpha] [ ]" -- at least for the moment.
 EOM
 
 #######################################################################
@@ -170,7 +174,9 @@ load_opcode_tables($opcode_map_file);
 my $flash_blank_fill_hex_str = ($user_flash_blank_fill) ? $user_flash_blank_fill : $mnem2hex{$DEFAULT_FLASH_BLANK_INSTR};
 
 if( $expanded_op_file ) {
-  expand_opcode_table_to_file( $expanded_op_file );
+  write_expanded_opcode_table_to_file( $expanded_op_file );
+} elsif( $dump_escaped_alpha_table ) {
+  write_escaped_alpha_table_to_file( $dump_escaped_alpha_table );
 } elsif( $mode eq $ASSEMBLE_MODE ) {
   assemble( $outfile, @files );
 } elsif( $mode eq $DISASSEMBLE_MODE ) {
@@ -207,6 +213,18 @@ sub assemble {
         die "ERROR: Cannot recognize mnemonic at line $. of '$file': $_\n";
       } else {
         if( $text_flag ) {
+          # See if the text has any escaped characters in it. Subsitute them if found.
+          # There may be more than one so loop until satisfied.
+          while( $text_flag =~ /\[(.+)\]/ ) {
+            my $escaped_alpha = $1;
+            if( exists $escaped_alpha2ord{$escaped_alpha} ) {
+              my $char = chr($escaped_alpha2ord{$escaped_alpha});
+              $text_flag =~ s/\[$escaped_alpha\]/$char/;
+            } else {
+              die "ERROR: Cannot locate escaped alpha: [$escaped_alpha] in table.\n";
+            }
+          }
+
           my @chars = split "", $text_flag;
           $words[++$next_free_word] = hex2dec($mnem2hex{$_}) | ord($chars[0]);
           if( $chars[1] and $chars[2] ) {
@@ -242,8 +260,6 @@ sub assemble {
 sub disassemble {
   my $outfile = shift;
   my @files = @_;
-  local $_;
-  my (@img);
 
   my $text_lo_limit = hex2dec($mnem2hex{"LBL'"});
   my $text_hi_limit = hex2dec($mnem2hex{"INT'"}) + 256;
@@ -255,14 +271,18 @@ sub disassemble {
   foreach my $file (@files) {
     my $double_words = 0;
     open DAT, $file or die "ERROR: Cannot open dat file '$file' for reading: $!\n";
+
+    # This trick will read in the binary image in 16-bit words of the correct endian.
     local $/;
     my @words = unpack("S*", <DAT>);
+
     my $len = $words[1] - 1;
-    my $total_instructions = 0;
+    my $total_steps = 0;
     for( my $k = 0; $k < $len; $k++ ) {
       my $word = $words[$k+2];
-      $total_instructions++;
-      # Check if we are in the 2 words opcode range: LBL' to INT'
+      $total_steps++;
+
+      # Check if we are in the 2 words opcode range: LBL' to INT'. These require special treatment.
       if( ($word >= $text_lo_limit) and ($word < $text_hi_limit) ) {
         my $base_op = $word & 0xFF00;
         my (@chars);
@@ -270,14 +290,14 @@ sub disassemble {
         $word = $words[$k+3];
         $double_words++;
         ($chars[2], $chars[1]) = (($word >> 8), ($word & 0xFF));
-        print_disassemble_text($total_instructions, $base_op, @chars);
+        print_disassemble_text($total_steps, $base_op, @chars);
         $k++;
       } else {
-        print_disassemble_normal($total_instructions, $word);
+        print_disassemble_normal($total_steps, $word);
       }
       print "\n" if 0; # breakpoint
     }
-    print "$comment_marker $total_instructions total instructions used.\n";
+    print "$comment_marker $total_steps total instructions used.\n";
     print "$comment_marker $len total words used.\n";
     print "$comment_marker ", $len - (2*$double_words), " single word instructions.\n";
     print "$comment_marker $double_words double word instructions.\n";
@@ -290,16 +310,19 @@ sub disassemble {
 
 #######################################################################
 #
-#
+# Print the lines which do not include quoted characters.
 #
 sub print_disassemble_normal {
   my $idx = shift;
   my $word = shift;
-  my $hex_str = lc dec2hex($word);
+  my $hex_str = lc dec2hex4($word);
   if( not exists $hex2mnem{$hex_str} ) {
     die "ERROR: Opcode '$hex_str' does not exist at line ", $idx+1, " at print_disassemble_normal\n";
   }
+
+  # Set up the correct number of leading asterisks if requested.
   my $label_flag = (($hex2mnem{$hex_str} =~ /LBL/) and $star_labels) ? "*" x $star_labels : "";
+
   if( $no_step_numbers ) {
     printf OUT "%0s%0s\n", $label_flag, $hex2mnem{$hex_str};
   } elsif( $debug ) {
@@ -313,17 +336,23 @@ sub print_disassemble_normal {
 
 #######################################################################
 #
-#
+# Print the lines that include up to 3 quoted characters For example "LBL'ABC'".
+# Substitute the characters which exist in the escaped-alpha translation
+# table with their escaped counterparts. For example, the 2-word opcode
+# "12a3 0058" will get translated to "LBL'[delta]X'".
 #
 sub print_disassemble_text {
   my $idx = shift;
-  my $word = shift;
+  my $opcode = shift;
   my @chars = @_;
-  my $hex_str = lc dec2hex($word);
+  my $hex_str = lc dec2hex4($opcode);
   if( not exists $hex2mnem{$hex_str} ) {
     die "ERROR: Opcode '$hex_str' does not exist at line ", $idx+1, " at print_disassemble_text\n";
   }
+
+  # Set up the correct number of leading asterisks if requested.
   my $label_flag = (($hex2mnem{$hex_str} =~ /LBL/) and $star_labels) ? "*" x $star_labels : "";
+
   if( $no_step_numbers ) {
     printf OUT "%0s%0s", $label_flag, $hex2mnem{$hex_str};
   } elsif( $debug ) {
@@ -331,8 +360,15 @@ sub print_disassemble_text {
   } else {
     printf OUT "%03d %0s%0s", $idx, $label_flag, $hex2mnem{$hex_str};
   }
-  foreach (@chars) {
-    print OUT chr($_) if $_;
+
+  # Check to see if the character is an escaped-alpha. If so, print the escaped string
+  # rather than the actual characters.
+  foreach my $ord (@chars) {
+    if( exists $ord2escaped_alpha{$ord} ) {
+      print OUT "[${ord2escaped_alpha{$ord}}]" if $ord;
+    } else {
+      print OUT chr($ord) if $ord;
+    }
   }
   print OUT "'\n"; # Append the trailing single quote.
   return;
@@ -463,7 +499,7 @@ sub load_opcode_tables {
     next if m<^\s*//>;
     chomp; chomp;
 
-    # From about WP34S SVN 1000 on, the console can spit out a "compressed" opcode map
+    # From about WP34s SVN 1000 on, the console can spit out a "compressed" opcode map
     # when run using: "./trunk/Linux/calc opcodes > opcode.map"
     #
     # From Paul Dale (:
@@ -499,18 +535,13 @@ sub load_opcode_tables {
       my $hex_str = $1;
       my $mnemonic = $2;
       my $line_num = $.;
-
-      # The space character is more than likely to be swallowed by an editor so the only thing
-      # I can think of re-encoding it as "[ ]". This makes it similar to other "escaped" characters
-      # in the mnemonics. A bit ugly but it works.
-      #
-      # (Another possibility is detecting a "bare" [alpha] -- one with no other trailing information
-      # -- and assuming this is a space. I will work on that for next time.)
-# Modified the databse instead. See comments immediately after "__DATA__" section marker.
-#      if( $mnemonic =~ /\[alpha\]\s+$/ ) {
-#        $mnemonic = "[alpha] [ ]";
-#      }
       load_table_entry($hex_str, $mnemonic, $line_num);
+
+      # We need to harvest the escaped-alpha table for later substitutions.
+      if( /\[alpha\]\s+\[(.+)\]/ ) {
+        my $escaped_alpha = $1;
+        load_escaped_alpha_tables($hex_str, $escaped_alpha, $line_num);
+      }
 
     # arg-type line
     } elsif( /0x([0-9a-fA-F]{4})\s+arg\s+(.+)$/ ) {
@@ -537,9 +568,9 @@ sub load_opcode_tables {
 
 #######################################################################
 #
-# Expand the opcode table back into its complete form.
+# Write the expanded opcode table to a file.
 #
-sub expand_opcode_table_to_file {
+sub write_expanded_opcode_table_to_file {
   my $file = shift;
   local $_;
   open EXPND, "> $file" or die "ERROR: Cannot open expanded opcode file '$file' for writing: $!\n";
@@ -548,7 +579,23 @@ sub expand_opcode_table_to_file {
   }
   close EXPND;
   return;
-} # expand_opcode_table_to_file
+} # write_expanded_opcode_table_to_file
+
+
+#######################################################################
+#
+# Write the escaped alpha table to a file.
+#
+sub write_escaped_alpha_table_to_file {
+  my $file = shift;
+  local $_;
+  open ALPHA, "> $file" or die "ERROR: Cannot open escaped alpha file '$file' for writing: $!\n";
+  for my $ord (sort {$a <=> $b} keys %ord2escaped_alpha) {
+    print ALPHA "ord = $ord (decimal), 0x", dec2hex2($ord), "(hex); alpha = '${ord2escaped_alpha{$ord}}'\n";
+  }
+  close ALPHA;
+  return;
+} # write_escaped_alpha_table_to_file
 
 
 #######################################################################
@@ -636,6 +683,34 @@ sub parse_arg_type {
   return;
 } # parse_arg_type
 
+
+#######################################################################
+#
+#
+#
+sub load_escaped_alpha_tables {
+  my $hex_str = shift;
+  my $escaped_alpha = shift;
+  my $line_num = shift;
+  my $ord = hex2dec($hex_str) & 0xFF;
+
+  # Build the table to convert ordinals to escaped alpha, ie: 0x1D = 29 => "[approx]".
+  if( not exists $ord2escaped_alpha{$ord} ) {
+    $ord2escaped_alpha{$ord} = $escaped_alpha;
+  } else {
+    warn "# WARNING: Duplicate ordinal for escaped alpha: $ord (0x", dec2hex2($ord), ") at line $line_num\n" unless $quiet;
+  }
+
+  # Build the table to convert escaped alpha to ordinals, ie: "[approx]" => 0x1D = 29.
+  if( not exists $escaped_alpha2ord{$escaped_alpha} ) {
+    $escaped_alpha2ord{$escaped_alpha} = $ord;
+  } else {
+    warn "# WARNING: Duplicate escaped alpha: '$escaped_alpha' at line $line_num\n" unless $quiet;
+  }
+  return;
+} # load_escaped_alpha_tables
+
+
 #######################################################################
 #
 # Build an entry pair similar to the older format which includes the opcode (in a hex
@@ -646,7 +721,7 @@ sub construct_offset_mnemonic {
   my $offset = shift; # Decimal
   my $mnemonic = shift;
   my $reg_name_str = shift;
-  return (dec2hex(hex2dec($base_hex_str) + $offset), "${mnemonic}${reg_name_str}");
+  return (dec2hex4(hex2dec($base_hex_str) + $offset), "${mnemonic}${reg_name_str}");
 } # construct_offset_mnemonic
 
 
@@ -704,15 +779,30 @@ sub myChomp {
 #
 # Convert a decimal number to 4-digit hex string
 #
-sub dec2hex {
+sub dec2hex4 {
   my $dec = shift;
   my $hex_str = sprintf "%04X", $dec;
   return ( $hex_str );
-} # dec2hex
+} # dec2hex4
 
 sub d2h { # Quickie version for use with Perl debugger.
-  return dec2hex(@_);
+  return dec2hex4(@_);
 } # d2h
+
+
+#######################################################################
+#
+# Convert a decimal number to 2-digit hex string
+#
+sub dec2hex2 {
+  my $dec = shift;
+  my $hex_str = sprintf "%02X", $dec;
+  return ( $hex_str );
+} # dec2hex2
+
+sub d2h2 { # Quickie version for use with Perl debugger.
+  return dec2hex2(@_);
+} # d2h2
 
 #######################################################################
 #
@@ -815,7 +905,7 @@ sub get_options {
     }
 
     elsif( ($arg eq '-f') or ($arg eq '-fill') ) {
-      $user_flash_blank_fill = dec2hex(eval_possible_hex(shift(@ARGV)));
+      $user_flash_blank_fill = dec2hex4(eval_possible_hex(shift(@ARGV)));
     }
 
     elsif( $arg eq '-dl' ) {
@@ -836,6 +926,12 @@ sub get_options {
       $expanded_op_file = shift(@ARGV);
     }
 
+    # This is typically only used for debug at the moment. It will dump the escaped alpha table
+    # into a file of this name. Just having the file named is sufficient to trigger this mode.
+    elsif( ($arg eq '-da') or ($arg eq '-dump_alpha') ) {
+      $dump_escaped_alpha_table = shift(@ARGV);
+    }
+
     else {
       push @files, $arg;
     }
@@ -852,9 +948,9 @@ sub get_options {
 } # get_options
 
 __DATA__
-# Generated by "./trunk/Linux/calc opcodes" from SVN 1140
+# Generated by "./trunk/Linux/calc opcodes" from SVN 1146
 # Modified the "[alpha]\s{2}" to be "[alpha] [ ]" to make sure that an editor doesn't
-# corrupt an undlimited whitespace location.
+# "eat" the undelimited trailing whitespace.
 0x0000  cmd ENTER[^]
 0x0001  cmd CLx
 0x0002  cmd EEX
@@ -1299,26 +1395,33 @@ __DATA__
 0x801e  cmd # t[sub-p]
 0x801f  cmd # T[sub-p]
 0x8020  cmd # V[sub-m]
-0x8021  cmd # Z[sub-0]
-0x8022  cmd # [alpha]
-0x8023  cmd # [gamma]EM
-0x8024  cmd # [gamma][sub-p]
-0x8025  cmd # [epsilon][sub-0]
-0x8026  cmd # [lambda][sub-c]
-0x8027  cmd # [lambda][sub-c][sub-n]
-0x8028  cmd # [lambda][sub-c][sub-p]
-0x8029  cmd # [mu][sub-0]
-0x802a  cmd # [mu][sub-B]
-0x802b  cmd # [mu][sub-e]
-0x802c  cmd # [mu][sub-n]
-0x802d  cmd # [mu][sub-p]
-0x802e  cmd # [mu][sub-u]
-0x802f  cmd # [mu][sub-mu]
-0x8030  cmd # [pi]
-0x8031  cmd # [sigma][sub-B]
-0x8032  cmd # [PHI]
-0x8033  cmd # [PHI][sub-0]
-0x8034  cmd # [infinity]
+0x8021  cmd # Wa
+0x8022  cmd # Wb
+0x8023  cmd # We[^2]
+0x8024  cmd # We'[^2]
+0x8025  cmd # Wf[^-1]
+0x8026  cmd # WGM
+0x8027  cmd # W[omega]
+0x8028  cmd # Z[sub-0]
+0x8029  cmd # [alpha]
+0x802a  cmd # [gamma]EM
+0x802b  cmd # [gamma][sub-p]
+0x802c  cmd # [epsilon][sub-0]
+0x802d  cmd # [lambda][sub-c]
+0x802e  cmd # [lambda][sub-c][sub-n]
+0x802f  cmd # [lambda][sub-c][sub-p]
+0x8030  cmd # [mu][sub-0]
+0x8031  cmd # [mu][sub-B]
+0x8032  cmd # [mu][sub-e]
+0x8033  cmd # [mu][sub-n]
+0x8034  cmd # [mu][sub-p]
+0x8035  cmd # [mu][sub-u]
+0x8036  cmd # [mu][sub-mu]
+0x8037  cmd # [pi]
+0x8038  cmd # [sigma][sub-B]
+0x8039  cmd # [PHI]
+0x803a  cmd # [PHI][sub-0]
+0x803b  cmd # [infinity]
 0x8100  cmd [cmplx]# a
 0x8101  cmd [cmplx]# a[sub-0]
 0x8102  cmd [cmplx]# c
@@ -1352,26 +1455,33 @@ __DATA__
 0x811e  cmd [cmplx]# t[sub-p]
 0x811f  cmd [cmplx]# T[sub-p]
 0x8120  cmd [cmplx]# V[sub-m]
-0x8121  cmd [cmplx]# Z[sub-0]
-0x8122  cmd [cmplx]# [alpha]
-0x8123  cmd [cmplx]# [gamma]EM
-0x8124  cmd [cmplx]# [gamma][sub-p]
-0x8125  cmd [cmplx]# [epsilon][sub-0]
-0x8126  cmd [cmplx]# [lambda][sub-c]
-0x8127  cmd [cmplx]# [lambda][sub-c][sub-n]
-0x8128  cmd [cmplx]# [lambda][sub-c][sub-p]
-0x8129  cmd [cmplx]# [mu][sub-0]
-0x812a  cmd [cmplx]# [mu][sub-B]
-0x812b  cmd [cmplx]# [mu][sub-e]
-0x812c  cmd [cmplx]# [mu][sub-n]
-0x812d  cmd [cmplx]# [mu][sub-p]
-0x812e  cmd [cmplx]# [mu][sub-u]
-0x812f  cmd [cmplx]# [mu][sub-mu]
-0x8130  cmd [cmplx]# [pi]
-0x8131  cmd [cmplx]# [sigma][sub-B]
-0x8132  cmd [cmplx]# [PHI]
-0x8133  cmd [cmplx]# [PHI][sub-0]
-0x8134  cmd [cmplx]# [infinity]
+0x8121  cmd [cmplx]# Wa
+0x8122  cmd [cmplx]# Wb
+0x8123  cmd [cmplx]# We[^2]
+0x8124  cmd [cmplx]# We'[^2]
+0x8125  cmd [cmplx]# Wf[^-1]
+0x8126  cmd [cmplx]# WGM
+0x8127  cmd [cmplx]# W[omega]
+0x8128  cmd [cmplx]# Z[sub-0]
+0x8129  cmd [cmplx]# [alpha]
+0x812a  cmd [cmplx]# [gamma]EM
+0x812b  cmd [cmplx]# [gamma][sub-p]
+0x812c  cmd [cmplx]# [epsilon][sub-0]
+0x812d  cmd [cmplx]# [lambda][sub-c]
+0x812e  cmd [cmplx]# [lambda][sub-c][sub-n]
+0x812f  cmd [cmplx]# [lambda][sub-c][sub-p]
+0x8130  cmd [cmplx]# [mu][sub-0]
+0x8131  cmd [cmplx]# [mu][sub-B]
+0x8132  cmd [cmplx]# [mu][sub-e]
+0x8133  cmd [cmplx]# [mu][sub-n]
+0x8134  cmd [cmplx]# [mu][sub-p]
+0x8135  cmd [cmplx]# [mu][sub-u]
+0x8136  cmd [cmplx]# [mu][sub-mu]
+0x8137  cmd [cmplx]# [pi]
+0x8138  cmd [cmplx]# [sigma][sub-B]
+0x8139  cmd [cmplx]# [PHI]
+0x813a  cmd [cmplx]# [PHI][sub-0]
+0x813b  cmd [cmplx]# [infinity]
 0x8200  cmd iC 0
 0x8200  arg iC  max=0,indirect
 0x8201  cmd iC 1
@@ -1464,7 +1574,7 @@ __DATA__
 0xa11d  cmd [alpha] [approx]
 0xa11e  cmd [alpha] [pound]
 0xa11f  cmd [alpha] [yen]
-0xa120  cmd [alpha] [ ]
+0xa120  cmd [alpha]
 0xa121  cmd [alpha] !
 0xa122  cmd [alpha] "
 0xa123  cmd [alpha] #
