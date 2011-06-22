@@ -7,6 +7,9 @@ STO - Backup:  This creates a copy of the RAM in flash memory.
 
 RCL - Restore: This restores a previously created backup. 
 
+D - Debug:     Disables all power saving. Unlocks the following ON+S
+               combination. The small "=" is lit.
+
 S - SAM-BA:    Clears the GPNVM1 bit and turns the calculator off.
                S is on the '6' key.
                ATTENTION: You can now only boot into SAM-BA mode!
@@ -75,7 +78,7 @@ with ON+STO. This can be copied to your PC or loaded from it.
 
 1. From calculator to PC
 
-   a) Do an ON+STO, then ON+S, then RESET with the cable connected.
+   a) Do an ON+STO, then ON+D then ON+S with the cable connected.
    b) Press ON once and start SAM-BA on the PC. It should connect.
    c) Set the start address to 0x11F800 and the size to 0x800
    d) Enter a file name in the receive field.
