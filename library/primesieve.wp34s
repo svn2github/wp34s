@@ -1,0 +1,42 @@
+// This program implements the sieve of Eratosthenes to set all prime numbered
+//flags with using any registers apart from the stack.
+
+	001: LBL'PMS'
+	002: 9
+	003: 9
+	004: SF[->]X
+	005: DSE X
+	006: BACK 02
+	007: CF 00
+	008: CF 01
+	009: 2
+	010: .
+	011: 0
+	012: 1
+	013: LBL 00
+	014: FC?[->]X
+	015: GTO 01
+	016: ENTER[^]
+	017: IP
+	018: ENTER[^]
+	019: STO+ Y
+	020: EEX
+	021: 5
+	022: /
+	023: +
+	024: .
+	025: 0
+	026: 9
+	027: 9
+	028: +
+	029: CF[->]X
+	030: ISG X
+	031: BACK 02
+	032: R[v]
+	033: LBL 01
+	034: ISG X
+	035: GTO 00
+	036: RTN
+// CRC16: B3F1
+//
+// Run the program and the prime numbered flags will be set up to flag 99.

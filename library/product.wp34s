@@ -1,0 +1,73 @@
+// This file is part of 34S.
+//
+// 34S is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// 34S is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//
+//
+// This code is the source for the internal product routine.
+//
+// The only change of note is the call to the user's routine is done as XEQ 00
+// instead of XEQUSR.
+
+
+	001: LBL'PRD'
+	002: SPEC?
+	003: SKIP 25
+	004: STO 00
+	005: STO 03
+	006: IP			// First function call is separate
+	007: FILL		// to avoid a multiply
+	008: XEQ 00
+	009: SPEC?
+	010: SKIP 17
+	011: STO 01
+	012: SKIP 07		// Skip to DSE at end of loop
+	013: RCL 00		// Start of product loop
+	014: IP
+	015: FILL
+	016: XEQ 00
+	017: SPEC?
+	018: SKIP 09
+	019: STO[times] 01
+	020: DSE 00		// End of product loop
+	021: BACK 08		// Back to the start above
+	022: RCL 03		// Normal exit
+	023: STO L
+	024: iC 00		// Zero
+	025: FILL
+	026: RCL 01
+	027: RTN
+	028: RCL 03		// Function returned an infinity or NaN
+	029: STO L		// Come here if we started with infinity or NaN
+	030: iC 00		// Zero
+	031: FILL
+	032: # NaN
+	033: RTN
+	034: LBL 00		// The function to be producted goes here
+	035: RTN
+// CRC16: 081F
+//
+//
+// This routine just loops around a standard DSE loop executing the function and
+// multiplying the result into the product.
+//
+// Registers used:
+// 	00	DSE loop counter (user supplied)
+// 	01	Product
+// 	03	Saved initial loop counter (goes into L on exit)
+//
+// Labels used:
+// 	B	Main entry point (never targetted)
+// 	00	User's function to sum

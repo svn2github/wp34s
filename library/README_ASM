@@ -1,0 +1,59 @@
+-----------------------------------------------------------------------
+This file is part of 34S.
+
+34S is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+34S is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+-----------------------------------------------------------------------
+
+This directory contains some sample program files written in a format compatible
+with the WP-34s assembler/disassembler tool.
+
+To assemble the source files into flash images that can be loaded as per the WP-34s
+calculator manual, run the following (note that the path to the assembler script may
+be different in your particular environment):
+
+$ ../trunk/tools/wp34s_asm.pl SOME_FILE.wp34s -o wp34s-1.dat
+
+To assemble several programs into a single flash image that can be loaded as per the manual,
+run the following:
+
+$ ../trunk/tools/wp34s_asm.pl derivative.wp34s integrate.wp34s product.wp34s quadratic.wp34s solver.wp34s sum.wp34s -o wp34s-1.dat
+
+Th remaining programs can be built into a second flash image as well:
+
+$ ../trunk/tools/wp34s_asm.pl 8queens.wp34s code_breaker.wp34s fibonacci.wp34s primesieve.wp34s -o wp34s-2.dat
+
+A look at the sizes of all the programs in this example set will indicated that there are a
+few too many steps in the cummulative set to fit into a single flash page (flash image is limited
+to 506 program words). Therefore to fit them all into the calculator at one time, they need to be
+written to 2 flash pages ('wp34s-1.dat', and 'wp34s-2.dat' are used in the above examples).
+
+The program entry labels have been modified from the original '*.txt' files so that each is
+unique. Since they now are alpha lables, they can be viewed using the 'CAT' function on the
+calculator.
+
+These files can serve as a set of examples in how to write compatible assembly
+source files for the WP-34s calculator's assembler.
+
+Note: A working Perl installation is required to run this assembler/disassembler.
+Consult the assembler manual for more details or go to common locations such as
+http://strawberryperl.com/ and/or http://www.activestate.com/activeperl for more
+information about Perl downloads.
+
+WARNING: As yet there has been no examination of whether labels collide in a concatenated
+combination within a flash image. See page 12 of the calculator reference manual for details of
+how the labels are searched by the calculator. A future version of the assembler may put checks
+in to ensure that label collisions are detected at assembly-time. These programs are provided
+as examples of syntax, format, and form WITHOUT ANY WARRANTY. It is up to the user to verify
+correctness.
+

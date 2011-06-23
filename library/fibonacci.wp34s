@@ -1,0 +1,26 @@
+// This routine returns the generalised Fibonacci function.
+//
+// It returns the correct value for all integer arguments and is defined
+// over the entire real domain.
+//
+	001: LBL'FIB'
+	002: # [PHI]
+	003: x[<->]y
+	004: y[^x]
+	005: 0
+	006: # [pi]
+	007: RCL[times] L
+	008: [cmplx]COS
+	009: RCL/ Z
+	010: +
+	011: -
+	012: 5
+	013: [sqrt]
+	014: /
+	015: RTN
+// CRC16: 0594
+//
+//
+// The internal Fibonacci function (FIB) uses the same algorithm.
+// Both complex and real versions of this function are included in the
+// firmware.
