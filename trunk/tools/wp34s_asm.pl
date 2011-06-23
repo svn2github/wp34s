@@ -79,6 +79,14 @@ my $DISASSEMBLE_MODE = "disassemble";
 my $DEFAULT_MODE = $ASSEMBLE_MODE;
 my $mode = $DEFAULT_MODE;
 
+# There are 2 XROM modes:
+# 1) XROM output into a C array (use '-c_xrom' switch)
+# 2) XROM output into a binary image (use '-xrom' switch)
+my $xrom_c_mode = 0;
+my $xrom_leader = "const s_opcode xrom[] = (";
+my $xrom_indent_spaces = 8;
+my $xrom_bin_mode = 0;
+
 # These are used to convert all the registers into numeric offsets.
 #
 # There are 2 groups of named register offsets; the 112 group (XYZTABCDLIJK) and the 104
@@ -129,6 +137,7 @@ Parameters:
    -fill fill_hex   Optinal value to prefill flash image with.  [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
    -s number        Optional number of asterisks (stars) to prepend to labels in
                     disassembly mode.                           [Default: $DEFAULT_STAR_LABELS]
+   -ns              Turn off step numbers in disassembler listing.
    -h               This help script.
 
 Examples:
@@ -168,16 +177,56 @@ Notes:
      contains any hex digits or it starts with a "0x", it will be interpreted as a hex value. Thus
      "1234" will be decimal 1234 while "0x1234" will be the decimal value 4660. Both "EFA2" and "0xEFA2"
      will be interpreted as a hex value as well (61346). The leading "0x" is optional in this case.
+  4) The order the command lines switches are used is not important. There is no fixed order.
 EOM
+
+my $extended_help = <<EXTENDED_HELP;
+Extended parameters:
+   -d level         Set the debug output verbosity level.       [Default: 0]
+   -dl              Disable flash length limit.
+   -c               Output the assembler result in C-array mode. Primarily for XROM assembly.
+   -xrom            Assemble in XROM mode. Automatically turns off the flash length limit (-dl).
+   -syntax file     Turns on syntax dumping. Output will be sent to 'file'.
+   -alpha  file     Turns on alpha table dumping. Output will be sent to 'file'.
+   -empty           Used in assembler mode to generate an empty flash image. Needs '-o FILE.dat'
+                    as well.
+   -more_help       This extended help script.
+
+Examples:
+  \$ calc xrom | wp34s_conv.pl > xrom.wp34s
+  \$ $script_name xrom.wp34s -dl -o xrom.dat
+  - Assembles the XROM output into a binary image. (Mostly for test purposes.)
+
+  \$ calc xrom | wp34s_conv.pl > xrom.wp34s
+  \$ $script_name xrom.wp34s -c -o xrom.c
+  - Creates a C-array of the XROM.
+
+  \$ $script_name -syntax opcode_syntax.txt
+  - Creates an opcode syntax file call 'opcode_syntax.txt' matching the current internal
+    opcode table. Useful as reference when writing or transcribing source in an editor.
+
+  \$ $script_name -empty -o wp34s-0.dat
+  - Creates an empty flash image. (Could not figure out how clear an image otherwise though
+    there probably is a mechanism I don't know about.)
+EXTENDED_HELP
 
 #######################################################################
 
 get_options();
+
+# We load a compressed opcode <-> mnemonic table and expand it into an uncompressed
+# version, By default, the compressed table is contained in a '__DATA__' section at the
+# end of the script. A newer (or older!) compressed table can also be read in in order
+# to translate to newer (or older) opcode maps.
 load_opcode_tables($opcode_map_file);
 
+# Decide what value is to be used to fill the unused portion of the flash image.
+# By default, the operation "ERR 03" has been used in the standard image that the
+# calculator produces itself. However, there are some minor advantages to making this
+# the value "FFFF". Use the the '-fill <VALUE>' switch to modify the value,
 my $flash_blank_fill_hex_str = ($user_flash_blank_fill) ? $user_flash_blank_fill : $mnem2hex{$DEFAULT_FLASH_BLANK_INSTR};
 
-
+# This is where the script decides what it is going to do.
 if( $build_an_empty_image ) {
   build_empty_flash_image( $outfile );
   warn "Built empty flash image...\n";
@@ -190,6 +239,7 @@ if( $build_an_empty_image ) {
 } elsif( $mode eq $DISASSEMBLE_MODE ) {
   disassemble( $outfile, @files );
 } else {
+  warn "Internal error: Huh! How did I get here?\n";
 }
 
 
@@ -208,7 +258,7 @@ sub assemble {
   foreach my $file (@files) {
     open SRC, $file or die "ERROR: Cannot open source '$file' for reading: $!\n";
     while(<SRC>) {
-      $_ = remove_trailing_comments($_);
+      $_ = remove_trailing_single_line_comments($_);
 
       # Remove any commented or blank lines.
       next if /^\s*$/;
@@ -252,12 +302,30 @@ sub assemble {
       }
     }
   }
-  $words[1] = $next_free_word;
-  $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
-  $words[0] = $crc16;
-  write_binary( $outfile, @words );
-  print "// CRC16: ", dec2hex4($crc16), "\n";
-  print "// Total words: ", $next_free_word-1, "\n";
+
+  # We have 3 output modes:
+  #  - A C-array for use with XROM
+  #  - An XROM binary with no output of the CRC or step count.
+  #  - Standard assembler binary output.
+  if( $xrom_c_mode ) {
+    dump_c_array( $outfile, $xrom_leader, $xrom_indent_spaces, @words[2 .. $next_free_word] );
+
+  } elsif( $xrom_bin_mode ) {
+    $crc16 = calc_crc16( @words[2 .. $next_free_word] );
+    write_binary( $outfile, @words[2 .. $next_free_word] ); # Limit the words that are processed.
+    print "// XROM mode -- NOTE: Currently cannot be disassembled.\n";
+    print "// CRC16: ", dec2hex4($crc16), "\n";
+    print "// Total words: ", $next_free_word-1, "\n";
+
+  # Normal mode.
+  } else {
+    $words[1] = $next_free_word;
+    $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
+    $words[0] = $crc16;
+    write_binary( $outfile, @words );
+    print "// CRC16: ", dec2hex4($crc16), "\n";
+    print "// Total words: ", $next_free_word-1, "\n";
+  }
 
   return;
 } # assemble
@@ -880,13 +948,13 @@ sub many { # Alias for combien
 
 #######################################################################
 #
-# Remove any trailing comments from lines
+# Remove any trailing single line comments from lines
 #
-sub remove_trailing_comments {
+sub remove_trailing_single_line_comments {
   my $line = shift;
   $line =~ s<\s*//.*$><>;
   return $line;
-} # remove_trailing_comments
+} # remove_trailing_single_line_comments
 
 
 #######################################################################
@@ -927,6 +995,26 @@ sub build_empty_flash_image {
 
 
 #######################################################################
+#
+# Dump the output into a C-array.
+#
+sub dump_c_array {
+  my $file = shift;
+  my $leader = shift;
+  my $indent_spaces = shift;
+  my @val_array = @_;
+  open OUT, "> $file" or die "ERROR: Could not open C-array file '$file' for writing: $!\n";
+  print OUT "$leader\n";
+  for my $hex_str (0 .. (scalar @val_array)-2) {
+    printf OUT "%0s0x%04x,\n", " " x $indent_spaces, $val_array[$hex_str];
+  }
+  printf OUT "%0s0x%04x );\n", " " x $indent_spaces, $val_array[-1];
+  close OUT;
+  return;
+} # dump_c_array
+
+
+#######################################################################
 #######################################################################
 #
 # Process the command line option list.
@@ -938,6 +1026,12 @@ sub get_options {
     # See if help is asked for
     if( $arg eq '-h' ) {
       print "$usage\n";
+      die "\n";
+    }
+
+    if( $arg eq '-more_help' ) {
+      print "$usage\n";
+      print "$extended_help\n";
       die "\n";
     }
 
@@ -1001,6 +1095,22 @@ sub get_options {
       $build_an_empty_image = 1;
     }
 
+    # Undocumented debug hook to generate a XROM C-array.
+    # Automatically disables the flash length limit since the XROM can be larger than a
+    # flash image.
+    elsif( ($arg eq '-c_xrom') or ($arg eq '-c') ) {
+      $xrom_c_mode = 1;
+      $disable_flash_limit = 1;
+    }
+
+    # Undocumented debug hook to generate a XROM binary image.
+    # Automatically disables the flash length limit since the XROM can be larger than a
+    # flash image.
+    elsif( $arg eq '-xrom' ) {
+      $xrom_bin_mode = 1;
+      $disable_flash_limit = 1;
+    }
+
     # This is typically only used for debug at the moment. It will dump the expanded tables
     # into a file of this name. Just having the file named is sufficient to trigger this mode.
     elsif( ($arg eq '-e') or ($arg eq '-expand') or ($arg eq '-syntax') ) {
@@ -1009,7 +1119,7 @@ sub get_options {
 
     # This is typically only used for debug at the moment. It will dump the escaped alpha table
     # into a file of this name. Just having the file named is sufficient to trigger this mode.
-    elsif( ($arg eq '-da') or ($arg eq '-dump_alpha') ) {
+    elsif( ($arg eq '-da') or ($arg eq '-alpha') ) {
       $dump_escaped_alpha_table = shift(@ARGV);
     }
 
@@ -1030,8 +1140,8 @@ sub get_options {
 
 __DATA__
 # Generated by "./trunk/Linux/calc opcodes" from SVN 1146
-# Modified the "[alpha]\s{2}" to be "[alpha] [ ]" to make sure that an editor doesn't
-# "eat" the undelimited trailing whitespace.
+# Modified the "[alpha]\s{2}" to be "[alpha] [space]" to make sure that an editor doesn't
+# "eat" the undelimited trailing whitespace. This is opcode 0xa120.
 0x0000  cmd ENTER[^]
 0x0001  cmd CLx
 0x0002  cmd EEX
@@ -1655,7 +1765,7 @@ __DATA__
 0xa11d  cmd [alpha] [approx]
 0xa11e  cmd [alpha] [pound]
 0xa11f  cmd [alpha] [yen]
-0xa120  cmd [alpha]
+0xa120  cmd [alpha] [space]
 0xa121  cmd [alpha] !
 0xa122  cmd [alpha] "
 0xa123  cmd [alpha] #
