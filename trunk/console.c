@@ -175,6 +175,10 @@ static int dumpop(const opcode c, int pt) {
 	if (strcmp(s, "???") != 0) {
 		char t[100], *q = t;
 		int l = 35;
+
+		if (c == RARG(RARG_ALPHA, ' '))
+			strcpy(tracebuf+2, "[space]");
+
 		q += sprintf(t, "%04x  ", (unsigned int)c);
 		while (*s != '\0') {
 			const unsigned char z = 0xff & *s++;
@@ -216,6 +220,9 @@ static void dump_menu(const char *name, const char *prefix, const enum catalogue
 		int l = 35 - slen(prefix);
 		const opcode cati = current_catalogue(i);
 		buf = catcmd(cati, cmd);
+
+		if (cati == RARG(RARG_ALPHA, ' '))
+			strcpy(cmd+2, "[space]");
 
 		printf("\t%d\t%s", i+1, prefix);
 		for (p=buf; *p != '\0'; p++) {
@@ -296,6 +303,9 @@ static void dump_code(unsigned int pc, unsigned int max, int annotate) {
 			printf("%04x: %04x       ", pc, op);
 		}
 		//printf("%04x: %04x  ", pc, op);
+		if (op == RARG(RARG_ALPHA, ' '))
+			strcpy(instr+2, "[space]");
+
 		pc = inc(pc);
 		while (*p != '\0') {
 			char c = *p++;
@@ -390,7 +400,10 @@ static void dump_opcodes(void) {
 			if (cmd == RARG_ALPHA) {
 				if ((c & 0xff) == 0)
 					continue;
-				printf("0x%04x\tcmd\t[alpha] %s\n", c, cmdpretty);
+				if ((c & 0xff) == ' ')
+					printf("0x%04x\tcmd\t[alpha] [space]\n", c);
+				else
+					printf("0x%04x\tcmd\t[alpha] %s\n", c, cmdpretty);
 				continue;
 			} else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
 				printf("0x%04x\tcmd\t%s# %s\n", c, cmd == RARG_CONST_CMPLX?"[cmplx]":"", cmdpretty);
