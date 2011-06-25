@@ -39,7 +39,7 @@
 #define sigmaYlnX	(Regs[99])
 
 
-#define DISCRETE_TOLERANCE	&const_0_15
+#define DISCRETE_TOLERANCE	&const_0_1
 
 
 // #define DUMP1
@@ -782,7 +782,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 				decNumber *(*pdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
 				decNumber *(*cdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
 				const decNumber *arg1, const decNumber *arg2) {
-	decNumber w, x, z, md, prev;
+	decNumber v, w, x, z, md, prev;
 	int i;
 	const int discrete = (flags & NEWTON_DISCRETE) != 0;
 	const int nonnegative = (flags & NEWTON_NONNEGATIVE) != 0;
@@ -793,7 +793,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 		dn_multiply(&md, r, &const_0_04);
 
 	for (i=0; i<50; i++) {
-		dn_subtract(&z, (*cdf)(&x, r, arg1, arg2), p);
+		dn_subtract(&z, (*cdf)(&w, r, arg1, arg2), p);
 
 		// Check if things are getting worse
 		if (wandercheck) {
@@ -802,8 +802,16 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 				return set_NaN(r);
 			decNumberCopy(&prev, &x);
 		}
-
-		if (decNumberIsZero((*pdf)(&x, r, arg1, arg2)))
+		if (discrete) {
+			// Using the pdf for the slope isn't great for the discrete distributions
+			// So we do something more akin to a secant approach
+			dn_add(&v, r, &const_0_001);
+			(*cdf)(&x, &v, arg1, arg2);
+			dn_subtract(&v, &x, &w);
+			dn_multiply(&x, &v, &const_1000);
+		} else
+			(*pdf)(&x, r, arg1, arg2);
+		if (decNumberIsZero(&x))
 			break;
 		dn_divide(&w, &z, &x);
 
@@ -825,6 +833,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 		// If this distribution doesn't take negative values, limit outselves to positive ones
 		if (nonnegative && decNumberIsNegative(r))
 			dn_multiply(r, &z, &const_0_00001);
+
 		// Check for finished
 		if (discrete) {
 			if (absolute_error(r, &z, DISCRETE_TOLERANCE))
