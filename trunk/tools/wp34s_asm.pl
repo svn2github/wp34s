@@ -252,25 +252,27 @@ sub assemble {
   my @files = @_;
   local $_;
   my ($crc16);
-  my @words = pre_fill_flash($flash_blank_fill_hex_str); # A hex string.
+  my @words = pre_fill_flash($flash_blank_fill_hex_str); # Fill value is a hex4 string.
   my $next_free_word = 1;
+  my $steps_used = 0;
+  my ($alpha_text);
 
   foreach my $file (@files) {
-    open SRC, $file or die "ERROR: Cannot open source '$file' for reading: $!\n";
-    while(<SRC>) {
-      $_ = remove_trailing_single_line_comments($_);
+    my @lines = read_file_and_redact_comments($file);
+    for my $k (1 .. (scalar @lines)) {
+      $_ = $lines[$k-1];
 
-      # Remove any commented or blank lines.
-      next if /^\s*$/;
-      next if m<^\s*//>;
+      next if /^\s*$/; # Skip any blank lines.
       chomp; chomp;
 
-      my $alpha_text;
+      s/\s+$//; # Remove any trailing blanks.
       ($_, $alpha_text) = assembler_preformat_handling($_);
 
       if( not exists $mnem2hex{$_} ) {
-        die "ERROR: Cannot recognize mnemonic at line $. of '$file': $_\n";
+        die "ERROR: Cannot recognize mnemonic at line $k of '$file': $_\n";
       } else {
+        $steps_used++;
+        # Alpha text needs to be treated separately since it encodes to 2 words.
         if( $alpha_text ) {
           # See if the text has any escaped characters in it. Subsitute them if found.
           # There may be more than one so loop until satisfied.
@@ -293,6 +295,7 @@ sub assemble {
           } else {
             $words[++$next_free_word] = 0;
           }
+        # "Normal" opcodes...
         } else {
           $words[++$next_free_word] = hex2dec($mnem2hex{$_});
         }
@@ -316,6 +319,7 @@ sub assemble {
     print "// XROM mode -- NOTE: Currently cannot be disassembled.\n";
     print "// CRC16: ", dec2hex4($crc16), "\n";
     print "// Total words: ", $next_free_word-1, "\n";
+    print "// Total steps: $steps_used\n";
 
   # Normal mode.
   } else {
@@ -325,6 +329,7 @@ sub assemble {
     write_binary( $outfile, @words );
     print "// CRC16: ", dec2hex4($crc16), "\n";
     print "// Total words: ", $next_free_word-1, "\n";
+    print "// Total steps: $steps_used\n";
   }
 
   return;
@@ -507,11 +512,12 @@ sub write_binary {
 
 #######################################################################
 #
-# Handle any lines that need special work. If the opcode is in
-# the range "LBL'" through "INT'" it needs to have the extra
-# label character masked off and a flag set to non-0 to indicate
-# that the opcode is this type. The $alpha_text is set to a non-0
-# label characters if this is the case.
+# Handle any lines that need special work. If the opcode has single
+# quotes in it ('xxx'), it needs to have the alpha string extracted to the
+# "$alpha_text" variable. If "$alpha_text" is returned as the NULL string,
+# the opcode was not of this type. Thus, this "$alpha_text" flag is used
+# above to signal the assembler to swicth into the 2-word opcode translation
+# mode required for these quoted alpha mnemonics.
 #
 sub assembler_preformat_handling {
   my $line = shift;
@@ -519,6 +525,7 @@ sub assembler_preformat_handling {
 
   $line =~ s/^\s*\d{3}\:{0,1}\s+//; # Remove any line numbers with or without a colon
   $line =~ s/^\s+//;      # Remove leading whitespace
+  $line =~ s/\s+$//;      # Remove trailing whitespace
 
   # Labels sometimes are displayed with an asterisk to make them easier to locate.
   $line =~ s/^\*+LBL/LBL/;
@@ -925,36 +932,74 @@ sub h2d { # Quickie version for use with Perl debugger.
 
 #######################################################################
 #
-# Debug stubs
+# Remove any trailing single line comments from lines
 #
-# Print number of entries in the referenced hash, for example:
-#  "p combien(\%hex2mnem)"
+# Rendered obsolete by read_file_and_redact_comments() but keep the commented
+# code just in case.
 #
-sub combien {
-  my $ref_hash = shift;
-  my $count = 0;
-  local $_;
-  foreach (keys %{$ref_hash} ) {
-    $count++;
-  }
-  print "The hash has $count keys\n";
-  return;
-} # combien
-
-sub many { # Alias for combien
-  return(combien(shift));
-} # many
+#sub remove_trailing_single_line_comments {
+#  my $line = shift;
+#  $line =~ s<\s*//.*$><>;
+#  return $line;
+#} # remove_trailing_single_line_comments
 
 
 #######################################################################
 #
-# Remove any trailing single line comments from lines
+# Read in a file and redact any commented sections.
 #
-sub remove_trailing_single_line_comments {
-  my $line = shift;
-  $line =~ s<\s*//.*$><>;
-  return $line;
-} # remove_trailing_single_line_comments
+# Currently this will handle "//", "/* ... */" on a single line, "/*" alone
+# on a line up to and including the next occurance of "*/", plus more than one
+# occurance of "/* ... */ ... /* ... */" on a single line. There may be some
+# weird cases that it does not handle.
+#
+sub read_file_and_redact_comments {
+  my $file = shift;
+  local $_;
+  # Oh no!! Slanted toothpick syndrome! :-)
+  my $slc  = "\/\/"; # Single line comment marker.
+  my $mlcs = "/\\*"; # Multiline comment start marker.
+  my $mlce = "\\*/"; # Multiline comment end marker.
+  my $in_mlc = 0;    # In-multiline-comment flag.
+  my (@lines);
+  open FILE, $file or die "ERROR: Cannot open input file '$file' for reading: $!\n";
+  while( <FILE> ) {
+    chomp; chomp;
+
+    # Detect if we are currently in a multiline comment and we see the end of a
+    # multiline comment. If so, remove up to and including the trailing multiline
+    # comment marker.
+    if( $in_mlc and m<${mlce}> ) {
+      $in_mlc = 0;
+      s<^.*?\*/><>;
+    }
+
+    # Remove any single line comment sections from the line.
+    s<${slc}.*$><>;
+
+    # Detect complete multiline comments ...and remove them. (don't be greedy)
+    while( m<${mlcs}.+?${mlce}> ) {
+      s<${mlcs}.*?${mlce}><>;
+    }
+
+    # If we still have a start of a multiline comment, set the flag on (possibly again).
+    # It means we don't have a terminated comment set so delete to the end of the line.
+    if( m<${mlcs}> ) {
+      $in_mlc = 1;
+      s<${mlcs}.*$><>;
+    }
+
+    # If we are still in a multiline comment and we get here, scrub the entire line.
+    if( $in_mlc ) {
+      $_ = "";
+    }
+
+    # Store anything that is left.
+    push @lines, $_;
+  }
+  close FILE;
+  return @lines;
+} # read_file_and_redact_comments
 
 
 #######################################################################
