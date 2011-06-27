@@ -372,3 +372,24 @@ minus 10% of the chi_guess result. However, I think a Newton approach
 will converge substantially faster.
 
 
+
+Fisher's F quantile estimate:
+
+cf Abramovitz and Stegun, end of chapter 26, p. 961 in 1964 ed.
+
+n1, n2 > 1  For n1=1 or n2=1 use 2 instead.
+
+
+function guess_fisher(n1, n2, pp)
+
+  r1 = 1 / (n1 - 1)
+  r2 = 1 / (n2 - 1)
+  h =  2 / (r1 + r2)
+  x = -guess_normal(pp)
+  k = (x*x - 3) / 6
+  w = x * sqrt(h + k) / h - (r1 - r2) * (k + 5/6 - 2/3/h)
+
+  guess_fisher = exp(2*w)
+
+end function
+
