@@ -775,24 +775,23 @@ static decNumber *discrete_final_check(decNumber *r, const decNumber *p, const d
  */
 #define NEWTON_DISCRETE		0x0001
 #define NEWTON_NONNEGATIVE	0x0002
-#define NEWTON_MAXSTEP		0x0004
-#define NEWTON_WANDERCHECK	0x0008
+#define NEWTON_WANDERCHECK	0x0004
 
 static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned short int flags,
 				decNumber *(*pdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
 				decNumber *(*cdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
-				const decNumber *arg1, const decNumber *arg2) {
+				const decNumber *arg1, const decNumber *arg2, const decNumber *maxstep) {
 	decNumber v, w, x, z, md, prev;
 	int i;
 	const int discrete = (flags & NEWTON_DISCRETE) != 0;
 	const int nonnegative = (flags & NEWTON_NONNEGATIVE) != 0;
-	const int maxstep = (flags & NEWTON_MAXSTEP) != 0;
 	const int wandercheck = (flags & NEWTON_WANDERCHECK) != 0;
 
-	if (maxstep)
-		dn_multiply(&md, r, &const_0_04);
+	if (maxstep != NULL)
+		dn_multiply(&md, r, maxstep);
 
 	for (i=0; i<50; i++) {
+//dump1(r, "est");
 		dn_subtract(&z, (*cdf)(&w, r, arg1, arg2), p);
 
 		// Check if things are getting worse
@@ -816,7 +815,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 		dn_divide(&w, &z, &x);
 
 		// Limit the step size if necessary
-		if (maxstep) {
+		if (maxstep != NULL) {
 			dn_abs(&x, &w);
 			if (decNumberIsNegative(dn_compare(&z, &md, &x))) {
 				if (decNumberIsNegative(&w))
@@ -1284,7 +1283,7 @@ decNumber *qf_chi2(decNumber *r, const decNumber *p) {
 	qf_chi2_est(r, &v, p);
 	if (decNumberIsZero(r))
 		return r;
-	return newton_qf(r, p, NEWTON_NONNEGATIVE | NEWTON_MAXSTEP | NEWTON_WANDERCHECK, &pdf_chi2_helper, &cdf_chi2_helper, &v, NULL);
+	return newton_qf(r, p, NEWTON_NONNEGATIVE | NEWTON_WANDERCHECK, &pdf_chi2_helper, &cdf_chi2_helper, &v, NULL, &const_0_04);
 }
 
 
@@ -1453,7 +1452,7 @@ decNumber *qf_T(decNumber *r, const decNumber *x) {
 
 	if (qf_T_init(r, &ndf, x))
 		return r;
-	return newton_qf(r, x, 0, &pdf_T_helper, &cdf_T_helper, &ndf, NULL);
+	return newton_qf(r, x, 0, &pdf_T_helper, &cdf_T_helper, &ndf, NULL, NULL);
 }
 
 static int f_param(decNumber *r, decNumber *d1, decNumber *d2, const decNumber *x) {
@@ -1522,6 +1521,44 @@ decNumber *cdf_F(decNumber *r, const decNumber *x) {
 	return cdf_F_helper(r, x, &v1, &v2);
 }
 
+static void qf_F_recipm1(decNumber *r, const decNumber *n) {
+	decNumber t;
+	if (decNumberIsZero(dn_subtract(&t, n, &const_1)))
+		decNumberCopy(r, &const_1);
+	else
+		decNumberRecip(r, &t);
+}
+
+static decNumber *qf_F_est(decNumber *r, const decNumber *n1, const decNumber *n2, const decNumber *pp) {
+	decNumber t, u, dr, h, k;
+
+	qf_F_recipm1(&u, n1);
+	qf_F_recipm1(&k, n2);
+	dn_add(&t, &u, &k);
+	dn_divide(&h, &const_2, &t);
+	dn_subtract(&dr, &u, &k);
+
+	dn_subtract(&t, &const_0_5, pp);
+	qf_Q_est(&u, pp, &t);
+	dn_minus(r, &u);
+	decNumberSquare(&k, r);
+	dn_subtract(&u, &k, &const_3);
+	dn_divide(&k, &u, &const_6);
+
+	dn_divide(&t, &const_2on3, &h);
+	dn_subtract(&u, &const_5on6, &t);
+	dn_add(&t, &u, &k);
+	dn_multiply(&u, &dr, &t);
+
+	dn_add(&dr, &h, &k);
+	dn_sqrt(&t, &dr);
+	dn_divide(&dr, &t, &h);
+	dn_multiply(&t, &dr, r);
+	dn_subtract(r, &t, &u);
+	dn_multiply(&u, r, &const_2);
+	return dn_exp(r, &u);
+}
+
 decNumber *qf_F(decNumber *r, const decNumber *x) {
 	decNumber df1, df2;
 
@@ -1530,8 +1567,8 @@ decNumber *qf_F(decNumber *r, const decNumber *x) {
 	if (decNumberIsZero(x))
 		return decNumberZero(r);
 
-	decNumberCopy(r, &const_5);		// Need better initial estimate
-	return newton_qf(r, x, NEWTON_NONNEGATIVE, &pdf_F_helper, &cdf_F_helper, &df1, &df2);
+	qf_F_est(r, &df1, &df2, x);
+	return newton_qf(r, x, NEWTON_NONNEGATIVE | NEWTON_WANDERCHECK, &pdf_F_helper, &cdf_F_helper, &df1, &df2, &const_0_75);
 }
 
 /* Weibull distribution cdf = 1 - exp(-(x/lambda)^k)
@@ -1778,7 +1815,7 @@ decNumber *qf_B(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_B_est(r, p, &prob, &n);
-	newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, &pdf_B_helper, &cdf_B_helper, &prob, &n);
+	newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, &pdf_B_helper, &cdf_B_helper, &prob, &n, NULL);
 	return dn_min(r, r, &n);
 }
 
@@ -1860,7 +1897,7 @@ decNumber *qf_P(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_P_est(r, p, &lambda);
-	return newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, &pdf_P_helper, &cdf_P_helper, &lambda, NULL);
+	return newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, &pdf_P_helper, &cdf_P_helper, &lambda, NULL, NULL);
 }
 
 /* Geometric cdf
