@@ -117,6 +117,7 @@ void init_state(void) {
         C(fract);
         C(contrast);
 	C(jg1582);
+        C(entryp);
 #undef C
 	s.state_lift = 1;
 	xcopy(&State, &s, sizeof(struct _state));
