@@ -290,6 +290,7 @@ struct constsml constsml[] = {
 	CONSTANT("G",		"PC_G",		"6.6742867E-11"),
 	CONSTANT("G\270",	"PC_Go",	"7.748091696E-5"),
 	CONSTANT("g\274",	"PC_Ge",	"2.002319304362"),
+	CONSTANT("GM",		"PC_WGS_GM",	"3986004.418E8"),
 	CONSTANT("h",		"PC_PLANK",	"6.62606876E-34"),
 	CONSTANT("\236",	"PC_hon2PI",	"1.054571596E-34"),
 	CONSTANT("k",		"PC_k",		"1.3806503E-23"),
@@ -313,7 +314,6 @@ struct constsml constsml[] = {
 	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),
 	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),
 	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),
-	CONSTANT("SGM",		"PC_WGS_GM",	"3986004.418E8"),
 	CONSTANT("S\267",	"PC_WGS_OMEGA",	"7292115.0E-11"),
 	CONSTANT("T\270",	"PC_t",		"273.15"),
 	CONSTANT("t\276",	"PC_tp",	"5.39124E-44"),		// Base Planck unit of time
