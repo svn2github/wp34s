@@ -312,7 +312,7 @@ struct constsml constsml[] = {
 	CONSTANT("Sa",		"PC_WGS_A",	"6378137.0"),
 	CONSTANT("Sb",		"PC_WGS_B",	"6356752.3142"),
 	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),
-	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),
+	CONSTANT("Se`\232",	"PC_WGS_ES2",	"6.73949674228E-3"),
 	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),
 	CONSTANT("T\270",	"PC_t",		"273.15"),
 	CONSTANT("t\276",	"PC_tp",	"5.39124E-44"),		// Base Planck unit of time
