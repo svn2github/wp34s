@@ -314,7 +314,6 @@ struct constsml constsml[] = {
 	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),
 	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),
 	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),
-	CONSTANT("S\267",	"PC_WGS_OMEGA",	"7292115.0E-11"),
 	CONSTANT("T\270",	"PC_t",		"273.15"),
 	CONSTANT("t\276",	"PC_tp",	"5.39124E-44"),		// Base Planck unit of time
 	CONSTANT("T\276",	"PC_PlanckTh",	"1.416785e32"),		// Base Planck unit of temperature
@@ -341,6 +340,7 @@ struct constsml constsml[] = {
 	CONSTANT("\261\230",	"PC_sigma",	"5.6704E-8"),
 	CONSTANT("\224",	"PHI",		"1.61803398874989484820458683436563811772030917980576"),
 	CONSTANT("\224\270",	"PC_phi0",	"2.067833636E-15"),
+	CONSTANT("\267",	"PC_WGS_OMEGA",	"7292115.0E-11"),
 	CONSTANT("\237",	"INF",		"inf"),
 #if 0
 	CONSTANT("Z",		"PC_apery",	"1.20205690315959"),	// Apery's constant = zeta(3)
