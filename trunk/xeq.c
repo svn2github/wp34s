@@ -806,6 +806,7 @@ static void process_cmdline(void) {
 			decNumberFromString(&x, cmdline, &Ctx);
 			setX(&x);
 		}
+		set_entry();
 	}
 }
 
@@ -2434,7 +2435,6 @@ static void specials(const opcode op) {
 	case OP_9:	case OP_A:	case OP_B:
 	case OP_C:	case OP_D:	case OP_E:
 	case OP_F:
-		set_entry();
 		digit(opm - OP_0);
 		break;
 
@@ -2446,7 +2446,6 @@ static void specials(const opcode op) {
 				digit(0);
 			CmdLineDot++;
 			Cmdline[CmdLineLength++] = '.';
-			set_entry();
 		}
 		break;
 
@@ -2458,7 +2457,6 @@ static void specials(const opcode op) {
 				digit(1);
 			CmdLineEex = CmdLineLength;
 			Cmdline[CmdLineLength++] = 'E';
-			set_entry();
 		}
 		break;
 
