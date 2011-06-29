@@ -636,6 +636,10 @@ enum {
 	OP_QUAD,
 	OP_XEQALPHA, OP_GTOALPHA,
         OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
+
+	OP_SENDP, OP_RECVP, OP_SENDR, OP_RECVR, OP_SENDA, OP_RECVA,
+	OP_SEND1, OP_RECV1,
+
         NUM_NILADIC     // Last entry defines number of operations
 };
 

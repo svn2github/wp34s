@@ -48,6 +48,7 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "keys.c"
 #include "lcd.c"
 #include "prt.c"
+#include "serial.h"
 #include "stats.c"
 #include "storage.c"
 #include "string.c"

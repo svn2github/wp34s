@@ -428,7 +428,7 @@ void load_state(decimal64 *nul1, decimal64 *nul2)
 /*
  *  The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
  */
-static unsigned short int crc16( void *base, unsigned int length )
+unsigned short int crc16( void *base, unsigned int length )
 {
 	unsigned short int crc = 0x5aa5;
 	unsigned char *d = (unsigned char *) base;

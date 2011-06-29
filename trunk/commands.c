@@ -26,6 +26,7 @@
 #include "alpha.h"
 #include "lcd.h"
 #include "storage.h"
+#include "serial.h"
 #endif
 
 #ifdef SHORT_POINTERS
@@ -525,6 +526,15 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SLOAD,		&load_state,		"RCFST")
 	FUNC0(OP_BACKUP,	&flash_backup,		"SAVE")
 	FUNC0(OP_RESTORE,	&flash_restore,		"LOAD")
+
+	FUNC0(OP_SENDP,		&send_program,		"SENDP")
+	FUNC0(OP_RECVP,		&recv_program,		"RECVP")
+	FUNC0(OP_SENDR,		&send_registers,	"SENDR")
+	FUNC0(OP_RECVR,		&recv_registers,	"RECVR")
+	FUNC0(OP_SENDA,		&send_all,		"SENDA")
+	FUNC0(OP_RECVA,		&recv_all,		"RECVA")
+	FUNC0(OP_SEND1,		&send_byte,		"SEND1")
+	FUNC1(OP_RECV1,		&recv_byte,		"RECV1")
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2
