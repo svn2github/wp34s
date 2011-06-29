@@ -1754,11 +1754,11 @@ static int process_status(const keycode c) {
 #endif
 	case K40:
 		if ((n -= 1) < 0)
-			n = 0;
+			n = 9;
 		break;
 	case K50:
 		if ((n += 1) > 9)
-			n = 9;
+			n = 0;
 		break;
 	default:
 		n = -1; 
