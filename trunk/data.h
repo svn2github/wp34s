@@ -274,4 +274,8 @@ extern int ShowRegister; 	   // temporary display (not X)
 extern int PcWrapped;		   // dec() or inc() have rapped around
 extern decContext Ctx;
 
+#if !defined(REALBUILD) && !defined(WINGUI)
+extern int just_displayed;
+#endif
+
 #endif /* DATA_H_ */

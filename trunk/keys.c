@@ -2206,9 +2206,10 @@ void process_keycode(int c) {
 		display();
 	}
 #else
-	if (!Running && !Pause && c != STATE_IGNORE) {
+	if (!Running && !Pause && c != STATE_IGNORE && ! just_displayed) {
 		display();
 	}
+        just_displayed = 0;
 #endif
 }
 

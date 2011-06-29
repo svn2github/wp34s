@@ -30,6 +30,9 @@ static void set_status_sized(const char *, int);
 static void set_status(const char *);
 static void set_status_right(const char *);
 
+#if !defined(REALBUILD) && !defined(WINGUI)
+int just_displayed = 0;
+#endif
 
 /* Message strings
  * Strings starting S7_ are for the lower 7 segment line.  Strings starting S_
@@ -1352,6 +1355,9 @@ skpall:
 	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;
 	finish_display();
+#if !defined(REALBUILD) && !defined(WINGUI)
+        just_displayed = 1;
+#endif
 }
 
 
