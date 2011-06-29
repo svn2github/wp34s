@@ -431,6 +431,10 @@ void show_flags(void) {
 	PRINTF("numdig = %u   alpha '%-31s'   bflags = %03o-%03o",
 			State2.numdigit, Alpha, get_bank_flags() >> 8,
 			get_bank_flags() & 0xff);
+	if (State.entryp) {
+		MOVE(0, FLAG_BASE+2);
+		PRINTF("entryp");
+	}
 	MOVE(10, FLAG_BASE+3);
 	PRINTF("digval=%u", State2.digval);
 	MOVE(23, FLAG_BASE+3);
@@ -440,7 +444,7 @@ void show_flags(void) {
 	MOVE(45, FLAG_BASE+3);
 	PRINTF("cmddot = %u  cmdeex = %u  eol = %u",
 			CmdLineDot, CmdLineEex, CmdLineLength);
-	MOVE(1, FLAG_BASE+3);
+	MOVE(0, FLAG_BASE+3);
 	PRINTF("JG=%d", State.jg1582?1582:1752);
 #if 0
 	MOVE(0, 30);
