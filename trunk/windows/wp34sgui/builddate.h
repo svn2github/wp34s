@@ -4,5 +4,5 @@ unsigned long long const BuildDate
 #pragma section = "version"
 @ "version"
 #endif
-= 0x7628201100000000;
-#define SVN_REVISION "$Rev:: 1234  $"
+= 0x7630201100000000;
+#define SVN_REVISION "$Rev:: 263   $"

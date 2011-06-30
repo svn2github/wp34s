@@ -53,6 +53,7 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "storage.c"
 #include "string.c"
 #include "xeq.c"
+#include "serial.c"
 #include "xrom.c"
 #if 0
 #include "decNumber/decNumber.c"
