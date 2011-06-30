@@ -164,8 +164,6 @@ static s_opcode program_xfcn[] = {
 	NILIC(OP_RECVR,		"RECVR")
 	NILIC(OP_SENDA,		"SENDA")
 	NILIC(OP_RECVA,		"RECVA")
-	NILIC(OP_SEND1,		"SEND1")
-	NILIC(OP_RECV1,		"RECV1")
 
 	/* Integer mode commands */
 	RARGCMD(RARG_ASR,	"ASR")
@@ -324,8 +322,6 @@ static s_opcode catalogue[] = {
 	NILIC(OP_RECVR,		"RECVR")
 	NILIC(OP_SENDA,		"SENDA")
 	NILIC(OP_RECVA,		"RECVA")
-	NILIC(OP_SEND1,		"SEND1")
-	NILIC(OP_RECV1,		"RECV1")
 };
 
 static s_opcode cplx_catalogue[] = {
@@ -523,8 +519,6 @@ static s_opcode int_catalogue[] = {
 	NILIC(OP_RECVR,		"RECVR")
 	NILIC(OP_SENDA,		"SENDA")
 	NILIC(OP_RECVA,		"RECVA")
-	NILIC(OP_SEND1,		"SEND1")
-	NILIC(OP_RECV1,		"RECV1")
 };
 
 static s_opcode test_catalogue[] = {
@@ -605,6 +599,10 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_GTOALPHA,	"GTO\240")
 	RARGCMD(RARG_ALPHAXEQ,	"\240XEQ")
 	RARGCMD(RARG_ALPHAGTO,	"\240GTO")
+	NILIC(OP_SEND1,		"SEND1")
+	NILIC(OP_RECV1,		"RECV1")
+	NILIC(OP_SERIAL_OPEN,	"SOPEN")
+	NILIC(OP_SERIAL_CLOSE,	"SCLOSE")
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE

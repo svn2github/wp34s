@@ -49,6 +49,17 @@ static void get_bytes(void *bytes, unsigned int n) {
 	xcopy(bytes, buffer, n);
 }
 
+/* Open the serial port
+ */
+void serial_open(decimal64 *nul1, decimal64 *nul2) {
+}
+
+/* Close the serial port
+ */
+void serial_close(decimal64 *nul1, decimal64 *nul2) {
+}
+
+
 /* Transmit the program space from RAM to the serial port.
  * 506 * 2 = 1012 bytes plus checksums.
  */
