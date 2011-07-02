@@ -5,11 +5,13 @@
 /* Output a single byte to the serial
  */
 static void put_byte(unsigned char byte) {
+	err(ERR_PROG_BAD);
 }
 
 /* Get a single byte from the serial port
  */
 static unsigned int get_byte(void) {
+	err(ERR_PROG_BAD);
 	return 65;
 }
 
