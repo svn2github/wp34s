@@ -393,3 +393,94 @@ function guess_fisher(n1, n2, pp)
 
 end function
 
+
+
+
+
+
+
+Binomial quantile:
+
+For the record: here is a complete binomial quantile function. It
+returns a fractional value that is a linear interpolation between the
+two adjacent integers that define the interval [x, x+1] in which the cdf
+would have the value pp if the function was not discrete but continuous.
+
+The main point here is that this algorithm requires just one single call
+of the binomial cdf and also just one call of the pdf. The rest happens
+in a loop with just a few additions and multiplications. Since the first
+estimate usually is quite close to the true value only a few iterations
+are required. Even if the estimate is off by 10 or 20 or even more, I
+assume 20 of these loops will be executed faster than 2 or 3 loops with
+a ibeta() or binomial_cdf() call inside.
+
+I haven't tested this very thoroughly, in fact this is exactly the VBA
+code that I wrote just a few minutes ago. <8)
+
+
+Function binquantile(n, p, pp)
+
+q = 1 - p
+
+If pp >= 1 - p ^ n Then
+
+  x = n - (1 - pp) / (p ^ n)   ' direct solution for p close to 1
+
+Else
+
+  If pp <= q ^ n Then
+
+     x = pp / (q ^ n) - 1      ' direct solution for p close to 0
+
+  Else
+
+     z = guess_normal(pp)      ' estimate and iteration otherwise
+     x = Int((z + (z * z - 1) / 6) * Sqr(n * p * (1 - p)) + n * p)
+
+     If x < 0 Then x = 0       ' x is bounded by [0, n-1]
+     If x > n - 1 Then x = n - 1
+
+     cdf = bincdf(x, n, p)
+     pdf = binpdf(x, n, p)
+     poverq = p / q
+
+     If cdf > pp Then
+        Do
+          dy = pdf
+          cdf = cdf - dy
+          pdf = pdf * x / poverq / (n - x + 1)
+          x = x - 1
+        Loop Until cdf <= pp
+     Else
+        Do
+          x = x + 1
+          pdf = pdf / x * poverq * (n - x + 1)
+          dy = pdf
+          cdf = cdf + dy
+        Loop Until cdf >= pp
+     End If
+
+     x = x + (pp - cdf) / dy   ' final linear interpolation
+
+  End If
+
+End If
+
+binquantile = x
+
+End Function
+
+
+The basic idea is simple:
+
+- if pp =< cdf(0) return a linear estimate between 0 and -1.
+If you prefer integer results, simply return -1
+
+- if pp >= cdf(n-1) return a linear estimate between n-1 and n.
+If you prefer integer results, simply return n-1
+
+- otherwise evaluate an estimate x and check if it is too large or too
+small. Then decrement resp. increment x and adjust the cdf accordingly.
+This is easy since the new pdf can be calculated from the previous one.
+Test again until the cdf drops below resp. exceeds pp. If you prefer
+integer results, omit the final linear interpolation.
