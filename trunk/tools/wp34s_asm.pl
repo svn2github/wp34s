@@ -24,8 +24,6 @@ my $Description = "Assembler/Disassembler for the WP34s calculator.";
 #
 # Language:         Perl script
 #
-my $SVN_Current_Revision  =  '$Revision: $';
-#
 #-----------------------------------------------------------------------
 
 use strict;
@@ -133,18 +131,23 @@ my $usage = <<EOM;
 $script
 Usage:
    $script_name src_file [src_file2 [src_file3]] -o out_binary  # assembly mode
-   $script_name in_binary -dis > src_file                       # disassembly mode
+   $script_name in_binary -dis [-o out_binary] > src_file       # disassembly mode
 
 Parameters:
    src_file         One or more WP34s program source files. Conventionally, "wp34s" is used
                     as the filename extension.
-   -o out_binary    Flash image produced by assembler. Required in assembler mode. Conventionally,
-                    "dat" is used as the filename extension.
+   -o outfile       Output produced by the tool. In assembler mode, this is required and will be
+                    the binary flash image. Assembler output extension is conventionally ".dat".
+                    In disassembler mode, this is optional and will be the output ASCII source
+                    listing, conventionally uses the ".wp34s" extension. I/O redirection can be
+                    used as an alternate method of capturing the ASCII source listing in disassembler
+                    mode.
    -dis             Disassemble the binary image file.
-   -op file         Optional opcode file to parse.              [Default: $DEFAULT_OPCODE_MAP_FILE]
-   -fill fill_hex   Optinal value to prefill flash image with.  [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
+   -op infile       Optional opcode file to parse.              [Default: $DEFAULT_OPCODE_MAP_FILE]
+   -fill fill_hex   Optional value to prefill flash image with. [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
    -s number        Optional number of asterisks (stars) to prepend to labels in
                     disassembly mode.                           [Default: $DEFAULT_STAR_LABELS]
+   -syntax outfile  Turns on syntax guide file dumping. Output will be sent to 'outfile'.
    -ns              Turn off step numbers in disassembler listing.
    -h               This help script.
 
@@ -152,30 +155,32 @@ Examples:
   \$ $script_name great_circle.wp34s -o wp34s-3.dat
   - Assembles the named WP34s program source file producing a flash image for the WP34s.
 
-  \$ $script_name  great_circle.wp34s  floating_point.wp34s  -o wp34s-1.dat  -fill FFFF
+  \$ $script_name  great_circle.wp34s floating_point.wp34s -o wp34s-1.dat  -fill FFFF
   - Assembles multiple WP34s program source files into a single contiguous flash image for
-    the WP34s. Uses FFFF as the optional fill value. Allows (and encourages) use of libraries
+    the WP34s. Uses 0xFFFF as the optional fill value. Allows (and encourages) use of libraries
     of programs by concatenating the flash image from several source files.
 
-  \$ $script_name -dis wp34s-1.dat -s 3
+  \$ $script_name -dis wp34s-1.dat -s 3 > myProg.wp34s
+  \$ $script_name -dis wp34s-1.dat -s 3 -o myProg.wp34s
   - Disassembles a flash image from the WP34s. Prepend 3 asterisks to the front to each label to
-    make then easier to find in the listing (they are ignored during assembly).
+    make then easier to find in the listing (they are ignored during assembly). Both invocation
+    result in identical behaviour.
 
-  \$ $script_name -dis wp34s-0.dat > test.wp34s ; $script_name test.wp34s -o wp34s-0a.dat
-  \$ diff wp34s-0.dat wp34s-0a.dat
-  - An end-to-end test of the tool. Note that the blank fill mode will have to be the same
+  \$ $script_name -dis wp34s-0.dat -o test.wp34s; $script_name test.wp34s -o wp34s-0a.dat; diff wp34s-0.dat wp34s-0a.dat
+  - An end-to-end test of the tool. Note that the blank fill mode will have to have been the same
     for the binaries to match.
 
 Notes:
   1) Step numbers can be used in the source file but they are ignored. Since they are ignored,
-     it does\'t matter if they are not contiguous (ie: 000, 003, 004) or not monotonic (ie: 000,
-     004, 003). The disassembler does produce step numbers that are both continguous and monotonic.
-  2) You can name a different opcode table using -op. This can be used to translate a source
+     it doesn\'t matter if they are not contiguous (ie: 000, 003, 004) or not monotonic (ie: 000,
+     004, 003). The disassembler does produce step numbers that are both contiguous and monotonic
+     -- when not suppressed by the -ns switch.
+  2) You can name a different opcode table using the -op switch. This can be used to translate a source
      written for a different SVN revision of the WP34s to move the program to a modern version of
-     the WP34s. Disassemble the old flash using the old opcode table and reassemble using the default
-     (internal) table. This is also an insurance policy against the opcodes evolving as well. Simply
-     target newer opcode tables as they become available. To generate an opcode table, using the
-     following (Linux version shown, Windows is likely similar):
+     the WP34s. Typically, disassemble the old flash using the old opcode table and reassemble using
+     the default (internal) table. This is also an insurance policy against the opcodes evolving as well.
+     Simply target newer opcode tables as they become available. To generate an opcode table, using the
+     following (Linux version shown. Windows is likely similar, though I have never tried):
       \$ svn up
       \$ cd ./trunk
       \$ make
@@ -185,7 +190,7 @@ Notes:
      contains any hex digits or it starts with a "0x", it will be interpreted as a hex value. Thus
      "1234" will be decimal 1234 while "0x1234" will be the decimal value 4660. Both "EFA2" and "0xEFA2"
      will be interpreted as a hex value as well (61346). The leading "0x" is optional in this case.
-  4) The order the command lines switches are used is not important. There is no fixed order.
+  4) The order the command lines switches is not significant. There is no fixed order.
 EOM
 
 my $extended_help = <<EXTENDED_HELP;
@@ -194,7 +199,6 @@ Extended parameters:
    -dl              Disable flash length limit.
    -c               Output the assembler result in C-array mode. Primarily for XROM assembly.
    -xrom            Assemble in XROM mode. Automatically turns off the flash length limit (-dl).
-   -syntax file     Turns on syntax dumping. Output will be sent to 'file'.
    -alpha  file     Turns on alpha table dumping. Output will be sent to 'file'.
    -empty           Used in assembler mode to generate an empty flash image. Needs '-o FILE.dat'
                     as well.
@@ -216,6 +220,11 @@ Examples:
   \$ $script_name -empty -o wp34s-0.dat
   - Creates an empty flash image. (Could not figure out how clear an image otherwise though
     there probably is a mechanism I don't know about.)
+
+Notes:
+  1) XROM mode skips the first 2 words normally written to the binary image. This means that
+     the CRC16 and the "next step" indicator are suppressed. This binary output is currently
+     *not* able to be disassembled.
 EXTENDED_HELP
 
 #######################################################################
@@ -1087,14 +1096,6 @@ sub get_options {
     if( $arg eq '-more_help' ) {
       print "$usage\n";
       print "$extended_help\n";
-      die "\n";
-    }
-
-    elsif( ($arg eq '--version') or ($arg eq '-V') ) {
-      print "$script\n";
-      if( $SVN_Current_Revision =~ /Revision: (.+)\s*\$/ ) {
-        print "Version: $1\n";
-      }
       die "\n";
     }
 
