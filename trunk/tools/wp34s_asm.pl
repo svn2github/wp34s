@@ -154,6 +154,7 @@ Parameters:
 Examples:
   \$ $script_name great_circle.wp34s -o wp34s-3.dat
   - Assembles the named WP34s program source file producing a flash image for the WP34s.
+    MUST use -o to name the output file in assembler mode -- cannot use output redirection.
 
   \$ $script_name  great_circle.wp34s floating_point.wp34s -o wp34s-1.dat  -fill FFFF
   - Assembles multiple WP34s program source files into a single contiguous flash image for
@@ -1187,7 +1188,7 @@ sub get_options {
   #----------------------------------------------
   # Verify that we have an output file if we are in assembler mode.
   if( ($mode eq $ASSEMBLE_MODE) and ($outfile eq "-") and not $expanded_op_file ) {
-    warn "ERROR: Must enter an output file name in assembler mode.\n";
+    warn "ERROR: Must enter an output file name in assembler mode (-o SomeFileName).\n";
     die  "       Enter '$script_name -h' for help.\n";
   }
 
