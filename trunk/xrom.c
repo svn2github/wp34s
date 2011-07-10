@@ -913,15 +913,7 @@ const s_opcode xrom[] = {
 		alpha6('W', 'P', ' ', '3', '4', 'S')
 	LBL(0)
 		AVIEW
-#ifdef REALBUILD
-		DIG(5)
-		EEX
-		DIG(3)
-		DSZ(st(X))
-		BACK(1)
-#else
 		PAUSE(8)
-#endif
 		CLALPHA
 	RTN
 };

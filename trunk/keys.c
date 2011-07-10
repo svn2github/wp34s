@@ -2051,6 +2051,8 @@ static int process(const int c) {
 		 *  Abort a running program with R/S or EXIT
 		 */
 		if (c == K60 || c == K63) {
+			if (Pause && isXROM(state_pc()))
+				set_pc(0);
 			set_running_off();
 			Pause = 0;
 			DispMsg = "Stopped";
