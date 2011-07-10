@@ -161,6 +161,19 @@ static void get_block(void *bytes, unsigned int n) {
 
 
 /*
+ * Open the serial port
+ */
+void serial_open(decimal64 *nul1, decimal64 *nul2) {
+}
+ 
+ /*
+ * Close the serial port
+ */
+void serial_close(decimal64 *nul1, decimal64 *nul2) {
+}
+
+
+/*
  * Transmit the program space from RAM to the serial port.
  * 506 * 2 = 1012 bytes plus checksums.
  */

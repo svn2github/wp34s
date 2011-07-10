@@ -28,6 +28,8 @@ extern void send_all(decimal64 *nul1, decimal64 *nul2);
 extern void recv_all(decimal64 *nul1, decimal64 *nul2);
 extern void send_byte(decimal64 *nul1, decimal64 *nul2);
 extern int recv_byte(int timeout);
+extern void serial_open(decimal64 *byte, decimal64 *nul2);
+extern void serial_close(decimal64 *byte, decimal64 *nul2);
 
 // Call-back for a received byte with error information
 extern void received_byte( short byte );

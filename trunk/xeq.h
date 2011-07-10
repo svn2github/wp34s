@@ -640,7 +640,7 @@ enum {
         OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
 
 	OP_SENDP, OP_RECVP, OP_SENDR, OP_RECVR, OP_SENDA, OP_RECVA,
-	OP_SEND1,
+	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
 
         NUM_NILADIC     // Last entry defines number of operations
 };
