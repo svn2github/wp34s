@@ -82,8 +82,9 @@ void set_speed( unsigned int speed );
 #define PLLCOUNT          AT91C_CKGR_PLLCOUNT
 /// PLL MUL values.
 #define PLLMUL_LOW_V      399
-//#define PLLMUL         999
+#define PLLMUL_LOW_V_NX   444   // if no crystal installed
 #define PLLMUL            1199
+#define PLLMUL_NX         1333  // no crystal
 /// PLL DIV value.
 #define PLLDIV            1
 
@@ -113,6 +114,7 @@ unsigned char Contrast;
 volatile unsigned char LcdFadeOut;
 volatile unsigned char InIrq;
 unsigned char DebugFlag;
+unsigned char Xtal;
 #ifdef SLEEP_ANNUNCIATOR
 unsigned char SleepAnnunciatorOn;
 #endif
@@ -796,145 +798,158 @@ static void set_mckr( int pres, int css )
  *  Physical speeds are 2 MHZ / 64, 2 MHz, 10 MHz, 32.768 MHz
  *  Using the slow clock doesn't seem to work for unknown reasons.
  *  Therefore, the main clock with a divider is used as slowest clock.
+ *
+ *  Speed remains untouched while the serial I/O is running
  */
 void set_speed( unsigned int speed )
 {
-	/*
-	 *  Table of supported speeds
-	 */
-	static const int speeds[ SPEED_HIGH + 1 ] =
-		{ 2000000 / 64 , 2000000,
-		  32768 * ( 1 + PLLMUL_LOW_V ), 32768 * ( 1 + PLLMUL ) };
-
-	if ( speed < SPEED_MEDIUM && ( is_debug() || StartupTicks < 10 ) ) {
+	if ( !SerialOn ) {
 		/*
-		 *  Allow JTAG debugging
+		 *  Table of supported speeds
 		 */
-		speed = SPEED_MEDIUM;
-	}
+		static const int speeds[ SPEED_HIGH + 1 ] =
+			{ 2000000 / 64 , 2000000,
+			  32768 * ( 1 + PLLMUL_LOW_V ), 32768 * ( 1 + PLLMUL ) };
 
-	/*
-	 *  If low voltage reduce maximum speed to 10 MHz
-	 */
-	if ( speed == SPEED_HIGH && Voltage <= LOW_VOLTAGE ) {
-		speed = SPEED_H_LOW_V;
-	}
+		if ( speed < SPEED_MEDIUM && ( is_debug() || StartupTicks < 10 ) ) {
+			/*
+			 *  Allow JTAG debugging
+			 */
+			speed = SPEED_MEDIUM;
+		}
 
-	if ( speeds[ speed ] == ClockSpeed ) {
 		/*
-		 *  Invalid or no change.
+		 *  If low voltage reduce maximum speed to 10 MHz
 		 */
-		return;
-	}
+		if ( speed == SPEED_HIGH && Voltage <= LOW_VOLTAGE ) {
+			speed = SPEED_H_LOW_V;
+		}
 
-	/*
-	 *  Set new speed
-	 */
-	lock();
-	SpeedSetting = speed;
-	ClockSpeed = speeds[ speed ];
+		if ( speeds[ speed ] == ClockSpeed ) {
+			/*
+			 *  Invalid or no change.
+			 */
+			return;
+		}
 
-	switch ( speed ) {
-
-	case SPEED_IDLE:
-	case SPEED_SLOW:
 		/*
-		 *  Turn the clock almost off
-		 *  System will go idle from main loop
+		 *  Set new speed
 		 */
-		enable_mclk();
-		set_mckr( AT91C_PMC_PRES_CLK_64, AT91C_PMC_CSS_MAIN_CLK );
+		lock();
+		SpeedSetting = speed;
+		ClockSpeed = speeds[ speed ];
 
-		// No wait states for flash read
-		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
+		switch ( speed ) {
 
-		// Turn off the unused oscillators
-		disable_pll();
+		case SPEED_IDLE:
+		case SPEED_SLOW:
+			/*
+			 *  Turn the clock almost off
+			 *  System will go idle from main loop
+			 */
+			enable_mclk();
+			set_mckr( AT91C_PMC_PRES_CLK_64, AT91C_PMC_CSS_MAIN_CLK );
 
-		// Save power
-		SUPC_SetVoltageOutput( SUPC_VDD_155 );
-		break;
-
-	case SPEED_MEDIUM:
-		/*
-		 *  2 MHz internal RC clock
-		 */
-		enable_mclk();
-		set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
-
-		// No wait states needed for flash read
-		AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
-
-		// Turn off the PLL
-		disable_pll();
-
-		// save a little power
-		SUPC_SetVoltageOutput( SUPC_VDD_165 );
-
-		break;
-
-	case SPEED_H_LOW_V:
-		/*
-		 *  19 MHz PLL, used in case of low battery
-		 */
-
-	case SPEED_HIGH:
-		/*
-		 *  37.5 MHz PLL, derived from 32 KHz slow clock
-		 */
-		SUPC_SetVoltageOutput( SUPC_VDD_180 );
-#if 1
-		if ( speed == SPEED_H_LOW_V ) {
-			// No wait state necessary at 10 MHz
+			// No wait states for flash read
 			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
-		}
-		else
-#endif
-		{
-			// With VDD=1.8, 1 wait state for flash reads is enough.
-			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
-		}
 
-		if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS )
-			== AT91C_PMC_CSS_PLL_CLK )
-		{
-			// Intermediate switch to main clock
+			// Turn off the unused oscillators
+			disable_pll();
+
+			// Save power
+			SUPC_SetVoltageOutput( SUPC_VDD_155 );
+			break;
+
+		case SPEED_MEDIUM:
+			/*
+			 *  2 MHz internal RC clock
+			 */
 			enable_mclk();
 			set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
-		}
-		if ( speed == SPEED_H_LOW_V ) {
-			// Initialise PLL at 10MHz
-			AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-						| ( PLLMUL_LOW_V << 16 ) | PLLDIV;
-		}
-		else {
-			// Initialise PLL at 32MHz
-			AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-						| ( PLLMUL << 16 ) | PLLDIV;
-		}
-		while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
 
-		// Switch to PLL
-		set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_PLL_CLK );
+			// No wait states needed for flash read
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
 
-		// Turn off main clock
-		disable_mclk();
+			// Turn off the PLL
+			disable_pll();
 
-#if 1
-		if ( speed == SPEED_H_LOW_V ) {
-			// Save battery, we are already low
+			// save a little power
 			SUPC_SetVoltageOutput( SUPC_VDD_165 );
+
+			break;
+
+		case SPEED_H_LOW_V:
+			/*
+			 *  19 MHz PLL, used in case of low battery
+			 */
+
+		case SPEED_HIGH:
+			/*
+			 *  37.5 MHz PLL, derived from 32 KHz slow clock
+			 */
+			SUPC_SetVoltageOutput( SUPC_VDD_180 );
+
+			if ( speed == SPEED_H_LOW_V ) {
+				// No wait state necessary at 10 MHz
+				AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
+			}
+			else
+			{
+				// With VDD=1.8, 1 wait state for flash reads is enough.
+				AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
+			}
+
+			if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS )
+				== AT91C_PMC_CSS_PLL_CLK )
+			{
+				// Intermediate switch to main clock
+				enable_mclk();
+				set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
+			}
+			if ( speed == SPEED_H_LOW_V ) {
+				// Initialise PLL at 10MHz
+				if ( Xtal ) {
+					AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
+								 | ( PLLMUL_LOW_V << 16 ) | PLLDIV;
+				}
+				else {
+					AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
+								 | ( PLLMUL_LOW_V_NX << 16 ) | PLLDIV;
+				}
+			}
+			else {
+				// Initialise PLL at 32MHz
+				if ( Xtal ) {
+					AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
+								 | ( PLLMUL << 16 ) | PLLDIV;
+				}
+				else {
+					AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
+								 | ( PLLMUL_NX << 16 ) | PLLDIV;
+				}
+			}
+			while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
+
+			// Switch to PLL
+			set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_PLL_CLK );
+
+			// Turn off main clock
+			disable_mclk();
+
+			if ( speed == SPEED_H_LOW_V ) {
+				// Save battery, we are already low
+				SUPC_SetVoltageOutput( SUPC_VDD_165 );
+			}
+			break;
 		}
-#endif
-		break;
-	}
 
 #ifdef SPEED_ANNUNCIATOR
-	dot( SPEED_ANNUNCIATOR, speed > SPEED_MEDIUM );
-	finish_display();
+		dot( SPEED_ANNUNCIATOR, speed > SPEED_MEDIUM );
+		finish_display();
 #endif
 
-	unlock();
+		unlock();
+	}
 
 	if ( speed == SPEED_IDLE ) {
 		/*
@@ -1045,15 +1060,23 @@ void LCD_interrupt( void )
 		 */
 		user_heartbeat();
 
-		/*
-		 *  Schedule the next one so that there are 50 calls in 5 seconds
-		 *  We need to skip 3 ticks in 128 cycles
-		 */
-		if ( Heartbeats ==  40 || Heartbeats ==  81 || Heartbeats == 122 ) {
-			UserHeartbeatCountDown = 6;
+		if ( Xtal ) {
+			/*
+			 *  Schedule the next one so that there are 50 calls in 5 seconds
+			 *  We need to skip 3 ticks in 128 cycles
+			 */
+			if ( Heartbeats ==  40 || Heartbeats ==  81 || Heartbeats == 122 ) {
+				UserHeartbeatCountDown = 6;
+			}
+			else {
+				UserHeartbeatCountDown = 5;
+			}
 		}
 		else {
-			UserHeartbeatCountDown = 5;
+			/*
+			 *  Without a crystal a less accurate timing is good enough
+			 */
+			UserHeartbeatCountDown = Heartbeats & 1 ? 4 : 5;
 		}
 	}
 
@@ -1154,6 +1177,35 @@ void enable_interrupts()
 	UserHeartbeatCountDown = 5;
 	// --prio;
 }
+
+
+/*
+ *  Open the DBGU port for transmission
+ */
+int open_port( int baud, int bits, int stopbits, int parity )
+{
+	SerialOn = 1;
+	return 0;
+}
+
+
+/*
+ *  Close the DBGU port after transmission is complete
+ */
+extern void close_port( void )
+{
+	SerialOn = 0;
+}
+
+
+/*
+ *  Output a single byte to the serial
+ */
+void put_byte( unsigned char byte )
+{
+	err( ERR_PROG_BAD );
+}
+
 
 
 /*************************************************************************
@@ -1259,11 +1311,10 @@ void idle( void )
  */
 void turn_on_crystal( void )
 {
-	if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
-		message( "Wait...", "" );
-		AT91C_BASE_SUPC->SUPC_CR = (0xA5 << 24) | AT91C_SUPC_XTALSEL;
-		while ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL );
-	}
+	message( "Wait...", "" );
+	AT91C_BASE_SUPC->SUPC_CR = (0xA5 << 24) | AT91C_SUPC_XTALSEL;
+	while ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL );
+	Xtal = 1;
 	DispMsg = "OK";
 	display();
 }
@@ -1344,6 +1395,10 @@ int main(void)
 	// Dummy access for optimiser
 	xcopy( (void *) &command_info, &command_info, 0 );
 #endif
+	/*
+	 *  Timing is dependent on the presence of a crystal
+	 */
+	Xtal = ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) == AT91C_SUPC_OSCSEL );
 
 	/*
 	 *  Don't let the user wait too long.
@@ -1513,8 +1568,8 @@ int main(void)
 			/*
 			 *  Test if we can turn ourself completely off
 			 */
-			if ( !is_debug() && !Running && KbData == 0LL
-			     && Pause == 0 && StartupTicks >= 10
+			if ( !is_debug() && !Running && !SerialOn
+			     && KbData == 0LL && Pause == 0 && StartupTicks >= 10
 			     && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
 			     && Keyticks < APD_TICKS )
 			{
@@ -1659,7 +1714,7 @@ int main(void)
 #ifndef XTAL
 				case K02:
 					// ON+C turn on Crystal
-					if ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) != AT91C_SUPC_OSCSEL ) {
+					if ( !Xtal ) {
 						if ( confirm_counter == 1 ) {
 							message( "Crystal?", "Installed" );
 							break;

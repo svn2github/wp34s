@@ -29,6 +29,8 @@
 #include "builddate.h"
 #include "display.h"
 #include "storage.h"
+#include "serial.h"
+#include "data.h"
 
 /*
  *  Setup the LCD area, persistent RAM and not so persistent RAM
@@ -236,6 +238,34 @@ void shutdown( void )
 {
 	// Shutdown();
 	ExitEmulator();
+}
+
+
+/*
+ *  Open a COM port for transmission
+ */
+int open_port( int baud, int bits, int stopbits, int parity )
+{
+	SerialOn = 1;
+	return 0;
+}
+
+
+/*
+ *  Close the COM port after transmission is complete
+ */
+extern void close_port( void )
+{
+	SerialOn = 0;
+}
+
+
+/*
+ *  Output a single byte to the serial
+ */
+void put_byte( unsigned char byte ) 
+{
+	err( ERR_PROG_BAD );
 }
 
 

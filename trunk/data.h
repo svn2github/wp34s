@@ -268,10 +268,11 @@ extern TStateWhileOn StateWhileOn;
 extern volatile int WaitForLcd;	   // Sync with display refresh
 extern volatile int Pause;         // Count down for programmed pause
 extern int Running;		   // Program is active
-extern int JustStopped;            // set on program stop to ignore the next R/S key in the buffer
+extern int JustStopped;            // Set on program stop to ignore the next R/S key in the buffer
 extern int Error;		   // Did an error occur, if so what code?
-extern int ShowRegister; 	   // temporary display (not X)
+extern int ShowRegister; 	   // Temporary display (not X)
 extern int PcWrapped;		   // dec() or inc() have rapped around
+extern char SerialOn;		   // Set while the serial I/O is active
 extern decContext Ctx;
 
 #if !defined(REALBUILD) && !defined(WINGUI)

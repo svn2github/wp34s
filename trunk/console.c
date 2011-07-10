@@ -503,6 +503,31 @@ int is_shift_down(int s)
 	return 0;
 }
 
+/*
+ *  Open a COM port for transmission
+ */
+int open_port( int baud, int bits, int stopbits, int parity )
+{
+	return 0;
+}
+
+
+/*
+ *  Close the COM port after transmission is complete
+ */
+extern void close_port( void )
+{
+}
+
+
+/*
+ *  Output a single byte to the serial
+ */
+void put_byte( unsigned char byte )
+{
+	err( ERR_PROG_BAD );
+}
+
 
 /*
  *  Main loop
