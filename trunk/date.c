@@ -402,15 +402,49 @@ void date_isleap(decimal64 *nul1, decimal64 *nul2) {
 
 /* Return the day of the week
  */
+static int dateExtract(decNumber *res, const decNumber *x, int *y, int *m, int *d) {
+	if (decNumberIsSpecial(x) || extract_date(x, y, m, d)) {
+		set_NaN(res);
+		return 0;
+	}
+	return 1;
+}
+
 decNumber *dateDayOfWeek(decNumber *res, const decNumber *x) {
 	int y, m, d;
 
-	if (decNumberIsSpecial(x) || extract_date(x, &y, &m, &d))
-		set_NaN(res);
-	else
+	if (dateExtract(res, x, &y, &m, &d))
 		int_to_dn(res, day_of_week(y, m, d, &DispMsg));
 	return res;
 }
+
+
+/* Decompose dates into numerics
+ */
+decNumber *dateYear(decNumber *res, const decNumber *x) {
+	int y, m, d;
+
+	if (dateExtract(res, x, &y, &m, &d))
+		int_to_dn(res, y);
+	return res;
+}
+
+decNumber *dateMonth(decNumber *res, const decNumber *x) {
+	int y, m, d;
+
+	if (dateExtract(res, x, &y, &m, &d))
+		int_to_dn(res, m);
+	return res;
+}
+
+decNumber *dateDay(decNumber *res, const decNumber *x) {
+	int y, m, d;
+
+	if (dateExtract(res, x, &y, &m, &d))
+		int_to_dn(res, d);
+	return res;
+}
+
 
 static void copy3(const char *p) {
 	char buf[4];

@@ -139,6 +139,9 @@ static s_opcode program_xfcn[] = {
 	DYA(OP_BSYN,		"Yn")
 #endif
 	NILIC(OP_QUAD,		"QUAD")
+	MON(OP_DATE_DAY,	"DY")
+	MON(OP_DATE_MONTH,	"MONTH")
+	MON(OP_DATE_YEAR,	"YEAR")
 
 	DYA(OP_LEGENDRE_PN,   "P\275")
 	DYA(OP_CHEBYCHEV_TN,  "T\275")
@@ -297,6 +300,9 @@ static s_opcode catalogue[] = {
 	DYA(OP_BSYN,		"Yn")
 #endif
 	NILIC(OP_QUAD,		"QUAD")
+	MON(OP_DATE_DAY,	"DY")
+	MON(OP_DATE_MONTH,	"MONTH")
+	MON(OP_DATE_YEAR,	"YEAR")
 
 	DYA(OP_LEGENDRE_PN,   "P\275")
 	DYA(OP_CHEBYCHEV_TN,  "T\275")

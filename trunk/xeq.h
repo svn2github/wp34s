@@ -534,6 +534,7 @@ enum {
 #ifdef INCLUDE_FACTOR
         OP_FACTOR,
 #endif
+	OP_DATE_YEAR, OP_DATE_MONTH, OP_DATE_DAY,
         NUM_MONADIC     // Last entry defines number of operations
 };
     

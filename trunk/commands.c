@@ -225,6 +225,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #ifdef INCLUDE_FACTOR
 	FUNC(OP_FACTOR,	&decFactor,		NULL,		&intFactor,	"FACTOR")
 #endif
+	FUNC(OP_DATE_YEAR,	&dateYear,	NULL,		NULL,		"YEAR")
+	FUNC(OP_DATE_MONTH,	&dateMonth,	NULL,		NULL,		"MONTH")
+	FUNC(OP_DATE_DAY,	&dateDay,	NULL,		NULL,		"DY")
 #undef FUNC
 };
 #if COMMANDS_PASS != 2
