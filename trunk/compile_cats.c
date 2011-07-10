@@ -52,7 +52,7 @@ static s_opcode program_xfcn[] = {
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	MON(OP_D2J,		"D\015J")
-	MON(OP_DOWK,		"DAY")
+	MON(OP_DOWK,		"WDAY")
 	DYA(OP_DTADD,		"DAYS+")
 	NILIC(OP_2FRAC,		"DECOMP")
 	MON(OP_ERF,		"erf")
@@ -139,7 +139,7 @@ static s_opcode program_xfcn[] = {
 	DYA(OP_BSYN,		"Yn")
 #endif
 	NILIC(OP_QUAD,		"QUAD")
-	MON(OP_DATE_DAY,	"DY")
+	MON(OP_DATE_DAY,	"DAY")
 	MON(OP_DATE_MONTH,	"MONTH")
 	MON(OP_DATE_YEAR,	"YEAR")
 
@@ -213,7 +213,7 @@ static s_opcode catalogue[] = {
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	MON(OP_D2J,		"D\015J")
-	MON(OP_DOWK,		"DAY")
+	MON(OP_DOWK,		"WDAY")
 	DYA(OP_DTADD,		"DAYS+")
 	NILIC(OP_2FRAC,		"DECOMP")
 	MON(OP_ERF,		"erf")
@@ -300,7 +300,7 @@ static s_opcode catalogue[] = {
 	DYA(OP_BSYN,		"Yn")
 #endif
 	NILIC(OP_QUAD,		"QUAD")
-	MON(OP_DATE_DAY,	"DY")
+	MON(OP_DATE_DAY,	"DAY")
 	MON(OP_DATE_MONTH,	"MONTH")
 	MON(OP_DATE_YEAR,	"YEAR")
 

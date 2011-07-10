@@ -199,7 +199,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_NOT,	&decNumberNot,		NULL,		&intNot,	"NOT")
 	FUNC(OP_BITCNT,	NULL,			NULL,		&intNumBits,	"nBITS")
 	FUNC(OP_MIRROR,	NULL,			NULL,		&intMirror,	"MIRROR")
-	FUNC(OP_DOWK,	&dateDayOfWeek,		NULL,		NULL,		"DAY")
+	FUNC(OP_DOWK,	&dateDayOfWeek,		NULL,		NULL,		"WDAY")
 	FUNC(OP_D2J,	&dateToJ,		NULL,		NULL,		"D\015J")
 	FUNC(OP_J2D,	&dateFromJ,		NULL,		NULL,		"J\015D")
 	FUNC(OP_DEGC_F,	&convC2F,		NULL,		NULL,		"\005C\015\005F")
@@ -227,7 +227,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #endif
 	FUNC(OP_DATE_YEAR,	&dateYear,	NULL,		NULL,		"YEAR")
 	FUNC(OP_DATE_MONTH,	&dateMonth,	NULL,		NULL,		"MONTH")
-	FUNC(OP_DATE_DAY,	&dateDay,	NULL,		NULL,		"DY")
+	FUNC(OP_DATE_DAY,	&dateDay,	NULL,		NULL,		"DAY")
 #undef FUNC
 };
 #if COMMANDS_PASS != 2
