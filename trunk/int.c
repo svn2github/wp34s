@@ -16,6 +16,7 @@
 
 #include "int.h"
 #include "xeq.h"
+#include "serial.h"
 
 /* Some utility routines to extract bits of long longs */
 
@@ -1635,3 +1636,20 @@ long long int intFactor(long long int x) {
 }
 #endif // INCLUDE_FACTOR
 
+
+long long int intRecv(long long int x) {
+	int sx;
+	unsigned long long int xv = extract_value(x, &sx);
+	int to = xv & 0x7fffffff;
+	int c;
+
+	if (sx)
+		to = -1;
+	c = recv_byte(to);
+
+	sx = c < 0;
+	if (sx)
+		c = -c;
+	set_overflow(sx);
+	return build_value(c, sx);
+}

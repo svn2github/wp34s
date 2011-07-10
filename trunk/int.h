@@ -95,5 +95,7 @@ extern unsigned long long int doFactor(unsigned long long int);
 extern long long int intFactor(long long int);
 #endif
 
+extern long long int intRecv(long long int x);
+
 
 #endif

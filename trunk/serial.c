@@ -97,6 +97,7 @@ extern void received_byte( short byte )
 }
 
 
+#if 0
 /*
  *  Connect to partner
  *  Opens the port and sends ENQ until ACK is received
@@ -117,7 +118,7 @@ static int connect( void )
 	} while ( --i && c != ACK );
 	return c != ACK;
 }
-
+#endif
 
 
 
@@ -156,18 +157,6 @@ static void get_block(void *bytes, unsigned int n) {
 		return;
 	}
 	xcopy(bytes, buffer, n);
-}
-
-/*
- * Open the serial port
- */
-void serial_open(decimal64 *nul1, decimal64 *nul2) {
-}
-
-/*
- * Close the serial port
- */
-void serial_close(decimal64 *nul1, decimal64 *nul2) {
 }
 
 
@@ -245,6 +234,6 @@ void send_byte(decimal64 *nul1, decimal64 *nul2) {
  * value in X.
  * If the transfer times out, ???.
  */
-void recv_byte(decimal64 *reg, decimal64 *nul2) {
-	put_int(get_byte(10), 0, reg);
+int recv_byte(int timeout) {
+	return get_byte(timeout);
 }

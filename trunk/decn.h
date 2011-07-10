@@ -238,4 +238,6 @@ extern decNumber *decFactor(decNumber *r, const decNumber *x);
 extern decNumber *dn_ln(decNumber *r, const decNumber *x);
 
 
+extern decNumber *decRecv(decNumber *r, const decNumber *x);
+
 #endif

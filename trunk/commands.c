@@ -225,9 +225,11 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #ifdef INCLUDE_FACTOR
 	FUNC(OP_FACTOR,	&decFactor,		NULL,		&intFactor,	"FACTOR")
 #endif
-	FUNC(OP_DATE_YEAR,	&dateYear,	NULL,		NULL,		"YEAR")
-	FUNC(OP_DATE_MONTH,	&dateMonth,	NULL,		NULL,		"MONTH")
-	FUNC(OP_DATE_DAY,	&dateDay,	NULL,		NULL,		"DAY")
+	FUNC(OP_DATE_YEAR, &dateYear,		NULL,		NULL,		"YEAR")
+	FUNC(OP_DATE_MONTH, &dateMonth,		NULL,		NULL,		"MONTH")
+	FUNC(OP_DATE_DAY, &dateDay,		NULL,		NULL,		"DAY")
+
+	FUNC(OP_RECV1,	&decRecv,		NULL,		&intRecv,	"RECV1")
 #undef FUNC
 };
 #if COMMANDS_PASS != 2
@@ -537,9 +539,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SENDA,		&send_all,		"SENDA")
 	FUNC0(OP_RECVA,		&recv_all,		"RECVA")
 	FUNC0(OP_SEND1,		&send_byte,		"SEND1")
-	FUNC1(OP_RECV1,		&recv_byte,		"RECV1")
-	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN")
-	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE")
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2

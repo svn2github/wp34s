@@ -20,6 +20,7 @@
 #include "complex.h"
 #include "stats.h"
 #include "int.h"
+#include "serial.h"
 
 // #define DUMP1
 #ifdef DUMP1
@@ -3390,3 +3391,16 @@ decNumber *decFactor(decNumber *r, const decNumber *x) {
 	return r;
 }
 #endif
+
+decNumber *decRecv(decNumber *r, const decNumber *x) {
+	int to;
+
+	if (decNumberIsSpecial(x) || decNumberIsNegative(x)) {
+		to = -1;
+		if (decNumberIsInfinite(x) && ! decNumberIsNegative(x))
+			to = 0x7fffffff;
+	} else
+		to = dn_to_int(x);
+	int_to_dn(r, recv_byte(to));
+	return r;
+}
