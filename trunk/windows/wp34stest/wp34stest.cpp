@@ -25,7 +25,7 @@ const char *get_revision( void ) { return "test"; }
 int is_real_key_pressed(void) { return 0; }
 int get_key(void) {return 0; }
 int put_key( int k ) {return k;}
-int open_port( int baud, int bits, int stopbits, int parity ) {return 0 }
+int open_port( int baud, int bits, int stopbits, int parity ) {return 0; }
 extern void close_port( void ) {}
 void put_byte( unsigned char byte ) {}
 
