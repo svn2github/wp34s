@@ -15,20 +15,21 @@
 struct _ram PersistentRam;
 TStateWhileOn StateWhileOn;
 
-const char *pretty(unsigned char z) { return 0; }
-void shutdown( void ) { exit( 0 ); }
-int is_key_pressed(void) { return 0; }
-#ifndef watchdog
-void watchdog(void)  {}
-#endif
-const char *get_revision( void ) { return "test"; }
-int is_real_key_pressed(void) { return 0; }
-int get_key(void) {return 0; }
-int put_key( int k ) {return k;}
-int open_port( int baud, int bits, int stopbits, int parity ) {return 0; }
-extern void close_port( void ) {}
-void put_byte( unsigned char byte ) {}
-
+extern "C" {
+	const char *pretty(unsigned char z) { return 0; }
+	void shutdown( void ) { exit( 0 ); }
+	int is_key_pressed(void) { return 0; }
+	#ifndef watchdog
+	void watchdog(void)  {}
+	#endif
+	const char *get_revision( void ) { return "test"; }
+	int is_real_key_pressed(void) { return 0; }
+	int get_key(void) {return 0; }
+	int put_key( int k ) {return k;}
+	int open_port( int baud, int bits, int stopbits, int parity ) {return 0; }
+	void close_port( void ) { return; }
+	void put_byte( unsigned char byte ) { return; }
+}
 // we have one context
 static decContext Ctx;
 

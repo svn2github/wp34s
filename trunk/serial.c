@@ -97,11 +97,11 @@ extern void received_byte( short byte )
 }
 
 
-#if 0
 /*
  *  Connect to partner
  *  Opens the port and sends ENQ until ACK is received
  */
+#if 0
 static int connect( void )
 {
 	int c, i = MAXWAIT;
