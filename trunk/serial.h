@@ -19,22 +19,28 @@
 
 #include "xeq.h"
 
+// Special return values
+#define R_TIMEOUT (-1)
+#define R_ERROR (-2)
+#define R_BREAK (-3)
+
+// Global flags
+extern char SerialOn;
+
 // User visible routines
-extern void send_program(decimal64 *nul1, decimal64 *nul2);
-extern void recv_program(decimal64 *nul1, decimal64 *nul2);
-extern void send_registers(decimal64 *nul1, decimal64 *nul2);
-extern void recv_registers(decimal64 *nul1, decimal64 *nul2);
-extern void send_all(decimal64 *nul1, decimal64 *nul2);
-extern void recv_all(decimal64 *nul1, decimal64 *nul2);
-extern void send_byte(decimal64 *nul1, decimal64 *nul2);
-extern int recv_byte(int timeout);
-extern void serial_open(decimal64 *byte, decimal64 *nul2);
-extern void serial_close(decimal64 *byte, decimal64 *nul2);
+extern void send_program( decimal64 *nul1, decimal64 *nul2 );
+extern void send_registers( decimal64 *nul1, decimal64 *nul2 );
+extern void send_all( decimal64 *nul1, decimal64 *nul2 );
+extern void recv_any( decimal64 *nul1, decimal64 *nul2 );
+extern void send_byte( decimal64 *nul1, decimal64 *nul2 );
+extern int recv_byte( int timeout );
+extern void serial_open( decimal64 *byte, decimal64 *nul2 );
+extern void serial_close( decimal64 *byte, decimal64 *nul2 );
 
 // Call-back for a received byte with error information
-extern void received_byte( short byte );
+extern void byte_received( short byte );
 
-// Implemented by the hardware
+// Implemented by the hardware layer
 extern int open_port( int baud, int bits, int stopbits, int parity );
 extern void close_port( void );
 extern void put_byte( unsigned char byte );

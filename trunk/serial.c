@@ -23,24 +23,17 @@
 #define ENQ 5
 #define ACK 6
 #define NAK 0x15
-#define MAXWAIT 10
-#define R_TIMEOUT (-1)
-#define R_ERROR (-2)
-#define R_BREAK (-3)
+#define MAXCONNECT 10
+#define CHARTIME 10
 
 #define IN_BUFF_LEN 32
 #define IN_BUFF_MASK 0x1f
 #define DATA_LEN 2048
 
-/*
- *  Format of a serial data block
- */
-typedef struct _io_block {
-	char tag[ 2 ];
-	unsigned short length;
-	unsigned short crc;
-	unsigned char data[ DATA_LEN ];
-} IO_block;
+#define TAG_PROGRAM  0x5250 // "PR"
+#define TAG_REGISTER 0x4552 // "RE"
+#define TAG_ALLMEM   0x4C41 // "AL"
+
 
 /*
  *  Flags and hardware buffer for received data
@@ -51,13 +44,16 @@ char SerialOn;
 
 
 /*
- *  Get a single byte from the serial port
+ * Receive a single byte from the serial port and return the
+ * value in X.
+ * If the transfer times out or an error is detected return a negative error code.
  */
-static int get_byte( int timeout )
+int recv_byte( int timeout )
 {
 	int byte;
 	unsigned int ticks = Ticker + timeout;
-	while ( InCount == 0 && Ticker < ticks ) {
+
+	while ( InCount == 0 && ( timeout < 0 || Ticker < ticks ) ) {
 		/*
 		 *  No bytes in buffer
 		 */
@@ -76,9 +72,9 @@ static int get_byte( int timeout )
 
 
 /*
- *  Add a received byte to the buffer
+ *  Add a received byte to the buffer, called from interrupt.
  */
-extern void received_byte( short byte )
+void byte_received( short byte )
 {
 	if ( InCount == IN_BUFF_LEN ) {
 		/*
@@ -89,164 +85,296 @@ extern void received_byte( short byte )
 		--InCount;
 	}
 
-	lock();
 	InBuffer[ (int) InWrite ] = byte;
 	InWrite = ( InWrite + 1 ) & IN_BUFF_MASK;
 	++InCount;
+}
+
+
+static void clear_buffer( void )
+{
+	lock();
+	InRead = InWrite = InCount = 0;
 	unlock();
 }
 
 
 /*
- *  Connect to partner
- *  Opens the port and sends ENQ until ACK is received
+ *  Open port with default settings.
+ *  Returns non zero in case of failure.
  */
-#if 0
+static int open_port_default( void )
+{
+	return open_port( 9600, 8, 1, 'N' );
+}
+
+
+/*
+ *  Connect to partner.
+ *  Opens the port and sends ENQ until ACK is received.
+ *  Returns non zero in case of failure.
+ */
 static int connect( void )
 {
-	int c, i = MAXWAIT;
+	int c, i = MAXCONNECT;
 
-	c = open_port( 9600, 8, 1, 'N' );
-	if ( c ) {
-		// may fail, at least on the emulator
-		err( ERR_IO );
-		return -1;
-	}
+	if ( open_port_default() ) return 1;
 	do {
 		put_byte( ENQ );
-		c = get_byte( 10 );
+		c = recv_byte( CHARTIME );
 	} while ( --i && c != ACK );
 	return c != ACK;
 }
-#endif
-
 
 
 /*
- * Transmit a number of bytes and a checksum to the serial port.
+ *  Accept connection from partner.
+ *  Opens the port and waits for ENQ.
+ *  Returns non zero in case of failure.
  */
-static void put_block( void *bytes, unsigned int n ) {
-	unsigned int i;
-	const unsigned short int checksum = crc16( bytes, n );
+static int accept_connection( void )
+{
+	int i = MAXCONNECT;
 
-	for ( i = 0; i < n; i++ )
-		put_byte(((unsigned char *)bytes)[i]);
-	put_byte((checksum >> 8) & 0xff);
-	put_byte(checksum & 0xff);
+	if ( open_port_default() ) return 1;
+	while ( i-- ) {
+		if ( recv_byte( CHARTIME ) == ENQ ) {
+			clear_buffer();
+			put_byte( ACK );
+			return 0;
+		}
+		put_byte( NAK );
+	}
+	return 1;
 }
 
+
 /*
- * Receive a number of bytes from the serial port and validate the checksum.
- * If the checksum doesn't match, nothing happens.
+ *  Transmit a 16 bit word lsb first
  */
-static void get_block(void *bytes, unsigned int n) {
-	unsigned int i;
-	unsigned char buffer[2048];
-	unsigned short crc;
-	unsigned int byte;
+static void put_word( unsigned short w )
+{
+	put_byte( (unsigned char) ( w >> 8 ) );
+	put_byte( (unsigned char) w );
+}
 
-	for (i=0; i<n; i++)
-		buffer[i] = get_byte( 10 );
 
-	byte = get_byte( 10 );
-	crc = (byte & 0xff) << 8;
-	byte = get_byte( 10 );
-	crc |= (byte & 0xff);
-	if (crc != crc16(buffer, n)) {
-		err(ERR_IO);
-		return;
+/*
+ *  Receive a 16 bit word. Negative return values are errors.
+ */
+static int get_word( void )
+{
+	int cl;
+	int ch;
+
+	cl = recv_byte( CHARTIME );
+	if ( cl < 0 ) return cl;
+	ch = recv_byte( CHARTIME );
+	if ( ch < 0 ) return ch;
+	return cl | ( ch << 8 );
+}
+
+
+/*
+ *  Transmits block of data to the serial port.
+ *  Returns non zero in case of error.
+ *  The protocol is as follows:
+ *    Connect (Send ENQ, wait for ACK, see above)
+ *    Send tag (2 bytes)
+ *    Send length (16 bit, lsb first)
+ *    Send CRC^tag^length (16 bit, lsb first)
+ *    Send data
+ *    Send ETX
+ *    Wait for ACK
+ */
+static int put_block( unsigned short tag, unsigned short length, void *data )
+{
+	const unsigned short cc = crc16( data, length ) ^ tag ^ length;
+	unsigned char *p = (unsigned char *) data;
+
+	if ( connect() ) return 1;
+	put_word( tag );
+	put_word( length );
+	put_word( cc );
+	while ( length-- ) {
+		put_byte( *p++ );
 	}
-	xcopy(bytes, buffer, n);
+	clear_buffer();
+	put_byte( ETX );
+	if ( ACK != recv_byte( 2 * CHARTIME ) ) {
+		err( ERR_IO );
+		return 1;
+	}
+	close_port();
+	return 0;
+}
+
+
+/*
+ *  Receive block from the serial port and validate the checksum.
+ *  If the checksum doesn't match, set error condition.
+ *  Depending on the tag received, copy the data to its destination.
+ *  This implements the RECV command.
+ */
+void recv_any( decimal64 *nul1, decimal64 *nul2 )
+{
+	int i, c;
+	unsigned char buffer[ DATA_LEN ];
+	int tag, length, crc;
+	void *dest;
+
+	if ( accept_connection() ) goto err;
+
+	tag = get_word();
+	if ( tag < 0 ) goto err;
+
+	length = get_word();
+	if ( length < 0 ) goto err;
+
+	crc = get_word();
+	if ( crc < 0 ) goto err;
+
+	for ( i = 0; i < length; ++i ) {
+		c = recv_byte( CHARTIME );
+		if ( c < 0 ) goto err;
+		buffer[ i ] = c;
+	}
+	c = recv_byte( CHARTIME );
+	if ( c != ETX ) goto err;
+
+	if ( crc != ( crc16( buffer, length ) ^ tag ^ length ) ) goto err;
+
+	/*
+	 *  Check the tag value and copy the data if valid
+	 */
+	switch ( tag ) {
+
+	case TAG_PROGRAM:
+		/*
+		 *  Program area received
+		 */
+		if ( check_return_stack_segment( -1 )
+		  || length > sizeof( s_opcode ) * NUMPROG )
+		{
+			  goto invalid;
+		}
+		dest = Prog;
+		LastProg = 1 + length / sizeof( s_opcode );
+		DispMsg = "Program";
+		break;
+
+	case TAG_ALLMEM:
+		/*
+		 *  All memory received
+		 */
+		if ( check_return_stack_segment( -1 )
+		  || length != sizeof( PersistentRam ) )
+		{
+			  goto invalid;
+		}
+		dest = &PersistentRam;
+		DispMsg = "All RAM";
+		break;
+
+	case TAG_REGISTER:
+		/*
+		 *  Registers received
+		 */
+		if ( length > sizeof( Regs ) ) {
+			  goto invalid;
+		}
+		dest = Regs;
+		DispMsg = "Register";
+		break;
+
+	default:
+		goto invalid;
+	}
+
+	/*
+	 *  Copy the data and recompute the checksums
+	 */
+	xcopy( dest, buffer, length );
+	checksum_all();
+
+	/*
+	 *  All is well
+	 */
+	c = ACK;
+	goto close;
+
+	/*
+	 *  Various error conditions
+	 */
+invalid:
+	err( ERR_INVALID );
+	goto nak;
+err:
+	err( ERR_IO );
+nak:
+	c = NAK;
+
+close:
+	/*
+	 *  Send reply to partner
+	 */
+	put_byte( c );
+	close_port();
+	return;
 }
 
 
 /*
  * Open the serial port
  */
-void serial_open(decimal64 *nul1, decimal64 *nul2) {
+void serial_open( decimal64 *nul1, decimal64 *nul2 )
+{
 }
  
  /*
  * Close the serial port
  */
-void serial_close(decimal64 *nul1, decimal64 *nul2) {
+void serial_close( decimal64 *nul1, decimal64 *nul2 )
+{
 }
 
 
 /*
  * Transmit the program space from RAM to the serial port.
- * 506 * 2 = 1012 bytes plus checksums.
  */
-void send_program(decimal64 *nul1, decimal64 *nul2) {
-	put_block(Prog, sizeof(s_opcode) * NUMPROG);
-}
-
-
-/*
- * Load the RAM program space from the serial port.
- */
-void recv_program(decimal64 *nul1, decimal64 *nul2) {
-	if (check_return_stack_segment(-1)) {
-		err( ERR_INVALID );
-		return;
-	}
-	get_block(Prog, sizeof(s_opcode) * NUMPROG);
+void send_program( decimal64 *nul1, decimal64 *nul2 )
+{
+	put_block( TAG_PROGRAM, ( LastProg - 1 ) * sizeof( s_opcode ), Prog );
 }
 
 
 /*
  * Send registers 00 through 99 to the serial port.
- * 100 registers at 8 bytes each is 800 bytes in total plus checksums.
  */
-void send_registers(decimal64 *nul1, decimal64 *nul2) {
-	put_block(Regs, sizeof(decimal64) * TOPREALREG);
-}
-
-
-/*
- * Load registers 00 through 99 from the serial port.
- */
-void recv_registers(decimal64 *nul1, decimal64 *nul2) {
-	get_block(Regs, sizeof(decimal64) * TOPREALREG);
+void send_registers( decimal64 *nul1, decimal64 *nul2 )
+{
+	put_block( TAG_REGISTER, sizeof( decimal64 ) * TOPREALREG, Regs );
 }
 
 
 /*
  * Send all of RAM to the serial port.  2kb in total.
  */
-void send_all(decimal64 *nul1, decimal64 *nul2) {
-	put_block(&PersistentRam, sizeof(TPersistentRam));
-}
-
-
-/*
- * Load all of RAM from the serial port.
- */
-void recv_all(decimal64 *nul1, decimal64 *nul2) {
-	if (check_return_stack_segment(-1)) {
-		err( ERR_INVALID );
-		return;
-	}
-	get_block(&PersistentRam, sizeof(TPersistentRam));
+void send_all( decimal64 *nul1, decimal64 *nul2 )
+{
+	put_block( TAG_ALLMEM, sizeof( PersistentRam ), &PersistentRam );
 }
 
 
 /*
  * Send a single byte as specified in X to the serial port.
  */
-void send_byte(decimal64 *nul1, decimal64 *nul2) {
+void send_byte( decimal64 *nul1, decimal64 *nul2 )
+{
 	int sgn;
-	const unsigned char byte = get_int(&regX, &sgn) & 0xff;
+	const unsigned char byte = get_int( &regX, &sgn ) & 0xff;
 
-	put_byte(byte);
+	put_byte( byte );
 }
 
 
-/*
- * Receive a single byte from the serial port and return the
- * value in X.
- * If the transfer times out, ???.
- */
-int recv_byte(int timeout) {
-	return get_byte(timeout);
-}

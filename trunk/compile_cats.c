@@ -162,11 +162,9 @@ static s_opcode program_xfcn[] = {
 
 	/* Serial commands */
 	NILIC(OP_SENDP,		"SENDP")
-	NILIC(OP_RECVP,		"RECVP")
 	NILIC(OP_SENDR,		"SENDR")
-	NILIC(OP_RECVR,		"RECVR")
 	NILIC(OP_SENDA,		"SENDA")
-	NILIC(OP_RECVA,		"RECVA")
+	NILIC(OP_RECV,		"RECV")
 
 	/* Integer mode commands */
 	RARGCMD(RARG_ASR,	"ASR")
@@ -323,11 +321,9 @@ static s_opcode catalogue[] = {
 
 	/* Serial commands */
 	NILIC(OP_SENDP,		"SENDP")
-	NILIC(OP_RECVP,		"RECVP")
 	NILIC(OP_SENDR,		"SENDR")
-	NILIC(OP_RECVR,		"RECVR")
 	NILIC(OP_SENDA,		"SENDA")
-	NILIC(OP_RECVA,		"RECVA")
+	NILIC(OP_RECV,		"RECV")
 };
 
 static s_opcode cplx_catalogue[] = {
@@ -520,11 +516,9 @@ static s_opcode int_catalogue[] = {
 
 	/* Serial commands */
 	NILIC(OP_SENDP,		"SENDP")
-	NILIC(OP_RECVP,		"RECVP")
 	NILIC(OP_SENDR,		"SENDR")
-	NILIC(OP_RECVR,		"RECVR")
 	NILIC(OP_SENDA,		"SENDA")
-	NILIC(OP_RECVA,		"RECVA")
+	NILIC(OP_RECV,		"RECV")
 };
 
 static s_opcode test_catalogue[] = {
