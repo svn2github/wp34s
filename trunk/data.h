@@ -272,7 +272,6 @@ extern int JustStopped;            // Set on program stop to ignore the next R/S
 extern int Error;		   // Did an error occur, if so what code?
 extern int ShowRegister; 	   // Temporary display (not X)
 extern int PcWrapped;		   // dec() or inc() have rapped around
-extern char SerialOn;		   // Set while the serial I/O is active
 extern decContext Ctx;
 
 #if !defined(REALBUILD) && !defined(WINGUI)

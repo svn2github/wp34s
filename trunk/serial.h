@@ -32,16 +32,18 @@ extern void send_program( decimal64 *nul1, decimal64 *nul2 );
 extern void send_registers( decimal64 *nul1, decimal64 *nul2 );
 extern void send_all( decimal64 *nul1, decimal64 *nul2 );
 extern void recv_any( decimal64 *nul1, decimal64 *nul2 );
-extern void send_byte( decimal64 *nul1, decimal64 *nul2 );
 extern int recv_byte( int timeout );
+#ifdef INCLUDE_USER_IO
+extern void send_byte( decimal64 *nul1, decimal64 *nul2 );
 extern void serial_open( decimal64 *byte, decimal64 *nul2 );
 extern void serial_close( decimal64 *byte, decimal64 *nul2 );
+#endif
 
 // Call-back for a received byte with error information
 extern void byte_received( short byte );
 
 // Implemented by the hardware layer
-extern int open_port( int baud, int bits, int stopbits, int parity );
+extern int open_port( int baud, int bits, int parity, int stopbits );
 extern void close_port( void );
 extern void put_byte( unsigned char byte );
 

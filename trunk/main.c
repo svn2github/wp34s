@@ -25,6 +25,7 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #include "lcd.h"
 #include "keys.h"
 #include "storage.h"
+#include "serial.h"
 
 #ifndef at91sam7l128
 #define at91sam7l128 1
@@ -150,9 +151,7 @@ short int BodTimer;
 /*
  *  DBGU serial I/O definitions
  */
-#define DBGU_DRXD_PIO_MASK 0x00010000
-#define DBGU_DTXD_PIO_MASK 0x00020000
-#define DBGU_PIO_MASK      0x00030000
+#define USE_SYSTEM_IRQ 1
 
 /*
  *  Tell the revision number (must not be optimised out!)
@@ -183,6 +182,7 @@ void short_wait( int count )
  *  Lock / unlock by disabling / enabling the periodic interrupt.
  *  Do nothing if called inside the interrupt handler
  */
+#undef lock
 void lock( void )
 {
 	if ( !InIrq ) {
@@ -190,6 +190,7 @@ void lock( void )
 	}
 }
 
+#undef unlock
 void unlock( void )
 {
 	if ( !InIrq ) {
@@ -429,7 +430,6 @@ void disable_lcd( void )
 
 /*
  *  Go to idle mode
- *  Runs from SRAM to be able to turn off flash
  */
 void go_idle( void )
 {
@@ -1036,6 +1036,13 @@ void LCD_interrupt( void )
 	 */
 	scan_keyboard();
 
+	/*
+	 *  Check if a serial transfer has to be interrupted
+	 */
+	if ( SerialOn && OnKeyPressed ) {
+		byte_received( R_BREAK );
+	}
+
 	Heartbeats = ( Heartbeats + 1 ) & 0x7f;
 	if ( Heartbeats & 1 ) {
 		/*
@@ -1102,35 +1109,42 @@ void SLCD_irq( void )
 
 #ifdef USE_SYSTEM_IRQ
 /*
+ *  The DBGU interrupt
+ */
+void DBGU_irq( void )
+{
+	// Test receiver
+	if ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_RXRDY ) ) {
+		int c = AT91C_BASE_DBGU->DBGU_RHR;
+		if ( AT91C_BASE_DBGU->DBGU_CSR & 0xE0 ) {
+			// receiver error
+			c = R_ERROR;
+			AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RSTSTA;
+		}
+		byte_received( c );
+	}
+
+	// If transmitter is ready disable its interrupt
+	if ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_TXRDY ) ) {
+		AT91C_BASE_DBGU->DBGU_IDR = AT91C_US_TXRDY;
+	}
+}
+
+
+/*
  *  The system interrupt handler
  */
-RAM_FUNCTION void system_irq( void )
+void system_irq( void )
 {
 	SUPC_DisableDeepMode();
-
-	/*
-	 *  Set speed to a minimum of 2 MHz for all irq handling.
-	 */
-	if ( SpeedSetting < SPEED_MEDIUM ) {
-		set_speed( SPEED_MEDIUM );
-	}
 
 	/*
 	 *  Since all system peripherals are tied to the same IRQ source 1
 	 *  we need to check, for the source of the interrupt
 	 */
-	if ( PIT_GetStatus() ) {
-		/*
-		 *  PIT
-		 */
-		PIT_interrupt();
-	}
-	else {
-		/*
-		 *  Add other sources here
-		 */
-		// ...
-	}
+
+	// This part checks for itself
+	DBGU_irq();
 }
 #endif
 
@@ -1180,11 +1194,39 @@ void enable_interrupts()
 
 
 /*
- *  Open the DBGU port for transmission
+ *  Open the DBGU port for transmission.
+ *  The DBGU port is restricted in that it only supports 8 bits, 1 stop bit.
+ *  7 bits is rejected, the number of stop bits is ignored.
+ *  A non zero return indicates an error.
  */
-int open_port( int baud, int bits, int stopbits, int parity )
+int open_port( int baud, int bits, int parity, int stopbits )
 {
-	SerialOn = 1;
+	int mode, div;
+
+	// Reset & disable receiver and transmitter, disable interrupts
+	AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RSTRX | AT91C_US_RSTTX | AT91C_US_RSTSTA;
+	AT91C_BASE_DBGU->DBGU_IDR = 0xFFFFFFFF;
+
+	// The port provides only 8bit support
+	if ( bits != 8 ) return 1;
+	mode = parity == 'E' ? AT91C_US_PAR_EVEN
+	     : parity == 'O' ? AT91C_US_PAR_ODD
+	     : AT91C_US_PAR_NONE;
+	div = ClockSpeed / ( baud * 16 );
+	if ( div <= 1 ) return 1;
+
+	// Configure baud rate
+	AT91C_BASE_DBGU->DBGU_BRGR = div;
+
+	// Configure mode register
+	AT91C_BASE_DBGU->DBGU_MR = mode;
+
+	// Enable RX interrupt
+	AT91C_BASE_DBGU->DBGU_IER = AT91C_US_RXRDY;
+
+	// Enable receiver and transmitter
+	AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RXEN | AT91C_US_TXEN;
+
 	return 0;
 }
 
@@ -1194,7 +1236,9 @@ int open_port( int baud, int bits, int stopbits, int parity )
  */
 extern void close_port( void )
 {
-	SerialOn = 0;
+	// Disable receiver and transmitter, disable interrupts
+	AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RXDIS | AT91C_US_TXDIS;
+	AT91C_BASE_DBGU->DBGU_IDR = 0xFFFFFFFF;
 }
 
 
@@ -1203,8 +1247,21 @@ extern void close_port( void )
  */
 void put_byte( unsigned char byte )
 {
-	err( ERR_PROG_BAD );
+    // Wait for the transmitter to be ready
+    while ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_TXRDY ) == 0 && !OnKeyPressed ) {
+	    go_idle();
+    }
+    if ( OnKeyPressed ) {
+	    return;
+    }
+
+    // Send character
+    AT91C_BASE_DBGU->DBGU_THR = byte;
+
+    // Enable transmitter interrupt
+    AT91C_BASE_DBGU->DBGU_IER = AT91C_US_TXRDY;
 }
+
 
 
 
@@ -1283,6 +1340,7 @@ int put_key( int k )
 /*
  *  Serve the watch dog
  */
+#undef watchdog
 void watchdog( void )
 {
 #ifndef NOWD
@@ -1296,6 +1354,7 @@ void watchdog( void )
  *  Called from a busy loop waiting for an interrupt to do something.
  *  The original speed is restored.
  */
+#undef idle
 void idle( void )
 {
 	int old_speed = SpeedSetting;
@@ -1325,6 +1384,7 @@ void turn_on_crystal( void )
  *  Is debugger active ?
  *  The flag is set via ON+D
  */
+#undef is_debug
 int is_debug( void )
 {
 	return DebugFlag == 0xA5;
@@ -1335,7 +1395,7 @@ void toggle_debug( void )
 {
 	DebugFlag = is_debug() ? 0 : 0xA5;
 #ifdef SLEEP_ANNUNCIATOR
-	SleepAnnunciatorOn = is_debug();
+	SleepAnnunciatorOn = is_debug() || SerialOn;
 	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
 #endif
 	message( is_debug() ? "Debug ON" : "Debug OFF", NULL );
@@ -1346,6 +1406,7 @@ void toggle_debug( void )
  *  Is test mode active ?
  *  The flag is set via ON+1
  */
+#undef is_test_mode
 int is_test_mode( void )
 {
 	return TestFlag;
@@ -1537,8 +1598,8 @@ int main(void)
 	}
 
 #ifdef SLEEP_ANNUNCIATOR
-	SleepAnnunciatorOn = 1;
-	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn && DebugFlag );
+	SleepAnnunciatorOn = is_debug();
+	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
 	finish_display();
 #endif
 	/*

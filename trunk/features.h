@@ -41,6 +41,8 @@
 // Include Bernoulli numbers as functions
 #define INCLUDE_BERNOULLI
 
+// Include the user mode serial commands SOPEN, SCLOSE, RECV1, SEND1
+#define INCLUDE_USER_IO
 
 // Incude the digamma function for real and complex arguments
 //#define INCLUDE_DIGAMMA

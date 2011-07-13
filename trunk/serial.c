@@ -17,6 +17,8 @@
 #include "serial.h"
 #include "xeq.h"
 #include "storage.h"
+#include "display.h"
+#include "lcd.h"
 
 #define STX 2
 #define ETX 3
@@ -34,6 +36,7 @@
 #define TAG_REGISTER 0x4552 // "RE"
 #define TAG_ALLMEM   0x4C41 // "AL"
 
+#define SERIAL_ANNUNCIATOR LIT_EQ
 
 /*
  *  Flags and hardware buffer for received data
@@ -41,6 +44,18 @@
 short InBuffer[ IN_BUFF_LEN ];
 volatile char InRead, InWrite, InCount;
 char SerialOn;
+
+/*
+ *  Handle the flag and the annunciator
+ */
+static void serial_state( int state )
+{
+	SerialOn = state;
+#ifdef SERIAL_ANNUNCIATOR
+	dot( SERIAL_ANNUNCIATOR, state );
+	finish_display();
+#endif
+}
 
 
 /*
@@ -72,6 +87,15 @@ int recv_byte( int timeout )
 
 
 /*
+ *  Receive a byte with fixed timeout value
+ */
+static int get_byte( void )
+{
+	return recv_byte( CHARTIME );
+}
+
+
+/*
  *  Add a received byte to the buffer, called from interrupt.
  */
 void byte_received( short byte )
@@ -91,6 +115,9 @@ void byte_received( short byte )
 }
 
 
+/*
+ *  Get rid of any stray input data
+ */
 static void clear_buffer( void )
 {
 	lock();
@@ -105,7 +132,11 @@ static void clear_buffer( void )
  */
 static int open_port_default( void )
 {
-	return open_port( 9600, 8, 1, 'N' );
+	if ( open_port( 9600, 8, 1, 'N' ) ) {
+		return 1;
+	}
+	serial_state( 1 );
+	return 0;
 }
 
 
@@ -121,8 +152,8 @@ static int connect( void )
 	if ( open_port_default() ) return 1;
 	do {
 		put_byte( ENQ );
-		c = recv_byte( CHARTIME );
-	} while ( --i && c != ACK );
+		c = get_byte();
+	} while ( c != ACK && --i );
 	return c != ACK;
 }
 
@@ -138,7 +169,7 @@ static int accept_connection( void )
 
 	if ( open_port_default() ) return 1;
 	while ( i-- ) {
-		if ( recv_byte( CHARTIME ) == ENQ ) {
+		if ( get_byte() == ENQ ) {
 			clear_buffer();
 			put_byte( ACK );
 			return 0;
@@ -167,9 +198,9 @@ static int get_word( void )
 	int cl;
 	int ch;
 
-	cl = recv_byte( CHARTIME );
+	cl = get_byte();
 	if ( cl < 0 ) return cl;
-	ch = recv_byte( CHARTIME );
+	ch = get_byte();
 	if ( ch < 0 ) return ch;
 	return cl | ( ch << 8 );
 }
@@ -178,35 +209,41 @@ static int get_word( void )
 /*
  *  Transmits block of data to the serial port.
  *  Returns non zero in case of error.
+ *
  *  The protocol is as follows:
  *    Connect (Send ENQ, wait for ACK, see above)
  *    Send tag (2 bytes)
  *    Send length (16 bit, lsb first)
- *    Send CRC^tag^length (16 bit, lsb first)
+ *    Send CRC ^ tag (16 bit, lsb first)
  *    Send data
  *    Send ETX
  *    Wait for ACK
+ *
+ *    If a NAK is reeived while sending the transfer is aborted.
  */
 static int put_block( unsigned short tag, unsigned short length, void *data )
 {
-	const unsigned short cc = crc16( data, length ) ^ tag ^ length;
+	const unsigned short crc = crc16( data, length ) ^ tag;
 	unsigned char *p = (unsigned char *) data;
+	int ret = 0;
 
 	if ( connect() ) return 1;
 	put_word( tag );
 	put_word( length );
-	put_word( cc );
-	while ( length-- ) {
+	put_word( crc );
+	while ( length-- && ret == 0 ) {
 		put_byte( *p++ );
+		ret = ( NAK == recv_byte( 0 ) );
 	}
 	clear_buffer();
 	put_byte( ETX );
-	if ( ACK != recv_byte( 2 * CHARTIME ) ) {
+	if ( ret || ACK != recv_byte( 2 * CHARTIME ) ) {
 		err( ERR_IO );
-		return 1;
+		ret = 1;
 	}
 	close_port();
-	return 0;
+	serial_state( 0 );
+	return ret;
 }
 
 
@@ -229,20 +266,20 @@ void recv_any( decimal64 *nul1, decimal64 *nul2 )
 	if ( tag < 0 ) goto err;
 
 	length = get_word();
-	if ( length < 0 ) goto err;
+	if ( length < 0 || length > DATA_LEN ) goto err;
 
 	crc = get_word();
 	if ( crc < 0 ) goto err;
 
 	for ( i = 0; i < length; ++i ) {
-		c = recv_byte( CHARTIME );
+		c = get_byte();
 		if ( c < 0 ) goto err;
 		buffer[ i ] = c;
 	}
-	c = recv_byte( CHARTIME );
+	c = get_byte();
 	if ( c != ETX ) goto err;
 
-	if ( crc != ( crc16( buffer, length ) ^ tag ^ length ) ) goto err;
+	if ( crc != ( crc16( buffer, length ) ^ tag ) ) goto err;
 
 	/*
 	 *  Check the tag value and copy the data if valid
@@ -320,23 +357,83 @@ close:
 	 */
 	put_byte( c );
 	close_port();
+	serial_state( 0 );
 	return;
 }
 
 
+#ifdef INCLUDE_USER_IO
 /*
- * Open the serial port
+ *  Open the serial port from user code.
+ *  Alpha is interpreted as follows:
+ *    baudrate,format
+ *    - The delimter may be any non digit.
+ *    - The format is a combination of '1', '2', '7', '8', 'E', 'O' or 'N'
+ *    - Any other characters are skipped and ignored.
+ *    - Default: 9600,8N1
  */
 void serial_open( decimal64 *nul1, decimal64 *nul2 )
 {
+	int baud = 9600;
+	char bits = 8;
+	char parity = 'N';
+	char stop = 1;
+	char c, *p = Alpha;
+
+	if ( *p != '\0' ) {
+		/*
+		 *  Alpha is set, parse it
+		 */
+		baud = 0;
+		while ( ( c = *p++ ) && c >= '0' && c <= '9' ) {
+			baud = baud * 10 + ( c & 0xf );
+		}
+		while ( ( c = *p++ ) ) {
+			if ( c == '7' || c == '8' ) {
+				bits = c & 0xf;
+			}
+			else if ( c == '1' || c == '2' ) {
+				stop = c & 0xf;
+			}
+			else if ( c == 'E' || c == 'N' || c == 'O' ) {
+				parity = c;
+			}
+		}
+	}
+
+	/*
+	 *  Set up the port
+	 */
+	if ( open_port( baud, bits, stop, parity ) ) {
+		err( ERR_INVALID );
+		return;
+	}
+	serial_state( 1 );
+	return;
 }
- 
+
+
  /*
- * Close the serial port
+ * Close the serial port from user code
  */
 void serial_close( decimal64 *nul1, decimal64 *nul2 )
 {
+	close_port();
+	serial_state( 0 );
 }
+
+
+/*
+ * Send a single byte as specified in X to the serial port.
+ */
+void send_byte( decimal64 *nul1, decimal64 *nul2 )
+{
+	int sgn;
+	const unsigned char byte = get_int( &regX, &sgn ) & 0xff;
+
+	put_byte( byte );
+}
+#endif
 
 
 /*
@@ -363,18 +460,6 @@ void send_registers( decimal64 *nul1, decimal64 *nul2 )
 void send_all( decimal64 *nul1, decimal64 *nul2 )
 {
 	put_block( TAG_ALLMEM, sizeof( PersistentRam ), &PersistentRam );
-}
-
-
-/*
- * Send a single byte as specified in X to the serial port.
- */
-void send_byte( decimal64 *nul1, decimal64 *nul2 )
-{
-	int sgn;
-	const unsigned char byte = get_int( &regX, &sgn ) & 0xff;
-
-	put_byte( byte );
 }
 
 

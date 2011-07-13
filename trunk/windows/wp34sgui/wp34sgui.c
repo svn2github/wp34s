@@ -244,7 +244,7 @@ void shutdown( void )
 /*
  *  Open a COM port for transmission
  */
-int open_port( int baud, int bits, int stopbits, int parity )
+int open_port( int baud, int bits, int parity, int stopbits )
 {
 	SerialOn = 1;
 	return 0;

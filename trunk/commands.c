@@ -228,8 +228,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_DATE_YEAR, &dateYear,		NULL,		NULL,		"YEAR")
 	FUNC(OP_DATE_MONTH, &dateMonth,		NULL,		NULL,		"MONTH")
 	FUNC(OP_DATE_DAY, &dateDay,		NULL,		NULL,		"DAY")
-
+#ifdef INCLUDE_USER_IO
 	FUNC(OP_RECV1,	&decRecv,		NULL,		&intRecv,	"RECV1")
+#endif
 #undef FUNC
 };
 #if COMMANDS_PASS != 2
@@ -536,9 +537,11 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SENDR,		&send_registers,	"SENDR")
 	FUNC0(OP_SENDA,		&send_all,		"SENDA")
 	FUNC0(OP_RECV,		&recv_any,		"RECV")
+#ifdef INCLUDE_USER_IO
 	FUNC0(OP_SEND1,		&send_byte,		"SEND1")
 	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN")
 	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE")
+#endif
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2

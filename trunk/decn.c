@@ -3392,6 +3392,7 @@ decNumber *decFactor(decNumber *r, const decNumber *x) {
 }
 #endif
 
+#ifdef INCLUDE_USER_IO
 decNumber *decRecv(decNumber *r, const decNumber *x) {
 	int to;
 
@@ -3404,3 +3405,4 @@ decNumber *decRecv(decNumber *r, const decNumber *x) {
 	int_to_dn(r, recv_byte(to));
 	return r;
 }
+#endif

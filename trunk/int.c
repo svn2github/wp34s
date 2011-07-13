@@ -1636,7 +1636,7 @@ long long int intFactor(long long int x) {
 }
 #endif // INCLUDE_FACTOR
 
-
+#ifdef INCLUDE_USER_IO
 long long int intRecv(long long int x) {
 	int sx;
 	unsigned long long int xv = extract_value(x, &sx);
@@ -1653,3 +1653,4 @@ long long int intRecv(long long int x) {
 	set_overflow(sx);
 	return build_value(c, sx);
 }
+#endif

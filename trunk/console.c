@@ -506,7 +506,7 @@ int is_shift_down(int s)
 /*
  *  Open a COM port for transmission
  */
-int open_port( int baud, int bits, int stopbits, int parity )
+int open_port( int baud, int bits, int parity, int stopbits )
 {
 	return 0;
 }
