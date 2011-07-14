@@ -280,6 +280,11 @@ void lift(void) {
 		*get_stack(i) = *get_stack(i-1);
 }
 
+static void lift_if_enabled(void) {
+	if ( State.state_lift )
+		lift();
+}
+
 static void lower(void) {
 	const int n = stack_size();
 	int i;
@@ -756,8 +761,7 @@ static void process_cmdline(void) {
 				cmdline[CmdLineLength-2] = '\0';
 		}
 		CmdLineLength = 0;
-		if (State.state_lift)
-			lift();
+		lift_if_enabled();
 		State.state_lift = 1;
 		CmdLineDot = 0;
 		CmdLineEex = 0;
@@ -1106,7 +1110,7 @@ void cmdconst(unsigned int arg, enum rarg op) {
 		bad_mode_error();
 		return;
 	}
-	lift();
+	lift_if_enabled();
 	regX = CONSTANT(arg);
 }
 
@@ -1127,7 +1131,7 @@ void cmdconstint(unsigned int arg, enum rarg op) {
 		bad_mode_error();
 		return;
 	}
-	lift();
+	lift_if_enabled();
 	regX = CONSTANT_INT(arg);
 }
 
@@ -1239,7 +1243,7 @@ void cmdsto(unsigned int arg, enum rarg op) {
 static void do_rcl(const decimal64 *rn, enum rarg op) {
 	if (op == RARG_RCL) {
 		decimal64 temp = *rn;
-		lift();
+		lift_if_enabled();
 		regX = temp;
 	} else {
 		if (is_intmode()) {
@@ -1856,8 +1860,7 @@ static void niladic(const opcode op) {
 			case 2:	lift();
 				y = &regY;
 			case 1:	x = &regX;
-				if (State.state_lift)
-					lift();
+				lift_if_enabled();
 			default:
 				if (niladics[idx].niladicf != FNULL)
 					CALL(niladics[idx].niladicf)(x, y);
