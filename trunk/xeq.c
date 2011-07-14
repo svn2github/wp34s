@@ -1022,11 +1022,11 @@ static void dyadic(const opcode op) {
 
 				getXY(&x, &y);
 
-				CALL(dyfuncs[f].dydreal)(&r, &y, &x);
-
-				setlastX();
-				lower();
-				setX(&r);
+				if (NULL != CALL(dyfuncs[f].dydreal)(&r, &y, &x)) {
+					setlastX();
+					lower();
+					setX(&r);
+				}
 			} else
 				bad_mode_error();
 		}
@@ -1091,12 +1091,12 @@ static void triadic(const opcode op) {
 				getXY(&x, &y);
 				getZ(&z);
 
-				CALL(trifuncs[f].trireal)(&r, &z, &y, &x);
-
-				setlastX();
-				lower();
-				lower();
-				setX(&r);
+				if (NULL != CALL(trifuncs[f].trireal)(&r, &z, &y, &x)) {
+					setlastX();
+					lower();
+					lower();
+					setX(&r);
+				}
 			} else
 				bad_mode_error();
 		}
