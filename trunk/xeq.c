@@ -951,10 +951,10 @@ static void monadic(const opcode op) {
 
 				getX(&x);
 
-				CALL(monfuncs[f].mondreal)(&r, &x);
-
-				setlastX();
-				setX(&r);
+				if ( NULL != DCALL(monfuncs[f].mondreal)(&r, &x) ) {
+					setlastX();
+					setX(&r);
+				}
 			} else
 				bad_mode_error();
 		}

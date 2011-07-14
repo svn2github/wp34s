@@ -84,6 +84,7 @@ typedef unsigned short int s_opcode;
  *  This macro reverses the operation.
  */
 #define CALL(f) (*((void (*)())(0x100001 | ( f << 1 ))))
+#define DCALL(f) (*((decNumber *(*)())(0x100001 | ( f << 1 ))))
 #define ICALL(f) (*((long long (*)())(0x100001 | ( f << 1 ))))
 #define FNULL 0
 #ifdef POST_PROCESSING
@@ -107,6 +108,7 @@ extern _CONST struct _command_info {
 } command_info;
 #else
 #define CALL(f) (*f)
+#define DCALL(f) (*f)
 #define ICALL(f) (*f)
 #define FNULL NULL
 #endif
