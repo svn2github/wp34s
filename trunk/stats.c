@@ -611,7 +611,7 @@ decNumber *stats_xhat(decNumber *res, const decNumber *y) {
 	enum sigma_modes m;
 
 	if (check_data(2))
-		return NULL;
+		return set_NaN(res);
 	m = do_LR(&b, &a);
 	switch (m) {
 	default:
@@ -643,7 +643,7 @@ decNumber *stats_yhat(decNumber *res, const decNumber *x) {
 	enum sigma_modes m;
 
 	if (check_data(2))
-		return NULL;
+		return set_NaN(res);
 	m = do_LR(&b, &a);
 	switch (m) {
 	default:

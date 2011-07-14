@@ -186,10 +186,12 @@ static void warn(const enum errors e) {
 /* Produce an error and stop
  */
 void err(const enum errors e) {
-	Error = e;
-	if (Running) {
-		set_running_off();
-		decpc();			// back up to errant statement
+	if (Error == ERR_NONE) {
+		Error = e;
+		if (Running) {
+			set_running_off();
+			decpc();		// back up to errant statement
+		}
 	}
 }
 
