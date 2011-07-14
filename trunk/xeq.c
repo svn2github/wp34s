@@ -1021,7 +1021,7 @@ static void dyadic(const opcode op) {
 
 				getXY(&x, &y);
 
-				if (NULL != CALL(dyfuncs[f].dydreal)(&r, &y, &x))
+				if (NULL != DCALL(dyfuncs[f].dydreal)(&r, &y, &x))
 					set_NaN(&r);
 				setlastX();
 				lower();
@@ -1090,7 +1090,7 @@ static void triadic(const opcode op) {
 				getXY(&x, &y);
 				getZ(&z);
 
-				if (NULL != CALL(trifuncs[f].trireal)(&r, &z, &y, &x))
+				if (NULL != DCALL(trifuncs[f].trireal)(&r, &z, &y, &x))
 					set_NaN(&r);
 				setlastX();
 				lower();
