@@ -77,7 +77,7 @@ static void init_cat(enum catalogues cat) {
 		State.last_catpos = State2.digval;
 		CmdLineLength = 0;
 	}
-	process_cmdline_set_lift();
+	process_cmdline();
 	State2.catalogue = cat;
 	State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
 	if (cat != CATALOGUE_NONE && State.last_cat == cat) {

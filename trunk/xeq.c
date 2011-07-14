@@ -283,8 +283,15 @@ void lift(void) {
 }
 
 static void lift_if_enabled(void) {
-	if ( State.state_lift )
+	if (State.state_lift) {
 		lift();
+		State.state_lift = 1;
+	}
+}
+
+static void lift2_if_enabled(void) {
+	lift_if_enabled();
+	lift();
 }
 
 static void lower(void) {
@@ -293,14 +300,6 @@ static void lower(void) {
 
 	for (i=1; i<n; i++)
 		*get_stack(i-1) = *get_stack(i);
-}
-
-static void lift2(void) {
-	const int n = stack_size();
-	int i;
-
-	for (i=n-1; i>1; i--)
-		*get_stack(i) = *get_stack(i-2);
 }
 
 static void lower2(void) {
@@ -746,7 +745,7 @@ static int fract_convert_number(decNumber *x, const char *s) {
 
 /* Process the command line if any
  */
-static void process_cmdline(void) {
+void process_cmdline(void) {
 	decNumber a, b, x, t, z;
 
 	if (CmdLineLength) {
@@ -957,10 +956,10 @@ static void monadic(const opcode op) {
 
 				getX(&x);
 
-				if ( NULL != DCALL(monfuncs[f].mondreal)(&r, &x) ) {
-					setlastX();
-					setX(&r);
-				}
+				if ( NULL == DCALL(monfuncs[f].mondreal)(&r, &x) )
+					set_NaN(&r);
+				setlastX();
+				setX(&r);
 			} else
 				bad_mode_error();
 		}
@@ -1022,11 +1021,11 @@ static void dyadic(const opcode op) {
 
 				getXY(&x, &y);
 
-				if (NULL != CALL(dyfuncs[f].dydreal)(&r, &y, &x)) {
-					setlastX();
-					lower();
-					setX(&r);
-				}
+				if (NULL != CALL(dyfuncs[f].dydreal)(&r, &y, &x))
+					set_NaN(&r);
+				setlastX();
+				lower();
+				setX(&r);
 			} else
 				bad_mode_error();
 		}
@@ -1091,12 +1090,12 @@ static void triadic(const opcode op) {
 				getXY(&x, &y);
 				getZ(&z);
 
-				if (NULL != CALL(trifuncs[f].trireal)(&r, &z, &y, &x)) {
-					setlastX();
-					lower();
-					lower();
-					setX(&r);
-				}
+				if (NULL != CALL(trifuncs[f].trireal)(&r, &z, &y, &x))
+					set_NaN(&r);
+				setlastX();
+				lower();
+				lower();
+				setX(&r);
 			} else
 				bad_mode_error();
 		}
@@ -1121,7 +1120,7 @@ void cmdconstcmplx(unsigned int arg, enum rarg op) {
 		bad_mode_error();
 		return;
 	}
-	lift2();
+	lift2_if_enabled();
 	regX = CONSTANT(arg);
 	regY = CONSTANT_INT(OP_ZERO);
 }
@@ -1332,7 +1331,7 @@ static void do_crcl(const decimal64 *t1, const decimal64 *t2, enum rarg op) {
 	decNumber r1, r2;
 
 	if (op == RARG_CRCL) {
-		lift2();
+		lift2_if_enabled();
 		regX = *t1;
 		regY = *t2;
 	} else {
@@ -1859,7 +1858,7 @@ static void niladic(const opcode op) {
 			decimal64 *x = NULL, *y = NULL;
 
 			switch (niladics[idx].numresults) {
-			case 2:	lift();
+			case 2:	lift_if_enabled();
 				y = &regY;
 			case 1:	x = &regX;
 				lift_if_enabled();

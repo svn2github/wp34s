@@ -913,6 +913,7 @@ extern void setlastX(void);
 extern int stack_size(void);
 extern void lift(void);
 extern void process_cmdline_set_lift(void);
+extern void process_cmdline(void);
 
 extern unsigned int alen(void);
 
