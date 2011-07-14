@@ -3210,8 +3210,10 @@ static void rargs(const opcode op) {
 	}
 	if (arg >= lim)
 		err(ind?ERR_RANGE:ERR_PROG_BAD);
-	else
+	else {
 		CALL(argcmds[cmd].f)(arg, (enum rarg)cmd);
+		State.state_lift = 1;
+	}
 }
 
 static void multi(const opcode op) {
