@@ -3188,7 +3188,7 @@ static void rargs(const opcode op) {
 	unsigned int lim = argcmds[cmd].lim;
 	if (lim == 0) lim = 256; // default
 
-	process_cmdline_set_lift();
+	process_cmdline();
 
 	if (cmd >= num_argcmds) {
 		illegal(op);
