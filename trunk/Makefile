@@ -222,7 +222,7 @@ endif
 # Build generated files
 
 consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
-		$(DNHDRS) Makefile features.h
+		$(DNHDRS) Makefile
 	cd $(UTILITIES) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
 		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
