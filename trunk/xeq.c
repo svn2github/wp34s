@@ -2835,6 +2835,7 @@ void time_12(decimal64 *nul1, decimal64 *nul2) {
 	State.t12 = 1;
 }
 
+#ifdef INCLUDE_USER_MODE
 /* Save and restore used State.
  */
 void op_rclflag(decimal64 *x, decimal64 *b) {
@@ -2887,6 +2888,7 @@ void op_stoflag(decimal64 *nul1, decimal64 *nul2) {
 #include "statebits.h"
 #undef SB
 }
+#endif
 
 static void do_rtn(int plus1) {
 	if (Running && RetStkPtr > 0) {

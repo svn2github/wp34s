@@ -503,8 +503,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_REGSWAP,	&op_regswap,		"R-SWAP")
 	FUNC0(OP_REGCLR,	&op_regclr,		"R-CLR")
 	FUNC0(OP_REGSORT,	&op_regsort,		"R-SORT")
-	FUNC1(OP_RCLFLAG,	&op_rclflag,		"RCLM")
-	FUNC0(OP_STOFLAG,	&op_stoflag,		"STOM")
 	FUNC0(OP_GSBuser,	&do_usergsb,		"XEQUSR")
 	FUNC0(OP_XisInf,	&isInfinite,		"\237?")
 	FUNC0(OP_XisNaN,	&isNan,			"NaN?")
@@ -541,6 +539,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SEND1,		&send_byte,		"SEND1")
 	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN")
 	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE")
+#endif
+#ifdef INCLUDE_USER_MODE
+	FUNC1(OP_RCLFLAG,	&op_rclflag,		"RCLM")
+	FUNC0(OP_STOFLAG,	&op_stoflag,		"STOM")
 #endif
 #undef FUNC0
 #undef FUNC1
