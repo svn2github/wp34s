@@ -222,7 +222,7 @@ endif
 # Build generated files
 
 consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
-		Makefile features.h
+		$(DNHDRS) Makefile features.h
 	cd $(UTILITIES) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
 		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
@@ -249,7 +249,7 @@ $(UTILITIES)/lcdgen$(EXE): lcdgen.c Makefile lcd.h
 $(UTILITIES)/genchars7$(EXE): genchars7.c Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-$(UTILITIES)/post_process$(EXE): post_process.c Makefile xeq.h
+$(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 xeq.h: statebits.h

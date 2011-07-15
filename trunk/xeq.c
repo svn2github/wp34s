@@ -283,10 +283,8 @@ void lift(void) {
 }
 
 static void lift_if_enabled(void) {
-	if (State.state_lift) {
+	if (State.state_lift)
 		lift();
-		State.state_lift = 1;
-	}
 }
 
 static void lift2_if_enabled(void) {

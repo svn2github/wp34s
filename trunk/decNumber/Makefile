@@ -27,6 +27,6 @@ $(OBJECTDIR)/$(LIB): $(OBJS)
 	$(AR) -r $@ $(OBJS)
 	$(RANLIB) $@
 
-$(OBJECTDIR)/%.o: %.c
+$(OBJECTDIR)/%.o: %.c $(INCS)
 	$(CC) -c $(CFLAGS) -o $@ $<
 
