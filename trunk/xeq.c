@@ -1868,7 +1868,8 @@ static void niladic(const opcode op) {
 		}
 	} else
 		illegal(op);
-	State.state_lift = 1;
+	if (idx != OP_rCLX)
+		State.state_lift = 1;
 }
 
 
