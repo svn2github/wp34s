@@ -229,7 +229,7 @@ static int program_flash( int page_no, void *buffer, int length )
  *  Started with ON+"B" or ON+"R" or the SAVE/LOAD commands
  *  The backup area is the last 2KB of flash (pages 504 to 511)
  */
-void flash_backup( decimal64 *nul1, decimal64 *nul2 )
+void flash_backup( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	process_cmdline_set_lift();
 	init_state();
@@ -245,7 +245,7 @@ void flash_backup( decimal64 *nul1, decimal64 *nul2 )
 }
 
 
-void flash_restore(decimal64 *nul1, decimal64 *nul2)
+void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
 	if ( checksum_backup() ) {
 		err( ERR_INVALID );
@@ -398,7 +398,7 @@ void swap_program( unsigned int r, enum rarg op )
 /*
  *  Load registers from backup
  */
-void load_registers(decimal64 *nul1, decimal64 *nul2)
+void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
 	if ( checksum_backup() ) {
 		/*
@@ -411,7 +411,7 @@ void load_registers(decimal64 *nul1, decimal64 *nul2)
 }
 
 
-void load_state(decimal64 *nul1, decimal64 *nul2)
+void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
 	if ( checksum_backup() ) {
 		/*

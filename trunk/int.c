@@ -572,7 +572,7 @@ static unsigned long long int packup(unsigned short int x[4]) {
 }
 #endif
 
-void intDblMul(decimal64 *nul1, decimal64 *nul2) {
+void intDblMul(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 #ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	unsigned long long int xv, yv;
@@ -1304,12 +1304,9 @@ static void justify(decimal64 *ct,
 	d64fromInt(ct, (long long int)c);
 }
 
-void intLJ(decimal64 *x, decimal64 *nul) {
-	justify(x, &intLSL, topbit_mask());
-}
-
-void intRJ(decimal64 *x, decimal64 *nul) {
-	justify(x, &intLSR, 1LL);
+void int_justify(decimal64 *x, decimal64 *nul, enum nilop op) {
+	const unsigned long long int mask = (op == OP_LJ) ? topbit_mask() : 1LL;
+	justify(x, (op == OP_LJ) ? &intLSL : &intLSR, mask);
 }
 
 

@@ -21,6 +21,7 @@
 #include "int.h"
 
 
+#define sigmaBASE	86
 #define sigmaXXY	(Regs[86])
 
 #define sigmaX	(Regs[87])
@@ -86,27 +87,11 @@ static int check_data(int n) {
 }
 
 
-void stats_mode_expf(decimal64 *nul1, decimal64 *nul2) {
-	State.sigma_mode = SIGMA_EXP;
+void stats_mode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	State.sigma_mode = (op - OP_LINF) + SIGMA_LINEAR;
 }
 
-void stats_mode_linf(decimal64 *nul1, decimal64 *nul2) {
-	State.sigma_mode = SIGMA_LINEAR;
-}
-
-void stats_mode_logf(decimal64 *nul1, decimal64 *nul2) {
-	State.sigma_mode = SIGMA_LOG;
-}
-
-void stats_mode_pwrf(decimal64 *nul1, decimal64 *nul2) {
-	State.sigma_mode = SIGMA_POWER;
-}
-
-void stats_mode_best(decimal64 *nul1, decimal64 *nul2) {
-	State.sigma_mode = SIGMA_BEST;
-}
-
-void sigma_clear(decimal64 *nul1, decimal64 *nul2) {
+void sigma_clear(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	sigmaN = CONSTANT_INT(OP_ZERO);
 	sigmaX = CONSTANT_INT(OP_ZERO);
 	sigmaY = CONSTANT_INT(OP_ZERO);
@@ -277,65 +262,13 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, d
 }
 
 
-void sigma_N(decimal64 *x, decimal64 *y) {
-	*x = sigmaN;
+void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
+	*x = Regs[sigmaBASE + (op - OP_sigmaX2Y)];
 }
 
-void sigma_X(decimal64 *x, decimal64 *y) {
+void sigma_sum(decimal64 *x, decimal64 *y, enum nilop op) {
 	*x = sigmaX;
-}
-
-void sigma_Y(decimal64 *x, decimal64 *y) {
-	*x = sigmaY;
-}
-
-void sigma_XX(decimal64 *x, decimal64 *y) {
-	*x = sigmaXX;
-}
-
-void sigma_YY(decimal64 *x, decimal64 *y) {
-	*x = sigmaYY;
-}
-
-void sigma_XY(decimal64 *x, decimal64 *y) {
-	*x = sigmaXY;
-}
-
-void sigma_X2Y(decimal64 *x, decimal64 *y) {
-	*x = sigmaXXY;
-}
-
-void sigma_lnX(decimal64 *x, decimal64 *y) {
-	*x = sigmalnX;
-}
-
-void sigma_lnXlnX(decimal64 *x, decimal64 *y) {
-	*x = sigmalnXlnX;
-}
-
-void sigma_lnY(decimal64 *x, decimal64 *y) {
-	*x = sigmalnY;
-}
-
-void sigma_lnYlnY(decimal64 *x, decimal64 *y) {
-	*x = sigmalnYlnY;
-}
-
-void sigma_lnXlnY(decimal64 *x, decimal64 *y) {
-	*x = sigmalnXlnY;
-}
-
-void sigma_XlnY(decimal64 *x, decimal64 *y) {
-	*x = sigmaXlnY;
-}
-
-void sigma_YlnX(decimal64 *x, decimal64 *y) {
-	*x = sigmaYlnX;
-}
-
-void sigma_sum(decimal64 *x, decimal64 *y) {
-	sigma_X(x, NULL);
-	sigma_Y(y, NULL);
+	*y = sigmaY;
 }
 
 
@@ -348,7 +281,7 @@ static void mean_common(decimal64 *res, const decNumber *x, const decNumber *n, 
 	packed_from_number(res, p);
 }
 
-void stats_mean(decimal64 *x, decimal64 *y) {
+void stats_mean(decimal64 *x, decimal64 *y, enum nilop op) {
 	decNumber N;
 	decNumber sx, sy;
 
@@ -362,7 +295,7 @@ void stats_mean(decimal64 *x, decimal64 *y) {
 
 
 // weighted mean sigmaXY / sigmaY
-void stats_wmean(decimal64 *x, decimal64 *nul) {
+void stats_wmean(decimal64 *x, decimal64 *nul, enum nilop op) {
 	decNumber xy, y;
 
 	if (check_data(1))
@@ -373,7 +306,7 @@ void stats_wmean(decimal64 *x, decimal64 *nul) {
 }
 
 // geometric mean e^(sigmaLnX / N)
-void stats_gmean(decimal64 *x, decimal64 *y) {
+void stats_gmean(decimal64 *x, decimal64 *y, enum nilop op) {
 	decNumber N;
 	decNumber sx, sy;
 
@@ -423,35 +356,18 @@ static void S(decimal64 *x, decimal64 *y, int sample, int rootn, int exp) {
 }
 
 // sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
-void stats_s(decimal64 *x, decimal64 *y) {
-	S(x, y, 1, 0, 0);
+void stats_deviations(decimal64 *x, decimal64 *y, enum nilop op) {
+	int sample = 1, rootn = 0, exp = 0;
+
+	if (op == OP_statSigma || op == OP_statGSigma)
+		sample = 0;
+	if (op == OP_statSErr || op == OP_statGSErr)
+		rootn = 1;
+	if (op == OP_statGS || op == OP_statGSigma || op == OP_statGSErr)
+		exp = 1;
+	S(x, y, sample, rootn, exp);
 }
 
-// [sigma]x = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / n)
-void stats_sigma(decimal64 *x, decimal64 *y) {
-	S(x, y, 0, 0, 0);
-}
-
-// serr = sx / sqrt(n)
-void stats_SErr(decimal64 *x, decimal64 *y) {
-	S(x, y, 1, 1, 0);
-}
-
-
-// sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
-void stats_gs(decimal64 *x, decimal64 *y) {
-	S(x, y, 1, 0, 1);
-}
-
-// [sigma]x = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / n)
-void stats_gsigma(decimal64 *x, decimal64 *y) {
-	S(x, y, 0, 0, 1);
-}
-
-// serr = sx / sqrt(n)
-void stats_gSErr(decimal64 *x, decimal64 *y) {
-	S(x, y, 1, 1, 1);
-}
 
 
 // Weighted standard deviation
@@ -479,17 +395,16 @@ void WS(decimal64 *x, int sample, int rootn) {
 	packed_from_number(x, p);
 }
 
-void stats_ws(decimal64 *x, decimal64 *y) {
-	WS(x, 1, 0);
+void stats_wdeviations(decimal64 *x, decimal64 *y, enum nilop op) {
+	int sample = 1, rootn = 0;
+
+	if (op == OP_statWSigma)
+		sample = 0;
+	if (op == OP_statWSErr)
+		rootn = 0;
+	WS(x, sample, rootn);
 }
 
-void stats_wsigma(decimal64 *x, decimal64 *y) {
-	WS(x, 0, 0);
-}
-
-void stats_wSErr(decimal64 *x, decimal64 *y) {
-	WS(x, 1, 1);
-}
 
 
 decNumber *stats_sigper(decNumber *res, const decNumber *x) {
@@ -533,7 +448,7 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 }
 
 
-void stats_correlation(decimal64 *r, decimal64 *nul) {
+void stats_correlation(decimal64 *r, decimal64 *nul, enum nilop op) {
 	decNumber t;
 
 	if (check_data(2))
@@ -561,13 +476,10 @@ static void covariance(decimal64 *r, int sample) {
 	packed_from_number(r, &u);
 }
 
-void stats_COV(decimal64 *r, decimal64 *nul) {
-	covariance(r, 0);
+void stats_COV(decimal64 *r, decimal64 *nul, enum nilop op) {
+	covariance(r, (op == OP_statCOV) ? 0 : 1);
 }
 
-void stats_Sxy(decimal64 *r, decimal64 *nul) {
-	covariance(r, 1);
-}
 
 // y = B . x + A
 static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
@@ -595,7 +507,7 @@ static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
 }
 
 
-void stats_LR(decimal64 *bout, decimal64 *aout) {
+void stats_LR(decimal64 *bout, decimal64 *aout, enum nilop op) {
 	decNumber a, b;
 
 	if (check_data(2))
@@ -704,7 +616,7 @@ static void taus_seed(unsigned long int s) {
 		taus_get();
 }
 
-void stats_random(decimal64 *r, decimal64 *nul) {
+void stats_random(decimal64 *r, decimal64 *nul, enum nilop op) {
 	// Start by generating the next in sequence
 	unsigned long int s;
 	decNumber y, z;
@@ -724,7 +636,7 @@ void stats_random(decimal64 *r, decimal64 *nul) {
 }
 
 
-void stats_sto_random(decimal64 *nul1, decimal64 *nul2) {
+void stats_sto_random(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	unsigned long int s;
 	int z;
 	decNumber x;

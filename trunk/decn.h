@@ -120,8 +120,8 @@ extern decNumber *decNumberSinc(decNumber *res, const decNumber *x);
 extern decNumber *do_atan2(decNumber *at, const decNumber *ain, const decNumber *b);
 
 
-extern void op_r2p(decimal64 *nul1, decimal64 *nul2);
-extern void op_p2r(decimal64 *nul1, decimal64 *nul2);
+extern void op_r2p(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_p2r(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
 extern decNumber *decNumberSinh(decNumber *res, const decNumber *x);
 extern decNumber *decNumberCosh(decNumber *res, const decNumber *x);

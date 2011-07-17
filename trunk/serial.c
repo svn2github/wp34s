@@ -253,7 +253,7 @@ static int put_block( unsigned short tag, unsigned short length, void *data )
  *  Depending on the tag received, copy the data to its destination.
  *  This implements the RECV command.
  */
-void recv_any( decimal64 *nul1, decimal64 *nul2 )
+void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	int i, c;
 	unsigned char buffer[ DATA_LEN ];
@@ -372,7 +372,7 @@ close:
  *    - Any other characters are skipped and ignored.
  *    - Default: 9600,8N1
  */
-void serial_open( decimal64 *nul1, decimal64 *nul2 )
+void serial_open( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	int baud = 9600;
 	char bits = 8;
@@ -416,7 +416,7 @@ void serial_open( decimal64 *nul1, decimal64 *nul2 )
  /*
  * Close the serial port from user code
  */
-void serial_close( decimal64 *nul1, decimal64 *nul2 )
+void serial_close( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	close_port();
 	serial_state( 0 );
@@ -426,7 +426,7 @@ void serial_close( decimal64 *nul1, decimal64 *nul2 )
 /*
  * Send a single byte as specified in X to the serial port.
  */
-void send_byte( decimal64 *nul1, decimal64 *nul2 )
+void send_byte( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	int sgn;
 	const unsigned char byte = get_int( &regX, &sgn ) & 0xff;
@@ -439,7 +439,7 @@ void send_byte( decimal64 *nul1, decimal64 *nul2 )
 /*
  * Transmit the program space from RAM to the serial port.
  */
-void send_program( decimal64 *nul1, decimal64 *nul2 )
+void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	put_block( TAG_PROGRAM, ( LastProg - 1 ) * sizeof( s_opcode ), Prog );
 }
@@ -448,7 +448,7 @@ void send_program( decimal64 *nul1, decimal64 *nul2 )
 /*
  * Send registers 00 through 99 to the serial port.
  */
-void send_registers( decimal64 *nul1, decimal64 *nul2 )
+void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	put_block( TAG_REGISTER, sizeof( decimal64 ) * TOPREALREG, Regs );
 }
@@ -457,7 +457,7 @@ void send_registers( decimal64 *nul1, decimal64 *nul2 )
 /*
  * Send all of RAM to the serial port.  2kb in total.
  */
-void send_all( decimal64 *nul1, decimal64 *nul2 )
+void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	put_block( TAG_ALLMEM, sizeof( PersistentRam ), &PersistentRam );
 }

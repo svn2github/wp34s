@@ -57,6 +57,7 @@
 #include "decNumber/decContext.h"
 #include "decNumber/decimal64.h"
 
+enum nilop;
 enum rarg;
 enum multiops;
 
@@ -243,7 +244,7 @@ struct niladic
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	void (*niladicf)(decimal64 *, decimal64 *);
+	void (*niladicf)(decimal64 *, decimal64 *, enum nilop);
 	unsigned char numresults;
 	const char nname[NAME_LEN];
 };
@@ -591,12 +592,12 @@ enum {
 };  
 
 // Niladic functions
-enum {
+enum nilop {
 	OP_NOP=0, OP_VERSION, OP_OFF,
 	OP_STKSIZE, OP_STK4, OP_STK8, OP_INTSIZE,
 	OP_SWAP, OP_CSWAP, OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
 	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPXY,
-	OP_sigmaX, OP_sigmaY, OP_sigmaX2, OP_sigmaY2, OP_sigma_XY, OP_sigmaX2Y,
+	OP_sigmaX2Y, OP_sigmaX, OP_sigmaX2, OP_sigmaY, OP_sigmaY2, OP_sigma_XY,
 	OP_sigmaN,
 	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
 		OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,
@@ -606,14 +607,14 @@ enum {
 		OP_statR, OP_statLR,
 		OP_statSErr, OP_statGSErr, OP_statWSErr,
 	OP_statCOV, OP_statSxy,
-	OP_EXPF, OP_LINF, OP_LOGF, OP_PWRF, OP_BEST,
+	OP_LINF, OP_EXPF, OP_PWRF, OP_LOGF, OP_BEST,
 	OP_RANDOM, OP_STORANDOM,
 	OP_DEG, OP_RAD, OP_GRAD,
 	OP_RTN, OP_RTNp1,
 	OP_RS, OP_PROMPT,
 	OP_SIGMACLEAR, OP_CLREG, OP_rCLX, OP_CLSTK, OP_CLALL, OP_RESET, OP_CLFLAGS,
 	OP_R2P, OP_P2R,
-	OP_FRACDENOM, OP_2FRAC, OP_DENFIX, OP_DENFAC, OP_DENANY,
+	OP_FRACDENOM, OP_2FRAC, OP_DENANY, OP_DENFIX, OP_DENFAC,
 	OP_FRACIMPROPER, OP_FRACPROPER,
 	OP_RADDOT, OP_RADCOM, OP_THOUS_ON, OP_THOUS_OFF,
 	OP_FIXSCI, OP_FIXENG,
@@ -623,7 +624,7 @@ enum {
 	OP_LJ, OP_RJ,
 	OP_DBL_MUL,
 	OP_RCLSIGMA,
-	OP_DATEYMD, OP_DATEDMY, OP_DATEMDY, OP_JG1752, OP_JG1582,
+	OP_DATEDMY, OP_DATEYMD, OP_DATEMDY, OP_JG1752, OP_JG1582,
 	OP_ISLEAP, OP_ALPHADAY, OP_ALPHAMONTH, OP_ALPHADATE, OP_ALPHATIME,
 	OP_DATE, OP_TIME, OP_24HR, OP_12HR,
 	OP_SETDATE, OP_SETTIME,
@@ -791,7 +792,6 @@ enum trig_modes {
 	TRIG_DEG=0,	TRIG_RAD,	TRIG_GRAD
 };
 extern enum trig_modes get_trig_mode(void);
-extern void set_trig_mode(enum trig_modes m);
 
 // Date modes
 enum date_modes {
@@ -883,8 +883,8 @@ extern int check_return_stack_segment(int);
 
 extern void clrretstk(void);
 extern void clrprog(void);
-extern void clrall(decimal64 *a, decimal64 *b);
-extern void reset(decimal64 *a, decimal64 *b);
+extern void clrall(decimal64 *a, decimal64 *b, enum nilop op);
+extern void reset(decimal64 *a, decimal64 *b, enum nilop op);
 
 extern opcode getprog(unsigned int n);
 extern void stoprog(opcode);
@@ -972,18 +972,17 @@ extern void xeq_sst(char *tracebuf);
 extern void xeq_bst(char *tracebuf);
 
 /* Command functions */
-extern void version(decimal64 *nul1, decimal64 *nul2);
-extern void cmd_off(decimal64 *nul1, decimal64 *nul2);
+extern void version(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void cmd_off(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cmderr(unsigned int arg, enum rarg op);
-extern void cpx_roll_down(decimal64 *nul1, decimal64 *nul2);
-extern void cpx_roll_up(decimal64 *nul1, decimal64 *nul2);
-extern void swap(decimal64 *nul1, decimal64 *nul2);
-extern void cpx_swap(decimal64 *nul1, decimal64 *nul2);
-extern void cpx_enter(decimal64 *nul1, decimal64 *nul2);
-extern void cpx_fill(decimal64 *nul1, decimal64 *nul2);
-extern void fill(decimal64 *nul1, decimal64 *nul2);
-extern void drop(decimal64 *nul1, decimal64 *nul2);
-extern void dropxy(decimal64 *nul1, decimal64 *nul2);
+extern void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void swap(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void cpx_swap(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void cpx_enter(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void cpx_fill(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void fill(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void drop(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cmdconst(unsigned int arg, enum rarg op);
 extern void cmdconstcmplx(unsigned int arg, enum rarg op);
 extern void cmdconstint(unsigned int arg, enum rarg op);
@@ -995,16 +994,15 @@ extern void cmdswap(unsigned int arg, enum rarg op);
 extern void cmdflashrcl(unsigned int arg, enum rarg op);
 extern void cmdflashcrcl(unsigned int arg, enum rarg op);
 extern void cmdview(unsigned int arg, enum rarg op);
-extern void set_stack_size4(decimal64 *a, decimal64 *nul2);
-extern void set_stack_size8(decimal64 *a, decimal64 *nul2);
-extern void get_stack_size(decimal64 *a, decimal64 *nul2);
-extern void get_word_size(decimal64 *a, decimal64 *nul2);
+extern void set_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern void get_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);
 extern void cmdgto(unsigned int arg, enum rarg op);
 extern void cmdalphagto(unsigned int arg, enum rarg op);
-extern void op_gtoalpha(decimal64 *a, decimal64 *b);
-extern void op_xeqalpha(decimal64 *a, decimal64 *b);
+extern void op_gtoalpha(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_xeqalpha(decimal64 *a, decimal64 *b, enum nilop op);
 extern void cmdmultigto(const opcode o, enum multiops mopr);
 extern void cmdlblp(unsigned int arg, enum rarg op);
 extern void cmdmultilblp(const opcode o, enum multiops mopr);
@@ -1020,73 +1018,50 @@ extern void cmdloopz(unsigned int arg, enum rarg op);
 extern void cmdloop(unsigned int arg, enum rarg op);
 extern void cmdflag(unsigned int arg, enum rarg op);
 extern void intws(unsigned int arg, enum rarg op);
-extern void op_2frac(decimal64 *x, decimal64 *b);
-extern void op_fracdenom(decimal64 *a, decimal64 *b);
-extern void op_denany(decimal64 *a, decimal64 *b);
-extern void op_denfix(decimal64 *a, decimal64 *b);
-extern void op_denfac(decimal64 *a, decimal64 *b);
-extern void op_float(decimal64 *a, decimal64 *b);
-extern void op_hms(decimal64 *a, decimal64 *b);
-extern void op_fract(decimal64 *nul1, decimal64 *nul2);
-extern void op_fracimp(decimal64 *a, decimal64 *b);
-extern void op_fracpro(decimal64 *a, decimal64 *b);
-extern void op_deg(decimal64 *nul1, decimal64 *nul2);
-extern void op_rad(decimal64 *nul1, decimal64 *nul2);
-extern void op_grad(decimal64 *nul1, decimal64 *nul2);
-extern void op_radixcom(decimal64 *nul1, decimal64 *nul2);
-extern void op_radixdot(decimal64 *nul1, decimal64 *nul2);
-extern void op_thousands_off(decimal64 *nul1, decimal64 *nul2);
-extern void op_thousands_on(decimal64 *nul1, decimal64 *nul2);
-extern void op_fixsci(decimal64 *nul1, decimal64 *nul2);
-extern void op_fixeng(decimal64 *nul1, decimal64 *nul2);
+extern void op_2frac(decimal64 *x, decimal64 *b, enum nilop op);
+extern void op_fracdenom(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_denom(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_float(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_fract(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_trigmode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_radix(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_thousands(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_pause(unsigned int arg, enum rarg op);
-extern void op_2comp(decimal64 *a, decimal64 *b);
-extern void op_1comp(decimal64 *a, decimal64 *b);
-extern void op_unsigned(decimal64 *a, decimal64 *b);
-extern void op_signmant(decimal64 *a, decimal64 *b);
+extern void op_intsign(decimal64 *a, decimal64 *b, enum nilop op);
 extern void set_int_base(unsigned int arg, enum rarg op);
-extern void op_seteur(decimal64 *a, decimal64 *nul);
-extern void op_setuk(decimal64 *a, decimal64 *nul);
-extern void op_setusa(decimal64 *a, decimal64 *nul);
-extern void op_setind(decimal64 *a, decimal64 *nul);
-extern void op_setchn(decimal64 *a, decimal64 *nul);
-extern void date_ymd(decimal64 *a, decimal64 *nul);
-extern void date_dmy(decimal64 *a, decimal64 *nul);
-extern void date_mdy(decimal64 *a, decimal64 *nul);
-extern void time_24(decimal64 *nul1, decimal64 *nul2);
-extern void time_12(decimal64 *nul1, decimal64 *nul2);
+extern void op_locale(decimal64 *a, decimal64 *nul, enum nilop op);
+extern void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op);
+extern void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_rclflag(decimal64 *x, decimal64 *b);
-extern void op_stoflag(decimal64 *nul1, decimal64 *nul2);
-extern void op_rtn(decimal64 *nul1, decimal64 *nul2);
-extern void op_rtnp1(decimal64 *nul1, decimal64 *nul2);
-extern void op_rs(decimal64 *nul1, decimal64 *nul2);
-extern void op_prompt(decimal64 *nul1, decimal64 *nul2);
-extern void do_usergsb(decimal64 *a, decimal64 *b);
-extern void do_userclear(decimal64 *a, decimal64 *b);
-extern void XisInt(decimal64 *a, decimal64 *b);
-extern void XisFrac(decimal64 *a, decimal64 *b);
-extern void XisEven(decimal64 *a, decimal64 *b);
-extern void XisOdd(decimal64 *a, decimal64 *b);
-extern void XisPrime(decimal64 *a, decimal64 *b);
-extern void isSpecial(decimal64 *a, decimal64 *b);
-extern void isNan(decimal64 *a, decimal64 *b);
-extern void isInfinite(decimal64 *a, decimal64 *b);
-extern void op_entryp(decimal64 *a, decimal64 *b);
-extern void op_regcopy(decimal64 *a, decimal64 *b);
-extern void op_regswap(decimal64 *a, decimal64 *b);
-extern void op_regclr(decimal64 *a, decimal64 *b);
-extern void op_regsort(decimal64 *nul1, decimal64 *nul2);
+extern void op_stoflag(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op);
+extern void do_userclear(decimal64 *a, decimal64 *b, enum nilop op);
+extern void XisInt(decimal64 *a, decimal64 *b, enum nilop op);
+extern void XisEven(decimal64 *a, decimal64 *b, enum nilop op);
+extern void XisOdd(decimal64 *a, decimal64 *b, enum nilop op);
+extern void XisPrime(decimal64 *a, decimal64 *b, enum nilop op);
+extern void isSpecial(decimal64 *a, decimal64 *b, enum nilop op);
+extern void isNan(decimal64 *a, decimal64 *b, enum nilop op);
+extern void isInfinite(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_entryp(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_regcopy(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_regswap(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_regclr(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_regsort(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cmdconv(unsigned int arg, enum rarg op);
-extern void roll_down(decimal64 *nul1, decimal64 *nul2);
-extern void roll_up(decimal64 *nul1, decimal64 *nul2);
-extern void clrx(decimal64 *nul1, decimal64 *nul2);
-extern void clrstk(decimal64 *nul1, decimal64 *nul2);
-extern void clrflags(decimal64 *nul1, decimal64 *nul2);
-extern void clrreg(decimal64 *nul1, decimal64 *nul2);
-extern void showlead0(decimal64 *nul1, decimal64 *nul2);
-extern void hidelead0(decimal64 *nul1, decimal64 *nul2);
-extern void op_ticks(decimal64 *a, decimal64 *b);
-extern void op_voltage(decimal64 *a, decimal64 *b);
+extern void roll_down(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void clrx(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void clrflags(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_ticks(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_voltage(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
 
@@ -1097,8 +1072,8 @@ extern decNumber *convAR2DB(decNumber *r, const decNumber *x);
 extern decNumber *convDB2PR(decNumber *r, const decNumber *x);
 extern decNumber *convPR2DB(decNumber *r, const decNumber *x);
 
-extern void xrom_tvm(decimal64 *a, decimal64 *b);
-extern void xrom_quad(decimal64 *a, decimal64 *b);
+extern void xrom_tvm(decimal64 *a, decimal64 *b, enum nilop op);
+extern void xrom_quad(decimal64 *a, decimal64 *b, enum nilop op);
 
 extern void packed_from_number(decimal64 *r, const decNumber *x);
 extern void int_mode_convert(decimal64 *r);

@@ -1706,8 +1706,8 @@ static int process_confirm(const keycode c) {
 	switch (c) {
 	case K63:			// Yes
 		switch (State2.confirm) {
-		case confirm_clall:	clrall(NULL, NULL);	break;
-		case confirm_reset:	reset(NULL, NULL);	break;
+		case confirm_clall:	clrall(NULL, NULL, OP_CLALL);	break;
+		case confirm_reset:	reset(NULL, NULL, OP_RESET);	break;
 		case confirm_clprog:	clrprog();
 		}
 		State2.confirm = confirm_none;

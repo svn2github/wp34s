@@ -1304,7 +1304,7 @@ decNumber *decNumberArcTan2(decNumber *res, const decNumber *a, const decNumber 
 	return res;	
 }
 
-void op_r2p(decimal64 *nul1, decimal64 *nul2) {
+void op_r2p(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &y);
@@ -1314,7 +1314,7 @@ void op_r2p(decimal64 *nul1, decimal64 *nul2) {
 	setXY(&rx, &y);
 }
 
-void op_p2r(decimal64 *nul1, decimal64 *nul2) {
+void op_p2r(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &ry);

@@ -45,14 +45,14 @@ extern int checksum_backup(void);
 extern int is_prog_region(unsigned int region);
 extern int is_data_region(unsigned int region);
 
-extern void flash_backup(decimal64 *nul1, decimal64 *nul2);
-extern void flash_restore(decimal64 *nul1, decimal64 *nul2);
+extern void flash_backup(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void sam_ba_boot(void);
 extern void save_program(unsigned int region, enum rarg op);
 extern void load_program(unsigned int region, enum rarg op);
 extern void swap_program(unsigned int region, enum rarg op);
-extern void load_registers(decimal64 *nul1, decimal64 *nul2);
-extern void load_state(decimal64 *nul1, decimal64 *nul2);
+extern void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
 #ifndef REALBUILD
 extern void save_statefile(void);

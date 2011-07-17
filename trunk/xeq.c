@@ -103,13 +103,13 @@ void set_bank_flags(unsigned int f) {
 	BankFlags = f;
 }
 
-void version(decimal64 *nul1, decimal64 *nul2) {
+void version(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	State2.version = 1;
 	if (!State2.runmode)
 		display();
 }
 
-void cmd_off(decimal64 *a, decimal64 *nul2) {
+void cmd_off(decimal64 *a, decimal64 *nul2, enum nilop op) {
 	shutdown();
 }
 
@@ -369,45 +369,45 @@ void getYZ(decNumber *y, decNumber *z) {
 	getZ(z);
 }
 
-void roll_down(decimal64 *nul1, decimal64 *nul2) {
+void roll_down(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	const decimal64 r = regX;
 	lower();
 	*get_stack_top() = r;
 }
 
-void roll_up(decimal64 *nul1, decimal64 *nul2) {
+void roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	const decimal64 r = *get_stack_top();
 	lift();
 	regX = r;
 }
 
-void cpx_roll_down(decimal64 *nul1, decimal64 *nul2) {
-	roll_down(NULL, NULL);
-	roll_down(NULL, NULL);
+void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	roll_down(NULL, NULL, OP_RDOWN);
+	roll_down(NULL, NULL, OP_RDOWN);
 }
 
-void cpx_roll_up(decimal64 *nul1, decimal64 *nul2) {
-	roll_up(NULL, NULL);
-	roll_up(NULL, NULL);
+void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	roll_up(NULL, NULL, OP_RUP);
+	roll_up(NULL, NULL, OP_RUP);
 }
 
-void swap(decimal64 *nul1, decimal64 *nul2) {
+void swap(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	swap_reg(&regX, &regY);
 }
 
-void cpx_swap(decimal64 *nul1, decimal64 *nul2) {
+void cpx_swap(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	swap_reg(&regX, &regZ);
 	swap_reg(&regY, &regT);
 }
 
-void cpx_enter(decimal64 *nul1, decimal64 *nul2) {
+void cpx_enter(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decimal64 x = regX, y = regY;
-	cpx_roll_up(NULL, NULL);
+	cpx_roll_up(NULL, NULL, OP_CRUP);
 	regX = x;
 	regY = y;
 }
 
-void cpx_fill(decimal64 *nul1, decimal64 *nul2) {
+void cpx_fill(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	const int n = stack_size();
 	int i;
 
@@ -416,7 +416,7 @@ void cpx_fill(decimal64 *nul1, decimal64 *nul2) {
 		else		*get_stack(i) = regX;
 }
 
-void fill(decimal64 *nul1, decimal64 *nul2) {
+void fill(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	const int n = stack_size();
 	int i;
 
@@ -424,13 +424,10 @@ void fill(decimal64 *nul1, decimal64 *nul2) {
 		*get_stack(i) = regX;
 }
 
-void drop(decimal64 *nul1, decimal64 *nul2) {
+void drop(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	lower();
-}
-
-void dropxy(decimal64 *nul1, decimal64 *nul2) {
-	lower();
-	lower();
+	if (op == OP_DROPXY)
+		lower();
 }
 
 
@@ -438,12 +435,8 @@ int is_intmode(void) {
 	return State.intm;
 }
 
-void showlead0(decimal64 *nul1, decimal64 *nul2) {
-	State.leadzero = 1;
-}
-
-void hidelead0(decimal64 *nul1, decimal64 *nul2) {
-	State.leadzero = 0;
+void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	State.leadzero = (op == OP_LEAD0) ? 1 : 0;
 }
 
 /* Increment the passed PC.  Account for wrap around but nothing else.
@@ -580,16 +573,16 @@ static void set_zero(decimal64 *x) {
 		*x = CONSTANT_INT(OP_ZERO);
 }
 
-void clrx(decimal64 *nul1, decimal64 *nul2) {
+void clrx(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	set_zero(&regX);
 	State.state_lift = 0;
 }
 
 /* Zero out the stack
  */
-void clrstk(decimal64 *nul1, decimal64 *nul2) {
+void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	set_zero(&regX);
-	fill(NULL, NULL);
+	fill(NULL, NULL, OP_FILL);
 	regL = regX;
 	regI = regX;
 
@@ -599,13 +592,13 @@ void clrstk(decimal64 *nul1, decimal64 *nul2) {
 
 /* Reset all flags to off/false
  */
-void clrflags(decimal64 *nul1, decimal64 *nul2) {
+void clrflags(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	xset(UserFlags, 0, sizeof(UserFlags));
 }
 
 /* Zero out all registers including the stack and lastx
  */	
-void clrreg(decimal64 *nul1, decimal64 *nul2) {
+void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	int i;
 
 	set_zero(& (Regs[0]));
@@ -641,14 +634,14 @@ void clrprog(void) {
 
 /* Clear all - programs and registers
  */
-void clrall(decimal64 *a, decimal64 *b) {
+void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
 	int i;
 
-	sigma_clear(NULL, NULL);
-	clrreg(NULL, NULL);
-	clrstk(NULL, NULL);
-	clralpha(NULL, NULL);
-	clrflags(NULL, NULL);
+	sigma_clear(NULL, NULL, OP_SIGMACLEAR);
+	clrreg(NULL, NULL, OP_CLREG);
+	clrstk(NULL, NULL, OP_CLSTK);
+	clralpha(NULL, NULL, OP_CLRALPHA);
+	clrflags(NULL, NULL, OP_CLFLAGS);
 	clrprog();
 
 	/* Clear out the banked registers and flags */
@@ -665,9 +658,9 @@ void clrall(decimal64 *a, decimal64 *b) {
 
 /* Clear everything
  */
-void reset(decimal64 *a, decimal64 *b) {
+void reset(decimal64 *a, decimal64 *b, enum nilop op) {
 	xset(&PersistentRam, 0, sizeof( PersistentRam ));
-	clrall(NULL, NULL);
+	clrall(NULL, NULL, OP_CLALL);
 	init_state();
 	State.contrast = 9;
 	DispMsg = "Erased";
@@ -1391,24 +1384,21 @@ void cmdview(unsigned int arg, enum rarg op) {
 
 
 /* Set the stack size */
-void set_stack_size4(decimal64 *a, decimal64 *nul2) {
-	State.stack_depth = 0;
-}
-void set_stack_size8(decimal64 *a, decimal64 *nul2) {
-	State.stack_depth = 1;
+void set_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op) {
+	State.stack_depth = (op == OP_STK4) ? 0 : 1;
 }
 
 /* Get the stack size */
-void get_stack_size(decimal64 *a, decimal64 *nul2) {
+void get_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op) {
 	put_int(stack_size(), 0, a);
 }
 
-void get_word_size(decimal64 *a, decimal64 *nul2) {
+void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op) {
 	put_int((int)word_size(), 0, a);
 }
 
 /* Get the current ticker value */
-void op_ticks(decimal64 *a, decimal64 *nul2) {
+void op_ticks(decimal64 *a, decimal64 *nul2, enum nilop op) {
 #if defined(WINGUI) || defined(REALBUILD)
     put_int(Ticker, 0, a);
 #else
@@ -1421,7 +1411,7 @@ void op_ticks(decimal64 *a, decimal64 *nul2) {
 }
 
 /* Display the battery voltage */
-void op_voltage(decimal64 *a, decimal64 *nul2) {
+void op_voltage(decimal64 *a, decimal64 *nul2, enum nilop op) {
 	decNumber t, u;
 #ifdef REALBUILD
 	unsigned long long int v = 19 + Voltage;
@@ -1660,13 +1650,10 @@ static void do_branchalpha(int is_gsb) {
 	branchtoalpha(is_gsb, buf);
 }
 
-void op_gtoalpha(decimal64 *a, decimal64 *b) {
-	do_branchalpha(0);
+void op_gtoalpha(decimal64 *a, decimal64 *b, enum nilop op) {
+	do_branchalpha((op ==OP_GTOALPHA) ? 0 : 1);
 }
 
-void op_xeqalpha(decimal64 *a, decimal64 *b) {
-	do_branchalpha(1);
-}
 
 
 static void do_xrom(int lbl) {
@@ -1691,7 +1678,7 @@ void multixromarg(const opcode o, enum multiops mopr) {
 	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), findmultilbl(o, 0));
 }
 
-void xrom_quad(decimal64 *a, decimal64 *nul2) {
+void xrom_quad(decimal64 *a, decimal64 *nul2, enum nilop op) {
 	do_xrom(ENTRY_QUAD);
 }
 
@@ -1862,7 +1849,7 @@ static void niladic(const opcode op) {
 				lift_if_enabled();
 			default:
 				if (niladics[idx].niladicf != FNULL)
-					CALL(niladics[idx].niladicf)(x, y);
+					CALL(niladics[idx].niladicf)(x, y, (enum nilop)idx);
 				break;
 			}
 		}
@@ -2208,7 +2195,7 @@ void get_maxdenom(decNumber *d) {
 	int_to_dn(d, dm==0?9999:dm);
 }
 
-void op_2frac(decimal64 *x, decimal64 *b) {
+void op_2frac(decimal64 *x, decimal64 *b, enum nilop op) {
 	decNumber z, n, d, t;
 
 	if (State.intm) {
@@ -2231,7 +2218,7 @@ void op_2frac(decimal64 *x, decimal64 *b) {
 	}
 }
 
-void op_fracdenom(decimal64 *a, decimal64 *b) {
+void op_fracdenom(decimal64 *a, decimal64 *b, enum nilop op) {
 	int s;
 	unsigned long long int i;
 
@@ -2246,17 +2233,10 @@ void op_fracdenom(decimal64 *a, decimal64 *b) {
 	}
 }
 
-void op_denany(decimal64 *a, decimal64 *b) {
-	State.denom_mode = DENOM_ANY;
+void op_denom(decimal64 *a, decimal64 *b, enum nilop op) {
+	State.denom_mode = DENOM_ANY + (op - OP_DENANY);
 }
 
-void op_denfix(decimal64 *a, decimal64 *b) {
-	State.denom_mode = DENOM_FIXED;
-}
-
-void op_denfac(decimal64 *a, decimal64 *b) {
-	State.denom_mode = DENOM_FACTOR;
-}
 
 /* Switching from an integer mode to real mode requires us
  * to make an effort at converting x and y into a real numbers
@@ -2284,7 +2264,7 @@ static void float_mode_convert(decimal64 *r) {
 }
 #endif
 
-void op_float(decimal64 *a, decimal64 *b) {
+void op_float(decimal64 *a, decimal64 *b, enum nilop op) {
 #ifdef HP16C_MODE_CHANGE
 	decNumber x, y, z;
 #else
@@ -2309,27 +2289,16 @@ void op_float(decimal64 *a, decimal64 *b) {
 #endif
 	}
 	State.fract = 0;
-        State2.hms = 0;
+        State2.hms = (op == OP_HMS) ? 1 : 0;
 }
 
-void op_hms(decimal64 *a, decimal64 *b) {
-	op_float(a, b);
-	State2.hms = 1;
-}
-
-void op_fract(decimal64 *nul1, decimal64 *nul2) {
-	op_float(NULL, NULL);
+void op_fract(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	op_float(NULL, NULL, OP_FLOAT);
 	State.fract = 1;
-}
-
-void op_fracimp(decimal64 *a, decimal64 *b) {
-	op_fract(a, b);
-	State.improperfrac = 1;
-}
-
-void op_fracpro(decimal64 *a, decimal64 *b) {
-	op_fract(a, b);
-	State.improperfrac = 0;
+	if (op == OP_FRACIMPROPER)
+		State.improperfrac = 1;
+	else if (op == OP_FRACPROPER)
+		State.improperfrac = 0;
 }
 
 static int is_digit(const char c) {
@@ -2487,7 +2456,7 @@ static void specials(const opcode op) {
 			else if (Cmdline[CmdLineLength] == '.')
 				CmdLineDot--;
 		} else
-			clrx(NULL, NULL);
+			clrx(NULL, NULL, OP_rCLX);
 		break;
 
 	case OP_ENTER:
@@ -2503,7 +2472,7 @@ static void specials(const opcode op) {
 		State.state_lift = 0;
 		setlastX();
 		sigma_plus(&Ctx);
-		sigma_N(&regX, NULL);
+		sigma_val(&regX, NULL, OP_sigmaN);
 		break;
 
 	case OP_SIGMAMINUS:
@@ -2513,7 +2482,7 @@ static void specials(const opcode op) {
 		State.state_lift = 0;
 		setlastX();
 		sigma_minus(&Ctx);
-		sigma_N(&regX, NULL);
+		sigma_val(&regX, NULL, OP_sigmaN);
 		break;
 
 	// Conditional tests vs registers....
@@ -2549,47 +2518,26 @@ enum trig_modes get_trig_mode(void) {
 	return State.trigmode;
 }
 
-void set_trig_mode(enum trig_modes m) {
+static void set_trig_mode(enum trig_modes m) {
 	State.trigmode = m;
 }
 
-void op_deg(decimal64 *nul1, decimal64 *nul2) {
-	set_trig_mode(TRIG_DEG);
+void op_trigmode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	set_trig_mode((enum trig_modes)(TRIG_DEG + (op - OP_DEG)));
 }
 
-void op_rad(decimal64 *nul1, decimal64 *nul2) {
-	set_trig_mode(TRIG_RAD);
-}
-
-void op_grad(decimal64 *nul1, decimal64 *nul2) {
-	set_trig_mode(TRIG_GRAD);
-}
-
-void op_radixcom(decimal64 *nul1, decimal64 *nul2) {
-	State.fraccomma = 1;
+void op_radix(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	State.fraccomma = (op == OP_RADCOM) ? 1 : 0;
 	State.fract = 0;
 }
 
-void op_radixdot(decimal64 *nul1, decimal64 *nul2) {
-	State.fraccomma = 0;
-	State.fract = 0;
+
+void op_thousands(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	State.nothousands = (op == OP_THOUS_ON) ? 0 : 1;
 }
 
-void op_thousands_off(decimal64 *nul1, decimal64 *nul2) {
-	State.nothousands = 1;
-}
-
-void op_thousands_on(decimal64 *nul1, decimal64 *nul2) {
-	State.nothousands = 0;
-}
-
-void op_fixsci(decimal64 *nul1, decimal64 *nul2) {
-	State.fixeng = 0;
-	State.fract = 0;
-}
-
-void op_fixeng(decimal64 *nul1, decimal64 *nul2) {
-	State.fixeng = 1;
+void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	State.fixeng = (op == OP_FIXSCI) ? 0 : 1;
 	State.fract = 0;
 }
 
@@ -2609,21 +2557,10 @@ void op_pause(unsigned int arg, enum rarg op) {
 #endif
 }
 
-void op_2comp(decimal64 *a, decimal64 *b) {
-	State.int_mode = MODE_2COMP;
+void op_intsign(decimal64 *a, decimal64 *b, enum nilop op) {
+	State.int_mode = (op - OP_2COMP) + MODE_2COMP;
 }
 
-void op_1comp(decimal64 *a, decimal64 *b) {
-	State.int_mode = MODE_1COMP;
-}
-
-void op_unsigned(decimal64 *a, decimal64 *b) {
-	State.int_mode = MODE_UNSIGNED;
-}
-
-void op_signmant(decimal64 *a, decimal64 *b) {
-	State.int_mode = MODE_SGNMANT;
-}
 
 /* Switch to integer mode.
  * If we're coming from real mode we do funny stuff with the stack,
@@ -2740,9 +2677,9 @@ static void set_base(unsigned int b) {
 void set_int_base(unsigned int arg, enum rarg op) {
 	if (arg < 2) {
 		if (arg == 0)
-			op_float(NULL, NULL);
+			op_float(NULL, NULL, OP_FLOAT);
 		else
-			op_fract(NULL, NULL);
+			op_fract(NULL, NULL, OP_FRACT);
 	} else
 		set_base(arg);
 }
@@ -2758,82 +2695,65 @@ enum {
 };
 
 static void set_locale(int flags) {
-	if (flags & LOCALE_RADIX_COM)		op_radixcom(NULL,NULL);
-	else					op_radixdot(NULL,NULL);
-
-	if (flags & LOCALE_TIME_24)		time_24(NULL,NULL);
-	else					time_12(NULL,NULL);
-
-	if (flags & LOCALE_THOUS_OFF)		op_thousands_off(NULL,NULL);
-	else					op_thousands_on(NULL,NULL);
-
-	if (flags & LOCALE_JG1582)		jg1582(NULL,NULL);
-	else					jg1752(NULL,NULL);
-
-	if (flags & LOCALE_DATE_MDY)		date_mdy(NULL,NULL);
-	else if (flags & LOCALE_DATE_YMD)	date_ymd(NULL,NULL);
-	else					date_dmy(NULL,NULL);
+	op_radix(NULL, NULL, (flags & LOCALE_RADIX_COM) ? OP_RADCOM : OP_RADDOT);
+	op_timemode(NULL, NULL, (flags & LOCALE_TIME_24) ? OP_24HR : OP_12HR);
+	op_thousands(NULL, NULL, (flags & LOCALE_THOUS_OFF) ? OP_THOUS_OFF : OP_THOUS_ON);
+	op_jgchange(NULL, NULL, (flags & LOCALE_JG1582) ? OP_JG1582 : OP_JG1752);
+	op_datemode(NULL, NULL, (flags & LOCALE_DATE_MDY) ? OP_DATEMDY : ((flags & LOCALE_DATE_YMD) ? OP_DATEYMD : OP_DATEDMY));
 }
 
-void op_seteur(decimal64 *a, decimal64 *nul) {
-	set_locale(	LOCALE_RADIX_COM |
+void op_locale(decimal64 *a, decimal64 *nul, enum nilop op) {
+	int f;
+
+	switch (op) {
+	default:
+	case OP_SETUK:
+		f = LOCALE_RADIX_DOT |
+			LOCALE_THOUS_ON |
+			LOCALE_TIME_12 |
+			LOCALE_JG1752 |
+			LOCALE_DATE_DMY;
+		break;
+	case OP_SETEUR:
+		f = LOCALE_RADIX_COM |
 			LOCALE_THOUS_ON |
 			LOCALE_TIME_24 |
 			LOCALE_JG1582 |
-			LOCALE_DATE_DMY);
-}
-
-void op_setuk(decimal64 *a, decimal64 *nul) {
-	set_locale(	LOCALE_RADIX_DOT |
+			LOCALE_DATE_DMY;
+		break;
+	case OP_SETUSA:
+		f = LOCALE_RADIX_DOT |
 			LOCALE_THOUS_ON |
 			LOCALE_TIME_12 |
 			LOCALE_JG1752 |
-			LOCALE_DATE_DMY);
-}
-
-void op_setusa(decimal64 *a, decimal64 *nul) {
-	set_locale(	LOCALE_RADIX_DOT |
-			LOCALE_THOUS_ON |
-			LOCALE_TIME_12 |
-			LOCALE_JG1752 |
-			LOCALE_DATE_MDY);
-}
-
-void op_setind(decimal64 *a, decimal64 *nul) {
-	set_locale(	LOCALE_RADIX_DOT |
+			LOCALE_DATE_MDY;
+		break;
+	case OP_SETIND:
+		f = LOCALE_RADIX_DOT |
 			LOCALE_THOUS_OFF |
 			LOCALE_TIME_24 |
 			LOCALE_JG1752 |
-			LOCALE_DATE_DMY);
-}
-
-void op_setchn(decimal64 *a, decimal64 *nul) {
-	set_locale(	LOCALE_RADIX_DOT |
+			LOCALE_DATE_DMY;
+		break;
+	case OP_SETCHN:
+		f = LOCALE_RADIX_DOT |
 			LOCALE_THOUS_OFF |
 			LOCALE_TIME_24 |
 			LOCALE_JG1752 |
-			LOCALE_DATE_YMD);
+			LOCALE_DATE_YMD;
+		break;
+	}
+	set_locale(f);
 }
 
 
-void date_ymd(decimal64 *a, decimal64 *nul) {
-	State.date_mode = DATE_YMD;
+void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op) {
+	State.date_mode = (op - OP_DATEDMY) + DATE_DMY;
 }
 
-void date_dmy(decimal64 *a, decimal64 *nul) {
-	State.date_mode = DATE_DMY;
-}
 
-void date_mdy(decimal64 *a, decimal64 *nul) {
-	State.date_mode = DATE_MDY;
-}
-
-void time_24(decimal64 *nul1, decimal64 *nul2) {
-	State.t12 = 0;
-}
-
-void time_12(decimal64 *nul1, decimal64 *nul2) {
-	State.t12 = 1;
+void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	State.t12 = (op == OP_12HR) ? 1 : 0;
 }
 
 #ifdef INCLUDE_USER_MODE
@@ -2904,27 +2824,22 @@ static void do_rtn(int plus1) {
 	}
 }
 
-void op_rtn(decimal64 *nul1, decimal64 *nul2) {
+void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	if (!State.implicit_rtn)
-		do_rtn(0);
+		do_rtn(op == OP_RTN ? 0 : 1);
 }
 
-void op_rtnp1(decimal64 *nul1, decimal64 *nul2) {
-	if (!State.implicit_rtn)
-		do_rtn(1);
-}
-
-void op_rs(decimal64 *nul1, decimal64 *nul2) {
+void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	if (Running)	set_running_off();
 	else		set_running_on();
 }
 
-void op_prompt(decimal64 *nul1, decimal64 *nul2) {
+void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	set_running_off();
 	alpha_view_common(regX_idx);
 }
 
-void do_usergsb(decimal64 *a, decimal64 *b) {
+void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op) {
 	unsigned int usrpc = State.usrpc;
 	const unsigned int pc = state_pc();
 	if (usrpc != 0 && isXROM(pc))
@@ -2932,7 +2847,7 @@ void do_usergsb(decimal64 *a, decimal64 *b) {
 }
 
 /* Test if a number is an integer */
-void XisInt(decimal64 *a, decimal64 *b) {
+void XisInt(decimal64 *a, decimal64 *b, enum nilop op) {
 	decNumber x;
 
 	getX(&x);
@@ -2940,7 +2855,7 @@ void XisInt(decimal64 *a, decimal64 *b) {
 }
 
 /* Test if a number has a fractional component */
-void XisFrac(decimal64 *a, decimal64 *b) {
+void XisFrac(decimal64 *a, decimal64 *b, enum nilop op) {
 	decNumber x;
 
 	getX(&x);
@@ -2973,7 +2888,7 @@ static int evenX() {
 }
 
 /* Test if a number is an even integer */
-void XisEven(decimal64 *a, decimal64 *b) {
+void XisEven(decimal64 *a, decimal64 *b, enum nilop op) {
 	if (is_intmode()) {
 		fin_tst((d64toInt(&regX) & 1) == 0);
 	} else {
@@ -2982,7 +2897,7 @@ void XisEven(decimal64 *a, decimal64 *b) {
 }
 
 /* Test if a number is an odd integer */
-void XisOdd(decimal64 *a, decimal64 *b) {
+void XisOdd(decimal64 *a, decimal64 *b, enum nilop op) {
 	if (is_intmode()) {
 		fin_tst((d64toInt(&regX) & 1) != 0);
 	} else {
@@ -2991,7 +2906,7 @@ void XisOdd(decimal64 *a, decimal64 *b) {
 }
 
 /* Test if a number is prime */
-void XisPrime(decimal64 *a, decimal64 *b) {
+void XisPrime(decimal64 *a, decimal64 *b, enum nilop op) {
 	int sgn;
 
 	fin_tst(isPrime(get_int(&regX, &sgn)) && sgn == 0);
@@ -2999,7 +2914,7 @@ void XisPrime(decimal64 *a, decimal64 *b) {
 
 /* Test is a number is infinite.
  */
-void isInfinite(decimal64 *a, decimal64 *b) {
+void isInfinite(decimal64 *a, decimal64 *b, enum nilop op) {
 	decNumber x;
 
 	getX(&x);
@@ -3010,21 +2925,21 @@ void isInfinite(decimal64 *a, decimal64 *b) {
  * this could be done by testing x != x, but having a special command
  * for it reads easier.
  */
-void isNan(decimal64 *a, decimal64 *b) {
+void isNan(decimal64 *a, decimal64 *b, enum nilop op) {
 	decNumber x;
 
 	getX(&x);
 	fin_tst(!is_intmode() && decNumberIsNaN(&x));
 }
 
-void isSpecial(decimal64 *a, decimal64 *b) {
+void isSpecial(decimal64 *a, decimal64 *b, enum nilop op) {
 	decNumber x;
 
 	getX(&x);
 	fin_tst(!is_intmode() && decNumberIsSpecial(&x));
 }
 
-void op_entryp(decimal64 *a, decimal64 *b) {
+void op_entryp(decimal64 *a, decimal64 *b, enum nilop op) {
 	fin_tst(State.entryp);
 }
 
@@ -3088,7 +3003,7 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *ne
 	return 0;
 }
 
-void op_regcopy(decimal64 *a, decimal64 *b) {
+void op_regcopy(decimal64 *a, decimal64 *b, enum nilop op) {
 	unsigned int s, d, n;
 	int negative;
 
@@ -3100,7 +3015,7 @@ void op_regcopy(decimal64 *a, decimal64 *b) {
 		xcopy(Regs+d, Regs+s, n*sizeof(Regs[0]));
 }
 
-void op_regswap(decimal64 *a, decimal64 *b) {
+void op_regswap(decimal64 *a, decimal64 *b, enum nilop op) {
 	unsigned int s, d, n, i;
 
 	if (reg_decode(&s, &n, &d, NULL) || s == d)
@@ -3115,7 +3030,7 @@ void op_regswap(decimal64 *a, decimal64 *b) {
 	}
 }
 
-void op_regclr(decimal64 *a, decimal64 *b) {
+void op_regclr(decimal64 *a, decimal64 *b, enum nilop op) {
 	unsigned int s, n, i;
 
 	if (reg_decode(&s, &n, NULL, NULL))
@@ -3124,7 +3039,7 @@ void op_regclr(decimal64 *a, decimal64 *b) {
 		Regs[i+s] = CONSTANT_INT(OP_ZERO);
 }
 
-void op_regsort(decimal64 *nul1, decimal64 *nul2) {
+void op_regsort(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	unsigned int s, n;
 	decNumber pivot, a, t;
 	int beg[10], end[10], i;
@@ -3581,7 +3496,7 @@ int init_34s(void)
 {
 	int cleared = checksum_all();
 	if ( cleared ) {
-		reset(NULL, NULL);
+		reset(NULL, NULL, OP_RESET);
 	}
 	init_state();
 
