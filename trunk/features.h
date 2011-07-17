@@ -44,7 +44,7 @@
 // Include the user mode serial commands SOPEN, SCLOSE, RECV1, SEND1
 #define INCLUDE_USER_IO
 
-// Include the RCLM/STOM user mode save and restore commands
+// Include the SAVEM/RESTM user mode save and restore commands
 #define INCLUDE_USER_MODE
 
 // Incude the digamma function for real and complex arguments

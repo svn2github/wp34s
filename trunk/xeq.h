@@ -430,7 +430,7 @@ enum eKind {
 #define OP_NIL	(KIND_NIL << KIND_SHIFT)		/* Niladic operations */
 #define OP_MON	(KIND_MON << KIND_SHIFT)		/* Monadic operations */
 #define OP_DYA	(KIND_DYA << KIND_SHIFT)		/* Dyadic operations */
-#define OP_TRI	(KIND_TRI << KIND_SHIFT)		/* Dyadic operations */
+#define OP_TRI	(KIND_TRI << KIND_SHIFT)		/* Triadic operations */
 #define OP_CMON	(KIND_CMON << KIND_SHIFT)		/* Complex Monadic operation */
 #define OP_CDYA	(KIND_CDYA << KIND_SHIFT)		/* Complex Dyadic operation */
 
