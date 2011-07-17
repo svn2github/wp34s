@@ -47,6 +47,7 @@ my $first_line = 1;
 my $DEFAULT_COMMENT_MARKER = "//";
 my $cmt = $DEFAULT_COMMENT_MARKER;
 my $no_comments = 0;
+my $show_step_num = 1;
 
 # Define the comment format. Only these ones are recognized.
 # This is require because there is no specific comment delimiter (other than these) in
@@ -111,6 +112,8 @@ get_options();
 open IN, $infile or die "ERROR: Cannot open input file '$infile' for reading: $!\n";
 open OUT, "> $outfile" or die "ERROR: Cannot open output file '$outfile' for writing: $!\n";
 
+my $step = 1;
+
 while(<IN>) {
   next if m<^\s*//>;
   next if /^\s*$/;
@@ -136,7 +139,12 @@ while(<IN>) {
   # Reprocess the line to parse out only the info needed (or wanted!) by WP34s assembler format.
   if( /[0-9a-f]{4}:\s+([0-9a-f]{4}\s+){1,2}(.+)$/ ) {
     print OUT "${cmt} $parsed_comment\n" if $parsed_comment and not $no_comments;
-    print OUT "${2}\n";
+    if( $show_step_num ) {
+      printf OUT "%03d %0s\n", $step, ${2};
+      $step++;
+    } else {
+      print OUT "${2}\n";
+    }
   }
 }
 close IN;
@@ -158,7 +166,7 @@ sub get_options {
       die "\n";
     }
 
-    elsif( ($arg eq '--version') or ($arg eq '-V') ) {
+    elsif( ($arg eq "--version") or ($arg eq "-V") ) {
       print "$script\n";
       if( $SVN_Current_Revision =~ /Revision: (.+)\s*\$/ ) {
         print "Version: $1\n";
@@ -166,20 +174,28 @@ sub get_options {
       die "\n";
     }
 
-    elsif( $arg eq '-d' ) {
+    elsif( $arg eq "-d" ) {
       $debug = shift(@ARGV);
     }
 
-    elsif( $arg eq '-v' ) {
+    elsif( $arg eq "-v" ) {
       $quiet = 0;
     }
 
-    elsif( $arg eq '-o' ) {
+    elsif( $arg eq "-o" ) {
       $outfile = shift(@ARGV);
     }
 
-    elsif( $arg eq '-nc' ) {
+    elsif( $arg eq "-nc" ) {
       $no_comments = 1;
+    }
+
+    elsif( $arg eq "-s" ) {
+      $show_step_num = 1;
+    }
+
+    elsif( $arg eq "-ns" ) {
+      $show_step_num = 0;
     }
 
     else {
