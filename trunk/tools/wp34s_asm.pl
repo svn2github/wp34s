@@ -39,7 +39,7 @@ my $outfile = "-";
 
 my $DEFAULT_OP_SVN = "-- unknown --";
 my $op_svn = $DEFAULT_OP_SVN;
-my $report_op_svn = 0;
+my $report_op_svn = 1;
 
 my $FLASH_LENGTH = 512;
 my $DEFAULT_FLASH_BLANK_INSTR = "ERR 03";
@@ -153,7 +153,8 @@ Parameters:
                     disassembly mode.                           [Default: $DEFAULT_STAR_LABELS]
    -syntax outfile  Turns on syntax guide file dumping. Output will be sent to 'outfile'.
    -ns              Turn off step numbers in disassembler listing.
-   -svn             Report compressed opcode table SVN version number to STDOUT.
+   -no_svn          Suppress report of compressed opcode table SVN version number.
+   -svn             Report compressed opcode table SVN version number to STDOUT. [default]
    -h               This help script.
 
 Examples:
@@ -466,7 +467,8 @@ sub print_disassemble_text {
   if( $no_step_numbers ) {
     printf OUT "%0s%0s", $label_flag, $hex2mnem{$hex_str};
   } elsif( $debug ) {
-    printf OUT "%03d /* %04s */ %0s%0s", $idx, $hex_str, $label_flag, $hex2mnem{$hex_str};
+    my $op_hex = sprintf "%04s %04s", lc dec2hex4(hex2dec($hex_str)+$chars[0]), lc dec2hex4($chars[2]*256+$chars[1]);
+    printf OUT "%03d /* %04s */ %0s%0s", $idx, $op_hex, $label_flag, $hex2mnem{$hex_str};
   } else {
     printf OUT "%03d %0s%0s", $idx, $label_flag, $hex2mnem{$hex_str};
   }
@@ -1105,77 +1107,81 @@ sub get_options {
   while ($arg = shift(@ARGV)) {
 
     # See if help is asked for
-    if( $arg eq '-h' ) {
+    if( $arg eq "-h" ) {
       print "$usage\n";
       die "\n";
     }
 
-    if( $arg eq '-more_help' ) {
+    if( $arg eq "-more_help" ) {
       print "$usage\n";
       print "$extended_help\n";
       die "\n";
     }
 
-    elsif( ($arg eq '-opcodes') or ($arg eq '-opcode') or ($arg eq '-map') or  ($arg eq '-op') ) {
+    elsif( ($arg eq "-opcodes") or ($arg eq "-opcode") or ($arg eq "-map") or  ($arg eq "-op") ) {
       $opcode_map_file = shift(@ARGV);
       print "# NOTE: Opcode map file: $opcode_map_file\n";
     }
 
-    elsif( $arg eq '-dis' ) {
+    elsif( $arg eq "-dis" ) {
       $mode = $DISASSEMBLE_MODE;
     }
 
-    elsif( $arg eq '-d' ) {
+    elsif( $arg eq "-d" ) {
       $debug = shift(@ARGV);
     }
 
-    elsif( $arg eq '-v' ) {
+    elsif( $arg eq "-v" ) {
       $quiet = 0;
     }
 
-    elsif( $arg eq '-svn' ) {
+    elsif( $arg eq "-svn" ) {
       $report_op_svn = 1;
     }
 
-    elsif( ($arg eq '-s') or ($arg eq '-stars') ) {
+    elsif( $arg eq "-no_svn" ) {
+      $report_op_svn = 0;
+    }
+
+    elsif( ($arg eq "-s") or ($arg eq "-stars") ) {
       $star_labels = shift(@ARGV);
     }
 
-    elsif( ($arg eq '-f') or ($arg eq '-fill') ) {
+    elsif( ($arg eq "-f") or ($arg eq "-fill") ) {
       $user_flash_blank_fill = dec2hex4(eval_possible_hex(shift(@ARGV)));
     }
 
-    elsif( $arg eq '-dl' ) {
+    elsif( $arg eq "-dl" ) {
       $disable_flash_limit = 1;
     }
 
-    elsif( $arg eq '-ns' ) {
+    elsif( $arg eq "-ns" ) {
       $no_step_numbers = 1;
     }
 
-    elsif( $arg eq '-o' ) {
+    elsif( $arg eq "-o" ) {
       $outfile = shift(@ARGV);
     }
 
     # Undocumented debug hook to zero the last 4 words.
-    elsif( $arg eq '-04' ) {
+    elsif( $arg eq "-04" ) {
       $zero_last_4 = 1;
     }
 
     # Undocumented debug hook to generate a "universal" CRC.
-    elsif( $arg eq '-magic' ) {
+    elsif( $arg eq "-magic" ) {
       $use_magic_marker = 1;
     }
 
     # Undocumented debug hook to generate an empty flash image.
-    elsif( $arg eq '-empty' ) {
+    elsif( $arg eq "-empty" ) {
       $build_an_empty_image = 1;
     }
 
     # Undocumented debug hook to generate a XROM C-array.
     # Automatically disables the flash length limit since the XROM can be larger than a
     # flash image.
-    elsif( ($arg eq '-c_xrom') or ($arg eq '-c') ) {
+    elsif( ($arg eq "-c_xrom") or ($arg eq "-c") ) {
       $xrom_c_mode = 1;
       $disable_flash_limit = 1;
     }
@@ -1183,20 +1189,20 @@ sub get_options {
     # Undocumented debug hook to generate a XROM binary image.
     # Automatically disables the flash length limit since the XROM can be larger than a
     # flash image.
-    elsif( $arg eq '-xrom' ) {
+    elsif( $arg eq "-xrom" ) {
       $xrom_bin_mode = 1;
       $disable_flash_limit = 1;
     }
 
     # This is typically only used for debug at the moment. It will dump the expanded tables
     # into a file of this name. Just having the file named is sufficient to trigger this mode.
-    elsif( ($arg eq '-e') or ($arg eq '-expand') or ($arg eq '-syntax') ) {
+    elsif( ($arg eq "-e") or ($arg eq "-expand") or ($arg eq "-syntax") ) {
       $expanded_op_file = shift(@ARGV);
     }
 
     # This is typically only used for debug at the moment. It will dump the escaped alpha table
     # into a file of this name. Just having the file named is sufficient to trigger this mode.
-    elsif( ($arg eq '-da') or ($arg eq '-alpha') ) {
+    elsif( ($arg eq "-da") or ($arg eq "-alpha") ) {
       $dump_escaped_alpha_table = shift(@ARGV);
     }
 
@@ -1216,7 +1222,7 @@ sub get_options {
 } # get_options
 
 __DATA__
-# Generated by "./trunk/Linux/calc opcodes > svn_1199.op" from SVN 1199
+# Generated by "./trunk/Linux/calc opcodes > svn_1231.op"
 0x0000  cmd ENTER[^]
 0x0001  cmd CLx
 0x0002  cmd EEX
@@ -1380,42 +1386,37 @@ __DATA__
 0x0179  cmd R-SWAP
 0x017a  cmd R-CLR
 0x017b  cmd R-SORT
-0x017c  cmd RCLM
-0x017d  cmd STOM
-0x017e  cmd XEQUSR
-0x017f  cmd [infinity]?
-0x0180  cmd NaN?
-0x0181  cmd SPEC?
-0x0182  cmd PRIME?
-0x0183  cmd INT?
-0x0184  cmd FP?
-0x0185  cmd EVEN?
-0x0186  cmd ODD?
-0x0187  cmd ENTRY?
-0x0188  cmd TICKS
-0x0189  cmd BATT
-0x018a  cmd SETEUR
-0x018b  cmd SETUK
-0x018c  cmd SETUSA
-0x018d  cmd SETIND
-0x018e  cmd SETCHN
-0x018f  cmd SLVQ
-0x0190  cmd XEQ[alpha]
-0x0191  cmd GTO[alpha]
-0x0192  cmd RCFRG
-0x0193  cmd RCFST
-0x0194  cmd SAVE
-0x0195  cmd LOAD
-0x0196  cmd SENDP
-0x0197  cmd RECVP
-0x0198  cmd SENDR
-0x0199  cmd RECVR
-0x019a  cmd SENDA
-0x019b  cmd RECVA
-0x019c  cmd SEND1
-0x019d  cmd RECV1
-0x019e  cmd SOPEN
-0x019f  cmd SCLOSE
+0x017c  cmd XEQUSR
+0x017d  cmd [infinity]?
+0x017e  cmd NaN?
+0x017f  cmd SPEC?
+0x0180  cmd PRIME?
+0x0181  cmd INT?
+0x0182  cmd FP?
+0x0183  cmd EVEN?
+0x0184  cmd ODD?
+0x0185  cmd ENTRY?
+0x0186  cmd TICKS
+0x0187  cmd BATT
+0x0188  cmd SETEUR
+0x0189  cmd SETUK
+0x018a  cmd SETUSA
+0x018b  cmd SETIND
+0x018c  cmd SETCHN
+0x018d  cmd SLVQ
+0x018e  cmd XEQ[alpha]
+0x018f  cmd GTO[alpha]
+0x0190  cmd RCFRG
+0x0191  cmd RCFST
+0x0192  cmd SAVE
+0x0193  cmd LOAD
+0x0194  cmd SENDP
+0x0195  cmd SENDR
+0x0196  cmd SENDA
+0x0197  cmd RECV
+0x0198  cmd SEND1
+0x0199  cmd SOPEN
+0x019a  cmd SCLOSE
 0x0200  cmd FP
 0x0201  cmd FLOOR
 0x0202  cmd CEIL
@@ -1537,6 +1538,7 @@ __DATA__
 0x0277  cmd YEAR
 0x0278  cmd MONTH
 0x0279  cmd DAY
+0x027a  cmd RECV1
 0x0300  cmd y[^x]
 0x0301  cmd +
 0x0302  cmd -
@@ -2218,9 +2220,9 @@ __DATA__
 0xe900  arg KEY?  max=112,indirect,stack
 0xea00  arg [alpha]XEQ  max=112,indirect,stack
 0xeb00  arg [alpha]GTO  max=112,indirect,stack
-0xec00  arg PRCL  max=4,indirect
-0xed00  arg PSTO  max=4,indirect
-0xee00  arg P[<->]  max=4,indirect
+0xec00  arg PRCL  max=3,indirect
+0xed00  arg PSTO  max=3,indirect
+0xee00  arg P[<->]  max=3,indirect
 0xef00  arg RCF max=112,indirect,stack
 0xf000  arg RCF+  max=112,indirect,stack
 0xf100  arg RCF-  max=112,indirect,stack
