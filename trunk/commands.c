@@ -709,8 +709,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 
 	CMDstk(RARG_VIEW_REG,	&alpha_view_reg,NUMREG,			"VW\240+")
 #ifdef INCLUDE_USER_MODE
-	CMDstk(RARG_SAVEM,	&cmdsavem,	NUMREG,			"MSTO")
-	CMDstk(RARG_RESTM,	&cmdrestm,	NUMREG,			"MRCL")
+	CMDstk(RARG_SAVEM,	&cmdsavem,	NUMREG,			"STOM")
+	CMDstk(RARG_RESTM,	&cmdrestm,	NUMREG,			"RCLM")
 #endif
 
 #undef CMDnoI

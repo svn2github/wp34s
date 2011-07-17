@@ -1180,6 +1180,16 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K_CMPLX:
+#ifdef INCLUDE_USER_MODE
+		if (State2.ind || State2.dot)
+			break;
+		if (base == RARG_STO)
+			State.base = RARG_SAVEM;
+		else if (base == RARG_RCL)
+			State.base = RARG_RESTM;
+		break;
+#endif
+
 	case K12:	  // I (lastY)
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
