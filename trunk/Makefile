@@ -129,7 +129,7 @@ SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
-		statebits.h stats.h xeq.h xrom.h storage.h serial.h
+		stats.h xeq.h xrom.h storage.h serial.h
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 LIBS += -L$(OBJECTDIR) -lconsts
@@ -252,7 +252,7 @@ $(UTILITIES)/genchars7$(EXE): genchars7.c Makefile lcd.h
 $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-xeq.h: statebits.h
+xeq.h:
 	@touch xeq.h
 
 # Build libs and objects
@@ -289,7 +289,7 @@ $(OBJECTDIR)/stats.o: stats.c xeq.h data.h decn.h stats.h consts.h int.h \
 $(OBJECTDIR)/string.o: string.c xeq.h data.h Makefile features.h
 $(OBJECTDIR)/storage.o: storage.c xeq.h data.h storage.h Makefile features.h
 $(OBJECTDIR)/xeq.o: xeq.c xeq.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
-		display.h consts.h date.h statebits.h storage.h Makefile features.h
+		display.h consts.h date.h storage.h Makefile features.h
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h data.h consts.h Makefile features.h
 
 ifdef REALBUILD

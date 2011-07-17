@@ -3507,6 +3507,8 @@ int init_34s(void)
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	check_cat(CATALOGUE_INTERNAL, "internal");
 #endif
+        if (sizeof(unsigned long long int) != sizeof(UState))
+            error("sizeof register (%u) != sizeof user state (%u)\n", sizeof(unsigned long long int), sizeof(UState));
 	}
 #endif
 	return cleared;
