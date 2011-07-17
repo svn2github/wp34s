@@ -399,7 +399,7 @@ void show_flags(void) {
 		MOVE(64, FLAG_BASE);
 		PRINTF("[H.MS]");
 	}
-	if (State.fract) {
+	if (UState.fract) {
 		MOVE(71, FLAG_BASE);
 		PRINTF("[FRACT]");
 	}
@@ -422,7 +422,7 @@ void show_flags(void) {
 	MOVE(30, FLAG_BASE+1);
 	PRINTF("shft = %u", cur_shift());
 	MOVE(40, FLAG_BASE+1);
-	PRINTF("trig = %u", State.trigmode);
+	PRINTF("trig = %u", UState.trigmode);
 	MOVE(60, FLAG_BASE+1);
 	PRINTF("r = %u", ShowRegister);
 //	MOVE(60, FLAG_BASE+1);

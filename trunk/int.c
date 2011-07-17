@@ -22,7 +22,7 @@
 
 unsigned int int_base(void) {
 #ifndef TINY_BUILD
-	unsigned int b = State.int_base + 1;
+	unsigned int b = UState.int_base + 1;
 	if (b < 2)
 		return 10;
 	return b;
@@ -35,14 +35,14 @@ enum arithmetic_modes int_mode(void) {
 #ifndef TINY_BUILD
 	unsigned int b = int_base();
 	if (b == 10 || (b & (b-1)) == 0)
-		return State.int_mode;
+		return UState.int_mode;
 #endif
 	return MODE_UNSIGNED;
 }
 
 unsigned int word_size(void) {
 #ifndef TINY_BUILD
-	unsigned int il = State.int_len;
+	unsigned int il = UState.int_len;
 	if (il >= MAX_WORD_SIZE || il == 0)
 		return MAX_WORD_SIZE;
 	return il;

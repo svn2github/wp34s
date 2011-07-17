@@ -2138,17 +2138,17 @@ decNumber *decNumberNxor(decNumber *res, const decNumber *x, const decNumber *y)
 
 
 decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
-	int numdig = State.dispdigs + 1;
+	int numdig = UState.dispdigs + 1;
 	decNumber p10;
 	decNumber t, u;
-	enum display_modes dmode = State.dispmode;
+	enum display_modes dmode = UState.dispmode;
 	enum rounding round;
 	int digits;
 
 	if (decNumberIsSpecial(x))
 		return decNumberCopy(res, x);
 
-	if (State.fract) {
+	if (UState.fract) {
 		decNumber2Fraction(&t, &u, x);
 		return dn_divide(res, &t, &u);
 	}
@@ -2197,7 +2197,7 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 		return;
 	}
 
-	dm = State.denom_mode;
+	dm = UState.denom_mode;
 	get_maxdenom(&maxd);
 
 	decNumberZero(&dold);

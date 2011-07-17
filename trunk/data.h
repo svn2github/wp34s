@@ -30,34 +30,43 @@
 /*
  *  State that must be saved across power off
  */
+struct _ustate {
+	unsigned int denom_mode :    2;	// Fractions denominator mode
+	unsigned int denom_max :    14;	// Maximum denominator
+	unsigned int improperfrac :  1;	// proper or improper fraction display
+	unsigned int fract :         1;	// Fractions mode
+
+	unsigned int dispmode :      2;	// Display mode (ALL, FIX, SCI, ENG)
+	unsigned int dispdigs :      4;	// Display digits
+	unsigned int fixeng :        1;	// Fix flips to ENG instead of SCI
+	unsigned int fraccomma :     1;	// radix mark . or ,
+	unsigned int nothousands :   1;	// , or nothing for thousands separator
+
+	unsigned int intm :          1;	// In integer mode
+	unsigned int int_maxw :      3;	// maximum available window
+	unsigned int int_base :      4;	// Integer input/output base
+	unsigned int int_len :       7;	// Length of Integers
+	unsigned int int_mode :      2;	// Integer sign mode
+	unsigned int leadzero :      1;	// forced display of leading zeros in integer mode
+
+	unsigned int date_mode :     2;	// Date input/output format
+	unsigned int t12 :           1;	// 12 hour time mode
+	unsigned int jg1582 :        1;	// Julian/Gregorian change over in 1582 instead of 1752
+
+	unsigned int trigmode :      2;	// Trig mode (DEG, RAD, GRAD)
+	unsigned int stack_depth :   1;	// Stack depth
+	unsigned int sigma_mode :    3;	// Which sigma regression mode we're using
+	unsigned int contrast :      4;	// Display contrast
+};
+
 struct _state {
-	unsigned int denom_mode : 2;	// Fractions denominator mode
-	unsigned int denom_max : 14;	// Maximum denominator
+	unsigned int last_cat :      5;	// Most recent catalogue browsed
+	unsigned int last_catpos :   7;	// Last position in said catalogue
+	unsigned int entryp :        1;	// Has the user entered something since the last program stop
+	unsigned int state_lift :    1;	// XEQ internal - don't use
+	unsigned int implicit_rtn :  1;	// End of program is an implicit return
+	unsigned int deep_sleep :    1; // Used to wake up correctly
 
-	unsigned int last_cat : 5;	// Most recent catalogue browsed
-	unsigned int last_catpos : 7;	// Last position in said catalogue
-
-	unsigned int intm : 1;		// In integer mode
-	unsigned int int_maxw : 3;	// maximum available window
-
-	unsigned int int_base : 4;	// Integer input/output base
-	unsigned int implicit_rtn : 1;	// End of program is an implicit return
-
-	unsigned int improperfrac : 1;	// proper or improper fraction display
-	unsigned int nothousands : 1;	// , or nothing for thousands separator
-	unsigned int jg1582 : 1;	// Julian/Gregorian change over in 1582 instead of 1752
-
-	unsigned int fract : 1;		// Fractions mode
-	unsigned int leadzero : 1;	// forced display of leading zeros in integer mode
-	unsigned int entryp : 1;	// Has the user entered something since the last program stop
-	unsigned int state_lift : 1;	// XEQ internal - don't use
-
-	unsigned int deep_sleep : 1;    // Used to wake up correctly
-
-// User noticeable state
-#define SB(f, p)	unsigned int f : p
-#include "statebits.h"
-#undef SB
 	/*
 	 *  Not bit fields
 	 */
@@ -65,8 +74,6 @@ struct _state {
 	unsigned short usrpc;		// XEQ internal - don't use
 	unsigned char retstk_ptr;	// XEQ internal - don't use
 	unsigned char base;		// Base value for a command with an argument
-	unsigned char contrast;		// Display contrast
-	unsigned char int_len;		// Length of Integers
 };
 
 /*
@@ -110,6 +117,11 @@ typedef struct _ram {
 	struct _state _state;
 
 	/*
+	 *  User state
+	 */
+	struct _ustate _ustate;
+
+	/*
 	 *  Storage space for our user flags
 	 */
 	unsigned short _bank_flags;
@@ -132,6 +144,7 @@ typedef struct _ram {
 extern TPersistentRam PersistentRam;
 
 #define State		 (PersistentRam._state)
+#define UState		 (PersistentRam._ustate)
 #define CrcProg		 (PersistentRam._crc_prog)
 #define LastProg	 (PersistentRam._last_prog)
 #define Alpha		 (PersistentRam._alpha)

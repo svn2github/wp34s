@@ -45,7 +45,7 @@
 #define INCLUDE_USER_IO
 
 // Include the RCLM/STOM user mode save and restore commands
-//#define INCLUDE_USER_MODE
+#define INCLUDE_USER_MODE
 
 // Incude the digamma function for real and complex arguments
 //#define INCLUDE_DIGAMMA

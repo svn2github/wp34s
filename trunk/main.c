@@ -405,7 +405,7 @@ void enable_lcd( void )
 	/*
 	 *  Set contrast and enable the display
 	 */
-	SUPC_SetSlcdVoltage( Contrast = State.contrast );
+	SUPC_SetSlcdVoltage( Contrast = UState.contrast );
 	SLCDC_Enable();
 }
 
@@ -489,7 +489,7 @@ void shutdown( void )
 	/*
 	 *  Let Interrupt fade out the display
 	 */
-	LcdFadeOut = State.contrast;
+	LcdFadeOut = UState.contrast;
 	message( "Bye...", "" );
 
 	/*
@@ -1611,8 +1611,8 @@ int main(void)
 		/*
 		 *  Adjust the display contrast if it has been changed
 		 */
-		if ( State.contrast != Contrast ) {
-			SUPC_SetSlcdVoltage( Contrast = State.contrast );
+		if ( UState.contrast != Contrast ) {
+			SUPC_SetSlcdVoltage( Contrast = UState.contrast );
 		}
 
 		while ( !is_key_pressed() ) {
@@ -1694,8 +1694,8 @@ int main(void)
 
 				case K64:
 					// ON-"+" Increase contrast
-					if ( State.contrast != 15 ) {
-						++State.contrast;
+					if ( UState.contrast != 15 ) {
+						++UState.contrast;
 						DispMsg = "+Contrast";
 						display();
 					}
@@ -1704,8 +1704,8 @@ int main(void)
 
 				case K54:
 					// ON-"-" Decrease contrast
-					if ( State.contrast != 0 ) {
-						--State.contrast;
+					if ( UState.contrast != 0 ) {
+						--UState.contrast;
 						DispMsg = "-Contrast";
 						display();
 					}
@@ -1728,8 +1728,8 @@ int main(void)
 
 				case K62:
 					// ON + . toggle radix mark
-					State.fraccomma = !State.fraccomma;
-					DispMsg = State.fraccomma ? "RDX," : "RDX.";
+					UState.fraccomma = !UState.fraccomma;
+					DispMsg = UState.fraccomma ? "RDX," : "RDX.";
 					display();
 					confirm_counter = 0;
 					break;

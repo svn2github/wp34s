@@ -88,7 +88,7 @@ static int check_data(int n) {
 
 
 void stats_mode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	State.sigma_mode = (op - OP_LINF) + SIGMA_LINEAR;
+	UState.sigma_mode = (op - OP_LINF) + SIGMA_LINEAR;
 }
 
 void sigma_clear(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
@@ -150,7 +150,7 @@ static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const 
 	decNumberSquare(&lx, &x);
 	mulop(&sigmaXXY, &lx, &y, op);
 
-//	if (State.sigma_mode == SIGMA_LINEAR)
+//	if (UState.sigma_mode == SIGMA_LINEAR)
 //		return;
 
 	dn_ln(&lx, &x);
@@ -453,7 +453,7 @@ void stats_correlation(decimal64 *r, decimal64 *nul, enum nilop op) {
 
 	if (check_data(2))
 		return;
-	correlation(&t, State.sigma_mode);
+	correlation(&t, UState.sigma_mode);
 	packed_from_number(r, &t);
 }
 
@@ -464,7 +464,7 @@ static void covariance(decimal64 *r, int sample) {
 
 	if (check_data(2))
 		return;
-	get_sigmas(&N, &sx, &sy, NULL, NULL, &sxy, State.sigma_mode);
+	get_sigmas(&N, &sx, &sy, NULL, NULL, &sxy, UState.sigma_mode);
 	dn_multiply(&t, &sx, &sy);
 	dn_divide(&u, &t, &N);
 	dn_subtract(&t, &sxy, &u);
@@ -487,7 +487,7 @@ static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
 	decNumber sx, sy, sxx, sxy;
 	enum sigma_modes m;
 
-	m = get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, State.sigma_mode);
+	m = get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, UState.sigma_mode);
 
 	dn_multiply(B, &N, &sxx);
 	decNumberSquare(&u, &sx);

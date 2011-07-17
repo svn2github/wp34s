@@ -540,10 +540,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN")
 	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE")
 #endif
-#ifdef INCLUDE_USER_MODE
-	FUNC1(OP_RCLFLAG,	&op_rclflag,		"RCLM")
-	FUNC0(OP_STOFLAG,	&op_stoflag,		"STOM")
-#endif
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2
@@ -712,6 +708,11 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_SRD,		&op_shift_digit,100,			"S.R")
 
 	CMDstk(RARG_VIEW_REG,	&alpha_view_reg,NUMREG,			"VW\240+")
+#ifdef INCLUDE_USER_MODE
+	CMDstk(RARG_SAVEM,	&cmdsavem,	NUMREG,			"SAVEM")
+	CMDstk(RARG_RESTM,	&cmdrestm,	NUMREG,			"RESTM")
+#endif
+
 #undef CMDnoI
 #undef CMDstk
 #undef CMD

@@ -647,9 +647,6 @@ enum nilop {
 #ifdef INCLUDE_USER_IO
 	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
 #endif
-#ifdef INCLUDE_USER_MODE
-	OP_RCLFLAG, OP_STOFLAG,
-#endif
         NUM_NILADIC     // Last entry defines number of operations
 };
 
@@ -719,6 +716,10 @@ enum rarg {
 	RARG_SLD, RARG_SRD,
 
 	RARG_VIEW_REG,
+
+#ifdef INCLUDE_USER_MODE
+	RARG_SAVEM, RARG_RESTM,
+#endif
 
         NUM_RARG     // Last entry defines number of operations
 };
@@ -994,6 +995,8 @@ extern void cmdswap(unsigned int arg, enum rarg op);
 extern void cmdflashrcl(unsigned int arg, enum rarg op);
 extern void cmdflashcrcl(unsigned int arg, enum rarg op);
 extern void cmdview(unsigned int arg, enum rarg op);
+extern void cmdsavem(unsigned int arg, enum rarg op);
+extern void cmdrestm(unsigned int arg, enum rarg op);
 extern void set_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op);
@@ -1033,8 +1036,6 @@ extern void set_int_base(unsigned int arg, enum rarg op);
 extern void op_locale(decimal64 *a, decimal64 *nul, enum nilop op);
 extern void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op);
 extern void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_rclflag(decimal64 *x, decimal64 *b);
-extern void op_stoflag(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op);

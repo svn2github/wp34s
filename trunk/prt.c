@@ -104,7 +104,7 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 #ifdef COMPILE_CATALOGUES
 	case OP_DOT:	return ".";
 #else
-	case OP_DOT:	return State.fraccomma?",":".";
+	case OP_DOT:	return UState.fraccomma?",":".";
 #endif
 	case OP_CHS:	return "+/-";
 	case OP_CLX:	return "CLx";

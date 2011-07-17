@@ -95,28 +95,7 @@ void init_state(void) {
 	xset(&s, 0, sizeof(s));
 
 #define C(n)	s.n = State.n
-	C(fraccomma);
         C(state_pc);
-	C(sigma_mode);
-	C(intm);
-	C(int_len);
-        C(t12);
-        C(stack_depth);
-	C(dispdigs);
-	C(trigmode);
-	C(dispmode);
-	C(fixeng);
-	C(int_base);
-	C(int_mode);
-	C(date_mode);
-	C(denom_mode);
-        C(denom_max);
-        C(improperfrac);
-        C(nothousands);
-        C(leadzero);
-        C(fract);
-        C(contrast);
-	C(jg1582);
         C(entryp);
 #undef C
 	s.state_lift = 1;
@@ -247,7 +226,7 @@ static int process_normal(const keycode c) {
 	case K_CMPLX:
 		if (intltr(15))
 			return OP_SPEC | OP_F;
-		if (!State.intm)
+		if (!UState.intm)
 			State2.cmplx = 1;
 		break;
 
@@ -376,7 +355,7 @@ static int process_f_shifted(const keycode c) {
 	case K44:	return OP_MON | OP_SQRT;
 
 	case K50:
-		if (State.intm && State.int_maxw > State2.int_window)
+		if (UState.intm && UState.int_maxw > State2.int_window)
 			State2.int_window++;
 		break;
 	case K51:	State2.test = TST_EQ;	break;
@@ -439,7 +418,7 @@ static int process_g_shifted(const keycode c) {
 	case K44:	return OP_MON | OP_SQR;
 
 	case K50:	
-		if (State.intm && State.int_maxw > 0 && State2.int_window > 0)
+		if (UState.intm && UState.int_maxw > 0 && State2.int_window > 0)
 			State2.int_window--;
 		break;
 	case K51:	State2.test = TST_NE;	break;
@@ -490,7 +469,7 @@ static int process_h_shifted(const keycode c) {
 		return OP_NIL | OP_RUP;
 
 	case K20:
-		if (! State.intm)
+		if (! UState.intm)
 			init_cat(CATALOGUE_CONST);
 		break;
 	case K21:	init_arg(RARG_SWAP);	break;	// x<>
@@ -531,7 +510,7 @@ static int process_h_shifted(const keycode c) {
 	case K60:	set_smode(SDISP_SHOW);		break;
 	case K61:	init_arg(RARG_PAUSE);		break;
 	case K62:
-		if (State.fraccomma)
+		if (UState.fraccomma)
 			return OP_NIL | OP_RADDOT;
 		return OP_NIL | OP_RADCOM;
 

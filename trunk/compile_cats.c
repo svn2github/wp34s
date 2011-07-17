@@ -604,8 +604,8 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_SERIAL_CLOSE,	"SCLOSE")
 #endif
 #ifdef INCLUDE_USER_MODE
-	NILIC(OP_RCLFLAG,	"RCLM")
-	NILIC(OP_STOFLAG,	"STOM")
+	NILIC(RARG_SAVEM,	"SAVEM")
+	NILIC(RARG_RESTM,	"RESTM")
 #endif
 };
 

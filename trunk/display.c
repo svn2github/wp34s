@@ -207,7 +207,7 @@ static void carry_overflow(void) {
 	case SDISP_OCT:	b = 8;		break;
 	case SDISP_DEC:	b = 10;		break;
 	case SDISP_HEX:	b = 16;		break;
-	default:	b = State.int_base+1;	break;
+	default:	b = UState.int_base+1;	break;
 	}
 
 	// Display the base as the first exponent digit
@@ -297,7 +297,7 @@ static void annunicators(void) {
 		*p++ = '\240';
 		*p++ = ':';
 	} else if (!is_intmode()) {
-		switch (State.date_mode) {
+		switch (UState.date_mode) {
 		//case DATE_DMY:	q = "d.my\006\006";	break;
 		case DATE_YMD:	q = "y.md\006\006";	break;
 		case DATE_MDY:	q = "m.dy\006\006";	break;
@@ -317,8 +317,8 @@ static void annunicators(void) {
 		*q++ = '\006';
 		p = num_arg_0(q, word_size(), 2);
 
-		if (State.int_maxw > 0) {
-			n = 4 + 2 * (5 - State.int_maxw);
+		if (UState.int_maxw > 0) {
+			n = 4 + 2 * (5 - UState.int_maxw);
 			if (*q == '1')
 				n += 2;
 			if (q[1] == '1')
@@ -326,7 +326,7 @@ static void annunicators(void) {
 			while (n-- > 0)
 				*p++ = '\006';
 
-			for (n=State.int_maxw; n>=0; n--)
+			for (n=UState.int_maxw; n>=0; n--)
 				*p++ = State2.int_window == n ? '|':'\'';
 		}
 
@@ -342,11 +342,11 @@ static void disp_x(const char *p) {
 	enum seperator_modes seperator = SEP_COMMA;
 	int gotdot = -1;
 
-	if (State.fraccomma) {
+	if (UState.fraccomma) {
 		decimal = DECIMAL_COMMA;
 		seperator = SEP_DOT;
 	}
-	if (State.nothousands)
+	if (UState.nothousands)
 		seperator = SEP_NONE;
 
 	if (*p == '-') {
@@ -423,7 +423,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 	}
 
 	if (!res) {
-		State.int_maxw = 0;
+		UState.int_maxw = 0;
 		carry_overflow();
 	}
 
@@ -449,10 +449,10 @@ static void set_int_x(decimal64 *rgx, char *res) {
 				vs |= ~mask;
 		}
 
-		if (!State.leadzero && vs == 0) {
+		if (!UState.leadzero && vs == 0) {
 			set_dig_s(dig, '0', res);
 			return;
-		} else if (!State.leadzero) {
+		} else if (!UState.leadzero) {
 			v = (unsigned long long int)vs;
 			for (i=0; v != 0; i++) {
 				const int r = v % b;
@@ -481,7 +481,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			*res++ = buf[i];
 	} else {
 		const int window = State2.int_window;
-		State.int_maxw = (i-1) / 12;
+		UState.int_maxw = (i-1) / 12;
 		buf[i] = '\0';
 
 		j = window * 12;	// 12 digits at a time
@@ -667,7 +667,7 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 	dn_compare(&t, &t, &w);
 	decNumberTrunc(&w, &x);		/* Extract the whole part */
 
-	if (!State.improperfrac) {
+	if (!UState.improperfrac) {
 		if (!decNumberIsZero(&w)) {
 			p = num_arg(p, dn_to_int(&w));
 			*p++ = ' ';
@@ -719,8 +719,8 @@ static void set_x(const decimal64 *rgx, char *res) {
 	const char *q;
 	int count, i;
 	int extra_digits = 0;
-	int dd = State.dispdigs;
-	int mode = State.dispmode;
+	int dd = UState.dispdigs;
+	int mode = UState.dispmode;
 	enum decimal_modes decimal = DECIMAL_DOT;
 	enum seperator_modes seperator = SEP_COMMA;
 	char c;
@@ -728,11 +728,11 @@ static void set_x(const decimal64 *rgx, char *res) {
 	decNumber z;
 	int trimzeros = 0;
 
-	if (State.fraccomma) {
+	if (UState.fraccomma) {
 		decimal = DECIMAL_COMMA;
 		seperator = SEP_DOT;
 	}
-	if (State.nothousands)
+	if (UState.nothousands)
 		seperator = SEP_NONE;
 
 	if (!State2.smode && ! State2.cmplx) {
@@ -740,7 +740,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 			set_x_hms(rgx, res, decimal);
 			State2.hms = 0;
 			return;
-		} else if (State.fract) {
+		} else if (UState.fract) {
 			if (set_x_fract(rgx, res))
 				return;
 		}
@@ -814,7 +814,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 
 	if (mode == MODE_FIX) {
 		if (exp > (DISPLAY_DIGITS - 1) || exp < -dd)
-			mode = State.fixeng?MODE_ENG:MODE_SCI;
+			mode = UState.fixeng?MODE_ENG:MODE_SCI;
 		else {
 			extra_digits = exp;
 			/* We might have push the fixed decimals off the
@@ -835,7 +835,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 			mantissa[0] = '1';
 			exp++;
 			if (mode == MODE_FIX && exp > (DISPLAY_DIGITS - 1)) {
-				mode = State.fixeng?MODE_ENG:MODE_SCI;
+				mode = UState.fixeng?MODE_ENG:MODE_SCI;
 				extra_digits = 0;
 			}
 		} else {
@@ -857,7 +857,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 			count++;
 		// Too big or too small to fit on display
 		if (exp >= DISPLAY_DIGITS || exp < (count - DISPLAY_DIGITS)) {
-			switch ((exp % 3) * State.fixeng) {
+			switch ((exp % 3) * UState.fixeng) {
 			case -1:
 			case 2:
 				*obp++ = *p++;

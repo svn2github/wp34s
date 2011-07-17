@@ -28,7 +28,7 @@
 
 
 void op_jgchange(decimal64 *a, decimal64 *b, enum nilop op) {
-	State.jg1582 = (op == OP_JG1582) ? 1 : 0;
+	UState.jg1582 = (op == OP_JG1582) ? 1 : 0;
 }
 
 
@@ -36,7 +36,7 @@ void op_jgchange(decimal64 *a, decimal64 *b, enum nilop op) {
  */
 static int isGregorian(int year, int month, int day) {
 	int y, m, d;
-	if (State.jg1582) {
+	if (UState.jg1582) {
 		y = 1582;
 		m = 10;
 		d = 15;
@@ -80,7 +80,7 @@ static int JDN(int year, int month, int day) {
  */
 static void JDN2(int J, int *year, int *month, int *day) {
 	int b, c, y, d, e, m;
-	int jgthreshold = State.jg1582 ? 2299161 : 2361222;
+	int jgthreshold = UState.jg1582 ? 2299161 : 2361222;
 
 	if (J >= jgthreshold) {	// Gregorian
 		const int a = J + 32044;
@@ -203,7 +203,7 @@ static decNumber *build_date(decNumber *res, int year, int month, int day) {
 	int_to_dn(&m, month);
 	int_to_dn(&d, day);
 
-	switch (State.date_mode) {
+	switch (UState.date_mode) {
 	case DATE_YMD:
 		dn_multiply(&x, &d, &const_0_01);
 		dn_add(&d, &x, &m);
@@ -258,7 +258,7 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day) {
 	decNumberTrunc(&a, &z);			// a = ff
 	fp = dn_to_int(&a);
 	dn_subtract(&z, &z, &a);		// z = .rrrr
-	switch (State.date_mode) {
+	switch (UState.date_mode) {
 	default:
 	case DATE_YMD:
 		y = ip;
@@ -579,7 +579,7 @@ void date_alphadate(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 		err(ERR_BAD_DATE);
 		return;
 	}
-	switch (State.date_mode) {
+	switch (UState.date_mode) {
 	default:
 		p = num_arg(buf, y);
 		*p++ = '-';
@@ -620,7 +620,7 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 		getX(&x);
 		decNumberTrunc(&y, &x);
 		a = dn_to_int(&y);
-		if (State.t12) {
+		if (UState.t12) {
 			if (a >= 12) {
 				a -= 12;
 				suffix = " PM";

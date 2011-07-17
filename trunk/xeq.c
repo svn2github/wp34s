@@ -261,7 +261,7 @@ static int check_special(const decNumber *x) {
 int stack_size(void) {
 	if (isXROM(state_pc()))
 		return 4;
-	return State.stack_depth?8:4;
+	return UState.stack_depth?8:4;
 }
 
 static decimal64 *get_stack(int pos) {
@@ -432,11 +432,11 @@ void drop(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 
 int is_intmode(void) {
-	return State.intm;
+	return UState.intm;
 }
 
 void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	State.leadzero = (op == OP_LEAD0) ? 1 : 0;
+	UState.leadzero = (op == OP_LEAD0) ? 1 : 0;
 }
 
 /* Increment the passed PC.  Account for wrap around but nothing else.
@@ -662,7 +662,7 @@ void reset(decimal64 *a, decimal64 *b, enum nilop op) {
 	xset(&PersistentRam, 0, sizeof( PersistentRam ));
 	clrall(NULL, NULL, OP_CLALL);
 	init_state();
-	State.contrast = 9;
+	UState.contrast = 7;
 	DispMsg = "Erased";
 }
 
@@ -765,7 +765,7 @@ void process_cmdline(void) {
 			char *d0, *d1, *d2;
 			int neg;
 
-			State.fract = 1;
+			UState.fract = 1;
 			if (cmdline[0] == '-') {
 				neg = 1;
 				d0 = cmdline+1;
@@ -1383,9 +1383,22 @@ void cmdview(unsigned int arg, enum rarg op) {
 }
 
 
+#ifdef INCLUDE_USER_MODE
+/* Save and restore user state.
+ */
+void cmdsavem(unsigned int arg, enum rarg op) {
+
+	xcopy( get_reg_n(arg), &UState, sizeof(unsigned long long int) );
+}
+
+void cmdrestm(unsigned int arg, enum rarg op) {
+	xcopy( &UState, get_reg_n(arg), sizeof(unsigned long long int) );
+}
+#endif
+
 /* Set the stack size */
 void set_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op) {
-	State.stack_depth = (op == OP_STK4) ? 0 : 1;
+	UState.stack_depth = (op == OP_STK4) ? 0 : 1;
 }
 
 /* Get the stack size */
@@ -1683,10 +1696,10 @@ void xrom_quad(decimal64 *a, decimal64 *nul2, enum nilop op) {
 }
 
 void cmddisp(unsigned int arg, enum rarg op) {
-	State.dispdigs = arg;
+	UState.dispdigs = arg;
 	if (op != RARG_DISP)
-		State.dispmode = (op - RARG_STD) + MODE_STD;
-	State.fract = 0;
+		UState.dispmode = (op - RARG_STD) + MODE_STD;
+	UState.fract = 0;
 }
 
 
@@ -2170,20 +2183,20 @@ void cmdflag(unsigned int arg, enum rarg op) {
 void intws(unsigned int arg, enum rarg op) {
 	if (is_intmode()) {
 		int i, ss = stack_size();
-		unsigned int oldlen = State.int_len;
+		unsigned int oldlen = UState.int_len;
 		long long int v;
 
 		for (i=0; i<ss; i++) {
 			v = get_reg_n_as_int(regX_idx + i);
-			State.int_len = arg;
+			UState.int_len = arg;
 			put_reg_n_from_int(regX_idx + i, mask_value(v));
-			State.int_len = oldlen;
+			UState.int_len = oldlen;
 		}
 		v = get_reg_n_as_int(regL_idx);
-		State.int_len = arg;
+		UState.int_len = arg;
 		put_reg_n_from_int(regL_idx, mask_value(v));
 	} else
-	    State.int_len = arg;
+	    UState.int_len = arg;
 }
 
 
@@ -2191,14 +2204,14 @@ void intws(unsigned int arg, enum rarg op) {
  */
 
 void get_maxdenom(decNumber *d) {
-	const unsigned int dm = State.denom_max;
+	const unsigned int dm = UState.denom_max;
 	int_to_dn(d, dm==0?9999:dm);
 }
 
 void op_2frac(decimal64 *x, decimal64 *b, enum nilop op) {
 	decNumber z, n, d, t;
 
-	if (State.intm) {
+	if (UState.intm) {
 		d64fromInt(x, 1);
 		return;
 	}
@@ -2224,17 +2237,17 @@ void op_fracdenom(decimal64 *a, decimal64 *b, enum nilop op) {
 
 	i = get_int(&regX, &s);
 	if (i > 9999)
-		State.denom_max = 0;
+		UState.denom_max = 0;
 	else if (i != 1)
-		State.denom_max = (unsigned int) i;
+		UState.denom_max = (unsigned int) i;
 	else {
 		setlastX();
-		put_int(State.denom_max, 0, &regX);
+		put_int(UState.denom_max, 0, &regX);
 	}
 }
 
 void op_denom(decimal64 *a, decimal64 *b, enum nilop op) {
-	State.denom_mode = DENOM_ANY + (op - OP_DENANY);
+	UState.denom_mode = DENOM_ANY + (op - OP_DENANY);
 }
 
 
@@ -2272,8 +2285,8 @@ void op_float(decimal64 *a, decimal64 *b, enum nilop op) {
 #endif
 
 	if (is_intmode()) {
-		State.intm = 0;
-		// State.int_len = 0;
+		UState.intm = 0;
+		// UState.int_len = 0;
 #ifdef HP16C_MODE_CHANGE
 		int2dn(&x, &regX);
 		int2dn(&y, &regY);
@@ -2288,17 +2301,17 @@ void op_float(decimal64 *a, decimal64 *b, enum nilop op) {
 		float_mode_convert(&regL);
 #endif
 	}
-	State.fract = 0;
+	UState.fract = 0;
         State2.hms = (op == OP_HMS) ? 1 : 0;
 }
 
 void op_fract(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	op_float(NULL, NULL, OP_FLOAT);
-	State.fract = 1;
+	UState.fract = 1;
 	if (op == OP_FRACIMPROPER)
-		State.improperfrac = 1;
+		UState.improperfrac = 1;
 	else if (op == OP_FRACPROPER)
-		State.improperfrac = 0;
+		UState.improperfrac = 0;
 }
 
 static int is_digit(const char c) {
@@ -2422,7 +2435,7 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_EEX:
-		if (is_intmode() || State.fract || CmdLineDot == 2)
+		if (is_intmode() || UState.fract || CmdLineDot == 2)
 			break;
 		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
 			if (CmdLineLength == 0)
@@ -2515,11 +2528,11 @@ enum trig_modes get_trig_mode(void) {
 	if (State2.cmplx)
 		return TRIG_RAD;
 	//if (State2.hyp)	return TRIG_RAD;
-	return State.trigmode;
+	return UState.trigmode;
 }
 
 static void set_trig_mode(enum trig_modes m) {
-	State.trigmode = m;
+	UState.trigmode = m;
 }
 
 void op_trigmode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
@@ -2527,18 +2540,18 @@ void op_trigmode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 void op_radix(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	State.fraccomma = (op == OP_RADCOM) ? 1 : 0;
-	State.fract = 0;
+	UState.fraccomma = (op == OP_RADCOM) ? 1 : 0;
+	UState.fract = 0;
 }
 
 
 void op_thousands(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	State.nothousands = (op == OP_THOUS_ON) ? 0 : 1;
+	UState.nothousands = (op == OP_THOUS_ON) ? 0 : 1;
 }
 
 void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	State.fixeng = (op == OP_FIXSCI) ? 0 : 1;
-	State.fract = 0;
+	UState.fixeng = (op == OP_FIXSCI) ? 0 : 1;
+	UState.fract = 0;
 }
 
 
@@ -2558,7 +2571,7 @@ void op_pause(unsigned int arg, enum rarg op) {
 }
 
 void op_intsign(decimal64 *a, decimal64 *b, enum nilop op) {
-	State.int_mode = (op - OP_2COMP) + MODE_2COMP;
+	UState.int_mode = (op - OP_2COMP) + MODE_2COMP;
 }
 
 
@@ -2665,12 +2678,12 @@ static void check_int_switch(void) {
 			int_mode_convert(get_stack(i));
 		int_mode_convert(&regL);
 #endif
-		State.intm = 1;
+		UState.intm = 1;
 	}
 }
 
 static void set_base(unsigned int b) {
-	State.int_base = b - 1;
+	UState.int_base = b - 1;
 	check_int_switch();
 }
 
@@ -2748,68 +2761,14 @@ void op_locale(decimal64 *a, decimal64 *nul, enum nilop op) {
 
 
 void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op) {
-	State.date_mode = (op - OP_DATEDMY) + DATE_DMY;
+	UState.date_mode = (op - OP_DATEDMY) + DATE_DMY;
 }
 
 
 void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	State.t12 = (op == OP_12HR) ? 1 : 0;
+	UState.t12 = (op == OP_12HR) ? 1 : 0;
 }
 
-#ifdef INCLUDE_USER_MODE
-/* Save and restore used State.
- */
-void op_rclflag(decimal64 *x, decimal64 *b) {
-	unsigned long long int n = 0;
-	unsigned int posn = 0;
-	decNumber r;
-
-#define SB(f, p)					\
-		n |= (State.f) << posn;			\
-		posn += (p)
-#include "statebits.h"
-#undef SB
-	if (State.intm) {
-		if (word_size() < posn)
-			err(ERR_INT_SIZE);
-		else
-			d64fromInt(x, n);
-	} else {
-		ullint_to_dn(&r, n);
-		packed_from_number(x, &r);
-	}
-}
-
-void op_stoflag(decimal64 *nul1, decimal64 *nul2) {
-	unsigned long long int n;
-	int sgn;
-	decNumber x;
-
-	if (State.intm) {
-	/* Figure out the number of bits required.  This is optimised
-	 * into a single constant assignment.
-	 */
-		unsigned int nb = 0;
-#define SB(f, p)	nb += (p);
-#include "statebits.h"
-#undef SB
-		if (word_size() < nb) {
-			err(ERR_INT_SIZE);
-			return;
-		}
-		n = d64toInt(&regX);
-	} else {
-		getX(&x);
-		n = dn_to_ull(&x, &sgn);
-	}
-
-#define SB(f, p)					\
-		(State.f) = n & ((1 << (p)) - 1);	\
-		n >>= (p)
-#include "statebits.h"
-#undef SB
-}
-#endif
 
 static void do_rtn(int plus1) {
 	if (Running && RetStkPtr > 0) {
@@ -3176,7 +3135,7 @@ void reset_volatile_state(void) {
 	if (State.implicit_rtn)
 		process_cmdline_set_lift();
 	State2.int_window = 0;
-	State.int_maxw = 0;
+	UState.int_maxw = 0;
 	State.implicit_rtn = 0;
 
 	State2.smode = SDISP_NORMAL;
