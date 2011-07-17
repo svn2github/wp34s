@@ -418,7 +418,7 @@ void show_flags(void) {
 		PRINTF("[running]");
 	}
 	MOVE(70, 5);
-	PRINTF("iw = %u/%u", State2.int_window, State.int_maxw);
+	PRINTF("iw = %u/%u", State2.int_window, UState.int_maxw);
 	MOVE(30, FLAG_BASE+1);
 	PRINTF("shft = %u", cur_shift());
 	MOVE(40, FLAG_BASE+1);
@@ -445,7 +445,7 @@ void show_flags(void) {
 	PRINTF("cmddot = %u  cmdeex = %u  eol = %u",
 			CmdLineDot, CmdLineEex, CmdLineLength);
 	MOVE(0, FLAG_BASE+3);
-	PRINTF("JG=%d", State.jg1582?1582:1752);
+	PRINTF("JG=%d", UState.jg1582?1582:1752);
 #if 0
 	MOVE(0, 30);
 	PRINTF("RetStk = %u", State.retstk_ptr);

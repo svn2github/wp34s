@@ -230,7 +230,7 @@ int main()
     Ctx.round = DEC_ROUND_HALF_EVEN;
     
     // be sure to be in radians
-    State.trigmode = TRIG_RAD;
+    UState.trigmode = TRIG_RAD;
     
     // initialise MAPM lib to 100
     m_apm_cpp_precision(100);         /* default is 30 */

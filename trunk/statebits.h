@@ -22,16 +22,4 @@
  * sixteen digit real.
  */
 
-	SB(dispmode, 2);	// Display mode (ALL, FIX, SCI, ENG)
-	SB(fixeng, 1);		// Fix flips to ENG instead of SCI
-	SB(dispdigs, 4);	// Display digits
-
-	SB(trigmode, 2);	// Trig mode (DEG, RAD, GRAD)
-	SB(date_mode, 2);	// Date input/output format
-
-	SB(t12, 1);		// 12 hour time mode
-	SB(fraccomma, 1);	// radix mark . or ,
-	SB(sigma_mode, 3);	// Which sigma regression mode we're using
-
-	SB(int_mode, 2);	// Integer sign mode
-	SB(stack_depth, 1);	// Stack depth
+// This file is obsolete
