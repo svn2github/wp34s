@@ -3416,15 +3416,10 @@ void xeqone(char *tracebuf) {
 #ifndef REALBUILD
 	State2.trace = 0;
 #endif
-#if 0
 	print_step(tracebuf, op);
 	DispMsg = tracebuf;
 	State2.disp_small = 1;
-#endif
 	incpc();
-	print_step(tracebuf, getprog(state_pc()));
-	DispMsg = tracebuf;
-	State2.disp_small = 1;
 	xeq(op);
 
 	xeq_xrom();
