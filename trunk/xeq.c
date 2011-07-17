@@ -1387,12 +1387,13 @@ void cmdview(unsigned int arg, enum rarg op) {
 /* Save and restore user state.
  */
 void cmdsavem(unsigned int arg, enum rarg op) {
-
 	xcopy( get_reg_n(arg), &UState, sizeof(unsigned long long int) );
 }
 
 void cmdrestm(unsigned int arg, enum rarg op) {
 	xcopy( &UState, get_reg_n(arg), sizeof(unsigned long long int) );
+	if ( UState.contrast == 0 )
+		UState.contrast = 7;
 }
 #endif
 
