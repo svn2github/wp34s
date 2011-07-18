@@ -2698,66 +2698,39 @@ void set_int_base(unsigned int arg, enum rarg op) {
 		set_base(arg);
 }
 
-
-enum {
-	LOCALE_RADIX_COM=1,	LOCALE_RADIX_DOT=0,
-	LOCALE_TIME_24=2,	LOCALE_TIME_12=0,
-	LOCALE_THOUS_OFF=4,	LOCALE_THOUS_ON=0,
-	LOCALE_JG1582=8,	LOCALE_JG1752=0,
-	LOCALE_DATE_MDY=16,	LOCALE_DATE_DMY=0,
-	LOCALE_DATE_YMD=32,
-};
-
-static void set_locale(int flags) {
-	op_radix(NULL, NULL, (flags & LOCALE_RADIX_COM) ? OP_RADCOM : OP_RADDOT);
-	op_timemode(NULL, NULL, (flags & LOCALE_TIME_24) ? OP_24HR : OP_12HR);
-	op_thousands(NULL, NULL, (flags & LOCALE_THOUS_OFF) ? OP_THOUS_OFF : OP_THOUS_ON);
-	op_jgchange(NULL, NULL, (flags & LOCALE_JG1582) ? OP_JG1582 : OP_JG1752);
-	op_datemode(NULL, NULL, (flags & LOCALE_DATE_MDY) ? OP_DATEMDY : ((flags & LOCALE_DATE_YMD) ? OP_DATEYMD : OP_DATEDMY));
-}
-
 void op_locale(decimal64 *a, decimal64 *nul, enum nilop op) {
-	int f;
+	enum {
+		LOCALE_RADIX_COM=1,	LOCALE_RADIX_DOT=0,
+		LOCALE_TIME_24=2,	LOCALE_TIME_12=0,
+		LOCALE_THOUS_OFF=4,	LOCALE_THOUS_ON=0,
+		LOCALE_JG1582=8,	LOCALE_JG1752=0,
+		LOCALE_DATE_MDY=16,	LOCALE_DATE_DMY=0,
+		LOCALE_DATE_YMD=32,
+	};
+	static const unsigned char locales[] = {
+		// Europe
+		LOCALE_RADIX_COM | LOCALE_THOUS_ON | LOCALE_TIME_24 |
+			LOCALE_JG1582 | LOCALE_DATE_DMY,
+		// UK/British
+		LOCALE_RADIX_DOT | LOCALE_THOUS_ON | LOCALE_TIME_12 |
+			LOCALE_JG1752 | LOCALE_DATE_DMY,
+		// USA
+		LOCALE_RADIX_DOT | LOCALE_THOUS_ON | LOCALE_TIME_12 |
+			LOCALE_JG1752 | LOCALE_DATE_MDY,
+		// India
+		LOCALE_RADIX_DOT | LOCALE_THOUS_OFF | LOCALE_TIME_24 |
+			LOCALE_JG1752 | LOCALE_DATE_DMY,
+		// China
+		LOCALE_RADIX_DOT | LOCALE_THOUS_OFF | LOCALE_TIME_24 |
+			LOCALE_JG1752 | LOCALE_DATE_YMD,
+	};
+	const unsigned char f = locales[op - OP_SETEUR];
 
-	switch (op) {
-	default:
-	case OP_SETUK:
-		f = LOCALE_RADIX_DOT |
-			LOCALE_THOUS_ON |
-			LOCALE_TIME_12 |
-			LOCALE_JG1752 |
-			LOCALE_DATE_DMY;
-		break;
-	case OP_SETEUR:
-		f = LOCALE_RADIX_COM |
-			LOCALE_THOUS_ON |
-			LOCALE_TIME_24 |
-			LOCALE_JG1582 |
-			LOCALE_DATE_DMY;
-		break;
-	case OP_SETUSA:
-		f = LOCALE_RADIX_DOT |
-			LOCALE_THOUS_ON |
-			LOCALE_TIME_12 |
-			LOCALE_JG1752 |
-			LOCALE_DATE_MDY;
-		break;
-	case OP_SETIND:
-		f = LOCALE_RADIX_DOT |
-			LOCALE_THOUS_OFF |
-			LOCALE_TIME_24 |
-			LOCALE_JG1752 |
-			LOCALE_DATE_DMY;
-		break;
-	case OP_SETCHN:
-		f = LOCALE_RADIX_DOT |
-			LOCALE_THOUS_OFF |
-			LOCALE_TIME_24 |
-			LOCALE_JG1752 |
-			LOCALE_DATE_YMD;
-		break;
-	}
-	set_locale(f);
+	op_radix(NULL, NULL, (f & LOCALE_RADIX_COM) ? OP_RADCOM : OP_RADDOT);
+	op_timemode(NULL, NULL, (f & LOCALE_TIME_24) ? OP_24HR : OP_12HR);
+	op_thousands(NULL, NULL, (f & LOCALE_THOUS_OFF) ? OP_THOUS_OFF : OP_THOUS_ON);
+	op_jgchange(NULL, NULL, (f & LOCALE_JG1582) ? OP_JG1582 : OP_JG1752);
+	op_datemode(NULL, NULL, (f & LOCALE_DATE_MDY) ? OP_DATEMDY : ((f & LOCALE_DATE_YMD) ? OP_DATEYMD : OP_DATEDMY));
 }
 
 
