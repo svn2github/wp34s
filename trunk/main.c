@@ -82,10 +82,10 @@ void set_speed( unsigned int speed );
 /// PLL startup time (in number of slow clock ticks).
 #define PLLCOUNT          AT91C_CKGR_PLLCOUNT
 /// PLL MUL values.
-#define PLLMUL_LOW_V      399
-#define PLLMUL_LOW_V_NX   444   // if no crystal installed
-#define PLLMUL            1199
-#define PLLMUL_NX         1333  // no crystal
+#define PLLMUL_LOW_V      599
+#define PLLMUL_LOW_V_NX   665   // if no crystal installed
+#define PLLMUL            1055  // 1199 is probably too demanding on the hardware
+#define PLLMUL_NX         1173  // 1333  // no crystal
 /// PLL DIV value.
 #define PLLDIV            1
 
