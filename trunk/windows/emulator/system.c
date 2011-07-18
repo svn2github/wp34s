@@ -70,6 +70,14 @@ int KeyBuffGetKey()
   return key;
 }
 
+// Return the last pressed key and reset its value
+int GetLastKey(void)
+{
+	int c = System.LastKeyPress;
+	System.LastKeyPress = -1;
+	return c;
+}
+
 // *****************************************************************************
 // Keyboard buffer management
 
@@ -78,6 +86,7 @@ void AddKeyInBuffer(int k)
   char r= System.BufRead;
   char w= System.BufWrite;
   int t;
+  System.LastKeyPress = (signed char) k;
   if (w!=r-1 && (w!=MAXKEYBUFSIZE || r!=0)) // if space in buffer
   {
     System.KeyBuffer[w]= k;                       // place key in buffer

@@ -76,6 +76,8 @@ int  EXPORT KeyBuffGetKey(void);
 
 int  EXPORT AddKeyInBuffer(int k);
 
+int EXPORT GetLastKey(void);
+
 void EXPORT ExitEmulator(void);
 #ifdef __cplusplus
 }

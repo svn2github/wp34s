@@ -31,6 +31,7 @@
 #include "storage.h"
 #include "serial.h"
 #include "data.h"
+#include "keys.h"
 
 /*
  *  Setup the LCD area, persistent RAM and not so persistent RAM
@@ -42,7 +43,9 @@ TStateWhileOn StateWhileOn;
 /*
  *  More data (see main.c of real build)
  */
-//volatile unsigned char Voltage = 0xa;
+HANDLE CommHandle;
+DWORD CommError;
+unsigned long CommThreadId;
 
 /*
  *  Keyboard time out ticker
@@ -82,7 +85,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	/*
 	 *  Create the heartbeat at 100ms
 	 */
-	CreateThread(NULL, 1024 * 16, HeartbeatThread, NULL, 0, &id);
+	CreateThread( NULL, 1024 * 16, HeartbeatThread, NULL, 0, &id );
 
 	/*
 	 *  Start the emulator
@@ -241,22 +244,207 @@ void shutdown( void )
 }
 
 
+/***************************************************************************
+ * Serial stuff
+ ***************************************************************************/
+
 /*
- *  Open a COM port for transmission
+ *  Setze Timeouts
  */
-int open_port( int baud, int bits, int parity, int stopbits )
+static void set_comm_timeouts( DWORD ri, DWORD rtm, DWORD rtc,
+			       DWORD wtm, DWORD wtc )
 {
-	SerialOn = 1;
+	COMMTIMEOUTS timeouts;
+
+	timeouts.ReadIntervalTimeout = ri;
+	timeouts.ReadTotalTimeoutMultiplier = rtm;
+	timeouts.ReadTotalTimeoutConstant = rtc;
+	timeouts.WriteTotalTimeoutMultiplier = wtm;
+	timeouts.WriteTotalTimeoutConstant = wtc;
+
+	if ( 0 == SetCommTimeouts( CommHandle, &timeouts ) ) {
+		CommError = GetLastError();
+	}
+}
+
+
+/*
+ *  The receiver thread
+ */
+unsigned long __stdcall CommThread( void *p )
+{
+	signed short c;
+	BOOL res;
+	DWORD count;
+	COMSTAT status;
+
+	while( SerialOn ) {
+
+		/*
+		 * Read a single character with a 0.1 second timeout
+		 * This will stop the thread automatically if SerialOn is cleared
+		 */
+		set_comm_timeouts( 0, 0, 100, 0, 0 );
+
+		/*
+		 *  Read with timeout
+		 */
+		c = 0;
+		res = ReadFile( CommHandle, &c, 1, &count, NULL );
+		if ( res == 0 ) {
+			/*
+			 *  Communication error
+			 */
+			CommError = GetLastError();
+			c = R_ERROR;
+		}
+		if ( GetLastKey() == K60 ) {
+			/*
+			 *  User abort
+			 */
+			c = R_BREAK;
+		}
+		if ( count == 0 ) {
+			/*
+			 *  No data received, test again
+			 */
+			continue;
+		}
+		if ( SerialOn ) {
+			/*
+			 *  Check for communication error
+			 */
+			if ( c == 0xff ) {
+				res = ClearCommError( CommHandle, &CommError, &status );
+				if ( res == 0 ) {
+					CommError = GetLastError();
+				}
+				c = R_ERROR;
+			}
+
+			/*
+			 *  Insert result into queue
+			 */
+			byte_received( c );
+		}
+	}
+	CommThreadId = 0;
 	return 0;
 }
 
 
 /*
- *  Close the COM port after transmission is complete
+ *  Open a COM port for transmission
+ *  The name is fetched from the file wp34s.ini
+ *  If no name can be found, "COM1:" is assumed.
+ */
+int open_port( int baud, int bits, int parity, int stopbits )
+{
+	char name[ 20 ];
+	FILE *f = fopen( "wp34s.ini", "rt" );
+	char *p = NULL;
+	BOOL res;
+	DCB dcb;
+
+	if ( f != NULL ) {
+		p = fgets( name, sizeof( name ), f );
+		strtok( name, "\r\n\t " );
+		fclose( f );
+	}
+	if ( p == NULL ) {
+		strcpy( name, "COM1:" );
+	}
+	CommHandle = CreateFile( name,
+                                 GENERIC_READ | GENERIC_WRITE,
+                                 0,    /* EXCLUSIVE */
+                                 NULL, /* NOINHERIT */
+                                 OPEN_EXISTING,
+                                 0,    /* NO ATTRIBUTES */
+                                 0 );  /* NO TEMPLATE */
+
+	if ( CommHandle == INVALID_HANDLE_VALUE ) {
+		CommHandle = 0;
+		return 1;
+	}
+
+	/*
+	 *  Set up DCB
+	 */
+	dcb.DCBlength = sizeof( DCB );
+
+	res = GetCommState( CommHandle, &dcb );
+	if ( res == 0 ) goto fail;
+
+	/*
+	 *  Baudrate
+	 */
+	dcb.BaudRate = baud;
+
+	/*
+	*  Datenformat
+	*/
+	dcb.ByteSize = (BYTE) bits;
+	dcb.Parity = (BYTE) ( parity == 'N' ? 0 :
+			      parity == 'O' ? 1 :
+			      parity == 'E' ? 2 :
+			      0 );
+	dcb.fParity = parity != 'N';
+	dcb.StopBits = (BYTE) ( stopbits <= 1 ? 0 :
+				baud == 110 ? 1 :
+				2 );
+
+	/*
+	 *  Handshake etc.
+	 */
+	dcb.fBinary = TRUE;
+	dcb.fErrorChar = TRUE;
+	dcb.fNull = FALSE;
+	dcb.fDsrSensitivity = FALSE;
+	dcb.fAbortOnError = FALSE;
+	dcb.ErrorChar = 0xff;
+
+	dcb.fDtrControl = DTR_CONTROL_ENABLE;
+	dcb.fOutxDsrFlow = FALSE;
+	dcb.fRtsControl = RTS_CONTROL_ENABLE;
+	dcb.fOutxCtsFlow = FALSE;
+
+	/*
+	 *  Setze the paraeters
+	 */
+	res = SetCommState( CommHandle, &dcb );
+	if ( res == 0 ) goto fail;
+
+	/*
+	 *  Start the receiver thread
+	 */
+	SerialOn = 1;
+	CreateThread( NULL, 1024 * 16, CommThread, NULL, 0, &CommThreadId );
+
+	/*
+	 *  All is OK
+	 */
+	return 0;
+
+fail:
+	/*
+	 *  Close in case of error
+	 */
+	CloseHandle( CommHandle );
+	CommHandle = 0;
+	CommError = GetLastError();
+	return 1;
+}
+
+
+/*
+ *  Close the COM port after transmission is complete.
+ *  A short wait assures that the receiver thread terminates.
  */
 extern void close_port( void )
 {
 	SerialOn = 0;
+	Sleep( 200 );
+	CloseHandle( CommHandle );
 }
 
 
@@ -265,7 +453,14 @@ extern void close_port( void )
  */
 void put_byte( unsigned char byte ) 
 {
-	err( ERR_PROG_BAD );
+	BOOL res;
+	char buffer = (char) byte;
+	DWORD written;
+
+	res = WriteFile( CommHandle, &buffer, 1, &written, NULL );
+	if ( res == 0 || written != 1 ) {
+		CommError = GetLastError();
+	}
 }
 
 
