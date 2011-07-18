@@ -308,12 +308,14 @@ char * decimal64ToString(const decimal64 *d64, char *string){
   return string;
   } // decimal64ToString
 
+#if 0
 char * decimal64ToEngString(const decimal64 *d64, char *string){
   decNumber dn;                         // work
   decimal64ToNumber(d64, &dn);
   decNumberToEngString(&dn, string);
   return string;
   } // decimal64ToEngString
+#endif
 
 /* ------------------------------------------------------------------ */
 /* to-number -- conversion from numeric string                        */
@@ -330,6 +332,7 @@ char * decimal64ToEngString(const decimal64 *d64, char *string){
 /* (setting of status and traps) and for the rounding mode, only.     */
 /* If an error occurs, the result will be a valid decimal64 NaN.      */
 /* ------------------------------------------------------------------ */
+#if NEED_D64FROMSTRING
 decimal64 * decimal64FromString(decimal64 *result, const char *string,
                                 decContext *set) {
   decContext dc;                             // work
@@ -346,6 +349,7 @@ decimal64 * decimal64FromString(decimal64 *result, const char *string,
     }
   return result;
   } // decimal64FromString
+#endif
 
 #if DECTRACE || DECCHECK
 /* ------------------------------------------------------------------ */

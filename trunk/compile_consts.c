@@ -35,6 +35,9 @@
 
 #define xcopy memcpy
 
+
+#define NEED_D64FROMSTRING  1
+
 #if defined(WIN32) && !defined(__GNUC__)
 // Visual C on Windows will link with decnumber.lib
 #include "decNumber.h"

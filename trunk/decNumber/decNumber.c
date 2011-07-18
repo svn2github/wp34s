@@ -361,10 +361,12 @@ char * decNumberToString(const decNumber *dn, char *string){
   return string;
   } // DecNumberToString
 
+#if 0
 char * decNumberToEngString(const decNumber *dn, char *string){
   decToString(dn, string, 1);
   return string;
   } // DecNumberToEngString
+#endif
 
 /* ------------------------------------------------------------------ */
 /* to-number -- conversion from numeric string                        */
@@ -698,6 +700,7 @@ decNumber * decNumberCompare(decNumber *res, const decNumber *lhs,
 /* C must have space for one digit; the result will always be one of  */
 /* -1, 0, or 1.                                                       */
 /* ------------------------------------------------------------------ */
+#if 0
 decNumber * decNumberCompareTotal(decNumber *res, const decNumber *lhs,
                              const decNumber *rhs, decContext *set) {
   uInt status=0;                        // accumulator
@@ -705,6 +708,7 @@ decNumber * decNumberCompareTotal(decNumber *res, const decNumber *lhs,
   if (status!=0) decStatus(res, status, set);
   return res;
   } // decNumberCompareTotal
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decNumberDivide -- divide one number by another                    */
@@ -738,6 +742,7 @@ decNumber * decNumberDivide(decNumber *res, const decNumber *lhs,
 /*                                                                    */
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
+#if 0
 decNumber * decNumberDivideInteger(decNumber *res, const decNumber *lhs,
                                    const decNumber *rhs, decContext *set) {
   uInt status=0;                        // accumulator
@@ -745,6 +750,7 @@ decNumber * decNumberDivideInteger(decNumber *res, const decNumber *lhs,
   if (status!=0) decStatus(res, status, set);
   return res;
   } // decNumberDivideInteger
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decNumberExp -- exponentiation                                     */
@@ -1622,7 +1628,7 @@ decNumber * decNumberRescale(decNumber *res, const decNumber *lhs,
   if (status!=0) decStatus(res, status, set);
   return res;
   } // decNumberRescale
-
+  
 /* ------------------------------------------------------------------ */
 /* decNumberRemainder -- divide and return remainder                  */
 /*                                                                    */
@@ -1655,6 +1661,7 @@ decNumber * decNumberRemainder(decNumber *res, const decNumber *lhs,
 /*                                                                    */
 /* C must have space for set->digits digits.                          */
 /* ------------------------------------------------------------------ */
+#if 0
 decNumber * decNumberRemainderNear(decNumber *res, const decNumber *lhs,
                                    const decNumber *rhs, decContext *set) {
   uInt status=0;                        // accumulator
@@ -1662,6 +1669,7 @@ decNumber * decNumberRemainderNear(decNumber *res, const decNumber *lhs,
   if (status!=0) decStatus(res, status, set);
   return res;
   } // decNumberRemainderNear
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decNumberSameQuantum -- test for equal exponents                   */
@@ -1672,6 +1680,7 @@ decNumber * decNumberRemainderNear(decNumber *res, const decNumber *lhs,
 /*                                                                    */
 /* No errors are possible and no context is needed.                   */
 /* ------------------------------------------------------------------ */
+#if 0
 decNumber * decNumberSameQuantum(decNumber *res, const decNumber *lhs,
                                  const decNumber *rhs) {
   Unit ret=0;                      // return value
@@ -1691,6 +1700,7 @@ decNumber * decNumberSameQuantum(decNumber *res, const decNumber *lhs,
   *res->lsu=ret;
   return res;
   } // decNumberSameQuantum
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decNumberSquareRoot -- square root operator                        */
@@ -2165,19 +2175,23 @@ decNumber * decNumberCopy(decNumber *dest, const decNumber *src) {
 /* All fields are updated as required.  This is a utility operation,  */
 /* so special values are unchanged and no error is possible.          */
 /* ------------------------------------------------------------------ */
+#if 0
 decNumber * decNumberTrim(decNumber *dn) {
   Int  dropped;                    // work
   return decTrim(dn, 0, &dropped);
   } // decNumberTrim
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decNumberVersion -- return the name and version of this module     */
 /*                                                                    */
 /* No error is possible.                                              */
 /* ------------------------------------------------------------------ */
+#if 0
 const char * decNumberVersion(void) {
   return DECVERSION;
   } // decNumberVersion
+#endif
 
 /* ------------------------------------------------------------------ */
 /* decNumberZero -- set a number to 0                                 */
@@ -2279,6 +2293,7 @@ static void decToString(const decNumber *dn, char *string, Flag eng) {
   if ((exp>0) || (pre<-5)) {       // need exponential form
     e=exp+dn->digits-1;            // calculate E value
     pre=1;                         // assume one digit before '.'
+#if 0
     if (eng && (e!=0)) {           // engineering: may need to adjust
       Int adj;                     // adjustment
       // The C remainder operator is undefined for negative numbers, so
@@ -2302,6 +2317,7 @@ static void decToString(const decNumber *dn, char *string, Flag eng) {
           }
         } // zero
       } // eng
+#endif
     } // need exponent
 
   /* lay out the digits of the coefficient, adding 0s and . as needed */
@@ -2889,7 +2905,7 @@ static decNumber * decDivideOp(decNumber *res,
       // one or two infinities
       if (decNumberIsInfinite(lhs)) {   // LHS (dividend) is infinite
         if (decNumberIsInfinite(rhs) || // two infinities are invalid ..
-            op & (REMAINDER | REMNEAR)) { // as is remainder of infinity
+            op & (REMAINDER /*| REMNEAR*/)) { // as is remainder of infinity
           *status|=DEC_Invalid_operation;
           break;
           }
@@ -2900,7 +2916,7 @@ static decNumber * decDivideOp(decNumber *res,
         }
        else {                           // RHS (divisor) is infinite
         residue=0;
-        if (op&(REMAINDER|REMNEAR)) {
+        if (op&(REMAINDER/*|REMNEAR*/)) {
           // result is [finished clone of] lhs
           decCopyFit(res, lhs, set, &residue, status);
           }
@@ -2927,7 +2943,7 @@ static decNumber * decDivideOp(decNumber *res,
         }
        else {
         decNumberZero(res);
-        if (op&(REMAINDER|REMNEAR)) *status|=DEC_Invalid_operation;
+        if (op&(REMAINDER/*|REMNEAR*/)) *status|=DEC_Invalid_operation;
          else {
           *status|=DEC_Division_by_zero; // x/0
           res->bits=bits|DECINF;         // .. is +/- Infinity
@@ -2949,10 +2965,12 @@ static decNumber * decDivideOp(decNumber *res,
           res->exponent=exponent;       // exponent, too
           decFinalize(res, set, &residue, status);   // check exponent
           }
+#if 0
          else if (op&DIVIDEINT) {
           decNumberZero(res);           // integer 0
           res->bits=bits;               // sign as computed
           }
+#endif
          else {                         // a remainder
           exponent=rhs->exponent;       // [save in case overwrite]
           decNumberCopy(res, lhs);      // [zeros always fit]
@@ -2973,6 +2991,7 @@ static decNumber * decDivideOp(decNumber *res,
     // possible because the quotient is known to be <1
     // [for REMNEAR, it needs to be < -1, as -0.5 could need work]
     if (exponent<0 && !(op==DIVIDE)) {
+#if 0
       if (op&DIVIDEINT) {
         decNumberZero(res);                  // integer part is 0
         #if DECSUBSET
@@ -2980,6 +2999,7 @@ static decNumber * decDivideOp(decNumber *res,
         #endif
           res->bits=bits;                    // set +/- zero
         break;}
+#endif
       // fastpath remainders so long as the lhs has the smaller
       // (or equal) exponent
       if (lhs->exponent<=rhs->exponent) {
@@ -3181,7 +3201,7 @@ static decNumber * decDivideOp(decNumber *res,
       // if the residue is zero, the operation is done (unless divide
       // or divideInteger and still not enough digits yet)
       if (*var1==0 && var1units==1) {        // residue is 0
-        if (op&(REMAINDER|REMNEAR)) break;
+        if (op&(REMAINDER/*|REMNEAR*/)) break;
         if ((op&DIVIDE) && (exponent<=maxexponent)) break;
         // [drop through if divideInteger]
         }
@@ -3248,7 +3268,7 @@ static decNumber * decDivideOp(decNumber *res,
         *status|=DEC_Division_impossible;
         break;
         }
-      if (op & (REMAINDER|REMNEAR)) {
+      if (op & (REMAINDER/*|REMNEAR*/)) {
         // [Here, the exponent will be 0, because var1 was adjusted
         // appropriately.]
         Int postshift;                       // work
@@ -3294,6 +3314,7 @@ static decNumber * decDivideOp(decNumber *res,
         // Now correct the result if doing remainderNear; if it
         // (looking just at coefficients) is > rhs/2, or == rhs/2 and
         // the integer was odd then the result should be rem-rhs.
+#if 0
         if (op&REMNEAR) {
           Int compare, tarunits;        // work
           Unit *up;                     // ..
@@ -3365,6 +3386,7 @@ static decNumber * decDivideOp(decNumber *res,
             bits^=DECNEG;               // flip the sign
             }
           } // REMNEAR
+#endif
         } // REMAINDER or REMNEAR
       } // not DIVIDE
 
@@ -4616,6 +4638,7 @@ decNumber * decCompareOp(decNumber *res, const decNumber *lhs,
     // [following code does not require input rounding]
 
     // If total ordering then handle differing signs 'up front'
+#if 0
     if (op == COMPTOTAL) {              // total ordering
       if (decNumberIsNegative(lhs) && !decNumberIsNegative(rhs)) {
         result=-1;
@@ -4626,12 +4649,14 @@ decNumber * decCompareOp(decNumber *res, const decNumber *lhs,
         break;
         }
       }
+#endif
 
     // handle NaNs specially; let infinities drop through
     // This assumes sNaN (even just one) leads to NaN.
     merged=(lhs->bits | rhs->bits) & (DECSNAN | DECNAN);
     if (merged) {                       // a NaN bit set
       if (op == COMPARE);               // result will be NaN
+#if 0
        else if (op == COMPTOTAL) {      // total ordering, always finite
         // signs are known to be the same; compute the ordering here
         // as if the signs are both positive, then invert for negatives
@@ -4649,6 +4674,7 @@ decNumber * decCompareOp(decNumber *res, const decNumber *lhs,
         if (decNumberIsNegative(lhs)) result=-result;
         break;
         } // total order
+#endif
 
        else if (merged & DECSNAN);      // sNaN -> qNaN
        else { // here if MIN or MAX and one or two quiet NaNs
@@ -4670,7 +4696,8 @@ decNumber * decCompareOp(decNumber *res, const decNumber *lhs,
 
   if (result==BADINT) *status|=DEC_Insufficient_storage; // rare
    else {
-    if (op == COMPARE || op == COMPTOTAL) {  // returning signum
+    if (op == COMPARE /*|| op == COMPTOTAL*/) {  // returning signum
+#if 0
       if (op == COMPTOTAL && result==0) {
         // operands are numerically equal or same NaN (and same sign,
         // tested first); if identical, leave result 0
@@ -4680,6 +4707,7 @@ decNumber * decCompareOp(decNumber *res, const decNumber *lhs,
           if (decNumberIsNegative(lhs)) result=-result;
           } // lexp!=rexp
         } // total-order by exponent
+#endif
       decNumberZero(res);               // [always a valid result]
       if (result!=0) {                  // must be -1 or +1
         *res->lsu=1;
