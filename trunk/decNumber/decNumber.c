@@ -3272,9 +3272,9 @@ static decNumber * decDivideOp(decNumber *res,
         // [Here, the exponent will be 0, because var1 was adjusted
         // appropriately.]
         Int postshift;                       // work
-        Flag wasodd=0;                       // integer was odd
-        Unit *quotlsu;                       // for save
-        Int  quotdigits;                     // ..
+        //Flag wasodd=0;                       // integer was odd
+        //Unit *quotlsu;                       // for save
+        //Int  quotdigits;                     // ..
 
         // Fastpath when residue is truly 0 is worthwhile [and
         // simplifies the code below]
@@ -3289,9 +3289,9 @@ static decNumber * decDivideOp(decNumber *res,
           break;
           }
         // note if the quotient was odd
-        if (*accnext & 0x01) wasodd=1;       // acc is odd
-        quotlsu=accnext;                     // save in case need to reinspect
-        quotdigits=accdigits;                // ..
+        //if (*accnext & 0x01) wasodd=1;       // acc is odd
+        //quotlsu=accnext;                     // save in case need to reinspect
+        //quotdigits=accdigits;                // ..
 
         // treat the residue, in var1, as the value to return, via acc
         // calculate the unused zero digits.  This is the smaller of:
