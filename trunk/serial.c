@@ -72,6 +72,7 @@ int recv_byte( int timeout )
 		/*
 		 *  No bytes in buffer
 		 */
+		busy();
 		idle();
 	}
 	if ( InCount == 0 ) {
@@ -141,6 +142,18 @@ static int open_port_default( void )
 
 
 /*
+ *  Open port with default settings.
+ *  Returns non zero in case of failure.
+ */
+static void close_port_reset_state( void )
+{
+	close_port();
+	serial_state( 0 );
+}
+
+
+
+/*
  *  Connect to partner.
  *  Opens the port and sends ENQ until ACK is received.
  *  Returns non zero in case of failure.
@@ -153,8 +166,12 @@ static int connect( void )
 	do {
 		put_byte( ENQ );
 		c = get_byte();
-	} while ( c != ACK && --i );
-	return c != ACK;
+	} while ( c != ACK && c != R_BREAK && --i );
+	if ( c != ACK ) {
+		close_port_reset_state();
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -169,13 +186,15 @@ static int accept_connection( void )
 
 	if ( open_port_default() ) return 1;
 	while ( i-- ) {
-		if ( get_byte() == ENQ ) {
+		int c = get_byte();
+		if ( c == ENQ ) {
 			clear_buffer();
 			put_byte( ACK );
 			return 0;
 		}
-		put_byte( NAK );
+		if ( c == R_BREAK ) break;
 	}
+	close_port_reset_state();
 	return 1;
 }
 
@@ -185,8 +204,8 @@ static int accept_connection( void )
  */
 static void put_word( unsigned short w )
 {
-	put_byte( (unsigned char) ( w >> 8 ) );
 	put_byte( (unsigned char) w );
+	put_byte( (unsigned char) ( w >> 8 ) );
 }
 
 
@@ -219,31 +238,39 @@ static int get_word( void )
  *    Send ETX
  *    Wait for ACK
  *
- *    If a NAK is reeived while sending the transfer is aborted.
+ *    If a NAK is received while sending the transfer is aborted.
  */
-static int put_block( unsigned short tag, unsigned short length, void *data )
+static void put_block( unsigned short tag, unsigned short length, void *data )
 {
 	const unsigned short crc = crc16( data, length ) ^ tag;
 	unsigned char *p = (unsigned char *) data;
-	int ret = 0;
+	int ret = connect();
+	int c;
 
-	if ( connect() ) return 1;
-	put_word( tag );
-	put_word( length );
-	put_word( crc );
-	while ( length-- && ret == 0 ) {
-		put_byte( *p++ );
-		ret = ( NAK == recv_byte( 0 ) );
+	if ( ret == 0 ) {
+		/*
+		 *  We are connected, send data
+		 */
+		put_word( tag );
+		put_word( length );
+		put_word( crc );
+		while ( length-- && ret == 0 ) {
+			busy();
+			put_byte( *p++ );
+			c = recv_byte( 0 );
+			ret = ( c == NAK || c == R_BREAK );
+		}
+		clear_buffer();
+		put_byte( ETX );
+		if ( ret || ACK != recv_byte( 2 * CHARTIME ) ) {
+			ret = 1;
+		}
+		close_port_reset_state();
 	}
-	clear_buffer();
-	put_byte( ETX );
-	if ( ret || ACK != recv_byte( 2 * CHARTIME ) ) {
+	if ( ret ) {
 		err( ERR_IO );
-		ret = 1;
 	}
-	close_port();
-	serial_state( 0 );
-	return ret;
+	return;
 }
 
 
@@ -260,7 +287,10 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 	int tag, length, crc;
 	void *dest;
 
-	if ( accept_connection() ) goto err;
+	if ( accept_connection() ) {
+		err( ERR_IO );
+		return;
+	}
 
 	tag = get_word();
 	if ( tag < 0 ) goto err;
@@ -356,8 +386,7 @@ close:
 	 *  Send reply to partner
 	 */
 	put_byte( c );
-	close_port();
-	serial_state( 0 );
+	close_port_reset_state();
 	return;
 }
 
@@ -367,7 +396,7 @@ close:
  *  Open the serial port from user code.
  *  Alpha is interpreted as follows:
  *    baudrate,format
- *    - The delimter may be any non digit.
+ *    - The delimiter may be any non digit.
  *    - The format is a combination of '1', '2', '7', '8', 'E', 'O' or 'N'
  *    - Any other characters are skipped and ignored.
  *    - Default: 9600,8N1
@@ -404,7 +433,7 @@ void serial_open( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 	/*
 	 *  Set up the port
 	 */
-	if ( open_port( baud, bits, stop, parity ) ) {
+	if ( open_port( baud, bits, parity, stop ) ) {
 		err( ERR_INVALID );
 		return;
 	}
@@ -418,8 +447,7 @@ void serial_open( decimal64 *nul1, decimal64 *nul2, enum nilop op )
  */
 void serial_close( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
-	close_port();
-	serial_state( 0 );
+	close_port_reset_state();
 }
 
 

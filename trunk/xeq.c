@@ -3157,7 +3157,7 @@ void xeq(opcode op)
 		DispMsg = tracebuf;
 	}
 #endif
-
+	Busy = 0;
 	xcopy(save, &regX, (STACK_SIZE+2) * sizeof(decimal64));
 	if (isDBL(op))
 		multi(op);

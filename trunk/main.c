@@ -152,6 +152,7 @@ short int BodTimer;
  *  DBGU serial I/O definitions
  */
 #define USE_SYSTEM_IRQ 1
+#define DBGU_PIOC_MASK 0x00030000
 
 /*
  *  Tell the revision number (must not be optimised out!)
@@ -808,7 +809,7 @@ void set_speed( unsigned int speed )
 		 *  Table of supported speeds
 		 */
 		static const int speeds[ SPEED_HIGH + 1 ] =
-			{ 2000000 / 64 , 2000000,
+			{ 2000000 / 64 , 2000000 / 64 , 2000000,
 			  32768 * ( 1 + PLLMUL_LOW_V ), 32768 * ( 1 + PLLMUL ) };
 
 		if ( speed < SPEED_MEDIUM && ( is_debug() || StartupTicks < 10 ) ) {
@@ -827,7 +828,7 @@ void set_speed( unsigned int speed )
 
 		if ( speeds[ speed ] == ClockSpeed ) {
 			/*
-			 *  Invalid or no change.
+			 *  No change.
 			 */
 			return;
 		}
@@ -1202,6 +1203,11 @@ void enable_interrupts()
 int open_port( int baud, int bits, int parity, int stopbits )
 {
 	int mode, div;
+
+	// Assign I/O pins to DBGU, disable pull-ups
+	AT91C_BASE_PIOC->PIO_PDR   = DBGU_PIOC_MASK;
+	AT91C_BASE_PIOC->PIO_ASR   = DBGU_PIOC_MASK;
+	AT91C_BASE_PIOC->PIO_PPUDR = DBGU_PIOC_MASK;
 
 	// Reset & disable receiver and transmitter, disable interrupts
 	AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RSTRX | AT91C_US_RSTTX | AT91C_US_RSTSTA;

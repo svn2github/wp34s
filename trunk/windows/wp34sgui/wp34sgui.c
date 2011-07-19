@@ -302,7 +302,8 @@ unsigned long __stdcall CommThread( void *p )
 			/*
 			 *  User abort
 			 */
-			c = R_BREAK;
+			byte_received( R_BREAK );
+			continue;
 		}
 		if ( count == 0 ) {
 			/*
@@ -458,6 +459,7 @@ void put_byte( unsigned char byte )
 	DWORD written;
 
 	res = WriteFile( CommHandle, &buffer, 1, &written, NULL );
+	FlushFileBuffers( CommHandle );
 	if ( res == 0 || written != 1 ) {
 		CommError = GetLastError();
 	}

@@ -47,7 +47,7 @@
 // Include the SAVEM/RESTM user mode save and restore commands
 #define INCLUDE_USER_MODE
 
-// Incude the digamma function for real and complex arguments
+// Include the digamma function for real and complex arguments
 //#define INCLUDE_DIGAMMA
 
 // Include Jacobi's Elliptical Functions: SN, CN & DN for real & complex arguments
@@ -58,9 +58,9 @@
 //#define INCLUDE_BESSEL
 //#define COMPLEX_BESSEL
 
-// Inlcude a fused multiply add instruction
+// Include a fused multiply add instruction
 // This isn't vital since this can be done using a complex addition.
-//#define INCLUDE_MULADD
+#define INCLUDE_MULADD
 
 // Include the x!! function defined over the complex plane
 //#define INCLUDE_DBLFACT
@@ -79,7 +79,7 @@
 //#define USE_RIDDERS
 
 // Include code to find integer factors
-//#define INCLUDE_FACTOR
+#define INCLUDE_FACTOR
 
 // Define this to support HP16c integer/real mode conversions.
 // The 16c breaks a real into a mantissa and base two exponent on entry
