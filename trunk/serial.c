@@ -461,6 +461,22 @@ void send_byte( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 
 	put_byte( byte );
 }
+
+void send_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op ) {
+	const char *p;
+	for (p = Alpha; *p != '\0'; p++)
+		put_byte(*p);
+}
+
+void recv_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op ) {
+	int sgn;
+	int timeout = get_int(&regX, &sgn);
+
+	if (sgn || timeout < 0)
+		timeout = 0;
+	
+}
+
 #endif
 
 

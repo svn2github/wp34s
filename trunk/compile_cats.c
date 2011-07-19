@@ -602,6 +602,8 @@ static s_opcode prog_catalogue[] = {
 	MON(OP_RECV1,		"RECV1")
 	NILIC(OP_SERIAL_OPEN,	"SOPEN")
 	NILIC(OP_SERIAL_CLOSE,	"SCLOSE")
+	NILIC(OP_ALPHASEND,	"\240SEND")
+	NILIC(OP_ALPHARECV,	"\240RECV")
 #endif
 };
 

@@ -539,6 +539,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SEND1,		&send_byte,		"SEND1")
 	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN")
 	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE")
+	FUNC0(OP_ALPHASEND,	&send_alpha,		"\240SEND")
+	FUNC0(OP_ALPHARECV,	&recv_alpha,		"\240RECV")
 #endif
 #undef FUNC0
 #undef FUNC1

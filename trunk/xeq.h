@@ -535,13 +535,13 @@ enum {
 	OP_EASTER,
 #endif
 #ifdef INCLUDE_FACTOR
-        OP_FACTOR,
+	OP_FACTOR,
 #endif
 	OP_DATE_YEAR, OP_DATE_MONTH, OP_DATE_DAY,
 #ifdef INCLUDE_USER_IO
 	OP_RECV1,
 #endif
-        NUM_MONADIC     // Last entry defines number of operations
+	NUM_MONADIC	// Last entry defines number of operations
 };
     
 // Dyadic functions
@@ -576,7 +576,7 @@ enum {
 	OP_LAGUERRE,
 	OP_HERMITE_HE,
 	OP_HERMITE_H,
-        NUM_DYADIC     // Last entry defines number of operations
+	NUM_DYADIC	// Last entry defines number of operations
 };
 
 // Triadic functions
@@ -588,7 +588,7 @@ enum {
 #endif
 	OP_PERMRR,
 	OP_GEN_LAGUERRE,
-        NUM_TRIADIC     // Last entry defines number of operations
+	NUM_TRIADIC	// Last entry defines number of operations
 };  
 
 // Niladic functions
@@ -641,13 +641,14 @@ enum nilop {
 
 	OP_QUAD,
 	OP_XEQALPHA, OP_GTOALPHA,
-        OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
+	OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
 
 	OP_SENDP, OP_SENDR, OP_SENDA, OP_RECV,
 #ifdef INCLUDE_USER_IO
 	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
+	OP_ALPHASEND, OP_ALPHARECV,
 #endif
-        NUM_NILADIC     // Last entry defines number of operations
+	NUM_NILADIC	// Last entry defines number of operations
 };
 
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
@@ -721,7 +722,7 @@ enum rarg {
 	RARG_SAVEM, RARG_RESTM,
 #endif
 
-        NUM_RARG     // Last entry defines number of operations
+	NUM_RARG	// Last entry defines number of operations
 };
 #define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
@@ -749,7 +750,7 @@ enum multiops {
 	DBL_ALPHA,
 #endif
 	//DBL_NUMBER,
-        NUM_MULTI     // Last entry defines number of operations
+	NUM_MULTI	// Last entry defines number of operations
 };
 
 

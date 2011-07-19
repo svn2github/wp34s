@@ -37,6 +37,8 @@ extern int recv_byte( int timeout );
 extern void send_byte( decimal64 *nul1, decimal64 *nul, enum nilop op2 );
 extern void serial_open( decimal64 *byte, decimal64 *nul2, enum nilop op );
 extern void serial_close( decimal64 *byte, decimal64 *nul2, enum nilop op );
+extern void send_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op2 );
+extern void recv_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op2 );
 #endif
 
 // Call-back for a received byte with error information
