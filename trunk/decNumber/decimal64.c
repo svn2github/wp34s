@@ -388,6 +388,7 @@ void decimal64Show(const decimal64 *d64) {
 /* ================================================================== */
 
 // define and include the conversion tables to use
+#if 0
 #define DEC_BIN2DPD 1         // used for all sizes
 #if DECDPUN==3
   #define DEC_DPD2BIN 1
@@ -395,6 +396,7 @@ void decimal64Show(const decimal64 *d64) {
   #define DEC_DPD2BCD 1
 #endif
 #include "decDPD.h"           // lookup tables
+#endif
 
 // The maximum number of decNumberUnits needed for a working copy of
 // the units array is the ceiling of digits/DECDPUN, where digits is
@@ -540,7 +542,11 @@ void decDigitsToDPD(const decNumber *dn, uInt *targ, Int shift) {
     #endif
     // here there are 3 digits in bin, or have used all input digits
 
+#if 0
     dpd=BIN2DPD[bin];
+#else
+    dpd = bin;
+#endif
 
     // write declet to uInt array
     *uout|=dpd<<uoff;
@@ -609,7 +615,14 @@ void decDigitsFromDPD(decNumber *dn, const uInt *sour, Int declets) {
   #if DECDPUN==3
     if (dpd==0) *uout=0;
      else {
+#if 0
       *uout=DPD2BIN[dpd];          // convert 10 bits to binary 0-999
+#else
+      if (dpd < 1000)
+	      *uout = dpd;
+      else
+	      *uout = 0;
+#endif
       last=uout;                   // record most significant unit
       }
     uout++;
