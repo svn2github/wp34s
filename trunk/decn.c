@@ -2158,8 +2158,16 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 
 	if (dmode == MODE_FIX) {
 		/* FIX is different since the number of digits changes */
+#if 0
+		/* The slow but always correct way */
 		int_to_dn(&u, numdig-1);
 		decNumberPow10(&p10, &u);
+#else
+		/* The much faster but relying on base 10 numbers with exponents */
+		decNumberCopy(&p10, &const_1);
+		p10.exponent += numdig-1;
+		
+#endif
 		dn_multiply(&t, x, &p10);
 		decNumberRound(&u, &t);
 		return dn_divide(res, &u, &p10);
