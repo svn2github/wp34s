@@ -42,11 +42,12 @@ extern void recv_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op2 );
 #endif
 
 // Call-back for a received byte with error information
-extern void byte_received( short byte );
+extern int byte_received( short byte );
 
 // Implemented by the hardware layer
 extern int open_port( int baud, int bits, int parity, int stopbits );
 extern void close_port( void );
 extern void put_byte( unsigned char byte );
+extern void flush_comm( void );
 
 #endif

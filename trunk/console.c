@@ -503,6 +503,7 @@ int is_shift_down(int s)
 	return 0;
 }
 
+#ifndef WIN32  // Windows uses winserial.c
 /*
  *  Open a COM port for transmission
  */
@@ -528,6 +529,14 @@ void put_byte( unsigned char byte )
 	err( ERR_PROG_BAD );
 }
 
+
+/*
+ *  Force buffer flush
+ */
+void flush_comm( void )
+{
+}
+#endif
 
 /*
  *  Main loop

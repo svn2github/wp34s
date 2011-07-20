@@ -26,7 +26,7 @@
 #define ACK 6
 #define NAK 0x15
 #define MAXCONNECT 10
-#define CHARTIME 10
+#define CHARTIME 30
 
 #define IN_BUFF_LEN 32
 #define IN_BUFF_MASK 0x1f
@@ -68,6 +68,7 @@ int recv_byte( int timeout )
 	int byte;
 	unsigned int ticks = Ticker + timeout;
 
+	flush_comm();
 	while ( InCount == 0 && ( timeout < 0 || Ticker < ticks ) ) {
 		/*
 		 *  No bytes in buffer
@@ -99,20 +100,25 @@ static int get_byte( void )
 /*
  *  Add a received byte to the buffer, called from interrupt.
  */
-void byte_received( short byte )
+int byte_received( short byte )
 {
 	if ( InCount == IN_BUFF_LEN ) {
 		/*
 		 *  Sorry, no room
 		 */
+#ifdef REALBUILD
 		byte = R_ERROR;
 		InWrite = ( InWrite - 1 ) & IN_BUFF_MASK;
 		--InCount;
+#else
+		return 1;
+#endif
 	}
 
 	InBuffer[ (int) InWrite ] = byte;
 	InWrite = ( InWrite + 1 ) & IN_BUFF_MASK;
 	++InCount;
+	return 0;
 }
 
 
@@ -131,13 +137,14 @@ static void clear_buffer( void )
  *  Open port with default settings.
  *  Returns non zero in case of failure.
  */
-static int open_port_default( void )
+static void close_port_reset_state( void )
 {
-	if ( open_port( 9600, 8, 1, 'N' ) ) {
-		return 1;
+	if ( SerialOn ) {
+		flush_comm();
+		close_port();
+		serial_state( 0 );
+		clear_buffer();
 	}
-	serial_state( 1 );
-	return 0;
 }
 
 
@@ -145,10 +152,14 @@ static int open_port_default( void )
  *  Open port with default settings.
  *  Returns non zero in case of failure.
  */
-static void close_port_reset_state( void )
+static int open_port_default( void )
 {
-	close_port();
-	serial_state( 0 );
+	close_port_reset_state();
+	if ( open_port( 9600, 8, 1, 'N' ) ) {
+		return 1;
+	}
+	serial_state( 1 );
+	return 0;
 }
 
 
@@ -190,6 +201,7 @@ static int accept_connection( void )
 		if ( c == ENQ ) {
 			clear_buffer();
 			put_byte( ACK );
+			flush_comm();
 			return 0;
 		}
 		if ( c == R_BREAK ) break;
@@ -251,18 +263,21 @@ static void put_block( unsigned short tag, unsigned short length, void *data )
 		/*
 		 *  We are connected, send data
 		 */
+		put_byte( STX );
 		put_word( tag );
 		put_word( length );
 		put_word( crc );
 		while ( length-- && ret == 0 ) {
 			busy();
 			put_byte( *p++ );
-			c = recv_byte( 0 );
-			ret = ( c == NAK || c == R_BREAK );
+			if ( (char) length == 0 ) {
+				c = recv_byte( 0 );
+				ret = ( c == NAK || c == R_BREAK );
+			}
 		}
 		clear_buffer();
 		put_byte( ETX );
-		if ( ret || ACK != recv_byte( 2 * CHARTIME ) ) {
+		if ( ret || ACK != recv_byte( 5 * CHARTIME ) ) {
 			ret = 1;
 		}
 		close_port_reset_state();
@@ -288,6 +303,14 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 	void *dest;
 
 	if ( accept_connection() ) {
+		err( ERR_IO );
+		return;
+	}
+	for ( i = 0; i < MAXCONNECT; ++i ) {
+		c = get_byte();
+		if ( c == STX ) break;
+	}
+	if ( c != STX ) {
 		err( ERR_IO );
 		return;
 	}
@@ -391,6 +414,33 @@ close:
 }
 
 
+/*
+ * Transmit the program space from RAM to the serial port.
+ */
+void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+{
+	put_block( TAG_PROGRAM, ( LastProg - 1 ) * sizeof( s_opcode ), Prog );
+}
+
+
+/*
+ * Send registers 00 through 99 to the serial port.
+ */
+void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+{
+	put_block( TAG_REGISTER, sizeof( decimal64 ) * TOPREALREG, Regs );
+}
+
+
+/*
+ * Send all of RAM to the serial port.  2kb in total.
+ */
+void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+{
+	put_block( TAG_ALLMEM, sizeof( PersistentRam ), &PersistentRam );
+}
+
+
 #ifdef INCLUDE_USER_IO
 /*
  *  Open the serial port from user code.
@@ -409,6 +459,7 @@ void serial_open( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 	char stop = 1;
 	char c, *p = Alpha;
 
+	close_port_reset_state();
 	if ( *p != '\0' ) {
 		/*
 		 *  Alpha is set, parse it
@@ -443,11 +494,24 @@ void serial_open( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 
 
  /*
- * Close the serial port from user code
- */
+  * Close the serial port from user code
+  */
 void serial_close( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	close_port_reset_state();
+}
+
+
+/*
+ *  Open with default parameters if not aöready opend by SOPEN
+ */
+static int serial_open_default( void )
+{
+	if ( !SerialOn && open_port_default() ) {
+		err( ERR_IO );
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -459,51 +523,54 @@ void send_byte( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 	int sgn;
 	const unsigned char byte = get_int( &regX, &sgn ) & 0xff;
 
-	put_byte( byte );
+	if ( !serial_open_default() ) {
+		put_byte( byte );
+		flush_comm();
+	}
 }
 
-void send_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op ) {
+
+/*
+ *  Send the contents of the Alpha register, terminated by a CR
+ */
+void send_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op )
+{
 	const char *p;
-	for (p = Alpha; *p != '\0'; p++)
-		put_byte(*p);
+	if ( !serial_open_default() ) {
+		for ( p = Alpha; *p != '\0'; p++ ) {
+			put_byte(*p);
+		}
+		put_byte( '\r' );
+		flush_comm();
+	}
 }
 
-void recv_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op ) {
-	int sgn;
-	int timeout = get_int(&regX, &sgn);
 
-	if (sgn || timeout < 0)
-		timeout = 0;
+/*
+ *  Receive the contents of the alpha register.
+ *  CR stops the reception.
+ */
+void recv_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op )
+{
+	int i, c = 0;
+	int timeout = (int) get_int( &regX, &i );
+
+	if ( i || timeout < 0 ) timeout = -1;
 	
+	if ( !serial_open_default() ) {
+		i = 0;
+		while ( i < NUMALPHA ) {
+			c = recv_byte( i == 0 || timeout < CHARTIME ? timeout : CHARTIME );
+			if ( c == '\r' || c < 0 ) break;
+			Alpha[ i++ ] = c;
+		}
+		Alpha[ i ] = '\0';
+		if ( c < 0 ) {
+			err( ERR_IO );
+		}
+	}
 }
 
 #endif
-
-
-/*
- * Transmit the program space from RAM to the serial port.
- */
-void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
-{
-	put_block( TAG_PROGRAM, ( LastProg - 1 ) * sizeof( s_opcode ), Prog );
-}
-
-
-/*
- * Send registers 00 through 99 to the serial port.
- */
-void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op )
-{
-	put_block( TAG_REGISTER, sizeof( decimal64 ) * TOPREALREG, Regs );
-}
-
-
-/*
- * Send all of RAM to the serial port.  2kb in total.
- */
-void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op )
-{
-	put_block( TAG_ALLMEM, sizeof( PersistentRam ), &PersistentRam );
-}
 
 

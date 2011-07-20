@@ -30,6 +30,10 @@
 /*
  *  State that must be saved across power off
  */
+
+/*
+ *  User visible state
+ */
 struct _ustate {
 	unsigned int contrast :      4;	// Display contrast
 
@@ -62,6 +66,10 @@ struct _ustate {
 	unsigned int trigmode :      2;	// Trig mode (DEG, RAD, GRAD)
 };
 
+
+/*
+ *  System state
+ */
 struct _state {
 	unsigned int last_cat :      5;	// Most recent catalogue browsed
 	unsigned int last_catpos :   7;	// Last position in said catalogue
@@ -69,12 +77,12 @@ struct _state {
 	unsigned int state_lift :    1;	// XEQ internal - don't use
 	unsigned int implicit_rtn :  1;	// End of program is an implicit return
 	unsigned int deep_sleep :    1; // Used to wake up correctly
+	unsigned int usrpc :        16;	// XEQ internal - don't use
 
 	/*
 	 *  Not bit fields
 	 */
 	unsigned short state_pc;	// XEQ internal - don't use
-	unsigned short usrpc;		// XEQ internal - don't use
 	unsigned char retstk_ptr;	// XEQ internal - don't use
 	unsigned char base;		// Base value for a command with an argument
 };

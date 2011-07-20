@@ -29,6 +29,7 @@ extern "C" {
 	int open_port( int baud, int bits, int parity, int stopbits ) {return 0; }
 	void close_port( void ) { return; }
 	void put_byte( unsigned char byte ) { return; }
+	void flush_comm( void ) { return; }
 }
 // we have one context
 static decContext Ctx;

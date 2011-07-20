@@ -1253,22 +1253,31 @@ extern void close_port( void )
  */
 void put_byte( unsigned char byte )
 {
-    // Wait for the transmitter to be ready
-    while ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_TXRDY ) == 0 && !OnKeyPressed ) {
-	    go_idle();
-    }
-    if ( OnKeyPressed ) {
-	    return;
-    }
+	// Wait for the transmitter to be ready
+	while ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_TXRDY ) == 0 && !OnKeyPressed ) {
+		go_idle();
+	}
+	if ( OnKeyPressed ) {
+		return;
+	}
 
-    // Send character
-    AT91C_BASE_DBGU->DBGU_THR = byte;
+	// Send character
+	AT91C_BASE_DBGU->DBGU_THR = byte;
 
-    // Enable transmitter interrupt
-    AT91C_BASE_DBGU->DBGU_IER = AT91C_US_TXRDY;
+	// Enable transmitter interrupt
+	AT91C_BASE_DBGU->DBGU_IER = AT91C_US_TXRDY;
 }
 
 
+/*
+ *  Force all remaining characters to be sent out
+ */
+void flush_comm( void )
+{
+	while ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_TXEMPTY ) == 0 && !OnKeyPressed ) {
+		go_idle();
+	}
+}
 
 
 /*************************************************************************
