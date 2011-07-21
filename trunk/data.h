@@ -47,7 +47,7 @@ struct _ustate {
 	unsigned int fraccomma :     1;	// radix mark . or ,
 	unsigned int nothousands :   1;	// , or nothing for thousands separator
 	unsigned int jg1582 :        1;	// Julian/Gregorian change over in 1582 instead of 1752
-
+// 32 bits
 	unsigned int intm :          1;	// In integer mode
 	unsigned int leadzero :      1;	// forced display of leading zeros in integer mode
 	unsigned int int_mode :      2;	// Integer sign mode
@@ -59,7 +59,9 @@ struct _ustate {
 
 	unsigned int date_mode :     2;	// Date input/output format
 	unsigned int trigmode :      2;	// Trig mode (DEG, RAD, GRAD)
+// 24 bits
 	unsigned int sigma_mode :    3;	// Which sigma regression mode we're using
+	unsigned int rounding_mode:  3;	// Which rounding mode we're using
 };
 
 

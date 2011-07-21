@@ -223,13 +223,34 @@ static void error(const char *fmt, ...) {
 #define illegal(op)	do { err(ERR_PROG_BAD); } while (0)
 #endif
 
+/* Real rounding mode access routine
+ */
+static unsigned int get_rounding_mode() {
+	return UState.rounding_mode;
+}
+
+void op_roundingmode(decimal64 *x, decimal64 *nul2, enum nilop op) {
+	put_int(get_rounding_mode(), 0, x);
+}
+
+void rarg_roundingmode(unsigned int arg, enum rarg op) {
+	UState.rounding_mode = arg;
+}
+
+
 /* Pack a number into our DPD register format
  */
 void packed_from_number(decimal64 *r, const decNumber *x) {
+	static const unsigned char rounding_modes[DEC_ROUND_MAX] = {
+		DEC_ROUND_HALF_EVEN, DEC_ROUND_HALF_UP, DEC_ROUND_HALF_DOWN,
+		DEC_ROUND_UP, DEC_ROUND_DOWN,
+		DEC_ROUND_CEILING, DEC_ROUND_FLOOR
+	};
 	decContext ctx64;
 
 	decContextDefault(&ctx64, DEC_INIT_DECIMAL64);
 	ctx64.traps = 0;
+	ctx64.round = rounding_modes[get_rounding_mode()];
 	decimal64FromNumber(r, x, &ctx64);
 }
 

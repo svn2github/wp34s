@@ -436,16 +436,16 @@ enum eKind {
 
 #define OP_DBL	0x1000			/* Double sized instructions */
 
-#define RARG_OPSHFT	8
+#define RARG_OPSHFT	8		/* Don't use outside this header */
+#define RARG_OPBASE	0x20		/* Don't use outside this header */
+
 #define RARG_MASK	0x7f
 #define RARG_IND	0x80
-#define RARG_OPMASK	0xff00
-#define RARG_OPBASE	0x20
 #define RARG_BASE(op)	(((op) + RARG_OPBASE) << RARG_OPSHFT)
 #define RARG(op, n)	(RARG_BASE(op) | (n))
 #define RARG_CMD(op)	(((op) >> RARG_OPSHFT) - RARG_OPBASE)
 
-#define isRARG(op)	(((op) & RARG_OPMASK) >= (RARG_OPBASE << RARG_OPSHFT))
+#define isRARG(op)	(((op) & 0xff00) >= (RARG_OPBASE << RARG_OPSHFT))
 
 #define opKIND(op)	((enum eKind)((op) >> KIND_SHIFT))
 #define argKIND(op)	((op) & ((1 << KIND_SHIFT)-1))
@@ -647,6 +647,8 @@ enum nilop {
 	OP_XEQALPHA, OP_GTOALPHA,
 	OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
 
+	OP_ROUNDING,
+
 	OP_SENDP, OP_SENDR, OP_SENDA, OP_RECV,
 #ifdef INCLUDE_USER_IO
 	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
@@ -721,6 +723,7 @@ enum rarg {
 	RARG_SLD, RARG_SRD,
 
 	RARG_VIEW_REG,
+	RARG_ROUNDING,
 
 #ifdef INCLUDE_USER_MODE
 	RARG_SAVEM, RARG_RESTM,
@@ -1069,6 +1072,8 @@ extern void op_ticks(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_voltage(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
+extern void op_roundingmode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void rarg_roundingmode(unsigned int arg, enum rarg op);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x);
 extern decNumber *convF2C(decNumber *r, const decNumber *x);

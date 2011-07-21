@@ -531,6 +531,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_BACKUP,	&flash_backup,		"SAVE")
 	FUNC0(OP_RESTORE,	&flash_restore,		"LOAD")
 
+	FUNC1(OP_ROUNDING,	&op_roundingmode,	"RM?")
+
 	FUNC0(OP_SENDP,		&send_program,		"SENDP")
 	FUNC0(OP_SENDR,		&send_registers,	"SENDR")
 	FUNC0(OP_SENDA,		&send_all,		"SENDA")
@@ -710,6 +712,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_SRD,		&op_shift_digit,100,			"S.R")
 
 	CMDstk(RARG_VIEW_REG,	&alpha_view_reg,NUMREG,			"VW\240+")
+	CMD(RARG_ROUNDING,	&rarg_roundingmode, DEC_ROUND_MAX,	"RM")
+
 #ifdef INCLUDE_USER_MODE
 	CMDstk(RARG_SAVEM,	&cmdsavem,	NUMREG,			"STOM")
 	CMDstk(RARG_RESTM,	&cmdrestm,	NUMREG,			"RCLM")
