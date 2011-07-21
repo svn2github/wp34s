@@ -532,6 +532,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_RESTORE,	&flash_restore,		"LOAD")
 
 	FUNC1(OP_ROUNDING,	&op_roundingmode,	"RM?")
+	FUNC0(OP_SLOW,		&op_setspeed,		"SLOW")
+	FUNC0(OP_FAST,		&op_setspeed,		"FAST")
 
 	FUNC0(OP_SENDP,		&send_program,		"SENDP")
 	FUNC0(OP_SENDR,		&send_registers,	"SENDR")

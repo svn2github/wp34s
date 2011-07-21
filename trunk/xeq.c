@@ -2764,6 +2764,11 @@ void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	UState.t12 = (op == OP_12HR) ? 1 : 0;
 }
 
+void op_setspeed(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	UState.speed = (op == OP_SLOW) ? 0 : 1;
+}
+
+
 
 static void do_rtn(int plus1) {
 	if (Running && RetStkPtr > 0) {

@@ -648,6 +648,7 @@ enum nilop {
 	OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
 
 	OP_ROUNDING,
+	OP_SLOW, OP_FAST,
 
 	OP_SENDP, OP_SENDR, OP_SENDA, OP_RECV,
 #ifdef INCLUDE_USER_IO
@@ -1072,8 +1073,9 @@ extern void op_ticks(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_voltage(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
-extern void op_roundingmode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_roundingmode(decimal64 *, decimal64 *, enum nilop);
 extern void rarg_roundingmode(unsigned int arg, enum rarg op);
+extern void op_setspeed(decimal64 *, decimal64 *, enum nilop);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x);
 extern decNumber *convF2C(decNumber *r, const decNumber *x);
