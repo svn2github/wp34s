@@ -46,24 +46,20 @@ struct _ustate {
 	unsigned int fixeng :        1;	// Fix flips to ENG instead of SCI
 	unsigned int fraccomma :     1;	// radix mark . or ,
 	unsigned int nothousands :   1;	// , or nothing for thousands separator
-	unsigned int filler1 :	     1; // used for structure alignment
+	unsigned int jg1582 :        1;	// Julian/Gregorian change over in 1582 instead of 1752
 
 	unsigned int intm :          1;	// In integer mode
 	unsigned int leadzero :      1;	// forced display of leading zeros in integer mode
 	unsigned int int_mode :      2;	// Integer sign mode
 	unsigned int int_base :      4;	// Integer input/output base
 	unsigned int int_len :       7;	// Length of Integers
-	unsigned int filler2 :       1; // Used for structure alignment
+	unsigned int t12 :           1;	// 12 hour time mode
 	unsigned int int_maxw :      3;	// maximum available window
-	unsigned int filler3 :       1; // Used for structure alignment
+	unsigned int stack_depth :   1;	// Stack depth
 
 	unsigned int date_mode :     2;	// Date input/output format
-	unsigned int t12 :           1;	// 12 hour time mode
-	unsigned int jg1582 :        1;	// Julian/Gregorian change over in 1582 instead of 1752
-
-	unsigned int stack_depth :   1;	// Stack depth
-	unsigned int sigma_mode :    3;	// Which sigma regression mode we're using
 	unsigned int trigmode :      2;	// Trig mode (DEG, RAD, GRAD)
+	unsigned int sigma_mode :    3;	// Which sigma regression mode we're using
 };
 
 
