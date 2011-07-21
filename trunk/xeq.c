@@ -2765,9 +2765,8 @@ void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 void op_setspeed(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	UState.speed = (op == OP_SLOW) ? 0 : 1;
+	UState.slow_speed = (op == OP_SLOW) ? 1 : 0;
 }
-
 
 
 static void do_rtn(int plus1) {

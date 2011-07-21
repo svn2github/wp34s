@@ -62,7 +62,7 @@ struct _ustate {
 // 24 bits
 	unsigned int sigma_mode :    3;	// Which sigma regression mode we're using
 	unsigned int rounding_mode:  3;	// Which rounding mode we're using
-	unsigned int speed :         1;	// Speed setting, 0 = slow, 1 = fast
+	unsigned int slow_speed :    1;	// Speed setting, 0 = fast, 1 = slow
 	unsigned int padding :       1;	// The last bit
 };
 
