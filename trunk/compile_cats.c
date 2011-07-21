@@ -30,8 +30,8 @@
 #define CDYA(op, n)		op | OP_CDYA,
 #define CMON(op, n)		op | OP_CMON,
 #define NILIC(op, n)		op | OP_NIL,
-#define RARGCMD(op, n)		OP_RARG | ((op) << RARG_OPSHFT),
-#define CONV(n, d, name)	(OP_RARG | ((RARG_CONV) << RARG_OPSHFT)) + (n)*2 + (d),
+#define RARGCMD(op, n)		RARG_BASE(op),
+#define CONV(n, d, name)	RARG_BASE(RARG_CONV) + (n)*2 + (d),
 
 
 static s_opcode program_xfcn[] = {

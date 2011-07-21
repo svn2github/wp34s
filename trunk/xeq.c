@@ -1556,7 +1556,7 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 }
 
 unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
-	return find_opcode_from(pc, OP_RARG + (RARG_LBL << RARG_OPSHFT) + arg, quiet);
+	return find_opcode_from(pc, RARG(RARG_LBL, arg), quiet);
 }
 
 
@@ -3033,7 +3033,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 static void rargs(const opcode op) {
 	unsigned int arg = op & RARG_MASK;
 	int ind = op & RARG_IND;
-	const unsigned int cmd = (op & ~OP_RARG) >> RARG_OPSHFT;
+	const unsigned int cmd = RARG_CMD(op);
 	decNumber x;
 	unsigned int lim = argcmds[cmd].lim;
 	if (lim == 0) lim = 256; // default

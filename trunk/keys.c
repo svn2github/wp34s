@@ -1058,8 +1058,7 @@ fkey:		if (oldstate != SHIFT_F)
 
 /* Code to handle all commands with arguments */
 static int arg_eval(unsigned int dv) {
-	const int r = OP_RARG + ((State.base) << 8) +
-			(State2.ind?RARG_IND:0) + dv;
+	const int r = RARG(State.base, (State2.ind?RARG_IND:0) + dv);
 	init_arg(0);
 	State2.rarg = 0;
 	return r;
@@ -1572,8 +1571,8 @@ static int process_catalogue(const keycode c) {
 
 				init_cat(CATALOGUE_NONE);
 
-				if (op & OP_RARG) {
-					const unsigned int rarg = (op & ~OP_RARG) >> RARG_OPSHFT;
+				if (isRARG(op)) {
+					const unsigned int rarg = RARG_CMD(op);
 
 					if (rarg == RARG_CONST || rarg == RARG_CONST_CMPLX || rarg == RARG_CONV || rarg == RARG_ALPHA)
 						return op;
@@ -1642,7 +1641,7 @@ static int process_catalogue(const keycode c) {
 		int i;
 
 		init_cat(CATALOGUE_NONE);
-		if (op & OP_RARG)
+		if (isRARG(op))
 			return op ^ 1;
 		for (i=0; i<sizeof(conv_mapping) / sizeof(conv_mapping[0]); i++)
 			if (op == conv_mapping[i])

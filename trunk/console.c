@@ -149,7 +149,7 @@ static void rarg_values(const opcode c, int l) {
 	char bf[100];
 
 	if (isRARG(c)) {
-		const unsigned int cmd = (c & ~OP_RARG) >> RARG_OPSHFT;
+		const unsigned int cmd = RARG_CMD(c);
 		const unsigned int idx = c & 0x7f;
 
 		if (cmd == RARG_CONV) {
@@ -385,7 +385,7 @@ static void dump_opcodes(void) {
 			prettify(cmdname, cmdpretty);
 			printf("0x%04x\tmult\t%s\n", c, cmdpretty);
 		} else if (isRARG(c)) {
-			const unsigned int cmd = (c & ~OP_RARG) >> RARG_OPSHFT;
+			const unsigned int cmd = RARG_CMD(c);
 			unsigned int limit;
 
 			if (cmd >= NUM_RARG)

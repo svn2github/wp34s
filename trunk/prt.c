@@ -155,7 +155,7 @@ static const char *prt_conv(unsigned int arg, char *instr) {
 static const char *prt_rargs(const opcode op, char *instr) {
 	unsigned int arg = op & RARG_MASK;
 	int ind = op & RARG_IND;
-	const unsigned int cmd = (op & ~OP_RARG) >> RARG_OPSHFT;
+	const unsigned int cmd = RARG_CMD(op);
 	char buf[CONST_NAMELEN + 1];
 
 	if (cmd == RARG_ALPHA) {
@@ -251,7 +251,7 @@ const char *catcmd(opcode op, char instr[16]) {
 	if (isDBL(op)) {
 		return prt_multi(op, instr);
 	} else if (isRARG(op)) {
-		f = (op & ~OP_RARG) >> RARG_OPSHFT;
+		f = RARG_CMD(op);
 		if (f < num_argcmds) {
 			if (f == RARG_CONST || f == RARG_CONST_CMPLX) {
 				const unsigned int arg = op & RARG_MASK;

@@ -436,12 +436,16 @@ enum eKind {
 
 #define OP_DBL	0x1000			/* Double sized instructions */
 
-#define OP_RARG	0x8000			/* All operations that have a register like argument */
 #define RARG_OPSHFT	8
 #define RARG_MASK	0x7f
 #define RARG_IND	0x80
+#define RARG_OPMASK	0xff00
+#define RARG_OPBASE	0x20
+#define RARG_BASE(op)	(((op) + RARG_OPBASE) << RARG_OPSHFT)
+#define RARG(op, n)	(RARG_BASE(op) | (n))
+#define RARG_CMD(op)	(((op) >> RARG_OPSHFT) - RARG_OPBASE)
 
-#define isRARG(op)	((op) & OP_RARG)
+#define isRARG(op)	(((op) & RARG_OPMASK) >= (RARG_OPBASE << RARG_OPSHFT))
 
 #define opKIND(op)	((enum eKind)((op) >> KIND_SHIFT))
 #define argKIND(op)	((op) & ((1 << KIND_SHIFT)-1))
@@ -724,7 +728,6 @@ enum rarg {
 
 	NUM_RARG	// Last entry defines number of operations
 };
-#define RARG(op, n)	(OP_RARG | ((op) << RARG_OPSHFT) | (n))
 
 
 // Special functions

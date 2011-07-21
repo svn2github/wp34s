@@ -20,7 +20,7 @@
 
 /* Define all the commands we'll be using to simplify coding */
 #define st(n)		reg ## n ## _idx
-#define ALPHA(c)	(OP_RARG | (RARG_ALPHA << RARG_OPSHFT) | ((c) & 0xff)),
+#define ALPHA(c)	RARG(RARG_ALPHA, (c) & 0xff
 #define xRARG(op, n)	RARG((RARG_ ## op), ((n) & RARG_MASK)),
 #define xCONST(n)	CONST(OP_ ## n),
 #define iCONST(n)	CONST_INT(OP_ ## n),
@@ -31,7 +31,7 @@
 #define SPECIAL(n)	(OP_SPEC | OP_ ## n),
 #define xMULTI(n,a,b,c)	(OP_DBL | ((DBL_ ## n) << DBL_SHIFT) | ((a) & 0xff)), \
 			((b) & 0xff) | (((c) << 8) & 0xff00),
-#define xCONV(n, d)	(OP_RARG | ((RARG_CONV) << RARG_OPSHFT)) + (OP_ ## n)*2 + (d),
+#define xCONV(n, d)	RARG(RARG_CONV, (OP_ ## n)*2 + (d)),
 
 // Specials
 #define ENTER		SPECIAL(ENTER)
