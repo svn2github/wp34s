@@ -820,9 +820,9 @@ void set_speed( unsigned int speed )
 		}
 
 		/*
-		 *  If low voltage reduce maximum speed to 10 MHz
+		 *  If low voltage or requested by user reduce maximum speed
 		 */
-		if ( speed == SPEED_HIGH && Voltage <= LOW_VOLTAGE ) {
+		if ( speed == SPEED_HIGH && ( UState.slow_speed || Voltage <= LOW_VOLTAGE ) ) {
 			speed = SPEED_H_LOW_V;
 		}
 
@@ -1836,6 +1836,7 @@ int main(void)
 			 *  Reduce speed
 			 */
 			set_speed( SPEED_H_LOW_V );
+			UState.slow_speed = 1;
 		}
 
 		/*
