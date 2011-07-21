@@ -1836,7 +1836,6 @@ int main(void)
 			 *  Reduce speed
 			 */
 			set_speed( SPEED_H_LOW_V );
-			UState.slow_speed = 1;
 		}
 
 		/*
