@@ -19,7 +19,7 @@
 
 #define REGION_TYPE_PROGRAM 0
 #define REGION_TYPE_DATA 1
-#define NUMBER_OF_FLASH_REGIONS 5
+#define NUMBER_OF_FLASH_REGIONS 8
 #define BACKUP_REGION 1
 
 typedef struct _flash_region {

@@ -836,9 +836,9 @@ Memory Configuration
 Name             Origin             Length             Attributes
 sram             0x00200000         0x00001000         w !xr
 backupsram       0x00300000         0x00000800         w !xr
-flash            0x00100000         0x0001ebf0         xr
-revision         0x0011ebf0         0x00000010         r
-userflash        0x0011ec00         0x00001400         r
+flash            0x00100000         0x0001dff0         xr
+revision         0x0011dff0         0x00000010         r
+userflash        0x0011e000         0x00002000         r
 cmdtab           0x000f0000         0x00010000         r
 *default*        0x00000000         0xffffffff
 
@@ -1292,14 +1292,14 @@ LOAD realbuild_obj\libdecNumber.a
                 0x00200000                . = ALIGN (0x4)
                 0x00200000                _erelocate = .
 
-.revision       0x0011ebf0       0x10
+.revision       0x0011dff0       0x10
  *(.revision)
- .revision      0x0011ebf0       0x10 asone.o
-                0x0011ebf0                SvnRevision
+ .revision      0x0011dff0       0x10 asone.o
+                0x0011dff0                SvnRevision
 
-.userflash      0x0011ec00     0x1400
+.userflash      0x0011e000     0x2000
  *(.userflash)
- .userflash     0x0011ec00     0x1400 asone.o
+ .userflash     0x0011e000     0x2000 asone.o
 
 .bss            0x00200000       0xd0
                 0x00200000                . = ALIGN (0x4)

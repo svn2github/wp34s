@@ -39,17 +39,13 @@ ENTRY(entry)
 
 MEMORY
 {
-    sram (W!RX) :       ORIGIN = 0x200000, LENGTH = 0x1000
-    backupsram (W!RX) : ORIGIN = 0x300000, LENGTH = 0x800
-
-/* select one option for fixed XROM
-    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x1FBFC
-    xrom  (R) :         ORIGIN = 0x11FBD0, LENGTH = 0x424
-*/
-    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 0x1400 - 0x10
-    revision (R) :      ORIGIN = 0x11ebf0, LENGTH = 0x10
-    userflash (R) :     ORIGIN = 0x11ec00, LENGTH = 0x1400
+    sram (W!RX) :       ORIGIN = 0x200000, LENGTH = 4K
+    backupsram (W!RX) : ORIGIN = 0x300000, LENGTH = 2K
     
+    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 8K - 16
+    revision (R) :      ORIGIN = 0x120000 - 8K - 16, LENGTH = 16
+    userflash (R) :     ORIGIN = 0x120000 - 8K, LENGTH = 8K
+
     cmdtab (R) :        ORIGIN = 0x0f0000, LENGTH = 0x10000
 }
 
@@ -81,13 +77,6 @@ SECTIONS
         . = ALIGN(4);
         _erelocate = .;
     } >sram
-
-/*
-    .xrom : 
-    {
-    *(.xrom)
-    } >xrom
-*/
 
     .revision : 
     {
