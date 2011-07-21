@@ -291,6 +291,10 @@ struct constsml constsml[] = {
 	CONSTANT("e",		"PC_eV",	"1.602176462E-19"),
 	CONSTANT("eE",		"CNSTE",	"2.71828182845904523536028747135266249775724709369995"),
 	CONSTANT("F",		"PC_F",		"96485.3415"),
+#if 0
+	CONSTANT("F\240",	"PC_F_alpha",	"2.502907875095892822283902873218"),
+	CONSTANT("F\243",	"PC_F_delta",	"4.66920160910299067185320382"),
+#endif
 	CONSTANT("g",		"PC_g",		"9.80665"),
 	CONSTANT("G",		"PC_G",		"6.6742867E-11"),
 	CONSTANT("G\270",	"PC_Go",	"7.748091696E-5"),
@@ -350,7 +354,16 @@ struct constsml constsml[] = {
 #if 0
 	CONSTANT("Z",		"PC_apery",	"1.20205690315959"),	// Apery's constant = zeta(3)
 	CONSTANT("Gaus",	"PC_gauss",	"0.834626841674043"),	// Gauss's constant = 1 / AGM(1, sqrt(2))
-	CONSTANT("Cat",		"PC_catalan",	"0.915965594177219"),	// Catalan's constant
+	CONSTANT("CG",		"PC_catalan",	"0.915965594177219"),	// Catalan's constant
+#endif
+#if 0
+	CONSTANT("Msol",	"PC_M_sol",	"1.98892e30"),	// Mass of sun
+	CONSTANT("Mear",	"PC_M_terra",	"5.972245e24"),	// Mass of Earth
+	CONSTANT("Mlun",	"PC_M_luna",	"7.3477e22"),	// Mass of Moon
+	CONSTANT("Rear",	"PC_R_terra",	"6371.0"),	// Earth mean radius
+	CONSTANT("Rlun",	"PC_R_luna",	"1737.10"),	// Moon mean radius
+	CONSTANT("SMlu",	"PC_SM_luna",	"384399"),	// Semi-major axis Moon
+	CONSTANT("SMea",	"PC_SM_terra",	"149598261"),	// Semi-major axis Earth
 #endif
 	CONSTANT(NULL, NULL, NULL)
 };
