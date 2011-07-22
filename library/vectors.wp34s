@@ -1,0 +1,192 @@
+/*
+This file is part of 34S.
+
+34S is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+34S is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+This is a basic suite of three dimensional vector operations for the WP 34S.
+*/
+	001:  LBL'X.Y'
+	002:  [cmplx]R[v]
+	003:  STO J
+	004:  RCL[times] T
+	005:  R[^]
+	006:  STO I
+	007:  RCL[times] T
+	008:  +
+	009:  R[^]
+	010:  ENTER[^]
+	011:  RCL[times] T
+	012:  RCL+ Z
+	013:  STO Z
+	014:  DROP
+	015:  STO L
+	016:  DROP
+	017:  RTN
+
+	019:  LBL'V+'
+	020:  [cmplx]R[v]
+	021:  STO J
+	022:  RCL+ T
+	023:  R[^]
+	024:  STO I
+	025:  RCL+ T
+	026:  R[^]
+	027:  RCL+ T
+	028:  RTN
+
+	030:  LBL'V-'
+	031:  [cmplx]R[v]
+	032:  STO J
+	033:  +/-
+	034:  RCL+ T
+	035:  R[^]
+	036:  STO I
+	037:  +/-
+	038:  RCL+ T
+	039:  R[^]
+	040:  +/-
+	041:  RCL+ T
+	042:  RCL L
+	043:  +/-
+	044:  STO L
+	045:  DROP
+	046:  RTN
+
+	048:  LBL'V[<->]'
+	049:  [cmplx]R[v]
+	050:  x[<->] T
+	051:  [cmplx]R[^]
+	052:  [cmplx]x[<->] L
+	053:  RTN
+
+	055:  LBL'Vun'
+	056:  XEQ 00
+	057:  1/x
+
+	058:  LBL'V*S'
+	059:  STO[times] Y
+	060:  STO[times] Z
+	061:  STO[times] T
+	062:  STO L
+	063:  DROP
+	064:  RTN
+
+	066:  LBL'VAB'
+	067:  XEQ 00
+	068:  x[<->] T
+	069:  STO J
+	070:  DROP
+	071:  [cmplx]STO L
+	072:  [cmplx]DROP
+	073:  RTN
+
+	075:  LBL 00
+	076:  ENTER[^]
+	077:  x[^2]
+	078:  RCL Z
+	079:  RCL[times] T
+	080:  +
+	081:  RCL T
+	082:  RCL[times] T
+	083:  +
+	084:  [sqrt]
+	085:  RTN
+
+	087:  LBL'V+-'
+	088:  [cmplx]R[v]
+	089:  STO J
+	090:  +/-
+	091:  [cmplx]R[^]
+	092:  [cmplx]+/-
+	093:  RTN
+
+	095:  LBL'VLx'
+	096:  RCL J
+	097:  [cmplx]RCL L
+	098:  RTN
+
+/*
+As a rule a vector occupies a triple of stack registers usually X, Y & Z or
+T, A & B.  Scalars occupy one stack level.  Operations save their first
+argument to last X (L for scalars and L, I & J for vectors).
+
+
+The function provided here are:
+
+X.Y
+	Vector dot product.  Input vectors in X,Y,Z and T,A,B.
+	Output scalar in X.  Second vector unchanged in Y,Z,T and
+	the first vector in L,I,J.
+
+	result = X*T + Y*A + Z*B
+
+
+V+
+	Vector addition.  Input vectors in X,Y,Z and T,A,B.
+	Output vector in X,Y,Z.  Second vector unchanged in T,A,B.
+	The first vector is saved in L,I,J.
+
+
+V-
+	Vector subtraction.  Behaviour as for V+.
+
+
+V<->
+	Vector swap.  Swaps X,Y,Z with T,A,B.
+
+
+Vun
+	Unit vector from vector.  Replaces X,Y,Z with the equivalent
+	unit vector.  Saves the recprocal of the vectors length in L.
+	To undo this operation:
+		RCL L
+		1/x
+		V*S
+
+
+V*S
+	Vector multipled by scalar.  Vector in Y,Z,T and scalar in X.
+	Saves the scalar in L.
+
+
+VAB
+	Vector absolute value (modulus).  Vector in Y,Z,T.  Returns
+	the length in X (dropping the vector).  The original vector
+	is saved in L,I,J.
+
+
+V+-
+	Vector change sign.  Replaces the vector in X,Y,Z with its
+	negative.  The original vector is saved in L,I,J.
+
+
+VLX
+	Vector equivalent of LastX.  Pushes a vector stored in L,I,J onto
+	the stack.
+
+
+TO DO:
+	Cross product.
+*/
+
+LBL'X[times]Y'
+RTN
+
+// Opcode SVN version: 1274
+// CRC16: 2C6E
+// Total words: 102
+// Total steps: 92
+
