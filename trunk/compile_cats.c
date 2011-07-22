@@ -766,6 +766,7 @@ static s_opcode conv_catalogue[] = {
 static unsigned char alpha_symbols[] = {
 	',',	'"',	'#',	'`',	'*',	':',
 	';',	'?',	'@',	'\'',	'_',	'~',
+	'\216',	'\256'				// Sol, Terra
 };
 
 static unsigned char alpha_compares[] = {

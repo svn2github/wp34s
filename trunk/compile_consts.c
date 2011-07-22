@@ -288,13 +288,12 @@ struct constsml constsml[] = {
 	CONSTANT("c",		"PC_C",		"299792458"),		// Speed of light in a vacuum
 	CONSTANT("c\271",	"PC_C1",	"374177107E-16"),
 	CONSTANT("c\272",	"PC_C2",	"0.014387752"),
+	CONSTANT("CG",		"PC_catalan",	"0.915965594177219"),	// Catalan's constant
 	CONSTANT("e",		"PC_eV",	"1.602176462E-19"),
 	CONSTANT("eE",		"CNSTE",	"2.71828182845904523536028747135266249775724709369995"),
 	CONSTANT("F",		"PC_F",		"96485.3415"),
-#if 0
 	CONSTANT("F\240",	"PC_F_alpha",	"2.502907875095892822283902873218"),
 	CONSTANT("F\243",	"PC_F_delta",	"4.66920160910299067185320382"),
-#endif
 	CONSTANT("g",		"PC_g",		"9.80665"),
 	CONSTANT("G",		"PC_G",		"6.6742867E-11"),
 	CONSTANT("G\270",	"PC_Go",	"7.748091696E-5"),
@@ -305,11 +304,14 @@ struct constsml constsml[] = {
 	CONSTANT("k",		"PC_k",		"1.3806503E-23"),
 	CONSTANT("l\276",	"PC_PlanckL",	"1.616252e-35"),	// Base Planck unit of length
 	CONSTANT("m\274",	"PC_me",	"9.10938188E-31"),
+	CONSTANT("m\033",	"PC_M_luna",	"7.3477e22"),		// Mass of Moon NASA: 734.9e20
 	CONSTANT("m\275",	"PC_mn",	"1.67492716E-27"),
 	CONSTANT("M\276",	"PC_PlanckM",	"2.17644e-8"),		// Base Planck unit of mass
 	CONSTANT("m\276",	"PC_mp",	"1.67262158E-27"),
 	CONSTANT("m\277",	"PC_mu",	"1.66053873E-27"),
 	CONSTANT("m\231",	"PC_mMu",	"1.88353109E-28"),
+	CONSTANT("m\216",	"PC_M_sol",	"1.98892e30"),		// Mass of sun NASA: 1.9891e30
+	CONSTANT("m\256",	"PC_M_terra",	"5.972245e24"),		// Mass of Earth  NASA: 5.97219 +/- 0.00060
 	CONSTANT("N\327",	"PC_Na",	"6.02214199E23"),
 	CONSTANT("NaN",		"NAN",		"NaN"),
 	CONSTANT("p\270",	"PC_atm",	"101325"),
@@ -317,12 +319,17 @@ struct constsml constsml[] = {
 	CONSTANT("R",		"PC_R",		"8.314472"),
 	CONSTANT("r\274",	"PC_Re",	"2.817940285E-15"),
 	//CONSTANT("R\367",	"PC_Rk",	"25812.80756"),
+	CONSTANT("r\033",	"PC_R_luna",	"1737.10"),		// Moon mean radius NASA: 1737.5 +/- 0.1  and  1737.53 +/- 0.03
 	CONSTANT("R\233",	"PC_Rinf",	"10973731.5685"),
+	CONSTANT("r\216",	"PC_R_sol",	"695508"),		// Sun mean radius NASA: 6.960e5 km
+	CONSTANT("r\256",	"PC_R_terra",	"6371.00"),		// Earth mean radius (matches NASA's)
 	CONSTANT("Sa",		"PC_WGS_A",	"6378137.0"),
 	CONSTANT("Sb",		"PC_WGS_B",	"6356752.3142"),
 	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),
 	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),
 	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),
+	CONSTANT("SM\033",	"PC_SM_luna",	"384399"),		// Semi-major axis Moon NASA: 384400 km
+	CONSTANT("SM\256",	"PC_SM_terra",	"149598261"),		// Semi-major axis Earth NASA: 
 	CONSTANT("T\270",	"PC_t",		"273.15"),
 	CONSTANT("t\276",	"PC_tp",	"5.39124E-44"),		// Base Planck unit of time
 	CONSTANT("T\276",	"PC_PlanckTh",	"1.416785e32"),		// Base Planck unit of temperature
@@ -354,17 +361,6 @@ struct constsml constsml[] = {
 #if 0
 	CONSTANT("Z",		"PC_apery",	"1.20205690315959"),	// Apery's constant = zeta(3)
 	CONSTANT("Gaus",	"PC_gauss",	"0.834626841674043"),	// Gauss's constant = 1 / AGM(1, sqrt(2))
-	CONSTANT("CG",		"PC_catalan",	"0.915965594177219"),	// Catalan's constant
-#endif
-#if 0
-	CONSTANT("Msol",	"PC_M_sol",	"1.98892e30"),	// Mass of sun
-	CONSTANT("Mear",	"PC_M_terra",	"5.972245e24"),	// Mass of Earth
-	CONSTANT("Mlun",	"PC_M_luna",	"7.3477e22"),	// Mass of Moon
-	CONSTANT("Rsol",	"PC_R_sol",	"695508"),	// Sun mean radius
-	CONSTANT("Rear",	"PC_R_terra",	"6371.0"),	// Earth mean radius
-	CONSTANT("Rlun",	"PC_R_luna",	"1737.10"),	// Moon mean radius
-	CONSTANT("SMlu",	"PC_SM_luna",	"384399"),	// Semi-major axis Moon
-	CONSTANT("SMea",	"PC_SM_terra",	"149598261"),	// Semi-major axis Earth
 #endif
 	CONSTANT(NULL, NULL, NULL)
 };
