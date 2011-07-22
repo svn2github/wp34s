@@ -120,11 +120,11 @@ static const char *const map32[32] = {
 static const char *const maptop[129] = {
 	"del",
 	"ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA", "ETA", "THETA",
-	"IOTA", "KAPPA", "LAMBDA", "MU", "NU", "XI", "OMICRON", "PI",
+	"IOTA", "KAPPA", "LAMBDA", "MU", "NU", "XI", "sol", "PI",
 	"RHO", "SIGMA", "TAU", "UPSILON", "PHI", "CHI", "PSI", "OMEGA",
 	"sub-B", "sub-mu", "^2", "sub-infinity", "^x", "^-1", "h-bar", "infinity",
 	"alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta",
-	"iota", "kappa", "lambda", "mu", "nu", "xi", "omicron", "pi",
+	"iota", "kappa", "lambda", "mu", "nu", "xi", "terra", "pi",
 	"rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega",
 	"sub-0", "sub-1", "sub-2", "sub-c", "sub-e", "sub-n", "sub-p", "sub-u",
 	"A-grave", "A-acute", "A-tilde", "A-umlaut", "A-dot", "C-acute", "C-hook", "C-cedilla",
