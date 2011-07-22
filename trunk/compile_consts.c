@@ -360,6 +360,7 @@ struct constsml constsml[] = {
 	CONSTANT("Msol",	"PC_M_sol",	"1.98892e30"),	// Mass of sun
 	CONSTANT("Mear",	"PC_M_terra",	"5.972245e24"),	// Mass of Earth
 	CONSTANT("Mlun",	"PC_M_luna",	"7.3477e22"),	// Mass of Moon
+	CONSTANT("Rsol",	"PC_R_sol",	"695508"),	// Sun mean radius
 	CONSTANT("Rear",	"PC_R_terra",	"6371.0"),	// Earth mean radius
 	CONSTANT("Rlun",	"PC_R_luna",	"1737.10"),	// Moon mean radius
 	CONSTANT("SMlu",	"PC_SM_luna",	"384399"),	// Semi-major axis Moon
