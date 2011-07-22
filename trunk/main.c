@@ -39,11 +39,12 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 /*
  *  CPU speed settings
  */
-#define SPEED_IDLE    0
-#define SPEED_SLOW    1
-#define SPEED_MEDIUM  2
-#define SPEED_H_LOW_V 3
-#define SPEED_HIGH    4
+#define SPEED_IDLE     0
+#define SPEED_SLOW     1
+#define SPEED_MEDIUM   2
+#define SPEED_HALF     3
+#define SPEED_HIGH     4
+
 #define SLEEP_ANNUNCIATOR LIT_EQ
 // #define SPEED_ANNUNCIATOR BIG_EQ
 void set_speed( unsigned int speed );
@@ -82,10 +83,10 @@ void set_speed( unsigned int speed );
 /// PLL startup time (in number of slow clock ticks).
 #define PLLCOUNT          AT91C_CKGR_PLLCOUNT
 /// PLL MUL values.
-#define PLLMUL_LOW_V      599
-#define PLLMUL_LOW_V_NX   665   // if no crystal installed
-#define PLLMUL            1055  // 1199 is probably too demanding on the hardware
-#define PLLMUL_NX         1173  // 1333  // no crystal
+#define PLLMUL_HALF       599   // half speed
+#define PLLMUL_HALF_NX    665   // if no crystal installed
+#define PLLMUL_FULL       1124  // 1199 is probably too demanding on the hardware
+#define PLLMUL_FULL_NX    1249  // 1333  // no crystal
 /// PLL DIV value.
 #define PLLDIV            1
 
@@ -119,6 +120,7 @@ unsigned char Xtal;
 #ifdef SLEEP_ANNUNCIATOR
 unsigned char SleepAnnunciatorOn;
 #endif
+int BaudRate;
 
 /*
  *  Definitions for the keyboard scan
@@ -496,7 +498,7 @@ void shutdown( void )
 	/*
 	 *  Ensure the RAM checksum is correct
 	 */
-	set_speed( SPEED_H_LOW_V );
+	set_speed( SPEED_HALF );
 	checksum_all();
 
 	/*
@@ -793,7 +795,7 @@ static void set_mckr( int pres, int css )
 
 /*
  *  Set clock speed to one of 4 fixed values:
- *  SPEED_IDLE, SPEED_MEDIUM, SPEED_H_LOW_V, SPEED_HIGH
+ *  SPEED_IDLE, SPEED_MEDIUM, SPEED_HALF, SPEED_HIGH
  *  In the idle modes, the CPU clock will be turned off.
  *
  *  Physical speeds are 2 MHZ / 64, 2 MHz, 10 MHz, 32.768 MHz
@@ -804,14 +806,20 @@ static void set_mckr( int pres, int css )
  */
 void set_speed( unsigned int speed )
 {
+	unsigned int pll;
+
+	/*
+	 *  Table of supported speeds
+	 */
+	static const int speeds[ SPEED_HIGH + 1 ] =
+		{ 2000000 / 64 , 2000000 / 64 , 2000000,
+		  32768 * ( 1 + PLLMUL_HALF ),
+		  32768 * ( 1 + PLLMUL_FULL ) };
+
 	if ( !SerialOn ) {
 		/*
-		 *  Table of supported speeds
+		 *  Speed changes not allowed while the serial port is active
 		 */
-		static const int speeds[ SPEED_HIGH + 1 ] =
-			{ 2000000 / 64 , 2000000 / 64 , 2000000,
-			  32768 * ( 1 + PLLMUL_LOW_V ), 32768 * ( 1 + PLLMUL ) };
-
 		if ( speed < SPEED_MEDIUM && ( is_debug() || StartupTicks < 10 ) ) {
 			/*
 			 *  Allow JTAG debugging
@@ -823,9 +831,8 @@ void set_speed( unsigned int speed )
 		 *  If low voltage or requested by user reduce maximum speed
 		 */
 		if ( speed == SPEED_HIGH && ( UState.slow_speed || Voltage <= LOW_VOLTAGE ) ) {
-			speed = SPEED_H_LOW_V;
+			speed = SPEED_HALF;
 		}
-
 		if ( speeds[ speed ] == ClockSpeed ) {
 			/*
 			 *  No change.
@@ -879,19 +886,19 @@ void set_speed( unsigned int speed )
 
 			break;
 
-		case SPEED_H_LOW_V:
+		case SPEED_HALF:
 			/*
-			 *  19 MHz PLL, used in case of low battery
+			 *  18 MHz PLL, used in case of low battery
 			 */
 
 		case SPEED_HIGH:
 			/*
-			 *  37.5 MHz PLL, derived from 32 KHz slow clock
+			 *  36 MHz PLL, full speed
 			 */
 			SUPC_SetVoltageOutput( SUPC_VDD_180 );
 
-			if ( speed == SPEED_H_LOW_V ) {
-				// No wait state necessary at 10 MHz
+			if ( speed < SPEED_HIGH ) {
+				// No wait state necessary at lower speeds
 				AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
 			}
 			else
@@ -900,35 +907,31 @@ void set_speed( unsigned int speed )
 				AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
 			}
 
-			if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS )
-				== AT91C_PMC_CSS_PLL_CLK )
+			if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS ) == AT91C_PMC_CSS_PLL_CLK )
 			{
 				// Intermediate switch to main clock
 				enable_mclk();
 				set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
 			}
-			if ( speed == SPEED_H_LOW_V ) {
-				// Initialise PLL at 10MHz
+			if ( speed == SPEED_HALF ) {
+				// Initialise PLL at 19MHz
 				if ( Xtal ) {
-					AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-								 | ( PLLMUL_LOW_V << 16 ) | PLLDIV;
+					pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_HALF << 16 ) | PLLDIV;
 				}
 				else {
-					AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-								 | ( PLLMUL_LOW_V_NX << 16 ) | PLLDIV;
+					pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_HALF_NX << 16 ) | PLLDIV;
 				}
 			}
 			else {
-				// Initialise PLL at 32MHz
+				// Initialise PLL at 37.5MHz
 				if ( Xtal ) {
-					AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-								 | ( PLLMUL << 16 ) | PLLDIV;
+					pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_FULL << 16 ) | PLLDIV;
 				}
 				else {
-					AT91C_BASE_PMC->PMC_PLLR = CKGR_PLL | PLLCOUNT \
-								 | ( PLLMUL_NX << 16 ) | PLLDIV;
+					pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_FULL_NX << 16 ) | PLLDIV;
 				}
 			}
+			AT91C_BASE_PMC->PMC_PLLR = pll;
 			while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
 
 			// Switch to PLL
@@ -937,17 +940,17 @@ void set_speed( unsigned int speed )
 			// Turn off main clock
 			disable_mclk();
 
-			if ( speed == SPEED_H_LOW_V ) {
-				// Save battery, we are already low
+			if ( speed <= SPEED_HIGH ) {
+				// Save battery
 				SUPC_SetVoltageOutput( SUPC_VDD_165 );
 			}
 			break;
 		}
 
-#ifdef SPEED_ANNUNCIATOR
+	#ifdef SPEED_ANNUNCIATOR
 		dot( SPEED_ANNUNCIATOR, speed > SPEED_MEDIUM );
 		finish_display();
-#endif
+	#endif
 
 		unlock();
 	}
@@ -1233,6 +1236,11 @@ int open_port( int baud, int bits, int parity, int stopbits )
 	// Enable receiver and transmitter
 	AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RXEN | AT91C_US_TXEN;
 
+	/*
+	 *  We need the baud rate in case of speed switches
+	 */
+	BaudRate = baud;
+
 	return 0;
 }
 
@@ -1365,6 +1373,17 @@ void watchdog( void )
 
 
 /*
+ *  Update the processor speed.
+ *  This will honour the speed setting in UState.
+ */
+#undef update_speed
+void update_speed( void )
+{
+	set_speed( SPEED_HIGH );
+}
+
+
+/*
  *  Go idle to save power.
  *  Called from a busy loop waiting for an interrupt to do something.
  *  The original speed is restored.
@@ -1481,7 +1500,7 @@ int main(void)
 	 *  We go to 10 MHz here as a compromise between power draw
 	 *  and reaction time for the user
 	 */
-	set_speed( SPEED_H_LOW_V );
+	set_speed( SPEED_HALF );
 
 #ifdef STACK_DEBUG
 	/*
@@ -1835,7 +1854,7 @@ int main(void)
 			/*
 			 *  Reduce speed
 			 */
-			set_speed( SPEED_H_LOW_V );
+			set_speed( SPEED_HALF );
 		}
 
 		/*

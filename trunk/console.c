@@ -536,6 +536,7 @@ void put_byte( unsigned char byte )
 void flush_comm( void )
 {
 }
+
 #endif
 
 /*

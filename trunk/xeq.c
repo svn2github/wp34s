@@ -2754,11 +2754,9 @@ void op_locale(decimal64 *a, decimal64 *nul, enum nilop op) {
 	op_datemode(NULL, NULL, (f & LOCALE_DATE_MDY) ? OP_DATEMDY : ((f & LOCALE_DATE_YMD) ? OP_DATEYMD : OP_DATEDMY));
 }
 
-
 void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op) {
 	UState.date_mode = (op - OP_DATEDMY) + DATE_DMY;
 }
-
 
 void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	UState.t12 = (op == OP_12HR) ? 1 : 0;
@@ -2766,8 +2764,8 @@ void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 void op_setspeed(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	UState.slow_speed = (op == OP_SLOW) ? 1 : 0;
+	update_speed();
 }
-
 
 static void do_rtn(int plus1) {
 	if (Running && RetStkPtr > 0) {

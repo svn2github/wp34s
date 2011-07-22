@@ -236,4 +236,3 @@ void shutdown( void )
 	ExitEmulator();
 }
 
-
