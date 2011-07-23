@@ -414,42 +414,46 @@ struct constsml constsint[] = {
  * more accurate values are known for many of these.
  */
 struct constsml conversions[] = {
-	CONV("kg",	"lb",		"KG_LBM",	"0.4535924"),
-	CONV("kg",	"stone",	"KG_STONE",	"6.35029318"),
-	CONV("g",	"oz",		"G_OZ",		"28.34952"),
-	CONV("g",	"tr.oz",	"G_TOZ",	"31.10348"),
-	CONV("l",	"galUK",	"L_GALUK",	"4.54609"),
-	CONV("l",	"galUS",	"L_GALUS",	"3.785412"),		/* US liquid gallon */
-	CONV("l",	"cft",		"L_CUBFT",	"28.31685"),
-	CONV("ml",	"flozUK",	"ML_FLOZUK",	"28.41306"),
-	CONV("ml",	"flozUS",	"ML_FLOZUS",	"29.57353"),
-	CONV("cm",	"inches",	"CM_INCH",	"2.54"),
-	CONV("m",	"fathom",	"M_FATHOM",	"1.82880"),
-	CONV("m",	"feet",		"M_FEET",	"0.3048"),
-	CONV("m",	"yards",	"M_YARD",	"0.9144"),
-	CONV("km",	"miles",	"KM_MILE",	"1.609344"),
-	CONV("km",	"l.y.",		"KM_LY",	"9.46073E12"),
-	CONV("km",	"pc",		"KM_PC",	"3.085678E13"),
-	CONV("km",	"AU",		"KM_AU",	"1.495979E8"),
-	CONV("km",	"nmi",		"KM_NMI",	"1.852"),
-//	CONV("m\232",	"square",	"M_SQUARE",	"9.290304"),
-//	CONV("m\232",	"perch",	"M_PERCH",	"25.29285264"),
-	CONV("ha",	"acres",	"HA_ACRE",	"0.4046873"),
-	CONV("N",	"lbf",		"N_LBF",	"4.448222"),
-	CONV("J",	"Btu",		"J_BTU",	"1055.056"),
-	CONV("J",	"cal",		"J_CAL",	"4.1868"),
-	CONV("J",	"kWh",		"J_kWh",	"3600000"),
-	CONV("Pa",	"atm",		"Pa_ATM",	"101325"),
-	CONV("Pa",	"bar",		"Pa_bar",	"100000"),
-	CONV("Pa",	"mmHg",		"Pa_mmHg",	"133.3224"),
-	CONV("Pa",	"psi",		"Pa_psi",	"6894.757"),
-	CONV("Pa",	"inHg",		"Pa_inhg",	"3386.389"),
-	CONV("Pa",	"torr",		"Pa_torr",	"133.3224"),
-	CONV("W",	"bhp",		"W_HPUK",	"745.6999"),
-	CONV("W",	"PS(hp)",	"W_HP",		"735.4988"),
-	CONV("W",	"HP\274",	"W_HPe",	"746"),
-	CONV("t",	"tons",		"T_TON",	"1.016047"),
-	CONV("t",	"s.tons",	"T_SHTON",	"0.9071847"),
+	CONV("kg",	"lb",		"KG_LBM",	"0.4535924"),		// source: NIST
+	CONV("kg",	"stone",	"KG_STONE",	"6.3502936"),		// derived: 14 lbs to a stone
+	CONV("kg",	"cwt",		"KG_CWT",	"50.8023488"),		// derived: 112lb to a long cwt
+	CONV("kg",	"s.cwt",	"KG_SHCWT",	"45.35924"),		// source: NIST hundredweight, short 100lb
+	CONV("g",	"oz",		"G_OZ",		"28.34952"),		// source: NIST
+	CONV("g",	"tr.oz",	"G_TOZ",	"31.10348"),		// source: NIST
+	CONV("l",	"galUK",	"L_GALUK",	"4.54609"),		// source: NIST
+	CONV("l",	"galUS",	"L_GALUS",	"3.785412"),		// source: NIST
+	CONV("l",	"cft",		"L_CUBFT",	"28.31685"),		// source: NIST
+	CONV("ml",	"flozUK",	"ML_FLOZUK",	"28.41306"),		// source: NIST oz UK fluid
+	CONV("ml",	"flozUS",	"ML_FLOZUS",	"29.57353"),		// source: NIST oz US fluid
+	CONV("cm",	"inches",	"CM_INCH",	"2.54"),		// source: NIST
+	CONV("m",	"fathom",	"M_FATHOM",	"1.828804"),		// derived: 6 feet
+	CONV("m",	"feet",		"M_FEET",	"0.3048"),		// source: NIST
+	CONV("m",	"yards",	"M_YARD",	"0.9144"),		// source: NIST
+	CONV("km",	"miles",	"KM_MILE",	"1.609344"),		// source: NIST
+	CONV("km",	"l.y.",		"KM_LY",	"9.46073E12"),		// source: NIST
+	CONV("km",	"pc",		"KM_PC",	"3.085678E13"),		// source: NIST
+	CONV("km",	"AU",		"KM_AU",	"149597900"),		// source: NIST
+//	CONV("km",	"AU",		"KM_AU",	"149597870.691"),	// AU from the IAU web site
+	CONV("km",	"nmi",		"KM_NMI",	"1.852"),		// source: NIST
+//	CONV("m\232",	"square",	"M_SQUARE",	"9.290304"),		// derived: 
+//	CONV("m\232",	"perch",	"M_PERCH",	"25.29285264"),		// derived: 
+	CONV("ha",	"acres",	"HA_ACRE",	"0.4046873"),		// source: NIST
+	CONV("N",	"lbf",		"N_LBF",	"4.448222"),		// source: NIST
+	CONV("J",	"Btu",		"J_BTU",	"1055.056"),		// source: NIST BTUit
+	CONV("J",	"cal",		"J_CAL",	"4.1868"),		// source: NIST calorie it
+	CONV("J",	"kWh",		"J_kWh",	"3600000"),		// source: NIST
+	CONV("Pa",	"atm",		"Pa_ATM",	"101325"),		// source: NIST atmosphere standard
+	CONV("Pa",	"bar",		"Pa_bar",	"100000"),		// source: NIST
+	CONV("Pa",	"mmHg",		"Pa_mmHg",	"133.3224"),		// source: NIST cm mercury conventional
+	CONV("Pa",	"psi",		"Pa_psi",	"6894.757"),		// source: NIST pound-force per square inch
+	CONV("Pa",	"inHg",		"Pa_inhg",	"3386.389"),		// source: NIST inch of mercury conventional
+	CONV("Pa",	"torr",		"Pa_torr",	"133.3224"),		// source: NIST
+	CONV("W",	"bhp",		"W_HPUK",	"745.70"),		// source: NIST horsepower UK
+	CONV("W",	"hp",		"W_HP550",	"745.6999"),		// source: NIST horsepower 550 ft . lb / s
+	CONV("W",	"PS(hp)",	"W_HP",		"735.4988"),		// source: NIST horsepower metric
+	CONV("W",	"HP\274",	"W_HPe",	"746"),			// source: NIST horsepower electric
+	CONV("t",	"tons",		"T_TON",	"1.016047"),		// source: NIST ton, long 2240lb
+	CONV("t",	"s.tons",	"T_SHTON",	"0.9071847"),		// source: NIST ton, short 2000lb
 
 	CONV(NULL, NULL, NULL, NULL)
 };
