@@ -295,23 +295,24 @@ struct constsml constsml[] = {
 	CONSTANT("F\240",	"PC_F_alpha",	"2.502907875095892822283902873218"),
 	CONSTANT("F\243",	"PC_F_delta",	"4.66920160910299067185320382"),
 	CONSTANT("g",		"PC_g",		"9.80665"),
-	CONSTANT("G",		"PC_G",		"6.67384E-11"),
+	CONSTANT("G",		"PC_G",		"6.67384E-11"),		// NIST 2010, IAU 2009 gives 6.67428E-11
 	CONSTANT("G\270",	"PC_Go",	"7.7480917346E-5"),
 	CONSTANT("g\274",	"PC_Ge",	"-2.00231930436153"),
-	CONSTANT("GM",		"PC_WGS_GM",	"3986004.418E8"),
+	CONSTANT("GM",		"PC_WGS_GM",	"3986004.418E8"),	// WGS84 standard
 	CONSTANT("h",		"PC_PLANK",	"6.62606957E-34"),
 	CONSTANT("\236",	"PC_hon2PI",	"1.054571726E-34"),
+	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
 	CONSTANT("k",		"PC_k",		"1.3806488E-23"),
 	CONSTANT("l\276",	"PC_PlanckL",	"1.616199E-35"),	// Base Planck unit of length
 	CONSTANT("m\274",	"PC_me",	"9.10938291E-31"),
-	CONSTANT("m\033",	"PC_M_luna",	"7.3477e22"),		// Mass of Moon NASA: 734.9e20
-	CONSTANT("M\275",	"PC_mn",	"1.674927351E-27"),
+	CONSTANT("M\033",	"PC_M_luna",	"7.349e22"),		// Mass of Moon NASA Horizons
+	CONSTANT("m\275",	"PC_mn",	"1.674927351E-27"),
 	CONSTANT("m\276",	"PC_mp",	"1.672621777E-27"),
 	CONSTANT("M\276",	"PC_PlanckM",	"2.17651E-8"),		// Base Planck unit of mass
 	CONSTANT("m\277",	"PC_mu",	"1.660538921E-27"),
 	CONSTANT("m\231",	"PC_mMu",	"1.883531475E-28"),
-	CONSTANT("M\216",	"PC_M_sol",	"1.98892e30"),		// Mass of sun NASA: 1.9891e30
-	CONSTANT("M\256",	"PC_M_terra",	"5.972245e24"),		// Mass of Earth  NASA: 5.97219 +/- 0.00060
+	CONSTANT("M\216",	"PC_M_sol",	"1.9891e30"),		// Mass of sun NASA Horizons
+	CONSTANT("M\256",	"PC_M_terra",	"5.9736e24"),		// Mass of Earth NASA Horizons
 	CONSTANT("N\327",	"PC_Na",	"6.02214129E23"),
 	CONSTANT("NaN",		"NAN",		"NaN"),
 	CONSTANT("p\270",	"PC_atm",	"101325"),
@@ -319,17 +320,17 @@ struct constsml constsml[] = {
 	CONSTANT("R",		"PC_R",		"8.3144621"),
 	CONSTANT("r\274",	"PC_Re",	"2.8179403267E-15"),
 	//CONSTANT("R\367",	"PC_Rk",	"25812.8074434"),
-	CONSTANT("R\033",	"PC_R_luna",	"1737.10"),		// Moon mean radius NASA: 1737.5 +/- 0.1  and  1737.53 +/- 0.03
+	CONSTANT("R\033",	"PC_R_luna",	"1737.53"),		// Moon mean radius NASA Horizons
 	CONSTANT("R\233",	"PC_Rinf",	"10973731.568539"),
-	CONSTANT("R\216",	"PC_R_sol",	"695508"),		// Sun mean radius NASA: 6.960e5 km
-	CONSTANT("R\256",	"PC_R_terra",	"6371.00"),		// Earth mean radius (matches NASA's)
-	CONSTANT("Sa",		"PC_WGS_A",	"6378137.0"),
-	CONSTANT("Sb",		"PC_WGS_B",	"6356752.3142"),
-	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),
-	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),
-	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),
-	CONSTANT("SM\033",	"PC_SM_luna",	"384399"),		// Semi-major axis Moon NASA: 384400 km
-	CONSTANT("SM\256",	"PC_SM_terra",	"149598261"),		// Semi-major axis Earth NASA: 
+	CONSTANT("R\216",	"PC_R_sol",	"6.960E5"),		// Sun mean radius NASA Horizons
+	CONSTANT("R\256",	"PC_R_terra",	"6371.01"),		// Earth mean radius NASA Horizons
+	CONSTANT("Sa",		"PC_WGS_A",	"6378137.0"),		// WGS84 standard
+	CONSTANT("Sb",		"PC_WGS_B",	"6356752.3142"),	// WGS84 standard
+	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),	// WGS84 standard
+	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),	// WGS84 standard
+	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),	// WGS84 standard
+	CONSTANT("SM\033",	"PC_SM_luna",	"384400"),		// Semi-major axis Moon NASA Horizons
+	CONSTANT("SM\256",	"PC_SM_terra",	"149.60E6"),		// Semi-major axis Earth NASA Earth fact sheet
 	CONSTANT("T\270",	"PC_t",		"273.15"),
 	CONSTANT("t\276",	"PC_tp",	"5.39106E-44"),		// Base Planck unit of time
 	CONSTANT("T\276",	"PC_PlanckTh",	"1.416833E32"),		// Base Planck unit of temperature
@@ -356,7 +357,7 @@ struct constsml constsml[] = {
 	CONSTANT("\261\230",	"PC_sigma",	"5.670373E-8"),
 	CONSTANT("\224",	"PHI",		"1.61803398874989484820458683436563811772030917980576"),
 	CONSTANT("\224\270",	"PC_phi0",	"2.067833758E-15"),
-	CONSTANT("\267",	"PC_WGS_OMEGA",	"7292115.0E-11"),
+	CONSTANT("\267",	"PC_WGS_OMEGA",	"7292115.0E-11"),	// WGS84 standard
 	CONSTANT("\237",	"INF",		"inf"),
 #if 0
 	CONSTANT("Z",		"PC_apery",	"1.20205690315959"),	// Apery's constant = zeta(3)
@@ -432,8 +433,7 @@ struct constsml conversions[] = {
 	CONV("km",	"miles",	"KM_MILE",	"1.609344"),		// source: NIST
 	CONV("km",	"l.y.",		"KM_LY",	"9.46073E12"),		// source: NIST
 	CONV("km",	"pc",		"KM_PC",	"3.085678E13"),		// source: NIST
-	CONV("km",	"AU",		"KM_AU",	"149597900"),		// source: NIST
-//	CONV("km",	"AU",		"KM_AU",	"149597870.691"),	// AU from the IAU web site
+	CONV("km",	"AU",		"KM_AU",	"149597900"),		// source: NIST, IAU 2009 gives 1.49597870700E11
 	CONV("km",	"nmi",		"KM_NMI",	"1.852"),		// source: NIST
 //	CONV("m\232",	"square",	"M_SQUARE",	"9.290304"),		// derived: 
 //	CONV("m\232",	"perch",	"M_PERCH",	"25.29285264"),		// derived: 
