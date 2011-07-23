@@ -34,87 +34,101 @@ This is a basic suite of three dimensional vector operations for the WP 34S.
 	015:  STO L
 	016:  DROP
 	017:  RTN
-	018:  
-	019:  LBL'V+'
-	020:  cpx Rv
-	021:  STO J
-	022:  RCL+ T
-	023:  R^
-	024:  STO I
-	025:  RCL+ T
-	026:  R^
-	027:  RCL+ T
-	028:  RTN:  
-	029:  
-	030:  LBL'V-'
-	031:  cpx Rv
-	032:  STO J
-	033:  CHS
-	034:  RCL+T
-	035:  R^
-	036:  STO I
-	037:  CHS
-	038:  RCL+T
-	039:  R^
-	040:  CHS
-	041:  RCL+T
-	042:  RCL L
-	043:  CHS
-	044:  STO L
-	045:  DROP
-	046:  RTN
-	047:  
-	048:  LBL'V<->'
-	049:  cpx Rv
-	050:  x<> T
-	051:  cpx R^
-	052:  cpx x<> L
-	053:  RTN
-	054:  
-	055:  LBL'Vun'
-	056:  XEQ 00
-	057:  1/x
-	058:  LBL'V*S'
-	059:  STO*Y
-	060:  STO*Z
-	061:  STO*T
-	062:  STO L
-	063:  DROP
-	064:  RTN
-	065:  
-	066:  LBL'VAB'
-	067:  XEQ 00
-	068:  X<> T
-	069:  STO J
-	070:  DROP
-	071:  cpx STO L
-	072:  cpx DROP
-	073:  RTN
-	074:  
-	075:  LBL 00
-	076:  ENTER
-	077:  x^2
-	078:  RCL z
-	079:  RCL*t
-	080:  +
-	081:  RCL t
-	082:  RCL*t
-	083:  +
-	084:  SQRT
-	085:  RTN
-	086:  
-	087:  LBL'V+-'
-	088:  cpx Rv
-	089:  STO J
-	090:  CHS
-	091:  cpx R^
-	092:  cpx CHS
-	093:  RTN
-	094:  
-	095:  LBL'VLx'
-	096:  RCL J
-	097:  cpx RCL L
-	098:  RTN
+	018:  LBL'V+'
+	019:  cpx Rv
+	020:  STO J
+	021:  RCL+ T
+	022:  R^
+	023:  STO I
+	024:  RCL+ T
+	025:  R^
+	026:  RCL+ T
+	027:  RTN
+	028:  LBL'V-'
+	029:  cpx Rv
+	030:  STO J
+	031:  CHS
+	032:  RCL+T
+	033:  R^
+	034:  STO I
+	035:  CHS
+	036:  RCL+T
+	037:  R^
+	038:  CHS
+	039:  RCL+T
+	040:  RCL L
+	041:  CHS
+	042:  STO L
+	043:  DROP
+	044:  RTN
+	045:  LBL'V<->'
+	046:  cpx Rv
+	047:  x<> T
+	048:  cpx R^
+	049:  cpx x<> L
+	050:  RTN
+	051:  LBL'Vun'
+	052:  XEQ 00
+	053:  1/x
+	054:  LBL'V*S'
+	055:  STO*Y
+	056:  STO*Z
+	057:  STO*T
+	058:  STO L
+	059:  DROP
+	060:  RTN
+	061:  LBL'VAB'
+	062:  XEQ 00
+	063:  X<> T
+	064:  STO J
+	065:  DROP
+	066:  cpx STO L
+	067:  cpx DROP
+	068:  RTN
+	069:  LBL 00
+	070:  ENTER
+	071:  x^2
+	072:  RCL z
+	073:  RCL*t
+	074:  +
+	075:  RCL t
+	076:  RCL*t
+	077:  +
+	078:  SQRT
+	079:  RTN
+	080:  LBL'V+-'
+	081:  cpx Rv
+	082:  STO J
+	083:  CHS
+	084:  cpx R^
+	085:  cpx CHS
+	086:  RTN
+	087:  LBL'VLx'
+	088:  RCL J
+	089:  cpx RCL L
+	090:  RTN
+	091:  LBL'X[times]Y'
+	092:  STO C
+	093:  RCL* B
+	094:  RCL T
+	095:  RCL* T
+	096:  -
+	097:  x<>y
+	098:  STO I
+	099:  RCL* T
+	100:  RCL A
+	101:  RCL* D
+	102:  -
+	103:  x<>z
+	104:  STO J
+	105:  RCL* A
+	106:  RCL B
+	107:  RCL* I
+	108:  -
+	109:  R^
+	110:  STO L
+	111:  Rv
+	112:  RTN
 
 
 As a rule a vector occupies a triple of stack registers usually X, Y & Z or
@@ -175,6 +189,8 @@ VLX
 	Vector equivalent of LastX.  Pushes a vector stored in L,I,J onto
 	the stack.
 
-
-TO DO:
-	Cross product.
+XxY
+	Vector cross product.  Input vectors in X,Y,Z and T,A,B.
+	Output vector in X,Y,Z.  Second vector unchanged in T,A,B and
+	the first vector saved in L,I,J.  Uses stack registers C & D
+	for temporaty storage.
