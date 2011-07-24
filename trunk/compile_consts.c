@@ -320,17 +320,17 @@ struct constsml constsml[] = {
 	CONSTANT("R",		"PC_R",		"8.3144621"),
 	CONSTANT("r\274",	"PC_Re",	"2.8179403267E-15"),
 	//CONSTANT("R\367",	"PC_Rk",	"25812.8074434"),
-	CONSTANT("R\033",	"PC_R_luna",	"1737.53"),		// Moon mean radius NASA Horizons
+	CONSTANT("R\033",	"PC_R_luna",	"1737.53E3"),		// Moon mean radius NASA Horizons
 	CONSTANT("R\233",	"PC_Rinf",	"10973731.568539"),
-	CONSTANT("R\216",	"PC_R_sol",	"6.960E5"),		// Sun mean radius NASA Horizons
-	CONSTANT("R\256",	"PC_R_terra",	"6371.01"),		// Earth mean radius NASA Horizons
+	CONSTANT("R\216",	"PC_R_sol",	"6.960E8"),		// Sun mean radius NASA Horizons
+	CONSTANT("R\256",	"PC_R_terra",	"6371.01E3"),		// Earth mean radius NASA Horizons
 	CONSTANT("Sa",		"PC_WGS_A",	"6378137.0"),		// WGS84 standard
 	CONSTANT("Sb",		"PC_WGS_B",	"6356752.3142"),	// WGS84 standard
 	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),	// WGS84 standard
 	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),	// WGS84 standard
 	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),	// WGS84 standard
-	CONSTANT("SM\033",	"PC_SM_luna",	"384400"),		// Semi-major axis Moon NASA Horizons
-	CONSTANT("SM\256",	"PC_SM_terra",	"149.60E6"),		// Semi-major axis Earth NASA Earth fact sheet
+	CONSTANT("SM\033",	"PC_SM_luna",	"384400E3"),		// Semi-major axis Moon NASA Horizons
+	CONSTANT("SM\256",	"PC_SM_terra",	"149.60E9"),		// Semi-major axis Earth NASA Earth fact sheet
 	CONSTANT("T\270",	"PC_t",		"273.15"),
 	CONSTANT("t\276",	"PC_tp",	"5.39106E-44"),		// Base Planck unit of time
 	CONSTANT("T\276",	"PC_PlanckTh",	"1.416833E32"),		// Base Planck unit of temperature
