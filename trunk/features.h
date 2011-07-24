@@ -42,33 +42,40 @@
 #define INCLUDE_BERNOULLI
 
 // Include the user mode serial commands SOPEN, SCLOSE, RECV1, SEND1
-#define INCLUDE_USER_IO
+// Space cost approximately 744 bytes.
+// #define INCLUDE_USER_IO
 
 // Include the SAVEM/RESTM user mode save and restore commands
 #define INCLUDE_USER_MODE
 
 // Include the digamma function for real and complex arguments
+// Space cost 1156 bytes
 //#define INCLUDE_DIGAMMA
 
 // Include Jacobi's Elliptical Functions: SN, CN & DN for real & complex arguments
+// Space cost 1624 bytes
 //#define INCLUDE_ELLIPTIC
 
 // Include Bessel functions of first and second kind
 // Complex versions aren't working properly yet.
+// Space cost for real version only 1704 bytes
 //#define INCLUDE_BESSEL
 //#define COMPLEX_BESSEL
 
 // Include a fused multiply add instruction
 // This isn't vital since this can be done using a complex addition.
-#define INCLUDE_MULADD
+// Space cost 108 bytes.
+// #define INCLUDE_MULADD
 
 // Include the x!! function defined over the complex plane
+// Space cost for this and !n 368 bytes.
 //#define INCLUDE_DBLFACT
 
 // Include the !n function defined over the reals (integers)
 //#define INCLUDE_SUBFACT
 
 // Include multi-character alpha constants (not keystroke programmable)
+// Space cost 20 bytes.
 //#define MULTI_ALPHA
 
 // Include a date function to determine the date of Easter in a given year
@@ -79,7 +86,8 @@
 //#define USE_RIDDERS
 
 // Include code to find integer factors
-#define INCLUDE_FACTOR
+// Space cost 480 bytes.
+// #define INCLUDE_FACTOR
 
 // Define this to support HP16c integer/real mode conversions.
 // The 16c breaks a real into a mantissa and base two exponent on entry
