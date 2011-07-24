@@ -300,8 +300,8 @@ struct constsml constsml[] = {
 	CONSTANT("g\274",	"PC_Ge",	"-2.00231930436153"),
 	CONSTANT("GM",		"PC_WGS_GM",	"3986004.418E8"),	// WGS84 standard
 	CONSTANT("h",		"PC_PLANK",	"6.62606957E-34"),
-	CONSTANT("\236",	"PC_hon2PI",	"1.054571726E-34"),
 	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
+	CONSTANT("\236",	"PC_hon2PI",	"1.054571726E-34"),
 	CONSTANT("k",		"PC_k",		"1.3806488E-23"),
 	CONSTANT("l\276",	"PC_PlanckL",	"1.616199E-35"),	// Base Planck unit of length
 	CONSTANT("m\274",	"PC_me",	"9.10938291E-31"),
