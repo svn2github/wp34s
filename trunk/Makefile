@@ -201,11 +201,11 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.tmp 
 	$(UTILITIES)/post_process$(EXE) $(OUTPUTDIR)/calc.tmp $@
 	@grep "^\.fixed"     $(MAPFILE) | tail -n 1 >  $(SUMMARY)
-	@grep "^\.relocate"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.bss"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.slcdcmem"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.revision"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.userflash" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.cmdtab"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.bss"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.slcdcmem"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.backup"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@cat $(SUMMARY)
 

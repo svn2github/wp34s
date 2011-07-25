@@ -83,9 +83,9 @@ void set_speed( unsigned int speed );
 /// PLL startup time (in number of slow clock ticks).
 #define PLLCOUNT          AT91C_CKGR_PLLCOUNT
 /// PLL MUL values.
-#define PLLMUL_HALF       599   // half speed
+#define PLLMUL_HALF       599   // half speed (20 MHz)
 #define PLLMUL_HALF_NX    665   // if no crystal installed
-#define PLLMUL_FULL       1124  // 1199 is probably too demanding on the hardware
+#define PLLMUL_FULL       1124  // (37 MHz) 1199 is probably too demanding on the hardware
 #define PLLMUL_FULL_NX    1249  // 1333  // no crystal
 /// PLL DIV value.
 #define PLLDIV            1
@@ -794,11 +794,11 @@ static void set_mckr( int pres, int css )
 
 
 /*
- *  Set clock speed to one of 4 fixed values:
- *  SPEED_IDLE, SPEED_MEDIUM, SPEED_HALF, SPEED_HIGH
+ *  Set clock speed to one of 5 fixed values:
+ *  SPEED_IDLE, SPEED_SLOW, SPEED_MEDIUM, SPEED_HALF, SPEED_HIGH
  *  In the idle modes, the CPU clock will be turned off.
  *
- *  Physical speeds are 2 MHZ / 64, 2 MHz, 10 MHz, 32.768 MHz
+ *  Physical speeds are 2 MHZ / 64, 2 MHz, 20 MHz, 37 MHz
  *  Using the slow clock doesn't seem to work for unknown reasons.
  *  Therefore, the main clock with a divider is used as slowest clock.
  *
@@ -833,19 +833,29 @@ void set_speed( unsigned int speed )
 		if ( speed == SPEED_HIGH && ( UState.slow_speed || Voltage <= LOW_VOLTAGE ) ) {
 			speed = SPEED_HALF;
 		}
-		if ( speeds[ speed ] == ClockSpeed ) {
+		if ( speed == SpeedSetting ) {
 			/*
 			 *  No change.
 			 */
-			return;
+			goto idle_check;
 		}
 
 		/*
 		 *  Set new speed
 		 */
 		lock();
-		SpeedSetting = speed;
-		ClockSpeed = speeds[ speed ];
+
+		if ( speed == SPEED_HIGH ) {
+			/*
+			 *  We need full voltage in the core
+			 */
+			SUPC_SetVoltageOutput( SUPC_VDD_180 );
+
+			/*
+			 *  At frequencies beyond 30 MHz, we need wait states for flash reads
+			 */
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_2FWS;
+		}
 
 		switch ( speed ) {
 
@@ -858,9 +868,6 @@ void set_speed( unsigned int speed )
 			enable_mclk();
 			set_mckr( AT91C_PMC_PRES_CLK_64, AT91C_PMC_CSS_MAIN_CLK );
 
-			// No wait states for flash read
-			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
-
 			// Turn off the unused oscillators
 			disable_pll();
 
@@ -872,6 +879,9 @@ void set_speed( unsigned int speed )
 			/*
 			 *  2 MHz internal RC clock
 			 */
+			if ( SpeedSetting < SPEED_MEDIUM ) {
+				SUPC_SetVoltageOutput( SUPC_VDD_165 );
+			}
 			enable_mclk();
 			set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
 
@@ -881,40 +891,27 @@ void set_speed( unsigned int speed )
 			// Turn off the PLL
 			disable_pll();
 
-			// save a little power
-			SUPC_SetVoltageOutput( SUPC_VDD_165 );
+			// save power
+			SUPC_SetVoltageOutput( SUPC_VDD_155 );
 
 			break;
 
 		case SPEED_HALF:
 			/*
-			 *  18 MHz PLL, used in case of low battery
+			 *  20 MHz PLL, used in case of low battery or user request
 			 */
 
 		case SPEED_HIGH:
 			/*
-			 *  36 MHz PLL, full speed
+			 *  37 MHz PLL, full speed
 			 */
-			SUPC_SetVoltageOutput( SUPC_VDD_180 );
-
-			if ( speed < SPEED_HIGH ) {
-				// No wait state necessary at lower speeds
-				AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
-			}
-			else
-			{
-				// With VDD=1.8, 1 wait state for flash reads is enough.
-				AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_1FWS;
-			}
-
-			if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS ) == AT91C_PMC_CSS_PLL_CLK )
-			{
+			if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS ) == AT91C_PMC_CSS_PLL_CLK ) {
 				// Intermediate switch to main clock
 				enable_mclk();
 				set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
 			}
 			if ( speed == SPEED_HALF ) {
-				// Initialise PLL at 19MHz
+				// Initialise PLL at 20MHz
 				if ( Xtal ) {
 					pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_HALF << 16 ) | PLLDIV;
 				}
@@ -923,7 +920,7 @@ void set_speed( unsigned int speed )
 				}
 			}
 			else {
-				// Initialise PLL at 37.5MHz
+				// Initialise PLL at 37MHz
 				if ( Xtal ) {
 					pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_FULL << 16 ) | PLLDIV;
 				}
@@ -940,21 +937,35 @@ void set_speed( unsigned int speed )
 			// Turn off main clock
 			disable_mclk();
 
-			if ( speed <= SPEED_HIGH ) {
-				// Save battery
-				SUPC_SetVoltageOutput( SUPC_VDD_165 );
-			}
 			break;
 		}
 
-	#ifdef SPEED_ANNUNCIATOR
+		if ( speed < SPEED_HIGH ) {
+			/*
+			 *  We can reduce the core voltage to save power
+			 */
+			SUPC_SetVoltageOutput( SUPC_VDD_155 );
+
+			/*
+			 *  No wait states for flash reads needed
+			 */
+			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
+		}
+
+		/*
+		 *  Store new settings
+		 */
+		SpeedSetting = speed;
+		ClockSpeed = speeds[ speed ];
+		unlock();
+
+#ifdef SPEED_ANNUNCIATOR
 		dot( SPEED_ANNUNCIATOR, speed > SPEED_MEDIUM );
 		finish_display();
-	#endif
-
-		unlock();
+#endif
 	}
 
+idle_check:
 	if ( speed == SPEED_IDLE ) {
 		/*
 		 *  Save power

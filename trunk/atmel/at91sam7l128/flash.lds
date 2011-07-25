@@ -42,8 +42,8 @@ MEMORY
     sram (W!RX) :       ORIGIN = 0x200000, LENGTH = 4K
     backupsram (W!RX) : ORIGIN = 0x300000, LENGTH = 2K
     
-    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 8K - 16
-    revision (R) :      ORIGIN = 0x120000 - 8K - 16, LENGTH = 16
+    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 10K - 16
+    revision (R) :      ORIGIN = 0x120000 - 10K - 16, LENGTH = 16
     userflash (R) :     ORIGIN = 0x120000 - 10K, LENGTH = 10K
 
     cmdtab (R) :        ORIGIN = 0x0f0000, LENGTH = 0x10000
