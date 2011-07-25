@@ -1315,9 +1315,28 @@ void display(void) {
 				crc >>= 4;
 				j += SEGS_PER_DIGIT;
 			}
+			skip = 1;
+		}
+		if (cur_shift() != SHIFT_N || State2.cmplx || State2.arrow)
+			annuc = 1;
+		goto nostk;
+	}
+	show_stack();
+nostk:	show_flags();
+	if (!skip && !State2.version) {
+		if (State2.runmode) {
+			p = get_cmdline();
+			if (p == NULL || cata) {
+				if (ShowRegister != -1)
+					format_reg(get_reg_n(ShowRegister), NULL);
+				else
+					set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
+			} else
+				disp_x(p);
 		} else {
 			unsigned int upc = user_pc();
 			unsigned int pc = state_pc();
+			xset(buf, '\0', sizeof(buf));
 			if (isXROM(pc)) {
 				num_arg_0(scopy_spc(buf, "l1B "), upc, 5);
 			} else if (isLIB(pc)) {
@@ -1331,21 +1350,6 @@ void display(void) {
 			for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)
 				set_dig(i, *bp);
 		}
-		if (cur_shift() != SHIFT_N || State2.cmplx || State2.arrow)
-			annuc = 1;
-		goto nostk;
-	}
-	show_stack();
-nostk:	show_flags();
-	if (!skip && State2.runmode && !State2.version) {
-		p = get_cmdline();
-		if (p == NULL || cata) {
-			if (ShowRegister != -1)
-				format_reg(get_reg_n(ShowRegister), NULL);
-			else
-				set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
-		} else
-			disp_x(p);
 	}
 	if (annuc)
 		annunicators();
