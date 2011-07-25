@@ -448,7 +448,7 @@ struct constsml conversions[] = {
 	CONV("Pa",	"psi",		"Pa_psi",	"6894.757"),		// source: NIST pound-force per square inch
 	CONV("Pa",	"inHg",		"Pa_inhg",	"3386.389"),		// source: NIST inch of mercury conventional
 	CONV("Pa",	"torr",		"Pa_torr",	"133.3224"),		// source: NIST
-	CONV("W",	"bhp",		"W_HPUK",	"745.70"),		// source: NIST horsepower UK
+	CONV("W",	"hpUK",		"W_HPUK",	"745.70"),		// source: NIST horsepower UK
 	CONV("W",	"hp",		"W_HP550",	"745.6999"),		// source: NIST horsepower 550 ft . lb / s
 	CONV("W",	"PS(hp)",	"W_HP",		"735.4988"),		// source: NIST horsepower metric
 	CONV("W",	"HP\274",	"W_HPe",	"746"),			// source: NIST horsepower electric
