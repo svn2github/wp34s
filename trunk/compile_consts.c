@@ -712,7 +712,7 @@ static int const_small_compare(const void *v1, const void *v2) {
 		else if (u1[i] > u2[i]) return 1;
 		else if (u1[i] == -1) break;
 	}
-	return strcmp(cs1->name, cs2->name);
+	return - strcmp(cs1->name, cs2->name);
 }
 
 static void const_small_sort(struct constsml ctbl[]) {
