@@ -36,6 +36,9 @@
 #define xcopy memcpy
 
 
+#include "charmap.c"
+
+
 #define NEED_D64FROMSTRING  1
 
 #if defined(WIN32) && !defined(__GNUC__)
@@ -288,60 +291,32 @@ struct constsml constsml[] = {
 	CONSTANT("c",		"PC_C",		"299792458"),		// Speed of light in a vacuum
 	CONSTANT("c\271",	"PC_C1",	"3.74177153E-16"),
 	CONSTANT("c\272",	"PC_C2",	"1.438770E-2"),
-	CONSTANT("CG",		"PC_catalan",	"0.915965594177219"),	// Catalan's constant
 	CONSTANT("e",		"PC_eV",	"1.602176565E-19"),
-	CONSTANT("eE",		"CNSTE",	"2.71828182845904523536028747135266249775724709369995"),
 	CONSTANT("F",		"PC_F",		"96485.3365"),
-	CONSTANT("F\240",	"PC_F_alpha",	"2.502907875095892822283902873218"),
-	CONSTANT("F\243",	"PC_F_delta",	"4.66920160910299067185320382"),
 	CONSTANT("g",		"PC_g",		"9.80665"),
 	CONSTANT("G",		"PC_G",		"6.67384E-11"),		// NIST 2010, IAU 2009 gives 6.67428E-11
 	CONSTANT("G\270",	"PC_Go",	"7.7480917346E-5"),
 	CONSTANT("g\274",	"PC_Ge",	"-2.00231930436153"),
-	CONSTANT("GM",		"PC_WGS_GM",	"3986004.418E8"),	// WGS84 standard
-	CONSTANT("h",		"PC_PLANK",	"6.62606957E-34"),
 	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
-	CONSTANT("\236",	"PC_hon2PI",	"1.054571726E-34"),
 	CONSTANT("k",		"PC_k",		"1.3806488E-23"),
-	CONSTANT("l\276",	"PC_PlanckL",	"1.616199E-35"),	// Base Planck unit of length
 	CONSTANT("m\274",	"PC_me",	"9.10938291E-31"),
-	CONSTANT("M\033",	"PC_M_luna",	"7.349e22"),		// Mass of Moon NASA Horizons
 	CONSTANT("m\275",	"PC_mn",	"1.674927351E-27"),
 	CONSTANT("m\276",	"PC_mp",	"1.672621777E-27"),
-	CONSTANT("M\276",	"PC_PlanckM",	"2.17651E-8"),		// Base Planck unit of mass
 	CONSTANT("m\277",	"PC_mu",	"1.660538921E-27"),
 	CONSTANT("m\231",	"PC_mMu",	"1.883531475E-28"),
-	CONSTANT("M\216",	"PC_M_sol",	"1.9891e30"),		// Mass of sun NASA Horizons
-	CONSTANT("M\256",	"PC_M_terra",	"5.9736e24"),		// Mass of Earth NASA Horizons
 	CONSTANT("N\327",	"PC_Na",	"6.02214129E23"),
-	CONSTANT("NaN",		"NAN",		"NaN"),
 	CONSTANT("p\270",	"PC_atm",	"101325"),
-/**/	CONSTANT("q\276",	"PC_PlanckQ",	"1.875545870e-18"),	// Base Planck unit of charge
 	CONSTANT("R",		"PC_R",		"8.3144621"),
 	CONSTANT("r\274",	"PC_Re",	"2.8179403267E-15"),
-	//CONSTANT("R\367",	"PC_Rk",	"25812.8074434"),
-	CONSTANT("R\033",	"PC_R_luna",	"1737.53E3"),		// Moon mean radius NASA Horizons
+	//CONSTANT("R\367",	"PC_Rk",	"25812.8074434"),	// von Klitzing constant
 	CONSTANT("R\233",	"PC_Rinf",	"10973731.568539"),
-	CONSTANT("R\216",	"PC_R_sol",	"6.960E8"),		// Sun mean radius NASA Horizons
-	CONSTANT("R\256",	"PC_R_terra",	"6371.01E3"),		// Earth mean radius NASA Horizons
-	CONSTANT("Sa",		"PC_WGS_A",	"6378137.0"),		// WGS84 standard
-	CONSTANT("Sb",		"PC_WGS_B",	"6356752.3142"),	// WGS84 standard
-	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),	// WGS84 standard
-	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),	// WGS84 standard
-	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),	// WGS84 standard
-	CONSTANT("SM\033",	"PC_SM_luna",	"384400E3"),		// Semi-major axis Moon NASA Horizons
-	CONSTANT("SM\256",	"PC_SM_terra",	"149.60E9"),		// Semi-major axis Earth NASA Earth fact sheet
 	CONSTANT("T\270",	"PC_t",		"273.15"),
 	CONSTANT("t\276",	"PC_tp",	"5.39106E-44"),		// Base Planck unit of time
-	CONSTANT("T\276",	"PC_PlanckTh",	"1.416833E32"),		// Base Planck unit of temperature
 	CONSTANT("V\033",	"PC_Vm",	"22.413968E-3"),
 	CONSTANT("Z\270",	"PC_Zo",	"376.730313461"),
 	CONSTANT("\240",	"PC_alpha",	"7.2973525698E-3"),
-	CONSTANT("\242EM",	"EULER",	"0.5772156649015328606065120900824024310421593359399235988"),
 	CONSTANT("\242\276",	"PC_gamP",	"2.675222005E8"),
 	CONSTANT("\244\270",	"PC_eps0",	"8.854187817E-12"),
-	//CONSTANT("\207",	"PC_MILLS",	"1.3063778838630806904686144926026057129167845851567136443680537599664340537668265988215014037011973957"),
-	//CONSTANT("\252",	"PC_lam",	"0.62432998854355087099293638310083724417964262018"),
 	CONSTANT("\252\273",	"PC_lamC",	"2.4263102389E-12"),
 	CONSTANT("\252\273\275","PC_lamCn",	"1.3195909068E-15"),
 	CONSTANT("\252\273\276","PC_lamCp",	"1.32140985623E-15"),
@@ -352,17 +327,52 @@ struct constsml constsml[] = {
 	CONSTANT("\253\276",	"PC_muP",	"1.410606743E-26"),
 	CONSTANT("\253\277",	"PC_mu_u",	"5.05078353E-27"),
 	CONSTANT("\253\231",	"PC_mumu",	"-4.49044807E-26"),
-	CONSTANT("\257",	"PI",		"3.14159265358979323846264338327950288419716939937510"),
-	//CONSTANT("\217\272",	"PI2",		"0.660161815846869573927812110014555778432623336"),
 	CONSTANT("\261\230",	"PC_sigma",	"5.670373E-8"),
-	CONSTANT("\224",	"PHI",		"1.61803398874989484820458683436563811772030917980576"),
 	CONSTANT("\224\270",	"PC_phi0",	"2.067833758E-15"),
-	CONSTANT("\267",	"PC_WGS_OMEGA",	"7292115.0E-11"),	// WGS84 standard
+
+	/* Plank related constants */
+	CONSTANT("h",		"PC_PLANK",	"6.62606957E-34"),
+	CONSTANT("\236",	"PC_hon2PI",	"1.054571726E-34"),
+	CONSTANT("l\276",	"PC_PlanckL",	"1.616199E-35"),	// Base Planck unit of length
+	CONSTANT("M\276",	"PC_PlanckM",	"2.17651E-8"),		// Base Planck unit of mass
+/**/	CONSTANT("q\276",	"PC_PlanckQ",	"1.875545870e-18"),	// Base Planck unit of charge
+	CONSTANT("T\276",	"PC_PlanckTh",	"1.416833E32"),		// Base Planck unit of temperature
+
+	/* Mathematical constants */
+	CONSTANT("NaN",		"NAN",		"NaN"),
 	CONSTANT("\237",	"INF",		"inf"),
-#if 0
-	CONSTANT("Z",		"PC_apery",	"1.20205690315959"),	// Apery's constant = zeta(3)
-	CONSTANT("Gaus",	"PC_gauss",	"0.834626841674043"),	// Gauss's constant = 1 / AGM(1, sqrt(2))
-#endif
+	CONSTANT("\242EM",	"EULER",	"0.5772156649015328606065120900824024310421593359399235988"),
+	CONSTANT("\224",	"PHI",		"1.61803398874989484820458683436563811772030917980576"),
+	CONSTANT("CG",		"PC_catalan",	"0.915965594177219"),	// Catalan's constant
+	CONSTANT("eE",		"CNSTE",	"2.71828182845904523536028747135266249775724709369995"),
+	CONSTANT("F\243",	"PC_F_delta",	"4.66920160910299067185320382"),
+	CONSTANT("F\240",	"PC_F_alpha",	"2.502907875095892822283902873218"),
+	CONSTANT("\257",	"PI",		"3.14159265358979323846264338327950288419716939937510"),
+	//CONSTANT("\207",	"PC_MILLS",	"1.3063778838630806904686144926026057129167845851567136443680537599664340537668265988215014037011973957"),
+	//CONSTANT("\252",	"PC_lam",	"0.62432998854355087099293638310083724417964262018"),
+	//CONSTANT("\217\272",	"PI2",		"0.660161815846869573927812110014555778432623336"),
+	//CONSTANT("Z",		"PC_apery",	"1.20205690315959"),	// Apery's constant = zeta(3)
+	//CONSTANT("Gaus",	"PC_gauss",	"0.834626841674043"),	// Gauss's constant = 1 / AGM(1, sqrt(2))
+
+	/* WGS constants */
+	CONSTANT("Sa",		"PC_WGS_A",	"6378137.0"),		// WGS84 standard
+	CONSTANT("Sb",		"PC_WGS_B",	"6356752.3142"),	// WGS84 standard
+	CONSTANT("Se\232",	"PC_WGS_E2",	"6.69437999014E-3"),	// WGS84 standard
+	CONSTANT("Se'\232",	"PC_WGS_ES2",	"6.73949674228E-3"),	// WGS84 standard
+	CONSTANT("Sf\235",	"PC_WGS_F",	"298.257223563"),	// WGS84 standard
+	CONSTANT("GM",		"PC_WGS_GM",	"3986004.418E8"),	// WGS84 standard
+	CONSTANT("\267",	"PC_WGS_OMEGA",	"7292115.0E-11"),	// WGS84 standard
+
+	/* Astronomical constants */
+	CONSTANT("M\033",	"PC_M_luna",	"7.349e22"),		// Mass of Moon NASA Horizons
+	CONSTANT("M\216",	"PC_M_sol",	"1.9891e30"),		// Mass of sun NASA Horizons
+	CONSTANT("M\256",	"PC_M_terra",	"5.9736e24"),		// Mass of Earth NASA Horizons
+	CONSTANT("R\033",	"PC_R_luna",	"1737.53E3"),		// Moon mean radius NASA Horizons
+	CONSTANT("R\216",	"PC_R_sol",	"6.960E8"),		// Sun mean radius NASA Horizons
+	CONSTANT("R\256",	"PC_R_terra",	"6371.01E3"),		// Earth mean radius NASA Horizons
+	CONSTANT("SM\033",	"PC_SM_luna",	"384400E3"),		// Semi-major axis Moon NASA Horizons
+	CONSTANT("SM\256",	"PC_SM_terra",	"149.60E9"),		// Semi-major axis Earth NASA Earth fact sheet
+
 	CONSTANT(NULL, NULL, NULL)
 };
 
@@ -678,6 +688,41 @@ static void const_small_tbl(FILE *f, const int incname, const struct constsml ct
 }
 
 
+static void unpack(const char *b, int *u) {
+	while (*b != 0 && *b != ' ') {
+		*u++ = remap_chars(0xff & *b++);
+	}
+	*u = -1;
+}
+
+static int const_small_compare(const void *v1, const void *v2) {
+	const struct constsml *cs1 = (const struct constsml *)v1;
+	const struct constsml *cs2 = (const struct constsml *)v2;
+	int u1[16], u2[16];
+	int i;
+
+	for (i=0; i<16; i++)
+		u1[i] = u2[i] = 0;
+
+	unpack(cs1->name, u1);
+	unpack(cs2->name, u2);
+
+	for (i=0; i<16; i++) {
+		if (u1[i] < u2[i]) return -1;
+		else if (u1[i] > u2[i]) return 1;
+		else if (u1[i] == -1) break;
+	}
+	return strcmp(cs1->name, cs2->name);
+}
+
+static void const_small_sort(struct constsml ctbl[]) {
+	int n;
+
+	for (n=0; ctbl[n].val != NULL; n++);
+	qsort(ctbl, n, sizeof(struct constsml), &const_small_compare);
+}
+
+
 static const unsigned char charlengths[512+5] = {
 #define C(len, a, b, c, x, y, z)	len
 #include "charset.h"
@@ -700,6 +745,7 @@ static void const_small(FILE *fh) {
 			"#define B(b1,b2,b3,b4,b5,b6,b7,b8) {{ b8,b7,b6,b5,b4,b3,b2,b1 }}\n"
 			"#endif\n\n"
 		);
+	const_small_sort(constsml);
 	const_small_tbl(f, 1, constsml, "cnsts", "NUM_CONSTS",
 				"CONSTANT", "CONST", "RARG_CONST", "RARG_CONST_CMPLX",
 				"Table of user visible constants");

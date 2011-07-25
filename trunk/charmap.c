@@ -14,8 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "xeq.h"
-
 
 /* Take a characer and remap it into sort order.
  * Also cater for different cases, diacriticals and some
