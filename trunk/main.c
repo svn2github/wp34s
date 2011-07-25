@@ -18,7 +18,7 @@
  * This is the main module for the real hardware
  * Module written by MvC
  */
-__attribute__((section(".revision"),externally_visible)) const char SvnRevision[ 16 ] = "$Rev:: 1157    $";
+__attribute__((section(".revision"),externally_visible)) const char SvnRevision[ 16 ] = "$Rev:: 1306    $";
 
 #include "xeq.h"
 #include "display.h"

@@ -18,7 +18,7 @@
 #define __XEQ_H__
 
 /* Version number */
-#define VERSION_STRING	"2.0"
+#define VERSION_STRING	"2.1"
 
 /*
  * Optional features are defined in features.h
