@@ -885,7 +885,7 @@ static void gpl_text(const char *start, const char *middle, const char *end) {
 }
 
 
-void unpack(const char *b, int *u) {
+static void unpack(const char *b, int *u) {
 	while (*b != 0 && *b != ' ') {
 		*u++ = remap_chars(0xff & *b++);
 	}
@@ -931,7 +931,7 @@ static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 	for (i=0; i<num_cat; i++)
 		printf("%s0x%04x,", (i%6) == 0?"\n\t":" ", cat[i] & 0xffff);
 	printf("\n};\n\n");
- }
+}
 
 
 static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
