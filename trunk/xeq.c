@@ -1541,6 +1541,7 @@ int check_return_stack_segment(int segment) {
 
 	if (!bad || Running )
 		return bad;
+	set_running_off();
 	RetStkPtr = 0;
 	raw_set_pc(0);
 	return 0;
