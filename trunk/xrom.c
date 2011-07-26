@@ -144,6 +144,8 @@
 #define POW10		MONADIC(POW10)
 #define FRAC		MONADIC(FRAC)
 #define TRUNC		MONADIC(TRUNC)
+#define FLOOR		MONADIC(FLOOR)
+#define CEIL		MONADIC(CEIL)
 #define SQUARE		MONADIC(SQR)
 #define SQRT		MONADIC(SQRT)
 
@@ -868,7 +870,7 @@ const s_opcode xrom[] = {
 /* Very minimal routine to return the next prime in sequence
  */
 	LBL(ENTRY_NEXTPRIME)
-		ABS
+		FLOOR
 		TST1(le)
 			SKIP(9)
 		TST_PRIME
