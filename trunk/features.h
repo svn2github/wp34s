@@ -41,8 +41,8 @@
 // Include Bernoulli numbers as functions
 #define INCLUDE_BERNOULLI
 
-// Include the user mode serial commands SOPEN, SCLOSE, RECV1, SEND1
-// Space cost approximately 744 bytes.
+// Include the user mode serial commands SOPEN, SCLOSE, RECV1, SEND1, aRECV, aSEND
+// Space cost approximately 700 bytes.
 // #define INCLUDE_USER_IO
 
 // Include the SAVEM/RESTM user mode save and restore commands

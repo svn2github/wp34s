@@ -86,6 +86,7 @@ USER_FLASH TUserFlash UserFlash;
  */
 static int flash_command( unsigned int cmd )
 {
+	SUPC_SetVoltageOutput( SUPC_VDD_180 );
 	return IAP_FUNC( cmd ) >> 1;
 }
 

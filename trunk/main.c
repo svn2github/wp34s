@@ -871,28 +871,15 @@ void set_speed( unsigned int speed )
 			// Turn off the unused oscillators
 			disable_pll();
 
-			// Save power
-			SUPC_SetVoltageOutput( SUPC_VDD_155 );
-			break;
-
 		case SPEED_MEDIUM:
 			/*
 			 *  2 MHz internal RC clock
 			 */
-			if ( SpeedSetting < SPEED_MEDIUM ) {
-				SUPC_SetVoltageOutput( SUPC_VDD_165 );
-			}
 			enable_mclk();
 			set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
 
-			// No wait states needed for flash read
-			AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
-
 			// Turn off the PLL
 			disable_pll();
-
-			// save power
-			SUPC_SetVoltageOutput( SUPC_VDD_155 );
 
 			break;
 
