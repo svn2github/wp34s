@@ -340,8 +340,9 @@ static void setlastXY(void) {
 }
 
 
-void getX(decNumber *x) {
+decNumber *getX(decNumber *x) {
 	decimal64ToNumber(&regX, x);
+	return x;
 }
 
 void setX(const decNumber *x) {
@@ -2814,19 +2815,18 @@ void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op) {
 }
 
 /* Test if a number is an integer */
-void XisInt(decimal64 *a, decimal64 *b, enum nilop op) {
+static int x_is_int(void) {
 	decNumber x;
+	return is_intmode() || is_int(getX(&x));
+}
 
-	getX(&x);
-	fin_tst(is_intmode() || is_int(&x));
+void XisInt(decimal64 *a, decimal64 *b, enum nilop op) {
+	fin_tst(x_is_int());
 }
 
 /* Test if a number has a fractional component */
 void XisFrac(decimal64 *a, decimal64 *b, enum nilop op) {
-	decNumber x;
-
-	getX(&x);
-	fin_tst(!is_intmode() && !is_int(&x));
+	fin_tst(!x_is_int());
 }
 
 /* Utility routine that checks if the X register is even or odd or neither.

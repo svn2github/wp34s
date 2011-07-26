@@ -911,7 +911,7 @@ extern void set_bank_flags(unsigned int);
 extern const char *prt(opcode, char *);
 extern const char *catcmd(opcode, char *);
 
-extern void getX(decNumber *x);
+extern decNumber *getX(decNumber *x);
 extern void getY(decNumber *y);
 extern void setX(const decNumber *x);
 
@@ -1050,6 +1050,7 @@ extern void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op);
 extern void do_userclear(decimal64 *a, decimal64 *b, enum nilop op);
 extern void XisInt(decimal64 *a, decimal64 *b, enum nilop op);
+extern void XisFrac(decimal64 *a, decimal64 *b, enum nilop op);
 extern void XisEven(decimal64 *a, decimal64 *b, enum nilop op);
 extern void XisOdd(decimal64 *a, decimal64 *b, enum nilop op);
 extern void XisPrime(decimal64 *a, decimal64 *b, enum nilop op);
