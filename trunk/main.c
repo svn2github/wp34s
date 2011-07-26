@@ -37,6 +37,11 @@ __attribute__((section(".revision"),externally_visible)) const char SvnRevision[
 #include "rtc.h"
 
 /*
+ *  Some conditional compilation defines
+ */
+#define SLOW_SERIAL
+
+/*
  *  CPU speed settings
  */
 #define SPEED_IDLE     0
@@ -1204,6 +1209,10 @@ void enable_interrupts()
 int open_port( int baud, int bits, int parity, int stopbits )
 {
 	int mode, div;
+
+#ifdef SLOW_SERIAL
+	set_speed( SPEED_HALF );
+#endif
 
 	// Assign I/O pins to DBGU, disable pull-ups
 	AT91C_BASE_PIOC->PIO_PDR   = DBGU_PIOC_MASK;

@@ -285,6 +285,9 @@ static void put_block( unsigned short tag, unsigned short length, void *data )
 	if ( ret ) {
 		err( ERR_IO );
 	}
+	else {
+		DispMsg = "OK";
+	}
 	return;
 }
 
@@ -343,11 +346,10 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 		/*
 		 *  Program area received
 		 */
-		if ( check_return_stack_segment( -1 )
-		  || length > sizeof( s_opcode ) * NUMPROG )
-		{
+		if ( length > sizeof( s_opcode ) * NUMPROG ) {
 			  goto invalid;
 		}
+		State.state_pc = 0;
 		dest = Prog;
 		LastProg = 1 + length / sizeof( s_opcode );
 		DispMsg = "Program";
@@ -357,11 +359,10 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 		/*
 		 *  All memory received
 		 */
-		if ( check_return_stack_segment( -1 )
-		  || length != sizeof( PersistentRam ) )
-		{
+		if ( length != sizeof( PersistentRam ) ) {
 			  goto invalid;
 		}
+		State.state_pc = 0;
 		dest = &PersistentRam;
 		DispMsg = "All RAM";
 		break;
