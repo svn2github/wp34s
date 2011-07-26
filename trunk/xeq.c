@@ -1517,7 +1517,7 @@ static int check_one(int s, unsigned int p) {
 	return 0;
 }
 
-int check_return_stack_segment(int segment) {
+static int do_check_return(int segment) {
 	int i;
 	unsigned char *p;
 	int s = (segment < 0) ? 0 : (segment+1);
@@ -1533,6 +1533,16 @@ int check_return_stack_segment(int segment) {
 	if (((1 << (F_XROM % 8)) & *p) != 0)
 		if (check_one(s, State.usrpc))
 			return 1;
+	return 0;
+}
+
+int check_return_stack_segment(int segment) {
+	const int bad = do_check_return(segment);
+
+	if (!bad || Running )
+		return bad;
+	RetStkPtr = 0;
+	raw_set_pc(0);
 	return 0;
 }
 
