@@ -643,7 +643,7 @@ enum nilop {
 	OP_TICKS, OP_VOLTAGE,
 	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN,
 
-	OP_QUAD,
+	OP_QUAD, OP_NEXTPRIME,
 	OP_XEQALPHA, OP_GTOALPHA,
 	OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
 
@@ -741,8 +741,8 @@ enum specials {
 	OP_0, OP_1, OP_2, OP_3, OP_4, OP_5, OP_6, OP_7, OP_8, OP_9,
 			OP_A, OP_B, OP_C, OP_D, OP_E, OP_F,
 	OP_SIGMAPLUS, OP_SIGMAMINUS,
-	OP_Xeq0, OP_Xne0, OP_Xapx0, OP_Xlt0, OP_Xgt0, OP_Xle0, OP_Xge0,
-	OP_Xeq1, OP_Xne1, OP_Xapx1, OP_Xlt1, OP_Xgt1, OP_Xle1, OP_Xge1,
+	OP_Xeq0, OP_Xne0, OP_Xapx0, OP_Xlt0, OP_Xle0, OP_Xgt0, OP_Xge0,
+	OP_Xeq1, OP_Xne1, OP_Xapx1, OP_Xlt1, OP_Xle1, OP_Xgt1, OP_Xge1,
 	OP_Zeq0, OP_Zne0, OP_Zapx0,
 	OP_Zeq1, OP_Zne1, OP_Zapx1,
 	NUM_SPECIAL
@@ -1084,8 +1084,7 @@ extern decNumber *convAR2DB(decNumber *r, const decNumber *x);
 extern decNumber *convDB2PR(decNumber *r, const decNumber *x);
 extern decNumber *convPR2DB(decNumber *r, const decNumber *x);
 
-extern void xrom_tvm(decimal64 *a, decimal64 *b, enum nilop op);
-extern void xrom_quad(decimal64 *a, decimal64 *b, enum nilop op);
+extern void xrom_routines(decimal64 *a, decimal64 *b, enum nilop op);
 
 extern void packed_from_number(decimal64 *r, const decNumber *x);
 extern void int_mode_convert(decimal64 *r);

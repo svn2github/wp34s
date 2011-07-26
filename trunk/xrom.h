@@ -28,7 +28,8 @@
 #define ENTRY_2DERIV	95
 #define ENTRY_INTEGRATE	94
 
-#define ENTRY_QUAD	89
+#define ENTRY_QUAD	89	/* Same order as OP_QUAD, OP_NEXTPRIME */
+#define ENTRY_NEXTPRIME	88
 
 
 /* Labels - global */

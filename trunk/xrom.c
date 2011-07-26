@@ -35,7 +35,7 @@
 
 // Specials
 #define ENTER		SPECIAL(ENTER)
-#define CLX		SPECIAL(CLX)
+#define specCLX		SPECIAL(CLX)
 #define EEX		SPECIAL(EEX)
 #define CHS		SPECIAL(CHS)
 #define DOT		SPECIAL(DOT)
@@ -123,12 +123,18 @@
 #define GSBUSER		NILADIC(GSBuser)
 #define AVIEW		NILADIC(VIEWALPHA)
 #define DECM		NILADIC(FLOAT)
+#define CLX		NILADIC(rCLX)
 #define CLSTK		NILADIC(CLSTK)
 #define CLALPHA		NILADIC(CLRALPHA)
 #define STOP		NILADIC(RS)
 #define TST_INFINITE	NILADIC(XisInf)
 #define TST_NaN		NILADIC(XisNaN)
 #define TST_SPECIAL	NILADIC(XisSpecial)
+#define TST_EVEN	NILADIC(XisEVEN)
+#define TST_ODD		NILADIC(XisODD)
+#define TST_INT		NILADIC(XisINT)
+#define TST_FRAC	NILADIC(XisFRAC)
+#define TST_PRIME	NILADIC(XisPRIME)
 
 // Mondaic functions
 #define RECIP		MONADIC(RECIP)
@@ -857,6 +863,25 @@ const s_opcode xrom[] = {
 		STO_PL(st(Y))
 		RCL_MI(st(L))
 	RTN
+
+/**************************************************************************/
+/* Very minimal routine to return the next prime in sequence
+ */
+	LBL(ENTRY_NEXTPRIME)
+		ABS
+		TST1(le)
+			SKIP(9)
+		TST_PRIME
+			INC(st(X))
+		TST_EVEN
+			INC(st(X))
+		TST_PRIME
+			RTN
+		INC(st(X))
+		BACK(4)
+		CLX
+		DIG(2)
+		RTN
 
 /**************************************************************************/
 #define R_PMT	80

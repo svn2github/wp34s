@@ -139,6 +139,8 @@ static s_opcode program_xfcn[] = {
 	DYA(OP_BSYN,		"Yn")
 #endif
 	NILIC(OP_QUAD,		"QUAD")
+	NILIC(OP_NEXTPRIME,	"NEXTP")
+
 	MON(OP_DATE_DAY,	"DAY")
 	MON(OP_DATE_MONTH,	"MONTH")
 	MON(OP_DATE_YEAR,	"YEAR")
@@ -298,6 +300,8 @@ static s_opcode catalogue[] = {
 	DYA(OP_BSYN,		"Yn")
 #endif
 	NILIC(OP_QUAD,		"QUAD")
+	NILIC(OP_NEXTPRIME,	"NEXTP")
+
 	MON(OP_DATE_DAY,	"DAY")
 	MON(OP_DATE_MONTH,	"MONTH")
 	MON(OP_DATE_YEAR,	"YEAR")
@@ -477,6 +481,7 @@ static s_opcode int_catalogue[] = {
 #ifdef INCLUDE_FACTOR
 	MON(OP_FACTOR,		"FACTOR")
 #endif 
+	NILIC(OP_NEXTPRIME,	"NEXTP")
 	NILIC(OP_RESET,		"RESET")
 	NILIC(OP_RJ,		"RJ")
 	RARGCMD(RARG_RL,	"RL")

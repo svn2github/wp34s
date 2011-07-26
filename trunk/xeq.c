@@ -1713,8 +1713,8 @@ void multixromarg(const opcode o, enum multiops mopr) {
 	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), findmultilbl(o, 0));
 }
 
-void xrom_quad(decimal64 *a, decimal64 *nul2, enum nilop op) {
-	do_xrom(ENTRY_QUAD);
+void xrom_routines(decimal64 *a, decimal64 *nul2, enum nilop op) {
+	do_xrom(ENTRY_QUAD - (op - OP_QUAD));
 }
 
 void cmddisp(unsigned int arg, enum rarg op) {
