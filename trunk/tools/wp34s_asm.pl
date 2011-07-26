@@ -58,8 +58,6 @@ my $expanded_op_file = "";
 # dumped escaped alpha table.
 my $dump_escaped_alpha_table = "";
 
-my $comment_marker = "//";
-
 # Number of '*' to prepend to labels in disassembly -- just makes them easier to find.
 my $DEFAULT_STAR_LABELS = 0;
 my $star_labels = $DEFAULT_STAR_LABELS;
@@ -381,7 +379,7 @@ sub disassemble {
 
   open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
 
-  print "$comment_marker Source file(s): ", join(", ", @files), "\n";
+  print "// Source file(s): ", join(", ", @files), "\n";
 
   foreach my $file (@files) {
     my $double_words = 0;
@@ -411,10 +409,10 @@ sub disassemble {
         print_disassemble_normal($total_steps, $word);
       }
     }
-    print "$comment_marker $total_steps total instructions used.\n";
-    print "$comment_marker $len total words used.\n";
-    print "$comment_marker ", $len - (2*$double_words), " single word instructions.\n";
-    print "$comment_marker $double_words double word instructions.\n";
+    print "// $total_steps total instructions used.\n";
+    print "// $len total words used.\n";
+    print "// ", $len - (2*$double_words), " single word instructions.\n";
+    print "// $double_words double word instructions.\n";
     close DAT;
   }
   close OUT;
@@ -1107,7 +1105,7 @@ sub get_options {
 
     elsif( ($arg eq "-opcodes") or ($arg eq "-opcode") or ($arg eq "-map") or  ($arg eq "-op") ) {
       $opcode_map_file = shift(@ARGV);
-      print "# NOTE: Opcode map file: $opcode_map_file\n";
+      print "// NOTE: Using custom opcode map file: $opcode_map_file\n";
     }
 
     elsif( $arg eq "-dis" ) {
