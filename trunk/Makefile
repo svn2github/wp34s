@@ -219,7 +219,7 @@ else
 $(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNumber.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
-	echo "# \$$REV\$$" > $(OPCODES)
+	echo "# \$$Rev\$$" > $(OPCODES)
 	$@ opcodes >> $(OPCODES)
 endif
 
