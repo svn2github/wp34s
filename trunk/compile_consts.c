@@ -369,8 +369,8 @@ struct constsml constsml[] = {
 	CONSTANT("R\033",	"PC_R_luna",	"1737.53E3"),		// Moon mean radius NASA Horizons
 	CONSTANT("R\216",	"PC_R_sol",	"6.960E8"),		// Sun mean radius NASA Horizons
 	CONSTANT("R\256",	"PC_R_terra",	"6371.01E3"),		// Earth mean radius NASA Horizons
-	CONSTANT("SM\033",	"PC_SM_luna",	"384400E3"),		// Semi-major axis Moon NASA Horizons
-	CONSTANT("SM\256",	"PC_SM_terra",	"149.60E9"),		// Semi-major axis Earth NASA Earth fact sheet
+	CONSTANT("a\033\256",	"PC_SM_luna",	"384400E3"),		// Semi-major axis Moon NASA Horizons
+	CONSTANT("a\256\216",	"PC_SM_terra",	"149.60E9"),		// Semi-major axis Earth NASA Earth fact sheet
 //	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
 
 	CONSTANT(NULL, NULL, NULL)
