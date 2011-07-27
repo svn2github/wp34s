@@ -18,15 +18,18 @@
 #
 #-----------------------------------------------------------------------
 #
-my $Description = "Assembler/Disassembler for the WP34s calculator.";
+my $Description = "Assembler/Disassembler for the WP 34S calculator.";
 #
 #-----------------------------------------------------------------------
 #
 # Language:         Perl script
 #
+my $SVN_Current_Revision  =  '$Revision$';
+#
 #-----------------------------------------------------------------------
 
 use strict;
+use File::Basename;
 
 # ---------------------------------------------------------------------
 
@@ -45,7 +48,8 @@ my $FLASH_LENGTH = 512;
 my $DEFAULT_FLASH_BLANK_INSTR = "ERR 03";
 my $user_flash_blank_fill = "";
 
-my $USE_INTERNAL_OPCODE_MAP = "--internal table--";
+my $STD_EXTERNAL_OP_TABLE = "wp34s.op";
+my $USE_INTERNAL_OPCODE_MAP = "-- internal table --";
 my $DEFAULT_OPCODE_MAP_FILE = $USE_INTERNAL_OPCODE_MAP;
 my $opcode_map_file = $DEFAULT_OPCODE_MAP_FILE;
 
@@ -110,27 +114,16 @@ my %table_exception_format = ( "PRCL"   => "%01d",
 
 # ---------------------------------------------------------------------
 
-# Automatically extract the name of the executable that was used. Try and parse it back to its
-# base name (without the path) by assuming it was either a Perl script or a Windows executable.
-# (The latter is for future use if and when we find a suitable Perl to executable compiler.) If we
-# can't parse it, just take what the OS gave -- path and all.
+# Automatically extract the name of the executable that was used. Also extract
+# the directory so we can potentially source other information from this location.
 my $script_executable = $0;
-my $script_name       = "";
-if( $script_executable =~ /[\.\/]*(\w+\.pl)/ ) {
-  $script_name     = "$1";
-} elsif( $script_executable =~ /[\.\/]*(\w+\.exe)/ ) {
-  $script_name     = "$1";
-} else {
-  $script_name     = "$0";
-}
+my ($script_name, $script_dir, $script_suffix) = fileparse($script_executable);
 
-my $script  = <<SCRIPT;
-$script_name  - $Description
-SCRIPT
-
+my $script  = "$script_name  - $Description";
 my $usage = <<EOM;
 
 $script
+
 Usage:
    $script_name src_file [src_file2 [src_file3]] -o out_binary  # assembly mode
    $script_name in_binary -dis [-o out_binary] > src_file       # disassembly mode
@@ -604,9 +597,29 @@ sub pre_fill_flash {
 #
 sub load_opcode_tables {
   my $file = shift;
-  if( $opcode_map_file ne $USE_INTERNAL_OPCODE_MAP ) {
-    open DATA, $file or die "ERROR: Cannot open opcode map file '$opcode_map_file' for reading: $!\n";
+
+  # If the user has specified an opcode table via the -opcodes switch, use that one.
+  if( $file ne $USE_INTERNAL_OPCODE_MAP ) {
+    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+    $file .= " (specified)";
+
+  # Search the current directory for an opcode table.
+  } elsif( -e "${STD_EXTERNAL_OP_TABLE}" ) {
+    $file = "${STD_EXTERNAL_OP_TABLE}";
+    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+    $file .= " (local directory)";
+
+  # Search the directory the script is running out of.
+  } elsif( -e "${script_dir}${STD_EXTERNAL_OP_TABLE}" ) {
+    $file = "${script_dir}${STD_EXTERNAL_OP_TABLE}";
+    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+
+  } else {
   }
+  print "// Opcode map source: $file\n";
+
+  # Read from whatever source happened to be caught. If none of the above opened
+  # a file, read the attached DATA segment at the end of the script as the fallback.
   while(<DATA>) {
     # Extract the SVN version of the opcode table -- if it exists.
     if( /^# Generated .+ svn_(\d+)\.op/ ) {
@@ -1083,6 +1096,19 @@ sub dump_c_array {
 
 
 #######################################################################
+#
+#
+#
+sub extract_svn_version {
+  my $svn_rev = "";
+  if( $SVN_Current_Revision =~ /Revision: (.+)\s*\$/ ) {
+    $svn_rev = $1;
+  }
+  return $svn_rev;
+} # extract_svn_version
+
+
+#######################################################################
 #######################################################################
 #
 # Process the command line option list.
@@ -1103,9 +1129,15 @@ sub get_options {
       die "\n";
     }
 
+    elsif( ($arg eq "--version") or ($arg eq "-V") ) {
+      print "$script\n";
+      my $svn_rev = extract_svn_version();
+      print "SVN version: $svn_rev\n" if $svn_rev;
+      die "\n";
+    }
+
     elsif( ($arg eq "-opcodes") or ($arg eq "-opcode") or ($arg eq "-map") or  ($arg eq "-op") ) {
       $opcode_map_file = shift(@ARGV);
-      print "// NOTE: Using custom opcode map file: $opcode_map_file\n";
     }
 
     elsif( $arg eq "-dis" ) {
