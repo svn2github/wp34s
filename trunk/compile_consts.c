@@ -310,7 +310,6 @@ struct constsml constsml[] = {
 	//CONSTANT("R\367",	"PC_Rk",	"25812.8074434"),	// von Klitzing constant
 	CONSTANT("R\233",	"PC_Rinf",	"10973731.568539"),
 	CONSTANT("T\270",	"PC_t",		"273.15"),
-	CONSTANT("t\276",	"PC_tp",	"5.39106E-44"),		// Base Planck unit of time
 	CONSTANT("V\033",	"PC_Vm",	"22.413968E-3"),
 	CONSTANT("Z\270",	"PC_Zo",	"376.730313461"),
 	CONSTANT("\240",	"PC_alpha",	"7.2973525698E-3"),
@@ -336,6 +335,7 @@ struct constsml constsml[] = {
 	CONSTANT("M\276",	"PC_PlanckM",	"2.17651E-8"),		// Base Planck unit of mass
 /**/	CONSTANT("q\276",	"PC_PlanckQ",	"1.875545870e-18"),	// Base Planck unit of charge
 	CONSTANT("T\276",	"PC_PlanckTh",	"1.416833E32"),		// Base Planck unit of temperature
+	CONSTANT("t\276",	"PC_tp",	"5.39106E-44"),		// Base Planck unit of time
 
 	/* Mathematical constants */
 	CONSTANT("NaN",		"NAN",		"NaN"),
