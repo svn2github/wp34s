@@ -1330,7 +1330,7 @@ void cmdcsto(unsigned int arg, enum rarg op) {
 	} else {
 		if (is_intmode())
 			bad_mode_error();
-		else if (storcl_cop(op - RARG_STO, t1, t2, &r1, &r2))
+		else if (storcl_cop(op - RARG_CSTO, t1, t2, &r1, &r2))
 			illegal(op);
 		else {
 			packed_from_number(t1, &r1);
