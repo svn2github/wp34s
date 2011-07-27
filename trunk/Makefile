@@ -134,7 +134,7 @@ HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 LIBS += -L$(OBJECTDIR) -lconsts
-LIBDN := -ldecNumber
+LIBDN := -ldecNum34s
 CNSTS := $(OBJECTDIR)/libconsts.a
 
 ifdef REALBUILD
@@ -194,7 +194,7 @@ ifdef REALBUILD
 # Target flash
 
 $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
-		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNumber.a \
+		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNum34s.a \
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE)
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber -save-temps
@@ -216,7 +216,7 @@ else
 
 # Target calc, console emulator
 
-$(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNumber.a $(CNSTS) \
+$(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
 	echo "# \$$Rev\$$" > $(OPCODES)
@@ -262,8 +262,9 @@ xeq.h:
 
 # Build libs and objects
 
-$(OBJECTDIR)/libdecNumber.a: $(DNSRCS) $(DNHDRS)
-	+@make OBJECTDIR=../$(OBJECTDIR) "CFLAGS=$(CFLAGS)" -C decNumber
+$(OBJECTDIR)/libdecNum34s.a: $(DNSRCS) $(DNHDRS)
+	+@make OBJECTDIR=../$(OBJECTDIR) "CFLAGS=$(CFLAGS)" "LIB=libdecNum34s.a" \
+		-C decNumber
 
 vpath %.c = atmel
 $(OBJECTDIR)/%.o: %.c
