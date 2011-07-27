@@ -297,7 +297,6 @@ struct constsml constsml[] = {
 	CONSTANT("G",		"PC_G",		"6.67384E-11"),		// NIST 2010, IAU 2009 gives 6.67428E-11
 	CONSTANT("G\270",	"PC_Go",	"7.7480917346E-5"),
 	CONSTANT("g\274",	"PC_Ge",	"-2.00231930436153"),
-	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
 	CONSTANT("k",		"PC_k",		"1.3806488E-23"),
 	CONSTANT("m\274",	"PC_me",	"9.10938291E-31"),
 	CONSTANT("m\275",	"PC_mn",	"1.674927351E-27"),
@@ -372,6 +371,7 @@ struct constsml constsml[] = {
 	CONSTANT("R\256",	"PC_R_terra",	"6371.01E3"),		// Earth mean radius NASA Horizons
 	CONSTANT("SM\033",	"PC_SM_luna",	"384400E3"),		// Semi-major axis Moon NASA Horizons
 	CONSTANT("SM\256",	"PC_SM_terra",	"149.60E9"),		// Semi-major axis Earth NASA Earth fact sheet
+//	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
 
 	CONSTANT(NULL, NULL, NULL)
 };
