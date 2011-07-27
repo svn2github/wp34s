@@ -2814,63 +2814,33 @@ void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op) {
 		gsbgto(usrpc, 1, pc);
 }
 
-/* Test if a number is an integer */
-static int x_is_int(void) {
-	decNumber x;
-	return is_intmode() || is_int(getX(&x));
-}
-
+/* Test if a number is an integer or fractional */
+/* Special numbers are neither */
 void XisInt(decimal64 *a, decimal64 *b, enum nilop op) {
-	fin_tst(x_is_int());
-}
-
-/* Test if a number has a fractional component */
-void XisFrac(decimal64 *a, decimal64 *b, enum nilop op) {
-	fin_tst(!x_is_int());
-}
-
-/* Utility routine that checks if the X register is even or odd or neither.
- * Returns positive if even, zero if odd, -1 for special, -2 for fractional.
- */
-int is_even(const decNumber *x) {
-	decNumber y, z;
-
-	if (decNumberIsSpecial(x))
-		return -1;
-	dn_abs(&z, x);
-	decNumberMod(&y, &z, &const_2);
-	if (decNumberIsZero(&y))
-		return 1;
-	dn_compare(&z, &y, &const_1);
-	if (decNumberIsZero(&z))
-		return 0;
-	return -2;
-}
-
-static int evenX() {
 	decNumber x;
-
-	getX(&x);
-	return is_even(&x);
+	int result, op_int = (op == OP_XisINT);
+	if ( is_intmode() )
+		result = op_int;
+	else if (decNumberIsSpecial(getX(&x)))
+		result = 0;
+	else
+	        result = (is_int(&x) == op_int);
+	fin_tst(result);
 }
 
-/* Test if a number is an even integer */
-void XisEven(decimal64 *a, decimal64 *b, enum nilop op) {
+/* Test if a number is an even or odd integer */
+/* fractional or special values are neither even nor odd */
+void XisEvenOrOdd(decimal64 *a, decimal64 *b, enum nilop op) {
+	decNumber x;
+	int odd = (op == OP_XisODD);
+
 	if (is_intmode()) {
-		fin_tst((d64toInt(&regX) & 1) == 0);
+		fin_tst((d64toInt(&regX) & 1) == odd);
 	} else {
-		fin_tst(evenX() == 1);
+		fin_tst(is_even(getX(&x)) == !odd);
 	}
 }
 
-/* Test if a number is an odd integer */
-void XisOdd(decimal64 *a, decimal64 *b, enum nilop op) {
-	if (is_intmode()) {
-		fin_tst((d64toInt(&regX) & 1) != 0);
-	} else {
-		fin_tst(evenX() == 0);
-	}
-}
 
 /* Test if a number is prime */
 void XisPrime(decimal64 *a, decimal64 *b, enum nilop op) {

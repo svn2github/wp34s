@@ -509,9 +509,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_XisSpecial,	&isSpecial,		"SPEC?")
 	FUNC0(OP_XisPRIME,	&XisPrime,		"PRIME?")
 	FUNC0(OP_XisINT,	&XisInt,		"INT?")
-	FUNC0(OP_XisFRAC,	&XisFrac,		"FP?")
-	FUNC0(OP_XisEVEN,	&XisEven,		"EVEN?")
-	FUNC0(OP_XisODD,	&XisOdd,		"ODD?")
+	FUNC0(OP_XisFRAC,	&XisInt,		"FP?")
+	FUNC0(OP_XisEVEN,	&XisEvenOrOdd,		"EVEN?")
+	FUNC0(OP_XisODD,	&XisEvenOrOdd,		"ODD?")
 	FUNC0(OP_ENTRYP,	&op_entryp,		"ENTRY?")
 
 	FUNC1(OP_TICKS,		&op_ticks,		"TICKS")

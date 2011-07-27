@@ -241,6 +241,23 @@ int is_int(const decNumber *x) {
 	return 1;
 }
 
+/* Utility routine that checks if the X register is even or odd or neither.
+ * Returns positive if even, zero if odd, -1 for special, -2 for fractional.
+ */
+int is_even(const decNumber *x) {
+	decNumber y, z;
+
+	if (decNumberIsSpecial(x))
+		return -1;
+	dn_abs(&z, x);
+	decNumberMod(&y, &z, &const_2);
+	if (decNumberIsZero(&y))
+		return 1;
+	dn_compare(&z, &y, &const_1);
+	if (decNumberIsZero(&z))
+		return 0;
+	return -2;
+}
 
 void dn_inc(decNumber *x) {
 	dn_add(x, x, &const_1);

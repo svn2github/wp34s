@@ -68,6 +68,10 @@
       <SubSystem>Console</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>echo # $REV$ &gt; $(SolutionDir)..\tools\wp34s.op
+$(TargetDir)$(TargetFileName) opcodes  &gt;&gt; $(SolutionDir)..\tools\wp34s.op</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -99,6 +103,10 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
+    <PostBuildEvent>
+      <Command>echo # $REV$ &gt; $(SolutionDir)..\tools\wp34s.op
+$(TargetDir)$(TargetFileName) opcodes  &gt;&gt; $(SolutionDir)..\tools\wp34s.op</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\allconsts.c" />

@@ -50,6 +50,7 @@ CFLAGS = $(BASE_CFLAGS)
 CFLAGS += -O0 -DUSECURSES -DDEBUG
 OUTPUTDIR := $(SYSTEM)
 UTILITIES := $(SYSTEM)
+TOOLS := tools
 CC := gcc
 AR := ar
 RANLIB := ranlib
@@ -156,6 +157,7 @@ LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
 MAIN := $(OBJECTDIR)/main.o
 else
 MAIN := $(OBJECTDIR)/console.o
+OPCODES := $(TOOLS)/wp34s.op
 endif
 
 # Targets and rules
@@ -217,6 +219,8 @@ else
 $(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNumber.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
+	echo "# \$$REV\$$" > $(OPCODES)
+	$@ opcodes >> $(OPCODES)
 endif
 
 # Build generated files
