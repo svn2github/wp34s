@@ -1516,6 +1516,11 @@ int main(void)
 	xset( (void *) 0x200200, 0x5A, 0x800 );
 #endif
 
+	/*
+	 *  Minimum initialisation for decNumber library
+	 */
+	xeq_init_contexts();
+
 #ifdef ALLOW_DEEP_SLEEP
 	/*
 	 *  Initialisation depends on the wake up reason
@@ -1632,6 +1637,7 @@ int main(void)
 	BodThreshold = -1;
 	detect_voltage();
 	enable_interrupts();
+
 	if ( !State2.invalid_disp ) {
 		// This is not a wakeup from deep sleep but a power on
 		// We need to refresh the display.

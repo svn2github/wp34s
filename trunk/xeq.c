@@ -3416,7 +3416,7 @@ void xeq_init_contexts(void) {
 }
 
 
-#if defined(DEBUG) && !defined(WINGUI)
+#if defined(DEBUG) && !defined(WINGUI) && !defined(WP34STEST)
 extern unsigned char remap_chars(unsigned char ch);
 
 static int compare(s_opcode a1, s_opcode a2, int cata) {
@@ -3504,8 +3504,9 @@ int init_34s(void)
 		reset(NULL, NULL, OP_RESET);
 	}
 	init_state();
+	xeq_init_contexts();
 
-#if !defined(REALBUILD) && !defined(WINGUI) && defined(DEBUG)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(WP34STEST) && defined(DEBUG)
 	{
 		int i;
 	/* Sanity check the function table indices.

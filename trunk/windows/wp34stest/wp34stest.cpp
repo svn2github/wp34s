@@ -223,12 +223,7 @@ int main()
 {
 
     // initialise the dec context
-    decContextDefault(&Ctx, DEC_INIT_BASE);
-    Ctx.traps = 0;
-    Ctx.digits = DECNUMDIGITS;
-    Ctx.emax=DEC_MAX_MATH;
-    Ctx.emin=-DEC_MAX_MATH;
-    Ctx.round = DEC_ROUND_HALF_EVEN;
+    xeq_init_contexts();
     
     // be sure to be in radians
     UState.trigmode = TRIG_RAD;
