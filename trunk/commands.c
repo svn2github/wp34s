@@ -722,6 +722,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_SAVEM,	&cmdsavem,	NUMREG,			"STOM")
 	CMDstk(RARG_RESTM,	&cmdrestm,	NUMREG,			"RCLM")
 #endif
+	CMD(RARG_DELPROG,	NULL,		100,			"DEL\276")
 
 #undef CMDnoI
 #undef CMDstk

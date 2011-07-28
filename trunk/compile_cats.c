@@ -35,6 +35,7 @@
 
 
 static s_opcode program_xfcn[] = {
+	RARGCMD(RARG_DELPROG,	"DEL[sub-p]")
 	MON(OP__1POW,		"(-1)^x")
 	DYA(OP_PERMG,		"%+MG")
 	DYA(OP_MARGIN,		"%MG")

@@ -3334,21 +3334,55 @@ void stoprog(opcode c) {
  */
 void delprog(void) {
 	int i;
-	const unsigned pc = state_pc();
+	const unsigned int pc = state_pc();
 	int off;
 
-	if (pc == 0 || !isRAM(pc))
+	if (pc == 0)
 		return;
+	if (!isRAM(pc)) {
+		err(ERR_READ_ONLY);
+		return;
+	}
 	off = isDBL(Prog_1[pc])?2:1;
 	for (i=pc; i<(int)LastProg-1; i++)
 		Prog_1[i] = Prog_1[i+off];
 	do {
-		Prog_1[LastProg] =  EMPTY_PROGRAM_OPCODE;
+		Prog_1[LastProg] = EMPTY_PROGRAM_OPCODE;
 		LastProg--;
 	} while (--off);
 	decpc();
 }
 
+/* Delete multiple steps from the current position
+ */
+void delsteps(unsigned int n) {
+	const unsigned int pc = state_pc();
+	if (! isRAM(pc))
+		err(ERR_READ_ONLY);
+	else if (n == 0) {
+		unsigned int i = (pc != 0) ? pc : 1;
+		while (i<LastProg)
+			Prog_1[i++] = EMPTY_PROGRAM_OPCODE;
+		if (pc == 0)
+			LastProg = 1;
+		else {
+			LastProg = pc;
+			decpc();
+		}
+	} else {
+		if (pc == 0)
+			incpc();
+		while (n-- > 0) {
+			delprog();
+			if (incpc()) {
+				decpc();
+				break;
+			}
+		}
+		if (pc == 0)
+			set_pc(0);
+	}
+}
 
 void xeq_init_contexts(void) {
 	/* Initialise our standard contexts.

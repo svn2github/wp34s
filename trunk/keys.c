@@ -1058,9 +1058,17 @@ fkey:		if (oldstate != SHIFT_F)
 
 /* Code to handle all commands with arguments */
 static int arg_eval(unsigned int dv) {
-	const int r = RARG(State.base, (State2.ind?RARG_IND:0) + dv);
+	const unsigned int base = State.base;
+	const int r = RARG(base, (State2.ind?RARG_IND:0) + dv);
 	init_arg(0);
 	State2.rarg = 0;
+	if (base == RARG_DELPROG) {
+		if (State2.runmode)
+			err(ERR_BAD_MODE);
+		else
+			delsteps(dv);
+		return STATE_UNFINISHED;
+	}
 	return r;
 }
 

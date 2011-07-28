@@ -729,6 +729,7 @@ enum rarg {
 #ifdef INCLUDE_USER_MODE
 	RARG_SAVEM, RARG_RESTM,
 #endif
+	RARG_DELPROG,
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -771,6 +772,7 @@ enum errors {
 	ERR_TOO_LONG,	ERR_XEQ_NEST,	ERR_STK_CLASH,
 	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
 	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
+	ERR_READ_ONLY,
 	MAX_ERROR
 };
 
@@ -898,6 +900,7 @@ extern void reset(decimal64 *a, decimal64 *b, enum nilop op);
 extern opcode getprog(unsigned int n);
 extern void stoprog(opcode);
 extern void delprog(void);
+extern void delsteps(unsigned int);
 extern unsigned int inc(const unsigned int);
 extern unsigned int dec(unsigned int);
 extern int incpc(void);
