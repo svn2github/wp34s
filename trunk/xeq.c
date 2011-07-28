@@ -3355,6 +3355,7 @@ void delprog(void) {
 
 /* Delete multiple steps from the current position
  */
+#ifdef INCLUDE_MULTI_DELETE
 void delsteps(unsigned int n) {
 	const unsigned int pc = state_pc();
 	if (! isRAM(pc))
@@ -3385,6 +3386,7 @@ void delsteps(unsigned int n) {
 			set_pc(0);
 	}
 }
+#endif
 
 void xeq_init_contexts(void) {
 	/* Initialise our standard contexts.
@@ -3453,13 +3455,28 @@ static void check_cat(const enum catalogues cata, const char *name) {
 static void check_const_cat(void) {
 	int i;
 	char b1[16], b2[16];
+	char p1[64], p2[64];
 
 	for (i=1; i<NUM_CONSTS; i++) {
-		if (compare(CONST(i-1), CONST(i), 0))
-			error("constants row %d / %d: %s / %s", i, i+1,
-					catcmd(CONST(i-1), b1), catcmd(CONST(i), b2));
+		if (compare(CONST(i-1), CONST(i), 0)) {
+			prettify(catcmd(CONST(i-1), b1), p1);
+			prettify(catcmd(CONST(i), b2), p2);
+			error("constants row %d / %d: %s / %s", i, i+1, p1, p2);
+		}
 	}
 }
+
+static void bad_table(const char *t, int row, const char *n, int nlen) {
+	char buf[64], name[20];
+	int i;
+
+	for (i=0; i<nlen; i++)
+		name[i] = n[i];
+	name[nlen] = '\0';
+	prettify(name, buf);
+	error("%s table row %d: %6s", t, row, buf);
+}
+
 #endif
 
 /* Main initialisation routine that sets things up for us.
@@ -3483,22 +3500,22 @@ int init_34s(void)
 	 */
 	for (i=0; i<num_monfuncs; i++)
 		if (monfuncs[i].n != i)
-			error("monadic function table row %d: %6s", i, monfuncs[i].fname);
+			bad_table("monadic function", i, monfuncs[i].fname, NAME_LEN);
 	for (i=0; i<num_dyfuncs; i++)
 		if (dyfuncs[i].n != i)
-			error("dyadic function table row %d: %6s", i, dyfuncs[i].fname);
+			bad_table("dyadic function", i, dyfuncs[i].fname, NAME_LEN);
 	for (i=0; i<num_trifuncs; i++)
 		if (trifuncs[i].n != i)
-			error("triadic function table row %d: %6s", i, trifuncs[i].fname);
+			bad_table("triadic function", i, trifuncs[i].fname, NAME_LEN);
 	for (i=0; i<num_niladics; i++)
 		if (niladics[i].n != i)
-			error("niladic function table row %d: %6s", i, niladics[i].nname);
+			bad_table("niladic function", i, niladics[i].nname, NAME_LEN);
 	for (i=0; i<num_argcmds; i++)
 		if (argcmds[i].n != i)
-			error("argument command table row %d: %6s", i, argcmds[i].cmd);
+			bad_table("argument command", i, argcmds[i].cmd, NAME_LEN);
 	for (i=0; i<num_multicmds; i++)
 		if (multicmds[i].n != i)
-			error("multi command table row %d: %6s", i, multicmds[i].cmd);
+			bad_table("multi command", i, multicmds[i].cmd, NAME_LEN);
 	check_const_cat();
 	check_cat(CATALOGUE_COMPLEX, "complex");
 	check_cat(CATALOGUE_STATS, "statistics");

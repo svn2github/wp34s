@@ -348,7 +348,7 @@ static void dump_prog(unsigned int n) {
 	}
 }
 
-static void prettify(const char *in, char *out) {
+void prettify(const char *in, char *out) {
 	const char *p;
 	char c;
 
@@ -388,8 +388,12 @@ static void dump_opcodes(void) {
 			const unsigned int cmd = RARG_CMD(c);
 			unsigned int limit;
 
-			if (cmd >= NUM_RARG || cmd == RARG_DELPROG)
+			if (cmd >= NUM_RARG)
 				continue;
+#ifdef INCLUDE_MULTI_DELETE
+			if (cmd == RARG_DELPROG)
+				continue;
+#endif
 			limit = argcmds[cmd].lim;
 			if (cmd != RARG_ALPHA && (c & RARG_IND) != 0)
 				continue;

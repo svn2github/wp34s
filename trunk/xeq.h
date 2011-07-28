@@ -729,7 +729,9 @@ enum rarg {
 #ifdef INCLUDE_USER_MODE
 	RARG_SAVEM, RARG_RESTM,
 #endif
+#ifdef INCLUDE_MULTI_DELETE
 	RARG_DELPROG,
+#endif
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -868,6 +870,7 @@ enum shifts {
  */
 extern void err(const enum errors);
 extern const char *pretty(unsigned char);
+extern void prettify(const char *in, char *out);
 
 extern const char *get_cmdline(void);
 

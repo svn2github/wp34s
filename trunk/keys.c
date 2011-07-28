@@ -1062,10 +1062,12 @@ static int arg_eval(unsigned int dv) {
 	const int r = RARG(base, (State2.ind?RARG_IND:0) + dv);
 	init_arg(0);
 	State2.rarg = 0;
+#ifdef INCLUDE_MULTI_DELETE
 	if (base == RARG_DELPROG) {
 		delsteps(dv);
 		return STATE_UNFINISHED;
 	}
+#endif
 	return r;
 }
 

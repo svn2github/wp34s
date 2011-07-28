@@ -96,6 +96,9 @@
 // last X on the mode switch (so e.g. 34 stays 34).
 // #define HP16C_MODE_CHANGE
 
+// Include code to support a program mode only delete multiple steps command
+#define INCLUDE_MULTI_DELETE
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/

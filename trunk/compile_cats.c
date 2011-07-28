@@ -610,7 +610,9 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_ALPHASEND,	"\240SEND")
 	NILIC(OP_ALPHARECV,	"\240RECV")
 #endif
+#ifdef INCLUDE_MULTI_DELETE
 	RARGCMD(RARG_DELPROG,	"DEL[sub-p]")
+#endif
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
