@@ -1064,7 +1064,7 @@ static int arg_eval(unsigned int dv) {
 	State2.rarg = 0;
 #ifdef INCLUDE_MULTI_DELETE
 	if (base == RARG_DELPROG) {
-		delsteps(dv);
+		del_till_label(dv);
 		return STATE_UNFINISHED;
 	}
 #endif
@@ -1100,7 +1100,11 @@ static int arg_digit(int n) {
 static int arg_fkey(int n) {
 	const unsigned int b = State.base;
 
-	if ((b >= RARG_LBL && b <= RARG_INTG) || (b >= RARG_SF && b <= RARG_FCF)) {
+	if ((b >= RARG_LBL && b <= RARG_INTG) || (b >= RARG_SF && b <= RARG_FCF)
+#ifdef INCLUDE_MULTI_DELETE
+			|| b == RARG_DELPROG
+#endif
+			) {
 		if (State2.ind || State2.numdigit > 0)
 			return STATE_UNFINISHED;
 		if (argcmds[State.base].lim <= 100)
@@ -1287,6 +1291,12 @@ static int process_arg(const keycode c) {
 				init_arg(base - RARG_LBL);
 				State2.multi = 1;
 				State2.rarg = 0;
+#ifdef INCLUDE_MULTI_DELETE
+			} else if (base == RARG_DELPROG) {
+				init_arg(DBL_DELPROG);
+				State2.multi = 1;
+				State2.rarg = 0;
+#endif
 			} else if (base == RARG_SCI) {
 				init_arg(0);
 				State2.rarg = 0;
@@ -1325,6 +1335,8 @@ static int process_arg(const keycode c) {
 static int process_multi(const keycode c) {
 	const enum shifts oldstate = cur_shift();
 	unsigned char ch;
+	unsigned int opcode;
+	unsigned int base = State.base;
 
 	set_shift(SHIFT_N);
 
@@ -1336,10 +1348,12 @@ static int process_multi(const keycode c) {
 		if (State2.numdigit == 0) {
 			return STATE_UNFINISHED;
 		} else if (State2.numdigit == 1) {
-			return OP_DBL + (State.base << DBL_SHIFT) + State2.digval;
+			opcode = OP_DBL + (base << DBL_SHIFT) + State2.digval;
+			goto fin;
 		} else {
-			return OP_DBL + (State.base << DBL_SHIFT) + State2.digval +
+			opcode = OP_DBL + (base << DBL_SHIFT) + State2.digval +
 				(State2.digval2 << 16);
+			goto fin;
 		}
 
 	case K24:	// Clx - backspace, clear alpha
@@ -1377,8 +1391,18 @@ static int process_multi(const keycode c) {
 		return STATE_UNFINISHED;
 	}
 	State2.multi = 0;
-	return OP_DBL + (State.base << DBL_SHIFT) + State2.digval +
+
+	base = State.base;
+	opcode = OP_DBL + (base << DBL_SHIFT) + State2.digval +
 			(State2.digval2 << 16) + (ch << 24);
+fin:
+#ifdef INCLUDE_MULTI_DELETE
+	if (base == DBL_DELPROG) {
+		del_till_multi_label(opcode);
+		return STATE_UNFINISHED;
+	}
+#endif
+	return opcode;
 }
 
 

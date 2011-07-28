@@ -723,7 +723,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_RESTM,	&cmdrestm,	NUMREG,			"RCLM")
 #endif
 #ifdef INCLUDE_MULTI_DELETE
-	CMDnoI(RARG_DELPROG,	NULL,		100,			"DEL\276")
+	CMDnoI(RARG_DELPROG,	NULL,		NUMLBL,			"DEL\276")
 #endif
 
 #undef CMDnoI
@@ -770,6 +770,9 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_ALPHA,	&multialpha,	"\240")
 #endif
 //	CMD(DBL_NUMBER,	NULL,		"#")
+#ifdef INCLUDE_MULTI_DELETE
+	CMD(DBL_DELPROG,NULL,		"DEL\276")
+#endif
 #undef CMD
 };
 

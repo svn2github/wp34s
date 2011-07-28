@@ -380,6 +380,10 @@ static void dump_opcodes(void) {
 				continue;
 			if (cmd >= num_multicmds)
 				continue;
+#ifdef INCLUDE_MULTI_DELETE
+			if (cmd == DBL_DELPROG)
+				continue;
+#endif
 			xset(cmdname, '\0', 16);
 			xcopy(cmdname, multicmds[cmd].cmd, NAME_LEN);
 			prettify(cmdname, cmdpretty);

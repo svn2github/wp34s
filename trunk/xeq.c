@@ -3356,35 +3356,36 @@ void delprog(void) {
 /* Delete multiple steps from the current position
  */
 #ifdef INCLUDE_MULTI_DELETE
-void delsteps(unsigned int n) {
-	const unsigned int pc = state_pc();
+static void delete_until(unsigned int op) {
+	unsigned int pc = state_pc();
+
 	if (! isRAM(pc))
 		err(ERR_READ_ONLY);
 	else if (State2.runmode)
 		err(ERR_BAD_MODE);
-	else if (n == 0) {
-		unsigned int i = (pc != 0) ? pc : 1;
-		while (i<LastProg)
-			Prog_1[i++] = EMPTY_PROGRAM_OPCODE;
-		if (pc == 0)
-			LastProg = 1;
-		else {
-			LastProg = pc;
-			decpc();
-		}
-	} else {
-		if (pc == 0)
-			incpc();
-		while (n-- > 0) {
+	else {
+		const int pczero = (pc == 0);
+		if (pczero && incpc())
+			return;
+		while (getprog(state_pc()) != op) {
 			delprog();
 			if (incpc()) {
 				decpc();
 				break;
 			}
 		}
-		if (pc == 0)
+		if (pczero)
 			set_pc(0);
 	}
+}
+
+void del_till_label(unsigned int n) {
+	delete_until(RARG(RARG_LBL, n));
+}
+
+void del_till_multi_label(unsigned int n) {
+	const opcode dest = (n & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
+	delete_until(dest);
 }
 #endif
 

@@ -760,6 +760,7 @@ enum multiops {
 	DBL_ALPHA,
 #endif
 	//DBL_NUMBER,
+	DBL_DELPROG,
 	NUM_MULTI	// Last entry defines number of operations
 };
 
@@ -903,7 +904,8 @@ extern void reset(decimal64 *a, decimal64 *b, enum nilop op);
 extern opcode getprog(unsigned int n);
 extern void stoprog(opcode);
 extern void delprog(void);
-extern void delsteps(unsigned int);
+extern void del_till_label(unsigned int);
+extern void del_till_multi_label(unsigned int);
 extern unsigned int inc(const unsigned int);
 extern unsigned int dec(unsigned int);
 extern int incpc(void);
