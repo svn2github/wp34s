@@ -3330,6 +3330,18 @@ void stoprog(opcode c) {
 }
 
 
+/* Sanity checks for program step deletion
+ */
+static int check_delete_prog(unsigned int pc) {
+	if (! isRAM(pc))
+		err(ERR_READ_ONLY);
+	else if (State2.runmode)
+		err(ERR_BAD_MODE);
+	else
+		return 0;
+	return 1;
+}
+
 /* Delete the current step in the program
  */
 void delprog(void) {
@@ -3337,12 +3349,11 @@ void delprog(void) {
 	const unsigned int pc = state_pc();
 	int off;
 
+	if (check_delete_prog(pc))
+		return;
 	if (pc == 0)
 		return;
-	if (!isRAM(pc)) {
-		err(ERR_READ_ONLY);
-		return;
-	}
+
 	off = isDBL(Prog_1[pc])?2:1;
 	for (i=pc; i<(int)LastProg-1; i++)
 		Prog_1[i] = Prog_1[i+off];
@@ -3358,25 +3369,28 @@ void delprog(void) {
 #ifdef INCLUDE_MULTI_DELETE
 static void delete_until(unsigned int op) {
 	unsigned int pc = state_pc();
+	const int pczero = (pc == 0);
+	unsigned int t;
 
-	if (! isRAM(pc))
-		err(ERR_READ_ONLY);
-	else if (State2.runmode)
-		err(ERR_BAD_MODE);
-	else {
-		const int pczero = (pc == 0);
-		if (pczero && incpc())
-			return;
-		while (getprog(state_pc()) != op) {
-			delprog();
-			if (incpc()) {
-				decpc();
-				break;
-			}
-		}
-		if (pczero)
-			set_pc(0);
+	if (check_delete_prog(pc))
+		return;
+	if (pczero && incpc())
+		return;
+
+	t = find_opcode_from(pc, op, 1);
+	if (t == 0 || t < pc) {
+		err(ERR_NO_LBL);
+		return;
 	}
+	while (getprog(state_pc()) != op) {
+		delprog();
+		if (incpc()) {
+			decpc();
+			break;
+		}
+	}
+	if (pczero)
+		set_pc(0);
 }
 
 void del_till_label(unsigned int n) {
