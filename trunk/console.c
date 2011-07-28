@@ -388,7 +388,7 @@ static void dump_opcodes(void) {
 			const unsigned int cmd = RARG_CMD(c);
 			unsigned int limit;
 
-			if (cmd >= NUM_RARG)
+			if (cmd >= NUM_RARG || cmd == RARG_DELPROG)
 				continue;
 			limit = argcmds[cmd].lim;
 			if (cmd != RARG_ALPHA && (c & RARG_IND) != 0)
