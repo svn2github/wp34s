@@ -3359,6 +3359,8 @@ void delsteps(unsigned int n) {
 	const unsigned int pc = state_pc();
 	if (! isRAM(pc))
 		err(ERR_READ_ONLY);
+	else if (State2.runmode)
+		err(ERR_BAD_MODE);
 	else if (n == 0) {
 		unsigned int i = (pc != 0) ? pc : 1;
 		while (i<LastProg)

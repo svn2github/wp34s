@@ -1063,10 +1063,7 @@ static int arg_eval(unsigned int dv) {
 	init_arg(0);
 	State2.rarg = 0;
 	if (base == RARG_DELPROG) {
-		if (State2.runmode)
-			err(ERR_BAD_MODE);
-		else
-			delsteps(dv);
+		delsteps(dv);
 		return STATE_UNFINISHED;
 	}
 	return r;
