@@ -148,6 +148,8 @@
 #define CEIL		MONADIC(CEIL)
 #define SQUARE		MONADIC(SQR)
 #define SQRT		MONADIC(SQRT)
+#define LN1P		MONADIC(LN1P)
+#define EXPM1		MONADIC(EXPM1)
 
 // Dyadic functions
 #define PLUS		DYADIC(ADD)
@@ -898,11 +900,10 @@ const s_opcode xrom[] = {
 		RCL(R_PMT)
 		RCL(R_PV)
 		RCL_PL(R_FV)
-		DIG(1)
-		RCL_PL(R_I)
-		RCL(R_N)
-		POWER
-		DEC(st(X))
+		RCL(83)
+		LN1P
+		RCL_MU(84)
+		EXPM1
 		DIVISION
 		RCL_PL(R_PV)
 		RCL_MU(R_I)
