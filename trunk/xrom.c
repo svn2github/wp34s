@@ -900,11 +900,18 @@ const s_opcode xrom[] = {
 		RCL(R_PMT)
 		RCL(R_PV)
 		RCL_PL(R_FV)
-		RCL(83)
+		RCL(R_I)
+		TST0(ne)
+			SKIP(4)
+		RCL_PL(R_N)		// i == 0 special case
+		RCL_MU(R_PMT)
+		PLUS
+		SKIP(11)
+
 		LN1P
-		RCL_MU(84)
+		RCL_MU(R_N)
 		EXPM1
-		DIVISION
+		DIVISION		// General case
 		RCL_PL(R_PV)
 		RCL_MU(R_I)
 		FCp(F_BEG)
