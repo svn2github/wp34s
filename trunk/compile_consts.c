@@ -287,7 +287,7 @@ struct constsml {
 
 struct constsml constsml[] = {
 	CONSTANT("a",		"PC_a",		"365.2425"),		// Days in a Gregorian year
-	CONSTANT("a\270",	"PC_a0",	"5.291772083E-11"),	// Bohr radius
+	CONSTANT("a\270",	"PC_a0",	"5.2917721092E-11"),	// Bohr radius
 	CONSTANT("c",		"PC_C",		"299792458"),		// Speed of light in a vacuum
 	CONSTANT("c\271",	"PC_C1",	"3.74177153E-16"),	// First radiation constant
 	CONSTANT("c\272",	"PC_C2",	"1.438770E-2"),		// Second radiation constant
@@ -320,7 +320,7 @@ struct constsml constsml[] = {
 	CONSTANT("\236",	"PC_hon2PI",	"1.054571726E-34"),	// Planck's constant over 2 pi.
 	CONSTANT("l\276",	"PC_PlanckL",	"1.616199E-35"),	// Base Planck unit of length
 	CONSTANT("M\276",	"PC_PlanckM",	"2.17651E-8"),		// Base Planck unit of mass
-/**/	CONSTANT("q\276",	"PC_PlanckQ",	"1.875545870e-18"),	// Base Planck unit of charge
+/**/	CONSTANT("q\276",	"PC_PlanckQ",	"1.8755459e-18"),	// Base Planck unit of charge
 	CONSTANT("T\276",	"PC_PlanckTh",	"1.416833E32"),		// Base Planck unit of temperature
 	CONSTANT("t\276",	"PC_tp",	"5.39106E-44"),		// Base Planck unit of time
 
@@ -332,11 +332,11 @@ struct constsml constsml[] = {
 	CONSTANT("m\276",	"PC_mp",	"1.672621777E-27"),	// Proton mass
 	CONSTANT("m\277",	"PC_mu",	"1.660538921E-27"),	// Atomic mass unit
 	CONSTANT("m\231",	"PC_mMu",	"1.883531475E-28"),	// Muon mass
-	CONSTANT("m\274c\232",	"PC_mec2",	"8.18710506E-14"),	// Electron mass by c^2
-	CONSTANT("m\275c\232",	"PC_mnc2",	"1.505349631E-10"),	// Neutron mass by c^2
-	CONSTANT("m\276c\232",	"PC_mpc2",	"1.503277484E-10"),	// Proton mass by c^2
+//	CONSTANT("m\274c\232",	"PC_mec2",	"8.18710506E-14"),	// Electron mass by c^2
+//	CONSTANT("m\275c\232",	"PC_mnc2",	"1.505349631E-10"),	// Neutron mass by c^2
+//	CONSTANT("m\276c\232",	"PC_mpc2",	"1.503277484E-10"),	// Proton mass by c^2
 	CONSTANT("m\277c\232",	"PC_muc2",	"1.492417954E-10"),	// Atomic mass unit by c^2
-	CONSTANT("m\231c\232",	"PC_mMuc2",	"1.692833667E-11"),	// Muon mass by c^2
+//	CONSTANT("m\231c\232",	"PC_mMuc2",	"1.692833667E-11"),	// Muon mass by c^2
 	CONSTANT("\252\273",	"PC_lamC",	"2.4263102389E-12"),	// Compton wavelength of the electron
 	CONSTANT("\252\273\275","PC_lamCn",	"1.3195909068E-15"),	// Compton wavelength of the neutron
 	CONSTANT("\252\273\276","PC_lamCp",	"1.32140985623E-15"),	// Compton wavelength of the proton
@@ -378,8 +378,8 @@ struct constsml constsml[] = {
 	CONSTANT("R\033",	"PC_R_luna",	"1737.53E3"),		// Moon mean radius NASA Horizons
 	CONSTANT("R\216",	"PC_R_sol",	"6.960E8"),		// Sun mean radius NASA Horizons
 	CONSTANT("R\256",	"PC_R_terra",	"6371.01E3"),		// Earth mean radius NASA Horizons
-	CONSTANT("a\033\256",	"PC_SM_luna",	"384400E3"),		// Semi-major axis Moon NASA Horizons
-	CONSTANT("a\256\216",	"PC_SM_terra",	"149.60E9"),		// Semi-major axis Earth NASA Earth fact sheet
+	CONSTANT("a\033",	"PC_SM_luna",	"384400E3"),		// Semi-major axis Moon NASA Horizons
+	CONSTANT("a\256",	"PC_SM_terra",	"149.5979E9"),		// Semi-major axis Earth NASA Earth fact sheet
 //	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
 
 	CONSTANT(NULL, NULL, NULL)
