@@ -287,6 +287,9 @@ struct argcmd
 	unsigned int indirectokay : 1;
 	unsigned int stckreg : 1;
 	unsigned int cmplx : 1;
+#ifdef ALLOW_MORE_LABELS
+	unsigned int label : 1;
+#endif
 	const char cmd[NAME_LEN];
 };
 extern const struct argcmd argcmds[];
@@ -342,7 +345,13 @@ extern int current_catalogue_max(void);
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define RET_STACK_SIZE	8	/* Depth of return stack */
+#ifdef ALLOW_MORE_LABELS
+#define NUMLBL		116	/* Number of program labels */
+#define LBLNAMES	"ABCDFGHIJKLPTWYZ"
+#else
 #define NUMLBL		104	/* Number of program labels */
+#define LBLNAMES	"ABCD"
+#endif
 #define NUMFLG		104	/* Number of flags */
 
 #define NUMALPHA	31	/* Number of characters in Alpha */

@@ -99,6 +99,10 @@
 // Include code to support a program mode only delete multiple steps command
 #define INCLUDE_MULTI_DELETE
 
+// Allow more single letter labels then just A, B, C & D.
+#define ALLOW_MORE_LABELS 1  
+
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/

@@ -558,23 +558,48 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 #endif
 
 
+#ifdef ALLOW_MORE_LABELS
 #ifdef COMPILE_CATALOGUES
-#define allCMD(name, func, limit, nm, ind, stk, cpx)					\
+#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
+	{ PTR, limit, ind, stk, cpx, lbl, nm },
+#elif DEBUG
+#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
+	{ name, func, limit, ind, stk, cpx, lbl, nm },
+#elif COMMANDS_PASS == 1
+#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
+	{ 0xaa55, limit, ind, stk, cpx, lbl, nm },
+#else
+#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
+	{ func, limit, ind, stk, cpx, lbl, nm },
+#endif
+#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0)
+#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0)
+#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1, 0)
+#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0)
+#define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 1)
+#define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 1)
+#else
+#ifdef COMPILE_CATALOGUES
+#define allCMD(name, func, limit, nm, ind, stk, cpx)				\
 	{ PTR, limit, ind, stk, cpx, nm },
 #elif DEBUG
-#define allCMD(name, func, limit, nm, ind, stk, cpx)					\
+#define allCMD(name, func, limit, nm, ind, stk, cpx)				\
 	{ name, func, limit, ind, stk, cpx, nm },
 #elif COMMANDS_PASS == 1
-#define allCMD(name, func, limit, nm, ind, stk, cpx)					\
+#define allCMD(name, func, limit, nm, ind, stk, cpx)				\
 	{ 0xaa55, limit, ind, stk, cpx, nm },
 #else
-#define allCMD(name, func, limit, nm, ind, stk, cpx)					\
+#define allCMD(name, func, limit, nm, ind, stk, cpx)				\
 	{ func, limit, ind, stk, cpx, nm },
 #endif
 #define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0)
 #define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0)
 #define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1)
 #define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0)
+#define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0)
+#define CMDlNoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0)
+#endif
+
 
 #if COMMANDS_PASS == 2
 CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
@@ -641,16 +666,16 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_ISZ,	&cmdloopz,	NUMREG,			"ISZ")
 	CMDstk(RARG_DEC,	&cmdlincdec,	NUMREG,			"DEC")
 	CMDstk(RARG_INC,	&cmdlincdec,	NUMREG,			"INC")
-	CMDnoI(RARG_LBL,	NULL,		NUMLBL,			"LBL")
-	CMD(RARG_LBLP,		&cmdlblp,	NUMLBL,			"LBL?")
-	CMD(RARG_XEQ,		&cmdgto,	NUMLBL,			"XEQ")
-	CMD(RARG_GTO,		&cmdgto,	NUMLBL,			"GTO")
-	CMD(RARG_SUM,		&xromarg,	NUMLBL,			"\221")
-	CMD(RARG_PROD,		&xromarg,	NUMLBL,			"\217")
-	CMD(RARG_SOLVE,		&xromarg,	NUMLBL,			"SLV")
-	CMD(RARG_DERIV,		&xromarg,	NUMLBL,			"f'(x)")
-	CMD(RARG_2DERIV,	&xromarg,	NUMLBL,			"f\"(x)")
-	CMD(RARG_INTG,		&xromarg,	NUMLBL,			"INT")
+	CMDlblnI(RARG_LBL,	NULL,		NUMLBL,			"LBL")
+	CMDlbl(RARG_LBLP,	&cmdlblp,	NUMLBL,			"LBL?")
+	CMDlbl(RARG_XEQ,	&cmdgto,	NUMLBL,			"XEQ")
+	CMDlbl(RARG_GTO,	&cmdgto,	NUMLBL,			"GTO")
+	CMDlbl(RARG_SUM,	&xromarg,	NUMLBL,			"\221")
+	CMDlbl(RARG_PROD,	&xromarg,	NUMLBL,			"\217")
+	CMDlbl(RARG_SOLVE,	&xromarg,	NUMLBL,			"SLV")
+	CMDlbl(RARG_DERIV,	&xromarg,	NUMLBL,			"f'(x)")
+	CMDlbl(RARG_2DERIV,	&xromarg,	NUMLBL,			"f\"(x)")
+	CMDlbl(RARG_INTG,	&xromarg,	NUMLBL,			"INT")
 
 	CMD(RARG_STD,		&cmddisp,	DISPLAY_DIGITS,		"ALL")
 	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX")
@@ -726,6 +751,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDnoI(RARG_DELPROG,	NULL,		NUMLBL,			"DEL\276")
 #endif
 
+#undef CMDlbl
+#undef CMDlblnI
 #undef CMDnoI
 #undef CMDstk
 #undef CMD
