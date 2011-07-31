@@ -100,7 +100,7 @@
 #define INCLUDE_MULTI_DELETE
 
 // Allow more single letter labels then just A, B, C & D.
-#define ALLOW_MORE_LABELS 1  
+#define ALLOW_MORE_LABELS
 
 
 /*******************************************************************/

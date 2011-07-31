@@ -847,7 +847,32 @@ static int process_gtodot(const keycode c) {
 	case K02:	rawpc = gtodot_fkey(2);	goto fin;
 	case K03:	rawpc = gtodot_fkey(3);	goto fin;
 #endif
-
+#ifdef ALLOW_MORE_LABELS
+	case K05:	rawpc = gtodot_fkey(4);	goto fin;		// F
+#ifdef SEQUENTIAL_ROWS
+	case K10:	case K11:	case K12:			// G H & I
+		rawpc = gtodot_fkey(c - K10 + 5);
+		goto fin;
+	case K21:	case K22:	case K23:			// J K L
+		rawpc = gtodot_fkey(c - K21 + 8);
+		goto fin;
+	case K63:	case K64:					// Y & Z
+		rawpc = gtodot_fkey(c - K63 + 14);
+		goto fin;
+#else
+	case K10:	rawpc = gtodot_fkey(5);	goto fin;		// G
+	case K11:	rawpc = gtodot_fkey(6);	goto fin;		// H
+	case K12:	rawpc = gtodot_fkey(7);	goto fin;		// I
+	case K21:	rawpc = gtodot_fkey(8);	goto fin;		// J
+	case K22:	rawpc = gtodot_fkey(9);	goto fin;		// K
+	case K23:	rawpc = gtodot_fkey(10);	goto fin;	// L
+	case K63:	rawpc = gtodot_fkey(14);	goto fin;	// Y
+	case K64:	rawpc = gtodot_fkey(15);	goto fin;	// Z
+#endif
+	case K34:	rawpc = gtodot_fkey(11);	goto fin;	// P
+	case K44:	rawpc = gtodot_fkey(12);	goto fin;	// T
+	case K54:	rawpc = gtodot_fkey(13);	goto fin;	// W
+#endif
 	case K62:		// .
 		if (State2.numdigit == 0) {
 			rawpc = 0;
@@ -1100,11 +1125,12 @@ static int arg_digit(int n) {
 static int arg_fkey(int n) {
 	const unsigned int b = State.base;
 
-	if ((b >= RARG_LBL && b <= RARG_INTG) || (b >= RARG_SF && b <= RARG_FCF)
-#ifdef INCLUDE_MULTI_DELETE
-			|| b == RARG_DELPROG
+#ifdef ALLOW_MORE_LABELS
+	if (argcmds[b].label || (b >= RARG_SF && b <= RARG_FCF && n < 4))
+#else
+	if (argcmds[b].label || (b >= RARG_SF && b <= RARG_FCF))
 #endif
-			) {
+	{
 		if (State2.ind || State2.numdigit > 0)
 			return STATE_UNFINISHED;
 		if (argcmds[State.base].lim <= 100)
@@ -1190,6 +1216,12 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K_CMPLX:
+#ifdef ALLOW_MORE_LABELS
+		{	const int v = arg_fkey(4);
+			if (v != STATE_UNFINISHED)
+				return v;
+		}
+#endif
 #ifdef INCLUDE_USER_MODE
 		if (State2.ind || State2.dot)
 			break;
@@ -1200,39 +1232,56 @@ static int process_arg(const keycode c) {
 		break;
 #endif
 
+#ifdef ALLOW_MORE_LABELS
+#define LBLK(n)		return arg_fkey(n)
+#ifdef SEQUENTIAL_ROWS
+	case K10:	case K11:
+		LBLK(c - K10 + 5);			// Labels G & H
+#else
+	case K10:	LBLK(5);			// Label G
+	case K11:	LBLK(6);			// Label H
+#endif
+#else
+#define LBLK(n)		break
+#endif
 	case K12:	  // I (lastY)
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regI_idx);
-		break;
+		LBLK(7);				// Label I
 
 	case K23:	  // L (lastX)
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			return arg_eval(regL_idx);
-		break;
+		LBLK(10);				// Label L
+
 	case K21:	// J
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			return arg_eval(regJ_idx);
-		break;
+		LBLK(8);				// Label J
+
 	case K22:	// K
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regK_idx);
-		break;
+		LBLK(9);				// Label K
+
 	case K62:		// X
 		return process_arg_dot(base);
+
 	case K63:		// Y
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regY_idx);
-		break;
+		LBLK(14);				// Label Y
 
 	/* STO and RCL can take an arithmetic argument */
 	case K64:		// Z register
 		if (State2.dot || ( ! arg_storcl(RARG_STO_PL - RARG_STO, 1) &&
 					(argcmds[base].stckreg || State2.ind)))
 			return arg_eval(regZ_idx);
-		break;
+		LBLK(15);				// Label Z
+
 	case K54:
 		if (base == RARG_VIEW || base == RARG_VIEW_REG) {
 			init_arg(0);
@@ -1240,17 +1289,19 @@ static int process_arg(const keycode c) {
 			return OP_NIL | OP_VIEWALPHA;
 		}
 		arg_storcl(RARG_STO_MI - RARG_STO, 1);
-		break;
+		LBLK(13);				// Label W
 
 	case K44:		// T register
 		if (State2.dot || ( ! arg_storcl(RARG_STO_MU - RARG_STO, 1) &&
 					(argcmds[base].stckreg || State2.ind)))
 			if (!argcmds[base].cmplx)
 				return arg_eval(regT_idx);
-		break;
+		LBLK(12);				// Label T
+
 	case K34:
 		arg_storcl(RARG_STO_DV - RARG_STO, 1);
-		break;
+		LBLK(11);				// Label P
+
 	case K40:
 		arg_storcl(RARG_STO_MAX - RARG_STO, 0);
 		break;
@@ -1258,45 +1309,46 @@ static int process_arg(const keycode c) {
 		arg_storcl(RARG_STO_MIN - RARG_STO, 0);
 		break;
 
+#undef LBLK
+
 	case K00:
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			return arg_eval(regA_idx);
-		return arg_fkey(0);
+		return arg_fkey(0);			// Label A
 	case K02:
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			return arg_eval(regC_idx);
-		return arg_fkey(2);	// F2
+		return arg_fkey(2);			// Label C
 #ifdef SEQUENTIAL_ROWS
 	case K01:	case K03:
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regB_idx + c - K01);
-		return arg_fkey(c - K00);
+		return arg_fkey(c - K00);		// Labels B and D
 #else
 	case K01:
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regB_idx);
-		return arg_fkey(1);	// F1
+		return arg_fkey(1);			// Label B
 	case K03:
 		if (State2.dot || argcmds[base].stckreg || State2.ind)
 			if (!argcmds[base].cmplx)
 				return arg_eval(regD_idx);
-		return arg_fkey(3);	// F3
+		return arg_fkey(3);			// Label D
 #endif
 
 	case K20:				// Enter is a short cut finisher but it also changes a few commands if it is first up
 		if (State2.numdigit == 0 && !State2.ind && !State2.dot) {
-			if (base >= RARG_LBL && base <= RARG_INTG) {
-				init_arg(base - RARG_LBL);
-				State2.multi = 1;
-				State2.rarg = 0;
+			if (argcmds[base].label) {
 #ifdef INCLUDE_MULTI_DELETE
-			} else if (base == RARG_DELPROG) {
-				init_arg(DBL_DELPROG);
+				if (base == RARG_DELPROG)
+					init_arg(DBL_DELPROG);
+				else
+#endif
+					init_arg(base - RARG_LBL);
 				State2.multi = 1;
 				State2.rarg = 0;
-#endif
 			} else if (base == RARG_SCI) {
 				init_arg(0);
 				State2.rarg = 0;

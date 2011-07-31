@@ -186,13 +186,8 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		} else {
 			if (arg >= regX_idx && arg <= regK_idx && argcmds[cmd].stckreg) {
 				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = REGNAMES[arg-regX_idx];
-#ifdef ALLOW_MORE_LABELS
-// If we assume LBLNAMES is always correct even for flags, etc. this can be shortened.
-			} else if (argcmds[cmd].label && arg >= 100) {
+			} else if (/*argcmds[cmd].label && */arg >= 100) {
 				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = LBLNAMES[arg-100];
-#endif
-			} else if (arg >= 100) {
-				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = 'A'+arg-100;
 			} else {
 				num_arg_0(sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN), arg, argcmds[cmd].lim < 10 ? 1 : 2);
 			}

@@ -287,9 +287,7 @@ struct argcmd
 	unsigned int indirectokay : 1;
 	unsigned int stckreg : 1;
 	unsigned int cmplx : 1;
-#ifdef ALLOW_MORE_LABELS
 	unsigned int label : 1;
-#endif
 	const char cmd[NAME_LEN];
 };
 extern const struct argcmd argcmds[];
