@@ -261,10 +261,11 @@ extern const unsigned short num_niladics;
 struct argcmd
 {
 	unsigned short f;
-	unsigned int lim : 8;
+	unsigned char lim;
 	unsigned int indirectokay : 1;
 	unsigned int stckreg : 1;
 	unsigned int cmplx : 1;
+	unsigned int label : 1;
 	_CONST char cmd[NAME_LEN];
 };
 

@@ -30,6 +30,8 @@ static void set_status_sized(const char *, int);
 static void set_status(const char *);
 static void set_status_right(const char *);
 
+const char *DispMsg;	   // What to display in message area
+
 #if !defined(REALBUILD) && !defined(WINGUI)
 int just_displayed = 0;
 #endif

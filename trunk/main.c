@@ -125,7 +125,6 @@ unsigned char Xtal;
 #ifdef SLEEP_ANNUNCIATOR
 unsigned char SleepAnnunciatorOn;
 #endif
-int BaudRate;
 
 /*
  *  Definitions for the keyboard scan
@@ -1242,11 +1241,6 @@ int open_port( int baud, int bits, int parity, int stopbits )
 
 	// Enable receiver and transmitter
 	AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RXEN | AT91C_US_TXEN;
-
-	/*
-	 *  We need the baud rate in case of speed switches
-	 */
-	BaudRate = baud;
 
 	return 0;
 }

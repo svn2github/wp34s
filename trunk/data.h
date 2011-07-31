@@ -223,11 +223,6 @@ struct _state2 {
  */
 typedef struct _while_on {
 	/*
-	 * What to display in message area
-	 */
-	const char *_disp_msg;
-
-	/*
 	 *  A ticker, incremented every 100ms
 	 */
 	volatile unsigned long _ticker;
@@ -273,7 +268,6 @@ extern TStateWhileOn StateWhileOn;
 
 #define State2		 (StateWhileOn._state2)
 #define TestFlag	 (State2.test_flag)
-#define DispMsg		 (StateWhileOn._disp_msg)
 #define Ticker		 (StateWhileOn._ticker)
 #define Keyticks         (StateWhileOn._keyticks)
 #define LastActiveSecond (StateWhileOn._last_active_second)
@@ -296,6 +290,9 @@ extern int JustStopped;            // Set on program stop to ignore the next R/S
 extern int Error;		   // Did an error occur, if so what code?
 extern int ShowRegister; 	   // Temporary display (not X)
 extern int PcWrapped;		   // dec() or inc() have rapped around
+extern const char *DispMsg;	   // What to display in message area
+
+
 extern decContext Ctx;
 
 #if !defined(REALBUILD) && !defined(WINGUI)
