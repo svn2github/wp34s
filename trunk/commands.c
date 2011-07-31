@@ -558,7 +558,6 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 #endif
 
 
-#ifdef ALLOW_MORE_LABELS
 #ifdef COMPILE_CATALOGUES
 #define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
 	{ PTR, limit, ind, stk, cpx, lbl, nm },
@@ -578,27 +577,6 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 #define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0)
 #define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 1)
 #define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 1)
-#else
-#ifdef COMPILE_CATALOGUES
-#define allCMD(name, func, limit, nm, ind, stk, cpx)				\
-	{ PTR, limit, ind, stk, cpx, nm },
-#elif DEBUG
-#define allCMD(name, func, limit, nm, ind, stk, cpx)				\
-	{ name, func, limit, ind, stk, cpx, nm },
-#elif COMMANDS_PASS == 1
-#define allCMD(name, func, limit, nm, ind, stk, cpx)				\
-	{ 0xaa55, limit, ind, stk, cpx, nm },
-#else
-#define allCMD(name, func, limit, nm, ind, stk, cpx)				\
-	{ func, limit, ind, stk, cpx, nm },
-#endif
-#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0)
-#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0)
-#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1)
-#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0)
-#define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0)
-#define CMDlNoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0)
-#endif
 
 
 #if COMMANDS_PASS == 2
@@ -666,6 +644,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_ISZ,	&cmdloopz,	NUMREG,			"ISZ")
 	CMDstk(RARG_DEC,	&cmdlincdec,	NUMREG,			"DEC")
 	CMDstk(RARG_INC,	&cmdlincdec,	NUMREG,			"INC")
+
 	CMDlblnI(RARG_LBL,	NULL,		NUMLBL,			"LBL")
 	CMDlbl(RARG_LBLP,	&cmdlblp,	NUMLBL,			"LBL?")
 	CMDlbl(RARG_XEQ,	&cmdgto,	NUMLBL,			"XEQ")
@@ -737,8 +716,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstk(RARG_FLCRCL_MU, &cmdflashcrcl,	NUMREG-1,		"\024RCF\034")
 	CMDcstk(RARG_FLCRCL_DV, &cmdflashcrcl,	NUMREG-1,		"\024RCF/")
 
-	CMD(RARG_SLD,		&op_shift_digit,100,			"S.L")
-	CMD(RARG_SRD,		&op_shift_digit,100,			"S.R")
+	CMD(RARG_SLD,		&op_shift_digit,100,			"SDL")
+	CMD(RARG_SRD,		&op_shift_digit,100,			"SDR")
 
 	CMDstk(RARG_VIEW_REG,	&alpha_view_reg,NUMREG,			"VW\240+")
 	CMD(RARG_ROUNDING,	&rarg_roundingmode, DEC_ROUND_MAX,	"RM")
@@ -748,7 +727,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_RESTM,	&cmdrestm,	NUMREG,			"RCLM")
 #endif
 #ifdef INCLUDE_MULTI_DELETE
-	CMDnoI(RARG_DELPROG,	NULL,		NUMLBL,			"DEL\276")
+	CMDlblnI(RARG_DELPROG,	NULL,		NUMLBL,			"DEL\276")
 #endif
 
 #undef CMDlbl
