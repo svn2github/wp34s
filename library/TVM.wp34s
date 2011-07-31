@@ -1,0 +1,23 @@
+LBL'TVM'
+RCL 80
+RCL 81
+RCL+ 82
+RCL 83
+x[!=]0?
+SKIP 03
+RCL+ 84
+RCL[times] 80
+SKIP 11
+LN1+x
+RCL[times] 84
+e[^x]-1
+/
+RCL+ 81
+RCL[times] 83
+FC? 80
+SKIP 03
+RCL 83
+INC X
+/
++
+RTN
