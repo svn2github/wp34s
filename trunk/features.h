@@ -99,8 +99,10 @@
 // Include code to support a program mode only delete multiple steps command
 #define INCLUDE_MULTI_DELETE
 
-// Allow more single letter labels then just A, B, C & D.
-#define ALLOW_MORE_LABELS
+// Allow more single letter labels then just the four hot keys : A, B, C & D.
+// Enabling this option also allows labels F, G, H, I, J, K, L, P, T, W, Y & Z.
+// None of these are hot keys however.
+// #define ALLOW_MORE_LABELS
 
 
 /*******************************************************************/
