@@ -887,6 +887,7 @@ const s_opcode xrom[] = {
 		DIG(2)
 		RTN
 
+#if 0 // Moved to library
 /**************************************************************************/
 #define R_PMT	80
 #define R_PV	81
@@ -928,7 +929,6 @@ const s_opcode xrom[] = {
 #undef R_PV
 #undef R_PMT
 
-#if 0
 /**************************************************************************/
 	DLBL('W', 'H', 'O')
 		CLALPHA
