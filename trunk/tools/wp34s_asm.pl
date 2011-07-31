@@ -49,8 +49,9 @@ my $DEFAULT_FLASH_BLANK_INSTR = "ERR 03";
 my $user_flash_blank_fill = "";
 
 my $STD_EXTERNAL_OP_TABLE = "wp34s.op";
-my $USE_INTERNAL_OPCODE_MAP = "-- internal table --";
-my $DEFAULT_OPCODE_MAP_FILE = $USE_INTERNAL_OPCODE_MAP;
+my $FORCE_INTERNAL_MAP = "internal";
+my $USE_FALLBACK_INTERNAL_MAP = "fallback_internal_table";
+my $DEFAULT_OPCODE_MAP_FILE = $USE_FALLBACK_INTERNAL_MAP;
 my $opcode_map_file = $DEFAULT_OPCODE_MAP_FILE;
 
 # If this variable is set to a non-NULL value, it will be used as the filename of the
@@ -93,14 +94,16 @@ my $xrom_bin_mode = 0;
 
 # These are used to convert all the registers into numeric offsets.
 #
-# There are 2 groups of named register offsets; the 112 group (XYZTABCDLIJK) and the 104
-# group (ABCD). We have to extract the opcode's numeric value based on the op-type. The value of
-# max will give us this (112,111,104,100,etc.). Note that for all values of max<=100, either group is
-# valid since these are purely numeric.
+# There are at least 3 groups of named instruction offsets; the 112 group (XYZTABCDLIJK), the 116 group
+# (ABCDFGHIJKLPTWYZ), and the 104 group (ABCD). We have to extract the opcode's numeric offset based on
+# the op-type. The value of max will give us this (116,112,104,100,etc.). Note that for all values of
+# max<=100, any group is valid since these are purely numeric.
 my @reg_offset_112 = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I", "J", "K");
 my $MAX_INDIRECT_112 = 112;
 my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D");
 my $MAX_INDIRECT_104 = 104;
+my @label_116 = (0 .. 99, "A", "B", "C", "D", "F", "G", "H", "I", "J", "K", "L", "P", "T", "W", "Y", "Z");
+my $MAX_LABEL = 116;
 
 # The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
@@ -544,6 +547,7 @@ sub write_binary {
   my $outfile = shift;
   my @words = @_;
   open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
+  binmode OUT;
   foreach (@words) {
     my $bin_lo = $_ & 0xFF;
     my $bin_hi = $_ >> 8;
@@ -618,23 +622,27 @@ sub pre_fill_flash {
 sub load_opcode_tables {
   my $file = shift;
 
-  # If the user has specified an opcode table via the -opcodes switch, use that one.
-  if( $file ne $USE_INTERNAL_OPCODE_MAP ) {
-    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
-    $file .= " (specified)";
+  if( $file ne $FORCE_INTERNAL_MAP ) {
+    # If the user has specified an opcode table via the -opcodes switch, use that one.
+    if( $file ne $USE_FALLBACK_INTERNAL_MAP ) {
+      open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+      $file .= " (specified)";
 
-  # Search the current directory for an opcode table.
-  } elsif( -e "${STD_EXTERNAL_OP_TABLE}" ) {
-    $file = "${STD_EXTERNAL_OP_TABLE}";
-    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
-    $file .= " (local directory)";
+    # Search the current directory for an opcode table.
+    } elsif( -e "${STD_EXTERNAL_OP_TABLE}" ) {
+      $file = "${STD_EXTERNAL_OP_TABLE}";
+      open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+      $file .= " (local directory)";
 
-  # Search the directory the script is running out of.
-  } elsif( -e "${script_dir}${STD_EXTERNAL_OP_TABLE}" ) {
-    $file = "${script_dir}${STD_EXTERNAL_OP_TABLE}";
-    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+    # Search the directory the script is running out of.
+    } elsif( -e "${script_dir}${STD_EXTERNAL_OP_TABLE}" ) {
+      $file = "${script_dir}${STD_EXTERNAL_OP_TABLE}";
+      open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
 
+    } else {
+    }
   } else {
+    $file .= " (forced)";
   }
   print "// Opcode map source: $file\n";
 
@@ -823,11 +831,10 @@ sub parse_arg_type {
   if( $direct_max ) {
     for my $offset (0 .. ($direct_max-1)) {
       my ($reg_str);
-      # There are 2 groups of named register offsets; the 112 group (XYZTABCDLIJK) and the 104
-      # group (ABCD). We have to extract the opcode's numeric offset based on the op-type. The value of
-      # max will give us this (112,104,100,etc.). Note that for all values of max<=100, either group is
-      # valid since these are purely numeric.
-      if( $direct_max > $MAX_INDIRECT_104 ) {
+      # Find out which instruction offset group we are to use.
+      if( $direct_max == $MAX_LABEL ) {
+        $reg_str = $label_116[$offset];
+      } elsif( $direct_max > $MAX_INDIRECT_104 ) {
         $reg_str = $reg_offset_112[$offset];
       } else {
         $reg_str = $reg_offset_104[$offset];
@@ -1696,8 +1703,8 @@ __DATA__
 0x1900  mult  INT
 0x2000  cmd # a
 0x2001  cmd # a[sub-0]
-0x2002  cmd # a[sub-m][terra]
-0x2003  cmd # a[terra][sol]
+0x2002  cmd # a[sub-m]
+0x2003  cmd # a[terra]
 0x2004  cmd # c
 0x2005  cmd # c[sub-1]
 0x2006  cmd # c[sub-2]
@@ -1718,65 +1725,61 @@ __DATA__
 0x2015  cmd # Kj
 0x2016  cmd # l[sub-p]
 0x2017  cmd # m[sub-e]
-0x2018  cmd # m[sub-e]c[^2]
-0x2019  cmd # M[sub-m]
-0x201a  cmd # m[sub-n]
-0x201b  cmd # m[sub-n]c[^2]
-0x201c  cmd # m[sub-p]
-0x201d  cmd # M[sub-p]
-0x201e  cmd # m[sub-p]c[^2]
-0x201f  cmd # m[sub-u]
-0x2020  cmd # m[sub-u]c[^2]
-0x2021  cmd # m[sub-mu]
-0x2022  cmd # m[sub-mu]c[^2]
-0x2023  cmd # M[sol]
-0x2024  cmd # M[terra]
-0x2025  cmd # N[sub-A]
-0x2026  cmd # NaN
-0x2027  cmd # p[sub-0]
-0x2028  cmd # q[sub-p]
-0x2029  cmd # R
-0x202a  cmd # r[sub-e]
-0x202b  cmd # R[sub-k]
-0x202c  cmd # R[sub-m]
-0x202d  cmd # R[sub-infinity]
-0x202e  cmd # R[sol]
-0x202f  cmd # R[terra]
-0x2030  cmd # Sa
-0x2031  cmd # Sb
-0x2032  cmd # Se[^2]
-0x2033  cmd # Se'[^2]
-0x2034  cmd # Sf[^-1]
-0x2035  cmd # T[sub-0]
-0x2036  cmd # t[sub-p]
-0x2037  cmd # T[sub-p]
-0x2038  cmd # V[sub-m]
-0x2039  cmd # Z[sub-0]
-0x203a  cmd # [alpha]
-0x203b  cmd # [gamma]EM
-0x203c  cmd # [gamma][sub-p]
-0x203d  cmd # [epsilon][sub-0]
-0x203e  cmd # [lambda][sub-c]
-0x203f  cmd # [lambda][sub-c][sub-n]
-0x2040  cmd # [lambda][sub-c][sub-p]
-0x2041  cmd # [mu][sub-0]
-0x2042  cmd # [mu][sub-B]
-0x2043  cmd # [mu][sub-e]
-0x2044  cmd # [mu][sub-n]
-0x2045  cmd # [mu][sub-p]
-0x2046  cmd # [mu][sub-u]
-0x2047  cmd # [mu][sub-mu]
-0x2048  cmd # [pi]
-0x2049  cmd # [sigma][sub-B]
-0x204a  cmd # [PHI]
-0x204b  cmd # [PHI][sub-0]
-0x204c  cmd # [omega]
-0x204d  cmd # -[infinity]
-0x204e  cmd # [infinity]
+0x2018  cmd # M[sub-m]
+0x2019  cmd # m[sub-n]
+0x201a  cmd # m[sub-p]
+0x201b  cmd # M[sub-p]
+0x201c  cmd # m[sub-u]
+0x201d  cmd # m[sub-u]c[^2]
+0x201e  cmd # m[sub-mu]
+0x201f  cmd # M[sol]
+0x2020  cmd # M[terra]
+0x2021  cmd # N[sub-A]
+0x2022  cmd # NaN
+0x2023  cmd # p[sub-0]
+0x2024  cmd # q[sub-p]
+0x2025  cmd # R
+0x2026  cmd # r[sub-e]
+0x2027  cmd # R[sub-k]
+0x2028  cmd # R[sub-m]
+0x2029  cmd # R[sub-infinity]
+0x202a  cmd # R[sol]
+0x202b  cmd # R[terra]
+0x202c  cmd # Sa
+0x202d  cmd # Sb
+0x202e  cmd # Se[^2]
+0x202f  cmd # Se'[^2]
+0x2030  cmd # Sf[^-1]
+0x2031  cmd # T[sub-0]
+0x2032  cmd # t[sub-p]
+0x2033  cmd # T[sub-p]
+0x2034  cmd # V[sub-m]
+0x2035  cmd # Z[sub-0]
+0x2036  cmd # [alpha]
+0x2037  cmd # [gamma]EM
+0x2038  cmd # [gamma][sub-p]
+0x2039  cmd # [epsilon][sub-0]
+0x203a  cmd # [lambda][sub-c]
+0x203b  cmd # [lambda][sub-c][sub-n]
+0x203c  cmd # [lambda][sub-c][sub-p]
+0x203d  cmd # [mu][sub-0]
+0x203e  cmd # [mu][sub-B]
+0x203f  cmd # [mu][sub-e]
+0x2040  cmd # [mu][sub-n]
+0x2041  cmd # [mu][sub-p]
+0x2042  cmd # [mu][sub-u]
+0x2043  cmd # [mu][sub-mu]
+0x2044  cmd # [pi]
+0x2045  cmd # [sigma][sub-B]
+0x2046  cmd # [PHI]
+0x2047  cmd # [PHI][sub-0]
+0x2048  cmd # [omega]
+0x2049  cmd # -[infinity]
+0x204a  cmd # [infinity]
 0x2100  cmd [cmplx]# a
 0x2101  cmd [cmplx]# a[sub-0]
-0x2102  cmd [cmplx]# a[sub-m][terra]
-0x2103  cmd [cmplx]# a[terra][sol]
+0x2102  cmd [cmplx]# a[sub-m]
+0x2103  cmd [cmplx]# a[terra]
 0x2104  cmd [cmplx]# c
 0x2105  cmd [cmplx]# c[sub-1]
 0x2106  cmd [cmplx]# c[sub-2]
@@ -1797,61 +1800,57 @@ __DATA__
 0x2115  cmd [cmplx]# Kj
 0x2116  cmd [cmplx]# l[sub-p]
 0x2117  cmd [cmplx]# m[sub-e]
-0x2118  cmd [cmplx]# m[sub-e]c[^2]
-0x2119  cmd [cmplx]# M[sub-m]
-0x211a  cmd [cmplx]# m[sub-n]
-0x211b  cmd [cmplx]# m[sub-n]c[^2]
-0x211c  cmd [cmplx]# m[sub-p]
-0x211d  cmd [cmplx]# M[sub-p]
-0x211e  cmd [cmplx]# m[sub-p]c[^2]
-0x211f  cmd [cmplx]# m[sub-u]
-0x2120  cmd [cmplx]# m[sub-u]c[^2]
-0x2121  cmd [cmplx]# m[sub-mu]
-0x2122  cmd [cmplx]# m[sub-mu]c[^2]
-0x2123  cmd [cmplx]# M[sol]
-0x2124  cmd [cmplx]# M[terra]
-0x2125  cmd [cmplx]# N[sub-A]
-0x2126  cmd [cmplx]# NaN
-0x2127  cmd [cmplx]# p[sub-0]
-0x2128  cmd [cmplx]# q[sub-p]
-0x2129  cmd [cmplx]# R
-0x212a  cmd [cmplx]# r[sub-e]
-0x212b  cmd [cmplx]# R[sub-k]
-0x212c  cmd [cmplx]# R[sub-m]
-0x212d  cmd [cmplx]# R[sub-infinity]
-0x212e  cmd [cmplx]# R[sol]
-0x212f  cmd [cmplx]# R[terra]
-0x2130  cmd [cmplx]# Sa
-0x2131  cmd [cmplx]# Sb
-0x2132  cmd [cmplx]# Se[^2]
-0x2133  cmd [cmplx]# Se'[^2]
-0x2134  cmd [cmplx]# Sf[^-1]
-0x2135  cmd [cmplx]# T[sub-0]
-0x2136  cmd [cmplx]# t[sub-p]
-0x2137  cmd [cmplx]# T[sub-p]
-0x2138  cmd [cmplx]# V[sub-m]
-0x2139  cmd [cmplx]# Z[sub-0]
-0x213a  cmd [cmplx]# [alpha]
-0x213b  cmd [cmplx]# [gamma]EM
-0x213c  cmd [cmplx]# [gamma][sub-p]
-0x213d  cmd [cmplx]# [epsilon][sub-0]
-0x213e  cmd [cmplx]# [lambda][sub-c]
-0x213f  cmd [cmplx]# [lambda][sub-c][sub-n]
-0x2140  cmd [cmplx]# [lambda][sub-c][sub-p]
-0x2141  cmd [cmplx]# [mu][sub-0]
-0x2142  cmd [cmplx]# [mu][sub-B]
-0x2143  cmd [cmplx]# [mu][sub-e]
-0x2144  cmd [cmplx]# [mu][sub-n]
-0x2145  cmd [cmplx]# [mu][sub-p]
-0x2146  cmd [cmplx]# [mu][sub-u]
-0x2147  cmd [cmplx]# [mu][sub-mu]
-0x2148  cmd [cmplx]# [pi]
-0x2149  cmd [cmplx]# [sigma][sub-B]
-0x214a  cmd [cmplx]# [PHI]
-0x214b  cmd [cmplx]# [PHI][sub-0]
-0x214c  cmd [cmplx]# [omega]
-0x214d  cmd [cmplx]# -[infinity]
-0x214e  cmd [cmplx]# [infinity]
+0x2118  cmd [cmplx]# M[sub-m]
+0x2119  cmd [cmplx]# m[sub-n]
+0x211a  cmd [cmplx]# m[sub-p]
+0x211b  cmd [cmplx]# M[sub-p]
+0x211c  cmd [cmplx]# m[sub-u]
+0x211d  cmd [cmplx]# m[sub-u]c[^2]
+0x211e  cmd [cmplx]# m[sub-mu]
+0x211f  cmd [cmplx]# M[sol]
+0x2120  cmd [cmplx]# M[terra]
+0x2121  cmd [cmplx]# N[sub-A]
+0x2122  cmd [cmplx]# NaN
+0x2123  cmd [cmplx]# p[sub-0]
+0x2124  cmd [cmplx]# q[sub-p]
+0x2125  cmd [cmplx]# R
+0x2126  cmd [cmplx]# r[sub-e]
+0x2127  cmd [cmplx]# R[sub-k]
+0x2128  cmd [cmplx]# R[sub-m]
+0x2129  cmd [cmplx]# R[sub-infinity]
+0x212a  cmd [cmplx]# R[sol]
+0x212b  cmd [cmplx]# R[terra]
+0x212c  cmd [cmplx]# Sa
+0x212d  cmd [cmplx]# Sb
+0x212e  cmd [cmplx]# Se[^2]
+0x212f  cmd [cmplx]# Se'[^2]
+0x2130  cmd [cmplx]# Sf[^-1]
+0x2131  cmd [cmplx]# T[sub-0]
+0x2132  cmd [cmplx]# t[sub-p]
+0x2133  cmd [cmplx]# T[sub-p]
+0x2134  cmd [cmplx]# V[sub-m]
+0x2135  cmd [cmplx]# Z[sub-0]
+0x2136  cmd [cmplx]# [alpha]
+0x2137  cmd [cmplx]# [gamma]EM
+0x2138  cmd [cmplx]# [gamma][sub-p]
+0x2139  cmd [cmplx]# [epsilon][sub-0]
+0x213a  cmd [cmplx]# [lambda][sub-c]
+0x213b  cmd [cmplx]# [lambda][sub-c][sub-n]
+0x213c  cmd [cmplx]# [lambda][sub-c][sub-p]
+0x213d  cmd [cmplx]# [mu][sub-0]
+0x213e  cmd [cmplx]# [mu][sub-B]
+0x213f  cmd [cmplx]# [mu][sub-e]
+0x2140  cmd [cmplx]# [mu][sub-n]
+0x2141  cmd [cmplx]# [mu][sub-p]
+0x2142  cmd [cmplx]# [mu][sub-u]
+0x2143  cmd [cmplx]# [mu][sub-mu]
+0x2144  cmd [cmplx]# [pi]
+0x2145  cmd [cmplx]# [sigma][sub-B]
+0x2146  cmd [cmplx]# [PHI]
+0x2147  cmd [cmplx]# [PHI][sub-0]
+0x2148  cmd [cmplx]# [omega]
+0x2149  cmd [cmplx]# -[infinity]
+0x214a  cmd [cmplx]# [infinity]
 0x2200  cmd iC 0
 0x2200  arg iC  max=0,indirect
 0x2201  cmd iC 1
@@ -2193,16 +2192,16 @@ __DATA__
 0x5800  arg ISZ max=112,indirect,stack
 0x5900  arg DEC max=112,indirect,stack
 0x5a00  arg INC max=112,indirect,stack
-0x5b00  arg LBL max=104
-0x5c00  arg LBL?  max=104,indirect
-0x5d00  arg XEQ max=104,indirect
-0x5e00  arg GTO max=104,indirect
-0x5f00  arg [SIGMA] max=104,indirect
-0x6000  arg [PI]  max=104,indirect
-0x6100  arg SLV max=104,indirect
-0x6200  arg f'(x) max=104,indirect
-0x6300  arg f"(x) max=104,indirect
-0x6400  arg INT max=104,indirect
+0x5b00  arg LBL max=116
+0x5c00  arg LBL?  max=116,indirect
+0x5d00  arg XEQ max=116,indirect
+0x5e00  arg GTO max=116,indirect
+0x5f00  arg [SIGMA] max=116,indirect
+0x6000  arg [PI]  max=116,indirect
+0x6100  arg SLV max=116,indirect
+0x6200  arg f'(x) max=116,indirect
+0x6300  arg f"(x) max=116,indirect
+0x6400  arg INT max=116,indirect
 0x6500  arg ALL max=12,indirect
 0x6600  arg FIX max=12,indirect
 0x6700  arg SCI max=12,indirect
@@ -2330,8 +2329,8 @@ __DATA__
 0x9800  arg [cmplx]RCF- max=111,indirect,stack,complex
 0x9900  arg [cmplx]RCF[times] max=111,indirect,stack,complex
 0x9a00  arg [cmplx]RCF/ max=111,indirect,stack,complex
-0x9b00  arg S.L max=100,indirect
-0x9c00  arg S.R max=100,indirect
+0x9b00  arg SDL max=100,indirect
+0x9c00  arg SDR max=100,indirect
 0x9d00  arg VW[alpha]+  max=112,indirect,stack
 0x9e00  arg RM  max=7,indirect
 0x9f00  arg STOM  max=112,indirect,stack
