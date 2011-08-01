@@ -11,7 +11,7 @@ D - Debug:     Disables all power saving. Unlocks the following ON+S
                combination. The small "=" is lit.
 
 S - SAM-BA:    Clears the GPNVM1 bit and turns the calculator off.
-               S is on the '6' key.
+               S is on the '6' key. Works only in debug mode.
                ATTENTION: You can now only boot into SAM-BA mode!
                Without the SAM-BA software and the cable, you're lost!
 
@@ -25,7 +25,7 @@ mode.
 
 There are additional commands in the I/O catalogue (f+STO):
 
-PSTO n   Store program in region n. n is 0 to 3. A region is a
+PSTO n   Store program in region n. n is 0 to 8. A region is a
          block of flash memory that can hold a copy of the
          user program area. Alphanumeric labels in flash can be
          called with XEQ. This allows creation of libraries.
@@ -59,9 +59,14 @@ Region  Flash address  state file   Remark
 ---------------------------------------------------------------------
 unnamed   0x11fc00     wp34s-R.dat  Registers and state of the backup
    0      0x11f800     wp34s-0.dat  User program of the backup
-   1      0x11f400     wp34s-1.dat  Generic user Program region
-   2      0x11f000     wp34s-2.dat  ditto
+   1      0x11f400     wp34s-1.dat  Default library            
+   2      0x11f000     wp34s-2.dat  Generic user program region
    3      0x11ec00     wp34s-3.dat  ditto
+   4      0x11e800     wp34s-4.dat  ditto
+   5      0x11e400     wp34s-5.dat  ditto
+   6      0x11e000     wp34s-6.dat  ditto
+   7      0x11dc00     wp34s-7.dat  ditto
+   8      0x11d800     wp34s-8.dat  ditto
   RAM                  wp34s.dat    Emulator image of the RAM area
 
 wp34s.dat is only written on exit of the emulator software.
@@ -70,8 +75,11 @@ All files are only read into memory on emulator startup. If we find
 enough free space in flash we may increase the number of regions.
 
 
-How to transfer data between the calculator and your PC
-=======================================================
+How to transfer data between the calculator and your PC (SAM-BA)
+================================================================
+
+This discussion is superceded by the new serial I/O commands. It's
+still interesting enough to leave it here as a reference.
 
 The whole RAM is saved to address 0x11f800 (relative address 0x1f800)
 with ON+STO. This can be copied to your PC or loaded from it.
@@ -110,12 +118,31 @@ and state portion of the backup area at 0x11fc00 is formatted differently.
 If you want to get your emulator data into the calculator in one go,
 do the following in Windows:
 
-copy /b calc.bin+wp34s-3.dat+wp34s-2.dat+wp34s-1.dat+wp34s.dat calc-full.bin
+copy /b calc.bin+wp34s-8.dat+...+wp34s-2.dat+wp34s-1.dat+wp34s.dat calc-full.bin
 
 As an alternative the following will copy the backup data instead of the
 RAM state file:
 
-copy /b calc.bin+wp34s-3.dat+wp34s-2.dat+wp34s-1.dat+wp34s-0.dat+wp34s-R.dat calc-full.bin
+copy /b calc.bin+wp34s-8.dat+...+wp34s-2.dat+wp34s-1.dat+wp34s-0.dat+wp34s-R.dat calc-full.bin
 
 The resulting file can be programmed into flash and all data is readily
 available.
+
+
+How to transfer data between the calculator and your PC (Serial I/O)
+====================================================================
+
+Both the emulator and the calculator can talk to each other with the
+same cable used for programming. In the emulator directory a text file
+wp34s.ini must be placed that contains the name of the port such as COM2:
+
+On the receiver (emulator or calculator) execute RECV (from X.FCN).
+
+On the sender, you can send data with the following commands:
+
+SENDA   Sends all memory including state.
+SENDP   Sends program memory.
+SENDR   Sends registers 00 to 99.
+LSEND n Sends a library region directly. 
+        It arrives in RAM and can be stored with PSTO.
+
