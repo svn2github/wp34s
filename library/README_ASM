@@ -27,11 +27,11 @@ $ ../trunk/tools/wp34s_asm.pl SOME_FILE.wp34s -o wp34s-1.dat
 To assemble several programs into a single flash image that can be loaded as per the manual,
 run the following:
 
-$ ../trunk/tools/wp34s_asm.pl derivative.wp34s integrate.wp34s product.wp34s quadratic.wp34s solver.wp34s sum.wp34s -o wp34s-1.dat
+$ ../tools/wp34s_asm.pl derivative.wp34s integrate.wp34s product.wp34s quadratic.wp34s solver.wp34s sum.wp34s -o wp34s-1.dat
 
 Th remaining programs can be built into a second flash image as well:
 
-$ ../trunk/tools/wp34s_asm.pl 8queens.wp34s code_breaker.wp34s fibonacci.wp34s primesieve.wp34s -o wp34s-2.dat
+$ ../tools/wp34s_asm.pl 8queens.wp34s code_breaker.wp34s fibonacci.wp34s primesieve.wp34s -o wp34s-2.dat
 
 A look at the sizes of all the programs in this example set will indicated that there are a
 few too many steps in the cummulative set to fit into a single flash page (flash image is limited
