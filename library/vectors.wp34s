@@ -22,18 +22,76 @@ This is a basic suite of three dimensional vector operations for the WP 34S.
 As a rule a vector occupies a triple of stack registers usually X, Y & Z or
 T, A & B.  Scalars occupy one stack level.  Operations save their first
 argument to last X (L for scalars and L, I & J for vectors).
+*/
 
+/*
+  Here is a short application stub that makes the functions available
+  form the keyboard. Makes use of the new one letter labels
+*/
+LBL'VEC'
+SSIZE8
+CL[alpha]
+[alpha] V
+[alpha] e
+[alpha] c
+[alpha] t
+[alpha] o
+[alpha] r
+[alpha]VIEW
+STOP
+BACK 01
 
+LBL A      // Absolute value
+XEQ'VAB'
+BACK 04
+
+LBL B      // Unit vector (couldn't fnd a better key)
+XEQ'Vun'
+BACK 07
+
+LBL C      // Cross product
+XEQ'VxV'
+BACK 10
+
+LBL D      // Dot product
+XEQ'V.V'
+BACK 13
+
+LBL J      // Exchange (on x<>y key)
+XEQ'V[<->]V'
+BACK 16
+
+LBL K      // Sign change (on +/- key)
+XEQ'V+-'
+BACK 19
+
+LBL L      // Last X
+XEQ'VLx'
+BACK 22
+
+LBL T      // Scalar musltiply on multiplication key
+XEQ'V[times]S'
+BACK 25
+
+LBL W      // Subtraction on -
+XEQ'V-V'
+BACK 28
+
+LBL Z      // Addition on +
+XEQ'V+V'
+BACK 31
+
+/*
 The function provided here are:
 
-X.Y
+V.V
   Vector dot product.  Input vectors in X,Y,Z and T,A,B.
   Output scalar in X.  Second vector unchanged in Y,Z,T and
   the first vector in L,I,J.
 
   result = X*T + Y*A + Z*B
 */
-001 ***LBL'X.Y'
+001 ***LBL'V.V'
 002 [cmplx]R[v]
 003 STO J
 004 RCL[times] T
@@ -51,12 +109,12 @@ X.Y
 016 DROP
 017 RTN
 
-/* V+
+/* V+V
   Vector addition.  Input vectors in X,Y,Z and T,A,B.
   Output vector in X,Y,Z.  Second vector unchanged in T,A,B.
   The first vector is saved in L,I,J.
 */
-018 ***LBL'V+'
+018 ***LBL'V+V'
 019 [cmplx]R[v]
 020 STO J
 021 RCL+ T
@@ -67,10 +125,10 @@ X.Y
 026 RCL+ T
 027 RTN
 
-/* V-
+/* V-V
   Vector subtraction.  Behaviour as for V+.
 */
-028 ***LBL'V-'
+028 ***LBL'V-V'
 029 [cmplx]R[v]
 030 STO J
 031 +/-
@@ -88,10 +146,10 @@ X.Y
 043 DROP
 044 RTN
 
-/* V<->
+/* V<->V
   Vector swap.  Swaps X,Y,Z with T,A,B.
 */
-045 ***LBL'V[<->]'
+045 ***LBL'V[<->]V'
 046 [cmplx]R[v]
 047 x[<->] T
 048 [cmplx]R[^]
@@ -110,11 +168,11 @@ X.Y
 052 XEQ 00
 053 1/x
 
-/* V*S
+/* V[times]S
   Vector multipled by scalar.  Vector in Y,Z,T and scalar in X.
   Saves the scalar in L.
 */
-054 ***LBL'V*S'
+054 ***LBL'V[times]S'
 055 STO[times] Y
 056 STO[times] Z
 057 STO[times] T
@@ -160,7 +218,7 @@ X.Y
 085 [cmplx]+/-
 086 RTN
 
-/* VLX
+/* VLx
   Vector equivalent of LastX.  Pushes a vector stored in L,I,J onto
   the stack.
 */
@@ -169,13 +227,13 @@ X.Y
 089 [cmplx]RCL L
 090 RTN
 
-/* XxY
+/* V[times]V
   Vector cross product.  Input vectors in X,Y,Z and T,A,B.
   Output vector in X,Y,Z.  Second vector unchanged in T,A,B and
   the first vector saved in L,I,J.  Uses stack registers C & D
   for temporaty storage.
 */
-091 ***LBL'X[times]Y'
+091 ***LBL'V[times]V'
 092 STO C
 093 RCL[times] B
 094 RCL T
@@ -197,9 +255,4 @@ X.Y
 110 STO L
 111 R[v]
 112 RTN
-
-// Opcode SVN version: 1293
-// CRC16: 0250
-// Total words: 122
-// Total steps: 112
 
