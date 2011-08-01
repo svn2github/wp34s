@@ -20,14 +20,57 @@ Original code by Jean-Marc Baillard from:
 
 	http://hp41programs.yolasite.com/quaternions.php
 
+Numeric Labels
+99	POL
+98	REC
+97	LNQ
+96	e^Q
+95	Q*Q
+94	Q+Q
+93	Q-Q
+92	
+91	
+90	
+
+Register use
+79
+78
+
+LBL'SHQ'
+DEG
+SINH
+STO 79
+X<> L
+COSH
+STO 78
+NORM			(x^2+y^2+z^2)^0.5
+RCL L
+X<>Y
+x<>0?
+STO/ 78
+RAD->deg
+COS
+STO* 79
+RCL L
+X<> L
+SIN
+ST* 78
+X<> 78
+STO* T
+STO* Z
+*
+RCL 79
+RTN
 
 LBL'Q+Q'
+LBL 94
 	cpx RCL+ A
 	cpx Rv
 	cpx RCL+ A
 	cpx R^
 	RTN
 LBL'Q-Q'
+LBL 93
 	cpx RCL- A
 	cpx +/-
 	cpx Rv
@@ -93,5 +136,5 @@ LBL 95
 
 LBL'Q^R'
 	RTN
-LBL'Q^Q'
-	RtN
+
+LBL'NORM'
