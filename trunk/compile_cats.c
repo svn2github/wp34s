@@ -599,6 +599,7 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_SLOAD,		"RCFST")
 	NILIC(OP_BACKUP,	"SAVE")
 	NILIC(OP_RESTORE,	"LOAD")
+	RARGCMD(RARG_FLRCL, 	"RCF")
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
