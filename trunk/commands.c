@@ -729,7 +729,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #ifdef INCLUDE_MULTI_DELETE
 	CMDlblnI(RARG_DELPROG,	NULL,		NUMLBL,			"DEL\276")
 #endif
-	CMD(RARG_LSEND,		&send_library,	NUMBER_OF_FLASH_REGIONS-1,	"LSEND")
+	CMD(RARG_LSEND,		&send_library,	NUMBER_OF_FLASH_REGIONS-1,	"SENDL")
 
 #undef CMDlbl
 #undef CMDlblnI

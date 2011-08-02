@@ -740,7 +740,7 @@ enum rarg {
 #ifdef INCLUDE_MULTI_DELETE
 	RARG_DELPROG,
 #endif
-	RARG_LSEND,
+	RARG_SENDL,
 
 	NUM_RARG	// Last entry defines number of operations
 };

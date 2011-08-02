@@ -151,11 +151,24 @@ static void close_port_reset_state( void )
 /*
  *  Open port with default settings.
  *  Returns non zero in case of failure.
+ *  On a machine without a crystal the real speed of the device
+ *  compared to the nominal speed may be specified as a percentage in X.
+ *  For a slow device, try 90, for a fast device try 110.
  */
 static int open_port_default( void )
 {
+	int baud = 9600;
+#ifdef REALBUILD
+	extern unsigned char Xtal;
+	if ( !Xtal ) {
+		int factor = (int) get_reg_n_as_int( regX_idx );
+		if ( factor >= 80 && factor <= 120 ) {
+			baud = baud * 100 / factor;
+		}
+	}
+#endif
 	close_port_reset_state();
-	if ( open_port( 9600, 8, 1, 'N' ) ) {
+	if ( open_port( baud, 8, 1, 'N' ) ) {
 		return 1;
 	}
 	serial_state( 1 );

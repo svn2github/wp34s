@@ -167,7 +167,7 @@ static s_opcode program_xfcn[] = {
 	NILIC(OP_SENDR,		"SENDR")
 	NILIC(OP_SENDA,		"SENDA")
 	NILIC(OP_RECV,		"RECV")
-	RARGCMD(RARG_LSEND,	"LSEND")
+	RARGCMD(RARG_SENDL,	"SENDL")
 
 
 	/* Integer mode commands */
@@ -330,7 +330,7 @@ static s_opcode catalogue[] = {
 	NILIC(OP_SENDR,		"SENDR")
 	NILIC(OP_SENDA,		"SENDA")
 	NILIC(OP_RECV,		"RECV")
-	RARGCMD(RARG_LSEND,	"LSEND")
+	RARGCMD(RARG_SENDL,	"SENDL")
 
 };
 
@@ -528,7 +528,7 @@ static s_opcode int_catalogue[] = {
 	NILIC(OP_SENDR,		"SENDR")
 	NILIC(OP_SENDA,		"SENDA")
 	NILIC(OP_RECV,		"RECV")
-	RARGCMD(RARG_LSEND,	"LSEND")
+	RARGCMD(RARG_SENDL,	"SENDL")
 
 };
 
