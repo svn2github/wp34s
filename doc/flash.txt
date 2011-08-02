@@ -138,11 +138,20 @@ wp34s.ini must be placed that contains the name of the port such as COM2:
 
 On the receiver (emulator or calculator) execute RECV (from X.FCN).
 
-On the sender, you can send data with the following commands:
+On the sender, you can send data with the following X.FCN commands:
 
-SENDA   Sends all memory including state.
-SENDP   Sends program memory.
-SENDR   Sends registers 00 to 99.
-LSEND n Sends a library region directly. 
-        It arrives in RAM and can be stored with PSTO.
+SENDA   sends all memory including state.
+SENDP   sends program memory.
+SENDR   sends registers 00 to 99.
+SENDL n sends a library region directly. 
+        The library arrives in program RAM and can be stored with PSTO.
 
+On a device without the crystal installed, the baud rate setting may be
+a bit too far off and you will get "I/O Error". The commands accept a
+correction factor in percent in X. Try with 95 if your device is a bit too
+slow or 105 if it is a bit too fast. Values between 80 and 120 are valid
+all other values are ignored. To determine the speed, use the loop
+CLx; INC X; BACK 01 and let it run for 30 seconds. The expected result
+at nominal speed is around 191000.
+
+On the emulator or with the crystal installed, X is ignored. 
