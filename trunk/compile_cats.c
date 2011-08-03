@@ -528,6 +528,7 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_INTSIZE,	"WSIZE?")
 	NILIC(OP_XisInf,	"\237?")
 	NILIC(OP_XisSpecial,	"SPEC?")
+	NILIC(OP_ROUNDING,	"RM?")
 
 	RARGCMD(RARG_TEST_APX,	"x~?")
 	RARGCMD(RARG_TEST_LT,	"x<?")
@@ -639,7 +640,6 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_STK4,		"SSIZE4")
 	NILIC(OP_STK8,		"SSIZE8")
 	NILIC(OP_FRACT,		"FRACT")
-	NILIC(OP_ROUNDING,	"RM?")
 	RARGCMD(RARG_ROUNDING,	"RM")
 	NILIC(OP_SLOW,		"SLOW")
 	NILIC(OP_FAST,		"FAST")
