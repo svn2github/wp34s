@@ -153,13 +153,6 @@ static s_opcode program_xfcn[] = {
 	NILIC(OP_VOLTAGE,     "BATT")
 	RARGCMD(RARG_FLRCL, 	"RCF")
 
-	/* Serial commands */
-	NILIC(OP_SENDP,		"SENDP")
-	NILIC(OP_SENDR,		"SENDR")
-	NILIC(OP_SENDA,		"SENDA")
-	NILIC(OP_RECV,		"RECV")
-	RARGCMD(RARG_SENDL,	"SENDL")
-
 
 	/* Integer mode commands */
 	RARGCMD(RARG_ASR,	"ASR")
@@ -306,14 +299,6 @@ static s_opcode catalogue[] = {
 	DYA(OP_HERMITE_H,     "H\275")
 	NILIC(OP_VOLTAGE,     "BATT")
 	RARGCMD(RARG_FLRCL, 	"RCF")
-
-	/* Serial commands */
-	NILIC(OP_SENDP,		"SENDP")
-	NILIC(OP_SENDR,		"SENDR")
-	NILIC(OP_SENDA,		"SENDA")
-	NILIC(OP_RECV,		"RECV")
-	RARGCMD(RARG_SENDL,	"SENDL")
-
 };
 
 static s_opcode cplx_catalogue[] = {
@@ -495,14 +480,6 @@ static s_opcode int_catalogue[] = {
 	TRI(OP_MULADD,		"\034+")
 #endif
 	RARGCMD(RARG_FLRCL, 	"RCF")
-
-	/* Serial commands */
-	NILIC(OP_SENDP,		"SENDP")
-	NILIC(OP_SENDR,		"SENDR")
-	NILIC(OP_SENDA,		"SENDA")
-	NILIC(OP_RECV,		"RECV")
-	RARGCMD(RARG_SENDL,	"SENDL")
-
 };
 
 static s_opcode test_catalogue[] = {
@@ -582,6 +559,14 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_GTOALPHA,	"GTO\240")
 	RARGCMD(RARG_ALPHAXEQ,	"\240XEQ")
 	RARGCMD(RARG_ALPHAGTO,	"\240GTO")
+
+	/* Serial commands */
+	NILIC(OP_SENDP,		"SENDP")
+	NILIC(OP_SENDR,		"SENDR")
+	NILIC(OP_SENDA,		"SENDA")
+	NILIC(OP_RECV,		"RECV")
+	RARGCMD(RARG_SENDL,	"SENDL")
+
 #ifdef INCLUDE_USER_IO
 	NILIC(OP_SEND1,		"SEND1")
 	MON(OP_RECV1,		"RECV1")
