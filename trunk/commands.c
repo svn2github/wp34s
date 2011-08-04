@@ -654,7 +654,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDlbl(RARG_SOLVE,	&xromarg,	NUMLBL,			"SLV")
 	CMDlbl(RARG_DERIV,	&xromarg,	NUMLBL,			"f'(x)")
 	CMDlbl(RARG_2DERIV,	&xromarg,	NUMLBL,			"f\"(x)")
-	CMDlbl(RARG_INTG,	&xromarg,	NUMLBL,			"INT")
+	CMDlbl(RARG_INTG,	&xromarg,	NUMLBL,			"\004")
 
 	CMD(RARG_STD,		&cmddisp,	DISPLAY_DIGITS,		"ALL")
 	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX")
@@ -772,7 +772,7 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_SOLVE,	&multixromarg,	"SLV")
 	CMD(DBL_DERIV,	&multixromarg,	"f'(x)")
 	CMD(DBL_2DERIV,	&multixromarg,	"f\"(x)")
-	CMD(DBL_INTG,	&multixromarg,	"INT")
+	CMD(DBL_INTG,	&multixromarg,	"\004")
 #ifdef MULTI_ALPHA
 	CMD(DBL_ALPHA,	&multialpha,	"\240")
 #endif
