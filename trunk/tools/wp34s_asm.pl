@@ -54,6 +54,12 @@ my $USE_FALLBACK_INTERNAL_MAP = "fallback_internal_table";
 my $DEFAULT_OPCODE_MAP_FILE = $USE_FALLBACK_INTERNAL_MAP;
 my $opcode_map_file = $DEFAULT_OPCODE_MAP_FILE;
 
+# These are markers indicating the region of the opcode map where the multi-character
+# opcodes live. HOPEFULLY THEY WILL ALWAYS STAY CO-LOCATED!
+# These will be dynamically detected and filled in when the table is read in.
+my $multi_char_target_lo = 0x0800_0000; # Initialize to bigger than it can ever be!
+my $multi_char_target_hi = 0;
+
 # If this variable is set to a non-NULL value, it will be used as the filename of the
 # expanded opcode dump file. This *should* be equivalent to the "a a" file from the
 # 'calc a a' program.
@@ -390,9 +396,6 @@ sub disassemble {
   my $outfile = shift;
   my @files = @_;
 
-  my $text_lo_limit = hex2dec($mnem2hex{"LBL'"});
-  my $text_hi_limit = hex2dec($mnem2hex{"INT'"}) + 256;
-
   open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
 
   print "// Source file(s): ", join(", ", @files), "\n";
@@ -411,8 +414,8 @@ sub disassemble {
       my $word = $words[$k+2];
       $total_steps++;
 
-      # Check if we are in the 2 words opcode range: LBL' to INT'. These require special treatment.
-      if( ($word >= $text_lo_limit) and ($word < $text_hi_limit) ) {
+      # Check if we are in the 2 words opcode range. These require special treatment.
+      if( ($word >= $multi_char_target_lo) and ($word < ($multi_char_target_hi + 256)) ) {
         my $base_op = $word & 0xFF00;
         my (@chars);
         $chars[0] = $word & 0xFF;
@@ -738,6 +741,21 @@ sub load_opcode_tables {
       my $mnemonic = "${2}'"; # append a single quote.
       my $line_num = $.;
       load_table_entry($hex_str, $mnemonic, $line_num);
+
+      # Dynamically extract the band of opcodes that require special processing for
+      # multi-character strings.
+      # The lower band...
+      if( hex2dec($hex_str) < $multi_char_target_lo ) {
+        print "DEBUG: Replacing the multi-char lower limit using '$mnemonic'. Was: ", dec2hex4($multi_char_target_lo), ", Now is: $hex_str\n" if $debug > 2;
+        $multi_char_target_lo = hex2dec($hex_str);
+      }
+
+      # The upper band... Note that this will be offset by 256 when used to account for
+      # the offset byte within the opcode.
+      if( hex2dec($hex_str) > $multi_char_target_hi ) {
+        print "DEBUG: Replacing the multi-char upper limit using '$mnemonic'. Was: ", dec2hex4($multi_char_target_hi), ", Now is: $hex_str\n" if $debug > 2;
+        $multi_char_target_hi = hex2dec($hex_str);
+      }
 
     } else {
       die "ERROR: Cannot parse opcode table line $.: '$_'\n";
