@@ -31,7 +31,7 @@
 #define STATE_RUNNING		-5
 #define STATE_IGNORE		-6
 
-/* Define this if the keycodes map rows sequentially */
+/* Define this if the key codes map rows sequentially */
 #define SEQUENTIAL_ROWS
 
 #define TEST_EQ		0
@@ -53,6 +53,85 @@ enum confirmations {
 
 enum shifts cur_shift(void) {
 	return (enum shifts) State2.shifts;
+}
+
+
+
+
+/*
+ * Mapping from the key code to a linear index
+ * The trick is to move the shifts and the holes in the map out of the way
+ */
+static unsigned char keycode_to_linear(const keycode c)
+{
+	static const unsigned char linear_key_map[ 7 * 6 ] = {
+		 0,  1,  2,  3,  4,  5,   // K00 - K05
+		 6,  7,  8,  0,  0,  0,   // K10 - K15
+		 9, 10, 11, 12, 13,  0,   // K20 - K24
+		14, 15, 16, 17, 18,  0,   // K30 - K34
+		19, 20, 21, 22, 23,  0,   // K40 - K44
+		24, 25, 26, 27, 28,  0,   // K50 - K54
+		29, 30, 31, 32, 33,  0    // K60 - K64
+	};
+	return linear_key_map[c];
+}
+
+/*
+ * Mapping from key position to alpha in the four key planes plus
+ * the two lower case planes.
+ */
+static unsigned char keycode_to_alpha(const keycode c, unsigned int s)
+{
+	static const unsigned char alphamap[][6] = {
+		/*upper f-sft g-sft h-sft lower g-shf lower */
+		{ 'A',  0221, 0200, 0000, 'a',  0240,  },  // K00
+		{ 'B',  'B',  0201, 0000, 'b',  0241,  },  // K01
+		{ 'C',  'C',  0202, 0000, 'c',  0242,  },  // K02
+		{ 'D',  0003, 0203, 0000, 'd',  0243,  },  // K03
+		{ 'E',  0015, 0204, 0000, 'e',  0244,  },  // K04
+		{ 'F',  0024, 0224, 0000, 'f',  0264,  },  // K05
+
+		{ 'G',  0000, 0202, 0020, 'g',  0242,  },  // K10
+		{ 'H',  0000, 0225, 0016, 'h',  0265,  },  // K11
+		{ 'I',  0000, 0210, 0000, 'i',  0250,  },  // K12
+
+		{ 0000, 0000, 0206, 0000, 0000, 0246,  },  // K20
+		{ 'J',  0000, 0000, 0027, 'j',  0000,  },  // K21
+		{ 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
+		{ 'L',  0246, 0212, 0257, 'l',  0252,  },  // K23
+		{ 0, 0, 0, 0, 0, 0 },
+
+		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
+		{ 'M',  '7',  0213, '&',  'm',  0253,  },  // K31
+		{ 'N',  '8',  0214, '|',  'n',  0254,  },  // K32
+		{ 'O',  '9',  0227, 0013, 'o',  0267,  },  // K33
+		{ 'P',  '/',  0217, 0235, 'p',  0257,  },  // K34
+
+		{ 0020, 0000, 0000, '!',  0020, 0000,  },  // K40
+		{ 'Q',  '4',  0000, 0000, 'q',  0000,  },  // K41
+		{ 'R',  '5',  0220, 0000, 'r',  0260,  },  // K42
+		{ 'S',  '6',  0221, '$',  's',  0261,  },  // K43
+		{ 'T',  0034, 0222, 0217, 't',  0262,  },  // K44
+
+		{ 0017, '(',  ')',  0000, 0000, ')',   },  // K50
+		{ '1',  '1',  0207, 0000, '1',  0247,  },  // K51
+		{ 'U',  '2',  0000, 0014, 'u',  0000,  },  // K52
+		{ 'V',  '3',  0000, 0036, 'v',  0000,  },  // K53
+		{ 'W',  '-',  0000, '%',  'w',  0000,  },  // K54
+
+		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K60
+		{ '0',  '0',  0226, ' ',  '0',  0266,  },  // K61
+		{ 'X',  '.',  0215, 0000, 'x',  0255,  },  // K62
+		{ 'Y',  0000, 0223, 0037, 'y',  0263,  },  // K63
+		{ 'Z',  '+',  0205, '%',  'z',  0245,  },  // K64
+	};
+	if (State2.alphashift) {
+		if (s == SHIFT_N)
+			s = SHIFT_LC_N;
+		else if (s == SHIFT_G)
+			s = SHIFT_LC_G;
+	}
+	return alphamap[keycode_to_linear(c)][s];
 }
 
 void set_shift(enum shifts s) {
@@ -116,71 +195,6 @@ static void set_smode(const enum single_disp d) {
 	State2.smode = (State2.smode == d)?SDISP_NORMAL:d;
 }
 
-/* Mapping from key position to alpha in the four key planes plus
- * the two lower case planes.
- * MvC: added fillers to adjust modified key codes
- */
-static const unsigned char alphamap[41][6] = {
-	/*upper f-sft g-sft h-sft lower g-shf lower */
-        { 'A',  0221, 0200, 0000, 'a',  0240,  },  // K00
-        { 'B',  'B',  0201, 0000, 'b',  0241,  },  // K01
-        { 'C',  'C',  0202, 0000, 'c',  0242,  },  // K02
-        { 'D',  0003, 0203, 0000, 'd',  0243,  },  // K03
-        { 'E',  0015, 0204, 0000, 'e',  0244,  },  // K04
-        { 'F',  0024, 0224, 0000, 'f',  0264,  },  // K05
-
-        { 'G',  0000, 0202, 0020, 'g',  0242,  },  // K10
-        { 'H',  0000, 0225, 0016, 'h',  0265,  },  // K11
-        { 'I',  0000, 0210, 0000, 'i',  0250,  },  // K12
-        { 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0 },
-
-        { 0000, 0000, 0206, 0000, 0000, 0246,  },  // K20
-        { 'J',  0000, 0000, 0027, 'j',  0000,  },  // K21
-        { 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
-        { 'L',  0246, 0212, 0257, 'l',  0252,  },  // K23
-        { 0, 0, 0, 0, 0, 0 },
-        { 0, 0, 0, 0, 0, 0 },
-
-        { 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
-        { 'M',  '7',  0213, '&',  'm',  0253,  },  // K31
-        { 'N',  '8',  0214, '|',  'n',  0254,  },  // K32
-        { 'O',  '9',  0227, 0013, 'o',  0267,  },  // K33
-        { 'P',  '/',  0217, 0235, 'p',  0257,  },  // K34
-        { 0, 0, 0, 0, 0, 0 },
-
-        { 0020, 0000, 0000, '!',  0020, 0000,  },  // K40
-        { 'Q',  '4',  0000, 0000, 'q',  0000,  },  // K41
-        { 'R',  '5',  0220, 0000, 'r',  0260,  },  // K42
-        { 'S',  '6',  0221, '$',  's',  0261,  },  // K43
-        { 'T',  0034, 0222, 0217, 't',  0262,  },  // K44
-        { 0, 0, 0, 0, 0, 0 },
-
-        { 0017, '(',  ')',  0000, 0000, ')',   },  // K50
-        { '1',  '1',  0207, 0000, '1',  0247,  },  // K51
-        { 'U',  '2',  0000, 0014, 'u',  0000,  },  // K52
-        { 'V',  '3',  0000, 0036, 'v',  0000,  },  // K53
-        { 'W',  '-',  0000, '%',  'w',  0000,  },  // K54
-        { 0, 0, 0, 0, 0, 0 },
-
-        { 0000, 0000, 0000, 0000, 0000, 0000,  },  // K60
-        { '0',  '0',  0226, ' ',  '0',  0266,  },  // K61
-        { 'X',  '.',  0215, 0000, 'x',  0255,  },  // K62
-        { 'Y',  0000, 0223, 0037, 'y',  0263,  },  // K63
-        { 'Z',  '+',  0205, '%',  'z',  0245,  },  // K64
-};
-
-static unsigned char keycode_to_alpha(const keycode c, unsigned int s) 
-{
-	if (State2.alphashift) {
-		if (s == SHIFT_N)
-			s = SHIFT_LC_N;
-		else if (s == SHIFT_G)
-			s = SHIFT_LC_G;
-	}
-	return alphamap[c][s];
-}
 
 static int check_f_key(int n, const int dflt) {
 	const int code = 100 + n;
@@ -193,105 +207,96 @@ static int check_f_key(int n, const int dflt) {
 	return dflt;
 }
 
-/* Return non-zero if the current mode is integer and we acept letters
+/* Return non-zero if the current mode is integer and we accept letters
  * as digits.
  */
 static int intltr(int d) {
 	return (is_intmode() && (int) int_base() > d);
 }
 
-static int process_normal(const keycode c) {
+static int process_normal(const keycode c)
+{
+	static const short int op_map[] = {
+		// Row 1
+		OP_SPEC | OP_SIGMAPLUS, // A to D
+		OP_MON  | OP_RECIP,
+		OP_DYA  | OP_POW,
+		OP_MON  | OP_SQRT,
+		STATE_UNFINISHED,	// ->
+		STATE_UNFINISHED,	// CPX
+		// Row 2
+		RARG_STO,
+		RARG_RCL,
+		OP_NIL  | OP_RDOWN,
+		// Row 3
+		OP_SPEC | OP_ENTER,
+		OP_NIL  | OP_SWAP,	// x<>y
+		OP_SPEC | OP_CHS,	// CHS
+		OP_SPEC | OP_EEX,	// EEX
+		OP_SPEC | OP_CLX,	// <-
+		// Row 4
+		RARG_XEQ,
+		OP_SPEC | OP_7,
+		OP_SPEC | OP_8,
+		OP_SPEC | OP_9,
+		OP_DYA  | OP_DIV,
+		// Row 5
+		STATE_BST,
+		OP_SPEC | OP_4,
+		OP_SPEC | OP_5,
+		OP_SPEC | OP_6,
+		OP_DYA  | OP_MUL,
+		// Row 6
+		STATE_SST,		// SST
+		OP_SPEC | OP_1,
+		OP_SPEC | OP_2,
+		OP_SPEC | OP_3,
+		OP_DYA  | OP_SUB,
+		// Row 7
+		STATE_UNFINISHED,	// ON/C
+		OP_SPEC | OP_0,
+		OP_SPEC | OP_DOT,
+		OP_NIL  | OP_RS,	// R/S
+		OP_DYA  | OP_ADD
+	};
+	int lc = keycode_to_linear(c);
+	opcode op = op_map[lc];
+
+	// The switch handles all the special cases
 	switch (c) {
 	case K00:
-		if (intltr(10))
-			return OP_SPEC | OP_A;
-		return check_f_key(0, OP_SPEC | OP_SIGMAPLUS);
 	case K01:
-		if (intltr(11))
-			return OP_SPEC | OP_B;
-		return check_f_key(1, OP_MON | OP_RECIP);
 	case K02:
-		if (intltr(12))
-			return OP_SPEC | OP_C;
-		return check_f_key(2, OP_DYA | OP_POW);
 	case K03:
-		if (intltr(13))
-			return OP_SPEC | OP_D;
-		return check_f_key(3, OP_MON | OP_SQRT);
 	case K_ARROW:
-		if (intltr(14))
-			return OP_SPEC | OP_E;
-		State2.arrow = 1;
-		break;
 	case K_CMPLX:
-		if (intltr(15))
-			return OP_SPEC | OP_F;
-		if (!UState.intm)
-			State2.cmplx = 1;
-		break;
+		if (intltr(lc + 10))
+			return ( OP_SPEC | OP_A ) + lc;
 
-	case K10:					// STO
-		init_arg(RARG_STO);
-		break;
+		if ( c == K_ARROW ) {
+			State2.arrow = 1;
+			break;
+		}
+		else if ( c == K_CMPLX ) {
+			if (!UState.intm)
+				State2.cmplx = 1;
+			break;
+		}
+		return check_f_key(lc, op);
 
-	case K11:					// RCL
-		init_arg(RARG_RCL);
-		break;
-
-	case K12:					// R down
-		return OP_NIL | OP_RDOWN;
-
-	case K20:	return OP_SPEC | OP_ENTER;
-	case K21:	return OP_NIL | OP_SWAP;	// x<>y
-	case K22:	return OP_SPEC | OP_CHS;	// CHS
-	case K23:	return OP_SPEC | OP_EEX;	// EEX
-	case K24:
+	case K24:					// <-
 		if (State2.runmode)
-			return OP_SPEC | OP_CLX;
+			return op;
 		return STATE_BACKSPACE;
 
-	case K30:	init_arg(RARG_XEQ);	break;	// XEQ/GSB
-#ifdef SEQUENTIAL_ROWS
-	case K31:	case K32:	case K33:
-		return OP_SPEC | (c - K31 + OP_7);
-#else
-	case K31:	return OP_SPEC | OP_7;
-	case K32:	return OP_SPEC | OP_8;
-	case K33:	return OP_SPEC | OP_9;
-#endif
-	case K34:	return OP_DYA | OP_DIV;
+	case K10:					// STO
+	case K11:					// RCL
+	case K30:					// XEQ
+		init_arg(op);
+		break;
 
-	case K40:					// BST
-		return STATE_BST;
-
-
-#ifdef SEQUENTIAL_ROWS
-	case K41:	case K42:	case K43:
-		return OP_SPEC | (c - K41 + OP_4);
-#else
-	case K41:	return OP_SPEC | OP_4;
-	case K42:	return OP_SPEC | OP_5;
-	case K43:	return OP_SPEC | OP_6;
-#endif
-	case K44:	return OP_DYA | OP_MUL;
-
-	case K50:	return STATE_SST;		// SST
-
-#ifdef SEQUENTIAL_ROWS
-	case K51:	case K52:	case K53:
-		return OP_SPEC | (c - K51 + OP_1);
-#else
-	case K51:	return OP_SPEC | OP_1;
-	case K52:	return OP_SPEC | OP_2;
-	case K53:	return OP_SPEC | OP_3;
-#endif
-	case K54:	return OP_DYA | OP_SUB;
-
-	case K60:	break;				// ON/C
-	case K61:	return OP_SPEC | OP_0;
-	case K62:	return OP_SPEC | OP_DOT;
-	case K63:	return OP_NIL | OP_RS;		// R/S
-	case K64:	return OP_DYA | OP_ADD;
+	default:
+		return op;				// Keys handled by table
 	}
 	return STATE_UNFINISHED;
 }
