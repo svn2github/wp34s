@@ -214,6 +214,9 @@ static int intltr(int d) {
 	return (is_intmode() && (int) int_base() > d);
 }
 
+/*
+ *  Process a key code in the unshifted mode.
+ */
 static int process_normal(const keycode c)
 {
 	static const short int op_map[] = {
