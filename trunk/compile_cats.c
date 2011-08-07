@@ -168,7 +168,6 @@ static s_opcode program_xfcn[] = {
 	RARGCMD(RARG_MASKR,	"MASKR")
 	MON(OP_MIRROR,		"MIRROR")
 	MON(OP_BITCNT,		"nBITS")
-	NILIC(OP_RESET,		"RESET")
 	NILIC(OP_RJ,		"RJ")
 	RARGCMD(RARG_RL,	"RL")
 	RARGCMD(RARG_RLC,	"RLC")
