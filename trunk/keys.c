@@ -24,12 +24,12 @@
 #include "catalogues.h"
 
 
-#define STATE_UNFINISHED	-1
-#define STATE_BACKSPACE		-2
-#define STATE_SST		-3
-#define STATE_BST		-4
-#define STATE_RUNNING		-5
-#define STATE_IGNORE		-6
+#define STATE_UNFINISHED	(OP_SPEC | OP_UNFINISHED)
+#define STATE_BACKSPACE		(OP_SPEC | OP_BACKSPACE)
+#define STATE_SST		(OP_SPEC | OP_SST)
+#define STATE_BST		(OP_SPEC | OP_BST)
+#define STATE_RUNNING		(OP_SPEC | OP_RUNNING)
+#define STATE_IGNORE		(OP_SPEC | OP_IGNORE)
 
 /* Define this if the key codes map rows sequentially */
 
@@ -232,7 +232,7 @@ static int intltr(int d) {
  */
 static int process_normal(const keycode c)
 {
-	static const short int op_map[] = {
+	static const unsigned short int op_map[] = {
 		// Row 1
 		OP_SPEC | OP_SIGMAPLUS, // A to D
 		OP_MON  | OP_RECIP,
@@ -319,7 +319,7 @@ static int process_normal(const keycode c)
 
 
 static int process_f_shifted(const keycode c) {
-	static const short int op_map[] = {
+	static const unsigned short int op_map[] = {
 		// Row 1
 		STATE_UNFINISHED,	// HYP
 		OP_MON | OP_SIN,
@@ -362,7 +362,7 @@ static int process_f_shifted(const keycode c) {
 		RARG_LBL,
 		RARG_DSE
 	};
-	static const short int op_map2[] = {
+	static const unsigned short int op_map2[] = {
 		OP_SPEC | OP_SIGMAPLUS,
 		OP_MON  | OP_RECIP,
 		OP_DYA  | OP_POW,
@@ -429,7 +429,7 @@ static int process_f_shifted(const keycode c) {
 }
 
 static int process_g_shifted(const keycode c) {
-	static const short int op_map[] = {
+	static const unsigned short int op_map[] = {
 		// Row 1
 		STATE_UNFINISHED,	// HYP-1
 		OP_MON | OP_ASIN,
@@ -509,7 +509,7 @@ static int process_g_shifted(const keycode c) {
 static int process_h_shifted(const keycode c) {
 #define _CAT  0x8000	// Must not interfere with existing opcode markers
 #define _RARG 0x4000	// ditto
-	static const short int op_map[] = {
+	static const unsigned short int op_map[] = {
 		// Row 1
 		_RARG   | RARG_STD,
 		_RARG   | RARG_FIX,
