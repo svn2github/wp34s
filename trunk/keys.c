@@ -90,6 +90,133 @@ static signed char keycode_to_digit_or_register(const keycode c)
 	return map[keycode_to_linear(c)];
 }
 
+/*
+ *  Mapping of a keycode and shift state to a catalogue number
+ */
+static enum catalogues keycode_to_cat(const keycode c, const enum shifts s)
+{
+	if (! State2.alphas) {
+		/*
+		 *  Normal processing
+		 */
+		if (s == SHIFT_F && c == K60)
+			return CATALOGUE_REGISTERS;
+
+		if (s != SHIFT_H)
+			return CATALOGUE_NONE;
+
+		switch (c) {
+
+		case K_ARROW:
+			if (UState.intm)
+				return CATALOGUE_NONE;
+			return CATALOGUE_CONV;
+
+		case K05:
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+			if (State2.cmplx)
+				return CATALOGUE_INTERNAL;
+#endif
+			return CATALOGUE_MODE;
+
+		case K10:	
+			return CATALOGUE_LABELS;
+
+		case K20:
+			if (UState.intm)
+				return CATALOGUE_NONE;
+			if (State2.cmplx)
+				return CATALOGUE_COMPLEX_CONST;
+			return CATALOGUE_CONST;
+
+		case K41:
+			if (UState.intm)
+				return CATALOGUE_NONE;
+			return CATALOGUE_PROB;
+
+		case K42:
+			if (UState.intm)
+				return CATALOGUE_NONE;
+			return CATALOGUE_STATS;
+
+		case K44:
+			return CATALOGUE_STATUS;
+
+		case K50:
+			if (UState.intm)
+				return CATALOGUE_INT;
+			if (State2.cmplx)
+				return CATALOGUE_COMPLEX;
+			if (! State2.runmode)
+				return CATALOGUE_PROGXFCN;
+			return CATALOGUE_NORMAL;
+
+		case K51:
+			return CATALOGUE_TEST;
+
+		case K52:
+			return CATALOGUE_PROG;
+
+		default:
+			break;
+		}
+	}
+	else {
+		/*
+		 *  All the alpha catalogues go here
+		 */
+		if (s != SHIFT_F && s != SHIFT_H)
+			return 0;
+
+		switch (c) {
+
+		case K12:
+			if (s == SHIFT_F)
+				return CATALOGUE_ALPHA_SUBSCRIPTS;
+			else
+				return CATALOGUE_ALPHA_SUPERSCRIPTS;
+			break;
+
+		case K_ARROW:	// Alpha comparison characters
+			if (s == SHIFT_F)
+				return CATALOGUE_ALPHA_ARROWS;
+			break;
+
+		case K_CMPLX:	// Complex character menu
+			if (s == SHIFT_F) {
+				if (State2.alphashift)
+					return CATALOGUE_ALPHA_LETTERS_LOWER;
+				else
+					return CATALOGUE_ALPHA_LETTERS_UPPER;
+			}
+			break;
+
+		case K50:
+			if (s == SHIFT_H) {	// Alpha command catalogue
+				if (! State2.runmode)
+					return CATALOGUE_PROGXFCN;
+				else
+					return CATALOGUE_ALPHA;
+			}
+			break;
+
+		case K51:	// Alpha comparison characters
+			if (s == SHIFT_H)
+				return CATALOGUE_ALPHA_COMPARES;
+			break;
+
+		case K62:	// Alpha maths symbol characters
+			if (s == SHIFT_H)
+				return CATALOGUE_ALPHA_SYMBOLS;
+			break;
+
+		default:
+			break;
+		}
+	}
+	return CATALOGUE_NONE;
+}
+
 
 /*
  * Mapping from key position to alpha in the four key planes plus
@@ -164,21 +291,45 @@ static void init_arg(const enum rarg base) {
 }
 
 static void init_cat(enum catalogues cat) {
-	if (cat == CATALOGUE_NONE) {
+	if (cat == CATALOGUE_NONE && State2.catalogue != CATALOGUE_NONE) {
 		// Save last catalogue for a later restore
 		State.last_cat = State2.catalogue;
 		State.last_catpos = State2.digval;
 		CmdLineLength = 0;
 	}
 	process_cmdline();
-	State2.catalogue = cat;
-	State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
-	if (cat != CATALOGUE_NONE && State.last_cat == cat) {
-		// Same catalogue again, restore position
-		State2.digval = State.last_catpos;
+	if (cat == CATALOGUE_LABELS) {
+		// Label browser
+		State2.registerlist = 0;
+		State2.status = 0;
+		State2.labellist = 1;
+		advance_to_next_label(0);
+	}
+	else if (cat == CATALOGUE_REGISTERS) {
+		// Register browser
+		State2.status = 0;
+		State2.labellist = 0;
+		State2.registerlist = 1;
+		State2.digval = regX_idx;
+		State2.digval2 = 0;
+	}
+	else if (cat == CATALOGUE_STATUS) {
+		// Register browser
+		State2.registerlist = 0;
+		State2.labellist = 0;
+		State2.status = 1;
 	}
 	else {
-		State2.digval = 0;
+		// Normal catalogue
+		State2.catalogue = cat;
+		State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
+		if (cat != CATALOGUE_NONE && State.last_cat == cat) {
+			// Same catalogue again, restore position
+			State2.digval = State.last_catpos;
+		}
+		else {
+			State2.digval = 0;
+		}
 	}
 	set_shift(SHIFT_N);
 }
@@ -435,13 +586,6 @@ static int process_f_shifted(const keycode c) {
 		State2.test = TST_EQ;
 		break;
 
-	case K60:				// Register browser
-		process_cmdline_set_lift();
-		State2.registerlist = 1;
-		State2.digval = regX_idx;
-		State2.digval2 = 0;
-		break;
-
 	case K52:
 	case K53:
 	case K63:
@@ -534,22 +678,21 @@ static int process_g_shifted(const keycode c) {
 }
 
 static int process_h_shifted(const keycode c) {
-#define _CAT  0x8000	// Must not interfere with existing opcode markers
-#define _RARG 0x4000	// ditto
+#define _RARG 0x8000	// Must not interfere with existing opcode markers
 	static const unsigned short int op_map[] = {
 		// Row 1
 		_RARG   | RARG_STD,
 		_RARG   | RARG_FIX,
 		_RARG   | RARG_SCI,
 		_RARG   | RARG_ENG,
-		_CAT    | CATALOGUE_CONV,
-		_CAT    | CATALOGUE_MODE,
+		STATE_UNFINISHED,	// CONV
+		STATE_UNFINISHED,	// MODE
 		// Row 2
 		STATE_UNFINISHED,	// CAT
 		_RARG   | RARG_VIEW,
 		OP_NIL  | OP_RUP,
 		// Row 3
-		_CAT    | CATALOGUE_CONST,
+		STATE_UNFINISHED,	// CONST
 		_RARG   | RARG_SWAP,
 		OP_MON  | OP_NOT,
 		STATE_UNFINISHED,	// CLP
@@ -562,14 +705,14 @@ static int process_h_shifted(const keycode c) {
 		OP_DYA  | OP_MOD,
 		// Row 5
 		OP_MON  | OP_FACT,
-		_CAT    | CATALOGUE_PROB,
-		_CAT    | CATALOGUE_STATS,
+		STATE_UNFINISHED,	// PROB
+		STATE_UNFINISHED,	// STAT
 		OP_NIL  | OP_statLR,
 		STATE_UNFINISHED,	// STATUS
 		// Row 6
-		_CAT    | CATALOGUE_NORMAL,
-		_CAT    | CATALOGUE_TEST,
-		_CAT    | CATALOGUE_PROG,
+		STATE_UNFINISHED,	// X.FCN
+		STATE_UNFINISHED,	// TEST
+		STATE_UNFINISHED,	// P.FCN
 		CONST(OP_PI),
 		OP_SPEC | OP_SIGMAMINUS,
 		// Row 7
@@ -587,32 +730,11 @@ static int process_h_shifted(const keycode c) {
 	// The switch handles all the special cases
 	switch (c) {
 
-	case K10:
-		State2.labellist = 1;
-		advance_to_next_label(0);
-		break;
-
-	case K20:
-		if (UState.intm)
-			op = STATE_UNFINISHED;
-		break;
-
 	case K23:
 		if (State2.runmode)
 			clrretstk();
 		else
 			init_confirm(confirm_clprog);
-		break;
-
-	case K44:
-		State2.status = 1;
-		break;
-
-	case K50:
-		if (! State2.runmode)
-			op = _CAT | CATALOGUE_PROGXFCN;
-		else if (UState.intm)
-			op = _CAT | CATALOGUE_INT;
 		break;
 
 	case K60:
@@ -634,17 +756,12 @@ static int process_h_shifted(const keycode c) {
 	}
 
 	if ( op != STATE_UNFINISHED ) {
-		if ( op & _CAT ) {
-			init_cat( (enum catalogues) (op & ~_CAT) );
-			op = STATE_UNFINISHED;
-		}
-		else if ( op & _RARG ) {
+		if ( op & _RARG ) {
 			init_arg( (enum rarg) (op & ~_RARG) );
 			op = STATE_UNFINISHED;
 		}
 	}
 	return op;
-#undef _CAT
 #undef _RARG
 }
 
@@ -667,7 +784,6 @@ static int process_normal_cmplx(const keycode c) {
 
 	case K34:	return OP_CDYA | OP_DIV;
 	case K44:	return OP_CDYA | OP_MUL;
-	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K54:	return OP_CDYA | OP_SUB;
 	case K64:	return OP_CDYA | OP_ADD;
 	default:	break;
@@ -675,7 +791,7 @@ static int process_normal_cmplx(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
-static int process_f_shifted_cmplex(const keycode c) {
+static int process_f_shifted_cmplx(const keycode c) {
 	set_shift(SHIFT_N);
 	State2.cmplx = 0;
 	switch (c) {
@@ -699,7 +815,6 @@ static int process_f_shifted_cmplex(const keycode c) {
 	case K40:	return OP_CDYA | OP_COMB;
 	case K44:	return OP_CMON | OP_SQRT;
 
-	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K51:
 		State2.cmplx = 1;
 		State2.test = TST_EQ;
@@ -744,7 +859,6 @@ static int process_g_shifted_cmplx(const keycode c) {
 	case K40:	return OP_CDYA | OP_PERM;
 	case K44:	return OP_CMON | OP_SQR;
 
-	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
 	case K51:
 		State2.cmplx = 1;
 		State2.test = TST_NE;
@@ -769,25 +883,12 @@ static int process_h_shifted_cmplx(const keycode c) {
 	switch (c) {
 	case K12:	return OP_NIL | OP_CRUP;
 
-	case K20:	init_cat(CATALOGUE_COMPLEX_CONST);	break;
 	case K21:	init_arg(RARG_CSWAP);	break;	// x<>
 	case K22:	return OP_CMON | OP_CCONJ;
 
 	case K40:	return OP_CMON | OP_FACT;	// z!
 
-	case K50:	init_cat(CATALOGUE_COMPLEX);	break;
-	case K52:	init_cat(CATALOGUE_PROG);	break;
 	case K53:	return CONST_CMPLX(OP_PI);
-
-	case K60:	break;
-
-	case K05:
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-		init_cat(CATALOGUE_INTERNAL);
-#else
-		set_shift(SHIFT_h);
-#endif		
-		break;
 
 	default:
 		break;
@@ -1017,30 +1118,6 @@ static int process_alpha(const keycode c) {
 		}
 		break;
 
-	case K12:
-		if (oldstate == SHIFT_F)
-			init_cat(CATALOGUE_ALPHA_SUBSCRIPTS);
-		else if (oldstate == SHIFT_H)
-			init_cat(CATALOGUE_ALPHA_SUPERSCRIPTS);
-		else
-			break;
-		return STATE_UNFINISHED;
-
-	case K_ARROW:	// Alpha comparison characters
-		if (oldstate == SHIFT_F) {
-			init_cat(CATALOGUE_ALPHA_ARROWS);
-			return STATE_UNFINISHED;
-		}
-		break;
-
-	case K_CMPLX:	// Complex character menu
-		if (oldstate == SHIFT_F) {
-			init_cat(State2.alphashift?CATALOGUE_ALPHA_LETTERS_LOWER:
-						CATALOGUE_ALPHA_LETTERS_UPPER);
-			return STATE_UNFINISHED;
-		}
-		break;
-
 	case K20:	// Enter - maybe exit alpha mode
 		if (oldstate == SHIFT_G)
 			break;
@@ -1092,20 +1169,6 @@ static int process_alpha(const keycode c) {
 				State2.alpha_pos = alpha_pos-1;
 			return STATE_UNFINISHED;
 		}
-		if (oldstate == SHIFT_H) {	// Alpha command catalogue
-			if (! State2.runmode)
-				init_cat(CATALOGUE_PROGXFCN);
-			else
-				init_cat(CATALOGUE_ALPHA);
-			return STATE_UNFINISHED;
-		}
-		break;
-
-	case K51:	// Alpha comparison characters
-		if (oldstate == SHIFT_H) {
-			init_cat(CATALOGUE_ALPHA_COMPARES);
-			return STATE_UNFINISHED;
-		}
 		break;
 
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
@@ -1116,13 +1179,6 @@ static int process_alpha(const keycode c) {
 		else
 			init_state();
 		return STATE_UNFINISHED;
-
-	case K62:	// Alpha maths symbol characters
-		if (oldstate == SHIFT_H) {
-			init_cat(CATALOGUE_ALPHA_SYMBOLS);
-			return STATE_UNFINISHED;
-		}
-		break;
 
 	case K63:
 		if (oldstate == SHIFT_F)
@@ -1778,6 +1834,10 @@ static int process_catalogue(const keycode c) {
 				return conv_mapping[i^1];
 		return STATE_UNFINISHED;		// Unreached
 	}
+	else if ( c == K60 && State2.alphas ) {
+		// Handle alpha shift in alpha mode
+		return process_alpha(c);
+	}
 
 	/* We've got a key press, map it to a character and try to
 	 * jump to the appropriate catalogue entry.
@@ -1786,7 +1846,7 @@ static int process_catalogue(const keycode c) {
 	set_shift(SHIFT_N);
 	if (ch == '\0')
 		return STATE_UNFINISHED;
-	if (Keyticks >= 30)
+	if (Keyticks >= 30 || State2.alphas)
 		CmdLineLength = 0;	// keyboard search timed out
 	if (CmdLineLength < 10)
 		Cmdline[CmdLineLength++] = ch;
@@ -2050,6 +2110,7 @@ static int process_registerlist(const keycode c) {
 
 static int process(const int c) {
 	const enum shifts s = cur_shift();
+	enum catalogues cat;
 
 	if (c == K_HEARTBEAT) {
 		/*
@@ -2128,15 +2189,6 @@ static int process(const int c) {
 	}
 #endif
 
-	if (State2.status)
-		return process_status((const keycode)c);
-
-	if (State2.labellist)
-		return process_labellist((const keycode)c);
-
-	if (State2.registerlist)
-		return process_registerlist((const keycode)c);
-
 	if (State2.confirm)
 		return process_confirm((const keycode)c);
 
@@ -2148,6 +2200,9 @@ static int process(const int c) {
 
 	if (State2.test != TST_NONE)
 		return process_test((const keycode)c);
+
+	if (State2.arrow)
+		return process_arrow((const keycode)c);
 
 	// Process shift keys directly
 	if (c == K_F) {
@@ -2163,24 +2218,40 @@ static int process(const int c) {
 		return STATE_UNFINISHED;
 	}
 
+	if (State2.multi)
+		return process_multi((const keycode)c);
+
 	if (State2.rarg)
 		return process_arg((const keycode)c);
+
+	// Here the keys are mapped to catalogues
+	// The position of this code decides where catalog switching
+	// works and were not
+	cat = keycode_to_cat((keycode)c, s);
+	if ( cat != CATALOGUE_NONE ) {
+		init_cat( CATALOGUE_NONE );
+		init_cat( cat );
+		return STATE_UNFINISHED;
+	}
+
+	if (State2.status)
+		return process_status((const keycode)c);
+
+	if (State2.labellist)
+		return process_labellist((const keycode)c);
+
+	if (State2.registerlist)
+		return process_registerlist((const keycode)c);
 
 	if (State2.catalogue)
 		return process_catalogue((const keycode)c);
 
-	if (State2.multi)
-		return process_multi((const keycode)c);
-
 	if (State2.alphas)
 		return process_alpha((const keycode)c);
 
-	if (State2.arrow)
-		return process_arrow((const keycode)c);
-
 	if (State2.cmplx) {
 		if (s == SHIFT_F)
-			return process_f_shifted_cmplex((const keycode)c);
+			return process_f_shifted_cmplx((const keycode)c);
 		if (s == SHIFT_G)
 			return process_g_shifted_cmplx((const keycode)c);
 		if (s == SHIFT_H)
