@@ -1846,8 +1846,8 @@ static int process_catalogue(const keycode c) {
 	set_shift(SHIFT_N);
 	if (ch == '\0')
 		return STATE_UNFINISHED;
-	if (Keyticks >= 30 || State2.alphas)
-		CmdLineLength = 0;	// keyboard search timed out
+	if (Keyticks >= 30 || (State2.alphas && State2.catalogue > CATALOGUE_ALPHA))
+		CmdLineLength = 0;	// keyboard search timed out or single letter cat
 	if (CmdLineLength < 10)
 		Cmdline[CmdLineLength++] = ch;
 	/* Search for the current buffer in the catalogue */

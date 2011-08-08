@@ -321,7 +321,7 @@ long long int intMultiply(long long int y, long long int x) {
 	unsigned long long int yv = extract_value(y, &sy);
 
 	u = mask_value(xv * yv);
-	set_overflow(u / yv != xv);
+	set_overflow(yv != 0 && u / yv != xv);
 
         if (mode == MODE_UNSIGNED)
             return u;
