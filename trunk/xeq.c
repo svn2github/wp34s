@@ -1886,10 +1886,12 @@ static void niladic(const opcode op) {
 
 	process_cmdline();
 	if (idx < num_niladics) {
-		if (niladics[idx].niladicf != FNULL) {
+		if (is_intmode() && NILADIC_NOTINT(niladics[idx]))
+			bad_mode_error();
+		else if (niladics[idx].niladicf != FNULL) {
 			decimal64 *x = NULL, *y = NULL;
 
-			switch (niladics[idx].numresults) {
+			switch (NILADIC_NUMRESULTS(niladics[idx])) {
 			case 2:	lift_if_enabled();
 				y = &regY;
 			case 1:	x = &regX;
@@ -1985,7 +1987,7 @@ static void do_ztst(const decimal64 *r, const decimal64 *i, const enum tst_op op
 	process_cmdline_set_lift();
 
 	if (is_intmode()) {
-		err(ERR_BAD_MODE);
+		bad_mode_error();
 		return;
 	}
 	getXY(&x, &y);
@@ -2123,7 +2125,7 @@ void op_shift_digit(unsigned int n, enum rarg op) {
 	int adjust = n;
 
 	if (is_intmode()) {
-		err(ERR_BAD_MODE);
+		bad_mode_error();
 		return;
 	}
 	getX(&x);
@@ -2513,8 +2515,10 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_SIGMAPLUS:
-		if (is_intmode())
+		if (is_intmode()) {
+			bad_mode_error();
 			break;
+		}
 		process_cmdline();
 		State.state_lift = 0;
 		setlastX();
@@ -2523,8 +2527,10 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_SIGMAMINUS:
-		if (is_intmode())
+		if (is_intmode()) {
+			bad_mode_error();
 			break;
+		}
 		process_cmdline();
 		State.state_lift = 0;
 		setlastX();
@@ -3336,7 +3342,7 @@ static int check_delete_prog(unsigned int pc) {
 	if (! isRAM(pc))
 		err(ERR_READ_ONLY);
 	else if (State2.runmode)
-		err(ERR_BAD_MODE);
+		bad_mode_error();
 	else
 		return 0;
 	return 1;

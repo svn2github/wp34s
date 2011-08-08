@@ -250,6 +250,9 @@ struct niladic
 };
 extern const struct niladic niladics[];
 extern const unsigned short num_niladics;
+#define NILADIC_NOINT		(0x80)
+#define NILADIC_NUMRESULTS(n)	((n).numresults & 0x3)
+#define NILADIC_NOTINT(n)	((n).numresults & NILADIC_NOINT)
 
 
 /* Table of argument taking commands */

@@ -361,18 +361,14 @@ static void easter(int year, int *month, int *day) {
 decNumber *dateEaster(decNumber *res, const decNumber *x) {
 	int y;
 
-	if (is_intmode())
+	if (find_year(x, &y)) {
 		set_NaN(res);
-	else {
-		if (find_year(x, &y)) {
-			set_NaN(res);
-			return res;
-		} else {
-			int m, d;
+		return res;
+	} else {
+		int m, d;
 
-			easter(y, &m, &d);
-			build_date(res, y, m, d);
-		}
+		easter(y, &m, &d);
+		build_date(res, y, m, d);
 	}
 	return res;
 }
@@ -385,14 +381,10 @@ void date_isleap(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	int y, t = 0;
 	decNumber x;
 
-	if (is_intmode())
-		err(ERR_BAD_DATE);
-	else {
-		getX(&x);
-		if (! find_year(&x, &y))
-			t = isleap(y);
-		fin_tst(t);
-	}
+	getX(&x);
+	if (! find_year(&x, &y))
+		t = isleap(y);
+	fin_tst(t);
 }
 
 
@@ -455,16 +447,13 @@ static void copy3(const char *p) {
 void date_alphaday(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber x;
 	int y, m, d, dow;
-	if (is_intmode())
+
+	getX(&x);
+	if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d))
 		err(ERR_BAD_DATE);
 	else {
-		getX(&x);
-		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d))
-			err(ERR_BAD_DATE);
-		else {
-			dow = day_of_week(y, m, d, NULL);
-			copy3("MONTUEWEDTHUFRISATSUN" + 3*(dow-1));
-		}
+		dow = day_of_week(y, m, d, NULL);
+		copy3("MONTUEWEDTHUFRISATSUN" + 3*(dow-1));
 	}
 }
 
@@ -473,15 +462,11 @@ void date_alphamonth(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	int y, m, d;
 	static const char mons[12*3] = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
 
-	if (is_intmode())
+	getX(&x);
+	if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d))
 		err(ERR_BAD_DATE);
 	else {
-		getX(&x);
-		if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d))
-			err(ERR_BAD_DATE);
-		else {
-			copy3(mons + 3*m - 3);
-		}
+		copy3(mons + 3*m - 3);
 	}
 }
 
@@ -492,10 +477,6 @@ decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y) {
 	int j;
 	int yr, m, d;
 
-	if (is_intmode()) {
-		err(ERR_BAD_DATE);
-		return res;
-	}
 	if (decNumberIsSpecial(x) || decNumberIsSpecial(y) || ! is_int(y)) {
 err:		set_NaN(res);
 		return res;
@@ -516,9 +497,7 @@ err:		set_NaN(res);
 decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y) {
 	int d, m, yr, j1, j2;
 
-	if (is_intmode())
-		err(ERR_BAD_DATE);
-	else if (decNumberIsSpecial(x) || decNumberIsSpecial(y))
+	if (decNumberIsSpecial(x) || decNumberIsSpecial(y))
 err:		set_NaN(res);
 	else {
 		if (extract_date(x, &yr, &m, &d))
@@ -536,9 +515,7 @@ err:		set_NaN(res);
 /* Conversion routines from Julian days to and from dates
  */
 decNumber *dateToJ(decNumber *res, const decNumber *x) {
-	if (is_intmode())
-		err(ERR_BAD_DATE);
-	else if (decNumberIsSpecial(x))
+	if (decNumberIsSpecial(x))
 err:		set_NaN(res);
 	else {
 		int y, m, d;
@@ -551,9 +528,7 @@ err:		set_NaN(res);
 }
 
 decNumber *dateFromJ(decNumber *res, const decNumber *x) {
-	if (is_intmode())
-		err(ERR_BAD_DATE);
-	else if (decNumberIsSpecial(x))
+	if (decNumberIsSpecial(x))
 		set_NaN(res);
 	else {
 		const int j = dn_to_int(x);
@@ -613,37 +588,33 @@ void date_alphatime(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	int a;
 	const char *suffix;
 
-	if (is_intmode())
-		err(ERR_BAD_DATE);
-	else {
-		xset(buf, '\0', sizeof(buf));
-		getX(&x);
-		decNumberTrunc(&y, &x);
-		a = dn_to_int(&y);
-		if (UState.t12) {
-			if (a >= 12) {
-				a -= 12;
-				suffix = " PM";
-			} else
-				suffix = " AM";
-			if (a == 0)
-				a = 12;
+	xset(buf, '\0', sizeof(buf));
+	getX(&x);
+	decNumberTrunc(&y, &x);
+	a = dn_to_int(&y);
+	if (UState.t12) {
+		if (a >= 12) {
+			a -= 12;
+			suffix = " PM";
 		} else
-			suffix = "";
-		p = num_arg(buf, a);
-		*p++ = ':';
-		decNumberFrac(&y, &x);
-		dn_multiply(&x, &y, &const_60);
-		decNumberTrunc(&y, &x);
-		p = num_arg_0(p, dn_to_int(&y), 2);
-		*p++ = ':';
-		decNumberFrac(&y, &x);
-		dn_multiply(&x, &y, &const_60);
-		decNumberRound(&y, &x);
-		p = num_arg_0(p, dn_to_int(&y), 2);
-		scopy(p, suffix);
-		add_string(buf);
-	}
+			suffix = " AM";
+		if (a == 0)
+			a = 12;
+	} else
+		suffix = "";
+	p = num_arg(buf, a);
+	*p++ = ':';
+	decNumberFrac(&y, &x);
+	dn_multiply(&x, &y, &const_60);
+	decNumberTrunc(&y, &x);
+	p = num_arg_0(p, dn_to_int(&y), 2);
+	*p++ = ':';
+	decNumberFrac(&y, &x);
+	dn_multiply(&x, &y, &const_60);
+	decNumberRound(&y, &x);
+	p = num_arg_0(p, dn_to_int(&y), 2);
+	scopy(p, suffix);
+	add_string(buf);
 }
 
 

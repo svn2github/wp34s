@@ -357,22 +357,21 @@ const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
 
 
 #ifdef COMPILE_CATALOGUES
-#define FUNC0(name, d, fn) { PTR, 0, fn },
-#define FUNC1(name, d, fn) { PTR, 1, fn },
-#define FUNC2(name, d, fn) { PTR, 2, fn },
+#define FUNC(name, d, fn, arg)		{ PTR, arg, fn },
 #elif DEBUG
-#define FUNC0(name, d, fn) { name, d, 0, fn },
-#define FUNC1(name, d, fn) { name, d, 1, fn },
-#define FUNC2(name, d, fn) { name, d, 2, fn },
+#define FUNC(name, d, fn, arg)		{ name, d, arg, fn },
 #elif COMMANDS_PASS == 1
-#define FUNC0(name, d, fn) { 0xaa55, 0, fn },
-#define FUNC1(name, d, fn) { 0xaa55, 1, fn },
-#define FUNC2(name, d, fn) { 0xaa55, 2, fn },
+#define FUNC(name, d, fn, arg)		{ 0xaa55, arg, fn },
 #else
-#define FUNC0(name, d, fn) { d, 0, fn },
-#define FUNC1(name, d, fn) { d, 1, fn },
-#define FUNC2(name, d, fn) { d, 2, fn },
+#define FUNC(name, d, fn, arg)		{ d, arg, fn },
 #endif
+
+#define FUNC0(name, d, fn)	FUNC(name, d, fn, 0)
+#define FUNC1(name, d, fn)	FUNC(name, d, fn, 1)
+#define FUNC2(name, d, fn)	FUNC(name, d, fn, 2)
+#define FN_I0(name, d, fn)	FUNC(name, d, fn, NILADIC_NOINT | 0)
+#define FN_I1(name, d, fn)	FUNC(name, d, fn, NILADIC_NOINT | 1)
+#define FN_I2(name, d, fn)	FUNC(name, d, fn, NILADIC_NOINT | 2)
 
 #if COMMANDS_PASS == 2
 CMDTAB const struct niladic_cmdtab niladics_ct[ NUM_NILADIC ] = {
@@ -397,36 +396,36 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_CFILL,		&cpx_fill,		"\024FILL")
 	FUNC0(OP_DROP,		&drop,			"DROP")
 	FUNC0(OP_DROPXY,	&drop,			"\024DROP")
-	FUNC1(OP_sigmaX2Y,	&sigma_val,		"\221x\232y")
-	FUNC1(OP_sigmaX,	&sigma_val,		"\221x")
-	FUNC1(OP_sigmaX2,	&sigma_val,		"\221x\232")
-	FUNC1(OP_sigmaY,	&sigma_val,		"\221y")
-	FUNC1(OP_sigmaY2,	&sigma_val,		"\221y\232")
-	FUNC1(OP_sigma_XY,	&sigma_val,		"\221xy")
-	FUNC1(OP_sigmaN,	&sigma_val,		"n\221")
-	FUNC1(OP_sigmalnX,	&sigma_val,		"\221lnx")
-	FUNC1(OP_sigmalnXlnX,	&sigma_val,		"\221ln\232x")
-	FUNC1(OP_sigmalnY,	&sigma_val,		"\221lny")
-	FUNC1(OP_sigmalnYlnY,	&sigma_val,		"\221ln\232y")
-	FUNC1(OP_sigmalnXlnY,	&sigma_val,		"\221lnxy")
-	FUNC1(OP_sigmaXlnY,	&sigma_val,		"\221xlny")
-	FUNC1(OP_sigmaYlnX,	&sigma_val,		"\221ylnx")
-	FUNC2(OP_statS,		&stats_deviations,	"s")
-	FUNC2(OP_statSigma,	&stats_deviations,	"\261")
-	FUNC2(OP_statGS,	&stats_deviations,	"\244")
-	FUNC2(OP_statGSigma,	&stats_deviations,	"\244\276")
-	FUNC1(OP_statWS,	&stats_wdeviations,	"sw")
-	FUNC1(OP_statWSigma,	&stats_wdeviations,	"\261w")
-	FUNC2(OP_statMEAN,	&stats_mean,		"\001")
-	FUNC1(OP_statWMEAN,	&stats_wmean,		"\001w")
-	FUNC2(OP_statGMEAN,	&stats_gmean,		"\001g")
-	FUNC1(OP_statR,		&stats_correlation,	"CORR")
-	FUNC2(OP_statLR,	&stats_LR,		"LR")
-	FUNC2(OP_statSErr,	&stats_deviations,	"SERR")
-	FUNC2(OP_statGSErr,	&stats_deviations,	"\244m")
-	FUNC1(OP_statWSErr,	&stats_wdeviations,	"SERRw")
-	FUNC1(OP_statCOV,	&stats_COV,		"COV")
-	FUNC1(OP_statSxy,	&stats_COV,		"sxy")
+	FN_I1(OP_sigmaX2Y,	&sigma_val,		"\221x\232y")
+	FN_I1(OP_sigmaX,	&sigma_val,		"\221x")
+	FN_I1(OP_sigmaX2,	&sigma_val,		"\221x\232")
+	FN_I1(OP_sigmaY,	&sigma_val,		"\221y")
+	FN_I1(OP_sigmaY2,	&sigma_val,		"\221y\232")
+	FN_I1(OP_sigma_XY,	&sigma_val,		"\221xy")
+	FN_I1(OP_sigmaN,	&sigma_val,		"n\221")
+	FN_I1(OP_sigmalnX,	&sigma_val,		"\221lnx")
+	FN_I1(OP_sigmalnXlnX,	&sigma_val,		"\221ln\232x")
+	FN_I1(OP_sigmalnY,	&sigma_val,		"\221lny")
+	FN_I1(OP_sigmalnYlnY,	&sigma_val,		"\221ln\232y")
+	FN_I1(OP_sigmalnXlnY,	&sigma_val,		"\221lnxy")
+	FN_I1(OP_sigmaXlnY,	&sigma_val,		"\221xlny")
+	FN_I1(OP_sigmaYlnX,	&sigma_val,		"\221ylnx")
+	FN_I2(OP_statS,		&stats_deviations,	"s")
+	FN_I2(OP_statSigma,	&stats_deviations,	"\261")
+	FN_I2(OP_statGS,	&stats_deviations,	"\244")
+	FN_I2(OP_statGSigma,	&stats_deviations,	"\244\276")
+	FN_I1(OP_statWS,	&stats_wdeviations,	"sw")
+	FN_I1(OP_statWSigma,	&stats_wdeviations,	"\261w")
+	FN_I2(OP_statMEAN,	&stats_mean,		"\001")
+	FN_I1(OP_statWMEAN,	&stats_wmean,		"\001w")
+	FN_I2(OP_statGMEAN,	&stats_gmean,		"\001g")
+	FN_I1(OP_statR,		&stats_correlation,	"CORR")
+	FN_I2(OP_statLR,	&stats_LR,		"LR")
+	FN_I2(OP_statSErr,	&stats_deviations,	"SERR")
+	FN_I2(OP_statGSErr,	&stats_deviations,	"\244m")
+	FN_I1(OP_statWSErr,	&stats_wdeviations,	"SERRw")
+	FN_I1(OP_statCOV,	&stats_COV,		"COV")
+	FN_I1(OP_statSxy,	&stats_COV,		"sxy")
 	FUNC0(OP_LINF,		&stats_mode,		"LinF")
 	FUNC0(OP_EXPF,		&stats_mode,		"ExpF")
 	FUNC0(OP_PWRF,		&stats_mode,		"PowerF")
@@ -448,10 +447,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_CLALL,		NULL,			"CLALL")
 	FUNC0(OP_RESET,		NULL,			"RESET")
 	FUNC0(OP_CLFLAGS,	&clrflags,		"CLFLAG")
-	FUNC0(OP_R2P,		&op_r2p,		"\015POL")
-	FUNC0(OP_P2R,		&op_p2r,		"\015REC")
-	FUNC0(OP_FRACDENOM,	&op_fracdenom,		"DENMAX")
-	FUNC1(OP_2FRAC,		&op_2frac,		"DECOMP")
+	FN_I0(OP_R2P,		&op_r2p,		"\015POL")
+	FN_I0(OP_P2R,		&op_p2r,		"\015REC")
+	FN_I0(OP_FRACDENOM,	&op_fracdenom,		"DENMAX")
+	FN_I1(OP_2FRAC,		&op_2frac,		"DECOMP")
 	FUNC0(OP_DENANY,	&op_denom,		"DENANY")
 	FUNC0(OP_DENFIX,	&op_denom,		"DENFIX")
 	FUNC0(OP_DENFAC,	&op_denom,		"DENFAC")
@@ -475,23 +474,23 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC1(OP_LJ,		&int_justify,		"LJ")
 	FUNC1(OP_RJ,		&int_justify,		"RJ")
 	FUNC0(OP_DBL_MUL, 	&intDblMul,		"DBL\034")
-	FUNC2(OP_RCLSIGMA,	&sigma_sum,		"SUM")
+	FN_I2(OP_RCLSIGMA,	&sigma_sum,		"SUM")
 	FUNC0(OP_DATEDMY,	&op_datemode,		"D.MY")
 	FUNC0(OP_DATEYMD,	&op_datemode,		"Y.MD")
 	FUNC0(OP_DATEMDY,	&op_datemode,		"M.DY")
 	FUNC0(OP_JG1752,	&op_jgchange,		"JG1752")
 	FUNC0(OP_JG1582,	&op_jgchange,		"JG1582")
-	FUNC0(OP_ISLEAP,	&date_isleap,		"LEAP?")
-	FUNC0(OP_ALPHADAY,	&date_alphaday,		"\240DAY")
-	FUNC0(OP_ALPHAMONTH,	&date_alphamonth,	"\240MONTH")
-	FUNC0(OP_ALPHADATE,	&date_alphadate,	"\240DATE")
-	FUNC0(OP_ALPHATIME,	&date_alphatime,	"\240TIME")
-	FUNC1(OP_DATE,		&date_date,		"DATE")
-	FUNC1(OP_TIME,		&date_time,		"TIME")
+	FN_I0(OP_ISLEAP,	&date_isleap,		"LEAP?")
+	FN_I0(OP_ALPHADAY,	&date_alphaday,		"\240DAY")
+	FN_I0(OP_ALPHAMONTH,	&date_alphamonth,	"\240MONTH")
+	FN_I0(OP_ALPHADATE,	&date_alphadate,	"\240DATE")
+	FN_I0(OP_ALPHATIME,	&date_alphatime,	"\240TIME")
+	FN_I1(OP_DATE,		&date_date,		"DATE")
+	FN_I1(OP_TIME,		&date_time,		"TIME")
 	FUNC0(OP_24HR,		&op_timemode,		"24H")
 	FUNC0(OP_12HR,		&op_timemode,		"12H")
-	FUNC0(OP_SETDATE,	&date_setdate,		"SETDAT")
-	FUNC0(OP_SETTIME,	&date_settime,		"SETTIM")
+	FN_I0(OP_SETDATE,	&date_setdate,		"SETDAT")
+	FN_I0(OP_SETTIME,	&date_settime,		"SETTIM")
 	FUNC0(OP_CLRALPHA,	&clralpha,		"CL\240")
 	FUNC0(OP_VIEWALPHA,	&alpha_view,		"\240VIEW")
 	FUNC1(OP_ALPHALEN,	&alpha_length,		"\240LENG")
@@ -499,14 +498,14 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_XTOALPHA,	&alpha_fromx,		"x\015\240")
 	FUNC0(OP_ALPHAON,	&alpha_onoff,		"\240ON")
 	FUNC0(OP_ALPHAOFF,	&alpha_onoff,		"\240OFF")
-	FUNC0(OP_REGCOPY,	&op_regcopy,		"R-COPY")
-	FUNC0(OP_REGSWAP,	&op_regswap,		"R-SWAP")
-	FUNC0(OP_REGCLR,	&op_regclr,		"R-CLR")
-	FUNC0(OP_REGSORT,	&op_regsort,		"R-SORT")
+	FN_I0(OP_REGCOPY,	&op_regcopy,		"R-COPY")
+	FN_I0(OP_REGSWAP,	&op_regswap,		"R-SWAP")
+	FN_I0(OP_REGCLR,	&op_regclr,		"R-CLR")
+	FN_I0(OP_REGSORT,	&op_regsort,		"R-SORT")
 	FUNC0(OP_GSBuser,	&do_usergsb,		"XEQUSR")
-	FUNC0(OP_XisInf,	&isInfinite,		"\237?")
-	FUNC0(OP_XisNaN,	&isNan,			"NaN?")
-	FUNC0(OP_XisSpecial,	&isSpecial,		"SPEC?")
+	FN_I0(OP_XisInf,	&isInfinite,		"\237?")
+	FN_I0(OP_XisNaN,	&isNan,			"NaN?")
+	FN_I0(OP_XisSpecial,	&isSpecial,		"SPEC?")
 	FUNC0(OP_XisPRIME,	&XisPrime,		"PRIME?")
 	FUNC0(OP_XisINT,	&XisInt,		"INT?")
 	FUNC0(OP_XisFRAC,	&XisInt,		"FP?")
@@ -548,9 +547,13 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_ALPHASEND,	&send_alpha,		"\240SEND")
 	FUNC0(OP_ALPHARECV,	&recv_alpha,		"\240RECV")
 #endif
+#undef FUNC
 #undef FUNC0
 #undef FUNC1
 #undef FUNC2
+#undef FN_I0
+#undef FN_I1
+#undef FN_I2
 };
 
 #if COMMANDS_PASS != 2
