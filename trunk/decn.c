@@ -3103,12 +3103,7 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 	decNumber x, y;
 	unsigned int flags = 0;
 
-	dn_compare(&x, b, a);
-	if (decNumberIsZero(&x)) {
-		dn_add(b, a, &const_10);
-		dn_multiply(fb, fa, &const_10);
-		goto cnst;
-	} else if (decNumberIsNegative(&x)) {
+	if (decNumberIsNegative(dn_compare(&x, b, a))) {
 		decNumberSwap(a, b);
 		decNumberSwap(fa, fb);
 	}
@@ -3117,7 +3112,7 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 	if (sa == sb) {				// Same side of line
 		dn_compare(&y, fa, fb);
 		if (decNumberIsZero(&y)) {	// Worse equal...
-cnst:			SET_CONST(flags);
+			SET_CONST(flags);
 		}
 		// Both estimates are the same side of the line.
 #if 1

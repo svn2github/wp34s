@@ -217,6 +217,8 @@ const s_opcode xrom[] = {
 	LBL(ENTRY_SOLVE)
 		ENTRY
 		DECM
+		TST(APX, st(Y))
+			INC(st(Y))
 		CSTO(A)
 		FILL
 		GSBUSER
