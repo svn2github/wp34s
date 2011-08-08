@@ -201,7 +201,6 @@ struct _state2 {
 	unsigned int alphashift : 1;	// Alpha shifted to lower case
 	unsigned int rarg : 1;		// In argument accept mode
 	unsigned int runmode : 1;	// Program mode or run mode
-	unsigned int flags : 1;		// Display state flags
 	unsigned int disp_small : 1;	// Display the status message in small font
 	unsigned int hms : 1;		// H.MS mode
 	unsigned int invalid_disp : 1;  // Display contents is invalid
@@ -209,6 +208,7 @@ struct _state2 {
 	unsigned int registerlist : 1;	// Displaying the register's contents
 #ifndef REALBUILD
 	unsigned int trace : 1;
+	unsigned int flags : 1;		// Display state flags
 #else
 	unsigned int test_flag : 1;	// Test flag for various software tests
 #endif

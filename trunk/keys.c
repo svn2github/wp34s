@@ -184,21 +184,47 @@ static void init_cat(enum catalogues cat) {
 }
 
 void init_state(void) {
-	struct _state s;
-	xset(&s, 0, sizeof(s));
+	unsigned int a = state_pc();
+	unsigned int b = State.entryp;
 
-#define C(n)	s.n = State.n
-        C(state_pc);
-        C(entryp);
-#undef C
-	s.state_lift = 1;
-	xcopy(&State, &s, sizeof(struct _state));
+	xset(&State, 0, sizeof(struct _state));
+	State.state_lift = 1;
+	State.entryp = b;
+	set_pc(a);
 
+#ifndef REALBUILD
+	a = State2.flags;
+	b = State2.trace;
+#endif
 	xset(&State2, 0, sizeof(State2));
 	//State2.shifts = SHIFT_N;
 	State2.test = TST_NONE;
 	State2.runmode = 1;
+#ifndef REALBUILD
+	State2.trace = b;
+	State2.flags = a;
+#endif
 	ShowRegister = regX_idx;
+}
+
+void soft_init_state(void) {
+	int soft;
+	unsigned int runmode;
+
+	if (CmdLineLength) {
+		CmdLineLength = 0;
+		CmdLineEex = 0;
+		CmdLineDot = 0;
+		return;
+	}
+	soft = State2.multi || State2.rarg || State2.hyp || State2.gtodot || State2.cmplx || State2.arrow || State2.test != TST_NONE;
+	if (soft) {
+		runmode = State2.runmode;
+	}
+	init_state();
+	if (soft) {
+		State2.runmode = runmode;
+	}
 }
 
 static void init_confirm(enum confirmations n) {
@@ -2090,13 +2116,7 @@ static int process(const int c) {
 	 * if required.
 	 */
 	if (c == K60 && s == SHIFT_N && ! State2.catalogue) {
-		if (CmdLineLength) {
-			CmdLineLength = 0;
-			CmdLineEex = 0;
-			CmdLineDot = 0;
-		}
-		else
-			init_state();
+		soft_init_state();
 		return STATE_UNFINISHED;
 	}
 #if defined(REALBUILD) || defined(WINGUI)
