@@ -666,6 +666,8 @@ enum nilop {
 	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
 	OP_ALPHASEND, OP_ALPHARECV,
 #endif
+	OP_TOP,
+
 	NUM_NILADIC	// Last entry defines number of operations
 };
 
@@ -790,7 +792,7 @@ enum errors {
 	ERR_TOO_LONG,	ERR_XEQ_NEST,	ERR_STK_CLASH,
 	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
 	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
-	ERR_READ_ONLY,
+	ERR_READ_ONLY,	ERR_SOLVE,
 	MAX_ERROR
 };
 
@@ -1072,6 +1074,7 @@ extern void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op);
 extern void do_userclear(decimal64 *a, decimal64 *b, enum nilop op);
+extern void isTop(decimal64 *a, decimal64 *b, enum nilop op);
 extern void XisInt(decimal64 *a, decimal64 *b, enum nilop op);
 extern void XisEvenOrOdd(decimal64 *a, decimal64 *b, enum nilop op);
 extern void XisPrime(decimal64 *a, decimal64 *b, enum nilop op);

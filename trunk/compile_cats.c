@@ -596,6 +596,7 @@ static s_opcode internal_catalogue[] = {
 	RARGCMD(RARG_INISOLVE,	"SLVI")
 	RARGCMD(RARG_SOLVESTEP,	"SLVS")
 	NILIC(OP_GSBuser,	"XEQUSR")
+	NILIC(OP_TOP,		"TOP?")
 };
 #endif
 

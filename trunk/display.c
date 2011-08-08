@@ -83,6 +83,7 @@ static const char *const error_table[] =
 	"I/O\0Error",
 	"Invalid\0dAtA",
 	"No write\0",
+	"Solve\0FAILEd",
 };
 
 

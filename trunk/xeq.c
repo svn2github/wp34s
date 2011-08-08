@@ -2820,6 +2820,11 @@ void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op) {
 		gsbgto(usrpc, 1, pc);
 }
 
+/* Tests if the user program is at the top level */
+void isTop(decimal64 *a, decimal64 *b, enum nilop op) {
+	fin_tst(Running && RetStkPtr == 0);
+}
+
 /* Test if a number is an integer or fractional */
 /* Special numbers are neither */
 void XisInt(decimal64 *a, decimal64 *b, enum nilop op) {

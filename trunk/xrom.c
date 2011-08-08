@@ -135,6 +135,7 @@
 #define TST_INT		NILADIC(XisINT)
 #define TST_FRAC	NILADIC(XisFRAC)
 #define TST_PRIME	NILADIC(XisPRIME)
+#define TST_TOP		NILADIC(TOP)
 
 // Mondaic functions
 #define RECIP		MONADIC(RECIP)
@@ -172,7 +173,7 @@
 // Other short cuts
 #define ENTRY		GSB(XROM_CHECK)
 #define EXIT		GTO(XROM_EXIT)
-#define EXITp1		GTO(XROM_EXITp1)
+//#define EXITp1		GTO(XROM_EXITp1)
 
 /* Now the xrom table itself.
  *
@@ -257,7 +258,8 @@ const s_opcode xrom[] = {
 		EXIT
 	//LBL(7)
 		GSB(8)
-		EXITp1
+//		EXITp1
+		GTO(4)
 	LBL(8)
 		ZERO
 		STO(st(L))
@@ -278,7 +280,8 @@ const s_opcode xrom[] = {
 		SWAPXY
 		RCL(A)
 		RCL(C)
-		EXITp1
+//		EXITp1
+		GTO(4)
 	//LBL(5)
 		RCL(st(T))
 		STO(st(L))
@@ -286,7 +289,13 @@ const s_opcode xrom[] = {
 		SWAPXY
 		RCL(B)
 		RCL(C)
-		EXITp1
+//		EXITp1
+	LBL(4)
+		CF(F_XROM)
+		TST_TOP
+		ERROR(ERR_SOLVE)
+		RTNp1
+
 	LBL(1)				// Success
 		ZERO
 		STO(st(L))
@@ -842,9 +851,9 @@ const s_opcode xrom[] = {
 		CF(F_XROM)
 		RTN
 
-	LBL(XROM_EXITp1)		// Clear xrom falg and return with skip
-		CF(F_XROM)
-		RTNp1
+//	LBL(XROM_EXITp1)		// Clear xrom falg and return with skip
+//		CF(F_XROM)
+//		RTNp1
 
 
 /**************************************************************************/

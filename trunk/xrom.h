@@ -35,7 +35,7 @@
 /* Labels - global */
 #define XROM_CHECK		40
 #define XROM_EXIT		41
-#define XROM_EXITp1		42
+//#define XROM_EXITp1		42
 
 
 /* Flags - global */
