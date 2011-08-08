@@ -217,7 +217,7 @@ void soft_init_state(void) {
 		CmdLineDot = 0;
 		return;
 	}
-	soft = State2.multi || State2.rarg || State2.hyp || State2.gtodot ||
+	soft = State2.multi || State2.rarg || State2.hyp || State2.gtodot || State2.labellist ||
 			State2.cmplx || State2.arrow || State2.test != TST_NONE || State2.status;
 	if (soft) {
 		runmode = State2.runmode;
