@@ -21,7 +21,7 @@
 
 Keyboard-Layout:
 ----------------
-00N      PV    PMT     FV
+  N      PV    PMT     FV
 [ A ]  [ B ]  [ C ]  [ D ]
 
   NP     NI     I
@@ -38,8 +38,8 @@ Lbl.   Start  N?   I?   PV?  PMT? FV?  Init I->i SLV  TVM
 
 Remarks:
 ========
-- program 'FIN' should be loaded into and called from RAM
-- [XEQ]'FIN' at first to initialize registers and parameters
+- program 'TVM' should be loaded into and called from RAM
+- [XEQ]'TVM' at first to initialize registers and parameters
 - enter values for parameters NP,NI if desired (default=1)
 - all financial keys for N,PV,PMT,FV and NP,NI,I work as follows:
   input+key stores the value, key alone calculates the value
@@ -90,7 +90,7 @@ NI = compounding frequency CF (interest periods per year)
 
 */
 
-	001 LBL'FIN'	// extended TVM-Solver
+	001 LBL'TVM'	// extended TVM-Solver
 	002 .	  	// Initialize registers & parameters
 	003 1
 	004 R-CLR
@@ -136,21 +136,21 @@ NI = compounding frequency CF (interest periods per year)
 	044 XEQ 05
 	045 STO 05
 	046 GTO 00
-	047 LBL G
+	047 LBL 21
 	048 ENTRY?
 	049 SF 00
 	050 FC?S 00
 	051 RCL 06
 	052 STO 06
 	053 GTO 00
-	054 LBL H
+	054 LBL 22
 	055 ENTRY?
 	056 SF 00
 	057 FC?S 00
 	058 RCL 07
 	059 STO 07
 	060 GTO 00
-	061 LBL I
+	061 LBL 23
 	062 ENTRY?
 	063 SF 00
 	064 FC? 00
