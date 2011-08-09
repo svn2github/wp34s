@@ -707,6 +707,23 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 }
 
 
+static void show_x(char *x) {
+	int i, j = 0;
+	*find_char(x, '\0') = '0';
+
+	for (i=1; i<=12; i++) {
+		set_dig_s(j, x[i], NULL);
+		j += SEGS_PER_DIGIT;
+	}
+	for (i=13; i<=15; i++) {
+		set_dig_s(j, x[i], NULL);
+		j += SEGS_PER_EXP_DIGIT;
+	}
+	x[1] = '\0';
+	set_status(x);
+}
+
+
 /* Display the X register in the numeric portion of the display.
  * We have to account for the various display modes and numbers of
  * digits.
@@ -754,15 +771,25 @@ static void set_x(const decimal64 *rgx, char *res) {
 	if (check_special_dn(&z, res))
 		return;
 
+	if (State2.smode == SDISP_SHOW) {
+		dn_abs(&z, &z);
+		decNumberNormalize(&z, &z, &Ctx);
+		z.exponent = 0;
+	}
+
+	xset(x, '\0', sizeof(x));
+
 	if (decNumberIsZero(&z)) {
-		x[0] = '0';	x[1] = '\0';
+		x[0] = '0';
 	} else
-		decimal64ToString(rgx, x);
+		decNumberToString(&z, x);
 
 	if (State2.smode == SDISP_SHOW) {
-		mode = MODE_STD;
-		dd = DISPLAY_DIGITS - 1;
-	} else if (mode == MODE_STD) {
+		show_x(x);
+		return;
+	}
+
+	if (mode == MODE_STD) {
 		decNumber b, c;
 
 		decNumberCopy(&b, &const_1);
@@ -1301,7 +1328,7 @@ void display(void) {
 				}
 				set_status_right(buf);
 			}
-		} else {
+		} else if (State2.smode != SDISP_SHOW) {
 			annuc = 1;
 		}
 	} else {
