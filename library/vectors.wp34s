@@ -57,32 +57,32 @@ LBL D      // Dot product
 XEQ'V.V'
 BACK 13
 
-LBL J      // Exchange (on x<>y key)
+LBL 32     // Exchange (on x<>y key)
 XEQ'V[<->]V'
 BACK 16
 
-LBL K      // Sign change (on +/- key)
+LBL 33     // Sign change (on +/- key)
 XEQ'V+-'
 BACK 19
 
-LBL L      // Last X
+LBL 34     // L, Last X
 XEQ'VLx'
 BACK 22
 
-LBL T      // Scalar multiply on multiplication key
+LBL 55     // Scalar multiply on multiplication key
 XEQ'V[times]S'
 BACK 25
 
-LBL W      // Subtraction on -
+LBL 65     // Subtraction on -
 XEQ'V-V'
 BACK 28
 
-LBL Z      // Addition on +
+LBL 75     // Addition on +
 XEQ'V+V'
 BACK 31
 
 /*
-The function provided here are:
+The functions provided here are:
 
 V.V
   Vector dot product.  Input vectors in X,Y,Z and T,A,B.
