@@ -136,6 +136,7 @@
 #define TST_FRAC	NILADIC(XisFRAC)
 #define TST_PRIME	NILADIC(XisPRIME)
 #define TST_TOP		NILADIC(TOP)
+#define VERS		NILADIC(VERSION)
 
 // Mondaic functions
 #define RECIP		MONADIC(RECIP)
@@ -941,6 +942,7 @@ const s_opcode xrom[] = {
 #undef R_FV
 #undef R_PV
 #undef R_PMT
+#endif
 
 /**************************************************************************/
 	DLBL('W', 'H', 'O')
@@ -954,8 +956,13 @@ const s_opcode xrom[] = {
 		GSB(0)
 		alpha6('M', 'a', 'r', 'c', 'u', 's')
 		GSB(0)
+		alpha4('N', 'e', 'i', 'l')
+		GSB(0)
+		alpha6('&', ' ', 'm', 'o', 'r', 'e')
+		GSB(0)
 		GSB(1)
-		VIEW(st(X))
+		//VIEW(st(X))
+		VERS
 		RTN
 	LBL(1)
 		alpha6('W', 'P', ' ', '3', '4', 'S')
@@ -964,7 +971,6 @@ const s_opcode xrom[] = {
 		PAUSE(8)
 		CLALPHA
 	RTN
-#endif
 
 };
 
