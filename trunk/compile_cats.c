@@ -505,6 +505,8 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_XisPRIME,	"PRIME?")
 	NILIC(OP_STKSIZE,	"SSIZE?")
 	NILIC(OP_INTSIZE,	"WSIZE?")
+	NILIC(OP_GETBASE,	"BASE?")
+	NILIC(OP_GETSIGN,	"SMODE?")
 	NILIC(OP_XisInf,	"\237?")
 	NILIC(OP_XisSpecial,	"SPEC?")
 	NILIC(OP_ROUNDING,	"RM?")

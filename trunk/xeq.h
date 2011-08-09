@@ -667,6 +667,7 @@ enum nilop {
 	OP_ALPHASEND, OP_ALPHARECV,
 #endif
 	OP_TOP,
+	OP_GETBASE, OP_GETSIGN,
 
 	NUM_NILADIC	// Last entry defines number of operations
 };
@@ -1036,6 +1037,8 @@ extern void cmdrestm(unsigned int arg, enum rarg op);
 extern void set_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern void get_sign_mode(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern void get_base(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);
 extern void cmdgto(unsigned int arg, enum rarg op);
