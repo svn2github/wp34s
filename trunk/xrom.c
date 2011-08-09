@@ -901,49 +901,6 @@ const s_opcode xrom[] = {
 		DIG(2)
 		RTN
 
-#if 0 // Moved to library
-/**************************************************************************/
-#define R_PMT	80
-#define R_PV	81
-#define R_FV	82
-#define R_I	83
-#define R_N	84
-
-#define F_BEG	80
-
-	DLBL('T', 'V', 'M')
-		RCL(R_PMT)
-		RCL(R_PV)
-		RCL_PL(R_FV)
-		RCL(R_I)
-		TST0(ne)
-			SKIP(3)
-		RCL_PL(R_N)		// i == 0 special case
-		RCL_MU(R_PMT)
-		SKIP(11)
-
-		LN1P
-		RCL_MU(R_N)
-		EXPM1
-		DIVISION		// General case
-		RCL_PL(R_PV)
-		RCL_MU(R_I)
-		FCp(F_BEG)
-			SKIP(3)
-		RCL(R_I)
-		INC(st(X))
-		DIVISION
-		PLUS
-		RTN
-
-#undef F_BEG
-#undef R_N
-#undef R_I
-#undef R_FV
-#undef R_PV
-#undef R_PMT
-#endif
-
 /**************************************************************************/
 	DLBL('W', 'H', 'O')
 		CLALPHA
