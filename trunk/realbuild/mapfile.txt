@@ -861,7 +861,7 @@ LOAD realbuild_obj\libdecNumber.a
                 0x000f0e7c                dyfuncs_ct
                 0x000f1116                monfuncs_ct
 
-.fixed          0x00100000    0x1cfec
+.fixed          0x00100000    0x1d058
                 0x00100000                . = ALIGN (0x4)
                 0x00100000                _sfixed = .
  *(.text*)
@@ -1267,23 +1267,23 @@ LOAD realbuild_obj\libdecNumber.a
                 0x0011cac8                COMBMSD
                 0x0011cb48                COMBEXP
  *(.xrom)
- .xrom          0x0011cbc8      0x424 asone.o
-                0x0011cfec                . = ALIGN (0x4)
-                0x0011cfec                _efixed = .
+ .xrom          0x0011cbc8      0x490 asone.o
+                0x0011d058                . = ALIGN (0x4)
+                0x0011d058                _efixed = .
 
-.glue_7         0x0011cfec        0x0
+.glue_7         0x0011d058        0x0
  .glue_7        0x00000000        0x0 linker stubs
 
-.glue_7t        0x0011cfec        0x0
+.glue_7t        0x0011d058        0x0
  .glue_7t       0x00000000        0x0 linker stubs
 
-.vfp11_veneer   0x0011cfec        0x0
+.vfp11_veneer   0x0011d058        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x0011cfec        0x0
+.v4_bx          0x0011d058        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
-.relocate       0x00200000        0x0 load address 0x0011cfec
+.relocate       0x00200000        0x0 load address 0x0011d058
                 0x00200000                . = ALIGN (0x4)
                 0x00200000                _srelocate = .
  *(.vectors)

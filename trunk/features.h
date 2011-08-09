@@ -76,7 +76,7 @@
 
 // Include multi-character alpha constants (not keystroke programmable)
 // Space cost 20 bytes.
-//#define MULTI_ALPHA
+// #define MULTI_ALPHA
 
 // Include a date function to determine the date of Easter in a given year
 //#define INCLUDE_EASTER
