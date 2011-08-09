@@ -250,7 +250,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int s)
 		{ 'P',  '/',  0217, 0235, 'p',  0257,  },  // K34
 
 		{ 0020, 0000, 0000, '!',  0020, 0000,  },  // K40
-		{ 'Q',  '4',  0000, 0000, 'q',  0000,  },  // K41
+		{ 'Q',  '4',  0000, '?',  'q',  0000,  },  // K41
 		{ 'R',  '5',  0220, 0000, 'r',  0260,  },  // K42
 		{ 'S',  '6',  0221, '$',  's',  0261,  },  // K43
 		{ 'T',  0034, 0222, 0217, 't',  0262,  },  // K44
@@ -1087,19 +1087,22 @@ static int process_alpha(const keycode c) {
 	unsigned char ch;
 	unsigned int alpha_pos = State2.alpha_pos, n;
 	State2.alpha_pos = 0;
+        int t;
 
 	set_shift(SHIFT_N);
 
 	switch (c) {
+	case K00:
 	case K01:
 	case K02:
 	case K03:
 		if (oldstate != SHIFT_F)
 			break;
 		ch = keycode_to_alpha(c, oldstate);
-		if (ch == '\0')
+                t = check_f_key(c - K00, RARG(RARG_ALPHA, ch));
+                if (t == RARG(RARG_ALPHA, '\0'))
 			return STATE_UNFINISHED;
-		return check_f_key(c - K01 + 1, RARG(RARG_ALPHA, ch));
+		return t;
 
 	case K10:	// STO
 		if (oldstate == SHIFT_F)
