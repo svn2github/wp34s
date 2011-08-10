@@ -107,7 +107,7 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 	case OP_DOT:	return UState.fraccomma?",":".";
 #endif
 	case OP_CHS:	return "+/-";
-	case OP_CLX:	return "CLx";
+	//case OP_CLX:	return "CLx";
 	case OP_ENTER:	return "ENTER\020";
 	case OP_EEX:	return "EEX";
 	case OP_SIGMAPLUS:	return "\221+";

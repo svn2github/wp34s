@@ -145,7 +145,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_GRD2DEG,&decNumberG2D,		NULL,		NULL,		"G\015\005")
 	FUNC(OP_RAD2GRD,&decNumberR2G,		NULL,		NULL,		"rad\015G")
 	FUNC(OP_GRD2RAD,&decNumberG2R,		NULL,		NULL,		"G\015rad")
-	FUNC(OP_CCHS,	&dn_minus,		&cmplxMinus,	&intChs,	"+/-")
+	FUNC(OP_CCHS,	NULL,			&cmplxMinus,	NULL,		"\024+/-")
 	FUNC(OP_CCONJ,	NULL,			&cmplxConj,	NULL,		"CONJ")
 	FUNC(OP_ERF,	&decNumberERF,		NULL,		NULL,		"erf")
 	FUNC(OP_ERFC,	&decNumberERFC,		NULL,		NULL,		"erfc")
