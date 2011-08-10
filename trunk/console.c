@@ -111,7 +111,7 @@ static int remap(const int c) {
  * >=127 (del).
  */
 static const char *const map32[32] = {
-	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "space", "grad",
+	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "narrow-space", "grad",
 	"+/-", "<=", ">=", "!=", "euro", "->", "<-", "v",
 	"^", "f-shift", "g-shift", "h-shift", "cmplx", "O-slash", "o-slash", "<->",
 	"sz", "x-hat", "y-hat", "sub-m", "times", "approx", "pound", "yen"
