@@ -276,9 +276,11 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int s)
 	return alphamap[keycode_to_linear(c)][s];
 }
 
-void set_shift(enum shifts s) {
+enum shifts set_shift(enum shifts s) {
+	enum shifts r = cur_shift();
 	State2.shifts = s;
 	State2.alpha_pos = 0;
+	return r;
 }
 
 static void init_arg(const enum rarg base) {
@@ -932,9 +934,8 @@ static int process_hyp(const keycode c) {
 
 
 static int process_arrow(const keycode c) {
-	const enum shifts oldstate = cur_shift();
+	const enum shifts oldstate = set_shift(SHIFT_N);
 
-	set_shift(SHIFT_N);
 	State2.arrow = 0;
 	switch (c) {
 	case K10:
@@ -1083,13 +1084,11 @@ fin:		set_pc(rawpc);
 /* Process a keystroke in alpha mode
  */
 static int process_alpha(const keycode c) {
-	const enum shifts oldstate = cur_shift();
+	const enum shifts oldstate = set_shift(SHIFT_N);
 	unsigned char ch;
 	unsigned int alpha_pos = State2.alpha_pos, n;
         int t;
 	State2.alpha_pos = 0;
-
-	set_shift(SHIFT_N);
 
 	switch (c) {
 	case K00:
@@ -1315,9 +1314,8 @@ static int process_arg(const keycode c) {
 	unsigned int base = State.base;
 	int n = keycode_to_digit_or_register(c);
 #ifndef ALLOW_MORE_LABELS
-	enum shifts old_shift = cur_shift();
+	const enum shifts old_shift = set_shift(SHIFT_N);
 	int shorthand = 0;
-	set_shift(SHIFT_N);
 #endif
 	if (base >= num_argcmds) {
 		init_arg(0);
@@ -1510,12 +1508,10 @@ static int process_arg(const keycode c) {
 /* Multi (2) word instruction entry
  */
 static int process_multi(const keycode c) {
-	const enum shifts oldstate = cur_shift();
+	const enum shifts oldstate = set_shift(SHIFT_N);
 	unsigned char ch;
 	unsigned int opcode;
 	unsigned int base = State.base;
-
-	set_shift(SHIFT_N);
 
 	switch (c) {
 	case K20:	// Enter - exit multi mode, maybe return a result
