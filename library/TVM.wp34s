@@ -109,13 +109,9 @@ TVM expr: ((PV+FV)/((1+i)^N-1)+PV)*i/k+PMT  (SLV iteration for i)
 
 LBL'TVM'        // extended TVM-Solver
 	CL[alpha]
-	[alpha] T
-	[alpha] V
-	[alpha] M
+	[alpha]'TVM'
 	[alpha] [space]
-	[alpha] S
-	[alpha] l
-	[alpha] v
+	[alpha]'Slv'
 	[alpha]VIEW
 	.               // Initialize registers & parameters
 	1
