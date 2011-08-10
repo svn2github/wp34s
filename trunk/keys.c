@@ -1363,7 +1363,7 @@ static int process_arg(const keycode c) {
 	}
 #else
 	shorthand = argcmds[base].label && ! State2.ind && ! State2.dot && 
-		(old_shift == SHIFT_F || (c > K_ARROW && c != K20 && c != K24 && c != K60 && c != K62));
+		(old_shift == SHIFT_F || (c > K_ARROW && c != K20 && c != K24 && c != K60 && c != K62 && c < K_F && c > K_H));
 
 	if (n >= 0 && n <= 9 && (! shorthand || old_shift != SHIFT_F))
 		return arg_digit(n);
@@ -1377,6 +1377,10 @@ static int process_arg(const keycode c) {
 	 *  Handle the rest here.
 	 */
 	switch (c) {
+	case K_F:
+		if (old_shift == SHIFT_N && ! State2.ind && ! State2.dot && argcmds[base].label)
+			set_shift(SHIFT_F);
+		break;
 
 	case K_ARROW:		// arrow
 		if (!State2.dot && argcmds[base].indirectokay) {
@@ -2210,6 +2214,9 @@ static int process(const int c) {
 	if (State2.confirm)
 		return process_confirm((const keycode)c);
 
+	if (State2.rarg)
+		return process_arg((const keycode)c);
+
 	if (State2.gtodot)
 		return process_gtodot((const keycode)c);
 
@@ -2238,9 +2245,6 @@ static int process(const int c) {
 
 	if (State2.multi)
 		return process_multi((const keycode)c);
-
-	if (State2.rarg)
-		return process_arg((const keycode)c);
 
 	// Here the keys are mapped to catalogues
 	// The position of this code decides where catalog switching
