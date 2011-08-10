@@ -1238,7 +1238,7 @@ void display(void) {
 		if (State2.dot) {
 			*bp++ = 's';
 			*bp++ = '_';
-		} else if (cur_shift() == SHIFT_F && ! State2.ind) {
+		} else if (cur_shift() == SHIFT_F && argcmds[State.base].label && ! State2.ind) {
 			*bp++ = '\021';
 			*bp++ = '_';
 		} else {
