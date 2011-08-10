@@ -2222,9 +2222,6 @@ static int process(const int c) {
 	if (State2.test != TST_NONE)
 		return process_test((const keycode)c);
 
-	if (State2.arrow)
-		return process_arrow((const keycode)c);
-
 	// Process shift keys directly
 	if (c == K_F) {
 		set_shift((s == SHIFT_F)?SHIFT_N:SHIFT_F);
@@ -2241,6 +2238,9 @@ static int process(const int c) {
 
 	if (State2.multi)
 		return process_multi((const keycode)c);
+
+	if (State2.arrow)
+		return process_arrow((const keycode)c);
 
 	// Here the keys are mapped to catalogues
 	// The position of this code decides where catalog switching
@@ -2336,6 +2336,3 @@ void process_keycode(int c) {
         just_displayed = 0;
 #endif
 }
-
-
-
