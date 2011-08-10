@@ -639,8 +639,10 @@ int main(int argc, char *argv[]) {
 skipargs:
 	if (!warm)
 		init_34s();
+	State2.flags = 1;
 	if (setuptty(0) == 0) {
 		display();
+		just_displayed = 0;
 		while ((c = GETCHAR()) != GETCHAR_ERR && c != CH_QUIT) {
 #ifdef USECURSES
 			if (c == CH_TRACE) {
