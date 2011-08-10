@@ -343,7 +343,7 @@ void show_flags(void) {
 	if (!State2.flags)
 		return;
 	MOVE(0, 0);
-	PRINTF("   ");
+	PRINTF(" %c ", just_displayed?'*':' ');
 	MOVE(10, 0);
 	switch (cur_shift()) {
 	case SHIFT_F:   PRINTF("[f-shift]");    break;
