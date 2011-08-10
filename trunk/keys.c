@@ -265,7 +265,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int s)
 		{ '0',  '0',  0226, ' ',  '0',  0266,  },  // K61
 		{ 'X',  '.',  0215, 0000, 'x',  0255,  },  // K62
 		{ 'Y',  0000, 0223, 0037, 'y',  0263,  },  // K63
-		{ 'Z',  '+',  0205, '%',  'z',  0245,  },  // K64
+		{ 'Z',  '+',  0205, 0000, 'z',  0245,  },  // K64
 	};
 	if (State2.alphashift) {
 		if (s == SHIFT_N)
