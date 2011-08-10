@@ -1086,8 +1086,8 @@ static int process_alpha(const keycode c) {
 	const enum shifts oldstate = cur_shift();
 	unsigned char ch;
 	unsigned int alpha_pos = State2.alpha_pos, n;
-	State2.alpha_pos = 0;
         int t;
+	State2.alpha_pos = 0;
 
 	set_shift(SHIFT_N);
 
@@ -1124,6 +1124,13 @@ static int process_alpha(const keycode c) {
 	case K20:	// Enter - maybe exit alpha mode
 		if (oldstate == SHIFT_G)
 			break;
+#ifdef MULTI_ALPHA
+		if (oldstate == SHIFT_F && ! State2.runmode) {
+			State2.multi = 1;
+			State.base = DBL_ALPHA;
+			return STATE_UNFINISHED;
+		}
+#endif
 		State2.alphas = 0;
 		State2.alphashift = 0;
 		return STATE_UNFINISHED;
@@ -1152,10 +1159,14 @@ static int process_alpha(const keycode c) {
 		return STATE_UNFINISHED;
 
 	case K40:
-		if (oldstate == SHIFT_N) {	// Alpha scroll left
-			n = alpha_pos + 1;
-			State2.alpha_pos = ( n < ( alen() + 5 ) / 6 ) ? n : alpha_pos;
-			return STATE_UNFINISHED;
+		if (oldstate == SHIFT_N) {
+			if ( State2.runmode ) {
+				// Alpha scroll left
+				n = alpha_pos + 1;
+				State2.alpha_pos = ( n < ( alen() + 5 ) / 6 ) ? n : alpha_pos;
+				return STATE_UNFINISHED;
+			}
+			return STATE_BST;
 		}
 		break;
 
@@ -1167,10 +1178,14 @@ static int process_alpha(const keycode c) {
 		break;
 
 	case K50:
-		if (oldstate == SHIFT_N) {	// Alpha scroll right
-			if (alpha_pos > 0)
-				State2.alpha_pos = alpha_pos-1;
-			return STATE_UNFINISHED;
+		if (oldstate == SHIFT_N) {
+			if ( State2.runmode ) {
+				// Alpha scroll right
+				if (alpha_pos > 0)
+					State2.alpha_pos = alpha_pos-1;
+				return STATE_UNFINISHED;
+			}
+			return STATE_SST;
 		}
 		break;
 

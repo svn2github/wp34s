@@ -902,6 +902,7 @@ const s_opcode xrom[] = {
 		RTN
 
 /**************************************************************************/
+#if 1
 	DLBL('W', 'H', 'O')
 		CLALPHA
 		GSB(1)
@@ -928,7 +929,7 @@ const s_opcode xrom[] = {
 		PAUSE(8)
 		CLALPHA
 	RTN
-
+#endif
 };
 
 const unsigned short int xrom_size = sizeof(xrom) / sizeof(const s_opcode);
