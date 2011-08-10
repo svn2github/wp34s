@@ -3100,13 +3100,15 @@ failed:
 
 void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNumber *fb, unsigned int *flagp) {
 	int sa, sb;
-	decNumber x, y;
+	decNumber y;
 	unsigned int flags = 0;
 
-	if (decNumberIsNegative(dn_compare(&x, b, a))) {
+	/*
+	if (decNumberIsNegative(dn_compare(&y, b, a))) {
 		decNumberSwap(a, b);
 		decNumberSwap(fa, fb);
 	}
+	*/
 	sa = decNumberIsNegative(fa);
 	sb = decNumberIsNegative(fb);
 	if (sa == sb) {				// Same side of line

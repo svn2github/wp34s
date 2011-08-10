@@ -222,6 +222,8 @@ const s_opcode xrom[] = {
 			INC(st(Y))
 		TST(APX, st(Y))
 			SR10(1)
+		TST(GT, st(Y))
+			SWAPXY
 		CSTO(A)
 		FILL
 		GSBUSER
