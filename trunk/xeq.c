@@ -2507,7 +2507,7 @@ static void specials(const opcode op) {
 
 	case OP_CLX:
 		if (Running)
-			illegal();
+			illegal(op);
 		else if (CmdLineLength) {
 			CmdLineLength--;
 			if (Cmdline[CmdLineLength] == 'E')
