@@ -82,7 +82,7 @@ static const char *const error_table[] =
 	"Invalid\0ParaMmEtEr",
 	"I/O\0Error",
 	"Invalid\0dAtA",
-	"No write\0",
+	"No write\0In FLASH",
 	"Solve\0FAILEd",
 };
 
