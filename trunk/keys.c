@@ -1374,10 +1374,10 @@ static int process_arg(const keycode c) {
 	 *  So far, we've got the digits and some special label adressing keys
 	 *  Handle the rest here.
 	 */
-	switch (c) {
+	switch ((int)c) {
 	case K_F:
-		if (old_shift == SHIFT_N && ! State2.ind && ! State2.dot && argcmds[base].label)
-			set_shift(SHIFT_F);
+		if (! State2.ind && ! State2.dot && argcmds[base].label)
+			set_shift(old_shift == SHIFT_F ? SHIFT_N : SHIFT_F);
 		break;
 
 	case K_ARROW:		// arrow
