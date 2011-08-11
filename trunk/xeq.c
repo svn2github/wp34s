@@ -556,7 +556,6 @@ unsigned int user_pc(void) {
 		base = 0;
 	else {
 		base = startLIB(pc);
-		n = 1;
 	}
 
 	while (base < pc) {
