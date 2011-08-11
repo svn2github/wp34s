@@ -74,20 +74,33 @@ static unsigned char keycode_to_linear(const keycode c)
 
 /*
  *  Mapping from a key code to a digit from 0 to 9 or to a register address
+ *  Bit seven is set if the key cannnot be used as a lbael shortcut
  */
-static signed char keycode_to_digit_or_register(const keycode c)
+#define NO_REG 0x7f
+#define NO_SHORT 0x80
+static unsigned int keycode_to_digit_or_register(const keycode c)
 {
-	static const signed char map[] = {
-		regA_idx, regB_idx, regC_idx, regD_idx,       -1, -1,
-		      -1,       -1, regI_idx,
-		      -1, regJ_idx, regK_idx, regL_idx,       -1,
-		      -1,        7,        8,        9,       -1,
-		      -1,        4,        5,        6, regT_idx,
-		      -1,        1,        2,        3,       -1,
-		      -1,        0, regX_idx, regY_idx, regZ_idx
+	static const unsigned char map[] = {
+		// K00 - K05
+		NO_SHORT | regA_idx, NO_SHORT | regB_idx,
+		NO_SHORT | regC_idx, NO_SHORT | regD_idx,
+		NO_SHORT | NO_REG,   NO_REG,
+		// K10 - K12
+		NO_REG, NO_REG, regI_idx,
+		// K20 - K24
+		NO_SHORT | NO_REG, regJ_idx, regK_idx, regL_idx, NO_SHORT | NO_REG,
+		// K30 - K34
+		NO_REG, 7, 8, 9, NO_REG,
+		// K40 - K44
+		NO_REG, 4, 5, 6, regT_idx,
+		// K50 - K54
+		NO_REG, 1, 2, 3, NO_REG,
+		// K60 - K64
+		NO_SHORT | NO_REG, 0, NO_SHORT | regX_idx,
+		regY_idx, regZ_idx
 	};
 
-	return map[keycode_to_linear(c)];
+	return (unsigned int) map[keycode_to_linear(c)];
 }
 
 /*
@@ -1312,18 +1325,20 @@ static int process_arg_dot(const unsigned int base) {
 
 static int process_arg(const keycode c) {
 	unsigned int base = State.base;
-	int n = keycode_to_digit_or_register(c);
+	unsigned int n = keycode_to_digit_or_register(c);
 #ifndef ALLOW_MORE_LABELS
 	const enum shifts old_shift = set_shift(SHIFT_N);
-	int shorthand = 0;
+	int label_addressing = argcmds[base].label && ! State2.ind && ! State2.dot;
+	int shorthand = label_addressing && (old_shift == SHIFT_F || (n > 9 && !(n & NO_SHORT)));
 #endif
+	n &= ~NO_SHORT;
 	if (base >= num_argcmds) {
 		init_arg(0);
 		State2.rarg = 0;
 		return STATE_UNFINISHED;
 	}
 #ifdef ALLOW_MORE_LABELS
-	if ( n >= 0 && n <= 9 ) {
+	if ( n <= 9 ) {
 		return arg_digit(n);
 	}
 	if ( argcmds[base].label && ! State2.ind ) {
@@ -1360,10 +1375,7 @@ static int process_arg(const keycode c) {
 			return v;
 	}
 #else
-	shorthand = argcmds[base].label && ! State2.ind && ! State2.dot && 
-		(old_shift == SHIFT_F || (c > K_ARROW && c != K20 && c != K24 && c != K60 && c != K62 && c < K_F && c > K_H));
-
-	if (n >= 0 && n <= 9 && (! shorthand || old_shift != SHIFT_F))
+	if (n <= 9 && ! shorthand)
 		return arg_digit(n);
 
 	if (shorthand)
@@ -1376,7 +1388,7 @@ static int process_arg(const keycode c) {
 	 */
 	switch ((int)c) {
 	case K_F:
-		if (! State2.ind && ! State2.dot && argcmds[base].label)
+		if (label_addressing)
 			set_shift(old_shift == SHIFT_F ? SHIFT_N : SHIFT_F);
 		break;
 
@@ -1923,7 +1935,7 @@ static int process_confirm(const keycode c) {
 }
 
 static int process_status(const keycode c) {
-	int n = State2.status - 1;
+	unsigned int n = State2.status - 1;
 
 	if ( c == K40 ) {
 		if (--n < 0)
@@ -1936,7 +1948,9 @@ static int process_status(const keycode c) {
 	else
 		n = keycode_to_digit_or_register(c);
 
-	State2.status = n + 1;
+	if ( n <= 9 )
+		State2.status = n + 1;
+
 	return STATE_UNFINISHED;
 }
 
@@ -2074,16 +2088,15 @@ static int process_labellist(const keycode c) {
 
 
 static int process_registerlist(const keycode c) {
-	int n = keycode_to_digit_or_register(c);
+	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
 
-	if ( n >= 0 && n <= 9 ) {
+	if ( n <= 9 ) {
 		if (State2.digval > NUMREG-1)
 			State2.digval = 0;
 		State2.digval = (State2.digval * 10 + n) % 100;
 		return STATE_UNFINISHED;
 	}
-
-	if ( n > NUMREG - 1 ) {
+	else if ( n != NO_REG ) {
 		State2.digval = n;
 		return STATE_UNFINISHED;
 	}
