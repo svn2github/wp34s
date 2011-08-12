@@ -172,31 +172,39 @@ foreach my $file (@files) {
   push @lines, load_cleaned_source($file);
 }
 
-display_steps("// ") if $debug;
-process_double_quotes();
-display_steps("// ") if $debug;
-extract_labels();           # Look for existing "LBL \d{2}" or "LBL [A-Z]"opcodes
-extract_targets();          # Look for "SomeLabel::"
-extract_branches();         # Look for "(BACK|SKIP|JMP) SomeLabel"
-show_state(__LINE__) if $debug;
-#extract_LBLd_opcodes();  # Look for "(GTO|XEQ|SLV|etc) SomeLabel"
-insert_synthetic_labels();  # Add synthetic symbolic label for any %LBLs without a counterpart in %targets
-show_state(__LINE__) if $debug;
-check_consistency();
-show_state(__LINE__) if $debug;
-populate_branch_array();
-show_state(__LINE__) if $debug;
-extract_LBLd_opcodes();  # Look for "(GTO|XEQ|SLV|etc) SomeLabel"
-show_state(__LINE__) if $debug;
-preprocess_synthetic_targets();
+preprocessor();
 
-print "// Original Source File(s): ", join (", ", @files), "\n";
+print "// Temporary Source File(s): ", join (", ", @files), "\n";
 print "// Preprocessor revision: $SVN_Current_Revision \n";
 display_steps("");
-
 show_LBLs() if $show_catalogue;
 
 #######################################################################
+
+#######################################################################
+#
+# Execute the preprocessor steps.
+#
+sub preprocessor {
+  display_steps("// ") if $debug;
+  process_double_quotes();
+  display_steps("// ") if $debug;
+  extract_labels();           # Look for existing "LBL \d{2}" or "LBL [A-Z]"opcodes
+  extract_targets();          # Look for "SomeLabel::"
+  extract_branches();         # Look for "(BACK|SKIP|JMP) SomeLabel"
+  show_state(__LINE__) if $debug;
+  insert_synthetic_labels();  # Add synthetic symbolic label for any %LBLs without a counterpart in %targets
+  show_state(__LINE__) if $debug;
+  check_consistency();
+  show_state(__LINE__) if $debug;
+  populate_branch_array();
+  show_state(__LINE__) if $debug;
+  extract_LBLd_opcodes();  # Look for "(GTO|XEQ|SLV|etc) SomeLabel"
+  show_state(__LINE__) if $debug;
+  preprocess_synthetic_targets();
+  return;
+} # preprocessor
+
 
 #######################################################################
 #
@@ -878,6 +886,9 @@ sub reconstruct_steps {
 #######################################################################
 #
 # Extract the either a 3 character or a 1 character substring from the string.
+# Note that a 2-character string would take up 4 bytes regardless of whether it
+# was coded as "[alpha]'xy[null]'" or "[alpha] x\n[alpha] y" so might as well make
+# it easier on myself by leaving them as multiple a single alpha steps.
 #
 sub extract_substring {
   my $string = shift;
