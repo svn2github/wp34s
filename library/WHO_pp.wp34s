@@ -1,0 +1,30 @@
+// ====================================================================
+// XXX This preprocessor-ready example program requires that it be
+//     assembled with the '-pp' switch.
+// ====================================================================
+
+LBL'Who'
+CL[alpha]
+XEQ Who_WP34S_Name
+"by"
+XEQ Who_View
+"Pauli"
+XEQ Who_View
+"Walter"
+XEQ Who_View
+"Marcus"
+XEQ Who_View
+"Neil"
+XEQ Who_View
+"& others"
+XEQ Who_View
+XEQ Who_WP34S_Name
+VERS
+RTN
+
+
+Who_WP34S_Name:: "WP 34S"
+Who_View:: [alpha]VIEW
+PSE 08
+CL[alpha]
+RTN
