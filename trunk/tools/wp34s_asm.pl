@@ -39,10 +39,23 @@ my (%mnem2hex, %hex2mnem, %ord2escaped_alpha, %escaped_alpha2ord);
 my @files = ();
 
 my $outfile = "-";
+my $REDACT_COMMENTS = 1;
+my $NORMAL_READ = 0;
 
 my $DEFAULT_OP_SVN = "-- unknown --";
 my $op_svn = $DEFAULT_OP_SVN;
 my $report_op_svn = 1;
+
+my $enable_pp = 0;
+my $DEFAULT_PREPROC = "wp34s_pp.pl";
+my $preproc = $DEFAULT_PREPROC;
+
+my $pp_options = " -m 90 -cat "; # XXX Limit the max SKIP/BACK offset to 90 to reduce the
+                                 #     likelyhood of a recursive LBL insertion pushing a
+                                 #     resolved SKIP/BACK beyond 99. Not a robust fix but
+                                 #     likely to catch 99.99% of cases.
+                                 # XXX Generate a LBL catalogue.
+my $pp_listing = "wp34s_pp.lst";
 
 my $FLASH_LENGTH = 512;
 my $DEFAULT_FLASH_BLANK_INSTR = "ERR 03";
@@ -121,6 +134,17 @@ my %table_exception_format = ( "PRCL"   => "%01d",
                                "P[<->]" => "%01d",
                              );
 
+# ANSI colour codes.
+my $ansi_normal           = "\e[0m";
+my $ansi_red_bg           = "\e[41;33;1m";
+my $ansi_green_bg         = "\e[42;33;1m";
+my $ansi_rev_green_bg     = "\e[42;1;7;33;1m";
+my $ansi_rev_blue_bg      = "\e[47;1;7;34;1m";
+my $ansi_rev_cyan_bg      = "\e[30;46m";
+
+my $DEFAULT_USE_ANSI_COLOUR = 1;
+my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
+
 # ---------------------------------------------------------------------
 
 # Build a table that will translate any O/S reported to what we should be using.
@@ -152,8 +176,8 @@ my $usage = <<EOM;
 $script
 
 Usage:
-   $script_name src_file [src_file2 [src_file3]] -o out_binary  # assembly mode
-   $script_name in_binary -dis [-o out_binary] > src_file       # disassembly mode
+   $script_name [-pp] src_file [src_file2 [src_file3]] -o out_binary  # assembly mode
+   $script_name in_binary -dis [-o out_binary] > src_file             # disassembly mode
 
 Parameters:
    src_file         One or more WP34s program source files. Conventionally, "wp34s" is used
@@ -161,10 +185,14 @@ Parameters:
    -o outfile       Output produced by the tool. In assembler mode, this is required and will be
                     the binary flash image. Assembler output extension is conventionally ".dat".
                     In disassembler mode, this is optional and will be the output ASCII source
-                    listing, conventionally uses the ".wp34s" extension. I/O redirection can be
+                    listing, conventionally uses the ".wp34s" extension. STDOUT redirection can be
                     used as an alternate method of capturing the ASCII source listing in disassembler
                     mode.
    -dis             Disassemble the binary image file.
+   -pp              Launch the symbolic preprocessor ($DEFAULT_PREPROC) from within the assembler, feeding
+                    the results directly back into the assembler. Only has meaning for assembly process,
+                    not disassembly. Will create an intermediate file called '$pp_listing' containing
+                    the post-processed source(s).
    -op infile       Optional opcode file to parse.              [Default: $DEFAULT_OPCODE_MAP_FILE]
    -fill fill_hex   Optional value to prefill flash image with. [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
    -s number        Optional number of asterisks (stars) to prepend to labels in
@@ -172,7 +200,6 @@ Parameters:
    -syntax outfile  Turns on syntax guide file dumping. Output will be sent to 'outfile'.
    -ns              Turn off step numbers in disassembler listing.
    -no_svn          Suppress report of compressed opcode table SVN version number.
-   -svn             Report compressed opcode table SVN version number to STDOUT. [default]
    -h               This help script.
 
 Examples:
@@ -190,6 +217,10 @@ Examples:
   - Disassembles a flash image from the WP34s. Prepend 3 asterisks to the front to each label to
     make then easier to find in the listing (they are ignored during assembly). Both invocation
     result in identical behaviour.
+
+  \$ $script_name -pp gc_sym.wp34s vec_sym.wp34s -o wp34s-3.dat
+  - Run the named file(s) through the '$DEFAULT_PREPROC' symbolic preprocessor prior to feeding the
+    intermediate post-processed '$pp_listing' into the assembler proper.
 
   \$ $script_name -dis wp34s-0.dat -o test.wp34s; $script_name test.wp34s -o wp34s-0a.dat; diff wp34s-0.dat wp34s-0a.dat
   - An end-to-end test of the tool. Note that the blank fill mode will have to have been the same
@@ -298,29 +329,53 @@ sub assemble {
   my $outfile = shift;
   my @files = @_;
   local $_;
-  my ($crc16);
+  my ($crc16, $alpha_text, @lines, $file);
   my @words = pre_fill_flash($flash_blank_fill_hex_str); # Fill value is a hex4 string.
   my $next_free_word = 1;
   my $steps_used = 0;
-  my ($alpha_text);
 
+  # If the preprocessor (PP) is requested, read in all the files and process them
+  # as one single concatenated list of lines. This is required because the PP will
+  # dynamically allocate 'local' labels as required. The PP has no concept of 'local'
+  # label reuse. (XXX Maybe later.)
+  if( $enable_pp ) {
+    my @pp_lines = ();
+    foreach $file (@files) {
+      push @pp_lines, read_file($file, $NORMAL_READ);
+    }
+    @lines = run_pp(\@pp_lines, @files);
+
+    # Reduce the file list to a single name -- the PP intermediate file.
+    @files = ();
+    push @files, $pp_listing;
+  }
+
+  # If the PP has run (above), the file list will have been changed to a single
+  # file -- the PP intermediate one.
   foreach my $file (@files) {
-    my @lines = read_file_and_redact_comments($file);
+    @lines = ();
+    @lines = read_file($file, $REDACT_COMMENTS);
+
     for my $k (1 .. (scalar @lines)) {
       $_ = $lines[$k-1];
 
       next if /^\s*$/; # Skip any blank lines.
       next if /^\s*\d{3}\:{0,1}\s*$/; # Skip any lines that have just a 3-digit step number
                                       # and no actual mnemonic.
-      chomp; chomp;
-      s/\r//;
-      s/\n//;
+      s/\r//; s/\n//;
 
       s/\s+$//; # Remove any trailing blanks.
+      my $org_line = $_;
       ($_, $alpha_text) = assembler_preformat_handling($_);
 
       if( not exists $mnem2hex{$_} ) {
-        die "ERROR: Cannot recognize mnemonic at line $k of '$file': $_\n";
+        warn "ERROR: Cannot recognize mnemonic at line $k of file ${file}: -> ${org_line} <-\n";
+        if( $org_line =~ /::/ ) {
+          warn "       There seems to be WP 34S Preprocessor labels here. Try using the '-pp' switch.\n";
+          die  "       Enter '$script_name -h' for help.\n";
+        } else {
+          die "\n";
+        }
       } else {
         $steps_used++;
         # Alpha text needs to be treated separately since it encodes to 2 words.
@@ -969,7 +1024,7 @@ sub load_mnem2hex_entry {
   if( not exists $mnem2hex{$mnemonic} ) {
     $mnem2hex{$mnemonic} = lc $op_hex_str;
   } else {
-    warn "# WARNING: Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')\n" unless $quiet;
+    warn "# WARNING: Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')\n";
   }
   return;
 } # load_mnem2hex_entry
@@ -987,7 +1042,7 @@ sub load_hex2mnem_entry {
   if( not exists $hex2mnem{$op_hex_str} ) {
     $hex2mnem{lc $op_hex_str} = $mnemonic;
   } else {
-    warn "# WARNING: Duplicate opcode hex: '$op_hex_str' at line $line_num (new defintion: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')\n" unless $quiet;
+    warn "# WARNING: Duplicate opcode hex: '$op_hex_str' at line $line_num (new defintion: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')\n";
   }
   return;
 } # load_hex2mnem_entry
@@ -1039,27 +1094,45 @@ sub h2d { # Quickie version for use with Perl debugger.
 
 #######################################################################
 #
-# Read in a file and redact any commented sections.
+# Read in a file and redact any commented sections, if requested to do so,
+#
+sub read_file {
+  my $file = shift;
+  my $is_redact = shift;
+  local $_;
+  my (@lines);
+  open FILE, $file or die "ERROR: Cannot open input file '$file' for reading: $!\n";
+  while( <FILE> ) {
+    s/\r//; s/\n//;
+    push @lines, $_;
+  }
+  close FILE;
+  return ($is_redact) ? redact_comments(@lines) : @lines;
+} # read_file
+
+
+#######################################################################
+#
+# Redact any commented sections.
 #
 # Currently this will handle "//", "/* ... */" on a single line, "/*" alone
 # on a line up to and including the next occurance of "*/", plus more than one
 # occurance of "/* ... */ ... /* ... */" on a single line. There may be some
 # weird cases that it does not handle.
 #
-sub read_file_and_redact_comments {
-  my $file = shift;
+sub redact_comments {
+  my @lines = @_;
   local $_;
+
   # Oh no!! Slanted toothpick syndrome! :-)
   my $slc  = "\/\/"; # Single line comment marker.
   my $mlcs = "/\\*"; # Multiline comment start marker.
   my $mlce = "\\*/"; # Multiline comment end marker.
   my $in_mlc = 0;    # In-multiline-comment flag.
-  my (@lines);
-  open FILE, $file or die "ERROR: Cannot open input file '$file' for reading: $!\n";
-  while( <FILE> ) {
-    chomp; chomp;
-    s/\r//;
-    s/\n//;
+  my (@redacted_lines);
+
+  foreach (@lines) {
+    s/\r//; s/\n//;
 
     # Detect if we are currently in a multiline comment and we see the end of a
     # multiline comment. If so, remove up to and including the trailing multiline
@@ -1090,11 +1163,10 @@ sub read_file_and_redact_comments {
     }
 
     # Store anything that is left.
-    push @lines, $_;
+    push @redacted_lines, $_;
   }
-  close FILE;
-  return @lines;
-} # read_file_and_redact_comments
+  return @redacted_lines;
+} # redact_comments
 
 
 #######################################################################
@@ -1136,6 +1208,62 @@ sub build_empty_flash_image {
 
 #######################################################################
 #
+# Run the preprocessor on the array of lines.
+#
+sub run_pp {
+  my $ref_src_lines = shift; # Single concatenated array of all source files.
+  my @files = @_;
+  my (@lines, $err_msg, $cmd, $pp_location);
+  local $_;
+
+  # Create a temporary intermediate file holding the raw sources concatenated together.
+  my $tmp_file = gen_random_writeable_filename();
+  open TMP, "> $tmp_file" or die "ERROR: Cannot open temp file '$tmp_file' for writing: $!\n";
+  foreach (@{$ref_src_lines}) {
+    print TMP "$_\n";
+  }
+  close TMP;
+
+  # See if we can locate the preprocessor.
+  if( -e "${preproc}" ) {
+    $pp_location = "${preproc}";
+    $cmd = "${preproc} $pp_options $tmp_file"
+  } elsif( -e "${script_dir}${preproc}" ) {
+    $pp_location = "${script_dir}${preproc}";
+    $cmd = "${script_dir}${preproc} $pp_options $tmp_file";
+  } else {
+    die "ERROR: Cannot locate the assembly preprocessor in '${preproc}' or '${script_dir}${preproc}'\n";
+  }
+
+  print "// Running WP 34S preprocessor from: $pp_location\n";
+
+  @lines = `$cmd`;
+  $err_msg = $?;
+  if( $err_msg ) {
+    warn "ERROR: WP 34S preprocessor failed. Temp file: '$tmp_file'\n";
+    die  "       Prehaps you can try running it in isolation using: \$ $cmd\n";
+  }
+  unlink $tmp_file;
+
+  my (@clean_lines);
+  foreach (@lines) {
+    s/\r//; s/\n//;
+    push @clean_lines, $_;
+  }
+
+  open PP_LST, "> $pp_listing" or die "ERROR: Cannot open preprocessor list file '$pp_listing' for writing: $!\n";
+  print PP_LST "// Source file(s): ", join ", ", @files, "\n";
+  foreach (@clean_lines) {
+    print PP_LST "$_\n";
+  }
+  close PP_LST;
+
+  return @clean_lines;
+} # run_pp
+
+
+#######################################################################
+#
 # Dump the output into a C-array.
 #
 sub dump_c_array {
@@ -1152,6 +1280,27 @@ sub dump_c_array {
   close OUT;
   return;
 } # dump_c_array
+
+
+#######################################################################
+#
+# Generate a random file name that can be used and thrown away.
+# It is thrown away by the consumer, not in here!
+#
+sub gen_random_writeable_filename {
+  my $filename = rand();
+  $filename = ".__${filename}.tmp";
+  my $attempts_left = 10;
+  while( -e "$filename" ) {
+    $filename = rand();
+    $filename = ".__${filename}.tmp";
+    $attempts_left--;
+    if( $attempts_left < 0 ) {
+      die "ERROR: Could not succeed in creating a temporary file: $!\n";
+    }
+  }
+  return $filename;
+} # gen_random_writeable_filename
 
 
 #######################################################################
@@ -1239,6 +1388,18 @@ sub get_options {
       $outfile = shift(@ARGV);
     }
 
+    elsif( $arg eq "-pp" ) {
+      $enable_pp = 1;
+    }
+
+    elsif( $arg eq "-pp_script" ) {
+      $preproc = shift(@ARGV);
+    }
+
+    elsif( $arg eq "-nc" ) {
+      $use_ansi_colour = 0;
+    }
+
     # Undocumented debug hook to zero the last 4 words.
     elsif( $arg eq "-04" ) {
       $zero_last_4 = 1;
@@ -1294,13 +1455,20 @@ sub get_options {
     die  "       Enter '$script_name -h' for help.\n";
   }
 
+  if( $enable_pp ) {
+    if( $mode ne $DISASSEMBLE_MODE ) {
+      print "// WP 34S assembly preprocessor enabled: '-pp'\n";
+    } else {
+      print "// NOTE: The preprocessor switch (-pp) has no effect in disassembly mode.\n";
+    }
+  }
+
   return;
 } # get_options
 
 __DATA__
 # $Rev$
 0x0000  cmd ENTER[^]
-0x0001  cmd CLx
 0x0002  cmd EEX
 0x0003  cmd +/-
 0x0004  cmd .
@@ -1494,6 +1662,9 @@ __DATA__
 0x0199  cmd SENDR
 0x019a  cmd SENDA
 0x019b  cmd RECV
+0x019c  cmd TOP?
+0x019d  cmd BASE?
+0x019e  cmd SMODE?
 0x0200  cmd FP
 0x0201  cmd FLOOR
 0x0202  cmd CEIL
@@ -1547,7 +1718,6 @@ __DATA__
 0x0232  cmd G[->][degree]
 0x0233  cmd rad[->]G
 0x0234  cmd G[->]rad
-0x0235  cmd +/-
 0x0237  cmd erf
 0x0238  cmd erfc
 0x0239  cmd [phi](x)
@@ -1718,7 +1888,8 @@ __DATA__
 0x1600  mult  SLV
 0x1700  mult  f'(x)
 0x1800  mult  f"(x)
-0x1900  mult  INT
+0x1900  mult  [integral]
+0x1a00  mult  [alpha]
 0x2000  cmd # a
 0x2001  cmd # a[sub-0]
 0x2002  cmd # a[sub-m]
@@ -1900,7 +2071,7 @@ __DATA__
 0x221b  cmd iC 0.14887433
 0x221c  cmd iC 0.29552422
 0x221d  cmd iC 0.14773910
-0x2300  arg ERR max=20,indirect
+0x2300  arg ERR max=21,indirect
 0x2400  arg STO max=112,indirect,stack
 0x2500  arg STO+  max=112,indirect,stack
 0x2600  arg STO-  max=112,indirect,stack
@@ -1935,7 +2106,7 @@ __DATA__
 0x4103  cmd [alpha] [sqrt]
 0x4104  cmd [alpha] [integral]
 0x4105  cmd [alpha] [degree]
-0x4106  cmd [alpha] [space]
+0x4106  cmd [alpha] [narrow-space]
 0x4107  cmd [alpha] [grad]
 0x4108  cmd [alpha] [+/-]
 0x4109  cmd [alpha] [<=]
@@ -2210,16 +2381,16 @@ __DATA__
 0x5800  arg ISZ max=112,indirect,stack
 0x5900  arg DEC max=112,indirect,stack
 0x5a00  arg INC max=112,indirect,stack
-0x5b00  arg LBL max=116
-0x5c00  arg LBL?  max=116,indirect
-0x5d00  arg XEQ max=116,indirect
-0x5e00  arg GTO max=116,indirect
-0x5f00  arg [SIGMA] max=116,indirect
-0x6000  arg [PI]  max=116,indirect
-0x6100  arg SLV max=116,indirect
-0x6200  arg f'(x) max=116,indirect
-0x6300  arg f"(x) max=116,indirect
-0x6400  arg INT max=116,indirect
+0x5b00  arg LBL max=104
+0x5c00  arg LBL?  max=104,indirect
+0x5d00  arg XEQ max=104,indirect
+0x5e00  arg GTO max=104,indirect
+0x5f00  arg [SIGMA] max=104,indirect
+0x6000  arg [PI]  max=104,indirect
+0x6100  arg SLV max=104,indirect
+0x6200  arg f'(x) max=104,indirect
+0x6300  arg f"(x) max=104,indirect
+0x6400  arg [integral]  max=104,indirect
 0x6500  arg ALL max=12,indirect
 0x6600  arg FIX max=12,indirect
 0x6700  arg SCI max=12,indirect
@@ -2353,3 +2524,4 @@ __DATA__
 0x9e00  arg RM  max=7,indirect
 0x9f00  arg STOM  max=112,indirect,stack
 0xa000  arg RCLM  max=112,indirect,stack
+0xa200  arg SENDL max=9,indirect
