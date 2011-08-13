@@ -20,7 +20,7 @@
 #
 my $Description = "Symbolic Preprocessor for the WP 34S Assembler.";
 #
-my $SVN_Current_Revision = '$Rev: 20 $';
+my $SVN_Current_Revision = '$Rev: $';
 #
 #-----------------------------------------------------------------------
 #
@@ -92,13 +92,14 @@ $script
 
       The output is intended to be fed into the WP 34S assembler (wp34s_asm.pl).
 Usage:
-   $script_name src_file [src_file2...] [-cat] [-ns] [-h] > out
+   $script_name src_file [src_file2...] [-cat] [-ns] [-m max_offset] [-h] > out
 
 Parameters:
    src_file         One or more WP 34S program source files. Conventionally, "wp34s"
                     is used as the filename extension.
    -cat             Generate a LBL catalogue.
    -ns              Suppress generation of step numbers.
+   -m max_offset    Change the maximum offset limit.  [default: $DEFAULT_MAX_JMP_OFFSET]
    -h               This help script.
 
 Examples:
@@ -1599,7 +1600,7 @@ sub get_options {
   return;
 } # get_options
 
-# A dummy program to use to test.
+# A dummy program to use for tests -- and I mean DUMMY!
 __DATA__
 001: Oomph:: +
 002           [times]
