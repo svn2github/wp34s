@@ -174,7 +174,7 @@ foreach my $file (@files) {
 
 preprocessor();
 
-print "// Temporary Source File(s): ", join (", ", @files), "\n";
+print "// Source File(s): ", join (", ", @files), "\n";
 print "// Preprocessor revision: $SVN_Current_Revision \n";
 display_steps("");
 show_LBLs() if $show_catalogue;
@@ -885,10 +885,11 @@ sub reconstruct_steps {
 
 #######################################################################
 #
-# Extract the either a 3 character or a 1 character substring from the string.
+# Extract either a 3 character or a 1 character substring from the string.
 # Note that a 2-character string would take up 4 bytes regardless of whether it
-# was coded as "[alpha]'xy[null]'" or "[alpha] x\n[alpha] y" so might as well make
-# it easier on myself by leaving them as multiple a single alpha steps.
+# was coded as "[alpha]'xy[null]'" or "[alpha] x, [alpha] y" so might as well make
+# it easier on myself by leaving them as 2 single alpha steps. (Doesn't look
+# as nice in the source but: too bad, so sad.)
 #
 sub extract_substring {
   my $string = shift;
@@ -901,12 +902,15 @@ sub extract_substring {
   my $substring = "";
   print "// DEBUG: extract_substring: Attempting to extract substring from '$string'\n" if $debug;
   while($string and ($num_chars < 3) ) {
+    # Check for any escaped alphas since these need to be treated differently.
     if( $string =~ /^(\[.+?\])/ ) {
       $alpha = $1;
       $actual_alpha = $alpha;
     } elsif( $string =~ /^(.)/ ) {
       $alpha = $1;
       $actual_alpha = $alpha;
+
+      # Substitue any spaces the user encoded into the escaped alpha version.
       if( $alpha eq " " ) {
         $alpha = "[space]";
       }
@@ -922,27 +926,41 @@ sub extract_substring {
     print "// DEBUG: extract_substring: Found character '$actual_alpha' equated to '$alpha' in '$string'\n" if $debug;
     push @alphas, $alpha;
 
-    # Repair any character that attempts to do some regex work!
-    if( $actual_alpha =~ /\[|\]/ ) {
-      $actual_alpha =~ s/\[/\\\[/;
-      $actual_alpha =~ s/\]/\\\]/;
-    } elsif( $actual_alpha =~ /\{|\}/ ) {
-      $actual_alpha =~ s/\{/\\\{/;
-      $actual_alpha =~ s/\}/\\\}/;
-    } elsif( $actual_alpha =~ /\)|\)/ ) {
-      $actual_alpha =~ s/\(/\\\(/;
-      $actual_alpha =~ s/\)/\\\)/;
-    } elsif( $actual_alpha =~ /\?/ ) {
-      $actual_alpha =~ s/\?/\\\?/;
-    } elsif( $actual_alpha =~ /\*/ ) {
-      $actual_alpha =~ s/\*/\\\*/;
-    } elsif( $actual_alpha =~ /\+/ ) {
-      $actual_alpha =~ s/\+/\\\+/;
-    } elsif( $actual_alpha =~ /\\/ ) {
-      $actual_alpha =~ s/\\/\\\\/;
+    # For now, use a function I found online to do the sustitution. Avoid regex!!
+    if(0) {
+      # Repair any character that attempts to do some regex work!
+      # Sheesh! What an awful job!
+      if( $actual_alpha =~ /\\/ ) {
+        $actual_alpha =~ s/\\/\\\\/;
+      }
+      if( $actual_alpha =~ /\[|\]/ ) {
+        $actual_alpha =~ s/\[/\\\[/;
+        $actual_alpha =~ s/\]/\\\]/;
+      }
+      if( $actual_alpha =~ /\{|\}/ ) {
+        $actual_alpha =~ s/\{/\\\{/;
+        $actual_alpha =~ s/\}/\\\}/;
+      }
+      if( $actual_alpha =~ /\)|\)/ ) {
+        $actual_alpha =~ s/\(/\\\(/;
+        $actual_alpha =~ s/\)/\\\)/;
+      }
+      if( $actual_alpha =~ /\?/ ) {
+        $actual_alpha =~ s/\?/\\\?/;
+      }
+      if( $actual_alpha =~ /\*/ ) {
+        $actual_alpha =~ s/\*/\\\*/;
+      }
+      if( $actual_alpha =~ /\+/ ) {
+        $actual_alpha =~ s/\+/\\\+/;
+      }
+      if( $actual_alpha =~ /\^/ ) {
+        $actual_alpha =~ s/\^/\\\^/;
+      }
+      $string =~ s/${actual_alpha}(.*)/$1/;
+    } else {
+      $string = str_replace($actual_alpha, "", $string);
     }
-
-    $string =~ s/${actual_alpha}(.*)/$1/;
     $num_chars++;
   }
 
@@ -962,6 +980,30 @@ sub extract_substring {
   print "// DEBUG: extract_substring: Extracted $num_chars character(s): '$substring'. Left with string of '$string'.\n" if $debug;
   return ($substring, $num_chars, $string);
 } # extract_substring
+
+
+#######################################################################
+#
+# Replace a string without using RegExp.
+# See: http://www.bin-co.com/perl/scripts/str_replace.php
+#
+sub str_replace {
+  my $replace_this = shift;
+  my $with_this  = shift;
+  my $string   = shift;
+
+  my $length = length($string);
+  my $target = length($replace_this);
+
+  for(my $i=0; $i<$length - $target + 1; $i++) {
+    if(substr($string,$i,$target) eq $replace_this) {
+      $string = substr($string,0,$i) . $with_this . substr($string,$i+$target);
+      return $string; #Comment this if you what a global replace
+    }
+  }
+  return $string;
+} # str_replace
+
 
 #######################################################################
 #

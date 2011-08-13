@@ -386,7 +386,17 @@ sub assemble {
             my $escaped_alpha = $1;
             if( exists $escaped_alpha2ord{$escaped_alpha} ) {
               my $char = chr($escaped_alpha2ord{$escaped_alpha});
-              $alpha_text =~ s/\[$escaped_alpha\]/$char/;
+
+              # For now, use a different replacement function rather than a regex.
+              # This is because the text patttern for the substitution have regex control
+              # sequences in them and that screws things up!
+              # XXX This is still not quite correct. Doesn't handle superscript for example.
+              #     I will get at it soon!!
+              if(0) {
+                $alpha_text =~ s/\[$escaped_alpha\]/$char/;
+              } else {
+                $alpha_text = str_replace($escaped_alpha, $char, $alpha_text);
+              }
             } else {
               die "ERROR: Cannot locate escaped alpha: [$escaped_alpha] in table.\n";
             }
@@ -1305,6 +1315,29 @@ sub gen_random_writeable_filename {
 
 #######################################################################
 #
+# Replace a string without using RegExp.
+# See: http://www.bin-co.com/perl/scripts/str_replace.php
+#
+sub str_replace {
+  my $replace_this = shift;
+  my $with_this  = shift;
+  my $string   = shift;
+
+  my $length = length($string);
+  my $target = length($replace_this);
+
+  for(my $i=0; $i<$length - $target + 1; $i++) {
+    if(substr($string,$i,$target) eq $replace_this) {
+      $string = substr($string,0,$i) . $with_this . substr($string,$i+$target);
+      return $string; #Comment this if you what a global replace
+    }
+  }
+  return $string;
+} # str_replace
+
+
+#######################################################################
+#
 #
 #
 sub extract_svn_version {
@@ -1441,6 +1474,12 @@ sub get_options {
     # into a file of this name. Just having the file named is sufficient to trigger this mode.
     elsif( ($arg eq "-da") or ($arg eq "-alpha") ) {
       $dump_escaped_alpha_table = shift(@ARGV);
+    }
+
+    # This is typically only used for debug at the moment. It will dump the escaped alpha table
+    # into a file of this name. Just having the file named is sufficient to trigger this mode.
+    elsif( $arg eq "--" ) {
+      push @files, "-";
     }
 
     else {
