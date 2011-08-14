@@ -170,6 +170,19 @@ if( exists $useable_OS{$^O} ) {
 my $script_executable = $0;
 my ($script_name, $script_dir, $script_suffix) = fileparse($script_executable);
 
+print "// DEBUG: script_executable = '$script_executable'\n" if $debug;
+print "// DEBUG: script_name       = '$script_name'\n" if $debug;
+print "// DEBUG: script_dir        = '$script_dir'\n" if $debug;
+print "// DEBUG: script_suffix     = '$script_suffix'\n" if $debug;
+if(1) {
+  if( $script_name =~ /\.exe$/ ) {
+    print "// NOTE: Detected running EXE version.\n";
+    print "         Adjusting child preprocessor script name from '$preproc' to ";
+    $preproc =~ s/\.pl$/\.exe/;
+    print "'$preproc'\n";
+  }
+}
+
 my $script  = "$script_name  - $Description";
 my $usage = <<EOM;
 
@@ -1229,6 +1242,7 @@ sub run_pp {
   close TMP;
 
   # See if we can locate the preprocessor.
+  print "// DEBUG: Base name of the preprocessor being searched for: '${preproc}'\n" if $debug;
   if( -e "${preproc}" ) {
     $pp_location = "${preproc}";
     $cmd = "${preproc} $pp_options $tmp_file"
