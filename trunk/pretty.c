@@ -57,6 +57,12 @@ void prettify(const char *in, char *out) {
 	*out = '\0';
 }
 
+#ifdef COMPILE_CATALOGUES
+#define isNULL(fp) (strcmp(fp, "NULL") == 0)
+#else
+#define isNULL(fp) (fp == FNULL)
+#endif
+
 void dump_opcodes(FILE *f) {
 	int c, d;
 	char cmdname[16];
@@ -138,17 +144,17 @@ void dump_opcodes(FILE *f) {
 				break;
 
 			case KIND_MON:
-				if (d < num_monfuncs && (monfuncs[d].mondreal != FNULL || monfuncs[d].monint != FNULL))
+				if (d < num_monfuncs && (! isNULL(monfuncs[d].mondreal) || ! isNULL(monfuncs[d].monint)))
 					break;
 				continue;
 
 			case KIND_DYA:
-				if (d < num_dyfuncs && (dyfuncs[d].dydreal != FNULL || dyfuncs[d].dydint != FNULL))
+				if (d < num_dyfuncs && (! isNULL(dyfuncs[d].dydreal) || ! isNULL(dyfuncs[d].dydint)))
 					break;
 				continue;
 
 			case KIND_CMON:
-				if (d < num_monfuncs && monfuncs[d].mondcmplx != FNULL) {
+				if (d < num_monfuncs && ! isNULL(monfuncs[d].mondcmplx)) {
 					if (cmdname[0] == COMPLEX_PREFIX)
 						break;
 					fprintf(f, "0x%04x\tcmd\t[cmplx]%s\n", c, cmdpretty);
@@ -156,7 +162,7 @@ void dump_opcodes(FILE *f) {
 				continue;
 
 			case KIND_CDYA:
-				if (d < num_dyfuncs && dyfuncs[d].dydcmplx != FNULL) {
+				if (d < num_dyfuncs && ! isNULL(dyfuncs[d].dydcmplx)) {
 					if (cmdname[0] == COMPLEX_PREFIX)
 						break;
 					fprintf(f, "0x%04x\tcmd\t[cmplx]%s\n", c, cmdpretty);

@@ -16,7 +16,7 @@
 
 #define COMPILE_CATALOGUES
 #undef DEBUG
-#define NOCURSES
+#define NOCURSES 1
 #undef REALBUILD
 
 #include "consts.h"

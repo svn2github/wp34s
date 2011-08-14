@@ -157,8 +157,8 @@ LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
 MAIN := $(OBJECTDIR)/main.o
 else
 MAIN := $(OBJECTDIR)/console.o
-OPCODES := $(TOOLS)/wp34s.op
 endif
+OPCODES := $(TOOLS)/wp34s.op
 
 # Targets and rules
 

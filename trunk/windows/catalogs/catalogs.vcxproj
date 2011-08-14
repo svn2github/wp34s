@@ -50,7 +50,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>../consts;../../decNumber;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USECURSES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NOCURSES;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -68,7 +68,8 @@
     </Link>
     <PostBuildEvent>
       <Message>building catalogues.h</Message>
-      <Command>$(OutDir)catalogs.exe &gt; ..\..\catalogues.h</Command>
+      <Command>echo # $Rev$ &gt; $(SolutionDir)..\tools\wp34s.op
+$(OutDir)catalogs.exe &gt; ..\..\catalogues.h 2&gt;&gt; $(SolutionDir)..\tools\wp34s.op</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,7 +78,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <AdditionalIncludeDirectories>../consts;../../decNumber;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;USECURSES;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NOCURSES;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
@@ -97,7 +98,8 @@
     </Link>
     <PostBuildEvent>
       <Message>building catalogues.h</Message>
-      <Command>$(OutDir)catalogs.exe &gt; ..\..\catalogues.h</Command>
+      <Command>echo # $Rev$ &gt; $(SolutionDir)..\tools\wp34s.op
+$(OutDir)catalogs.exe &gt; ..\..\catalogues.h 2&gt;&gt; $(SolutionDir)..\tools\wp34s.op</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

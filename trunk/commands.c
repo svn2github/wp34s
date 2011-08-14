@@ -13,7 +13,6 @@
  * You should have received a copy of the GNU General Public License
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 #if COMMANDS_PASS != 2
 #include "xeq.h"
 #include "decn.h"
@@ -63,12 +62,16 @@ const struct _command_info command_info = {
 #endif
 #endif
 
+// Dummy definition for catalogue generation
+#ifdef COMPILE_CATALOGUES
+#define PTR(p)	#p
+#endif
+
 /* Define our table of monadic functions.
  * These must be in the same order as the monadic function enum but we'll
  * validate this only if debugging is enabled.
  */
 #ifdef COMPILE_CATALOGUES
-#define PTR(p)		(((p) == NULL)?NULL:((void *)1))
 #define FUNC(name, d, c, i, fn) { PTR(d), PTR(c), PTR(i), fn },
 #elif DEBUG
 #define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
@@ -243,7 +246,6 @@ const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
  * validate this only if debugging is enabled.
  */
 #ifdef COMPILE_CATALOGUES
-#define PTR(p)		(((p) == NULL)?NULL:((void *)1))
 #define FUNC(name, d, c, i, fn) { PTR(d), PTR(c), PTR(i), fn },
 #elif DEBUG
 #define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
@@ -325,7 +327,6 @@ const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
  * validate this only if debugging is enabled.
  */
 #ifdef COMPILE_CATALOGUES
-#define PTR(p)		(((p) == NULL)?NULL:((void *)1))
 #define FUNC(name, d, i, fn) { PTR(d), PTR(i), fn },
 #elif DEBUG
 #define FUNC(name, d, i, fn) { name, d, i, fn },

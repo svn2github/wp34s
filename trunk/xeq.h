@@ -137,12 +137,16 @@ struct monfunc_cmdtab
 struct monfunc
 #endif
 {
+#ifdef COMPILE_CATALOGUES
+	const char mondreal[30], mondcmplx[30], monint[30];
+#else
 #ifdef DEBUG
 	unsigned short n;
 #endif
 	decNumber *(*mondreal)(decNumber *, const decNumber *);
 	void (*mondcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber *);
 	long long int (*monint)(long long int);
+#endif
 	const char fname[NAME_LEN];
 };
 extern const struct monfunc monfuncs[];
@@ -171,6 +175,9 @@ struct dyfunc_cmdtab
 struct dyfunc
 #endif
 {
+#ifdef COMPILE_CATALOGUES
+	const char dydreal[30], dydcmplx[30], dydint[30];
+#else
 #ifdef DEBUG
 	unsigned short n;
 #endif
@@ -178,6 +185,7 @@ struct dyfunc
 	void (*dydcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber*,
 				const decNumber *, const decNumber *);
 	long long int (*dydint)(long long int, long long int);
+#endif
 	const char fname[NAME_LEN];
 };
 extern const struct dyfunc dyfuncs[];
@@ -209,8 +217,12 @@ struct trifunc
 #ifdef DEBUG
 	unsigned short n;
 #endif
+#ifdef COMPILE_CATALOGUES
+	const char trireal[30], triint[30];
+#else
 	decNumber *(*trireal)(decNumber *, const decNumber *, const decNumber *, const decNumber *);
 	long long int (*triint)(long long int, long long int, long long int);
+#endif
 	const char fname[NAME_LEN];
 };
 extern const struct trifunc trifuncs[];
@@ -244,7 +256,11 @@ struct niladic
 #ifdef DEBUG
 	unsigned short n;
 #endif
+#ifdef COMPILE_CATALOGUES
+	const char niladicf[30];
+#else
 	void (*niladicf)(decimal64 *, decimal64 *, enum nilop);
+#endif
 	unsigned char numresults;
 	const char nname[NAME_LEN];
 };
@@ -286,7 +302,11 @@ struct argcmd
 #ifdef DEBUG
 	unsigned short n;
 #endif
+#ifdef COMPILE_CATALOGUES
+	const char f[30];
+#else
 	void (*f)(unsigned int, enum rarg);
+#endif
 	unsigned int lim : 8;
 	unsigned int indirectokay : 1;
 	unsigned int stckreg : 1;
@@ -322,7 +342,11 @@ struct multicmd
 #ifdef DEBUG
 	unsigned short n;
 #endif
+#ifdef COMPILE_CATALOGUES
+	const char f[30];
+#else
 	void (*f)(opcode, enum multiops);
+#endif
 	const char cmd[NAME_LEN];
 };
 extern const struct multicmd multicmds[];
