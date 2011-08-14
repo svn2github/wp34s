@@ -28,6 +28,8 @@
 #define NILADIC(n)	(OP_NIL | (OP_ ## n)),
 #define MONADIC(n)	(OP_MON | (OP_ ## n)),
 #define DYADIC(n)	(OP_DYA | (OP_ ## n)),
+#define CMONADIC(n)	(OP_CMON | (OP_ ## n)),
+#define CDYADIC(n)	(OP_CDYA | (OP_ ## n)),
 #define SPECIAL(n)	(OP_SPEC | OP_ ## n),
 #define xMULTI(n,a,b,c)	(OP_DBL | ((DBL_ ## n) << DBL_SHIFT) | ((a) & 0xff)), \
 			((b) & 0xff) | (((c) << 8) & 0xff00),
@@ -87,8 +89,11 @@
 #define FCpF(f)		xRARG(FCF, f)
 #define PAUSE(f)	xRARG(PAUSE, f)
 #define VIEW(f)		xRARG(VIEW, f)
+#define VIEWREG(f)	xRARG(VIEW_REG, f)
 #define SR10(f)		xRARG(SRD, f)
 #define SL10(f)		xRARG(SLD, f)
+#define STOSTK(f)	xRARG(STOSTK, f)
+#define RCLSTK(f)	xRARG(RCLSTK, f)
 
 #define SLVI(f)		xRARG(INISOLVE, f)
 #define SLVS(f)		xRARG(SOLVESTEP, f)
@@ -161,6 +166,15 @@
 #define MOD		DYADIC(MOD)
 #define POWER		DYADIC(POW)
 
+// Complex monadic
+#define CCONJ		CMONADIC(CCONJ)
+
+// Complex dyadic
+#define CPLUS		CDYADIC(ADD)
+#define CMINUS		CDYADIC(SUB)
+#define CTIMES		CDYADIC(MUL)
+#define CDIVISION	CDYADIC(DIV)
+
 // Stack manipulation shortcuts
 #define SWAPXY		NILADIC(SWAP)
 #define CSWAPXY		NILADIC(CSWAP)
@@ -174,7 +188,7 @@
 // Other short cuts
 #define ENTRY		GSB(XROM_CHECK)
 #define EXIT		GTO(XROM_EXIT)
-//#define EXITp1		GTO(XROM_EXITp1)
+#define EXITp1		GTO(XROM_EXITp1)
 
 /* Now the xrom table itself.
  *
@@ -301,7 +315,7 @@ const s_opcode xrom[] = {
 		CF(F_XROM)
 		TST_TOP
 		ERROR(ERR_SOLVE)
-		RTNp1
+		EXITp1
 
 	LBL(1)				// Success
 		ZERO
@@ -848,6 +862,75 @@ const s_opcode xrom[] = {
 #undef F_SECOND
 
 /**************************************************************************/
+/* A quadratic equation solver.
+ * Based on code by Franz.
+ */
+	LBL(ENTRY_QUAD)
+/* Registers:
+ *	00	c
+ *	01	b^2 - 4ac
+ *	02	2a
+ *	03	T
+ *	04	I
+ */
+		GSB(XROM_CHECK)
+		STOSTK(00)
+		RCL(st(I))
+		STO(4)
+		ROLLD
+
+		RCL_PL(st(X))		// 2c b a .
+		SWAP(st(Z))		// a b 2c .
+		TST0(eq)
+			ERROR(ERR_INVALID)
+		RCL_PL(st(X))		// 2a b 2c .
+		STO(2)
+		RCL(st(Y))		// b 2a b 2c
+		CTIMES			// b^2-4ac 2b(a+c) b 2c
+		STO(1)
+		TST0(lt)
+			SKIP(11)	// complex result
+		SQRT			// sqrt 2b(a+c) b 2c
+		SWAPXY
+		ROLLD			// sqrt b 2c .
+		TST0(gt)
+			CCONJ
+		MINUS			// sqrt-b 2c 2c 2c
+		TST0(ne)
+			STO_DV(st(Y))
+		RCL_DV(2)
+		GSB(1)
+		EXIT
+
+		// complex result
+		ABS
+		SQRT			// sqrt ? b 2c
+		RCL_DV(2)		// sqrt/2a ? b 2c
+		RCL(st(Z))		// b sqrt/2a ? b
+		RCL_DV(2)		// b/2a sqrt/2a ? b
+		CHS
+		GSB(1)
+		TST_TOP
+			SKIP(1)
+		EXITp1
+
+		CLALPHA
+		alpha1('C')
+		VIEWREG(st(X))
+		EXIT
+
+	LBL(1)				// Fix the stack up
+		RCL(0)
+		STO(st(L))		// Push c into Last X
+		RCL(4)
+		STO(st(I))		// Restore I
+		CSWAPXY
+		RCL(4)			// Restore T
+		RCL(1)			// Preserve b^2 - 4ac
+		CSWAPXY
+		RTN
+
+/**************************************************************************/
 
 	LBL(XROM_CHECK)			// Set xrom flag and error if it
 		FCpF(F_XROM)		// was set already, return if not.
@@ -858,31 +941,11 @@ const s_opcode xrom[] = {
 		CF(F_XROM)
 		RTN
 
-//	LBL(XROM_EXITp1)		// Clear xrom falg and return with skip
-//		CF(F_XROM)
-//		RTNp1
+	LBL(XROM_EXITp1)		// Clear xrom falg and return with skip
+		CF(F_XROM)
+		RTNp1
 
 
-/**************************************************************************/
-/* Fairly minimal quadratic solver by Gerson W. Barbosa that remains
- * numerically quite stable.
- */
-	LBL(ENTRY_QUAD)
-		RCL_DV(st(Z))
-		SWAP(st(Z))
-		STO_PL(st(X))
-		DIVISION
-		CHS
-		STO(st(Z))
-		SQUARE
-		SWAPXY
-		MINUS
-		SQRT
-		STO(st(L))
-		SWAPXY
-		STO_PL(st(Y))
-		RCL_MI(st(L))
-	RTN
 
 /**************************************************************************/
 /* Very minimal routine to return the next prime in sequence
@@ -904,7 +967,7 @@ const s_opcode xrom[] = {
 		RTN
 
 /**************************************************************************/
-#if 1
+
 	DLBL('W', 'H', 'O')
 		CLALPHA
 		GSB(1)
@@ -931,7 +994,6 @@ const s_opcode xrom[] = {
 		PAUSE(8)
 		CLALPHA
 	RTN
-#endif
 };
 
 const unsigned short int xrom_size = sizeof(xrom) / sizeof(const s_opcode);
