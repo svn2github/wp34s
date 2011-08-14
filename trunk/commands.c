@@ -68,8 +68,8 @@ const struct _command_info command_info = {
  * validate this only if debugging is enabled.
  */
 #ifdef COMPILE_CATALOGUES
-#define PTR	((void *)1)
-#define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
+#define PTR(p)		(((p) == NULL)?NULL:((void *)1))
+#define FUNC(name, d, c, i, fn) { PTR(d), PTR(c), PTR(i), fn },
 #elif DEBUG
 #define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
 #elif COMMANDS_PASS == 1
@@ -243,8 +243,8 @@ const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
  * validate this only if debugging is enabled.
  */
 #ifdef COMPILE_CATALOGUES
-#define PTR	((void *)1)
-#define FUNC(name, d, c, i, fn) { PTR, PTR, PTR, fn },
+#define PTR(p)		(((p) == NULL)?NULL:((void *)1))
+#define FUNC(name, d, c, i, fn) { PTR(d), PTR(c), PTR(i), fn },
 #elif DEBUG
 #define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
 #elif COMMANDS_PASS == 1
@@ -325,8 +325,8 @@ const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
  * validate this only if debugging is enabled.
  */
 #ifdef COMPILE_CATALOGUES
-#define PTR	((void *)1)
-#define FUNC(name, d, i, fn) { PTR, PTR, fn },
+#define PTR(p)		(((p) == NULL)?NULL:((void *)1))
+#define FUNC(name, d, i, fn) { PTR(d), PTR(i), fn },
 #elif DEBUG
 #define FUNC(name, d, i, fn) { name, d, i, fn },
 #elif COMMANDS_PASS == 1
@@ -357,7 +357,7 @@ const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
 
 
 #ifdef COMPILE_CATALOGUES
-#define FUNC(name, d, fn, arg)		{ PTR, arg, fn },
+#define FUNC(name, d, fn, arg)		{ PTR(d), arg, fn },
 #elif DEBUG
 #define FUNC(name, d, fn, arg)		{ name, d, arg, fn },
 #elif COMMANDS_PASS == 1
@@ -566,7 +566,7 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 
 #ifdef COMPILE_CATALOGUES
 #define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
-	{ PTR, limit, ind, stk, cpx, lbl, nm },
+	{ PTR(func), limit, ind, stk, cpx, lbl, nm },
 #elif DEBUG
 #define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
 	{ name, func, limit, ind, stk, cpx, lbl, nm },
@@ -752,7 +752,7 @@ const unsigned short num_argcmds = sizeof(argcmds) / sizeof(struct argcmd);
 
 #ifdef COMPILE_CATALOGUES
 #define CMD(name, func, nm)			\
-	{ PTR, nm },
+	{ PTR(func), nm },
 #elif DEBUG
 #define CMD(name, func, nm)			\
 	{ name, func, nm },

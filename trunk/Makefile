@@ -219,8 +219,6 @@ else
 $(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
-	echo "# \$$Rev\$$" > $(OPCODES)
-	$@ opcodes >> $(OPCODES)
 endif
 
 # Build generated files
@@ -231,8 +229,10 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
 		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 
-catalogues.h: $(UTILITIES)/compile_cats$(EXE) Makefile features.h
-	$(UTILITIES)/compile_cats$(EXE) >catalogues.h
+catalogues.h: $(UTILITIES)/compile_cats$(EXE) Makefile features.h pretty.c \
+			charmap.c commands.c string.c prt.c consts.c
+	echo "# \$$Rev\$$" > $(OPCODES)
+	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>>$(OPCODES)
 
 lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
 	$(UTILITIES)/lcdgen$(EXE) >$@
@@ -309,6 +309,6 @@ $(OBJECTDIR)/rtc.o: atmel/rtc.c atmel/rtc.h \
 $(OBJECTDIR)/main.o: main.c xeq.h data.h
 else
 $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h data.h keys.h consts.h display.h lcd.h \
-		int.h xrom.h storage.h Makefile features.h
+		int.h xrom.h storage.h Makefile features.h pretty.c
 endif
 

@@ -106,44 +106,7 @@ static int remap(const int c) {
 }
 
 
-/* Mappings from our internal character codes to readable strings.
- * The first table is for characters below space and the second for those
- * >=127 (del).
- */
-static const char *const map32[32] = {
-	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "narrow-space", "grad",
-	"+/-", "<=", ">=", "!=", "euro", "->", "<-", "v",
-	"^", "f-shift", "g-shift", "h-shift", "cmplx", "O-slash", "o-slash", "<->",
-	"sz", "x-hat", "y-hat", "sub-m", "times", "approx", "pound", "yen"
-};
-
-static const char *const maptop[129] = {
-	"del",
-	"ALPHA", "BETA", "GAMMA", "DELTA", "EPSILON", "ZETA", "ETA", "THETA",
-	"IOTA", "KAPPA", "LAMBDA", "MU", "NU", "XI", "sol", "PI",
-	"RHO", "SIGMA", "TAU", "UPSILON", "PHI", "CHI", "PSI", "OMEGA",
-	"sub-B", "sub-mu", "^2", "sub-infinity", "^x", "^-1", "h-bar", "infinity",
-	"alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta",
-	"iota", "kappa", "lambda", "mu", "nu", "xi", "terra", "pi",
-	"rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega",
-	"sub-0", "sub-1", "sub-2", "sub-c", "sub-e", "sub-n", "sub-p", "sub-u",
-	"A-grave", "A-acute", "A-tilde", "A-umlaut", "A-dot", "C-acute", "C-hook", "C-cedilla",
-	"E-grave", "E-acute", "E-filde", "E-trema", "I-grave", "I-acute", "I-tilde", "I-trema",
-	"N-tilde", "O-grave", "O-acute", "O-tilde", "O-umlaut", "R-hook", "S-hook", "sub-A",
-	"U-grave", "U-acute", "U-tilde", "U-umlaut", "U-dot", "Y-acute", "Y-trema", "Z-hook",
-	"a-grave", "a-acute", "a-tilde", "a-umlaut", "a-dot", "c-acute", "c-hook", "c-cedilla",
-	"e-grave", "e-acute", "e-tilde", "e-trema", "i-grave", "i-acute", "i-tilde", "i-trema",
-	"n-tilde", "o-grave", "o-acute", "o-tilde", "o-umlaut", "r-hook", "s-hook", "sub-k",
-	"u-grave", "u-acute", "u-tilde", "u-umlaut", "u-dot", "y-acute", "y-trema", "z-hook"
-};
-
-const char *pretty(unsigned char z) {
-	if (z < 32)
-		return map32[z & 0x1f];
-	if (z >= 127)
-		return maptop[z - 127];
-	return NULL;
-}
+#include "pretty.c"
 
 static void rarg_values(const opcode c, int l) {
 	char bf[100];
@@ -348,136 +311,6 @@ static void dump_prog(unsigned int n) {
 	}
 }
 
-void prettify(const char *in, char *out) {
-	const char *p;
-	char c;
-
-	while (*in != '\0') {
-		c = *in++;
-		p = pretty(c);
-		if (p == NULL)
-			*out++ = c;
-		else {
-			*out++ = '[';
-			while (*p != '\0')
-				*out++ = *p++;
-			*out++ = ']';
-		}
-	}
-	*out = '\0';
-}
-
-static void dump_opcodes(void) {
-	int c, d;
-	char cmdname[16];
-	char cmdpretty[500];
-	const char *p;
-
-	for (c=0; c<65536; c++) {
-		if (isDBL(c)) {
-			const unsigned int cmd = opDBL(c);
-			if ((c & 0xff) != 0)
-				continue;
-			if (cmd >= num_multicmds)
-				continue;
-#ifdef INCLUDE_MULTI_DELETE
-			if (cmd == DBL_DELPROG)
-				continue;
-#endif
-			xset(cmdname, '\0', 16);
-			xcopy(cmdname, multicmds[cmd].cmd, NAME_LEN);
-			prettify(cmdname, cmdpretty);
-			printf("0x%04x\tmult\t%s\n", c, cmdpretty);
-		} else if (isRARG(c)) {
-			const unsigned int cmd = RARG_CMD(c);
-			unsigned int limit;
-
-			if (cmd >= NUM_RARG)
-				continue;
-#ifdef INCLUDE_MULTI_DELETE
-			if (cmd == RARG_DELPROG)
-				continue;
-#endif
-			limit = argcmds[cmd].lim;
-			if (cmd != RARG_ALPHA && (c & RARG_IND) != 0)
-				continue;
-			p = catcmd(c, cmdname);
-			if (strcmp(p, "???") == 0)
-				continue;
-			prettify(p, cmdpretty);
-			if (cmd == RARG_ALPHA) {
-				if ((c & 0xff) == 0)
-					continue;
-				if ((c & 0xff) == ' ')
-					printf("0x%04x\tcmd\t[alpha] [space]\n", c);
-				else
-					printf("0x%04x\tcmd\t[alpha] %s\n", c, cmdpretty);
-				continue;
-			} else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
-				printf("0x%04x\tcmd\t%s# %s\n", c, cmd == RARG_CONST_CMPLX?"[cmplx]":"", cmdpretty);
-				continue;
-			} else if (cmd == RARG_CONV) {
-				printf("0x%04x\tcmd\t%s\n", c, cmdpretty);
-				continue;
-			} else if (cmd == RARG_CONST_INT) {
-				p = prt(c, cmdname);
-				if (strcmp(p, "???") != 0)
-					printf("0x%04x\tcmd\t%s\n", c, p);
-				if ((c & 0xff) != 0)
-					continue;
-				limit = 0;
-			}
-			if ((c & 0xff) != 0)
-				continue;
-			printf("0x%04x\targ\t%s\tmax=%u", c, cmdpretty, limit);
-			if (argcmds[cmd].indirectokay)
-				printf(",indirect");
-			if (argcmds[cmd].stckreg)
-				printf(",stack");
-			if (argcmds[cmd].cmplx)
-				printf(",complex");
-			printf("\n");
-		} else {
-			p = catcmd(c, cmdname);
-			if (strcmp(p, "???") == 0)
-				continue;
-			prettify(p, cmdpretty);
-			d = argKIND(c);
-			switch (opKIND(c)) {
-			default:
-				break;
-
-			case KIND_MON:
-				if (d < num_monfuncs && (monfuncs[d].mondreal != FNULL || monfuncs[d].monint != FNULL))
-					break;
-				continue;
-
-			case KIND_DYA:
-				if (d < num_dyfuncs && (dyfuncs[d].dydreal != FNULL || dyfuncs[d].dydint != FNULL))
-					break;
-				continue;
-
-			case KIND_CMON:
-				if (d < num_monfuncs && monfuncs[d].mondcmplx != FNULL) {
-					if (cmdname[0] == COMPLEX_PREFIX)
-						break;
-					printf("0x%04x\tcmd\t[cmplx]%s\n", c, cmdpretty);
-				}
-				continue;
-
-			case KIND_CDYA:
-				if (d < num_dyfuncs && dyfuncs[d].dydcmplx != FNULL) {
-					if (cmdname[0] == COMPLEX_PREFIX)
-						break;
-					printf("0x%04x\tcmd\t[cmplx]%s\n", c, cmdpretty);
-				}
-				continue;
-
-			}
-			printf("0x%04x\tcmd\t%s\n", c, cmdpretty);
-		}
-	}
-}
 
 void shutdown( void )
 {
@@ -575,7 +408,7 @@ int main(int argc, char *argv[]) {
 				goto skipargs;
 			}
 			if (strcmp(argv[1], "opcodes") == 0) {
-				dump_opcodes();
+				dump_opcodes(stdout);
 				return 0;
 			}
 			dump_menu("float", "", CATALOGUE_NORMAL);

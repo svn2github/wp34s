@@ -950,6 +950,7 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 	printf("\n};\n\n");
 }
 
+#include "pretty.c"
 
 #define CAT(n)		emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode))
 #define ALPHA(n)	emit_alpha(#n , n, sizeof(n))
@@ -979,6 +980,8 @@ int main(int argc, char *argv[]) {
 	ALPHA(alpha_subscripts);
 	ALPHA(alpha_letters_upper);
 	ALPHA(alpha_letters_lower);
+
+	dump_opcodes(stderr);
 
 	return 0;
 }
