@@ -386,7 +386,11 @@ sub assemble {
             my $escaped_alpha = $1;
             if( exists $escaped_alpha2ord{$escaped_alpha} ) {
               my $char = chr($escaped_alpha2ord{$escaped_alpha});
-              $alpha_text =~ s/\[$escaped_alpha\]/$char/;
+
+              # Use a custom replacement function rather than a regex because the text
+              # patttern for the substitution have regex control sequences in them and
+              # that screws things up!
+              $alpha_text = str_replace("\[${escaped_alpha}\]", $char, $alpha_text);
             } else {
               die "ERROR: Cannot locate escaped alpha: [$escaped_alpha] in table.\n";
             }
@@ -453,7 +457,7 @@ sub disassemble {
 
   open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
 
-  print "// Source file(s): ", join(", ", @files), "\n";
+  print "// $script_name: Source file(s): ", join (", ", @files), "\n";
 
   foreach my $file (@files) {
     my $double_words = 0;
@@ -1252,7 +1256,7 @@ sub run_pp {
   }
 
   open PP_LST, "> $pp_listing" or die "ERROR: Cannot open preprocessor list file '$pp_listing' for writing: $!\n";
-  print PP_LST "// Source file(s): ", join ", ", @files, "\n";
+  print PP_LST "// $script_name: Source file(s): ", join (", ", @files), "\n";
   foreach (@clean_lines) {
     print PP_LST "$_\n";
   }
@@ -1305,11 +1309,32 @@ sub gen_random_writeable_filename {
 
 #######################################################################
 #
+# Replace a string without using RegExp.
+# See: http://www.bin-co.com/perl/scripts/str_replace.php
+#
+sub str_replace {
+  my ($replace_this, $with_this, $string, $do_globally) = @_;
+
+  my $len = length($replace_this);
+  my $position = 0; # current position
+
+  while( ($position = index($string, $replace_this, $position)) >= 0 ) {
+    substr($string, $position, $len) = $with_this;
+    if( not defined $do_globally or not $do_globally ) {
+      last;
+    }
+  }
+  return $string;
+} # str_replace
+
+
+#######################################################################
+#
 #
 #
 sub extract_svn_version {
   my $svn_rev = "";
-  if( $SVN_Current_Revision =~ /Revision: (.+)\s*\$/ ) {
+  if( $SVN_Current_Revision =~ /Rev.+?(\d+)\s*\$/ ) {
     $svn_rev = $1;
   }
   return $svn_rev;

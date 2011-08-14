@@ -20,7 +20,7 @@
 #
 my $Description = "Symbolic Preprocessor for the WP 34S Assembler.";
 #
-my $SVN_Current_Revision = '$Rev: $';
+my $SVN_Current_Revision = '$Rev$';
 #
 #-----------------------------------------------------------------------
 #
@@ -175,8 +175,8 @@ foreach my $file (@files) {
 
 preprocessor();
 
-print "// Source File(s): ", join (", ", @files), "\n";
-print "// Preprocessor revision: $SVN_Current_Revision \n";
+print "// $script_name: Source file(s): ", join (", ", @files), "\n";
+print "// $script_name: Preprocessor revision: $SVN_Current_Revision \n";
 display_steps("");
 show_LBLs() if $show_catalogue;
 
@@ -232,7 +232,8 @@ sub process_double_quotes {
     } else {
       $label = "";
     }
-    if( $line =~ /^\s*\"(.+?)\"/ ) {
+    # By not being greedy with this search, we can support embedded double quotes.
+    if( $line =~ /^\s*\"(.+)\"/ ) {
       my $string = $1;
       my $is_first = 1;
       while( $string ) {
@@ -927,41 +928,11 @@ sub extract_substring {
     print "// DEBUG: extract_substring: Found character '$actual_alpha' equated to '$alpha' in '$string'\n" if $debug;
     push @alphas, $alpha;
 
-    # For now, use a function I found online to do the sustitution. Avoid regex!!
-    if(0) {
-      # Repair any character that attempts to do some regex work!
-      # Sheesh! What an awful job!
-      if( $actual_alpha =~ /\\/ ) {
-        $actual_alpha =~ s/\\/\\\\/;
-      }
-      if( $actual_alpha =~ /\[|\]/ ) {
-        $actual_alpha =~ s/\[/\\\[/;
-        $actual_alpha =~ s/\]/\\\]/;
-      }
-      if( $actual_alpha =~ /\{|\}/ ) {
-        $actual_alpha =~ s/\{/\\\{/;
-        $actual_alpha =~ s/\}/\\\}/;
-      }
-      if( $actual_alpha =~ /\)|\)/ ) {
-        $actual_alpha =~ s/\(/\\\(/;
-        $actual_alpha =~ s/\)/\\\)/;
-      }
-      if( $actual_alpha =~ /\?/ ) {
-        $actual_alpha =~ s/\?/\\\?/;
-      }
-      if( $actual_alpha =~ /\*/ ) {
-        $actual_alpha =~ s/\*/\\\*/;
-      }
-      if( $actual_alpha =~ /\+/ ) {
-        $actual_alpha =~ s/\+/\\\+/;
-      }
-      if( $actual_alpha =~ /\^/ ) {
-        $actual_alpha =~ s/\^/\\\^/;
-      }
-      $string =~ s/${actual_alpha}(.*)/$1/;
-    } else {
-      $string = str_replace($actual_alpha, "", $string);
-    }
+    # Use a different replacement function rather than a regex because the text
+    # patttern for the substitution have regex control sequences in them and
+    # that screws things up!
+    $string = str_replace($actual_alpha, "", $string);
+
     $num_chars++;
   }
 
@@ -989,17 +960,15 @@ sub extract_substring {
 # See: http://www.bin-co.com/perl/scripts/str_replace.php
 #
 sub str_replace {
-  my $replace_this = shift;
-  my $with_this  = shift;
-  my $string   = shift;
+  my ($replace_this, $with_this, $string, $do_globally) = @_;
 
-  my $length = length($string);
-  my $target = length($replace_this);
+  my $len = length($replace_this);
+  my $position = 0; # current position
 
-  for(my $i=0; $i<$length - $target + 1; $i++) {
-    if(substr($string,$i,$target) eq $replace_this) {
-      $string = substr($string,0,$i) . $with_this . substr($string,$i+$target);
-      return $string; #Comment this if you what a global replace
+  while( ($position = index($string, $replace_this, $position)) >= 0 ) {
+    substr($string, $position, $len) = $with_this;
+    if( not defined $do_globally or not $do_globally ) {
+      last;
     }
   }
   return $string;
@@ -1524,7 +1493,7 @@ sub show_state {
 #
 sub extract_svn_version {
   my $svn_rev = "";
-  if( $SVN_Current_Revision =~ /Revision: (.+)\s*\$/ ) {
+  if( $SVN_Current_Revision =~ /Rev.+?(\d+)\s*\$/ ) {
     $svn_rev = $1;
   }
   return $svn_rev;
