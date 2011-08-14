@@ -57,12 +57,6 @@ void prettify(const char *in, char *out) {
 	*out = '\0';
 }
 
-#ifdef COMPILE_CATALOGUES
-#define isNULL(fp) (strcmp(fp, "NULL") == 0)
-#else
-#define isNULL(fp) (fp == FNULL)
-#endif
-
 void dump_opcodes(FILE *f) {
 	int c, d;
 	char cmdname[16];

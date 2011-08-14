@@ -1276,7 +1276,7 @@ void display(void) {
 			getX(&x);
 			if (opKIND(op) == KIND_MON) {
 				const unsigned int f = argKIND(op);
-				if (f < num_monfuncs && monfuncs[f].mondreal != FNULL) {
+				if (f < num_monfuncs && ! isNULL(monfuncs[f].mondreal)) {
 					CALL(monfuncs[f].mondreal)(&r, &x);
 				}
 				else

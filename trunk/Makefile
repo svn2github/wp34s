@@ -246,7 +246,7 @@ $(UTILITIES)/compile_consts$(EXE): compile_consts.c Makefile features.h \
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
 		commands.c string.c prt.c consts.c Makefile features.h
-	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
+	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $< -O0 -g
 
 $(UTILITIES)/lcdgen$(EXE): lcdgen.c Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<

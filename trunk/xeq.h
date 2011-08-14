@@ -73,6 +73,12 @@ enum multiops;
 typedef unsigned int opcode;
 typedef unsigned short int s_opcode;
 
+#ifdef COMPILE_CATALOGUES
+#define isNULL(fp) (strcmp(fp, "((void *)0)") == 0)
+#else
+#define isNULL(fp) (fp == FNULL)
+#endif
+
 #if (defined(REALBUILD) || defined(POST_PROCESSING)) && !defined(COMPILE_CATALOGUES)
 #pragma pack(push)
 #pragma pack(2)

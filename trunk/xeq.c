@@ -955,7 +955,7 @@ static void monadic(const opcode op) {
 	f = argKIND(op);
 	if (f < num_monfuncs) {
 		if (is_intmode()) {
-			if (monfuncs[f].monint != FNULL) {
+			if (! isNULL(monfuncs[f].monint)) {
 				long long int x = d64toInt(&regX);
 				x = ICALL(monfuncs[f].monint)(x);
 				setlastX();
@@ -963,7 +963,7 @@ static void monadic(const opcode op) {
 			} else
 				bad_mode_error();
 		} else {
-			if (monfuncs[f].mondreal != FNULL) {
+			if (! isNULL(monfuncs[f].mondreal)) {
 				decNumber x, r;
 
 				getX(&x);
@@ -988,7 +988,7 @@ static void monadic_cmplex(const opcode op) {
 	f = argKIND(op);
 
 	if (f < num_monfuncs) {
-		if (monfuncs[f].mondcmplx != FNULL) {
+		if (! isNULL(monfuncs[f].mondcmplx)) {
 			getXY(&x, &y);
 
 			CALL(monfuncs[f].mondcmplx)(&rx, &ry, &x, &y);
@@ -1018,7 +1018,7 @@ static void dyadic(const opcode op) {
 	f = argKIND(op);
 	if (f < num_dyfuncs) {
 		if (is_intmode()) {
-			if (dyfuncs[f].dydint != FNULL) {
+			if (! isNULL(dyfuncs[f].dydint)) {
 				long long int x = d64toInt(&regX);
 				long long int y = d64toInt(&regY);
 				x = ICALL(dyfuncs[f].dydint)(y, x);
@@ -1028,7 +1028,7 @@ static void dyadic(const opcode op) {
 			} else
 				bad_mode_error();
 		} else {
-			if (dyfuncs[f].dydreal != FNULL) {
+			if (! isNULL(dyfuncs[f].dydreal)) {
 				decNumber x, y, r;
 
 				getXY(&x, &y);
@@ -1053,7 +1053,7 @@ static void dyadic_cmplex(const opcode op) {
 
 	f = argKIND(op);
 	if (f < num_dyfuncs) {
-		if (dyfuncs[f].dydcmplx != FNULL) {
+		if (! isNULL(dyfuncs[f].dydcmplx)) {
 			getXY(&x1, &y1);
 			getZ(&x2);
 			getT(&y2);
@@ -1084,7 +1084,7 @@ static void triadic(const opcode op) {
 	f = argKIND(op);
 	if (f < num_trifuncs) {
 		if (is_intmode()) {
-			if (trifuncs[f].triint != FNULL) {
+			if (! isNULL(trifuncs[f].triint)) {
 				long long int x = d64toInt(&regX);
 				long long int y = d64toInt(&regY);
 				long long int z = d64toInt(&regZ);
@@ -1096,7 +1096,7 @@ static void triadic(const opcode op) {
 			} else
 				bad_mode_error();
 		} else {
-			if (trifuncs[f].trireal != FNULL) {
+			if (! isNULL(trifuncs[f].trireal)) {
 				decNumber x, y, z, r;
 
 				getXY(&x, &y);
@@ -1895,7 +1895,7 @@ static void niladic(const opcode op) {
 	if (idx < num_niladics) {
 		if (is_intmode() && NILADIC_NOTINT(niladics[idx]))
 			bad_mode_error();
-		else if (niladics[idx].niladicf != FNULL) {
+		else if (! isNULL(niladics[idx].niladicf)) {
 			decimal64 *x = NULL, *y = NULL;
 
 			switch (NILADIC_NUMRESULTS(niladics[idx])) {
@@ -1904,8 +1904,7 @@ static void niladic(const opcode op) {
 			case 1:	x = &regX;
 				lift_if_enabled();
 			default:
-				if (niladics[idx].niladicf != FNULL)
-					CALL(niladics[idx].niladicf)(x, y, (enum nilop)idx);
+				CALL(niladics[idx].niladicf)(x, y, (enum nilop)idx);
 				break;
 			}
 		}
@@ -3068,7 +3067,7 @@ static void rargs(const opcode op) {
 		illegal(op);
 		return;
 	}
-	if (argcmds[cmd].f == FNULL)
+	if (isNULL(argcmds[cmd].f))
 		return;
 	if (ind && argcmds[cmd].indirectokay) {
 		if (is_intmode()) {
@@ -3098,7 +3097,7 @@ static void multi(const opcode op) {
 		illegal(op);
 		return;
 	}
-	if (multicmds[cmd].f == FNULL)	// LBL does nothing
+	if (isNULL(multicmds[cmd].f))	// LBL does nothing
 		return;
 	CALL(multicmds[cmd].f)(op, (enum multiops)cmd);
 }
