@@ -222,12 +222,12 @@ static const struct {
 	XL(ENTRY_QUAD, "Entry: QUADRATIC SOLVER")
 	XL(XROM_CHECK, "Internal: Common entry code")
 	XL(XROM_EXIT, "Internal: Normal exit code")
-	//XL(XROM_EXITp1, "Internal: Abnormal exit code")
+	XL(XROM_EXITp1, "Internal: Abnormal exit code")
 #undef XL
 #define XG(n, s)	X(GTO, n, s)	X(XEQ, n, s)
 	XG(XROM_CHECK, "-> Common entry code")
 	XG(XROM_EXIT, "-> Normal exit code")
-	//XG(XROM_EXITp1, "-> Abnormal exit code")
+	XG(XROM_EXITp1, "-> Abnormal exit code")
 #undef XG
 #define XE(n, s)	X(ERROR, n, s)
 	XE(ERR_DOMAIN, "Error: Domain Error")
