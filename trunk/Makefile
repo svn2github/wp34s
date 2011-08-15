@@ -229,7 +229,7 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
 		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 
-catalogues.h: $(UTILITIES)/compile_cats$(EXE) Makefile features.h pretty.c \
+catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile features.h pretty.c \
 			charmap.c commands.c string.c prt.c consts.c
 	echo "# \$$Rev\$$" > $(OPCODES)
 	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>>$(OPCODES)
