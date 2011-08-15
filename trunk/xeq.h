@@ -698,6 +698,7 @@ enum nilop {
 #endif
 	OP_TOP,
 	OP_GETBASE, OP_GETSIGN,
+	OP_ISINT, OP_ISFLOAT,
 
 	NUM_NILADIC	// Last entry defines number of operations
 };
@@ -1132,6 +1133,7 @@ extern void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_ticks(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_voltage(decimal64 *a, decimal64 *b, enum nilop op);
+extern void check_mode(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
 extern void op_roundingmode(decimal64 *, decimal64 *, enum nilop);

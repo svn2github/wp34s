@@ -552,6 +552,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_TOP,		&isTop,			"TOP?")
 	FUNC1(OP_GETBASE,	&get_base,		"BASE?")
 	FUNC1(OP_GETSIGN,	&get_sign_mode,		"SMODE?")
+	FUNC0(OP_ISINT,		&check_mode,		"INTM?")
+	FUNC0(OP_ISFLOAT,	&check_mode,		"REALM?")
 #undef FUNC
 #undef FUNC0
 #undef FUNC1

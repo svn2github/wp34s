@@ -141,6 +141,8 @@
 #define TST_FRAC	NILADIC(XisFRAC)
 #define TST_PRIME	NILADIC(XisPRIME)
 #define TST_TOP		NILADIC(TOP)
+#define TST_INTMODE	NILADIC(ISINT)
+#define TST_FLOATMODE	NILADIC(ISFLOAT)
 #define VERS		NILADIC(VERSION)
 
 // Monadic functions
@@ -231,7 +233,6 @@ const s_opcode xrom[] = {
 
 	LBL(ENTRY_SOLVE)
 		ENTRY
-		DECM
 		TST(APX, st(Y))
 			INC(st(Y))
 		TST(APX, st(Y))
@@ -379,7 +380,6 @@ const s_opcode xrom[] = {
 
 	LBL(ENTRY_INTEGRATE)
 		ENTRY
-		DECM
 		TST_SPECIAL
 			GTO(8)
 		SWAPXY
@@ -545,7 +545,6 @@ const s_opcode xrom[] = {
 
 	LBL(ENTRY_SIGMA)
 		ENTRY
-		DECM
 		TST_SPECIAL
 			GTO(9)
 		STO(I)
@@ -582,7 +581,6 @@ const s_opcode xrom[] = {
 // Product code
 	LBL(ENTRY_PI)
 		ENTRY
-		DECM
 		TST_SPECIAL
 			GTO(9)
 		STO(I)
@@ -641,7 +639,6 @@ const s_opcode xrom[] = {
 
 	LBL(ENTRY_2DERIV)
 		ENTRY
-		DECM
 		TST_SPECIAL
 			GTO(9)
 		SF(F_SECOND)
@@ -720,7 +717,6 @@ const s_opcode xrom[] = {
 
 	LBL(ENTRY_DERIV)
 		ENTRY
-		DECM
 		TST_SPECIAL
 			GTO(9)
 		CF(F_SECOND)
@@ -873,7 +869,7 @@ const s_opcode xrom[] = {
  *	03	T
  *	04	I
  */
-		GSB(XROM_CHECK)
+		ENTRY
 		STOSTK(00)
 		RCL(st(I))
 		STO(4)
@@ -933,9 +929,11 @@ const s_opcode xrom[] = {
 /**************************************************************************/
 
 	LBL(XROM_CHECK)			// Set xrom flag and error if it
-		FCpF(F_XROM)		// was set already, return if not.
-			RTN
-		ERROR(ERR_XROM_NEST)
+		TST_INTMODE
+			ERROR(ERR_BAD_MODE)
+		FSpF(F_XROM)		// was set already, return if not.
+			ERROR(ERR_XROM_NEST)
+		RTN
 
 	LBL(XROM_EXIT)			// Clear xrom flag and return
 		CF(F_XROM)

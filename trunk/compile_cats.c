@@ -521,6 +521,9 @@ static s_opcode test_catalogue[] = {
 	RARGCMD(RARG_LBLP,	"LBL?")
 	NILIC(OP_ENTRYP,	"ENTRY?")
 	RARGCMD(RARG_KEY,	"KEY?")
+	NILIC(OP_TOP,		"TOP?")
+	NILIC(OP_ISINT,		"INTM?")
+	NILIC(OP_ISFLOAT,	"REALM?")
 };
 
 static s_opcode prog_catalogue[] = {
@@ -598,7 +601,6 @@ static s_opcode internal_catalogue[] = {
 	RARGCMD(RARG_INISOLVE,	"SLVI")
 	RARGCMD(RARG_SOLVESTEP,	"SLVS")
 	NILIC(OP_GSBuser,	"XEQUSR")
-	NILIC(OP_TOP,		"TOP?")
 };
 #endif
 

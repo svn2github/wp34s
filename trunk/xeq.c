@@ -1484,6 +1484,17 @@ void op_keyp(unsigned int arg, enum rarg op) {
 	fin_tst(cond);
 }
 
+/* Check which operating mode we're in -- integer or real -- they both
+ * vector through this routine.
+ */
+void check_mode(decimal64 *a, decimal64 *nul2, enum nilop op) {
+	const int intmode = is_intmode() ? 1 : 0;
+	const int desired = (op == OP_ISINT) ? 1 : 0;
+
+	fin_tst(intmode == desired);
+}
+
+
 /* Save and restore the entire stack to sequential registers */
 static int check_stack_overlap(unsigned int arg, int *nout) {
 	const int n = stack_size();
