@@ -143,7 +143,7 @@
 #define TST_TOP		NILADIC(TOP)
 #define VERS		NILADIC(VERSION)
 
-// Mondaic functions
+// Monadic functions
 #define RECIP		MONADIC(RECIP)
 #define ABS		MONADIC(ABS)
 #define SIGN		MONADIC(SIGN)
