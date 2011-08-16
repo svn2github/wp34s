@@ -156,13 +156,13 @@ my %useable_OS = ("linux"   => "linux",
                   "MSWin32" => "MSWin32",
                   "MSDOS"   => "MSDOS",
                   "cygwin"  => "cygwin",
-                  "MacOS"   => "MacOS",
+                  "Darwin"  => "Darwin",
                  );
 
 if( exists $useable_OS{$^O} ) {
   fileparse_set_fstype($useable_OS{$^O});
 } else {
-  print "// WARNING: Unrecognized O/S ($^O). Some features may not worked as expected.\n";
+  print "// WARNING: Unrecognized O/S ($^O). Some features may not work as expected.\n";
 }
 
 # Automatically extract the name of the executable that was used. Also extract
