@@ -74,7 +74,7 @@ typedef unsigned int opcode;
 typedef unsigned short int s_opcode;
 
 #ifdef COMPILE_CATALOGUES
-#define isNULL(fp) (strcmp(fp, "((void *)0)") == 0)
+#define isNULL(fp) (strcmp(fp, "NOFN") == 0)
 #else
 #define isNULL(fp) (fp == FNULL)
 #endif
@@ -291,6 +291,7 @@ struct argcmd
 	unsigned int stckreg : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
+	unsigned int stos : 1;
 	_CONST char cmd[NAME_LEN];
 };
 
@@ -318,6 +319,7 @@ struct argcmd
 	unsigned int stckreg : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
+	unsigned int stos : 1;
 	const char cmd[NAME_LEN];
 };
 extern const struct argcmd argcmds[];

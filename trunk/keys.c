@@ -1270,6 +1270,9 @@ static int arg_digit(int n) {
 static int arg_fkey(int n) {
 	const unsigned int b = State.base;
 
+	if (n == 0 && argcmds[b].stos)
+		return arg_eval(regA_idx);
+
 #ifdef ALLOW_MORE_LABELS
 	if (argcmds[b].label || (b >= RARG_SF && b <= RARG_FCF && n < 4))
 #else
@@ -1278,7 +1281,7 @@ static int arg_fkey(int n) {
 	{
 		if (State2.ind || State2.numdigit > 0)
 			return STATE_UNFINISHED;
-		if (argcmds[State.base].lim <= 100)
+		if (argcmds[b].lim <= 100)
 			return STATE_UNFINISHED;
 		return arg_eval(n + 100);
 	}

@@ -1499,7 +1499,7 @@ void check_mode(decimal64 *a, decimal64 *nul2, enum nilop op) {
 static int check_stack_overlap(unsigned int arg, int *nout) {
 	const int n = stack_size();
 
-	if (arg + n <= TOPREALREG) {
+	if (arg + n <= TOPREALREG || (arg == regA_idx && UState.stack_depth == 0)) {
 		*nout = n;
 		return 1;
 	}

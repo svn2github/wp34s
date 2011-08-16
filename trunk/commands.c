@@ -64,16 +64,18 @@ const struct _command_info command_info = {
 
 // Dummy definition for catalogue generation
 #ifdef COMPILE_CATALOGUES
-#define PTR(p)	#p
+#undef NOFN 
+#else
+#define NOFN NULL
 #endif
 
 /* Define our table of monadic functions.
  * These must be in the same order as the monadic function enum but we'll
  * validate this only if debugging is enabled.
  */
-#define NOFN	((void *)0)
 #ifdef COMPILE_CATALOGUES
-#define FUNC(name, d, c, i, fn) { PTR(d), PTR(c), PTR(i), fn },
+#undef NOFN
+#define FUNC(name, d, c, i, fn) { #d, #c, #i, fn },
 #elif DEBUG
 #define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
 #elif COMMANDS_PASS == 1
@@ -247,7 +249,7 @@ const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
  * validate this only if debugging is enabled.
  */
 #ifdef COMPILE_CATALOGUES
-#define FUNC(name, d, c, i, fn) { PTR(d), PTR(c), PTR(i), fn },
+#define FUNC(name, d, c, i, fn) { #d, #c, #i, fn },
 #elif DEBUG
 #define FUNC(name, d, c, i, fn) { name, d, c, i, fn },
 #elif COMMANDS_PASS == 1
@@ -261,7 +263,7 @@ CMDTAB const struct dyfunc_cmdtab dyfuncs_ct[ NUM_DYADIC ] = {
 #else
 const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #endif
-	FUNC(OP_POW,	&dn_power,	&cmplxPower,	&intPower,	"y\234")
+	FUNC(OP_POW,	&dn_power,		&cmplxPower,	&intPower,	"y\234")
 	FUNC(OP_ADD,	&dn_add,		&cmplxAdd,	&intAdd,	"+")
 	FUNC(OP_SUB,	&dn_subtract,		&cmplxSubtract,	&intSubtract,	"-")
 	FUNC(OP_MUL,	&dn_multiply,		&cmplxMultiply,	&intMultiply,	"\034")
@@ -328,7 +330,7 @@ const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
  * validate this only if debugging is enabled.
  */
 #ifdef COMPILE_CATALOGUES
-#define FUNC(name, d, i, fn) { PTR(d), PTR(i), fn },
+#define FUNC(name, d, i, fn) { #d, #i, fn },
 #elif DEBUG
 #define FUNC(name, d, i, fn) { name, d, i, fn },
 #elif COMMANDS_PASS == 1
@@ -359,7 +361,7 @@ const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
 
 
 #ifdef COMPILE_CATALOGUES
-#define FUNC(name, d, fn, arg)		{ PTR(d), arg, fn },
+#define FUNC(name, d, fn, arg)		{ #d, arg, fn },
 #elif DEBUG
 #define FUNC(name, d, fn, arg)		{ name, d, arg, fn },
 #elif COMMANDS_PASS == 1
@@ -569,25 +571,25 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 
 
 #ifdef COMPILE_CATALOGUES
-#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
-	{ PTR(func), limit, ind, stk, cpx, lbl, nm },
+#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl, stos)				\
+	{ #func, limit, ind, stk, cpx, lbl, stos, nm },
 #elif DEBUG
-#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
-	{ name, func, limit, ind, stk, cpx, lbl, nm },
+#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl, stos)				\
+	{ name, func, limit, ind, stk, cpx, lbl, stos, nm },
 #elif COMMANDS_PASS == 1
-#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
-	{ 0xaa55, limit, ind, stk, cpx, lbl, nm },
+#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl, stos)				\
+	{ 0xaa55, limit, ind, stk, cpx, lbl, stos, nm },
 #else
-#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl)				\
-	{ func, limit, ind, stk, cpx, lbl, nm },
+#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl, stos)				\
+	{ func, limit, ind, stk, cpx, lbl, stos, nm },
 #endif
-#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0)
-#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0)
-#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1, 0)
-#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0)
-#define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 1)
-#define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 1)
-
+#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0, 0)
+#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0, 0)
+#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1, 0, 0)
+#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0, 0)
+#define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 1, 0)
+#define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 1, 0)
+#define CMDstos(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0, 1) 
 
 #if COMMANDS_PASS == 2
 CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
@@ -625,8 +627,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstk(RARG_CRCL_DV, 	&cmdcrcl,	NUMREG-1,		"\024RCL/")
 	CMDcstk(RARG_CSWAP,	&cmdswap,	NUMREG-1,		"\024x\027")
 	CMDstk(RARG_VIEW,	&cmdview,	NUMREG,			"VIEW")
-	CMD(RARG_STOSTK,	&cmdstostk,	TOPREALREG-4+1,		"STOS")
-	CMD(RARG_RCLSTK,	&cmdrclstk,	TOPREALREG-4+1,		"RCLS")
+	CMDstos(RARG_STOSTK,	&cmdstostk,	regA_idx+1,		"STOS")
+	CMDstos(RARG_RCLSTK,	&cmdrclstk,	regA_idx+1,		"RCLS")
 	CMDnoI(RARG_ALPHA,	&cmdalpha,	0,			"")
 	CMDstk(RARG_AREG,	&alpha_reg,	NUMREG,			"\240RC#")
 	CMDstk(RARG_ASTO,	&alpha_sto,	NUMREG,			"\240STO")
@@ -756,7 +758,7 @@ const unsigned short num_argcmds = sizeof(argcmds) / sizeof(struct argcmd);
 
 #ifdef COMPILE_CATALOGUES
 #define CMD(name, func, nm)			\
-	{ PTR(func), nm },
+	{ #func, nm },
 #elif DEBUG
 #define CMD(name, func, nm)			\
 	{ name, func, nm },
