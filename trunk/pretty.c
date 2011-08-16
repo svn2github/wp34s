@@ -126,6 +126,8 @@ void dump_opcodes(FILE *f) {
 				fprintf(f, ",stack");
 			if (argcmds[cmd].cmplx)
 				fprintf(f, ",complex");
+			if (argcmds[cmd].stos)
+				fprintf(f, ",stostack");
 			fprintf(f, "\n");
 		} else {
 			p = catcmd(c, cmdname);

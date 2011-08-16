@@ -589,7 +589,7 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 #define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0, 0)
 #define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 1, 0)
 #define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 1, 0)
-#define CMDstos(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0, 1) 
+#define CMDstos(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0, 1)
 
 #if COMMANDS_PASS == 2
 CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
