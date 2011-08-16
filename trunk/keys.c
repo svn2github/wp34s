@@ -1394,7 +1394,7 @@ static int process_arg(const keycode c) {
 
 	case K_ARROW:		// arrow
 		if (!State2.dot && argcmds[base].indirectokay) {
-			State2.ind = 1 - State2.ind;
+			State2.ind = ! State2.ind;
 			if (State2.ind == 0 && !argcmds[base].stckreg)
 				State2.dot = 0;
 		}
@@ -1414,26 +1414,23 @@ static int process_arg(const keycode c) {
 	case K00:	// A
 		if (argcmds[base].stos)
 			return arg_eval(n);
-	case K02:	// C
-	case K21:	// J
-	case K23:	// L (lastX)
-		// Real and complex mode allowed
-		if (State2.dot || argcmds[base].stckreg || State2.ind)
-			return arg_eval(n);
-		goto fkey;
-
 	case K01:	// B
+	case K02:	// C
 	case K03:	// D
 	case K12:	// I (lastY)
+	case K21:	// J
 	case K22:	// K
+	case K23:	// L (lastX)
 	case K63:	// Y
-		// Only real mode allowed
-		if (State2.dot || argcmds[base].stckreg || State2.ind)
-			if (!argcmds[base].cmplx)
+		if (State2.dot || State2.ind)
+			return arg_eval(n);
+		if (argcmds[base].stckreg) {
+			if (! argcmds[base].cmplx || (n & ~1) == 0)
+				// in complex mode only even registers allowed
 				return arg_eval(n);
-	fkey:
-		if ( c <= K03 ) {
-			return arg_fkey(c - K00);		// Labels A to D
+		}
+		else if ( c <= K03 ) {
+			return arg_fkey(c - K00);		// Labels or flags A to D
 		}
 		break;
 
