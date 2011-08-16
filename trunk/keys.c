@@ -1270,9 +1270,6 @@ static int arg_digit(int n) {
 static int arg_fkey(int n) {
 	const unsigned int b = State.base;
 
-	if (n == 0 && argcmds[b].stos)
-		return arg_eval(regA_idx);
-
 #ifdef ALLOW_MORE_LABELS
 	if (argcmds[b].label || (b >= RARG_SF && b <= RARG_FCF && n < 4))
 #else
@@ -1386,7 +1383,7 @@ static int process_arg(const keycode c) {
 		return arg_eval(11 + ( c / 6 ) * 10 + c % 6);
 #endif
 	/*
-	 *  So far, we've got the digits and some special label adressing keys
+	 *  So far, we've got the digits and some special label addressing keys
 	 *  Handle the rest here.
 	 */
 	switch ((int)c) {
@@ -1415,6 +1412,8 @@ static int process_arg(const keycode c) {
 #endif
 
 	case K00:	// A
+		if (argcmds[base].stos)
+			return arg_eval(n);
 	case K02:	// C
 	case K21:	// J
 	case K23:	// L (lastX)
