@@ -1479,7 +1479,7 @@ void op_keyp(unsigned int arg, enum rarg op) {
 	if (!cond) {
 		int k = LastKey - 1;
 		LastKey = 0;
-		reg_put_int(arg, 11 + k % 6 + 10 * (k/6), 0);
+		reg_put_int(arg, keycode_to_row_column(k), 0);
 	}
 	fin_tst(cond);
 }

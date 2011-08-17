@@ -73,6 +73,15 @@ static unsigned char keycode_to_linear(const keycode c)
 }
 
 /*
+ * Mapping from the key code to a row column code ('A'=11 to '+'=75)
+ * Used in KEY? and for shorthand addressing
+ */
+unsigned char keycode_to_row_column(const int c)
+{
+	return 11 + ( c / 6 ) * 10 + c % 6;
+}
+
+/*
  *  Mapping from a key code to a digit from 0 to 9 or to a register address
  *  Bit seven is set if the key cannnot be used as a lbael shortcut
  */
@@ -1400,7 +1409,7 @@ static int process_arg(const keycode c) {
 
 	if (shorthand)
 		// row column shorthand addressing
-		return arg_eval(11 + ( c / 6 ) * 10 + c % 6);
+		return arg_eval(keycode_to_row_column(c));
 #endif
 	/*
 	 *  So far, we've got the digits and some special label addressing keys
@@ -1603,62 +1612,47 @@ fin:
 static int process_test(const keycode c) {
 	int r = State2.test;
 	int cmpx = State2.cmplx;
+	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
+	unsigned int base = (cmpx ? RARG_TEST_ZEQ : RARG_TEST_EQ) + r;
 
 	State2.test = TST_NONE;
 	State2.cmplx = 0;
-	switch (c) {
-	case K_CMPLX:
-	case K12:
-		if (cmpx)
-			break;
-		return RARG(RARG_TEST_EQ+r, regI_idx);
-	case K23:
-		return RARG((cmpx?RARG_TEST_ZEQ:RARG_TEST_EQ)+r, regL_idx);
-	case K44:
-		if (cmpx)
-			break;
-		return RARG(RARG_TEST_EQ+r, regT_idx);
-	case K63:
-		if (cmpx)
-			break;
-		return RARG(RARG_TEST_EQ+r, regY_idx);
-	case K62:
-		return RARG((cmpx?RARG_TEST_ZEQ:RARG_TEST_EQ)+r, regX_idx);
-	case K64:
-		return RARG((cmpx?RARG_TEST_ZEQ:RARG_TEST_EQ)+r, regZ_idx);
-	case K00:
-		return RARG((cmpx?RARG_TEST_ZEQ:RARG_TEST_EQ)+r, regA_idx);
-	case K01:
-		if (cmpx)
-			break;
-		return RARG(RARG_TEST_EQ+r, regB_idx);
-	case K02:
-		return RARG((cmpx?RARG_TEST_ZEQ:RARG_TEST_EQ)+r, regC_idx);
-	case K03:
-		if (cmpx)
-			break;
-		return RARG(RARG_TEST_EQ+r, regD_idx);
-
-	case K31:	case K32:	case K33:	// 7 8 9
-	case K41:	case K42:	case K43:	// 4 5 6
-			case K52:	case K53:	//   2 3
-		init_arg((cmpx?RARG_TEST_ZEQ:RARG_TEST_EQ) + r);
+	if (n != NO_REG && n >= TOPREALREG) {
+		// Lettered register
+		if (cmpx && (n & 1))
+			// Disallow odd complex registers > A
+			goto again;
+		// Return the comand with the register completed
+		return RARG(base, n);
+	}
+	else if ( n == 0 ) {
+		// Special 0
+		return OP_SPEC + (cmpx ? OP_Zeq0 : OP_Xeq0) + r;
+	}
+	else if ( n == 1 ) {
+		// Special 1
+		return OP_SPEC + (cmpx ? OP_Zeq1 : OP_Xeq1) + r;
+	}
+	else if ( n <= 9 || c == K_ARROW ) {
+		// digit 2..9
+		init_arg(base);
 		return process_arg(c);
+	}
 
-	case K61:	return OP_SPEC + (cmpx?OP_Zeq0:OP_Xeq0) + r;	// tests vs 0
-	case K51:	return OP_SPEC + (cmpx?OP_Zeq1:OP_Xeq1) + r;	// tests vs 1
-
+	switch (c) {
 	case K11:					// tests vs register
 	case K20:
-		init_arg((cmpx?RARG_TEST_ZEQ:RARG_TEST_EQ) + r);
+		init_arg(base);
 		return STATE_UNFINISHED;
 
 	case K60:
 	case K24:
 		return STATE_UNFINISHED;
+
 	default:
 		break;
 	}
+again:
 	State2.test = r;
 	State2.cmplx = cmpx;
 	return STATE_UNFINISHED;
