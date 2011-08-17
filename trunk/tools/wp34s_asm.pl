@@ -49,6 +49,7 @@ my $report_op_svn = 1;
 my $enable_pp = 0;
 my $DEFAULT_PREPROC = "wp34s_pp.pl";
 my $preproc = $DEFAULT_PREPROC;
+my $preproc_fallback_dir = "";
 
 my $pp_options = " -m 90 -cat "; # XXX Limit the max SKIP/BACK offset to 90 to reduce the
                                  #     likelyhood of a recursive LBL insertion pushing a
@@ -116,13 +117,22 @@ my $xrom_bin_mode = 0;
 # There are at least 3 groups of named instruction offsets; the 112 group (XYZTABCDLIJK), the 116 group
 # (ABCDFGHIJKLPTWYZ), and the 104 group (ABCD). We have to extract the opcode's numeric offset based on
 # the op-type. The value of max will give us this (116,112,104,100,etc.). Note that for all values of
-# max<=100, any group is valid since these are purely numeric.
+# max<=100, any group is valid since these are purely numeric. The "stostack" group comes from the
+# offset-112 group. This tag limits the offset to only 00-95 and A.
 my @reg_offset_112 = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I", "J", "K");
 my $MAX_INDIRECT_112 = 112;
+
 my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D");
 my $MAX_INDIRECT_104 = 104;
+
+# XXX Not sure if this is used anymore but it doesn't hurt to retain for now.
 my @label_116 = (0 .. 99, "A", "B", "C", "D", "F", "G", "H", "I", "J", "K", "L", "P", "T", "W", "Y", "Z");
 my $MAX_LABEL = 116;
+
+# This is for the 'stostack' group. They use the 112 group table.
+# XXX This is more than a bit unclean in that there is an arbitrary gap
+#     in the sequence. This will have to be manually patched if things change.
+my $MAX_STOSTACK_NUM = 95;
 
 # The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
@@ -157,11 +167,16 @@ my %useable_OS = ("linux"   => "linux",
                   "MSDOS"   => "MSDOS",
                   "cygwin"  => "cygwin",
                   "Darwin"  => "Darwin",
+                  "darwin"  => "darwin",
+                  "MacOS"   => "MacOS",
                  );
 
 if( exists $useable_OS{$^O} ) {
   fileparse_set_fstype($useable_OS{$^O});
 } else {
+  # If we get here, the set file system type function has NOT been run and we may not
+  # be able to locate "relative" file such as the standard external opcode table or the
+  # PP script. If worst comes to worse, we can specify both of these from the command line.
   print "// WARNING: Unrecognized O/S ($^O). Some features may not work as expected.\n";
 }
 
@@ -886,6 +901,8 @@ sub write_escaped_alpha_table_to_file {
 #
 # 'stack' is present if a stack register is allowed as an argument.
 #
+# 'stostack' is present if the registers are limited to 00-95 and A.
+#
 # 'complex' is present if the argument specifies a complex pair of registers. This
 # basically restricts numeric registers to be 0 - 98 instead of 0 - 99 and it restricts
 # lettered registers to be X, Z, A, C, L and J.
@@ -899,6 +916,7 @@ sub parse_arg_type {
   my $direct_max = 0;
   my $indirect_modifier = 0;
   my $stack_modifier = 0;
+  my $stostack_modifier = 0;
   my $complex_modifier = 0;
 
   if( $arg =~ /(\S+)\s+/ ) {
@@ -914,30 +932,22 @@ sub parse_arg_type {
   }
 
   $indirect_modifier = 1 if $arg =~ /indirect/;
-  $stack_modifier    = 1 if $arg =~ /stack/;
+  $stack_modifier    = 1 if $arg =~ /[^o]stack/; # Eliminate the stostack from any matches here.
+  $stostack_modifier = 1 if $arg =~ /stostack/;
   $complex_modifier  = 1 if $arg =~ /complex/;
 
   # Load the direct argument variants
   if( $direct_max ) {
-    for my $offset (0 .. ($direct_max-1)) {
-      my ($reg_str);
-      # Find out which instruction offset group we are to use.
-      if( $direct_max == $MAX_LABEL ) {
-        $reg_str = $label_116[$offset];
-      } elsif( $direct_max > $MAX_INDIRECT_104 ) {
-        $reg_str = $reg_offset_112[$offset];
-      } else {
-        $reg_str = $reg_offset_104[$offset];
+    if( $stostack_modifier ) {
+      # XXX This is more than a bit unclean in that there is an arbitrary gap
+      #     in the sequence. This will have to be manually patched if things change.
+      for my $offset (0 .. $MAX_STOSTACK_NUM, ($direct_max-1)) {
+        parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, $stostack_modifier);
       }
-      # "Correct" the format if it is in the numeric range [0-99]. However, a few of the instructions
-      # are limited to a single digit. Detect these and format accordingly.
-      if( not exists $table_exception_format{$base_mnemonic} ) {
-        $reg_str = sprintf("%02d", $offset) if $offset < 100;
-      } else {
-        $reg_str = sprintf($table_exception_format{$base_mnemonic}, $offset) if $offset < 100;
+    } else {
+      for my $offset (0 .. ($direct_max - 1)) {
+        parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, $stostack_modifier);
       }
-      my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $offset, "$base_mnemonic ", $reg_str);
-      load_table_entry($hex_str, $mnemonic, $line_num);
     }
   }
 
@@ -956,6 +966,43 @@ sub parse_arg_type {
 
   return;
 } # parse_arg_type
+
+
+#######################################################################
+#
+#
+#
+sub parse_arg_type_dir_max {
+  my $direct_max = shift;
+  my $offset = shift;
+  my $base_mnemonic = shift;
+  my $base_hex_str = shift;
+  my $line_num = shift;
+  my $stostack_modifier = shift;
+  my ($reg_str);
+
+  # Find out which instruction offset group we are to use.
+  if( $stostack_modifier ) {
+    $reg_str = $reg_offset_112[$offset];
+  } elsif( $direct_max == $MAX_LABEL ) {
+    $reg_str = $label_116[$offset];
+  } elsif( $direct_max > $MAX_INDIRECT_104 ) {
+    $reg_str = $reg_offset_112[$offset];
+  } else {
+    $reg_str = $reg_offset_104[$offset];
+  }
+
+  # "Correct" the format if it is in the numeric range [0-99]. However, a few of the instructions
+  # are limited to a single digit. Detect these and format accordingly.
+  if( not exists $table_exception_format{$base_mnemonic} ) {
+    $reg_str = sprintf("%02d", $offset) if $offset < 100;
+  } else {
+    $reg_str = sprintf($table_exception_format{$base_mnemonic}, $offset) if $offset < 100;
+  }
+  my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $offset, "$base_mnemonic ", $reg_str);
+  load_table_entry($hex_str, $mnemonic, $line_num);
+  return;
+} # parse_arg_type_dir_max
 
 
 #######################################################################
@@ -1242,15 +1289,26 @@ sub run_pp {
   close TMP;
 
   # See if we can locate the preprocessor.
+  # Order of precedence is:
+  # 1) Specified dir from command line.
+  # 2) local direct
+  # 3) where the main script is running from
   print "// DEBUG: Base name of the preprocessor being searched for: '${preproc}'\n" if $debug;
-  if( -e "${preproc}" ) {
+  if( $preproc_fallback_dir and -e "${preproc_fallback_dir}${preproc}" ) {
+    $pp_location = "${preproc_fallback_dir}${preproc}";
+    $cmd = "${preproc_fallback_dir}${preproc} $pp_options $tmp_file"
+  } elsif( -e "${preproc}" ) {
     $pp_location = "${preproc}";
     $cmd = "${preproc} $pp_options $tmp_file"
   } elsif( -e "${script_dir}${preproc}" ) {
     $pp_location = "${script_dir}${preproc}";
     $cmd = "${script_dir}${preproc} $pp_options $tmp_file";
   } else {
-    die "ERROR: Cannot locate the assembly preprocessor in '${preproc}' or '${script_dir}${preproc}'\n";
+    my $locations = "'${preproc}' or '${script_dir}${preproc}'";
+    if( $preproc_fallback_dir ) {
+      $locations .= " or '${preproc_fallback_dir}${preproc}'";
+    }
+    die "ERROR: Cannot locate the assembly preprocessor in $locations\n";
   }
 
   print "// Running WP 34S preprocessor from: $pp_location\n";
@@ -1433,6 +1491,13 @@ sub get_options {
 
     elsif( $arg eq "-pp_script" ) {
       $preproc = shift(@ARGV);
+    }
+
+    elsif( $arg eq "-pp_dir" ) {
+      $preproc_fallback_dir = shift(@ARGV);
+      unless( $preproc_fallback_dir =~ m</$> ) {
+        $preproc_fallback_dir .= "/";
+      }
     }
 
     elsif( $arg eq "-nc" ) {
@@ -1704,6 +1769,8 @@ __DATA__
 0x019c  cmd TOP?
 0x019d  cmd BASE?
 0x019e  cmd SMODE?
+0x019f  cmd INTM?
+0x01a0  cmd REALM?
 0x0200  cmd FP
 0x0201  cmd FLOOR
 0x0202  cmd CEIL
@@ -2138,8 +2205,8 @@ __DATA__
 0x3c00  arg [cmplx]RCL/ max=111,indirect,stack,complex
 0x3d00  arg [cmplx]x[<->] max=111,indirect,stack,complex
 0x3e00  arg VIEW  max=112,indirect,stack
-0x3f00  arg STOS  max=97,indirect
-0x4000  arg RCLS  max=97,indirect
+0x3f00  arg STOS  max=105,indirect,stostack
+0x4000  arg RCLS  max=105,indirect,stostack
 0x4101  cmd [alpha] [x-bar]
 0x4102  cmd [alpha] [y-bar]
 0x4103  cmd [alpha] [sqrt]
