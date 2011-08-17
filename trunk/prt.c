@@ -163,7 +163,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 	} else if (cmd >= num_argcmds || argcmds[cmd].cmd == NULL)
 		return "???";
 	else if (!ind) {
-		if (arg >= argcmds[cmd].lim)
+		if (arg >= argcmds[cmd].lim || (argcmds[cmd].stos && arg > 96 && arg != regA_idx))
 			return "???";
 		if (cmd == RARG_CONST) {
 			//return sncopy(instr, cnsts[arg].cname, CONST_NAMELEN);

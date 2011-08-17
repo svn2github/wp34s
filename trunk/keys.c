@@ -1227,14 +1227,29 @@ static int process_alpha(const keycode c) {
 }
 
 /* Code to handle all commands with arguments */
-static int arg_eval(unsigned int dv) {
+static int arg_eval(unsigned int val) {
 	const unsigned int base = State.base;
-	const int r = RARG(base, (State2.ind?RARG_IND:0) + dv);
+	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val);
+	const unsigned int ssize = (! UState.stack_depth || ! State2.runmode ) ? 4 : 8;
+
+	if (! State2.ind) {
+		/*
+		 *  Central argument checking for some commands
+		 */
+		if (argcmds[base].cmplx && (val > TOPREALREG - 2 && (val & 1)))
+			// Disallow odd complex register > 98
+			return STATE_UNFINISHED;
+
+		if (argcmds[base].stos && (val > TOPREALREG - ssize && (val != regA_idx || ssize > 4)))
+			// Avoid stack clash for STOS/RCLS
+			return STATE_UNFINISHED;
+	}
+	// Build op-code
 	init_arg(0);
 	State2.rarg = 0;
 #ifdef INCLUDE_MULTI_DELETE
 	if (base == RARG_DELPROG) {
-		del_till_label(dv);
+		del_till_label(val);
 		return STATE_UNFINISHED;
 	}
 #endif
@@ -1246,10 +1261,8 @@ static int arg_digit(int n) {
 	const int mx = State2.ind ? NUMREG : argcmds[base].lim;
 	const unsigned int val = State2.digval * 10 + n;
 
-	if (val == TOPREALREG-1 && argcmds[base].cmplx)
-		return STATE_UNFINISHED;
 	if (State2.numdigit == 0) {
-		if (mx < 10) {
+		if (mx <= 10) {
 			if (n < mx)
 				return arg_eval(n);
 			return STATE_UNFINISHED;
@@ -1262,8 +1275,14 @@ static int arg_digit(int n) {
 	}
 	State2.digval = val;
 	State2.numdigit++;
-	if (State2.numdigit == 2)
-		return arg_eval(val);
+	if (State2.numdigit == 2) {
+		int result = arg_eval(val);
+		if ( result == STATE_UNFINISHED ) {
+			State2.numdigit = 1;
+			State2.digval /= 10;
+		}
+		return result;
+	}
 	return STATE_UNFINISHED;
 }
 
@@ -1326,6 +1345,7 @@ static int process_arg_dot(const unsigned int base) {
 static int process_arg(const keycode c) {
 	unsigned int base = State.base;
 	unsigned int n = keycode_to_digit_or_register(c);
+	int stack_reg = argcmds[base].stckreg || State2.ind;
 #ifndef ALLOW_MORE_LABELS
 	const enum shifts old_shift = set_shift(SHIFT_N);
 	int label_addressing = argcmds[base].label && ! State2.ind && ! State2.dot;
@@ -1395,7 +1415,7 @@ static int process_arg(const keycode c) {
 	case K_ARROW:		// arrow
 		if (!State2.dot && argcmds[base].indirectokay) {
 			State2.ind = ! State2.ind;
-			if (State2.ind == 0 && !argcmds[base].stckreg)
+			if (! stack_reg)
 				State2.dot = 0;
 		}
 		break;
@@ -1412,8 +1432,6 @@ static int process_arg(const keycode c) {
 #endif
 
 	case K00:	// A
-		if (argcmds[base].stos)
-			return arg_eval(n);
 	case K01:	// B
 	case K02:	// C
 	case K03:	// D
@@ -1422,13 +1440,8 @@ static int process_arg(const keycode c) {
 	case K22:	// K
 	case K23:	// L (lastX)
 	case K63:	// Y
-		if (State2.dot || State2.ind)
+		if (State2.dot || stack_reg)
 			return arg_eval(n);
-		if (argcmds[base].stckreg) {
-			if (! argcmds[base].cmplx || (n & ~1) == 0)
-				// in complex mode only even registers allowed
-				return arg_eval(n);
-		}
 		else if ( c <= K03 ) {
 			return arg_fkey(c - K00);		// Labels or flags A to D
 		}
@@ -1439,8 +1452,7 @@ static int process_arg(const keycode c) {
 
 	/* STO and RCL can take an arithmetic argument */
 	case K64:		// Z register
-		if (State2.dot || ( ! arg_storcl(RARG_STO_PL - RARG_STO, 1) &&
-					(argcmds[base].stckreg || State2.ind)))
+		if (State2.dot || ( ! arg_storcl(RARG_STO_PL - RARG_STO, 1) && stack_reg))
 			return arg_eval(n);
 		break;
 
@@ -1454,10 +1466,8 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K44:		// T register
-		if (State2.dot || ( ! arg_storcl(RARG_STO_MU - RARG_STO, 1) &&
-					(argcmds[base].stckreg || State2.ind)))
-			if (!argcmds[base].cmplx)
-				return arg_eval(n);
+		if (State2.dot || ( ! arg_storcl(RARG_STO_MU - RARG_STO, 1) && stack_reg))
+			return arg_eval(n);
 		break;
 
 	case K34:
@@ -1499,7 +1509,7 @@ static int process_arg(const keycode c) {
 				State2.dot = 1;
 		} else if (State2.numdigit > 0)
 			return arg_eval(State2.digval);
-		else if (argcmds[base].stckreg || State2.ind)
+		else if (stack_reg)
 			State2.dot = 1 - State2.dot;
 		break;
 
