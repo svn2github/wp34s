@@ -86,7 +86,6 @@ static const char *prt_tst(const char *r, const enum tst_op op, char *instr, int
 }
 
 static const char *prt_specials(const unsigned int opm, char *instr) {
-	char buf[16];
 
 	switch (opm) {
 	case OP_0:	case OP_1:	case OP_2:
@@ -119,7 +118,6 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 		return prt_tst("0", (enum tst_op)(opm - OP_Xeq0), instr, 0);
 	case OP_Zeq0:	case OP_Zne0:
 	//case OP_Zapx0:
-		xset(buf, '\0', sizeof(buf));
 		return prt_tst("0", (enum tst_op)(opm - OP_Zeq0), instr, 1);
 
 	case OP_Xeq1:	case OP_Xlt1:	case OP_Xle1:
@@ -128,7 +126,7 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 		return prt_tst("1", (enum tst_op)(opm - OP_Xeq1), instr, 0);
 	case OP_Zeq1:	case OP_Zne1:
 	//case OP_Zapx1:
-		xset(buf, '\0', sizeof(buf));
+		return prt_tst("1", (enum tst_op)(opm - OP_Zeq1), instr, 1);
 	}
 	return "???";
 }

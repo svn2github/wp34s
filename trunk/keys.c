@@ -815,91 +815,84 @@ static int process_normal_cmplx(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
-static int process_f_shifted_cmplx(const keycode c) {
-	set_shift(SHIFT_N);
+
+static int process_fg_shifted_cmplx(const keycode c) {
+
+	static const unsigned short int op_map[][2] = {
+		// Row 1
+		{ 1,                   0                   }, // HYP
+		{ OP_CMON | OP_SIN,    OP_CMON | OP_ASIN   },
+		{ OP_CMON | OP_COS,    OP_CMON | OP_ACOS   },
+		{ OP_CMON | OP_TAN,    OP_CMON | OP_ATAN   },
+		{ OP_NIL | OP_P2R,     OP_NIL | OP_R2P     },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    }, // CPX
+		// Row 2
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		// Row 3
+		{ STATE_UNFINISHED,    OP_NIL | OP_CFILL   }, // ENTER
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		// Row 4
+		{ OP_CMON | OP_EXP,    OP_CMON | OP_LN     },
+		{ OP_CMON | OP_10POWX, OP_CMON | OP_LOG    },
+		{ OP_CMON | OP_2POWX,  OP_CMON | OP_LG2    },
+		{ OP_CDYA | OP_POW,    OP_CDYA | OP_LOGXY  },
+		{ OP_CMON | OP_RECIP,  OP_CDYA | OP_PARAL  },
+		// Row 5
+		{ OP_CDYA | OP_COMB,   OP_CDYA | OP_PERM   },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ OP_CMON | OP_SQRT,   OP_CMON | OP_SQR    },
+		// Row 6
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ TST_EQ,              TST_NE              }, // tests
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		// Row 7
+		{ STATE_UNFINISHED,    OP_NIL | OP_OFF     },
+		{ OP_CMON | OP_ABS,    OP_CMON | OP_RND    },
+		{ OP_CMON | OP_TRUNC,  OP_CMON | OP_FRAC   },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+	};
+
+	enum shifts old_shift = set_shift(SHIFT_N);
+	int lc = keycode_to_linear(c);
+	int op = op_map[lc][old_shift == SHIFT_G];
 	State2.cmplx = 0;
+
 	switch (c) {
 	case K00:
 		State2.hyp = 1;
-		State2.dot = 1;
+		State2.dot = op;
 		State2.cmplx = 1;
+		return STATE_UNFINISHED;
+
+	case K_CMPLX:
+		set_shift(old_shift);
 		break;
-	case K01:	return OP_CMON | OP_SIN;
-	case K02:	return OP_CMON | OP_COS;
-	case K03:	return OP_CMON | OP_TAN;
-	case K04:	return OP_NIL | OP_P2R;
-	case K_CMPLX:	set_shift(SHIFT_F);	break;
-
-	case K30:	return OP_CMON | OP_EXP;
-	case K31:	return OP_CMON | OP_10POWX;
-	case K32:	return OP_CMON | OP_2POWX;
-	case K33:	return OP_CDYA | OP_POW;
-	case K34:	return OP_CMON | OP_RECIP;
-
-	case K40:	return OP_CDYA | OP_COMB;
-	case K44:	return OP_CMON | OP_SQRT;
 
 	case K51:
 		State2.cmplx = 1;
-		State2.test = TST_EQ;
-		break;
+		State2.test = op;
+		return STATE_UNFINISHED;
 
 	case K60:
 		init_state();
 		break;
 
-	case K61:	return OP_CMON | OP_ABS;
-	case K62:	return OP_CMON | OP_TRUNC;
-
 	default:
 		break;
 	}
-	return STATE_UNFINISHED;
+	return op;
 }
 
-static int process_g_shifted_cmplx(const keycode c) {
-	set_shift(SHIFT_N);
-	State2.cmplx = 0;
-	switch (c) {
-	case K00:
-		State2.hyp = 1;
-		State2.dot = 0;
-		State2.cmplx = 1;
-		break;
-	case K01:	return OP_CMON | OP_ASIN;
-	case K02:	return OP_CMON | OP_ACOS;
-	case K03:	return OP_CMON | OP_ATAN;
-	case K04:	return OP_NIL | OP_R2P;
-	case K_CMPLX:	set_shift(SHIFT_G);	break;
-
-	case K20:	return OP_NIL | OP_CFILL;
-
-	case K30:	return OP_CMON | OP_LN;
-	case K31:	return OP_CMON | OP_LOG;
-	case K32:	return OP_CMON | OP_LG2;
-	case K33:	return OP_CDYA | OP_LOGXY;
-	case K34:	return OP_CDYA | OP_PARAL;
-
-	case K40:	return OP_CDYA | OP_PERM;
-	case K44:	return OP_CMON | OP_SQR;
-
-	case K51:
-		State2.cmplx = 1;
-		State2.test = TST_NE;
-		break;
-
-	case K60:
-		init_state();
-		break;
-
-	case K61:	return OP_CMON | OP_RND;
-	case K62:	return OP_CMON | OP_FRAC;
-
-	default:
-		break;
-	}
-	return STATE_UNFINISHED;
-}
 
 static int process_h_shifted_cmplx(const keycode c) {
 	set_shift(SHIFT_N);
@@ -911,6 +904,11 @@ static int process_h_shifted_cmplx(const keycode c) {
 	case K22:	return OP_CMON | OP_CCONJ;
 
 	case K40:	return OP_CMON | OP_FACT;	// z!
+
+	case K51:
+		State2.cmplx = 1;
+		State2.test = TST_APX;
+		return STATE_UNFINISHED;
 
 	case K53:	return CONST_CMPLX(OP_PI);
 
@@ -931,16 +929,16 @@ static int process_h_shifted_cmplx(const keycode c) {
 static int process_hyp(const keycode c) {
 	const int cmplx = State2.cmplx;
 	const int dot = State2.dot;
-	const opcode x = cmplx?OP_CMON:OP_MON;
+	const opcode x = cmplx ? OP_CMON : OP_MON;
 
 	State2.hyp = 0;
 	State2.cmplx = 0;
 	State2.dot = 0;
 
 	switch (c) {
-	case K01:	return x + (dot?OP_SINH:OP_ASINH);
-	case K02:	return x + (dot?OP_COSH:OP_ACOSH);
-	case K03:	return x + (dot?OP_TANH:OP_ATANH);
+	case K01:	return x + (dot ? OP_SINH : OP_ASINH);
+	case K02:	return x + (dot ? OP_COSH : OP_ACOSH);
+	case K03:	return x + (dot ? OP_TANH : OP_ATANH);
 
 	case K60:
 	case K24:
@@ -2284,10 +2282,8 @@ static int process(const int c) {
 		return process_alpha((const keycode)c);
 
 	if (State2.cmplx) {
-		if (s == SHIFT_F)
-			return process_f_shifted_cmplx((const keycode)c);
-		if (s == SHIFT_G)
-			return process_g_shifted_cmplx((const keycode)c);
+		if (s == SHIFT_F || s == SHIFT_G)
+			return process_fg_shifted_cmplx((const keycode)c);
 		if (s == SHIFT_H)
 			return process_h_shifted_cmplx((const keycode)c);
 		return process_normal_cmplx((const keycode)c);
