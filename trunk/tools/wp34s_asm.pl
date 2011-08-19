@@ -132,7 +132,7 @@ my $MAX_LABEL = 116;
 # This is for the 'stostack' group. They use the 112 group table.
 # XXX This is more than a bit unclean in that there is an arbitrary gap
 #     in the sequence. This will have to be manually patched if things change.
-my $MAX_STOSTACK_NUM = 95;
+my $MAX_STOSTACK_NUM = 96;
 
 # The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
@@ -1610,6 +1610,8 @@ __DATA__
 0x0024  cmd x[>=]1?
 0x0025  cmd [cmplx]x=0?
 0x0026  cmd [cmplx]x[!=]0?
+0x0028  cmd [cmplx]x=1?
+0x0029  cmd [cmplx]x[!=]1?
 0x0100  cmd NOP
 0x0101  cmd VERS
 0x0102  cmd OFF
