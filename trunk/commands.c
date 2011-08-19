@@ -742,6 +742,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDlblnI(RARG_DELPROG,	NOFN,		NUMLBL,			"DEL\276")
 #endif
 	CMD(RARG_SENDL,		&send_library,	NUMBER_OF_FLASH_REGIONS-1,	"SENDL")
+	CMDstk(RARG_PUTKEY,	&op_putkey,	NUMREG,			"PUTK")
+	CMDstk(RARG_KEYTYPE,	&op_keytype,	NUMREG,			"KTP?")
 
 #undef CMDlbl
 #undef CMDlblnI

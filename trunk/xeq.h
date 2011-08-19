@@ -780,6 +780,8 @@ enum rarg {
 	RARG_DELPROG,
 #endif
 	RARG_SENDL,
+	RARG_PUTKEY,
+	RARG_KEYTYPE,
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -1004,7 +1006,7 @@ extern void put_reg_n(int, const decNumber *);
 extern void swap_reg(decimal64 *, decimal64 *);
 
 extern void reg_put_int(int, unsigned long long int, int);
-//extern unsigned long long int reg_get_int(int, int *);
+extern unsigned long long int reg_get_int(int, int *);
 
 extern void put_int(unsigned long long int, int, decimal64 *);
 extern unsigned long long int get_int(const decimal64 *, int *);
@@ -1038,6 +1040,8 @@ extern void do_conv(decNumber *, unsigned int, const decNumber *);
 
 extern unsigned char remap_chars(unsigned char);
 extern unsigned char keycode_to_row_column(const int c);
+int row_column_to_keycode(const int c);
+
 
 /* Control program execution */
 extern void xeq_sst(char *tracebuf);
@@ -1142,6 +1146,8 @@ extern void op_shift_digit(unsigned int n, enum rarg op);
 extern void op_roundingmode(decimal64 *, decimal64 *, enum nilop);
 extern void rarg_roundingmode(unsigned int arg, enum rarg op);
 extern void op_setspeed(decimal64 *, decimal64 *, enum nilop);
+extern void op_putkey(unsigned int arg, enum rarg op);
+extern void op_keytype(unsigned int arg, enum rarg op);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x);
 extern decNumber *convF2C(decNumber *r, const decNumber *x);

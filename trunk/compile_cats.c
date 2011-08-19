@@ -521,9 +521,11 @@ static s_opcode test_catalogue[] = {
 	RARGCMD(RARG_LBLP,	"LBL?")
 	NILIC(OP_ENTRYP,	"ENTRY?")
 	RARGCMD(RARG_KEY,	"KEY?")
+	RARGCMD(RARG_KEYTYPE,	"KTP?")
 	NILIC(OP_TOP,		"TOP?")
 	NILIC(OP_ISINT,		"INTM?")
 	NILIC(OP_ISFLOAT,	"REALM?")
+
 };
 
 static s_opcode prog_catalogue[] = {
@@ -593,6 +595,7 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_BACKUP,	"SAVE")
 	NILIC(OP_RESTORE,	"LOAD")
 	RARGCMD(RARG_FLRCL, 	"RCF")
+	RARGCMD(RARG_PUTKEY,	"PUTK")
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE

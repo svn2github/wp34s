@@ -82,6 +82,20 @@ unsigned char keycode_to_row_column(const int c)
 }
 
 /*
+ * Mapping from a row column code ('A'=11 to '+'=75) to the key code
+ * Used in PUTK and KTYPE.
+ */
+int row_column_to_keycode(const int c)
+{
+	int row = c / 10 - 1;
+	int col = c % 10 - 1;
+
+	if (row < 0 || row > 6 || col > 5 - (row >= 2))
+		return -1;
+	return row * 6 + col;
+}
+
+/*
  *  Mapping from a key code to a digit from 0 to 9 or to a register address
  *  Bit seven is set if the key cannnot be used as a lbael shortcut
  */

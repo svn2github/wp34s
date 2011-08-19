@@ -860,9 +860,9 @@ void reg_put_int(int n, unsigned long long int val, int sgn) {
 	put_int(val, sgn, get_reg_n(n));
 }
 
-//unsigned long long int reg_get_int(int n, int *sgn) {
-//	return get_int(get_reg_n(n), sgn);
-//}
+unsigned long long int reg_get_int(int n, int *sgn) {
+	return get_int(get_reg_n(n), sgn);
+}
 
 
 /* Put an integer into the specified real
@@ -1479,10 +1479,66 @@ void op_keyp(unsigned int arg, enum rarg op) {
 	if (!cond) {
 		int k = LastKey - 1;
 		LastKey = 0;
+		if ( arg == regX_idx )
+			lift_if_enabled();
 		reg_put_int(arg, keycode_to_row_column(k), 0);
 	}
 	fin_tst(cond);
 }
+
+/*
+ *  Get a key code from a register and translate it from row/colum to internal
+ *  Check for valid arguments
+ */
+static int get_keycode_from_reg(unsigned int n)
+{
+	int sgn;
+	const int c = row_column_to_keycode((int) reg_get_int((int) n, &sgn));
+	if ( c < 0 )
+		err(ERR_RANGE);
+	return c;
+}
+
+/*
+ *  Take a row/column key code and feed it to the keyboard buffer
+ *  This stops program execution first to make sure, the key is not
+ *  read in by KEY? again.
+ */
+void op_putkey(unsigned int arg, enum rarg op)
+{
+	const int c = get_keycode_from_reg(arg);
+
+	if (c >= 0) {
+		set_running_off();
+		put_key(c);
+	}
+}
+
+/*
+ *  Return the type of the keycode in register n
+ *  returns 0-9 for digits, 10 for ., +/-, EEX, 11 for f,g,h, 12 for all other keys.
+ *  Invalid codes produce an error.
+ */
+void op_keytype(unsigned int arg, enum rarg op)
+{
+	const int c = get_keycode_from_reg(arg);
+	if ( c >= 0 ) {
+		const char types[] = {
+			12, 12, 12, 12, 12, 12,
+			12, 12, 12, 11, 11, 11,
+			12, 12, 10, 10, 12, 12,
+			12,  7,  8,  9, 12, 12,
+			12,  4,  5,  6, 12, 12,
+			12,  1,  2,  3, 12, 12,
+			12,  0, 10, 12, 12 };
+		if ( arg != regX_idx )
+			lift_if_enabled();
+		else
+			setlastX();
+		put_int(types[c], 0, &regX);
+	}
+}
+
 
 /* Check which operating mode we're in -- integer or real -- they both
  * vector through this routine.
