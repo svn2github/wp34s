@@ -711,6 +711,8 @@ static void show_x(char *x) {
 	int i, j = 0;
 	*find_char(x, '\0') = '0';
 
+#if 0
+	// 1 + 12 + 3 version
 	for (i=1; i<=12; i++) {
 		set_dig_s(j, x[i], NULL);
 		j += SEGS_PER_DIGIT;
@@ -720,6 +722,14 @@ static void show_x(char *x) {
 		j += SEGS_PER_EXP_DIGIT;
 	}
 	x[1] = '\0';
+#else
+	// 4 + 12 version
+	for (i=4; i<=15; i++) {
+		set_dig_s(j, x[i], NULL);
+		j += SEGS_PER_DIGIT;
+	}
+	x[4] = '\0';
+#endif
 	set_status(x);
 }
 
