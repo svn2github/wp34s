@@ -32,6 +32,9 @@
 
 #ifndef TINY_BUILD
 
+// Include the Mantissa and exponent function
+#define INCLUDE_MANTISSA
+
 // Include Rieman's Zeta function
 // The complex version isn't accurate for large imaginary numbers
 // and the series approximations I've located thus far converge too slowly.

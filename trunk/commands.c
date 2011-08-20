@@ -237,6 +237,10 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #ifdef INCLUDE_USER_IO
 	FUNC(OP_RECV1,	&decRecv,		NOFN,		&intRecv,	"RECV1")
 #endif
+#ifdef INCLUDE_MANTISSA
+	FUNC(OP_MANTISSA, &decNumberMantissa,	NOFN,		NOFN,		"MANT")
+	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT")
+#endif
 #undef FUNC
 };
 #if COMMANDS_PASS != 2

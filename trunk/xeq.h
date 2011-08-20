@@ -588,6 +588,9 @@ enum {
 #ifdef INCLUDE_USER_IO
 	OP_RECV1,
 #endif
+#ifdef INCLUDE_MANTISSA
+	OP_MANTISSA, OP_EXPONENT,
+#endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
     

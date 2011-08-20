@@ -153,6 +153,10 @@ static s_opcode program_xfcn[] = {
 	DYA(OP_HERMITE_H,     "H\275")
 	NILIC(OP_VOLTAGE,     "BATT")
 	RARGCMD(RARG_FLRCL, 	"RCF")
+#ifdef INCLUDE_MANTISSA
+	MON(OP_MANTISSA,	"MANT")
+	MON(OP_EXPONENT,	"EXPT")
+#endif
 
 
 	/* Integer mode commands */
@@ -300,6 +304,10 @@ static s_opcode catalogue[] = {
 	DYA(OP_HERMITE_H,     "H\275")
 	NILIC(OP_VOLTAGE,     "BATT")
 	RARGCMD(RARG_FLRCL, 	"RCF")
+#ifdef INCLUDE_MANTISSA
+	MON(OP_MANTISSA,	"MANT")
+	MON(OP_EXPONENT,	"EXPT")
+#endif
 };
 
 static s_opcode cplx_catalogue[] = {

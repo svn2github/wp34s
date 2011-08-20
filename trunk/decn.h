@@ -60,6 +60,9 @@ extern void decNumberPI(decNumber *pi);
 extern void decNumberPIon2(decNumber *pion2);
 extern int is_int(const decNumber *);
 
+extern decNumber *decNumberMantissa(decNumber *r, const decNumber *a);
+extern decNumber *decNumberExponent(decNumber *r, const decNumber *a);
+
 extern int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol);
 extern int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol);
 

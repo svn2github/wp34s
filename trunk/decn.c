@@ -290,6 +290,32 @@ int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol)
 }
 
 
+/* Mantissa of a number
+ */
+#ifdef INCLUDE_MANTISSA
+decNumber *decNumberMantissa(decNumber *r, const decNumber *x) {
+	if (decNumberIsSpecial(x))
+		return set_NaN(r);
+	if (decNumberIsZero(x))
+		return decNumberCopy(r, x);
+	decNumberNormalize(r, x, &Ctx);
+	r->exponent = -15;
+	return r;
+}
+
+/* Exponenet of a number
+ */
+decNumber *decNumberExponent(decNumber *r, const decNumber *x) {
+	if (decNumberIsSpecial(x))
+		return set_NaN(r);
+	if (decNumberIsZero(x))
+		return decNumberZero(r);
+	decNumberNormalize(r, x, &Ctx);
+	int_to_dn(r, r->exponent + 15);
+	return r;
+}
+#endif
+
 /* Multiply Add: x + y * z
  */
 #ifdef INCLUDE_MULADD
