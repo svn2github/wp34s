@@ -776,6 +776,7 @@ static int process_h_shifted(const keycode c) {
 		break;
 
 	case K60:
+		process_cmdline_set_lift();
 		set_smode(SDISP_SHOW);
 		break;
 

@@ -711,7 +711,10 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 
 static void show_x(char *x) {
 	int i, j = 0;
-	*find_char(x, '\0') = '0';
+	char *p = find_char(x, '\0');
+
+	for (i=0; i<16; i++)
+		p[i] = '0';
 
 #if 0
 	// 1 + 12 + 3 version
