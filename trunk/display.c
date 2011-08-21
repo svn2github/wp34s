@@ -436,6 +436,8 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		if (int_mode() == MODE_2COMP && sign == 1 && v == 0)
 			v = value;
 		if (v == 0) {
+			if (sign)
+				set_dig_s(dig-SEGS_PER_DIGIT, '-', res);
 			set_dig_s(dig, '0', res);
 			return;
 		} else
