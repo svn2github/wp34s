@@ -36,6 +36,9 @@ extern void cmplxPower(decNumber *rx, decNumber *ry,
 extern void cmplxLogxy(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d);
+extern void cmplxXRoot(decNumber *rx, decNumber *ry,
+		const decNumber *a, const decNumber *b,
+		const decNumber *c, const decNumber *d);
 
 /* And some shortcuts to the above for one argument real */
 #if 0

@@ -63,6 +63,9 @@ extern int is_int(const decNumber *);
 extern decNumber *decNumberMantissa(decNumber *r, const decNumber *a);
 extern decNumber *decNumberExponent(decNumber *r, const decNumber *a);
 
+extern decNumber *decNumberXRoot(decNumber *r, const decNumber *a, const decNumber *b);
+extern long long int intXRoot(long long int y, long long int x);
+
 extern int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol);
 extern int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol);
 

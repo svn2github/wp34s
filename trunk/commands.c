@@ -323,6 +323,9 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_LAGUERRE,	&decNumberPolyLn,	NOFN,	NOFN,		"L\275")
 	FUNC(OP_HERMITE_HE,	&decNumberPolyHEn,	NOFN,	NOFN,		"H\275")
 	FUNC(OP_HERMITE_H,	&decNumberPolyHn,	NOFN,	NOFN,		"H\275\276")
+#ifdef INCLUDE_XROOT
+	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
+#endif
 #undef FUNC
 };
 #if COMMANDS_PASS != 2

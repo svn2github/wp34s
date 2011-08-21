@@ -157,6 +157,9 @@ static s_opcode program_xfcn[] = {
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
 #endif
+#ifdef INCLUDE_XROOT
+	DYA(OP_XROOT,		"\234\003y")
+#endif
 
 
 	/* Integer mode commands */
@@ -308,6 +311,9 @@ static s_opcode catalogue[] = {
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
 #endif
+#ifdef INCLUDE_XROOT
+	DYA(OP_XROOT,		"\234\003y")
+#endif
 };
 
 static s_opcode cplx_catalogue[] = {
@@ -349,6 +355,9 @@ static s_opcode cplx_catalogue[] = {
 	CDYA(OP_SN,		"SN")
 #endif
 	RARGCMD(RARG_FLCRCL, 	"\024RCF")
+#ifdef INCLUDE_XROOT
+	CDYA(OP_XROOT,		"\234\003y")
+#endif
 };
 
 static s_opcode stats_catalogue[] = {
@@ -490,6 +499,9 @@ static s_opcode int_catalogue[] = {
 	TRI(OP_MULADD,		"\034+")
 #endif
 	RARGCMD(RARG_FLRCL, 	"RCF")
+#ifdef INCLUDE_XROOT
+	DYA(OP_XROOT,		"\234\003y")
+#endif
 };
 
 static s_opcode test_catalogue[] = {

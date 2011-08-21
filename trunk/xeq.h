@@ -626,6 +626,10 @@ enum {
 	OP_LAGUERRE,
 	OP_HERMITE_HE,
 	OP_HERMITE_H,
+
+#ifdef INCLUDE_XROOT
+	OP_XROOT,
+#endif
 	NUM_DYADIC	// Last entry defines number of operations
 };
 

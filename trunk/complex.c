@@ -211,6 +211,18 @@ void cmplxPower(decNumber *rx, decNumber *ry,
 #endif
 }
 
+#ifdef INCLUDE_XROOT
+// (a, b) ^ 1 / (c, d)
+void cmplxXRoot(decNumber *rx, decNumber *ry,
+		const decNumber *a, const decNumber *b,
+		const decNumber *c, const decNumber *d) {
+	decNumber g, h;
+
+	cmplxRecip(&g, &h, c, d);
+	cmplxPower(rx, ry, a, b, &g, &h);
+}
+#endif
+
 
 // abs(a + i b) = sqrt(a^2 + b^2)
 void cmplxAbs(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {

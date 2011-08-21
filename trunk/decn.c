@@ -840,12 +840,71 @@ decNumber *decNumberCubeRoot(decNumber *r, const decNumber *x) {
 	decNumberRecip(&third, &const_3);
 
 	if (decNumberIsNegative(x)) {
-		dn_minus(&t, x);
-		dn_power(&t, &t, &third);
+		dn_minus(r, x);
+		dn_power(&t, r, &third);
 		return dn_minus(r, &t);
 	}
 	return dn_power(r, x, &third);
 }
+
+#ifdef INCLUDE_XROOT
+decNumber *decNumberXRoot(decNumber *r, const decNumber *a, const decNumber *b) {
+	decNumber s, t;
+
+	decNumberRecip(&s, b);
+
+	if (decNumberIsNegative(a)) {
+		if (is_even(b) == 0) {
+			dn_minus(r, a);
+			dn_power(&t, r, &s);
+			return dn_minus(r, &t);
+		}
+		return set_NaN(r);
+	}
+	return dn_power(r, a, &s);
+}
+
+/* Integer xth root piggy backs on the real code.
+ */
+long long int intXRoot(long long int y, long long int x) {
+	int sx, sy;
+	unsigned long long int vx = extract_value(x, &sx);
+	unsigned long long int vy = extract_value(y, &sy);
+	decNumber rx, ry, rz;
+
+	if (sx) {
+		if (vy == 1) {
+			set_carry(0);
+			vy = 1;
+		} else {
+			set_carry(1);
+			vy = 0;
+		}
+		if (sy != 0)
+			sy = vx & 1;
+		return build_value(vy, sy);
+	}
+
+	ullint_to_dn(&rx, vx);
+	ullint_to_dn(&ry, vy);
+	decNumberXRoot(&rz, &ry, &rx);
+	if (decNumberIsSpecial(&rz)) {
+		set_overflow(1);
+		set_carry(0);
+		return 0;
+	}
+	vy = dn_to_ull(decNumberFloor(&rx, &rz), &sx);
+	if (sy) {
+		sx = (vx & 1) ? 0 : 1;
+		y = -y;
+	} else
+		sx = 0;
+	set_carry(intPower(vy, x) != y);
+	set_overflow(sx);
+	return build_value(vy, sy);
+}
+
+#endif
 
 
 decNumber *decNumberMod(decNumber *res, const decNumber *x, const decNumber *y) {
