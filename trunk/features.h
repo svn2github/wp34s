@@ -33,9 +33,11 @@
 #ifndef TINY_BUILD
 
 // Include the Mantissa and exponent function
+// Space cost is approximately 180 bytes
 #define INCLUDE_MANTISSA
 
 // Include the xroot function for reals, integers and complex numbers
+// Space cost is approximately 400 bytes
 #define INCLUDE_XROOT
 
 // Include Rieman's Zeta function
@@ -81,7 +83,6 @@
 //#define INCLUDE_SUBFACT
 
 // Include multi-character alpha constants (not keystroke programmable)
-// Space cost 20 bytes.
 #define MULTI_ALPHA
 
 // Include a date function to determine the date of Easter in a given year
