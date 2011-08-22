@@ -1433,7 +1433,14 @@ void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op) {
 }
 
 void get_sign_mode(decimal64 *a, decimal64 *nul2, enum nilop op) {
-	put_int((int)int_mode(), 0, a);
+	static const unsigned char modes[4] = {
+		0x02,		// 2's complement
+		0x01,		// 1's complement
+		0x00,		// unsigned
+		0x81		// sign and mantissa
+	};
+	const unsigned char v = modes[(int)int_mode()];
+	put_int(v & 3, v & 0x80, a);
 }
 
 void get_base(decimal64 *a, decimal64 *nul2, enum nilop op) {
