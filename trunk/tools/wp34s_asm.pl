@@ -108,7 +108,7 @@ my $mode = $DEFAULT_MODE;
 # 1) XROM output into a C array (use '-c_xrom' switch)
 # 2) XROM output into a binary image (use '-xrom' switch)
 my $xrom_c_mode = 0;
-my $xrom_leader = "const s_opcode xrom[] = (";
+my $xrom_leader = "#include \"xeq.h\"\nconst s_opcode xrom[] = {";
 my $xrom_indent_spaces = 8;
 my $xrom_bin_mode = 0;
 
@@ -1352,7 +1352,7 @@ sub dump_c_array {
   for my $hex_str (0 .. (scalar @val_array)-2) {
     printf OUT "%0s0x%04x,\n", " " x $indent_spaces, $val_array[$hex_str];
   }
-  printf OUT "%0s0x%04x );\n", " " x $indent_spaces, $val_array[-1];
+  printf OUT "%0s0x%04x };\nconst unsigned short int xrom_size = sizeof(xrom) / sizeof(const s_opcode);\n", " " x $indent_spaces, $val_array[-1];
   close OUT;
   return;
 } # dump_c_array
