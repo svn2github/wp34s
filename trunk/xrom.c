@@ -118,6 +118,7 @@
 // Define the constants we know about
 #define PI		xCONST(PI)
 #define ZERO		iCONST(ZERO)
+#define ONE		iCONST(ONE)
 #define E		xCONST(CNSTE)
 #define NAN		xCONST(NAN)
 #define INFINITY	xCONST(INF)
@@ -818,8 +819,8 @@ const s_opcode xrom[] = {
 		RTN
 
 	DLBL('\243', 'X', 0)
-		DOT
-		DIG(1)			// default h = 0.1
+		ONE
+		SR10(1)			// default h = 0.1
 		RTN
 
 	LBL(8)				// Four point estimate from registers
