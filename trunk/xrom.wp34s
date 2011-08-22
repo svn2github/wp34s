@@ -590,8 +590,8 @@ deriv_default_h::	STO 03
 			RTN
 
 		LBL'[delta]X'
-			.
-			1				/* default h = 0.1*/
+			iC 1
+			SDR 01				/* default h = 0.1*/
 			RTN
 
 deriv_4point::		8
