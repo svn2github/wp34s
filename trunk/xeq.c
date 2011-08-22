@@ -1437,7 +1437,7 @@ void get_sign_mode(decimal64 *a, decimal64 *nul2, enum nilop op) {
 }
 
 void get_base(decimal64 *a, decimal64 *nul2, enum nilop op) {
-	put_int((int)int_base(), 0, a);
+	put_int(UState.intm ? (int) int_base() : UState.fract, 0, a);
 }
 
 /* Get the current ticker value */
