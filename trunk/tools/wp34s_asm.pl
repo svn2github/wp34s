@@ -1893,6 +1893,8 @@ __DATA__
 0x0277  cmd YEAR
 0x0278  cmd MONTH
 0x0279  cmd DAY
+0x027a  cmd MANT
+0x027b  cmd EXPT
 0x0300  cmd y[^x]
 0x0301  cmd +
 0x0302  cmd -
@@ -1930,6 +1932,7 @@ __DATA__
 0x0322  cmd L[sub-n]
 0x0323  cmd H[sub-n]
 0x0324  cmd H[sub-n][sub-p]
+0x0325  cmd [^x][sqrt]y
 0x0400  cmd I[beta]
 0x0401  cmd DBL/
 0x0402  cmd DBLR
@@ -1987,6 +1990,7 @@ __DATA__
 0x060e  cmd [cmplx]PERM
 0x0611  cmd [cmplx]||
 0x0612  cmd [cmplx]AGM
+0x0625  cmd [cmplx][^x][sqrt]y
 0x1000  mult  LBL
 0x1100  mult  LBL?
 0x1200  mult  XEQ
@@ -2633,3 +2637,5 @@ __DATA__
 0x9f00  arg STOM  max=112,indirect,stack
 0xa000  arg RCLM  max=112,indirect,stack
 0xa200  arg SENDL max=9,indirect
+0xa300  arg PUTK  max=112,indirect,stack
+0xa400  arg KTP?  max=112,indirect,stack

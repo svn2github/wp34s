@@ -855,14 +855,18 @@ sub display_steps {
 sub reconstruct_steps {
   my $label_field_length = $longest_label+$NUM_TARGET_LABEL_COLONS;
   my ($label, $opcode, @reconstructed_steps);
+
   for( my $step = 1; $step <= scalar(@lines); $step++ ) {
     my $line = $lines[$step-1];
 
-    if( $line =~ /^\s*\d{0,3}:{0,1}\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})\s+(\S+.*)/ ) { # Line with target label
+    # Scrub any step number present. It will be recreated on the other end, unless otherwise requested.
+    $line =~ s/^\s*\d{3}:{0,1}//;
+
+    if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})\s+(\S+.*)/ ) { # Line with target label
       $label = ${1} . (" " x ($label_field_length - length($1)));
       $opcode = $2;
       print "// DEBUG: reconstruct_steps: Type 1: '$line'\n" if $debug > 3;
-    } elsif( $line =~ /^\s*\d{0,3}:{0,1}\s*(\S+.*)/ ) { # Line without target label
+    } elsif( $line =~ /^\s*(\S+.*)/ ) { # Line without target label
       $label = " " x $label_field_length;
       $opcode = $1;
       print "// DEBUG: reconstruct_steps: Type 2: '$line'\n" if $debug > 3;
@@ -875,6 +879,8 @@ sub reconstruct_steps {
         die "ERROR: reconstruct_steps: Cannot parse the line at step $step! Line: '$line'\n";
       }
     }
+
+    # See if the user has turned off step number generation from the command line.
     if( $prt_step_num ) {
       push @reconstructed_steps, sprintf "%03d /* %0s */ %0s", $step, $label, $opcode;
     } else {
