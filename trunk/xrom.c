@@ -191,7 +191,8 @@
 // Other short cuts
 #define ENTRY		GSB(XROM_CHECK)
 #define EXIT		GTO(XROM_EXIT)
-#define EXITp1		GTO(XROM_EXITp1)
+//#define EXITp1		GTO(XROM_EXITp1)
+#define EXITp1		CF(F_XROM)	RTNp1
 
 /* Now the xrom table itself.
  *
@@ -940,10 +941,11 @@ const s_opcode xrom[] = {
 		CF(F_XROM)
 		RTN
 
+/*
 	LBL(XROM_EXITp1)		// Clear xrom falg and return with skip
 		CF(F_XROM)
 		RTNp1
-
+*/
 
 
 /**************************************************************************/
