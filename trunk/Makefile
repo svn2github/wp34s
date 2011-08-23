@@ -257,7 +257,7 @@ $(UTILITIES)/genchars7$(EXE): genchars7.c Makefile lcd.h
 $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-xrom.c: xrom.wp34s $(OPCODES) Makefile
+xrom.c: xrom.wp34s $(OPCODES) Makefile xeq.h
 	tools/wp34s_asm.pl -pp -op $(OPCODES) -c -o xrom.c xrom.wp34s
 
 xeq.h:
