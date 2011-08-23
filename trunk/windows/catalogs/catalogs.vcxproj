@@ -67,9 +67,8 @@
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>building catalogues.h</Message>
-      <Command>echo # $Rev$ &gt; $(SolutionDir)..\tools\wp34s.op
-$(OutDir)catalogs.exe &gt; ..\..\catalogues.h 2&gt;&gt; $(SolutionDir)..\tools\wp34s.op</Command>
+      <Message>building catalogues.h and xrom.c</Message>
+      <Command>build_cats.cmd $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -97,9 +96,8 @@ $(OutDir)catalogs.exe &gt; ..\..\catalogues.h 2&gt;&gt; $(SolutionDir)..\tools\w
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PostBuildEvent>
-      <Message>building catalogues.h</Message>
-      <Command>echo # $Rev$ &gt; $(SolutionDir)..\tools\wp34s.op
-$(OutDir)catalogs.exe &gt; ..\..\catalogues.h 2&gt;&gt; $(SolutionDir)..\tools\wp34s.op</Command>
+      <Message>building catalogues.h and xrom.c</Message>
+      <Command>build_cats.cmd $(OutDir)</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -114,6 +112,9 @@ $(OutDir)catalogs.exe &gt; ..\..\catalogues.h 2&gt;&gt; $(SolutionDir)..\tools\w
       <Project>{a91d87a3-2800-4d00-8ae0-aeb987269c0d}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\xrom.wp34s" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
