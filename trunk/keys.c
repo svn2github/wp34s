@@ -97,7 +97,7 @@ int row_column_to_keycode(const int c)
 
 /*
  *  Mapping from a key code to a digit from 0 to 9 or to a register address
- *  Bit seven is set if the key cannnot be used as a lbael shortcut
+ *  Bit seven is set if the key cannot be used as a label shortcut
  */
 #define NO_REG 0x7f
 #define NO_SHORT 0x80
@@ -202,7 +202,7 @@ static enum catalogues keycode_to_cat(const keycode c, const enum shifts s)
 		 *  All the alpha catalogues go here
 		 */
 		if (s != SHIFT_F && s != SHIFT_H)
-			return 0;
+			return CATALOGUE_NONE;
 
 		switch (c) {
 
@@ -533,7 +533,9 @@ static int process_normal(const keycode c)
 	return STATE_UNFINISHED;
 }
 
-
+/*
+ *  Process a key code after f shift
+ */
 static int process_f_shifted(const keycode c) {
 	static const unsigned short int op_map[] = {
 		// Row 1
@@ -637,6 +639,9 @@ static int process_f_shifted(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
+/*
+ *  Process a key code after g shift
+ */
 static int process_g_shifted(const keycode c) {
 	static const unsigned short int op_map[] = {
 		// Row 1
@@ -715,6 +720,9 @@ static int process_g_shifted(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
+/*
+ *  Process a key code after h shift
+ */
 static int process_h_shifted(const keycode c) {
 #define _RARG 0x8000	// Must not interfere with existing opcode markers
 	static const unsigned short int op_map[] = {
@@ -804,7 +812,9 @@ static int process_h_shifted(const keycode c) {
 #undef _RARG
 }
 
-
+/*
+ *  Process a key code after CPX
+ */
 static int process_normal_cmplx(const keycode c) {
 	State2.cmplx = 0;
 	switch (c) {
@@ -830,7 +840,9 @@ static int process_normal_cmplx(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
-
+/*
+ *  Process a key code after f or g shift and CPX
+ */
 static int process_fg_shifted_cmplx(const keycode c) {
 
 	static const unsigned short int op_map[][2] = {
@@ -908,7 +920,9 @@ static int process_fg_shifted_cmplx(const keycode c) {
 	return op;
 }
 
-
+/*
+ *  Process a key code after h shift and CPX
+ */
 static int process_h_shifted_cmplx(const keycode c) {
 	set_shift(SHIFT_N);
 	State2.cmplx = 0;
@@ -933,8 +947,8 @@ static int process_h_shifted_cmplx(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
-
-/* Fairly simple routine for dealing with the HYP prefix.
+/*
+ * Fairly simple routine for dealing with the HYP prefix.
  * This setting can only be followed by 4, 5, or 6 to specify
  * the function.  The inverse routines use the code too, the State2.dot
  * is 1 for normal and 0 for inverse hyperbolic.  We also have to
@@ -968,6 +982,9 @@ static int process_hyp(const keycode c) {
 }
 
 
+/*
+ *  Process a key code after ->
+ */
 static int process_arrow(const keycode c) {
 	const enum shifts oldstate = set_shift(SHIFT_N);
 
@@ -1248,7 +1265,9 @@ static int process_alpha(const keycode c) {
 	return RARG(RARG_ALPHA, ch & 0xff);
 }
 
-/* Code to handle all commands with arguments */
+/*
+ *  Code to handle all commands with arguments
+ */
 static int arg_eval(unsigned int val) {
 	const unsigned int base = State.base;
 	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val);
@@ -1621,7 +1640,9 @@ fin:
 	return opcode;
 }
 
-
+/*
+ *  Process arguments to the diverse test commands
+ */
 static int process_test(const keycode c) {
 	int r = State2.test;
 	int cmpx = State2.cmplx;
@@ -1635,7 +1656,7 @@ static int process_test(const keycode c) {
 		if (cmpx && (n & 1))
 			// Disallow odd complex registers > A
 			goto again;
-		// Return the comand with the register completed
+		// Return the command with the register completed
 		return RARG(base, n);
 	}
 	else if ( n == 0 ) {
@@ -1721,73 +1742,56 @@ static opcode alpha_code(int n, const char tbl[]) {
 /* Return the opcode for entry n from the current catalogue
  */
 opcode current_catalogue(int n) {
-	switch (State2.catalogue) {
-	default:
-		return OP_NIL | OP_NOP;
+	// A quick table of catalogue tables
+	// NB: the order here MUST match that in `enum catalogues'
+	static const void *catalogues[] =
+	{
+		NULL, // NONE
+		catalogue,
+		cplx_catalogue,
+		stats_catalogue,
+		prob_catalogue,
+		int_catalogue,
+		prog_catalogue,
+		program_xfcn,
+		test_catalogue,
+		mode_catalogue,
+		alpha_catalogue,
+		alpha_symbols,
+		alpha_compares,
+		alpha_arrows,
+		alpha_letters_upper,
+		alpha_letters_lower,
+		alpha_superscripts,
+		alpha_subscripts,
+		NULL,
+		NULL,
+		conv_catalogue,
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+		internal_catalogue,
+#endif
+	};
+	unsigned int c = State2.catalogue;
+	s_opcode *cat = (s_opcode *) (catalogues[c]);
 
-	case CATALOGUE_CONST:
+	if ( c == CATALOGUE_CONST )
 		return CONST(n);
 
-	case CATALOGUE_COMPLEX_CONST:
+	if ( c == CATALOGUE_COMPLEX_CONST )
 		return CONST_CMPLX(n);
 
-	case CATALOGUE_INT:
-		return int_catalogue[n];
+	if ( c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS )
+		return alpha_code(n, (const char *)cat);
 
-	case CATALOGUE_ALPHA:
-		return alpha_catalogue[n];
+	if (c >= sizeof(catalogues) / sizeof(void *))
+		return OP_NIL | OP_NOP;
 
-	/* Alpha character menus are all similar */
-	case CATALOGUE_ALPHA_SYMBOLS:
-		return alpha_code(n, alpha_symbols);
-	case CATALOGUE_ALPHA_COMPARES:
-		return alpha_code(n, alpha_compares);
-	case CATALOGUE_ALPHA_ARROWS:
-		return alpha_code(n, alpha_arrows);
-	case CATALOGUE_ALPHA_LETTERS_UPPER:
-		return alpha_code(n, alpha_letters_upper);
-	case CATALOGUE_ALPHA_LETTERS_LOWER:
-		return alpha_code(n, alpha_letters_lower);
-	case CATALOGUE_ALPHA_SUPERSCRIPTS:
-		return alpha_code(n, alpha_superscripts);
-	case CATALOGUE_ALPHA_SUBSCRIPTS:
-		return alpha_code(n, alpha_subscripts);
-
-	case CATALOGUE_COMPLEX:
-		return cplx_catalogue[n];
-
-	case CATALOGUE_STATS:
-		return stats_catalogue[n];
-
-	case CATALOGUE_PROB:
-		return prob_catalogue[n];
-
-	case CATALOGUE_PROG:
-		return prog_catalogue[n];
-
-	case CATALOGUE_PROGXFCN:
-		return program_xfcn[n];
-
-	case CATALOGUE_MODE:
-		return mode_catalogue[n];
-
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-	case CATALOGUE_INTERNAL:
-		return internal_catalogue[n];
-#endif
-
-	case CATALOGUE_TEST:
-		return test_catalogue[n];
-
-	case CATALOGUE_NORMAL:
-		return catalogue[n];
-
-	case CATALOGUE_CONV:
-		return conv_catalogue[n];
-	}
+	return (opcode) (cat[n]);
 }
 
-
+/*
+ *  Catalogue navigation
+ */
 static int process_catalogue(const keycode c) {
 	unsigned int dv = State2.digval;
 	unsigned char ch;
