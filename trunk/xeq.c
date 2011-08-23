@@ -2050,6 +2050,20 @@ static void do_tst(const decimal64 *cmp, const enum tst_op op, int cnst) {
 flse:	fin_tst(a);
 }
 
+static void test_negative_zero(void) {
+	process_cmdline_set_lift();
+
+	if (is_intmode()) {
+		int xs;
+		unsigned long long int xv = extract_value(d64toInt(&regX), &xs);
+		fin_tst(xv == 0 && xs);
+	} else {
+		decNumber x;
+		getX(&x);
+		fin_tst(decNumberIsZero(&x) && decNumberIsNegative(&x));
+	}
+}
+
 void cmdtest(unsigned int arg, enum rarg op) {
 	do_tst(get_reg_n(arg), (enum tst_op)(op - RARG_TEST_EQ), -1);
 }
@@ -2634,6 +2648,10 @@ static void specials(const opcode op) {
 	case OP_Zeq1:	case OP_Zne1:
 	//case OP_Zapx1:
 		do_ztst(&CONSTANT_INT(OP_ONE), &CONSTANT_INT(OP_ZERO), (enum tst_op)(opm - OP_Zeq1));
+		break;
+
+	case OP_Xqe_0:
+		test_negative_zero();
 		break;
 
 	default:

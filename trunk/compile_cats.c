@@ -30,6 +30,7 @@
 #define CDYA(op, n)		op | OP_CDYA,
 #define CMON(op, n)		op | OP_CMON,
 #define NILIC(op, n)		op | OP_NIL,
+#define SPECIAL(op, n)		op | OP_SPEC,
 #define RARGCMD(op, n)		RARG_BASE(op),
 #define CONV(n, d, name)	RARG_BASE(RARG_CONV) + (n)*2 + (d),
 
@@ -545,7 +546,7 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_TOP,		"TOP?")
 	NILIC(OP_ISINT,		"INTM?")
 	NILIC(OP_ISFLOAT,	"REALM?")
-
+	SPECIAL(OP_Xqe_0,	"x=-0?")
 };
 
 static s_opcode prog_catalogue[] = {
