@@ -1486,8 +1486,6 @@ void op_keyp(unsigned int arg, enum rarg op) {
 	if (!cond) {
 		int k = LastKey - 1;
 		LastKey = 0;
-		if ( arg == regX_idx )
-			lift_if_enabled();
 		reg_put_int(arg, keycode_to_row_column(k), 0);
 	}
 	fin_tst(cond);
@@ -1538,10 +1536,7 @@ void op_keytype(unsigned int arg, enum rarg op)
 			12,  4,  5,  6, 12, 12,
 			12,  1,  2,  3, 12, 12,
 			12,  0, 10, 12, 12 };
-		if ( arg != regX_idx )
-			lift_if_enabled();
-		else
-			setlastX();
+		lift_if_enabled();
 		put_int(types[c], 0, &regX);
 	}
 }
