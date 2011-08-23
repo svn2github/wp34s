@@ -795,7 +795,11 @@ static void set_x(const decimal64 *rgx, char *res) {
 	xset(x, '\0', sizeof(x));
 
 	if (decNumberIsZero(&z)) {
-		x[0] = '0';
+		if (decNumberIsNegative(&z) && get_user_flag(NAN_FLAG)) {
+			x[0] = '-';
+			x[1] = '0';
+		} else
+			x[0] = '0';
 	} else
 		decNumberToString(&z, x);
 
