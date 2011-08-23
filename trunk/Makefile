@@ -258,7 +258,7 @@ $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 xrom.c: xrom.wp34s $(OPCODES) Makefile
-	wp34s_asm.pl -pp -op $(OPCODES) -c -o xrom.c xrom.wp34s
+	tools/wp34s_asm.pl -pp -op $(OPCODES) -c -o xrom.c xrom.wp34s
 
 xeq.h:
 	@touch xeq.h
