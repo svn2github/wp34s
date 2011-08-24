@@ -32,11 +32,6 @@
 #define ENTRY_NEXTPRIME	88
 
 
-/* Labels - global */
-#define XROM_CHECK		40
-#define XROM_EXIT		41
-#define XROM_EXITp1		42
-
 
 /* Flags - global */
 #define F_XROM			15
