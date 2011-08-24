@@ -599,7 +599,11 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 #define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0, 0)
 #define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 1, 0)
 #define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 1, 0)
-#define CMDstos(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0, 1)
+#ifdef ALLOW_STOS_A
+#define CMDstos(n, f, nm)	allCMD(n, f, regA_idx+1, nm, 1, 1, 0, 0, 1)
+#else
+#define CMDstos(n, f, nm)	allCMD(n, f, TOPREALREG-4+1, nm, 1, 0, 0, 0, 1)
+#endif
 
 #if COMMANDS_PASS == 2
 CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
@@ -637,8 +641,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstk(RARG_CRCL_DV, 	&cmdcrcl,	NUMREG-1,		"\024RCL/")
 	CMDcstk(RARG_CSWAP,	&cmdswap,	NUMREG-1,		"\024x\027")
 	CMDstk(RARG_VIEW,	&cmdview,	NUMREG,			"VIEW")
-	CMDstos(RARG_STOSTK,	&cmdstostk,	regA_idx+1,		"STOS")
-	CMDstos(RARG_RCLSTK,	&cmdrclstk,	regA_idx+1,		"RCLS")
+	CMDstos(RARG_STOSTK,	&cmdstostk,				"STOS")
+	CMDstos(RARG_RCLSTK,	&cmdrclstk,				"RCLS")
 	CMDnoI(RARG_ALPHA,	&cmdalpha,	0,			"")
 	CMDstk(RARG_AREG,	&alpha_reg,	NUMREG,			"\240RC#")
 	CMDstk(RARG_ASTO,	&alpha_sto,	NUMREG,			"\240STO")

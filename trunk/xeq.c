@@ -1316,6 +1316,7 @@ static int storcl_cop(unsigned short opr,
 	return 0;
 }
 
+
 void cmdcsto(unsigned int arg, enum rarg op) {
 	decNumber r1, r2;
 	decimal64 *t1, *t2;
@@ -1387,6 +1388,7 @@ void swap_reg(decimal64 *a, decimal64 *b) {
 }
 
 void cmdswap(unsigned int arg, enum rarg op) {
+
 	swap_reg(&regX, get_reg_n(arg));
 	if (op == RARG_CSWAP) {
 		swap_reg(&regY, get_reg_n(arg+1));
@@ -1557,7 +1559,11 @@ void check_mode(decimal64 *a, decimal64 *nul2, enum nilop op) {
 static int check_stack_overlap(unsigned int arg, int *nout) {
 	const int n = stack_size();
 
+#ifdef ALLOW_STOS_A
 	if (arg + n <= TOPREALREG || (arg == regA_idx && UState.stack_depth == 0)) {
+#else
+	if (arg + n <= TOPREALREG) {
+#endif
 		*nout = n;
 		return 1;
 	}
@@ -3168,7 +3174,7 @@ static void rargs(const opcode op) {
 		if (lim > 128 && ind)		// put the top bit back in
 			arg |= RARG_IND;
 	}
-	if (arg >= lim)
+	if (arg >= lim || (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && (arg & 1)))
 		err(ind?ERR_RANGE:ERR_PROG_BAD);
 	else {
 		CALL(argcmds[cmd].f)(arg, (enum rarg)cmd);
