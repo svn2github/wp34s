@@ -177,7 +177,7 @@ version:
 
 clean:
 	-rm -fr $(DIRS)
-	-rm -fr consts.h consts.c allconsts.c catalogues.h
+	-rm -fr consts.h consts.c allconsts.c catalogues.h xrom.c
 #       -make -C decNumber clean
 #       -make -C utilities clean
 
