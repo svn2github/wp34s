@@ -546,7 +546,8 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_TOP,		"TOP?")
 	NILIC(OP_ISINT,		"INTM?")
 	NILIC(OP_ISFLOAT,	"REALM?")
-	SPECIAL(OP_Xqe_0,	"x=-0?")
+	NILIC(OP_Xeq_pos0,	"x=+0?")
+	NILIC(OP_Xeq_neg0,	"x=-0?")
 };
 
 static s_opcode prog_catalogue[] = {

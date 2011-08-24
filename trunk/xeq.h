@@ -709,6 +709,8 @@ enum nilop {
 	OP_GETBASE, OP_GETSIGN,
 	OP_ISINT, OP_ISFLOAT,
 
+	OP_Xeq_pos0, OP_Xeq_neg0,
+
 	NUM_NILADIC	// Last entry defines number of operations
 };
 
@@ -805,7 +807,6 @@ enum specials {
 	OP_Xeq1, OP_Xne1, OP_Xapx1, OP_Xlt1, OP_Xle1, OP_Xgt1, OP_Xge1,
 	OP_Zeq0, OP_Zne0, OP_Zapx0,
 	OP_Zeq1, OP_Zne1, OP_Zapx1,
-	OP_Xqe_0,
 
 	// These are pseudo ops that don't actually do anything outside the keyboard handler
 	OP_SST, OP_BST, OP_BACKSPACE, OP_RUNNING, OP_IGNORE, OP_UNFINISHED,
@@ -1133,6 +1134,7 @@ extern void XisPrime(decimal64 *a, decimal64 *b, enum nilop op);
 extern void isSpecial(decimal64 *a, decimal64 *b, enum nilop op);
 extern void isNan(decimal64 *a, decimal64 *b, enum nilop op);
 extern void isInfinite(decimal64 *a, decimal64 *b, enum nilop op);
+extern void check_zero(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void op_entryp(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_regcopy(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_regswap(decimal64 *a, decimal64 *b, enum nilop op);
