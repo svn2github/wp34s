@@ -1,16 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html><head></head><body><h1>WP 34S Interactive Programming</h1><p>This
 chapter&nbsp;deals with writing programs that interact with the user.
-Topic covered will be the display of messages, geting input from the
-user, hot keys and truely interactive "real time" programs.</p><h2>Interrupting a Program for Display of Information</h2><p>When
+Topics covered are the display of messages, geting input from the user,
+hot keys and truely interactive "real time" programs.</p><h2>Interrupting a Program for Display of Information</h2><p>When
 a program is started, the display contents are replaced by the "Running
 Program" message. To display a number while a program is executing, use
 the VIEW (<span style="font-family: monospace;">g RCL</span>) command
-and give it a register to display. X is a valid register here so you
-can display the standard stack&nbsp;to the user. The command formats
-the number to the present&nbsp;settings and updates the LCD to display
-it. This causes a small overhead so expect that your program slows down
-a bit with each update. This is especially true if the displays follow
+and give it a register to display. X is a valid input here so you can
+present the standard stack&nbsp;to the user. The command formats the
+number to the present&nbsp;settings and updates the LCD to display it.
+This causes a small overhead so expect that your program slows down a
+bit with each update. This is especially true if the displays follow
 each other in a tight loop because the flicker avoidance logic needs to
 wait for a complete display refresh cycle before the next update is
 allowed.</p><p>Another way to show what would normally appear on the
@@ -39,7 +39,7 @@ X.FCN catalogue changes in alpha mode to contain alpha commands.
 Displaying a message will normally start with a CL[alpha] instruction
 because most commands append their output to what is already stored. To
 save space, characters in program mode may be entered in groups of
-three by typing <span style="font-family: monospace;">f+ENTER^</span>
+three by typing <span style="font-family: monospace;">f ENTER^</span>
 while already in alpha mode. This saves one program step per three
 characters but does not allow all special symbols to be entered because
 the catalogues are not available in this mode. Single characters and
@@ -57,51 +57,51 @@ three dashes. You can of course display a message together with a
 chosen register. Go to alpha mode and enter VIEW (<span style="font-family: monospace;">g RCL</span>). This will produce the [alpha]VW+ nn command. It is meant to display alpha together with ('+')
 numeric data coming from any register. As with VIEW, X is allowed here.
 The above comments regarding PSE or STOP following any of these
-commands hold.</p><p>Another way to display the alpha register is to
-switch to alpha mode with [alpha]ON. The main difference is that you
-are presented the tail of the string instead of its head. Also, a PSE
-is necessary to update the actual display which [alpha]ON alone does
-not do. If followed by a STOP, alpha mode stays on causing user input
-to go to the upper display! [alpa]OFF returns everything to normal.</p><h2>Data Input</h2><p>The
-easiest way of getting user user input, apart from expecting everything
-on the stack, is just stopping the program with STOP, letting the user
-input a number and let him press <span style="font-family: monospace;">R/S</span>
-to continue execution. Without any clue what the program is asking for,
-this is only suitable for very simple programs. The least you want to
-do is present a message to the user what he is supposed to enter before
-the program stops. This can be done with any of the [alpha]VIEW
-commands followed by STOP. There is a shorthand expecially made for
-this: PROMPT. It &nbsp;is a cmbination of [alpha]VW+ X and STOP. It
-displays the alpha register together with the current X register and
-halts program execution. This is good for entering a lengthy list of
+commands are valid here, too.</p><p>Another way to display the alpha
+register is to switch to alpha mode with [alpha]ON. The main difference
+is that you are presented the tail of the string instead of its head.
+Also, a PSE is necessary to update the actual display which [alpha]ON
+alone does not do. If followed by a STOP, alpha mode stays on causing
+user input to go to the upper display! [alpa]OFF returns everything to
+normal.</p><h2>Data Input</h2><p>The easiest way of getting&nbsp;user
+input, apart from expecting everything on the stack, is just stopping
+the program with STOP, letting the user input a number and let him
+press <span style="font-family: monospace;">R/S</span> to continue
+execution. Without any clue what the program is asking for, this is
+only suitable for very simple programs. The least you want to do is
+present a message to the user what he is supposed to enter before the
+program stops. This can be done with any of the [alpha]VIEW commands
+followed by STOP. There is a shorthand expecially made for this:
+PROMPT. It &nbsp;is a cmbination of [alpha]VW+ X and STOP. It displays
+the alpha register together with the current X register and halts
+program execution. This is good for entering a lengthy list of
 parameters in a given order without much programming.</p><h2>Hot Keys</h2><p>A more versatile way of doing things is using the dedicated keys A to D in the top row. If the user presses one of these keys, the
 program executes the next subroutine or program with a label of the
 same name. If you have more than one program using these labels in RAM
 or in a flash region, it's necessary to move the program counter (PC)
-to the top of the program and stop there. A typcal program structure
-might be the following:</p><pre>LBL 'MYP'<br>CL[alpha]<br>[alpha]'Hel'<br>[alpha]'lo!'<br>LBL 00<br>PROMPT<br>BACK 01<br>LBL A<br>ENTRY?<br>SKIP 01<br>XEQ 01<br>STO 01<br>GTO 00<br>LBL B<br>...<br></pre><p>This
-sets up a message and stops. R/S does nothing, it simply returns to the
-prompt. If the user enters a number and hits A, the program starts with
-the ENTRY? test which is true if the user has entered fresh data. The
-input will be stored in register <span style="font-family: monospace;">01</span> and the program jumps back to the prompt. If the user has not entered any information after the last prompt, subroutine <span style="font-family: monospace;">01</span> will be called to compute a new value which is then stored and displayed. This is the way, the TVM application is implemented.</p><h2>The Keyboard Codes</h2><p>Sometimes,
-the hot keys A to D aren't enough. But there are ways to extend the
-number of directly addressable subroutines by a simple trick: shorthand
-addressing of numeric labels. To make this possible, each key is
-identified by a row and a column, each star1ing with <span style="font-family: monospace;">1</span>.</p><pre> A    B    C    D   -&gt;   CPX<br>11   12   13   14   <span style="font-style: italic;">15   16</span><br><br>STO  RCL  Rv    f    g    h<br><span style="font-style: italic;">21   22   23</span>   <span style="color: rgb(163, 163, 163);">24</span>   25   26<br><br>ENTER^    x&lt;&gt;y +/-  EEX  &lt;-<br>31        <span style="font-style: italic;">32   33   34</span>   35<br><br>XEQ    7     8     9     /<br><span style="font-style: italic;">41</span>    42    43    44    <span style="font-style: italic;">45</span><br><br> ^     4     5     6     x<br><span style="font-style: italic;">51</span>    52    53    54    <span style="font-style: italic;">55</span><br><br> v     1     2     3     -<br><span style="font-style: italic;">61</span>    62    63    64    <span style="font-style: italic;">65</span><br><br>EXIT   0     .    R/S    +<br><span style="font-style: italic;">71</span>    72    73    <span style="font-style: italic;">74    75</span>&nbsp;</pre><p>Whenever you are asked for the entry of a two digit label, any of the keys marked in <span style="font-style: italic;">italic</span>
+to the top of the program and stop there. A typical program structure
+might be the following:</p><pre>LBL 'MYP'<br>CL[alpha]<br>[alpha]'Hel'<br>[alpha]'lo!'<br>LBL 00<br>PROMPT<br>BACK 01<br>LBL A<br>ENTRY?<br>SKIP 01<br>XEQ 01<br>STO 01<br>GTO 00<br>LBL B<br>...<br></pre><p>This sets up a message and stops. R/S does nothing, it simply returns to the prompt. If the user enters a number and hits <span style="font-family: monospace;">A</span>,
+the program starts with the ENTRY? test which is true if the user has
+entered fresh data. The input will be stored in register <span style="font-family: monospace;">01</span> and the program jumps back to the prompt. If the user has not entered any information after the last prompt, subroutine <span style="font-family: monospace;">01</span> will be called to compute a new value which is then stored and displayed. This is the way, the TVM application is implemented.</p><h2>The Keyboard Codes</h2><p>Sometimes, the hot keys <span style="font-family: monospace;">A</span> to <span style="font-family: monospace;">D</span>
+aren't enough. But there are ways to extend the number of directly
+addressable subroutines by a simple trick: shorthand addressing of
+numeric labels. To make this possible, each key is identified by a row
+and a column, each star1ing with <span style="font-family: monospace;">1</span>.</p><pre> A    B    C    D   -&gt;   CPX<br>11   12   13   14   <span style="font-style: italic;">15   16</span><br><br>STO  RCL  Rv    f    g    h<br><span style="font-style: italic;">21   22   23</span>   <span style="color: rgb(163, 163, 163);">24</span>   25   26<br><br>ENTER^    x&lt;&gt;y +/-  EEX  &lt;-<br>31        <span style="font-style: italic;">32   33   34</span>   35<br><br>XEQ    7     8     9     /<br><span style="font-style: italic;">41</span>    42    43    44    <span style="font-style: italic;">45</span><br><br> ^     4     5     6     x<br><span style="font-style: italic;">51</span>    52    53    54    <span style="font-style: italic;">55</span><br><br> v     1     2     3     -<br><span style="font-style: italic;">61</span>    62    63    64    <span style="font-style: italic;">65</span><br><br>EXIT   0     .    R/S    +<br><span style="font-style: italic;">71</span>    72    73    <span style="font-style: italic;">74    75</span>&nbsp;</pre><p>Whenever you are asked for the entry of a two digit label, any of the keys marked in <span style="font-style: italic;">italic</span>
 in the above picture can be used as direct input. The label will be
 replaced by the row/column code of the respective key. Some keys are
 not available this way because they have a predefined meaning in this
-context. They can still be used for a short address by precing the key
-with the <span style="font-family: monospace;">f</span> prefix. Only the <span style="font-family: monospace;">f</span> prefix itself cannot be used for shorthand addressing.&nbsp;If you want to associate a program with the key <span style="font-family: monospace;">STO</span>, just put the label <span style="font-family: monospace;">21</span> in front of the routine and it can be conveniently called with <span style="font-family: monospace;">XEQ</span> <span style="font-family: monospace;">STO</span> by the user.</p><h2>Direct Keyboard&nbsp;Access</h2><p>The
+context. They can still be used for a short address by preceding the
+key with the <span style="font-family: monospace;">f</span> prefix. Only the <span style="font-family: monospace;">f</span> prefix itself cannot be used for shorthand addressing.&nbsp;If you want to associate a program with the key <span style="font-family: monospace;">STO</span>, just put the label <span style="font-family: monospace;">21</span> in front of the routine and it can be conveniently called with <span style="font-family: monospace;">XEQ</span> <span style="font-family: monospace;">STO</span> by the user.</p><h2>Direct Keyboard&nbsp;Access</h2><p>The
 same codes are returned by the KEY? command which allows true "real
 time" response to user input from the keyboard. KEY? takes a register
-argument (X is allowed but does not lift the stack) and stores the last
-pressed key during program execution in the specified register. <span style="font-family: monospace;">R/S</span> and <span style="font-family: monospace;">EXIT</span>
+argument (X is allowed but does not lift the stack) and stores the key
+most recently pressed during program execution in the specified
+register. <span style="font-family: monospace;">R/S</span> and <span style="font-family: monospace;">EXIT</span>
 cannot be queried, they stop program execution immediately. The
 keyboard is active during execution but it is of course desirable to
 show a message and suspend the program with the PSE command while
-waiting for user input. PSE is interrupted by a pressed key, so you can
-simply use a PSE <span style="font-family: monospace;">99</span>
+waiting for user input. PSE is interrupted by a&nbsp;key press, so you
+can simply use a PSE <span style="font-family: monospace;">99</span>
 statement in a loop to wait for input. KEY? acts as a conditional at
 the same time so a typical user input loop will look like this:</p><pre>LBL 'USR'<br>CL[alpha]<br>[alpha]'KEY'<br>[alpha] ?<br>LBL 00<br>[alpha]VIEW<br>PSE 99<br>KEY? 00<br>GTO 00<br>LBL?-&gt;00<br>XEQ-&gt;00<br>GTO 00<br></pre><p>This code fragment prompts for a key and stores it in register <span style="font-family: monospace;">00</span>.
 The line directly after KEY? is executed when no key was pressed. The
