@@ -609,6 +609,8 @@ static int process_f_shifted(const keycode c) {
 	case K_ARROW:
 		if (UState.intm) {
 			State2.arrow = 1;
+			set_shift(SHIFT_F);
+			break;
 		}
 		return op;
 
@@ -694,10 +696,20 @@ static int process_g_shifted(const keycode c) {
 	// The switch handles all the special cases
 	switch (c) {
 	case K00:
-		State2.hyp = 1;
-		State2.dot = 0;
-		State2.cmplx = 0;
+		if (! UState.intm) {
+			State2.hyp = 1;
+			State2.dot = 0;
+			State2.cmplx = 0;
+		}
 		break;
+
+	case K_ARROW:
+		if (UState.intm) {
+			State2.arrow = 1;
+			set_shift(SHIFT_G);
+			break;
+		}
+		return op;
 
 	case K50:	
 		if (UState.intm && UState.int_maxw > 0 && State2.int_window > 0)
