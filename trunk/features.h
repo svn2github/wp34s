@@ -86,7 +86,7 @@
 #define MULTI_ALPHA
 
 // Allow A as destination for STOS/RCLS
-#define ALLOW_STOS_A
+//#define ALLOW_STOS_A
 
 // Include a date function to determine the date of Easter in a given year
 //#define INCLUDE_EASTER
