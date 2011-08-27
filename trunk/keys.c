@@ -609,7 +609,6 @@ static int process_f_shifted(const keycode c) {
 	case K_ARROW:
 		if (UState.intm) {
 			State2.arrow = 1;
-			set_shift(SHIFT_F);
 			break;
 		}
 		return op;
@@ -706,7 +705,6 @@ static int process_g_shifted(const keycode c) {
 	case K_ARROW:
 		if (UState.intm) {
 			State2.arrow = 1;
-			set_shift(SHIFT_G);
 			break;
 		}
 		return op;
@@ -1018,11 +1016,11 @@ static int process_arrow(const keycode c) {
 		break;
 
 	case K22:
-		set_smode((oldstate != SHIFT_G)?SDISP_BIN:SDISP_OCT);
+		set_smode((oldstate == SHIFT_F)?SDISP_BIN:SDISP_OCT);
 		process_cmdline_set_lift();
 		break;
 	case K23:
-		set_smode((oldstate != SHIFT_G)?SDISP_DEC:SDISP_HEX);
+		set_smode((oldstate == SHIFT_F)?SDISP_DEC:SDISP_HEX);
 		process_cmdline_set_lift();
 		break;
 
