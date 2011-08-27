@@ -897,29 +897,37 @@ static int process_h_shifted_cmplx(const keycode c) {
  */
 static int process_hyp(const keycode c) {
 	const int cmplx = State2.cmplx;
-	int dot = State2.dot;
-	const opcode x = cmplx ? OP_CMON : OP_MON;
+	const opcode op = cmplx ? OP_CMON : OP_MON;
+	int f = State2.dot;
 
 	State2.hyp = 0;
 	State2.cmplx = 0;
 	State2.dot = 0;
 
 	switch ((int)c) {
-	case K01:	return x + (dot ? OP_SINH : OP_ASINH);
-	case K02:	return x + (dot ? OP_COSH : OP_ACOSH);
-	case K03:	return x + (dot ? OP_TANH : OP_ATANH);
 
+	case K00:
 	case K60:
 	case K24:
 		break;
+
+	case K01:
+		return op | (f ? OP_SINH : OP_ASINH);
+
+	case K02:
+		return op | (f ? OP_COSH : OP_ACOSH);
+
+	case K03:
+		return op | (f ? OP_TANH : OP_ATANH);
+
 	case K_F:
 	case K_G:
-		dot = (c == K_F);
+		f = (c == K_F);
 		// fall trough
 	default:
 		State2.hyp = 1;
 		State2.cmplx = cmplx;
-		State2.dot = dot;
+		State2.dot = f;
 		break;
 	}
 	return STATE_UNFINISHED;
