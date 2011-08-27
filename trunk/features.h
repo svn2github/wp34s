@@ -88,6 +88,9 @@
 // Allow A as destination for STOS/RCLS
 //#define ALLOW_STOS_A
 
+// Shift arrow keeps the shift state
+// #define ARROW_KEEPS_SHIFT
+
 // Include a date function to determine the date of Easter in a given year
 //#define INCLUDE_EASTER
 

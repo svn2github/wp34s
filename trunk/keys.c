@@ -533,201 +533,131 @@ static int process_normal(const keycode c)
 	return STATE_UNFINISHED;
 }
 
+
 /*
- *  Process a key code after f shift
+ *  Process a key code after f or g shift
  */
-static int process_f_shifted(const keycode c) {
-	static const unsigned short int op_map[] = {
+static int process_fg_shifted(const keycode c) {
+
+	static const unsigned short int op_map[][2] = {
 		// Row 1
-		STATE_UNFINISHED,	// HYP
-		OP_MON | OP_SIN,
-		OP_MON | OP_COS,
-		OP_MON | OP_TAN,
-		OP_NIL | OP_P2R,
-		OP_NIL | OP_FRACPROPER,
+		{ 1,                      0                        }, // HYP
+		{ OP_MON | OP_SIN,        OP_MON | OP_ASIN         },
+		{ OP_MON | OP_COS,        OP_MON | OP_ACOS         },
+		{ OP_MON | OP_TAN,        OP_MON | OP_ATAN         },
+		{ OP_NIL | OP_P2R,        OP_NIL | OP_R2P          },
+		{ OP_NIL | OP_FRACPROPER, OP_NIL | OP_FRACIMPROPER }, // CPX
 		// Row 2
-		OP_NIL | OP_HMS,
-		OP_NIL | OP_FLOAT,
-		OP_NIL | OP_RANDOM,
+		{ OP_NIL | OP_HMS,        OP_NIL | OP_DEG          },
+		{ OP_NIL | OP_FLOAT,      OP_NIL | OP_RAD          },
+		{ OP_NIL | OP_RANDOM,     OP_NIL | OP_GRAD         },
 		// Row 3
-		STATE_UNFINISHED,	// Alpha
-		OP_NIL | OP_ALPHATOX,
-		RARG(RARG_BASE, 2),
-		RARG(RARG_BASE, 10),
-		OP_NIL | OP_CLRALPHA,
+		{ STATE_UNFINISHED,       OP_NIL | OP_FILL         }, // ENTER
+		{ OP_NIL | OP_ALPHATOX,   OP_NIL | OP_XTOALPHA     },
+		{ RARG(RARG_BASE, 2),     RARG(RARG_BASE, 8)       },
+		{ RARG(RARG_BASE, 10),    RARG(RARG_BASE, 16)      },
+		{ OP_NIL | OP_CLRALPHA,   OP_NIL | OP_SIGMACLEAR   },
 		// Row 4
-		OP_MON | OP_EXP,
-		OP_MON | OP_10POWX,
-		OP_MON | OP_2POWX,
-		OP_DYA | OP_POW,
-		OP_MON | OP_RECIP,
+		{ OP_MON | OP_EXP,        OP_MON | OP_LN           },
+		{ OP_MON | OP_10POWX,     OP_MON | OP_LOG          },
+		{ OP_MON | OP_2POWX,      OP_MON | OP_LG2          },
+		{ OP_DYA | OP_POW,        OP_DYA | OP_LOGXY        },
+		{ OP_MON | OP_RECIP,      OP_DYA | OP_PARAL        },
 		// Row 5
-		OP_DYA | OP_COMB,
-		OP_MON | OP_cdf_Q,
-		OP_NIL | OP_statMEAN,
-		OP_MON | OP_yhat,
-		OP_MON | OP_SQRT,
+		{ OP_DYA | OP_COMB,       OP_DYA | OP_PERM         },
+		{ OP_MON | OP_cdf_Q,      OP_MON | OP_qf_Q         },
+		{ OP_NIL | OP_statMEAN,   OP_NIL | OP_statS        },
+		{ OP_MON | OP_yhat,       OP_NIL | OP_statR        },
+		{ OP_MON | OP_SQRT,       OP_MON | OP_SQR          },
 		// Row 6
-		STATE_UNFINISHED,	// Window left
-		STATE_UNFINISHED,	// Test X=
-		RARG_SOLVE,
-		RARG_PROD,
-		OP_MON | OP_PERCNT,
+		{ STATE_UNFINISHED,       STATE_UNFINISHED         },
+		{ TST_EQ,                 TST_NE                   }, // tests
+		{ RARG_SOLVE,             RARG_INTG                },
+		{ RARG_PROD,              RARG_SUM                 },
+		{ OP_MON | OP_PERCNT,     OP_MON | OP_PERCHG       },
 		// Row 7
-		STATE_UNFINISHED,	// Register browser
-		OP_MON | OP_ABS,
-		OP_MON | OP_TRUNC,
-		RARG_LBL,
-		RARG_DSE
+		{ STATE_UNFINISHED,       OP_NIL | OP_OFF          },
+		{ OP_MON | OP_ABS,        OP_MON | OP_RND          },
+		{ OP_MON | OP_TRUNC,      OP_MON | OP_FRAC         },
+		{ RARG_LBL,               OP_NIL | OP_RTN          },
+		{ RARG_DSE,               RARG_ISG                 }
 	};
+
 	static const unsigned short int op_map2[] = {
 		OP_SPEC | OP_SIGMAPLUS,
 		OP_MON  | OP_RECIP,
 		OP_DYA  | OP_POW,
 		OP_MON  | OP_SQRT
 	};
-	int lc = keycode_to_linear(c);
-	int op = op_map[lc];
-	set_shift(SHIFT_N);
 
-	// The switch handles all the special cases
+	enum shifts old_shift = set_shift(SHIFT_N);
+	int lc = keycode_to_linear(c);
+	int op = op_map[lc][old_shift == SHIFT_G];
+
 	switch (c) {
 	case K00:
 	case K01:
 	case K02:
 	case K03:
-		if (UState.intm)
+		if (UState.intm /* && old_shift == SHIFT_F */)
 			return check_f_key(lc, op_map2[lc]);
 
 		if ( c == K00 ) {
 			State2.hyp = 1;
-			State2.dot = 1;
-			State2.cmplx = 0;
+			State2.dot = op;
+			// State2.cmplx = 0;
+			return STATE_UNFINISHED;
 		}
-		return op;			// unfinished in case of HYP (K00)
+		break;
 
 	case K_ARROW:
 		if (UState.intm) {
 			State2.arrow = 1;
-			break;
+#ifdef ARROW_KEEPS_SHIFT
+			set_shift(old_shift);
+#endif
+			return STATE_UNFINISHED;
 		}
-		return op;
-
-	case K20:				// ALpha
-		State2.alphas = 1;
-		process_cmdline_set_lift();
 		break;
 
-	case K50:				// Window left
-		if (UState.intm && UState.int_maxw > State2.int_window)
-			State2.int_window++;
+	case K20:				// Alpha
+		if (old_shift == SHIFT_F) {
+			State2.alphas = 1;
+			process_cmdline_set_lift();
+		}
 		break;
 
-	case K51:				// Test X=
-		State2.test = TST_EQ;
+	case K50:				// Window left/right
+		if (UState.intm) {
+			if (old_shift == SHIFT_F) {
+				if (UState.int_maxw > State2.int_window)
+					State2.int_window++;
+			}
+			else {
+				if (UState.int_maxw > 0 && State2.int_window > 0)
+					State2.int_window--;
+			}
+		}	
 		break;
+
+	case K51:
+		State2.test = op;
+		return STATE_UNFINISHED;
 
 	case K52:
 	case K53:
 	case K63:
 	case K64:
-		init_arg((enum rarg)op);
-		break;
-
-	default:
-		return (unsigned short) op;	// Keys handled by table
-	}
-	return STATE_UNFINISHED;
-}
-
-/*
- *  Process a key code after g shift
- */
-static int process_g_shifted(const keycode c) {
-	static const unsigned short int op_map[] = {
-		// Row 1
-		STATE_UNFINISHED,	// HYP-1
-		OP_MON | OP_ASIN,
-		OP_MON | OP_ACOS,
-		OP_MON | OP_ATAN,
-		OP_NIL | OP_R2P,
-		OP_NIL | OP_FRACIMPROPER,
-		// Row 2
-		OP_NIL | OP_DEG,
-		OP_NIL | OP_RAD,
-		OP_NIL | OP_GRAD,
-		// Row 3
-		OP_NIL | OP_FILL,
-		OP_NIL | OP_XTOALPHA,
-		RARG(RARG_BASE, 8),
-		RARG(RARG_BASE, 16),
-		OP_NIL | OP_SIGMACLEAR,
-		// Row 4
-		OP_MON | OP_LN,
-		OP_MON | OP_LOG,
-		OP_MON | OP_LG2,
-		OP_DYA | OP_LOGXY,
-		OP_DYA | OP_PARAL,
-		// Row 5
-		OP_DYA | OP_PERM,
-		OP_MON | OP_qf_Q,
-		OP_NIL | OP_statS,
-		OP_NIL | OP_statR,
-		OP_MON | OP_SQR,
-		// Row 6
-		STATE_UNFINISHED,	// Window right
-		STATE_UNFINISHED,	// Test X!=
-		RARG_INTG,
-		RARG_SUM,
-		OP_MON | OP_PERCHG,
-		// Row 7
-		OP_NIL | OP_OFF,
-		OP_MON | OP_RND,
-		OP_MON | OP_FRAC,
-		OP_NIL | OP_RTN,
-		RARG_ISG
-	};
-
-	int lc = keycode_to_linear(c);
-	int op = op_map[lc];
-	set_shift(SHIFT_N);
-
-	// The switch handles all the special cases
-	switch (c) {
-	case K00:
-		if (! UState.intm) {
-			State2.hyp = 1;
-			State2.dot = 0;
-			State2.cmplx = 0;
+		if (op != (OP_NIL | OP_RTN)) {
+			init_arg((enum rarg)op);
+			return STATE_UNFINISHED;
 		}
 		break;
 
-	case K_ARROW:
-		if (UState.intm) {
-			State2.arrow = 1;
-			break;
-		}
-		return op;
-
-	case K50:	
-		if (UState.intm && UState.int_maxw > 0 && State2.int_window > 0)
-			State2.int_window--;
-		break;
-
-	case K51:
-		State2.test = TST_NE;
-		break;
-
-	case K52:
-	case K53:
-	case K64:
-		init_arg((enum rarg) op);
-		break;
-
 	default:
-		return (unsigned short) op;	// Keys handled by table
+		break;
 	}
-	return STATE_UNFINISHED;
+	return op;
 }
 
 /*
@@ -967,14 +897,14 @@ static int process_h_shifted_cmplx(const keycode c) {
  */
 static int process_hyp(const keycode c) {
 	const int cmplx = State2.cmplx;
-	const int dot = State2.dot;
+	int dot = State2.dot;
 	const opcode x = cmplx ? OP_CMON : OP_MON;
 
 	State2.hyp = 0;
 	State2.cmplx = 0;
 	State2.dot = 0;
 
-	switch (c) {
+	switch ((int)c) {
 	case K01:	return x + (dot ? OP_SINH : OP_ASINH);
 	case K02:	return x + (dot ? OP_COSH : OP_ACOSH);
 	case K03:	return x + (dot ? OP_TANH : OP_ATANH);
@@ -982,6 +912,10 @@ static int process_hyp(const keycode c) {
 	case K60:
 	case K24:
 		break;
+	case K_F:
+	case K_G:
+		dot = (c == K_F);
+		// fall trough
 	default:
 		State2.hyp = 1;
 		State2.cmplx = cmplx;
@@ -1004,21 +938,27 @@ static int process_arrow(const keycode c) {
 		if (oldstate == SHIFT_N || oldstate == SHIFT_G)
 			return OP_MON | OP_2DEG;
 		return OP_MON | OP_2HMS;
+
 	case K11:
 		if (oldstate == SHIFT_N || oldstate == SHIFT_G)
 			return OP_MON | OP_2RAD;
 		return OP_MON | OP_HMS2;
-	case K12:	return OP_MON | OP_2GRAD;
+
+	case K12:
+		return OP_MON | OP_2GRAD;
 
 	case K20:
-		if (oldstate == SHIFT_N || oldstate == SHIFT_F)
+		if (oldstate == SHIFT_N || oldstate == SHIFT_F) {
+			process_cmdline_set_lift();
 			State2.arrow_alpha = 1;
+		}
 		break;
 
 	case K22:
 		set_smode((oldstate == SHIFT_F)?SDISP_BIN:SDISP_OCT);
 		process_cmdline_set_lift();
 		break;
+
 	case K23:
 		set_smode((oldstate == SHIFT_F)?SDISP_DEC:SDISP_HEX);
 		process_cmdline_set_lift();
@@ -1026,14 +966,14 @@ static int process_arrow(const keycode c) {
 
 	case K04:
 		switch (oldstate) {
-		case SHIFT_F:	return OP_NIL | OP_P2R;
-		case SHIFT_G:	return OP_NIL | OP_R2P;
-		default:	break;
+		case SHIFT_F:
+			return OP_NIL | OP_P2R;
+		case SHIFT_G:
+			return OP_NIL | OP_R2P;
+		default:	
+			break;
 		}
 		break;
-
-//	case K05:
-//		return OP_NIL | OP_2FRAC;
 
 	default:
 		break;
@@ -2285,9 +2225,6 @@ static int process(const int c) {
 	if (State2.multi)
 		return process_multi((const keycode)c);
 
-	if (State2.arrow)
-		return process_arrow((const keycode)c);
-
 	// Here the keys are mapped to catalogues
 	// The position of this code decides where catalog switching
 	// works and were not
@@ -2295,8 +2232,12 @@ static int process(const int c) {
 	if ( cat != CATALOGUE_NONE ) {
 		init_cat( CATALOGUE_NONE );
 		init_cat( cat );
+		State2.arrow = 0;
 		return STATE_UNFINISHED;
 	}
+
+	if (State2.arrow)
+		return process_arrow((const keycode)c);
 
 	if (State2.status)
 		return process_status((const keycode)c);
@@ -2320,10 +2261,8 @@ static int process(const int c) {
 			return process_h_shifted_cmplx((const keycode)c);
 		return process_normal_cmplx((const keycode)c);
 	} else {
-		if (s == SHIFT_F)
-			return process_f_shifted((const keycode)c);
-		if (s == SHIFT_G)
-			return process_g_shifted((const keycode)c);
+		if (s == SHIFT_F || s == SHIFT_G)
+			return process_fg_shifted((const keycode)c);
 		if (s == SHIFT_H)
 			return process_h_shifted((const keycode)c);
 		return process_normal((const keycode)c);
