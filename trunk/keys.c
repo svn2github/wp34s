@@ -1018,11 +1018,11 @@ static int process_arrow(const keycode c) {
 		break;
 
 	case K22:
-		set_smode((oldstate != SHIFT_F)?SDISP_OCT:SDISP_BIN);
+		set_smode((oldstate != SHIFT_G)?SDISP_BIN:SDISP_OCT);
 		process_cmdline_set_lift();
 		break;
 	case K23:
-		set_smode((oldstate != SHIFT_F)?SDISP_HEX:SDISP_DEC);
+		set_smode((oldstate != SHIFT_G)?SDISP_DEC:SDISP_HEX);
 		process_cmdline_set_lift();
 		break;
 
