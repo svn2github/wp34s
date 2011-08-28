@@ -610,6 +610,12 @@ static int process_fg_shifted(const keycode c) {
 		}
 		break;
 
+	/*
+	 *  Handle the temporary display of X in another base
+	 *  On the emulator this is done with ->
+	 *  On the device, shift hold takes the role
+	 */
+#ifndef SHIFT_HOLD_TEMPVIEW
 	case K_ARROW:
 		if (UState.intm) {
 			State2.arrow = 1;
@@ -619,6 +625,19 @@ static int process_fg_shifted(const keycode c) {
 			return STATE_UNFINISHED;
 		}
 		break;
+#else
+	case K22:
+	case K23:
+		if (is_shift_down(old_shift)) {
+			const enum single_disp d =
+				c == K22 ? old_shift == SHIFT_F ? SDISP_BIN : SDISP_OCT
+				         : old_shift == SHIFT_F ? SDISP_DEC : SDISP_HEX;
+			set_smode(d);
+			process_cmdline_set_lift();
+			return STATE_UNFINISHED;
+		}
+		break;
+#endif
 
 	case K20:				// Alpha
 		if (old_shift == SHIFT_F) {
@@ -962,6 +981,7 @@ static int process_arrow(const keycode c) {
 		}
 		break;
 
+#ifndef SHIFT_HOLD_TEMPVIEW
 	case K22:
 		set_smode((oldstate == SHIFT_F)?SDISP_BIN:SDISP_OCT);
 		process_cmdline_set_lift();
@@ -971,6 +991,7 @@ static int process_arrow(const keycode c) {
 		set_smode((oldstate == SHIFT_F)?SDISP_DEC:SDISP_HEX);
 		process_cmdline_set_lift();
 		break;
+#endif
 
 	case K04:
 		switch (oldstate) {
