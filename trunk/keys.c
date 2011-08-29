@@ -43,9 +43,6 @@
 static void advance_to_next_label(unsigned int pc);
 
 
-/* Short blink of PRN annunciator with every key */
-int BusyBlink;
-
 enum confirmations {
 	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog
 };
@@ -2153,10 +2150,15 @@ static int process(const int c) {
 
 		/*
 		 *  Toggle the RPN annunciator as a visual feedback
+		 *  While the display is frozen, the annunciator stays cleared.
 		 */
-		dot(RPN, !BusyBlink);
-		BusyBlink = 0;
-		finish_display();
+		if ( ShowRPN == 1 ) {
+			dot(RPN, 1);
+			finish_display();
+		}
+		else if ( ShowRPN == -1 ) {
+			ShowRPN = 1;
+		}
 
 		/*
 		 *  Serve the watchdog
@@ -2202,7 +2204,7 @@ static int process(const int c) {
 	/*
 	 * Turn off the RPN annunciator as a visual feedback
 	 */
-	BusyBlink = 1;
+	ShowRPN = -1;
 	dot(RPN, 0);
 	finish_display();
 

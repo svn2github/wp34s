@@ -33,6 +33,7 @@
 
 extern int setuptty(int reset);
 extern void display(void);
+extern void frozen_display(void);
 extern void set_running_off_sst(void);
 extern void set_running_on_sst(void);
 extern void set_running_off(void);

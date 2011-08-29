@@ -170,10 +170,9 @@ void reset_disp(void) {
         int i;
 
         wait_for_display();
-        clr_dot(STO_annun);
-        //clr_dot(RCL_annun);
-        for (i=0; i<=EXP_SIGN; i++)
-                clr_dot(i);
+        for (i=0; i<MATRIX_BASE; i++)
+		if (i != RCL_annun)
+			clr_dot(i);
 
 #if !defined(REALBUILD) && !defined(WINGUI)
 #ifdef USECURSES

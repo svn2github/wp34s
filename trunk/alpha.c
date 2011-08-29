@@ -65,9 +65,7 @@ void clralpha(decimal64 *a, decimal64 *b, enum nilop op) {
 void alpha_view_common(int reg) {
 	DispMsg = Alpha;
 	ShowRegister = reg;
-	display();
-	DispMsg = Alpha;
-	ShowRegister = reg;
+	frozen_display();
 }
 
 void alpha_view(decimal64 *a, decimal64 *b, enum nilop op) {
@@ -79,8 +77,6 @@ void alpha_view(decimal64 *a, decimal64 *b, enum nilop op) {
 void alpha_view_reg(unsigned int arg, enum rarg op) {
 	alpha_view_common(arg);
 }
-
-
 
 
 /* Append the character from the given register or passed arg to Alpha

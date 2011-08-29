@@ -206,6 +206,7 @@ struct _state2 {
 	unsigned int invalid_disp : 1;  // Display contents is invalid
 	unsigned int labellist : 1;	// Displaying the alpha label navigator
 	unsigned int registerlist : 1;	// Displaying the register's contents
+	unsigned int disp_freeze : 1;   // Set by VIEW to avoid refresh
 #ifndef REALBUILD
 	unsigned int trace : 1;
 	unsigned int flags : 1;		// Display state flags
@@ -290,6 +291,7 @@ extern int JustStopped;            // Set on program stop to ignore the next R/S
 extern int Error;		   // Did an error occur, if so what code?
 extern int ShowRegister; 	   // Temporary display (not X)
 extern int PcWrapped;		   // dec() or inc() have rapped around
+extern int ShowRPN;		   // controls the RPN annunciator
 extern const char *DispMsg;	   // What to display in message area
 
 

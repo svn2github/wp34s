@@ -32,6 +32,8 @@ static void set_status_right(const char *);
 
 const char *DispMsg;	   // What to display in message area
 
+int ShowRPN;		   // controls visibility of RPN annunciator
+
 #if !defined(REALBUILD) && !defined(WINGUI)
 int just_displayed = 0;
 #endif
@@ -1189,7 +1191,12 @@ static void set_annunciators(void)
 	 */
 	dot(DEG, !is_intmode() && tm == TRIG_DEG);
 	dot(RAD, !is_intmode() && tm == TRIG_RAD);
+
+	/* Show the RPN indicator only if display shows X in the normal mode
+	 */
+	dot(RPN, ShowRPN == 1 && Running);
 }
+
 
 /*
  *  Update the display
@@ -1199,12 +1206,18 @@ void display(void) {
 	char buf[40], *bp = buf;
 	const char *p;
 	int annuc = 0;
-	const enum catalogues cata = State2.catalogue;
+	const enum catalogues cata = (enum catalogues) State2.catalogue;
 	int skip = 0;
+	int rpn = 0;
 
-	// Clear display and set annunciators
+	if ( State2.disp_freeze ) {
+		State2.disp_freeze = 0;
+		ShowRPN = 0;
+		return;
+	}
+
+	// Clear display
 	reset_disp();
-	set_annunciators();
 
 	xset(buf, '\0', sizeof(buf));
 	if (State2.cmplx  && !cata) {
@@ -1228,6 +1241,7 @@ void display(void) {
 		set_decimal(SEGS_PER_DIGIT * 4, DECIMAL_COMMA, NULL);
 		xcopy( vers + 8, get_revision(), 4 );
 		set_status(vers);
+		skip = 1;
 		goto nostk;
 	} else if (State2.confirm) {
 		set_status(S_SURE);
@@ -1370,22 +1384,26 @@ void display(void) {
 			}
 			skip = 1;
 		}
-		if (cur_shift() != SHIFT_N || State2.cmplx || State2.arrow)
+		else if (cur_shift() != SHIFT_N || State2.cmplx || State2.arrow)
 			annuc = 1;
 		goto nostk;
 	}
 	show_stack();
 nostk:	show_flags();
-	if (!skip && !State2.version) {
+	if (!skip) {
 		if (State2.runmode) {
 			p = get_cmdline();
 			if (p == NULL || cata) {
-				if (ShowRegister != -1)
+				if (ShowRegister != -1) {
 					format_reg(get_reg_n(ShowRegister), NULL);
+					rpn = ShowRegister == regX_idx;
+				}
 				else
 					set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
-			} else
+			} else {
 				disp_x(p);
+				rpn = 1;
+			}
 		} else {
 			unsigned int upc = user_pc();
 			unsigned int pc = state_pc();
@@ -1407,6 +1425,10 @@ nostk:	show_flags();
 	if (annuc)
 		annunicators();
 skpall:
+	if (rpn == 0 || State2.smode != SDISP_NORMAL)
+		ShowRPN = 0;
+	set_annunciators();
+
 	State2.version = 0;
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
@@ -1417,6 +1439,16 @@ skpall:
 #endif
 }
 
+/*
+ *  Frozen display will revert to normal only after another call to display();
+ */
+void frozen_display()
+{
+	State2.disp_freeze = 0;
+	ShowRPN = 0;
+	display();
+	State2.disp_freeze = 1;
+}
 
 /* Take the given string and display as much of it as possible on the top
  * line of the display.  The font size is set by the smallp parameter.

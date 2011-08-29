@@ -1401,8 +1401,9 @@ void cmdswap(unsigned int arg, enum rarg op) {
  */
 void cmdview(unsigned int arg, enum rarg op) {
 	ShowRegister = arg;
+	State2.disp_freeze = 0;
 	display();
-	ShowRegister = arg;
+	State2.disp_freeze = 1;
 }
 
 
@@ -3618,6 +3619,7 @@ int init_34s(void)
 	}
 	init_state();
 	xeq_init_contexts();
+	ShowRPN = 1;
 
 #if !defined(REALBUILD) && !defined(WINGUI) && !defined(WP34STEST) && defined(DEBUG)
 	{
