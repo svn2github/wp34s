@@ -114,7 +114,7 @@ private:
 	bool ReadRegistry();
 	void WriteToRegistry();
 	void CheckMenuForManager();
-  void UpdateSkinMenu();
+	void UpdateSkinMenu();
 
 	// Contains resource id for the selected test bench menu item
 	UINT m_nCurrentTestbenchId;

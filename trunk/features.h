@@ -88,7 +88,7 @@
 // Allow A as destination for STOS/RCLS
 #define ALLOW_STOS_A
 
-#ifdef REALBUILD
+#if defined(REALBUILD) || defined(WINGUI)
 // Use shift hold sequence for temporary display in other bases
 #define SHIFT_HOLD_TEMPVIEW
 

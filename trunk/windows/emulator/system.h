@@ -96,6 +96,7 @@ int EXPORT KeyBuffPeek();           //!<  returns -1 if there is no keys in the 
 int EXPORT KeyBuffEmpty();          //!< returns true/false if there is a key in the buffer or not...
 int EXPORT KeyBuffRoom();           //!< returns free space in keyboard buffer
 int EXPORT GetLastKey();            //!< gets the last key pressed for handling ON key abort
+u64 EXPORT GetKeyboardMap();        //!< return the map of pressed keys
 /*! \fn void KeyboardBufferClear()
     \brief remove all keys from keyboard buffer
 */

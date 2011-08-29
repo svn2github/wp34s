@@ -742,7 +742,12 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
     if (!already_exists) {
       for (iter = m_listKeyCode.begin(); iter != 
             m_listKeyCode.end(); ) {
-        HP20bKeyUp(*iter);
+          if (*iter != VK_LSHIFT && *iter != VK_RSHIFT && *iter != VK_SHIFT
+#ifdef wp34s
+              && *iter != 'F' && *iter != 'G' && *iter != 'H'
+#endif
+          )
+	    HP20bKeyUp(*iter);
         iter = m_listKeyCode.erase(iter);
       }
       m_listKeyCode.push_back(wKeyCode);
@@ -752,6 +757,7 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
     m_listKeyCode.push_back(wKeyCode);
 
 }
+
 /***************************************************************
 ** 
 ** Responsible to trap keystrokes for non-system keys. Once trapped, 
@@ -761,6 +767,12 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
 //
 void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
 { 
+#ifdef wp34s
+  if (wKeyCode == 'F' && System.KeyboardMap & 0x200
+   || wKeyCode == 'G' && System.KeyboardMap & 0x400
+   || wKeyCode == 'H' && System.KeyboardMap & 0x800 )
+    return;
+#endif
   ForceHP20bKeyUp(wKeyCode);
   if (m_Touch_Base == NONE) {
     {
@@ -770,10 +782,13 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
         m_rgnPressedButton = Skin.hpGetKeyRegion( wKeyCode, m_bShiftKeyPressed, &m_nHP20bKeyDown);
         if (m_rgnPressedButton != 0) {
           keypress(m_nHP20bKeyDown);
-          HDC   hDC =::GetDC( m_Background.m_hWnd);
+          HDC hDC = ::GetDC(m_Background.m_hWnd);
 
           InvertRgn(hDC, m_rgnPressedButton);
-         ::ReleaseDC(m_Background.m_hWnd, hDC);
+          ::ReleaseDC(m_Background.m_hWnd, hDC);
+#ifdef wp34s
+          if (wKeyCode == 'F' || wKeyCode == 'G' || wKeyCode == 'H') return;
+#endif
           m_Touch_Base = KEYBOARD;
         }
       }
@@ -789,19 +804,24 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
 //
 void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
 { 
-  if (wKeyCode == VK_LSHIFT || wKeyCode == VK_RSHIFT || wKeyCode == VK_SHIFT)
+  LONG key;
+  if (wKeyCode == VK_LSHIFT || wKeyCode == VK_RSHIFT || wKeyCode == VK_SHIFT) {
     m_bShiftKeyPressed = false;
-
-  if (m_nHP20bKeyDown >= 0) {
-    HDC   hDC =::GetDC(m_Background.m_hWnd);
-
-    InvertRgn(hDC, m_rgnPressedButton);
-   ::ReleaseDC(m_Background.m_hWnd, hDC);
-    DeleteObject(m_rgnPressedButton);
-    System.KeyboardMap &= ~((u64)1 << m_nHP20bKeyDown);
-    m_nHP20bKeyDown = - 1;
-    m_Touch_Base = NONE;
+    key = m_nHP20bKeyDown;
   }
+  else {
+    m_rgnPressedButton = Skin.hpGetKeyRegion(wKeyCode, m_bShiftKeyPressed, &key);
+  }
+  if (m_rgnPressedButton != 0 && key >= 0 && System.KeyboardMap & ((u64)1 << key)) {
+    HDC hDC = ::GetDC(m_Background.m_hWnd);
+    InvertRgn(hDC, m_rgnPressedButton);
+    ::ReleaseDC(m_Background.m_hWnd, hDC);
+    DeleteObject(m_rgnPressedButton);
+    System.KeyboardMap &= ~((u64)1 << key);
+    m_nHP20bKeyDown = - 1;
+    m_rgnPressedButton = 0;
+  }
+  m_Touch_Base = NONE;
 }
 /***************************************************************
 ** 
@@ -942,9 +962,10 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
   else {
     if (r != NULL)
       DeleteObject(r);
-
+#ifndef wp34s
     // Forcing to send SHIFT key to calculator firmware
     System.KeyboardMap &= ~((u64)1 << Skin.mright);
+#endif
     UpdateScreen(true);
   }
   CDialog::OnRButtonUp(nFlags, point);
@@ -964,10 +985,10 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
   LONG code;
   HRGN r = Skin.hpGetKeyRegion(&point, &code);
   if (NULL != r && code == - 1) {
-    HDC hDC =::GetDC(m_Background.m_hWnd);
+    HDC hDC = ::GetDC(m_Background.m_hWnd);
 
     InvertRgn(hDC, r);
-   ::ReleaseDC(m_Background.m_hWnd, hDC);
+    ::ReleaseDC(m_Background.m_hWnd, hDC);
     //track when the mouse pointer leaves a window
     TRACKMOUSEEVENT tme;
 
@@ -980,8 +1001,18 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
   else {
     if (r != NULL)
       DeleteObject(r);
+#ifdef wp34s
+    if ( r != NULL && code >= 9 && code <= 11 ) {
+      // RMB on f to h
+      if ( System.KeyboardMap & ((u64)1 << code) )
+        HP20bKeyUp('F' + code - 9);
+      else
+        HP20bKeyDown('F' + code - 9);
+    }
+#else
     if (Skin.mright != - 1)
       keypress(Skin.mright);
+#endif
   }
   CDialog::OnRButtonDown(nFlags, point);
 }

@@ -78,6 +78,12 @@ int GetLastKey(void)
 	return c;
 }
 
+// Return the keyboard map of pressed keys
+u64 GetKeyboardMap(void)
+{
+	return System.KeyboardMap;
+}
+
 // *****************************************************************************
 // Keyboard buffer management
 

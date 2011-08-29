@@ -76,7 +76,9 @@ int  EXPORT KeyBuffGetKey(void);
 
 int  EXPORT AddKeyInBuffer(int k);
 
-int EXPORT GetLastKey(void);
+int  EXPORT GetLastKey(void);
+
+long long EXPORT GetKeyboardMap(void);
 
 void EXPORT ExitEmulator(void);
 #ifdef __cplusplus

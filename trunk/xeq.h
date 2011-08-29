@@ -1174,6 +1174,7 @@ extern void int_mode_convert(decimal64 *r);
 /* system functions */
 extern void busy(void);
 extern int is_key_pressed(void);
+extern int is_shift_down(int s);
 extern int get_key(void);
 extern int put_key(int k);
 extern void shutdown(void);
@@ -1186,7 +1187,6 @@ extern void update_speed(void);
 extern void idle(void);
 extern int is_debug(void);
 extern int is_test_mode(void);
-extern int is_shift_down(int s);
 #else
 #define lock()
 #define unlock()
