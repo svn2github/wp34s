@@ -1937,7 +1937,7 @@ static int process_confirm(const keycode c) {
 }
 
 static int process_status(const keycode c) {
-	unsigned int n = State2.status - 1;
+	int n = ((int)State2.status) - 1;
 
 	if ( c == K40 ) {
 		if (--n < 0)
