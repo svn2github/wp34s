@@ -1210,7 +1210,7 @@ void display(void) {
 	int skip = 0;
 	int rpn = 0;
 
-	if ( State2.disp_freeze ) {
+	if (State2.disp_freeze) {
 		State2.disp_freeze = 0;
 		ShowRPN = 0;
 		return;
@@ -1395,8 +1395,8 @@ nostk:	show_flags();
 			p = get_cmdline();
 			if (p == NULL || cata) {
 				if (ShowRegister != -1) {
+					rpn = (ShowRegister == regX_idx) && !State2.hms;
 					format_reg(get_reg_n(ShowRegister), NULL);
-					rpn = ShowRegister == regX_idx;
 				}
 				else
 					set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
@@ -1432,6 +1432,7 @@ skpall:
 	State2.version = 0;
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
+	State2.disp_temp = (ShowRPN == 0);
 	ShowRegister = regX_idx;
 	finish_display();
 #if !defined(REALBUILD) && !defined(WINGUI)

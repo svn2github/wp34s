@@ -183,9 +183,12 @@ struct _state2 {
 	unsigned char catalogue;	// In catalogue mode
 	unsigned char numdigit;
 	unsigned char shifts;		// f, g, or h shift?
-	unsigned int smode : 3;		// Single short display mode
+	unsigned char smode;		// Single short display mode
+	volatile unsigned char voltage; // Last measured voltage
+	char last_key;			// Most recent key pressed while program is running
+	unsigned char test;		// Waiting for a test command entry
+
 	unsigned int confirm : 2;	// Confirmation of operation required
-	unsigned int test : 3;		// Waiting for a test command entry
 	unsigned int int_window : 3;	// Which window to display 0=rightmost
 	unsigned int gtodot : 1;	// GTO . sequence met
 	unsigned int cmplx : 1;		// Complex prefix pressed
@@ -207,6 +210,7 @@ struct _state2 {
 	unsigned int labellist : 1;	// Displaying the alpha label navigator
 	unsigned int registerlist : 1;	// Displaying the register's contents
 	unsigned int disp_freeze : 1;   // Set by VIEW to avoid refresh
+	unsigned int disp_temp : 1;     // Indicates a temporary display, disables <-
 #ifndef REALBUILD
 	unsigned int trace : 1;
 	unsigned int flags : 1;		// Display state flags
@@ -245,16 +249,6 @@ typedef struct _while_on {
 	struct _state2 _state2;
 
 	/*
-	 *  Last measured voltage
-	 */
-	volatile unsigned char _voltage;
-
-	/*
-	 *  Most recent key pressed while program is running
-	 */
-	char _last_key;
-
-	/*
 	 *  What the user was just typing in
 	 */
 	unsigned char _cmdlinelength;	// XEQ internal - don't use
@@ -269,11 +263,11 @@ extern TStateWhileOn StateWhileOn;
 
 #define State2		 (StateWhileOn._state2)
 #define TestFlag	 (State2.test_flag)
+#define Voltage          (State2.voltage)
+#define LastKey		 (State2.last_key)
 #define Ticker		 (StateWhileOn._ticker)
 #define Keyticks         (StateWhileOn._keyticks)
 #define LastActiveSecond (StateWhileOn._last_active_second)
-#define Voltage          (StateWhileOn._voltage)
-#define LastKey		 (StateWhileOn._last_key)
 #define CmdLineLength	 (StateWhileOn._cmdlinelength)
 #define CmdLineEex	 (StateWhileOn._cmdlineeex)
 #define CmdLineDot	 (StateWhileOn._cmdlinedot)

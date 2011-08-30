@@ -514,6 +514,8 @@ static int process_normal(const keycode c)
 		return check_f_key(lc, op);
 
 	case K24:				// <-
+		if (State2.disp_temp)
+			return STATE_UNFINISHED;
 		if (State2.runmode)
 			return op;
 		return STATE_BACKSPACE;

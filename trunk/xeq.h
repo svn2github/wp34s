@@ -860,7 +860,7 @@ enum display_modes {
 enum single_disp {
 	SDISP_NORMAL=0,
 	SDISP_SHOW,
-	SDISP_BIN,	SDISP_OCT,	SDISP_DEC,	SDISP_HEX,
+	SDISP_BIN,	SDISP_OCT,	SDISP_DEC,	SDISP_HEX
 };
 
 // Trig modes
