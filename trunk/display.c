@@ -1432,7 +1432,7 @@ skpall:
 	State2.version = 0;
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
-	State2.disp_temp = (ShowRPN == 0);
+	State2.disp_temp = (ShowRPN == 0 && State2.runmode);
 	ShowRegister = regX_idx;
 	finish_display();
 #if !defined(REALBUILD) && !defined(WINGUI)
