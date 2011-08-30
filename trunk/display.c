@@ -1213,6 +1213,7 @@ void display(void) {
 	if (State2.disp_freeze) {
 		State2.disp_freeze = 0;
 		ShowRPN = 0;
+		State2.disp_temp = 1;
 		return;
 	}
 
