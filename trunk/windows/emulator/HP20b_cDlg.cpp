@@ -854,7 +854,7 @@ void CHP20b_cDlg::OnLButtonUp(UINT nFlags, CPoint point)
     HDC   hDC =::GetDC(m_Background.m_hWnd);
 
     InvertRgn(hDC, m_rgnPressedButton);
-   ::ReleaseDC(m_Background.m_hWnd, hDC);
+    ::ReleaseDC(m_Background.m_hWnd, hDC);
     DeleteObject(m_rgnPressedButton);
     System.KeyboardMap &= ~((u64)1 << m_nCurKeyPadNum);
     m_rgnPressedButton = NULL;
@@ -886,7 +886,7 @@ void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
         HDC   hDC =::GetDC(m_Background.m_hWnd);
 
         InvertRgn(hDC, m_rgnPressedButton);
-       ::ReleaseDC(m_Background.m_hWnd, hDC);
+        ::ReleaseDC(m_Background.m_hWnd, hDC);
         //track when the mouse pointer leaves a window
         TRACKMOUSEEVENT tme;
 
@@ -919,6 +919,7 @@ void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
 //
 UINT SkinListCounter;
 bool SkinList(_TCHAR *fullfilename, _TCHAR *filename, void *p);
+
 void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
 { 
   LONG code;
@@ -927,7 +928,7 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
     HDC   hDC =::GetDC(m_Background.m_hWnd);
 
     InvertRgn(hDC, r);
-   ::ReleaseDC(m_Background.m_hWnd, hDC);
+    ::ReleaseDC(m_Background.m_hWnd, hDC);
     DeleteObject(r);
     CMenu *pMenu = new CMenu;
 
@@ -960,8 +961,13 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
     delete pMenu;
   }
   else {
-    if (r != NULL)
+    if (r != NULL) {
       DeleteObject(r);
+#ifdef wp34s
+      OnLButtonUp(nFlags, point);
+      HP20bKeyUp('H');
+#endif
+    }
 #ifndef wp34s
     // Forcing to send SHIFT key to calculator firmware
     System.KeyboardMap &= ~((u64)1 << Skin.mright);
@@ -980,8 +986,6 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
 //
 void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
 { 
-  // TODO: Add your message handler code here and/or call default
-
   LONG code;
   HRGN r = Skin.hpGetKeyRegion(&point, &code);
   if (NULL != r && code == - 1) {
@@ -999,17 +1003,24 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
     DeleteObject(r);
   }
   else {
-    if (r != NULL)
+    if (r != NULL) {
       DeleteObject(r);
 #ifdef wp34s
-    if ( r != NULL && code >= 9 && code <= 11 ) {
-      // RMB on f to h
-      if ( System.KeyboardMap & ((u64)1 << code) )
-        HP20bKeyUp('F' + code - 9);
-      else
-        HP20bKeyDown('F' + code - 9);
+      if (code >= 9 && code <= 11 ) {
+        // RMB on f to h
+        if ( System.KeyboardMap & ((u64)1 << code) )
+          HP20bKeyUp('F' + code - 9);
+        else
+          HP20bKeyDown('F' + code - 9);
+      }
+      else {
+        // RMB on any other key: press g before
+        HP20bKeyDown('H');
+        OnLButtonDown(nFlags, point);
+      }
+#endif
     }
-#else
+#ifndef wp34s
     if (Skin.mright != - 1)
       keypress(Skin.mright);
 #endif
