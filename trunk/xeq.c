@@ -2737,6 +2737,7 @@ void int_mode_convert(decimal64 *r) {
 	unsigned long long int n;
 
 	decimal64ToNumber(r, &x);
+        decNumberTrunc(&x, &x);
 	n = dn_to_ull(&x, &s);
 	d64fromInt(r, build_value(n, s));
 }
