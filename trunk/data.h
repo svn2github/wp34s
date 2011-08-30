@@ -178,15 +178,15 @@ extern TPersistentRam PersistentRam;
 struct _state2 {
 	unsigned short digval;
 	unsigned char digval2;
+	unsigned char numdigit;		// All three used during argument entry
 	unsigned char status;		// display status screen line
 	unsigned char alpha_pos;	// Display position inside alpha
 	unsigned char catalogue;	// In catalogue mode
-	unsigned char numdigit;
+	unsigned char test;		// Waiting for a test command entry
 	unsigned char shifts;		// f, g, or h shift?
 	unsigned char smode;		// Single short display mode
 	volatile unsigned char voltage; // Last measured voltage
-	char last_key;			// Most recent key pressed while program is running
-	unsigned char test;		// Waiting for a test command entry
+	signed char last_key;		// Most recent key pressed while program is running
 
 	unsigned int confirm : 2;	// Confirmation of operation required
 	unsigned int int_window : 3;	// Which window to display 0=rightmost

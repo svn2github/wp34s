@@ -171,7 +171,7 @@ void reset_disp(void) {
 
         wait_for_display();
         for (i=0; i<MATRIX_BASE; i++)
-		if (i != RCL_annun)
+		if (i != RCL_annun && i != BATTERY && i != LIT_EQ )
 			clr_dot(i);
 
 #if !defined(REALBUILD) && !defined(WINGUI)

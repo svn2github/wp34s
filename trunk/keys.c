@@ -372,6 +372,11 @@ static void init_cat(enum catalogues cat) {
 void init_state(void) {
 	unsigned int a = state_pc();
 	unsigned int b = State.entryp;
+	unsigned char v = Voltage;
+	signed char k = LastKey;
+#ifdef REALBUILD
+	unsigned char t = TestFlag;
+#endif
 
 	xset(&State, 0, sizeof(struct _state));
 	State.state_lift = 1;
@@ -386,9 +391,15 @@ void init_state(void) {
 	//State2.shifts = SHIFT_N;
 	State2.test = TST_NONE;
 	State2.runmode = 1;
+
+	// Restore stuff that has been moved to state2 for space reasons.
+	Voltage = v;
+	LastKey = k;
 #ifndef REALBUILD
 	State2.trace = b;
 	State2.flags = a;
+#else
+	TestFlag = t;
 #endif
 	ShowRegister = regX_idx;
 }

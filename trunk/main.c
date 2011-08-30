@@ -1687,8 +1687,8 @@ int main(void)
 					SleepAnnunciatorOn = 0;
 				}
 #endif
-				dot( RPN, 1 );		// might still be off
-				show_keyticks();	// debugging
+				dot( RPN, ShowRPN != 0 );	// might still be off
+				show_keyticks();		// debugging
 				finish_display();
 				while ( WaitForLcd || KbData != 0 ) {
 					/*
