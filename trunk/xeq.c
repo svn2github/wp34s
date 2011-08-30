@@ -1403,7 +1403,7 @@ void cmdview(unsigned int arg, enum rarg op) {
 	ShowRegister = arg;
 	State2.disp_freeze = 0;
 	display();
-	State2.disp_freeze = 1;
+	State2.disp_freeze = Running || arg != regX_idx;
 }
 
 
