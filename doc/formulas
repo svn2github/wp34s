@@ -41,13 +41,10 @@ cos(a + i b) = cos(a) cosh(b) - i sin(a) sinh(b)
 
 tan(a + i b) = (sin(a) cosh(b) + i cos(a) sinh(b)) / (cos(a) cosh(b) - i sin(a) sinh(b))
 
-arcsin(z) = k PI + (-1)^k . asin(beta) + i (-1)^k ln(alpha+sqrt(alpha^2-1))
-arccos(z) = 2k PI +- (acos(beta) - i ln(alpha+sqrt(alpha^2-1)))
-where
-	alpha = 1/2 sqrt((x+1)^2+y^2) + 1/2 sqrt((x-1)^2+y^2)
-	beta  = 1/2 sqrt((x+1)^2+y^2) - 1/2 sqrt((x-1)^2+y^2)
+arcsin(z) = k PI + -i ln (iz + sqrt(1-z^2))
+arccos(z) = k PI + -i ln(z + sqrt(z^2-1))
+arctan(z) = i/2 (ln(1-iz) - ln(1+iz))
 
-arctan(z) = k PI + 0.5 atan(2a / (1-a^2-b^2) + i/4 ln((a^2+(b+1)^2)/(a^2+(b-1)^2))
 
 sinh(a) = (e^(a) - e^(-a))/2
 

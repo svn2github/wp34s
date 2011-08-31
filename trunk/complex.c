@@ -422,64 +422,40 @@ void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 #endif
 }
 
-// Helper for arcsin and arccos.
-// alpha = 1/2 sqrt((x+1)^2+y^2) + 1/2 sqrt((x-1)^2+y^2)
-// beta  = 1/2 sqrt((x+1)^2+y^2) - 1/2 sqrt((x-1)^2+y^2)
-// la = ln(alpha + sqrt(alpha^2-1)
-#ifndef TINY_BUILD
-static void asinacos_chelper(decNumber *la, decNumber *b, const decNumber *x, const decNumber *y) {
-	decNumber y2, x1, r, s, t;
 
-	decNumberSquare(&y2, y);
-	dn_add(&x1, x, &const_1);
-	decNumberSquare(&t, &x1);
-	dn_add(&r, &t, &y2);
-	dn_sqrt(&t, &r);
-	dn_multiply(&s, &t, &const_0_5);
-
-	dn_subtract(&x1, x, &const_1);
-	decNumberSquare(&t, &x1);
-	dn_add(&r, &t, &y2);
-	dn_sqrt(&t, &r);
-	dn_multiply(&r, &t, &const_0_5);
-
-	dn_add(&t, &s, &r);
-	dn_subtract(b, &s, &r);
-
-	// Now ln(alpha + sqrt(alpha*alpha-1))
-	decNumberSquare(&r, &t);
-	dn_subtract(&s, &r, &const_1);
-	dn_sqrt(&r, &s);
-	dn_add(&s, &r, &t);
-	dn_ln(la, &s);
-}
-#endif
-
-// arcsin(z) = k PI + (-1)^k . asin(beta) + i (-1)^k ln(alpha+sqrt(alpha^2-1))
+// arcsin(z) = k PI + -i ln (iz + sqrt(1-z^2))
 void cmplxAsin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 #ifndef TINY_BUILD
-	decNumber beta;
+	decNumber t1, t2, s1, s2, u;
 
-	asinacos_chelper(ry, &beta, a, b);
-	do_asin(rx, &beta);
+	cmplxSqr(&t1, &t2, a, b);
+	cmplxSubtractFromReal(&s1, &s2, &const_1, &t1, &t2);
+	cmplxSqrt(&t1, &t2, &s1, &s2);
+	dn_minus(&u, b);				/* i (a + ib) = -b + ia */
+	cmplxAdd(&s1, &s2, &u, a, &t1, &t2);
+	cmplxLn(&t1, rx, &s1, &s2);
+	dn_minus(ry, &t1);
 #endif
 }
 
-// arccos(z) = 2k PI +- (acos(beta) - i ln(alpha+sqrt(alpha^2-1)))
+// arccos(z) = k PI + -i ln(z + sqrt(z^2-1))
 void cmplxAcos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 #ifndef TINY_BUILD
-	decNumber beta;
+	decNumber t1, t2, s1, s2, u;
 
-	asinacos_chelper(ry, &beta, a, b);
-	dn_minus(ry, ry);
-	do_acos(rx, &beta);
+	cmplxSqr(&u, &t2, a, b);
+	dn_subtract(&t1, &u, &const_1);
+	cmplxSqrt(&s1, &s2, &t1, &t2);
+	cmplxAdd(&t1, &t2, &s1, &s2, a, b);
+	cmplxLn(&s1, rx, &t1, &t2);
+	dn_minus(ry, &s1);
 #endif
 }
 
-// atan(z) = k PI + 0.5 atan(2a / (1-a^2-b^2) + i/4 ln((a^2+(b+1)^2)/(a^2+(b-1)^2))
-//		z^2 <>-1
+// atan(z) = i/2 (ln(1 - i z) - ln (1 + i z))
 void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 #ifndef TINY_BUILD
+#if 0
 	decNumber s1, s2, t1, t2, u, v1, v2;
 
 	dn_add(&t1, b, &const_1);
@@ -495,6 +471,18 @@ void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	dn_multiply(&s1, &const_0_5, &t2);
 	dn_minus(rx, &s1);
 	dn_multiply(ry, &const_0_5, &t1);
+#else
+	decNumber s1, s2, t1, t2, v1, v2;
+
+	dn_subtract(&v1, &const_1, b);	// 1 + iz = 1 + i(a+ib)	= 1-b + ia
+	cmplxLn(&s1, &s2, &v1, a);
+	dn_add(&v1, &const_1, b);	// 1 - iz = 1 - i(a+ib) = 1+b - ia
+	dn_minus(&v2, a);
+	cmplxLn(&t1, &t2, &v1, &v2);
+	cmplxSubtract(&v1, &v2, &t1, &t2, &s1, &s2);
+	cmplxMultiplyReal(ry, &t1, &v1, &v2, &const_0_5);
+	dn_minus(rx, &t1);
+#endif
 #endif
 }
 
