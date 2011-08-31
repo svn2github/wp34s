@@ -333,28 +333,32 @@ static void init_cat(enum catalogues cat) {
 		CmdLineLength = 0;
 	}
 	process_cmdline();
-	if (cat == CATALOGUE_LABELS) {
+
+	State2.labellist = 0;
+	State2.registerlist = 0;
+	State2.status = 0;
+	State2.catalogue = CATALOGUE_NONE;
+
+	switch (cat) {
+	case CATALOGUE_LABELS:
 		// Label browser
-		State2.registerlist = 0;
-		State2.status = 0;
 		State2.labellist = 1;
 		advance_to_next_label(0);
-	}
-	else if (cat == CATALOGUE_REGISTERS) {
+		break;
+	
+	case CATALOGUE_REGISTERS:
 		// Register browser
-		State2.status = 0;
-		State2.labellist = 0;
 		State2.registerlist = 1;
 		State2.digval = regX_idx;
 		State2.digval2 = 0;
-	}
-	else if (cat == CATALOGUE_STATUS) {
+		break;
+
+	case CATALOGUE_STATUS:
 		// Register browser
-		State2.registerlist = 0;
-		State2.labellist = 0;
 		State2.status = 1;
-	}
-	else {
+		break;
+
+	default:
 		// Normal catalogue
 		State2.catalogue = cat;
 		State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
@@ -369,6 +373,9 @@ static void init_cat(enum catalogues cat) {
 	set_shift(SHIFT_N);
 }
 
+/*
+ *  Reset the internal state to a sane default
+ */
 void init_state(void) {
 	unsigned int a = state_pc();
 	unsigned int b = State.entryp;
@@ -392,7 +399,8 @@ void init_state(void) {
 	State2.test = TST_NONE;
 	State2.runmode = 1;
 
-	// Restore stuff that has been moved to state2 for space reasons.
+	// Restore stuff that has been moved to State2 for space reasons
+	// but must not be cleared.
 	Voltage = v;
 	LastKey = k;
 #ifndef REALBUILD
@@ -407,6 +415,7 @@ void init_state(void) {
 void soft_init_state(void) {
 	int soft;
 	unsigned int runmode;
+	unsigned int alphas;
 
 	if (CmdLineLength) {
 		CmdLineLength = 0;
@@ -418,10 +427,12 @@ void soft_init_state(void) {
 			State2.cmplx || State2.arrow || State2.test != TST_NONE || State2.status;
 	if (soft) {
 		runmode = State2.runmode;
+		alphas = State2.alphas;
 	}
 	init_state();
 	if (soft) {
 		State2.runmode = runmode;
+		State2.alphas = alphas;
 	}
 }
 
@@ -1162,7 +1173,7 @@ static int process_alpha(const keycode c) {
 		break;
 
 	case K20:	// Enter - maybe exit alpha mode
-		if (oldstate == SHIFT_G)
+		if (oldstate == SHIFT_G || oldstate == SHIFT_H)
 			break;
 #ifdef MULTI_ALPHA
 		if (oldstate == SHIFT_F && ! State2.runmode) {
@@ -1234,7 +1245,7 @@ static int process_alpha(const keycode c) {
 			State2.alphashift = 1 - State2.alphashift;
 		else if (oldstate == SHIFT_G)
 			return OP_NIL | OP_OFF;
-		else
+		else if (oldstate == SHIFT_N)
 			init_state();
 		return STATE_UNFINISHED;
 
@@ -1789,6 +1800,7 @@ static int process_catalogue(const keycode c) {
 	unsigned char ch;
 	const int ctmax = current_catalogue_max();
 	const enum shifts s = cur_shift();
+	const enum catalogues cat = (enum catalogues) State2.catalogue;
 
 	if (s == SHIFT_N) {
 		switch (c) {
@@ -1888,8 +1900,10 @@ static int process_catalogue(const keycode c) {
 	set_shift(SHIFT_N);
 	if (ch == '\0')
 		return STATE_UNFINISHED;
-	if (Keyticks >= 30 || (State2.alphas && State2.catalogue > CATALOGUE_ALPHA))
-		CmdLineLength = 0;	// keyboard search timed out or single letter cat
+	if ( cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST ) {
+		// No multi character search in alpha catalogues
+		CmdLineLength = 0;
+	}
 	if (CmdLineLength < 10)
 		Cmdline[CmdLineLength++] = ch;
 	/* Search for the current buffer in the catalogue */
@@ -2236,6 +2250,15 @@ static int process(const int c) {
 		return STATE_IGNORE;
 	}
 #endif
+	/*  Handle the keyboard timeout for catalogue navigation
+	 *  Must be done early in the process to capture the shifts correctly
+	 */
+	if (State2.catalogue && Keyticks > 30)
+		CmdLineLength = 0;
+
+	/*
+	 *  Process the various cases
+	 */
 
 	if (State2.confirm)
 		return process_confirm((const keycode)c);
