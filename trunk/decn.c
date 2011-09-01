@@ -2260,9 +2260,6 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		return dn_divide(res, &t, &u);
 	}
 
-	if (dmode == MODE_STD)
-		return decNumberCopy(res, x);
-
 	if (dmode == MODE_FIX) {
 		/* FIX is different since the number of digits changes */
 #if 0
@@ -2280,8 +2277,8 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		return dn_divide(res, &u, &p10);
 	}
 
-//	if (dmode == MODE_STD)
-//		numdig = 12;
+	if (dmode == MODE_STD)
+		numdig = 12;
 	round = Ctx.round;
 	digits = Ctx.digits;
 
