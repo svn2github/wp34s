@@ -1046,6 +1046,7 @@ extern int s_to_i(const char *);
 extern unsigned long long int s_to_ull(const char *, unsigned int);
 
 extern void do_conv(decNumber *, unsigned int, const decNumber *);
+extern enum display_modes std_round_fix(const decNumber *);
 
 extern unsigned char remap_chars(unsigned char);
 extern unsigned char keycode_to_row_column(const int c);

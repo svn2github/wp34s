@@ -741,6 +741,20 @@ static void show_x(char *x) {
 }
 
 
+enum display_modes std_round_fix(const decNumber *z) {
+	decNumber b, c;
+
+	decNumberCopy(&b, &const_1);
+	b.exponent -= UState.dispdigs;
+	dn_abs(&c, z);
+	dn_compare(&b, &c, &b);
+	dn_compare(&c, &const_1, &c);
+	if (dn_gt0(&b) && dn_gt0(&c))
+		return MODE_FIX;
+	return MODE_STD;
+}
+
+
 /* Display the X register in the numeric portion of the display.
  * We have to account for the various display modes and numbers of
  * digits.
@@ -811,17 +825,9 @@ static void set_x(const decimal64 *rgx, char *res) {
 	}
 
 	if (mode == MODE_STD) {
-		decNumber b, c;
-
-		decNumberCopy(&b, &const_1);
-		b.exponent -= dd;
-		dn_abs(&c, &z);
-		dn_compare(&b, &c, &b);
-		dn_compare(&c, &const_1, &c);
-		if (dn_gt0(&b) && dn_gt0(&c)) {
-			mode = MODE_FIX;
+		mode = std_round_fix(&z);
+		if (mode == MODE_FIX)
 			trimzeros = 1;
-		}
 		dd = DISPLAY_DIGITS - 1;
 	}
 
