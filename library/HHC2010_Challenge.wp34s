@@ -1,0 +1,38 @@
+	LBL A
+	8
+	STO I
+	RCL 09
+again::	ODD?
+	JMP oddy
+	RCL[->]I
+	ODD?
+	JMP loop
+	x[<=]? Y
+	JMP loop
+swap::	x[<->]y 
+	x[<->][->]I
+	INC I 
+	STO[->]I 
+	GTO A 
+oddy::	RCL[->]I
+	EVEN?
+	JMP swap
+	x>? Y
+	JMP swap
+loop::	DSE I
+	JMP again
+	RTN
+
+/* This is a 34S solution to the programming challenge for RPL machines
+ * at the 2010 HHC.  It is based on a 15C solution to keystroke challenge
+ * found independently by Richard Schwartz and Gene Wright.
+ *
+ * The solution for keystroke programmables is trivial since there is a built
+ * in register sort function:
+ *
+ *	LBL A
+ *	.
+ *	1
+ *	R_SORT
+ *	RTN
+ */
