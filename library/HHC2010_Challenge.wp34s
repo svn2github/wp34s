@@ -1,4 +1,18 @@
-	LBL A
+/* This is a 34S solution to the programming challenge for RPL machines
+ * at the 2010 HHC.  It is based on a 15C solution to keystroke challenge
+ * found independently by Richard Schwartz and Gene Wright.
+ *
+ * The solution for keystroke programmables is trivial since there is a built
+ * in register sort function:
+ *
+ *	LBL A
+ *	.
+ *	1
+ *	R_SORT
+ *	RTN
+ */
+ 
+	LBL'HHC'
 	8
 	STO I
 	RCL 09
@@ -23,16 +37,3 @@ loop::	DSE I
 	JMP again
 	RTN
 
-/* This is a 34S solution to the programming challenge for RPL machines
- * at the 2010 HHC.  It is based on a 15C solution to keystroke challenge
- * found independently by Richard Schwartz and Gene Wright.
- *
- * The solution for keystroke programmables is trivial since there is a built
- * in register sort function:
- *
- *	LBL A
- *	.
- *	1
- *	R_SORT
- *	RTN
- */
