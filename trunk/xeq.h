@@ -477,7 +477,7 @@ enum eKind {
 #define OP_CMON	(KIND_CMON << KIND_SHIFT)		/* Complex Monadic operation */
 #define OP_CDYA	(KIND_CDYA << KIND_SHIFT)		/* Complex Dyadic operation */
 
-#define OP_DBL	0x1000			/* Double sized instructions */
+#define OP_DBL	0xF000			/* Double sized instructions */
 
 #define RARG_OPSHFT	8		/* Don't use outside this header */
 #define RARG_OPBASE	0x20		/* Don't use outside this header */
@@ -488,12 +488,13 @@ enum eKind {
 #define RARG(op, n)	(RARG_BASE(op) | (n))
 #define RARG_CMD(op)	(((op) >> RARG_OPSHFT) - RARG_OPBASE)
 
-#define isRARG(op)	(((op) & 0xff00) >= (RARG_OPBASE << RARG_OPSHFT))
-
 #define opKIND(op)	((enum eKind)((op) >> KIND_SHIFT))
 #define argKIND(op)	((op) & ((1 << KIND_SHIFT)-1))
 #define isDBL(op)	(((op) & 0xf000) == OP_DBL)
 #define opDBL(op)	(((op) >> DBL_SHIFT) & 0xf)
+
+//#define isRARG(op)	(((op) & 0xff00) >= (RARG_OPBASE << RARG_OPSHFT) && ! isDBL(op))
+#define isRARG(op)	(((op) & 0xf000) > 0 && ! isDBL(op))
 
 enum tst_op {
 	TST_EQ=0,	TST_NE=1,	TST_APX=2,
