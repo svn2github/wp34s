@@ -1464,16 +1464,16 @@ int isPrime(unsigned long long int p) {
 	unsigned long long int s;
 #define PRIME_ITERATION	15
 
+	/* Quick check for p <= 2 and evens */
+	if (p < 2)	return 0;
+	if (p == 2)	return 1;
+	if ((p&1) == 0)	return 0;
+
 	/* We fail for numbers >= 2^63 */
 	if ((p & 0x8000000000000000ull) != 0) {
 		err(ERR_DOMAIN);
 		return 1;
 	}
-
-	/* Quick check for p <= 2 and evens */
-	if (p < 2)	return 0;
-	if (p == 2)	return 1;
-	if ((p&1) == 0)	return 0;
 
 	/* Quick check for divisibility by small primes */
 	for (i=1; i<N_PRIMES; i++)
