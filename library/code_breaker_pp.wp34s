@@ -1,0 +1,87 @@
+// This program donated by Jeff O.
+//
+// This is the classic four digit number guessing game.
+// After each guess you get feedback based on the number of numbers that are correct
+// and the number that are correct but are in the wrong position.
+//
+// To play: XEQ 'CBK' to execute the. The calculator will generate
+// a random four digit number with no repeated digits, zero not allowed,
+// then stop and display 0.0. Key in a four digit guess, (e.g. 1234, 9753,
+// etc.) and press R/S. The calculator will compare your guess to the secret
+// number it generated and return a score in the following format:
+//
+// 	x.y
+//
+// where x is the number of digits in your guess that are both in the secret
+// number and in the correct position, and y is the number of digits which
+// are in the secret number but not in the correct position. So, for example,
+// if the secret number is 3214 and you guess 1234, the score will be 2.2,
+// as the 2 and 4 are in the correct positions and the 1 and 3 are in the
+// number but in the incorrect position in your guess. After each guess,
+// pressing x[<->]y will show the number of guesses so far. Keep entering
+// guesses until 4.0 is displayed, indicating you have solved the puzzle.
+//
+// The guess will be in register Z in case you forget what you just guessed.
+//
+
+// Program Listing
+//
+	LBL'CBK'	// "Code Breaker"
+	CL[alpha]
+	"CodeBreaker"
+	CLx		// clear x to get zero to store in 1 - 5, 10
+	STO 01
+	STO 02
+	STO 03
+	STO 04
+	STO 05
+	STO 10		// set display mode Fix 1 so scores are presented as x.x
+	FIX 01
+	4  		// enter 4
+	STO I		// Store 4 in I for loop index and indirect storage.
+CBK01::	4
+	RAN#		// generate random number, 4 pushed to Y
+	SDL 01		// Multiply times 10 to get a digit left of decimal point
+	IP
+CBK02::	x=?[->]Y	// check random number against register pointed to by Y
+	JMP CBK01	// if equal, go back and generate new number
+	DSZ Y		// decrement Y register, skip when zero
+	JMP CBK02	// jump back to compare digit to next register pointed to by Y
+	STO[->]I	// If random number is not equal to any existing digit, store in register pointed to by I
+	DSE I
+	JMP CBK01	// Go back to random number generator to store next digit
+CBK03::	RCL 05		// Recall score of guess for guessing portion
+	PROMPT	  	// Stop, display 0.0 after
+	STO 09		// Store digit guess in register 9
+	STO 08		// Store second copy of guess
+	CLx	  	// Clear x for 0 in x
+	STO 05		// Store which will hold score for the current guess
+	4
+	STO I  		// Store I for loop index and indirect recalling.
+CBK04::	RCL 09		// Recall guess
+	SDR 01		// Divide guess by 10
+	STO 09
+	FP 		// Take fractional part
+	SDL 01		// Multiply times 10 to get a digit left of decimal point
+	IP 	 	// drop fractional portion
+	x=?[->]I	// Compare to digit pointed to by I
+	JMP CBK06	// If equal, go to scoring for correct digit in correct location
+	4
+	x[<->]y
+	x=?[->]Y	// Compare to digit pointed to by Y
+	JMP CBK05	// if equal, go to scoring for correct digit in incorrect location
+	DSZ Y
+	BACK 03		// jump back three steps to compare digit to next register pointed
+	0
+	JMP CBK09	// Go to scoring
+CBK05::	.
+CBK06::	1  		// for .1 for guess digit in number in incorrect location, 1 for correct digit in correct location.)
+	STO+ 05		// Add 1, .1 or 0 to score
+	DSE I
+	JMP CBK04	// Go to extract next guess digit
+CBK09::	INC 10		// Increment count of guesses
+	CL[alpha]
+	"Guess #"
+	[alpha]IP 10	// Show # of guesses in upper display
+	RCL 08		// Recall original guess
+	JMP CBK03	// Go to label display score and count of guesses

@@ -377,25 +377,33 @@ static void init_cat(enum catalogues cat) {
  *  Reset the internal state to a sane default
  */
 void init_state(void) {
-	unsigned int a = state_pc();
-	unsigned int b = State.entryp;
-	unsigned char v = Voltage;
-	signed char k = LastKey;
-#ifdef REALBUILD
+#ifndef REALBUILD
+	unsigned int a = State2.flags;
+	unsigned int b = State2.trace;
+#else
 	unsigned char t = TestFlag;
 #endif
-
-	xset(&State, 0, sizeof(struct _state));
+	unsigned char v = Voltage;
+	signed char k = LastKey;
+/*
+	unsigned int last_cat :      5;	// Most recent catalogue browsed
+	unsigned int last_catpos :   7;	// Last position in said catalogue
+	unsigned int entryp :        1;	// Has the user entered something since the last program stop
+	unsigned int state_lift :    1;	// XEQ internal - don't use
+	unsigned int implicit_rtn :  1;	// End of program is an implicit return
+	unsigned int deep_sleep :    1; // Used to wake up correctly
+	unsigned int usrpc :        16;	// XEQ internal - don't use
+	unsigned short state_pc;	// XEQ internal - don't use
+	unsigned char retstk_ptr;	// XEQ internal - don't use
+	unsigned char base;		// Base value for a command with an argument
+*/
 	State.state_lift = 1;
-	State.entryp = b;
-	set_pc(a);
+	State.implicit_rtn = 0;
+	State.usrpc = 0;
+	State.base = 0;
+	State.retstk_ptr = 0;
 
-#ifndef REALBUILD
-	a = State2.flags;
-	b = State2.trace;
-#endif
 	xset(&State2, 0, sizeof(State2));
-	//State2.shifts = SHIFT_N;
 	State2.test = TST_NONE;
 	State2.runmode = 1;
 
