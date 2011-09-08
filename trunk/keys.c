@@ -401,7 +401,7 @@ void init_state(void) {
 	State.implicit_rtn = 0;
 	State.usrpc = 0;
 	State.base = 0;
-	State.retstk_ptr = 0;
+	clrretstk();
 
 	xset(&State2, 0, sizeof(State2));
 	State2.test = TST_NONE;
