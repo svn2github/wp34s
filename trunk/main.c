@@ -1869,7 +1869,10 @@ int main(void)
 		 */
 		if ( k != -1 ) {
 			process_keycode( k );
-			if ( k != K_HEARTBEAT ) {
+			if ( k != K_HEARTBEAT || JustStopped ) {
+				/*
+				 *  User has pressed a key or a program has just stopped: Avoid APD.
+				 */
 				Keyticks = 0;
 				confirm_counter = 0;
 			}

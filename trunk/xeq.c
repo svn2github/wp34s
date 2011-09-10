@@ -3365,7 +3365,7 @@ void xeqprog(void)
 		clr_dot(RCL_annun);
 		display();
 #if defined(REALBUILD) || defined(WINGUI)
-		// Avoid accidental restart with R/S
+		// Avoid accidental restart with R/S or APD after program ends
 		JustStopped = 1;
 #endif
 	}
