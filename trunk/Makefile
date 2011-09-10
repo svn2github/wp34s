@@ -229,8 +229,7 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
 		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 
-catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile features.h pretty.c \
-			charmap.c commands.c string.c prt.c consts.c
+catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile
 	echo "# \$$Rev\$$" > $(OPCODES)
 	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>>$(OPCODES)
 
@@ -245,7 +244,7 @@ $(UTILITIES)/compile_consts$(EXE): compile_consts.c Makefile features.h \
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
-		commands.c string.c prt.c consts.c Makefile features.h
+		commands.c string.c prt.c consts.c pretty.c Makefile features.h
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $< -O0 -g
 
 $(UTILITIES)/lcdgen$(EXE): lcdgen.c Makefile lcd.h

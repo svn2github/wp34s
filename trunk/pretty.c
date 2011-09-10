@@ -165,6 +165,11 @@ void dump_opcodes(FILE *f) {
 				}
 				continue;
 
+			case KIND_NIL:
+				d = c & 0xff;
+				if (d == OP_CLALL || d == OP_RESET) {
+					continue;
+				}
 			}
 			fprintf(f, "0x%04x\tcmd\t%s\n", c, cmdpretty);
 		}
