@@ -16,7 +16,7 @@
 	0
 	1
 PMS00:: FC?[->]X
-	GTO PMS01
+	JMP PMS01
 	ENTER[^]
 	IP
 	ENTER[^]
@@ -30,9 +30,9 @@ PMS00:: FC?[->]X
 	9
 	9
 	+
-	CF[->]X
+pmslp::	CF[->]X
 	ISG X
-	BACK 02
+	JMP pmslp
 	R[v]
 PMS01::	ISG X
 	JMP PMS00
