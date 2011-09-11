@@ -63,7 +63,7 @@ my $DEFAULT_FLASH_BLANK_INSTR = "ERR 03";
 my $user_flash_blank_fill = "";
 
 my $DEFAULT_OPCODE_MAP_FILE = "wp34s.op";
-my $opcode_map_file = $DEFAULT_OPCODE_MAP_FILE;
+my $opcode_map_file = "";
 
 # These are markers indicating the region of the opcode map where the multi-character
 # opcodes live. HOPEFULLY THEY WILL ALWAYS STAY CO-LOCATED!
@@ -720,22 +720,25 @@ sub load_opcode_tables {
   my $file = shift;
 
   # If the user has specified an opcode table via the -opcodes switch, use that one.
-  if( $file ne $DEFAULT_OPCODE_MAP_FILE ) {
+  if( $file ) {
     open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
     $file .= " (specified)";
 
-  # Search the current directory for an opcode table.
-  } elsif( -e "${DEFAULT_OPCODE_MAP_FILE}" ) {
-    $file = "${DEFAULT_OPCODE_MAP_FILE}";
-    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
-    $file .= " (local directory)";
-
-  # Search the directory the script is running out of.
-  } elsif( -e "${script_dir}${DEFAULT_OPCODE_MAP_FILE}" ) {
-    $file = "${script_dir}${DEFAULT_OPCODE_MAP_FILE}";
-    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
-
   } else {
+    # Search the current directory for an opcode table.
+    if( -e "${DEFAULT_OPCODE_MAP_FILE}" ) {
+      $file = "${DEFAULT_OPCODE_MAP_FILE}";
+      open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+      $file .= " (local directory)";
+
+    # Search the directory the script is running out of.
+    } elsif( -e "${script_dir}${DEFAULT_OPCODE_MAP_FILE}" ) {
+      $file = "${script_dir}${DEFAULT_OPCODE_MAP_FILE}";
+      open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+
+    } else {
+      die "ERROR: Cannot locate op-code table '$DEFAULT_OPCODE_MAP_FILE' in either current directory or '${script_dir}'.\n";
+    }
   }
   print "// Opcode map source: $file\n";
 
