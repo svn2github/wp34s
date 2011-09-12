@@ -626,9 +626,9 @@ void stats_random(decimal64 *r, decimal64 *nul, enum nilop op) {
 	s = taus_get();
 
 	// Now build ourselves a number
-	if (is_intmode())
-		d64fromInt(r, build_value(s, 0));
-	else {
+	if (is_intmode()) {
+		d64fromInt(r, build_value((((unsigned long long int)taus_get()) << 32) | s, 0));
+	} else {
 		ullint_to_dn(&z, s);
 		dn_multiply(&y, &z, &const_randfac);
 		packed_from_number(r, &y);
