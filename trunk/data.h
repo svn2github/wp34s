@@ -90,6 +90,7 @@ struct _state {
 /*
  *  This data is stored in battery backed up SRAM.
  *  The total size is limited to 2 KB.
+ *  The alignment is carefully chosen to just fill the available space.
  */
 typedef struct _ram {
 	/*
@@ -133,6 +134,11 @@ typedef struct _ram {
 	struct _ustate _ustate;
 
 	/*
+	 *  PC in case of a manual XEQ for later restore
+	 */
+	unsigned short int _top_pc;
+
+	/*
 	 *  Storage space for our user flags
 	 */
 	unsigned short _bank_flags;
@@ -166,6 +172,7 @@ extern TPersistentRam PersistentRam;
 #define BankFlags	 (PersistentRam._bank_flags)
 #define UserFlags	 (PersistentRam._user_flags)
 #define RetStk		 (PersistentRam._retstk)
+#define TopPc		 (PersistentRam._top_pc)
 #define RandS1		 (PersistentRam._rand_s1)
 #define RandS2		 (PersistentRam._rand_s2)
 #define RandS3		 (PersistentRam._rand_s3)

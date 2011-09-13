@@ -135,7 +135,7 @@ static enum catalogues keycode_to_cat(const keycode c, const enum shifts s)
 		if (s == SHIFT_F && c == K60)
 			return CATALOGUE_REGISTERS;
 
-		if (s != SHIFT_H)
+		if (s != SHIFT_H && ! ( State2.cmplx && ( c == K20 || c == K50 ) ) )
 			return CATALOGUE_NONE;
 
 		switch (c) {

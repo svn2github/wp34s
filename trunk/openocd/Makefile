@@ -15,12 +15,13 @@
 # **********************************************************************************************
 
 # specify output filename here (must be	*.bin file)
-TARGET = realbuild/calc.bin
+TARGET = ../realbuild/calc.bin
 
 # specify the directory	where openocd executable resides
 # We are using the Olimex install here
 OPENOCD_DIR = $(ProgramFiles)\\OlimexODS\\OpenOCD\\
-OPENOCD	= $(OPENOCD_DIR)openocd-libftdi.exe
+#OPENOCD	= $(OPENOCD_DIR)openocd-libftdi.exe
+OPENOCD	= $(OPENOCD_DIR)bin\\openocd-0.5.0.exe
 
 # specify OpenOCD configuration	file
 OPENOCD_SERVER_CFG = at91sam7l128-server.cfg
@@ -29,7 +30,7 @@ OPENOCD_FLASH_CFG = at91sam7l128-program-flash.cfg
 # program the AT91SAM7L128 internal flash memory
 program: $(TARGET)
 	@echo "Flash Programming with OpenOCD..." # display a message on the console
-	$(OPENOCD) -d3 -f $(OPENOCD_FLASH_CFG) # program the onchip FLASH here
+	$(OPENOCD) -f $(OPENOCD_FLASH_CFG) # program the onchip FLASH here
 	@echo "Flash Programming Finished." # display a	message	on the console
 
 # start	the server for debugging
