@@ -1944,6 +1944,9 @@ void fin_tst(const int a) {
 /* Skip a number of instructions forwards */
 void cmdskip(unsigned int arg, enum rarg op) {
 	while (arg-- > 0 && !incpc());
+	if (PcWrapped) {
+		err(ERR_RANGE);
+	}
 }
 
 /* Skip backwards */
@@ -1952,15 +1955,14 @@ void cmdback(unsigned int arg, enum rarg op) {
         if (arg) {
 		State.implicit_rtn = 0;
 		if ( Running )
-			pc = dec(pc);
+			++arg;
 		do {
 			pc = dec(pc);
 		} while (--arg && !PcWrapped);
-		if (PcWrapped && Running)
-			State.implicit_rtn = 1;
+		if (PcWrapped)
+			err(ERR_RANGE);
 		else
 			raw_set_pc(pc);
-
 	}
 }
 
