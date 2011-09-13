@@ -1954,8 +1954,10 @@ void cmdback(unsigned int arg, enum rarg op) {
 	unsigned int pc = state_pc();
         if (arg) {
 		State.implicit_rtn = 0;
-		if ( Running )
-			++arg;
+		if ( Running ) {
+			// Handles the case properly that we are on last step
+			pc = dec(pc);
+		}
 		do {
 			pc = dec(pc);
 		} while (--arg && !PcWrapped);
