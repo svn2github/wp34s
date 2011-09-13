@@ -126,11 +126,11 @@ endif
 
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c xrom.c consts.c alpha.c charmap.c \
-		commands.c string.c storage.c serial.c
+		commands.c string.c storage.c serial.c matrix.c
 
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
-		stats.h xeq.h xrom.h storage.h serial.h
+		stats.h xeq.h xrom.h storage.h serial.h matrix.h
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 LIBS += -L$(OBJECTDIR) -lconsts
@@ -290,6 +290,7 @@ $(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h data.h display.h lcdmap.h atmel/board.h \
 		Makefile features.h
 $(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h data.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h storage.h Makefile features.h
+$(OBJECTDIR)/matrix.o: matrix.c matrix.h xeq.h decn.h consts.h Makefile features.h
 $(OBJECTDIR)/prt.o: prt.c xeq.h data.h consts.h display.h Makefile features.h
 $(OBJECTDIR)/serial.o: serial.c xeq.h serial.h storage.h Makefile
 $(OBJECTDIR)/stats.o: stats.c xeq.h data.h decn.h stats.h consts.h int.h \

@@ -26,6 +26,7 @@
 #include "lcd.h"
 #include "storage.h"
 #include "serial.h"
+#include "matrix.h"
 #endif
 
 #ifdef SHORT_POINTERS
@@ -241,6 +242,11 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_MANTISSA, &decNumberMantissa,	NOFN,		NOFN,		"MANT")
 	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT")
 #endif
+#ifdef MATRIX_SUPPORT
+	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"MtALL")
+	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"MtROW?")
+	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"MtCOL?")
+#endif
 #undef FUNC
 };
 #if COMMANDS_PASS != 2
@@ -325,6 +331,10 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_HERMITE_H,	&decNumberPolyHn,	NOFN,	NOFN,		"H\275\276")
 #ifdef INCLUDE_XROOT
 	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
+#endif
+#ifdef MATRIX_SUPPORT
+	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"MtROW")
+	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"MtCOL")
 #endif
 #undef FUNC
 };

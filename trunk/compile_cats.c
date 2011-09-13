@@ -626,6 +626,13 @@ static s_opcode internal_catalogue[] = {
 	RARGCMD(RARG_INISOLVE,	"SLVI")
 	RARGCMD(RARG_SOLVESTEP,	"SLVS")
 	NILIC(OP_GSBuser,	"XEQUSR")
+#ifdef MATRIX_SUPPORT
+	MON(OP_MAT_ALL,		"MtALL")
+	DYA(OP_MAT_ROW,		"MtROW")
+	DYA(OP_MAT_COL,		"MtCOL")
+	MON(OP_MAT_RQ,		"MtROW?")
+	MON(OP_MAT_CQ,		"MtCOL?")
+#endif
 };
 #endif
 

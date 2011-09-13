@@ -592,6 +592,10 @@ enum {
 #ifdef INCLUDE_MANTISSA
 	OP_MANTISSA, OP_EXPONENT,
 #endif
+#ifdef MATRIX_SUPPORT
+	OP_MAT_ALL,
+	OP_MAT_RQ, OP_MAT_CQ,
+#endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
     
@@ -630,6 +634,9 @@ enum {
 
 #ifdef INCLUDE_XROOT
 	OP_XROOT,
+#endif
+#ifdef MATRIX_SUPPORT
+	OP_MAT_ROW, OP_MAT_COL,
 #endif
 	NUM_DYADIC	// Last entry defines number of operations
 };
