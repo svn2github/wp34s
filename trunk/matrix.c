@@ -19,9 +19,32 @@
 #include "consts.h"
 
 
-#include <stdio.h>
-
 #ifdef MATRIX_SUPPORT
+
+static int matrix_idx(int row, int col, int ncols) {
+	return col + row * ncols;
+}
+
+static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, int ncols) {
+	decimal64ToNumber(base + matrix_idx(row, col, ncols), r);
+}
+
+static void matrix_put(const decNumber *r, decimal64 *base, int row, int col, int ncols) {
+	packed_from_number(base + matrix_idx(row, col, ncols), r);
+}
+
+static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
+	decNumber z;
+
+	if (base < 0 || base + rows * cols > 100) {
+		err(ERR_RANGE);
+		return 0;
+	}
+	int_to_dn(&z, (base * 100 + cols) * 100 + rows);
+	dn_multiply(r, &z, &const_0_0001);
+	return 1;
+}
+
 static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 	decNumber ax, y;
 	unsigned int n, base;
@@ -39,7 +62,7 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 	c = (n / 100) % 100;
 	if (r == 0)
 		r = c;
-	if (base + r * c >= 100) {
+	if (base + r * c > 100) {
 		err(ERR_RANGE);
 		return -1;
 	}
@@ -51,6 +74,18 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 	if (cols)	*cols = c;
 	if (up)		*up = u;
 	return base;
+}
+
+static decimal64 *matrix_decomp(const decNumber *x, int *rows, int *cols) {
+	int r, c, u;
+	int base = matrix_decompose(x, &r, &c, &u);
+
+	if (base < 0)
+		return NULL;
+
+	if (rows)       *rows = r;
+	if (cols)       *cols = c;
+	return get_reg_n(base);
 }
 
 static decNumber *matrix_do_loop(decNumber *r, int low, int high, int step, int up) {
@@ -121,6 +156,67 @@ decNumber *matrix_colq(decNumber *r, const decNumber *x) {
 	if (matrix_decompose(x, NULL, &cols, NULL) < 0)
 		return NULL;
 	int_to_dn(r, cols);
+	return r;
+}
+
+// a = a + b * k -- generalised matrix add and subtract
+decNumber *matrix_genadd(decNumber *r, const decNumber *k, const decNumber *b, const decNumber *a) {
+	int arows, acols, brows, bcols;
+	decNumber s, t, u;
+	int i;
+
+	decimal64 *abase = matrix_decomp(a, &arows, &acols);
+	decimal64 *bbase = matrix_decomp(b, &brows, &bcols);
+	if (abase == NULL || bbase == NULL)
+		return NULL;
+	if (arows != brows || acols != bcols) {
+		err(ERR_RANGE);
+		return NULL;
+	}
+	for (i=0; i<arows*acols; i++) {
+		decimal64ToNumber(bbase + i, &s);
+		dn_multiply(&t, &s, k);
+		decimal64ToNumber(abase + i, &s);
+		dn_add(&u, &t, &s);
+		packed_from_number(abase + i, &u);
+	}
+	return decNumberCopy(r, a);
+}
+
+
+// Matrix multiply c = a * b
+decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *c) {
+	int arows, acols, brows, bcols;
+	decNumber sum, s, t, u;
+	int creg;
+	int i, j, k;
+
+	decimal64 *abase = matrix_decomp(a, &arows, &acols);
+	decimal64 *bbase = matrix_decomp(b, &brows, &bcols);
+	decimal64 *cbase;
+
+	if (abase == NULL || bbase == NULL)
+		return NULL;
+	if (acols != brows) {
+		err(ERR_RANGE);
+		return NULL;
+	}
+	creg = dn_to_int(c);
+	if (matrix_descriptor(r, creg, arows, bcols) == 0)
+		return NULL;
+	cbase = get_reg_n(creg);
+
+	for (i=0; i<arows; i++)
+		for (j=0; j<bcols; j++) {
+			decNumberZero(&sum);
+			for (k=0; k<acols; k++) {
+				matrix_get(&s, abase, i, k, acols);
+				matrix_get(&t, bbase, k, j, bcols);
+				dn_multiply(&u, &s, &t);
+				dn_add(&sum, &sum, &u);
+			}
+			matrix_put(&sum, cbase, i, j, bcols);
+		}
 	return r;
 }
 
