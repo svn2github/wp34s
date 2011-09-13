@@ -969,7 +969,7 @@ extern unsigned int user_pc(void);
 extern unsigned int find_user_pc(unsigned int);
 extern int check_return_stack_segment(int);
 
-extern void clrretstk(void);
+extern void clrretstk(int clr_pc);
 extern void clrprog(void);
 extern void clrall(decimal64 *a, decimal64 *b, enum nilop op);
 extern void reset(decimal64 *a, decimal64 *b, enum nilop op);

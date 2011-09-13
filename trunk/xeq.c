@@ -636,10 +636,11 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 /* Clear the subroutine return stack
  */
-void clrretstk(void) {
+void clrretstk(int clr_pc) {
 	RetStkPtr = 0;
 	set_bank_flags(0);
-	raw_set_pc(0);
+	if (clr_pc)
+		raw_set_pc(0);
 }
 
 /* Clear the program space
@@ -650,7 +651,7 @@ void clrprog(void) {
 	for (i=1; i<=NUMPROG; i++)
 		Prog_1[i] = EMPTY_PROGRAM_OPCODE;
 	LastProg = 1;
-	clrretstk();
+	clrretstk(1);
 }
 
 /* Clear all - programs and registers
@@ -1685,7 +1686,7 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 			if (RetStkPtr >= RET_STACK_SIZE) {
 				// Stack is full
 				err(ERR_XEQ_NEST);
-				clrretstk();
+				clrretstk(0);
 			}
 			else {
 				// Push PC on return stack
@@ -1694,7 +1695,7 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 		} 
 		else {
 			// XEQ or hot key from keyboard
-			clrretstk();
+			clrretstk(0);
 			TopPc = oldpc;
 			set_running_on();
 		}
@@ -1721,8 +1722,7 @@ static void do_rtn(int plus1) {
 		}
 	} else {
 		// Manual return goes to step 0 and clears the return stack
-		raw_set_pc(0);
-		clrretstk();
+		clrretstk(1);
 	}
 }
 

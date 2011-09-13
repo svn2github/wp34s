@@ -401,7 +401,7 @@ void init_state(void) {
 	State.implicit_rtn = 0;
 	State.usrpc = 0;
 	State.base = 0;
-	clrretstk();
+	clrretstk(0);
 
 	xset(&State2, 0, sizeof(State2));
 	State2.test = TST_NONE;
@@ -766,7 +766,7 @@ static int process_h_shifted(const keycode c) {
 
 	case K23:
 		if (State2.runmode)
-			clrretstk();
+			clrretstk(1);
 		else
 			init_confirm(confirm_clprog);
 		break;

@@ -288,7 +288,7 @@ static int write_region( int r, FLASH_REGION *fr )
 static void program_cleanup( void ) 
 {
 	if ( !Running ) {
-		clrretstk();
+		clrretstk(1);
 	}
 }
 
