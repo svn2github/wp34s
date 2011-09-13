@@ -1680,12 +1680,8 @@ unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
  */
 static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 	raw_set_pc(pc);
-	if (gsb) {
+	if (gsb && ! State.implicit_rtn) {
 		if (Running) {
-			if (State.implicit_rtn) {
-				// the next statement would be the end of code
-				oldpc = 0;
-			}
 			if (RetStkPtr >= RET_STACK_SIZE) {
 				// Stack is full
 				err(ERR_XEQ_NEST);
@@ -1705,6 +1701,36 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 	}
 	State.implicit_rtn = 0;
 }
+
+// Handle a RTN
+static void do_rtn(int plus1) {
+	if (Running) {
+		if (RetStkPtr > 0) {
+			// Normal RTN within program
+			unsigned short int pc = RetStk[--RetStkPtr];
+			raw_set_pc(pc);
+			RetStk[RetStkPtr] = 0;
+			if (plus1)
+				incpc();
+		}
+		else {
+			// RTN with empty stack goes to last saved PC and stops
+			set_running_off();
+			raw_set_pc(TopPc);
+			TopPc = 0;
+		}
+	} else {
+		// Manual return goes to step 0 and clears the return stack
+		raw_set_pc(0);
+		clrretstk();
+	}
+}
+
+void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	if (!State.implicit_rtn)
+		do_rtn(op == OP_RTN ? 0 : 1);
+}
+
 
 static void cmdgtocommon(int gsb, unsigned int pc) {
 	const unsigned int oldpc = state_pc();
@@ -1930,7 +1956,7 @@ void cmdback(unsigned int arg, enum rarg op) {
 		do {
 			pc = dec(pc);
 		} while (--arg && !PcWrapped);
-		if (PcWrapped)
+		if (PcWrapped && Running)
 			State.implicit_rtn = 1;
 		else
 			raw_set_pc(pc);
@@ -2897,35 +2923,6 @@ void op_setspeed(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	update_speed();
 }
 
-static void do_rtn(int plus1) {
-	if (Running) {
-		if (RetStkPtr > 0) {
-			// Normal return within program
-			unsigned short int pc = RetStk[--RetStkPtr];
-			raw_set_pc(pc);
-			RetStk[RetStkPtr] = 0;
-			if (pc == 0)
-				set_running_off();
-			else if (plus1)
-				incpc();
-		}
-		else {
-			// Return with empty stack goes to last saved PC and stops
-			set_running_off();
-			raw_set_pc(TopPc);
-			TopPc = 0;
-		}
-	} else {
-		// Manual return goes to step 0 and clears the return stack
-		raw_set_pc(0);
-		clrretstk();
-	}
-}
-
-void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	if (!State.implicit_rtn)
-		do_rtn(op == OP_RTN ? 0 : 1);
-}
 
 void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	if (Running)	set_running_off();

@@ -30,7 +30,7 @@
 	TICKS
 	STO J
 	1
-loop::	x[^2]
+svg1::	x[^2]
 	[sqrt]
 	LN
 	e[^x]
@@ -38,7 +38,7 @@ loop::	x[^2]
 	TAN
 	INC X
 	DSZ I
-	JMP loop
+	JMP svg1
 	TICKS
 	RCL- J
 	x[<->]y
