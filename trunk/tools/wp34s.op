@@ -200,6 +200,9 @@
 0x01a0	cmd	REALM?
 0x01a1	cmd	x=+0?
 0x01a2	cmd	x=-0?
+0x01a3	cmd	MtR[<->]
+0x01a4	cmd	MtR[times]
+0x01a5	cmd	MtR+[times]
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -323,8 +326,10 @@
 0x027a	cmd	MANT
 0x027b	cmd	EXPT
 0x027c	cmd	MtALL
-0x027d	cmd	MtROW?
-0x027e	cmd	MtCOL?
+0x027d	cmd	MtTRN
+0x027e	cmd	MtROW?
+0x027f	cmd	MtCOL?
+0x0280	cmd	MtIJ
 0x0300	cmd	y[^x]
 0x0301	cmd	+
 0x0302	cmd	-
@@ -370,6 +375,9 @@
 0x0402	cmd	DBLR
 0x0403	cmd	%MRR
 0x0404	cmd	L[sub-n][alpha]
+0x0405	cmd	Mt[times]
+0x0406	cmd	Mt+[times]
+0x0407	cmd	MtREG
 0x0500	cmd	[cmplx]FP
 0x0504	cmd	[cmplx]IP
 0x0505	cmd	[cmplx]ABS

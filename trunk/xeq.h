@@ -595,7 +595,7 @@ enum {
 #ifdef MATRIX_SUPPORT
 	OP_MAT_ALL,
 	OP_MAT_TRN,
-	OP_MAT_RQ, OP_MAT_CQ,
+	OP_MAT_RQ, OP_MAT_CQ, OP_MAT_IJ,
 #endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
@@ -654,6 +654,7 @@ enum {
 #ifdef MATRIX_SUPPORT
 	OP_MAT_MUL,
 	OP_MAT_GADD,
+	OP_MAT_REG,
 #endif
 	NUM_TRIADIC	// Last entry defines number of operations
 };  
@@ -723,6 +724,10 @@ enum nilop {
 	OP_ISINT, OP_ISFLOAT,
 
 	OP_Xeq_pos0, OP_Xeq_neg0,
+
+#ifdef MATRIX_SUPPORT
+	OP_MAT_ROW_SWAP, OP_MAT_ROW_MUL, OP_MAT_ROW_GADD,
+#endif
 
 	NUM_NILADIC	// Last entry defines number of operations
 };
@@ -1000,9 +1005,12 @@ extern const char *catcmd(opcode, char *);
 extern decNumber *getX(decNumber *x);
 extern void getY(decNumber *y);
 extern void setX(const decNumber *x);
+extern void setY(const decNumber *x);
 
 extern void getXY(decNumber *x, decNumber *y);
 extern void getYZ(decNumber *x, decNumber *y);
+extern void getXYZ(decNumber *x, decNumber *y, decNumber *z);
+extern void getXYZT(decNumber *x, decNumber *y, decNumber *z, decNumber *t);
 extern void setXY(const decNumber *x, const decNumber *y);
 
 extern void setlastX(void);

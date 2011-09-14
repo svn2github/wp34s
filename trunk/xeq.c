@@ -358,7 +358,7 @@ void getY(decNumber *y) {
 	decimal64ToNumber(&regY, y);
 }
 
-static void setY(const decNumber *y) {
+void setY(const decNumber *y) {
 	decNumber yn;
 
 	if (! check_special(y)) {
@@ -384,6 +384,16 @@ static void getT(decNumber *q) {
 void getXY(decNumber *x, decNumber *y) {
 	getX(x);
 	getY(y);
+}
+
+void getXYZ(decNumber *x, decNumber *y, decNumber *z) {
+	getXY(x, y);
+	getZ(z);
+}
+
+void getXYZT(decNumber *x, decNumber *y, decNumber *z, decNumber *t) {
+	getXYZ(x, y, z);
+	getT(t);
 }
 
 void getYZ(decNumber *y, decNumber *z) {
@@ -1055,9 +1065,7 @@ static void dyadic_cmplex(const opcode op) {
 	f = argKIND(op);
 	if (f < num_dyfuncs) {
 		if (! isNULL(dyfuncs[f].dydcmplx)) {
-			getXY(&x1, &y1);
-			getZ(&x2);
-			getT(&y2);
+			getXYZT(&x1, &y1, &x2, &y2);
 
 			CALL(dyfuncs[f].dydcmplx)(&xr, &yr, &x2, &y2, &x1, &y1);
 
@@ -1100,8 +1108,7 @@ static void triadic(const opcode op) {
 			if (! isNULL(trifuncs[f].trireal)) {
 				decNumber x, y, z, r;
 
-				getXY(&x, &y);
-				getZ(&z);
+				getXYZ(&x, &y, &z);
 
 				if (NULL == DCALL(trifuncs[f].trireal)(&r, &z, &y, &x))
 					set_NaN(&r);

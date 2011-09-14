@@ -124,7 +124,7 @@
 // #define ALLOW_MORE_LABELS
 
 // Include some basic matrix support commands.
-//#define MATRIX_SUPPORT
+#define MATRIX_SUPPORT
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */

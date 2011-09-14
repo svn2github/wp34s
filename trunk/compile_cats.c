@@ -635,6 +635,11 @@ static s_opcode internal_catalogue[] = {
 	MON(OP_MAT_TRN,		"MtTRN")
 	TRI(OP_MAT_MUL,		"Mt[times]")
 	TRI(OP_MAT_GADD,	"Mt+[times]")
+	TRI(OP_MAT_REG,		"MtREG")
+	MON(OP_MAT_IJ,		"MtIJ")
+	NILIC(OP_MAT_ROW_SWAP,	"MtR<>")
+	NILIC(OP_MAT_ROW_MUL,	"MtR*")
+	NILIC(OP_MAT_ROW_GADD,	"MtR+*")
 #endif
 };
 #endif

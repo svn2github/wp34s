@@ -247,6 +247,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"MtTRN")
 	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"MtROW?")
 	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"MtCOL?")
+	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"MtIJ")
 #endif
 #undef FUNC
 };
@@ -373,6 +374,7 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"Mt\034")
 	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"Mt+\034")
+	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"MtREG")
 #endif
 #undef FUNC
 };
@@ -581,6 +583,12 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_Xeq_pos0,	&check_zero,		"x=+0?")
 	FUNC0(OP_Xeq_neg0,	&check_zero,		"x=-0?")
+
+#ifdef MATRIX_SUPPORT
+	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"MtR\027")
+	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"MtR\034")
+	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"MtR+\034")
+#endif
 #undef FUNC
 #undef FUNC0
 #undef FUNC1

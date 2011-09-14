@@ -159,6 +159,45 @@ decNumber *matrix_colq(decNumber *r, const decNumber *x) {
 	return r;
 }
 
+decNumber *matrix_getreg(decNumber *r, const decNumber *cdn, const decNumber *rdn, const decNumber *m) {
+	int h, w, ri, ci;
+	int n = matrix_decompose(m, &h, &w, NULL);
+
+	if (n < 0)
+		return NULL;
+	ri = dn_to_int(rdn) - 1;
+	ci = dn_to_int(cdn) - 1;
+	if (ri < 0 || ci < 0 || ri >= h || ci >= w) {
+		err(ERR_RANGE);
+		return NULL;
+	}
+	n += matrix_idx(ri, ci, w);
+	int_to_dn(r, n);
+	return r;
+}
+
+decNumber *matrix_getrc(decNumber *res, const decNumber *m) {
+	decNumber ydn;
+	int rows, cols, c, r, pos;
+	int n = matrix_decompose(m, &rows, &cols, NULL);
+
+	if (n < 0)
+		return NULL;
+	getY(&ydn);
+	pos = dn_to_int(&ydn);
+	pos -= n;
+	if (pos < 0 || pos >= rows*cols) {
+		err(ERR_RANGE);
+		return NULL;
+	}
+	c = pos % cols + 1;
+	r = pos / cols + 1;
+	int_to_dn(res, r);
+	int_to_dn(&ydn, c);
+	setY(&ydn);
+	return res;
+}
+
 // a = a + b * k -- generalised matrix add and subtract
 decNumber *matrix_genadd(decNumber *r, const decNumber *k, const decNumber *b, const decNumber *a) {
 	int arows, acols, brows, bcols;
@@ -224,9 +263,11 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 	int w, h, start, next, i;
 	int n = matrix_decompose(m, &h, &w, NULL);
-	decimal64 *base = get_reg_n(n);
-	decimal64 tmp;
+	decimal64 *base, tmp;
 
+	if (n < 0)
+		return NULL;
+	base = get_reg_n(n);
 	if (base == NULL)
 		return NULL;
 
@@ -250,6 +291,49 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 
 	matrix_descriptor(r, n, w, h);
 	return r;
+}
+
+void matrix_rowops(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	decNumber m, ydn, zdn, t;
+	decimal64 *base;
+	int rows, cols;
+	int r1, r2, i;
+
+	getXYZT(&m, &ydn, &zdn, &t);
+	base = matrix_decomp(&m, &rows, &cols);
+	if (base == NULL)
+		return;
+
+	r1 = dn_to_int(&ydn) - 1;
+	if (r1 < 0 || r1 >= rows) {
+badrow:		err(ERR_RANGE);
+		return;
+	}
+
+	if (op == OP_MAT_ROW_MUL) {
+		for (i=0; i<cols; i++) {
+			matrix_get(&t, base, r1, i, cols);
+			dn_multiply(&m, &zdn, &t);
+			matrix_put(&m, base, r1, i, cols);
+		}
+	} else {
+		r2 = dn_to_int(&zdn) - 1;
+		if (r2 < 0 || r2 >= rows)
+			goto badrow;
+
+		if (op == OP_MAT_ROW_SWAP) {
+			for (i=0; i<cols; i++)
+				swap_reg(base + matrix_idx(r1, i, cols), base + matrix_idx(r2, i, cols));
+		} else {
+			for (i=0; i<cols; i++) {
+				matrix_get(&ydn, base, r1, i, cols);
+				matrix_get(&zdn, base, r2, i, cols);
+				dn_multiply(&m, &zdn, &t);
+				dn_add(&zdn, &ydn, &m);
+				matrix_put(&zdn, base, r1, i, cols);
+			}
+		}
+	}
 }
 
 #endif
