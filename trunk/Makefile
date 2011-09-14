@@ -149,7 +149,7 @@ DNOBJS := $(DNSRCS:%.c=$(OBJECTDIR)/%.o)
 DNSRCS := $(DNSRCS:%.c=decNumber/%.c)
 DNHDRS := $(DNSRCS:%.c=%.h) 
 
-LDCTRL := atmel/at91sam7l128/flash.lds
+LDCTRL := wp34s_pre.lds
 MAPFILE := $(OUTPUTDIR)/mapfile.txt
 SUMMARY := $(OUTPUTDIR)/summary.txt
 SYMBOLS := $(OUTPUTDIR)/symbols.txt
@@ -211,6 +211,9 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	@grep "^\.backup"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@cat $(SUMMARY)
 
+$(LDCTRL): wp34s.lds features.h Makefile
+	$(HOSTCC) -E -P -x c wp34s.lds > $(LDCTRL)
+
 # include openocd/Makefile
 else
 
@@ -218,7 +221,7 @@ else
 
 $(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
+	$(HOSTCC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
 endif
 
 # Build generated files

@@ -1,6 +1,6 @@
 /* Matrix addition and subtraction.
  * Matrix descriptors in X and Y.
- * Resulting matrix descritpor returned in X.
+ * Resulting matrix descriptor returned in X.
  * Uses one stack level.
  */
 			LBL'M-'	/* X = X - Y */
@@ -10,17 +10,17 @@
 
 			LBL'M+'	/* X = X + Y */
 			iC 1
-m_add_sub_common::	x<> Z
-			x<>y
+m_add_sub_common::	x[<->] Z
+			x[<->]y
 			Mt+[times]
 			RTN
 
 /* Matrix Transpose multiply
  */
 			LBL'M`[times]'
-			[cmplx]x<>y
+			[cmplx]x[<->]y
 			MtTRN
-			[cmplx]x<>y
+			[cmplx]x[<->]y
 			Mt[times]
 			RTN
 
@@ -37,7 +37,7 @@ m_add_sub_common::	x<> Z
 			LBL'TR'
 			CF 99
 m_trace_common::	iC 1
-			X<>Y
+			x[<->]y
 			MtCOL
 			iC 1
 			SDR 05

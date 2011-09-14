@@ -19,18 +19,17 @@
 
 #define REGION_TYPE_PROGRAM 0
 #define REGION_TYPE_DATA 1
-#define NUMBER_OF_FLASH_REGIONS 10
 #define BACKUP_REGION 1
 
 typedef struct _flash_region {
-	unsigned short crc;
-	unsigned short last_prog;
-	s_opcode prog[ 512 - 2 ];
+        unsigned short crc;
+        unsigned short last_prog;
+        s_opcode prog[ 512 - 2 ];
 } FLASH_REGION;
 
 typedef struct _user_flash {
-	FLASH_REGION region[ NUMBER_OF_FLASH_REGIONS - 2 ];
-	TPersistentRam backup;
+        FLASH_REGION region[ NUMBER_OF_FLASH_REGIONS - 2 ];
+        TPersistentRam backup;
 } TUserFlash;
 
 extern TUserFlash UserFlash;

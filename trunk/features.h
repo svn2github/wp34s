@@ -124,11 +124,19 @@
 // #define ALLOW_MORE_LABELS
 
 // Include some basic matrix support commands.
-#define MATRIX_SUPPORT
+// #define MATRIX_SUPPORT
+
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
+
+// Needs to be adjusted depending on code size
+#ifdef MATRIX_SUPPORT
+#define NUMBER_OF_FLASH_REGIONS 9
+#else
+#define NUMBER_OF_FLASH_REGIONS 11
+#endif
 
 #if defined(INCLUDE_COMPLEX_ZETA) && ! defined(INCLUDE_ZETA)
 /* Complex zeta implies real zeta */
@@ -149,5 +157,5 @@
 #define INCLUDE_DIGAMMA
 #endif
 
-#endif	/* TINY_BUILD*/
-#endif	/* FEATURES_H__ */
+#endif  /* TINY_BUILD*/
+#endif  /* FEATURES_H__ */

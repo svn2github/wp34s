@@ -1,37 +1,31 @@
-/* ----------------------------------------------------------------------------
- *         ATMEL Microcontroller Software Support
- * ----------------------------------------------------------------------------
- * Copyright (c) 2008, Atmel Corporation
- *
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * - Redistributions of source code must retain the above copyright notice,
- * this list of conditions and the disclaimer below.
- *
- * Atmel's name may not be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
- * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
- * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
- * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
- * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * ----------------------------------------------------------------------------
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*------------------------------------------------------------------------------
  *      Linker script for running in internal Flash on the AT91SAM7L128.
  *
  *      Modified by Marcus von Cube for wp34s
+ *      Needs to be preprocessed by gcc -E -P -x c wp34s.lds >wp34s_pre.lds
  *----------------------------------------------------------------------------*/
+
+#include "features.h"
+//#define USER_FLASH_SIZE (NUMBER_OF_FLASH_REGIONS * 1024)
+#define K(x) CONCAT(x, K)
+#define CONCAT(x, y) x ## y
+#define USER_FLASH_SIZE K(NUMBER_OF_FLASH_REGIONS)
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
@@ -42,9 +36,9 @@ MEMORY
     sram (W!RX) :       ORIGIN = 0x200000, LENGTH = 4K
     backupsram (W!RX) : ORIGIN = 0x300000, LENGTH = 2K
     
-    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - 10K - 16
-    revision (R) :      ORIGIN = 0x120000 - 10K - 16, LENGTH = 16
-    userflash (R) :     ORIGIN = 0x120000 - 10K, LENGTH = 10K
+    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - USER_FLASH_SIZE - 16
+    revision (R) :      ORIGIN = 0x120000 - USER_FLASH_SIZE - 16, LENGTH = 16
+    userflash (R) :     ORIGIN = 0x120000 - USER_FLASH_SIZE, LENGTH = USER_FLASH_SIZE
 
     cmdtab (R) :        ORIGIN = 0x0f0000, LENGTH = 0x10000
 }
