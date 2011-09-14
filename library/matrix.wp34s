@@ -1,0 +1,90 @@
+/* Matrix addition and subtraction.
+ * Matrix descriptors in X and Y.
+ * Resulting matrix descritpor returned in X.
+ * Uses one stack level.
+ */
+			LBL'M-'	/* X = X - Y */
+			iC 1
+			+/-
+			JMP m_add_sub_common
+
+			LBL'M+'	/* X = X + Y */
+			iC 1
+m_add_sub_common::	x<> Z
+			x<>y
+			Mt+[times]
+			RTN
+
+/* Matrix Transpose multiply
+ */
+			LBL'M`[times]'
+			[cmplx]x<>y
+			MtTRN
+			[cmplx]x<>y
+			Mt[times]
+			RTN
+
+/* Trace of a matrix.
+ * Uses stack.
+ * Uses flag 99.
+ */
+ 			/* Sum of absolute values of diagonal elements */
+ 			LBL'ATR'
+			SF 99
+			JMP m_trace_common
+
+			/* Sum of diagonal elements */
+			LBL'TR'
+			CF 99
+m_trace_common::	iC 1
+			X<>Y
+			MtCOL
+			iC 1
+			SDR 05
+			+
+			iC 0
+m_trace_loop::		RCL[->]Y
+			FS? 99
+			ABS
+			+
+			ISG Y
+			JMP m_trace_loop
+			JMP drop_y
+
+/* Maxtrix norm.
+ * Uses stack.
+ */
+			LBL'MNM'
+			MtALL
+			iC 0
+m_norm_loop::		RCL[->]Y
+			x[^2]
+			+
+			ISG Y
+			JMP m_norm_loop
+			[sqrt]
+			JMP drop_y
+
+/* Maximum & minimum elements in a matrix
+ * Uses stack.
+ */
+			LBL'M[^]'
+			MtALL
+			RCL[->]X
+m_max_loop::		RCL[^][->]Y
+			ISG Y
+			JMP m_max_loop
+			JMP drop_y
+
+			LBL'M[v]'
+			MtALL
+			RCL[->]X
+m_min_loop::		RCL[v][->]Y
+			ISG Y
+			JMP m_min_loop
+			/*JMP drop_y*/
+
+drop_y::		x[<->]y
+			DROP
+			RTN
+
