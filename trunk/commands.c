@@ -244,6 +244,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #endif
 #ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"MtALL")
+	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"MtTRN")
 	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"MtROW?")
 	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"MtCOL?")
 #endif
@@ -369,6 +370,10 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #endif
 	FUNC(OP_PERMRR,		&decNemberPerMRR, NOFN,		"%MRR")
         FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha, NOFN,    "L\275\240")
+#ifdef MATRIX_SUPPORT
+	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"Mt\034")
+	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"Mt+\034")
+#endif
 #undef FUNC
 };
 

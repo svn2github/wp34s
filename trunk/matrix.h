@@ -24,5 +24,8 @@ extern decNumber *matrix_rowq(decNumber *r, const decNumber *x);
 extern decNumber *matrix_colq(decNumber *r, const decNumber *x);
 extern decNumber *matrix_row(decNumber *r, const decNumber *y, const decNumber *x);
 extern decNumber *matrix_col(decNumber *r, const decNumber *y, const decNumber *x);
+extern decNumber *matrix_genadd(decNumber *r, const decNumber *k, const decNumber *b, const decNumber *a);
+extern decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *c);
+extern decNumber *matrix_transpose(decNumber *r, const decNumber *m);
 
 #endif

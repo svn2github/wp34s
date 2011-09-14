@@ -594,6 +594,7 @@ enum {
 #endif
 #ifdef MATRIX_SUPPORT
 	OP_MAT_ALL,
+	OP_MAT_TRN,
 	OP_MAT_RQ, OP_MAT_CQ,
 #endif
 	NUM_MONADIC	// Last entry defines number of operations
@@ -650,6 +651,10 @@ enum {
 #endif
 	OP_PERMRR,
 	OP_GEN_LAGUERRE,
+#ifdef MATRIX_SUPPORT
+	OP_MAT_MUL,
+	OP_MAT_GADD,
+#endif
 	NUM_TRIADIC	// Last entry defines number of operations
 };  
 

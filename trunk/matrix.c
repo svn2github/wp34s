@@ -220,4 +220,36 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 	return r;
 }
 
+/* In place matrix transpose using minimal extra storage */
+decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
+	int w, h, start, next, i;
+	int n = matrix_decompose(m, &h, &w, NULL);
+	decimal64 *base = get_reg_n(n);
+	decimal64 tmp;
+
+	if (base == NULL)
+		return NULL;
+
+	for (start=0; start < w*h; start++) {
+		next = start;
+		i=0;
+		do {
+			i++;
+			next = (next % h) * w + next / h;
+		} while (next > start);
+		if (next < start || i == 1)
+			continue;
+
+		tmp = base[next = start];
+		do {
+			i = (next % h) * w + next / h;
+			base[next] = (i == start) ? tmp : base[i];
+			next = i;
+		} while (next > start);
+	}
+
+	matrix_descriptor(r, n, w, h);
+	return r;
+}
+
 #endif

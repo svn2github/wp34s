@@ -632,6 +632,9 @@ static s_opcode internal_catalogue[] = {
 	DYA(OP_MAT_COL,		"MtCOL")
 	MON(OP_MAT_RQ,		"MtROW?")
 	MON(OP_MAT_CQ,		"MtCOL?")
+	MON(OP_MAT_TRN,		"MtTRN")
+	TRI(OP_MAT_MUL,		"Mt[times]")
+	TRI(OP_MAT_GADD,	"Mt+[times]")
 #endif
 };
 #endif
