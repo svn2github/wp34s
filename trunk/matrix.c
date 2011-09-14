@@ -95,6 +95,8 @@ static decNumber *matrix_do_loop(decNumber *r, int low, int high, int step, int 
 	if (up) {
 		i = (low * 1000 + high) * 100 + step;
 	} else {
+		if (low == 0)
+			err(ERR_RANGE);
 		i = (high * 1000 + low - 1) * 100 + step;
 	}
 	int_to_dn(&z, i);
