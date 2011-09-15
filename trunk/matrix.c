@@ -24,15 +24,7 @@
 static int matrix_idx(int row, int col, int ncols) {
 	return col + row * ncols;
 }
-
-static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, int ncols) {
-	decimal64ToNumber(base + matrix_idx(row, col, ncols), r);
-}
-
-static void matrix_put(const decNumber *r, decimal64 *base, int row, int col, int ncols) {
-	packed_from_number(base + matrix_idx(row, col, ncols), r);
-}
-
+		
 static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 	decNumber z;
 
@@ -77,14 +69,10 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 }
 
 static decimal64 *matrix_decomp(const decNumber *x, int *rows, int *cols) {
-	int r, c, u;
-	int base = matrix_decompose(x, &r, &c, &u);
+	const int base = matrix_decompose(x, rows, cols, NULL);
 
 	if (base < 0)
 		return NULL;
-
-	if (rows)       *rows = r;
-	if (cols)       *cols = c;
 	return get_reg_n(base);
 }
 
@@ -234,7 +222,7 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 
 	decimal64 *abase = matrix_decomp(a, &arows, &acols);
 	decimal64 *bbase = matrix_decomp(b, &brows, &bcols);
-	decimal64 *cbase;
+	decimal64 *ap, *bp, *cp;
 
 	if (abase == NULL || bbase == NULL)
 		return NULL;
@@ -245,18 +233,23 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 	creg = dn_to_int(c);
 	if (matrix_descriptor(r, creg, arows, bcols) == 0)
 		return NULL;
-	cbase = get_reg_n(creg);
+	cp = get_reg_n(creg);
 
 	for (i=0; i<arows; i++)
 		for (j=0; j<bcols; j++) {
 			decNumberZero(&sum);
+			ap = abase + acols * i;
+			bp = bbase + j;
 			for (k=0; k<acols; k++) {
-				matrix_get(&s, abase, i, k, acols);
-				matrix_get(&t, bbase, k, j, bcols);
+				decimal64ToNumber(ap++, &s);
+				//matrix_get(&s, abase, i, k, acols);
+				decimal64ToNumber(bp, &t);
+				bp += bcols;
+				//matrix_get(&t, bbase, k, j, bcols);
 				dn_multiply(&u, &s, &t);
 				dn_add(&sum, &sum, &u);
 			}
-			matrix_put(&sum, cbase, i, j, bcols);
+			packed_from_number(cp++, &sum);
 		}
 	return r;
 }
@@ -266,6 +259,8 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 	int w, h, start, next, i;
 	int n = matrix_decompose(m, &h, &w, NULL);
 	decimal64 *base, tmp;
+	const int elements = w*h;
+	char used[100];
 
 	if (n < 0)
 		return NULL;
@@ -273,22 +268,17 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 	if (base == NULL)
 		return NULL;
 
-	for (start=0; start < w*h; start++) {
-		next = start;
-		i=0;
-		do {
-			i++;
-			next = (next % h) * w + next / h;
-		} while (next > start);
-		if (next < start || i == 1)
-			continue;
-
-		tmp = base[next = start];
-		do {
-			i = (next % h) * w + next / h;
-			base[next] = (i == start) ? tmp : base[i];
-			next = i;
-		} while (next > start);
+	xset(used, 0, elements);
+	for (start=0; start < elements; start++) {
+		if (! used[start]) {
+			tmp = base[next = start];
+			do {
+				i = (next % h) * w + next / h;
+				used[i] = 1;
+				base[next] = (i == start) ? tmp : base[i];
+				next = i;
+			} while (next > start);
+		}
 	}
 
 	matrix_descriptor(r, n, w, h);
@@ -297,42 +287,44 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 
 void matrix_rowops(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber m, ydn, zdn, t;
-	decimal64 *base;
+	decimal64 *base, *r1, *r2;
 	int rows, cols;
-	int r1, r2, i;
+	int i;
 
 	getXYZT(&m, &ydn, &zdn, &t);
 	base = matrix_decomp(&m, &rows, &cols);
 	if (base == NULL)
 		return;
 
-	r1 = dn_to_int(&ydn) - 1;
-	if (r1 < 0 || r1 >= rows) {
+	i = dn_to_int(&ydn) - 1;
+	if (i < 0 || i >= rows) {
 badrow:		err(ERR_RANGE);
 		return;
 	}
+	r1 = base + i * cols;
 
 	if (op == OP_MAT_ROW_MUL) {
 		for (i=0; i<cols; i++) {
-			matrix_get(&t, base, r1, i, cols);
+			decimal64ToNumber(r1, &t);
 			dn_multiply(&m, &zdn, &t);
-			matrix_put(&m, base, r1, i, cols);
+			packed_from_number(r1++, &m);
 		}
 	} else {
-		r2 = dn_to_int(&zdn) - 1;
-		if (r2 < 0 || r2 >= rows)
+		i = dn_to_int(&zdn) - 1;
+		if (i < 0 || i >= rows)
 			goto badrow;
+		r2 = base + i * cols;
 
 		if (op == OP_MAT_ROW_SWAP) {
 			for (i=0; i<cols; i++)
-				swap_reg(base + matrix_idx(r1, i, cols), base + matrix_idx(r2, i, cols));
+				swap_reg(r1++, r2++);
 		} else {
 			for (i=0; i<cols; i++) {
-				matrix_get(&ydn, base, r1, i, cols);
-				matrix_get(&zdn, base, r2, i, cols);
+				decimal64ToNumber(r1, &ydn);
+				decimal64ToNumber(r2++, &zdn);
 				dn_multiply(&m, &zdn, &t);
 				dn_add(&zdn, &ydn, &m);
-				matrix_put(&zdn, base, r1, i, cols);
+				packed_from_number(r1++, &zdn);
 			}
 		}
 	}
