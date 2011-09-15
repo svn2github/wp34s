@@ -25,6 +25,10 @@ static int matrix_idx(int row, int col, int ncols) {
 	return col + row * ncols;
 }
 		
+static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, int ncols) {
+	decimal64ToNumber(base + matrix_idx(row, col, ncols), r);
+}
+
 static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 	decNumber z;
 
@@ -203,11 +207,11 @@ decNumber *matrix_genadd(decNumber *r, const decNumber *k, const decNumber *b, c
 		return NULL;
 	}
 	for (i=0; i<arows*acols; i++) {
-		decimal64ToNumber(bbase + i, &s);
+		decimal64ToNumber(bbase++, &s);
 		dn_multiply(&t, &s, k);
-		decimal64ToNumber(abase + i, &s);
+		decimal64ToNumber(abase, &s);
 		dn_add(&u, &t, &s);
-		packed_from_number(abase + i, &u);
+		packed_from_number(abase++, &u);
 	}
 	return decNumberCopy(r, a);
 }
@@ -222,7 +226,7 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 
 	decimal64 *abase = matrix_decomp(a, &arows, &acols);
 	decimal64 *bbase = matrix_decomp(b, &brows, &bcols);
-	decimal64 *ap, *bp, *cp;
+	decimal64 *cbase;
 
 	if (abase == NULL || bbase == NULL)
 		return NULL;
@@ -233,23 +237,18 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 	creg = dn_to_int(c);
 	if (matrix_descriptor(r, creg, arows, bcols) == 0)
 		return NULL;
-	cp = get_reg_n(creg);
+	cbase = get_reg_n(creg);
 
 	for (i=0; i<arows; i++)
 		for (j=0; j<bcols; j++) {
 			decNumberZero(&sum);
-			ap = abase + acols * i;
-			bp = bbase + j;
 			for (k=0; k<acols; k++) {
-				decimal64ToNumber(ap++, &s);
-				//matrix_get(&s, abase, i, k, acols);
-				decimal64ToNumber(bp, &t);
-				bp += bcols;
-				//matrix_get(&t, bbase, k, j, bcols);
+				matrix_get(&s, abase, i, k, acols);
+				matrix_get(&t, bbase, k, j, bcols);
 				dn_multiply(&u, &s, &t);
 				dn_add(&sum, &sum, &u);
 			}
-			packed_from_number(cp++, &sum);
+			packed_from_number(cbase++, &sum);
 		}
 	return r;
 }
@@ -259,8 +258,6 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 	int w, h, start, next, i;
 	int n = matrix_decompose(m, &h, &w, NULL);
 	decimal64 *base, tmp;
-	const int elements = w*h;
-	char used[100];
 
 	if (n < 0)
 		return NULL;
@@ -268,17 +265,22 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 	if (base == NULL)
 		return NULL;
 
-	xset(used, 0, elements);
-	for (start=0; start < elements; start++) {
-		if (! used[start]) {
-			tmp = base[next = start];
-			do {
-				i = (next % h) * w + next / h;
-				used[i] = 1;
-				base[next] = (i == start) ? tmp : base[i];
-				next = i;
-			} while (next > start);
-		}
+	for (start=0; start < w*h; start++) {
+		next = start;
+		i=0;
+		do {
+			i++;
+			next = (next % h) * w + next / h;
+		} while (next > start);
+		if (next < start || i == 1)
+			continue;
+
+		tmp = base[next = start];
+		do {
+			i = (next % h) * w + next / h;
+			base[next] = (i == start) ? tmp : base[i];
+			next = i;
+		} while (next > start);
 	}
 
 	matrix_descriptor(r, n, w, h);
