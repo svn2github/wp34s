@@ -38,9 +38,6 @@
 #define CH_FLAGS	'F'
 #define CH_REFRESH	12	/* ^L */
 
-
-static const char SvnRevision[ 12 ] = "$Rev:: 621 $";
-
 /*
  *  PC keys to calculator keys
  */
@@ -489,10 +486,3 @@ skipargs:
 	return 0;
 }
 
-/*
- *  Tell the revision number (must not be optimised out!)
- */
-const char *get_revision( void )
-{
-	return SvnRevision + 7;
-}

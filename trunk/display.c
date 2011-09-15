@@ -22,6 +22,7 @@
 #include "consts.h"
 #include "alpha.h"
 #include "decn.h"
+#include "revision.h"
 
 enum seperator_modes { SEP_NONE, SEP_COMMA, SEP_DOT };
 enum decimal_modes { DECIMAL_DOT, DECIMAL_COMMA, DECIMAL_DASH };
@@ -1246,7 +1247,7 @@ void display(void) {
 		set_digits_string("pAULI WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
 		set_decimal(SEGS_PER_DIGIT * 4, DECIMAL_COMMA, NULL);
-		xcopy( vers + 8, get_revision(), 4 );
+		xcopy( vers + 8, SvnRevision, 4 );
 		set_status(vers);
 		skip = 1;
 		goto nostk;

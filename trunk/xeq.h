@@ -1200,7 +1200,6 @@ extern int is_shift_down(int s);
 extern int get_key(void);
 extern int put_key(int k);
 extern void shutdown(void);
-extern const char *get_revision(void);
 #ifdef REALBUILD
 extern void lock(void);
 extern void unlock(void);

@@ -130,7 +130,7 @@ SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
-		stats.h xeq.h xrom.h storage.h serial.h matrix.h
+		stats.h xeq.h xrom.h storage.h serial.h matrix.h revision.h
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 LIBS += -L$(OBJECTDIR) -lconsts
@@ -195,7 +195,8 @@ ifdef REALBUILD
 
 $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNum34s.a \
-		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE)
+		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE)
+	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber -save-temps
 	$(NM) -n $(OUTPUTDIR)/calc >$(SYMBOLS)
@@ -222,6 +223,9 @@ else
 $(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
 	$(HOSTCC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
+	
+revision.h: $(UTILITIES)/create_revision$(EXE) $(HEADERS) $(SRCS) Makefile
+	$(UTILITIES)/create_revision$(EXE) >$@
 endif
 
 # Build generated files
@@ -256,6 +260,9 @@ $(UTILITIES)/lcdgen$(EXE): lcdgen.c Makefile lcd.h
 $(UTILITIES)/genchars7$(EXE): genchars7.c Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
+$(UTILITIES)/create_revision$(EXE): create_revision.c Makefile
+	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
+
 $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
@@ -286,7 +293,7 @@ $(OBJECTDIR)/consts.o: consts.c consts.h Makefile features.h
 $(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h data.h alpha.h atmel/rtc.h \
 		Makefile features.h
 $(OBJECTDIR)/decn.o: decn.c decn.h xeq.h data.h consts.h complex.h int.h serial.h lcd.h Makefile features.h
-$(OBJECTDIR)/display.o: display.c xeq.h data.h display.h consts.h lcd.h int.h \
+$(OBJECTDIR)/display.o: display.c xeq.h data.h display.h consts.h lcd.h int.h revision.h \
 		charset.h charset7.h decn.h alpha.h decn.h storage.h Makefile features.h
 $(OBJECTDIR)/int.o: int.c int.h xeq.h data.h serial.h Makefile features.h
 $(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h data.h display.h lcdmap.h atmel/board.h \

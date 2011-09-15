@@ -18,8 +18,6 @@
  * This is the main module for the real hardware
  * Module written by MvC
  */
-__attribute__((section(".revision"),externally_visible)) const char SvnRevision[ 16 ] = "$Rev:: 1306    $";
-
 #include "xeq.h"
 #include "display.h"
 #include "lcd.h"
@@ -159,16 +157,6 @@ short int BodTimer;
  */
 #define USE_SYSTEM_IRQ 1
 #define DBGU_PIOC_MASK 0x00030000
-
-/*
- *  Tell the revision number (must not be optimised out!)
- */
-const char *get_revision( void )
-{
-	asm( "" );
-	return SvnRevision + 7;
-}
-
 
 /*
  *  Short wait to allow output lines to settle

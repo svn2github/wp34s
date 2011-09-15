@@ -40,7 +40,7 @@ static char *Template =
 	"#ifdef REALBUILD\n"
 	"__attribute__((section(\".revision\"),externally_visible))\n"
 	"#endif\n"
-	"const char SvnRevision[ 4 ] = \"%-4d\"\n";
+	"const char SvnRevision[ 4 ] = \"%-4d\";\n";
 
 int main( int argc, char **argv )
 {
