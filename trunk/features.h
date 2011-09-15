@@ -86,7 +86,7 @@
 #define MULTI_ALPHA
 
 // Allow A as destination for STOS/RCLS
-#define ALLOW_STOS_A
+// #define ALLOW_STOS_A
 
 #if defined(REALBUILD) || defined(WINGUI)
 // Use shift hold sequence for temporary display in other bases
