@@ -207,11 +207,11 @@ decNumber *matrix_genadd(decNumber *r, const decNumber *k, const decNumber *b, c
 		return NULL;
 	}
 	for (i=0; i<arows*acols; i++) {
-		decimal64ToNumber(bbase++, &s);
+		decimal64ToNumber(bbase + i, &s);
 		dn_multiply(&t, &s, k);
-		decimal64ToNumber(abase, &s);
+		decimal64ToNumber(abase + i, &s);
 		dn_add(&u, &t, &s);
-		packed_from_number(abase++, &u);
+		packed_from_number(abase + i, &u);
 	}
 	return decNumberCopy(r, a);
 }
