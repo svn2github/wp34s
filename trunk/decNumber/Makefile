@@ -11,9 +11,10 @@ SRCS += decimal64.c
 
 OBJS = $(SRCS:%.c=$(OBJECTDIR)/%.o)
 
-gpath %.o = $(OBJECTDIR)
+gpath = $(OBJECTDIR)
 
 all: $(OBJECTDIR) $(OBJECTDIR)/$(LIB)
+
 
 .PHONY: clean
 clean:

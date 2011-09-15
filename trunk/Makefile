@@ -198,7 +198,7 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE)
 	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
-		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNumber -save-temps
+		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s -save-temps
 	$(NM) -n $(OUTPUTDIR)/calc >$(SYMBOLS)
 	$(NM) -S $(OUTPUTDIR)/calc >>$(SYMBOLS)
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.tmp 
