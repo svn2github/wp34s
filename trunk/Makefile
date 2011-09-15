@@ -130,7 +130,7 @@ SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
-		stats.h xeq.h xrom.h storage.h serial.h matrix.h revision.h
+		stats.h xeq.h xrom.h storage.h serial.h matrix.h 
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 LIBS += -L$(OBJECTDIR) -lconsts
