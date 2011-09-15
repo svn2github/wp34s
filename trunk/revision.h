@@ -14,7 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// $id$
+// $Id$
 
 #ifdef REALBUILD
 __attribute__((section(".revision"),externally_visible))
