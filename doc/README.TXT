@@ -1,4 +1,4 @@
-August 2011
+September 2011
 
 
 This is beta firmware for the WP34S calculator.  This is for HP's 20b
