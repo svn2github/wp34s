@@ -126,7 +126,7 @@ static unsigned int keycode_to_digit_or_register(const keycode c)
 /*
  *  Mapping of a keycode and shift state to a catalogue number
  */
-static enum catalogues keycode_to_cat(const keycode c, const enum shifts s)
+static enum catalogues keycode_to_cat(const keycode c, enum shifts s)
 {
 	if (! State2.alphas) {
 		/*
@@ -135,7 +135,10 @@ static enum catalogues keycode_to_cat(const keycode c, const enum shifts s)
 		if (s == SHIFT_F && c == K60)
 			return CATALOGUE_REGISTERS;
 
-		if (s != SHIFT_H && ! ( State2.cmplx && ( c == K20 || c == K50 ) ) )
+		if (s == SHIFT_N && State2.cmplx && c == K50 && State2.catalogue == CATALOGUE_NONE)
+			s = SHIFT_H;
+
+		if (s != SHIFT_H)
 			return CATALOGUE_NONE;
 
 		switch (c) {
