@@ -46,11 +46,14 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 	unsigned int n, base;
 	int r, c, u;
 
-	u = decNumberIsNegative(x) ? 1 : 0;
-	if (u) {
+	if (decNumberIsNegative(x)) {
 		dn_abs(&ax, x);
 		x = &ax;
-	}
+		u = 0;
+	} else
+		u = 1;
+	if (up)		*up = u;
+
 	dn_multiply(&y, x, &const_10000);
 	n = dn_to_int(&y);
 	base = (n / 10000) % 100;
@@ -68,7 +71,6 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 	}
 	if (rows)	*rows = r;
 	if (cols)	*cols = c;
-	if (up)		*up = u;
 	return base;
 }
 

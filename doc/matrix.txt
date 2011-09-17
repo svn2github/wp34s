@@ -96,23 +96,24 @@ MtALL
 	Takes a matrix descriptor in X and returns a value suitable
 	for ISG or DSE looping in X (and sets last X like all good
 	commands).  The loop processes all elements in the matrix.
-	The loop index is DSE if the descriptor is positive and ISG
-	for negative.
+	The loop index is DSE if the descriptor is negative and ISG
+	for positive.  DSE loops cannot finish at register 00.
 
 MtROW
 	Takes a matrix descriptor in X and a row number in Y.  It
 	returns a value suitable for looping in X (dropping the
 	stack and setting last x like all two argument commands).
 	The loop process all elements in the specified row only.
-	The loop index is DSE if the descriptor is positive and ISG
-	for negative.
+	The loop index is DSE if the descriptor is negative and ISG
+	for positive  DSE loops cannot finish at register 00.
 
 MtCOL
 	Takes a matrix descriptor in X and a column number in Y.
 	It returns a value suitable for looping in X (again acting
 	like a two argument command).  The loop processes all
 	elements in the specified column only.  The loop index is
-	DSE if the descriptor is positive and ISG for negative.
+	DSE if the descriptor is negative and ISG for positive.
+	DSE loops cannot finish at register 00.
 
 MtROW?
 	Takes a matrix descriptor in X and returns the number of
