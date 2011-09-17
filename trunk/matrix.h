@@ -30,4 +30,7 @@ extern decNumber *matrix_transpose(decNumber *r, const decNumber *m);
 extern decNumber *matrix_getreg(decNumber *r, const decNumber *k, const decNumber *b, const decNumber *a);
 extern decNumber *matrix_getrc(decNumber *r, const decNumber *x);
 extern void matrix_rowops(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+
 #endif

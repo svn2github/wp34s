@@ -727,6 +727,7 @@ enum nilop {
 
 #ifdef MATRIX_SUPPORT
 	OP_MAT_ROW_SWAP, OP_MAT_ROW_MUL, OP_MAT_ROW_GADD,
+	OP_MAT_CHECK_SQUARE, OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
 
 	NUM_NILADIC	// Last entry defines number of operations
@@ -856,6 +857,9 @@ enum errors {
 	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
 	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
 	ERR_READ_ONLY,	ERR_SOLVE,
+#ifdef MATRIX_SUPPORT
+	ERR_MATRIX_DIM,
+#endif
 	MAX_ERROR
 };
 

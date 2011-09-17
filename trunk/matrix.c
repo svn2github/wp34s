@@ -62,8 +62,8 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 		err(ERR_RANGE);
 		return -1;
 	}
-	if (r == 0 || c == 0) {
-		err(ERR_TOO_LONG);
+	if (c == 0) {
+		err(ERR_BAD_PARAM);
 		return -1;
 	}
 	if (rows)	*rows = r;
@@ -80,6 +80,41 @@ static decimal64 *matrix_decomp(const decNumber *x, int *rows, int *cols) {
 	return get_reg_n(base);
 }
 
+void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	int r, c;
+	decNumber x;
+
+	getX(&x);
+	if (matrix_decompose(&x, &r, &c, NULL) >= 0 && r != c)
+		err(ERR_MATRIX_DIM);
+}
+
+void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	decNumber x;
+	int r, c, i, j;
+	decimal64 *base;
+	const decimal64 *diag, *off;
+
+	getX(&x);
+	base = matrix_decomp(&x, &r, &c);
+	if (base != NULL) {
+		off = &CONSTANT_INT(OP_ZERO);
+
+		if (op == OP_MAT_IDENT) {
+			if (r != c) {
+				err(ERR_MATRIX_DIM);
+				return;
+			}
+			diag = &CONSTANT_INT(OP_ONE);
+		} else
+			diag = off;
+
+		for (i=0; i<r; i++)
+			for (j=0; j<c; j++)
+				*base++ = *((i==j)?diag:off);
+	}
+}
+
 static decNumber *matrix_do_loop(decNumber *r, int low, int high, int step, int up) {
 	decNumber z;
 	int i;
@@ -88,7 +123,7 @@ static decNumber *matrix_do_loop(decNumber *r, int low, int high, int step, int 
 		i = (low * 1000 + high) * 100 + step;
 	} else {
 		if (low == 0)
-			err(ERR_RANGE);
+			err(ERR_DOMAIN);
 		i = (high * 1000 + low - 1) * 100 + step;
 	}
 	int_to_dn(&z, i);
@@ -203,7 +238,7 @@ decNumber *matrix_genadd(decNumber *r, const decNumber *k, const decNumber *b, c
 	if (abase == NULL || bbase == NULL)
 		return NULL;
 	if (arows != brows || acols != bcols) {
-		err(ERR_RANGE);
+		err(ERR_MATRIX_DIM);
 		return NULL;
 	}
 	for (i=0; i<arows*acols; i++) {
@@ -231,7 +266,7 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 	if (abase == NULL || bbase == NULL)
 		return NULL;
 	if (acols != brows) {
-		err(ERR_RANGE);
+		err(ERR_MATRIX_DIM);
 		return NULL;
 	}
 	creg = dn_to_int(c);

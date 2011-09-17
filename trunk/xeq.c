@@ -595,7 +595,7 @@ unsigned int find_user_pc(unsigned int target) {
 }
 
 
-/* Zero the X register
+/* Zero a register
  */
 static void set_zero(decimal64 *x) {
 	if (is_intmode())
