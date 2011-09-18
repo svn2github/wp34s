@@ -50,12 +50,19 @@ int main( int argc, char **argv )
 	int rev;
 	char *p;
 	
-	tmpnam( tmpname );
+	if (tmpnam( tmpname ) == NULL) {
+		fprintf(stderr, "Unable to create tempory file name: %m\n");
+		return 1;
+	}
 
 	// Try to execute svnversion
 	sprintf( buffer, "svnversion -n >%s", tmpname );
 	fprintf( stderr, "Executing %s\n", buffer );
-	system( buffer );
+	if (system( buffer ) == -1) {
+		fprintf(stderr, "unable to run subversion command: %m\n");
+		remove( tmpname );
+		return 1;
+	}
 
 	// Read result
 	f = fopen( tmpname, "r" );
@@ -64,7 +71,12 @@ int main( int argc, char **argv )
 		strcpy( buffer, "0000" );
 	}
 	else {
-		fgets( buffer, sizeof( buffer ) - 1, f );
+		if (fgets( buffer, sizeof( buffer ) - 1, f ) == NULL) {
+			fprintf(stderr, "unable to read revision: %m\n");
+			fclose( f );
+			remove( tmpname );
+			return 1;
+		}
 		fprintf( stderr, "Revision number(s): %s\n", buffer );
 		fclose( f );
 		remove( tmpname );
