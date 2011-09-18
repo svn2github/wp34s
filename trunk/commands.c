@@ -243,11 +243,11 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT")
 #endif
 #ifdef MATRIX_SUPPORT
-	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"MtALL")
-	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"MtTRN")
-	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"MtROW?")
-	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"MtCOL?")
-	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"MtIJ")
+	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M.ALL")
+	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"M.TRN")
+	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"M.ROW?")
+	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"M.COL?")
+	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"M.IJ")
 #endif
 #undef FUNC
 };
@@ -335,8 +335,8 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
 #endif
 #ifdef MATRIX_SUPPORT
-	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"MtROW")
-	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"MtCOL")
+	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M.ROW")
+	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M.COL")
 #endif
 #undef FUNC
 };
@@ -372,9 +372,9 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 	FUNC(OP_PERMRR,		&decNemberPerMRR, NOFN,		"%MRR")
         FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha, NOFN,    "L\275\240")
 #ifdef MATRIX_SUPPORT
-	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"Mt\034")
-	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"Mt+\034")
-	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"MtREG")
+	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"M.\034")
+	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"M.+\034")
+	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"M.REG")
 #endif
 #undef FUNC
 };
@@ -585,12 +585,12 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_Xeq_neg0,	&check_zero,		"x=-0?")
 
 #ifdef MATRIX_SUPPORT
-	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"MtR\027")
-	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"MtR\034")
-	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"MtR+\034")
-	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"MtSQR")
-	FUNC0(OP_MAT_ZERO,	&matrix_create,		"MtZERO")
-	FUNC0(OP_MAT_IDENT,	&matrix_create,		"MtIDEN")
+	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"M.R\027")
+	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"M.R\034")
+	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"M.R+\034")
+	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
+	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
+	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
 #undef FUNC
 #undef FUNC0
