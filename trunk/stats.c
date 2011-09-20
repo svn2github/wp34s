@@ -481,7 +481,7 @@ void stats_COV(decimal64 *r, decimal64 *nul, enum nilop op) {
 }
 
 
-// y = B . x + A
+// y = B + A . x
 static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
 	decNumber N, u, v, denom;
 	decNumber sx, sy, sxx, sxy;

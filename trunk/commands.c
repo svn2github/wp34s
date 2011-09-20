@@ -555,8 +555,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")
-	FUNC0(OP_RLOAD,		&load_registers,	"RCFRG")
-	FUNC0(OP_SLOAD,		&load_state,		"RCFST")
+	FUNC0(OP_RLOAD,		&load_registers,	"RCF.RG")
+	FUNC0(OP_SLOAD,		&load_state,		"RCF.ST")
 	FUNC0(OP_BACKUP,	&flash_backup,		"SAVE")
 	FUNC0(OP_RESTORE,	&flash_restore,		"LOAD")
 
