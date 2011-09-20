@@ -554,22 +554,11 @@ void cmplxAsin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 
 // arccos(z) = k PI + -i ln(z + sqrt(z^2-1))
 void cmplxAcos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#if 1
 	decNumber t1, t2;
 
 	cmplxAsin(&t1, &t2, a, b);
 	dn_minus(ry, &t2);
 	dn_subtract(rx, &const_PIon2, &t1);
-#else
-	decNumber t1, t2, s1, s2, u;
-
-	cmplxSqr(&u, &t2, a, b);
-	dn_subtract(&t1, &u, &const_1);
-	cmplxSqrt(&s1, &s2, &t1, &t2);
-	cmplxAdd(&t1, &t2, &s1, &s2, a, b);
-	cmplxLn(&s1, rx, &t1, &t2);
-	dn_minus(ry, &s1);
-#endif
 }
 
 
