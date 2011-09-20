@@ -423,55 +423,9 @@ void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 }
 
 
-// arcsin(z) = k PI + -i ln (iz + sqrt(1-z^2))
-void cmplxAsin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber t1, t2, s1, s2, u;
-
-	cmplxSqr(&t1, &t2, a, b);
-	cmplxSubtractFromReal(&s1, &s2, &const_1, &t1, &t2);
-	cmplxSqrt(&t1, &t2, &s1, &s2);
-	dn_minus(&u, b);				/* i (a + ib) = -b + ia */
-	cmplxAdd(&s1, &s2, &u, a, &t1, &t2);
-	cmplxLn(&t1, rx, &s1, &s2);
-	dn_minus(ry, &t1);
-#endif
-}
-
-// arccos(z) = k PI + -i ln(z + sqrt(z^2-1))
-void cmplxAcos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber t1, t2, s1, s2, u;
-
-	cmplxSqr(&u, &t2, a, b);
-	dn_subtract(&t1, &u, &const_1);
-	cmplxSqrt(&s1, &s2, &t1, &t2);
-	cmplxAdd(&t1, &t2, &s1, &s2, a, b);
-	cmplxLn(&s1, rx, &t1, &t2);
-	dn_minus(ry, &s1);
-#endif
-}
-
 // atan(z) = i/2 (ln(1 - i z) - ln (1 + i z))
 void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 #ifndef TINY_BUILD
-#if 0
-	decNumber s1, s2, t1, t2, u, v1, v2;
-
-	dn_add(&t1, b, &const_1);
-	dn_minus(&t2, a);
-	cmplxLn(&s1, &s2, &t1, &t2);
-
-	dn_subtract(&u, &const_1, b);
-	cmplxLn(&v1, &v2, &u, a);
-
-	dn_subtract(&t1, &s1, &v1);
-	dn_subtract(&t2, &s2, &v2);
-
-	dn_multiply(&s1, &const_0_5, &t2);
-	dn_minus(rx, &s1);
-	dn_multiply(ry, &const_0_5, &t1);
-#else
 	decNumber s1, s2, t1, t2, v1, v2;
 
 	dn_subtract(&v1, &const_1, b);	// 1 + iz = 1 + i(a+ib)	= 1-b + ia
@@ -482,7 +436,6 @@ void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	cmplxSubtract(&v1, &v2, &t1, &t2, &s1, &s2);
 	cmplxMultiplyReal(ry, &t1, &v1, &v2, &const_0_5);
 	dn_minus(rx, &t1);
-#endif
 #endif
 }
 
@@ -552,31 +505,73 @@ void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 #endif
 }
 
-static void cmplx_asinhacosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *add) {
-#ifndef TINY_BUILD
-	decNumber s1, s2, t1, t2;
+// arcsinh(a + i b) = ln((a + i b) + sqrt((a + i b) (a + i b) + 1)
+void cmplxAsinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+	decNumber s1, s2, t1, t2, na, nb;
+	int negate;
+
+	negate = decNumberIsNegative(a);
+	if (negate) {
+		cmplxMinus(&na, &nb, a, b);
+		a = &na;
+		b = &nb;
+	}
 
 	cmplxSqr(&s1, &t2, a, b);
 
-	dn_add(&t1, &s1, add);
+	dn_add(&t1, &s1, &const_1);
 
 	cmplxSqrt(&s1, &s2, &t1, &t2);
 	dn_add(&t1, &s1, a);
 	dn_add(&t2, &s2, b);
 
 	cmplxLn(rx, ry, &t1, &t2);
-#endif
-}
-
-// arcsinh(a + i b) = ln((a + i b) + sqrt((a + i b) (a + i b) + 1)
-void cmplxAsinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplx_asinhacosh(rx, ry, a, b, &const_1);
+	if (negate)
+		cmplxMinus(rx, ry, rx, ry);
 }
 
 // arccosh(a + i b) = ln((a + i b) + sqrt((a + i b) (a + i b) - 1)
 void cmplxAcosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplx_asinhacosh(rx, ry, a, b, &const__1);
+	decNumber t1, t2, s1, s2, u1, u2;
+
+	dn_add(&t1, a, &const_1);
+	cmplxSqrt(&s1, &s2, &t1, b);
+	dn_subtract(&t1, a, &const_1);
+	cmplxSqrt(&u1, &u2, &t1, b);
+	cmplxMultiply(&t1, &t2, &s1, &s2, &u1, &u2);
+	cmplxAdd(&s1, &s2, a, b, &t1, &t2);
+	cmplxLn(rx, ry, &s1, &s2);
 }
+
+// arcsin(z) = k PI + -i ln (iz + sqrt(1-z^2))
+void cmplxAsin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+	decNumber t;
+
+	dn_minus(&t, a);
+	cmplxAsinh(ry, rx, b, &t);
+	dn_minus(rx, rx);
+}
+
+// arccos(z) = k PI + -i ln(z + sqrt(z^2-1))
+void cmplxAcos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+#if 1
+	decNumber t1, t2;
+
+	cmplxAsin(&t1, &t2, a, b);
+	dn_minus(ry, &t2);
+	dn_subtract(rx, &const_PIon2, &t1);
+#else
+	decNumber t1, t2, s1, s2, u;
+
+	cmplxSqr(&u, &t2, a, b);
+	dn_subtract(&t1, &u, &const_1);
+	cmplxSqrt(&s1, &s2, &t1, &t2);
+	cmplxAdd(&t1, &t2, &s1, &s2, a, b);
+	cmplxLn(&s1, rx, &t1, &t2);
+	dn_minus(ry, &s1);
+#endif
+}
+
 
 // arctanh(a + i b) = (1/2)*ln((1 + (a + i b))/(1 - (a + i b)))
 void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
