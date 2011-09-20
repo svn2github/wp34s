@@ -1436,18 +1436,25 @@ void op_p2r(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 /* Hyperbolic functions.
  * We start with a utility routine that calculates sinh and cosh.
  * We do the sihn as (e^x - 1) / e^x + e^x - 1 for numerical stability
- * reasons.
+ * reasons if the value of x is smallish.
  */
 void dn_sinhcosh(const decNumber *x, decNumber *sinhv, decNumber *coshv) {
 	decNumber t, u, v;
 
 	if (sinhv != NULL) {
-		decNumberExpm1(&u, x);
-		dn_multiply(&t, &u, &const_0_5);
-		dn_inc(&u);
-		dn_divide(&v, &t, &u);
-		dn_inc(&u);
-		dn_multiply(sinhv, &u, &v);
+		if (decNumberIsNegative(dn_compare(&u, dn_abs(&t, x), &const_0_5))) {
+			decNumberExpm1(&u, x);
+			dn_multiply(&t, &u, &const_0_5);
+			dn_inc(&u);
+			dn_divide(&v, &t, &u);
+			dn_inc(&u);
+			dn_multiply(sinhv, &u, &v);
+		} else {
+			dn_exp(&u, x);			// u = e^x
+			decNumberRecip(&v, &u);		// v = e^-x
+			dn_subtract(&t, &u, &v);	// r = e^x - e^-x
+			dn_multiply(sinhv, &t, &const_0_5);
+		}
 	}
 	if (coshv != NULL) {
 		dn_exp(&u, x);			// u = e^x
