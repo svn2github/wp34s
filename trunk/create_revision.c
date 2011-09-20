@@ -51,7 +51,7 @@ int main( int argc, char **argv )
 	char *p;
 	
 	if (tmpnam( tmpname ) == NULL) {
-		fprintf(stderr, "Unable to create tempory file name: %m\n");
+		perror("Unable to create tempory file name");
 		return 1;
 	}
 
@@ -59,7 +59,7 @@ int main( int argc, char **argv )
 	sprintf( buffer, "svnversion -n >%s", tmpname );
 	fprintf( stderr, "Executing %s\n", buffer );
 	if (system( buffer ) == -1) {
-		fprintf(stderr, "unable to run subversion command: %m\n");
+		perror("unable to run subversion command");
 		remove( tmpname );
 		return 1;
 	}
@@ -72,7 +72,7 @@ int main( int argc, char **argv )
 	}
 	else {
 		if (fgets( buffer, sizeof( buffer ) - 1, f ) == NULL) {
-			fprintf(stderr, "unable to read revision: %m\n");
+			perror("unable to read revision");
 			fclose( f );
 			remove( tmpname );
 			return 1;
