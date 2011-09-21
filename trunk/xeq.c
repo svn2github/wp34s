@@ -1298,12 +1298,18 @@ void cmdflashrcl(unsigned int arg, enum rarg op) {
  */
 static int storcl_cop(unsigned short opr,
 		const decimal64 *y1r, const decimal64 *y2r,
-		decNumber *r1, decNumber *r2) {
+		decNumber *r1, decNumber *r2, int rev) {
 	decNumber x1, x2, y1, y2;
 
-	getXY(&x1, &x2);
-	decimal64ToNumber(y1r, &y1);
-	decimal64ToNumber(y2r, &y2);
+	if (rev) {
+		getXY(&y1, &y2);
+		decimal64ToNumber(y1r, &x1);
+		decimal64ToNumber(y2r, &x2);
+	} else {
+		getXY(&x1, &x2);
+		decimal64ToNumber(y1r, &y1);
+		decimal64ToNumber(y2r, &y2);
+	}
 
 	switch (opr) {
 	case 1:
@@ -1338,7 +1344,7 @@ void cmdcsto(unsigned int arg, enum rarg op) {
 	} else {
 		if (is_intmode())
 			bad_mode_error();
-		else if (storcl_cop(op - RARG_CSTO, t1, t2, &r1, &r2))
+		else if (storcl_cop(op - RARG_CSTO, t1, t2, &r1, &r2, 0))
 			illegal(op);
 		else {
 			packed_from_number(t1, &r1);
@@ -1358,7 +1364,7 @@ static void do_crcl(const decimal64 *t1, const decimal64 *t2, enum rarg op) {
 	} else {
 		if (is_intmode())
 			bad_mode_error();
-		else if (storcl_cop(op - RARG_CRCL, t1, t2, &r1, &r2))
+		else if (storcl_cop(op - RARG_CRCL, t1, t2, &r1, &r2, 1))
 			illegal(op);
 		else {
 			setlastXY();
