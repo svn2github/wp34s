@@ -1,4 +1,4 @@
-# $Rev$ 
+# $Rev$
 0x0000	cmd	ENTER[^]
 0x0002	cmd	EEX
 0x0003	cmd	+/-
@@ -182,8 +182,8 @@
 0x018e	cmd	NEXTP
 0x018f	cmd	XEQ[alpha]
 0x0190	cmd	GTO[alpha]
-0x0191	cmd	RCFRG
-0x0192	cmd	RCFST
+0x0191	cmd	RCF.RG
+0x0192	cmd	RCF.ST
 0x0193	cmd	SAVE
 0x0194	cmd	LOAD
 0x0195	cmd	RM?
@@ -1031,9 +1031,9 @@
 0x8900	arg	KEY?	max=112,indirect,stack
 0x8a00	arg	[alpha]XEQ	max=112,indirect,stack
 0x8b00	arg	[alpha]GTO	max=112,indirect,stack
-0x8c00	arg	PRCL	max=10,indirect
-0x8d00	arg	PSTO	max=10,indirect
-0x8e00	arg	P[<->]	max=10,indirect
+0x8c00	arg	PRCL	max=9,indirect
+0x8d00	arg	PSTO	max=9,indirect
+0x8e00	arg	P[<->]	max=9,indirect
 0x8f00	arg	RCF	max=112,indirect,stack
 0x9000	arg	RCF+	max=112,indirect,stack
 0x9100	arg	RCF-	max=112,indirect,stack
@@ -1052,7 +1052,7 @@
 0x9e00	arg	RM	max=7,indirect
 0x9f00	arg	STOM	max=112,indirect,stack
 0xa000	arg	RCLM	max=112,indirect,stack
-0xa200	arg	SENDL	max=10,indirect
+0xa200	arg	SENDL	max=9,indirect
 0xa300	arg	PUTK	max=112,indirect,stack
 0xa400	arg	KTP?	max=112,indirect,stack
 0xf000	mult	LBL
