@@ -124,7 +124,7 @@
 // #define ALLOW_MORE_LABELS
 
 // Include some basic matrix support commands.
-// #define MATRIX_SUPPORT
+#define MATRIX_SUPPORT
 
 
 /*******************************************************************/
@@ -133,9 +133,9 @@
 
 // Needs to be adjusted depending on code size
 #ifdef MATRIX_SUPPORT
-#define NUMBER_OF_FLASH_REGIONS 9
+#define NUMBER_OF_FLASH_REGIONS 8
 #else
-#define NUMBER_OF_FLASH_REGIONS 11
+#define NUMBER_OF_FLASH_REGIONS 10
 #endif
 
 #if defined(INCLUDE_COMPLEX_ZETA) && ! defined(INCLUDE_ZETA)
