@@ -727,7 +727,10 @@ enum nilop {
 
 #ifdef MATRIX_SUPPORT
 	OP_MAT_ROW_SWAP, OP_MAT_ROW_MUL, OP_MAT_ROW_GADD,
-	OP_MAT_CHECK_SQUARE, OP_MAT_ZERO, OP_MAT_IDENT,
+	OP_MAT_CHECK_SQUARE,
+#endif
+#ifdef SILLY_MATRIX_SUPPORT
+	 OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
 
 	NUM_NILADIC	// Last entry defines number of operations

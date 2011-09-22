@@ -126,6 +126,8 @@
 // Include some basic matrix support commands.
 // #define MATRIX_SUPPORT
 
+// Include matrix functions better implemented in user code
+// #define SILLY_MATRIX_SUPPORT
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
@@ -155,6 +157,10 @@
 #if defined(INCLUDE_BESSEL) && ! defined(INCLUDE_DIGAMMA)
 /* Second kind functions of integer order need digamma */
 #define INCLUDE_DIGAMMA
+#endif
+
+#if defined(SILLY_MATRIX_SUPPORT) && ! defined(MATRIX_SUPPORT)
+#define MATRIX_SUPPORT
 #endif
 
 #endif  /* TINY_BUILD*/

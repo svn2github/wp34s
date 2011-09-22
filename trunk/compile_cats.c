@@ -641,6 +641,8 @@ static s_opcode internal_catalogue[] = {
 	NILIC(OP_MAT_ROW_MUL,	"M.R*")
 	NILIC(OP_MAT_ROW_GADD,	"M.R+*")
 	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
+#endif
+#ifdef SILLY_MATRIX_SUPPORT
 	NILIC(OP_MAT_ZERO,	"M.ZERO")
 	NILIC(OP_MAT_IDENT,	"M.IDEN")
 #endif

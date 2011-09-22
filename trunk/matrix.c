@@ -91,6 +91,7 @@ void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 		err(ERR_MATRIX_DIM);
 }
 
+#ifdef SILLY_MATRIX_SUPPORT
 void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber x;
 	int r, c, i, j;
@@ -116,6 +117,7 @@ void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 				*base++ = *((i==j)?diag:off);
 	}
 }
+#endif
 
 static decNumber *matrix_do_loop(decNumber *r, int low, int high, int step, int up) {
 	decNumber z;
