@@ -12,16 +12,16 @@
 			iC 1
 m_add_sub_common::	x[<->] Z
 			x[<->]y
-			Mt+[times]
+			M.+[times]
 			RTN
 
 /* Matrix Transpose multiply
  */
 			LBL'M`[times]'
 			[cmplx]x[<->]y
-			MtTRN
+			M.TRN
 			[cmplx]x[<->]y
-			Mt[times]
+			M.[times]
 			RTN
 
 /* Trace of a matrix.
@@ -38,7 +38,7 @@ m_add_sub_common::	x[<->] Z
 			CF 99
 m_trace_common::	iC 1
 			x[<->]y
-			MtCOL
+			M.COL
 			iC 1
 			SDR 05
 			+
@@ -55,7 +55,7 @@ m_trace_loop::		RCL[->]Y
  * Uses stack.
  */
 			LBL'MNM'
-			MtALL
+			M.ALL
 			iC 0
 m_norm_loop::		RCL[->]Y
 			x[^2]
@@ -69,7 +69,7 @@ m_norm_loop::		RCL[->]Y
  * Uses stack.
  */
 			LBL'M[^]'
-			MtALL
+			M.ALL
 			RCL[->]X
 m_max_loop::		RCL[^][->]Y
 			ISG Y
@@ -77,7 +77,7 @@ m_max_loop::		RCL[^][->]Y
 			JMP drop_y
 
 			LBL'M[v]'
-			MtALL
+			M.ALL
 			RCL[->]X
 m_min_loop::		RCL[v][->]Y
 			ISG Y
@@ -85,6 +85,32 @@ m_min_loop::		RCL[v][->]Y
 			/*JMP drop_y*/
 
 drop_y::		x[<->]y
+			DROP
+			RTN
+
+/* Create an identity matrix */
+m_ident::		LBL'IDT'
+			M.SQR
+			XEQ m_zero
+			RCL L
+			M.COL
+			iC 1
+			SDR 05
+			+
+m_ident_loop::			INC[->]X
+				ISG X
+				JMP m_ident_loop
+			DROP
+			RTN
+
+/* Create a zero matrix */
+m_zero::		LBL'ZER'
+			ABS
+			M.ALL
+m_zero_loop::			STO[->]X
+				STO-[->]X
+				ISG Y
+				JMP m_zero_loop
 			DROP
 			RTN
 
