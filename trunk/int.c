@@ -1051,17 +1051,23 @@ long long int intSqrt(long long int x) {
 		err(ERR_DOMAIN);
 		return 0;
 	}
-	if (v == 0) {
-		set_carry(0);
-		return 0;
+	if (v < 4) {
+		if (v < 2) {
+			set_carry(0);
+			n1 = v;
+		} else {
+			set_carry(1);
+			n1 = 1;
+		}
+	} else {
+		n0 = v / 2 + 1;
+		n1 = v / n0 + n0 / 2;
+		while (n1 < n0) {
+			n0 = n1;
+			n1 = (n0 + v / n0) / 2;
+		}
+		set_carry((n1 * n1 != v)?1:0);
 	}
-	n0 = v / 2 + 1;
-	n1 = v / n0 + n0 / 2;
-	while (n1 < n0) {
-		n0 = n1;
-		n1 = (n0 + v / n0) / 2;
-	}
-	set_carry((n1 * n1 != v)?1:0);
 	return build_value(n1, sx);
 #else
 	return 0;
