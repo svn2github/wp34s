@@ -2226,9 +2226,9 @@ void cmdloop(unsigned int arg, enum rarg op) {
 
 		xv = extract_value(x, &xs);
 		if (op == RARG_ISG)
-			fin_tst(xs == 0 && xv > 0);	// > 0
+			fin_tst(! (xs == 0 && xv > 0));		// > 0
 		else
-			fin_tst(xs != 0 || xv == 0);	// <= 0
+			fin_tst(! (xs != 0 || xv == 0));	// <= 0
 		return;
 	} else {
 		decNumber x, i, f, n, u;
