@@ -1863,7 +1863,7 @@ void cmddisp(unsigned int arg, enum rarg op) {
 	UState.dispdigs = arg;
 	if (op != RARG_DISP)
 		UState.dispmode = (op - RARG_STD) + MODE_STD;
-	UState.fract = 0;
+	op_float(NULL, NULL, OP_FLOAT);
 }
 
 
