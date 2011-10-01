@@ -248,6 +248,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"M.ROW?")
 	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"M.COL?")
 	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"M.IJ")
+	FUNC(OP_MAT_DET, &matrix_determinant,	NOFN,		NOFN,		"M.DET")
 #endif
 #undef FUNC
 };

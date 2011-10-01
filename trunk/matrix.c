@@ -29,6 +29,10 @@ static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, in
 	decimal64ToNumber(base + matrix_idx(row, col, ncols), r);
 }
 
+static void matrix_put(const decNumber *x, decimal64 *base, int row, int col, int ncols) {
+	packed_from_number(base + matrix_idx(row, col, ncols), x);
+}
+
 static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 	decNumber z;
 
@@ -369,6 +373,87 @@ badrow:		err(ERR_RANGE);
 			}
 		}
 	}
+}
+
+static int LU_decomposition(decimal64 *A, int *pivots, const int n) {
+	int i, j, k;
+	int pvt, spvt = 1;
+	decimal64 *p1, *p2;
+	decNumber max, t, u;
+
+	for (k=0; k<n; k++) {
+		/* Find the pivot row */
+		pvt = k;
+		matrix_get(&u, A, k, k, n);
+		dn_abs(&max, &u);
+		for (j=k+1; j<n; j++) {
+			matrix_get(&t, A, j, k, n);
+			dn_abs(&u, &t);
+			if (dn_lt0(dn_compare(&t, &max, &u))) {
+				decNumberCopy(&max, &u);
+				pvt = j;
+			}
+		}
+		if (pivots != NULL)
+			*pivots++ = pvt;
+
+		/* pivot if required */
+		if (pvt != k) {
+			spvt = -spvt;
+			p1 = A + (n * k);
+			p2 = A + (n * pvt);
+			for (j=0; j<n; j++)
+				swap_reg(p1++, p2++);
+		}
+
+		/* Check for singular */
+		matrix_get(&t, A, k, k, n);
+		if (decNumberIsZero(&t))
+			return 0;
+
+		/* Find the lower triangular elements for column k */
+		for (i=k+1; i<n; i++) {
+			matrix_get(&t, A, k, k, n);
+			matrix_get(&u, A, i, k, n);
+			dn_divide(&max, &u, &t);
+			matrix_put(&max, A, i, k, n);
+		}
+		/* Update the upper triangular elements */
+		for (i=k+1; i<n; i++)
+			for (j=k+1; j<n; j++) {
+				matrix_get(&t, A, i, k, n);
+				matrix_get(&u, A, k, j, n);
+				dn_multiply(&max, &t, &u);
+				matrix_get(&t, A, i, j, n);
+				dn_subtract(&u, &t, &max);
+				matrix_put(&u, A, i, j, n);
+			}
+	}
+	return spvt;
+}
+
+decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
+	int rows, cols, i;
+	decimal64 mat[100], *base;
+	decNumber t;
+
+	base = matrix_decomp(m, &rows, &cols);
+	if (base == NULL)
+		return NULL;
+	if (rows != cols) {
+		err(ERR_MATRIX_DIM);
+		return NULL;
+	}
+
+	xcopy(mat, base, rows * rows * sizeof(decimal64));
+	i = LU_decomposition(mat, NULL, rows);
+
+	int_to_dn(r, i);
+	for (i=0; i<rows; i++) {
+		matrix_get(&t, mat, i, i, rows);
+		dn_multiply(r, r, &t);
+	}
+	return r;
 }
 
 #endif

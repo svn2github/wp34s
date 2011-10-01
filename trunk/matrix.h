@@ -33,4 +33,6 @@ extern void matrix_rowops(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
+extern decNumber *matrix_determinant(decNumber *r, const decNumber *x);
+
 #endif

@@ -596,6 +596,7 @@ enum {
 	OP_MAT_ALL,
 	OP_MAT_TRN,
 	OP_MAT_RQ, OP_MAT_CQ, OP_MAT_IJ,
+	OP_MAT_DET,
 #endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
