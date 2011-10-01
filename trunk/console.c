@@ -300,6 +300,16 @@ static void dump_prog(unsigned int n) {
 	}
 }
 
+static void dump_registers(void) {
+	char buf[100];
+	int i;
+
+	for (i=0; i<100; i++) {
+		decimal64ToString(get_reg_n(i), buf);
+		printf("register %02d: %s\n", i, buf);
+	}
+}
+
 
 void shutdown( void )
 {
@@ -380,6 +390,10 @@ int main(int argc, char *argv[]) {
 	load_statefile();
 	if (argc > 1) {
 		if (argc == 2) {
+			if (strcmp(argv[1], "reg") == 0) {
+				dump_registers();
+				return 0;
+			}
 			if (strcmp(argv[1], "xrom") == 0) {
 				dump_xrom();
 				return 0;
