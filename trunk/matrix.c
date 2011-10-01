@@ -18,6 +18,9 @@
 #include "decn.h"
 #include "consts.h"
 
+#define MAX_DIMENSION	100
+#define MAX_SQUARE	10
+
 
 #ifdef MATRIX_SUPPORT
 
@@ -29,9 +32,11 @@ static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, in
 	decimal64ToNumber(base + matrix_idx(row, col, ncols), r);
 }
 
+#ifndef MATRIX_ACCURATE_LU_DECOMPOSITION
 static void matrix_put(const decNumber *x, decimal64 *base, int row, int col, int ncols) {
 	packed_from_number(base + matrix_idx(row, col, ncols), x);
 }
+#endif
 
 static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 	decNumber z;
@@ -375,6 +380,135 @@ badrow:		err(ERR_RANGE);
 	}
 }
 
+#ifdef MATRIX_ACCURATE_LU_DECOMPOSITION
+static int LU_decomposition(decNumber *A, int *pivots, const int n) {
+	int i, j, k;
+	int pvt, spvt = 1;
+	decNumber *p1, *p2, *diag;
+	decNumber max, t, u;
+
+	if (pivots != NULL)
+		for (i=0; i<n; i++)
+			pivots[i] = -1;
+
+	for (k=0; k<n; k++) {
+		/* Find the pivot row */
+		pvt = k;
+		diag = A + (k * (n+1));
+		dn_abs(&max, diag);
+		for (j=k+1; j<n; j++) {
+			dn_abs(&u, A + matrix_idx(j, k, n));
+			if (dn_lt0(dn_compare(&t, &max, &u))) {
+				decNumberCopy(&max, &u);
+				pvt = j;
+			}
+		}
+		if (pivots != NULL)
+			*pivots++ = pvt;
+
+		/* pivot if required */
+		if (pvt != k) {
+			spvt = -spvt;
+			p1 = A + (n * k);
+			p2 = A + (n * pvt);
+			for (j=0; j<n; j++) {
+				decNumberCopy(&t, p1);
+				decNumberCopy(p1, p2);
+				decNumberCopy(p2, &t);
+				p1++;
+				p2++;
+			}
+		}
+
+		/* Check for singular */
+		if (decNumberIsZero(diag))
+			return 0;
+
+		/* Find the lower triangular elements for column k */
+		for (i=k+1; i<n; i++) {
+			decNumber *p = A + matrix_idx(i, k, n);
+			dn_divide(p, p, diag);
+		}
+
+		/* Update the upper triangular elements */
+		for (i=k+1; i<n; i++)
+			for (j=k+1; j<n; j++) {
+				decNumber *p;
+				dn_multiply(&max, A + matrix_idx(i, k, n), A + matrix_idx(k, j, n));
+				p = A + matrix_idx(i, j, n);
+				dn_subtract(p, p, &max);
+			}
+	}
+	return spvt;
+}
+
+static int matrix_lu_check(const decNumber *m, decNumber *mat, decimal64 **mbase) {
+	int rows, cols;
+	int i;
+	decimal64 *base;
+
+	base = matrix_decomp(m, &rows, &cols);
+	if (base == NULL)
+		return 0;
+	if (rows != cols) {
+		err(ERR_MATRIX_DIM);
+		return 0;
+	}
+	if (mat != NULL) {
+		for (i=0; i<rows * rows; i++)
+			decimal64ToNumber(base + i, mat + i);
+	}
+	if (mbase != NULL)
+		*mbase = base;
+	return rows;
+}
+
+decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
+	int n, i;
+	decNumber mat[MAX_SQUARE*MAX_SQUARE];
+
+	n = matrix_lu_check(m, mat, NULL);
+	if (n == 0)
+		return NULL;
+
+	i = LU_decomposition(mat, NULL, n);
+
+	int_to_dn(r, i);
+	for (i=0; i<n; i++)
+		dn_multiply(r, r, mat + (i * (n+1)));
+	return r;
+}
+
+decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
+	int pivots[MAX_SQUARE], i, sign, n;
+	decNumber t, u;
+	decNumber mat[MAX_SQUARE*MAX_SQUARE];
+	decimal64 *base;
+
+	n = matrix_lu_check(m, mat, &base);
+	if (n == 0)
+		return NULL;
+
+	sign = LU_decomposition(mat, pivots, n);
+	if (sign == 0) {
+		err(ERR_SINGULAR);
+		return NULL;
+	}
+
+	/* Build the pivot number */
+	decNumberZero(r);
+	for (i=0; i<n; i++) {
+		int_to_dn(&t, pivots[i]);
+		dn_multiply(&u, r, &const_10);
+		dn_add(r, &u, &t);
+	}
+
+	/* Copy the result back over the matrix */
+	for (i=0; i<n*n; i++)
+		packed_from_number(base + i, mat + i);
+	return r;
+}
+#else
 static int LU_decomposition(decimal64 *A, int *pivots, const int n) {
 	int i, j, k;
 	int pvt, spvt = 1;
@@ -432,28 +566,71 @@ static int LU_decomposition(decimal64 *A, int *pivots, const int n) {
 	return spvt;
 }
 
-decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
-	int rows, cols, i;
-	decimal64 mat[100], *base;
-	decNumber t;
+static int matrix_lu_check(const decNumber *m, decimal64 *mat, decimal64 **mbase) {
+	int rows, cols;
+	decimal64 *base;
 
 	base = matrix_decomp(m, &rows, &cols);
 	if (base == NULL)
-		return NULL;
+		return 0;
 	if (rows != cols) {
 		err(ERR_MATRIX_DIM);
-		return NULL;
+		return 0;
 	}
+	if (mat != NULL)
+		xcopy(mat, base, rows * rows * sizeof(decimal64));
+	if (mbase != NULL)
+		*mbase = base;
+	return rows;
+}
 
-	xcopy(mat, base, rows * rows * sizeof(decimal64));
-	i = LU_decomposition(mat, NULL, rows);
+decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
+	int n, i;
+	decimal64 mat[MAX_SQUARE*MAX_SQUARE];
+	decNumber t;
+
+	n = matrix_lu_check(m, mat, NULL);
+	if (n == 0)
+		return NULL;
+
+	i = LU_decomposition(mat, NULL, n);
 
 	int_to_dn(r, i);
-	for (i=0; i<rows; i++) {
-		matrix_get(&t, mat, i, i, rows);
+	for (i=0; i<n; i++) {
+		matrix_get(&t, mat, i, i, n);
 		dn_multiply(r, r, &t);
 	}
 	return r;
 }
+
+decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
+	int pivots[MAX_SQUARE], i, sign, n;
+	decNumber t, u;
+	decimal64 mat[MAX_SQUARE*MAX_SQUARE];
+	decimal64 *base;
+
+	n = matrix_lu_check(m, mat, &base);
+	if (n == 0)
+		return NULL;
+
+	sign = LU_decomposition(mat, pivots, n);
+	if (sign == 0) {
+		err(ERR_SINGULAR);
+		return NULL;
+	}
+
+	/* Build the pivot number */
+	decNumberZero(r);
+	for (i=0; i<n; i++) {
+		int_to_dn(&t, pivots[i]);
+		dn_multiply(&u, r, &const_10);
+		dn_add(r, &u, &t);
+	}
+
+	/* Copy the result back over the matrix */
+	xcopy(base, mat, n * n * sizeof(decimal64));
+	return r;
+}
+#endif
 
 #endif

@@ -596,7 +596,7 @@ enum {
 	OP_MAT_ALL,
 	OP_MAT_TRN,
 	OP_MAT_RQ, OP_MAT_CQ, OP_MAT_IJ,
-	OP_MAT_DET,
+	OP_MAT_DET, OP_MAT_LU,
 #endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
@@ -862,7 +862,7 @@ enum errors {
 	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
 	ERR_READ_ONLY,	ERR_SOLVE,
 #ifdef MATRIX_SUPPORT
-	ERR_MATRIX_DIM,
+	ERR_MATRIX_DIM,	ERR_SINGULAR,
 #endif
 	MAX_ERROR
 };

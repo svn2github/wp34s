@@ -89,6 +89,7 @@ static const char *const error_table[] =
 	"Solve\0FAILEd",
 #ifdef MATRIX_SUPPORT
 	"Matrix\0diMmEnSion",
+	"Singular\0",
 #endif
 };
 

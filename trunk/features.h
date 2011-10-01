@@ -129,6 +129,11 @@
 // Include matrix functions better implemented in user code
 // #define SILLY_MATRIX_SUPPORT
 
+// Include alternative code that does the LU decomposition in high precision
+// This consumes an extra 2800 bytes on the stack so overflow is a definite
+// risk.
+// #define MATRIX_ACCURATE_LU_DECOMPOSITION
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
@@ -159,7 +164,7 @@
 #define INCLUDE_DIGAMMA
 #endif
 
-#if defined(SILLY_MATRIX_SUPPORT) && ! defined(MATRIX_SUPPORT)
+#if (defined(SILLY_MATRIX_SUPPORT) || defined(MATRIX_ACCURATE_LU_DECOMPOSITION)) && ! defined(MATRIX_SUPPORT)
 #define MATRIX_SUPPORT
 #endif
 
