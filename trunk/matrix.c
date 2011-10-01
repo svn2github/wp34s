@@ -387,10 +387,6 @@ static int LU_decomposition(decNumber *A, unsigned char *pivots, const int n) {
 	decNumber *p1, *p2, *diag;
 	decNumber max, t, u;
 
-	if (pivots != NULL)
-		for (i=0; i<n; i++)
-			pivots[i] = -1;
-
 	for (k=0; k<n; k++) {
 		/* Find the pivot row */
 		pvt = k;
