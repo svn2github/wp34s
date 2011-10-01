@@ -381,7 +381,7 @@ badrow:		err(ERR_RANGE);
 }
 
 #ifdef MATRIX_ACCURATE_LU_DECOMPOSITION
-static int LU_decomposition(decNumber *A, int *pivots, const int n) {
+static int LU_decomposition(decNumber *A, unsigned char *pivots, const int n) {
 	int i, j, k;
 	int pvt, spvt = 1;
 	decNumber *p1, *p2, *diag;
@@ -480,7 +480,8 @@ decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
 }
 
 decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
-	int pivots[MAX_SQUARE], i, sign, n;
+	unsigned char pivots[MAX_SQUARE];
+	int i, sign, n;
 	decNumber t, u;
 	decNumber mat[MAX_SQUARE*MAX_SQUARE];
 	decimal64 *base;
@@ -509,7 +510,7 @@ decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
 	return r;
 }
 #else
-static int LU_decomposition(decimal64 *A, int *pivots, const int n) {
+static int LU_decomposition(decimal64 *A, unsigned char *pivots, const int n) {
 	int i, j, k;
 	int pvt, spvt = 1;
 	decimal64 *p1, *p2;
@@ -604,7 +605,8 @@ decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
 }
 
 decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
-	int pivots[MAX_SQUARE], i, sign, n;
+	unsigned char pivots[MAX_SQUARE];
+	int i, sign, n;
 	decNumber t, u;
 	decimal64 mat[MAX_SQUARE*MAX_SQUARE];
 	decimal64 *base;
