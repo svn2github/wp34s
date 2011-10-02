@@ -696,6 +696,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_BACK,		&cmdback,	100,			"BACK")
 	CMDstk(RARG_DSE,	&cmdloop,	NUMREG,			"DSE")
 	CMDstk(RARG_ISG,	&cmdloop,	NUMREG,			"ISG")
+	CMDstk(RARG_DSL,	&cmdloop,	NUMREG,			"DSL")
+	CMDstk(RARG_ISE,	&cmdloop,	NUMREG,			"ISE")
 	CMDstk(RARG_DSZ,	&cmdloopz,	NUMREG,			"DSZ")
 	CMDstk(RARG_ISZ,	&cmdloopz,	NUMREG,			"ISZ")
 	CMDstk(RARG_DEC,	&cmdlincdec,	NUMREG,			"DEC")

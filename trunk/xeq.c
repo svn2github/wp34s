@@ -2218,7 +2218,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 		int xs;
 		unsigned long long int xv;
 
-		if (op == RARG_ISG)
+		if (op == RARG_ISG || op == RARG_ISE)
 			x = intAdd(x, 1LL);
 		else
 			x = intSubtract(x, 1LL);
@@ -2227,8 +2227,12 @@ void cmdloop(unsigned int arg, enum rarg op) {
 		xv = extract_value(x, &xs);
 		if (op == RARG_ISG)
 			fin_tst(! (xs == 0 && xv > 0));		// > 0
-		else
+		else if (op == RARG_DSE)
 			fin_tst(! (xs != 0 || xv == 0));	// <= 0
+		else if (op == RARG_ISE)
+			fin_tst(! (xs == 0 || xv == 0));	// >= 0
+		else // if (op == RARG_DSL)
+			fin_tst(! (xs != 0 && xv > 0));		// < 0
 		return;
 	} else {
 		decNumber x, i, f, n, u;
@@ -2250,14 +2254,20 @@ void cmdloop(unsigned int arg, enum rarg op) {
 		if (decNumberIsZero(&i))
 			decNumberCopy(&i, &const_1);
 
-		if (op == RARG_ISG) {
+		if (op == RARG_ISG || op == RARG_ISE) {
 			dn_add(&n, &n, &i);
 			dn_compare(&x, &f, &n);
-			fin_tst(! decNumberIsNegative(&x));
+			if (op == RARG_ISE)
+				fin_tst(dn_gt0(&x));
+			else
+				fin_tst(! dn_lt0(&x));
 		} else {
 			dn_subtract(&n, &n, &i);
 			dn_compare(&x, &f, &n);
-			fin_tst(decNumberIsNegative(&x));
+			if (op == RARG_DSL)
+				fin_tst(dn_le0(&x));
+			else
+				fin_tst(dn_lt0(&x));
 		}
 
 		// Finally rebuild the result
