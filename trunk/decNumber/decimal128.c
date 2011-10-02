@@ -307,6 +307,7 @@ decNumber * decimal128ToNumber(const decimal128 *d128, decNumber *dn) {
   return dn;
   } // decimal128ToNumber
 
+#if 0
 /* ------------------------------------------------------------------ */
 /* to-scientific-string -- conversion to numeric string               */
 /* to-engineering-string -- conversion to numeric string              */
@@ -398,4 +399,5 @@ void decimal128Show(const decimal128 *d128) {
     }
   #endif
   } // decimal128Show
+#endif
 #endif

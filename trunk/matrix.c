@@ -17,6 +17,7 @@
 #include "matrix.h"
 #include "decn.h"
 #include "consts.h"
+#include "decNumber/decimal128.h"
 
 #define MAX_DIMENSION	100
 #define MAX_SQUARE	10
@@ -30,12 +31,6 @@ static int matrix_idx(int row, int col, int ncols) {
 static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, int ncols) {
 	decimal64ToNumber(base + matrix_idx(row, col, ncols), r);
 }
-
-#ifndef MATRIX_ACCURATE_LU_DECOMPOSITION
-static void matrix_put(const decNumber *x, decimal64 *base, int row, int col, int ncols) {
-	packed_from_number(base + matrix_idx(row, col, ncols), x);
-}
-#endif
 
 static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 	decNumber z;
@@ -379,167 +374,37 @@ badrow:		err(ERR_RANGE);
 	}
 }
 
-#ifdef MATRIX_ACCURATE_LU_DECOMPOSITION
-/*
- *  Specialized decNumber definitions for slightly limited accuracy
- *  which allows to store a 10x10 matrix in volatile memory
- */
-#define MAT_DECNUMDIGITS (DECNUMDIGITS-6*DECDPUN)
-#define MAT_DECNUMUNITS ((MAT_DECNUMDIGITS+DECDPUN-1)/DECDPUN)
 
-// The data structure...
-typedef struct {
-    int32_t digits;                // Count of digits in the coefficient; >0
-    int32_t exponent;              // Unadjusted exponent, unbiased, in
-                                   // range: -1999999997 through 999999999
-    uint8_t bits;                  // Indicator bits (see above)
-    decNumberUnit lsu[MAT_DECNUMUNITS];// Coefficient, from least significant unit
-} matDecNumber;
+static void matrix_get128(decNumber *r, const decimal128 *base, int row, int col, int ncols) {
+	decimal128ToNumber(base + matrix_idx(row, col, ncols), r);
+}
 
-static int LU_decomposition(matDecNumber *A, unsigned char *pivots, const int n) {
+static void put128(decimal128 *r, const decNumber *x) {
+	decContext ctx128;
+
+	decContextDefault(&ctx128, DEC_INIT_DECIMAL128);
+	ctx128.traps = 0;
+	decimal128FromNumber(r, x, &ctx128);
+}
+
+static void matrix_put128(const decNumber *x, decimal128 *base, int row, int col, int ncols) {
+	put128(base + matrix_idx(row, col, ncols), x);
+}
+
+
+static int LU_decomposition(decimal128 *A, unsigned char *pivots, const int n) {
 	int i, j, k;
 	int pvt, spvt = 1;
-	matDecNumber *p1, *p2, *diag;
-	matDecNumber max, t, u;
-
-	Ctx.digits = MAT_DECNUMDIGITS;
-	for (k=0; k<n; k++) {
-		/* Find the pivot row */
-		pvt = k;
-		diag = A + (k * (n+1));
-		dn_abs((decNumber *) &max, (decNumber *) diag);
-		for (j=k+1; j<n; j++) {
-			dn_abs((decNumber *) &u, (decNumber *) (A + matrix_idx(j, k, n)));
-			if (dn_lt0(dn_compare((decNumber *) &t, (decNumber *) &max, (decNumber *) &u))) {
-				decNumberCopy((decNumber *) &max, (decNumber *) &u);
-				pvt = j;
-			}
-		}
-		if (pivots != NULL)
-			*pivots++ = pvt;
-
-		/* pivot if required */
-		if (pvt != k) {
-			spvt = -spvt;
-			p1 = A + (n * k);
-			p2 = A + (n * pvt);
-			for (j=0; j<n; j++) {
-				decNumberCopy((decNumber *) &t, (decNumber *) p1);
-				decNumberCopy((decNumber *) p1, (decNumber *) p2);
-				decNumberCopy((decNumber *) p2, (decNumber *) &t);
-				p1++;
-				p2++;
-			}
-		}
-
-		/* Check for singular */
-		if (decNumberIsZero(diag)) {
-			spvt = 0;
-			break;
-		}
-
-		/* Find the lower triangular elements for column k */
-		for (i=k+1; i<n; i++) {
-			matDecNumber *p = A + matrix_idx(i, k, n);
-			dn_divide((decNumber *) p, (decNumber *) p, (decNumber *) diag);
-		}
-
-		/* Update the upper triangular elements */
-		for (i=k+1; i<n; i++)
-			for (j=k+1; j<n; j++) {
-				matDecNumber *p;
-				dn_multiply((decNumber *) &max,
-					(decNumber *) (A + matrix_idx(i, k, n)),
-					(decNumber *) (A + matrix_idx(k, j, n)));
-				p = A + matrix_idx(i, j, n);
-				dn_subtract((decNumber *) p, (decNumber *) p, (decNumber *) &max);
-			}
-	}
-	Ctx.digits = DECNUMDIGITS;
-	return spvt;
-}
-
-static int matrix_lu_check(const decNumber *m, matDecNumber *mat, decimal64 **mbase) {
-	int rows, cols;
-	int i;
-	decimal64 *base;
-
-	base = matrix_decomp(m, &rows, &cols);
-	if (base == NULL)
-		return 0;
-	if (rows != cols) {
-		err(ERR_MATRIX_DIM);
-		return 0;
-	}
-	if (mat != NULL) {
-		for (i=0; i<rows * rows; i++)
-			decimal64ToNumber(base + i, (decNumber *) (mat + i));
-	}
-	if (mbase != NULL)
-		*mbase = base;
-	return rows;
-}
-
-decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
-	int n, i;
-	matDecNumber mat[MAX_SQUARE*MAX_SQUARE];
-
-	n = matrix_lu_check(m, mat, NULL);
-	if (n == 0)
-		return NULL;
-
-	i = LU_decomposition(mat, NULL, n);
-
-	int_to_dn(r, i);
-	for (i=0; i<n; i++)
-		dn_multiply(r, r, (decNumber *) (mat + (i * (n+1))));
-	return r;
-}
-
-decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
-	unsigned char pivots[MAX_SQUARE];
-	int i, sign, n;
-	decNumber t, u;
-	matDecNumber mat[MAX_SQUARE*MAX_SQUARE];
-	decimal64 *base;
-
-	n = matrix_lu_check(m, mat, &base);
-	if (n == 0)
-		return NULL;
-
-	sign = LU_decomposition(mat, pivots, n);
-	if (sign == 0) {
-		err(ERR_SINGULAR);
-		return NULL;
-	}
-
-	/* Build the pivot number */
-	decNumberZero(r);
-	for (i=0; i<n; i++) {
-		int_to_dn(&t, pivots[i]);
-		dn_multiply(&u, r, &const_10);
-		dn_add(r, &u, &t);
-	}
-
-	/* Copy the result back over the matrix */
-	for (i=0; i<n*n; i++)
-		packed_from_number(base + i, (decNumber *) (mat + i));
-	return r;
-}
-#else
-static int LU_decomposition(decimal64 *A, unsigned char *pivots, const int n) {
-	int i, j, k;
-	int pvt, spvt = 1;
-	decimal64 *p1, *p2;
+	decimal128 *p1, *p2;
 	decNumber max, t, u;
 
 	for (k=0; k<n; k++) {
 		/* Find the pivot row */
 		pvt = k;
-		matrix_get(&u, A, k, k, n);
+		matrix_get128(&u, A, k, k, n);
 		dn_abs(&max, &u);
 		for (j=k+1; j<n; j++) {
-			matrix_get(&t, A, j, k, n);
+			matrix_get128(&t, A, j, k, n);
 			dn_abs(&u, &t);
 			if (dn_lt0(dn_compare(&t, &max, &u))) {
 				decNumberCopy(&max, &u);
@@ -554,39 +419,47 @@ static int LU_decomposition(decimal64 *A, unsigned char *pivots, const int n) {
 			spvt = -spvt;
 			p1 = A + (n * k);
 			p2 = A + (n * pvt);
-			for (j=0; j<n; j++)
-				swap_reg(p1++, p2++);
+			for (j=0; j<n; j++) {
+				decimal128 t = *p1;
+				*p1 = *p2;
+				*p2 = t;
+				p1++;
+				p2++;
+				//swap_reg(p1++, p2++);
+			}
 		}
 
 		/* Check for singular */
-		matrix_get(&t, A, k, k, n);
+		matrix_get128(&t, A, k, k, n);
 		if (decNumberIsZero(&t))
 			return 0;
 
 		/* Find the lower triangular elements for column k */
 		for (i=k+1; i<n; i++) {
-			matrix_get(&t, A, k, k, n);
-			matrix_get(&u, A, i, k, n);
+			matrix_get128(&t, A, k, k, n);
+			matrix_get128(&u, A, i, k, n);
 			dn_divide(&max, &u, &t);
-			matrix_put(&max, A, i, k, n);
+			matrix_put128(&max, A, i, k, n);
 		}
 		/* Update the upper triangular elements */
 		for (i=k+1; i<n; i++)
 			for (j=k+1; j<n; j++) {
-				matrix_get(&t, A, i, k, n);
-				matrix_get(&u, A, k, j, n);
+				matrix_get128(&t, A, i, k, n);
+				matrix_get128(&u, A, k, j, n);
 				dn_multiply(&max, &t, &u);
-				matrix_get(&t, A, i, j, n);
+				matrix_get128(&t, A, i, j, n);
 				dn_subtract(&u, &t, &max);
-				matrix_put(&u, A, i, j, n);
+				matrix_put128(&u, A, i, j, n);
 			}
 	}
 	return spvt;
 }
 
-static int matrix_lu_check(const decNumber *m, decimal64 *mat, decimal64 **mbase) {
+static int matrix_lu_check(const decNumber *m, decimal128 *mat, decimal64 **mbase) {
 	int rows, cols;
 	decimal64 *base;
+	decNumber t;
+	int i;
 
 	base = matrix_decomp(m, &rows, &cols);
 	if (base == NULL)
@@ -595,8 +468,12 @@ static int matrix_lu_check(const decNumber *m, decimal64 *mat, decimal64 **mbase
 		err(ERR_MATRIX_DIM);
 		return 0;
 	}
-	if (mat != NULL)
-		xcopy(mat, base, rows * rows * sizeof(decimal64));
+	if (mat != NULL) {
+		for (i=0; i<rows*rows; i++) {
+			decimal64ToNumber(base+i, &t);
+			put128(mat+i, &t);
+		}
+	}
 	if (mbase != NULL)
 		*mbase = base;
 	return rows;
@@ -604,7 +481,7 @@ static int matrix_lu_check(const decNumber *m, decimal64 *mat, decimal64 **mbase
 
 decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
 	int n, i;
-	decimal64 mat[MAX_SQUARE*MAX_SQUARE];
+	decimal128 mat[MAX_SQUARE*MAX_SQUARE];
 	decNumber t;
 
 	n = matrix_lu_check(m, mat, NULL);
@@ -615,7 +492,7 @@ decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
 
 	int_to_dn(r, i);
 	for (i=0; i<n; i++) {
-		matrix_get(&t, mat, i, i, n);
+		matrix_get128(&t, mat, i, i, n);
 		dn_multiply(r, r, &t);
 	}
 	return r;
@@ -625,7 +502,7 @@ decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
 	unsigned char pivots[MAX_SQUARE];
 	int i, sign, n;
 	decNumber t, u;
-	decimal64 mat[MAX_SQUARE*MAX_SQUARE];
+	decimal128 mat[MAX_SQUARE*MAX_SQUARE];
 	decimal64 *base;
 
 	n = matrix_lu_check(m, mat, &base);
@@ -647,9 +524,10 @@ decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
 	}
 
 	/* Copy the result back over the matrix */
-	xcopy(base, mat, n * n * sizeof(decimal64));
+	for (i=0; i<n*n; i++) {
+		decimal128ToNumber(mat+i, &t);
+		packed_from_number(base+i, &t);
+	}
 	return r;
 }
-#endif
-
 #endif

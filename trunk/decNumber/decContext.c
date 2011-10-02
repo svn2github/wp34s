@@ -76,7 +76,7 @@ decContext * decContextDefault(decContext *context, Int kind) {
       context->extended=1;                   // set
       #endif
       break;
-#if 0
+#if 1
     case DEC_INIT_DECIMAL128:
       context->digits=34;                    // digits
       context->emax=6144;                    // Emax

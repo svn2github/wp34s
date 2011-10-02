@@ -7,7 +7,7 @@ INCS += decimal128.h decimal32.h decimal64.h
 
 SRCS  = decContext.c decNumber.c decPacked.c
 #SRCS += decimal128.c decimal32.c decimal64.c
-SRCS += decimal64.c
+SRCS += decimal128.c decimal64.c
 
 OBJS = $(SRCS:%.c=$(OBJECTDIR)/%.o)
 
