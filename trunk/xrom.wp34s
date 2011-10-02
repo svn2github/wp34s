@@ -342,7 +342,7 @@ sum_loop::		RCL 00
 			x[<->]y
 			[cmplx]STO 01
 
-sum_entry::		DSE 00
+sum_entry::		DSL 00
 				JMP sum_loop
 			JMP sum_product_okay
 
@@ -368,7 +368,7 @@ product_loop::		RCL 00
 			SPEC?
 				JMP sum_product_nan
 			STO[times] 01
-product_entry::		DSE 00
+product_entry::		DSL 00
 				JMP product_loop
 
 sum_product_okay::	RCL 03
