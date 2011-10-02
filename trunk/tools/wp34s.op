@@ -905,156 +905,158 @@
 0x5400	arg	BACK	max=100,indirect
 0x5500	arg	DSE	max=112,indirect,stack
 0x5600	arg	ISG	max=112,indirect,stack
-0x5700	arg	DSZ	max=112,indirect,stack
-0x5800	arg	ISZ	max=112,indirect,stack
-0x5900	arg	DEC	max=112,indirect,stack
-0x5a00	arg	INC	max=112,indirect,stack
-0x5b00	arg	LBL	max=104
-0x5c00	arg	LBL?	max=104,indirect
-0x5d00	arg	XEQ	max=104,indirect
-0x5e00	arg	GTO	max=104,indirect
-0x5f00	arg	[SIGMA]	max=104,indirect
-0x6000	arg	[PI]	max=104,indirect
-0x6100	arg	SLV	max=104,indirect
-0x6200	arg	f'(x)	max=104,indirect
-0x6300	arg	f"(x)	max=104,indirect
-0x6400	arg	[integral]	max=104,indirect
-0x6500	arg	ALL	max=12,indirect
-0x6600	arg	FIX	max=12,indirect
-0x6700	arg	SCI	max=12,indirect
-0x6800	arg	ENG	max=12,indirect
-0x6900	arg	DISP	max=12,indirect
-0x6a00	arg	SF	max=104,indirect
-0x6b00	arg	CF	max=104,indirect
-0x6c00	arg	FF	max=104,indirect
-0x6d00	arg	FS?	max=104,indirect
-0x6e00	arg	FC?	max=104,indirect
-0x6f00	arg	FS?C	max=104,indirect
-0x7000	arg	FS?S	max=104,indirect
-0x7100	arg	FS?F	max=104,indirect
-0x7200	arg	FC?C	max=104,indirect
-0x7300	arg	FC?S	max=104,indirect
-0x7400	arg	FC?F	max=104,indirect
-0x7500	arg	WSIZE	max=65,indirect
-0x7600	arg	RL	max=64,indirect
-0x7700	arg	RR	max=64,indirect
-0x7800	arg	RLC	max=65,indirect
-0x7900	arg	RRC	max=65,indirect
-0x7a00	arg	SL	max=65,indirect
-0x7b00	arg	SR	max=65,indirect
-0x7c00	arg	ASR	max=65,indirect
-0x7d00	arg	SB	max=64,indirect
-0x7e00	arg	CB	max=64,indirect
-0x7f00	arg	FB	max=64,indirect
-0x8000	arg	BS?	max=64,indirect
-0x8100	arg	BC?	max=64,indirect
-0x8200	arg	MASKL	max=65,indirect
-0x8300	arg	MASKR	max=65,indirect
-0x8400	arg	BASE	max=17,indirect
-0x8500	cmd	kg[->]lb
-0x8501	cmd	lb[->]kg
-0x8502	cmd	kg[->]stone
-0x8503	cmd	stone[->]kg
-0x8504	cmd	kg[->]cwt
-0x8505	cmd	cwt[->]kg
-0x8506	cmd	kg[->]s.cwt
-0x8507	cmd	s.cwt[->]kg
-0x8508	cmd	g[->]oz
-0x8509	cmd	oz[->]g
-0x850a	cmd	g[->]tr.oz
-0x850b	cmd	tr.oz[->]g
-0x850c	cmd	l[->]galUK
-0x850d	cmd	galUK[->]l
-0x850e	cmd	l[->]galUS
-0x850f	cmd	galUS[->]l
-0x8510	cmd	l[->]cft
-0x8511	cmd	cft[->]l
-0x8512	cmd	ml[->]flozUK
-0x8513	cmd	flozUK[->]ml
-0x8514	cmd	ml[->]flozUS
-0x8515	cmd	flozUS[->]ml
-0x8516	cmd	cm[->]inches
-0x8517	cmd	inches[->]cm
-0x8518	cmd	m[->]fathom
-0x8519	cmd	fathom[->]m
-0x851a	cmd	m[->]feet
-0x851b	cmd	feet[->]m
-0x851c	cmd	m[->]yards
-0x851d	cmd	yards[->]m
-0x851e	cmd	km[->]miles
-0x851f	cmd	miles[->]km
-0x8520	cmd	km[->]l.y.
-0x8521	cmd	l.y.[->]km
-0x8522	cmd	km[->]pc
-0x8523	cmd	pc[->]km
-0x8524	cmd	km[->]AU
-0x8525	cmd	AU[->]km
-0x8526	cmd	km[->]nmi
-0x8527	cmd	nmi[->]km
-0x8528	cmd	ha[->]acres
-0x8529	cmd	acres[->]ha
-0x852a	cmd	N[->]lbf
-0x852b	cmd	lbf[->]N
-0x852c	cmd	J[->]Btu
-0x852d	cmd	Btu[->]J
-0x852e	cmd	J[->]cal
-0x852f	cmd	cal[->]J
-0x8530	cmd	J[->]kWh
-0x8531	cmd	kWh[->]J
-0x8532	cmd	Pa[->]atm
-0x8533	cmd	atm[->]Pa
-0x8534	cmd	Pa[->]bar
-0x8535	cmd	bar[->]Pa
-0x8536	cmd	Pa[->]mmHg
-0x8537	cmd	mmHg[->]Pa
-0x8538	cmd	Pa[->]psi
-0x8539	cmd	psi[->]Pa
-0x853a	cmd	Pa[->]inHg
-0x853b	cmd	inHg[->]Pa
-0x853c	cmd	Pa[->]torr
-0x853d	cmd	torr[->]Pa
-0x853e	cmd	W[->]hpUK
-0x853f	cmd	hpUK[->]W
-0x8540	cmd	W[->]hp
-0x8541	cmd	hp[->]W
-0x8542	cmd	W[->]PS(hp)
-0x8543	cmd	PS(hp)[->]W
-0x8544	cmd	W[->]HP[sub-e]
-0x8545	cmd	HP[sub-e][->]W
-0x8546	cmd	t[->]tons
-0x8547	cmd	tons[->]t
-0x8548	cmd	t[->]s.tons
-0x8549	cmd	s.tons[->]t
-0x8600	arg	SLVI	max=91,indirect
-0x8700	arg	SLVS	max=91,indirect
-0x8800	arg	PSE	max=100,indirect
-0x8900	arg	KEY?	max=112,indirect,stack
-0x8a00	arg	[alpha]XEQ	max=112,indirect,stack
-0x8b00	arg	[alpha]GTO	max=112,indirect,stack
-0x8c00	arg	PRCL	max=9,indirect
-0x8d00	arg	PSTO	max=9,indirect
-0x8e00	arg	P[<->]	max=9,indirect
-0x8f00	arg	RCF	max=112,indirect,stack
-0x9000	arg	RCF+	max=112,indirect,stack
-0x9100	arg	RCF-	max=112,indirect,stack
-0x9200	arg	RCF[times]	max=112,indirect,stack
-0x9300	arg	RCF/	max=112,indirect,stack
-0x9400	arg	RCF[v]	max=112,indirect,stack
-0x9500	arg	RCF[^]	max=112,indirect,stack
-0x9600	arg	[cmplx]RCF	max=111,indirect,stack,complex
-0x9700	arg	[cmplx]RCF+	max=111,indirect,stack,complex
-0x9800	arg	[cmplx]RCF-	max=111,indirect,stack,complex
-0x9900	arg	[cmplx]RCF[times]	max=111,indirect,stack,complex
-0x9a00	arg	[cmplx]RCF/	max=111,indirect,stack,complex
-0x9b00	arg	SDL	max=100,indirect
-0x9c00	arg	SDR	max=100,indirect
-0x9d00	arg	VW[alpha]+	max=112,indirect,stack
-0x9e00	arg	RM	max=7,indirect
-0x9f00	arg	STOM	max=112,indirect,stack
-0xa000	arg	RCLM	max=112,indirect,stack
-0xa200	arg	SENDL	max=9,indirect
-0xa300	arg	PUTK	max=112,indirect,stack
-0xa400	arg	KTP?	max=112,indirect,stack
+0x5700	arg	DSL	max=112,indirect,stack
+0x5800	arg	ISE	max=112,indirect,stack
+0x5900	arg	DSZ	max=112,indirect,stack
+0x5a00	arg	ISZ	max=112,indirect,stack
+0x5b00	arg	DEC	max=112,indirect,stack
+0x5c00	arg	INC	max=112,indirect,stack
+0x5d00	arg	LBL	max=104
+0x5e00	arg	LBL?	max=104,indirect
+0x5f00	arg	XEQ	max=104,indirect
+0x6000	arg	GTO	max=104,indirect
+0x6100	arg	[SIGMA]	max=104,indirect
+0x6200	arg	[PI]	max=104,indirect
+0x6300	arg	SLV	max=104,indirect
+0x6400	arg	f'(x)	max=104,indirect
+0x6500	arg	f"(x)	max=104,indirect
+0x6600	arg	[integral]	max=104,indirect
+0x6700	arg	ALL	max=12,indirect
+0x6800	arg	FIX	max=12,indirect
+0x6900	arg	SCI	max=12,indirect
+0x6a00	arg	ENG	max=12,indirect
+0x6b00	arg	DISP	max=12,indirect
+0x6c00	arg	SF	max=104,indirect
+0x6d00	arg	CF	max=104,indirect
+0x6e00	arg	FF	max=104,indirect
+0x6f00	arg	FS?	max=104,indirect
+0x7000	arg	FC?	max=104,indirect
+0x7100	arg	FS?C	max=104,indirect
+0x7200	arg	FS?S	max=104,indirect
+0x7300	arg	FS?F	max=104,indirect
+0x7400	arg	FC?C	max=104,indirect
+0x7500	arg	FC?S	max=104,indirect
+0x7600	arg	FC?F	max=104,indirect
+0x7700	arg	WSIZE	max=65,indirect
+0x7800	arg	RL	max=64,indirect
+0x7900	arg	RR	max=64,indirect
+0x7a00	arg	RLC	max=65,indirect
+0x7b00	arg	RRC	max=65,indirect
+0x7c00	arg	SL	max=65,indirect
+0x7d00	arg	SR	max=65,indirect
+0x7e00	arg	ASR	max=65,indirect
+0x7f00	arg	SB	max=64,indirect
+0x8000	arg	CB	max=64,indirect
+0x8100	arg	FB	max=64,indirect
+0x8200	arg	BS?	max=64,indirect
+0x8300	arg	BC?	max=64,indirect
+0x8400	arg	MASKL	max=65,indirect
+0x8500	arg	MASKR	max=65,indirect
+0x8600	arg	BASE	max=17,indirect
+0x8700	cmd	kg[->]lb
+0x8701	cmd	lb[->]kg
+0x8702	cmd	kg[->]stone
+0x8703	cmd	stone[->]kg
+0x8704	cmd	kg[->]cwt
+0x8705	cmd	cwt[->]kg
+0x8706	cmd	kg[->]s.cwt
+0x8707	cmd	s.cwt[->]kg
+0x8708	cmd	g[->]oz
+0x8709	cmd	oz[->]g
+0x870a	cmd	g[->]tr.oz
+0x870b	cmd	tr.oz[->]g
+0x870c	cmd	l[->]galUK
+0x870d	cmd	galUK[->]l
+0x870e	cmd	l[->]galUS
+0x870f	cmd	galUS[->]l
+0x8710	cmd	l[->]cft
+0x8711	cmd	cft[->]l
+0x8712	cmd	ml[->]flozUK
+0x8713	cmd	flozUK[->]ml
+0x8714	cmd	ml[->]flozUS
+0x8715	cmd	flozUS[->]ml
+0x8716	cmd	cm[->]inches
+0x8717	cmd	inches[->]cm
+0x8718	cmd	m[->]fathom
+0x8719	cmd	fathom[->]m
+0x871a	cmd	m[->]feet
+0x871b	cmd	feet[->]m
+0x871c	cmd	m[->]yards
+0x871d	cmd	yards[->]m
+0x871e	cmd	km[->]miles
+0x871f	cmd	miles[->]km
+0x8720	cmd	km[->]l.y.
+0x8721	cmd	l.y.[->]km
+0x8722	cmd	km[->]pc
+0x8723	cmd	pc[->]km
+0x8724	cmd	km[->]AU
+0x8725	cmd	AU[->]km
+0x8726	cmd	km[->]nmi
+0x8727	cmd	nmi[->]km
+0x8728	cmd	ha[->]acres
+0x8729	cmd	acres[->]ha
+0x872a	cmd	N[->]lbf
+0x872b	cmd	lbf[->]N
+0x872c	cmd	J[->]Btu
+0x872d	cmd	Btu[->]J
+0x872e	cmd	J[->]cal
+0x872f	cmd	cal[->]J
+0x8730	cmd	J[->]kWh
+0x8731	cmd	kWh[->]J
+0x8732	cmd	Pa[->]atm
+0x8733	cmd	atm[->]Pa
+0x8734	cmd	Pa[->]bar
+0x8735	cmd	bar[->]Pa
+0x8736	cmd	Pa[->]mmHg
+0x8737	cmd	mmHg[->]Pa
+0x8738	cmd	Pa[->]psi
+0x8739	cmd	psi[->]Pa
+0x873a	cmd	Pa[->]inHg
+0x873b	cmd	inHg[->]Pa
+0x873c	cmd	Pa[->]torr
+0x873d	cmd	torr[->]Pa
+0x873e	cmd	W[->]hpUK
+0x873f	cmd	hpUK[->]W
+0x8740	cmd	W[->]hp
+0x8741	cmd	hp[->]W
+0x8742	cmd	W[->]PS(hp)
+0x8743	cmd	PS(hp)[->]W
+0x8744	cmd	W[->]HP[sub-e]
+0x8745	cmd	HP[sub-e][->]W
+0x8746	cmd	t[->]tons
+0x8747	cmd	tons[->]t
+0x8748	cmd	t[->]s.tons
+0x8749	cmd	s.tons[->]t
+0x8800	arg	SLVI	max=91,indirect
+0x8900	arg	SLVS	max=91,indirect
+0x8a00	arg	PSE	max=100,indirect
+0x8b00	arg	KEY?	max=112,indirect,stack
+0x8c00	arg	[alpha]XEQ	max=112,indirect,stack
+0x8d00	arg	[alpha]GTO	max=112,indirect,stack
+0x8e00	arg	PRCL	max=9,indirect
+0x8f00	arg	PSTO	max=9,indirect
+0x9000	arg	P[<->]	max=9,indirect
+0x9100	arg	RCF	max=112,indirect,stack
+0x9200	arg	RCF+	max=112,indirect,stack
+0x9300	arg	RCF-	max=112,indirect,stack
+0x9400	arg	RCF[times]	max=112,indirect,stack
+0x9500	arg	RCF/	max=112,indirect,stack
+0x9600	arg	RCF[v]	max=112,indirect,stack
+0x9700	arg	RCF[^]	max=112,indirect,stack
+0x9800	arg	[cmplx]RCF	max=111,indirect,stack,complex
+0x9900	arg	[cmplx]RCF+	max=111,indirect,stack,complex
+0x9a00	arg	[cmplx]RCF-	max=111,indirect,stack,complex
+0x9b00	arg	[cmplx]RCF[times]	max=111,indirect,stack,complex
+0x9c00	arg	[cmplx]RCF/	max=111,indirect,stack,complex
+0x9d00	arg	SDL	max=100,indirect
+0x9e00	arg	SDR	max=100,indirect
+0x9f00	arg	VW[alpha]+	max=112,indirect,stack
+0xa000	arg	RM	max=7,indirect
+0xa100	arg	STOM	max=112,indirect,stack
+0xa200	arg	RCLM	max=112,indirect,stack
+0xa400	arg	SENDL	max=9,indirect
+0xa500	arg	PUTK	max=112,indirect,stack
+0xa600	arg	KTP?	max=112,indirect,stack
 0xf000	mult	LBL
 0xf100	mult	LBL?
 0xf200	mult	XEQ
