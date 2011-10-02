@@ -1,4 +1,4 @@
-# $Rev$
+# $Rev$ 
 0x0000	cmd	ENTER[^]
 0x0002	cmd	EEX
 0x0003	cmd	+/-
@@ -200,6 +200,10 @@
 0x01a0	cmd	REALM?
 0x01a1	cmd	x=+0?
 0x01a2	cmd	x=-0?
+0x01a3	cmd	M.R[<->]
+0x01a4	cmd	M.R[times]
+0x01a5	cmd	M.R+[times]
+0x01a6	cmd	M.SQR?
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -322,6 +326,13 @@
 0x0279	cmd	DAY
 0x027a	cmd	MANT
 0x027b	cmd	EXPT
+0x027c	cmd	M.ALL
+0x027d	cmd	M.TRN
+0x027e	cmd	M.ROW?
+0x027f	cmd	M.COL?
+0x0280	cmd	M.IJ
+0x0281	cmd	M.DET
+0x0282	cmd	M.LU
 0x0300	cmd	y[^x]
 0x0301	cmd	+
 0x0302	cmd	-
@@ -360,11 +371,16 @@
 0x0323	cmd	H[sub-n]
 0x0324	cmd	H[sub-n][sub-p]
 0x0325	cmd	[^x][sqrt]y
+0x0326	cmd	M.ROW
+0x0327	cmd	M.COL
 0x0400	cmd	I[beta]
 0x0401	cmd	DBL/
 0x0402	cmd	DBLR
 0x0403	cmd	%MRR
 0x0404	cmd	L[sub-n][alpha]
+0x0405	cmd	M.[times]
+0x0406	cmd	M.+[times]
+0x0407	cmd	M.REG
 0x0500	cmd	[cmplx]FP
 0x0504	cmd	[cmplx]IP
 0x0505	cmd	[cmplx]ABS
@@ -599,7 +615,7 @@
 0x221b	cmd	iC 0.14887433
 0x221c	cmd	iC 0.29552422
 0x221d	cmd	iC 0.14773910
-0x2300	arg	ERR	max=21,indirect
+0x2300	arg	ERR	max=23,indirect
 0x2400	arg	STO	max=112,indirect,stack
 0x2500	arg	STO+	max=112,indirect,stack
 0x2600	arg	STO-	max=112,indirect,stack
@@ -1033,9 +1049,9 @@
 0x8b00	arg	KEY?	max=112,indirect,stack
 0x8c00	arg	[alpha]XEQ	max=112,indirect,stack
 0x8d00	arg	[alpha]GTO	max=112,indirect,stack
-0x8e00	arg	PRCL	max=9,indirect
-0x8f00	arg	PSTO	max=9,indirect
-0x9000	arg	P[<->]	max=9,indirect
+0x8e00	arg	PRCL	max=7,indirect
+0x8f00	arg	PSTO	max=7,indirect
+0x9000	arg	P[<->]	max=7,indirect
 0x9100	arg	RCF	max=112,indirect,stack
 0x9200	arg	RCF+	max=112,indirect,stack
 0x9300	arg	RCF-	max=112,indirect,stack
@@ -1054,7 +1070,7 @@
 0xa000	arg	RM	max=7,indirect
 0xa100	arg	STOM	max=112,indirect,stack
 0xa200	arg	RCLM	max=112,indirect,stack
-0xa400	arg	SENDL	max=9,indirect
+0xa400	arg	SENDL	max=7,indirect
 0xa500	arg	PUTK	max=112,indirect,stack
 0xa600	arg	KTP?	max=112,indirect,stack
 0xf000	mult	LBL
