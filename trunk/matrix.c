@@ -32,6 +32,8 @@ static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, in
 	decimal64ToNumber(base + matrix_idx(row, col, ncols), r);
 }
 
+/* Build a matrix descriptor from the base, rows and columns.
+ */
 static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 	decNumber z;
 
@@ -44,6 +46,10 @@ static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 	return 1;
 }
 
+/* Take a matrix descriptor and return the base register number.
+ * Optionally return the number of rows and columns in the matrix.
+ * Optionally return the sign of the initial descriptor as well.
+ */
 static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 	decNumber ax, y;
 	unsigned int n, base;
@@ -77,6 +83,9 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 	return base;
 }
 
+/* Decompose a matrix descriptor and return a pointer to its first
+ * element.  Optionally return the number of rows and columns.
+ */
 static decimal64 *matrix_decomp(const decNumber *x, int *rows, int *cols) {
 	const int base = matrix_decompose(x, rows, cols, NULL);
 
@@ -85,6 +94,8 @@ static decimal64 *matrix_decomp(const decNumber *x, int *rows, int *cols) {
 	return get_reg_n(base);
 }
 
+/* Check if a matrix is square or not.
+ */
 void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	int r, c;
 	decNumber x;
@@ -95,6 +106,8 @@ void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 #ifdef SILLY_MATRIX_SUPPORT
+/* Create either a zero matrix or an identity matrix.
+ */
 void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber x;
 	int r, c, i, j;
@@ -591,10 +604,10 @@ void matrix_inverse(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 	for (i=0; i<n; i++) {
 		for (j=0; j<n; j++)
-			decNumberCopy(b+i, (i==j) ? &const_1 : &const_0);
+			decNumberCopy(b+j, (i==j) ? &const_1 : &const_0);
 		matrix_pivoting_solve(mat, b, pivots, x, n);
 		for (j=0; j<n; j++)
-			packed_from_number(base + matrix_idx(i, j, n), x+j);
+			packed_from_number(base + matrix_idx(j, i, n), x+j);
 	}
 }
 
