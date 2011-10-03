@@ -119,15 +119,10 @@ decNumber *dn_exp(decNumber *r, const decNumber *a) {
  * This should be equal or larger than any of the summation integers required in the
  * various series approximations to avoid needless computation.
  */
-#define MAX_SMALL_INT	30
+#define MAX_SMALL_INT	9
 static const decNumber *const small_ints[MAX_SMALL_INT+1] = {
 	&const_0, &const_1, &const_2, &const_3, &const_4,
 	&const_5, &const_6, &const_7, &const_8, &const_9,
-	&const_10, &const_11, &const_12, &const_13, &const_14,
-	&const_15, &const_16, &const_17, &const_18, &const_19,
-	&const_20, &const_21, &const_22, &const_23, &const_24,
-	&const_25, &const_26, &const_27, &const_28, &const_29,
-	&const_30
 };
 
 const decNumber *small_int(int i) {
