@@ -6,15 +6,15 @@ correspond to the BLAS of the 34S's matrix support.
 All these routines take or create a matrix descriptor.  This is a
 real number in the format:
 
-	bb.ccrr
+	bb.rrcc
 
 where:
 	bb is the base register (00 - 99).
 
-	cc is the number of columns in the matrix (01 - 99).
+	rr is the number of rows in the matrix (01 - 99).
 
-	rr is the number of rows in the matrix (01 - 99).  If rr
-		is omitted, the value of cc is used and the matrix
+	cc is the number of columns in the matrix (01 - 99).  If cc
+		is omitted, the value of rr is used and the matrix
 		is assumed to be square.
 
 

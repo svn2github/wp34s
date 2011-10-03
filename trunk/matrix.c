@@ -66,10 +66,10 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 	dn_multiply(&y, x, &const_10000);
 	n = dn_to_int(&y);
 	base = (n / 10000) % 100;
-	r = n % 100;
-	c = (n / 100) % 100;
-	if (r == 0)
-		r = c;
+	c = n % 100;
+	r = (n / 100) % 100;
+	if (c == 0)
+		c = r;
 	if (base + r * c > 100) {
 		err(ERR_RANGE);
 		return -1;
