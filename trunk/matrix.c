@@ -500,6 +500,7 @@ decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
 	return r;
 }
 
+#ifdef MATRIX_LU_DECOMP
 decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
 	unsigned char pivots[MAX_SQUARE];
 	int i, sign, n;
@@ -532,4 +533,5 @@ decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
 	}
 	return r;
 }
+#endif
 #endif

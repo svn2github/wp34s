@@ -133,6 +133,10 @@
 // M.R<->, M.R*, M.R+
 // #define MATRIX_ROWOPS
 
+// Inlcude the LU decomposition as a user command
+// M.LU
+// #define MATRIX_LU_DECOMP
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
@@ -156,10 +160,14 @@
 #define INCLUDE_DIGAMMA
 #endif
 
+/* Check for matrix options that imply matrix itself */
 #if defined(SILLY_MATRIX_SUPPORT) && ! defined(MATRIX_SUPPORT)
 #define MATRIX_SUPPORT
 #endif
 #if defined(MATRIX_ROWOPS) && ! defined(MATRIX_SUPPORT)
+#define MATRIX_SUPPORT
+#endif
+#if defined(MATRIX_LU_DECOMP) && ! defined(MATRIX_SUPPORT)
 #define MATRIX_SUPPORT
 #endif
 

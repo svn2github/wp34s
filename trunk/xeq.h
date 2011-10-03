@@ -596,7 +596,10 @@ enum {
 	OP_MAT_ALL,
 	OP_MAT_TRN,
 	OP_MAT_RQ, OP_MAT_CQ, OP_MAT_IJ,
-	OP_MAT_DET, OP_MAT_LU,
+	OP_MAT_DET,
+#ifdef MATRIX_LU_DECOMP
+	OP_MAT_LU,
+#endif
 #endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
