@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
 	ADJUST( p_niladics,     niladic );
 	ADJUST( p_niladics_ct,  niladic_cmdtab );
 	ADJUST( p_argcmds,      argcmd );
-	printf( "sizeof(struct argcmd) = %d\n", sizeof(struct argcmd) );
+	printf( "sizeof(struct argcmd) = %d\n", (int)sizeof(struct argcmd) );
 	ADJUST( p_argcmds_ct,   argcmd_cmdtab );
 	ADJUST( p_multicmds,    multicmd );
 	ADJUST( p_multicmds_ct, multicmd_cmdtab );

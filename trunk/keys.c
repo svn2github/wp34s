@@ -436,10 +436,8 @@ void soft_init_state(void) {
 	}
 	soft = State2.multi || State2.rarg || State2.hyp || State2.gtodot || State2.labellist ||
 			State2.cmplx || State2.arrow || State2.test != TST_NONE || State2.status;
-	if (soft) {
-		runmode = State2.runmode;
-		alphas = State2.alphas;
-	}
+	runmode = State2.runmode;
+	alphas = State2.alphas;
 	init_state();
 	if (soft) {
 		State2.runmode = runmode;

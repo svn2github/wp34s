@@ -133,13 +133,6 @@
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
 
-// Needs to be adjusted depending on code size
-#ifdef MATRIX_SUPPORT
-#define NUMBER_OF_FLASH_REGIONS 8
-#else
-#define NUMBER_OF_FLASH_REGIONS 10
-#endif
-
 #if defined(INCLUDE_COMPLEX_ZETA) && ! defined(INCLUDE_ZETA)
 /* Complex zeta implies real zeta */
 #define INCLUDE_ZETA
@@ -159,8 +152,15 @@
 #define INCLUDE_DIGAMMA
 #endif
 
-#if (defined(SILLY_MATRIX_SUPPORT) || defined(MATRIX_ACCURATE_LU_DECOMPOSITION)) && ! defined(MATRIX_SUPPORT)
+#if defined(SILLY_MATRIX_SUPPORT) && ! defined(MATRIX_SUPPORT)
 #define MATRIX_SUPPORT
+#endif
+
+// Needs to be adjusted depending on code size
+#ifdef MATRIX_SUPPORT
+#define NUMBER_OF_FLASH_REGIONS 7
+#else
+#define NUMBER_OF_FLASH_REGIONS 10
 #endif
 
 #endif  /* TINY_BUILD*/
