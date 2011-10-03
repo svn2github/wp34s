@@ -659,6 +659,7 @@ enum {
 	OP_MAT_MUL,
 	OP_MAT_GADD,
 	OP_MAT_REG,
+	OP_MAT_LIN_EQN,
 #endif
 	NUM_TRIADIC	// Last entry defines number of operations
 };  
@@ -734,6 +735,7 @@ enum nilop {
 	OP_MAT_ROW_SWAP, OP_MAT_ROW_MUL, OP_MAT_ROW_GADD,
 #endif
 	OP_MAT_CHECK_SQUARE,
+	OP_MAT_INVERSE,
 #endif
 #ifdef SILLY_MATRIX_SUPPORT
 	 OP_MAT_ZERO, OP_MAT_IDENT,

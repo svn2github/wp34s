@@ -645,6 +645,8 @@ static s_opcode internal_catalogue[] = {
 	NILIC(OP_MAT_ROW_GADD,	"M.R+*")
 #endif
 	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
+	NILIC(OP_MAT_INVERSE,	"M.INV")
+	TRI(OP_MAT_LIN_EQN,	"M.LIN")
 	MON(OP_MAT_DET,		"M.DET")
 #ifdef MATRIX_LU_DECOMP
 	MON(OP_MAT_LU,		"M.LU")

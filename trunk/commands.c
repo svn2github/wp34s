@@ -379,6 +379,7 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"M.\034")
 	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"M.+\034")
 	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"M.REG")
+	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	NOFN,	"M.LIN")
 #endif
 #undef FUNC
 };
@@ -595,6 +596,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"M.R+\034")
 #endif
 	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
+	FUNC0(OP_MAT_INVERSE,	&matrix_inverse,	"M.INV")
 #endif
 #ifdef SILLY_MATRIX_SUPPORT
 	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")

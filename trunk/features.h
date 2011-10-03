@@ -135,7 +135,7 @@
 
 // Inlcude the LU decomposition as a user command
 // M.LU
-// #define MATRIX_LU_DECOMP
+#define MATRIX_LU_DECOMP
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
