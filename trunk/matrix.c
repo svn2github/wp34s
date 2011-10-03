@@ -129,9 +129,7 @@ static decNumber *matrix_do_loop(decNumber *r, int low, int high, int step, int 
 	if (up) {
 		i = (low * 1000 + high) * 100 + step;
 	} else {
-		if (low == 0)
-			err(ERR_DOMAIN);
-		i = (high * 1000 + low - 1) * 100 + step;
+		i = (high * 1000 + low) * 100 + step;
 	}
 	int_to_dn(&z, i);
 	dn_multiply(r, &z, &const_0_00001);
@@ -330,6 +328,7 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 	return r;
 }
 
+#ifdef MATRIX_ROWOPS
 void matrix_rowops(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber m, ydn, zdn, t;
 	decimal64 *base, *r1, *r2;
@@ -374,6 +373,7 @@ badrow:		err(ERR_RANGE);
 		}
 	}
 }
+#endif
 
 
 static void matrix_get128(decNumber *r, const decimal128 *base, int row, int col, int ncols) {
