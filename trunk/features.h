@@ -173,7 +173,7 @@
 
 // Needs to be adjusted depending on code size
 #ifdef MATRIX_SUPPORT
-#define NUMBER_OF_FLASH_REGIONS 7
+#define NUMBER_OF_FLASH_REGIONS 8
 #else
 #define NUMBER_OF_FLASH_REGIONS 10
 #endif
