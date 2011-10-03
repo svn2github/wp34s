@@ -134,17 +134,28 @@ M.ZERO						Optional: SILLY_MATRIX_SUPPORT
 
 
 M.DET
-	Take a matrix descriptor in X and return the determinant
+	Takes a matrix descriptor in X and return the determinant
 	of the matrix.  The matrix must be square and is not modified.
 
 M.LU						Optional: MATRIX_LU_DECOMP
-	Take a matrix descriptor in X modify the matrix into its
+	Takes a matrix descriptor in X modify the matrix into its
 	LU decomposition.  The matrix must be square and it is
 	modified in-situ.  The value in X is replaced by a pivot
 	descriptor that defines the pivots that were required to
 	calculate the decomposition.  The most significant digit
 	is the pivot for the first diagonal entry, the next most
 	the second and so forth.
+
+M.LIN
+	Takes a square matrix descriptor in Z and a vector maxtix
+	descriptor in y and a base register in x and solves the
+	system of linear equations Zx = y.  Returns the filled out
+	matrix descriptor in X.
+
+M.INV
+	Takes a square matrix descriptor in X and inverts the matrix
+	in-situ.  Doesn't alter the stack.
+
 
 
 Errors:
