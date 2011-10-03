@@ -587,9 +587,11 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_Xeq_neg0,	&check_zero,		"x=-0?")
 
 #ifdef MATRIX_SUPPORT
+#ifdef MATRIX_ROWOPS
 	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"M.R\027")
 	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"M.R\034")
 	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"M.R+\034")
+#endif
 	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
 #endif
 #ifdef SILLY_MATRIX_SUPPORT

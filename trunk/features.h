@@ -129,6 +129,10 @@
 // Include matrix functions better implemented in user code
 // #define SILLY_MATRIX_SUPPORT
 
+// Include matrix row/row operations.
+// M.R<->, M.R*, M.R+
+// #define MATRIX_ROWOPS
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
@@ -153,6 +157,9 @@
 #endif
 
 #if defined(SILLY_MATRIX_SUPPORT) && ! defined(MATRIX_SUPPORT)
+#define MATRIX_SUPPORT
+#endif
+#if defined(MATRIX_ROWOPS) && ! defined(MATRIX_SUPPORT)
 #define MATRIX_SUPPORT
 #endif
 

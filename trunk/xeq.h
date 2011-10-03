@@ -727,7 +727,9 @@ enum nilop {
 	OP_Xeq_pos0, OP_Xeq_neg0,
 
 #ifdef MATRIX_SUPPORT
+#ifdef MATRIX_ROWOPS
 	OP_MAT_ROW_SWAP, OP_MAT_ROW_MUL, OP_MAT_ROW_GADD,
+#endif
 	OP_MAT_CHECK_SQUARE,
 #endif
 #ifdef SILLY_MATRIX_SUPPORT
