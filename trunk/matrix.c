@@ -477,31 +477,24 @@ static int LU_decomposition(decimal128 *A, unsigned char *pivots, const int n) {
 	return spvt;
 }
 
-/* Swap the contents of two numbers */
-static void dn_swap(decNumber *a, decNumber *b) {
-	decNumber t;
-
-	if (a == b)
-		return;
-	decNumberCopy(&t, a);
-	decNumberCopy(a, b);
-	decNumberCopy(b, &t);
-}
-
 /* Solve the linear equation Ax = b.
  * We do this by utilising the LU decomposition passed in in A and solving
  * the linear equation Ly = b for y, where L is the lower diagonal triangular
  * matrix with unity along the diagonal.  Then we solve the linear system
  * Ux = y, where U is the upper triangular matrix.
  */
-static void matrix_pivoting_solve(decimal128 *LU, decNumber *b, unsigned char pivot[], decNumber *x, int n) {
+static void matrix_pivoting_solve(decimal128 *LU, const decimal64 *b[], unsigned char pivot[], decNumber *x, int n) {
 	int i, k;
 	decNumber r, t;
 
 	/* Solve the first linear equation Ly = b */
 	for (k=0; k<n; k++) {
-		dn_swap(b+k, b+pivot[k]);
-		decNumberCopy(x + k, b + k);
+		if (k != pivot[k]) {
+			const decimal64 *swap = b[k];
+			b[k] = b[pivot[k]];
+			b[pivot[k]] = swap;
+		}
+		decimal64ToNumber(b[k], x + k);
 		for (i=0; i<k; i++) {
 			matrix_get128(&r, LU, k, i, n);
 			dn_multiply(&t, &r, x+i);
@@ -511,7 +504,7 @@ static void matrix_pivoting_solve(decimal128 *LU, decNumber *b, unsigned char pi
 
 	/* Solve the second linear equation Ux = y */
 	for (k=n-1; k>=0; k--) {
-		//dn_swap(b+k, b+pivot[k]);		// undo pivoting from before
+		//if(k != pivot[k]) swap(b[k], b[pivot[k]]);		// undo pivoting from before
 		for (i=k+1; i<n; i++) {
 			matrix_get128(&r, LU, k, i, n);
 			dn_multiply(&t, &r, x+i);
@@ -585,10 +578,11 @@ decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
  */
 void matrix_inverse(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decimal128 mat[MAX_SQUARE*MAX_SQUARE];
-	decNumber b[MAX_SQUARE], x[MAX_SQUARE];
+	decNumber x[MAX_SQUARE];
 	unsigned char pivots[MAX_SQUARE];
 	int i, j, n;
 	decimal64 *base;
+	const decimal64 *b[MAX_SQUARE];
 	decNumber regx;
 
 	getX(&regx);
@@ -604,7 +598,7 @@ void matrix_inverse(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 	for (i=0; i<n; i++) {
 		for (j=0; j<n; j++)
-			decNumberCopy(b+j, (i==j) ? &const_1 : &const_0);
+			b[j] = (i==j) ? &CONSTANT_INT(OP_ONE) : &CONSTANT_INT(OP_ZERO);
 		matrix_pivoting_solve(mat, b, pivots, x, n);
 		for (j=0; j<n; j++)
 			packed_from_number(base + matrix_idx(j, i, n), x+j);
@@ -617,8 +611,9 @@ decNumber *matrix_linear_eqn(decNumber *r, const decNumber *a, const decNumber *
 	int n, i, brows, bcols, creg;
 	decimal128 mat[MAX_SQUARE*MAX_SQUARE];
 	decimal64 *bbase, *cbase;
-	decNumber bv[MAX_SQUARE], cv[MAX_SQUARE];
+	decNumber cv[MAX_SQUARE];
 	unsigned char pivots[MAX_SQUARE];
+	const decimal64 *bv[MAX_SQUARE];
 
 	n = matrix_lu_check(a, mat, NULL);
 	if (n == 0)
@@ -644,7 +639,7 @@ decNumber *matrix_linear_eqn(decNumber *r, const decNumber *a, const decNumber *
 
 	/* And solve */
 	for (i=0; i<n; i++)
-		decimal64ToNumber(bbase+i, bv+i);
+		bv[i] = bbase + i;
 	matrix_pivoting_solve(mat, bv, pivots, cv, n);
 	for (i=0; i<n; i++)
 		packed_from_number(cbase+i, cv+i);
