@@ -131,11 +131,11 @@
 
 // Include matrix row/row operations.
 // M.R<->, M.R*, M.R+
-// #define MATRIX_ROWOPS
+#define MATRIX_ROWOPS
 
 // Inlcude the LU decomposition as a user command
 // M.LU
-#define MATRIX_LU_DECOMP
+// #define MATRIX_LU_DECOMP
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
