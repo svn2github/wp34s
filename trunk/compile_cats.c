@@ -630,6 +630,7 @@ static s_opcode internal_catalogue[] = {
 	NILIC(OP_GSBuser,	"XEQUSR")
 #ifdef MATRIX_SUPPORT
 	MON(OP_MAT_ALL,		"M.ALL")
+	MON(OP_MAT_DIAG,	"M.DIAG")
 	DYA(OP_MAT_ROW,		"M.ROW")
 	DYA(OP_MAT_COL,		"M.COL")
 	MON(OP_MAT_RQ,		"M.ROW?")

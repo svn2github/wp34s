@@ -20,6 +20,7 @@
 #include "xeq.h"
 
 extern decNumber *matrix_all(decNumber *r, const decNumber *x);
+extern decNumber *matrix_diag(decNumber *r, const decNumber *x);
 extern decNumber *matrix_rowq(decNumber *r, const decNumber *x);
 extern decNumber *matrix_colq(decNumber *r, const decNumber *x);
 extern decNumber *matrix_row(decNumber *r, const decNumber *y, const decNumber *x);

@@ -244,6 +244,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #endif
 #ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M.ALL")
+	FUNC(OP_MAT_DIAG, &matrix_diag,		NOFN,		NOFN,		"M.DIAG")
 	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"M.TRN")
 	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"M.ROW?")
 	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"M.COL?")

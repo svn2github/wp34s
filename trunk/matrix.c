@@ -158,6 +158,17 @@ decNumber *matrix_all(decNumber *r, const decNumber *x) {
 	return matrix_do_loop(r, base, base+rows*cols-1, 1, up);
 }
 
+decNumber *matrix_diag(decNumber *r, const decNumber *x) {
+	int rows, cols, base, up, n;
+
+	base = matrix_decompose(x, &rows, &cols, &up);
+	if (base < 0)
+		return NULL;
+	n = ((rows < cols) ? rows : cols) - 1;
+	cols++;
+	return matrix_do_loop(r, base, base+n*cols, cols, up);
+}
+
 decNumber *matrix_row(decNumber *r, const decNumber *y, const decNumber *x) {
 	int rows, cols, base, up, n;
 
