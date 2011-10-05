@@ -1,3 +1,9 @@
+/* Matrix creation routines.  The first entry point creates an identity
+ * matrix.  The second creates a zero matrix.  Both of these routines do
+ * not change the stack at all.  They both replace L however.  They also
+ * clear flag C on exit.
+ */
+
 /* Create an identity matrix */
 m_ident::		LBL'M.1'
 			SF C
@@ -20,6 +26,28 @@ m_init_4::			INC[->]X
 				JMP m_init_4
 			JMP m_init_3
 
+/* Trace of a matrix.
+ * Uses stack.
+ * Uses flag C.
+ */
+ 			/* Sum of absolute values of diagonal elements */
+ 			LBL'ATR'
+			SF C
+			JMP m_trace_common
+
+			/* Sum of diagonal elements */
+			LBL'TR'
+			CF C
+m_trace_common::	ABS
+			M.DIAG
+			iC 0
+m_trace_loop::		RCL[->]Y
+			FS? C
+			ABS
+			+
+			ISG Y
+			JMP m_trace_loop
+			JMP drop_y
 
 /* Matrix addition and subtraction.
  * Matrix descriptors in X and Y.
@@ -47,32 +75,6 @@ m_add_sub_common::	x[<->] Z
 			M.[times]
 			RTN
 
-/* Trace of a matrix.
- * Uses stack.
- * Uses flag 99.
- */
- 			/* Sum of absolute values of diagonal elements */
- 			LBL'ATR'
-			SF 99
-			JMP m_trace_common
-
-			/* Sum of diagonal elements */
-			LBL'TR'
-			CF 99
-m_trace_common::	iC 1
-			x[<->]y
-			M.COL
-			iC 1
-			SDR 05
-			+
-			iC 0
-m_trace_loop::		RCL[->]Y
-			FS? 99
-			ABS
-			+
-			ISG Y
-			JMP m_trace_loop
-			JMP drop_y
 
 /* Maxtrix norm.
  * Uses stack.
