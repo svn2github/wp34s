@@ -1093,7 +1093,7 @@ sub load_mnem2hex_entry {
 
   if( not exists $mnem2hex{$mnemonic} ) {
     $mnem2hex{$mnemonic} = lc $op_hex_str;
-  } else {
+  } elsif ( $mnem2hex{$mnemonic} ne lc $op_hex_str ) {
     warn "# WARNING: Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')\n";
   }
   return;
@@ -1111,7 +1111,7 @@ sub load_hex2mnem_entry {
 
   if( not exists $hex2mnem{$op_hex_str} ) {
     $hex2mnem{lc $op_hex_str} = $mnemonic;
-  } else {
+  } elsif ( $hex2mnem{lc $op_hex_str} ne $mnemonic ) {
     warn "# WARNING: Duplicate opcode hex: '$op_hex_str' at line $line_num (new definition: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')\n";
   }
   return;
