@@ -1,3 +1,26 @@
+/* Create an identity matrix */
+m_ident::		LBL'M.1'
+			SF C
+			JMP m_init_1
+/* Create a zero matrix */
+m_zero::		LBL'M.0'
+			CF C
+m_init_1::		ABS
+			M.ALL
+m_init_2::			STO[->]X
+				STO-[->]X
+				ISG X
+				JMP m_init_2
+m_init_3::		x[<->] L
+			FC?C C
+			RTN
+			M.DIAG
+m_init_4::			INC[->]X
+				ISG X
+				JMP m_init_4
+			JMP m_init_3
+
+
 /* Matrix addition and subtraction.
  * Matrix descriptors in X and Y.
  * Resulting matrix descriptor returned in X.
@@ -85,32 +108,6 @@ m_min_loop::		RCL[v][->]Y
 			/*JMP drop_y*/
 
 drop_y::		x[<->]y
-			DROP
-			RTN
-
-/* Create an identity matrix */
-m_ident::		LBL'IDT'
-			M.SQR
-			XEQ m_zero
-			RCL L
-			M.COL
-			iC 1
-			SDR 05
-			+
-m_ident_loop::			INC[->]X
-				ISG X
-				JMP m_ident_loop
-			DROP
-			RTN
-
-/* Create a zero matrix */
-m_zero::		LBL'ZER'
-			ABS
-			M.ALL
-m_zero_loop::			STO[->]X
-				STO-[->]X
-				ISG Y
-				JMP m_zero_loop
 			DROP
 			RTN
 

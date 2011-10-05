@@ -652,10 +652,10 @@ static s_opcode internal_catalogue[] = {
 #ifdef MATRIX_LU_DECOMP
 	MON(OP_MAT_LU,		"M.LU")
 #endif
-#endif
 #ifdef SILLY_MATRIX_SUPPORT
 	NILIC(OP_MAT_ZERO,	"M.ZERO")
 	NILIC(OP_MAT_IDENT,	"M.IDEN")
+#endif
 #endif
 };
 #endif
