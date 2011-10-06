@@ -299,6 +299,10 @@ decNumber *dn_mul100(decNumber *r, const decNumber *x) {
 	return dn_multiply(r, x, &const_100);
 }
 
+decNumber *dn_mulPI(decNumber *r, const decNumber *x) {
+	return dn_multiply(r, x, &const_PI);
+}
+
 
 int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol) {
 	decNumber a, b;
@@ -763,7 +767,7 @@ decNumber *decNumberPow_1(decNumber *r, const decNumber *x) {
 	if (even == 0)
 		return dn__1(r);
 	decNumberMod(&u, x, &const_2);
-	dn_multiply(&t, &u, &const_PI);
+	dn_mulPI(&t, &u);
 	sincosTaylor(&t, NULL, r);
 	return r;
 }
@@ -1839,7 +1843,7 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
 	if (reflec) {
 		// figure out xin * PI mod 2PI
 		decNumberMod(&s, xin, &const_2);
-		dn_multiply(&t, &const_PI, &s);
+		dn_mulPI(&t, &s);
 		sincosTaylor(&t, &s, &u);
 		dn_multiply(&u, &s, res);
 		dn_divide(res, &const_PI, &u);
@@ -1876,7 +1880,7 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin) {
 	if (reflec) {
 		// Figure out S * PI mod 2PI
 		decNumberMod(&u, &s, &const_2);
-		dn_multiply(&t, &const_PI, &u);
+		dn_mulPI(&t, &u);
 		sincosTaylor(&t, &s, &u);
 		dn_divide(&u, &const_PI, &s);
 		dn_ln(&t, &u);
@@ -1935,10 +1939,10 @@ decNumber *decNumberPsi(decNumber *res, const decNumber *xin) {
 		if (is_int(xin)) {
 			return set_NaN(res);
 		}
-		dn_multiply(&x_2, &const_PI, xin);
+		dn_mulPI(&x_2, xin);
 		dn_sincos(&x_2, &t, &r);
 		dn_divide(&x_2, &r, &t);		// x_2 = cot(PI.x)
-		dn_multiply(&t, &x_2, &const_PI);
+		dn_mulPI(&t, &x_2);
 		dn_1m(&x, xin);
 		dn_minus(res, &t);
 	} else {
@@ -2400,7 +2404,7 @@ decNumber *decNumberFib(decNumber *res, const decNumber *x) {
 	decNumber r, s, t;
 
 	dn_power(&r, &const_phi, x);
-	dn_multiply(&t, &const_PI, x);
+	dn_mulPI(&t, &const_PI);
 	dn_sincos(&t, NULL, &s);
 	dn_divide(&t, &s, &r);
 	dn_subtract(&s, &r, &t);
@@ -2859,7 +2863,7 @@ decNumber *decNumberBSYN(decNumber *res, const decNumber *alpha, const decNumber
 	else if (decNumberIsInfinite(alpha) || decNumberIsNegative(x))
 		return set_NaN(res);
 	else if (!is_int(alpha)) {
-		dn_multiply(&t, alpha, &const_PI);
+		dn_mulPI(&t, alpha);
 		dn_sincos(&t, &s, &c);
 		dn_bessel(&t, alpha, x, 1);
 		dn_multiply(&u, &t, &c);
@@ -2894,7 +2898,7 @@ decNumber *decNumberBSKN(decNumber *res, const decNumber *alpha, const decNumber
 		dn_subtract(&u, &v, &t);
 		dn_multiply(&v, &u, &const_PIon2);
 
-		dn_multiply(&t, alpha, &const_PI);
+		dn_mulPI(&t, alpha);
 		dn_sincos(&t, &u, NULL);
 		dn_divide(res, &v, &u);
 	} else

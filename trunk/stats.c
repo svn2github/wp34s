@@ -1224,7 +1224,7 @@ decNumber *pdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v, co
 	dn_multiply(&w, &t, &u);			// w = ln (1 + x^2 / v) . (v+1)/2
 	dn_subtract(&t, r, &w);
 	dn_exp(&u, &t);
-	dn_multiply(&w, v, &const_PI);
+	dn_mulPI(&w, v);
 	dn_sqrt(&t, &w);
 	return dn_divide(r, &u, &t);
 }
@@ -1335,7 +1335,7 @@ static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
 
 	dn_compare(&a, v, &const_1);
 	if (decNumberIsZero(&a)) {					// special case v = 1
-		dn_multiply(&a, &b, &const_PI);
+		dn_mulPI(&a, &b);
 		dn_sincos(&a, &c, &d);
 		dn_divide(&a, &c, &d);			// lower = tan(pi (x - 1/2))
 		dn_minus(r, &a);
@@ -2013,7 +2013,7 @@ decNumber *pdf_cauchy(decNumber *r, const decNumber *x) {
 		return r;
 	decNumberSquare(&a, &b);
 	dn_p1(&b, &a);
-	dn_multiply(&a, &b, &const_PI);
+	dn_mulPI(&a, &b);
 	dn_multiply(&b, &a, &gamma);
 	return decNumberRecip(r, &b);
 }
@@ -2037,7 +2037,7 @@ decNumber *qf_cauchy(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 0))
 	    return r;
 	dn_subtract(&a, p, &const_0_5);
-	dn_multiply(&b, &a, &const_PI);
+	dn_mulPI(&b, &a);
 	decNumberTan(&a, &b);
 	dn_multiply(&b, &a, &gamma);
 	return dn_add(r, &b, &x0);

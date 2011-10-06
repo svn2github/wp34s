@@ -231,6 +231,7 @@ extern decNumber *dn_p2(decNumber *, const decNumber *);
 extern decNumber *dn_mul2(decNumber *, const decNumber *);
 extern decNumber *dn_div2(decNumber *, const decNumber *);
 extern decNumber *dn_mul100(decNumber *, const decNumber *);
+extern decNumber *dn_mulPI(decNumber *, const decNumber *);
 
 extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, unsigned int *);
 extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, unsigned int *, int (*)(const decNumber *, const decNumber *, const decNumber *));
