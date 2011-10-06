@@ -281,16 +281,16 @@ decNumber *matrix_genadd(decNumber *r, const decNumber *k, const decNumber *b, c
 }
 
 
-// Matrix multiply c = a * b
+// Matrix multiply c = a * b, c can be a or b or overlap either
 decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *c) {
 	int arows, acols, brows, bcols;
 	decNumber sum, s, t, u;
 	int creg;
 	int i, j, k;
-
+	decimal64 result[MAX_DIMENSION];
+	decimal64 *rp = result;
 	decimal64 *abase = matrix_decomp(a, &arows, &acols);
 	decimal64 *bbase = matrix_decomp(b, &brows, &bcols);
-	decimal64 *cbase;
 
 	if (abase == NULL || bbase == NULL)
 		return NULL;
@@ -301,7 +301,6 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 	creg = dn_to_int(c);
 	if (matrix_descriptor(r, creg, arows, bcols) == 0)
 		return NULL;
-	cbase = get_reg_n(creg);
 
         busy();
 	for (i=0; i<arows; i++)
@@ -313,8 +312,9 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 				dn_multiply(&u, &s, &t);
 				dn_add(&sum, &sum, &u);
 			}
-			packed_from_number(cbase++, &sum);
+			packed_from_number(rp++, &sum);
 		}
+	xcopy(get_reg_n(creg), result, sizeof(decimal64) * arows * bcols);
 	return r;
 }
 
