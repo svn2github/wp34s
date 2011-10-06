@@ -220,8 +220,13 @@ extern decNumber *set_NaN(decNumber *);
 extern decNumber *set_inf(decNumber *);
 extern decNumber *set_neginf(decNumber *);
 
-extern void dn_inc(decNumber *);
-extern void dn_dec(decNumber *);
+extern decNumber *dn_inc(decNumber *);
+extern decNumber *dn_dec(decNumber *);
+extern decNumber *dn_p1(decNumber *, const decNumber *);
+extern decNumber *dn_m1(decNumber *, const decNumber *);
+extern decNumber *dn_1m(decNumber *, const decNumber *);
+extern decNumber *dn_1(decNumber *);
+extern decNumber *dn__1(decNumber *);
 
 extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, unsigned int *);
 extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, unsigned int *, int (*)(const decNumber *, const decNumber *, const decNumber *));

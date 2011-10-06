@@ -2252,7 +2252,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 		dn_multiply(&x, &i, &const_100);
 		decNumberTrunc(&i, &x);			// i = ii
 		if (decNumberIsZero(&i))
-			decNumberCopy(&i, &const_1);
+			dn_1(&i);
 
 		if (op == RARG_ISG || op == RARG_ISE) {
 			dn_add(&n, &n, &i);

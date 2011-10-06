@@ -749,7 +749,7 @@ static void show_x(char *x) {
 enum display_modes std_round_fix(const decNumber *z) {
 	decNumber b, c;
 
-	decNumberCopy(&b, &const_1);
+	dn_1(&b);
 	b.exponent -= UState.dispdigs;
 	dn_abs(&c, z);
 	dn_compare(&b, &c, &b);

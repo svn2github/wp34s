@@ -405,9 +405,9 @@ void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 	if (decNumberIsZero(a) && decNumberIsInfinite(b)) {
 		decNumberZero(rx);
 		if (decNumberIsNegative(b))
-			decNumberCopy(ry, &const__1);
+			dn__1(ry);
 		else
-			decNumberCopy(ry, &const_1);
+			dn_1(ry);
 	} else {
 		dn_sincos(a, rx, ry);
 		dn_sinhcosh(b, &sb, &cb);
@@ -428,9 +428,9 @@ void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 #ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2, v1, v2;
 
-	dn_subtract(&v1, &const_1, b);	// 1 + iz = 1 + i(a+ib)	= 1-b + ia
+	dn_1m(&v1, b);			// 1 + iz = 1 + i(a+ib)	= 1-b + ia
 	cmplxLn(&s1, &s2, &v1, a);
-	dn_add(&v1, &const_1, b);	// 1 - iz = 1 - i(a+ib) = 1+b - ia
+	dn_p1(&v1, b);			// 1 - iz = 1 - i(a+ib) = 1+b - ia
 	dn_minus(&v2, a);
 	cmplxLn(&t1, &t2, &v1, &v2);
 	cmplxSubtract(&v1, &v2, &t1, &t2, &s1, &s2);
@@ -519,7 +519,7 @@ void cmplxAsinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 
 	cmplxSqr(&s1, &t2, a, b);
 
-	dn_add(&t1, &s1, &const_1);
+	dn_p1(&t1, &s1);
 
 	cmplxSqrt(&s1, &s2, &t1, &t2);
 	dn_add(&t1, &s1, a);
@@ -534,9 +534,9 @@ void cmplxAsinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 void cmplxAcosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 	decNumber t1, t2, s1, s2, u1, u2;
 
-	dn_add(&t1, a, &const_1);
+	dn_p1(&t1, a);
 	cmplxSqrt(&s1, &s2, &t1, b);
-	dn_subtract(&t1, a, &const_1);
+	dn_m1(&t1, a);
 	cmplxSqrt(&u1, &u2, &t1, b);
 	cmplxMultiply(&t1, &t2, &s1, &s2, &u1, &u2);
 	cmplxAdd(&s1, &s2, a, b, &t1, &t2);
@@ -567,7 +567,7 @@ void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 #ifndef TINY_BUILD
 	decNumber s1, s2, t1, t2;
 
-	dn_add(&t1, a, &const_1);
+	dn_p1(&t1, a);
 	cmplxSubtractFromReal(&t2, ry, &const_1, a, b);
 
 	cmplxDivide(&s1, &s2, &t1, b, &t2, ry);
@@ -591,7 +591,7 @@ void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 			return;
 		}
 	}
-	dn_add(&t, a, &const_1);
+	dn_p1(&t, a);
 	cmplxLn(rx, ry, &t, b);
 #endif
 }
@@ -610,7 +610,7 @@ void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 		}
 	}
 	cmplxExp(&t, ry, a, b);
-	dn_subtract(rx, &t, &const_1);
+	dn_m1(rx, &t);
 #endif
 }
 
@@ -680,10 +680,10 @@ void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	dn_compare(&t1, &const_500, a);
 	if (! decNumberIsNegative(&t1)) {
 		// x<500, lx1 = ln(x+1); est = .665 * (1 + .0195*lx1) * lx1 + 0.04
-		dn_add(&t1, a, &const_1);
+		dn_p1(&t1, a);
 		cmplxLn(&w1, &w2, &t1, b);				// ln(1+a,b)
 		cmplxMultiplyReal(&t1, &s2, &w1, &w2, &const_0_0195);
-		dn_add(&s1, &const_1, &t1);
+		dn_p1(&s1, &t1);
 		cmplxMultiplyReal(&u1, &u2, &s1, &s2, &const_0_665);
 		cmplxMultiply(&t1, ry, &u1, &u2, &w1, &w2);
 		dn_add(rx, &const_0_04, &t1);
@@ -703,12 +703,12 @@ void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 
 	for (i=0; i<20; i++) {
 		// Now iterate to refine the estimate
-		dn_add(&u1, rx, &const_1);			// u = wj + 1	(u1,ry)
+		dn_p1(&u1, rx);					// u = wj + 1	(u1,ry)
 		cmplxExp(&t1, &t2, rx, ry);			// t = e^wj
 		cmplxMultiply(&s1, &s2, &u1, ry, &t1, &t2);	// (s1,s2) = (wj+1)e^wj
 
-		dn_add(&v1, &u1, &const_1);			// v = wj + 2	(v1,ry)
-		dn_add(&w1, &u1, &u1);			// w = 2wj + 2
+		dn_p1(&v1, &u1);				// v = wj + 2	(v1,ry)
+		dn_add(&w1, &u1, &u1);				// w = 2wj + 2
 		dn_add(&w2, ry, ry);
 		cmplxDivide(&u1, &u2, &v1, ry, &w1, &w2);		// (u1,u2) = (wj+2)/(2wj+2)
 		cmplxMultiply(&w1, &w2, &t1, &t2, rx, ry);		// (w1,w2) = wj e^wj
@@ -805,7 +805,7 @@ static int cmplx_perm_helper(decNumber *rx, decNumber *ry, const decNumber *a, c
 		return 0;
 	}
 		
-	dn_add(&n, a, &const_1);		// x+1
+	dn_p1(&n, a);				// x+1
 	cmplxLnGamma(&s1, &s2, &n, b);		// lnGamma(x+1) = Ln x!
 
 	cmplxSubtract(rx, ry, &n, b, c, d);	// x-y+1
@@ -824,7 +824,7 @@ void cmplxComb(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	const int code = cmplx_perm_helper(&r1, &r2, a, b, c, d);
 
 	if (code) {
-		dn_add(&n, c, &const_1);	// y+1
+		dn_p1(&n, c);			// y+1
 		cmplxLnGamma(&s1, &s2, &n, d);	// LnGamma(y+1) = Ln y!
 		cmplxSubtract(&n, &m, &r1, &r2, &s1, &s2);
 
@@ -907,14 +907,14 @@ void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNum
 	// Correct out argument and begin the inversion if it is negative
 	if (decNumberIsNegative(xin)) {
 		reflec = 1;
-		dn_subtract(&t1, &const_1, xin);
+		dn_1m(&t1, xin);
 		if (decNumberIsZero(y) && is_int(&t1)) {
 			cmplx_NaN(rx, ry);
 			return;
 		}
-		dn_subtract(&x, &t1, &const_1);
+		dn_m1(&x, &t1);
 	} else
-		dn_subtract(&x, xin, &const_1);
+		dn_m1(&x, xin);
 
 	// Sum the series
 	c_lg(&s1, &s2, &x, y);
@@ -961,14 +961,14 @@ void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decN
 	// Correct out argument and begin the inversion if it is negative
 	if (decNumberIsNegative(xin)) {
 		reflec = 1;
-		dn_subtract(&t1, &const_1, xin);
+		dn_1m(&t1, xin);
 		if (decNumberIsZero(y) && is_int(&t1)) {
 			cmplx_NaN(rx, ry);
 			return;
 		}
-		dn_subtract(&x, &t1, &const_1);
+		dn_m1(&x, &t1);
 	} else
-		dn_subtract(&x, xin, &const_1);
+		dn_m1(&x, xin);
 
 	c_lg(rx, ry, &x, y);
 
@@ -987,7 +987,7 @@ void cmplxFactorial(decNumber *rx, decNumber *ry, const decNumber *xin, const de
 #ifndef TINY_BUILD
 	decNumber x;
 
-	dn_add(&x, xin, &const_1);
+	dn_p1(&x, xin);
 	cmplxGamma(rx, ry, &x, y);
 #endif
 }
@@ -997,12 +997,12 @@ void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const d
 #ifndef TINY_BUILD
 	decNumber t, u1, u2, v1, v2, w1, w2;
 
-	dn_add(&t, a, &const_1);
+	dn_p1(&t, a);
 	cmplx2x(&u1, &u2, &t, b);
 	cmplxDivideReal(&v1, &v2, &u1, &u2, &const_PI);
 	cmplxSqrt(&u1, &u2, &v1, &v2);
 	cmplxMultiplyReal(&v1, &v2, a, b, &const_0_5);
-	dn_add(&t, &v1, &const_1);
+	dn_p1(&t, &v1;
 	cmplxGamma(&w1, &w2, &t, &v2);
 	cmplxMultiply(rx, ry, &w1, &w2, &u1, &u2);
 #endif
@@ -1121,7 +1121,7 @@ void cmplxZeta(decNumber *rx, decNumber *ry,
 		if (decNumberIsNaN(xin) || decNumberIsNegative(xin) || decNumberIsNaN(yin)) {
 			cmplx_NaN(rx, ry);
 		} else {
-			decNumberCopy(rx, &const_1);
+			dn_1(rx);
 			decNumberZero(ry);
 		}
 		return;
@@ -1266,7 +1266,7 @@ static void elliptic_setup(decNumber *r,
 
 	dn_multiply(&a, dnuk, snvki);
 	decNumberSquare(r, &a);
-	dn_subtract(&a, &const_1, r);
+	dn_1m(&a, r);
 	decNumberRecip(r, &a);
 }
 #endif
@@ -1367,11 +1367,11 @@ static void cmplx_bessel(decNumber *rx, decNumber *ry,
 	cmplxSqr(&x2on4x, &x2on4y, &t1, &t2);
 
 	cmplxPower(&t1, &t2, &t1, &t2, nx, ny);
-	dn_add(&b, nx, &const_1);
+	dn_p1(&b, nx);
 	cmplxGamma(&a1, &a2, &b, ny);
 	cmplxDivide(&ux, &uy, &t1, &t2, &a1, &a2);
 
-	decNumberCopy(&k, &const_1);
+	dn_1(&k);
 	cmplxCopy(rx, ry, &ux, &uy);
 
 	for (i=0;i<1000;i++) {
@@ -1451,7 +1451,7 @@ static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumb
 	if (modified)
 		cmplxMinus(&x2on4x, &x2on4y, &x2on4x, &x2on4y);
 	if (in > 0) {
-		dn_subtract(&vx, n, &const_1);	// v = n-k-1 = n-1
+		dn_m1(&vx, n);			// v = n-k-1 = n-1
 		decNumberZero(&k);
 		decNumberGamma(&px, n);		// p = (n-1)!
 		decNumberZero(&py);
@@ -1471,7 +1471,7 @@ static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumb
 	} else {
 		decNumberZero(rx);
 		decNumberZero(ry);
-		decNumberCopy(&nf, &const_1);
+		dn_1(&nf);
 	}
 
 	if (modified) {
@@ -1487,7 +1487,7 @@ static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumb
 	cmplxAdd(rx, ry, rx, ry, &vx, &vy);
 
 	cmplxMinus(&x2on4x, &x2on4y, &x2on4x, &x2on4y);
-	dn_add(&tx, n, &const_1);			// t = n+1
+	dn_p1(&tx, n);					// t = n+1
 	decNumberPsi(&ux, &tx);				// u = Psi(n+1)
 	dn_subtract(&vx, &ux, &const_egamma);	// v = psi(k+1) + psi(n+k+1)
 	decNumberZero(&k);
