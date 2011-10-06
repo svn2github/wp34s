@@ -73,6 +73,11 @@ static void cmplxMultiplyReal(decNumber *rx, decNumber *ry,
 	dn_multiply(ry, b, r);
 }
 
+static void cmplxDiv2(decNumber *rx, decNumber *ry,
+		const decNumber *a, const decNumber *b) {
+	cmplxMultiplyReal(rx, ry, a, b, &const_0_5);
+}
+
 // (a + i b) / c = ( a / r ) + i ( b / r)
 static void cmplxDivideReal(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
@@ -434,7 +439,7 @@ void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	dn_minus(&v2, a);
 	cmplxLn(&t1, &t2, &v1, &v2);
 	cmplxSubtract(&v1, &v2, &t1, &t2, &s1, &s2);
-	cmplxMultiplyReal(ry, &t1, &v1, &v2, &const_0_5);
+	cmplxDiv2(ry, &t1, &v1, &v2);
 	dn_minus(rx, &t1);
 #endif
 }
@@ -573,7 +578,7 @@ void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 	cmplxDivide(&s1, &s2, &t1, b, &t2, ry);
 	cmplxLn(&t1, &t2, &s1, &s2);
 
-	cmplxMultiplyReal(rx, ry, &t1, &t2, &const_0_5);
+	cmplxDiv2(rx, ry, &t1, &t2);
 #endif
 }
 
@@ -1001,7 +1006,7 @@ void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const d
 	cmplx2x(&u1, &u2, &t, b);
 	cmplxDivideReal(&v1, &v2, &u1, &u2, &const_PI);
 	cmplxSqrt(&u1, &u2, &v1, &v2);
-	cmplxMultiplyReal(&v1, &v2, a, b, &const_0_5);
+	cmplxDiv2(&v1, &v2, a, b);
 	dn_p1(&t, &v1;
 	cmplxGamma(&w1, &w2, &t, &v2);
 	cmplxMultiply(rx, ry, &w1, &w2, &u1, &u2);
@@ -1212,7 +1217,7 @@ void cmplxAGM(decNumber *rx, decNumber *ry,
 		}
 
 		cmplxAdd(&t1, &t2, &x1, &x2, &y1, &y2);
-		cmplxMultiplyReal(&u1, &u2, &t1, &t2, &const_0_5);
+		cmplxDiv2(&u1, &u2, &t1, &t2);
 
 		cmplxMultiply(&t1, &t2, &x1, &x2, &y1, &y2);
 		cmplxSqrt(&y1, &y2, &t1, &t2);
@@ -1363,7 +1368,7 @@ static void cmplx_bessel(decNumber *rx, decNumber *ry,
 	decNumber t1, t2, a1, a2, b;
 	int i;
 
-	cmplxMultiplyReal(&t1, &t2, xx, xy, &const_0_5);
+	cmplxDiv2(&t1, &t2, xx, xy);
 	cmplxSqr(&x2on4x, &x2on4y, &t1, &t2);
 
 	cmplxPower(&t1, &t2, &t1, &t2, nx, ny);
@@ -1444,7 +1449,7 @@ static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumb
 	in = dn_to_int(n);
 	n_odd = in & 1;
 
-	cmplxMultiplyReal(&xon2x, &xon2y, x, y, &const_0_5);	// xon2 = x/2
+	cmplxDiv2(&xon2x, &xon2y, x, y);			// xon2 = x/2
 	cmplxPowerReal(&xon2nx, &xon2ny, &xon2x, &xon2y, n);	// xon2n = (x/2)^n
 	cmplxSqr(&x2on4x, &x2on4y, &xon2x, &xon2y);		// x2on4 = +/- x^2/4
 
@@ -1522,7 +1527,7 @@ static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumb
 		if (n_odd)
 			cmplxMultiplyReal(&ux, &uy, &tx, &ty, &const__0_5);
 		else
-			cmplxMultiplyReal(&ux, &uy, &tx, &ty, &const_0_5);
+			cmplxDiv2(&ux, &uy, &tx, &ty);
 	} else
 		cmplxMultiplyReal(&ux, &uy, &tx, &ty, &const__1onPI);
 	cmplxAdd(rx, ry, rx, ry, &ux, &uy);
