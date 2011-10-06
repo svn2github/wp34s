@@ -283,6 +283,10 @@ decNumber *dn__1(decNumber *r) {
 	return decNumberCopy(r, &const__1);
 }
 
+decNumber *dn_p2(decNumber *r, const decNumber *x) {
+	return dn_add(r, x, &const_2);
+}
+
 decNumber *dn_mul2(decNumber *r, const decNumber *x) {
 	return dn_multiply(r, x, &const_2);
 }
@@ -713,7 +717,7 @@ decNumber *dn_ln(decNumber *r, const decNumber *x) {
 		if (relative_error(&w, &v, &const_1e_32))
 			break;
 		decNumberCopy(&v, &w);
-		dn_add(&i, &i, &const_2);
+		dn_p2(&i, &i);
 	}
 	dn_multiply(r, &f, &w);
 	if (expon == 0)
@@ -811,7 +815,7 @@ decNumber *decNumberLamW(decNumber *r, const decNumber *x) {
 		dn_multiply(&s, &u, &t);	// s = (wj+1)e^wj
 
 		dn_p1(&v, &u);			// v = wj + 2
-		dn_add(&w, &u, &u);		// w = 2wj + 2
+		dn_mul2(&w, &u);		// w = 2wj + 2
 		dn_divide(&u, &v, &w);		// u = (wj+2)/(2wj+2)
 		dn_multiply(&w, &t, r);		// w = wj e^wj
 
@@ -1228,12 +1232,12 @@ void do_atan(decNumber *res, const decNumber *x) {
 		dn_multiply(&t, &t, &a2);
 		dn_divide(&z, &t, &j);
 		dn_add(res, res, &z);
-		dn_add(&j, &j, &const_2);
+		dn_p2(&j, &j);
 
 		dn_multiply(&t, &t, &a2);
 		dn_divide(&z, &t, &j);
 		dn_subtract(res, res, &z);
-		dn_add(&j, &j, &const_2);
+		dn_p2(&j, &j);
 
 		dn_compare(&a1, res, &last);
 	} while (!decNumberIsZero(&a1));
@@ -1274,7 +1278,7 @@ void do_asin(decNumber *res, const decNumber *x) {
 	dn_inc(&z);
 	dn_divide(&z, x, &z);
 	do_atan(&abx, &z);
-	dn_add(res, &abx, &abx);
+	dn_mul2(res, &abx);
 }
 
 void do_acos(decNumber *res, const decNumber *x) {
@@ -1304,7 +1308,7 @@ void do_acos(decNumber *res, const decNumber *x) {
         dn_1m(&abx, x);
         dn_divide(&z, &abx, &z);
         do_atan(&abx, &z);
-        dn_add(res, &abx, &abx);
+        dn_mul2(res, &abx);
     }
 }
 
@@ -1521,7 +1525,7 @@ decNumber *decNumberTanh(decNumber *res, const decNumber *x) {
 	}
 	dn_add(&a, x, x);
 	decNumberExpm1(&b, &a);
-	dn_add(&a, &b, &const_2);
+	dn_p2(&a, &b);
 	return dn_divide(res, &b, &a);
 }
 
@@ -1578,7 +1582,7 @@ decNumber *decNumberArcTanh(decNumber *res, const decNumber *x) {
 	// Not the obvious formula but more stable...
 	dn_1m(&z, x);
 	dn_divide(&y, x, &z);
-	dn_add(&z, &y, &y);
+	dn_mul2(&z, &y);
 	decNumberLn1p(&y, &z);
 	return dn_div2(res, &y);
 }
@@ -1777,7 +1781,7 @@ decNumber *decNumberFactorial(decNumber *res, const decNumber *xin) {
 decNumber *decNumberDblFactorial(decNumber *r, const decNumber *x) {
 	decNumber t, u, v;
 
-	dn_add(&t, x, &const_2);		// t = x+2
+	dn_p2(&t, x);				// t = x+2
 	decNumberPow2(&u, &t);			// u = 2^(x+1)
 	dn_sqrt(&t, &u);
 	dn_multiply(&u, &t, &const_recipsqrt2PI);
@@ -2442,7 +2446,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 		dn_inc(&i);
 		dn_subtract(&t, a, &i);		// t = a-i
 		dn_multiply(&an, &i, &t);		// an = -i (i-a)
-		dn_add(&b, &b, &const_2);
+		dn_p2(&b, &b);
 		dn_multiply(&t, &an, &d);
 		dn_add(&v, &t, &b);
 		dn_abs(&t, &v);

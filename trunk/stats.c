@@ -839,19 +839,19 @@ decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const dec
 		limit = 1;
 	else {
 		decNumberLnBeta(&u, a, b);
-		dn_ln(&v, x);		// v = ln(x)
+		dn_ln(&v, x);			// v = ln(x)
 		dn_multiply(&t, a, &v);
 		dn_subtract(&v, &t, &u);	// v = lng(...)+a.ln(x)
 		dn_1m(&y, x);			// y = 1-x
-		dn_ln(&u, &y);		// u = ln(1-x)
+		dn_ln(&u, &y);			// u = ln(1-x)
 		dn_multiply(&t, &u, b);
 		dn_add(&u, &t, &v);		// u = lng(...)+a.ln(x)+b.ln(1-x)
 		dn_exp(&w, &u);
 	}
 	dn_add(&v, a, b);
-	dn_add(&u, &v, &const_2);		// u = a+b+2
+	dn_p2(&u, &v);				// u = a+b+2
 	dn_p1(&t, a);				// t = a+1
-	dn_divide(&v, &t, &u);		// u = (a+1)/(a+b+2)
+	dn_divide(&v, &t, &u);			// u = (a+1)/(a+b+2)
 	dn_compare(&t, x, &v);
 	if (decNumberIsNegative(&t)) {
 		if (limit)
@@ -1000,7 +1000,7 @@ decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
 			if (decNumberIsZero(&v))
 				break;
 			decNumberCopy(&a, &u);
-			dn_add(&d, &d, &const_2);
+			dn_p2(&d, &d);
 		}
 		dn_multiply(&v, &a, pdf);
 		if (decNumberIsNegative(x))

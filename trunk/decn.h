@@ -227,6 +227,7 @@ extern decNumber *dn_m1(decNumber *, const decNumber *);
 extern decNumber *dn_1m(decNumber *, const decNumber *);
 extern decNumber *dn_1(decNumber *);
 extern decNumber *dn__1(decNumber *);
+extern decNumber *dn_p2(decNumber *, const decNumber *);
 extern decNumber *dn_mul2(decNumber *, const decNumber *);
 extern decNumber *dn_div2(decNumber *, const decNumber *);
 
