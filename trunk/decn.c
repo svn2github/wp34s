@@ -283,6 +283,14 @@ decNumber *dn__1(decNumber *r) {
 	return decNumberCopy(r, &const__1);
 }
 
+decNumber *dn_mul2(decNumber *r, const decNumber *x) {
+	return dn_multiply(r, x, &const_2);
+}
+
+decNumber *dn_div2(decNumber *r, const decNumber *x) {
+	return dn_multiply(r, x, &const_0_5);
+}
+
 
 int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol) {
 	decNumber a, b;
@@ -680,7 +688,7 @@ decNumber *dn_ln(decNumber *r, const decNumber *x) {
 
 /* The too high case never happens
 	while (dn_le0(dn_compare(&t, &const_2, &z))) {
-		dn_multiply(&f, &f, &const_2);
+		dn_mul2(&f, &f);
 		dn_sqrt(&z, &z);
 	}
 */
@@ -688,7 +696,7 @@ decNumber *dn_ln(decNumber *r, const decNumber *x) {
 	// Making the constant here larger will reduce the number of later
 	// iterations at the expense of more square root operations.
 	while (dn_le0(dn_compare(&t, &z, &const_root2on2))) {
-		dn_multiply(&f, &f, &const_2);
+		dn_mul2(&f, &f);
 		dn_sqrt(&z, &z);
 	}
 	dn_p1(&t, &z);
@@ -1388,7 +1396,7 @@ decNumber *do_atan2(decNumber *at, const decNumber *y, const decNumber *x) {
 		} else {
 			if (decNumberIsInfinite(y)) {
 				decNumberPIon2(&t);
-				dn_multiply(at, &t, &const_0_5);
+				dn_div2(at, &t);
 				if (yneg)
 					dn_minus(at, at);
 			} else {
@@ -1460,7 +1468,7 @@ void dn_sinhcosh(const decNumber *x, decNumber *sinhv, decNumber *coshv) {
 	if (sinhv != NULL) {
 		if (decNumberIsNegative(dn_compare(&u, dn_abs(&t, x), &const_0_5))) {
 			decNumberExpm1(&u, x);
-			dn_multiply(&t, &u, &const_0_5);
+			dn_div2(&t, &u);
 			dn_inc(&u);
 			dn_divide(&v, &t, &u);
 			dn_inc(&u);
@@ -1469,14 +1477,14 @@ void dn_sinhcosh(const decNumber *x, decNumber *sinhv, decNumber *coshv) {
 			dn_exp(&u, x);			// u = e^x
 			decNumberRecip(&v, &u);		// v = e^-x
 			dn_subtract(&t, &u, &v);	// r = e^x - e^-x
-			dn_multiply(sinhv, &t, &const_0_5);
+			dn_div2(sinhv, &t);
 		}
 	}
 	if (coshv != NULL) {
 		dn_exp(&u, x);			// u = e^x
 		decNumberRecip(&v, &u);		// v = e^-x
 		dn_add(&t, &v, &u);		// r = e^x + e^-x
-		dn_multiply(coshv, &t, &const_0_5);
+		dn_div2(coshv, &t);
 	}
 }
 
@@ -1572,7 +1580,7 @@ decNumber *decNumberArcTanh(decNumber *res, const decNumber *x) {
 	dn_divide(&y, x, &z);
 	dn_add(&z, &y, &y);
 	decNumberLn1p(&y, &z);
-	return dn_multiply(res, &const_0_5, &y);
+	return dn_div2(res, &y);
 }
 
 
@@ -1773,7 +1781,7 @@ decNumber *decNumberDblFactorial(decNumber *r, const decNumber *x) {
 	decNumberPow2(&u, &t);			// u = 2^(x+1)
 	dn_sqrt(&t, &u);
 	dn_multiply(&u, &t, &const_recipsqrt2PI);
-	dn_multiply(&t, x, &const_0_5);
+	dn_div2(&t, x);
 	dn_p1(&v, &t);
 	decNumberGamma(&t, &v);
 	return dn_multiply(r, &u, &t);
@@ -2022,7 +2030,7 @@ decNumber *decNumberZeta(decNumber *res, const decNumber *xin) {
 		return decNumberCopy(res, &const__0_5);
 	}
 	if (decNumberIsNegative(xin)) {
-		dn_multiply(&s, xin, &const_0_5);
+		dn_div2(&s, xin);
 		if (is_int(&s)) {
 			return decNumberZero(res);
 		}
@@ -2212,7 +2220,7 @@ decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y) 
 			return decNumberCopy(res, &a);
 
 		dn_add(&t, &a, &g);
-		dn_multiply(&u, &t, &const_0_5);
+		dn_div2(&u, &t);
 
 		dn_multiply(&t, &a, &g);
 		if (decNumberIsZero(&t))
@@ -2516,7 +2524,7 @@ decNumber *decNumberERFC(decNumber *res, const decNumber *x) {
 	dn_divide(&a, x, &const_root2on2);
 	dn_minus(&b, &a);
 	cdf_Q(&a, &b);
-	return dn_multiply(res, &a, &const_2);
+	return dn_mul2(res, &a);
 }
 
 
@@ -2571,13 +2579,13 @@ void dn_elliptic(decNumber *sn, decNumber *cn, decNumber *dn, const decNumber *u
 		dn_add(&g, mu(n), nu(n));
 		dn_abs(&a, &g);
 		dn_multiply(&b, &a, &const_1e_32);
-		dn_multiply(&a, &b, &const_2);
+		dn_mul2(&a, &b);
 		dn_subtract(&e, mu(n), nu(n));
 		dn_abs(&f, &e);
 		dn_compare(&e, &a, &f);
 		if (!decNumberIsNegative(&e) && !decNumberIsZero(&e))
 			break;
-		dn_multiply(mu(n+1), &const_0_5, &g);
+		dn_div2(mu(n+1), &g);
 		dn_multiply(&a, mu(n), nu(n));
 		dn_sqrt(nu(n+1), &a);
 		n++;
@@ -2658,7 +2666,7 @@ static decNumber *dn_bessel(decNumber *res, const decNumber *alpha, const decNum
 	decNumber x2on4, term, gfac;
 	int n;
 
-	dn_multiply(&q, x, &const_0_5);	// q = x/2
+	dn_div2(&q, x);				// q = x/2
 	decNumberSquare(&x2on4, &q);		// factor each time around
 	dn_power(&r, &q, alpha);		// (x/2)^(2m+alpha)
 
@@ -2750,7 +2758,7 @@ static void bessel2_int_series(decNumber *res, const decNumber *n, const decNumb
 	in = dn_to_int(n);
 	n_odd = in & 1;
 
-	dn_multiply(&xon2, x, &const_0_5);	// xon2 = x/2
+	dn_div2(&xon2, x);			// xon2 = x/2
 	dn_power(&xon2n, &xon2, n);		// xon2n = (x/2)^n
 	decNumberSquare(&x2on4, &xon2);		// x2on4 = +/- x^2/4
 
@@ -2822,7 +2830,7 @@ static void bessel2_int_series(decNumber *res, const decNumber *n, const decNumb
 		if (n_odd)
 			dn_multiply(&u, &t, &const__0_5);
 		else
-			dn_multiply(&u, &t, &const_0_5);
+			dn_div2(&u, &t);
 	} else
 		dn_multiply(&u, &t, &const__1onPI);
 	dn_add(res, res, &u);
@@ -2989,7 +2997,7 @@ static void solve_bisect(decNumber *s, const decNumber *a, const decNumber *b) {
 	decNumber x;
 
 	dn_add(&x, a, b);
-	dn_multiply(s, &x, &const_0_5);
+	dn_div2(s, &x);
 }
 
 
@@ -3162,15 +3170,15 @@ brcket:
 				decNumberCopy(b, c);
 				decNumberCopy(fb, fc);
 				if (decNumberIsNegative(a))
-					dn_multiply(&x, a, &const_2);
-				else	dn_multiply(&x, a, &const_0_5);
+					dn_mul2(&x, a);
+				else	dn_div2(&x, a);
 				dn_subtract(&q, &x, &const_10);
 			} else {
 				decNumberCopy(a, c);
 				decNumberCopy(fa, fc);
 				if (decNumberIsNegative(b))
-					dn_multiply(&x, b, &const_0_5);
-				else	dn_multiply(&x, b, &const_2);
+					dn_div2(&x, b);
+				else	dn_mul2(&x, b);
 				dn_add(&q, &x, &const_10);
 			}
 		} else {
@@ -3358,15 +3366,13 @@ error:		return set_NaN(r);
 	default:
 		decNumberCopy(&t1, x);
 		break;
+	case ORTHOPOLY_HERMITE_H:
 	case ORTHOPOLY_CHEBYCHEV_UN:
-		dn_multiply(&t1, x, &const_2);
+		dn_mul2(&t1, x);
 		break;
 	case ORTHOPOLY_GEN_LAGUERRE:
 		dn_p1(&t, param);
 		dn_subtract(&t1, &t, x);
-		break;
-	case ORTHOPOLY_HERMITE_H:
-		dn_multiply(&t1, x, &const_2);
 		break;
 	}
 	dn_1(&t0);
@@ -3383,13 +3389,13 @@ error:		return set_NaN(r);
 	decNumberCopy(&dA, &const_2);
 	dn_1(&C);
 	dn_1(&B);
-	dn_multiply(&A, x, &const_2);
+	dn_mul2(&A, x);
 	incA = incB = incC = 0;
 	switch (type) {
 	case ORTHOPOLY_LEGENDRE_PN:
 		incA = incB = incC = 1;
 		dn_add(&A, &A, x);
-		dn_multiply(&dA, x, &const_2);
+		dn_mul2(&dA, x);
 		break;
 	case ORTHOPOLY_CHEBYCHEV_TN:	break;
 	case ORTHOPOLY_CHEBYCHEV_UN:	break;
@@ -3478,7 +3484,7 @@ decNumber *decNumberBernBn(decNumber *r, const decNumber *n) {
 		// Values 306 and larger give infinite results, this is shortcut code
 		// to save some time -- using 360 as the threshold to reuse a constant.
 		if (decNumberIsNegative(dn_compare(&b, &const_360, n))) {
-			dn_multiply(&b, n, &const_0_5);
+			dn_div2(&b, n);
 			if (is_even(&b))
 				return set_neginf(r);
 			return set_inf(r);
@@ -3502,7 +3508,7 @@ decNumber *decNumberBernBnS(decNumber *r, const decNumber *n) {
 	if (decNumberIsZero(n)) {
 		return set_NaN(r);
 	}
-	dn_multiply(&a, n, &const_2);
+	dn_mul2(&a, n);
 	decNumberBernBn(r, &a);
 	if (is_even(n))
 		dn_minus(r, r);

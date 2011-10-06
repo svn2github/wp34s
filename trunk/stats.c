@@ -796,7 +796,7 @@ static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const d
 	for (i=0; i<500; i++) {
 		decNumberCopy(&oldr, r);
 		dn_inc(&m);			// m = i+1
-		dn_multiply(&m2, &m, &const_2);
+		dn_mul2(&m2, &m);
 		dn_subtract(&t, b, &m);
 		dn_multiply(&u, &t, &m);
 		dn_multiply(&t, &u, x);	// t = m*(b-m)*x
@@ -952,7 +952,7 @@ decNumber *pdf_Q(decNumber *q, const decNumber *x) {
 	decNumber r, t;
 
 	decNumberSquare(&t, x);
-	dn_multiply(&r, &t, &const_0_5);
+	dn_div2(&r, &t);
 	dn_minus(&t, &r);
 	dn_exp(&r, &t);
 	return dn_multiply(q, &r, &const_recipsqrt2PI);
@@ -1067,7 +1067,7 @@ decNumber *qf_Q(decNumber *r, const decNumber *x) {
 		dn_subtract(&a, &cdf, x);
 		dn_divide(&t, &a, &pdf);
 		dn_multiply(&a, &t, r);
-		dn_multiply(&b, &a, &const_0_5);
+		dn_div2(&b, &a);
 		dn_m1(&a, &b);
 		dn_divide(&b, &t, &a);
 		dn_add(&a, &b, r);
@@ -1098,7 +1098,7 @@ decNumber *pdf_chi2_helper(decNumber *r, const decNumber *x, const decNumber *k,
 		return decNumberZero(r);
 
 	dn_multiply(&s, x, &const__0_5);		// s = -x/2
-	dn_multiply(&k2, k, &const_0_5);		// k2 = k/2
+	dn_div2(&k2, k);				// k2 = k/2
 	dn_m1(&k1, &k2);				// k = k/2-1
 	dn_ln(&t, x);					// t = ln(x)
 	dn_multiply(&v, &k1, &t);			// r = (k/2-1) ln(x)
@@ -1126,8 +1126,8 @@ decNumber *cdf_chi2_helper(decNumber *r, const decNumber *x, const decNumber *v,
 	if (decNumberIsInfinite(x))
 		return dn_1(r);
 
-	dn_multiply(&a, v, &const_0_5);
-	dn_multiply(&b, x, &const_0_5);
+	dn_div2(&a, v);
+	dn_div2(&b, x);
 	return decNumberGammap(r, &a, &b);
 }
 
@@ -1151,7 +1151,7 @@ static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p
 	dn_minus(&a, &b);
 	dn_exp(&b, &a);
 	if (decNumberIsNegative(dn_compare(&a, p, &b))) {
-		dn_multiply(&a, n, &const_0_5);
+		dn_div2(&a, n);
 		decNumberLnGamma(&b, &a);
 		dn_divide(guess, &b, &a);
 		dn_exp(&b, guess);
@@ -1159,7 +1159,7 @@ static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p
 		decNumberRecip(&d, &a);
 		dn_power(&a, guess, &d);
 		dn_multiply(&d, &a, &b);
-		dn_multiply(guess, &d, &const_2);
+		dn_mul2(guess, &d);
 	} else {
 		dn_subtract(&b, &const_0_5, p);
 		qf_Q_est(&a, p, &b);
@@ -1213,7 +1213,7 @@ static int t_param(decNumber *r, decNumber *v, const decNumber *x) {
 decNumber *pdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v, const decNumber *null) {
 	decNumber t, u, w;
 
-	dn_multiply(&t, v, &const_0_5);			// t=v/2
+	dn_div2(&t, v);					// t=v/2
 	decNumberLnGamma(&w, &t);			// w = lnGamma(v/2)
 	dn_add(&u, &t, &const_0_5);			// u = (v+1)/2
 	decNumberLnGamma(&t, &u);			// t = lnGamma((v+1)/2)
@@ -1254,9 +1254,9 @@ decNumber *cdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v, co
 	decNumberSquare(&t, x);
 	dn_add(r, &t, v);
 	dn_divide(&t, v, r);
-	dn_multiply(r, v, &const_0_5);
+	dn_div2(r, v);
 	betai(&u, r, &const_0_5, &t);
-	dn_multiply(r, &const_0_5, &u);
+	dn_div2(r, &u);
 	if (invert)
 		dn_1m(r, r);
 	return r;
@@ -1302,7 +1302,7 @@ static void qf_T_est(decNumber *r, const decNumber *df, const decNumber *p, cons
 		dn_add(r, r, &u);
 		negate = invert;
 	} else {
-		dn_multiply(&x2, df, &const_2);
+		dn_mul2(&x2, df);
 		dn_m1(&b, &x2);
 		dn_divide(&a, &const_PI, &b);
 		dn_sqrt(&b, &a);
@@ -1392,9 +1392,9 @@ decNumber *pdf_F_helper(decNumber *r, const decNumber *x, const decNumber *d1, c
 	dn_add(&a, d1, d2);
 	dn_multiply(&c, &b, &a);
 	dn_subtract(&a, &s, &c);
-	dn_multiply(&s, &a, &const_0_5);
-	dn_multiply(&a, d1, &const_0_5);
-	dn_multiply(&b, d2, &const_0_5);
+	dn_div2(&s, &a);
+	dn_div2(&a, d1);
+	dn_div2(&b, d2);
 	decNumberLnBeta(&c, &a, &b);
 	dn_subtract(&a, &s, &c);
 	dn_exp(&b, &a);
@@ -1420,8 +1420,8 @@ decNumber *cdf_F_helper(decNumber *r, const decNumber *x, const decNumber *v1, c
 	dn_multiply(&t, v1, x);
 	dn_add(&u, &t, v2);			// u = v1 * x + v2
 	dn_divide(&w, &t, &u);			// w = (v1 * x) / (v1 * x + v2)
-	dn_multiply(&t, v1, &const_0_5);
-	dn_multiply(&u, v2, &const_0_5);
+	dn_div2(&t, v1);
+	dn_div2(&u, v2);
 	return betai(r, &t, &u, &w);
 }
 
@@ -1467,7 +1467,7 @@ static decNumber *qf_F_est(decNumber *r, const decNumber *n1, const decNumber *n
 	dn_divide(&dr, &t, &h);
 	dn_multiply(&t, &dr, r);
 	dn_subtract(r, &t, &u);
-	dn_multiply(&u, r, &const_2);
+	dn_mul2(&u, r);
 	return dn_exp(r, &u);
 }
 
@@ -1952,7 +1952,7 @@ static int logistic_xform(decNumber *r, decNumber *c, const decNumber *x, decNum
 		return 1;
 	dn_subtract(&a, x, &mu);
 	dn_divide(&b, &a, s);
-	dn_multiply(c, &b, &const_0_5);
+	dn_div2(c, &b);
 	return 0;
 }
 
@@ -1974,7 +1974,7 @@ decNumber *cdf_logistic(decNumber *r, const decNumber *x) {
 	if (logistic_xform(r, &a, x, &s))
 		return r;
 	decNumberTanh(&b, &a);
-	dn_multiply(&a, &b, &const_0_5);
+	dn_div2(&a, &b);
 	return dn_add(r, &a, &const_0_5);
 }
 
@@ -1987,9 +1987,9 @@ decNumber *qf_logistic(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 0))
 	    return r;
 	dn_subtract(&a, p, &const_0_5);
-	dn_multiply(&b, &a, &const_2);
+	dn_mul2(&b, &a);
 	decNumberArcTanh(&a, &b);
-	dn_multiply(&b, &a, &const_2);
+	dn_mul2(&b, &a);
 	dn_multiply(&a, &b, &s);
 	return dn_add(r, &a, &mu);
 }

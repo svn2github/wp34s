@@ -2849,7 +2849,7 @@ static void check_int_switch(void) {
 			m = 1;
 			decNumberFrac(&y, &z);
 			for (i=0; i<31; i++) {
-				dn_multiply(&z, &y, &const_2);
+				dn_mul2(&z, &y);
 				decNumberTrunc(&y, &z);
 				m += m;
 				if (! decNumberIsZero(&y))
@@ -2858,7 +2858,7 @@ static void check_int_switch(void) {
 			}
 			ex -= 31;
 			/* Finally, round up if required */
-			dn_multiply(&z, &y, &const_2);
+			dn_mul2(&z, &y);
 			decNumberTrunc(&y, &z);
 			if (! decNumberIsZero(&y)) {
 				m++;
