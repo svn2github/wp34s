@@ -126,11 +126,6 @@ my $MAX_INDIRECT_104 = 104;
 my @label_116 = (0 .. 99, "A", "B", "C", "D", "F", "G", "H", "I", "J", "K", "L", "P", "T", "W", "Y", "Z");
 my $MAX_LABEL = 116;
 
-# This is for the 'stostack' group. They use the 112 group table.
-# XXX This is more than a bit unclean in that there is an arbitrary gap
-#     in the sequence. This will have to be manually patched if things change.
-my $MAX_STOSTACK_NUM = 96;
-
 # The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
 
@@ -944,16 +939,8 @@ sub parse_arg_type {
 
   # Load the direct argument variants
   if( $direct_max ) {
-    if( $stostack_modifier ) {
-      # XXX This is more than a bit unclean in that there is an arbitrary gap
-      #     in the sequence. This will have to be manually patched if things change.
-      for my $offset (0 .. $MAX_STOSTACK_NUM, ($direct_max-1)) {
-        parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, $stostack_modifier);
-      }
-    } else {
-      for my $offset (0 .. ($direct_max - 1)) {
-        parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, $stostack_modifier);
-      }
+    for my $offset (0 .. ($direct_max - 1)) {
+      parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, $stostack_modifier);
     }
   }
 
@@ -1093,7 +1080,7 @@ sub load_mnem2hex_entry {
 
   if( not exists $mnem2hex{$mnemonic} ) {
     $mnem2hex{$mnemonic} = lc $op_hex_str;
-  } elsif ( $mnem2hex{$mnemonic} ne lc $op_hex_str ) {
+  } else {
     warn "# WARNING: Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')\n";
   }
   return;
@@ -1111,7 +1098,7 @@ sub load_hex2mnem_entry {
 
   if( not exists $hex2mnem{$op_hex_str} ) {
     $hex2mnem{lc $op_hex_str} = $mnemonic;
-  } elsif ( $hex2mnem{lc $op_hex_str} ne $mnemonic ) {
+  } else {
     warn "# WARNING: Duplicate opcode hex: '$op_hex_str' at line $line_num (new definition: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')\n";
   }
   return;
