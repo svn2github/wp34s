@@ -295,6 +295,10 @@ decNumber *dn_div2(decNumber *r, const decNumber *x) {
 	return dn_multiply(r, x, &const_0_5);
 }
 
+decNumber *dn_mul100(decNumber *r, const decNumber *x) {
+	return dn_multiply(r, x, &const_100);
+}
+
 
 int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol) {
 	decNumber a, b;
@@ -2101,7 +2105,7 @@ decNumber *decNumberPerchg(decNumber *res, const decNumber *x) {
 	getY(&y);
 	dn_subtract(&z, x, &y);
 	dn_divide(&w, &z, &y);
-	dn_multiply(res, &w, &const_100);
+	dn_mul100(res, &w);
 	return res;
 }
 
@@ -2111,7 +2115,7 @@ decNumber *decNumberPertot(decNumber *res, const decNumber *x) {
 
 	getY(&y);
 	dn_divide(&z, x, &y);
-	dn_multiply(res, &z, &const_100);
+	dn_mul100(res, &z);
 	return res;
 }
 
@@ -2129,7 +2133,7 @@ decNumber *decNumberMargin(decNumber *res, const decNumber *y, const decNumber *
 	decNumber a, b;
 
 	dn_subtract(&a, x, y);
-	dn_multiply(&b, &a, &const_100);
+	dn_mul100(&b, &a);
 	return dn_divide(res, &b, x);
 }
 
@@ -2140,7 +2144,7 @@ decNumber *decNemberPerMRR(decNumber *r, const decNumber *z, const decNumber *y,
 	decNumberRecip(&b, z);
 	dn_power(&c, &a, &b);
 	dn_m1(&a, &c);
-	return dn_multiply(r, &a, &const_100);
+	return dn_mul100(r, &a);
 }
 
 
@@ -2149,7 +2153,7 @@ decNumber *decNumberHMS2HR(decNumber *res, const decNumber *x) {
 
 	// decode hhhh.mmss...
 	decNumberFrac(&t, x);			// t = .mmss
-	dn_multiply(&s, &t, &const_100);	// s = mm.ss
+	dn_mul100(&s, &t);			// s = mm.ss
 	decNumberTrunc(&m, &s);			// m = mm
 	decNumberFrac(&t, &s);			// t = .ss
 	dn_multiply(&s, &t, &const_100on60);	// s = ss.sss / 60
@@ -3033,7 +3037,7 @@ static void limit_jump(decNumber *s, const decNumber *a, const decNumber *b) {
 
 	dn_subtract(&x, a, b);
 	dn_abs(&y, &x);
-	dn_multiply(&x, &y, &const_100);	// 100 |a-b|
+	dn_mul100(&x, &y);			// 100 |a-b|
 	dn_subtract(&y, a, &x);
 	dn_compare(&z, s, &y);
 	if (decNumberIsNegative(&z)) {

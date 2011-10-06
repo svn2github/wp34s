@@ -254,7 +254,7 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day) {
 	decNumberTrunc(&a, &z);			// a = iii	z = iii.ffrrrr
 	ip = dn_to_int(&a);
 	dn_subtract(&a, &z, &a);		// a = .ffrrrr
-	dn_multiply(&z, &a, &const_100);	// z = ff.rrrr
+	dn_mul100(&z, &a);			// z = ff.rrrr
 	decNumberTrunc(&a, &z);			// a = ff
 	fp = dn_to_int(&a);
 	dn_subtract(&z, &z, &a);		// z = .rrrr
@@ -263,7 +263,7 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day) {
 	case DATE_YMD:
 		y = ip;
 		m = fp;
-		dn_multiply(&a, &z, &const_100);
+		dn_mul100(&a, &z);
 		decNumberTrunc(&z, &a);
 		d = dn_to_int(&z);
 		break;
@@ -707,10 +707,10 @@ void date_settime(decimal64 *r, decimal64 *nul, enum nilop op) {
 	getX(&x);
 	h = dn_to_int(decNumberTrunc(&y, &x)) & 0x3f;
 	decNumberFrac(&y, &x);
-	dn_multiply(&x, &y, &const_100);
+	dn_mul100(&x, &y);
 	m = dn_to_int(decNumberTrunc(&y, &x)) & 0x7f;
 	decNumberFrac(&y, &x);
-	dn_multiply(&x, &y, &const_100);
+	dn_mul100(&x, &y);
 	s = dn_to_int(decNumberRound(&y, &x)) & 0x7f;
 #ifdef REALBUILD
 	busy();

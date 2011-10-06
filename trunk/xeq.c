@@ -2249,7 +2249,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 		dn_multiply(&i, &u, &const_1000);	// i = fff.ii
 		decNumberTrunc(&f, &i);			// f = fff
 		dn_subtract(&i, &i, &f);		// i = .ii		
-		dn_multiply(&x, &i, &const_100);
+		dn_mul100(&x, &i);
 		decNumberTrunc(&i, &x);			// i = ii
 		if (decNumberIsZero(&i))
 			dn_1(&i);
@@ -3064,12 +3064,12 @@ static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *ne
 		return 1;
 	}
 	decNumberFrac(&y, &x);
-	dn_multiply(&x, &y, &const_100);
+	dn_mul100(&x, &y);
 	decNumberTrunc(&y, &x);
 	*n = num = dn_to_int(&y);
 	if (d != NULL) {
 		decNumberFrac(&y, &x);
-		dn_multiply(&x, &y, &const_100);
+		dn_mul100(&x, &y);
 		decNumberTrunc(&y, &x);
 		*d = rdest = dn_to_int(&y);
 		if (num == 0) {

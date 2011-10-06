@@ -412,7 +412,7 @@ decNumber *stats_sigper(decNumber *res, const decNumber *x) {
 
 	get_sigmas(NULL, &sx, NULL, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 	dn_divide(&t, x, &sx);
-	return dn_multiply(res, &t, &const_100);
+	return dn_mul100(res, &t);
 }
 
 /* Calculate the correlation based on the stats data using the
