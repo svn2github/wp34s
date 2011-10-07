@@ -87,10 +87,8 @@ static const char *const error_table[] =
 	"Invalid\0dAtA",
 	"No write\0In FLASH",
 	"Solve\0FAILEd",
-#ifdef MATRIX_SUPPORT
 	"Matrix\0diMmEnSion",
 	"Singular\0",
-#endif
 };
 
 

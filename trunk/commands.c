@@ -242,7 +242,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_MANTISSA, &decNumberMantissa,	NOFN,		NOFN,		"MANT")
 	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT")
 #endif
-#ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M.ALL")
 	FUNC(OP_MAT_DIAG, &matrix_diag,		NOFN,		NOFN,		"M.DIAG")
 	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"M.TRN")
@@ -252,7 +251,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_MAT_DET, &matrix_determinant,	NOFN,		NOFN,		"M.DET")
 #ifdef MATRIX_LU_DECOMP
 	FUNC(OP_MAT_LU, &matrix_lu_decomp,	NOFN,		NOFN,		"M.LU")
-#endif
 #endif
 #undef FUNC
 };
@@ -339,10 +337,8 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #ifdef INCLUDE_XROOT
 	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
 #endif
-#ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M.ROW")
 	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M.COL")
-#endif
 #undef FUNC
 };
 #if COMMANDS_PASS != 2
@@ -376,12 +372,10 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #endif
 	FUNC(OP_PERMRR,		&decNemberPerMRR, NOFN,		"%MRR")
         FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha, NOFN,    "L\275\240")
-#ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"M.\034")
 	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"M.+\034")
 	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"M.REG")
 	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	NOFN,	"M.LIN")
-#endif
 #undef FUNC
 };
 
@@ -590,7 +584,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_Xeq_pos0,	&check_zero,		"x=+0?")
 	FUNC0(OP_Xeq_neg0,	&check_zero,		"x=-0?")
 
-#ifdef MATRIX_SUPPORT
 #ifdef MATRIX_ROWOPS
 	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"M.R\027")
 	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"M.R\034")
@@ -598,7 +591,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #endif
 	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
 	FUNC0(OP_MAT_INVERSE,	&matrix_inverse,	"M.INV")
-#endif
 #ifdef SILLY_MATRIX_SUPPORT
 	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
