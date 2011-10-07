@@ -48,6 +48,8 @@ static s_opcode program_xfcn[] = {
 	MON(OP_BnS,		"B[sub-n]*")
 #endif
 	MON(OP_CEIL,		"CEIL")
+	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLREG,		"CLREG")
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DROP,		"DROP")
@@ -164,6 +166,7 @@ static s_opcode program_xfcn[] = {
 	/* Integer mode commands */
 	RARGCMD(RARG_ASR,	"ASR")
 	RARGCMD(RARG_CB,	"CB")
+	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_DBL_MUL,	"DBL\034")
 	TRI(OP_DBL_DIV, 	"DBL/")
 	TRI(OP_DBL_MOD, 	"DBLR")
@@ -199,6 +202,8 @@ static s_opcode catalogue[] = {
 	MON(OP_BnS,		"B[sub-n]*")
 #endif
 	MON(OP_CEIL,		"CEIL")
+	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLREG,		"CLREG")
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DROP,		"DROP")
@@ -442,6 +447,9 @@ static s_opcode int_catalogue[] = {
 	MON(OP__1POW,		"-1^x")
 	RARGCMD(RARG_ASR,	"ASR")
 	RARGCMD(RARG_CB,	"CB")
+	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLFLAGS,	"CLFLAG")
+	NILIC(OP_CLREG,		"CLREG")
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DBL_MUL,	"DBL\034")
@@ -540,16 +548,14 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_ISFLOAT,	"REALM?")
 	NILIC(OP_Xeq_pos0,	"x=+0?")
 	NILIC(OP_Xeq_neg0,	"x=-0?")
-
-	MON(OP_MAT_RQ,		"M.ROW?")
-	MON(OP_MAT_CQ,		"M.COL?")
-	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
 };
 
 static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_STOSTK,	"\015STK")
 	RARGCMD(RARG_RCLSTK,	"\016STK")
 	RARGCMD(RARG_CF,	"CF")
+	NILIC(OP_CLFLAGS,	"CLFLAG")
+	NILIC(OP_CLSTK,		"CLSTK")
 	NILIC(OP_DATE,		"DATE")
 	RARGCMD(RARG_DEC,	"DEC")
 	NILIC(OP_DROP,		"DROP")
@@ -565,6 +571,7 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_ISZ,	"ISZ")
 	NILIC(OP_NOP,		"NOP")
 	NILIC(OP_PROMPT,	"PROMPT")
+	NILIC(OP_REGCLR,	"R-CLR")
 	NILIC(OP_REGCOPY,	"R-COPY")
 	NILIC(OP_REGSORT,	"R-SORT")
 	NILIC(OP_REGSWAP,	"R-SWAP")
@@ -615,21 +622,19 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_PUTKEY,	"PUTK")
 };
 
-// Marcus: CLP to go in here
-static s_opcode clear_catalogue[] = {
-	NILIC(OP_rCLX,		"CLx")
-	NILIC(OP_CLSTK,		"CLSTK")
-	NILIC(OP_CLALL,		"CLALL")
-	NILIC(OP_CLFLAGS,	"CLFLAG")
-	NILIC(OP_CLREG,		"CLREG")
-	NILIC(OP_REGCLR,	"R-CLR")
-};
-
-static s_opcode matrix_catalogue[] = {
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+static s_opcode internal_catalogue[] = {
+	RARGCMD(RARG_CONST_INT,	"iC")
+	RARGCMD(RARG_INISOLVE,	"SLVI")
+	RARGCMD(RARG_SOLVESTEP,	"SLVS")
+	NILIC(OP_GSBuser,	"XEQUSR")
+#ifdef MATRIX_SUPPORT
 	MON(OP_MAT_ALL,		"M.ALL")
 	MON(OP_MAT_DIAG,	"M.DIAG")
 	DYA(OP_MAT_ROW,		"M.ROW")
 	DYA(OP_MAT_COL,		"M.COL")
+	MON(OP_MAT_RQ,		"M.ROW?")
+	MON(OP_MAT_CQ,		"M.COL?")
 	MON(OP_MAT_TRN,		"M.TRN")
 	TRI(OP_MAT_MUL,		"M.[times]")
 	TRI(OP_MAT_GADD,	"M.+[times]")
@@ -640,6 +645,7 @@ static s_opcode matrix_catalogue[] = {
 	NILIC(OP_MAT_ROW_MUL,	"M.R*")
 	NILIC(OP_MAT_ROW_GADD,	"M.R+*")
 #endif
+	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
 	NILIC(OP_MAT_INVERSE,	"M.INV")
 	TRI(OP_MAT_LIN_EQN,	"M.LIN")
 	MON(OP_MAT_DET,		"M.DET")
@@ -650,14 +656,7 @@ static s_opcode matrix_catalogue[] = {
 	NILIC(OP_MAT_ZERO,	"M.ZERO")
 	NILIC(OP_MAT_IDENT,	"M.IDEN")
 #endif
-};
-
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-static s_opcode internal_catalogue[] = {
-	RARGCMD(RARG_CONST_INT,	"iC")
-	RARGCMD(RARG_INISOLVE,	"SLVI")
-	RARGCMD(RARG_SOLVESTEP,	"SLVS")
-	NILIC(OP_GSBuser,	"XEQUSR")
+#endif
 };
 #endif
 
@@ -701,6 +700,8 @@ static s_opcode mode_catalogue[] = {
 };
 
 static s_opcode alpha_catalogue[] = {
+	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLREG,		"CLREG")
 	NILIC(OP_ALPHADATE,	"\240DATE")
 	NILIC(OP_ALPHADAY,	"\240DAY")
 	RARGCMD(RARG_AIP,	"\240IP")
@@ -1026,8 +1027,6 @@ int main(int argc, char *argv[]) {
 	CAT(mode_catalogue);
 	CAT(alpha_catalogue);
 	CAT(conv_catalogue);
-	CAT(clear_catalogue);
-	CAT(matrix_catalogue);
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CAT(internal_catalogue);
 #endif

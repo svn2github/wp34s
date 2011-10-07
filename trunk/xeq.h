@@ -592,12 +592,14 @@ enum {
 #ifdef INCLUDE_MANTISSA
 	OP_MANTISSA, OP_EXPONENT,
 #endif
+#ifdef MATRIX_SUPPORT
 	OP_MAT_ALL, OP_MAT_DIAG,
 	OP_MAT_TRN,
 	OP_MAT_RQ, OP_MAT_CQ, OP_MAT_IJ,
 	OP_MAT_DET,
 #ifdef MATRIX_LU_DECOMP
 	OP_MAT_LU,
+#endif
 #endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
@@ -638,7 +640,9 @@ enum {
 #ifdef INCLUDE_XROOT
 	OP_XROOT,
 #endif
+#ifdef MATRIX_SUPPORT
 	OP_MAT_ROW, OP_MAT_COL,
+#endif
 	NUM_DYADIC	// Last entry defines number of operations
 };
 
@@ -651,10 +655,12 @@ enum {
 #endif
 	OP_PERMRR,
 	OP_GEN_LAGUERRE,
+#ifdef MATRIX_SUPPORT
 	OP_MAT_MUL,
 	OP_MAT_GADD,
 	OP_MAT_REG,
 	OP_MAT_LIN_EQN,
+#endif
 	NUM_TRIADIC	// Last entry defines number of operations
 };  
 
@@ -724,11 +730,13 @@ enum nilop {
 
 	OP_Xeq_pos0, OP_Xeq_neg0,
 
+#ifdef MATRIX_SUPPORT
 #ifdef MATRIX_ROWOPS
 	OP_MAT_ROW_SWAP, OP_MAT_ROW_MUL, OP_MAT_ROW_GADD,
 #endif
 	OP_MAT_CHECK_SQUARE,
 	OP_MAT_INVERSE,
+#endif
 #ifdef SILLY_MATRIX_SUPPORT
 	 OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
@@ -861,7 +869,9 @@ enum errors {
 	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
 	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
 	ERR_READ_ONLY,	ERR_SOLVE,
+#ifdef MATRIX_SUPPORT
 	ERR_MATRIX_DIM,	ERR_SINGULAR,
+#endif
 	MAX_ERROR
 };
 
@@ -933,8 +943,6 @@ enum catalogues
 	CATALOGUE_CONST,
 	CATALOGUE_COMPLEX_CONST,
 	CATALOGUE_CONV,
-	CATALOGUE_MATRIX,
-	CATALOGUE_CLEAR,
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CATALOGUE_INTERNAL,
 #endif

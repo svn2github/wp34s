@@ -22,6 +22,7 @@
 #define MAX_DIMENSION	100
 #define MAX_SQUARE	10
 
+#ifdef MATRIX_SUPPORT
 
 static int matrix_idx(int row, int col, int ncols) {
 	return col + row * ncols;
@@ -692,4 +693,5 @@ decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
 	}
 	return r;
 }
+#endif
 #endif

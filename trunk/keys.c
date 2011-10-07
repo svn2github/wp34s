@@ -1735,8 +1735,6 @@ int current_catalogue_max(void) {
 		NUM_CONSTS,
 		NUM_CONSTS,
 		sizeof(conv_catalogue) / sizeof(const s_opcode),
-		sizeof(matrix_catalogue) / sizeof(const s_opcode),
-		sizeof(clear_catalogue) / sizeof(const s_opcode),
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		sizeof(internal_catalogue) / sizeof(const s_opcode),
 #endif
@@ -1781,8 +1779,6 @@ opcode current_catalogue(int n) {
 		NULL,
 		NULL,
 		conv_catalogue,
-		matrix_catalogue,
-		clear_catalogue,
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		internal_catalogue,
 #endif
