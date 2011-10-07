@@ -186,6 +186,23 @@ static s_opcode program_xfcn[] = {
 	MON(OP_SIGN,		"SIGN")
 	RARGCMD(RARG_SL,	"SL")
 	RARGCMD(RARG_SR,	"SR")
+
+#ifdef MATRIX_SUPPORT
+	// Matrix commands
+	MON(OP_MAT_TRN,		"M.TRN")
+	TRI(OP_MAT_MUL,		"M.[times]")
+	TRI(OP_MAT_GADD,	"M.+[times]")
+	NILIC(OP_MAT_INVERSE,	"M.INV")
+	TRI(OP_MAT_LIN_EQN,	"M.LIN")
+	MON(OP_MAT_DET,		"M.DET")
+#ifdef MATRIX_LU_DECOMP
+	MON(OP_MAT_LU,		"M.LU")
+#endif
+#ifdef SILLY_MATRIX_SUPPORT
+	NILIC(OP_MAT_ZERO,	"M.ZERO")
+	NILIC(OP_MAT_IDENT,	"M.IDEN")
+#endif
+#endif
 };
 
 
@@ -314,6 +331,23 @@ static s_opcode catalogue[] = {
 #endif
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
+#endif
+
+#ifdef MATRIX_SUPPORT
+	// Matrix commands
+	MON(OP_MAT_TRN,		"M.TRN")
+	TRI(OP_MAT_MUL,		"M.[times]")
+	TRI(OP_MAT_GADD,	"M.+[times]")
+	NILIC(OP_MAT_INVERSE,	"M.INV")
+	TRI(OP_MAT_LIN_EQN,	"M.LIN")
+	MON(OP_MAT_DET,		"M.DET")
+#ifdef MATRIX_LU_DECOMP
+	MON(OP_MAT_LU,		"M.LU")
+#endif
+#ifdef SILLY_MATRIX_SUPPORT
+	NILIC(OP_MAT_ZERO,	"M.ZERO")
+	NILIC(OP_MAT_IDENT,	"M.IDEN")
+#endif
 #endif
 };
 
@@ -548,6 +582,12 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_ISFLOAT,	"REALM?")
 	NILIC(OP_Xeq_pos0,	"x=+0?")
 	NILIC(OP_Xeq_neg0,	"x=-0?")
+
+#ifdef MATRIX_SUPPORT
+	MON(OP_MAT_RQ,		"M.ROW?")
+	MON(OP_MAT_CQ,		"M.COL?")
+	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
+#endif
 };
 
 static s_opcode prog_catalogue[] = {
@@ -620,6 +660,20 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_RESTORE,	"LOAD")
 	RARGCMD(RARG_FLRCL, 	"RCF")
 	RARGCMD(RARG_PUTKEY,	"PUTK")
+
+#ifdef MATRIX_SUPPORT
+	MON(OP_MAT_ALL,		"M.ALL")
+	MON(OP_MAT_DIAG,	"M.DIAG")
+	DYA(OP_MAT_ROW,		"M.ROW")
+	DYA(OP_MAT_COL,		"M.COL")
+	TRI(OP_MAT_REG,		"M.REG")
+	MON(OP_MAT_IJ,		"M.IJ")
+#ifdef MATRIX_ROWOPS
+	NILIC(OP_MAT_ROW_SWAP,	"M.R<>")
+	NILIC(OP_MAT_ROW_MUL,	"M.R*")
+	NILIC(OP_MAT_ROW_GADD,	"M.R+*")
+#endif
+#endif
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
@@ -628,35 +682,6 @@ static s_opcode internal_catalogue[] = {
 	RARGCMD(RARG_INISOLVE,	"SLVI")
 	RARGCMD(RARG_SOLVESTEP,	"SLVS")
 	NILIC(OP_GSBuser,	"XEQUSR")
-#ifdef MATRIX_SUPPORT
-	MON(OP_MAT_ALL,		"M.ALL")
-	MON(OP_MAT_DIAG,	"M.DIAG")
-	DYA(OP_MAT_ROW,		"M.ROW")
-	DYA(OP_MAT_COL,		"M.COL")
-	MON(OP_MAT_RQ,		"M.ROW?")
-	MON(OP_MAT_CQ,		"M.COL?")
-	MON(OP_MAT_TRN,		"M.TRN")
-	TRI(OP_MAT_MUL,		"M.[times]")
-	TRI(OP_MAT_GADD,	"M.+[times]")
-	TRI(OP_MAT_REG,		"M.REG")
-	MON(OP_MAT_IJ,		"M.IJ")
-#ifdef MATRIX_ROWOPS
-	NILIC(OP_MAT_ROW_SWAP,	"M.R<>")
-	NILIC(OP_MAT_ROW_MUL,	"M.R*")
-	NILIC(OP_MAT_ROW_GADD,	"M.R+*")
-#endif
-	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
-	NILIC(OP_MAT_INVERSE,	"M.INV")
-	TRI(OP_MAT_LIN_EQN,	"M.LIN")
-	MON(OP_MAT_DET,		"M.DET")
-#ifdef MATRIX_LU_DECOMP
-	MON(OP_MAT_LU,		"M.LU")
-#endif
-#ifdef SILLY_MATRIX_SUPPORT
-	NILIC(OP_MAT_ZERO,	"M.ZERO")
-	NILIC(OP_MAT_IDENT,	"M.IDEN")
-#endif
-#endif
 };
 #endif
 
