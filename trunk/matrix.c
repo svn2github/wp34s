@@ -101,8 +101,9 @@ void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber x;
 
 	getX(&x);
-	if (matrix_decompose(&x, &r, &c, NULL) >= 0 && r != c)
-		err(ERR_MATRIX_DIM);
+	if (matrix_decompose(&x, &r, &c, NULL) < 0)
+		return;
+	fin_tst(r != c);
 }
 
 #ifdef SILLY_MATRIX_SUPPORT
