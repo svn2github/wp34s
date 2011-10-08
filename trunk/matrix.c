@@ -63,7 +63,7 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 		u = 1;
 	if (up)		*up = u;
 
-	dn_multiply(&y, x, &const_10000);
+	dn_mulpow10(&y, x, 4);
 	n = dn_to_int(&y);
 	base = (n / 10000) % 100;
 	c = n % 100;
@@ -683,7 +683,7 @@ decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
 	decNumberZero(r);
 	for (i=0; i<n; i++) {
 		int_to_dn(&t, pivots[i]);
-		dn_multiply(&u, r, &const_10);
+		dn_mulpow10(&u, r, 1);
 		dn_add(r, &u, &t);
 	}
 

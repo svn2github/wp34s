@@ -549,7 +549,7 @@ static void hms_step(decNumber *res, decNumber *x, unsigned int *v) {
 
 	decNumberMod(&n, x, &const_100);
 	*v = dn_to_int(&n);
-	dn_divide(&n, x, &const_100);
+	dn_mulpow10(&n, x, -2);
 	decNumberTrunc(res, &n);
 }
 
@@ -608,7 +608,7 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 	}
 
 	decNumberHR2HMS(&y, &x);
-	dn_multiply(&t, &y, &const_1e6);
+	dn_mulpow10(&t, &y, 6);
 	decNumberRound(&u, &t);
 
 	hms_step(&t, &u, &fs);
@@ -640,12 +640,10 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 	// j += SEGS_PER_EXP_DIGIT;
 
 	// Check for values too big or small
-	dn_compare(&x, &const_9000, &a);
-	if (dn_le0(&x)) {
+	if (dn_le0(dn_compare(&x, &const_9000, &a))) {
 		res = set_dig_s(exp_last, 'o', res);
 	} else if (! decNumberIsZero(&a)) {
-		dn_compare(&x, &a, &const_0_0000005);
-		if (decNumberIsNegative(&x)) {
+		if (decNumberIsNegative(dn_compare(&x, &a, &const_0_0000005))) {
 			res = set_dig_s(exp_last, 'u', res);
 		}
 	}

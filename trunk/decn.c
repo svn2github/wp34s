@@ -114,7 +114,6 @@ decNumber *dn_exp(decNumber *r, const decNumber *a) {
 }
 
 
-
 /* Define a table of small integers.
  * This should be equal or larger than any of the summation integers required in the
  * various series approximations to avoid needless computation.
@@ -149,7 +148,7 @@ void ullint_to_dn(decNumber *x, unsigned long long int n) {
 				dn_multiply(&z, &p10, small_ints[r]);
 				dn_add(x, x, &z);
 			}
-			dn_multiply(&p10, &p10, &const_10);
+			dn_mulpow10(&p10, &p10, 1);
 		}
 	}
 }
@@ -296,11 +295,21 @@ decNumber *dn_div2(decNumber *r, const decNumber *x) {
 }
 
 decNumber *dn_mul100(decNumber *r, const decNumber *x) {
+#ifdef DECNUMBER
+	return dn_mulpow10(r, x, 2);
+#else
 	return dn_multiply(r, x, &const_100);
+#endif
 }
 
 decNumber *dn_mulPI(decNumber *r, const decNumber *x) {
 	return dn_multiply(r, x, &const_PI);
+}
+
+decNumber *dn_mulpow10(decNumber *r, const decNumber *x, int p) {
+	decNumberCopy(r, x);
+	r->exponent += p;
+	return r;
 }
 
 
@@ -2113,7 +2122,7 @@ decNumber *decNumberPercent(decNumber *res, const decNumber *x) {
 	decNumber y, z;
 
 	getY(&y);
-	dn_divide(&z, &y, &const_100);
+	dn_mulpow10(&z, &y, -2);
 	return dn_multiply(res, &z, x);
 }
 
@@ -2605,7 +2614,7 @@ void dn_elliptic(decNumber *sn, decNumber *cn, decNumber *dn, const decNumber *u
 	for (;;) {
 		dn_add(&g, mu(n), nu(n));
 		dn_abs(&a, &g);
-		dn_multiply(&b, &a, &const_1e_32);
+		dn_mulpow10(&b, &a, 32);
 		dn_mul2(&a, &b);
 		dn_subtract(&e, mu(n), nu(n));
 		dn_abs(&f, &e);

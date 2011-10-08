@@ -1903,7 +1903,7 @@ decNumber *convDB2PR(decNumber *r, const decNumber *x) {
 decNumber *convPR2DB(decNumber *r, const decNumber *x) {
 	decNumber t;
 	dn_log10(&t, x);
-	return dn_multiply(r, &t, &const_10);
+	return dn_mulpow10(r, &t, 1);
 }
 
 /* Scale conversions */
@@ -2246,7 +2246,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 		dn_subtract(&u, &f, &n);		// u = .fffii
 		if (decNumberIsNegative(&x))
 			dn_minus(&n, &n);
-		dn_multiply(&i, &u, &const_1000);	// i = fff.ii
+		dn_mulpow10(&i, &u, 3);			// i = fff.ii
 		decNumberTrunc(&f, &i);			// f = fff
 		dn_subtract(&i, &i, &f);		// i = .ii		
 		dn_mul100(&x, &i);

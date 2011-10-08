@@ -719,7 +719,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 			dn_add(&v, r, &const_0_001);
 			(*cdf)(&x, &v, arg1, arg2);
 			dn_subtract(&v, &x, &w);
-			dn_multiply(&x, &v, &const_1000);
+			dn_mulpow10(&x, &v, 3);
 		} else
 			(*pdf)(&x, r, arg1, arg2);
 		if (decNumberIsZero(&x))

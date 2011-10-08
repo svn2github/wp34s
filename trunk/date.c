@@ -276,7 +276,7 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day) {
 	case DATE_MDY:
 		m = ip;
 		d = fp;
-year:		dn_multiply(&a, &z, &const_10000);
+year:		dn_mulpow10(&a, &z, 4);
 		decNumberTrunc(&z, &a);
 		y = dn_to_int(&z);
 		break;
@@ -674,10 +674,10 @@ void date_time(decimal64 *r, decimal64 *nul, enum nilop op) {
 
 	query_time(&s, &m, &h);
 	int_to_dn(&a, s);
-	dn_divide(&b, &a, &const_100);
+	dn_mulpow10(&b, &a, -2);
 	int_to_dn(&a, m);
 	dn_add(&c, &a, &b);
-	dn_divide(&b, &c, &const_100);
+	dn_mulpow10(&b, &c, -2);
 	int_to_dn(&a, h);
 	dn_add(&c, &b, &a);
 	packed_from_number(r, &c);
