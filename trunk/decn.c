@@ -2151,7 +2151,7 @@ decNumber *decNumberPertot(decNumber *res, const decNumber *x) {
 decNumber *decNumberPerMargin(decNumber *res, const decNumber *y, const decNumber *x) {
 	decNumber a, b;
 
-	dn_multiply(&a, x, &const_0_01);
+	dn_mulpow10(&a, x, -2);
 	dn_1m(&b, &a);
 	return dn_divide(res, y, &b);
 }
@@ -2184,7 +2184,8 @@ decNumber *decNumberHMS2HR(decNumber *res, const decNumber *x) {
 	dn_mul100(&s, &t);			// s = mm.ss
 	decNumberTrunc(&m, &s);			// m = mm
 	decNumberFrac(&t, &s);			// t = .ss
-	dn_multiply(&s, &t, &const_100on60);	// s = ss.sss / 60
+	dn_multiply(&s, &t, &const_1on60);	// s = ss.sss / 60
+	dn_mulpow10(&s, &s, 2);
 	dn_add(&t, &m, &s);			// s = mm + ss.sss / 60
 	dn_multiply(&m, &t, &const_1on60);
 	decNumberTrunc(&s, x);			// s = hh
@@ -2196,12 +2197,12 @@ decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x) {
 	decNumber m, s, t;
 
 	decNumberFrac(&t, x);			// t = .mmssss
-	dn_multiply(&s, &t, &const_60);	// s = mm.ssss
+	dn_multiply(&s, &t, &const_60);		// s = mm.ssss
 	decNumberTrunc(&m, &s);			// m = mm
 	decNumberFrac(&t, &s);			// t = .ssss
 	dn_multiply(&s, &t, &const_0_6);	// scale down by 60/100
 	dn_add(&t, &s, &m);			// t = mm.ss
-	dn_multiply(&m, &t, &const_0_01);	// t = .mmss
+	dn_mulpow10(&m, &t, -2);		// t = .mmss
 	decNumberTrunc(&s, x);			// s = hh
 	dn_add(res, &m, &s);			// res = hh.mmss
 	return res;

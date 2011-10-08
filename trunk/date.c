@@ -205,23 +205,23 @@ static decNumber *build_date(decNumber *res, int year, int month, int day) {
 
 	switch (UState.date_mode) {
 	case DATE_YMD:
-		dn_multiply(&x, &d, &const_0_01);
+		dn_mulpow10(&x, &d, -2);
 		dn_add(&d, &x, &m);
-		dn_multiply(&x, &d, &const_0_01);
+		dn_mulpow10(&x, &d, -2);
 		dn_add(res, &y, &x);
 		break;
 
 	case DATE_DMY:
-		dn_multiply(&x, &y, &const_0_0001);
+		dn_mulpow10(&x, &y, -4);
 		dn_add(&y, &m, &x);
-		dn_multiply(&x, &y, &const_0_01);
+		dn_mulpow10(&x, &y, -2);
 		dn_add(res, &d, &x);
 		break;
 
 	case DATE_MDY:
-		dn_multiply(&x, &y, &const_0_0001);
+		dn_mulpow10(&x, &y, -4);
 		dn_add(&y, &d, &x);
-		dn_multiply(&x, &y, &const_0_01);
+		dn_mulpow10(&x, &y, -2);
 		dn_add(res, &m, &x);
 		break;
 	}

@@ -164,7 +164,7 @@ static decNumber *matrix_do_loop(decNumber *r, int low, int high, int step, int 
 		i = (high * 1000 + low) * 100 + step;
 	}
 	int_to_dn(&z, i);
-	dn_multiply(r, &z, &const_0_00001);
+	dn_mulpow10(r, &z, -5);
 	return r;
 }
 

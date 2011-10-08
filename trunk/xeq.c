@@ -1490,7 +1490,7 @@ void op_voltage(decimal64 *a, decimal64 *nul2, enum nilop op) {
 		put_int(v, 0, a);
 	} else {
 		ullint_to_dn(&t, v);
-		dn_multiply(&u, &t, &const_0_1);
+		dn_mulpow10(&u, &t, -1);
 		packed_from_number(a, &u);
 	}
 }
@@ -1896,7 +1896,7 @@ decNumber *convAR2DB(decNumber *r, const decNumber *x) {
 
 decNumber *convDB2PR(decNumber *r, const decNumber *x) {
 	decNumber t;
-	dn_multiply(&t, x, &const_0_1);
+	dn_mulpow10(&t, x, -1);
 	return decNumberPow10(r, &t);
 }
 

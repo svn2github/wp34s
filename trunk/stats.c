@@ -743,7 +743,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 
 		// If this distribution doesn't take negative values, limit outselves to positive ones
 		if (nonnegative && decNumberIsNegative(r))
-			dn_multiply(r, &z, &const_0_00001);
+			dn_mulpow10(r, &z, -5);
 
 		// Check for finished
 		if (discrete) {
