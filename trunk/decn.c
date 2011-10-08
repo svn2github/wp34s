@@ -331,30 +331,45 @@ int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol)
  */
 #ifdef INCLUDE_MANTISSA
 decNumber *decNumberMantissa(decNumber *r, const decNumber *x) {
-	decNumber e, p;
-
 	if (decNumberIsSpecial(x))
 		return set_NaN(r);
 	if (decNumberIsZero(x))
 		return decNumberCopy(r, x);
-	decNumberExponent(&e, x);
-	dn_minus(&e, &e);
-	decNumberPow10(&p, &e);
-	return dn_multiply(r, &p, x);
+#ifdef DECNUMBER
+	decNumberCopy(r, x);
+	r->exponent = 1 - r->digits;
+	return r;
+#else
+	{
+		decNumber e, p;
+
+		decNumberExponent(&e, x);
+		dn_minus(&e, &e);
+		decNumberPow10(&p, &e);
+		return dn_multiply(r, &p, x);
+	}
+#endif
 }
 
 /* Exponenet of a number
  */
 decNumber *decNumberExponent(decNumber *r, const decNumber *x) {
-	decNumber z, l;
-
 	if (decNumberIsSpecial(x))
 		return set_NaN(r);
 	if (decNumberIsZero(x))
 		return decNumberZero(r);
-	dn_abs(&z, x);
-	dn_log10(&l, &z);
-	return decNumberFloor(r, &l);
+#ifdef DECNUMBER
+	int_to_dn(r, x->exponent + x->digits - 1);
+	return r;
+#else
+	{
+		decNumber z, l;
+
+		dn_abs(&z, x);
+		dn_log10(&l, &z);
+		return decNumberFloor(r, &l);
+	}
+#endif
 }
 #endif
 
