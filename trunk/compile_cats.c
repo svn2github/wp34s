@@ -202,6 +202,7 @@ static s_opcode program_xfcn[] = {
 	NILIC(OP_MAT_ZERO,	"M.ZERO")
 	NILIC(OP_MAT_IDENT,	"M.IDEN")
 #endif
+	DYA(OP_MAT_COPY,	"M.COPY")
 #endif
 };
 
@@ -348,6 +349,7 @@ static s_opcode catalogue[] = {
 	NILIC(OP_MAT_ZERO,	"M.ZERO")
 	NILIC(OP_MAT_IDENT,	"M.IDEN")
 #endif
+	DYA(OP_MAT_COPY,	"M.COPY")
 #endif
 };
 

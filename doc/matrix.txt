@@ -139,6 +139,10 @@ M.ZERO						Optional: SILLY_MATRIX_SUPPORT
 	Takes a matrix descriptor in X and zeros the registers
 	corresponding to the matrix.  The stack remains unchanged.
 
+M.COPY
+	Takes a matrix descriptor in Y and a register number in X.
+	Copies the matrix into registers starting from X.  Returns
+	a properly formed matrix descriptor in X.
 
 M.DET
 	Takes a matrix descriptor in X and return the determinant

@@ -642,6 +642,7 @@ enum {
 #endif
 #ifdef MATRIX_SUPPORT
 	OP_MAT_ROW, OP_MAT_COL,
+	OP_MAT_COPY,
 #endif
 	NUM_DYADIC	// Last entry defines number of operations
 };

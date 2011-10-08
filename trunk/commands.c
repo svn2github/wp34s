@@ -342,6 +342,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M.ROW")
 	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M.COL")
+	FUNC(OP_MAT_COPY, &matrix_copy,		NOFN,		NOFN,		"M.COPY")
 #endif
 #undef FUNC
 };

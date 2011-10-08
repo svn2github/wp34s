@@ -41,8 +41,8 @@ static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 		err(ERR_RANGE);
 		return 0;
 	}
-	int_to_dn(&z, (base * 100 + cols) * 100 + rows);
-	dn_multiply(r, &z, &const_0_0001);
+	int_to_dn(&z, (base * 100 + rows) * 100 + cols);
+	dn_mulpow10(r, &z, -4);
 	return 1;
 }
 
@@ -135,6 +135,24 @@ void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	}
 }
 #endif
+
+/* Matrix copy
+ */
+decNumber *matrix_copy(decNumber *r, const decNumber *y, const decNumber *x) {
+	decimal64 *src;
+	int rows, cols, d;
+
+	src = matrix_decomp(y, &rows, &cols);
+	if (src == NULL)
+		return NULL;
+
+	d = dn_to_int(x);
+	if (matrix_descriptor(r, d, rows, cols) == 0)
+		return NULL;
+	xcopy(get_reg_n(d), src, rows * cols * sizeof(decimal64));
+	return r;
+}
+
 
 static decNumber *matrix_do_loop(decNumber *r, int low, int high, int step, int up) {
 	decNumber z;

@@ -33,6 +33,7 @@ extern decNumber *matrix_getrc(decNumber *r, const decNumber *x);
 extern void matrix_rowops(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern decNumber *matrix_copy(decNumber *r, const decNumber *y, const decNumber *x);
 
 extern decNumber *matrix_determinant(decNumber *r, const decNumber *x);
 extern decNumber *matrix_lu_decomp(decNumber *r, const decNumber *x);
