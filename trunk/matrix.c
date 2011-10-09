@@ -321,6 +321,7 @@ decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNumber *b,
 	if (matrix_descriptor(r, creg, arows, bcols) == 0)
 		return NULL;
 
+        busy();
 	for (i=0; i<arows; i++)
 		for (j=0; j<bcols; j++) {
 			decNumberZero(&sum);
@@ -448,6 +449,7 @@ static int LU_decomposition(decimal128 *A, unsigned char *pivots, const int n) {
 	decimal128 *p1, *p2;
 	decNumber max, t, u;
 
+        busy();
 	for (k=0; k<n; k++) {
 		/* Find the pivot row */
 		pvt = k;
