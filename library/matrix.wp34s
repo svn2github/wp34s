@@ -174,3 +174,60 @@ drop_y::		x[<->]y
 			DROP
 			RTN
 
+
+/* Minimal matrix editor
+ *  Usage:  
+ *    
+ *    Review/Enter the elements of an entire matrix
+ *    BB.RRCC // Matrix descriptor
+ *    XEQ'MIO'
+ *    ---> Review and/or enter each element then [R/S]
+ *         until the end of the matrix
+ *
+ *    Review/Enter an individual element of a matrix
+ *    BB.RRCC // Matrix descriptor
+ *    XEQ'MRC'
+ *    Row number (i)
+ *    [ENTER] Column number (j)
+ *    [R/S]
+ *    Review and/or enter Element value in X
+ *    [R/S]
+ *    
+ *    Notes:- The matrix descriptor is in Last x. You can recall it and
+ *    do further editing.
+ *    
+ *  Resources:
+ *    
+ *    Flags none
+ *    
+ *    Registers I: Index to acces elements through the matrix
+ */
+
+		LBL'MIO'	//-- Works on entire matrix elements 
+		M.ALL 
+		STO I 
+mio_loop::	RCL I 
+		RCL L 
+		M.IJ 
+		CL[alpha] 	// shows the next element indexes 
+		[alpha] ( 
+		[alpha]IP X 
+		[alpha] , 
+		[alpha]IP Y 
+		[alpha] ) 
+		RCL[->]I 
+		PROMPT 
+		STO[->]I 	// Store element to keep any change 
+		ISG I 
+		JMP mio_loop	// End of the loop through the matrix 
+		CL[alpha] 
+		RTN
+		LBL'MRC'	//-- Works on one chosen matrix element 
+		CL[alpha] 
+		[alpha]'R|C' 
+		PROMPT 
+		x[<->]y 
+		RCL Z 
+		M.REG 
+		STO I 
+		JMP mio_loop
