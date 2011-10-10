@@ -66,29 +66,90 @@ m_add_sub_common::	x[<->] Z
 			M.+[times]
 			RTN
 
-/* Matrix Transpose multiply
+/* Scalar multiply
  */
-			LBL'M`[times]'
-			[cmplx]x[<->]y
-			M.TRN
-			[cmplx]x[<->]y
-			M.[times]
+			LBL'M.y'
+			ABS
+			M.ALL
+			x[<->]y
+m_scalar_mult::		STO[times][->]Y
+			ISG Y
+			JMP m_scalar_mult
+			[cmplx]DROP
 			RTN
-
 
 /* Maxtrix norm.
  * Uses stack.
  */
-			LBL'MNM'
+			LBL'FNM'
+			ABS
+			+/-
 			M.ALL
-			iC 0
-m_norm_loop::		RCL[->]Y
-			x[^2]
-			+
-			ISG Y
-			JMP m_norm_loop
+			[SIGMA] m_frob_sum
 			[sqrt]
-			JMP drop_y
+			RTN
+m_frob_sum::		x[^2]
+			RTN
+
+
+/* Maxtrix row and column norms.
+ * Uses stack + A, B, C and D.
+ */
+			LBL'RNM'
+			SF C
+			JMP m_norm_common
+
+			LBL'CMN'
+			CF C
+m_norm_common::		STOM B			/* save mode settings */
+			SSIZE4
+			ABS
+			+/-
+			STO C			/* save matrix descriptor */
+			iC 0
+			STO A
+			iC 1
+			RCL Z
+			FS? C
+			M.COL
+			FC? C
+			M.ROW
+			STO D
+m_norm_loop::		[cmplx]RCL C
+			M.IJ
+			FS? C
+			x[<->]y
+			DROP
+			RCL C
+			FS? C
+			M.ROW
+			FC? C
+			M.COL
+			[SIGMA] m_norm_sum
+			STO[^] A
+			DSL D
+			JMP m_norm_loop
+			RCL A
+			RCLM B
+			CF C
+			RTN
+
+m_norm_sum::		RCL[->]X
+			ABS
+			RTN
+
+/* Find a specified element in a matrix
+ */
+ 			LBL'MFD'
+			ABS
+			M.ALL
+			x[<->]y
+m_find_loop::		x=?[->]Y
+			JMP m_found
+			ISG Y
+			JMP m_find_loop
+m_found::		DROP
+			RTN
 
 /* Maximum & minimum elements in a matrix
  * Uses stack.
