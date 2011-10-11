@@ -3415,53 +3415,43 @@ void xeqprog(void)
 	}
 }
 
-/* Single step routine
+/* Single step and back step routine
  */
-void xeqone(char *tracebuf) {
-	const opcode op = getprog(state_pc());
-#ifndef REALBUILD
-	unsigned int trace = State2.trace;
-#endif
+void xeq_sst_bst(char *tracebuf, int kind) 
+{
+	opcode op;
 
-	set_running_on_sst();
-#ifndef REALBUILD
-	State2.trace = 0;
-#endif
-	print_step(tracebuf, op);
-	DispMsg = tracebuf;
-	State2.disp_small = 1;
-	incpc();
-	xeq(op);
-
-	xeq_xrom();
-
-	set_running_off_sst();
-#ifndef REALBUILD
-	State2.trace = trace;
-#endif
-}
-
-/* Single step
- */
-void xeq_sst(char *tracebuf) {
 	reset_volatile_state();
-	if (State2.runmode)
-		xeqone(tracebuf);
-	else
+	if (kind == -1)
+		decpc();
+	op = getprog(state_pc());
+
+	if (State2.runmode) {
+		// Display the step
+		State2.disp_small = 1;
+		print_step(tracebuf, op);
+		DispMsg = tracebuf;
+		if (kind == 1) {
+			// Execute the step on key up
+#ifndef REALBUILD
+			unsigned int trace = State2.trace;
+			State2.trace = 0;
+#endif
+			set_running_on_sst();
+			incpc();
+			xeq(op);
+			xeq_xrom();
+			set_running_off_sst();
+#ifndef REALBUILD
+			State2.trace = trace;
+#endif
+		}
+	}
+	else if (kind == 0)
+		// Key down in program mode
 		incpc();
 }
 
-/* Back step
- */
-void xeq_bst(char *tracebuf) {
-	reset_volatile_state();
-	decpc();
-	if (State2.runmode) {
-		State2.disp_small = 1;
-		print_step(tracebuf, getprog(state_pc()));
-		DispMsg = tracebuf;
-	}
-}
 
 /* Store into program space.
  */

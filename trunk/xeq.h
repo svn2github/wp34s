@@ -960,6 +960,7 @@ enum shifts {
 
 
 #define K_HEARTBEAT 99			// Pseudo key, "pressed" every 100ms
+#define K_RELEASE 98			// Pseudo key, sent on key release
 
 /*
  *  All more or less persistent global data
@@ -1092,8 +1093,7 @@ int row_column_to_keycode(const int c);
 
 
 /* Control program execution */
-extern void xeq_sst(char *tracebuf);
-extern void xeq_bst(char *tracebuf);
+extern void xeq_sst_bst(char *tracebuf, int kind);
 
 /* Command functions */
 extern void version(decimal64 *nul1, decimal64 *nul2, enum nilop op);

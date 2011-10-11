@@ -40,9 +40,6 @@
 #define TEST_GT		4
 #define TEST_GE		5
 
-static void advance_to_next_label(unsigned int pc);
-
-
 enum confirmations {
 	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog
 };
@@ -50,6 +47,12 @@ enum confirmations {
 enum shifts cur_shift(void) {
 	return (enum shifts) State2.shifts;
 }
+
+/* Local data to this module */
+static unsigned short int OpCode;
+
+
+static void advance_to_next_label(unsigned int pc);
 
 /*
  * Mapping from the key code to a linear index
@@ -2184,6 +2187,15 @@ static int process(const int c) {
 		 *  This is totally thread safe!
 		 */
 
+		if (OpCode != 0 && Keyticks > 30) {
+			/*
+			 *  Key is too long held down
+			 */
+			OpCode = 0;
+			DispMsg = "NULL";
+			display();
+		}
+
 		/*
 		 *  Toggle the RPN annunciator as a visual feedback
 		 *  While the display is frozen, the annunciator stays cleared.
@@ -2349,40 +2361,65 @@ void process_keycode(int c) {
 	char tracebuf[25];
 
 	xeq_init_contexts();
-	c = process(c);
-	switch (c) {
-	case STATE_SST:
-		xeq_sst(tracebuf);
-		break;
 
-	case STATE_BST:
-		xeq_bst(tracebuf);
-		break;
-
-	case STATE_BACKSPACE:
-		if (! State2.runmode)
-			delprog();
-		else if (State2.alphas) {
-			char *p = find_char(Alpha, '\0');
-			if (p > Alpha)
-				*--p = '\0';
+	if (c == K_RELEASE) {
+		if (OpCode != 0) {
+			// Execute the key on release
+			c = OpCode;
+			OpCode = 0;
+			if ( c == STATE_SST ) {
+				xeq_sst_bst(tracebuf, 1);
+			}
+			else if (State2.runmode) {
+				xeq(c);
+				if ( Running || Pause )
+					xeqprog();
+			} 
+			else {
+				stoprog(c);
+			}
 		}
-		break;
+	}
+	else {
+		 // decode the key
+		c = process(c);
+		switch (c) {
+		case STATE_SST:
+			xeq_sst_bst(tracebuf, 0);
+			OpCode = c;
+			break;
 
-	case STATE_RUNNING:
-		xeqprog();  // continue execution
-		break;
+		case STATE_BST:
+			xeq_sst_bst(tracebuf, -1);
+			break;
 
-	case STATE_UNFINISHED:
-	case STATE_IGNORE:
-		break;
+		case STATE_BACKSPACE:
+			if (! State2.runmode)
+				delprog();
+			else if (State2.alphas) {
+				char *p = find_char(Alpha, '\0');
+				if (p > Alpha)
+					*--p = '\0';
+			}
+			break;
 
-	default:
-		if (State2.runmode) {
-			xeq(c);
-			xeqprog();
-		} else
-			stoprog(c);
+		case STATE_RUNNING:
+			xeqprog();  // continue execution
+			break;
+
+		case STATE_UNFINISHED:
+		case STATE_IGNORE:
+			break;
+
+		default:
+			// Save the op-code for execution on key-up
+			OpCode = c;
+			// Show it to the user
+			if (DispMsg == NULL) {
+				scopy_char(tracebuf, prt(c, tracebuf), '\0');
+				DispMsg = tracebuf;
+			}
+		}
 	}
 #if defined(REALBUILD) || defined(WINGUI)
 	if (!Running && !Pause && !JustStopped && c != STATE_IGNORE) {

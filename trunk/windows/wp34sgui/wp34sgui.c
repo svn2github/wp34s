@@ -128,7 +128,9 @@ void KeyPress( int i )
 			process_keycode( K_F );
 	}
 	process_keycode( i );
-	if ( i != K_HEARTBEAT ) Keyticks = 0;
+	if ( i != K_HEARTBEAT && i != K_RELEASE ) {
+		Keyticks = 0;
+	}
 }
 
 void UpdateScreen( bool forceUpdate )

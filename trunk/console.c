@@ -490,9 +490,12 @@ skipargs:
 			} else if (c == CH_REFRESH) {
 				clear();
 				display();
-			} else
+			} else 
 #endif
+			{
 				process_keycode(remap(c));
+				process_keycode(K_RELEASE);
+			}
 		}
 		setuptty(1);
 	}

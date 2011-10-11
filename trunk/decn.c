@@ -552,7 +552,7 @@ decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y) {
 }
 
 
-/* The extra logrithmetic and power functions */
+/* The extra logarithm and power functions */
 
 /* Raise y^x */
 decNumber *dn_power(decNumber *r, const decNumber *y, const decNumber *x) {
@@ -2936,7 +2936,7 @@ decNumber *decNumberBSKN(decNumber *res, const decNumber *alpha, const decNumber
 #endif
 
 
-/* Sovler code from here */
+/* Solver code from here */
 
 
 /* Secant iteration */
@@ -2951,7 +2951,7 @@ static void solve_secant(decNumber *s, const decNumber *a, const decNumber *b, c
 }
 
 /* A third of the inverse quadratic interpolation step.
- * Return non-zero is one ofthe denominators is zero.
+ * Return non-zero is one of the denominators is zero.
  */
 static int qstep(decNumber *r, const decNumber *a, const decNumber *fb, const decNumber *fc, const decNumber *fa) {
 	decNumber x, y, z;

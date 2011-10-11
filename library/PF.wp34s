@@ -1,0 +1,38 @@
+/*
+  Prim-Faktor-Zerlegung (Prime Factorization)
+
+  Input:  X:n (positive integer)
+  Output: X:pf1 [R/S] pf2 [R/S] ... [R/S] 0 (L:n)
+  Used:   XYZT, IK
+*/
+
+001 LBL'PF'
+002 INT?
+003 x<1?
+004 RTN
+005 STO K
+006 2
+007 RCL Y
+008 [sqrt]
+009 IP
+010 STO I
+011 DROP
+012 x>? I
+013 SKIP 11
+014 [cmplx]ENTER
+015 RMDR
+016 x=0?
+017 SKIP 03
+018 DROP
+019 NEXTP
+020 BACK 08
+021 DROP
+022 STOP
+023 STO/ Y
+024 BACK 17
+025 DROP
+026 STOP
+027 CLSTK
+028 x[<->] K
+029 [times]
+030 RTN

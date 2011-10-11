@@ -813,6 +813,9 @@ void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
     m_rgnPressedButton = Skin.hpGetKeyRegion(wKeyCode, m_bShiftKeyPressed, &key);
   }
   if (m_rgnPressedButton != 0 && key >= 0 && System.KeyboardMap & ((u64)1 << key)) {
+#ifdef wp34s
+    keypress(98);
+#endif
     HDC hDC = ::GetDC(m_Background.m_hWnd);
     InvertRgn(hDC, m_rgnPressedButton);
     ::ReleaseDC(m_Background.m_hWnd, hDC);
@@ -853,6 +856,9 @@ void CHP20b_cDlg::OnLButtonUp(UINT nFlags, CPoint point)
   if (NULL != m_rgnPressedButton && MOUSE == m_Touch_Base) {
     HDC   hDC =::GetDC(m_Background.m_hWnd);
 
+#ifdef wp34s
+    keypress( 98 );
+#endif
     InvertRgn(hDC, m_rgnPressedButton);
     ::ReleaseDC(m_Background.m_hWnd, hDC);
     DeleteObject(m_rgnPressedButton);
