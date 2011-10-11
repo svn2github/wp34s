@@ -19,7 +19,8 @@ where:
 
 
 
-The commands:
+Matrix commands
+---------------
 
 M.TRN - matrix transpose.
 
@@ -98,13 +99,16 @@ M.ALL
 	for positive.
 
 M.DIAG
+
 	Takes a matrix descriptor in X and returns a value suitable
 	for ISG or DSL looping in X (and sets last X appropriately).
 	The loop processes all elements along the matrix diagonal.
 	The loop index is DSL if the descriptor is negative and ISG
 	for positive.
 
+
 M.ROW
+
 	Takes a matrix descriptor in X and a row number in Y.  It
 	returns a value suitable for looping in X (dropping the
 	stack and setting last x like all two argument commands).
@@ -112,43 +116,61 @@ M.ROW
 	The loop index is DSL if the descriptor is negative and ISG
 	for positive.
 
+
 M.COL
+
 	Takes a matrix descriptor in X and a column number in Y.
 	It returns a value suitable for looping in X (again acting
 	like a two argument command).  The loop processes all
 	elements in the specified column only.  The loop index is
 	DSL if the descriptor is negative and ISG for positive.
 
+
 M.ROW?
+
 	Takes a matrix descriptor in X and returns the number of
 	rows in the matrix.  The descriptor is saved in LastX.
 
+
 M.COL?
+
 	Takes a matrix descriptor in X and returns the number of
 	columns in the matrix.  The descritpor is saved in LastX.
 
+
 M.SQR?
+
 	Takes a matrix descriptor in X and generates an error if
 	it isn't square.  Does nothing if it is.
 
-M.IDEN						Optional: SILLY_MATRIX_SUPPORT
+
+M.IDEN		Not included			Optional: SILLY_MATRIX_SUPPORT
+
 	Takes a matrix descriptor for a square matrix in X and fills
 	the corresponding registers so that it is an identity matrix.
 
-M.ZERO						Optional: SILLY_MATRIX_SUPPORT
+
+M.ZERO		Not included			Optional: SILLY_MATRIX_SUPPORT
+
 	Takes a matrix descriptor in X and zeros the registers
 	corresponding to the matrix.  The stack remains unchanged.
 
+
 M.COPY
+
 	Takes a matrix descriptor in Y and a register number in X.
 	Copies the matrix into registers starting from X.  Returns
 	a properly formed matrix descriptor in X.
 
+
 M.DET
+
 	Takes a matrix descriptor in X and return the determinant
 	of the matrix.  The matrix must be square and is not modified.
 
-M.LU						Optional: MATRIX_LU_DECOMP
+
+M.LU		Not included			Optional: MATRIX_LU_DECOMP
+
 	Takes a matrix descriptor in X modify the matrix into its
 	LU decomposition.  The matrix must be square and it is
 	modified in-situ.  The value in X is replaced by a pivot
@@ -157,19 +179,24 @@ M.LU						Optional: MATRIX_LU_DECOMP
 	is the pivot for the first diagonal entry, the next most
 	the second and so forth.
 
+
 M.LIN
+
 	Takes a square matrix descriptor in Z and a vector maxtix
 	descriptor in y and a base register in x and solves the
 	system of linear equations Zx = y.  Returns the filled out
 	matrix descriptor in X.
 
+
 M.INV
+
 	Takes a square matrix descriptor in X and inverts the matrix
 	in-situ.  Doesn't alter the stack.
 
 
 
-Errors:
+Errors
+------
 
 	"Out of Range" is a matrix descriptor would go beyond the
 		registers available or a row or column index is too
@@ -183,3 +210,113 @@ Errors:
 	"Singular Error" if a matrix is LU decomposed, used to solve
 		a system of equations or is inverted when it isn't
 		of full rank.
+
+
+
+Matrix library
+--------------
+
+'M.1'
+
+	Takes a matrix descriptor in X and initialises an identity
+	matrix (1 down the diagonal and zero every were else).  X
+	is preserved, L is overwritten.
+
+
+'M.0'
+
+	Takes a matrix descriptor in X and initialises a zero matrix
+	X is preserved, L is overwritten.
+
+
+'ATR'
+
+	Takes a matrix descriptor in X and returns the sum of the
+	absolute values of the diagonal elements.  Clears flag C.
+	Requires three stack levels, L is overwritten.
+
+
+'TR'
+
+	Takes a matrix descriptor in X and returns the trace of the
+	matrix.  Clears flag C.  Requires three stack levels, L is
+	overwritten.
+
+
+'M-'
+
+	Takes a matrix descriptor in X and Y.  Subtracts matrix Y
+	from matrix X.  Stack levels X and Y are unchanged.  Z is
+	set to -1 and levels above this are lifted one position.
+
+
+'M+'
+
+	Takes a matrix descriptor in X and Y.  Add matrix Y from
+	matrix X.  Stack levels X and Y are unchanged.  Z is set
+	to 1 and levels above this are lifted one position.
+
+
+'M.y'
+
+	Takes a matrix descriptor in X and a scalar constant in y.
+	Multiplies X by y.  The original matrix descriptor is in L
+	on exit.  Both arguments are dropped from the stack.
+
+
+'FNM'
+
+	Takes a matrix descriptor in X.  Calculates the Frobenius
+	norm of the matrix.  Overwrites the stack and L.
+
+
+'RNM'
+
+	Takes a matrix descriptor in X.  Calcualtes the row norm
+	of the matrix.  Overwrites the stack, A, B, C, D and L.
+	Clears flag C.
+
+
+'CNM'
+
+	Takes a matrix descriptor in X.  Calcualtes the column norm
+	of the matrix.  Overwrites the stack, A, B, C, D and L.
+	Clears flag C.
+
+
+'MFD'
+
+	Takes a matrix descriptor in X and a value in Y.  Find the
+	first matching element in the matrix and returns the register
+	number of that element.
+
+
+'M[^]'
+
+	Takes a matrix descriptor in X and returns the maximum value
+	in the matrix.  Uses the two stack levels and overwrites L.
+
+
+'M[v]'
+
+	Takes a matrix descriptor in X and returns the minimum value
+	in the matrix.  Uses the two stack levels and overwrites L.
+
+
+'MIO'
+
+	Review / enter the elements of an entire matrix.  Matrix
+	descriptor in X on entry.  Review and/or modify each element
+	in turn pressing R/S between each.  The original matrix
+	descriptor in left in L.  The stack is overwritten.  I is
+	overwritten.
+
+
+'MRC'
+
+	Review / enter individual elements of a matrix.  Matrix
+	descriptor in X on entry.  For each element, enter the row
+	then the column and press R/S.  Review the element's value
+	and optionally change it then press R/S again.  The original
+	matrix descriptor in left in L.  The stack is overwritten.
+	I is overwritten.
