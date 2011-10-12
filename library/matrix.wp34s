@@ -198,12 +198,13 @@ drop_y::		x[<->] Y
  *    
  *  Resources:
  *    
- *    Flags none
+ *    Flags C
  *    
  *    Registers I: Index to acces elements through the matrix
  */
 
-		LBL'MIO'	//-- Works on entire matrix elements 
+		LBL'MIO'	//-- Works on entire matrix elements
+entry_A::	SF C
 		M-ALL 
 		STO I 
 mio_loop::	RCL I 
@@ -219,15 +220,18 @@ mio_loop::	RCL I
 		PROMPT 
 		STO[->]I 	// Store element to keep any change 
 		ISG I 
-		JMP mio_loop	// End of the loop through the matrix 
-		CL[alpha] 
-		RTN
+		JMP mio_loop	// End of the loop through the matrix
+		RCL L
+		FS? C
+		JMP entry_A
+
 		LBL'MRC'	//-- Works on one chosen matrix element 
+		CF C
 		CL[alpha] 
 		[alpha]'R|C' 
 		PROMPT 
 		x[<->] Y 
 		RCL Z 
 		M-REG 
-		STO I 
+		STO I
 		JMP mio_loop
