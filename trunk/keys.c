@@ -2404,6 +2404,10 @@ void process_keycode(int c)
 					xeqprog();
 			}
 		}
+		else {
+			// Ignore key-up if no operation was pending
+			return;
+		}
 	}
 	else {
 		/*
