@@ -49,7 +49,7 @@ enum shifts cur_shift(void) {
 }
 
 /* Local data to this module */
-static unsigned short int OpCode;
+unsigned short int OpCode;
 char OpCodeDisplayPending;
 
 static void advance_to_next_label(unsigned int pc);
@@ -2410,10 +2410,6 @@ void process_keycode(int c)
 		 *  Decode the key 
 		 */
 		c = process(c);
-		if ( c != 0 && c == OpCode ) {
-			// Ignore repeat
-			return;
-		}
 		switch (c) {
 		case STATE_SST:
 			xeq_sst_bst(0);

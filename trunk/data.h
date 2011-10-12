@@ -295,6 +295,7 @@ extern int PcWrapped;		   // dec() or inc() have rapped around
 extern int ShowRPN;		   // controls the RPN annunciator
 extern const char *DispMsg;	   // What to display in message area
 extern char TraceBuffer[];         // Display current instruction
+extern unsigned short OpCode;      // Pending execution waiting for key-release
 
 
 extern decContext Ctx;

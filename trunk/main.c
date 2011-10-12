@@ -306,8 +306,9 @@ void scan_keyboard( void )
 
 	/*
 	 *  Handle repeating keys (arrows)
+	 *  Repeat is suppressed when a pending operation is waiting for key-up.
 	 */
-	if ( keys.ll == 0 && KbData == KbRepeatKey && KbCount <= 2 ) {
+	if ( keys.ll == 0 && KbData == KbRepeatKey && KbCount <= 2 && OpCode == 0 ) {
 		/*
 		 *  One of the repeating keys is still down
 		 */
