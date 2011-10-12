@@ -1728,12 +1728,14 @@ int main(void)
 				 *  Check for special key combinations.
 				 *  Critical keys have to be pressed twice.
 				 */
-				if ( k != last_key_combo ) {
-					confirm_counter = 1;
-					last_key_combo = k;
-				}
-				else {
-					++confirm_counter;
+				if ( k != K_RELEASE ) {
+					if ( k != last_key_combo ) {
+						confirm_counter = 1;
+						last_key_combo = k;
+					}
+					else {
+						++confirm_counter;
+					}
 				}
 				switch( k ) {
 
@@ -1850,7 +1852,7 @@ int main(void)
 				k = -1;
 			}
 		}
-		if ( ( k != K_HEARTBEAT && k != -1 ) || Running ) {
+		if ( k == K_RELEASE /* ( k != K_HEARTBEAT && k != -1 ) */ || Running ) {
 			/*
 			 *  Increase the speed of operation
 			 */

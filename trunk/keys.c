@@ -2410,6 +2410,10 @@ void process_keycode(int c)
 		 *  Decode the key 
 		 */
 		c = process(c);
+		if ( c != 0 && c == OpCode ) {
+			// Ignore repeat
+			return;
+		}
 		switch (c) {
 		case STATE_SST:
 			xeq_sst_bst(0);
