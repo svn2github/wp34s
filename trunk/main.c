@@ -148,7 +148,7 @@ signed char KeyBuffer[ KEY_BUFF_LEN ];
 volatile char KbRead, KbWrite, KbCount;
 volatile char OnKeyPressed;
 short int KbRepeatCount;
-long long KbData, KbDebounce, KbRepeatKey;
+long long KbData, KbDebounce, KbRepeatKey, KbLastDecoded;
 short int BodThreshold;
 short int BodTimer;
 
@@ -330,10 +330,24 @@ void scan_keyboard( void )
 		KbRepeatKey = keys.ll & KEY_REPEAT_MASK;
 	}
 
-	if ( keys.ll != 0 ) {
+	if ( keys.ll == 0 ) {
+		/*
+		 *  Test for key-up
+		 */
+		if ( KbLastDecoded != 0 && ( KbLastDecoded & KbData ) == 0 ) {
+			/*
+			 *  The key which was sent last is no longer pressed
+			 */
+			put_key( K_RELEASE );
+			KbLastDecoded = 0;
+		}
+	}
+	else {
 		/*
 		 *  Decode
 		 */
+		KbLastDecoded = keys.ll;
+
 		k = 0;
 		for ( i = 0; i < 7; ++i ) {
 			/*
