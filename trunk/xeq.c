@@ -431,15 +431,6 @@ void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	roll_up(NULL, NULL, OP_RUP);
 }
 
-void swap(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	swap_reg(&regX, &regY);
-}
-
-void cpx_swap(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	swap_reg(&regX, &regZ);
-	swap_reg(&regY, &regT);
-}
-
 void cpx_enter(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decimal64 x = regX, y = regY;
 	cpx_roll_up(NULL, NULL, OP_CRUP);
@@ -1410,10 +1401,18 @@ void swap_reg(decimal64 *a, decimal64 *b) {
 }
 
 void cmdswap(unsigned int arg, enum rarg op) {
+	decimal64 *reg;
 
-	swap_reg(&regX, get_reg_n(arg));
-	if (op == RARG_CSWAP) {
-		swap_reg(&regY, get_reg_n(arg+1));
+	if (op == RARG_CSWAPX)
+		reg = &regX;
+	else if (op == RARG_CSWAPZ)
+		reg = &regZ;
+	else
+		reg = &regX + (int)(op - RARG_SWAPX);
+
+	swap_reg(reg, get_reg_n(arg));
+	if (op >= RARG_CSWAPX) {
+		swap_reg(reg+1, get_reg_n(arg+1));
 		set_was_complex();
 	}
 }

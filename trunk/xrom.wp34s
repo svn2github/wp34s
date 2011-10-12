@@ -26,7 +26,7 @@
 			x[approx]? Y
 				SDR 01
 			x>? Y
-				x[<->]y
+				x[<->] Y
 			[cmplx]STO 00
 			FILL
 			XEQUSR
@@ -84,7 +84,7 @@ slv_failed::		RCL 03
 			RCL T			/* Return the better estimate being A */
 			STO L
 			iC 0
-			x[<->]y
+			x[<->] Y
 			RCL 00
 			RCL 02
 			JMP slv_fail_common
@@ -92,7 +92,7 @@ slv_failed::		RCL 03
 slv_fail_BltA::		RCL T
 			STO L
 			iC 0
-			x[<->]y
+			x[<->] Y
 			RCL 01
 			RCL 02
 
@@ -119,7 +119,7 @@ slv_initial1_perfect::	RCL 03
 slv_initial_common::	RCL X
 			iC 0
 			STO L
-			[cmplx]x[<->]y
+			[cmplx]x[<->] Z
 			JMP exit
 
 
@@ -167,12 +167,12 @@ int_zero_interval::	XEQ int_restore_limits
 			XEQ entry
 			SPEC?
 				JMP int_bad_range
-			x[<->]y
+			x[<->] Y
 			SPEC?
 				JMP int_bad_range
 			x=? Y				/* Check if range is zero*/
 				JMP int_zero_interval
-			x[<->]y
+			x[<->] Y
 
 			/* Compute (x-y)/2 and (x+y)/2 */
 			[cmplx]ENTER
@@ -339,7 +339,7 @@ sum_loop::		RCL 00
 			ENTER[^]
 			RCL- 01
 			RCL- Z
-			x[<->]y
+			x[<->] Y
 			[cmplx]STO 01
 
 sum_entry::		DSL 00
@@ -640,7 +640,7 @@ deriv_return::		STO L
 			x<0?
 				JMP quad_complex
 			[sqrt]				/* sqrt 2b(a+c) b 2c*/
-			x[<->]y
+			x[<->] Y
 			R[v]				/* sqrt b 2c .*/
 			x>0?
 				[cmplx]CONJ
@@ -672,10 +672,10 @@ quad_fix_stack::	RCL 00
 			STO L				/* Push c into Last X*/
 			RCL 04
 			STO I				/* Restore I*/
-			[cmplx]x[<->]y
+			[cmplx]x[<->] Z
 			RCL 04				/* Restore T*/
 			RCL 01				/* Preserve b^2 - 4ac*/
-			[cmplx]x[<->]y
+			[cmplx]x[<->] Z
 			RTN
 
 /**************************************************************************/

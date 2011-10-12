@@ -67,7 +67,7 @@ CBK04::	RCL 09		// Recall guess
 	x=?[->]I	// Compare to digit pointed to by I
 	JMP CBK06	// If equal, go to scoring for correct digit in correct location
 	4
-	x[<->]y
+	x[<->] Y
 	x=?[->]Y	// Compare to digit pointed to by Y
 	JMP CBK05	// if equal, go to scoring for correct digit in incorrect location
 	DSZ Y

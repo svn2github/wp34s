@@ -669,7 +669,7 @@ enum {
 enum nilop {
 	OP_NOP=0, OP_VERSION, OP_OFF,
 	OP_STKSIZE, OP_STK4, OP_STK8, OP_INTSIZE,
-	OP_SWAP, OP_CSWAP, OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
+	OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
 	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPXY,
 	OP_sigmaX2Y, OP_sigmaX, OP_sigmaX2, OP_sigmaY, OP_sigmaY2, OP_sigma_XY,
 	OP_sigmaN,
@@ -758,10 +758,10 @@ enum rarg {
 			RARG_STO_MIN, RARG_STO_MAX,
 	RARG_RCL, RARG_RCL_PL, RARG_RCL_MI, RARG_RCL_MU, RARG_RCL_DV,
 			RARG_RCL_MIN, RARG_RCL_MAX,
-	RARG_SWAP,
+	RARG_SWAPX, RARG_SWAPY, RARG_SWAPZ, RARG_SWAPT,
 	RARG_CSTO, RARG_CSTO_PL, RARG_CSTO_MI, RARG_CSTO_MU, RARG_CSTO_DV,
 	RARG_CRCL, RARG_CRCL_PL, RARG_CRCL_MI, RARG_CRCL_MU, RARG_CRCL_DV,
-	RARG_CSWAP,
+	RARG_CSWAPX, RARG_CSWAPZ,
 	RARG_VIEW,
 	RARG_STOSTK, RARG_RCLSTK,
 
@@ -1101,8 +1101,6 @@ extern void cmd_off(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cmderr(unsigned int arg, enum rarg op);
 extern void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void swap(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void cpx_swap(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cpx_enter(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cpx_fill(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void fill(decimal64 *nul1, decimal64 *nul2, enum nilop op);

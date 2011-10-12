@@ -62,7 +62,7 @@ m_trace_loop::		RCL[->]Y
 			LBL'M+'	/* X = X + Y */
 			iC 1
 m_add_sub_common::	x[<->] Z
-			x[<->]y
+			x[<->] Y
 			M-+[times]
 			RTN
 
@@ -71,7 +71,7 @@ m_add_sub_common::	x[<->] Z
 			LBL'M-y'
 			ABS
 			M-ALL
-			x[<->]y
+			x[<->] Y
 m_scalar_mult::		STO[times][->]Y
 			ISG Y
 			JMP m_scalar_mult
@@ -118,7 +118,7 @@ m_norm_common::		STOM B			/* save mode settings */
 m_norm_loop::		[cmplx]RCL C
 			M-IJ
 			FS? C
-			x[<->]y
+			x[<->] Y
 			DROP
 			RCL C
 			FS? C
@@ -143,7 +143,7 @@ m_norm_sum::		RCL[->]X
  			LBL'MFD'
 			ABS
 			M-ALL
-			x[<->]y
+			x[<->] Y
 m_find_loop::		x=?[->]Y
 			JMP m_found
 			ISG Y
@@ -170,7 +170,7 @@ m_min_loop::		RCL[v][->]Y
 			JMP m_min_loop
 			/*JMP drop_y*/
 
-drop_y::		x[<->]y
+drop_y::		x[<->] Y
 			DROP
 			RTN
 
@@ -226,7 +226,7 @@ mio_loop::	RCL I
 		CL[alpha] 
 		[alpha]'R|C' 
 		PROMPT 
-		x[<->]y 
+		x[<->] Y 
 		RCL Z 
 		M-REG 
 		STO I 

@@ -76,14 +76,14 @@
 	052: RCL T
 	053: STO L
 	054: iC 00		// Zero
-	055: x[<->]y
+	055: x[<->] Y
 	056: RCL 00
 	057: RCL 03
 	058: RTN+1		// Failure return C and A
 	059: RCL T
 	060: STO L
 	061: iC 00		// Zero
-	062: x[<->]y
+	062: x[<->] Y
 	063: RCL 01
 	064: RCL 02
 	065: RTN+1		// Failure return C and B
@@ -104,7 +104,7 @@
 	080: RCL X
 	081: iC 00		// Zero
 	082: STO L
-	083: [cmplx]x[<->]y		// Complex x<>y to put things in their place
+	083: [cmplx]x[<->] Z	// Complex x<>y to put things in their place
 	084: RTN
 	085: LBL 00		// User's routine
 	086: RTN

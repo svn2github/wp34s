@@ -201,7 +201,7 @@ LBL 01  // N=?
 	SKIP 09
 	/
 	LN
-	x[<->]y
+	x[<->] Y
 	LN1+x
 	/
 	SKIP 03
@@ -259,7 +259,7 @@ LBL 03  // PV=?
 	SKIP 08
 	RCL Y
 	RCL- 05
-	x[<->]y
+	x[<->] Y
 	RCL 08
 	LN1+x
 	[times]
@@ -303,7 +303,7 @@ LBL 05  // FV=?
 	RCL 01
 	x=0?
 	ERR 13  // FV invalid for N=0! -> Error: "Bad mode"
-	x[<->]y
+	x[<->] Y
 	x=0?
 	SKIP 11
 	LN1+x

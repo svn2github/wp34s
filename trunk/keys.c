@@ -493,7 +493,7 @@ static int process_normal(const keycode c)
 		OP_NIL  | OP_RDOWN,
 		// Row 3
 		OP_SPEC | OP_ENTER,
-		OP_NIL  | OP_SWAP,	// x<>y
+		RARG(RARG_SWAPX, regY_idx),
 		OP_SPEC | OP_CHS,	// CHS
 		OP_SPEC | OP_EEX,	// EEX
 		OP_SPEC | OP_CLX,	// <-
@@ -586,7 +586,7 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_NIL | OP_RANDOM,     OP_NIL | OP_GRAD         },
 		// Row 3
 		{ STATE_UNFINISHED,       OP_NIL | OP_FILL         }, // ENTER
-		{ OP_NIL | OP_ALPHATOX,   OP_NIL | OP_XTOALPHA     },
+		{ RARG_SWAPY,   	  RARG_SWAPZ     	   },
 		{ RARG(RARG_BASE, 2),     RARG(RARG_BASE, 8)       },
 		{ RARG(RARG_BASE, 10),    RARG(RARG_BASE, 16)      },
 		{ OP_NIL | OP_CLRALPHA,   OP_NIL | OP_SIGMACLEAR   },
@@ -696,6 +696,7 @@ static int process_fg_shifted(const keycode c) {
 		State2.test = op;
 		return STATE_UNFINISHED;
 
+	case K21:
 	case K52:
 	case K53:
 	case K63:
@@ -731,7 +732,7 @@ static int process_h_shifted(const keycode c) {
 		OP_NIL  | OP_RUP,
 		// Row 3
 		STATE_UNFINISHED,	// CONST
-		_RARG   | RARG_SWAP,
+		_RARG   | RARG_SWAPX,
 		OP_MON  | OP_NOT,
 		STATE_UNFINISHED,	// CLP
 		OP_NIL  | OP_rCLX,
@@ -820,7 +821,8 @@ static int process_normal_cmplx(const keycode c) {
 	case K12:	return OP_NIL | OP_CRDOWN;
 
 	case K20:	return OP_NIL | OP_CENTER;
-	case K21:	return OP_NIL | OP_CSWAP;
+	case K21:	return RARG(RARG_CSWAPX, regZ_idx);
+
 	case K22:	return OP_CMON | OP_CCHS;		// CHS
 
 	case K34:	return OP_CDYA | OP_DIV;
@@ -851,7 +853,7 @@ static int process_fg_shifted_cmplx(const keycode c) {
 		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
 		// Row 3
 		{ STATE_UNFINISHED,    OP_NIL | OP_CFILL   }, // ENTER
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    RARG_CSWAPZ         },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
@@ -906,6 +908,11 @@ static int process_fg_shifted_cmplx(const keycode c) {
 		init_state();
 		break;
 
+	case K21:
+		if (op != STATE_UNFINISHED)
+			init_arg((enum rarg)op);
+		return STATE_UNFINISHED;
+
 	default:
 		break;
 	}
@@ -921,7 +928,7 @@ static int process_h_shifted_cmplx(const keycode c) {
 	switch (c) {
 	case K12:	return OP_NIL | OP_CRUP;
 
-	case K21:	init_arg(RARG_CSWAP);	break;	// x<>
+	case K21:	init_arg(RARG_CSWAPX);	break;	// x<>
 	case K22:	return OP_CMON | OP_CCONJ;
 
 	case K40:	return OP_CMON | OP_FACT;	// z!
