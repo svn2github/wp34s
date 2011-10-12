@@ -1093,7 +1093,7 @@ int row_column_to_keycode(const int c);
 
 
 /* Control program execution */
-extern void xeq_sst_bst(char *tracebuf, int kind);
+extern void xeq_sst_bst(int kind);
 
 /* Command functions */
 extern void version(decimal64 *nul1, decimal64 *nul2, enum nilop op);

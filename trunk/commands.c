@@ -243,15 +243,15 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT")
 #endif
 #ifdef MATRIX_SUPPORT
-	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M.ALL")
-	FUNC(OP_MAT_DIAG, &matrix_diag,		NOFN,		NOFN,		"M.DIAG")
-	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"M.TRN")
-	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"M.ROW?")
-	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"M.COL?")
-	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"M.IJ")
-	FUNC(OP_MAT_DET, &matrix_determinant,	NOFN,		NOFN,		"M.DET")
+	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M-ALL")
+	FUNC(OP_MAT_DIAG, &matrix_diag,		NOFN,		NOFN,		"M-DIAG")
+	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"M-TRN")
+	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"M-ROW?")
+	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"M-COL?")
+	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"M-IJ")
+	FUNC(OP_MAT_DET, &matrix_determinant,	NOFN,		NOFN,		"M-DET")
 #ifdef MATRIX_LU_DECOMP
-	FUNC(OP_MAT_LU, &matrix_lu_decomp,	NOFN,		NOFN,		"M.LU")
+	FUNC(OP_MAT_LU, &matrix_lu_decomp,	NOFN,		NOFN,		"M-LU")
 #endif
 #endif
 #undef FUNC
@@ -340,9 +340,9 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
 #endif
 #ifdef MATRIX_SUPPORT
-	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M.ROW")
-	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M.COL")
-	FUNC(OP_MAT_COPY, &matrix_copy,		NOFN,		NOFN,		"M.COPY")
+	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M-ROW")
+	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M-COL")
+	FUNC(OP_MAT_COPY, &matrix_copy,		NOFN,		NOFN,		"M-COPY")
 #endif
 #undef FUNC
 };
@@ -378,10 +378,10 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 	FUNC(OP_PERMRR,		&decNemberPerMRR, NOFN,		"%MRR")
         FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha, NOFN,    "L\275\240")
 #ifdef MATRIX_SUPPORT
-	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"M.\034")
-	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"M.+\034")
-	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"M.REG")
-	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	NOFN,	"M.LIN")
+	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"M-\034")
+	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"M-+\034")
+	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"M-REG")
+	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	NOFN,	"M-LIN")
 #endif
 #undef FUNC
 };
@@ -533,10 +533,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_XTOALPHA,	&alpha_fromx,		"x\015\240")
 	FUNC0(OP_ALPHAON,	&alpha_onoff,		"\240ON")
 	FUNC0(OP_ALPHAOFF,	&alpha_onoff,		"\240OFF")
-	FN_I0(OP_REGCOPY,	&op_regcopy,		"R.COPY")
-	FN_I0(OP_REGSWAP,	&op_regswap,		"R.SWAP")
-	FN_I0(OP_REGCLR,	&op_regclr,		"R.CLR")
-	FN_I0(OP_REGSORT,	&op_regsort,		"R.SORT")
+	FN_I0(OP_REGCOPY,	&op_regcopy,		"R-COPY")
+	FN_I0(OP_REGSWAP,	&op_regswap,		"R-SWAP")
+	FN_I0(OP_REGCLR,	&op_regclr,		"R-CLR")
+	FN_I0(OP_REGSORT,	&op_regsort,		"R-SORT")
 	FUNC0(OP_GSBuser,	&do_usergsb,		"XEQUSR")
 	FN_I0(OP_XisInf,	&isInfinite,		"\237?")
 	FN_I0(OP_XisNaN,	&isNan,			"NaN?")
@@ -593,16 +593,16 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 #ifdef MATRIX_SUPPORT
 #ifdef MATRIX_ROWOPS
-	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"M.R\027")
-	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"M.R\034")
-	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"M.R+\034")
+	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"M-R\027")
+	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"M-R\034")
+	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"M-R+\034")
 #endif
-	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
-	FUNC0(OP_MAT_INVERSE,	&matrix_inverse,	"M.INV")
+	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M-SQR?")
+	FUNC0(OP_MAT_INVERSE,	&matrix_inverse,	"M-INV")
 #endif
 #ifdef SILLY_MATRIX_SUPPORT
-	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
-	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
+	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M-ZERO")
+	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M-IDEN")
 #endif
 #undef FUNC
 #undef FUNC0

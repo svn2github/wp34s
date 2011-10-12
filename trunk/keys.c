@@ -50,7 +50,7 @@ enum shifts cur_shift(void) {
 
 /* Local data to this module */
 static unsigned short int OpCode;
-
+char OpCodeDisplayPending;
 
 static void advance_to_next_label(unsigned int pc);
 
@@ -2181,54 +2181,6 @@ static int process(const int c) {
 	const enum shifts s = cur_shift();
 	enum catalogues cat;
 
-	if (c == K_HEARTBEAT) {
-		/*
-		 *  Heartbeat processing goes here.
-		 *  This is totally thread safe!
-		 */
-
-		if (OpCode != 0 && Keyticks > 30) {
-			/*
-			 *  Key is too long held down
-			 */
-			OpCode = 0;
-			DispMsg = "NULL";
-			display();
-		}
-
-		/*
-		 *  Toggle the RPN annunciator as a visual feedback
-		 *  While the display is frozen, the annunciator stays cleared.
-		 */
-		if ( ShowRPN == 1 ) {
-			dot(RPN, 1);
-			finish_display();
-		}
-		else if ( ShowRPN == -1 ) {
-			ShowRPN = 1;
-		}
-
-		/*
-		 *  Serve the watchdog
-		 */
-		watchdog();
-
-#if defined(REALBUILD) || defined(WINGUI)
-		/*
-		 *  If buffer is empty re-allow R/S to start a program
-		 */
-		if ( JustStopped && !is_key_pressed() ) {
-			JustStopped = 0;
-		}
-#endif
-
-		/*
-		 *  Do nothing if not running a program
-		 */
-		if (!Running && !Pause)
-			return STATE_IGNORE;
-	}
-
 	if (Running || Pause) {
 		/*
 		 *  Abort a running program with R/S or EXIT
@@ -2357,40 +2309,115 @@ static int process(const int c) {
 	}
 }
 
-void process_keycode(int c) {
-	char tracebuf[25];
 
+static void show_opcode(void)
+{
+	scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
+	DispMsg = TraceBuffer;
+	OpCodeDisplayPending = 0;
+}
+
+
+/*
+ *  Fed with key codes by the event loop
+ */
+void process_keycode(int c)
+{
+	if (c == K_HEARTBEAT) {
+		/*
+		 *  Heartbeat processing goes here.
+		 *  This is totally thread safe!
+		 */
+		if (OpCode != 0) {
+			/*
+			 *  Handle command display and NULL here
+			 */
+			if (OpCodeDisplayPending && Keyticks >= 2) {
+				/*
+				 *  Show command to the user
+				 */
+				show_opcode();
+				display();
+			}
+			else if (Keyticks > 12) {
+				/*
+				 *  Key is too long held down
+				 */
+				OpCode = 0;
+				DispMsg = "NULL";
+				display();
+			}
+		}
+		/*
+		 *  Toggle the RPN annunciator as a visual feedback
+		 *  While the display is frozen, the annunciator stays cleared.
+		 */
+		if ( ShowRPN == 1 ) {
+			dot(RPN, 1);
+			finish_display();
+		}
+		else if ( ShowRPN == -1 ) {
+			ShowRPN = 1;
+		}
+
+		/*
+		 *  Serve the watchdog
+		 */
+		watchdog();
+
+#if defined(REALBUILD) || defined(WINGUI)
+		/*
+		 *  If buffer is empty re-allow R/S to start a program
+		 */
+		if ( JustStopped && !is_key_pressed() ) {
+			JustStopped = 0;
+		}
+#endif
+
+		/*
+		 *  Do nothing if not running a program
+		 */
+		if (!Running && !Pause)
+			return;
+	}
+
+	/*
+	 *  Prepare for execution of any numerical commands
+	 */
 	xeq_init_contexts();
 
+	/*
+	 *  Handle key release
+	 */
 	if (c == K_RELEASE) {
 		if (OpCode != 0) {
-			// Execute the key on release
+			/*
+			 * Execute the key on release
+			 */
 			c = OpCode;
 			OpCode = 0;
-			if ( c == STATE_SST ) {
-				xeq_sst_bst(tracebuf, 1);
-			}
-			else if (State2.runmode) {
+			if (c == STATE_SST)
+				xeq_sst_bst(1);
+			else {
 				xeq(c);
 				if ( Running || Pause )
 					xeqprog();
-			} 
-			else {
-				stoprog(c);
 			}
 		}
 	}
 	else {
-		 // decode the key
+		/*
+		 *  Decode the key 
+		 */
 		c = process(c);
 		switch (c) {
 		case STATE_SST:
-			xeq_sst_bst(tracebuf, 0);
+			xeq_sst_bst(0);
 			OpCode = c;
 			break;
 
 		case STATE_BST:
-			xeq_sst_bst(tracebuf, -1);
+			xeq_sst_bst(-1);
 			break;
 
 		case STATE_BACKSPACE:
@@ -2412,21 +2439,30 @@ void process_keycode(int c) {
 			break;
 
 		default:
-			// Save the op-code for execution on key-up
-			OpCode = c;
-			// Show it to the user
-			if (DispMsg == NULL) {
-				scopy_char(tracebuf, prt(c, tracebuf), '\0');
-				DispMsg = tracebuf;
+			if (State2.runmode) {
+				if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F))
+					// Data entry key
+					xeq(c);
+				else {
+					// Save the op-code for execution on key-up
+					OpCode = c;
+					if (isRARG(c))
+						show_opcode();
+					else
+						OpCodeDisplayPending = 1;
+				}
+			}
+			else {
+				stoprog(c);
 			}
 		}
 	}
 #if defined(REALBUILD) || defined(WINGUI)
-	if (!Running && !Pause && !JustStopped && c != STATE_IGNORE) {
+	if (! Running && ! Pause && ! JustStopped && c != STATE_IGNORE) {
 		display();
 	}
 #else
-	if (!Running && !Pause && c != STATE_IGNORE && ! just_displayed) {
+	if (! Running && ! Pause && c != STATE_IGNORE && ! just_displayed) {
 		display();
 	}
         just_displayed = 0;

@@ -297,8 +297,10 @@ void scan_keyboard( void )
 	/*
 	 *  Program PIO
 	 */
-	// All as input
+	// All as input, no pull-ups
 	AT91C_BASE_PIOC->PIO_ODR = KEY_ROWS_MASK | KEY_COLS_MASK;
+	AT91C_BASE_PIOC->PIO_PPUDR =  KEY_COLS_MASK;
+
 	// Disable clock
 	AT91C_BASE_PMC->PMC_PCDR = 1 << AT91C_ID_PIOC;
 

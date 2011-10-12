@@ -92,6 +92,14 @@ int ShowRegister;
  */
 decContext Ctx;
 
+/*
+ * A buffer for instruction display
+ */
+char TraceBuffer[25];
+
+/*
+ * The return stack pointer
+ */
 #define RetStkPtr	(State.retstk_ptr)
 
 
@@ -3245,9 +3253,10 @@ static void multi(const opcode op) {
 
 /* Print a single program step nicely.
  */
-static void print_step(char *p, const opcode op) {
+static void print_step(const opcode op) {
 	char buf[16];
 	const unsigned int pc = state_pc();
+	char *p = TraceBuffer;
 
 	if (isXROM(pc)) {
 		*p++ = 'x';
@@ -3261,6 +3270,8 @@ static void print_step(char *p, const opcode op) {
 	p = num_arg_0(p, user_pc(), 3);
 	*p++ = ':';
 	scopy_char(p, prt(op, buf), '\0');
+	State2.disp_small = 1;
+	DispMsg = TraceBuffer;
 }
 
 
@@ -3311,13 +3322,11 @@ void xeq(opcode op)
 #ifndef REALBUILD
 	if (State2.trace) {
 		char buf[16];
-		static char tracebuf[24];
-
 		if (Running)
-			print_step(tracebuf, op);
+			print_step(op);
 		else
-			sprintf(tracebuf, "%04X:%s", op, prt(op, buf));
-		DispMsg = tracebuf;
+			sprintf(TraceBuffer, "%04X:%s", op, prt(op, buf));
+		DispMsg = TraceBuffer;
 	}
 #endif
 	Busy = 0;
@@ -3417,7 +3426,7 @@ void xeqprog(void)
 
 /* Single step and back step routine
  */
-void xeq_sst_bst(char *tracebuf, int kind) 
+void xeq_sst_bst(int kind) 
 {
 	opcode op;
 
@@ -3428,9 +3437,7 @@ void xeq_sst_bst(char *tracebuf, int kind)
 
 	if (State2.runmode) {
 		// Display the step
-		State2.disp_small = 1;
-		print_step(tracebuf, op);
-		DispMsg = tracebuf;
+		print_step(op);
 		if (kind == 1) {
 			// Execute the step on key up
 #ifndef REALBUILD

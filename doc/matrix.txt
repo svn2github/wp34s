@@ -22,7 +22,7 @@ where:
 Matrix commands
 ---------------
 
-M.TRN - matrix transpose.
+M-TRN - matrix transpose.
 
 	Takes a matrix descriptor in X (in the bb.ccrr format) and
 	returns the descriptor for the transpose of X (bb.rrcc).
@@ -31,7 +31,7 @@ M.TRN - matrix transpose.
 	when done in RPN.
 
 
-M.[times] - matrix multiply
+M-[times] - matrix multiply
 
 	Takes matrix descriptors in Y and Z and the integer part
 	of X as the base of the result.  It calculates X = Z * Y.
@@ -45,7 +45,7 @@ M.[times] - matrix multiply
 	this.
 
 
-M.+[times] - generalised matrix addition.
+M-+[times] - generalised matrix addition.
 
 	Takes a real in z and matrix descriptors in Y and X.
 	Calculates X = X + z * Y.  That is a scalar multiple of a
@@ -54,21 +54,21 @@ M.+[times] - generalised matrix addition.
 	rounded.  This one would be possible in RPN without losing
 	accuracy but again, fiddly.
 
-M.R[<->]  (similar to PPC M1).			Optional: MATRIX_ROWOPS
+M-R[<->]  (similar to PPC M1).			Optional: MATRIX_ROWOPS
 
 	Takes a matrix descriptor in X, and two row numbers in Y
 	and Z.  It swaps those two rows in the matrix.  The stack
 	is unmodified.
 
 
-M.R[times]   (similar to PPC M2).		Optional: MATRIX_ROWOPS
+M-R[times]   (similar to PPC M2).		Optional: MATRIX_ROWOPS
 
 	Takes a matrix descriptor in X, a row number in Y and a
 	constant in z.  It multiplies the specified row of the
 	matrix by z.  The stack is unmodified.
 
 
-M.R+[times]   (similar to PPC M3).		Optional: MATRIX_ROWOPS
+M-R+[times]   (similar to PPC M3).		Optional: MATRIX_ROWOPS
 
 	Takes a matrix descriptor in X, a destination row number
 	in Y, a source row number in Z and a constant in t.  It
@@ -77,28 +77,28 @@ M.R+[times]   (similar to PPC M3).		Optional: MATRIX_ROWOPS
 	unchanged.
 
 
-M.IJ   (similar to PPC M4).
+M-IJ   (similar to PPC M4).
 
 	Takes a matrix descriptor in X and a register number in Y.
 	Returns the column that register represents in Y and the
 	row in X.  The matrix descriptor is saved in last X.
 
 
-M.REG   (similar to PPC M5).
+M-REG   (similar to PPC M5).
 
 	Takes a matrix descriptor in X, a row number in Y and a
 	column number in Z.  Returns the register index in X (popping
 	the stack twice).  The matrix descriptor is saved in last
 	X.
 
-M.ALL
+M-ALL
 	Takes a matrix descriptor in X and returns a value suitable
 	for ISG or DSL looping in X (and sets last X like all good
 	commands).  The loop processes all elements in the matrix.
 	The loop index is DSL if the descriptor is negative and ISG
 	for positive.
 
-M.DIAG
+M-DIAG
 
 	Takes a matrix descriptor in X and returns a value suitable
 	for ISG or DSL looping in X (and sets last X appropriately).
@@ -107,7 +107,7 @@ M.DIAG
 	for positive.
 
 
-M.ROW
+M-ROW
 
 	Takes a matrix descriptor in X and a row number in Y.  It
 	returns a value suitable for looping in X (dropping the
@@ -117,7 +117,7 @@ M.ROW
 	for positive.
 
 
-M.COL
+M-COL
 
 	Takes a matrix descriptor in X and a column number in Y.
 	It returns a value suitable for looping in X (again acting
@@ -126,50 +126,50 @@ M.COL
 	DSL if the descriptor is negative and ISG for positive.
 
 
-M.ROW?
+M-ROW?
 
 	Takes a matrix descriptor in X and returns the number of
 	rows in the matrix.  The descriptor is saved in LastX.
 
 
-M.COL?
+M-COL?
 
 	Takes a matrix descriptor in X and returns the number of
 	columns in the matrix.  The descritpor is saved in LastX.
 
 
-M.SQR?
+M-SQR?
 
 	Takes a matrix descriptor in X and generates an error if
 	it isn't square.  Does nothing if it is.
 
 
-M.IDEN		Not included			Optional: SILLY_MATRIX_SUPPORT
+M-IDEN		Not included			Optional: SILLY_MATRIX_SUPPORT
 
 	Takes a matrix descriptor for a square matrix in X and fills
 	the corresponding registers so that it is an identity matrix.
 
 
-M.ZERO		Not included			Optional: SILLY_MATRIX_SUPPORT
+M-ZERO		Not included			Optional: SILLY_MATRIX_SUPPORT
 
 	Takes a matrix descriptor in X and zeros the registers
 	corresponding to the matrix.  The stack remains unchanged.
 
 
-M.COPY
+M-COPY
 
 	Takes a matrix descriptor in Y and a register number in X.
 	Copies the matrix into registers starting from X.  Returns
 	a properly formed matrix descriptor in X.
 
 
-M.DET
+M-DET
 
 	Takes a matrix descriptor in X and return the determinant
 	of the matrix.  The matrix must be square and is not modified.
 
 
-M.LU		Not included			Optional: MATRIX_LU_DECOMP
+M-LU		Not included			Optional: MATRIX_LU_DECOMP
 
 	Takes a matrix descriptor in X modify the matrix into its
 	LU decomposition.  The matrix must be square and it is
@@ -180,7 +180,7 @@ M.LU		Not included			Optional: MATRIX_LU_DECOMP
 	the second and so forth.
 
 
-M.LIN
+M-LIN
 
 	Takes a square matrix descriptor in Z and a vector maxtix
 	descriptor in y and a base register in x and solves the
@@ -188,7 +188,7 @@ M.LIN
 	matrix descriptor in X.
 
 
-M.INV
+M-INV
 
 	Takes a square matrix descriptor in X and inverts the matrix
 	in-situ.  Doesn't alter the stack.
@@ -216,14 +216,14 @@ Errors
 Matrix library
 --------------
 
-'M.1'
+'M-1'
 
 	Takes a matrix descriptor in X and initialises an identity
 	matrix (1 down the diagonal and zero every were else).  X
 	is preserved, L is overwritten.
 
 
-'M.0'
+'M-0'
 
 	Takes a matrix descriptor in X and initialises a zero matrix
 	X is preserved, L is overwritten.
@@ -257,7 +257,7 @@ Matrix library
 	to 1 and levels above this are lifted one position.
 
 
-'M.y'
+'M-y'
 
 	Takes a matrix descriptor in X and a scalar constant in y.
 	Multiplies X by y.  The original matrix descriptor is in L

@@ -5,11 +5,11 @@
  */
 
 /* Create an identity matrix */
-m_ident::		LBL'M.1'
+m_ident::		LBL'M-1'
 			SF C
 			JMP m_init_1
 /* Create a zero matrix */
-m_zero::		LBL'M.0'
+m_zero::		LBL'M-0'
 			CF C
 m_init_1::		ABS
 			M.ALL
@@ -63,14 +63,14 @@ m_trace_loop::		RCL[->]Y
 			iC 1
 m_add_sub_common::	x[<->] Z
 			x[<->]y
-			M.+[times]
+			M-+[times]
 			RTN
 
 /* Scalar multiply
  */
-			LBL'M.y'
+			LBL'M-y'
 			ABS
-			M.ALL
+			M-ALL
 			x[<->]y
 m_scalar_mult::		STO[times][->]Y
 			ISG Y
@@ -84,7 +84,7 @@ m_scalar_mult::		STO[times][->]Y
 			LBL'FNM'
 			ABS
 			+/-
-			M.ALL
+			M-ALL
 			[SIGMA] m_frob_sum
 			[sqrt]
 			RTN
@@ -111,20 +111,20 @@ m_norm_common::		STOM B			/* save mode settings */
 			iC 1
 			RCL Z
 			FS? C
-			M.COL
+			M-COL
 			FC? C
-			M.ROW
+			M-ROW
 			STO D
 m_norm_loop::		[cmplx]RCL C
-			M.IJ
+			M-IJ
 			FS? C
 			x[<->]y
 			DROP
 			RCL C
 			FS? C
-			M.ROW
+			M-ROW
 			FC? C
-			M.COL
+			M-COL
 			[SIGMA] m_norm_sum
 			STO[^] A
 			DSL D
@@ -142,7 +142,7 @@ m_norm_sum::		RCL[->]X
  */
  			LBL'MFD'
 			ABS
-			M.ALL
+			M-ALL
 			x[<->]y
 m_find_loop::		x=?[->]Y
 			JMP m_found
@@ -155,7 +155,7 @@ m_found::		DROP
  * Uses stack.
  */
 			LBL'M[^]'
-			M.ALL
+			M-ALL
 			RCL[->]X
 m_max_loop::		RCL[^][->]Y
 			ISG Y
@@ -163,7 +163,7 @@ m_max_loop::		RCL[^][->]Y
 			JMP drop_y
 
 			LBL'M[v]'
-			M.ALL
+			M-ALL
 			RCL[->]X
 m_min_loop::		RCL[v][->]Y
 			ISG Y
@@ -204,11 +204,11 @@ drop_y::		x[<->]y
  */
 
 		LBL'MIO'	//-- Works on entire matrix elements 
-		M.ALL 
+		M-ALL 
 		STO I 
 mio_loop::	RCL I 
 		RCL L 
-		M.IJ 
+		M-IJ 
 		CL[alpha] 	// shows the next element indexes 
 		[alpha] ( 
 		[alpha]IP X 
@@ -228,6 +228,6 @@ mio_loop::	RCL I
 		PROMPT 
 		x[<->]y 
 		RCL Z 
-		M.REG 
+		M-REG 
 		STO I 
 		JMP mio_loop
