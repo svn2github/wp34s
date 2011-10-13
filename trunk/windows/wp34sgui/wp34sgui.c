@@ -119,14 +119,6 @@ void Shutdown( void )
  */
 void KeyPress( int i )
 {
-	if ( i != K_HEARTBEAT ) {
-		if ( i != K_F && is_shift_down( SHIFT_F ) && State2.shifts != SHIFT_F )
-			process_keycode( K_F );
-		else if ( i != K_G && is_shift_down( SHIFT_G ) && State2.shifts != SHIFT_G )
-			process_keycode( K_G );
-		else if ( i != K_H && is_shift_down( SHIFT_H ) && State2.shifts != SHIFT_H )
-			process_keycode( K_F );
-	}
 	process_keycode( i );
 	if ( i != K_HEARTBEAT && i != K_RELEASE ) {
 		Keyticks = 0;

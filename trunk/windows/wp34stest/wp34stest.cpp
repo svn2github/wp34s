@@ -30,6 +30,7 @@ extern "C" {
 	void close_port( void ) { return; }
 	void put_byte( unsigned char byte ) { return; }
 	void flush_comm( void ) { return; }
+	int is_shift_down(int s) {return 0; }
 }
 // we have one context
 static decContext Ctx;

@@ -44,15 +44,46 @@ enum confirmations {
 	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog
 };
 
-enum shifts cur_shift(void) {
-	return (enum shifts) State2.shifts;
-}
-
 /* Local data to this module */
-unsigned short int OpCode;
+unsigned int OpCode;
 char OpCodeDisplayPending;
 
 static void advance_to_next_label(unsigned int pc);
+
+/*
+ *  Return the shift state
+ */
+enum shifts cur_shift(void) {
+	return 	( is_shift_down( SHIFT_H ) ? SHIFT_H
+		: is_shift_down( SHIFT_G ) ? SHIFT_G
+		: is_shift_down( SHIFT_F ) ? SHIFT_F
+		: (enum shifts) State2.shifts );
+}
+
+/*
+ *  Set new shift state, return previous state
+ */
+static enum shifts set_shift(enum shifts shift) {
+	enum shifts r = cur_shift();
+	State2.shifts = shift;
+	State2.alpha_pos = 0;
+	return r;
+}
+
+/*
+ *  Clear shift state and return previous state
+ */
+enum shifts reset_shift(void) {
+	return set_shift(SHIFT_N);
+}
+
+/*
+ *  Toggle shift state
+ */
+static void toggle_shift(enum shifts shift) {
+	State2.shifts = State2.shifts == shift ? SHIFT_N : shift;
+}
+
 
 /*
  * Mapping from the key code to a linear index
@@ -129,19 +160,19 @@ static unsigned int keycode_to_digit_or_register(const keycode c)
 /*
  *  Mapping of a keycode and shift state to a catalogue number
  */
-static enum catalogues keycode_to_cat(const keycode c, enum shifts s)
+static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 {
 	if (! State2.alphas) {
 		/*
 		 *  Normal processing
 		 */
-		if (s == SHIFT_F && c == K60)
+		if (shift == SHIFT_F && c == K60)
 			return CATALOGUE_REGISTERS;
 
-		if (s == SHIFT_N && State2.cmplx && c == K50 && State2.catalogue == CATALOGUE_NONE)
-			s = SHIFT_H;
+		if (shift == SHIFT_N && State2.cmplx && c == K50 && State2.catalogue == CATALOGUE_NONE)
+			shift = SHIFT_H;
 
-		if (s != SHIFT_H)
+		if (shift != SHIFT_H)
 			return CATALOGUE_NONE;
 
 		switch (c) {
@@ -204,25 +235,25 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts s)
 		/*
 		 *  All the alpha catalogues go here
 		 */
-		if (s != SHIFT_F && s != SHIFT_H)
+		if (shift != SHIFT_F && shift != SHIFT_H)
 			return CATALOGUE_NONE;
 
 		switch (c) {
 
 		case K12:
-			if (s == SHIFT_F)
+			if (shift == SHIFT_F)
 				return CATALOGUE_ALPHA_SUBSCRIPTS;
 			else
 				return CATALOGUE_ALPHA_SUPERSCRIPTS;
 			break;
 
 		case K_ARROW:	// Alpha comparison characters
-			if (s == SHIFT_F)
+			if (shift == SHIFT_F)
 				return CATALOGUE_ALPHA_ARROWS;
 			break;
 
 		case K_CMPLX:	// Complex character menu
-			if (s == SHIFT_F) {
+			if (shift == SHIFT_F) {
 				if (State2.alphashift)
 					return CATALOGUE_ALPHA_LETTERS_LOWER;
 				else
@@ -231,7 +262,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts s)
 			break;
 
 		case K50:
-			if (s == SHIFT_H) {	// Alpha command catalogue
+			if (shift == SHIFT_H) {	// Alpha command catalogue
 				if (! State2.runmode)
 					return CATALOGUE_PROGXFCN;
 				else
@@ -240,12 +271,12 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts s)
 			break;
 
 		case K51:	// Alpha comparison characters
-			if (s == SHIFT_H)
+			if (shift == SHIFT_H)
 				return CATALOGUE_ALPHA_COMPARES;
 			break;
 
 		case K62:	// Alpha maths symbol characters
-			if (s == SHIFT_H)
+			if (shift == SHIFT_H)
 				return CATALOGUE_ALPHA_SYMBOLS;
 			break;
 
@@ -261,7 +292,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts s)
  * Mapping from key position to alpha in the four key planes plus
  * the two lower case planes.
  */
-static unsigned char keycode_to_alpha(const keycode c, unsigned int s)
+static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 {
 	static const unsigned char alphamap[][6] = {
 		/*upper f-sft g-sft h-sft lower g-shf lower */
@@ -307,19 +338,12 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int s)
 		{ 'Z',  '+',  0205, 0000, 'z',  0245,  },  // K64
 	};
 	if (State2.alphashift) {
-		if (s == SHIFT_N)
-			s = SHIFT_LC_N;
-		else if (s == SHIFT_G)
-			s = SHIFT_LC_G;
+		if (shift == SHIFT_N)
+			shift = SHIFT_LC_N;
+		else if (shift == SHIFT_G)
+			shift = SHIFT_LC_G;
 	}
-	return alphamap[keycode_to_linear(c)][s];
-}
-
-enum shifts set_shift(enum shifts s) {
-	enum shifts r = cur_shift();
-	State2.shifts = s;
-	State2.alpha_pos = 0;
-	return r;
+	return alphamap[keycode_to_linear(c)][shift];
 }
 
 static void init_arg(const enum rarg base) {
@@ -376,7 +400,7 @@ static void init_cat(enum catalogues cat) {
 			State2.digval = 0;
 		}
 	}
-	set_shift(SHIFT_N);
+	reset_shift();
 }
 
 /*
@@ -623,16 +647,16 @@ static int process_fg_shifted(const keycode c) {
 		OP_MON  | OP_SQRT
 	};
 
-	enum shifts old_shift = set_shift(SHIFT_N);
+	enum shifts shift = reset_shift();
 	int lc = keycode_to_linear(c);
-	int op = op_map[lc][old_shift == SHIFT_G];
+	int op = op_map[lc][shift == SHIFT_G];
 
 	switch (c) {
 	case K00:
 	case K01:
 	case K02:
 	case K03:
-		if (UState.intm /* && old_shift == SHIFT_F */)
+		if (UState.intm /* && shift == SHIFT_F */)
 			return check_f_key(lc, op_map2[lc]);
 
 		if ( c == K00 ) {
@@ -653,7 +677,7 @@ static int process_fg_shifted(const keycode c) {
 		if (UState.intm) {
 			State2.arrow = 1;
 #ifdef ARROW_KEEPS_SHIFT
-			set_shift(old_shift);
+			set_shift(shift);
 #endif
 			return STATE_UNFINISHED;
 		}
@@ -661,10 +685,10 @@ static int process_fg_shifted(const keycode c) {
 #else
 	case K22:
 	case K23:
-		if (is_shift_down(old_shift)) {
+		if (is_shift_down(shift)) {
 			const enum single_disp d =
-				c == K22 ? old_shift == SHIFT_F ? SDISP_BIN : SDISP_OCT
-				         : old_shift == SHIFT_F ? SDISP_DEC : SDISP_HEX;
+				c == K22 ? shift == SHIFT_F ? SDISP_BIN : SDISP_OCT
+				         : shift == SHIFT_F ? SDISP_DEC : SDISP_HEX;
 			set_smode(d);
 			process_cmdline_set_lift();
 			return STATE_UNFINISHED;
@@ -673,7 +697,7 @@ static int process_fg_shifted(const keycode c) {
 #endif
 
 	case K20:				// Alpha
-		if (old_shift == SHIFT_F) {
+		if (shift == SHIFT_F) {
 			State2.alphas = 1;
 			process_cmdline_set_lift();
 		}
@@ -681,7 +705,7 @@ static int process_fg_shifted(const keycode c) {
 
 	case K50:				// Window left/right
 		if (UState.intm) {
-			if (old_shift == SHIFT_F) {
+			if (shift == SHIFT_F) {
 				if (UState.int_maxw > State2.int_window)
 					State2.int_window++;
 			}
@@ -764,7 +788,7 @@ static int process_h_shifted(const keycode c) {
 
 	int lc = keycode_to_linear(c);
 	int op = op_map[lc];
-	set_shift(SHIFT_N);
+	reset_shift();
 
 	// The switch handles all the special cases
 	switch (c) {
@@ -883,9 +907,9 @@ static int process_fg_shifted_cmplx(const keycode c) {
 		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
 	};
 
-	enum shifts old_shift = set_shift(SHIFT_N);
+	enum shifts shift = reset_shift();
 	int lc = keycode_to_linear(c);
-	int op = op_map[lc][old_shift == SHIFT_G];
+	int op = op_map[lc][shift == SHIFT_G];
 	State2.cmplx = 0;
 
 	switch (c) {
@@ -896,7 +920,7 @@ static int process_fg_shifted_cmplx(const keycode c) {
 		return STATE_UNFINISHED;
 
 	case K_CMPLX:
-		set_shift(old_shift);
+		set_shift(shift);
 		break;
 
 	case K51:
@@ -923,7 +947,7 @@ static int process_fg_shifted_cmplx(const keycode c) {
  *  Process a key code after h shift and CPX
  */
 static int process_h_shifted_cmplx(const keycode c) {
-	set_shift(SHIFT_N);
+	reset_shift();
 	State2.cmplx = 0;
 	switch (c) {
 	case K12:	return OP_NIL | OP_CRUP;
@@ -997,17 +1021,17 @@ static int process_hyp(const keycode c) {
  *  Process a key code after ->
  */
 static int process_arrow(const keycode c) {
-	const enum shifts oldstate = set_shift(SHIFT_N);
+	const enum shifts shift = reset_shift();
 
 	State2.arrow = 0;
 	switch (c) {
 	case K10:
-		if (oldstate == SHIFT_N || oldstate == SHIFT_G)
+		if (shift == SHIFT_N || shift == SHIFT_G)
 			return OP_MON | OP_2DEG;
 		return OP_MON | OP_2HMS;
 
 	case K11:
-		if (oldstate == SHIFT_N || oldstate == SHIFT_G)
+		if (shift == SHIFT_N || shift == SHIFT_G)
 			return OP_MON | OP_2RAD;
 		return OP_MON | OP_HMS2;
 
@@ -1015,7 +1039,7 @@ static int process_arrow(const keycode c) {
 		return OP_MON | OP_2GRAD;
 
 	case K20:
-		if (oldstate == SHIFT_N || oldstate == SHIFT_F) {
+		if (shift == SHIFT_N || shift == SHIFT_F) {
 			process_cmdline_set_lift();
 			State2.arrow_alpha = 1;
 		}
@@ -1023,18 +1047,18 @@ static int process_arrow(const keycode c) {
 
 #ifndef SHIFT_HOLD_TEMPVIEW
 	case K22:
-		set_smode((oldstate == SHIFT_F)?SDISP_BIN:SDISP_OCT);
+		set_smode((shift == SHIFT_F)?SDISP_BIN:SDISP_OCT);
 		process_cmdline_set_lift();
 		break;
 
 	case K23:
-		set_smode((oldstate == SHIFT_F)?SDISP_DEC:SDISP_HEX);
+		set_smode((shift == SHIFT_F)?SDISP_DEC:SDISP_HEX);
 		process_cmdline_set_lift();
 		break;
 #endif
 
 	case K04:
-		switch (oldstate) {
+		switch (shift) {
 		case SHIFT_F:
 			return OP_NIL | OP_P2R;
 		case SHIFT_G:
@@ -1155,7 +1179,7 @@ fin:		set_pc(rawpc);
 /* Process a keystroke in alpha mode
  */
 static int process_alpha(const keycode c) {
-	const enum shifts oldstate = set_shift(SHIFT_N);
+	const enum shifts shift = reset_shift();
 	unsigned char ch;
 	unsigned int alpha_pos = State2.alpha_pos, n;
         int t;
@@ -1166,36 +1190,36 @@ static int process_alpha(const keycode c) {
 	case K01:
 	case K02:
 	case K03:
-		if (oldstate != SHIFT_F)
+		if (shift != SHIFT_F)
 			break;
-		ch = keycode_to_alpha(c, oldstate);
+		ch = keycode_to_alpha(c, shift);
                 t = check_f_key(c - K00, RARG(RARG_ALPHA, ch));
                 if (t == RARG(RARG_ALPHA, '\0'))
 			return STATE_UNFINISHED;
 		return t;
 
 	case K10:	// STO
-		if (oldstate == SHIFT_F)
+		if (shift == SHIFT_F)
 			init_arg(RARG_ASTO);
 		else
 			break;
 		return STATE_UNFINISHED;
 
 	case K11:	// RCL - maybe view
-		if (oldstate == SHIFT_F) {
+		if (shift == SHIFT_F) {
 			init_arg(RARG_ARCL);
 			return STATE_UNFINISHED;
-		} else if (oldstate == SHIFT_H) {
+		} else if (shift == SHIFT_H) {
 			init_arg(RARG_VIEW_REG);
 			return STATE_UNFINISHED;
 		}
 		break;
 
 	case K20:	// Enter - maybe exit alpha mode
-		if (oldstate == SHIFT_G || oldstate == SHIFT_H)
+		if (shift == SHIFT_G || shift == SHIFT_H)
 			break;
 #ifdef MULTI_ALPHA
-		if (oldstate == SHIFT_F && ! State2.runmode) {
+		if (shift == SHIFT_F && ! State2.runmode) {
 			State2.multi = 1;
 			State.base = DBL_ALPHA;
 			return STATE_UNFINISHED;
@@ -1206,30 +1230,30 @@ static int process_alpha(const keycode c) {
 		return STATE_UNFINISHED;
 
 	case K21:
-		if (oldstate == SHIFT_F)
+		if (shift == SHIFT_F)
 			return OP_NIL | OP_ALPHATOX;
-		else if (oldstate == SHIFT_G)
+		else if (shift == SHIFT_G)
 			return OP_NIL | OP_XTOALPHA;
 		break;
 
 	case K24:	// Clx - backspace, clear Alpha
-		if (oldstate == SHIFT_F)
+		if (shift == SHIFT_F)
 			return OP_NIL | OP_CLRALPHA;
-		if (oldstate == SHIFT_N)
+		if (shift == SHIFT_N)
 			return STATE_BACKSPACE;
 		break;
 
 	case K30:
-		if (oldstate == SHIFT_N)
+		if (shift == SHIFT_N)
 			init_arg(RARG_XEQ);
-		else if (oldstate == SHIFT_H)
+		else if (shift == SHIFT_H)
 			init_arg(RARG_GTO);
 		else
 			break;
 		return STATE_UNFINISHED;
 
 	case K40:
-		if (oldstate == SHIFT_N) {
+		if (shift == SHIFT_N) {
 			if ( State2.runmode ) {
 				// Alpha scroll left
 				n = alpha_pos + 1;
@@ -1241,14 +1265,14 @@ static int process_alpha(const keycode c) {
 		break;
 
 	case K44:
-		if (oldstate == SHIFT_H) {
+		if (shift == SHIFT_H) {
 			State2.status = 1;
 			return STATE_UNFINISHED;
 		}
 		break;
 
 	case K50:
-		if (oldstate == SHIFT_N) {
+		if (shift == SHIFT_N) {
 			if ( State2.runmode ) {
 				// Alpha scroll right
 				if (alpha_pos > 0)
@@ -1260,16 +1284,16 @@ static int process_alpha(const keycode c) {
 		break;
 
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
-		if (oldstate == SHIFT_F)
+		if (shift == SHIFT_F)
 			State2.alphashift = 1 - State2.alphashift;
-		else if (oldstate == SHIFT_G)
+		else if (shift == SHIFT_G)
 			return OP_NIL | OP_OFF;
-		else if (oldstate == SHIFT_N)
+		else if (shift == SHIFT_N)
 			init_state();
 		return STATE_UNFINISHED;
 
 	case K63:
-		if (oldstate == SHIFT_F)
+		if (shift == SHIFT_F)
 			return OP_NIL | OP_RS;		// R/S
 		break;
 
@@ -1278,7 +1302,7 @@ static int process_alpha(const keycode c) {
 	}
 
 	/* Look up the character and return an alpha code if okay */
-	ch = keycode_to_alpha(c, oldstate);
+	ch = keycode_to_alpha(c, shift);
 	if (ch == 0)
 		return STATE_UNFINISHED;
 	return RARG(RARG_ALPHA, ch & 0xff);
@@ -1410,9 +1434,11 @@ static int process_arg(const keycode c) {
 	unsigned int n = keycode_to_digit_or_register(c);
 	int stack_reg = argcmds[base].stckreg || State2.ind;
 #ifndef ALLOW_MORE_LABELS
-	const enum shifts old_shift = set_shift(SHIFT_N);
+	const enum shifts previous_shift = State2.shifts;
+	const enum shifts shift = reset_shift();
 	int label_addressing = argcmds[base].label && ! State2.ind && ! State2.dot;
-	int shorthand = label_addressing && (old_shift == SHIFT_F || (n > 9 && !(n & NO_SHORT)));
+	int shorthand = label_addressing && c != K_F 
+		        && (shift == SHIFT_F || (n > 9 && !(n & NO_SHORT)));
 #endif
 	n &= ~NO_SHORT;
 	if (base >= num_argcmds) {
@@ -1472,7 +1498,7 @@ static int process_arg(const keycode c) {
 	switch ((int)c) {
 	case K_F:
 		if (label_addressing)
-			set_shift(old_shift == SHIFT_F ? SHIFT_N : SHIFT_F);
+			set_shift(previous_shift == SHIFT_F ? SHIFT_N : SHIFT_F);
 		break;
 
 	case K_ARROW:		// arrow
@@ -1592,14 +1618,14 @@ static int process_arg(const keycode c) {
 /* Multi (2) word instruction entry
  */
 static int process_multi(const keycode c) {
-	const enum shifts oldstate = set_shift(SHIFT_N);
+	const enum shifts shift = reset_shift();
 	unsigned char ch;
 	unsigned int opcode;
 	unsigned int base = State.base;
 
 	switch (c) {
 	case K20:	// Enter - exit multi mode, maybe return a result
-		if (oldstate == SHIFT_F)
+		if (shift == SHIFT_F)
 			break;
 		State2.multi = 0;
 		if (State2.numdigit == 0) {
@@ -1614,7 +1640,7 @@ static int process_multi(const keycode c) {
 		}
 
 	case K24:	// Clx - backspace, clear alpha
-		if (oldstate == SHIFT_N || oldstate == SHIFT_F) {
+		if (shift == SHIFT_N || shift == SHIFT_F) {
 			if (State2.numdigit == 0)
 				State2.multi = 0;
 			else
@@ -1624,7 +1650,7 @@ static int process_multi(const keycode c) {
 		break;
 
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
-		if (oldstate == SHIFT_F)
+		if (shift == SHIFT_F)
 			State2.alphashift = 1 - State2.alphashift;
 		else
 			init_state();
@@ -1635,7 +1661,7 @@ static int process_multi(const keycode c) {
 	}
 
 	/* Look up the character and return an alpha code if okay */
-	ch = keycode_to_alpha(c, oldstate);
+	ch = keycode_to_alpha(c, shift);
 	if (ch == 0)
 		return STATE_UNFINISHED;
 	if (State2.numdigit == 0) {
@@ -1818,10 +1844,10 @@ static int process_catalogue(const keycode c) {
 	unsigned int dv = State2.digval;
 	unsigned char ch;
 	const int ctmax = current_catalogue_max();
-	const enum shifts s = cur_shift();
+	const enum shifts shift = cur_shift();
 	const enum catalogues cat = (enum catalogues) State2.catalogue;
 
-	if (s == SHIFT_N) {
+	if (shift == SHIFT_N) {
 		switch (c) {
 		case K30:			// XEQ accepts command
 		case K20:			// Enter accepts command
@@ -1882,7 +1908,7 @@ static int process_catalogue(const keycode c) {
 		default:
 			break;
 		}
-	} else if (s == SHIFT_F && c == K01 && State2.catalogue == CATALOGUE_CONV) {
+	} else if (shift == SHIFT_F && c == K01 && State2.catalogue == CATALOGUE_CONV) {
 		/* A small table of commands in pairs containing inverse commands.
 		 * This table could be unsigned characters only storing the monadic kind.
 		 * this saves twelve bytes in the table at a cost of some bytes in the code below.
@@ -1915,8 +1941,8 @@ static int process_catalogue(const keycode c) {
 	/* We've got a key press, map it to a character and try to
 	 * jump to the appropriate catalogue entry.
 	 */
-	ch = remap_chars(keycode_to_alpha(c, s));
-	set_shift(SHIFT_N);
+	ch = remap_chars(keycode_to_alpha(c, shift));
+	reset_shift();
 	if (ch == '\0')
 		return STATE_UNFINISHED;
 	if ( cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST ) {
@@ -2185,7 +2211,7 @@ static int process_registerlist(const keycode c) {
 }
 
 static int process(const int c) {
-	const enum shifts s = cur_shift();
+	const enum shifts shift = cur_shift();
 	enum catalogues cat;
 
 	if (Running || Pause) {
@@ -2219,7 +2245,7 @@ static int process(const int c) {
 	 * common across all modes.  Shifted modes need to check this themselves
 	 * if required.
 	 */
-	if (c == K60 && s == SHIFT_N && ! State2.catalogue) {
+	if (c == K60 && shift == SHIFT_N && ! State2.catalogue) {
 		soft_init_state();
 		return STATE_UNFINISHED;
 	}
@@ -2257,15 +2283,15 @@ static int process(const int c) {
 
 	// Process shift keys directly
 	if (c == K_F) {
-		set_shift((s == SHIFT_F)?SHIFT_N:SHIFT_F);
+		toggle_shift(SHIFT_F);
 		return STATE_UNFINISHED;
 	}
 	if (c == K_G) {
-		set_shift((s == SHIFT_G)?SHIFT_N:SHIFT_G);
+		toggle_shift(SHIFT_G);
 		return STATE_UNFINISHED;
 	}
 	if (c == K_H) {
-		set_shift((s == SHIFT_H)?SHIFT_N:SHIFT_H);
+		toggle_shift(SHIFT_H);
 		return STATE_UNFINISHED;
 	}
 
@@ -2275,7 +2301,7 @@ static int process(const int c) {
 	// Here the keys are mapped to catalogues
 	// The position of this code decides where catalog switching
 	// works and were not
-	cat = keycode_to_cat((keycode)c, s);
+	cat = keycode_to_cat((keycode)c, shift);
 	if ( cat != CATALOGUE_NONE ) {
 		init_cat( CATALOGUE_NONE );
 		init_cat( cat );
@@ -2302,15 +2328,15 @@ static int process(const int c) {
 		return process_alpha((const keycode)c);
 
 	if (State2.cmplx) {
-		if (s == SHIFT_F || s == SHIFT_G)
+		if (shift == SHIFT_F || shift == SHIFT_G)
 			return process_fg_shifted_cmplx((const keycode)c);
-		if (s == SHIFT_H)
+		if (shift == SHIFT_H)
 			return process_h_shifted_cmplx((const keycode)c);
 		return process_normal_cmplx((const keycode)c);
 	} else {
-		if (s == SHIFT_F || s == SHIFT_G)
+		if (shift == SHIFT_F || shift == SHIFT_G)
 			return process_fg_shifted((const keycode)c);
-		if (s == SHIFT_H)
+		if (shift == SHIFT_H)
 			return process_h_shifted((const keycode)c);
 		return process_normal((const keycode)c);
 	}
@@ -2413,6 +2439,9 @@ void process_keycode(int c)
 		}
 		else {
 			// Ignore key-up if no operation was pending
+			if (! State2.disp_temp ) {
+				display();
+			}
 			return;
 		}
 	}

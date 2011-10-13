@@ -273,7 +273,7 @@ static void set_seperator(int posn, const enum seperator_modes sep, char *res) {
  * Care needs to be taken to keep things aligned.
  * Spaces are 5 pixels wide, \006 is a single pixel space.
  */
-static void annunicators(void) {
+static void annunciators(void) {
 	char buf[42], *p = buf, *q;
 	int n;
 
@@ -1432,17 +1432,17 @@ nostk:	show_flags();
 				set_dig(i, *bp);
 		}
 	}
-	if (annuc)
-		annunicators();
 skpall:
 	if (rpn == 0 || State2.smode != SDISP_NORMAL)
 		ShowRPN = 0;
+	if (annuc && ShowRPN)
+		annunciators();
 	set_annunciators();
 
+	State2.disp_temp = (ShowRPN == 0 && State2.runmode);
 	State2.version = 0;
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
-	State2.disp_temp = (ShowRPN == 0 && State2.runmode);
 	ShowRegister = regX_idx;
 	finish_display();
 #if !defined(REALBUILD) && !defined(WINGUI)

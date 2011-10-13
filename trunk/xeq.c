@@ -680,7 +680,7 @@ void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
 		BankRegs[i] = Regs[0];
 	BankFlags = 0;
 
-	set_shift(SHIFT_N);
+	reset_shift();
 	State2.test = TST_NONE;
 
 	DispMsg = NULL;

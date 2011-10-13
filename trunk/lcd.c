@@ -61,38 +61,45 @@ static const unsigned char lcd_bit[] = {
 #undef M
 };
 
-void set_dot(int n) {
+volatile unsigned int *LcdAddr;
+
+static int find_dot(int n) {
         unsigned int m;
         
         if ( n >= 0 && n <= 141 ) {
                 m = 1 << lcd_bit[n];
-                AT91C_SLCDC_MEM[lcd_addr[n]] |= m;
-        }
+		LcdAddr = AT91C_SLCDC_MEM + lcd_addr[n];
+		return m;
+	}
 #ifdef DEBUG
-        else {
-                *((char *)NULL)=0;
-        }
+        *((char *)NULL)=0;
 #endif
+	return 0;
+}
+
+void set_dot(int n) {
+        unsigned int m = find_dot(n);
+        if (m != 0)
+		*LcdAddr |= m;
 }
 
 void clr_dot(int n) {
-        unsigned int m;
-        if ( n >= 0 && n <= 141 ) {
-                m = 1 << lcd_bit[n];
-                AT91C_SLCDC_MEM[lcd_addr[n]] &= ~m;
-        }
-#ifdef DEBUG
-        else {
-                *((char *)NULL)=0;
-        }
-#endif
+        unsigned int m = find_dot(n);
+        if (m != 0)
+                *LcdAddr &= ~m;
 }
+
+int is_dot(int n) {
+        unsigned int m = find_dot(n);
+        return m != 0 && (*LcdAddr & m) != 0;
+}
+
 
 void set_status_grob(unsigned long long int grob[6]) {
         volatile unsigned long long int *p = (volatile unsigned long long int *)AT91C_SLCDC_MEM;
         int i, j;
 
-        //6*33 horizontal matrix transfert
+        //6*33 horizontal matrix transfer
         p[6] = (p[6]&~0x7fffffffc0LL) | ((grob[0]<<6) & 0x7fffffffc0LL);
         p[7] = (p[7]&~0x7fffffffc0LL) | ((grob[1]<<6) & 0x7fffffffc0LL);
         p[8] = (p[8]&~0x7fffffffc0LL) | ((grob[2]<<6) & 0x7fffffffc0LL);
@@ -167,16 +174,25 @@ int setuptty(int reset) {
 
 
 void reset_disp(void) {
-        int i;
+#if defined(REALBUILD) || defined(WINGUI)
+	int rcl = is_dot(RCL_annun);
+	int bat = is_dot(BATTERY);
+	int leq = is_dot(LIT_EQ);
 
         wait_for_display();
+	xset((void *) AT91C_SLCDC_MEM, 0, 4 * 20);
+	dot(RCL_annun, rcl);
+	dot(BATTERY, bat);
+	dot(LIT_EQ, leq);
+#else
+// Console
+#ifdef USECURSES
+	int i;
         for (i=0; i<MATRIX_BASE; i++)
 		if (i != RCL_annun && i != BATTERY && i != LIT_EQ )
 			clr_dot(i);
 
-#if !defined(REALBUILD) && !defined(WINGUI)
-#ifdef USECURSES
-        erase();
+	erase();
         MOVE(0, 4);
 #else
         putchar('\r');

@@ -20,6 +20,7 @@
 extern int setuptty(int reset);
 extern void set_dot(int n);
 extern void clr_dot(int n);
+extern int is_dot(int n);
 extern void set_status_grob(unsigned long long int grob[6]);
 extern void show_disp(void);
 extern void wait_for_display(void);

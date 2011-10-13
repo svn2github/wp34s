@@ -364,21 +364,6 @@ void scan_keyboard( void )
 					 */
 					i = 7;
 
-					if ( State2.shifts == SHIFT_N ) {
-						/*
-						 *  Insert Shift key if f,g,h still down
-						 */
-						if ( k != K_F && ( KbData & KEY_SHIFT_F_MASK ) ) {
-							put_key( K_F );
-						}
-						else if ( k != K_G && ( KbData & KEY_SHIFT_G_MASK ) ) {
-							put_key( K_G );
-						}
-						else if ( k != K_H && ( KbData & KEY_SHIFT_H_MASK ) ) {
-							put_key( K_H );
-						}
-					}
-
 					/*
 					 *  Add key to buffer
 					 */
