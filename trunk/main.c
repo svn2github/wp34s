@@ -148,7 +148,7 @@ signed char KeyBuffer[ KEY_BUFF_LEN ];
 volatile char KbRead, KbWrite, KbCount;
 volatile char OnKeyPressed;
 short int KbRepeatCount;
-long long KbData, KbDebounce, KbRepeatKey, KbLastDecoded;
+long long KbData, KbDebounce, KbRepeatKey;
 short int BodThreshold;
 short int BodTimer;
 
@@ -333,22 +333,20 @@ void scan_keyboard( void )
 
 	if ( keys.ll == 0 ) {
 		/*
-		 *  Test for key-up
+		 *  No new key to decode: test for key-up
+		 *  Key must have been twice down for debounce reasons
 		 */
-		if ( KbLastDecoded != 0 && ( KbLastDecoded & KbData ) == 0 ) {
+		if ( ( last_keys & KbDebounce & ~KbData ) != 0 ) {
 			/*
-			 *  The key which was sent last is no longer pressed
+			 *  A key has been released
 			 */
 			put_key( K_RELEASE );
-			KbLastDecoded = 0;
 		}
 	}
 	else {
 		/*
 		 *  Decode
 		 */
-		KbLastDecoded = keys.ll;
-
 		k = 0;
 		for ( i = 0; i < 7; ++i ) {
 			/*
@@ -1298,7 +1296,8 @@ int is_key_pressed( void )
  */
 int is_shift_down( int s )
 {
-	return 0 != ( (int) KbData & ( 0x400 << s ) );
+	const int mask = s == SHIFT_ANY ? 0x3800 : (0x400 << s);
+	return 0 != ( (int) KbData & mask );
 }
 
 
@@ -1650,12 +1649,6 @@ int main(void)
 			/*
 			 *  Save power if nothing in queue
 			 */
-			if ( !OnKeyPressed && confirm_counter == 1 ) {
-				// ON key was released
-				confirm_counter = 0;
-				DispMsg = "Cancelled";
-				display();
-			}
 #ifdef ALLOW_DEEP_SLEEP
 			/*
 			 *  Test if we can turn ourself completely off
@@ -1707,8 +1700,14 @@ int main(void)
 
 		if ( k != K_HEARTBEAT ) {
 			/*
-			 *  A real key was pressed
+			 *  A real key was pressed or released
 			 */
+			if ( !OnKeyPressed && confirm_counter == 1 ) {
+				// ON key was released
+				confirm_counter = 0;
+				DispMsg = "Cancelled";
+				display();
+			}
 			if ( OnKeyPressed && k != K60 && !Running ) {
 				/*
 				 *  Check for special key combinations.
@@ -1729,8 +1728,7 @@ int main(void)
 					// ON-"+" Increase contrast
 					if ( UState.contrast != 15 ) {
 						++UState.contrast;
-						DispMsg = "+Contrast";
-						display();
+						message( "+Contrast", NULL );
 					}
 					confirm_counter = 0;
 					break;
@@ -1739,8 +1737,7 @@ int main(void)
 					// ON-"-" Decrease contrast
 					if ( UState.contrast != 0 ) {
 						--UState.contrast;
-						DispMsg = "-Contrast";
-						display();
+						message( "-Contrast", NULL );
 					}
 					confirm_counter = 0;
 					break;
@@ -1762,8 +1759,8 @@ int main(void)
 				case K62:
 					// ON + . toggle radix mark
 					UState.fraccomma = !UState.fraccomma;
-					DispMsg = UState.fraccomma ? "RDX," : "RDX.";
-					display();
+					display(); // Update number in display
+					message( UState.fraccomma ? "RDX," : "RDX.", NULL );
 					confirm_counter = 0;
 					break;
 

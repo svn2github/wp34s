@@ -220,7 +220,8 @@ int put_key(int k)
 int is_shift_down(int s)
 {
 	long long map = GetKeyboardMap();
-	return 0 != ( map & ( 0x100 << s ) );
+	int mask = s == SHIFT_ANY ? 0xe00 : (0x100 << s);
+	return 0 != ( map & mask );
 }
 
 

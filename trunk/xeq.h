@@ -955,7 +955,8 @@ enum catalogues
 enum shifts {
 	SHIFT_N = 0,
 	SHIFT_F, SHIFT_G, SHIFT_H,
-	SHIFT_LC_N, SHIFT_LC_G		// Two lower case planes
+	SHIFT_LC_N, SHIFT_LC_G,		// Two lower case planes
+	SHIFT_ANY			// Used only in is_shift_down()
 };
 
 

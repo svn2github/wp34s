@@ -1203,7 +1203,7 @@ static void set_annunciators(void)
 
 	/* Show the RPN indicator only if display shows X in the normal mode
 	 */
-	dot(RPN, ShowRPN == 1 && Running);
+	dot(RPN, ShowRPN >= 1 && ! Running);
 }
 
 
@@ -1217,7 +1217,7 @@ void display(void) {
 	int annuc = 0;
 	const enum catalogues cata = (enum catalogues) State2.catalogue;
 	int skip = 0;
-	int rpn = 0;
+	int x_disp = 0;
 
 	if (State2.disp_freeze) {
 		State2.disp_freeze = 0;
@@ -1345,7 +1345,6 @@ void display(void) {
 	} else if (State2.runmode) {
 		if (DispMsg) {
 			set_status(DispMsg);
-			DispMsg = NULL;
 			State2.disp_small = 0;
 		} else if (State2.alphas) {
 #if 0
@@ -1405,14 +1404,14 @@ nostk:	show_flags();
 			p = get_cmdline();
 			if (p == NULL || cata) {
 				if (ShowRegister != -1) {
-					rpn = (ShowRegister == regX_idx) && !State2.hms;
+					x_disp = (ShowRegister == regX_idx) && !State2.hms;
 					format_reg(get_reg_n(ShowRegister), NULL);
 				}
 				else
 					set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
 			} else {
 				disp_x(p);
-				rpn = 1;
+				x_disp = 1;
 			}
 		} else {
 			unsigned int upc = user_pc();
@@ -1433,17 +1432,18 @@ nostk:	show_flags();
 		}
 	}
 skpall:
-	if (rpn == 0 || State2.smode != SDISP_NORMAL)
+	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL)
 		ShowRPN = 0;
-	if (annuc && ShowRPN)
-		annunciators();
 	set_annunciators();
 
 	State2.disp_temp = (ShowRPN == 0 && State2.runmode);
+	if (annuc && !State2.disp_temp)
+		annunciators();
 	State2.version = 0;
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;
+	DispMsg = NULL;
 	finish_display();
 #if !defined(REALBUILD) && !defined(WINGUI)
         just_displayed = 1;
@@ -1593,6 +1593,7 @@ void set_running_off() {
 }
 
 void set_running_on() {
+	set_running_on_sst();
 	reset_disp();
 	set_annunciators();
 	dot( BEG, 0 );
@@ -1604,7 +1605,6 @@ void set_running_on() {
 	set_digits_string("running", 0);
 #endif
 	finish_display();
-	set_running_on_sst();
 	LastKey = 0;
 }
 

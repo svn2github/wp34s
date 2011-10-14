@@ -787,7 +787,9 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
           InvertRgn(hDC, m_rgnPressedButton);
           ::ReleaseDC(m_Background.m_hWnd, hDC);
 #ifdef wp34s
-          if (wKeyCode == 'F' || wKeyCode == 'G' || wKeyCode == 'H') return;
+          if (wKeyCode == 'F' || wKeyCode == 'G' || wKeyCode == 'H') {
+            return;
+	  }
 #endif
           m_Touch_Base = KEYBOARD;
         }
@@ -813,9 +815,6 @@ void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
     m_rgnPressedButton = Skin.hpGetKeyRegion(wKeyCode, m_bShiftKeyPressed, &key);
   }
   if (m_rgnPressedButton != 0 && key >= 0 && System.KeyboardMap & ((u64)1 << key)) {
-#ifdef wp34s
-    keypress(98);
-#endif
     HDC hDC = ::GetDC(m_Background.m_hWnd);
     InvertRgn(hDC, m_rgnPressedButton);
     ::ReleaseDC(m_Background.m_hWnd, hDC);
@@ -823,6 +822,9 @@ void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
     System.KeyboardMap &= ~((u64)1 << key);
     m_nHP20bKeyDown = - 1;
     m_rgnPressedButton = 0;
+#ifdef wp34s
+    keypress(98);
+#endif
   }
   m_Touch_Base = NONE;
 }
@@ -856,15 +858,15 @@ void CHP20b_cDlg::OnLButtonUp(UINT nFlags, CPoint point)
   if (NULL != m_rgnPressedButton && MOUSE == m_Touch_Base) {
     HDC   hDC =::GetDC(m_Background.m_hWnd);
 
-#ifdef wp34s
-    keypress( 98 );
-#endif
     InvertRgn(hDC, m_rgnPressedButton);
     ::ReleaseDC(m_Background.m_hWnd, hDC);
     DeleteObject(m_rgnPressedButton);
     System.KeyboardMap &= ~((u64)1 << m_nCurKeyPadNum);
     m_rgnPressedButton = NULL;
     m_nCurKeyPadNum = - 1;
+#ifdef wp34s
+    keypress( 98 );
+#endif
   }
   if (MOUSE == m_Touch_Base)
     m_Touch_Base = NONE;
@@ -885,11 +887,25 @@ void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
     m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
     if (NULL != m_rgnPressedButton) {
       if (m_nCurKeyPadNum >= 0) {
+#ifdef wp34s
+	if (m_nCurKeyPadNum >= 9 && m_nCurKeyPadNum <= 11) {
+          DeleteObject(m_rgnPressedButton);
+	  for (int i = 9; i <= 11; ++i) {
+            // A shift key may still be down, unlock it
+            if (System.KeyboardMap & (u64)1 << i) {
+	      HP20bKeyUp(i - 9 + 'F');
+	      if (i == m_nCurKeyPadNum)
+		return;
+	    }
+	  }
+	  m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
+	}
+#endif
         keypress(m_nCurKeyPadNum);
         if (m_Background.m_hWnd == 0)
           return;
 
-        HDC   hDC =::GetDC(m_Background.m_hWnd);
+        HDC hDC =::GetDC(m_Background.m_hWnd);
 
         InvertRgn(hDC, m_rgnPressedButton);
         ::ReleaseDC(m_Background.m_hWnd, hDC);
@@ -971,7 +987,8 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
       DeleteObject(r);
 #ifdef wp34s
       OnLButtonUp(nFlags, point);
-      HP20bKeyUp('H');
+      if (code != 11)
+	HP20bKeyUp('H');
 #endif
     }
 #ifndef wp34s
@@ -1014,10 +1031,12 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
 #ifdef wp34s
       if (code >= 9 && code <= 11 ) {
         // RMB on f to h
-        if ( System.KeyboardMap & ((u64)1 << code) )
-          HP20bKeyUp('F' + code - 9);
-        else
-          HP20bKeyDown('F' + code - 9);
+	for (int i = 9; i <= 11; ++i) {
+          if ( System.KeyboardMap & ((u64)1 << i) )
+            HP20bKeyUp('F' + i - 9);
+          else if (i == code)
+            HP20bKeyDown('F' + code - 9);
+	}
       }
       else {
         // RMB on any other key: press g before

@@ -222,7 +222,9 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			return CATALOGUE_NORMAL;
 
 		case K51:
-			return CATALOGUE_TEST;
+			if (! State2.cmplx)
+				return CATALOGUE_TEST;
+			break;
 
 		case K52:
 			return CATALOGUE_PROG;
@@ -861,67 +863,74 @@ static int process_normal_cmplx(const keycode c) {
 /*
  *  Process a key code after f or g shift and CPX
  */
-static int process_fg_shifted_cmplx(const keycode c) {
+static int process_fgh_shifted_cmplx(const keycode c) {
 
-	static const unsigned short int op_map[][2] = {
+	static const unsigned short int op_map[][3] = {
 		// Row 1
-		{ 1,                   0                   }, // HYP
-		{ OP_CMON | OP_SIN,    OP_CMON | OP_ASIN   },
-		{ OP_CMON | OP_COS,    OP_CMON | OP_ACOS   },
-		{ OP_CMON | OP_TAN,    OP_CMON | OP_ATAN   },
-		{ OP_NIL | OP_P2R,     OP_NIL | OP_R2P     },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    }, // CPX
+		{ 1,                   0,                   STATE_UNFINISHED    }, // HYP
+		{ OP_CMON | OP_SIN,    OP_CMON | OP_ASIN,   STATE_UNFINISHED    },
+		{ OP_CMON | OP_COS,    OP_CMON | OP_ACOS,   STATE_UNFINISHED    },
+		{ OP_CMON | OP_TAN,    OP_CMON | OP_ATAN,   STATE_UNFINISHED    },
+		{ OP_NIL | OP_P2R,     OP_NIL | OP_R2P,     STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    }, // CPX
 		// Row 2
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_CRUP    }, // R^
 		// Row 3
-		{ STATE_UNFINISHED,    OP_NIL | OP_CFILL   }, // ENTER
-		{ STATE_UNFINISHED,    RARG_CSWAPZ         },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    OP_NIL | OP_CFILL,   OP_NIL | OP_CFILL   }, // ENTER
+		{ STATE_UNFINISHED,    RARG_CSWAPZ,         RARG_CSWAPX         },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_CMON | OP_CCONJ  },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
 		// Row 4
-		{ OP_CMON | OP_EXP,    OP_CMON | OP_LN     },
-		{ OP_CMON | OP_10POWX, OP_CMON | OP_LOG    },
-		{ OP_CMON | OP_2POWX,  OP_CMON | OP_LG2    },
-		{ OP_CDYA | OP_POW,    OP_CDYA | OP_LOGXY  },
-		{ OP_CMON | OP_RECIP,  OP_CDYA | OP_PARAL  },
+		{ OP_CMON | OP_EXP,    OP_CMON | OP_LN,     STATE_UNFINISHED    },
+		{ OP_CMON | OP_10POWX, OP_CMON | OP_LOG,    STATE_UNFINISHED    },
+		{ OP_CMON | OP_2POWX,  OP_CMON | OP_LG2,    STATE_UNFINISHED    },
+		{ OP_CDYA | OP_POW,    OP_CDYA | OP_LOGXY,  STATE_UNFINISHED    },
+		{ OP_CMON | OP_RECIP,  OP_CDYA | OP_PARAL,  STATE_UNFINISHED    },
 		// Row 5
-		{ OP_CDYA | OP_COMB,   OP_CDYA | OP_PERM   },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ OP_CMON | OP_SQRT,   OP_CMON | OP_SQR    },
+		{ OP_CDYA | OP_COMB,   OP_CDYA | OP_PERM,   OP_CMON | OP_FACT   },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ OP_CMON | OP_SQRT,   OP_CMON | OP_SQR,    OP_CMON | OP_SQR    },
 		// Row 6
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ TST_EQ,              TST_NE              }, // tests
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ TST_EQ,              TST_NE,              TST_APX             }, // tests
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    CONST_CMPLX(OP_PI)  },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
 		// Row 7
-		{ STATE_UNFINISHED,    OP_NIL | OP_OFF     },
-		{ OP_CMON | OP_ABS,    OP_CMON | OP_RND    },
-		{ OP_CMON | OP_TRUNC,  OP_CMON | OP_FRAC   },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    OP_NIL | OP_OFF,     STATE_UNFINISHED    },
+		{ OP_CMON | OP_ABS,    OP_CMON | OP_RND,    STATE_UNFINISHED    },
+		{ OP_CMON | OP_TRUNC,  OP_CMON | OP_FRAC,   STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    }
 	};
 
 	enum shifts shift = reset_shift();
 	int lc = keycode_to_linear(c);
-	int op = op_map[lc][shift == SHIFT_G];
+	int op = op_map[lc][shift - SHIFT_F];
 	State2.cmplx = 0;
 
 	switch (c) {
 	case K00:
-		State2.hyp = 1;
-		State2.dot = op;
-		State2.cmplx = 1;
+		if (op != STATE_UNFINISHED) {
+			State2.hyp = 1;
+			State2.dot = op;
+			State2.cmplx = 1;
+		}
 		return STATE_UNFINISHED;
 
 	case K_CMPLX:
 		set_shift(shift);
 		break;
+
+	case K21:
+		if (op != STATE_UNFINISHED)
+			init_arg((enum rarg)op);
+		return STATE_UNFINISHED;
 
 	case K51:
 		State2.cmplx = 1;
@@ -932,43 +941,13 @@ static int process_fg_shifted_cmplx(const keycode c) {
 		init_state();
 		break;
 
-	case K21:
-		if (op != STATE_UNFINISHED)
-			init_arg((enum rarg)op);
-		return STATE_UNFINISHED;
-
 	default:
 		break;
 	}
 	return op;
 }
 
-/*
- *  Process a key code after h shift and CPX
- */
-static int process_h_shifted_cmplx(const keycode c) {
-	reset_shift();
-	State2.cmplx = 0;
-	switch (c) {
-	case K12:	return OP_NIL | OP_CRUP;
 
-	case K21:	init_arg(RARG_CSWAPX);	break;	// x<>
-	case K22:	return OP_CMON | OP_CCONJ;
-
-	case K40:	return OP_CMON | OP_FACT;	// z!
-
-	case K51:
-		State2.cmplx = 1;
-		State2.test = TST_APX;
-		return STATE_UNFINISHED;
-
-	case K53:	return CONST_CMPLX(OP_PI);
-
-	default:
-		break;
-	}
-	return STATE_UNFINISHED;
-}
 
 /*
  * Fairly simple routine for dealing with the HYP prefix.
@@ -1081,12 +1060,9 @@ static int gtodot_digit(const int n) {
 	unsigned int dv = State2.digval;
 	const unsigned int val = dv * 10 + n;
 
-	State2.numdigit++;
-	if (State2.numdigit == 2) {		// two digits starting large
-		if (val > NUMPROG / 10)
-			return val;
-	}
-	if (State2.numdigit == 3)
+	if (val > NUMPROG / 10)
+		return val;
+	if (++State2.numdigit == 3)
 		return val;
 	State2.digval = val;
 	return -1;
@@ -1106,30 +1082,39 @@ static int gtodot_fkey(int n) {
 
 static int process_gtodot(const keycode c) {
 	int pc = -1;
-	unsigned int rawpc;
+	unsigned int rawpc = keycode_to_digit_or_register(c);
 
-	switch (c) {
-	case K31:
-	case K32:
-	case K33:
-	case K41:
-	case K42:
-	case K43:
-	case K51:
-	case K52:
-	case K53:
-	case K61:
-		pc = gtodot_digit(keycode_to_digit_or_register(c));
-		break;
-
-	case K00:
-	case K01:
-	case K02:
-	case K03:
+	if (rawpc <= 9) {
+		// Digit 0 - 9
+		pc = gtodot_digit(rawpc);
+	}
+	else if (c >= K00 && c <= K03) {
+		// A - D
 		rawpc = gtodot_fkey(c - K00);
 		goto fin;
-
+	}
+	else if (c == K62) {
+		// .
+		if (State2.numdigit == 0) {
+			rawpc = 0;
+			goto fin;
+		}
+	}
+	else if (c == K20) {
+		// ENTER - short circuit processing
+		pc = State2.digval;
+	}
+	else if (c == K24) {
+		// backspace
+		if (State2.numdigit == 0) {
+			pc = state_pc();
+		} else {
+			State2.numdigit--;
+			State2.digval /= 10;
+		}
+	}
 #ifdef ALLOW_MORE_LABELS
+	else switch (c) {
 	case K05:	rawpc = gtodot_fkey(4);	goto fin;		// F
 	case K10:	case K11:	case K12:			// G H & I
 		rawpc = gtodot_fkey(c - K10 + 5);
@@ -1143,28 +1128,10 @@ static int process_gtodot(const keycode c) {
 	case K34:	rawpc = gtodot_fkey(11);	goto fin;	// P
 	case K44:	rawpc = gtodot_fkey(12);	goto fin;	// T
 	case K54:	rawpc = gtodot_fkey(13);	goto fin;	// W
-#endif
-	case K62:		// .
-		if (State2.numdigit == 0) {
-			rawpc = 0;
-			goto fin;
-		}
-		break;
-
-	case K20:		// ENTER - short circuit processing
-		pc = State2.digval;
-		break;
-
-	case K24:		// backspace
-		if (State2.numdigit == 0) {
-			pc = state_pc();
-		} else {
-			State2.numdigit--;
-			State2.digval /= 10;
-		}
 	default:
 		return STATE_UNFINISHED;
 	}
+#endif
 	if (pc >= 0) {
 		rawpc = find_user_pc(pc);
 fin:		set_pc(rawpc);
@@ -2328,10 +2295,8 @@ static int process(const int c) {
 		return process_alpha((const keycode)c);
 
 	if (State2.cmplx) {
-		if (shift == SHIFT_F || shift == SHIFT_G)
-			return process_fg_shifted_cmplx((const keycode)c);
-		if (shift == SHIFT_H)
-			return process_h_shifted_cmplx((const keycode)c);
+		if (shift != SHIFT_N)
+			return process_fgh_shifted_cmplx((const keycode)c);
 		return process_normal_cmplx((const keycode)c);
 	} else {
 		if (shift == SHIFT_F || shift == SHIFT_G)
@@ -2361,6 +2326,20 @@ void process_keycode(int c)
 		 *  Heartbeat processing goes here.
 		 *  This is totally thread safe!
 		 */
+
+		/*
+		 *  Toggle the RPN annunciator as a visual feedback
+		 *  While the display is frozen, the annunciator stays cleared.
+		 */
+		if ( ShowRPN == 1 && !Running ) {
+			dot(RPN, 1);
+			finish_display();
+			ShowRPN = 2;
+		}
+		else if ( ShowRPN == -1 ) {
+			ShowRPN = 1;
+		}
+
 		if (OpCode != 0) {
 			/*
 			 *  Handle command display and NULL here
@@ -2377,20 +2356,15 @@ void process_keycode(int c)
 				 *  Key is too long held down
 				 */
 				OpCode = 0;
-				DispMsg = "NULL";
-				display();
+				message("NULL", NULL);
+				// Force display update on key-up
+				State2.disp_temp = 0;
+				ShowRPN = 2;
 			}
 		}
-		/*
-		 *  Toggle the RPN annunciator as a visual feedback
-		 *  While the display is frozen, the annunciator stays cleared.
-		 */
-		if ( ShowRPN == 1 ) {
-			dot(RPN, 1);
-			finish_display();
-		}
-		else if ( ShowRPN == -1 ) {
-			ShowRPN = 1;
+		if (Keyticks > 12 && is_shift_down( SHIFT_ANY )) {
+			// Rely on the held shift key instead of the toggle
+			State2.shifts = SHIFT_N;
 		}
 
 		/*
@@ -2436,10 +2410,12 @@ void process_keycode(int c)
 				if ( Running || Pause )
 					xeqprog();
 			}
+			ShowRPN = 1; // Back to normal display and processing
 		}
 		else {
 			// Ignore key-up if no operation was pending
 			if (! State2.disp_temp ) {
+				// This will get rid of the last displayed op-code
 				display();
 			}
 			return;
