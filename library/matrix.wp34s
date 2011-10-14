@@ -12,7 +12,7 @@ m_ident::		LBL'M-1'
 m_zero::		LBL'M-0'
 			CF C
 m_init_1::		ABS
-			M.ALL
+			M-ALL
 m_init_2::			STO[->]X
 				STO-[->]X
 				ISG X
@@ -20,7 +20,7 @@ m_init_2::			STO[->]X
 m_init_3::		x[<->] L
 			FC?C C
 			RTN
-			M.DIAG
+			M-DIAG
 m_init_4::			INC[->]X
 				ISG X
 				JMP m_init_4
@@ -39,7 +39,7 @@ m_init_4::			INC[->]X
 			LBL'TR'
 			CF C
 m_trace_common::	ABS
-			M.DIAG
+			M-DIAG
 			iC 0
 m_trace_loop::		RCL[->]Y
 			FS? C
