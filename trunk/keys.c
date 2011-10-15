@@ -1188,6 +1188,7 @@ static int process_alpha(const keycode c) {
 #ifdef MULTI_ALPHA
 		if (shift == SHIFT_F && ! State2.runmode) {
 			State2.multi = 1;
+			State2.numdigit = 0;
 			State.base = DBL_ALPHA;
 			return STATE_UNFINISHED;
 		}
