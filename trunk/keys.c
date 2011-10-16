@@ -1984,7 +1984,10 @@ static int process_status(const keycode c) {
 		if (++n > 9)
 			n = 0;
 	}
-	else
+	else if (c == K24) {
+		State2.status = 0;
+		return STATE_UNFINISHED;
+	} else
 		n = keycode_to_digit_or_register(c);
 
 	if ( n <= 9 )
