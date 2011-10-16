@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define MAXD	100
 
 static const int am11[100] = {
   65,	66,	-58,	74,	-3,	-46,	28,	29,	11,	6,
@@ -47,29 +48,55 @@ static const int am12[100] = {
   60,	19,	33,	10,	19,	53,	81,	-20,	-12,	8
 };
 
-void outmat(const char *label, const int am[], int d) {
+static int pos(int x) {
+	if (x < 0)
+		return -x;
+	return x;
+}
+
+static void outmat(const char *label, const int am[], int d) {
 	char buf[30];
 	int x;
-	int i;
+	int i, j, k;
 	char *p;
+	unsigned char used[MAXD];
+
+	memset(used, 0, sizeof(used));
 
 	printf("\tLBL'%s'\n", label);
 	for (i=0; i<d; i++) {
+		if (used[i])
+			continue;
 		x = am[i];
 		if (x < 0)
 			x = -x;
 		sprintf(buf, "%d", x);
 		for (p=buf; *p != 0; p++)
 			printf("\t%c\n", *p);
-		if (am[i] < 0)
-			printf("\t+/-\n");
-		printf("\tSTO %02d\n", i);
+		for (j=i; j<d; j++) {
+			if (pos(am[i]) == am[j]) {
+				used[j] = 1;
+				printf("\tSTO %02d\n", j);
+			}
+		}
+		k = 0;
+		for (j=i; j<d; j++) {
+			if (pos(am[i]) == -am[j]) {
+				if (k == 0) {
+					printf("\t+/-\n");
+					k = 1;
+				}
+				used[j] = 1;
+				printf("\tSTO %02d\n", j);
+			}
+		}
+		
 	}
 	printf("\tRTN\n\n");
 }
 
 int main() {
-	//outmat("A11", am11, 100);
+	outmat("A11", am11, 100);
 	outmat("A12", am12, 100);
 	return 0;
 }
