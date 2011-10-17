@@ -934,6 +934,8 @@ static unsigned char alpha_letters_lower[] = {
 #endif
 
 
+static int total_cat, total_alpha, total_conv;
+
 static const char *gpl[] = {
 	"This file is part of 34S.",
 	"",
@@ -1001,7 +1003,7 @@ static int compare_cat(const void *v1, const void *v2) {
 	return 0;
 }
 
-static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
+static void emit_catalogue(const char *name, s_opcode cat[], int num_cat, int conv) {
 	int i;
 
 	qsort(cat, num_cat, sizeof(s_opcode), &compare_cat);
@@ -1010,6 +1012,10 @@ static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 	for (i=0; i<num_cat; i++)
 		printf("%s0x%04x,", (i%6) == 0?"\n\t":" ", cat[i] & 0xffff);
 	printf("\n};\n\n");
+	if (conv)
+		total_conv += num_cat;
+	else
+        	total_cat += num_cat;
 }
 
 
@@ -1042,11 +1048,13 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 	for (i=0; i<num_cat; i++)
 		printf("%s0%03o,", (i%8) == 0?"\n\t":" ", cat[i] & 0xff);
 	printf("\n};\n\n");
+        total_alpha += num_cat;
 }
 
 #include "pretty.c"
 
-#define CAT(n)		emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode))
+#define CAT(n)		emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode), 0)
+#define CONVERSION(n)	emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode), 1)
 #define ALPHA(n)	emit_alpha(#n , n, sizeof(n))
 
 int main(int argc, char *argv[]) {
@@ -1062,7 +1070,7 @@ int main(int argc, char *argv[]) {
 	CAT(prog_catalogue);
 	CAT(mode_catalogue);
 	CAT(alpha_catalogue);
-	CAT(conv_catalogue);
+	CONVERSION(conv_catalogue);
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CAT(internal_catalogue);
 #endif
@@ -1077,5 +1085,9 @@ int main(int argc, char *argv[]) {
 
 	dump_opcodes(stderr);
 
+	printf( "/* Total number of catalogue entries %d\n"
+		" * Total number of conversion entries %d\n"
+		" * Total number of alpha entries %d\n"
+		" */\n", total_cat, total_conv, total_alpha);
 	return 0;
 }
