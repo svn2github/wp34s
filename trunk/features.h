@@ -171,11 +171,15 @@
 #define MATRIX_SUPPORT
 #endif
 
+#ifndef REALBUILD
+#define NUMBER_OF_FLASH_REGIONS 11
+#else
 // Needs to be adjusted depending on code size
 #ifdef MATRIX_SUPPORT
 #define NUMBER_OF_FLASH_REGIONS 7
 #else
 #define NUMBER_OF_FLASH_REGIONS 10
+#endif
 #endif
 
 #endif  /* TINY_BUILD*/

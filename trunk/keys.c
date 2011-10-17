@@ -54,10 +54,8 @@ static void advance_to_next_label(unsigned int pc);
  *  Return the shift state
  */
 enum shifts cur_shift(void) {
-	return 	( is_shift_down( SHIFT_H ) ? SHIFT_H
-		: is_shift_down( SHIFT_G ) ? SHIFT_G
-		: is_shift_down( SHIFT_F ) ? SHIFT_F
-		: (enum shifts) State2.shifts );
+	enum shifts s = shift_down();
+	return s == SHIFT_N ? (enum shifts) State2.shifts : s;
 }
 
 /*
@@ -687,7 +685,7 @@ static int process_fg_shifted(const keycode c) {
 #else
 	case K22:
 	case K23:
-		if (is_shift_down(shift)) {
+		if (shift == shift_down()) {
 			const enum single_disp d =
 				c == K22 ? shift == SHIFT_F ? SDISP_BIN : SDISP_OCT
 				         : shift == SHIFT_F ? SDISP_DEC : SDISP_HEX;
@@ -2366,7 +2364,7 @@ void process_keycode(int c)
 				ShowRPN = 2;
 			}
 		}
-		if (Keyticks > 12 && is_shift_down( SHIFT_ANY )) {
+		if (Keyticks > 12 && shift_down() != SHIFT_N) {
 			// Rely on the held shift key instead of the toggle
 			State2.shifts = SHIFT_N;
 		}
@@ -2418,10 +2416,12 @@ void process_keycode(int c)
 		}
 		else {
 			// Ignore key-up if no operation was pending
+#if defined(REALBUILD) || defined(WINGUI)
 			if (! State2.disp_temp ) {
 				// This will get rid of the last displayed op-code
 				display();
 			}
+#endif
 			return;
 		}
 	}
@@ -2466,9 +2466,11 @@ void process_keycode(int c)
 				else {
 					// Save the op-code for execution on key-up
 					OpCode = c;
+#if defined(REALBUILD) || defined(WINGUI)
 					if (isRARG(c))
 						show_opcode();
 					else
+#endif
 						OpCodeDisplayPending = 1;
 				}
 			}

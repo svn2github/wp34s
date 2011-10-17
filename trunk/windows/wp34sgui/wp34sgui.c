@@ -217,11 +217,13 @@ int put_key(int k)
 /*
  *  Check if a shift key is held down
  */
-int is_shift_down(int s)
+enum shifts shift_down(void)
 {
-	long long map = GetKeyboardMap();
-	int mask = s == SHIFT_ANY ? 0xe00 : (0x100 << s);
-	return 0 != ( map & mask );
+	int map = (int) GetKeyboardMap();
+	return map & ( 0x100 << SHIFT_H ) ? SHIFT_H
+	     : map & ( 0x100 << SHIFT_G ) ? SHIFT_G
+	     : map & ( 0x100 << SHIFT_F ) ? SHIFT_F
+	     : SHIFT_N;
 }
 
 

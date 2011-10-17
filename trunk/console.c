@@ -338,9 +338,9 @@ int put_key( int k )
 	return k;
 }
 
-int is_shift_down(int s)
+enum shifts shift_down(void)
 {
-	return 0;
+	return SHIFT_N;
 }
 
 #ifndef WIN32  // Windows uses winserial.c

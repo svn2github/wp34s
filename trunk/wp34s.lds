@@ -21,8 +21,8 @@
  *      Needs to be preprocessed by gcc -E -P -x c wp34s.lds >wp34s_pre.lds
  *----------------------------------------------------------------------------*/
 
+#define REALBUILD 1
 #include "features.h"
-//#define USER_FLASH_SIZE (NUMBER_OF_FLASH_REGIONS * 1024)
 #define K(x) CONCAT(x, K)
 #define CONCAT(x, y) x ## y
 #define USER_FLASH_SIZE K(NUMBER_OF_FLASH_REGIONS)

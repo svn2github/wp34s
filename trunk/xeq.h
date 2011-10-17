@@ -955,8 +955,7 @@ enum catalogues
 enum shifts {
 	SHIFT_N = 0,
 	SHIFT_F, SHIFT_G, SHIFT_H,
-	SHIFT_LC_N, SHIFT_LC_G,		// Two lower case planes
-	SHIFT_ANY			// Used only in is_shift_down()
+	SHIFT_LC_N, SHIFT_LC_G		// Two lower case planes
 };
 
 
@@ -1212,7 +1211,7 @@ extern void int_mode_convert(decimal64 *r);
 /* system functions */
 extern void busy(void);
 extern int is_key_pressed(void);
-extern int is_shift_down(int s);
+extern enum shifts shift_down(void);
 extern int get_key(void);
 extern int put_key(int k);
 extern void shutdown(void);

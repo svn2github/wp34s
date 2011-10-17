@@ -1292,14 +1292,16 @@ int is_key_pressed( void )
 
 
 /*
- *  Check if a shift key is held down. The argument is one of SHIFT_F, _G, _H.
+ *  Check if a shift key is held down. The result is one of SHIFT_F, _G, _H.
  */
-int is_shift_down( int s )
+enum shifts shift_down(void)
 {
-	const int mask = s == SHIFT_ANY ? 0x3800 : (0x400 << s);
-	return 0 != ( (int) KbData & mask );
+	const int map = (int) KbData;
+	return map & ( 0x400 << SHIFT_H ) ? SHIFT_H
+	     : map & ( 0x400 << SHIFT_G ) ? SHIFT_G
+	     : map & ( 0x400 << SHIFT_F ) ? SHIFT_F
+	     : SHIFT_N;
 }
-
 
 /*
  *  Get a key
