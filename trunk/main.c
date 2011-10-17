@@ -99,8 +99,8 @@ void set_speed( unsigned int speed );
  *  Deep sleep and idle settings
  */
 #define APD_TICKS 1800 // 3 minutes
-#define APD_VOLTAGE SUPC_BOD_2_1V
-#define LOW_VOLTAGE SUPC_BOD_2_4V
+#define APD_VOLTAGE SUPC_BOD_2_2V
+#define LOW_VOLTAGE SUPC_BOD_2_7V
 #define ALLOW_DEEP_SLEEP 1   // undef to disable
 #define TICKS_BEFORE_DEEP_SLEEP 5
 
