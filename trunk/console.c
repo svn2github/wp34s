@@ -421,7 +421,7 @@ int main(int argc, char *argv[]) {
 			dump_menu("integer", "", CATALOGUE_INT);
 			dump_menu("alpha", "", CATALOGUE_ALPHA);
 			dump_menu("alpha special letters upper", "", CATALOGUE_ALPHA_LETTERS_UPPER);
-			dump_menu("alpha special letters lower", "", CATALOGUE_ALPHA_LETTERS_LOWER);
+			// dump_menu("alpha special letters lower", "", CATALOGUE_ALPHA_LETTERS_LOWER);
 			dump_menu("alpha superscripts", "", CATALOGUE_ALPHA_SUPERSCRIPTS);
 			dump_menu("alpha subscripts", "", CATALOGUE_ALPHA_SUBSCRIPTS);
 			dump_menu("alpha symbols", "", CATALOGUE_ALPHA_SYMBOLS);

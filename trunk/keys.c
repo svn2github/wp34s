@@ -160,127 +160,91 @@ static unsigned int keycode_to_digit_or_register(const keycode c)
  */
 static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 {
+	int i, col, max;
+	const struct _map {
+		unsigned char key, cat[3];
+	} *cp;
+
+	// Common to both alpha mode and normal mode is the programming X.FCN catalogue
+	if (c == K50 && shift == SHIFT_H && ! State2.runmode && ! State2.cmplx)
+		return CATALOGUE_PROGXFCN;
+
 	if (! State2.alphas) {
 		/*
-		 *  Normal processing
+		 *  Normal processing - Not alpha mode
 		 */
-		if (shift == SHIFT_F && c == K60)
-			return CATALOGUE_REGISTERS;
-
-		if (shift == SHIFT_N && State2.cmplx && c == K50 && State2.catalogue == CATALOGUE_NONE)
-			shift = SHIFT_H;
-
-		if (shift != SHIFT_H)
-			return CATALOGUE_NONE;
-
-		switch (c) {
-
-		case K_ARROW:
-			if (UState.intm)
-				return CATALOGUE_NONE;
-			return CATALOGUE_CONV;
-
-		case K05:
+		static const struct _map cmap[] = {
+			{ K_ARROW, { CATALOGUE_CONV,   CATALOGUE_NONE,   CATALOGUE_CONV          } },
 #ifdef INCLUDE_INTERNAL_CATALOGUE
-			if (State2.cmplx)
-				return CATALOGUE_INTERNAL;
+			{ K05,     { CATALOGUE_MODE,   CATALOGUE_MODE,   CATALOGUE_INTERNAL      } },
+#else
+			{ K05,     { CATALOGUE_MODE,   CATALOGUE_MODE,   CATALOGUE_MODE          } },
 #endif
-			return CATALOGUE_MODE;
+			{ K10,     { CATALOGUE_LABELS, CATALOGUE_LABELS, CATALOGUE_LABELS        } },
+			{ K20,     { CATALOGUE_CONST,  CATALOGUE_NONE,   CATALOGUE_COMPLEX_CONST } },
+			{ K41,     { CATALOGUE_PROB,   CATALOGUE_NONE,   CATALOGUE_PROB          } },
+			{ K42,     { CATALOGUE_STATS,  CATALOGUE_NONE,   CATALOGUE_STATS         } },
+			{ K44,     { CATALOGUE_STATUS, CATALOGUE_STATUS, CATALOGUE_STATUS        } },
+			{ K50,     { CATALOGUE_NORMAL, CATALOGUE_INT,    CATALOGUE_COMPLEX       } },
+			{ K51,     { CATALOGUE_TEST,   CATALOGUE_TEST,   CATALOGUE_NONE          } },
+			{ K52,     { CATALOGUE_PROG,   CATALOGUE_PROG,   CATALOGUE_PROG          } },
+		};
 
-		case K10:	
-			return CATALOGUE_LABELS;
-
-		case K20:
-			if (UState.intm)
-				return CATALOGUE_NONE;
-			if (State2.cmplx)
-				return CATALOGUE_COMPLEX_CONST;
-			return CATALOGUE_CONST;
-
-		case K41:
-			if (UState.intm)
-				return CATALOGUE_NONE;
-			return CATALOGUE_PROB;
-
-		case K42:
-			if (UState.intm)
-				return CATALOGUE_NONE;
-			return CATALOGUE_STATS;
-
-		case K44:
-			return CATALOGUE_STATUS;
-
-		case K50:
-			if (UState.intm)
-				return CATALOGUE_INT;
-			if (State2.cmplx)
-				return CATALOGUE_COMPLEX;
-			if (! State2.runmode)
-				return CATALOGUE_PROGXFCN;
-			return CATALOGUE_NORMAL;
-
-		case K51:
-			if (! State2.cmplx)
-				return CATALOGUE_TEST;
-			break;
-
-		case K52:
-			return CATALOGUE_PROG;
-
-		default:
-			break;
+		if (shift == SHIFT_F && c == K60) {
+			/*
+			 *  Exception from the rule: f+EXIT is register browser
+			 */
+			return CATALOGUE_REGISTERS;
 		}
+
+		if (c == K50 && shift == SHIFT_N && State2.cmplx && State2.catalogue == CATALOGUE_NONE) {
+			/*
+			 *  Shorthand to complex X.FCN - h may be omitted
+			 */
+			shift = SHIFT_H;
+		}
+
+		if (shift != SHIFT_H) {
+			/*
+			 *  All standard catalogues are on h-shifted keys
+			 */
+			return CATALOGUE_NONE;
+		}
+
+		/*
+		 *  Prepare search
+		 */
+		cp = cmap;
+		col = UState.intm ? 1 : State2.cmplx ? 2 : 0;
+		max = sizeof(cmap) / sizeof(cmap[0]);
 	}
 	else {
 		/*
 		 *  All the alpha catalogues go here
 		 */
-		if (shift != SHIFT_F && shift != SHIFT_H)
-			return CATALOGUE_NONE;
+		static const struct _map amap[] = {
+			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,        CATALOGUE_NONE               } },
+			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS_UPPER, CATALOGUE_NONE               } },
+			{ K12,     { CATALOGUE_NONE, CATALOGUE_ALPHA_SUBSCRIPTS,    CATALOGUE_ALPHA_SUPERSCRIPTS } },
+			{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA              } },
+			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_COMPARES     } },
+			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_SYMBOLS      } },
+		};
 
-		switch (c) {
+		/*
+		 *  Prepare search
+		 */
+		cp = amap;
+		col = shift == SHIFT_H ? 2 : shift;
+		max = sizeof(amap) / sizeof(amap[0]);
+	}
 
-		case K12:
-			if (shift == SHIFT_F)
-				return CATALOGUE_ALPHA_SUBSCRIPTS;
-			else
-				return CATALOGUE_ALPHA_SUPERSCRIPTS;
-			break;
-
-		case K_ARROW:	// Alpha comparison characters
-			if (shift == SHIFT_F)
-				return CATALOGUE_ALPHA_ARROWS;
-			break;
-
-		case K_CMPLX:	// Complex character menu
-			if (shift == SHIFT_F) {
-				if (State2.alphashift)
-					return CATALOGUE_ALPHA_LETTERS_LOWER;
-				else
-					return CATALOGUE_ALPHA_LETTERS_UPPER;
-			}
-			break;
-
-		case K50:
-			if (shift == SHIFT_H) {	// Alpha command catalogue
-				if (! State2.runmode)
-					return CATALOGUE_PROGXFCN;
-				else
-					return CATALOGUE_ALPHA;
-			}
-			break;
-
-		case K51:	// Alpha comparison characters
-			if (shift == SHIFT_H)
-				return CATALOGUE_ALPHA_COMPARES;
-			break;
-
-		case K62:	// Alpha maths symbol characters
-			if (shift == SHIFT_H)
-				return CATALOGUE_ALPHA_SYMBOLS;
-			break;
-
-		default:
+	/*
+	 *  Search the key in one of the tables
+	 */
+	for (i = 0; i < max; ++i, ++cp) {
+		if (cp->key == c) {
+			return cp->cat[col];
 			break;
 		}
 	}
@@ -1731,12 +1695,12 @@ int current_catalogue_max(void) {
 		sizeof(alpha_compares),
 		sizeof(alpha_arrows),
 		sizeof(alpha_letters_upper),
-		sizeof(alpha_letters_lower),
+		// sizeof(alpha_letters_lower),
 		sizeof(alpha_superscripts),
 		sizeof(alpha_subscripts),
 		NUM_CONSTS,
 		NUM_CONSTS,
-		sizeof(conv_catalogue) / sizeof(const s_opcode),
+		sizeof(conv_catalogue),
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		sizeof(internal_catalogue) / sizeof(const s_opcode),
 #endif
@@ -1775,18 +1739,18 @@ opcode current_catalogue(int n) {
 		alpha_compares,
 		alpha_arrows,
 		alpha_letters_upper,
-		alpha_letters_lower,
+		// alpha_letters_lower,
 		alpha_superscripts,
 		alpha_subscripts,
 		NULL,
 		NULL,
-		conv_catalogue,
+		NULL, //CONV
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		internal_catalogue,
 #endif
 	};
+	s_opcode *cat;
 	unsigned int c = State2.catalogue;
-	s_opcode *cat = (s_opcode *) (catalogues[c]);
 
 	if ( c == CATALOGUE_CONST )
 		return CONST(n);
@@ -1794,8 +1758,23 @@ opcode current_catalogue(int n) {
 	if ( c == CATALOGUE_COMPLEX_CONST )
 		return CONST_CMPLX(n);
 
-	if ( c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS )
+	if ( c == CATALOGUE_CONV ) {
+		unsigned char c = conv_catalogue[n];
+		if (c & 0x80)
+			// Monadic conversion routine
+			return OP_MON | (c & 0x7f);
+		else
+			return RARG(RARG_CONV, c);
+	}
+
+	if ( c == CATALOGUE_ALPHA_LETTERS_UPPER && State2.alphashift )
+		cat = (s_opcode *) alpha_letters_lower;
+	else
+		cat = (s_opcode *) (catalogues[c]);
+
+	if ( c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS ) {
 		return alpha_code(n, (const char *)cat);
+	}
 
 	if (c >= sizeof(catalogues) / sizeof(void *))
 		return OP_NIL | OP_NOP;
@@ -2072,28 +2051,22 @@ static void advance_to_previous_label(unsigned int pc) {
 
 static int process_labellist(const keycode c) {
 	unsigned int pc = State2.digval;
+	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
+	enum shifts shift = reset_shift();
 
-	switch (c) {
-	case K62:				// Jump to XROM
-		advance_to_next_label(addrXROM(0));
-		return STATE_UNFINISHED;
-
-	// Digits take you to that segment
-	case K31:
-	case K32:
-	case K33:
-	case K41:
-	case K42:
-	case K43:
-	case K51:
-	case K52:
-	case K53:
-	case K61:
-		pc = advance_to_next_code_segment(keycode_to_digit_or_register(c));
+	if (n <= 9) {
+		// Digits take you to that segment
+		pc = advance_to_next_code_segment(n);
 		if (! is_label_at(pc))
 			advance_to_next_label(pc);
 		else
 			State2.digval = pc;
+		return STATE_UNFINISHED;
+	}
+
+	switch (c) {
+	case K62:				// Jump to XROM
+		advance_to_next_label(addrXROM(0));
 		return STATE_UNFINISHED;
 
 	case K50:			// Find next label
@@ -2104,22 +2077,23 @@ static int process_labellist(const keycode c) {
 		advance_to_previous_label(pc);
 		return STATE_UNFINISHED;
 
-	case K20:			// GTO
-		State2.digval = 0;
-		State2.labellist = 0;
-		return (getprog(pc) & 0xfffff0ff) + (DBL_GTO << DBL_SHIFT);
-
-	case K30:			// XEQ
-	case K63:			// R/S
-		State2.digval = 0;
-		State2.labellist = 0;
-		return (getprog(pc) & 0xfffff0ff) + (DBL_XEQ << DBL_SHIFT);
-
 	case K24:			// Exit doing nothing
 	case K60:
 		break;
+
+	case K20:			// ENTER^: GTO
+	case K30:			// XEQ
+	case K63:			// R/S
+		if (shift == SHIFT_N) {
+			const int op = c == K20 ? (DBL_GTO << DBL_SHIFT) 
+				                : (DBL_XEQ << DBL_SHIFT);
+			State2.digval = 0;
+			State2.labellist = 0;
+			return (getprog(pc) & 0xfffff0ff) + op;
+		}
 	default:
 		return STATE_UNFINISHED;
+
 	}
 	State2.digval = 0;
 	State2.labellist = 0;
@@ -2129,6 +2103,7 @@ static int process_labellist(const keycode c) {
 
 static int process_registerlist(const keycode c) {
 	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
+	enum shifts shift = reset_shift();
 
 	if ( n <= 9 ) {
 		if (State2.digval > NUMREG-1)
@@ -2159,17 +2134,19 @@ static int process_registerlist(const keycode c) {
 		State2.digval2 = !State2.digval2;
 		return STATE_UNFINISHED;
 
-	case K11:
-	case K20:
-		n = RARG(State2.digval2?RARG_FLRCL:RARG_RCL, State2.digval);
-		State2.registerlist = 0;
-		State2.digval = 0;
-		State2.digval2 = 0;
-		return n;
-
 	case K24:			// Exit doing nothing
 	case K60:
 		break;
+
+	case K11:		// RCL
+	case K20:		// ENTER
+		if ( shift == SHIFT_N ) {
+			n = RARG(State2.digval2?RARG_FLRCL:RARG_RCL, State2.digval);
+			State2.registerlist = 0;
+			State2.digval = 0;
+			State2.digval2 = 0;
+			return n;
+		}
 	default:
 		return STATE_UNFINISHED;
 	}

@@ -883,15 +883,17 @@ static unsigned char alpha_subscripts[] = {
 	0231,	0233,				// sub-mu, sub-infinity
 };
 
+// Next two must match in size and 'meaning'
 static unsigned char alpha_letters_upper[] = {
 	0300, 0301, 0302, 0303, 0304,		// A
 	0305, 0306, 0307,			// C
 	0310, 0311, 0312, 0313,			// E
+	0236,					// h-bar
 	0314, 0315, 0316, 0317,			// I
 	0320,					// N
 	0321, 0322, 0323, 0324, 0025,		// O
 	0325,					// R
-	0326,					// S
+	0326, 0030,				// S
 	0330, 0331, 0332, 0333, 0334,		// U
 	0335, 0336,				// Y
 	0337,					// Z
@@ -1003,7 +1005,7 @@ static int compare_cat(const void *v1, const void *v2) {
 	return 0;
 }
 
-static void emit_catalogue(const char *name, s_opcode cat[], int num_cat, int conv) {
+static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 	int i;
 
 	qsort(cat, num_cat, sizeof(s_opcode), &compare_cat);
@@ -1012,10 +1014,25 @@ static void emit_catalogue(const char *name, s_opcode cat[], int num_cat, int co
 	for (i=0; i<num_cat; i++)
 		printf("%s0x%04x,", (i%6) == 0?"\n\t":" ", cat[i] & 0xffff);
 	printf("\n};\n\n");
-	if (conv)
-		total_conv += num_cat;
-	else
-        	total_cat += num_cat;
+       	total_cat += num_cat;
+}
+
+
+// compact ecncoding for conversions in just on byte per entry
+static void emit_conv_catalogue(const char *name, s_opcode cat[], int num_cat) {
+	int i;
+
+	qsort(cat, num_cat, sizeof(s_opcode), &compare_cat);
+
+	printf("static const unsigned char %s[] = {", name);
+	for (i=0; i<num_cat; i++) {
+		unsigned char c = (unsigned char) cat[i];
+		if (opKIND(cat[i]) == KIND_MON)
+			c |= 0x80;
+		printf("%s0x%02x,", (i%6) == 0?"\n\t":" ", c);
+	}
+	printf("\n};\n\n");
+	total_conv += num_cat;
 }
 
 
@@ -1053,8 +1070,8 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 
 #include "pretty.c"
 
-#define CAT(n)		emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode), 0)
-#define CONVERSION(n)	emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode), 1)
+#define CAT(n)		emit_catalogue(#n , n, sizeof(n) / sizeof(s_opcode))
+#define CONVERSION(n)	emit_conv_catalogue(#n , n, sizeof(n) / sizeof(s_opcode))
 #define ALPHA(n)	emit_alpha(#n , n, sizeof(n))
 
 int main(int argc, char *argv[]) {
