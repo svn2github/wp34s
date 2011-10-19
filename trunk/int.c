@@ -1088,13 +1088,13 @@ long long int intCubeRoot(long long int v) {
 	y2 = 0;
 	y = 0;
 	for (s=63; s>=0; s -= 3) {
-		y2 = 4*y2;
-		y = 2*y;
+		y2 <<= 2;
+		y <<= 1;
 		b = 3*(y2 + y) + 1;
 		bs = b << s;
 		if (x >= bs && b == (bs >> s)) {
 			x -= bs;
-			y2 += 2*y + 1;
+			y2 += (y << 1) + 1;
 			y++;
 		}
 	}

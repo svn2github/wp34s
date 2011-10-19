@@ -106,7 +106,7 @@ static void JDN2(int J, int *year, int *month, int *day) {
 
 
 static int isleap(int year) {
-	if (year % 4 == 0) {		// leap year candidate
+	if ((year & 3) == 0) {		// leap year candidate
 		if (isGregorian(year, 1, 1)) {
 			// Gregorian is leap if not divisible by 100 or if devisible by 400
 			if (year % 100 == 0) {

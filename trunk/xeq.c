@@ -2312,13 +2312,14 @@ void op_shift_digit(unsigned int n, enum rarg op) {
  * also return a byte with the relevant bit mask set up.
  * Also, handle bank switched flags in xROM code.
  */
-static unsigned char *flag_byte(const int n, unsigned char *mask) {
+static unsigned char *flag_byte(int n, unsigned char *mask) {
 	if (n < 0 || n >= NUMFLG)
 		return NULL;
-	*mask = 1 << (n % 8);
+	*mask = 1 << (n & 7);
+	n >>= 3;
 	if (isXROM(state_pc()) && n < NUMBANKFLAGS)
-		return ((unsigned char *)&BankFlags) + n / 8;
-	return UserFlags + n / 8;
+		return ((unsigned char *)&BankFlags) + n;
+	return UserFlags + n;
 }
 
 int get_user_flag(int n) {

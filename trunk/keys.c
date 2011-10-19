@@ -1784,9 +1784,10 @@ opcode current_catalogue(int n) {
 		return OP_NIL | OP_NOP;
 
 	/* Unpack the opcode */
-	p = cat[n + n/4];
-	q = cat[n + n/4 + 1];
-	m = 0x3ff & ((p << (2 + 2 * (n%4))) | (q >> (6 - 2 * (n%4))));
+	cat += n + (n >> 2);
+	p = cat[0];
+	q = cat[1];
+	m = 0x3ff & ((p << (2 + ((n & 3) << 1))) | (q >> (6 - ((n & 3) << 1))));
 
 	/* Now figure out which opcode it really is */
 	for (i=0; i<KIND_MAX; i++) {
