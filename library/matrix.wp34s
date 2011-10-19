@@ -83,6 +83,8 @@ m_add_sub_common::	x[<->] Z
 			RTN
 
 /* Scalar multiply
+ * Matrix descriptor in X, scalar in y.
+ * Returns with the matrix descriptor in L and the stack dropped twice.
  */
 			LBL'M-y'
 			ABS
@@ -95,7 +97,8 @@ m_scalar_mult::		STO[times][->]Y
 			RTN
 
 /* Maxtrix norm.
- * Uses stack.
+ * Matrix descriptor in X, returns with the norm in X.
+ * Uses stack & L.
  */
 			LBL'FNM'
 			ABS
