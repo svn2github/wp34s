@@ -226,6 +226,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,        CATALOGUE_NONE               } },
 			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS_UPPER, CATALOGUE_NONE               } },
 			{ K12,     { CATALOGUE_NONE, CATALOGUE_ALPHA_SUBSCRIPTS,    CATALOGUE_ALPHA_SUPERSCRIPTS } },
+			{ K44,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_STATUS             } },
 			{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA              } },
 			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_COMPARES     } },
 			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_SYMBOLS      } },
@@ -348,7 +349,7 @@ static void init_cat(enum catalogues cat) {
 		break;
 
 	case CATALOGUE_STATUS:
-		// Register browser
+		// Flag browser
 		State2.status = 1;
 		break;
 
@@ -998,6 +999,7 @@ static int process_arrow(const keycode c) {
 		break;
 #endif
 
+#if 0
 	case K04:
 		switch (shift) {
 		case SHIFT_F:
@@ -1008,7 +1010,7 @@ static int process_arrow(const keycode c) {
 			break;
 		}
 		break;
-
+#endif
 	default:
 		break;
 	}
@@ -1109,7 +1111,7 @@ fin:		set_pc(rawpc);
  */
 static int process_alpha(const keycode c) {
 	const enum shifts shift = reset_shift();
-	unsigned char ch;
+	unsigned char ch = keycode_to_alpha(c, shift);
 	unsigned int alpha_pos = State2.alpha_pos, n;
         int t;
 	State2.alpha_pos = 0;
@@ -1121,7 +1123,6 @@ static int process_alpha(const keycode c) {
 	case K03:
 		if (shift != SHIFT_F)
 			break;
-		ch = keycode_to_alpha(c, shift);
                 t = check_f_key(c - K00, RARG(RARG_ALPHA, ch));
                 if (t == RARG(RARG_ALPHA, '\0'))
 			return STATE_UNFINISHED;
@@ -1194,13 +1195,6 @@ static int process_alpha(const keycode c) {
 		}
 		break;
 
-	case K44:
-		if (shift == SHIFT_H) {
-			State2.status = 1;
-			return STATE_UNFINISHED;
-		}
-		break;
-
 	case K50:
 		if (shift == SHIFT_N) {
 			if ( State2.runmode ) {
@@ -1232,7 +1226,6 @@ static int process_alpha(const keycode c) {
 	}
 
 	/* Look up the character and return an alpha code if okay */
-	ch = keycode_to_alpha(c, shift);
 	if (ch == 0)
 		return STATE_UNFINISHED;
 	return RARG(RARG_ALPHA, ch & 0xff);
