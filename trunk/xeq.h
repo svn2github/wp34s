@@ -463,8 +463,9 @@ enum eKind {
 	KIND_DYA,
 	KIND_TRI,
 	KIND_CMON,
-	KIND_CDYA,
+	KIND_CDYA
 };
+#define KIND_MAX	(1 + (int)KIND_CDYA)
 
 #define KIND_SHIFT	8
 #define DBL_SHIFT	8

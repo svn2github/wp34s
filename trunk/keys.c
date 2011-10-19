@@ -1749,8 +1749,18 @@ opcode current_catalogue(int n) {
 		internal_catalogue,
 #endif
 	};
-	s_opcode *cat;
+	static const unsigned short int opcode_breaks[KIND_MAX] = {
+		NUM_SPECIAL,		// Number of specials
+		NUM_NILADIC,		// Number of niladics
+		NUM_MONADIC,		// Number of monadics
+		NUM_DYADIC,		// Number of dyadics
+		NUM_TRIADIC,		// Number of triadics
+		NUM_MONADIC,		// Number of complex monadics
+		NUM_DYADIC,		// Number of complex dyadics
+	};
+	const void *cat;
 	unsigned int c = State2.catalogue;
+	int m, i;
 
 	if ( c == CATALOGUE_CONST )
 		return CONST(n);
@@ -1768,9 +1778,9 @@ opcode current_catalogue(int n) {
 	}
 
 	if ( c == CATALOGUE_ALPHA_LETTERS_UPPER && State2.alphashift )
-		cat = (s_opcode *) alpha_letters_lower;
+		cat = alpha_letters_lower;
 	else
-		cat = (s_opcode *) (catalogues[c]);
+		cat = catalogues[c];
 
 	if ( c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS ) {
 		return alpha_code(n, (const char *)cat);
@@ -1779,7 +1789,16 @@ opcode current_catalogue(int n) {
 	if (c >= sizeof(catalogues) / sizeof(void *))
 		return OP_NIL | OP_NOP;
 
-	return (opcode) (cat[n]);
+	/* Unpack the opcode */
+	m = ((const unsigned short int *)cat)[n];
+
+	/* Now figure out which opcode it really is */
+	for (i=0; i<KIND_MAX; i++) {
+		if (m < opcode_breaks[i])
+			return (i << KIND_SHIFT) + m;
+		m -= opcode_breaks[i];
+	}
+	return RARG_BASE(m);
 }
 
 /*

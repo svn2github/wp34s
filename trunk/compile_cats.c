@@ -1007,12 +1007,33 @@ static int compare_cat(const void *v1, const void *v2) {
 
 static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 	int i;
+	unsigned short int x;
+	static const unsigned short int opcode_breaks[KIND_MAX] = {
+		NUM_SPECIAL,		// Number of specials
+		NUM_NILADIC,		// Number of niladics
+		NUM_MONADIC,		// Number of monadics
+		NUM_DYADIC,		// Number of dyadics
+		NUM_TRIADIC,		// Number of triadics
+		NUM_MONADIC,		// Number of complex monadics
+		NUM_DYADIC,		// Number of complex dyadics
+	};
+	unsigned short int opcode_sums[1 + KIND_MAX];
+
+	opcode_sums[0] = 0;
+	for (i=1; i<=KIND_MAX; i++)
+		opcode_sums[i] = opcode_sums[i-1] + opcode_breaks[i-1];
 
 	qsort(cat, num_cat, sizeof(s_opcode), &compare_cat);
 
-	printf("static const s_opcode %s[] = {", name);
-	for (i=0; i<num_cat; i++)
-		printf("%s0x%04x,", (i%6) == 0?"\n\t":" ", cat[i] & 0xffff);
+	printf("static const unsigned short int %s[] = {", name);
+	for (i=0; i<num_cat; i++) {
+		const s_opcode op = cat[i] & 0xffff;
+		if (isRARG(op))
+			x = opcode_sums[KIND_MAX] + RARG_CMD(op);
+		else
+			x = opcode_sums[(int)opKIND(op)] + argKIND(op);
+		printf("%s0x%03x,", (i%6) == 0?"\n\t":" ", x);
+	}
 	printf("\n};\n\n");
        	total_cat += num_cat;
 }
