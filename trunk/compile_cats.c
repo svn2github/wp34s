@@ -1018,6 +1018,8 @@ static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 		NUM_DYADIC,		// Number of complex dyadics
 	};
 	unsigned short int opcode_sums[1 + KIND_MAX];
+	unsigned char buffer[10000];
+	unsigned char *bp = buffer;
 
 	opcode_sums[0] = 0;
 	for (i=1; i<=KIND_MAX; i++)
@@ -1025,14 +1027,42 @@ static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 
 	qsort(cat, num_cat, sizeof(s_opcode), &compare_cat);
 
-	printf("static const unsigned short int %s[] = {", name);
 	for (i=0; i<num_cat; i++) {
 		const s_opcode op = cat[i] & 0xffff;
 		if (isRARG(op))
 			x = opcode_sums[KIND_MAX] + RARG_CMD(op);
 		else
 			x = opcode_sums[(int)opKIND(op)] + argKIND(op);
-		printf("%s0x%03x,", (i%6) == 0?"\n\t":" ", x);
+		if ((x & 0x3ff) != x) {
+			fprintf(stderr, "Error: opcode overflow: 0x%04x\n", x);
+			exit(1);
+		}
+		switch (i%4) {
+		case 0:
+			*bp++ = x >> 2;
+			*bp = (x & 0x3) << 6;
+			break;
+		case 1:
+			*bp++ |= x >> 4;
+			*bp = (x & 0xf) << 4;
+			break;
+		case 2:
+			*bp++ |= x >> 6;
+			*bp = (x & 0x3f) << 2;
+			break;
+		case 3:
+			*bp++ |= x >> 8;
+			*bp++ = (x & 0xff);
+			break;
+		}
+	}
+	if (num_cat % 4 != 0)
+		bp++;
+
+	printf("#define SIZE_%s %d\n", name, num_cat);
+	printf("static const unsigned char %s[] = {", name);
+	for (i=0; buffer + i != bp; i++) {
+		printf("%s0x%02x,", (i%6) == 0?"\n\t":" ", buffer[i]);
 	}
 	printf("\n};\n\n");
        	total_cat += num_cat;
@@ -1045,6 +1075,7 @@ static void emit_conv_catalogue(const char *name, s_opcode cat[], int num_cat) {
 
 	qsort(cat, num_cat, sizeof(s_opcode), &compare_cat);
 
+	printf("#define SIZE_%s %d\n", name, num_cat);
 	printf("static const unsigned char %s[] = {", name);
 	for (i=0; i<num_cat; i++) {
 		unsigned char c = (unsigned char) cat[i];
@@ -1082,6 +1113,7 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 
 	//qsort(cat, num_cat, 1, &alpha_compare);
 
+	printf("#define SIZE_%s %d\n", name, num_cat);
 	printf("static const char %s[] = {", name);
 	for (i=0; i<num_cat; i++)
 		printf("%s0%03o,", (i%8) == 0?"\n\t":" ", cat[i] & 0xff);

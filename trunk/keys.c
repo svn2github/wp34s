@@ -1681,28 +1681,28 @@ int current_catalogue_max(void) {
 	static const unsigned char catalogue_sizes[] = 
 	{
 		0, // NONE
-		sizeof(catalogue) / sizeof(const s_opcode),
-		sizeof(cplx_catalogue) / sizeof(const s_opcode),
-		sizeof(stats_catalogue) / sizeof(const s_opcode),
-		sizeof(prob_catalogue) / sizeof(const s_opcode),
-		sizeof(int_catalogue) / sizeof(const s_opcode),
-		sizeof(prog_catalogue) / sizeof(const s_opcode),
-		sizeof(program_xfcn) / sizeof(const s_opcode),
-		sizeof(test_catalogue) / sizeof(const s_opcode),
-		sizeof(mode_catalogue) / sizeof(const s_opcode),
-		sizeof(alpha_catalogue) / sizeof(const s_opcode),
-		sizeof(alpha_symbols),
-		sizeof(alpha_compares),
-		sizeof(alpha_arrows),
-		sizeof(alpha_letters_upper),
-		// sizeof(alpha_letters_lower),
-		sizeof(alpha_superscripts),
-		sizeof(alpha_subscripts),
+		SIZE_catalogue,
+		SIZE_cplx_catalogue,
+		SIZE_stats_catalogue,
+		SIZE_prob_catalogue,
+		SIZE_int_catalogue,
+		SIZE_prog_catalogue,
+		SIZE_program_xfcn,
+		SIZE_test_catalogue,
+		SIZE_mode_catalogue,
+		SIZE_alpha_catalogue,
+		SIZE_alpha_symbols,
+		SIZE_alpha_compares,
+		SIZE_alpha_arrows,
+		SIZE_alpha_letters_upper,
+		// SIZE_alpha_letters_lower,
+		SIZE_alpha_superscripts,
+		SIZE_alpha_subscripts,
 		NUM_CONSTS,
 		NUM_CONSTS,
-		sizeof(conv_catalogue),
+		SIZE_conv_catalogue,
 #ifdef INCLUDE_INTERNAL_CATALOGUE
-		sizeof(internal_catalogue) / sizeof(const s_opcode),
+		SIZE_internal_catalogue,
 #endif
 	};
 	return catalogue_sizes[State2.catalogue];
@@ -1758,9 +1758,10 @@ opcode current_catalogue(int n) {
 		NUM_MONADIC,		// Number of complex monadics
 		NUM_DYADIC,		// Number of complex dyadics
 	};
-	const void *cat;
+	const unsigned char *cat;
 	unsigned int c = State2.catalogue;
 	int m, i;
+	unsigned p, q;
 
 	if ( c == CATALOGUE_CONST )
 		return CONST(n);
@@ -1769,16 +1770,16 @@ opcode current_catalogue(int n) {
 		return CONST_CMPLX(n);
 
 	if ( c == CATALOGUE_CONV ) {
-		unsigned char c = conv_catalogue[n];
-		if (c & 0x80)
+		const unsigned char cnv = conv_catalogue[n];
+		if (cnv & 0x80)
 			// Monadic conversion routine
-			return OP_MON | (c & 0x7f);
+			return OP_MON | (cnv & 0x7f);
 		else
-			return RARG(RARG_CONV, c);
+			return RARG(RARG_CONV, cnv);
 	}
 
 	if ( c == CATALOGUE_ALPHA_LETTERS_UPPER && State2.alphashift )
-		cat = alpha_letters_lower;
+		cat = (const unsigned char *)alpha_letters_lower;
 	else
 		cat = catalogues[c];
 
@@ -1790,7 +1791,9 @@ opcode current_catalogue(int n) {
 		return OP_NIL | OP_NOP;
 
 	/* Unpack the opcode */
-	m = ((const unsigned short int *)cat)[n];
+	p = cat[n + n/4];
+	q = cat[n + n/4 + 1];
+	m = 0x3ff & ((p << (2 + 2 * (n%4))) | (q >> (6 - 2 * (n%4))));
 
 	/* Now figure out which opcode it really is */
 	for (i=0; i<KIND_MAX; i++) {
