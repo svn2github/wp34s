@@ -1008,7 +1008,7 @@ static int compare_cat(const void *v1, const void *v2) {
 static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 	int i;
 	unsigned short int x;
-	static const unsigned short int opcode_breaks[KIND_MAX] = {
+	static const unsigned char opcode_breaks[KIND_MAX] = {
 		NUM_SPECIAL,		// Number of specials
 		NUM_NILADIC,		// Number of niladics
 		NUM_MONADIC,		// Number of monadics

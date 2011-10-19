@@ -1749,7 +1749,7 @@ opcode current_catalogue(int n) {
 		internal_catalogue,
 #endif
 	};
-	static const unsigned short int opcode_breaks[KIND_MAX] = {
+	static const unsigned char opcode_breaks[KIND_MAX] = {
 		NUM_SPECIAL,		// Number of specials
 		NUM_NILADIC,		// Number of niladics
 		NUM_MONADIC,		// Number of monadics
