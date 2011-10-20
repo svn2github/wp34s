@@ -191,12 +191,12 @@ static s_opcode program_xfcn[] = {
 
 #ifdef MATRIX_SUPPORT
 	// Matrix commands
-	MON(OP_MAT_TRN,		"M.TRN")
-	TRI(OP_MAT_MUL,		"M.[times]")
-	TRI(OP_MAT_GADD,	"M.+[times]")
-	NILIC(OP_MAT_INVERSE,	"M.INV")
-	TRI(OP_MAT_LIN_EQN,	"M.LIN")
-	MON(OP_MAT_DET,		"M.DET")
+	MON(OP_MAT_TRN,		"TRANSP")
+	TRI(OP_MAT_MUL,		"M[times]")
+	TRI(OP_MAT_GADD,	"M+[times]")
+	NILIC(OP_MAT_INVERSE,	"M^-1")
+	TRI(OP_MAT_LIN_EQN,	"LINEQS")
+	MON(OP_MAT_DET,		"DET")
 #ifdef MATRIX_LU_DECOMP
 	MON(OP_MAT_LU,		"M.LU")
 #endif
@@ -340,12 +340,12 @@ static s_opcode catalogue[] = {
 
 #ifdef MATRIX_SUPPORT
 	// Matrix commands
-	MON(OP_MAT_TRN,		"M.TRN")
-	TRI(OP_MAT_MUL,		"M.[times]")
-	TRI(OP_MAT_GADD,	"M.+[times]")
-	NILIC(OP_MAT_INVERSE,	"M.INV")
-	TRI(OP_MAT_LIN_EQN,	"M.LIN")
-	MON(OP_MAT_DET,		"M.DET")
+	MON(OP_MAT_TRN,		"TRANSP")
+	TRI(OP_MAT_MUL,		"M[times]")
+	TRI(OP_MAT_GADD,	"M+[times]")
+	NILIC(OP_MAT_INVERSE,	"M^-1")
+	TRI(OP_MAT_LIN_EQN,	"LINEQS")
+	MON(OP_MAT_DET,		"DET")
 #ifdef MATRIX_LU_DECOMP
 	MON(OP_MAT_LU,		"M.LU")
 #endif
@@ -592,8 +592,8 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_Xeq_neg0,	"x=-0?")
 
 #ifdef MATRIX_SUPPORT
-	MON(OP_MAT_RQ,		"M.ROW?")
-	MON(OP_MAT_CQ,		"M.COL?")
+	MON(OP_MAT_RQ,		"nROW")
+	MON(OP_MAT_CQ,		"nCOL")
 	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
 #endif
 };
@@ -671,16 +671,16 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_PUTKEY,	"PUTK")
 
 #ifdef MATRIX_SUPPORT
-	MON(OP_MAT_ALL,		"M.ALL")
-	MON(OP_MAT_DIAG,	"M.DIAG")
-	DYA(OP_MAT_ROW,		"M.ROW")
-	DYA(OP_MAT_COL,		"M.COL")
+	MON(OP_MAT_ALL,		"M-ALL")
+	MON(OP_MAT_DIAG,	"M-DIAG")
+	DYA(OP_MAT_ROW,		"M-ROW")
+	DYA(OP_MAT_COL,		"M-COL")
 	TRI(OP_MAT_REG,		"M.REG")
 	MON(OP_MAT_IJ,		"M.IJ")
 #ifdef MATRIX_ROWOPS
-	NILIC(OP_MAT_ROW_SWAP,	"M.R<>")
-	NILIC(OP_MAT_ROW_MUL,	"M.R*")
-	NILIC(OP_MAT_ROW_GADD,	"M.R+*")
+	NILIC(OP_MAT_ROW_SWAP,	"MROW<>")
+	NILIC(OP_MAT_ROW_MUL,	"MROW*")
+	NILIC(OP_MAT_ROW_GADD,	"MROW+*")
 #endif
 #endif
 };

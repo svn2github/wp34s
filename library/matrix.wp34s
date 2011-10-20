@@ -79,7 +79,7 @@ m_trace_loop::		RCL[->]Y
 			iC 1
 m_add_sub_common::	x[<->] Z
 			x[<->] Y
-			M-+[times]
+			M+[times]
 			RTN
 
 /* Scalar multiply
@@ -136,7 +136,7 @@ m_norm_common::		STOM B			/* save mode settings */
 			M-ROW
 			STO D
 m_norm_loop::		[cmplx]RCL C
-			M-IJ
+			M.IJ
 			FS? C
 			x[<->] Y
 			DROP
@@ -229,7 +229,7 @@ entry_A::	SF C
 		STO I 
 mio_loop::	RCL I 
 		RCL L 
-		M-IJ 
+		M.IJ 
 		CL[alpha] 	// shows the next element indexes 
 		[alpha] ( 
 		[alpha]IP X 
@@ -252,6 +252,6 @@ mio_loop::	RCL I
 		PROMPT 
 		x[<->] Y 
 		RCL Z 
-		M-REG 
+		M.REG 
 		STO I
 		JMP mio_loop

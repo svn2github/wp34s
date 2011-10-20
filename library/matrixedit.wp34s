@@ -63,7 +63,7 @@ loop::	CL[alpha]       // Display row and column
 	RCL J           // Compute register to display
 	RCL I
 	RCL A
-	M-REG		// This returns the register for (I,J)
+	M.REG		// This returns the register for (I,J)
 	STO B
 
 key::	VW[alpha]+[->]B	// Show value together with indices
@@ -119,7 +119,7 @@ sto::	STO[->]B  	// Store value if the user presses R/S to continue
 	x<? J		// is column number positive?
 	JMP loop	// ok, continue
 	RCL A
-	M-COL?		// return the number of columns
+	nCOL		// return the number of columns
 	STO J		// use as current column
 			// fall through
 
@@ -128,7 +128,7 @@ row_up:: DEC I		// decrement row index
 	x<? I		// is row number positive?
 	JMP loop	// ok, continue
 	RCL A
-	M-ROW?		// return the number of rows
+	nROW		// return the number of rows
 	STO I		// use as current row
 	JMP loop
 
@@ -141,7 +141,7 @@ row_up:: DEC I		// decrement row index
 	// column right
 	INC J		// increment column index
 	RCL A
-	M-COL?		// return the number of columns
+	nCOL		// return the number of columns
 	x[>=]? J	// is index less or equal number of columns?
 	JMP loop	// ok, continue
 	1 		// back to square one
@@ -151,7 +151,7 @@ row_up:: DEC I		// decrement row index
 row_down:: INC I	// increment row index
 	0
 	RCL A
-	M-ROW?		// return the number of rows
+	nROW		// return the number of rows
 	x[>=]? I	// is index less or equal number of rows?
 	JMP loop	// ok, continue
 	1 		// back to square one

@@ -245,13 +245,13 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M-ALL")
 	FUNC(OP_MAT_DIAG, &matrix_diag,		NOFN,		NOFN,		"M-DIAG")
-	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"M-TRN")
-	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"M-ROW?")
-	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"M-COL?")
-	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"M-IJ")
-	FUNC(OP_MAT_DET, &matrix_determinant,	NOFN,		NOFN,		"M-DET")
+	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"TRANSP")
+	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"nROW")
+	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"nCOL")
+	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"M.IJ")
+	FUNC(OP_MAT_DET, &matrix_determinant,	NOFN,		NOFN,		"DET")
 #ifdef MATRIX_LU_DECOMP
-	FUNC(OP_MAT_LU, &matrix_lu_decomp,	NOFN,		NOFN,		"M-LU")
+	FUNC(OP_MAT_LU, &matrix_lu_decomp,	NOFN,		NOFN,		"M.LU")
 #endif
 #endif
 #undef FUNC
@@ -342,7 +342,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M-ROW")
 	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M-COL")
-	FUNC(OP_MAT_COPY, &matrix_copy,		NOFN,		NOFN,		"M-COPY")
+	FUNC(OP_MAT_COPY, &matrix_copy,		NOFN,		NOFN,		"M.COPY")
 #endif
 #undef FUNC
 };
@@ -378,10 +378,10 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 	FUNC(OP_PERMRR,		&decNemberPerMRR, NOFN,		"%MRR")
         FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha, NOFN,    "L\275\240")
 #ifdef MATRIX_SUPPORT
-	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"M-\034")
-	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"M-+\034")
-	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"M-REG")
-	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	NOFN,	"M-LIN")
+	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"M\034")
+	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"M+\034")
+	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"M.REG")
+	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	NOFN,	"LINEQS")
 #endif
 #undef FUNC
 };
@@ -591,16 +591,16 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 #ifdef MATRIX_SUPPORT
 #ifdef MATRIX_ROWOPS
-	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"M-R\027")
-	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"M-R\034")
-	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"M-R+\034")
+	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"MROW\027")
+	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"MROW\034")
+	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"MROW+\034")
 #endif
-	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M-SQR?")
-	FUNC0(OP_MAT_INVERSE,	&matrix_inverse,	"M-INV")
+	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
+	FUNC0(OP_MAT_INVERSE,	&matrix_inverse,	"M\235")
 #endif
 #ifdef SILLY_MATRIX_SUPPORT
-	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M-ZERO")
-	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M-IDEN")
+	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
+	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
 #undef FUNC
 #undef FUNC0
