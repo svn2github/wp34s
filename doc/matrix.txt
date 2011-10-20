@@ -1,9 +1,22 @@
-There are a number of built in matrix related commands.  These are
-designed to provide the low level support routines for creating
-more useful matrix functions as key stroke programs.  I.e. they
-correspond to the BLAS of the 34S's matrix support.
+There are a number of built in matrix related commands.  Many of these
+are designed to provide the low level support routines for creating more
+useful matrix functions as key stroke programs.  I.e. they correspond
+to the BLAS of the 34S's matrix support.  Others perform high level
+operations (e.g. matrix multiply, LU decomposition) and are useful as
+they are.
 
-All these routines take or create a matrix descriptor.  This is a
+Some of these commands are optional and can be included or excluded via
+build time options.  Currently, these options are available:
+
+	Option				Default
+	----------------------------------------
+	MATRIX_LU_DECOMP		enabled
+	MATRIX_ROWOPS			enabled
+	SILLY_MATRIX_SUPPORT		disabled
+
+    
+
+All of these routines take or create a matrix descriptor.  This is a
 real number in the format:
 
 	bb.rrcc
@@ -215,6 +228,11 @@ Errors
 
 Matrix library
 --------------
+
+This are routines coded as user keytroke programs.  They are generally
+not as well behaved as the above functions.  They also need to be loaded
+onto the calculator before they are available.
+
 
 'M-1'
 
