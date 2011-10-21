@@ -231,12 +231,13 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_COMPARES     } },
 			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_SYMBOLS      } },
 		};
+		static const char smap[] = { 0, 1, 0, 2 }; // Map shifts to columns;
 
 		/*
 		 *  Prepare search
 		 */
 		cp = amap;
-		col = shift == SHIFT_H ? 2 : shift;
+		col = smap[shift];
 		max = sizeof(amap) / sizeof(amap[0]);
 	}
 
@@ -245,7 +246,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 	 */
 	for (i = 0; i < max; ++i, ++cp) {
 		if (cp->key == c) {
-			return cp->cat[col];
+			return (enum catalogues) cp->cat[col];
 			break;
 		}
 	}
