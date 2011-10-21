@@ -592,8 +592,6 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_Xeq_neg0,	"x=-0?")
 
 #ifdef MATRIX_SUPPORT
-	MON(OP_MAT_RQ,		"nROW")
-	MON(OP_MAT_CQ,		"nCOL")
 	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
 #endif
 };
@@ -682,6 +680,8 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_MAT_ROW_MUL,	"MROW*")
 	NILIC(OP_MAT_ROW_GADD,	"MROW+*")
 #endif
+	MON(OP_MAT_RQ,		"nROW")
+	MON(OP_MAT_CQ,		"nCOL")
 #endif
 };
 
