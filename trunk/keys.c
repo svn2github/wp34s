@@ -1370,7 +1370,7 @@ static int process_arg(const keycode c) {
 		return STATE_UNFINISHED;
 	}
 #ifdef ALLOW_MORE_LABELS
-	if ( n <= 9 ) {
+	if ( n <= 9 && ! State2.dot ) {
 		return arg_digit(n);
 	}
 	if ( argcmds[base].label && ! State2.ind ) {
@@ -1407,7 +1407,7 @@ static int process_arg(const keycode c) {
 			return v;
 	}
 #else
-	if (n <= 9 && ! shorthand)
+	if (n <= 9 && ! shorthand && ! State2.dot)
 		return arg_digit(n);
 
 	if (shorthand)
