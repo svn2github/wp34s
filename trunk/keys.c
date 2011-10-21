@@ -1174,6 +1174,7 @@ static int process_alpha(const keycode c) {
 			return STATE_BACKSPACE;
 		break;
 
+#if 0
 	case K30:
 		if (shift == SHIFT_N)
 			init_arg(RARG_XEQ);
@@ -1182,6 +1183,7 @@ static int process_alpha(const keycode c) {
 		else
 			break;
 		return STATE_UNFINISHED;
+#endif
 
 	case K40:
 		if (shift == SHIFT_N) {
@@ -1216,10 +1218,12 @@ static int process_alpha(const keycode c) {
 			init_state();
 		return STATE_UNFINISHED;
 
+#if 0
 	case K63:
 		if (shift == SHIFT_F)
 			return OP_NIL | OP_RS;		// R/S
 		break;
+#endif
 
 	default:
 		break;
@@ -1504,6 +1508,7 @@ static int process_arg(const keycode c) {
 #endif
 					init_arg(base - RARG_LBL);
 				State2.multi = 1;
+				State2.alphashift = 0;
 				State2.rarg = 0;
 			} else if (base == RARG_SCI) {
 				init_arg(0);
@@ -1540,6 +1545,13 @@ static int process_arg(const keycode c) {
 
 /* Multi (2) word instruction entry
  */
+static void reset_multi(void) {
+	// Reset the multi flag and clear lowercase flag if not called from alpha mode
+	State2.multi = 0;
+	if (! State2.alphas )
+		State2.alphashift = 0;
+}
+
 static int process_multi(const keycode c) {
 	const enum shifts shift = reset_shift();
 	unsigned char ch;
@@ -1550,7 +1562,7 @@ static int process_multi(const keycode c) {
 	case K20:	// Enter - exit multi mode, maybe return a result
 		if (shift == SHIFT_F)
 			break;
-		State2.multi = 0;
+		reset_multi();
 		if (State2.numdigit == 0) {
 			return STATE_UNFINISHED;
 		} else if (State2.numdigit == 1) {
@@ -1565,7 +1577,7 @@ static int process_multi(const keycode c) {
 	case K24:	// Clx - backspace, clear alpha
 		if (shift == SHIFT_N || shift == SHIFT_F) {
 			if (State2.numdigit == 0)
-				State2.multi = 0;
+				reset_multi();
 			else
 				State2.numdigit--;
 			return STATE_UNFINISHED;
@@ -1576,7 +1588,7 @@ static int process_multi(const keycode c) {
 		if (shift == SHIFT_F)
 			State2.alphashift = 1 - State2.alphashift;
 		else
-			init_state();
+			reset_multi();
 		return STATE_UNFINISHED;
 
 	default:
@@ -1596,7 +1608,7 @@ static int process_multi(const keycode c) {
 		State2.numdigit = 2;
 		return STATE_UNFINISHED;
 	}
-	State2.multi = 0;
+	reset_multi();
 
 	base = State.base;
 	opcode = OP_DBL + (base << DBL_SHIFT) + State2.digval +

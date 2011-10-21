@@ -100,7 +100,7 @@ void set_speed( unsigned int speed );
  */
 #define APD_TICKS 1800 // 3 minutes
 #define APD_VOLTAGE SUPC_BOD_2_2V
-#define LOW_VOLTAGE SUPC_BOD_2_7V
+#define LOW_VOLTAGE SUPC_BOD_2_5V
 #define ALLOW_DEEP_SLEEP 1   // undef to disable
 #define TICKS_BEFORE_DEEP_SLEEP 5
 
