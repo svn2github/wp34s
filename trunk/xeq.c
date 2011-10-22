@@ -613,8 +613,6 @@ void clrx(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	set_zero(&regX);
 	fill(NULL, NULL, OP_FILL);
-	regL = regX;
-	regI = regX;
 
 	CmdLineLength = 0;
 	State.state_lift = 1;
