@@ -3268,6 +3268,8 @@ static void print_step(const opcode op) {
 		p = num_arg_0(p, user_pc(), 3);
 		*p++ = ':';
 		scopy_char(p, prt(op, buf), '\0');
+		if (*p == '?')
+			*p = '\0';
 	}
 	State2.disp_small = 1;
 	DispMsg = TraceBuffer;

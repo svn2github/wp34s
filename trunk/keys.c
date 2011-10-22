@@ -46,7 +46,7 @@ enum confirmations {
 
 /* Local data to this module */
 unsigned int OpCode;
-char OpCodeDisplayPending;
+unsigned char OpCodeDisplayPending;
 
 static void advance_to_next_label(unsigned int pc);
 
@@ -999,19 +999,6 @@ static int process_arrow(const keycode c) {
 		process_cmdline_set_lift();
 		break;
 #endif
-
-#if 0
-	case K04:
-		switch (shift) {
-		case SHIFT_F:
-			return OP_NIL | OP_P2R;
-		case SHIFT_G:
-			return OP_NIL | OP_R2P;
-		default:	
-			break;
-		}
-		break;
-#endif
 	default:
 		break;
 	}
@@ -1114,7 +1101,7 @@ static int process_alpha(const keycode c) {
 	const enum shifts shift = reset_shift();
 	unsigned char ch = keycode_to_alpha(c, shift);
 	unsigned int alpha_pos = State2.alpha_pos, n;
-        int t;
+        int op = STATE_UNFINISHED;
 	State2.alpha_pos = 0;
 
 	switch (c) {
@@ -1122,19 +1109,19 @@ static int process_alpha(const keycode c) {
 	case K01:
 	case K02:
 	case K03:
-		if (shift != SHIFT_F)
-			break;
-                t = check_f_key(c - K00, RARG(RARG_ALPHA, ch));
-                if (t == RARG(RARG_ALPHA, '\0'))
-			return STATE_UNFINISHED;
-		return t;
+		if (shift == SHIFT_F) {
+			op = check_f_key(c - K00, 0);
+			if ( op != 0 )
+				goto alpha_off;
+		}
+		break;
 
 	case K10:	// STO
-		if (shift == SHIFT_F)
+		if (shift == SHIFT_F) {
 			init_arg(RARG_ASTO);
-		else
-			break;
-		return STATE_UNFINISHED;
+			return STATE_UNFINISHED;
+		}
+		break;
 
 	case K11:	// RCL - maybe view
 		if (shift == SHIFT_F) {
@@ -1157,9 +1144,10 @@ static int process_alpha(const keycode c) {
 			return STATE_UNFINISHED;
 		}
 #endif
+	alpha_off:
 		State2.alphas = 0;
 		State2.alphashift = 0;
-		return STATE_UNFINISHED;
+		return op;
 
 	case K21:
 		if (shift == SHIFT_F)
@@ -1169,22 +1157,22 @@ static int process_alpha(const keycode c) {
 		break;
 
 	case K24:	// Clx - backspace, clear Alpha
-		if (shift == SHIFT_F)
-			return OP_NIL | OP_CLRALPHA;
 		if (shift == SHIFT_N)
 			return STATE_BACKSPACE;
+		if (shift == SHIFT_F)
+			return OP_NIL | OP_CLRALPHA;
 		break;
 
-#if 0
 	case K30:
-		if (shift == SHIFT_N)
+		if (shift == SHIFT_N) {
 			init_arg(RARG_XEQ);
-		else if (shift == SHIFT_H)
+			goto alpha_off;
+		}
+		else if (shift == SHIFT_H) {
 			init_arg(RARG_GTO);
-		else
-			break;
-		return STATE_UNFINISHED;
-#endif
+			goto alpha_off;
+		}
+		break;
 
 	case K40:
 		if (shift == SHIFT_N) {
@@ -1219,12 +1207,10 @@ static int process_alpha(const keycode c) {
 			init_state();
 		return STATE_UNFINISHED;
 
-#if 0
 	case K63:
 		if (shift == SHIFT_F)
 			return OP_NIL | OP_RS;		// R/S
 		break;
-#endif
 
 	default:
 		break;
@@ -1233,7 +1219,7 @@ static int process_alpha(const keycode c) {
 	/* Look up the character and return an alpha code if okay */
 	if (ch == 0)
 		return STATE_UNFINISHED;
-	return RARG(RARG_ALPHA, ch & 0xff);
+	return RARG(RARG_ALPHA, ch);
 }
 
 /*
@@ -1346,7 +1332,7 @@ static int process_arg_dot(const unsigned int base) {
 	if (State2.dot || argcmds[base].stckreg || State2.ind)
 		return arg_eval(regX_idx);
 
-	if (base == RARG_GTO) {
+	if (base == RARG_GTO || base == RARG_XEQ) {
 		// Special GTO . sequence
 		if (State2.numdigit == 0 && ! State2.ind) {
 			State2.gtodot = 1;
@@ -1811,6 +1797,7 @@ opcode current_catalogue(int n) {
 	return RARG_BASE(m);
 }
 
+
 /*
  *  Catalogue navigation
  */
@@ -1832,21 +1819,19 @@ static int process_catalogue(const keycode c) {
 
 				if (isRARG(op)) {
 					const unsigned int rarg = RARG_CMD(op);
-
 					if (rarg == RARG_CONST || rarg == RARG_CONST_CMPLX || rarg == RARG_CONV || rarg == RARG_ALPHA)
 						return op;
-					if (rarg >= RARG_TEST_EQ && rarg <= RARG_TEST_GE) {
-						State2.test = TST_EQ + (rarg - RARG_TEST_EQ);
-						return STATE_UNFINISHED;
-					}
-					init_arg(rarg);
-				} else {
+					if (rarg >= RARG_TEST_EQ && rarg <= RARG_TEST_GE)
+						State2.test = TST_EQ + (RARG_CMD(op) - RARG_TEST_EQ);
+					else
+						init_arg(RARG_CMD(op));
+				}
+				else {
 					if (op == (OP_NIL | OP_CLALL))
 						init_confirm(confirm_clall);
 					else if (op == (OP_NIL | OP_RESET))
 						init_confirm(confirm_reset);
-					else
-						return op;
+					return op;
 				}
 			} else
 				init_cat(CATALOGUE_NONE);
@@ -2352,7 +2337,7 @@ void process_keycode(int c)
 			/*
 			 *  Handle command display and NULL here
 			 */
-			if (OpCodeDisplayPending && Keyticks >= 2) {
+			if (Keyticks >= 2 && OpCodeDisplayPending) {
 				/*
 				 *  Show command to the user
 				 */
@@ -2472,12 +2457,7 @@ void process_keycode(int c)
 				else {
 					// Save the op-code for execution on key-up
 					OpCode = c;
-#if defined(REALBUILD) || defined(WINGUI)
-					if (isRARG(c))
-						show_opcode();
-					else
-#endif
-						OpCodeDisplayPending = 1;
+					OpCodeDisplayPending = 1;
 				}
 			}
 			else {
