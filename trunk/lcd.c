@@ -359,7 +359,7 @@ void show_flags(void) {
 		return;
 	MOVE(0, 0);
 	PRINTF(" %c ", just_displayed?'*':' ');
-	MOVE(10, 0);
+	MOVE(5, 0);
 	switch (cur_shift()) {
 	case SHIFT_F:   PRINTF("[f-shift]");    break;
 	case SHIFT_G:   PRINTF("[g-shift]");    break;
@@ -367,19 +367,19 @@ void show_flags(void) {
 	default:                                break;
 	}
 	if (State2.hyp) {
-		MOVE(40, 0);
+		MOVE(14, 0);
 		if (State2.dot)
 			PRINTF("[hyp]");
 		else
 			PRINTF("[hyp-1]");
 	}
-	if (State2.cmplx) {
-		MOVE(20, 0);
-		PRINTF("[cmplx]");
-	}
 	if (!State2.runmode) {
-		MOVE(30, 0);
+		MOVE(21, 0);
 		PRINTF("[prog]");
+	}
+	if (view_instruction_counter) {
+		MOVE(28, 0);
+		PRINTF("#%llu", instruction_count);
 	}
 	MOVE(0, 0);
 

@@ -3320,6 +3320,9 @@ void xeq(opcode op)
 	struct _state old = State;
 	enum errors er;
 
+#if !defined(REALBUILD) && !defined(WINGUI)
+	instruction_count++;
+#endif
 #ifndef REALBUILD
 	if (State2.trace) {
 		char buf[16];

@@ -36,7 +36,11 @@
 #define CH_QUIT		'Q'
 #define CH_TRACE	'T'
 #define CH_FLAGS	'F'
+#define CH_ICOUNT	'C'
 #define CH_REFRESH	12	/* ^L */
+
+unsigned long long int instruction_count = 0;
+int view_instruction_counter = 0;
 
 /*
  *  PC keys to calculator keys
@@ -490,7 +494,11 @@ skipargs:
 			} else if (c == CH_REFRESH) {
 				clear();
 				display();
-			} else 
+			} else if (c == CH_ICOUNT) {
+				instruction_count = 0;
+				view_instruction_counter = 1 - view_instruction_counter;
+				display();
+			} else
 #endif
 			{
 				process_keycode(remap(c));

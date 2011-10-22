@@ -303,5 +303,9 @@ extern decContext Ctx;
 #if !defined(REALBUILD) && !defined(WINGUI)
 extern int just_displayed;
 #endif
+#if !defined(REALBUILD) && !defined(WINGUI)
+extern unsigned long long int instruction_count;
+extern int view_instruction_counter;
+#endif
 
 #endif /* DATA_H_ */
