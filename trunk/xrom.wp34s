@@ -628,34 +628,34 @@ deriv_return::		STO L
 			STO 04
 			R[v]
 
-			RCL+ X				/* 2c b a .*/
-			x[<->] Z			/* a b 2c .*/
+			RCL+ X				/* 2c b a . */
+			x[<->] Z			/* a b 2c . */
 			x=0?
-				ERR 18			/* Invalid arugment error*/
-			RCL+ X				/* 2a b 2c .*/
+				ERR 18			/* Invalid arugment error */
+			RCL+ X				/* 2a b 2c . */
 			STO 02
-			RCL Y				/* b 2a b 2c*/
-			[cmplx][times]			/* b^2-4ac 2b(a+c) b 2c*/
+			RCL Y				/* b 2a b 2c */
+			[cmplx][times]			/* b^2-4ac 2b(a+c) b 2c */
 			STO 01
 			x<0?
 				JMP quad_complex
-			[sqrt]				/* sqrt 2b(a+c) b 2c*/
-			x[<->] Y
-			R[v]				/* sqrt b 2c .*/
+			[sqrt]				/* sqrt 2b(a+c) b 2c */
+			x[<->] Y			/* . sqrt b 2c */
+			DROP				/* sqrt b 2c 2c */
+			x[<->] Y			/* b sqrt 2c 2c */
 			x>0?
 				[cmplx]CONJ
-			-				/* sqrt-b 2c 2c 2c*/
-			x[!=]0?
-				STO/ Y
-			RCL/ 02
+			-				/* -b-sqrt 2c 2c 2c */
+			STO/ Y				/* -b-sqrt 2c/(-b-sqrt) 2c 2c */
+			RCL/ 02				/* (b-sqrt)/2a 2c/(b-sqrt) 2c 2c */
 			XEQ quad_fix_stack
 			JMP exit
 
 quad_complex::		ABS
-			[sqrt]				/* sqrt ? b 2c*/
-			RCL/ 02				/* sqrt/2a ? b 2c*/
-			RCL Z				/* b sqrt/2a ? b*/
-			RCL/ 02				/* b/2a sqrt/2a ? b*/
+			[sqrt]				/* sqrt ? b 2c */
+			RCL/ 02				/* sqrt/2a ? b 2c */
+			RCL Z				/* b sqrt/2a ? b */
+			RCL/ 02				/* b/2a sqrt/2a ? b */
 			+/-
 			XEQ quad_fix_stack
 			TOP?
