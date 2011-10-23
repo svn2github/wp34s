@@ -102,7 +102,7 @@ void set_speed( unsigned int speed );
 #define APD_VOLTAGE SUPC_BOD_2_2V
 #define LOW_VOLTAGE SUPC_BOD_2_5V
 #define ALLOW_DEEP_SLEEP 1   // undef to disable
-#define TICKS_BEFORE_DEEP_SLEEP 5
+#define TICKS_BEFORE_DEEP_SLEEP 20
 
 //#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
 //#define NO_INLINE    __attribute__((noinline))
@@ -978,8 +978,8 @@ void user_heartbeat( void )
 		/*
 		 *  The PSE handler checks this value
 		 */
-	        if ( --Pause == 0 ) {
-	        	update_speed();
+	        if ( --Pause == 0 && Running ) {
+			set_speed( SPEED_HIGH );
 	        }
 	}
 
@@ -1021,7 +1021,7 @@ void LCD_interrupt( void )
 			set_speed( SPEED_MEDIUM );
 		}
 		else if ( GoFast == 10 ) {
-			update_speed();
+			set_speed( SPEED_HIGH );
 		}
 	}
 
@@ -1384,10 +1384,10 @@ void watchdog( void )
  *  This will honour the speed setting in UState.
  */
 #undef update_speed
-void update_speed( void )
+void update_speed( int full )
 {
 	GoFast = 0;
-	set_speed( SPEED_HIGH );
+	set_speed( full ? SPEED_HIGH : SPEED_HALF );
 }
 
 
@@ -1503,13 +1503,6 @@ int main(void)
 	 */
 	Xtal = ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) == AT91C_SUPC_OSCSEL );
 
-	/*
-	 *  Don't let the user wait too long.
-	 *  We go to 10 MHz here as a compromise between power draw
-	 *  and reaction time for the user
-	 */
-	set_speed( SPEED_HALF );
-
 #ifdef STACK_DEBUG
 	/*
 	 *  Fill RAM with 0x5A for debugging
@@ -1520,7 +1513,7 @@ int main(void)
 	/*
 	 *  Minimum initialisation for decNumber library
 	 */
-	xeq_init_contexts();
+	// xeq_init_contexts();
 
 #ifdef ALLOW_DEEP_SLEEP
 	/*
@@ -1589,7 +1582,7 @@ int main(void)
 		 *  CRC checking the RAM is a bit slow so we speed up.
 		 *  Idling will slow us down again.
 		 */
-		update_speed();
+		set_speed( SPEED_HALF );
 
 		/*
 		 *  Turn on LCD, RTC and backup SRAM
@@ -1766,7 +1759,7 @@ int main(void)
 						message( "Erase?", "ALL" );
 					}
 					else {
-						update_speed();
+						set_speed( SPEED_HALF );
 						Crc = 0;
 						init_34s();
 						confirm_counter = 0;
@@ -1788,7 +1781,7 @@ int main(void)
 						message( "Backup?", "to FLASH" );
 					}
 					else {
-						update_speed();
+						set_speed( SPEED_HALF );
 						flash_backup( NULL, NULL, OP_BACKUP );
 						display();
 						confirm_counter = 0;
@@ -1801,7 +1794,7 @@ int main(void)
 						message( "Restore?", "FLASH" );
 					}
 					else {
-						update_speed();
+						set_speed( SPEED_HALF );
 						flash_restore( NULL, NULL, OP_RESTORE );
 						display();
 						confirm_counter = 0;
@@ -1858,7 +1851,7 @@ int main(void)
 			/*
 			 *  Increase the speed of operation
 			 */
-			update_speed();
+			set_speed( SPEED_HIGH );
 		}
 #endif
 		/*
@@ -1869,7 +1862,7 @@ int main(void)
 			/*
 			 *  Reduce speed
 			 */
-			update_speed();
+			set_speed( SPEED_HALF );
 		}
 
 		/*

@@ -2954,7 +2954,7 @@ void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 void op_setspeed(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	UState.slow_speed = (op == OP_SLOW) ? 1 : 0;
-	update_speed();
+	update_speed(1);
 }
 
 
@@ -3305,7 +3305,7 @@ void busy(void)
 	/*
 	 *  Increase the speed
 	 */
-	update_speed();
+	update_speed(1);
 
 	/*
 	 *  Indicate busy state to the user

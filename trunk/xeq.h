@@ -1220,7 +1220,7 @@ extern void shutdown(void);
 extern void lock(void);
 extern void unlock(void);
 extern void watchdog(void);
-extern void update_speed(void);
+extern void update_speed(int full);
 extern void idle(void);
 extern int is_debug(void);
 extern int is_test_mode(void);
@@ -1228,7 +1228,7 @@ extern int is_test_mode(void);
 #define lock()
 #define unlock()
 #define watchdog()
-#define update_speed()
+#define update_speed(full)
 #define idle()
 #define is_debug() 0
 #define is_test_mode() 0

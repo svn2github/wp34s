@@ -1320,6 +1320,7 @@ void display(void) {
 			if (opKIND(op) == KIND_MON) {
 				const unsigned int f = argKIND(op);
 				if (f < num_monfuncs && ! isNULL(monfuncs[f].mondreal)) {
+					update_speed(0);
 					CALL(monfuncs[f].mondreal)(&r, &x);
 				}
 				else
@@ -1593,7 +1594,7 @@ void set_running_off() {
 }
 
 void set_running_on() {
-	update_speed();
+	update_speed(0);
 	set_running_on_sst();
 	reset_disp();
 	set_annunciators();
