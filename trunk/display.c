@@ -1593,6 +1593,7 @@ void set_running_off() {
 }
 
 void set_running_on() {
+	update_speed();
 	set_running_on_sst();
 	reset_disp();
 	set_annunciators();

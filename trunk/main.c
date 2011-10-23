@@ -862,6 +862,7 @@ void set_speed( unsigned int speed )
 
 			// Turn off the unused oscillators
 			disable_pll();
+			GoFast = 0;
 
 		case SPEED_MEDIUM:
 			/*
@@ -977,7 +978,9 @@ void user_heartbeat( void )
 		/*
 		 *  The PSE handler checks this value
 		 */
-	        --Pause;
+	        if ( --Pause == 0 ) {
+	        	update_speed();
+	        }
 	}
 
 	/*
@@ -1008,6 +1011,18 @@ void LCD_interrupt( void )
 	 */
 	if ( SpeedSetting < SPEED_MEDIUM ) {
 		set_speed( SPEED_MEDIUM );
+	}
+
+	if ( GoFast ) {
+		/*
+		 *  We are doing serious work
+		 */
+		if ( ++GoFast == 5 && SpeedSetting < SPEED_MEDIUM ) {
+			set_speed( SPEED_MEDIUM );
+		}
+		else if ( GoFast == 10 ) {
+			update_speed();
+		}
 	}
 
 	/*
@@ -1371,6 +1386,7 @@ void watchdog( void )
 #undef update_speed
 void update_speed( void )
 {
+	GoFast = 0;
 	set_speed( SPEED_HIGH );
 }
 
@@ -1573,7 +1589,7 @@ int main(void)
 		 *  CRC checking the RAM is a bit slow so we speed up.
 		 *  Idling will slow us down again.
 		 */
-		set_speed( SPEED_HIGH );
+		update_speed();
 
 		/*
 		 *  Turn on LCD, RTC and backup SRAM
@@ -1750,7 +1766,7 @@ int main(void)
 						message( "Erase?", "ALL" );
 					}
 					else {
-						set_speed( SPEED_HIGH );
+						update_speed();
 						Crc = 0;
 						init_34s();
 						confirm_counter = 0;
@@ -1772,7 +1788,7 @@ int main(void)
 						message( "Backup?", "to FLASH" );
 					}
 					else {
-						set_speed( SPEED_HIGH );
+						update_speed();
 						flash_backup( NULL, NULL, OP_BACKUP );
 						display();
 						confirm_counter = 0;
@@ -1785,7 +1801,7 @@ int main(void)
 						message( "Restore?", "FLASH" );
 					}
 					else {
-						set_speed( SPEED_HIGH );
+						update_speed();
 						flash_restore( NULL, NULL, OP_RESTORE );
 						display();
 						confirm_counter = 0;
@@ -1837,13 +1853,14 @@ int main(void)
 				k = -1;
 			}
 		}
+#if 0
 		if ( k == K_RELEASE /* ( k != K_HEARTBEAT && k != -1 ) */ || Running ) {
 			/*
 			 *  Increase the speed of operation
 			 */
-			set_speed( SPEED_HIGH );
+			update_speed();
 		}
-
+#endif
 		/*
 		 *  Take care of the low battery indicator
 		 */
@@ -1852,7 +1869,7 @@ int main(void)
 			/*
 			 *  Reduce speed
 			 */
-			set_speed( SPEED_HALF );
+			update_speed();
 		}
 
 		/*

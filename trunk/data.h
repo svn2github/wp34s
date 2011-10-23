@@ -291,11 +291,12 @@ extern int Running;		   // Program is active
 extern int JustStopped;            // Set on program stop to ignore the next R/S key in the buffer
 extern int Error;		   // Did an error occur, if so what code?
 extern int ShowRegister; 	   // Temporary display (not X)
-extern int PcWrapped;		   // dec() or inc() have rapped around
+extern int PcWrapped;		   // decpc() or incpc() have wrapped around
 extern int ShowRPN;		   // controls the RPN annunciator
 extern const char *DispMsg;	   // What to display in message area
 extern char TraceBuffer[];         // Display current instruction
 extern unsigned int OpCode;        // Pending execution waiting for key-release
+extern unsigned char GoFast;	   // Speed-up might be necessary
 
 
 extern decContext Ctx;

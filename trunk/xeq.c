@@ -2770,6 +2770,7 @@ void op_pause(unsigned int arg, enum rarg op) {
 #if defined(REALBUILD) || defined(WINGUI)
 	// decremented in the low level heartbeat
 	Pause = arg;
+	GoFast = (arg == 0);
 #else
 #ifdef WIN32
 #pragma warning(disable:4996)
@@ -3300,6 +3301,11 @@ void busy(void)
 	 *  Serve the hardware watch dog
 	 */
 	watchdog();
+
+	/*
+	 *  Increase the speed
+	 */
+	update_speed();
 
 	/*
 	 *  Indicate busy state to the user

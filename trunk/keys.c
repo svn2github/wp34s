@@ -47,6 +47,7 @@ enum confirmations {
 /* Local data to this module */
 unsigned int OpCode;
 unsigned char OpCodeDisplayPending;
+unsigned char GoFast;
 
 static void advance_to_next_label(unsigned int pc);
 
@@ -2189,6 +2190,7 @@ static int process(const int c) {
 		if ( c != K_HEARTBEAT ) {
 			LastKey = (char) (c + 1);	// Store for KEY?
 			Pause = 0;			// leave PSE statement
+			GoFast = 1;
 		}
 		// continue execution if really running, else ignore (PSE)
 		return STATE_RUNNING;
@@ -2333,31 +2335,36 @@ void process_keycode(int c)
 			ShowRPN = 1;
 		}
 
-		if (OpCode != 0) {
+		if ( Keyticks >= 2 ) {
 			/*
-			 *  Handle command display and NULL here
+			 *  Some time has passed after last key press
 			 */
-			if (Keyticks >= 2 && OpCodeDisplayPending) {
+			if (OpCode != 0) {
 				/*
-				 *  Show command to the user
+				 *  Handle command display and NULL here
 				 */
-				show_opcode();
-				display();
+				if (OpCodeDisplayPending) {
+					/*
+					 *  Show command to the user
+					 */
+					show_opcode();
+					display();
+				}
+				else if (Keyticks > 12) {
+					/*
+					 *  Key is too long held down
+					 */
+					OpCode = 0;
+					message("NULL", NULL);
+					// Force display update on key-up
+					State2.disp_temp = 0;
+					ShowRPN = 2;
+				}
 			}
-			else if (Keyticks > 12) {
-				/*
-				 *  Key is too long held down
-				 */
-				OpCode = 0;
-				message("NULL", NULL);
-				// Force display update on key-up
-				State2.disp_temp = 0;
-				ShowRPN = 2;
+			if (Keyticks > 12 && shift_down() != SHIFT_N) {
+				// Rely on the held shift key instead of the toggle
+				State2.shifts = SHIFT_N;
 			}
-		}
-		if (Keyticks > 12 && shift_down() != SHIFT_N) {
-			// Rely on the held shift key instead of the toggle
-			State2.shifts = SHIFT_N;
 		}
 
 		/*
@@ -2380,11 +2387,12 @@ void process_keycode(int c)
 		if (!Running && !Pause)
 			return;
 	}
-
-	/*
-	 *  Prepare for execution of any numerical commands
-	 */
-	xeq_init_contexts();
+	else {
+		/*
+		 *  Not the heartbeat - prepare for execution of any numerical commands
+		 */
+		xeq_init_contexts();
+	}
 
 	/*
 	 *  Handle key release
@@ -2394,13 +2402,14 @@ void process_keycode(int c)
 			/*
 			 * Execute the key on release
 			 */
+			GoFast = 1;
 			c = OpCode;
 			OpCode = 0;
 			if (c == STATE_SST)
 				xeq_sst_bst(1);
 			else {
 				xeq(c);
-				if ( Running || Pause )
+				if (Running || Pause)
 					xeqprog();
 			}
 			ShowRPN = 1; // Back to normal display and processing
