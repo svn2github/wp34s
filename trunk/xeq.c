@@ -194,13 +194,8 @@ static void warn(const enum errors e) {
 /* Produce an error and stop
  */
 void err(const enum errors e) {
-	if (Error == ERR_NONE) {
+	if (Error == ERR_NONE)
 		Error = e;
-		if (Running) {
-			set_running_off();
-			decpc();		// back up to errant statement
-		}
-	}
 }
 
 
@@ -212,7 +207,10 @@ static void bad_mode_error(void) {
 
 /* User commands to produce warnings and errors */
 void cmderr(unsigned int arg, enum rarg op) {
-	err(arg);
+	if (isXROM(state_pc()))
+		err(arg);
+	else
+		err(-(int)arg);
 }
 
 #if defined(DEBUG) && !defined(WINGUI)
@@ -3324,7 +3322,6 @@ void xeq(opcode op)
 {
 	decimal64 save[STACK_SIZE+2];
 	struct _state old = State;
-	enum errors er;
 
 #if !defined(REALBUILD) && !defined(WINGUI)
 	instruction_count++;
@@ -3358,16 +3355,23 @@ void xeq(opcode op)
 		}
 	}
 
-	if ((er = Error) != ERR_NONE) {
-		xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
-		State = old;
-		Error = er;
-		set_running_off();
-		RetStkPtr = 0;
-		BankFlags = 0;
-		if (isXROM(state_pc()))
-			set_pc(0);
+	if (Error != ERR_NONE) {
+		if (Error < 0)
+			Error = -Error; // ERR command
+		else {
+			// Repair stack and state
+			// Clear return stack
+			xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
+			State = old;
+			RetStkPtr = 0;
+			BankFlags = 0;
+			if (isXROM(state_pc()))
+				set_pc(0);
+			else
+				decpc();	// Back to error instruction
+		}
 		process_cmdline_set_lift();
+		set_running_off();
 	} else if (State.implicit_rtn) {
 		do_rtn(0);
 	}
