@@ -1101,6 +1101,7 @@ extern void xeq_sst_bst(int kind);
 extern void version(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cmd_off(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cmderr(unsigned int arg, enum rarg op);
+extern void cmdmsg(unsigned int arg, enum rarg op);
 extern void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void cpx_enter(decimal64 *nul1, decimal64 *nul2, enum nilop op);

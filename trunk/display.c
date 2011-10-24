@@ -61,38 +61,48 @@ static const char S7_fract_GT[] = " Gt";
  * top line, the second in the bottom.  If the second is empty, "Error"
  * is displayed instead.  To get a blank lower line, include a space.
  */
-
-// NB: this MUST be in the same order as `enum errors'
-static const char *const error_table[] = 
+void error_message(const enum errors e) 
 {
-	// manually get the order correct!
-	0, 
-	"Domain\0",
-	"Bad date\0",
-	"Undefined\0Op-CODE",
-	"+\237\0",
-	"-\237\0",
-	"No such\0LABEL",
-	"SLV \004 \221 \217\0NEStED",
-	"Out of range\0",
-	"Bad digit\0",
-	"Too long\0",
-	">8\006\006\006levels\0NEStED",
-	"Stack\0CLASH",
-	"Bad mode\0",
-	"Word size\0too SMmALL",
-	"Too few\0dAtA Points",
-	"Invalid\0ParaMmEtEr",
-	"I/O\0Error",
-	"Invalid\0dAtA",
-	"No write\0In FLASH",
-	"Solve\0FAILEd",
-#ifdef MATRIX_SUPPORT
-	"Matrix\0diMmEnSion",
-	"Singular\0",
-#endif
-};
+	// NB: this MUST be in the same order as `enum errors'
+	static const char *const error_table[] = 
+	{
+		// manually get the order correct!
+		"Running\0PrograMm", 
+		"Domain\0",
+		"Bad date\0",
+		"Undefined\0Op-CODE",
+		"+\237\0",
+		"-\237\0",
+		"No such\0LABEL",
+		"SLV \004 \221 \217\0NEStED",
+		"Out of range\0",
+		"Bad digit\0",
+		"Too long\0",
+		">8\006\006\006levels\0NEStED",
+		"Stack\0CLASH",
+		"Bad mode\0",
+		"Word size\0too SMmALL",
+		"Too few\0dAtA Points",
+		"Invalid\0ParaMmEtEr",
+		"I/O\0Error",
+		"Invalid\0dAtA",
+		"No write\0In FLASH",
+		"Solve\0FAILEd",
+	#ifdef MATRIX_SUPPORT
+		"Matrix\0diMmEnSion",
+		"Singular\0",
+	#endif
+	};
 
+	if (e != ERR_NONE || Running) {
+		const char *p = error_table[e];
+		const char *q = find_char(p, '\0') + 1;
+		if (*q == '\0')
+			q = S7_ERROR;
+		message( p, q );
+		State2.disp_freeze = (e != ERR_NONE);
+	}
+}
 
 
 /* Variable width font for the dot matrix part of the display.
@@ -1234,17 +1244,7 @@ void display(void) {
 		*bp++ = COMPLEX_PREFIX;
 		set_status(buf);
 	}
-	if (Error != ERR_NONE) {
-		const enum errors e = (const enum errors)Error;
-		Error = 0;
-		p = error_table[e];
-		set_status(p);
-		p = find_char(p, '\0')+1;
-		if (*p == '\0')
-			p = S7_ERROR;
-		set_digits_string(p, 0);
-		goto skpall;
-	} else if (State2.version) {
+	if (State2.version) {
 		char vers[] = "34S " VERSION_STRING " ????";
 		set_digits_string("pAULI WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
@@ -1431,7 +1431,6 @@ nostk:	show_flags();
 				set_dig(i, *bp);
 		}
 	}
-skpall:
 	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL)
 		ShowRPN = 0;
 	set_annunciators();
@@ -1577,32 +1576,4 @@ static void set_status_right(const char *str) {
 	set_status_sized(p+1, toolarge);
 }
 
-//#pragma GCC optimize "s"
-
-void set_running_off_sst() {
-	Running = 0;
-}
-
-void set_running_on_sst() {
-	Running = 1;
-}
-
-void set_running_off() {
-	set_running_off_sst();
-	State.entryp = 0;
-	dot( RCL_annun, 0);
-}
-
-void set_running_on() {
-	update_speed(0);
-	set_running_on_sst();
-	LastKey = 0;
-	running_display();
-	dot( BEG, 0 );
-	finish_display();
-}
-
-void running_display() {
-	message("Running", "PrograMm"); 
-}
 

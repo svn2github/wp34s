@@ -186,17 +186,19 @@ static void set_was_complex(void) {
 }
 
 
-/* Produce a warning and stop
- */
-static void warn(const enum errors e) {
-}
-
 /* Produce an error and stop
  */
 void err(const enum errors e) {
-	if (Error == ERR_NONE)
+	if (Error == ERR_NONE) {
 		Error = e;
+		error_message(e);
+	}
 }
+
+
+/* Display a warning
+ */
+#define warn(e) error_message(e)
 
 
 /* Doing something in the wrong mode */
@@ -205,16 +207,17 @@ static void bad_mode_error(void) {
 }
 
 
-/* User commands to produce warnings and errors */
+/* User command to produce an error */
 void cmderr(unsigned int arg, enum rarg op) {
-	err(arg);
-	if (op == RARG_WARNING) {
-		if (arg == 0 && Running)
-			running_display();
-		else
-			frozen_display();
-	}
+	err((enum errors) arg);
 }
+
+
+/* User command to display a warning */
+void cmdmsg(unsigned int arg, enum rarg op) {
+	error_message((enum errors) arg);
+}
+
 
 #if defined(DEBUG) && !defined(WINGUI)
 #include <stdlib.h>
@@ -3361,6 +3364,7 @@ void xeq(opcode op)
 	if (Error != ERR_NONE) {
 		// Repair stack and state
 		// Clear return stack
+		Error = ERR_NONE;
 		xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
 		State = old;
 		BankFlags = 0;
@@ -3598,6 +3602,30 @@ void xeq_init_contexts(void) {
 	Ctx.emax=DEC_MAX_MATH;
 	Ctx.emin=-DEC_MAX_MATH;
 	Ctx.round = DEC_ROUND_HALF_EVEN;
+}
+
+
+void set_running_off_sst() {
+	Running = 0;
+}
+
+void set_running_on_sst() {
+	Running = 1;
+}
+
+void set_running_off() {
+	set_running_off_sst();
+	State.entryp = 0;
+	dot( RCL_annun, 0);
+}
+
+void set_running_on() {
+	update_speed(0);
+	set_running_on_sst();
+	LastKey = 0;
+	error_message(ERR_NONE);
+	dot(BEG, 0);
+	finish_display();
 }
 
 
