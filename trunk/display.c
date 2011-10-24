@@ -1596,17 +1596,13 @@ void set_running_off() {
 void set_running_on() {
 	update_speed(0);
 	set_running_on_sst();
-	reset_disp();
-	set_annunciators();
-	dot( BEG, 0 );
-#if 1
-	set_status("Running");
-	set_digits_string("PrograMm", 0);
-#else
-	set_status("Program");
-	set_digits_string("running", 0);
-#endif
-	finish_display();
 	LastKey = 0;
+	running_display();
+	dot( BEG, 0 );
+	finish_display();
+}
+
+void running_display() {
+	message("Running", "PrograMm"); 
 }
 

@@ -207,10 +207,13 @@ static void bad_mode_error(void) {
 
 /* User commands to produce warnings and errors */
 void cmderr(unsigned int arg, enum rarg op) {
-	if (op == RARG_ERROR)
-		err(arg);
-	else
-		err(-(int)arg);
+	err(arg);
+	if (op == RARG_WARNING) {
+		if (arg == 0 && Running)
+			running_display();
+		else
+			frozen_display();
+	}
 }
 
 #if defined(DEBUG) && !defined(WINGUI)
@@ -3356,17 +3359,14 @@ void xeq(opcode op)
 	}
 
 	if (Error != ERR_NONE) {
-		if (Error < 0)
-			Error = -Error; // WARN command
-		else {
-			// Repair stack and state
-			// Clear return stack
-			xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
-			State = old;
-			BankFlags = 0;
-			if (Running) {
+		// Repair stack and state
+		// Clear return stack
+		xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
+		State = old;
+		BankFlags = 0;
+		if (Running) {
 #ifndef REALBUILD
-			    if (! State2.trace )
+			if (! State2.trace ) {
 #endif
 				while (isXROM(state_pc())) {
 					// Leave XROM
@@ -3378,13 +3378,16 @@ void xeq(opcode op)
 						incpc(); // compensate for decpc below
 					}
 				}
-				decpc();	// Back to error instruction
-				RetStkPtr = 0;  // clear return stack
+#ifndef REALBUILD
 			}
+#endif
+			decpc();	// Back to error instruction
+			RetStkPtr = 0;  // clear return stack
+			set_running_off();
+			process_cmdline_set_lift();
 		}
-		process_cmdline_set_lift();
-		set_running_off();
-	} else if (State.implicit_rtn) {
+	} 
+	else if (State.implicit_rtn) {
 		do_rtn(0);
 	}
 	reset_volatile_state();
