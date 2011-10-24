@@ -3623,6 +3623,7 @@ void set_running_off() {
 
 void set_running_on() {
 	update_speed(0);
+	GoFast = 1;
 	set_running_on_sst();
 	LastKey = 0;
 	error_message(ERR_NONE);
