@@ -1346,7 +1346,6 @@ void display(void) {
 	} else if (State2.runmode) {
 		if (DispMsg) {
 			set_status(DispMsg);
-			State2.disp_small = 0;
 		} else if (State2.alphas) {
 #if 0
 			set_digits_string("AlpHA", 0);
@@ -1445,6 +1444,7 @@ skpall:
 	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;
 	DispMsg = NULL;
+	State2.disp_small = 0;
 	finish_display();
 #if !defined(REALBUILD) && !defined(WINGUI)
         just_displayed = 1;

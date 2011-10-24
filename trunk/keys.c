@@ -2434,6 +2434,7 @@ void process_keycode(int c)
 		case STATE_SST:
 			xeq_sst_bst(0);
 			OpCode = c;
+			OpCodeDisplayPending = 0;
 			break;
 
 		case STATE_BST:

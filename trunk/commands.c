@@ -801,6 +801,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_PUTKEY,	&op_putkey,	NUMREG,			"PUTK")
 	CMDstk(RARG_KEYTYPE,	&op_keytype,	NUMREG,			"KTP?")
 
+	CMD(RARG_WARNING,	&cmderr,	MAX_ERROR,		"WARN")
+
 #undef CMDlbl
 #undef CMDlblnI
 #undef CMDnoI

@@ -207,7 +207,7 @@ static void bad_mode_error(void) {
 
 /* User commands to produce warnings and errors */
 void cmderr(unsigned int arg, enum rarg op) {
-	if (isXROM(state_pc()))
+	if (op == RARG_ERROR)
 		err(arg);
 	else
 		err(-(int)arg);
@@ -3357,18 +3357,30 @@ void xeq(opcode op)
 
 	if (Error != ERR_NONE) {
 		if (Error < 0)
-			Error = -Error; // ERR command
+			Error = -Error; // WARN command
 		else {
 			// Repair stack and state
 			// Clear return stack
 			xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
 			State = old;
-			RetStkPtr = 0;
 			BankFlags = 0;
-			if (isXROM(state_pc()))
-				set_pc(0);
-			else
+			if (Running) {
+#ifndef REALBUILD
+			    if (! State2.trace )
+#endif
+				while (isXROM(state_pc())) {
+					// Leave XROM
+					if (RetStkPtr > 0) {
+						raw_set_pc(RetStk[--RetStkPtr]);
+					}
+					else {
+						raw_set_pc(TopPc);
+						incpc(); // compensate for decpc below
+					}
+				}
 				decpc();	// Back to error instruction
+				RetStkPtr = 0;  // clear return stack
+			}
 		}
 		process_cmdline_set_lift();
 		set_running_off();
@@ -3461,11 +3473,11 @@ void xeq_sst_bst(int kind)
 			set_running_on_sst();
 			incpc();
 			xeq(op);
-			xeq_xrom();
-			set_running_off_sst();
 #ifndef REALBUILD
 			State2.trace = trace;
 #endif
+			xeq_xrom();
+			set_running_off_sst();
 		}
 	}
 	else if (kind == 0)
