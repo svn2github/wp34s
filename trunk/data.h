@@ -258,11 +258,13 @@ typedef struct _while_on {
 	/*
 	 *  What the user was just typing in
 	 */
-	unsigned char _cmdlinelength;	// XEQ internal - don't use
-	unsigned char _cmdlineeex;	// XEQ internal - don't use
-	unsigned char _cmdlinedot;	// XEQ internal - don't use
+	struct _cline {
+		unsigned char _cmdlinelength;	// XEQ internal - don't use
+		unsigned char _cmdlineeex;	// XEQ internal - don't use
+		unsigned char _cmdlinedot;	// XEQ internal - don't use
 
-	char _cmdline[CMDLINELEN + 1];
+		char _cmdline[CMDLINELEN + 1];
+	} _command_line;
 
 } TStateWhileOn;
 
@@ -275,10 +277,11 @@ extern TStateWhileOn StateWhileOn;
 #define Ticker		 (StateWhileOn._ticker)
 #define Keyticks         (StateWhileOn._keyticks)
 #define LastActiveSecond (StateWhileOn._last_active_second)
-#define CmdLineLength	 (StateWhileOn._cmdlinelength)
-#define CmdLineEex	 (StateWhileOn._cmdlineeex)
-#define CmdLineDot	 (StateWhileOn._cmdlinedot)
-#define Cmdline		 (StateWhileOn._cmdline)
+#define CommandLine	 (StateWhileOn._command_line)
+#define CmdLineLength	 (StateWhileOn._command_line._cmdlinelength)
+#define CmdLineEex	 (StateWhileOn._command_line._cmdlineeex)
+#define CmdLineDot	 (StateWhileOn._command_line._cmdlinedot)
+#define Cmdline		 (StateWhileOn._command_line._cmdline)
 
 #pragma pack(pop)
 

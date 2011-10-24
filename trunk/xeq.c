@@ -3328,6 +3328,7 @@ void xeq(opcode op)
 {
 	decimal64 save[STACK_SIZE+2];
 	struct _state old = State;
+	struct _cline old_cl = CommandLine;
 
 #if !defined(REALBUILD) && !defined(WINGUI)
 	instruction_count++;
@@ -3367,6 +3368,8 @@ void xeq(opcode op)
 		Error = ERR_NONE;
 		xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
 		State = old;
+		CommandLine = old_cl;
+		process_cmdline_set_lift();
 		BankFlags = 0;
 		if (Running) {
 #ifndef REALBUILD
@@ -3388,7 +3391,6 @@ void xeq(opcode op)
 			decpc();	// Back to error instruction
 			RetStkPtr = 0;  // clear return stack
 			set_running_off();
-			process_cmdline_set_lift();
 		}
 	} 
 	else if (State.implicit_rtn) {
