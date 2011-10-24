@@ -14,6 +14,8 @@
 // need these
 struct _ram PersistentRam;
 TStateWhileOn StateWhileOn;
+unsigned long long int instruction_count;
+int view_instruction_counter;
 
 extern "C" {
 	const char *pretty(unsigned char z) { return 0; }
