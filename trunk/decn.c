@@ -2429,7 +2429,7 @@ decNumber *decNumberFib(decNumber *res, const decNumber *x) {
 	decNumber r, s, t;
 
 	dn_power(&r, &const_phi, x);
-	dn_mulPI(&t, &const_PI);
+	dn_mulPI(&t, x);
 	dn_sincos(&t, NULL, &s);
 	dn_divide(&t, &s, &r);
 	dn_subtract(&s, &r, &t);
