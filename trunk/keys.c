@@ -2185,6 +2185,7 @@ static int process(const int c) {
 			set_running_off();
 			Pause = 0;
 			DispMsg = "Stopped";
+			State2.disp_freeze = 0;
 			return STATE_UNFINISHED;
 		}
 		if ( c != K_HEARTBEAT ) {
@@ -2227,7 +2228,6 @@ static int process(const int c) {
 	/*
 	 *  Process the various cases
 	 */
-
 	if (State2.confirm)
 		return process_confirm((const keycode)c);
 

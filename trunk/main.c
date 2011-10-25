@@ -49,7 +49,7 @@
 #define SPEED_HIGH     4
 
 #define SLEEP_ANNUNCIATOR LIT_EQ
-// #define SPEED_ANNUNCIATOR BIG_EQ
+// #define SPEED_ANNUNCIATOR LIT_EQ
 void set_speed( unsigned int speed );
 
 /*
@@ -299,7 +299,7 @@ void scan_keyboard( void )
 	 */
 	// All as input, no pull-ups
 	AT91C_BASE_PIOC->PIO_ODR = KEY_ROWS_MASK | KEY_COLS_MASK;
-	AT91C_BASE_PIOC->PIO_PPUDR =  KEY_COLS_MASK;
+	AT91C_BASE_PIOC->PIO_PPUDR = KEY_ROWS_MASK | KEY_COLS_MASK;
 
 	// Disable clock
 	AT91C_BASE_PMC->PMC_PCDR = 1 << AT91C_ID_PIOC;
@@ -822,8 +822,10 @@ void set_speed( unsigned int speed )
 		/*
 		 *  If low voltage or requested by user reduce maximum speed
 		 */
-		if ( speed == SPEED_HIGH && ( UState.slow_speed || Voltage <= LOW_VOLTAGE ) ) {
-			speed = SPEED_HALF;
+		if ( speed == SPEED_HIGH ) {
+			if ( ( UState.slow_speed || Voltage <= LOW_VOLTAGE ) ) {
+				speed = SPEED_HALF;
+			}
 		}
 		if ( speed == SpeedSetting ) {
 			/*
@@ -831,7 +833,12 @@ void set_speed( unsigned int speed )
 			 */
 			goto idle_check;
 		}
-
+#ifdef SPEED_ANNUNCIATOR
+		if ( speed == SPEED_HIGH || SpeedSetting == SPEED_HIGH ) {
+			dot( SPEED_ANNUNCIATOR, speed == SPEED_HIGH );
+			finish_display();
+		}
+#endif
 		/*
 		 *  Set new speed
 		 */
@@ -862,7 +869,7 @@ void set_speed( unsigned int speed )
 
 			// Turn off the unused oscillators
 			disable_pll();
-			GoFast = 0;
+			break;
 
 		case SPEED_MEDIUM:
 			/*
@@ -938,11 +945,6 @@ void set_speed( unsigned int speed )
 		SpeedSetting = speed;
 		ClockSpeed = speeds[ speed ];
 		unlock();
-
-#ifdef SPEED_ANNUNCIATOR
-		dot( SPEED_ANNUNCIATOR, speed > SPEED_MEDIUM );
-		finish_display();
-#endif
 	}
 
 idle_check:
@@ -950,6 +952,9 @@ idle_check:
 		/*
 		 *  Save power
 		 */
+		if ( !Running ) {
+			GoFast = 0;
+		}
 		go_idle();
 	}
 }
@@ -1005,24 +1010,26 @@ void user_heartbeat( void )
 void LCD_interrupt( void )
 {
 	InIrq = 1;
-
 	/*
 	 *  Set speed to a minimum of 2 MHz for all irq handling.
 	 */
-	if ( SpeedSetting < SPEED_MEDIUM ) {
-		set_speed( SPEED_MEDIUM );
-	}
+	int speed = SPEED_MEDIUM;
 
 	if ( GoFast ) {
 		/*
 		 *  We are doing serious work
 		 */
-		if ( ++GoFast == 5 && SpeedSetting < SPEED_MEDIUM ) {
-			set_speed( SPEED_MEDIUM );
+		if ( ++GoFast == 5 ) {
+			speed = SPEED_HALF;
 		}
 		else if ( GoFast == 10 ) {
-			set_speed( SPEED_HIGH );
+			speed = SPEED_HIGH;
+			GoFast = 0;
 		}
+	}
+
+	if ( SpeedSetting < speed ) {
+		set_speed( speed );
 	}
 
 	/*
@@ -1033,9 +1040,8 @@ void LCD_interrupt( void )
 	if ( WaitForLcd ) {
 		if ( ++WaitForLcd == 3 ) {
 			SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_LOAD_ONLY );
-			if ( Running ) WaitForLcd = 0;
 		}
-		else if ( WaitForLcd >= 4 ){
+		else if ( WaitForLcd == 4 ) {
 			WaitForLcd = 0;
 		}
 	}
@@ -1386,7 +1392,6 @@ void watchdog( void )
 #undef update_speed
 void update_speed( int full )
 {
-	GoFast = 0;
 	set_speed( full ? SPEED_HIGH : SPEED_HALF );
 }
 
@@ -1399,10 +1404,15 @@ void update_speed( int full )
 #undef idle
 void idle( void )
 {
+#if 0
 	int old_speed = SpeedSetting;
 	set_speed( SPEED_IDLE );
 	set_speed( old_speed );
+#else
+	go_idle();
+#endif
 }
+
 
 
 #ifndef XTAL
@@ -1689,7 +1699,7 @@ int main(void)
 					 *  We have to wait for the LCD to update.
 					 *  While we wait, the user might have pressed a key.
 					 */
-					set_speed( SPEED_IDLE );
+					go_idle();
 					if ( is_key_pressed() ) {
 						goto key_pressed;
 					}

@@ -3327,7 +3327,8 @@ void busy(void)
 void xeq(opcode op) 
 {
 	decimal64 save[STACK_SIZE+2];
-	// struct _state old = State;
+	struct _ustate old = UState;
+	unsigned short old_pc = state_pc();
 	int old_cl = *((int *)&CommandLine);
 
 #if !defined(REALBUILD) && !defined(WINGUI)
@@ -3367,7 +3368,8 @@ void xeq(opcode op)
 		// Clear return stack
 		Error = ERR_NONE;
 		xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
-		// State = old;
+		UState = old;
+		State.state_pc = old_pc;
 		*((int *)&CommandLine) = old_cl;
 		process_cmdline_set_lift();
 		BankFlags = 0;

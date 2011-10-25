@@ -1537,8 +1537,9 @@ static void set_status(const char *str) {
  */
 extern void message(const char *str1, const char *str2)
 {
+	State2.disp_freeze = 0;
 	if ( State2.invalid_disp && str2 == NULL ) {
-		// Complete redraw neccessary
+		// Complete redraw necessary
 		DispMsg = str1;
 		display();
 	}
