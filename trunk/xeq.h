@@ -824,7 +824,7 @@ enum rarg {
 	RARG_SENDL,
 	RARG_PUTKEY,
 	RARG_KEYTYPE,
-	RARG_WARNING,
+	RARG_MESSAGE,
 
 	NUM_RARG	// Last entry defines number of operations
 };
