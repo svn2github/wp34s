@@ -60,13 +60,8 @@ slv_loop::		FILL
 			/* Solver estimates converged */
 slv_fin::		RCL Z
 			FILL
-			x[approx]0?
-				JMP slv_found
 			XEQ slv_fixstack
 			JMP exit
-
-slv_found::		XEQ slv_fixstack
-			JMP slv_fail_common
 
 slv_fixstack::		iC 0
 			STO L
