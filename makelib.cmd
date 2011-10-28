@@ -2,8 +2,8 @@
 setlocal
 cd library
 set TOOLS=..\trunk\tools
-set ASM=%TOOLS%\wp34s_asm.pl -op %TOOLS%\wp34s.op -fill 0xffff
-set PP=%TOOLS%\wp34s_pp.pl
+set ASM=%TOOLS%\wp34s_asm.exe -op %TOOLS%\wp34s.op -fill 0xffff
+set PP=%TOOLS%\wp34s_pp.exe
 
 set DAT=wp34s-1.dat
 %ASM% -pp matrix.wp34s matrixedit.wp34s vectors_pp.wp34s -o %DAT%
@@ -33,7 +33,7 @@ copy %DAT% ..\trunk\windows\wp34sgui
 copy %DAT% ..\trunk\realbuild
 
 set DAT=wp34s-5.dat
-%ASM% -pp matrixtest.wp34s -o %DAT%
+%ASM% matrixtestAM01.wp34s matrixtestAM02.wp34s matrixtestAM03.wp34s -o %DAT%
 if errorlevel 1 goto exit
 copy %DAT% ..\trunk\windows\wp34sgui
 copy %DAT% ..\trunk\realbuild

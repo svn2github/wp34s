@@ -314,7 +314,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 }
 
 static void init_arg(const enum rarg base) {
-	State.base = base;
+	CmdBase = base;
 	State2.ind = 0;
 	State2.digval = 0;
 	State2.numdigit = 0;
@@ -397,7 +397,7 @@ void init_state(void) {
 	State.state_lift = 1;
 	State.implicit_rtn = 0;
 	State.usrpc = 0;
-	State.base = 0;
+	CmdBase = 0;
 	clrretstk(0);
 
 	xset(&State2, 0, sizeof(State2));
@@ -1141,7 +1141,7 @@ static int process_alpha(const keycode c) {
 		if (shift == SHIFT_F && ! State2.runmode) {
 			State2.multi = 1;
 			State2.numdigit = 0;
-			State.base = DBL_ALPHA;
+			CmdBase = DBL_ALPHA;
 			return STATE_UNFINISHED;
 		}
 #endif
@@ -1227,7 +1227,7 @@ static int process_alpha(const keycode c) {
  *  Code to handle all commands with arguments
  */
 static int arg_eval(unsigned int val) {
-	const unsigned int base = State.base;
+	const unsigned int base = CmdBase;
 	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val);
 	const unsigned int ssize = (! UState.stack_depth || ! State2.runmode ) ? 4 : 8;
 
@@ -1259,7 +1259,7 @@ static int arg_eval(unsigned int val) {
 }
 
 static int arg_digit(int n) {
-	const unsigned int base = State.base;
+	const unsigned int base = CmdBase;
 	const int mx = State2.ind ? NUMREG : argcmds[base].lim;
 	const unsigned int val = State2.digval * 10 + n;
 
@@ -1289,7 +1289,7 @@ static int arg_digit(int n) {
 }
 
 static int arg_fkey(int n) {
-	const unsigned int b = State.base;
+	const unsigned int b = CmdBase;
 
 #ifdef ALLOW_MORE_LABELS
 	if (argcmds[b].label || (b >= RARG_SF && b <= RARG_FCF && n < 4))
@@ -1312,17 +1312,17 @@ static int arg_storcl_check(const unsigned int b, const int cmplx) {
 }
 
 static int arg_storcl(const unsigned int n, int cmplx) {
-	unsigned int b = State.base;
+	unsigned int b = CmdBase;
 
 	if (arg_storcl_check(b, cmplx)) {
-		State.base += n;
+		CmdBase += n;
 		return 1;
 	}
 	/* And we can turn off the operation too */
 	if (b >= n) {
 		b -= n;
 		if (arg_storcl_check(b, cmplx)) {
-			State.base = b;
+			CmdBase = b;
 			return 1;
 		}
 	}
@@ -1345,7 +1345,7 @@ static int process_arg_dot(const unsigned int base) {
 }
 
 static int process_arg(const keycode c) {
-	unsigned int base = State.base;
+	unsigned int base = CmdBase;
 	unsigned int n = keycode_to_digit_or_register(c);
 	int stack_reg = argcmds[base].stckreg || State2.ind;
 #ifndef ALLOW_MORE_LABELS
@@ -1429,9 +1429,9 @@ static int process_arg(const keycode c) {
 		if (State2.ind || State2.dot)
 			break;
 		if (base == RARG_STO)
-			State.base = RARG_SAVEM;
+			CmdBase = RARG_SAVEM;
 		else if (base == RARG_RCL)
-			State.base = RARG_RESTM;
+			CmdBase = RARG_RESTM;
 		break;
 #endif
 
@@ -1544,7 +1544,7 @@ static int process_multi(const keycode c) {
 	const enum shifts shift = reset_shift();
 	unsigned char ch;
 	unsigned int opcode;
-	unsigned int base = State.base;
+	unsigned int base = CmdBase;
 
 	switch (c) {
 	case K20:	// Enter - exit multi mode, maybe return a result
@@ -1598,7 +1598,7 @@ static int process_multi(const keycode c) {
 	}
 	reset_multi();
 
-	base = State.base;
+	base = CmdBase;
 	opcode = OP_DBL + (base << DBL_SHIFT) + State2.digval +
 			(State2.digval2 << 16) + (ch << 24);
 fin:

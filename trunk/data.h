@@ -83,8 +83,7 @@ struct _state {
 	 *  Not bit fields
 	 */
 	unsigned short state_pc;	// XEQ internal - don't use
-	unsigned char retstk_ptr;	// XEQ internal - don't use
-	unsigned char base;		// Base value for a command with an argument
+	signed short retstk_ptr;	// XEQ internal - don't use
 };
 
 /*
@@ -171,7 +170,7 @@ extern TPersistentRam PersistentRam;
 #define Prog		 (PersistentRam._prog)
 #define BankFlags	 (PersistentRam._bank_flags)
 #define UserFlags	 (PersistentRam._user_flags)
-#define RetStk		 (PersistentRam._retstk)
+#define RetStk		 (PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
 #define TopPc		 (PersistentRam._top_pc)
 #define RandS1		 (PersistentRam._rand_s1)
 #define RandS2		 (PersistentRam._rand_s2)
@@ -259,12 +258,13 @@ typedef struct _while_on {
 	 *  What the user was just typing in
 	 */
 	struct _cline {
-		unsigned char _cmdlinelength;	// XEQ internal - don't use
-		unsigned char _cmdlineeex;	// XEQ internal - don't use
-		unsigned char _cmdlinedot;	// XEQ internal - don't use
-
-		char _cmdline[CMDLINELEN + 1];
+		unsigned char cmdlinelength;	// XEQ internal - don't use
+		unsigned char cmdlineeex;	// XEQ internal - don't use
+		unsigned char cmdlinedot;	// XEQ internal - don't use
+		unsigned char cmdbase;		// Base value for a command with an argument
+						// fits nicely int his place (alignment)
 	} _command_line;
+	char _cmdline[CMDLINELEN + 1];
 
 } TStateWhileOn;
 
@@ -278,10 +278,11 @@ extern TStateWhileOn StateWhileOn;
 #define Keyticks         (StateWhileOn._keyticks)
 #define LastActiveSecond (StateWhileOn._last_active_second)
 #define CommandLine	 (StateWhileOn._command_line)
-#define CmdLineLength	 (StateWhileOn._command_line._cmdlinelength)
-#define CmdLineEex	 (StateWhileOn._command_line._cmdlineeex)
-#define CmdLineDot	 (StateWhileOn._command_line._cmdlinedot)
-#define Cmdline		 (StateWhileOn._command_line._cmdline)
+#define CmdLineLength	 (StateWhileOn._command_line.cmdlinelength)
+#define CmdLineEex	 (StateWhileOn._command_line.cmdlineeex)
+#define CmdLineDot	 (StateWhileOn._command_line.cmdlinedot)
+#define CmdBase		 (StateWhileOn._command_line.cmdbase)
+#define Cmdline		 (StateWhileOn._cmdline)
 
 #pragma pack(pop)
 

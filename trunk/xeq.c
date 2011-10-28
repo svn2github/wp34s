@@ -1632,7 +1632,7 @@ static int do_check_return(int segment) {
 	if (check_one(s, state_pc()))
 		return 1;
 
-	for (i=0; i<RetStkPtr; i++)
+	for (i = RetStkPtr; i < 0; --i)
 		if (check_one(s, RetStk[i]))
 			return 1;
 
@@ -1702,17 +1702,18 @@ unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
 /* Handle a GTO/GSB instruction
  */
 static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
+	int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 	raw_set_pc(pc);
 	if (gsb && ! State.implicit_rtn) {
 		if (Running) {
-			if (RetStkPtr >= RET_STACK_SIZE) {
+			if (-RetStkPtr >= stack_size) {
 				// Stack is full
 				err(ERR_XEQ_NEST);
 				clrretstk(0);
 			}
 			else {
 				// Push PC on return stack
-				RetStk[RetStkPtr++] = oldpc;
+				RetStk[--RetStkPtr] = oldpc;
 			}
 		} 
 		else {
@@ -1728,11 +1729,10 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 // Handle a RTN
 static void do_rtn(int plus1) {
 	if (Running) {
-		if (RetStkPtr > 0) {
+		if (RetStkPtr != 0) {
 			// Normal RTN within program
-			unsigned short int pc = RetStk[--RetStkPtr];
+			unsigned short int pc = RetStk[RetStkPtr++];
 			raw_set_pc(pc);
-			RetStk[RetStkPtr] = 0;
 			if (plus1)
 				incpc();
 		}
@@ -3379,8 +3379,8 @@ void xeq(opcode op)
 #endif
 				while (isXROM(state_pc())) {
 					// Leave XROM
-					if (RetStkPtr > 0) {
-						raw_set_pc(RetStk[--RetStkPtr]);
+					if (RetStkPtr != 0) {
+						raw_set_pc(RetStk[RetStkPtr++]);
 					}
 					else {
 						raw_set_pc(TopPc);

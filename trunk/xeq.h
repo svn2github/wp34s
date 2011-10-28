@@ -375,10 +375,10 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
-#define NUMPROG		506	/* Even more steps :-) */
+#define NUMPROG		510	/* Even more steps :-) */
+#define RET_STACK_SIZE	4	/* Minimum depth of return stack, extends into program space */
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
-#define RET_STACK_SIZE	8	/* Depth of return stack */
 #ifdef ALLOW_MORE_LABELS
 #define NUMLBL		116	/* Number of program labels */
 #define LBLNAMES	"ABCDFGHIJKLPTWYZ"

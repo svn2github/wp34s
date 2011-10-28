@@ -78,7 +78,7 @@ void error_message(const enum errors e)
 		"Out of range\0",
 		"Bad digit\0",
 		"Too long\0",
-		">8\006\006\006levels\0NEStED",
+		"RTN Stack\0Full",
 		"Stack\0CLASH",
 		"Bad mode\0",
 		"Word size\0too SMmALL",
@@ -1268,7 +1268,7 @@ void display(void) {
 			*bp++ = '_';
 		set_status(buf);
 	} else if (State2.multi) {
-		bp = scopy_char(bp, multicmds[State.base].cmd, '\'');
+		bp = scopy_char(bp, multicmds[CmdBase].cmd, '\'');
 		if (State2.numdigit > 0) {
 			*bp++ = (char) State2.digval;
 			if (State2.numdigit > 1)
@@ -1277,7 +1277,7 @@ void display(void) {
 		set_status(buf);
 	} else if (State2.rarg) {
 		/* Commands with arguments */
-		bp = scopy_char(bp, argcmds[State.base].cmd, State2.ind?'\015':' ');
+		bp = scopy_char(bp, argcmds[CmdBase].cmd, State2.ind?'\015':' ');
 		if (State2.dot) {
 			*bp++ = 's';
 			*bp++ = '_';
@@ -1285,7 +1285,7 @@ void display(void) {
 			*bp++ = '\021';
 			*bp++ = '_';
 		} else {
-			const int maxdigits = State2.ind || argcmds[State.base].lim > 10 ? 2 : 1;
+			const int maxdigits = State2.ind || argcmds[CmdBase].lim > 10 ? 2 : 1;
 			if (State2.numdigit > 0)
 				bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
 			for (i=State2.numdigit; i<maxdigits; i++)
