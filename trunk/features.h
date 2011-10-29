@@ -19,6 +19,13 @@
  *  Select optional features here
  */
 
+// Define this to support a STOPWATCH function like the StopWatch on the HP-41C
+// Time Module or the HP-55
+#define INCLUDE_STOPWATCH
+// Define this to activate directly the STOPWATCH function by pressing the F then
+// G prefixes quicly
+#define INCLUDE_STOPWATCH_HOTKEY
+
 // Define this to use inline quick check macros for determining
 // a bit of information about decNumbers.  Enabling this will create
 // larger faster code.
@@ -176,9 +183,17 @@
 #else
 // Needs to be adjusted depending on code size
 #ifdef MATRIX_SUPPORT
+#ifdef INCLUDE_STOPWATCH
+#define NUMBER_OF_FLASH_REGIONS 5
+#else
 #define NUMBER_OF_FLASH_REGIONS 7
+#endif
+#else
+#ifdef INCLUDE_STOPWATCH
+#define NUMBER_OF_FLASH_REGIONS 8
 #else
 #define NUMBER_OF_FLASH_REGIONS 10
+#endif
 #endif
 #endif
 

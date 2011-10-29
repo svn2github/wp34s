@@ -44,4 +44,8 @@ extern void message(const char *str1, const char *str2);
 extern void format_reg(decimal64 *r, char *buf);
 extern void dot(int n, int on);
 
+#ifdef INCLUDE_STOPWATCH
+extern void stopwatch_message(const char *str1, const char *str2, int dot_pos, char* exponent);
+#endif // INCLUDE_STOPWATCH
+
 #endif

@@ -32,6 +32,9 @@
 #include "serial.h"
 #include "data.h"
 #include "keys.h"
+#ifdef INCLUDE_STOPWATCH
+#include "stopwatch.h"
+#endif
 
 /*
  *  Setup the LCD area, persistent RAM and not so persistent RAM
@@ -119,10 +122,20 @@ void Shutdown( void )
  */
 void KeyPress( int i )
 {
+#ifdef INCLUDE_STOPWATCH
+		if(KeyCallback!=NULL) {
+			i=(*KeyCallback)(i);
+		} else {
+#endif
+
 	process_keycode( i );
 	if ( i != K_HEARTBEAT && i != K_RELEASE ) {
 		Keyticks = 0;
 	}
+
+#ifdef INCLUDE_STOPWATCH
+		}
+#endif
 }
 
 void UpdateScreen( bool forceUpdate )

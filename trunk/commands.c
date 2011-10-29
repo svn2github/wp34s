@@ -27,6 +27,9 @@
 #include "storage.h"
 #include "serial.h"
 #include "matrix.h"
+#ifdef INCLUDE_STOPWATCH
+#include "stopwatch.h"
+#endif
 #endif
 
 #ifdef SHORT_POINTERS
@@ -601,6 +604,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #ifdef SILLY_MATRIX_SUPPORT
 	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
+#endif
+#ifdef INCLUDE_STOPWATCH
+	FN_I1(OP_STOPWATCH,		&stopwatch,		"STOPW")
 #endif
 #undef FUNC
 #undef FUNC0

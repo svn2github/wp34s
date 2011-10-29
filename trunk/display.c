@@ -1554,6 +1554,33 @@ extern void message(const char *str1, const char *str2)
 	}
 }
 
+#ifdef INCLUDE_STOPWATCH
+
+static void stopwatch_exponent(const char* exponent) {
+	int j = SEGS_EXP_BASE;
+	for (; *exponent!=0; exponent++) {
+		set_dig_s(j, *exponent, NULL);
+		j += SEGS_PER_EXP_DIGIT;
+	}
+}
+
+void stopwatch_message(const char *str1, const char *str2, int dot_pos, char* exponent)
+{
+	reset_disp();
+	set_annunciators();
+	set_digits_string( str2, 0 );
+	if( dot_pos>=0 ) {
+		set_decimal( dot_pos*SEGS_PER_DIGIT, SEP_DOT, NULL );
+	}
+	if( exponent!=NULL ) {
+		stopwatch_exponent(exponent);
+	}
+	set_status( str1 );
+	finish_display();
+}
+
+
+#endif // INCLUDE_STOPWATCH
 
 /* Display the right hand characters from the given string.
  * Trying to fit as many as possible into the bitmap area,

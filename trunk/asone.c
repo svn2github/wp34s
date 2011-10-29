@@ -56,6 +56,7 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "serial.c"
 #include "matrix.c"
 #include "xrom.c"
+#include "stopwatch.c"
 #if 0
 #include "decNumber/decNumber.c"
 #include "decNumber/decContext.c"

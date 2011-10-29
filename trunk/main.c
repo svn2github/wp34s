@@ -24,6 +24,9 @@
 #include "keys.h"
 #include "storage.h"
 #include "serial.h"
+#ifdef INCLUDE_STOPWATCH
+#include "stopwatch.h"
+#endif
 
 #ifndef at91sam7l128
 #define at91sam7l128 1
@@ -150,7 +153,7 @@ volatile char OnKeyPressed;
 short int KbRepeatCount;
 long long KbData, KbDebounce, KbRepeatKey;
 short int BodThreshold;
-short int BodTimer;
+short int BodStopwatch;
 
 /*
  *  DBGU serial I/O definitions
@@ -693,8 +696,8 @@ void detect_voltage( void )
 	/*
 	 *  Don't be active all the time
 	 */
-	if ( BodTimer > 0 ) {
-		--BodTimer;
+	if ( BodStopwatch > 0 ) {
+		--BodStopwatch;
 		return;
 	}
 
@@ -735,7 +738,7 @@ void detect_voltage( void )
 			/*
 			 *  Wait some time before next loop with BOD disabled
 			 */
-			BodTimer = 25;
+			BodStopwatch = 25;
 			AT91C_BASE_SUPC->SUPC_BOMR = 0;
 		}
 		else if ( BodThreshold == 0 ) {
@@ -1675,6 +1678,9 @@ int main(void)
 			 *  Test if we can turn ourself completely off
 			 */
 			if ( !is_debug() && !Running && !SerialOn
+#ifdef INCLUDE_STOPWATCH
+				 && KeyCallback==NULL
+#endif
 			     && KbData == 0LL && Pause == 0 && StartupTicks >= 10
 			     && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
 			     && Keyticks < APD_TICKS )
@@ -1718,8 +1724,14 @@ int main(void)
 		 */
 	key_pressed:
 		k = get_key();
-
+#ifdef INCLUDE_STOPWATCH
+		if(KeyCallback!=NULL) {
+			k=(*KeyCallback)(k);
+		}
+		if ( k !=-1 && k != K_HEARTBEAT ) {
+#else
 		if ( k != K_HEARTBEAT ) {
+#endif
 			/*
 			 *  A real key was pressed or released
 			 */
@@ -1889,7 +1901,11 @@ int main(void)
 			}
 		}
 
+#ifdef INCLUDE_STOPWATCH
+		if ( Voltage <= APD_VOLTAGE || ( !Running && KeyCallback==NULL && Keyticks >= APD_TICKS ) ) {
+#else
 		if ( Voltage <= APD_VOLTAGE || ( !Running && Keyticks >= APD_TICKS ) ) {
+#endif
 			/*
 			 *  We have a reason to power the device off
 			 */

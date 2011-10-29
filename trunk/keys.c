@@ -2171,6 +2171,12 @@ static int process_registerlist(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
+#ifdef INCLUDE_STOPWATCH_HOTKEY
+#define HOTKEY_DELAY 4
+static int key_f_ticker=-10;
+static int key_h_ticker=-10;
+#endif // INCLUDE_STOPWATCH_HOTKEY
+
 static int process(const int c) {
 	const enum shifts shift = cur_shift();
 	enum catalogues cat;
@@ -2212,6 +2218,14 @@ static int process(const int c) {
 		soft_init_state();
 		return STATE_UNFINISHED;
 	}
+
+#ifdef INCLUDE_STOPWATCH_HOTKEY
+	if(c == K60 && shift==SHIFT_H && Ticker-key_h_ticker<=HOTKEY_DELAY) {
+		toggle_shift(SHIFT_N);
+		return (KIND_NIL  << KIND_SHIFT) | OP_STOPWATCH;
+	}
+#endif // INCLUDE_STOPWATCH_HOTKEY
+
 #if defined(REALBUILD) || defined(WINGUI)
 	if ( c == K63 && JustStopped ) {
 		// Avoid an accidental restart with R/S
@@ -2245,6 +2259,9 @@ static int process(const int c) {
 
 	// Process shift keys directly
 	if (c == K_F) {
+#ifdef INCLUDE_STOPWATCH_HOTKEY
+		key_f_ticker=Ticker;
+#endif // INCLUDE_STOPWATCH_HOTKEY
 		toggle_shift(SHIFT_F);
 		return STATE_UNFINISHED;
 	}
@@ -2253,6 +2270,14 @@ static int process(const int c) {
 		return STATE_UNFINISHED;
 	}
 	if (c == K_H) {
+#ifdef INCLUDE_STOPWATCH_HOTKEY
+		// We need to compare with the stored value for shift
+		// The shift variable is to cur_shift and it already holds 
+		// the SHIFT_H value
+		if((enum shifts) State2.shifts==SHIFT_F && Ticker-key_f_ticker<=HOTKEY_DELAY) {
+			key_h_ticker=Ticker;
+		}
+#endif // INCLUDE_STOPWATCH_HOTKEY
 		toggle_shift(SHIFT_H);
 		return STATE_UNFINISHED;
 	}

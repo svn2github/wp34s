@@ -58,7 +58,7 @@ int JustStopped;
 #endif
 
 /*
- *  Timer for a programmed pause
+ *  Stopwatch for a programmed pause
  */
 volatile int Pause;
 

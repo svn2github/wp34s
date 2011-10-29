@@ -83,6 +83,13 @@ HOSTCC := $(CC)
 HOSTAR := $(AR)
 HOSTRANLIB := $(RANLIB)
 HOSTCFLAGS := -Wall -Werror -O1 -g
+ifdef REALBUILD
+# Select the correct parameters and libs for various Unix flavours
+ifeq ($(SYSTEM),Darwin)
+# MacOS - uses 32 bits pointer or code won't compile
+HOSTCFLAGS += -m32
+endif
+endif
 
 ifdef REALBUILD
 
@@ -126,11 +133,13 @@ endif
 
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c xrom.c consts.c alpha.c charmap.c \
-		commands.c string.c storage.c serial.c matrix.c
+		commands.c string.c storage.c serial.c matrix.c \
+		stopwatch.c
 
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
-		stats.h xeq.h xrom.h storage.h serial.h matrix.h 
+		stats.h xeq.h xrom.h storage.h serial.h matrix.h \
+		stopwatch.h 
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 LIBS += -L$(OBJECTDIR) -lconsts
@@ -223,7 +232,7 @@ else
 $(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
 	$(HOSTCC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(LIBDN) $(LIBS)
-	
+
 revision.h: $(UTILITIES)/create_revision$(EXE) $(HEADERS) $(SRCS) Makefile
 	$(UTILITIES)/create_revision$(EXE) >$@
 endif
@@ -245,7 +254,7 @@ lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
 
 charset7.h: $(UTILITIES)/genchars7$(EXE)
 	$(UTILITIES)/genchars7$(EXE) >$@
-	
+
 $(UTILITIES)/compile_consts$(EXE): compile_consts.c Makefile features.h \
 		charset.h charmap.c
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
@@ -310,6 +319,8 @@ $(OBJECTDIR)/storage.o: storage.c xeq.h data.h storage.h Makefile features.h
 $(OBJECTDIR)/xeq.o: xeq.c xeq.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h storage.h Makefile features.h
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h data.h consts.h Makefile features.h
+$(OBJECTDIR)/stopwatch.o: stopwatch.c stopwatch.h decn.h xeq.h consts.h alpha.h display.h keys.h \
+                Makefile features.h
 
 ifdef REALBUILD
 $(OBJECTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
