@@ -21,15 +21,15 @@
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
-#define INCLUDE_STOPWATCH
+//#define INCLUDE_STOPWATCH
 // Define this to activate directly the STOPWATCH function by pressing the F then
-// G prefixes quicly
-#define INCLUDE_STOPWATCH_HOTKEY
+// G prefixes quickly
+//#define INCLUDE_STOPWATCH_HOTKEY
 
 // Define this to use inline quick check macros for determining
 // a bit of information about decNumbers.  Enabling this will create
 // larger faster code.
-#define DECNUMBER_QUICK_MACROS
+//#define DECNUMBER_QUICK_MACROS
 
 // Build a tiny version of the device
 // #define TINY_BUILD

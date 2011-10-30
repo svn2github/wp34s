@@ -2,6 +2,7 @@ LIB = libdecNumber.a
 
 INCS  = decContext.h decDPD.h decNumber.h decPacked.h
 INCS += decimal128.h decimal32.h decimal64.h
+INCS += ../features.h
 # For some reason this confuses the C++ compiler building dependencies
 # INCS += decNumberLocal.h 
 
