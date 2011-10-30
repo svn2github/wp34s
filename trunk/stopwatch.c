@@ -20,7 +20,6 @@
 #include "alpha.h"
 
 #ifdef INCLUDE_STOPWATCH
-#include <stdio.h>
 #ifndef REALBUILD
 #ifdef WIN32
 #include "win32.h"
@@ -40,6 +39,9 @@
 
 
 #ifdef INCLUDE_STOPWATCH
+
+#define StopWatchKeyticks         (StateWhileOn._keyticks)
+#define STOPWATCH_APD_TICKS 1800 // 3 minutes
 
 struct _stopwatch_status {
 	int running:1;
@@ -92,7 +94,7 @@ static void fill_exponent(char* exponent)
 	exponent[2]=0;
 }
 
-static void display_stopwatch() {
+static void display_stopwatch(char* message) {
 	char buf[13], *p;
 	char exponent[3];
 	int tenths, secs, mins, hours;
@@ -114,7 +116,6 @@ static void display_stopwatch() {
 		*p++=' ';
 		p=num_arg_0(p, tenths, 1);
 		*p=0;
-		stopwatch_message("STOPWATCH", buf, -1, StopwatchStatus.stopwatch_show_memory?exponent:(char*)NULL);
 	} else {
 		p=buf;
 		*p++=' ';
@@ -125,8 +126,8 @@ static void display_stopwatch() {
 		p=num_arg_0(p, secs, 2);
 		*p++='"';
 		*p=0;
-		stopwatch_message("STOPWATCH", buf, -1, StopwatchStatus.stopwatch_show_memory?exponent:(char*)NULL);
 	}
+	stopwatch_message(message, buf, -1, StopwatchStatus.stopwatch_show_memory?exponent:(char*)NULL);
 }
 
 static void store_stopwatch_in_memory() {
@@ -292,17 +293,25 @@ static int process_stopwatch_key(int key)
 }
 
 int stopwatch_callback(int key) {
+	char* message="STOPWATCH\0\0\0\0";
+
 	if(StopwatchStatus.running)	{
 		Stopwatch=getTicker()-FirstTicker;
+		StopWatchKeyticks=0;
+	} else if(StopWatchKeyticks >= STOPWATCH_APD_TICKS) {
+		KeyCallback=(int(*)(int)) NULL;
+		return -1;
 	}
+
 	if(key!=K_HEARTBEAT && key!=K_RELEASE) {
+		StopWatchKeyticks=0;
 		if(StopwatchStatus.stopwatch_select_memory_mode) {
 			key=process_select_memory_key(key);
 		} else {
 			key=process_stopwatch_key(key);
 		}
 	}
-	display_stopwatch();
+	display_stopwatch(message);
 
 	return key==K_RELEASE?-1:key;
 }
