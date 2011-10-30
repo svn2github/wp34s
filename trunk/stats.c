@@ -1201,7 +1201,7 @@ decNumber *qf_chi2(decNumber *r, const decNumber *p) {
 
 static int t_param(decNumber *r, decNumber *v, const decNumber *x) {
 	dist_one_param(v);
-	if (param_positive(r, v))
+	if (param_positive_int(r, v))
 		return 1;
 	if (decNumberIsNaN(x)) {
 		set_NaN(r);
@@ -1369,7 +1369,7 @@ decNumber *qf_T(decNumber *r, const decNumber *x) {
 
 static int f_param(decNumber *r, decNumber *d1, decNumber *d2, const decNumber *x) {
 	dist_two_param(d1, d2);
-	if (param_positive(r, d1) || param_positive(r, d2))
+	if (param_positive_int(r, d1) || param_positive_int(r, d2))
 		return 1;
 	if (decNumberIsNaN(x)) {
 		set_NaN(r);
