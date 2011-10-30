@@ -56,7 +56,7 @@ long long int FirstTicker=-1;
 long long int Stopwatch=0;
 signed char StopwatchMemory=0;
 signed char StopwatchMemoryFirstDigit=-1;
-
+char* StopWatchMessage;
 
 #define STOPWATCH_RS K63
 #define STOPWATCH_EXIT K60
@@ -293,10 +293,15 @@ static int process_stopwatch_key(int key)
 }
 
 int stopwatch_callback(int key) {
-	char* message="STOPWATCH\0\0\0\0";
+	// Trying to make things work whether char are unsigned or not
+	short shift=256*(StopWatchMessage[11] & 0x7F);
+	shift+=(StopWatchMessage[10] & 0x7F)+(StopWatchMessage[10]&0x80?128:0);
+	shift*=StopWatchMessage[11]&0x80?-1:1;
 
+		
 	if(StopwatchStatus.running)	{
-		Stopwatch=getTicker()-FirstTicker;
+		long long int ticker=getTicker();
+		Stopwatch=ticker-FirstTicker+(shift==0?0:(ticker-FirstTicker)/shift);
 		StopWatchKeyticks=0;
 	} else if(StopWatchKeyticks >= STOPWATCH_APD_TICKS) {
 		KeyCallback=(int(*)(int)) NULL;
@@ -311,12 +316,13 @@ int stopwatch_callback(int key) {
 			key=process_stopwatch_key(key);
 		}
 	}
-	display_stopwatch(message);
+	display_stopwatch(StopWatchMessage);
 
 	return key==K_RELEASE?-1:key;
 }
 
 void stopwatch(decimal64 *r, decimal64 *nul, enum nilop op) {
+	StopWatchMessage="STOPWATCH\0\0\0";
 	StopwatchStatus.stopwatch_show_memory=0;
 	StopwatchStatus.stopwatch_select_memory_mode=0;
 	StopwatchMemory=0;
