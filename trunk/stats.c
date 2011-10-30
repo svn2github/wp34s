@@ -914,7 +914,7 @@ static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
 			(!zero && decNumberIsZero(n)) ||
 			(intg && !is_int(n))) {
 		decNumberZero(r);
-		Error = ERR_BAD_PARAM;
+		err(ERR_BAD_PARAM);
 		return 1;
 	}
 	return 0;
