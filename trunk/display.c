@@ -652,7 +652,7 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 	// Check for values too big or small
 	if (dn_le0(dn_compare(&x, &const_9000, &a))) {
 		res = set_dig_s(exp_last, 'o', res);
-	} else if (! decNumberIsZero(&a)) {
+	} else if (! dn_eq0(&a)) {
 		if (decNumberIsNegative(dn_compare(&x, &a, &const_0_0000005))) {
 			res = set_dig_s(exp_last, 'u', res);
 		}
@@ -689,7 +689,7 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 	decNumberTrunc(&w, &x);		/* Extract the whole part */
 
 	if (!UState.improperfrac) {
-		if (!decNumberIsZero(&w)) {
+		if (!dn_eq0(&w)) {
 			p = num_arg(p, dn_to_int(&w));
 			*p++ = ' ';
 		}
@@ -710,7 +710,7 @@ static int set_x_fract(const decimal64 *rgx, char *res) {
 		j += SEGS_PER_DIGIT;
 	}
 
-	if (decNumberIsZero(&t))
+	if (dn_eq0(&t))
 		p = (char *)S7_fract_EQ;
 	else if (decNumberIsNegative(&t))
 		p = (char *)S7_fract_LT;
@@ -823,7 +823,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 
 	xset(x, '\0', sizeof(x));
 
-	if (decNumberIsZero(&z)) {
+	if (dn_eq0(&z)) {
 		if (decNumberIsNegative(&z) && get_user_flag(NAN_FLAG)) {
 			x[0] = '-';
 			x[1] = '0';

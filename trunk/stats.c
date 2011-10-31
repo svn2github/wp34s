@@ -722,7 +722,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 			dn_mulpow10(&x, &v, 3);
 		} else
 			(*pdf)(&x, r, arg1, arg2);
-		if (decNumberIsZero(&x))
+		if (dn_eq0(&x))
 			break;
 		dn_divide(&w, &z, &x);
 
@@ -820,7 +820,7 @@ static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const d
 		dn_multiply(&v, &d, &c);
 		dn_multiply(r, r, &v);	// r *= d*c
 		dn_compare(&u, &oldr, r);
-		if (decNumberIsZero(&u))
+		if (dn_eq0(&u))
 			break;
 	}
 }
@@ -835,7 +835,7 @@ decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const dec
 	if (decNumberIsNegative(x) || decNumberIsNegative(&t)) {
 		return set_NaN(r);
 	}
-	if (decNumberIsZero(x) || decNumberIsZero(&t))
+	if (dn_eq0(x) || dn_eq0(&t))
 		limit = 1;
 	else {
 		decNumberLnBeta(&u, a, b);
@@ -878,7 +878,7 @@ static int check_probability(decNumber *r, const decNumber *x, int min_zero) {
 		set_NaN(r);
 		return 1;
 	}
-	if (decNumberIsZero(x)) {
+	if (dn_eq0(x)) {
 	    if (min_zero)
 		decNumberCopy(r, &const_0);
 	    else
@@ -886,7 +886,7 @@ static int check_probability(decNumber *r, const decNumber *x, int min_zero) {
 	    return 1;
 	}
 	dn_compare(&t, &const_1, x);
-	if (decNumberIsZero(&t)) {
+	if (dn_eq0(&t)) {
 	    set_inf(r);
 	    return 1;
 	}
@@ -911,7 +911,7 @@ static void dist_two_param(decNumber *a, decNumber *b) {
 static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
 	if (decNumberIsSpecial(n) ||
 			dn_le0(n) ||
-			(!zero && decNumberIsZero(n)) ||
+			(!zero && dn_eq0(n)) ||
 			(intg && !is_int(n))) {
 		decNumberZero(r);
 		err(ERR_BAD_PARAM);
@@ -978,7 +978,7 @@ decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
 			dn_add(&u, x, &t);
 			dn_divide(&t, &n, &u);
 			dn_dec(&n);
-		} while (! decNumberIsZero(&n));
+		} while (! dn_eq0(&n));
 
 		dn_add(&u, &t, x);
 		dn_divide(q, pdf, &u);
@@ -997,7 +997,7 @@ decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
 			dn_divide(&t, &u, &d);
 			dn_add(&u, &a, &t);
 			dn_compare(&v, &u, &a);
-			if (decNumberIsZero(&v))
+			if (dn_eq0(&v))
 				break;
 			decNumberCopy(&a, &u);
 			dn_p2(&d, &d);
@@ -1056,7 +1056,7 @@ decNumber *qf_Q(decNumber *r, const decNumber *x) {
 	if (check_probability(r, x, 0))
 		return r;
 	dn_subtract(&b, &const_0_5, x);
-	if (decNumberIsZero(&b)) {
+	if (dn_eq0(&b)) {
 		decNumberZero(r);
 		return r;
 	}
@@ -1193,7 +1193,7 @@ decNumber *qf_chi2(decNumber *r, const decNumber *p) {
 	if (chi2_param(r, &v, p))
 		return r;
 	qf_chi2_est(r, &v, p);
-	if (decNumberIsZero(r))
+	if (dn_eq0(r))
 		return r;
 	return newton_qf(r, p, NEWTON_NONNEGATIVE | NEWTON_WANDERCHECK, &pdf_chi2_helper, &cdf_chi2_helper, &v, NULL, &const_0_04);
 }
@@ -1248,7 +1248,7 @@ decNumber *cdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v, co
 	}
 	if (decNumberIsInfinite(v))			// Normal in the limit
 		return cdf_Q(r, x);
-	if (decNumberIsZero(x))
+	if (dn_eq0(x))
 		return decNumberCopy(r, &const_0_5);
 	invert = ! decNumberIsNegative(x);
 	decNumberSquare(&t, x);
@@ -1324,7 +1324,7 @@ static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
 	if (t_param(r, v, x))
 		return 1;
 	dn_subtract(&b, &const_0_5, x);
-	if (decNumberIsZero(&b)) {
+	if (dn_eq0(&b)) {
 		decNumberZero(r);
 		return 1;
 	}
@@ -1334,7 +1334,7 @@ static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
 	}
 
 	dn_compare(&a, v, &const_1);
-	if (decNumberIsZero(&a)) {					// special case v = 1
+	if (dn_eq0(&a)) {					// special case v = 1
 		dn_mulPI(&a, &b);
 		dn_sincos(&a, &c, &d);
 		dn_divide(&a, &c, &d);			// lower = tan(pi (x - 1/2))
@@ -1342,7 +1342,7 @@ static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
 		return 1;
 	}
 	dn_compare(&d, v, &const_2);			// special case v = 2
-	if (decNumberIsZero(&d)) {
+	if (dn_eq0(&d)) {
 		dn_1m(&a, x);
 		dn_multiply(&c, &a, x);
 		dn_multiply(&d, &c, &const_4);		// alpha = 4p(1-p)
@@ -1435,7 +1435,7 @@ decNumber *cdf_F(decNumber *r, const decNumber *x) {
 
 static void qf_F_recipm1(decNumber *r, const decNumber *n) {
 	decNumber t;
-	if (decNumberIsZero(dn_m1(&t, n)))
+	if (dn_eq0(dn_m1(&t, n)))
 		dn_1(r);
 	else
 		decNumberRecip(r, &t);
@@ -1476,7 +1476,7 @@ decNumber *qf_F(decNumber *r, const decNumber *x) {
 
 	if (f_param(r, &df1, &df2, x))
 		return r;
-	if (decNumberIsZero(x))
+	if (dn_eq0(x))
 		return decNumberZero(r);
 
 	qf_F_est(r, &df1, &df2, x);

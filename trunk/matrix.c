@@ -483,7 +483,7 @@ static int LU_decomposition(decimal128 *A, unsigned char *pivots, const int n) {
 
 		/* Check for singular */
 		matrix_get128(&t, A, k, k, n);
-		if (decNumberIsZero(&t))
+		if (dn_eq0(&t))
 			return 0;
 
 		/* Find the lower triangular elements for column k */
@@ -543,7 +543,7 @@ static void matrix_pivoting_solve(decimal128 *LU, const decimal64 *b[], unsigned
 		matrix_get128(&r, LU, k, k, n);
 #if 0
 		/* Check for singular matrix */
-		if (decNumberIsZero(&r))
+		if (dn_eq0(&r))
 			return;
 #endif
 		dn_divide(x+k, x+k, &r);

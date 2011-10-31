@@ -812,7 +812,7 @@ void process_cmdline(void) {
 			*d2++ = '\0';
 			if (fract_convert_number(&b, d2))
 				return;
-			if (decNumberIsZero(&b)) {
+			if (dn_eq0(&b)) {
 				err(ERR_DOMAIN);
 				return;
 			}
@@ -822,7 +822,7 @@ void process_cmdline(void) {
 				dn_divide(&t, &a, &b);
 				dn_add(&x, &z, &t);
 			} else {
-				if (decNumberIsZero(&a)) {
+				if (dn_eq0(&a)) {
 					err(ERR_DOMAIN);
 					return;
 				}
@@ -913,7 +913,7 @@ long long int d64toInt(const decimal64 *n) {
 	int sgn;
 
 	decimal64ToNumber(n, &t);
-	if (decNumberIsZero(&t))
+	if (dn_eq0(&t))
 		return 0;
 	if (decNumberIsSpecial(&t))
 		return 0;
@@ -2099,7 +2099,7 @@ static void do_tst(const decimal64 *cmp, const enum tst_op op, int cnst) {
 				decNumberRnd(&t, &t);
 		}
 		dn_compare(&r, &x, &t);
-		iszero = decNumberIsZero(&r);
+		iszero = dn_eq0(&r);
 		isneg = decNumberIsNegative(&r);
 	}
 
@@ -2128,7 +2128,7 @@ void check_zero(decimal64 *a, decimal64 *nul2, enum nilop op) {
 		decNumber x;
 		getX(&x);
 		neg = decNumberIsNegative(&x);
-		zero = decNumberIsZero(&x);
+		zero = dn_eq0(&x);
 	}
 	if (op == OP_Xeq_pos0)
 		fin_tst(zero && !neg);
@@ -2167,11 +2167,11 @@ static void do_ztst(const decimal64 *r, const decimal64 *i, const enum tst_op op
 	}
 #endif
 	dn_compare(&t, &x, &a);
-	if (!decNumberIsZero(&t))
+	if (!dn_eq0(&t))
 		eq = 0;
 	else {
 		dn_compare(&t, &y, &b);
-		if (!decNumberIsZero(&t))
+		if (!dn_eq0(&t))
 			eq = 0;
 	}
 	if (op != TST_NE)
@@ -2209,7 +2209,7 @@ static int incdec(unsigned int arg, int inc) {
 			dn_dec(&x);
 		put_reg_n(arg, &x);
 		decNumberTrunc(&y, &x);
-		return ! decNumberIsZero(&y);
+		return ! dn_eq0(&y);
 	}
 }
 
@@ -2260,7 +2260,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 		dn_subtract(&i, &i, &f);		// i = .ii		
 		dn_mul100(&x, &i);
 		decNumberTrunc(&i, &x);			// i = ii
-		if (decNumberIsZero(&i))
+		if (dn_eq0(&i))
 			dn_1(&i);
 
 		if (op == RARG_ISG || op == RARG_ISE) {
@@ -2301,7 +2301,7 @@ void op_shift_digit(unsigned int n, enum rarg op) {
 	}
 	getX(&x);
 	setlastX();
-	if (decNumberIsSpecial(&x) || decNumberIsZero(&x))
+	if (decNumberIsSpecial(&x) || dn_eq0(&x))
 		return;
 	if (op == RARG_SRD)
 		adjust = -adjust;
@@ -2430,7 +2430,7 @@ void op_2frac(decimal64 *x, decimal64 *b, enum nilop op) {
 	if (State2.runmode) {
 		dn_divide(&t, &n, &d);
 		dn_compare(&n, &t, &z);
-		if (decNumberIsZero(&n))
+		if (dn_eq0(&n))
 			DispMsg = "y/x =";
 		else if (decNumberIsNegative(&n))
 			DispMsg = "y/x \017";
@@ -2839,7 +2839,7 @@ static void check_int_switch(void) {
 			else
 				d64fromInt(&regX, 1);
 
-		} else if (decNumberIsZero(&x)) {
+		} else if (dn_eq0(&x)) {
 			/* 0 exponent, 0 mantissa -- although this can be negative zero */
 			d64fromInt(&regY, build_value(0, decNumberIsNegative(&x)?1:0));
 			d64fromInt(&regX, 0);
@@ -2863,7 +2863,7 @@ static void check_int_switch(void) {
 				dn_mul2(&z, &y);
 				decNumberTrunc(&y, &z);
 				m += m;
-				if (! decNumberIsZero(&y))
+				if (! dn_eq0(&y))
 					m++;
 				decNumberFrac(&y, &z);
 			}
@@ -2871,7 +2871,7 @@ static void check_int_switch(void) {
 			/* Finally, round up if required */
 			dn_mul2(&z, &y);
 			decNumberTrunc(&y, &z);
-			if (! decNumberIsZero(&y)) {
+			if (! dn_eq0(&y)) {
 				m++;
 				if (m == 0) {
 					ex++;

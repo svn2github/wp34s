@@ -66,6 +66,9 @@ int dn_le0(const decNumber *x) {
 int dn_gt0(const decNumber *x) {
 	return ! decNumberIsNegative(x) && ! decNumberIsZero(x);
 }
+int dn_eq0(const decNumber *x) {
+	return decNumberIsZero(x);
+}
 
 /* Some wrapper rountines to save space
  */
@@ -231,7 +234,7 @@ int is_int(const decNumber *x) {
 	Ctx.round = a;
 
 	dn_subtract(&r, x, &y);
-	if (! decNumberIsZero(&r))
+	if (! dn_eq0(&r))
 		return 0;
 	return 1;
 }
@@ -246,10 +249,10 @@ int is_even(const decNumber *x) {
 		return -1;
 	dn_abs(&z, x);
 	decNumberMod(&y, &z, &const_2);
-	if (decNumberIsZero(&y))
+	if (dn_eq0(&y))
 		return 1;
 	dn_compare(&z, &y, &const_1);
-	if (decNumberIsZero(&z))
+	if (dn_eq0(&z))
 		return 0;
 	return -2;
 }
@@ -316,8 +319,8 @@ decNumber *dn_mulpow10(decNumber *r, const decNumber *x, int p) {
 int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol) {
 	decNumber a, b;
 
-	if (decNumberIsZero(x)) {
-		if (decNumberIsZero(y))
+	if (dn_eq0(x)) {
+		if (dn_eq0(y))
 			return 1;
 		x = y;
 	}
@@ -342,7 +345,7 @@ int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol)
 decNumber *decNumberMantissa(decNumber *r, const decNumber *x) {
 	if (decNumberIsSpecial(x))
 		return set_NaN(r);
-	if (decNumberIsZero(x))
+	if (dn_eq0(x))
 		return decNumberCopy(r, x);
 #ifdef DECNUMBER
 	decNumberCopy(r, x);
@@ -365,7 +368,7 @@ decNumber *decNumberMantissa(decNumber *r, const decNumber *x) {
 decNumber *decNumberExponent(decNumber *r, const decNumber *x) {
 	if (decNumberIsSpecial(x))
 		return set_NaN(r);
-	if (decNumberIsZero(x))
+	if (dn_eq0(x))
 		return decNumberZero(r);
 #ifdef DECNUMBER
 	int_to_dn(r, x->exponent + x->digits - 1);
@@ -474,7 +477,7 @@ decNumber *decNumberSign(decNumber *r, const decNumber *x) {
 
 	if (decNumberIsNaN(x))
 		z = x;
-	else if (decNumberIsZero(x))
+	else if (dn_eq0(x))
 		z = &const_0;
 	else if (decNumberIsNegative(x))
 		z = &const__1;
@@ -489,7 +492,7 @@ static void dn_gcd(decNumber *r, const decNumber *x, const decNumber *y) {
 
 	decNumberCopy(&b, y);
 	decNumberCopy(r, x);
-	while (! decNumberIsZero(&b)) {
+	while (! dn_eq0(&b)) {
 		decNumberCopy(&t, &b);
 		decNumberMod(&b, r, &t);
 		decNumberCopy(r, &t);
@@ -523,9 +526,9 @@ decNumber *decNumberGCD(decNumber *r, const decNumber *x, const decNumber *y) {
 	if (dn_check_gcd(r, x, y, &sign, &a, &b))
 		return r;
 
-	if(decNumberIsZero(x))
+	if(dn_eq0(x))
 		decNumberCopy(r, &b);
-	else if (decNumberIsZero(y))
+	else if (dn_eq0(y))
 		decNumberCopy(r, &a);
 	else
 		dn_gcd(r, &a, &b);
@@ -541,7 +544,7 @@ decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y) {
 	if (dn_check_gcd(r, x, y, &sign, &a, &b))
 		return r;
 
-	if(decNumberIsZero(x) || decNumberIsZero(y))
+	if(dn_eq0(x) || dn_eq0(y))
 		decNumberCopy(r, x);
 	dn_gcd(&gcd, &a, &b);
 	dn_divide(&t, &a, &gcd);
@@ -560,22 +563,22 @@ decNumber *dn_power(decNumber *r, const decNumber *y, const decNumber *x) {
 	int isxint, xodd, ynegative;
 	int negate = 0;
 
-	if (decNumberIsZero(dn_compare(&t, &const_1, y)))
+	if (dn_eq0(dn_compare(&t, &const_1, y)))
 		return dn_1(r);				// 1^x = 1
 
-	if (decNumberIsZero(x))
+	if (dn_eq0(x))
 		return dn_1(r);				// y^0 = 1
 
 	if (decNumberIsNaN(x) || decNumberIsNaN(y))
 		return set_NaN(r);
 
-	if (decNumberIsZero(dn_compare(&t, &const_1, x)))
+	if (dn_eq0(dn_compare(&t, &const_1, x)))
 		return decNumberCopy(r, y); 		// y^1 = y
 
 	isxint = is_int(x);
 	if (decNumberIsInfinite(x)) {
 		dn_compare(&t, y, &const__1);
-		if (decNumberIsZero(&t))
+		if (dn_eq0(&t))
 			return dn_1(r);			// -1 ^ +/-inf = 1
 
 		dn_abs(&t, y);
@@ -609,7 +612,7 @@ decNumber *dn_power(decNumber *r, const decNumber *y, const decNumber *x) {
 		return set_inf(r);				// +inf^x x>0 = +inf
 	}
 
-	if (decNumberIsZero(y)) {
+	if (dn_eq0(y)) {
 		xodd = isxint && is_even(x) == 0;
 		if (decNumberIsNegative(x)) {
 			if (xodd && ynegative)
@@ -642,12 +645,12 @@ decNumber *dn_power(decNumber *r, const decNumber *y, const decNumber *x) {
 decNumber *decNumberLn1p(decNumber *r, const decNumber *x) {
 	decNumber u, v, w;
 
-	if (decNumberIsSpecial(x) || decNumberIsZero(x)) {
+	if (decNumberIsSpecial(x) || dn_eq0(x)) {
 		return decNumberCopy(r, x);
 	}
 	dn_p1(&u, x);
 	dn_m1(&v, &u);
-	if (decNumberIsZero(&v)) {
+	if (dn_eq0(&v)) {
 		return decNumberCopy(r, x);
 	}
 	dn_divide(&w, x, &v);
@@ -664,11 +667,11 @@ decNumber *decNumberExpm1(decNumber *r, const decNumber *x) {
 	}
 	dn_exp(&u, x);
 	dn_m1(&v, &u);
-	if (decNumberIsZero(&v)) {
+	if (dn_eq0(&v)) {
 		return decNumberCopy(r, x);
 	}
 	dn_compare(&w, &v, &const__1);
-	if (decNumberIsZero(&w)) {
+	if (dn_eq0(&w)) {
 		return dn__1(r);
 	}
 	dn_multiply(&w, &v, x);
@@ -1031,7 +1034,7 @@ static void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c) {
 			else
 				dn_add(c, c, &t);
 			dn_compare(&z, c, &z);
-			if (decNumberIsZero(&z))
+			if (dn_eq0(&z))
 				finc = 1;
 		}
 
@@ -1044,7 +1047,7 @@ static void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c) {
 			else
 				dn_add(s, s, &t);
 			dn_compare(&z, s, &z);
-			if (decNumberIsZero(&z))
+			if (dn_eq0(&z))
 				fins = 1;
 		}
 	}
@@ -1063,15 +1066,15 @@ static int right_angle(decNumber *res, const decNumber *x,
 	const decNumber *z;
 
 	decNumberRemainder(&r, x, quad, &Ctx);
-	if (!decNumberIsZero(&r))
+	if (!dn_eq0(&r))
 		return 0;
 
-	if (decNumberIsZero(x))
+	if (dn_eq0(x))
 		z = r0;
 	else {
 		dn_add(&r, quad, quad);
 		dn_compare(&r, &r, x);
-		if (decNumberIsZero(&r))
+		if (dn_eq0(&r))
 			z = r2;
 		else if (decNumberIsNegative(&r))
 			z = r3;
@@ -1204,7 +1207,7 @@ decNumber *decNumberSinc(decNumber *res, const decNumber *x) {
 	decNumberSquare(&s, x);
 	dn_p1(&t, &s);
 	dn_compare(&s, &t, &const_1);
-	if (decNumberIsZero(&s))
+	if (dn_eq0(&s))
 		dn_1(res);
 	else {
 		decNumberSin(&s, x);
@@ -1237,7 +1240,7 @@ void do_atan(decNumber *res, const decNumber *x) {
 	//  tan(x/2) = tan(x)/(1+sqrt(1+tan(x)^2))
 	for (n=0; n<1000; n++) {
 		dn_compare(&b, &a, &const_0_1);
-		if (decNumberIsNegative(&b) || decNumberIsZero(&b))
+		if (dn_le0(&b))
 			break;
 		doubles++;
 		// a = a/(1+sqrt(1+a^2)) -- at most 3 iterations.
@@ -1272,7 +1275,7 @@ void do_atan(decNumber *res, const decNumber *x) {
 		dn_p2(&j, &j);
 
 		dn_compare(&a1, res, &last);
-	} while (!decNumberIsZero(&a1));
+	} while (!dn_eq0(&a1));
 	dn_multiply(res, res, &a);
 
 	while (doubles) {
@@ -1331,7 +1334,7 @@ void do_acos(decNumber *res, const decNumber *x) {
 
 	// res = 2*atan((1-x)/sqrt(1-x*x))
 	dn_compare(&z, x, &const_1);
-	if (decNumberIsZero(&z))
+	if (dn_eq0(&z))
 		decNumberZero(res);
     else {
         dn_multiply(&z, x, x);
@@ -1385,9 +1388,9 @@ decNumber *do_atan2(decNumber *at, const decNumber *y, const decNumber *x) {
 	if (decNumberIsNaN(x) || decNumberIsNaN(y)) {
 		return set_NaN(at);
 	}
-	if (decNumberIsZero(y)) {
+	if (dn_eq0(y)) {
 		if (yneg) {
-			if (decNumberIsZero(x)) {
+			if (dn_eq0(x)) {
 				if (xneg) {
 					decNumberPI(at);
 					dn_minus(at, at);
@@ -1399,7 +1402,7 @@ decNumber *do_atan2(decNumber *at, const decNumber *y, const decNumber *x) {
 			} else
 				decNumberCopy(at, y);
 		} else {
-			if (decNumberIsZero(x)) {
+			if (dn_eq0(x)) {
 				if (xneg)
 					decNumberPI(at);
 				else
@@ -1411,7 +1414,7 @@ decNumber *do_atan2(decNumber *at, const decNumber *y, const decNumber *x) {
 		}
 		return at;
 	}
-	if (decNumberIsZero(x)) {
+	if (dn_eq0(x)) {
 		decNumberPIon2(at);
 		if (yneg)
 			dn_minus(at, at);
@@ -1459,7 +1462,7 @@ decNumber *do_atan2(decNumber *at, const decNumber *y, const decNumber *x) {
 	} else
 		decNumberZero(&t);
 	dn_add(at, &r, &t);
-	if (decNumberIsZero(at) && yneg)
+	if (dn_eq0(at) && yneg)
 		dn_minus(at, at);
 	return at;
 }
@@ -1606,7 +1609,7 @@ decNumber *decNumberArcTanh(decNumber *res, const decNumber *x) {
 	if (decNumberIsNaN(x))
 		return set_NaN(res);
 	dn_abs(&y, x);
-	if (decNumberIsZero(dn_compare(&z, &y, &const_1))) {
+	if (dn_eq0(dn_compare(&z, &y, &const_1))) {
 		if (decNumberIsNegative(x))
 			return set_neginf(res);
 		return set_inf(res);
@@ -2062,7 +2065,7 @@ decNumber *decNumberZeta(decNumber *res, const decNumber *xin) {
 			return set_NaN(res);
 		return dn_1(res);
 	}
-	if (decNumberIsZero(xin)) {
+	if (dn_eq0(xin)) {
 		return decNumberCopy(res, &const__0_5);
 	}
 	if (decNumberIsNegative(xin)) {
@@ -2246,7 +2249,7 @@ decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y) 
 	if (decNumberIsSpecial(x) || decNumberIsSpecial(y)) {
 		if (decNumberIsNaN(x) || decNumberIsNaN(y))
 			goto nan;
-		if (decNumberIsZero(x) || decNumberIsZero(y))
+		if (dn_eq0(x) || dn_eq0(y))
 			goto nan;
 		return set_inf(res);
 	}
@@ -2260,7 +2263,7 @@ decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y) 
 		dn_div2(&u, &t);
 
 		dn_multiply(&t, &a, &g);
-		if (decNumberIsZero(&t))
+		if (dn_eq0(&t))
 			return decNumberZero(res);
 		dn_sqrt(&g, &t);
 		decNumberCopy(&a, &u);
@@ -2273,7 +2276,7 @@ nan:	return set_NaN(res);
  * We treat 0 as false and non-zero as true.
  */
 static int dn2bool(const decNumber *x) {
-	return decNumberIsZero(x)?0:1;
+	return dn_eq0(x)?0:1;
 }
 
 static decNumber *bool2dn(decNumber *res, int l) {
@@ -2397,14 +2400,14 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 		for (i=0; i<1000; i++) {
 			decNumberTrunc(&t, &z);
 			dn_subtract(&s, &z, &t);
-			if (decNumberIsZero(&s))
+			if (dn_eq0(&s))
 				break;
 			decNumberRecip(&z, &s);
 			decNumberTrunc(&s, &z);
 			dn_multiply(&t, &s, d);
 			dn_add(&s, &t, &dold);	// s is new denominator estimate
 			dn_compare(&t, &maxd, &s);
-			if (decNumberIsNegative(&t) || decNumberIsZero(&t))
+			if (dn_le0(&t))
 				break;
 			decNumberCopy(&dold, d);
 			decNumberCopy(d, &s);
@@ -2452,7 +2455,7 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 		dn_multiply(&del, &del, &t);
 		dn_add(&t, &sum, &del);
 		dn_compare(&u, &t, &sum);
-		if (decNumberIsZero(&u)) {
+		if (dn_eq0(&u)) {
 			dn_ln(&t, x);
 			dn_multiply(&u, &t, a);
 			dn_subtract(&t, &u, x);
@@ -2497,7 +2500,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 		dn_multiply(&t, &d, &c);
 		dn_multiply(&u, &h, &t);
 		dn_compare(&t, &h, &u);
-		if (decNumberIsZero(&t))
+		if (dn_eq0(&t))
 			break;
 		decNumberCopy(&h, &u);
 //		dn_m1(&u, &t);
@@ -2523,7 +2526,7 @@ decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *
 	}
 	if (decNumberIsInfinite(x))
 		return dn_1(res);
-	if (decNumberIsZero(x))
+	if (dn_eq0(x))
 		return decNumberZero(res);
 
 	dn_p1(&lga, a);
@@ -2620,7 +2623,7 @@ void dn_elliptic(decNumber *sn, decNumber *cn, decNumber *dn, const decNumber *u
 		dn_subtract(&e, mu(n), nu(n));
 		dn_abs(&f, &e);
 		dn_compare(&e, &a, &f);
-		if (!decNumberIsNegative(&e) && !decNumberIsZero(&e))
+		if (!decNumberIsNegative(&e) && !dn_eq0(&e))
 			break;
 		dn_div2(mu(n+1), &g);
 		dn_multiply(&a, mu(n), nu(n));
@@ -2724,7 +2727,7 @@ static decNumber *dn_bessel(decNumber *res, const decNumber *alpha, const decNum
 			dn_minus(&term, &term);
 		dn_add(&q, &term, res);
 		dn_compare(&r, &q, res);
-		if (decNumberIsZero(&r))
+		if (dn_eq0(&r))
 			return res;
 		decNumberCopy(res, &q);
 	}
@@ -2738,8 +2741,8 @@ decNumber *decNumberBSJN(decNumber *res, const decNumber *alpha, const decNumber
 
 	if (decNumberIsNaN(alpha) || decNumberIsSpecial(x))
 		return set_NaN(res);
-	if (decNumberIsZero(x)) {
-		if (decNumberIsZero(alpha))
+	if (dn_eq0(x)) {
+		if (dn_eq0(alpha))
 			return dn_1(res);
 		return decNumberZero(res);
 	}
@@ -2762,8 +2765,8 @@ decNumber *decNumberBSIN(decNumber *res, const decNumber *alpha, const decNumber
 		return set_NaN(res);
 	else if (decNumberIsInfinite(x))
 		return set_inf(res);
-	else if (decNumberIsZero(x)) {
-		if (decNumberIsZero(alpha))
+	else if (dn_eq0(x)) {
+		if (dn_eq0(alpha))
 			return dn_1(res);
 		else
 			return decNumberZero(res);
@@ -2858,7 +2861,7 @@ static void bessel2_int_series(decNumber *res, const decNumber *n, const decNumb
 		dn_multiply(&t, &v, &p);
 		dn_add(&u, &t, &s);
 		dn_compare(&t, &u, &s);
-		if (decNumberIsZero(&t))
+		if (dn_eq0(&t))
 			break;
 		decNumberCopy(&s, &u);
 	}
@@ -2883,7 +2886,7 @@ decNumber *decNumberBSYN(decNumber *res, const decNumber *alpha, const decNumber
 
 	if (decNumberIsNaN(alpha) || decNumberIsSpecial(x))
 		return set_NaN(res);
-	else if (decNumberIsZero(x))
+	else if (dn_eq0(x))
 		return set_neginf(res);
 	else if (decNumberIsInfinite(alpha) || decNumberIsNegative(x))
 		return set_NaN(res);
@@ -2910,7 +2913,7 @@ decNumber *decNumberBSKN(decNumber *res, const decNumber *alpha, const decNumber
 
 	if (decNumberIsNaN(alpha) || decNumberIsNaN(x))
 		return set_NaN(res);
-	else if (decNumberIsZero(x))
+	else if (dn_eq0(x))
 		return set_inf(res);
 	else if (decNumberIsInfinite(alpha) || decNumberIsNegative(x))
 		return set_NaN(res);
@@ -2957,10 +2960,10 @@ static int qstep(decNumber *r, const decNumber *a, const decNumber *fb, const de
 	decNumber x, y, z;
 
 	dn_subtract(&x, fa, fb);
-	if (decNumberIsZero(&x))
+	if (dn_eq0(&x))
 		return -1;
 	dn_subtract(&y, fa, fc);
-	if (decNumberIsZero(&y))
+	if (dn_eq0(&y))
 		return -1;
 	dn_multiply(&z, &x, &y);
 	dn_multiply(&x, a, fb);
@@ -2992,22 +2995,22 @@ static int solve_ridder(decNumber *xnew, const decNumber *x0, const decNumber *x
 	decNumber a, b, r, s, t, u, v;
 
 	dn_subtract(&r, y1, y2);
-	if (decNumberIsZero(&r))
+	if (dn_eq0(&r))
 		return -1;
 	dn_subtract(&s, y0, y1);		// s = y0 - y1
 	dn_divide(&a, &s, &r);
 	dn_multiply(&t, &a, y1);
 	dn_subtract(&r, y0, &t);
-	if (decNumberIsZero(&r))
+	if (dn_eq0(&r))
 		return -1;
 	dn_divide(&b, &s, &r);
 	dn_p1(&r, &b);
-	if (decNumberIsZero(&r))
+	if (dn_eq0(&r))
 		return -1;
 	dn_m1(&s, &b);
 	dn_divide(&u, &s, &r);
 	dn_p1(&r, &a);
-	if (decNumberIsZero(&r))
+	if (dn_eq0(&r))
 		return -1;
 	dn_m1(&s, &a);
 	dn_divide(&v, &s, &r);
@@ -3053,8 +3056,7 @@ static int solve_bracket(decNumber *s, const decNumber *a, const decNumber *b) {
 		dn_subtract(&x, a, s);
 	}
 	/* If out of bracket or the same as a previous, out of bracket */
-	return (decNumberIsNegative(&y) || decNumberIsZero(&y) ||
-		decNumberIsNegative(&x) || decNumberIsZero(&x));
+	return (dn_le0(&y) || dn_le0(&x));
 }
 
 
@@ -3098,7 +3100,7 @@ static int slv_compare(const decNumber *a, const decNumber *b, const decNumber *
 
 	decNumberRnd(&ar, a);
 	decNumberRnd(&br, b);
-	return decNumberIsZero(dn_compare(&c, &ar, &br));
+	return dn_eq0(dn_compare(&c, &ar, &br));
 }
 
 /* Define how with use the flags.
@@ -3196,7 +3198,7 @@ brcket:
 				goto failed;
 
 			dn_compare(&x, fb, fc);
-			if (! decNumberIsZero(&x)) {
+			if (! dn_eq0(&x)) {
 				slv_state = SLV_SET_COUNT(slv_state, 0);
 				CLEAR_CONST(slv_state);
 				r = -1;
@@ -3272,7 +3274,7 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 	sb = decNumberIsNegative(fb);
 	if (sa == sb) {				// Same side of line
 		dn_compare(&y, fa, fb);
-		if (decNumberIsZero(&y)) {	// Worse equal...
+		if (dn_eq0(&y)) {	// Worse equal...
 			SET_CONST(flags);
 		}
 		// Both estimates are the same side of the line.
@@ -3508,13 +3510,13 @@ decNumber *decNumberBernBn(decNumber *r, const decNumber *n) {
 #ifndef TINY_BUILD
 	decNumber a, b;
 
-	if (decNumberIsZero(n))
+	if (dn_eq0(n))
 		return dn_1(r);
 	if (! is_int(n) || decNumberIsNegative(n)) {
 		return set_NaN(r);
 	}
 	dn_1m(&a, n);
-	if (decNumberIsZero(&a))
+	if (dn_eq0(&a))
 		return decNumberCopy(r, &const__0_5);
 	if (is_even(n)) {
 #if 0
@@ -3542,7 +3544,7 @@ decNumber *decNumberBernBnS(decNumber *r, const decNumber *n) {
 #ifndef TINY_BUILD
 	decNumber a;
 
-	if (decNumberIsZero(n)) {
+	if (dn_eq0(n)) {
 		return set_NaN(r);
 	}
 	dn_mul2(&a, n);

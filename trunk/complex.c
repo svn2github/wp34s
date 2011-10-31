@@ -256,10 +256,10 @@ void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		}
 		return;
 	}
-	if (decNumberIsZero(b)) {
+	if (dn_eq0(b)) {
 		decNumberSign(rx, a);
 		decNumberZero(ry);
-	} else if (decNumberIsZero(a)) {
+	} else if (dn_eq0(a)) {
 		decNumberZero(rx);
 		decNumberSign(ry, b);
 	} else {
@@ -316,7 +316,7 @@ void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 #ifndef TINY_BUILD
 	decNumber fac, t1, u, v;
 
-	if (decNumberIsZero(b)) {
+	if (dn_eq0(b)) {
 		// Detect a purely real input and shortcut the computation
 		if (decNumberIsNegative(a)) {
 			dn_minus(&t1, a);
@@ -372,7 +372,7 @@ static void cmplx_sincos(const decNumber *a, const decNumber *b, decNumber *sx, 
 #ifndef TINY_BUILD
 	decNumber sa, ca, sb, cb;
 
-	if (decNumberIsZero(a) && decNumberIsInfinite(b)) {
+	if (dn_eq0(a) && decNumberIsInfinite(b)) {
 		if (sx != NULL)	decNumberZero(sx);
 		if (sy != NULL)	decNumberCopy(sy, b);
 		if (cx != NULL)	set_inf(cx);
@@ -407,7 +407,7 @@ void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 	decNumber sb, cb;
 	decNumber t1, t2, t3;
 
-	if (decNumberIsZero(a) && decNumberIsInfinite(b)) {
+	if (dn_eq0(a) && decNumberIsInfinite(b)) {
 		decNumberZero(rx);
 		if (decNumberIsNegative(b))
 			dn__1(ry);
@@ -449,7 +449,7 @@ void cmplxSinc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 #ifndef TINY_BUILD
 	decNumber s1, s2;
 
-	if (decNumberIsZero(b)) {
+	if (dn_eq0(b)) {
 		decNumberSinc(rx, a);
 		decNumberZero(ry);
 	} else {
@@ -465,7 +465,7 @@ static void cmplx_sinhcosh(const decNumber *a, const decNumber *b, decNumber *sx
 #ifndef TINY_BUILD
 	decNumber sa, ca, sb, cb;
 
-	if (decNumberIsZero(b)) {
+	if (dn_eq0(b)) {
 		if (sx != NULL)	decNumberSinh(sx, a);
 		if (sy != NULL)	decNumberZero(sy);
 		if (cx != NULL)	decNumberCosh(cx, a);
@@ -496,7 +496,7 @@ void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 #ifndef TINY_BUILD
 	decNumber ta, tb, t2;
 
-	if (decNumberIsZero(b)) {
+	if (dn_eq0(b)) {
 		decNumberTanh(rx, a);
 		decNumberZero(ry);
 	} else {
@@ -587,7 +587,7 @@ void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 #ifndef TINY_BUILD
 	decNumber t;
 
-	if (decNumberIsZero(b)) {
+	if (dn_eq0(b)) {
 		dn_abs(&t, a);
 		dn_compare(&t, &t, &const_0_0001);
 		if (decNumberIsNegative(&t)) {
@@ -605,7 +605,7 @@ void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 #ifndef TINY_BUILD
 	decNumber t;
 
-	if (decNumberIsZero(b)) {
+	if (dn_eq0(b)) {
 		dn_abs(&t, a);
 		dn_compare(&t, &t, &const_0_0001);
 		if (decNumberIsNegative(&t)) {
@@ -752,8 +752,8 @@ void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *
 #ifndef TINY_BUILD
 	decNumber u;
 
-	if (decNumberIsZero(b)) {
-		if (decNumberIsZero(a)) {
+	if (dn_eq0(b)) {
+		if (dn_eq0(a)) {
 			cmplx_NaN(rx, ry);
 		} else if (decNumberIsNegative(a)) {
 			dn_minus(&u, a);
@@ -787,7 +787,7 @@ void cmplxExp(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 #ifndef TINY_BUILD
 	decNumber e, s, c;
 
-	if (decNumberIsZero(b)) {
+	if (dn_eq0(b)) {
 		dn_exp(rx, a);
 		decNumberZero(ry);
 	} else if (decNumberIsSpecial(a) || decNumberIsSpecial(b)) {
@@ -913,7 +913,7 @@ void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNum
 	if (decNumberIsNegative(xin)) {
 		reflec = 1;
 		dn_1m(&t1, xin);
-		if (decNumberIsZero(y) && is_int(&t1)) {
+		if (dn_eq0(y) && is_int(&t1)) {
 			cmplx_NaN(rx, ry);
 			return;
 		}
@@ -967,7 +967,7 @@ void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decN
 	if (decNumberIsNegative(xin)) {
 		reflec = 1;
 		dn_1m(&t1, xin);
-		if (decNumberIsZero(y) && is_int(&t1)) {
+		if (dn_eq0(y) && is_int(&t1)) {
 			cmplx_NaN(rx, ry);
 			return;
 		}
@@ -1054,7 +1054,7 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 
 	// Reflection if negative real part
 	if (dn_le0(ain)) {
-		if (decNumberIsZero(bin) && is_int(ain)) {
+		if (dn_eq0(bin) && is_int(ain)) {
 			cmplx_NaN(rx, ry);
 			return;
 		}
@@ -1134,7 +1134,7 @@ void cmplxZeta(decNumber *rx, decNumber *ry,
 
 	/* Short cut the real case by using the real version of the function */
 #if 0
-	if (decNumberIsZero(yin)) {
+	if (dn_eq0(yin)) {
 		decNumberZeta(rx, xin);
 		decNumberZero(ry);
 		return;
@@ -1390,7 +1390,7 @@ static void cmplx_bessel(decNumber *rx, decNumber *ry,
 		cmplxAdd(&a1, &a2, &ux, &uy, rx, ry);
 		cmplxSubtract(&t1, &t2, &a1, &a2, rx, ry);
 		cmplxR(&b, &t1, &t2);
-		if (decNumberIsZero(&b))
+		if (dn_eq0(&b))
 			return;
 		cmplxCopy(rx, ry, &a1, &a2);
 		dn_inc(&k);
@@ -1403,7 +1403,7 @@ void cmplxBSJN(decNumber *rx, decNumber *ry,
 		const decNumber *alphax, const decNumber *alphay,
 		const decNumber *xx, const decNumber *xy) {
 #ifndef TINY_BUILD
-	if (decNumberIsZero(xy) && decNumberIsZero(alphay)) {
+	if (dn_eq0(xy) && dn_eq0(alphay)) {
 		decNumberBSJN(rx, alphax, xx);
 		if (decNumberIsNaN(rx))
 			set_NaN(ry);
@@ -1420,7 +1420,7 @@ void cmplxBSIN(decNumber *rx, decNumber *ry,
 		const decNumber *alphax, const decNumber *alphay,
 		const decNumber *xx, const decNumber *xy) {
 #ifndef TINY_BUILD
-	if (decNumberIsZero(xy) && decNumberIsZero(alphay)) {
+	if (dn_eq0(xy) && dn_eq0(alphay)) {
 		decNumberBSIN(rx, alphax, xx);
 		if (decNumberIsNaN(rx))
 			set_NaN(ry);
@@ -1518,7 +1518,7 @@ static void cmplx_bessel2_int_series(decNumber *rx, decNumber *ry, const decNumb
 		cmplxAdd(&ux, &uy, &tx, &ty, &sx, &sy);
 		cmplxSubtract(&tx, &ty, &ux, &uy, &sx, &sy);
 		cmplxR(&vy, &tx, &ty);
-		if (decNumberIsZero(&vy))
+		if (dn_eq0(&vy))
 			break;
 		cmplxCopy(&sx, &sy, &ux, &uy);
 	}
@@ -1545,7 +1545,7 @@ void cmplxBSYN(decNumber *rx, decNumber *ry,
 #ifndef TINY_BUILD
 	decNumber t1, t2, sx, sy, cx, cy, jnx, jny, jmx, jmy;
 #if 0
-	if (decNumberIsZero(xy) && decNumberIsZero(vy)) {
+	if (dn_eq0(xy) && dn_eq0(vy)) {
 		decNumberBSYN(rx, vx, xx);
 		if (decNumberIsNaN(rx))
 			set_NaN(ry);
@@ -1555,7 +1555,7 @@ void cmplxBSYN(decNumber *rx, decNumber *ry,
 	if (decNumberIsSpecial(vx) || decNumberIsSpecial(vy) ||
 			decNumberIsSpecial(xx) || decNumberIsSpecial(xy))
 		cmplx_NaN(rx, ry);
-	else if (decNumberIsZero(vy) && is_int(vx)) {
+	else if (dn_eq0(vy) && is_int(vx)) {
 		cmplx_bessel2_int_series(rx, ry, vx, xx, xy, 0);
 	} else {
 		cmplx_bessel(&jnx, &jny, vx, vy, xx, xy, 1);
@@ -1579,7 +1579,7 @@ void cmplxBSKN(decNumber *rx, decNumber *ry,
 	decNumber t1, t2, inx, iny, imx, imy;
 
 #if 0
-	if (decNumberIsZero(xy) && decNumberIsZero(vy)) {
+	if (dn_eq0(xy) && dn_eq0(vy)) {
 		decNumberBSKN(rx, vx, xx);
 		if (decNumberIsNaN(rx))
 			set_NaN(ry);
@@ -1589,7 +1589,7 @@ void cmplxBSKN(decNumber *rx, decNumber *ry,
 	if (decNumberIsSpecial(vx) || decNumberIsSpecial(vy) ||
 			decNumberIsSpecial(xx) || decNumberIsSpecial(xy))
 		cmplx_NaN(rx, ry);
-	else if (decNumberIsZero(vy) && is_int(vx)) {
+	else if (dn_eq0(vy) && is_int(vx)) {
 		cmplx_bessel2_int_series(rx, ry, vx, xx, xy, 1);
 	} else {
 		cmplx_bessel(&inx, &iny, vx, vy, xx, xy, 0);

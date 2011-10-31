@@ -25,6 +25,7 @@
 extern int dn_gt0(const decNumber *x);
 extern int dn_lt0(const decNumber *x);
 extern int dn_le0(const decNumber *x);
+extern int dn_eq0(const decNumber *x);
 
 extern decNumber *dn_add(decNumber *r, const decNumber *a, const decNumber *b);
 extern decNumber *dn_subtract(decNumber *r, const decNumber *a, const decNumber *b);
