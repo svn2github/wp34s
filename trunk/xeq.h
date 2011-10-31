@@ -980,7 +980,7 @@ enum shifts {
 
 #ifdef ENABLE_LOCALS
 #define	MAX_LOCAL	100		// maximum number of local registers
-#define MAX_LOCAL_DIRECT 15		// highest directly addressable local register
+#define MAX_LOCAL_DIRECT 16		// # of directly addressable local registers
 #endif
 
 /*

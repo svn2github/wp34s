@@ -320,6 +320,9 @@ static void init_arg(const enum rarg base) {
 	State2.numdigit = 0;
 	State2.rarg = 1;
 	State2.dot = 0;
+#ifdef ENABLE_LOCALS
+	State2.local = 0;
+#endif
 }
 
 static void init_cat(enum catalogues cat) {
@@ -1210,7 +1213,11 @@ static int process_alpha(const keycode c) {
  */
 static int arg_eval(unsigned int val) {
 	const unsigned int base = CmdBase;
+#ifdef ENABLE_LOCALS
+	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val + State2.local ? NUMREG : 0);
+#else
 	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val);
+#endif
 	const unsigned int ssize = (! UState.stack_depth || ! State2.runmode ) ? 4 : 8;
 
 	if (! State2.ind) {
@@ -1242,7 +1249,11 @@ static int arg_eval(unsigned int val) {
 
 static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
+#ifdef ENABLE_LOCALS
+	const int mx = State2.ind ? NUMREG : State2.local ? MAX_LOCAL_DIRECT : argcmds[base].lim;
+#else
 	const int mx = State2.ind ? NUMREG : argcmds[base].lim;
+#endif
 	const unsigned int val = State2.digval * 10 + n;
 
 	if (State2.numdigit == 0) {
@@ -1308,8 +1319,20 @@ static int arg_storcl(const unsigned int n, int cmplx) {
 }
 
 static int process_arg_dot(const unsigned int base) {
+#ifdef ENABLE_LOCALS
+	if (State2.dot)
+		return arg_eval(regX_idx);
+
+	if (argcmds[base].stckreg || State2.ind) {
+		// local register select
+		if (State2.numdigit == 0)
+			State2.local = ! State2.local;
+	}
+	else
+#else
 	if (State2.dot || argcmds[base].stckreg || State2.ind)
 		return arg_eval(regX_idx);
+#endif
 
 	if (base == RARG_GTO || base == RARG_XEQ) {
 		// Special GTO . sequence
