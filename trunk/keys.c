@@ -1214,7 +1214,7 @@ static int process_alpha(const keycode c) {
 static int arg_eval(unsigned int val) {
 	const unsigned int base = CmdBase;
 #ifdef ENABLE_LOCALS
-	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val + State2.local ? NUMREG : 0);
+	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val + (State2.local ? NUMREG : 0));
 #else
 	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val);
 #endif
