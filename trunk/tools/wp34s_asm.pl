@@ -123,13 +123,9 @@ my @reg_offset_REG = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I",
 		      ".08", ".09", ".10", ".11", ".12", ".13", ".14", ".15");
 my $MAX_INDIRECT_REG = 128;
 
-
+# This is for labels and flags
 my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D");
 my $MAX_INDIRECT_104 = 104;
-
-# XXX Not sure if this is used anymore but it doesn't hurt to retain for now.
-my @label_116 = (0 .. 99, "A", "B", "C", "D", "F", "G", "H", "I", "J", "K", "L", "P", "T", "W", "Y", "Z");
-my $MAX_LABEL = 116;
 
 # The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
@@ -984,11 +980,7 @@ sub parse_arg_type_dir_max {
   my ($reg_str);
 
   # Find out which instruction offset group we are to use.
-  if( $stostack_modifier ) {
-    $reg_str = $reg_offset_REG[$offset];
-  } elsif( $direct_max == $MAX_LABEL ) {
-    $reg_str = $label_116[$offset];
-  } elsif( $direct_max > $MAX_INDIRECT_104 ) {
+  if( $stostack_modifier || $direct_max > $MAX_INDIRECT_104 ) {
     $reg_str = $reg_offset_REG[$offset];
   } else {
     $reg_str = $reg_offset_104[$offset];

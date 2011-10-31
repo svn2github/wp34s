@@ -1066,25 +1066,7 @@ static int process_gtodot(const keycode c) {
 			State2.digval /= 10;
 		}
 	}
-#ifdef ALLOW_MORE_LABELS
-	else switch (c) {
-	case K05:	rawpc = gtodot_fkey(4);	goto fin;		// F
-	case K10:	case K11:	case K12:			// G H & I
-		rawpc = gtodot_fkey(c - K10 + 5);
-		goto fin;
-	case K21:	case K22:	case K23:			// J K L
-		rawpc = gtodot_fkey(c - K21 + 8);
-		goto fin;
-	case K63:	case K64:					// Y & Z
-		rawpc = gtodot_fkey(c - K63 + 14);
-		goto fin;
-	case K34:	rawpc = gtodot_fkey(11);	goto fin;	// P
-	case K44:	rawpc = gtodot_fkey(12);	goto fin;	// T
-	case K54:	rawpc = gtodot_fkey(13);	goto fin;	// W
-	default:
-		return STATE_UNFINISHED;
-	}
-#endif
+
 	if (pc >= 0) {
 		rawpc = find_user_pc(pc);
 fin:		set_pc(rawpc);
@@ -1291,11 +1273,7 @@ static int arg_digit(int n) {
 static int arg_fkey(int n) {
 	const unsigned int b = CmdBase;
 
-#ifdef ALLOW_MORE_LABELS
-	if (argcmds[b].label || (b >= RARG_SF && b <= RARG_FCF && n < 4))
-#else
 	if (argcmds[b].label || (b >= RARG_SF && b <= RARG_FCF))
-#endif
 	{
 		if (State2.ind || State2.numdigit > 0)
 			return STATE_UNFINISHED;
@@ -1348,64 +1326,25 @@ static int process_arg(const keycode c) {
 	unsigned int base = CmdBase;
 	unsigned int n = keycode_to_digit_or_register(c);
 	int stack_reg = argcmds[base].stckreg || State2.ind;
-#ifndef ALLOW_MORE_LABELS
 	const enum shifts previous_shift = State2.shifts;
 	const enum shifts shift = reset_shift();
 	int label_addressing = argcmds[base].label && ! State2.ind && ! State2.dot;
 	int shorthand = label_addressing && c != K_F 
 		        && (shift == SHIFT_F || (n > 9 && !(n & NO_SHORT)));
-#endif
+
 	n &= ~NO_SHORT;
 	if (base >= num_argcmds) {
 		init_arg(0);
 		State2.rarg = 0;
 		return STATE_UNFINISHED;
 	}
-#ifdef ALLOW_MORE_LABELS
-	if ( n <= 9 && ! State2.dot ) {
-		return arg_digit(n);
-	}
-	if ( argcmds[base].label && ! State2.ind ) {
-		int v;
-		switch ( c ) {
-		case K_CMPLX:
-			v = arg_fkey(4);		// F
-			break;
-		case K10:
-		case K11:
-		case K12:
-			v = arg_fkey(c - K10 + 5);	// G, H, I
-			break;
-		case K21:
-		case K22:
-		case K23:
-			v = arg_fkey(c - K21 + 8);	// J, K, L
-			break;
-		case K34:
-			v = arg_fkey(11);		// P
-			break;
-		case K44:
-			v = arg_fkey(12);		// T
-			break;
-		case K54:
-			v = arg_fkey(13);		// W
-			break;
-		case K63:
-		case K64:
-			v = arg_fkey(c - K63 + 14);	// Y, Z
-			break;
-		}
-		if ( v != STATE_UNFINISHED )
-			return v;
-	}
-#else
 	if (n <= 9 && ! shorthand && ! State2.dot)
 		return arg_digit(n);
 
 	if (shorthand)
 		// row column shorthand addressing
 		return arg_eval(keycode_to_row_column(c));
-#endif
+
 	/*
 	 *  So far, we've got the digits and some special label addressing keys
 	 *  Handle the rest here.

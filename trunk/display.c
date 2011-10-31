@@ -1286,6 +1286,10 @@ void display(void) {
 			*bp++ = '_';
 		} else {
 			const int maxdigits = State2.ind || argcmds[CmdBase].lim > 10 ? 2 : 1;
+#ifdef ENABLE_LOCALS
+			if (State2.local)
+				*bp++ = '.';
+#endif	
 			if (State2.numdigit > 0)
 				bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
 			for (i=State2.numdigit; i<maxdigits; i++)

@@ -814,7 +814,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
 #ifdef ENABLE_LOCALS
-	CMD(RARG_LOCAL,		&op_local,	MAX_LOCAL,		"LOCAL")
+	CMD(RARG_LOCAL,		&op_local,	MAX_LOCAL,		"LOCL")
 #endif
 
 #undef CMDlbl

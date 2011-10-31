@@ -379,13 +379,8 @@ extern int current_catalogue_max(void);
 #define RET_STACK_SIZE	4	/* Minimum depth of return stack, extends into program space */
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
-#ifdef ALLOW_MORE_LABELS
-#define NUMLBL		116	/* Number of program labels */
-#define LBLNAMES	"ABCDFGHIJKLPTWYZ"
-#else
 #define NUMLBL		104	/* Number of program labels */
 #define LBLNAMES	"ABCD"
-#endif
 #define NUMFLG		104	/* Number of flags */
 
 #define NUMALPHA	31	/* Number of characters in Alpha */
