@@ -845,9 +845,34 @@ void process_cmdline_set_lift(void) {
 }
 
 
+/*
+ *  Return a pointer to a numbered register.
+ *  If locals are enabled and a non existent local register
+ *  is accessed, the respective global register is returned.
+ *  Error checking must be done outside this routine.
+ */
 decimal64 *get_reg_n(int n) {
+#ifdef NUMBANKREGS
+	// return the local XROM registers
 	if (isXROM(state_pc()) && n < NUMBANKREGS)
 		return BankRegs + n;
+#endif
+#ifdef ENABLE_LOCALS
+	if (n >= NUMREG) {
+		// local register on the return stack
+		int sp = RetStkPtr;
+		n -= NUMREG;
+		for(;;) {
+			unsigned short s = RetStk[sp++];
+			if (isLOCAL(s)) {
+				s = LOCAL_MAXREG(s);
+				if (n > s)
+					break;
+				return (decimal64 *)(RetStk + sp);
+			}
+		}
+	}
+#endif
 	return Regs + (n % NUMREG);
 }
 
@@ -3633,6 +3658,31 @@ void set_running_on() {
 	finish_display();
 }
 
+#ifdef ENABLE_LOCALS
+/*
+ *  Command to support local variables
+ */
+void op_local(unsigned int arg, enum rarg op) {
+	const int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
+	const short int n = (arg << 2);
+	short int sp = RetStkPtr;
+
+	if (sp != 0 && isLOCAL(RetStk[sp])) {
+		// Do not allow more than one LOCAL in the same subroutine
+		err(ERR_INVALID);
+		return;
+	}
+	// compute space needed
+	sp -= n;
+	if (-sp >= stack_size) {
+		err(ERR_XEQ_NEST);
+		return;
+	}
+	RetStk[--sp] = LOCAL_MASK | n;
+	RetStkPtr = sp;
+}
+
+#endif
 
 #if defined(DEBUG) && !defined(WINGUI) && !defined(WP34STEST)
 extern unsigned char remap_chars(unsigned char ch);

@@ -636,8 +636,13 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 	{ func, limit, ind, stk, cpx, lbl, stos, nm },
 #endif
 #define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0, 0)
+#ifdef ENABLE_LOCALS
+#define CMDstk(n, f, lim, nm)	allCMD(n, f, NUMREG+MAX_LOCAL, nm, 1, 1, 0, 0, 0)
+#define CMDcstk(n, f, lim, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-1, nm, 1, 1, 1, 0, 0)
+#else
 #define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0, 0)
 #define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1, 0, 0)
+#endif
 #define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0, 0)
 #define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 1, 0)
 #define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 1, 0)
@@ -808,6 +813,9 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_KEYTYPE,	&op_keytype,	NUMREG,			"KTP?")
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
+#ifdef ENABLE_LOCALS
+	CMD(RARG_LOCAL,		&op_local,	MAX_LOCAL,		"LOCAL")
+#endif
 
 #undef CMDlbl
 #undef CMDlblnI

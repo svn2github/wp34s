@@ -149,12 +149,15 @@ static const char *prt_conv(unsigned int arg, char *instr) {
 	return instr;
 }
 
+
 /* Commands that take an argument */
 static const char *prt_rargs(const opcode op, char *instr) {
 	unsigned int arg = op & RARG_MASK;
 	int ind = op & RARG_IND;
 	const unsigned int cmd = RARG_CMD(op);
 	char buf[CONST_NAMELEN + 1];
+	char *p;
+	int n;
 
 	if (cmd == RARG_ALPHA) {
 		*scopy(instr, "\240 ") = arg + (ind?RARG_IND:0);
@@ -182,23 +185,32 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			buf[10] = '\0';
 			scopy(scopy(instr, "iC "), buf);
 		} else {
-			if (arg >= regX_idx && arg <= regK_idx && argcmds[cmd].stckreg) {
-				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = REGNAMES[arg-regX_idx];
-			} else if (/*argcmds[cmd].label && */arg >= 100) {
-				*sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN) = LBLNAMES[arg-100];
-			} else {
-				num_arg_0(sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN), arg, argcmds[cmd].lim < 10 ? 1 : 2);
+			p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
+			if (argcmds[cmd].label)
+				*p = LBLNAMES[arg-100];
+			else {
+				n = argcmds[cmd].lim < 10 ? 1 : 2;
+				goto print_reg;
 			}
 		}
 	} else {
 		if (!argcmds[cmd].indirectokay)
 			return "???";
-		if (arg >= regX_idx && arg <= regK_idx)
-			*sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\015') = REGNAMES[arg-regX_idx];
-		else if (arg < NUMREG)
-			num_arg_0(sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\015'), arg, 2);
-		else
-			return "???";
+		p = sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\015');
+		n = 2;
+
+	print_reg:
+		if (arg >= regX_idx && arg <= regK_idx && argcmds[cmd].stckreg)
+			*p = REGNAMES[arg-regX_idx];
+		else {
+#ifdef ENABLE_LOCALS
+			if (arg > regK_idx) {
+				arg -= regK_idx + 1;
+				*p++ = '.';
+			}
+#endif
+			num_arg_0(p, arg, n );
+		}
 	}
 	return instr;
 }

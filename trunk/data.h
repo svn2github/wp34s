@@ -205,6 +205,9 @@ struct _state2 {
 	unsigned int hyp : 1;		// Entering a HYP or HYP-1 operation
 	unsigned int dot : 1;		// misc use
 	unsigned int ind : 1;		// Indirection STO or RCL
+#ifdef ENABLE_LOCALS
+	unsigned int local : 1;		// entering a local register number .00 to.15
+#endif
 	unsigned int arrow_alpha : 1;	// display alpha conversion
 	unsigned int alphas : 1;        // Alpha shift key pressed
 	unsigned int alphashift : 1;	// Alpha shifted to lower case

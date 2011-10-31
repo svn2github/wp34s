@@ -394,18 +394,30 @@ extern int current_catalogue_max(void);
 #define NUMBANKREGS	5
 #define NUMBANKFLAGS	16
 
+#ifdef ENABLE_LOCALS
+/* Special return stack marker for local registers */
+#define LOCAL_MASK      (0x8000u)
+#define isLOCAL(s)	(((s) & 0xc000u) == LOCAL_MASK)
+#define LOCAL_MAXREG(s)	((s) & 0x7f)
+#else
+#define LOCAL_MASK	0
+#endif
 
 /* Macros to access program ROM */
-#define XROM_MASK	(0x8000u)
+#define XROM_MASK	(0x4000u)
+#ifdef ENABLE_LOCALS
+#define isXROM(pc)	(((pc) & 0xc000u) == XROM_MASK)
+#else
 #define isXROM(pc)	((pc) & XROM_MASK)
+#endif
 #define addrXROM(pc)	((pc) | XROM_MASK)
 
 /* Macros to access flash library space */
 #if NUMPROG > 511
-#define LIB_MASK	(0x7c00u)
+#define LIB_MASK	(0x3c00u)
 #define LIB_SHIFT	(10)
 #else
-#define LIB_MASK	(0x7e00u)
+#define LIB_MASK	(0x3e00u)
 #define LIB_SHIFT	(9)
 #endif
 
@@ -418,7 +430,7 @@ extern int current_catalogue_max(void);
 #define offsetLIB(pc)	((pc) & LIB_ADDR_MASK)
 #define sizeLIB(n)	(UserFlash.region[NUMBER_OF_FLASH_REGIONS-1-(n)].last_prog-1)
 
-#define isRAM(pc)	(((pc) & (XROM_MASK | LIB_MASK)) == 0)
+#define isRAM(pc)	(((pc) & (XROM_MASK | LIB_MASK | LOCAL_MASK)) == 0)
 
 
 /* Stack lives in the register set */
@@ -829,6 +841,10 @@ enum rarg {
 	RARG_KEYTYPE,
 	RARG_MESSAGE,
 
+#ifdef ENABLE_LOCALS
+	RARG_LOCAL,
+#endif
+
 	NUM_RARG	// Last entry defines number of operations
 };
 
@@ -966,6 +982,11 @@ enum shifts {
 
 #define K_HEARTBEAT 99			// Pseudo key, "pressed" every 100ms
 #define K_RELEASE 98			// Pseudo key, sent on key release
+
+#ifdef ENABLE_LOCALS
+#define	MAX_LOCAL	100		// maximum number of local registers
+#define MAX_LOCAL_DIRECT 15		// highest directly addressable local register
+#endif
 
 /*
  *  All more or less persistent global data
@@ -1201,6 +1222,7 @@ extern void rarg_roundingmode(unsigned int arg, enum rarg op);
 extern void op_setspeed(decimal64 *, decimal64 *, enum nilop);
 extern void op_putkey(unsigned int arg, enum rarg op);
 extern void op_keytype(unsigned int arg, enum rarg op);
+extern void op_local(unsigned int arg, enum rarg op);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x);
 extern decNumber *convF2C(decNumber *r, const decNumber *x);

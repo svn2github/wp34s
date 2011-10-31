@@ -2,8 +2,8 @@
 setlocal
 cd library
 set TOOLS=..\trunk\tools
-set ASM=%TOOLS%\wp34s_asm.exe -op %TOOLS%\wp34s.op -fill 0xffff
-set PP=%TOOLS%\wp34s_pp.exe
+set ASM=%TOOLS%\wp34s_asm.pl -op %TOOLS%\wp34s.op -fill 0xffff
+set PP=%TOOLS%\wp34s_pp.pl
 
 set DAT=wp34s-1.dat
 %ASM% -pp matrix.wp34s matrixedit.wp34s vectors_pp.wp34s -o %DAT%

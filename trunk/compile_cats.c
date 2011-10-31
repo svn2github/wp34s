@@ -687,6 +687,9 @@ static s_opcode prog_catalogue[] = {
 	MON(OP_MAT_RQ,		"nROW")
 	MON(OP_MAT_CQ,		"nCOL")
 #endif
+#ifdef ENABLE_LOCALS
+	RARGCMD(RARG_LOCAL,	"LOCAL")
+#endif
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE

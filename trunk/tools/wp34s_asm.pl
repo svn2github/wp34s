@@ -116,8 +116,13 @@ my $xrom_bin_mode = 0;
 # the op-type. The value of max will give us this (116,112,104,100,etc.). Note that for all values of
 # max<=100, any group is valid since these are purely numeric. The "stostack" group comes from the
 # offset-112 group. This tag limits the offset to only 00-95 and A.
-my @reg_offset_112 = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I", "J", "K");
-my $MAX_INDIRECT_112 = 112;
+
+# MvC :Added local registers .00 to .15. Renamed the 112 group to REG group
+my @reg_offset_REG = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I", "J", "K",
+                      ".00", ".01", ".02", ".03", ".04", ".05", ".06", ".07",
+		      ".08", ".09", ".10", ".11", ".12", ".13", ".14", ".15");
+my $MAX_INDIRECT_REG = 128;
+
 
 my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D");
 my $MAX_INDIRECT_104 = 104;
@@ -928,6 +933,10 @@ sub parse_arg_type {
 
   if( $arg =~ /max=(\d+)/ ) {
     $direct_max = $1;
+    if( $direct_max > 128 ) {
+      # LOCAL seems to be in effect
+      $direct_max = 128;
+    }
   } else {
     die "ERROR: Cannot parse max parameter from arg-type line $line_num: '$arg'\n";
   }
@@ -944,11 +953,11 @@ sub parse_arg_type {
     }
   }
 
-  # Load the indirect argument variants. These always comes from the 112 set.
+  # Load the indirect argument variants. These always comes from the REG set.
   if( $indirect_modifier ) {
-    for my $offset (0 .. ($MAX_INDIRECT_112 - 1)) {
+    for my $offset (0 .. ($MAX_INDIRECT_REG - 1)) {
       # "Correct" the format if it is in the numeric range [0-99].
-      my $reg_str = ($offset < 100) ? sprintf("%02d", $offset) : $reg_offset_112[$offset];
+      my $reg_str = ($offset < 100) ? sprintf("%02d", $offset) : $reg_offset_REG[$offset];
       my $indirect_offset = $offset + $INDIRECT_FLAG;
       my $mnemonic_str = "$base_mnemonic";
       $mnemonic_str .= "[->]";
@@ -976,11 +985,11 @@ sub parse_arg_type_dir_max {
 
   # Find out which instruction offset group we are to use.
   if( $stostack_modifier ) {
-    $reg_str = $reg_offset_112[$offset];
+    $reg_str = $reg_offset_REG[$offset];
   } elsif( $direct_max == $MAX_LABEL ) {
     $reg_str = $label_116[$offset];
   } elsif( $direct_max > $MAX_INDIRECT_104 ) {
-    $reg_str = $reg_offset_112[$offset];
+    $reg_str = $reg_offset_REG[$offset];
   } else {
     $reg_str = $reg_offset_104[$offset];
   }
