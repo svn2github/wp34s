@@ -26,11 +26,6 @@
 // G prefixes quickly
 //#define INCLUDE_STOPWATCH_HOTKEY
 
-// Define this to use inline quick check macros for determining
-// a bit of information about decNumbers.  Enabling this will create
-// larger faster code.
-#define DECNUMBER_QUICK_MACROS
-
 // Build a tiny version of the device
 // #define TINY_BUILD
 

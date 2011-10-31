@@ -140,13 +140,9 @@
   /* ----- Macros ----- */
   // ISZERO -- return true if decNumber dn is a zero
   // [performance-critical in some situations]
-#ifdef DECNUMBER_QUICK_MACROS
-  #define ISZERO(dn) decNumberIsZero(dn)     // now just a local name
-#else
   #define ISZERO(dn)     (*(dn)->lsu==0 \
                                    && (dn)->digits==1 \
                                    && (((dn)->bits&DECSPECIAL)==0))
-#endif
 
   // X10 and X100 -- multiply integer i by 10 or 100
   // [shifts are usually faster than multiply; could be conditional]

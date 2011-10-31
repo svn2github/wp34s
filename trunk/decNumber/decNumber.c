@@ -6643,29 +6643,3 @@ static void decFree(void *alloc) {
 #define free(a) decFree(a)
 #endif
 
-
-#ifndef DECNUMBER_QUICK_MACROS
-int decNumberIsZero(const decNumber *dn) {
-	return (*(dn)->lsu==0 && (dn)->digits==1 && (((dn)->bits&DECSPECIAL)==0));
-}
-
-int decNumberIsNegative(const decNumber *dn) {
-	return (((dn)->bits&DECNEG)!=0);
-}
-
-int decNumberIsNaN(const decNumber *dn) {
-	return (((dn)->bits&(DECNAN|DECSNAN))!=0);
-}
-
-int decNumberIsQNaN(const decNumber *dn) {
-	return (((dn)->bits&(DECNAN))!=0);
-}
-
-int decNumberIsSNaN(const decNumber *dn) {
-	return (((dn)->bits&(DECSNAN))!=0);
-}
-
-int decNumberIsInfinite(const decNumber *dn) {
-	return (((dn)->bits&DECINF)!=0);
-}
-#endif
