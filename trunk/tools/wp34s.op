@@ -1,4 +1,4 @@
-# $Rev$
+# $Rev$ 
 0x0000	cmd	ENTER[^]
 0x0002	cmd	EEX
 0x0003	cmd	+/-
@@ -203,6 +203,7 @@
 0x01a3	cmd	MROW+[times]
 0x01a4	cmd	M.SQR?
 0x01a5	cmd	M[^-1]
+0x01a6	cmd	MEM?
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -649,8 +650,8 @@
 0x4000	arg	[cmplx]x[<->]	max=211,indirect,stack,complex
 0x4100	arg	[cmplx]z[<->]	max=211,indirect,stack,complex
 0x4200	arg	VIEW	max=212,indirect,stack
-0x4300	arg	STOS	max=97,indirect,stostack
-0x4400	arg	RCLS	max=97,indirect,stostack
+0x4300	arg	STOS	max=209,indirect,stostack
+0x4400	arg	RCLS	max=209,indirect,stostack
 0x4501	cmd	[alpha] [x-bar]
 0x4502	cmd	[alpha] [y-bar]
 0x4503	cmd	[alpha] [sqrt]

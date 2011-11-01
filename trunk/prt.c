@@ -164,7 +164,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 	} else if (cmd >= num_argcmds || argcmds[cmd].cmd == NULL)
 		return "???";
 	else if (!ind) {
-		if (arg >= argcmds[cmd].lim || (argcmds[cmd].stos && arg > 96 && arg != regA_idx))
+		if (arg >= argcmds[cmd].lim)
 			return "???";
 		if (cmd == RARG_CONST) {
 			//return sncopy(instr, cnsts[arg].cname, CONST_NAMELEN);
@@ -186,7 +186,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			scopy(scopy(instr, "iC "), buf);
 		} else {
 			p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
-			if (argcmds[cmd].label)
+			if (argcmds[cmd].label && arg >= 100)
 				*p = LBLNAMES[arg-100];
 			else {
 				n = argcmds[cmd].lim < 10 ? 1 : 2;
@@ -200,7 +200,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		n = 2;
 
 	print_reg:
-		if (arg >= regX_idx && arg <= regK_idx && argcmds[cmd].stckreg)
+		if (arg >= regX_idx && arg <= regK_idx && (ind || argcmds[cmd].stckreg))
 			*p = REGNAMES[arg-regX_idx];
 		else {
 #ifdef ENABLE_LOCALS

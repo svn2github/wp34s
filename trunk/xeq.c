@@ -858,19 +858,9 @@ decimal64 *get_reg_n(int n) {
 		return BankRegs + n;
 #endif
 #ifdef ENABLE_LOCALS
-	if (n >= NUMREG) {
+	if (n >= NUMREG && LocalRegs != 0) {
 		// local register on the return stack
-		int sp = RetStkPtr;
-		n -= NUMREG;
-		for(;;) {
-			unsigned short s = RetStk[sp++];
-			if (isLOCAL(s)) {
-				s = LOCAL_MAXREG(s);
-				if (n > s)
-					break;
-				return (decimal64 *)(RetStk + sp);
-			}
-		}
+		return (decimal64 *)(RetStk + LocalRegs + 1) + n - NUMREG;
 	}
 #endif
 	return Regs + (n % NUMREG);
@@ -1529,6 +1519,14 @@ void op_voltage(decimal64 *a, decimal64 *nul2, enum nilop op) {
 	}
 }
 
+/*
+ *  Return the free space on the return stack in levels/steps
+ */
+void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
+	put_int( RET_STACK_SIZE + NUMPROG + 1 - LastProg + RetStkPtr, 0, a );
+}
+
+
 /* Check if a keystroke is pending in the buffer, if so return it to the specified
  * register, if not skip the next step.
  */
@@ -1609,7 +1607,9 @@ static int check_stack_overlap(unsigned int arg, int *nout) {
 	const int n = stack_size();
 
 #ifdef ALLOW_STOS_A
-	if (arg + n <= TOPREALREG || (arg == regA_idx && UState.stack_depth == 0)) {
+	if (arg + n <= TOPREALREG || (arg == regA_idx && n == 4)) {
+#elif defined(ENABLE_LOCALS)
+	if (arg + n <= TOPREALREG || arg >= NUMREG) {
 #else
 	if (arg + n <= TOPREALREG) {
 #endif
@@ -1637,6 +1637,22 @@ void cmdrclstk(unsigned int arg, enum rarg op) {
 }
 
 
+#ifdef ENABLE_LOCALS
+/*
+ *  Move up the return stack, skipping any local variables
+ */
+static int retstk_up(int sp)
+{
+	unsigned int s = RetStk[sp++];
+	if (isLOCAL(s))
+		sp += (LOCAL_MAXREG(s) << 2) + 1;
+	return sp;
+}
+#else
+#define retstk_up(sp) (sp + 1)
+#endif
+
+
 /* Check if a PC in the return stack lives in a specified segment.
  * Return non-zero if the PC or the return stack are in the specified segment.
  */
@@ -1657,7 +1673,7 @@ static int do_check_return(int segment) {
 	if (check_one(s, state_pc()))
 		return 1;
 
-	for (i = RetStkPtr; i < 0; --i)
+	for (i = RetStkPtr; i < 0; i = retstk_up(i))
 		if (check_one(s, RetStk[i]))
 			return 1;
 
@@ -1729,23 +1745,22 @@ unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
 static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 	int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 	raw_set_pc(pc);
-	if (gsb && ! State.implicit_rtn) {
-		if (Running) {
-			if (-RetStkPtr >= stack_size) {
-				// Stack is full
-				err(ERR_XEQ_NEST);
-				clrretstk(0);
-			}
-			else {
-				// Push PC on return stack
-				RetStk[--RetStkPtr] = oldpc;
-			}
-		} 
-		else {
+	if (gsb) {
+		if (!Running) {
 			// XEQ or hot key from keyboard
 			clrretstk(0);
-			TopPc = oldpc;
 			set_running_on();
+		}
+		if (-RetStkPtr >= stack_size) {
+			// Stack is full
+			err(ERR_RAM_FULL);
+			// clrretstk(0);
+		}
+		else {
+			// Push PC on return stack
+			if (State.implicit_rtn)
+				oldpc = addrXROM(0);	// fixed RTN statement
+			RetStk[--RetStkPtr] = oldpc;
 		}
 	}
 	State.implicit_rtn = 0;
@@ -1754,23 +1769,42 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 // Handle a RTN
 static void do_rtn(int plus1) {
 	if (Running) {
-		if (RetStkPtr != 0) {
+		if (RetStkPtr < 0) {
+			// Pop any LOCALS off the stack
+			RetStkPtr = retstk_up(RetStkPtr);
+		}
+		if (RetStkPtr <= 0) {
 			// Normal RTN within program
-			unsigned short int pc = RetStk[RetStkPtr++];
+			unsigned short pc = RetStk[RetStkPtr - 1];
 			raw_set_pc(pc);
 			if (plus1)
 				incpc();
 		}
 		else {
-			// RTN with empty stack goes to last saved PC and stops
+			// program was started without a valid return address on the stack
+			clrretstk(1);
+		}
+		if (RetStkPtr == 0) {
+			// RTN with empty stack stops
 			set_running_off();
-			raw_set_pc(TopPc);
-			TopPc = 0;
 		}
 	} else {
 		// Manual return goes to step 0 and clears the return stack
 		clrretstk(1);
 	}
+#ifdef ENABLE_LOCALS
+	// Check if we need to readjust the LocalRegs pointer			
+	if (RetStkPtr > LocalRegs) {
+		unsigned short sp;
+		LocalRegs = 0;
+		for (sp = RetStkPtr; sp < -4; ++sp) {
+			if (isLOCAL(RetStk[sp])) {
+				LocalRegs = sp;
+				break;
+			}
+		}
+	}
+#endif
 }
 
 void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
@@ -2986,10 +3020,14 @@ void op_setspeed(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	update_speed(1);
 }
 
-
 void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	if (Running)	set_running_off();
-	else		set_running_on();
+	if (Running)
+		set_running_off();
+	else {
+		set_running_on();
+		if (RetStkPtr == 0)
+			RetStk[--RetStkPtr] = state_pc();
+	}
 }
 
 void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
@@ -3256,8 +3294,18 @@ static void rargs(const opcode op) {
 		if (lim > 128 && ind)		// put the top bit back in
 			arg |= RARG_IND;
 	}
-	if (arg >= lim || (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && (arg & 1)))
-		err(ind?ERR_RANGE:ERR_PROG_BAD);
+#ifdef ENABLE_LOCALS
+	// Range checking for local registers
+	if (lim > NUMREG && argcmds[cmd].local) {
+		lim = NUMREG + (LocalRegs == 0 ? 0 : LOCAL_MAXREG(RetStk[LocalRegs]));
+		if (argcmds[cmd].cmplx)
+			--lim;
+		else if (argcmds[cmd].stos)
+			lim -= stack_size() - 1;
+	}
+#endif
+	if (arg >= lim || (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1)))
+		err(ERR_RANGE);
 	else {
 		CALL(argcmds[cmd].f)(arg, (enum rarg)cmd);
 		State.state_lift = 1;
@@ -3404,13 +3452,14 @@ void xeq(opcode op)
 #endif
 				while (isXROM(state_pc())) {
 					// Leave XROM
-					if (RetStkPtr != 0) {
-						raw_set_pc(RetStk[RetStkPtr++]);
+					int sp = RetStkPtr;
+					if (sp != 0) {
+						raw_set_pc(RetStk[sp]);
+						sp = retstk_up(sp);
+						RetStkPtr = sp;
 					}
-					else {
-						raw_set_pc(TopPc);
+					if (sp == 0)
 						incpc(); // compensate for decpc below
-					}
 				}
 #ifndef REALBUILD
 			}
@@ -3664,7 +3713,7 @@ void set_running_on() {
  */
 void op_local(unsigned int arg, enum rarg op) {
 	const int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
-	const short int n = (arg << 2);
+	const short int n = (++arg << 2);
 	short int sp = RetStkPtr;
 
 	if (sp != 0 && isLOCAL(RetStk[sp])) {
@@ -3675,11 +3724,12 @@ void op_local(unsigned int arg, enum rarg op) {
 	// compute space needed
 	sp -= n;
 	if (-sp >= stack_size) {
-		err(ERR_XEQ_NEST);
+		err(ERR_RAM_FULL);
 		return;
 	}
-	RetStk[--sp] = LOCAL_MASK | n;
-	RetStkPtr = sp;
+	xset(RetStk + sp, 0, n << 1);
+	RetStk[--sp] = LOCAL_MASK | arg;
+	RetStkPtr = LocalRegs = sp;
 }
 
 #endif

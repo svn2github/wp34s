@@ -111,11 +111,14 @@ typedef struct _ram {
 	unsigned short int _retstk[RET_STACK_SIZE];
 
 	/*
+	 *  Banked registers, will be replaced by local registers eventually
+	 */
+	decimal64 _bank_regs[NUMBANKREGS];
+
+	/*
 	 *  Define storage for the machine's registers.
 	 */
 	decimal64 _regs[NUMREG];
-
-	decimal64 _bank_regs[NUMBANKREGS];
 
 	/*
 	 *  Random number seeds
@@ -133,10 +136,10 @@ typedef struct _ram {
 	struct _ustate _ustate;
 
 	/*
-	 *  PC in case of a manual XEQ for later restore
+	 *  Position on return stack where current local variables start
 	 */
-	unsigned short int _top_pc;
-
+	signed short _local_regs;
+	
 	/*
 	 *  Storage space for our user flags
 	 */
@@ -171,7 +174,7 @@ extern TPersistentRam PersistentRam;
 #define BankFlags	 (PersistentRam._bank_flags)
 #define UserFlags	 (PersistentRam._user_flags)
 #define RetStk		 (PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
-#define TopPc		 (PersistentRam._top_pc)
+#define LocalRegs	 (PersistentRam._local_regs)
 #define RandS1		 (PersistentRam._rand_s1)
 #define RandS2		 (PersistentRam._rand_s2)
 #define RandS3		 (PersistentRam._rand_s3)

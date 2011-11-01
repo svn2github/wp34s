@@ -1323,7 +1323,7 @@ static int process_arg_dot(const unsigned int base) {
 	if (State2.dot)
 		return arg_eval(regX_idx);
 
-	if (argcmds[base].stckreg || State2.ind) {
+	if (argcmds[base].local || State2.ind) {
 		// local register select
 		if (State2.numdigit == 0)
 			State2.local = ! State2.local;

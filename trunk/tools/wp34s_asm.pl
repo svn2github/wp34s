@@ -84,7 +84,7 @@ my $dump_escaped_alpha_table = "";
 my $DEFAULT_STAR_LABELS = 0;
 my $star_labels = $DEFAULT_STAR_LABELS;
 
-my $MAX_FLASH_WORDS = 506;
+my $MAX_FLASH_WORDS = 510;
 my $disable_flash_limit = 0;
 
 my $no_step_numbers = 0;

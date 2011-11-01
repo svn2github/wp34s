@@ -605,8 +605,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
+	FUNC1(OP_MEM,		&get_mem,		"MEM?")
 #ifdef INCLUDE_STOPWATCH
-	FN_I1(OP_STOPWATCH,		&stopwatch,		"STOPW")
+	FN_I1(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
 #undef FUNC
 #undef FUNC0
@@ -623,33 +624,35 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 
 
 #ifdef COMPILE_CATALOGUES
-#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl, stos)				\
-	{ #func, limit, ind, stk, cpx, lbl, stos, nm },
+#define allCMD(name, func, limit, nm, ind, stk, loc, cpx, lbl, stos)				\
+	{ #func, limit, ind, stk, loc, cpx, lbl, stos, nm },
 #elif DEBUG
-#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl, stos)				\
-	{ name, func, limit, ind, stk, cpx, lbl, stos, nm },
+#define allCMD(name, func, limit, nm, ind, stk, loc, cpx, lbl, stos)				\
+	{ name, func, limit, ind, stk, loc, cpx, lbl, stos, nm },
 #elif COMMANDS_PASS == 1
-#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl, stos)				\
-	{ 0xaa55, limit, ind, stk, cpx, lbl, stos, nm },
+#define allCMD(name, func, limit, nm, ind, stk, loc, cpx, lbl, stos)				\
+	{ 0xaa55, limit, ind, stk, loc, cpx, lbl, stos, nm },
 #else
-#define allCMD(name, func, limit, nm, ind, stk, cpx, lbl, stos)				\
-	{ func, limit, ind, stk, cpx, lbl, stos, nm },
+#define allCMD(name, func, limit, nm, ind, stk, loc, cpx, lbl, stos)				\
+	{ func, limit, ind, stk, loc, cpx, lbl, stos, nm },
 #endif
-#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0, 0)
+#define CMD(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0, 0, 0)
 #ifdef ENABLE_LOCALS
-#define CMDstk(n, f, lim, nm)	allCMD(n, f, NUMREG+MAX_LOCAL, nm, 1, 1, 0, 0, 0)
-#define CMDcstk(n, f, lim, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-1, nm, 1, 1, 1, 0, 0)
+#define CMDstk(n, f, lim, nm)	allCMD(n, f, NUMREG+MAX_LOCAL, nm, 1, 1, 1, 0, 0, 0)
+#define CMDcstk(n, f, lim, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-1, nm, 1, 1, 1, 1, 0, 0)
 #else
-#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 0, 0, 0)
-#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1, 0, 0)
+#define CMDstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1, 0, 0, 0)
+#define CMDcstk(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 1, 1, 1, 0, 0)
 #endif
-#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0, 0)
-#define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 1, 0)
-#define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 1, 0)
-#ifdef ALLOW_STOS_A
-#define CMDstos(n, f, nm)	allCMD(n, f, regA_idx+1, nm, 1, 1, 0, 0, 1)
+#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0, 0, 0)
+#define CMDlbl(n, f, lim, nm)	allCMD(n, f, lim, nm, 1, 0, 0, 0, 1, 0)
+#define CMDlblnI(n, f, lim, nm)	allCMD(n, f, lim, nm, 0, 0, 0, 0, 1, 0)
+#ifdef ENABLE_LOCALS
+#define CMDstos(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-3, nm, 1, 0, 1, 0, 0, 1)
+#elif defined(ALLOW_STOS_A)
+#define CMDstos(n, f, nm)	allCMD(n, f, regA_idx+1, nm, 1, 1, 0, 0, 0, 1)
 #else
-#define CMDstos(n, f, nm)	allCMD(n, f, TOPREALREG-4+1, nm, 1, 0, 0, 0, 1)
+#define CMDstos(n, f, nm)	allCMD(n, f, TOPREALREG-4+1, nm, 1, 0, 0, 0, 0, 1)
 #endif
 
 #if COMMANDS_PASS == 2

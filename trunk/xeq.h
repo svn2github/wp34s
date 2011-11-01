@@ -289,6 +289,7 @@ struct argcmd
 	unsigned char lim;
 	unsigned int indirectokay : 1;
 	unsigned int stckreg : 1;
+	unsigned int local : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
 	unsigned int stos : 1;
@@ -317,6 +318,7 @@ struct argcmd
 	unsigned int lim : 8;
 	unsigned int indirectokay : 1;
 	unsigned int stckreg : 1;
+	unsigned int local : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
 	unsigned int stos : 1;
@@ -749,6 +751,7 @@ enum nilop {
 #ifdef SILLY_MATRIX_SUPPORT
 	 OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
+	OP_MEM,
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -882,7 +885,7 @@ enum errors {
 	ERR_DOMAIN,	ERR_BAD_DATE,	ERR_PROG_BAD,
 	ERR_INFINITY,	ERR_MINFINITY,	ERR_NO_LBL,
 	ERR_XROM_NEST,	ERR_RANGE,	ERR_DIGIT,
-	ERR_TOO_LONG,	ERR_XEQ_NEST,	ERR_STK_CLASH,
+	ERR_TOO_LONG,	ERR_RAM_FULL,	ERR_STK_CLASH,
 	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
 	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
 	ERR_READ_ONLY,	ERR_SOLVE,
@@ -1145,6 +1148,7 @@ extern void get_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_sign_mode(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_base(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);
 extern void cmdgto(unsigned int arg, enum rarg op);
@@ -1218,6 +1222,11 @@ extern void op_setspeed(decimal64 *, decimal64 *, enum nilop);
 extern void op_putkey(unsigned int arg, enum rarg op);
 extern void op_keytype(unsigned int arg, enum rarg op);
 extern void op_local(unsigned int arg, enum rarg op);
+
+extern void set_running_off_sst(void);
+extern void set_running_on_sst(void);
+extern void set_running_off(void);
+extern void set_running_on(void);
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x);
 extern decNumber *convF2C(decNumber *r, const decNumber *x);

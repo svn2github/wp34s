@@ -126,6 +126,8 @@ void dump_opcodes(FILE *f) {
 				fprintf(f, ",stostack");
 			else if (argcmds[cmd].stckreg)
 				fprintf(f, ",stack");
+			else if (argcmds[cmd].local)
+				fprintf(f, ",local");
 			if (argcmds[cmd].cmplx)
 				fprintf(f, ",complex");
 			fprintf(f, "\n");

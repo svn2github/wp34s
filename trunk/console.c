@@ -233,7 +233,7 @@ static const struct {
 	XE(ERR_RANGE, "Error: out of range error")
 	XE(ERR_DIGIT, "Error: bad digit error")
 	XE(ERR_TOO_LONG, "Error: too long error")
-	XE(ERR_XEQ_NEST, "Error: >8 levels nested")
+	XE(ERR_RAM_FULL, "Error: RTN stack full")
 	XE(ERR_STK_CLASH, "Error: stack clash")
 	XE(ERR_BAD_MODE, "Error: bad mode error")
 	XE(ERR_INT_SIZE, "Error: word size too small")

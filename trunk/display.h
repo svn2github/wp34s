@@ -34,10 +34,6 @@
 extern int setuptty(int reset);
 extern void display(void);
 extern void frozen_display(void);
-extern void set_running_off_sst(void);
-extern void set_running_on_sst(void);
-extern void set_running_off(void);
-extern void set_running_on(void);
 extern void error_message(const enum errors e);
 extern void message(const char *str1, const char *str2);
 
