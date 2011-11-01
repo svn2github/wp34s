@@ -415,6 +415,7 @@ int main(int argc, char *argv[]) {
 				goto skipargs;
 			}
 			if (strcmp(argv[1], "opcodes") == 0) {
+				printf("maxsteps=%d\n", NUMPROG);
 				dump_opcodes(stdout);
 				return 0;
 			}
