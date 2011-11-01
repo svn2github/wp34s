@@ -1645,7 +1645,7 @@ static int retstk_up(int sp)
 {
 	unsigned int s = RetStk[sp++];
 	if (isLOCAL(s))
-		sp += (LOCAL_MAXREG(s) << 2) + 1;
+		sp += LOCAL_LEVELS(s);
 	return sp;
 }
 #else
@@ -3044,7 +3044,17 @@ void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op) {
 
 /* Tests if the user program is at the top level */
 void isTop(decimal64 *a, decimal64 *b, enum nilop op) {
-	fin_tst(Running && RetStkPtr == 0);
+	int top = 0;
+	
+	if (Running) {
+#ifdef ENABLE_LOCALS
+		int n = LocalRegs == 0 ? 0 : LOCAL_LEVELS(RetStk[LocalRegs]);
+		top = RetStkPtr >= -1 - n;
+#else
+		top = RetStkPtr >= -1;
+#endif
+	}
+	fin_tst(top);
 }
 
 /* Test if a number is an integer or fractional */
@@ -3728,7 +3738,7 @@ void op_local(unsigned int arg, enum rarg op) {
 		return;
 	}
 	xset(RetStk + sp, 0, n << 1);
-	RetStk[--sp] = LOCAL_MASK | arg;
+	RetStk[--sp] = LOCAL_MASK | (n + 1);
 	RetStkPtr = LocalRegs = sp;
 }
 

@@ -1468,10 +1468,12 @@ static int process_arg(const keycode c) {
 				init_arg(0);
 				State2.rarg = 0;
 				return OP_NIL | OP_FIXENG;
+#if 0 // prevents us from selecting the stack registers here
 			} else if (base == RARG_VIEW || base == RARG_VIEW_REG) {
 				init_arg(0);
 				State2.rarg = 0;
 				return OP_NIL | OP_VIEWALPHA;
+#endif
 			} else if (argcmds[base].stckreg)
 				State2.dot = 1;
 		} else if (State2.numdigit > 0)

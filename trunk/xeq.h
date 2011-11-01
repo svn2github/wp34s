@@ -18,7 +18,7 @@
 #define __XEQ_H__
 
 /* Version number */
-#define VERSION_STRING	"2.2"
+#define VERSION_STRING	"2.3"
 
 /*
  * Optional features are defined in features.h
@@ -395,7 +395,8 @@ extern int current_catalogue_max(void);
 /* Special return stack marker for local registers */
 #define LOCAL_MASK      (0x8000u)
 #define isLOCAL(s)	(((s) & 0xc000u) == LOCAL_MASK)
-#define LOCAL_MAXREG(s)	((s) & 0x7f)
+#define LOCAL_LEVELS(s)	((s) & 0x1ff)
+#define LOCAL_MAXREG(s)	(LOCAL_LEVELS(s) >> 2)
 #else
 #define LOCAL_MASK	0
 #endif
