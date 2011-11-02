@@ -26,6 +26,11 @@
 #include <stdio.h>   // (s)printf
 #endif // REALBUILD
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
+#endif
+
 #define XEQ_INTERNAL 1
 #include "xeq.h"
 #include "storage.h"
@@ -1795,7 +1800,7 @@ static void do_rtn(int plus1) {
 #ifdef ENABLE_LOCALS
 	// Check if we need to readjust the LocalRegs pointer			
 	if (RetStkPtr > LocalRegs) {
-		unsigned short sp;
+		signed short sp;
 		LocalRegs = 0;
 		for (sp = RetStkPtr; sp < -4; ++sp) {
 			if (isLOCAL(RetStk[sp])) {
@@ -3888,4 +3893,9 @@ int init_34s(void)
 #endif
 	return cleared;
 }
+
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
+
 

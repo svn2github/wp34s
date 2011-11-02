@@ -1320,13 +1320,15 @@ static int arg_storcl(const unsigned int n, int cmplx) {
 
 static int process_arg_dot(const unsigned int base) {
 #ifdef ENABLE_LOCALS
-	if (State2.dot)
+	if (State2.dot || State2.local) {
+		State2.local = 0;
 		return arg_eval(regX_idx);
+	}
 
 	if (argcmds[base].local || State2.ind) {
 		// local register select
 		if (State2.numdigit == 0)
-			State2.local = ! State2.local;
+			State2.local = 1;
 	}
 	else
 #else
@@ -1413,7 +1415,7 @@ static int process_arg(const keycode c) {
 		}
 		break;
 
-	case K62:	// X
+	case K62:	// X, '.'
 		return process_arg_dot(base);
 
 	/* STO and RCL can take an arithmetic argument */
@@ -1482,8 +1484,25 @@ static int process_arg(const keycode c) {
 			State2.dot = 1 - State2.dot;
 		break;
 
+	case K24:	// <-
+#ifdef ENABLE_LOCALS
+		if (State2.numdigit == 0) {
+			if (State2.dot)
+				State2.dot = 0;
+			else if (State2.local)
+				State2.local = 0;
+			else if (State2.ind)
+				State2.ind = 0;
+			else
+				goto reset;
+		}
+		else
+			--State2.numdigit;
+		break;
+#endif
+
 	case K60:
-	case K24:
+	reset:
 		init_arg(0);
 		State2.rarg = 0;
 		break;
