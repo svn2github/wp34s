@@ -565,7 +565,6 @@ static void const_big(void) {
 	fprintf(fm, "OBJS=");
 
 	decContextDefault(&ctx, DEC_INIT_BASE);
-	ctx.traps = 0;
 	ctx.digits = DECNUMDIGITS;
 	ctx.emax=DEC_MAX_MATH;
 	ctx.emin=-DEC_MAX_MATH;

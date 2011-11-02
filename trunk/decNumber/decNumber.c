@@ -2110,7 +2110,7 @@ decNumber * decNumberToIntegralValue(decNumber *res, const decNumber *rhs,
   // that was easy, but if negative exponent there is work to do...
   workset=*set;                    // clone rounding, etc.
   workset.digits=rhs->digits;      // no length rounding
-  workset.traps=0;                 // no traps
+//  workset.traps=0;                 // no traps
   decNumberZero(&dn);              // make a number with exponent 0
   return decNumberQuantize(res, rhs, &dn, &workset);
   } // decNumberToIntegralValue

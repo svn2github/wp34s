@@ -42,7 +42,7 @@ decContext * decContextDefault(decContext *context, Int kind) {
   context->emax=DEC_MAX_EMAX;                // 9-digit exponents
   context->emin=DEC_MIN_EMIN;                // .. balanced
   context->round=DEC_ROUND_HALF_UP;          // 0.5 rises
-  context->traps=DEC_Errors;                 // all but informational
+//  context->traps=DEC_Errors;                 // all but informational
   context->status=0;                         // cleared
   context->clamp=0;                          // no clamping
   #if DECSUBSET
@@ -58,7 +58,7 @@ decContext * decContextDefault(decContext *context, Int kind) {
       context->emax=96;                      // Emax
       context->emin=-95;                     // Emin
       context->round=DEC_ROUND_HALF_EVEN;    // 0.5 to nearest even
-      context->traps=0;                      // no traps set
+//      context->traps=0;                      // no traps set
       context->clamp=1;                      // clamp exponents
       #if DECSUBSET
       context->extended=1;                   // set
@@ -70,7 +70,7 @@ decContext * decContextDefault(decContext *context, Int kind) {
       context->emax=384;                     // Emax
       context->emin=-383;                    // Emin
       context->round=DEC_ROUND_HALF_EVEN;    // 0.5 to nearest even
-      context->traps=0;                      // no traps set
+//      context->traps=0;                      // no traps set
       context->clamp=1;                      // clamp exponents
       #if DECSUBSET
       context->extended=1;                   // set
@@ -82,7 +82,7 @@ decContext * decContextDefault(decContext *context, Int kind) {
       context->emax=6144;                    // Emax
       context->emin=-6143;                   // Emin
       context->round=DEC_ROUND_HALF_EVEN;    // 0.5 to nearest even
-      context->traps=0;                      // no traps set
+//      context->traps=0;                      // no traps set
       context->clamp=1;                      // clamp exponents
       #if DECSUBSET
       context->extended=1;                   // set

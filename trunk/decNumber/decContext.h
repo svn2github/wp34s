@@ -65,7 +65,7 @@ typedef unsigned long long int	uint64_t;
     int32_t  emax;                 // maximum positive exponent
     int32_t  emin;                 // minimum negative exponent
     enum     rounding round;       // rounding mode
-    uint32_t traps;                // trap-enabler flags
+//    uint32_t traps;                // trap-enabler flags
     uint32_t status;               // status flags
     uint8_t  clamp;                // flag: apply IEEE exponent clamp
     #if DECSUBSET

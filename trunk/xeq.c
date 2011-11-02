@@ -285,7 +285,6 @@ void packed_from_number(decimal64 *r, const decNumber *x) {
 	decContext ctx64;
 
 	decContextDefault(&ctx64, DEC_INIT_DECIMAL64);
-	ctx64.traps = 0;
 	ctx64.round = rounding_modes[get_rounding_mode()];
 	decimal64FromNumber(r, x, &ctx64);
 }
@@ -3702,7 +3701,7 @@ void xeq_init_contexts(void) {
 	 * We have to disable traps and bump the digits for internal calculations.
 	 */
 	decContextDefault(&Ctx, DEC_INIT_BASE);
-	Ctx.traps = 0;
+//	Ctx.traps = 0;
 	Ctx.digits = DECNUMDIGITS;
 	Ctx.emax=DEC_MAX_MATH;
 	Ctx.emin=-DEC_MAX_MATH;

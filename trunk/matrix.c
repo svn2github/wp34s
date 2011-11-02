@@ -430,7 +430,6 @@ static void put128(decimal128 *r, const decNumber *x) {
 	decContext ctx128;
 
 	decContextDefault(&ctx128, DEC_INIT_DECIMAL128);
-	ctx128.traps = 0;
 	decimal128FromNumber(r, x, &ctx128);
 }
 
