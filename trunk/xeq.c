@@ -3570,10 +3570,10 @@ void xeq_sst_bst(int kind)
 	reset_volatile_state();
 	if (kind == -1)
 		decpc();
-	op = getprog(state_pc());
 
 	if (State2.runmode) {
 		// Display the step
+		op = getprog(state_pc());
 		print_step(op);
 		if (kind == 1) {
 			// Execute the step on key up
@@ -3591,9 +3591,11 @@ void xeq_sst_bst(int kind)
 			set_running_off_sst();
 		}
 	}
-	else if (kind == 0)
+	else if (kind == 0) {
 		// Key down in program mode
 		incpc();
+		OpCode = 0;
+	}
 }
 
 
@@ -3738,8 +3740,8 @@ void set_running_on() {
  */
 void op_local(unsigned int arg, enum rarg op) {
 	const int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
-	const short int n = (++arg << 2) + 1;
 	short int sp = RetStkPtr;
+	const short int n = (++arg << 2) + 1 + (sp & 1); // force even sp
 
 	if (sp != 0 && isLOCAL(RetStk[sp])) {
 		// Do not allow more than one LOCAL in the same subroutine
