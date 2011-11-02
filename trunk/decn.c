@@ -3311,10 +3311,15 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 
 // User code interface to the solver
 void solver(unsigned int arg, enum rarg op) {
+	const int f_base = arg + (arg >= NUMREG ? NUMFLG : 0);
 	decNumber a, b, c, fa, fb, fc;
 	unsigned int flags;
 	int r;
 
+	if (arg >= NUMREG && (local_levels() >> 2) < (int)arg - NUMREG + 5) {
+		err(ERR_RANGE);
+		return;
+	}	
 	get_reg_n_as_dn(arg + 0, &a);
 	get_reg_n_as_dn(arg + 1, &b);
 	get_reg_n_as_dn(arg + 3, &fa);
@@ -3326,13 +3331,13 @@ void solver(unsigned int arg, enum rarg op) {
 		get_reg_n_as_dn(arg + 2, &c);
 		flags = 0;
 		for (r=0; r<8; r++)
-			if (get_user_flag(arg + r + _FLAG_COUNT_N))
+			if (get_user_flag(f_base + r + _FLAG_COUNT_N))
 				flags |= 1<<r;
 		flags = SLV_SET_COUNT(0, flags);
 
-		if (get_user_flag(arg + _FLAG_BRACKET_N))
+		if (get_user_flag(f_base + _FLAG_BRACKET_N))
 			SET_BRACKET(flags);
-		if (get_user_flag(arg + _FLAG_CONST_N))
+		if (get_user_flag(f_base + _FLAG_CONST_N))
 			SET_CONST(flags);
 #ifdef USE_RIDDERS
 		if (get_user_flag(arg + _FLAG_BISECT_N))
@@ -3350,14 +3355,14 @@ void solver(unsigned int arg, enum rarg op) {
 	put_reg_n(arg + 3, &fa);
 	put_reg_n(arg + 4, &fb);
 
-	put_user_flag(arg + _FLAG_BRACKET_N, IS_BRACKET(flags));
-	put_user_flag(arg + _FLAG_CONST_N, IS_CONST(flags));
+	put_user_flag(f_base + _FLAG_BRACKET_N, IS_BRACKET(flags));
+	put_user_flag(f_base + _FLAG_CONST_N, IS_CONST(flags));
 #ifdef USE_RIDDERS
-	put_user_flag(arg + _FLAG_BISECT_N, IS_BISECT(flags));
+	put_user_flag(f_base + _FLAG_BISECT_N, IS_BISECT(flags));
 #endif
 	flags = SLV_COUNT(flags);
 	for (r=0; r<8; r++)
-		put_user_flag(arg + r + _FLAG_COUNT_N, flags & (1<<r));
+		put_user_flag(f_base + r + _FLAG_COUNT_N, flags & (1<<r));
 }
 
 /**********************************************************************/

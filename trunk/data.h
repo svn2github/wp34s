@@ -77,12 +77,12 @@ struct _state {
 	unsigned int state_lift :    1;	// XEQ internal - don't use
 	unsigned int implicit_rtn :  1;	// End of program is an implicit return
 	unsigned int deep_sleep :    1; // Used to wake up correctly
-	unsigned int usrpc :        16;	// XEQ internal - don't use
+	signed   int local_regs :   16; // Position on return stack where current local variables start
 
 	/*
 	 *  Not bit fields
 	 */
-	unsigned short state_pc;	// XEQ internal - don't use
+	unsigned short pc;		// XEQ internal - don't use
 	signed short retstk_ptr;	// XEQ internal - don't use
 };
 
@@ -111,11 +111,6 @@ typedef struct _ram {
 	unsigned short int _retstk[RET_STACK_SIZE];
 
 	/*
-	 *  Banked registers, will be replaced by local registers eventually
-	 */
-	decimal64 _bank_regs[NUMBANKREGS];
-
-	/*
 	 *  Define storage for the machine's registers.
 	 */
 	decimal64 _regs[NUMREG];
@@ -136,14 +131,8 @@ typedef struct _ram {
 	struct _ustate _ustate;
 
 	/*
-	 *  Position on return stack where current local variables start
-	 */
-	signed short _local_regs;
-	
-	/*
 	 *  Storage space for our user flags
 	 */
-	unsigned short _bank_flags;
 	unsigned char _user_flags[(NUMFLG+7) >> 3];
 
 	/*
@@ -154,7 +143,7 @@ typedef struct _ram {
 	/*
 	 *  Magic marker to detect failed RAM
 	 *  The CRC excludes the program space which has its own checksum
-	 *  And the return stack which may get clobbered by a PSTO command
+	 *  and the return stack which may get clobbered by a PSTO command
 	 */
 	unsigned short _crc;
 
@@ -168,13 +157,10 @@ extern TPersistentRam PersistentRam;
 #define LastProg	 (PersistentRam._last_prog)
 #define Alpha		 (PersistentRam._alpha)
 #define Regs		 (PersistentRam._regs)
-#define Tags		 (PersistentRam._tags)
-#define BankRegs	 (PersistentRam._bank_regs)
 #define Prog		 (PersistentRam._prog)
-#define BankFlags	 (PersistentRam._bank_flags)
 #define UserFlags	 (PersistentRam._user_flags)
 #define RetStk		 (PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
-#define LocalRegs	 (PersistentRam._local_regs)
+#define LocalRegs	 (PersistentRam._state.local_regs)
 #define RandS1		 (PersistentRam._rand_s1)
 #define RandS2		 (PersistentRam._rand_s2)
 #define RandS3		 (PersistentRam._rand_s3)
@@ -208,9 +194,8 @@ struct _state2 {
 	unsigned int hyp : 1;		// Entering a HYP or HYP-1 operation
 	unsigned int dot : 1;		// misc use
 	unsigned int ind : 1;		// Indirection STO or RCL
-#ifdef ENABLE_LOCALS
 	unsigned int local : 1;		// entering a local register number .00 to.15
-#endif
+	unsigned int localflg : 1;	// entering a local flag number .00 to.15
 	unsigned int arrow_alpha : 1;	// display alpha conversion
 	unsigned int alphas : 1;        // Alpha shift key pressed
 	unsigned int alphashift : 1;	// Alpha shifted to lower case

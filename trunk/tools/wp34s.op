@@ -205,6 +205,7 @@ maxsteps=510
 0x01a4	cmd	M.SQR?
 0x01a5	cmd	M[^-1]
 0x01a6	cmd	MEM?
+0x01a7	cmd	POPUSR
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -950,17 +951,17 @@ maxsteps=510
 0x6d00	arg	SCI	max=12,indirect
 0x6e00	arg	ENG	max=12,indirect
 0x6f00	arg	DISP	max=12,indirect
-0x7000	arg	SF	max=104,indirect
-0x7100	arg	CF	max=104,indirect
-0x7200	arg	FF	max=104,indirect
-0x7300	arg	FS?	max=104,indirect
-0x7400	arg	FC?	max=104,indirect
-0x7500	arg	FS?C	max=104,indirect
-0x7600	arg	FS?S	max=104,indirect
-0x7700	arg	FS?F	max=104,indirect
-0x7800	arg	FC?C	max=104,indirect
-0x7900	arg	FC?S	max=104,indirect
-0x7a00	arg	FC?F	max=104,indirect
+0x7000	arg	SF	max=120,indirect
+0x7100	arg	CF	max=120,indirect
+0x7200	arg	FF	max=120,indirect
+0x7300	arg	FS?	max=120,indirect
+0x7400	arg	FC?	max=120,indirect
+0x7500	arg	FS?C	max=120,indirect
+0x7600	arg	FS?S	max=120,indirect
+0x7700	arg	FS?F	max=120,indirect
+0x7800	arg	FC?C	max=120,indirect
+0x7900	arg	FC?S	max=120,indirect
+0x7a00	arg	FC?F	max=120,indirect
 0x7b00	arg	WSIZE	max=65,indirect
 0x7c00	arg	RL	max=64,indirect
 0x7d00	arg	RR	max=64,indirect
@@ -1051,8 +1052,8 @@ maxsteps=510
 0x8b47	cmd	tons[->]t
 0x8b48	cmd	t[->]s.tons
 0x8b49	cmd	s.tons[->]t
-0x8c00	arg	SLVI	max=91,indirect
-0x8d00	arg	SLVS	max=91,indirect
+0x8c00	arg	SLVI	max=208,indirect,local
+0x8d00	arg	SLVS	max=208,indirect,local
 0x8e00	arg	PSE	max=100,indirect
 0x8f00	arg	KEY?	max=212,indirect,stack
 0x9000	arg	[alpha]XEQ	max=212,indirect,stack
@@ -1060,18 +1061,18 @@ maxsteps=510
 0x9200	arg	PRCL	max=10,indirect
 0x9300	arg	PSTO	max=10,indirect
 0x9400	arg	P[<->]	max=10,indirect
-0x9500	arg	RCF	max=212,indirect,stack
-0x9600	arg	RCF+	max=212,indirect,stack
-0x9700	arg	RCF-	max=212,indirect,stack
-0x9800	arg	RCF[times]	max=212,indirect,stack
-0x9900	arg	RCF/	max=212,indirect,stack
-0x9a00	arg	RCF[v]	max=212,indirect,stack
-0x9b00	arg	RCF[^]	max=212,indirect,stack
-0x9c00	arg	[cmplx]RCF	max=211,indirect,stack,complex
-0x9d00	arg	[cmplx]RCF+	max=211,indirect,stack,complex
-0x9e00	arg	[cmplx]RCF-	max=211,indirect,stack,complex
-0x9f00	arg	[cmplx]RCF[times]	max=211,indirect,stack,complex
-0xa000	arg	[cmplx]RCF/	max=211,indirect,stack,complex
+0x9500	arg	RCF	max=112,indirect,stack
+0x9600	arg	RCF+	max=112,indirect,stack
+0x9700	arg	RCF-	max=112,indirect,stack
+0x9800	arg	RCF[times]	max=112,indirect,stack
+0x9900	arg	RCF/	max=112,indirect,stack
+0x9a00	arg	RCF[v]	max=112,indirect,stack
+0x9b00	arg	RCF[^]	max=112,indirect,stack
+0x9c00	arg	[cmplx]RCF	max=111,indirect,stack,complex
+0x9d00	arg	[cmplx]RCF+	max=111,indirect,stack,complex
+0x9e00	arg	[cmplx]RCF-	max=111,indirect,stack,complex
+0x9f00	arg	[cmplx]RCF[times]	max=111,indirect,stack,complex
+0xa000	arg	[cmplx]RCF/	max=111,indirect,stack,complex
 0xa100	arg	SDL	max=100,indirect
 0xa200	arg	SDR	max=100,indirect
 0xa300	arg	VW[alpha]+	max=212,indirect,stack

@@ -292,6 +292,7 @@ struct argcmd
 	unsigned int local : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
+	unsigned int flag : 1;
 	unsigned int stos : 1;
 	_CONST char cmd[NAME_LEN];
 };
@@ -321,6 +322,7 @@ struct argcmd
 	unsigned int local : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
+	unsigned int flag : 1;
 	unsigned int stos : 1;
 	const char cmd[NAME_LEN];
 };
@@ -377,8 +379,8 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
-#define NUMPROG		510	/* Even more steps :-) */
-#define RET_STACK_SIZE	4	/* Minimum depth of return stack, extends into program space */
+#define NUMPROG		510	/* Fill 1 KB (including crc and length) */
+#define RET_STACK_SIZE	26	/* Minimum depth of return stack, extends into program space */
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
@@ -388,26 +390,17 @@ extern int current_catalogue_max(void);
 #define NUMALPHA	31	/* Number of characters in Alpha */
 
 #define CMDLINELEN	19	/* 12 mantissa + dot + sign + E + sign + 3 exponent = 19 */
-#define NUMBANKREGS	5
 #define NUMBANKFLAGS	16
 
-#ifdef ENABLE_LOCALS
 /* Special return stack marker for local registers */
 #define LOCAL_MASK      (0x8000u)
-#define isLOCAL(s)	(((s) & 0xc000u) == LOCAL_MASK)
+#define isLOCAL(s)	((s) & LOCAL_MASK)
 #define LOCAL_LEVELS(s)	((s) & 0x1ff)
 #define LOCAL_MAXREG(s)	(LOCAL_LEVELS(s) >> 2)
-#else
-#define LOCAL_MASK	0
-#endif
 
 /* Macros to access program ROM */
 #define XROM_MASK	(0x4000u)
-#ifdef ENABLE_LOCALS
-#define isXROM(pc)	(((pc) & 0xc000u) == XROM_MASK)
-#else
 #define isXROM(pc)	((pc) & XROM_MASK)
-#endif
 #define addrXROM(pc)	((pc) | XROM_MASK)
 
 /* Macros to access flash library space */
@@ -750,9 +743,10 @@ enum nilop {
 	OP_MAT_INVERSE,
 #endif
 #ifdef SILLY_MATRIX_SUPPORT
-	 OP_MAT_ZERO, OP_MAT_IDENT,
+	OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
 	OP_MEM,
+	OP_POPUSR,
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -840,9 +834,7 @@ enum rarg {
 	RARG_KEYTYPE,
 	RARG_MESSAGE,
 
-#ifdef ENABLE_LOCALS
 	RARG_LOCAL,
-#endif
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -982,10 +974,8 @@ enum shifts {
 #define K_HEARTBEAT 99			// Pseudo key, "pressed" every 100ms
 #define K_RELEASE 98			// Pseudo key, sent on key release
 
-#ifdef ENABLE_LOCALS
 #define	MAX_LOCAL	100		// maximum number of local registers
 #define MAX_LOCAL_DIRECT 16		// # of directly addressable local registers
-#endif
 
 /*
  *  All more or less persistent global data
@@ -1016,11 +1006,16 @@ extern int init_34s(void);
 extern void process_keycode(int);
 extern void set_entry(void);
 
+#if 0
 extern unsigned int state_pc(void);
+#else
+#define state_pc() (State.pc)
+#endif
 extern void set_pc(unsigned int);
 extern unsigned int user_pc(void);
 extern unsigned int find_user_pc(unsigned int);
 extern int check_return_stack_segment(int);
+extern int local_levels(void);
 
 extern void clrretstk(int clr_pc);
 extern void clrprog(void);
@@ -1038,9 +1033,6 @@ extern int incpc(void);
 extern void decpc(void);
 extern unsigned int find_label_from(unsigned int, unsigned int, int);
 extern void fin_tst(const int);
-
-extern unsigned int get_bank_flags(void);
-extern void set_bank_flags(unsigned int);
 
 extern const char *prt(opcode, char *);
 extern const char *catcmd(opcode, char *);
@@ -1187,6 +1179,7 @@ extern void op_locale(decimal64 *a, decimal64 *nul, enum nilop op);
 extern void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op);
 extern void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_popusr(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op);

@@ -157,7 +157,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 	const unsigned int cmd = RARG_CMD(op);
 	char buf[CONST_NAMELEN + 1];
 	char *p;
-	int n;
+	int n = 2;
 
 	if (cmd == RARG_ALPHA) {
 		*scopy(instr, "\240 ") = arg + (ind?RARG_IND:0);
@@ -186,10 +186,20 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			scopy(scopy(instr, "iC "), buf);
 		} else {
 			p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
-			if (argcmds[cmd].label && arg >= 100)
-				*p = LBLNAMES[arg-100];
+			if (argcmds[cmd].flag && arg >= 100) {
+				if (arg >= NUMFLG) {
+					arg -= NUMFLG;
+					goto print_dotnn;
+				}
+				goto print_abcd;
+			}
+			else if (argcmds[cmd].label && arg >= 100) {
+			print_abcd:
+				*p = LBLNAMES[arg - 100];
+			}
 			else {
-				n = argcmds[cmd].lim < 10 ? 1 : 2;
+				if (argcmds[cmd].lim < 10)
+					n = 1;
 				goto print_reg;
 			}
 		}
@@ -197,18 +207,16 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		if (!argcmds[cmd].indirectokay)
 			return "???";
 		p = sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\015');
-		n = 2;
 
 	print_reg:
 		if (arg >= regX_idx && arg <= regK_idx && (ind || argcmds[cmd].stckreg))
 			*p = REGNAMES[arg-regX_idx];
 		else {
-#ifdef ENABLE_LOCALS
 			if (arg > regK_idx) {
 				arg -= regK_idx + 1;
+	print_dotnn:
 				*p++ = '.';
 			}
-#endif
 			num_arg_0(p, arg, n );
 		}
 	}

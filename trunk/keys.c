@@ -320,9 +320,8 @@ static void init_arg(const enum rarg base) {
 	State2.numdigit = 0;
 	State2.rarg = 1;
 	State2.dot = 0;
-#ifdef ENABLE_LOCALS
 	State2.local = 0;
-#endif
+	State2.localflg = 0;
 }
 
 static void init_cat(enum catalogues cat) {
@@ -385,21 +384,9 @@ void init_state(void) {
 #endif
 	unsigned char v = Voltage;
 	signed char k = LastKey;
-/*
-	unsigned int last_cat :      5;	// Most recent catalogue browsed
-	unsigned int last_catpos :   7;	// Last position in said catalogue
-	unsigned int entryp :        1;	// Has the user entered something since the last program stop
-	unsigned int state_lift :    1;	// XEQ internal - don't use
-	unsigned int implicit_rtn :  1;	// End of program is an implicit return
-	unsigned int deep_sleep :    1; // Used to wake up correctly
-	unsigned int usrpc :        16;	// XEQ internal - don't use
-	unsigned short state_pc;	// XEQ internal - don't use
-	unsigned char retstk_ptr;	// XEQ internal - don't use
-	unsigned char base;		// Base value for a command with an argument
-*/
+
 	State.state_lift = 1;
 	State.implicit_rtn = 0;
-	State.usrpc = 0;
 	CmdBase = 0;
 	clrretstk(0);
 
@@ -1213,11 +1200,10 @@ static int process_alpha(const keycode c) {
  */
 static int arg_eval(unsigned int val) {
 	const unsigned int base = CmdBase;
-#ifdef ENABLE_LOCALS
-	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val + (State2.local ? NUMREG : 0));
-#else
-	const int r = RARG(base, (State2.ind ? RARG_IND : 0) + val);
-#endif
+	const int r = RARG(base, val 
+				 + (State2.ind ? RARG_IND : 0) 
+		                 + (State2.local    ? NUMREG :
+				    State2.localflg ? NUMFLG : 0));
 	const unsigned int ssize = (! UState.stack_depth || ! State2.runmode ) ? 4 : 8;
 
 	if (! State2.ind) {
@@ -1249,11 +1235,7 @@ static int arg_eval(unsigned int val) {
 
 static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
-#ifdef ENABLE_LOCALS
 	const int mx = State2.ind ? NUMREG : State2.local ? MAX_LOCAL_DIRECT : argcmds[base].lim;
-#else
-	const int mx = State2.ind ? NUMREG : argcmds[base].lim;
-#endif
 	const unsigned int val = State2.digval * 10 + n;
 
 	if (State2.numdigit == 0) {
@@ -1319,29 +1301,29 @@ static int arg_storcl(const unsigned int n, int cmplx) {
 }
 
 static int process_arg_dot(const unsigned int base) {
-#ifdef ENABLE_LOCALS
-	if (State2.dot || State2.local) {
-		State2.local = 0;
-		return arg_eval(regX_idx);
-	}
 
-	if (argcmds[base].local || State2.ind) {
-		// local register select
-		if (State2.numdigit == 0)
+	if (State2.numdigit == 0) {
+		// Only valid at beginning of entry
+		if (State2.dot || State2.local) {
+			// '..' or ENTER '.' = X
+			State2.local = 0;
+			return arg_eval(regX_idx);
+		}
+		if (argcmds[base].local || State2.ind) {
+			// local register select
 			State2.local = 1;
-	}
-	else
-#else
-	if (State2.dot || argcmds[base].stckreg || State2.ind)
-		return arg_eval(regX_idx);
-#endif
-
-	if (base == RARG_GTO || base == RARG_XEQ) {
-		// Special GTO . sequence
-		if (State2.numdigit == 0 && ! State2.ind) {
-			State2.gtodot = 1;
-			init_arg(0);
-			State2.rarg = 0;
+		}
+		else if (argcmds[base].flag) {
+			// local flag select
+			State2.localflg = 1;
+		}
+		else if (base == RARG_GTO || base == RARG_XEQ) {
+			// Special GTO . sequence
+			if (! State2.ind) {
+				State2.gtodot = 1;
+				init_arg(0);
+				State2.rarg = 0;
+			}
 		}
 	}
 	return STATE_UNFINISHED;
@@ -1351,7 +1333,7 @@ static int process_arg(const keycode c) {
 	unsigned int base = CmdBase;
 	unsigned int n = keycode_to_digit_or_register(c);
 	int stack_reg = argcmds[base].stckreg || State2.ind;
-	const enum shifts previous_shift = State2.shifts;
+	const enum shifts previous_shift = (enum shifts) State2.shifts;
 	const enum shifts shift = reset_shift();
 	int label_addressing = argcmds[base].label && ! State2.ind && ! State2.dot;
 	int shorthand = label_addressing && c != K_F 
@@ -1485,7 +1467,6 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K24:	// <-
-#ifdef ENABLE_LOCALS
 		if (State2.numdigit == 0) {
 			if (State2.dot)
 				State2.dot = 0;
@@ -1499,7 +1480,6 @@ static int process_arg(const keycode c) {
 		else
 			--State2.numdigit;
 		break;
-#endif
 
 	case K60:
 	reset:

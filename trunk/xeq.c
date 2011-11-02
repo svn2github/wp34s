@@ -26,7 +26,8 @@
 #include <stdio.h>   // (s)printf
 #endif // REALBUILD
 
-#ifdef __GNUC__
+#if __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
+#define GNUC_POP_ERROR
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 #endif
@@ -88,6 +89,11 @@ int PcWrapped;
 int ShowRegister;
 
 /*
+ *  User code being called from XROM
+ */
+unsigned short XromUserPc;
+
+/*
  *  Define storage for the machine's program space.
  */
 #define Prog_1	((s_opcode *)(Prog - 1))
@@ -107,14 +113,21 @@ char TraceBuffer[25];
  */
 #define RetStkPtr	(State.retstk_ptr)
 
-
-unsigned int get_bank_flags(void) {
-	return BankFlags;
+/*
+ *  How many stack levels with local data have we?
+ */
+int local_levels(void) {
+	return LocalRegs < 0 ? LOCAL_LEVELS(RetStk[LocalRegs]) : 0;
 }
 
-void set_bank_flags(unsigned int f) {
-	BankFlags = f;
+#if ! defined(REALBUILD) && ! defined(WINGUI)
+// Console screen only
+unsigned int get_local_flags(void) {
+	if (LocalRegs == 0)
+		return 0;
+	return RetStk[LocalRegs + 1];
 }
+#endif
 
 void version(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	State2.version = 1;
@@ -126,11 +139,17 @@ void cmd_off(decimal64 *a, decimal64 *nul2, enum nilop op) {
 	shutdown();
 }
 
-unsigned int state_pc(void) {	return State.state_pc;	}
-static void raw_set_pc(unsigned int pc) {
-	State.state_pc = pc;
+#ifndef state_pc
+unsigned int state_pc(void) {
+	return State.pc;	
 }
 
+static void raw_set_pc(unsigned int pc) {
+	State.pc = pc;
+}
+#else
+#define raw_set_pc(new_pc) (State.pc = new_pc)
+#endif
 
 /*
  *  Get an opcode, check for double length codes
@@ -631,9 +650,11 @@ void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
  */
 void clrflags(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	xset(UserFlags, 0, sizeof(UserFlags));
+	if (LocalRegs < 0)
+		RetStk[LocalRegs + 1] = 0;
 }
 
-/* Zero out all registers including the stack and lastx
+/* Zero out all registers excluding the stack and lastx
  */	
 void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	int i;
@@ -646,6 +667,10 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	for (i=TOPREALREG+stack_size(); i<NUMREG; i++)
 		Regs[i] = Regs[0];
 
+	if (LocalRegs < 0) {
+		i = (local_levels() - 2) << 1;
+		xset(RetStk + LocalRegs + 2, 0, i);
+	}
 	CmdLineLength = 0;
 	State.state_lift = 1;
 }
@@ -653,8 +678,7 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 /* Clear the subroutine return stack
  */
 void clrretstk(int clr_pc) {
-	RetStkPtr = 0;
-	set_bank_flags(0);
+	RetStkPtr = LocalRegs = 0;
 	if (clr_pc)
 		raw_set_pc(0);
 }
@@ -673,7 +697,6 @@ void clrprog(void) {
 /* Clear all - programs and registers
  */
 void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
-	int i;
 
 	sigma_clear(NULL, NULL, OP_SIGMACLEAR);
 	clrreg(NULL, NULL, OP_CLREG);
@@ -681,11 +704,6 @@ void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
 	clralpha(NULL, NULL, OP_CLRALPHA);
 	clrflags(NULL, NULL, OP_CLFLAGS);
 	clrprog();
-
-	/* Clear out the banked registers and flags */
-	for (i=0; i<NUMBANKREGS; i++)
-		BankRegs[i] = Regs[0];
-	BankFlags = 0;
 
 	reset_shift();
 	State2.test = TST_NONE;
@@ -857,17 +875,10 @@ void process_cmdline_set_lift(void) {
  *  Error checking must be done outside this routine.
  */
 decimal64 *get_reg_n(int n) {
-#ifdef NUMBANKREGS
-	// return the local XROM registers
-	if (isXROM(state_pc()) && n < NUMBANKREGS)
-		return BankRegs + n;
-#endif
-#ifdef ENABLE_LOCALS
-	if (n >= NUMREG && LocalRegs != 0) {
+	if (n >= NUMREG && LocalRegs < 0) {
 		// local register on the return stack
-		return (decimal64 *)(RetStk + LocalRegs + 1) + n - NUMREG;
+		return (decimal64 *)(RetStk + LocalRegs + 2) + n - NUMREG;
 	}
-#endif
 	return Regs + (n % NUMREG);
 }
 
@@ -1613,10 +1624,8 @@ static int check_stack_overlap(unsigned int arg, int *nout) {
 
 #ifdef ALLOW_STOS_A
 	if (arg + n <= TOPREALREG || (arg == regA_idx && n == 4)) {
-#elif defined(ENABLE_LOCALS)
-	if (arg + n <= TOPREALREG || arg >= NUMREG) {
 #else
-	if (arg + n <= TOPREALREG) {
+	if (arg + n <= TOPREALREG || arg >= NUMREG) {
 #endif
 		*nout = n;
 		return 1;
@@ -1642,49 +1651,54 @@ void cmdrclstk(unsigned int arg, enum rarg op) {
 }
 
 
-#ifdef ENABLE_LOCALS
 /*
  *  Move up the return stack, skipping any local variables
  */
-static int retstk_up(int sp)
+static int retstk_up(int sp, int unwind)
 {
-	unsigned int s = RetStk[sp++];
-	if (isLOCAL(s))
-		sp += LOCAL_LEVELS(s);
+	if (sp < 0) {
+		unsigned int s = RetStk[sp++];
+		if (isLOCAL(s)) {
+			int n = LOCAL_LEVELS(s); 
+			sp += n;
+			if (unwind) {
+				// Readjust the LocalRegs pointer
+				LocalRegs = 0;
+				for (RetStkPtr = sp; sp < -4; ++sp) {
+					if (isLOCAL(RetStk[sp])) {
+						LocalRegs = sp;
+						return RetStkPtr;
+					}
+				}
+			}
+		}
+	}
 	return sp;
 }
-#else
-#define retstk_up(sp) (sp + 1)
-#endif
 
 
 /* Check if a PC in the return stack lives in a specified segment.
  * Return non-zero if the PC or the return stack are in the specified segment.
+ * If we find an XROM address on the stack, we fail in any case.
  */
 static int check_one(int s, unsigned int p) {
 	if (s == 0) {
 		if (isRAM(p) && p != 0)
 			return 1;
-	} else if (isLIB(p) && nLIB(p) == s)
+	} else if (isXROM(p) || (isLIB(p) && nLIB(p) == s))
 		return 1;
 	return 0;
 }
 
 static int do_check_return(int segment) {
 	int i;
-	unsigned char *p;
 	int s = (segment < 0) ? 0 : (segment+1);
 
 	if (check_one(s, state_pc()))
 		return 1;
 
-	for (i = RetStkPtr; i < 0; i = retstk_up(i))
+	for (i = RetStkPtr; i < 0; i = retstk_up(i, 0))
 		if (check_one(s, RetStk[i]))
-			return 1;
-
-	p = ((unsigned char *)&BankFlags) + F_XROM / 8;
-	if (((1 << (F_XROM % 8)) & *p) != 0)
-		if (check_one(s, State.usrpc))
 			return 1;
 	return 0;
 }
@@ -1776,7 +1790,7 @@ static void do_rtn(int plus1) {
 	if (Running) {
 		if (RetStkPtr < 0) {
 			// Pop any LOCALS off the stack
-			RetStkPtr = retstk_up(RetStkPtr);
+			RetStkPtr = retstk_up(RetStkPtr, 1);
 		}
 		if (RetStkPtr <= 0) {
 			// Normal RTN within program
@@ -1797,21 +1811,9 @@ static void do_rtn(int plus1) {
 		// Manual return goes to step 0 and clears the return stack
 		clrretstk(1);
 	}
-#ifdef ENABLE_LOCALS
-	// Check if we need to readjust the LocalRegs pointer			
-	if (RetStkPtr > LocalRegs) {
-		signed short sp;
-		LocalRegs = 0;
-		for (sp = RetStkPtr; sp < -4; ++sp) {
-			if (isLOCAL(RetStk[sp])) {
-				LocalRegs = sp;
-				break;
-			}
-		}
-	}
-#endif
 }
 
+// RTN and RTN+1
 void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	State.implicit_rtn = 0;
 	do_rtn(op == OP_RTN ? 0 : 1);
@@ -1905,7 +1907,7 @@ void op_gtoalpha(decimal64 *a, decimal64 *b, enum nilop op) {
 }
 
 
-
+// XEQ to an XROM command
 static void do_xrom(int lbl) {
 	const unsigned int oldpc = state_pc();
 	const unsigned int pc = find_label_from(addrXROM(0), lbl, 1);
@@ -1915,7 +1917,7 @@ static void do_xrom(int lbl) {
 
 static void xromargcommon(int lbl, unsigned int userpc) {
 	if (userpc != 0) {
-		State.usrpc = userpc;
+		XromUserPc = userpc;
 		do_xrom(lbl);
 	}
 }
@@ -2376,16 +2378,16 @@ void op_shift_digit(unsigned int n, enum rarg op) {
 
 /* Return a pointer to the byte with the indicated flag in it.
  * also return a byte with the relevant bit mask set up.
- * Also, handle bank switched flags in xROM code.
+ * Also, handle local flags.
  */
 static unsigned char *flag_byte(int n, unsigned char *mask) {
-	if (n < 0 || n >= NUMFLG)
-		return NULL;
+	unsigned char *p = UserFlags;
+	if (n >= NUMFLG) {
+		n -= NUMFLG;
+		p = (unsigned char *)(RetStk + LocalRegs + 1);
+	}
 	*mask = 1 << (n & 7);
-	n >>= 3;
-	if (isXROM(state_pc()) && n < NUMBANKFLAGS)
-		return ((unsigned char *)&BankFlags) + n;
-	return UserFlags + n;
+	return p + (n >> 3);
 }
 
 int get_user_flag(int n) {
@@ -3040,11 +3042,21 @@ void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	alpha_view_common(regX_idx);
 }
 
-void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op) {
-	unsigned int usrpc = State.usrpc;
+// XEQUSR
+// Command pushes two values on stack, needs to be followed by POPUSR
+void do_usergsb(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	const unsigned int pc = state_pc();
-	if (usrpc != 0 && isXROM(pc))
-		gsbgto(usrpc, 1, pc);
+	if (isXROM(pc) && XromUserPc != 0) {
+		gsbgto(pc, 1, XromUserPc);
+		gsbgto(XromUserPc, 1, pc);
+		XromUserPc = 0;
+	}
+}
+
+// POPUSR
+void op_popusr(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	if (isXROM(state_pc()))
+		XromUserPc = RetStk[RetStkPtr++];
 }
 
 /* Tests if the user program is at the top level */
@@ -3052,12 +3064,7 @@ void isTop(decimal64 *a, decimal64 *b, enum nilop op) {
 	int top = 0;
 	
 	if (Running) {
-#ifdef ENABLE_LOCALS
-		int n = LocalRegs == 0 ? 0 : LOCAL_LEVELS(RetStk[LocalRegs]);
-		top = RetStkPtr >= -1 - n;
-#else
-		top = RetStkPtr >= -1;
-#endif
+		top = RetStkPtr >= -1 - local_levels();
 	}
 	fin_tst(top);
 }
@@ -3309,16 +3316,22 @@ static void rargs(const opcode op) {
 		if (lim > 128 && ind)		// put the top bit back in
 			arg |= RARG_IND;
 	}
-#ifdef ENABLE_LOCALS
 	// Range checking for local registers
-	if (lim > NUMREG && argcmds[cmd].local) {
+	if (argcmds[cmd].local) {
 		lim = NUMREG + (LocalRegs == 0 ? 0 : LOCAL_MAXREG(RetStk[LocalRegs]));
 		if (argcmds[cmd].cmplx)
 			--lim;
 		else if (argcmds[cmd].stos)
 			lim -= stack_size() - 1;
+		if ((int)arg < 0)
+			arg = NUMREG - (int)arg;
 	}
-#endif
+	else if (argcmds[cmd].flag) {
+		if (LocalRegs == 0)
+			lim -= 16;
+		if ((int)arg < 0)
+			arg = NUMFLG - (int)arg;
+	}
 	if (arg >= lim || (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1)))
 		err(ERR_RANGE);
 	else {
@@ -3457,10 +3470,9 @@ void xeq(opcode op)
 		Error = ERR_NONE;
 		xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
 		UState = old;
-		State.state_pc = old_pc;
+		raw_set_pc(old_pc);
 		*((int *)&CommandLine) = old_cl;
 		process_cmdline_set_lift();
-		BankFlags = 0;
 		if (Running) {
 #ifndef REALBUILD
 			if (! State2.trace ) {
@@ -3470,7 +3482,7 @@ void xeq(opcode op)
 					int sp = RetStkPtr;
 					if (sp != 0) {
 						raw_set_pc(RetStk[sp]);
-						sp = retstk_up(sp);
+						sp = retstk_up(sp, 1);
 						RetStkPtr = sp;
 					}
 					if (sp == 0)
@@ -3722,13 +3734,12 @@ void set_running_on() {
 	finish_display();
 }
 
-#ifdef ENABLE_LOCALS
 /*
  *  Command to support local variables
  */
 void op_local(unsigned int arg, enum rarg op) {
 	const int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
-	const short int n = (++arg << 2);
+	const short int n = (++arg << 2) + 1;
 	short int sp = RetStkPtr;
 
 	if (sp != 0 && isLOCAL(RetStk[sp])) {
@@ -3746,8 +3757,6 @@ void op_local(unsigned int arg, enum rarg op) {
 	RetStk[--sp] = LOCAL_MASK | (n + 1);
 	RetStkPtr = LocalRegs = sp;
 }
-
-#endif
 
 #if defined(DEBUG) && !defined(WINGUI) && !defined(WP34STEST)
 extern unsigned char remap_chars(unsigned char ch);
@@ -3894,7 +3903,7 @@ int init_34s(void)
 	return cleared;
 }
 
-#ifdef __GNUC__
+#ifdef GNUC_POP_ERROR
 #pragma GCC diagnostic pop
 #endif
 

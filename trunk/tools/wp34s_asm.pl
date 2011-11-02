@@ -122,7 +122,9 @@ my @reg_offset_REG = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I",
 my $MAX_INDIRECT_REG = scalar @reg_offset_REG; # Set to length of the array.
 
 # This is for labels and flags
-my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D");
+my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D",
+                      ".00", ".01", ".02", ".03", ".04", ".05", ".06", ".07",
+                      ".08", ".09", ".10", ".11", ".12", ".13", ".14", ".15");
 my $MAX_INDIRECT_104 = scalar @reg_offset_104; # Set to length of the array.
 
 # The register numeric value is flagged as an indirect reference by setting bit 7.

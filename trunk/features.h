@@ -134,9 +134,6 @@
 // M.LU
 #define MATRIX_LU_DECOMP
 
-// Enable the commands LOCAL, F<> and register addressing with '.'
-#define ENABLE_LOCALS
-
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/

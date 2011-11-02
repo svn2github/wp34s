@@ -355,6 +355,8 @@ void show_stack(void) {
 
 void show_flags(void) {
 #if !defined(REALBUILD) && !defined(WINGUI)
+	extern unsigned int get_local_flags(void);
+
 	if (!State2.flags)
 		return;
 	MOVE(0, 0);
@@ -443,9 +445,9 @@ void show_flags(void) {
 //	MOVE(60, FLAG_BASE+1);
 //	PRINTF("apos = %u", State2.alpha_pos);
 	MOVE(10, FLAG_BASE+2);
-	PRINTF("numdig = %u   alpha '%-31s'   bflags = %03o-%03o",
-			State2.numdigit, Alpha, get_bank_flags() >> 8,
-			get_bank_flags() & 0xff);
+	PRINTF("numdig = %u   alpha '%-31s'   lflags = %03o-%03o",
+			State2.numdigit, Alpha, get_local_flags() >> 8,
+			get_local_flags() & 0xff);
 	if (State.entryp) {
 		MOVE(0, FLAG_BASE+2);
 		PRINTF("entryp");
