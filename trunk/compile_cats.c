@@ -1161,6 +1161,7 @@ int main(int argc, char *argv[]) {
 	ALPHA(alpha_letters_upper);
 	ALPHA(alpha_letters_lower);
 
+        fprintf(stderr, "maxsteps=%d\n", NUMPROG);
 	dump_opcodes(stderr);
 
 	printf( "/* Total number of catalogue entries %d\n"
