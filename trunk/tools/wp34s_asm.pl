@@ -84,7 +84,8 @@ my $dump_escaped_alpha_table = "";
 my $DEFAULT_STAR_LABELS = 0;
 my $star_labels = $DEFAULT_STAR_LABELS;
 
-my $MAX_FLASH_WORDS = 510;
+my $DEFAULT_MAX_FLASH_WORDS = 506;
+my $max_flash_words = $DEFAULT_MAX_FLASH_WORDS;
 my $disable_flash_limit = 0;
 
 my $no_step_numbers = 0;
@@ -111,21 +112,18 @@ my $xrom_bin_mode = 0;
 
 # These are used to convert all the registers into numeric offsets.
 #
-# There are at least 3 groups of named instruction offsets; the 112 group (XYZTABCDLIJK), the 116 group
-# (ABCDFGHIJKLPTWYZ), and the 104 group (ABCD). We have to extract the opcode's numeric offset based on
-# the op-type. The value of max will give us this (116,112,104,100,etc.). Note that for all values of
-# max<=100, any group is valid since these are purely numeric. The "stostack" group comes from the
-# offset-112 group. This tag limits the offset to only 00-95 and A.
-
-# MvC :Added local registers .00 to .15. Renamed the 112 group to REG group
+# There are at least 2 groups of named instruction offsets; the REG group (XYZTABCDLIJK + .00 to .15),
+# and the 104 group (ABCD). We have to extract the opcode's numeric offset based on the op-type. The
+# value of max will give us this (116,112,104,100,etc.). Note that for all values of max<=100, any
+# group is valid since these are purely numeric. The "stostack" group comes from the REG group.
 my @reg_offset_REG = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I", "J", "K",
                       ".00", ".01", ".02", ".03", ".04", ".05", ".06", ".07",
-		      ".08", ".09", ".10", ".11", ".12", ".13", ".14", ".15");
-my $MAX_INDIRECT_REG = 128;
+                      ".08", ".09", ".10", ".11", ".12", ".13", ".14", ".15");
+my $MAX_INDIRECT_REG = scalar @reg_offset_REG; # Set to length of the array.
 
 # This is for labels and flags
 my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D");
-my $MAX_INDIRECT_104 = 104;
+my $MAX_INDIRECT_104 = scalar @reg_offset_104; # Set to length of the array.
 
 # The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
@@ -177,6 +175,26 @@ if( exists $useable_OS{$^O} ) {
   # PP script. If worst comes to worse, we can specify both of these from the command line.
   print "// WARNING: Unrecognized O/S ($^O). Some features may not work as expected.\n";
 }
+
+# Pragma table
+#
+# Add new variables to pragma table as required. The format is:
+#                   keyword      pointer to variable
+#
+#                    stars    => \$star_labels,
+#
+# The keyword format for the wp34s.op file is starting with a letter (any case) or an underscore
+# followed by zero or more letters (any case), numbers, and/or underscores. Case is significant.
+# There can be 0 or more whitespace between the start of the line and/or between the "=" assignment.
+#
+# Examples (ignore quote):
+#
+# "maxsteps=510"
+# "maxsteps = 510"
+# "    maxsteps= 510"
+#
+my %pragma_table = ( maxsteps => \$max_flash_words,
+                   );
 
 # Automatically extract the name of the executable that was used. Also extract
 # the directory so we can potentially source other information from this location.
@@ -441,8 +459,8 @@ sub assemble {
           $words[++$next_free_word] = hex2dec($mnem2hex{$_});
         }
       }
-      if( ($next_free_word >= $MAX_FLASH_WORDS) and not $disable_flash_limit ) {
-        die "ERROR: Too many program steps encountered.\n";
+      if( ($next_free_word >= $max_flash_words) and not $disable_flash_limit ) {
+        die "ERROR: Too many program steps encountered (> $max_flash_words words).\n";
       }
     }
   }
@@ -846,6 +864,17 @@ sub load_opcode_tables {
         $multi_char_target_hi = hex2dec($hex_str);
       }
 
+    # Parse any of the pragma-like values.
+    } elsif( /^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\=\s*(\d+)\s*$/ ) {
+      my $variable = $1;
+      my $value = $2;
+
+      # Just ignore anything that isn't found in the pragma table. If it is found,
+      # dereference the pointer from the hash table and assign the new value.
+      if( exists $pragma_table{$variable} ) {
+        ${$pragma_table{$variable}} = $value;
+      }
+
     } else {
       die "ERROR: Cannot parse opcode table line $.: '$_'\n";
     }
@@ -980,7 +1009,7 @@ sub parse_arg_type_dir_max {
   my ($reg_str);
 
   # Find out which instruction offset group we are to use.
-  if( $stostack_modifier || $direct_max > $MAX_INDIRECT_104 ) {
+  if( $stostack_modifier or ($direct_max > $MAX_INDIRECT_104) ) {
     $reg_str = $reg_offset_REG[$offset];
   } else {
     $reg_str = $reg_offset_104[$offset];
