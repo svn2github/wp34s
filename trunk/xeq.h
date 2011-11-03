@@ -1144,6 +1144,7 @@ extern void get_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_sign_mode(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_base(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern int free_mem(void);
 extern void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);

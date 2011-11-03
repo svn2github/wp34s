@@ -1098,34 +1098,43 @@ void format_reg(decimal64 *r, char *buf) {
 static void show_status(void) {
 	int i, n;
 	int j = SEGS_PER_DIGIT;
-	int base = 10 * (State2.status - 1);
+	const int status = State2.status - 1;
 	char buf[12], *p;
 	unsigned int pc;
 
-	p = scopy(buf, "FL ");
-	p = num_arg_0(p, base, 2);
-	*p++ = '-';
-	i = base+29>=NUMFLG?NUMFLG-1:base+29;
-	if (i < 100)
-		p = num_arg_0(p, i, 2);
-	else
-		*p++ = (i-100) + 'A';
-	*p = '\0';
-	set_status(buf);
-	set_decimal(0, DECIMAL_DOT, NULL);
-	for (i=0; i<10; i++) {
-		const int k = i + base;
-		const int l = get_user_flag(k) + (get_user_flag(k+10)<<1) + (get_user_flag(k+20)<<2);
-		set_dig(j, l);
-		set_decimal(j, DECIMAL_DOT, NULL);
-		j += SEGS_PER_DIGIT;
-		if (i == 4) {
-			set_dig(j, 8);
+	if (status == 0) {
+		set_status("Memory:");
+		p = num_arg_0(buf, free_mem(), 3);
+		p = scopy(p, "  Wword");
+		*p = '\0';
+		set_digits_string(buf, 2*SEGS_PER_DIGIT);
+	} else {
+		const int base = 10 * (status - 1);
+		p = scopy(buf, "FL ");
+		p = num_arg_0(p, base, 2);
+		*p++ = '-';
+		i = base+29>=NUMFLG?NUMFLG-1:base+29;
+		if (i < 100)
+			p = num_arg_0(p, i, 2);
+		else
+			*p++ = (i-100) + 'A';
+		*p = '\0';
+		set_status(buf);
+		set_decimal(0, DECIMAL_DOT, NULL);
+		for (i=0; i<10; i++) {
+			const int k = i + base;
+			const int l = get_user_flag(k) + (get_user_flag(k+10)<<1) + (get_user_flag(k+20)<<2);
+			set_dig(j, l);
 			set_decimal(j, DECIMAL_DOT, NULL);
 			j += SEGS_PER_DIGIT;
+			if (i == 4) {
+				set_dig(j, 8);
+				set_decimal(j, DECIMAL_DOT, NULL);
+				j += SEGS_PER_DIGIT;
+			}
 		}
+		set_seperator(SEGS_PER_DIGIT * 5, SEP_DOT, NULL);
 	}
-	set_seperator(SEGS_PER_DIGIT * 5, SEP_DOT, NULL);
 
 	j = SEGS_EXP_BASE;
 	pc = state_pc();

@@ -1537,8 +1537,12 @@ void op_voltage(decimal64 *a, decimal64 *nul2, enum nilop op) {
 /*
  *  Return the free space on the return stack in levels/steps
  */
+int free_mem(void) {
+	return RET_STACK_SIZE + NUMPROG + 1 - LastProg + RetStkPtr;
+}
+
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
-	put_int( RET_STACK_SIZE + NUMPROG + 1 - LastProg + RetStkPtr, 0, a );
+	put_int( free_mem(), 0, a );
 }
 
 

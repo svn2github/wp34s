@@ -1939,10 +1939,10 @@ static int process_status(const keycode c) {
 
 	if ( c == K40 ) {
 		if (--n < 0)
-			n = 9;
+			n = 10;
 	}
 	else if ( c == K50 ) {
-		if (++n > 9)
+		if (++n > 10)
 			n = 0;
 	}
 	else if (c == K24) {
@@ -1951,7 +1951,7 @@ static int process_status(const keycode c) {
 	} else
 		n = keycode_to_digit_or_register(c);
 
-	if ( n <= 9 )
+	if ( n <= 10 )
 		State2.status = n + 1;
 
 	return STATE_UNFINISHED;
