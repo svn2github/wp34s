@@ -38,6 +38,7 @@
 			[cmplx]STO .00
 			FILL
 			XEQUSR
+			NOP
 			POPUSR
 			STO .03
 			x[approx]0?
@@ -45,6 +46,7 @@
 			RCL .01
 			FILL
 			XEQUSR
+			NOP
 			POPUSR
 			STO .04
 			x[approx]0?
@@ -54,6 +56,7 @@
 
 slv_loop::		FILL
 			XEQUSR
+			NOP
 			POPUSR
 			FILL
 			x[approx]0?
@@ -202,12 +205,14 @@ int_zero_interval::	XEQ int_restore_limits
 			/* Sum Gauss and Kronrod common points */
 int_gkloop::		XEQ int_first_point
 			XEQUSR
+			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range
 			XEQ int_gauss
 			XEQ int_second_point
 			XEQUSR
+			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range
@@ -221,6 +226,7 @@ int_gkloop::		XEQ int_first_point
 			RCL .01
 			FILL
 			XEQUSR
+			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range2
@@ -235,12 +241,14 @@ int_gkloop::		XEQ int_first_point
 			/* Sum Kronrod only points */
 int_kloop::		XEQ int_first_point
 			XEQUSR
+			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range2
 			XEQ int_kronrod
 			XEQ int_second_point
 			XEQUSR
+			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range2
@@ -331,6 +339,7 @@ int_restore_limits::	RCL .01
 			IP				/* First function call is separate*/
 			FILL				/* to avoid Kahan summing from zero*/
 			XEQUSR				/* six extra instructions save nine*/
+			NOP
 			POPUSR
 			SPEC?				/* from executing*/
 				JMP sum_product_nan
@@ -343,6 +352,7 @@ sum_loop::		RCL .00
 			IP
 			FILL
 			XEQUSR
+			NOP
 			POPUSR
 			SPEC?
 				JMP sum_product_nan
@@ -369,6 +379,7 @@ sum_entry::		DSL .00
 			IP				/* First function call is separate*/
 			FILL				/* to avoid a multiply*/
 			XEQUSR
+			NOP
 			POPUSR
 			SPEC?
 				JMP sum_product_nan
@@ -379,6 +390,7 @@ product_loop::		RCL .00
 			IP
 			FILL
 			XEQUSR
+			NOP
 			POPUSR
 			SPEC?
 				JMP sum_product_nan
@@ -581,6 +593,7 @@ deriv_eval_func::	STO .00
 			RCL+ .03
 			FILL
 			XEQUSR				/* f(x + k h)*/
+			NOP
 			POPUSR
 			SPEC?
 				RTN
@@ -592,6 +605,7 @@ deriv_eval_func::	STO .00
 			RCL+ .03
 			FILL
 			XEQUSR				/* f(x - k h)*/
+			NOP
 			POPUSR
 			SPEC?
 				RTN
