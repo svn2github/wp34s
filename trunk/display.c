@@ -1109,21 +1109,37 @@ static void show_status(void) {
 		*p = '\0';
 		set_digits_string(buf, 2*SEGS_PER_DIGIT);
 	} else {
-		const int base = 10 * (status - 1);
-		p = scopy(buf, "FL ");
-		p = num_arg_0(p, base, 2);
-		*p++ = '-';
-		i = base+29>=NUMFLG?NUMFLG-1:base+29;
-		if (i < 100)
-			p = num_arg_0(p, i, 2);
-		else
-			*p++ = (i-100) + 'A';
-		*p = '\0';
-		set_status(buf);
+		int base;
+		int end;
+		
+		if (status <= 10) {
+			base = 10 * (status - 1);
+			end = base >= 70 ? 99 : base + 29;
+			p = scopy(buf, "FL ");
+			p = num_arg_0(p, base, 2);
+			*p++ = '-';
+			p = num_arg_0(p, end, 2);
+			*p = '\0';
+			set_status(buf);
+		}
+		else if (status == 11) {
+			base = regA_idx;
+			end = regK_idx;
+			set_status("X:T\006A:D\006L:K");
+		}
+		else { // status == 12
+			base = LOCAL_FLAG_BASE;
+			end = LOCAL_FLAG_BASE + 15;
+			set_status("FL.00-.15");
+		}
 		set_decimal(0, DECIMAL_DOT, NULL);
 		for (i=0; i<10; i++) {
 			const int k = i + base;
-			const int l = get_user_flag(k) + (get_user_flag(k+10)<<1) + (get_user_flag(k+20)<<2);
+			int l = get_user_flag(k);
+			if (end >= k + 10)
+				l += (get_user_flag(k + 10) << 1);
+			if (end >= k + 20)
+				l += (get_user_flag(k + 20) << 2);
 			set_dig(j, l);
 			set_decimal(j, DECIMAL_DOT, NULL);
 			j += SEGS_PER_DIGIT;
@@ -1181,9 +1197,12 @@ static void show_registers(void) {
 	decimal64 *reg;
 
 	xset(buf, '\0', 16);
-	reg = State2.digval2 ? UserFlash.backup._regs : Regs;
-	bp = scopy_spc(buf, State2.digval2?"Fl\006":"Rg");
-
+	reg = State2.digval2 ? UserFlash.backup._regs : 
+	      State2.local   ? get_reg_n( LOCAL_REG_BASE ) :
+	      Regs;
+	bp = scopy_spc(buf, State2.digval2 ? "Fl\006" : "Rg");
+	if (State2.local)
+		*bp++ = '.';
 	if (State2.digval < 100)
 		num_arg_0(bp, State2.digval, 2);
 	else

@@ -151,7 +151,7 @@ static unsigned int keycode_to_digit_or_register(const keycode c)
 		// K50 - K54
 		NO_REG, 1, 2, 3, NO_REG,
 		// K60 - K64
-		NO_SHORT | NO_REG, 0, NO_SHORT | regX_idx,
+		NO_SHORT | NO_REG, 0, NO_SHORT | LOCAL_REG_BASE,
 		regY_idx, regZ_idx
 	};
 
@@ -391,7 +391,8 @@ void init_state(void) {
 	State.state_lift = 1;
 	State.implicit_rtn = 0;
 	CmdBase = 0;
-	clrretstk(0);
+	// Removed: will clear any locals on power off
+	// clrretstk(0);
 
 	xset(&State2, 0, sizeof(State2));
 	State2.test = TST_NONE;
@@ -1571,7 +1572,7 @@ static int process_test(const keycode c) {
 
 	State2.test = TST_NONE;
 	State2.cmplx = 0;
-	if (n != NO_REG && n >= TOPREALREG) {
+	if (n != NO_REG && n >= TOPREALREG && n < LOCAL_REG_BASE ) {
 		// Lettered register
 		if (cmpx && (n & 1))
 			// Disallow odd complex registers > A
@@ -1587,8 +1588,8 @@ static int process_test(const keycode c) {
 		// Special 1
 		return OP_SPEC + (cmpx ? OP_Zeq1 : OP_Xeq1) + r;
 	}
-	else if ( n <= 9 || c == K_ARROW ) {
-		// digit 2..9
+	else if ( n <= 9 || c == K_ARROW || c == K62 ) {
+		// digit 2..9, -> or .
 		init_arg(base);
 		return process_arg(c);
 	}
@@ -1927,23 +1928,29 @@ static int process_confirm(const keycode c) {
 
 static int process_status(const keycode c) {
 	int n = ((int)State2.status) - 1;
+	int max = LocalRegs < 0 ? 12 : 11;
 
-	if ( c == K40 ) {
+	if (c == K40) {
 		if (--n < 0)
-			n = 10;
+			n = max;
 	}
-	else if ( c == K50 ) {
-		if (++n > 10)
+	else if (c == K50) {
+		if (++n > max)
 			n = 0;
 	}
-	else if (c == K24) {
+	else if (c == K24 || c == K60) {
 		State2.status = 0;
 		return STATE_UNFINISHED;
-	} else
-		n = keycode_to_digit_or_register(c);
-
-	if ( n <= 10 )
-		State2.status = n + 1;
+	} 
+	else {
+		n = keycode_to_digit_or_register(c) & 0x7f;
+		if (n <= 9)
+			n += 1;
+		else if (n == LOCAL_REG_BASE)
+			n = State2.status - 1 == max ? 11 : max;
+		else n = 11; 
+	}
+	State2.status = n + 1;
 
 	return STATE_UNFINISHED;
 }
@@ -2079,11 +2086,17 @@ static int process_labellist(const keycode c) {
 static int process_registerlist(const keycode c) {
 	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
 	enum shifts shift = reset_shift();
+	const int max = State2.local ? LOCAL_MAXREG(RetStk[LocalRegs]) : NUMREG;
 
-	if ( n <= 9 ) {
-		if (State2.digval > NUMREG-1)
-			State2.digval = 0;
-		State2.digval = (State2.digval * 10 + n) % 100;
+	if ( n == LOCAL_REG_BASE ) {
+		if (LocalRegs < 0)
+			State2.local = 1 - State2.local;
+		State2.digval = State2.local ? 0 : regX_idx;
+		return STATE_UNFINISHED;
+	}
+	else if ( n <= 9 ) {
+		int dv = (State2.digval * 10 + n) % 100;
+		State2.digval = dv < max ? dv : n;
 		return STATE_UNFINISHED;
 	}
 	else if ( n != NO_REG ) {
@@ -2096,17 +2109,18 @@ static int process_registerlist(const keycode c) {
 		if (State2.digval > 0)
 			State2.digval--;
 		else
-			State2.digval = NUMREG-1;
+			State2.digval = max - 1;
 		return STATE_UNFINISHED;
 
 	case K50:
-		if (State2.digval < NUMREG-1)
+		if (State2.digval < max - 1)
 			State2.digval++;
-		else	State2.digval = 0;
+		else	
+			State2.digval = 0;
 		return STATE_UNFINISHED;
 
 	case K04:
-		State2.digval2 = !State2.digval2;
+		State2.digval2 = ! State2.digval2 && ! State2.local;
 		return STATE_UNFINISHED;
 
 	case K24:			// Exit doing nothing
@@ -2116,7 +2130,7 @@ static int process_registerlist(const keycode c) {
 	case K11:		// RCL
 	case K20:		// ENTER
 		if ( shift == SHIFT_N ) {
-			n = RARG(State2.digval2?RARG_FLRCL:RARG_RCL, State2.digval);
+			n = RARG( State2.digval2 ? RARG_FLRCL : RARG_RCL, State2.digval );
 			State2.registerlist = 0;
 			State2.digval = 0;
 			State2.digval2 = 0;
