@@ -92,6 +92,7 @@ int ShowRegister;
  *  User code being called from XROM
  */
 unsigned short XromUserPc;
+unsigned short UserLocalRegs;
 
 /*
  *  Define storage for the machine's program space.
@@ -645,13 +646,6 @@ void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	State.state_lift = 1;
 }
 
-/* Reset all flags to off/false
- */
-void clrflags(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	xset(UserFlags, 0, sizeof(UserFlags));
-	if (LocalRegs < 0)
-		RetStk[LocalRegs + 1] = 0;
-}
 
 /* Zero out all registers excluding the stack and lastx
  */	
@@ -668,7 +662,7 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 	if (LocalRegs < 0) {
 		i = (local_levels() - 2) << 1;
-		xset(RetStk + LocalRegs + 2, 0, i);
+		xset(RetStk + (short)((LocalRegs + 2) & 0xfffe), 0, i);
 	}
 	CmdLineLength = 0;
 	State.state_lift = 1;
@@ -872,11 +866,13 @@ void process_cmdline_set_lift(void) {
  *  If locals are enabled and a non existent local register
  *  is accessed, the respective global register is returned.
  *  Error checking must be done outside this routine.
+ *  We force the beginning of the local registers on an even stack position.
+ *  This ensures 32 bit alignment of the decima64 object.
  */
 decimal64 *get_reg_n(int n) {
-	if (n >= NUMREG && LocalRegs < 0) {
+	if (n >= LOCAL_REG_BASE && LocalRegs < 0) {
 		// local register on the return stack
-		return (decimal64 *)(RetStk + LocalRegs + 2) + n - NUMREG;
+		return (decimal64 *)(RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n - LOCAL_REG_BASE;
 	}
 	return Regs + (n % NUMREG);
 }
@@ -1915,6 +1911,7 @@ static void do_xrom(int lbl) {
 	const unsigned int oldpc = state_pc();
 	const unsigned int pc = find_label_from(addrXROM(0), lbl, 1);
 
+	UserLocalRegs = LocalRegs;
 	gsbgto(pc, 1, oldpc);
 }
 
@@ -2383,21 +2380,29 @@ void op_shift_digit(unsigned int n, enum rarg op) {
  * also return a byte with the relevant bit mask set up.
  * Also, handle local flags.
  */
-static unsigned char *flag_byte(int n, unsigned char *mask) {
-	unsigned char *p = UserFlags;
-	if (n >= NUMFLG) {
-		n -= NUMFLG;
-		p = (unsigned char *)(RetStk + LocalRegs + 1);
+static unsigned short int *flag_word(int n, unsigned short int *mask) {
+	unsigned short int *p = UserFlags;
+	if (n >= LOCAL_FLAG_BASE) {
+		n -= LOCAL_FLAG_BASE;
+		if (LocalRegs & 1) {
+			// Odd frame: flags are at end of frame
+			p = RetStk + LocalRegs + local_levels() - 1;
+		}
+		else {
+			// Even frame: Flags are at beginning of frame
+			p = RetStk + LocalRegs + 1;
+		}
 	}
-	*mask = 1 << (n & 7);
-	return p + (n >> 3);
+	if (mask != NULL)
+		*mask = 1 << (n & 15);
+	return p + (n >> 4);
 }
 
 int get_user_flag(int n) {
-	unsigned char mask;
-	const unsigned char *const f = flag_byte(n, &mask);
+	unsigned short mask;
+	const unsigned short *const f = flag_word(n, &mask);
 
-	return f != NULL && (*f & mask)?1:0;
+	return (*f & mask)? 1 : 0;
 }
 
 void put_user_flag(int n, int f) {
@@ -2405,44 +2410,45 @@ void put_user_flag(int n, int f) {
 	else	clr_user_flag(n);
 }
 
+#ifndef set_user_flag
 void set_user_flag(int n) {
-	unsigned char mask;
-	unsigned char *const f = flag_byte(n, &mask);
+	unsigned short mask;
+	unsigned short *const f = flag_word(n, &mask);
 
-	if (f != NULL)
-		*f |= mask;
+	*f |= mask;
 }
 
 void clr_user_flag(int n) {
-	unsigned char mask;
-	unsigned char *const f = flag_byte(n, &mask);
+	unsigned short mask;
+	unsigned short *const f = flag_word(n, &mask);
 
-	if (f != NULL)
-		*f &= ~mask;
+	*f &= ~mask;
 }
+#endif
 
 void cmdflag(unsigned int arg, enum rarg op) {
-	unsigned char mask;
-	unsigned char *const f = flag_byte(arg, &mask);
+	unsigned short mask;
+	unsigned short *const f = flag_word(arg, &mask);
 	int flg = *f & mask;
 
 	switch (op) {
-	case RARG_SF:	flg = 1;			break;
-	case RARG_CF:	flg = 0;			break;
-	case RARG_FF:	flg = flg?0:1;			break;
+	case RARG_SF:	flg = 1;			   break;
+	case RARG_CF:	flg = 0;			   break;
+	case RARG_FF:	flg = flg? 0 : 1;		   break;
 
-	case RARG_FS:	fin_tst(flg);			return;
-	case RARG_FC:	fin_tst(! flg);			return;
+	case RARG_FS:	fin_tst(flg);			   return;
+	case RARG_FC:	fin_tst(! flg);			   return;
 
-	case RARG_FSC:	fin_tst(flg);	flg = 0;	break;
-	case RARG_FSS:	fin_tst(flg);	flg = 1;	break;
-	case RARG_FSF:	fin_tst(flg);	flg = flg?0:1;	break;
+	case RARG_FSC:	fin_tst(flg); flg = 0;		   break;
+	case RARG_FSS:	fin_tst(flg); flg = 1;		   break;
+	case RARG_FSF:	fin_tst(flg); flg = flg ? 0 : 1;   break;
 
-	case RARG_FCC:	fin_tst(! flg);	flg = 0;	break;
-	case RARG_FCS:	fin_tst(! flg);	flg = 1;	break;
-	case RARG_FCF:	fin_tst(! flg);	flg = flg?0:1;	break;
+	case RARG_FCC:	fin_tst(! flg);	flg = 0;	   break;
+	case RARG_FCS:	fin_tst(! flg);	flg = 1;	   break;
+	case RARG_FCF:	fin_tst(! flg);	flg = flg ? 0 : 1; break;
 
-	default:					return;
+	default:					
+		return;
 	}
 
 	// And write the value back
@@ -2457,6 +2463,18 @@ void cmdflag(unsigned int arg, enum rarg op) {
 	}
 }
 
+/* Reset all flags to off/false
+ */
+void clrflags(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	xset(UserFlags, 0, sizeof(UserFlags));
+	if (LocalRegs < 0) {
+		* flag_word(LOCAL_REG_BASE, NULL) = 0;
+	}
+}
+
+
+/* Integer word size
+ */
 void intws(unsigned int arg, enum rarg op) {
 	if (is_intmode()) {
 		int i, ss = stack_size();
@@ -3046,20 +3064,26 @@ void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 // XEQUSR
-// Command pushes two values on stack, needs to be followed by POPUSR
+// Command pushes 4 values on stack, needs to be followed by POPUSR
 void do_usergsb(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	const unsigned int pc = state_pc();
 	if (isXROM(pc) && XromUserPc != 0) {
-		gsbgto(pc, 1, XromUserPc);
-		gsbgto(XromUserPc, 1, pc);
+		gsbgto(pc, 1, XromUserPc);    // push address of callee
+		gsbgto(pc, 1, LocalRegs);     // push my local registers 
+		gsbgto(pc, 1, UserLocalRegs); // push former local registers
+		gsbgto(XromUserPc, 1, pc);    // push return address, transfer control
 		XromUserPc = 0;
+		LocalRegs = UserLocalRegs;    // reestablish user environment
 	}
 }
 
 // POPUSR
 void op_popusr(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	if (isXROM(state_pc()))
-		XromUserPc = RetStk[RetStkPtr++];
+	if (isXROM(state_pc())) {
+		UserLocalRegs = RetStk[RetStkPtr++]; // previous local registers
+		LocalRegs =     RetStk[RetStkPtr++]; // my local registers
+		XromUserPc =    RetStk[RetStkPtr++]; // adress of callee
+	}
 }
 
 /* Tests if the user program is at the top level */
@@ -3740,16 +3764,21 @@ void set_running_on() {
 }
 
 /*
- *  Command to support local variables
+ *  Command to support local variables.
+ *  A stack frame is constructed:
+ *	marker including size of frame,
+ *	register + flag area.
+ *  Registers must reside on even stack positions
+ *  so the flag word is either at the top or at the bottom of the frame.
  */
-void op_local(unsigned int arg, enum rarg op) {
+void cmdlocl(unsigned int arg, enum rarg op) {
 	const int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 	short int sp = RetStkPtr;
-	const short int n = (++arg << 2) + 1 + (sp & 1); // force even sp
+	const short int n = (++arg << 2) + 1;
 
 	if (sp != 0 && isLOCAL(RetStk[sp])) {
 		// Do not allow more than one LOCAL in the same subroutine
-		err(ERR_INVALID);
+		err(ERR_ILLEGAL);
 		return;
 	}
 	// compute space needed
@@ -3761,6 +3790,17 @@ void op_local(unsigned int arg, enum rarg op) {
 	xset(RetStk + sp, 0, n << 1);
 	RetStk[--sp] = LOCAL_MASK | (n + 1);
 	RetStkPtr = LocalRegs = sp;
+}
+
+/*
+ *  Undo the effect of LOCL
+ *  POPs all pending returns below the most recent local frame and this frame
+ */
+void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	if (LocalRegs < 0)
+		RetStkPtr = retstk_up(LocalRegs, 1);
+	else
+		err(ERR_ILLEGAL);
 }
 
 #if defined(DEBUG) && !defined(WINGUI) && !defined(WP34STEST)

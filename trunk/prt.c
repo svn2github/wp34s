@@ -186,15 +186,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			scopy(scopy(instr, "iC "), buf);
 		} else {
 			p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
-			if (argcmds[cmd].flag && arg >= 100) {
-				if (arg >= NUMFLG) {
-					arg -= NUMFLG;
-					goto print_dotnn;
-				}
-				goto print_abcd;
-			}
-			else if (argcmds[cmd].label && arg >= 100) {
-			print_abcd:
+			if (argcmds[cmd].label && arg >= 100) {
 				*p = LBLNAMES[arg - 100];
 			}
 			else {
@@ -214,7 +206,6 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		else {
 			if (arg > regK_idx) {
 				arg -= regK_idx + 1;
-	print_dotnn:
 				*p++ = '.';
 			}
 			num_arg_0(p, arg, n );

@@ -133,7 +133,7 @@ typedef struct _ram {
 	/*
 	 *  Storage space for our user flags
 	 */
-	unsigned char _user_flags[(NUMFLG+7) >> 3];
+	unsigned short int _user_flags[(NUMFLG+15) >> 4];
 
 	/*
 	 *  Alpha register gets its own space
@@ -194,8 +194,7 @@ struct _state2 {
 	unsigned int hyp : 1;		// Entering a HYP or HYP-1 operation
 	unsigned int dot : 1;		// misc use
 	unsigned int ind : 1;		// Indirection STO or RCL
-	unsigned int local : 1;		// entering a local register number .00 to.15
-	unsigned int localflg : 1;	// entering a local flag number .00 to.15
+	unsigned int local : 1;		// entering a local flag or register number .00 to.15
 	unsigned int arrow_alpha : 1;	// display alpha conversion
 	unsigned int alphas : 1;        // Alpha shift key pressed
 	unsigned int alphashift : 1;	// Alpha shifted to lower case

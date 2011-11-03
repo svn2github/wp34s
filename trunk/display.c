@@ -74,7 +74,7 @@ void error_message(const enum errors e)
 		"+\237\0",
 		"-\237\0",
 		"No such\0LABEL",
-		"SLV \004 \221 \217\0NEStED",
+		"Illegal\0OperAtion",
 		"Out of range\0",
 		"Bad digit\0",
 		"Too long\0",
@@ -1295,7 +1295,7 @@ void display(void) {
 			*bp++ = '_';
 		} else {
 			const int maxdigits = State2.ind || argcmds[CmdBase].lim > 10 ? 2 : 1;
-			if (State2.local || State2.localflg)
+			if (State2.local)
 				*bp++ = '.';
 			if (State2.numdigit > 0)
 				bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);

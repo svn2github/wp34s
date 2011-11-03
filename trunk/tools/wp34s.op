@@ -208,6 +208,7 @@ maxsteps=510
 0x01a8	cmd	M.SQR?
 0x01a9	cmd	M[^-1]
 0x01aa	cmd	MEM?
+0x01ab	cmd	LPOP
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -953,17 +954,17 @@ maxsteps=510
 0x6d00	arg	SCI	max=12,indirect
 0x6e00	arg	ENG	max=12,indirect
 0x6f00	arg	DISP	max=12,indirect
-0x7000	arg	SF	max=120,indirect
-0x7100	arg	CF	max=120,indirect
-0x7200	arg	FF	max=120,indirect
-0x7300	arg	FS?	max=120,indirect
-0x7400	arg	FC?	max=120,indirect
-0x7500	arg	FS?C	max=120,indirect
-0x7600	arg	FS?S	max=120,indirect
-0x7700	arg	FS?F	max=120,indirect
-0x7800	arg	FC?C	max=120,indirect
-0x7900	arg	FC?S	max=120,indirect
-0x7a00	arg	FC?F	max=120,indirect
+0x7000	arg	SF	max=128,indirect,stack
+0x7100	arg	CF	max=128,indirect,stack
+0x7200	arg	FF	max=128,indirect,stack
+0x7300	arg	FS?	max=128,indirect,stack
+0x7400	arg	FC?	max=128,indirect,stack
+0x7500	arg	FS?C	max=128,indirect,stack
+0x7600	arg	FS?S	max=128,indirect,stack
+0x7700	arg	FS?F	max=128,indirect,stack
+0x7800	arg	FC?C	max=128,indirect,stack
+0x7900	arg	FC?S	max=128,indirect,stack
+0x7a00	arg	FC?F	max=128,indirect,stack
 0x7b00	arg	WSIZE	max=65,indirect
 0x7c00	arg	RL	max=64,indirect
 0x7d00	arg	RR	max=64,indirect

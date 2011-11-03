@@ -169,7 +169,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 	} *cp;
 
 	// Common to both alpha mode and normal mode is the programming X.FCN catalogue
-	if (c == K50 && shift == SHIFT_H && ! State2.runmode && ! State2.cmplx)
+	if (c == K53 && shift == SHIFT_H && ! State2.runmode && ! State2.cmplx)
 		return CATALOGUE_PROGXFCN;
 
 	if (! State2.alphas) {
@@ -202,7 +202,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			return CATALOGUE_REGISTERS;
 		}
 
-		if (c == K50 && shift == SHIFT_N && State2.cmplx && State2.catalogue == CATALOGUE_NONE) {
+		if (c == K53 && shift == SHIFT_N && State2.cmplx && State2.catalogue == CATALOGUE_NONE) {
 			/*
 			 *  Shorthand to complex X.FCN - h may be omitted
 			 */
@@ -325,7 +325,6 @@ static void init_arg(const enum rarg base) {
 	State2.rarg = 1;
 	State2.dot = 0;
 	State2.local = 0;
-	State2.localflg = 0;
 }
 
 static void init_cat(enum catalogues cat) {
@@ -1200,8 +1199,7 @@ static int arg_eval(unsigned int val) {
 	const unsigned int base = CmdBase;
 	const int r = RARG(base, val 
 				 + (State2.ind ? RARG_IND : 0) 
-		                 + (State2.local    ? NUMREG :
-				    State2.localflg ? NUMFLG : 0));
+		                 + (State2.local ? LOCAL_REG_BASE : 0));
 	const unsigned int ssize = (! UState.stack_depth || ! State2.runmode ) ? 4 : 8;
 
 	if (! State2.ind) {
@@ -1308,12 +1306,8 @@ static int process_arg_dot(const unsigned int base) {
 			return arg_eval(regX_idx);
 		}
 		if (argcmds[base].local || State2.ind) {
-			// local register select
+			// local register or flag select
 			State2.local = 1;
-		}
-		else if (argcmds[base].flag) {
-			// local flag select
-			State2.localflg = 1;
 		}
 		else if (base == RARG_GTO || base == RARG_XEQ) {
 			// Special GTO . sequence
@@ -1450,12 +1444,6 @@ static int process_arg(const keycode c) {
 				init_arg(0);
 				State2.rarg = 0;
 				return OP_NIL | OP_FIXENG;
-#if 0 // prevents us from selecting the stack registers here
-			} else if (base == RARG_VIEW || base == RARG_VIEW_REG) {
-				init_arg(0);
-				State2.rarg = 0;
-				return OP_NIL | OP_VIEWALPHA;
-#endif
 			} else if (argcmds[base].stckreg)
 				State2.dot = 1;
 		} else if (State2.numdigit > 0)
@@ -1799,9 +1787,10 @@ static int process_catalogue(const keycode c) {
 				else {
 					if (opKIND(op) == KIND_NIL) {
 						const int nop = argKIND(op);
-						if (nop >= OP_CLALL && nop <= OP_CLP)
+						if (nop >= OP_CLALL && nop <= OP_CLP) {
 							init_confirm(confirm_clall + (nop - OP_CLALL));
-						return STATE_UNFINISHED;
+							return STATE_UNFINISHED;
+						}
 					}
 					return op;
 				}

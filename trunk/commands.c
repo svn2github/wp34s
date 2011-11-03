@@ -612,6 +612,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
 	FUNC1(OP_MEM,		&get_mem,		"MEM?")
+	FUNC0(OP_LPOP,		&cmdlpop,		"LPOP")
 #ifdef INCLUDE_STOPWATCH
 	FN_I1(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
@@ -650,7 +651,7 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 #define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim,                nm, 0, 0, 0, 0, 0, 0, 0)
 #define CMDlbl(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 1, 0, 0, 0, 1, 0, 0)
 #define CMDlblnI(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 0, 0, 0, 0, 1, 0, 0)
-#define CMDflg(n, f, nm)	allCMD(n, f, NUMFLG+16,		 nm, 1, 0, 0, 0, 0, 1, 0)
+#define CMDflg(n, f, nm)	allCMD(n, f, NUMFLG+16,		 nm, 1, 1, 1, 0, 0, 1, 0)
 #define CMDstos(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-3, nm, 1, 0, 1, 0, 0, 0, 1)
 
 
@@ -812,7 +813,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_KEYTYPE,	&op_keytype,				"KTP?")
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
-	CMD(RARG_LOCAL,		&op_local,	MAX_LOCAL,		"LOCL")
+	CMD(RARG_LOCAL,		&cmdlocl,	MAX_LOCAL,		"LOCL")
 
 #undef CMDlbl
 #undef CMDlblnI

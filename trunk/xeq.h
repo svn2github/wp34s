@@ -63,10 +63,10 @@ enum multiops;
 
 /* Define some system flag to user flag mappings
  */
-#define A_FLAG		100	/* A = annunciator */
-#define OVERFLOW_FLAG	101	/* B = excess/exceed */
-#define CARRY_FLAG	102	/* C = carry */
-#define NAN_FLAG	103	/* D = danger */
+#define A_FLAG		regA_idx	/* A = annunciator */
+#define OVERFLOW_FLAG	regB_idx	/* B = excess/exceed */
+#define CARRY_FLAG	regC_idx	/* C = carry */
+#define NAN_FLAG	regD_idx	/* D = danger */
 
 #define NAME_LEN	6	/* Length of command names */
 
@@ -385,7 +385,6 @@ extern int current_catalogue_max(void);
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
 #define LBLNAMES	"ABCD"
-#define NUMFLG		104	/* Number of flags */
 
 #define NUMALPHA	31	/* Number of characters in Alpha */
 
@@ -427,6 +426,7 @@ extern int current_catalogue_max(void);
 /* Stack lives in the register set */
 #define NUMREG		(TOPREALREG+STACK_SIZE+EXTRA_REG)/* Number of registers */
 #define TOPREALREG	(100)				/* Non-stack last register */
+#define NUMFLG		NUMREG	// These two must match!
 
 #define REGNAMES	"XYZTABCDLIJK"
 
@@ -746,6 +746,7 @@ enum nilop {
 	OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
 	OP_MEM,
+	OP_LPOP,
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -874,7 +875,7 @@ enum errors {
 	ERR_NONE = 0,
 	ERR_DOMAIN,	ERR_BAD_DATE,	ERR_PROG_BAD,
 	ERR_INFINITY,	ERR_MINFINITY,	ERR_NO_LBL,
-	ERR_XROM_NEST,	ERR_RANGE,	ERR_DIGIT,
+	ERR_ILLEGAL,	ERR_RANGE,	ERR_DIGIT,
 	ERR_TOO_LONG,	ERR_RAM_FULL,	ERR_STK_CLASH,
 	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
 	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
@@ -1083,9 +1084,14 @@ extern unsigned long long int get_int(const decimal64 *, int *);
 extern void get_maxdenom(decNumber *);
 
 extern int get_user_flag(int);
+extern void put_user_flag(int n, int f);
+#if 0
 extern void set_user_flag(int);
 extern void clr_user_flag(int);
-extern void put_user_flag(int n, int f);
+#else
+#define set_user_flag(n) cmdflag(n, RARG_SF)
+#define clr_user_flag(n) cmdflag(n, RARG_CF)
+#endif
 	
 extern void *xcopy(void *, const void *, int);
 extern void *xset(void *, const char, int);
@@ -1221,7 +1227,8 @@ extern void rarg_roundingmode(unsigned int arg, enum rarg op);
 extern void op_setspeed(decimal64 *, decimal64 *, enum nilop);
 extern void op_putkey(unsigned int arg, enum rarg op);
 extern void op_keytype(unsigned int arg, enum rarg op);
-extern void op_local(unsigned int arg, enum rarg op);
+extern void cmdlocl(unsigned int arg, enum rarg op);
+extern void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
 extern void set_running_off_sst(void);
 extern void set_running_on_sst(void);

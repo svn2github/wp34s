@@ -229,7 +229,7 @@ static const struct {
 	XE(ERR_INFINITY, "Error: +infinity")
 	XE(ERR_MINFINITY, "Error: -infinity")
 	XE(ERR_NO_LBL, "Error: no such label")
-	XE(ERR_XROM_NEST, "Error: Slv integrate sum product nested")
+	XE(ERR_ILLEGAL, "Error: Illegal operation")
 	XE(ERR_RANGE, "Error: out of range error")
 	XE(ERR_DIGIT, "Error: bad digit error")
 	XE(ERR_TOO_LONG, "Error: too long error")

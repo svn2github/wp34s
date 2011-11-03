@@ -301,7 +301,7 @@ static int internal_save_program( unsigned int r, FLASH_REGION *fr )
 {
 	program_cleanup();
 	if ( check_return_stack_segment( r ) ) {
-		err( ERR_INVALID );
+		err( ERR_ILLEGAL );
 		return 1;
 	}
 	if ( write_region( r, (FLASH_REGION *) fr ) ) {
