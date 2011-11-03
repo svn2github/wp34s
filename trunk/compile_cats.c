@@ -188,24 +188,6 @@ static s_opcode program_xfcn[] = {
 	MON(OP_SIGN,		"SIGN")
 	RARGCMD(RARG_SL,	"SL")
 	RARGCMD(RARG_SR,	"SR")
-
-#ifdef MATRIX_SUPPORT
-	// Matrix commands
-	MON(OP_MAT_TRN,		"TRANSP")
-	TRI(OP_MAT_MUL,		"M[times]")
-	TRI(OP_MAT_GADD,	"M+[times]")
-	NILIC(OP_MAT_INVERSE,	"M^-1")
-	TRI(OP_MAT_LIN_EQN,	"LINEQS")
-	MON(OP_MAT_DET,		"DET")
-#ifdef MATRIX_LU_DECOMP
-	MON(OP_MAT_LU,		"M.LU")
-#endif
-#ifdef SILLY_MATRIX_SUPPORT
-	NILIC(OP_MAT_ZERO,	"M.ZERO")
-	NILIC(OP_MAT_IDENT,	"M.IDEN")
-#endif
-	DYA(OP_MAT_COPY,	"M.COPY")
-#endif
 };
 
 
@@ -336,24 +318,6 @@ static s_opcode catalogue[] = {
 #endif
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
-#endif
-
-#ifdef MATRIX_SUPPORT
-	// Matrix commands
-	MON(OP_MAT_TRN,		"TRANSP")
-	TRI(OP_MAT_MUL,		"M[times]")
-	TRI(OP_MAT_GADD,	"M+[times]")
-	NILIC(OP_MAT_INVERSE,	"M^-1")
-	TRI(OP_MAT_LIN_EQN,	"LINEQS")
-	MON(OP_MAT_DET,		"DET")
-#ifdef MATRIX_LU_DECOMP
-	MON(OP_MAT_LU,		"M.LU")
-#endif
-#ifdef SILLY_MATRIX_SUPPORT
-	NILIC(OP_MAT_ZERO,	"M.ZERO")
-	NILIC(OP_MAT_IDENT,	"M.IDEN")
-#endif
-	DYA(OP_MAT_COPY,	"M.COPY")
 #endif
 };
 
@@ -547,6 +511,39 @@ static s_opcode int_catalogue[] = {
 #endif
 };
 
+#ifdef MATRIX_SUPPORT
+static s_opcode matrix_catalogue[] = {
+	MON(OP_MAT_DET,		"DET")
+	TRI(OP_MAT_LIN_EQN,	"LINEQS")
+	TRI(OP_MAT_GADD,	"M+[times]")
+	NILIC(OP_MAT_INVERSE,	"M^-1")
+	MON(OP_MAT_ALL,		"M-ALL")
+	DYA(OP_MAT_COL,		"M-COL")
+	MON(OP_MAT_DIAG,	"M-DIAG")
+	DYA(OP_MAT_ROW,		"M-ROW")
+	TRI(OP_MAT_MUL,		"M[times]")
+	DYA(OP_MAT_COPY,	"M.COPY")
+	MON(OP_MAT_IJ,		"M.IJ")
+	TRI(OP_MAT_REG,		"M.REG")
+	MON(OP_MAT_CQ,		"nCOL")
+	MON(OP_MAT_RQ,		"nROW")
+	MON(OP_MAT_TRN,		"TRANSP")
+
+#ifdef MATRIX_ROWOPS
+	NILIC(OP_MAT_ROW_SWAP,	"MROW<>")
+	NILIC(OP_MAT_ROW_MUL,	"MROW*")
+	NILIC(OP_MAT_ROW_GADD,	"MROW+*")
+#endif
+#ifdef MATRIX_LU_DECOMP
+	MON(OP_MAT_LU,		"M.LU")
+#endif
+#ifdef SILLY_MATRIX_SUPPORT
+	NILIC(OP_MAT_ZERO,	"M.ZERO")
+	NILIC(OP_MAT_IDENT,	"M.IDEN")
+#endif
+};
+#endif
+
 static s_opcode test_catalogue[] = {
 	RARGCMD(RARG_BC,	"BC?")
 	RARGCMD(RARG_BS,	"BS?")
@@ -673,21 +670,6 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_FLRCL, 	"RCF")
 	RARGCMD(RARG_PUTKEY,	"PUTK")
 
-#ifdef MATRIX_SUPPORT
-	MON(OP_MAT_ALL,		"M-ALL")
-	MON(OP_MAT_DIAG,	"M-DIAG")
-	DYA(OP_MAT_ROW,		"M-ROW")
-	DYA(OP_MAT_COL,		"M-COL")
-	TRI(OP_MAT_REG,		"M.REG")
-	MON(OP_MAT_IJ,		"M.IJ")
-#ifdef MATRIX_ROWOPS
-	NILIC(OP_MAT_ROW_SWAP,	"MROW<>")
-	NILIC(OP_MAT_ROW_MUL,	"MROW*")
-	NILIC(OP_MAT_ROW_GADD,	"MROW+*")
-#endif
-	MON(OP_MAT_RQ,		"nROW")
-	MON(OP_MAT_CQ,		"nCOL")
-#endif
 	RARGCMD(RARG_LOCAL,	"LOCAL")
 };
 
@@ -1146,6 +1128,9 @@ int main(int argc, char *argv[]) {
 	CAT(mode_catalogue);
 	CAT(alpha_catalogue);
 	CONVERSION(conv_catalogue);
+#ifdef MATRIX_SUPPORT
+	CAT(matrix_catalogue);
+#endif
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CAT(internal_catalogue);
 #endif

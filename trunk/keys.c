@@ -1657,6 +1657,9 @@ int current_catalogue_max(void) {
 		NUM_CONSTS,
 		NUM_CONSTS,
 		SIZE_conv_catalogue,
+#ifdef MATRIX_SUPPORT
+		SIZE_matrix_catalogue,
+#endif
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		SIZE_internal_catalogue,
 #endif
@@ -1701,6 +1704,9 @@ opcode current_catalogue(int n) {
 		NULL,
 		NULL,
 		NULL, //CONV
+#ifdef MATRIX_SUPPORT
+		matrix_catalogue,
+#endif
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		internal_catalogue,
 #endif
