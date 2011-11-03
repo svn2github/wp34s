@@ -49,6 +49,7 @@ static s_opcode program_xfcn[] = {
 #endif
 	MON(OP_CEIL,		"CEIL")
 	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLP,		"CLPROG")
 	NILIC(OP_CLREG,		"CLREG")
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
@@ -365,22 +366,26 @@ static s_opcode cplx_catalogue[] = {
 #endif
 };
 
-static s_opcode stats_catalogue[] = {
-	MON(OP_sigper,		"%\221")
+static s_opcode cfit_catalogue[] = {
 	NILIC(OP_BEST,		"BESTF")
 	NILIC(OP_statCOV,	"COV")
-	NILIC(OP_statSxy,	"sxy")
 	NILIC(OP_EXPF,		"EXPF")
 	NILIC(OP_LINF,		"LINF")
+	NILIC(OP_LOGF,		"LOGF")
+	NILIC(OP_statLR,	"L.R.")
+	NILIC(OP_PWRF,		"PWRF")
+	NILIC(OP_statSxy,	"sxy")
+	MON(OP_xhat,		"\031")
+};
+
+static s_opcode stats_catalogue[] = {
+	MON(OP_sigper,		"%\221")
 	DYA(OP_LNBETA,		"LN\241")
 	MON(OP_LNGAMMA,		"LN\202")
-	NILIC(OP_LOGF,		"LOGF")
 	NILIC(OP_sigmaN,	"n\221")
-	NILIC(OP_PWRF,		"PWRF")
 	NILIC(OP_STORANDOM,	"SEED")
 	NILIC(OP_statSErr,	"SERR")
 	NILIC(OP_RCLSIGMA,	"SUM")
-	MON(OP_xhat,		"\031")
 	NILIC(OP_statWMEAN,	"\001w")
 	NILIC(OP_statGMEAN,	"\001g")
 	NILIC(OP_statGSErr,	"\244m")
@@ -1121,6 +1126,7 @@ int main(int argc, char *argv[]) {
 	CAT(program_xfcn);
 	CAT(cplx_catalogue);
 	CAT(stats_catalogue);
+	CAT(cfit_catalogue);
 	CAT(prob_catalogue);
 	CAT(int_catalogue);
 	CAT(test_catalogue);

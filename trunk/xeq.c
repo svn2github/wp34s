@@ -3883,6 +3883,7 @@ int init_34s(void)
 	check_const_cat();
 	check_cat(CATALOGUE_COMPLEX, "complex");
 	check_cat(CATALOGUE_STATS, "statistics");
+	check_cat(CATALOGUE_CFIT, "curve fitting");
 	check_cat(CATALOGUE_PROB, "probability");
 	check_cat(CATALOGUE_PROG, "programme");
 	check_cat(CATALOGUE_MODE, "mode");

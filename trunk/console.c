@@ -421,6 +421,7 @@ int main(int argc, char *argv[]) {
 			dump_menu("float", "", CATALOGUE_NORMAL);
 			dump_menu("complex", "[cmplx]", CATALOGUE_COMPLEX);
 			dump_menu("statistics", "", CATALOGUE_STATS);
+			dump_menu("curve fitting", "", CATALOGUE_CFIT);
 			dump_menu("probability", "", CATALOGUE_PROB);
 			dump_menu("integer", "", CATALOGUE_INT);
 #ifdef MATRIX_SUPPORT

@@ -41,6 +41,8 @@
 #define TEST_GE		5
 
 enum confirmations {
+	// Apart from the first of these, these must be in the same
+	// order as the opcodes in xeq.h: OP_CLALL, OP_RESET, OP_CLP
 	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog
 };
 
@@ -185,10 +187,12 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K20,     { CATALOGUE_CONST,  CATALOGUE_NONE,   CATALOGUE_COMPLEX_CONST } },
 			{ K41,     { CATALOGUE_PROB,   CATALOGUE_NONE,   CATALOGUE_PROB          } },
 			{ K42,     { CATALOGUE_STATS,  CATALOGUE_NONE,   CATALOGUE_STATS         } },
-			{ K44,     { CATALOGUE_STATUS, CATALOGUE_STATUS, CATALOGUE_STATUS        } },
-			{ K50,     { CATALOGUE_NORMAL, CATALOGUE_INT,    CATALOGUE_COMPLEX       } },
+			{ K43,     { CATALOGUE_CFIT,   CATALOGUE_NONE,   CATALOGUE_CFIT          } },
+			{ K44,     { CATALOGUE_MATRIX, CATALOGUE_NONE,   CATALOGUE_MATRIX        } },
+			{ K50,     { CATALOGUE_STATUS, CATALOGUE_STATUS, CATALOGUE_STATUS        } },
 			{ K51,     { CATALOGUE_TEST,   CATALOGUE_TEST,   CATALOGUE_NONE          } },
 			{ K52,     { CATALOGUE_PROG,   CATALOGUE_PROG,   CATALOGUE_PROG          } },
+			{ K53,     { CATALOGUE_NORMAL, CATALOGUE_INT,    CATALOGUE_COMPLEX       } },
 		};
 
 		if (shift == SHIFT_F && c == K60) {
@@ -590,7 +594,7 @@ static int process_fg_shifted(const keycode c) {
 		{ RARG_PROD,              RARG_SUM                 },
 		{ OP_MON | OP_PERCNT,     OP_MON | OP_PERCHG       },
 		// Row 7
-		{ STATE_UNFINISHED,       OP_NIL | OP_OFF          },
+		{ STATE_UNFINISHED,       STATE_UNFINISHED         },
 		{ OP_MON | OP_ABS,        OP_MON | OP_RND          },
 		{ OP_MON | OP_TRUNC,      OP_MON | OP_FRAC         },
 		{ RARG_LBL,               OP_NIL | OP_RTN          },
@@ -677,6 +681,13 @@ static int process_fg_shifted(const keycode c) {
 		State2.test = op;
 		return STATE_UNFINISHED;
 
+	case K60:
+		if (shift == SHIFT_G) {
+			process_cmdline_set_lift();
+			set_smode(SDISP_SHOW);
+		}
+		break;
+
 	case K21:
 	case K52:
 	case K53:
@@ -715,7 +726,7 @@ static int process_h_shifted(const keycode c) {
 		STATE_UNFINISHED,	// CONST
 		_RARG   | RARG_SWAPX,
 		OP_MON  | OP_NOT,
-		STATE_UNFINISHED,	// CLP
+		CONST(OP_PI),
 		OP_NIL  | OP_rCLX,
 		// Row 4
 		_RARG   | RARG_GTO,
@@ -727,16 +738,16 @@ static int process_h_shifted(const keycode c) {
 		OP_MON  | OP_FACT,
 		STATE_UNFINISHED,	// PROB
 		STATE_UNFINISHED,	// STAT
-		OP_NIL  | OP_statLR,
-		STATE_UNFINISHED,	// STATUS
+		STATE_UNFINISHED,	// CFIT
+		STATE_UNFINISHED,	// MATRIX
 		// Row 6
-		STATE_UNFINISHED,	// X.FCN
+		STATE_UNFINISHED,	// STATUS
 		STATE_UNFINISHED,	// TEST
 		STATE_UNFINISHED,	// P.FCN
-		CONST(OP_PI),
+		STATE_UNFINISHED,	// X.FCN
 		OP_SPEC | OP_SIGMAMINUS,
 		// Row 7
-		STATE_UNFINISHED,	// SHOW
+		OP_NIL | OP_OFF,
 		_RARG   | RARG_PAUSE,
 		OP_NIL  | OP_RADCOM,
 		STATE_UNFINISHED,	// P/R
@@ -749,19 +760,6 @@ static int process_h_shifted(const keycode c) {
 
 	// The switch handles all the special cases
 	switch (c) {
-
-	case K23:
-		if (State2.runmode)
-			clrretstk(1);
-		else
-			init_confirm(confirm_clprog);
-		break;
-
-	case K60:
-		process_cmdline_set_lift();
-		set_smode(SDISP_SHOW);
-		break;
-
 	case K62:
 		if (UState.fraccomma)
 			op = OP_NIL | OP_RADDOT;
@@ -857,7 +855,7 @@ static int process_fgh_shifted_cmplx(const keycode c) {
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    CONST_CMPLX(OP_PI)  },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
 		// Row 7
-		{ STATE_UNFINISHED,    OP_NIL | OP_OFF,     STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_OFF     },
 		{ OP_CMON | OP_ABS,    OP_CMON | OP_RND,    STATE_UNFINISHED    },
 		{ OP_CMON | OP_TRUNC,  OP_CMON | OP_FRAC,   STATE_UNFINISHED    },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
@@ -1174,7 +1172,7 @@ static int process_alpha(const keycode c) {
 	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
 		if (shift == SHIFT_F)
 			State2.alphashift = 1 - State2.alphashift;
-		else if (shift == SHIFT_G)
+		else if (shift == SHIFT_H)
 			return OP_NIL | OP_OFF;
 		else if (shift == SHIFT_N)
 			init_state();
@@ -1657,6 +1655,7 @@ int current_catalogue_max(void) {
 		NUM_CONSTS,
 		NUM_CONSTS,
 		SIZE_conv_catalogue,
+		SIZE_cfit_catalogue,
 #ifdef MATRIX_SUPPORT
 		SIZE_matrix_catalogue,
 #endif
@@ -1704,6 +1703,7 @@ opcode current_catalogue(int n) {
 		NULL,
 		NULL,
 		NULL, //CONV
+		cfit_catalogue,
 #ifdef MATRIX_SUPPORT
 		matrix_catalogue,
 #endif
@@ -1797,10 +1797,12 @@ static int process_catalogue(const keycode c) {
 						init_arg(RARG_CMD(op));
 				}
 				else {
-					if (op == (OP_NIL | OP_CLALL))
-						init_confirm(confirm_clall);
-					else if (op == (OP_NIL | OP_RESET))
-						init_confirm(confirm_reset);
+					if (opKIND(op) == KIND_NIL) {
+						const int nop = argKIND(op);
+						if (nop >= OP_CLALL && nop <= OP_CLP)
+							init_confirm(confirm_clall + (nop - OP_CLALL));
+						return STATE_UNFINISHED;
+					}
 					return op;
 				}
 			} else
@@ -1916,7 +1918,7 @@ static int process_confirm(const keycode c) {
 		switch (State2.confirm) {
 		case confirm_clall:	clrall(NULL, NULL, OP_CLALL);	break;
 		case confirm_reset:	reset(NULL, NULL, OP_RESET);	break;
-		case confirm_clprog:	clrprog();
+		case confirm_clprog:	clrprog();			break;
 		}
 		State2.confirm = confirm_none;
 		State2.digval = 0;

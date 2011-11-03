@@ -169,7 +169,7 @@ void dump_opcodes(FILE *f) {
 
 			case KIND_NIL:
 				d = c & 0xff;
-				if (d == OP_CLALL || d == OP_RESET) {
+				if (d >= OP_CLALL && d <= OP_CLP) {
 					continue;
 				}
 			}
