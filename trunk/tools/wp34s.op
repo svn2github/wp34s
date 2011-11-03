@@ -160,52 +160,54 @@ maxsteps=510
 0x0178	cmd	R-SWAP
 0x0179	cmd	R-CLR
 0x017a	cmd	R-SORT
-0x017b	cmd	XEQUSR
-0x017c	cmd	[infinity]?
-0x017d	cmd	NaN?
-0x017e	cmd	SPEC?
-0x017f	cmd	PRIME?
-0x0180	cmd	INT?
-0x0181	cmd	FP?
-0x0182	cmd	EVEN?
-0x0183	cmd	ODD?
-0x0184	cmd	ENTRY?
-0x0185	cmd	TICKS
-0x0186	cmd	BATT
-0x0187	cmd	SETEUR
-0x0188	cmd	SETUK
-0x0189	cmd	SETUSA
-0x018a	cmd	SETIND
-0x018b	cmd	SETCHN
-0x018c	cmd	SLVQ
-0x018d	cmd	NEXTP
-0x018e	cmd	XEQ[alpha]
-0x018f	cmd	GTO[alpha]
-0x0190	cmd	RCF.RG
-0x0191	cmd	RCF.ST
-0x0192	cmd	SAVE
-0x0193	cmd	LOAD
-0x0194	cmd	RM?
-0x0195	cmd	SLOW
-0x0196	cmd	FAST
-0x0197	cmd	SENDP
-0x0198	cmd	SENDR
-0x0199	cmd	SENDA
-0x019a	cmd	RECV
-0x019b	cmd	TOP?
-0x019c	cmd	IBASE?
-0x019d	cmd	SMODE?
-0x019e	cmd	INTM?
-0x019f	cmd	REALM?
-0x01a0	cmd	x=+0?
-0x01a1	cmd	x=-0?
-0x01a2	cmd	MROW[<->]
-0x01a3	cmd	MROW[times]
-0x01a4	cmd	MROW+[times]
-0x01a5	cmd	M.SQR?
-0x01a6	cmd	M[^-1]
-0x01a7	cmd	MEM?
-0x01a8	cmd	POPUSR
+0x017b	cmd	SLVI
+0x017c	cmd	SLVS
+0x017d	cmd	XEQUSR
+0x017e	cmd	POPUSR
+0x017f	cmd	[infinity]?
+0x0180	cmd	NaN?
+0x0181	cmd	SPEC?
+0x0182	cmd	PRIME?
+0x0183	cmd	INT?
+0x0184	cmd	FP?
+0x0185	cmd	EVEN?
+0x0186	cmd	ODD?
+0x0187	cmd	ENTRY?
+0x0188	cmd	TICKS
+0x0189	cmd	BATT
+0x018a	cmd	SETEUR
+0x018b	cmd	SETUK
+0x018c	cmd	SETUSA
+0x018d	cmd	SETIND
+0x018e	cmd	SETCHN
+0x018f	cmd	SLVQ
+0x0190	cmd	NEXTP
+0x0191	cmd	XEQ[alpha]
+0x0192	cmd	GTO[alpha]
+0x0193	cmd	RCF.RG
+0x0194	cmd	RCF.ST
+0x0195	cmd	SAVE
+0x0196	cmd	LOAD
+0x0197	cmd	RM?
+0x0198	cmd	SLOW
+0x0199	cmd	FAST
+0x019a	cmd	SENDP
+0x019b	cmd	SENDR
+0x019c	cmd	SENDA
+0x019d	cmd	RECV
+0x019e	cmd	TOP?
+0x019f	cmd	IBASE?
+0x01a0	cmd	SMODE?
+0x01a1	cmd	INTM?
+0x01a2	cmd	REALM?
+0x01a3	cmd	x=+0?
+0x01a4	cmd	x=-0?
+0x01a5	cmd	MROW[<->]
+0x01a6	cmd	MROW[times]
+0x01a7	cmd	MROW+[times]
+0x01a8	cmd	M.SQR?
+0x01a9	cmd	M[^-1]
+0x01aa	cmd	MEM?
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -1052,38 +1054,36 @@ maxsteps=510
 0x8b47	cmd	tons[->]t
 0x8b48	cmd	t[->]s.tons
 0x8b49	cmd	s.tons[->]t
-0x8c00	arg	SLVI	max=208,indirect,local
-0x8d00	arg	SLVS	max=208,indirect,local
-0x8e00	arg	PSE	max=100,indirect
-0x8f00	arg	KEY?	max=212,indirect,stack
-0x9000	arg	[alpha]XEQ	max=212,indirect,stack
-0x9100	arg	[alpha]GTO	max=212,indirect,stack
-0x9200	arg	PRCL	max=10,indirect
-0x9300	arg	PSTO	max=10,indirect
-0x9400	arg	P[<->]	max=10,indirect
-0x9500	arg	RCF	max=112,indirect,stack
-0x9600	arg	RCF+	max=112,indirect,stack
-0x9700	arg	RCF-	max=112,indirect,stack
-0x9800	arg	RCF[times]	max=112,indirect,stack
-0x9900	arg	RCF/	max=112,indirect,stack
-0x9a00	arg	RCF[v]	max=112,indirect,stack
-0x9b00	arg	RCF[^]	max=112,indirect,stack
-0x9c00	arg	[cmplx]RCF	max=111,indirect,stack,complex
-0x9d00	arg	[cmplx]RCF+	max=111,indirect,stack,complex
-0x9e00	arg	[cmplx]RCF-	max=111,indirect,stack,complex
-0x9f00	arg	[cmplx]RCF[times]	max=111,indirect,stack,complex
-0xa000	arg	[cmplx]RCF/	max=111,indirect,stack,complex
-0xa100	arg	SDL	max=100,indirect
-0xa200	arg	SDR	max=100,indirect
-0xa300	arg	VW[alpha]+	max=212,indirect,stack
-0xa400	arg	RM	max=7,indirect
-0xa500	arg	STOM	max=212,indirect,stack
-0xa600	arg	RCLM	max=212,indirect,stack
-0xa800	arg	SENDL	max=10,indirect
-0xa900	arg	PUTK	max=212,indirect,stack
-0xaa00	arg	KTP?	max=212,indirect,stack
-0xab00	arg	MSG	max=23,indirect
-0xac00	arg	LOCL	max=100,indirect
+0x8c00	arg	PSE	max=100,indirect
+0x8d00	arg	KEY?	max=212,indirect,stack
+0x8e00	arg	[alpha]XEQ	max=212,indirect,stack
+0x8f00	arg	[alpha]GTO	max=212,indirect,stack
+0x9000	arg	PRCL	max=10,indirect
+0x9100	arg	PSTO	max=10,indirect
+0x9200	arg	P[<->]	max=10,indirect
+0x9300	arg	RCF	max=112,indirect,stack
+0x9400	arg	RCF+	max=112,indirect,stack
+0x9500	arg	RCF-	max=112,indirect,stack
+0x9600	arg	RCF[times]	max=112,indirect,stack
+0x9700	arg	RCF/	max=112,indirect,stack
+0x9800	arg	RCF[v]	max=112,indirect,stack
+0x9900	arg	RCF[^]	max=112,indirect,stack
+0x9a00	arg	[cmplx]RCF	max=111,indirect,stack,complex
+0x9b00	arg	[cmplx]RCF+	max=111,indirect,stack,complex
+0x9c00	arg	[cmplx]RCF-	max=111,indirect,stack,complex
+0x9d00	arg	[cmplx]RCF[times]	max=111,indirect,stack,complex
+0x9e00	arg	[cmplx]RCF/	max=111,indirect,stack,complex
+0x9f00	arg	SDL	max=100,indirect
+0xa000	arg	SDR	max=100,indirect
+0xa100	arg	VW[alpha]+	max=212,indirect,stack
+0xa200	arg	RM	max=7,indirect
+0xa300	arg	STOM	max=212,indirect,stack
+0xa400	arg	RCLM	max=212,indirect,stack
+0xa600	arg	SENDL	max=10,indirect
+0xa700	arg	PUTK	max=212,indirect,stack
+0xa800	arg	KTP?	max=212,indirect,stack
+0xa900	arg	MSG	max=23,indirect
+0xaa00	arg	LOCL	max=100,indirect
 0xf000	mult	LBL
 0xf100	mult	LBL?
 0xf200	mult	XEQ

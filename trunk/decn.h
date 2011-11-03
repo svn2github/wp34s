@@ -238,7 +238,7 @@ extern decNumber *dn_mulpow10(decNumber *, const decNumber *, int);
 extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, unsigned int *);
 extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, unsigned int *, int (*)(const decNumber *, const decNumber *, const decNumber *));
 
-extern void solver(unsigned int arg, enum rarg op);
+extern void solver(decimal64 *a, decimal64 *b, enum nilop op);
 
 extern decNumber *decNumberPolyPn(decNumber *res, const decNumber *y, const decNumber *x);
 extern decNumber *decNumberPolyTn(decNumber *res, const decNumber *y, const decNumber *x);

@@ -539,7 +539,12 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FN_I0(OP_REGSWAP,	&op_regswap,		"R-SWAP")
 	FN_I0(OP_REGCLR,	&op_regclr,		"R-CLR")
 	FN_I0(OP_REGSORT,	&op_regsort,		"R-SORT")
+
+	FUNC0(OP_INISOLVE,	&solver,		"SLVI")
+	FUNC0(OP_SOLVESTEP,	&solver,		"SLVS")
 	FUNC0(OP_GSBuser,	&do_usergsb,		"XEQUSR")
+	FUNC0(OP_POPUSR,	&op_popusr,		"POPUSR")
+
 	FN_I0(OP_XisInf,	&isInfinite,		"\237?")
 	FN_I0(OP_XisNaN,	&isNan,			"NaN?")
 	FN_I0(OP_XisSpecial,	&isSpecial,		"SPEC?")
@@ -607,7 +612,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
 	FUNC1(OP_MEM,		&get_mem,		"MEM?")
-	FUNC0(OP_POPUSR,	&op_popusr,		"POPUSR")
 #ifdef INCLUDE_STOPWATCH
 	FN_I1(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
@@ -648,7 +652,6 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 #define CMDlblnI(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 0, 0, 0, 0, 1, 0, 0)
 #define CMDflg(n, f, nm)	allCMD(n, f, NUMFLG+16,		 nm, 1, 0, 0, 0, 0, 1, 0)
 #define CMDstos(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-3, nm, 1, 0, 1, 0, 0, 0, 1)
-#define CMDslv(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-4, nm, 1, 0, 1, 0, 0, 0, 0)
 
 
 #if COMMANDS_PASS == 2
@@ -767,9 +770,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_BASE,		&set_int_base,	17,			"BASE")
 
 	CMDnoI(RARG_CONV,	&cmdconv,	NUM_CONSTS_CONV*2,	"conv")
-
-	CMDslv(RARG_INISOLVE,	&solver,				"SLVI")
-	CMDslv(RARG_SOLVESTEP,	&solver,				"SLVS")
 
 	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
 	CMDstk(RARG_KEY,	&op_keyp,				"KEY?")

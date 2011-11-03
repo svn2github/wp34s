@@ -3310,37 +3310,32 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 #define _FLAG_COUNT_N	0	/* 0 - 7, eight flags in all */
 
 // User code interface to the solver
-void solver(unsigned int arg, enum rarg op) {
-	const int f_base = arg + (arg >= NUMREG ? NUMFLG : 0);
+void solver(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	decNumber a, b, c, fa, fb, fc;
 	unsigned int flags;
 	int r;
 
-	if (arg >= NUMREG && (local_levels() >> 2) < (int)arg - NUMREG + 5) {
-		err(ERR_RANGE);
-		return;
-	}	
-	get_reg_n_as_dn(arg + 0, &a);
-	get_reg_n_as_dn(arg + 1, &b);
-	get_reg_n_as_dn(arg + 3, &fa);
-	get_reg_n_as_dn(arg + 4, &fb);
+	get_reg_n_as_dn(LOCAL_REG_BASE + 0, &a);
+	get_reg_n_as_dn(LOCAL_REG_BASE + 1, &b);
+	get_reg_n_as_dn(LOCAL_REG_BASE + 3, &fa);
+	get_reg_n_as_dn(LOCAL_REG_BASE + 4, &fb);
 
-	if (op == RARG_INISOLVE) {
+	if (op == OP_INISOLVE) {
 		solver_init(&c, &a, &b, &fa, &fb, &flags);
 	} else {
-		get_reg_n_as_dn(arg + 2, &c);
+		get_reg_n_as_dn(LOCAL_REG_BASE + 2, &c);
 		flags = 0;
 		for (r=0; r<8; r++)
-			if (get_user_flag(f_base + r + _FLAG_COUNT_N))
+			if (get_user_flag(LOCAL_FLAG_BASE + r + _FLAG_COUNT_N))
 				flags |= 1<<r;
 		flags = SLV_SET_COUNT(0, flags);
 
-		if (get_user_flag(f_base + _FLAG_BRACKET_N))
+		if (get_user_flag(LOCAL_FLAG_BASE + _FLAG_BRACKET_N))
 			SET_BRACKET(flags);
-		if (get_user_flag(f_base + _FLAG_CONST_N))
+		if (get_user_flag(LOCAL_FLAG_BASE + _FLAG_CONST_N))
 			SET_CONST(flags);
 #ifdef USE_RIDDERS
-		if (get_user_flag(arg + _FLAG_BISECT_N))
+		if (get_user_flag(NUMFLG + _FLAG_BISECT_N))
 			SET_BISECT(flags);
 #endif
 
@@ -3349,20 +3344,20 @@ void solver(unsigned int arg, enum rarg op) {
 		setX(r==0?&const_0:&const_1);
 	}
 
-	put_reg_n(arg + 0, &a);
-	put_reg_n(arg + 1, &b);
-	put_reg_n(arg + 2, &c);
-	put_reg_n(arg + 3, &fa);
-	put_reg_n(arg + 4, &fb);
+	put_reg_n(LOCAL_REG_BASE + 0, &a);
+	put_reg_n(LOCAL_REG_BASE + 1, &b);
+	put_reg_n(LOCAL_REG_BASE + 2, &c);
+	put_reg_n(LOCAL_REG_BASE + 3, &fa);
+	put_reg_n(LOCAL_REG_BASE + 4, &fb);
 
-	put_user_flag(f_base + _FLAG_BRACKET_N, IS_BRACKET(flags));
-	put_user_flag(f_base + _FLAG_CONST_N, IS_CONST(flags));
+	put_user_flag(LOCAL_FLAG_BASE + _FLAG_BRACKET_N, IS_BRACKET(flags));
+	put_user_flag(LOCAL_FLAG_BASE + _FLAG_CONST_N, IS_CONST(flags));
 #ifdef USE_RIDDERS
-	put_user_flag(f_base + _FLAG_BISECT_N, IS_BISECT(flags));
+	put_user_flag(LOCAL_FLAG_BASE + _FLAG_BISECT_N, IS_BISECT(flags));
 #endif
 	flags = SLV_COUNT(flags);
 	for (r=0; r<8; r++)
-		put_user_flag(f_base + r + _FLAG_COUNT_N, flags & (1<<r));
+		put_user_flag(LOCAL_FLAG_BASE + r + _FLAG_COUNT_N, flags & (1<<r));
 }
 
 /**********************************************************************/

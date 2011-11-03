@@ -51,7 +51,7 @@
 			STO .04
 			x[approx]0?
 				JMP slv_initial2_perfect
-			SLVI .00
+			SLVI
 			RCL .02
 
 slv_loop::		FILL
@@ -61,7 +61,7 @@ slv_loop::		FILL
 			FILL
 			x[approx]0?
 				JMP slv_success
-			SLVS .00
+			SLVS
 			x[!=]0?			/* Check for failure to complete*/
 				JMP slv_failed
 			RCL .02

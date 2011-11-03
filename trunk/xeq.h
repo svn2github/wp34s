@@ -709,7 +709,7 @@ enum nilop {
 	OP_CLRALPHA, OP_VIEWALPHA, OP_ALPHALEN,
 	OP_ALPHATOX, OP_XTOALPHA, OP_ALPHAON, OP_ALPHAOFF,
 	OP_REGCOPY, OP_REGSWAP, OP_REGCLR, OP_REGSORT,
-	OP_GSBuser,
+	OP_INISOLVE, OP_SOLVESTEP, OP_GSBuser, OP_POPUSR,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 	OP_ENTRYP,
@@ -746,7 +746,6 @@ enum nilop {
 	OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
 	OP_MEM,
-	OP_POPUSR,
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -808,8 +807,6 @@ enum rarg {
 	RARG_BASE,
 
 	RARG_CONV,
-
-	RARG_INISOLVE, RARG_SOLVESTEP,
 
 	RARG_PAUSE, RARG_KEY,
 	RARG_ALPHAXEQ, RARG_ALPHAGTO,
@@ -980,6 +977,9 @@ enum shifts {
 
 #define	MAX_LOCAL	100		// maximum number of local registers
 #define MAX_LOCAL_DIRECT 16		// # of directly addressable local registers
+
+#define LOCAL_FLAG_BASE	(NUMFLG)
+#define LOCAL_REG_BASE	(NUMREG)
 
 /*
  *  All more or less persistent global data
@@ -1187,6 +1187,7 @@ extern void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_popusr(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void solver(decimal64 *a, decimal64 *b, enum nilop op);
 extern void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op);
 extern void do_userclear(decimal64 *a, decimal64 *b, enum nilop op);
 extern void isTop(decimal64 *a, decimal64 *b, enum nilop op);
