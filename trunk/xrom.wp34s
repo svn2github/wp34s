@@ -72,12 +72,7 @@ slv_loop::		FILL
 			JMP slv_loop
 
 			/* Solver estimates converged */
-slv_fin::		RCL Z
-			FILL
-			XEQ slv_fixstack
-			RTN
-
-slv_fixstack::		iC 0
+slv_fin::		iC 0
 			STO L
 			RCL T
 			RCL .01
@@ -683,8 +678,7 @@ deriv_return::		STO L
                         x[!=]0?
 			STO/ Y				/* -b-sqrt 2c/(-b-sqrt) 2c 2c */
 			RCL/ .02			/* (b-sqrt)/2a 2c/(b-sqrt) 2c 2c */
-			XEQ quad_fix_stack
-			RTN
+			JMP quad_fix_stack
 
 quad_complex::		ABS
 			[sqrt]				/* sqrt ? b 2c */
