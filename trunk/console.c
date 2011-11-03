@@ -423,7 +423,9 @@ int main(int argc, char *argv[]) {
 			dump_menu("statistics", "", CATALOGUE_STATS);
 			dump_menu("probability", "", CATALOGUE_PROB);
 			dump_menu("integer", "", CATALOGUE_INT);
+#ifdef MATRIX_SUPPORT
 			dump_menu("matrix", "", CATALOGUE_MATRIX);
+#endif
 			dump_menu("alpha", "", CATALOGUE_ALPHA);
 			dump_menu("alpha special letters upper", "", CATALOGUE_ALPHA_LETTERS_UPPER);
 			// dump_menu("alpha special letters lower", "", CATALOGUE_ALPHA_LETTERS_LOWER);

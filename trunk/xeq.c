@@ -3884,6 +3884,9 @@ int init_34s(void)
 	check_cat(CATALOGUE_MODE, "mode");
 	check_cat(CATALOGUE_TEST, "tests");
 	check_cat(CATALOGUE_INT, "int");
+#ifdef MATRIX_SUPPORT
+	check_cat(CATALOGUE_MATRIX, "matrix");
+#endif
 	check_cat(CATALOGUE_ALPHA, "alpha");
 	check_cat(CATALOGUE_ALPHA_LETTERS_UPPER, "alpha special upper case letters");
 	// check_cat(CATALOGUE_ALPHA_LETTERS_LOWER, "alpha special lower letters");
