@@ -101,7 +101,7 @@ void set_speed( unsigned int speed );
  *  And Auto Power Down threshold
  *  Deep sleep and idle settings
  */
-#define APD_TICKS 1800 // 3 minutes
+#define APD_TICKS 6000 // 10 minutes
 #define APD_VOLTAGE SUPC_BOD_2_2V
 #define LOW_VOLTAGE SUPC_BOD_2_5V
 #define ALLOW_DEEP_SLEEP 1   // undef to disable

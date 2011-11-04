@@ -3750,6 +3750,7 @@ void set_running_on_sst() {
 void set_running_off() {
 	set_running_off_sst();
 	State.entryp = 0;
+	State.implicit_rtn = 0;
 	dot( RCL_annun, 0);
 }
 
@@ -3772,35 +3773,56 @@ void set_running_on() {
  *  so the flag word is either at the top or at the bottom of the frame.
  */
 void cmdlocl(unsigned int arg, enum rarg op) {
-	const int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 	short int sp = RetStkPtr;
-	const short int n = (++arg << 2) + 1;
+	int size = (++arg << 2) + 2;
+	const unsigned short marker = LOCAL_MASK | size;
+	int old_size = 0;
+	short unsigned int old_flags = 0;
 
-	if (sp != 0 && isLOCAL(RetStk[sp])) {
-		// Do not allow more than one LOCAL in the same subroutine
-		err(ERR_ILLEGAL);
-		return;
+	if (sp == LocalRegs) {
+		// resize required
+		old_size = local_levels();
+		sp += old_size;
+		old_flags = *flag_word(LOCAL_FLAG_BASE, NULL);
 	}
 	// compute space needed
-	sp -= n;
-	if (-sp >= stack_size) {
+	sp -= size;
+	if (-sp > RET_STACK_SIZE + NUMPROG + 1 - LastProg) {
 		err(ERR_RAM_FULL);
 		return;
 	}
-	xset(RetStk + sp, 0, n << 1);
-	RetStk[--sp] = LOCAL_MASK | (n + 1);
+	if ( old_size > 0 ) {
+		// move previous contents to new destination
+		int n;
+		if (size > old_size) {
+			n = old_size;
+			size -= old_size;
+		}
+		else {
+			n = size;
+			size = 0;
+		}
+		xcopy(RetStk + sp, RetStk + LocalRegs, n + n);
+	}
+	// fill the rest with 0
+	xset(RetStk + sp + old_size, 0, size + size);
+
+	// set marker, pointers and flags
+	RetStk[sp] = marker;
 	RetStkPtr = LocalRegs = sp;
+	*flag_word(LOCAL_FLAG_BASE, NULL) = old_flags;
 }
 
 /*
- *  Undo the effect of LOCL
- *  POPs all pending returns below the most recent local frame and this frame
+ *  Undo the effect of LOCL by popping the current local frame.
+ *  Needs to be executed from the same level that has established the frame.
  */
 void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	if (LocalRegs < 0)
-		RetStkPtr = retstk_up(LocalRegs, 1);
-	else
+	if (LocalRegs != RetStkPtr) {
 		err(ERR_ILLEGAL);
+		return;
+	}
+	RetStkPtr = retstk_up(LocalRegs, 1) - 1;
 }
 
 #if defined(DEBUG) && !defined(WINGUI) && !defined(WP34STEST)
