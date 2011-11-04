@@ -109,6 +109,7 @@ void set_speed( unsigned int speed );
 
 //#define RAM_FUNCTION __attribute__((section(".ramfunc"),noinline))
 //#define NO_INLINE    __attribute__((noinline))
+#define NO_RETURN      __attribute__((noreturn))
 
 /*
  *  Local data
@@ -433,7 +434,7 @@ void go_idle( void )
 {
 	if ( is_debug() ) {
 		/*
-		 *  Idle and off modes cannot be debugged
+		 *  Idle and  modes cannot be debugged
 		 */
 		return;
 	}
@@ -454,7 +455,7 @@ void go_idle( void )
 /*
  *  Common part of shutdown() and deep_sleep()
  */
-void turn_off( void )
+NO_RETURN void turn_off( void )
 {
 	/*
 	 *  Disable any unused oscillators and let the rest go slow
@@ -476,7 +477,7 @@ void turn_off( void )
 /*
  *  Turn everything except the backup sram off
  */
-void shutdown( void )
+NO_RETURN void shutdown( void )
 {
 	/*
 	 *  CmdLine will be lost, process it first
@@ -1502,7 +1503,7 @@ void show_keyticks(void)
 /*
  *  Main program as seen from C
  */
-int main(void)
+NO_RETURN int main(void)
 {
 	char confirm_counter = 0;
 	char last_key_combo = 0;
@@ -1914,7 +1915,6 @@ int main(void)
 			}
 		}
 	}
-        return 0;
 }
 
 

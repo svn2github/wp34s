@@ -318,115 +318,116 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 	int tag, length, crc;
 	void *dest;
 
-	if ( accept_connection() ) {
-		err( ERR_IO );
-		return;
-	}
-	for ( i = 0; i < MAXCONNECT; ++i ) {
+	if ( not_running() ) {
+		/*
+		 *  Only allowed as a direct command
+		 */
+		if ( accept_connection() ) {
+			err( ERR_IO );
+			return;
+		}
+		for ( i = 0; i < MAXCONNECT; ++i ) {
+			c = get_byte();
+			if ( c == STX ) break;
+		}
+		if ( c != STX ) {
+			err( ERR_IO );
+			return;
+		}
+
+		tag = get_word();
+		if ( tag < 0 ) goto err;
+
+		length = get_word();
+		if ( length < 0 || length > DATA_LEN ) goto err;
+
+		crc = get_word();
+		if ( crc < 0 ) goto err;
+
+		for ( i = 0; i < length; ++i ) {
+			c = get_byte();
+			if ( c < 0 ) goto err;
+			buffer[ i ] = c;
+		}
 		c = get_byte();
-		if ( c == STX ) break;
-	}
-	if ( c != STX ) {
+		if ( c != ETX ) goto err;
+
+		if ( crc != ( crc16( buffer, length ) ^ tag ) ) goto err;
+
+		/*
+		 *  Check the tag value and copy the data if valid
+		 */
+		switch ( tag ) {
+
+		case TAG_PROGRAM:
+			/*
+			 *  Program area received
+			 */
+			if ( length > sizeof( s_opcode ) * NUMPROG ) {
+				  goto invalid;
+			}
+			dest = Prog;
+			LastProg = 1 + length / sizeof( s_opcode );
+			DispMsg = "Program";
+			clrretstk_pc();
+			break;
+
+		case TAG_ALLMEM:
+			/*
+			 *  All memory received
+			 */
+			if ( length != sizeof( PersistentRam ) ) {
+				  goto invalid;
+			}
+			dest = &PersistentRam;
+			DispMsg = "All RAM";
+			break;
+
+		case TAG_REGISTER:
+			/*
+			 *  Registers received
+			 */
+			if ( length > sizeof( Regs ) ) {
+				  goto invalid;
+			}
+			dest = Regs;
+			DispMsg = "Register";
+			break;
+
+		default:
+			goto invalid;
+		}
+
+		/*
+		 *  Copy the data and recompute the checksums
+		 */
+		xcopy( dest, buffer, length );
+		checksum_all();
+
+		/*
+		 *  All is well
+		 */
+		c = ACK;
+		goto close;
+
+		/*
+		 *  Various error conditions
+		 */
+	invalid:
+		err( ERR_INVALID );
+		goto nak;
+	err:
 		err( ERR_IO );
-		return;
-	}
+	nak:
+		c = NAK;
 
-	tag = get_word();
-	if ( tag < 0 ) goto err;
-
-	length = get_word();
-	if ( length < 0 || length > DATA_LEN ) goto err;
-
-	crc = get_word();
-	if ( crc < 0 ) goto err;
-
-	for ( i = 0; i < length; ++i ) {
-		c = get_byte();
-		if ( c < 0 ) goto err;
-		buffer[ i ] = c;
-	}
-	c = get_byte();
-	if ( c != ETX ) goto err;
-
-	if ( crc != ( crc16( buffer, length ) ^ tag ) ) goto err;
-
-	/*
-	 *  Check the tag value and copy the data if valid
-	 */
-	switch ( tag ) {
-
-	case TAG_PROGRAM:
+	close:
 		/*
-		 *  Program area received
+		 *  Send reply to partner
 		 */
-		if ( check_return_stack_segment( -1 )
-		  || length > sizeof( s_opcode ) * NUMPROG )
-		{
-			  goto invalid;
-		}
-		dest = Prog;
-		LastProg = 1 + length / sizeof( s_opcode );
-		DispMsg = "Program";
-		break;
-
-	case TAG_ALLMEM:
-		/*
-		 *  All memory received
-		 */
-		if ( check_return_stack_segment( -1 )
-		  || length != sizeof( PersistentRam ) )
-		{
-			  goto invalid;
-		}
-		dest = &PersistentRam;
-		DispMsg = "All RAM";
-		break;
-
-	case TAG_REGISTER:
-		/*
-		 *  Registers received
-		 */
-		if ( length > sizeof( Regs ) ) {
-			  goto invalid;
-		}
-		dest = Regs;
-		DispMsg = "Register";
-		break;
-
-	default:
-		goto invalid;
+		put_byte( c );
+		close_port_reset_state();
 	}
-
-	/*
-	 *  Copy the data and recompute the checksums
-	 */
-	xcopy( dest, buffer, length );
-	checksum_all();
-
-	/*
-	 *  All is well
-	 */
-	c = ACK;
-	goto close;
-
-	/*
-	 *  Various error conditions
-	 */
-invalid:
-	err( ERR_INVALID );
-	goto nak;
-err:
-	err( ERR_IO );
-nak:
-	c = NAK;
-
-close:
-	/*
-	 *  Send reply to partner
-	 */
-	put_byte( c );
-	close_port_reset_state();
-	return;
 }
 
 

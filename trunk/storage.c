@@ -227,35 +227,38 @@ static int program_flash( int page_no, void *buffer, int length )
 
 /*
  *  Simple backup / restore
- *  Started with ON+"B" or ON+"R" or the SAVE/LOAD commands
+ *  Started with ON+STO or ON+RCL or the SAVE/LOAD commands
  *  The backup area is the last 2KB of flash (pages 504 to 511)
  */
 void flash_backup( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
-	process_cmdline_set_lift();
-	init_state();
-	checksum_all();
+	if ( not_running() ) {
+		process_cmdline_set_lift();
+		init_state();
+		checksum_all();
 
-	if ( program_flash( PAGE_BACKUP, &PersistentRam, SIZE_BACKUP * PAGE_SIZE ) ) {
-		err( ERR_IO );
-		DispMsg = "Error";
-	}
-	else {
-		DispMsg = "Saved";
+		if ( program_flash( PAGE_BACKUP, &PersistentRam, SIZE_BACKUP * PAGE_SIZE ) ) {
+			err( ERR_IO );
+			DispMsg = "Error";
+		}
+		else {
+			DispMsg = "Saved";
+		}
 	}
 }
 
 
 void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
-	if ( checksum_backup() ) {
-		err( ERR_INVALID );
-		// DispMsg = "Invalid";
-	}
-	else {
-		xcopy( &PersistentRam, &( UserFlash.backup ), sizeof( PersistentRam ) );
-		init_state();
-		DispMsg = "Restored";
+	if ( not_running() ) {
+		if ( checksum_backup() ) {
+			err( ERR_INVALID );
+		}
+		else {
+			xcopy( &PersistentRam, &( UserFlash.backup ), sizeof( PersistentRam ) );
+			init_state();
+			DispMsg = "Restored";
+		}
 	}
 }
 
@@ -283,27 +286,11 @@ static int write_region( int r, FLASH_REGION *fr )
 
 
 /*
- *  Cleanup the return stack if needed
- */
-static void program_cleanup( void ) 
-{
-	if ( !Running ) {
-		clrretstk(1);
-	}
-}
-
-
-/*
  *  Save the user program area to a region.
  *  Returns an error if failed.
  */
 static int internal_save_program( unsigned int r, FLASH_REGION *fr )
 {
-	program_cleanup();
-	if ( check_return_stack_segment( r ) ) {
-		err( ERR_ILLEGAL );
-		return 1;
-	}
 	if ( write_region( r, (FLASH_REGION *) fr ) ) {
 		err( ERR_IO );
                 return 1;
@@ -317,8 +304,11 @@ static int internal_save_program( unsigned int r, FLASH_REGION *fr )
  */
 void save_program( unsigned int r, enum rarg op )
 {
-	checksum_code();
-	internal_save_program( r + 1, (FLASH_REGION *) &CrcProg );
+	if ( not_running() ) {
+		clrretstk_pc();
+		checksum_code();
+		internal_save_program( r + 1, (FLASH_REGION *) &CrcProg );
+	}
 }
 
 
@@ -330,10 +320,7 @@ static int internal_load_program( unsigned int r )
 {
 	FLASH_REGION *fr = &flash_region( r );
 
-	program_cleanup();
-	if ( checksum_region( r ) || check_return_stack_segment( -1 )
-	     || fr->last_prog > NUMPROG + 1 )
-	{
+	if ( checksum_region( r ) || fr->last_prog > NUMPROG + 1 ) {
 		/*
 		 *  Not a valid program region
 		 */
@@ -342,7 +329,6 @@ static int internal_load_program( unsigned int r )
 	}
 	clrprog();
 	xcopy( &CrcProg, fr, region_length( fr ) );
-	set_running_off();
 	return 0;
 }
 
@@ -353,7 +339,9 @@ static int internal_load_program( unsigned int r )
  */
 void load_program( unsigned int r, enum rarg op )
 {
-	internal_load_program( r + 1 );
+	if ( not_running() ) {
+		internal_load_program( r + 1 );
+	}
 }
 
 
@@ -367,31 +355,34 @@ void swap_program( unsigned int r, enum rarg op )
 	FLASH_REGION region;
 	int l;
 
-	++r;
-	fr = &flash_region( r );
-	l = region_length( fr );
+	if ( not_running() ) {
+		++r;
+		fr = &flash_region( r );
+		l = region_length( fr );
 
-	/*
-	 *  Temporary copy of current program
-	 */
-	xcopy( &region, &CrcProg, l );
-
-	/*
-	 *  Load program from flash
-	 */
-	if ( internal_load_program( r ) ) {
-		err( ERR_INVALID );
-	}
-
-	/*
-	 *  Save current program from temporary copy
-	 */
-	if ( internal_save_program( r, &region ) ) {
 		/*
-		 *  Flash failure, recover
+		 *  Temporary copy of current program
 		 */
-		xcopy( &CrcProg, &region, l );
-		return;
+		checksum_code();
+		xcopy( &region, &CrcProg, l );
+
+		/*
+		 *  Load program from flash
+		 */
+		if ( internal_load_program( r ) ) {
+			err( ERR_INVALID );
+		}
+
+		/*
+		 *  Save current program from temporary copy
+		 */
+		if ( internal_save_program( r, &region ) ) {
+			/*
+			 *  Flash failure, recover
+			 */
+			xcopy( &CrcProg, &region, l );
+			return;
+		}
 	}
 }
 
@@ -414,15 +405,18 @@ void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 
 void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
-	if ( checksum_backup() ) {
-		/*
-		 *  Not a valid backup region
-		 */
-		err( ERR_INVALID );
-		return;
+	if ( not_running() ) {
+		if ( checksum_backup() ) {
+			/*
+			 *  Not a valid backup region
+			 */
+			err( ERR_INVALID );
+			return;
+		}
+		xcopy( &RandS1, &UserFlash.backup._rand_s1, (char *) &Crc - (char *) &RandS1 );
+		init_state();
+		clrretstk_pc();
 	}
-	xcopy( &RandS1, &UserFlash.backup._rand_s1, (char *) &Crc - (char *) &RandS1 );
-	init_state();
 }
 
 

@@ -180,6 +180,7 @@ void SUPC_SetBodSampling(unsigned int mode)
 //------------------------------------------------------------------------------
 /// Disables the voltage regulator, which makes the device enter backup mode.
 //------------------------------------------------------------------------------
+NO_RETURN
 void SUPC_DisableVoltageRegulator(void)
 {
     AT91C_BASE_SUPC->SUPC_CR = SUPC_KEY | AT91C_SUPC_VROFF;
@@ -189,6 +190,7 @@ void SUPC_DisableVoltageRegulator(void)
 //------------------------------------------------------------------------------
 /// Shuts the device down so it enters Off mode.
 //------------------------------------------------------------------------------
+NO_RETURN
 void SUPC_Shutdown(void)
 {
     AT91C_BASE_SUPC->SUPC_CR = SUPC_KEY | AT91C_SUPC_SHDW;

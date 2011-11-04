@@ -24,8 +24,7 @@
 # Define to use a crystal oscillator on slow clock after hardware modification
 #XTAL = 1
 
-BASE_CFLAGS := -Wall -Werror -g -fno-common \
-	-fno-defer-pop -fno-exceptions # -fno-inline-functions 
+BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-exceptions 
 OPT_CFLAGS := -Os
 
 # Settings for Unix like environments with gcc

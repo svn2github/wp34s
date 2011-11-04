@@ -668,13 +668,18 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	State.state_lift = 1;
 }
 
+
 /* Clear the subroutine return stack
  */
-void clrretstk(int clr_pc) {
+static void clrretstk(void) {
 	RetStkPtr = LocalRegs = 0;
-	if (clr_pc)
-		raw_set_pc(0);
 }
+
+void clrretstk_pc(void) {
+	clrretstk();
+	raw_set_pc(0);
+}
+
 
 /* Clear the program space
  */
@@ -684,7 +689,7 @@ void clrprog(void) {
 	for (i=1; i<=NUMPROG; i++)
 		Prog_1[i] = EMPTY_PROGRAM_OPCODE;
 	LastProg = 1;
-	clrretstk(1);
+	clrretstk_pc();
 }
 
 /* Clear all - programs and registers
@@ -1676,43 +1681,6 @@ static int retstk_up(int sp, int unwind)
 }
 
 
-/* Check if a PC in the return stack lives in a specified segment.
- * Return non-zero if the PC or the return stack are in the specified segment.
- * If we find an XROM address on the stack, we fail in any case.
- */
-static int check_one(int s, unsigned int p) {
-	if (s == 0) {
-		if (isRAM(p) && p != 0)
-			return 1;
-	} else if (isXROM(p) || (isLIB(p) && nLIB(p) == s))
-		return 1;
-	return 0;
-}
-
-static int do_check_return(int segment) {
-	int i;
-	int s = (segment < 0) ? 0 : (segment+1);
-
-	if (check_one(s, state_pc()))
-		return 1;
-
-	for (i = RetStkPtr; i < 0; i = retstk_up(i, 0))
-		if (check_one(s, RetStk[i]))
-			return 1;
-	return 0;
-}
-
-int check_return_stack_segment(int segment) {
-	const int bad = do_check_return(segment);
-
-	if (!bad || Running )
-		return bad;
-	set_running_off();
-	RetStkPtr = 0;
-	raw_set_pc(0);
-	return 0;
-}
-
 /* Search from the given position for the specified numeric label.
  */
 static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet) {
@@ -1766,13 +1734,13 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 	if (gsb) {
 		if (!Running) {
 			// XEQ or hot key from keyboard
-			clrretstk(0);
+			clrretstk();
 			set_running_on();
 		}
 		if (-RetStkPtr >= stack_size) {
 			// Stack is full
 			err(ERR_RAM_FULL);
-			// clrretstk(0);
+			// clrretstk();
 		}
 		else {
 			// Push PC on return stack
@@ -1800,7 +1768,7 @@ static void do_rtn(int plus1) {
 		}
 		else {
 			// program was started without a valid return address on the stack
-			clrretstk(1);
+			clrretstk_pc();
 		}
 		if (RetStkPtr == 0) {
 			// RTN with empty stack stops
@@ -1808,7 +1776,7 @@ static void do_rtn(int plus1) {
 		}
 	} else {
 		// Manual return goes to step 0 and clears the return stack
-		clrretstk(1);
+		clrretstk_pc();
 	}
 }
 
@@ -3636,6 +3604,7 @@ void stoprog(opcode c) {
 
 	if (!isRAM(state_pc()))
 		return;
+	clrretstk();
 	off = isDBL(c)?2:1;
 	if (LastProg + off > NUMPROG+1) {
 		return;
@@ -3739,6 +3708,22 @@ void xeq_init_contexts(void) {
 }
 
 
+/*
+ *  We don't allow some commands from a running program
+ */
+int not_running(void)
+{
+	if ( Running ) {
+		err(ERR_ILLEGAL);
+		return 0;
+	}
+	return 1;
+}
+
+
+/*
+ *  Handle the Running Flag
+ */
 void set_running_off_sst() {
 	Running = 0;
 }

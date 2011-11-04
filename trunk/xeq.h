@@ -1019,10 +1019,9 @@ extern unsigned int state_pc(void);
 extern void set_pc(unsigned int);
 extern unsigned int user_pc(void);
 extern unsigned int find_user_pc(unsigned int);
-extern int check_return_stack_segment(int);
 extern int local_levels(void);
 
-extern void clrretstk(int clr_pc);
+extern void clrretstk_pc(void);
 extern void clrprog(void);
 extern void clrall(decimal64 *a, decimal64 *b, enum nilop op);
 extern void reset(decimal64 *a, decimal64 *b, enum nilop op);
@@ -1230,6 +1229,7 @@ extern void op_keytype(unsigned int arg, enum rarg op);
 extern void cmdlocl(unsigned int arg, enum rarg op);
 extern void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
+extern int not_running(void);
 extern void set_running_off_sst(void);
 extern void set_running_on_sst(void);
 extern void set_running_off(void);
