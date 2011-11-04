@@ -612,6 +612,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
 	FUNC1(OP_MEM,		&get_mem,		"MEM?")
+	FUNC1(OP_LOCLQ,		&get_mem,		"LOCL?")
 	FUNC0(OP_LPOP,		&cmdlpop,		"LPOP")
 #ifdef INCLUDE_STOPWATCH
 	FN_I1(OP_STOPWATCH,	&stopwatch,		"STOPW")

@@ -576,6 +576,7 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_XisSpecial,	"SPEC?")
 	NILIC(OP_ROUNDING,	"RM?")
 	NILIC(OP_MEM,		"MEM?")
+	NILIC(OP_LOCLQ,		"LOCL?")
 
 	RARGCMD(RARG_TEST_APX,	"x~?")
 	RARGCMD(RARG_TEST_LT,	"x<?")

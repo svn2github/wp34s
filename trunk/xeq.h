@@ -746,6 +746,7 @@ enum nilop {
 	OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
 	OP_MEM,
+	OP_LOCLQ,
 	OP_LPOP,
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,

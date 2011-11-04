@@ -1536,14 +1536,15 @@ void op_voltage(decimal64 *a, decimal64 *nul2, enum nilop op) {
 }
 
 /*
- *  Return the free space on the return stack in levels/steps
+ *  Return the free space on the return stack in levels/steps (MEM?)
+ *  Return the number of actve local registers
  */
 int free_mem(void) {
 	return RET_STACK_SIZE + NUMPROG + 1 - LastProg + RetStkPtr;
 }
 
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
-	put_int( free_mem(), 0, a );
+	put_int( op == OP_MEM ? free_mem() : local_levels() >> 2, 0, a );
 }
 
 
