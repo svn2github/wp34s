@@ -24,12 +24,12 @@
 #define sigmaBASE	86
 #define sigmaXXY	(Regs[86])
 
-#define sigmaX	(Regs[87])
-#define sigmaXX	(Regs[88])
-#define sigmaY	(Regs[89])
-#define sigmaYY	(Regs[90])
-#define sigmaXY	(Regs[91])
-#define sigmaN	(Regs[92])
+#define sigmaX		(Regs[87])
+#define sigmaXX		(Regs[88])
+#define sigmaY		(Regs[89])
+#define sigmaYY		(Regs[90])
+#define sigmaXY		(Regs[91])
+#define sigmaN		(Regs[92])
 
 #define sigmalnX	(Regs[93])
 #define sigmalnXlnX	(Regs[94])
@@ -92,6 +92,7 @@ void stats_mode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 void sigma_clear(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+#if 0
 	sigmaN = CONSTANT_INT(OP_ZERO);
 	sigmaX = CONSTANT_INT(OP_ZERO);
 	sigmaY = CONSTANT_INT(OP_ZERO);
@@ -106,6 +107,9 @@ void sigma_clear(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	sigmalnXlnY = CONSTANT_INT(OP_ZERO);
 	sigmaXlnY = CONSTANT_INT(OP_ZERO);
 	sigmaYlnX = CONSTANT_INT(OP_ZERO);
+#else
+	zero_regs(Regs + sigmaBASE, NUMSTATREG);
+#endif
 }
 
 

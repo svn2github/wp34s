@@ -611,9 +611,12 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
+	FUNC0(OP_LPOP,		&cmdlpop,		"LPOP")
 	FUNC1(OP_MEM,		&get_mem,		"MEM?")
 	FUNC1(OP_LOCLQ,		&get_mem,		"LOCL?")
-	FUNC0(OP_LPOP,		&cmdlpop,		"LPOP")
+#ifdef ENABLE_VARIABLE_REGS
+	FUNC1(OP_REGSQ,		&get_mem,		"REGS?")
+#endif
 #ifdef INCLUDE_STOPWATCH
 	FN_I1(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
@@ -632,29 +635,31 @@ const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
 
 
 #ifdef COMPILE_CATALOGUES
-#define allCMD(name, func, limit, nm, ind, stk, loc, cpx, lbl, flag, stos)				\
-	{ #func, limit, ind, stk, loc, cpx, lbl, flag, stos, nm },
+#define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
+	{ #func, limit, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
 #elif DEBUG
-#define allCMD(name, func, limit, nm, ind, stk, loc, cpx, lbl, flag, stos)			\
-	{ name, func, limit, ind, stk, loc, cpx, lbl, flag, stos, nm },
+#define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)			\
+	{ name, func, limit, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
 #elif COMMANDS_PASS == 1
-#define allCMD(name, func, limit, nm, ind, stk, loc, cpx, lbl, flag, stos)				\
-	{ 0xaa55, limit, ind, stk, loc, cpx, lbl, flag, stos, nm },
+#define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
+	{ 0xaa55, limit, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
 #else
-#define allCMD(name, func, limit, nm, ind, stk, loc, cpx, lbl, flag, stos)				\
-	{ func, limit, ind, stk, loc, cpx, lbl, flag, stos, nm },
+#define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
+	{ func, limit, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
 #endif
-#define CMD(n, f, lim, nm)	allCMD(n, f, lim,                nm, 1, 0, 0, 0, 0, 0, 0)
-#define CMDstk(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL,   nm, 1, 1, 1, 0, 0, 0, 0)
-#define CMDcstk(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-1, nm, 1, 1, 1, 1, 0, 0, 0)
-#define CMDstknL(n, f, nm)	allCMD(n, f, NUMREG,             nm, 1, 1, 0, 0, 0, 0, 0)
-#define CMDcstknL(n, f, nm)	allCMD(n, f, NUMREG-1,           nm, 1, 1, 0, 1, 0, 0, 0)
-#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim,                nm, 0, 0, 0, 0, 0, 0, 0)
-#define CMDlbl(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 1, 0, 0, 0, 1, 0, 0)
-#define CMDlblnI(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 0, 0, 0, 0, 1, 0, 0)
-#define CMDflg(n, f, nm)	allCMD(n, f, NUMFLG+16,		 nm, 1, 1, 1, 0, 0, 1, 0)
-#define CMDstos(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-3, nm, 1, 0, 1, 0, 0, 0, 1)
-
+                                                                 //  i  r  s  l  c  lb f  ss
+#define CMD(n, f, lim, nm)	allCMD(n, f, lim,                nm, 1, 0, 0, 0, 0, 0, 0, 0)
+#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim,                nm, 0, 0, 0, 0, 0, 0, 0, 0)
+#define CMDreg(n, f, nm)	allCMD(n, f, TOPREALREG,         nm, 1, 1, 0, 1, 0, 0, 0, 0)
+#define CMDstk(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL,   nm, 1, 1, 1, 1, 0, 0, 0, 0)
+#define CMDcstk(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-1, nm, 1, 1, 1, 1, 1, 0, 0, 0)
+#define CMDregnL(n, f, nm)	allCMD(n, f, TOPREALREG,         nm, 1, 1, 0, 0, 0, 0, 0, 0)
+#define CMDstknL(n, f, nm)	allCMD(n, f, NUMREG,             nm, 1, 0, 1, 0, 0, 0, 0, 0)
+#define CMDcstknL(n, f, nm)	allCMD(n, f, NUMREG-1,           nm, 1, 0, 1, 0, 1, 0, 0, 0)
+#define CMDlbl(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 1, 0, 0, 0, 0, 1, 0, 0)
+#define CMDlblnI(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 0, 0, 0, 0, 0, 1, 0, 0)
+#define CMDflg(n, f, nm)	allCMD(n, f, NUMFLG+16,		 nm, 1, 0, 1, 1, 0, 0, 1, 0)
+#define CMDstos(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-3, nm, 1, 1, 0, 1, 0, 0, 0, 1)
 
 #if COMMANDS_PASS == 2
 CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
@@ -779,9 +784,9 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,				"\240XEQ")
 	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,				"\240GTO")
 
-	CMD(RARG_PLOAD,		&load_program,	NUMBER_OF_FLASH_REGIONS-1,	"PRCL")
-	CMD(RARG_PSAVE,		&save_program,	NUMBER_OF_FLASH_REGIONS-1,	"PSTO")
-	CMD(RARG_PSWAP,		&swap_program,	NUMBER_OF_FLASH_REGIONS-1,	"P\027")
+	CMD(RARG_PLOAD,		&load_program,	NUMBER_OF_FLASH_REGIONS-1, "PRCL")
+	CMD(RARG_PSAVE,		&save_program,	NUMBER_OF_FLASH_REGIONS-1, "PSTO")
+	CMD(RARG_PSWAP,		&swap_program,	NUMBER_OF_FLASH_REGIONS-1, "P\027")
 
 	CMDstknL(RARG_FLRCL, 	  &cmdflashrcl,				"RCF")
 	CMDstknL(RARG_FLRCL_PL,   &cmdflashrcl,				"RCF+")
@@ -815,6 +820,9 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
 	CMD(RARG_LOCAL,		&cmdlocl,	MAX_LOCAL,		"LOCL")
+#ifdef ENABLE_VARIABLE_REGS
+	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
+#endif
 
 #undef CMDlbl
 #undef CMDlblnI

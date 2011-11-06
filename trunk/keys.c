@@ -1232,7 +1232,7 @@ static int arg_eval(unsigned int val) {
 
 static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
-	const int mx = State2.ind ? NUMREG : State2.local ? MAX_LOCAL_DIRECT : argcmds[base].lim;
+	const int mx = State2.ind ? NumRegs : State2.local ? MAX_LOCAL_DIRECT : argcmds[base].lim;
 	const unsigned int val = State2.digval * 10 + n;
 
 	if (State2.numdigit == 0) {
@@ -2086,7 +2086,7 @@ static int process_labellist(const keycode c) {
 static int process_registerlist(const keycode c) {
 	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
 	enum shifts shift = reset_shift();
-	const int max = State2.local ? LOCAL_MAXREG(RetStk[LocalRegs]) : NUMREG;
+	const int max = State2.local ? LOCAL_MAXREG(RetStk[LocalRegs]) : NumRegs;
 
 	if ( n == LOCAL_REG_BASE ) {
 		if (LocalRegs < 0)

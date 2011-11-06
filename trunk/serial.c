@@ -387,10 +387,10 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 			/*
 			 *  Registers received
 			 */
-			if ( length > sizeof( Regs ) ) {
+			if ( (length >> 3) > NumRegs ) {
 				  goto invalid;
 			}
-			dest = Regs;
+			dest = get_reg_n(0);
 			DispMsg = "Register";
 			break;
 
@@ -441,11 +441,11 @@ void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 
 
 /*
- * Send registers 00 through 99 to the serial port.
+ * Send registers 00 through 99 or the configured maximum to the serial port.
  */
 void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
-	put_block( TAG_REGISTER, sizeof( decimal64 ) * TOPREALREG, Regs );
+	put_block( TAG_REGISTER, NumRegs << 3, get_reg_n( 0 ) );
 }
 
 

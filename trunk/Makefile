@@ -25,7 +25,7 @@
 #XTAL = 1
 
 BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-exceptions 
-OPT_CFLAGS := -Os
+OPT_CFLAGS := -Os -fira-region=one
 
 # Settings for Unix like environments with gcc
 # Creates the Console version of the emulator or the real thing

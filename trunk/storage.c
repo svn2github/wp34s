@@ -399,6 +399,10 @@ void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 		err( ERR_INVALID );
 		return;
 	}
+#ifdef ENABLE_VARIABLE_REGS
+	clrretstk();
+	NumRegs = UserFlash.backup._numregs;
+#endif
 	xcopy( Regs, UserFlash.backup._regs, sizeof( Regs ) );
 }
 
@@ -423,7 +427,7 @@ void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 /*
  *  The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
  */
-unsigned short int crc16( void *base, unsigned int length )
+unsigned short int crc16( const void *base, unsigned int length )
 {
 	unsigned short int crc = 0x5aa5;
 	unsigned char *d = (unsigned char *) base;
@@ -444,7 +448,7 @@ unsigned short int crc16( void *base, unsigned int length )
  *  Compute a checksum and compare it against the stored sum
  *  Returns non zero value if failure
  */
-static int test_checksum( void *data, unsigned int length, unsigned short oldcrc, unsigned short *pcrc )
+static int test_checksum( const void *data, unsigned int length, unsigned short oldcrc, unsigned short *pcrc )
 {
 	unsigned short crc;
 	crc = crc16( data, length );
@@ -487,7 +491,8 @@ int checksum_region( int r )
  */
 int checksum_data( void )
 {
-	return test_checksum( &Regs, (char *) &Crc - (char *) &Regs, Crc, &Crc );
+	const char *r = (char *) get_reg_n(0);
+	return test_checksum( r, (char *) &Crc - r, Crc, &Crc );
 }
 
 
@@ -506,9 +511,9 @@ int checksum_all( void )
  */
 int checksum_backup( void )
 {
-	return test_checksum( &( UserFlash.backup._regs ),
-			      (char *) &( UserFlash.backup._crc ) - (char *) &( UserFlash.backup._regs ),
-			      UserFlash.backup._crc, NULL );
+	const char *r = (char *) get_flash_reg_n(0);
+	return test_checksum( r, (char *) &( UserFlash.backup._crc ) - r, 
+		              UserFlash.backup._crc, NULL );
 }
 
 /*

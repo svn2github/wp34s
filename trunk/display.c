@@ -1195,21 +1195,22 @@ static void show_label(void) {
 static void show_registers(void) {
 	char buf[16], *bp;
 	decimal64 *reg;
+	const int n = State2.digval;
 
 	xset(buf, '\0', 16);
-	reg = State2.digval2 ? UserFlash.backup._regs : 
-	      State2.local   ? get_reg_n( LOCAL_REG_BASE ) :
-	      Regs;
+	reg = State2.digval2 ? get_flash_reg_n(n) : 
+	      State2.local   ? get_reg_n(LOCAL_REG_BASE + n) : 
+	      get_reg_n(n);
 	bp = scopy_spc(buf, State2.digval2 ? "Fl\006" : "Rg");
 	if (State2.local)
 		*bp++ = '.';
-	if (State2.digval < 100)
-		num_arg_0(bp, State2.digval, 2);
+	if (n < 100)
+		num_arg_0(bp, n, 2);
 	else
-		*bp++ = REGNAMES[State2.digval - regX_idx];
+		*bp++ = REGNAMES[n - regX_idx];
 	set_status(buf);
 
-	format_reg(reg + State2.digval, NULL);
+	format_reg(reg, NULL);
 }
 
 

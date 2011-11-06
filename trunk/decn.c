@@ -305,6 +305,14 @@ decNumber *dn_mul100(decNumber *r, const decNumber *x) {
 #endif
 }
 
+decNumber *dn_mul1000(decNumber *r, const decNumber *x) {
+#ifdef DECNUMBER
+	return dn_mulpow10(r, x, 3);
+#else
+	return dn_multiply(r, x, &const_1000);
+#endif
+}
+
 decNumber *dn_mulPI(decNumber *r, const decNumber *x) {
 	return dn_multiply(r, x, &const_PI);
 }

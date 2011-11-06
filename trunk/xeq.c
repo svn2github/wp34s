@@ -109,10 +109,17 @@ decContext Ctx;
  */
 char TraceBuffer[25];
 
+#ifdef ENABLE_VARIABLE_REGS
 /*
- * The return stack pointer
+ * The actual top of the return stack
  */
-#define RetStkPtr	(State.retstk_ptr)
+unsigned short *RetStk;
+#endif
+
+/*
+ *  Total Size of the return stack
+ */
+int RetStkSize;
 
 /*
  *  How many stack levels with local data have we?
@@ -322,7 +329,7 @@ int stack_size(void) {
 }
 
 static decimal64 *get_stack(int pos) {
-	return Regs + TOPREALREG + pos;
+	return &regX + pos;
 }
 
 static decimal64 *get_stack_top(void) {
@@ -622,105 +629,6 @@ unsigned int find_user_pc(unsigned int target) {
 }
 
 
-/* Zero a register
- */
-static void set_zero(decimal64 *x) {
-	if (is_intmode())
-		d64fromInt(x, 0);
-	else
-		*x = CONSTANT_INT(OP_ZERO);
-}
-
-void clrx(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	set_zero(&regX);
-	State.state_lift = 0;
-}
-
-/* Zero out the stack
- */
-void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	set_zero(&regX);
-	fill(NULL, NULL, OP_FILL);
-
-	CmdLineLength = 0;
-	State.state_lift = 1;
-}
-
-
-/* Zero out all registers excluding the stack and lastx
- */	
-void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	int i;
-
-	set_zero(& (Regs[0]));
-
-	for (i=1; i<TOPREALREG; i++)
-		Regs[i] = Regs[0];
-
-	for (i=TOPREALREG+stack_size(); i<NUMREG; i++)
-		Regs[i] = Regs[0];
-
-	if (LocalRegs < 0) {
-		i = (local_levels() - 2) << 1;
-		xset(RetStk + (short)((LocalRegs + 2) & 0xfffe), 0, i);
-	}
-	CmdLineLength = 0;
-	State.state_lift = 1;
-}
-
-
-/* Clear the subroutine return stack
- */
-static void clrretstk(void) {
-	RetStkPtr = LocalRegs = 0;
-}
-
-void clrretstk_pc(void) {
-	clrretstk();
-	raw_set_pc(0);
-}
-
-
-/* Clear the program space
- */
-void clrprog(void) {
-	int i;
-
-	for (i=1; i<=NUMPROG; i++)
-		Prog_1[i] = EMPTY_PROGRAM_OPCODE;
-	LastProg = 1;
-	clrretstk_pc();
-}
-
-/* Clear all - programs and registers
- */
-void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
-
-	sigma_clear(NULL, NULL, OP_SIGMACLEAR);
-	clrreg(NULL, NULL, OP_CLREG);
-	clrstk(NULL, NULL, OP_CLSTK);
-	clralpha(NULL, NULL, OP_CLRALPHA);
-	clrflags(NULL, NULL, OP_CLFLAGS);
-	clrprog();
-
-	reset_shift();
-	State2.test = TST_NONE;
-
-	DispMsg = NULL;
-}
-
-
-/* Clear everything
- */
-void reset(decimal64 *a, decimal64 *b, enum nilop op) {
-	xset(&PersistentRam, 0, sizeof( PersistentRam ));
-	clrall(NULL, NULL, OP_CLALL);
-	init_state();
-	UState.contrast = 7;
-	DispMsg = "Erased";
-}
-
-
 /* Convert a possibly signed string to an integer
  */
 int s_to_i(const char *s) {
@@ -879,7 +787,15 @@ decimal64 *get_reg_n(int n) {
 		// local register on the return stack
 		return (decimal64 *)(RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n - LOCAL_REG_BASE;
 	}
-	return Regs + (n % NUMREG);
+	return Regs + TOPREALREG - NumRegs + n;
+}
+
+decimal64 *get_flash_reg_n(int n) {
+#ifdef ENABLE_VARIABLE_REGS
+	return UserFlash.backup._regs + TOPREALREG - UserFlash.backup._numregs + n;
+#else
+	return UserFlash.backup._regs + n;
+#endif
 }
 
 void get_reg_n_as_dn(int n, decNumber *x) {
@@ -907,6 +823,13 @@ unsigned long long int reg_get_int(int n, int *sgn) {
 	return get_int(get_reg_n(n), sgn);
 }
 
+void zero_regs(decimal64 *dest, int n) {
+	xset(dest, 0, n << 3);
+}
+
+static void move_regs(decimal64 *dest, decimal64 *src, int n) {
+	xcopy(dest, src, n << 3);
+}
 
 /* Put an integer into the specified real
  */
@@ -980,6 +903,113 @@ void d64fromInt(decimal64 *n, const long long int z) {
 	xcopy(n, &z, sizeof(decimal64));
 #endif
 }
+
+
+/* Zero a register
+ */
+static void set_zero(decimal64 *x) {
+#if 0
+	if (is_intmode())
+		d64fromInt(x, 0);
+	else
+		*x = CONSTANT_INT(OP_ZERO);
+#else
+	zero_regs(x, 1);
+#endif
+}
+
+void clrx(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	set_zero(&regX);
+	State.state_lift = 0;
+}
+
+/* Zero out the stack
+ */
+void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	set_zero(&regX);
+	fill(NULL, NULL, OP_FILL);
+
+	CmdLineLength = 0;
+	State.state_lift = 1;
+}
+
+
+/* Zero out all registers excluding the stack and lastx
+ */	
+void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	decimal64 savestack[10];
+
+	process_cmdline_set_lift();
+
+	// save stack for later restore
+	xcopy(savestack, &regX, sizeof(savestack));
+
+	// erase register memory
+	zero_regs(get_reg_n(0), NumRegs);
+
+	// repair stack, L, I
+	move_regs(&regX, savestack, stack_size());
+	move_regs(&regL, savestack + 8, 2);
+
+	if (LocalRegs < 0) {
+		zero_regs(get_reg_n(LOCAL_REG_BASE), local_levels() >> 2);
+	}
+}
+
+
+/* Clear the subroutine return stack
+ */
+void clrretstk(void) {
+	RetStkPtr = LocalRegs = 0;
+}
+
+void clrretstk_pc(void) {
+	clrretstk();
+	raw_set_pc(0);
+}
+
+
+/* Clear the program space
+ */
+void clrprog(void) {
+	int i;
+
+	for (i=1; i<=NUMPROG; i++)
+		Prog_1[i] = EMPTY_PROGRAM_OPCODE;
+	LastProg = 1;
+	clrretstk_pc();
+}
+
+/* Clear all - programs and registers
+ */
+void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
+
+	clrprog();
+#ifdef ENABLE_VARIABLE_REGS
+	NumRegs = TOPREALREG;
+#endif
+	clrreg(NULL, NULL, OP_CLREG);
+	clrstk(NULL, NULL, OP_CLSTK);
+	clralpha(NULL, NULL, OP_CLRALPHA);
+	clrflags(NULL, NULL, OP_CLFLAGS);
+
+	reset_shift();
+	State2.test = TST_NONE;
+
+	DispMsg = NULL;
+}
+
+
+/* Clear everything
+ */
+void reset(decimal64 *a, decimal64 *b, enum nilop op) {
+	xset(&PersistentRam, 0, sizeof( PersistentRam ));
+	clrall(NULL, NULL, OP_CLALL);
+	init_state();
+	UState.contrast = 7;
+	DispMsg = "Erased";
+}
+
 
 /***************************************************************************
  * Monadic function handling.
@@ -1536,15 +1566,22 @@ void op_voltage(decimal64 *a, decimal64 *nul2, enum nilop op) {
 }
 
 /*
- *  Return the free space on the return stack in levels/steps (MEM?)
- *  Return the number of actve local registers
+ *  Return the free space on the return stack in levels/steps (MEM?),
+ *  the number of active local (or global) registers
  */
 int free_mem(void) {
-	return RET_STACK_SIZE + NUMPROG + 1 - LastProg + RetStkPtr;
+	return RetStkSize + RetStkPtr;
 }
 
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
+#ifdef ENABLE_VARIABLE_REGS
+	put_int( op == OP_MEM ? free_mem() : 
+		 op == OP_LOCLQ ? local_levels() >> 2 :
+		 NumRegs,
+		 0, a );
+#else
 	put_int( op == OP_MEM ? free_mem() : local_levels() >> 2, 0, a );
+#endif
 }
 
 
@@ -1624,35 +1661,32 @@ void check_mode(decimal64 *a, decimal64 *nul2, enum nilop op) {
 
 
 /* Save and restore the entire stack to sequential registers */
-static int check_stack_overlap(unsigned int arg, int *nout) {
+static int check_stack_overlap(unsigned int arg) {
 	const int n = stack_size();
 
 #ifdef ALLOW_STOS_A
-	if (arg + n <= TOPREALREG || (arg == regA_idx && n == 4)) {
+	if (arg + n <= NumRegs || (arg == regA_idx && n == 4)) {
 #else
-	if (arg + n <= TOPREALREG || arg >= NUMREG) {
+	if (arg + n <= NumRegs || arg >= NUMREG) {
 #endif
-		*nout = n;
-		return 1;
+		return n;
 	}
 	err(ERR_STK_CLASH);
 	return 0;
 }
 
 void cmdstostk(unsigned int arg, enum rarg op) {
-	int i, n;
+	int i, n = check_stack_overlap(arg);
 
-	if (check_stack_overlap(arg, &n))
-		for (i=0; i<n; i++)
-			*get_reg_n(arg+i) = *get_stack(i);
+	for (i=0; i<n; i++)
+		*get_reg_n(arg+i) = *get_stack(i);
 }
 
 void cmdrclstk(unsigned int arg, enum rarg op) {
-	int i, n;
+	int i, n = check_stack_overlap(arg);
 
-	if (check_stack_overlap(arg, &n))
-		for (i=0; i<n; i++)
-			*get_stack(i) = *get_reg_n(arg+i);
+	for (i=0; i<n; i++)
+		*get_stack(i) = *get_reg_n(arg+i);
 }
 
 
@@ -3132,138 +3166,155 @@ void op_entryp(decimal64 *a, decimal64 *b, enum nilop op) {
 }
 
 /* Bulk register operations */
-static int reg_decode(unsigned int *s, unsigned int *n, unsigned int *d, int *negative) {
+static int reg_decode(decimal64 **s, unsigned int *n, decimal64 **d, int flash) {
 	decNumber x, y;
-	int rsrc, num, rdest, q;
+	int rsrc, num, rdest, q, mx_src, mx_dest;
 
 	if (is_intmode())
 		return 1;
-	getX(&x);
-	if (dn_lt0(&x)) {
-		if (negative != NULL) {
-			dn_minus(&x, &x);
-			*negative = 1;
-		} else {
-			err(ERR_RANGE);
-			return 1;
-		}
-	} else if (negative != NULL)
-		*negative = 0;
-	decNumberTrunc(&y, &x);
-	*s = rsrc = dn_to_int(&y);
-	if (rsrc >= TOPREALREG) {
-		err(ERR_RANGE);
-		return 1;
+
+	getX(&x);			// sss.nnddd~
+	dn_mulpow10(&y, &x, 2 + 3);	// sssnnddd.~
+	decNumberTrunc(&x, &y);		// sssnnddd.0
+	rsrc = dn_to_int(&x);		// sssnnddd
+
+	if (rsrc < 0) {
+		if (!flash)
+			goto range_error;
+		rsrc = -rsrc;
 	}
-	decNumberFrac(&y, &x);
-	dn_mul100(&x, &y);
-	decNumberTrunc(&y, &x);
-	*n = num = dn_to_int(&y);
+	else 
+		flash = 0;
+
+	rdest = rsrc % 1000;		// ddd
+	rsrc /= 1000;			// sssnn
+	num = rsrc % 100;		// nn
+	rsrc /= 100;			// sss
+
+	mx_src = flash ? UserFlash.backup._numregs :
+		 rsrc >= LOCAL_REG_BASE ? local_levels() >> 2 : NumRegs;
+	if (rsrc >= mx_src)
+		goto range_error;
+
 	if (d != NULL) {
-		decNumberFrac(&y, &x);
-		dn_mul100(&x, &y);
-		decNumberTrunc(&y, &x);
-		*d = rdest = dn_to_int(&y);
+		mx_dest = rdest >= LOCAL_REG_BASE ? local_levels() >> 2 : NumRegs;
+
 		if (num == 0) {
-			/* Calculate the maxium non-ovelapping size */
-			if (rsrc > rdest) {
-				num = TOPREALREG - rsrc;
-				q = rsrc - rdest;
-			} else {
-				num = TOPREALREG - rdest;
-				q = rdest - rsrc;
+			/* Calculate the maximum non-overlapping size */
+			if (flash || (rsrc >= LOCAL_REG_BASE) != (rdest >= LOCAL_REG_BASE))
+				// source & destination in different memory areas
+				num = mx_dest < mx_src ? mx_dest : mx_src;
+			else {
+				if (rsrc > rdest) {
+					num = mx_src - rsrc;
+					q = rsrc - rdest;
+				} 
+				else {
+					num = mx_dest - rdest;
+					q = rdest - rsrc;
+				}
+				if (num > q)
+					num = q;
 			}
-			if (num > q)
-				num = q;
-			*n = num;
-		} else if (rsrc+num > TOPREALREG || rdest+num > TOPREALREG) {
-			err(ERR_RANGE);
-			return 1;
 		}
-	} else {
+		if (rdest >= LOCAL_REG_BASE)
+			mx_dest += LOCAL_REG_BASE;
+		if (rdest + num > mx_dest)
+			goto range_error;
+		// Set pointer
+		*d = get_reg_n(rdest);
+	}
+	else {
 		if (num == 0) {
-			*n = TOPREALREG - rsrc;
-		} else if (rsrc+num > TOPREALREG) {
-			err(ERR_RANGE);
-			return 1;
+			num = mx_src - rsrc;
 		}
 	}
+	if (rsrc >= LOCAL_REG_BASE)
+		mx_src += LOCAL_REG_BASE;
+	if (rsrc + num > mx_src)
+		goto range_error;
+
+	// Now point to the correct source register
+	*s = flash ? get_flash_reg_n(rsrc) : get_reg_n(rsrc);
+	*n = num;
+
 	return 0;
+
+range_error:
+	err(ERR_RANGE);
+	return 1;
 }
 
 void op_regcopy(decimal64 *a, decimal64 *b, enum nilop op) {
-	unsigned int s, d, n;
-	int negative;
+	decimal64 *s, *d;
+	unsigned int n;
 
-	if (reg_decode(&s, &n, &d, &negative) || s == d)
+	if (reg_decode(&s, &n, &d, 1))
 		return;
-	if (negative)
-		xcopy(Regs+d, UserFlash.backup._regs+s, n*sizeof(Regs[0]));
-	else
-		xcopy(Regs+d, Regs+s, n*sizeof(Regs[0]));
+	move_regs(d, s, n);
 }
 
 void op_regswap(decimal64 *a, decimal64 *b, enum nilop op) {
-	unsigned int s, d, n, i;
+	decimal64 *s, *d;
+	unsigned int n, i;
 
-	if (reg_decode(&s, &n, &d, NULL) || s == d)
+	if (reg_decode(&s, &n, &d, 0) || s == d)
 		return;
-	if (s < d && (s+n) > d)
-		err(ERR_RANGE);
-	else if (d < s && (d+n) > s)
+	if ((s < d && (s + n) > d) || (d < s && (d + n) > s))
 		err(ERR_RANGE);
 	else {
-		for (i=0; i<n; i++)
-			swap_reg(Regs+s+i, Regs+d+i);
+		for (i = 0; i < n; i++)
+			swap_reg(s + i, d + i);
 	}
 }
 
 void op_regclr(decimal64 *a, decimal64 *b, enum nilop op) {
-	unsigned int s, n, i;
+	decimal64 *s;
+	unsigned int n;
 
-	if (reg_decode(&s, &n, NULL, NULL))
+	if (reg_decode(&s, &n, NULL, 0))
 		return;
-	for (i=0; i<n; i++)
-		Regs[i+s] = CONSTANT_INT(OP_ZERO);
+	xset(s, 0, n << 2);
 }
 
 void op_regsort(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	unsigned int s, n;
+	decimal64 *s;
+	unsigned int n;
 	decNumber pivot, a, t;
 	int beg[10], end[10], i;
 
-	if (reg_decode(&s, &n, NULL, NULL) || n == 1)
+	if (reg_decode(&s, &n, NULL, 0) || n == 1)
 		return;
 
-	/*( Non-recursive quicksort */
-	beg[0] = s;
-	end[0] = s + n;
+	/* Non-recursive quicksort */
+	beg[0] = 0;
+	end[0] = n;
 	i = 0;
 	while (i>=0) {
 		int L = beg[i];
 		int R = end[i] - 1;
 		if (L<R) {
-			const decimal64 pvt = Regs[L];
+			const decimal64 pvt = s[L];
 			decimal64ToNumber(&pvt, &pivot);
 			while (L<R) {
 				while (L<R) {
-					decimal64ToNumber(Regs+R, &a);
+					decimal64ToNumber(s + R, &a);
 					if (dn_lt0(dn_compare(&t, &a, &pivot)))
 						break;
 					R--;
 				}
 				if (L<R)
-					Regs[L++] = Regs[R];
+					s[L++] = s[R];
 				while (L<R) {
-					decimal64ToNumber(Regs+L, &a);
+					decimal64ToNumber(s + L, &a);
 					if (dn_lt0(dn_compare(&t, &pivot, &a)))
 						break;
 					L++;
 				}
 				if (L<R)
-					Regs[R--] = Regs[L];
+					s[R--] = s[L];
 			}
-			Regs[L] = pvt;
+			s[L] = pvt;
 			if (L - beg[i] < end[i] - (L+1)) {
 				beg[i+1] = beg[i];
 				end[i+1] = L;
@@ -3301,6 +3352,7 @@ static void rargs(const opcode op) {
 	}
 	if (isNULL(argcmds[cmd].f))
 		return;
+
 	if (ind && argcmds[cmd].indirectokay) {
 		if (is_intmode()) {
 			arg = (unsigned int) get_reg_n_as_int(arg);
@@ -3312,7 +3364,16 @@ static void rargs(const opcode op) {
 		if (lim > 128 && ind)		// put the top bit back in
 			arg |= RARG_IND;
 	}
-	// Range checking for local registers
+#ifdef ENABLE_VARIABLE_REGS
+	// Range checking for registers against variable boundary
+	if (argcmds[cmd].reg && arg < TOPREALREG) {
+		lim = NumRegs;
+		if (argcmds[cmd].cmplx)
+			--lim;
+	}
+	else
+#endif
+	// Range checking for local registers or flags
 	if (argcmds[cmd].local) {
 		lim = NUMREG + (LocalRegs == 0 ? 0 : LOCAL_MAXREG(RetStk[LocalRegs]));
 		if (argcmds[cmd].cmplx)
@@ -3328,8 +3389,10 @@ static void rargs(const opcode op) {
 		if ((int)arg < 0)
 			arg = NUMFLG - (int)arg;
 	}
-	if (arg >= lim || (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1)))
+	if (arg >= lim )
 		err(ERR_RANGE);
+	else if (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1))
+		err(ERR_ILLEGAL);
 	else {
 		CALL(argcmds[cmd].f)(arg, (enum rarg)cmd);
 		State.state_lift = 1;
@@ -3440,6 +3503,15 @@ void xeq(opcode op)
 			sprintf(TraceBuffer, "%04X:%s", op, prt(op, buf));
 		DispMsg = TraceBuffer;
 	}
+#endif
+#ifdef ENABLE_VARIABLE_REGS
+	// Compute the actual top and current size of the return stack
+	RetStkSize = (TOPREALREG - NumRegs) << 2;
+	RetStk = RetStkBase + RetStkSize;
+	RetStkSize += RET_STACK_SIZE + NUMPROG + 1 - LastProg;
+#else
+	// Compute the current size of the return stack
+	RetStkSize = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 #endif
 	Busy = 0;
 	xcopy(save, &regX, (STACK_SIZE+2) * sizeof(decimal64));
@@ -3811,6 +3883,26 @@ void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	RetStkPtr = retstk_up(LocalRegs, 1) - 1;
 }
 
+#ifdef ENABLE_VARIABLE_REGS
+/*
+ *  Reduce the number of global registers in favour of local data on the return stack
+ */
+void cmdregs(unsigned int arg, enum rarg op) {
+	++arg;
+	if ( arg < NUMSTATREG ) {
+		err(ERR_RANGE);
+		return;
+	}
+	clrretstk();
+	// Move register contents (except the summation registers)
+	if (arg > NUMSTATREG) {
+		move_regs(Regs + TOPREALREG - arg, Regs + TOPREALREG - NumRegs, arg - NUMSTATREG);
+		if (arg > NumRegs)
+			zero_regs(Regs + TOPREALREG - NUMSTATREG - arg + NumRegs, arg - NumRegs);
+	}
+	NumRegs = arg;
+}
+#endif
 #if defined(DEBUG) && !defined(WINGUI) && !defined(WP34STEST)
 extern unsigned char remap_chars(unsigned char ch);
 

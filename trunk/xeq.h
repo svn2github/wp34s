@@ -288,6 +288,7 @@ struct argcmd
 	unsigned short f;
 	unsigned char lim;
 	unsigned int indirectokay : 1;
+	unsigned int reg : 1;
 	unsigned int stckreg : 1;
 	unsigned int local : 1;
 	unsigned int cmplx : 1;
@@ -318,6 +319,7 @@ struct argcmd
 #endif
 	unsigned int lim : 8;
 	unsigned int indirectokay : 1;
+	unsigned int reg : 1;
 	unsigned int stckreg : 1;
 	unsigned int local : 1;
 	unsigned int cmplx : 1;
@@ -380,7 +382,11 @@ extern int current_catalogue_max(void);
  * relatively easily.
  */
 #define NUMPROG		510	/* Fill 1 KB (including crc and length) */
-#define RET_STACK_SIZE	26	/* Minimum depth of return stack, extends into program space */
+#ifdef ENABLE_VARIABLE_REGS
+#define RET_STACK_SIZE	24	/* Minimum depth of return stack, extends into unused program space */
+#else
+#define RET_STACK_SIZE	26	/* Minimum depth of return stack, extends into unused program space */
+#endif
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
@@ -426,7 +432,8 @@ extern int current_catalogue_max(void);
 /* Stack lives in the register set */
 #define NUMREG		(TOPREALREG+STACK_SIZE+EXTRA_REG)/* Number of registers */
 #define TOPREALREG	(100)				/* Non-stack last register */
-#define NUMFLG		NUMREG	// These two must match!
+#define NUMSTATREG	(14)				/* Summation registers */
+#define NUMFLG		NUMREG				// These two must match!
 
 #define REGNAMES	"XYZTABCDLIJK"
 
@@ -745,9 +752,12 @@ enum nilop {
 #ifdef SILLY_MATRIX_SUPPORT
 	OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
+	OP_LPOP,
 	OP_MEM,
 	OP_LOCLQ,
-	OP_LPOP,
+#ifdef ENABLE_VARIABLE_REGS
+	OP_REGSQ,
+#endif
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -834,6 +844,9 @@ enum rarg {
 	RARG_MESSAGE,
 
 	RARG_LOCAL,
+#ifdef ENABLE_VARIABLE_REGS
+	RARG_REGS,
+#endif
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -1022,6 +1035,7 @@ extern unsigned int user_pc(void);
 extern unsigned int find_user_pc(unsigned int);
 extern int local_levels(void);
 
+extern void clrretstk(void);
 extern void clrretstk_pc(void);
 extern void clrprog(void);
 extern void clrall(decimal64 *a, decimal64 *b, enum nilop op);
@@ -1069,11 +1083,13 @@ extern int get_tag_n(int n);
 extern void set_tag_n(int n, int tag);
 
 extern decimal64 *get_reg_n(int);
+extern decimal64 *get_flash_reg_n(int);
 extern long long int get_reg_n_as_int(int);
 extern void put_reg_n_from_int(int, const long long int);
 extern void get_reg_n_as_dn(int, decNumber *);
 extern void put_reg_n(int, const decNumber *);
 extern void swap_reg(decimal64 *, decimal64 *);
+extern void zero_regs(decimal64 *dest, int n);
 
 extern void reg_put_int(int, unsigned long long int, int);
 extern unsigned long long int reg_get_int(int, int *);
@@ -1229,6 +1245,9 @@ extern void op_putkey(unsigned int arg, enum rarg op);
 extern void op_keytype(unsigned int arg, enum rarg op);
 extern void cmdlocl(unsigned int arg, enum rarg op);
 extern void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+#ifdef ENABLE_VARIABLE_REGS
+extern void cmdregs(unsigned int arg, enum rarg op);
+#endif
 
 extern int not_running(void);
 extern void set_running_off_sst(void);

@@ -134,6 +134,9 @@
 // M.LU
 #define MATRIX_LU_DECOMP
 
+// Allow the number of registers to be variable
+#define ENABLE_VARIABLE_REGS
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/

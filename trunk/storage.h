@@ -36,7 +36,7 @@ extern TUserFlash UserFlash;
 
 #define flash_region(n) (UserFlash.region[ NUMBER_OF_FLASH_REGIONS - 1 - (n) ])
 
-extern unsigned short int crc16( void *base, unsigned int length );
+extern unsigned short int crc16( const void *base, unsigned int length );
 extern int checksum_code(void);
 extern int checksum_region(int r);
 extern int checksum_all(void);

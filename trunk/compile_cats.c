@@ -573,7 +573,9 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_ROUNDING,	"RM?")
 	NILIC(OP_MEM,		"MEM?")
 	NILIC(OP_LOCLQ,		"LOCL?")
-
+#ifdef ENABLE_VARIABLE_REGS
+	NILIC(OP_REGSQ,		"REGS?")
+#endif
 	RARGCMD(RARG_TEST_APX,	"x~?")
 	RARGCMD(RARG_TEST_LT,	"x<?")
 	RARGCMD(RARG_TEST_LE,	"x<=?")
@@ -717,7 +719,9 @@ static s_opcode mode_catalogue[] = {
 	RARGCMD(RARG_ROUNDING,	"RM")
 	NILIC(OP_SLOW,		"SLOW")
 	NILIC(OP_FAST,		"FAST")
-
+#ifdef ENABLE_VARIABLE_REGS
+	RARGCMD(RARG_REGS,	"REGS")
+#endif
 	NILIC(OP_SETEUR,	"SETEUR")
 	NILIC(OP_SETUK,		"SETUK")
 	NILIC(OP_SETUSA,	"SETUSA")

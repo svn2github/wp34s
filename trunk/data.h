@@ -135,6 +135,13 @@ typedef struct _ram {
 	 */
 	unsigned short int _user_flags[(NUMFLG+15) >> 4];
 
+#ifdef ENABLE_VARIABLE_REGS
+	/*
+	 *  Number of currently allocated global registers
+	 */
+	unsigned char _numregs;
+#endif
+
 	/*
 	 *  Alpha register gets its own space
 	 */
@@ -151,20 +158,27 @@ typedef struct _ram {
 
 extern TPersistentRam PersistentRam;
 
-#define State		 (PersistentRam._state)
-#define UState		 (PersistentRam._ustate)
-#define CrcProg		 (PersistentRam._crc_prog)
-#define LastProg	 (PersistentRam._last_prog)
-#define Alpha		 (PersistentRam._alpha)
-#define Regs		 (PersistentRam._regs)
-#define Prog		 (PersistentRam._prog)
-#define UserFlags	 (PersistentRam._user_flags)
-#define RetStk		 (PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
-#define LocalRegs	 (PersistentRam._state.local_regs)
-#define RandS1		 (PersistentRam._rand_s1)
-#define RandS2		 (PersistentRam._rand_s2)
-#define RandS3		 (PersistentRam._rand_s3)
-#define Crc              (PersistentRam._crc)
+#define State		(PersistentRam._state)
+#define UState		(PersistentRam._ustate)
+#define CrcProg		(PersistentRam._crc_prog)
+#define LastProg	(PersistentRam._last_prog)
+#define Alpha		(PersistentRam._alpha)
+#define Regs		(PersistentRam._regs)
+#define Prog		(PersistentRam._prog)
+#define UserFlags	(PersistentRam._user_flags)
+#ifdef ENABLE_VARIABLE_REGS
+#define RetStkBase	(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
+#define NumRegs		(PersistentRam._numregs)
+#else
+#define RetStk		(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
+#define NumRegs		(TOPREALREG)
+#endif
+#define RetStkPtr	(PersistentRam._state.retstk_ptr)
+#define LocalRegs	(PersistentRam._state.local_regs)
+#define RandS1		(PersistentRam._rand_s1)
+#define RandS2		(PersistentRam._rand_s2)
+#define RandS3		(PersistentRam._rand_s3)
+#define Crc             (PersistentRam._crc)
 
 
 /*
@@ -291,7 +305,9 @@ extern const char *DispMsg;	   // What to display in message area
 extern char TraceBuffer[];         // Display current instruction
 extern unsigned int OpCode;        // Pending execution waiting for key-release
 extern unsigned char GoFast;	   // Speed-up might be necessary
-
+#ifdef ENABLE_VARIABLE_REGS
+extern unsigned short *RetStk;	   // Pointer to current top of return stack
+#endif
 
 extern decContext Ctx;
 
