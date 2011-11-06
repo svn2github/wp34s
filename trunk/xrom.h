@@ -32,10 +32,6 @@
 #define ENTRY_NEXTPRIME	88
 
 
-
-/* Flags - global */
-#define F_XROM			15
-
 extern const s_opcode xrom[];
 extern const unsigned short int xrom_size;
 
