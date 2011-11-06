@@ -380,8 +380,6 @@ static s_opcode cfit_catalogue[] = {
 
 static s_opcode stats_catalogue[] = {
 	MON(OP_sigper,		"%\221")
-	DYA(OP_LNBETA,		"LN\241")
-	MON(OP_LNGAMMA,		"LN\202")
 	NILIC(OP_sigmaN,	"n\221")
 	NILIC(OP_STORANDOM,	"SEED")
 	NILIC(OP_statSErr,	"SERR")
@@ -394,8 +392,6 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_statWSErr,	"SERRw")
 	NILIC(OP_statWS,	"sw")
 	NILIC(OP_statWSigma,	"\244w")
-	DYA(OP_BETA,		"\241")
-	MON(OP_GAMMA,		"\202")
 	NILIC(OP_statSigma,	"\261")
 	NILIC(OP_sigmalnXlnX,	"\221ln\232X")
 	NILIC(OP_sigmalnYlnY,	"\221ln\232Y")
