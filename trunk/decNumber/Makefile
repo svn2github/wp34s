@@ -24,11 +24,11 @@ clean:
 $(OBJECTDIR):
 	mkdir -p $@
 
-$(OBJECTDIR)/$(LIB): $(OBJS) 
+$(OBJECTDIR)/$(LIB): $(OBJS) Makefile 
 	-rm -f $@
 	$(AR) -r $@ $(OBJS)
 	$(RANLIB) $@
 
-$(OBJECTDIR)/%.o: %.c $(INCS)
+$(OBJECTDIR)/%.o: %.c $(INCS) Makefile
 	$(CC) -c $(CFLAGS) -o $@ $<
 

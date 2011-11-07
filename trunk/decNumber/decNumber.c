@@ -225,7 +225,7 @@ static decNumber * decExpOp(decNumber *, const decNumber *,
                               decContext *, uInt *);
 static void        decFinalize(decNumber *, decContext *, Int *, uInt *);
 static Int         decGetDigits(Unit *, Int);
-static Int         decGetInt(const decNumber *);
+/*static*/ Int	   decGetInt(const decNumber *);
 //static decNumber * decLnOp(decNumber *, const decNumber *,
 //                              decContext *, uInt *);
 static decNumber * decMultiplyOp(decNumber *, const decNumber *,
@@ -6075,7 +6075,7 @@ static uInt decCheckMath(const decNumber *rhs, decContext *set,
 /* The sign can be determined from dn by the caller when BIGEVEN or   */
 /* BIGODD is returned.                                                */
 /* ------------------------------------------------------------------ */
-static Int decGetInt(const decNumber *dn) {
+/*static*/ Int decGetInt(const decNumber *dn) {
   Int  theInt;                          // result accumulator
   const Unit *up;                       // work
   Int  got;                             // digits (real or not) processed

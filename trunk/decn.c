@@ -128,7 +128,7 @@ static const decNumber *const small_ints[MAX_SMALL_INT+1] = {
 };
 
 const decNumber *small_int(int i) {
-	if (i >= 0 && i<= MAX_SMALL_INT)
+	if (i >= 0 && i <= MAX_SMALL_INT)
 		return small_ints[i];
 	return NULL;
 }
@@ -139,19 +139,19 @@ void ullint_to_dn(decNumber *x, unsigned long long int n) {
 		decNumberCopy(x, small_ints[n]);
 	} else {
 		/* Got to do this the long way */
-		decNumber p10, z;
+		decNumber z;
+		int shift = 0;
 
-		dn_1(&p10);
 		decNumberZero(x);
 
 		while (n != 0) {
-			const int r = n%10;
+			const int r = n % 10;
 			n /= 10;
 			if (r != 0) {
-				dn_multiply(&z, &p10, small_ints[r]);
+				dn_mulpow10(&z, small_ints[r], shift);
 				dn_add(x, x, &z);
 			}
-			dn_mulpow10(&p10, &p10, 1);
+			++shift;
 		}
 	}
 }
@@ -173,12 +173,17 @@ void int_to_dn(decNumber *x, int n) {
 }
 
 int dn_to_int(const decNumber *x) {
+#if 0
 	decNumber y;
 	char buf[64];
 
 	decNumberRescale(&y, x, &const_0, &Ctx);
 	decNumberToString(&y, buf);
 	return s_to_i(buf);
+#else
+	extern int decGetInt(const decNumber *);
+	return decGetInt(x);
+#endif
 }
 
 unsigned long long int dn_to_ull(const decNumber *x, int *sgn) {
@@ -298,19 +303,7 @@ decNumber *dn_div2(decNumber *r, const decNumber *x) {
 }
 
 decNumber *dn_mul100(decNumber *r, const decNumber *x) {
-#ifdef DECNUMBER
 	return dn_mulpow10(r, x, 2);
-#else
-	return dn_multiply(r, x, &const_100);
-#endif
-}
-
-decNumber *dn_mul1000(decNumber *r, const decNumber *x) {
-#ifdef DECNUMBER
-	return dn_mulpow10(r, x, 3);
-#else
-	return dn_multiply(r, x, &const_1000);
-#endif
 }
 
 decNumber *dn_mulPI(decNumber *r, const decNumber *x) {
@@ -355,20 +348,9 @@ decNumber *decNumberMantissa(decNumber *r, const decNumber *x) {
 		return set_NaN(r);
 	if (dn_eq0(x))
 		return decNumberCopy(r, x);
-#ifdef DECNUMBER
 	decNumberCopy(r, x);
 	r->exponent = 1 - r->digits;
 	return r;
-#else
-	{
-		decNumber e, p;
-
-		decNumberExponent(&e, x);
-		dn_minus(&e, &e);
-		decNumberPow10(&p, &e);
-		return dn_multiply(r, &p, x);
-	}
-#endif
 }
 
 /* Exponenet of a number
@@ -378,18 +360,8 @@ decNumber *decNumberExponent(decNumber *r, const decNumber *x) {
 		return set_NaN(r);
 	if (dn_eq0(x))
 		return decNumberZero(r);
-#ifdef DECNUMBER
 	int_to_dn(r, x->exponent + x->digits - 1);
 	return r;
-#else
-	{
-		decNumber z, l;
-
-		dn_abs(&z, x);
-		dn_log10(&l, &z);
-		return decNumberFloor(r, &l);
-	}
-#endif
 }
 #endif
 

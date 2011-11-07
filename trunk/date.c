@@ -187,8 +187,7 @@ static int day_of_week(int year, int month, int day, const char **msg) {
  * Some care is required for overflow and the like.
  */
 static decNumber *build_date(decNumber *res, int year, int month, int day) {
-	decNumber y, m, d, x;
-	int bc;
+	int sign = 1, shift = -6, r = 0;
 
 	if (check_date(year, month, day)) {
 		set_NaN(res);
@@ -196,38 +195,25 @@ static decNumber *build_date(decNumber *res, int year, int month, int day) {
 	}
 	if (year < 0) {
 		year = -year;
-		bc = 1;
-	} else	bc = 0;
-
-	int_to_dn(&y, year);
-	int_to_dn(&m, month);
-	int_to_dn(&d, day);
+		sign = -1;
+	}
 
 	switch (UState.date_mode) {
 	case DATE_YMD:
-		dn_mulpow10(&x, &d, -2);
-		dn_add(&d, &x, &m);
-		dn_mulpow10(&x, &d, -2);
-		dn_add(res, &y, &x);
+		r = ((year * 100) + month) * 100 + day;
+		shift = -4;
 		break;
 
 	case DATE_DMY:
-		dn_mulpow10(&x, &y, -4);
-		dn_add(&y, &m, &x);
-		dn_mulpow10(&x, &y, -2);
-		dn_add(res, &d, &x);
+		r = ((day * 100) + month)* 10000 + year;
 		break;
 
 	case DATE_MDY:
-		dn_mulpow10(&x, &y, -4);
-		dn_add(&y, &d, &x);
-		dn_mulpow10(&x, &y, -2);
-		dn_add(res, &m, &x);
+		r = ((month * 100) + day)* 10000 + year;
 		break;
 	}
-
-	if (bc)
-		dn_minus(res, res);
+	int_to_dn(res, r * sign);
+	dn_mulpow10(res, res, shift);
 	day_of_week(year, month, day, &DispMsg);
 	return res;
 }
