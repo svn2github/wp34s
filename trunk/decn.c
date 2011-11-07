@@ -173,8 +173,8 @@ void int_to_dn(decNumber *x, int n) {
 }
 
 int dn_to_int(const decNumber *x) {
-#if 0
 	decNumber y;
+#if 0
 	char buf[64];
 
 	decNumberRescale(&y, x, &const_0, &Ctx);
@@ -182,7 +182,7 @@ int dn_to_int(const decNumber *x) {
 	return s_to_i(buf);
 #else
 	extern int decGetInt(const decNumber *);
-	return decGetInt(x);
+	return decGetInt(decNumberTrunc(&y, x));
 #endif
 }
 
