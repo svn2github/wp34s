@@ -232,8 +232,8 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS_UPPER, CATALOGUE_NONE               } },
 			{ K12,     { CATALOGUE_NONE, CATALOGUE_ALPHA_SUBSCRIPTS,    CATALOGUE_ALPHA_SUPERSCRIPTS } },
 			{ K44,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_STATUS             } },
-			{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA              } },
 			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_COMPARES     } },
+			{ K53,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA              } },
 			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_SYMBOLS      } },
 		};
 		static const char smap[] = { 0, 1, 0, 2 }; // Map shifts to columns;
@@ -281,7 +281,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 0000, 0000, 0206, 0000, 0000, 0246,  },  // K20
 		{ 'J',  0000, 0000, 0027, 'j',  0000,  },  // K21
 		{ 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
-		{ 'L',  0246, 0212, 0000, 'l',  0252,  },  // K23
+		{ 'L',  0246, 0212, 0257, 'l',  0252,  },  // K23
 		{ 0, 0, 0, 0, 0, 0 },
 
 		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
@@ -299,7 +299,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 0017, '(',  ')',  0000, 0000, ')',   },  // K50
 		{ '1',  '1',  0207, 0000, '1',  0247,  },  // K51
 		{ 'U',  '2',  0000, 0014, 'u',  0000,  },  // K52
-		{ 'V',  '3',  0000, 0257, 'v',  0000,  },  // K53
+		{ 'V',  '3',  0000, 0000, 'v',  0000,  },  // K53
 		{ 'W',  '-',  0000, '%',  'w',  0000,  },  // K54
 
 		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K60
@@ -1232,7 +1232,9 @@ static int arg_eval(unsigned int val) {
 
 static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
-	const int mx = State2.ind ? NumRegs : State2.local ? MAX_LOCAL_DIRECT : argcmds[base].lim;
+	const int mx = (State2.ind || argcmds[base].reg) ? (State2.runmode ? NumRegs : NUMREG) :
+		        State2.local ? MAX_LOCAL_DIRECT :
+			argcmds[base].lim;
 	const unsigned int val = State2.digval * 10 + n;
 
 	if (State2.numdigit == 0) {

@@ -69,7 +69,7 @@ void error_message(const enum errors e)
 		// manually get the order correct!
 		"Running\0PrograMm", 
 		"Domain\0",
-		"Bad date\0",
+		"Bad time\0or dAtE",
 		"Undefined\0Op-CODE",
 		"+\237\0",
 		"-\237\0",

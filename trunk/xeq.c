@@ -1764,7 +1764,6 @@ unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
 /* Handle a GTO/GSB instruction
  */
 static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
-	int stack_size = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 	raw_set_pc(pc);
 	if (gsb) {
 		if (!Running) {
@@ -1772,7 +1771,7 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 			clrretstk();
 			set_running_on();
 		}
-		if (-RetStkPtr >= stack_size) {
+		if (-RetStkPtr >= RetStkSize) {
 			// Stack is full
 			err(ERR_RAM_FULL);
 			// clrretstk();
@@ -3845,7 +3844,7 @@ void cmdlocl(unsigned int arg, enum rarg op) {
 	}
 	// compute space needed
 	sp -= size;
-	if (-sp > RET_STACK_SIZE + NUMPROG + 1 - LastProg) {
+	if (-sp > RetStkSize) {
 		err(ERR_RAM_FULL);
 		return;
 	}

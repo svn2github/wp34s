@@ -582,37 +582,50 @@ void date_alphadate(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	add_string(buf);
 }
 
+/*
+ *  Time functions
+ */
+static int extract_time(int *h, int *m, int *s) {
+	int hms;
+	decNumber a, b;
+
+	getX(&a);
+	dn_mulpow10(&b, &a, 4);
+	hms = dn_to_int(decNumberRound(&a, &b));
+	*s = (hms % 100);
+	hms /= 100;
+	*m = (hms % 100);
+	*h = hms / 100;
+	if (hms < 0 || *h >= 24 || *m >= 60 || *s >= 60) {
+		err(ERR_BAD_DATE);
+		return 1;
+	}
+	return 0;
+}
+
 void date_alphatime(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	decNumber x,  y;
 	char buf[16], *p;
-	int a;
+	int h, m, s;
 	const char *suffix;
 
+	if (extract_time(&h, &m, &s))
+		return;
 	xset(buf, '\0', sizeof(buf));
-	getX(&x);
-	decNumberTrunc(&y, &x);
-	a = dn_to_int(&y);
 	if (UState.t12) {
-		if (a >= 12) {
-			a -= 12;
+		if (h >= 12) {
+			h -= 12;
 			suffix = " PM";
 		} else
 			suffix = " AM";
-		if (a == 0)
-			a = 12;
+		if (h == 0)
+			h = 12;
 	} else
 		suffix = "";
-	p = num_arg(buf, a);
+	p = num_arg(buf, h);
 	*p++ = ':';
-	decNumberFrac(&y, &x);
-	dn_multiply(&x, &y, &const_60);
-	decNumberTrunc(&y, &x);
-	p = num_arg_0(p, dn_to_int(&y), 2);
+	p = num_arg_0(p, m, 2);
 	*p++ = ':';
-	decNumberFrac(&y, &x);
-	dn_multiply(&x, &y, &const_60);
-	decNumberRound(&y, &x);
-	p = num_arg_0(p, dn_to_int(&y), 2);
+	p = num_arg_0(p, s, 2);
 	scopy(p, suffix);
 	add_string(buf);
 }
@@ -670,17 +683,13 @@ void date_date(decimal64 *r, decimal64 *nul, enum nilop op) {
 
 void date_time(decimal64 *r, decimal64 *nul, enum nilop op) {
 	unsigned int h, m, s;
-	decNumber a, b, c;
+	decNumber a, b;
 
 	query_time(&s, &m, &h);
-	int_to_dn(&a, s);
-	dn_mulpow10(&b, &a, -2);
-	int_to_dn(&a, m);
-	dn_add(&c, &a, &b);
-	dn_mulpow10(&b, &c, -2);
+	h = (h * 100 + m) * 100 + s;
 	int_to_dn(&a, h);
-	dn_add(&c, &b, &a);
-	packed_from_number(r, &c);
+	dn_mulpow10(&b, &a, -4);
+	packed_from_number(r, &b);
 }
 
 void date_setdate(decimal64 *r, decimal64 *nul, enum nilop op) {
@@ -701,17 +710,9 @@ void date_setdate(decimal64 *r, decimal64 *nul, enum nilop op) {
 }
 
 void date_settime(decimal64 *r, decimal64 *nul, enum nilop op) {
-	int s, m, h;
-	decNumber x, y;
-
-	getX(&x);
-	h = dn_to_int(decNumberTrunc(&y, &x)) & 0x3f;
-	decNumberFrac(&y, &x);
-	dn_mul100(&x, &y);
-	m = dn_to_int(decNumberTrunc(&y, &x)) & 0x7f;
-	decNumberFrac(&y, &x);
-	dn_mul100(&x, &y);
-	s = dn_to_int(decNumberRound(&y, &x)) & 0x7f;
+	int h, m, s;
+	if (extract_time(&h, &m, &s))
+		return;
 #ifdef REALBUILD
 	busy();
 	RTC_SetTime((unsigned char) h, (unsigned char) m, (unsigned char) s);
