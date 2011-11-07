@@ -3273,7 +3273,7 @@ void op_regclr(decimal64 *a, decimal64 *b, enum nilop op) {
 
 	if (reg_decode(&s, &n, NULL, 0))
 		return;
-	xset(s, 0, n << 2);
+	zero_regs(s, n);
 }
 
 void op_regsort(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
@@ -3781,21 +3781,37 @@ void xeq_init_contexts(void) {
 
 
 /*
+
  *  We don't allow some commands from a running program
+
  */
+
 int not_running(void)
+
 {
+
 	if ( Running ) {
+
 		err(ERR_ILLEGAL);
+
 		return 0;
+
 	}
+
 	return 1;
+
 }
 
 
+
+
+
 /*
+
  *  Handle the Running Flag
+
  */
+
 void set_running_off_sst() {
 	Running = 0;
 }
