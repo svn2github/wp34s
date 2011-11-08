@@ -1201,7 +1201,7 @@ static void show_registers(void) {
 	reg = State2.digval2 ? get_flash_reg_n(n) : 
 	      State2.local   ? get_reg_n(LOCAL_REG_BASE + n) : 
 	      get_reg_n(n);
-	bp = scopy_spc(buf, State2.digval2 ? "Fl\006" : "Rg");
+	bp = scopy_spc(buf, State2.digval2 ? "Bkup" : "Reg ");
 	if (State2.local)
 		*bp++ = '.';
 	if (n < 100)

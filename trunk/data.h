@@ -308,8 +308,8 @@ extern unsigned char GoFast;	   // Speed-up might be necessary
 #ifdef ENABLE_VARIABLE_REGS
 extern unsigned short *RetStk;	   // Pointer to current top of return stack
 #endif
-
-extern decContext Ctx;
+extern int RetStkSize;		   // actual size of retiurn stack		
+extern decContext Ctx;		   // decNumber library context
 
 #if !defined(REALBUILD) && !defined(WINGUI)
 extern int just_displayed;

@@ -676,6 +676,9 @@ static s_opcode prog_catalogue[] = {
 
 	RARGCMD(RARG_LOCAL,	"LOCL")
 	NILIC(OP_LPOP,		"LPOP")
+#ifndef INCLUDE_INTERNAL_CATALOGUE
+	RARGCMD(RARG_CONST_INT,	"iC")
+#endif
 };
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE

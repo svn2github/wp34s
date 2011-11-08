@@ -787,7 +787,7 @@ decimal64 *get_reg_n(int n) {
 		// local register on the return stack
 		return (decimal64 *)(RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n - LOCAL_REG_BASE;
 	}
-	return Regs + TOPREALREG - NumRegs + n;
+	return Regs + (n >= TOPREALREG ? 0 : TOPREALREG - NumRegs) + n;
 }
 
 decimal64 *get_flash_reg_n(int n) {
@@ -2778,17 +2778,6 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_SIGMAPLUS:
-		if (is_intmode()) {
-			bad_mode_error();
-			break;
-		}
-		process_cmdline();
-		State.state_lift = 0;
-		setlastX();
-		sigma_plus(&Ctx);
-		sigma_val(&regX, NULL, OP_sigmaN);
-		break;
-
 	case OP_SIGMAMINUS:
 		if (is_intmode()) {
 			bad_mode_error();
@@ -2797,7 +2786,10 @@ static void specials(const opcode op) {
 		process_cmdline();
 		State.state_lift = 0;
 		setlastX();
-		sigma_minus(&Ctx);
+		if (opm == OP_SIGMAPLUS)
+			sigma_plus(&Ctx);
+		else
+			sigma_minus(&Ctx);
 		sigma_val(&regX, NULL, OP_sigmaN);
 		break;
 
@@ -3502,15 +3494,6 @@ void xeq(opcode op)
 			sprintf(TraceBuffer, "%04X:%s", op, prt(op, buf));
 		DispMsg = TraceBuffer;
 	}
-#endif
-#ifdef ENABLE_VARIABLE_REGS
-	// Compute the actual top and current size of the return stack
-	RetStkSize = (TOPREALREG - NumRegs) << 2;
-	RetStk = RetStkBase + RetStkSize;
-	RetStkSize += RET_STACK_SIZE + NUMPROG + 1 - LastProg;
-#else
-	// Compute the current size of the return stack
-	RetStkSize = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 #endif
 	Busy = 0;
 	xcopy(save, &regX, (STACK_SIZE+2) * sizeof(decimal64));

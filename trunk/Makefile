@@ -282,7 +282,7 @@ xeq.h:
 
 # Build libs and objects
 
-$(OBJECTDIR)/libdecNum34s.a: $(DNSRCS) $(DNHDRS) features.h decNumber/Makefile
+$(OBJECTDIR)/libdecNum34s.a: $(DNSRCS) $(DNHDRS) features.h decNumber/Makefile Makefile
 	+@make OBJECTDIR=../$(OBJECTDIR) "CFLAGS=$(CFLAGS)" "LIB=libdecNum34s.a" \
 		-C decNumber
 

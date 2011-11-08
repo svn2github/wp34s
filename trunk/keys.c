@@ -2088,11 +2088,11 @@ static int process_labellist(const keycode c) {
 static int process_registerlist(const keycode c) {
 	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
 	enum shifts shift = reset_shift();
-	const int max = State2.local ? LOCAL_MAXREG(RetStk[LocalRegs]) : NumRegs;
+	const int max = State2.local ? LOCAL_MAXREG(RetStk[LocalRegs]) : NUMREG;
 
-	if ( n == LOCAL_REG_BASE ) {
+	if ( n == LOCAL_REG_BASE ) {	// '.'
 		if (LocalRegs < 0)
-			State2.local = 1 - State2.local;
+			State2.local = ! State2.local && ! State2.digval2;
 		State2.digval = State2.local ? 0 : regX_idx;
 		return STATE_UNFINISHED;
 	}
@@ -2108,15 +2108,21 @@ static int process_registerlist(const keycode c) {
 
 	switch (c) {
 	case K40:
-		if (State2.digval > 0)
-			State2.digval--;
+		if (State2.digval > 0) {
+			if (! State2.local && State2.digval == TOPREALREG)
+				State2.digval = NumRegs;
+			--State2.digval;
+		}
 		else
 			State2.digval = max - 1;
 		return STATE_UNFINISHED;
 
 	case K50:
-		if (State2.digval < max - 1)
+		if (State2.digval < max - 1) {
 			State2.digval++;
+			if (! State2.local && State2.digval == NumRegs)
+				State2.digval = regX_idx;
+		}
 		else	
 			State2.digval = 0;
 		return STATE_UNFINISHED;
@@ -2390,9 +2396,18 @@ void process_keycode(int c)
 	}
 	else {
 		/*
-		 *  Not the heartbeat - prepare for execution of any numerical commands
+		 *  Not the heartbeat - prepare for execution of any commands
 		 */
 		xeq_init_contexts();
+#ifdef ENABLE_VARIABLE_REGS
+		// Compute the actual top and current size of the return stack
+		RetStkSize = (TOPREALREG - NumRegs) << 2;
+		RetStk = RetStkBase + RetStkSize;
+		RetStkSize += RET_STACK_SIZE + NUMPROG + 1 - LastProg;
+#else
+		// Compute the current size of the return stack
+		RetStkSize = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
+#endif
 	}
 
 	/*

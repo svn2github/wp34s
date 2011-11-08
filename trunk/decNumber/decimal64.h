@@ -51,8 +51,9 @@
   #endif
 
   /* Decimal 64-bit type, accessible by bytes */
-  typedef struct {
+  typedef union {
     uint8_t bytes[DECIMAL64_Bytes];     // decimal64: 1, 5, 8, 50 bits
+    uint32_t ints[DECIMAL64_Bytes/4];   // force alignment to 32 bit boundary
     } decimal64;
 
   /* special values [top byte excluding sign bit; last two bits are

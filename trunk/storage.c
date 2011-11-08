@@ -576,6 +576,10 @@ void load_statefile( void )
 		memset( p, 0xff, l );
 		sprintf( name, REGION_FILE, i == 0 ? 'R' : i + '0' - 1 );
 		f = fopen( name, "rb" );
+		if ( f == NULL && i == 0 ) {
+			// Emulate a backup
+			UserFlash.backup = PersistentRam;
+		}
 		if ( f != NULL ) {
 			fread( p, l, 1, f );
 			fclose(f);
