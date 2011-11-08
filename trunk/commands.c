@@ -618,7 +618,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC1(OP_REGSQ,		&get_mem,		"REGS?")
 #endif
 #ifdef INCLUDE_STOPWATCH
-	FN_I1(OP_STOPWATCH,	&stopwatch,		"STOPW")
+	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
 #undef FUNC
 #undef FUNC0
@@ -784,9 +784,9 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,				"\240XEQ")
 	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,				"\240GTO")
 
-	CMD(RARG_PLOAD,		&load_program,	NUMBER_OF_FLASH_REGIONS-1, "PRCL")
-	CMD(RARG_PSAVE,		&save_program,	NUMBER_OF_FLASH_REGIONS-1, "PSTO")
-	CMD(RARG_PSWAP,		&swap_program,	NUMBER_OF_FLASH_REGIONS-1, "P\027")
+	CMD(RARG_PLOAD,		&load_program,	NUMBER_OF_FLASH_REGIONS-1,	"PRCL")
+	CMD(RARG_PSAVE,		&save_program,	NUMBER_OF_FLASH_REGIONS-1,	"PSTO")
+	CMD(RARG_PSWAP,		&swap_program,	NUMBER_OF_FLASH_REGIONS-1,	"P\027")
 
 	CMDstknL(RARG_FLRCL, 	  &cmdflashrcl,				"RCF")
 	CMDstknL(RARG_FLRCL_PL,   &cmdflashrcl,				"RCF+")

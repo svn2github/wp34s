@@ -321,7 +321,7 @@ int stopwatch_callback(int key) {
 	return key==K_RELEASE?-1:key;
 }
 
-void stopwatch(decimal64 *r, decimal64 *nul, enum nilop op) {
+void stopwatch(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	StopWatchMessage="STOPWATCH\0\0\0";
 	StopwatchStatus.stopwatch_show_memory=0;
 	StopwatchStatus.stopwatch_select_memory_mode=0;

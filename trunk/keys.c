@@ -2150,7 +2150,7 @@ static int process_registerlist(const keycode c) {
 #ifdef INCLUDE_STOPWATCH_HOTKEY
 #define HOTKEY_DELAY 4
 static int key_f_ticker=-10;
-static int key_h_ticker=-10;
+static int key_g_ticker=-10;
 #endif // INCLUDE_STOPWATCH_HOTKEY
 
 static int process(const int c) {
@@ -2196,7 +2196,7 @@ static int process(const int c) {
 	}
 
 #ifdef INCLUDE_STOPWATCH_HOTKEY
-	if(c == K60 && shift==SHIFT_H && Ticker-key_h_ticker<=HOTKEY_DELAY) {
+	if(c == K60 && shift==SHIFT_G && Ticker-key_f_ticker<=HOTKEY_DELAY) {
 		toggle_shift(SHIFT_N);
 		return (KIND_NIL  << KIND_SHIFT) | OP_STOPWATCH;
 	}
@@ -2251,7 +2251,7 @@ static int process(const int c) {
 		// The shift variable is to cur_shift and it already holds 
 		// the SHIFT_H value
 		if((enum shifts) State2.shifts==SHIFT_F && Ticker-key_f_ticker<=HOTKEY_DELAY) {
-			key_h_ticker=Ticker;
+			key_g_ticker=Ticker;
 		}
 #endif // INCLUDE_STOPWATCH_HOTKEY
 		toggle_shift(SHIFT_H);
