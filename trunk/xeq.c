@@ -109,17 +109,35 @@ decContext Ctx;
  */
 char TraceBuffer[25];
 
+/*
+ *  Total Size of the return stack
+ */
+int RetStkSize;
+
 #ifdef ENABLE_VARIABLE_REGS
 /*
  * The actual top of the return stack
  */
 unsigned short *RetStk;
-#endif
 
 /*
- *  Total Size of the return stack
+ *  Shift the return stack.
+ *  The distance is in levels.
+ *  I argument is negative, return stack will shrink.
+ *  Returns 1 if unsuccessful (error is set)
  */
-int RetStkSize;
+int move_retstk(int distance)
+{
+	if (RetStkSize + RetStkPtr + distance < 0) {
+		err(ERR_RAM_FULL);
+		return 1;
+	}
+	xcopy(RetStk + distance, RetStk, (-RetStkPtr) << 1);
+	RetStk += distance;
+	RetStkSize += distance;
+	return 0;
+}
+#endif
 
 /*
  *  How many stack levels with local data have we?
@@ -127,6 +145,7 @@ int RetStkSize;
 int local_levels(void) {
 	return LocalRegs < 0 ? LOCAL_LEVELS(RetStk[LocalRegs]) : 0;
 }
+
 
 #if ! defined(REALBUILD) && ! defined(WINGUI)
 // Console screen only
@@ -2787,9 +2806,9 @@ static void specials(const opcode op) {
 		State.state_lift = 0;
 		setlastX();
 		if (opm == OP_SIGMAPLUS)
-			sigma_plus(&Ctx);
+			sigma_plus();
 		else
-			sigma_minus(&Ctx);
+			sigma_minus();
 		sigma_val(&regX, NULL, OP_sigmaN);
 		break;
 
@@ -3886,18 +3905,15 @@ void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
  *  Reduce the number of global registers in favour of local data on the return stack
  */
 void cmdregs(unsigned int arg, enum rarg op) {
-	++arg;
-	if ( arg < NUMSTATREG ) {
-		err(ERR_RANGE);
+	int distance = NumRegs - (++arg);
+
+	// Move return stack, check for room
+	if (move_retstk(distance << 2))
 		return;
-	}
-	clrretstk();
-	// Move register contents (except the summation registers)
-	if (arg > NUMSTATREG) {
-		move_regs(Regs + TOPREALREG - arg, Regs + TOPREALREG - NumRegs, arg - NUMSTATREG);
-		if (arg > NumRegs)
-			zero_regs(Regs + TOPREALREG - NUMSTATREG - arg + NumRegs, arg - NumRegs);
-	}
+	// Move register contents, including the statistics registers
+	move_regs(Regs + TOPREALREG - arg - NumStatRegs, Regs + TOPREALREG - NumRegs - NumStatRegs, arg + NumStatRegs);
+	if (distance < 0)
+		zero_regs(Regs + TOPREALREG + distance, -distance);
 	NumRegs = arg;
 }
 #endif

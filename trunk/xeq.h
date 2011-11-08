@@ -1033,7 +1033,9 @@ extern unsigned int state_pc(void);
 extern void set_pc(unsigned int);
 extern unsigned int user_pc(void);
 extern unsigned int find_user_pc(unsigned int);
+
 extern int local_levels(void);
+extern int move_retstk(int distance);
 
 extern void clrretstk(void);
 extern void clrretstk_pc(void);

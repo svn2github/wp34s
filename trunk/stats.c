@@ -14,30 +14,70 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+// New version with variable register block
+
 #include "xeq.h"
 #include "decn.h"
 #include "stats.h"
 #include "consts.h"
 #include "int.h"
 
+#ifdef ENABLE_VARIABLE_REGS
+/*
+ *  Point to our register block
+ */
+decimal64 *StatRegs;
 
-#define sigmaBASE	86
-#define sigmaXXY	(Regs[86])
+/*
+ *  Handle block (de)allocation
+ */
+static void sigmaDeallocate(void) {
+	move_retstk(NumStatRegs << 2);
+	NumStatRegs = 0;
+}
 
-#define sigmaX		(Regs[87])
-#define sigmaXX		(Regs[88])
-#define sigmaY		(Regs[89])
-#define sigmaYY		(Regs[90])
-#define sigmaXY		(Regs[91])
-#define sigmaN		(Regs[92])
+static int sigmaAllocate(void)
+{
+	if (NumStatRegs != 0)
+		sigmaDeallocate();
+	if (move_retstk(-(NUMSTATREG << 2))) {
+		return 1;
+	}
+	NumStatRegs = NUMSTATREG;
+	StatRegs = Regs + TOPREALREG - NumRegs - NumStatRegs;
+	zero_regs(StatRegs, NumStatRegs);
+	return 0;
+}
 
-#define sigmalnX	(Regs[93])
-#define sigmalnXlnX	(Regs[94])
-#define sigmalnY	(Regs[95])
-#define sigmalnYlnY	(Regs[96])
-#define sigmalnXlnY	(Regs[97])
-#define sigmaXlnY	(Regs[98])
-#define sigmaYlnX	(Regs[99])
+static int check_stat(void) {
+	if (NumStatRegs == 0) {
+		err(ERR_MORE_POINTS);
+		return 1;
+	}
+	return 0;
+}
+
+#else
+#define StatRegs	(Regs+TOPREALREG-NUMSTATREG)
+#define check_stat()	(0)
+#endif
+
+#define sigmaXXY	(StatRegs[0])
+
+#define sigmaX		(StatRegs[1])
+#define sigmaXX		(StatRegs[2])
+#define sigmaY		(StatRegs[3])
+#define sigmaYY		(StatRegs[4])
+#define sigmaXY		(StatRegs[5])
+#define sigmaN		(StatRegs[6])
+
+#define sigmalnX	(StatRegs[7])
+#define sigmalnXlnX	(StatRegs[8])
+#define sigmalnY	(StatRegs[9])
+#define sigmalnYlnY	(StatRegs[10])
+#define sigmalnXlnY	(StatRegs[11])
+#define sigmaXlnY	(StatRegs[12])
+#define sigmaYlnX	(StatRegs[13])
 
 
 #define DISCRETE_TOLERANCE	&const_0_1
@@ -81,7 +121,8 @@ static int check_number(const decNumber *r, int n) {
 
 static int check_data(int n) {
 	decNumber r;
-
+	if (check_stat())
+		return 1;
 	decimal64ToNumber(&sigmaN, &r);
 	return check_number(&r, n);
 }
@@ -107,8 +148,11 @@ void sigma_clear(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	sigmalnXlnY = CONSTANT_INT(OP_ZERO);
 	sigmaXlnY = CONSTANT_INT(OP_ZERO);
 	sigmaYlnX = CONSTANT_INT(OP_ZERO);
+
+#elif defined(ENABLE_VARIABLE_REGS)
+	sigmaDeallocate();
 #else
-	zero_regs(Regs + sigmaBASE, NUMSTATREG);
+	zero_regs(StatRegs, NumStatRegs);
 #endif
 }
 
@@ -170,11 +214,21 @@ static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const 
 }
 
 void sigma_plus() {
+#ifdef ENABLE_VARIABLE_REGS
+	if (NumStatRegs == 0 && sigmaAllocate())
+		return;
+#endif
 	sigma_helper(&dn_add);
 }
 
 void sigma_minus() {
+	if (check_stat())
+		return;
 	sigma_helper(&dn_subtract);
+#ifdef ENABLE_VARIABLE_REGS
+	if (check_data(1))
+		sigmaDeallocate();
+#endif
 }
 
 
@@ -267,10 +321,21 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, d
 
 
 void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
-	*x = Regs[sigmaBASE + (op - OP_sigmaX2Y)];
+#ifdef ENABLE_VARIABLE_REGS
+	const int n = op - OP_sigmaX2Y;
+	*x = n >= NumStatRegs ? CONSTANT_INT(OP_ZERO) : StatRegs[n];
+#else
+	*x = StatRegs[op - OP_sigmaX2Y];
+#endif
 }
 
 void sigma_sum(decimal64 *x, decimal64 *y, enum nilop op) {
+#ifdef ENABLE_VARIABLE_REGS
+	if (NumStatRegs == 0) {
+		*x = *y = CONSTANT_INT(OP_ZERO);
+		return;
+	}
+#endif
 	*x = sigmaX;
 	*y = sigmaY;
 }
@@ -379,6 +444,8 @@ void WS(decimal64 *x, int sample, int rootn) {
 	decNumber sxxy, sy, sxy, syy;
 	decNumber t, u, v, w, *p;
 
+	if (check_stat())
+		return;
 	get_sigmas(NULL, NULL, &sy, NULL, &syy, &sxy, SIGMA_QUIET_LINEAR);
 	if (check_number(&sy, 2))
 		return;
@@ -414,6 +481,10 @@ void stats_wdeviations(decimal64 *x, decimal64 *y, enum nilop op) {
 decNumber *stats_sigper(decNumber *res, const decNumber *x) {
 	decNumber sx, t;
 
+	if (check_stat()) {
+		*res = const_0;
+		return res;
+	}
 	get_sigmas(NULL, &sx, NULL, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 	dn_divide(&t, x, &sx);
 	return dn_mul100(res, &t);
@@ -491,7 +562,7 @@ static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
 	decNumber sx, sy, sxx, sxy;
 	enum sigma_modes m;
 
-	m = get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, UState.sigma_mode);
+	m = get_sigmas(&N, &sx, &sy, &sxx, NULL, &sxy, (enum sigma_modes) UState.sigma_mode);
 
 	dn_multiply(B, &N, &sxx);
 	decNumberSquare(&u, &sx);

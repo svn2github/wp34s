@@ -140,6 +140,7 @@ typedef struct _ram {
 	 *  Number of currently allocated global registers
 	 */
 	unsigned char _numregs;
+	unsigned char _numstatregs;
 #endif
 
 	/*
@@ -169,9 +170,11 @@ extern TPersistentRam PersistentRam;
 #ifdef ENABLE_VARIABLE_REGS
 #define RetStkBase	(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
 #define NumRegs		(PersistentRam._numregs)
+#define NumStatRegs	(PersistentRam._numstatregs)
 #else
 #define RetStk		(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
 #define NumRegs		(TOPREALREG)
+#define NumStatRegs	(NUMSTATREG)
 #endif
 #define RetStkPtr	(PersistentRam._state.retstk_ptr)
 #define LocalRegs	(PersistentRam._state.local_regs)

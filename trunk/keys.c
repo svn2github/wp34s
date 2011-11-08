@@ -2401,7 +2401,7 @@ void process_keycode(int c)
 		xeq_init_contexts();
 #ifdef ENABLE_VARIABLE_REGS
 		// Compute the actual top and current size of the return stack
-		RetStkSize = (TOPREALREG - NumRegs) << 2;
+		RetStkSize = (TOPREALREG - NumRegs - NumStatRegs) << 2;
 		RetStk = RetStkBase + RetStkSize;
 		RetStkSize += RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 #else

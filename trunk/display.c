@@ -21,6 +21,7 @@
 #include "int.h"
 #include "consts.h"
 #include "alpha.h"
+#include "stats.h"
 #include "decn.h"
 #include "revision.h"
 
@@ -1360,6 +1361,12 @@ void display(void) {
 				do_conv(&r, op & RARG_MASK, &x);
 			decNumberNormalize(&r, &r, &Ctx);
 			packed_from_number(&z, &r);
+			set_x(&z, NULL);
+			skip = 1;
+		} else if (cata == CATALOGUE_STATS && 
+				op >= (OP_NIL | OP_sigmaX2Y) && op <= (OP_NIL | OP_sigmaYlnX)) {
+			decimal64 z;
+			sigma_val(&z, NULL, (enum nilop) argKIND(op));
 			set_x(&z, NULL);
 			skip = 1;
 		}
