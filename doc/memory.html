@@ -28,7 +28,8 @@ distinct areas:</p>
 
   <li>The subroutine return stack,</li>
 
-  <li>The registers used for cumulative statistics (may be missing)</li>
+  <li>The registers used for cumulative statistics (may be
+missing)</li>
 
   <li>The global registers, including the stack,</li>
 
@@ -43,7 +44,7 @@ areas.</p>
 <p>A complete copy of the nonvolatile RAM can be written to flash
 region <span style="font-family: monospace;">0</span>
 with the Command <span style="font-family: monospace;">SAVE</span>
-(<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">ON</span>+<span style="font-weight: bold; font-family: Helvetica,Arial,sans-serif;">STO</span>).
+(<span style="font-family: Helvetica,Arial,sans-serif;">ON</span>+<span style="font-family: Helvetica,Arial,sans-serif;">STO</span>).
 The document <a href="flash.txt">flash.txt</a> or
 the manual have more information about the handling of flash memory.</p>
 
@@ -73,19 +74,23 @@ summation registers may have taken their share (see below).<br>
 The numberered registers <span style="font-family: monospace;">00</span>
 to <span style="font-family: monospace;">99</span>
 precede the stack and special registers <span style="font-family: monospace;">X</span>, <span style="font-family: monospace;">Y</span>, <span style="font-family: monospace;">Z</span>, <span style="font-family: monospace;">T</span>, <span style="font-family: monospace;">A</span>, <span style="font-family: monospace;">B</span>, <span style="font-family: monospace;">C</span>, <span style="font-family: monospace;">D</span>, <span style="font-family: monospace;">L</span>, <span style="font-family: monospace;">I</span>, <span style="font-family: monospace;">J</span> and <span style="font-family: monospace;">K</span>. This totals
-to 112 registers, each occupying eight bytes (or four steps). For programs
+to 112 registers, each occupying eight bytes (or four steps). For
+programs
 which do not need all the numbered registers the amount can be reduced
 by specifying the highest numbered register with the command <span style="font-family: monospace;">REGS nn</span>. With <span style="font-family: monospace;">REGS 99</span> you get
 the default state, <span style="font-family: monospace;">REGS
 00</span> just leaves a single numbered register for use. You can
-query the current allocation with <span style="font-family: monospace;">REGS?</span>. This command returns the number of registers allocated, a number&nbsp;between 1 and 100.</p>
+query the current allocation with <span style="font-family: monospace;">REGS?</span>. This
+command returns the number of registers allocated, a number&nbsp;between
+1 and 100.</p>
 
 <p>What happens when <span style="font-family: monospace;">REGS</span>
 is executed is that the beginning of the register area is moved. When
 the new upper limit is lower then it was, the move goes towards higher
 addresses; increasing the number of registers will move the boundary
 towards lower adresses. The memory contents is moved, too, thus
-preserving the register data for the remaining registers. Any additional registers are zeroed. The lettered
+preserving the register data for the remaining registers. Any
+additional registers are zeroed. The lettered
 registers stay in their place. As an example, after <span style="font-family: monospace;">REGS 89</span>,
 register <span style="font-family: monospace;">89</span><span style="font-family: monospace;"></span> is followed
 directly by register&nbsp;<span style="font-family: monospace;"></span><span style="font-family: monospace;">X</span><span style="font-family: monospace;"></span>. If the
@@ -115,7 +120,8 @@ program. This is accomplished by using the subroutine return stack to
 store not only return adresses but also local registers and flags.
 Before you can use the feature, you may have to make room.</p>
 
-<h3><a name="How_to_Make_Room"></a>How to Make Room</h3>
+<h3><a name="How_to_Make_Room"></a>How to Make
+Room</h3>
 
 <p>The total size of the return stack is given by the following
 equation:</p>
@@ -181,7 +187,8 @@ of the argument given to <span style="font-family: monospace;">LOCL</span>.</p>
 <p>Indirect addresses go from 112
 (a magic number) to 211
 (magically a palindrome, in fact just 112+100-1). The
-directly addressable registers and the flags range from 112 to 127 (127 is the
+directly addressable registers and the flags range from 112 to 127 (127
+is the
 highest argument that can be stored in an op-code, hence the limit). An
 easier to remember alternate addressing scheme uses negative indexes
 but this way <span style="font-family: monospace;">.00</span>
@@ -197,7 +204,7 @@ with a value below 112
 in <span style="font-family: monospace;">.00</span>),
 a local register with a global index register (<span style="font-family: monospace;">STO-&gt;00</span>
 with an index from 112
-onwards), or a local register with a local index register  (<span style="font-family: monospace;">STO-&gt;.00</span>
+onwards), or a local register with a local index register (<span style="font-family: monospace;">STO-&gt;.00</span>
 with an index from 112
 onwards).<br>
 
@@ -247,41 +254,63 @@ command itself will have access to the caller's local registers. Once <span styl
 executed by the callee, the caller's local registers are hidden from
 view.</p>
 
-<p><span style="font-family: monospace;">RTN</span> or <span style="font-family: monospace;">LPOP</span> in a program check if the current stack pointer
+<p><span style="font-family: monospace;">RTN</span>
+or <span style="font-family: monospace;">LPOP</span>
+in a program check if the current stack pointer
 points to a local frame. If that's the case the stack pointer is moved
 above the frame where the return address is found and the rest of the
 stack is searched upwards for another local frame. If one is found its
-pointer is stored, else the pointer to the active local frame is cleared. <span style="font-family: monospace;">RTN</span> will pop and branch
-to the return address while <span style="font-family: monospace;">LPOP</span> will just continue execution. As a result, the current local frame is dropped and the next higher frame reactivated.</p>
+pointer is stored, else the pointer to the active local frame is
+cleared. <span style="font-family: monospace;">RTN</span>
+will pop and branch
+to the return address while <span style="font-family: monospace;">LPOP</span>
+will just continue execution. As a result, the current local frame is
+dropped and the next higher frame reactivated.</p>
 
-<p>Manually executing <span style="font-family: monospace;">RTN</span>, starting a new program with <span style="font-family: monospace;">XEQ</span>, or
+<p>Manually executing <span style="font-family: monospace;">RTN</span>,
+starting a new program with <span style="font-family: monospace;">XEQ</span>,
+or
 program editing will clear the return stack and remove any local data
 by clearing the pointer. Any contents in any local register or
 flag is lost!</p>
 
 <h3>Recursive Programming</h3>
 
-<p>Using local registers makes it possible to create a subroutine that
-calls itself recursively, each invocation dealing with its local data
-only. Of course the RPN stack is global so you should be careful not to
-corrupt it.</p>
-<p> Here is a recursive implementation of the factorial (not setting LastX correctly):</p>
+<p>Using local registers makes it possible to create a subroutine
+that calls itself recursively, each invocation dealing with its local
+data only. Of course the RPN stack is global so you should be careful
+not to corrupt it.</p>
+
+<p> Here is a recursive implementation of the factorial (not
+setting LastX correctly):</p>
+
 <pre>	LBL'FAC'<br>	IP<br>	x&gt;1?<br>	SKIP 02<br>	1<br>	RTN<br>	LOCL 00<br>	STO .00<br>	DEC X<br>	XEQ'FAC'<br>	RCL[times] .00<br>	RTN</pre>
 
 <h2>Cumulative Statistics</h2>
 
-<p>The summation registers for the cumulative statistics are no longer
-held in the user register space but are allocated seperately. This
-offers the opportunity to&nbsp; deal with higher internal precision and
-avoids clobbering&nbsp;their contents manually. The only way to set the
-registers is with the <span style="font-family: monospace;">[Sigma]+</span> and <span style="font-family: monospace;">[Sigma]-</span> commands. They can be queried with their respective dedicated commands only, not by <span style="font-family: monospace;">STO</span> or <span style="font-family: monospace;">RCL</span>.</p>
+<p>The summation registers for the cumulative statistics are no
+longer held in the user register space but are allocated seperately.
+This offers the opportunity to&nbsp; deal with higher internal
+precision and avoids clobbering&nbsp;their contents manually. The
+only way to set the registers is with the <span style="font-family: monospace;">[Sigma]+</span> and <span style="font-family: monospace;">[Sigma]-</span>
+commands. They can be queried with their respective dedicated commands
+only, not by <span style="font-family: monospace;">STO</span>
+or <span style="font-family: monospace;">RCL</span>.</p>
 
-<p>The first invocation of <span style="font-family: monospace;">[Sigma]+</span> allocates the required space just below register <span style="font-family: monospace;">00</span> and above the subroutine return stack, pushing it down in memory. It may be necessary <a href="#How_to_Make_Room">to make room</a> first. At present 54&nbsp; steps are required for the data.&nbsp; When the number of data points reaches zero, either by <span style="font-family: monospace;">[Sigma]-</span> or by <span style="font-family: monospace;">CL[Sigma]</span>,
-the block is deallocated again. All pointers are
+<p>The first invocation of <span style="font-family: monospace;">[Sigma]+</span>
+allocates the required space just below register <span style="font-family: monospace;">00</span> and above
+the subroutine return stack, pushing it down in memory. It may be
+necessary <a href="#How_to_Make_Room">to make room</a>
+first. At present 54&nbsp; steps are required for the
+data.&nbsp; When the number of data points reaches zero, either by <span style="font-family: monospace;">[Sigma]-</span> or by <span style="font-family: monospace;">CL[Sigma]</span>, the
+block is deallocated again. All pointers are
 automatically&nbsp;adjusted so that this allocation or deallocation
 does not disrupt a running program.</p>
-<p>When memory allocation fails, an error is thrown. Most functions
-will throw an error if not enough data points have been entered. The
-register query commands such as <span style="font-family: monospace;">[Sigma]n</span> return zero if no data is allocated. </p>
+
+<p>When memory allocation fails, an error is thrown. Most
+functions will throw an error if not enough data points have been
+entered. The register query commands such as <span style="font-family: monospace;">[Sigma]n</span> return
+zero if no data is allocated. </p>
+
 </body>
 </html>

@@ -2,86 +2,105 @@
 <html>
 <head>
 
-  
   <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
-
-  
   <title>WP 34S - Interactive Programming</title>
+
+
 </head>
 
 
 <body>
 
-
-
 <h1>WP 34S Interactive Programming</h1>
 
-
-
 <p>This
-chapter&nbsp;deals with writing programs that interact with the user.
+chapter&nbsp;deals with writing programs that interact with the
+user.
 Topics covered are the display of messages, geting input from the user,
 hot keys and truely interactive "real time" programs.</p>
 
-
-
 <h2>Interrupting a Program for Display of Information</h2>
-
-
 
 <p>When
 a program is started, the display contents are replaced by the "Running
 Program" message. To display a number while a program is executing, use
-the <span style="font-family: monospace;">VIEW</span> (<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">h RCL</span>) command
-and give it a register to display. <span style="font-family: monospace;">X</span> is a valid input here so you can
-present the standard stack&nbsp;to the user. The command formats the
-number to the present&nbsp;settings and updates the LCD to display it.
+the <span style="font-family: monospace;">VIEW</span>
+(<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">h
+RCL</span>) command
+and give it a register to display. <span style="font-family: monospace;">X</span> is a valid
+input here so you can
+present the standard stack&nbsp;to the user. The command formats
+the
+number to the present&nbsp;settings and updates the LCD to display
+it.
 This causes a small overhead so expect that your program slows down a
 bit with each update. This is especially true if the displays follow
 each other in a tight loop because the flicker avoidance logic needs to
 wait for a complete display refresh cycle before the next update is
 allowed.</p>
 
-
-
 <p>Another way to show what would normally appear on the
-display when no program were running is to use the <span style="font-family: monospace;">PSE</span> instruction. It
+display when no program were running is to use the <span style="font-family: monospace;">PSE</span>
+instruction. It
 takes an argument which is the time in 10ths of seconds to suspend
 execution. A time of zero is allowed which will have the same effect as
-the <span style="font-family: monospace;">VIEW X</span> instruction. A <span style="font-family: monospace;">PSE</span> following <span style="font-family: monospace;">VIEW nn</span> where <span style="font-family: monospace;">nn</span> is not the <span style="font-family: monospace;">X</span>
-register works as expected: It displays register <span style="font-family: monospace;">nn</span>. The display stays
-the same until the next <span style="font-family: monospace;">VIEW</span> or <span style="font-family: monospace;">PSE</span> instruction is executed, not only
-for the specified time.&nbsp; Another <span style="font-family: monospace;">PSE</span> or <span style="font-family: monospace;">STOP</span> will switch back to
-the normal X display.&nbsp;<span style="font-family: monospace;">VIEW nn</span> followed by <span style="font-family: monospace;">STOP</span> will display
-register <span style="font-family: monospace;">nn</span> until the user presses a key.</p>
-
-
+the <span style="font-family: monospace;">VIEW X</span>
+instruction. A <span style="font-family: monospace;">PSE</span>
+following <span style="font-family: monospace;">VIEW nn</span>
+where <span style="font-family: monospace;">nn</span>
+is not the <span style="font-family: monospace;">X</span>
+register works as expected: It displays register <span style="font-family: monospace;">nn</span>. The display
+stays
+the same until the next <span style="font-family: monospace;">VIEW</span>
+or <span style="font-family: monospace;">PSE</span>
+instruction is executed, not only
+for the specified time.&nbsp; Another <span style="font-family: monospace;">PSE</span> or <span style="font-family: monospace;">STOP</span> will
+switch back to
+the normal X display.&nbsp;<span style="font-family: monospace;">VIEW
+nn</span> followed by <span style="font-family: monospace;">STOP</span>
+will display
+register <span style="font-family: monospace;">nn</span>
+until the user presses a key.</p>
 
 <p>To make things clearer:
-<span style="font-family: monospace;">VIEW</span> immediatly displays the register when encountered during execution
-of a program. When followed by <span style="font-family: monospace;">PSE</span> or <span style="font-family: monospace;">STOP</span>, the display persists. Only
-the next <span style="font-family: monospace;">PSE</span> or <span style="font-family: monospace;">STOP</span> (or keyboard entry after the program has halted) will revert to the normal X display. To make sure
-that a <span style="font-family: monospace;">STOP</span> or <span style="font-family: monospace;">PSE</span> always displays a specific information it's best to
-directly precede it by the corresponding VIEW instruction. To get the "Running Program" message back once it has been replaced
-by a programmed display use the command <span style="font-family: monospace;">MSG 00. </span>The <span style="font-family: monospace;">MSG</span> command displays one of the system error messages without disturbing the program, zero being a special case.&nbsp;</p>
-
-
+<span style="font-family: monospace;">VIEW</span>
+immediatly displays the register when encountered during execution
+of a program. When followed by <span style="font-family: monospace;">PSE</span>
+or <span style="font-family: monospace;">STOP</span>,
+the display persists. Only
+the next <span style="font-family: monospace;">PSE</span>
+or <span style="font-family: monospace;">STOP</span>
+(or keyboard entry after the program has halted) will revert to the
+normal X display. To make sure
+that a <span style="font-family: monospace;">STOP</span>
+or <span style="font-family: monospace;">PSE</span>
+always displays a specific information it's best to
+directly precede it by the corresponding VIEW instruction. To get the
+"Running Program" message back once it has been replaced
+by a programmed display use the command <span style="font-family: monospace;">MSG 00. </span>The <span style="font-family: monospace;">MSG</span> command
+displays one of the system error messages without disturbing the
+program, zero being a special case.&nbsp;</p>
 
 <h2>Displaying Messages</h2>
 
-
-
 <p>A message in
-<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">WP 34S</span> is a string of characters that is shown in the upper region of
+<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">WP
+34S</span> is a string of characters that is shown in the upper
+region of
 the display. The programmatic interface to this area is via the alpha
-register. You need to go to alpha mode with <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">f ENTER^</span>
+register. You need to go to alpha mode with <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">f
+ENTER^</span>
 to access most of the commands that deal with this register. Look at
-the&nbsp;<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">INPUT</span><span style="font-weight: bold;"> </span>display annunciator to see if alpha mode is active. The
-<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">X.FCN</span> catalogue changes in alpha mode to contain alpha commands.
-Displaying a message will normally start with a <span style="font-family: monospace;">CL[alpha]</span> instruction
+the&nbsp;<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">INPUT</span><span style="font-weight: bold;"> </span>display
+annunciator to see if alpha mode is active. The
+<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">X.FCN</span>
+catalogue changes in alpha mode to contain alpha commands.
+Displaying a message will normally start with a <span style="font-family: monospace;">CL[alpha]</span>
+instruction
 because most commands append their output to what is already stored. To
 save space, characters in program mode may be entered in groups of
-three by typing <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">f ENTER^</span>
+three by typing <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">f
+ENTER^</span>
 while already in alpha mode. This saves one program step per three
 characters but does not allow all special symbols to be entered because
 the catalogues are not available in this mode. Single characters and
@@ -91,222 +110,223 @@ width of each symbol. The display switches to a smaller font if
 necessary. The contents can be scrolled in interactive alpha mode with
 the up and down arrow keys.</p>
 
-
-
 <p>If you just want to display the
-message and no number with it, use the <span style="font-family: monospace;">[alpha]VIEW</span> command. To get to
+message and no number with it, use the <span style="font-family: monospace;">[alpha]VIEW</span>
+command. To get to
 this command you must be out of alpha mode and open the <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">P.FCN</span>
-catalogue. <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">g A</span> brings you
-to the alpha commands. The <span style="font-family: monospace;">[alpha]VIEW</span> display starts at the first
+catalogue. 0 brings you
+to the alpha commands. The <span style="font-family: monospace;">[alpha]VIEW</span>
+display starts at the first
 character of the string. The numeric portion of the LCD is replaced by
 three dashes. You can of course display a message together with a
-chosen register. Go to alpha mode and enter <span style="font-family: monospace;">VIEW</span> (<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">h RCL</span>). This will produce the <span style="font-family: monospace;">[alpha]VW+ nn</span> command. It is meant to display alpha together with ('<span style="font-family: monospace;">+</span>')
-numeric data coming from any register. As with <span style="font-family: monospace;">VIEW</span>, <span style="font-family: monospace;">X</span> is allowed here.
-The above comments regarding <span style="font-family: monospace;">PSE</span> or <span style="font-family: monospace;">STOP</span> following any of these
+chosen register. Go to alpha mode and enter <span style="font-family: monospace;">VIEW</span> (<span style="font-family: Helvetica,Arial,sans-serif;">h
+RCL</span>). This will produce the <span style="font-family: monospace;">[alpha]VW+ nn</span>
+command. It is meant to display alpha together with ('<span style="font-family: monospace;">+</span>')
+numeric data coming from any register. As with <span style="font-family: monospace;">VIEW</span>, <span style="font-family: monospace;">X</span> is allowed
+here.
+The above comments regarding <span style="font-family: monospace;">PSE</span>
+or <span style="font-family: monospace;">STOP</span>
+following any of these
 commands are valid here, too.</p>
 
-
-
 <p>Another way to display the alpha
-register is to switch to alpha mode with [<span style="font-family: monospace;">alpha]ON</span>. The main difference
+register is to switch to alpha mode with [<span style="font-family: monospace;">alpha]ON</span>. The
+main difference
 is that you are presented the tail of the string instead of its head.
-Also, a <span style="font-family: monospace;">PSE</span> or <span style="font-family: monospace;">STOP</span> is necessary to update the actual display which <span style="font-family: monospace;">[alpha]ON</span>
-alone does not do. If followed by a <span style="font-family: monospace;">STOP</span>, alpha mode stays on causing
-user input to go to the upper display! <span style="font-family: monospace;">[alpha]OFF</span> returns everything to
+Also, a <span style="font-family: monospace;">PSE</span>
+or <span style="font-family: monospace;">STOP</span>
+is necessary to update the actual display which <span style="font-family: monospace;">[alpha]ON</span>
+alone does not do. If followed by a <span style="font-family: monospace;">STOP</span>, alpha
+mode stays on causing
+user input to go to the upper display! <span style="font-family: monospace;">[alpha]OFF</span>
+returns everything to
 normal.</p>
-
-
 
 <h2>Temporary Displays</h2>
 
-
-
 <p>Whenever the display does not show the actual contents of the <span style="font-family: monospace;">X</span>
 register in the current mode, this is considered a temporary display.
-To distinguish this from the normal display, the <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">RPN</span> annunciator is off
-during temporary displays and on otherwise.&nbsp;The following displays
+To distinguish this from the normal display, the <span style="font-family: Helvetica,Arial,sans-serif;">RPN</span>
+annunciator is off
+during temporary displays and on otherwise.&nbsp;The following
+displays
 are considered temporary:</p>
-
-
 
 <ol>
 
-
-
   <li>Any errors,</li>
-
-
 
   <li><span style="font-family: monospace;">[alpha]VIEW</span>,</li>
 
+  <li><span style="font-family: monospace;">[alpha]VW+
+nn</span>,</li>
 
+  <li><span style="font-family: monospace;">VIEW nn</span>
+where <span style="font-family: monospace;">nn</span>
+is not <span style="font-family: monospace;">X</span>,</li>
 
-  <li><span style="font-family: monospace;">[alpha]VW+ nn</span>,</li>
+  <li><span style="font-family: monospace;">VIEW X</span>
+if encountered in a program because <span style="font-family: monospace;">X</span> may have
+changed before the stop,</li>
 
-
-
-  <li><span style="font-family: monospace;">VIEW nn</span> where <span style="font-family: monospace;">nn</span> is not <span style="font-family: monospace;">X</span>,</li>
-
-
-
-  <li><span style="font-family: monospace;">VIEW X</span> if encountered in a program because <span style="font-family: monospace;">X</span> may have changed before the stop,</li>
-
-
-
-  <li><span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">H.MS</span> display,</li>
-
-
+  <li><span style="font-family: Helvetica,Arial,sans-serif;">H.MS</span>
+display,</li>
 
   <li>Temporary display in another base (not programmable).</li>
 
-
-
 </ol>
 
-
-
-<p>Press <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">EXIT</span> or <span style="font-weight: bold; font-family: Helvetica,Arial,sans-serif;">&lt;-</span> to get back to the normal display.</p>
-
-
+<p>Press <span style="font-family: Helvetica,Arial,sans-serif;">EXIT</span>
+or <span style="font-family: Helvetica,Arial,sans-serif;">&lt;-</span>
+to get back to the normal display.</p>
 
 <h2>Data Input</h2>
 
-
-
 <p>The easiest way of getting&nbsp;user
 input, apart from expecting everything on the stack, is just stopping
-the program with <span style="font-family: monospace;">STOP</span>, letting the user input a number and let him
-press <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">R/S</span> to continue
+the program with <span style="font-family: monospace;">STOP</span>,
+letting the user input a number and let him
+press <span style="font-family: Helvetica,Arial,sans-serif;">R/S</span>
+to continue
 execution. Without any clue what the program is asking for, this is
 only suitable for very simple programs. The least you want to do is
 present a message to the user what he is supposed to enter when the
-program stops. This can be done with any of the <span style="font-family: monospace;">[alpha]VIEW</span> commands
-followed by <span style="font-family: monospace;">STOP</span>. There is a shorthand expecially made for this:
-<span style="font-family: monospace;">PROMPT</span>. It &nbsp;is a combination of<span style="font-family: monospace;"> [alpha]VW+ X</span> and <span style="font-family: monospace;">STOP</span>. It displays
-the alpha register together with the current <span style="font-family: monospace;">X</span> register and halts
+program stops. This can be done with any of the <span style="font-family: monospace;">[alpha]VIEW</span>
+commands
+followed by <span style="font-family: monospace;">STOP</span>.
+There is a shorthand expecially made for this:
+<span style="font-family: monospace;">PROMPT</span>.
+It &nbsp;is a combination of<span style="font-family: monospace;">
+[alpha]VW+ X</span> and <span style="font-family: monospace;">STOP</span>.
+It displays
+the alpha register together with the current <span style="font-family: monospace;">X</span> register and
+halts
 program execution. This is good for entering a lengthy list of
 parameters in a given order without much programming.</p>
 
-
-
 <h2>Hot Keys</h2>
 
-
-
-<p>A more versatile way of doing things is using the dedicated keys <span style="font-weight: bold; font-family: Helvetica,Arial,sans-serif;">A</span>
-to <span style="font-weight: bold; font-family: Helvetica,Arial,sans-serif;">D</span> in the top row. If the user presses one of these keys the
+<p>A more versatile way of doing things is using the dedicated
+keys <span style="font-family: Helvetica,Arial,sans-serif;">A</span>
+to <span style="font-family: Helvetica,Arial,sans-serif;">D</span>
+in the top row. If the user presses one of these keys the
 program executes the next subroutine or program with a label of the
 same name. If you have more than one program using labels <span style="font-family: monospace;">A</span> to <span style="font-family: monospace;">D</span> in RAM
 or in a flash region, it's necessary to move the program counter (PC)
 to the top of the program and stop there. A typical program structure
 might be the following:</p>
 
-
-
 <pre>LBL 'MYP'<br>CL[alpha]<br>[alpha]'Hel'<br>[alpha]'lo!'<br>LBL 00<br>PROMPT<br>BACK 01<br>LBL A<br>ENTRY?<br>SKIP 01<br>XEQ 01<br>STO 01<br>GTO 00<br>LBL B<br>...<br></pre>
 
-
-
-<p>This sets up a message and stops. <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">R/S</span> does nothing, it simply returns to the prompt. If the user enters a number and hits <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">A</span>,
-the program starts with the <span style="font-family: monospace;">ENTRY?</span> test which is true if the user has
-entered fresh data. The input will be stored in register <span style="font-family: monospace;">01</span> and the program jumps back to the prompt. If the user has not entered any information after the last prompt, subroutine <span style="font-family: monospace;">01</span> will be called to compute a new value which is then stored and displayed. This is the way the TVM application is implemented.</p>
-
-
+<p>This sets up a message and stops. <span style="font-family: Helvetica,Arial,sans-serif;">R/S</span>
+does nothing, it simply returns to the prompt. If the user enters a
+number and hits <span style="font-family: Helvetica,Arial,sans-serif;">A</span>,
+the program starts with the <span style="font-family: monospace;">ENTRY?</span>
+test which is true if the user has
+entered fresh data. The input will be stored in register <span style="font-family: monospace;">01</span> and the
+program jumps back to the prompt. If the user has not entered any
+information after the last prompt, subroutine <span style="font-family: monospace;">01</span> will be
+called to compute a new value which is then stored and displayed. This
+is the way the TVM application is implemented.</p>
 
 <h2>The Keyboard Codes</h2>
 
-
-
-<p>Sometimes, the hot keys <span style="font-weight: bold; font-family: Helvetica,Arial,sans-serif;">A</span> to <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">D</span>
+<p>Sometimes, the hot keys <span style="font-family: Helvetica,Arial,sans-serif;">A</span>
+to <span style="font-family: Helvetica,Arial,sans-serif;">D</span>
 aren't enough. But there are ways to extend the number of directly
 addressable subroutines by a simple trick: shorthand addressing of
 numeric labels. To make this possible, each key is identified by a row
 and a column, each star1ing with <span style="font-family: monospace;">1</span>.</p>
 
+<pre> A B C D -&gt; CPX<br>11 12 13 14 <span style="font-style: italic;">15 16</span><br><br>STO RCL Rv f g h<br><span style="font-style: italic;">21 22 23</span> <span style="color: rgb(163, 163, 163);">24</span> 25 26<br><br>ENTER^ x&lt;&gt;y +/- EEX &lt;-<br>31 <span style="font-style: italic;">32 33 34</span> 35<br><br>XEQ 7 8 9 /<br><span style="font-style: italic;">41</span> 42 43 44 <span style="font-style: italic;">45</span><br><br> ^ 4 5 6 x<br><span style="font-style: italic;">51</span> 52 53 54 <span style="font-style: italic;">55</span><br><br> v 1 2 3 -<br><span style="font-style: italic;">61</span> 62 63 64 <span style="font-style: italic;">65</span><br><br>EXIT 0 . R/S +<br><span style="font-style: italic;">71</span> 72 73 <span style="font-style: italic;">74 75</span>&nbsp;</pre>
 
-
-<pre> A    B    C    D   -&gt;   CPX<br>11   12   13   14   <span style="font-style: italic;">15   16</span><br><br>STO  RCL  Rv    f    g    h<br><span style="font-style: italic;">21   22   23</span>   <span style="color: rgb(163, 163, 163);">24</span>   25   26<br><br>ENTER^    x&lt;&gt;y +/-  EEX  &lt;-<br>31        <span style="font-style: italic;">32   33   34</span>   35<br><br>XEQ    7     8     9     /<br><span style="font-style: italic;">41</span>    42    43    44    <span style="font-style: italic;">45</span><br><br> ^     4     5     6     x<br><span style="font-style: italic;">51</span>    52    53    54    <span style="font-style: italic;">55</span><br><br> v     1     2     3     -<br><span style="font-style: italic;">61</span>    62    63    64    <span style="font-style: italic;">65</span><br><br>EXIT   0     .    R/S    +<br><span style="font-style: italic;">71</span>    72    73    <span style="font-style: italic;">74    75</span>&nbsp;</pre>
-
-
-
-<p>Whenever you are asked for the entry of a two-digit label, any of the keys marked in <span style="font-style: italic;">italic</span>
+<p>Whenever you are asked for the entry of a two-digit label, any
+of the keys marked in <span style="font-style: italic;">italic</span>
 in the above picture can be used as direct input. The label will be
 replaced by the row/column code of the respective key. Some keys are
 not available this way because they have a predefined meaning in this
 context. They can still be used for a short address by preceding the
-key with the <span style="font-family: monospace;">f</span> prefix. Only the <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">f</span> prefix itself cannot be used for shorthand addressing.&nbsp;If you want to associate a program with the key <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">STO</span>, just put the label <span style="font-family: monospace;">21</span> in front of the routine and it can be conveniently called with <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">XEQ STO</span> by the user.</p>
-
-
+key with the <span style="font-family: monospace;">f</span>
+prefix. Only the <span style="font-family: Helvetica,Arial,sans-serif;">f</span>
+prefix itself cannot be used for shorthand addressing.&nbsp;If you
+want to associate a program with the key <span style="font-family: Helvetica,Arial,sans-serif;">STO</span>,
+just put the label <span style="font-family: monospace;">21</span>
+in front of the routine and it can be conveniently called with <span style="font-family: Helvetica,Arial,sans-serif;">XEQ
+STO</span> by the user.</p>
 
 <h2>Direct Keyboard&nbsp;Access</h2>
 
-
-
 <p>The
-same codes are returned by the <span style="font-family: monospace;">KEY?</span> command which allows true "real
-time" response to user input from the keyboard. <span style="font-family: monospace;">KEY?</span> takes a register
-argument (<span style="font-family: monospace;">X</span> is allowed but does not lift the stack) and stores the key
+same codes are returned by the <span style="font-family: monospace;">KEY?</span>
+command which allows true "real
+time" response to user input from the keyboard. <span style="font-family: monospace;">KEY?</span> takes a
+register
+argument (<span style="font-family: monospace;">X</span>
+is allowed but does not lift the stack) and stores the key
 most recently pressed during program execution in the specified
-register. <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">R/S</span> and <span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">EXIT</span>
+register. <span style="font-family: Helvetica,Arial,sans-serif;">R/S</span>
+and <span style="font-family: Helvetica,Arial,sans-serif;">EXIT</span>
 cannot be queried, they stop program execution immediately. The
 keyboard is active during execution but it is of course desirable to
-show a message and suspend the program with the <span style="font-family: monospace;">PSE</span> command while
-waiting for user input. <span style="font-family: monospace;">PSE</span> is interrupted by a&nbsp;key press, so you
-can simply use a <span style="font-family: monospace;">PSE 99</span>
-statement in a loop to wait for input. <span style="font-family: monospace;">KEY?</span> acts as a conditional at
+show a message and suspend the program with the <span style="font-family: monospace;">PSE</span> command
+while
+waiting for user input. <span style="font-family: monospace;">PSE</span>
+is interrupted by a&nbsp;key press, so you
+can simply use a <span style="font-family: monospace;">PSE
+99</span>
+statement in a loop to wait for input. <span style="font-family: monospace;">KEY?</span> acts as a
+conditional at
 the same time so a typical user input loop will look like this:</p>
-
-
 
 <pre>LBL 'USR'<br>CL[alpha]<br>[alpha]'KEY'<br>[alpha] ?<br>LBL 00<br>[alpha]VIEW<br>PSE 99<br>KEY? 00<br>GTO 00<br>LBL?-&gt;00<br>XEQ-&gt;00<br>GTO 00<br></pre>
 
-
-
-<p>This code fragment prompts for a key and stores it in register <span style="font-family: monospace;">00</span>.
-The line directly after <span style="font-family: monospace;">KEY?</span> is executed when no key was pressed. The
-statement <span style="font-family: monospace;">KEY?</span> is only executed every 9.9 seconds if the user does not
+<p>This code fragment prompts for a key and stores it in register
+<span style="font-family: monospace;">00</span>.
+The line directly after <span style="font-family: monospace;">KEY?</span>
+is executed when no key was pressed. The
+statement <span style="font-family: monospace;">KEY?</span>
+is only executed every 9.9 seconds if the user does not
 press a key. If he does, the PSE is immediately terminated, <span style="font-family: monospace;">KEY?</span> is
-executed, finds the keycode and stores it in&nbsp;register <span style="font-family: monospace;">00</span>. The <span style="font-family: monospace;">LBL?-&gt;00</span> instruction checks if&nbsp;a label corresponding to the keycode has been defined and executes it if found.&nbsp;Instead
+executed, finds the keycode and stores it in&nbsp;register <span style="font-family: monospace;">00</span>. The <span style="font-family: monospace;">LBL?-&gt;00</span>
+instruction checks if&nbsp;a label corresponding to the keycode has
+been defined and executes it if found.&nbsp;Instead
 of the dumb waiting loop, the program can do some computations and
-update the display before the next call to <span style="font-family: monospace;">PSE</span> and <span style="font-family: monospace;">KEY?</span>&nbsp;-&nbsp;think of a lunar lander game.</p>
+update the display before the next call to <span style="font-family: monospace;">PSE</span> and <span style="font-family: monospace;">KEY?</span>&nbsp;-&nbsp;think
+of a lunar lander game.</p>
 
-
-
-<p>To be even more versatile, the instruction <span style="font-family: monospace;">KTP? nn</span> is available and returns the key type of a row/column code in register <span style="font-family: monospace;">nn</span>: <span style="font-family: monospace;">0</span> to <span style="font-family: monospace;">9</span> for the respective digits, <span style="font-family: monospace;">10</span> for the other numeric keys (<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">. </span><span style="font-family: Helvetica,Arial,sans-serif;"></span>,<span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;"> +/-</span> and <span style="font-weight: bold;"></span><span style="font-family: Helvetica,Arial,sans-serif; font-weight: bold;">EEX</span>),&nbsp;<span style="font-family: monospace;">11</span> for any of the three shift keys and <span style="font-family: monospace;">12</span> for the rest. An invalid code in the target register throws an "Invalid Range Error".</p>
-
-
+<p>To be even more versatile, the instruction <span style="font-family: monospace;">KTP? nn</span> is
+available and returns the key type of a row/column code in register <span style="font-family: monospace;">nn</span>: <span style="font-family: monospace;">0</span> to <span style="font-family: monospace;">9</span> for the
+respective digits, <span style="font-family: monospace;">10</span>
+for the other numeric keys (<span style="font-family: Helvetica,Arial,sans-serif;">.
+</span><span style="font-family: Helvetica,Arial,sans-serif;"></span>,<span style="font-family: Helvetica,Arial,sans-serif;">
++/-</span> and <span style=""></span><span style="font-family: Helvetica,Arial,sans-serif;">EEX</span>),&nbsp;<span style="font-family: monospace;">11</span> for any of
+the three shift keys and <span style="font-family: monospace;">12</span>
+for the rest. An invalid code in the target register throws an "Invalid
+Range Error".</p>
 
 <p>If
 you decide not to handle the key in the program you may feed it back to
-the main processing loop of the calculator with the <span style="font-family: monospace;">PUTK nn</span> command.
+the main processing loop of the calculator with the <span style="font-family: monospace;">PUTK nn</span>
+command.
 What happens is that the program halts and the key is treated as if
 pressed after the stop. This is especially useful if you want to allow
 numeric input while waiting for some special keys like the arrows. This
-allows writing of a vector or matrix&nbsp;editor in user code. After
-execution of the <span style="font-family: monospace;">PUTK</span> command the user is responsible for letting the
-program continue its work by pressing <span style="font-weight: bold; font-family: Helvetica,Arial,sans-serif;">R/S</span> or a hot key.</p>
-
-
-
-<pre></pre>
-
-
-
-<p></p>
-
-
-
-<p></p>
-
-
-
-<p></p>
-
-
+allows writing of a vector or matrix&nbsp;editor in user code.
+After
+execution of the <span style="font-family: monospace;">PUTK</span>
+command the user is responsible for letting the
+program continue its work by pressing <span style="font-family: Helvetica,Arial,sans-serif;">R/S</span>
+or a hot key.</p>
 
 <pre></pre>
 
+<p></p>
 
+<p></p>
+
+<p></p>
+
+<pre></pre>
 
 </body>
 </html>
