@@ -139,8 +139,8 @@ typedef struct _ram {
 	/*
 	 *  Number of currently allocated global registers
 	 */
-	unsigned char _numregs;
-	unsigned char _numstatregs;
+	unsigned char _numregs;		// in registers
+	unsigned char _sizestatregs;	// in levels
 #endif
 
 	/*
@@ -170,11 +170,11 @@ extern TPersistentRam PersistentRam;
 #ifdef ENABLE_VARIABLE_REGS
 #define RetStkBase	(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
 #define NumRegs		(PersistentRam._numregs)
-#define NumStatRegs	(PersistentRam._numstatregs)
+#define SizeStatRegs	(PersistentRam._sizestatregs)
 #else
 #define RetStk		(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
 #define NumRegs		(TOPREALREG)
-#define NumStatRegs	(NUMSTATREG)
+#define SizeStatRegs	(NUMSTATREG>>2)
 #endif
 #define RetStkPtr	(PersistentRam._state.retstk_ptr)
 #define LocalRegs	(PersistentRam._state.local_regs)
@@ -311,7 +311,8 @@ extern unsigned char GoFast;	   // Speed-up might be necessary
 #ifdef ENABLE_VARIABLE_REGS
 extern unsigned short *RetStk;	   // Pointer to current top of return stack
 #endif
-extern int RetStkSize;		   // actual size of retiurn stack		
+extern int RetStkSize;		   // actual size of retiurn stack
+extern int ProgFree;		   // Remaining program steps
 extern decContext Ctx;		   // decNumber library context
 
 #if !defined(REALBUILD) && !defined(WINGUI)

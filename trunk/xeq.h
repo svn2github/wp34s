@@ -682,10 +682,18 @@ enum nilop {
 	OP_STKSIZE, OP_STK4, OP_STK8, OP_INTSIZE,
 	OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
 	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPXY,
+#ifdef ENABLE_VARIABLE_REGS
+	OP_sigmaX2Y, OP_sigmaX2, OP_sigmaY2, OP_sigma_XY,
+	OP_sigmaX, OP_sigmaY, 
+	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
+	OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,
+	OP_sigmaN,
+#else
 	OP_sigmaX2Y, OP_sigmaX, OP_sigmaX2, OP_sigmaY, OP_sigmaY2, OP_sigma_XY,
 	OP_sigmaN,
 	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
 		OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,
+#endif
 	OP_statS, OP_statSigma, OP_statGS, OP_statGSigma,
 		OP_statWS, OP_statWSigma,
 		OP_statMEAN, OP_statWMEAN, OP_statGMEAN,

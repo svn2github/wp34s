@@ -114,6 +114,11 @@ char TraceBuffer[25];
  */
 int RetStkSize;
 
+/*
+ *  Number of remaining program steps
+ */
+int ProgFree;
+
 #ifdef ENABLE_VARIABLE_REGS
 /*
  * The actual top of the return stack
@@ -202,7 +207,7 @@ opcode getprog(unsigned int n) {
 		FLASH_REGION *fr = &flash_region(nLIB(n));
 		return get_opcode(fr->prog + offsetLIB(n));
 	}
-	if (n >= LastProg || n > NUMPROG)
+	if (n >= LastProg)
 		return EMPTY_PROGRAM_OPCODE;
 	if (n == 0)
 		return OP_NIL | OP_NOP;
@@ -991,10 +996,6 @@ void clrretstk_pc(void) {
 /* Clear the program space
  */
 void clrprog(void) {
-	int i;
-
-	for (i=1; i<=NUMPROG; i++)
-		Prog_1[i] = EMPTY_PROGRAM_OPCODE;
 	LastProg = 1;
 	clrretstk_pc();
 }
@@ -3679,8 +3680,8 @@ void stoprog(opcode c) {
 	if (!isRAM(state_pc()))
 		return;
 	clrretstk();
-	off = isDBL(c)?2:1;
-	if (LastProg + off > NUMPROG+1) {
+	off = isDBL(c) ? 2 : 1;
+	if (ProgFree < off) {
 		return;
 	}
 	LastProg += off;
@@ -3769,16 +3770,34 @@ void del_till_multi_label(unsigned int n) {
 }
 #endif
 
+/* 
+ *  The following needs to be done each time before any user input is processed.
+ *  On the hardware, RAM is volatile and these pointers and structures need valid values!
+ */
 void xeq_init_contexts(void) {
-	/* Initialise our standard contexts.
-	 * We have to disable traps and bump the digits for internal calculations.
-	 */
+	// Initialise our standard contexts.
+	// We have to disable traps and bump the digits for internal calculations.
 	decContextDefault(&Ctx, DEC_INIT_BASE);
 //	Ctx.traps = 0;
 	Ctx.digits = DECNUMDIGITS;
 	Ctx.emax=DEC_MAX_MATH;
 	Ctx.emin=-DEC_MAX_MATH;
 	Ctx.round = DEC_ROUND_HALF_EVEN;
+
+#ifdef ENABLE_VARIABLE_REGS
+	// Compute the actual top and current size of the return stack
+	RetStkSize = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs;
+	RetStk = RetStkBase + RetStkSize;
+	RetStkSize += RET_STACK_SIZE + NUMPROG + 1 - LastProg;
+	ProgFree = NUMPROG - LastProg - 1;
+	if (RetStk < Prog + NUMPROG)
+		ProgFree -= Prog + NUMPROG - RetStk;	// All pointers are to 16 bit words!
+#else
+	// Compute the current size of the return stack
+	RetStkSize = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
+	ProgFree = NUMPROG - LastProg + 1;
+#endif
+
 }
 
 
@@ -3911,12 +3930,19 @@ void cmdregs(unsigned int arg, enum rarg op) {
 	if (move_retstk(distance << 2))
 		return;
 	// Move register contents, including the statistics registers
-	move_regs(Regs + TOPREALREG - arg - NumStatRegs, Regs + TOPREALREG - NumRegs - NumStatRegs, arg + NumStatRegs);
+	xcopy((unsigned short *)(Regs + TOPREALREG - arg)     - SizeStatRegs,
+	      (unsigned short *)(Regs + TOPREALREG - NumRegs) - SizeStatRegs,
+	      (arg << 3) + (SizeStatRegs << 1));
 	if (distance < 0)
 		zero_regs(Regs + TOPREALREG + distance, -distance);
 	NumRegs = arg;
 }
 #endif
+
+
+/*
+ *  Debugging output for the console version
+ */
 #if defined(DEBUG) && !defined(WINGUI) && !defined(WP34STEST)
 extern unsigned char remap_chars(unsigned char ch);
 

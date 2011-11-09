@@ -22,68 +22,112 @@
 #include "consts.h"
 #include "int.h"
 
-#ifdef ENABLE_VARIABLE_REGS
-/*
- *  Point to our register block
- */
-decimal64 *StatRegs;
+// #define DUMP1	// Debug output
 
+#define DISCRETE_TOLERANCE	&const_0_1
+
+/*
+ *  Define register block
+ */
+typedef struct _stat_data {
+#ifdef ENABLE_VARIABLE_REGS
+	// new ordering
+	// op-codes must match
+
+	// The next four are canditates for higher precision
+	decimal64 sX2Y;
+	decimal64 sX2;		
+	decimal64 sY2;		
+	decimal64 sXY;
+
+	decimal64 sX;		
+	decimal64 sY;		
+	decimal64 slnX;		
+	decimal64 slnXlnX;	
+	decimal64 slnY;		
+	decimal64 slnYlnY;	
+	decimal64 slnXlnY;	
+	decimal64 sXlnY;	
+	decimal64 sYlnX;
+
+	unsigned int sN;		
+#else
+	// old ordering
+	// op-codes must match!
+	decimal64 sX2Y;
+	decimal64 sX;		
+	decimal64 sX2;		
+	decimal64 sY;		
+	decimal64 sY2;		
+	decimal64 sXY;
+	decimal64 sN;		
+	decimal64 slnX;		
+	decimal64 slnXlnX;	
+	decimal64 slnY;		
+	decimal64 slnYlnY;	
+	decimal64 slnXlnY;	
+	decimal64 sXlnY;	
+	decimal64 sYlnX;
+#endif
+} STAT_DATA;
+
+#ifdef ENABLE_VARIABLE_REGS
+STAT_DATA *StatRegs;
+#else
+const STAT_DATA *StatRegs = (STAT_DATA *) Regs + TOPREALREG - NUMSTATREG;
+#endif
+
+#define sigmaN		(StatRegs->sN)
+#define sigmaX		(StatRegs->sX)
+#define sigmaY		(StatRegs->sY)
+#define sigmaX2		(StatRegs->sX2)
+#define sigmaY2		(StatRegs->sY2)
+#define sigmaXY		(StatRegs->sXY)
+#define sigmaX2Y	(StatRegs->sX2Y)
+#define sigmalnX	(StatRegs->slnX)
+#define sigmalnXlnX	(StatRegs->slnXlnX)
+#define sigmalnY	(StatRegs->slnY)
+#define sigmalnYlnY	(StatRegs->slnYlnY)
+#define sigmalnXlnY	(StatRegs->slnXlnY)
+#define sigmaXlnY	(StatRegs->sXlnY)
+#define sigmaYlnX	(StatRegs->sYlnX)
+
+#ifdef ENABLE_VARIABLE_REGS
 /*
  *  Handle block (de)allocation
  */
-static void sigmaDeallocate(void) {
-	move_retstk(NumStatRegs << 2);
-	NumStatRegs = 0;
+static int check_stat(void) {
+	if (SizeStatRegs == 0) {
+		err(ERR_MORE_POINTS);
+		return 1;
+	}
+	StatRegs = (STAT_DATA *) ((unsigned short *)(Regs + TOPREALREG - NumRegs) - SizeStatRegs);
+	return 0;
 }
 
 static int sigmaAllocate(void)
 {
-	if (NumStatRegs != 0)
-		sigmaDeallocate();
-	if (move_retstk(-(NUMSTATREG << 2))) {
-		return 1;
+	if (SizeStatRegs == 0) {
+		SizeStatRegs = sizeof(STAT_DATA) >> 1;	// in 16 bit words!
+		if (move_retstk(-SizeStatRegs)) {
+			SizeStatRegs = 0;
+			return 1;
+		}
+		check_stat();
+		xset(StatRegs, 0, SizeStatRegs << 1);
 	}
-	NumStatRegs = NUMSTATREG;
-	StatRegs = Regs + TOPREALREG - NumRegs - NumStatRegs;
-	zero_regs(StatRegs, NumStatRegs);
 	return 0;
 }
 
-static int check_stat(void) {
-	if (NumStatRegs == 0) {
-		err(ERR_MORE_POINTS);
-		return 1;
-	}
-	return 0;
+static void sigmaDeallocate(void) {
+	move_retstk(SizeStatRegs);
+	SizeStatRegs = 0;
 }
 
 #else
-#define StatRegs	(Regs+TOPREALREG-NUMSTATREG)
 #define check_stat()	(0)
 #endif
 
-#define sigmaXXY	(StatRegs[0])
-
-#define sigmaX		(StatRegs[1])
-#define sigmaXX		(StatRegs[2])
-#define sigmaY		(StatRegs[3])
-#define sigmaYY		(StatRegs[4])
-#define sigmaXY		(StatRegs[5])
-#define sigmaN		(StatRegs[6])
-
-#define sigmalnX	(StatRegs[7])
-#define sigmalnXlnX	(StatRegs[8])
-#define sigmalnY	(StatRegs[9])
-#define sigmalnYlnY	(StatRegs[10])
-#define sigmalnXlnY	(StatRegs[11])
-#define sigmaXlnY	(StatRegs[12])
-#define sigmaYlnX	(StatRegs[13])
-
-
-#define DISCRETE_TOLERANCE	&const_0_1
-
-
-// #define DUMP1
 #ifdef DUMP1
 #include <stdio.h>
 static FILE *debugf = NULL;
@@ -119,12 +163,20 @@ static int check_number(const decNumber *r, int n) {
 	return 0;
 }
 
-static int check_data(int n) {
+static int check_data(unsigned int n) {
+#ifdef ENABLE_VARIABLE_REGS
+	if (check_stat() || sigmaN < n) {
+		err(ERR_MORE_POINTS);
+		return 1;
+	}
+	return 0;
+#else
 	decNumber r;
 	if (check_stat())
 		return 1;
 	decimal64ToNumber(&sigmaN, &r);
 	return check_number(&r, n);
+#endif
 }
 
 
@@ -133,26 +185,10 @@ void stats_mode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 void sigma_clear(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-#if 0
-	sigmaN = CONSTANT_INT(OP_ZERO);
-	sigmaX = CONSTANT_INT(OP_ZERO);
-	sigmaY = CONSTANT_INT(OP_ZERO);
-	sigmaXX = CONSTANT_INT(OP_ZERO);
-	sigmaYY = CONSTANT_INT(OP_ZERO);
-	sigmaXY = CONSTANT_INT(OP_ZERO);
-
-	sigmalnX = CONSTANT_INT(OP_ZERO);
-	sigmalnXlnX = CONSTANT_INT(OP_ZERO);
-	sigmalnY = CONSTANT_INT(OP_ZERO);
-	sigmalnYlnY = CONSTANT_INT(OP_ZERO);
-	sigmalnXlnY = CONSTANT_INT(OP_ZERO);
-	sigmaXlnY = CONSTANT_INT(OP_ZERO);
-	sigmaYlnX = CONSTANT_INT(OP_ZERO);
-
-#elif defined(ENABLE_VARIABLE_REGS)
+#ifdef ENABLE_VARIABLE_REGS
 	sigmaDeallocate();
 #else
-	zero_regs(StatRegs, NumStatRegs);
+	zero_regs(StatRegs, SizeStatRegs >> 2);
 #endif
 }
 
@@ -188,15 +224,17 @@ static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const 
 
 	getXY(&x, &y);
 
+#ifndef ENABLE_VARIABLE_REGS
 	sigop(&sigmaN, &const_1, op);
+#endif
 	sigop(&sigmaX, &x, op);
 	sigop(&sigmaY, &y, op);
-	mulop(&sigmaXX, &x, &x, op);
-	mulop(&sigmaYY, &y, &y, op);
+	mulop(&sigmaX2, &x, &x, op);
+	mulop(&sigmaY2, &y, &y, op);
 	mulop(&sigmaXY, &x, &y, op);
 
 	decNumberSquare(&lx, &x);
-	mulop(&sigmaXXY, &lx, &y, op);
+	mulop(&sigmaX2Y, &lx, &y, op);
 
 //	if (UState.sigma_mode == SIGMA_LINEAR)
 //		return;
@@ -215,8 +253,9 @@ static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const 
 
 void sigma_plus() {
 #ifdef ENABLE_VARIABLE_REGS
-	if (NumStatRegs == 0 && sigmaAllocate())
+	if (sigmaAllocate())
 		return;
+	++sigmaN;
 #endif
 	sigma_helper(&dn_add);
 }
@@ -226,7 +265,7 @@ void sigma_minus() {
 		return;
 	sigma_helper(&dn_subtract);
 #ifdef ENABLE_VARIABLE_REGS
-	if (check_data(1))
+	if (--sigmaN <= 0)
 		sigmaDeallocate();
 #endif
 }
@@ -236,7 +275,8 @@ void sigma_minus() {
  * which has the highest absolute correlation.
  */
 static enum sigma_modes determine_best(const decNumber *n) {
-	enum sigma_modes m = SIGMA_LINEAR, i;
+	enum sigma_modes m = SIGMA_LINEAR;
+	int i;
 	decNumber b, c, d;
 
 	dn_compare(&b, &const_2, n);
@@ -244,14 +284,14 @@ static enum sigma_modes determine_best(const decNumber *n) {
 		correlation(&c, SIGMA_LINEAR);
 		dn_abs(&b, &c);
 		for (i=SIGMA_LINEAR+1; i<SIGMA_BEST; i++) {
-			correlation(&d, i);
+			correlation(&d, (enum sigma_modes) i);
 
 			if (! decNumberIsNaN(&d)) {
 				dn_abs(&c, &d);
 				dn_compare(&d, &b, &c);
 				if (dn_lt0(&d)) {
 					decNumberCopy(&b, &c);
-					m = i;
+					m = (enum sigma_modes) i;
 				}
 			}
 		}
@@ -270,7 +310,11 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, d
 	int lnx, lny;
 	decNumber n;
 
+#ifdef ENABLE_VARIABLE_REGS
+	int_to_dn(&n, sigmaN);
+#else
 	decimal64ToNumber(&sigmaN, &n);
+#endif
 	if (mode == SIGMA_BEST)
 		mode = determine_best(&n);
 
@@ -307,23 +351,35 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, d
 	if (N != NULL)
 		decNumberCopy(N, &n);
 	if (sx != NULL)
-		decimal64ToNumber(lnx?&sigmalnX:&sigmaX, sx);
+		decimal64ToNumber(lnx ? &sigmalnX : &sigmaX, sx);
 	if (sy != NULL)
-		decimal64ToNumber(lny?&sigmalnY:&sigmaY, sy);
+		decimal64ToNumber(lny ? &sigmalnY : &sigmaY, sy);
 	if (sxx != NULL)
-		decimal64ToNumber(lnx?&sigmalnXlnX:&sigmaXX, sxx);
+		decimal64ToNumber(lnx ? &sigmalnXlnX : &sigmaX2, sxx);
 	if (syy != NULL)
-		decimal64ToNumber(lny?&sigmalnYlnY:&sigmaYY, syy);
+		decimal64ToNumber(lny ? &sigmalnYlnY : &sigmaY2, syy);
 	if (sxy != NULL)
 		decimal64ToNumber(xy, sxy);
 	return mode;
 }
 
 
+/*
+ *  Return a summation register to the user.
+ *  Opcodes have been reaaranged to move sigmaN to the end of the list.
+ *  decimal64 values are grouped together, if decimal128 is used, regrouping is required
+ */
 void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
 #ifdef ENABLE_VARIABLE_REGS
-	const int n = op - OP_sigmaX2Y;
-	*x = n >= NumStatRegs ? CONSTANT_INT(OP_ZERO) : StatRegs[n];
+	if (SizeStatRegs == 0) {
+		*x = CONSTANT_INT(OP_ZERO);
+		return;
+	}
+	else if (op == OP_sigmaN) {
+		put_int(sigmaN, 0, x);
+	}
+	else
+		*x = (&sigmaX2Y)[op - OP_sigmaX2Y];
 #else
 	*x = StatRegs[op - OP_sigmaX2Y];
 #endif
@@ -331,7 +387,7 @@ void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
 
 void sigma_sum(decimal64 *x, decimal64 *y, enum nilop op) {
 #ifdef ENABLE_VARIABLE_REGS
-	if (NumStatRegs == 0) {
+	if (SizeStatRegs == 0) {
 		*x = *y = CONSTANT_INT(OP_ZERO);
 		return;
 	}
@@ -449,7 +505,7 @@ void WS(decimal64 *x, int sample, int rootn) {
 	get_sigmas(NULL, NULL, &sy, NULL, &syy, &sxy, SIGMA_QUIET_LINEAR);
 	if (check_number(&sy, 2))
 		return;
-	decimal64ToNumber(&sigmaXXY, &sxxy);
+	decimal64ToNumber(&sigmaX2Y, &sxxy);
 
 	dn_multiply(&t, &sy, &sxxy);
 	decNumberSquare(&u, &sxy);
@@ -481,10 +537,8 @@ void stats_wdeviations(decimal64 *x, decimal64 *y, enum nilop op) {
 decNumber *stats_sigper(decNumber *res, const decNumber *x) {
 	decNumber sx, t;
 
-	if (check_stat()) {
-		*res = const_0;
+	if (check_stat())
 		return res;
-	}
 	get_sigmas(NULL, &sx, NULL, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 	dn_divide(&t, x, &sx);
 	return dn_mul100(res, &t);

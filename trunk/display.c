@@ -1364,7 +1364,7 @@ void display(void) {
 			set_x(&z, NULL);
 			skip = 1;
 		} else if (cata == CATALOGUE_STATS && 
-				op >= (OP_NIL | OP_sigmaX2Y) && op <= (OP_NIL | OP_sigmaYlnX)) {
+				op >= (OP_NIL | OP_sigmaX2Y) && op < (OP_NIL | OP_sigmaX2Y) + NUMSTATREG) {
 			decimal64 z;
 			sigma_val(&z, NULL, (enum nilop) argKIND(op));
 			set_x(&z, NULL);
@@ -1462,7 +1462,7 @@ nostk:	show_flags();
 				num_arg_0(buf+3, nLIB(pc)-1, 2);
 				num_arg_0(buf+6, 1+upc, 3);
 			} else {
-				set_exp(NUMPROG + 1 - LastProg, 1, NULL);
+				set_exp(ProgFree, 1, NULL);
 				num_arg_0(scopy_spc(buf, S7_STEP), upc, 3);
 			}
 			for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)
