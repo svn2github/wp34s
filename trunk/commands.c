@@ -611,9 +611,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
-	FUNC0(OP_LPOP,		&cmdlpop,		"LPOP")
+	FUNC0(OP_LPOP,		&cmdlpop,		"PopLR")
 	FUNC1(OP_MEM,		&get_mem,		"MEM?")
-	FUNC1(OP_LOCLQ,		&get_mem,		"LOCL?")
+	FUNC1(OP_LOCLQ,		&get_mem,		"LocR?")
 #ifdef ENABLE_VARIABLE_REGS
 	FUNC1(OP_REGSQ,		&get_mem,		"REGS?")
 #endif
@@ -819,7 +819,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_KEYTYPE,	&op_keytype,				"KTP?")
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
-	CMD(RARG_LOCAL,		&cmdlocl,	MAX_LOCAL,		"LOCL")
+	CMD(RARG_LOCAL,		&cmdlocl,	MAX_LOCAL,		"LocR")
 #ifdef ENABLE_VARIABLE_REGS
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
 #endif

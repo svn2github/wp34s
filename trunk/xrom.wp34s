@@ -28,7 +28,7 @@
  */
 		LBL 97				/* Entry: SOLVE */
 			XEQ entry
-			LOCL 04			/* Need 5 registers and flags */
+			LocR 04			/* Need 5 registers and flags */
 			x[approx]? Y
 				INC Y
 			x[approx]? Y
@@ -167,7 +167,7 @@ int_zero_interval::	XEQ int_restore_limits
 
 		LBL 94					/* Entry: INTEGRATE */
 			XEQ entry
-			LOCL 04				/* Need registers .00 to .04
+			LocR 04				/* Need registers .00 to .04
 			SPEC?
 				JMP int_bad_range
 			x[<->] Y
@@ -326,7 +326,7 @@ int_restore_limits::	RCL .01
  */
 		LBL 99					/* Entry: SUMMATION */
 			XEQ entry
-			LOCL 03				/* Registers .00 to .03 */
+			LocR 03				/* Registers .00 to .03 */
 			SPEC?
 				JMP sum_product_okay
 			STO .00
@@ -422,7 +422,7 @@ sum_product_error::	STO L
  */
 		LBL 95					/* Entry: SECOND DERIVATIVE */
 			XEQ entry
-			LOCL 04				/* Registers .00 to .04 */
+			LocR 04				/* Registers .00 to .04 */
 			SPEC?
 				JMP deriv_bad_input
 			SF .00
@@ -513,7 +513,7 @@ deriv_6point::		RCL .01
 
 		LBL 96					/* Entry: DERIVATIVE */
 			XEQ entry
-			LOCL 04				/* Registers .00 to .04 */
+			LocR 04				/* Registers .00 to .04 */
 			SPEC?
 				JMP deriv_bad_input
 			CF .00
@@ -651,7 +651,7 @@ deriv_return::		STO L
  */
 		LBL 89					/* Entry: QUADRATIC SOLVER */
 			XEQ entry
-			LOCL 04				/* Registers .00 to .04 */
+			LocR 04				/* Registers .00 to .04 */
 			STOS .00
 			RCL I
 			STO .04
