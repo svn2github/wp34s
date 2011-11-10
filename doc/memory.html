@@ -151,17 +151,16 @@ to query the free space in steps.
 
 </h3>
 
-<p><span style="font-family: monospace;">LOCL
-nn&nbsp;</span>- Reserve <span style="font-family: monospace;">nn</span>+1 local
+<p><span style="font-family: monospace;">LocR&nbsp;nn&nbsp;</span>- Reserve <span style="font-family: monospace;">nn</span>+1 local
 registers and 16 local flags.<br>
 
-<span style="font-family: monospace;">LPOP&nbsp;&nbsp;&nbsp;
+<span style="font-family: monospace;">PopL &nbsp;&nbsp;
 -</span> Pop the local registers without returning.<br>
 
 <span style="font-family: monospace;">RTN&nbsp;&nbsp;&nbsp;
 &nbsp;</span>- Pop the local registers and return.<br>
 
-<span style="font-family: monospace;">LOCL?&nbsp;&nbsp;&nbsp;</span>-
+<span style="font-family: monospace;">LocR?&nbsp;&nbsp;&nbsp;</span>-
 How many local registers are allocated?<br>
 
 <span style="font-family: monospace;">MEM?&nbsp;&nbsp;&nbsp;&nbsp;</span>-
@@ -182,7 +181,7 @@ The highest possible direct address is <span style="font-family: monospace;">.15
 technical limit. Higher numbered registers can be used by indirect
 addressing only. The maximum value for <span style="font-family: monospace;">nn</span> is <span style="font-family: monospace;">99</span>, giving 100
 local registers. Local flags are always allocated from <span style="font-family: monospace;">.00</span> to <span style="font-family: monospace;">.15</span>, regardless
-of the argument given to <span style="font-family: monospace;">LOCL</span>.</p>
+of the argument given to <span style="font-family: monospace;">LocR</span>.</p>
 
 <p>Indirect addresses go from 112
 (a magic number) to 211
@@ -214,7 +213,7 @@ onwards).<br>
 
 </h3>
 
-<p>After executing <span style="font-family: monospace;">LOCL</span>,
+<p>After executing <span style="font-family: monospace;">LocR</span>,
 a frame is allocated on the return stack which contains:<br>
 
 </p>
@@ -236,26 +235,26 @@ flag word is sometimes allocated at the end of the frame instead of its
 start to ensure a 32 bit alignment of the register data. This is
 handled transparently. Newly allocated registers are cleared to zero.</p>
 
-<p>Executing <span style="font-family: monospace;">LOCL</span>
+<p>Executing <span style="font-family: monospace;">LocR</span>
 again from the same subroutine level will adjust the number of
 registers. This requires data copying because the registers are
 allocated from low to high addresses and the stack grows in the
 opposite direction. If the number of registers increases, the new
 registers a zeroed.</p>
 
-<p><span style="font-family: monospace;">LOCL?</span>
+<p><span style="font-family: monospace;">LocR?</span>
 will give you the number of local registers available.</p>
 
 <p><span style="font-family: monospace;">XEQ</span>
 in a program does not do anything special, it just pushes the return
 address before it branches to the target. This means, that a subroutine
-that does not execute a <span style="font-family: monospace;">LOCL</span>
-command itself will have access to the caller's local registers. Once <span style="font-family: monospace;">LOCL</span> is
+that does not execute a <span style="font-family: monospace;">LocR</span>
+command itself will have access to the caller's local registers. Once <span style="font-family: monospace;">LocR</span> is
 executed by the callee, the caller's local registers are hidden from
 view.</p>
 
 <p><span style="font-family: monospace;">RTN</span>
-or <span style="font-family: monospace;">LPOP</span>
+or <span style="font-family: monospace;">PopL</span>
 in a program check if the current stack pointer
 points to a local frame. If that's the case the stack pointer is moved
 above the frame where the return address is found and the rest of the
@@ -263,7 +262,7 @@ stack is searched upwards for another local frame. If one is found its
 pointer is stored, else the pointer to the active local frame is
 cleared. <span style="font-family: monospace;">RTN</span>
 will pop and branch
-to the return address while <span style="font-family: monospace;">LPOP</span>
+to the return address while <span style="font-family: monospace;">PopL</span>
 will just continue execution. As a result, the current local frame is
 dropped and the next higher frame reactivated.</p>
 
@@ -284,7 +283,7 @@ not to corrupt it.</p>
 <p> Here is a recursive implementation of the factorial (not
 setting LastX correctly):</p>
 
-<pre>	LBL'FAC'<br>	IP<br>	x&gt;1?<br>	SKIP 02<br>	1<br>	RTN<br>	LOCL 00<br>	STO .00<br>	DEC X<br>	XEQ'FAC'<br>	RCL[times] .00<br>	RTN</pre>
+<pre>	LBL'FAC'<br>	IP<br>	x&gt;1?<br>	SKIP 02<br>	1<br>	RTN<br>	LocR 00<br>	STO .00<br>	DEC X<br>	XEQ'FAC'<br>	RCL[times] .00<br>	RTN</pre>
 
 <h2>Cumulative Statistics</h2>
 
