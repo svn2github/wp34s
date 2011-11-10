@@ -56,6 +56,7 @@
 #include "decNumber/decNumber.h"
 #include "decNumber/decContext.h"
 #include "decNumber/decimal64.h"
+#include "decNumber/decimal128.h"
 
 enum nilop;
 enum rarg;
@@ -1275,6 +1276,8 @@ extern decNumber *convPR2DB(decNumber *r, const decNumber *x);
 extern void xrom_routines(decimal64 *a, decimal64 *b, enum nilop op);
 
 extern void packed_from_number(decimal64 *r, const decNumber *x);
+extern void packed128_from_number(decimal128 *r, const decNumber *x);
+extern void packed_from_packed128(decimal64 *r, const decimal128 *s);
 extern void int_mode_convert(decimal64 *r);
 
 /* system functions */

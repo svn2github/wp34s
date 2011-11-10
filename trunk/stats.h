@@ -17,6 +17,7 @@
 #ifndef __STATS_H__
 #define __STATS_H__
 
+extern void sigmaDeallocate();
 extern void sigma_clear(decimal64 *, decimal64 *, enum nilop);
 extern void sigma_plus();
 extern void sigma_minus();

@@ -308,12 +308,13 @@ void rarg_roundingmode(unsigned int arg, enum rarg op) {
 
 /* Pack a number into our DPD register format
  */
+static const unsigned char rounding_modes[DEC_ROUND_MAX] = {
+	DEC_ROUND_HALF_EVEN, DEC_ROUND_HALF_UP, DEC_ROUND_HALF_DOWN,
+	DEC_ROUND_UP, DEC_ROUND_DOWN,
+	DEC_ROUND_CEILING, DEC_ROUND_FLOOR
+};
+
 void packed_from_number(decimal64 *r, const decNumber *x) {
-	static const unsigned char rounding_modes[DEC_ROUND_MAX] = {
-		DEC_ROUND_HALF_EVEN, DEC_ROUND_HALF_UP, DEC_ROUND_HALF_DOWN,
-		DEC_ROUND_UP, DEC_ROUND_DOWN,
-		DEC_ROUND_CEILING, DEC_ROUND_FLOOR
-	};
 	decContext ctx64;
 
 	decContextDefault(&ctx64, DEC_INIT_DECIMAL64);
@@ -321,6 +322,19 @@ void packed_from_number(decimal64 *r, const decNumber *x) {
 	decimal64FromNumber(r, x, &ctx64);
 }
 
+void packed128_from_number(decimal128 *r, const decNumber *x) {
+	decContext ctx128;
+
+	decContextDefault(&ctx128, DEC_INIT_DECIMAL128);
+	ctx128.round = rounding_modes[get_rounding_mode()];
+	decimal128FromNumber(r, x, &ctx128);
+}
+
+// Repack a decimal128 to decimal64
+void packed_from_packed128(decimal64 *r, const decimal128 *s) {
+	decNumber temp;
+	packed_from_number(r, decimal128ToNumber(s, &temp));
+}
 
 /* Check if a value is bogus and error out if so.
  */
@@ -967,20 +981,17 @@ void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 /* Zero out all registers excluding the stack and lastx
  */	
 void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	decimal64 savestack[10];
-
 	process_cmdline_set_lift();
 
-	// save stack for later restore
-	xcopy(savestack, &regX, sizeof(savestack));
-
 	// erase register memory
-	zero_regs(get_reg_n(0), NUMREG);
+	zero_regs(get_reg_n(0), NumRegs);
 
-	// repair stack, L, I
-	move_regs(&regX, savestack, stack_size());
-	move_regs(&regL, savestack + 8, 2);
+	// erase lettered registers
+	if (stack_size() == 4)
+		zero_regs(&regA, 4);
+	zero_regs(&regJ, 2);
 
+	// erase local registers but keep them allocated
 	if (LocalRegs < 0) {
 		zero_regs(get_reg_n(LOCAL_REG_BASE), local_levels() >> 2);
 	}

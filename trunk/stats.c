@@ -34,11 +34,11 @@ typedef struct _stat_data {
 	// new ordering
 	// op-codes must match
 
-	// The next four are canditates for higher precision
-	decimal64 sX2Y;
-	decimal64 sX2;		
-	decimal64 sY2;		
-	decimal64 sXY;
+	// The next four are higher precision
+	decimal128 sX2Y;
+	decimal128 sX2;		
+	decimal128 sY2;		
+	decimal128 sXY;
 
 	decimal64 sX;		
 	decimal64 sY;		
@@ -119,7 +119,7 @@ static int sigmaAllocate(void)
 	return 0;
 }
 
-static void sigmaDeallocate(void) {
+void sigmaDeallocate(void) {
 	move_retstk(SizeStatRegs);
 	SizeStatRegs = 0;
 }
@@ -203,17 +203,36 @@ static void sigop(decimal64 *r, const decNumber *a, decNumber *(*op)(decNumber *
 	packed_from_number(r, &u);
 }
 
+#ifdef ENABLE_VARIABLE_REGS
+static void sigop128(decimal128 *r, const decNumber *a, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
+	decNumber t, u;
+
+	decimal128ToNumber(r, &t);
+	(*op)(&u, &t, a);
+	packed128_from_number(r, &u);
+}
+#else
+#define sigop128 sigop
+#endif
+
 
 /* Multiply a pair of values and accumulate into the sigma data.
  */
 static void mulop(decimal64 *r, const decNumber *a, const decNumber *b, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
-	decNumber t, u, v;
+	decNumber t;
 
-	dn_multiply(&t, a, b);
-	decimal64ToNumber(r, &v);
-	(*op)(&u, &v, &t);
-	packed_from_number(r, &u);
+	sigop(r, dn_multiply(&t, a, b), op);
 }
+
+#ifdef ENABLE_VARIABLE_REGS
+static void mulop128(decimal128 *r, const decNumber *a, const decNumber *b, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
+	decNumber t;
+
+	sigop128(r, dn_multiply(&t, a, b), op);
+}
+#else
+#define mulop128 mulop
+#endif
 
 
 /* Define a helper function to handle sigma+ and sigma-
@@ -229,12 +248,12 @@ static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const 
 #endif
 	sigop(&sigmaX, &x, op);
 	sigop(&sigmaY, &y, op);
-	mulop(&sigmaX2, &x, &x, op);
-	mulop(&sigmaY2, &y, &y, op);
-	mulop(&sigmaXY, &x, &y, op);
+	mulop128(&sigmaX2, &x, &x, op);
+	mulop128(&sigmaY2, &y, &y, op);
+	mulop128(&sigmaXY, &x, &y, op);
 
 	decNumberSquare(&lx, &x);
-	mulop(&sigmaX2Y, &lx, &y, op);
+	mulop128(&sigmaX2Y, &lx, &y, op);
 
 //	if (UState.sigma_mode == SIGMA_LINEAR)
 //		return;
@@ -304,11 +323,12 @@ static enum sigma_modes determine_best(const decNumber *n) {
  * If the fit is best, call a routine to figure out which has the highest
  * absolute r.  This entails a recursive call back here.
  */
-static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, decNumber *sxx, decNumber *syy,
+static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, 
+					decNumber *sxx, decNumber *syy,
 					decNumber *sxy, enum sigma_modes mode) {
-	decimal64 *xy;
 	int lnx, lny;
 	decNumber n;
+	decimal64 *xy = NULL;
 
 #ifdef ENABLE_VARIABLE_REGS
 	int_to_dn(&n, sigmaN);
@@ -319,10 +339,10 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, d
 		mode = determine_best(&n);
 
 	switch (mode) {
-	default:			// Linear
+	default:
+	case SIGMA_LINEAR:
 		DispMsg = "Linear";
 	case SIGMA_QUIET_LINEAR:
-		xy = &sigmaXY;
 		lnx = lny = 0;
 		break;
 
@@ -354,12 +374,33 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy, d
 		decimal64ToNumber(lnx ? &sigmalnX : &sigmaX, sx);
 	if (sy != NULL)
 		decimal64ToNumber(lny ? &sigmalnY : &sigmaY, sy);
+#ifdef ENABLE_VARIABLE_REGS
+	if (sxx != NULL) {
+		if (lnx)
+			decimal64ToNumber(&sigmalnXlnX, sxx);
+		else
+			decimal128ToNumber(&sigmaX2, sxx);
+	}
+	if (syy != NULL) {
+		if (lny)
+			decimal64ToNumber(&sigmalnYlnY, syy);
+		else
+			decimal128ToNumber(&sigmaY2, syy);
+	}
+	if (sxy != NULL) {
+		if (lnx || lny)
+			decimal64ToNumber(xy, sxy);
+		else
+			decimal128ToNumber(&sigmaXY, sxy);
+	}
+#else
 	if (sxx != NULL)
 		decimal64ToNumber(lnx ? &sigmalnXlnX : &sigmaX2, sxx);
 	if (syy != NULL)
 		decimal64ToNumber(lny ? &sigmalnYlnY : &sigmaY2, syy);
 	if (sxy != NULL)
 		decimal64ToNumber(xy, sxy);
+#endif
 	return mode;
 }
 
@@ -379,8 +420,10 @@ void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
 	if (op == OP_sigmaN) {
 		put_int(sigmaN, 0, x);
 	}
+	else if (op < OP_sigmaX)
+		packed_from_packed128(x, &sigmaX2Y + (op - OP_sigmaX2Y));
 	else
-		*x = (&sigmaX2Y)[op - OP_sigmaX2Y];
+		*x = (&sigmaX)[op - OP_sigmaX];
 #else
 	*x = StatRegs[op - OP_sigmaX2Y];
 #endif
@@ -506,8 +549,11 @@ void WS(decimal64 *x, int sample, int rootn) {
 	get_sigmas(NULL, NULL, &sy, NULL, &syy, &sxy, SIGMA_QUIET_LINEAR);
 	if (check_number(&sy, 2))
 		return;
+#ifdef ENABLE_VARIABLE_REGS
+	decimal128ToNumber(&sigmaX2Y, &sxxy);
+#else
 	decimal64ToNumber(&sigmaX2Y, &sxxy);
-
+#endif
 	dn_multiply(&t, &sy, &sxxy);
 	decNumberSquare(&u, &sxy);
 	dn_subtract(&v, &t, &u);

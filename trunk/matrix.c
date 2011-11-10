@@ -419,22 +419,15 @@ badrow:		err(ERR_RANGE);
 #endif
 
 
-/* Three little utility routines to convert decimal128s to decNumbers and back and to
+/* Two little utility routines to convert decimal128s to decNumbers and back and to
  * extract elements form a decimal128 matrix.
  */
 static void matrix_get128(decNumber *r, const decimal128 *base, int row, int col, int ncols) {
 	decimal128ToNumber(base + matrix_idx(row, col, ncols), r);
 }
 
-static void put128(decimal128 *r, const decNumber *x) {
-	decContext ctx128;
-
-	decContextDefault(&ctx128, DEC_INIT_DECIMAL128);
-	decimal128FromNumber(r, x, &ctx128);
-}
-
 static void matrix_put128(const decNumber *x, decimal128 *base, int row, int col, int ncols) {
-	put128(base + matrix_idx(row, col, ncols), x);
+	packed128_from_number(base + matrix_idx(row, col, ncols), x);
 }
 
 
@@ -570,7 +563,7 @@ static int matrix_lu_check(const decNumber *m, decimal128 *mat, decimal64 **mbas
 	if (mat != NULL) {
 		for (i=0; i<rows*rows; i++) {
 			decimal64ToNumber(base+i, &t);
-			put128(mat+i, &t);
+			packed128_from_number(mat+i, &t);
 		}
 	}
 	if (mbase != NULL)
@@ -706,8 +699,7 @@ decNumber *matrix_lu_decomp(decNumber *r, const decNumber *m) {
 
 	/* Copy the result back over the matrix */
 	for (i=0; i<n*n; i++) {
-		decimal128ToNumber(mat+i, &t);
-		packed_from_number(base+i, &t);
+		packed_from_packed128(base+i, mat+i);
 	}
 	return r;
 }
