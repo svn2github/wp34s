@@ -379,7 +379,12 @@ does not disrupt a running program.</p>
 <p>When memory allocation fails, an error is thrown. Most
 functions will throw an error if not enough data points have been
 entered. The register query commands such as <span style="font-family: monospace;">[Sigma]n</span> return
-zero if no data is allocated. </p>
+zero if no data is allocated.</p>
+<p>The summation data will be cleared automatically when&nbsp;a long
+program is copied from flash or loaded via the serial interface and
+after the load the registers would no longer fit in memory. You can
+avoid this by reducing the amount of numbered registers with the
+command <span style="font-family: monospace;">REGS 86</span> (or less) before the load attempt. This will move the summation data beyond the program area boundary. </p>
 
 
 </body>

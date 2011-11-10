@@ -19,6 +19,7 @@
 #include "storage.h"
 #include "display.h"
 #include "lcd.h"
+#include "stats.h"
 
 #define STX 2
 #define ETX 3
@@ -369,7 +370,13 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 			dest = Prog;
 			LastProg = 1 + length / sizeof( s_opcode );
 			DispMsg = "Program";
+#ifdef ENABLE_VARIABLE_REGS
+			if (RetStk < Prog + LastProg ) {
+				sigmaDeallocate();
+			}
+#endif
 			clrretstk_pc();
+
 			break;
 
 		case TAG_ALLMEM:
