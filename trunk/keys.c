@@ -230,8 +230,9 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		static const struct _map amap[] = {
 			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,        CATALOGUE_NONE               } },
 			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS_UPPER, CATALOGUE_NONE               } },
+			{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_LABELS             } },
 			{ K12,     { CATALOGUE_NONE, CATALOGUE_ALPHA_SUBSCRIPTS,    CATALOGUE_ALPHA_SUPERSCRIPTS } },
-			{ K44,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_STATUS             } },
+			{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_STATUS             } },
 			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_COMPARES     } },
 			{ K53,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA              } },
 			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_SYMBOLS      } },
@@ -267,22 +268,22 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 {
 	static const unsigned char alphamap[][6] = {
 		/*upper f-sft g-sft h-sft lower g-shf lower */
-		{ 'A',  0221, 0200, 0000, 'a',  0240,  },  // K00
-		{ 'B',  'B',  0201, 0000, 'b',  0241,  },  // K01
-		{ 'C',  'C',  0202, 0000, 'c',  0242,  },  // K02
-		{ 'D',  0003, 0203, 0000, 'd',  0243,  },  // K03
-		{ 'E',  0015, 0204, 0000, 'e',  0244,  },  // K04
-		{ 'F',  0024, 0224, 0000, 'f',  0264,  },  // K05
+		{ 'A',  0221, 0200, 0221, 'a',  0240,  },  // K00
+		{ 'B',  'B',  0201, 'B',  'b',  0241,  },  // K01
+		{ 'C',  'C',  0202, 'C',  'c',  0242,  },  // K02
+		{ 'D',  0003, 0203, 0003, 'd',  0243,  },  // K03
+		{ 'E',  0015, 0204, 0015, 'e',  0244,  },  // K04 ->
+		{ 'F',  0024, 0224, 0024, 'f',  0264,  },  // K05
 
-		{ 'G',  0000, 0202, 0020, 'g',  0242,  },  // K10
-		{ 'H',  0000, 0225, 0016, 'h',  0265,  },  // K11
-		{ 'I',  0000, 0210, 0000, 'i',  0250,  },  // K12
+		{ 'G',  0005, 0202, 0005, 'g',  0242,  },  // K10
+		{ 'H',  0016, 0225, 0016, 'h',  0265,  },  // K11
+		{ 'I',  0017, 0210, 0017, 'i',  0250,  },  // K12
 
-		{ 0000, 0000, 0206, 0000, 0000, 0246,  },  // K20
-		{ 'J',  0000, 0000, 0027, 'j',  0000,  },  // K21
+		{ 0000, 0000, 0206, 0020, 0000, 0246,  },  // K20 ENTER
+		{ 'J',  '<',  '>',  0027, 'j',  '>',   },  // K21
 		{ 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
 		{ 'L',  0246, 0212, 0257, 'l',  0252,  },  // K23
-		{ 0, 0, 0, 0, 0, 0 },
+		{ 0000, 0000, 0016, 0016, 0000, 0016   },  // K24 <-
 
 		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
 		{ 'M',  '7',  0213, '&',  'm',  0253,  },  // K31
@@ -292,12 +293,12 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 
 		{ 0020, 0000, 0000, '!',  0020, 0000,  },  // K40
 		{ 'Q',  '4',  0000, '?',  'q',  0000,  },  // K41
-		{ 'R',  '5',  0220, 0000, 'r',  0260,  },  // K42
+		{ 'R',  '5',  0220, 0001, 'r',  0260,  },  // K42
 		{ 'S',  '6',  0221, '$',  's',  0261,  },  // K43
-		{ 'T',  0034, 0222, 0217, 't',  0262,  },  // K44
+		{ 'T',  0034, 0222, 0003, 't',  0262,  },  // K44
 
 		{ 0017, '(',  ')',  0000, 0000, ')',   },  // K50
-		{ '1',  '1',  0207, 0000, '1',  0247,  },  // K51
+		{ '1',  '1',  0207, '=',  '1',  0247,  },  // K51
 		{ 'U',  '2',  0000, 0014, 'u',  0000,  },  // K52
 		{ 'V',  '3',  0000, 0000, 'v',  0000,  },  // K53
 		{ 'W',  '-',  0000, '%',  'w',  0000,  },  // K54
@@ -1119,14 +1120,14 @@ static int process_alpha(const keycode c) {
 		State2.alphas = 0;
 		State2.alphashift = 0;
 		return op;
-
+#if 0
 	case K21:
 		if (shift == SHIFT_F)
 			return OP_NIL | OP_ALPHATOX;
 		else if (shift == SHIFT_G)
 			return OP_NIL | OP_XTOALPHA;
 		break;
-
+#endif
 	case K24:	// Clx - backspace, clear Alpha
 		if (shift == SHIFT_N)
 			return STATE_BACKSPACE;

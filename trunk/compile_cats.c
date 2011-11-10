@@ -850,28 +850,28 @@ static s_opcode conv_catalogue[] = {
 static unsigned char alpha_symbols[] = {
 	',',	'"',	'#',	'`',	'*',	':',
 	';',	'@',	'\'',	'_',	'~',
-	'\216',	'\256'				// Sol, Terra
+	0216,	0256				// Sol, Terra
 };
 
 static unsigned char alpha_compares[] = {
-	'<',	'\011',	'=',	'\012',	'>',
-	'[',	']',	'{',	'}',	'\035',
+	'<',	0011,	'=',	0013,	0012,	'>',
+	'[',	']',	'{',	'}',	0035
 };
 
 static unsigned char alpha_arrows[] = {
 	015,	016,				// left arrow, right arrow
 	017,	020,				// up arrow, down arrow,
 	004,	0177,				// integral, up/down arrow
-	'^',	0237,				// ^, infinity
+	'^',	0237				// ^, infinity
 };
 
 static unsigned char alpha_superscripts[] = {
 	0235,	0232,				// ^-1, ^2
 	0234,					// ^x
 	0005,					// degree
-	031,	001,				// x-hat, x-bar
-	032,	002,				// y-hat, y-bar
-	024,					// complex prefix
+	0031,	0001,				// x-hat, x-bar
+	0032,	0002,				// y-hat, y-bar
+	0024					// complex prefix
 };
 
 static unsigned char alpha_subscripts[] = {
@@ -879,7 +879,7 @@ static unsigned char alpha_subscripts[] = {
 	0327,	0230,	0273,			// sub-A, sub-B, sub-c
 	0274,	0367,	0033,			// sub-e, sub-k, sub-n
 	0275,	0276,	0277,			// sub-n, sub-p, sub-u
-	0231,	0233,				// sub-mu, sub-infinity
+	0231,	0233				// sub-mu, sub-infinity
 };
 
 // Next two must match in size and 'meaning'
@@ -895,7 +895,7 @@ static unsigned char alpha_letters_upper[] = {
 	0326, 0030,				// S
 	0330, 0331, 0332, 0333, 0334,		// U
 	0335, 0336,				// Y
-	0337,					// Z
+	0337					// Z
 };
 static unsigned char alpha_letters_lower[] = {
 	0340, 0341, 0342, 0343, 0344,		// A
@@ -909,7 +909,7 @@ static unsigned char alpha_letters_lower[] = {
 	0366, 0030,				// S
 	0370, 0371, 0372, 0373, 0374,		// U
 	0375, 0376,				// Y
-	0377,					// Z
+	0377					// Z
 };
 
 
