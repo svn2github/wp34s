@@ -848,7 +848,13 @@ unsigned long long int reg_get_int(int n, int *sgn) {
 }
 
 void zero_regs(decimal64 *dest, int n) {
-	xset(dest, 0, n << 3);
+	int i;
+
+	if (is_intmode())
+		xset(dest, 0, n << 3);
+	else
+		for (i=0; i<n; i++)
+			dest[i] = CONSTANT_INT(OP_ZERO);
 }
 
 static void move_regs(decimal64 *dest, decimal64 *src, int n) {
