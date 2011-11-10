@@ -975,7 +975,7 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	xcopy(savestack, &regX, sizeof(savestack));
 
 	// erase register memory
-	zero_regs(get_reg_n(0), NumRegs);
+	zero_regs(get_reg_n(0), NUMREG);
 
 	// repair stack, L, I
 	move_regs(&regX, savestack, stack_size());
