@@ -683,13 +683,13 @@ enum nilop {
 	OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
 	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPXY,
 #ifdef ENABLE_VARIABLE_REGS
-	OP_sigmaX2Y, OP_sigmaX2, OP_sigmaY2, OP_sigma_XY,
+	OP_sigmaX2Y, OP_sigmaX2, OP_sigmaY2, OP_sigmaXY,
 	OP_sigmaX, OP_sigmaY, 
 	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
 	OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,
 	OP_sigmaN,
 #else
-	OP_sigmaX2Y, OP_sigmaX, OP_sigmaX2, OP_sigmaY, OP_sigmaY2, OP_sigma_XY,
+	OP_sigmaX2Y, OP_sigmaX, OP_sigmaX2, OP_sigmaY, OP_sigmaY2, OP_sigmaXY,
 	OP_sigmaN,
 	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
 		OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,
@@ -760,9 +760,9 @@ enum nilop {
 #ifdef SILLY_MATRIX_SUPPORT
 	OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
-	OP_LPOP,
+	OP_POPLR,
 	OP_MEM,
-	OP_LOCLQ,
+	OP_LOCR,
 #ifdef ENABLE_VARIABLE_REGS
 	OP_REGSQ,
 #endif

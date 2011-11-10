@@ -367,20 +367,24 @@ static s_opcode cplx_catalogue[] = {
 };
 
 static s_opcode cfit_catalogue[] = {
-	NILIC(OP_BEST,		"BESTF")
-	NILIC(OP_statCOV,	"COV")
-	NILIC(OP_EXPF,		"EXPF")
-	NILIC(OP_LINF,		"LINF")
-	NILIC(OP_LOGF,		"LOGF")
-	NILIC(OP_statLR,	"L.R.")
-	NILIC(OP_PWRF,		"PWRF")
-	NILIC(OP_statSxy,	"sxy")
-	MON(OP_xhat,		"\031")
+	NILIC(OP_sigmaN,	"n\221")
+	NILIC(OP_sigmalnXlnX,	"\221ln\232X")
+	NILIC(OP_sigmalnYlnY,	"\221ln\232Y")
+	NILIC(OP_sigmalnX,	"\221lnX")
+	NILIC(OP_sigmalnXlnY,	"\221lnXY")
+	NILIC(OP_sigmalnY,	"\221lnY")
+	NILIC(OP_sigmaX,	"\221x")
+	NILIC(OP_sigmaX2,	"\221x\232")
+	NILIC(OP_sigmaXlnY,	"\221XlnY")
+	NILIC(OP_sigmaXY,	"\221xy")
+	NILIC(OP_sigmaX2Y,	"\221x\232y")
+	NILIC(OP_sigmaY,	"\221y")
+	NILIC(OP_sigmaY2,	"\221y\232")
+	NILIC(OP_sigmaYlnX,	"\221YlnX")
 };
 
 static s_opcode stats_catalogue[] = {
 	MON(OP_sigper,		"%\221")
-	NILIC(OP_sigmaN,	"n\221")
 	NILIC(OP_STORANDOM,	"SEED")
 	NILIC(OP_statSErr,	"SERR")
 	NILIC(OP_RCLSIGMA,	"SUM")
@@ -393,19 +397,15 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_statWS,	"sw")
 	NILIC(OP_statWSigma,	"\244w")
 	NILIC(OP_statSigma,	"\261")
-	NILIC(OP_sigmalnXlnX,	"\221ln\232X")
-	NILIC(OP_sigmalnYlnY,	"\221ln\232Y")
-	NILIC(OP_sigmalnX,	"\221lnX")
-	NILIC(OP_sigmalnXlnY,	"\221lnXY")
-	NILIC(OP_sigmalnY,	"\221lnY")
-	NILIC(OP_sigmaX,	"\221x")
-	NILIC(OP_sigmaX2,	"\221x\232")
-	NILIC(OP_sigmaXlnY,	"\221XlnY")
-	NILIC(OP_sigma_XY,	"\221xy")
-	NILIC(OP_sigmaX2Y,	"\221x\232y")
-	NILIC(OP_sigmaY,	"\221y")
-	NILIC(OP_sigmaY2,	"\221y\232")
-	NILIC(OP_sigmaYlnX,	"\221YlnX")
+	NILIC(OP_BEST,		"BESTF")
+	NILIC(OP_statCOV,	"COV")
+	NILIC(OP_EXPF,		"EXPF")
+	NILIC(OP_LINF,		"LINF")
+	NILIC(OP_LOGF,		"LOGF")
+	NILIC(OP_statLR,	"L.R.")
+	NILIC(OP_PWRF,		"PWRF")
+	NILIC(OP_statSxy,	"sxy")
+	MON(OP_xhat,		"\031")
 };
 
 static s_opcode prob_catalogue[] = {
@@ -572,7 +572,7 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_XisSpecial,	"SPEC?")
 	NILIC(OP_ROUNDING,	"RM?")
 	NILIC(OP_MEM,		"MEM?")
-	NILIC(OP_LOCLQ,		"LOCL?")
+	NILIC(OP_LOCR,		"LocR?")
 #ifdef ENABLE_VARIABLE_REGS
 	NILIC(OP_REGSQ,		"REGS?")
 #endif
@@ -674,8 +674,8 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_FLRCL, 	"RCF")
 	RARGCMD(RARG_PUTKEY,	"PUTK")
 
-	RARGCMD(RARG_LOCAL,	"LOCL")
-	NILIC(OP_LPOP,		"LPOP")
+	RARGCMD(RARG_LOCAL,	"LocR")
+	NILIC(OP_POPLR,		"PopLR")
 #ifndef INCLUDE_INTERNAL_CATALOGUE
 	RARGCMD(RARG_CONST_INT,	"iC")
 #endif

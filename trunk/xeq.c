@@ -1596,7 +1596,7 @@ int free_mem(void) {
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
 #ifdef ENABLE_VARIABLE_REGS
 	put_int( op == OP_MEM ? free_mem() : 
-		 op == OP_LOCLQ ? local_levels() >> 2 :
+		 op == OP_LOCR ? local_levels() >> 2 :
 		 NumRegs,
 		 0, a );
 #else

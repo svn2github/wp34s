@@ -1344,31 +1344,32 @@ void display(void) {
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
 			set_x(&CONSTANT(State2.digval), NULL);
 			skip = 1;
-		} else if (cata == CATALOGUE_CONV && State2.runmode) {
-			decNumber x, r;
-			decimal64 z;
+		} else if (State2.runmode) {
+			if (cata == CATALOGUE_CONV) {
+				decNumber x, r;
+				decimal64 z;
 
-			getX(&x);
-			if (opKIND(op) == KIND_MON) {
-				const unsigned int f = argKIND(op);
-				if (f < num_monfuncs && ! isNULL(monfuncs[f].mondreal)) {
-					update_speed(0);
-					CALL(monfuncs[f].mondreal)(&r, &x);
-				}
-				else
-					set_NaN(&r);
-			} else
-				do_conv(&r, op & RARG_MASK, &x);
-			decNumberNormalize(&r, &r, &Ctx);
-			packed_from_number(&z, &r);
-			set_x(&z, NULL);
-			skip = 1;
-		} else if (cata == CATALOGUE_STATS && 
-				op >= (OP_NIL | OP_sigmaX2Y) && op < (OP_NIL | OP_sigmaX2Y) + NUMSTATREG) {
-			decimal64 z;
-			sigma_val(&z, NULL, (enum nilop) argKIND(op));
-			set_x(&z, NULL);
-			skip = 1;
+				getX(&x);
+				if (opKIND(op) == KIND_MON) {
+					const unsigned int f = argKIND(op);
+					if (f < num_monfuncs && ! isNULL(monfuncs[f].mondreal)) {
+						update_speed(0);
+						CALL(monfuncs[f].mondreal)(&r, &x);
+					}
+					else
+						set_NaN(&r);
+				} else
+					do_conv(&r, op & RARG_MASK, &x);
+				decNumberNormalize(&r, &r, &Ctx);
+				packed_from_number(&z, &r);
+				set_x(&z, NULL);
+				skip = 1;
+			} else if (op >= (OP_NIL | OP_sigmaX2Y) && op < (OP_NIL | OP_sigmaX2Y) + NUMSTATREG) {
+				decimal64 z;
+				sigma_val(&z, NULL, (enum nilop) argKIND(op));
+				set_x(&z, NULL);
+				skip = 1;
+			}
 		}
 	} else if (State2.status) {
 		show_status();

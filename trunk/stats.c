@@ -375,7 +375,8 @@ void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
 		*x = CONSTANT_INT(OP_ZERO);
 		return;
 	}
-	else if (op == OP_sigmaN) {
+	check_stat();
+	if (op == OP_sigmaN) {
 		put_int(sigmaN, 0, x);
 	}
 	else
