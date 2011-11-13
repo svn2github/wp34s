@@ -116,7 +116,7 @@ static int sigmaAllocate(void)
 		check_stat();
 		xset(StatRegs, 0, SizeStatRegs << 1);
 	}
-	return 0;
+	return check_stat();
 }
 
 void sigmaDeallocate(void) {
