@@ -49,8 +49,9 @@
   #endif
 
   /* Decimal 128-bit type, accessible by bytes */
-  typedef struct {
+  typedef union {
     uint8_t bytes[DECIMAL128_Bytes];    // decimal128: 1, 5, 12, 110 bits
+    uint32_t ints[DECIMAL128_Bytes/4];	// force 32 bit alignment
     } decimal128;
 
   /* special values [top byte excluding sign bit; last two bits are

@@ -128,7 +128,7 @@ unsigned short *RetStk;
 /*
  *  Shift the return stack.
  *  The distance is in levels.
- *  I argument is negative, return stack will shrink.
+ *  If argument is negative, return stack will shrink.
  *  Returns 1 if unsuccessful (error is set)
  */
 int move_retstk(int distance)
@@ -3806,7 +3806,7 @@ void xeq_init_contexts(void) {
 	RetStkSize = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs;
 	RetStk = RetStkBase + RetStkSize;
 	RetStkSize += RET_STACK_SIZE + NUMPROG + 1 - LastProg;
-	ProgFree = NUMPROG - LastProg - 1;
+	ProgFree = NUMPROG - (LastProg - 1);
 	if (RetStk < Prog + NUMPROG)
 		ProgFree -= Prog + NUMPROG - RetStk;	// All pointers are to 16 bit words!
 #else

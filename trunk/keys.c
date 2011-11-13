@@ -92,14 +92,14 @@ static void toggle_shift(enum shifts shift) {
  */
 static unsigned char keycode_to_linear(const keycode c)
 {
-	static const unsigned char linear_key_map[ 7 * 6 ] = {
+	static const unsigned char linear_key_map[ 7 * 6 - 1 ] = {
 		 0,  1,  2,  3,  4,  5,   // K00 - K05
-		 6,  7,  8,  0,  0,  0,   // K10 - K15
+		 6,  7,  8, 34, 34, 34,   // K10 - K15
 		 9, 10, 11, 12, 13,  0,   // K20 - K24
 		14, 15, 16, 17, 18,  0,   // K30 - K34
 		19, 20, 21, 22, 23,  0,   // K40 - K44
 		24, 25, 26, 27, 28,  0,   // K50 - K54
-		29, 30, 31, 32, 33,  0    // K60 - K64
+		29, 30, 31, 32, 33        // K60 - K63
 	};
 	return linear_key_map[c];
 }
@@ -150,9 +150,11 @@ static unsigned int keycode_to_digit_or_register(const keycode c)
 		NO_REG, 4, 5, 6, regT_idx,
 		// K50 - K54
 		NO_REG, 1, 2, 3, NO_REG,
-		// K60 - K64
+		// K60 - K63
 		NO_SHORT | NO_REG, 0, NO_SHORT | LOCAL_REG_BASE,
-		regY_idx, regZ_idx
+		regY_idx, regZ_idx,
+		// Shifts
+		NO_REG
 	};
 
 	return (unsigned int) map[keycode_to_linear(c)];
@@ -1946,12 +1948,13 @@ static int process_status(const keycode c) {
 		return STATE_UNFINISHED;
 	} 
 	else {
-		n = keycode_to_digit_or_register(c) & 0x7f;
-		if (n <= 9)
-			n += 1;
-		else if (n == LOCAL_REG_BASE)
+		int nn = keycode_to_digit_or_register(c) & 0x7f;
+		if (nn <= 9)
+			n = nn + 1;
+		else if (nn == LOCAL_REG_BASE)
 			n = State2.status - 1 == max ? 11 : max;
-		else n = 11; 
+		else if (nn != NO_REG)
+			n = 11; 
 	}
 	State2.status = n + 1;
 
@@ -2224,6 +2227,7 @@ static int process(const int c) {
 
 	/*
 	 *  Process the various cases
+	 *  The handlers in this block here do not handle shifts at all or do it themselves
 	 */
 	if (State2.confirm)
 		return process_confirm((const keycode)c);
@@ -2240,7 +2244,12 @@ static int process(const int c) {
 	if (State2.test != TST_NONE)
 		return process_test((const keycode)c);
 
-	// Process shift keys directly
+	if (State2.status)
+		return process_status((const keycode)c);
+
+	/*
+	 *  Process shift keys directly
+	 */
 	if (c == K_F) {
 #ifdef INCLUDE_STOPWATCH_HOTKEY
 		key_f_ticker=Ticker;
@@ -2265,12 +2274,17 @@ static int process(const int c) {
 		return STATE_UNFINISHED;
 	}
 
+	/*
+	 *  The handlers in this block need to call reset_shift somewhere
+	 */
 	if (State2.multi)
 		return process_multi((const keycode)c);
 
-	// Here the keys are mapped to catalogues
-	// The position of this code decides where catalog switching
-	// works and were not
+	/*
+	 * Here the keys are mapped to catalogues
+	 * The position of this code decides where catalog switching
+	 * works and were not
+	 */
 	cat = keycode_to_cat((keycode)c, shift);
 	if ( cat != CATALOGUE_NONE ) {
 		init_cat( CATALOGUE_NONE );
@@ -2279,11 +2293,11 @@ static int process(const int c) {
 		return STATE_UNFINISHED;
 	}
 
+	/*
+	 *  More handlers...
+	 */
 	if (State2.arrow)
 		return process_arrow((const keycode)c);
-
-	if (State2.status)
-		return process_status((const keycode)c);
 
 	if (State2.labellist)
 		return process_labellist((const keycode)c);
