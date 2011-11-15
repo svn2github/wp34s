@@ -79,7 +79,7 @@ void error_message(const enum errors e)
 		"Out of range\0",
 		"Bad digit\0",
 		"Too long\0",
-		"RTN Stack\0Full",
+		"RTN stack\0Full",
 		"Stack\0CLASH",
 		"Bad mode\0",
 		"Word size\0too SMmALL",
