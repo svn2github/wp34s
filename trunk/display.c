@@ -1106,9 +1106,9 @@ static void show_status(void) {
 	if (status == 0) {
 		set_status("Memory:");
 		p = num_arg_0(buf, free_mem(), 3);
-		p = scopy(p, "  WwordS");
+		p = scopy(p, "  StEPS");
 		*p = '\0';
-		set_digits_string(buf, SEGS_PER_DIGIT);
+		set_digits_string(buf, 2*SEGS_PER_DIGIT);
 	} else {
 		int base;
 		int end;
