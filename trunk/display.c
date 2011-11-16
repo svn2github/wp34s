@@ -90,7 +90,7 @@ void error_message(const enum errors e)
 		"No write\0In FLASH",
 		"Solve\0FAILEd",
 	#ifdef MATRIX_SUPPORT
-		"Matrix\0diMmEnSion",
+		"Matrix\0MmISMmAtCH",
 		"Singular\0",
 	#endif
 	};
