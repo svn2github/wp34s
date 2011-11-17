@@ -3529,9 +3529,7 @@ decNumber *decNumberBernBnS(decNumber *r, const decNumber *n) {
 	}
 	dn_mul2(&a, n);
 	decNumberBernBn(r, &a);
-	if (is_even(n))
-		dn_minus(r, r);
-	return r;
+	return dn_abs(r, r);
 #else
 	return NULL;
 #endif
