@@ -3378,8 +3378,10 @@ static void rargs(const opcode op) {
 		illegal(op);
 		return;
 	}
-	if (isNULL(argcmds[cmd].f))
+	if (isNULL(argcmds[cmd].f)) {
+		State.state_lift = 1;
 		return;
+	}
 
 	if (ind && argcmds[cmd].indirectokay) {
 		if (is_intmode()) {
