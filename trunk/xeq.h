@@ -391,7 +391,6 @@ extern int current_catalogue_max(void);
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
-#define LBLNAMES	"ABCD"
 
 #define NUMALPHA	31	/* Number of characters in Alpha */
 
@@ -402,7 +401,7 @@ extern int current_catalogue_max(void);
 #define LOCAL_MASK      (0x8000u)
 #define isLOCAL(s)	((s) & LOCAL_MASK)
 #define LOCAL_LEVELS(s)	((s) & 0x1ff)
-#define LOCAL_MAXREG(s)	(LOCAL_LEVELS(s) >> 2)
+//#define LOCAL_MAXREG(s)	(LOCAL_LEVELS(s) >> 2)
 
 /* Macros to access program ROM */
 #define XROM_MASK	(0x4000u)
@@ -767,6 +766,7 @@ enum nilop {
 #ifdef ENABLE_VARIABLE_REGS
 	OP_REGSQ,
 #endif
+	OP_XLOCAL,
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -1044,6 +1044,7 @@ extern unsigned int user_pc(void);
 extern unsigned int find_user_pc(unsigned int);
 
 extern int local_levels(void);
+extern int local_regs(void);
 extern int move_retstk(int distance);
 
 extern void clrretstk(void);
@@ -1090,8 +1091,10 @@ extern unsigned int alen(void);
 extern long long int d64toInt(const decimal64 *n);
 extern void d64fromInt(decimal64 *n, const long long int z);
 
+#if 0
 extern int get_tag_n(int n);
 extern void set_tag_n(int n, int tag);
+#endif
 
 extern decimal64 *get_reg_n(int);
 extern decimal64 *get_flash_reg_n(int);
@@ -1254,11 +1257,12 @@ extern void rarg_roundingmode(unsigned int arg, enum rarg op);
 extern void op_setspeed(decimal64 *, decimal64 *, enum nilop);
 extern void op_putkey(unsigned int arg, enum rarg op);
 extern void op_keytype(unsigned int arg, enum rarg op);
-extern void cmdlocl(unsigned int arg, enum rarg op);
+extern void cmdlocr(unsigned int arg, enum rarg op);
 extern void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 #ifdef ENABLE_VARIABLE_REGS
 extern void cmdregs(unsigned int arg, enum rarg op);
 #endif
+extern void cmdxlocal(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
 extern int not_running(void);
 extern void set_running_off_sst(void);

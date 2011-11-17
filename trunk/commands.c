@@ -637,6 +637,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #ifdef ENABLE_VARIABLE_REGS
 	FUNC1(OP_REGSQ,		&get_mem,		"REGS?")
 #endif
+	FUNC0(OP_XLOCAL,	&cmdxlocal,		"XLOCAL")
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
@@ -839,7 +840,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_KEYTYPE,	&op_keytype,				"KTP?")
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
-	CMD(RARG_LOCAL,		&cmdlocl,	MAX_LOCAL,		"LocR")
+	CMD(RARG_LOCAL,		&cmdlocr,	MAX_LOCAL,		"LocR")
 #ifdef ENABLE_VARIABLE_REGS
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
 #endif

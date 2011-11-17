@@ -179,9 +179,9 @@
 // Needs to be adjusted depending on code size
 #ifdef MATRIX_SUPPORT
 #ifdef INCLUDE_STOPWATCH
-#define NUMBER_OF_FLASH_REGIONS 5
+#define NUMBER_OF_FLASH_REGIONS 6
 #else
-#define NUMBER_OF_FLASH_REGIONS 7
+#define NUMBER_OF_FLASH_REGIONS 8
 #endif
 #else
 #ifdef INCLUDE_STOPWATCH

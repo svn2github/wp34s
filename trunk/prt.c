@@ -187,7 +187,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		} else {
 			p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
 			if (argcmds[cmd].label && arg >= 100) {
-				*p = LBLNAMES[arg - 100];
+				*p = arg - 100 + 'A';
 			}
 			else {
 				if (argcmds[cmd].lim < 10)

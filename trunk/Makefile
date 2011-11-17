@@ -217,6 +217,7 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	@grep "^\.cmdtab"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.bss"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.slcdcmem"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.volatile"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.backup"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@cat $(SUMMARY)
 

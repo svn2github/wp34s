@@ -97,6 +97,13 @@ SECTIONS
         _ezero = .;
     } >sram
 
+    .volatile (NOLOAD) :
+    {
+        . = ALIGN(4);
+    	*(.volatile)
+        . = ALIGN(4);
+    } >sram
+
     .backup (NOLOAD) :
     {
         . = ALIGN(4);

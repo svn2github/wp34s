@@ -151,6 +151,14 @@ int local_levels(void) {
 	return LocalRegs < 0 ? LOCAL_LEVELS(RetStk[LocalRegs]) : 0;
 }
 
+/*
+ *  How many local registers have we?
+ */
+int local_regs(void) {
+	const int l = local_levels();
+	return l == 1 ? NUMXREGS : l >> 2;
+}
+
 
 #if ! defined(REALBUILD) && ! defined(WINGUI)
 // Console screen only
@@ -204,7 +212,7 @@ opcode getprog(unsigned int n) {
 		return get_opcode(xrom + (n & ~XROM_MASK) );
 	}
 	if (isLIB(n)) {
-		FLASH_REGION *fr = &flash_region(nLIB(n));
+		FLASH_REGION *fr = flash_region(nLIB(n));
 		return get_opcode(fr->prog + offsetLIB(n));
 	}
 	if (n >= LastProg)
@@ -822,8 +830,14 @@ void process_cmdline_set_lift(void) {
  */
 decimal64 *get_reg_n(int n) {
 	if (n >= LOCAL_REG_BASE && LocalRegs < 0) {
-		// local register on the return stack
-		return (decimal64 *)(RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n - LOCAL_REG_BASE;
+		n -= LOCAL_REG_BASE;
+		if (local_levels() == 1) {
+			// Local XROM register in volatile RAM
+			return XromRegs + n;
+		} else {
+			// local register on the return stack
+			return (decimal64 *)(RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n;
+		}
 	}
 	return Regs + (n >= TOPREALREG ? 0 : TOPREALREG - NumRegs) + n;
 }
@@ -993,7 +1007,7 @@ void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 	// erase local registers but keep them allocated
 	if (LocalRegs < 0) {
-		zero_regs(get_reg_n(LOCAL_REG_BASE), local_levels() >> 2);
+		zero_regs(get_reg_n(LOCAL_REG_BASE), local_regs());
 	}
 }
 
@@ -1613,11 +1627,11 @@ int free_mem(void) {
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
 #ifdef ENABLE_VARIABLE_REGS
 	put_int( op == OP_MEM ? free_mem() : 
-		 op == OP_LOCR ? local_levels() >> 2 :
+		 op == OP_LOCR ? local_regs() :
 		 NumRegs,
 		 0, a );
 #else
-	put_int( op == OP_MEM ? free_mem() : local_levels() >> 2, 0, a );
+	put_int( op == OP_MEM ? free_mem() : local_regs(), 0, a );
 #endif
 }
 
@@ -1738,9 +1752,9 @@ static int retstk_up(int sp, int unwind)
 			int n = LOCAL_LEVELS(s); 
 			sp += n;
 			if (unwind) {
-				// Readjust the LocalRegs pointer
+				// Re-adjust the LocalRegs pointer
 				LocalRegs = 0;
-				for (RetStkPtr = sp; sp < -4; ++sp) {
+				for (RetStkPtr = sp; sp < 0; ++sp) {
 					if (isLOCAL(RetStk[sp])) {
 						LocalRegs = sp;
 						return RetStkPtr;
@@ -2422,10 +2436,15 @@ void op_shift_digit(unsigned int n, enum rarg op) {
 static unsigned short int *flag_word(int n, unsigned short int *mask) {
 	unsigned short int *p = UserFlags;
 	if (n >= LOCAL_FLAG_BASE) {
+		const int l = local_levels();
 		n -= LOCAL_FLAG_BASE;
-		if (LocalRegs & 1) {
+		if (l == 1) {
+			// XROM special
+			p = &XromFlags;
+		}
+		else if (LocalRegs & 1) {
 			// Odd frame: flags are at end of frame
-			p = RetStk + LocalRegs + local_levels() - 1;
+			p = RetStk + LocalRegs + l - 1;
 		}
 		else {
 			// Even frame: Flags are at beginning of frame
@@ -3220,12 +3239,12 @@ static int reg_decode(decimal64 **s, unsigned int *n, decimal64 **d, int flash) 
 	rsrc /= 100;			// sss
 
 	mx_src = flash ? UserFlash.backup._numregs :
-		 rsrc >= LOCAL_REG_BASE ? local_levels() >> 2 : NumRegs;
+		 rsrc >= LOCAL_REG_BASE ? local_regs() : NumRegs;
 	if (rsrc >= mx_src)
 		goto range_error;
 
 	if (d != NULL) {
-		mx_dest = rdest >= LOCAL_REG_BASE ? local_levels() >> 2 : NumRegs;
+		mx_dest = rdest >= LOCAL_REG_BASE ? local_regs() : NumRegs;
 
 		if (num == 0) {
 			/* Calculate the maximum non-overlapping size */
@@ -3361,7 +3380,7 @@ void op_regsort(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 /* Handle a command that takes an argument.  The argument is encoded
  * in the low order bits of the opcode.  We also have to take
- * account of the indirction flag and various limits -- we always work modulo
+ * account of the indirection flag and various limits -- we always work modulo
  * the limit.
  */
 static void rargs(const opcode op) {
@@ -3405,7 +3424,7 @@ static void rargs(const opcode op) {
 #endif
 	// Range checking for local registers or flags
 	if (argcmds[cmd].local) {
-		lim = NUMREG + (LocalRegs == 0 ? 0 : LOCAL_MAXREG(RetStk[LocalRegs]));
+		lim = NUMREG + local_regs();
 		if (argcmds[cmd].cmplx)
 			--lim;
 		else if (argcmds[cmd].stos)
@@ -3819,39 +3838,22 @@ void xeq_init_contexts(void) {
 
 }
 
-
 /*
-
  *  We don't allow some commands from a running program
-
  */
 
-int not_running(void)
-
-{
+int not_running(void) {
 
 	if ( Running ) {
-
 		err(ERR_ILLEGAL);
-
 		return 0;
-
 	}
-
 	return 1;
-
 }
 
-
-
-
-
 /*
-
  *  Handle the Running Flag
-
  */
-
 void set_running_off_sst() {
 	Running = 0;
 }
@@ -3885,7 +3887,7 @@ void set_running_on() {
  *  Registers must reside on even stack positions
  *  so the flag word is either at the top or at the bottom of the frame.
  */
-void cmdlocl(unsigned int arg, enum rarg op) {
+void cmdlocr(unsigned int arg, enum rarg op) {
 	short int sp = RetStkPtr;
 	int size = (++arg << 2) + 2;
 	const unsigned short marker = LOCAL_MASK | size;
@@ -3924,6 +3926,28 @@ void cmdlocl(unsigned int arg, enum rarg op) {
 	RetStk[sp] = marker;
 	RetStkPtr = LocalRegs = sp;
 	*flag_word(LOCAL_FLAG_BASE, NULL) = old_flags;
+}
+
+/*
+ *  Command to support a single set of local variables
+ *  for non recursive non interruptible XROM routines.
+ *  We need a single stack level for a special marker
+ */
+void cmdxlocal(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	if (isXROM(state_pc())) {
+		if (RetStkPtr >= RetStkSize) {
+			err(ERR_RAM_FULL);
+			return;
+		}
+		RetStk[--RetStkPtr] = LOCAL_MASK | 1;
+		// fill with 0
+		zero_regs(XromRegs, NUMXREGS);
+		XromFlags = 0;
+		LocalRegs = RetStkPtr;
+	}
+	else {
+		cmdlocr(16, OP_LOCR);
+	}
 }
 
 /*

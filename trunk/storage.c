@@ -21,6 +21,7 @@
 #ifdef REALBUILD
 #define BACKUP_SRAM  __attribute__((section(".backup")))
 #define SLCDCMEM     __attribute__((section(".slcdcmem")))
+#define VOLATILE     __attribute__((section(".volatile")))
 #define USER_FLASH   __attribute__((section(".userflash")))
 #ifndef NULL
 #define NULL 0
@@ -32,6 +33,7 @@
 #include <string.h>
 #define BACKUP_SRAM
 #define SLCDCMEM
+#define VOLATILE
 #define USER_FLASH
 #define STATE_FILE "wp34s.dat"
 #define REGION_FILE "wp34s-%c.dat"
@@ -52,6 +54,12 @@ BACKUP_SRAM TPersistentRam PersistentRam;
  *  Data that is saved in the SLCD controller during deep sleep
  */
 SLCDCMEM TStateWhileOn StateWhileOn;
+
+/*
+ *  A private register area for XROM code in volatile RAM
+ *  It replaces the local registers and flags if active.
+ */
+VOLATILE TXromLocal XromLocal;
 
 /*
  *  The user flash area:
@@ -319,7 +327,7 @@ void save_program( unsigned int r, enum rarg op )
  */
 static int internal_load_program( unsigned int r )
 {
-	FLASH_REGION *fr = &flash_region( r );
+	FLASH_REGION *fr = flash_region( r );
 
 	if ( checksum_region( r ) || fr->last_prog > NUMPROG + 1 ) {
 		/*
@@ -364,7 +372,7 @@ void swap_program( unsigned int r, enum rarg op )
 
 	if ( not_running() ) {
 		++r;
-		fr = &flash_region( r );
+		fr = flash_region( r );
 		l = region_length( fr );
 
 		/*
@@ -486,7 +494,7 @@ int checksum_code( void )
  */
 int checksum_region( int r )
 {
-	FLASH_REGION *fr = &flash_region( r );
+	FLASH_REGION *fr = flash_region( r );
 	int l = ( fr->last_prog - 1 ) * sizeof( s_opcode );
 	return l < 0 || l > sizeof( fr->prog ) || test_checksum( fr->prog, l, fr->crc, NULL );
 }
@@ -529,7 +537,7 @@ int checksum_backup( void )
  */
 extern int is_prog_region( unsigned int r )
 {
-	FLASH_REGION *fr = &flash_region( r );
+	FLASH_REGION *fr = flash_region( r );
 
 	return r > 0 && fr->last_prog >= 1 && fr->last_prog <= NUMPROG + 1;
 }
@@ -579,7 +587,7 @@ void load_statefile( void )
 		fclose( f );
 	}
 	for ( i = 0; i < NUMBER_OF_FLASH_REGIONS; ++i ) {
-		p = (char *) &flash_region( i );
+		p = (char *) flash_region( i );
 		l = SIZE_REGION * PAGE_SIZE;
 		memset( p, 0xff, l );
 		sprintf( name, REGION_FILE, i == 0 ? 'R' : i + '0' - 1 );
@@ -593,7 +601,7 @@ void load_statefile( void )
 			fclose(f);
 #ifdef REPAIR_CRC_ON_LOAD
 			if ( checksum_region( i ) ) {
-				FLASH_REGION *fr = &flash_region( i );
+				FLASH_REGION *fr = flash_region( i );
 				int l;
 				for ( l = 0; l < NUMPROG; ++l ) {
 					if ( fr->prog[ l ] == 0xffff

@@ -471,7 +471,7 @@ void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op )
  */
 void send_library(unsigned int region, enum rarg op)
 {
-	FLASH_REGION *fr = &flash_region( region + 1 );
+	FLASH_REGION *fr = flash_region( region + 1 );
 	put_block( TAG_PROGRAM, ( fr->last_prog - 1 ) * sizeof( s_opcode ), fr->prog );
 }
 

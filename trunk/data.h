@@ -269,7 +269,7 @@ typedef struct _while_on {
 		unsigned char cmdlineeex;	// XEQ internal - don't use
 		unsigned char cmdlinedot;	// XEQ internal - don't use
 		unsigned char cmdbase;		// Base value for a command with an argument
-						// fits nicely int his place (alignment)
+						// fits nicely into his place (alignment)
 	} _command_line;
 	char _cmdline[CMDLINELEN + 1];
 
@@ -290,6 +290,22 @@ extern TStateWhileOn StateWhileOn;
 #define CmdLineDot	 (StateWhileOn._command_line.cmdlinedot)
 #define CmdBase		 (StateWhileOn._command_line.cmdbase)
 #define Cmdline		 (StateWhileOn._cmdline)
+
+/*
+ *  A private set of registers for non recursive, non interruptible XROM code
+ *  They are addressed as local registers from .00 to .15
+ */
+#define NUMXREGS 16
+typedef struct _xrom_local
+{
+	decimal64 _regs[NUMXREGS];
+	unsigned short int _flags;
+} TXromLocal;
+
+extern TXromLocal XromLocal;
+
+#define XromRegs (XromLocal._regs)
+#define XromFlags (XromLocal._flags)
 
 #pragma pack(pop)
 

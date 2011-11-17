@@ -2092,7 +2092,7 @@ static int process_labellist(const keycode c) {
 static int process_registerlist(const keycode c) {
 	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
 	enum shifts shift = reset_shift();
-	const int max = State2.local ? LOCAL_MAXREG(RetStk[LocalRegs]) : NUMREG;
+	const int max = State2.local ? local_regs() : NUMREG;
 
 	if ( n == LOCAL_REG_BASE ) {	// '.'
 		if (LocalRegs < 0)

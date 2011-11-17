@@ -651,7 +651,7 @@ deriv_return::		STO L
  */
 		LBL 89					/* Entry: QUADRATIC SOLVER */
 			XEQ entry
-			LocR 04				/* Registers .00 to .04 */
+			XLOCAL				/* Registers .00 to .04 are used */
 			STOS .00
 			RCL I
 			STO .04
@@ -713,7 +713,7 @@ quad_fix_stack::	RCL .00
 				ERR 01
 			x[<=]0?
 				ERR 01
-			LocR 12
+			XLOCAL
 			STOS .08
 			STO+ X
 			XEQ bernoulli
@@ -763,7 +763,7 @@ zeta_0::		.
  */
 		LBL 87				// Zeta function
 			XEQ entry
-			LocR 12
+			XLOCAL
 			STOS .08
 			x=0?
 				JMP zeta_0
