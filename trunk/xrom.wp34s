@@ -718,14 +718,7 @@ quad_fix_stack::	RCL .00
 			STO+ X
 			XEQ bernoulli
 			STO+ X
-			RCL .08
-			EVEN?
-				JMP bern_even
-			DROP
-			JMP zeta_exit
-
-bern_even::		DROP
-			+/-
+			ABS
 			JMP zeta_exit
 
 		LBL 86				// Bernoulli number Bn = -n zeta(1-n), n>=0
