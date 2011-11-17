@@ -221,6 +221,10 @@ static const struct {
 	XL(ENTRY_DERIV, "Entry: DERIVATIVE")
 	XL(ENTRY_2DERIV, "Entry: SECOND DERIVATIVE")
 	XL(ENTRY_QUAD, "Entry: QUADRATIC SOLVER")
+	XL(ENTRY_NEXTPRIME, "Entry: NEXT PRIME")
+	XL(ENTRY_ZETA, "Entry: ZETA FUNCTION")
+	XL(ENTRY_Bn, "Entry: BERNOULLI NUMBER (modern)")
+	XL(ENTRY_Bn_star, "Entry: BERNOULLI NUMBER (old)")
 #undef XL
 #define XE(n, s)	X(ERROR, n, s)
 	XE(ERR_DOMAIN, "Error: Domain Error")

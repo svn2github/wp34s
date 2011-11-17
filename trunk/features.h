@@ -43,13 +43,15 @@
 #define INCLUDE_XROOT
 
 // Include Rieman's Zeta function
+// There is an XROM implementation of these now that is much smaller.
+//
 // The complex version isn't accurate for large imaginary numbers
 // and the series approximations I've located thus far converge too slowly.
-#define INCLUDE_ZETA
+// #define INCLUDE_ZETA
 // #define INCLUDE_COMPLEX_ZETA
 
 // Include Bernoulli numbers as functions
-#define INCLUDE_BERNOULLI
+// #define INCLUDE_BERNOULLI
 
 // Include the user mode serial commands SOPEN, SCLOSE, RECV1, SEND1, aRECV, aSEND
 // Space cost approximately 700 bytes.

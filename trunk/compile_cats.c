@@ -43,10 +43,6 @@ static s_opcode program_xfcn[] = {
 	MON(OP_PERTOT,		"%T")
 	MON(OP_sigper,		"%\221")
 	DYA(OP_ATAN2,		"ANGLE")
-#ifdef INCLUDE_BERNOULLI
-	MON(OP_Bn,		"B[sub-n]")
-	MON(OP_BnS,		"B[sub-n]*")
-#endif
 	MON(OP_CEIL,		"CEIL")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLP,		"CLPROG")
@@ -131,6 +127,14 @@ static s_opcode program_xfcn[] = {
 #endif
 #ifdef INCLUDE_ZETA
 	MON(OP_ZETA,		"\245")
+#ifdef INCLUDE_BERNOULLI
+	MON(OP_Bn,		"B[sub-n]")
+	MON(OP_BnS,		"B[sub-n]*")
+#endif
+#else
+	NILIC(OP_USR_ZETA,	"\245")
+	NILIC(OP_USR_Bn,	"B[sub-n]")
+	NILIC(OP_USR_BnS,	"B[sub-n]*")
 #endif
 #ifdef INCLUDE_DIGAMMA
 	MON(OP_PSI,		"\226")
@@ -200,10 +204,6 @@ static s_opcode catalogue[] = {
 	MON(OP_PERTOT,		"%T")
 	MON(OP_sigper,		"%\221")
 	DYA(OP_ATAN2,		"ANGLE")
-#ifdef INCLUDE_BERNOULLI
-	MON(OP_Bn,		"B[sub-n]")
-	MON(OP_BnS,		"B[sub-n]*")
-#endif
 	MON(OP_CEIL,		"CEIL")
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLREG,		"CLREG")
@@ -287,6 +287,14 @@ static s_opcode catalogue[] = {
 #endif
 #ifdef INCLUDE_ZETA
 	MON(OP_ZETA,		"\245")
+#ifdef INCLUDE_BERNOULLI
+	MON(OP_Bn,		"B[sub-n]")
+	MON(OP_BnS,		"B[sub-n]*")
+#endif
+#else
+	NILIC(OP_USR_ZETA,	"\245")
+	NILIC(OP_USR_Bn,	"B[sub-n]")
+	NILIC(OP_USR_BnS,	"B[sub-n]*")
 #endif
 #ifdef INCLUDE_DIGAMMA
 	MON(OP_PSI,		"\226")

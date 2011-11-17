@@ -30,6 +30,9 @@
 
 #define ENTRY_QUAD	89	/* Same order as OP_QUAD, OP_NEXTPRIME */
 #define ENTRY_NEXTPRIME	88
+#define ENTRY_ZETA	87
+#define ENTRY_Bn	86
+#define ENTRY_Bn_star	85
 
 
 extern const s_opcode xrom[];

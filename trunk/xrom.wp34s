@@ -707,6 +707,162 @@ quad_fix_stack::	RCL .00
 			RTN
 
 /**************************************************************************/
+		LBL 85				// Bernoulli number Bn* = +/- Bn(2 n)
+			XEQ entry
+			FP?
+				ERR 01
+			x[<=]0?
+				ERR 01
+			LocR 12
+			STOS .08
+			STO+ X
+			XEQ bernoulli
+			STO+ X
+			RCL .08
+			EVEN?
+				JMP bern_even
+			DROP
+			JMP zeta_exit
+
+bern_even::		DROP
+			+/-
+			JMP zeta_exit
+
+		LBL 86				// Bernoulli number Bn = -n zeta(1-n), n>=0
+			XEQ entry
+			FP?
+				ERR 01
+			x<0?
+				ERR 01
+			LocR 12
+			STOS .08
+			x=0?
+				JMP Bn_0
+			x=1?
+				JMP zeta_0
+			ODD?
+				JMP Bn_odd
+			XEQ bernoulli
+			JMP zeta_exit
+
+bernoulli::		STO 12
+			DEC X
+			+/-
+			XEQ zeta_int
+			RCL[times] .08
+			+/-
+			JMP zeta_exit
+
+Bn_odd::		iC 0
+			JMP zeta_exit
+
+Bn_0::			iC 1
+			JMP zeta_exit
+
+zeta_0::		.
+			5
+			+/-
+			JMP zeta_exit
+
+/**************************************************************************/
+/* Zeta function implementation based on Jean-Marc Baillard's from:
+ *	http://hp41programs.yolasite.com/zeta.php
+ */
+		LBL 87				// Zeta function
+			XEQ entry
+			LocR 12
+			STOS .08
+			x=0?
+				JMP zeta_0
+			XEQ zeta_int
+
+zeta_exit::		x[<->] .08
+			STO L
+			RCLS .08
+			RTN
+		
+zeta_int::		STO .01
+			STO .07
+			.
+			5
+			x[<=]? Y
+				JMP zeta_calc
+
+zeta_neg::		SIGN
+			x[<->] Y
+			-
+			STO .01
+			XEQ zeta_calc
+			iC 1
+			ASIN
+			RCL[times] .07
+			SIN
+			[times]
+			# [pi]
+			STO/ Y
+			STO+ X
+			RCL .07
+			y[^x]
+			[times]
+			x[<->] .01
+			[GAMMA]
+			RCL[times] .01
+			RTN
+
+zeta_calc::		2
+			0
+			STO .00
+			STO .03
+			SIGN
+			STO .02
+			STO .04
+			STO .05
+			+/-
+			STO .06
+			CLx
+			NOP
+zeta_loop::		RCL .05
+			RCL .00
+			RCL .01
+			+/-
+			y[^x]
+			[times]
+			RCL .06
+			+/-
+			STO .06
+			[times]
+			+
+			RCL .00
+			ENTER[^]
+			STO+ Y
+			STO[times] Y
+			-
+			RCL[times] .04
+			RCL .03
+			x[^2]
+			RCL .00
+			DEC X
+			x[^2]
+			-
+			STO+ X
+			/
+			STO .04
+			STO+ .05
+			x[<->] Y
+			DSE .00
+				JMP zeta_loop
+
+			RCL/ .05
+			2
+			LN
+			iC 1
+			RCL- .01
+			[times]
+			e[^x]-1
+			/
+			RTN
+
+/**************************************************************************/
 
 			/* We do not work in integer mode */
 entry::			INTM?

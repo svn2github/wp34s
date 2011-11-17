@@ -224,10 +224,10 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #else
 	FUNC(OP_ZETA,	&decNumberZeta,		NOFN,		NOFN,		"\245")
 #endif
-#endif
 #ifdef INCLUDE_BERNOULLI
 	FUNC(OP_Bn,	&decNumberBernBn,	NOFN,		NOFN,		"B\275")
 	FUNC(OP_BnS,	&decNumberBernBnS,	NOFN,		NOFN,		"B\275*")
+#endif
 #endif
 #ifdef INCLUDE_EASTER
 	FUNC(OP_EASTER,	&dateEaster,		NOFN,		NOFN,		"EASTER")
@@ -583,6 +583,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_QUAD,		&xrom_routines,		"SLVQ")
 	FUNC0(OP_NEXTPRIME,	&xrom_routines,		"NEXTP")
+	FUNC0(OP_USR_ZETA,	&xrom_routines,		"\245")
+	FUNC0(OP_USR_Bn,	&xrom_routines,		"B\275")
+	FUNC0(OP_USR_BnS,	&xrom_routines,		"B\275*")
 
 	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")
