@@ -49,10 +49,6 @@
 
 pr05::		CL[alpha]
 		"IM[^]RE "
-/*		[alpha]'IM'
-		[alpha] [^]
-		[alpha]'RE[space]'
-*/
 		[alpha]IP 03
 		"?"
 		PROMPT
@@ -71,7 +67,7 @@ pr06::		CF A
 		FIX 06
 		x[!=]0?
 			JMP pr01
-		EEX
+		1
 		STO 04
 
 pr01::		RCL 00
@@ -98,10 +94,7 @@ pr01::		RCL 00
 		XEQ pr11
 		2
 		STO+ 05
-		EEX
-		3
-		+/-
-		[times]
+		SDR 03
 		STO+ 01
 		RCL 04
 		RCL 03
@@ -114,9 +107,7 @@ pr01::		RCL 00
 		1
 		0
 		-
-		EEX
-		3
-		/
+		SDR 03
 		STO- 05
 		FIX 07
 
@@ -144,12 +135,8 @@ pr11::		RCL 01
 		STO 05
 		FC? 01
 			JMP pr13
-		EEX
-		3
-		+/-
-		ENTER[^]
 		2
-		[times]
+		SDR 03
 		STO+ 05
 
 pr13::		[cmplx]RCL[->]05
@@ -167,9 +154,7 @@ pr00::		[cmplx]ENTER
 		[cmplx][times]
 		RCL[->]05
 		FS? 01
-			RCL 08
-		FS? 01
-			[times]
+			RCL[times] 08
 		+
 		FS? A
 			STO[->]05
