@@ -1757,9 +1757,10 @@ static int retstk_up(int sp, int unwind)
 				for (RetStkPtr = sp; sp < 0; ++sp) {
 					if (isLOCAL(RetStk[sp])) {
 						LocalRegs = sp;
-						return RetStkPtr;
+						break;
 					}
 				}
+				return RetStkPtr;
 			}
 		}
 	}
