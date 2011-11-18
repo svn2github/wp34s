@@ -707,7 +707,7 @@ quad_fix_stack::	RCL .00
 			RTN
 
 /**************************************************************************/
-		LBL 85				// Bernoulli number Bn* = +/- Bn(2 n)
+		LBL 85				/* Bernoulli number Bn* = +/- Bn(2 n) */
 			XEQ entry
 			FP?
 				ERR 01
@@ -721,13 +721,13 @@ quad_fix_stack::	RCL .00
 			ABS
 			JMP zeta_exit
 
-		LBL 86				// Bernoulli number Bn = -n zeta(1-n), n>=0
+		LBL 86				/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
 			XEQ entry
 			FP?
 				ERR 01
 			x<0?
 				ERR 01
-			LocR 12
+			XLOCAL
 			STOS .08
 			x=0?
 				JMP Bn_0
@@ -760,8 +760,10 @@ zeta_0::		.
 /**************************************************************************/
 /* Zeta function implementation based on Jean-Marc Baillard's from:
  *	http://hp41programs.yolasite.com/zeta.php
+ * This is the same algorithm as the C version uses, just with fewer terms and
+ * with the constants computed on the fly.
  */
-		LBL 87				// Zeta function
+		LBL 87				/* Zeta function */
 			XEQ entry
 			XLOCAL
 			STOS .08
