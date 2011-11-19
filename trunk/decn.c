@@ -1848,7 +1848,7 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
 		// Without introducing a new constant, we've got 150 or 256 to choose from.
 		if (is_int(&x) && ! dn_eq0(xin) && decNumberIsNegative(dn_compare(&t, &x, &const_256))) {
 			dn_1(res);
-			while (! dn_eq0(&x) && !decNumberIsInfinite(res)) {
+			while (! dn_eq0(&x)) {
 				dn_multiply(res, res, &x);
 				dn_m1(&x, &x);
 			}
