@@ -1674,6 +1674,7 @@ void op_putkey(unsigned int arg, enum rarg op)
 	if (c >= 0) {
 		set_running_off();
 		put_key(c);
+		display();	// force refresh
 	}
 }
 

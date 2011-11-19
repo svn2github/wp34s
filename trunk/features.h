@@ -92,6 +92,9 @@
 // Allow A as destination for STOS/RCLS
 // #define ALLOW_STOS_A
 
+// Allow the hot keys and XEQ in Alpha mode if defined
+// #define ALLOW_ALPHA_XEQ
+
 #if defined(REALBUILD) || defined(WINGUI)
 // Use shift hold sequence for temporary display in other bases
 #define SHIFT_HOLD_TEMPVIEW
@@ -141,7 +144,7 @@
 
 // Include fast path code to calculate factorials and gamma functions
 // for positive integers using a string of multiplications.
-//#define GAMMA_FAST_INTEGERS
+#define GAMMA_FAST_INTEGERS
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */

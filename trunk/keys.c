@@ -270,10 +270,17 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 {
 	static const unsigned char alphamap[][6] = {
 		/*upper f-sft g-sft h-sft lower g-shf lower */
+#ifdef ALLOW_ALPHA_XEQ
 		{ 'A',  0221, 0200, 0221, 'a',  0240,  },  // K00
-		{ 'B',  'B',  0201, 'B',  'b',  0241,  },  // K01
-		{ 'C',  'C',  0202, 'C',  'c',  0242,  },  // K02
+		{ 'B',  0000, 0201, 0000, 'b',  0241,  },  // K01
+		{ 'C',  0000, 0202, 0000, 'c',  0242,  },  // K02
 		{ 'D',  0003, 0203, 0003, 'd',  0243,  },  // K03
+#else
+		{ 'A',  0221, 0200, 0000, 'a',  0240,  },  // K00
+		{ 'B',  0000, 0201, 0000, 'b',  0241,  },  // K01
+		{ 'C',  0000, 0202, 0000, 'c',  0242,  },  // K02
+		{ 'D',  0003, 0203, 0000, 'd',  0243,  },  // K03
+#endif
 		{ 'E',  0015, 0204, 0015, 'e',  0244,  },  // K04 ->
 		{ 'F',  0024, 0224, 0024, 'f',  0264,  },  // K05
 
@@ -282,10 +289,10 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 'I',  0017, 0210, 0017, 'i',  0250,  },  // K12
 
 		{ 0000, 0000, 0206, 0020, 0000, 0246,  },  // K20 ENTER
-		{ 'J',  '<',  '>',  0027, 'j',  '>',   },  // K21
+		{ 'J',  0000, 0000, 0027, 'j',  0000,  },  // K21
 		{ 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
 		{ 'L',  0246, 0212, 0257, 'l',  0252,  },  // K23
-		{ 0000, 0000, 0016, 0016, 0000, 0016   },  // K24 <-
+		{ 0000, 0000, 0000, 0016, 0000, 0016   },  // K24 <-
 
 		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
 		{ 'M',  '7',  0213, '&',  'm',  0253,  },  // K31
@@ -1079,17 +1086,23 @@ static int process_alpha(const keycode c) {
 	State2.alpha_pos = 0;
 
 	switch (c) {
+#ifdef ALLOW_ALPHA_XEQ
 	case K00:
 	case K01:
 	case K02:
 	case K03:
 		if (shift == SHIFT_F) {
+#if 0
 			op = check_f_key(c - K00, 0);
 			if ( op != 0 )
 				goto alpha_off;
+#else
+			op = RARG(RARG_XEQ, c + 100);
+			goto alpha_off
+#endif
 		}
 		break;
-
+#endif
 	case K10:	// STO
 		if (shift == SHIFT_F) {
 			init_arg(RARG_ASTO);
@@ -1118,7 +1131,9 @@ static int process_alpha(const keycode c) {
 			return STATE_UNFINISHED;
 		}
 #endif
+#ifdef ALLOW_ALPHA_XEQ
 	alpha_off:
+#endif
 		State2.alphas = 0;
 		State2.alphashift = 0;
 		return op;
@@ -1137,6 +1152,7 @@ static int process_alpha(const keycode c) {
 			return OP_NIL | OP_CLRALPHA;
 		break;
 
+#ifdef ALLOW_ALPHA_XEQ
 	case K30:
 		if (shift == SHIFT_N) {
 			init_arg(RARG_XEQ);
@@ -1147,6 +1163,7 @@ static int process_alpha(const keycode c) {
 			goto alpha_off;
 		}
 		break;
+#endif
 
 	case K40:
 		if (shift == SHIFT_N) {
@@ -1503,7 +1520,7 @@ static int process_multi(const keycode c) {
 
 	switch (c) {
 	case K20:	// Enter - exit multi mode, maybe return a result
-		if (shift == SHIFT_F)
+		if (shift != SHIFT_N)
 			break;
 		reset_multi();
 		if (State2.numdigit == 0) {
@@ -1518,7 +1535,7 @@ static int process_multi(const keycode c) {
 		}
 
 	case K24:	// Clx - backspace, clear alpha
-		if (shift == SHIFT_N || shift == SHIFT_F) {
+		if (shift != SHIFT_H) {
 			if (State2.numdigit == 0)
 				reset_multi();
 			else
