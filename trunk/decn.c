@@ -1840,8 +1840,22 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
 			return set_NaN(res);
 		}
 		dn_m1(&x, &t);
-	} else
+	} else {
 		dn_m1(&x, xin);
+#ifdef GAMMA_FAST_INTEGERS
+		// Provide a fast path evaluation for positive integer arguments than aren't too large
+		// The threshold for overflow is 205! (i.e. 204! is within range and 205! isn't).
+		// Without introducing a new constant, we've got 150 or 256 to choose from.
+		if (is_int(&x) && ! dn_eq0(xin) && decNumberIsNegative(dn_compare(&t, &x, &const_256))) {
+			dn_1(res);
+			while (! dn_eq0(&x) && !decNumberIsInfinite(res)) {
+				dn_multiply(res, res, &x);
+				dn_m1(&x, &x);
+			}
+			return res;
+		}
+#endif
+	}
 
 	dn_LnGamma(&t, &x);
 	dn_exp(res, &t);

@@ -139,6 +139,10 @@
 // Allow the number of registers to be variable
 #define ENABLE_VARIABLE_REGS
 
+// Include fast path code to calculate factorials and gamma functions
+// for positive integers using a string of multiplications.
+//#define GAMMA_FAST_INTEGERS
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
