@@ -327,10 +327,10 @@ int_restore_limits::	RCL .01
 		LBL 99					/* Entry: SUMMATION */
 			XEQ entry
 			LocR 03				/* Registers .00 to .03 */
-			SPEC?
-				JMP sum_product_okay
-			STO .00
 			STO .03				/* Save for LastX*/
+			SPEC?
+				JMP sum_product_nan
+			STO .00
 			IP				/* First function call is separate*/
 			FILL				/* to avoid Kahan summing from zero*/
 			XEQUSR				/* six extra instructions save nine*/
@@ -367,10 +367,11 @@ sum_entry::		DSL .00
 
 		LBL 98					/* Entry: PRODUCT */
 			XEQ entry
-			SPEC?
-				JMP sum_product_okay
-			STO .00
+			LocR 03				/* Registers .00 to .03 */
 			STO .03
+			SPEC?
+				JMP sum_product_nan
+			STO .00
 			IP				/* First function call is separate*/
 			FILL				/* to avoid a multiply*/
 			XEQUSR
@@ -400,13 +401,9 @@ sum_product_okay::	RCL .03
 			RCL .01
 			RTN
 
-sum_product_nan::	RCL .03
-
-sum_product_error::	STO L
-			iC 0
-			FILL
-			# NaN
-			RTN
+sum_product_nan::	# NaN
+			STO .01
+			JMP sum_product_okay
 
 /**************************************************************************/
 /* Numerical differentiation
