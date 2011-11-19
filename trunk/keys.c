@@ -2431,6 +2431,17 @@ void process_keycode(int c)
 		 *  Not the heartbeat - prepare for execution of any commands
 		 */
 		xeq_init_contexts();
+
+#if defined(REALBUILD) || defined(WINGUI)
+		/*
+		 *  Reallow display refresh which is temporarily disabled after a stop
+		 *  All keys execpt R/S trigger this. The latter will only be reenabled
+		 *  from the heartbeat after the keybord buffer has become empty to avoid
+		 *  an accidental restart of the program.
+		 */
+		if (c != K63)
+			JustStopped = 0;
+#endif
 	}
 
 	/*

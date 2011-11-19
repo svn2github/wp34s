@@ -600,326 +600,327 @@ LOAD realbuild_obj\libdecNum34s.a
                 0x000f100e                dyfuncs_ct
                 0x000f12f0                monfuncs_ct
 
-.fixed          0x00100000    0x1de20
+.fixed          0x00100000    0x1de28
                 0x00100000                . = ALIGN (0x4)
                 0x00100000                _sfixed = .
  *(.text*)
  .text          0x00100000       0xf0 board_cstartup.o
                 0x00100068                resetHandler
                 0x00100068                entry
- .text          0x001000f0    0x1372c asone.o
+ .text          0x001000f0    0x13728 asone.o
                 0x0010a4d8                __aeabi_unwind_cpp_pr0
                 0x0010a4da                __aeabi_unwind_cpp_pr1
                 0x0010a4dc                __aeabi_unwind_cpp_pr2
                 0x0010a4de                LowLevelInit
                 0x0010a548                xcopy
                 0x0010a548                memcpy
-                0x00113800                memset
-                0x00113800                xset
+                0x001137fc                memset
+                0x001137fc                xset
  .text.unlikely
-                0x0011381c      0x3f8 asone.o
- .text.startup  0x00113c14     0x1a20 asone.o
-                0x00113c14                main
- .text          0x00115634       0x14 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uqi.o)
-                0x00115634                __gnu_thumb1_case_uqi
- .text          0x00115648       0x14 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uhi.o)
-                0x00115648                __gnu_thumb1_case_uhi
- .text          0x0011565c      0x11c c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivsi3.o)
-                0x0011565c                __aeabi_uidiv
-                0x0011565c                __udivsi3
-                0x00115758                __aeabi_uidivmod
- .text          0x00115778      0x150 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divsi3.o)
-                0x00115778                __divsi3
-                0x00115778                __aeabi_idiv
-                0x001158a8                __aeabi_idivmod
- .text          0x001158c8        0x4 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_dvmd_tls.o)
-                0x001158c8                __aeabi_idiv0
-                0x001158c8                __aeabi_ldiv0
- .text          0x001158cc       0x18 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_lshrdi3.o)
-                0x001158cc                __lshrdi3
-                0x001158cc                __aeabi_llsr
- .text          0x001158e4       0x1c c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashrdi3.o)
-                0x001158e4                __aeabi_lasr
-                0x001158e4                __ashrdi3
- .text          0x00115900       0x18 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashldi3.o)
-                0x00115900                __aeabi_llsl
-                0x00115900                __ashldi3
- .text          0x00115918       0x3c c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_aeabi_uldivmod.o)
-                0x00115918                __aeabi_uldivmod
- .text          0x00115954       0x4c c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
-                0x00115954                __muldi3
-                0x00115954                __aeabi_lmul
- .text          0x001159a0       0x74 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(bpabi.o)
-                0x001159a0                __gnu_ldivmod_helper
-                0x001159dc                __gnu_uldivmod_helper
- .text          0x00115a14      0x390 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
-                0x00115a14                __divdi3
- .text          0x00115da4      0x358 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
-                0x00115da4                __udivdi3
- .text          0x001160fc       0x48 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_clzsi2.o)
-                0x001160fc                __clzsi2
- .text          0x00116144       0x6c realbuild_obj\libdecNum34s.a(decContext.o)
-                0x00116144                decContextDefault
-                0x001161a8                decContextSetStatus
- .text          0x001161b0     0x3124 realbuild_obj\libdecNum34s.a(decNumber.o)
-                0x00116f10                decNumberToString
-                0x001172a0                decNumberFromString
-                0x001175c8                decNumberCopy
-                0x00117668                decNumberNormalize
-                0x00117878                decNumberMultiply
-                0x001179ae                decNumberMin
-                0x001179e0                decNumberMax
-                0x00117a12                decNumberCompare
-                0x00117e68                decNumberSubtract
-                0x00117e9a                decNumberAdd
-                0x00117eca                decNumberPlus
-                0x00117f0e                decNumberMinus
-                0x00117f54                decNumberAbs
-                0x00118650                decNumberRemainder
-                0x00118682                decNumberDivide
-                0x001186b4                decNumberSquareRoot
-                0x00118edc                decNumberExp
-                0x00118f60                decNumberZero
-                0x00118f6e                decGetInt
-                0x001191f4                decNumberRescale
-                0x00119224                decNumberQuantize
-                0x00119256                decNumberToIntegralValue
- .text          0x001192d4      0x268 realbuild_obj\libdecNum34s.a(decimal128.o)
-                0x001192d4                decimal128FromNumber
-                0x00119468                decimal128ToNumber
- .text          0x0011953c      0x42c realbuild_obj\libdecNum34s.a(decimal64.o)
-                0x0011953c                decDigitsToDPD
-                0x00119670                decimal64FromNumber
-                0x001197f4                decDigitsFromDPD
-                0x00119880                decimal64ToNumber
-                0x00119948                decimal64ToString
- .text.stub     0x00119968       0x54 linker stubs
+                0x00113818      0x3f8 asone.o
+ .text.startup  0x00113c10     0x1a28 asone.o
+                0x00113c10                main
+ .text          0x00115638       0x14 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uqi.o)
+                0x00115638                __gnu_thumb1_case_uqi
+ .text          0x0011564c       0x14 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uhi.o)
+                0x0011564c                __gnu_thumb1_case_uhi
+ .text          0x00115660      0x11c c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivsi3.o)
+                0x00115660                __aeabi_uidiv
+                0x00115660                __udivsi3
+                0x0011575c                __aeabi_uidivmod
+ .text          0x0011577c      0x150 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divsi3.o)
+                0x0011577c                __divsi3
+                0x0011577c                __aeabi_idiv
+                0x001158ac                __aeabi_idivmod
+ .text          0x001158cc        0x4 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_dvmd_tls.o)
+                0x001158cc                __aeabi_idiv0
+                0x001158cc                __aeabi_ldiv0
+ .text          0x001158d0       0x18 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_lshrdi3.o)
+                0x001158d0                __lshrdi3
+                0x001158d0                __aeabi_llsr
+ .text          0x001158e8       0x1c c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashrdi3.o)
+                0x001158e8                __aeabi_lasr
+                0x001158e8                __ashrdi3
+ .text          0x00115904       0x18 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashldi3.o)
+                0x00115904                __aeabi_llsl
+                0x00115904                __ashldi3
+ .text          0x0011591c       0x3c c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_aeabi_uldivmod.o)
+                0x0011591c                __aeabi_uldivmod
+ .text          0x00115958       0x4c c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
+                0x00115958                __muldi3
+                0x00115958                __aeabi_lmul
+ .text          0x001159a4       0x74 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(bpabi.o)
+                0x001159a4                __gnu_ldivmod_helper
+                0x001159e0                __gnu_uldivmod_helper
+ .text          0x00115a18      0x390 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
+                0x00115a18                __divdi3
+ .text          0x00115da8      0x358 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
+                0x00115da8                __udivdi3
+ .text          0x00116100       0x48 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_clzsi2.o)
+                0x00116100                __clzsi2
+ .text          0x00116148       0x6c realbuild_obj\libdecNum34s.a(decContext.o)
+                0x00116148                decContextDefault
+                0x001161ac                decContextSetStatus
+ .text          0x001161b4     0x3124 realbuild_obj\libdecNum34s.a(decNumber.o)
+                0x00116f14                decNumberToString
+                0x001172a4                decNumberFromString
+                0x001175cc                decNumberCopy
+                0x0011766c                decNumberNormalize
+                0x0011787c                decNumberMultiply
+                0x001179b2                decNumberMin
+                0x001179e4                decNumberMax
+                0x00117a16                decNumberCompare
+                0x00117e6c                decNumberSubtract
+                0x00117e9e                decNumberAdd
+                0x00117ece                decNumberPlus
+                0x00117f12                decNumberMinus
+                0x00117f58                decNumberAbs
+                0x00118654                decNumberRemainder
+                0x00118686                decNumberDivide
+                0x001186b8                decNumberSquareRoot
+                0x00118ee0                decNumberExp
+                0x00118f64                decNumberZero
+                0x00118f72                decGetInt
+                0x001191f8                decNumberRescale
+                0x00119228                decNumberQuantize
+                0x0011925a                decNumberToIntegralValue
+ .text          0x001192d8      0x268 realbuild_obj\libdecNum34s.a(decimal128.o)
+                0x001192d8                decimal128FromNumber
+                0x0011946c                decimal128ToNumber
+ .text          0x00119540      0x42c realbuild_obj\libdecNum34s.a(decimal64.o)
+                0x00119540                decDigitsToDPD
+                0x00119674                decimal64FromNumber
+                0x001197f8                decDigitsFromDPD
+                0x00119884                decimal64ToNumber
+                0x0011994c                decimal64ToString
+ *fill*         0x0011996c        0x4 00
+ .text.stub     0x00119970       0x54 linker stubs
  *(.rodata*)
- .rodata        0x001199c8     0x3780 asone.o
+ .rodata        0x001199d0     0x3780 asone.o
  .rodata.str1.1
-                0x0011d148      0x248 asone.o
+                0x0011d150      0x248 asone.o
                                 0x25a (size before relaxing)
- .rodata        0x0011d390        0xc realbuild_obj\libconsts.a(const_NaN.o)
-                0x0011d390                const_NaN
- .rodata        0x0011d39c        0xc realbuild_obj\libconsts.a(const_inf.o)
-                0x0011d39c                const_inf
- .rodata        0x0011d3a8        0xc realbuild_obj\libconsts.a(const__inf.o)
-                0x0011d3a8                const__inf
- .rodata        0x0011d3b4        0xc realbuild_obj\libconsts.a(const__2.o)
-                0x0011d3b4                const__2
- .rodata        0x0011d3c0        0xc realbuild_obj\libconsts.a(const__1.o)
-                0x0011d3c0                const__1
- .rodata        0x0011d3cc        0xc realbuild_obj\libconsts.a(const__0.o)
-                0x0011d3cc                ::const(void)
- .rodata        0x0011d3d8        0xc realbuild_obj\libconsts.a(const_0.o)
-                0x0011d3d8                const_0
- .rodata        0x0011d3e4        0xc realbuild_obj\libconsts.a(const_1.o)
-                0x0011d3e4                const_1
- .rodata        0x0011d3f0        0xc realbuild_obj\libconsts.a(const_2.o)
-                0x0011d3f0                const_2
- .rodata        0x0011d3fc        0xc realbuild_obj\libconsts.a(const_3.o)
-                0x0011d3fc                const_3
- .rodata        0x0011d408        0xc realbuild_obj\libconsts.a(const_4.o)
-                0x0011d408                const_4
- .rodata        0x0011d414        0xc realbuild_obj\libconsts.a(const_5.o)
-                0x0011d414                const_5
- .rodata        0x0011d420        0xc realbuild_obj\libconsts.a(const_6.o)
-                0x0011d420                const_6
- .rodata        0x0011d42c        0xc realbuild_obj\libconsts.a(const_7.o)
-                0x0011d42c                const_7
- .rodata        0x0011d438        0xc realbuild_obj\libconsts.a(const_8.o)
-                0x0011d438                const_8
- .rodata        0x0011d444        0xc realbuild_obj\libconsts.a(const_9.o)
-                0x0011d444                const_9
- .rodata        0x0011d450        0xc realbuild_obj\libconsts.a(const_10.o)
-                0x0011d450                const_10
- .rodata        0x0011d45c        0xc realbuild_obj\libconsts.a(const_15.o)
-                0x0011d45c                const_15
- .rodata        0x0011d468        0xc realbuild_obj\libconsts.a(const_16.o)
-                0x0011d468                const_16
- .rodata        0x0011d474        0xc realbuild_obj\libconsts.a(const_20.o)
-                0x0011d474                const_20
- .rodata        0x0011d480        0xc realbuild_obj\libconsts.a(const_21.o)
-                0x0011d480                const_21
- .rodata        0x0011d48c        0xc realbuild_obj\libconsts.a(const_32.o)
-                0x0011d48c                const_32
- .rodata        0x0011d498        0xc realbuild_obj\libconsts.a(const_60.o)
-                0x0011d498                const_60
- .rodata        0x0011d4a4        0xc realbuild_obj\libconsts.a(const_90.o)
-                0x0011d4a4                const_90
- .rodata        0x0011d4b0        0xc realbuild_obj\libconsts.a(const_100.o)
-                0x0011d4b0                const_100
- .rodata        0x0011d4bc        0xc realbuild_obj\libconsts.a(const_150.o)
-                0x0011d4bc                const_150
- .rodata        0x0011d4c8        0xc realbuild_obj\libconsts.a(const_256.o)
-                0x0011d4c8                const_256
- .rodata        0x0011d4d4        0xc realbuild_obj\libconsts.a(const_360.o)
-                0x0011d4d4                const_360
- .rodata        0x0011d4e0        0xc realbuild_obj\libconsts.a(const_400.o)
-                0x0011d4e0                const_400
- .rodata        0x0011d4ec        0xc realbuild_obj\libconsts.a(const_500.o)
-                0x0011d4ec                const_500
- .rodata        0x0011d4f8        0xc realbuild_obj\libconsts.a(const_9000.o)
-                0x0011d4f8                const_9000
- .rodata        0x0011d504        0xc realbuild_obj\libconsts.a(const_100000.o)
-                0x0011d504                const_100000
- .rodata        0x0011d510        0xc realbuild_obj\libconsts.a(const_1e32.o)
-                0x0011d510                const_1e32
- .rodata        0x0011d51c        0xc realbuild_obj\libconsts.a(const_1e_32.o)
-                0x0011d51c                const_1e_32
- .rodata        0x0011d528        0xc realbuild_obj\libconsts.a(const_1e_400.o)
-                0x0011d528                const_1e_400
- .rodata        0x0011d534        0xc realbuild_obj\libconsts.a(const_1e_24.o)
-                0x0011d534                const_1e_24
- .rodata        0x0011d540        0xc realbuild_obj\libconsts.a(const_0_0000005.o)
-                0x0011d540                const_0_0000005
- .rodata        0x0011d54c        0xc realbuild_obj\libconsts.a(const_0_0001.o)
-                0x0011d54c                const_0_0001
- .rodata        0x0011d558        0xc realbuild_obj\libconsts.a(const_0_001.o)
-                0x0011d558                const_0_001
- .rodata        0x0011d564        0xc realbuild_obj\libconsts.a(const_0_1.o)
-                0x0011d564                const_0_1
- .rodata        0x0011d570        0xc realbuild_obj\libconsts.a(const_0_0195.o)
-                0x0011d570                const_0_0195
- .rodata        0x0011d57c        0xc realbuild_obj\libconsts.a(const_0_2.o)
-                0x0011d57c                const_0_2
- .rodata        0x0011d588       0x10 realbuild_obj\libconsts.a(const_0_2214.o)
-                0x0011d588                const_0_2214
- .rodata        0x0011d598        0xc realbuild_obj\libconsts.a(const_0_25.o)
-                0x0011d598                const_0_25
- .rodata        0x0011d5a4        0xc realbuild_obj\libconsts.a(const_0_04.o)
-                0x0011d5a4                const_0_04
- .rodata        0x0011d5b0        0xc realbuild_obj\libconsts.a(const_0_05.o)
-                0x0011d5b0                const_0_05
- .rodata        0x0011d5bc        0xc realbuild_obj\libconsts.a(const_0_5.o)
-                0x0011d5bc                const_0_5
- .rodata        0x0011d5c8        0xc realbuild_obj\libconsts.a(const__0_5.o)
-                0x0011d5c8                const__0_5
- .rodata        0x0011d5d4        0xc realbuild_obj\libconsts.a(const_0_6.o)
-                0x0011d5d4                const_0_6
- .rodata        0x0011d5e0        0xc realbuild_obj\libconsts.a(const_0_665.o)
-                0x0011d5e0                const_0_665
- .rodata        0x0011d5ec        0xc realbuild_obj\libconsts.a(const_0_75.o)
-                0x0011d5ec                const_0_75
- .rodata        0x0011d5f8        0xc realbuild_obj\libconsts.a(const_0_85.o)
-                0x0011d5f8                const_0_85
- .rodata        0x0011d604        0xc realbuild_obj\libconsts.a(const_0_9.o)
-                0x0011d604                const_0_9
- .rodata        0x0011d610        0xc realbuild_obj\libconsts.a(const_0_97.o)
-                0x0011d610                const_0_97
- .rodata        0x0011d61c       0x24 realbuild_obj\libconsts.a(const_2on3.o)
-                0x0011d61c                const_2on3
- .rodata        0x0011d640       0x24 realbuild_obj\libconsts.a(const_5on6.o)
-                0x0011d640                const_5on6
- .rodata        0x0011d664       0x24 realbuild_obj\libconsts.a(const_1on60.o)
-                0x0011d664                const_1on60
- .rodata        0x0011d688        0xc realbuild_obj\libconsts.a(const_1_7.o)
-                0x0011d688                const_1_7
- .rodata        0x0011d694        0xc realbuild_obj\libconsts.a(const_9on5.o)
-                0x0011d694                const_9on5
- .rodata        0x0011d6a0       0x24 realbuild_obj\libconsts.a(const_root2on2.o)
-                0x0011d6a0                const_root2on2
- .rodata        0x0011d6c4       0x24 realbuild_obj\libconsts.a(const_e.o)
-                0x0011d6c4                const_e
- .rodata        0x0011d6e8       0x24 realbuild_obj\libconsts.a(const_PI.o)
-                0x0011d6e8                const_PI
- .rodata        0x0011d70c      0x138 realbuild_obj\libconsts.a(const_2PI.o)
-                0x0011d70c                const_2PI
- .rodata        0x0011d844       0x24 realbuild_obj\libconsts.a(const_sqrt2PI.o)
-                0x0011d844                const_sqrt2PI
- .rodata        0x0011d868       0x24 realbuild_obj\libconsts.a(const_recipsqrt2PI.o)
-                0x0011d868                const_recipsqrt2PI
- .rodata        0x0011d88c       0x24 realbuild_obj\libconsts.a(const_PIon2.o)
-                0x0011d88c                const_PIon2
- .rodata        0x0011d8b0       0x24 realbuild_obj\libconsts.a(const_PIon180.o)
-                0x0011d8b0                const_PIon180
- .rodata        0x0011d8d4       0x24 realbuild_obj\libconsts.a(const_PIon200.o)
-                0x0011d8d4                const_PIon200
- .rodata        0x0011d8f8       0x24 realbuild_obj\libconsts.a(const_ln2.o)
-                0x0011d8f8                const_ln2
- .rodata        0x0011d91c       0x24 realbuild_obj\libconsts.a(const_ln10.o)
-                0x0011d91c                const_ln10
- .rodata        0x0011d940       0x24 realbuild_obj\libconsts.a(const_phi.o)
-                0x0011d940                const_phi
- .rodata        0x0011d964       0x24 realbuild_obj\libconsts.a(const_recipsqrt5.o)
-                0x0011d964                const_recipsqrt5
- .rodata        0x0011d988       0x1c realbuild_obj\libconsts.a(const_randfac.o)
-                0x0011d988                const_randfac
- .rodata        0x0011d9a4       0x24 realbuild_obj\libconsts.a(const_2rootEonPI.o)
-                0x0011d9a4                const_2rootEonPI
- .rodata        0x0011d9c8       0x10 realbuild_obj\libconsts.a(const_gammaR.o)
-                0x0011d9c8                const_gammaR
- .rodata        0x0011d9d8       0x20 realbuild_obj\libconsts.a(const_gammaC00.o)
-                0x0011d9d8                const_gammaC00
- .rodata        0x0011d9f8       0x20 realbuild_obj\libconsts.a(const_gammaC01.o)
-                0x0011d9f8                const_gammaC01
- .rodata        0x0011da18       0x20 realbuild_obj\libconsts.a(const_gammaC02.o)
-                0x0011da18                const_gammaC02
- .rodata        0x0011da38       0x20 realbuild_obj\libconsts.a(const_gammaC03.o)
-                0x0011da38                const_gammaC03
- .rodata        0x0011da58       0x20 realbuild_obj\libconsts.a(const_gammaC04.o)
-                0x0011da58                const_gammaC04
- .rodata        0x0011da78       0x20 realbuild_obj\libconsts.a(const_gammaC05.o)
-                0x0011da78                const_gammaC05
- .rodata        0x0011da98       0x20 realbuild_obj\libconsts.a(const_gammaC06.o)
-                0x0011da98                const_gammaC06
- .rodata        0x0011dab8       0x20 realbuild_obj\libconsts.a(const_gammaC07.o)
-                0x0011dab8                const_gammaC07
- .rodata        0x0011dad8       0x20 realbuild_obj\libconsts.a(const_gammaC08.o)
-                0x0011dad8                const_gammaC08
- .rodata        0x0011daf8       0x20 realbuild_obj\libconsts.a(const_gammaC09.o)
-                0x0011daf8                const_gammaC09
- .rodata        0x0011db18       0x20 realbuild_obj\libconsts.a(const_gammaC10.o)
-                0x0011db18                const_gammaC10
- .rodata        0x0011db38       0x20 realbuild_obj\libconsts.a(const_gammaC11.o)
-                0x0011db38                const_gammaC11
- .rodata        0x0011db58       0x20 realbuild_obj\libconsts.a(const_gammaC12.o)
-                0x0011db58                const_gammaC12
- .rodata        0x0011db78       0x20 realbuild_obj\libconsts.a(const_gammaC13.o)
-                0x0011db78                const_gammaC13
- .rodata        0x0011db98       0x20 realbuild_obj\libconsts.a(const_gammaC14.o)
-                0x0011db98                const_gammaC14
- .rodata        0x0011dbb8       0x20 realbuild_obj\libconsts.a(const_gammaC15.o)
-                0x0011dbb8                const_gammaC15
- .rodata        0x0011dbd8       0x20 realbuild_obj\libconsts.a(const_gammaC16.o)
-                0x0011dbd8                const_gammaC16
- .rodata        0x0011dbf8       0x20 realbuild_obj\libconsts.a(const_gammaC17.o)
-                0x0011dbf8                const_gammaC17
- .rodata        0x0011dc18       0x20 realbuild_obj\libconsts.a(const_gammaC18.o)
-                0x0011dc18                const_gammaC18
- .rodata        0x0011dc38       0x20 realbuild_obj\libconsts.a(const_gammaC19.o)
-                0x0011dc38                const_gammaC19
- .rodata        0x0011dc58       0x20 realbuild_obj\libconsts.a(const_gammaC20.o)
-                0x0011dc58                const_gammaC20
- .rodata        0x0011dc78       0x20 realbuild_obj\libconsts.a(const_gammaC21.o)
-                0x0011dc78                const_gammaC21
- .rodata        0x0011dc98       0x48 realbuild_obj\libdecNum34s.a(decNumber.o)
-                0x0011dc98                powers
+ .rodata        0x0011d398        0xc realbuild_obj\libconsts.a(const_NaN.o)
+                0x0011d398                const_NaN
+ .rodata        0x0011d3a4        0xc realbuild_obj\libconsts.a(const_inf.o)
+                0x0011d3a4                const_inf
+ .rodata        0x0011d3b0        0xc realbuild_obj\libconsts.a(const__inf.o)
+                0x0011d3b0                const__inf
+ .rodata        0x0011d3bc        0xc realbuild_obj\libconsts.a(const__2.o)
+                0x0011d3bc                const__2
+ .rodata        0x0011d3c8        0xc realbuild_obj\libconsts.a(const__1.o)
+                0x0011d3c8                const__1
+ .rodata        0x0011d3d4        0xc realbuild_obj\libconsts.a(const__0.o)
+                0x0011d3d4                ::const(void)
+ .rodata        0x0011d3e0        0xc realbuild_obj\libconsts.a(const_0.o)
+                0x0011d3e0                const_0
+ .rodata        0x0011d3ec        0xc realbuild_obj\libconsts.a(const_1.o)
+                0x0011d3ec                const_1
+ .rodata        0x0011d3f8        0xc realbuild_obj\libconsts.a(const_2.o)
+                0x0011d3f8                const_2
+ .rodata        0x0011d404        0xc realbuild_obj\libconsts.a(const_3.o)
+                0x0011d404                const_3
+ .rodata        0x0011d410        0xc realbuild_obj\libconsts.a(const_4.o)
+                0x0011d410                const_4
+ .rodata        0x0011d41c        0xc realbuild_obj\libconsts.a(const_5.o)
+                0x0011d41c                const_5
+ .rodata        0x0011d428        0xc realbuild_obj\libconsts.a(const_6.o)
+                0x0011d428                const_6
+ .rodata        0x0011d434        0xc realbuild_obj\libconsts.a(const_7.o)
+                0x0011d434                const_7
+ .rodata        0x0011d440        0xc realbuild_obj\libconsts.a(const_8.o)
+                0x0011d440                const_8
+ .rodata        0x0011d44c        0xc realbuild_obj\libconsts.a(const_9.o)
+                0x0011d44c                const_9
+ .rodata        0x0011d458        0xc realbuild_obj\libconsts.a(const_10.o)
+                0x0011d458                const_10
+ .rodata        0x0011d464        0xc realbuild_obj\libconsts.a(const_15.o)
+                0x0011d464                const_15
+ .rodata        0x0011d470        0xc realbuild_obj\libconsts.a(const_16.o)
+                0x0011d470                const_16
+ .rodata        0x0011d47c        0xc realbuild_obj\libconsts.a(const_20.o)
+                0x0011d47c                const_20
+ .rodata        0x0011d488        0xc realbuild_obj\libconsts.a(const_21.o)
+                0x0011d488                const_21
+ .rodata        0x0011d494        0xc realbuild_obj\libconsts.a(const_32.o)
+                0x0011d494                const_32
+ .rodata        0x0011d4a0        0xc realbuild_obj\libconsts.a(const_60.o)
+                0x0011d4a0                const_60
+ .rodata        0x0011d4ac        0xc realbuild_obj\libconsts.a(const_90.o)
+                0x0011d4ac                const_90
+ .rodata        0x0011d4b8        0xc realbuild_obj\libconsts.a(const_100.o)
+                0x0011d4b8                const_100
+ .rodata        0x0011d4c4        0xc realbuild_obj\libconsts.a(const_150.o)
+                0x0011d4c4                const_150
+ .rodata        0x0011d4d0        0xc realbuild_obj\libconsts.a(const_256.o)
+                0x0011d4d0                const_256
+ .rodata        0x0011d4dc        0xc realbuild_obj\libconsts.a(const_360.o)
+                0x0011d4dc                const_360
+ .rodata        0x0011d4e8        0xc realbuild_obj\libconsts.a(const_400.o)
+                0x0011d4e8                const_400
+ .rodata        0x0011d4f4        0xc realbuild_obj\libconsts.a(const_500.o)
+                0x0011d4f4                const_500
+ .rodata        0x0011d500        0xc realbuild_obj\libconsts.a(const_9000.o)
+                0x0011d500                const_9000
+ .rodata        0x0011d50c        0xc realbuild_obj\libconsts.a(const_100000.o)
+                0x0011d50c                const_100000
+ .rodata        0x0011d518        0xc realbuild_obj\libconsts.a(const_1e32.o)
+                0x0011d518                const_1e32
+ .rodata        0x0011d524        0xc realbuild_obj\libconsts.a(const_1e_32.o)
+                0x0011d524                const_1e_32
+ .rodata        0x0011d530        0xc realbuild_obj\libconsts.a(const_1e_400.o)
+                0x0011d530                const_1e_400
+ .rodata        0x0011d53c        0xc realbuild_obj\libconsts.a(const_1e_24.o)
+                0x0011d53c                const_1e_24
+ .rodata        0x0011d548        0xc realbuild_obj\libconsts.a(const_0_0000005.o)
+                0x0011d548                const_0_0000005
+ .rodata        0x0011d554        0xc realbuild_obj\libconsts.a(const_0_0001.o)
+                0x0011d554                const_0_0001
+ .rodata        0x0011d560        0xc realbuild_obj\libconsts.a(const_0_001.o)
+                0x0011d560                const_0_001
+ .rodata        0x0011d56c        0xc realbuild_obj\libconsts.a(const_0_1.o)
+                0x0011d56c                const_0_1
+ .rodata        0x0011d578        0xc realbuild_obj\libconsts.a(const_0_0195.o)
+                0x0011d578                const_0_0195
+ .rodata        0x0011d584        0xc realbuild_obj\libconsts.a(const_0_2.o)
+                0x0011d584                const_0_2
+ .rodata        0x0011d590       0x10 realbuild_obj\libconsts.a(const_0_2214.o)
+                0x0011d590                const_0_2214
+ .rodata        0x0011d5a0        0xc realbuild_obj\libconsts.a(const_0_25.o)
+                0x0011d5a0                const_0_25
+ .rodata        0x0011d5ac        0xc realbuild_obj\libconsts.a(const_0_04.o)
+                0x0011d5ac                const_0_04
+ .rodata        0x0011d5b8        0xc realbuild_obj\libconsts.a(const_0_05.o)
+                0x0011d5b8                const_0_05
+ .rodata        0x0011d5c4        0xc realbuild_obj\libconsts.a(const_0_5.o)
+                0x0011d5c4                const_0_5
+ .rodata        0x0011d5d0        0xc realbuild_obj\libconsts.a(const__0_5.o)
+                0x0011d5d0                const__0_5
+ .rodata        0x0011d5dc        0xc realbuild_obj\libconsts.a(const_0_6.o)
+                0x0011d5dc                const_0_6
+ .rodata        0x0011d5e8        0xc realbuild_obj\libconsts.a(const_0_665.o)
+                0x0011d5e8                const_0_665
+ .rodata        0x0011d5f4        0xc realbuild_obj\libconsts.a(const_0_75.o)
+                0x0011d5f4                const_0_75
+ .rodata        0x0011d600        0xc realbuild_obj\libconsts.a(const_0_85.o)
+                0x0011d600                const_0_85
+ .rodata        0x0011d60c        0xc realbuild_obj\libconsts.a(const_0_9.o)
+                0x0011d60c                const_0_9
+ .rodata        0x0011d618        0xc realbuild_obj\libconsts.a(const_0_97.o)
+                0x0011d618                const_0_97
+ .rodata        0x0011d624       0x24 realbuild_obj\libconsts.a(const_2on3.o)
+                0x0011d624                const_2on3
+ .rodata        0x0011d648       0x24 realbuild_obj\libconsts.a(const_5on6.o)
+                0x0011d648                const_5on6
+ .rodata        0x0011d66c       0x24 realbuild_obj\libconsts.a(const_1on60.o)
+                0x0011d66c                const_1on60
+ .rodata        0x0011d690        0xc realbuild_obj\libconsts.a(const_1_7.o)
+                0x0011d690                const_1_7
+ .rodata        0x0011d69c        0xc realbuild_obj\libconsts.a(const_9on5.o)
+                0x0011d69c                const_9on5
+ .rodata        0x0011d6a8       0x24 realbuild_obj\libconsts.a(const_root2on2.o)
+                0x0011d6a8                const_root2on2
+ .rodata        0x0011d6cc       0x24 realbuild_obj\libconsts.a(const_e.o)
+                0x0011d6cc                const_e
+ .rodata        0x0011d6f0       0x24 realbuild_obj\libconsts.a(const_PI.o)
+                0x0011d6f0                const_PI
+ .rodata        0x0011d714      0x138 realbuild_obj\libconsts.a(const_2PI.o)
+                0x0011d714                const_2PI
+ .rodata        0x0011d84c       0x24 realbuild_obj\libconsts.a(const_sqrt2PI.o)
+                0x0011d84c                const_sqrt2PI
+ .rodata        0x0011d870       0x24 realbuild_obj\libconsts.a(const_recipsqrt2PI.o)
+                0x0011d870                const_recipsqrt2PI
+ .rodata        0x0011d894       0x24 realbuild_obj\libconsts.a(const_PIon2.o)
+                0x0011d894                const_PIon2
+ .rodata        0x0011d8b8       0x24 realbuild_obj\libconsts.a(const_PIon180.o)
+                0x0011d8b8                const_PIon180
+ .rodata        0x0011d8dc       0x24 realbuild_obj\libconsts.a(const_PIon200.o)
+                0x0011d8dc                const_PIon200
+ .rodata        0x0011d900       0x24 realbuild_obj\libconsts.a(const_ln2.o)
+                0x0011d900                const_ln2
+ .rodata        0x0011d924       0x24 realbuild_obj\libconsts.a(const_ln10.o)
+                0x0011d924                const_ln10
+ .rodata        0x0011d948       0x24 realbuild_obj\libconsts.a(const_phi.o)
+                0x0011d948                const_phi
+ .rodata        0x0011d96c       0x24 realbuild_obj\libconsts.a(const_recipsqrt5.o)
+                0x0011d96c                const_recipsqrt5
+ .rodata        0x0011d990       0x1c realbuild_obj\libconsts.a(const_randfac.o)
+                0x0011d990                const_randfac
+ .rodata        0x0011d9ac       0x24 realbuild_obj\libconsts.a(const_2rootEonPI.o)
+                0x0011d9ac                const_2rootEonPI
+ .rodata        0x0011d9d0       0x10 realbuild_obj\libconsts.a(const_gammaR.o)
+                0x0011d9d0                const_gammaR
+ .rodata        0x0011d9e0       0x20 realbuild_obj\libconsts.a(const_gammaC00.o)
+                0x0011d9e0                const_gammaC00
+ .rodata        0x0011da00       0x20 realbuild_obj\libconsts.a(const_gammaC01.o)
+                0x0011da00                const_gammaC01
+ .rodata        0x0011da20       0x20 realbuild_obj\libconsts.a(const_gammaC02.o)
+                0x0011da20                const_gammaC02
+ .rodata        0x0011da40       0x20 realbuild_obj\libconsts.a(const_gammaC03.o)
+                0x0011da40                const_gammaC03
+ .rodata        0x0011da60       0x20 realbuild_obj\libconsts.a(const_gammaC04.o)
+                0x0011da60                const_gammaC04
+ .rodata        0x0011da80       0x20 realbuild_obj\libconsts.a(const_gammaC05.o)
+                0x0011da80                const_gammaC05
+ .rodata        0x0011daa0       0x20 realbuild_obj\libconsts.a(const_gammaC06.o)
+                0x0011daa0                const_gammaC06
+ .rodata        0x0011dac0       0x20 realbuild_obj\libconsts.a(const_gammaC07.o)
+                0x0011dac0                const_gammaC07
+ .rodata        0x0011dae0       0x20 realbuild_obj\libconsts.a(const_gammaC08.o)
+                0x0011dae0                const_gammaC08
+ .rodata        0x0011db00       0x20 realbuild_obj\libconsts.a(const_gammaC09.o)
+                0x0011db00                const_gammaC09
+ .rodata        0x0011db20       0x20 realbuild_obj\libconsts.a(const_gammaC10.o)
+                0x0011db20                const_gammaC10
+ .rodata        0x0011db40       0x20 realbuild_obj\libconsts.a(const_gammaC11.o)
+                0x0011db40                const_gammaC11
+ .rodata        0x0011db60       0x20 realbuild_obj\libconsts.a(const_gammaC12.o)
+                0x0011db60                const_gammaC12
+ .rodata        0x0011db80       0x20 realbuild_obj\libconsts.a(const_gammaC13.o)
+                0x0011db80                const_gammaC13
+ .rodata        0x0011dba0       0x20 realbuild_obj\libconsts.a(const_gammaC14.o)
+                0x0011dba0                const_gammaC14
+ .rodata        0x0011dbc0       0x20 realbuild_obj\libconsts.a(const_gammaC15.o)
+                0x0011dbc0                const_gammaC15
+ .rodata        0x0011dbe0       0x20 realbuild_obj\libconsts.a(const_gammaC16.o)
+                0x0011dbe0                const_gammaC16
+ .rodata        0x0011dc00       0x20 realbuild_obj\libconsts.a(const_gammaC17.o)
+                0x0011dc00                const_gammaC17
+ .rodata        0x0011dc20       0x20 realbuild_obj\libconsts.a(const_gammaC18.o)
+                0x0011dc20                const_gammaC18
+ .rodata        0x0011dc40       0x20 realbuild_obj\libconsts.a(const_gammaC19.o)
+                0x0011dc40                const_gammaC19
+ .rodata        0x0011dc60       0x20 realbuild_obj\libconsts.a(const_gammaC20.o)
+                0x0011dc60                const_gammaC20
+ .rodata        0x0011dc80       0x20 realbuild_obj\libconsts.a(const_gammaC21.o)
+                0x0011dc80                const_gammaC21
+ .rodata        0x0011dca0       0x48 realbuild_obj\libdecNum34s.a(decNumber.o)
+                0x0011dca0                powers
  .rodata.str1.1
-                0x0011dce0       0x23 realbuild_obj\libdecNum34s.a(decNumber.o)
+                0x0011dce8       0x23 realbuild_obj\libdecNum34s.a(decNumber.o)
                                  0x27 (size before relaxing)
- *fill*         0x0011dd03        0x1 00
- .rodata        0x0011dd04        0x4 realbuild_obj\libdecNum34s.a(decimal128.o)
- .rodata        0x0011dd08      0x118 realbuild_obj\libdecNum34s.a(decimal64.o)
-                0x0011dd20                COMBMSD
-                0x0011dda0                COMBEXP
+ *fill*         0x0011dd0b        0x1 00
+ .rodata        0x0011dd0c        0x4 realbuild_obj\libdecNum34s.a(decimal128.o)
+ .rodata        0x0011dd10      0x118 realbuild_obj\libdecNum34s.a(decimal64.o)
+                0x0011dd28                COMBMSD
+                0x0011dda8                COMBEXP
  *(.xrom)
-                0x0011de20                . = ALIGN (0x4)
-                0x0011de20                _efixed = .
+                0x0011de28                . = ALIGN (0x4)
+                0x0011de28                _efixed = .
 
-.glue_7         0x0011de20        0x0
+.glue_7         0x0011de28        0x0
  .glue_7        0x00000000        0x0 linker stubs
 
-.glue_7t        0x0011de20        0x0
+.glue_7t        0x0011de28        0x0
  .glue_7t       0x00000000        0x0 linker stubs
 
-.vfp11_veneer   0x0011de20        0x0
+.vfp11_veneer   0x0011de28        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x0011de20        0x0
+.v4_bx          0x0011de28        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
-.relocate       0x00200000        0x0 load address 0x0011de20
+.relocate       0x00200000        0x0 load address 0x0011de28
                 0x00200000                . = ALIGN (0x4)
                 0x00200000                _srelocate = .
  *(.vectors)
@@ -1318,243 +1319,243 @@ OUTPUT(realbuild/calc elf32-littlearm)
  .comment       0x00000000       0x12 realbuild_obj\libdecNum34s.a(decimal128.o)
  .comment       0x00000000       0x12 realbuild_obj\libdecNum34s.a(decimal64.o)
 
-.debug_line     0x00000000     0x9e17
+.debug_line     0x00000000     0x9e1a
  .debug_line    0x00000000       0x7e board_cstartup.o
- .debug_line    0x0000007e     0x6356 asone.o
- .debug_line    0x000063d4       0x75 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uqi.o)
- .debug_line    0x00006449       0x76 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uhi.o)
- .debug_line    0x000064bf       0x9a c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivsi3.o)
- .debug_line    0x00006559       0xa6 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divsi3.o)
- .debug_line    0x000065ff       0x6d c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_dvmd_tls.o)
- .debug_line    0x0000666c       0x78 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_lshrdi3.o)
- .debug_line    0x000066e4       0x79 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashrdi3.o)
- .debug_line    0x0000675d       0x78 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashldi3.o)
- .debug_line    0x000067d5       0x70 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_aeabi_uldivmod.o)
- .debug_line    0x00006845       0x9e c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
- .debug_line    0x000068e3       0x75 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(bpabi.o)
- .debug_line    0x00006958      0x103 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
- .debug_line    0x00006a5b       0xe0 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
- .debug_line    0x00006b3b       0x7a c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_clzsi2.o)
- .debug_line    0x00006bb5       0x4c realbuild_obj\libconsts.a(const_NaN.o)
- .debug_line    0x00006c01       0x4c realbuild_obj\libconsts.a(const_inf.o)
- .debug_line    0x00006c4d       0x4d realbuild_obj\libconsts.a(const__inf.o)
- .debug_line    0x00006c9a       0x4b realbuild_obj\libconsts.a(const__2.o)
- .debug_line    0x00006ce5       0x4b realbuild_obj\libconsts.a(const__1.o)
- .debug_line    0x00006d30       0x4b realbuild_obj\libconsts.a(const__0.o)
- .debug_line    0x00006d7b       0x4a realbuild_obj\libconsts.a(const_0.o)
- .debug_line    0x00006dc5       0x4a realbuild_obj\libconsts.a(const_1.o)
- .debug_line    0x00006e0f       0x4a realbuild_obj\libconsts.a(const_2.o)
- .debug_line    0x00006e59       0x4a realbuild_obj\libconsts.a(const_3.o)
- .debug_line    0x00006ea3       0x4a realbuild_obj\libconsts.a(const_4.o)
- .debug_line    0x00006eed       0x4a realbuild_obj\libconsts.a(const_5.o)
- .debug_line    0x00006f37       0x4a realbuild_obj\libconsts.a(const_6.o)
- .debug_line    0x00006f81       0x4a realbuild_obj\libconsts.a(const_7.o)
- .debug_line    0x00006fcb       0x4a realbuild_obj\libconsts.a(const_8.o)
- .debug_line    0x00007015       0x4a realbuild_obj\libconsts.a(const_9.o)
- .debug_line    0x0000705f       0x4b realbuild_obj\libconsts.a(const_10.o)
- .debug_line    0x000070aa       0x4b realbuild_obj\libconsts.a(const_15.o)
- .debug_line    0x000070f5       0x4b realbuild_obj\libconsts.a(const_16.o)
- .debug_line    0x00007140       0x4b realbuild_obj\libconsts.a(const_20.o)
- .debug_line    0x0000718b       0x4b realbuild_obj\libconsts.a(const_21.o)
- .debug_line    0x000071d6       0x4b realbuild_obj\libconsts.a(const_32.o)
- .debug_line    0x00007221       0x4b realbuild_obj\libconsts.a(const_60.o)
- .debug_line    0x0000726c       0x4b realbuild_obj\libconsts.a(const_90.o)
- .debug_line    0x000072b7       0x4c realbuild_obj\libconsts.a(const_100.o)
- .debug_line    0x00007303       0x4c realbuild_obj\libconsts.a(const_150.o)
- .debug_line    0x0000734f       0x4c realbuild_obj\libconsts.a(const_256.o)
- .debug_line    0x0000739b       0x4c realbuild_obj\libconsts.a(const_360.o)
- .debug_line    0x000073e7       0x4c realbuild_obj\libconsts.a(const_400.o)
- .debug_line    0x00007433       0x4c realbuild_obj\libconsts.a(const_500.o)
- .debug_line    0x0000747f       0x4d realbuild_obj\libconsts.a(const_9000.o)
- .debug_line    0x000074cc       0x4f realbuild_obj\libconsts.a(const_100000.o)
- .debug_line    0x0000751b       0x4d realbuild_obj\libconsts.a(const_1e32.o)
- .debug_line    0x00007568       0x4e realbuild_obj\libconsts.a(const_1e_32.o)
- .debug_line    0x000075b6       0x4f realbuild_obj\libconsts.a(const_1e_400.o)
- .debug_line    0x00007605       0x4e realbuild_obj\libconsts.a(const_1e_24.o)
- .debug_line    0x00007653       0x52 realbuild_obj\libconsts.a(const_0_0000005.o)
- .debug_line    0x000076a5       0x4f realbuild_obj\libconsts.a(const_0_0001.o)
- .debug_line    0x000076f4       0x4e realbuild_obj\libconsts.a(const_0_001.o)
- .debug_line    0x00007742       0x4c realbuild_obj\libconsts.a(const_0_1.o)
- .debug_line    0x0000778e       0x4f realbuild_obj\libconsts.a(const_0_0195.o)
- .debug_line    0x000077dd       0x4c realbuild_obj\libconsts.a(const_0_2.o)
- .debug_line    0x00007829       0x4f realbuild_obj\libconsts.a(const_0_2214.o)
- .debug_line    0x00007878       0x4d realbuild_obj\libconsts.a(const_0_25.o)
- .debug_line    0x000078c5       0x4d realbuild_obj\libconsts.a(const_0_04.o)
- .debug_line    0x00007912       0x4d realbuild_obj\libconsts.a(const_0_05.o)
- .debug_line    0x0000795f       0x4c realbuild_obj\libconsts.a(const_0_5.o)
- .debug_line    0x000079ab       0x4d realbuild_obj\libconsts.a(const__0_5.o)
- .debug_line    0x000079f8       0x4c realbuild_obj\libconsts.a(const_0_6.o)
- .debug_line    0x00007a44       0x4e realbuild_obj\libconsts.a(const_0_665.o)
- .debug_line    0x00007a92       0x4d realbuild_obj\libconsts.a(const_0_75.o)
- .debug_line    0x00007adf       0x4d realbuild_obj\libconsts.a(const_0_85.o)
- .debug_line    0x00007b2c       0x4c realbuild_obj\libconsts.a(const_0_9.o)
- .debug_line    0x00007b78       0x4d realbuild_obj\libconsts.a(const_0_97.o)
- .debug_line    0x00007bc5       0x4d realbuild_obj\libconsts.a(const_2on3.o)
- .debug_line    0x00007c12       0x4d realbuild_obj\libconsts.a(const_5on6.o)
- .debug_line    0x00007c5f       0x4e realbuild_obj\libconsts.a(const_1on60.o)
- .debug_line    0x00007cad       0x4c realbuild_obj\libconsts.a(const_1_7.o)
- .debug_line    0x00007cf9       0x4d realbuild_obj\libconsts.a(const_9on5.o)
- .debug_line    0x00007d46       0x51 realbuild_obj\libconsts.a(const_root2on2.o)
- .debug_line    0x00007d97       0x4a realbuild_obj\libconsts.a(const_e.o)
- .debug_line    0x00007de1       0x4b realbuild_obj\libconsts.a(const_PI.o)
- .debug_line    0x00007e2c       0x4c realbuild_obj\libconsts.a(const_2PI.o)
- .debug_line    0x00007e78       0x50 realbuild_obj\libconsts.a(const_sqrt2PI.o)
- .debug_line    0x00007ec8       0x55 realbuild_obj\libconsts.a(const_recipsqrt2PI.o)
- .debug_line    0x00007f1d       0x4e realbuild_obj\libconsts.a(const_PIon2.o)
- .debug_line    0x00007f6b       0x50 realbuild_obj\libconsts.a(const_PIon180.o)
- .debug_line    0x00007fbb       0x50 realbuild_obj\libconsts.a(const_PIon200.o)
- .debug_line    0x0000800b       0x4c realbuild_obj\libconsts.a(const_ln2.o)
- .debug_line    0x00008057       0x4d realbuild_obj\libconsts.a(const_ln10.o)
- .debug_line    0x000080a4       0x4c realbuild_obj\libconsts.a(const_phi.o)
- .debug_line    0x000080f0       0x53 realbuild_obj\libconsts.a(const_recipsqrt5.o)
- .debug_line    0x00008143       0x50 realbuild_obj\libconsts.a(const_randfac.o)
- .debug_line    0x00008193       0x53 realbuild_obj\libconsts.a(const_2rootEonPI.o)
- .debug_line    0x000081e6       0x4f realbuild_obj\libconsts.a(const_gammaR.o)
- .debug_line    0x00008235       0x51 realbuild_obj\libconsts.a(const_gammaC00.o)
- .debug_line    0x00008286       0x51 realbuild_obj\libconsts.a(const_gammaC01.o)
- .debug_line    0x000082d7       0x51 realbuild_obj\libconsts.a(const_gammaC02.o)
- .debug_line    0x00008328       0x51 realbuild_obj\libconsts.a(const_gammaC03.o)
- .debug_line    0x00008379       0x51 realbuild_obj\libconsts.a(const_gammaC04.o)
- .debug_line    0x000083ca       0x51 realbuild_obj\libconsts.a(const_gammaC05.o)
- .debug_line    0x0000841b       0x51 realbuild_obj\libconsts.a(const_gammaC06.o)
- .debug_line    0x0000846c       0x51 realbuild_obj\libconsts.a(const_gammaC07.o)
- .debug_line    0x000084bd       0x51 realbuild_obj\libconsts.a(const_gammaC08.o)
- .debug_line    0x0000850e       0x51 realbuild_obj\libconsts.a(const_gammaC09.o)
- .debug_line    0x0000855f       0x51 realbuild_obj\libconsts.a(const_gammaC10.o)
- .debug_line    0x000085b0       0x51 realbuild_obj\libconsts.a(const_gammaC11.o)
- .debug_line    0x00008601       0x51 realbuild_obj\libconsts.a(const_gammaC12.o)
- .debug_line    0x00008652       0x51 realbuild_obj\libconsts.a(const_gammaC13.o)
- .debug_line    0x000086a3       0x51 realbuild_obj\libconsts.a(const_gammaC14.o)
- .debug_line    0x000086f4       0x51 realbuild_obj\libconsts.a(const_gammaC15.o)
- .debug_line    0x00008745       0x51 realbuild_obj\libconsts.a(const_gammaC16.o)
- .debug_line    0x00008796       0x51 realbuild_obj\libconsts.a(const_gammaC17.o)
- .debug_line    0x000087e7       0x51 realbuild_obj\libconsts.a(const_gammaC18.o)
- .debug_line    0x00008838       0x51 realbuild_obj\libconsts.a(const_gammaC19.o)
- .debug_line    0x00008889       0x51 realbuild_obj\libconsts.a(const_gammaC20.o)
- .debug_line    0x000088da       0x51 realbuild_obj\libconsts.a(const_gammaC21.o)
- .debug_line    0x0000892b       0x6b realbuild_obj\libdecNum34s.a(decContext.o)
- .debug_line    0x00008996     0x114e realbuild_obj\libdecNum34s.a(decNumber.o)
- .debug_line    0x00009ae4      0x123 realbuild_obj\libdecNum34s.a(decimal128.o)
- .debug_line    0x00009c07      0x210 realbuild_obj\libdecNum34s.a(decimal64.o)
+ .debug_line    0x0000007e     0x6359 asone.o
+ .debug_line    0x000063d7       0x75 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uqi.o)
+ .debug_line    0x0000644c       0x76 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uhi.o)
+ .debug_line    0x000064c2       0x9a c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivsi3.o)
+ .debug_line    0x0000655c       0xa6 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divsi3.o)
+ .debug_line    0x00006602       0x6d c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_dvmd_tls.o)
+ .debug_line    0x0000666f       0x78 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_lshrdi3.o)
+ .debug_line    0x000066e7       0x79 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashrdi3.o)
+ .debug_line    0x00006760       0x78 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashldi3.o)
+ .debug_line    0x000067d8       0x70 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_aeabi_uldivmod.o)
+ .debug_line    0x00006848       0x9e c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
+ .debug_line    0x000068e6       0x75 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(bpabi.o)
+ .debug_line    0x0000695b      0x103 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
+ .debug_line    0x00006a5e       0xe0 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
+ .debug_line    0x00006b3e       0x7a c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_clzsi2.o)
+ .debug_line    0x00006bb8       0x4c realbuild_obj\libconsts.a(const_NaN.o)
+ .debug_line    0x00006c04       0x4c realbuild_obj\libconsts.a(const_inf.o)
+ .debug_line    0x00006c50       0x4d realbuild_obj\libconsts.a(const__inf.o)
+ .debug_line    0x00006c9d       0x4b realbuild_obj\libconsts.a(const__2.o)
+ .debug_line    0x00006ce8       0x4b realbuild_obj\libconsts.a(const__1.o)
+ .debug_line    0x00006d33       0x4b realbuild_obj\libconsts.a(const__0.o)
+ .debug_line    0x00006d7e       0x4a realbuild_obj\libconsts.a(const_0.o)
+ .debug_line    0x00006dc8       0x4a realbuild_obj\libconsts.a(const_1.o)
+ .debug_line    0x00006e12       0x4a realbuild_obj\libconsts.a(const_2.o)
+ .debug_line    0x00006e5c       0x4a realbuild_obj\libconsts.a(const_3.o)
+ .debug_line    0x00006ea6       0x4a realbuild_obj\libconsts.a(const_4.o)
+ .debug_line    0x00006ef0       0x4a realbuild_obj\libconsts.a(const_5.o)
+ .debug_line    0x00006f3a       0x4a realbuild_obj\libconsts.a(const_6.o)
+ .debug_line    0x00006f84       0x4a realbuild_obj\libconsts.a(const_7.o)
+ .debug_line    0x00006fce       0x4a realbuild_obj\libconsts.a(const_8.o)
+ .debug_line    0x00007018       0x4a realbuild_obj\libconsts.a(const_9.o)
+ .debug_line    0x00007062       0x4b realbuild_obj\libconsts.a(const_10.o)
+ .debug_line    0x000070ad       0x4b realbuild_obj\libconsts.a(const_15.o)
+ .debug_line    0x000070f8       0x4b realbuild_obj\libconsts.a(const_16.o)
+ .debug_line    0x00007143       0x4b realbuild_obj\libconsts.a(const_20.o)
+ .debug_line    0x0000718e       0x4b realbuild_obj\libconsts.a(const_21.o)
+ .debug_line    0x000071d9       0x4b realbuild_obj\libconsts.a(const_32.o)
+ .debug_line    0x00007224       0x4b realbuild_obj\libconsts.a(const_60.o)
+ .debug_line    0x0000726f       0x4b realbuild_obj\libconsts.a(const_90.o)
+ .debug_line    0x000072ba       0x4c realbuild_obj\libconsts.a(const_100.o)
+ .debug_line    0x00007306       0x4c realbuild_obj\libconsts.a(const_150.o)
+ .debug_line    0x00007352       0x4c realbuild_obj\libconsts.a(const_256.o)
+ .debug_line    0x0000739e       0x4c realbuild_obj\libconsts.a(const_360.o)
+ .debug_line    0x000073ea       0x4c realbuild_obj\libconsts.a(const_400.o)
+ .debug_line    0x00007436       0x4c realbuild_obj\libconsts.a(const_500.o)
+ .debug_line    0x00007482       0x4d realbuild_obj\libconsts.a(const_9000.o)
+ .debug_line    0x000074cf       0x4f realbuild_obj\libconsts.a(const_100000.o)
+ .debug_line    0x0000751e       0x4d realbuild_obj\libconsts.a(const_1e32.o)
+ .debug_line    0x0000756b       0x4e realbuild_obj\libconsts.a(const_1e_32.o)
+ .debug_line    0x000075b9       0x4f realbuild_obj\libconsts.a(const_1e_400.o)
+ .debug_line    0x00007608       0x4e realbuild_obj\libconsts.a(const_1e_24.o)
+ .debug_line    0x00007656       0x52 realbuild_obj\libconsts.a(const_0_0000005.o)
+ .debug_line    0x000076a8       0x4f realbuild_obj\libconsts.a(const_0_0001.o)
+ .debug_line    0x000076f7       0x4e realbuild_obj\libconsts.a(const_0_001.o)
+ .debug_line    0x00007745       0x4c realbuild_obj\libconsts.a(const_0_1.o)
+ .debug_line    0x00007791       0x4f realbuild_obj\libconsts.a(const_0_0195.o)
+ .debug_line    0x000077e0       0x4c realbuild_obj\libconsts.a(const_0_2.o)
+ .debug_line    0x0000782c       0x4f realbuild_obj\libconsts.a(const_0_2214.o)
+ .debug_line    0x0000787b       0x4d realbuild_obj\libconsts.a(const_0_25.o)
+ .debug_line    0x000078c8       0x4d realbuild_obj\libconsts.a(const_0_04.o)
+ .debug_line    0x00007915       0x4d realbuild_obj\libconsts.a(const_0_05.o)
+ .debug_line    0x00007962       0x4c realbuild_obj\libconsts.a(const_0_5.o)
+ .debug_line    0x000079ae       0x4d realbuild_obj\libconsts.a(const__0_5.o)
+ .debug_line    0x000079fb       0x4c realbuild_obj\libconsts.a(const_0_6.o)
+ .debug_line    0x00007a47       0x4e realbuild_obj\libconsts.a(const_0_665.o)
+ .debug_line    0x00007a95       0x4d realbuild_obj\libconsts.a(const_0_75.o)
+ .debug_line    0x00007ae2       0x4d realbuild_obj\libconsts.a(const_0_85.o)
+ .debug_line    0x00007b2f       0x4c realbuild_obj\libconsts.a(const_0_9.o)
+ .debug_line    0x00007b7b       0x4d realbuild_obj\libconsts.a(const_0_97.o)
+ .debug_line    0x00007bc8       0x4d realbuild_obj\libconsts.a(const_2on3.o)
+ .debug_line    0x00007c15       0x4d realbuild_obj\libconsts.a(const_5on6.o)
+ .debug_line    0x00007c62       0x4e realbuild_obj\libconsts.a(const_1on60.o)
+ .debug_line    0x00007cb0       0x4c realbuild_obj\libconsts.a(const_1_7.o)
+ .debug_line    0x00007cfc       0x4d realbuild_obj\libconsts.a(const_9on5.o)
+ .debug_line    0x00007d49       0x51 realbuild_obj\libconsts.a(const_root2on2.o)
+ .debug_line    0x00007d9a       0x4a realbuild_obj\libconsts.a(const_e.o)
+ .debug_line    0x00007de4       0x4b realbuild_obj\libconsts.a(const_PI.o)
+ .debug_line    0x00007e2f       0x4c realbuild_obj\libconsts.a(const_2PI.o)
+ .debug_line    0x00007e7b       0x50 realbuild_obj\libconsts.a(const_sqrt2PI.o)
+ .debug_line    0x00007ecb       0x55 realbuild_obj\libconsts.a(const_recipsqrt2PI.o)
+ .debug_line    0x00007f20       0x4e realbuild_obj\libconsts.a(const_PIon2.o)
+ .debug_line    0x00007f6e       0x50 realbuild_obj\libconsts.a(const_PIon180.o)
+ .debug_line    0x00007fbe       0x50 realbuild_obj\libconsts.a(const_PIon200.o)
+ .debug_line    0x0000800e       0x4c realbuild_obj\libconsts.a(const_ln2.o)
+ .debug_line    0x0000805a       0x4d realbuild_obj\libconsts.a(const_ln10.o)
+ .debug_line    0x000080a7       0x4c realbuild_obj\libconsts.a(const_phi.o)
+ .debug_line    0x000080f3       0x53 realbuild_obj\libconsts.a(const_recipsqrt5.o)
+ .debug_line    0x00008146       0x50 realbuild_obj\libconsts.a(const_randfac.o)
+ .debug_line    0x00008196       0x53 realbuild_obj\libconsts.a(const_2rootEonPI.o)
+ .debug_line    0x000081e9       0x4f realbuild_obj\libconsts.a(const_gammaR.o)
+ .debug_line    0x00008238       0x51 realbuild_obj\libconsts.a(const_gammaC00.o)
+ .debug_line    0x00008289       0x51 realbuild_obj\libconsts.a(const_gammaC01.o)
+ .debug_line    0x000082da       0x51 realbuild_obj\libconsts.a(const_gammaC02.o)
+ .debug_line    0x0000832b       0x51 realbuild_obj\libconsts.a(const_gammaC03.o)
+ .debug_line    0x0000837c       0x51 realbuild_obj\libconsts.a(const_gammaC04.o)
+ .debug_line    0x000083cd       0x51 realbuild_obj\libconsts.a(const_gammaC05.o)
+ .debug_line    0x0000841e       0x51 realbuild_obj\libconsts.a(const_gammaC06.o)
+ .debug_line    0x0000846f       0x51 realbuild_obj\libconsts.a(const_gammaC07.o)
+ .debug_line    0x000084c0       0x51 realbuild_obj\libconsts.a(const_gammaC08.o)
+ .debug_line    0x00008511       0x51 realbuild_obj\libconsts.a(const_gammaC09.o)
+ .debug_line    0x00008562       0x51 realbuild_obj\libconsts.a(const_gammaC10.o)
+ .debug_line    0x000085b3       0x51 realbuild_obj\libconsts.a(const_gammaC11.o)
+ .debug_line    0x00008604       0x51 realbuild_obj\libconsts.a(const_gammaC12.o)
+ .debug_line    0x00008655       0x51 realbuild_obj\libconsts.a(const_gammaC13.o)
+ .debug_line    0x000086a6       0x51 realbuild_obj\libconsts.a(const_gammaC14.o)
+ .debug_line    0x000086f7       0x51 realbuild_obj\libconsts.a(const_gammaC15.o)
+ .debug_line    0x00008748       0x51 realbuild_obj\libconsts.a(const_gammaC16.o)
+ .debug_line    0x00008799       0x51 realbuild_obj\libconsts.a(const_gammaC17.o)
+ .debug_line    0x000087ea       0x51 realbuild_obj\libconsts.a(const_gammaC18.o)
+ .debug_line    0x0000883b       0x51 realbuild_obj\libconsts.a(const_gammaC19.o)
+ .debug_line    0x0000888c       0x51 realbuild_obj\libconsts.a(const_gammaC20.o)
+ .debug_line    0x000088dd       0x51 realbuild_obj\libconsts.a(const_gammaC21.o)
+ .debug_line    0x0000892e       0x6b realbuild_obj\libdecNum34s.a(decContext.o)
+ .debug_line    0x00008999     0x114e realbuild_obj\libdecNum34s.a(decNumber.o)
+ .debug_line    0x00009ae7      0x123 realbuild_obj\libdecNum34s.a(decimal128.o)
+ .debug_line    0x00009c0a      0x210 realbuild_obj\libdecNum34s.a(decimal64.o)
 
-.debug_info     0x00000000    0x2bd02
+.debug_info     0x00000000    0x2bd04
  .debug_info    0x00000000       0x64 board_cstartup.o
- .debug_info    0x00000064    0x2164e asone.o
- .debug_info    0x000216b2       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uqi.o)
- .debug_info    0x00021753       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uhi.o)
- .debug_info    0x000217f4       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivsi3.o)
- .debug_info    0x00021895       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divsi3.o)
- .debug_info    0x00021936       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_dvmd_tls.o)
- .debug_info    0x000219d7       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_lshrdi3.o)
- .debug_info    0x00021a78       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashrdi3.o)
- .debug_info    0x00021b19       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashldi3.o)
- .debug_info    0x00021bba       0x9b c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_aeabi_uldivmod.o)
- .debug_info    0x00021c55      0x202 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
- .debug_info    0x00021e57       0xea c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(bpabi.o)
- .debug_info    0x00021f41      0x687 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
- .debug_info    0x000225c8      0x64a c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
- .debug_info    0x00022c12       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_clzsi2.o)
- .debug_info    0x00022cb3       0xe7 realbuild_obj\libconsts.a(const_NaN.o)
- .debug_info    0x00022d9a       0xe7 realbuild_obj\libconsts.a(const_inf.o)
- .debug_info    0x00022e81       0xe7 realbuild_obj\libconsts.a(const__inf.o)
- .debug_info    0x00022f68       0xe7 realbuild_obj\libconsts.a(const__2.o)
- .debug_info    0x0002304f       0xe7 realbuild_obj\libconsts.a(const__1.o)
- .debug_info    0x00023136       0xe7 realbuild_obj\libconsts.a(const__0.o)
- .debug_info    0x0002321d       0xe7 realbuild_obj\libconsts.a(const_0.o)
- .debug_info    0x00023304       0xe7 realbuild_obj\libconsts.a(const_1.o)
- .debug_info    0x000233eb       0xe7 realbuild_obj\libconsts.a(const_2.o)
- .debug_info    0x000234d2       0xe7 realbuild_obj\libconsts.a(const_3.o)
- .debug_info    0x000235b9       0xe7 realbuild_obj\libconsts.a(const_4.o)
- .debug_info    0x000236a0       0xe7 realbuild_obj\libconsts.a(const_5.o)
- .debug_info    0x00023787       0xe7 realbuild_obj\libconsts.a(const_6.o)
- .debug_info    0x0002386e       0xe7 realbuild_obj\libconsts.a(const_7.o)
- .debug_info    0x00023955       0xe7 realbuild_obj\libconsts.a(const_8.o)
- .debug_info    0x00023a3c       0xe7 realbuild_obj\libconsts.a(const_9.o)
- .debug_info    0x00023b23       0xe7 realbuild_obj\libconsts.a(const_10.o)
- .debug_info    0x00023c0a       0xe7 realbuild_obj\libconsts.a(const_15.o)
- .debug_info    0x00023cf1       0xe7 realbuild_obj\libconsts.a(const_16.o)
- .debug_info    0x00023dd8       0xe7 realbuild_obj\libconsts.a(const_20.o)
- .debug_info    0x00023ebf       0xe7 realbuild_obj\libconsts.a(const_21.o)
- .debug_info    0x00023fa6       0xe7 realbuild_obj\libconsts.a(const_32.o)
- .debug_info    0x0002408d       0xe7 realbuild_obj\libconsts.a(const_60.o)
- .debug_info    0x00024174       0xe7 realbuild_obj\libconsts.a(const_90.o)
- .debug_info    0x0002425b       0xe7 realbuild_obj\libconsts.a(const_100.o)
- .debug_info    0x00024342       0xe7 realbuild_obj\libconsts.a(const_150.o)
- .debug_info    0x00024429       0xe7 realbuild_obj\libconsts.a(const_256.o)
- .debug_info    0x00024510       0xe7 realbuild_obj\libconsts.a(const_360.o)
- .debug_info    0x000245f7       0xe7 realbuild_obj\libconsts.a(const_400.o)
- .debug_info    0x000246de       0xe7 realbuild_obj\libconsts.a(const_500.o)
- .debug_info    0x000247c5       0xe7 realbuild_obj\libconsts.a(const_9000.o)
- .debug_info    0x000248ac       0xe7 realbuild_obj\libconsts.a(const_100000.o)
- .debug_info    0x00024993       0xe7 realbuild_obj\libconsts.a(const_1e32.o)
- .debug_info    0x00024a7a       0xe7 realbuild_obj\libconsts.a(const_1e_32.o)
- .debug_info    0x00024b61       0xe7 realbuild_obj\libconsts.a(const_1e_400.o)
- .debug_info    0x00024c48       0xe7 realbuild_obj\libconsts.a(const_1e_24.o)
- .debug_info    0x00024d2f       0xe7 realbuild_obj\libconsts.a(const_0_0000005.o)
- .debug_info    0x00024e16       0xe7 realbuild_obj\libconsts.a(const_0_0001.o)
- .debug_info    0x00024efd       0xe7 realbuild_obj\libconsts.a(const_0_001.o)
- .debug_info    0x00024fe4       0xe7 realbuild_obj\libconsts.a(const_0_1.o)
- .debug_info    0x000250cb       0xe7 realbuild_obj\libconsts.a(const_0_0195.o)
- .debug_info    0x000251b2       0xe7 realbuild_obj\libconsts.a(const_0_2.o)
- .debug_info    0x00025299       0xe7 realbuild_obj\libconsts.a(const_0_2214.o)
- .debug_info    0x00025380       0xe7 realbuild_obj\libconsts.a(const_0_25.o)
- .debug_info    0x00025467       0xe7 realbuild_obj\libconsts.a(const_0_04.o)
- .debug_info    0x0002554e       0xe7 realbuild_obj\libconsts.a(const_0_05.o)
- .debug_info    0x00025635       0xe7 realbuild_obj\libconsts.a(const_0_5.o)
- .debug_info    0x0002571c       0xe7 realbuild_obj\libconsts.a(const__0_5.o)
- .debug_info    0x00025803       0xe7 realbuild_obj\libconsts.a(const_0_6.o)
- .debug_info    0x000258ea       0xe7 realbuild_obj\libconsts.a(const_0_665.o)
- .debug_info    0x000259d1       0xe7 realbuild_obj\libconsts.a(const_0_75.o)
- .debug_info    0x00025ab8       0xe7 realbuild_obj\libconsts.a(const_0_85.o)
- .debug_info    0x00025b9f       0xe7 realbuild_obj\libconsts.a(const_0_9.o)
- .debug_info    0x00025c86       0xe7 realbuild_obj\libconsts.a(const_0_97.o)
- .debug_info    0x00025d6d       0xe7 realbuild_obj\libconsts.a(const_2on3.o)
- .debug_info    0x00025e54       0xe7 realbuild_obj\libconsts.a(const_5on6.o)
- .debug_info    0x00025f3b       0xe7 realbuild_obj\libconsts.a(const_1on60.o)
- .debug_info    0x00026022       0xe7 realbuild_obj\libconsts.a(const_1_7.o)
- .debug_info    0x00026109       0xe7 realbuild_obj\libconsts.a(const_9on5.o)
- .debug_info    0x000261f0       0xe7 realbuild_obj\libconsts.a(const_root2on2.o)
- .debug_info    0x000262d7       0xe7 realbuild_obj\libconsts.a(const_e.o)
- .debug_info    0x000263be       0xe7 realbuild_obj\libconsts.a(const_PI.o)
- .debug_info    0x000264a5       0xe8 realbuild_obj\libconsts.a(const_2PI.o)
- .debug_info    0x0002658d       0xe7 realbuild_obj\libconsts.a(const_sqrt2PI.o)
- .debug_info    0x00026674       0xe7 realbuild_obj\libconsts.a(const_recipsqrt2PI.o)
- .debug_info    0x0002675b       0xe7 realbuild_obj\libconsts.a(const_PIon2.o)
- .debug_info    0x00026842       0xe7 realbuild_obj\libconsts.a(const_PIon180.o)
- .debug_info    0x00026929       0xe7 realbuild_obj\libconsts.a(const_PIon200.o)
- .debug_info    0x00026a10       0xe7 realbuild_obj\libconsts.a(const_ln2.o)
- .debug_info    0x00026af7       0xe7 realbuild_obj\libconsts.a(const_ln10.o)
- .debug_info    0x00026bde       0xe7 realbuild_obj\libconsts.a(const_phi.o)
- .debug_info    0x00026cc5       0xe7 realbuild_obj\libconsts.a(const_recipsqrt5.o)
- .debug_info    0x00026dac       0xe7 realbuild_obj\libconsts.a(const_randfac.o)
- .debug_info    0x00026e93       0xe7 realbuild_obj\libconsts.a(const_2rootEonPI.o)
- .debug_info    0x00026f7a       0xe7 realbuild_obj\libconsts.a(const_gammaR.o)
- .debug_info    0x00027061       0xe7 realbuild_obj\libconsts.a(const_gammaC00.o)
- .debug_info    0x00027148       0xe7 realbuild_obj\libconsts.a(const_gammaC01.o)
- .debug_info    0x0002722f       0xe7 realbuild_obj\libconsts.a(const_gammaC02.o)
- .debug_info    0x00027316       0xe7 realbuild_obj\libconsts.a(const_gammaC03.o)
- .debug_info    0x000273fd       0xe7 realbuild_obj\libconsts.a(const_gammaC04.o)
- .debug_info    0x000274e4       0xe7 realbuild_obj\libconsts.a(const_gammaC05.o)
- .debug_info    0x000275cb       0xe7 realbuild_obj\libconsts.a(const_gammaC06.o)
- .debug_info    0x000276b2       0xe7 realbuild_obj\libconsts.a(const_gammaC07.o)
- .debug_info    0x00027799       0xe7 realbuild_obj\libconsts.a(const_gammaC08.o)
- .debug_info    0x00027880       0xe7 realbuild_obj\libconsts.a(const_gammaC09.o)
- .debug_info    0x00027967       0xe7 realbuild_obj\libconsts.a(const_gammaC10.o)
- .debug_info    0x00027a4e       0xe7 realbuild_obj\libconsts.a(const_gammaC11.o)
- .debug_info    0x00027b35       0xe7 realbuild_obj\libconsts.a(const_gammaC12.o)
- .debug_info    0x00027c1c       0xe7 realbuild_obj\libconsts.a(const_gammaC13.o)
- .debug_info    0x00027d03       0xe7 realbuild_obj\libconsts.a(const_gammaC14.o)
- .debug_info    0x00027dea       0xe7 realbuild_obj\libconsts.a(const_gammaC15.o)
- .debug_info    0x00027ed1       0xe7 realbuild_obj\libconsts.a(const_gammaC16.o)
- .debug_info    0x00027fb8       0xe7 realbuild_obj\libconsts.a(const_gammaC17.o)
- .debug_info    0x0002809f       0xe7 realbuild_obj\libconsts.a(const_gammaC18.o)
- .debug_info    0x00028186       0xe7 realbuild_obj\libconsts.a(const_gammaC19.o)
- .debug_info    0x0002826d       0xe7 realbuild_obj\libconsts.a(const_gammaC20.o)
- .debug_info    0x00028354       0xe7 realbuild_obj\libconsts.a(const_gammaC21.o)
- .debug_info    0x0002843b      0x1ce realbuild_obj\libdecNum34s.a(decContext.o)
- .debug_info    0x00028609     0x2bf3 realbuild_obj\libdecNum34s.a(decNumber.o)
- .debug_info    0x0002b1fc      0x418 realbuild_obj\libdecNum34s.a(decimal128.o)
- .debug_info    0x0002b614      0x6ee realbuild_obj\libdecNum34s.a(decimal64.o)
+ .debug_info    0x00000064    0x21650 asone.o
+ .debug_info    0x000216b4       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uqi.o)
+ .debug_info    0x00021755       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_thumb1_case_uhi.o)
+ .debug_info    0x000217f6       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivsi3.o)
+ .debug_info    0x00021897       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divsi3.o)
+ .debug_info    0x00021938       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_dvmd_tls.o)
+ .debug_info    0x000219d9       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_lshrdi3.o)
+ .debug_info    0x00021a7a       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashrdi3.o)
+ .debug_info    0x00021b1b       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_ashldi3.o)
+ .debug_info    0x00021bbc       0x9b c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_aeabi_uldivmod.o)
+ .debug_info    0x00021c57      0x202 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
+ .debug_info    0x00021e59       0xea c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(bpabi.o)
+ .debug_info    0x00021f43      0x687 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
+ .debug_info    0x000225ca      0x64a c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
+ .debug_info    0x00022c14       0xa1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_clzsi2.o)
+ .debug_info    0x00022cb5       0xe7 realbuild_obj\libconsts.a(const_NaN.o)
+ .debug_info    0x00022d9c       0xe7 realbuild_obj\libconsts.a(const_inf.o)
+ .debug_info    0x00022e83       0xe7 realbuild_obj\libconsts.a(const__inf.o)
+ .debug_info    0x00022f6a       0xe7 realbuild_obj\libconsts.a(const__2.o)
+ .debug_info    0x00023051       0xe7 realbuild_obj\libconsts.a(const__1.o)
+ .debug_info    0x00023138       0xe7 realbuild_obj\libconsts.a(const__0.o)
+ .debug_info    0x0002321f       0xe7 realbuild_obj\libconsts.a(const_0.o)
+ .debug_info    0x00023306       0xe7 realbuild_obj\libconsts.a(const_1.o)
+ .debug_info    0x000233ed       0xe7 realbuild_obj\libconsts.a(const_2.o)
+ .debug_info    0x000234d4       0xe7 realbuild_obj\libconsts.a(const_3.o)
+ .debug_info    0x000235bb       0xe7 realbuild_obj\libconsts.a(const_4.o)
+ .debug_info    0x000236a2       0xe7 realbuild_obj\libconsts.a(const_5.o)
+ .debug_info    0x00023789       0xe7 realbuild_obj\libconsts.a(const_6.o)
+ .debug_info    0x00023870       0xe7 realbuild_obj\libconsts.a(const_7.o)
+ .debug_info    0x00023957       0xe7 realbuild_obj\libconsts.a(const_8.o)
+ .debug_info    0x00023a3e       0xe7 realbuild_obj\libconsts.a(const_9.o)
+ .debug_info    0x00023b25       0xe7 realbuild_obj\libconsts.a(const_10.o)
+ .debug_info    0x00023c0c       0xe7 realbuild_obj\libconsts.a(const_15.o)
+ .debug_info    0x00023cf3       0xe7 realbuild_obj\libconsts.a(const_16.o)
+ .debug_info    0x00023dda       0xe7 realbuild_obj\libconsts.a(const_20.o)
+ .debug_info    0x00023ec1       0xe7 realbuild_obj\libconsts.a(const_21.o)
+ .debug_info    0x00023fa8       0xe7 realbuild_obj\libconsts.a(const_32.o)
+ .debug_info    0x0002408f       0xe7 realbuild_obj\libconsts.a(const_60.o)
+ .debug_info    0x00024176       0xe7 realbuild_obj\libconsts.a(const_90.o)
+ .debug_info    0x0002425d       0xe7 realbuild_obj\libconsts.a(const_100.o)
+ .debug_info    0x00024344       0xe7 realbuild_obj\libconsts.a(const_150.o)
+ .debug_info    0x0002442b       0xe7 realbuild_obj\libconsts.a(const_256.o)
+ .debug_info    0x00024512       0xe7 realbuild_obj\libconsts.a(const_360.o)
+ .debug_info    0x000245f9       0xe7 realbuild_obj\libconsts.a(const_400.o)
+ .debug_info    0x000246e0       0xe7 realbuild_obj\libconsts.a(const_500.o)
+ .debug_info    0x000247c7       0xe7 realbuild_obj\libconsts.a(const_9000.o)
+ .debug_info    0x000248ae       0xe7 realbuild_obj\libconsts.a(const_100000.o)
+ .debug_info    0x00024995       0xe7 realbuild_obj\libconsts.a(const_1e32.o)
+ .debug_info    0x00024a7c       0xe7 realbuild_obj\libconsts.a(const_1e_32.o)
+ .debug_info    0x00024b63       0xe7 realbuild_obj\libconsts.a(const_1e_400.o)
+ .debug_info    0x00024c4a       0xe7 realbuild_obj\libconsts.a(const_1e_24.o)
+ .debug_info    0x00024d31       0xe7 realbuild_obj\libconsts.a(const_0_0000005.o)
+ .debug_info    0x00024e18       0xe7 realbuild_obj\libconsts.a(const_0_0001.o)
+ .debug_info    0x00024eff       0xe7 realbuild_obj\libconsts.a(const_0_001.o)
+ .debug_info    0x00024fe6       0xe7 realbuild_obj\libconsts.a(const_0_1.o)
+ .debug_info    0x000250cd       0xe7 realbuild_obj\libconsts.a(const_0_0195.o)
+ .debug_info    0x000251b4       0xe7 realbuild_obj\libconsts.a(const_0_2.o)
+ .debug_info    0x0002529b       0xe7 realbuild_obj\libconsts.a(const_0_2214.o)
+ .debug_info    0x00025382       0xe7 realbuild_obj\libconsts.a(const_0_25.o)
+ .debug_info    0x00025469       0xe7 realbuild_obj\libconsts.a(const_0_04.o)
+ .debug_info    0x00025550       0xe7 realbuild_obj\libconsts.a(const_0_05.o)
+ .debug_info    0x00025637       0xe7 realbuild_obj\libconsts.a(const_0_5.o)
+ .debug_info    0x0002571e       0xe7 realbuild_obj\libconsts.a(const__0_5.o)
+ .debug_info    0x00025805       0xe7 realbuild_obj\libconsts.a(const_0_6.o)
+ .debug_info    0x000258ec       0xe7 realbuild_obj\libconsts.a(const_0_665.o)
+ .debug_info    0x000259d3       0xe7 realbuild_obj\libconsts.a(const_0_75.o)
+ .debug_info    0x00025aba       0xe7 realbuild_obj\libconsts.a(const_0_85.o)
+ .debug_info    0x00025ba1       0xe7 realbuild_obj\libconsts.a(const_0_9.o)
+ .debug_info    0x00025c88       0xe7 realbuild_obj\libconsts.a(const_0_97.o)
+ .debug_info    0x00025d6f       0xe7 realbuild_obj\libconsts.a(const_2on3.o)
+ .debug_info    0x00025e56       0xe7 realbuild_obj\libconsts.a(const_5on6.o)
+ .debug_info    0x00025f3d       0xe7 realbuild_obj\libconsts.a(const_1on60.o)
+ .debug_info    0x00026024       0xe7 realbuild_obj\libconsts.a(const_1_7.o)
+ .debug_info    0x0002610b       0xe7 realbuild_obj\libconsts.a(const_9on5.o)
+ .debug_info    0x000261f2       0xe7 realbuild_obj\libconsts.a(const_root2on2.o)
+ .debug_info    0x000262d9       0xe7 realbuild_obj\libconsts.a(const_e.o)
+ .debug_info    0x000263c0       0xe7 realbuild_obj\libconsts.a(const_PI.o)
+ .debug_info    0x000264a7       0xe8 realbuild_obj\libconsts.a(const_2PI.o)
+ .debug_info    0x0002658f       0xe7 realbuild_obj\libconsts.a(const_sqrt2PI.o)
+ .debug_info    0x00026676       0xe7 realbuild_obj\libconsts.a(const_recipsqrt2PI.o)
+ .debug_info    0x0002675d       0xe7 realbuild_obj\libconsts.a(const_PIon2.o)
+ .debug_info    0x00026844       0xe7 realbuild_obj\libconsts.a(const_PIon180.o)
+ .debug_info    0x0002692b       0xe7 realbuild_obj\libconsts.a(const_PIon200.o)
+ .debug_info    0x00026a12       0xe7 realbuild_obj\libconsts.a(const_ln2.o)
+ .debug_info    0x00026af9       0xe7 realbuild_obj\libconsts.a(const_ln10.o)
+ .debug_info    0x00026be0       0xe7 realbuild_obj\libconsts.a(const_phi.o)
+ .debug_info    0x00026cc7       0xe7 realbuild_obj\libconsts.a(const_recipsqrt5.o)
+ .debug_info    0x00026dae       0xe7 realbuild_obj\libconsts.a(const_randfac.o)
+ .debug_info    0x00026e95       0xe7 realbuild_obj\libconsts.a(const_2rootEonPI.o)
+ .debug_info    0x00026f7c       0xe7 realbuild_obj\libconsts.a(const_gammaR.o)
+ .debug_info    0x00027063       0xe7 realbuild_obj\libconsts.a(const_gammaC00.o)
+ .debug_info    0x0002714a       0xe7 realbuild_obj\libconsts.a(const_gammaC01.o)
+ .debug_info    0x00027231       0xe7 realbuild_obj\libconsts.a(const_gammaC02.o)
+ .debug_info    0x00027318       0xe7 realbuild_obj\libconsts.a(const_gammaC03.o)
+ .debug_info    0x000273ff       0xe7 realbuild_obj\libconsts.a(const_gammaC04.o)
+ .debug_info    0x000274e6       0xe7 realbuild_obj\libconsts.a(const_gammaC05.o)
+ .debug_info    0x000275cd       0xe7 realbuild_obj\libconsts.a(const_gammaC06.o)
+ .debug_info    0x000276b4       0xe7 realbuild_obj\libconsts.a(const_gammaC07.o)
+ .debug_info    0x0002779b       0xe7 realbuild_obj\libconsts.a(const_gammaC08.o)
+ .debug_info    0x00027882       0xe7 realbuild_obj\libconsts.a(const_gammaC09.o)
+ .debug_info    0x00027969       0xe7 realbuild_obj\libconsts.a(const_gammaC10.o)
+ .debug_info    0x00027a50       0xe7 realbuild_obj\libconsts.a(const_gammaC11.o)
+ .debug_info    0x00027b37       0xe7 realbuild_obj\libconsts.a(const_gammaC12.o)
+ .debug_info    0x00027c1e       0xe7 realbuild_obj\libconsts.a(const_gammaC13.o)
+ .debug_info    0x00027d05       0xe7 realbuild_obj\libconsts.a(const_gammaC14.o)
+ .debug_info    0x00027dec       0xe7 realbuild_obj\libconsts.a(const_gammaC15.o)
+ .debug_info    0x00027ed3       0xe7 realbuild_obj\libconsts.a(const_gammaC16.o)
+ .debug_info    0x00027fba       0xe7 realbuild_obj\libconsts.a(const_gammaC17.o)
+ .debug_info    0x000280a1       0xe7 realbuild_obj\libconsts.a(const_gammaC18.o)
+ .debug_info    0x00028188       0xe7 realbuild_obj\libconsts.a(const_gammaC19.o)
+ .debug_info    0x0002826f       0xe7 realbuild_obj\libconsts.a(const_gammaC20.o)
+ .debug_info    0x00028356       0xe7 realbuild_obj\libconsts.a(const_gammaC21.o)
+ .debug_info    0x0002843d      0x1ce realbuild_obj\libdecNum34s.a(decContext.o)
+ .debug_info    0x0002860b     0x2bf3 realbuild_obj\libdecNum34s.a(decNumber.o)
+ .debug_info    0x0002b1fe      0x418 realbuild_obj\libdecNum34s.a(decimal128.o)
+ .debug_info    0x0002b616      0x6ee realbuild_obj\libdecNum34s.a(decimal64.o)
 
 .debug_abbrev   0x00000000     0x494d
  .debug_abbrev  0x00000000       0x14 board_cstartup.o
@@ -1717,24 +1718,24 @@ OUTPUT(realbuild/calc elf32-littlearm)
  .debug_aranges
                 0x00000260       0x20 realbuild_obj\libdecNum34s.a(decimal64.o)
 
-.debug_loc      0x00000000    0x28e65
- .debug_loc     0x00000000    0x21b98 asone.o
- .debug_loc     0x00021b98       0xed c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
- .debug_loc     0x00021c85      0x198 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(bpabi.o)
- .debug_loc     0x00021e1d      0xcf1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
- .debug_loc     0x00022b0e      0xd8d c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
- .debug_loc     0x0002389b       0x5b realbuild_obj\libdecNum34s.a(decContext.o)
- .debug_loc     0x000238f6     0x4ad2 realbuild_obj\libdecNum34s.a(decNumber.o)
- .debug_loc     0x000283c8      0x309 realbuild_obj\libdecNum34s.a(decimal128.o)
- .debug_loc     0x000286d1      0x794 realbuild_obj\libdecNum34s.a(decimal64.o)
+.debug_loc      0x00000000    0x28ef3
+ .debug_loc     0x00000000    0x21c26 asone.o
+ .debug_loc     0x00021c26       0xed c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
+ .debug_loc     0x00021d13      0x198 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(bpabi.o)
+ .debug_loc     0x00021eab      0xcf1 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
+ .debug_loc     0x00022b9c      0xd8d c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
+ .debug_loc     0x00023929       0x5b realbuild_obj\libdecNum34s.a(decContext.o)
+ .debug_loc     0x00023984     0x4ad2 realbuild_obj\libdecNum34s.a(decNumber.o)
+ .debug_loc     0x00028456      0x309 realbuild_obj\libdecNum34s.a(decimal128.o)
+ .debug_loc     0x0002875f      0x794 realbuild_obj\libdecNum34s.a(decimal64.o)
 
-.debug_ranges   0x00000000     0x1bf0
- .debug_ranges  0x00000000     0x15e8 asone.o
- .debug_ranges  0x000015e8       0x50 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
- .debug_ranges  0x00001638      0x120 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
- .debug_ranges  0x00001758       0xf0 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
- .debug_ranges  0x00001848      0x388 realbuild_obj\libdecNum34s.a(decNumber.o)
- .debug_ranges  0x00001bd0       0x20 realbuild_obj\libdecNum34s.a(decimal64.o)
+.debug_ranges   0x00000000     0x1c00
+ .debug_ranges  0x00000000     0x15f8 asone.o
+ .debug_ranges  0x000015f8       0x50 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_muldi3.o)
+ .debug_ranges  0x00001648      0x120 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_divdi3.o)
+ .debug_ranges  0x00001768       0xf0 c:/apps/yagarto-4.6.0/bin/../lib/gcc/arm-none-eabi/4.6.0/thumb\libgcc.a(_udivdi3.o)
+ .debug_ranges  0x00001858      0x388 realbuild_obj\libdecNum34s.a(decNumber.o)
+ .debug_ranges  0x00001be0       0x20 realbuild_obj\libdecNum34s.a(decimal64.o)
 
 .debug_str      0x00000000     0x749e
  .debug_str     0x00000000     0x66f7 asone.o

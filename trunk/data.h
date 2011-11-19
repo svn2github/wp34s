@@ -315,7 +315,9 @@ extern TXromLocal XromLocal;
 extern volatile int WaitForLcd;	   // Sync with display refresh
 extern volatile int Pause;         // Count down for programmed pause
 extern int Running;		   // Program is active
+#if defined(REALBUILD) || defined(WINGUI)
 extern int JustStopped;            // Set on program stop to ignore the next R/S key in the buffer
+#endif
 extern int Error;		   // Did an error occur, if so what code?
 extern int ShowRegister; 	   // Temporary display (not X)
 extern int PcWrapped;		   // decpc() or incpc() have wrapped around
