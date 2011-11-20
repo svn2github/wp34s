@@ -1297,14 +1297,6 @@ void display(void) {
 		for (i=State2.numdigit; i<3; i++)
 			*bp++ = '_';
 		set_status(buf);
-	} else if (State2.multi) {
-		bp = scopy_char(bp, multicmds[CmdBase].cmd, '\'');
-		if (State2.numdigit > 0) {
-			*bp++ = (char) State2.digval;
-			if (State2.numdigit > 1)
-				*bp++ = State2.digval2;
-		}
-		set_status(buf);
 	} else if (State2.rarg) {
 		/* Commands with arguments */
 		bp = scopy_char(bp, argcmds[CmdBase].cmd, State2.ind?'\015':' ');
@@ -1331,7 +1323,7 @@ void display(void) {
 		*bp++ = '?';
 		set_status(buf);
 	} else if (cata) {
-		const opcode op = current_catalogue(State2.digval);
+		const opcode op = current_catalogue(State.catpos);
 		char b2[16];
 		const char *p;
 
@@ -1371,6 +1363,14 @@ void display(void) {
 				skip = 1;
 			}
 		}
+	} else if (State2.multi) {
+		bp = scopy_char(bp, multicmds[CmdBase].cmd, '\'');
+		if (State2.numdigit > 0) {
+			*bp++ = (char) State2.digval;
+			if (State2.numdigit > 1)
+				*bp++ = State2.digval2;
+		}
+		set_status(buf);
 	} else if (State2.status) {
 		show_status();
 		skip = 1;

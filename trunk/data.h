@@ -72,7 +72,7 @@ struct _ustate {
  */
 struct _state {
 	unsigned int last_cat :      5;	// Most recent catalogue browsed
-	unsigned int last_catpos :   7;	// Last position in said catalogue
+	unsigned int catpos :        7;	// Position in said catalogue
 	unsigned int entryp :        1;	// Has the user entered something since the last program stop
 	unsigned int state_lift :    1;	// XEQ internal - don't use
 	unsigned int implicit_rtn :  1;	// End of program is an implicit return

@@ -165,16 +165,17 @@ static unsigned int keycode_to_digit_or_register(const keycode c)
  */
 static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 {
+	enum catalogues cat = CATALOGUE_NONE;
 	int i, col, max;
 	const struct _map {
 		unsigned char key, cat[3];
 	} *cp;
 
 	// Common to both alpha mode and normal mode is the programming X.FCN catalogue
-	if (c == K53 && shift == SHIFT_H && ! State2.runmode && ! State2.cmplx)
+	if (c == K53 && shift == SHIFT_H && ! State2.runmode && ! State2.cmplx && ! State2.multi)
 		return CATALOGUE_PROGXFCN;
 
-	if (! State2.alphas) {
+	if (! State2.alphas && ! State2.multi) {
 		/*
 		 *  Normal processing - Not alpha mode
 		 */
@@ -254,11 +255,15 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 	 */
 	for (i = 0; i < max; ++i, ++cp) {
 		if (cp->key == c) {
-			return (enum catalogues) cp->cat[col];
+			cat = (enum catalogues) cp->cat[col];
 			break;
 		}
 	}
-	return CATALOGUE_NONE;
+	if (State2.multi && (cat < CATALOGUE_ALPHA_SYMBOLS || cat > CATALOGUE_ALPHA_SUBSCRIPTS)) {
+		// Ignore the non character catalogues in multi character mode
+		cat = CATALOGUE_NONE;
+	}
+	return cat;
 }
 
 
@@ -341,7 +346,6 @@ static void init_cat(enum catalogues cat) {
 	if (cat == CATALOGUE_NONE && State2.catalogue != CATALOGUE_NONE) {
 		// Save last catalogue for a later restore
 		State.last_cat = State2.catalogue;
-		State.last_catpos = State2.digval;
 		CmdLineLength = 0;
 	}
 	process_cmdline();
@@ -373,13 +377,10 @@ static void init_cat(enum catalogues cat) {
 	default:
 		// Normal catalogue
 		State2.catalogue = cat;
-		State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST)?1:0;
-		if (cat != CATALOGUE_NONE && State.last_cat == cat) {
-			// Same catalogue again, restore position
-			State2.digval = State.last_catpos;
-		}
-		else {
-			State2.digval = 0;
+		State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST);
+		if (cat != CATALOGUE_NONE && State.last_cat != cat) {
+			// Different catalogue, reset position
+			State.catpos = 0;
 		}
 	}
 	reset_shift();
@@ -1503,86 +1504,6 @@ static int process_arg(const keycode c) {
 }
 
 
-/* Multi (2) word instruction entry
- */
-static void reset_multi(void) {
-	// Reset the multi flag and clear lowercase flag if not called from alpha mode
-	State2.multi = 0;
-	if (! State2.alphas )
-		State2.alphashift = 0;
-}
-
-static int process_multi(const keycode c) {
-	const enum shifts shift = reset_shift();
-	unsigned char ch;
-	unsigned int opcode;
-	unsigned int base = CmdBase;
-
-	switch (c) {
-	case K20:	// Enter - exit multi mode, maybe return a result
-		if (shift != SHIFT_N)
-			break;
-		reset_multi();
-		if (State2.numdigit == 0) {
-			return STATE_UNFINISHED;
-		} else if (State2.numdigit == 1) {
-			opcode = OP_DBL + (base << DBL_SHIFT) + State2.digval;
-			goto fin;
-		} else {
-			opcode = OP_DBL + (base << DBL_SHIFT) + State2.digval +
-				(State2.digval2 << 16);
-			goto fin;
-		}
-
-	case K24:	// Clx - backspace, clear alpha
-		if (shift != SHIFT_H) {
-			if (State2.numdigit == 0)
-				reset_multi();
-			else
-				State2.numdigit--;
-			return STATE_UNFINISHED;
-		}
-		break;
-
-	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
-		if (shift == SHIFT_F)
-			State2.alphashift = 1 - State2.alphashift;
-		else
-			reset_multi();
-		return STATE_UNFINISHED;
-
-	default:
-		break;
-	}
-
-	/* Look up the character and return an alpha code if okay */
-	ch = keycode_to_alpha(c, shift);
-	if (ch == 0)
-		return STATE_UNFINISHED;
-	if (State2.numdigit == 0) {
-		State2.digval = ch;
-		State2.numdigit = 1;
-		return STATE_UNFINISHED;
-	} else if (State2.numdigit == 1) {
-		State2.digval2 = ch;
-		State2.numdigit = 2;
-		return STATE_UNFINISHED;
-	}
-	reset_multi();
-
-	base = CmdBase;
-	opcode = OP_DBL + (base << DBL_SHIFT) + State2.digval +
-			(State2.digval2 << 16) + (ch << 24);
-fin:
-#ifdef INCLUDE_MULTI_DELETE
-	if (base == DBL_DELPROG) {
-		del_till_multi_label(opcode);
-		return STATE_UNFINISHED;
-	}
-#endif
-	return opcode;
-}
-
 /*
  *  Process arguments to the diverse test commands
  */
@@ -1783,7 +1704,7 @@ opcode current_catalogue(int n) {
  *  Catalogue navigation
  */
 static int process_catalogue(const keycode c) {
-	unsigned int dv = State2.digval;
+	int pos = State.catpos;
 	unsigned char ch;
 	const int ctmax = current_catalogue_max();
 	const enum shifts shift = cur_shift();
@@ -1793,8 +1714,8 @@ static int process_catalogue(const keycode c) {
 		switch (c) {
 		case K30:			// XEQ accepts command
 		case K20:			// Enter accepts command
-			if ((int) dv < ctmax) {
-				const opcode op = current_catalogue(dv);
+			if (pos < ctmax) {
+				const opcode op = current_catalogue(pos);
 
 				init_cat(CATALOGUE_NONE);
 
@@ -1811,7 +1732,7 @@ static int process_catalogue(const keycode c) {
 					if (opKIND(op) == KIND_NIL) {
 						const int nop = argKIND(op);
 						if (nop >= OP_CLALL && nop <= OP_CLP) {
-							init_confirm(confirm_clall + (nop - OP_CLALL));
+							init_confirm((enum confirmations) (confirm_clall + (nop - OP_CLALL)));
 							return STATE_UNFINISHED;
 						}
 					}
@@ -1825,7 +1746,8 @@ static int process_catalogue(const keycode c) {
 			if (CmdLineLength > 0 && Keyticks < 30) {
 				if (--CmdLineLength > 0)
 					goto search;
-				State2.digval = 0;
+				pos = 0;
+				goto set_pos;
 			} else
 				init_cat(CATALOGUE_NONE);
 			return STATE_UNFINISHED;
@@ -1835,23 +1757,23 @@ static int process_catalogue(const keycode c) {
 			return STATE_UNFINISHED;
 
 		case K40:
-			if (State2.digval > 0)
-				State2.digval--;
-			else
-				State2.digval = ctmax-1;
 			CmdLineLength = 0;
-			return STATE_UNFINISHED;
+			if (pos == 0)
+				goto set_max;
+			else
+				--pos;
+			goto set_pos;
 
 		case K50:
-			if ((int) ++State2.digval >= ctmax)
-				State2.digval = 0;
 			CmdLineLength = 0;
-			return STATE_UNFINISHED;
+			if (++pos >= ctmax)
+				pos = 0;
+			goto set_pos;
 
 		default:
 			break;
 		}
-	} else if (shift == SHIFT_F && c == K01 && State2.catalogue == CATALOGUE_CONV) {
+	} else if (shift == SHIFT_F && c == K01 && cat == CATALOGUE_CONV) {
 		/* A small table of commands in pairs containing inverse commands.
 		 * This table could be unsigned characters only storing the monadic kind.
 		 * this saves twelve bytes in the table at a cost of some bytes in the code below.
@@ -1865,18 +1787,18 @@ static int process_catalogue(const keycode c) {
 			OP_MON | OP_DEG2GRD,	OP_MON | OP_GRD2DEG,
 			OP_MON | OP_RAD2GRD,	OP_MON | OP_GRD2RAD,
 		};
-		const opcode op = current_catalogue(dv);
+		const opcode op = current_catalogue(pos);
 		int i;
 
 		init_cat(CATALOGUE_NONE);
 		if (isRARG(op))
 			return op ^ 1;
-		for (i=0; i<sizeof(conv_mapping) / sizeof(conv_mapping[0]); i++)
+		for (i = 0; i < sizeof(conv_mapping) / sizeof(conv_mapping[0]); ++i)
 			if (op == conv_mapping[i])
 				return conv_mapping[i^1];
 		return STATE_UNFINISHED;		// Unreached
 	}
-	else if ( c == K60 && State2.alphas ) {
+	else if (c == K60 && State2.alphas) {
 		// Handle alpha shift in alpha mode
 		return process_alpha(c);
 	}
@@ -1888,7 +1810,7 @@ static int process_catalogue(const keycode c) {
 	reset_shift();
 	if (ch == '\0')
 		return STATE_UNFINISHED;
-	if ( cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST ) {
+	if (cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST) {
 		// No multi character search in alpha catalogues
 		CmdLineLength = 0;
 	}
@@ -1898,32 +1820,118 @@ static int process_catalogue(const keycode c) {
 
 search:
 	Cmdline[CmdLineLength] = '\0';
-	for (dv = 0; dv < (unsigned int)ctmax; dv++) {
+	for (pos = 0; pos < ctmax; ++pos) {
 		char buf[16];
-		const char *cmd = catcmd(current_catalogue(dv), buf);
+		const char *cmd = catcmd(current_catalogue(pos), buf);
 		int i;
 
 		if (*cmd == COMPLEX_PREFIX)
 			cmd++;
 		for (i=0; cmd[i] != '\0'; i++) {
 			const unsigned char c = remap_chars(cmd[i]);
-			const unsigned char cl = 0xff&Cmdline[i];
-			if (c > cl) {
-				State2.digval = dv;
-				return STATE_UNFINISHED;
-			} else if (c < cl)
+			const unsigned char cl = (unsigned char) Cmdline[i];
+			if (c > cl)
+				goto set_pos;
+			else if (c < cl)
 				break;
 		}
-		if (Cmdline[i] == '\0') {
-			State2.digval = dv;
-			return STATE_UNFINISHED;
-		}
+		if (Cmdline[i] == '\0')
+			goto set_pos;
 	}
-	State2.digval = ctmax-1;
+set_max:
+	pos = ctmax - 1;
+set_pos:
+	State.catpos = pos;
 	return STATE_UNFINISHED;
 }
 
 
+/* Multi (2) word instruction entry
+ */
+static void reset_multi(void) {
+	// Reset the multi flag and clear lowercase flag if not called from alpha mode
+	State2.multi = 0;
+	if (! State2.alphas )
+		State2.alphashift = 0;
+}
+
+static int process_multi(const keycode c) {
+	const enum shifts shift = reset_shift();
+	unsigned char ch = 0;
+	unsigned int opcode;
+
+	if (State2.catalogue) {
+		// Alpha catalogue from within multi character command
+		opcode = process_catalogue((const keycode)c);
+		if (opcode == STATE_UNFINISHED)
+			return opcode;
+		ch = (unsigned char) opcode;
+		goto add_char;
+	}
+
+	switch (c) {
+	case K20:	// Enter - exit multi mode, maybe return a result
+		if (shift != SHIFT_N)
+			break;
+		reset_multi();
+		if (State2.numdigit == 0)
+			return STATE_UNFINISHED;
+		else if (State2.numdigit == 1)
+			State2.digval2 = 0;
+		goto fin;
+
+	case K24:	// Clx - backspace, clear alpha
+		if (shift != SHIFT_H) {
+			if (State2.numdigit == 0)
+				reset_multi();
+			else
+				State2.numdigit--;
+			return STATE_UNFINISHED;
+		}
+		break;
+
+	case K60:	// EXIT/ON maybe case switch, otherwise exit alpha
+		if (shift == SHIFT_F)
+			State2.alphashift = 1 - State2.alphashift;
+		else
+			reset_multi();
+		return STATE_UNFINISHED;
+
+	default:
+		break;
+	}
+
+	/* Look up the character and return an alpha code if okay */
+	ch = keycode_to_alpha(c, shift);
+	if (ch == 0)
+		return STATE_UNFINISHED;
+add_char:
+	if (State2.numdigit == 0) {
+		State2.digval = ch;
+		State2.numdigit = 1;
+		return STATE_UNFINISHED;
+	} else if (State2.numdigit == 1) {
+		State2.digval2 = ch;
+		State2.numdigit = 2;
+		return STATE_UNFINISHED;
+	}
+	reset_multi();
+
+fin:
+	opcode = OP_DBL + (CmdBase << DBL_SHIFT) 
+	       + State2.digval + (State2.digval2 << 16) + (ch << 24);
+#ifdef INCLUDE_MULTI_DELETE
+	if (CmdBase == DBL_DELPROG) {
+		del_till_multi_label(opcode);
+		return STATE_UNFINISHED;
+	}
+#endif
+	return opcode;
+}
+
+
+/* Handle YES/NO confirmations
+ */
 static int process_confirm(const keycode c) {
 	switch (c) {
 	case K63:			// Yes
@@ -2294,8 +2302,6 @@ static int process(const int c) {
 	/*
 	 *  The handlers in this block need to call reset_shift somewhere
 	 */
-	if (State2.multi)
-		return process_multi((const keycode)c);
 
 	/*
 	 * Here the keys are mapped to catalogues
@@ -2313,6 +2319,9 @@ static int process(const int c) {
 	/*
 	 *  More handlers...
 	 */
+	if (State2.multi)
+		return process_multi((const keycode)c);
+
 	if (State2.arrow)
 		return process_arrow((const keycode)c);
 
