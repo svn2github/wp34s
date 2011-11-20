@@ -1701,20 +1701,27 @@ opcode current_catalogue(int n) {
 
 
 /*
+ *  Helper for navigation in alpha catalogues. Some charaters are not allowed
+ *  in multi character commands.
+ */
+static int forbidden_alpha(int pos) {
+	return (current_catalogue(pos) & 0xf0) == 0xf0;
+}
+
+/*
  *  Catalogue navigation
  */
-static int process_catalogue(const keycode c) {
+static int process_catalogue(const keycode c, const enum shifts shift, const int is_multi) {
 	int pos = State.catpos;
 	unsigned char ch;
 	const int ctmax = current_catalogue_max();
-	const enum shifts shift = cur_shift();
 	const enum catalogues cat = (enum catalogues) State2.catalogue;
 
 	if (shift == SHIFT_N) {
 		switch (c) {
 		case K30:			// XEQ accepts command
 		case K20:			// Enter accepts command
-			if (pos < ctmax) {
+			if (pos < ctmax && !(is_multi && forbidden_alpha(pos))) {
 				const opcode op = current_catalogue(pos);
 
 				init_cat(CATALOGUE_NONE);
@@ -1766,41 +1773,45 @@ static int process_catalogue(const keycode c) {
 
 		case K50:
 			CmdLineLength = 0;
-			if (++pos >= ctmax)
+			while (++pos < ctmax && is_multi && forbidden_alpha(pos));
+			if (pos >= ctmax)
 				pos = 0;
 			goto set_pos;
 
 		default:
 			break;
 		}
-	} else if (shift == SHIFT_F && c == K01 && cat == CATALOGUE_CONV) {
-		/* A small table of commands in pairs containing inverse commands.
-		 * This table could be unsigned characters only storing the monadic kind.
-		 * this saves twelve bytes in the table at a cost of some bytes in the code below.
-		 * Not worth it since the maximum saving will be less than twelve bytes.
-		 */
-		static const unsigned short int conv_mapping[] = {
-			OP_MON | OP_AR_DB,	OP_MON | OP_DB_AR,
-			OP_MON | OP_DB_PR,	OP_MON | OP_PR_DB,
-			OP_MON | OP_DEGC_F,	OP_MON | OP_DEGF_C,
-			OP_MON | OP_DEG2RAD,	OP_MON | OP_RAD2DEG,
-			OP_MON | OP_DEG2GRD,	OP_MON | OP_GRD2DEG,
-			OP_MON | OP_RAD2GRD,	OP_MON | OP_GRD2RAD,
-		};
-		const opcode op = current_catalogue(pos);
-		int i;
+	} else if (shift == SHIFT_F) {
+		if (c == K01 && cat == CATALOGUE_CONV) {
+			/* A small table of commands in pairs containing inverse commands.
+			 * This table could be unsigned characters only storing the monadic kind.
+			 * this saves twelve bytes in the table at a cost of some bytes in the code below.
+			 * Not worth it since the maximum saving will be less than twelve bytes.
+			 */
+			static const unsigned short int conv_mapping[] = {
+				OP_MON | OP_AR_DB,	OP_MON | OP_DB_AR,
+				OP_MON | OP_DB_PR,	OP_MON | OP_PR_DB,
+				OP_MON | OP_DEGC_F,	OP_MON | OP_DEGF_C,
+				OP_MON | OP_DEG2RAD,	OP_MON | OP_RAD2DEG,
+				OP_MON | OP_DEG2GRD,	OP_MON | OP_GRD2DEG,
+				OP_MON | OP_RAD2GRD,	OP_MON | OP_GRD2RAD,
+			};
+			const opcode op = current_catalogue(pos);
+			int i;
 
-		init_cat(CATALOGUE_NONE);
-		if (isRARG(op))
-			return op ^ 1;
-		for (i = 0; i < sizeof(conv_mapping) / sizeof(conv_mapping[0]); ++i)
-			if (op == conv_mapping[i])
-				return conv_mapping[i^1];
-		return STATE_UNFINISHED;		// Unreached
-	}
-	else if (c == K60 && State2.alphas) {
-		// Handle alpha shift in alpha mode
-		return process_alpha(c);
+			init_cat(CATALOGUE_NONE);
+			if (isRARG(op))
+				return op ^ 1;
+			for (i = 0; i < sizeof(conv_mapping) / sizeof(conv_mapping[0]); ++i)
+				if (op == conv_mapping[i])
+					return conv_mapping[i^1];
+			return STATE_UNFINISHED;		// Unreached
+		}
+		else if (c == K60 && (State2.alphas || State2.multi)) {
+			// Handle alpha shift in alpha mode
+			State2.alphashift = 1 - State2.alphashift;
+			return STATE_UNFINISHED;
+		}
 	}
 
 	/* We've got a key press, map it to a character and try to
@@ -1841,6 +1852,8 @@ search:
 set_max:
 	pos = ctmax - 1;
 set_pos:
+	while (is_multi && pos && forbidden_alpha(pos))
+		--pos;
 	State.catpos = pos;
 	return STATE_UNFINISHED;
 }
@@ -1856,13 +1869,13 @@ static void reset_multi(void) {
 }
 
 static int process_multi(const keycode c) {
-	const enum shifts shift = reset_shift();
+	enum shifts shift = reset_shift();
 	unsigned char ch = 0;
 	unsigned int opcode;
 
 	if (State2.catalogue) {
 		// Alpha catalogue from within multi character command
-		opcode = process_catalogue((const keycode)c);
+		opcode = process_catalogue((const keycode)c, shift, State2.numdigit == 1);
 		if (opcode == STATE_UNFINISHED)
 			return opcode;
 		ch = (unsigned char) opcode;
@@ -2332,7 +2345,7 @@ static int process(const int c) {
 		return process_registerlist((const keycode)c);
 
 	if (State2.catalogue)
-		return process_catalogue((const keycode)c);
+		return process_catalogue((const keycode)c, reset_shift(), 0);
 
 	if (State2.alphas)
 		return process_alpha((const keycode)c);
