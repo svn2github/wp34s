@@ -1875,7 +1875,7 @@ static int process_multi(const keycode c) {
 
 	if (State2.catalogue) {
 		// Alpha catalogue from within multi character command
-		opcode = process_catalogue((const keycode)c, shift, State2.numdigit == 1);
+		opcode = process_catalogue((const keycode)c, shift, State2.numdigit == 2);
 		if (opcode == STATE_UNFINISHED)
 			return opcode;
 		ch = (unsigned char) opcode;
