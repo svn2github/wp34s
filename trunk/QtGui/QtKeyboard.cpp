@@ -201,12 +201,6 @@ static int keyEventToKeycode(const QKeyEvent& keyEvent)
 		return -1;
 	}
 
-	QString keyText = keyEvent.text();
-	if(keyText.isEmpty())
-	{
-		return -1;
-	}
-
 	Qt::KeyboardModifiers modifiers = keyEvent.modifiers();
 	if(modifiers & Qt::ShiftModifier)
 	{
