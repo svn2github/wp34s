@@ -1783,32 +1783,32 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 		}
 	} else if (shift == SHIFT_F) {
 		if (c == K01 && cat == CATALOGUE_CONV) {
-			/* A small table of commands in pairs containing inverse commands.
-			 * This table could be unsigned characters only storing the monadic kind.
-			 * this saves twelve bytes in the table at a cost of some bytes in the code below.
-			 * Not worth it since the maximum saving will be less than twelve bytes.
-			 */
-			static const unsigned short int conv_mapping[] = {
-				OP_MON | OP_AR_DB,	OP_MON | OP_DB_AR,
-				OP_MON | OP_DB_PR,	OP_MON | OP_PR_DB,
-				OP_MON | OP_DEGC_F,	OP_MON | OP_DEGF_C,
-				OP_MON | OP_DEG2RAD,	OP_MON | OP_RAD2DEG,
-				OP_MON | OP_DEG2GRD,	OP_MON | OP_GRD2DEG,
-				OP_MON | OP_RAD2GRD,	OP_MON | OP_GRD2RAD,
-			};
+		/* A small table of commands in pairs containing inverse commands.
+		 * This table could be unsigned characters only storing the monadic kind.
+		 * this saves twelve bytes in the table at a cost of some bytes in the code below.
+		 * Not worth it since the maximum saving will be less than twelve bytes.
+		 */
+		static const unsigned short int conv_mapping[] = {
+			OP_MON | OP_AR_DB,	OP_MON | OP_DB_AR,
+			OP_MON | OP_DB_PR,	OP_MON | OP_PR_DB,
+			OP_MON | OP_DEGC_F,	OP_MON | OP_DEGF_C,
+			OP_MON | OP_DEG2RAD,	OP_MON | OP_RAD2DEG,
+			OP_MON | OP_DEG2GRD,	OP_MON | OP_GRD2DEG,
+			OP_MON | OP_RAD2GRD,	OP_MON | OP_GRD2RAD,
+		};
 			const opcode op = current_catalogue(pos);
-			int i;
+		int i;
 
-			init_cat(CATALOGUE_NONE);
-			if (isRARG(op))
-				return op ^ 1;
+		init_cat(CATALOGUE_NONE);
+		if (isRARG(op))
+			return op ^ 1;
 			for (i = 0; i < sizeof(conv_mapping) / sizeof(conv_mapping[0]); ++i)
-				if (op == conv_mapping[i])
-					return conv_mapping[i^1];
-			return STATE_UNFINISHED;		// Unreached
-		}
+			if (op == conv_mapping[i])
+				return conv_mapping[i^1];
+		return STATE_UNFINISHED;		// Unreached
+	}
 		else if (c == K60 && (State2.alphas || State2.multi)) {
-			// Handle alpha shift in alpha mode
+		// Handle alpha shift in alpha mode
 			State2.alphashift = 1 - State2.alphashift;
 			return STATE_UNFINISHED;
 		}
@@ -1821,7 +1821,7 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 	reset_shift();
 	if (ch == '\0')
 		return STATE_UNFINISHED;
-	if (cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST) {
+	if ( cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST ) {
 		// No multi character search in alpha catalogues
 		CmdLineLength = 0;
 	}
@@ -1855,7 +1855,7 @@ set_pos:
 	while (is_multi && pos && forbidden_alpha(pos))
 		--pos;
 	State.catpos = pos;
-	return STATE_UNFINISHED;
+				return STATE_UNFINISHED;
 }
 
 
@@ -1885,7 +1885,7 @@ static int process_multi(const keycode c) {
 	switch (c) {
 	case K20:	// Enter - exit multi mode, maybe return a result
 		if (shift != SHIFT_N)
-			break;
+				break;
 		reset_multi();
 		if (State2.numdigit == 0)
 			return STATE_UNFINISHED;
@@ -1908,11 +1908,11 @@ static int process_multi(const keycode c) {
 			State2.alphashift = 1 - State2.alphashift;
 		else
 			reset_multi();
-		return STATE_UNFINISHED;
+			return STATE_UNFINISHED;
 
 	default:
 		break;
-	}
+		}
 
 	/* Look up the character and return an alpha code if okay */
 	ch = keycode_to_alpha(c, shift);
@@ -1936,8 +1936,8 @@ fin:
 #ifdef INCLUDE_MULTI_DELETE
 	if (CmdBase == DBL_DELPROG) {
 		del_till_multi_label(opcode);
-		return STATE_UNFINISHED;
-	}
+	return STATE_UNFINISHED;
+}
 #endif
 	return opcode;
 }
@@ -2250,7 +2250,7 @@ static int process(const int c) {
 	}
 #endif // INCLUDE_STOPWATCH_HOTKEY
 
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 	if ( c == K63 && JustStopped ) {
 		// Avoid an accidental restart with R/S
 		JustStopped = 0;
@@ -2433,7 +2433,7 @@ void process_keycode(int c)
 		 */
 		watchdog();
 
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 		/*
 		 *  If buffer is empty re-allow R/S to start a program
 		 */
@@ -2454,7 +2454,7 @@ void process_keycode(int c)
 		 */
 		xeq_init_contexts();
 
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 		/*
 		 *  Reallow display refresh which is temporarily disabled after a stop
 		 *  All keys execpt R/S trigger this. The latter will only be reenabled
@@ -2488,7 +2488,7 @@ void process_keycode(int c)
 		}
 		else {
 			// Ignore key-up if no operation was pending
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 			if (! State2.disp_temp ) {
 				// This will get rid of the last displayed op-code
 				display();
@@ -2547,7 +2547,7 @@ void process_keycode(int c)
 			}
 		}
 	}
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 	if (! Running && ! Pause && ! JustStopped && c != STATE_IGNORE) {
 		display();
 	}

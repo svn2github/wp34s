@@ -15,7 +15,7 @@
  */
 
 #ifndef REALBUILD
-#ifdef WIN32
+#if defined(WIN32) && !defined(QTGUI)
 #include <stdlib.h>  // sleep
 #include "win32.h"
 #define sleep _sleep
@@ -59,7 +59,7 @@ int Running;
 /*
  *  A program has just stopped
  */
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 int JustStopped;
 #endif
 
@@ -160,7 +160,7 @@ int local_regs(void) {
 }
 
 
-#if ! defined(REALBUILD) && ! defined(WINGUI)
+#if ! defined(REALBUILD) && ! defined(WINGUI) && !defined(QTGUI)
 // Console screen only
 unsigned int get_local_flags(void) {
 	if (LocalRegs == 0)
@@ -283,7 +283,7 @@ void cmdmsg(unsigned int arg, enum rarg op) {
 }
 
 
-#if defined(DEBUG) && !defined(WINGUI)
+#if defined(DEBUG) && !defined(WINGUI) && !defined(QTGUI)
 #include <stdlib.h>
 static void error(const char *fmt, ...) {
 	va_list ap;
@@ -835,7 +835,7 @@ decimal64 *get_reg_n(int n) {
 			// Local XROM register in volatile RAM
 			return XromRegs + n;
 		} else {
-			// local register on the return stack
+		// local register on the return stack
 			return (decimal64 *)(RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n;
 		}
 	}
@@ -1587,7 +1587,7 @@ void get_base(decimal64 *a, decimal64 *nul2, enum nilop op) {
 
 /* Get the current ticker value */
 void op_ticks(decimal64 *a, decimal64 *nul2, enum nilop op) {
-#if defined(WINGUI) || defined(REALBUILD)
+#if defined(WINGUI) || defined(QTGUI) || defined(REALBUILD)
     put_int(Ticker, 0, a);
 #else
     struct timeval tv;
@@ -2909,7 +2909,7 @@ void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 void op_pause(unsigned int arg, enum rarg op) {
 	display();
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 	// decremented in the low level heartbeat
 	Pause = arg;
 	GoFast = (arg == 0);
@@ -3541,7 +3541,7 @@ void xeq(opcode op)
 	unsigned short old_pc = state_pc();
 	int old_cl = *((int *)&CommandLine);
 
-#if !defined(REALBUILD) && !defined(WINGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
 	instruction_count++;
 #endif
 #ifndef REALBUILD
@@ -3643,7 +3643,7 @@ void xeqprog(void)
 	int state = 0;
 
 	if ( Running || Pause ) {
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 		long long last_ticker = Ticker;
 		state = ((int) last_ticker % (2*TICKS_PER_FLASH) < TICKS_PER_FLASH);
 #else
@@ -3664,7 +3664,7 @@ void xeqprog(void)
 		// Program has terminated
 		clr_dot(RCL_annun);
 		display();
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 		// Avoid accidental restart with R/S or APD after program ends
 		JustStopped = 1;
 #endif
@@ -3839,22 +3839,37 @@ void xeq_init_contexts(void) {
 
 }
 
+
 /*
+
  *  We don't allow some commands from a running program
+
  */
 
 int not_running(void) {
 
 	if ( Running ) {
+
 		err(ERR_ILLEGAL);
+
 		return 0;
+
 	}
+
 	return 1;
+
 }
 
+
+
+
+
 /*
+
  *  Handle the Running Flag
+
  */
+
 void set_running_off_sst() {
 	Running = 0;
 }
@@ -3987,7 +4002,7 @@ void cmdregs(unsigned int arg, enum rarg op) {
 /*
  *  Debugging output for the console version
  */
-#if defined(DEBUG) && !defined(WINGUI) && !defined(WP34STEST)
+#if defined(DEBUG) && !defined(WINGUI) && !defined(QTGUI) && !defined(WP34STEST)
 extern unsigned char remap_chars(unsigned char ch);
 
 static int compare(s_opcode a1, s_opcode a2, int cata) {
@@ -4078,7 +4093,7 @@ int init_34s(void)
 	xeq_init_contexts();
 	ShowRPN = 1;
 
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(WP34STEST) && defined(DEBUG)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI) && !defined(WP34STEST) && defined(DEBUG)
 	{
 		int i;
 	/* Sanity check the function table indices.

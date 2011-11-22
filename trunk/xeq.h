@@ -58,6 +58,7 @@
 #include "decNumber/decimal64.h"
 #include "decNumber/decimal128.h"
 
+
 enum nilop;
 enum rarg;
 enum multiops;

@@ -61,7 +61,11 @@ static const unsigned char lcd_bit[] = {
 #undef M
 };
 
+#ifdef QTGUI
+volatile uint32_t *LcdAddr;
+#else
 volatile unsigned int *LcdAddr;
+#endif
 
 static int find_dot(int n) {
         unsigned int m;
@@ -123,7 +127,7 @@ void set_status_grob(unsigned long long int grob[6]) {
 #endif
 
 int setuptty(int reset) {
-#if !defined(REALBUILD) && !defined(WINGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
 #ifdef USECURSES
         if (reset)
                 endwin();
@@ -174,13 +178,18 @@ int setuptty(int reset) {
 
 
 void reset_disp(void) {
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 	int rcl = is_dot(RCL_annun);
 	int bat = is_dot(BATTERY);
 	int leq = is_dot(LIT_EQ);
 
         wait_for_display();
+#ifdef QTGUI
+    	xset(LcdData, 0, sizeof(LcdData));
+#else
+        // terrible code which assumes int are 4 bytes long. Works fine for realbuild and for WINGUI though
 	xset((void *) AT91C_SLCDC_MEM, 0, 4 * 20);
+#endif
 	dot(RCL_annun, rcl);
 	dot(BATTERY, bat);
 	dot(LIT_EQ, leq);
@@ -354,7 +363,7 @@ void show_stack(void) {
 }
 
 void show_flags(void) {
-#if !defined(REALBUILD) && !defined(WINGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
 	extern unsigned int get_local_flags(void);
 
 	if (!State2.flags)
@@ -500,13 +509,16 @@ void finish_display(void) {
 #elif defined(WINGUI)
         void EXPORT UpdateDlgScreen(int force);
         UpdateDlgScreen(1);
+#elif defined(QTGUI)
+        void updateScreen();
+        updateScreen();
 #else
         putchar('\r');
 #endif
 #endif
 }
 
-#if !defined(REALBUILD) && !defined(WINGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
 /* Take a string and cleanse all non-printing characters from it.
  * Replace them with the usual [xxx] sequences.
  */
@@ -530,7 +542,7 @@ static char *cleanse(const char *s) {
 #endif
 
 void show_progtrace(char *buf) {
-#if !defined(REALBUILD) && !defined(WINGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
         int pc = state_pc();
 
 #ifdef USECURSES

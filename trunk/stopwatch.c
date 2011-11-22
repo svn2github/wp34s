@@ -21,7 +21,7 @@
 
 #ifdef INCLUDE_STOPWATCH
 #ifndef REALBUILD
-#ifdef WIN32
+#if defined(WIN32) && !defined(QTGUI)
 #include "win32.h"
 #else
 #include <sys/time.h>
@@ -70,7 +70,7 @@ char* StopWatchMessage;
 #define MAX_STOPWATCH_MEMORY 100
 
 long long int getTicker() {
-	#if defined(WINGUI) || defined(REALBUILD)
+	#if defined(WINGUI) || defined(QTGUI) || defined(REALBUILD)
     return Ticker;
 #else
     struct timeval tv;

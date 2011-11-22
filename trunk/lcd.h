@@ -17,6 +17,10 @@
 #ifndef __LCD_H__
 #define __LCD_H__
 
+#if defined(QTGUI)
+#include <stdint.h>
+#endif
+
 extern int setuptty(int reset);
 extern void set_dot(int n);
 extern void clr_dot(int n);
@@ -54,7 +58,7 @@ extern void show_stack(void);
 
 #define BITMAP_WIDTH		43
 
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(NOCURSES)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI) && !defined(NOCURSES)
 #ifdef USECURSES
 #include <curses.h>
 #define GETCHAR	getch
@@ -87,6 +91,13 @@ extern void WindowsSwapBuffers();
 extern unsigned int LcdData[20];
 #undef AT91C_SLCDC_MEM
 #define AT91C_SLCDC_MEM LcdData
+#define Lcd_Enable()
+#endif
+
+#if defined(QTGUI)
+extern uint64_t LcdData[10];
+#undef AT91C_SLCDC_MEM
+#define AT91C_SLCDC_MEM ((uint32_t*) LcdData)
 #define Lcd_Enable()
 #endif
 

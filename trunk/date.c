@@ -692,6 +692,9 @@ void date_setdate(decimal64 *r, decimal64 *nul, enum nilop op) {
 	busy();
 	RTC_SetDate((unsigned short) y, (unsigned char) m,
 		    (unsigned char) d, (unsigned char) dow);
+#else
+	// So that very strict compilers (i.e. gcc4.6 do not complain that dow is unused with -Wall)
+	(void) dow;
 #endif
 }
 

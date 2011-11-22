@@ -21,10 +21,10 @@
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
-//#define INCLUDE_STOPWATCH
+#define INCLUDE_STOPWATCH
 // Define this to activate directly the STOPWATCH function by pressing the F then
-// G prefixes quickly
-//#define INCLUDE_STOPWATCH_HOTKEY
+// G prefixes quicly
+#define INCLUDE_STOPWATCH_HOTKEY
 
 // Build a tiny version of the device
 // #define TINY_BUILD
@@ -92,10 +92,7 @@
 // Allow A as destination for STOS/RCLS
 // #define ALLOW_STOS_A
 
-// Allow the hot keys and XEQ in Alpha mode if defined
-// #define ALLOW_ALPHA_XEQ
-
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 // Use shift hold sequence for temporary display in other bases
 #define SHIFT_HOLD_TEMPVIEW
 

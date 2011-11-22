@@ -36,7 +36,7 @@ const char *DispMsg;	   // What to display in message area
 
 int ShowRPN;		   // controls visibility of RPN annunciator
 
-#if !defined(REALBUILD) && !defined(WINGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
 int just_displayed = 0;
 #endif
 
@@ -1484,7 +1484,7 @@ nostk:	show_flags();
 	DispMsg = NULL;
 	State2.disp_small = 0;
 	finish_display();
-#if !defined(REALBUILD) && !defined(WINGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
         just_displayed = 1;
 #endif
 }
@@ -1509,7 +1509,7 @@ static void set_status_sized(const char *str, int smallp) {
 	unsigned int x = 0;
 	int i, j;
 	const unsigned short szmask = smallp?0x100:0;
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 	unsigned long long mat[6];
 
 	xset(mat, 0, sizeof(mat));
@@ -1533,7 +1533,7 @@ static void set_status_sized(const char *str, int smallp) {
 			for (j=0; j<width; j++) {
 				if (x+j >= BITMAP_WIDTH)
 					break;
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 				if (cmap[i] & (1 << j))
 					mat[i] |= 1LL << (x+j);
 #else
@@ -1542,7 +1542,7 @@ static void set_status_sized(const char *str, int smallp) {
 			}
 		x += width;
 	}
-#if defined(REALBUILD) || defined(WINGUI)
+#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 	set_status_grob(mat);
 #else
 	for (i=MATRIX_BASE + 6*x; i<400; i++)

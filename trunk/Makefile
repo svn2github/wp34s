@@ -36,17 +36,28 @@ ifeq "$(SYSTEM)" ""
 SYSTEM := Output
 endif
 ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
-# Force REALBUILD on windows under MinGW
+SYSTEM := windows32
+endif
+ifeq "$(findstring CYGWIN,$(SYSTEM))" "CYGWIN"
 SYSTEM := windows32
 endif
 ifeq "$(findstring indows,$(SYSTEM))" "indows"
 # Force REALBUILD on windows under MinGW / alternate uname utility
-SYSTEM := windows32
+ifndef QTGUI
 REALBUILD := 1
+endif
+SYSTEM := windows32
+MAKE=mingw32-make
+CC=mingw32-gcc
+CXX=mingw32-g++
 endif
 
 CFLAGS = $(BASE_CFLAGS)
+ifndef QTGUI
 CFLAGS += -O0 -DUSECURSES -DDEBUG
+else
+CFLAGS += -O0 -DDEBUG
+endif
 OUTPUTDIR := $(SYSTEM)
 UTILITIES := $(SYSTEM)
 TOOLS := tools
@@ -59,23 +70,7 @@ LDCTRL :=
 
 ifndef REALBUILD
 # Select the correct parameters and libs for various Unix flavours
-ifeq ($(SYSTEM),Linux)
 LIBS += -lcurses
-else
-ifeq ($(SYSTEM),Darwin)
-# MacOS - use static ncurses lib if found
-CFLAGS += -m32
-NCURSES := $(shell find /sw/lib -name libncurses.a)
-ifneq "$(NCURSES)" ""
-LIBS += $(NCURSES)
-else
-LIBS += -lcurses
-endif
-else
-# Any other Unix
-LIBS += -lcurses
-endif
-endif
 endif
 
 HOSTCC := $(CC)
@@ -90,6 +85,16 @@ HOSTCFLAGS += -m32
 endif
 endif
 
+ifdef QTGUI
+OUTPUTDIR := $(SYSTEM)_qt
+UTILITIES := $(SYSTEM)_qt
+CFLAGS += -DQTGUI
+endif
+
+ifeq ($(SYSTEM),windows32)
+EXE := .exe
+endif
+
 ifdef REALBUILD
 
 # Settings for the Yagarto tool chain under Windows
@@ -97,6 +102,7 @@ ifdef REALBUILD
 # MinGW will do nicely
 
 OUTPUTDIR := realbuild
+UTILITIES := $(OUTPUTDIR)
 CFLAGS := -mthumb -mcpu=arm7tdmi $(OPT_CFLAGS) $(BASE_CFLAGS)
 CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
 HOSTCFLAGS += -DREALBUILD
@@ -122,9 +128,13 @@ endif
 
 ifdef REALBUILD
 OBJECTDIR := $(OUTPUTDIR)_obj
-DIRS += $(OBJECTDIR) $(UTILITIES)
 else
 OBJECTDIR := $(OUTPUTDIR)/obj
+endif
+
+ifdef REALBUILD
+DIRS += $(OBJECTDIR) $(UTILITIES)
+else
 DIRS := $(OUTPUTDIR) $(OBJECTDIR)
 endif
 
@@ -141,6 +151,7 @@ HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		stopwatch.h 
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
+
 LIBS += -L$(OBJECTDIR) -lconsts
 LIBDN := -ldecNum34s
 CNSTS := $(OBJECTDIR)/libconsts.a
@@ -170,14 +181,19 @@ OPCODES := $(TOOLS)/wp34s.op
 
 # Targets and rules
 
-.PHONY: clean tgz asone flash version
+.PHONY: clean tgz asone flash version qt_gui real_qt_gui qt_clean qt_clean_all
 
 ifdef REALBUILD
 all: flash
 flash: $(DIRS) $(OUTPUTDIR)/calc.bin
 else
+ifdef QTGUI
+all: qtobjs
+qtobjs: $(DIRS) $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) $(LDCTRL) Makefile
+else
 all: calc
 calc: $(DIRS) $(OUTPUTDIR)/calc
+endif
 endif
 
 version:
@@ -186,11 +202,11 @@ version:
 clean:
 	-rm -fr $(DIRS)
 	-rm -fr consts.h consts.c allconsts.c catalogues.h xrom.c
-#       -make -C decNumber clean
-#       -make -C utilities clean
+#       -$(MAKE) -C decNumber clean
+#       -$(MAKE) -C utilities clean
 
 tgz:
-	@make clean
+	@$(MAKE) clean
 	rm -f sci.tgz
 	tar czf sci.tgz *
 
@@ -243,7 +259,7 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		$(DNHDRS) Makefile
 	cd $(UTILITIES) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
-		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
+		&& $(MAKE) "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 
 catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile
 	echo "# \$$Rev\$$" > $(OPCODES)
@@ -284,7 +300,7 @@ xeq.h:
 # Build libs and objects
 
 $(OBJECTDIR)/libdecNum34s.a: $(DNSRCS) $(DNHDRS) features.h decNumber/Makefile Makefile
-	+@make OBJECTDIR=../$(OBJECTDIR) "CFLAGS=$(CFLAGS)" "LIB=libdecNum34s.a" \
+	+@$(MAKE) OBJECTDIR=../$(OBJECTDIR) "CFLAGS=$(CFLAGS)" "LIB=libdecNum34s.a" \
 		-C decNumber
 
 vpath %.c = atmel
@@ -336,3 +352,27 @@ $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h data.h keys.h consts.h disp
 		int.h xrom.h storage.h Makefile features.h pretty.c
 endif
 
+
+qt_gui:
+	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui
+
+ifdef QTGUI
+
+CALCLIB := $(OBJECTDIR)/libCalculator.a
+$(CALCLIB): $(OBS)
+	-rm -f $@
+	$(AR) -r $@ $(OBJS)
+	$(RANLIB) $@
+
+real_qt_gui: all $(CALCLIB)
+	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts"
+else
+real_qt_gui:
+	@echo "real_qt_gui should be called if QTGUI is not defined"
+endif
+
+qt_clean:
+	cd QtGui; $(MAKE) clean
+
+qt_clean_all: qt_clean
+		$(MAKE) QTGUI=1 clean	
