@@ -21,10 +21,12 @@
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
-#define INCLUDE_STOPWATCH
+// #define INCLUDE_STOPWATCH
+#ifdef INCLUDE_STOPWATCH
 // Define this to activate directly the STOPWATCH function by pressing the F then
 // G prefixes quicly
 #define INCLUDE_STOPWATCH_HOTKEY
+#endif
 
 // Build a tiny version of the device
 // #define TINY_BUILD
@@ -90,15 +92,17 @@
 #define MULTI_ALPHA
 
 // Allow A as destination for STOS/RCLS
-// #define ALLOW_STOS_A
+//#define ALLOW_STOS_A
 
 #if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 // Use shift hold sequence for temporary display in other bases
-#define SHIFT_HOLD_TEMPVIEW
-
-#else
+//#define SHIFT_HOLD_TEMPVIEW
+#endif
+#ifndef SHIFT_HOLD_TEMPVIEW
 // Shift arrow keeps the shift state
-#define ARROW_KEEPS_SHIFT
+//#define ARROW_KEEPS_SHIFT
+// Allow temporary views in integer mode
+//#define INT_MODE_TEMPVIEW
 #endif
 
 // Include a date function to determine the date of Easter in a given year

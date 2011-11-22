@@ -481,8 +481,8 @@ static int process_normal(const keycode c)
 		OP_MON  | OP_RECIP,
 		OP_DYA  | OP_POW,
 		OP_MON  | OP_SQRT,
-		STATE_UNFINISHED,	// ->
-		STATE_UNFINISHED,	// CPX
+		OP_SPEC | OP_E,		// ->
+		OP_SPEC | OP_F,		// CPX
 		// Row 2
 		RARG_STO,
 		RARG_RCL,
@@ -527,21 +527,30 @@ static int process_normal(const keycode c)
 	case K01:
 	case K02:
 	case K03:
-	case K_ARROW:
-	case K_CMPLX:
+		if (UState.intm)
+			op = OP_SPEC | (OP_A + lc);
 		if (intltr(lc + 10))
-			return ( OP_SPEC | OP_A ) + lc;
-
-		if ( c == K_ARROW ) {
-			State2.arrow = 1;
-			break;
-		}
-		else if ( c == K_CMPLX ) {
-			if (!UState.intm)
-				State2.cmplx = 1;
-			break;
-		}
+			return op;
 		return check_f_key(lc, op);
+
+	case K_ARROW:
+#ifdef INT_MODE_TEMPVIEW
+		if (intltr(14))
+			return op;
+#else
+		if (UState.intm)
+			return op;
+#endif
+		process_cmdline_set_lift();
+		State2.arrow = 1;
+		set_shift(SHIFT_G);
+		break;
+
+	case K_CMPLX:
+		if (UState.intm)
+			return op;
+		State2.cmplx = 1;
+		break;
 
 	case K24:				// <-
 		if (State2.disp_temp)
@@ -641,20 +650,11 @@ static int process_fg_shifted(const keycode c) {
 
 	/*
 	 *  Handle the temporary display of X in another base
-	 *  On the emulator this is done with ->
-	 *  On the device, shift hold takes the role
+	 *  On the console emulator this is always done with ->
+	 *  On the device, shift hold may take the role
 	 */
-#ifndef SHIFT_HOLD_TEMPVIEW
-	case K_ARROW:
-		if (UState.intm) {
-			State2.arrow = 1;
-#ifdef ARROW_KEEPS_SHIFT
-			set_shift(shift);
-#endif
-			return STATE_UNFINISHED;
-		}
-		break;
-#else
+#ifdef SHIFT_HOLD_TEMPVIEW
+	// Shift hold sequences go here
 	case K22:
 	case K23:
 		if (shift == shift_down()) {
@@ -666,12 +666,32 @@ static int process_fg_shifted(const keycode c) {
 			return STATE_UNFINISHED;
 		}
 		break;
+#elif defined(INT_MODE_TEMPVIEW) || defined(ARROW_KEEPS_SHIFT)
+	// Only needed if we allow temporary views in int mode.
+	// Otherwise, the arrow will never be used after f or g.
+	case K_ARROW:
+		if (UState.intm) {
+			State2.arrow = 1;
+			process_cmdline_set_lift();
+#ifdef ARROW_KEEPS_SHIFT
+			set_shift(shift);
+#else
+			set_shift(SHIFT_G);
+#endif
+			return STATE_UNFINISHED;
+		}
+		break;
 #endif
 
 	case K20:				// Alpha
 		if (shift == SHIFT_F) {
-			State2.alphas = 1;
 			process_cmdline_set_lift();
+#ifdef SHIFT_HOLD_TEMPVIEW
+			if (shift == shift_down())
+				State2.arrow_alpha = 1;
+			else
+#endif
+			State2.alphas = 1;
 		}
 		break;
 
@@ -981,24 +1001,22 @@ static int process_arrow(const keycode c) {
 	case K12:
 		return OP_MON | OP_2GRAD;
 
+#ifndef SHIFT_HOLD_TEMPVIEW
 	case K20:
 		if (shift == SHIFT_N || shift == SHIFT_F) {
-			process_cmdline_set_lift();
 			State2.arrow_alpha = 1;
 		}
 		break;
 
-#ifndef SHIFT_HOLD_TEMPVIEW
 	case K22:
-		set_smode((shift == SHIFT_F)?SDISP_BIN:SDISP_OCT);
-		process_cmdline_set_lift();
+		set_smode((shift == SHIFT_F) ? SDISP_BIN : SDISP_OCT);
 		break;
 
 	case K23:
-		set_smode((shift == SHIFT_F)?SDISP_DEC:SDISP_HEX);
-		process_cmdline_set_lift();
+		set_smode((shift == SHIFT_F) ? SDISP_DEC : SDISP_HEX);
 		break;
 #endif
+
 	default:
 		break;
 	}

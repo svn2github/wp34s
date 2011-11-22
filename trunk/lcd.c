@@ -28,7 +28,10 @@ volatile int WaitForLcd;
 
 #ifdef USECURSES
 static unsigned char dots[400];
-
+#ifdef __GNUC__
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+#endif
 
 static void dispreg(const char n, decimal64 *p) {
         char buf[32];

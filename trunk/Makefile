@@ -37,74 +37,85 @@ SYSTEM := Output
 endif
 ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
 SYSTEM := windows32
+MAKE=mingw32-make
+CC=mingw32-gcc
+CXX=mingw32-g++
+else
+MAKE=make
+CC=gcc
+CXX=g++
 endif
 ifeq "$(findstring CYGWIN,$(SYSTEM))" "CYGWIN"
 SYSTEM := windows32
 endif
 ifeq "$(findstring indows,$(SYSTEM))" "indows"
-# Force REALBUILD on windows under MinGW / alternate uname utility
-ifndef QTGUI
-REALBUILD := 1
-endif
+# Any other Windows GCC is mapped to windows32
 SYSTEM := windows32
-MAKE=mingw32-make
-CC=mingw32-gcc
-CXX=mingw32-g++
+endif
+
+ifeq ($(SYSTEM),windows32)
+EXE := .exe
+else
+EXE :=
 endif
 
 CFLAGS = $(BASE_CFLAGS)
-ifndef QTGUI
-CFLAGS += -O0 -DUSECURSES -DDEBUG
+ifdef QTGUI
+CFLAGS += -O0 -DDEBUG -DQTGUI 
 else
-CFLAGS += -O0 -DDEBUG
+CFLAGS += -O0 -DDEBUG -DUSECURSES
 endif
-OUTPUTDIR := $(SYSTEM)
-UTILITIES := $(SYSTEM)
-TOOLS := tools
-CC := gcc
-AR := ar
-RANLIB := ranlib
-EXE :=
-LDFLAGS :=
-LDCTRL :=
 
 ifndef REALBUILD
+ifndef QTGUI
 # Select the correct parameters and libs for various Unix flavours
+ifeq ($(SYSTEM),Linux)
+LIBS += -lcurses
+else
+ifeq ($(SYSTEM),Darwin)
+# MacOS - use static ncurses lib if found
+CFLAGS += -m32
+NCURSES := $(shell find /sw/lib -name libncurses.a)
+ifneq "$(NCURSES)" ""
+LIBS += $(NCURSES)
+else
 LIBS += -lcurses
 endif
+else
+ifeq ($(SYSTEM),windows32)
+LIBS += -lpdcurses
+else
+# Any other Unix
+LIBS += -lcurses
+endif
+endif
+endif
+endif
+endif
+ 	
+TOOLS := tools
+AR=ar
+RANLIB=ranlib
+LDFLAGS :=
+LDCTRL :=
 
 HOSTCC := $(CC)
 HOSTAR := $(AR)
 HOSTRANLIB := $(RANLIB)
 HOSTCFLAGS := -Wall -Werror -O1 -g
+
 ifdef REALBUILD
-# Select the correct parameters and libs for various Unix flavours
+# Settings for the Yagarto tool chain under Windows (or MacOS)
+# On Windows a standard gcc is needed for building the generated files.
+# MinGW will do nicely
+
+CFLAGS := -mthumb -mcpu=arm7tdmi $(OPT_CFLAGS) $(BASE_CFLAGS)
+CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
+
 ifeq ($(SYSTEM),Darwin)
 # MacOS - uses 32 bits pointer or code won't compile
 HOSTCFLAGS += -m32
 endif
-endif
-
-ifdef QTGUI
-OUTPUTDIR := $(SYSTEM)_qt
-UTILITIES := $(SYSTEM)_qt
-CFLAGS += -DQTGUI
-endif
-
-ifeq ($(SYSTEM),windows32)
-EXE := .exe
-endif
-
-ifdef REALBUILD
-
-# Settings for the Yagarto tool chain under Windows
-# A standard Windows gcc is needed for building the generated files.
-# MinGW will do nicely
-
-OUTPUTDIR := realbuild
-UTILITIES := $(OUTPUTDIR)
-CFLAGS := -mthumb -mcpu=arm7tdmi $(OPT_CFLAGS) $(BASE_CFLAGS)
-CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
 HOSTCFLAGS += -DREALBUILD
 ifdef NOWD
 CFLAGS += -DNOWD
@@ -127,15 +138,20 @@ EXE := .exe
 endif
 
 ifdef REALBUILD
-OBJECTDIR := $(OUTPUTDIR)_obj
+OUTPUTDIR := realbuild
+UTILITIES := $(SYSTEM)_realbuild
+OBJECTDIR := $(UTILITIES)/obj
+DIRS := $(OBJECTDIR) $(UTILITIES)
 else
-OBJECTDIR := $(OUTPUTDIR)/obj
+ifdef QTGUI
+OUTPUTDIR := $(SYSTEM)_qt
+UTILITIES := $(SYSTEM)_qt
+else
+OUTPUTDIR := $(SYSTEM)
+UTILITIES := $(SYSTEM)
 endif
-
-ifdef REALBUILD
-DIRS += $(OBJECTDIR) $(UTILITIES)
-else
-DIRS := $(OUTPUTDIR) $(OBJECTDIR)
+OBJECTDIR := $(OUTPUTDIR)/obj
+DIRS := $(OBJECTDIR) $(OUTPUTDIR)
 endif
 
 # Files and libraries
@@ -144,6 +160,9 @@ SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c xrom.c consts.c alpha.c charmap.c \
 		commands.c string.c storage.c serial.c matrix.c \
 		stopwatch.c
+ifeq ($(SYSTEM),windows32)
+SRCS += winserial.c
+endif
 
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
@@ -259,8 +278,8 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		$(DNHDRS) Makefile
 	cd $(UTILITIES) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
-		&& $(MAKE) "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
-
+		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
+		
 catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile
 	echo "# \$$Rev\$$" > $(OPCODES)
 	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>>$(OPCODES)
@@ -350,6 +369,9 @@ $(OBJECTDIR)/main.o: main.c xeq.h data.h
 else
 $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h data.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h storage.h Makefile features.h pretty.c
+ifeq ($(SYSTEM),windows32)
+$(OBJECTDIR)/winserial.o: winserial.c serial.h Makefile
+endif		
 endif
 
 

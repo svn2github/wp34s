@@ -15,7 +15,7 @@
  */
 
 #ifndef REALBUILD
-#if defined(WIN32) && !defined(QTGUI)
+#if defined(WIN32) && !defined(QTGUI) && !defined(__GNUC__)
 #include <stdlib.h>  // sleep
 #include "win32.h"
 #define sleep _sleep
@@ -2914,7 +2914,7 @@ void op_pause(unsigned int arg, enum rarg op) {
 	Pause = arg;
 	GoFast = (arg == 0);
 #else
-#ifdef WIN32
+#if defined(WIN32) && !defined(__GNUC__)
 #pragma warning(disable:4996)
 	sleep(arg/10);
 #else

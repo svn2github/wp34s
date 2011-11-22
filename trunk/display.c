@@ -1215,14 +1215,6 @@ static void show_registers(void) {
 }
 
 
-/* Display the X register as alpha */
-static void show_alpha(void) {
-	char buf[12];
-
-	set_status(alpha_rcl_s(&regX, buf));
-	State2.arrow_alpha = 0;
-}
-
 static void set_annunciators(void)
 {
 	const enum trig_modes tm = get_trig_mode();
@@ -1381,7 +1373,7 @@ void display(void) {
 		show_registers();
 		skip = 1;
 	} else if (State2.arrow_alpha) {
-		show_alpha();
+		set_status(alpha_rcl_s(&regX, buf));
 	} else if (State2.runmode) {
 		if (DispMsg) {
 			set_status(DispMsg);
@@ -1470,7 +1462,7 @@ nostk:	show_flags();
 				set_dig(i, *bp);
 		}
 	}
-	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL)
+	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || State2.arrow_alpha)
 		ShowRPN = 0;
 	set_annunciators();
 
@@ -1478,6 +1470,7 @@ nostk:	show_flags();
 	if (annuc && !State2.disp_temp)
 		annunciators();
 	State2.version = 0;
+	State2.arrow_alpha = 0;
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;

@@ -21,7 +21,7 @@
 
 #ifdef INCLUDE_STOPWATCH
 #ifndef REALBUILD
-#if defined(WIN32) && !defined(QTGUI)
+#if defined(WIN32) && !defined(QTGUI) && !defined(__GNUC__)
 #include "win32.h"
 #else
 #include <sys/time.h>
