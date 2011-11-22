@@ -53,6 +53,7 @@ private:
     QWaitCondition keyWaitCondition;
     char keyboardBuffer[KEYBOARD_BUFFER_SIZE];
     int keyboardBufferBegin, keyboardBufferEnd;
+    int lastKey;
 };
 
 #endif /* QTKEYBOARD_H_ */

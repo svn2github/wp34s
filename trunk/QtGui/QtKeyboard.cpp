@@ -61,6 +61,7 @@ bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 	{
 		putKey(key);
 	}
+	lastKey=key;
 	return true;
 }
 
@@ -68,7 +69,18 @@ bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)
 {
 	Q_UNUSED(aMouseEvent)
 
+	// Sometimes, when clicking rapidly, we receive only the buttonReleased event without the buttonPressed before
+	// This code is here to deal with it and avoid "missing" keys
+	if(lastKey<0)
+	{
+		int key=findKey(aMouseEvent.pos());
+		if(key>=0)
+		{
+			putKey(key);
+		}
+	}
 	forward_key_released();
+	lastKey=-1;
 	return true;
 }
 
