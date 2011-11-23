@@ -17,6 +17,8 @@
 #include "xeq.h"
 #include "stopwatch.h"
 #include "display.h"
+#include "data.h"
+#include "storage.h"
 
 extern int is_key_pressed_adapter();
 extern int put_key_adapter(int);
@@ -85,4 +87,21 @@ void forward_key_released()
 
 void shutdown()
 {
+}
+
+extern char* get_memory()
+{
+	return (char*) &PersistentRam;
+}
+
+extern int get_memory_size()
+{
+	return sizeof(PersistentRam);
+}
+
+void prepare_memory_save()
+{
+	process_cmdline_set_lift();
+	init_state();
+	checksum_all();
 }

@@ -22,6 +22,9 @@ extern "C"
 extern void init_calculator();
 extern void forward_keycode(int);
 extern void forward_key_released();
+extern char* get_memory();
+extern int get_memory_size();
+extern void prepare_memory_save();
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */

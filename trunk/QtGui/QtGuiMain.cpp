@@ -14,7 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include <QtGui>
 #include "QtEmulator.h"
 
@@ -23,6 +22,9 @@ int main(int argv, char **args)
 	try
 	{
 		QApplication app(argv, args);
+		QApplication::setOrganizationName(ORGANIZATION_NAME);
+		QApplication::setApplicationName(APPLICATION_NAME);
+
 		QtEmulator emulator;
 		emulator.show();
 
@@ -30,7 +32,7 @@ int main(int argv, char **args)
 	}
 	catch(QtSkinException& exception)
 	{
-		std::cerr << exception.what() << std::endl;
+		qDebug() << exception.what();
 		return 1;
 	}
 }

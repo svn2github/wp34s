@@ -14,7 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
 #include <stack>
 #include "QtSkin.h"
 

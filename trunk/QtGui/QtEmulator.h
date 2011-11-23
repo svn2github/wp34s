@@ -26,6 +26,10 @@
 #include "QtCalculatorThread.h"
 #include "QtHeartBeatThread.h"
 
+#define ORGANIZATION_NAME "WP-34s"
+#define APPLICATION_NAME "WP34sEmulator"
+#define WINDOWS_POSITION_SETTING "Position"
+#define NON_VOLATILE_MEMORY_SETTING "NonVolatileMemory"
 
 class QtEmulator : public QMainWindow
 {
@@ -33,6 +37,7 @@ class QtEmulator : public QMainWindow
 
 public:
      QtEmulator();
+     ~QtEmulator();
 
 public:
      QtKeyboard& getKeyboard() const;
@@ -44,6 +49,10 @@ private:
      QtSkin* buildSkin(const QString& aStringFilename);
      void buildComponents(const QtSkin& aSkin);
      void startThreads();
+     void loadSettings();
+     void saveSetting();
+     void loadMemory();
+     void saveMemory();
 
 private:
      QtKeyboard* keyboard;

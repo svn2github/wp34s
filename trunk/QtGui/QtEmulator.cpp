@@ -15,11 +15,14 @@
  */
 
 #include "QtEmulator.h"
+#include "QtEmulatorAdapter.h"
 
 QtEmulator* currentEmulator;
 
 QtEmulator::QtEmulator()
 {
+	loadSettings();
+
 	QtSkin* skin=buildSkin(getSkinFilename());
 	buildComponents(*skin);
 	delete skin;
@@ -33,7 +36,14 @@ QtEmulator::QtEmulator()
 	setWindowTitle(QApplication::translate("wp34s", "WP34s"));
 	currentEmulator = this;
 
+	loadMemory();
 	startThreads();
+}
+
+QtEmulator::~QtEmulator()
+{
+	saveSetting();
+	saveMemory();
 }
 
 QtKeyboard& QtEmulator::getKeyboard() const
@@ -79,4 +89,45 @@ QtSkin* QtEmulator::buildSkin(const QString& aStringFilename)
 {
 	QFile skinFile(aStringFilename);
 	return new QtSkin(skinFile);
+}
+
+void QtEmulator::loadSettings()
+{
+
+}
+
+void QtEmulator::saveSetting()
+{
+
+}
+
+void QtEmulator::loadMemory()
+{
+	QSettings settings;
+	QVariant variant=settings.value(NON_VOLATILE_MEMORY_SETTING);
+	if(variant.isValid() && variant.canConvert(QVariant::ByteArray))
+	{
+		QByteArray memory=variant.toByteArray();
+		if(memory.size()==get_memory_size())
+		{
+			memcpy(get_memory(), memory.constData(), memory.size());
+		}
+		else
+		{
+			// TODO
+		}
+	}
+	else
+	{
+		// TODO
+	}
+}
+
+void QtEmulator::saveMemory()
+{
+	prepare_memory_save();
+	QSettings settings;
+	QByteArray memory(get_memory(), get_memory_size());
+	settings.setValue(NON_VOLATILE_MEMORY_SETTING, memory);
+	settings.sync();
 }
