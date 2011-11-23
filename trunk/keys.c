@@ -456,10 +456,12 @@ static int check_f_key(int n, const int dflt) {
 	const int code = 100 + n;
 	unsigned int pc = state_pc();
 
-	if(isXROM(pc))
-		pc = 1;
-	if (find_label_from(pc, code, 1))
-		return RARG(RARG_XEQ, code);
+	if (! State2.runmode) {
+		if (isXROM(pc))
+			pc = 1;
+		if (find_label_from(pc, code, 1))
+			return RARG(RARG_XEQ, code);
+	}
 	return dflt;
 }
 
@@ -467,7 +469,7 @@ static int check_f_key(int n, const int dflt) {
  * as digits.
  */
 static int intltr(int d) {
-	return (UState.intm && (int) int_base() > d);
+	return (UState.intm && (! State2.runmode || (int) int_base() > d));
 }
 
 /*
@@ -525,10 +527,10 @@ static int process_normal(const keycode c)
 	switch (c) {
 	case K00:
 	case K01:
-	case K02:
-	case K03:
 		if (UState.intm)
 			op = OP_SPEC | (OP_A + lc);
+	case K02:
+	case K03:
 		if (intltr(lc + 10))
 			return op;
 		return check_f_key(lc, op);
@@ -622,8 +624,8 @@ static int process_fg_shifted(const keycode c) {
 	};
 
 	static const unsigned short int op_map2[] = {
-		OP_SPEC | OP_SIGMAPLUS,
-		OP_MON  | OP_RECIP,
+		STATE_UNFINISHED,
+		STATE_UNFINISHED,
 		OP_DYA  | OP_POW,
 		OP_MON  | OP_SQRT
 	};
@@ -2268,7 +2270,7 @@ static int process(const int c) {
 	}
 #endif // INCLUDE_STOPWATCH_HOTKEY
 
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 	if ( c == K63 && JustStopped ) {
 		// Avoid an accidental restart with R/S
 		JustStopped = 0;
@@ -2451,7 +2453,7 @@ void process_keycode(int c)
 		 */
 		watchdog();
 
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 		/*
 		 *  If buffer is empty re-allow R/S to start a program
 		 */
@@ -2472,7 +2474,7 @@ void process_keycode(int c)
 		 */
 		xeq_init_contexts();
 
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 		/*
 		 *  Reallow display refresh which is temporarily disabled after a stop
 		 *  All keys execpt R/S trigger this. The latter will only be reenabled
@@ -2506,7 +2508,7 @@ void process_keycode(int c)
 		}
 		else {
 			// Ignore key-up if no operation was pending
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 			if (! State2.disp_temp ) {
 				// This will get rid of the last displayed op-code
 				display();
@@ -2565,14 +2567,14 @@ void process_keycode(int c)
 			}
 		}
 	}
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
-	if (! Running && ! Pause && ! JustStopped && c != STATE_IGNORE) {
+#ifndef CONSOLE
+	if (! Running && ! Pause && ! JustStopped && ! JustDisplayed && c != STATE_IGNORE) {
 		display();
 	}
 #else
-	if (! Running && ! Pause && c != STATE_IGNORE && ! just_displayed) {
+	if (! Running && ! Pause && c != STATE_IGNORE && ! JustDisplayed) {
 		display();
 	}
-        just_displayed = 0;
 #endif
+        JustDisplayed = 0;
 }

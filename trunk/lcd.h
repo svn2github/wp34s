@@ -16,6 +16,7 @@
 
 #ifndef __LCD_H__
 #define __LCD_H__
+#include "xeq.h"
 
 #if defined(QTGUI)
 #include <stdint.h>
@@ -58,7 +59,7 @@ extern void show_stack(void);
 
 #define BITMAP_WIDTH		43
 
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI) && !defined(NOCURSES)
+#if defined(CONSOLE) && !defined(NOCURSES)
 #ifdef USECURSES
 #include <curses.h>
 #define GETCHAR	getch

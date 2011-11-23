@@ -15,6 +15,11 @@
  */
 #ifndef FEATURES_H__
 #define FEATURES_H__
+
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
+#define CONSOLE
+#endif
+
 /*
  *  Select optional features here
  */
@@ -94,7 +99,7 @@
 // Allow A as destination for STOS/RCLS
 //#define ALLOW_STOS_A
 
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 // Use shift hold sequence for temporary display in other bases
 //#define SHIFT_HOLD_TEMPVIEW
 #endif

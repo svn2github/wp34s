@@ -70,7 +70,7 @@ char* StopWatchMessage;
 #define MAX_STOPWATCH_MEMORY 100
 
 long long int getTicker() {
-	#if defined(WINGUI) || defined(QTGUI) || defined(REALBUILD)
+#ifndef CONSOLE
     return Ticker;
 #else
     struct timeval tv;

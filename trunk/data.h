@@ -315,7 +315,7 @@ extern TXromLocal XromLocal;
 extern volatile int WaitForLcd;	   // Sync with display refresh
 extern volatile int Pause;         // Count down for programmed pause
 extern int Running;		   // Program is active
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 extern int JustStopped;            // Set on program stop to ignore the next R/S key in the buffer
 #endif
 extern int Error;		   // Did an error occur, if so what code?
@@ -333,10 +333,8 @@ extern int RetStkSize;		   // actual size of retiurn stack
 extern int ProgFree;		   // Remaining program steps
 extern decContext Ctx;		   // decNumber library context
 
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
-extern int just_displayed;
-#endif
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
+extern int JustDisplayed;	   // Avoid duplicate calls to display();
+#ifdef CONSOLE
 extern unsigned long long int instruction_count;
 extern int view_instruction_counter;
 #endif

@@ -130,7 +130,7 @@ void set_status_grob(unsigned long long int grob[6]) {
 #endif
 
 int setuptty(int reset) {
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
+#ifdef CONSOLE
 #ifdef USECURSES
         if (reset)
                 endwin();
@@ -181,7 +181,7 @@ int setuptty(int reset) {
 
 
 void reset_disp(void) {
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 	int rcl = is_dot(RCL_annun);
 	int bat = is_dot(BATTERY);
 	int leq = is_dot(LIT_EQ);
@@ -366,13 +366,13 @@ void show_stack(void) {
 }
 
 void show_flags(void) {
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
+#ifdef CONSOLE
 	extern unsigned int get_local_flags(void);
 
 	if (!State2.flags)
 		return;
 	MOVE(0, 0);
-	PRINTF(" %c ", just_displayed?'*':' ');
+	PRINTF(" %c ", JustDisplayed ? '*' : ' ');
 	MOVE(5, 0);
 	switch (cur_shift()) {
 	case SHIFT_F:   PRINTF("[f-shift]");    break;
@@ -521,7 +521,7 @@ void finish_display(void) {
 #endif
 }
 
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
+#ifdef CONSOLE
 /* Take a string and cleanse all non-printing characters from it.
  * Replace them with the usual [xxx] sequences.
  */
@@ -545,7 +545,7 @@ static char *cleanse(const char *s) {
 #endif
 
 void show_progtrace(char *buf) {
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
+#ifdef CONSOLE
         int pc = state_pc();
 
 #ifdef USECURSES

@@ -56,10 +56,10 @@
  */
 int Running;
 
+#ifndef CONSOLE
 /*
  *  A program has just stopped
  */
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
 int JustStopped;
 #endif
 
@@ -160,7 +160,7 @@ int local_regs(void) {
 }
 
 
-#if ! defined(REALBUILD) && ! defined(WINGUI) && !defined(QTGUI)
+#ifdef CONSOLE
 // Console screen only
 unsigned int get_local_flags(void) {
 	if (LocalRegs == 0)
@@ -262,7 +262,18 @@ void err(const enum errors e) {
 
 /* Display a warning
  */
-#define warn(e) error_message(e)
+static void warn(const enum errors e) {
+	if (Running) {
+		err(e);
+	}
+	else {
+		error_message(e);
+#ifndef CONSOLE
+		State2.disp_freeze = 0;
+		JustDisplayed = 1;
+#endif
+	}
+}
 
 
 /* Doing something in the wrong mode */
@@ -283,7 +294,7 @@ void cmdmsg(unsigned int arg, enum rarg op) {
 }
 
 
-#if defined(DEBUG) && !defined(WINGUI) && !defined(QTGUI)
+#if defined(DEBUG) && defined(CONSOLE)
 #include <stdlib.h>
 static void error(const char *fmt, ...) {
 	va_list ap;
@@ -1587,7 +1598,7 @@ void get_base(decimal64 *a, decimal64 *nul2, enum nilop op) {
 
 /* Get the current ticker value */
 void op_ticks(decimal64 *a, decimal64 *nul2, enum nilop op) {
-#if defined(WINGUI) || defined(QTGUI) || defined(REALBUILD)
+#ifndef CONSOLE
     put_int(Ticker, 0, a);
 #else
     struct timeval tv;
@@ -2909,7 +2920,7 @@ void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 void op_pause(unsigned int arg, enum rarg op) {
 	display();
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 	// decremented in the low level heartbeat
 	Pause = arg;
 	GoFast = (arg == 0);
@@ -3541,7 +3552,7 @@ void xeq(opcode op)
 	unsigned short old_pc = state_pc();
 	int old_cl = *((int *)&CommandLine);
 
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
+#ifdef CONSOLE
 	instruction_count++;
 #endif
 #ifndef REALBUILD
@@ -3643,7 +3654,7 @@ void xeqprog(void)
 	int state = 0;
 
 	if ( Running || Pause ) {
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 		long long last_ticker = Ticker;
 		state = ((int) last_ticker % (2*TICKS_PER_FLASH) < TICKS_PER_FLASH);
 #else
@@ -3664,7 +3675,7 @@ void xeqprog(void)
 		// Program has terminated
 		clr_dot(RCL_annun);
 		display();
-#if defined(REALBUILD) || defined(WINGUI) || defined(QTGUI)
+#ifndef CONSOLE
 		// Avoid accidental restart with R/S or APD after program ends
 		JustStopped = 1;
 #endif
@@ -4002,7 +4013,7 @@ void cmdregs(unsigned int arg, enum rarg op) {
 /*
  *  Debugging output for the console version
  */
-#if defined(DEBUG) && !defined(WINGUI) && !defined(QTGUI) && !defined(WP34STEST)
+#if defined(DEBUG) && defined(CONSOLE) && !defined(WP34STEST)
 extern unsigned char remap_chars(unsigned char ch);
 
 static int compare(s_opcode a1, s_opcode a2, int cata) {
@@ -4093,7 +4104,7 @@ int init_34s(void)
 	xeq_init_contexts();
 	ShowRPN = 1;
 
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI) && !defined(WP34STEST) && defined(DEBUG)
+#if defined(CONSOLE) && !defined(WP34STEST) && defined(DEBUG)
 	{
 		int i;
 	/* Sanity check the function table indices.
