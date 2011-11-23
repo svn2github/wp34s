@@ -1195,19 +1195,24 @@ static void show_registers(void) {
 	decimal64 *reg;
 	const int n = State2.digval;
 
-	xset(buf, '\0', 16);
 	reg = State2.digval2 ? get_flash_reg_n(n) : 
 	      State2.local   ? get_reg_n(LOCAL_REG_BASE + n) : 
 	      get_reg_n(n);
-	bp = scopy_spc(buf, State2.digval2 ? "Bkup" : "Reg ");
-	if (State2.local)
-		*bp++ = '.';
-	if (n < 100)
-		num_arg_0(bp, n, 2);
-	else
-		*bp++ = REGNAMES[n - regX_idx];
-	set_status(buf);
 
+	if (State2.disp_as_alpha) {
+		set_status(alpha_rcl_s(reg, buf));
+	}
+	else {
+		xset(buf, '\0', 16);
+		bp = scopy_spc(buf, State2.digval2 ? "Bkup" : "Reg ");
+		if (State2.local)
+			*bp++ = '.';
+		if (n < 100)
+			num_arg_0(bp, n, 2);
+		else
+			*bp++ = REGNAMES[n - regX_idx];
+		set_status(buf);
+	}
 	format_reg(reg, NULL);
 }
 
@@ -1369,8 +1374,10 @@ void display(void) {
 	} else if (State2.registerlist) {
 		show_registers();
 		skip = 1;
-	} else if (State2.arrow_alpha) {
+#ifdef SHIFT_HOLD_TEMPVIEW
+	} else if (State2.disp_as_alpha) {
 		set_status(alpha_rcl_s(&regX, buf));
+#endif
 	} else if (State2.runmode) {
 		if (DispMsg) {
 			set_status(DispMsg);
@@ -1459,15 +1466,16 @@ nostk:	show_flags();
 				set_dig(i, *bp);
 		}
 	}
-	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || State2.arrow_alpha)
+	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || State2.disp_as_alpha)
 		ShowRPN = 0;
 	set_annunciators();
 
-	State2.disp_temp = (ShowRPN == 0 && State2.runmode);
+	State2.disp_temp = (ShowRPN == 0 && State2.runmode 
+		            && (! State2.registerlist || State2.disp_as_alpha));
 	if (annuc && !State2.disp_temp)
 		annunciators();
 	State2.version = 0;
-	State2.arrow_alpha = 0;
+	State2.disp_as_alpha = 0;
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;

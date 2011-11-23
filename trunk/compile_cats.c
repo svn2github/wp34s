@@ -31,8 +31,8 @@
 #define CMON(op, n)		op | OP_CMON,
 #define NILIC(op, n)		op | OP_NIL,
 #define SPECIAL(op, n)		op | OP_SPEC,
-#define RARGCMD(op, n)		RARG_BASE(op),
-#define CONV(n, d, name)	RARG_BASE(RARG_CONV) + (n)*2 + (d),
+#define RARGCMD(op, n)		RARG_BASEOP(op),
+#define CONV(n, d, name)	RARG_BASEOP(RARG_CONV) + (n)*2 + (d),
 
 
 static s_opcode program_xfcn[] = {

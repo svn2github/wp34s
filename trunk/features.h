@@ -141,7 +141,7 @@
 // M.R<->, M.R*, M.R+
 #define MATRIX_ROWOPS
 
-// Inlcude the LU decomposition as a user command
+// Include the LU decomposition as a user command
 // M.LU
 #define MATRIX_LU_DECOMP
 

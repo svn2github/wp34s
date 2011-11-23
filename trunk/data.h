@@ -212,7 +212,7 @@ struct _state2 {
 	unsigned int dot : 1;		// misc use
 	unsigned int ind : 1;		// Indirection STO or RCL
 	unsigned int local : 1;		// entering a local flag or register number .00 to.15
-	unsigned int arrow_alpha : 1;	// display alpha conversion
+	unsigned int disp_as_alpha : 1;	// display alpha conversion
 	unsigned int alphas : 1;        // Alpha shift key pressed
 	unsigned int alphashift : 1;	// Alpha shifted to lower case
 	unsigned int rarg : 1;		// In argument accept mode

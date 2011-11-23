@@ -496,8 +496,8 @@ enum eKind {
 
 #define RARG_MASK	0x7f
 #define RARG_IND	0x80
-#define RARG_BASE(op)	(((op) + RARG_OPBASE) << RARG_OPSHFT)
-#define RARG(op, n)	(RARG_BASE(op) | (n))
+#define RARG_BASEOP(op)	(((op) + RARG_OPBASE) << RARG_OPSHFT)
+#define RARG(op, n)	(RARG_BASEOP(op) | (n))
 #define RARG_CMD(op)	((enum rarg) (((op) >> RARG_OPSHFT) - RARG_OPBASE))
 
 #define opKIND(op)	((enum eKind)((op) >> KIND_SHIFT))
