@@ -456,7 +456,7 @@ static int check_f_key(int n, const int dflt) {
 	const int code = 100 + n;
 	unsigned int pc = state_pc();
 
-	if (! State2.runmode) {
+	if (State2.runmode) {
 		if (isXROM(pc))
 			pc = 1;
 		if (find_label_from(pc, code, 1))
