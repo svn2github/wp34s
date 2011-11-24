@@ -2285,6 +2285,18 @@ decNumber *decNumberNot(decNumber *res, const decNumber *x) {
 	return bool2dn(res, !dn2bool(x));
 }
 
+#if 1
+/*
+ *  Execute the logical opeartions via a truth table.
+ *  Each nibble encodes a single operation.
+ */
+decNumber *decNumberBooleanOp(decNumber *res, const decNumber *x, const decNumber *y) {
+	const unsigned int TRUTH_TABLE = 0x9176E8;
+	const unsigned int bit = ((XeqOpCode - OP_LAND) << 2) + (dn2bool(y) << 1) + dn2bool(x);
+	return bool2dn(res, (TRUTH_TABLE >> bit) & 1);
+}
+
+#else
 decNumber *decNumberAnd(decNumber *res, const decNumber *x, const decNumber *y) {
 	return bool2dn(res, dn2bool(x) && dn2bool(y));
 }
@@ -2308,7 +2320,7 @@ decNumber *decNumberNor(decNumber *res, const decNumber *x, const decNumber *y) 
 decNumber *decNumberNxor(decNumber *res, const decNumber *x, const decNumber *y) {
 	return bool2dn(res, !(dn2bool(x) ^ dn2bool(y)));
 }
-
+#endif
 
 decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 	int numdig = UState.dispdigs + 1;

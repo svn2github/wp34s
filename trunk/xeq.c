@@ -84,6 +84,11 @@ int Error;
 int PcWrapped;
 
 /*
+ *  Currently executed function
+ */
+s_opcode XeqOpCode;
+
+/*
  *  Temporary display (not X)
  */
 int ShowRegister;
@@ -3401,6 +3406,8 @@ static void rargs(const opcode op) {
 	const unsigned int cmd = RARG_CMD(op);
 	decNumber x;
 	unsigned int lim = argcmds[cmd].lim;
+
+	XeqOpCode = (s_opcode) cmd;
 	if (lim == 0) lim = 256; // default
 
 	process_cmdline();
@@ -3462,6 +3469,7 @@ static void rargs(const opcode op) {
 
 static void multi(const opcode op) {
 	const int cmd = opDBL(op);
+	XeqOpCode = (s_opcode) cmd;
 
 	process_cmdline_set_lift();
 
@@ -3572,6 +3580,7 @@ void xeq(opcode op)
 	else if (isRARG(op))
 		rargs(op);
 	else {
+		XeqOpCode = (s_opcode) op;
 		switch (opKIND(op)) {
 		case KIND_SPEC:	specials(op);	break;
 		case KIND_NIL:	niladic(op);	break;

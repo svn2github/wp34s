@@ -325,6 +325,7 @@ extern int ShowRPN;		   // controls the RPN annunciator
 extern const char *DispMsg;	   // What to display in message area
 extern char TraceBuffer[];         // Display current instruction
 extern unsigned int OpCode;        // Pending execution waiting for key-release
+extern s_opcode XeqOpCode;	   // Currently executed function
 extern unsigned char GoFast;	   // Speed-up might be necessary
 #ifdef ENABLE_VARIABLE_REGS
 extern unsigned short *RetStk;	   // Pointer to current top of return stack

@@ -324,12 +324,21 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_HMSSUB,	&decNumberHMSSub,	NOFN,		NOFN,		"H.MS-")
 	FUNC(OP_GCD,	&decNumberGCD,		NOFN,		&intGCD,	"GCD")
 	FUNC(OP_LCM,	&decNumberLCM,		NOFN,		&intLCM,	"LCM")
+#if 1
+	FUNC(OP_LAND,	&decNumberBooleanOp,	NOFN,		&intAnd,	"AND")
+	FUNC(OP_LOR,	&decNumberBooleanOp,	NOFN,		&intOr,		"OR")
+	FUNC(OP_LXOR,	&decNumberBooleanOp,	NOFN,		&intXor,	"XOR")
+	FUNC(OP_LNAND,	&decNumberBooleanOp,	NOFN,		&intNand,	"NAND")
+	FUNC(OP_LNOR,	&decNumberBooleanOp,	NOFN,		&intNor,	"NOR")
+	FUNC(OP_LXNOR,	&decNumberBooleanOp,	NOFN,		&intEquiv,	"XNOR")
+#else
 	FUNC(OP_LAND,	&decNumberAnd,		NOFN,		&intAnd,	"AND")
 	FUNC(OP_LOR,	&decNumberOr,		NOFN,		&intOr,		"OR")
 	FUNC(OP_LXOR,	&decNumberXor,		NOFN,		&intXor,	"XOR")
 	FUNC(OP_LNAND,	&decNumberNand,		NOFN,		&intNand,	"NAND")
 	FUNC(OP_LNOR,	&decNumberNor,		NOFN,		&intNor,	"NOR")
 	FUNC(OP_LXNOR,	&decNumberNxor,		NOFN,		&intEquiv,	"XNOR")
+#endif
 	FUNC(OP_DTADD,	&dateAdd,		NOFN,		NOFN,		"DAYS+")
 	FUNC(OP_DTDIF,	&dateDelta,		NOFN,		NOFN,		"\203DAYS")
 

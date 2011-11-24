@@ -201,13 +201,16 @@ extern decNumber *decNumberParallel(decNumber *res, const decNumber *x, const de
 extern decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y);
 
 extern decNumber *decNumberNot(decNumber *res, const decNumber *x);
+#if 1
+extern decNumber *decNumberBooleanOp(decNumber *res, const decNumber *x, const decNumber *y);
+#else
 extern decNumber *decNumberAnd(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberOr(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberXor(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberNand(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberNor(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberNxor(decNumber *res, const decNumber *x, const decNumber *y);
-
+#endif
 
 extern void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv);
 extern void dn_sinhcosh(const decNumber *v, decNumber *sinhv, decNumber *coshv);
