@@ -325,12 +325,12 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_GCD,	&decNumberGCD,		NOFN,		&intGCD,	"GCD")
 	FUNC(OP_LCM,	&decNumberLCM,		NOFN,		&intLCM,	"LCM")
 #if 1
-	FUNC(OP_LAND,	&decNumberBooleanOp,	NOFN,		&intAnd,	"AND")
-	FUNC(OP_LOR,	&decNumberBooleanOp,	NOFN,		&intOr,		"OR")
-	FUNC(OP_LXOR,	&decNumberBooleanOp,	NOFN,		&intXor,	"XOR")
-	FUNC(OP_LNAND,	&decNumberBooleanOp,	NOFN,		&intNand,	"NAND")
-	FUNC(OP_LNOR,	&decNumberBooleanOp,	NOFN,		&intNor,	"NOR")
-	FUNC(OP_LXNOR,	&decNumberBooleanOp,	NOFN,		&intEquiv,	"XNOR")
+	FUNC(OP_LAND,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"AND")
+	FUNC(OP_LOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"OR")
+	FUNC(OP_LXOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"XOR")
+	FUNC(OP_LNAND,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"NAND")
+	FUNC(OP_LNOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"NOR")
+	FUNC(OP_LXNOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"XNOR")
 #else
 	FUNC(OP_LAND,	&decNumberAnd,		NOFN,		&intAnd,	"AND")
 	FUNC(OP_LOR,	&decNumberOr,		NOFN,		&intOr,		"OR")

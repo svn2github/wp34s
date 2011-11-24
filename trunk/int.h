@@ -53,12 +53,16 @@ extern long long int intCube(long long int x);
 extern long long int intChs(long long int x);
 extern long long int intAbs(long long int x);
 extern long long int intNot(long long int x);
+#if 1
+extern long long int intBooleanOp(long long int y, long long int x);
+#else
 extern long long int intAnd(long long int y, long long int x);
 extern long long int intOr(long long int y, long long int x);
 extern long long int intXor(long long int y, long long int x);
 extern long long int intNand(long long int y, long long int x);
 extern long long int intNor(long long int y, long long int x);
 extern long long int intEquiv(long long int y, long long int x);
+#endif
 
 extern long long int intFP(long long int x);
 extern long long int intIP(long long int x);

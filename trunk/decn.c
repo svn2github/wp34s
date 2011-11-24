@@ -2287,7 +2287,7 @@ decNumber *decNumberNot(decNumber *res, const decNumber *x) {
 
 #if 1
 /*
- *  Execute the logical opeartions via a truth table.
+ *  Execute the logical operations via a truth table.
  *  Each nibble encodes a single operation.
  */
 decNumber *decNumberBooleanOp(decNumber *res, const decNumber *x, const decNumber *y) {

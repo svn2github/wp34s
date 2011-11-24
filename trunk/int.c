@@ -860,6 +860,22 @@ long long int intNot(long long int x) {
 	return mask_value(~x);
 }
 
+#if 1
+long long int intBooleanOp(long long int y, long long int x) {
+	long long result;
+	const int op = XeqOpCode - OP_LAND;
+	const int not = op >= 3 ? 3 : 0;
+
+	switch (op - not) {
+	case 0:  result = y & x; break;
+	case 1:  result = y | x; break;
+	default: result = y ^ x; break;
+	}
+	if (not)
+		result = ~result;
+	return mask_value(result);
+}
+#else
 long long int intAnd(long long int y, long long int x) {
 	return mask_value(y & x);
 }
@@ -883,6 +899,7 @@ long long int intNor(long long int y, long long int x) {
 long long int intEquiv(long long int y, long long int x) {
 	return mask_value(~(y ^ x));
 }
+#endif
 
 /* Fraction and integer parts are very easy for integers.
  */
