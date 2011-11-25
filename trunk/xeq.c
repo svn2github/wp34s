@@ -3088,6 +3088,9 @@ void op_locale(decimal64 *a, decimal64 *nul, enum nilop op) {
 		// China
 		LOCALE_RADIX_DOT | LOCALE_THOUS_OFF | LOCALE_TIME_24 |
 			LOCALE_JG1752 | LOCALE_DATE_YMD,
+		// Japan
+		LOCALE_RADIX_DOT | LOCALE_THOUS_ON | LOCALE_TIME_24 |
+			LOCALE_JG1752 | LOCALE_DATE_YMD,
 	};
 	const unsigned char f = locales[op - OP_SETEUR];
 

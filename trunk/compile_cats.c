@@ -738,6 +738,7 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_SETUSA,	"SETUSA")
 	NILIC(OP_SETIND,	"SETIND")
 	NILIC(OP_SETCHN,	"SETCHN")
+	NILIC(OP_SETJPN,	"SETJPN")
 };
 
 static s_opcode alpha_catalogue[] = {

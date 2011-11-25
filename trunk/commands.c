@@ -589,6 +589,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SETUSA,	&op_locale,		"SETUSA")
 	FUNC0(OP_SETIND,	&op_locale,		"SETIND")
 	FUNC0(OP_SETCHN,	&op_locale,		"SETCHN")
+	FUNC0(OP_SETJPN,	&op_locale,		"SETJPN")
 
 	FUNC0(OP_QUAD,		&xrom_routines,		"SLVQ")
 	FUNC0(OP_NEXTPRIME,	&xrom_routines,		"NEXTP")
