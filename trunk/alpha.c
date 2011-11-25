@@ -87,7 +87,6 @@ void cmdalpha(unsigned int arg, enum rarg op) {
 }
 
 
-#ifdef MULTI_ALPHA
 /* Multiple append to Alpha */
 void multialpha(opcode op, enum multiops mopr) {
 	char buf[4];
@@ -98,7 +97,6 @@ void multialpha(opcode op, enum multiops mopr) {
 	buf[3] = '\0';
 	add_string(buf);
 }
-#endif
 
 
 /* Append integer value to Alpha

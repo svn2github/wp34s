@@ -93,23 +93,6 @@
 // Include the !n function defined over the reals (integers)
 //#define INCLUDE_SUBFACT
 
-// Include multi-character alpha constants (not keystroke programmable)
-#define MULTI_ALPHA
-
-// Allow A as destination for STOS/RCLS
-//#define ALLOW_STOS_A
-
-#ifndef CONSOLE
-// Use shift hold sequence for temporary display in other bases
-//#define SHIFT_HOLD_TEMPVIEW
-#endif
-#ifndef SHIFT_HOLD_TEMPVIEW
-// Shift arrow keeps the shift state
-//#define ARROW_KEEPS_SHIFT
-// Allow temporary views in integer mode
-//#define INT_MODE_TEMPVIEW
-#endif
-
 // Include a date function to determine the date of Easter in a given year
 //#define INCLUDE_EASTER
 

@@ -294,7 +294,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 'I',  0017, 0210, 0017, 'i',  0250,  },  // K12
 
 		{ 0000, 0000, 0206, 0020, 0000, 0246,  },  // K20 ENTER
-		{ 'J',  0000, 0000, 0027, 'j',  0000,  },  // K21
+		{ 'J',  '(',  ')',  0027, 'j',  ')',   },  // K21
 		{ 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
 		{ 'L',  0246, 0212, 0257, 'l',  0252,  },  // K23
 		{ 0000, 0000, 0000, 0016, 0000, 0016   },  // K24 <-
@@ -311,7 +311,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 'S',  '6',  0221, '$',  's',  0261,  },  // K43
 		{ 'T',  0034, 0222, 0003, 't',  0262,  },  // K44
 
-		{ 0017, '(',  ')',  0000, 0000, ')',   },  // K50
+		{ 0017, 0000, 0000, 0000, 0000, 0000,  },  // K50
 		{ '1',  '1',  0207, '=',  '1',  0247,  },  // K51
 		{ 'U',  '2',  0000, 0014, 'u',  0000,  },  // K52
 		{ 'V',  '3',  0000, 0000, 'v',  0000,  },  // K53
@@ -611,7 +611,7 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_MON | OP_yhat     | NO_INT,   OP_NIL | OP_statR           },
 		{ OP_MON | OP_SQRT,		   OP_MON | OP_SQR             },
 		// Row 6
-		{ STATE_UNFINISHED,                STATE_UNFINISHED            },
+		{ RARG_SF,                         RARG_CF                     },
 		{ TST_EQ,                          TST_NE                      }, // tests
 		{ RARG_SOLVE           | NO_INT,   RARG_INTG          | NO_INT },
 		{ RARG_PROD            | NO_INT,   RARG_SUM           | NO_INT },
@@ -657,52 +657,16 @@ static int process_fg_shifted(const keycode c) {
 
 	/*
 	 *  Handle the temporary display of X in another base
-	 *  On the console emulator this is always done with ->
 	 *  On the device, shift hold may take the role
 	 */
-#ifdef SHIFT_HOLD_TEMPVIEW
-	// Shift hold sequences go here
-	case K22:
-	case K23:
-		if (shift == shift_down()) {
-			const enum single_disp d =
-				c == K22 ? shift == SHIFT_F ? SDISP_BIN : SDISP_OCT
-				         : shift == SHIFT_F ? SDISP_DEC : SDISP_HEX;
-			set_smode(d);
-			process_cmdline_set_lift();
-			return STATE_UNFINISHED;
-		}
-		break;
-#elif defined(INT_MODE_TEMPVIEW) || defined(ARROW_KEEPS_SHIFT)
-	// Only needed if we allow temporary views in int mode.
-	// Otherwise, the arrow will never be used after f or g.
-	case K_ARROW:
-		if (UState.intm) {
-			State2.arrow = 1;
-			process_cmdline_set_lift();
-#ifdef ARROW_KEEPS_SHIFT
-			set_shift(shift);
-#else
-			set_shift(SHIFT_G);
-#endif
-			return STATE_UNFINISHED;
-		}
-		break;
-#endif
-
 	case K20:				// Alpha
 		if (shift == SHIFT_F) {
 			process_cmdline_set_lift();
-#ifdef SHIFT_HOLD_TEMPVIEW
-			if (shift == shift_down())
-				State2.disp_as_alpha = 1;
-			else
-#endif
 			State2.alphas = 1;
 		}
 		break;
 
-	case K50:				// Window left/right
+	case K21:				// Window left/right
 		if (UState.intm) {
 			if (shift == SHIFT_F) {
 				if (UState.int_maxw > State2.int_window)
@@ -726,7 +690,7 @@ static int process_fg_shifted(const keycode c) {
 		}
 		break;
 
-	case K21:
+	case K50:
 	case K52:
 	case K53:
 	case K63:
@@ -1019,14 +983,6 @@ static int process_arrow(const keycode c) {
 	case K12:
 		return OP_MON | OP_2GRAD;
 
-#ifndef SHIFT_HOLD_TEMPVIEW
-#if 0
-	case K20:
-		if (shift == SHIFT_N || shift == SHIFT_F) {
-			State2.disp_as_alpha = 1;
-		}
-		break;
-#endif
 	case K22:
 		set_smode((shift == SHIFT_F) ? SDISP_BIN : SDISP_OCT);
 		break;
@@ -1034,7 +990,6 @@ static int process_arrow(const keycode c) {
 	case K23:
 		set_smode((shift == SHIFT_F) ? SDISP_DEC : SDISP_HEX);
 		break;
-#endif
 
 	default:
 		break;
@@ -1124,23 +1079,6 @@ static int process_alpha(const keycode c) {
 	State2.alpha_pos = 0;
 
 	switch (c) {
-#ifdef ALLOW_ALPHA_XEQ
-	case K00:
-	case K01:
-	case K02:
-	case K03:
-		if (shift == SHIFT_F) {
-#if 0
-			op = check_f_key(c - K00, 0);
-			if ( op != 0 )
-				goto alpha_off;
-#else
-			op = RARG(RARG_XEQ, c + 100);
-			goto alpha_off
-#endif
-		}
-		break;
-#endif
 	case K10:	// STO
 		if (shift == SHIFT_F) {
 			init_arg(RARG_ASTO);
@@ -1161,47 +1099,22 @@ static int process_alpha(const keycode c) {
 	case K20:	// Enter - maybe exit alpha mode
 		if (shift == SHIFT_G || shift == SHIFT_H)
 			break;
-#ifdef MULTI_ALPHA
 		if (shift == SHIFT_F && ! State2.runmode) {
 			State2.multi = 1;
 			State2.numdigit = 0;
 			CmdBase = DBL_ALPHA;
 			return STATE_UNFINISHED;
 		}
-#endif
-#ifdef ALLOW_ALPHA_XEQ
-	alpha_off:
-#endif
 		State2.alphas = 0;
 		State2.alphashift = 0;
 		return op;
-#if 0
-	case K21:
-		if (shift == SHIFT_F)
-			return OP_NIL | OP_ALPHATOX;
-		else if (shift == SHIFT_G)
-			return OP_NIL | OP_XTOALPHA;
-		break;
-#endif
+
 	case K24:	// Clx - backspace, clear Alpha
 		if (shift == SHIFT_N)
 			return STATE_BACKSPACE;
 		if (shift == SHIFT_F)
 			return OP_NIL | OP_CLRALPHA;
 		break;
-
-#ifdef ALLOW_ALPHA_XEQ
-	case K30:
-		if (shift == SHIFT_N) {
-			init_arg(RARG_XEQ);
-			goto alpha_off;
-		}
-		else if (shift == SHIFT_H) {
-			init_arg(RARG_GTO);
-			goto alpha_off;
-		}
-		break;
-#endif
 
 	case K40:
 		if (shift == SHIFT_N) {
@@ -1268,11 +1181,7 @@ static int arg_eval(unsigned int val) {
 		if (argcmds[base].cmplx && (val > TOPREALREG - 2 && (val & 1)))
 			// Disallow odd complex register > 98
 			return STATE_UNFINISHED;
-#ifdef ALLOW_STOS_A
-		if (argcmds[base].stos && (val > TOPREALREG - ssize && (val != regA_idx || ssize > 4)))
-#else
 		if (argcmds[base].stos && (val > TOPREALREG - ssize))
-#endif
 			// Avoid stack clash for STOS/RCLS
 			return STATE_UNFINISHED;
 	}
@@ -1424,7 +1333,6 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K_CMPLX:
-#ifdef INCLUDE_USER_MODE
 		if (State2.ind || State2.dot)
 			break;
 		if (base == RARG_STO)
@@ -1432,7 +1340,6 @@ static int process_arg(const keycode c) {
 		else if (base == RARG_RCL)
 			CmdBase = RARG_RESTM;
 		break;
-#endif
 
 	case K00:	// A
 	case K01:	// B

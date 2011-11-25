@@ -1731,11 +1731,7 @@ void check_mode(decimal64 *a, decimal64 *nul2, enum nilop op) {
 static int check_stack_overlap(unsigned int arg) {
 	const int n = stack_size();
 
-#ifdef ALLOW_STOS_A
-	if (arg + n <= NumRegs || (arg == regA_idx && n == 4)) {
-#else
 	if (arg + n <= NumRegs || arg >= NUMREG) {
-#endif
 		return n;
 	}
 	err(ERR_STK_CLASH);

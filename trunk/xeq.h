@@ -882,11 +882,8 @@ enum specials {
 // Double sized instructions
 enum multiops {
 	DBL_LBL=0, DBL_LBLP, DBL_XEQ, DBL_GTO,
-	DBL_SUM, DBL_PROD, DBL_SOLVE, DBL_DERIV, DBL_2DERIV,
-	DBL_INTG,
-#ifdef MULTI_ALPHA
+	DBL_SUM, DBL_PROD, DBL_SOLVE, DBL_DERIV, DBL_2DERIV, DBL_INTG,
 	DBL_ALPHA,
-#endif
 	//DBL_NUMBER,
 	DBL_DELPROG,
 	NUM_MULTI	// Last entry defines number of operations

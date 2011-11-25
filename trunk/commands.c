@@ -896,9 +896,7 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_DERIV,	&multixromarg,	"f'(x)")
 	CMD(DBL_2DERIV,	&multixromarg,	"f\"(x)")
 	CMD(DBL_INTG,	&multixromarg,	"\004")
-#ifdef MULTI_ALPHA
 	CMD(DBL_ALPHA,	&multialpha,	"\240")
-#endif
 //	CMD(DBL_NUMBER,	NOFN,		"#")
 #ifdef INCLUDE_MULTI_DELETE
 	CMD(DBL_DELPROG,NOFN,		"DEL\276")
