@@ -1307,8 +1307,16 @@ static int process_arg(const keycode c) {
 		State2.rarg = 0;
 		return STATE_UNFINISHED;
 	}
-	if (n <= 9 && ! shorthand && ! State2.dot)
-		return arg_digit(n);
+	if (n <= 9) {
+		if(! shorthand && ! State2.dot)
+			return arg_digit(n);
+	}
+	else if (n < LOCAL_REG_BASE) {
+		if (State2.dot || stack_reg)
+			return arg_eval(n);
+		else if ( c <= K03 )
+			return arg_fkey(c - K00);		// Labels or flags A to D
+	}
 
 	if (shorthand)
 		// row column shorthand addressing
@@ -1339,22 +1347,6 @@ static int process_arg(const keycode c) {
 			CmdBase = RARG_SAVEM;
 		else if (base == RARG_RCL)
 			CmdBase = RARG_RESTM;
-		break;
-
-	case K00:	// A
-	case K01:	// B
-	case K02:	// C
-	case K03:	// D
-	case K12:	// I (lastY)
-	case K21:	// J
-	case K22:	// K
-	case K23:	// L (lastX)
-	case K63:	// Y
-		if (State2.dot || stack_reg)
-			return arg_eval(n);
-		else if ( c <= K03 ) {
-			return arg_fkey(c - K00);		// Labels or flags A to D
-		}
 		break;
 
 	case K62:	// X, '.'
@@ -1431,8 +1423,10 @@ static int process_arg(const keycode c) {
 			else
 				goto reset;
 		}
-		else
+		else {
 			--State2.numdigit;
+			State2.digval /= 10;
+		}
 		break;
 
 	case K60:

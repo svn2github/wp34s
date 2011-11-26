@@ -1257,6 +1257,9 @@ void display(void) {
 		State2.disp_freeze = 0;
 		ShowRPN = 0;
 		State2.disp_temp = 1;
+#ifdef CONSOLE
+	        JustDisplayed = 1;
+#endif
 		return;
 	}
 
