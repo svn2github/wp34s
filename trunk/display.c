@@ -1328,7 +1328,7 @@ void display(void) {
 		bp = scopy(bp, p);
 		set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
-			set_x(&CONSTANT(State2.digval), NULL);
+			set_x(&CONSTANT(op & RARG_MASK), NULL);
 			skip = 1;
 		} else if (State2.runmode) {
 			if (cata == CATALOGUE_CONV) {
