@@ -342,12 +342,12 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_DTADD,	&dateAdd,		NOFN,		NOFN,		"DAYS+")
 	FUNC(OP_DTDIF,	&dateDelta,		NOFN,		NOFN,		"\203DAYS")
 
-	FUNC(OP_LEGENDRE_PN,	&decNumberPolyPn,	NOFN,	NOFN,		"P\275")
-	FUNC(OP_CHEBYCHEV_TN,	&decNumberPolyTn,	NOFN,	NOFN,		"T\275")
-	FUNC(OP_CHEBYCHEV_UN,	&decNumberPolyUn,	NOFN,	NOFN,		"U\275")
+	FUNC(OP_LEGENDRE_PN,	&decNumberPolyCommon,	NOFN,	NOFN,		"P\275")
+	FUNC(OP_CHEBYCHEV_TN,	&decNumberPolyCommon,	NOFN,	NOFN,		"T\275")
+	FUNC(OP_CHEBYCHEV_UN,	&decNumberPolyCommon,	NOFN,	NOFN,		"U\275")
 	FUNC(OP_LAGUERRE,	&decNumberPolyLn,	NOFN,	NOFN,		"L\275")
-	FUNC(OP_HERMITE_HE,	&decNumberPolyHEn,	NOFN,	NOFN,		"H\275")
-	FUNC(OP_HERMITE_H,	&decNumberPolyHn,	NOFN,	NOFN,		"H\275\276")
+	FUNC(OP_HERMITE_HE,	&decNumberPolyCommon,	NOFN,	NOFN,		"H\275")
+	FUNC(OP_HERMITE_H,	&decNumberPolyCommon,	NOFN,	NOFN,		"H\275\276")
 #ifdef INCLUDE_XROOT
 	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
 #endif

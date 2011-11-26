@@ -2292,7 +2292,7 @@ decNumber *decNumberNot(decNumber *res, const decNumber *x) {
  */
 decNumber *decNumberBooleanOp(decNumber *res, const decNumber *x, const decNumber *y) {
 	const unsigned int TRUTH_TABLE = 0x9176E8;
-	const unsigned int bit = ((XeqOpCode - OP_LAND) << 2) + (dn2bool(y) << 1) + dn2bool(x);
+	const unsigned int bit = ((argKIND(XeqOpCode) - OP_LAND) << 2) + (dn2bool(y) << 1) + dn2bool(x);
 	return bool2dn(res, (TRUTH_TABLE >> bit) & 1);
 }
 
@@ -3482,16 +3482,8 @@ error:		return set_NaN(r);
 #endif
 }
 
-decNumber *decNumberPolyPn(decNumber *r, const decNumber *y, const decNumber *x) {
-	return ortho_poly(r, NULL, y, x, ORTHOPOLY_LEGENDRE_PN);
-}
-
-decNumber *decNumberPolyTn(decNumber *r, const decNumber *y, const decNumber *x) {
-	return ortho_poly(r, NULL, y, x, ORTHOPOLY_CHEBYCHEV_TN);
-}
-
-decNumber *decNumberPolyUn(decNumber *r, const decNumber *y, const decNumber *x) {
-	return ortho_poly(r, NULL, y, x, ORTHOPOLY_CHEBYCHEV_UN);
+decNumber *decNumberPolyCommon(decNumber *r, const decNumber *y, const decNumber *x) {
+	return ortho_poly(r, NULL, y, x, argKIND(XeqOpCode) - OP_LEGENDRE_PN + ORTHOPOLY_LEGENDRE_PN);
 }
 
 decNumber *decNumberPolyLn(decNumber *r, const decNumber *y, const decNumber *x) {
@@ -3502,13 +3494,6 @@ decNumber *decNumberPolyLnAlpha(decNumber *r, const decNumber *z, const decNumbe
 	return ortho_poly(r, z, y, x, ORTHOPOLY_GEN_LAGUERRE);
 }
 
-decNumber *decNumberPolyHEn(decNumber *r, const decNumber *y, const decNumber *x) {
-	return ortho_poly(r, NULL, y, x, ORTHOPOLY_HERMITE_HE);
-}
-
-decNumber *decNumberPolyHn(decNumber *r, const decNumber *y, const decNumber *x) {
-	return ortho_poly(r, NULL, y, x, ORTHOPOLY_HERMITE_H);
-}
 
 
 #ifdef INCLUDE_BERNOULLI
