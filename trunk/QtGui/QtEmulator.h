@@ -28,8 +28,24 @@
 
 #define ORGANIZATION_NAME "WP-34s"
 #define APPLICATION_NAME "WP34sEmulator"
+#define WINDOWS_SETTINGS_GROUP "MainWindow"
 #define WINDOWS_POSITION_SETTING "Position"
-#define NON_VOLATILE_MEMORY_SETTING "NonVolatileMemory"
+#define DEFAULT_POSITION_X 50
+#define DEFAULT_POSITION_Y 50
+
+#define SKIN_SUFFIX "xskin"
+#define MEMORY_FILE_TYPE "memory"
+#define MEMORY_DIRECTORY "memory"
+#define SKIN_FILE_TYPE "skin"
+#define SKIN_DIRECTORY "skins"
+#define IMAGE_FILE_TYPE "image"
+#define IMAGE_DIRECTORY "images"
+#define NON_VOLATILE_MEMORY_FILENAME "wp34s.dat"
+#define REGION_FILENAME_PATTERN "wp34s-%1.dat"
+
+#ifdef Q_WS_MAC
+#define RESOURCES_DIR "/../resources/"
+#endif
 
 class QtEmulator : public QMainWindow
 {
@@ -44,15 +60,22 @@ public:
      QtScreen& getScreen() const;
      void updateScreen();
 
+protected:
+     void closeEvent(QCloseEvent* event);
+
 private:
+     void setPaths();
      QString getSkinFilename();
      QtSkin* buildSkin(const QString& aStringFilename);
      void buildComponents(const QtSkin& aSkin);
      void startThreads();
      void loadSettings();
-     void saveSetting();
+     void saveSettings();
      void loadMemory();
+     bool loadMemoryRegion(int aRegionIndex);
      void saveMemory();
+     QString getRegionName(int aRegionIndex) const;
+     QString getRegionFileName(int aRegionIndex) const;
 
 private:
      QtKeyboard* keyboard;
@@ -60,6 +83,8 @@ private:
      QtBackgroundImage* backgroundImage;
      QtCalculatorThread* calculatorThread;
      QtHeartBeatThread* heartBeatThread;
+     QSettings settings;
+     QString userSettingsDirectoryName;
 
 signals:
 	void screenChanged();

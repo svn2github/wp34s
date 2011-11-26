@@ -21,6 +21,17 @@
 #define REGION_TYPE_DATA 1
 #define BACKUP_REGION 1
 
+/*
+ *  Define some pages in flash memory for user access
+ */
+#define SIZE_REGION	 4
+#define SIZE_BACKUP	 8
+#define PAGE_SIZE	 256
+#define PAGE_END	 512
+#define PAGE_BACKUP	 (PAGE_END - SIZE_BACKUP)
+#define PAGE_BEGIN	 (PAGE_END - SIZE_REGION * NUMBER_OF_FLASH_REGIONS)
+#define region_page( r ) (PAGE_BEGIN + (NUMBER_OF_FLASH_REGIONS - 1 - r) * SIZE_REGION)
+
 typedef struct _flash_region {
         unsigned short crc;
         unsigned short last_prog;
@@ -53,9 +64,10 @@ extern void swap_program(unsigned int region, enum rarg op);
 extern void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
-#ifndef REALBUILD
+#if !defined(REALBUILD) && !defined (QTGUI)
 extern void save_statefile(void);
 extern void load_statefile(void);
 #endif
+
 
 #endif

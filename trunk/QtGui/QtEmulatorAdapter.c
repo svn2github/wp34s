@@ -14,6 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
 #include "xeq.h"
 #include "stopwatch.h"
 #include "display.h"
@@ -89,12 +90,12 @@ void shutdown()
 {
 }
 
-extern char* get_memory()
+char* get_memory()
 {
 	return (char*) &PersistentRam;
 }
 
-extern int get_memory_size()
+int get_memory_size()
 {
 	return sizeof(PersistentRam);
 }
@@ -104,4 +105,32 @@ void prepare_memory_save()
 	process_cmdline_set_lift();
 	init_state();
 	checksum_all();
+}
+
+int get_number_of_flash_regions()
+{
+	return NUMBER_OF_FLASH_REGIONS;
+}
+
+int get_flash_region_size()
+{
+	return SIZE_REGION * PAGE_SIZE;
+}
+
+char* get_filled_flash_region(int region_index)
+{
+	char* region = (char*) flash_region(region_index);
+	int length = SIZE_REGION * PAGE_SIZE;
+	memset( region, 0xff, length );
+	return region;
+}
+
+int program_flash( int page_no, void *buffer, int length )
+{
+	return 0;
+}
+
+void fast_backup_to_flash()
+{
+	UserFlash.backup = PersistentRam;
 }

@@ -68,16 +68,6 @@ VOLATILE TXromLocal XromLocal;
  */
 USER_FLASH TUserFlash UserFlash;
 
-/*
- *  Define some pages in flash memory for user access
- */
-#define SIZE_REGION	 4
-#define SIZE_BACKUP	 8
-#define PAGE_SIZE	 256
-#define PAGE_END	 512
-#define PAGE_BACKUP	 (PAGE_END - SIZE_BACKUP)
-#define PAGE_BEGIN	 (PAGE_END - SIZE_REGION * NUMBER_OF_FLASH_REGIONS)
-#define region_page( r ) (PAGE_BEGIN + (NUMBER_OF_FLASH_REGIONS - 1 - r) * SIZE_REGION)
 
 #ifdef REALBUILD
 #ifdef NO_RAM_COPY
@@ -177,6 +167,9 @@ void sam_ba_boot(void)
 /*
  *  Emulate the flash in a file wp34s-<n>.dat
  */
+#ifdef QTGUI
+extern int program_flash( int page_no, void *buffer, int length );
+#else
 static int program_flash( int page_no, void *buffer, int length )
 {
 	char name[ 20 ];
@@ -230,6 +223,7 @@ static int program_flash( int page_no, void *buffer, int length )
 	fclose( f );
 	return 0;
 }
+#endif
 
 #endif
 
@@ -548,7 +542,7 @@ extern int is_data_region( unsigned int r )
 }
 
 
-#ifndef REALBUILD
+#if !defined(REALBUILD) && !defined(QTGUI)
 /*
  *  Save/Load state to a file (only for emulator(s))
  */

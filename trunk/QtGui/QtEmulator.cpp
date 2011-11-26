@@ -21,6 +21,24 @@ QtEmulator* currentEmulator;
 
 QtEmulator::QtEmulator()
 {
+#ifdef Q_WS_MAC
+	QSettings::Format format=QSettings::NativeFormat;
+#else
+	QSettings::Format format=QSettings::IniFormat;
+#endif
+	QSettings userSettings(format, QSettings::UserScope, QString(ORGANIZATION_NAME), QString(APPLICATION_NAME));
+	userSettingsDirectoryName=QFileInfo(userSettings.fileName()).dir().path();
+
+#ifdef Q_WS_MAC
+	userSettingsDirectoryName.append('/').append(APPLICATION_NAME);
+#endif
+	QDir userSettingsDirectory(userSettingsDirectoryName);
+	if(!userSettingsDirectory.exists())
+	{
+		userSettingsDirectory.mkpath(userSettingsDirectoryName);
+	}
+
+	setPaths();
 	loadSettings();
 
 	QtSkin* skin=buildSkin(getSkinFilename());
@@ -42,7 +60,13 @@ QtEmulator::QtEmulator()
 
 QtEmulator::~QtEmulator()
 {
-	saveSetting();
+}
+
+void QtEmulator::closeEvent(QCloseEvent* event)
+{
+	Q_UNUSED(event)
+
+	saveSettings();
 	saveMemory();
 }
 
@@ -80,6 +104,35 @@ void QtEmulator::startThreads()
 	heartBeatThread->start();
 }
 
+void QtEmulator::setPaths()
+{
+	QString applicationDir=QApplication::applicationDirPath();
+
+	QStringList skinSearchPath;
+	QStringList imageSearchPath;
+	QStringList memorySearchPath;
+
+
+	skinSearchPath << userSettingsDirectoryName;
+	imageSearchPath << userSettingsDirectoryName;
+	memorySearchPath << userSettingsDirectoryName;
+
+#ifdef Q_WS_MAC
+	QString resourcesDir(applicationDir+RESOURCES_DIR);
+	skinSearchPath << resourcesDir+SKIN_DIRECTORY;
+	imageSearchPath << resourcesDir+IMAGE_DIRECTORY;
+	memorySearchPath << resourcesDir+MEMORY_DIRECTORY;
+#endif
+
+	skinSearchPath << applicationDir+SKIN_DIRECTORY;
+	imageSearchPath << applicationDir+IMAGE_DIRECTORY;
+	memorySearchPath << applicationDir+MEMORY_DIRECTORY;
+
+	QDir::setSearchPaths(SKIN_FILE_TYPE, skinSearchPath);
+	QDir::setSearchPaths(IMAGE_FILE_TYPE, imageSearchPath);
+	QDir::setSearchPaths(MEMORY_FILE_TYPE, memorySearchPath);
+}
+
 QString  QtEmulator::getSkinFilename()
 {
 	return "4 Medium 34s V3.xskin";
@@ -93,41 +146,115 @@ QtSkin* QtEmulator::buildSkin(const QString& aStringFilename)
 
 void QtEmulator::loadSettings()
 {
-
+	 settings.beginGroup(WINDOWS_SETTINGS_GROUP);
+	 move(settings.value(WINDOWS_POSITION_SETTING, QPoint(DEFAULT_POSITION_X, DEFAULT_POSITION_Y)).toPoint());
+	 settings.endGroup();
 }
 
-void QtEmulator::saveSetting()
+void QtEmulator::saveSettings()
 {
-
+    settings.beginGroup(WINDOWS_SETTINGS_GROUP);
+    settings.setValue(WINDOWS_POSITION_SETTING, pos());
+    settings.endGroup();
 }
 
 void QtEmulator::loadMemory()
 {
-	QSettings settings;
-	QVariant variant=settings.value(NON_VOLATILE_MEMORY_SETTING);
-	if(variant.isValid() && variant.canConvert(QVariant::ByteArray))
-	{
-		QByteArray memory=variant.toByteArray();
-		if(memory.size()==get_memory_size())
-		{
-			memcpy(get_memory(), memory.constData(), memory.size());
-		}
-		else
-		{
-			// TODO
-		}
-	}
-	else
+	QFile memoryFile(QString(MEMORY_FILE_TYPE)+':'+NON_VOLATILE_MEMORY_FILENAME);
+	if(!memoryFile.exists() || !memoryFile.open(QIODevice::ReadOnly))
 	{
 		// TODO
+		return;
 	}
+
+	int memorySize=get_memory_size();
+	if(memoryFile.size()!=memorySize)
+	{
+		// TODO
+		return;
+	}
+
+	QDataStream dataStream(&memoryFile);
+	int reallyRead=dataStream.readRawData(get_memory(), memorySize);
+	if(reallyRead!=memorySize)
+	{
+		// TODO
+		return;
+	}
+
+	for (int i = 0; i < get_number_of_flash_regions(); ++i )
+	{
+		loadMemoryRegion(i);
+	}
+}
+
+bool QtEmulator::loadMemoryRegion(int aRegionIndex)
+{
+	QFile memoryRegionFile(QString(MEMORY_FILE_TYPE)+':'+getRegionFileName(aRegionIndex));
+	if(!memoryRegionFile.exists())
+	{
+		if(aRegionIndex==0)
+		{
+			// If we cannot read the saved backup flash region,
+			// we behave as if the main memory had already been saved in it
+			fast_backup_to_flash();
+		}
+		// TODO
+		return false;
+	}
+
+	if(!memoryRegionFile.open(QIODevice::ReadOnly))
+	{
+		// TODO
+		return false;
+	}
+
+	int memoryRegionSize=get_flash_region_size();
+	if(memoryRegionFile.size()!=memoryRegionSize)
+	{
+		// TODO
+		return false;
+	}
+
+	QDataStream dataStream(&memoryRegionFile);
+	int reallyRead=dataStream.readRawData(get_filled_flash_region(aRegionIndex), memoryRegionSize);
+	if(reallyRead!=memoryRegionSize)
+	{
+		// TODO
+		return false;
+	}
+
+	return true;
 }
 
 void QtEmulator::saveMemory()
 {
 	prepare_memory_save();
-	QSettings settings;
-	QByteArray memory(get_memory(), get_memory_size());
-	settings.setValue(NON_VOLATILE_MEMORY_SETTING, memory);
-	settings.sync();
+	QFile memoryFile(userSettingsDirectoryName+'/'+NON_VOLATILE_MEMORY_FILENAME);
+	if(!memoryFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
+	{
+		// TODO
+		return;
+	}
+
+	QDataStream dataStream(&memoryFile);
+	int memorySize=get_memory_size();
+	int reallyWritten=dataStream.writeRawData(get_memory(), memorySize);
+	if(reallyWritten!=memorySize)
+	{
+		// TODO
+	}
+}
+
+QString QtEmulator::getRegionFileName(int aRegionIndex) const
+{
+	QString regionFileName(REGION_FILENAME_PATTERN);
+	if(aRegionIndex==0)
+	{
+		return regionFileName.arg('R');
+	}
+	else
+	{
+		return regionFileName.arg(QString::number(aRegionIndex));
+	}
 }
