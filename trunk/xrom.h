@@ -33,6 +33,7 @@
 #define ENTRY_ZETA	87
 #define ENTRY_Bn	86
 #define ENTRY_Bn_star	85
+#define ENTRY_W1	84
 
 
 extern const s_opcode xrom[];

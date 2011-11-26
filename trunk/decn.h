@@ -244,6 +244,7 @@ extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNu
 
 extern void solver(decimal64 *a, decimal64 *b, enum nilop op);
 
+extern decNumber *decNumberPolyCommon(decNumber *res, const decNumber *y, const decNumber *x);
 extern decNumber *decNumberPolyPn(decNumber *res, const decNumber *y, const decNumber *x);
 extern decNumber *decNumberPolyTn(decNumber *res, const decNumber *y, const decNumber *x);
 extern decNumber *decNumberPolyUn(decNumber *res, const decNumber *y, const decNumber *x);

@@ -112,7 +112,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_10POWX,	&decNumberPow10,	&cmplx10x,	&int10pow,	"10\234")
 	FUNC(OP_LN1P,	&decNumberLn1p,		&cmplxLn1p,	NOFN,		"LN1+x")
 	FUNC(OP_EXPM1,	&decNumberExpm1,	&cmplxExpm1,	NOFN,		"e\234-1")
-	FUNC(OP_LAMW,	&decNumberLamW,		&cmplxlamW,	NOFN,		"W")
+	FUNC(OP_LAMW,	&decNumberLamW,		&cmplxlamW,	NOFN,		"W\276")
 	FUNC(OP_INVW,	&decNumberInvW,		&cmplxInvW,	NOFN,		"W\235")
 	FUNC(OP_SQR,	&decNumberSquare,	&cmplxSqr,	&intSqr,	"x\232")
 	FUNC(OP_CUBE,	&decNumberCube,		&cmplxCube,	&intCube,	"CUBE")
@@ -596,6 +596,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_USR_ZETA,	&xrom_routines,		"\245")
 	FUNC0(OP_USR_Bn,	&xrom_routines,		"B\275")
 	FUNC0(OP_USR_BnS,	&xrom_routines,		"B\275*")
+	FUNC0(OP_USR_W1,	&xrom_routines,		"W\033")
 
 	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")

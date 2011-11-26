@@ -641,7 +641,7 @@ enum {
 	OP_LAND, OP_LOR, OP_LXOR, OP_LNAND, OP_LNOR, OP_LXNOR,
 	OP_DTADD, OP_DTDIF,
 
-	// Orthogonal polynomials -- must be in the same order as the enum below
+	// Orthogonal polynomials -- must be in the same order as the enum in decn.c
 	OP_LEGENDRE_PN,
 	OP_CHEBYCHEV_TN,
 	OP_CHEBYCHEV_UN,
@@ -733,7 +733,7 @@ enum nilop {
 	OP_TICKS, OP_VOLTAGE,
 	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN, OP_SETJPN,
 
-	OP_QUAD, OP_NEXTPRIME, OP_USR_ZETA, OP_USR_Bn, OP_USR_BnS,
+	OP_QUAD, OP_NEXTPRIME, OP_USR_ZETA, OP_USR_Bn, OP_USR_BnS, OP_USR_W1,
 	OP_XEQALPHA, OP_GTOALPHA,
 	OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
 

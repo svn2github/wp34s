@@ -225,6 +225,7 @@ static const struct {
 	XL(ENTRY_ZETA, "Entry: ZETA FUNCTION")
 	XL(ENTRY_Bn, "Entry: BERNOULLI NUMBER (modern)")
 	XL(ENTRY_Bn_star, "Entry: BERNOULLI NUMBER (old)")
+	XL(ENTRY_W1, "Entry: Lambert W negative branch")
 #undef XL
 #define XE(n, s)	X(ERROR, n, s)
 	XE(ERR_DOMAIN, "Error: Domain Error")

@@ -704,6 +704,53 @@ quad_fix_stack::	RCL .00
 			RTN
 
 /**************************************************************************/
+
+		LBL 84
+			XEQ entry
+			XLOCAL
+			STOS .08
+			SPEC?
+				JMP LamW_NaN2
+			x[>=]0?
+				JMP LamW_inf
+			STOS .08
+			+/-
+			1/x
+			STO .00
+			# eE
+			x>? Y
+				JMP LamW_NaN
+			RCL .00
+LamW_loop::		STO .01
+			LN
+			RCL[times] .00
+			RCL .01
+			x[<->] Y
+			-
+			x=0?
+				JMP LamW_exit
+			RCL L
+			JMP LamW_loop
+LamW_exit::		RCL L
+			RCL/ .00
+			+/-
+			JMP zeta_exit
+
+LamW_inf::	x>0?
+			JMP LamW_NaN2
+		FC? D
+			ERR 05
+		# -[infinity]
+		JMP zeta_exit
+
+LamW_NaN::	RCLS .08
+LamW_NaN2::	FC? D
+			ERR 01
+		# NaN
+		JMP zeta_exit
+		
+
+/**************************************************************************/
 		LBL 85				/* Bernoulli number Bn* = +/- Bn(2 n) */
 			XEQ entry
 			FP?
