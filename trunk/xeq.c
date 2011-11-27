@@ -1881,7 +1881,7 @@ static void do_rtn(int plus1) {
 // RTN and RTN+1
 void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	State.implicit_rtn = 0;
-	do_rtn(op == OP_RTN ? 0 : 1);
+	do_rtn(op == OP_RTNp1 ? 1 : 0);
 }
 
 
