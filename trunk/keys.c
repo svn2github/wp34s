@@ -233,7 +233,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		static const struct _map amap[] = {
 			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,        CATALOGUE_NONE               } },
 			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS_UPPER, CATALOGUE_NONE               } },
-			{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_LABELS             } },
+		//	{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_LABELS             } },
 			{ K12,     { CATALOGUE_NONE, CATALOGUE_ALPHA_SUBSCRIPTS,    CATALOGUE_ALPHA_SUPERSCRIPTS } },
 			{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_STATUS             } },
 			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_COMPARES     } },
@@ -296,19 +296,19 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 0000, 0000, 0206, 0020, 0000, 0246,  },  // K20 ENTER
 		{ 'J',  '(',  ')',  0027, 'j',  ')',   },  // K21
 		{ 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
-		{ 'L',  0246, 0212, 0257, 'l',  0252,  },  // K23
+		{ 'L',  0000, 0212, 0257, 'l',  0252,  },  // K23
 		{ 0000, 0000, 0000, 0016, 0000, 0016   },  // K24 <-
 
 		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
 		{ 'M',  '7',  0213, '&',  'm',  0253,  },  // K31
 		{ 'N',  '8',  0214, '|',  'n',  0254,  },  // K32
 		{ 'O',  '9',  0227, 0013, 'o',  0267,  },  // K33
-		{ 'P',  '/',  0217, 0036, 'p',  0257,  },  // K34
+		{ 'P',  '/',  0217, 0000, 'p',  0257,  },  // K34
 
 		{ 0020, 0000, 0000, '!',  0020, 0000,  },  // K40
 		{ 'Q',  '4',  0000, '?',  'q',  0000,  },  // K41
 		{ 'R',  '5',  0220, 0001, 'r',  0260,  },  // K42
-		{ 'S',  '6',  0221, '$',  's',  0261,  },  // K43
+		{ 'S',  '6',  0221, 0000, 's',  0261,  },  // K43
 		{ 'T',  0034, 0222, 0003, 't',  0262,  },  // K44
 
 		{ 0017, 0000, 0000, 0000, 0000, 0000,  },  // K50
@@ -320,7 +320,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K60
 		{ '0',  '0',  0226, ' ',  '0',  0266,  },  // K61
 		{ 'X',  '.',  0215, 0000, 'x',  0255,  },  // K62
-		{ 'Y',  0000, 0223, 0037, 'y',  0263,  },  // K63
+		{ 'Y',  0000, 0223, '=',  'y',  0263,  },  // K63
 		{ 'Z',  '+',  0205, 0221, 'z',  0245,  },  // K64
 	};
 	if (State2.alphashift) {

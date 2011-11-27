@@ -1487,9 +1487,11 @@ static void do_crcl(const decimal64 *t1, const decimal64 *t2, enum rarg op) {
 	decNumber r1, r2;
 
 	if (op == RARG_CRCL) {
+		decimal64 x = *t1;
+		decimal64 y = *t2;
 		lift2_if_enabled();
-		regX = *t1;
-		regY = *t2;
+		regX = x;
+		regY = y;
 	} else {
 		if (is_intmode())
 			bad_mode_error();
@@ -3860,35 +3862,19 @@ void xeq_init_contexts(void) {
 
 
 /*
-
  *  We don't allow some commands from a running program
-
  */
-
 int not_running(void) {
-
 	if ( Running ) {
-
 		err(ERR_ILLEGAL);
-
 		return 0;
-
 	}
-
 	return 1;
-
 }
 
-
-
-
-
 /*
-
  *  Handle the Running Flag
-
  */
-
 void set_running_off_sst() {
 	Running = 0;
 }

@@ -851,7 +851,7 @@ static s_opcode conv_catalogue[] = {
 	MON(OP_RAD2GRD,		   "R\015G")
 	MON(OP_GRD2RAD,		   "G\015R")
 //	CONV(OP_M_SQUARE,	0, "m^2->square")
-//	CONV(OP_M_SQUARE,	1, "suare->m^2")
+//	CONV(OP_M_SQUARE,	1, "square->m^2")
 //	CONV(OP_M_PERCH,	0, "m^2->perch")
 //	CONV(OP_M_PERCH,	1, "perch->m^2")
 };
@@ -861,6 +861,7 @@ static s_opcode conv_catalogue[] = {
 static unsigned char alpha_symbols[] = {
 	',',	'"',	'#',	'`',	'*',	':',
 	';',	'@',	'\'',	'_',	'~',
+	'$',	0014,	0036,	0037,		// currency symbols
 	0216,	0256				// Sol, Terra
 };
 
