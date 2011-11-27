@@ -14,6 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <string.h>
 #include "QtEmulator.h"
 #include "QtEmulatorAdapter.h"
 
@@ -218,7 +219,9 @@ bool QtEmulator::loadMemoryRegion(int aRegionIndex)
 	}
 
 	QDataStream dataStream(&memoryRegionFile);
-	int reallyRead=dataStream.readRawData(get_filled_flash_region(aRegionIndex), memoryRegionSize);
+	char* region=get_flash_region(aRegionIndex);
+	memset( region, FLASH_REGION_DEFAULT_VALUE, memoryRegionSize );
+	int reallyRead=dataStream.readRawData(region, memoryRegionSize);
 	if(reallyRead!=memoryRegionSize)
 	{
 		memoryWarning("Error whilst reading "+memoryRegionFile.fileName());

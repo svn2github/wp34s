@@ -27,7 +27,7 @@ extern int get_memory_size();
 extern void prepare_memory_save();
 extern int get_flash_region_size();
 extern int get_number_of_flash_regions();
-extern char* get_filled_flash_region(int);
+extern char* get_flash_region(int);
 extern void fast_backup_to_flash();
 }
 

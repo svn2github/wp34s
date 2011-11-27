@@ -47,6 +47,8 @@
 #define RESOURCES_DIR "/../resources/"
 #endif
 
+#define FLASH_REGION_DEFAULT_VALUE 0xFF
+
 class QtEmulator : public QMainWindow
 {
 	Q_OBJECT

@@ -14,7 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
 #include "xeq.h"
 #include "stopwatch.h"
 #include "display.h"
@@ -118,12 +117,9 @@ int get_flash_region_size()
 	return SIZE_REGION * PAGE_SIZE;
 }
 
-char* get_filled_flash_region(int region_index)
+char* get_flash_region(int region_index)
 {
-	char* region = (char*) flash_region(region_index);
-	int length = SIZE_REGION * PAGE_SIZE;
-	memset( region, 0xff, length );
-	return region;
+	return (char*) flash_region(region_index);
 }
 
 char* get_region_path(int region_index)
