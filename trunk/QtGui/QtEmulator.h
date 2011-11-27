@@ -59,6 +59,9 @@ public:
      QtKeyboard& getKeyboard() const;
      QtScreen& getScreen() const;
      void updateScreen();
+     // Used by program_flash via QtEmulatorAdapter.c
+     char* getRegionPath(int aRegionIndex);
+     void resetUserMemory();
 
 protected:
      void closeEvent(QCloseEvent* event);
@@ -76,6 +79,8 @@ private:
      void saveMemory();
      QString getRegionName(int aRegionIndex) const;
      QString getRegionFileName(int aRegionIndex) const;
+     QString getMemoryPath() const;
+     void memoryWarning(const QString& aMessage, bool aResetFlag=true);
 
 private:
      QtKeyboard* keyboard;
@@ -85,6 +90,9 @@ private:
      QtHeartBeatThread* heartBeatThread;
      QSettings settings;
      QString userSettingsDirectoryName;
+     // We need to keep this variable to return a properly allocated char*
+     // to program_flash in storage.c
+     QByteArray currentRegionPath;
 
 signals:
 	void screenChanged();

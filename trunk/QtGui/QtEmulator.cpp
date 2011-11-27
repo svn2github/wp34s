@@ -170,7 +170,8 @@ void QtEmulator::loadMemory()
 	int memorySize=get_memory_size();
 	if(memoryFile.size()!=memorySize)
 	{
-		// TODO
+		memoryWarning(memoryFile.fileName()+" expected size is "+QString::number(memorySize)
+		+" but file size is "+QString::number(memoryFile.size()));
 		return;
 	}
 
@@ -178,7 +179,7 @@ void QtEmulator::loadMemory()
 	int reallyRead=dataStream.readRawData(get_memory(), memorySize);
 	if(reallyRead!=memorySize)
 	{
-		// TODO
+		memoryWarning("Error whilst reading "+memoryFile.fileName());
 		return;
 	}
 
@@ -199,20 +200,20 @@ bool QtEmulator::loadMemoryRegion(int aRegionIndex)
 			// we behave as if the main memory had already been saved in it
 			fast_backup_to_flash();
 		}
-		// TODO
-		return false;
+		return true;
 	}
 
 	if(!memoryRegionFile.open(QIODevice::ReadOnly))
 	{
-		// TODO
+		memoryWarning("Cannot open "+memoryRegionFile.fileName());
 		return false;
 	}
 
 	int memoryRegionSize=get_flash_region_size();
 	if(memoryRegionFile.size()!=memoryRegionSize)
 	{
-		// TODO
+		memoryWarning(memoryRegionFile.fileName()+" expected size is "+QString::number(memoryRegionSize)
+		+" but file size is "+QString::number(memoryRegionFile.size()));
 		return false;
 	}
 
@@ -220,7 +221,7 @@ bool QtEmulator::loadMemoryRegion(int aRegionIndex)
 	int reallyRead=dataStream.readRawData(get_filled_flash_region(aRegionIndex), memoryRegionSize);
 	if(reallyRead!=memoryRegionSize)
 	{
-		// TODO
+		memoryWarning("Error whilst reading "+memoryRegionFile.fileName());
 		return false;
 	}
 
@@ -230,10 +231,10 @@ bool QtEmulator::loadMemoryRegion(int aRegionIndex)
 void QtEmulator::saveMemory()
 {
 	prepare_memory_save();
-	QFile memoryFile(userSettingsDirectoryName+'/'+NON_VOLATILE_MEMORY_FILENAME);
+	QFile memoryFile(getMemoryPath());
 	if(!memoryFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
 	{
-		// TODO
+		memoryWarning("Cannot open "+memoryFile.fileName());
 		return;
 	}
 
@@ -242,8 +243,31 @@ void QtEmulator::saveMemory()
 	int reallyWritten=dataStream.writeRawData(get_memory(), memorySize);
 	if(reallyWritten!=memorySize)
 	{
-		// TODO
+		memoryWarning("Cannot write "+memoryFile.fileName());
+		return;
 	}
+}
+
+char* QtEmulator::getRegionPath(int aRegionIndex)
+{
+	QString regionPath(userSettingsDirectoryName+'/'+getRegionFileName(aRegionIndex));
+	currentRegionPath=regionPath.toAscii();
+	return currentRegionPath.data();
+}
+
+extern "C"
+{
+
+char* get_region_path_adapter(int aRegionIndex)
+{
+	return currentEmulator->getRegionPath(aRegionIndex);
+}
+
+}
+
+QString QtEmulator::getMemoryPath() const
+{
+	return userSettingsDirectoryName+'/'+NON_VOLATILE_MEMORY_FILENAME;
 }
 
 QString QtEmulator::getRegionFileName(int aRegionIndex) const
@@ -256,5 +280,50 @@ QString QtEmulator::getRegionFileName(int aRegionIndex) const
 	else
 	{
 		return regionFileName.arg(QString::number(aRegionIndex));
+	}
+}
+
+void QtEmulator::resetUserMemory()
+{
+	bool removed=true;
+	QFile memoryFile(getMemoryPath());
+	if(memoryFile.exists())
+	{
+		removed &= memoryFile.remove();
+	}
+
+	for (int i = 0; i < get_number_of_flash_regions(); ++i )
+	{
+		QFile regionMemoryFile(getRegionPath(i));
+		if(regionMemoryFile.exists())
+		{
+			removed &= regionMemoryFile.remove();
+		}
+	}
+
+	if(!removed)
+	{
+		memoryWarning("Cannot reset user memory", false);
+	}
+}
+
+void QtEmulator::memoryWarning(const QString& aMessage, bool aResetFlag)
+{
+	QMessageBox messageBox;
+	messageBox.setIcon(QMessageBox::Critical);
+	messageBox.setText("Error with memory files");
+	messageBox.setInformativeText(aMessage);
+	if(aResetFlag)
+	{
+		messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Reset);
+	}
+	else
+	{
+		messageBox.setStandardButtons(QMessageBox::Ok);
+	}
+	messageBox.setDefaultButton(QMessageBox::Ok);
+	if(messageBox.exec()==QMessageBox::Reset)
+	{
+		resetUserMemory();
 	}
 }

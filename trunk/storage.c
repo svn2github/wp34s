@@ -168,11 +168,19 @@ void sam_ba_boot(void)
  *  Emulate the flash in a file wp34s-<n>.dat
  */
 #ifdef QTGUI
-extern int program_flash( int page_no, void *buffer, int length );
+extern char* get_region_path(int region_index);
 #else
+char region_path[20];
+static char* get_region_path(int region_index)
+{
+	sprintf( region_path, REGION_FILE, region_index == 0 ? 'R' : region_index + '0' - 1 );
+	return region_path;
+}
+#endif
+
 static int program_flash( int page_no, void *buffer, int length )
 {
-	char name[ 20 ];
+	char *name;
 	char *dest;
 	int r_last = -1;
 	int r;
@@ -200,7 +208,7 @@ static int program_flash( int page_no, void *buffer, int length )
 			if ( f != NULL ) {
 				fclose( f );
 			}
-			sprintf( name, REGION_FILE, r == 0 ? 'R' : r + '0' - 1 );
+			name = get_region_path( r );
 
 			f = fopen( name, "rb+" );
 			if ( f == NULL ) {
@@ -224,9 +232,6 @@ static int program_flash( int page_no, void *buffer, int length )
 	return 0;
 }
 #endif
-
-#endif
-
 
 /*
  *  Simple backup / restore

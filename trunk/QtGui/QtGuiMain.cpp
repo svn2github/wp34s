@@ -19,12 +19,11 @@
 
 int main(int argv, char **args)
 {
+	QApplication app(argv, args);
+	QApplication::setOrganizationName(ORGANIZATION_NAME);
+	QApplication::setApplicationName(APPLICATION_NAME);
 	try
 	{
-		QApplication app(argv, args);
-		QApplication::setOrganizationName(ORGANIZATION_NAME);
-		QApplication::setApplicationName(APPLICATION_NAME);
-
 		QtEmulator emulator;
 		emulator.show();
 
@@ -32,7 +31,13 @@ int main(int argv, char **args)
 	}
 	catch(QtSkinException& exception)
 	{
-		qDebug() << exception.what();
+		QMessageBox messageBox;
+		messageBox.setIcon(QMessageBox::Critical);
+		messageBox.setText("Error reading skin, cannot continue");
+		messageBox.setInformativeText(exception.what());
+		messageBox.setStandardButtons(QMessageBox::Ok);
+		messageBox.setDefaultButton(QMessageBox::Ok);
+		messageBox.exec();
 		return 1;
 	}
 }

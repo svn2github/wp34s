@@ -24,6 +24,7 @@
 extern int is_key_pressed_adapter();
 extern int put_key_adapter(int);
 extern void add_heartbeat_adapter(int);
+extern char* get_region_path_adapter(int);
 
 void init_calculator()
 {
@@ -125,9 +126,9 @@ char* get_filled_flash_region(int region_index)
 	return region;
 }
 
-int program_flash( int page_no, void *buffer, int length )
+char* get_region_path(int region_index)
 {
-	return 0;
+	return get_region_path_adapter(region_index);
 }
 
 void fast_backup_to_flash()
