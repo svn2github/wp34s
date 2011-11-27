@@ -31,7 +31,7 @@ QtEmulator::QtEmulator()
 	userSettingsDirectoryName=QFileInfo(userSettings.fileName()).dir().path();
 
 #ifdef Q_WS_MAC
-	userSettingsDirectoryName.append('/').append(APPLICATION_NAME);
+	userSettingsDirectoryName.append('/').append(ORGANIZATION_NAME);
 #endif
 	QDir userSettingsDirectory(userSettingsDirectoryName);
 	if(!userSettingsDirectory.exists())
