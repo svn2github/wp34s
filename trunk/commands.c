@@ -500,6 +500,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_GRAD,		&op_trigmode,		"GRAD")
 	FUNC0(OP_RTN,		&op_rtn,		"RTN")
 	FUNC0(OP_RTNp1,		&op_rtn,		"RTN+1")
+	FUNC0(OP_END,		&op_rtn,		"END")
 	FUNC0(OP_RS,		&op_rs,			"STOP")
 	FUNC0(OP_PROMPT,	&op_prompt,		"PROMPT")
 	FUNC0(OP_SIGMACLEAR,	&sigma_clear,		"CL\221")
