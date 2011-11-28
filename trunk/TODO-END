@@ -1,0 +1,49 @@
+Introduce:
+		unsigned int find_program_start(unsigned int pc)
+		unsigned int find_program_end(unsigned int pc)
+	the second might not be worth separating out however.
+
+
+Modify:
+		inc
+		dec
+		incpc
+		decpc
+
+	to take an extra argument that indicates if END is a terminal
+	instruction or not.  Consider creating sister routines or
+	wrappering a common routine for this instead of using an
+	extra argument.
+
+
+Modify:
+	find_opcode / find_lbl to differentiate local labels from
+	alpha labels with respects to the wraping machanics.
+
+	CAT browser mustn't wrap.
+	CAT browser shows ENDs.
+
+	SKIP, BACK wrap on END.
+	SST, BST wrap on END.
+	conditional tests wrap on END.
+
+	GTO .. must go to the end of RAM program memory & optionally insert END.
+
+
+Consider:
+	reserving a pair of memory locations to store the current
+	program start and finish.  update these when/if required.
+	Zero them on procedure call or RTN.
+
+	numeric label search optimisation once the end is reached...
+		search backwards from the starting address and remember the
+		last matching label.  Once the beginning of the program is
+		reached, return the last matched address.
+
+	also consider caching numeric labels in a table in volatile memory to
+	make branches to labels very fast.
+
+
+Subsequently:
+	a program in flash filing system.
+	a program in RAM filing system that escapes the 510 step limitation.
