@@ -860,8 +860,10 @@ static s_opcode conv_catalogue[] = {
 
 /* The alpha mode menus to access all the weird characters */
 static unsigned char alpha_symbols[] = {
-	',',	'"',	'#',	'`',	'*',	':',
-	';',	'@',	'\'',	'_',	'~',
+	',',	';',	':',	'?',
+	'\'',	'"',	'#',	'`',
+	'*',	'%',	'@',	'_',
+	'~',
 	'$',	0014,	0036,	0037,		// currency symbols
 	0216,	0256				// Sol, Terra
 };
@@ -872,9 +874,11 @@ static unsigned char alpha_compares[] = {
 };
 
 static unsigned char alpha_arrows[] = {
-	015,	016,				// left arrow, right arrow
-	017,	020,				// up arrow, down arrow,
-	004,	0177,				// integral, up/down arrow
+	0015,	0016,				// left arrow, right arrow
+	0017,	0020,				// up arrow, down arrow,
+	0027,					// exchange
+	0003,	0004,				// root, integral
+	0177,					// up/down arrow
 	'^',	0237				// ^, infinity
 };
 

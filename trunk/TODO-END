@@ -28,14 +28,19 @@ Modify:
 	conditional tests wrap on END.
 
 	GTO .. must go to the end of RAM program memory & optionally insert END.
+	More navigation commands are needed: GTO.up GTO.down for skipping
+	to the begin or end of the current program. GTO.'ABC' to go to a label.
 
-	Program CRC must be for the current program only.
+	CLP clears current program only. The multi line delete becomes obsolete.
+
+	Program CRC must be for the current program only (on SHOW).
 
 
 Consider:
 	reserving a pair of memory locations to store the current
-	program start and finish.  update these when/if required.
-	Zero them on procedure call or RTN.
+	program start and finish.  Update these when/if required.
+	Zero them on procedure call or RTN but only if the called
+	or the return address lie outside the current range.
 
 	numeric label search optimisation once the end is reached...
 		search backwards from the starting address and remember the
@@ -43,7 +48,8 @@ Consider:
 		reached, return the last matched address.
 
 	also consider caching numeric labels in a table in volatile memory to
-	make branches to labels very fast.
+	make branches to labels very fast. Get rid of duplicate local labels 
+	then.
 
 
 Subsequently:
