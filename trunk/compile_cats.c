@@ -882,25 +882,31 @@ static unsigned char alpha_arrows[] = {
 	'^',	0237				// ^, infinity
 };
 
+#ifndef MERGE_SUPERSCRIPTS
 static unsigned char alpha_superscripts[] = {
 	0235,	0232,				// ^-1, ^2
 	0234,					// ^x
 	0005,					// degree
+	0024,					// complex prefix
 	0031,	0001,				// x-hat, x-bar
 	0032,	0002,				// y-hat, y-bar
-	0024					// complex prefix
 };
+#endif
 
 static unsigned char alpha_subscripts[] = {
 	0270,	0271,	0272,			// sub-0, sub-1, sub-2
 	0327,	0230,	0273,			// sub-A, sub-B, sub-c
-	0274,	0367,	0033,			// sub-e, sub-k, sub-n
+	0274,	0367,	0033,			// sub-e, sub-k, sub-m
 	0275,	0276,	0277,			// sub-n, sub-p, sub-u
-	0231,	0233				// sub-mu, sub-infinity
+	0231,	0233,				// sub-mu, sub-infinity
+	0235,	0232,				// ^-1, ^2
+	0234,					// ^x
+	0005,					// degree
+	0024					// complex prefix
 };
 
 // Next two must match in size and 'meaning'
-static unsigned char alpha_letters_upper[] = {
+static unsigned char alpha_letters[] = {
 	0300, 0301, 0302, 0303, 0304,		// A
 	0305, 0306, 0307,			// C
 	0310, 0311, 0312, 0313,			// E
@@ -911,6 +917,8 @@ static unsigned char alpha_letters_upper[] = {
 	0325,					// R
 	0326, 0030,				// S
 	0330, 0331, 0332, 0333, 0334,		// U
+	0031, 0001,				// x-hat, x-bar
+	0032, 0002,				// y-hat, y-bar
 	0335, 0336,				// Y
 	0337					// Z
 };
@@ -925,6 +933,8 @@ static unsigned char alpha_letters_lower[] = {
 	0365,					// R
 	0366, 0030,				// S
 	0370, 0371, 0372, 0373, 0374,		// U
+	0031, 0001,				// x-hat, x-bar
+	0032, 0002,				// y-hat, y-bar
 	0375, 0376,				// Y
 	0377					// Z
 };
@@ -1168,9 +1178,11 @@ int main(int argc, char *argv[]) {
 	ALPHA(alpha_symbols);
 	ALPHA(alpha_compares);
 	ALPHA(alpha_arrows);
+#ifndef MERGE_SUPERSCRIPTS
 	ALPHA(alpha_superscripts);
+#endif
 	ALPHA(alpha_subscripts);
-	ALPHA(alpha_letters_upper);
+	ALPHA(alpha_letters);
 	ALPHA(alpha_letters_lower);
 
         fprintf(stderr, "maxsteps=%d\n", NUMPROG);

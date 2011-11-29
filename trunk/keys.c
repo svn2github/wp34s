@@ -231,14 +231,14 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 *  All the alpha catalogues go here
 		 */
 		static const struct _map amap[] = {
-			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,        CATALOGUE_NONE               } },
-			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS_UPPER, CATALOGUE_NONE               } },
-		//	{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_LABELS             } },
-			{ K12,     { CATALOGUE_NONE, CATALOGUE_ALPHA_SUBSCRIPTS,    CATALOGUE_ALPHA_SUPERSCRIPTS } },
-			{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_STATUS             } },
-			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_COMPARES     } },
-			{ K53,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA              } },
-			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,                CATALOGUE_ALPHA_SYMBOLS      } },
+			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,     CATALOGUE_NONE               } },
+			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS,    CATALOGUE_NONE               } },
+		//	{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_LABELS             } },
+			{ K12,     { CATALOGUE_NONE, CATALOGUE_ALPHA_SUBSCRIPTS, CATALOGUE_NONE		      } },
+		//	{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_STATUS             } },
+			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_ALPHA_COMPARES     } },
+			{ K53,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_ALPHA              } },
+			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_ALPHA_SYMBOLS      } },
 		};
 		static const char smap[] = { 0, 1, 0, 2 }; // Map shifts to columns;
 
@@ -1519,9 +1519,7 @@ int current_catalogue_max(void) {
 		SIZE_alpha_symbols,
 		SIZE_alpha_compares,
 		SIZE_alpha_arrows,
-		SIZE_alpha_letters_upper,
-		// SIZE_alpha_letters_lower,
-		SIZE_alpha_superscripts,
+		SIZE_alpha_letters,
 		SIZE_alpha_subscripts,
 		NUM_CONSTS,
 		NUM_CONSTS,
@@ -1567,9 +1565,7 @@ opcode current_catalogue(int n) {
 		alpha_symbols,
 		alpha_compares,
 		alpha_arrows,
-		alpha_letters_upper,
-		// alpha_letters_lower,
-		alpha_superscripts,
+		alpha_letters,
 		alpha_subscripts,
 		NULL,
 		NULL,
@@ -1611,13 +1607,13 @@ opcode current_catalogue(int n) {
 			return RARG(RARG_CONV, cnv);
 	}
 
-	if ( c == CATALOGUE_ALPHA_LETTERS_UPPER && State2.alphashift )
-		cat = (const unsigned char *)alpha_letters_lower;
+	if ( c == CATALOGUE_ALPHA_LETTERS && State2.alphashift )
+		cat = (const unsigned char *) alpha_letters_lower;
 	else
-		cat = catalogues[c];
+		cat = (const unsigned char *) catalogues[c];
 
 	if ( c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS ) {
-		return alpha_code(n, (const char *)cat);
+		return alpha_code(n, (const char *) cat);
 	}
 
 	if (c >= sizeof(catalogues) / sizeof(void *))
@@ -1783,7 +1779,7 @@ search:
 		for (i=0; cmd[i] != '\0'; i++) {
 			const unsigned char c = remap_chars(cmd[i]);
 			const unsigned char cl = (unsigned char) Cmdline[i];
-			if (c > cl)
+			if (c == cl)
 				goto set_pos;
 			else if (c < cl)
 				break;
@@ -1797,7 +1793,7 @@ set_pos:
 	while (is_multi && pos && forbidden_alpha(pos))
 		--pos;
 	State.catpos = pos;
-				return STATE_UNFINISHED;
+	return STATE_UNFINISHED;
 }
 
 

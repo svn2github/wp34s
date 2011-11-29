@@ -112,7 +112,8 @@
 // #define HP16C_MODE_CHANGE
 
 // Include code to support a program mode only delete multiple steps command
-#define INCLUDE_MULTI_DELETE
+// END makes this obsolete
+// #define INCLUDE_MULTI_DELETE
 
 // Include some basic matrix support commands.
 #define MATRIX_SUPPORT

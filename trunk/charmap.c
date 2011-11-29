@@ -15,19 +15,19 @@
  */
 
 
-/* Take a characer and remap it into sort order.
+/* Take a character and remap it into sort order.
  * Also cater for different cases, diacriticals and some
  * special symbols being identical from an ordering perspective.
  *
  * Using a 256 element table to define equivalence classes is smaller
- * than a switch statement to catch teh exception.  Lower case is for
+ * than a switch statement to catch the exception.  Lower case is for
  * Greek letters and the Roman letter doesn't correspond at all with the Greek.
  */
 unsigned char remap_chars(unsigned char ch) {
 	static const unsigned char remapping[256] = {
 		0,	74,	78,	170,	171,	10,	0,	179,	// 0000
 		126,	155,	159,	158,	163,	145,	146,	147,	// 0010
-		148,	1,	2,	3,	4,	57,	57,	151,	// 0020
+		148,	1,	2,	3,	27,	57,	57,	151,	// 0020
 		63,	75,	80,	49,	124,	157,	164,	165,	// 0030
 		0,	129,	134,	135,	162,	161,	175,	133,	// 0040
 		120,	121,	136,	122,	127,	123,	128,	125,	// 0050
