@@ -337,12 +337,10 @@ static int internal_load_program( unsigned int r )
 	}
 	clrprog();
 	xcopy( &CrcProg, fr, region_length( fr ) );
-#ifdef ENABLE_VARIABLE_REGS
 	if (RetStk < Prog + LastProg ) {
 		sigmaDeallocate();
 		clrretstk();
 	}
-#endif
 	return 0;
 }
 
@@ -413,11 +411,9 @@ void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 		err( ERR_INVALID );
 		return;
 	}
-#ifdef ENABLE_VARIABLE_REGS
 	clrretstk();
 	NumRegs = UserFlash.backup._numregs;
 	sigmaDeallocate();
-#endif
 	xcopy( Regs, UserFlash.backup._regs, sizeof( Regs ) );
 }
 

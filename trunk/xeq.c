@@ -124,7 +124,6 @@ int RetStkSize;
  */
 int ProgFree;
 
-#ifdef ENABLE_VARIABLE_REGS
 /*
  * The actual top of the return stack
  */
@@ -147,7 +146,6 @@ int move_retstk(int distance)
 	RetStkSize += distance;
 	return 0;
 }
-#endif
 
 /*
  *  How many stack levels with local data have we?
@@ -647,6 +645,29 @@ void decpc(void) {
 	set_running_off();
 }
 
+/*
+ * Update the pointers to the current program delimited by END statements
+ */
+static void update_begin_end(void) {
+	unsigned int pc, opc;
+
+	for (pc = state_pc();;) {
+		opc = pc;
+		pc = inc(opc);
+		if (PcWrapped || getprog(opc) == (OP_NIL | OP_END)) {
+			ProgEnd = opc + 1;
+			break;
+		}
+	}
+	for (pc = state_pc();;) {
+		unsigned int opc = pc;
+		pc = dec(opc);
+		if (PcWrapped || getprog(pc) == (OP_NIL | OP_END)) {
+			ProgBegin = opc;
+			break;
+		}
+	}
+}
 
 /* Determine where in program space the PC really is
  */
@@ -859,11 +880,7 @@ decimal64 *get_reg_n(int n) {
 }
 
 decimal64 *get_flash_reg_n(int n) {
-#ifdef ENABLE_VARIABLE_REGS
 	return UserFlash.backup._regs + TOPREALREG - UserFlash.backup._numregs + n;
-#else
-	return UserFlash.backup._regs + n;
-#endif
 }
 
 void get_reg_n_as_dn(int n, decNumber *x) {
@@ -1052,9 +1069,7 @@ void clrprog(void) {
 void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
 
 	clrprog();
-#ifdef ENABLE_VARIABLE_REGS
 	NumRegs = TOPREALREG;
-#endif
 	clrreg(NULL, NULL, OP_CLREG);
 	clrstk(NULL, NULL, OP_CLSTK);
 	clralpha(NULL, NULL, OP_CLRALPHA);
@@ -1643,14 +1658,10 @@ int free_mem(void) {
 }
 
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
-#ifdef ENABLE_VARIABLE_REGS
 	put_int( op == OP_MEM ? free_mem() : 
 		 op == OP_LOCR ? local_regs() :
 		 NumRegs,
 		 0, a );
-#else
-	put_int( op == OP_MEM ? free_mem() : local_regs(), 0, a );
-#endif
 }
 
 
@@ -3433,17 +3444,14 @@ static void rargs(const opcode op) {
 		if (lim > 128 && ind)		// put the top bit back in
 			arg |= RARG_IND;
 	}
-#ifdef ENABLE_VARIABLE_REGS
-	// Range checking for registers against variable boundary
 	if (argcmds[cmd].reg && arg < TOPREALREG) {
+		// Range checking for registers against variable boundary
 		lim = NumRegs;
 		if (argcmds[cmd].cmplx)
 			--lim;
 	}
-	else
-#endif
-	// Range checking for local registers or flags
-	if (argcmds[cmd].local) {
+	else if (argcmds[cmd].local) {
+		// Range checking for local registers or flags
 		lim = NUMREG + local_regs();
 		if (argcmds[cmd].cmplx)
 			--lim;
@@ -3844,7 +3852,6 @@ void xeq_init_contexts(void) {
 	Ctx.emin=-DEC_MAX_MATH;
 	Ctx.round = DEC_ROUND_HALF_EVEN;
 
-#ifdef ENABLE_VARIABLE_REGS
 	// Compute the actual top and current size of the return stack
 	RetStkSize = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs;
 	RetStk = RetStkBase + RetStkSize;
@@ -3852,12 +3859,6 @@ void xeq_init_contexts(void) {
 	ProgFree = NUMPROG - (LastProg - 1);
 	if (RetStk < Prog + NUMPROG)
 		ProgFree -= Prog + NUMPROG - RetStk;	// All pointers are to 16 bit words!
-#else
-	// Compute the current size of the return stack
-	RetStkSize = RET_STACK_SIZE + NUMPROG + 1 - LastProg;
-	ProgFree = NUMPROG - LastProg + 1;
-#endif
-
 }
 
 
@@ -3983,7 +3984,6 @@ void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	RetStkPtr = retstk_up(LocalRegs, 1) - 1;
 }
 
-#ifdef ENABLE_VARIABLE_REGS
 /*
  *  Reduce the number of global registers in favour of local data on the return stack
  */
@@ -4001,7 +4001,6 @@ void cmdregs(unsigned int arg, enum rarg op) {
 		zero_regs(Regs + TOPREALREG + distance, -distance);
 	NumRegs = arg;
 }
-#endif
 
 
 /*

@@ -15,7 +15,6 @@ Modify:
 	wrappering a common routine for this instead of using an
 	extra argument.
 
-
 Modify:
 	find_opcode / find_lbl to differentiate local labels from
 	alpha labels with respects to the wraping machanics.
@@ -41,6 +40,8 @@ Consider:
 	program start and finish.  Update these when/if required.
 	Zero them on procedure call or RTN but only if the called
 	or the return address lie outside the current range.
+
+	Done: ProgBegin, ProgEnd, update_begin_end()
 
 	numeric label search optimisation once the end is reached...
 		search backwards from the starting address and remember the

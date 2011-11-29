@@ -441,7 +441,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_CFILL,		&cpx_fill,		"\024FILL")
 	FUNC0(OP_DROP,		&drop,			"DROP")
 	FUNC0(OP_DROPXY,	&drop,			"\024DROP")
-#ifdef ENABLE_VARIABLE_REGS
 	FN_I1(OP_sigmaX2Y,	&sigma_val,		"\221x\232y")
 	FN_I1(OP_sigmaX2,	&sigma_val,		"\221x\232")
 	FN_I1(OP_sigmaY2,	&sigma_val,		"\221y\232")
@@ -456,22 +455,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FN_I1(OP_sigmaXlnY,	&sigma_val,		"\221xlny")
 	FN_I1(OP_sigmaYlnX,	&sigma_val,		"\221ylnx")
 	FN_I1(OP_sigmaN,	&sigma_val,		"n\221")
-#else
-	FN_I1(OP_sigmaX2Y,	&sigma_val,		"\221x\232y")
-	FN_I1(OP_sigmaX,	&sigma_val,		"\221x")
-	FN_I1(OP_sigmaX2,	&sigma_val,		"\221x\232")
-	FN_I1(OP_sigmaY,	&sigma_val,		"\221y")
-	FN_I1(OP_sigmaY2,	&sigma_val,		"\221y\232")
-	FN_I1(OP_sigmaXY,	&sigma_val,		"\221xy")
-	FN_I1(OP_sigmaN,	&sigma_val,		"n\221")
-	FN_I1(OP_sigmalnX,	&sigma_val,		"\221lnx")
-	FN_I1(OP_sigmalnXlnX,	&sigma_val,		"\221ln\232x")
-	FN_I1(OP_sigmalnY,	&sigma_val,		"\221lny")
-	FN_I1(OP_sigmalnYlnY,	&sigma_val,		"\221ln\232y")
-	FN_I1(OP_sigmalnXlnY,	&sigma_val,		"\221lnxy")
-	FN_I1(OP_sigmaXlnY,	&sigma_val,		"\221xlny")
-	FN_I1(OP_sigmaYlnX,	&sigma_val,		"\221ylnx")
-#endif
 	FN_I2(OP_statS,		&stats_deviations,	"s")
 	FN_I2(OP_statSigma,	&stats_deviations,	"\261")
 	FN_I2(OP_statGS,	&stats_deviations,	"\244")
@@ -646,9 +629,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_POPLR,		&cmdlpop,		"PopLR")
 	FUNC1(OP_MEM,		&get_mem,		"MEM?")
 	FUNC1(OP_LOCR,		&get_mem,		"LocR?")
-#ifdef ENABLE_VARIABLE_REGS
 	FUNC1(OP_REGSQ,		&get_mem,		"REGS?")
-#endif
 	FUNC0(OP_XLOCAL,	&cmdxlocal,		"XLOCAL")
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
@@ -853,9 +834,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
 	CMD(RARG_LOCAL,		&cmdlocr,	MAX_LOCAL,		"LocR")
-#ifdef ENABLE_VARIABLE_REGS
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
-#endif
 
 #undef CMDlbl
 #undef CMDlblnI

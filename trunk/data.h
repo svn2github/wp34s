@@ -135,13 +135,17 @@ typedef struct _ram {
 	 */
 	unsigned short int _user_flags[(NUMFLG+15) >> 4];
 
-#ifdef ENABLE_VARIABLE_REGS
+	/*
+	 *  Begin and end of current program
+	 */
+	unsigned short int _prog_begin;
+	unsigned short int _prog_end;
+
 	/*
 	 *  Number of currently allocated global registers
 	 */
 	unsigned char _numregs;		// in registers
 	unsigned char _sizestatregs;	// in levels
-#endif
 
 	/*
 	 *  Alpha register gets its own space
@@ -167,15 +171,11 @@ extern TPersistentRam PersistentRam;
 #define Regs		(PersistentRam._regs)
 #define Prog		(PersistentRam._prog)
 #define UserFlags	(PersistentRam._user_flags)
-#ifdef ENABLE_VARIABLE_REGS
 #define RetStkBase	(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
+#define ProgBegin	(PersistentRam._prog_begin)
+#define ProgEnd		(PersistentRam._prog_end)
 #define NumRegs		(PersistentRam._numregs)
 #define SizeStatRegs	(PersistentRam._sizestatregs)
-#else
-#define RetStk		(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
-#define NumRegs		(TOPREALREG)
-#define SizeStatRegs	(NUMSTATREG>>2)
-#endif
 #define RetStkPtr	(PersistentRam._state.retstk_ptr)
 #define LocalRegs	(PersistentRam._state.local_regs)
 #define RandS1		(PersistentRam._rand_s1)
@@ -327,9 +327,7 @@ extern char TraceBuffer[];         // Display current instruction
 extern unsigned int OpCode;        // Pending execution waiting for key-release
 extern s_opcode XeqOpCode;	   // Currently executed function
 extern unsigned char GoFast;	   // Speed-up might be necessary
-#ifdef ENABLE_VARIABLE_REGS
 extern unsigned short *RetStk;	   // Pointer to current top of return stack
-#endif
 extern int RetStkSize;		   // actual size of retiurn stack
 extern int ProgFree;		   // Remaining program steps
 extern decContext Ctx;		   // decNumber library context

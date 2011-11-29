@@ -30,10 +30,6 @@
  *  Define register block
  */
 typedef struct _stat_data {
-#ifdef ENABLE_VARIABLE_REGS
-	// new ordering
-	// op-codes must match
-
 	// The next four are higher precision
 	decimal128 sX2Y;
 	decimal128 sX2;		
@@ -51,31 +47,9 @@ typedef struct _stat_data {
 	decimal64 sYlnX;
 
 	unsigned int sN;		
-#else
-	// old ordering
-	// op-codes must match!
-	decimal64 sX2Y;
-	decimal64 sX;		
-	decimal64 sX2;		
-	decimal64 sY;		
-	decimal64 sY2;		
-	decimal64 sXY;
-	decimal64 sN;		
-	decimal64 slnX;		
-	decimal64 slnXlnX;	
-	decimal64 slnY;		
-	decimal64 slnYlnY;	
-	decimal64 slnXlnY;	
-	decimal64 sXlnY;	
-	decimal64 sYlnX;
-#endif
 } STAT_DATA;
 
-#ifdef ENABLE_VARIABLE_REGS
 STAT_DATA *StatRegs;
-#else
-const STAT_DATA *StatRegs = (STAT_DATA *) Regs + TOPREALREG - NUMSTATREG;
-#endif
 
 #define sigmaN		(StatRegs->sN)
 #define sigmaX		(StatRegs->sX)
@@ -92,7 +66,6 @@ const STAT_DATA *StatRegs = (STAT_DATA *) Regs + TOPREALREG - NUMSTATREG;
 #define sigmaXlnY	(StatRegs->sXlnY)
 #define sigmaYlnX	(StatRegs->sYlnX)
 
-#ifdef ENABLE_VARIABLE_REGS
 /*
  *  Handle block (de)allocation
  */
@@ -124,9 +97,6 @@ void sigmaDeallocate(void) {
 	SizeStatRegs = 0;
 }
 
-#else
-#define check_stat()	(0)
-#endif
 
 #ifdef DUMP1
 #include <stdio.h>
@@ -164,19 +134,11 @@ static int check_number(const decNumber *r, int n) {
 }
 
 static int check_data(unsigned int n) {
-#ifdef ENABLE_VARIABLE_REGS
 	if (check_stat() || sigmaN < n) {
 		err(ERR_MORE_POINTS);
 		return 1;
 	}
 	return 0;
-#else
-	decNumber r;
-	if (check_stat())
-		return 1;
-	decimal64ToNumber(&sigmaN, &r);
-	return check_number(&r, n);
-#endif
 }
 
 
@@ -185,11 +147,7 @@ void stats_mode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 void sigma_clear(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-#ifdef ENABLE_VARIABLE_REGS
 	sigmaDeallocate();
-#else
-	zero_regs(StatRegs, SizeStatRegs >> 2);
-#endif
 }
 
 
@@ -203,7 +161,6 @@ static void sigop(decimal64 *r, const decNumber *a, decNumber *(*op)(decNumber *
 	packed_from_number(r, &u);
 }
 
-#ifdef ENABLE_VARIABLE_REGS
 static void sigop128(decimal128 *r, const decNumber *a, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
 	decNumber t, u;
 
@@ -211,9 +168,6 @@ static void sigop128(decimal128 *r, const decNumber *a, decNumber *(*op)(decNumb
 	(*op)(&u, &t, a);
 	packed128_from_number(r, &u);
 }
-#else
-#define sigop128 sigop
-#endif
 
 
 /* Multiply a pair of values and accumulate into the sigma data.
@@ -224,15 +178,11 @@ static void mulop(decimal64 *r, const decNumber *a, const decNumber *b, decNumbe
 	sigop(r, dn_multiply(&t, a, b), op);
 }
 
-#ifdef ENABLE_VARIABLE_REGS
 static void mulop128(decimal128 *r, const decNumber *a, const decNumber *b, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
 	decNumber t;
 
 	sigop128(r, dn_multiply(&t, a, b), op);
 }
-#else
-#define mulop128 mulop
-#endif
 
 
 /* Define a helper function to handle sigma+ and sigma-
@@ -243,9 +193,6 @@ static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const 
 
 	getXY(&x, &y);
 
-#ifndef ENABLE_VARIABLE_REGS
-	sigop(&sigmaN, &const_1, op);
-#endif
 	sigop(&sigmaX, &x, op);
 	sigop(&sigmaY, &y, op);
 	mulop128(&sigmaX2, &x, &x, op);
@@ -271,11 +218,9 @@ static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const 
 }
 
 void sigma_plus() {
-#ifdef ENABLE_VARIABLE_REGS
 	if (sigmaAllocate())
 		return;
 	++sigmaN;
-#endif
 	sigma_helper(&dn_add);
 }
 
@@ -283,10 +228,8 @@ void sigma_minus() {
 	if (check_stat())
 		return;
 	sigma_helper(&dn_subtract);
-#ifdef ENABLE_VARIABLE_REGS
 	if (--sigmaN <= 0)
 		sigmaDeallocate();
-#endif
 }
 
 
@@ -330,11 +273,7 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 	decNumber n;
 	decimal64 *xy = NULL;
 
-#ifdef ENABLE_VARIABLE_REGS
 	int_to_dn(&n, sigmaN);
-#else
-	decimal64ToNumber(&sigmaN, &n);
-#endif
 	if (mode == SIGMA_BEST)
 		mode = determine_best(&n);
 
@@ -374,7 +313,6 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 		decimal64ToNumber(lnx ? &sigmalnX : &sigmaX, sx);
 	if (sy != NULL)
 		decimal64ToNumber(lny ? &sigmalnY : &sigmaY, sy);
-#ifdef ENABLE_VARIABLE_REGS
 	if (sxx != NULL) {
 		if (lnx)
 			decimal64ToNumber(&sigmalnXlnX, sxx);
@@ -393,14 +331,6 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 		else
 			decimal128ToNumber(&sigmaXY, sxy);
 	}
-#else
-	if (sxx != NULL)
-		decimal64ToNumber(lnx ? &sigmalnXlnX : &sigmaX2, sxx);
-	if (syy != NULL)
-		decimal64ToNumber(lny ? &sigmalnYlnY : &sigmaY2, syy);
-	if (sxy != NULL)
-		decimal64ToNumber(xy, sxy);
-#endif
 	return mode;
 }
 
@@ -411,7 +341,6 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
  *  decimal64 values are grouped together, if decimal128 is used, regrouping is required
  */
 void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
-#ifdef ENABLE_VARIABLE_REGS
 	if (SizeStatRegs == 0) {
 		*x = CONSTANT_INT(OP_ZERO);
 		return;
@@ -424,18 +353,13 @@ void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
 		packed_from_packed128(x, &sigmaX2Y + (op - OP_sigmaX2Y));
 	else
 		*x = (&sigmaX)[op - OP_sigmaX];
-#else
-	*x = StatRegs[op - OP_sigmaX2Y];
-#endif
 }
 
 void sigma_sum(decimal64 *x, decimal64 *y, enum nilop op) {
-#ifdef ENABLE_VARIABLE_REGS
 	if (SizeStatRegs == 0) {
 		*x = *y = CONSTANT_INT(OP_ZERO);
 		return;
 	}
-#endif
 	*x = sigmaX;
 	*y = sigmaY;
 }
@@ -549,11 +473,7 @@ void WS(decimal64 *x, int sample, int rootn) {
 	get_sigmas(NULL, NULL, &sy, NULL, &syy, &sxy, SIGMA_QUIET_LINEAR);
 	if (check_number(&sy, 2))
 		return;
-#ifdef ENABLE_VARIABLE_REGS
 	decimal128ToNumber(&sigmaX2Y, &sxxy);
-#else
-	decimal64ToNumber(&sigmaX2Y, &sxxy);
-#endif
 	dn_multiply(&t, &sy, &sxxy);
 	decNumberSquare(&u, &sxy);
 	dn_subtract(&v, &t, &u);

@@ -384,11 +384,7 @@ extern int current_catalogue_max(void);
  * relatively easily.
  */
 #define NUMPROG		510	/* Fill 1 KB (including crc and length) */
-#ifdef ENABLE_VARIABLE_REGS
 #define RET_STACK_SIZE	24	/* Minimum depth of return stack, extends into unused program space */
-#else
-#define RET_STACK_SIZE	26	/* Minimum depth of return stack, extends into unused program space */
-#endif
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
@@ -683,18 +679,11 @@ enum nilop {
 	OP_STKSIZE, OP_STK4, OP_STK8, OP_INTSIZE,
 	OP_RDOWN, OP_RUP, OP_CRDOWN, OP_CRUP,
 	OP_CENTER, OP_FILL, OP_CFILL, OP_DROP, OP_DROPXY,
-#ifdef ENABLE_VARIABLE_REGS
 	OP_sigmaX2Y, OP_sigmaX2, OP_sigmaY2, OP_sigmaXY,
 	OP_sigmaX, OP_sigmaY, 
 	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
 	OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,
 	OP_sigmaN,
-#else
-	OP_sigmaX2Y, OP_sigmaX, OP_sigmaX2, OP_sigmaY, OP_sigmaY2, OP_sigmaXY,
-	OP_sigmaN,
-	OP_sigmalnX, OP_sigmalnXlnX, OP_sigmalnY, OP_sigmalnYlnY,
-		OP_sigmalnXlnY, OP_sigmaXlnY, OP_sigmaYlnX,
-#endif
 	OP_statS, OP_statSigma, OP_statGS, OP_statGSigma,
 		OP_statWS, OP_statWSigma,
 		OP_statMEAN, OP_statWMEAN, OP_statGMEAN,
@@ -764,9 +753,7 @@ enum nilop {
 	OP_POPLR,
 	OP_MEM,
 	OP_LOCR,
-#ifdef ENABLE_VARIABLE_REGS
 	OP_REGSQ,
-#endif
 	OP_XLOCAL,
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
@@ -854,9 +841,7 @@ enum rarg {
 	RARG_MESSAGE,
 
 	RARG_LOCAL,
-#ifdef ENABLE_VARIABLE_REGS
 	RARG_REGS,
-#endif
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -1257,9 +1242,7 @@ extern void op_putkey(unsigned int arg, enum rarg op);
 extern void op_keytype(unsigned int arg, enum rarg op);
 extern void cmdlocr(unsigned int arg, enum rarg op);
 extern void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-#ifdef ENABLE_VARIABLE_REGS
 extern void cmdregs(unsigned int arg, enum rarg op);
-#endif
 extern void cmdxlocal(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
 extern int not_running(void);
