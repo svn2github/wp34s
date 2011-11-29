@@ -1,0 +1,743 @@
+/* Solve code.
+ *
+ * On entry the stack looks like:
+ *	Y	Guess a
+ *	X	Guess b
+ *
+ * On return the stack looks like:
+ *	L	0
+ *
+ *	T	0
+ *	Z	f(X)
+ *	Y	previous root estimate
+ *	X	root estimate
+ *
+ * Register use:
+ * 0	a	lower bound
+ * 1	b	upper bound
+ * 2	c	new guess
+ * 3	f(a)
+ * 4	f(b)
+ */
+		LBL 97				/* Entry: SOLVE */
+			XEQ entry
+			x[approx]? Y
+				INC Y
+			x[approx]? Y
+				SDR 01
+			x>? Y
+				x[<->] Y
+			[cmplx]STO 00
+			FILL
+			XEQUSR
+			STO 03
+			x[approx]0?
+				JMP slv_initial1_perfect
+			RCL 01
+			FILL
+			XEQUSR
+			STO 04
+			x[approx]0?
+				JMP slv_initial2_perfect
+			SLVI 00
+			RCL 02
+
+slv_loop::		FILL
+			XEQUSR
+			FILL
+			x[approx]0?
+				JMP slv_success
+			SLVS 00
+			x[!=]0?			/* Check for failure to complete*/
+				JMP slv_failed
+			RCL 02
+			x[approx]? 00
+				JMP slv_fin
+			x[approx]? 01
+				JMP slv_fin
+			JMP slv_loop
+
+			/* Solver estimates converged */
+slv_fin::		RCL Z
+			FILL
+			XEQ slv_fixstack
+			JMP exit
+
+slv_fixstack::		iC 0
+			STO L
+			RCL T
+			RCL 01
+			RCL 02
+			RTN
+
+slv_failed::		RCL 03
+			ABS
+			RCL 04
+			ABS
+			x<? Y
+				JMP slv_fail_BltA
+			RCL T			/* Return the better estimate being A */
+			STO L
+			iC 0
+			x[<->] Y
+			RCL 00
+			RCL 02
+			JMP slv_fail_common
+
+slv_fail_BltA::		RCL T
+			STO L
+			iC 0
+			x[<->] Y
+			RCL 01
+			RCL 02
+
+slv_fail_common::	CF 15
+			TOP?
+				ERR 20
+err_exit1::		CF 15
+			RTN+1
+
+slv_success::		iC 0
+			STO L
+			RCL Z
+			RCL 01
+			RCL 02
+			JMP exit
+
+slv_initial2_perfect::	RCL 04
+			RCL 01
+			JMP slv_initial_common
+
+slv_initial1_perfect::	RCL 03
+			RCL 00
+
+slv_initial_common::	RCL X
+			iC 0
+			STO L
+			[cmplx]x[<->] Z
+			JMP exit
+
+
+/* Integrate code
+ * We're using a Gauss-Kronrod quadrature with 10 Guass points
+ * and 21 Kronrod points.  We calculate the Guass quadrature
+ * first so we can give an estimate if an error occurs during the
+ * extra evaluations of the Kronrod quadrature.
+ *
+ * On entry the stack looks like:
+ *	Y	lower limit
+ *	X	upper limit
+ *
+ * On return the stack looks like:
+ *	L	integral (Gauss)
+ *	I	unchanged
+ *
+ *	T	lower limit (Y on input)
+ *	Z	upper limit (X on input)
+ *	Y	error estimate (Gauss - Kronrod)
+ *	X	integral (Kronrod)
+ *
+ * Register use:
+ * 0	half interval length
+ * 1	interval midpoint
+ * 2	Gauss sum
+ * 3	Kronrod sum
+ * 4	Index
+ */
+
+int_bad_range::		XEQ int_restore_limits
+			# NaN
+			ENTER[^]
+			STO L
+			JMP exit
+
+int_zero_interval::	XEQ int_restore_limits
+			iC 0
+			ENTER[^]
+			STO L
+			JMP exit
+
+
+		LBL 94					/* Entry: INTEGRATE */
+			XEQ entry
+			SPEC?
+				JMP int_bad_range
+			x[<->] Y
+			SPEC?
+				JMP int_bad_range
+			x=? Y				/* Check if range is zero*/
+				JMP int_zero_interval
+			x[<->] Y
+
+			/* Compute (x-y)/2 and (x+y)/2 */
+			[cmplx]ENTER
+			+
+			2
+			/
+			x[<->] Z
+			-
+			2
+			/
+			[cmplx]STO 00			/* Also stores the midpoint */
+
+			/* Initialise the summations */
+			iC 0
+			STO 02
+			STO 03
+
+			/* Loop through the common points */
+			iC 15.02903
+			STO 04
+
+			/* Sum Gauss and Kronrod common points */
+int_gkloop::		XEQ int_first_point
+			XEQUSR
+			SPEC?
+				JMP int_bad_range
+			XEQ int_gauss
+			XEQ int_second_point
+			XEQUSR
+			SPEC?
+				JMP int_bad_range
+			XEQ int_gauss
+			ISG 04
+				JMP int_gkloop
+
+			/* Evaluate at midpoint for the Kronrod estimate */
+			RCL 00
+			STO[times] 02
+			RCL 01
+			FILL
+			XEQUSR
+			SPEC?
+				JMP int_bad_range2
+			iC 0.14944555
+			[times]
+			STO+ 03
+
+			/* Now loop through the Kronrod points */
+			iC 5.01402
+			STO 04
+
+			/* Sum Kronrod only points */
+int_kloop::		XEQ int_first_point
+			XEQUSR
+			SPEC?
+				JMP int_bad_range2
+			XEQ int_kronrod
+			XEQ int_second_point
+			XEQUSR
+			SPEC?
+				JMP int_bad_range2
+			XEQ int_kronrod
+			ISG 04
+				JMP int_kloop
+
+			RCL 00
+			STO[times] 03
+
+			/* Set up the stack for our output */
+			XEQ int_restore_limits
+			RCL 03
+			RCL- 02				/* err, l, u, ?, G*/
+			RCL 03				/* K, err, l, u, G*/
+			JMP exit
+
+			/* Calculate the first point from the xi */
+int_first_point::	iC[->]04
+			RCL[times] 00
+			RCL+ 01
+			FILL
+			RTN
+
+			/* Calculate the second point from the xi */
+int_second_point::	RCL 01
+			iC[->]04
+			RCL[times] 00
+			-
+			FILL
+			RTN
+
+			/* Do a Kronrod accumulation, f(xi) in X */
+int_kronrod::		RCL 04				/* i, f, ?, ?*/
+			INC X				/* i+1, f, ?, ?*/
+			iC[->]X				/* ki, i+1, f, ?*/
+			STO L
+			RCL Z				/* f, ki, i+1, f*/
+			FILL				/* f, f, f, f*/
+			RCL[times] L			/* ki*f, f, f, f*/
+			STO+ 03
+			RTN
+
+			/* Gauus Kronrod accumulation, f(xi) in X */
+int_gauss::		RCL 04		
+			INC X				/* I+1, f, ?, ?*/
+			RCL Y				/* f, I+1, f, ?*/
+			RCL X				/* f, f, I+1, f*/
+			iC[->]Z				/* gi, f, f, I+1*/
+			INC T				/* gi, f, f, I+2*/
+			[times]				/* gi*f, f, I+2, I+2*/
+			STO+ 02
+			DROP				/* f, I+2, I+2, I+2*/
+			iC[->]Z				/* ki, f, I+2, I+2*/
+			[times]				/* ki*f, I+2, I+2, I+2*/
+			STO+ 03
+			RTN
+
+			/* A value is NaN after the Gauss estimate */
+int_bad_range2:: 	XEQ int_restore_limits
+			# NaN
+			RCL 02
+			STO L
+			JMP exit
+
+int_restore_limits::	RCL 01
+			RCL- 00
+			RCL 01
+			RCL+ 00		/* l, u*/
+			RTN
+
+
+/**************************************************************************/
+/* Sigma and products
+ * Register use:
+ * 0	I
+ * 1	product/sum
+ * 2	carry for sum
+ * 3	saved I
+ */
+		LBL 99					/* Entry: SUMMATION */
+			XEQ entry
+			SPEC?
+				JMP sum_product_okay
+			STO 00
+			STO 03				/* Save for LastX*/
+			IP				/* First function call is separate*/
+			FILL				/* to avoid Kahan summing from zero*/
+			XEQUSR				/* six extra instructions save nine*/
+			SPEC?				/* from executing*/
+				JMP sum_product_nan
+			STO 01
+			iC 0
+			STO 02
+			JMP sum_entry
+
+sum_loop::		RCL 00
+			IP
+			FILL
+			XEQUSR
+			SPEC?
+				JMP sum_product_nan
+			RCL- 02
+			ENTER[^]
+			RCL+ 01
+			ENTER[^]
+			RCL- 01
+			RCL- Z
+			x[<->] Y
+			[cmplx]STO 01
+
+sum_entry::		DSL 00
+				JMP sum_loop
+			JMP sum_product_okay
+
+
+		LBL 98					/* Entry: PRODUCT */
+			XEQ entry
+			SPEC?
+				JMP sum_product_okay
+			STO 00
+			STO 03
+			IP				/* First function call is separate*/
+			FILL				/* to avoid a multiply*/
+			XEQUSR
+			SPEC?
+				JMP sum_product_nan
+			STO 01
+			JMP product_entry
+
+product_loop::		RCL 00
+			IP
+			FILL
+			XEQUSR
+			SPEC?
+				JMP sum_product_nan
+			STO[times] 01
+product_entry::		DSL 00
+				JMP product_loop
+
+sum_product_okay::	RCL 03
+			STO L
+			iC 0
+			FILL
+			RCL 01
+			JMP exit
+
+sum_product_nan::	RCL 03
+
+sum_product_error::	STO L
+			iC 0
+			FILL
+			# NaN
+			JMP exit
+
+/**************************************************************************/
+/* Numerical differentiation
+ * Register use:
+ * 0	E3
+ * 1	E2
+ * 2	E1
+ * 3	X
+ * 4	H
+ *
+ * Flag use:
+ * 0	second derivative
+ */
+		LBL 95					/* Entry: SECOND DERIVATIVE */
+			XEQ entry
+			SPEC?
+				JMP deriv_bad_input
+			SF 00
+			XEQ deriv_default_h
+			1
+			XEQ deriv_eval_func		/* f(x+h) + f(x-h)*/
+				JMP deriv_bad_input
+			1
+			6
+			[times]
+			STO 01				/* order four estimate*/
+			4
+			2
+			EEX
+			3
+			RCL[times] 00
+			STO 02				/* order ten estimate*/
+			0
+			XEQ deriv_eval_func		/* f(x)*/
+				JMP deriv_bad_input
+			3
+			0
+			[times]
+			STO- 01
+			7
+			3
+			7
+			6
+			6
+			RCL[times] 00
+			STO- 02
+
+			2
+			XEQ deriv_eval_func		/* f(x+2h) + f(x-2h)*/
+				JMP deriv_bad_input
+			STO- 01
+			6
+			EEX
+			3
+			[times]
+			STO- 02
+
+			3
+			XEQ deriv_eval_func		/* f(x+3h) + f(x-3h)*/
+				JMP deriv2_4point
+			EEX
+			3
+			[times]
+			STO+ 02
+
+			4
+			XEQ deriv_eval_func		/* f(x+4h) + f(x-4h)*/
+				JMP deriv2_4point
+			1
+			2
+			5
+			[times]
+			STO- 02
+
+			5
+			XEQ deriv_eval_func		/* f(x+5h) + f(x-5h)*/
+				JMP deriv2_4point
+			8
+			[times]
+			RCL+ 02
+			2
+			5
+			2
+			SDL 02				/* * 100 = 25200*/
+			RCL[times] 04
+			RCL[times] 04
+			/
+			JMP deriv_return
+
+deriv_bad_input::	# NaN
+			JMP deriv_return
+
+deriv2_4point::		1
+			2
+			RCL[times] 04
+			RCL[times] 04
+			1/x
+			STO[times] 01
+
+deriv_6point::		RCL 01
+			JMP deriv_return
+
+
+		LBL 96					/* Entry: DERIVATIVE */
+			XEQ entry
+			SPEC?
+				JMP deriv_bad_input
+			CF 00
+			XEQ deriv_default_h
+			1
+			XEQ deriv_eval_func		/* f(x+h) - f(x-h)*/
+				JMP deriv_bad_input
+			STO 01
+
+			2
+			XEQ deriv_eval_func		/* f(x+2h) - f(x-2h)*/
+				JMP deriv_bad_input
+			STO 02
+
+			/* At this point we can do a four point estimate if something goes awry */
+			3
+			XEQ deriv_eval_func		/* f(x+3h)-f(x-3h)*/
+				JMP deriv_4point
+
+			/* At this point we can do the six point estimate - calculate it now */
+			4
+			5
+			RCL[times] 01
+			9
+			RCL[times] 02
+			-
+			+
+			6
+			0
+			RCL[times] 04
+			/
+			x[<->] 01			/* Six point stimate in E2 & start ten point estimate*/
+			2
+			1
+			SDL 02				/* * 100 = 2100*/
+			[times]
+			6
+			SDL 02				/* * 100 = 600*/
+			RCL[times] 02
+			-
+			1
+			5
+			0
+			RCL[times] 00
+			+				/* Ten point estimate to end up in E1*/
+
+			STO 02
+			4
+			XEQ deriv_eval_func		/* f(x+4h) - f(x-4h)*/
+				JMP deriv_6point
+			2
+			5
+			[times]
+			STO- 02
+
+			5
+			XEQ deriv_eval_func		/* f(x+5h) - f(x-5h)*/
+				JMP deriv_6point
+			RCL+ 00
+			RCL+ 02
+			2
+			5
+			2
+			0
+			RCL[times] 04
+			/
+			JMP deriv_return
+
+			/* Eval f(X + k h) k on stack */
+deriv_eval_func::	STO 00
+			RCL[times] 04
+			RCL+ 03
+			FILL
+			XEQUSR				/* f(x + k h)*/
+			SPEC?
+				RTN
+			x[<->] 00
+			x=0?
+				JMP deriv_skip_midpoint
+			+/-
+			RCL[times] 04
+			RCL+ 03
+			FILL
+			XEQUSR				/* f(x - k h)*/
+			SPEC?
+				RTN
+			FS? 00
+			+/-
+			STO- 00
+
+deriv_skip_midpoint::	RCL 00
+			RTN+1
+
+deriv_default_h::	STO 03
+			FILL
+			XEQ'[delta]X'
+			STO 04
+			RTN
+
+		LBL'[delta]X'
+			iC 1
+			SDR 01				/* default h = 0.1*/
+			RTN
+
+deriv_4point::		8
+			RCL[times] 01
+			RCL- 02
+			1
+			2
+			RCL[times] 04
+			/
+
+
+deriv_return::		STO L
+			iC 0
+			FILL
+			RCL 03
+			x[<->] L
+			JMP exit
+
+/**************************************************************************/
+/* A quadratic equation solver.
+ * Based on code by Franz.
+ *
+ * Register use:
+ * 0	c
+ * 1	b^2 - 4ac
+ * 2	2a
+ * 3	t
+ * 4	I
+ */
+		LBL 89					/* Entry: QUADRATIC SOLVER */
+			XEQ entry
+			STOS 00
+			RCL I
+			STO 04
+			R[v]
+
+			RCL+ X				/* 2c b a . */
+			x[<->] Z			/* a b 2c . */
+			x=0?
+				ERR 18			/* Invalid arugment error */
+			RCL+ X				/* 2a b 2c . */
+			STO 02
+			RCL Y				/* b 2a b 2c */
+			[cmplx][times]			/* b^2-4ac 2b(a+c) b 2c */
+			STO 01
+			x<0?
+				JMP quad_complex
+			[sqrt]				/* sqrt 2b(a+c) b 2c */
+			x[<->] Y			/* . sqrt b 2c */
+			DROP				/* sqrt b 2c 2c */
+			x[<->] Y			/* b sqrt 2c 2c */
+			x[>=]0?
+				[cmplx]CONJ
+			-				/* -b-sqrt 2c 2c 2c */
+                        x[!=]0?
+			STO/ Y				/* -b-sqrt 2c/(-b-sqrt) 2c 2c */
+			RCL/ 02				/* (b-sqrt)/2a 2c/(b-sqrt) 2c 2c */
+			XEQ quad_fix_stack
+			JMP exit
+
+quad_complex::		ABS
+			[sqrt]				/* sqrt ? b 2c */
+			RCL/ 02				/* sqrt/2a ? b 2c */
+			RCL Z				/* b sqrt/2a ? b */
+			RCL/ 02				/* b/2a sqrt/2a ? b */
+			+/-
+			XEQ quad_fix_stack
+			TOP?
+				JMP quad_message
+err_exit2::		CF 15
+			RTN+1
+
+quad_message::		CL[alpha]
+			[alpha] C
+			VW[alpha]+ X
+			JMP exit
+
+quad_fix_stack::	RCL 00
+			STO L				/* Push c into Last X*/
+			RCL 04
+			STO I				/* Restore I*/
+			[cmplx]x[<->] Z
+			RCL 04				/* Restore T*/
+			RCL 01				/* Preserve b^2 - 4ac*/
+			[cmplx]x[<->] Z
+			RTN
+
+/**************************************************************************/
+
+			/* Set xrom flag and error if it*/
+entry::			INTM?
+				ERR 13			/* Error: bad mode error*/
+			FS?F 15				/* was set already, return if not.*/
+				ERR 07			/* Error: Slv integrate sum product nested*/
+			RTN
+
+			/* Clear xrom flag and return*/
+exit::			CF 15
+			RTN
+
+			/* Clear xrom falg and return with skip */
+/* This is only jumpped to from two places and it is shorter to inline it
+err_exit::		CF 15
+			RTN+1
+*/
+
+
+/**************************************************************************/
+/* Very minimal routine to return the next prime in sequence
+ */
+		LBL 88
+			FLOOR
+			x[<=]1?
+				JMP prime_2
+			PRIME?
+				INC X
+			EVEN?
+prime_loop::			INC X
+			PRIME?
+				RTN
+			INC X
+			JMP prime_loop
+
+prime_2::		CLx
+			2
+			RTN
+
+/**************************************************************************/
+
+		LBL'WHO'
+			CL[alpha]
+			XEQ who_wp
+			"by"
+			XEQ who_show
+			"Pauli"
+			XEQ who_show
+			"Walter"
+			XEQ who_show
+			"Marcus"
+			XEQ who_show
+			"Neil"
+			XEQ who_show
+			"& more"
+			XEQ who_show
+			XEQ who_wp
+			VERS
+			RTN
+
+who_wp::		"WP 34S"
+
+who_show::		[alpha]VIEW
+			PSE 08
+			CL[alpha]
+			RTN
