@@ -231,14 +231,14 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 *  All the alpha catalogues go here
 		 */
 		static const struct _map amap[] = {
-			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,     CATALOGUE_NONE               } },
-			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS,    CATALOGUE_NONE               } },
-		//	{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_LABELS             } },
-			{ K12,     { CATALOGUE_NONE, CATALOGUE_ALPHA_SUBSCRIPTS, CATALOGUE_NONE		      } },
-		//	{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_STATUS             } },
-			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_ALPHA_COMPARES     } },
-			{ K53,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_ALPHA              } },
-			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,             CATALOGUE_ALPHA_SYMBOLS      } },
+			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,  CATALOGUE_NONE              } },
+			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS, CATALOGUE_NONE              } },
+		//	{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_LABELS            } },
+			{ K12,     { CATALOGUE_NONE, CATALOGUE_NONE,	      CATALOGUE_ALPHA_SUBSCRIPTS  } },
+		//	{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_STATUS            } },
+			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_ALPHA_COMPARES    } },
+			{ K53,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_ALPHA             } },
+			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_ALPHA_SYMBOLS     } },
 		};
 		static const char smap[] = { 0, 1, 0, 2 }; // Map shifts to columns;
 
