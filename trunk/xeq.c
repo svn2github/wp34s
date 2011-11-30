@@ -186,13 +186,11 @@ void cmd_off(decimal64 *a, decimal64 *nul2, enum nilop op) {
 unsigned int state_pc(void) {
 	return State.pc;	
 }
-
+#endif
 static void raw_set_pc(unsigned int pc) {
 	State.pc = pc;
+	update_program_bounds(0);
 }
-#else
-#define raw_set_pc(new_pc) (State.pc = new_pc)
-#endif
 
 /*
  *  Get an opcode, check for double length codes
@@ -572,28 +570,28 @@ void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 #define SECTION_RAM	0
 #define SECTION_LIB	1	/* And above */
 
-static unsigned short int find_section_bounds(const unsigned int pc, const int endp, unsigned short int *const start) {
-	unsigned short int s, e;
+static unsigned short int find_section_bounds(const unsigned int pc, const int endp, unsigned short int *const p_top) {
+	unsigned short int top, bottom;
 
-	if (endp) { 
+	if (endp && State2.runmode) { 
 		// Use the current program as bounds
-		s = ProgBegin;
-		e = ProgEnd - 1;
+		top = ProgBegin;
+		bottom = ProgEnd;
 	}
 	else if (isXROM(pc)) {
-		s = addrXROM(0);
-		e = addrXROM(xrom_size);
+		top = addrXROM(0);
+		bottom = addrXROM(xrom_size);
 	} 
 	else if (isLIB(pc)) {
-		s = startLIB(pc);
-		e = s + sizeLIB(nLIB(pc));
+		top = startLIB(pc);
+		bottom = top + sizeLIB(nLIB(pc));
 	}
 	else {
-		s = 0;
-		e = LastProg - 1;
+		top = State2.runmode;
+		bottom = LastProg - 1;
 	}
-	*start = s;
-	return e;
+	*p_top = top;
+	return bottom;
 }
 
 
@@ -635,7 +633,9 @@ unsigned int do_dec(unsigned int pc, int endp) {
 		PcWrapped = 1;
 		pc = bottom;
 	}
-	if (--pc > top && isDBL(getprog(pc - 1)))
+	else
+		--pc;
+	if (pc > top && isDBL(getprog(pc - 1)))
 		--pc;
 	return pc;
 }
@@ -665,7 +665,7 @@ void decpc(void) {
 /*
  * Update the pointers to the current program delimited by END statements
  */
-static void update_begin_end(const int force) {
+void update_program_bounds(const int force) {
 	unsigned int pc = state_pc();
 
 	if (! force && pc >= ProgBegin && pc < ProgEnd)
@@ -674,7 +674,7 @@ static void update_begin_end(const int force) {
 		const unsigned int opc = pc;
 		pc = do_inc(opc, 0);
 		if (PcWrapped || getprog(opc) == (OP_NIL | OP_END)) {
-			ProgEnd = opc + 1;
+			ProgEnd = opc;
 			break;
 		}
 	}
@@ -706,7 +706,7 @@ unsigned int user_pc(void) {
 
 	while (base < pc) {
 		++n;
-		base = inc(base);
+		base = do_inc(base, 0);
 		if (PcWrapped)
 			return n - 1;
 	}
@@ -723,8 +723,8 @@ unsigned int find_user_pc(unsigned int target) {
 
 	while (n++ < target) {
 		const unsigned int oldbase = base;
-		base = inc(oldbase);
-		if (base < oldbase)
+		base = do_inc(oldbase, 0);
+		if (PcWrapped)
 			return oldbase;
 	}
 	return base;
@@ -1814,22 +1814,21 @@ static int retstk_up(int sp, int unwind)
 
 /* Search from the given position for the specified numeric label.
  */
-static unsigned int find_opcode_from(const unsigned int pc, const opcode l, const int flags) {
-	unsigned int z = pc;
+static unsigned int find_opcode_from(unsigned int pc, const opcode l, const int flags) {
 	unsigned short int top;
 	int count;
 	const int endp = flags & FIND_OP_ENDS;
 	const int errp = flags & FIND_OP_ERROR;
 
-	count = find_section_bounds(z, endp, &top);
+	count = 1 + find_section_bounds(pc, endp, &top);
 	count -= top;
 	while (count--) {
 		// Wrap around doesn't hurt, we just limit the search to the number of possible steps
 		// If we don't find the label, we may search a little too far if many double word
 		// instructions are in the code, but this doesn't do any harm.
-		if (getprog(z) == l)
-			return z;
-		z = inc(z);
+		if (getprog(pc) == l)
+			return pc;
+		pc = inc(pc);
 	}
 	if (errp)
 		err(ERR_NO_LBL);
@@ -1985,7 +1984,7 @@ static void do_branchalpha(int is_gsb) {
 }
 
 void op_gtoalpha(decimal64 *a, decimal64 *b, enum nilop op) {
-	do_branchalpha((op ==OP_GTOALPHA) ? 0 : 1);
+	do_branchalpha((op == OP_GTOALPHA) ? 0 : 1);
 }
 
 
@@ -3745,27 +3744,25 @@ void xeq_sst_bst(int kind)
 /* Store into program space.
  */
 void stoprog(opcode c) {
+	const int off = isDBL(c) ? 2 : 1;
 	int i;
-	int off;
-	unsigned int pc;
+	unsigned int pc = state_pc();
 
-	if (!isRAM(state_pc()))
+	if (!isRAM(pc))
 		return;
 	clrretstk();
-	off = isDBL(c) ? 2 : 1;
 	if (ProgFree < off) {
 		return;
 	}
 	LastProg += off;
-	incpc();
-	pc = state_pc();
-	for (i=LastProg; i>(int)pc; i--)
-		Prog_1[i] = Prog_1[i-off];
-	if (pc != 0) {
-		if (isDBL(c))
-			Prog_1[pc + 1] = c >> 16;
-		Prog_1[pc] = c;
-	}
+	ProgEnd += off;
+	pc = do_inc(pc, 0);	// Don't stop on END
+	for (i = LastProg; i > (int)pc; i--)
+		Prog_1[i] = Prog_1[i - off];
+	if (isDBL(c))
+		Prog_1[pc + 1] = c >> 16;
+	Prog_1[pc] = c;
+	State.pc = pc;
 }
 
 

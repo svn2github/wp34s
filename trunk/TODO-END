@@ -3,6 +3,8 @@ Introduce:
 		unsigned int find_program_end(unsigned int pc)
 	the second might not be worth separating out however.
 
+DONE (instead):
+	update_program_bounds(force) to set pointers PorgBegin, ProgEnd.
 
 Modify:
 		inc
@@ -24,35 +26,47 @@ Modify:
 	incpc and decpc need no such wrapping -- they are only used in places
 	where END is important.
 
+DONE:
+	do_inc(), do_dec() argument. dec/inc obey porgram bounds. 
 
 Modify:
 	find_section_bounds needs to figure out how to work with ENDs.
-
+DONE:	
+	find_section_bounds has a parameter to obey the bounds or not.
+	In program entry mode, all program memory is freely addressable (no bounds).
 
 Modify:
 	user_pc needs to reworked to start from the start of the current program
 	not the current region.
-
+	
 DONE:
 	find_opcode / find_lbl to differentiate local labels from
 	alpha labels with respects to the wraping machanics.
+	This seems to work! The code has been simplified.
 
 Modify:
 	CAT browser mustn't wrap.
 	CAT browser shows ENDs.
+	This needs to be investigated
 
 	SKIP, BACK wrap on END.
 	SST, BST wrap on END.
 	conditional tests wrap on END.
+	This should work because incpc and decpc are modified.
 
 	GTO .. must go to the end of RAM program memory & optionally insert END.
 	More navigation commands are needed: GTO.up GTO.down for skipping
 	to the begin of the current or next program. GTO.'ABC' to go to a label.
-
+	
 	CLP clears current program only. The multi line delete becomes obsolete.
 
 	Program CRC must be for the current program only (on SHOW).
 
+DONE:
+	GTO.. inserts END if needed.
+	GTO.up jumps to the beginning of the current program and then backwards to
+	the previous program.
+	GTO.down jumps to the next program.
 
 Consider:
 	reserving a pair of memory locations to store the current
@@ -60,7 +74,10 @@ Consider:
 	Zero them on procedure call or RTN but only if the called
 	or the return address lie outside the current range.
 
-	ProgBegin, ProgEnd, update_begin_end() -- partially done
+DONE:
+	ProgBegin, ProgEnd, update_begin_end()
+
+Consider:
 	Move ProgBegin/ProgEnd into volatile RAM and recalculate as required??
 	They'll only be recalculated on global XEQ or after a power off.
 	The first is unavoidable.  The second means a user interaction so a

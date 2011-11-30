@@ -1041,6 +1041,7 @@ extern void stoprog(opcode);
 extern void delprog(void);
 extern void del_till_label(unsigned int);
 extern void del_till_multi_label(unsigned int);
+extern void update_program_bounds(const int force);
 extern unsigned int inc(const unsigned int);
 extern unsigned int dec(unsigned int);
 extern unsigned int do_inc(const unsigned int, int);

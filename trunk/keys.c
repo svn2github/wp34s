@@ -398,6 +398,8 @@ void init_state(void) {
 	// Removed: will clear any locals on power off
 	// clrretstk(0);
 
+	if (State2.runmode == 0)
+		update_program_bounds(1);
 	xset(&State2, 0, sizeof(State2));
 	State2.test = TST_NONE;
 	State2.runmode = 1;
@@ -773,15 +775,16 @@ static int process_h_shifted(const keycode c) {
 	case K63:					// Program<->Run mode
 		State2.runmode = 1 - State2.runmode;
 		process_cmdline_set_lift();
+		update_program_bounds(1);
 		break;
 
 	default:
 		break;
 	}
 
-	if ( op != STATE_UNFINISHED ) {
-		if ( op & _RARG ) {
-			init_arg( (enum rarg) (op & ~(_RARG | NO_INT)) );
+	if (op != STATE_UNFINISHED) {
+		if (op & _RARG) {
+			init_arg((enum rarg) (op & ~(_RARG | NO_INT)));
 			op = STATE_UNFINISHED;
 		}
 	}
@@ -1033,8 +1036,10 @@ static int process_gtodot(const keycode c) {
 	else if (c == K62) {
 		// .
 		if (State2.numdigit == 0) {
-			rawpc = 0;
-			goto fin;
+			set_pc(LastProg - 1);
+			if (getprog(state_pc()) != (OP_NIL | OP_END))
+				stoprog(OP_NIL | OP_END);
+			goto fin2;
 		}
 	}
 	else if (c == K20) {
@@ -1050,11 +1055,21 @@ static int process_gtodot(const keycode c) {
 			State2.digval /= 10;
 		}
 	}
-
+	else if (c == K40) {
+		// up
+		decpc();
+		update_program_bounds(1);
+		pc = ProgBegin;
+	}
+	else if (c == K50) {
+		// down
+		update_program_bounds(1);
+		pc = inc(ProgEnd);
+	}
 	if (pc >= 0) {
 		rawpc = find_user_pc(pc);
 fin:		set_pc(rawpc);
-		State2.gtodot = 0;
+fin2:		State2.gtodot = 0;
 		State2.digval = 0;
 		State2.numdigit = 0;
 	}
@@ -1160,6 +1175,11 @@ static int process_alpha(const keycode c) {
 /*
  *  Code to handle all commands with arguments
  */
+static void reset_arg(void) {
+	init_arg((enum rarg) 0);
+	State2.rarg = 0;
+}
+
 static int arg_eval(unsigned int val) {
 	const unsigned int base = CmdBase;
 	const int r = RARG(base, val 
@@ -1179,8 +1199,7 @@ static int arg_eval(unsigned int val) {
 			return STATE_UNFINISHED;
 	}
 	// Build op-code
-	init_arg(0);
-	State2.rarg = 0;
+	reset_arg();
 #ifdef INCLUDE_MULTI_DELETE
 	if (base == RARG_DELPROG) {
 		del_till_label(val);
@@ -1276,8 +1295,7 @@ static int process_arg_dot(const unsigned int base) {
 			// Special GTO . sequence
 			if (! State2.ind) {
 				State2.gtodot = 1;
-				init_arg(0);
-				State2.rarg = 0;
+				reset_arg();
 			}
 		}
 	}
@@ -1296,8 +1314,7 @@ static int process_arg(const keycode c) {
 
 	n &= ~NO_SHORT;
 	if (base >= num_argcmds) {
-		init_arg(0);
-		State2.rarg = 0;
+		reset_arg();
 		return STATE_UNFINISHED;
 	}
 	if (n <= 9 && ! shorthand && ! State2.dot)
@@ -1361,8 +1378,7 @@ static int process_arg(const keycode c) {
 
 	case K54:
 		if (base == RARG_VIEW || base == RARG_VIEW_REG) {
-			init_arg(0);
-			State2.rarg = 0;
+			reset_arg();
 			return OP_NIL | OP_VIEWALPHA;
 		}
 		arg_storcl(RARG_STO_MI - RARG_STO, 1);
@@ -1393,17 +1409,15 @@ static int process_arg(const keycode c) {
 					init_arg(DBL_DELPROG);
 				else
 #endif
-					init_arg(base - RARG_LBL);
+					init_arg((enum rarg)(base - RARG_LBL));
 				State2.multi = 1;
 				State2.alphashift = 0;
 				State2.rarg = 0;
 			} else if (base == RARG_SCI) {
-				init_arg(0);
-				State2.rarg = 0;
+				reset_arg();
 				return OP_NIL | OP_FIXSCI;
 			} else if (base == RARG_ENG) {
-				init_arg(0);
-				State2.rarg = 0;
+				reset_arg();
 				return OP_NIL | OP_FIXENG;
 			} else if (argcmds[base].stckreg)
 				State2.dot = 1;
@@ -1432,10 +1446,7 @@ static int process_arg(const keycode c) {
 
 	case K60:
 	reset:
-		init_arg(0);
-		State2.rarg = 0;
-		break;
-
+		reset_arg();
 	default:
 		break;
 	}
@@ -1472,14 +1483,14 @@ static int process_test(const keycode c) {
 	}
 	else if ( n <= 9 || c == K_ARROW || c == K62 ) {
 		// digit 2..9, -> or .
-		init_arg(base);
+		init_arg((enum rarg)base);
 		return process_arg(c);
 	}
 
 	switch (c) {
 	case K11:					// tests vs register
 	case K20:
-		init_arg(base);
+		init_arg((enum rarg)base);
 		return STATE_UNFINISHED;
 
 	//case K60:
@@ -1958,7 +1969,7 @@ static unsigned int advance_to_next_code_segment(int n) {
 static void advance_to_next_label(unsigned int pc) {
 	for (;;) {
 		for (;;) {
-			pc = inc(pc);
+			pc = do_inc(pc, 0);
 			if (PcWrapped)
 				break;
 			if (is_label_at(pc)) {
@@ -1991,7 +2002,7 @@ static unsigned int advance_to_previous_code_segment(int n) {
 static void advance_to_previous_label(unsigned int pc) {
 	for (;;) {
 		for (;;) {
-			pc = dec(pc);
+			pc = do_dec(pc, 0);
 			if (PcWrapped)
 				break;
 			if (is_label_at(pc)) {
