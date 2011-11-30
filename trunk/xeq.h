@@ -384,7 +384,7 @@ extern int current_catalogue_max(void);
  * relatively easily.
  */
 #define NUMPROG		510	/* Fill 1 KB (including crc and length) */
-#define RET_STACK_SIZE	24	/* Minimum depth of return stack, extends into unused program space */
+#define RET_STACK_SIZE	22	/* Minimum depth of return stack, extends into unused program space */
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
