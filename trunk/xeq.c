@@ -572,28 +572,28 @@ void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 #define SECTION_RAM	0
 #define SECTION_LIB	1	/* And above */
 
-static int find_section_bounds(const unsigned int pc, unsigned int *const start, unsigned int *const end) {
-	unsigned int s, e;
-	int r;
+static unsigned short int find_section_bounds(const unsigned int pc, const int endp, unsigned short int *const start) {
+	unsigned short int s, e;
 
-	if (isXROM(pc)) {
+	if (endp) { 
+		// Use the current program as bounds
+		s = ProgBegin;
+		e = ProgEnd - 1;
+	}
+	else if (isXROM(pc)) {
 		s = addrXROM(0);
 		e = addrXROM(xrom_size);
-		r = SECTION_XROM;
-	} else if (isLIB(pc)) {
+	} 
+	else if (isLIB(pc)) {
 		s = startLIB(pc);
 		e = s + sizeLIB(nLIB(pc));
-		r = SECTION_LIB + nLIB(pc);
-	} else {
-		s = 1;
-		e = LastProg;
-		r = SECTION_RAM;
 	}
-	if (start != NULL)
-		*start = s;
-	if (end != NULL)
-		*end = e;
-	return r;
+	else {
+		s = 0;
+		e = LastProg - 1;
+	}
+	*start = s;
+	return e;
 }
 
 
@@ -602,26 +602,18 @@ static int find_section_bounds(const unsigned int pc, unsigned int *const start,
  * Set PcWrapped on wrap around
  */
 unsigned int do_inc(const unsigned int pc, int endp) {
-	const opcode opc = getprog(pc);
-	const unsigned int off = isDBL(opc)?2:1;
-	const unsigned int npc = pc + off;
-	int res;
-	unsigned int min, max;
+	const unsigned short int npc = pc + 1 + isDBL(getprog(pc));
+	unsigned short int top = 0;
+	unsigned short int bottom = 0;
 
 	PcWrapped = 0;
-	res = find_section_bounds(pc, &min, &max);
-	if (npc >= max) {
+	bottom = find_section_bounds(pc, endp, &top);
+
+	if (npc > bottom) {
 		PcWrapped = 1;
-		return min - (res == SECTION_RAM) ? 1 : 0;
+		return top;
 	}
-	if (res == SECTION_XROM)
-		return npc;
-
-	if (! endp || opc != (OP_NIL | OP_END))
-		return npc;
-
-	PcWrapped = 1;
-	return min - (res == SECTION_RAM) ? 1 : 0;
+	return npc;
 }
 
 unsigned int inc(const unsigned int pc) {
@@ -633,22 +625,18 @@ unsigned int inc(const unsigned int pc) {
  * Set PcWrapped on wrap around
  */
 unsigned int do_dec(unsigned int pc, int endp) {
-	unsigned int min, max;
-	int res;
+	unsigned short int top = 0;
+	unsigned short int bottom = 0;
 
 	PcWrapped = 0;
-	res = find_section_bounds(pc, &min, &max);
+	bottom = find_section_bounds(pc, endp, &top);
 
-	if (pc <= min) {
+	if (pc == top) {
 		PcWrapped = 1;
-		return max-1;
+		pc = bottom;
 	}
-	if (res == SECTION_XROM)
-		return pc;
-	if (--pc > min && isDBL(getprog(pc-1)))
+	if (--pc > top && isDBL(getprog(pc - 1)))
 		--pc;
-	if (endp && getprog(pc) == (OP_NIL | OP_END))
-		pc = max-1;
 	return pc;
 }
 
@@ -684,7 +672,7 @@ static void update_begin_end(const int force) {
 		return;
 	for (;;) {
 		const unsigned int opc = pc;
-		pc = inc(opc);
+		pc = do_inc(opc, 0);
 		if (PcWrapped || getprog(opc) == (OP_NIL | OP_END)) {
 			ProgEnd = opc + 1;
 			break;
@@ -692,7 +680,7 @@ static void update_begin_end(const int force) {
 	}
 	for (pc = state_pc();;) {
 		const unsigned int opc = pc;
-		pc = dec(opc);
+		pc = do_dec(opc, 0);
 		if (PcWrapped || getprog(pc) == (OP_NIL | OP_END)) {
 			ProgBegin = opc;
 			break;
@@ -718,7 +706,7 @@ unsigned int user_pc(void) {
 
 	while (base < pc) {
 		++n;
-		base = do_inc(base, 0);		// base = inc(base);  END TODO MORE
+		base = inc(base);
 		if (PcWrapped)
 			return n - 1;
 	}
@@ -1828,46 +1816,26 @@ static int retstk_up(int sp, int unwind)
  */
 static unsigned int find_opcode_from(const unsigned int pc, const opcode l, const int flags) {
 	unsigned int z = pc;
-	unsigned int max;
-	unsigned int min;
-	unsigned int base;
+	unsigned short int top;
+	int count;
 	const int endp = flags & FIND_OP_ENDS;
 	const int errp = flags & FIND_OP_ERROR;
 
-	if (find_section_bounds(z, &min, &max) == SECTION_RAM) {
-		if (z == 0)
-			z++;
-		base = 0xffff;
-	} else
-		base = min;
-
-	while (z < max && z != 0) {
-		const opcode opc = getprog(z);
-		if (opc == l)
+	count = find_section_bounds(z, endp, &top);
+	count -= top;
+	while (count--) {
+		// Wrap around doesn't hurt, we just limit the search to the number of possible steps
+		// If we don't find the label, we may search a little too far if many double word
+		// instructions are in the code, but this doesn't do any harm.
+		if (getprog(z) == l)
 			return z;
-		if (endp && opc == (OP_NIL | OP_END))
-			break;
-		z = do_inc(z, endp);
-		if (PcWrapped)
-			break;
+		z = inc(z);
 	}
-
-	max = 0;
-	z = pc;
-	while (z >= min && z != 0) {
-		const opcode opc = getprog(z);
-		if (opc == l)
-			max = z;
-		if (endp && opc == (OP_NIL | OP_END))
-			break;
-		z = do_dec(z, endp);
-		if (PcWrapped)
-			break;
-	}
-	if (! max && errp)
+	if (errp)
 		err(ERR_NO_LBL);
-	return max;
+	return 0;
 }
+
 
 unsigned int find_label_from(unsigned int pc, unsigned int arg, int flags) {
 	return find_opcode_from(pc, RARG(RARG_LBL, arg), flags);
