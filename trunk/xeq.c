@@ -572,7 +572,7 @@ void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 #define SECTION_RAM	0
 #define SECTION_LIB	1	/* And above */
 
-static int find_section_bounds(const unsigned int pc, int endp, unsigned int *const start, unsigned int *const end) {
+static int find_section_bounds(const unsigned int pc, unsigned int *const start, unsigned int *const end) {
 	unsigned int s, e;
 	int r;
 
@@ -1839,33 +1839,48 @@ static int retstk_up(int sp, int unwind)
  */
 static unsigned int find_opcode_from(const unsigned int pc, const opcode l, const int flags) {
 	unsigned int z = pc;
+	unsigned int newz;
 	unsigned int max;
 	unsigned int min;
 	unsigned int base;
 	const int endp = flags & FIND_OP_ENDS;
 	const int errp = flags & FIND_OP_ERROR;
 
-	if (find_section_bounds(z, endp, &min, &max) == SECTION_RAM) {
+	if (find_section_bounds(z, &min, &max) == SECTION_RAM) {
 		if (z == 0)
 			z++;
 		base = 0xffff;
 	} else
-			base = min;
+		base = min;
 
-	while (z < max && z != 0)
-		if (getprog(z) == l)
+	while (z < max && z != 0) {
+		const opcode opc = getprog(z);
+		if (opc == l)
 			return z;
-		else {
-			z = inc(z);
-			if (z == base)
-				break;
-		}
-	for (z = min; z<pc; z = inc(z))
-		if (getprog(z) == l)
-			return z;
-	if (errp)
+		if (endp && opc == (OP_NIL | OP_END))
+			break;
+		newz = inc(z);
+		if (newz <= z)
+			break;
+		z = newz;
+	}
+
+	max = 0;
+	z = pc;
+	while (z >= min && z != 0) {
+		const opcode opc = getprog(z);
+		if (opc == l)
+			max = z;
+		if (endp && opc == (OP_NIL | OP_END))
+			break;
+		newz = dec(z);
+		if (newz >= z)
+			break;
+		z = newz;
+	}
+	if (! max && errp)
 		err(ERR_NO_LBL);
-	return 0;
+	return max;
 }
 
 unsigned int find_label_from(unsigned int pc, unsigned int arg, int flags) {
@@ -1968,7 +1983,7 @@ static unsigned int findmultilbl(const opcode o, int flags) {
 }
 
 void cmdmultilblp(const opcode o, enum multiops mopr) {
-	fin_tst(findmultilbl(o, 1) != 0);
+	fin_tst(findmultilbl(o, 0) != 0);
 }
 
 static void do_multigto(int is_gsb, unsigned int lbl) {
@@ -1981,7 +1996,7 @@ static void do_multigto(int is_gsb, unsigned int lbl) {
 }
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
-	unsigned int lbl = findmultilbl(o, 0);
+	unsigned int lbl = findmultilbl(o, FIND_OP_ERROR);
 	int is_gsb = mopr != DBL_GTO;
 
 	do_multigto(is_gsb, lbl);
@@ -1995,7 +2010,7 @@ static void branchtoalpha(int is_gsb, char buf[]) {
 	op |= buf[0] & 0xff;
 	op |= (buf[1] & 0xff) << 16;
 	op |= (buf[2] & 0xff) << 24;
-	lbl = findmultilbl(op, 0);
+	lbl = findmultilbl(op, FIND_OP_ERROR);
 
 	do_multigto(is_gsb, lbl);
 }
@@ -2041,7 +2056,7 @@ void xromarg(unsigned int arg, enum rarg op) {
 }
 
 void multixromarg(const opcode o, enum multiops mopr) {
-	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), findmultilbl(o, 0));
+	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), findmultilbl(o, FIND_OP_ERROR));
 }
 
 void xrom_routines(decimal64 *a, decimal64 *nul2, enum nilop op) {
