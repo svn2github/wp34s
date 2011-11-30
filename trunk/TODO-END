@@ -15,6 +15,16 @@ Modify:
 	wrappering a common routine for this instead of using an
 	extra argument.
 
+	Further thought here: make inc() and dec() wrappers that call a routine
+	that takes an extra argument (do_inc and do_dec).  The extra argument
+	specifies if END is terminal or not.  There won't be many cases of
+	do_inc and do_dec needing to be called directly -- only global label
+	searches and the global label browser.
+
+	incpc and decpc need no such wrapping -- they are only used in places
+	where END is important.
+
+
 Modify:
 	find_opcode / find_lbl to differentiate local labels from
 	alpha labels with respects to the wraping machanics.
@@ -41,7 +51,13 @@ Consider:
 	Zero them on procedure call or RTN but only if the called
 	or the return address lie outside the current range.
 
-	Done: ProgBegin, ProgEnd, update_begin_end()
+	ProgBegin, ProgEnd, update_begin_end() -- partially done
+	Move ProgBegin/ProgEnd into volatile RAM and recalculate as required??
+	They'll only be recalculated on global XEQ or after a power off.
+	The first is unavoidable.  The second means a user interaction so a
+	performance hit then is minimal.  Also, wrapper this into get_start and
+	get_end calls that do the update is required -- these calls should also
+	handle xrom and library regions and might simplify other code.
 
 	numeric label search optimisation once the end is reached...
 		search backwards from the starting address and remember the
