@@ -267,7 +267,7 @@ static void dump_code(unsigned int pc, unsigned int max, int annotate) {
 		if (op == RARG(RARG_ALPHA, ' '))
 			strcpy(instr+2, "[space]");
 
-		pc = inc(pc);
+		pc = do_inc(pc, 0);
 		while (*p != '\0') {
 			char c = *p++;
 			const char *q = pretty(c);

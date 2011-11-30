@@ -24,14 +24,14 @@ Modify:
 	incpc and decpc need no such wrapping -- they are only used in places
 	where END is important.
 
-	Beginning to rethink the requirement for these -- the few places that
-	need to know about END are probably okay doing the work themselves
-	and save complicating these two....  time will tell.
-
 
 Modify:
 	find_section_bounds needs to figure out how to work with ENDs.
 
+
+Modify:
+	user_pc needs to reworked to start from the start of the current program
+	not the current region.
 
 DONE:
 	find_opcode / find_lbl to differentiate local labels from

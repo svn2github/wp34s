@@ -602,27 +602,26 @@ static int find_section_bounds(const unsigned int pc, unsigned int *const start,
  * Set PcWrapped on wrap around
  */
 unsigned int do_inc(const unsigned int pc, int endp) {
-	const unsigned int off = isDBL(getprog(pc))?2:1;
+	const opcode opc = getprog(pc);
+	const unsigned int off = isDBL(opc)?2:1;
 	const unsigned int npc = pc + off;
+	int res;
+	unsigned int min, max;
 
 	PcWrapped = 0;
-	if (isXROM(pc)) {
-		if (npc >= addrXROM(xrom_size)) {
-			PcWrapped = 1;
-			return addrXROM(0);
-		}
-	}
-	else if (isLIB(pc)) {
-		if (npc >= startLIB(pc) + sizeLIB(nLIB(pc))) {
-			PcWrapped = 1;
-			return startLIB(pc);
-		}
-	}
-	else if (npc >= LastProg) {
+	res = find_section_bounds(pc, &min, &max);
+	if (npc >= max) {
 		PcWrapped = 1;
-		return 0;
+		return min - (res == SECTION_RAM) ? 1 : 0;
 	}
-	return npc;
+	if (res == SECTION_XROM)
+		return npc;
+
+	if (! endp || opc != (OP_NIL | OP_END))
+		return npc;
+
+	PcWrapped = 1;
+	return min - (res == SECTION_RAM) ? 1 : 0;
 }
 
 unsigned int inc(const unsigned int pc) {
@@ -634,32 +633,22 @@ unsigned int inc(const unsigned int pc) {
  * Set PcWrapped on wrap around
  */
 unsigned int do_dec(unsigned int pc, int endp) {
+	unsigned int min, max;
+	int res;
+
 	PcWrapped = 0;
-	if (isXROM(pc)) {
-		if (pc == addrXROM(0)) {
-			PcWrapped = 1;
-			return addrXROM(xrom_size - 1);
-		}
-		if (--pc != addrXROM(0) && isDBL(getprog(pc-1)))
-			--pc;
-	} 
-	else if (isLIB(pc)) {
-		if (pc == startLIB(pc)) {
-			PcWrapped = 1;
-			pc = startLIB(pc) + sizeLIB(nLIB(pc));
-		}
-		--pc;
-		if (pc > startLIB(pc) && isDBL(getprog(pc-1)))
-			--pc;
-	} 
-	else {
-		if (pc == 0) {
-			PcWrapped = 1;
-			pc = LastProg;
-		}
-		if (--pc > 1 && isDBL(getprog(pc-1)))
-			--pc;
+	res = find_section_bounds(pc, &min, &max);
+
+	if (pc <= min) {
+		PcWrapped = 1;
+		return max-1;
 	}
+	if (res == SECTION_XROM)
+		return pc;
+	if (--pc > min && isDBL(getprog(pc-1)))
+		--pc;
+	if (endp && getprog(pc) == (OP_NIL | OP_END))
+		pc = max-1;
 	return pc;
 }
 
@@ -729,7 +718,7 @@ unsigned int user_pc(void) {
 
 	while (base < pc) {
 		++n;
-		base = inc(base);
+		base = do_inc(base, 0);		// base = inc(base);  END TODO MORE
 		if (PcWrapped)
 			return n - 1;
 	}
@@ -1839,7 +1828,6 @@ static int retstk_up(int sp, int unwind)
  */
 static unsigned int find_opcode_from(const unsigned int pc, const opcode l, const int flags) {
 	unsigned int z = pc;
-	unsigned int newz;
 	unsigned int max;
 	unsigned int min;
 	unsigned int base;
@@ -1859,10 +1847,9 @@ static unsigned int find_opcode_from(const unsigned int pc, const opcode l, cons
 			return z;
 		if (endp && opc == (OP_NIL | OP_END))
 			break;
-		newz = inc(z);
-		if (newz <= z)
+		z = do_inc(z, endp);
+		if (PcWrapped)
 			break;
-		z = newz;
 	}
 
 	max = 0;
@@ -1873,10 +1860,9 @@ static unsigned int find_opcode_from(const unsigned int pc, const opcode l, cons
 			max = z;
 		if (endp && opc == (OP_NIL | OP_END))
 			break;
-		newz = dec(z);
-		if (newz >= z)
+		z = do_dec(z, endp);
+		if (PcWrapped)
 			break;
-		z = newz;
 	}
 	if (! max && errp)
 		err(ERR_NO_LBL);
