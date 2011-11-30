@@ -1155,7 +1155,7 @@ static void show_status(void) {
 	if (isXROM(pc))
 		pc = 1;
 	for (n=i=0; i<4; i++) {
-		if (find_label_from(pc, 100+i, 1)) {
+		if (find_label_from(pc, 100+i, FIND_OP_ENDS)) {
 			if (++n == 4) {
 				set_dig(SEGS_EXP_BASE + SEGS_PER_EXP_DIGIT, 'L');
 				set_dig(SEGS_EXP_BASE + 2*SEGS_PER_EXP_DIGIT, 'L');

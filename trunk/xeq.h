@@ -1043,8 +1043,12 @@ extern void del_till_label(unsigned int);
 extern void del_till_multi_label(unsigned int);
 extern unsigned int inc(const unsigned int);
 extern unsigned int dec(unsigned int);
+extern unsigned int do_inc(const unsigned int, int);
+extern unsigned int do_dec(unsigned int, int);
 extern int incpc(void);
 extern void decpc(void);
+#define FIND_OP_ERROR	1
+#define FIND_OP_ENDS	2
 extern unsigned int find_label_from(unsigned int, unsigned int, int);
 extern void fin_tst(const int);
 

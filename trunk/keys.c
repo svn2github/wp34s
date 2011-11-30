@@ -452,7 +452,7 @@ static int check_f_key(int n, const int dflt) {
 	if (State2.runmode) {
 		if (isXROM(pc))
 			pc = 1;
-		if (find_label_from(pc, code, 1))
+		if (find_label_from(pc, code, FIND_OP_ENDS))
 			return RARG(RARG_XEQ, code);
 	}
 	return dflt;
@@ -1011,7 +1011,7 @@ static int gtodot_fkey(int n) {
 
 	if(isXROM(pc))
 		pc = 1;
-	pc = find_label_from(pc, code, 0);
+	pc = find_label_from(pc, code, FIND_OP_ERROR | FIND_OP_ENDS);
 	if (pc > 0)
 		return pc;
 	return state_pc();

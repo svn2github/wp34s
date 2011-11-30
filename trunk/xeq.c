@@ -565,11 +565,43 @@ void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	UState.leadzero = (op == OP_LEAD0) ? 1 : 0;
 }
 
+
+/* Locate the beginning and end of a section from a PC that points anywhere within
+ */
+#define SECTION_XROM	-1
+#define SECTION_RAM	0
+#define SECTION_LIB	1	/* And above */
+
+static int find_section_bounds(const unsigned int pc, int endp, unsigned int *const start, unsigned int *const end) {
+	unsigned int s, e;
+	int r;
+
+	if (isXROM(pc)) {
+		s = addrXROM(0);
+		e = addrXROM(xrom_size);
+		r = SECTION_XROM;
+	} else if (isLIB(pc)) {
+		s = startLIB(pc);
+		e = s + sizeLIB(nLIB(pc));
+		r = SECTION_LIB + nLIB(pc);
+	} else {
+		s = 1;
+		e = LastProg;
+		r = SECTION_RAM;
+	}
+	if (start != NULL)
+		*start = s;
+	if (end != NULL)
+		*end = e;
+	return r;
+}
+
+
 /* Increment the passed PC.  Account for wrap around but nothing else.
  * Return the updated PC.
  * Set PcWrapped on wrap around
  */
-unsigned int inc(const unsigned int pc) {
+unsigned int do_inc(const unsigned int pc, int endp) {
 	const unsigned int off = isDBL(getprog(pc))?2:1;
 	const unsigned int npc = pc + off;
 
@@ -593,11 +625,15 @@ unsigned int inc(const unsigned int pc) {
 	return npc;
 }
 
+unsigned int inc(const unsigned int pc) {
+	return do_inc(pc, 1);
+}
+
 /* Decrement the passed PC.  Account for wrap around but nothing else.
  * Return the updated PC.
  * Set PcWrapped on wrap around
  */
-unsigned int dec(unsigned int pc) {
+unsigned int do_dec(unsigned int pc, int endp) {
 	PcWrapped = 0;
 	if (isXROM(pc)) {
 		if (pc == addrXROM(0)) {
@@ -627,6 +663,10 @@ unsigned int dec(unsigned int pc) {
 	return pc;
 }
 
+unsigned int dec(unsigned int pc) {
+	return do_dec(pc, 1);
+}
+
 /* Increment the PC keeping account of wrapping around and stopping
  * programs on such.  Return non-zero if we wrapped.
  */
@@ -648,11 +688,12 @@ void decpc(void) {
 /*
  * Update the pointers to the current program delimited by END statements
  */
+/*
 static void update_begin_end(void) {
-	unsigned int pc, opc;
+	unsigned int pc;
 
 	for (pc = state_pc();;) {
-		opc = pc;
+		const unsigned int opc = pc;
 		pc = inc(opc);
 		if (PcWrapped || getprog(opc) == (OP_NIL | OP_END)) {
 			ProgEnd = opc + 1;
@@ -660,7 +701,7 @@ static void update_begin_end(void) {
 		}
 	}
 	for (pc = state_pc();;) {
-		unsigned int opc = pc;
+		const unsigned int opc = pc;
 		pc = dec(opc);
 		if (PcWrapped || getprog(pc) == (OP_NIL | OP_END)) {
 			ProgBegin = opc;
@@ -668,6 +709,7 @@ static void update_begin_end(void) {
 		}
 	}
 }
+*/
 
 /* Determine where in program space the PC really is
  */
@@ -1795,27 +1837,20 @@ static int retstk_up(int sp, int unwind)
 
 /* Search from the given position for the specified numeric label.
  */
-static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet) {
+static unsigned int find_opcode_from(const unsigned int pc, const opcode l, const int flags) {
 	unsigned int z = pc;
 	unsigned int max;
 	unsigned int min;
 	unsigned int base;
+	const int endp = flags & FIND_OP_ENDS;
+	const int errp = flags & FIND_OP_ERROR;
 
-	if (isXROM(z)) {
-		base = addrXROM(0);
-		min = base;
-		max = addrXROM(xrom_size);
-	} else if (isLIB(z)) {
-		base = startLIB(pc);
-		min = base;
-		max = min + sizeLIB(nLIB(z));
-	} else {
+	if (find_section_bounds(z, endp, &min, &max) == SECTION_RAM) {
 		if (z == 0)
 			z++;
 		base = 0xffff;
-		min = 1;
-		max = LastProg;
-	}
+	} else
+			base = min;
 
 	while (z < max && z != 0)
 		if (getprog(z) == l)
@@ -1828,13 +1863,13 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, int quiet)
 	for (z = min; z<pc; z = inc(z))
 		if (getprog(z) == l)
 			return z;
-	if (!quiet)
+	if (errp)
 		err(ERR_NO_LBL);
 	return 0;
 }
 
-unsigned int find_label_from(unsigned int pc, unsigned int arg, int quiet) {
-	return find_opcode_from(pc, RARG(RARG_LBL, arg), quiet);
+unsigned int find_label_from(unsigned int pc, unsigned int arg, int flags) {
+	return find_opcode_from(pc, RARG(RARG_LBL, arg), flags);
 }
 
 
@@ -1908,26 +1943,26 @@ static void cmdgtocommon(int gsb, unsigned int pc) {
 }
 
 void cmdlblp(unsigned int arg, enum rarg op) {
-	fin_tst(find_label_from(state_pc(), arg, 1) != 0);
+	fin_tst(find_label_from(state_pc(), arg, FIND_OP_ENDS) != 0);
 }
 
 void cmdgto(unsigned int arg, enum rarg op) {
-	cmdgtocommon(op != RARG_GTO, find_label_from(state_pc(), arg, 0));
+	cmdgtocommon(op != RARG_GTO, find_label_from(state_pc(), arg, FIND_OP_ERROR | FIND_OP_ENDS));
 }
 
-static unsigned int findmultilbl(const opcode o, int quiet) {
+static unsigned int findmultilbl(const opcode o, int flags) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
 	unsigned int lbl;
 	int i;
 
-	lbl = find_opcode_from(0, dest, 1);
+	lbl = find_opcode_from(0, dest, 0);
 	for (i=NUMBER_OF_FLASH_REGIONS-1; lbl == 0 && i > 0; i--) {
 		if ( is_prog_region(i) )
-			lbl = find_opcode_from(addrLIB(0, i), dest, 1);
+			lbl = find_opcode_from(addrLIB(0, i), dest, 0);
 	}
 	if (lbl == 0)
-		lbl = find_opcode_from(addrXROM(0), dest, 1);
-	if (lbl == 0 && ! quiet)
+		lbl = find_opcode_from(addrXROM(0), dest, 0);
+	if (lbl == 0 && (flags & FIND_OP_ERROR) != 0)
 		err(ERR_NO_LBL);
 	return lbl;
 }
@@ -1988,7 +2023,7 @@ void op_gtoalpha(decimal64 *a, decimal64 *b, enum nilop op) {
 // XEQ to an XROM command
 static void do_xrom(int lbl) {
 	const unsigned int oldpc = state_pc();
-	const unsigned int pc = find_label_from(addrXROM(0), lbl, 1);
+	const unsigned int pc = find_label_from(addrXROM(0), lbl, 0);
 
 	UserLocalRegs = LocalRegs;
 	gsbgto(pc, 1, oldpc);
@@ -3802,7 +3837,7 @@ void delprog(void) {
 /* Delete multiple steps from the current position
  */
 #ifdef INCLUDE_MULTI_DELETE
-static void delete_until(unsigned int op) {
+static void delete_until(unsigned int op, int flags) {
 	unsigned int pc = state_pc();
 	const int pczero = (pc == 0);
 	unsigned int t;
@@ -3812,7 +3847,7 @@ static void delete_until(unsigned int op) {
 	if (pczero && incpc())
 		return;
 
-	t = find_opcode_from(pc, op, 1);
+	t = find_opcode_from(pc, op, flags);
 	if (t == 0 || t < pc) {
 		err(ERR_NO_LBL);
 		return;
@@ -3829,12 +3864,12 @@ static void delete_until(unsigned int op) {
 }
 
 void del_till_label(unsigned int n) {
-	delete_until(RARG(RARG_LBL, n));
+	delete_until(RARG(RARG_LBL, n), FIND_OP_ENDS);
 }
 
 void del_till_multi_label(unsigned int n) {
 	const opcode dest = (n & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	delete_until(dest);
+	delete_until(dest, 0);
 }
 #endif
 
@@ -4135,6 +4170,7 @@ int init_34s(void)
 #ifdef MATRIX_SUPPORT
 	check_cat(CATALOGUE_MATRIX, "matrix");
 #endif
+	/*
 	check_cat(CATALOGUE_ALPHA, "alpha");
 	check_cat(CATALOGUE_ALPHA_LETTERS, "alpha special upper case letters");
 	// check_cat(CATALOGUE_ALPHA_LETTERS_LOWER, "alpha special lower letters");
@@ -4142,6 +4178,7 @@ int init_34s(void)
 	check_cat(CATALOGUE_ALPHA_SYMBOLS, "alpha symbols");
 	check_cat(CATALOGUE_ALPHA_COMPARES, "alpha compares");
 	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");
+	*/
 	check_cat(CATALOGUE_CONV, "conversion");
 	check_cat(CATALOGUE_NORMAL, "float");
 #ifdef INCLUDE_INTERNAL_CATALOGUE
