@@ -688,11 +688,12 @@ void decpc(void) {
 /*
  * Update the pointers to the current program delimited by END statements
  */
-/*
-static void update_begin_end(void) {
-	unsigned int pc;
+static void update_begin_end(const int force) {
+	unsigned int pc = state_pc();
 
-	for (pc = state_pc();;) {
+	if (! force && pc >= ProgBegin && pc < ProgEnd)
+		return;
+	for (;;) {
 		const unsigned int opc = pc;
 		pc = inc(opc);
 		if (PcWrapped || getprog(opc) == (OP_NIL | OP_END)) {
@@ -709,7 +710,6 @@ static void update_begin_end(void) {
 		}
 	}
 }
-*/
 
 /* Determine where in program space the PC really is
  */
