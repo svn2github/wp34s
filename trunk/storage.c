@@ -339,8 +339,8 @@ static int internal_load_program( unsigned int r )
 	xcopy( &CrcProg, fr, region_length( fr ) );
 	if (RetStk < Prog + LastProg ) {
 		sigmaDeallocate();
-		clrretstk();
 	}
+	clrretstk_pc();
 	return 0;
 }
 
