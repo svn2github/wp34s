@@ -52,11 +52,8 @@ void add_string(const char *s) {
 /* Clear the Alpha register
  */
 void clralpha(decimal64 *a, decimal64 *b, enum nilop op) {
-	int i;
-
-	for (i=0; i<=NUMALPHA; i++)
-		Alpha[i] = '\0';
 	DispMsg = NULL;
+	xset(Alpha, '\0', NUMALPHA);
 }
 
 
@@ -249,10 +246,4 @@ void alpha_rcl(unsigned int arg, enum rarg op) {
  */
 void alpha_onoff(decimal64 *a, decimal64 *b, enum nilop op) {
 	State2.alphas = (op == OP_ALPHAON) ? 1 : 0;
-}
-
-
-/* Input one character and append to alpha
- */
-void alpha_append() {
 }
