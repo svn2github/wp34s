@@ -200,7 +200,7 @@ struct _state2 {
 	volatile unsigned char voltage; // Last measured voltage
 	signed char last_key;		// Most recent key pressed while program is running
 
-	unsigned int confirm : 2;	// Confirmation of operation required
+	unsigned int confirm : 3;	// Confirmation of operation required
 	unsigned int int_window : 3;	// Which window to display 0=rightmost
 	unsigned int gtodot : 1;	// GTO . sequence met
 	unsigned int cmplx : 1;		// Complex prefix pressed

@@ -682,7 +682,7 @@ void update_program_bounds(const int force) {
 		const unsigned int opc = pc;
 		pc = do_dec(opc, 0);
 		if (PcWrapped || getprog(pc) == (OP_NIL | OP_END)) {
-			ProgBegin = opc;
+			ProgBegin = opc == 0 ? 1 : opc;
 			break;
 		}
 	}
@@ -1076,6 +1076,18 @@ void clrretstk_pc(void) {
 }
 
 
+/* Sanity checks for program (step) deletion
+ */
+static int check_delete_prog(unsigned int pc) {
+	if (! isRAM(pc))
+		err(ERR_READ_ONLY);
+//	else if (State2.runmode)
+//		bad_mode_error();
+	else
+		return 0;
+	return 1;
+}
+
 /* Clear the program space
  */
 void clrprog(void) {
@@ -1083,9 +1095,21 @@ void clrprog(void) {
 	clrretstk_pc();
 }
 
+/* Clear just the current program
+*/
+void clpcurrent(void) {
+	update_program_bounds(1);
+	if (check_delete_prog(ProgBegin))
+		return;
+	xcopy(Prog_1 + ProgBegin, Prog + ProgEnd, (LastProg - ProgEnd - 1) << 1);
+	LastProg -= (ProgEnd + 1 - ProgBegin);
+	set_pc(ProgBegin);
+}
+ 
+
 /* Clear all - programs and registers
  */
-void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
+void clrall(void) {
 
 	clrprog();
 	NumRegs = TOPREALREG;
@@ -1103,13 +1127,53 @@ void clrall(decimal64 *a, decimal64 *b, enum nilop op) {
 
 /* Clear everything
  */
-void reset(decimal64 *a, decimal64 *b, enum nilop op) {
+void reset(void) {
 	xset(&PersistentRam, 0, sizeof( PersistentRam ));
-	clrall(NULL, NULL, OP_CLALL);
+	clrall();
 	init_state();
 	UState.contrast = 7;
 	DispMsg = "Erased";
 }
+
+
+/* Delete multiple steps from the current position
+ */
+#ifdef INCLUDE_MULTI_DELETE
+static void delete_until(unsigned int op, int flags) {
+	unsigned int pc = state_pc();
+	const int pczero = (pc == 0);
+	unsigned int t;
+
+	if (check_delete_prog(pc))
+		return;
+	if (pczero && incpc())
+		return;
+
+	t = find_opcode_from(pc, op, flags);
+	if (t == 0 || t < pc) {
+		err(ERR_NO_LBL);
+		return;
+	}
+	while (getprog(state_pc()) != op) {
+		delprog();
+		if (incpc()) {
+			decpc();
+			break;
+		}
+	}
+	if (pczero)
+		set_pc(0);
+}
+
+void del_till_label(unsigned int n) {
+	delete_until(RARG(RARG_LBL, n), FIND_OP_ENDS);
+}
+
+void del_till_multi_label(unsigned int n) {
+	const opcode dest = (n & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
+	delete_until(dest, 0);
+}
+#endif
 
 
 /***************************************************************************
@@ -1828,7 +1892,7 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, const int 
 		// instructions are in the code, but this doesn't do any harm.
 		if (getprog(pc) == l)
 			return pc;
-		pc = inc(pc);
+		pc = do_inc(pc, endp);
 	}
 	if (errp)
 		err(ERR_NO_LBL);
@@ -3766,18 +3830,6 @@ void stoprog(opcode c) {
 }
 
 
-/* Sanity checks for program step deletion
- */
-static int check_delete_prog(unsigned int pc) {
-	if (! isRAM(pc))
-		err(ERR_READ_ONLY);
-	else if (State2.runmode)
-		bad_mode_error();
-	else
-		return 0;
-	return 1;
-}
-
 /* Delete the current step in the program
  */
 void delprog(void) {
@@ -3800,44 +3852,6 @@ void delprog(void) {
 	decpc();
 }
 
-/* Delete multiple steps from the current position
- */
-#ifdef INCLUDE_MULTI_DELETE
-static void delete_until(unsigned int op, int flags) {
-	unsigned int pc = state_pc();
-	const int pczero = (pc == 0);
-	unsigned int t;
-
-	if (check_delete_prog(pc))
-		return;
-	if (pczero && incpc())
-		return;
-
-	t = find_opcode_from(pc, op, flags);
-	if (t == 0 || t < pc) {
-		err(ERR_NO_LBL);
-		return;
-	}
-	while (getprog(state_pc()) != op) {
-		delprog();
-		if (incpc()) {
-			decpc();
-			break;
-		}
-	}
-	if (pczero)
-		set_pc(0);
-}
-
-void del_till_label(unsigned int n) {
-	delete_until(RARG(RARG_LBL, n), FIND_OP_ENDS);
-}
-
-void del_till_multi_label(unsigned int n) {
-	const opcode dest = (n & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	delete_until(dest, 0);
-}
-#endif
 
 /* 
  *  The following needs to be done each time before any user input is processed.
@@ -4092,7 +4106,7 @@ int init_34s(void)
 {
 	int cleared = checksum_all();
 	if ( cleared ) {
-		reset(NULL, NULL, OP_RESET);
+		reset();
 	}
 	init_state();
 	xeq_init_contexts();

@@ -695,7 +695,7 @@ enum nilop {
 	OP_DEG, OP_RAD, OP_GRAD,
 	OP_RTN, OP_RTNp1, OP_END,
 	OP_RS, OP_PROMPT,
-	OP_SIGMACLEAR, OP_CLREG, OP_rCLX, OP_CLSTK, OP_CLALL, OP_RESET, OP_CLP, OP_CLFLAGS,
+	OP_SIGMACLEAR, OP_CLREG, OP_rCLX, OP_CLSTK, OP_CLALL, OP_RESET, OP_CLPCURRENT, OP_CLP, OP_CLFLAGS,
 	OP_R2P, OP_P2R,
 	OP_FRACDENOM, OP_2FRAC, OP_DENANY, OP_DENFIX, OP_DENFAC,
 	OP_FRACIMPROPER, OP_FRACPROPER,
@@ -1033,8 +1033,9 @@ extern int move_retstk(int distance);
 extern void clrretstk(void);
 extern void clrretstk_pc(void);
 extern void clrprog(void);
-extern void clrall(decimal64 *a, decimal64 *b, enum nilop op);
-extern void reset(decimal64 *a, decimal64 *b, enum nilop op);
+extern void clpcurrent(void);
+extern void clrall(void);
+extern void reset(void);
 
 extern opcode getprog(unsigned int n);
 extern void stoprog(opcode);

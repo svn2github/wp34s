@@ -43,7 +43,7 @@
 enum confirmations {
 	// Apart from the first of these, these must be in the same
 	// order as the opcodes in xeq.h: OP_CLALL, OP_RESET, OP_CLP
-	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog
+	confirm_none=0, confirm_clall, confirm_reset, confirm_clpcurrent, confirm_clprog
 };
 
 /* Local data to this module */
@@ -1895,18 +1895,15 @@ fin:
 /* Handle YES/NO confirmations
  */
 static int process_confirm(const keycode c) {
+	// Optimization hint: a switch is shorter then a table of function pointers!
 	switch (c) {
 	case K63:			// Yes
 		switch (State2.confirm) {
-		case confirm_clall:	clrall(NULL, NULL, OP_CLALL);	break;
-		case confirm_reset:	reset(NULL, NULL, OP_RESET);	break;
-		case confirm_clprog:	clrprog();			break;
+		case confirm_clall:	 clrall();	break;
+		case confirm_reset:	 reset();	break;
+		case confirm_clpcurrent: clpcurrent();	break;
+		case confirm_clprog:	 clrprog();	break;
 		}
-		State2.confirm = confirm_none;
-		State2.digval = 0;
-		break;
-
-	//case K60:
 	case K24:
 	case K32:			// No
 		State2.confirm = 0;
