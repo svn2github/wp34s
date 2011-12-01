@@ -1790,7 +1790,7 @@ search:
 		for (i=0; cmd[i] != '\0'; i++) {
 			const unsigned char c = remap_chars(cmd[i]);
 			const unsigned char cl = (unsigned char) Cmdline[i];
-			if (c == cl)
+			if (c > cl)
 				goto set_pos;
 			else if (c < cl)
 				break;
