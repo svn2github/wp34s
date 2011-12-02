@@ -369,36 +369,35 @@ void cmplxCubeRoot(decNumber *rx, decNumber *ry, const decNumber *a, const decNu
 // sin(a + i b) = sin(a) cosh(b) + i cos(a) sinh(b)
 // cos(a + i b) = cos(a) cosh(b) - i sin(a) sinh(b)
 static void cmplx_sincos(const decNumber *a, const decNumber *b, decNumber *sx, decNumber *sy, decNumber *cx, decNumber *cy) {
-#ifndef TINY_BUILD
 	decNumber sa, ca, sb, cb;
 
 	if (dn_eq0(a) && decNumberIsInfinite(b)) {
-		if (sx != NULL)	decNumberZero(sx);
-		if (sy != NULL)	decNumberCopy(sy, b);
-		if (cx != NULL)	set_inf(cx);
-		if (cy != NULL)	decNumberZero(cy);
+		decNumberZero(sx);
+		decNumberCopy(sy, b);
+		set_inf(cx);
+		decNumberZero(cy);
 	} else {
 		dn_sincos(a, &sa, &ca);
 		dn_sinhcosh(b, &sb, &cb);
-		if (sx != NULL)	dn_multiply(sx, &sa, &cb);
-		if (sy != NULL)	dn_multiply(sy, &ca, &sb);
-		if (cx != NULL)	dn_multiply(cx, &ca, &cb);
-		if (cy != NULL) {
-			dn_multiply(&ca, &sa, &sb);
-			dn_minus(cy, &ca);
-		}
+
+		dn_multiply(sx, &sa, &cb);
+		dn_multiply(sy, &ca, &sb);
+		dn_multiply(cx, &ca, &cb);
+		dn_multiply(&ca, &sa, &sb);
+		dn_minus(cy, &ca);
 	}
-#endif
 }
 
 // sin(a + i b) = sin(a) cosh(b) + i cos(a) sinh(b)
 void cmplxSin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplx_sincos(a, b, rx, ry, NULL, NULL);
+	decNumber z;
+	cmplx_sincos(a, b, rx, ry, &z, &z);
 }
 
 // cos(a + i b) = cos(a) cosh(b) - i sin(a) sinh(b)
 void cmplxCos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplx_sincos(a, b, NULL, NULL, rx, ry);
+	decNumber z;
+	cmplx_sincos(a, b, &z, &z, rx, ry);
 }
 
 // tan(a + i b) = (sin(a) cosh(b) + i cos(a) sinh(b)) / (cos(a) cosh(b) - i sin(a) sinh(b))
@@ -462,33 +461,27 @@ void cmplxSinc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 // sinh(a + i b) = sinh(a) cos(b) + i cosh(a) sin(b)
 // cosh(a + i b) = cosh(a) cos(b) + i sinh(a) sin(b)
 static void cmplx_sinhcosh(const decNumber *a, const decNumber *b, decNumber *sx, decNumber *sy, decNumber *cx, decNumber *cy) {
-#ifndef TINY_BUILD
 	decNumber sa, ca, sb, cb;
 
-	if (dn_eq0(b)) {
-		if (sx != NULL)	decNumberSinh(sx, a);
-		if (sy != NULL)	decNumberZero(sy);
-		if (cx != NULL)	decNumberCosh(cx, a);
-		if (cy != NULL)	decNumberZero(cy);
-	} else {
-		dn_sinhcosh(a, &sa, &ca);
-		dn_sincos(b, &sb, &cb);
-		if (sx != NULL)	dn_multiply(sx, &sa, &cb);
-		if (sy != NULL)	dn_multiply(sy, &ca, &sb);
-		if (cx != NULL)	dn_multiply(cx, &ca, &cb);
-		if (cy != NULL)	dn_multiply(cy, &sa, &sb);
-	}
-#endif
+	dn_sinhcosh(a, &sa, &ca);
+	dn_sincos(b, &sb, &cb);
+
+	dn_multiply(sx, &sa, &cb);
+	dn_multiply(sy, &ca, &sb);
+	dn_multiply(cx, &ca, &cb);
+	dn_multiply(cy, &sa, &sb);
 }
 
 // sinh(a + i b) = sinh(a) cos(b) + i cosh(a) sin(b)
 void cmplxSinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplx_sinhcosh(a, b, rx, ry, NULL, NULL);
+	decNumber z;
+	cmplx_sinhcosh(a, b, rx, ry, &z, &z);
 }
 
 // cosh(a + i b) = cosh(a) cos(b) + i sinh(a) sin(b)
 void cmplxCosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplx_sinhcosh(a, b, NULL, NULL, rx, ry);
+	decNumber z;
+	cmplx_sinhcosh(a, b, &z, &z, rx, ry);
 }
 
 // tanh(a + i b) = (tanh(a) + i tan(b))/(1 + i tanh(a) tan(b))
@@ -606,9 +599,7 @@ void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 	decNumber t;
 
 	if (dn_eq0(b)) {
-		dn_abs(&t, a);
-		dn_compare(&t, &t, &const_0_0001);
-		if (decNumberIsNegative(&t)) {
+		if (decNumberIsNegative(dn_compare(&t, dn_abs(&t, a), &const_0_0001))) {
 			decNumberZero(ry);
 			decNumberExpm1(rx, a);
 			return;
