@@ -659,7 +659,7 @@ void decpc(void) {
 void update_program_bounds(const int force) {
 	unsigned int pc = state_pc();
 
-	if (! force && pc >= ProgBegin && pc <= ProgEnd)
+	if (! force && pc != 0 && pc >= ProgBegin && pc <= ProgEnd)
 		return;
 	for (PcWrapped = 0; !PcWrapped; pc = do_inc(pc, 0)) {
 		ProgEnd = pc;
