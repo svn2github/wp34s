@@ -1049,7 +1049,7 @@ static int process_gtodot(const keycode c) {
 	else if (c == K24) {
 		// backspace
 		if (State2.numdigit == 0) {
-			pc = state_pc();
+			goto fin2;
 		} else {
 			State2.numdigit--;
 			State2.digval /= 10;
@@ -1057,14 +1057,21 @@ static int process_gtodot(const keycode c) {
 	}
 	else if (c == K40) {
 		// up
-		decpc();
+		rawpc = state_pc();
+		if (rawpc == 1)
+			rawpc = 0;
+		set_pc(do_dec(rawpc, 0));
 		update_program_bounds(1);
-		pc = ProgBegin;
+		rawpc = ProgBegin;
+		goto fin;
 	}
 	else if (c == K50) {
 		// down
 		update_program_bounds(1);
-		pc = do_inc(ProgEnd, 0);
+		rawpc = do_inc(ProgEnd, 0);
+		if (rawpc == 0)
+			rawpc = 1;
+		goto fin;
 	}
 	if (pc >= 0) {
 		rawpc = find_user_pc(pc);

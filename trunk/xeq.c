@@ -580,11 +580,11 @@ static unsigned short int find_section_bounds(const unsigned int pc, const int e
 	}
 	else if (isXROM(pc)) {
 		top = addrXROM(0);
-		bottom = addrXROM(xrom_size);
+		bottom = addrXROM(xrom_size - 1);
 	} 
 	else if (isLIB(pc)) {
 		top = startLIB(pc);
-		bottom = top + sizeLIB(nLIB(pc));
+		bottom = top + sizeLIB(nLIB(pc)) - 1;
 	}
 	else {
 		top = State2.runmode;
@@ -659,13 +659,11 @@ void decpc(void) {
 void update_program_bounds(const int force) {
 	unsigned int pc = state_pc();
 
-	if (! force && pc >= ProgBegin && pc < ProgEnd)
+	if (! force && pc >= ProgBegin && pc <= ProgEnd)
 		return;
-	for (;;) {
-		const unsigned int opc = pc;
-		pc = do_inc(opc, 0);
-		if (PcWrapped || getprog(opc) == (OP_NIL | OP_END)) {
-			ProgEnd = opc;
+	for (PcWrapped = 0; !PcWrapped; pc = do_inc(pc, 0)) {
+		ProgEnd = pc;
+		if (getprog(pc) == (OP_NIL | OP_END)) {
 			break;
 		}
 	}
