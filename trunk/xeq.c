@@ -625,7 +625,7 @@ unsigned int do_dec(unsigned int pc, int endp) {
 	PcWrapped = 0;
 	bottom = find_section_bounds(pc, endp, &top);
 
-	if (pc == top) {
+	if (pc <= top) {
 		PcWrapped = 1;
 		pc = bottom;
 	}
