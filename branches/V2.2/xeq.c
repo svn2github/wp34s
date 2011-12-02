@@ -1359,9 +1359,11 @@ static void do_crcl(const decimal64 *t1, const decimal64 *t2, enum rarg op) {
 	decNumber r1, r2;
 
 	if (op == RARG_CRCL) {
+		decimal64 x = *t1;
+		decimal64 y = *t2;
 		lift2_if_enabled();
-		regX = *t1;
-		regY = *t2;
+		regX = x;
+		regY = y;
 	} else {
 		if (is_intmode())
 			bad_mode_error();
