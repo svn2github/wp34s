@@ -561,7 +561,7 @@ void show_progtrace(char *buf) {
                         PRINTF("%03d %08x: %s", pc, op, cleanse(prt(op, buf)));
                 } else
                         PRINTF("000:");
-                pc = dec(pc);
+                pc = do_dec(pc, 1);
         }
 #else
         if (pc) {

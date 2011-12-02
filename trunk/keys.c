@@ -1064,7 +1064,7 @@ static int process_gtodot(const keycode c) {
 	else if (c == K50) {
 		// down
 		update_program_bounds(1);
-		pc = inc(ProgEnd);
+		pc = do_inc(ProgEnd, 0);
 	}
 	if (pc >= 0) {
 		rawpc = find_user_pc(pc);
@@ -2013,7 +2013,7 @@ static void advance_to_previous_label(unsigned int pc) {
 			pc = advance_to_previous_code_segment(NUMBER_OF_FLASH_REGIONS);
 		else
 			pc = advance_to_previous_code_segment(nLIB(pc));
-		pc = dec(pc);
+		pc = do_dec(pc, 0);
 		if (is_label_at(pc)) {
 			State2.digval = pc;
 			return;

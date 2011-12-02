@@ -614,10 +614,6 @@ unsigned int do_inc(const unsigned int pc, int endp) {
 	return npc;
 }
 
-unsigned int inc(const unsigned int pc) {
-	return do_inc(pc, 1);
-}
-
 /* Decrement the passed PC.  Account for wrap around but nothing else.
  * Return the updated PC.
  * Set PcWrapped on wrap around
@@ -640,16 +636,12 @@ unsigned int do_dec(unsigned int pc, int endp) {
 	return pc;
 }
 
-unsigned int dec(unsigned int pc) {
-	return do_dec(pc, 1);
-}
-
 /* Increment the PC keeping account of wrapping around and stopping
  * programs on such.  Return non-zero if we wrapped.
  */
 int incpc(void) {
 	const unsigned int opc = state_pc();
-	const unsigned int pc = inc(opc);
+	const unsigned int pc = do_inc(opc, 1);
 
 	raw_set_pc(pc);
 	if (PcWrapped && Running)
@@ -658,8 +650,7 @@ int incpc(void) {
 }
 
 void decpc(void) {
-	raw_set_pc(dec(state_pc()));
-	set_running_off();
+	raw_set_pc(do_dec(state_pc(), 1));
 }
 
 /*
@@ -2190,10 +2181,10 @@ void cmdback(unsigned int arg, enum rarg op) {
 		State.implicit_rtn = 0;
 		if ( Running ) {
 			// Handles the case properly that we are on last step
-			pc = dec(pc);
+			pc = do_dec(pc, 1);
 		}
 		do {
-			pc = dec(pc);
+			pc = do_dec(pc, 1);
 		} while (--arg && !PcWrapped);
 		if (PcWrapped)
 			err(ERR_RANGE);
