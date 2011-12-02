@@ -860,7 +860,6 @@ long long int intNot(long long int x) {
 	return mask_value(~x);
 }
 
-#if 1
 long long int intBooleanOp(long long int y, long long int x) {
 	long long result;
 	const int op = XeqOpCode - OP_LAND;
@@ -875,31 +874,6 @@ long long int intBooleanOp(long long int y, long long int x) {
 		result = ~result;
 	return mask_value(result);
 }
-#else
-long long int intAnd(long long int y, long long int x) {
-	return mask_value(y & x);
-}
-
-long long int intOr(long long int y, long long int x) {
-	return mask_value(y | x);
-}
-
-long long int intXor(long long int y, long long int x) {
-	return mask_value(y ^ x);
-}
-
-long long int intNand(long long int y, long long int x) {
-	return mask_value(~(y & x));
-}
-
-long long int intNor(long long int y, long long int x) {
-	return mask_value(~(y | x));
-}
-
-long long int intEquiv(long long int y, long long int x) {
-	return mask_value(~(y ^ x));
-}
-#endif
 
 /* Fraction and integer parts are very easy for integers.
  */
@@ -907,13 +881,8 @@ long long int intFP(long long int x) {
 	return 0;
 }
 
-long long int intIP(long long int x) {
-	return mask_value(x);
-}
-
 
 long long int intSign(long long int x) {
-#ifndef TINY_BUILD
 	int sgn;
 	unsigned long long int v = extract_value(x, &sgn);
 
@@ -922,9 +891,6 @@ long long int intSign(long long int x) {
 	else
 		v = 1;
 	return build_value(v, sgn);
-#else
-	return 1;
-#endif
 }
 
 

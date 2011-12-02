@@ -65,7 +65,7 @@ extern long long int intEquiv(long long int y, long long int x);
 #endif
 
 extern long long int intFP(long long int x);
-extern long long int intIP(long long int x);
+#define intIP	mask_value
 extern long long int intSign(long long int x);
 
 extern void introt(unsigned arg, enum rarg op);
