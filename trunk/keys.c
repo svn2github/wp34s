@@ -1036,6 +1036,10 @@ static int process_gtodot(const keycode c) {
 	else if (c == K62) {
 		// .
 		if (State2.numdigit == 0) {
+			if (State2.runmode) {
+				rawpc = 0;
+				goto fin;
+			}
 			set_pc(LastProg - 1);
 			if (getprog(state_pc()) != (OP_NIL | OP_END))
 				stoprog(OP_NIL | OP_END);
@@ -1069,7 +1073,7 @@ static int process_gtodot(const keycode c) {
 		// down
 		update_program_bounds(1);
 		rawpc = do_inc(ProgEnd, 0);
-		if (rawpc == 0)
+		if (rawpc == 0 && LastProg > 1)
 			rawpc = 1;
 		goto fin;
 	}

@@ -671,7 +671,7 @@ void update_program_bounds(const int force) {
 		const unsigned int opc = pc;
 		pc = do_dec(opc, 0);
 		if (PcWrapped || getprog(pc) == (OP_NIL | OP_END)) {
-			ProgBegin = opc == 0 ? 1 : opc;
+			ProgBegin = opc == 0 && LastProg > 1 ? 1 : opc;
 			break;
 		}
 	}
