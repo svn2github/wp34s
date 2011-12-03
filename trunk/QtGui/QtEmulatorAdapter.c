@@ -20,10 +20,14 @@
 #include "data.h"
 #include "storage.h"
 
+extern const char SvnRevision[];
 extern int is_key_pressed_adapter();
 extern int put_key_adapter(int);
 extern void add_heartbeat_adapter(int);
 extern char* get_region_path_adapter(int);
+
+#define SVN_REVISION_SIZE 4
+static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
 
 void init_calculator()
 {
@@ -130,4 +134,24 @@ char* get_region_path(int region_index)
 void fast_backup_to_flash()
 {
 	UserFlash.backup = PersistentRam;
+}
+
+char* get_version_string()
+{
+	return VERSION_STRING;
+}
+
+char* get_svn_revision_string()
+{
+	int i;
+
+	if(SvnRevisionString[0]==0)
+	{
+		for(i=0; i<SVN_REVISION_SIZE; i++)
+		{
+			SvnRevisionString[i]=SvnRevision[i];
+		}
+		SvnRevisionString[SVN_REVISION_SIZE]=0;
+	}
+	return SvnRevisionString;
 }

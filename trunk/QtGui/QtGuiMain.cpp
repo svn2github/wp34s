@@ -19,15 +19,15 @@
 
 int main(int argv, char **args)
 {
-	QApplication app(argv, args);
+	QApplication application(argv, args);
 	QApplication::setOrganizationName(ORGANIZATION_NAME);
 	QApplication::setApplicationName(APPLICATION_NAME);
 	try
 	{
-		QtEmulator emulator;
+		QtEmulator emulator(application);
 		emulator.show();
 
-		return app.exec();
+		return application.exec();
 	}
 	catch(QtSkinException& exception)
 	{

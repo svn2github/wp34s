@@ -17,10 +17,13 @@
 #include <string.h>
 #include "QtEmulator.h"
 #include "QtEmulatorAdapter.h"
+#include "QtBuildDate.h"
+#include "QtPreferencesDialog.h"
 
 QtEmulator* currentEmulator;
 
-QtEmulator::QtEmulator()
+QtEmulator::QtEmulator(QApplication& anApplication)
+: application(anApplication)
 {
 #ifdef Q_WS_MAC
 	QSettings::Format format=QSettings::NativeFormat;
@@ -39,8 +42,9 @@ QtEmulator::QtEmulator()
 		userSettingsDirectory.mkpath(userSettingsDirectoryName);
 	}
 
-	setPaths();
 	loadSettings();
+	setPaths();
+	buildMenuBar();
 
 	QtSkin* skin=buildSkin(getSkinFilename());
 	buildComponents(*skin);
@@ -86,6 +90,107 @@ void QtEmulator::updateScreen()
 	emit screenChanged();
 }
 
+void QtEmulator::editPreferences()
+{
+	QtPreferencesDialog preferencesDialog(customDirectoryActive, customDirectory.path(), this);
+	int result=preferencesDialog.exec();
+	if(result==QDialog::Accepted)
+	{
+		customDirectoryActive=preferencesDialog.isCustomDirectoryActive();
+		customDirectory.setPath(preferencesDialog.getCustomDirectoryName());
+		if(!customDirectory.exists() || !customDirectory.isReadable())
+		{
+			customDirectoryActive=false;
+		}
+		saveCustomDirectorySettings();
+		settings.sync();
+		setPaths();
+	}
+}
+
+void QtEmulator::showAbout()
+{
+	QString aboutMessage("WP-34s scientific calculator ");
+	aboutMessage+=get_version_string();
+	aboutMessage+="\nby Pauli, Walter & Marcus";
+	aboutMessage+="\nParts (c) 2008 Hewlett-Packard development L.L.P";
+	aboutMessage+="\nGUI by Pascal";
+	aboutMessage+=QString("\nBuild date: ")+get_build_date();
+	aboutMessage+=QString("\nSvn revision: ")+get_svn_revision_string();
+
+	QMessageBox::about(this, "About WP-34s", aboutMessage);
+}
+
+void QtEmulator::confirmReset()
+{
+	QMessageBox::StandardButton answer=QMessageBox::question(this,
+			"Confirm Memory Reset",
+			"Do you really want to reset? This will clear your non-volatile and your flash memory",
+			QMessageBox::Ok | QMessageBox::Cancel,
+			QMessageBox::Cancel);
+	if(answer==QMessageBox::Ok)
+	{
+		resetUserMemory();
+	}
+}
+
+void QtEmulator::buildMenuBar()
+{
+	buildMainMenu();
+	buildEditMenu();
+	buildSkinsMenu();
+	buildHelpMenu();
+}
+
+void QtEmulator::buildMainMenu()
+{
+	QMenuBar* menuBar=this->menuBar();
+	QMenu* mainMenu=new QMenu(MAIN_MENU);
+	menuBar->addMenu(mainMenu);
+
+	QAction* resetAction = new QAction(RESET_ACTION_TEXT, this);
+	connect(resetAction, SIGNAL(triggered()), this, SLOT(confirmReset()));
+	mainMenu->addAction(resetAction);
+
+#ifndef Q_WS_MAC
+	mainMenu->addSeparator();
+	QAction* quitAction=new QAction(QUIT_ACTION_TEXT, this);
+	connect(quitAction, SIGNAL(triggered()), &application, SLOT(quit()));
+	mainMenu->addAction(quitAction);
+#endif
+}
+
+void QtEmulator::buildEditMenu()
+{
+	QMenuBar* menuBar=this->menuBar();
+	QMenu* editMenu=new QMenu(EDIT_MENU);
+	menuBar->addMenu(editMenu);
+
+	QAction* preferencesAction=new QAction(PREFERENCES_ACTION_TEXT, this);
+	preferencesAction->setMenuRole(QAction::PreferencesRole);
+	connect(preferencesAction, SIGNAL(triggered()), this, SLOT(editPreferences()));
+	editMenu->addAction(preferencesAction);
+}
+
+void QtEmulator::buildSkinsMenu()
+{
+	QMenuBar* menuBar=this->menuBar();
+	QMenu* skinsMenu=new QMenu(SKINS_MENU);
+	menuBar->addMenu(skinsMenu);
+}
+
+void QtEmulator::buildHelpMenu()
+{
+	QMenuBar* menuBar=this->menuBar();
+	QMenu* helpMenu=new QMenu(HELP_MENU);
+	menuBar->addMenu(helpMenu);
+
+	QAction* aboutAction=new QAction(ABOUT_ACTION_TEXT, this);
+	aboutAction->setMenuRole(QAction::AboutRole);
+	connect(aboutAction, SIGNAL(triggered()), this, SLOT(showAbout()));
+	helpMenu->addAction(aboutAction);
+}
+
 void QtEmulator::buildComponents(const QtSkin& aSkin)
 {
 	screen=new QtScreen(aSkin);
@@ -108,26 +213,39 @@ void QtEmulator::startThreads()
 void QtEmulator::setPaths()
 {
 	QString applicationDir=QApplication::applicationDirPath();
+#ifdef Q_WS_MAC
+	QString resourcesDir(applicationDir+RESOURCES_DIR);
+#endif
 
 	QStringList skinSearchPath;
 	QStringList imageSearchPath;
 	QStringList memorySearchPath;
 
+	if(customDirectoryActive)
+	{
+		skinSearchPath << customDirectory.path();
+		imageSearchPath << customDirectory.path();
+		memorySearchPath << customDirectory.path();
+	}
+	else
+	{
+		memorySearchPath << userSettingsDirectoryName;
+#ifdef Q_WS_MAC
+		memorySearchPath << resourcesDir+MEMORY_DIRECTORY;
+#endif
+		memorySearchPath << applicationDir+MEMORY_DIRECTORY;
+	}
 
 	skinSearchPath << userSettingsDirectoryName;
 	imageSearchPath << userSettingsDirectoryName;
-	memorySearchPath << userSettingsDirectoryName;
 
 #ifdef Q_WS_MAC
-	QString resourcesDir(applicationDir+RESOURCES_DIR);
 	skinSearchPath << resourcesDir+SKIN_DIRECTORY;
 	imageSearchPath << resourcesDir+IMAGE_DIRECTORY;
-	memorySearchPath << resourcesDir+MEMORY_DIRECTORY;
 #endif
 
 	skinSearchPath << applicationDir+SKIN_DIRECTORY;
 	imageSearchPath << applicationDir+IMAGE_DIRECTORY;
-	memorySearchPath << applicationDir+MEMORY_DIRECTORY;
 
 	QDir::setSearchPaths(SKIN_FILE_TYPE, skinSearchPath);
 	QDir::setSearchPaths(IMAGE_FILE_TYPE, imageSearchPath);
@@ -150,6 +268,11 @@ void QtEmulator::loadSettings()
 	 settings.beginGroup(WINDOWS_SETTINGS_GROUP);
 	 move(settings.value(WINDOWS_POSITION_SETTING, QPoint(DEFAULT_POSITION_X, DEFAULT_POSITION_Y)).toPoint());
 	 settings.endGroup();
+
+	 settings.beginGroup(CUSTOM_DIRECTORY_SETTINGS_GROUP);
+	 customDirectoryActive=settings.value(CUSTOM_DIRECTORY_ACTIVE_SETTING, false).toBool();
+	 customDirectory.setPath(settings.value(CUSTOM_DIRECTORY_NAME_SETTING, QString()).toString());
+	 settings.endGroup();
 }
 
 void QtEmulator::saveSettings()
@@ -157,6 +280,18 @@ void QtEmulator::saveSettings()
     settings.beginGroup(WINDOWS_SETTINGS_GROUP);
     settings.setValue(WINDOWS_POSITION_SETTING, pos());
     settings.endGroup();
+
+    saveCustomDirectorySettings();
+
+	settings.sync();
+}
+
+void QtEmulator::saveCustomDirectorySettings()
+{
+	settings.beginGroup(CUSTOM_DIRECTORY_SETTINGS_GROUP);
+	settings.setValue(CUSTOM_DIRECTORY_ACTIVE_SETTING, customDirectoryActive);
+	settings.setValue(CUSTOM_DIRECTORY_NAME_SETTING, customDirectory.path());
+	settings.endGroup();
 }
 
 void QtEmulator::loadMemory()
@@ -164,7 +299,7 @@ void QtEmulator::loadMemory()
 	QFile memoryFile(QString(MEMORY_FILE_TYPE)+':'+NON_VOLATILE_MEMORY_FILENAME);
 	if(!memoryFile.exists() || !memoryFile.open(QIODevice::ReadOnly))
 	{
-		// TODO
+		memoryWarning("Cannot find or cannot open "+memoryFile.fileName());
 		return;
 	}
 
@@ -234,7 +369,7 @@ bool QtEmulator::loadMemoryRegion(int aRegionIndex)
 void QtEmulator::saveMemory()
 {
 	prepare_memory_save();
-	QFile memoryFile(getMemoryPath());
+	QFile memoryFile(getMemoryPath(NON_VOLATILE_MEMORY_FILENAME));
 	if(!memoryFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
 	{
 		memoryWarning("Cannot open "+memoryFile.fileName());
@@ -253,7 +388,7 @@ void QtEmulator::saveMemory()
 
 char* QtEmulator::getRegionPath(int aRegionIndex)
 {
-	QString regionPath(userSettingsDirectoryName+'/'+getRegionFileName(aRegionIndex));
+	QString regionPath(getMemoryPath(getRegionFileName(aRegionIndex)));
 	currentRegionPath=regionPath.toAscii();
 	return currentRegionPath.data();
 }
@@ -268,9 +403,16 @@ char* get_region_path_adapter(int aRegionIndex)
 
 }
 
-QString QtEmulator::getMemoryPath() const
+QString QtEmulator::getMemoryPath(const QString& aMemoryFilename) const
 {
-	return userSettingsDirectoryName+'/'+NON_VOLATILE_MEMORY_FILENAME;
+	if(customDirectoryActive)
+	{
+		return customDirectory.path()+'/'+aMemoryFilename;
+	}
+	else
+	{
+		return userSettingsDirectoryName+'/'+aMemoryFilename;
+	}
 }
 
 QString QtEmulator::getRegionFileName(int aRegionIndex) const
@@ -289,7 +431,7 @@ QString QtEmulator::getRegionFileName(int aRegionIndex) const
 void QtEmulator::resetUserMemory()
 {
 	bool removed=true;
-	QFile memoryFile(getMemoryPath());
+	QFile memoryFile(getMemoryPath(NON_VOLATILE_MEMORY_FILENAME));
 	if(memoryFile.exists())
 	{
 		removed &= memoryFile.remove();

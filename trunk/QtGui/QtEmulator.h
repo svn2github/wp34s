@@ -33,6 +33,10 @@
 #define DEFAULT_POSITION_X 50
 #define DEFAULT_POSITION_Y 50
 
+#define CUSTOM_DIRECTORY_SETTINGS_GROUP "CustomDirectory"
+#define CUSTOM_DIRECTORY_ACTIVE_SETTING "CustomDirectoryActive"
+#define CUSTOM_DIRECTORY_NAME_SETTING "CustomDirectoryName"
+
 #define SKIN_SUFFIX "xskin"
 #define MEMORY_FILE_TYPE "memory"
 #define MEMORY_DIRECTORY "memory"
@@ -49,12 +53,22 @@
 
 #define FLASH_REGION_DEFAULT_VALUE 0xFF
 
+#define MAIN_MENU "Calculator"
+#define EDIT_MENU "Edit"
+#define SKINS_MENU "Skins"
+#define HELP_MENU "Help"
+
+#define ABOUT_ACTION_TEXT "About"
+#define PREFERENCES_ACTION_TEXT "Preferences"
+#define RESET_ACTION_TEXT "Reset Memory"
+#define QUIT_ACTION_TEXT "Quit"
+
 class QtEmulator : public QMainWindow
 {
 	Q_OBJECT
 
 public:
-     QtEmulator();
+     QtEmulator(QApplication& anApplication);
      ~QtEmulator();
 
 public:
@@ -65,26 +79,38 @@ public:
      char* getRegionPath(int aRegionIndex);
      void resetUserMemory();
 
+public slots:
+	void editPreferences();
+	void showAbout();
+	void confirmReset();
+
 protected:
      void closeEvent(QCloseEvent* event);
 
 private:
      void setPaths();
+     void buildMenuBar();
+     void buildMainMenu();
+     void buildEditMenu();
+     void buildSkinsMenu();
+     void buildHelpMenu();
      QString getSkinFilename();
      QtSkin* buildSkin(const QString& aStringFilename);
      void buildComponents(const QtSkin& aSkin);
      void startThreads();
      void loadSettings();
      void saveSettings();
+     void saveCustomDirectorySettings();
      void loadMemory();
      bool loadMemoryRegion(int aRegionIndex);
      void saveMemory();
      QString getRegionName(int aRegionIndex) const;
      QString getRegionFileName(int aRegionIndex) const;
-     QString getMemoryPath() const;
+     QString getMemoryPath(const QString& aMemoryFilename) const;
      void memoryWarning(const QString& aMessage, bool aResetFlag=true);
 
 private:
+     QApplication& application;
      QtKeyboard* keyboard;
      QtScreen* screen;
      QtBackgroundImage* backgroundImage;
@@ -95,6 +121,8 @@ private:
      // We need to keep this variable to return a properly allocated char*
      // to program_flash in storage.c
      QByteArray currentRegionPath;
+     bool customDirectoryActive;
+     QDir customDirectory;
 
 signals:
 	void screenChanged();

@@ -14,23 +14,13 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QTEMULATOR_ADAPTER_H_
-#define QTEMULATOR_ADAPTER_H_
+#ifndef QTBUILDDATE_H_
+#define QTBUILDDATE_H_
 
 extern "C"
 {
-extern void init_calculator();
-extern void forward_keycode(int);
-extern void forward_key_released();
-extern char* get_memory();
-extern int get_memory_size();
-extern void prepare_memory_save();
-extern int get_flash_region_size();
-extern int get_number_of_flash_regions();
-extern char* get_flash_region(int);
-extern void fast_backup_to_flash();
-extern char* get_version_string();
-extern char* get_svn_revision_string();
+extern char* get_build_date();
 }
 
-#endif /* QTEMULATOR_ADAPTER_H_ */
+
+#endif /* QTBUILDDATE_H_ */

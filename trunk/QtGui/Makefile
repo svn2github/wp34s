@@ -58,12 +58,14 @@ RMDIR := rm -rf
 QTMAKEFILE := QtMakefile.$(SYSTEM)
 QTMAKEFILE_EXISTS := $(wildcard $(QTMAKEFILE))
 
-ADAPTERLIB=$(OUTPUTDIR)/libAdapter.a
 ADAPTERSRCS=QtEmulatorAdapter.c
 ADAPTEROBJS=$(ADAPTERSRCS:%.c=$(OUTPUTDIR)/%.o)
 
+BUILDDATESRC=QtBuildDate.c
+BUILDDATEOBJ=$(BUILDDATESRC:%.c=$(OUTPUTDIR)/%.o)
+
 DIRS_TO_CLEAN := $(DIRS)
-EXTRA_FILES_TO_CLEAN := moc_QtBackgroundImage.cpp moc_QtEmulator.cpp
+EXTRA_FILES_TO_CLEAN := moc_QtBackgroundImage.cpp moc_QtEmulator.cpp moc_QtPreferencesDialog.cpp
 ifeq "$(SYSTEM)" "windows32"
 DIRS_TO_CLEAN += debug release
 EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.QtGui.debug object_script.QtGui.release
@@ -83,14 +85,12 @@ all:
 	cd ..; $(MAKE) RECURSIVE=1 qt_gui
 endif
 else 
-all: $(QTMAKEFILE) $(DIRS) $(ADAPTERLIB)
+all: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
 	$(MAKE) -f $(QTMAKEFILE) SUBLIBS="$(BASEOBJS) $(BASELIBS)"
 endif
 
-$(ADAPTERLIB): $(ADAPTEROBJS)
-	-$(RM) $@
-	$(AR) -r $@ $(ADAPTEROBJS)
-	$(RANLIB) $@
+build_date: 
+	$(CC) -c $(CFLAGS) -o $(BUILDDATEOBJ) $(BUILDDATESRC)
 
 $(QTMAKEFILE): QtGui.pro
 	$(MAKE) qtclean
