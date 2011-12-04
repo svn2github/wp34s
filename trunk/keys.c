@@ -859,7 +859,7 @@ static int process_fgh_shifted_cmplx(const keycode c) {
 		{ OP_CMON | OP_SQRT,   OP_CMON | OP_SQR,    OP_CMON | OP_SQR    },
 		// Row 6
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ TST_EQ,              TST_NE,              TST_APX             }, // tests
+		{ TST_EQ,              TST_NE,              STATE_UNFINISHED    }, // tests
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED  },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
@@ -895,8 +895,10 @@ static int process_fgh_shifted_cmplx(const keycode c) {
 		return STATE_UNFINISHED;
 
 	case K51:
-		State2.cmplx = 1;
-		State2.test = op;
+		if (op != STATE_UNFINISHED) {
+			State2.cmplx = 1;
+			State2.test = op;
+		}
 		return STATE_UNFINISHED;
 
 	case K60:

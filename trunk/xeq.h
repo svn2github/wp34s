@@ -856,8 +856,8 @@ enum specials {
 	OP_SIGMAPLUS, OP_SIGMAMINUS,
 	OP_Xeq0, OP_Xne0, OP_Xapx0, OP_Xlt0, OP_Xle0, OP_Xgt0, OP_Xge0,
 	OP_Xeq1, OP_Xne1, OP_Xapx1, OP_Xlt1, OP_Xle1, OP_Xgt1, OP_Xge1,
-	OP_Zeq0, OP_Zne0, OP_Zapx0,
-	OP_Zeq1, OP_Zne1, OP_Zapx1,
+	OP_Zeq0, OP_Zne0,
+	OP_Zeq1, OP_Zne1,
 
 	// These are pseudo ops that don't actually do anything outside the keyboard handler
 	OP_SST, OP_BST, OP_BACKSPACE, OP_RUNNING, OP_IGNORE, OP_UNFINISHED,
