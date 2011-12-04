@@ -1,0 +1,161 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ *  Interactive editor for matrices.
+ *  Start the editor with a matrix descriptor in X.
+ *  Use the arrow keys to navigate:
+ *    up/down: previous/next column
+ *    f-up/f-down: previous/next row
+ *  Type a digit to enter a number. This will suspend
+ *  the progrom. R/S will enter X at the current row/column.
+ *  XEQ RCL restores the present value to X if you decide
+ *  not to change the cell. Press R/S to continue.
+ *  We need a few registers for internal use and therefore 
+ *  set the stacksize to 4 to free registers A to D
+ *  Press <- to restore the mode and exit the editor
+ *
+ *  Register usage:
+ *   A - Matrix descriptor
+ *   B - Current register
+ *   D - Old setup mode
+ *   I, J - Row and column
+ *   K last key pressed
+ *
+ *  Fixed labels:
+ *   22 - Recall current matrix element
+ *   24 - f toggles navigation from horizontal to vertical
+ *   31 - ENTER (same as recall)
+ *   35 - Backspace to exit the editor
+ *   51 - Navigation up/left
+ *   61 - Navigation down/right
+ */
+      
+****LBL'MED'
+	STOM D		// save mode and set stack size
+	SSIZE4
+	STO A		// save matrix descriptor
+	1		// start with (1,1)
+	STO I
+	STO J
+
+loop::	CL[alpha]       // Display row and column
+	[alpha]IP I
+	" "
+	[alpha]IP J
+	" "
+	FS? 00
+	"f"
+
+	RCL J           // Compute register to display
+	RCL I
+	RCL A
+	M.REG		// This returns the register for (I,J)
+	STO B
+
+key::	VW[alpha]+[->]B	// Show value together with indices
+	PSE 99		// Wait for key
+	KEY? K
+	JMP key
+
+	// Now we have a key code in K
+
+	LBL?[->]K	// Do we have a label for the key?
+	GTO[->]K	// We are handling the key in code
+
+	KTP? K		// check if it was a number entry key
+	1
+	0
+	x<? Y
+	JMP key		// 11 or higher: ignore key
+
+	// Digit: Handle input of number entered by user
+
+	RCL[->]B	// default is the old value 
+	PUTK K  	// Input the digit and return control to the user
+sto::	STO[->]B  	// Store value if the user presses R/S to continue
+	JMP loop
+
+	// Handle keys in code
+
+	LBL 24		// f
+	FF 00		// Flag 0 is shift state
+	JMP loop
+
+	LBL 31  	// ENTER
+	LBL 22		// RCL
+	RCL[->]B
+	STOP
+	JMP sto
+
+	LBL 35		// <-
+	RCLM D
+	CL[alpha]
+	RCL A
+	RTN
+
+// Navigation up
+
+	LBL 51  	// key up
+	FS?C 00
+	JMP row_up	// f + up
+
+	// column left
+	DEC J		// decrement column index
+	0
+	x<? J		// is column number positive?
+	JMP loop	// ok, continue
+	RCL A
+	nCOL		// return the number of columns
+	STO J		// use as current column
+			// fall through
+
+row_up:: DEC I		// decrement row index
+	0
+	x<? I		// is row number positive?
+	JMP loop	// ok, continue
+	RCL A
+	nROW		// return the number of rows
+	STO I		// use as current row
+	JMP loop
+
+// Navigation down
+
+	LBL 61  	// down
+	FS?C 00
+	JMP row_down
+
+	// column right
+	INC J		// increment column index
+	RCL A
+	nCOL		// return the number of columns
+	x[>=]? J	// is index less or equal number of columns?
+	JMP loop	// ok, continue
+	1 		// back to square one
+	STO J		// use as current column
+			// fall through
+
+row_down:: INC I	// increment row index
+	0
+	RCL A
+	nROW		// return the number of rows
+	x[>=]? I	// is index less or equal number of rows?
+	JMP loop	// ok, continue
+	1 		// back to square one
+	STO I		// use as current row
+	JMP loop
+
+

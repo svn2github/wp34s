@@ -1,0 +1,140 @@
+This file is part of 34S.
+
+34S is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+34S is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+This is a basic suite of quaternions operations for the WP 34S.
+Original code by Jean-Marc Baillard from:
+
+	http://hp41programs.yolasite.com/quaternions.php
+
+Numeric Labels
+99	POL
+98	REC
+97	LNQ
+96	e^Q
+95	Q*Q
+94	Q+Q
+93	Q-Q
+92	
+91	
+90	
+
+Register use
+79
+78
+
+LBL'SHQ'
+DEG
+SINH
+STO 79
+X<> L
+COSH
+STO 78
+NORM			(x^2+y^2+z^2)^0.5
+RCL L
+X<>Y
+x<>0?
+STO/ 78
+RAD->deg
+COS
+STO* 79
+RCL L
+X<> L
+SIN
+ST* 78
+X<> 78
+STO* T
+STO* Z
+*
+RCL 79
+RTN
+
+LBL'Q+Q'
+LBL 94
+	cpx RCL+ A
+	cpx Rv
+	cpx RCL+ A
+	cpx R^
+	RTN
+LBL'Q-Q'
+LBL 93
+	cpx RCL- A
+	cpx +/-
+	cpx Rv
+	cpx RCL- A
+	cpx +/-
+	cpx R^
+	RTN
+
+LBL'Q^Q'
+	cpx Rv
+	cpx Rv
+	XEQ 97
+	XEQ 95
+	GTO 96
+
+LBL'LNQ'
+LBL 97
+	DEG
+	XEQ 99
+	LN
+	Rv
+	D->R
+	->RECT
+	Rv
+	->RECT
+	cpx R^
+	RTN
+
+LBL'POL'
+LBL 99
+	cpx Rv
+	->POL
+	R^
+	->POL
+	R^
+	->POL
+	RTN
+
+LBL'e^Q'
+LBL 96
+	DEG
+	cpx Rv
+	->POL
+	R^
+	->POL
+	R->D
+	R^
+	e^x
+LBL'REC'
+LBL 98
+	->RECT
+	Rv
+	->RECT
+	Rv
+	->RECT
+	cpx R^
+	RTN
+
+
+LBL'Q[times]Q'
+LBL 95
+	RTN
+
+LBL'Q^R'
+	RTN
+
+LBL'NORM'

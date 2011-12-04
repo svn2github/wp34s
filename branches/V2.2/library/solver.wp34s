@@ -1,0 +1,142 @@
+// This file is part of 34S.
+//
+// 34S is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// 34S is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+//
+//
+//
+//
+// This code is the source for the internal solve routine.
+//
+// The only change of note is the call to the user's routine is done as XEQ 00
+// instead of XEQUSR.
+
+
+	001: LBL'SOL'
+	002: [cmplx]STO 00		// Save A & B limits
+	003: FILL
+	004: XEQ 00		// Evaluate at A
+	005: STO 03
+	006: x[approx]0?
+	007: GTO 02
+	008: RCL 01
+	009: FILL
+	010: XEQ 00		// Evaluate at B
+	011: STO 04
+	012: x[approx]0?
+	013: GTO 03
+	014: SLVI 00		// Initialise the solver
+	015: RCL 02		// Solver loop, new estimate in C
+	016: FILL
+	017: XEQ 00		// Evaluate at C
+	018: FILL
+	019: x[approx]0?
+	020: GTO 01
+	021: SLVS 00		// Step the solver
+	022: x[!=]0?		// Check for failure to complete
+	023: GTO 05
+	024: RCL 02
+	025: x[approx]? 00
+	026: SKIP 03
+	027: x[approx]? 01
+	028: SKIP 01
+	029: BACK 13		// Loop back and try another estimate
+	030: RCL Z		// Estimate identical
+	031: FILL
+	032: x[approx]0?
+	033: SKIP 02
+	034: XEQ 08		// Solved
+	035: RTN
+	036: XEQ 08		// Failed to solve
+	037: RTN+1
+	038: LBL 08		// Set up the return stack
+	039: iC 00		// Zero
+	040: STO L
+	041: RCL T
+	042: RCL 01
+	043: RCL 02
+	044: RTN
+	045: LBL 05		// Failed to solve
+	046: RCL 03
+	047: ABS
+	048: RCL 04
+	049: ABS
+	050: x<? Y		// Which estimate is better A or B?
+	051: SKIP 07
+	052: RCL T
+	053: STO L
+	054: iC 00		// Zero
+	055: x[<->] Y
+	056: RCL 00
+	057: RCL 03
+	058: RTN+1		// Failure return C and A
+	059: RCL T
+	060: STO L
+	061: iC 00		// Zero
+	062: x[<->] Y
+	063: RCL 01
+	064: RCL 02
+	065: RTN+1		// Failure return C and B
+	066: LBL 01		// Successful solve form the solver loop
+	067: iC 00		// Zero
+	068: STO L
+	069: RCL Z
+	070: RCL 01
+	071: RCL 02
+	072: RTN		// Success return C and B
+	073: LBL 03		// Instant solve for initial A
+	074: RCL 04
+	075: RCL 01
+	076: SKIP 03
+	077: LBL 02		// Instant solve for initial B
+	078: RCL 03
+	079: RCL 00
+	080: RCL X
+	081: iC 00		// Zero
+	082: STO L
+	083: [cmplx]x[<->] Z	// Complex x<>y to put things in their place
+	084: RTN
+	085: LBL 00		// User's routine
+	086: RTN
+// CRC16: 5451
+//
+//
+// The solver uses a pair of internal routines to initialise and step
+// the solving algorithm.  These routines are fairly sophicated and
+// their opeartion will not be described here.  The solver code relies
+// on a stack depth of four.  This is always true for the internal
+// version but the code above will require some modification for a
+// stack depth of eight.
+//
+//
+// On entry the stack looks like:
+//      Y       Guess a
+//      X       Guess b
+//
+// On return the stack looks like:
+//      L       0
+//      I       unchanged
+//
+//      T       0
+//      Z       f(X)
+//      Y       previous root estimate
+//      X       root estimate
+//
+//
+// Register use:
+// 	00	A	one estimate of the zero's location
+// 	01	B	a second estimate of the zero's location
+// 	02	C	new estimate of the zero's location
+// 	03	FA	function value at A
+// 	04	FB	function value at B
+

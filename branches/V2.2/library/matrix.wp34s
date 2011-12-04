@@ -1,0 +1,257 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Matrix creation routines.  The first entry point creates an identity
+ * matrix.  The second creates a zero matrix.  Both of these routines do
+ * not change the stack at all.  They both replace L however.  They also
+ * clear flag C on exit.
+ */
+
+/* Create an identity matrix */
+m_ident::		LBL'M-1'
+			SF C
+			JMP m_init_1
+/* Create a zero matrix */
+m_zero::		LBL'M-0'
+			CF C
+m_init_1::		ABS
+			M-ALL
+m_init_2::			STO[->]X
+				STO-[->]X
+				ISG X
+				JMP m_init_2
+m_init_3::		x[<->] L
+			FC?C C
+			RTN
+			M-DIAG
+m_init_4::			INC[->]X
+				ISG X
+				JMP m_init_4
+			JMP m_init_3
+
+/* Trace of a matrix.
+ * Uses stack.
+ * Uses flag C.
+ */
+ 			/* Sum of absolute values of diagonal elements */
+ 			LBL'ATR'
+			SF C
+			JMP m_trace_common
+
+			/* Sum of diagonal elements */
+			LBL'TR'
+			CF C
+m_trace_common::	ABS
+			M-DIAG
+			iC 0
+m_trace_loop::		RCL[->]Y
+			FS? C
+			ABS
+			+
+			ISG Y
+			JMP m_trace_loop
+			JMP drop_y
+
+/* Matrix addition and subtraction.
+ * Matrix descriptors in X and Y.
+ * Resulting matrix descriptor returned in X.
+ * Uses one stack level.
+ */
+			LBL'M-'	/* X = X - Y */
+			iC 1
+			+/-
+			JMP m_add_sub_common
+
+			LBL'M+'	/* X = X + Y */
+			iC 1
+m_add_sub_common::	x[<->] Z
+			x[<->] Y
+			M+[times]
+			RTN
+
+/* Scalar multiply
+ * Matrix descriptor in X, scalar in y.
+ * Returns with the matrix descriptor in L and the stack dropped twice.
+ */
+			LBL'M-y'
+			ABS
+			M-ALL
+			x[<->] Y
+m_scalar_mult::		STO[times][->]Y
+			ISG Y
+			JMP m_scalar_mult
+			[cmplx]DROP
+			RTN
+
+/* Maxtrix norm.
+ * Matrix descriptor in X, returns with the norm in X.
+ * Uses stack & L.
+ */
+			LBL'FNM'
+			ABS
+			+/-
+			M-ALL
+			[SIGMA] m_frob_sum
+			[sqrt]
+			RTN
+m_frob_sum::		RCL[->]X
+			x[^2]
+			RTN
+
+
+/* Maxtrix row and column norms.
+ * Uses stack + A, B, C and D.
+ */
+			LBL'RNM'
+			SF C
+			JMP m_norm_common
+
+			LBL'CMN'
+			CF C
+m_norm_common::		STOM B			/* save mode settings */
+			SSIZE4
+			ABS
+			+/-
+			STO C			/* save matrix descriptor */
+			iC 0
+			STO A
+			iC 1
+			RCL Z
+			FS? C
+			M-COL
+			FC? C
+			M-ROW
+			STO D
+m_norm_loop::		[cmplx]RCL C
+			M.IJ
+			FS? C
+			x[<->] Y
+			DROP
+			RCL C
+			FS? C
+			M-ROW
+			FC? C
+			M-COL
+			[SIGMA] m_norm_sum
+			STO[^] A
+			DSL D
+			JMP m_norm_loop
+			RCL A
+			RCLM B
+			CF C
+			RTN
+
+m_norm_sum::		RCL[->]X
+			ABS
+			RTN
+
+/* Find a specified element in a matrix
+ */
+ 			LBL'MFD'
+			ABS
+			M-ALL
+			x[<->] Y
+m_find_loop::		x=?[->]Y
+			JMP m_found
+			ISG Y
+			JMP m_find_loop
+m_found::		DROP
+			RTN
+
+/* Maximum & minimum elements in a matrix
+ * Uses stack.
+ */
+			LBL'M[^]'
+			M-ALL
+			RCL[->]X
+m_max_loop::		RCL[^][->]Y
+			ISG Y
+			JMP m_max_loop
+			JMP drop_y
+
+			LBL'M[v]'
+			M-ALL
+			RCL[->]X
+m_min_loop::		RCL[v][->]Y
+			ISG Y
+			JMP m_min_loop
+			/*JMP drop_y*/
+
+drop_y::		x[<->] Y
+			DROP
+			RTN
+
+
+/* Minimal matrix editor
+ *  Usage:  
+ *    
+ *    Review/Enter the elements of an entire matrix
+ *    BB.RRCC // Matrix descriptor
+ *    XEQ'MIO'
+ *    ---> Review and/or enter each element then [R/S]
+ *         until the end of the matrix
+ *
+ *    Review/Enter an individual element of a matrix
+ *    BB.RRCC // Matrix descriptor
+ *    XEQ'MRC'
+ *    Row number (i)
+ *    [ENTER] Column number (j)
+ *    [R/S]
+ *    Review and/or enter Element value in X
+ *    [R/S]
+ *    
+ *    Notes:- The matrix descriptor is in Last x. You can recall it and
+ *    do further editing.
+ *    
+ *  Resources:
+ *    
+ *    Flags C
+ *    
+ *    Registers I: Index to acces elements through the matrix
+ */
+
+		LBL'MIO'	//-- Works on entire matrix elements
+entry_A::	SF C
+		M-ALL 
+		STO I 
+mio_loop::	RCL I 
+		RCL L 
+		M.IJ 
+		CL[alpha] 	// shows the next element indexes 
+		[alpha] ( 
+		[alpha]IP X 
+		[alpha] , 
+		[alpha]IP Y 
+		[alpha] ) 
+		RCL[->]I 
+		PROMPT 
+		STO[->]I 	// Store element to keep any change 
+		ISG I 
+		JMP mio_loop	// End of the loop through the matrix
+		RCL L
+		FS? C
+		JMP entry_A
+
+		LBL'MRC'	//-- Works on one chosen matrix element 
+		CF C
+		CL[alpha] 
+		[alpha]'R|C' 
+		PROMPT 
+		x[<->] Y 
+		RCL Z 
+		M.REG 
+		STO I
+		JMP mio_loop

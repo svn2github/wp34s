@@ -1,0 +1,74 @@
+/* This file is part of 34S.
+
+ 34S is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+
+ 34S is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+
+/* A simply performance test.
+ * Find the four digit number ABCD siuch that A^B * C^D equals ABCD.
+ *
+ * This program runs in signed integer mode (8.7 seconds) and in real
+ * mode (451.9 seconds).
+ *
+ * The result number is in register 30.  The time in ticks is returned in X.
+ */
+	LBL'BER'
+	TICKS
+	STO K
+	9			// K = 9
+	STO D
+	STO 00
+	INC X
+	STO J			// J = 10
+l0::	RCL 00
+	RCL[times] J
+	STO 10
+	RCL D
+	STO 01
+l1::		RCL 10
+		RCL+ 01
+		RCL[times] J
+		STO 11
+		RCL 00
+		RCL 01
+		y[^x]
+		STO 20
+		RCL D
+		STO 02
+l2::			RCL 11
+			RCL+ 02
+			RCL[times] J
+			STO 12
+			RCL D
+			STO 03
+l3::				RCL 12
+				RCL+ 03
+				RCL 02
+				RCL 03
+				y[^x]
+				RCL[times] 20
+				x=? Y
+					STO 30
+				DSL 03
+				JMP l3
+			DSE 02
+			JMP l2
+		DSL 01
+		JMP l1	// Using a label and GTO doesn't save noticable time
+	DSE 00
+	JMP l0		// Using a label and GTO doesn't save noticable time
+	TICKS
+	RCL- K
+	RTN
