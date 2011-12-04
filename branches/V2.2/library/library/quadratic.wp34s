@@ -1,0 +1,33 @@
+// Gerson W. Barbosa wrote this little quadratic solver:
+//
+//                               X        	            Y       	      Z	        T	      L
+//
+001 LBL'QDR'  //                 c	                    b       	       a        T	      L
+002 RCL/ Z    //                c/a                           b                  a       	T             c
+003 x[<->] Z  //                 a                            b                 c/a      	T             c
+004 STO+ X    //                2a                            b                 c/a     	T             c
+005 /         //               b/(2a)                        c/a                 T       	T            2a
+006 +/-       //              -b/(2a)                        c/a                 T       	T            2a
+007 STO Z     //              -b/(2a)                        c/a             -b/(2a)      T            2a
+008 x[^2]     //            b^2/(4a^2)                       c/a             -b/(2a)      T         -b/(2a)
+009 x[<->] Y  //                c/a                      b^2/(4a^2)          -b/(2a)      T         -b/(2a)
+010 -         //           b^2/(4a^2)-c/a                   -b/(2a)              T       	T           c/a
+011 [sqrt]    //        sqrt(b^2/(4a^2)-c/a)                -b/(2a)              T       	T       b^2/(4a^2)-c/a
+012 STO L     //        sqrt(b^2/(4a^2)-c/a)                -b/(2a)              T       	T    sqrt(b^2/(4a^2)-c/a)
+013 x[<->] Y  //              -b/(2a)                sqrt(b^2/(4a^2)-c/a)        T        T    sqrt(b^2/(4a^2)-c/a)
+014 STO+ Y    //              -b/(2a)            -b/(2a)+sqrt(b^2/(4a^2)-c/a)    T        T    sqrt(b^2/(4a^2)-c/a)
+015 RCL- L    //   -b/(2a)-sqrt(b^2/(4a^2)-c/a)  -b/(2a)+sqrt(b^2/(4a^2)-c/a)    T        T          -b/(2a)
+016 RTN       //
+// CRC16: 2513
+//
+//
+// To solve the quadratic 2*x^2-3*x+1:
+//
+//         keystrokes               display
+//
+//  2 ENTER 3 +/- ENTER 1 A           0.5
+//                     x<>y             1
+//
+//
+// Additional error checking could be added to verify that Z (a) is
+// not zero and that the SQRT on line 011 doesn't go complex.
