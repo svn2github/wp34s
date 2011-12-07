@@ -33,6 +33,9 @@
 #define DEFAULT_POSITION_X 50
 #define DEFAULT_POSITION_Y 50
 
+#define SKIN_SETTINGS_GROUP "Skin"
+#define LAST_SKIN_SETTING "LastSkin"
+
 #define CUSTOM_DIRECTORY_SETTINGS_GROUP "CustomDirectory"
 #define CUSTOM_DIRECTORY_ACTIVE_SETTING "CustomDirectoryActive"
 #define CUSTOM_DIRECTORY_NAME_SETTING "CustomDirectoryName"
@@ -46,6 +49,8 @@
 #define IMAGE_DIRECTORY "images"
 #define NON_VOLATILE_MEMORY_FILENAME "wp34s.dat"
 #define REGION_FILENAME_PATTERN "wp34s-%1.dat"
+
+#define DEBUG_OPTION "-debug"
 
 #ifdef Q_WS_MAC
 #define RESOURCES_DIR "/../resources/"
@@ -62,6 +67,10 @@
 #define PREFERENCES_ACTION_TEXT "Preferences"
 #define RESET_ACTION_TEXT "Reset Memory"
 #define QUIT_ACTION_TEXT "Quit"
+#define SHOW_WEBSITE_ACTION_TEXT "Show Website"
+#define WEBSITE_URL "http://wp34s.sourceforge.net/"
+
+typedef QMap<QString, QString> SkinMap;
 
 class QtEmulator : public QMainWindow
 {
@@ -83,19 +92,20 @@ public slots:
 	void editPreferences();
 	void showAbout();
 	void confirmReset();
+	void selectSkin(QAction* anAction);
+	void showWebSite();
 
 protected:
      void closeEvent(QCloseEvent* event);
 
 private:
      void setPaths();
+     void checkCustomDirectory();
      void buildMenuBar();
      void buildMainMenu();
      void buildEditMenu();
      void buildSkinsMenu();
      void buildHelpMenu();
-     QString getSkinFilename();
-     QtSkin* buildSkin(const QString& aStringFilename);
      void buildComponents(const QtSkin& aSkin);
      void startThreads();
      void loadSettings();
@@ -108,6 +118,11 @@ private:
      QString getRegionFileName(int aRegionIndex) const;
      QString getMemoryPath(const QString& aMemoryFilename) const;
      void memoryWarning(const QString& aMessage, bool aResetFlag=true);
+     QtSkin* buildSkin(const QString& aStringFilename) throw (QtSkinException);
+     void setInitialSkin() throw (QtSkinException);
+     void findSkins();
+     void setSkin(const QString& aSkinName) throw (QtSkinException);
+     void skinError(const QString& aMessage, bool aFatalFlag);
 
 private:
      QApplication& application;
@@ -123,6 +138,10 @@ private:
      QByteArray currentRegionPath;
      bool customDirectoryActive;
      QDir customDirectory;
+     QActionGroup* skinsActionGroup;
+     SkinMap skins;
+     QString currentSkinName;
+     bool debug;
 
 signals:
 	void screenChanged();

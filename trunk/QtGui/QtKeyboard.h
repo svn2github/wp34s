@@ -31,6 +31,7 @@ public:
 	~QtKeyboard();
 
 public:
+	void setSkin(const QtSkin& aSkin);
 	bool processKeyPressedEvent(const QKeyEvent& aKeyEvent);
 	bool processKeyReleasedEvent(const QKeyEvent& aKeyEvent);
 	bool processButtonPressedEvent(const QMouseEvent& aMouseEvent);

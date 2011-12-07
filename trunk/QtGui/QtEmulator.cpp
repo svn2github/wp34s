@@ -23,8 +23,10 @@
 QtEmulator* currentEmulator;
 
 QtEmulator::QtEmulator(QApplication& anApplication)
-: application(anApplication)
+: application(anApplication), skinsActionGroup(NULL)
 {
+	debug=application.arguments().contains(DEBUG_OPTION);
+
 #ifdef Q_WS_MAC
 	QSettings::Format format=QSettings::NativeFormat;
 #else
@@ -44,15 +46,15 @@ QtEmulator::QtEmulator(QApplication& anApplication)
 
 	loadSettings();
 	setPaths();
-	buildMenuBar();
 
-	QtSkin* skin=buildSkin(getSkinFilename());
-	buildComponents(*skin);
-	delete skin;
+	// setInitialSkin must be before buildSkinMenu, called from buildMenuBar
+	setInitialSkin();
+	buildMenuBar();
 
 	QVBoxLayout* layout = new QVBoxLayout();
 	layout->addWidget(backgroundImage);
 	setCentralWidget(backgroundImage);
+	layout->setSizeConstraint(QLayout::SetFixedSize);
 
 	connect(this, SIGNAL(screenChanged()), backgroundImage, SLOT(updateScreen()));
 
@@ -65,6 +67,7 @@ QtEmulator::QtEmulator(QApplication& anApplication)
 
 QtEmulator::~QtEmulator()
 {
+	delete skinsActionGroup;
 }
 
 void QtEmulator::closeEvent(QCloseEvent* event)
@@ -98,13 +101,19 @@ void QtEmulator::editPreferences()
 	{
 		customDirectoryActive=preferencesDialog.isCustomDirectoryActive();
 		customDirectory.setPath(preferencesDialog.getCustomDirectoryName());
-		if(!customDirectory.exists() || !customDirectory.isReadable())
-		{
-			customDirectoryActive=false;
-		}
+		checkCustomDirectory();
 		saveCustomDirectorySettings();
 		settings.sync();
 		setPaths();
+	}
+}
+
+void QtEmulator::checkCustomDirectory()
+{
+	if(customDirectoryActive && (!customDirectory.exists() || !customDirectory.isReadable()))
+	{
+		customDirectoryActive=false;
+		memoryWarning("Cannot find or read custom directory "+customDirectory.path(), false);
 	}
 }
 
@@ -121,6 +130,11 @@ void QtEmulator::showAbout()
 	QMessageBox::about(this, "About WP-34s", aboutMessage);
 }
 
+void QtEmulator::showWebSite()
+{
+	QDesktopServices::openUrl(QUrl(WEBSITE_URL, QUrl::TolerantMode));
+}
+
 void QtEmulator::confirmReset()
 {
 	QMessageBox::StandardButton answer=QMessageBox::question(this,
@@ -131,6 +145,27 @@ void QtEmulator::confirmReset()
 	if(answer==QMessageBox::Ok)
 	{
 		resetUserMemory();
+	}
+}
+
+void QtEmulator::selectSkin(QAction* anAction)
+{
+	QString savedSkinName=currentSkinName;
+	try
+	{
+		setSkin(anAction->text());
+	}
+	catch(QtSkinException& exception)
+	{
+		try
+		{
+			skinError(exception.what(), false);
+			setSkin(savedSkinName);
+		}
+		catch(QtSkinException& exception)
+		{
+			skinError(exception.what(), true);
+		}
 	}
 }
 
@@ -148,15 +183,11 @@ void QtEmulator::buildMainMenu()
 	QMenu* mainMenu=new QMenu(MAIN_MENU);
 	menuBar->addMenu(mainMenu);
 
-	QAction* resetAction = new QAction(RESET_ACTION_TEXT, this);
-	connect(resetAction, SIGNAL(triggered()), this, SLOT(confirmReset()));
-	mainMenu->addAction(resetAction);
+	mainMenu->addAction(RESET_ACTION_TEXT, this, SLOT(confirmReset()));
 
 #ifndef Q_WS_MAC
 	mainMenu->addSeparator();
-	QAction* quitAction=new QAction(QUIT_ACTION_TEXT, this);
-	connect(quitAction, SIGNAL(triggered()), &application, SLOT(quit()));
-	mainMenu->addAction(quitAction);
+	mainMenu->addAction(QUIT_ACTION_TEXT, &application, SLOT(quit()));
 #endif
 }
 
@@ -166,10 +197,8 @@ void QtEmulator::buildEditMenu()
 	QMenu* editMenu=new QMenu(EDIT_MENU);
 	menuBar->addMenu(editMenu);
 
-	QAction* preferencesAction=new QAction(PREFERENCES_ACTION_TEXT, this);
+	QAction* preferencesAction=editMenu->addAction(PREFERENCES_ACTION_TEXT, this, SLOT(editPreferences()));
 	preferencesAction->setMenuRole(QAction::PreferencesRole);
-	connect(preferencesAction, SIGNAL(triggered()), this, SLOT(editPreferences()));
-	editMenu->addAction(preferencesAction);
 }
 
 void QtEmulator::buildSkinsMenu()
@@ -177,6 +206,22 @@ void QtEmulator::buildSkinsMenu()
 	QMenuBar* menuBar=this->menuBar();
 	QMenu* skinsMenu=new QMenu(SKINS_MENU);
 	menuBar->addMenu(skinsMenu);
+
+	delete skinsActionGroup;
+	skinsActionGroup=new QActionGroup(this);
+	skinsActionGroup->setExclusive(true);
+
+	for(SkinMap::const_iterator skinIterator=skins.constBegin(); skinIterator!=skins.constEnd(); ++skinIterator)
+	{
+		QAction* skinAction=skinsMenu->addAction(skinIterator.key());
+		skinsActionGroup->addAction(skinAction);
+		skinAction->setCheckable(true);
+		if(skinAction->text()==currentSkinName)
+		{
+			skinAction->setChecked(true);
+		}
+	}
+	connect(skinsMenu, SIGNAL(triggered(QAction*)), this, SLOT(selectSkin(QAction*)));
 }
 
 void QtEmulator::buildHelpMenu()
@@ -185,19 +230,16 @@ void QtEmulator::buildHelpMenu()
 	QMenu* helpMenu=new QMenu(HELP_MENU);
 	menuBar->addMenu(helpMenu);
 
-	QAction* aboutAction=new QAction(ABOUT_ACTION_TEXT, this);
+	QAction* aboutAction=helpMenu->addAction(ABOUT_ACTION_TEXT, this, SLOT(showAbout()));
 	aboutAction->setMenuRole(QAction::AboutRole);
-	connect(aboutAction, SIGNAL(triggered()), this, SLOT(showAbout()));
-	helpMenu->addAction(aboutAction);
+
+	helpMenu->addAction(SHOW_WEBSITE_ACTION_TEXT, this, SLOT(showWebSite()));
 }
 
 void QtEmulator::buildComponents(const QtSkin& aSkin)
 {
 	screen=new QtScreen(aSkin);
 	keyboard=new QtKeyboard(aSkin);
-
-	QPixmap pixmap();
-
 	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard);
 }
 
@@ -239,6 +281,18 @@ void QtEmulator::setPaths()
 	skinSearchPath << userSettingsDirectoryName;
 	imageSearchPath << userSettingsDirectoryName;
 
+	if(debug)
+	{
+		QString currentDir=QDir::currentPath()+'/';
+
+		skinSearchPath << currentDir+SKIN_DIRECTORY;
+		imageSearchPath << currentDir+IMAGE_DIRECTORY;
+		if(!customDirectoryActive)
+		{
+			memorySearchPath << currentDir+MEMORY_DIRECTORY;
+		}
+	}
+
 #ifdef Q_WS_MAC
 	skinSearchPath << resourcesDir+SKIN_DIRECTORY;
 	imageSearchPath << resourcesDir+IMAGE_DIRECTORY;
@@ -252,15 +306,17 @@ void QtEmulator::setPaths()
 	QDir::setSearchPaths(MEMORY_FILE_TYPE, memorySearchPath);
 }
 
-QString  QtEmulator::getSkinFilename()
+QtSkin* QtEmulator::buildSkin(const QString& aSkinFilename) throw (QtSkinException)
 {
-	return "4 Medium 34s V3.xskin";
-}
-
-QtSkin* QtEmulator::buildSkin(const QString& aStringFilename)
-{
-	QFile skinFile(aStringFilename);
-	return new QtSkin(skinFile);
+	QFile skinFile(QString(SKIN_FILE_TYPE)+':'+aSkinFilename);
+	if(skinFile.exists() && skinFile.open(QIODevice::ReadOnly))
+	{
+		return new QtSkin(skinFile);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 void QtEmulator::loadSettings()
@@ -269,16 +325,26 @@ void QtEmulator::loadSettings()
 	 move(settings.value(WINDOWS_POSITION_SETTING, QPoint(DEFAULT_POSITION_X, DEFAULT_POSITION_Y)).toPoint());
 	 settings.endGroup();
 
+	 settings.beginGroup(SKIN_SETTINGS_GROUP);
+	 currentSkinName=settings.value(LAST_SKIN_SETTING, "").toString();
+	 settings.endGroup();
+
 	 settings.beginGroup(CUSTOM_DIRECTORY_SETTINGS_GROUP);
 	 customDirectoryActive=settings.value(CUSTOM_DIRECTORY_ACTIVE_SETTING, false).toBool();
-	 customDirectory.setPath(settings.value(CUSTOM_DIRECTORY_NAME_SETTING, QString()).toString());
+	 customDirectory.setPath(settings.value(CUSTOM_DIRECTORY_NAME_SETTING, "").toString());
 	 settings.endGroup();
+
+	 checkCustomDirectory();
 }
 
 void QtEmulator::saveSettings()
 {
     settings.beginGroup(WINDOWS_SETTINGS_GROUP);
     settings.setValue(WINDOWS_POSITION_SETTING, pos());
+    settings.endGroup();
+
+    settings.beginGroup(SKIN_SETTINGS_GROUP);
+    settings.setValue(LAST_SKIN_SETTING, currentSkinName);
     settings.endGroup();
 
     saveCustomDirectorySettings();
@@ -452,10 +518,24 @@ void QtEmulator::resetUserMemory()
 	}
 }
 
+void QtEmulator::skinError(const QString& aMessage, bool aFatalFlag)
+{
+	QMessageBox messageBox;
+	messageBox.setIcon(aFatalFlag?QMessageBox::Critical:QMessageBox::Warning);
+	messageBox.setText(aFatalFlag?"Cannot revert to previous skin":"Cannot switch to selected skin");
+	messageBox.setInformativeText(aMessage);
+	messageBox.setStandardButtons(QMessageBox::Ok);
+	messageBox.exec();
+	if(aFatalFlag)
+	{
+		application.exit(-1);
+	}
+}
+
 void QtEmulator::memoryWarning(const QString& aMessage, bool aResetFlag)
 {
 	QMessageBox messageBox;
-	messageBox.setIcon(QMessageBox::Critical);
+	messageBox.setIcon(QMessageBox::Warning);
 	messageBox.setText("Error with memory files");
 	messageBox.setInformativeText(aMessage);
 	if(aResetFlag)
@@ -470,5 +550,90 @@ void QtEmulator::memoryWarning(const QString& aMessage, bool aResetFlag)
 	if(messageBox.exec()==QMessageBox::Reset)
 	{
 		resetUserMemory();
+	}
+}
+
+void QtEmulator::setInitialSkin() throw (QtSkinException)
+{
+	findSkins();
+	QString skinName=currentSkinName;
+	QString skinFilename=skins.value(skinName);
+
+	// We clear now so if there is an error, it will be empty next time
+	currentSkinName.clear();
+
+	QtSkin* skin=NULL;
+	try
+	{
+		skin=buildSkin(skinFilename);
+	}
+	catch(QtSkinException& exception)
+	{
+		skinError("Cannot read skin "+skinName+": "+QString(exception.what()), false);
+	}
+	if(skin==NULL)
+	{
+		for(SkinMap::const_iterator skinIterator=skins.constBegin(); skinIterator!=skins.constEnd(); ++skinIterator)
+		{
+			if(skinName!=skinIterator.key())
+			{
+				try
+				{
+					skin=buildSkin(skinIterator.value());
+				}
+				catch(QtSkinException& exception)
+				{
+					skinError("Cannot read skin "+skinIterator.key()+": "+QString(exception.what()), false);
+				}
+				if(skin!=NULL)
+				{
+					break;
+				}
+			}
+		}
+
+		if(skin==NULL)
+		{
+			throw *(new QtSkinException("Cannot find a skin"));
+		}
+	}
+	buildComponents(*skin);
+	delete skin;
+
+	// If everything went ok, we set the saved skin name to the current one
+	currentSkinName=skinName;
+}
+
+void QtEmulator::setSkin(const QString& aSkinName) throw (QtSkinException)
+{
+	QString skinFilename=skins.value(aSkinName);
+	if(skinFilename.isEmpty())
+	{
+		throw *(new QtSkinException("Unknow skin "+aSkinName));
+	}
+
+	QtSkin* skin=buildSkin(skinFilename);
+	keyboard->setSkin(*skin);
+	screen->setSkin(*skin);
+	backgroundImage->setSkin(*skin);
+	delete skin;
+
+	currentSkinName=aSkinName;
+	layout()->setSizeConstraint(QLayout::SetFixedSize);
+}
+
+void QtEmulator::findSkins()
+{
+	skins.clear();
+	QStringList skinPath=QDir::searchPaths(SKIN_FILE_TYPE);
+	QStringList nameFilters(QString("*.")+SKIN_SUFFIX);
+	for (QStringList::const_iterator skinPathIterator = skinPath.constBegin(); skinPathIterator != skinPath.constEnd(); ++skinPathIterator)
+	{
+		QDir currentDir(*skinPathIterator);
+		QFileInfoList fileInfos=currentDir.entryInfoList(nameFilters);
+		for(QFileInfoList::const_iterator fileInfoIterator = fileInfos.constBegin(); fileInfoIterator != fileInfos.constEnd(); ++fileInfoIterator)
+		{
+			skins[fileInfoIterator->baseName()]=fileInfoIterator->fileName();
+		}
 	}
 }

@@ -6,6 +6,7 @@
  */
 
 #include "QtBackgroundImage.h"
+#include "QtEmulator.h"
 
 class BackgroundImageEventFilter: public QObject
 {
@@ -53,15 +54,21 @@ bool BackgroundImageEventFilter::eventFilter(QObject *obj, QEvent *event)
 QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard)
 	: screen(aScreen)
 {
-	if(!pixmap.load(aSkin.getPictureName()))
+	setSkin(aSkin);
+	setPixmap(pixmap);
+	installEventFilter(new BackgroundImageEventFilter(aKeyboard));
+	setFocusPolicy(Qt::StrongFocus);
+	setFixedSize(pixmap.size());
+}
+
+void QtBackgroundImage::setSkin(const QtSkin& aSkin)
+{
+	if(!pixmap.load(QString(IMAGE_FILE_TYPE)+':'+aSkin.getPictureName()))
 	{
 		throw *(new QtSkinException(QString("Cannot find picture ")+aSkin.getPictureName()));
 	}
 	setPixmap(pixmap);
-	installEventFilter(new BackgroundImageEventFilter(aKeyboard));
-	setFocusPolicy(Qt::StrongFocus);
-	setScaledContents(true);
-
+	setFixedSize(pixmap.size());
 }
 
 QPixmap& QtBackgroundImage::getBackgroundPixmap()

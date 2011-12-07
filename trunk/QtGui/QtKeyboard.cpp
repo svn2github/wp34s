@@ -21,8 +21,9 @@
 
 
 QtKeyboard::QtKeyboard(const QtSkin& aSkin)
-	: keys(aSkin.getKeys()), keyboardBufferBegin(0), keyboardBufferEnd(0)
+	: keyboardBufferBegin(0), keyboardBufferEnd(0)
 {
+	setSkin(aSkin);
 }
 
 QtKeyboard::~QtKeyboard()
@@ -34,6 +35,11 @@ QtKeyboard::~QtKeyboard()
 			delete *keyIterator;
 		}
 	}
+}
+
+void QtKeyboard::setSkin(const QtSkin& aSkin)
+{
+	keys=aSkin.getKeys();
 }
 
 bool QtKeyboard::processKeyPressedEvent(const QKeyEvent& aKeyEvent)

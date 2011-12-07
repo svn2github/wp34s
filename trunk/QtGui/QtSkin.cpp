@@ -386,7 +386,7 @@ void QtSkin::setErrorMessage(const QString& anErrorMessage, int aLine, int aColu
 
 bool QtSkin::fatalError(const QXmlParseException &anException)
 {
-	errorMessage=anException.message();
+	setErrorMessage(anException.message(), anException.lineNumber(), anException.columnNumber());
 	return false;
 }
 

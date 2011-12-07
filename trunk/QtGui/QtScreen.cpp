@@ -31,11 +31,16 @@ extern "C"
 #define SCREEN_COLUMN_COUNT 40
 
 QtScreen::QtScreen(const QtSkin& aSkin)
-	: screenRectangle(aSkin.getScreenRectangle()),
-	  screenForeground(aSkin.getSCreenForeground()),
-	  screenBackground(aSkin.getSCreenBackground()),
-	  dotPainters(aSkin.getDotPainters())
 {
+	setSkin(aSkin);
+}
+
+void QtScreen::setSkin(const QtSkin& aSkin)
+{
+	screenRectangle=aSkin.getScreenRectangle();
+	screenForeground=aSkin.getSCreenForeground();
+	screenBackground=aSkin.getSCreenBackground();
+	dotPainters=aSkin.getDotPainters();
 }
 
 QtScreen::~QtScreen()

@@ -33,6 +33,7 @@ public:
 public:
 	const QRect& getScreenRectangle() const;
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
+	void setSkin(const QtSkin& aSkin);
 
 private:
 	QRect screenRectangle;

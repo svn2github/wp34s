@@ -21,6 +21,7 @@ public:
 
 public:
 	QPixmap& getBackgroundPixmap();
+	void setSkin(const QtSkin& aSkin);
 
 public slots:
 	void updateScreen();

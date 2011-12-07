@@ -20,7 +20,7 @@
 #include <QtGui>
 
 #define PREFERENCES_TITLE "Preferences"
-#define USE_CUSTOM_DIRECTORY_TEXT "Use a custom directory for memory"
+#define USE_CUSTOM_DIRECTORY_TEXT "Use a custom directory for memory files"
 #define CHOOSE_DIRECTORY_TEXT "Choose"
 
 #define DIRECTORY_NAME_DEFAULT_WIDTH 60
