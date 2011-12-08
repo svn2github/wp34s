@@ -54,6 +54,10 @@
 
 #ifdef Q_WS_MAC
 #define RESOURCES_DIR "/../resources/"
+#else
+#ifdef Q_OS_UNIX
+#define RESOURCES_DIR "/../lib/WP-34s/"
+#endif
 #endif
 
 #define FLASH_REGION_DEFAULT_VALUE 0xFF

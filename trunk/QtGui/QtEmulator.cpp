@@ -255,9 +255,10 @@ void QtEmulator::startThreads()
 void QtEmulator::setPaths()
 {
 	QString applicationDir=QApplication::applicationDirPath();
-#ifdef Q_WS_MAC
+#ifdef RESOURCES_DIR
 	QString resourcesDir(applicationDir+RESOURCES_DIR);
 #endif
+
 
 	QStringList skinSearchPath;
 	QStringList imageSearchPath;
@@ -293,10 +294,11 @@ void QtEmulator::setPaths()
 		}
 	}
 
-#ifdef Q_WS_MAC
+#ifdef RESOURCES_DIR
 	skinSearchPath << resourcesDir+SKIN_DIRECTORY;
 	imageSearchPath << resourcesDir+IMAGE_DIRECTORY;
 #endif
+
 
 	skinSearchPath << applicationDir+SKIN_DIRECTORY;
 	imageSearchPath << applicationDir+IMAGE_DIRECTORY;
