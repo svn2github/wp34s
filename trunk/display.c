@@ -502,15 +502,18 @@ static void set_int_x(decimal64 *rgx, char *res) {
 			*res++ = buf[i];
 	} else {
 		const int window = State2.int_window;
-		UState.int_maxw = (i-1) / 12;
+		const int shift = b == 2 ? 8 : 12;
+		UState.int_maxw = (i-1) / shift;
 		buf[i] = '\0';
 
-		j = window * 12;	// 12 digits at a time
+		j = window * shift;	// 12 digits at a time
 		for (k=0; k<12; k++)
 			if (buf[j+k] == '\0')
 				break;
 		while (--k >= 0) {
 			set_dig(dig, buf[j++]);
+			if (b == 2 && (j & 3) == 0 && k != 0)
+				set_seperator(dig, SEP_DOT, NULL);
 			dig -= SEGS_PER_DIGIT;
 		}
 		if (sign) {

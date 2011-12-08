@@ -533,8 +533,10 @@ static int process_normal(const keycode c)
 			op = OP_SPEC | (OP_A + lc);
 	case K02:
 	case K03:
-		if (intltr(lc + 10))
+		if (intltr(lc + 10)) {
+			op = OP_SPEC | (OP_A + lc);
 			return op;
+		}
 		return check_f_key(lc, op);
 
 	case K_ARROW:
@@ -596,7 +598,7 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_NIL | OP_RANDOM,              OP_NIL | OP_GRAD            },
 		// Row 3
 		{ STATE_UNFINISHED,		   OP_NIL | OP_FILL            }, // ENTER
-		{ RARG_SWAPY,   		   RARG_SWAPZ     	       },
+		{ STATE_UNFINISHED,   		   STATE_UNFINISHED    	       },
 		{ RARG(RARG_BASE, 2),		   RARG(RARG_BASE, 8)          },
 		{ RARG(RARG_BASE, 10),		   RARG(RARG_BASE, 16)         },
 		{ OP_NIL | OP_CLPROG,		   OP_NIL | OP_SIGMACLEAR      },
