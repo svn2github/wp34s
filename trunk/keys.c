@@ -42,8 +42,8 @@
 
 enum confirmations {
 	// Apart from the first of these, these must be in the same
-	// order as the opcodes in xeq.h: OP_CLALL, OP_RESET, OP_CLP
-	confirm_none=0, confirm_clall, confirm_reset, confirm_clpcurrent, confirm_clprog
+	// order as the opcodes in xeq.h: OP_CLALL, OP_RESET, OP_CLPROG, OP_CLPALL
+	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog, confirm_clpall
 };
 
 /* Local data to this module */
@@ -288,23 +288,23 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 
 		{ 0000, 0000, 0206, 0000, 0000, 0246,  },  // K20 ENTER
 		{ 'J',  '(',  ')',  0000, 'j',  ')',   },  // K21
-		{ 'K',  0010, 0211, '\\', 'k',  0251,  },  // K22
+		{ 'K',  0010, 0211, 0214, 'k',  0251,  },  // K22
 		{ 'L',  0000, 0212, 0257, 'l',  0252,  },  // K23
 		{ 0000, 0000, 0000, 0000, 0000, 0000   },  // K24 <-
 
 		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
 		{ 'M',  '7',  0213, '&',  'm',  0253,  },  // K31
-		{ 'N',  '8',  0214, '|',  'n',  0254,  },  // K32
+		{ 'N',  '8',  'N',  '|',  'n',  0254,  },  // K32
 		{ 'O',  '9',  0227, 0013, 'o',  0267,  },  // K33
-		{ 'P',  '/',  0217, 0000, 'p',  0257,  },  // K34
+		{ 'P',  '/',  0217, '\\', 'p',  0257,  },  // K34
 
-		{ 0020, 0000, 0000, '!',  0020, 0000,  },  // K40
+		{ 0000, 0000, 0000, '!',  0000, 0000,  },  // K40
 		{ 'Q',  '4',  0000, 0000, 'q',  0000,  },  // K41
 		{ 'R',  '5',  0220, 0000, 'r',  0260,  },  // K42
 		{ 'S',  '6',  0221, 0000, 's',  0261,  },  // K43
 		{ 'T',  0034, 0222, 0000, 't',  0262,  },  // K44
 
-		{ 0017, 0000, 0000, 0000, 0000, 0000,  },  // K50
+		{ 0000, 0000, 0000, '?',  0000, 0000,  },  // K50
 		{ '1',  '1',  0207, '=' , '1',  0247,  },  // K51
 		{ 'U',  '2',  0000, 0000, 'u',  0000,  },  // K52
 		{ 'V',  '3',  0000, 0000, 'v',  0000,  },  // K53
@@ -439,8 +439,15 @@ void soft_init_state(void) {
 	}
 }
 
-static void init_confirm(enum confirmations n) {
-	State2.confirm = n;
+static int check_confirm(int op) {
+	if (opKIND(op) == KIND_NIL) {
+		const int nilop = argKIND(op);
+		if (nilop >= OP_CLALL && nilop <= OP_CLPALL) {
+			State2.confirm = confirm_clall + (nilop - OP_CLALL);
+			return STATE_UNFINISHED;
+		}
+	}
+	return op;
 }
 
 static void set_smode(const enum single_disp d) {
@@ -592,7 +599,7 @@ static int process_fg_shifted(const keycode c) {
 		{ RARG_SWAPY,   		   RARG_SWAPZ     	       },
 		{ RARG(RARG_BASE, 2),		   RARG(RARG_BASE, 8)          },
 		{ RARG(RARG_BASE, 10),		   RARG(RARG_BASE, 16)         },
-		{ OP_NIL | OP_CLRALPHA,		   OP_NIL | OP_SIGMACLEAR      },
+		{ OP_NIL | OP_CLPROG,		   OP_NIL | OP_SIGMACLEAR      },
 		// Row 4
 		{ OP_MON | OP_EXP      | NO_INT,   OP_MON | OP_LN     | NO_INT },
 		{ OP_MON | OP_10POWX,		   OP_MON | OP_LOG             },
@@ -707,7 +714,7 @@ static int process_fg_shifted(const keycode c) {
 		if (no_int)
 			return STATE_UNFINISHED;
 	}
-	return op;
+	return check_confirm(op);
 #undef NO_INT
 }
 
@@ -1133,7 +1140,7 @@ static int process_alpha(const keycode c) {
 	case K24:	// Clx - backspace, clear Alpha
 		if (shift == SHIFT_N)
 			return STATE_BACKSPACE;
-		if (shift == SHIFT_F)
+		if (shift == SHIFT_H)
 			return OP_NIL | OP_CLRALPHA;
 		break;
 
@@ -1359,9 +1366,9 @@ static int process_arg(const keycode c) {
 		if (State2.ind || State2.dot)
 			break;
 		if (base == RARG_STO)
-			CmdBase = RARG_SAVEM;
+			CmdBase = RARG_STOM;
 		else if (base == RARG_RCL)
-			CmdBase = RARG_RESTM;
+			CmdBase = RARG_RCLM;
 		break;
 
 	case K00:	// A
@@ -1695,14 +1702,7 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 						init_arg(RARG_CMD(op));
 				}
 				else {
-					if (opKIND(op) == KIND_NIL) {
-						const int nop = argKIND(op);
-						if (nop >= OP_CLALL && nop <= OP_CLP) {
-							init_confirm((enum confirmations) (confirm_clall + (nop - OP_CLALL)));
-							return STATE_UNFINISHED;
-						}
-					}
-					return op;
+					return check_confirm(op);
 				}
 			} else
 				init_cat(CATALOGUE_NONE);
@@ -1914,8 +1914,8 @@ static int process_confirm(const keycode c) {
 		switch (State2.confirm) {
 		case confirm_clall:	 clrall();	break;
 		case confirm_reset:	 reset();	break;
-		case confirm_clpcurrent: clpcurrent();	break;
 		case confirm_clprog:	 clrprog();	break;
+		case confirm_clpall:	 clpall();	break;
 		}
 	case K24:
 	case K32:			// No

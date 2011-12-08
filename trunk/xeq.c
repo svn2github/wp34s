@@ -1080,14 +1080,14 @@ static int check_delete_prog(unsigned int pc) {
 
 /* Clear the program space
  */
-void clrprog(void) {
+void clpall(void) {
 	LastProg = 1;
 	clrretstk_pc();
 }
 
 /* Clear just the current program
 */
-void clpcurrent(void) {
+void clrprog(void) {
 	update_program_bounds(1);
 	if (check_delete_prog(ProgBegin))
 		return;
@@ -1101,7 +1101,7 @@ void clpcurrent(void) {
  */
 void clrall(void) {
 
-	clrprog();
+	clpall();
 	NumRegs = TOPREALREG;
 	clrreg(NULL, NULL, OP_CLREG);
 	clrstk(NULL, NULL, OP_CLSTK);

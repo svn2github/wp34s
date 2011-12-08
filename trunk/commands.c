@@ -492,8 +492,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_CLSTK,		&clrstk,		"CLSTK")
 	FUNC0(OP_CLALL,		NOFN,			"CLALL")
 	FUNC0(OP_RESET,		NOFN,			"RESET")
-	FUNC0(OP_CLPCURRENT,	NOFN,			"CLPROG")
-	FUNC0(OP_CLP,		NOFN,			"CLPALL")
+	FUNC0(OP_CLPROG,	NOFN,			"CLPROG")
+	FUNC0(OP_CLPALL,	NOFN,			"CLPALL")
 	FUNC0(OP_CLFLAGS,	&clrflags,		"CLFLAG")
 	FN_I0(OP_R2P,		&op_r2p,		"\015POL")
 	FN_I0(OP_P2R,		&op_p2r,		"\015REC")
@@ -823,8 +823,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_ROUNDING,	&rarg_roundingmode, DEC_ROUND_MAX,	"RM")
 
 #ifdef INCLUDE_USER_MODE
-	CMDstk(RARG_SAVEM,	&cmdsavem,				"STOM")
-	CMDstk(RARG_RESTM,	&cmdrestm,				"RCLM")
+	CMDstk(RARG_STOM,	&cmdsavem,				"STOM")
+	CMDstk(RARG_RCLM,	&cmdrestm,				"RCLM")
 #endif
 #ifdef INCLUDE_MULTI_DELETE
 	CMDlblnI(RARG_DELPROG,	NOFN,					"DEL\276")
