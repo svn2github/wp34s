@@ -23,9 +23,10 @@
 QtEmulator* currentEmulator;
 
 QtEmulator::QtEmulator(QApplication& anApplication)
-: application(anApplication), skinsActionGroup(NULL)
+: application(anApplication), calculatorThread(NULL), heartBeatThread(NULL), skinsActionGroup(NULL)
 {
 	debug=application.arguments().contains(DEBUG_OPTION);
+	development=application.arguments().contains(DEVELOPMENT_OPTION);
 
 #ifdef Q_WS_MAC
 	QSettings::Format format=QSettings::NativeFormat;
@@ -68,6 +69,9 @@ QtEmulator::QtEmulator(QApplication& anApplication)
 QtEmulator::~QtEmulator()
 {
 	delete skinsActionGroup;
+	stopThreads();
+	delete heartBeatThread;
+	delete calculatorThread;
 }
 
 void QtEmulator::closeEvent(QCloseEvent* event)
@@ -134,6 +138,17 @@ void QtEmulator::showWebSite()
 {
 	QDesktopServices::openUrl(QUrl(WEBSITE_URL, QUrl::TolerantMode));
 }
+
+void QtEmulator::showDocumentation()
+{
+	QFile documentationFile(QString(DOCUMENTATION_FILE_TYPE)+':'+DOCUMENTATION_FILENAME);
+	if(documentationFile.exists())
+	{
+		QUrl url=QUrl::fromLocalFile(documentationFile.fileName());
+		QDesktopServices::openUrl(url);
+	}
+}
+
 
 void QtEmulator::confirmReset()
 {
@@ -234,6 +249,7 @@ void QtEmulator::buildHelpMenu()
 	aboutAction->setMenuRole(QAction::AboutRole);
 
 	helpMenu->addAction(SHOW_WEBSITE_ACTION_TEXT, this, SLOT(showWebSite()));
+	helpMenu->addAction(SHOW_DOCUMENTATION_ACTION_TEXT, this, SLOT(showDocumentation()));
 }
 
 void QtEmulator::buildComponents(const QtSkin& aSkin)
@@ -252,6 +268,20 @@ void QtEmulator::startThreads()
 	heartBeatThread->start();
 }
 
+void QtEmulator::stopThreads()
+{
+	if(heartBeatThread!=NULL && heartBeatThread->isRunning())
+	{
+		heartBeatThread->end();
+		heartBeatThread->wait(THREAD_WAITING_TIME);
+	}
+	if(calculatorThread!=NULL && calculatorThread->isRunning())
+	{
+		calculatorThread->end();
+		calculatorThread->wait(THREAD_WAITING_TIME);
+	}
+}
+
 void QtEmulator::setPaths()
 {
 	QString applicationDir=QApplication::applicationDirPath();
@@ -263,12 +293,14 @@ void QtEmulator::setPaths()
 	QStringList skinSearchPath;
 	QStringList imageSearchPath;
 	QStringList memorySearchPath;
+	QStringList documentationSearchPath;
 
 	if(customDirectoryActive)
 	{
 		skinSearchPath << customDirectory.path();
 		imageSearchPath << customDirectory.path();
 		memorySearchPath << customDirectory.path();
+		documentationSearchPath << customDirectory.path();
 	}
 	else
 	{
@@ -282,12 +314,13 @@ void QtEmulator::setPaths()
 	skinSearchPath << userSettingsDirectoryName;
 	imageSearchPath << userSettingsDirectoryName;
 
-	if(debug)
+	if(development)
 	{
 		QString currentDir=QDir::currentPath()+'/';
 
 		skinSearchPath << currentDir+SKIN_DIRECTORY;
 		imageSearchPath << currentDir+IMAGE_DIRECTORY;
+		documentationSearchPath << currentDir+DOCUMENTATION_DIRECTORY;
 		if(!customDirectoryActive)
 		{
 			memorySearchPath << currentDir+MEMORY_DIRECTORY;
@@ -297,15 +330,18 @@ void QtEmulator::setPaths()
 #ifdef RESOURCES_DIR
 	skinSearchPath << resourcesDir+SKIN_DIRECTORY;
 	imageSearchPath << resourcesDir+IMAGE_DIRECTORY;
+	documentationSearchPath << resourcesDir+DOCUMENTATION_DIRECTORY;
 #endif
 
 
 	skinSearchPath << applicationDir+SKIN_DIRECTORY;
 	imageSearchPath << applicationDir+IMAGE_DIRECTORY;
+	documentationSearchPath << applicationDir+DOCUMENTATION_DIRECTORY;
 
 	QDir::setSearchPaths(SKIN_FILE_TYPE, skinSearchPath);
 	QDir::setSearchPaths(IMAGE_FILE_TYPE, imageSearchPath);
 	QDir::setSearchPaths(MEMORY_FILE_TYPE, memorySearchPath);
+	QDir::setSearchPaths(DOCUMENTATION_FILE_TYPE, documentationSearchPath);
 }
 
 QtSkin* QtEmulator::buildSkin(const QString& aSkinFilename) throw (QtSkinException)

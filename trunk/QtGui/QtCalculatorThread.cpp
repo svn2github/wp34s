@@ -17,20 +17,39 @@
 #include "QtCalculatorThread.h"
 #include "QtEmulatorAdapter.h"
 
+extern "C"
+{
+	extern void add_heartbeat();
+}
+
 QtCalculatorThread::QtCalculatorThread(QtKeyboard& aKeyboard)
-: keyboard(aKeyboard)
+: keyboard(aKeyboard), ended(false)
 {
 }
 
 void QtCalculatorThread::run()
 {
-	init_calculator();
-	for(;;)
+	init_calculator();;
+	while(!isEnded())
 	{
+
 		int key=keyboard.waitKey();
 		if(key>=0)
 		{
 			forward_keycode(key);
 		}
 	}
+}
+
+void QtCalculatorThread::end()
+{
+	QMutexLocker mutexLocker(&mutex);
+	ended=true;
+	add_heartbeat();
+}
+
+bool QtCalculatorThread::isEnded()
+{
+	QMutexLocker mutexLocker(&mutex);
+	return ended;
 }

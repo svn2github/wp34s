@@ -22,15 +22,27 @@ extern "C"
 }
 
 QtHeartBeatThread::QtHeartBeatThread()
+: ended(false)
 {
 }
 
 void QtHeartBeatThread::run()
 {
-	for(;;)
+	while(!isEnded())
 	{
 		msleep(HEARTBEART_SLEEP_TIME_IN_MILLISECONDS);
 		add_heartbeat();
 	}
 }
 
+void QtHeartBeatThread::end()
+{
+	QMutexLocker mutexLocker(&mutex);
+	ended=true;
+}
+
+bool QtHeartBeatThread::isEnded()
+{
+	QMutexLocker mutexLocker(&mutex);
+	return ended;
+}

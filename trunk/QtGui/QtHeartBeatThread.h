@@ -18,6 +18,7 @@
 #define QTHEARTBEATTHREAD_H_
 
 #include <QThread>
+#include <QMutex>
 
 #define HEARTBEART_SLEEP_TIME_IN_MILLISECONDS 100
 
@@ -28,6 +29,14 @@ public:
 
 public:
     void run();
+	void end();
+
+private:
+	bool isEnded();
+
+private:
+	QMutex mutex;
+	bool ended;
 };
 
 #endif /* QTHEARTBEATTHREAD_H_ */

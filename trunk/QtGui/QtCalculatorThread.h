@@ -18,6 +18,7 @@
 #define QTCALCULATORTHREAD_H_
 
 #include <QThread>
+#include <QMutex>
 #include "QtKeyboard.h"
 
 class QtCalculatorThread: public QThread
@@ -27,9 +28,15 @@ public:
 
 public:
 	void run();
+	void end();
+
+private:
+	bool isEnded();
 
 private:
 	QtKeyboard& keyboard;
+	QMutex mutex;
+	bool ended;
 };
 
 #endif /* QTCALCULATORTHREAD_H_ */

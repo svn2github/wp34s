@@ -33,6 +33,8 @@
 #define DEFAULT_POSITION_X 50
 #define DEFAULT_POSITION_Y 50
 
+#define THREAD_WAITING_TIME (HEARTBEART_SLEEP_TIME_IN_MILLISECONDS*2)
+
 #define SKIN_SETTINGS_GROUP "Skin"
 #define LAST_SKIN_SETTING "LastSkin"
 
@@ -47,10 +49,16 @@
 #define SKIN_DIRECTORY "skins"
 #define IMAGE_FILE_TYPE "image"
 #define IMAGE_DIRECTORY "images"
+#define DOCUMENTATION_FILE_TYPE "doc"
+#define DOCUMENTATION_DIRECTORY "doc"
 #define NON_VOLATILE_MEMORY_FILENAME "wp34s.dat"
 #define REGION_FILENAME_PATTERN "wp34s-%1.dat"
 
+#define DOCUMENTATION_FILENAME "Manual_wp_34s_3_0.pdf"
+#define WEBSITE_URL "http://wp34s.sourceforge.net/"
+
 #define DEBUG_OPTION "-debug"
+#define DEVELOPMENT_OPTION "-dev"
 
 #ifdef Q_WS_MAC
 #define RESOURCES_DIR "/../resources/"
@@ -72,7 +80,9 @@
 #define RESET_ACTION_TEXT "Reset Memory"
 #define QUIT_ACTION_TEXT "Quit"
 #define SHOW_WEBSITE_ACTION_TEXT "Show Website"
-#define WEBSITE_URL "http://wp34s.sourceforge.net/"
+// Manual could be change to "Documentation" if we can generate it in HTML for instance
+#define SHOW_DOCUMENTATION_ACTION_TEXT "Manual"
+
 
 typedef QMap<QString, QString> SkinMap;
 
@@ -98,6 +108,7 @@ public slots:
 	void confirmReset();
 	void selectSkin(QAction* anAction);
 	void showWebSite();
+	void showDocumentation();
 
 protected:
      void closeEvent(QCloseEvent* event);
@@ -112,6 +123,7 @@ private:
      void buildHelpMenu();
      void buildComponents(const QtSkin& aSkin);
      void startThreads();
+     void stopThreads();
      void loadSettings();
      void saveSettings();
      void saveCustomDirectorySettings();
@@ -145,6 +157,7 @@ private:
      QActionGroup* skinsActionGroup;
      SkinMap skins;
      QString currentSkinName;
+     bool development;
      bool debug;
 
 signals:
