@@ -25,8 +25,8 @@
 #include "decn.h"
 #include "revision.h"
 
-enum seperator_modes { SEP_NONE, SEP_COMMA, SEP_DOT };
-enum decimal_modes { DECIMAL_DOT, DECIMAL_COMMA, DECIMAL_DASH };
+static enum separator_modes { SEP_NONE, SEP_COMMA, SEP_DOT } SeparatorMode;
+static enum decimal_modes { DECIMAL_DOT, DECIMAL_COMMA } DecimalMode;
 
 static void set_status_sized(const char *, int);
 static void set_status(const char *);
@@ -250,19 +250,18 @@ static char *set_decimal(const int posn, const enum decimal_modes decimal, char 
 	if (res) {
 		*res++ = (decimal == DECIMAL_DOT)?'.':',';
 	} else {
-		if (decimal != DECIMAL_DASH)
-			set_dot(posn+7);
+		set_dot(posn+7);
 		if (decimal != DECIMAL_DOT)
 			set_dot(posn+8);
 	}
 	return res;
 }
 
-/* Set the digit group seperator *before* the specified digit.
+/* Set the digit group separator *before* the specified digit.
  * This can be nothing, a comma or a dot depending on the state of the
  * sep argument.
  */
-static void set_seperator(int posn, const enum seperator_modes sep, char *res) {
+static void set_separator(int posn, const enum separator_modes sep, char *res) {
 	if (sep == SEP_NONE)
 		return;
 	if (res) {
@@ -357,16 +356,7 @@ skip:	*p = '\0';
 
 static void disp_x(const char *p) {
 	int i;
-	enum decimal_modes decimal = DECIMAL_DOT;
-	enum seperator_modes seperator = SEP_COMMA;
 	int gotdot = -1;
-
-	if (UState.fraccomma) {
-		decimal = DECIMAL_COMMA;
-		seperator = SEP_DOT;
-	}
-	if (UState.nothousands)
-		seperator = SEP_NONE;
 
 	if (*p == '-') {
 		set_dot(MANT_SIGN);
@@ -385,10 +375,10 @@ static void disp_x(const char *p) {
 				if (gotdot == -1)
 					gotdot = i;
 				if (i > 0)
-					set_decimal(i-SEGS_PER_DIGIT, decimal, NULL);
+					set_decimal(i - SEGS_PER_DIGIT, DecimalMode, NULL);
 				else {
 					set_dig(i, '0');
-					set_decimal(i, decimal, NULL);
+					set_decimal(i, DecimalMode, NULL);
 					i += SEGS_PER_DIGIT;	
 				}
 			} else {
@@ -404,7 +394,7 @@ static void disp_x(const char *p) {
 			gotdot -= 3 * SEGS_PER_DIGIT;
 			if (gotdot <= 0)			// MvC: was '<', caused crash
 				break;
-			set_seperator(gotdot, seperator, NULL);
+			set_separator(gotdot, SeparatorMode, NULL);
 		}
 
 		if (*p == 'E') {
@@ -501,19 +491,35 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		while (--i >= 0)
 			*res++ = buf[i];
 	} else {
+#if 0
+		// Allows configuration of digit grouping per base
+		static const char grouping[] = 
+			{       0x84, 0x93, 0x93, 0x93, 0x93, 0x93, 0x93, 
+		      //	   2     3     4     5     6     7     8
+		          0x93, 0x93, 0x93, 0x93, 0x93, 0x93, 0x93, 0x84 };
+		      //     9    10    11    12    13    14    15    16
+		const int shift = SeparatorMode == SEP_NONE ? 12 
+			        : grouping[b - 2] >> 4;
+		const int group = (grouping[b - 2] & 0xf);
+#else
+		// Less flexible but shorter
+		const int shift = SeparatorMode == SEP_NONE ? 12 
+			        : b == 2 || b == 16 ? 8 : 9;
+		const int group = b == 2 || b == 16 ? 4 : 3;
+#endif
 		const int window = State2.int_window;
-		const int shift = b == 2 ? 8 : 12;
-		UState.int_maxw = (i-1) / shift;
+
+		UState.int_maxw = (i - 1) / shift;
 		buf[i] = '\0';
 
-		j = window * shift;	// 12 digits at a time
-		for (k=0; k<12; k++)
-			if (buf[j+k] == '\0')
+		j = window * shift;	// digits at a time
+		for (k = 0; k < 12; k++)
+			if (buf[j + k] == '\0')
 				break;
 		while (--k >= 0) {
 			set_dig(dig, buf[j++]);
-			if (b == 2 && (j & 3) == 0 && k != 0)
-				set_seperator(dig, SEP_DOT, NULL);
+			if ((j % group) == 0 && k != 0)
+				set_separator(dig, SeparatorMode, NULL);
 			dig -= SEGS_PER_DIGIT;
 		}
 		if (sign) {
@@ -595,7 +601,7 @@ static char *hms_render(unsigned int v, char *str, int *jin, int n, int spaces) 
 /* Display the number in H.MS mode.
  * HMS is hhh[degrees]mm'ss.ss" fixed formated modulo reduced to range
  */
-static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes decimal) {
+static void set_x_hms(const decimal64 *rgx, char *res) {
 	decNumber x, y, a, t, u;
 	int j=0;
 	const int exp_last = SEGS_EXP_BASE + 2*SEGS_PER_EXP_DIGIT;
@@ -641,7 +647,7 @@ static void set_x_hms(const decimal64 *rgx, char *res, const enum decimal_modes 
 
 	// seconds
 	res = hms_render(sec, res, &j, 2, 1);
-	res = set_decimal(j - SEGS_PER_DIGIT, decimal, res);
+	res = set_decimal(j - SEGS_PER_DIGIT, DecimalMode, res);
 
 	// Fractional seconds
 	res = hms_render(fs, res, &j, 2, 0);
@@ -787,23 +793,14 @@ static void set_x(const decimal64 *rgx, char *res) {
 	int extra_digits = 0;
 	int dd = UState.dispdigs;
 	int mode = UState.dispmode;
-	enum decimal_modes decimal = DECIMAL_DOT;
-	enum seperator_modes seperator = SEP_COMMA;
 	char c;
 	int negative = 0;
 	decNumber z;
 	int trimzeros = 0;
 
-	if (UState.fraccomma) {
-		decimal = DECIMAL_COMMA;
-		seperator = SEP_DOT;
-	}
-	if (UState.nothousands)
-		seperator = SEP_NONE;
-
 	if (!State2.smode && ! State2.cmplx) {
 		if (State2.hms) {
-			set_x_hms(rgx, res, decimal);
+			set_x_hms(rgx, res);
 			State2.hms = 0;
 			return;
 		} else if (UState.fract) {
@@ -1064,9 +1061,9 @@ static void set_x(const decimal64 *rgx, char *res) {
 	}
 	for (i=0; (c = x[i]) != '\0' && j < SEGS_EXP_BASE; i++) {
 		if (c == '.') {
-			res = set_decimal(j-SEGS_PER_DIGIT, decimal, res);
+			res = set_decimal(j - SEGS_PER_DIGIT, DecimalMode, res);
 		} else if (c == ',') {
-			set_seperator(j, seperator, res);
+			set_separator(j, SeparatorMode, res);
 		} else {
 			res = set_dig_s(j, c, res);
 			j += SEGS_PER_DIGIT;
@@ -1075,7 +1072,7 @@ static void set_x(const decimal64 *rgx, char *res) {
 	if (show_exp)
 		set_exp(exp, 0, res);
 	if (obp[-1] == '.')
-		set_decimal((DISPLAY_DIGITS - 1) * SEGS_PER_DIGIT, decimal, res);
+		set_decimal((DISPLAY_DIGITS - 1) * SEGS_PER_DIGIT, DecimalMode, res);
 }
 
 
@@ -1112,6 +1109,7 @@ static void show_status(void) {
 	} else {
 		int base;
 		int end;
+		int group = 10;
 		
 		if (status <= 10) {
 			base = 10 * (status - 1);
@@ -1124,8 +1122,9 @@ static void show_status(void) {
 			set_status(buf);
 		}
 		else if (status == 11) {
-			base = regA_idx;
+			base = regX_idx;
 			end = regK_idx;
+			group = 4;
 			set_status("X:T\006A:D\006L:K");
 		}
 		else { // status == 12
@@ -1134,13 +1133,13 @@ static void show_status(void) {
 			set_status("FL.00-.15");
 		}
 		set_decimal(0, DECIMAL_DOT, NULL);
-		for (i=0; i<10; i++) {
+		for (i = 0; i < group; i++) {
 			const int k = i + base;
 			int l = get_user_flag(k);
-			if (end >= k + 10)
-				l += (get_user_flag(k + 10) << 1);
+			if (end >= k + group)
+				l += (get_user_flag(k + group) << 1);
 			if (end >= k + 20)
-				l += (get_user_flag(k + 20) << 2);
+				l += (get_user_flag(k + group) << 2);
 			set_dig(j, l);
 			set_decimal(j, DECIMAL_DOT, NULL);
 			j += SEGS_PER_DIGIT;
@@ -1150,7 +1149,7 @@ static void show_status(void) {
 				j += SEGS_PER_DIGIT;
 			}
 		}
-		set_seperator(SEGS_PER_DIGIT * 5, SEP_DOT, NULL);
+		set_separator(SEGS_PER_DIGIT * 5, SEP_DOT, NULL);
 	}
 
 	j = SEGS_EXP_BASE;
@@ -1265,6 +1264,16 @@ void display(void) {
 #endif
 		return;
 	}
+	// Used by various modes
+	SeparatorMode = SEP_COMMA;
+	DecimalMode = DECIMAL_DOT;
+	if (UState.fraccomma) {
+		SeparatorMode = SEP_DOT;
+		DecimalMode = DECIMAL_COMMA;
+	}
+	if (UState.nothousands)
+		SeparatorMode = SEP_NONE;
+
 
 	// Clear display
 	reset_disp();
