@@ -2980,8 +2980,9 @@ void op_radix(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 
 void op_separator(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	int state = (op == OP_THOUS_ON) ? 0 : 1;
-	if (UState.intm)
+	int x = (op - OP_THOUS_ON);
+	int state = x & 1;
+	if ((x&2) != 0)
 		UState.nointseparator = state;
 	else
 		UState.nothousands = state;
