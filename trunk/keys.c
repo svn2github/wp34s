@@ -765,7 +765,7 @@ static int process_h_shifted(const keycode c) {
 		// Row 7
 		OP_NIL | OP_OFF,
 		_RARG   | RARG_PAUSE,
-		OP_NIL  | OP_RADCOM | NO_INT,
+		OP_NIL  | OP_RADCOM,
 		STATE_UNFINISHED,	// P/R
 		OP_SPEC | OP_SIGMAPLUS | NO_INT
 	};
@@ -777,8 +777,10 @@ static int process_h_shifted(const keycode c) {
 	// The switch handles all the special cases
 	switch (c) {
 	case K62:
-		if (UState.fraccomma)
-			op = OP_NIL | OP_RADDOT | NO_INT;
+		if (UState.intm)
+			op = UState.nothousands ? (OP_NIL | OP_THOUS_ON) : (OP_NIL | OP_THOUS_OFF);
+		else if (UState.fraccomma)
+			op = OP_NIL | OP_RADDOT;
 		break;
 
 	case K63:					// Program<->Run mode

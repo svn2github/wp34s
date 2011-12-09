@@ -1789,7 +1789,7 @@ NO_RETURN int main(void)
 						display();
 					}
 					break;
-
+#if 0
 				case K62:
 					// ON + . toggle radix mark
 					UState.fraccomma = !UState.fraccomma;
@@ -1797,7 +1797,7 @@ NO_RETURN int main(void)
 					message( UState.fraccomma ? "RDX," : "RDX.", NULL );
 					confirm_counter = 0;
 					break;
-
+#endif
 				case K10:
 					// ON-STO Backup to flash
 					if ( confirm_counter == 1 ) {
