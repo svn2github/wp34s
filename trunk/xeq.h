@@ -1198,7 +1198,7 @@ extern void op_float(decimal64 *a, decimal64 *b, enum nilop op);
 extern void op_fract(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_trigmode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_radix(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_thousands(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_separator(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_pause(unsigned int arg, enum rarg op);
 extern void op_intsign(decimal64 *a, decimal64 *b, enum nilop op);

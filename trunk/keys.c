@@ -778,7 +778,7 @@ static int process_h_shifted(const keycode c) {
 	switch (c) {
 	case K62:
 		if (UState.intm)
-			op = UState.nothousands ? (OP_NIL | OP_THOUS_ON) : (OP_NIL | OP_THOUS_OFF);
+			op = UState.nointseparator ? (OP_NIL | OP_THOUS_ON) : (OP_NIL | OP_THOUS_OFF);
 		else if (UState.fraccomma)
 			op = OP_NIL | OP_RADDOT;
 		break;

@@ -1264,16 +1264,18 @@ void display(void) {
 #endif
 		return;
 	}
-	// Used by various modes
-	SeparatorMode = SEP_COMMA;
-	DecimalMode = DECIMAL_DOT;
+
+	// Separators used by various modes
 	if (UState.fraccomma) {
 		SeparatorMode = SEP_DOT;
 		DecimalMode = DECIMAL_COMMA;
 	}
-	if (UState.nothousands)
+	else {
+		SeparatorMode = SEP_COMMA;
+		DecimalMode = DECIMAL_DOT;
+	}
+	if ((UState.intm && UState.nointseparator) || (!UState.intm && UState.nothousands))
 		SeparatorMode = SEP_NONE;
-
 
 	// Clear display
 	reset_disp();

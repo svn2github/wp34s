@@ -45,8 +45,8 @@ struct _ustate {
 	unsigned int dispdigs :      4;	// Display digits
 	unsigned int fixeng :        1;	// Fix flips to ENG instead of SCI
 	unsigned int fraccomma :     1;	// radix mark . or ,
-	unsigned int nothousands :   1;	// , or nothing for thousands separator
-	unsigned int jg1582 :        1;	// Julian/Gregorian change over in 1582 instead of 1752
+	unsigned int nothousands :   1;	// opposite of radix mark or nothing for thousands separator
+	unsigned int nointseparator: 1;	// opposite of radix mark or nothing for integer display separator
 // 32 bits
 	unsigned int intm :          1;	// In integer mode
 	unsigned int leadzero :      1;	// forced display of leading zeros in integer mode
@@ -63,7 +63,7 @@ struct _ustate {
 	unsigned int sigma_mode :    3;	// Which sigma regression mode we're using
 	unsigned int slow_speed :    1;	// Speed setting, 1 = slow, 0 = fast
 	unsigned int rounding_mode : 3;	// Which rounding mode we're using
-	unsigned int padding :       1;	// The last bit
+	unsigned int jg1582 :        1;	// Julian/Gregorian change over in 1582 instead of 1752
 };
 
 

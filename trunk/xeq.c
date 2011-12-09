@@ -2979,8 +2979,12 @@ void op_radix(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 
-void op_thousands(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	UState.nothousands = (op == OP_THOUS_ON) ? 0 : 1;
+void op_separator(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	int state = (op == OP_THOUS_ON) ? 0 : 1;
+	if (UState.intm)
+		UState.nointseparator = state;
+	else
+		UState.nothousands = state;
 }
 
 void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
@@ -3165,10 +3169,12 @@ void op_locale(decimal64 *a, decimal64 *nul, enum nilop op) {
 	const unsigned char f = locales[op - OP_SETEUR];
 
 	op_radix(NULL, NULL, (f & LOCALE_RADIX_COM) ? OP_RADCOM : OP_RADDOT);
+	//op_separator(NULL, NULL, (f & LOCALE_THOUS_OFF) ? OP_THOUS_OFF : OP_THOUS_ON);
+	UState.nothousands = (f & LOCALE_THOUS_OFF) ? 1 : 0;
+
 	op_timemode(NULL, NULL, (f & LOCALE_TIME_24) ? OP_24HR : OP_12HR);
-	op_thousands(NULL, NULL, (f & LOCALE_THOUS_OFF) ? OP_THOUS_OFF : OP_THOUS_ON);
-	op_jgchange(NULL, NULL, (f & LOCALE_JG1582) ? OP_JG1582 : OP_JG1752);
 	op_datemode(NULL, NULL, (f & LOCALE_DATE_MDY) ? OP_DATEMDY : ((f & LOCALE_DATE_YMD) ? OP_DATEYMD : OP_DATEDMY));
+	op_jgchange(NULL, NULL, (f & LOCALE_JG1582) ? OP_JG1582 : OP_JG1752);
 }
 
 void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op) {
