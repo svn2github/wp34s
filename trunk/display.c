@@ -500,12 +500,14 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		      //     9    10    11    12    13    14    15    16
 		const int shift = SeparatorMode == SEP_NONE ? 12 
 			        : grouping[b - 2] >> 4;
-		const int group = (grouping[b - 2] & 0xf);
+		const int group = SeparatorMode == SEP_NONE ? 16
+				: (grouping[b - 2] & 0xf);
 #else
 		// Less flexible but shorter
 		const int shift = SeparatorMode == SEP_NONE ? 12 
 			        : b == 2 || b == 16 ? 8 : 9;
-		const int group = b == 2 || b == 16 ? 4 : 3;
+		const int group = SeparatorMode == SEP_NONE ? 16
+				: b == 2 || b == 16 ? 4 : 3;
 #endif
 		const int window = State2.int_window;
 
@@ -513,7 +515,7 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		buf[i] = '\0';
 
 		j = window * shift;	// digits at a time
-		for (k = 0; k < 12; k++)
+		for (k = 0; k < shift; k++)
 			if (buf[j + k] == '\0')
 				break;
 		while (--k >= 0) {
