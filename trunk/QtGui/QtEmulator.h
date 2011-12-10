@@ -77,8 +77,15 @@
 
 #define ABOUT_ACTION_TEXT "About"
 #define PREFERENCES_ACTION_TEXT "Preferences"
+
 #define RESET_ACTION_TEXT "Reset Memory"
 #define QUIT_ACTION_TEXT "Quit"
+
+#define COPY_NUMBER_ACTION_TEXT "Copy Number"
+#define COPY_TEXTLINE_ACTION_TEXT "Copy Textline"
+#define COPY_IMAGE_ACTION_TEXT "Copy Screen Image"
+#define PASTE_NUMBER_ACTION_TEXT "Paste Number"
+
 #define SHOW_WEBSITE_ACTION_TEXT "Show Website"
 // Manual could be change to "Documentation" if we can generate it in HTML for instance
 #define SHOW_DOCUMENTATION_ACTION_TEXT "Manual"
@@ -106,6 +113,10 @@ public slots:
 	void editPreferences();
 	void showAbout();
 	void confirmReset();
+	void copyNumber();
+	void copyTextLine();
+	void copyImage();
+	void pasteNumber();
 	void selectSkin(QAction* anAction);
 	void showWebSite();
 	void showDocumentation();

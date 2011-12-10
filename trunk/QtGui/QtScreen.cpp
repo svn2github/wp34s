@@ -41,6 +41,8 @@ void QtScreen::setSkin(const QtSkin& aSkin)
 	screenForeground=aSkin.getSCreenForeground();
 	screenBackground=aSkin.getSCreenBackground();
 	dotPainters=aSkin.getDotPainters();
+	pasteRectangle=aSkin.getPasteRectangle();
+	pastePainters=aSkin.getPastePainters();
 }
 
 QtScreen::~QtScreen()
@@ -80,6 +82,41 @@ void QtScreen::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEve
 	      }
 		}
 	}
+}
+
+void QtScreen::copy(QtBackgroundImage& aBackgroundImage, QClipboard& aClipboard) const
+{
+	const QRect* rectangle;
+	const DotPainterList* painters;
+	if(pasteRectangle.isValid() && !pastePainters.isEmpty())
+	{
+		rectangle=&pasteRectangle;
+		painters=&pastePainters;
+	}
+	else
+	{
+		rectangle=&screenRectangle;
+		painters=&dotPainters;
+	}
+
+	QPixmap pixmap(rectangle->width(), rectangle->height());
+	QPainter painter(&pixmap);
+	painter.fillRect(pixmap.rect(), screenBackground);
+	painter.setPen(screenForeground);
+	painter.setBrush(QBrush(screenForeground));
+
+	for(int row=0; row<SCREEN_ROW_COUNT; row++)
+	{
+		for(int column=0; column<SCREEN_COLUMN_COUNT; column++)
+		{
+	      if((LcdData[row] & ((uint64_t) 1) << column)!=0)
+	      {
+	    	  int dotIndex=row*SCREEN_COLUMN_COUNT+column;
+	    	  (*painters)[dotIndex]->paint(aBackgroundImage.getBackgroundPixmap(), painter);
+	      }
+		}
+	}
+	aClipboard.setPixmap(pixmap);
 }
 
 extern "C"

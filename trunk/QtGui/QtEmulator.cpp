@@ -19,6 +19,7 @@
 #include "QtEmulatorAdapter.h"
 #include "QtBuildDate.h"
 #include "QtPreferencesDialog.h"
+#include "QtNumberPaster.h"
 
 QtEmulator* currentEmulator;
 
@@ -163,6 +164,26 @@ void QtEmulator::confirmReset()
 	}
 }
 
+void QtEmulator::copyNumber()
+{
+	application.clipboard()->setText(get_formatted_displayed_number());
+}
+
+void QtEmulator::copyTextLine()
+{
+	application.clipboard()->setText(get_displayed_text());
+}
+
+void QtEmulator::copyImage()
+{
+	screen->copy(*backgroundImage, *application.clipboard());
+}
+
+void QtEmulator::pasteNumber()
+{
+	QtNumberPaster::paste(application.clipboard()->text(), *keyboard);
+}
+
 void QtEmulator::selectSkin(QAction* anAction)
 {
 	QString savedSkinName=currentSkinName;
@@ -202,7 +223,7 @@ void QtEmulator::buildMainMenu()
 
 #ifndef Q_WS_MAC
 	mainMenu->addSeparator();
-	mainMenu->addAction(QUIT_ACTION_TEXT, &application, SLOT(quit()));
+	mainMenu->addAction(QUIT_ACTION_TEXT, &application, SLOT(quit()), QKeySequence::Quit);
 #endif
 }
 
@@ -212,6 +233,14 @@ void QtEmulator::buildEditMenu()
 	QMenu* editMenu=new QMenu(EDIT_MENU);
 	menuBar->addMenu(editMenu);
 
+	editMenu->addAction(COPY_NUMBER_ACTION_TEXT, this, SLOT(copyNumber()), QKeySequence::Copy);
+	editMenu->addAction(COPY_TEXTLINE_ACTION_TEXT, this, SLOT(copyTextLine()));
+	editMenu->addAction(COPY_IMAGE_ACTION_TEXT, this, SLOT(copyImage()));
+	editMenu->addAction(PASTE_NUMBER_ACTION_TEXT, this, SLOT(pasteNumber()), QKeySequence::Paste);
+
+#ifndef Q_WS_MAC
+	editMenu->addSeparator();
+#endif
 	QAction* preferencesAction=editMenu->addAction(PREFERENCES_ACTION_TEXT, this, SLOT(editPreferences()));
 	preferencesAction->setMenuRole(QAction::PreferencesRole);
 }

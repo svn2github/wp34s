@@ -33,13 +33,16 @@ public:
 public:
 	const QRect& getScreenRectangle() const;
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
+	void copy(QtBackgroundImage& aBackgroundImage, QClipboard& aClipboard) const;
 	void setSkin(const QtSkin& aSkin);
 
 private:
 	QRect screenRectangle;
+	QRect pasteRectangle;
     QColor screenForeground;
     QColor screenBackground;
     DotPainterList dotPainters;
+    DotPainterList pastePainters;
 };
 
 extern "C"

@@ -29,6 +29,8 @@ extern char* get_region_path_adapter(int);
 #define SVN_REVISION_SIZE 4
 static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
 
+#define FORMATTED_DISPLAYED_NUMBER_LENGTH 30
+
 void init_calculator()
 {
 	DispMsg = NULL;
@@ -154,4 +156,20 @@ char* get_svn_revision_string()
 		SvnRevisionString[SVN_REVISION_SIZE]=0;
 	}
 	return SvnRevisionString;
+}
+
+char* get_formatted_displayed_number()
+{
+	static char buffer[FORMATTED_DISPLAYED_NUMBER_LENGTH];
+	char* b;
+	// We should use memset or equivalent but importing both WP34-s features.h header and normal C/C++ ones
+	// is not possible for certain C compilers such as gcc-4.6
+	for(b=buffer; b<buffer+FORMATTED_DISPLAYED_NUMBER_LENGTH; *(b++)=0);
+	format_reg( &regX, buffer );
+	return buffer;
+}
+
+char *get_displayed_text()
+{
+ 	return (char *) (DispMsg == NULL ? Alpha : DispMsg);
 }

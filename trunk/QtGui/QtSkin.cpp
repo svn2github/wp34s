@@ -28,7 +28,8 @@ static const PainterHandlers painterHandlers;
 
 QtSkin::QtSkin(QFile& aFile) throw (QtSkinException)
 		: pictureSize(-1, -1), screenRectangle(-1, -1, -1, -1), screenForeground(), screenBackground(),
-		  keys(MAX_KEY_CODE, NULL), dotPainters(DOT_PAINTERS_COUNT, NULL), insertedKeys(0), insertedDotPainters(0)
+		  keys(MAX_KEY_CODE, NULL), dotPainters(DOT_PAINTERS_COUNT, NULL), pastePainters(PASTE_PAINTERS_COUNT, NULL),
+		  insertedKeys(0), insertedDotPainters(0), insertedPastePainters(0)
 {
 	pushHandlers(documentHandlers);
 	characterMethodsStack.push(NULL);
@@ -81,6 +82,11 @@ bool QtSkin::checkSkin()
 		setSimpleErrorMessage("Invalid number of painters: "+QString().setNum(insertedDotPainters)+", should be "+QString().setNum(DOT_PAINTERS_COUNT));
 		return false;
 	}
+	if(insertedPastePainters!=0 && insertedPastePainters!=PASTE_PAINTERS_COUNT)
+	{
+		setSimpleErrorMessage("Invalid number of Paste painters: "+QString().setNum(insertedPastePainters)+", should be 0 or "+QString().setNum(PASTE_PAINTERS_COUNT));
+		return false;
+	}
 	return true;
 }
 
@@ -97,6 +103,11 @@ const QSize& QtSkin::getPictureSize() const
 const QRect& QtSkin::getScreenRectangle() const
 {
 	return screenRectangle;
+}
+
+const QRect& QtSkin::getPasteRectangle() const
+{
+	return pasteRectangle;
 }
 
 const QColor& QtSkin::getSCreenForeground() const
@@ -118,6 +129,12 @@ const DotPainterList QtSkin::getDotPainters() const
 {
 	return dotPainters;
 }
+
+const DotPainterList QtSkin::getPastePainters() const
+{
+	return pastePainters;
+}
+
 
 bool QtSkin::convertStringToInteger(const QString& aString, int& anInteger)
 {
@@ -576,6 +593,41 @@ bool QtSkin::startPainters(const QString& aName, const QXmlAttributes& theAttrib
 	Q_UNUSED(theAttributes)
 
 	pushHandlers(paintersHandlers);
+	currentPainters=&dotPainters;
+	insertedPainters=&insertedDotPainters;
+	return true;
+}
+
+bool QtSkin::startPasters(const QString& aName, const QXmlAttributes& theAttributes)
+{
+	Q_UNUSED(aName)
+	Q_UNUSED(theAttributes)
+
+	int widthIndex = theAttributes.index("width");
+	int heightIndex = theAttributes.index("height");
+
+	if (widthIndex < 0 || heightIndex < 0 || theAttributes.count()!=2)
+	{
+		setErrorMessage("Invalid attributes for Pasters");
+		return false;
+	}
+	int width;
+	if (!convertStringToInteger(theAttributes.value(widthIndex), width))
+	{
+		setErrorMessage("Invalid witdh " + theAttributes.value(widthIndex)+ " for Pasters");
+		return false;
+	}
+	int height;
+	if (!convertStringToInteger(theAttributes.value(heightIndex), height))
+	{
+		setErrorMessage("Invalid height " + theAttributes.value(heightIndex)+ " for Pasters");
+		return false;
+	}
+
+	pasteRectangle.setRect(0, 0, width, height);
+	pushHandlers(paintersHandlers);
+	currentPainters=&pastePainters;
+	insertedPainters=&insertedPastePainters;
 	return true;
 }
 
@@ -609,14 +661,14 @@ bool QtSkin::startPainter(const QString& aName, const QXmlAttributes& theAttribu
 			setErrorMessage("Invalid painter index "+QString().setNum(index)+", should be lesser than "+QString().setNum(DOT_PAINTERS_COUNT));
 			return false;
 		}
-		if(dotPainters[index]!=NULL)
+		if((*currentPainters)[index]!=NULL)
 		{
 			setErrorMessage("Duplicated painter index "+QString().setNum(index));
 			return false;
 		}
 		currentDotPainter=new DotPainter();
-		dotPainters[index]=currentDotPainter;
-		insertedDotPainters++;
+		(*currentPainters)[index]=currentDotPainter;
+		(*insertedPainters)++;
 
 		pushHandlers(painterHandlers);
 		return true;
@@ -769,6 +821,7 @@ SkinHandlers::SkinHandlers()
 	(*this)[QString("background")]=TagHandler(&QtSkin::startBackground, NULL, NULL);
 	(*this)[QString("keys")]=TagHandler(&QtSkin::startKeys, NULL, NULL);
 	(*this)[QString("painters")]=TagHandler(&QtSkin::startPainters, NULL, NULL);
+	(*this)[QString("pasters")]=TagHandler(&QtSkin::startPasters, NULL, NULL);
 }
 
 KeysHandlers::KeysHandlers()

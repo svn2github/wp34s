@@ -44,6 +44,7 @@ class TagHandler;
 #define KEY_COUNT 37
 #define MAX_KEY_CODE 41
 #define DOT_PAINTERS_COUNT 400
+#define PASTE_PAINTERS_COUNT DOT_PAINTERS_COUNT
 
 typedef QHash<QString, TagHandler> TagHandlers;
 typedef bool (QtSkin::*StartElementMethod)(const QString&, const QXmlAttributes&);
@@ -73,10 +74,12 @@ public: // getters for Skin fields
     QString getPictureName() const;
     const QSize& getPictureSize() const;
     const QRect& getScreenRectangle() const;
+    const QRect& getPasteRectangle() const;
     const QColor& getSCreenForeground() const;
     const QColor& getSCreenBackground() const;
     const QtKeyList& getKeys() const;
     const DotPainterList getDotPainters() const;
+    const DotPainterList getPastePainters() const;
 
 public: // Parsing methods
     bool startSkin(const QString& aName, const QXmlAttributes& theAttributes);
@@ -89,6 +92,7 @@ public: // Parsing methods
     bool startKey(const QString& aName, const QXmlAttributes& theAttributes);
     bool startShortcut(const QString& aName, const QXmlAttributes& theAttributes);
     bool startPainters(const QString& aName, const QXmlAttributes& theAttributes);
+    bool startPasters(const QString& aName, const QXmlAttributes& theAttributes);
     bool startPainter(const QString& aName, const QXmlAttributes& theAttributes);
     bool charactersPolygon(const QString& aName);
     bool startCopy(const QString& aName, const QXmlAttributes& theAttributes);
@@ -109,10 +113,13 @@ private: // Skin fields
 	QString pictureName;
 	QSize pictureSize;
 	QRect screenRectangle;
+	QRect pasteRectangle;
     QColor screenForeground;
     QColor screenBackground;
     QtKeyList keys;
     DotPainterList dotPainters;
+    DotPainterList pastePainters;
+    DotPainterList* currentPainters;
 
 private: // Internal use fields
 	QString errorMessage;
@@ -121,7 +128,7 @@ private: // Internal use fields
 	QStack<CharactersMethod> characterMethodsStack;
 	QString currentCharacters;
 	int currentCharactersLine, currentCharactersColumn;
-    int insertedKeys, insertedDotPainters;
+    int insertedKeys, insertedDotPainters, insertedPastePainters, *insertedPainters;
     QtKey* currentKey;
     DotPainter* currentDotPainter;
 };
