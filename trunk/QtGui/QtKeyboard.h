@@ -21,6 +21,10 @@
 #include <QMutex>
 #include <QWaitCondition>
 #include "QtSkin.h"
+#include "QtKey.h"
+
+// We need to forward define it as we are included by QtBackgroundImage.h
+class QtBackgroundImage;
 
 #define KEYBOARD_BUFFER_SIZE 16
 
@@ -41,20 +45,23 @@ public:
 	void putKeyIfBufferEmpty(char aKey);
 	bool isKeyPressed();
 	int waitKey();
+	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
 
 private:
 	bool isKeyPressedNoLock();
 	int getKeyNoLock();
-    int findKey(const QKeyEvent& aKeyEvent) const;
-    int findKey(const QPoint& aPoint) const;
+    int findKeyCode(const QKeyEvent& aKeyEvent) const;
+    int findKeyCode(const QPoint& aPoint) const;
+    const QtKey* findKey(int aKey) const;
 
 private:
     QtKeyList keys;
     QMutex mutex;
     QWaitCondition keyWaitCondition;
     char keyboardBuffer[KEYBOARD_BUFFER_SIZE];
-    int keyboardBufferBegin, keyboardBufferEnd;
+    volatile int keyboardBufferBegin, keyboardBufferEnd;
     int lastKey;
+    QHash<int, const QtKey*> keysByCode;
 };
 
 #endif /* QTKEYBOARD_H_ */

@@ -36,7 +36,7 @@ private:
 
 private:
 	QMutex mutex;
-	bool ended;
+	volatile bool ended;
 };
 
 #endif /* QTHEARTBEATTHREAD_H_ */

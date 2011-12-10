@@ -36,7 +36,7 @@ private:
 private:
 	QtKeyboard& keyboard;
 	QMutex mutex;
-	bool ended;
+	volatile bool ended;
 };
 
 #endif /* QTCALCULATORTHREAD_H_ */

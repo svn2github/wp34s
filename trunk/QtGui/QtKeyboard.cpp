@@ -21,7 +21,7 @@
 
 
 QtKeyboard::QtKeyboard(const QtSkin& aSkin)
-	: keyboardBufferBegin(0), keyboardBufferEnd(0)
+	: keyboardBufferBegin(0), keyboardBufferEnd(0), lastKey(-1)
 {
 	setSkin(aSkin);
 }
@@ -40,15 +40,23 @@ QtKeyboard::~QtKeyboard()
 void QtKeyboard::setSkin(const QtSkin& aSkin)
 {
 	keys=aSkin.getKeys();
+	for(QtKeyConstIterator keyIterator=keys.constBegin(); keyIterator!=keys.constEnd(); ++keyIterator)
+	{
+		if(*keyIterator!=NULL)
+		{
+			keysByCode[(*keyIterator)->getCode()]=*keyIterator;
+		}
+	}
 }
 
 bool QtKeyboard::processKeyPressedEvent(const QKeyEvent& aKeyEvent)
 {
-	int key=findKey(aKeyEvent);
+	int key=findKeyCode(aKeyEvent);
 	if(key>=0)
 	{
 		putKey(key);
 	}
+	lastKey=key;
 	return true;
 }
 
@@ -57,12 +65,13 @@ bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 	Q_UNUSED(aKeyEvent)
 
 	forward_key_released();
+	lastKey=-1;
 	return true;
 }
 
 bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 {
-	int key=findKey(aMouseEvent.pos());
+	int key=findKeyCode(aMouseEvent.pos());
 	if(key>=0)
 	{
 		putKey(key);
@@ -79,7 +88,7 @@ bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)
 	// This code is here to deal with it and avoid "missing" keys
 	if(lastKey<0)
 	{
-		int key=findKey(aMouseEvent.pos());
+		int key=findKeyCode(aMouseEvent.pos());
 		if(key>=0)
 		{
 			putKey(key);
@@ -154,7 +163,7 @@ int QtKeyboard::waitKey()
 static int keyEventToKeycode(const QKeyEvent&);
 
 // This is not very efficient but it works and because keys are only 40, with just a few sequences each, this will do
-int QtKeyboard::findKey(const QKeyEvent& aKeyEvent) const
+int QtKeyboard::findKeyCode(const QKeyEvent& aKeyEvent) const
 {
 	int keyCode=keyEventToKeycode(aKeyEvent);
 	if(keyCode<0)
@@ -180,7 +189,7 @@ int QtKeyboard::findKey(const QKeyEvent& aKeyEvent) const
 }
 
 // Not very efficient too but with 40 keys, probably fast enough and avoid the trouble of building sorted trees
-int QtKeyboard::findKey(const QPoint& aPoint) const
+int QtKeyboard::findKeyCode(const QPoint& aPoint) const
 {
 	for(QtKeyConstIterator keyIterator=keys.begin(); keyIterator!=keys.end(); ++keyIterator)
 	{
@@ -190,6 +199,28 @@ int QtKeyboard::findKey(const QPoint& aPoint) const
 		}
 	}
 	return -1;
+}
+
+const QtKey* QtKeyboard::findKey(int aKeyCode) const
+{
+	return keysByCode.value(aKeyCode, NULL);
+}
+
+void QtKeyboard::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent)
+{
+	Q_UNUSED(aPaintEvent);
+
+	if(lastKey>=0)
+	{
+		QPainter painter(&aBackgroundImage);;
+		painter.setCompositionMode(QPainter::CompositionMode_Difference);
+		const QtKey* key=findKey(lastKey);
+		if(key!=NULL && key->getRectangle().isValid())
+		{
+			painter.fillRect(key->getRectangle(), Qt::white);
+			aBackgroundImage.update(key->getRectangle());
+		}
+	}
 }
 
 static int keyEventToKeycode(const QKeyEvent& keyEvent)

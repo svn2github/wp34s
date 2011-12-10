@@ -52,7 +52,7 @@ bool BackgroundImageEventFilter::eventFilter(QObject *obj, QEvent *event)
 }
 
 QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard)
-	: screen(aScreen)
+	: screen(aScreen), keyboard(aKeyboard)
 {
 	setSkin(aSkin);
 	setPixmap(pixmap);
@@ -80,6 +80,7 @@ void QtBackgroundImage::paintEvent(QPaintEvent* aPaintEvent)
 {
 	QLabel::paintEvent(aPaintEvent);
 	screen.paint(*this, *aPaintEvent);
+	keyboard.paint(*this, *aPaintEvent);
 }
 
 void QtBackgroundImage::updateScreen()

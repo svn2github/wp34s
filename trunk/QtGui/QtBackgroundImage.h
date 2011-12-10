@@ -32,6 +32,7 @@ protected:
 private:
 	 QPixmap pixmap;
 	 QtScreen& screen;
+	 QtKeyboard& keyboard;
 };
 
 #endif /* QTBACKGROUNDIMAGE_H_ */
