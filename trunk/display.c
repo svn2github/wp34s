@@ -1295,11 +1295,11 @@ void display(void) {
 		set_status(buf);
 	}
 	if (State2.version) {
-		char vers[] = "34S " VERSION_STRING " ????";
-		set_digits_string("pAULI WwALtE", 0);
+		char vers[] = "34S\006" VERSION_STRING "\006????";
+		set_digits_string("pAULI,WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
 		set_decimal(SEGS_PER_DIGIT * 4, DECIMAL_COMMA, NULL);
-		xcopy( vers + 8, SvnRevision, 4 );
+		xcopy( vers + sizeof(vers) - 5, SvnRevision, 4 );
 		set_status(vers);
 		skip = 1;
 		goto nostk;
