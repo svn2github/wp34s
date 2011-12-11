@@ -15,19 +15,52 @@
  */
 
 #include "QtPreferencesDialog.h"
+#include "QtSerialPort.h"
 
-QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, QWidget* aParent)
+QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
+		const QString& aCustomDirectoryName,
+		const QString& aSerialPortName,
+		QWidget* aParent)
 : QDialog(aParent)
 {
 	setWindowTitle(PREFERENCES_TITLE);
+	buildComponents(aCustomDirectoryActiveFlag, aCustomDirectoryName, aSerialPortName);
+}
 
+QtPreferencesDialog::~QtPreferencesDialog()
+{
+}
+
+void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, const QString& aSerialPortName)
+{
 	QVBoxLayout* dialogLayout=new QVBoxLayout;
+	dialogLayout->setSizeConstraint(QLayout::SetFixedSize);
+	setLayout(dialogLayout);
+
+
+	QTabWidget* tabWidget = new QTabWidget;
+	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), "Memory");
+	tabWidget->addTab(buildSerialTab(aSerialPortName), "Serial Port");
+
+	dialogLayout->addWidget(tabWidget);
+
+	QDialogButtonBox* buttonBox=new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+	connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+	dialogLayout->addWidget(buttonBox);
+}
+
+QWidget* QtPreferencesDialog::buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName)
+{
+	QWidget* memoryTab=new QWidget;
+	QVBoxLayout* memoryTabLayout=new QVBoxLayout;
 
 	useCustomDirectoryButton=new QRadioButton(USE_CUSTOM_DIRECTORY_TEXT);
 	connect(useCustomDirectoryButton, SIGNAL(toggled(bool)), this, SLOT(customDirectoryToggled(bool)));
-	dialogLayout->addWidget(useCustomDirectoryButton);
+	memoryTabLayout->addWidget(useCustomDirectoryButton);
 
 	QHBoxLayout* directoryLayout=new QHBoxLayout;
+	directoryLayout->setSpacing(HORIZONTAL_SPACING);
 	directoryNameEdit=new QLineEdit;
 	int minimumWidth=directoryNameEdit->fontMetrics().width(DIRECTORY_NAME_DEFAULT_CHAR)*DIRECTORY_NAME_DEFAULT_WIDTH;
 	directoryNameEdit->setMinimumWidth(minimumWidth);
@@ -35,24 +68,52 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag, const 
 
 	chooseButton=new QPushButton(CHOOSE_DIRECTORY_TEXT);
 	directoryLayout->addWidget(chooseButton);
-	dialogLayout->addItem(directoryLayout);
 	connect(chooseButton, SIGNAL(clicked(bool)), this, SLOT(chooseDirectory()));
-
-	QDialogButtonBox* buttonBox=new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-	connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
-	connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
-	dialogLayout->addWidget(buttonBox);
-
-	dialogLayout->setSizeConstraint(QLayout::SetFixedSize);
-	setLayout(dialogLayout);
 
 	useCustomDirectoryButton->setChecked(aCustomDirectoryActiveFlag);
 	directoryNameEdit->setText(aCustomDirectoryName);
 	customDirectoryToggled(isCustomDirectoryActive());
+
+	memoryTabLayout->addItem(directoryLayout);
+	memoryTab->setLayout(memoryTabLayout);
+
+	return memoryTab;
 }
 
-QtPreferencesDialog::~QtPreferencesDialog()
+QWidget* QtPreferencesDialog::buildSerialTab(const QString& aSerialPortName)
 {
+	QWidget* serialTab=new QWidget;
+	QVBoxLayout* serialTabLayout=new QVBoxLayout;
+
+	QHBoxLayout* serialPortNameLayout=new QHBoxLayout;
+	serialPortNameLayout->setSpacing(HORIZONTAL_SPACING);
+	QLabel* serialPortNameLabel=new QLabel("Serial Port Name");
+	serialPortNameLayout->addWidget(serialPortNameLabel);
+	serialPortNameEdit=new QLineEdit;
+	serialPortNameLayout->addWidget(serialPortNameEdit);
+
+	serialPortNameEdit->setText(aSerialPortName);
+	serialTabLayout->addItem(serialPortNameLayout);
+
+	QListWidget* serialPortList=new QListWidget;
+	serialTabLayout->addWidget(serialPortList);
+	fillSerialPorts(*serialPortList);
+	QList<QListWidgetItem*> items=serialPortList->findItems(aSerialPortName, Qt::MatchExactly);
+	if(!items.isEmpty())
+	{
+		serialPortList->setCurrentItem(items[0]);
+	}
+
+	connect(serialPortList, SIGNAL(currentTextChanged(const QString&)), this, SLOT(serialPortChanged(const QString&)));
+
+	serialTab->setLayout(serialTabLayout);
+
+	return serialTab;
+}
+
+void QtPreferencesDialog::fillSerialPorts(QListWidget& aListWidget)
+{
+	aListWidget.addItems(QtSerialPort::getSerialPorts());
 }
 
 bool QtPreferencesDialog::isCustomDirectoryActive() const
@@ -85,4 +146,14 @@ void QtPreferencesDialog::chooseDirectory()
 			directoryNameEdit->setText(filenames[0]);
 		}
 	}
+}
+
+QString QtPreferencesDialog::getSerialPortName() const
+{
+	return serialPortNameEdit->text();
+}
+
+void QtPreferencesDialog::serialPortChanged(const QString& aSerialPortName)
+{
+	serialPortNameEdit->setText(aSerialPortName);
 }

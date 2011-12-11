@@ -25,6 +25,7 @@
 #include "QtScreen.h"
 #include "QtCalculatorThread.h"
 #include "QtHeartBeatThread.h"
+#include "QtSerialPort.h"
 
 #define ORGANIZATION_NAME "WP-34s"
 #define APPLICATION_NAME "WP34sEmulator"
@@ -41,6 +42,9 @@
 #define CUSTOM_DIRECTORY_SETTINGS_GROUP "CustomDirectory"
 #define CUSTOM_DIRECTORY_ACTIVE_SETTING "CustomDirectoryActive"
 #define CUSTOM_DIRECTORY_NAME_SETTING "CustomDirectoryName"
+
+#define SERIAL_PORT_SETTINGS_GROUP "SerialPort"
+#define SERIAL_PORT_NAME_SETTING "SerialPortName"
 
 #define SKIN_SUFFIX "xskin"
 #define MEMORY_FILE_TYPE "memory"
@@ -133,11 +137,13 @@ private:
      void buildSkinsMenu();
      void buildHelpMenu();
      void buildComponents(const QtSkin& aSkin);
+     void buildSerialPort();
      void startThreads();
      void stopThreads();
      void loadSettings();
      void saveSettings();
      void saveCustomDirectorySettings();
+     void saveSerialPortSettings();
      void loadMemory();
      bool loadMemoryRegion(int aRegionIndex);
      void saveMemory();
@@ -168,6 +174,7 @@ private:
      QActionGroup* skinsActionGroup;
      SkinMap skins;
      QString currentSkinName;
+     QtSerialPort* serialPort;
      bool development;
      bool debug;
 

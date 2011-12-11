@@ -17,10 +17,22 @@
 #ifndef QTSERIALPORT_H_
 #define QTSERIALPORT_H_
 
+#include <QtCore>
+
 class QtSerialPort
 {
 public:
 	QtSerialPort();
+
+public:
+	const QString& getSerialPortName() const;
+	void setSerialPortName(const QString& aSerialPortName);
+
+public:
+	static QStringList getSerialPorts();
+
+private:
+	QString serialPortName;
 };
 
 #endif /* QTSERIALPORT_H_ */

@@ -14,17 +14,40 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtCore>
 #include "QtSerialPort.h"
+#include <qextserialenumerator.h>
+#include <QList>
+
 
 QtSerialPort::QtSerialPort()
 {
 }
 
+const QString& QtSerialPort::getSerialPortName() const
+{
+	return serialPortName;
+}
+
+void QtSerialPort::setSerialPortName(const QString& aSerialPortName)
+{
+	serialPortName=aSerialPortName;
+}
+
+QStringList QtSerialPort::getSerialPorts()
+{
+	QStringList portNames;
+    QList<QextPortInfo> portsInfos = QextSerialEnumerator::getPorts();
+    for (int i = 0; i < portsInfos.size(); i++)
+    {
+    	portNames << portsInfos[i].portName;
+    }
+    portNames.sort();
+    return portNames;
+}
+
 extern "C"
 {
-
-int open_port( int baud, int bits, int parity, int stopbits )
+int open_port(int baud, int bits, int parity, int stopbits)
 {
 	Q_UNUSED(baud)
 	Q_UNUSED(bits)
@@ -34,16 +57,16 @@ int open_port( int baud, int bits, int parity, int stopbits )
 	return 0;
 }
 
-extern void close_port( void )
+extern void close_port()
 {
 }
 
-void put_byte( unsigned char byte )
+void put_byte(unsigned char byte)
 {
 	Q_UNUSED(byte)
 }
 
-void flush_comm( void )
+void flush_comm(void)
 {
 }
 

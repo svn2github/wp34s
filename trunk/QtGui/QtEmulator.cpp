@@ -46,6 +46,7 @@ QtEmulator::QtEmulator(QApplication& anApplication)
 		userSettingsDirectory.mkpath(userSettingsDirectoryName);
 	}
 
+	buildSerialPort();
 	loadSettings();
 	setPaths();
 
@@ -100,7 +101,7 @@ void QtEmulator::updateScreen()
 
 void QtEmulator::editPreferences()
 {
-	QtPreferencesDialog preferencesDialog(customDirectoryActive, customDirectory.path(), this);
+	QtPreferencesDialog preferencesDialog(customDirectoryActive, customDirectory.path(), serialPort->getSerialPortName(), this);
 	int result=preferencesDialog.exec();
 	if(result==QDialog::Accepted)
 	{
@@ -108,6 +109,9 @@ void QtEmulator::editPreferences()
 		customDirectory.setPath(preferencesDialog.getCustomDirectoryName());
 		checkCustomDirectory();
 		saveCustomDirectorySettings();
+		QString serialPortName=preferencesDialog.getSerialPortName();
+		serialPort->setSerialPortName(serialPortName);
+		saveSerialPortSettings();
 		settings.sync();
 		setPaths();
 	}
@@ -288,6 +292,11 @@ void QtEmulator::buildComponents(const QtSkin& aSkin)
 	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard);
 }
 
+void QtEmulator::buildSerialPort()
+{
+	serialPort=new QtSerialPort;
+}
+
 void QtEmulator::startThreads()
 {
 	calculatorThread=new QtCalculatorThread(*keyboard);
@@ -388,20 +397,25 @@ QtSkin* QtEmulator::buildSkin(const QString& aSkinFilename) throw (QtSkinExcepti
 
 void QtEmulator::loadSettings()
 {
-	 settings.beginGroup(WINDOWS_SETTINGS_GROUP);
-	 move(settings.value(WINDOWS_POSITION_SETTING, QPoint(DEFAULT_POSITION_X, DEFAULT_POSITION_Y)).toPoint());
-	 settings.endGroup();
+	settings.beginGroup(WINDOWS_SETTINGS_GROUP);
+	move(settings.value(WINDOWS_POSITION_SETTING, QPoint(DEFAULT_POSITION_X, DEFAULT_POSITION_Y)).toPoint());
+	settings.endGroup();
 
-	 settings.beginGroup(SKIN_SETTINGS_GROUP);
-	 currentSkinName=settings.value(LAST_SKIN_SETTING, "").toString();
-	 settings.endGroup();
+	settings.beginGroup(SKIN_SETTINGS_GROUP);
+	currentSkinName=settings.value(LAST_SKIN_SETTING, "").toString();
+	settings.endGroup();
 
-	 settings.beginGroup(CUSTOM_DIRECTORY_SETTINGS_GROUP);
-	 customDirectoryActive=settings.value(CUSTOM_DIRECTORY_ACTIVE_SETTING, false).toBool();
-	 customDirectory.setPath(settings.value(CUSTOM_DIRECTORY_NAME_SETTING, "").toString());
-	 settings.endGroup();
+	settings.beginGroup(CUSTOM_DIRECTORY_SETTINGS_GROUP);
+	customDirectoryActive=settings.value(CUSTOM_DIRECTORY_ACTIVE_SETTING, false).toBool();
+	customDirectory.setPath(settings.value(CUSTOM_DIRECTORY_NAME_SETTING, "").toString());
+	settings.endGroup();
 
-	 checkCustomDirectory();
+	settings.beginGroup(SERIAL_PORT_SETTINGS_GROUP);
+	QString serialPortName=settings.value(SERIAL_PORT_NAME_SETTING, "").toString();
+	serialPort->setSerialPortName(serialPortName);
+	settings.endGroup();
+
+	checkCustomDirectory();
 }
 
 void QtEmulator::saveSettings()
@@ -415,6 +429,7 @@ void QtEmulator::saveSettings()
     settings.endGroup();
 
     saveCustomDirectorySettings();
+    saveSerialPortSettings();
 
 	settings.sync();
 }
@@ -425,6 +440,15 @@ void QtEmulator::saveCustomDirectorySettings()
 	settings.setValue(CUSTOM_DIRECTORY_ACTIVE_SETTING, customDirectoryActive);
 	settings.setValue(CUSTOM_DIRECTORY_NAME_SETTING, customDirectory.path());
 	settings.endGroup();
+}
+
+void QtEmulator::saveSerialPortSettings()
+{
+    settings.beginGroup(SERIAL_PORT_SETTINGS_GROUP);
+    QString serialPortName=serialPort->getSerialPortName();
+    settings.setValue(SERIAL_PORT_NAME_SETTING, serialPortName);
+    serialPort->setSerialPortName(serialPortName);
+    settings.endGroup();
 }
 
 void QtEmulator::loadMemory()

@@ -2,8 +2,16 @@ TEMPLATE = app
 TARGET = 
 DEPENDPATH += .
 QMAKE_PRE_LINK = $(MAKE) build_date 
-LIBS += $(OUTPUTDIR)/QtBuildDate.o $(OUTPUTDIR)/QtEmulatorAdapter.o $(BASELIBS) 
+LIBS += $(OUTPUTDIR)/QtBuildDate.o $(OUTPUTDIR)/QtEmulatorAdapter.o $(BASE_LIBS) $(SERIAL_LIB)
 POST_TARGETDEPS += $(OUTPUTDIR)/QtEmulatorAdapter.o
+INCLUDEPATH += $(SERIAL_INCLUDE)
+
+macx {
+  LIBS += -framework IOKit -framework CoreFoundation
+}
+win32 {
+  LIBS += -lsetupapi
+}
 
 QT += xml
 

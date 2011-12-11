@@ -26,26 +26,40 @@
 #define DIRECTORY_NAME_DEFAULT_WIDTH 60
 #define DIRECTORY_NAME_DEFAULT_CHAR 'x'
 
+#define HORIZONTAL_SPACING 10
+
 class QtPreferencesDialog: public QDialog
 {
 	Q_OBJECT
 
 public:
-	QtPreferencesDialog(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, QWidget* aParent=NULL);
+	QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
+			const QString& aCustomDirectoryName,
+			const QString& aSerialPortName,
+			QWidget* aParent=NULL);
 	~QtPreferencesDialog();
 
 public:
 	bool isCustomDirectoryActive() const;
 	QString getCustomDirectoryName() const;
+	QString getSerialPortName() const;
 
 public slots:
-	void customDirectoryToggled(bool);
+	void customDirectoryToggled(bool aButtonChecked);
 	void chooseDirectory();
+	void serialPortChanged(const QString& aSerialPortName);
+
+private:
+	void buildComponents(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, const QString& aSerialPortName);
+	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName);
+	QWidget* buildSerialTab(const QString& aSerialPortName);
+	void fillSerialPorts(QListWidget& aListWidget);
 
 private:
 	QRadioButton* useCustomDirectoryButton;
 	QLineEdit* directoryNameEdit;
 	QPushButton* chooseButton;
+	QLineEdit* serialPortNameEdit;
 };
 
 #endif /* QTPREFERENCESDIALOG_H_ */

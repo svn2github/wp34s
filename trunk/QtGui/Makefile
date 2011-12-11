@@ -71,6 +71,17 @@ DIRS_TO_CLEAN += debug release
 EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.QtGui.debug object_script.QtGui.release
 endif
 
+ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "windows32"), "")
+	SERIAL_LIB=""
+else
+	SERIAL_LIB=-Lserial/lib/$(SYSTEM) -lqextserialport
+endif
+ifeq ("$(SYSTEM)", "windows32")
+	SERIAL_INCLUDE=serial/include/windows32
+else
+	SERIAL_INCLUDE=serial/include
+endif
+
 $(OUTPUTDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -I.. -o $@ $<
 
@@ -86,7 +97,7 @@ all:
 endif
 else 
 all: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
-	$(MAKE) -f $(QTMAKEFILE) SUBLIBS="$(BASEOBJS) $(BASELIBS)"
+	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS="$(BASEOBJS) $(BASELIBS)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)"
 endif
 
 build_date: 

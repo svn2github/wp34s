@@ -1,0 +1,46 @@
+This module uses the open-source project qextserialport to provide serial-port
+communication with real WP-34s units.
+
+See http://code.google.com/p/qextserialport/ for more information about this project.
+
+It comes with precompiled libraries for Windows, Mac OSX & Linux. However, as these libraries where compiled
+on specific platforms (Windows 7/MinGW, OSX Lion, Ubuntu 11.10/gcc-4.6), they may not work on your platform.
+
+First, you'll have to make sure that the Mercurial, free source control management tool, is installed on your system.
+
+Go to http://mercurial.selenic.com/ to download a version.
+
+
+On Mac OSX & Linux, get the sources:
+
+hg clone https://code.google.com/p/qextserialport
+
+Then edit the src/src.pro qmake config file and make sure that the "CONFIG += staticlib" is uncommented.
+run 'qmake' at the top level then make.
+
+On Mac OSX, copy the src/build/libqextserialportd.a into the QtGui/serial/lib/Darwin directory 
+and rename it to libqextserialport.a 
+
+On Linux, copy the src/build/libqextserialport.a into the QtGui/serial/lib/Linux directory 
+
+
+On Windows, you'll need a different set of sources as qextserialport does not goes well with recent versions
+of Qt.
+
+The project to use is:
+
+http://code.google.com/r/dbzhang800-qextserialport/
+
+and you must retrieve the sources with:
+
+hg clone https://code.google.com/r/dbzhang800-qextserialport/
+
+Then in the dbzhang800-qextserialport directory created by hg:
+
+- copy config_example.pri to config.pri
+- edit config.pri and uncomment the 'QEXTSERIALPORT_LIBRARY = yes' & 'QEXTSERIALPORT_STATIC = yes'
+- run qmake
+- run the appropriate make, usually the mingw32-make that comes with Qt
+
+The enter the 'lib' subdirectory and copy 'libqextserialport-1.2d.a' into the QtGui/serial/windows32 directory.
+Rename it to libqextserialport.a
