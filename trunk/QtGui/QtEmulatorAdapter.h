@@ -29,6 +29,7 @@ extern int get_flash_region_size();
 extern int get_number_of_flash_regions();
 extern char* get_flash_region(int);
 extern void fast_backup_to_flash();
+extern void reset_wp34s();
 extern char* get_version_string();
 extern char* get_svn_revision_string();
 extern char* get_formatted_displayed_number();

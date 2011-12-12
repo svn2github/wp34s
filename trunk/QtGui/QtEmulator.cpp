@@ -603,10 +603,14 @@ void QtEmulator::resetUserMemory()
 		}
 	}
 
+	reset_wp34s();
+
 	if(!removed)
 	{
 		memoryWarning("Cannot reset user memory", false);
 	}
+
+	updateScreen();
 }
 
 void QtEmulator::skinError(const QString& aMessage, bool aFatalFlag)

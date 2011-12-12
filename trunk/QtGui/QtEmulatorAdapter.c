@@ -31,6 +31,18 @@ static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
 
 #define FORMATTED_DISPLAYED_NUMBER_LENGTH 30
 
+// Replacement for memset as importing WP34-s features.h header is not possible for certain C compilers such as gcc-4.6
+// as they define their own
+static void memfill(void* aPointer, char aValue, int aSize)
+{
+	char* pointer=(char*) aPointer;
+	char* endPointer=pointer+aSize;
+	while(pointer!=endPointer)
+	{
+		*pointer++=aValue;
+	}
+}
+
 void init_calculator()
 {
 	DispMsg = NULL;
@@ -138,6 +150,13 @@ void fast_backup_to_flash()
 	UserFlash.backup = PersistentRam;
 }
 
+void reset_wp34s()
+{
+	memfill(&PersistentRam, 0, sizeof(PersistentRam));
+	init_34s();
+	display();
+}
+
 char* get_version_string()
 {
 	return VERSION_STRING;
@@ -161,10 +180,8 @@ char* get_svn_revision_string()
 char* get_formatted_displayed_number()
 {
 	static char buffer[FORMATTED_DISPLAYED_NUMBER_LENGTH];
-	char* b;
-	// We should use memset or equivalent but importing both WP34-s features.h header and normal C/C++ ones
-	// is not possible for certain C compilers such as gcc-4.6
-	for(b=buffer; b<buffer+FORMATTED_DISPLAYED_NUMBER_LENGTH; *(b++)=0);
+
+	memfill(buffer, 0, FORMATTED_DISPLAYED_NUMBER_LENGTH);
 	format_reg( &regX, buffer );
 	return buffer;
 }
