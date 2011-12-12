@@ -514,17 +514,6 @@ static void set_int_x(decimal64 *rgx, char *res) {
 		buf[i] = '\0';
 
 		j = window * shift;	// digits at a time
-#if 0
-		for (k = 0; k < shift; k++)
-			if (buf[j + k] == '\0')
-				break;
-		while (--k >= 0) {
-			set_dig(dig, buf[j++]);
-			if ((j % group) == 0 && k != 0)
-				set_separator(dig, SeparatorMode, NULL);
-			dig -= SEGS_PER_DIGIT;
-		}
-#else
 		for (k = 0; k < 12; k++)
 			if (buf[j + k] == '\0')
 				break;
@@ -537,7 +526,6 @@ static void set_int_x(decimal64 *rgx, char *res) {
 				set_separator(dig, SeparatorMode, NULL);
 			dig -= SEGS_PER_DIGIT;
 		}
-#endif
 		if (sign) {
 			if (dig >= 0)
 				set_dig(dig, '-');
