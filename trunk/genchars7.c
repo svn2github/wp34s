@@ -105,6 +105,9 @@ static struct pair {
 	DIG(6,			D_MIDDLE | D_BOTTOM),
 	DIG(7,			D_TOP | D_MIDDLE | D_BOTTOM),
 	DIG(8,			D_TL | D_TR | D_BL | D_BR),		// Status central separator
+
+	DIG(030,		D_MIDDLE | D_BL | D_BR | D_BOTTOM),	// small zero digit
+	DIG(031,		D_BR),					// small one digit
 };
 #define NUMDIGS		(sizeof(digtbl) / sizeof(*digtbl))
 
