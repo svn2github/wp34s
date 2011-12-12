@@ -18,6 +18,7 @@
 #define QTSERIALPORT_H_
 
 #include <QtCore>
+#include "qextserialport.h"
 
 class QtSerialPort
 {
@@ -27,12 +28,15 @@ public:
 public:
 	const QString& getSerialPortName() const;
 	void setSerialPortName(const QString& aSerialPortName);
+	bool open(const PortSettings& thePortSettings);
+	void close();
 
 public:
 	static QStringList getSerialPorts();
 
 private:
 	QString serialPortName;
+	QextSerialPort* serialPort;
 };
 
 #endif /* QTSERIALPORT_H_ */

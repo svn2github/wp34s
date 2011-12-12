@@ -108,6 +108,7 @@ public:
 public:
      QtKeyboard& getKeyboard() const;
      QtScreen& getScreen() const;
+     QtSerialPort& getSerialPort() const;
      void updateScreen();
      // Used by program_flash via QtEmulatorAdapter.c
      char* getRegionPath(int aRegionIndex);

@@ -94,6 +94,11 @@ QtScreen& QtEmulator::getScreen() const
 	return *screen;
 }
 
+QtSerialPort& QtEmulator::getSerialPort() const
+{
+	return *serialPort;
+}
+
 void QtEmulator::updateScreen()
 {
 	emit screenChanged();
