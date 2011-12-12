@@ -494,9 +494,9 @@ static void set_int_x(decimal64 *rgx, char *res) {
 #if 0
 		// Allows configuration of digit grouping per base
 		static const char grouping[] = 
-			{       0x84, 0xbf, 0xb4, 0xbf, 0xbf, 0xbf, 0xbf, 
+			{       0x84, 0xb3, 0xb4, 0xb3, 0xb3, 0xb3, 0xb3, 
 		      //	   2     3     4     5     6     7     8
-		          0xbf, 0xb3, 0xbf, 0xbf, 0xbf, 0xbf, 0xbf, 0xb2 };
+		          0xb3, 0xb3, 0xb3, 0xb3, 0xb3, 0xb3, 0xb3, 0xb2 };
 		      //     9    10    11    12    13    14    15    16
 		const int shift = SeparatorMode == SEP_NONE ? 12 
 			        : grouping[b - 2] >> 4;
@@ -504,17 +504,9 @@ static void set_int_x(decimal64 *rgx, char *res) {
 				: (grouping[b - 2] & 0xf);
 #else
 		// Less flexible but shorter
-#if 0
-		const int shift = SeparatorMode == SEP_NONE ? 12 
-			        : b == 2 || b == 16 ? 8 : 9;
-		const int group = SeparatorMode == SEP_NONE ? 16
-				: b == 2 || b == 16 ? 4 : 3;
-#else
 		const int shift = b == 2 ? 8 : 12;
 		const int group = (b == 2 || b == 4) ? 4
-				: b == 16 ? 2
-				: b == 10 ? 3 : 15;
-#endif
+				: b == 16 ? 2 : 3;
 #endif
 		const int window = State2.int_window;
 
