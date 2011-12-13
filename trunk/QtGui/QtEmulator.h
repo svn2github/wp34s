@@ -106,6 +106,7 @@ public:
      ~QtEmulator();
 
 public:
+     void quit();
      QtKeyboard& getKeyboard() const;
      QtScreen& getScreen() const;
      QtSerialPort& getSerialPort() const;
@@ -176,6 +177,7 @@ private:
      SkinMap skins;
      QString currentSkinName;
      QtSerialPort* serialPort;
+     bool active;
      bool development;
      bool debug;
 

@@ -182,7 +182,7 @@ char* get_formatted_displayed_number()
 	static char buffer[FORMATTED_DISPLAYED_NUMBER_LENGTH];
 
 	memfill(buffer, 0, FORMATTED_DISPLAYED_NUMBER_LENGTH);
-	format_reg( &regX, buffer );
+	format_reg(&regX, buffer);
 	return buffer;
 }
 

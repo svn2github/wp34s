@@ -33,7 +33,7 @@ int main(int argv, char **args)
 	{
 		QMessageBox messageBox;
 		messageBox.setIcon(QMessageBox::Critical);
-		messageBox.setText("Error reading skin, cannot continue");
+		messageBox.setText("Error finding or reading skin, cannot continue");
 		messageBox.setInformativeText(exception.what());
 		messageBox.setStandardButtons(QMessageBox::Ok);
 		messageBox.setDefaultButton(QMessageBox::Ok);

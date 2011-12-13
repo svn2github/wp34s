@@ -66,14 +66,24 @@ QtEmulator::QtEmulator(QApplication& anApplication)
 
 	loadMemory();
 	startThreads();
+	active=true;
 }
 
 QtEmulator::~QtEmulator()
+{
+	if(active)
+	{
+		quit();
+	}
+}
+
+void QtEmulator::quit()
 {
 	delete skinsActionGroup;
 	stopThreads();
 	delete heartBeatThread;
 	delete calculatorThread;
+	active=false;
 }
 
 void QtEmulator::closeEvent(QCloseEvent* event)
