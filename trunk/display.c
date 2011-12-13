@@ -84,7 +84,7 @@ void error_message(const enum errors e)
 		"Invalid\0ParaMmEtEr",
 		"I/O\0Error",
 		"Invalid\0dAtA",
-		"No write\0In FLASH",
+		"Write\0Protect",
 		"Solve\0FAILEd",
 	#ifdef MATRIX_SUPPORT
 		"Matrix\0MmISMmAtCH",
@@ -1187,7 +1187,7 @@ static void show_label(void) {
 		scopy(buf, "l1B");
 	} else if (isLIB(pc)) {
 		scopy(buf, "PG ");
-		num_arg_0(buf+3, nLIB(pc)-1, 2);
+		num_arg_0(buf+3, nLIB(pc)-1, 1);
 	} else {
 		scopy(buf, "rAMm");
 	}
@@ -1476,9 +1476,9 @@ nostk:	show_flags();
 			if (isXROM(pc)) {
 				num_arg_0(scopy_spc(buf, "l1B "), upc, 5);
 			} else if (isLIB(pc)) {
-				scopy(buf, "PG 00-");
-				num_arg_0(buf+3, nLIB(pc)-1, 2);
-				num_arg_0(buf+6, 1+upc, 3);
+				scopy(buf, "PG 0-");
+				num_arg_0(buf+3, nLIB(pc)-1, 1);
+				num_arg_0(buf+5, 1+upc, 4);
 			} else {
 				set_exp(ProgFree, 1, NULL);
 				num_arg_0(scopy_spc(buf, S7_STEP), upc, 3);

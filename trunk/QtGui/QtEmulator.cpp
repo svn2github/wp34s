@@ -592,11 +592,11 @@ QString QtEmulator::getRegionFileName(int aRegionIndex) const
 	QString regionFileName(REGION_FILENAME_PATTERN);
 	if(aRegionIndex==0)
 	{
-		return regionFileName.arg('R');
+		return regionFileName.arg("backup");
 	}
 	else
 	{
-		return regionFileName.arg(QString::number(aRegionIndex));
+		return regionFileName.arg("lib");
 	}
 }
 

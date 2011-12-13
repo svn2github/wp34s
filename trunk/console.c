@@ -297,10 +297,8 @@ static void dump_ram(void) {
 
 static void dump_prog(unsigned int n) {
 	unsigned int pc;
-	if (n > NUMBER_OF_FLASH_REGIONS-1)
+	if (n > REGION_LIBRARY - 1)
 		printf("no such program region %u\n", n);
-	else if (! is_prog_region(n+1))
-		printf("region %u is not a program region\n", n);
 	else if (sizeLIB(n+1) == 0)
 		printf("region %u empty\n", n);
 	else {

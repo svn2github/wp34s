@@ -406,22 +406,16 @@ extern int current_catalogue_max(void);
 #define addrXROM(pc)	((pc) | XROM_MASK)
 
 /* Macros to access flash library space */
-#if NUMPROG > 511
-#define LIB_MASK	(0x3c00u)
-#define LIB_SHIFT	(10)
-#else
-#define LIB_MASK	(0x3e00u)
-#define LIB_SHIFT	(9)
-#endif
+#define LIB_MASK	(0x3000u)
+#define LIB_SHIFT	(12)
 
-#define LIB_MAX		(15 - LIB_SHIFT)
-#define LIB_ADDR_MASK	((1 << (LIB_SHIFT)) - 1)
+#define LIB_ADDR_MASK	((1 << LIB_SHIFT) - 1)
 #define isLIB(pc)	((pc) & LIB_MASK)
 #define nLIB(pc)	(((pc) & LIB_MASK) >> LIB_SHIFT)
 #define addrLIB(pc, n)	((pc) | ((n) << LIB_SHIFT))
 #define startLIB(pc)	((pc) & ~LIB_ADDR_MASK)
 #define offsetLIB(pc)	((pc) & LIB_ADDR_MASK)
-#define sizeLIB(n)	(UserFlash.region[NUMBER_OF_FLASH_REGIONS-1-(n)].last_prog-1)
+#define sizeLIB(n)	((n == REGION_BACKUP ? BackupFlash._last_prog : UserFlash.last_prog) - 1)
 
 #define isRAM(pc)	(((pc) & (XROM_MASK | LIB_MASK | LOCAL_MASK)) == 0)
 
@@ -718,17 +712,15 @@ enum nilop {
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 	OP_ENTRYP,
-
 	OP_TICKS, OP_VOLTAGE,
 	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN, OP_SETJPN,
-
 	OP_QUAD, OP_NEXTPRIME, OP_USR_ZETA, OP_USR_Bn, OP_USR_BnS, OP_USR_W1,
 	OP_XEQALPHA, OP_GTOALPHA,
-	OP_RLOAD, OP_SLOAD, OP_BACKUP, OP_RESTORE,
-
+	OP_SAVE, OP_LOAD,
+	OP_LOADP, OP_LOADR, OP_LOADST, 
+	OP_PSTO, OP_PRCL,
 	OP_ROUNDING,
 	OP_SLOW, OP_FAST,
-
 	OP_SENDP, OP_SENDR, OP_SENDA, OP_RECV,
 #ifdef INCLUDE_USER_IO
 	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
@@ -737,7 +729,6 @@ enum nilop {
 	OP_TOP,
 	OP_GETBASE, OP_GETSIGN,
 	OP_ISINT, OP_ISFLOAT,
-
 	OP_Xeq_pos0, OP_Xeq_neg0,
 
 #ifdef MATRIX_SUPPORT
@@ -820,7 +811,6 @@ enum rarg {
 	RARG_PAUSE, RARG_KEY,
 	RARG_ALPHAXEQ, RARG_ALPHAGTO,
 
-	RARG_PLOAD, RARG_PSAVE, RARG_PSWAP,
 	RARG_FLRCL, RARG_FLRCL_PL, RARG_FLRCL_MI, RARG_FLRCL_MU, RARG_FLRCL_DV,
 			RARG_FLRCL_MIN, RARG_FLRCL_MAX,
 	RARG_FLCRCL, RARG_FLCRCL_PL, RARG_FLCRCL_MI, RARG_FLCRCL_MU, RARG_FLCRCL_DV,
@@ -835,7 +825,6 @@ enum rarg {
 #ifdef INCLUDE_MULTI_DELETE
 	RARG_DELPROG,
 #endif
-	RARG_SENDL,
 	RARG_PUTKEY,
 	RARG_KEYTYPE,
 	RARG_MESSAGE,

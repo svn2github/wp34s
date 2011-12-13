@@ -213,7 +213,7 @@ opcode getprog(unsigned int n) {
 		return get_opcode(xrom + (n & ~XROM_MASK) );
 	}
 	if (isLIB(n)) {
-		FLASH_REGION *fr = flash_region(nLIB(n));
+		FLASH_REGION *fr = nLIB(n) == REGION_BACKUP ? (FLASH_REGION *) &BackupFlash : &UserFlash;
 		return get_opcode(fr->prog + offsetLIB(n));
 	}
 	if (n >= LastProg)
@@ -888,7 +888,7 @@ decimal64 *get_reg_n(int n) {
 }
 
 decimal64 *get_flash_reg_n(int n) {
-	return UserFlash.backup._regs + TOPREALREG - UserFlash.backup._numregs + n;
+	return BackupFlash._regs + TOPREALREG - BackupFlash._numregs + n;
 }
 
 void get_reg_n_as_dn(int n, decNumber *x) {
@@ -1089,10 +1089,15 @@ void clpall(void) {
 */
 void clrprog(void) {
 	update_program_bounds(1);
-	if (check_delete_prog(ProgBegin))
-		return;
-	xcopy(Prog_1 + ProgBegin, Prog + ProgEnd, (LastProg - ProgEnd - 1) << 1);
-	LastProg -= (ProgEnd + 1 - ProgBegin);
+	if (nLIB(ProgBegin) == REGION_LIBRARY) {
+		flash_remove(ProgBegin, ProgEnd + 1 - ProgBegin);
+	}
+	else {
+		if (check_delete_prog(ProgBegin))
+			return;
+		xcopy(Prog_1 + ProgBegin, Prog + ProgEnd, (LastProg - ProgEnd - 1) << 1);
+		LastProg -= (ProgEnd + 1 - ProgBegin);
+	}
 	set_pc(ProgBegin);
 }
  
@@ -1507,7 +1512,7 @@ void cmdrcl(unsigned int arg, enum rarg op) {
 }
 
 void cmdflashrcl(unsigned int arg, enum rarg op) {
-	do_rcl(UserFlash.backup._regs+arg, op - RARG_FLRCL + RARG_RCL);
+	do_rcl(BackupFlash._regs+arg, op - RARG_FLRCL + RARG_RCL);
 }
 
 /* And the complex equivalents for the above.
@@ -1604,7 +1609,7 @@ void cmdcrcl(unsigned int arg, enum rarg op) {
 void cmdflashcrcl(unsigned int arg, enum rarg op) {
 	const decimal64 *t1, *t2;
 
-	t1 = UserFlash.backup._regs+arg;
+	t1 = BackupFlash._regs+arg;
 	t2 = t1+1;
 	do_crcl(t1, t2, op - RARG_FLCRCL + RARG_CRCL);
 }
@@ -1975,15 +1980,14 @@ void cmdgto(unsigned int arg, enum rarg op) {
 static unsigned int findmultilbl(const opcode o, int flags) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
 	unsigned int lbl;
-	int i;
 
-	lbl = find_opcode_from(0, dest, 0);
-	for (i=NUMBER_OF_FLASH_REGIONS-1; lbl == 0 && i > 0; i--) {
-		if ( is_prog_region(i) )
-			lbl = find_opcode_from(addrLIB(0, i), dest, 0);
-	}
+	lbl = find_opcode_from(0, dest, 0);					// RAM
 	if (lbl == 0)
-		lbl = find_opcode_from(addrXROM(0), dest, 0);
+		lbl = find_opcode_from(addrLIB(0, REGION_LIBRARY), dest, 0);	// Library
+	if (lbl == 0)
+		lbl = find_opcode_from(addrLIB(0, REGION_BACKUP), dest, 0);	// Backup
+	if (lbl == 0)
+		lbl = find_opcode_from(addrXROM(0), dest, 0);			// XROM
 	if (lbl == 0 && (flags & FIND_OP_ERROR) != 0)
 		err(ERR_NO_LBL);
 	return lbl;
@@ -3331,7 +3335,7 @@ static int reg_decode(decimal64 **s, unsigned int *n, decimal64 **d, int flash) 
 	num = rsrc % 100;		// nn
 	rsrc /= 100;			// sss
 
-	mx_src = flash ? UserFlash.backup._numregs :
+	mx_src = flash ? BackupFlash._numregs :
 		 rsrc >= LOCAL_REG_BASE ? local_regs() : NumRegs;
 	if (rsrc >= mx_src)
 		goto range_error;

@@ -1624,6 +1624,7 @@ NO_RETURN int main(void)
 					flash_restore( NULL, NULL, OP_RESTORE );
 				}
 			}
+			init_library();
 		}
 		else {
 			/*

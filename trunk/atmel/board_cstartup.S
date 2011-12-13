@@ -181,8 +181,8 @@ initialize:
         ldr     r2, =_srelocate
         add     r0, r0, r1
         sub     r0, r0, r2
-        ldr     r1, =_sbackup
-        ldr     r2, =_ebackup
+        ldr     r1, =_spersistent_ram
+        ldr     r2, =_epersistent_ram
 1:
         cmp     r1, r2
         ldrne   r3, [r0], #4

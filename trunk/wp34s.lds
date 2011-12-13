@@ -18,14 +18,7 @@
  *      Linker script for running in internal Flash on the AT91SAM7L128.
  *
  *      Modified by Marcus von Cube for wp34s
- *      Needs to be preprocessed by gcc -E -P -x c wp34s.lds >wp34s_pre.lds
  *----------------------------------------------------------------------------*/
-
-#define REALBUILD 1
-#include "features.h"
-#define K(x) CONCAT(x, K)
-#define CONCAT(x, y) x ## y
-#define USER_FLASH_SIZE K(NUMBER_OF_FLASH_REGIONS)
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
@@ -33,14 +26,13 @@ ENTRY(entry)
 
 MEMORY
 {
-    sram (W!RX) :       ORIGIN = 0x200000, LENGTH = 4K
-    backupsram (W!RX) : ORIGIN = 0x300000, LENGTH = 2K
+    volatile_ram (W!RX) :      	ORIGIN = 0x200000, LENGTH = 4K
+    persistent_ram (W!RX) : 	ORIGIN = 0x300000, LENGTH = 2K
     
-    flash (RX) :        ORIGIN = 0x100000, LENGTH = 0x20000 - USER_FLASH_SIZE - 4
-    revision (R) :      ORIGIN = 0x120000 - USER_FLASH_SIZE - 4, LENGTH = 4
-    userflash (R) :     ORIGIN = 0x120000 - USER_FLASH_SIZE, LENGTH = USER_FLASH_SIZE
+    program_flash (RX) :	ORIGIN = 0x100000, LENGTH = 0x20000 - 2K
+    backup_flash (R) :		ORIGIN = 0x120000 - 2K, LENGTH = 2K
 
-    cmdtab (R) :        ORIGIN = 0x0f0000, LENGTH = 0x10000
+    cmdtab (R) :		ORIGIN = 0x0f0000, LENGTH = 0x10000
 }
 
 SECTIONS
@@ -59,8 +51,9 @@ SECTIONS
         *(.xrom)          /* remove for fixed XROM */
         . = ALIGN(4);
         _efixed = .;
-    } >flash
+    } >program_flash
 
+#if 0
     .relocate : AT (_efixed)
     {
         . = ALIGN(4);
@@ -70,24 +63,27 @@ SECTIONS
         *(.data)
         . = ALIGN(4);
         _erelocate = .;
-    } >sram
+    } >persistent_ram
+#endif
 
     .revision : 
     {
+        . = ALIGN(256) - 4;
 	*(.revision)
-    } >revision
+	UserFlash = .;
+    } >program_flash
     
-    .userflash (NOLOAD) :
+    .backup_flash (NOLOAD) :
     {
-	*(.userflash)
-    } >userflash
+	*(.backup_flash)
+    } >backup_flash
 
     .bss (NOLOAD) : 
     {
         . = ALIGN(4);
         _szero = .;
         *(.bss)
-    } >sram
+    } >volatile_ram
     
     .slcdcmem (NOLOAD) :
     {
@@ -95,23 +91,23 @@ SECTIONS
     	*(.slcdcmem)
         . = ALIGN(4);
         _ezero = .;
-    } >sram
+    } >volatile_ram
 
-    .volatile (NOLOAD) :
+    .volatile_ram (NOLOAD) :
     {
         . = ALIGN(4);
-    	*(.volatile)
+    	*(.volatile_ram)
         . = ALIGN(4);
-    } >sram
+    } >volatile_ram
 
-    .backup (NOLOAD) :
+    .persistent_ram (NOLOAD) :
     {
         . = ALIGN(4);
-        _sbackup = .;
-        *(.backup)
+        _spersistent_ram = .;
+        *(.persistent_ram)
         . = ALIGN(4);
-        _ebackup = .;
-    } >backupsram
+        _epersistent_ram = .;
+    } >persistent_ram
 
     _sstack = 0x201000;
 

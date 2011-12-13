@@ -656,7 +656,6 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_SENDR,		"SENDR")
 	NILIC(OP_SENDA,		"SENDA")
 	NILIC(OP_RECV,		"RECV")
-	RARGCMD(RARG_SENDL,	"SENDL")
 
 #ifdef INCLUDE_USER_IO
 	NILIC(OP_SEND1,		"SEND1")
@@ -669,13 +668,13 @@ static s_opcode prog_catalogue[] = {
 #ifdef INCLUDE_MULTI_DELETE
 	RARGCMD(RARG_DELPROG,	"DEL[sub-p]")
 #endif
-	RARGCMD(RARG_PSAVE,	"PSTO")
-	RARGCMD(RARG_PLOAD,	"PRCL")
-	RARGCMD(RARG_PSWAP,	"P<>")
-	NILIC(OP_RLOAD,		"RCF.RG")
-	NILIC(OP_SLOAD,		"RCF.ST")
-	NILIC(OP_BACKUP,	"SAVE")
-	NILIC(OP_RESTORE,	"LOAD")
+	NILIC(OP_SAVE,		"SAVE")
+	NILIC(OP_LOAD,		"LOAD")
+	NILIC(OP_LOADP,		"LOADP")
+	NILIC(OP_LOADR,		"LOADR")
+	NILIC(OP_LOADST,	"LOADST")
+	NILIC(OP_PSTO,		"PSTO")
+	NILIC(OP_PRCL,		"PRCL")
 	RARGCMD(RARG_FLRCL, 	"RCF")
 	RARGCMD(RARG_PUTKEY,	"PUTK")
 
@@ -1186,7 +1185,7 @@ int main(int argc, char *argv[]) {
 	ALPHA(alpha_letters);
 	ALPHA(alpha_letters_lower);
 
-        fprintf(stderr, "maxsteps=%d\n", NUMPROG);
+        fprintf(stderr, "maxsteps=%d\n", NUMPROG_FLASH);
 	dump_opcodes(stderr);
 
 	printf( "/* Total number of catalogue entries %d\n"

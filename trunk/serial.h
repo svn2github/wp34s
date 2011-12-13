@@ -33,7 +33,6 @@ extern void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op );
 extern void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op );
 extern void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op );
 extern int recv_byte( int timeout );
-extern void send_library(unsigned int region, enum rarg op);
 #ifdef INCLUDE_USER_IO
 extern void send_byte( decimal64 *nul1, decimal64 *nul, enum nilop op2 );
 extern void serial_open( decimal64 *byte, decimal64 *nul2, enum nilop op );

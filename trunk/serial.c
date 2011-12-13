@@ -463,17 +463,6 @@ void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 }
 
 
-/*
- * Transmit a library region from flash to the serial port.
- * It will arrive in RAM on the receiver!
- */
-void send_library(unsigned int region, enum rarg op)
-{
-	FLASH_REGION *fr = flash_region( region + 1 );
-	put_block( TAG_PROGRAM, ( fr->last_prog - 1 ) * sizeof( s_opcode ), fr->prog );
-}
-
-
 #ifdef INCLUDE_USER_IO
 /*
  *  Open the serial port from user code.

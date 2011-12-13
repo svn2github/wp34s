@@ -1970,13 +1970,9 @@ static int is_label_at(unsigned int pc) {
 
 static unsigned int advance_to_next_code_segment(int n) {
 	for (;;) {
-		unsigned int pc;
-
-		if (++n > NUMBER_OF_FLASH_REGIONS)
+		if (++n > REGION_LIBRARY)
 			return addrXROM(0);
-		pc = addrLIB(0, n);
-		if ( is_prog_region( n ) )
-			return pc;
+		return addrLIB(0, n);
 	}
 }
 
@@ -2004,12 +2000,9 @@ static void advance_to_next_label(unsigned int pc) {
 
 static unsigned int advance_to_previous_code_segment(int n) {
 	for (;;) {
-		unsigned int pc;
 		if (--n == 0)
 			return LastProg > 1 ? 0 : addrXROM(0);
-		pc = addrLIB(0, n);
-		if ( is_prog_region( n ) )
-			return pc;
+		return addrLIB(0, n);
 	}
 }
 
@@ -2027,7 +2020,7 @@ static void advance_to_previous_label(unsigned int pc) {
 		if (isRAM(pc))
 			pc = addrXROM(0);
 		else if (isXROM(pc))
-			pc = advance_to_previous_code_segment(NUMBER_OF_FLASH_REGIONS);
+			pc = advance_to_previous_code_segment(REGION_LIBRARY);
 		else
 			pc = advance_to_previous_code_segment(nLIB(pc));
 		pc = do_dec(pc, 0);
@@ -2038,9 +2031,13 @@ static void advance_to_previous_label(unsigned int pc) {
 	}
 }
 
+/*
+ *  CAT command
+ */
 static int process_labellist(const keycode c) {
 	unsigned int pc = State2.digval;
 	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
+	int op = STATE_UNFINISHED;
 	enum shifts shift = reset_shift();
 
 	if (n <= 9) {
@@ -2066,27 +2063,41 @@ static int process_labellist(const keycode c) {
 		advance_to_previous_label(pc);
 		return STATE_UNFINISHED;
 
-	case K24:			// Exit doing nothing
-	// case K60:
+	case K24:			// <- or CLP
+		if (shift == SHIFT_F && !isXROM(pc)) {
+			set_pc(pc);
+			op = (OP_NIL | OP_CLPROG);
+		}
+		break;			// Exit doing nothing
+
+	case K10:			// STO
+	case K11:			// RCL
+		if (isXROM(pc))
+			return STATE_UNFINISHED;
+		set_pc(pc);
+		op = c == K10 ? (OP_NIL | OP_PSTO) : (OP_NIL | OP_PRCL);
 		break;
 
 	case K20:			// ENTER^: GTO
 	case K30:			// XEQ
 	case K63:			// R/S
 		if (shift == SHIFT_N) {
-			const int op = c == K20 ? (DBL_GTO << DBL_SHIFT) 
-				                : (DBL_XEQ << DBL_SHIFT);
-			State2.digval = 0;
-			State2.labellist = 0;
-			return (getprog(pc) & 0xfffff0ff) + op;
+			op = c == K20 ? (DBL_GTO << DBL_SHIFT) 
+			              : (DBL_XEQ << DBL_SHIFT);
+			op += (getprog(pc) & 0xfffff0ff);
+			break;
+		}
+		else if (shift == SHIFT_H && ! isXROM(pc)) {	// P/R
+			set_pc(pc);
+			State2.runmode = 0;
+			break;
 		}
 	default:
 		return STATE_UNFINISHED;
-
 	}
 	State2.digval = 0;
 	State2.labellist = 0;
-	return STATE_UNFINISHED;
+	return check_confirm(op);
 }
 
 

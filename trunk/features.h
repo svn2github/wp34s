@@ -167,24 +167,5 @@
 #define MATRIX_SUPPORT
 #endif
 
-#ifndef REALBUILD
-#define NUMBER_OF_FLASH_REGIONS 11
-#else
-// Needs to be adjusted depending on code size
-#ifdef MATRIX_SUPPORT
-#ifdef INCLUDE_STOPWATCH
-#define NUMBER_OF_FLASH_REGIONS 6
-#else
-#define NUMBER_OF_FLASH_REGIONS 7
-#endif
-#else
-#ifdef INCLUDE_STOPWATCH
-#define NUMBER_OF_FLASH_REGIONS 8
-#else
-#define NUMBER_OF_FLASH_REGIONS 10
-#endif
-#endif
-#endif
-
 #endif  /* TINY_BUILD*/
 #endif  /* FEATURES_H__ */

@@ -587,10 +587,13 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")
-	FUNC0(OP_RLOAD,		&load_registers,	"RCF.RG")
-	FUNC0(OP_SLOAD,		&load_state,		"RCF.ST")
-	FUNC0(OP_BACKUP,	&flash_backup,		"SAVE")
-	FUNC0(OP_RESTORE,	&flash_restore,		"LOAD")
+	FUNC0(OP_SAVE,		&flash_backup,		"SAVE")
+	FUNC0(OP_LOAD,		&flash_restore,		"LOAD")
+	FUNC0(OP_LOADP,		&load_program,		"LOADP")
+	FUNC0(OP_LOADR,		&load_registers,	"LOADR")
+	FUNC0(OP_LOADST,	&load_state,		"LOADST")
+	FUNC0(OP_PSTO,		&store_program,		"PSTO")
+	FUNC0(OP_PRCL,		&recall_program,	"PRCL")
 
 	FUNC1(OP_ROUNDING,	&op_roundingmode,	"RM?")
 	FUNC0(OP_SLOW,		&op_setspeed,		"SLOW")
@@ -801,10 +804,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,				"\240XEQ")
 	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,				"\240GTO")
 
-	CMD(RARG_PLOAD,		&load_program,	NUMBER_OF_FLASH_REGIONS-1,	"PRCL")
-	CMD(RARG_PSAVE,		&save_program,	NUMBER_OF_FLASH_REGIONS-1,	"PSTO")
-	CMD(RARG_PSWAP,		&swap_program,	NUMBER_OF_FLASH_REGIONS-1,	"P\027")
-
 	CMDstknL(RARG_FLRCL, 	  &cmdflashrcl,				"RCF")
 	CMDstknL(RARG_FLRCL_PL,   &cmdflashrcl,				"RCF+")
 	CMDstknL(RARG_FLRCL_MI,   &cmdflashrcl,				"RCF-")
@@ -831,7 +830,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #ifdef INCLUDE_MULTI_DELETE
 	CMDlblnI(RARG_DELPROG,	NOFN,					"DEL\276")
 #endif
-	CMD(RARG_SENDL,		&send_library,	NUMBER_OF_FLASH_REGIONS-1,	"SENDL")
 	CMDstk(RARG_PUTKEY,	&op_putkey,				"PUTK")
 	CMDstk(RARG_KEYTYPE,	&op_keytype,				"KTP?")
 

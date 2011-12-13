@@ -17,52 +17,48 @@
 #ifndef __STORAGE_H__
 #define __STORAGE_H__
 
-#define REGION_TYPE_PROGRAM 0
-#define REGION_TYPE_DATA 1
-#define BACKUP_REGION 1
-
 /*
- *  Define some pages in flash memory for user access
+ *  Define flash memory for user access
  */
-#define SIZE_REGION	 4
-#define SIZE_BACKUP	 8
-#define PAGE_SIZE	 256
-#define PAGE_END	 512
-#define PAGE_BACKUP	 (PAGE_END - SIZE_BACKUP)
-#define PAGE_BEGIN	 (PAGE_END - SIZE_REGION * NUMBER_OF_FLASH_REGIONS)
-#define region_page( r ) (PAGE_BEGIN + (NUMBER_OF_FLASH_REGIONS - 1 - r) * SIZE_REGION)
+#define REGION_BACKUP	   1
+#define REGION_LIBRARY	   2
+
+// The actual size will be shorter on the device
+#define NUMPROG_FLASH	4094
+
+#ifdef REALBUILD
+// Compute actual size of user flash area
+#define NUMPROG_FLASH_MAX (((s_opcode *)&BackupFlash - (s_opcode *)&UserFlash) - 2) 
+#else
+// Assume fixed size of user flash area in emulator
+#define NUMPROG_FLASH_MAX NUMPROG_FLASH
+#endif
 
 typedef struct _flash_region {
         unsigned short crc;
         unsigned short last_prog;
-        s_opcode prog[ 512 - 2 ];
+        s_opcode prog[ NUMPROG_FLASH ];
 } FLASH_REGION;
 
-typedef struct _user_flash {
-        FLASH_REGION region[ NUMBER_OF_FLASH_REGIONS - 2 ];
-        TPersistentRam backup;
-} TUserFlash;
-
-extern TUserFlash UserFlash;
-
-#define flash_region(n) (UserFlash.region + NUMBER_OF_FLASH_REGIONS - 1 - (n))
+extern FLASH_REGION UserFlash;
+extern TPersistentRam BackupFlash;
 
 extern unsigned short int crc16( const void *base, unsigned int length );
 extern int checksum_code(void);
-extern int checksum_region(int r);
 extern int checksum_all(void);
 extern int checksum_backup(void);
-extern int is_prog_region(unsigned int region);
-extern int is_data_region(unsigned int region);
+extern void init_library(void);
 
 extern void flash_backup(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern int flash_remove( int step_no, int count );
 extern void sam_ba_boot(void);
-extern void save_program(unsigned int region, enum rarg op);
-extern void load_program(unsigned int region, enum rarg op);
-extern void swap_program(unsigned int region, enum rarg op);
+extern void save_program(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void load_program(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void store_program(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void recall_program(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 
 #if !defined(REALBUILD) && !defined (QTGUI)
 extern void save_statefile(void);
