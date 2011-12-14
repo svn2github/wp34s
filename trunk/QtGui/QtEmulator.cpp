@@ -527,6 +527,15 @@ void QtEmulator::saveState()
 		memoryWarning("Cannot open "+memoryFile.fileName());
 		return;
 	}
+
+	QDataStream dataStream(&memoryFile);
+	int memorySize=get_memory_size();
+	int reallyWritten=dataStream.writeRawData(get_memory(), memorySize);
+	if(reallyWritten!=memorySize)
+	{
+		memoryWarning("Cannot write "+memoryFile.fileName());
+		return;
+	}
 }
 
 void QtEmulator::saveBackup()
