@@ -193,6 +193,27 @@ static void raw_set_pc(unsigned int pc) {
 }
 
 /*
+ *  Where do the program regions start?
+ */
+static const s_opcode *RegionTab[] = {
+	Prog,
+	UserFlash.prog,
+	BackupFlash._prog,
+	xrom
+};
+
+/*
+ *  Size of a program segment
+ */
+int sizeLIB(int region) {
+	if (region == REGION_XROM)
+		return xrom_size;
+	else
+		return (int)RegionTab[region][-1] - 1;
+}
+
+
+/*
  *  Get an opcode, check for double length codes
  */
 static opcode get_opcode( const s_opcode *loc )
@@ -205,42 +226,39 @@ static opcode get_opcode( const s_opcode *loc )
 }
 
 
-/* Return the program memory location specified.
+/* 
+ * Return the program memory location specified.
  */
-opcode getprog(unsigned int n) {
+opcode getprog(unsigned int pc) {
 
-	if (isXROM(n)) {
-		return get_opcode(xrom + (n & ~XROM_MASK) );
-	}
-	if (isLIB(n)) {
-		FLASH_REGION *fr = nLIB(n) == REGION_BACKUP ? (FLASH_REGION *) &BackupFlash : &UserFlash;
-		return get_opcode(fr->prog + offsetLIB(n));
-	}
-	if (n >= LastProg)
-		return EMPTY_PROGRAM_OPCODE;
-	if (n == 0)
-		return OP_NIL | OP_NOP;
-	return get_opcode( Prog + n - 1 );
+	const int region = nLIB(pc);
+	int offset = offsetLIB(pc);
+
+	if (offset < 0 || offset >= sizeLIB(region))
+		return OP_NIL | OP_END;
+	return get_opcode(RegionTab[region] + offset);
 }
 
 
+/*
+ *  Set PC with sanity check
+ */
 void set_pc(unsigned int pc) {
 	if (isRAM(pc)) {
 		if (pc >= LastProg)
 			pc = LastProg - 1;
-		if (pc > 1 && isDBL(Prog_1[pc-1]))
+		if (pc > 1 && isDBL(Prog_1[pc - 1]))
 			pc--;
-	} else if (isLIB(pc)) {
+	} else if (!isXROM(pc)) {
 		const unsigned int n = startLIB(pc) + sizeLIB(nLIB(pc));
-		if (n == 0)
-			pc = 0;
-		else if (pc > n-1)
-			pc = n-1;
-		if (pc > startLIB(pc) && isDBL(getprog(pc-1)))
-			pc--;
+		if (pc > n - 1)
+			pc = n - 1;
+		if (pc > startLIB(pc) && isDBL(getprog(pc - 1)))
+			--pc;
 	}
 	raw_set_pc(pc);
 }
+
 
 /* Set a flag to indicate that a complex operation has taken place
  * This only happens if we're not in a program.
@@ -263,7 +281,7 @@ void err(const enum errors e) {
 
 /* Display a warning
  */
-static void warn(const enum errors e) {
+void warn(const enum errors e) {
 	if (Running) {
 		err(e);
 	}
@@ -579,15 +597,15 @@ static unsigned short int find_section_bounds(const unsigned int pc, const int e
 		bottom = ProgEnd;
 	}
 	else if (isXROM(pc)) {
-		top = addrXROM(0);
-		bottom = addrXROM(xrom_size - 1);
+		top = addrXROM(1);
+		bottom = addrXROM(xrom_size);
 	} 
 	else if (isLIB(pc)) {
 		top = startLIB(pc);
 		bottom = top + sizeLIB(nLIB(pc)) - 1;
 	}
 	else {
-		top = State2.runmode;
+		top = State2.runmode;  // step 001 if not entering a program
 		bottom = LastProg - 1;
 	}
 	*p_top = top;
@@ -644,8 +662,6 @@ int incpc(void) {
 	const unsigned int pc = do_inc(opc, 1);
 
 	raw_set_pc(pc);
-	if (PcWrapped && Running)
-		State.implicit_rtn = 1;
 	return PcWrapped;
 }
 
@@ -681,23 +697,18 @@ void update_program_bounds(const int force) {
  */
 unsigned int user_pc(void) {
 	unsigned int pc = state_pc();
-	unsigned int n = 0;
+	unsigned int n = 1;
 	unsigned int base;
 
-	if (isXROM(pc))
-		return pc - addrXROM(0) + 1;
+	if (pc == 0)
+		return 0;
 
-	if (isRAM(pc))
-		base = 0;
-	else {
-		base = startLIB(pc);
-	}
-
+	base = startLIB(pc);
 	while (base < pc) {
-		++n;
 		base = do_inc(base, 0);
 		if (PcWrapped)
-			return n - 1;
+			return n;
+		++n;
 	}
 	return n;
 }
@@ -1069,10 +1080,8 @@ void clrretstk_pc(void) {
 /* Sanity checks for program (step) deletion
  */
 static int check_delete_prog(unsigned int pc) {
-	if (! isRAM(pc))
-		err(ERR_READ_ONLY);
-//	else if (State2.runmode)
-//		bad_mode_error();
+	if (! isRAM(pc) || pc == LastProg - 1 && getprog(pc) == (OP_NIL | OP_END))
+		warn(ERR_READ_ONLY);
 	else
 		return 0;
 	return 1;
@@ -1083,6 +1092,7 @@ static int check_delete_prog(unsigned int pc) {
 void clpall(void) {
 	LastProg = 1;
 	clrretstk_pc();
+	stoprog(OP_NIL | OP_END);
 }
 
 /* Clear just the current program
@@ -1917,12 +1927,9 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 		}
 		else {
 			// Push PC on return stack
-			if (State.implicit_rtn)
-				oldpc = addrXROM(0);	// fixed RTN statement
 			RetStk[--RetStkPtr] = oldpc;
 		}
 	}
-	State.implicit_rtn = 0;
 }
 
 // Handle a RTN
@@ -1955,7 +1962,6 @@ static void do_rtn(int plus1) {
 
 // RTN and RTN+1
 void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
-	State.implicit_rtn = 0;
 	do_rtn(op == OP_RTNp1 ? 1 : 0);
 }
 
@@ -2161,8 +2167,7 @@ void fin_tst(const int a) {
 			DispMsg = "true";
 	} else {
 		if (Running) {
-			if (! State.implicit_rtn)
-				incpc();
+			incpc();
 		} else
 			DispMsg = "false";
 	}
@@ -2181,7 +2186,6 @@ void cmdskip(unsigned int arg, enum rarg op) {
 void cmdback(unsigned int arg, enum rarg op) {
 	unsigned int pc = state_pc();
         if (arg) {
-		State.implicit_rtn = 0;
 		if ( Running ) {
 			// Handles the case properly that we are on last step
 			pc = do_dec(pc, 1);
@@ -3592,12 +3596,8 @@ static void print_step(const opcode op) {
  * happens.  This should be called on that something.
  */
 void reset_volatile_state(void) {
-	if (State.implicit_rtn)
-		process_cmdline_set_lift();
 	State2.int_window = 0;
 	UState.int_maxw = 0;
-	State.implicit_rtn = 0;
-
 	State2.smode = SDISP_NORMAL;
 }
 
@@ -3702,9 +3702,6 @@ void xeq(opcode op)
 			set_running_off();
 		}
 	} 
-	else if (State.implicit_rtn) {
-		do_rtn(0);
-	}
 	reset_volatile_state();
 }
 
@@ -3813,15 +3810,20 @@ void stoprog(opcode c) {
 	int i;
 	unsigned int pc = state_pc();
 
-	if (!isRAM(pc))
+	if (pc == LastProg - 1 && c != (OP_NIL | OP_END))
+		stoprog(OP_NIL | OP_END);
+
+	if (!isRAM(pc)) {
+		warn(ERR_READ_ONLY);
 		return;
+	}
 	clrretstk();
 	if (ProgFree < off) {
 		return;
 	}
 	LastProg += off;
 	ProgEnd += off;
-	pc = do_inc(pc, 0);	// Don't stop on END
+	pc = do_inc(pc, 0);	// Don't wrap on END
 	for (i = LastProg; i > (int)pc; i--)
 		Prog_1[i] = Prog_1[i - off];
 	if (isDBL(c))
@@ -3903,7 +3905,6 @@ void set_running_on_sst() {
 void set_running_off() {
 	set_running_off_sst();
 	State.entryp = 0;
-	State.implicit_rtn = 0;
 	dot( RCL_annun, 0);
 }
 

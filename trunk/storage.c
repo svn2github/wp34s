@@ -564,7 +564,7 @@ void load_statefile( void )
 	}
 	f = fopen( LIBRARY_FILE, "rb" );
 	if ( f != NULL ) {
-		fread( &UserFlash, 1, sizeof( UserFlash ), f );
+		fread( &UserFlash, sizeof( UserFlash ), 1, f );
 		fclose( f );
 	}
 	init_library();

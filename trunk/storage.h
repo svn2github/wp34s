@@ -17,11 +17,6 @@
 #ifndef __STORAGE_H__
 #define __STORAGE_H__
 
-/*
- *  Define flash memory for user access
- */
-#define REGION_BACKUP	   1
-#define REGION_LIBRARY	   2
 
 // The actual size will be shorter on the device
 #define NUMPROG_FLASH	4094

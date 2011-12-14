@@ -51,7 +51,10 @@ unsigned int OpCode;
 unsigned char OpCodeDisplayPending;
 unsigned char GoFast;
 
-static void advance_to_next_label(unsigned int pc);
+/*
+ *  Needed before definition
+ */ 
+static unsigned int advance_to_next_label(unsigned int pc);
 
 /*
  *  Return the shift state
@@ -352,7 +355,7 @@ static void init_cat(enum catalogues cat) {
 	case CATALOGUE_LABELS:
 		// Label browser
 		State2.labellist = 1;
-		advance_to_next_label(0);
+		State2.digval = advance_to_next_label(0);
 		break;
 	
 	case CATALOGUE_REGISTERS:
@@ -393,7 +396,6 @@ void init_state(void) {
 	signed char k = LastKey;
 
 	State.state_lift = 1;
-	State.implicit_rtn = 0;
 	CmdBase = 0;
 	// Removed: will clear any locals on power off
 	// clrretstk(0);
@@ -1010,12 +1012,11 @@ static int process_arrow(const keycode c) {
 /* Process a GTO . sequence
  */
 static int gtodot_digit(const int n) {
-	unsigned int dv = State2.digval;
-	const unsigned int val = dv * 10 + n;
+	const int val = State2.digval * 10 + n;
 
-	if (val > NUMPROG / 10)
+	if (val > sizeLIB(nLIB(state_pc())) / 10)
 		return val;
-	if (++State2.numdigit == 3)
+	if (++State2.numdigit == 4)
 		return val;
 	State2.digval = val;
 	return -1;
@@ -1048,16 +1049,8 @@ static int process_gtodot(const keycode c) {
 	}
 	else if (c == K62) {
 		// .
-		if (State2.numdigit == 0) {
-			if (State2.runmode) {
-				rawpc = 0;
-				goto fin;
-			}
-			set_pc(LastProg - 1);
-			if (getprog(state_pc()) != (OP_NIL | OP_END))
-				stoprog(OP_NIL | OP_END);
-			goto fin2;
-		}
+		rawpc = LastProg - 1;
+		goto fin;
 	}
 	else if (c == K20) {
 		// ENTER - short circuit processing
@@ -1932,6 +1925,10 @@ static int process_confirm(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
+
+/*
+ *  STATUS
+ */
 static int process_status(const keycode c) {
 	int n = ((int)State2.status) - 1;
 	int max = LocalRegs < 0 ? 12 : 11;
@@ -1962,136 +1959,126 @@ static int process_status(const keycode c) {
 	return STATE_UNFINISHED;
 }
 
+
+/*
+ *  CAT helper
+ */
 static int is_label_at(unsigned int pc) {
 	const unsigned int op = getprog(pc);
 
 	return (isDBL(op) && opDBL(op) == DBL_LBL);
 }
 
-static unsigned int advance_to_next_code_segment(int n) {
-	for (;;) {
-		if (++n > REGION_LIBRARY)
-			return addrXROM(0);
-		return addrLIB(0, n);
-	}
-}
-
-static void advance_to_next_label(unsigned int pc) {
-	for (;;) {
+static unsigned int advance_to_next_label(unsigned int pc) {
+	do {
 		for (;;) {
 			pc = do_inc(pc, 0);
 			if (PcWrapped)
 				break;
 			if (is_label_at(pc)) {
-				State2.digval = pc;
-				return;
+				return pc;
 			}
 		}
-		if (isXROM(pc))
-			pc = LastProg > 1 ? 1 : advance_to_next_code_segment(0);
-		else
-			pc = advance_to_next_code_segment(nLIB(pc));
-		if (is_label_at(pc)) {
-			State2.digval = pc;
-			return;
-		}
-	}
+		pc = addrLIB(1, (nLIB(pc) + 1) & 3);
+	} while (! is_label_at(pc));
+	return pc;
 }
 
-static unsigned int advance_to_previous_code_segment(int n) {
-	for (;;) {
-		if (--n == 0)
-			return LastProg > 1 ? 0 : addrXROM(0);
-		return addrLIB(0, n);
-	}
-}
-
-static void advance_to_previous_label(unsigned int pc) {
-	for (;;) {
+static unsigned int advance_to_previous_label(unsigned int pc) {
+	do {
 		for (;;) {
 			pc = do_dec(pc, 0);
 			if (PcWrapped)
 				break;
 			if (is_label_at(pc)) {
-				State2.digval = pc;
-				return;
+				return pc;
 			}
 		}
-		if (isRAM(pc))
-			pc = addrXROM(0);
-		else if (isXROM(pc))
-			pc = advance_to_previous_code_segment(REGION_LIBRARY);
-		else
-			pc = advance_to_previous_code_segment(nLIB(pc));
+		pc = addrLIB(1, (nLIB(pc) - 1) & 3);
 		pc = do_dec(pc, 0);
-		if (is_label_at(pc)) {
-			State2.digval = pc;
-			return;
-		}
-	}
+	} while (! is_label_at(pc));
+	return pc;
 }
+
 
 /*
  *  CAT command
  */
 static int process_labellist(const keycode c) {
 	unsigned int pc = State2.digval;
-	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
+	const unsigned int n = c == K62 ? REGION_XROM 
+		                        : keycode_to_digit_or_register(c) & ~NO_SHORT;
+	const int label = (getprog(pc) & 0xfffff0ff);
+	const int direct = State2.runmode && ! isXROM(pc);
+	const enum shifts shift = reset_shift();
 	int op = STATE_UNFINISHED;
-	enum shifts shift = reset_shift();
 
-	if (n <= 9) {
+	if (n <= REGION_XROM) {
 		// Digits take you to that segment
-		pc = advance_to_next_code_segment(n);
+		pc = addrLIB(1, n);
 		if (! is_label_at(pc))
-			advance_to_next_label(pc);
-		else
-			State2.digval = pc;
+			pc = advance_to_next_label(pc);
+		State2.digval = pc;
 		return STATE_UNFINISHED;
 	}
 
-	switch (c) {
-	case K62:				// Jump to XROM
-		advance_to_next_label(addrXROM(0));
+	switch (c | (shift << 8)) {
+	case K50:				// Find next label
+		State2.digval = advance_to_next_label(pc);
 		return STATE_UNFINISHED;
 
-	case K50:			// Find next label
-		advance_to_next_label(pc);
+	case K40:				// Find previous label
+		State2.digval = advance_to_previous_label(pc);
 		return STATE_UNFINISHED;
 
-	case K40:			// Find previous label
-		advance_to_previous_label(pc);
-		return STATE_UNFINISHED;
+	case K24:				// <- exits
+		break;
 
-	case K24:			// <- or CLP
-		if (shift == SHIFT_F && !isXROM(pc)) {
-			set_pc(pc);
-			op = (OP_NIL | OP_CLPROG);
-		}
-		break;			// Exit doing nothing
+	case K24 | (SHIFT_F << 8):		// CLP
+		if (isXROM(pc))
+			return STATE_UNFINISHED;
+		set_pc(pc);
+		op = (OP_NIL | OP_CLPROG);
+		break;
 
-	case K10:			// STO
-	case K11:			// RCL
+	case K10:				// STO
+	case K11:				// RCL
 		if (isXROM(pc))
 			return STATE_UNFINISHED;
 		set_pc(pc);
 		op = c == K10 ? (OP_NIL | OP_PSTO) : (OP_NIL | OP_PRCL);
 		break;
 
-	case K20:			// ENTER^: GTO
-	case K30:			// XEQ
-	case K63:			// R/S
-		if (shift == SHIFT_N) {
-			op = c == K20 ? (DBL_GTO << DBL_SHIFT) 
-			              : (DBL_XEQ << DBL_SHIFT);
-			op += (getprog(pc) & 0xfffff0ff);
-			break;
-		}
-		else if (shift == SHIFT_H && ! isXROM(pc)) {	// P/R
-			set_pc(pc);
-			State2.runmode = 0;
-			break;
-		}
+	case K20:				// ENTER^: GTO
+		if (! direct)
+			goto gto_label;		// Insert GTO'...' command
+		set_pc(pc);			// Forced branch
+		break;
+
+	case K30:				// XEQ
+	xeq_label:
+		op = (DBL_XEQ << DBL_SHIFT) + label;
+		break;
+
+	case K30 | (SHIFT_H << 8):
+	gto_label:
+		op = (DBL_GTO << DBL_SHIFT) + label;
+		break;
+
+	case K63:				// R/S
+		if (! direct)
+			goto xeq_label;
+		set_pc(pc);
+		op = OP_NIL | OP_RS;
+		break;
+
+	case K63 | (SHIFT_H << 8):		// P/R
+		if (isXROM(pc))
+			return STATE_UNFINISHED;
+		set_pc(pc);
+		State2.runmode = 0;
+		break;
+
 	default:
 		return STATE_UNFINISHED;
 	}

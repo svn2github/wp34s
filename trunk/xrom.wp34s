@@ -1,10 +1,3 @@
-/*
- * Fixed return statement in XROM
- * Needed to handle XEQ as last statement properly
- * Must be the first instruction here!
- */
-			RTN
-
 /* Solve code.
  *
  * On entry the stack looks like:
@@ -953,4 +946,4 @@ who_wp::		"WP 34S"
 who_show::		[alpha]VIEW
 			PSE 08
 			CL[alpha]
-			RTN
+			END

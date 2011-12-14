@@ -1176,23 +1176,18 @@ static void show_status(void) {
 
 /* Display the list of alpha labels */
 static void show_label(void) {
-	char buf[16], *bp;
+	char buf[16];
 	unsigned short int pc = State2.digval;
 	unsigned int op = getprog(pc);
-	int i;
 
 	set_status(prt((opcode)op, buf));
-	xset(buf, '\0', 16);
-	if (isXROM(pc)) {
-		scopy(buf, "l1B");
-	} else if (isLIB(pc)) {
-		scopy(buf, "PG ");
-		num_arg_0(buf+3, nLIB(pc)-1, 1);
-	} else {
-		scopy(buf, "rAMm");
-	}
-	for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)
-		set_dig(i, *bp);
+	if (isLIB(pc)) {
+		xset(buf, '\0', 16);
+		scopy(buf, "Lib ");
+		num_arg_0(buf + 4, nLIB(pc), 1);
+		set_digits_string(buf, 0);
+	} else
+		set_digits_string("rAMm", 0);
 }
 
 /* Display a list of register contents */
@@ -1309,7 +1304,7 @@ void display(void) {
 		bp = scopy_char(bp, argcmds[RARG_GTO].cmd, '.');
 		if (State2.numdigit > 0)
 			bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
-		for (i=State2.numdigit; i<3; i++)
+		for (i=State2.numdigit; i<4; i++)
 			*bp++ = '_';
 		set_status(buf);
 	} else if (State2.rarg) {
@@ -1473,18 +1468,16 @@ nostk:	show_flags();
 			unsigned int upc = user_pc();
 			unsigned int pc = state_pc();
 			xset(buf, '\0', sizeof(buf));
-			if (isXROM(pc)) {
-				num_arg_0(scopy_spc(buf, "l1B "), upc, 5);
-			} else if (isLIB(pc)) {
-				scopy(buf, "PG 0-");
-				num_arg_0(buf+3, nLIB(pc)-1, 1);
-				num_arg_0(buf+5, 1+upc, 4);
+			if (isLIB(pc)) {
+				const int n = nLIB(pc);
+				scopy(buf, "Lib ?-");
+				num_arg_0(buf + 4, n, 1);
+				num_arg_0(buf + 6, upc, n == REGION_BACKUP ? 3 : 4);
 			} else {
 				set_exp(ProgFree, 1, NULL);
 				num_arg_0(scopy_spc(buf, S7_STEP), upc, 3);
 			}
-			for (i=0, bp=buf; *bp != '\0'; bp++, i += SEGS_PER_DIGIT)
-				set_dig(i, *bp);
+			set_digits_string(buf, 0);
 		}
 	}
 	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || State2.disp_as_alpha)

@@ -75,8 +75,8 @@ struct _state {
 	unsigned int catpos :        7;	// Position in said catalogue
 	unsigned int entryp :        1;	// Has the user entered something since the last program stop
 	unsigned int state_lift :    1;	// XEQ internal - don't use
-	unsigned int implicit_rtn :  1;	// End of program is an implicit return
 	unsigned int deep_sleep :    1; // Used to wake up correctly
+	unsigned int filler :        1;	// force alignment
 	signed   int local_regs :   16; // Position on return stack where current local variables start
 
 	/*

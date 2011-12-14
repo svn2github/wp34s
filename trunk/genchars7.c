@@ -55,7 +55,7 @@ static struct pair {
 	DIG('H',		D_TL | D_TR | D_MIDDLE | D_BL | D_BR),
 	DIG('h',		D_TL | D_MIDDLE | D_BL | D_BR),
 	DIG('I',		D_TL | D_BL),
-	DIG('i',		D_TR | D_BR),
+	DIG('i',		D_BL),
 	DIG('J',		D_TR | D_BL | D_BR | D_BOTTOM),
 	DIG('j',		D_TR | D_BL | D_BR | D_BOTTOM),
 	DIG('L',		D_TL | D_BL | D_BOTTOM),

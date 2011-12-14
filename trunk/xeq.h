@@ -400,25 +400,29 @@ extern int current_catalogue_max(void);
 #define LOCAL_LEVELS(s)	((s) & 0x1ff)
 //#define LOCAL_MAXREG(s)	(LOCAL_LEVELS(s) >> 2)
 
-/* Macros to access program ROM */
-#define XROM_MASK	(0x4000u)
-#define isXROM(pc)	((pc) & XROM_MASK)
-#define addrXROM(pc)	((pc) | XROM_MASK)
+/*
+ *  The various program regions
+ */
+#define REGION_RAM	0
+#define REGION_LIBRARY	1
+#define REGION_BACKUP	2
+#define REGION_XROM	3
 
 /* Macros to access flash library space */
-#define LIB_MASK	(0x3000u)
-#define LIB_SHIFT	(12)
-
+#define LIB_SHIFT	(13)
+#define LIB_MASK	(3 << LIB_SHIFT)
 #define LIB_ADDR_MASK	((1 << LIB_SHIFT) - 1)
 #define isLIB(pc)	((pc) & LIB_MASK)
-#define nLIB(pc)	(((pc) & LIB_MASK) >> LIB_SHIFT)
+#define nLIB(pc)	((pc) >> LIB_SHIFT)
 #define addrLIB(pc, n)	((pc) | ((n) << LIB_SHIFT))
-#define startLIB(pc)	((pc) & ~LIB_ADDR_MASK)
-#define offsetLIB(pc)	((pc) & LIB_ADDR_MASK)
-#define sizeLIB(n)	((n == REGION_BACKUP ? BackupFlash._last_prog : UserFlash.last_prog) - 1)
+#define startLIB(pc)	(((pc) & ~LIB_ADDR_MASK) + 1)
+#define offsetLIB(pc)	(((pc) & LIB_ADDR_MASK) - 1)
 
-#define isRAM(pc)	(((pc) & (XROM_MASK | LIB_MASK | LOCAL_MASK)) == 0)
+#define isRAM(pc)	(((pc) & (LIB_MASK | LOCAL_MASK)) == 0)
 
+/* Macros to access program ROM */
+#define isXROM(pc)	(((pc) & LIB_MASK) == LIB_MASK)
+#define addrXROM(pc)	addrLIB(pc,REGION_XROM)
 
 /* Stack lives in the register set */
 #define NUMREG		(TOPREALREG+STACK_SIZE+EXTRA_REG)/* Number of registers */
@@ -986,6 +990,7 @@ enum shifts {
  *  Function prototypes
  */
 extern void err(const enum errors);
+extern void warn(const enum errors);
 extern const char *pretty(unsigned char);
 extern void prettify(const char *in, char *out);
 
@@ -1011,6 +1016,7 @@ extern unsigned int state_pc(void);
 #else
 #define state_pc() (State.pc)
 #endif
+extern int sizeLIB(int);
 extern void set_pc(unsigned int);
 extern unsigned int user_pc(void);
 extern unsigned int find_user_pc(unsigned int);
