@@ -79,19 +79,14 @@ QtEmulator::~QtEmulator()
 
 void QtEmulator::quit()
 {
+	saveSettings();
+	saveMemory();
+
 	delete skinsActionGroup;
 	stopThreads();
 	delete heartBeatThread;
 	delete calculatorThread;
 	active=false;
-}
-
-void QtEmulator::closeEvent(QCloseEvent* event)
-{
-	Q_UNUSED(event)
-
-	saveSettings();
-	saveMemory();
 }
 
 QtKeyboard& QtEmulator::getKeyboard() const

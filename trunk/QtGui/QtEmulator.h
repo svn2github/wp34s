@@ -128,9 +128,6 @@ public slots:
 	void showWebSite();
 	void showDocumentation();
 
-protected:
-     void closeEvent(QCloseEvent* event);
-
 private:
      void setPaths();
      void checkCustomDirectory();

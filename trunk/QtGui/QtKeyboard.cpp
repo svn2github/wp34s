@@ -212,12 +212,16 @@ void QtKeyboard::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintE
 
 	if(lastKey>=0)
 	{
-		QPainter painter(&aBackgroundImage);;
-		painter.setCompositionMode(QPainter::CompositionMode_Difference);
 		const QtKey* key=findKey(lastKey);
 		if(key!=NULL && key->getRectangle().isValid())
 		{
-			painter.fillRect(key->getRectangle(), Qt::white);
+			// There are simple way to invert video but this one works on every platform tested yet
+			QRect keyRectangle=key->getRectangle();
+			QPixmap keyPixmap=aBackgroundImage.getBackgroundPixmap().copy(keyRectangle);
+			QImage keyImage=keyPixmap.toImage();
+			keyImage.invertPixels();
+			QPainter painter(&aBackgroundImage);
+			painter.drawImage(keyRectangle, keyImage);
 			aBackgroundImage.update(key->getRectangle());
 		}
 	}
