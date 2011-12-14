@@ -55,8 +55,9 @@
 #define IMAGE_DIRECTORY "images"
 #define DOCUMENTATION_FILE_TYPE "doc"
 #define DOCUMENTATION_DIRECTORY "doc"
-#define NON_VOLATILE_MEMORY_FILENAME "wp34s.dat"
-#define REGION_FILENAME_PATTERN "wp34s-%1.dat"
+#define STATE_FILENAME "wp34s.dat"
+#define BACKUP_FILENAME "wp34s-backup.dat"
+#define LIBRARY_FILENAME "wp34s-lib.dat"
 
 #define DOCUMENTATION_FILENAME "Manual_wp_34s_3_0.pdf"
 #define WEBSITE_URL "http://wp34s.sourceforge.net/"
@@ -147,11 +148,15 @@ private:
      void saveCustomDirectorySettings();
      void saveSerialPortSettings();
      void loadMemory();
-     bool loadMemoryRegion(int aRegionIndex);
+     void loadState();
+     void loadBackup();
+     void loadLibrary();
      void saveMemory();
-     QString getRegionName(int aRegionIndex) const;
-     QString getRegionFileName(int aRegionIndex) const;
+     void saveState();
+     void saveBackup();
+     void saveLibrary();
      QString getMemoryPath(const QString& aMemoryFilename) const;
+     QString getRegionFileName(int aRegionIndex) const;
      void memoryWarning(const QString& aMessage, bool aResetFlag=true);
      QtSkin* buildSkin(const QString& aStringFilename) throw (QtSkinException);
      void setInitialSkin() throw (QtSkinException);

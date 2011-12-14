@@ -468,7 +468,14 @@ void QtEmulator::saveSerialPortSettings()
 
 void QtEmulator::loadMemory()
 {
-	QFile memoryFile(QString(MEMORY_FILE_TYPE)+':'+NON_VOLATILE_MEMORY_FILENAME);
+	loadState();
+	loadBackup();
+	loadLibrary();
+}
+
+void QtEmulator::loadState()
+{
+	QFile memoryFile(QString(MEMORY_FILE_TYPE)+':'+STATE_FILENAME);
 	if(!memoryFile.exists() || !memoryFile.open(QIODevice::ReadOnly))
 	{
 		memoryWarning("Cannot find or cannot open "+memoryFile.fileName());
@@ -491,70 +498,54 @@ void QtEmulator::loadMemory()
 		return;
 	}
 
-	for (int i = 0; i < get_number_of_flash_regions(); ++i )
-	{
-		loadMemoryRegion(i);
-	}
+	after_state_load();
 }
 
-bool QtEmulator::loadMemoryRegion(int aRegionIndex)
+void QtEmulator::loadBackup()
 {
-	QFile memoryRegionFile(QString(MEMORY_FILE_TYPE)+':'+getRegionFileName(aRegionIndex));
-	if(!memoryRegionFile.exists())
-	{
-		if(aRegionIndex==0)
-		{
-			// If we cannot read the saved backup flash region,
-			// we behave as if the main memory had already been saved in it
-			fast_backup_to_flash();
-		}
-		return true;
-	}
 
-	if(!memoryRegionFile.open(QIODevice::ReadOnly))
-	{
-		memoryWarning("Cannot open "+memoryRegionFile.fileName());
-		return false;
-	}
+}
 
-	int memoryRegionSize=get_flash_region_size();
-	if(memoryRegionFile.size()!=memoryRegionSize)
-	{
-		memoryWarning(memoryRegionFile.fileName()+" expected size is "+QString::number(memoryRegionSize)
-		+" but file size is "+QString::number(memoryRegionFile.size()));
-		return false;
-	}
+void QtEmulator::loadLibrary()
+{
 
-	QDataStream dataStream(&memoryRegionFile);
-	char* region=get_flash_region(aRegionIndex);
-	memset( region, FLASH_REGION_DEFAULT_VALUE, memoryRegionSize );
-	int reallyRead=dataStream.readRawData(region, memoryRegionSize);
-	if(reallyRead!=memoryRegionSize)
-	{
-		memoryWarning("Error whilst reading "+memoryRegionFile.fileName());
-		return false;
-	}
-
-	return true;
 }
 
 void QtEmulator::saveMemory()
 {
+	saveState();
+	saveBackup();
+	saveLibrary();
+}
+
+void QtEmulator::saveState()
+{
 	prepare_memory_save();
-	QFile memoryFile(getMemoryPath(NON_VOLATILE_MEMORY_FILENAME));
+	QFile memoryFile(getMemoryPath(STATE_FILENAME));
 	if(!memoryFile.open(QIODevice::WriteOnly | QIODevice::Truncate))
 	{
 		memoryWarning("Cannot open "+memoryFile.fileName());
 		return;
 	}
+}
 
-	QDataStream dataStream(&memoryFile);
-	int memorySize=get_memory_size();
-	int reallyWritten=dataStream.writeRawData(get_memory(), memorySize);
-	if(reallyWritten!=memorySize)
+void QtEmulator::saveBackup()
+{
+}
+
+void QtEmulator::saveLibrary()
+{
+}
+
+QString QtEmulator::getMemoryPath(const QString& aMemoryFilename) const
+{
+	if(customDirectoryActive)
 	{
-		memoryWarning("Cannot write "+memoryFile.fileName());
-		return;
+		return customDirectory.path()+'/'+aMemoryFilename;
+	}
+	else
+	{
+		return userSettingsDirectoryName+'/'+aMemoryFilename;
 	}
 }
 
@@ -575,47 +566,30 @@ char* get_region_path_adapter(int aRegionIndex)
 
 }
 
-QString QtEmulator::getMemoryPath(const QString& aMemoryFilename) const
-{
-	if(customDirectoryActive)
-	{
-		return customDirectory.path()+'/'+aMemoryFilename;
-	}
-	else
-	{
-		return userSettingsDirectoryName+'/'+aMemoryFilename;
-	}
-}
-
 QString QtEmulator::getRegionFileName(int aRegionIndex) const
 {
-	QString regionFileName(REGION_FILENAME_PATTERN);
-	if(aRegionIndex==0)
-	{
-		return regionFileName.arg("backup");
-	}
-	else
-	{
-		return regionFileName.arg("lib");
-	}
+	return aRegionIndex == get_region_backup_index() ? BACKUP_FILENAME : LIBRARY_FILENAME;
 }
 
 void QtEmulator::resetUserMemory()
 {
 	bool removed=true;
-	QFile memoryFile(getMemoryPath(NON_VOLATILE_MEMORY_FILENAME));
+	QFile memoryFile(getMemoryPath(STATE_FILENAME));
 	if(memoryFile.exists())
 	{
 		removed &= memoryFile.remove();
 	}
 
-	for (int i = 0; i < get_number_of_flash_regions(); ++i )
+	QFile backupFile(getMemoryPath(BACKUP_FILENAME));
+	if(backupFile.exists())
 	{
-		QFile regionMemoryFile(getRegionPath(i));
-		if(regionMemoryFile.exists())
-		{
-			removed &= regionMemoryFile.remove();
-		}
+		removed &= backupFile.remove();
+	}
+
+	QFile libraryFile(getMemoryPath(LIBRARY_FILENAME));
+	if(libraryFile.exists())
+	{
+		removed &= libraryFile.remove();
 	}
 
 	reset_wp34s();
@@ -747,3 +721,4 @@ void QtEmulator::findSkins()
 		}
 	}
 }
+

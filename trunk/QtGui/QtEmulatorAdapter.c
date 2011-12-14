@@ -118,6 +118,11 @@ int get_memory_size()
 	return sizeof(PersistentRam);
 }
 
+char* get_region_path(int region_index)
+{
+	return get_region_path_adapter(region_index);
+}
+
 void prepare_memory_save()
 {
 	process_cmdline_set_lift();
@@ -125,29 +130,24 @@ void prepare_memory_save()
 	checksum_all();
 }
 
-int get_number_of_flash_regions()
+void after_state_load()
 {
-	return NUMBER_OF_FLASH_REGIONS;
+	init_34s();
 }
 
-int get_flash_region_size()
+void after_backup_load()
 {
-	return SIZE_REGION * PAGE_SIZE;
 }
 
-char* get_flash_region(int region_index)
+
+void after_library_load()
 {
-	return (char*) flash_region(region_index);
+	init_library();
 }
 
-char* get_region_path(int region_index)
+int get_region_backup_index()
 {
-	return get_region_path_adapter(region_index);
-}
-
-void fast_backup_to_flash()
-{
-	UserFlash.backup = PersistentRam;
+	return REGION_BACKUP;
 }
 
 void reset_wp34s()
