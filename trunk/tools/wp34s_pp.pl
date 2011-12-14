@@ -49,7 +49,6 @@ my $longest_label = 0; # Recorded for pretty print purposes.
 
 my $NUM_TARGET_LABEL_COLONS = 2;
 
-my $USE_INTERNAL_SRC = "Internal source";
 my @files;
 
 my $prt_step_num = 1;
@@ -168,23 +167,33 @@ get_options();
 
 print "// DEBUG: main: MAX_JMP_OFFSET = $MAX_JMP_OFFSET\n" if $debug;
 
-my @lines;
+my (@src, @lines);
 foreach my $file (@files) {
-  push @lines, load_cleaned_source($file);
+  push @src, load_cleaned_source($file);
 }
 
-preprocessor();
+# Split the lines into an array of array references based on END.
+my @end_groups = split_END(@src);
 
 print "// $script_name: Source file(s): ", join (", ", @files), "\n";
 print "// $script_name: Preprocessor revision: $SVN_Current_Revision \n";
-display_steps("");
-show_LBLs() if $show_catalogue;
+
+foreach (@end_groups) {
+  @lines = @{$_}; # Cast the array element into an array.
+  my $length = scalar @lines; # Debug use only.
+  print "// DEBUG: main: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n" if $debug;
+  print "// DEBUG: main: Processing new END group. Contains $length lines.\n" if $debug;
+  initialize_tables();
+  preprocessor();
+  display_steps("");
+  show_LBLs() if $show_catalogue;
+}
 
 #######################################################################
 
 #######################################################################
 #
-# Execute the preprocessor steps.
+# Execute the preprocessor steps on the lines in the global @lines array.
 #
 sub preprocessor {
   display_steps("// ") if $debug;
@@ -205,6 +214,57 @@ sub preprocessor {
   preprocess_synthetic_targets();
   return;
 } # preprocessor
+
+
+#######################################################################
+#
+# Split the source into groups of arrays based on the END opcode. Return
+# a reference to the array of array references. If the last statement is not
+# an END, one will be synthetically added there.
+#
+sub split_END {
+  my @src = @_;
+  my @END_groups;
+  local $_;
+
+  # Make sure there is an END as the last instruction. If not, add one.
+  unless( $src[-1] =~ /(^|\s+)END($|\s+)/) {
+    push @src, "END";
+    print "// WARNING: Missing terminal \"END\". Appending after last statement in source.\n";
+  }
+
+  # Scan through the source cutting it up into groups delimited by "END".
+  my @group = ();
+  my $line;
+  my $line_num = 1; # Debug use only
+  while ($line = shift @src) {
+    push @group, $line;
+
+    # Detect an END instruction and split off source group.
+    if( $line =~ /(^|\s+)END($|\s+)/ ) {
+      my @this_group = @group;
+      push @END_groups, \@this_group;
+      @group = ();
+      print "// DEBUG: split_END: Found and split off an END group at line $line_num.\n" if $debug;
+    }
+    $line_num++;
+  }
+  return @END_groups;
+} # split_END
+
+
+#######################################################################
+#
+# Setup the tables for a new run.
+#
+sub initialize_tables {
+  %LBLs = ();
+  %targets = ();
+  %branches = ();
+  @branches = ();
+  @steps = ();
+  return;
+} # initialize_tables
 
 
 #######################################################################
@@ -1294,14 +1354,12 @@ sub read_file {
   my $file = shift;
   local $_;
   my (@lines);
-  if( $file ne $USE_INTERNAL_SRC ) {
-    open DATA, $file or die "ERROR: Cannot open input file '$file' for reading: $!\n";
-  }
-  while( <DATA> ) {
+  open SRC, $file or die "ERROR: Cannot open input file '$file' for reading: $!\n";
+  while( <SRC> ) {
     chomp; chomp; chomp;
     push @lines, $_;
   }
-  close DATA;
+  close SRC;
   return @lines;
 } # read_file
 
@@ -1532,9 +1590,9 @@ sub get_options {
       $debug = shift(@ARGV);
     }
 
-    elsif( ($arg eq "-internal") or ($arg eq "-i") ) {
-      push @files, $USE_INTERNAL_SRC;
-    }
+#    elsif( ($arg eq "-internal") or ($arg eq "-i") ) {
+#      push @files, $USE_INTERNAL_SRC;
+#    }
 
     # Step the maximum BACK/SKIP offset limit.
     elsif( $arg eq "-m" ) {
@@ -1575,47 +1633,3 @@ sub get_options {
   return;
 } # get_options
 
-# A dummy program to use for tests -- and I mean DUMMY!
-__DATA__
-001: Oomph:: +
-002           [times]
-              ****LBL D
-003           JMP __LBL_93
-004 Label1::  RCL 00
-005           x[>=]1?
-006           BACK Label1
-007           STO 25
-008           ****LBL 98
-009 Smooch::  SKIP Oomph
-010           XEQ Franktown
-011           ENTER[^]
-012           BACK Label1
-013 Franktown::  VERS
-014           ****LBL 23
-015           SKIP Label4
-016 Label3::  XEQ 98
-017           STOM 77
-018           JMP Oomph
-019           BACK 03
-020           BACK 02
-021 __LBL_93::  TICKS
-022 Label4::  JMP Label3
-023           SKIP 02
-024           SKIP 05
-025           ****LBL 93
-              GTO Smooch
-027           SKIP 02
-028           -
-029           GTO 93
-030           BACK 02
-031           RTN
-032           GTO Franktown
-033           [integral] __LBL_93
-034           SLV Label4
-035           XEQ Oomph
-036           [PI] Smooch
-037           [SIGMA] Label3
-037           [SIGMA] 98
-037           [SIGMA] D
-038           f"(x) Label1
-039           f'(x) Label4
