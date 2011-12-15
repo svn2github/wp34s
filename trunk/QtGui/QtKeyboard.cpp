@@ -19,9 +19,10 @@
 #include "QtKeyboard.h"
 #include "QtEmulatorAdapter.h"
 
+static const QtKeyCode INVALID_KEY_CODE;
 
 QtKeyboard::QtKeyboard(const QtSkin& aSkin)
-	: keyboardBufferBegin(0), keyboardBufferEnd(0), lastKey(-1)
+	: keyboardBufferBegin(0), keyboardBufferEnd(0), currentKeyCode(INVALID_KEY_CODE), currentKeyHShifted(false)
 {
 	setSkin(aSkin);
 }
@@ -39,6 +40,7 @@ QtKeyboard::~QtKeyboard()
 
 void QtKeyboard::setSkin(const QtSkin& aSkin)
 {
+	hShiftHeight=aSkin.getHShiftHeight();
 	keys=aSkin.getKeys();
 	for(QtKeyConstIterator keyIterator=keys.constBegin(); keyIterator!=keys.constEnd(); ++keyIterator)
 	{
@@ -51,12 +53,10 @@ void QtKeyboard::setSkin(const QtSkin& aSkin)
 
 bool QtKeyboard::processKeyPressedEvent(const QKeyEvent& aKeyEvent)
 {
-	int key=findKeyCode(aKeyEvent);
-	if(key>=0)
-	{
-		putKey(key);
-	}
-	lastKey=key;
+	QtKeyCode keyCode=findKeyCode(aKeyEvent);
+	putKeyCode(keyCode);
+	currentKeyCode=keyCode;
+	emit keyPressed();
 	return true;
 }
 
@@ -65,18 +65,14 @@ bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 	Q_UNUSED(aKeyEvent)
 
 	forward_key_released();
-	lastKey=-1;
+	currentKeyCode=INVALID_KEY_CODE;
 	return true;
 }
 
 bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 {
-	int key=findKeyCode(aMouseEvent.pos());
-	if(key>=0)
-	{
-		putKey(key);
-	}
-	lastKey=key;
+	currentKeyCode=findKeyCode(aMouseEvent.pos());
+	emit keyPressed();
 	return true;
 }
 
@@ -84,18 +80,24 @@ bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)
 {
 	Q_UNUSED(aMouseEvent)
 
-	// Sometimes, when clicking rapidly, we receive only the buttonReleased event without the buttonPressed before
-	// This code is here to deal with it and avoid "missing" keys
-	if(lastKey<0)
+	putKeyCode(findKeyCode(aMouseEvent.pos()));
+	forward_key_released();
+	currentKeyCode=INVALID_KEY_CODE;
+	return true;
+}
+
+bool QtKeyboard::processMouseMovedEvent(const QMouseEvent& aMouseEvent)
+{
+	if(currentKeyCode.isValid())
 	{
-		int key=findKeyCode(aMouseEvent.pos());
-		if(key>=0)
+		QtKeyCode newKeyCode=findKeyCode(aMouseEvent.pos());
+		if(newKeyCode.isValid())
 		{
-			putKey(key);
+			currentKeyCode=newKeyCode;
+			currentKeyHShifted=currentKeyCode.isHShifted();
+			emit keyPressed();
 		}
 	}
-	forward_key_released();
-	lastKey=-1;
 	return true;
 }
 
@@ -116,6 +118,20 @@ int QtKeyboard::getKeyNoLock()
 		int key=keyboardBuffer[keyboardBufferBegin];
 		keyboardBufferBegin=(keyboardBufferBegin+1)%KEYBOARD_BUFFER_SIZE;
 		return key;
+	}
+}
+
+void QtKeyboard::putKeyCode(const QtKeyCode& aKeyCode)
+{
+	currentKeyHShifted=false;
+	if(aKeyCode.isValid())
+	{
+		if(aKeyCode.isHShifted())
+		{
+			currentKeyHShifted=true;
+			putKey(H_CODE);
+		}
+		putKey(aKeyCode.getCode());
 	}
 }
 
@@ -163,7 +179,7 @@ int QtKeyboard::waitKey()
 static int keyEventToKeycode(const QKeyEvent&);
 
 // This is not very efficient but it works and because keys are only 40, with just a few sequences each, this will do
-int QtKeyboard::findKeyCode(const QKeyEvent& aKeyEvent) const
+QtKeyCode QtKeyboard::findKeyCode(const QKeyEvent& aKeyEvent) const
 {
 	int keyCode=keyEventToKeycode(aKeyEvent);
 	if(keyCode<0)
@@ -180,51 +196,77 @@ int QtKeyboard::findKeyCode(const QKeyEvent& aKeyEvent) const
 			{
 				if(sequence.matches(*sequenceIterator)==QKeySequence::ExactMatch)
 				{
-					return (*keyIterator)->getCode();
+					return QtKeyCode((*keyIterator)->getCode());
 				}
 			}
 		}
 	}
-	return -1;
+	return INVALID_KEY_CODE;
 }
 
 // Not very efficient too but with 40 keys, probably fast enough and avoid the trouble of building sorted trees
-int QtKeyboard::findKeyCode(const QPoint& aPoint) const
+QtKeyCode QtKeyboard::findKeyCode(const QPoint& aPoint) const
 {
 	for(QtKeyConstIterator keyIterator=keys.begin(); keyIterator!=keys.end(); ++keyIterator)
 	{
-		if(*keyIterator!=NULL && (*keyIterator)->getRectangle().contains(aPoint))
+		if(*keyIterator!=NULL)
 		{
-			return (*keyIterator)->getCode();
+			QRect keyRect=(*keyIterator)->getRectangle();
+			if(keyRect.contains(aPoint))
+			{
+				bool hShifted=false;
+				int code=(*keyIterator)->getCode();
+				if(code!=F_CODE && code!=G_CODE && code!=H_CODE)
+				{
+					QRect hRect(keyRect);
+					hRect.setTop(keyRect.bottom()-hShiftHeight);
+					hShifted=hRect.contains(aPoint);
+				}
+				return QtKeyCode(code, hShifted);
+			}
 		}
 	}
-	return -1;
+	return INVALID_KEY_CODE;
 }
 
-const QtKey* QtKeyboard::findKey(int aKeyCode) const
+const QtKey* QtKeyboard::findKey(const QtKeyCode& aKeyCode) const
 {
-	return keysByCode.value(aKeyCode, NULL);
+	if(aKeyCode.isValid())
+	{
+		return keysByCode.value(aKeyCode.getCode(), NULL);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 void QtKeyboard::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent)
 {
 	Q_UNUSED(aPaintEvent);
 
-	if(lastKey>=0)
+	const QtKey* key=findKey(currentKeyCode);
+	if(key!=NULL && key->getRectangle().isValid())
 	{
-		const QtKey* key=findKey(lastKey);
-		if(key!=NULL && key->getRectangle().isValid())
+		invert(key, aBackgroundImage);
+		if(currentKeyHShifted)
 		{
-			// There are simple way to invert video but this one works on every platform tested yet
-			QRect keyRectangle=key->getRectangle();
-			QPixmap keyPixmap=aBackgroundImage.getBackgroundPixmap().copy(keyRectangle);
-			QImage keyImage=keyPixmap.toImage();
-			keyImage.invertPixels();
-			QPainter painter(&aBackgroundImage);
-			painter.drawImage(keyRectangle, keyImage);
-			aBackgroundImage.update(key->getRectangle());
+			const QtKey* hKey=findKey(H_CODE);
+			invert(hKey, aBackgroundImage);
 		}
 	}
+}
+
+void QtKeyboard::invert(const QtKey* aKey, QtBackgroundImage& aBackgroundImage)
+{
+	// There are simple way to invert video but this one works on every platform tested yet
+	QRect keyRectangle=aKey->getRectangle();
+	QPixmap keyPixmap=aBackgroundImage.getBackgroundPixmap().copy(keyRectangle);
+	QImage keyImage=keyPixmap.toImage();
+	keyImage.invertPixels();
+	QPainter painter(&aBackgroundImage);
+	painter.drawImage(keyRectangle, keyImage);
+	aBackgroundImage.update(aKey->getRectangle());
 }
 
 static int keyEventToKeycode(const QKeyEvent& keyEvent)

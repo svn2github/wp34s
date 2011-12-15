@@ -22,17 +22,23 @@
 #include <QWaitCondition>
 #include "QtSkin.h"
 #include "QtKey.h"
+#include "QtKeyCode.h"
 
 // We need to forward define it as we are included by QtBackgroundImage.h
 class QtBackgroundImage;
 
 #define KEYBOARD_BUFFER_SIZE 16
+#define F_CODE 9
+#define G_CODE 10
+#define H_CODE 11
 
-class QtKeyboard
+class QtKeyboard: public QObject
 {
+	Q_OBJECT
+
 public:
 	QtKeyboard(const QtSkin& aSkin);
-	~QtKeyboard();
+	virtual ~QtKeyboard();
 
 public:
 	void setSkin(const QtSkin& aSkin);
@@ -40,27 +46,35 @@ public:
 	bool processKeyReleasedEvent(const QKeyEvent& aKeyEvent);
 	bool processButtonPressedEvent(const QMouseEvent& aMouseEvent);
 	bool processButtonReleasedEvent(const QMouseEvent& aMouseEvent);
+	bool processMouseMovedEvent(const QMouseEvent& aMouseEvent);
 	int getKey();
+	void putKeyCode(const QtKeyCode& aKeyCode);
 	void putKey(char aKey);
 	void putKeyIfBufferEmpty(char aKey);
 	bool isKeyPressed();
 	int waitKey();
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
+	void invert(const QtKey* aKey, QtBackgroundImage& aBackgroundImage);
+
+signals:
+	void keyPressed();
 
 private:
 	bool isKeyPressedNoLock();
 	int getKeyNoLock();
-    int findKeyCode(const QKeyEvent& aKeyEvent) const;
-    int findKeyCode(const QPoint& aPoint) const;
-    const QtKey* findKey(int aKey) const;
+	QtKeyCode findKeyCode(const QKeyEvent& aKeyEvent) const;
+	QtKeyCode findKeyCode(const QPoint& aPoint) const;
+    const QtKey* findKey(const QtKeyCode& aKeyCode) const;
 
 private:
+    int hShiftHeight;
     QtKeyList keys;
     QMutex mutex;
     QWaitCondition keyWaitCondition;
     char keyboardBuffer[KEYBOARD_BUFFER_SIZE];
     volatile int keyboardBufferBegin, keyboardBufferEnd;
-    int lastKey;
+    QtKeyCode currentKeyCode;
+    bool currentKeyHShifted;
     QHash<int, const QtKey*> keysByCode;
 };
 

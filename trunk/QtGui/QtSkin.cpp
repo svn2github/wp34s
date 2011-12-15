@@ -120,6 +120,11 @@ const QColor& QtSkin::getSCreenBackground() const
 	return screenBackground;
 }
 
+int QtSkin::getHShiftHeight() const
+{
+	return hShiftHeight;
+}
+
 const QtKeyList& QtSkin::getKeys() const
 {
 	return keys;
@@ -506,6 +511,30 @@ bool QtSkin::startBackground(const QString& aName, const QXmlAttributes& theAttr
 	return convertAttributesToColor("background", theAttributes, screenBackground);
 }
 
+
+bool QtSkin::startHShift(const QString& aName, const QXmlAttributes& theAttributes)
+{
+	Q_UNUSED(aName)
+
+	int heightIndex=theAttributes.index("height");
+
+	if(heightIndex<0 || theAttributes.count()!=1)
+	{
+		setErrorMessage("Invalid attributes for hshift");
+		return false;
+	}
+	else
+	{
+		if(!convertStringToInteger(theAttributes.value(heightIndex), hShiftHeight))
+		{
+			setErrorMessage("Invalid height "+theAttributes.value(heightIndex));
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool QtSkin::startKeys(const QString& aName, const QXmlAttributes& theAttributes)
 {
 	Q_UNUSED(aName)
@@ -819,6 +848,7 @@ SkinHandlers::SkinHandlers()
 	(*this)[QString("screen")]=TagHandler(&QtSkin::startScreen, NULL, NULL);
 	(*this)[QString("foreground")]=TagHandler(&QtSkin::startForeground, NULL, NULL);
 	(*this)[QString("background")]=TagHandler(&QtSkin::startBackground, NULL, NULL);
+	(*this)[QString("hshift")]=TagHandler(&QtSkin::startHShift, NULL, NULL);
 	(*this)[QString("keys")]=TagHandler(&QtSkin::startKeys, NULL, NULL);
 	(*this)[QString("painters")]=TagHandler(&QtSkin::startPainters, NULL, NULL);
 	(*this)[QString("pasters")]=TagHandler(&QtSkin::startPasters, NULL, NULL);

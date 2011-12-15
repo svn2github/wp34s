@@ -15,10 +15,10 @@ win32 {
 
 QT += xml
 
-SOURCES = QtGuiMain.cpp QtEmulator.cpp QtBackgroundImage.cpp QtKey.cpp QtSkin.cpp QtScreenPainter.cpp \
+SOURCES = QtGuiMain.cpp QtEmulator.cpp QtBackgroundImage.cpp QtKey.cpp QtKeyCode.cpp QtSkin.cpp QtScreenPainter.cpp \
 	QtKeyboard.cpp QtSerialPort.cpp QtScreen.cpp QtCalculatorThread.cpp QtHeartBeatThread.cpp QtPreferencesDialog.cpp \
 	QtNumberPaster.cpp
 	
-HEADERS = QtEmulator.h QtBackgroundImage.h QtKey.h QtSkin.h QtScreenPainter.h \
+HEADERS = QtEmulator.h QtBackgroundImage.h QtKey.h QtKeyCode.h QtSkin.h QtScreenPainter.h \
 	QtKeyboard.h QtSerialPort.h QtScreen.h QtCalculatorThread.h QtHeartBeatThread.h QtPreferencesDialog.h \
 	QtNumberPaster.h

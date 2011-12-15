@@ -77,6 +77,7 @@ public: // getters for Skin fields
     const QRect& getPasteRectangle() const;
     const QColor& getSCreenForeground() const;
     const QColor& getSCreenBackground() const;
+    int getHShiftHeight() const;
     const QtKeyList& getKeys() const;
     const DotPainterList getDotPainters() const;
     const DotPainterList getPastePainters() const;
@@ -88,6 +89,7 @@ public: // Parsing methods
     bool startScreen(const QString& aName, const QXmlAttributes& theAttributes);
     bool startForeground(const QString& aName, const QXmlAttributes& theAttributes);
     bool startBackground(const QString& aName, const QXmlAttributes& theAttributes);
+    bool startHShift(const QString& aName, const QXmlAttributes& theAttributes);
     bool startKeys(const QString& aName, const QXmlAttributes& theAttributes);
     bool startKey(const QString& aName, const QXmlAttributes& theAttributes);
     bool startShortcut(const QString& aName, const QXmlAttributes& theAttributes);
@@ -116,6 +118,7 @@ private: // Skin fields
 	QRect pasteRectangle;
     QColor screenForeground;
     QColor screenBackground;
+    int hShiftHeight;
     QtKeyList keys;
     DotPainterList dotPainters;
     DotPainterList pastePainters;

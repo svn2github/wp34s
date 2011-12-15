@@ -65,7 +65,7 @@ BUILDDATESRC=QtBuildDate.c
 BUILDDATEOBJ=$(BUILDDATESRC:%.c=$(OUTPUTDIR)/%.o)
 
 DIRS_TO_CLEAN := $(DIRS)
-EXTRA_FILES_TO_CLEAN := moc_QtBackgroundImage.cpp moc_QtEmulator.cpp moc_QtPreferencesDialog.cpp
+EXTRA_FILES_TO_CLEAN := moc_QtBackgroundImage.cpp moc_QtEmulator.cpp moc_QtPreferencesDialog.cpp moc_QtKeyboard.cpp
 ifeq "$(SYSTEM)" "windows32"
 DIRS_TO_CLEAN += debug release
 EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.QtGui.debug object_script.QtGui.release

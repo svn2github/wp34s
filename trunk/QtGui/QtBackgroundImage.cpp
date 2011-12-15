@@ -35,6 +35,11 @@ bool BackgroundImageEventFilter::eventFilter(QObject *obj, QEvent *event)
 		QMouseEvent* mouseEvent = static_cast<QMouseEvent *>(event);
 		return keyboard.processButtonReleasedEvent(*mouseEvent);
 	}
+	else if (event->type() == QEvent::MouseMove)
+	{
+		QMouseEvent* mouseEvent = static_cast<QMouseEvent *>(event);
+		return keyboard.processMouseMovedEvent(*mouseEvent);
+	}
 	else if (event->type() == QEvent::KeyPress)
 	{
 		QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
@@ -59,6 +64,7 @@ QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtK
 	installEventFilter(new BackgroundImageEventFilter(aKeyboard));
 	setFocusPolicy(Qt::StrongFocus);
 	setFixedSize(pixmap.size());
+	connect(&aKeyboard, SIGNAL(keyPressed()), this, SLOT(updateScreen()));
 }
 
 void QtBackgroundImage::setSkin(const QtSkin& aSkin)
