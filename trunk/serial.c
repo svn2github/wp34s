@@ -362,20 +362,16 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 
 		case TAG_PROGRAM:
 			/*
-			 *  Program area received
+			 *  Program received
 			 */
-			if ( length > sizeof( s_opcode ) * NUMPROG ) {
-				  goto invalid;
+			if ( append_program( (s_opcode *) buffer, length >> 1 ) ) {
+				/*
+				 *  Not enough memory
+				 */
+				goto nak;
 			}
-			dest = Prog;
-			LastProg = 1 + length / sizeof( s_opcode );
 			DispMsg = "Program";
-			if (RetStk < Prog + LastProg ) {
-				sigmaDeallocate();
-			}
-			clrretstk_pc();
-
-			break;
+			goto done;
 
 		case TAG_ALLMEM:
 			/*
@@ -407,6 +403,7 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 		 *  Copy the data and recompute the checksums
 		 */
 		xcopy( dest, buffer, length );
+	done:
 		checksum_all();
 
 		/*

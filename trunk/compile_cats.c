@@ -583,6 +583,7 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_MEM,		"MEM?")
 	NILIC(OP_LOCR,		"LocR?")
 	NILIC(OP_REGSQ,		"REGS?")
+	NILIC(OP_FLASH,		"FLASH?")
 	RARGCMD(RARG_TEST_APX,	"x~?")
 	RARGCMD(RARG_TEST_LT,	"x<?")
 	RARGCMD(RARG_TEST_LE,	"x<=?")

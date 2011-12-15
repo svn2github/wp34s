@@ -23,6 +23,8 @@
 /*
  *  Select optional features here
  */
+// Allow programs to be larger then 1KB
+#define ALLOW_LARGE_PROGRAM
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55

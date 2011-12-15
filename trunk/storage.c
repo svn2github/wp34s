@@ -19,10 +19,10 @@
  * Module written by MvC
  */
 #ifdef REALBUILD
-#define PERSISTENT_RAM __attribute__((section(".persistent_ram")))
+#define PERSISTENT_RAM __attribute__((section(".persistentram")))
 #define SLCDCMEM       __attribute__((section(".slcdcmem")))
-#define VOLATILE_RAM   __attribute__((section(".volatile_ram")))
-#define BACKUP_FLASH   __attribute__((section(".backup_flash")))
+#define VOLATILE_RAM   __attribute__((section(".volatileram")))
+#define BACKUP_FLASH   __attribute__((section(".backupflash")))
 #ifndef NULL
 #define NULL 0
 #endif
@@ -124,7 +124,7 @@ static int test_checksum( const void *data, unsigned int length, unsigned short 
  */
 int checksum_code( void )
 {
-	return LastProg < 1 || LastProg > NUMPROG 
+	return LastProg < 1 || LastProg > NUMPROG_LIMIT 
 		|| test_checksum( Prog, ( LastProg - 1 ) * sizeof( s_opcode ), CrcProg, &CrcProg );
 }
 
@@ -433,6 +433,55 @@ void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 
 
 /*
+ *  Helper to append a program in RAM.
+ *  Returns non zero in case of an error.
+ */
+int append_program(const s_opcode *source, int length)
+{
+	unsigned short pc;
+	int space_needed = length - ProgFree;
+
+	if ( LastProg == 2 ) {
+		/*
+		 *  Only the default END statement is present
+		 */
+		--space_needed;
+		--LastProg;
+	}
+	if ( length > NUMPROG_LIMIT ) {
+		return err( ERR_INVALID );
+	}
+	if ( length > NUMPROG_LIMIT - LastProg - 1 ) {
+		return err( ERR_RAM_FULL );
+	}
+
+	/*
+	 *  Make room if needed
+	 */
+	clrretstk();
+	if ( space_needed > 0 && SizeStatRegs != 0 ) {
+		space_needed -= SizeStatRegs;
+		sigmaDeallocate();
+	}
+	if ( space_needed > 0 ) {
+		const int regs = NumRegs - ( ( space_needed + 3 ) >> 2 ) - 1;
+		if ( regs < 0 ) {
+			return err( ERR_RAM_FULL );
+		}
+		cmdregs( regs, RARG_REGS );
+	}
+	/*
+	 *  Append data
+	 */
+	pc = LastProg;
+	LastProg += length;
+	xcopy( Prog + pc - 1, source, length << 1 );
+	set_pc( pc );
+	return 0;
+}
+
+
+/*
  *  Load the user program area from the backup.
  *  Called by PLOAD.
  */
@@ -441,7 +490,7 @@ void load_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 	if ( not_running() ) {
 		FLASH_REGION *fr = (FLASH_REGION *) &BackupFlash;
 
-		if ( checksum_region( fr, fr ) || fr->last_prog > NUMPROG + 1 ) {
+		if ( checksum_region( fr, fr ) || fr->last_prog > ProgMax ) {
 			/*
 			 *  Not a valid program region
 			 */
@@ -449,11 +498,7 @@ void load_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 			return;
 		}
 		clpall();
-		xcopy( &CrcProg, fr, sizeof( s_opcode ) * ( fr->last_prog + 1 ) );
-		if (RetStk < Prog + LastProg ) {
-			sigmaDeallocate();
-		}
-		clrretstk_pc();
+		append_program( fr->prog, fr->last_prog - 1 );
 	}
 }
 
@@ -501,20 +546,23 @@ void store_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
 	if ( not_running() ) {
 		update_program_bounds( 1 );
+		// 1. Check if program is labeled
+		// 2. Find any duplicate labels and delete the programs
+		// 3. Append program
 	}
 }
 
 
 /*
- *  Load a user program from the library region. Called by PRCL.
+ *  Load a user program from any region. Called by PRCL.
  */
 void recall_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
 	if ( not_running() ) {
-
+		update_program_bounds( 0 );
+		append_program( get_current_prog(), ProgEnd - ProgBegin + 1 );
 	}
 }
-
 
 
 #if !defined(REALBUILD) && !defined(QTGUI)
@@ -552,6 +600,7 @@ void load_statefile( void )
 		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
 		fclose( f );
 		init_34s();
+		checksum_all();
 	}
 	f = fopen( BACKUP_FILE, "rb" );
 	if ( f != NULL ) {

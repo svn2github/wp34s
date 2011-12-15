@@ -383,8 +383,16 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
+#ifdef ALLOW_LARGE_PROGRAM
+#define NUMPROG		2	/* Dummy value, aligns nicely */
+#define RET_STACK_SIZE	(510 - NUMPROG + 22)	/* Allocated depth of return stack */
+#define MINIMUM_RET_STACK_SIZE 8 /* Minimum headroom for program execution */
+#define NUMPROG_LIMIT	(510 + 22 - MINIMUM_RET_STACK_SIZE + 99 * 4)	/* Absolute maximum for sanity checks */
+#else
 #define NUMPROG		510	/* Fill 1 KB (including crc and length) */
+#define NUMPROG_LIMIT	NUMPROG
 #define RET_STACK_SIZE	22	/* Minimum depth of return stack, extends into unused program space */
+#endif
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
@@ -720,16 +728,8 @@ enum nilop {
 	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN, OP_SETJPN,
 	OP_QUAD, OP_NEXTPRIME, OP_USR_ZETA, OP_USR_Bn, OP_USR_BnS, OP_USR_W1,
 	OP_XEQALPHA, OP_GTOALPHA,
-	OP_SAVE, OP_LOAD,
-	OP_LOADP, OP_LOADR, OP_LOADST, 
-	OP_PSTO, OP_PRCL,
 	OP_ROUNDING,
 	OP_SLOW, OP_FAST,
-	OP_SENDP, OP_SENDR, OP_SENDA, OP_RECV,
-#ifdef INCLUDE_USER_IO
-	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
-	OP_ALPHASEND, OP_ALPHARECV,
-#endif
 	OP_TOP,
 	OP_GETBASE, OP_GETSIGN,
 	OP_ISINT, OP_ISFLOAT,
@@ -749,7 +749,21 @@ enum nilop {
 	OP_MEM,
 	OP_LOCR,
 	OP_REGSQ,
+	OP_FLASH,
 	OP_XLOCAL,
+
+#ifdef INCLUDE_USER_IO
+	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
+	OP_ALPHASEND, OP_ALPHARECV,
+#endif
+	OP_SENDP, OP_SENDR, OP_SENDA,
+
+	// Not programmable	
+	OP_RECV,
+	OP_SAVE, OP_LOAD,
+	OP_LOADR, OP_LOADST, 
+	OP_LOADP, OP_PRCL, OP_PSTO,
+
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -989,8 +1003,8 @@ enum shifts {
 /*
  *  Function prototypes
  */
-extern void err(const enum errors);
-extern void warn(const enum errors);
+extern int err(const enum errors);
+extern int warn(const enum errors);
 extern const char *pretty(unsigned char);
 extern void prettify(const char *in, char *out);
 
@@ -1033,6 +1047,7 @@ extern void clrall(void);
 extern void reset(void);
 
 extern opcode getprog(unsigned int n);
+extern const s_opcode *get_current_prog(void);
 extern void stoprog(opcode);
 extern void delprog(void);
 extern void del_till_label(unsigned int);
@@ -1164,6 +1179,7 @@ extern void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_sign_mode(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void get_base(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern int free_mem(void);
+extern int free_flash(void);
 extern void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);

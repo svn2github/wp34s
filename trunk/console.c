@@ -373,7 +373,7 @@ extern void close_port( void )
  */
 void put_byte( unsigned char byte )
 {
-	err( ERR_PROG_BAD );
+	err(ERR_PROG_BAD);
 }
 
 

@@ -246,14 +246,15 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	$(NM) -S $(OUTPUTDIR)/calc >>$(SYMBOLS)
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.tmp 
 	$(UTILITIES)/post_process$(EXE) $(OUTPUTDIR)/calc.tmp $@
-	@grep "^\.fixed"     $(MAPFILE) | tail -n 1 >  $(SUMMARY)
-	@grep "^\.revision"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.userflash" $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.cmdtab"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.bss"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.slcdcmem"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.volatile"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "^\.backup"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.fixed"          $(MAPFILE) | tail -n 1 >  $(SUMMARY)
+	@grep "^\.revision"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "UserFlash"         $(MAPFILE) | tail -n 3 >> $(SUMMARY)
+	@grep "^\.backupflash"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.cmdtab"         $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.bss"            $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.slcdcmem"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.volatileram"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+	@grep "^\.persistentram"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@cat $(SUMMARY)
 
 $(LDCTRL): wp34s.lds features.h Makefile

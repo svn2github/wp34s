@@ -448,6 +448,10 @@ static int check_confirm(int op) {
 			State2.confirm = confirm_clall + (nilop - OP_CLALL);
 			return STATE_UNFINISHED;
 		}
+		if (nilop >= OP_RECV && nilop <= OP_PSTO) {
+			// These commands are not programmable
+			State2.runmode = 1;
+		}
 	}
 	return op;
 }
@@ -1930,11 +1934,11 @@ static int process_confirm(const keycode c) {
  *  STATUS
  */
 static int process_status(const keycode c) {
-	int n = ((int)State2.status) - 1;
-	int max = LocalRegs < 0 ? 12 : 11;
+	int n = ((int)State2.status) - 3;
+	int max = LocalRegs < 0 ? 11 : 10;
 
 	if (c == K40) {
-		if (--n < 0)
+		if (--n < -2)
 			n = max;
 	}
 	else if (c == K50) {
@@ -1948,13 +1952,13 @@ static int process_status(const keycode c) {
 	else {
 		int nn = keycode_to_digit_or_register(c) & 0x7f;
 		if (nn <= 9)
-			n = nn + 1;
+			n = nn;
 		else if (nn == LOCAL_REG_BASE)
-			n = State2.status - 1 == max ? 11 : max;
+			n = n == max ? 10 : max;
 		else if (nn != NO_REG)
-			n = 11; 
+			n = 10; 
 	}
-	State2.status = n + 1;
+	State2.status = n + 3;
 
 	return STATE_UNFINISHED;
 }
@@ -1963,10 +1967,10 @@ static int process_status(const keycode c) {
 /*
  *  CAT helper
  */
-static int is_label_at(unsigned int pc) {
+static int is_label_or_end_at(unsigned int pc) {
 	const unsigned int op = getprog(pc);
 
-	return (isDBL(op) && opDBL(op) == DBL_LBL);
+	return op == (OP_NIL | OP_END) || (isDBL(op) && opDBL(op) == DBL_LBL);
 }
 
 static unsigned int advance_to_next_label(unsigned int pc) {
@@ -1975,12 +1979,12 @@ static unsigned int advance_to_next_label(unsigned int pc) {
 			pc = do_inc(pc, 0);
 			if (PcWrapped)
 				break;
-			if (is_label_at(pc)) {
+			if (is_label_or_end_at(pc)) {
 				return pc;
 			}
 		}
 		pc = addrLIB(1, (nLIB(pc) + 1) & 3);
-	} while (! is_label_at(pc));
+	} while (! is_label_or_end_at(pc));
 	return pc;
 }
 
@@ -1990,13 +1994,13 @@ static unsigned int advance_to_previous_label(unsigned int pc) {
 			pc = do_dec(pc, 0);
 			if (PcWrapped)
 				break;
-			if (is_label_at(pc)) {
+			if (is_label_or_end_at(pc)) {
 				return pc;
 			}
 		}
 		pc = addrLIB(1, (nLIB(pc) - 1) & 3);
 		pc = do_dec(pc, 0);
-	} while (! is_label_at(pc));
+	} while (! is_label_or_end_at(pc));
 	return pc;
 }
 
@@ -2016,7 +2020,7 @@ static int process_labellist(const keycode c) {
 	if (n <= REGION_XROM) {
 		// Digits take you to that segment
 		pc = addrLIB(1, n);
-		if (! is_label_at(pc))
+		if (! is_label_or_end_at(pc))
 			pc = advance_to_next_label(pc);
 		State2.digval = pc;
 		return STATE_UNFINISHED;
@@ -2047,6 +2051,7 @@ static int process_labellist(const keycode c) {
 			return STATE_UNFINISHED;
 		set_pc(pc);
 		op = c == K10 ? (OP_NIL | OP_PSTO) : (OP_NIL | OP_PRCL);
+		State2.runmode = 1;
 		break;
 
 	case K20:				// ENTER^: GTO

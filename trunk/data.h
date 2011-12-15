@@ -330,8 +330,12 @@ extern unsigned char GoFast;	   // Speed-up might be necessary
 extern unsigned short *RetStk;	   // Pointer to current top of return stack
 extern int RetStkSize;		   // actual size of retiurn stack
 extern int ProgFree;		   // Remaining program steps
+#ifdef ALLOW_LARGE_PROGRAM
+extern int ProgMax;		   // Maximum program size (total)
+#else
+#define ProgMax NUMPROG
+#endif
 extern decContext Ctx;		   // decNumber library context
-
 extern int JustDisplayed;	   // Avoid duplicate calls to display();
 #ifdef CONSOLE
 extern unsigned long long int instruction_count;

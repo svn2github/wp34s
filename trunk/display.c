@@ -162,6 +162,41 @@ void dot(int n, int on) {
 }
 
 
+
+/* Set the decimal point *after* the indicated digit
+ * The marker can be either a comma or a dot depending on the value
+ * of decimal.
+ */
+static char *set_decimal(const int posn, const enum decimal_modes decimal, char *res) {
+	if (res) {
+		*res++ = (decimal == DECIMAL_DOT)?'.':',';
+	} else {
+		set_dot(posn+7);
+		if (decimal != DECIMAL_DOT)
+			set_dot(posn+8);
+	}
+	return res;
+}
+
+/* Set the digit group separator *before* the specified digit.
+ * This can be nothing, a comma or a dot depending on the state of the
+ * sep argument.
+ */
+static void set_separator(int posn, const enum separator_modes sep, char *res) {
+	if (sep == SEP_NONE)
+		return;
+	if (res) {
+		if (sep == SEP_COMMA) *res++ = ',';
+		else *res++ = '.';
+	} else {
+		posn -= SEGS_PER_DIGIT;
+		set_dot(posn+7);
+		if (sep == SEP_COMMA)
+			set_dot(posn+8);
+	}
+}
+
+
 /* Set a digit in positions [base, base+6] */
 static void set_dig(int base, char ch) 
 {
@@ -187,8 +222,12 @@ static char *set_dig_s(int base, char ch, char *res) {
 
 static void set_digits_string(const char *msg, int j) {
 	for (; *msg != '\0'; msg++) {
-		set_dig_s(j, *msg, NULL);
-		j += SEGS_PER_DIGIT;
+		if (*msg == '.' || *msg == ',')
+			set_decimal(j - SEGS_PER_DIGIT, *msg == '.' ? DECIMAL_DOT : DECIMAL_COMMA, NULL);
+		else {
+			set_dig_s(j, *msg, NULL);
+			j += SEGS_PER_DIGIT;
+		}
 	}
 }
 
@@ -240,39 +279,6 @@ static void carry_overflow(void) {
 		set_dig(base + SEGS_PER_EXP_DIGIT, 'c');
 	if (get_overflow())
 		set_dig(base + 2*SEGS_PER_EXP_DIGIT, 'o');
-}
-
-/* Set the decimal point *after* the indicated digit
- * The marker can be either a comma or a dot depending on the value
- * of decimal.
- */
-static char *set_decimal(const int posn, const enum decimal_modes decimal, char *res) {
-	if (res) {
-		*res++ = (decimal == DECIMAL_DOT)?'.':',';
-	} else {
-		set_dot(posn+7);
-		if (decimal != DECIMAL_DOT)
-			set_dot(posn+8);
-	}
-	return res;
-}
-
-/* Set the digit group separator *before* the specified digit.
- * This can be nothing, a comma or a dot depending on the state of the
- * sep argument.
- */
-static void set_separator(int posn, const enum separator_modes sep, char *res) {
-	if (sep == SEP_NONE)
-		return;
-	if (res) {
-		if (sep == SEP_COMMA) *res++ = ',';
-		else *res++ = '.';
-	} else {
-		posn -= SEGS_PER_DIGIT;
-		set_dot(posn+7);
-		if (sep == SEP_COMMA)
-			set_dot(posn+8);
-	}
 }
 
 
@@ -1099,24 +1105,37 @@ void format_reg(decimal64 *r, char *buf) {
 /* Display the status screen */
 static void show_status(void) {
 	int i, n;
-	int j = SEGS_PER_DIGIT;
-	const int status = State2.status - 1;
-	char buf[12], *p;
+	int j = SEGS_EXP_BASE;
+	const int status = State2.status - 3;
+	char buf[16], *p = buf;
 	unsigned int pc;
 
-	if (status == 0) {
-		set_status("Memory:");
-		p = num_arg_0(buf, free_mem(), 3);
-		p = scopy(p, "  StEPS");
+	if (status == -2) {
+		set_status("Steps:");
+		p = num_arg(buf, free_mem());
+		p = scopy(p, " , FL. ");
+		p = num_arg(p, free_flash());
 		*p = '\0';
-		set_digits_string(buf, 2*SEGS_PER_DIGIT);
+		set_digits_string(buf, 0);
+	}
+	else if (status == -1) {
+		const int l = local_regs();
+		set_status("Regs:");
+		p = num_arg(buf, NumRegs);
+		if (l) {
+			p = scopy(p, " , Loc. ");
+			p = num_arg(p, l);
+		}
+		*p = '\0';
+		set_digits_string(buf, 0);
 	} else {
 		int base;
 		int end;
 		int group = 10;
+		int start = 0;
 		
-		if (status <= 10) {
-			base = 10 * (status - 1);
+		if (status <= 9) {
+			base = 10 * status;
 			end = base >= 70 ? 99 : base + 29;
 			p = scopy(buf, "FL ");
 			p = num_arg_0(p, base, 2);
@@ -1125,25 +1144,31 @@ static void show_status(void) {
 			*p = '\0';
 			set_status(buf);
 		}
-		else if (status == 11) {
+		else if (status == 10) {
 			base = regX_idx;
 			end = regK_idx;
+			start = 3;
 			group = 4;
-			set_status("X:T\006A:D\006L:K");
+			set_status("XYZT\006A:D\006LIJK");
 		}
-		else { // status == 12
+		else { // status == 11
 			base = LOCAL_FLAG_BASE;
 			end = LOCAL_FLAG_BASE + 15;
 			set_status("FL.00-.15");
 		}
-		set_decimal(0, DECIMAL_DOT, NULL);
-		for (i = 0; i < group; i++) {
-			const int k = i + base;
+		j = start * SEGS_PER_DIGIT;
+		set_decimal(j, DECIMAL_DOT, NULL);
+		j += SEGS_PER_DIGIT;
+		for (i = start; i < group + start; i++) {
+			int k = i + base - start;
 			int l = get_user_flag(k);
-			if (end >= k + group)
-				l += (get_user_flag(k + group) << 1);
-			if (end >= k + 20)
-				l += (get_user_flag(k + group) << 2);
+			k += group;
+			if (end >= k) {
+				l |= (get_user_flag(k) << 1);
+				k += group;
+				if (end >= k)
+					l |= (get_user_flag(k) << 2);
+			}
 			set_dig(j, l);
 			set_decimal(j, DECIMAL_DOT, NULL);
 			j += SEGS_PER_DIGIT;
@@ -1153,7 +1178,6 @@ static void show_status(void) {
 				j += SEGS_PER_DIGIT;
 			}
 		}
-		set_separator(SEGS_PER_DIGIT * 5, SEP_DOT, NULL);
 	}
 
 	j = SEGS_EXP_BASE;
@@ -1286,9 +1310,8 @@ void display(void) {
 	}
 	if (State2.version) {
 		char vers[] = "34S\006" VERSION_STRING "\006????";
-		set_digits_string("pAULI,WwALtE", 0);
+		set_digits_string("pAULI, WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
-		set_decimal(SEGS_PER_DIGIT * 4, DECIMAL_COMMA, NULL);
 		xcopy( vers + sizeof(vers) - 5, SvnRevision, 4 );
 		set_status(vers);
 		skip = 1;

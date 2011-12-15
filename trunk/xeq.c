@@ -124,6 +124,13 @@ int RetStkSize;
  */
 int ProgFree;
 
+#ifdef ALLOW_LARGE_PROGRAM
+/*
+ *  Maximum size of program, depends on Regs and Sigma
+ */
+int ProgMax;
+#endif
+
 /*
  * The actual top of the return stack
  */
@@ -195,7 +202,7 @@ static void raw_set_pc(unsigned int pc) {
 /*
  *  Where do the program regions start?
  */
-static const s_opcode *RegionTab[] = {
+static const s_opcode *const RegionTab[] = {
 	Prog,
 	UserFlash.prog,
 	BackupFlash._prog,
@@ -240,6 +247,16 @@ opcode getprog(unsigned int pc) {
 }
 
 
+/* 
+ * Return the the physical start-address of the current program
+ */
+const s_opcode *get_current_prog(void) {
+
+	const int region = nLIB(ProgBegin);
+	return RegionTab[region];
+}
+
+
 /*
  *  Set PC with sanity check
  */
@@ -271,27 +288,28 @@ static void set_was_complex(void) {
 
 /* Produce an error and stop
  */
-void err(const enum errors e) {
+int err(const enum errors e) {
 	if (Error == ERR_NONE) {
 		Error = e;
 		error_message(e);
+		return 1;
 	}
+	return e != ERR_NONE;
 }
 
 
 /* Display a warning
  */
-void warn(const enum errors e) {
+int warn(const enum errors e) {
 	if (Running) {
-		err(e);
+		return err(e);
 	}
-	else {
-		error_message(e);
+	error_message(e);
 #ifndef CONSOLE
-		State2.disp_freeze = 0;
-		JustDisplayed = 1;
+	State2.disp_freeze = 0;
+	JustDisplayed = 1;
 #endif
-	}
+	return e != ERR_NONE;
 }
 
 
@@ -584,10 +602,6 @@ void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 
 /* Locate the beginning and end of a section from a PC that points anywhere within
  */
-#define SECTION_XROM	-1
-#define SECTION_RAM	0
-#define SECTION_LIB	1	/* And above */
-
 static unsigned short int find_section_bounds(const unsigned int pc, const int endp, unsigned short int *const p_top) {
 	unsigned short int top, bottom;
 
@@ -658,10 +672,7 @@ unsigned int do_dec(unsigned int pc, int endp) {
  * programs on such.  Return non-zero if we wrapped.
  */
 int incpc(void) {
-	const unsigned int opc = state_pc();
-	const unsigned int pc = do_inc(opc, 1);
-
-	raw_set_pc(pc);
+	raw_set_pc(do_inc(state_pc(), 1));
 	return PcWrapped;
 }
 
@@ -1080,7 +1091,7 @@ void clrretstk_pc(void) {
 /* Sanity checks for program (step) deletion
  */
 static int check_delete_prog(unsigned int pc) {
-	if (! isRAM(pc) || pc == LastProg - 1 && getprog(pc) == (OP_NIL | OP_END))
+	if (! isRAM(pc) || (pc == LastProg - 1 && getprog(pc) == (OP_NIL | OP_END)))
 		warn(ERR_READ_ONLY);
 	else
 		return 0;
@@ -1090,9 +1101,9 @@ static int check_delete_prog(unsigned int pc) {
 /* Clear the program space
  */
 void clpall(void) {
-	LastProg = 1;
+	LastProg = 2;
 	clrretstk_pc();
-	stoprog(OP_NIL | OP_END);
+	Prog[0] = (OP_NIL | OP_END);
 }
 
 /* Clear just the current program
@@ -1116,12 +1127,13 @@ void clrprog(void) {
  */
 void clrall(void) {
 
-	clpall();
 	NumRegs = TOPREALREG;
+	xeq_init_contexts();
 	clrreg(NULL, NULL, OP_CLREG);
 	clrstk(NULL, NULL, OP_CLSTK);
 	clralpha(NULL, NULL, OP_CLRALPHA);
 	clrflags(NULL, NULL, OP_CLFLAGS);
+	clpall();
 
 	reset_shift();
 	State2.test = TST_NONE;
@@ -1738,16 +1750,20 @@ void op_voltage(decimal64 *a, decimal64 *nul2, enum nilop op) {
 }
 
 /*
- *  Return the free space on the return stack in levels/steps (MEM?),
- *  the number of active local (or global) registers
+ *  Commands to determine free memory
  */
 int free_mem(void) {
 	return RetStkSize + RetStkPtr;
 }
 
+int free_flash(void) {
+	return NUMPROG_FLASH_MAX - UserFlash.last_prog + 1;
+}
+
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
 	put_int( op == OP_MEM ? free_mem() : 
 		 op == OP_LOCR ? local_regs() :
+		 op == OP_FLASH ? free_flash() :
 		 NumRegs,
 		 0, a );
 }
@@ -2158,19 +2174,18 @@ void cmdconv(unsigned int arg, enum rarg op) {
 	setX(&r);
 }
 
-/* Finish up a test -- if the value is non-zero, the test passes.
- * If it is zero, the test fails.
+/*  Finish up a test -- if the value is non-zero, the test passes.
+ *  If it is zero, the test fails.
  */
 void fin_tst(const int a) {
-	if (a) {
-		if (!Running)
-			DispMsg = "true";
-	} else {
-		if (Running) {
+	if (Running) {
+		if (state_pc() == ProgEnd)
+			err(ERR_ILLEGAL);
+		else if (! a)
 			incpc();
-		} else
-			DispMsg = "false";
 	}
+	else
+		DispMsg = a ? "true" : "false";
 }
 
 
@@ -3873,10 +3888,17 @@ void xeq_init_contexts(void) {
 	// Compute the actual top and current size of the return stack
 	RetStkSize = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs;
 	RetStk = RetStkBase + RetStkSize;
+#ifdef ALLOW_LARGE_PROGRAM
+	ProgMax = NUMPROG + RET_STACK_SIZE + RetStkSize;
+	RetStkSize = ProgMax - (LastProg - 1);
+	ProgMax -= MINIMUM_RET_STACK_SIZE;
+	ProgFree = free_mem() - MINIMUM_RET_STACK_SIZE;
+#else
 	RetStkSize += RET_STACK_SIZE + NUMPROG + 1 - LastProg;
 	ProgFree = NUMPROG - (LastProg - 1);
 	if (RetStk < Prog + NUMPROG)
 		ProgFree -= Prog + NUMPROG - RetStk;	// All pointers are to 16 bit words!
+#endif
 }
 
 

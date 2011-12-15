@@ -26,11 +26,11 @@ ENTRY(entry)
 
 MEMORY
 {
-    volatile_ram (W!RX) :      	ORIGIN = 0x200000, LENGTH = 4K
-    persistent_ram (W!RX) : 	ORIGIN = 0x300000, LENGTH = 2K
+    volatileram (W!RX) :      	ORIGIN = 0x200000, LENGTH = 4K
+    persistentram (W!RX) : 	ORIGIN = 0x300000, LENGTH = 2K
     
-    program_flash (RX) :	ORIGIN = 0x100000, LENGTH = 0x20000 - 2K
-    backup_flash (R) :		ORIGIN = 0x120000 - 2K, LENGTH = 2K
+    programflash (RX) :		ORIGIN = 0x100000, LENGTH = 0x20000 - 2K
+    backupflash (R) :		ORIGIN = 0x120000 - 2K, LENGTH = 2K
 
     cmdtab (R) :		ORIGIN = 0x0f0000, LENGTH = 0x10000
 }
@@ -51,7 +51,7 @@ SECTIONS
         *(.xrom)          /* remove for fixed XROM */
         . = ALIGN(4);
         _efixed = .;
-    } >program_flash
+    } >programflash
 
 #if 0
     .relocate : AT (_efixed)
@@ -63,7 +63,7 @@ SECTIONS
         *(.data)
         . = ALIGN(4);
         _erelocate = .;
-    } >persistent_ram
+    } >persistentram
 #endif
 
     .revision : 
@@ -71,19 +71,21 @@ SECTIONS
         . = ALIGN(256) - 4;
 	*(.revision)
 	UserFlash = .;
-    } >program_flash
+    } >programflash
     
-    .backup_flash (NOLOAD) :
+    .backupflash (NOLOAD) :
     {
+    	UserFlashSize = . - UserFlash;
+    	UserFlashSteps = UserFlashSize / 2 - 2;
 	*(.backup_flash)
-    } >backup_flash
+    } >backupflash
 
     .bss (NOLOAD) : 
     {
         . = ALIGN(4);
         _szero = .;
         *(.bss)
-    } >volatile_ram
+    } >volatileram
     
     .slcdcmem (NOLOAD) :
     {
@@ -91,23 +93,23 @@ SECTIONS
     	*(.slcdcmem)
         . = ALIGN(4);
         _ezero = .;
-    } >volatile_ram
+    } >volatileram
 
-    .volatile_ram (NOLOAD) :
+    .volatileram (NOLOAD) :
     {
         . = ALIGN(4);
-    	*(.volatile_ram)
+    	*(.volatileram)
         . = ALIGN(4);
-    } >volatile_ram
+    } >volatileram
 
-    .persistent_ram (NOLOAD) :
+    .persistentram (NOLOAD) :
     {
         . = ALIGN(4);
-        _spersistent_ram = .;
-        *(.persistent_ram)
+        _spersistentram = .;
+        *(.persistentram)
         . = ALIGN(4);
-        _epersistent_ram = .;
-    } >persistent_ram
+        _epersistentram = .;
+    } >persistentram
 
     _sstack = 0x201000;
 

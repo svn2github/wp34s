@@ -587,29 +587,11 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")
-	FUNC0(OP_SAVE,		&flash_backup,		"SAVE")
-	FUNC0(OP_LOAD,		&flash_restore,		"LOAD")
-	FUNC0(OP_LOADP,		&load_program,		"LOADP")
-	FUNC0(OP_LOADR,		&load_registers,	"LOADR")
-	FUNC0(OP_LOADST,	&load_state,		"LOADST")
-	FUNC0(OP_PSTO,		&store_program,		"PSTO")
-	FUNC0(OP_PRCL,		&recall_program,	"PRCL")
 
 	FUNC1(OP_ROUNDING,	&op_roundingmode,	"RM?")
 	FUNC0(OP_SLOW,		&op_setspeed,		"SLOW")
 	FUNC0(OP_FAST,		&op_setspeed,		"FAST")
 
-	FUNC0(OP_SENDP,		&send_program,		"SENDP")
-	FUNC0(OP_SENDR,		&send_registers,	"SENDR")
-	FUNC0(OP_SENDA,		&send_all,		"SENDA")
-	FUNC0(OP_RECV,		&recv_any,		"RECV")
-#ifdef INCLUDE_USER_IO
-	FUNC0(OP_SEND1,		&send_byte,		"SEND1")
-	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN")
-	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE")
-	FUNC0(OP_ALPHASEND,	&send_alpha,		"\240SEND")
-	FUNC0(OP_ALPHARECV,	&recv_alpha,		"\240RECV")
-#endif
 	FUNC0(OP_TOP,		&isTop,			"TOP?")
 	FUNC1(OP_GETBASE,	&get_base,		"IBASE?")
 	FUNC1(OP_GETSIGN,	&get_sign_mode,		"SMODE?")
@@ -636,7 +618,29 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC1(OP_MEM,		&get_mem,		"MEM?")
 	FUNC1(OP_LOCR,		&get_mem,		"LocR?")
 	FUNC1(OP_REGSQ,		&get_mem,		"REGS?")
+	FUNC1(OP_FLASH,		&get_mem,		"FLASH?")
 	FUNC0(OP_XLOCAL,	&cmdxlocal,		"XLOCAL")
+
+#ifdef INCLUDE_USER_IO
+	FUNC0(OP_SEND1,		&send_byte,		"SEND1")
+	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN")
+	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE")
+	FUNC0(OP_ALPHASEND,	&send_alpha,		"\240SEND")
+	FUNC0(OP_ALPHARECV,	&recv_alpha,		"\240RECV")
+#endif
+	FUNC0(OP_SENDP,		&send_program,		"SENDP")
+	FUNC0(OP_SENDR,		&send_registers,	"SENDR")
+	FUNC0(OP_SENDA,		&send_all,		"SENDA")
+
+	FUNC0(OP_RECV,		&recv_any,		"RECV")
+	FUNC0(OP_SAVE,		&flash_backup,		"SAVE")
+	FUNC0(OP_LOAD,		&flash_restore,		"LOAD")
+	FUNC0(OP_LOADR,		&load_registers,	"LOADR")
+	FUNC0(OP_LOADST,	&load_state,		"LOADST")
+	FUNC0(OP_LOADP,		&load_program,		"LOADP")
+	FUNC0(OP_PRCL,		&recall_program,	"PRCL")
+	FUNC0(OP_PSTO,		&store_program,		"PSTO")
+
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif

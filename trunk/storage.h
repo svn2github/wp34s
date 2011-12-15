@@ -22,10 +22,10 @@
 #define NUMPROG_FLASH	4094
 
 #ifdef REALBUILD
-// Compute actual size of user flash area
-#define NUMPROG_FLASH_MAX (((s_opcode *)&BackupFlash - (s_opcode *)&UserFlash) - 2) 
+// Actual size of user flash area, Linker symbol on the device
+extern char UserFlashSteps;
+#define NUMPROG_FLASH_MAX ((int) &UserFlashSteps)
 #else
-// Assume fixed size of user flash area in emulator
 #define NUMPROG_FLASH_MAX NUMPROG_FLASH
 #endif
 
@@ -43,6 +43,7 @@ extern int checksum_code(void);
 extern int checksum_all(void);
 extern int checksum_backup(void);
 extern void init_library(void);
+extern int append_program(const s_opcode *source, int length);
 
 extern void flash_backup(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op);
