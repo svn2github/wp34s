@@ -32,15 +32,30 @@ static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, in
 	decimal64ToNumber(base + matrix_idx(row, col, ncols), r);
 }
 
+/* Check if a matrix fits into the available registers or not.
+ * Raise an error if not.
+ */
+static int matrix_range_check(int base, int rows, int cols) {
+	int limit = NumRegs;
+
+	if (base >= LOCAL_REG_BASE && LocalRegs < 0) {
+		base -= LOCAL_REG_BASE;
+		limit = local_regs();
+	}
+	if (base < 0 || base + rows * cols > limit) {
+		err(ERR_RANGE);
+		return 0;
+	}
+	return 1;
+}
+
 /* Build a matrix descriptor from the base, rows and columns.
  */
 static int matrix_descriptor(decNumber *r, int base, int rows, int cols) {
 	decNumber z;
 
-	if (base < 0 || base + rows * cols > 100) {
-		err(ERR_RANGE);
+	if (! matrix_range_check(base, rows, cols))
 		return 0;
-	}
 	int_to_dn(&z, (base * 100 + rows) * 100 + cols);
 	dn_mulpow10(r, &z, -4);
 	return 1;
@@ -65,15 +80,13 @@ static int matrix_decompose(const decNumber *x, int *rows, int *cols, int *up) {
 
 	dn_mulpow10(&y, x, 4);
 	n = dn_to_int(&y);
-	base = (n / 10000) % 100;
+	base = n / 10000;
 	c = n % 100;
 	r = (n / 100) % 100;
 	if (c == 0)
 		c = r;
-	if (base + r * c > 100) {
-		err(ERR_RANGE);
+	if (! matrix_range_check(base, r, c))
 		return -1;
-	}
 	if (c == 0) {
 		err(ERR_BAD_PARAM);
 		return -1;
