@@ -1959,10 +1959,7 @@ static void do_rtn(int plus1) {
 			// Normal RTN within program
 			unsigned short pc = RetStk[RetStkPtr - 1];
 			raw_set_pc(pc);
-			if (plus1) {
-				if (incpc())
-					decpc();  // do not wrap around
-			}
+			fin_tst(! plus1); // Inc PC if not at END
 		}
 		else {
 			// program was started without a valid return address on the stack
@@ -2181,10 +2178,8 @@ void cmdconv(unsigned int arg, enum rarg op) {
  */
 void fin_tst(const int a) {
 	if (Running) {
-		if (state_pc() == ProgEnd)
-			err(ERR_ILLEGAL);
-		else if (! a)
-			incpc();
+		if (! a && incpc())
+			decpc();
 	}
 	else
 		DispMsg = a ? "true" : "false";

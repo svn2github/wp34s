@@ -1186,7 +1186,8 @@ int main(int argc, char *argv[]) {
 	ALPHA(alpha_letters);
 	ALPHA(alpha_letters_lower);
 
-        fprintf(stderr, "maxsteps=%d\n", NUMPROG_FLASH);
+        fprintf(stderr, "maxsteps=%d\n", NUMPROG_LIMIT);
+        fprintf(stderr, "maxlibsteps=%d\n", NUMPROG_FLASH);
 	dump_opcodes(stderr);
 
 	printf( "/* Total number of catalogue entries %d\n"
