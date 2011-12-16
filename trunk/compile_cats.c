@@ -44,9 +44,6 @@ static s_opcode program_xfcn[] = {
 	MON(OP_sigper,		"%\221")
 	DYA(OP_ATAN2,		"ANGLE")
 	MON(OP_CEIL,		"CEIL")
-	NILIC(OP_CLALL,		"CLALL")
-	NILIC(OP_CLPALL,	"CLPALL")
-	NILIC(OP_CLREG,		"CLREG")
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DROP,		"DROP")
@@ -176,7 +173,6 @@ static s_opcode program_xfcn[] = {
 	/* Integer mode commands */
 	RARGCMD(RARG_ASR,	"ASR")
 	RARGCMD(RARG_CB,	"CB")
-	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_DBL_MUL,	"DBL\034")
 	TRI(OP_DBL_DIV, 	"DBL/")
 	TRI(OP_DBL_MOD, 	"DBLR")
@@ -208,8 +204,6 @@ static s_opcode catalogue[] = {
 	MON(OP_sigper,		"%\221")
 	DYA(OP_ATAN2,		"ANGLE")
 	MON(OP_CEIL,		"CEIL")
-	NILIC(OP_CLALL,		"CLALL")
-	NILIC(OP_CLREG,		"CLREG")
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DROP,		"DROP")
@@ -380,7 +374,7 @@ static s_opcode cplx_catalogue[] = {
 #endif
 };
 
-static s_opcode cfit_catalogue[] = {
+static s_opcode sums_catalogue[] = {
 	NILIC(OP_sigmaN,	"n\221")
 	NILIC(OP_sigmalnXlnX,	"\221ln\232X")
 	NILIC(OP_sigmalnYlnY,	"\221ln\232Y")
@@ -461,9 +455,6 @@ static s_opcode int_catalogue[] = {
 	MON(OP__1POW,		"-1^x")
 	RARGCMD(RARG_ASR,	"ASR")
 	RARGCMD(RARG_CB,	"CB")
-	NILIC(OP_CLALL,		"CLALL")
-	NILIC(OP_CLFLAGS,	"CLFLAG")
-	NILIC(OP_CLREG,		"CLREG")
 	MON(OP_CUBE,		"CUBE")
 	MON(OP_CUBERT,		"CUBERT")
 	NILIC(OP_DBL_MUL,	"DBL\034")
@@ -612,6 +603,9 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_SWAPT,	"t[<->]")
 	RARGCMD(RARG_STOSTK,	"\015STK")
 	RARGCMD(RARG_RCLSTK,	"\016STK")
+	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLPALL,	"CLPALL")
+	NILIC(OP_CLREG,		"CLREG")
 	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_CLSTK,		"CLSTK")
 	NILIC(OP_CLRALPHA,	"CLalpha")
@@ -746,8 +740,6 @@ static s_opcode mode_catalogue[] = {
 };
 
 static s_opcode alpha_catalogue[] = {
-	NILIC(OP_CLALL,		"CLALL")
-	NILIC(OP_CLREG,		"CLREG")
 	NILIC(OP_ALPHADATE,	"\240DATE")
 	NILIC(OP_ALPHADAY,	"\240DAY")
 	RARGCMD(RARG_AIP,	"\240IP")
@@ -1161,7 +1153,7 @@ int main(int argc, char *argv[]) {
 	CAT(program_xfcn);
 	CAT(cplx_catalogue);
 	CAT(stats_catalogue);
-	CAT(cfit_catalogue);
+	CAT(sums_catalogue);
 	CAT(prob_catalogue);
 	CAT(int_catalogue);
 	CAT(test_catalogue);

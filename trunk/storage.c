@@ -333,9 +333,9 @@ void init_library( void )
  *  Update crc and counter when done.
  *  All sizes are given in steps.
  */
-static int flash_append( int destination_step, s_opcode *source, int count, int last_prog )
+static int flash_append( int destination_step, const s_opcode *source, int count, int last_prog )
 {
-	char *dest = (char *) ( UserFlash.prog + offsetLIB( destination_step ) );
+	char *dest = (char *) ( UserFlash.prog + destination_step );
 	char *src = (char *) source;
 #ifdef REALBUILD
 	int offset_in_page = (int) dest & 0xff;
@@ -390,7 +390,7 @@ int flash_remove( int step_no, int count )
 	const int last_prog = UserFlash.last_prog - count;
 	step_no = offsetLIB( step_no );
 	return flash_append( step_no, UserFlash.prog + step_no + count,
-			     last_prog - step_no, last_prog );
+			     last_prog - step_no - 1, last_prog );
 }
 
 
@@ -544,11 +544,56 @@ void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op)
  */
 void store_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
+	opcode lbl; 
+	unsigned int pc;
+	int space_needed, count, free;
+
 	if ( not_running() ) {
+		/*
+		 *  Don't copy from library or XROM
+		 */
+		pc = nLIB( state_pc() );
+		if ( pc == REGION_LIBRARY || pc == REGION_XROM ) {
+			err( ERR_ILLEGAL );
+			return;
+		}
+		/*
+		 *  Check if program is labeled
+		 */
 		update_program_bounds( 1 );
-		// 1. Check if program is labeled
-		// 2. Find any duplicate labels and delete the programs
+		lbl = getprog( ProgBegin );
+		if ( !isDBL(lbl) || opDBL(lbl) != DBL_LBL ) {
+			err( ERR_NO_LBL );
+			return;
+		}
+		/*
+		 *  Compute space needed
+		 */
+		count = space_needed = 1 + ProgEnd - ProgBegin;
+		free = NUMPROG_FLASH_MAX + 1 - UserFlash.last_prog;
+
+		/*
+		 *  Find a duplicate label in the library and delete the program
+		 */
+		pc = find_opcode_from( addrLIB( 0, REGION_LIBRARY ), lbl, 0 );
+		if ( pc != 0 ) {
+			/*
+			 *  CLP in library
+			 */
+			unsigned int old_pc = state_pc();
+			set_pc( pc );
+			space_needed -= 1 + ProgEnd - ProgBegin;
+			if ( space_needed <= free ) {
+				clrprog();
+			}
+			set_pc( old_pc );
+		}
+		if ( space_needed > free ) {
+			err( ERR_FLASH_FULL );
+			return;
+		}
 		// 3. Append program
+		flash_append( UserFlash.last_prog - 1, get_current_prog(), count, UserFlash.last_prog + count );
 	}
 }
 

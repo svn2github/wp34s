@@ -248,7 +248,7 @@ opcode getprog(unsigned int pc) {
 
 
 /* 
- * Return the the physical start-address of the current program
+ * Return the physical start-address of the current program
  */
 const s_opcode *get_current_prog(void) {
 
@@ -1899,7 +1899,7 @@ static int retstk_up(int sp, int unwind)
 
 /* Search from the given position for the specified numeric label.
  */
-static unsigned int find_opcode_from(unsigned int pc, const opcode l, const int flags) {
+unsigned int find_opcode_from(unsigned int pc, const opcode l, const int flags) {
 	unsigned short int top;
 	int count;
 	const int endp = flags & FIND_OP_ENDS;
@@ -1924,6 +1924,7 @@ static unsigned int find_opcode_from(unsigned int pc, const opcode l, const int 
 unsigned int find_label_from(unsigned int pc, unsigned int arg, int flags) {
 	return find_opcode_from(pc, RARG(RARG_LBL, arg), flags);
 }
+
 
 
 /* Handle a GTO/GSB instruction

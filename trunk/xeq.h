@@ -898,6 +898,7 @@ enum errors {
 #ifdef MATRIX_SUPPORT
 	ERR_MATRIX_DIM,	ERR_SINGULAR,
 #endif
+	ERR_FLASH_FULL,
 	MAX_ERROR
 };
 
@@ -1059,6 +1060,7 @@ extern int incpc(void);
 extern void decpc(void);
 #define FIND_OP_ERROR	1
 #define FIND_OP_ENDS	2
+extern unsigned int find_opcode_from(unsigned int pc, const opcode l, const int flags);
 extern unsigned int find_label_from(unsigned int, unsigned int, int);
 extern void fin_tst(const int);
 

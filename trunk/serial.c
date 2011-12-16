@@ -266,7 +266,7 @@ static int get_word( void )
  *
  *    If a NAK is received while sending the transfer is aborted.
  */
-static void put_block( unsigned short tag, unsigned short length, void *data )
+static void put_block( unsigned short tag, unsigned short length, const void *data )
 {
 	const unsigned short crc = crc16( data, length ) ^ tag;
 	unsigned char *p = (unsigned char *) data;
@@ -434,11 +434,12 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 
 
 /*
- * Transmit the program space from RAM to the serial port.
+ * Transmit the current program to the serial port.
  */
 void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
-	put_block( TAG_PROGRAM, ( LastProg - 1 ) * sizeof( s_opcode ), Prog );
+	update_program_bounds( 1 );
+	put_block( TAG_PROGRAM, (ProgEnd - ProgBegin + 1) * sizeof( s_opcode ), get_current_prog() );
 }
 
 
