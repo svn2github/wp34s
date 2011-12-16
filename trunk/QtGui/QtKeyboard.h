@@ -32,6 +32,8 @@ class QtBackgroundImage;
 #define G_CODE 10
 #define H_CODE 11
 
+#define DEFAULT_HSHIFT_DELAY 200
+
 class QtKeyboard: public QObject
 {
 	Q_OBJECT
@@ -56,6 +58,9 @@ public:
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
 	void invert(const QtKey* aKey, QtBackgroundImage& aBackgroundImage);
 
+public slots:
+	void hShift();
+
 signals:
 	void keyPressed();
 
@@ -65,6 +70,7 @@ private:
 	QtKeyCode findKeyCode(const QKeyEvent& aKeyEvent) const;
 	QtKeyCode findKeyCode(const QPoint& aPoint) const;
     const QtKey* findKey(const QtKeyCode& aKeyCode) const;
+    void startHShiftTimer();
 
 private:
     int hShiftHeight;
@@ -74,7 +80,9 @@ private:
     char keyboardBuffer[KEYBOARD_BUFFER_SIZE];
     volatile int keyboardBufferBegin, keyboardBufferEnd;
     QtKeyCode currentKeyCode;
+    int hShiftDelay;
     bool currentKeyHShifted;
+    QTimer* hShiftTimer;
     QHash<int, const QtKey*> keysByCode;
 };
 

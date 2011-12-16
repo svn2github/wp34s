@@ -26,6 +26,16 @@ QtKeyCode::QtKeyCode(int aCode, bool anHShiftedFlag)
 {
 }
 
+bool QtKeyCode::operator ==(const QtKeyCode& aQtKeyCode) const
+{
+	return code==aQtKeyCode.getCode() && isHShifted()==aQtKeyCode.isHShifted();
+}
+
+bool QtKeyCode::operator !=(const QtKeyCode& aQtKeyCode) const
+{
+	return !(*this == aQtKeyCode);
+}
+
 bool QtKeyCode::isValid() const
 {
 	return valid;

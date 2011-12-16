@@ -22,9 +22,12 @@
 static const QtKeyCode INVALID_KEY_CODE;
 
 QtKeyboard::QtKeyboard(const QtSkin& aSkin)
-	: keyboardBufferBegin(0), keyboardBufferEnd(0), currentKeyCode(INVALID_KEY_CODE), currentKeyHShifted(false)
+	: keyboardBufferBegin(0), keyboardBufferEnd(0), currentKeyCode(INVALID_KEY_CODE), hShiftDelay(DEFAULT_HSHIFT_DELAY), currentKeyHShifted(false)
 {
 	setSkin(aSkin);
+	hShiftTimer=new QTimer(this);
+	hShiftTimer->setSingleShot(true);
+	connect(hShiftTimer, SIGNAL(timeout()), this, SLOT(hShift()));
 }
 
 QtKeyboard::~QtKeyboard()
@@ -72,6 +75,8 @@ bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 {
 	currentKeyCode=findKeyCode(aMouseEvent.pos());
+	currentKeyHShifted=false;
+	startHShiftTimer();
 	emit keyPressed();
 	return true;
 }
@@ -91,14 +96,21 @@ bool QtKeyboard::processMouseMovedEvent(const QMouseEvent& aMouseEvent)
 	if(currentKeyCode.isValid())
 	{
 		QtKeyCode newKeyCode=findKeyCode(aMouseEvent.pos());
-		if(newKeyCode.isValid())
+		if(newKeyCode.isValid() && newKeyCode!=currentKeyCode)
 		{
 			currentKeyCode=newKeyCode;
-			currentKeyHShifted=currentKeyCode.isHShifted();
+			currentKeyHShifted=false;
+			startHShiftTimer();
 			emit keyPressed();
 		}
 	}
 	return true;
+}
+
+void QtKeyboard::hShift()
+{
+	currentKeyHShifted=currentKeyCode.isValid() && currentKeyCode.isHShifted();
+	emit keyPressed();
 }
 
 int QtKeyboard::getKey()
@@ -239,6 +251,12 @@ const QtKey* QtKeyboard::findKey(const QtKeyCode& aKeyCode) const
 	{
 		return NULL;
 	}
+}
+
+void QtKeyboard::startHShiftTimer()
+{
+	hShiftTimer->stop();
+	hShiftTimer->start(hShiftDelay);
 }
 
 void QtKeyboard::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent)

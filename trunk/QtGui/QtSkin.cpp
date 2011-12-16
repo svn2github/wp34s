@@ -27,7 +27,7 @@ static const PainterHandlers painterHandlers;
 
 
 QtSkin::QtSkin(QFile& aFile) throw (QtSkinException)
-		: pictureSize(-1, -1), screenRectangle(-1, -1, -1, -1), screenForeground(), screenBackground(),
+		: pictureSize(-1, -1), screenRectangle(-1, -1, -1, -1), screenForeground(), screenBackground(), hShiftHeight(0),
 		  keys(MAX_KEY_CODE, NULL), dotPainters(DOT_PAINTERS_COUNT, NULL), pastePainters(PASTE_PAINTERS_COUNT, NULL),
 		  insertedKeys(0), insertedDotPainters(0), insertedPastePainters(0)
 {

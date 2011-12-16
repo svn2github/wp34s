@@ -25,6 +25,8 @@ public:
 	QtKeyCode(int aCode, bool anHShiftedFlag=false);
 
 public:
+	bool operator ==(const QtKeyCode& aQtKeyCode) const;
+	bool operator !=(const QtKeyCode& aQtKeyCode) const;
 	bool isValid() const;
 	int getCode() const;
 	bool isHShifted() const;
