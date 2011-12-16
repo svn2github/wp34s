@@ -1959,8 +1959,10 @@ static void do_rtn(int plus1) {
 			// Normal RTN within program
 			unsigned short pc = RetStk[RetStkPtr - 1];
 			raw_set_pc(pc);
-			if (plus1)
-				incpc();
+			if (plus1) {
+				if (incpc())
+					decpc();  // do not wrap around
+			}
 		}
 		else {
 			// program was started without a valid return address on the stack
