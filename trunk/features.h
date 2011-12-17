@@ -113,10 +113,6 @@
 // last X on the mode switch (so e.g. 34 stays 34).
 // #define HP16C_MODE_CHANGE
 
-// Include code to support a program mode only delete multiple steps command
-// END makes this obsolete
-// #define INCLUDE_MULTI_DELETE
-
 // Include some basic matrix support commands.
 #define MATRIX_SUPPORT
 
@@ -134,6 +130,9 @@
 // Include fast path code to calculate factorials and gamma functions
 // for positive integers using a string of multiplications.
 #define GAMMA_FAST_INTEGERS
+
+// Include the flash register recall routines RCF and their variants
+// #define INCLUDE_FLASH_RECALL
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */

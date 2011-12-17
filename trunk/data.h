@@ -170,6 +170,7 @@ extern TPersistentRam PersistentRam;
 #define Alpha		(PersistentRam._alpha)
 #define Regs		(PersistentRam._regs)
 #define Prog		(PersistentRam._prog)
+#define Prog_1		(PersistentRam._prog - 1)
 #define UserFlags	(PersistentRam._user_flags)
 #define RetStkBase	(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
 #define ProgBegin	(PersistentRam._prog_begin)

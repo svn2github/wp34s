@@ -1221,12 +1221,6 @@ static int arg_eval(unsigned int val) {
 	}
 	// Build op-code
 	reset_arg();
-#ifdef INCLUDE_MULTI_DELETE
-	if (base == RARG_DELPROG) {
-		del_till_label(val);
-		return STATE_UNFINISHED;
-	}
-#endif
 	return r;
 }
 
@@ -1277,8 +1271,12 @@ static int arg_fkey(int n) {
 }
 
 static int arg_storcl_check(const unsigned int b, const int cmplx) {
+#ifdef INCLUDE_FLASH_RECALL
 	return (b == RARG_STO || b == RARG_RCL || b == RARG_FLRCL ||
 			(cmplx && (b == RARG_CSTO || b == RARG_CRCL || b == RARG_FLCRCL)));
+#else
+	return (b == RARG_STO || b == RARG_RCL || (cmplx && (b == RARG_CSTO || b == RARG_CRCL )));
+#endif
 }
 
 static int arg_storcl(const unsigned int n, int cmplx) {
@@ -1425,12 +1423,7 @@ static int process_arg(const keycode c) {
 	case K20:				// Enter is a short cut finisher but it also changes a few commands if it is first up
 		if (State2.numdigit == 0 && !State2.ind && !State2.dot) {
 			if (argcmds[base].label) {
-#ifdef INCLUDE_MULTI_DELETE
-				if (base == RARG_DELPROG)
-					init_arg(DBL_DELPROG);
-				else
-#endif
-					init_arg((enum rarg)(base - RARG_LBL));
+				init_arg((enum rarg)(base - RARG_LBL));
 				State2.multi = 1;
 				State2.alphashift = 0;
 				State2.rarg = 0;
@@ -1896,12 +1889,6 @@ add_char:
 fin:
 	opcode = OP_DBL + (CmdBase << DBL_SHIFT) 
 	       + State2.digval + (State2.digval2 << 16) + (ch << 24);
-#ifdef INCLUDE_MULTI_DELETE
-	if (CmdBase == DBL_DELPROG) {
-		del_till_multi_label(opcode);
-	return STATE_UNFINISHED;
-}
-#endif
 	return opcode;
 }
 
@@ -2135,9 +2122,11 @@ static int process_registerlist(const keycode c) {
 			State2.digval = 0;
 		return STATE_UNFINISHED;
 
+#ifdef INCLUDE_FLASH_RECALL
 	case K04:
 		State2.digval2 = ! State2.digval2 && ! State2.local;
 		return STATE_UNFINISHED;
+#endif
 
 	case K24:			
 	//case K60:
@@ -2152,7 +2141,11 @@ static int process_registerlist(const keycode c) {
 		}
 	case K11:		// RCL
 		if ( shift == SHIFT_N ) {
+#ifdef INCLUDE_FLASH_RECALL
 			n = RARG( State2.digval2 ? RARG_FLRCL : RARG_RCL, State2.digval );
+#else
+			n = RARG( RARG_RCL, State2.digval );
+#endif
 			State2.registerlist = 0;
 			State2.digval = 0;
 			State2.digval2 = 0;

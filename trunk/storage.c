@@ -47,6 +47,7 @@
 #include "storage.h"
 #include "display.h"
 #include "stats.h"
+#include "alpha.h"
 
 #define PAGE_SIZE	 256
 
@@ -172,6 +173,146 @@ static int checksum_region( FLASH_REGION *fr, FLASH_REGION *header )
 	int l = ( header->last_prog - 1 ) * sizeof( s_opcode );
 	return l < 0 || l > sizeof( fr->prog ) || test_checksum( fr->prog, l, fr->crc, &(header->crc) );
 }
+
+
+/*
+ *  Sanity checks for program (step) deletion
+ */
+static int check_delete_prog( unsigned int pc ) 
+{
+	if ( !isRAM( pc ) || ( pc == LastProg - 1 && getprog( pc ) == ( OP_NIL | OP_END ) ) ) {
+		warn(ERR_READ_ONLY);
+	}
+	else {
+		return 0;
+	}
+	return 1;
+}
+
+
+/*
+ *  Clear the program space
+ */
+void clpall( void )
+{
+	LastProg = 2;
+	clrretstk_pc();
+	Prog[ 0 ] = ( OP_NIL | OP_END );
+}
+
+
+/*
+ *  Clear just the current program
+ */
+void clrprog( void )
+{
+	update_program_bounds( 1 );
+	if ( nLIB( ProgBegin ) == REGION_LIBRARY ) {
+		/*
+		 *  Porgram is in flash
+		 */
+		flash_remove( ProgBegin, ProgEnd + 1 - ProgBegin );
+	}
+	else {
+		if ( check_delete_prog( ProgBegin ) ) {
+			return;
+		}
+		xcopy( Prog_1 + ProgBegin, Prog + ProgEnd, ( LastProg - ProgEnd - 1 ) << 1 );
+		LastProg -= ( ProgEnd + 1 - ProgBegin );
+	}
+	set_pc( ProgBegin - 1 );
+}
+ 
+
+/*
+ *  Clear all - programs and registers
+ */
+void clrall(void) 
+{
+	NumRegs = TOPREALREG;
+	xeq_init_contexts();
+	clrreg( NULL, NULL, OP_CLREG );
+	clrstk( NULL, NULL, OP_CLSTK );
+	clralpha( NULL, NULL, OP_CLRALPHA );
+	clrflags( NULL, NULL, OP_CLFLAGS );
+	clpall();
+
+	reset_shift();
+	State2.test = TST_NONE;
+
+	DispMsg = NULL;
+}
+
+
+/*
+ *  Clear everything
+ */
+void reset( void ) 
+{
+	xset( &PersistentRam, 0, sizeof( PersistentRam ) );
+	clrall();
+	init_state();
+	UState.contrast = 6;
+	DispMsg = "Erased";
+}
+
+
+/*
+ *  Store into program space.
+ */
+void stoprog( opcode c ) {
+	const int off = isDBL( c ) ? 2 : 1;
+	int i;
+	unsigned int pc = state_pc();
+
+	if ( pc == LastProg - 1 && c != ( OP_NIL | OP_END ) )
+		stoprog( OP_NIL | OP_END );
+
+	if ( !isRAM( pc ) ) {
+		warn( ERR_READ_ONLY );
+		return;
+	}
+	clrretstk();
+	if ( ProgFree < off ) {
+		return;
+	}
+	LastProg += off;
+	ProgEnd += off;
+	pc = do_inc( pc, 0 );	// Don't wrap on END
+	for ( i = LastProg; i > (int) pc; --i ) {
+		Prog_1[ i ] = Prog_1[ i - off ];
+	}
+	if (isDBL(c))
+		Prog_1[pc + 1] = c >> 16;
+	Prog_1[pc] = c;
+	State.pc = pc;
+}
+
+
+/*
+ *  Delete the current step in the program
+ */
+void delprog( void )
+{
+	int i;
+	const unsigned int pc = state_pc();
+	int off;
+
+	if ( check_delete_prog( pc ) )
+		return;
+	if ( pc == 0 )
+		return;
+
+	off = isDBL( Prog_1[ pc ]) ? 2 : 1;
+	for ( i = pc; i < (int) LastProg - 1; ++i )
+		Prog_1[ i ] = Prog_1[ i + off ];
+	do {
+		Prog_1[ LastProg ] = EMPTY_PROGRAM_OPCODE;
+		LastProg--;
+	} while ( --off );
+	decpc();
+}
+
 
 #ifdef REALBUILD
 /*

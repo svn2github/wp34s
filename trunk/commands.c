@@ -808,6 +808,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,				"\240XEQ")
 	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,				"\240GTO")
 
+#ifdef INCLUDE_FLASH_RECALL
 	CMDstknL(RARG_FLRCL, 	  &cmdflashrcl,				"RCF")
 	CMDstknL(RARG_FLRCL_PL,   &cmdflashrcl,				"RCF+")
 	CMDstknL(RARG_FLRCL_MI,   &cmdflashrcl,				"RCF-")
@@ -820,7 +821,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstknL(RARG_FLCRCL_MI, &cmdflashcrcl,			"\024RCF-")
 	CMDcstknL(RARG_FLCRCL_MU, &cmdflashcrcl,			"\024RCF\034")
 	CMDcstknL(RARG_FLCRCL_DV, &cmdflashcrcl,			"\024RCF/")
-
+#endif
 	CMD(RARG_SLD,		&op_shift_digit,100,			"SDL")
 	CMD(RARG_SRD,		&op_shift_digit,100,			"SDR")
 
@@ -830,9 +831,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #ifdef INCLUDE_USER_MODE
 	CMDstk(RARG_STOM,	&cmdsavem,				"STOM")
 	CMDstk(RARG_RCLM,	&cmdrestm,				"RCLM")
-#endif
-#ifdef INCLUDE_MULTI_DELETE
-	CMDlblnI(RARG_DELPROG,	NOFN,					"DEL\276")
 #endif
 	CMDstk(RARG_PUTKEY,	&op_putkey,				"PUTK")
 	CMDstk(RARG_KEYTYPE,	&op_keytype,				"KTP?")
@@ -884,10 +882,6 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_2DERIV,	&multixromarg,	"f\"(x)")
 	CMD(DBL_INTG,	&multixromarg,	"\004")
 	CMD(DBL_ALPHA,	&multialpha,	"\240")
-//	CMD(DBL_NUMBER,	NOFN,		"#")
-#ifdef INCLUDE_MULTI_DELETE
-	CMD(DBL_DELPROG,NOFN,		"DEL\276")
-#endif
 #undef CMD
 };
 

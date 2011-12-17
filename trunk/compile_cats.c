@@ -160,7 +160,9 @@ static s_opcode program_xfcn[] = {
 	DYA(OP_HERMITE_HE,	"HE\275")
 	DYA(OP_HERMITE_H,	"H\275")
 	NILIC(OP_VOLTAGE,	"BATT")
+#ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL, 	"RCF")
+#endif
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
@@ -320,7 +322,9 @@ static s_opcode catalogue[] = {
 	DYA(OP_HERMITE_HE,	"HE\275")
 	DYA(OP_HERMITE_H,	"H\275")
 	NILIC(OP_VOLTAGE,	"BATT")
+#ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL,	"RCF")
+#endif
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
@@ -368,7 +372,9 @@ static s_opcode cplx_catalogue[] = {
 	CDYA(OP_DN,		"DN")
 	CDYA(OP_SN,		"SN")
 #endif
+#ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLCRCL, 	"\024RCF")
+#endif
 #ifdef INCLUDE_XROOT
 	CDYA(OP_XROOT,		"\234\003y")
 #endif
@@ -506,7 +512,9 @@ static s_opcode int_catalogue[] = {
 #ifdef INCLUDE_MULADD
 	TRI(OP_MULADD,		"\034+")
 #endif
+#ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL, 	"RCF")
+#endif
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
 #endif
@@ -660,9 +668,6 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_ALPHASEND,	"\240SEND")
 	NILIC(OP_ALPHARECV,	"\240RECV")
 #endif
-#ifdef INCLUDE_MULTI_DELETE
-	RARGCMD(RARG_DELPROG,	"DEL[sub-p]")
-#endif
 	NILIC(OP_SAVE,		"SAVE")
 	NILIC(OP_LOAD,		"LOAD")
 	NILIC(OP_LOADP,		"LOADP")
@@ -670,7 +675,9 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_LOADST,	"LOADST")
 	NILIC(OP_PSTO,		"PSTO")
 	NILIC(OP_PRCL,		"PRCL")
+#ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL, 	"RCF")
+#endif
 	RARGCMD(RARG_PUTKEY,	"PUTK")
 
 	RARGCMD(RARG_LOCAL,	"LocR")

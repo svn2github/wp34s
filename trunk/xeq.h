@@ -828,10 +828,11 @@ enum rarg {
 
 	RARG_PAUSE, RARG_KEY,
 	RARG_ALPHAXEQ, RARG_ALPHAGTO,
-
+#ifdef INCLUDE_FLASH_RECALL
 	RARG_FLRCL, RARG_FLRCL_PL, RARG_FLRCL_MI, RARG_FLRCL_MU, RARG_FLRCL_DV,
 			RARG_FLRCL_MIN, RARG_FLRCL_MAX,
 	RARG_FLCRCL, RARG_FLCRCL_PL, RARG_FLCRCL_MI, RARG_FLCRCL_MU, RARG_FLCRCL_DV,
+#endif
 	RARG_SLD, RARG_SRD,
 
 	RARG_VIEW_REG,
@@ -839,9 +840,6 @@ enum rarg {
 
 #ifdef INCLUDE_USER_MODE
 	RARG_STOM, RARG_RCLM,
-#endif
-#ifdef INCLUDE_MULTI_DELETE
-	RARG_DELPROG,
 #endif
 	RARG_PUTKEY,
 	RARG_KEYTYPE,
@@ -877,9 +875,6 @@ enum multiops {
 	DBL_SUM, DBL_PROD, DBL_SOLVE, DBL_DERIV, DBL_2DERIV, DBL_INTG,
 	DBL_ALPHA,
 	//DBL_NUMBER,
-#ifdef INCLUDE_MULTI_DELETE
-	DBL_DELPROG,
-#endif
 	NUM_MULTI	// Last entry defines number of operations
 };
 
@@ -1020,9 +1015,7 @@ extern void reset_volatile_state(void);
 extern void xeq(opcode);
 extern void xeqprog(void);
 extern void xeqone(char *);
-extern void xeq_init(void);
 extern void xeq_init_contexts(void);
-extern int init_34s(void);
 extern void process_keycode(int);
 extern void set_entry(void);
 
@@ -1042,17 +1035,9 @@ extern int move_retstk(int distance);
 
 extern void clrretstk(void);
 extern void clrretstk_pc(void);
-extern void clrprog(void);
-extern void clpall(void);
-extern void clrall(void);
-extern void reset(void);
 
 extern opcode getprog(unsigned int n);
 extern const s_opcode *get_current_prog(void);
-extern void stoprog(opcode);
-extern void delprog(void);
-extern void del_till_label(unsigned int);
-extern void del_till_multi_label(unsigned int);
 extern void update_program_bounds(const int force);
 extern unsigned int do_inc(const unsigned int, int);
 extern unsigned int do_dec(unsigned int, int);

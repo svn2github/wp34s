@@ -44,6 +44,14 @@ extern int checksum_all(void);
 extern int checksum_backup(void);
 extern void init_library(void);
 extern int append_program(const s_opcode *source, int length);
+extern void stoprog(opcode);
+extern void delprog(void);
+
+extern int init_34s(void);
+extern void clrprog(void);
+extern void clpall(void);
+extern void clrall(void);
+extern void reset(void);
 
 extern void flash_backup(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op);

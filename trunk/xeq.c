@@ -99,11 +99,6 @@ int ShowRegister;
 unsigned short XromUserPc;
 unsigned short UserLocalRegs;
 
-/*
- *  Define storage for the machine's program space.
- */
-#define Prog_1	((s_opcode *)(Prog - 1))
-
 /* We need various different math contexts.
  * More efficient to define these globally and reuse them as needed.
  */
@@ -1088,109 +1083,7 @@ void clrretstk_pc(void) {
 }
 
 
-/* Sanity checks for program (step) deletion
- */
-static int check_delete_prog(unsigned int pc) {
-	if (! isRAM(pc) || (pc == LastProg - 1 && getprog(pc) == (OP_NIL | OP_END)))
-		warn(ERR_READ_ONLY);
-	else
-		return 0;
-	return 1;
-}
 
-/* Clear the program space
- */
-void clpall(void) {
-	LastProg = 2;
-	clrretstk_pc();
-	Prog[0] = (OP_NIL | OP_END);
-}
-
-/* Clear just the current program
-*/
-void clrprog(void) {
-	update_program_bounds(1);
-	if (nLIB(ProgBegin) == REGION_LIBRARY) {
-		flash_remove(ProgBegin, ProgEnd + 1 - ProgBegin);
-	}
-	else {
-		if (check_delete_prog(ProgBegin))
-			return;
-		xcopy(Prog_1 + ProgBegin, Prog + ProgEnd, (LastProg - ProgEnd - 1) << 1);
-		LastProg -= (ProgEnd + 1 - ProgBegin);
-	}
-	set_pc(ProgBegin);
-}
- 
-
-/* Clear all - programs and registers
- */
-void clrall(void) {
-
-	NumRegs = TOPREALREG;
-	xeq_init_contexts();
-	clrreg(NULL, NULL, OP_CLREG);
-	clrstk(NULL, NULL, OP_CLSTK);
-	clralpha(NULL, NULL, OP_CLRALPHA);
-	clrflags(NULL, NULL, OP_CLFLAGS);
-	clpall();
-
-	reset_shift();
-	State2.test = TST_NONE;
-
-	DispMsg = NULL;
-}
-
-
-/* Clear everything
- */
-void reset(void) {
-	xset(&PersistentRam, 0, sizeof( PersistentRam ));
-	clrall();
-	init_state();
-	UState.contrast = 7;
-	DispMsg = "Erased";
-}
-
-
-/* Delete multiple steps from the current position
- */
-#ifdef INCLUDE_MULTI_DELETE
-static void delete_until(unsigned int op, int flags) {
-	unsigned int pc = state_pc();
-	const int pczero = (pc == 0);
-	unsigned int t;
-
-	if (check_delete_prog(pc))
-		return;
-	if (pczero && incpc())
-		return;
-
-	t = find_opcode_from(pc, op, flags);
-	if (t == 0 || t < pc) {
-		err(ERR_NO_LBL);
-		return;
-	}
-	while (getprog(state_pc()) != op) {
-		delprog();
-		if (incpc()) {
-			decpc();
-			break;
-		}
-	}
-	if (pczero)
-		set_pc(0);
-}
-
-void del_till_label(unsigned int n) {
-	delete_until(RARG(RARG_LBL, n), FIND_OP_ENDS);
-}
-
-void del_till_multi_label(unsigned int n) {
-	const opcode dest = (n & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
-	delete_until(dest, 0);
-}
-#endif
 
 
 /***************************************************************************
@@ -1202,8 +1095,8 @@ void del_till_multi_label(unsigned int n) {
  * lastx and then replace it with their result, we can factor out the common
  * stack manipulatin code.
  */
-static void monadic(const opcode op) {
-
+static void monadic(const opcode op) 
+{
 	unsigned int f;
 	process_cmdline_set_lift();
 
@@ -1533,9 +1426,11 @@ void cmdrcl(unsigned int arg, enum rarg op) {
 	do_rcl(get_reg_n(arg), op);
 }
 
+#ifdef INCLUDE_FLASH_RECALL
 void cmdflashrcl(unsigned int arg, enum rarg op) {
 	do_rcl(BackupFlash._regs+arg, op - RARG_FLRCL + RARG_RCL);
 }
+#endif
 
 /* And the complex equivalents for the above.
  * We pair registers arg & arg+1 to provide a complex number
@@ -1628,6 +1523,7 @@ void cmdcrcl(unsigned int arg, enum rarg op) {
 	do_crcl(t1, t2, op);
 }
 
+#ifdef INCLUDE_FLASH_RECALL
 void cmdflashcrcl(unsigned int arg, enum rarg op) {
 	const decimal64 *t1, *t2;
 
@@ -1635,7 +1531,7 @@ void cmdflashcrcl(unsigned int arg, enum rarg op) {
 	t2 = t1+1;
 	do_crcl(t1, t2, op - RARG_FLCRCL + RARG_CRCL);
 }
-
+#endif
 
 /* SWAP x with the specified register
  */
@@ -3813,59 +3709,6 @@ void xeq_sst_bst(int kind)
 		incpc();
 		OpCode = 0;
 	}
-}
-
-
-/* Store into program space.
- */
-void stoprog(opcode c) {
-	const int off = isDBL(c) ? 2 : 1;
-	int i;
-	unsigned int pc = state_pc();
-
-	if (pc == LastProg - 1 && c != (OP_NIL | OP_END))
-		stoprog(OP_NIL | OP_END);
-
-	if (!isRAM(pc)) {
-		warn(ERR_READ_ONLY);
-		return;
-	}
-	clrretstk();
-	if (ProgFree < off) {
-		return;
-	}
-	LastProg += off;
-	ProgEnd += off;
-	pc = do_inc(pc, 0);	// Don't wrap on END
-	for (i = LastProg; i > (int)pc; i--)
-		Prog_1[i] = Prog_1[i - off];
-	if (isDBL(c))
-		Prog_1[pc + 1] = c >> 16;
-	Prog_1[pc] = c;
-	State.pc = pc;
-}
-
-
-/* Delete the current step in the program
- */
-void delprog(void) {
-	int i;
-	const unsigned int pc = state_pc();
-	int off;
-
-	if (check_delete_prog(pc))
-		return;
-	if (pc == 0)
-		return;
-
-	off = isDBL(Prog_1[pc])?2:1;
-	for (i=pc; i<(int)LastProg-1; i++)
-		Prog_1[i] = Prog_1[i+off];
-	do {
-		Prog_1[LastProg] = EMPTY_PROGRAM_OPCODE;
-		LastProg--;
-	} while (--off);
-	decpc();
 }
 
 
