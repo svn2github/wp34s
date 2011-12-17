@@ -21,8 +21,13 @@
 
 static const QtKeyCode INVALID_KEY_CODE;
 
-QtKeyboard::QtKeyboard(const QtSkin& aSkin)
-	: keyboardBufferBegin(0), keyboardBufferEnd(0), currentKeyCode(INVALID_KEY_CODE), hShiftDelay(DEFAULT_HSHIFT_DELAY), currentKeyHShifted(false)
+QtKeyboard::QtKeyboard(const QtSkin& aSkin, int anHShiftDelay)
+	: keyboardBufferBegin(0),
+	  keyboardBufferEnd(0),
+	  currentKeyCode(INVALID_KEY_CODE),
+	  hShiftDelay(anHShiftDelay),
+	  currentKeyHShifted(false),
+	  hShiftLocked(false)
 {
 	setSkin(aSkin);
 	hShiftTimer=new QTimer(this);
@@ -107,10 +112,33 @@ bool QtKeyboard::processMouseMovedEvent(const QMouseEvent& aMouseEvent)
 	return true;
 }
 
+
+bool QtKeyboard::processDoubleClickEvent(const QMouseEvent& aMouseEvent)
+{
+	QtKeyCode keyCode=findKeyCode(aMouseEvent.pos());
+	if(keyCode.getCode()==H_CODE)
+	{
+		hShiftLocked=!hShiftLocked;
+		set_hshift_locked(hShiftLocked);
+		emit keyPressed();
+	}
+	return true;
+}
+
 void QtKeyboard::hShift()
 {
 	currentKeyHShifted=currentKeyCode.isValid() && currentKeyCode.isHShifted();
 	emit keyPressed();
+}
+
+int QtKeyboard::getHShiftDelay()
+{
+	return hShiftDelay;
+}
+
+void QtKeyboard::setHShiftDelay(int anHShiftDelay)
+{
+	hShiftDelay=anHShiftDelay;
 }
 
 int QtKeyboard::getKey()
@@ -138,7 +166,7 @@ void QtKeyboard::putKeyCode(const QtKeyCode& aKeyCode)
 	currentKeyHShifted=false;
 	if(aKeyCode.isValid())
 	{
-		if(aKeyCode.isHShifted())
+		if(!hShiftLocked && aKeyCode.isHShifted())
 		{
 			currentKeyHShifted=true;
 			putKey(H_CODE);
@@ -256,23 +284,36 @@ const QtKey* QtKeyboard::findKey(const QtKeyCode& aKeyCode) const
 void QtKeyboard::startHShiftTimer()
 {
 	hShiftTimer->stop();
-	hShiftTimer->start(hShiftDelay);
+	if(!hShiftLocked && currentKeyCode.isHShifted())
+	{
+		hShiftTimer->start(hShiftDelay);
+	}
 }
 
 void QtKeyboard::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent)
 {
 	Q_UNUSED(aPaintEvent);
 
+	if(hShiftLocked)
+	{
+		invertHKey(aBackgroundImage);
+	}
+
 	const QtKey* key=findKey(currentKeyCode);
 	if(key!=NULL && key->getRectangle().isValid())
 	{
 		invert(key, aBackgroundImage);
-		if(currentKeyHShifted)
+		if(currentKeyHShifted && !hShiftLocked)
 		{
-			const QtKey* hKey=findKey(H_CODE);
-			invert(hKey, aBackgroundImage);
+			invertHKey(aBackgroundImage);
 		}
 	}
+}
+
+void QtKeyboard::invertHKey(QtBackgroundImage& aBackgroundImage)
+{
+	static const QtKey* hKey=findKey(H_CODE);
+	invert(hKey, aBackgroundImage);
 }
 
 void QtKeyboard::invert(const QtKey* aKey, QtBackgroundImage& aBackgroundImage)

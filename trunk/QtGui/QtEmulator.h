@@ -43,6 +43,9 @@
 #define CUSTOM_DIRECTORY_ACTIVE_SETTING "CustomDirectoryActive"
 #define CUSTOM_DIRECTORY_NAME_SETTING "CustomDirectoryName"
 
+#define KEYBOARD_SETTINGS_GROUP "Keyboard"
+#define HSHIFT_DELAY_SETTING "HShiftDelay"
+
 #define SERIAL_PORT_SETTINGS_GROUP "SerialPort"
 #define SERIAL_PORT_NAME_SETTING "SerialPortName"
 
@@ -141,7 +144,13 @@ private:
      void startThreads();
      void stopThreads();
      void loadSettings();
+     void loadUserInterfaceSettings();
+     void loadKeyboardSettings();
+     void loadCustomDirectorySettings();
+     void loadSerialPortSettings();
      void saveSettings();
+     void saveUserInterfaceSettings();
+     void saveKeyboardSettings();
      void saveCustomDirectorySettings();
      void saveSerialPortSettings();
      void loadMemory();
@@ -178,6 +187,7 @@ private:
      QActionGroup* skinsActionGroup;
      SkinMap skins;
      QString currentSkinName;
+     int hShiftDelay;
      QtSerialPort* serialPort;
      bool active;
      bool development;

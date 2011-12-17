@@ -60,9 +60,16 @@ int put_key(int key)
 	return put_key_adapter(key);
 }
 
+static int hshift_locked=0;
+
 enum shifts shift_down()
 {
-	return SHIFT_N;
+	return hshift_locked?SHIFT_H:SHIFT_N;
+}
+
+void set_hshift_locked(int an_hshift_locked)
+{
+	hshift_locked=an_hshift_locked;
 }
 
 void add_heartbeat()

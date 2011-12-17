@@ -111,7 +111,10 @@ void QtEmulator::updateScreen()
 
 void QtEmulator::editPreferences()
 {
-	QtPreferencesDialog preferencesDialog(customDirectoryActive, customDirectory.path(), serialPort->getSerialPortName(), this);
+	QtPreferencesDialog preferencesDialog(customDirectoryActive,
+			customDirectory.path(),
+			keyboard->getHShiftDelay(),
+			serialPort->getSerialPortName(), this);
 	int result=preferencesDialog.exec();
 	if(result==QDialog::Accepted)
 	{
@@ -119,9 +122,14 @@ void QtEmulator::editPreferences()
 		customDirectory.setPath(preferencesDialog.getCustomDirectoryName());
 		checkCustomDirectory();
 		saveCustomDirectorySettings();
+
+		keyboard->setHShiftDelay(preferencesDialog.getHShiftDelay());
+		saveKeyboardSettings();
+
 		QString serialPortName=preferencesDialog.getSerialPortName();
 		serialPort->setSerialPortName(serialPortName);
 		saveSerialPortSettings();
+
 		settings.sync();
 		setPaths();
 	}
@@ -298,7 +306,7 @@ void QtEmulator::buildHelpMenu()
 void QtEmulator::buildComponents(const QtSkin& aSkin)
 {
 	screen=new QtScreen(aSkin);
-	keyboard=new QtKeyboard(aSkin);
+	keyboard=new QtKeyboard(aSkin, hShiftDelay);
 	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard);
 }
 
@@ -407,6 +415,16 @@ QtSkin* QtEmulator::buildSkin(const QString& aSkinFilename) throw (QtSkinExcepti
 
 void QtEmulator::loadSettings()
 {
+	loadUserInterfaceSettings();
+	loadKeyboardSettings();
+	loadCustomDirectorySettings();
+	loadSerialPortSettings();
+
+	checkCustomDirectory();
+}
+
+void QtEmulator::loadUserInterfaceSettings()
+{
 	settings.beginGroup(WINDOWS_SETTINGS_GROUP);
 	move(settings.value(WINDOWS_POSITION_SETTING, QPoint(DEFAULT_POSITION_X, DEFAULT_POSITION_Y)).toPoint());
 	settings.endGroup();
@@ -414,21 +432,42 @@ void QtEmulator::loadSettings()
 	settings.beginGroup(SKIN_SETTINGS_GROUP);
 	currentSkinName=settings.value(LAST_SKIN_SETTING, "").toString();
 	settings.endGroup();
+}
 
+void QtEmulator::loadKeyboardSettings()
+{
+	settings.beginGroup(KEYBOARD_SETTINGS_GROUP);
+	hShiftDelay=settings.value(HSHIFT_DELAY_SETTING, DEFAULT_HSHIFT_DELAY).toInt();
+	settings.endGroup();
+}
+
+void QtEmulator::loadCustomDirectorySettings()
+{
 	settings.beginGroup(CUSTOM_DIRECTORY_SETTINGS_GROUP);
 	customDirectoryActive=settings.value(CUSTOM_DIRECTORY_ACTIVE_SETTING, false).toBool();
 	customDirectory.setPath(settings.value(CUSTOM_DIRECTORY_NAME_SETTING, "").toString());
 	settings.endGroup();
+}
 
+void QtEmulator::loadSerialPortSettings()
+{
 	settings.beginGroup(SERIAL_PORT_SETTINGS_GROUP);
 	QString serialPortName=settings.value(SERIAL_PORT_NAME_SETTING, "").toString();
 	serialPort->setSerialPortName(serialPortName);
 	settings.endGroup();
-
-	checkCustomDirectory();
 }
 
 void QtEmulator::saveSettings()
+{
+    saveUserInterfaceSettings();
+    saveKeyboardSettings();
+    saveCustomDirectorySettings();
+    saveSerialPortSettings();
+
+	settings.sync();
+}
+
+void QtEmulator::saveUserInterfaceSettings()
 {
     settings.beginGroup(WINDOWS_SETTINGS_GROUP);
     settings.setValue(WINDOWS_POSITION_SETTING, pos());
@@ -437,11 +476,13 @@ void QtEmulator::saveSettings()
     settings.beginGroup(SKIN_SETTINGS_GROUP);
     settings.setValue(LAST_SKIN_SETTING, currentSkinName);
     settings.endGroup();
+}
 
-    saveCustomDirectorySettings();
-    saveSerialPortSettings();
-
-	settings.sync();
+void QtEmulator::saveKeyboardSettings()
+{
+    settings.beginGroup(KEYBOARD_SETTINGS_GROUP);
+    settings.setValue(HSHIFT_DELAY_SETTING, keyboard->getHShiftDelay());
+    settings.endGroup();
 }
 
 void QtEmulator::saveCustomDirectorySettings()

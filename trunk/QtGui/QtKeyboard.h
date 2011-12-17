@@ -39,7 +39,7 @@ class QtKeyboard: public QObject
 	Q_OBJECT
 
 public:
-	QtKeyboard(const QtSkin& aSkin);
+	QtKeyboard(const QtSkin& aSkin, int anHShiftDelay);
 	virtual ~QtKeyboard();
 
 public:
@@ -49,6 +49,7 @@ public:
 	bool processButtonPressedEvent(const QMouseEvent& aMouseEvent);
 	bool processButtonReleasedEvent(const QMouseEvent& aMouseEvent);
 	bool processMouseMovedEvent(const QMouseEvent& aMouseEvent);
+	bool processDoubleClickEvent(const QMouseEvent& aMouseEvent);
 	int getKey();
 	void putKeyCode(const QtKeyCode& aKeyCode);
 	void putKey(char aKey);
@@ -56,10 +57,13 @@ public:
 	bool isKeyPressed();
 	int waitKey();
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
+	void invertHKey(QtBackgroundImage& aBackgroundImage);
 	void invert(const QtKey* aKey, QtBackgroundImage& aBackgroundImage);
 
 public slots:
 	void hShift();
+	int getHShiftDelay();
+	void setHShiftDelay(int anHShiftDelay);
 
 signals:
 	void keyPressed();
@@ -82,6 +86,7 @@ private:
     QtKeyCode currentKeyCode;
     int hShiftDelay;
     bool currentKeyHShifted;
+    bool hShiftLocked;
     QTimer* hShiftTimer;
     QHash<int, const QtKey*> keysByCode;
 };

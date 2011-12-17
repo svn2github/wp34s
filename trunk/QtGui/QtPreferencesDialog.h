@@ -20,8 +20,16 @@
 #include <QtGui>
 
 #define PREFERENCES_TITLE "Preferences"
+#define MEMORY_TAB_NAME "Memory"
+#define KEYBOARD_TAB_NAME "Keyboard"
+#define HSHIFT_DELAY_LABEL_TEXT "H-Shift Delay"
+#define SERIAL_PORT_TAB_NAME "Serial Port"
+#define SERIAL_PORT_NAME_LABEL_TEXT "Serial Port Name"
 #define USE_CUSTOM_DIRECTORY_TEXT "Use a custom directory for memory files"
 #define CHOOSE_DIRECTORY_TEXT "Choose"
+
+#define HSHIFT_DELAY_MAX 999
+#define HSHIFT_DELAY_BOX_LENGTH 3
 
 #define DIRECTORY_NAME_DEFAULT_WIDTH 60
 #define DIRECTORY_NAME_DEFAULT_CHAR 'x'
@@ -35,6 +43,7 @@ class QtPreferencesDialog: public QDialog
 public:
 	QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 			const QString& aCustomDirectoryName,
+			int anHShiftDelay,
 			const QString& aSerialPortName,
 			QWidget* aParent=NULL);
 	~QtPreferencesDialog();
@@ -42,6 +51,7 @@ public:
 public:
 	bool isCustomDirectoryActive() const;
 	QString getCustomDirectoryName() const;
+	int getHShiftDelay() const;
 	QString getSerialPortName() const;
 
 public slots:
@@ -50,8 +60,9 @@ public slots:
 	void serialPortChanged(const QString& aSerialPortName);
 
 private:
-	void buildComponents(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, const QString& aSerialPortName);
+	void buildComponents(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, int anHShiftDelay, const QString& aSerialPortName);
 	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName);
+	QWidget* buildKeyboardTab(int anHShiftDelay);
 	QWidget* buildSerialTab(const QString& aSerialPortName);
 	void fillSerialPorts(QListWidget& aListWidget);
 
@@ -59,6 +70,7 @@ private:
 	QRadioButton* useCustomDirectoryButton;
 	QLineEdit* directoryNameEdit;
 	QPushButton* chooseButton;
+	QSpinBox* hShiftDelayBox;
 	QLineEdit* serialPortNameEdit;
 };
 

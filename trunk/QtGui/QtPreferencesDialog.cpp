@@ -19,19 +19,23 @@
 
 QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 		const QString& aCustomDirectoryName,
+		int anHShiftDelay,
 		const QString& aSerialPortName,
 		QWidget* aParent)
 : QDialog(aParent)
 {
 	setWindowTitle(PREFERENCES_TITLE);
-	buildComponents(aCustomDirectoryActiveFlag, aCustomDirectoryName, aSerialPortName);
+	buildComponents(aCustomDirectoryActiveFlag, aCustomDirectoryName, anHShiftDelay, aSerialPortName);
 }
 
 QtPreferencesDialog::~QtPreferencesDialog()
 {
 }
 
-void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, const QString& aSerialPortName)
+void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
+		const QString& aCustomDirectoryName,
+		int anHShiftDelay,
+		const QString& aSerialPortName)
 {
 	QVBoxLayout* dialogLayout=new QVBoxLayout;
 	dialogLayout->setSizeConstraint(QLayout::SetFixedSize);
@@ -39,8 +43,9 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag, const
 
 
 	QTabWidget* tabWidget = new QTabWidget;
-	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), "Memory");
-	tabWidget->addTab(buildSerialTab(aSerialPortName), "Serial Port");
+	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), MEMORY_TAB_NAME);
+	tabWidget->addTab(buildKeyboardTab(anHShiftDelay), KEYBOARD_TAB_NAME);
+	tabWidget->addTab(buildSerialTab(aSerialPortName), SERIAL_PORT_TAB_NAME);
 
 	dialogLayout->addWidget(tabWidget);
 
@@ -61,6 +66,7 @@ QWidget* QtPreferencesDialog::buildMemoryTab(bool aCustomDirectoryActiveFlag, co
 
 	QHBoxLayout* directoryLayout=new QHBoxLayout;
 	directoryLayout->setSpacing(HORIZONTAL_SPACING);
+
 	directoryNameEdit=new QLineEdit;
 	int minimumWidth=directoryNameEdit->fontMetrics().width(DIRECTORY_NAME_DEFAULT_CHAR)*DIRECTORY_NAME_DEFAULT_WIDTH;
 	directoryNameEdit->setMinimumWidth(minimumWidth);
@@ -80,6 +86,27 @@ QWidget* QtPreferencesDialog::buildMemoryTab(bool aCustomDirectoryActiveFlag, co
 	return memoryTab;
 }
 
+QWidget* QtPreferencesDialog::buildKeyboardTab(int anHShiftDelay)
+{
+	QWidget* keyboardTab=new QWidget;
+
+	QHBoxLayout* hShiftDelayLayout=new QHBoxLayout;
+	hShiftDelayLayout->setSpacing(HORIZONTAL_SPACING);
+
+	QLabel* hShiftDelayLabel=new QLabel(HSHIFT_DELAY_LABEL_TEXT);
+	hShiftDelayLayout->addWidget(hShiftDelayLabel);
+
+	hShiftDelayBox=new QSpinBox;
+	hShiftDelayBox->setRange(0, HSHIFT_DELAY_MAX);
+	hShiftDelayBox->setValue(anHShiftDelay);
+	hShiftDelayLayout->addWidget(hShiftDelayBox);
+
+	hShiftDelayLayout->addStretch();
+
+	keyboardTab->setLayout(hShiftDelayLayout);
+	return keyboardTab;
+}
+
 QWidget* QtPreferencesDialog::buildSerialTab(const QString& aSerialPortName)
 {
 	QWidget* serialTab=new QWidget;
@@ -87,7 +114,7 @@ QWidget* QtPreferencesDialog::buildSerialTab(const QString& aSerialPortName)
 
 	QHBoxLayout* serialPortNameLayout=new QHBoxLayout;
 	serialPortNameLayout->setSpacing(HORIZONTAL_SPACING);
-	QLabel* serialPortNameLabel=new QLabel("Serial Port Name");
+	QLabel* serialPortNameLabel=new QLabel(SERIAL_PORT_NAME_LABEL_TEXT);
 	serialPortNameLayout->addWidget(serialPortNameLabel);
 	serialPortNameEdit=new QLineEdit;
 	serialPortNameLayout->addWidget(serialPortNameEdit);
@@ -132,7 +159,6 @@ void QtPreferencesDialog::customDirectoryToggled(bool aButtonChecked)
 	chooseButton->setEnabled(aButtonChecked);
 }
 
-
 void QtPreferencesDialog::chooseDirectory()
 {
 	QFileDialog fileDialog(this);
@@ -146,6 +172,11 @@ void QtPreferencesDialog::chooseDirectory()
 			directoryNameEdit->setText(filenames[0]);
 		}
 	}
+}
+
+int QtPreferencesDialog::getHShiftDelay() const
+{
+	return hShiftDelayBox->value();
 }
 
 QString QtPreferencesDialog::getSerialPortName() const
