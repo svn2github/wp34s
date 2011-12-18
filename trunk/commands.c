@@ -615,10 +615,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
 	FUNC0(OP_POPLR,		&cmdlpop,		"PopLR")
-	FUNC1(OP_MEM,		&get_mem,		"MEM?")
-	FUNC1(OP_LOCR,		&get_mem,		"LocR?")
+	FUNC1(OP_MEMQ,		&get_mem,		"MEM?")
+	FUNC1(OP_LOCRQ,		&get_mem,		"LocR?")
 	FUNC1(OP_REGSQ,		&get_mem,		"REGS?")
-	FUNC1(OP_FLASH,		&get_mem,		"FLASH?")
+	FUNC1(OP_FLASHQ,	&get_mem,		"FLASH?")
 	FUNC0(OP_XLOCAL,	&cmdxlocal,		"XLOCAL")
 
 #ifdef INCLUDE_USER_IO
@@ -630,12 +630,14 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #endif
 	FUNC0(OP_SENDP,		&send_program,		"SENDP")
 	FUNC0(OP_SENDR,		&send_registers,	"SENDR")
+	FUNC0(OP_SENDsigma,	&send_sigma,		"SEND\221")
 	FUNC0(OP_SENDA,		&send_all,		"SENDA")
 
 	FUNC0(OP_RECV,		&recv_any,		"RECV")
 	FUNC0(OP_SAVE,		&flash_backup,		"SAVE")
 	FUNC0(OP_LOAD,		&flash_restore,		"LOAD")
 	FUNC0(OP_LOADR,		&load_registers,	"LOADR")
+	FUNC0(OP_LOADsigma,	&load_sigma,		"LOAD\221")
 	FUNC0(OP_LOADST,	&load_state,		"LOADST")
 	FUNC0(OP_LOADP,		&load_program,		"LOADP")
 	FUNC0(OP_PRCL,		&recall_program,	"PRCL")

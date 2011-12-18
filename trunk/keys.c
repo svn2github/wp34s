@@ -21,6 +21,7 @@
 #include "int.h"
 #include "consts.h"
 #include "storage.h"
+#include "stats.h"
 #include "catalogues.h"
 
 
@@ -193,7 +194,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K20,     { CATALOGUE_CONST,  CATALOGUE_NONE,   CATALOGUE_COMPLEX_CONST } },
 			{ K41,     { CATALOGUE_PROB,   CATALOGUE_NONE,   CATALOGUE_PROB          } },
 			{ K42,     { CATALOGUE_STATS,  CATALOGUE_NONE,   CATALOGUE_STATS         } },
-			{ K43,     { CATALOGUE_CFIT,   CATALOGUE_NONE,   CATALOGUE_CFIT          } },
+			{ K43,     { CATALOGUE_SUMS,   CATALOGUE_NONE,   CATALOGUE_SUMS          } },
 			{ K44,     { CATALOGUE_MATRIX, CATALOGUE_NONE,   CATALOGUE_MATRIX        } },
 			{ K50,     { CATALOGUE_STATUS, CATALOGUE_STATUS, CATALOGUE_STATUS        } },
 			{ K51,     { CATALOGUE_TEST,   CATALOGUE_TEST,   CATALOGUE_NONE          } },
@@ -1763,6 +1764,11 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 			// Handle alpha shift in alpha character catalogues
 			State2.alphashift = 1 - State2.alphashift;
 			return STATE_UNFINISHED;
+		}
+	} else if (shift == SHIFT_G) {
+		if (c == K24 && cat == CATALOGUE_SUMS) {
+			init_cat(CATALOGUE_NONE);
+			return OP_NIL | OP_SIGMACLEAR;
 		}
 	}
 

@@ -1657,9 +1657,9 @@ int free_flash(void) {
 }
 
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
-	put_int( op == OP_MEM ? free_mem() : 
-		 op == OP_LOCR ? local_regs() :
-		 op == OP_FLASH ? free_flash() :
+	put_int( op == OP_MEMQ ? free_mem() : 
+		 op == OP_LOCRQ ? local_regs() :
+		 op == OP_FLASHQ ? free_flash() :
 		 NumRegs,
 		 0, a );
 }
@@ -3847,7 +3847,7 @@ void cmdxlocal(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 		LocalRegs = RetStkPtr;
 	}
 	else {
-		cmdlocr(16, OP_LOCR);
+		cmdlocr(16, OP_LOCRQ);
 	}
 }
 
@@ -4005,7 +4005,7 @@ int init_34s(void)
 	check_const_cat();
 	check_cat(CATALOGUE_COMPLEX, "complex");
 	check_cat(CATALOGUE_STATS, "statistics");
-	check_cat(CATALOGUE_CFIT, "curve fitting");
+	check_cat(CATALOGUE_SUMS, "summations");
 	check_cat(CATALOGUE_PROB, "probability");
 	check_cat(CATALOGUE_PROG, "programme");
 	check_cat(CATALOGUE_MODE, "mode");

@@ -29,26 +29,6 @@
 /*
  *  Define register block
  */
-typedef struct _stat_data {
-	// The next four are higher precision
-	decimal128 sX2Y;
-	decimal128 sX2;		
-	decimal128 sY2;		
-	decimal128 sXY;
-
-	decimal64 sX;		
-	decimal64 sY;		
-	decimal64 slnX;		
-	decimal64 slnXlnX;	
-	decimal64 slnY;		
-	decimal64 slnYlnY;	
-	decimal64 slnXlnY;	
-	decimal64 sXlnY;	
-	decimal64 sYlnX;
-
-	unsigned int sN;		
-} STAT_DATA;
-
 STAT_DATA *StatRegs;
 
 #define sigmaN		(StatRegs->sN)
@@ -69,7 +49,7 @@ STAT_DATA *StatRegs;
 /*
  *  Handle block (de)allocation
  */
-static int check_stat(void) {
+int sigmaCheck(void) {
 	if (SizeStatRegs == 0) {
 		err(ERR_MORE_POINTS);
 		return 1;
@@ -84,12 +64,13 @@ static int sigmaAllocate(void)
 		SizeStatRegs = sizeof(STAT_DATA) >> 1;	// in 16 bit words!
 		if (move_retstk(-SizeStatRegs)) {
 			SizeStatRegs = 0;
+			err(ERR_RAM_FULL);
 			return 1;
 		}
-		check_stat();
-		xset(StatRegs, 0, SizeStatRegs << 1);
+		sigmaCheck();
+		xset(StatRegs, 0, sizeof(STAT_DATA));
 	}
-	return check_stat();
+	return sigmaCheck();
 }
 
 void sigmaDeallocate(void) {
@@ -97,6 +78,16 @@ void sigmaDeallocate(void) {
 	SizeStatRegs = 0;
 }
 
+/*
+ *  Helper for serial and storage commands
+ */
+int sigmaCopy(void *source)
+{
+	if (sigmaAllocate())
+		return 1;
+	xcopy(StatRegs, source, sizeof(STAT_DATA));
+	return 0;
+}
 
 #ifdef DUMP1
 #include <stdio.h>
@@ -134,7 +125,7 @@ static int check_number(const decNumber *r, int n) {
 }
 
 static int check_data(unsigned int n) {
-	if (check_stat() || sigmaN < n) {
+	if (sigmaCheck() || sigmaN < n) {
 		err(ERR_MORE_POINTS);
 		return 1;
 	}
@@ -225,7 +216,7 @@ void sigma_plus() {
 }
 
 void sigma_minus() {
-	if (check_stat())
+	if (sigmaCheck())
 		return;
 	sigma_helper(&dn_subtract);
 	if (--sigmaN <= 0)
@@ -345,7 +336,7 @@ void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
 		*x = CONSTANT_INT(OP_ZERO);
 		return;
 	}
-	check_stat();
+	sigmaCheck();
 	if (op == OP_sigmaN) {
 		put_int(sigmaN, 0, x);
 	}
@@ -468,7 +459,7 @@ void WS(decimal64 *x, int sample, int rootn) {
 	decNumber sxxy, sy, sxy, syy;
 	decNumber t, u, v, w, *p;
 
-	if (check_stat())
+	if (sigmaCheck())
 		return;
 	get_sigmas(NULL, NULL, &sy, NULL, &syy, &sxy, SIGMA_QUIET_LINEAR);
 	if (check_number(&sy, 2))
@@ -504,7 +495,7 @@ void stats_wdeviations(decimal64 *x, decimal64 *y, enum nilop op) {
 decNumber *stats_sigper(decNumber *res, const decNumber *x) {
 	decNumber sx, t;
 
-	if (check_stat())
+	if (sigmaCheck())
 		return res;
 	get_sigmas(NULL, &sx, NULL, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 	dn_divide(&t, x, &sx);

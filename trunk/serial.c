@@ -35,6 +35,7 @@
 
 #define TAG_PROGRAM  0x5250 // "PR"
 #define TAG_REGISTER 0x4552 // "RE"
+#define TAG_SIGMA    0x4D53 // "SM"
 #define TAG_ALLMEM   0x4C41 // "AL"
 
 #define SERIAL_ANNUNCIATOR LIT_EQ
@@ -395,6 +396,19 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 			DispMsg = "Register";
 			break;
 
+		case TAG_SIGMA:
+			/*
+			 *  Summation registers received
+			 */
+			if ( length != sizeof( STAT_DATA ) ) {
+				  goto invalid;
+			}
+			if ( sigmaCopy( buffer ) ) {
+				goto nak;
+			}
+			DispMsg = "\221 Regs";
+			goto done;
+
 		default:
 			goto invalid;
 		}
@@ -449,6 +463,17 @@ void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	put_block( TAG_REGISTER, NumRegs << 3, get_reg_n( 0 ) );
+}
+
+
+/*
+ * Send statistical summation data
+ */
+void send_sigma( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+{
+	if ( !sigmaCheck() ) {
+		put_block( TAG_SIGMA, sizeof( STAT_DATA ), StatRegs );
+	}
 }
 
 

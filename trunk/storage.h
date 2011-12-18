@@ -60,6 +60,7 @@ extern void sam_ba_boot(void);
 extern void save_program(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void load_program(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void load_sigma(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void store_program(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void recall_program(decimal64 *nul1, decimal64 *nul2, enum nilop op);

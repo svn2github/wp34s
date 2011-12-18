@@ -30,6 +30,7 @@ extern char SerialOn;
 // User visible routines
 extern void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op );
 extern void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op );
+extern void send_sigma( decimal64 *nul1, decimal64 *nul2, enum nilop op );
 extern void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op );
 extern void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op );
 extern int recv_byte( int timeout );

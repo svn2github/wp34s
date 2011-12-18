@@ -558,7 +558,7 @@ void flash_backup( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 }
 
 
-void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op)
+void flash_restore( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	if ( not_running() ) {
 		if ( checksum_backup() ) {
@@ -577,7 +577,7 @@ void flash_restore(decimal64 *nul1, decimal64 *nul2, enum nilop op)
  *  Helper to append a program in RAM.
  *  Returns non zero in case of an error.
  */
-int append_program(const s_opcode *source, int length)
+int append_program( const s_opcode *source, int length )
 {
 	unsigned short pc;
 	int space_needed = length - ProgFree;
@@ -626,7 +626,7 @@ int append_program(const s_opcode *source, int length)
  *  Load the user program area from the backup.
  *  Called by PLOAD.
  */
-void load_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
+void load_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	if ( not_running() ) {
 		FLASH_REGION *fr = (FLASH_REGION *) &BackupFlash;
@@ -647,7 +647,7 @@ void load_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 /*
  *  Load registers from backup
  */
-void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op)
+void load_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	int count;
 	if ( checksum_backup() ) {
@@ -665,7 +665,33 @@ void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 }
 
 
-void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op)
+/*
+ *  Load the statistical summation registers from backup
+ */
+void load_sigma( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+{
+	if ( checksum_backup() ) {
+		/*
+		 *  Not a valid backup region
+		 */
+		err( ERR_INVALID );
+		return;
+	}
+	if ( BackupFlash._sizestatregs == 0 ) {
+		/*
+		 *  Backup has no data
+		 */
+		err( ERR_MORE_POINTS );
+		return;
+	}
+	sigmaCopy( ( (char *)( BackupFlash._regs + TOPREALREG - BackupFlash._numregs ) - sizeof( STAT_DATA ) ) );
+}
+
+
+/*
+ *  Load the configuration data from the backup
+ */
+void load_state( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	if ( not_running() ) {
 		if ( checksum_backup() ) {
@@ -685,7 +711,7 @@ void load_state(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 /*
  *  Save a user program to the library region. Called by PSTO.
  */
-void store_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
+void store_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	opcode lbl; 
 	unsigned int pc;
@@ -744,7 +770,7 @@ void store_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 /*
  *  Load a user program from any region. Called by PRCL.
  */
-void recall_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
+void recall_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	if ( not_running() ) {
 		update_program_bounds( 0 );

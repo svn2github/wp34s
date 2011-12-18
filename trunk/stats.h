@@ -17,10 +17,37 @@
 #ifndef __STATS_H__
 #define __STATS_H__
 
-extern void sigmaDeallocate();
+/*
+ *  Define register block
+ */
+typedef struct _stat_data {
+	// The next four are higher precision
+	decimal128 sX2Y;
+	decimal128 sX2;		
+	decimal128 sY2;		
+	decimal128 sXY;
+
+	decimal64 sX;		
+	decimal64 sY;		
+	decimal64 slnX;		
+	decimal64 slnXlnX;	
+	decimal64 slnY;		
+	decimal64 slnYlnY;	
+	decimal64 slnXlnY;	
+	decimal64 sXlnY;	
+	decimal64 sYlnX;
+
+	unsigned int sN;		
+} STAT_DATA;
+
+extern STAT_DATA *StatRegs;
+
+extern int  sigmaCheck(void);
+extern void sigmaDeallocate(void);
+extern int  sigmaCopy(void *source);
 extern void sigma_clear(decimal64 *, decimal64 *, enum nilop);
-extern void sigma_plus();
-extern void sigma_minus();
+extern void sigma_plus(void);
+extern void sigma_minus(void);
 
 extern void stats_mean(decimal64 *, decimal64 *, enum nilop);
 extern void stats_wmean(decimal64 *, decimal64 *, enum nilop);
