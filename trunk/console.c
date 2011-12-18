@@ -289,8 +289,8 @@ static void dump_xrom(void) {
 }
 
 static void dump_ram(void) {
-	if (LastProg > 1)
-		dump_code(1, LastProg, 0);
+	if (RamRegionSize > 0)
+		dump_code(1, RamRegionSize + 1, 0);
 	else
 		printf("no RAM program\n");
 }

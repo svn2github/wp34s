@@ -31,7 +31,7 @@ extern char UserFlashSteps;
 
 typedef struct _flash_region {
         unsigned short crc;
-        unsigned short last_prog;
+        unsigned short region_size;
         s_opcode prog[ NUMPROG_FLASH ];
 } FLASH_REGION;
 

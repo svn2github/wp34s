@@ -211,7 +211,7 @@ int sizeLIB(int region) {
 	if (region == REGION_XROM)
 		return xrom_size;
 	else
-		return (int)RegionTab[region][-1] - 1;
+		return (int)RegionTab[region][-1];
 }
 
 
@@ -257,8 +257,8 @@ const s_opcode *get_current_prog(void) {
  */
 void set_pc(unsigned int pc) {
 	if (isRAM(pc)) {
-		if (pc >= LastProg)
-			pc = LastProg - 1;
+		if (pc > RamRegionSize)
+			pc = RamRegionSize;
 		if (pc > 1 && isDBL(Prog_1[pc - 1]))
 			pc--;
 	} else if (!isXROM(pc)) {
@@ -615,7 +615,7 @@ static unsigned short int find_section_bounds(const unsigned int pc, const int e
 	}
 	else {
 		top = State2.runmode;  // step 001 if not entering a program
-		bottom = LastProg - 1;
+		bottom = RamRegionSize;
 	}
 	*p_top = top;
 	return bottom;
@@ -693,7 +693,7 @@ void update_program_bounds(const int force) {
 		const unsigned int opc = pc;
 		pc = do_dec(opc, 0);
 		if (PcWrapped || getprog(pc) == (OP_NIL | OP_END)) {
-			ProgBegin = opc == 0 && LastProg > 1 ? 1 : opc;
+			ProgBegin = opc == 0 && RamRegionSize > 0 ? 1 : opc;
 			break;
 		}
 	}
@@ -1653,7 +1653,7 @@ int free_mem(void) {
 }
 
 int free_flash(void) {
-	return NUMPROG_FLASH_MAX - UserFlash.last_prog + 1;
+	return NUMPROG_FLASH_MAX - UserFlash.region_size;
 }
 
 void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op) {
@@ -3730,12 +3730,12 @@ void xeq_init_contexts(void) {
 	RetStk = RetStkBase + RetStkSize;
 #ifdef ALLOW_LARGE_PROGRAM
 	ProgMax = NUMPROG + RET_STACK_SIZE + RetStkSize;
-	RetStkSize = ProgMax - (LastProg - 1);
+	RetStkSize = ProgMax - (RamRegionSize);
 	ProgMax -= MINIMUM_RET_STACK_SIZE;
 	ProgFree = free_mem() - MINIMUM_RET_STACK_SIZE;
 #else
-	RetStkSize += RET_STACK_SIZE + NUMPROG + 1 - LastProg;
-	ProgFree = NUMPROG - (LastProg - 1);
+	RetStkSize += RET_STACK_SIZE + NUMPROG + RamRegionSize;
+	ProgFree = NUMPROG - (RamRegionSize);
 	if (RetStk < Prog + NUMPROG)
 		ProgFree -= Prog + NUMPROG - RetStk;	// All pointers are to 16 bit words!
 #endif

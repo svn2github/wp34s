@@ -97,7 +97,7 @@ typedef struct _ram {
 	 *  A flash region looks the same.
 	 */
 	unsigned short _crc_prog;	// checksum
-	unsigned short _last_prog;	// Position of the last program statement
+	unsigned short _region_size;	// size of the program region
 
 	/*
 	 *  Define storage for the machine's program space.
@@ -166,7 +166,7 @@ extern TPersistentRam PersistentRam;
 #define State		(PersistentRam._state)
 #define UState		(PersistentRam._ustate)
 #define CrcProg		(PersistentRam._crc_prog)
-#define LastProg	(PersistentRam._last_prog)
+#define RamRegionSize	(PersistentRam._region_size)
 #define Alpha		(PersistentRam._alpha)
 #define Regs		(PersistentRam._regs)
 #define Prog		(PersistentRam._prog)

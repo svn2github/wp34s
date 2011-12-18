@@ -437,7 +437,7 @@ void show_flags(void) {
 		PRINTF("[MULTI]");
 	}
 	MOVE(50, FLAG_BASE+1);
-	PRINTF("[lp %03u]", LastProg);
+	PRINTF("[RRS %03u]", RamRegionSize);
 	if (State.state_lift) {
 		MOVE(10, FLAG_BASE+1);
 		PRINTF("[lift]");
