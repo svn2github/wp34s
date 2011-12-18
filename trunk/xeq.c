@@ -943,7 +943,7 @@ void zero_regs(decimal64 *dest, int n) {
 			dest[i] = CONSTANT_INT(OP_ZERO);
 }
 
-static void move_regs(decimal64 *dest, decimal64 *src, int n) {
+void move_regs(decimal64 *dest, decimal64 *src, int n) {
 	xcopy(dest, src, n << 3);
 }
 
@@ -1428,7 +1428,7 @@ void cmdrcl(unsigned int arg, enum rarg op) {
 
 #ifdef INCLUDE_FLASH_RECALL
 void cmdflashrcl(unsigned int arg, enum rarg op) {
-	do_rcl(BackupFlash._regs+arg, op - RARG_FLRCL + RARG_RCL);
+	do_rcl(get_flash_reg_n(arg), op - RARG_FLRCL + RARG_RCL);
 }
 #endif
 
@@ -1878,13 +1878,12 @@ void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 }
 
 
-static void cmdgtocommon(int gsb, unsigned int pc) {
-	const unsigned int oldpc = state_pc();
-
+// Called by XEQ, GTO and CAT browser
+void cmdgtocommon(int gsb, unsigned int pc) {
 	if (pc == 0)
 		set_running_off();
 	else
-		gsbgto(pc, gsb, oldpc);
+		gsbgto(pc, gsb, state_pc());
 }
 
 void cmdlblp(unsigned int arg, enum rarg op) {

@@ -649,6 +649,7 @@ void load_program(decimal64 *nul1, decimal64 *nul2, enum nilop op)
  */
 void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 {
+	int count;
 	if ( checksum_backup() ) {
 		/*
 		 *  Not a valid backup region
@@ -656,10 +657,11 @@ void load_registers(decimal64 *nul1, decimal64 *nul2, enum nilop op)
 		err( ERR_INVALID );
 		return;
 	}
-	clrretstk();
-	NumRegs = BackupFlash._numregs;
-	sigmaDeallocate();
-	xcopy( Regs, BackupFlash._regs, sizeof( Regs ) );
+	count = NumRegs;
+	if ( count > BackupFlash._numregs ) {
+		count = BackupFlash._numregs;
+	}
+	move_regs( get_reg_n(0), get_flash_reg_n(0), count );
 }
 
 

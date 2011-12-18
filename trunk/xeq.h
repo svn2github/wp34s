@@ -1088,7 +1088,7 @@ extern void get_reg_n_as_dn(int, decNumber *);
 extern void put_reg_n(int, const decNumber *);
 extern void swap_reg(decimal64 *, decimal64 *);
 extern void zero_regs(decimal64 *dest, int n);
-
+extern void move_regs(decimal64 *dest, decimal64 *src, int n);
 extern void reg_put_int(int, unsigned long long int, int);
 extern unsigned long long int reg_get_int(int, int *);
 
@@ -1170,6 +1170,7 @@ extern int free_flash(void);
 extern void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op);
 extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);
+extern void cmdgtocommon(int gsb, unsigned int pc);
 extern void cmdgto(unsigned int arg, enum rarg op);
 extern void cmdalphagto(unsigned int arg, enum rarg op);
 extern void op_gtoalpha(decimal64 *a, decimal64 *b, enum nilop op);

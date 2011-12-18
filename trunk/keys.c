@@ -665,10 +665,6 @@ static int process_fg_shifted(const keycode c) {
 		}
 		break;
 
-	/*
-	 *  Handle the temporary display of X in another base
-	 *  On the device, shift hold may take the role
-	 */
 	case K20:				// Alpha
 		if (shift == SHIFT_F) {
 			process_cmdline_set_lift();
@@ -1999,7 +1995,8 @@ static int process_labellist(const keycode c) {
 	unsigned int pc = State2.digval;
 	const unsigned int n = c == K62 ? REGION_XROM 
 		                        : keycode_to_digit_or_register(c) & ~NO_SHORT;
-	const int label = (getprog(pc) & 0xfffff0ff);
+	const int opcode = getprog(pc);
+	const int label = isDBL(opcode) ? (getprog(pc) & 0xfffff0ff) : 0;
 	const int direct = State2.runmode && ! isXROM(pc);
 	const enum shifts shift = reset_shift();
 	int op = STATE_UNFINISHED;
@@ -2041,27 +2038,24 @@ static int process_labellist(const keycode c) {
 		State2.runmode = 1;
 		break;
 
-	case K20:				// ENTER^: GTO
-		if (! direct)
-			goto gto_label;		// Insert GTO'...' command
-		set_pc(pc);			// Forced branch
+	case K20:				// ENTER^
+	case K30 | (SHIFT_H << 8):		// GTO
+		if (direct)
+			set_pc(pc);		// Forced branch
+		else if (label)
+			op = (DBL_GTO << DBL_SHIFT) + label;
 		break;
 
 	case K30:				// XEQ
-	xeq_label:
-		op = (DBL_XEQ << DBL_SHIFT) + label;
-		break;
-
-	case K30 | (SHIFT_H << 8):
-	gto_label:
-		op = (DBL_GTO << DBL_SHIFT) + label;
-		break;
-
 	case K63:				// R/S
-		if (! direct)
-			goto xeq_label;
-		set_pc(pc);
-		op = OP_NIL | OP_RS;
+		if (label) {
+			if (direct) {
+				cmdgtocommon(1, pc);	// set pc and push return address
+				op = OP_NIL | OP_RS;
+			}
+			else 
+				op = (DBL_XEQ << DBL_SHIFT) + label;
+		}
 		break;
 
 	case K63 | (SHIFT_H << 8):		// P/R
