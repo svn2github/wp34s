@@ -24,7 +24,7 @@ my $Description = "WP 34S library manager.";
 #
 # Language:         Perl script
 #
-my $SVN_Current_Revision  =  '$Revision: $';
+my $SVN_Current_Revision  =  '$Revision$';
 #
 #-----------------------------------------------------------------------
 
@@ -173,7 +173,7 @@ if ($gen_cat) {
 
 
 # Catalogue the initial library.
-my %lib_cat = %{catalogue_binary(@lib_src)};
+my %lib_cat = %{catalogue_binary($in_libfile, @lib_src)};
 
 dbg_show_cat("after initial in_lib processing", "lib_cat", \%lib_cat)
     if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
@@ -296,12 +296,13 @@ sub disassemble_binary {
 # the quotes are part of the key name. Returns a reference to a hash.
 #
 sub catalogue_binary {
+  my $src_file = shift;
   my @src = @_;
   debug_msg(this_function_script((caller(0))[3]), "Parsing listing catalogue...") if $debug;
   local $_;
   my %cat = ();
 
-  my @segment_refs = split_END(@src);
+  my @segment_refs = split_END($src_file, @src);
   foreach my $segment_ref (@segment_refs) {
     my @this_prog_src = ();
 
@@ -347,6 +348,7 @@ sub catalogue_binary {
 #
 #
 sub prepare_new_srcs {
+  my $new_src_lib = shift;
   my @srcs = @_;
   my $src_list = join " ", @srcs;
 
@@ -358,7 +360,7 @@ sub prepare_new_srcs {
   my $cmd_line = "$use_pp $src_list -o $tmp_file $asm_options";
   my @result = run_prog($cmd, $cmd_line);
   my @new_src = disassemble_binary($tmp_file);
-  my %news_src_cat = %{catalogue_binary(@new_src)};
+  my %news_src_cat = %{catalogue_binary($tmp_file, @new_src)};
   unlink $tmp_file unless (exists $ENV{WP34S_LIB_KEEP_TEMP} and ($ENV{WP34S_LIB_KEEP_TEMP} == 1));
   return \%news_src_cat;
 } # prepare_new_srcs
@@ -374,6 +376,7 @@ sub prepare_new_srcs {
 # each program segment.
 #
 sub split_END {
+  my $src_file = shift;
   my @src = @_;
   my @org = @src;
   my @END_segments = ();
@@ -386,7 +389,7 @@ sub split_END {
 
   # Make sure there is an END as the last step.
   unless ($src[-1] =~ /(^|\s+)END($|\s+)/) {
-    die_msg(this_function_script((caller(0))[3]), "Invalid library. Missing END statement as last line.");
+    die_msg(this_function_script((caller(0))[3]), "Invalid library ($src_file). Missing END statement as last line.");
   }
 
   # Scan through the source cutting it up into segments delimited by "END".

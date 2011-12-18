@@ -62,8 +62,11 @@ my $pp_options = " -m 90 -cat "; # XXX Limit the max SKIP/BACK offset to 90 to r
                                  # XXX Generate a LBL catalogue.
 my $pp_listing = "wp34s_pp.lst";
 
+my $PADDING_BLOCK_SIZE = 128; # XXX 128 16-bit words = 256 bytes!!
+my $PADDING_FILL_VALUE = 0xFFFF;
+
 my $FLASH_LENGTH = 512;
-my $DEFAULT_FLASH_BLANK_INSTR = "ERR 03";
+my $DEFAULT_FLASH_BLANK_INSTR = $PADDING_FILL_VALUE;
 my $user_flash_blank_fill = "";
 
 my $DEFAULT_OPCODE_MAP_FILE = "wp34s.op";
@@ -243,7 +246,6 @@ Parameters:
                     not disassembly. Will create an intermediate file called '$pp_listing' containing
                     the post-processed source(s).
    -op infile       Optional opcode file to parse.              [Default: $DEFAULT_OPCODE_MAP_FILE]
-   -fill fill_hex   Optional value to prefill flash image with. [Default: instruction '$DEFAULT_FLASH_BLANK_INSTR']
    -s number        Optional number of asterisks (stars) to prepend to labels in
                     disassembly mode.                           [Default: $DEFAULT_STAR_LABELS]
    -syntax outfile  Turns on syntax guide file dumping. Output will be sent to 'outfile'.
@@ -256,10 +258,10 @@ Examples:
   - Assembles the named WP34s program source file producing a flash image for the WP34s.
     MUST use -o to name the output file in assembler mode -- cannot use output redirection.
 
-  \$ $script_name  great_circle.wp34s floating_point.wp34s -o wp34s-1.dat  -fill FFFF
+  \$ $script_name  great_circle.wp34s floating_point.wp34s -o wp34s-1.dat
   - Assembles multiple WP34s program source files into a single contiguous flash image for
-    the WP34s. Uses 0xFFFF as the optional fill value. Allows (and encourages) use of libraries
-    of programs by concatenating the flash image from several source files.
+    the WP34s. Allows (and encourages) use of libraries of programs by concatenating the
+    flash image from several source files.
 
   \$ $script_name -dis wp34s-1.dat -s 3 > myProg.wp34s
   \$ $script_name -dis wp34s-1.dat -s 3 -o myProg.wp34s
@@ -376,7 +378,11 @@ sub assemble {
   my @files = @_;
   local $_;
   my ($crc16, $alpha_text, @lines, $file);
-  my @words = pre_fill_flash($flash_blank_fill_hex_str); # Fill value is a hex4 string.
+
+  # We only need to prefill out the block in V2-- modes. In V3 mode, the array
+  # must be empty!
+  my @words = ($v3_mode) ? () : pre_fill_flash($flash_blank_fill_hex_str); # Fill value is a hex4 string.
+
   my $next_free_word = 1;
   my $steps_used = 0;
 
@@ -445,6 +451,13 @@ sub assemble {
 
           my @chars = split "", $alpha_text;
           $words[++$next_free_word] = hex2dec($mnem2hex{$_}) | ord($chars[0]);
+
+          # Quoted alpha slots have room for 3 characters -- 1 sits with the main op-code,
+          # and 2 more are in the next words. We can have any combination of 1, 2, or 3
+          # characters. Any character slot that is not used is nulled out.
+          #
+          # Characters are present in all three of the quote slots -- 1 in the main slot
+          # and 2 in the secondary slot.
           if( $chars[1] and $chars[2] ) {
             # XXX Due to a bug discovered by Pauli, the calculator misbehaves when these characters
             #     are in the 3rd character slot. To work around this, we will limit them to not being
@@ -453,8 +466,13 @@ sub assemble {
               die "ERROR: Cannot use this escaped alpha '$org_alpha_text' in 3rd character slot in step '$org_line'.\n";
             }
             $words[++$next_free_word] = ord($chars[1]) | (ord($chars[2]) << 8);
+
+          # Characters are present in just 2 of the 3 quote slots -- ie: 1 in the main
+          # slot and only 1 of these 2.
           } elsif( $chars[1] ) {
             $words[++$next_free_word] = ord($chars[1]);
+
+          # No characters are present in final 2 quote slots. Just blank it out.
           } else {
             $words[++$next_free_word] = 0;
           }
@@ -479,7 +497,7 @@ sub assemble {
 
   } elsif( $xrom_bin_mode ) {
     $crc16 = calc_crc16( @words[2 .. $next_free_word] );
-    write_binary( $outfile, @words[2 .. $next_free_word] ); # Limit the words that are processed.
+    write_binary( $outfile, $next_free_word, @words[2 .. $next_free_word] ); # Limit the words that are processed.
     print "// XROM mode -- NOTE: Currently cannot be disassembled.\n";
     print "// CRC16: ", dec2hex4($crc16), "\n";
     print "// Total words: ", $next_free_word-1, "\n";
@@ -487,10 +505,10 @@ sub assemble {
 
   # Normal mode.
   } else {
-    $words[1] = $next_free_word;
+    $words[1] = ($v3_mode) ? ($next_free_word - 1) : $next_free_word;
     $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
     $words[0] = $crc16;
-    write_binary( $outfile, @words );
+    write_binary( $outfile, $next_free_word, @words );
     print "// CRC16: ", dec2hex4($crc16), "\n";
     print "// Total words: ", $next_free_word-1, "\n";
     print "// Total steps: $steps_used\n";
@@ -520,7 +538,10 @@ sub disassemble {
     local $/;
     my @words = unpack("S*", <DAT>);
 
-    my $len = $words[1] - 1;
+    # In V3 mode, the length parameter does not need to be decremented, as it
+    # does in V2-- mode.
+    my $len = ($v3_mode) ? $words[1] : ($words[1] - 1);
+
     my $total_steps = 0;
     for( my $k = 0; $k < $len; $k++ ) {
       my $word = $words[$k+2];
@@ -660,9 +681,21 @@ sub wordArray2byteArray {
 #
 sub write_binary {
   my $outfile = shift;
+  my $last_word = shift;
   my @words = @_;
   open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
   binmode OUT;
+
+  if ($v3_mode) {
+    # In V3 mode, we need to pad out to a multiple of a specific pad block size.
+    # Unlike V2-- modes, V3 mode's array is not prepadded to a specific block size. The array
+    # has only real data in it and no more. Threfore, the array needs to be padded out
+    # to the defined block size.
+    for( my $k = $last_word + 1; ((scalar(@words) % $PADDING_BLOCK_SIZE) != 0); $k++ ) {
+      $words[$k] = $PADDING_FILL_VALUE;
+    }
+  }
+
   foreach (@words) {
     my $bin_lo = $_ & 0xFF;
     my $bin_hi = $_ >> 8;
@@ -1565,7 +1598,7 @@ sub get_options {
       $star_labels = shift(@ARGV);
     }
 
-    elsif( ($arg eq "-f") or ($arg eq "-fill") ) {
+    elsif( $arg eq "-fill" ) {
       $user_flash_blank_fill = dec2hex4(eval_possible_hex(shift(@ARGV)));
     }
 
