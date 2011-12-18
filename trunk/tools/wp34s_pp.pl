@@ -36,6 +36,14 @@ use File::Basename;
 my $debug = 0;
 my (%LBLs, %targets, %branches, @branches, @steps);
 
+# Allow these to be over-ridden using environment variables.
+my $v3_mode = (exists $ENV{WP34S_PP_V3}) ? $ENV{WP34S_PP_V3} : 0;
+my $renumber_steps = (exists $ENV{WP34S_PP_RENUM}) ? $ENV{WP34S_PP_RENUM} : 1;
+my $step = (exists $ENV{WP34S_PP_RENUM_START}) ? $ENV{WP34S_PP_RENUM_START} : 1;
+
+my $step_digits = 3; # Default to older style 3-digit step numbers.
+my $override_step_digits = 0;
+
 my $DEFAULT_MAX_JMP_OFFSET = 99;
 my $MAX_JMP_OFFSET = $DEFAULT_MAX_JMP_OFFSET; # Maximum offset for a BACK/SKIP statement.
 
@@ -99,6 +107,8 @@ Parameters:
    -cat             Generate a LBL catalogue.
    -ns              Suppress generation of step numbers.
    -m max_offset    Change the maximum offset limit.  [default: $DEFAULT_MAX_JMP_OFFSET]
+   -v3              Enable v3.* mode ehnacnements.
+   -renum           Renumber step lines sequentially. Only has meaning in v3 mode.
    -h               This help script.
 
 Examples:
@@ -109,6 +119,9 @@ Examples:
 
   \$ $script_name vector_sym.wp34s gc_sym.wp34s > src.wp34s
   - Preprocess multiple source files.
+
+  \$ $script_name vector_sym.wp34s -v3 > src.wp34s
+  - Enable v3 mode.
 
 Notes:
   1) All symbolic labels must contain only alphanumerics and/or underscores
@@ -165,6 +178,12 @@ EOM
 
 get_options();
 
+if ($override_step_digits) {
+  $step_digits = $override_step_digits;
+} elsif ($v3_mode) {
+  $step_digits = 4;
+}
+
 print "// DEBUG: main: MAX_JMP_OFFSET = $MAX_JMP_OFFSET\n" if $debug;
 
 my (@src, @lines);
@@ -172,17 +191,27 @@ foreach my $file (@files) {
   push @src, load_cleaned_source($file);
 }
 
-# Split the lines into an array of array references based on END.
-my @end_groups = split_END(@src);
+my @end_groups;
+if ($v3_mode) {
+  # Split the lines into an array of array references based on END.
+  @end_groups = split_END(@src);
+} else {
+  # If v3 mode is not on, fake it by pushing the reference to the single,
+  # unified source onto the group. This way only one source will be processed
+  # and it will behave as it did originally.
+  @end_groups = ();
+  push @end_groups, \@src;
+}
+
 
 print "// $script_name: Source file(s): ", join (", ", @files), "\n";
 print "// $script_name: Preprocessor revision: $SVN_Current_Revision \n";
 
 foreach (@end_groups) {
-  @lines = @{$_}; # Cast the array element into an array.
+  @lines = @{$_}; # Cast the reference as an array.
   my $length = scalar @lines; # Debug use only.
-  print "// DEBUG: main: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n" if $debug;
-  print "// DEBUG: main: Processing new END group. Contains $length lines.\n" if $debug;
+  print "// DEBUG: main: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n" if $debug and $v3_mode;
+  print "// DEBUG: main: Processing new END group. Contains $length lines.\n" if $debug and $v3_mode;
   initialize_tables();
   preprocessor();
   display_steps("");
@@ -190,7 +219,6 @@ foreach (@end_groups) {
 }
 
 #######################################################################
-
 #######################################################################
 #
 # Execute the preprocessor steps on the lines in the global @lines array.
@@ -230,7 +258,7 @@ sub split_END {
   # Make sure there is an END as the last instruction. If not, add one.
   unless( $src[-1] =~ /(^|\s+)END($|\s+)/) {
     push @src, "END";
-    print "// WARNING: Missing terminal \"END\". Appending after last statement in source.\n";
+    print "// WARNING: $script_name: Missing terminal \"END\". Appending after last statement in source.\n";
   }
 
   # Scan through the source cutting it up into groups delimited by "END".
@@ -838,8 +866,8 @@ sub search_and_insert_synthetic_label {
 
     # We have confirmed that no actual label exists so substitute it in.
     print "// DEBUG: search_and_insert_synthetic_label: Original line: '", $lines[$label_step-1], "'\n" if $debug > 1;
-    if( $lines[$label_step-1] =~ /^\s*\d{3}:{0,1}/ ) {
-      $lines[$label_step-1] =~ s/^(\s*\d{3}:{0,1})\s+(.+)/${1} ${assigned_label}:: $2/;
+    if( $lines[$label_step-1] =~ /^\s*\d{$step_digits}:{0,1}/ ) {
+      $lines[$label_step-1] =~ s/^(\s*\d{$step_digits}:{0,1})\s+(.+)/${1} ${assigned_label}:: $2/;
     } else {
       $lines[$label_step-1] =~ s/^(\s*)(.+)/${1}${assigned_label}:: $2/;
     }
@@ -902,6 +930,11 @@ sub display_steps {
   $leader = "// " if not defined $leader;
   local $_;
   foreach (reconstruct_steps($longest_label)) {
+    if ($renumber_steps and /^\s*(\d{3,4})(:{0,1}.+)/ ) {
+      my $line = $2;
+      my $format = length($1);
+      $_ = sprintf "%0${format}d%0s", $step++, $2;
+    }
     print "${leader}$_\n";
   }
   return;
@@ -920,7 +953,7 @@ sub reconstruct_steps {
     my $line = $lines[$step-1];
 
     # Scrub any step number present. It will be recreated on the other end, unless otherwise requested.
-    $line =~ s/^\s*\d{3}:{0,1}//;
+    $line =~ s/^\s*\d{$step_digits}:{0,1}//;
 
     if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})\s+(\S+.*)/ ) { # Line with target label
       $label = ${1} . (" " x ($label_field_length - length($1)));
@@ -942,7 +975,7 @@ sub reconstruct_steps {
 
     # See if the user has turned off step number generation from the command line.
     if( $prt_step_num ) {
-      push @reconstructed_steps, sprintf "%03d /* %0s */ %0s", $step, $label, $opcode;
+      push @reconstructed_steps, sprintf "%0${step_digits}d /* %0s */ %0s", $step, $label, $opcode;
     } else {
       push @reconstructed_steps, sprintf "/* %0s */ %0s", $label, $opcode;
     }
@@ -1129,11 +1162,12 @@ sub search_LBLs {
 
 #######################################################################
 #
-# Format the step into a 3-digit number.
+# Format the step into a N-digit number. N will be 3 for sources earlier than v3 and
+# 4 for V3 sources.
 #
 sub format_step {
   my $step = shift;
-  return sprintf "%03d", $step;
+  return sprintf "%0${step_digits}d", $step;
 } # format_step
 
 
@@ -1424,7 +1458,7 @@ sub redact_comments {
 
 #######################################################################
 #
-#
+# Remove any array elements that are blank lines.
 #
 sub remove_blank_lines {
   my @lines = @_;
@@ -1590,9 +1624,13 @@ sub get_options {
       $debug = shift(@ARGV);
     }
 
-#    elsif( ($arg eq "-internal") or ($arg eq "-i") ) {
-#      push @files, $USE_INTERNAL_SRC;
-#    }
+    elsif( ($arg eq "-v3") or ($arg eq "-end") ) {
+      $v3_mode = 1;
+    }
+
+    elsif( $arg eq "-no_v3" ) {
+      $v3_mode = 0;
+    }
 
     # Step the maximum BACK/SKIP offset limit.
     elsif( $arg eq "-m" ) {
@@ -1609,6 +1647,18 @@ sub get_options {
 
     elsif( $arg eq "-cat" ) {
       $show_catalogue = 1;
+    }
+
+    elsif( $arg eq "-renum" ) {
+      $renumber_steps = 1;
+    }
+
+    elsif( $arg eq "-no_renum" ) {
+      $renumber_steps = 0;
+    }
+
+    elsif( ($arg eq "-step_digits") or ($arg eq "-sd") ) {
+      $override_step_digits = shift(@ARGV);
     }
 
     # Might behave badly if files have already been entered.

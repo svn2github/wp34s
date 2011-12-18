@@ -29,6 +29,7 @@ my $SVN_Current_Revision  =  '$Revision$';
 #-----------------------------------------------------------------------
 
 use strict;
+use POSIX;
 use File::Basename;
 
 # ---------------------------------------------------------------------
@@ -37,6 +38,9 @@ my $debug = 0;
 my $quiet = 1;
 my (%mnem2hex, %hex2mnem, %ord2escaped_alpha, %escaped_alpha2ord);
 my @files = ();
+
+my $v3_mode = 0;
+my $step_digits = 3; # Default to older style 3-digit step numbers.
 
 my $outfile = "-";
 my $REDACT_COMMENTS = 1;
@@ -81,7 +85,8 @@ my $expanded_op_file = "";
 my $dump_escaped_alpha_table = "";
 
 # Number of '*' to prepend to labels in disassembly -- just makes them easier to find.
-my $DEFAULT_STAR_LABELS = 0;
+# Quoted labels will be displayed with 2x this number.
+my $DEFAULT_STAR_LABELS = 2;
 my $star_labels = $DEFAULT_STAR_LABELS;
 
 my $DEFAULT_MAX_FLASH_WORDS = 506;
@@ -207,10 +212,10 @@ print "// DEBUG: script_dir        = '$script_dir'\n" if $debug;
 print "// DEBUG: script_suffix     = '$script_suffix'\n" if $debug;
 if(1) {
   if( $script_name =~ /\.exe$/ ) {
-    print "// NOTE: Detected running EXE version.\n";
-    print "         Adjusting child preprocessor script name from '$preproc' to ";
+    print "// NOTE: Detected running EXE version.\n" if $debug;
+    print "         Adjusting child preprocessor script name from '$preproc' to " if $debug;
     $preproc =~ s/\.pl$/\.exe/;
-    print "'$preproc'\n";
+    print "'$preproc'\n" if $debug;
   }
 }
 
@@ -401,7 +406,7 @@ sub assemble {
       $_ = $lines[$k-1];
 
       next if /^\s*$/; # Skip any blank lines.
-      next if /^\s*\d{3}\:{0,1}\s*$/; # Skip any lines that have just a 3-digit step number
+      next if /^\s*\d{3,4}\:{0,1}\s*$/; # Skip any lines that have just a 3-digit step number
                                       # and no actual mnemonic.
       s/\r//; s/\n//;
 
@@ -410,7 +415,7 @@ sub assemble {
       ($_, $alpha_text) = assembler_preformat_handling($_);
 
       if( not exists $mnem2hex{$_} ) {
-        warn "ERROR: Cannot recognize mnemonic at line $k of file ${file}: -> ${org_line} <-\n";
+        warn "ERROR: $script_name: Cannot recognize mnemonic at line $k of file '${file}': -> ${org_line} <-\n";
         if( $org_line =~ /::/ ) {
           warn "       There seems to be WP 34S Preprocessor labels here. Try using the '-pp' switch.\n";
           die  "       Enter '$script_name -h' for help.\n";
@@ -564,9 +569,9 @@ sub print_disassemble_normal {
   if( $no_step_numbers ) {
     printf OUT "%0s%0s\n", $label_flag, $hex2mnem{$hex_str};
   } elsif( $debug ) {
-    printf OUT "%03d /* %04s */ %0s%0s\n", $idx, $hex_str, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0${step_digits}d /* %04s */ %0s%0s\n", $idx, $hex_str, $label_flag, $hex2mnem{$hex_str};
   } else {
-    printf OUT "%03d %0s%0s\n", $idx, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0${step_digits}d %0s%0s\n", $idx, $label_flag, $hex2mnem{$hex_str};
   }
   return;
 } # print_disassemble_normal
@@ -589,15 +594,15 @@ sub print_disassemble_text {
   }
 
   # Set up the correct number of leading asterisks if requested.
-  my $label_flag = (($hex2mnem{$hex_str} =~ /LBL/) and $star_labels) ? "*" x $star_labels : "";
+  my $label_flag = (($hex2mnem{$hex_str} =~ /LBL/) and $star_labels) ? "*" x (2 * $star_labels) : "";
 
   if( $no_step_numbers ) {
     printf OUT "%0s%0s", $label_flag, $hex2mnem{$hex_str};
   } elsif( $debug ) {
     my $op_hex = sprintf "%04s %04s", lc dec2hex4(hex2dec($hex_str)+$chars[0]), lc dec2hex4($chars[2]*256+$chars[1]);
-    printf OUT "%03d /* %04s */ %0s%0s", $idx, $op_hex, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0${step_digits}d /* %04s */ %0s%0s", $idx, $op_hex, $label_flag, $hex2mnem{$hex_str};
   } else {
-    printf OUT "%03d %0s%0s", $idx, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0${step_digits}d %0s%0s", $idx, $label_flag, $hex2mnem{$hex_str};
   }
 
   # Check to see if the character is an escaped-alpha. If so, print the escaped string
@@ -681,7 +686,7 @@ sub assembler_preformat_handling {
   my $line = shift;
   my $alpha_text = "";
 
-  $line =~ s/^\s*\d{3}\:{0,1}\s+//; # Remove any line numbers with or without a colon
+  $line =~ s/^\s*\d{3,4}\:{0,1}\s+//; # Remove any line numbers with or without a colon
   $line =~ s/^\s+//;      # Remove leading whitespace
   $line =~ s/\s+$//;      # Remove trailing whitespace
 
@@ -818,6 +823,12 @@ sub load_opcode_tables {
       my $hex_str = $1;
       my $mnemonic = $2;
       my $line_num = $.;
+
+      if ($mnemonic eq "END") {
+        $v3_mode = 1;
+        $step_digits = 4;
+      }
+
       load_table_entry($hex_str, $mnemonic, $line_num);
 
       # We need to harvest the escaped-alpha table for later substitutions.
@@ -1185,7 +1196,7 @@ sub h2d { # Quickie version for use with Perl debugger.
 #
 sub read_file {
   my $file = shift;
-  my $is_redact = shift;
+  my $do_redact = shift;
   local $_;
   my (@lines);
   open FILE, $file or die "ERROR: Cannot open input file '$file' for reading: $!\n";
@@ -1194,7 +1205,27 @@ sub read_file {
     push @lines, $_;
   }
   close FILE;
-  return ($is_redact) ? redact_comments(@lines) : @lines;
+
+  # We need to enforce the END statement being the last line in a V3 source. So
+  # redact the comments when in V3 mode so we can more easily recognize when
+  # the last statement is not an 'END'.
+  if ($do_redact or $v3_mode) {
+    @lines = redact_comments(@lines);
+    @lines = remove_blank_lines(@lines);
+  }
+
+  @lines = remove_line_numbers(@lines);
+
+  # Enforce the last line being an END if in V3 mode.
+  if ($v3_mode) {
+    # Make sure there is an END as the last instruction. If not, add one.
+    unless( $lines[-1] =~ /(^|\s+)END($|\s+)/) {
+      push @lines, "END";
+      print "// WARNING: $script_name: V3 mode: Missing terminal \"END\" in file '$file'. Appending after last statement in source...\n";
+    }
+  }
+
+  return @lines;
 } # read_file
 
 
@@ -1254,6 +1285,38 @@ sub redact_comments {
   }
   return @redacted_lines;
 } # redact_comments
+
+
+#######################################################################
+#
+# Remove any array elements that are blank lines.
+#
+sub remove_blank_lines {
+  my @lines = @_;
+  my (@new_lines);
+  local $_;
+  foreach (@lines) {
+    next if /^\s*$/;
+    push @new_lines, $_;
+  }
+  return @new_lines;
+} # remove_blank_lines
+
+
+#######################################################################
+#
+# Remove any leading line numbers.
+#
+sub remove_line_numbers {
+  my @lines = @_;
+  local $_;
+  foreach (@lines) {
+    s/^\s*\d{3,4}\:{0,1}//;
+  }
+  return @lines;
+} # remove_line_numbers
+
+
 
 
 #######################################################################
@@ -1334,15 +1397,25 @@ sub run_pp {
     die "ERROR: Cannot locate the assembly preprocessor in $locations\n";
   }
 
+  if ($v3_mode) {
+    $cmd .= " -v3";
+  }
+
+  # Override the step digits as required.
+  # XXX Hah! Who knew?! In Perl, 'log' is actually log2, not log10, like everywhere else!!
+  my $sd = ceil(log($max_flash_words)/log(10));
+  $cmd .= " -sd $sd";
+
   print "// Running WP 34S preprocessor from: $pp_location\n";
+  print "// Running: '$cmd'\n" if exists $ENV{WP34s_ASM_PRESERVE_PP_DBG} and ($ENV{WP34s_ASM_PRESERVE_PP_DBG} == 1);
 
   @lines = `$cmd`;
   $err_msg = $?;
   if( $err_msg ) {
     warn "ERROR: WP 34S preprocessor failed. Temp file: '$tmp_file'\n";
-    die  "       Pre haps you can try running it in isolation using: \$ $cmd\n";
+    die  "       Perhaps you can try running it in isolation using: \$ $cmd\n";
   }
-  unlink $tmp_file;
+  unlink $tmp_file unless exists $ENV{WP34s_ASM_PRESERVE_PP_TMP} and ($ENV{WP34s_ASM_PRESERVE_PP_TMP} == 1);
 
   my (@clean_lines);
   foreach (@lines) {
