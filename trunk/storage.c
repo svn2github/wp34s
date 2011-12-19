@@ -125,8 +125,8 @@ static int test_checksum( const void *data, unsigned int length, unsigned short 
  */
 int checksum_code( void )
 {
-	return RamRegionSize >= NUMPROG_LIMIT 
-		|| test_checksum( Prog, RamRegionSize * sizeof( s_opcode ), CrcProg, &CrcProg );
+	return ProgSize >= NUMPROG_LIMIT 
+		|| test_checksum( Prog, ProgSize * sizeof( s_opcode ), CrcProg, &CrcProg );
 }
 
 
@@ -170,11 +170,11 @@ int checksum_backup( void )
  */
 static int checksum_region( FLASH_REGION *fr, FLASH_REGION *header )
 {
-	unsigned int l = header->region_size * sizeof( s_opcode );
+	unsigned int l = header->size * sizeof( s_opcode );
 #ifndef REALBUILD
 	if ( test_checksum( fr->prog, l, fr->crc, NULL ) ) {
 		// old assembler
-		l = ( --header->region_size ) * sizeof( s_opcode );
+		l = ( --header->size ) * sizeof( s_opcode );
 	}
 #endif
 	return l > sizeof( fr->prog ) || test_checksum( fr->prog, l, fr->crc, &(header->crc ) );
@@ -186,7 +186,7 @@ static int checksum_region( FLASH_REGION *fr, FLASH_REGION *header )
  */
 static int check_delete_prog( unsigned int pc ) 
 {
-	if ( !isRAM( pc ) || ( pc == RamRegionSize && getprog( pc ) == ( OP_NIL | OP_END ) ) ) {
+	if ( !isRAM( pc ) || ( pc == ProgSize && getprog( pc ) == ( OP_NIL | OP_END ) ) ) {
 		warn(ERR_READ_ONLY);
 	}
 	else {
@@ -201,7 +201,7 @@ static int check_delete_prog( unsigned int pc )
  */
 void clpall( void )
 {
-	RamRegionSize = 1;
+	ProgSize = 1;
 	clrretstk_pc();
 	Prog[ 0 ] = ( OP_NIL | OP_END );
 }
@@ -223,8 +223,8 @@ void clrprog( void )
 		if ( check_delete_prog( ProgBegin ) ) {
 			return;
 		}
-		xcopy( Prog_1 + ProgBegin, Prog + ProgEnd, ( RamRegionSize - ProgEnd ) << 1 );
-		RamRegionSize -= ( ProgEnd + 1 - ProgBegin );
+		xcopy( Prog_1 + ProgBegin, Prog + ProgEnd, ( ProgSize - ProgEnd ) << 1 );
+		ProgSize -= ( ProgEnd + 1 - ProgBegin );
 	}
 	set_pc( ProgBegin - 1 );
 }
@@ -271,7 +271,7 @@ void stoprog( opcode c ) {
 	int i;
 	unsigned int pc = state_pc();
 
-	if ( pc == RamRegionSize && c != ( OP_NIL | OP_END ) )
+	if ( pc == ProgSize && c != ( OP_NIL | OP_END ) )
 		stoprog( OP_NIL | OP_END );
 
 	if ( !isRAM( pc ) ) {
@@ -282,10 +282,10 @@ void stoprog( opcode c ) {
 	if ( ProgFree < off ) {
 		return;
 	}
-	RamRegionSize += off;
+	ProgSize += off;
 	ProgEnd += off;
 	pc = do_inc( pc, 0 );	// Don't wrap on END
-	for ( i = RamRegionSize + 1; i > (int) pc; --i ) {
+	for ( i = ProgSize + 1; i > (int) pc; --i ) {
 		Prog_1[ i ] = Prog_1[ i - off ];
 	}
 	if (isDBL(c))
@@ -310,7 +310,9 @@ void delprog( void )
 		return;
 
 	off = isDBL( Prog_1[ pc ]) ? 2 : 1;
-	for ( i = pc; i < (int) RamRegionSize; ++i )
+	ProgSize -= off;
+	ProgEnd -= off;
+	for ( i = pc; i <= (int) ProgSize; ++i )
 		Prog_1[ i ] = Prog_1[ i + off ];
 	decpc();
 }
@@ -460,10 +462,10 @@ void init_library( void )
 	if ( checksum_region( &UserFlash, &UserFlash ) ) {
 		struct {
 			unsigned short crc;
-			unsigned short region_size;
+			unsigned short size;
 			s_opcode prog[ 126 ];
 		} lib;
-		lib.region_size = 0;
+		lib.size = 0;
 		lib.crc = MAGIC_MARKER;
 		xset( lib.prog, 0xff, sizeof( lib.prog ) );
 		program_flash( &UserFlash, &lib, 1 );
@@ -476,7 +478,7 @@ void init_library( void )
  *  Update crc and counter when done.
  *  All sizes are given in steps.
  */
-static int flash_append( int destination_step, const s_opcode *source, int count, int region_size )
+static int flash_append( int destination_step, const s_opcode *source, int count, int size )
 {
 	char *dest = (char *) ( UserFlash.prog + destination_step );
 	char *src = (char *) source;
@@ -516,10 +518,10 @@ static int flash_append( int destination_step, const s_opcode *source, int count
 	}
 
 	/*
-	 *  Update the library header to fix the crc and region_size fields.
+	 *  Update the library header to fix the crc and size fields.
 	 */
 	xcopy( fr, &UserFlash, PAGE_SIZE );
-	fr->region_size = region_size;
+	fr->size = size;
 	checksum_region( &UserFlash, fr );
 	return program_flash( &UserFlash, fr, 1 );
 }
@@ -530,7 +532,7 @@ static int flash_append( int destination_step, const s_opcode *source, int count
  */
 int flash_remove( int step_no, int count )
 {
-	const int size = UserFlash.region_size - count;
+	const int size = UserFlash.size - count;
 	step_no = offsetLIB( step_no );
 	return flash_append( step_no, UserFlash.prog + step_no + count,
 			     size - step_no, size );
@@ -584,17 +586,17 @@ int append_program( const s_opcode *source, int length )
 	unsigned short pc;
 	int space_needed = length - ProgFree;
 
-	if ( RamRegionSize == 1 ) {
+	if ( ProgSize == 1 ) {
 		/*
 		 *  Only the default END statement is present
 		 */
 		--space_needed;
-		--RamRegionSize;
+		--ProgSize;
 	}
 	if ( length > NUMPROG_LIMIT ) {
 		return err( ERR_INVALID );
 	}
-	if ( length > NUMPROG_LIMIT - RamRegionSize ) {
+	if ( length > NUMPROG_LIMIT - ProgSize ) {
 		return err( ERR_RAM_FULL );
 	}
 
@@ -616,9 +618,9 @@ int append_program( const s_opcode *source, int length )
 	/*
 	 *  Append data
 	 */
-	pc = RamRegionSize + 1;
-	RamRegionSize += length;
-	xcopy( Prog + pc - 1, source, length << 1 );
+	pc = ProgSize + 1;
+	ProgSize += length;
+	xcopy( Prog_1 + pc, source, length << 1 );
 	set_pc( pc );
 	return 0;
 }
@@ -633,7 +635,7 @@ void load_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 	if ( not_running() ) {
 		FLASH_REGION *fr = (FLASH_REGION *) &BackupFlash;
 
-		if ( checksum_region( fr, fr ) || fr->region_size >= ProgMax ) {
+		if ( checksum_region( fr, fr ) || fr->size >= ProgMax ) {
 			/*
 			 *  Not a valid program region
 			 */
@@ -641,7 +643,7 @@ void load_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 			return;
 		}
 		clpall();
-		append_program( fr->prog, fr->region_size );
+		append_program( fr->prog, fr->size );
 	}
 }
 
@@ -741,7 +743,7 @@ void store_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 		 *  Compute space needed
 		 */
 		count = space_needed = 1 + ProgEnd - ProgBegin;
-		free = NUMPROG_FLASH_MAX - UserFlash.region_size;
+		free = NUMPROG_FLASH_MAX - UserFlash.size;
 
 		/*
 		 *  Find a duplicate label in the library and delete the program
@@ -764,7 +766,7 @@ void store_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 			return;
 		}
 		// 3. Append program
-		flash_append( UserFlash.region_size, get_current_prog(), count, UserFlash.region_size + count );
+		flash_append( UserFlash.size, get_current_prog(), count, UserFlash.size + count );
 	}
 }
 

@@ -76,7 +76,6 @@ SECTIONS
     .backupflash (NOLOAD) :
     {
     	UserFlashSize = . - UserFlash;
-    	UserFlashSteps = UserFlashSize / 2 - 2;
 	*(.backup_flash)
     } >backupflash
 

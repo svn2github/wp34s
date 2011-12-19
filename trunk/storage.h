@@ -23,15 +23,15 @@
 
 #ifdef REALBUILD
 // Actual size of user flash area, Linker symbol on the device
-extern char UserFlashSteps;
-#define NUMPROG_FLASH_MAX ((int) &UserFlashSteps)
+extern char UserFlashSize;
+#define NUMPROG_FLASH_MAX (((int) &UserFlashSize >> 1) - 2)
 #else
 #define NUMPROG_FLASH_MAX NUMPROG_FLASH
 #endif
 
 typedef struct _flash_region {
         unsigned short crc;
-        unsigned short region_size;
+        unsigned short size;
         s_opcode prog[ NUMPROG_FLASH ];
 } FLASH_REGION;
 

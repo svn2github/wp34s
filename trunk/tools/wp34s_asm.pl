@@ -201,7 +201,7 @@ if( exists $useable_OS{$^O} ) {
 # "maxsteps = 510"
 # "    maxsteps= 510"
 #
-my %pragma_table = ( maxsteps => \$max_flash_words,
+my %pragma_table = ( maxlibsteps => \$max_flash_words,
                    );
 
 # Automatically extract the name of the executable that was used. Also extract

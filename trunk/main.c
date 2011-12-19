@@ -1454,7 +1454,7 @@ void toggle_debug( void )
 	SleepAnnunciatorOn = is_debug() || SerialOn;
 	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
 #endif
-	message( is_debug() ? "Debug ON" : "Debug OFF", NULL );
+	message( is_debug() ? "Debug ON" : "Debug\006OFF", NULL );
 }
 
 

@@ -72,7 +72,7 @@ my $ansi_rev_green_bg     = "\e[42;1;7;33;1m";
 my $ansi_rev_blue_bg      = "\e[47;1;7;34;1m";
 my $ansi_rev_cyan_bg      = "\e[30;46m";
 
-my $DEFAULT_USE_ANSI_COLOUR = 1;
+my $DEFAULT_USE_ANSI_COLOUR = 0;
 my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
 # ---------------------------------------------------------------------
@@ -348,11 +348,12 @@ sub catalogue_binary {
 #
 #
 sub prepare_new_srcs {
-  my $new_src_lib = shift;
+  #MvC
+  #my $new_src_lib = shift;
   my @srcs = @_;
   my $src_list = join " ", @srcs;
 
-  my $dbg_msg = "Preparing new source(s): " . join ", ", @new_srcs;
+  my $dbg_msg = "Preparing new source(s): " . join ", ", @srcs;
   debug_msg(this_function_script((caller(0))[3]), "$dbg_msg") if $debug;
 
   my $tmp_file = gen_random_writeable_filename();

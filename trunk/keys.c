@@ -1050,7 +1050,7 @@ static int process_gtodot(const keycode c) {
 	}
 	else if (c == K62) {
 		// .
-		rawpc = RamRegionSize;
+		rawpc = ProgSize;
 		goto fin;
 	}
 	else if (c == K20) {
@@ -1080,7 +1080,7 @@ static int process_gtodot(const keycode c) {
 		// down
 		update_program_bounds(1);
 		rawpc = do_inc(ProgEnd, 0);
-		if (rawpc == 0 && RamRegionSize > 0)
+		if (rawpc == 0 && ProgSize > 0)
 			rawpc = 1;
 		goto fin;
 	}
