@@ -571,19 +571,18 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC1(OP_TICKS,		&op_ticks,		"TICKS")
 	FUNC1(OP_VOLTAGE,	&op_voltage,		"BATT")
 
-	FUNC0(OP_SETEUR,	&op_locale,		"SETEUR")
-	FUNC0(OP_SETUK,		&op_locale,		"SETUK")
-	FUNC0(OP_SETUSA,	&op_locale,		"SETUSA")
-	FUNC0(OP_SETIND,	&op_locale,		"SETIND")
-	FUNC0(OP_SETCHN,	&op_locale,		"SETCHN")
-	FUNC0(OP_SETJPN,	&op_locale,		"SETJPN")
-
 	FUNC0(OP_QUAD,		&xrom_routines,		"SLVQ")
 	FUNC0(OP_NEXTPRIME,	&xrom_routines,		"NEXTP")
 	FUNC0(OP_USR_ZETA,	&xrom_routines,		"\245")
 	FUNC0(OP_USR_Bn,	&xrom_routines,		"B\275")
 	FUNC0(OP_USR_BnS,	&xrom_routines,		"B\275*")
 	FUNC0(OP_USR_W1,	&xrom_routines,		"W\033")
+	FUNC0(OP_SETEUR,	&xrom_routines,		"SETEUR")   // 83
+	FUNC0(OP_SETUK,		&xrom_routines,		"SETUK")
+	FUNC0(OP_SETUSA,	&xrom_routines,		"SETUSA")
+	FUNC0(OP_SETIND,	&xrom_routines,		"SETIND")
+	FUNC0(OP_SETCHN,	&xrom_routines,		"SETCHN")
+	FUNC0(OP_SETJPN,	&xrom_routines,		"SETJPN")
 
 	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")

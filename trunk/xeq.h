@@ -725,8 +725,8 @@ enum nilop {
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 	OP_ENTRYP,
 	OP_TICKS, OP_VOLTAGE,
-	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN, OP_SETJPN,
 	OP_QUAD, OP_NEXTPRIME, OP_USR_ZETA, OP_USR_Bn, OP_USR_BnS, OP_USR_W1,
+	OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN, OP_SETJPN,
 	OP_XEQALPHA, OP_GTOALPHA,
 	OP_ROUNDING,
 	OP_SLOW, OP_FAST,
@@ -1199,7 +1199,6 @@ extern void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_pause(unsigned int arg, enum rarg op);
 extern void op_intsign(decimal64 *a, decimal64 *b, enum nilop op);
 extern void set_int_base(unsigned int arg, enum rarg op);
-extern void op_locale(decimal64 *a, decimal64 *nul, enum nilop op);
 extern void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op);
 extern void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op);

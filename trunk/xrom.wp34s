@@ -921,6 +921,44 @@ prime_2::		CLx
 			RTN
 
 /**************************************************************************/
+/* Locale setting commands
+ */
+		LBL 83		// European
+			XEQ locale_common
+			RDX,
+			JG1582
+			RTN
+		LBL 82		// UK/Australia
+			XEQ locale_common
+			12H
+			RTN
+		LBL 81		// USA
+			XEQ locale_common
+			12H
+			M.DY
+			RTN
+		LBL 80		// India
+			XEQ locale_common
+			E3OFF
+			RTN
+		LBL 79		// China
+			XEQ locale_common
+			E3OFF
+			Y.MD
+			RTN
+		LBL 78		// Japan
+			XEQ locale_common
+			Y.MD
+			RTN
+
+locale_common::		RDX.
+			E3ON
+			24H
+			JG1752
+			D.MY
+			RTN
+
+/**************************************************************************/
 
 		LBL'WHO'
 			CL[alpha]

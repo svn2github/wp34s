@@ -3054,6 +3054,7 @@ void set_int_base(unsigned int arg, enum rarg op) {
 		set_base(arg);
 }
 
+#if 0
 void op_locale(decimal64 *a, decimal64 *nul, enum nilop op) {
 	enum {
 		LOCALE_RADIX_COM=1,	LOCALE_RADIX_DOT=0,
@@ -3093,6 +3094,7 @@ void op_locale(decimal64 *a, decimal64 *nul, enum nilop op) {
 	op_datemode(NULL, NULL, (f & LOCALE_DATE_MDY) ? OP_DATEMDY : ((f & LOCALE_DATE_YMD) ? OP_DATEYMD : OP_DATEDMY));
 	op_jgchange(NULL, NULL, (f & LOCALE_JG1582) ? OP_JG1582 : OP_JG1752);
 }
+#endif
 
 void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op) {
 	UState.date_mode = (op - OP_DATEDMY) + DATE_DMY;
