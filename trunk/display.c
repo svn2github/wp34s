@@ -1458,8 +1458,7 @@ void display(void) {
 		set_dot(STO_annun);
 		if (State2.smode == SDISP_SHOW) {
 			unsigned short int crc;
-			checksum_code();
-			crc = CrcProg;
+			crc = checksum_program();
 			j = SEGS_PER_DIGIT * 0;
 			for (i=0; i<4; i++) {
 				set_dig(j, "0123456789ABCDEF"[crc & 0xf]);

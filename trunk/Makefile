@@ -248,7 +248,7 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	$(UTILITIES)/post_process$(EXE) $(OUTPUTDIR)/calc.tmp $@
 	@grep "^\.fixed"          $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	@grep "^\.revision"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "UserFlash"         $(MAPFILE) | tail -n 3 >> $(SUMMARY)
+	@grep "UserFlash"         $(MAPFILE) | tail -n 2 >> $(SUMMARY)
 	@grep "^\.backupflash"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.cmdtab"         $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.bss"            $(MAPFILE) | tail -n 1 >> $(SUMMARY)
@@ -282,8 +282,7 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 		
 catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile
-	echo "# \$$Rev\$$" > $(OPCODES)
-	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>>$(OPCODES)
+	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>$(OPCODES)
 
 lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
 	$(UTILITIES)/lcdgen$(EXE) >$@

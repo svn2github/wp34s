@@ -1188,6 +1188,8 @@ int main(int argc, char *argv[]) {
 	ALPHA(alpha_letters);
 	ALPHA(alpha_letters_lower);
 
+	fprintf(stderr, "# $Rev$\n" );
+	fprintf(stderr, "version=%c%c\n", VERSION_STRING[0], VERSION_STRING[2]);
         fprintf(stderr, "maxsteps=%d\n", NUMPROG_LIMIT);
         fprintf(stderr, "maxlibsteps=%d\n", NUMPROG_FLASH);
 	dump_opcodes(stderr);

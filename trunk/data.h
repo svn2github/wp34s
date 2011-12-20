@@ -94,26 +94,30 @@ struct _state {
 typedef struct _ram {
 	/*
 	 *  Header information for the program space.
-	 *  A flash region looks the same.
 	 */
-	unsigned short _crc_prog;	// checksum
-	unsigned short _prog_size;	// size of the program region
+	unsigned short _prog_max;	// maximum size of program
+	unsigned short _prog_size;	// actual size of program
 
 	/*
-	 *  Define storage for the machine's program space.
-	 *  It spans almost 1 KB, leaving just 8 bytes at the end.
+	 *  Define storage for the machine's program memory and return stack.
+	 *  The program return stack is at the end of this area.
 	 */
-	s_opcode _prog[NUMPROG];
+	s_opcode _prog[RET_STACK_SIZE];
 
 	/*
-	 *  The program return stack.
+	 *  Storage space for our user flags (7 short integers)
 	 */
-	unsigned short int _retstk[RET_STACK_SIZE];
+	unsigned short int _user_flags[(NUMFLG+15) >> 4];
 
 	/*
 	 *  Define storage for the machine's registers.
 	 */
 	decimal64 _regs[NUMREG];
+
+	/*
+	 *  Alpha register gets its own space
+	 */
+	char _alpha[NUMALPHA+1];
 
 	/*
 	 *  Random number seeds
@@ -131,11 +135,6 @@ typedef struct _ram {
 	struct _ustate _ustate;
 
 	/*
-	 *  Storage space for our user flags
-	 */
-	unsigned short int _user_flags[(NUMFLG+15) >> 4];
-
-	/*
 	 *  Begin and end of current program
 	 */
 	unsigned short int _prog_begin;
@@ -148,14 +147,7 @@ typedef struct _ram {
 	unsigned char _sizestatregs;	// in levels
 
 	/*
-	 *  Alpha register gets its own space
-	 */
-	char _alpha[NUMALPHA+1];
-
-	/*
-	 *  Magic marker to detect failed RAM
-	 *  The CRC excludes the program space which has its own checksum
-	 *  and the return stack which may get clobbered by a PSTO command
+	 *  CRC or magic marker to detect failed RAM
 	 */
 	unsigned short _crc;
 
@@ -165,17 +157,17 @@ extern TPersistentRam PersistentRam;
 
 #define State		(PersistentRam._state)
 #define UState		(PersistentRam._ustate)
-#define CrcProg		(PersistentRam._crc_prog)
+#define ProgMax		(PersistentRam._prog_max)
 #define ProgSize	(PersistentRam._prog_size)
 #define Alpha		(PersistentRam._alpha)
 #define Regs		(PersistentRam._regs)
 #define Prog		(PersistentRam._prog)
 #define Prog_1		(PersistentRam._prog - 1)
-#define UserFlags	(PersistentRam._user_flags)
-#define RetStkBase	(PersistentRam._retstk + RET_STACK_SIZE) // Point to end of stack
+#define RetStkBase	(PersistentRam._prog + RET_STACK_SIZE) // Point to end of stack
 #define ProgBegin	(PersistentRam._prog_begin)
 #define ProgEnd		(PersistentRam._prog_end)
 #define NumRegs		(PersistentRam._numregs)
+#define UserFlags	(PersistentRam._user_flags)
 #define SizeStatRegs	(PersistentRam._sizestatregs)
 #define RetStkPtr	(PersistentRam._state.retstk_ptr)
 #define LocalRegs	(PersistentRam._state.local_regs)
@@ -331,11 +323,6 @@ extern unsigned char GoFast;	   // Speed-up might be necessary
 extern unsigned short *RetStk;	   // Pointer to current top of return stack
 extern int RetStkSize;		   // actual size of retiurn stack
 extern int ProgFree;		   // Remaining program steps
-#ifdef ALLOW_LARGE_PROGRAM
-extern int ProgMax;		   // Maximum program size (total)
-#else
-#define ProgMax NUMPROG
-#endif
 extern decContext Ctx;		   // decNumber library context
 extern int JustDisplayed;	   // Avoid duplicate calls to display();
 #ifdef CONSOLE

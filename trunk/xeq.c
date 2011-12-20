@@ -119,13 +119,6 @@ int RetStkSize;
  */
 int ProgFree;
 
-#ifdef ALLOW_LARGE_PROGRAM
-/*
- *  Maximum size of program, depends on Regs and Sigma
- */
-int ProgMax;
-#endif
-
 /*
  * The actual top of the return stack
  */
@@ -680,7 +673,8 @@ void decpc(void) {
  */
 void update_program_bounds(const int force) {
 	unsigned int pc = state_pc();
-
+	if (pc == 0)
+		pc = 1;
 	if (! force && pc >= ProgBegin && pc <= ProgEnd)
 		return;
 	for (PcWrapped = 0; !PcWrapped; pc = do_inc(pc, 0)) {
@@ -693,7 +687,7 @@ void update_program_bounds(const int force) {
 		const unsigned int opc = pc;
 		pc = do_dec(opc, 0);
 		if (PcWrapped || getprog(pc) == (OP_NIL | OP_END)) {
-			ProgBegin = opc == 0 && ProgSize > 0 ? 1 : opc;
+			ProgBegin = opc == 0 ? 1 : opc;
 			break;
 		}
 	}
@@ -3718,29 +3712,24 @@ void xeq_sst_bst(int kind)
  *  On the hardware, RAM is volatile and these pointers and structures need valid values!
  */
 void xeq_init_contexts(void) {
-	// Initialise our standard contexts.
-	// We have to disable traps and bump the digits for internal calculations.
+	/*
+	 *  Compute the sizes of the various memory portions
+	 */
+	const short int s = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs; // additional register space
+	RetStk = RetStkBase + s;					  // Move RetStk up or down
+	RetStkSize = s + RET_STACK_SIZE - ProgSize;
+	ProgMax = s + RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE;
+	ProgFree = ProgMax - ProgSize + RetStkPtr;
+
+	/*
+	 *  Initialise our standard contexts.
+	 *  We bump the digits for internal calculations.
+	 */
 	decContextDefault(&Ctx, DEC_INIT_BASE);
-//	Ctx.traps = 0;
 	Ctx.digits = DECNUMDIGITS;
 	Ctx.emax=DEC_MAX_MATH;
 	Ctx.emin=-DEC_MAX_MATH;
 	Ctx.round = DEC_ROUND_HALF_EVEN;
-
-	// Compute the actual top and current size of the return stack
-	RetStkSize = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs;
-	RetStk = RetStkBase + RetStkSize;
-#ifdef ALLOW_LARGE_PROGRAM
-	ProgMax = NUMPROG + RET_STACK_SIZE + RetStkSize;
-	RetStkSize = ProgMax - ProgSize;
-	ProgMax -= MINIMUM_RET_STACK_SIZE;
-	ProgFree = free_mem() - MINIMUM_RET_STACK_SIZE;
-#else
-	RetStkSize += RET_STACK_SIZE + NUMPROG + ProgSize;
-	ProgFree = NUMPROG - (ProgSize);
-	if (RetStk < Prog + NUMPROG)
-		ProgFree -= Prog + NUMPROG - RetStk;	// All pointers are to 16 bit words!
-#endif
 }
 
 

@@ -38,9 +38,10 @@ typedef struct _flash_region {
 extern FLASH_REGION UserFlash;
 extern TPersistentRam BackupFlash;
 
-extern unsigned short int crc16( const void *base, unsigned int length );
-extern int checksum_code(void);
-extern int checksum_all(void);
+extern unsigned short int crc16(const void *base, unsigned int length);
+extern unsigned short int checksum_program(void);
+extern int checksum_ram(void);
+#define checksum_all() checksum_ram()
 extern int checksum_backup(void);
 extern void init_library(void);
 extern int append_program(const s_opcode *source, int length);

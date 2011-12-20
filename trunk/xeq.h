@@ -383,54 +383,15 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
-#ifdef ALLOW_LARGE_PROGRAM
-#define NUMPROG		2	/* Dummy value, aligns nicely */
-#define RET_STACK_SIZE	(510 - NUMPROG + 22)	/* Allocated depth of return stack */
-#define MINIMUM_RET_STACK_SIZE 8 /* Minimum headroom for program execution */
-#define NUMPROG_LIMIT	(510 + 22 - MINIMUM_RET_STACK_SIZE + 99 * 4)	/* Absolute maximum for sanity checks */
-#else
-#define NUMPROG		510	/* Fill 1 KB (including crc and length) */
-#define NUMPROG_LIMIT	NUMPROG
-#define RET_STACK_SIZE	22	/* Minimum depth of return stack, extends into unused program space */
-#endif
+#define RET_STACK_SIZE	533      /* Combined return stack and program space */
+#define MINIMUM_RET_STACK_SIZE 6 /* Minimum headroom for program execution */
+#define NUMPROG_LIMIT	(RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE + (TOPREALREG - 1) * 4) /* Absolute maximum for sanity checks */
+
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
-
 #define NUMALPHA	31	/* Number of characters in Alpha */
-
 #define CMDLINELEN	19	/* 12 mantissa + dot + sign + E + sign + 3 exponent = 19 */
-#define NUMBANKFLAGS	16
-
-/* Special return stack marker for local registers */
-#define LOCAL_MASK      (0x8000u)
-#define isLOCAL(s)	((s) & LOCAL_MASK)
-#define LOCAL_LEVELS(s)	((s) & 0x1ff)
-//#define LOCAL_MAXREG(s)	(LOCAL_LEVELS(s) >> 2)
-
-/*
- *  The various program regions
- */
-#define REGION_RAM	0
-#define REGION_LIBRARY	1
-#define REGION_BACKUP	2
-#define REGION_XROM	3
-
-/* Macros to access flash library space */
-#define LIB_SHIFT	(13)
-#define LIB_MASK	(3 << LIB_SHIFT)
-#define LIB_ADDR_MASK	((1 << LIB_SHIFT) - 1)
-#define isLIB(pc)	((pc) & LIB_MASK)
-#define nLIB(pc)	((pc) >> LIB_SHIFT)
-#define addrLIB(pc, n)	((pc) | ((n) << LIB_SHIFT))
-#define startLIB(pc)	(((pc) & ~LIB_ADDR_MASK) + 1)
-#define offsetLIB(pc)	(((pc) & LIB_ADDR_MASK) - 1)
-
-#define isRAM(pc)	(((pc) & (LIB_MASK | LOCAL_MASK)) == 0)
-
-/* Macros to access program ROM */
-#define isXROM(pc)	(((pc) & LIB_MASK) == LIB_MASK)
-#define addrXROM(pc)	addrLIB(pc,REGION_XROM)
 
 /* Stack lives in the register set */
 #define NUMREG		(TOPREALREG+STACK_SIZE+EXTRA_REG)/* Number of registers */
@@ -466,6 +427,35 @@ extern int current_catalogue_max(void);
 #define regJ	(Regs[regJ_idx])
 #define regK	(Regs[regK_idx])
 
+
+/*
+ *  The various program regions
+ */
+#define REGION_RAM	0
+#define REGION_LIBRARY	1
+#define REGION_BACKUP	2
+#define REGION_XROM	3
+
+/* Special return stack marker for local registers */
+#define LOCAL_MASK      (0x8000u)
+#define isLOCAL(s)	((s) & LOCAL_MASK)
+#define LOCAL_LEVELS(s)	((s) & 0x1ff)
+
+/* Macros to access flash library space */
+#define LIB_SHIFT	(13)
+#define LIB_MASK	(3 << LIB_SHIFT)
+#define LIB_ADDR_MASK	((1 << LIB_SHIFT) - 1)
+#define isLIB(pc)	((pc) & LIB_MASK)
+#define nLIB(pc)	((pc) >> LIB_SHIFT)
+#define addrLIB(pc, n)	((pc) | ((n) << LIB_SHIFT))
+#define startLIB(pc)	(((pc) & ~LIB_ADDR_MASK) + 1)
+#define offsetLIB(pc)	(((pc) & LIB_ADDR_MASK) - 1)
+
+#define isRAM(pc)	(((pc) & (LIB_MASK | LOCAL_MASK)) == 0)
+
+/* Macros to access program ROM */
+#define isXROM(pc)	(((pc) & LIB_MASK) == LIB_MASK)
+#define addrXROM(pc)	addrLIB(pc,REGION_XROM)
 
 /* Define the operation codes and various masks to simplify access to them all
  */

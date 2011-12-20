@@ -118,48 +118,33 @@ static int test_checksum( const void *data, unsigned int length, unsigned short 
 
 
 /*
- *  Checksum the program area.
- *  This always computes and sets the checksum of the program in RAM.
- *  The checksum of any program in flash can simply be read out.
- *  Returns non zero value if failure
+ *  Checksum the current program.
  */
-int checksum_code( void )
+short unsigned int checksum_program( void )
 {
-	return ProgSize >= NUMPROG_LIMIT 
-		|| test_checksum( Prog, ProgSize * sizeof( s_opcode ), CrcProg, &CrcProg );
+	update_program_bounds( 1 );
+	return crc16( get_current_prog(), ProgEnd - ProgBegin + 1 );
 }
 
 
 /*
- *  Checksum the persistent RAM area (registers and state only)
- *  The magic marker is always valid. This eases manipulating state files.
+ *  Checksum the persistent RAM area
  *  Returns non zero value if failure
  */
-int checksum_data( void )
+int checksum_ram( void )
 {
-	const char *r = (char *) get_reg_n(0);
-	return test_checksum( r, (char *) &Crc - r, Crc, &Crc );
+	return test_checksum( &PersistentRam, sizeof( PersistentRam ) - sizeof( short ),
+			      Crc, &Crc );
 }
 
 
 /*
- *  Checksum all RAM
- *  Returns non zero value if failure
- */
-int checksum_all( void )
-{
-	return checksum_data() + checksum_code();
-}
-
-
-/*
- *  Checksum the backup flash region (registers and state only)
+ *  Checksum the backup flash region
  *  Returns non zero value if failure
  */
 int checksum_backup( void )
 {
-	const char *r = (char *) get_flash_reg_n(0);
-	return test_checksum( r, (char *) &( BackupFlash._crc ) - r,
+	return test_checksum( &BackupFlash, sizeof( BackupFlash ) - sizeof( short ),
 		              BackupFlash._crc, NULL );
 }
 
@@ -171,13 +156,27 @@ int checksum_backup( void )
 static int checksum_region( FLASH_REGION *fr, FLASH_REGION *header )
 {
 	unsigned int l = header->size * sizeof( s_opcode );
-#ifndef REALBUILD
-	if ( test_checksum( fr->prog, l, fr->crc, NULL ) ) {
-		// old assembler
-		l = ( --header->size ) * sizeof( s_opcode );
-	}
-#endif
 	return l > sizeof( fr->prog ) || test_checksum( fr->prog, l, fr->crc, &(header->crc ) );
+}
+
+
+/*
+ *  Helper to store final END in empty program space
+ */
+static void stoend( void )
+{
+	ProgSize = 1;
+	Prog[ 0 ] = ( OP_NIL | OP_END );
+}
+
+
+/*
+ *  Clear the program space
+ */
+void clpall( void )
+{
+	clrretstk_pc();
+	stoend();
 }
 
 
@@ -197,17 +196,6 @@ static int check_delete_prog( unsigned int pc )
 
 
 /*
- *  Clear the program space
- */
-void clpall( void )
-{
-	ProgSize = 1;
-	clrretstk_pc();
-	Prog[ 0 ] = ( OP_NIL | OP_END );
-}
-
-
-/*
  *  Clear just the current program
  */
 void clrprog( void )
@@ -223,8 +211,12 @@ void clrprog( void )
 		if ( check_delete_prog( ProgBegin ) ) {
 			return;
 		}
+		clrretstk();
 		xcopy( Prog_1 + ProgBegin, Prog + ProgEnd, ( ProgSize - ProgEnd ) << 1 );
 		ProgSize -= ( ProgEnd + 1 - ProgBegin );
+		if ( ProgSize == 0 ) {
+			stoend();
+		}
 	}
 	set_pc( ProgBegin - 1 );
 }
@@ -315,6 +307,55 @@ void delprog( void )
 	for ( i = pc; i <= (int) ProgSize; ++i )
 		Prog_1[ i ] = Prog_1[ i + off ];
 	decpc();
+}
+
+
+/*
+ *  Helper to append a program in RAM.
+ *  Returns non zero in case of an error.
+ */
+int append_program( const s_opcode *source, int length )
+{
+	unsigned short pc;
+	int space_needed = length - ProgFree;
+
+	if ( ProgSize == 1 ) {
+		/*
+		 *  Only the default END statement is present
+		 */
+		--space_needed;
+		--ProgSize;
+	}
+	if ( length > NUMPROG_LIMIT ) {
+		return err( ERR_INVALID );
+	}
+	if ( length > NUMPROG_LIMIT - ProgSize ) {
+		return err( ERR_RAM_FULL );
+	}
+
+	/*
+	 *  Make room if needed
+	 */
+	clrretstk();
+	if ( space_needed > 0 && SizeStatRegs != 0 ) {
+		space_needed -= SizeStatRegs;
+		sigmaDeallocate();
+	}
+	if ( space_needed > 0 ) {
+		const int regs = NumRegs - ( ( space_needed + 3 ) >> 2 ) - 1;
+		if ( regs < 0 ) {
+			return err( ERR_RAM_FULL );
+		}
+		cmdregs( regs, RARG_REGS );
+	}
+	/*
+	 *  Append data
+	 */
+	pc = ProgSize + 1;
+	ProgSize += length;
+	xcopy( Prog_1 + pc, source, length << 1 );
+	set_pc( pc );
+	return 0;
 }
 
 
@@ -578,72 +619,21 @@ void flash_restore( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 
 
 /*
- *  Helper to append a program in RAM.
- *  Returns non zero in case of an error.
- */
-int append_program( const s_opcode *source, int length )
-{
-	unsigned short pc;
-	int space_needed = length - ProgFree;
-
-	if ( ProgSize == 1 ) {
-		/*
-		 *  Only the default END statement is present
-		 */
-		--space_needed;
-		--ProgSize;
-	}
-	if ( length > NUMPROG_LIMIT ) {
-		return err( ERR_INVALID );
-	}
-	if ( length > NUMPROG_LIMIT - ProgSize ) {
-		return err( ERR_RAM_FULL );
-	}
-
-	/*
-	 *  Make room if needed
-	 */
-	clrretstk();
-	if ( space_needed > 0 && SizeStatRegs != 0 ) {
-		space_needed -= SizeStatRegs;
-		sigmaDeallocate();
-	}
-	if ( space_needed > 0 ) {
-		const int regs = NumRegs - ( ( space_needed + 3 ) >> 2 ) - 1;
-		if ( regs < 0 ) {
-			return err( ERR_RAM_FULL );
-		}
-		cmdregs( regs, RARG_REGS );
-	}
-	/*
-	 *  Append data
-	 */
-	pc = ProgSize + 1;
-	ProgSize += length;
-	xcopy( Prog_1 + pc, source, length << 1 );
-	set_pc( pc );
-	return 0;
-}
-
-
-/*
  *  Load the user program area from the backup.
  *  Called by PLOAD.
  */
 void load_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 {
 	if ( not_running() ) {
-		FLASH_REGION *fr = (FLASH_REGION *) &BackupFlash;
-
-		if ( checksum_region( fr, fr ) || fr->size >= ProgMax ) {
+		if ( checksum_backup() ) {
 			/*
-			 *  Not a valid program region
+			 *  Not a valid backup
 			 */
 			err( ERR_INVALID );
 			return;
 		}
 		clpall();
-		append_program( fr->prog, fr->size );
+		append_program( BackupFlash._prog, BackupFlash._prog_size );
 	}
 }
 
@@ -817,8 +807,6 @@ void load_statefile( void )
 	if ( f != NULL ) {
 		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
 		fclose( f );
-		init_34s();
-		checksum_all();
 	}
 	f = fopen( BACKUP_FILE, "rb" );
 	if ( f != NULL ) {
