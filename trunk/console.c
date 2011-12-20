@@ -226,6 +226,12 @@ static const struct {
 	XL(ENTRY_Bn, "Entry: BERNOULLI NUMBER (modern)")
 	XL(ENTRY_Bn_star, "Entry: BERNOULLI NUMBER (old)")
 	XL(ENTRY_W1, "Entry: Lambert W negative branch")
+        XL(ENTRY_SETEUR, "Entry: Set Eupopean locale")
+        XL(ENTRY_SETUK, "Entry: Set English locale")
+        XL(ENTRY_SETUSA, "Entry: Set USA locale")
+        XL(ENTRY_SETIND, "Entry: Set Indian locale")
+        XL(ENTRY_SETCHN, "Entry: Set Chinese locale")
+        XL(ENTRY_SETJAP, "Entry: Set Japanese locale")
 #undef XL
 #define XE(n, s)	X(ERROR, n, s)
 	XE(ERR_DOMAIN, "Error: Domain Error")
@@ -242,6 +248,17 @@ static const struct {
 	XE(ERR_STK_CLASH, "Error: stack clash")
 	XE(ERR_BAD_MODE, "Error: bad mode error")
 	XE(ERR_INT_SIZE, "Error: word size too small")
+	XE(ERR_MORE_POINTS, "Error: more data points required")
+	XE(ERR_BAD_PARAM, "Error: invalid parameter")
+	XE(ERR_IO, "Error: input / output problem")
+	XE(ERR_INVALID, "Error: invalid data")
+	XE(ERR_READ_ONLY, "Error: write protected")
+	XE(ERR_SOLVE, "Error: solve failed")
+#ifdef MATRIX_SUPPORT
+	XE(ERR_MATRIX_DIM, "Error: matrix dimension mismatch")
+	XE(ERR_SINGULAR, "Error: matrix singular")
+#endif
+	XE(ERR_FLASH_FULL, "Error: flash is full")
 #undef XE
 #undef X
 };

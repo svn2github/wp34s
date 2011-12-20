@@ -34,6 +34,13 @@
 #define ENTRY_Bn	86
 #define ENTRY_Bn_star	85
 #define ENTRY_W1	84
+#define ENTRY_SETEUR	83
+#define ENTRY_SETUK	82
+#define ENTRY_SETUSA	81
+#define ENTRY_SETIND	80
+#define ENTRY_SETCHN	79
+#define ENTRY_SETJAP	78
+
 
 
 extern const s_opcode xrom[];
