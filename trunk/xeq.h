@@ -832,7 +832,7 @@ enum rarg {
 	RARG_KEYTYPE,
 	RARG_MESSAGE,
 
-	RARG_LOCAL,
+	RARG_LOCR,
 	RARG_REGS,
 
 	NUM_RARG	// Last entry defines number of operations

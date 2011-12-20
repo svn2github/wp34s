@@ -686,6 +686,7 @@ static int process_fg_shifted(const keycode c) {
 		}	
 		break;
 
+
 	case K51:
 		State2.test = op;
 		return STATE_UNFINISHED;
@@ -698,6 +699,12 @@ static int process_fg_shifted(const keycode c) {
 		break;
 
 	case K50:
+#ifndef REALBUILD
+		if (SHIFT_N != shift_down()) {
+			State2.trace = (shift == SHIFT_F);
+			return STATE_UNFINISHED;
+		}
+#endif
 	case K52:
 	case K53:
 	case K63:

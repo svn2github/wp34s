@@ -31,7 +31,6 @@
 			[cmplx]STO .00
 			FILL
 			XEQUSR
-			NOP
 			POPUSR
 			STO .03
 			x[approx]0?
@@ -39,7 +38,6 @@
 			RCL .01
 			FILL
 			XEQUSR
-			NOP
 			POPUSR
 			STO .04
 			x[approx]0?
@@ -49,7 +47,6 @@
 
 slv_loop::		FILL
 			XEQUSR
-			NOP
 			POPUSR
 			FILL
 			x[approx]0?
@@ -160,7 +157,7 @@ int_zero_interval::	XEQ int_restore_limits
 
 		LBL 94					/* Entry: INTEGRATE */
 			XEQ entry
-			LocR 04				/* Need registers .00 to .04
+			LocR 04				/* Need registers .00 to .04 */
 			SPEC?
 				JMP int_bad_range
 			x[<->] Y
@@ -193,14 +190,12 @@ int_zero_interval::	XEQ int_restore_limits
 			/* Sum Gauss and Kronrod common points */
 int_gkloop::		XEQ int_first_point
 			XEQUSR
-			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range
 			XEQ int_gauss
 			XEQ int_second_point
 			XEQUSR
-			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range
@@ -214,7 +209,6 @@ int_gkloop::		XEQ int_first_point
 			RCL .01
 			FILL
 			XEQUSR
-			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range2
@@ -229,14 +223,12 @@ int_gkloop::		XEQ int_first_point
 			/* Sum Kronrod only points */
 int_kloop::		XEQ int_first_point
 			XEQUSR
-			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range2
 			XEQ int_kronrod
 			XEQ int_second_point
 			XEQUSR
-			NOP
 			POPUSR
 			SPEC?
 				JMP int_bad_range2
@@ -327,7 +319,6 @@ int_restore_limits::	RCL .01
 			IP				/* First function call is separate*/
 			FILL				/* to avoid Kahan summing from zero*/
 			XEQUSR				/* six extra instructions save nine*/
-			NOP
 			POPUSR
 			SPEC?				/* from executing*/
 				JMP sum_product_nan
@@ -340,7 +331,6 @@ sum_loop::		RCL .00
 			IP
 			FILL
 			XEQUSR
-			NOP
 			POPUSR
 			SPEC?
 				JMP sum_product_nan
@@ -368,7 +358,6 @@ sum_entry::		DSL .00
 			IP				/* First function call is separate*/
 			FILL				/* to avoid a multiply*/
 			XEQUSR
-			NOP
 			POPUSR
 			SPEC?
 				JMP sum_product_nan
@@ -379,7 +368,6 @@ product_loop::		RCL .00
 			IP
 			FILL
 			XEQUSR
-			NOP
 			POPUSR
 			SPEC?
 				JMP sum_product_nan
@@ -578,7 +566,6 @@ deriv_eval_func::	STO .00
 			RCL+ .03
 			FILL
 			XEQUSR				/* f(x + k h)*/
-			NOP
 			POPUSR
 			SPEC?
 				RTN
@@ -590,7 +577,6 @@ deriv_eval_func::	STO .00
 			RCL+ .03
 			FILL
 			XEQUSR				/* f(x - k h)*/
-			NOP
 			POPUSR
 			SPEC?
 				RTN
@@ -601,6 +587,25 @@ deriv_eval_func::	STO .00
 deriv_skip_midpoint::	RCL .00
 			RTN+1
 
+deriv_4point::		8
+			RCL[times] .01
+			RCL- .02
+			1
+			2
+			RCL[times] .04
+			/
+
+deriv_return::		STO L
+			iC 0
+			FILL
+			RCL .03
+			x[<->] L
+			RTN
+/*
+ *  This part contains double word instructions and must not be located between a
+ *  JMP and its label because in XROM, BACK and SKIP are computed instead of 
+ *  walking the PC. This would fail with a long instruction in between.
+ */
 deriv_default_h::	STO .03
 			FILL
 			XEQ'[delta]X'
@@ -610,22 +615,6 @@ deriv_default_h::	STO .03
 		LBL'[delta]X'
 			iC 1
 			SDR 01				/* default h = 0.1*/
-			RTN
-
-deriv_4point::		8
-			RCL[times] .01
-			RCL- .02
-			1
-			2
-			RCL[times] .04
-			/
-
-
-deriv_return::		STO L
-			iC 0
-			FILL
-			RCL .03
-			x[<->] L
 			RTN
 
 /**************************************************************************/

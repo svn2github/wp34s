@@ -682,7 +682,7 @@ static s_opcode prog_catalogue[] = {
 #endif
 	RARGCMD(RARG_PUTKEY,	"PUTK")
 
-	RARGCMD(RARG_LOCAL,	"LocR")
+	RARGCMD(RARG_LOCR,	"LocR")
 	NILIC(OP_POPLR,		"PopLR")
 #ifndef INCLUDE_INTERNAL_CATALOGUE
 	RARGCMD(RARG_CONST_INT,	"iC")

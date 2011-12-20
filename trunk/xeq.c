@@ -1763,27 +1763,25 @@ void cmdrclstk(unsigned int arg, enum rarg op) {
 /*
  *  Move up the return stack, skipping any local variables
  */
-static int retstk_up(int sp, int unwind)
+static void retstk_up(void)
 {
-	if (sp < 0) {
+	if (RetStkPtr < 0) {
+		int sp = RetStkPtr++;
 		unsigned int s = RetStk[sp++];
 		if (isLOCAL(s)) {
-			int n = LOCAL_LEVELS(s); 
-			sp += n;
-			if (unwind) {
-				// Re-adjust the LocalRegs pointer
-				LocalRegs = 0;
-				for (RetStkPtr = sp; sp < 0; ++sp) {
-					if (isLOCAL(RetStk[sp])) {
-						LocalRegs = sp;
-						break;
-					}
+			sp += LOCAL_LEVELS(s);
+			RetStkPtr = sp;
+			// Re-adjust the LocalRegs pointer
+			LocalRegs = 0;
+			while (sp < 0) {
+				if (isLOCAL(RetStk[sp])) {
+					LocalRegs = sp;
+					break;
 				}
-				return RetStkPtr;
+				++sp;
 			}
 		}
 	}
-	return sp;
 }
 
 
@@ -1844,13 +1842,14 @@ static void do_rtn(int plus1) {
 	if (Running) {
 		if (RetStkPtr < 0) {
 			// Pop any LOCALS off the stack
-			RetStkPtr = retstk_up(RetStkPtr, 1);
+			retstk_up();
 		}
 		if (RetStkPtr <= 0) {
 			// Normal RTN within program
 			unsigned short pc = RetStk[RetStkPtr - 1];
 			raw_set_pc(pc);
-			fin_tst(! plus1); // Inc PC if not at END
+			// If RTN+1 inc PC if not at END or a POPUSR command would be skipped
+			fin_tst(! plus1 || getprog(pc) == (OP_NIL | OP_POPUSR));
 		}
 		else {
 			// program was started without a valid return address on the stack
@@ -2078,16 +2077,23 @@ void fin_tst(const int a) {
 
 /* Skip a number of instructions forwards */
 void cmdskip(unsigned int arg, enum rarg op) {
-	while (arg-- > 0 && !incpc());
-	if (PcWrapped) {
-		err(ERR_RANGE);
+	unsigned int pc = state_pc();
+	if (isXROM(pc))
+		raw_set_pc(pc + arg);
+	else {
+		while (arg-- && !incpc());
+		if (PcWrapped) {
+			err(ERR_RANGE);
+		}
 	}
 }
 
 /* Skip backwards */
 void cmdback(unsigned int arg, enum rarg op) {
 	unsigned int pc = state_pc();
-        if (arg) {
+	if (isXROM(pc))
+		pc -= arg + 1;
+        else if (arg) {
 		if ( Running ) {
 			// Handles the case properly that we are on last step
 			pc = do_dec(pc, 1);
@@ -2095,11 +2101,12 @@ void cmdback(unsigned int arg, enum rarg op) {
 		do {
 			pc = do_dec(pc, 1);
 		} while (--arg && !PcWrapped);
-		if (PcWrapped)
+		if (PcWrapped) {
 			err(ERR_RANGE);
-		else
-			raw_set_pc(pc);
+			return;
+		}
 	}
+	raw_set_pc(pc);
 }
 
 
@@ -3587,17 +3594,17 @@ void xeq(opcode op)
 #ifndef REALBUILD
 			if (! State2.trace ) {
 #endif
-				while (isXROM(state_pc())) {
+				unsigned short int pc = state_pc();
+				while (isXROM(pc)) {
 					// Leave XROM
-					int sp = RetStkPtr;
-					if (sp != 0) {
-						raw_set_pc(RetStk[sp]);
-						sp = retstk_up(sp, 1);
-						RetStkPtr = sp;
+					if (RetStkPtr != 0) {
+						retstk_up();
+						pc = RetStk[RetStkPtr - 1];
 					}
-					if (sp == 0)
-						incpc(); // compensate for decpc below
+					if (RetStkPtr == 0)
+						++pc; // compensate for decpc below
 				}
+				raw_set_pc(pc);
 #ifndef REALBUILD
 			}
 #endif
@@ -3753,6 +3760,8 @@ void set_running_off_sst() {
 
 void set_running_on_sst() {
 	Running = 1;
+	if (state_pc() == 0)
+		incpc();
 }
 
 void set_running_off() {
@@ -3838,7 +3847,7 @@ void cmdxlocal(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 		LocalRegs = RetStkPtr;
 	}
 	else {
-		cmdlocr(16, OP_LOCRQ);
+		cmdlocr(16, RARG_LOCR);
 	}
 }
 
@@ -3851,7 +3860,9 @@ void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 		err(ERR_ILLEGAL);
 		return;
 	}
-	RetStkPtr = retstk_up(LocalRegs, 1) - 1;
+	RetStkPtr = LocalRegs;
+	retstk_up();
+	--RetStkPtr;
 }
 
 /*
