@@ -886,7 +886,7 @@ static unsigned char alpha_arrows[] = {
 
 #ifndef MERGE_SUPERSCRIPTS
 static unsigned char alpha_superscripts[] = {
-	0235,	0232,				// ^-1, ^2
+	0235,	0232,	0200,			// ^-1, ^2, ^3
 	0234,					// ^x
 	0005,					// degree
 	0024,					// complex prefix
@@ -900,8 +900,9 @@ static unsigned char alpha_subscripts[] = {
 	0327,	0230,	0273,			// sub-A, sub-B, sub-c
 	0274,	0367,	0033,			// sub-e, sub-k, sub-m
 	0275,	0276,	0277,			// sub-n, sub-p, sub-u
+	0201,					// sub-w
 	0231,	0233,				// sub-mu, sub-infinity
-	0235,	0232,				// ^-1, ^2
+	0235,	0232, 0200,			// ^-1, ^2, ^3
 	0234,					// ^x
 	0005,					// degree
 	0024					// complex prefix
@@ -909,7 +910,7 @@ static unsigned char alpha_subscripts[] = {
 
 // Next two must match in size and 'meaning'
 static unsigned char alpha_letters[] = {
-	0300, 0301, 0302, 0303, 0304,		// A
+	0300, 0301, 0302, 0303, 0304, 0210,	// A
 	0305, 0306, 0307,			// C
 	0310, 0311, 0312, 0313,			// E
 	0236,					// h-bar
@@ -925,7 +926,7 @@ static unsigned char alpha_letters[] = {
 	0337					// Z
 };
 static unsigned char alpha_letters_lower[] = {
-	0340, 0341, 0342, 0343, 0344,		// A
+	0340, 0341, 0342, 0343, 0344, 0211,	// A
 	0345, 0346, 0347,			// C
 	0350, 0351, 0352, 0353,			// E
 	0236,					// h-bar
