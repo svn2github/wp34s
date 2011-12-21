@@ -217,6 +217,9 @@ struct _state2 {
 	unsigned int registerlist : 1;	// Displaying the register's contents
 	unsigned int disp_freeze : 1;   // Set by VIEW to avoid refresh
 	unsigned int disp_temp : 1;     // Indicates a temporary display, disables <-
+#ifdef INCLUDE_DOUBLE_PRECISION
+	unsigned int mode_double : 1;	// Double precision mode
+#endif
 #ifndef REALBUILD
 	unsigned int trace : 1;
 	unsigned int flags : 1;		// Display state flags

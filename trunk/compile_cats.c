@@ -746,6 +746,10 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_SETJPN,	"SETJPN")
 	RARGCMD(RARG_STOM,	"STOM")
 	RARGCMD(RARG_RCLM,	"RCLM")
+#ifdef INCLUDE_DOUBLE_PRECISION
+	NILIC(OP_DBLON,		"DBLON")
+	NILIC(OP_DBLOFF,	"DBLOFF")
+#endif
 };
 
 static s_opcode alpha_catalogue[] = {

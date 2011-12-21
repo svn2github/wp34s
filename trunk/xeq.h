@@ -751,6 +751,9 @@ enum nilop {
 	OP_LOADR, OP_LOADsigma, OP_LOADST, 
 	OP_LOADP, OP_PRCL, OP_PSTO,
 
+#ifdef INCLUDE_DOUBLE_PRECISION
+	OP_DBLON, OP_DBLOFF,
+#endif
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -1186,6 +1189,7 @@ extern void op_trigmode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_radix(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_separator(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_double(decimal64 *nul1, decimal64 *nul2, enum nilop op);
 extern void op_pause(unsigned int arg, enum rarg op);
 extern void op_intsign(decimal64 *a, decimal64 *b, enum nilop op);
 extern void set_int_base(unsigned int arg, enum rarg op);

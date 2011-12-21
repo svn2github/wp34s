@@ -2910,6 +2910,11 @@ void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	UState.fract = 0;
 }
 
+#ifdef INCLUDE_DOUBLE_PRECISION
+void op_double(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+	State2.mode_double = (op == OP_DBLON) ? 1 : 0;
+}
+#endif
 
 void op_pause(unsigned int arg, enum rarg op) {
 	display();

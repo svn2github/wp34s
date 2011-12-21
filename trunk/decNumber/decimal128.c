@@ -335,7 +335,8 @@ char * decimal128ToEngString(const decimal128 *d128, char *string){
   decNumberToEngString(&dn, string);
   return string;
   } // decimal128ToEngString
-
+#endif
+#ifdef NEED_D128FROMSTRING
 /* ------------------------------------------------------------------ */
 /* to-number -- conversion from numeric string                        */
 /*                                                                    */
@@ -366,7 +367,8 @@ decimal128 * decimal128FromString(decimal128 *result, const char *string,
     }
   return result;
   } // decimal128FromString
-
+#endif
+#if 0
 #if DECTRACE || DECCHECK
 /* ------------------------------------------------------------------ */
 /* decimal128Show -- display a decimal128 in hexadecimal [debug aid]  */

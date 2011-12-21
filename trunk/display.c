@@ -295,6 +295,11 @@ static void annunciators(void) {
 	switch (cur_shift()) {
 	default:
 	case SHIFT_N:
+#ifdef INCLUDE_DOUBLE_PRECISION
+		if (State2.mode_double)
+			*p++ = 'D';
+		else
+#endif
 		if (State2.wascomplex) {
 			*p++ = 'C';
 			State2.wascomplex = 0;

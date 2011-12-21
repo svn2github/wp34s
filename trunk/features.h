@@ -23,6 +23,8 @@
 /*
  *  Select optional features here
  */
+// Rudimentary double precision mode, mainly for XROM use
+#define INCLUDE_DOUBLE_PRECISION
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55

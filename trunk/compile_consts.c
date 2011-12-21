@@ -38,20 +38,26 @@
 
 #include "charmap.c"
 
+#include "features.h"
 
 #define NEED_D64FROMSTRING  1
+#define NEED_D128FROMSTRING  1
 
 #if defined(WIN32) && !defined(__GNUC__)
 // Visual C on Windows will link with decnumber.lib
 #include "decNumber.h"
 #include "decimal64.h"
+#ifdef INCLUDE_DOUBLE_PRECISION
+#include "decimal128.h"
+#endif
 #else
 #include "decNumber.c"
 #include "decContext.c"
 #include "decimal64.c"
+#ifdef INCLUDE_DOUBLE_PRECISION
+#include "decimal128.c"
 #endif
-
-#include "features.h"
+#endif
 
 static FILE *fh;
 
@@ -396,6 +402,15 @@ struct constsml constsint[] = {
 	CONSTANT(NULL, NULL, NULL)
 };
 
+#ifdef INCLUDE_DOUBLE_PRECISION
+struct constsml constsdbl[] = {
+	CONSTANT("d_zero",	"ZERO",		"0"),
+	CONSTANT("d_one",	"ONE",		"1"),
+
+	CONSTANT(NULL, NULL, NULL)
+};
+#endif
+
 /* Imperial/metric conversions.
  * Data taken from http://physics.nist.gov/Pubs/SP811/appenB9.html
  * In general, the values are rounded to 6 or 7 digits even though
@@ -663,7 +678,41 @@ static void const_small_tbl(FILE *f, const int incname, const struct constsml ct
 			"};\n\n");
 }
 
+#ifdef INCLUDE_DOUBLE_PRECISION
+static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
+		const char *tname, const char *num_name, const char *macro_name,
+		const char *value_name,
+		const char *comment) {
+	int i, j;
+	unsigned char *p;
+	decimal128 d;
+	decContext ctx;
 
+	decContextDefault(&ctx, DEC_INIT_DECIMAL128);
+	for (i=0; ctbl[i].val != NULL; i++);
+	fprintf(fh, "\nstruct %s {\n"
+			"\tdecimal128 x;\n", tname);
+	fprintf(fh, "};\n\n");
+
+	fprintf(fh,	"/* %s */\n"
+			"extern const struct %s %s[];\n"
+			"#define %s %d\n"
+			"#define %s(n)	(%s[n].x)\n\n",
+			comment, tname, tname, num_name, i, macro_name, tname);
+	fprintf(f, "/* %s\n */\nconst struct %s %s[] = {\n", comment, tname, tname);
+	for (i=0; ctbl[i].val != NULL; i++) {
+		fprintf(f, "\t{ D(");
+		decimal128FromString(&d, ctbl[i].val, &ctx);
+		p = (unsigned char *)&d;
+		for (j=0; j<16; j++)
+			fprintf(f, "0x%02x%c ", p[15-j], j == 15 ? ')' : ',');
+		fprintf(f, "}, /* OP_");
+		put_name(f, ctbl[i].op);
+		fprintf(f, " */\n");
+	}
+	fprintf(f,"};\n\n");
+}
+#endif
 static void unpack(const char *b, int *u) {
 	while (*b != 0 && *b != ' ') {
 		*u++ = remap_chars(0xff & *b++);
@@ -721,13 +770,27 @@ static void const_small(FILE *fh) {
 			"#define B(b1,b2,b3,b4,b5,b6,b7,b8) {{ b8,b7,b6,b5,b4,b3,b2,b1 }}\n"
 			"#endif\n\n"
 		);
+#ifdef INCLUDE_DOUBLE_PRECISION
+	fprintf(f,	"#if BYTE_ORDER == BIG_ENDIAN\n"
+			"#define D(b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,b15,b16) \\\n"
+			"       {{ b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,b15,b16 }}\n"
+			"#else\n"
+			"#define D(b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,b15,b16) \\\n"
+			"       {{ b16,b15,b14,b13,b12,b11,b10,b9,b8,b7,b6,b5,b4,b3,b2,b1 }}\n"
+			"#endif\n\n"
+		);
+#endif
 	const_small_sort(constsml);
 	const_small_tbl(f, 1, constsml, "cnsts", "NUM_CONSTS",
 				"CONSTANT", "CONST", "RARG_CONST", "RARG_CONST_CMPLX",
 				"Table of user visible constants");
 	const_small_tbl(f, 0, constsint, "cnsts_int", "NUM_CONSTS_INT",
 				"CONSTANT_INT", "CONST_INT", "RARG_CONST_INT", NULL,
-				"Table of intenally used constants");
+				"Table of internally used constants");
+#ifdef INCLUDE_DOUBLE_PRECISION
+	const_dbl_tbl(f, constsdbl, "cnsts_dbl", "NUM_CONSTS_DBL", "CONSTANT_DBL", "CONST_DBL",
+				"Table of internally used double precision constants");
+#endif
 	const_small_tbl(f, -1, conversions, "cnsts_conv", "NUM_CONSTS_CONV",
 				"CONSTANT_CONV", "CONST_CONV", "RARG_CONST_CONV", NULL,
 				"Table of metric/imperial conversion constants");

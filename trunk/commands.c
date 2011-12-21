@@ -641,7 +641,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_LOADP,		&load_program,		"LOADP")
 	FUNC0(OP_PRCL,		&recall_program,	"PRCL")
 	FUNC0(OP_PSTO,		&store_program,		"PSTO")
-
+#ifdef INCLUDE_DOUBLE_PRECISION
+	FUNC0(OP_DBLON,		&op_double,		"DBLON")
+	FUNC0(OP_DBLOFF,	&op_double,		"DBLOFF")
+#endif
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
