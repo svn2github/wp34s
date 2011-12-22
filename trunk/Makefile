@@ -175,17 +175,17 @@ LIBS += -L$(OBJECTDIR) -lconsts
 LIBDN := -ldecNum34s
 CNSTS := $(OBJECTDIR)/libconsts.a
 
+DNSRCS := decNumber.c decContext.c decimal64.c decimal128.c
+DNOBJS := $(DNSRCS:%.c=$(OBJECTDIR)/%.o)
+DNSRCS := $(DNSRCS:%.c=decNumber/%.c)
+DNHDRS := $(DNSRCS:%.c=%.h) 
+
 ifdef REALBUILD
 STARTUP := atmel/board_cstartup.S
 ATSRCS := board_lowlevel.c board_memories.c aic.c pmc.c rtc.c slcdc.c supc.c 
 ATOBJS := $(ATSRCS:%.c=$(OBJECTDIR)/%.o)
 ATSRCS := $(ATSRCS:%.c=atmel/%.c)
 ATHDRS := $(ATSRCS:%.c=%.h) atmel/board.h atmel/at91sam7l128/AT91SAM7L128.h 
-
-DNSRCS := decNumber.c decContext.c decimal64.c 
-DNOBJS := $(DNSRCS:%.c=$(OBJECTDIR)/%.o)
-DNSRCS := $(DNSRCS:%.c=decNumber/%.c)
-DNHDRS := $(DNSRCS:%.c=%.h) 
 
 LDCTRL := wp34s_pre.lds
 MAPFILE := $(OUTPUTDIR)/mapfile.txt
@@ -290,9 +290,9 @@ lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
 charset7.h: $(UTILITIES)/genchars7$(EXE)
 	$(UTILITIES)/genchars7$(EXE) >$@
 
-$(UTILITIES)/compile_consts$(EXE): compile_consts.c Makefile features.h \
+$(UTILITIES)/compile_consts$(EXE): compile_consts.c $(DNSRCS) Makefile features.h \
 		charset.h charmap.c
-	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
+	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -DNEED_D64FROMSTRING -DNEED_D128FROMSTRING -o $@ $< $(DNSRCS)
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
 		commands.c string.c prt.c consts.c pretty.c Makefile features.h

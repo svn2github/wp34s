@@ -43,20 +43,10 @@
 #define NEED_D64FROMSTRING  1
 #define NEED_D128FROMSTRING  1
 
-#if defined(WIN32) && !defined(__GNUC__)
-// Visual C on Windows will link with decnumber.lib
 #include "decNumber.h"
 #include "decimal64.h"
 #ifdef INCLUDE_DOUBLE_PRECISION
 #include "decimal128.h"
-#endif
-#else
-#include "decNumber.c"
-#include "decContext.c"
-#include "decimal64.c"
-#ifdef INCLUDE_DOUBLE_PRECISION
-#include "decimal128.c"
-#endif
 #endif
 
 static FILE *fh;
