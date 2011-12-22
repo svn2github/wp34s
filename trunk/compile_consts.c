@@ -610,7 +610,7 @@ static void const_big(void) {
 static void put_name(FILE *f, const char *name) {
 	while (*name != '\0') {
 		const char ch = *name;
-		if ((ch & 0x80) == 0 && isprint(ch))
+		if ((ch & 0x80) == 0 && isprint((unsigned char) ch))
 			putc(ch, f);
 		else
 			fprintf(f, "\\%03o", 0xff & ch);
