@@ -142,6 +142,7 @@ OUTPUTDIR := realbuild
 UTILITIES := $(SYSTEM)_realbuild
 OBJECTDIR := $(UTILITIES)/obj
 DIRS := $(OBJECTDIR) $(UTILITIES)
+DNOPTS :=
 else
 ifdef QTGUI
 OUTPUTDIR := $(SYSTEM)_qt
@@ -152,6 +153,7 @@ UTILITIES := $(SYSTEM)
 endif
 OBJECTDIR := $(OUTPUTDIR)/obj
 DIRS := $(OBJECTDIR) $(OUTPUTDIR)
+DNOPTS := -DNEED_D128TOSTRING
 endif
 
 # Files and libraries
@@ -319,7 +321,7 @@ xeq.h:
 # Build libs and objects
 
 $(OBJECTDIR)/libdecNum34s.a: $(DNSRCS) $(DNHDRS) features.h decNumber/Makefile Makefile
-	+@$(MAKE) OBJECTDIR=../$(OBJECTDIR) "CFLAGS=$(CFLAGS)" "LIB=libdecNum34s.a" \
+	+@$(MAKE) OBJECTDIR=../$(OBJECTDIR) "CFLAGS=$(CFLAGS) $(DNOPTS)" "LIB=libdecNum34s.a" \
 		-C decNumber
 
 vpath %.c = atmel

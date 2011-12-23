@@ -764,7 +764,7 @@ enum nilop {
 	OP_LOADP, OP_PRCL, OP_PSTO,
 
 #ifdef INCLUDE_DOUBLE_PRECISION
-	OP_DBLON, OP_DBLOFF,
+	OP_DBLON, OP_DBLOFF, OP_ISDBL,
 #endif
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
@@ -1078,7 +1078,7 @@ extern void setlastX(void);
 extern int stack_size(void);
 extern REGISTER *get_stack(int pos);
 #ifdef INCLUDE_DOUBLE_PRECISION
-extern void copyreg(void *d, void *s);
+extern void copyreg(void *d, const void *s);
 #else
 #define copyreg(d, s) (*(d) = *(s))
 #endif
@@ -1253,6 +1253,7 @@ extern void lead0(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void op_ticks(REGISTER *a, REGISTER *b, enum nilop op);
 extern void op_voltage(REGISTER *a, REGISTER *b, enum nilop op);
 extern void check_mode(REGISTER *a, REGISTER *nul2, enum nilop op);
+extern void check_dblmode(REGISTER *a, REGISTER *nul2, enum nilop op);
 extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
 extern void op_roundingmode(REGISTER *, REGISTER *, enum nilop);

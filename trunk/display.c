@@ -810,7 +810,11 @@ static void set_x_(const REGISTER *rgx, char *res) {
 	int odig = 0;
 	int show_exp = 0;
 	int j;
+#ifdef INCLUDE_DOUBLE_PRECISION
+	char mantissa[64];
+#else
 	char mantissa[32];
+#endif
 	int exp;
 	char *p = mantissa;
 	char *r;

@@ -275,6 +275,8 @@ static unsigned short int find_section_bounds(const unsigned int pc, const int e
 		// Use the current program as bounds
 		top = ProgBegin;
 		bottom = ProgEnd;
+		if (top == 0)
+			top = 1;
 	}
 	else if (isXROM(pc)) {
 		top = addrXROM(1);
@@ -351,8 +353,8 @@ void decpc(void) {
  */
 void update_program_bounds(const int force) {
 	unsigned int pc = state_pc();
-	if (pc == 0)
-		pc = 1;
+	if (pc == 0 && State2.runmode)
+		State.pc = pc = 1;
 	if (! force && pc >= ProgBegin && pc <= ProgEnd)
 		return;
 	for (PcWrapped = 0; !PcWrapped; pc = do_inc(pc, 0)) {
@@ -583,7 +585,7 @@ static REGISTER *get_stack_top(void) {
 }
 
 #ifdef INCLUDE_DOUBLE_PRECISION
-void copyreg(void *d, void *s)
+void copyreg(void *d, const void *s)
 {
 	xcopy(d, s, is_dblmode() ? sizeof(decimal128) : sizeof(decimal64));
 }
@@ -631,7 +633,7 @@ void setlastX(void) {
 
 static void setlastXY(void) {
 	setlastX();
-	regI = regY;
+	copyreg(&regI, get_stack(1));
 }
 
 
@@ -958,14 +960,29 @@ REGISTER *get_reg_n(int n) {
 		n -= LOCAL_REG_BASE;
 		if (local_levels() == 1) {
 			// Local XROM register in volatile RAM
-			return (REGISTER *) XromRegs + n;
+			return (REGISTER *) ((decimal64 *) XromRegs + n);
 		} else {
 			// local register on the return stack
-			return (REGISTER *)(RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n;
+			return (REGISTER *) ((decimal64 *) (RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n);
 		}
 	}
 	return (REGISTER *) (Regs + (n >= TOPREALREG ? 0 : TOPREALREG - NumRegs) + remap_reg(n));
 }
+
+/*
+ *  Helper to find the imaginary part of a register
+ */
+#ifdef INCLUDE_DOUBLE_PRECISION
+REGISTER *get_reg_np1(int n)
+{
+	++n;
+	if (is_dblmode() && n == remap_reg(n))
+		++n;
+	return get_reg_n(n);
+}
+#else
+#define get_reg_np1(n) get_reg_n(n + 1)
+#endif
 
 REGISTER *get_flash_reg_n(int n) {
 	return (REGISTER *) (BackupFlash._regs + TOPREALREG - BackupFlash._numregs + remap_reg(n));
@@ -1507,21 +1524,14 @@ static int storcl_cop(unsigned short opr,
 
 void cmdcsto(unsigned int arg, enum rarg op) {
 	decNumber r1, r2;
-	REGISTER *t1, *t2, *y = &regY;
+	REGISTER *t1, *t2;
 
 	t1 = get_reg_n(arg);
-#ifdef INCLUDE_DOUBLE_PRECISION
-	if (is_dblmode()) {
-		t2 = get_reg_n(arg + 2);
-		y = &dblY;
-	}
-	else
-#endif
-		t2 = get_reg_n(arg + 1);
+	t2 = get_reg_np1(arg);
 
 	if (op == RARG_CSTO) {
 		copyreg(t1, &regX);
-		copyreg(t2, y);
+		copyreg(t2, get_stack(1));
 	} else {
 		if (is_intmode())
 			bad_mode_error();
@@ -1539,11 +1549,12 @@ static void do_crcl(const REGISTER *t1, const REGISTER *t2, enum rarg op) {
 	decNumber r1, r2;
 
 	if (op == RARG_CRCL) {
-		REGISTER x = *t1;
-		REGISTER y = *t2;
+		REGISTER x, y;
+		copyreg(&x, &t1);
+		copyreg(&y, &t2);
 		lift2_if_enabled();
-		regX = x;
-		regY = y;
+		copyreg(&regX, &x);
+		copyreg(get_stack(1), &y);
 	} else {
 		if (is_intmode())
 			bad_mode_error();
@@ -1558,20 +1569,12 @@ static void do_crcl(const REGISTER *t1, const REGISTER *t2, enum rarg op) {
 }
 
 void cmdcrcl(unsigned int arg, enum rarg op) {
-	const REGISTER *t1, *t2;
-
-	t1 = get_reg_n(arg);
-	t2 = get_reg_n(arg+1);
-	do_crcl(t1, t2, op);
+	do_crcl(get_reg_n(arg), get_reg_np1(arg), op);
 }
 
 #ifdef INCLUDE_FLASH_RECALL
 void cmdflashcrcl(unsigned int arg, enum rarg op) {
-	const REGISTER *t1, *t2;
-
-	t1 = BackupFlash._regs+arg;
-	t2 = t1+1;
-	do_crcl(t1, t2, op - RARG_FLCRCL + RARG_CRCL);
+	do_crcl(get_flash_reg_n(arg), get_flash_reg_n(arg+1), op - RARG_FLCRCL + RARG_CRCL);
 }
 #endif
 
@@ -1580,24 +1583,25 @@ void cmdflashcrcl(unsigned int arg, enum rarg op) {
 void swap_reg(REGISTER *a, REGISTER *b) {
 	REGISTER t;
 
-	t = *a;
-	*a = *b;
-	*b = t;
+	copyreg(&t, a);
+	copyreg(a, b);
+	copyreg(b, &t);
 }
 
 void cmdswap(unsigned int arg, enum rarg op) {
-	REGISTER *reg;
+	int idx;
 
 	if (op == RARG_CSWAPX)
-		reg = &regX;
+		idx = regX_idx;
 	else if (op == RARG_CSWAPZ)
-		reg = &regZ;
+		idx = regZ_idx;
 	else
-		reg = &regX + (int)(op - RARG_SWAPX);
+		idx = regX_idx + (int)(op - RARG_SWAPX);
 
-	swap_reg(reg, get_reg_n(arg));
+	swap_reg(get_reg_n(idx), get_reg_n(arg));
+
 	if (op >= RARG_CSWAPX) {
-		swap_reg(reg+1, get_reg_n(arg+1));
+		swap_reg(get_reg_np1(idx), get_reg_np1(arg));
 		set_was_complex();
 	}
 }
@@ -1780,6 +1784,15 @@ void check_mode(REGISTER *a, REGISTER *nul2, enum nilop op) {
 
 	fin_tst(intmode == desired);
 }
+
+
+#ifdef INCLUDE_DOUBLE_PRECISION
+/* Check if DBLON is active
+ */
+void check_dblmode(REGISTER *a, REGISTER *nul2, enum nilop op) {
+	fin_tst(is_dblmode());
+}
+#endif
 
 
 /* Save and restore the entire stack to sequential registers */
@@ -2203,7 +2216,7 @@ static void niladic(const opcode op) {
 
 			switch (NILADIC_NUMRESULTS(niladics[idx])) {
 			case 2:	lift_if_enabled();
-				y = &regY;
+				y = get_stack(1);
 			case 1:	x = &regX;
 				lift_if_enabled();
 			default:
@@ -2701,7 +2714,7 @@ void op_float(REGISTER *a, REGISTER *b, enum nilop op) {
 		// UState.int_len = 0;
 #ifdef HP16C_MODE_CHANGE
 		int2dn(&x, &regX);
-		int2dn(&y, &regY);
+		int2dn(&y, get_stack(1));
 		clrstk(NULL, NULL, NULL);
 		decNumberPower(&z, &const_2, &x);
 		dn_multiply(&x, &z, &y);
@@ -3000,7 +3013,7 @@ void op_double(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		// T comes from C/D
 		// L comes from L/I
 		// clear A to D and I
-		for (i = 0; i < i; ++i)
+		for (i = 0; i < 4; ++i)
 			packed_from_packed128(&(regX.s) + i, &(dblX.d) + i);
 		zero_regs(&regA, 4);
 		packed_from_packed128(&(regL.s), &(dblL.d));
@@ -3071,7 +3084,7 @@ static void check_int_switch(void) {
 			 * we might be in unsigned mode so we code them as 1 & 2.
 			 * NaN's get 3.
 			 */
-			regFromInt(&regY, 0);
+			regFromInt(get_stack(1), 0);
 			if (decNumberIsNaN(&x))
 				regFromInt(&regX, 3);
 			else if (decNumberIsNegative(&x))
@@ -3081,7 +3094,7 @@ static void check_int_switch(void) {
 
 		} else if (dn_eq0(&x)) {
 			/* 0 exponent, 0 mantissa -- although this can be negative zero */
-			regFromInt(&regY, build_value(0, decNumberIsNegative(&x)?1:0));
+			regFromInt(get_stack(1), build_value(0, decNumberIsNegative(&x)?1:0));
 			regFromInt(&regX, 0);
 		} else {
 			/* Deal with the sign */
@@ -3119,7 +3132,7 @@ static void check_int_switch(void) {
 				}
 			}
 			/* The mantissa */
-			regFromInt(&regY, build_value(m, sgn));
+			regFromInt(get_stack(1), build_value(m, sgn));
 			/* The exponent */
 			if (ex < 0) {
 				ex = -ex;
@@ -3863,8 +3876,6 @@ void set_running_off_sst() {
 
 void set_running_on_sst() {
 	Running = 1;
-	if (state_pc() == 0)
-		incpc();
 }
 
 void set_running_off() {
@@ -3976,11 +3987,13 @@ void cmdlpop(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
  *  Reduce the number of global registers in favour of local data on the return stack
  */
 void cmdregs(unsigned int arg, enum rarg op) {
-	int distance = NumRegs - (++arg);
+	int distance;
+	++arg;
 #ifdef INCLUDE_DOUBLE_PRECISION
 	if (is_dblmode() && (arg & 1))
 		++arg;
 #endif
+	distance = NumRegs - arg;
 	// Move return stack, check for room
 	if (move_retstk(distance << 2))
 		return;
