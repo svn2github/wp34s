@@ -389,7 +389,7 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
-#define RET_STACK_SIZE	533      /* Combined return stack and program space */
+#define RET_STACK_SIZE	532      /* Combined return stack and program space */
 #define MINIMUM_RET_STACK_SIZE 6 /* Minimum headroom for program execution */
 #define NUMPROG_LIMIT	(RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE + (TOPREALREG - 1) * 4) /* Absolute maximum for sanity checks */
 
@@ -1038,6 +1038,11 @@ extern unsigned int find_user_pc(unsigned int);
 extern int local_levels(void);
 extern int local_regs(void);
 extern int move_retstk(int distance);
+#ifdef INCLUDE_DOUBLE_PRECISION
+extern unsigned int global_regs(void);
+#else
+#define global_regs() NumRegs
+#endif
 
 extern void clrretstk(void);
 extern void clrretstk_pc(void);

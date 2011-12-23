@@ -1230,7 +1230,7 @@ static int arg_eval(unsigned int val) {
 
 static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
-	const int mx = (State2.ind || argcmds[base].reg) ? (State2.runmode ? NumRegs : NUMREG) :
+	const int mx = (State2.ind || argcmds[base].reg) ? (State2.runmode ? global_regs() : NUMREG) :
 		        State2.local ? MAX_LOCAL_DIRECT :
 			argcmds[base].lim;
 	const unsigned int val = State2.digval * 10 + n;
@@ -2112,7 +2112,7 @@ static int process_registerlist(const keycode c) {
 	case K40:
 		if (State2.digval > 0) {
 			if (! State2.local && State2.digval == TOPREALREG)
-				State2.digval = NumRegs;
+				State2.digval = global_regs();
 			--State2.digval;
 		}
 		else
@@ -2122,7 +2122,7 @@ static int process_registerlist(const keycode c) {
 	case K50:
 		if (State2.digval < max - 1) {
 			State2.digval++;
-			if (! State2.local && State2.digval == NumRegs)
+			if (! State2.local && State2.digval == global_regs())
 				State2.digval = regX_idx;
 		}
 		else	

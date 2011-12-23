@@ -109,11 +109,6 @@ typedef struct _ram {
 	s_opcode _prog[RET_STACK_SIZE];
 
 	/*
-	 *  Storage space for our user flags (7 short integers)
-	 */
-	unsigned short int _user_flags[(NUMFLG+15) >> 4];
-
-	/*
 	 *  Define storage for the machine's registers.
 	 */
 	decimal64 _regs[NUMREG];
@@ -145,10 +140,17 @@ typedef struct _ram {
 	unsigned short int _prog_end;
 
 	/*
+	 *  Storage space for our user flags (7 short integers)
+	 */
+	unsigned short int _user_flags[(NUMFLG+15) >> 4];
+
+	/*
 	 *  Number of currently allocated global registers
 	 */
 	unsigned char _numregs;		// in registers
 	unsigned char _sizestatregs;	// in levels
+
+	unsigned short filler;		// alignment
 
 	/*
 	 *  CRC or magic marker to detect failed RAM

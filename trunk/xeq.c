@@ -154,9 +154,37 @@ int local_levels(void) {
  */
 int local_regs(void) {
 	const int l = local_levels();
-	return l == 1 ? NUMXREGS : l >> 2;
+	const int n = l == 1 ? NUMXREGS : l >> 2;
+#ifdef INCLUDE_DOUBLE_PRECISION
+	if (is_dblmode())
+		return n >> 1;
+#endif
+	return n;
 }
 
+#ifdef INCLUDE_DOUBLE_PRECISION
+/*
+ *  How many global registers have we?
+ */
+unsigned int global_regs(void) {
+	if (is_dblmode())
+		return NumRegs >> 1;
+	return NumRegs;
+}
+#endif
+
+#ifdef INCLUDE_DOUBLE_PRECISION
+/*
+ *  How many special registers have we?
+ */
+static int special_regs(void) {
+	if (is_dblmode())
+		return (STACK_SIZE + EXTRA_REG) >> 1;
+	return STACK_SIZE + EXTRA_REG;
+}
+#else
+#define special_regs(void) (STACK_SIZE + EXTRA_REG)
+#endif
 
 #ifdef CONSOLE
 // Console screen only
@@ -940,14 +968,25 @@ void process_cmdline_set_lift(void) {
  *  This ensures 32 bit alignment of the decima64 object.
  */
 #ifdef INCLUDE_DOUBLE_PRECISION
+/*
+ *  If working in double precision, register numbers must be remapped
+ */
 int remap_reg(int n) {
-	// Mapping of double precision stack registers: Y->Z/T, Z->A/B, T->C/D
-	static const char remap[ 3 ] = { regZ_idx, regA_idx, regC_idx };
 	if (is_dblmode()) {
-		if (n >= regY_idx && n <= regT_idx)
-			return remap[-regY_idx + n];
+		if (n >= regX_idx && n <= regK_idx) {
+			// Mapping of double precision registers: 
+			// Y->Z/T, Z->A/B, T->C/D, L->L/I, I->J/K
+			static const unsigned char remap[] = 
+				{ regX_idx, regZ_idx, regA_idx, regC_idx, 
+				  regA_idx, regA_idx, regC_idx, regC_idx,
+				  regL_idx, regJ_idx, regJ_idx, regJ_idx };
+	
+			n = remap[-regX_idx + n];
+		}
+		else if (n < TOPREALREG)
+			n <<= 1;
 		else 
-			return n &= ~1;
+			n = ((n - LOCAL_REG_BASE) << 1) + LOCAL_REG_BASE;
 	}
 	return n;
 }
@@ -956,6 +995,7 @@ int remap_reg(int n) {
 #endif
 
 REGISTER *get_reg_n(int n) {
+	n = remap_reg(n);
 	if (n >= LOCAL_REG_BASE && LocalRegs < 0) {
 		n -= LOCAL_REG_BASE;
 		if (local_levels() == 1) {
@@ -966,23 +1006,9 @@ REGISTER *get_reg_n(int n) {
 			return (REGISTER *) ((decimal64 *) (RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n);
 		}
 	}
-	return (REGISTER *) (Regs + (n >= TOPREALREG ? 0 : TOPREALREG - NumRegs) + remap_reg(n));
+	return (REGISTER *) (Regs + (n >= TOPREALREG ? 0 : TOPREALREG - NumRegs) + n);
 }
 
-/*
- *  Helper to find the imaginary part of a register
- */
-#ifdef INCLUDE_DOUBLE_PRECISION
-REGISTER *get_reg_np1(int n)
-{
-	++n;
-	if (is_dblmode() && n == remap_reg(n))
-		++n;
-	return get_reg_n(n);
-}
-#else
-#define get_reg_np1(n) get_reg_n(n + 1)
-#endif
 
 REGISTER *get_flash_reg_n(int n) {
 	return (REGISTER *) (BackupFlash._regs + TOPREALREG - BackupFlash._numregs + remap_reg(n));
@@ -1083,13 +1109,13 @@ unsigned long long int get_int(const REGISTER *x, int *sgn) {
 /* Some conversion routines to take decimals and produce integers
  */
 long long int regToInt(const REGISTER *n) {
-	long long int x;
-	xcopy(&x, n, sizeof(x));
-	return x;
+	long long int ll;
+	xcopy(&ll, n, sizeof(ll));
+	return ll;
 }
 
-void regFromInt(REGISTER *n, const long long int z) {
-	xcopy(n, &z, sizeof(decimal64));
+void regFromInt(REGISTER *n, const long long int ll) {
+	xcopy(n, &ll, sizeof(decimal64));
 }
 
 
@@ -1119,12 +1145,7 @@ void clrreg(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	process_cmdline_set_lift();
 
 	// erase register memory
-	zero_regs(get_reg_n(0), NumRegs);
-
-	// erase lettered registers
-	if (stack_size() == 4)
-		zero_regs(&regA, 4);
-	zero_regs(&regJ, 2);
+	zero_regs(get_reg_n(0), global_regs() + special_regs());
 
 	// erase local registers but keep them allocated
 	if (LocalRegs < 0) {
@@ -1527,7 +1548,7 @@ void cmdcsto(unsigned int arg, enum rarg op) {
 	REGISTER *t1, *t2;
 
 	t1 = get_reg_n(arg);
-	t2 = get_reg_np1(arg);
+	t2 = get_reg_n(arg + 1);
 
 	if (op == RARG_CSTO) {
 		copyreg(t1, &regX);
@@ -1569,7 +1590,7 @@ static void do_crcl(const REGISTER *t1, const REGISTER *t2, enum rarg op) {
 }
 
 void cmdcrcl(unsigned int arg, enum rarg op) {
-	do_crcl(get_reg_n(arg), get_reg_np1(arg), op);
+	do_crcl(get_reg_n(arg), get_reg_n(arg + 1), op);
 }
 
 #ifdef INCLUDE_FLASH_RECALL
@@ -1601,7 +1622,7 @@ void cmdswap(unsigned int arg, enum rarg op) {
 	swap_reg(get_reg_n(idx), get_reg_n(arg));
 
 	if (op >= RARG_CSWAPX) {
-		swap_reg(get_reg_np1(idx), get_reg_np1(arg));
+		swap_reg(get_reg_n(idx + 1), get_reg_n(arg + 1));
 		set_was_complex();
 	}
 }
@@ -1706,7 +1727,7 @@ void get_mem(REGISTER *a, REGISTER *nul2, enum nilop op) {
 	put_int( op == OP_MEMQ ? free_mem() : 
 		 op == OP_LOCRQ ? local_regs() :
 		 op == OP_FLASHQ ? free_flash() :
-		 NumRegs,
+		 global_regs(),
 		 0, a );
 }
 
@@ -1799,7 +1820,7 @@ void check_dblmode(REGISTER *a, REGISTER *nul2, enum nilop op) {
 static int check_stack_overlap(unsigned int arg) {
 	const int n = stack_size();
 
-	if (arg + n <= NumRegs || arg >= NUMREG) {
+	if (arg + n <= global_regs() || arg >= NUMREG) {
 		return n;
 	}
 	err(ERR_STK_CLASH);
@@ -3340,11 +3361,7 @@ static int reg_decode(REGISTER **s, unsigned int *n, REGISTER **d, int flash) {
 	decNumber x, y;
 	int rsrc, num, rdest, q, mx_src, mx_dest;
 
-	if (is_intmode()
-#ifdef INCLUDE_DOUBLE_PRECISION
-	    || is_dblmode()
-#endif
-	) {
+	if (is_intmode()) {
 		bad_mode_error();
 		return 1;
 	}
@@ -3367,12 +3384,12 @@ static int reg_decode(REGISTER **s, unsigned int *n, REGISTER **d, int flash) {
 	rsrc /= 100;			// sss
 
 	mx_src = flash ? BackupFlash._numregs :
-		 rsrc >= LOCAL_REG_BASE ? local_regs() : NumRegs;
+		 rsrc >= LOCAL_REG_BASE ? local_regs() : global_regs();
 	if (rsrc >= mx_src)
 		goto range_error;
 
 	if (d != NULL) {
-		mx_dest = rdest >= LOCAL_REG_BASE ? local_regs() : NumRegs;
+		mx_dest = rdest >= LOCAL_REG_BASE ? local_regs() : global_regs();
 
 		if (num == 0) {
 			/* Calculate the maximum non-overlapping size */
@@ -3545,7 +3562,7 @@ static void rargs(const opcode op) {
 	}
 	if (argcmds[cmd].reg && arg < TOPREALREG) {
 		// Range checking for registers against variable boundary
-		lim = NumRegs;
+		lim = global_regs();
 		if (argcmds[cmd].cmplx)
 			--lim;
 	}
@@ -3904,12 +3921,16 @@ void set_running_on() {
  */
 void cmdlocr(unsigned int arg, enum rarg op) {
 	short int sp = RetStkPtr;
+#ifdef INCLUDE_DOUBLE_PRECISION
+	int size = (++arg << (is_dblmode() ? 3 : 2)) + 2;
+#else
 	int size = (++arg << 2) + 2;
+#endif
 	const unsigned short marker = LOCAL_MASK | size;
 	int old_size = 0;
 	short unsigned int old_flags = 0;
 
-	if (sp == LocalRegs) {
+	if (sp != 0 && sp == LocalRegs) {
 		// resize required
 		old_size = local_levels();
 		sp += old_size;
@@ -3990,8 +4011,12 @@ void cmdregs(unsigned int arg, enum rarg op) {
 	int distance;
 	++arg;
 #ifdef INCLUDE_DOUBLE_PRECISION
-	if (is_dblmode() && (arg & 1))
-		++arg;
+	if (is_dblmode())
+		arg <<= 1;
+	if (arg > TOPREALREG) {
+		err(ERR_RANGE);
+		return;
+	}
 #endif
 	distance = NumRegs - arg;
 	// Move return stack, check for room

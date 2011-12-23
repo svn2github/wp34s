@@ -1147,7 +1147,7 @@ static void show_status(void) {
 	else if (status == -1) {
 		const int l = local_regs();
 		set_status("Regs:");
-		p = num_arg(buf, NumRegs);
+		p = num_arg(buf, global_regs());
 		if (l) {
 			p = scopy(p, " , Loc. ");
 			p = num_arg(p, l);

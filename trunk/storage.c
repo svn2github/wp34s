@@ -342,7 +342,14 @@ int append_program( const s_opcode *source, int length )
 		sigmaDeallocate();
 	}
 	if ( space_needed > 0 ) {
-		const int regs = NumRegs - ( ( space_needed + 3 ) >> 2 ) - 1;
+		int regs;
+#ifdef INCLUDE_DOUBLE_PRECISION
+		if (is_dblmode())
+			regs = global_regs() - ( ( space_needed + 7 ) >> 3 ) - 1;
+		else
+#endif
+			regs = NumRegs - ( ( space_needed + 3 ) >> 2 ) - 1;
+
 		if ( regs < 0 ) {
 			return err( ERR_RAM_FULL );
 		}
@@ -655,7 +662,7 @@ void load_registers( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 	if ( count > BackupFlash._numregs ) {
 		count = BackupFlash._numregs;
 	}
-	move_regs( get_reg_n(0), get_flash_reg_n(0), count );
+	xcopy( get_reg_n(0), get_flash_reg_n(0), count << 3 );
 }
 
 
