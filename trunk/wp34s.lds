@@ -53,7 +53,7 @@ SECTIONS
         _efixed = .;
     } >programflash
 
-#if 0
+/*
     .relocate : AT (_efixed)
     {
         . = ALIGN(4);
@@ -64,12 +64,12 @@ SECTIONS
         . = ALIGN(4);
         _erelocate = .;
     } >persistentram
-#endif
+*/
 
     .revision : 
     {
-        . = ALIGN(256) - 4;
 	*(.revision)
+        . = ALIGN(256);
 	UserFlash = .;
     } >programflash
     

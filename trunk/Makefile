@@ -187,7 +187,7 @@ ATOBJS := $(ATSRCS:%.c=$(OBJECTDIR)/%.o)
 ATSRCS := $(ATSRCS:%.c=atmel/%.c)
 ATHDRS := $(ATSRCS:%.c=%.h) atmel/board.h atmel/at91sam7l128/AT91SAM7L128.h 
 
-LDCTRL := wp34s_pre.lds
+LDCTRL := wp34s.lds
 MAPFILE := $(OUTPUTDIR)/mapfile.txt
 SUMMARY := $(OUTPUTDIR)/summary.txt
 SYMBOLS := $(OUTPUTDIR)/symbols.txt
@@ -257,8 +257,8 @@ $(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(
 	@grep "^\.persistentram"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@cat $(SUMMARY)
 
-$(LDCTRL): wp34s.lds features.h Makefile
-	$(HOSTCC) -E -P -x c wp34s.lds > $(LDCTRL)
+# $(LDCTRL): wp34s.lds features.h Makefile
+#	$(HOSTCC) -E -P -x c wp34s.lds > $(LDCTRL)
 
 # include openocd/Makefile
 else
