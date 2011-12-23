@@ -28,18 +28,18 @@
 extern char SerialOn;
 
 // User visible routines
-extern void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op );
-extern void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op );
-extern void send_sigma( decimal64 *nul1, decimal64 *nul2, enum nilop op );
-extern void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op );
-extern void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op );
+extern void send_program( REGISTER *nul1, REGISTER *nul2, enum nilop op );
+extern void send_registers( REGISTER *nul1, REGISTER *nul2, enum nilop op );
+extern void send_sigma( REGISTER *nul1, REGISTER *nul2, enum nilop op );
+extern void send_all( REGISTER *nul1, REGISTER *nul2, enum nilop op );
+extern void recv_any( REGISTER *nul1, REGISTER *nul2, enum nilop op );
 extern int recv_byte( int timeout );
 #ifdef INCLUDE_USER_IO
-extern void send_byte( decimal64 *nul1, decimal64 *nul, enum nilop op2 );
-extern void serial_open( decimal64 *byte, decimal64 *nul2, enum nilop op );
-extern void serial_close( decimal64 *byte, decimal64 *nul2, enum nilop op );
-extern void send_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op2 );
-extern void recv_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op2 );
+extern void send_byte( REGISTER *nul1, REGISTER *nul, enum nilop op2 );
+extern void serial_open( REGISTER *byte, REGISTER *nul2, enum nilop op );
+extern void serial_close( REGISTER *byte, REGISTER *nul2, enum nilop op );
+extern void send_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op2 );
+extern void recv_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op2 );
 #endif
 
 // Call-back for a received byte with error information

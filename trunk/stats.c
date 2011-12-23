@@ -133,11 +133,11 @@ static int check_data(unsigned int n) {
 }
 
 
-void stats_mode(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void stats_mode(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	UState.sigma_mode = (op - OP_LINF) + SIGMA_LINEAR;
 }
 
-void sigma_clear(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void sigma_clear(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	sigmaDeallocate();
 }
 
@@ -331,41 +331,68 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
  *  Opcodes have been reaaranged to move sigmaN to the end of the list.
  *  decimal64 values are grouped together, if decimal128 is used, regrouping is required
  */
-void sigma_val(decimal64 *x, decimal64 *y, enum nilop op) {
+void sigma_val(REGISTER *x, REGISTER *y, enum nilop op) {
+#ifdef INCLUDE_DOUBLE_PRECISION
+	const int dbl = is_dblmode();
+#endif
 	if (SizeStatRegs == 0) {
-		*x = CONSTANT_INT(OP_ZERO);
+#ifdef INCLUDE_DOUBLE_PRECISION
+		if (dbl)
+			x->d = CONSTANT_DBL(OP_ZERO);
+		else
+#endif
+			x->s = CONSTANT_INT(OP_ZERO);
 		return;
 	}
 	sigmaCheck();
 	if (op == OP_sigmaN) {
 		put_int(sigmaN, 0, x);
 	}
-	else if (op < OP_sigmaX)
-		packed_from_packed128(x, &sigmaX2Y + (op - OP_sigmaX2Y));
-	else
-		*x = (&sigmaX)[op - OP_sigmaX];
-}
-
-void sigma_sum(decimal64 *x, decimal64 *y, enum nilop op) {
-	if (SizeStatRegs == 0) {
-		*x = *y = CONSTANT_INT(OP_ZERO);
-		return;
+	else if (op < OP_sigmaX) {
+		decimal128 *d = (&sigmaX2Y) + (op - OP_sigmaX2Y);
+#ifdef INCLUDE_DOUBLE_PRECISION
+		if (! dbl)
+			x->d = *d;
+		else
+#endif
+			packed_from_packed128(&(x->s), d);
 	}
-	*x = sigmaX;
-	*y = sigmaY;
+	else {
+		x->s = (&sigmaX)[op - OP_sigmaX];
+#ifdef INCLUDE_DOUBLE_PRECISION
+		if (dbl)
+			packed128_from_packed(&(x->d), &(x->s));
+#endif
+	}
+}
+
+void sigma_sum(REGISTER *x, REGISTER *y, enum nilop op) {
+	if (SizeStatRegs == 0) {
+		x->s = y->s = CONSTANT_INT(OP_ZERO);
+	}
+	else {
+		x->s = sigmaX;
+		y->s = sigmaY;
+	}
+#ifdef INCLUDE_DOUBLE_PRECISION
+	if (is_dblmode()) {
+		packed128_from_packed(&(x->d), &(x->s));
+		packed128_from_packed(&(y->d), &(y->s));
+	}
+#endif
 }
 
 
-static void mean_common(decimal64 *res, const decNumber *x, const decNumber *n, int exp) {
+static void mean_common(REGISTER *res, const decNumber *x, const decNumber *n, int exp) {
 	decNumber t, u, *p = &t;
 
 	dn_divide(&t, x, n);
 	if (exp)
 		dn_exp(p=&u, &t);
-	packed_from_number(res, p);
+	setResult(res, p);
 }
 
-void stats_mean(decimal64 *x, decimal64 *y, enum nilop op) {
+void stats_mean(REGISTER *x, REGISTER *y, enum nilop op) {
 	decNumber N;
 	decNumber sx, sy;
 
@@ -379,7 +406,7 @@ void stats_mean(decimal64 *x, decimal64 *y, enum nilop op) {
 
 
 // weighted mean sigmaXY / sigmaY
-void stats_wmean(decimal64 *x, decimal64 *nul, enum nilop op) {
+void stats_wmean(REGISTER *x, REGISTER *nul, enum nilop op) {
 	decNumber xy, y;
 
 	if (check_data(1))
@@ -390,7 +417,7 @@ void stats_wmean(decimal64 *x, decimal64 *nul, enum nilop op) {
 }
 
 // geometric mean e^(sigmaLnX / N)
-void stats_gmean(decimal64 *x, decimal64 *y, enum nilop op) {
+void stats_gmean(REGISTER *x, REGISTER *y, enum nilop op) {
 	decNumber N;
 	decNumber sx, sy;
 
@@ -403,7 +430,7 @@ void stats_gmean(decimal64 *x, decimal64 *y, enum nilop op) {
 }
 
 // Standard deviations and standard errors
-static void do_s(decimal64 *s,
+static void do_s(REGISTER *s,
 		const decNumber *sxx, const decNumber *sx,
 		const decNumber *N, const decNumber *denom, 
 		int rootn, int exp) {
@@ -423,10 +450,10 @@ static void do_s(decimal64 *s,
 		dn_exp(&u, p);
 		p = &u;
 	}
-	packed_from_number(s, p);
+	setResult(s, p);
 }
 
-static void S(decimal64 *x, decimal64 *y, int sample, int rootn, int exp) {
+static void S(REGISTER *x, REGISTER *y, int sample, int rootn, int exp) {
 	decNumber N, nm1, *n = &N;
 	decNumber sx, sxx, sy, syy;
 
@@ -440,7 +467,7 @@ static void S(decimal64 *x, decimal64 *y, int sample, int rootn, int exp) {
 }
 
 // sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
-void stats_deviations(decimal64 *x, decimal64 *y, enum nilop op) {
+void stats_deviations(REGISTER *x, REGISTER *y, enum nilop op) {
 	int sample = 1, rootn = 0, exp = 0;
 
 	if (op == OP_statSigma || op == OP_statGSigma)
@@ -455,7 +482,7 @@ void stats_deviations(decimal64 *x, decimal64 *y, enum nilop op) {
 
 
 // Weighted standard deviation
-void WS(decimal64 *x, int sample, int rootn) {
+void WS(REGISTER *x, int sample, int rootn) {
 	decNumber sxxy, sy, sxy, syy;
 	decNumber t, u, v, w, *p;
 
@@ -477,10 +504,10 @@ void WS(decimal64 *x, int sample, int rootn) {
 		dn_sqrt(&t, &sy);
 		dn_divide(p = &v, &u, &t);
 	}
-	packed_from_number(x, p);
+	setResult(x, p);
 }
 
-void stats_wdeviations(decimal64 *x, decimal64 *y, enum nilop op) {
+void stats_wdeviations(REGISTER *x, REGISTER *y, enum nilop op) {
 	int sample = 1, rootn = 0;
 
 	if (op == OP_statWSigma)
@@ -535,17 +562,17 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 }
 
 
-void stats_correlation(decimal64 *r, decimal64 *nul, enum nilop op) {
+void stats_correlation(REGISTER *r, REGISTER *nul, enum nilop op) {
 	decNumber t;
 
 	if (check_data(2))
 		return;
-	correlation(&t, UState.sigma_mode);
-	packed_from_number(r, &t);
+	correlation(&t, (enum sigma_modes) UState.sigma_mode);
+	setResult(r, &t);
 }
 
 
-static void covariance(decimal64 *r, int sample) {
+static void covariance(REGISTER *r, int sample) {
 	decNumber N, t, u, v;
 	decNumber sx, sy, sxy;
 
@@ -560,10 +587,10 @@ static void covariance(decimal64 *r, int sample) {
 		dn_divide(&u, &t, &v);
 	} else
 		dn_divide(&u, &t, &N);
-	packed_from_number(r, &u);
+	setResult(r, &u);
 }
 
-void stats_COV(decimal64 *r, decimal64 *nul, enum nilop op) {
+void stats_COV(REGISTER *r, REGISTER *nul, enum nilop op) {
 	covariance(r, (op == OP_statCOV) ? 0 : 1);
 }
 
@@ -594,14 +621,14 @@ static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
 }
 
 
-void stats_LR(decimal64 *bout, decimal64 *aout, enum nilop op) {
+void stats_LR(REGISTER *bout, REGISTER *aout, enum nilop op) {
 	decNumber a, b;
 
 	if (check_data(2))
 		return;
 	do_LR(&b, &a);
-	packed_from_number(aout, &a);
-	packed_from_number(bout, &b);
+	setResult(aout, &a);
+	setResult(bout, &b);
 }
 
 
@@ -703,7 +730,7 @@ static void taus_seed(unsigned long int s) {
 		taus_get();
 }
 
-void stats_random(decimal64 *r, decimal64 *nul, enum nilop op) {
+void stats_random(REGISTER *r, REGISTER *nul, enum nilop op) {
 	// Start by generating the next in sequence
 	unsigned long int s;
 	decNumber y, z;
@@ -714,22 +741,22 @@ void stats_random(decimal64 *r, decimal64 *nul, enum nilop op) {
 
 	// Now build ourselves a number
 	if (is_intmode()) {
-		d64fromInt(r, build_value((((unsigned long long int)taus_get()) << 32) | s, 0));
+		regFromInt(r, build_value((((unsigned long long int)taus_get()) << 32) | s, 0));
 	} else {
 		ullint_to_dn(&z, s);
 		dn_multiply(&y, &z, &const_randfac);
-		packed_from_number(r, &y);
+		setResult(r, &y);
 	}
 }
 
 
-void stats_sto_random(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void stats_sto_random(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	unsigned long int s;
 	int z;
 	decNumber x;
 
 	if (is_intmode()) {
-		 s = d64toInt(&regX) & 0xffffffff;
+		 s = regToInt(&regX) & 0xffffffff;
 	} else {
 		getX(&x);
 		s = (unsigned long int) dn_to_ull(&x, &z);

@@ -307,7 +307,7 @@ decNumber * decimal128ToNumber(const decimal128 *d128, decNumber *dn) {
   return dn;
   } // decimal128ToNumber
 
-#if 0
+#ifdef NEED_D128TOSTRING
 /* ------------------------------------------------------------------ */
 /* to-scientific-string -- conversion to numeric string               */
 /* to-engineering-string -- conversion to numeric string              */
@@ -328,7 +328,8 @@ char * decimal128ToString(const decimal128 *d128, char *string){
   decNumberToString(&dn, string);
   return string;
   } // decimal128ToString
-
+#endif
+#if 0
 char * decimal128ToEngString(const decimal128 *d128, char *string){
   decNumber dn;                         // work
   decimal128ToNumber(d128, &dn);

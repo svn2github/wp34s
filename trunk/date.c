@@ -27,7 +27,7 @@
 #endif
 
 
-void op_jgchange(decimal64 *a, decimal64 *b, enum nilop op) {
+void op_jgchange(REGISTER *a, REGISTER *b, enum nilop op) {
 	UState.jg1582 = (op == OP_JG1582) ? 1 : 0;
 }
 
@@ -363,7 +363,7 @@ decNumber *dateEaster(decNumber *res, const decNumber *x) {
 
 /* Test if a year is a leap year
  */
-void date_isleap(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void date_isleap(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	int y, t = 0;
 	decNumber x;
 
@@ -430,7 +430,7 @@ static void copy3(const char *p) {
 	add_string(buf);
 }
 
-void date_alphaday(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void date_alphaday(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decNumber x;
 	int y, m, d, dow;
 
@@ -443,7 +443,7 @@ void date_alphaday(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	}
 }
 
-void date_alphamonth(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void date_alphamonth(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decNumber x;
 	int y, m, d;
 	static const char mons[12*3] = "JANFEBMARAPRMAYJUNJULAUGSEPOCTNOVDEC";
@@ -528,7 +528,7 @@ decNumber *dateFromJ(decNumber *res, const decNumber *x) {
 
 
 /* Date and times to the Alpha register */
-void date_alphadate(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void date_alphadate(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decNumber x;
 	int d, m, y;
 	char buf[16];
@@ -589,7 +589,7 @@ static int extract_time(int *h, int *m, int *s) {
 	return 0;
 }
 
-void date_alphatime(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void date_alphatime(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	char buf[16], *p;
 	int h, m, s;
 	const char *suffix;
@@ -658,16 +658,16 @@ static void query_date(unsigned int *d, unsigned int *m, unsigned int *y) {
 }
 
 
-void date_date(decimal64 *r, decimal64 *nul, enum nilop op) {
+void date_date(REGISTER *r, REGISTER *nul, enum nilop op) {
 	unsigned int d, m, y;
 	decNumber z;
 
 	query_date(&d, &m, &y);
 	build_date(&z, y, m, d);
-	packed_from_number(r, &z);
+	setResult(r, &z);
 }
 
-void date_time(decimal64 *r, decimal64 *nul, enum nilop op) {
+void date_time(REGISTER *r, REGISTER *nul, enum nilop op) {
 	unsigned int h, m, s;
 	decNumber a, b;
 
@@ -675,10 +675,10 @@ void date_time(decimal64 *r, decimal64 *nul, enum nilop op) {
 	h = (h * 100 + m) * 100 + s;
 	int_to_dn(&a, h);
 	dn_mulpow10(&b, &a, -4);
-	packed_from_number(r, &b);
+	setResult(r, &b);
 }
 
-void date_setdate(decimal64 *r, decimal64 *nul, enum nilop op) {
+void date_setdate(REGISTER *r, REGISTER *nul, enum nilop op) {
 	int d, m, y, dow;
 	decNumber x;
 
@@ -698,7 +698,7 @@ void date_setdate(decimal64 *r, decimal64 *nul, enum nilop op) {
 #endif
 }
 
-void date_settime(decimal64 *r, decimal64 *nul, enum nilop op) {
+void date_settime(REGISTER *r, REGISTER *nul, enum nilop op) {
 	int h, m, s;
 	if (extract_time(&h, &m, &s))
 		return;

@@ -58,6 +58,12 @@
 #include "decNumber/decimal64.h"
 #include "decNumber/decimal128.h"
 
+// Generic register type
+typedef union {
+	decimal128 d;
+	decimal64 s;
+	unsigned int l[2];	// makes 32 bit alignment possible
+} REGISTER;
 
 enum nilop;
 enum rarg;
@@ -267,7 +273,7 @@ struct niladic
 #ifdef COMPILE_CATALOGUES
 	const char niladicf[30];
 #else
-	void (*niladicf)(decimal64 *, decimal64 *, enum nilop);
+	void (*niladicf)(REGISTER *, REGISTER *, enum nilop);
 #endif
 	unsigned char numresults;
 	const char nname[NAME_LEN];
@@ -414,20 +420,26 @@ extern int current_catalogue_max(void);
 #define regJ_idx	(TOPREALREG+10)
 #define regK_idx	(TOPREALREG+11)
 
-#define regX	(Regs[regX_idx])
-#define regY	(Regs[regY_idx])
-#define regZ	(Regs[regZ_idx])
-#define regT	(Regs[regT_idx])
-#define regA	(Regs[regA_idx])
-#define regB	(Regs[regB_idx])
-#define regC	(Regs[regC_idx])
-#define regD	(Regs[regD_idx])
-#define regL	(Regs[regL_idx])
-#define regI	(Regs[regI_idx])
-#define regJ	(Regs[regJ_idx])
-#define regK	(Regs[regK_idx])
+#define regX	(*((REGISTER *)(Regs+regX_idx)))
+#define regY	(*((REGISTER *)(Regs+regY_idx)))
+#define regZ	(*((REGISTER *)(Regs+regZ_idx)))
+#define regT	(*((REGISTER *)(Regs+regT_idx)))
+#define regA	(*((REGISTER *)(Regs+regA_idx)))
+#define regB	(*((REGISTER *)(Regs+regB_idx)))
+#define regC	(*((REGISTER *)(Regs+regC_idx)))
+#define regD	(*((REGISTER *)(Regs+regD_idx)))
+#define regL	(*((REGISTER *)(Regs+regL_idx)))
+#define regI	(*((REGISTER *)(Regs+regI_idx)))
+#define regJ	(*((REGISTER *)(Regs+regJ_idx)))
+#define regK	(*((REGISTER *)(Regs+regK_idx)))
 
-
+#ifdef INCLUDE_DOUBLE_PRECISION
+#define dblX	regX
+#define dblY	regZ
+#define dblZ	regA
+#define dblT	regC
+#define dblL	regL
+#endif
 /*
  *  The various program regions
  */
@@ -997,6 +1009,10 @@ extern void prettify(const char *in, char *out);
 extern const char *get_cmdline(void);
 
 extern int is_intmode(void);
+#ifdef INCLUDE_DOUBLE_PRECISION
+extern int is_dblmode(void);
+#endif
+
 extern enum shifts cur_shift(void);
 extern enum shifts reset_shift(void);
 
@@ -1052,38 +1068,49 @@ extern void getYZ(decNumber *x, decNumber *y);
 extern void getXYZ(decNumber *x, decNumber *y, decNumber *z);
 extern void getXYZT(decNumber *x, decNumber *y, decNumber *z, decNumber *t);
 extern void setXY(const decNumber *x, const decNumber *y);
-
+#ifdef INCLUDE_DOUBLE_PRECISION
+extern void setResult(REGISTER *r, const decNumber *x);
+#else
+#define setResult(r, x) packed_from_number(&((r)->s), x)
+#endif
 extern void setlastX(void);
 
 extern int stack_size(void);
+extern REGISTER *get_stack(int pos);
+#ifdef INCLUDE_DOUBLE_PRECISION
+extern void copyreg(void *d, void *s);
+#else
+#define copyreg(d, s) (*(d) = *(s))
+#endif
+
 extern void lift(void);
 extern void process_cmdline_set_lift(void);
 extern void process_cmdline(void);
 
 extern unsigned int alen(void);
 
-extern long long int d64toInt(const decimal64 *n);
-extern void d64fromInt(decimal64 *n, const long long int z);
+extern long long int regToInt(const REGISTER *n);
+extern void regFromInt(REGISTER *n, const long long int z);
 
 #if 0
 extern int get_tag_n(int n);
 extern void set_tag_n(int n, int tag);
 #endif
 
-extern decimal64 *get_reg_n(int);
-extern decimal64 *get_flash_reg_n(int);
+extern REGISTER *get_reg_n(int);
+extern REGISTER *get_flash_reg_n(int);
 extern long long int get_reg_n_as_int(int);
 extern void put_reg_n_from_int(int, const long long int);
 extern void get_reg_n_as_dn(int, decNumber *);
 extern void put_reg_n(int, const decNumber *);
-extern void swap_reg(decimal64 *, decimal64 *);
-extern void zero_regs(decimal64 *dest, int n);
-extern void move_regs(decimal64 *dest, decimal64 *src, int n);
+extern void swap_reg(REGISTER *, REGISTER *);
+extern void zero_regs(REGISTER *dest, int n);
+extern void move_regs(REGISTER *dest, REGISTER *src, int n);
 extern void reg_put_int(int, unsigned long long int, int);
 extern unsigned long long int reg_get_int(int, int *);
 
-extern void put_int(unsigned long long int, int, decimal64 *);
-extern unsigned long long int get_int(const decimal64 *, int *);
+extern void put_int(unsigned long long int, int, REGISTER *);
+extern unsigned long long int get_int(const REGISTER *, int *);
 
 extern void get_maxdenom(decNumber *);
 
@@ -1127,16 +1154,16 @@ int row_column_to_keycode(const int c);
 extern void xeq_sst_bst(int kind);
 
 /* Command functions */
-extern void version(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void cmd_off(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void version(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void cmd_off(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void cmderr(unsigned int arg, enum rarg op);
 extern void cmdmsg(unsigned int arg, enum rarg op);
-extern void cpx_roll_down(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void cpx_roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void cpx_enter(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void cpx_fill(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void fill(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void drop(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void cpx_roll_down(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void cpx_roll_up(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void cpx_enter(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void cpx_fill(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void fill(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void drop(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void cmdconst(unsigned int arg, enum rarg op);
 extern void cmdconstcmplx(unsigned int arg, enum rarg op);
 extern void cmdconstint(unsigned int arg, enum rarg op);
@@ -1150,21 +1177,21 @@ extern void cmdflashcrcl(unsigned int arg, enum rarg op);
 extern void cmdview(unsigned int arg, enum rarg op);
 extern void cmdsavem(unsigned int arg, enum rarg op);
 extern void cmdrestm(unsigned int arg, enum rarg op);
-extern void set_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
-extern void get_stack_size(decimal64 *a, decimal64 *nul2, enum nilop op);
-extern void get_word_size(decimal64 *a, decimal64 *nul2, enum nilop op);
-extern void get_sign_mode(decimal64 *a, decimal64 *nul2, enum nilop op);
-extern void get_base(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern void set_stack_size(REGISTER *a, REGISTER *nul2, enum nilop op);
+extern void get_stack_size(REGISTER *a, REGISTER *nul2, enum nilop op);
+extern void get_word_size(REGISTER *a, REGISTER *nul2, enum nilop op);
+extern void get_sign_mode(REGISTER *a, REGISTER *nul2, enum nilop op);
+extern void get_base(REGISTER *a, REGISTER *nul2, enum nilop op);
 extern int free_mem(void);
 extern int free_flash(void);
-extern void get_mem(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern void get_mem(REGISTER *a, REGISTER *nul2, enum nilop op);
 extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);
 extern void cmdgtocommon(int gsb, unsigned int pc);
 extern void cmdgto(unsigned int arg, enum rarg op);
 extern void cmdalphagto(unsigned int arg, enum rarg op);
-extern void op_gtoalpha(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_xeqalpha(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_gtoalpha(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_xeqalpha(REGISTER *a, REGISTER *b, enum nilop op);
 extern void cmdmultigto(const opcode o, enum multiops mopr);
 extern void cmdlblp(unsigned int arg, enum rarg op);
 extern void cmdmultilblp(const opcode o, enum multiops mopr);
@@ -1180,63 +1207,63 @@ extern void cmdloopz(unsigned int arg, enum rarg op);
 extern void cmdloop(unsigned int arg, enum rarg op);
 extern void cmdflag(unsigned int arg, enum rarg op);
 extern void intws(unsigned int arg, enum rarg op);
-extern void op_2frac(decimal64 *x, decimal64 *b, enum nilop op);
-extern void op_fracdenom(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_denom(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_float(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_fract(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_trigmode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_radix(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_separator(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_fixscieng(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_double(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_2frac(REGISTER *x, REGISTER *b, enum nilop op);
+extern void op_fracdenom(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_denom(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_float(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_fract(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_trigmode(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_radix(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_separator(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_fixscieng(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_double(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void op_pause(unsigned int arg, enum rarg op);
-extern void op_intsign(decimal64 *a, decimal64 *b, enum nilop op);
+extern void op_intsign(REGISTER *a, REGISTER *b, enum nilop op);
 extern void set_int_base(unsigned int arg, enum rarg op);
-extern void op_datemode(decimal64 *a, decimal64 *nul, enum nilop op);
-extern void op_timemode(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_rtn(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_popusr(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_rs(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_prompt(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void solver(decimal64 *a, decimal64 *b, enum nilop op);
-extern void do_usergsb(decimal64 *a, decimal64 *b, enum nilop op);
-extern void do_userclear(decimal64 *a, decimal64 *b, enum nilop op);
-extern void isTop(decimal64 *a, decimal64 *b, enum nilop op);
-extern void XisInt(decimal64 *a, decimal64 *b, enum nilop op);
-extern void XisEvenOrOdd(decimal64 *a, decimal64 *b, enum nilop op);
-extern void XisPrime(decimal64 *a, decimal64 *b, enum nilop op);
-extern void isSpecial(decimal64 *a, decimal64 *b, enum nilop op);
-extern void isNan(decimal64 *a, decimal64 *b, enum nilop op);
-extern void isInfinite(decimal64 *a, decimal64 *b, enum nilop op);
-extern void check_zero(decimal64 *a, decimal64 *nul2, enum nilop op);
-extern void op_entryp(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_regcopy(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_regswap(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_regclr(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_regsort(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_datemode(REGISTER *a, REGISTER *nul, enum nilop op);
+extern void op_timemode(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_rtn(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_popusr(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_rs(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_prompt(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void solver(REGISTER *a, REGISTER *b, enum nilop op);
+extern void do_usergsb(REGISTER *a, REGISTER *b, enum nilop op);
+extern void do_userclear(REGISTER *a, REGISTER *b, enum nilop op);
+extern void isTop(REGISTER *a, REGISTER *b, enum nilop op);
+extern void XisInt(REGISTER *a, REGISTER *b, enum nilop op);
+extern void XisEvenOrOdd(REGISTER *a, REGISTER *b, enum nilop op);
+extern void XisPrime(REGISTER *a, REGISTER *b, enum nilop op);
+extern void isSpecial(REGISTER *a, REGISTER *b, enum nilop op);
+extern void isNan(REGISTER *a, REGISTER *b, enum nilop op);
+extern void isInfinite(REGISTER *a, REGISTER *b, enum nilop op);
+extern void check_zero(REGISTER *a, REGISTER *nul2, enum nilop op);
+extern void op_entryp(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_regcopy(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_regswap(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_regclr(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_regsort(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void cmdconv(unsigned int arg, enum rarg op);
-extern void roll_down(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void roll_up(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void clrx(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void clrstk(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void clrflags(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void clrreg(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void lead0(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_ticks(decimal64 *a, decimal64 *b, enum nilop op);
-extern void op_voltage(decimal64 *a, decimal64 *b, enum nilop op);
-extern void check_mode(decimal64 *a, decimal64 *nul2, enum nilop op);
+extern void roll_down(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void roll_up(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void clrx(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void clrstk(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void clrflags(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void clrreg(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void lead0(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_ticks(REGISTER *a, REGISTER *b, enum nilop op);
+extern void op_voltage(REGISTER *a, REGISTER *b, enum nilop op);
+extern void check_mode(REGISTER *a, REGISTER *nul2, enum nilop op);
 extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
-extern void op_roundingmode(decimal64 *, decimal64 *, enum nilop);
+extern void op_roundingmode(REGISTER *, REGISTER *, enum nilop);
 extern void rarg_roundingmode(unsigned int arg, enum rarg op);
-extern void op_setspeed(decimal64 *, decimal64 *, enum nilop);
+extern void op_setspeed(REGISTER *, REGISTER *, enum nilop);
 extern void op_putkey(unsigned int arg, enum rarg op);
 extern void op_keytype(unsigned int arg, enum rarg op);
 extern void cmdlocr(unsigned int arg, enum rarg op);
-extern void cmdlpop(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void cmdlpop(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void cmdregs(unsigned int arg, enum rarg op);
-extern void cmdxlocal(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void cmdxlocal(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 
 extern int not_running(void);
 extern void set_running_off_sst(void);
@@ -1251,12 +1278,15 @@ extern decNumber *convAR2DB(decNumber *r, const decNumber *x);
 extern decNumber *convDB2PR(decNumber *r, const decNumber *x);
 extern decNumber *convPR2DB(decNumber *r, const decNumber *x);
 
-extern void xrom_routines(decimal64 *a, decimal64 *b, enum nilop op);
+extern void xrom_routines(REGISTER *a, REGISTER *b, enum nilop op);
 
 extern void packed_from_number(decimal64 *r, const decNumber *x);
 extern void packed128_from_number(decimal128 *r, const decNumber *x);
 extern void packed_from_packed128(decimal64 *r, const decimal128 *s);
-extern void int_mode_convert(decimal64 *r);
+#ifdef INCLUDE_DOUBLE_PRECISION
+extern void packed128_from_packed(decimal128 *r, const decimal64 *s);
+#endif
+extern void int_mode_convert(REGISTER *rs, REGISTER *rd);
 
 /* system functions */
 extern void busy(void);

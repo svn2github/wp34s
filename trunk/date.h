@@ -31,19 +31,19 @@ extern decNumber *dateToJ(decNumber *res, const decNumber *x);
 extern decNumber *dateFromJ(decNumber *res, const decNumber *x);
 
 extern decNumber *dateEaster(decNumber *res, const decNumber *x);
-extern void date_isleap(decimal64 *, decimal64 *, enum nilop op);
+extern void date_isleap(REGISTER *, REGISTER *, enum nilop op);
 
-extern void date_alphaday(decimal64 *, decimal64 *, enum nilop op);
-extern void date_alphamonth(decimal64 *, decimal64 *, enum nilop op);
-extern void date_alphadate(decimal64 *r, decimal64 *nul, enum nilop op);
-extern void date_alphatime(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void date_alphaday(REGISTER *, REGISTER *, enum nilop op);
+extern void date_alphamonth(REGISTER *, REGISTER *, enum nilop op);
+extern void date_alphadate(REGISTER *r, REGISTER *nul, enum nilop op);
+extern void date_alphatime(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 
-extern void date_time(decimal64 *, decimal64 *, enum nilop op);
-extern void date_date(decimal64 *, decimal64 *, enum nilop op);
-extern void date_settime(decimal64 *, decimal64 *, enum nilop op);
-extern void date_setdate(decimal64 *, decimal64 *, enum nilop op);
-extern void date_24(decimal64 *, decimal64 *, enum nilop op);
+extern void date_time(REGISTER *, REGISTER *, enum nilop op);
+extern void date_date(REGISTER *, REGISTER *, enum nilop op);
+extern void date_settime(REGISTER *, REGISTER *, enum nilop op);
+extern void date_setdate(REGISTER *, REGISTER *, enum nilop op);
+extern void date_24(REGISTER *, REGISTER *, enum nilop op);
 
-extern void op_jgchange(decimal64 *, decimal64 *, enum nilop op);
+extern void op_jgchange(REGISTER *, REGISTER *, enum nilop op);
 
 #endif

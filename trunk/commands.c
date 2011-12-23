@@ -695,8 +695,8 @@ CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
 const struct argcmd argcmds[ NUM_RARG ] = {
 #endif
 	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
-	CMDnoI(RARG_CONST_CMPLX,&cmdconstcmplx,	NUM_CONSTS,		"\024CNST")
-	CMD(RARG_CONST_INT,	&cmdconstint,	NUM_CONSTS_INT,		"iC")
+	CMDnoI(RARG_CONST_CMPLX,&cmdconst,	NUM_CONSTS,		"\024CNST")
+	CMD(RARG_CONST_INT,	&cmdconst,	NUM_CONSTS_INT,		"iC")
 	CMD(RARG_ERROR,		&cmderr,	MAX_ERROR,		"ERR")
 	CMDstk(RARG_STO, 	&cmdsto,				"STO")
 	CMDstk(RARG_STO_PL, 	&cmdsto,				"STO+")

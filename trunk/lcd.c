@@ -33,12 +33,18 @@ static unsigned char dots[400];
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #endif
 
-static void dispreg(const char n, decimal64 *p) {
+static void dispreg(const char n, REGISTER *p) {
         char buf[32];
         if (is_intmode())
-                sprintf(buf, "%llx", (unsigned long long int)d64toInt(p));
-        else
-                decimal64ToString(p, buf);
+                sprintf(buf, "%llx", (unsigned long long int)regToInt(p));
+        else {
+#ifdef INCLUDE_DOUBLE_PRECISION
+		if (is_dblmode())
+			decimal128ToString(&(p->d), buf);
+		else
+#endif
+			decimal64ToString(&(p->s), buf);
+	}
         PRINTF("%c: %s", n, buf);
 }
 
@@ -348,13 +354,13 @@ void show_stack(void) {
         for (i=4; i<STACK_SIZE; i++) {
                 MOVE(26, 8-i);
                 PRINTF("%c ", i<stack_size()?'*':' ');
-                dispreg(REGNAMES[i], &Regs[regX_idx+i]);
+                dispreg(REGNAMES[i], get_stack(i));
         }
         MOVE(53, 2);    dispreg(REGNAMES[regJ_idx-regX_idx], &regJ);
         MOVE(53, 1);    dispreg(REGNAMES[regK_idx-regX_idx], &regK);
         for (i=0; i<4; i++) {
                 MOVE(0, 4-i);
-                dispreg(REGNAMES[i], &Regs[regX_idx+i]);
+                dispreg(REGNAMES[i], get_stack(i));
         }
         MOVE(53, 4);
         dispreg(REGNAMES[regL_idx-regX_idx], &regL);

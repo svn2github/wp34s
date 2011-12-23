@@ -35,7 +35,7 @@ enum arithmetic_modes int_mode(void) {
 #ifndef TINY_BUILD
 	unsigned int b = int_base();
 	if (b == 10 || (b & (b-1)) == 0)
-		return UState.int_mode;
+		return (enum arithmetic_modes) UState.int_mode;
 #endif
 	return MODE_UNSIGNED;
 }
@@ -572,7 +572,7 @@ static unsigned long long int packup(unsigned short int x[4]) {
 }
 #endif
 
-void intDblMul(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void intDblMul(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 #ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	unsigned long long int xv, yv;
@@ -586,8 +586,8 @@ void intDblMul(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 		long long int xr, yr;
 		int sx, sy;
 
-		xr = d64toInt(&regX);
-		yr = d64toInt(&regY);
+		xr = regToInt(&regX);
+		yr = regToInt(&regY);
 
 		xv = extract_value(xr, &sx);
 		yv = extract_value(yr, &sy);
@@ -643,8 +643,8 @@ void intDblMul(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 			xv |= topbit_mask();
 	}
 
-	d64fromInt(&regY, mask_value(yv));
-	d64fromInt(&regX, mask_value(xv));
+	regFromInt(&regY, mask_value(yv));
+	regFromInt(&regX, mask_value(xv));
 	set_overflow(0);
 #endif
 }
@@ -969,7 +969,7 @@ void introt(unsigned int arg, enum rarg op) {
 		return;
 	}
 	ws = word_size();
-	x = d64toInt(&regX);
+	x = regToInt(&regX);
 
 	if (arg != 0) {
 		switch (op) {
@@ -993,7 +993,7 @@ void introt(unsigned int arg, enum rarg op) {
 			x = (*f)(x);
 	}
 	setlastX();
-	d64fromInt(&regX, mask_value(x));
+	regFromInt(&regX, mask_value(x));
 #endif
 }
 
@@ -1269,13 +1269,13 @@ long long int intMirror(long long int x) {
 
 /* Justify to the end of the register
  */
-static void justify(decimal64 *ct,
+static void justify(REGISTER *ct,
 			long long int (*shift)(long long int),
 			const long long int mask) {
 	unsigned int c = 0;
 	long long int v;
 
-	v = d64toInt(&regX);
+	v = regToInt(&regX);
 	setlastX();
 	lift();
 	if (v != 0) {
@@ -1285,12 +1285,12 @@ static void justify(decimal64 *ct,
 			c++;
 		}
 		restore_flags(flags);
-		d64fromInt(&regY, v);
+		regFromInt(&regY, v);
 	}
-	d64fromInt(ct, (long long int)c);
+	regFromInt(ct, (long long int)c);
 }
 
-void int_justify(decimal64 *x, decimal64 *nul, enum nilop op) {
+void int_justify(REGISTER *x, REGISTER *nul, enum nilop op) {
 	const unsigned long long int mask = (op == OP_LJ) ? topbit_mask() : 1LL;
 	justify(x, (op == OP_LJ) ? &intLSL : &intLSR, mask);
 }
@@ -1326,7 +1326,7 @@ void intmsks(unsigned int arg, enum rarg op) {
 			mask = (*f)(mask);
 		}
 	}
-	d64fromInt(&regX, x);
+	regFromInt(&regX, x);
 	set_carry(carry);
 #endif
 }
@@ -1341,7 +1341,7 @@ void intbits(unsigned int arg, enum rarg op) {
 		return;
 	}
 	m =  (arg >= word_size())?0:(1LL << arg);
-	x = d64toInt(&regX);
+	x = regToInt(&regX);
 
 	switch (op) {
 	case RARG_SB:	x |= m;		setlastX();		break;
@@ -1353,7 +1353,7 @@ void intbits(unsigned int arg, enum rarg op) {
 		return;
 	}
 
-	d64fromInt(&regX, x);
+	regFromInt(&regX, x);
 #endif
 }
 

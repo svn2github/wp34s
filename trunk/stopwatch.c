@@ -131,7 +131,7 @@ static void display_stopwatch(char* message) {
 }
 
 static void store_stopwatch_in_memory() {
-	decimal64 *memory = get_reg_n((StopwatchMemory++)%MAX_STOPWATCH_MEMORY);
+	REGISTER *memory = get_reg_n((StopwatchMemory++)%MAX_STOPWATCH_MEMORY);
 	int tenths, secs, mins, hours;
 	decNumber t1, t2, s1, s2, m1, m2, h1, h2;
 	
@@ -152,7 +152,7 @@ static void store_stopwatch_in_memory() {
 	dn_add(&h2, &h1, &m2);
 	dn_add(&h1, &h2, &s2);
 	dn_add(&h2, &h1, &t2);
-	packed_from_number(memory, &h2);
+	setResult(memory, &h2);
 }
 
 static int get_digit(int key) {
@@ -321,7 +321,7 @@ int stopwatch_callback(int key) {
 	return key==K_RELEASE?-1:key;
 }
 
-void stopwatch(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void stopwatch(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	StopWatchMessage="STOPWATCH\0\0\0";
 	StopwatchStatus.stopwatch_show_memory=0;
 	StopwatchStatus.stopwatch_select_memory_mode=0;

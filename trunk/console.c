@@ -327,9 +327,17 @@ static void dump_prog(unsigned int n) {
 static void dump_registers(void) {
 	char buf[100];
 	int i;
-
+#ifdef INCLUDE_DOUBLE_PRECISION
+	if (is_dblmode()) {
+		for (i=0; i<100; i += 2) {
+			decimal128ToString(&(get_reg_n(i)->d), buf);
+			printf("register %02d: %s\n", i, buf);
+		}
+		return;
+	}
+#endif
 	for (i=0; i<100; i++) {
-		decimal64ToString(get_reg_n(i), buf);
+		decimal64ToString(&(get_reg_n(i)->s), buf);
 		printf("register %02d: %s\n", i, buf);
 	}
 }

@@ -24,7 +24,7 @@
 #include "features.h"
 
 #ifdef INCLUDE_STOPWATCH
-extern void stopwatch(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void stopwatch(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern int (*KeyCallback)(int);
 #endif
 

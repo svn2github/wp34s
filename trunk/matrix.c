@@ -38,6 +38,10 @@ static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, in
 static int matrix_range_check(int base, int rows, int cols) {
 	int limit = NumRegs;
 
+#ifdef INCLUDE_DOUBLE_PRECISION
+	if (is_dblmode())
+		base = -1;
+#endif
 	if (base >= LOCAL_REG_BASE && LocalRegs < 0) {
 		base -= LOCAL_REG_BASE;
 		limit = local_regs();
@@ -104,12 +108,12 @@ static decimal64 *matrix_decomp(const decNumber *x, int *rows, int *cols) {
 
 	if (base < 0)
 		return NULL;
-	return get_reg_n(base);
+	return &(get_reg_n(base)->s);
 }
 
 /* Check if a matrix is square or not.
  */
-void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void matrix_is_square(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	int r, c;
 	decNumber x;
 
@@ -122,7 +126,7 @@ void matrix_is_square(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 #ifdef SILLY_MATRIX_SUPPORT
 /* Create either a zero matrix or an identity matrix.
  */
-void matrix_create(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void matrix_create(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decNumber x;
 	int r, c, i, j;
 	decimal64 *base;
@@ -358,7 +362,7 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 
 	if (n < 0)
 		return NULL;
-	base = get_reg_n(n);
+	base = &(get_reg_n(n)->s);
 	if (base == NULL)
 		return NULL;
 
@@ -385,7 +389,7 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 }
 
 #ifdef MATRIX_ROWOPS
-void matrix_rowops(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void matrix_rowops(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decNumber m, ydn, zdn, t;
 	decimal64 *base, *r1, *r2;
 	int rows, cols;
@@ -417,7 +421,7 @@ badrow:		err(ERR_RANGE);
 
 		if (op == OP_MAT_ROW_SWAP) {
 			for (i=0; i<cols; i++)
-				swap_reg(r1++, r2++);
+				swap_reg((REGISTER *) r1++, (REGISTER *) r2++);
 		} else {
 			for (i=0; i<cols; i++) {
 				decimal64ToNumber(r1, &ydn);
@@ -611,7 +615,7 @@ decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
  * Do this by calculating the LU decomposition and solving lots of systems
  * of linear equations.
  */
-void matrix_inverse(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void matrix_inverse(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decimal128 mat[MAX_SQUARE*MAX_SQUARE];
 	decNumber x[MAX_SQUARE];
 	unsigned char pivots[MAX_SQUARE];
@@ -663,7 +667,7 @@ decNumber *matrix_linear_eqn(decNumber *r, const decNumber *a, const decNumber *
 	creg = dn_to_int(c);
 	if (matrix_descriptor(r, creg, n, 1) == 0)
 		return NULL;
-	cbase = get_reg_n(creg);
+	cbase = &(get_reg_n(creg)->s);
 
 	/* Everything is happy so far -- decompose */
 	i = LU_decomposition(mat, pivots, n);

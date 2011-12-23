@@ -51,7 +51,7 @@ void add_string(const char *s) {
 
 /* Clear the Alpha register
  */
-void clralpha(decimal64 *a, decimal64 *b, enum nilop op) {
+void clralpha(REGISTER *a, REGISTER *b, enum nilop op) {
 	DispMsg = NULL;
 	xset(Alpha, '\0', NUMALPHA);
 }
@@ -65,7 +65,7 @@ void alpha_view_common(int reg) {
 	frozen_display();
 }
 
-void alpha_view(decimal64 *a, decimal64 *b, enum nilop op) {
+void alpha_view(REGISTER *a, REGISTER *b, enum nilop op) {
 	alpha_view_common((unsigned int)-1);
 }
 
@@ -131,7 +131,7 @@ unsigned int alen(void) {
 	return find_char(Alpha, '\0') - Alpha;
 }
 
-void alpha_length(decimal64 *x, decimal64 *b, enum nilop op) {
+void alpha_length(REGISTER *x, REGISTER *b, enum nilop op) {
 	put_int(alen(), 0, x);
 }
 
@@ -172,12 +172,12 @@ void alpha_rot_r(unsigned int arg, enum rarg op) {
 /* Take first character from Alpha and return its code in X.
  * remove the character from Alpha
  */
-void alpha_tox(decimal64 *a, decimal64 *b, enum nilop op) {
+void alpha_tox(REGISTER *a, REGISTER *b, enum nilop op) {
 	put_int(Alpha[0] & 0xff, 0, a);
 	alpha_shift_l(1, RARG_ALSL);
 }
 
-void alpha_fromx(decimal64 *a, decimal64 *b, enum nilop op) {
+void alpha_fromx(REGISTER *a, REGISTER *b, enum nilop op) {
 	int s;
 	add_char(0xff & get_int(&regX, &s));
 }
@@ -220,7 +220,7 @@ void alpha_sto(unsigned int arg, enum rarg op) {
  * buffer and return a pointer to the first character (which won't
  * always be the start of the buffer.
  */
-char *alpha_rcl_s(const decimal64 *reg, char buf[12]) {
+char *alpha_rcl_s(const REGISTER *reg, char buf[12]) {
 	int i;
 	unsigned long long int z = get_int(reg, &i);
 	char *p = buf + 11;
@@ -244,6 +244,6 @@ void alpha_rcl(unsigned int arg, enum rarg op) {
 
 /* Turn alpha mode on and off
  */
-void alpha_onoff(decimal64 *a, decimal64 *b, enum nilop op) {
+void alpha_onoff(REGISTER *a, REGISTER *b, enum nilop op) {
 	State2.alphas = (op == OP_ALPHAON) ? 1 : 0;
 }

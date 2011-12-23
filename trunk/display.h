@@ -37,7 +37,7 @@ extern void frozen_display(void);
 extern void error_message(const enum errors e);
 extern void message(const char *str1, const char *str2);
 
-extern void format_reg(decimal64 *r, char *buf);
+extern void format_reg(REGISTER *r, char *buf);
 extern void dot(int n, int on);
 
 #ifdef INCLUDE_STOPWATCH

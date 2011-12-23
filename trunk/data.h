@@ -76,7 +76,11 @@ struct _state {
 	unsigned int entryp :        1;	// Has the user entered something since the last program stop
 	unsigned int state_lift :    1;	// XEQ internal - don't use
 	unsigned int deep_sleep :    1; // Used to wake up correctly
+#ifdef INCLUDE_DOUBLE_PRECISION
+	unsigned int mode_double :   1;	// Double precision mode, should go to UState but that is full. :-(
+#else
 	unsigned int filler :        1;	// force alignment
+#endif
 	signed   int local_regs :   16; // Position on return stack where current local variables start
 
 	/*
@@ -217,9 +221,6 @@ struct _state2 {
 	unsigned int registerlist : 1;	// Displaying the register's contents
 	unsigned int disp_freeze : 1;   // Set by VIEW to avoid refresh
 	unsigned int disp_temp : 1;     // Indicates a temporary display, disables <-
-#ifdef INCLUDE_DOUBLE_PRECISION
-	unsigned int mode_double : 1;	// Double precision mode
-#endif
 #ifndef REALBUILD
 	unsigned int trace : 1;
 	unsigned int flags : 1;		// Display state flags

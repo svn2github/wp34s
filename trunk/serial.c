@@ -313,7 +313,7 @@ static void put_block( unsigned short tag, unsigned short length, const void *da
  *  Depending on the tag received, copy the data to its destination.
  *  This implements the RECV command.
  */
-void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+void recv_any( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 {
 	int i, c;
 	unsigned char buffer[ DATA_LEN ];
@@ -450,7 +450,7 @@ void recv_any( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 /*
  * Transmit the current program to the serial port.
  */
-void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+void send_program( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 {
 	update_program_bounds( 1 );
 	put_block( TAG_PROGRAM, (ProgEnd - ProgBegin + 1) * sizeof( s_opcode ), get_current_prog() );
@@ -460,7 +460,7 @@ void send_program( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 /*
  * Send registers 00 through 99 or the configured maximum to the serial port.
  */
-void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+void send_registers( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 {
 	put_block( TAG_REGISTER, NumRegs << 3, get_reg_n( 0 ) );
 }
@@ -469,7 +469,7 @@ void send_registers( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 /*
  * Send statistical summation data
  */
-void send_sigma( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+void send_sigma( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 {
 	if ( !sigmaCheck() ) {
 		put_block( TAG_SIGMA, sizeof( STAT_DATA ), StatRegs );
@@ -480,7 +480,7 @@ void send_sigma( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 /*
  * Send all of RAM to the serial port.  2kb in total.
  */
-void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+void send_all( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 {
 	put_block( TAG_ALLMEM, sizeof( PersistentRam ), &PersistentRam );
 }
@@ -496,7 +496,7 @@ void send_all( decimal64 *nul1, decimal64 *nul2, enum nilop op )
  *    - Any other characters are skipped and ignored.
  *    - Default: 9600,8N1
  */
-void serial_open( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+void serial_open( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 {
 	int baud = 9600;
 	char bits = 8;
@@ -541,7 +541,7 @@ void serial_open( decimal64 *nul1, decimal64 *nul2, enum nilop op )
  /*
   * Close the serial port from user code
   */
-void serial_close( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+void serial_close( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 {
 	close_port_reset_state();
 }
@@ -563,7 +563,7 @@ static int serial_open_default( void )
 /*
  * Send a single byte as specified in X to the serial port.
  */
-void send_byte( decimal64 *nul1, decimal64 *nul2, enum nilop op )
+void send_byte( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 {
 	int sgn;
 	const unsigned char byte = get_int( &regX, &sgn ) & 0xff;
@@ -578,7 +578,7 @@ void send_byte( decimal64 *nul1, decimal64 *nul2, enum nilop op )
 /*
  *  Send the contents of the Alpha register, terminated by a CR
  */
-void send_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op )
+void send_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op )
 {
 	const char *p;
 	if ( !serial_open_default() ) {
@@ -595,7 +595,7 @@ void send_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op )
  *  Receive the contents of the alpha register.
  *  CR stops the reception.
  */
-void recv_alpha( decimal64 *nul1, decimal64 *nul, enum nilop op )
+void recv_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op )
 {
 	int i, c = 0;
 	int timeout = (int) get_int( &regX, &i );

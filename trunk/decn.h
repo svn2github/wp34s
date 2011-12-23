@@ -127,8 +127,8 @@ extern decNumber *decNumberSinc(decNumber *res, const decNumber *x);
 extern decNumber *do_atan2(decNumber *at, const decNumber *ain, const decNumber *b);
 
 
-extern void op_r2p(decimal64 *nul1, decimal64 *nul2, enum nilop op);
-extern void op_p2r(decimal64 *nul1, decimal64 *nul2, enum nilop op);
+extern void op_r2p(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_p2r(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 
 extern decNumber *decNumberSinh(decNumber *res, const decNumber *x);
 extern decNumber *decNumberCosh(decNumber *res, const decNumber *x);
@@ -242,7 +242,7 @@ extern decNumber *dn_mulpow10(decNumber *, const decNumber *, int);
 extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, unsigned int *);
 extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, unsigned int *, int (*)(const decNumber *, const decNumber *, const decNumber *));
 
-extern void solver(decimal64 *a, decimal64 *b, enum nilop op);
+extern void solver(REGISTER *a, REGISTER *b, enum nilop op);
 
 extern decNumber *decNumberPolyCommon(decNumber *res, const decNumber *y, const decNumber *x);
 extern decNumber *decNumberPolyPn(decNumber *res, const decNumber *y, const decNumber *x);

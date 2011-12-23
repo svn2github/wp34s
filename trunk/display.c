@@ -244,11 +244,18 @@ static void set_exp(short exp, int zerop, char *res) {
 		else set_dot(EXP_SIGN);
 		exp = -exp;
 	}
-	xset(buf, '\0', sizeof(buf));
-	if (zerop)
-		num_arg_0(buf, exp, 3);
+#ifdef INCLUDE_DOUBLE_PRECISION
+	if (res == NULL && exp > 999)
+		scopy(buf, "HIG");
 	else
-		num_arg(buf, exp);
+#endif
+	{
+		xset(buf, '\0', sizeof(buf));
+		if (zerop)
+			num_arg_0(buf, exp, 3);
+		else
+			num_arg(buf, exp);
+	}
 	for (p = buf; *p !='\0'; p++) {
 		res = set_dig_s(j, *p, res);
 		j += SEGS_PER_EXP_DIGIT;
@@ -296,7 +303,7 @@ static void annunciators(void) {
 	default:
 	case SHIFT_N:
 #ifdef INCLUDE_DOUBLE_PRECISION
-		if (State2.mode_double)
+		if (is_dblmode())
 			*p++ = 'D';
 		else
 #endif
@@ -424,10 +431,10 @@ static void disp_x(const char *p) {
 
 static const char DIGITS[] = "0123456789ABCDEF";
 
-static void set_int_x(decimal64 *rgx, char *res) {
+static void set_int_x(REGISTER *rgx, char *res) {
 	const int ws = word_size();
 	unsigned int b;
-	const long long int value = d64toInt(rgx);
+	const long long int value = regToInt(rgx);
 	long long int vs = value;
 	unsigned long long int v;
 	char buf[MAX_WORD_SIZE + 1];
@@ -617,21 +624,20 @@ static char *hms_render(unsigned int v, char *str, int *jin, int n, int spaces) 
 /* Display the number in H.MS mode.
  * HMS is hhh[degrees]mm'ss.ss" fixed formated modulo reduced to range
  */
-static void set_x_hms(const decimal64 *rgx, char *res) {
+static void set_x_hms(const decNumber *rgx, char *res) {
 	decNumber x, y, a, t, u;
 	int j=0;
 	const int exp_last = SEGS_EXP_BASE + 2*SEGS_PER_EXP_DIGIT;
 	unsigned int hr, min, sec, fs;
 
-	decimal64ToNumber(rgx, &y);
-	if (check_special_dn(&y, res)) {
-		if (decNumberIsInfinite(&y))
+	if (check_special_dn(rgx, res)) {
+		if (decNumberIsInfinite(rgx))
 			res = set_dig_s(exp_last, 'o', res);
 		return;
 	}
 
-	decNumberMod(&x, &y, &const_9000);
-	dn_abs(&a, &y);
+	decNumberMod(&x, rgx, &const_9000);
+	dn_abs(&a, rgx);
 	if (decNumberIsNegative(&x)) {
 		if (res != NULL)
 			*res += '-';
@@ -683,22 +689,21 @@ static void set_x_hms(const decimal64 *rgx, char *res) {
 }
 
 
-static int set_x_fract(const decimal64 *rgx, char *res) {
+static int set_x_fract(const decNumber *rgx, char *res) {
 	decNumber x, w, n, d, t;
 	char buf[32], *p = buf;
 	int j;
 
-	decimal64ToNumber(rgx, &w);
-	if (check_special_dn(&w, res))
+	if (check_special_dn(rgx, res))
 		return 1;
-	dn_abs(&x, &w);
+	dn_abs(&x, rgx);
 	dn_compare(&d, &const_100000, &x);
 	if (dn_le0(&d))
 		return 0;
 	dn_compare(&d, &x, &const_0_0001);
 	if (decNumberIsNegative(&d))
 		return 0;
-	if (decNumberIsNegative(&w)) {
+	if (decNumberIsNegative(rgx)) {
 		if (res != NULL)
 			*res += '-';
 		else
@@ -795,7 +800,12 @@ enum display_modes std_round_fix(const decNumber *z) {
  * We have to account for the various display modes and numbers of
  * digits.
  */
-static void set_x(const decimal64 *rgx, char *res) {
+#ifdef INCLUDE_DOUBLE_PRECISION
+static void set_x(const REGISTER *rgx, char *res, int dbl) {
+#else
+#define set_x(rgx, res, dbl) set_x_(rgx, res)
+static void set_x_(const REGISTER *rgx, char *res) {
+#endif
 	char x[50], *obp = x;
 	int odig = 0;
 	int show_exp = 0;
@@ -814,18 +824,24 @@ static void set_x(const decimal64 *rgx, char *res) {
 	decNumber z;
 	int trimzeros = 0;
 
+#ifdef INCLUDE_DOUBLE_PRECISION
+	if (dbl)
+		decimal128ToNumber(&(rgx->d), &z);
+	else
+		decimal64ToNumber(&(rgx->s), &z);
+#else
+	decimal64ToNumber(rgx, &z);
+#endif
 	if (!State2.smode && ! State2.cmplx) {
 		if (State2.hms) {
-			set_x_hms(rgx, res);
+			set_x_hms(&z, res);
 			State2.hms = 0;
 			return;
 		} else if (UState.fract) {
-			if (set_x_fract(rgx, res))
+			if (set_x_fract(&z, res))
 				return;
 		}
 	}
-
-	decimal64ToNumber(rgx, &z);
 	if (check_special_dn(&z, res))
 		return;
 
@@ -1092,20 +1108,20 @@ static void set_x(const decimal64 *rgx, char *res) {
 }
 
 
-void format_reg(decimal64 *r, char *buf) {
-	decimal64 z;
+void format_reg(REGISTER *r, char *buf) {
+	REGISTER z;
 
 	if (is_intmode())
 		set_int_x(r, buf);
 #ifndef HP16C_MODE_CHANGE
 	else if (buf == NULL && State2.smode > SDISP_SHOW) {
-		z = *r;
-		int_mode_convert(&z);
+		copyreg(&z, r);
+		int_mode_convert(&z, &z);
 		set_int_x(&z, NULL);
 	}
 #endif
 	else
-		set_x(r, buf);
+		set_x(r, buf, State.mode_double);
 }
 
 /* Display the status screen */
@@ -1223,7 +1239,7 @@ static void show_label(void) {
 /* Display a list of register contents */
 static void show_registers(void) {
 	char buf[16], *bp;
-	decimal64 *reg;
+	REGISTER *reg;
 	const int n = State2.digval;
 
 	reg = State2.digval2 ? get_flash_reg_n(n) : 
@@ -1373,7 +1389,7 @@ void display(void) {
 		bp = scopy(bp, p);
 		set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
-			set_x(&CONSTANT(op & RARG_MASK), NULL);
+			set_x((REGISTER *) &CONSTANT(op & RARG_MASK), NULL, 0);
 			skip = 1;
 		} else if (State2.runmode) {
 			if (cata == CATALOGUE_CONV) {
@@ -1393,12 +1409,12 @@ void display(void) {
 					do_conv(&r, op & RARG_MASK, &x);
 				decNumberNormalize(&r, &r, &Ctx);
 				packed_from_number(&z, &r);
-				set_x(&z, NULL);
+				set_x((REGISTER *)&z, NULL, 0);
 				skip = 1;
 			} else if (op >= (OP_NIL | OP_sigmaX2Y) && op < (OP_NIL | OP_sigmaX2Y) + NUMSTATREG) {
-				decimal64 z;
+				REGISTER z;
 				sigma_val(&z, NULL, (enum nilop) argKIND(op));
-				set_x(&z, NULL);
+				set_x(&z, NULL, 0);
 				skip = 1;
 			}
 		}

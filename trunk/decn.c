@@ -1455,7 +1455,7 @@ decNumber *decNumberArcTan2(decNumber *res, const decNumber *a, const decNumber 
 	return res;	
 }
 
-void op_r2p(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void op_r2p(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &y);
@@ -1465,7 +1465,7 @@ void op_r2p(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
 	setXY(&rx, &y);
 }
 
-void op_p2r(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void op_p2r(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &ry);
@@ -3289,7 +3289,7 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 #define _FLAG_COUNT_N	0	/* 0 - 7, eight flags in all */
 
 // User code interface to the solver
-void solver(decimal64 *nul1, decimal64 *nul2, enum nilop op) {
+void solver(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	decNumber a, b, c, fa, fb, fc;
 	unsigned int flags;
 	int r;
