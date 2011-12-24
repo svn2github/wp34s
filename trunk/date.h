@@ -20,9 +20,7 @@
 #include "xeq.h"
 
 extern decNumber *dateDayOfWeek(decNumber *res, const decNumber *x);
-extern decNumber *dateYear(decNumber *res, const decNumber *x);
-extern decNumber *dateMonth(decNumber *res, const decNumber *x);
-extern decNumber *dateDay(decNumber *res, const decNumber *x);
+extern decNumber *dateExtraction(decNumber *res, const decNumber *x);
 
 extern decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y);

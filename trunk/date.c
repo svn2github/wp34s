@@ -395,27 +395,11 @@ decNumber *dateDayOfWeek(decNumber *res, const decNumber *x) {
 
 /* Decompose dates into numerics
  */
-decNumber *dateYear(decNumber *res, const decNumber *x) {
-	int y, m, d;
+decNumber *dateExtraction(decNumber *res, const decNumber *x) {
+	int z[3];
 
-	if (dateExtract(res, x, &y, &m, &d))
-		int_to_dn(res, y);
-	return res;
-}
-
-decNumber *dateMonth(decNumber *res, const decNumber *x) {
-	int y, m, d;
-
-	if (dateExtract(res, x, &y, &m, &d))
-		int_to_dn(res, m);
-	return res;
-}
-
-decNumber *dateDay(decNumber *res, const decNumber *x) {
-	int y, m, d;
-
-	if (dateExtract(res, x, &y, &m, &d))
-		int_to_dn(res, d);
+	if (dateExtract(res, x, z, z+1, z+2))
+		int_to_dn(res, z[argKIND(XeqOpCode) - OP_DATE_YEAR]);
 	return res;
 }
 

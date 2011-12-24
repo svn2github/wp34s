@@ -235,9 +235,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #ifdef INCLUDE_FACTOR
 	FUNC(OP_FACTOR,	&decFactor,		NOFN,		&intFactor,	"FACTOR")
 #endif
-	FUNC(OP_DATE_YEAR, &dateYear,		NOFN,		NOFN,		"YEAR")
-	FUNC(OP_DATE_MONTH, &dateMonth,		NOFN,		NOFN,		"MONTH")
-	FUNC(OP_DATE_DAY, &dateDay,		NOFN,		NOFN,		"DAY")
+	FUNC(OP_DATE_YEAR, &dateExtraction,	NOFN,		NOFN,		"YEAR")
+	FUNC(OP_DATE_MONTH, &dateExtraction,	NOFN,		NOFN,		"MONTH")
+	FUNC(OP_DATE_DAY, &dateExtraction,	NOFN,		NOFN,		"DAY")
 #ifdef INCLUDE_USER_IO
 	FUNC(OP_RECV1,	&decRecv,		NOFN,		&intRecv,	"RECV1")
 #endif
