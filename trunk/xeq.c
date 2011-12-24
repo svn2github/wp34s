@@ -672,7 +672,7 @@ static decNumber *getRegister(decNumber *r, const REGISTER *rs, const REGISTER *
 	else
 		decimal64ToNumber(&(rs->s), r);
 	if (decNumberIsZero(r))
-		r->exponent = 0;
+		decNumberZero(r);
 	return r;
 }
 
