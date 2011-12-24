@@ -1039,21 +1039,12 @@ unsigned long long int reg_get_int(int n, int *sgn) {
 	return get_int(get_reg_n(n), sgn);
 }
 
-#ifdef INCLUDE_DOUBLE_PRECISION
-/*
- *  Just zero out the memory
- *  The decimal coversion routines make sure that a 'regular' zero is returned
- */
-void zero_regs(REGISTER *dest, int n) {
-	xset(dest, 0, n << (is_dblmode() ? 4 : 3));
-}
-#else
 /*
  *  Set the register value explicitely
  */
 void zero_regs(REGISTER *dest, int n) {
 	int i;
-	n = 
+
 	if (is_intmode())
 		xset(dest, 0, n << 3);
 	else {
@@ -1069,7 +1060,6 @@ void zero_regs(REGISTER *dest, int n) {
 				(&(dest->s))[i] = CONSTANT_INT(OP_ZERO);
 	}
 }
-#endif
 
 void move_regs(REGISTER *dest, REGISTER *src, int n) {
 #ifdef INCLUDE_DOUBLE_PRECISION
