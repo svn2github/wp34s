@@ -671,8 +671,6 @@ static decNumber *getRegister(decNumber *r, const REGISTER *rs, const REGISTER *
 		decimal128ToNumber(&(rd->d), r);
 	else
 		decimal64ToNumber(&(rs->s), r);
-	if (decNumberIsZero(r))
-		decNumberZero(r);
 	return r;
 }
 
