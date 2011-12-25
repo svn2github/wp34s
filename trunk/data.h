@@ -298,6 +298,12 @@ extern TStateWhileOn StateWhileOn;
 typedef struct _xrom_local
 {
 	decimal64 _regs[NUMXREGS];
+#ifdef INCLUDE_DOUBLE_PRECISION
+	// Save area for DBL mode switch
+	decimal64 _regsAtoD[4];
+	// Private location for J & K in DBLON mode
+	decimal64 _regsJK[4];
+#endif
 	unsigned short int _flags;
 } TXromLocal;
 
@@ -305,6 +311,8 @@ extern TXromLocal XromLocal;
 
 #define XromRegs (XromLocal._regs)
 #define XromFlags (XromLocal._flags)
+#define XromAtoD (XromLocal._regsAtoD)
+#define XromJK (XromLocal._regsJK)
 
 #pragma pack(pop)
 

@@ -969,47 +969,59 @@ void process_cmdline_set_lift(void) {
 /*
  *  If working in double precision, register numbers must be remapped
  */
-int remap_reg(int n) {
-	if (is_dblmode()) {
-		if (n >= regX_idx && n <= regK_idx) {
-			// Mapping of double precision registers: 
-			// Y->Z/T, Z->A/B, T->C/D, L->L/I, I->J/K
-			static const unsigned char remap[] = 
-				{ regX_idx, regZ_idx, regA_idx, regC_idx, 
-				  regA_idx, regA_idx, regC_idx, regC_idx,
-				  regL_idx, regJ_idx, regJ_idx, regJ_idx };
-	
-			n = remap[-regX_idx + n];
-		}
-		else if (n < TOPREALREG)
-			n <<= 1;
-		else 
-			n = ((n - LOCAL_REG_BASE) << 1) + LOCAL_REG_BASE;
+static decimal64 *reg_address(int n, decimal64 *const regs, decimal64 *const named_regs) {
+	const int dbl = is_dblmode();
+
+	if (n < regX_idx)
+		return regs + n + (dbl ? n : 0);
+
+	n -= regX_idx;
+	// Lettered register
+	if (dbl) {
+		// Mapping of double precision registers: 
+		// Y->Z/T, Z->A/B, T->C/D, L->L/I, I->J/K
+		// J & K are needed for some functions and are
+		// therefore mapped to the last two numeric registers
+		// configured.
+		// In XROM, the last two local registers are used instead
+		static const signed char remap[] = 
+			{ 0,  2,  4,  6, 
+			  8, 10, -4, -2,
+			  8, 10, -4, -2 };
+
+		n = remap[n];
+		if (n < 0 && isXROM(state_pc()))
+			// Registers J/K in volatile RAM
+			return XromJK + 4 + n;
 	}
-	return n;
+	return named_regs + n;
 }
 #else
-#define remap_reg(n) (n)
+#define reg_address(n,regs,named_regs) ((n < regX_idx ? regs : named_regs - regX_idx) + n);
 #endif
 
 REGISTER *get_reg_n(int n) {
-	n = remap_reg(n);
 	if (n >= LOCAL_REG_BASE && LocalRegs < 0) {
 		n -= LOCAL_REG_BASE;
+#ifdef INCLUDE_DOUBLE_PRECISION
+		if (is_dblmode())
+			n <<= 1;
+#endif
 		if (local_levels() == 1) {
 			// Local XROM register in volatile RAM
-			return (REGISTER *) ((decimal64 *) XromRegs + n);
+			return (REGISTER *) (XromRegs + n);
 		} else {
 			// local register on the return stack
 			return (REGISTER *) ((decimal64 *) (RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n);
 		}
 	}
-	return (REGISTER *) (Regs + (n >= TOPREALREG ? 0 : TOPREALREG - NumRegs) + n);
+	return (REGISTER *) reg_address(n, Regs + TOPREALREG - NumRegs, Regs + regX_idx);
 }
 
 
 REGISTER *get_flash_reg_n(int n) {
-	return (REGISTER *) (BackupFlash._regs + TOPREALREG - BackupFlash._numregs + remap_reg(n));
+	return (REGISTER *) reg_address(n, BackupFlash._regs + TOPREALREG - BackupFlash._numregs,
+					   BackupFlash._regs + regX_idx);
 }
 
 void get_reg_n_as_dn(int n, decNumber *x) {
@@ -2997,22 +3009,39 @@ void op_fixscieng(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 
 #ifdef INCLUDE_DOUBLE_PRECISION
 void op_double(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+	static const unsigned char reglist[] = {
+		regX_idx, regY_idx, regZ_idx, regT_idx, regL_idx, regI_idx, regJ_idx, regK_idx 
+	};
 	const int dbl = (op == OP_DBLON);
+	const int xrom = (isXROM(state_pc()));
 	int i;
 	if (dbl == State.mode_double)
 		return;
-	State.mode_double = dbl;
-
 	if (dbl) {
-		// Convert X, Y, Z, T and L to double precision
+		if (NumRegs < 4) {
+			// Need space for J & K
+			cmdregs(1, RARG_REGS);
+			if (Error) {
+				return;
+			}
+		}
+		if (xrom)
+			xcopy(XromAtoD, &regA, sizeof(XromAtoD));
+
+		State.mode_double = 1;
+		// Convert X, Y, Z, T, L, I, J & K to double precision
+		// J & K go to highest numbered global registers
+		// I goes to J/K
+		// L goes to L/I
+		// A to D are lost
 		// T goes to C/D
 		// Z goes to A/B
 		// Y goes to Z/T
 		// X goes to X/Y
-		// L goes to L/I
-		for (i = 3; i >= 0; --i)
-			packed128_from_packed(&(dblX.d) + i, &(regX.s) + i);
-		packed128_from_packed(&(dblL.d), &(regL.s));
+		for (i = sizeof(reglist) - 1; i >= 0; --i) {
+			const int j = reglist[ i ];
+			packed128_from_packed(&(get_reg_n(j)->d), Regs + j);
+		}
 	}
 	else {
 		// Convert X/Y, Z/T, A/B, C/D and L/I to single precision
@@ -3021,12 +3050,20 @@ void op_double(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		// Z comes from A/B
 		// T comes from C/D
 		// L comes from L/I
-		// clear A to D and I
-		for (i = 0; i < 4; ++i)
-			packed_from_packed128(&(regX.s) + i, &(dblX.d) + i);
-		zero_regs(&regA, 4);
-		packed_from_packed128(&(regL.s), &(dblL.d));
-		regI.s = CONSTANT_INT(OP_ZERO);
+		// I comes from J/K
+		// J & K come from highest numbered global registers
+		// clear A to D
+		for (i = 0; i < sizeof(reglist); ++i) {
+			const int j = reglist[ i ];
+			packed_from_packed128(Regs + j, &(get_reg_n(j)->d));
+		}
+		State.mode_double = 0;
+		if (xrom)
+			xcopy(&regA, XromAtoD, sizeof(XromAtoD));
+		else
+			zero_regs(&regA, 4);
+		if (NumRegs > TOPREALREG)
+			cmdregs(TOPREALREG - 1, RARG_REGS);
 	}
 }
 #endif
@@ -3664,7 +3701,7 @@ void busy(void)
  */
 void xeq(opcode op) 
 {
-	decimal64 save[STACK_SIZE+2];
+	decimal64 save[STACK_SIZE+4];
 	struct _ustate old = UState;
 	unsigned short old_pc = state_pc();
 	int old_cl = *((int *)&CommandLine);
@@ -3683,7 +3720,7 @@ void xeq(opcode op)
 	}
 #endif
 	Busy = 0;
-	xcopy(save, &regX, (STACK_SIZE+2) * sizeof(decimal64));
+	xcopy(save, &regX, sizeof(save));
 	if (isDBL(op))
 		multi(op);
 	else if (isRARG(op))
@@ -3706,7 +3743,7 @@ void xeq(opcode op)
 		// Repair stack and state
 		// Clear return stack
 		Error = ERR_NONE;
-		xcopy(&regX, save, (STACK_SIZE+2) * sizeof(decimal64));
+		xcopy(&regX, save, sizeof(save));
 		UState = old;
 		raw_set_pc(old_pc);
 		*((int *)&CommandLine) = old_cl;
@@ -3967,6 +4004,9 @@ void cmdxlocal(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		// fill with 0
 #ifdef INCLUDE_DOUBLE_PRECISION
 		xset(XromRegs, 0, sizeof(XromRegs));
+		if (is_dblmode())
+			// make J & K accessible
+			xcopy(Regs + TOPREALREG - 4, XromRegs - 4, 4 * sizeof(decimal64));
 #else
 		zero_regs(XromRegs, NUMXREGS);
 #endif
@@ -3999,11 +4039,10 @@ void cmdregs(unsigned int arg, enum rarg op) {
 	int distance;
 	++arg;
 #ifdef INCLUDE_DOUBLE_PRECISION
-	if (is_dblmode())
+	if (is_dblmode()) {
 		arg <<= 1;
-	if (arg > TOPREALREG) {
-		err(ERR_RANGE);
-		return;
+		if( arg < 2 )
+			arg = 2;	// Reserve space for J&K
 	}
 #endif
 	distance = NumRegs - arg;

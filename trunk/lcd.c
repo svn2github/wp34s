@@ -356,8 +356,8 @@ void show_stack(void) {
                 PRINTF("%c ", i<stack_size()?'*':' ');
                 dispreg(REGNAMES[i], get_stack(i));
         }
-        MOVE(53, 2);    dispreg(REGNAMES[regJ_idx-regX_idx], &regJ);
-        MOVE(53, 1);    dispreg(REGNAMES[regK_idx-regX_idx], &regK);
+        MOVE(53, 2);    dispreg(REGNAMES[regJ_idx-regX_idx], get_reg_n(regJ_idx));
+        MOVE(53, 1);    dispreg(REGNAMES[regK_idx-regX_idx], get_reg_n(regK_idx));
         for (i=0; i<4; i++) {
                 MOVE(0, 4-i);
                 dispreg(REGNAMES[i], get_stack(i));
