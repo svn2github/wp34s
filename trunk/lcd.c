@@ -34,7 +34,7 @@ static unsigned char dots[400];
 #endif
 
 static void dispreg(const char n, REGISTER *p) {
-        char buf[32];
+        char buf[64];
         if (is_intmode())
                 sprintf(buf, "%llx", (unsigned long long int)regToInt(p));
         else {
