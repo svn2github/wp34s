@@ -764,7 +764,7 @@ enum nilop {
 	OP_LOADP, OP_PRCL, OP_PSTO,
 
 #ifdef INCLUDE_DOUBLE_PRECISION
-	OP_DBLON, OP_DBLOFF, OP_ISDBL,
+	OP_DBLON, OP_DBLOFF, OP_ISDBL, OP_PI, OP_cmplxPI,
 #endif
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
@@ -1083,7 +1083,7 @@ extern void setlastX(void);
 extern int stack_size(void);
 extern REGISTER *get_stack(int pos);
 #ifdef INCLUDE_DOUBLE_PRECISION
-extern void copyreg(void *d, const void *s);
+extern void copyreg(REGISTER *d, const REGISTER *s);
 #else
 #define copyreg(d, s) (*(d) = *(s))
 #endif
@@ -1169,6 +1169,7 @@ extern void cpx_enter(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void cpx_fill(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void fill(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void drop(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void op_pi(REGISTER *a, REGISTER *nul2, enum nilop op); 
 extern void cmdconst(unsigned int arg, enum rarg op);
 extern void cmdconstcmplx(unsigned int arg, enum rarg op);
 extern void cmdconstint(unsigned int arg, enum rarg op);

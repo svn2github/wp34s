@@ -613,7 +613,7 @@ static REGISTER *get_stack_top(void) {
 }
 
 #ifdef INCLUDE_DOUBLE_PRECISION
-void copyreg(void *d, const void *s)
+void copyreg(REGISTER *d, const REGISTER *s)
 {
 	xcopy(d, s, is_dblmode() ? sizeof(decimal128) : sizeof(decimal64));
 }
@@ -1345,6 +1345,18 @@ static void triadic(const opcode op) {
 }
 
 
+#ifdef INCLUDE_DOUBLE_PRECISION
+/*
+ *  PI in high precision
+ */
+void op_pi(REGISTER *x, REGISTER *y, enum nilop op)
+{
+	setRegister(x, x, &const_PI);
+	if (op == OP_cmplxPI)
+		set_zero(y);
+}
+#endif
+
 /* Commands to allow access to constants
  */
 void cmdconst(unsigned int arg, enum rarg op) {
@@ -1571,8 +1583,8 @@ static void do_crcl(const REGISTER *t1, const REGISTER *t2, enum rarg op) {
 
 	if (op == RARG_CRCL) {
 		REGISTER x, y;
-		copyreg(&x, &t1);
-		copyreg(&y, &t2);
+		copyreg(&x, t1);
+		copyreg(&y, t2);
 		lift2_if_enabled();
 		copyreg(&regX, &x);
 		copyreg(get_stack(1), &y);
@@ -3015,8 +3027,12 @@ void op_double(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	const int dbl = (op == OP_DBLON);
 	const int xrom = (isXROM(state_pc()));
 	int i;
-	if (dbl == State.mode_double)
+	if (dbl == State.mode_double) {
+		if (xrom)
+			// make J & K accessible to XROM code
+			xcopy(XromJK, Regs + TOPREALREG - 4, 2 * sizeof(decimal128));
 		return;
+	}
 	if (dbl) {
 		if (NumRegs < 4) {
 			// Need space for J & K
@@ -3591,6 +3607,12 @@ static void rargs(const opcode op) {
 		if (argcmds[cmd].cmplx)
 			--lim;
 	}
+	else if (argcmds[cmd].flag) {
+		if (LocalRegs == 0)
+			lim -= 16;
+		if ((int)arg < 0)
+			arg = NUMFLG - (int)arg;
+	}
 	else if (argcmds[cmd].local) {
 		// Range checking for local registers or flags
 		lim = NUMREG + local_regs();
@@ -3600,12 +3622,6 @@ static void rargs(const opcode op) {
 			lim -= stack_size() - 1;
 		if ((int)arg < 0)
 			arg = NUMREG - (int)arg;
-	}
-	else if (argcmds[cmd].flag) {
-		if (LocalRegs == 0)
-			lim -= 16;
-		if ((int)arg < 0)
-			arg = NUMFLG - (int)arg;
 	}
 	if (arg >= lim )
 		err(ERR_RANGE);
@@ -4004,9 +4020,6 @@ void cmdxlocal(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		// fill with 0
 #ifdef INCLUDE_DOUBLE_PRECISION
 		xset(XromRegs, 0, sizeof(XromRegs));
-		if (is_dblmode())
-			// make J & K accessible
-			xcopy(Regs + TOPREALREG - 4, XromRegs - 4, 4 * sizeof(decimal64));
 #else
 		zero_regs(XromRegs, NUMXREGS);
 #endif

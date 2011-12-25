@@ -819,7 +819,7 @@ zeta_neg::		SIGN
 			RCL[times] .07
 			SIN
 			[times]
-			# [pi]
+			[pi]		// # [pi]
 			STO/ Y
 			STO+ X
 			RCL .07
@@ -974,3 +974,14 @@ who_show::		[alpha]VIEW
 			PSE 08
 			CL[alpha]
 			END
+/*
+		LBL'TST'
+			XLOCAL
+			DBL?
+			SF .15
+			DBLON
+			[cmplx]RCL J
+			FC? .15
+			DBLOFF
+			END
+*/

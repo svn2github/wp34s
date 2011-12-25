@@ -752,7 +752,11 @@ static int process_h_shifted(const keycode c) {
 		STATE_UNFINISHED,	// CONST
 		_RARG   | RARG_SWAPX,
 		OP_MON  | OP_NOT,
+#ifdef INCLUDE_DOUBLE_PRECISION
+		OP_NIL  | OP_PI | NO_INT,
+#else
 		CONST(OP_PI) | NO_INT,
+#endif
 		OP_NIL  | OP_rCLX,
 		// Row 4
 		_RARG   | RARG_GTO,
@@ -864,7 +868,11 @@ static int process_fgh_shifted_cmplx(const keycode c) {
 		{ STATE_UNFINISHED,    OP_NIL | OP_CFILL,   OP_NIL | OP_CFILL   }, // ENTER
 		{ STATE_UNFINISHED,    RARG_CSWAPZ,         RARG_CSWAPX         },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_CMON | OP_CCONJ  },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    CONST_CMPLX(OP_PI),	},
+#ifdef INCLUDE_DOUBLE_PRECISION
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_cmplxPI },
+#else
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    CONST_CMPLX(OP_PI)	},
+#endif
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
 		// Row 4
 		{ OP_CMON | OP_EXP,    OP_CMON | OP_LN,     STATE_UNFINISHED    },
@@ -2010,7 +2018,11 @@ static int process_labellist(const keycode c) {
 		                        : keycode_to_digit_or_register(c) & ~NO_SHORT;
 	const int opcode = getprog(pc);
 	const int label = isDBL(opcode) ? (getprog(pc) & 0xfffff0ff) : 0;
+#ifdef REALBUILD
 	const int direct = State2.runmode && ! isXROM(pc);
+#else
+	const int direct = State2.runmode && (State2.trace ||! isXROM(pc));
+#endif
 	const enum shifts shift = reset_shift();
 	int op = STATE_UNFINISHED;
 

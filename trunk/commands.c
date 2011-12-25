@@ -645,6 +645,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_DBLON,		&op_double,		"DBLON")
 	FUNC0(OP_DBLOFF,	&op_double,		"DBLOFF")
 	FUNC0(OP_ISDBL,		&check_dblmode,		"DBL?")
+	FUNC1(OP_PI,		&op_pi,			"\257")
+	FUNC2(OP_cmplxPI,	&op_pi,			"\024\257")
 #endif
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
