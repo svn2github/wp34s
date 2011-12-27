@@ -839,6 +839,7 @@ enum rarg {
 
 	RARG_VIEW_REG,
 	RARG_ROUNDING,
+	RARG_ROUND,
 
 #ifdef INCLUDE_USER_MODE
 	RARG_STOM, RARG_RCLM,
@@ -1264,6 +1265,7 @@ extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
 extern void op_roundingmode(REGISTER *, REGISTER *, enum nilop);
 extern void rarg_roundingmode(unsigned int arg, enum rarg op);
+extern void rarg_round(unsigned int arg, enum rarg op);
 extern void op_setspeed(REGISTER *, REGISTER *, enum nilop);
 extern void op_putkey(unsigned int arg, enum rarg op);
 extern void op_keytype(unsigned int arg, enum rarg op);

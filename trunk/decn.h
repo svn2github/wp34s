@@ -81,6 +81,7 @@ extern decNumber *decNumberRecip(decNumber *r, const decNumber *x);
 extern decNumber *decNumberFloor(decNumber *r, const decNumber *x);
 extern decNumber *decNumberCeil(decNumber *r, const decNumber *x);
 extern decNumber *decNumberTrunc(decNumber *r, const decNumber *x);
+extern decNumber *decNumberRoundDigits(decNumber *r, const decNumber *x, const int digits, const enum rounding round);
 extern decNumber *decNumberRound(decNumber *r, const decNumber *x);
 extern decNumber *decNumberFrac(decNumber *r, const decNumber *x);
 extern decNumber *decNumberSign(decNumber *r, const decNumber *x);

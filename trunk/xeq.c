@@ -511,12 +511,17 @@ static void error(const char *fmt, ...) {
 
 /* Real rounding mode access routine
  */
-static unsigned int get_rounding_mode() {
-	return UState.rounding_mode;
+static enum rounding get_rounding_mode() {
+	static const unsigned char modes[DEC_ROUND_MAX] = {
+		DEC_ROUND_HALF_EVEN, DEC_ROUND_HALF_UP, DEC_ROUND_HALF_DOWN,
+		DEC_ROUND_UP, DEC_ROUND_DOWN,
+		DEC_ROUND_CEILING, DEC_ROUND_FLOOR
+	};
+	return (enum rounding) modes[UState.rounding_mode];
 }
 
 void op_roundingmode(REGISTER *x, REGISTER *nul2, enum nilop op) {
-	put_int(get_rounding_mode(), 0, x);
+	put_int(UState.rounding_mode, 0, x);
 }
 
 void rarg_roundingmode(unsigned int arg, enum rarg op) {
@@ -526,17 +531,12 @@ void rarg_roundingmode(unsigned int arg, enum rarg op) {
 
 /* Pack a number into our DPD register format
  */
-static const unsigned char rounding_modes[DEC_ROUND_MAX] = {
-	DEC_ROUND_HALF_EVEN, DEC_ROUND_HALF_UP, DEC_ROUND_HALF_DOWN,
-	DEC_ROUND_UP, DEC_ROUND_DOWN,
-	DEC_ROUND_CEILING, DEC_ROUND_FLOOR
-};
 
 void packed_from_number(decimal64 *r, const decNumber *x) {
 	decContext ctx64;
 
 	decContextDefault(&ctx64, DEC_INIT_DECIMAL64);
-	ctx64.round = rounding_modes[get_rounding_mode()];
+	ctx64.round = get_rounding_mode();
 	decimal64FromNumber(r, x, &ctx64);
 }
 
@@ -544,7 +544,7 @@ void packed128_from_number(decimal128 *r, const decNumber *x) {
 	decContext ctx128;
 
 	decContextDefault(&ctx128, DEC_INIT_DECIMAL128);
-	ctx128.round = rounding_modes[get_rounding_mode()];
+	ctx128.round = get_rounding_mode();
 	decimal128FromNumber(r, x, &ctx128);
 }
 
@@ -561,6 +561,18 @@ void packed128_from_packed(decimal128 *r, const decimal64 *s) {
 	packed128_from_number(r, decimal64ToNumber(s, &temp));
 }
 #endif
+
+/*
+ *  User command to round to a specific number of digits
+ */
+void rarg_round(unsigned int arg, enum rarg op) {
+	decNumber res, x;
+
+	setlastX();
+	getX(&x);
+	decNumberRoundDigits(&res, &x, arg, get_rounding_mode());
+	setX(&res);
+}
 
 /* Check if a value is bogus and error out if so.
  */

@@ -404,7 +404,7 @@ static decNumber *dn_recip(decNumber *r, const decNumber *x,
  * that saves the current rounding mode, rounds as required and restores
  * the rounding mode properly.
  */
-static decNumber *round2int(decNumber *r, const decNumber *x, int mode) {
+static decNumber *round2int(decNumber *r, const decNumber *x, enum rounding mode) {
 	enum rounding a = Ctx.round;
 
 	Ctx.round = mode;
@@ -2295,13 +2295,31 @@ decNumber *decNumberBooleanOp(decNumber *res, const decNumber *x, const decNumbe
 	return bool2dn(res, (TRUTH_TABLE >> bit) & 1);
 }
 
+
+/*
+ * Round a number to a given number of digits and with a given mode
+ */
+decNumber *decNumberRoundDigits(decNumber *res, const decNumber *x, const int digits, const enum rounding round) {
+	enum rounding default_round = Ctx.round;
+	int default_digits = Ctx.digits;
+
+	Ctx.round = round;
+	Ctx.digits = digits;
+	decNumberPlus(res, x, &Ctx);
+	Ctx.digits = default_digits;
+	Ctx.round = default_round;
+	return res;
+}
+
+
+/*
+ *  Round to display accuracy
+ */
 decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 	int numdig = UState.dispdigs + 1;
 	decNumber p10;
 	decNumber t, u;
-	enum display_modes dmode = UState.dispmode;
-	enum rounding round;
-	int digits;
+	enum display_modes dmode = (enum display_modes) UState.dispmode;
 
 	if (decNumberIsSpecial(x))
 		return decNumberCopy(res, x);
@@ -2323,7 +2341,7 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		int_to_dn(&u, numdig-1);
 		decNumberPow10(&p10, &u);
 #else
-		/* The much faster but relying on base 10 numbers with exponents */
+		/* The much faster way but relying on base 10 numbers with exponents */
 		dn_1(&p10);
 		p10.exponent += numdig-1;
 		
@@ -2333,15 +2351,7 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		return dn_divide(res, &u, &p10);
 	}
 
-	round = Ctx.round;
-	digits = Ctx.digits;
-
-	Ctx.round = DEC_ROUND_HALF_UP;
-	Ctx.digits = numdig;
-	decNumberPlus(res, x, &Ctx);
-	Ctx.digits = digits;
-	Ctx.round = round;
-	return res;
+	return decNumberRoundDigits(res, x, numdig, DEC_ROUND_HALF_UP); 
 }
 
 void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
