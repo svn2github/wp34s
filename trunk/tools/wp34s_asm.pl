@@ -102,28 +102,13 @@ use File::Basename;
 #
 #   RAM:
 #
-#   The RAM image is nearly identical to the pre-V3 image with the following
-#   exceptions: 1) The maximum length is always limited as per the pragma, 2) the
-#   the meaning of the word in slot 1 is the last word used as opposed to the next
-#   free word, and 3) it is padded out to the next 256 byte boundry (ie: 128 words).
-#   It has the following format:
-#
-#   Word      Content
-#   -----     -------------------------------
-#   0         CRC covering words 1 to the last program word used.
-#   1         Program token words used.
-#   2-x       Program tokens.
-#   (x+1)--Y  Fill to next multiple of 128 words using 0xFFFF.
-#
-#   flash:
-#
-#   The flash image is changed to a "library" format. The 0-th word contains the
+#   The V3 RAM image has changed from previous versions. The 0-th word contains the
 #   maximum words allowed in the region (normally comes from a pragma over-ride).
 #   The next word contains to the number of token words used in the region. The
 #   following words contain the program token words. This is finally followed by
-#   a CRC covering everyting up to, bt not including the CRC itself. The image is
-#   padded out to the next 256 byte boundry (ie: 128 words). This mode must be
-#   enabled with special command line switches. It has the following format:
+#   a CRC covering everyting up to, but not including the CRC itself. The image is
+#   padded out to the next 256 byte boundry (ie: 128 words). It has the following
+#   format:
 #
 #   Word      Content
 #   -----     -------------------------------
@@ -132,6 +117,22 @@ use File::Basename;
 #   2-x       Program tokens.
 #   (x+1)     CRC covering words 0 to the
 #   (x+2)--Y  Fill to next multiple of 128 words using 0xFFFF.
+#
+#   flash:
+#
+#   The flash image is nearly identical to the pre-V3 image with the following
+#   exceptions: 1) The maximum length is always limited as per the pragma, 2) the
+#   the meaning of the word in slot 1 is the last word used as opposed to the next
+#   free word, and 3) it is padded out to the next 256 byte boundry (ie: 128 words).
+#   This mode must be enabled with special command line switches. It has the
+#   following format:
+#
+#   Word      Content
+#   -----     -------------------------------
+#   0         CRC covering words 1 to the last program word used.
+#   1         Program token words used.
+#   2-x       Program tokens.
+#   (x+1)--Y  Fill to next multiple of 128 words using 0xFFFF.
 #
 #   XROM:
 #
@@ -635,21 +636,31 @@ sub assemble {
     print "// Total words: ", $next_free_word-1, "\n";
     print "// Total steps: $steps_used\n";
 
-  } elsif( $lib_mode and $v3_mode ) {
-    $words[0] = $max_flash_words;
+  } elsif ($v3_mode) {
     $words[1] = $next_free_word - 1;
-    $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[0 .. $next_free_word] );
-    push @words, $crc16;
-    write_binary( $outfile, $next_free_word+1, @words );
+    $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
+    if (not $lib_mode) {
+      $words[0] = $max_ram_words;
+      push @words, $crc16; # Place CRC after everything else.
+      write_binary( $outfile, $next_free_word+1, @words ); # Need to extend to include newly appended CRC.
+    } else {
+      $words[0] = $crc16;
+      write_binary( $outfile, $next_free_word, @words );
+    }
     print "// WP 34s version: $calc_version\n" if $calc_version;
     print "// CRC16: ", dec2hex4($crc16), "\n";
-    print "// Running in lib-mode. Lib-mode max words: $max_flash_words\n";
+
+    if (not $lib_mode) {
+      print "// Running in V3 RAM-mode. RAM-mode max words: $max_ram_words\n";
+    } else {
+      print "// Running in V3 Lib-mode. Lib-mode max words: $max_flash_words\n";
+    }
     print "// Total words: ", $next_free_word-1, "\n";
     print "// Total steps: $steps_used\n";
 
-  # Normal mode.
+  # V2-- mode
   } else {
-    $words[1] = ($v3_mode) ? ($next_free_word - 1) : $next_free_word;
+    $words[1] = $next_free_word;
     $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
     $words[0] = $crc16;
     write_binary( $outfile, $next_free_word, @words );
