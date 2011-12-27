@@ -33,11 +33,126 @@ use POSIX;
 use File::Basename;
 
 # ---------------------------------------------------------------------
+# NOTE: There is a discrepancy in the way "words" and "steps" are used in the calculator
+#       and I (NFH) believe these usages are incorrect and can lead to significant
+#       confusion and misinterpretation.
+#
+#       For the purposes of this calculator, a "word" is defined as a 16-bit quantity**.
+#       For storage purposes, the word is accessed in little endian mode. A word is an
+#       indivisible, fundamental unit. (Bytes are only used when addressed as portions of
+#       words for injection of offsets or as character encoding, or in the calculation of
+#       CRCs. Thus, bytes are never communicated directly with the calculator.)
+#
+#       A "step" is the tokenized instruction interpreted by the calculator's execution
+#       state machine. A step consists of one or two words and thus us not a fundamental
+#       unit.
+#
+#       Several pragmas have been defined using the term "step" where they really should
+#       be using the term "word". Hence, within this script, the proper term "word" will
+#       be used to avoid confusion.
+#
+# **    It is acknowledged that the underlying ARM processor uses a 32-bit word. However,
+#       the ARM is not in question in this design and, in fact, the calculator could be
+#       ported from the 32-bit ARM to a 16- or 8-bit processor and still maintain
+#       functionality under the current definition. Thus, it is felt that there is no
+#       confusion between 16-bit vs. 32-bit words, whereas there is a significant
+#       discrepancy between the usage of "steps" vs. "words" in the current definition.
+#
+# ---------------------------------------------------------------------
+# Binary Image Specifcation:
+#
+#  NOTE: All words are defined as 16-bit and are accessed in little endian order.
+#
+# There are 3 (4?) image types used by various versions and sections of the calculator.
+#
+# Pre-V3:
+#
+#   In pre-V3 calculators, there are 2 images formats: RAM/flash, and XROM.
+#
+#   RAM/flash:
+#
+#   The RAM and flash images are identical. They typically had a limit of 506 words
+#   per section (though this may be modified through the use of a op-code definition
+#   table pragma.) They have the following format:
+#
+#   Word        Content
+#   -----       -------------------------------
+#   0           CRC covering words 1 to the last program word used.
+#   1           Program token words used plus 1 (ie: next free word).
+#   2--x        Program tokens.
+#   (x+1)--512  Fill to 512 words using 0xFFFF.
+#
+#   XROM:
+#
+#   The XROM is not bounded by same size limitations as the RAM/flash areas. It has
+#   neither the CRC nor the next free word field. It is also not blank filled to any
+#   specific length. This mode must be enabled with special command line switches.
+#   It has the following format:
+#
+#   Word    Content
+#   -----   -------------------------------
+#   0-?     Program tokens.
+#
+# NOTE: Because they are missing the size field, binary XROM images cannot be
+#       disassembled using this tool.
+#
+# V3++:
+#
+#   In V3 calculators, there are 3 images formats: RAM, flash, and XROM.
+#
+#   RAM:
+#
+#   The RAM image is nearly identical to the pre-V3 image with the following
+#   exceptions: 1) The maximum length is always limited as per the pragma, 2) the
+#   the meaning of the word in slot 1 is the last word used as opposed to the next
+#   free word, and 3) it is padded out to the next 256 byte boundry (ie: 128 words).
+#   It has the following format:
+#
+#   Word      Content
+#   -----     -------------------------------
+#   0         CRC covering words 1 to the last program word used.
+#   1         Program token words used.
+#   2-x       Program tokens.
+#   (x+1)--Y  Fill to next multiple of 128 words using 0xFFFF.
+#
+#   flash:
+#
+#   The flash image is changed to a "library" format. The 0-th word contains the
+#   maximum words allowed in the region (normally comes from a pragma over-ride).
+#   The next word contains to the number of token words used in the region. The
+#   following words contain the program token words. This is finally followed by
+#   a CRC covering everyting up to, bt not including the CRC itself. The image is
+#   padded out to the next 256 byte boundry (ie: 128 words). This mode must be
+#   enabled with special command line switches. It has the following format:
+#
+#   Word      Content
+#   -----     -------------------------------
+#   0         Max words allowed in region
+#   1         Program token words used.
+#   2-x       Program tokens.
+#   (x+1)     CRC covering words 0 to the
+#   (x+2)--Y  Fill to next multiple of 128 words using 0xFFFF.
+#
+#   XROM:
+#
+#   The XROM image is identical to the pre-V3 image with the exception that the
+#   SKIP and BACK offsets are calculated differently. (Technically, this is the
+#   task of the programmer or the PP tool and not the assembler. It is mentioned
+#   here from reference only.) This mode must be enabled with special command line
+#   switches. It has the following format:
+#
+#   Word    Content
+#   -----   -------------------------------
+#   0-?     Program tokens.
+#
+# ---------------------------------------------------------------------
 
 my $debug = 0;
 my $quiet = 1;
 my (%mnem2hex, %hex2mnem, %ord2escaped_alpha, %escaped_alpha2ord);
 my @files = ();
+
+my $lib_mode = 0; # Special mode for flash libraries in V3.
 
 my $v3_mode = 0;
 my $step_digits = 3; # Default to older style 3-digit step numbers.
@@ -94,6 +209,13 @@ my $star_labels = $DEFAULT_STAR_LABELS;
 
 my $DEFAULT_MAX_FLASH_WORDS = 506;
 my $max_flash_words = $DEFAULT_MAX_FLASH_WORDS;
+
+my $DEFAULT_MAX_RAM_WORDS = 506;
+my $max_ram_words = $DEFAULT_MAX_RAM_WORDS;
+
+my $DEFAULT_CALC_VERSION = "";
+my $calc_version = $DEFAULT_CALC_VERSION;
+
 my $disable_flash_limit = 0;
 
 my $no_step_numbers = 0;
@@ -194,14 +316,19 @@ if( exists $useable_OS{$^O} ) {
 # The keyword format for the wp34s.op file is starting with a letter (any case) or an underscore
 # followed by zero or more letters (any case), numbers, and/or underscores. Case is significant.
 # There can be 0 or more whitespace between the start of the line and/or between the "=" assignment.
+# There can be 0 or 1 decimal points (sorry, no coma!) followed by 0 or more decimal digits.
 #
 # Examples (ignore quote):
 #
 # "maxsteps=510"
 # "maxsteps = 510"
 # "    maxsteps= 510"
+# "version=30"
+# "version=3.0"
 #
 my %pragma_table = ( maxlibsteps => \$max_flash_words,
+                     maxsteps    => \$max_ram_words,
+                     version     => \$calc_version,
                    );
 
 # Automatically extract the name of the executable that was used. Also extract
@@ -350,7 +477,7 @@ print "// Opcode SVN version: $op_svn\n" if $report_op_svn;
 # By default, the operation "ERR 03" has been used in the standard image that the
 # calculator produces itself. However, there are some minor advantages to making this
 # the value "FFFF". Use the '-fill <VALUE>' switch to modify the value,
-my $flash_blank_fill_hex_str = ($user_flash_blank_fill) ? $user_flash_blank_fill : $mnem2hex{$DEFAULT_FLASH_BLANK_INSTR};
+my $flash_blank_fill_hex_str = ($user_flash_blank_fill) ? $user_flash_blank_fill : dec2hex4($DEFAULT_FLASH_BLANK_INSTR);
 
 # This is where the script decides what it is going to do.
 if( $build_an_empty_image ) {
@@ -380,7 +507,7 @@ sub assemble {
   my ($crc16, $alpha_text, @lines, $file);
 
   # We only need to prefill out the block in V2-- modes. In V3 mode, the array
-  # must be empty!
+  # must start from empty!
   my @words = ($v3_mode) ? () : pre_fill_flash($flash_blank_fill_hex_str); # Fill value is a hex4 string.
 
   my $next_free_word = 1;
@@ -482,8 +609,13 @@ sub assemble {
           $words[++$next_free_word] = hex2dec($mnem2hex{$_});
         }
       }
-      if( ($next_free_word >= $max_flash_words) and not $disable_flash_limit ) {
-        die "ERROR: Too many program steps encountered (> $max_flash_words words).\n";
+
+      # Lib-mode and RAM-mode (ie: not $lib_mode) have different size limitations.
+      # Calculate if the limit is exceeded accordingly.
+      if ($lib_mode and ($next_free_word >= $max_flash_words)) {
+          die "ERROR: Too many program steps encountered in lib-mode (> $max_flash_words words).\n";
+      } elsif (not $lib_mode and ($next_free_word >= $max_ram_words) and not $disable_flash_limit) {
+          die "ERROR: Too many program steps encountered (> $max_ram_words words).\n";
       }
     }
   }
@@ -503,13 +635,27 @@ sub assemble {
     print "// Total words: ", $next_free_word-1, "\n";
     print "// Total steps: $steps_used\n";
 
+  } elsif( $lib_mode and $v3_mode ) {
+    $words[0] = $max_flash_words;
+    $words[1] = $next_free_word - 1;
+    $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[0 .. $next_free_word] );
+    push @words, $crc16;
+    write_binary( $outfile, $next_free_word+1, @words );
+    print "// WP 34s version: $calc_version\n" if $calc_version;
+    print "// CRC16: ", dec2hex4($crc16), "\n";
+    print "// Running in lib-mode. Lib-mode max words: $max_flash_words\n";
+    print "// Total words: ", $next_free_word-1, "\n";
+    print "// Total steps: $steps_used\n";
+
   # Normal mode.
   } else {
     $words[1] = ($v3_mode) ? ($next_free_word - 1) : $next_free_word;
     $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
     $words[0] = $crc16;
     write_binary( $outfile, $next_free_word, @words );
+    print "// WP 34s version: $calc_version\n" if $calc_version;
     print "// CRC16: ", dec2hex4($crc16), "\n";
+    print "// Running in RAM-mode. RAM-mode max words: $max_ram_words\n";
     print "// Total words: ", $next_free_word-1, "\n";
     print "// Total steps: $steps_used\n";
   }
@@ -909,7 +1055,7 @@ sub load_opcode_tables {
       }
 
     # Parse any of the pragma-like values.
-    } elsif( /^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\=\s*(\d+)\s*$/ ) {
+    } elsif( /^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\=\s*(\d+\.{0,1}\d*)\s*$/ ) {
       my $variable = $1;
       my $value = $2;
 
@@ -1434,6 +1580,10 @@ sub run_pp {
     $cmd .= " -v3";
   }
 
+  if ($v3_mode and $xrom_bin_mode) {
+    $cmd .= " -xrom";
+  }
+
   # Override the step digits as required.
   # XXX Hah! Who knew?! In Perl, 'log' is actually log2, not log10, like everywhere else!!
   my $sd = ceil(log($max_flash_words)/log(10));
@@ -1596,6 +1746,10 @@ sub get_options {
 
     elsif( ($arg eq "-s") or ($arg eq "-stars") ) {
       $star_labels = shift(@ARGV);
+    }
+
+    elsif( ($arg eq "-l") or ($arg eq "-lib") ) {
+      $lib_mode = 1;
     }
 
     elsif( $arg eq "-fill" ) {

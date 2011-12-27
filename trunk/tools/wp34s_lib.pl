@@ -28,7 +28,7 @@ my $SVN_Current_Revision  =  '$Revision$';
 #
 #-----------------------------------------------------------------------
 
-#use strict;
+use strict;
 use POSIX;
 use File::Basename;
 
@@ -69,10 +69,13 @@ my $ansi_normal           = "\e[0m";
 my $ansi_red_bg           = "\e[41;33;1m";
 my $ansi_green_bg         = "\e[42;33;1m";
 my $ansi_rev_green_bg     = "\e[42;1;7;33;1m";
+my $ansi_rev_red_bg       = "\e[41;1;7;33;1m";
 my $ansi_rev_blue_bg      = "\e[47;1;7;34;1m";
 my $ansi_rev_cyan_bg      = "\e[30;46m";
 
-my $DEFAULT_USE_ANSI_COLOUR = 0;
+my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_LIB_COLOUR})
+                            ? $ENV{WP34S_LIB_COLOUR}
+                            : 0;
 my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
 # ---------------------------------------------------------------------
@@ -93,6 +96,13 @@ my %useable_OS = ("linux"   => "linux",
 
 if( exists $useable_OS{$^O} ) {
   fileparse_set_fstype($useable_OS{$^O});
+
+  # Check for OS-specific options to enable or disable.
+  if ($^O =~ /MSDOS/) {
+    $use_ansi_colour = 0; # Supposidly, terminal emulators under MS-DOS have a hard time running
+                          # in full ANSI mode. Sigh! So, no matter what the user tries, make it
+                          # difficult to turn ANSI codes on.
+  }
 } else {
   # If we get here, the set file system type function has NOT been run and we may not
   # be able to locate "relative" file.
@@ -118,79 +128,111 @@ $script
 
 Usage:
    $script_name [src_file [src_file2 [src_file3]]] -ilib org_lib.dat [-olib new_lib.dat|-f] \\
-                  [-rm "'PRG'" [-rm "'PG2'"]|-rm "'PRG' 'PG2' [...]"] [-cat]
+                  [-rm PRG [-rm PG2]|-rm "PRG PG2 [...]"] [-cat] [-nc|-colour|-color]
 
 Parameters:
-   src_file         One or more source files to add or replace within an existing library.
-   -ilib libfile    The original library file to add or replace programs in. Unless this has the same
-                    name as outfile, this file will not be modified.
-   -olib outfile    Output produced by the tool. This is required and will be the binary flash image.
-                    Libraries extensions are conventionally ".dat". Must be supplied unless the '-f'
+   src_file         One or more source files to add or replace within an existing library (when
+                    -ilib provided), or to add to a newly created library (when no -ilib provided).
+   -ilib libfile    Optional original library file to add or replace programs in. Unless this has
+                    the same name as outfile or the -f switch is used, this file will not be
+                    modified.
+   -olib outfile    Output produced by the tool. This switch is required unless the -f switch is
+                    used or no modifications are being requested to the input library (eg: simply
+                    a '-cat' command is used). If input library modifications are being requested
+                    (eg: add, replace, or remove programs), this must be supplied unless the '-f'
                     override switch is used.
-   -f               Force the ilib to be used as the olib name as well.
+   -f               Force the -ilib to be used as the -olib name as well. Note that setting the same
+                    file name to both the -ilib and -olib switches results in the same action.
    -pp              Use the preprocessor when assembling the sources. [default]
    -no_pp           Don\'t use the preprocessor when assembling the sources.
-   -rm "'PRG'"      Name of program(s) to remove from the library. This switch can appear multiple
+   -rm "PRG"        Name of program(s) to remove from the library. This switch can appear multiple
                     times to name multiple programs, or a single instance of the switch can name
-                    multiple programs.
-                    NOTE: Currently, program names MUST be enclosed in outer double quotes AND single
-                          inner quotes!
-   -cat             Display catalogue of initial and final library.
+                    multiple programs. In the latter case, the list of program names must be
+                    surrounded by quotes. If the program name contains escaped-alphas, these must
+                    be surrounded by quotes.
+   -cat             Display catalogue of input and/or output libraries.
+   -nc              Turn off ANSI colour codes in warning and error messages. [default]
+   -colour          Turn on ANSI colour codes in warning and error messages.
+   -color           Turn on ANSI color codes in warning and error messages.
    -h               This help script.
 
 Examples:
-  \$ $script_name great_circle.wp34s -olib wp34s-lib.dat -ilib wp34s-lib.dat
-  - Assembles the named WP34s program source file producing and either replaces an existing
-    version in the named library or adds it. In this case the output and named library have
-    the same name, so the original library file will be overwritten.
+  \$ $script_name great_circle.wp34s -olib wp34s-lib.dat -ilib wp34s-lib.dat -cat
+  - Assembles the named WP34s program source file(s) and either replaces existing versions
+    in the named library or adds them. In this case the output and input libraries have the same
+    name, so the original library file will be overwritten. Provides a catalogue of both the
+    input and output libraries.
 
-  \$ $script_name  great_circle.wp34s floating_point.wp34s -olib wp34s-1.dat -ilib wp34s-1.dat
-  - Assembles the named WP34s program source files producing and either replaces existing
-    versions in the named library or adds them. In this case the output and named library have
-    the different names, so the original library file will be untouched.
+  \$ $script_name great_circle.wp34s floating_point.wp34s -olib wp34s-1.dat -ilib wp34s-1.dat
+  - Assembles the named WP34s program source files and either replaces existing versions in the
+    output library or adds them. In this case the input and output libraries have the different
+    names, so the original input library file will be untouched.
 
-  \$ $script_name -ilib wp34s-lib.dat -f -rm ABC -rm BCD
-  \$ $script_name -ilib wp34s-lib.dat -ilib wp34s-lib.dat -rm "ABC BCD"
-  - These 2 invocations have the identical result. They remove the 2 programs 'ABC'
-    and 'BCD' from the named library and write the resulting library back to the
-    sam named library. The first invocation 'forces' the input library to be overwritten.
+  \$ $script_name -ilib wp34s-lib.dat -f -rm ABC -rm BCD -rm "A[times][beta]"
+  \$ $script_name -ilib wp34s-lib.dat -olib wp34s-lib.dat -rm "ABC BCD A[times]B"
+  - These 2 invocations have the identical results. They remove the 3 programs 'ABC', 'BCD',
+    and 'A[times][beta]' from the named input library and write the resulting output library
+    back to the a file of the same name. The first invocation 'forces' the input library to
+    be overwritten. The second explicitly names the input and output libraries to the same
+    name. Notice that the escaped-alpha program name must be surrounded by quotes at all times.
+
+  \$ $script_name -ilib wp34s-lib.dat -cat
+  - Provides a catalogue of the input lib.
+
+  \$ $script_name -olib wp34s-lib.dat great_circle.wp34s mod.wp34s matrix.wp34s
+  - Assembles the named WP34s program source file(s) and creates a brand new output
+    library (ie: no existing input library was present).
 
 Notes:
-  1)
+  1) The library binary format is different from standard RAM images. It has extra information
+     used by the calculator, it can be longer than RAM images, and it moves some fields from the
+     beginning of the image to the end. Though these images are different from RAM images, they
+     can still be disassembled using the assembler's disassembler function using the standard
+     command format. For example:
+
+     \$ wp34s_asm.pl -dis some_lib.dat
+
+  2) Library extensions are traditionally '.dat' but perhaps should be migrated to '.lib'.
 EOM
 
 #######################################################################
 
 get_options();
 
-# Disassemble the library.
-my @lib_src = disassemble_binary($in_libfile);
+my (@lib_src, %lib_cat, %new_progs, @status);
 
-if ($gen_cat) {
-  print "Initial library catalogue:\n";
-  show_catalogue("  ", "$in_libfile", @lib_src);
+# Only process an input library if one is given, otherwise the outout will be create
+# "fresh" from the new sources.
+if ($in_libfile) {
+  # Disassemble the library.
+  @lib_src = disassemble_binary($in_libfile);
+
+  if ($gen_cat) {
+    print "Initial library catalogue:\n";
+    show_catalogue("  ", "$in_libfile", @lib_src);
+  }
+
+  # Catalogue the initial library.
+  %lib_cat = %{catalogue_binary($in_libfile, @lib_src)};
+
+
+  dbg_show_cat("after initial in_lib processing", "lib_cat", \%lib_cat)
+      if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
+  dbg_dump_cat("after processing org lib", "org_lib_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
+      if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
 }
-
-
-# Catalogue the initial library.
-my %lib_cat = %{catalogue_binary($in_libfile, @lib_src)};
-
-dbg_show_cat("after initial in_lib processing", "lib_cat", \%lib_cat)
-    if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
-dbg_dump_cat("after processing org lib", "org_lib_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
-    if $debug or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
 
 # Only execute the modification section if we have been requested to do something.
 if (@new_srcs or @rm_progs) {
   # Only run this section if there are programs that need to be added.
   if (@new_srcs) {
     # Prepare the new source files.
-    my %new_progs = %{prepare_new_srcs(@new_srcs)};
+    %new_progs = %{prepare_new_srcs(@new_srcs)};
 
     dbg_show_cat("after new programs preparation", "new_progs", \%new_progs)
         if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
     dbg_dump_cat("after processing new files", "new_src_${lib_cat_dump_basefile}", "new_progs", \%new_progs)
-        if $debug or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+        if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
 
 
     # Replace any existing programs with the new programs, or add the new programs
@@ -207,7 +249,7 @@ if (@new_srcs or @rm_progs) {
             if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
         dbg_dump_cat("after processing replacement of $new_prog_name",
                     "replace_${new_prog_name}_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
-            if $debug or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+            if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
       } else {
         printf "Adding program: \"%0s\", new program steps: %0d\n",
                 $new_prog_name, scalar @{$new_prog_src_ref} unless $quite;
@@ -218,7 +260,7 @@ if (@new_srcs or @rm_progs) {
             if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
         dbg_dump_cat("after processing addition of $new_prog_name",
                     "add_${new_prog_name}_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
-            if $debug or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+            if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
       }
     }
   }
@@ -233,19 +275,20 @@ if (@new_srcs or @rm_progs) {
 
       dbg_dump_cat("after processing removal of $rm_prog_name",
           "remove_${rm_prog_name}_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
-          if $debug or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+          if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
     } else {
-      warning_msg(this_function_script((caller(0))[3]), "Program to remove (\"$rm_prog_name\") does not exist in the library.");
+      warn_msg(this_function_script((caller(0))[3]), "Program to remove (\"$rm_prog_name\") does not exist in the library.");
     }
   }
 
   dbg_dump_cat("after all processing", $lib_cat_dump_final_file, "lib_cat", \%lib_cat)
-      if $debug or (exists $ENV{WP34S_LIB_FINAL_SRC} and ($ENV{WP34S_LIB_FINAL_SRC} ne ""));
+      if ($debug > 1) or (exists $ENV{WP34S_LIB_FINAL_SRC} and ($ENV{WP34S_LIB_FINAL_SRC} ne ""));
 }
 
 # Reassemble the new library. In the case of a run where we have not been asked to do anything, this
 # will be the original disassembled source library.
-my @status = resassemble_lib(\%lib_cat, $out_libfile);
+
+@status = resassemble_lib(\%lib_cat, $out_libfile);
 
 # Display a final catalogue if requested.
 if ($gen_cat and (@new_srcs or @rm_progs)) {
@@ -348,8 +391,6 @@ sub catalogue_binary {
 #
 #
 sub prepare_new_srcs {
-  #MvC
-  #my $new_src_lib = shift;
   my @srcs = @_;
   my $src_list = join " ", @srcs;
 
@@ -358,7 +399,7 @@ sub prepare_new_srcs {
 
   my $tmp_file = gen_random_writeable_filename();
   my $cmd = $asm_script;
-  my $cmd_line = "$use_pp $src_list -o $tmp_file $asm_options";
+  my $cmd_line = "$use_pp $src_list -o $tmp_file $asm_options -lib";
   my @result = run_prog($cmd, $cmd_line);
   my @new_src = disassemble_binary($tmp_file);
   my %news_src_cat = %{catalogue_binary($tmp_file, @new_src)};
@@ -512,7 +553,7 @@ sub resassemble_lib {
   close TMP;
 
   my $cmd = $asm_script;
-  my $cmd_line = "$use_pp $tmp_file -o $output_file";
+  my $cmd_line = "$use_pp $tmp_file -lib -o $output_file";
   my @result = run_prog($cmd, $cmd_line);
   unlink $tmp_file unless (exists $ENV{WP34S_LIB_KEEP_TEMP} and ($ENV{WP34S_LIB_KEEP_TEMP} == 1));
 
@@ -522,12 +563,15 @@ sub resassemble_lib {
 
 #######################################################################
 #
-#
+# Run the requested program and command line. The program is split from the
+# command line so we can attempt to locate it.
 #
 sub run_prog {
   my $prog = shift;
   my $cmd_line = shift;
   my @output = ();
+
+  my ($location, $cmd);
 
   # Look in the current directory.
   if (-e "${prog}") {
@@ -576,7 +620,7 @@ sub clean_array_of_eol {
 
 #######################################################################
 #
-# Remove any
+# Remove any whitespace and comments.
 #
 sub clean_array_of_whitespace_and_comments {
   my @raw = @_;
@@ -704,7 +748,7 @@ sub print_prog_name {
 
 #######################################################################
 #
-#
+# Format a fatal message.
 #
 sub die_msg {
   my $func_name = shift;
@@ -721,14 +765,14 @@ sub die_msg {
 
 #######################################################################
 #
-#
+# Format a warning message.
 #
 sub warn_msg {
   my $func_name = shift;
   my $text = shift;
   my $msg = "";
 
-  $msg = "$ansi_rev_green_bg" if $use_ansi_colour;
+  $msg = "$ansi_rev_red_bg" if $use_ansi_colour;
   $msg .= "WARNING: $func_name:";
   $msg .= "$ansi_normal " if $use_ansi_colour;
   $msg .= " $text";
@@ -738,7 +782,7 @@ sub warn_msg {
 
 #######################################################################
 #
-#
+# Format a debug message.
 #
 sub debug_msg {
   my $func_name = shift;
@@ -755,7 +799,7 @@ sub debug_msg {
 
 #######################################################################
 #
-# Scan the array for ERROR.
+# Scan the array for "ERROR".
 #
 sub has_errors {
   my @raw = @_;
@@ -776,10 +820,23 @@ sub has_errors {
 # Swap the main:: for the actual script name.
 #
 sub this_function_script {
-  my $this_function = shift( @_ );
+  my $this_function = shift;
+  $this_function = "main" if not defined $this_function or ($this_function eq "");
   $this_function =~ s/main/$script_name/;
   return $this_function;
 } # this_function_script
+
+
+#######################################################################
+#
+#
+#
+sub print_version {
+  print "$script\n";
+  my $svn_rev = extract_svn_version();
+  print "SVN version: $svn_rev\n" if $svn_rev;
+  return;
+} # print_version
 
 
 #######################################################################
@@ -792,15 +849,13 @@ sub get_options {
   while ($arg = shift(@ARGV)) {
 
     # See if help is asked for
-    if( $arg eq "-h" ) {
+    if( ($arg eq "-h") or ($arg eq "-help") or ($arg eq "--help") or ($arg eq "-?")) {
       print "$usage\n";
       die "\n";
     }
 
     elsif( ($arg eq "--version") or ($arg eq "-V") ) {
-      print "$script\n";
-      my $svn_rev = extract_svn_version();
-      print "SVN version: $svn_rev\n" if $svn_rev;
+      print_version();
       die "\n";
     }
 
@@ -826,10 +881,6 @@ sub get_options {
       $out_libfile = shift(@ARGV);
     }
 
-    elsif( $arg eq "-nc" ) {
-      $use_ansi_colour = 0;
-    }
-
     elsif( $arg eq "-f" ) {
       $force_lib_overwrite = 1;
     }
@@ -851,13 +902,24 @@ sub get_options {
       $use_ansi_colour = 0;
     }
 
+    elsif( ($arg eq "-ac") or ($arg eq "-colour") or ($arg eq "-color") ) {
+      $use_ansi_colour = 1;
+    }
+
     else {
       push @new_srcs, $arg;
     }
   }
 
   #----------------------------------------------
-  # Verify we have sufficient parameters.
+  # Check the sanity of the command line arguments.
+
+  # See if nothing is being asked to be done.
+  if ((not @new_srcs and not @rm_progs and not $out_libfile and not $in_libfile)
+   or (not @new_srcs and not @rm_progs and not $out_libfile and $in_libfile and not $gen_cat)) {
+    print_version();
+    die "Enter '$script_name -h' for help.\n";
+  }
 
   unless ($out_libfile and not $force_lib_overwrite or (not @new_srcs and not @rm_progs)) {
     warn "ERROR: Must enter an output file name in for recieving binary library (-olib SomeFileName).\n";
@@ -865,8 +927,14 @@ sub get_options {
     die  "       Enter '$script_name -h' for help.\n";
   }
 
-  if (not @new_srcs and not @rm_progs and not $out_libfile) {
+  # We have only an input library and no actions.
+  if (not @new_srcs and not @rm_progs and not $out_libfile and $in_libfile) {
     $out_libfile = gen_random_writeable_filename();
+  }
+
+  # We have only an output library and no input library.
+  if ($out_libfile and not $in_libfile) {
+    print "Creating olib '$out_libfile' from scratch.\n";
   }
 
   return;

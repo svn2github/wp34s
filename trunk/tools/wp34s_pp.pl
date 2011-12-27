@@ -57,6 +57,8 @@ my $longest_label = 0; # Recorded for pretty print purposes.
 
 my $NUM_TARGET_LABEL_COLONS = 2;
 
+my $xrom_mode = 0;
+
 my @files;
 
 my $prt_step_num = 1;
@@ -109,6 +111,8 @@ Parameters:
    -m max_offset    Change the maximum offset limit.  [default: $DEFAULT_MAX_JMP_OFFSET]
    -v3              Enable v3.* mode ehnacnements.
    -renum           Renumber step lines sequentially. Only has meaning in v3 mode.
+   -xrom            Run in XROM mode. NOTE: This is normally only used by the internal
+                    tool-chain. Not intended for use by the end-user!
    -h               This help script.
 
 Examples:
@@ -1657,6 +1661,10 @@ sub get_options {
       $renumber_steps = 0;
     }
 
+    elsif( ($arg eq "-xrom") or ($arg eq "-x") ) {
+      $xrom_mode = 1;
+    }
+
     elsif( ($arg eq "-step_digits") or ($arg eq "-sd") ) {
       $override_step_digits = shift(@ARGV);
     }
@@ -1679,6 +1687,12 @@ sub get_options {
     warn "ERROR: Must enter at least one file to process.\n";
     die  "       Enter '$script_name -h' for help.\n";
   }
+
+  if ($xrom_mode) {
+    warn "ERROR: XROM mode is currently unavailable in '$script_name'.\n";
+    die  "       Enter '$script_name -h' for help.\n";
+  }
+
 
   return;
 } # get_options
