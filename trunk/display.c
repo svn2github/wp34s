@@ -1276,7 +1276,7 @@ static void set_annunciators(void)
 	 * typing lower case in alpha mode.  Turn the big equals if we're
 	 * browsing constants.
 	 */
-	dot(BEG, state_pc() == 0);
+	dot(BEG, state_pc() <= 1);
 	dot(INPUT, State2.catalogue || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
 	dot(BIG_EQ, get_user_flag(A_FLAG));
