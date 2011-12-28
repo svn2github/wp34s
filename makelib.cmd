@@ -10,7 +10,7 @@ set PP=%TOOLS%\wp34s_pp.pl
 set DAT=wp34s-lib.dat
 
 echo on
-%ASM% -pp matrix.wp34s matrixedit.wp34s vectors.wp34s -o %DAT%
+%LIB% -pp matrix.wp34s matrixedit.wp34s vectors.wp34s -olib %DAT%
 @if errorlevel 1 goto exit
 :
 %LIB% TVM.wp34s -ilib %DAT% -olib %DAT%

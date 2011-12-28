@@ -2982,7 +2982,7 @@ static void specials(const opcode op) {
 	case OP_Xeq1:	case OP_Xlt1:	case OP_Xgt1:
 	case OP_Xne1:	case OP_Xle1:	case OP_Xge1:
 	case OP_Xapx1:
-		do_tst((REGISTER *) &CONSTANT_INT(OP_ZERO), (REGISTER *) &CONSTANT_DBL(OP_ZERO),
+		do_tst((REGISTER *) &CONSTANT_INT(OP_ONE), (REGISTER *) &CONSTANT_DBL(OP_ONE),
 			(enum tst_op)(opm - OP_Xeq1), 1);
 		break;
 	case OP_Zeq1:	case OP_Zne1:
@@ -3505,11 +3505,20 @@ void op_regswap(REGISTER *a, REGISTER *b, enum nilop op) {
 
 	if (reg_decode(&s, &n, &d, 0) || s == d)
 		return;
-	if ((s < d && (s + n) > d) || (d < s && (d + n) > s))
-		err(ERR_RANGE);
 	else {
-		for (i = 0; i < n; i++)
-			swap_reg(s + i, d + i);
+		REGISTER *t;
+		if (s > d) {
+			t = s;
+			s = d;
+			d = t;
+		}
+		t = is_dblmode() ? s + n : (REGISTER *) (&(s->s) + n);
+		if (t > d)
+			err(ERR_RANGE);
+		else {
+			for (i = 0; i < n; i++)
+				swap_reg(s + i, d + i);
+		}
 	}
 }
 
