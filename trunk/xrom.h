@@ -40,6 +40,7 @@
 #define ENTRY_SETIND	80
 #define ENTRY_SETCHN	79
 #define ENTRY_SETJAP	78
+#define ENTRY_WHO	77
 
 
 

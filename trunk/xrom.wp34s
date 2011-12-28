@@ -608,13 +608,15 @@ deriv_return::		STO L
  */
 deriv_default_h::	STO .03
 			FILL
-			XEQ'[delta]X'
+			LBL?'[delta]X'
+				JMP deltaX
+			iC 1
+			SDR 01				/* default h = 0.1 */
 			STO .04
 			RTN
 
-		LBL'[delta]X'
-			iC 1
-			SDR 01				/* default h = 0.1*/
+deltaX::		XEQ'[delta]X'
+			STO .04
 			RTN
 
 /**************************************************************************/
@@ -949,7 +951,7 @@ locale_common::		RDX.
 
 /**************************************************************************/
 
-		LBL'WHO'
+		LBL 77
 			CL[alpha]
 			XEQ who_wp
 			"by"
