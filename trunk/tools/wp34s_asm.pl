@@ -100,23 +100,23 @@ use File::Basename;
 #
 #   In V3 calculators, there are 3 images formats: RAM, flash, and XROM.
 #
-#   RAM:
+#   RAM (aka State file):
 #
 #   The V3 RAM image has changed from previous versions. The 0-th word contains the
-#   maximum words allowed in the region (normally comes from a pragma over-ride).
-#   The next word contains to the number of token words used in the region. The
-#   following words contain the program token words. This is finally followed by
-#   a CRC covering everyting up to, but not including the CRC itself. The image is
-#   padded out to the next 256 byte boundry (ie: 128 words). It has the following
-#   format:
+#   maximum words allowed in the region. Since the assembler cannot create a state
+#   file from scratch, we don't care what gets put in this field from this tool (another
+#   will fill it in). The next word contains to the number of token words actually used
+#   in the region. The next area is the program token words. Undefined padding words
+#   fill the spaces between the end of the program tokens and the start of the state.
+#   Following the state is the CRC, which covers 0 to the end of state. Note that this
+#   script doens not care about word 0, or anything after the active program tokens.
+#   It has the following format:
 #
 #   Word      Content
 #   -----     -------------------------------
 #   0         Max words allowed in region
 #   1         Program token words used.
 #   2-x       Program tokens.
-#   (x+1)     CRC covering words 0 to the
-#   (x+2)--Y  Fill to next multiple of 128 words using 0xFFFF.
 #
 #   flash:
 #
@@ -154,6 +154,9 @@ my (%mnem2hex, %hex2mnem, %ord2escaped_alpha, %escaped_alpha2ord);
 my @files = ();
 
 my $lib_mode = 0; # Special mode for flash libraries in V3.
+my $NO_PAD_MODE = 0;
+my $V2_PAD_MODE = 1;
+my $V3_PAD_MODE = 2;
 
 my $v3_mode = 0;
 my $step_digits = 3; # Default to older style 3-digit step numbers.
@@ -611,7 +614,7 @@ sub assemble {
         }
       }
 
-      # Lib-mode and RAM-mode (ie: not $lib_mode) have different size limitations.
+      # Lib-mode and RAM/State-mode (ie: not $lib_mode) have different size limitations.
       # Calculate if the limit is exceeded accordingly.
       if ($lib_mode and ($next_free_word >= $max_flash_words)) {
           die "ERROR: Too many program steps encountered in lib-mode (> $max_flash_words words).\n";
@@ -642,18 +645,18 @@ sub assemble {
     if (not $lib_mode) {
       $words[0] = $max_ram_words;
       push @words, $crc16; # Place CRC after everything else.
-      write_binary( $outfile, $next_free_word+1, @words ); # Need to extend to include newly appended CRC.
+      write_binary( $outfile, $next_free_word+1, $NO_PAD_MODE, @words ); # Need to extend to include newly appended CRC.
     } else {
       $words[0] = $crc16;
-      write_binary( $outfile, $next_free_word, @words );
+      write_binary( $outfile, $next_free_word, $V3_PAD_MODE, @words );
     }
     print "// WP 34s version: $calc_version\n" if $calc_version;
     print "// CRC16: ", dec2hex4($crc16), "\n";
 
     if (not $lib_mode) {
-      print "// Running in V3 RAM-mode. RAM-mode max words: $max_ram_words\n";
+      print "// Running in V3 State-mode. Max words: $max_ram_words\n";
     } else {
-      print "// Running in V3 Lib-mode. Lib-mode max words: $max_flash_words\n";
+      print "// Running in V3 Lib-mode. Max words: $max_flash_words\n";
     }
     print "// Total words: ", $next_free_word-1, "\n";
     print "// Total steps: $steps_used\n";
@@ -663,7 +666,7 @@ sub assemble {
     $words[1] = $next_free_word;
     $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
     $words[0] = $crc16;
-    write_binary( $outfile, $next_free_word, @words );
+    write_binary( $outfile, $next_free_word, $V2_PAD_MODE, @words );
     print "// WP 34s version: $calc_version\n" if $calc_version;
     print "// CRC16: ", dec2hex4($crc16), "\n";
     print "// Running in RAM-mode. RAM-mode max words: $max_ram_words\n";
@@ -834,16 +837,22 @@ sub wordArray2byteArray {
 
 #######################################################################
 #
-#
+# Pad mode:
+#   NO_PAD_MODE:  Don't add any padding.
+#   V2_PAD_MODE:  Padding already in place. (Actually identical to NO_PAD_MODE from
+#                 this function's point-of-view).
+#   V3_PAD_MODE:  Pad to next 256-byte boundary.
 #
 sub write_binary {
   my $outfile = shift;
   my $last_word = shift;
+  my $pad_mode = shift;
   my @words = @_;
+
   open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
   binmode OUT;
 
-  if ($v3_mode) {
+  if ($pad_mode == $V3_PAD_MODE) {
     # In V3 mode, we need to pad out to a multiple of a specific pad block size.
     # Unlike V2-- modes, V3 mode's array is not prepadded to a specific block size. The array
     # has only real data in it and no more. Threfore, the array needs to be padded out
@@ -1406,8 +1415,8 @@ sub read_file {
 
   @lines = remove_line_numbers(@lines);
 
-  # Enforce the last line being an END if in V3 mode.
-  if ($v3_mode) {
+  # Enforce the last line being an END if in V3 mode, unless we are XROM mode.
+  if ($v3_mode and not $xrom_c_mode and not $xrom_bin_mode) {
     # Make sure there is an END as the last instruction. If not, add one.
     unless( $lines[-1] =~ /(^|\s+)END($|\s+)/) {
       push @lines, "END";
@@ -1591,7 +1600,7 @@ sub run_pp {
     $cmd .= " -v3";
   }
 
-  if ($v3_mode and $xrom_bin_mode) {
+  if ($v3_mode and ($xrom_bin_mode or $xrom_c_mode)) {
     $cmd .= " -xrom";
   }
 

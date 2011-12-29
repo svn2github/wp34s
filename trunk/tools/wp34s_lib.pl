@@ -35,12 +35,20 @@ use File::Basename;
 # ---------------------------------------------------------------------
 
 my $debug = 0;
-my $quite = 0;
+my $quiet = 0;
 
 my $in_libfile = "";
 my $out_libfile = "";
-my $force_lib_overwrite = 0;
 my $gen_cat = 0;
+my $state_file = 0;
+my %state_data = ();
+my $chk_crc = 0;
+my $conv_state2flash = 0;
+
+my $FLASH_MODE = "-lib";
+my $STATE_MODE = "";
+
+my $CRC_INITIALIZER = 0x5aa5;
 
 my $DEFAULT_ASM = "wp34s_asm.pl";
 my $asm_script = $DEFAULT_ASM;
@@ -75,7 +83,7 @@ my $ansi_rev_cyan_bg      = "\e[30;46m";
 
 my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_LIB_COLOUR})
                             ? $ENV{WP34S_LIB_COLOUR}
-                            : 0;
+                            : 1;
 my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
 # ---------------------------------------------------------------------
@@ -99,7 +107,7 @@ if( exists $useable_OS{$^O} ) {
 
   # Check for OS-specific options to enable or disable.
   if ($^O =~ /MSDOS/) {
-    $use_ansi_colour = 0; # Supposidly, terminal emulators under MS-DOS have a hard time running
+    $use_ansi_colour = 0; # Supposedly, terminal emulators under MS-DOS have a hard time running
                           # in full ANSI mode. Sigh! So, no matter what the user tries, make it
                           # difficult to turn ANSI codes on.
   }
@@ -127,46 +135,55 @@ my $usage = <<EOM;
 $script
 
 Usage:
-   $script_name [src_file [src_file2 [src_file3]]] -ilib org_lib.dat [-olib new_lib.dat|-f] \\
-                  [-rm PRG [-rm PG2]|-rm "PRG PG2 [...]"] [-cat] [-nc|-colour|-color]
+   $script_name [src_file [src_file2 [src_file3]]] [-rm PRG [-rm PG2]|-rm "PRG PG2 [...]"] \\
+                [-conv] -ilib org_lib.dat [-olib new_lib.dat|-f] \\
+                [-cat] [-nc|-colour|-color]
 
 Parameters:
    src_file         One or more source files to add or replace within an existing library (when
                     -ilib provided), or to add to a newly created library (when no -ilib provided).
-   -ilib libfile    Optional original library file to add or replace programs in. Unless this has
-                    the same name as outfile or the -f switch is used, this file will not be
-                    modified.
-   -olib outfile    Output produced by the tool. This switch is required unless the -f switch is
-                    used or no modifications are being requested to the input library (eg: simply
-                    a '-cat' command is used). If input library modifications are being requested
-                    (eg: add, replace, or remove programs), this must be supplied unless the '-f'
-                    override switch is used.
-   -f               Force the -ilib to be used as the -olib name as well. Note that setting the same
-                    file name to both the -ilib and -olib switches results in the same action.
-   -pp              Use the preprocessor when assembling the sources. [default]
-   -no_pp           Don\'t use the preprocessor when assembling the sources.
    -rm "PRG"        Name of program(s) to remove from the library. This switch can appear multiple
                     times to name multiple programs, or a single instance of the switch can name
                     multiple programs. In the latter case, the list of program names must be
                     surrounded by quotes. If the program name contains escaped-alphas, these must
                     be surrounded by quotes.
+   -state           Indicates that the source library is a 'state' file, as opposed to a flash library.
+   -conv            Convert an existing state library file to a flash library format. This can be
+                    done with no modifications to the library content or can be used with any of the
+                    other editting features such as adding, removing, or replacing programs.
+   -ilib libfile    Original library file to add or replace programs in. If requesting a flash-style
+                    output, this input file is not strictly required. In this case a flash library will
+                    be constructed from scratch and will be named as per the '-olib' switch.
+   -olib outfile    Output produced by the tool. This switch is required unless the -f switch is
+                    used or no modifications are being requested to the input library (eg: simply
+                    a '-cat' command is used). If input library modifications are being requested
+                    (eg: add, replace, or remove programs), this must be supplied unless the '-f'
+                    override switch is used.
+   -f               Force the -ilib name to be used as the output library name as well. Note that
+                    setting the same file name using both the -ilib and -olib switches results in
+                    the same action. If the '-f' switch is used, it MUST follow the '-ilib' switch
+                    on the command line!
    -cat             Display catalogue of input and/or output libraries.
-   -nc              Turn off ANSI colour codes in warning and error messages. [default]
-   -colour          Turn on ANSI colour codes in warning and error messages.
-   -color           Turn on ANSI color codes in warning and error messages.
+
+   -pp              Use the preprocessor when assembling the sources. [default]
+   -no_pp           Don\'t use the preprocessor when assembling the sources.
+   -nc              Turn off ANSI colour codes in warning and error messages. [default for non-MSDOS O/S]
+   -colour          Turn on ANSI colour codes in warning and error messages.  [default for all other O/S's]
+   -color           Turn on ANSI color codes in warning and error messages. Same as previous (provides
+                    for American color/spelling palette :-).
    -h               This help script.
 
 Examples:
   \$ $script_name great_circle.wp34s -olib wp34s-lib.dat -ilib wp34s-lib.dat -cat
   - Assembles the named WP34s program source file(s) and either replaces existing versions
-    in the named library or adds them. In this case the output and input libraries have the same
-    name, so the original library file will be overwritten. Provides a catalogue of both the
-    input and output libraries.
+    in the named flash library or adds them to it. In this case the output and input libraries
+    have the same name, so the original library file will be overwritten. Provides a catalogue
+    of both the input and output libraries.
 
   \$ $script_name great_circle.wp34s floating_point.wp34s -olib wp34s-1.dat -ilib wp34s-1.dat
   - Assembles the named WP34s program source files and either replaces existing versions in the
-    output library or adds them. In this case the input and output libraries have the different
-    names, so the original input library file will be untouched.
+    output flash library or adds them to it. In this case the input and output libraries have
+    the different names, so the original input library file will be untouched.
 
   \$ $script_name -ilib wp34s-lib.dat -f -rm ABC -rm BCD -rm "A[times][beta]"
   \$ $script_name -ilib wp34s-lib.dat -olib wp34s-lib.dat -rm "ABC BCD A[times]B"
@@ -176,44 +193,79 @@ Examples:
     be overwritten. The second explicitly names the input and output libraries to the same
     name. Notice that the escaped-alpha program name must be surrounded by quotes at all times.
 
+  \$ $script_name great_circle.wp34s floating_point.wp34s -ilib wp34s.dat -f -state -rm XYZ
+  - Assembles the named WP34s program source files and either replaces existing versions in the
+    state library or adds them to it. Removes a program called XYZ. In this case the input
+    library name is reused for the output as well.
+
   \$ $script_name -ilib wp34s-lib.dat -cat
   - Provides a catalogue of the input lib.
 
+  \$ $script_name -ilib wp34s.dat -olib wp34s-lib.dat -conv -cat
+  - Convert a state file to a flash library file. Provides a catalogue of the library.
+
+  \$ $script_name -ilib wp34s.dat -olib wp34s-lib.dat -conv -rm ABC myprog.wp34s
+  - Convert a state file to a flash library file. The progra, 'ABC' will be removed from the
+    flash copy. Whatever programs are in 'myprog.wp34s' will be added or replaced, as the case
+    may be, from the flash copy.
+
   \$ $script_name -olib wp34s-lib.dat great_circle.wp34s mod.wp34s matrix.wp34s
   - Assembles the named WP34s program source file(s) and creates a brand new output
-    library (ie: no existing input library was present).
+    flash library (ie: no existing input library was present).
 
 Notes:
-  1) The library binary format is different from standard RAM images. It has extra information
-     used by the calculator, it can be longer than RAM images, and it moves some fields from the
-     beginning of the image to the end. Though these images are different from RAM images, they
-     can still be disassembled using the assembler's disassembler function using the standard
-     command format. For example:
+  1) The library binary format is different from state format. However, though these images
+     are different, they can both still be disassembled using the assembler's disassembler
+     function using the standard command format. For example:
 
      \$ wp34s_asm.pl -dis some_lib.dat
 
-  2) Library extensions are traditionally '.dat' but perhaps should be migrated to '.lib'.
+  2) A flash output library can be created without an existing input library. However, this is
+     not possible for the state file as its format is much more involved. Therefore, an '-ilib'
+     switch is required whenever the '-state' or '-conv' switches are used.
+
+  3) There is no order or position requirement of any command line switches EXCEPT '-f'. If
+     used, there MUST be a preceeding '-ilib' switch.
+
 EOM
 
 #######################################################################
 
 get_options();
 
-my (@lib_src, %lib_cat, %new_progs, @status);
+my (@lib_src, %lib_cat, %new_progs, @status, $initial_lib);
 
-# Only process an input library if one is given, otherwise the outout will be create
-# "fresh" from the new sources.
+# Only process an input library if one is given, otherwise the output will be create
+# "fresh" from the new sources. Note that we (currently) cannot create a state file
+# from scratch. However, this situation will have been trapped at the get_options()
+# function.
 if ($in_libfile) {
-  # Disassemble the library.
-  @lib_src = disassemble_binary($in_libfile);
+  if ($state_file or $conv_state2flash) {
+    # Read in and decompose the state file.
+    %state_data = %{parse_state_file($in_libfile)};
+
+    @lib_src = @{$state_data{SRC}};
+    $initial_lib = $in_libfile;
+
+  } else {
+    # Disassemble the library.
+    @lib_src = disassemble_binary($in_libfile);
+    $initial_lib = $in_libfile;
+  }
 
   if ($gen_cat) {
-    print "Initial library catalogue:\n";
-    show_catalogue("  ", "$in_libfile", @lib_src);
+    my $lib_format = "";
+    if ($state_file or $conv_state2flash) {
+      $lib_format = "State file";
+    } else {
+      $lib_format = "flash file";
+    }
+    print "Initial library catalogue (format: $lib_format)\n";
+    show_catalogue("  ", $initial_lib, @lib_src);
   }
 
   # Catalogue the initial library.
-  %lib_cat = %{catalogue_binary($in_libfile, @lib_src)};
+  %lib_cat = %{catalogue_binary($initial_lib, @lib_src)};
 
 
   dbg_show_cat("after initial in_lib processing", "lib_cat", \%lib_cat)
@@ -241,7 +293,7 @@ if (@new_srcs or @rm_progs) {
       my $new_prog_src_ref = $new_progs{$new_prog_name};  # a source array
       if (exists $lib_cat{$new_prog_name}) {
         printf "Replacing program: \"%0s\", old program steps: %0d, new program steps: %0d\n",
-                $new_prog_name, scalar @{$lib_cat{$new_prog_name}}, scalar @{$new_prog_src_ref} unless $quite;
+                $new_prog_name, scalar @{$lib_cat{$new_prog_name}}, scalar @{$new_prog_src_ref} unless $quiet;
 
         %lib_cat = %{replace_prog(\%lib_cat, $new_prog_name, $new_prog_src_ref)};
 
@@ -252,7 +304,7 @@ if (@new_srcs or @rm_progs) {
             if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
       } else {
         printf "Adding program: \"%0s\", new program steps: %0d\n",
-                $new_prog_name, scalar @{$new_prog_src_ref} unless $quite;
+                $new_prog_name, scalar @{$new_prog_src_ref} unless $quiet;
 
         %lib_cat = %{add_prog(\%lib_cat, $new_prog_name, $new_prog_src_ref)};
 
@@ -269,7 +321,7 @@ if (@new_srcs or @rm_progs) {
   foreach my $rm_prog_name (@rm_progs) {
     if (exists $lib_cat{$rm_prog_name}) {
       printf "Removing program: \"%0s\", old program steps: %0d\n",
-              $rm_prog_name, scalar @{$lib_cat{$rm_prog_name}} unless $quite;
+              $rm_prog_name, scalar @{$lib_cat{$rm_prog_name}} unless $quiet;
       %lib_cat = %{remove_prog(\%lib_cat, $rm_prog_name)};
       dbg_show_cat("after removing \"$rm_prog_name\"", "lib_cat", \%lib_cat) if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
 
@@ -285,33 +337,50 @@ if (@new_srcs or @rm_progs) {
       if ($debug > 1) or (exists $ENV{WP34S_LIB_FINAL_SRC} and ($ENV{WP34S_LIB_FINAL_SRC} ne ""));
 }
 
-# Reassemble the new library. In the case of a run where we have not been asked to do anything, this
-# will be the original disassembled source library.
+if ($state_file and not $conv_state2flash) {
+  # Create a new binary of the final program set and inject the program tokens into a newly
+  # constituted state file. The old calculator state data will be transfered directly from
+  # the orignal copy to the new state file. A CRC will be recalculated over the entire file
+  # and will be injected into the new state file.
+  my $tmp_file = gen_random_writeable_filename();
+  @status = reassemble_output(\%lib_cat, $tmp_file, $STATE_MODE);
+  rebuild_state_file(\%state_data, $tmp_file, $out_libfile);
+  unlink $tmp_file;
 
-@status = resassemble_lib(\%lib_cat, $out_libfile);
+} else {
+  # Reassemble the new library. In the case of a run where we have not been asked to do anything, this
+  # will be the original disassembled source library.
+  @status = reassemble_output(\%lib_cat, $out_libfile, $FLASH_MODE);
+}
 
 # Display a final catalogue if requested.
-if ($gen_cat and (@new_srcs or @rm_progs)) {
+if ($gen_cat and (@new_srcs or @rm_progs or $conv_state2flash)) {
   @lib_src = disassemble_binary($out_libfile);
-  print "Modified library catalogue:\n";
+  my $lib_format = "";
+  if ($state_file and not $conv_state2flash) {
+    $lib_format = "State file";
+  } else {
+    $lib_format = "flash file";
+  }
+  print "Modified library catalogue (format: $lib_format)\n";
   show_catalogue("  ", "$out_libfile", @lib_src);
 }
 
 # Display the output of the last assembly run to show the user how big everything is.
-unless ($quite) {
+unless ($quiet) {
   print "Library details:\n";
   print join "\n", @status, "\n";
 }
 
 # If we haven't been asked to do anything, a dummy output library name will have been generated.
 # We need to blow it away now.
-if (not @new_srcs and not @rm_progs) {
+if (not @new_srcs and not @rm_progs and not $conv_state2flash) {
   unlink $out_libfile;
 }
 
 
 #######################################################################
-# Start of subrountine suite
+# Start of subroutine suite
 #######################################################################
 #
 # Disassemble a binary image and return the listing as an array of lines.
@@ -340,7 +409,7 @@ sub disassemble_binary {
 #
 sub catalogue_binary {
   my $src_file = shift;
-  my @src = @_;
+  my @src = @_; # Array of 'cleaned' program lines.
   debug_msg(this_function_script((caller(0))[3]), "Parsing listing catalogue...") if $debug;
   local $_;
   my %cat = ();
@@ -355,8 +424,16 @@ sub catalogue_binary {
     my $prog_name = "";
     my $first_line = shift @segment; # Get 1st line of source and find the program name.
 
+    # XXX This (and many other lines) cannot deal with a program that starts with one of
+    #     the hotkey labels.
     if ($first_line =~ /^\s*\*{0,}LBL\'(.+)\'/) {
       $prog_name = $1;
+
+    # This will effectively scrub any non-program from the catalogue. This would
+    # include NULL programs (ie: a program consisting of only an 'END' statement).
+    } else {
+      warn_msg(this_function_script((caller(0))[3]), "Removing single line program: '$first_line'") if $debug or not $quiet;
+      next;
     }
 
     debug_msg(this_function_script((caller(0))[3]), "  Found program: \"$prog_name\"") if $debug;
@@ -372,11 +449,11 @@ sub catalogue_binary {
     while (@segment) {
       my $line = shift @segment;
 
-      # XXX Shitty little (temporary) workaround for a long-standing bug in the assembler!
-      #     It turns out that the assembler cannot read a bare source line that consists of
+      # XXX Shitty little (temporary?) workaround for a long-standing bug in the PP!
+      #     It turns out that the PP cannot read a bare source line that consists of
       #     only a 0! Will have to fix thix as some time.
       if ($line =~ /^0+$/) {
-        $line .= " // dummy comment to workaround long standing wp34s_asm.pl bug!";
+        $line .= " // dummy comment to workaround long standing wp34s_pp.pl bug!";
       }
       push @this_prog_src, $line;
     }
@@ -384,6 +461,54 @@ sub catalogue_binary {
   }
   return \%cat;
 } # catalogue_binary
+
+
+#######################################################################
+#
+# Read in and decompose the state file into its components.
+#
+sub parse_state_file {
+  my $file = shift;
+  debug_msg(this_function_script((caller(0))[3]), "Processing state file '$file'") if $debug > 1;
+  local $_;
+  my %state = ();
+  my @state_file_array = read_bin($file);
+
+  $state{MAX_SIZE_AVAIL} = $state_file_array[0];
+  $state{LAST_WORD_USED} = $state_file_array[1];
+  $state{ORG_CRC} = $state_file_array[-1];
+
+  $state{STATE_START} = $state{MAX_SIZE_AVAIL} + 2;
+  $state{STATE_END} = (scalar @state_file_array) - 2;
+
+  # Does NOT include the CRC!
+  my @state_array = @state_file_array[$state{STATE_START} .. $state{STATE_END}];
+  $state{STATE} = \@state_array;
+
+  if ($chk_crc or $debug) {
+    my $recalc_crc = calc_crc16(@state_file_array[0 .. $state{STATE_END}]);
+    if ($recalc_crc != $state{ORG_CRC}) {
+      my $msg = "Original CRC (0x" . dec2hex4($state{ORG_CRC}) . ") not equal to recalculated CRC (0x" . dec2hex4($recalc_crc) . ").";
+      die_msg(this_function_script((caller(0))[3]), $msg);
+    } else {
+      my $msg = "Original CRC (0x" . dec2hex4($state{ORG_CRC}) . ") matches recalculated CRC (0x" . dec2hex4($recalc_crc) . ").";
+      debug_msg(this_function_script((caller(0))[3]), $msg);
+    }
+  }
+
+  # Use 0 for the initial dummy CRC. The disassembler doesn't care.
+  my @src_bin = (0, $state{LAST_WORD_USED}, @state_file_array[2 .. ($state{LAST_WORD_USED}+1)]);
+  my $tmp_file = gen_random_writeable_filename();
+  write_bin($tmp_file, @src_bin);
+  my $cmd = $asm_script;
+  my $cmd_line = "-dis $tmp_file $disasm_options";
+  my @raw_src = run_prog($cmd, $cmd_line);
+  my @tmp_array = clean_array_of_whitespace_and_comments(@raw_src);
+  $state{SRC} = \@tmp_array;
+  unlink $tmp_file;
+  dbg_show_state("after being parsed:", "\%state", \%state) if $debug;
+  return \%state;
+} # parse_state_file
 
 
 #######################################################################
@@ -531,15 +656,16 @@ sub extract_svn_version {
 #
 #
 #
-sub resassemble_lib {
+sub reassemble_output {
   my $cat_ref = shift;
   my $output_file = shift;
+  my $mode = shift; # '-lib' for a flash library, and '' for a state file.
 
   # Create a temporary intermediate file holding the raw sources concatenated together.
   my $tmp_file = gen_random_writeable_filename();
   open TMP, "> $tmp_file" or die_msg(this_function_script((caller(0))[3]), "Cannot open temp file '$tmp_file' for writing: $!");
 
-  debug_msg(this_function_script((caller(0))[3]), "Assembling final catalogue into \"$output_file\"") if $debug > 0;
+#  debug_msg(this_function_script((caller(0))[3]), "Assembling final catalogue into \"$output_file\"") if $debug > 0;
 
   # Rebuild the file source file.
   my %cat = %{$cat_ref};
@@ -553,12 +679,69 @@ sub resassemble_lib {
   close TMP;
 
   my $cmd = $asm_script;
-  my $cmd_line = "$use_pp $tmp_file -lib -o $output_file";
+  my $cmd_line = "$use_pp $tmp_file $mode -o $output_file";
   my @result = run_prog($cmd, $cmd_line);
   unlink $tmp_file unless (exists $ENV{WP34S_LIB_KEEP_TEMP} and ($ENV{WP34S_LIB_KEEP_TEMP} == 1));
 
   return @result;
-} # resassemble_lib
+} # reassemble_output
+
+
+#######################################################################
+#
+#
+#
+sub rebuild_state_file {
+  my $state_ref = shift;
+  my $bin_file = shift;
+  my $output_file = shift;
+  local $_;
+
+  my @bin_array = read_bin( $bin_file );
+
+  # Create a blank array of the required size. By create a static size, we will ensure that the
+  # state will be injected at the correct location. By blanking it, we will make it easier to
+  # look around in side. The actual content of the unused areas is irrelevent but 0's are easier
+  # to deal with for humans.
+  my @new_state_words = ();
+  foreach (0 .. ($state_ref->{STATE_START}-1)) {
+    push @new_state_words, 0;
+  }
+
+  # Set the LWU to the value found in the newly assembled state file program suite.
+  $state_ref->{LAST_WORD_USED} = $bin_array[1];
+
+  if ($state_ref->{LAST_WORD_USED} > $state_ref->{MAX_SIZE_AVAIL}) {
+    my $msg = "Program(s) size of final state file exceeds maximum allowed in configuration: 0x"
+            . dec2hex4($state_ref->{LAST_WORD_USED}) . " > 0x" . dec2hex4($state_ref->{MAX_SIZE_AVAIL}) . ".";
+    die_msg(this_function_script((caller(0))[3]), $msg);
+  }
+
+  # Copy the assembled output to the new array. We need to add 2 extra words because we need
+  # to account for the MaxSizeAvail and LastWordUsed.
+  for (my $k = 0; $k < $state_ref->{LAST_WORD_USED}+2; $k++) {
+    $new_state_words[$k] = $bin_array[$k];
+  }
+
+  # Copy the actual values back into the array.
+  $new_state_words[0] = $state_ref->{MAX_SIZE_AVAIL};
+  $new_state_words[1] = $state_ref->{LAST_WORD_USED};
+
+  # Copy the original state.
+  my @old_state = @{$state_ref->{STATE}};
+  foreach (@old_state) {
+    push @new_state_words, $_;
+  }
+
+  # Calculate and insert the final CRC. This one covers the entire state area.
+  my $crc = calc_crc16(@new_state_words);
+  push @new_state_words, $crc;
+
+  write_bin($output_file, @new_state_words);
+
+#  debug_msg(this_function_script((caller(0))[3]), "Assembling final catalogue into \"$output_file\"") if $debug > 0;
+  return;
+} # rebuild_state_file
 
 
 #######################################################################
@@ -689,10 +872,79 @@ sub show_catalogue {
 
 #######################################################################
 #
+# Compute a CRC16 over the stream of bytes. We have convert the word array to
+# a byte array to do this.
+#
+sub calc_crc16 {
+  my @byteArray = wordArray2byteArray(@_);
+  my $crc = $CRC_INITIALIZER;
+  foreach (@byteArray) {
+    $crc = (($crc >> 8) & 0xFFFF) | (($crc << 8) & 0xFFFF);
+    $crc ^= $_;
+    $crc ^= ($crc & 0xFF) >> 4;
+    $crc ^= ($crc << 12) & 0xFFFF;
+    $crc ^= (($crc & 0xFF) << 5) & 0xFFFF;
+  }
+  return $crc;
+} # calc_crc16
+
+
+#######################################################################
+#
+#
+#
+sub wordArray2byteArray {
+  my @wordArray = @_;
+  my (@byteArray);
+  local $_;
+  foreach (@wordArray) {
+    push @byteArray, ($_ & 0xFF); # Low byte
+    push @byteArray, (($_ >> 8) & 0xFF); # High byte
+  }
+  return @byteArray;
+} # wordArray2byteArray
+
+
+#######################################################################
+#
+#
+#
+sub write_bin {
+  my $file = shift;
+  my @bin_array = @_;
+  local $_;
+  open OUT, "> $file" or die_msg(this_function_script((caller(0))[3]), "Cannot open file '$file' for writing: $!");
+  binmode OUT;
+  foreach (@bin_array) {
+    my $bin_lo = $_ & 0xFF;
+    my $bin_hi = $_ >> 8;
+    print OUT chr($bin_lo), chr($bin_hi);
+  }
+  close OUT;
+  return;
+} # write_bin
+
+
+#######################################################################
+#
+#
+#
+sub read_bin {
+  my $file = shift;
+  open BIN, $file or die_msg(this_function_script((caller(0))[3]), "Cannot open file '$file' for reading: $!");
+  # This trick will read in the binary image in 16-bit words of the correct endian.
+  local $/;
+  my @bin_array = unpack("S*", <BIN>);
+  return @bin_array;
+} # read_bin
+
+
+#######################################################################
+#
 # Extract a print a program name by examining the LBL.
 #
 sub dbg_show_cat {
-  my $epoch = shift;
+  my $epoch = shift; # "When" this dump is occuring in the flow of processing.
   my $hash_name = shift;
   my $cat_ref = shift;
   debug_msg(this_function_script((caller(0))[3]), "Current contents of \%${hash_name} $epoch:");
@@ -709,7 +961,7 @@ sub dbg_show_cat {
 # Dump a catalogue hash to a file.
 #
 sub dbg_dump_cat {
-  my $epoch = shift;
+  my $epoch = shift; # "When" this dump is occuring in the flow of processing.
   my $file = shift;
   my $hash_name = shift;
   my $cat_ref = shift;
@@ -728,6 +980,42 @@ sub dbg_dump_cat {
 
 #######################################################################
 #
+# Dump a summary of the state hash.
+#
+sub dbg_show_state {
+  my $epoch = shift; # "When" this dump is occuring in the flow of processing.
+  my $hash_name = shift;
+  my $hash_ref = shift;
+  my $msg = "";
+  debug_msg(this_function_script((caller(0))[3]), "Contents of ${hash_name} $epoch");
+
+  $msg = "  Max size available: " . $hash_ref->{MAX_SIZE_AVAIL} . " (0x" . dec2hex4($hash_ref->{MAX_SIZE_AVAIL}) . ")";
+  debug_msg(this_function_script((caller(0))[3]), $msg);
+
+  $msg = "  Last word used:     " . $hash_ref->{LAST_WORD_USED} . " (0x" . dec2hex4($hash_ref->{LAST_WORD_USED}) . ")";
+  debug_msg(this_function_script((caller(0))[3]), $msg);
+
+  $msg = "  Original CRC:       " . $hash_ref->{ORG_CRC} . " (0x" . dec2hex4($hash_ref->{ORG_CRC}) . ")";
+  debug_msg(this_function_script((caller(0))[3]), $msg);
+
+  $msg = "  State start loc:    " . $hash_ref->{STATE_START} . " (0x" . dec2hex4($hash_ref->{STATE_START}) . ")";
+  debug_msg(this_function_script((caller(0))[3]), $msg);
+
+  $msg = "  State end loc:      " . $hash_ref->{STATE_END} . " (0x" . dec2hex4($hash_ref->{STATE_END}) . ")";
+  debug_msg(this_function_script((caller(0))[3]), $msg);
+
+  $msg = "  Source length:      " . scalar @{$hash_ref->{SRC}};
+  debug_msg(this_function_script((caller(0))[3]), $msg);
+  if ($debug > 2) {
+    print join "\n", @{$hash_ref->{SRC}};
+  }
+
+  return;
+} # dbg_show_state
+
+
+#######################################################################
+#
 # Extract a print a program name by examining the LBL.
 #
 sub print_prog_name {
@@ -739,6 +1027,12 @@ sub print_prog_name {
   if ($prog_line =~ /^\s*\*{0,}LBL\'(.+)\'/) {
     $prog_name = $1;
     print "${leader}Source: $src_id, Program name: $prog_name, Line number: $ln\n";
+  } elsif ($prog_line =~ /^\s*END(\s+|$)/) {
+    if ($debug or $quiet) {
+      print "${leader}Source: $src_id, Program name: --Bare END--, Line number: $ln\n";
+    } else {
+      warn_msg(this_function_script((caller(0))[3]), "Appears to be a NULL program. First line of propram was 'END'.") unless $quiet and not $debug;
+    }
   } else {
     die_msg(this_function_script((caller(0))[3]), "First line of propram was not a correctly formatted LBL: '$prog_line'");
   }
@@ -795,6 +1089,21 @@ sub debug_msg {
   $msg .= " $text";
   print "$msg\n";
 } # debug_msg
+
+
+#######################################################################
+#
+# Convert a decimal number to 4-digit hex string
+#
+sub dec2hex4 {
+  my $dec = shift;
+  my $hex_str = sprintf "%04X", $dec;
+  return ( $hex_str );
+} # dec2hex4
+
+sub d2h { # Quickie version for use with Perl debugger.
+  return dec2hex4(@_);
+} # d2h
 
 
 #######################################################################
@@ -882,11 +1191,23 @@ sub get_options {
     }
 
     elsif( $arg eq "-f" ) {
-      $force_lib_overwrite = 1;
+      $out_libfile = $in_libfile;
+    }
+
+    elsif( ($arg eq "-state") or ($arg eq "-s") ) {
+      $state_file = 1;
+    }
+
+    elsif( ($arg eq "-conv") or ($arg eq "-s2f") ) {
+      $conv_state2flash = 1;
+    }
+
+    elsif( ($arg eq "-check_crc") or ($arg eq "-cc") ) {
+      $chk_crc = 1;
     }
 
     elsif( $arg eq "-q" ) {
-      $quite = 1;
+      $quiet = 1;
       $debug = 0;
     }
 
@@ -914,14 +1235,20 @@ sub get_options {
   #----------------------------------------------
   # Check the sanity of the command line arguments.
 
-  # See if nothing is being asked to be done.
+  if ($state_file and not $in_libfile) {
+    warn "ERROR: Cannot create a state file/library from scratch. Can only modify one.\n";
+    die  "       Enter '$script_name -h' for help.\n";
+  }
+
+  # See if nothing is being asked to be done. This is not really an error, so no loud
+  # admonishments, just a helpful indication.
   if ((not @new_srcs and not @rm_progs and not $out_libfile and not $in_libfile)
    or (not @new_srcs and not @rm_progs and not $out_libfile and $in_libfile and not $gen_cat)) {
     print_version();
     die "Enter '$script_name -h' for help.\n";
   }
 
-  unless ($out_libfile and not $force_lib_overwrite or (not @new_srcs and not @rm_progs)) {
+  unless ($out_libfile or (not @new_srcs and not @rm_progs)) {
     warn "ERROR: Must enter an output file name in for recieving binary library (-olib SomeFileName).\n";
     warn "       or use the force-override switch (-f).\n";
     die  "       Enter '$script_name -h' for help.\n";

@@ -63,6 +63,7 @@ my @files;
 
 my $prt_step_num = 1;
 my $show_catalogue = 0;
+my $show_targets = 0;
 
 # These instructions are eligible for use with the symbolic label. They all can take a symbolic label
 # which will eventualy be replaced with a numeric LBL. The value in the hash means:
@@ -196,13 +197,17 @@ foreach my $file (@files) {
 }
 
 my @end_groups;
-if ($v3_mode) {
+if ($v3_mode and not $xrom_mode) {
   # Split the lines into an array of array references based on END.
   @end_groups = split_END(@src);
 } else {
-  # If v3 mode is not on, fake it by pushing the reference to the single,
-  # unified source onto the group. This way only one source will be processed
-  # and it will behave as it did originally.
+  # If v3 mode is not on or we are in XROM mode, fake it by pushing the reference
+  # to the single, unified source onto the group. This way only one source will be
+  # processed and it will behave as it did originally.
+  #
+  # For XROM mode, are looking to avoid forcing an END be added to the file. However,
+  # the limitation is that we can only ever process a single file in this mode. Not
+  # an issue for XROM.
   @end_groups = ();
   push @end_groups, \@src;
 }
@@ -220,6 +225,7 @@ foreach (@end_groups) {
   preprocessor();
   display_steps("");
   show_LBLs() if $show_catalogue;
+  show_targets() if $show_targets;
 }
 
 #######################################################################
@@ -1653,6 +1659,10 @@ sub get_options {
       $show_catalogue = 1;
     }
 
+    elsif( $arg eq "-targets" ) {
+      $show_targets = 1;
+    }
+
     elsif( $arg eq "-renum" ) {
       $renumber_steps = 1;
     }
@@ -1687,12 +1697,6 @@ sub get_options {
     warn "ERROR: Must enter at least one file to process.\n";
     die  "       Enter '$script_name -h' for help.\n";
   }
-
-  if ($xrom_mode) {
-    warn "ERROR: XROM mode is currently unavailable in '$script_name'.\n";
-    die  "       Enter '$script_name -h' for help.\n";
-  }
-
 
   return;
 } # get_options
