@@ -1975,7 +1975,7 @@ static int process_status(const keycode c) {
 static int is_label_or_end_at(unsigned int pc) {
 	const unsigned int op = getprog(pc);
 
-	return !isXROM(pc) && (op == (OP_NIL | OP_END) || (isDBL(op) && opDBL(op) == DBL_LBL));
+	return op == (OP_NIL | OP_END) || (isDBL(op) && opDBL(op) == DBL_LBL);
 }
 
 static unsigned int advance_to_next_label(unsigned int pc) {

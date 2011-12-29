@@ -18,7 +18,7 @@
 #define __XROM_H__
 
 #include "xeq.h"
-
+#include "xrom_labels.h"
 
 /* Entry points */
 #define ENTRY_SIGMA	99	/* Same order: as RARG_SUM, RARG_PROD, RARG_SOLVE, RARG_INTG */
