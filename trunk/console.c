@@ -232,6 +232,7 @@ static const struct {
         XL(ENTRY_SETIND, "Entry: Set Indian locale")
         XL(ENTRY_SETCHN, "Entry: Set Chinese locale")
         XL(ENTRY_SETJAP, "Entry: Set Japanese locale")
+	XL(ENTRY_WHO, "Entry: WHO")
 #undef XL
 #define XE(n, s)	X(ERROR, n, s)
 	XE(ERR_DOMAIN, "Error: Domain Error")
