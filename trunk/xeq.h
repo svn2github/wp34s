@@ -771,6 +771,9 @@ enum nilop {
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
 
+#ifdef XROM_COMMANDS
+	OP_XROM_IN,
+#endif
 	NUM_NILADIC	// Last entry defines number of operations
 };
 
@@ -851,6 +854,10 @@ enum rarg {
 
 	RARG_LOCR,
 	RARG_REGS,
+
+#ifdef XROM_COMMANDS
+	RARG_XROM_OUT,
+#endif
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -1007,6 +1014,7 @@ extern int err(const enum errors);
 extern int warn(const enum errors);
 extern const char *pretty(unsigned char);
 extern void prettify(const char *in, char *out);
+extern int num_arg_digits(int);
 
 extern const char *get_cmdline(void);
 
@@ -1274,6 +1282,8 @@ extern void cmdlocr(unsigned int arg, enum rarg op);
 extern void cmdlpop(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void cmdregs(unsigned int arg, enum rarg op);
 extern void cmdxlocal(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void cmdxin(REGISTER *, REGISTER *, enum nilop);
+extern void cmdxout(unsigned int, enum rarg);
 
 extern int not_running(void);
 extern void set_running_off_sst(void);

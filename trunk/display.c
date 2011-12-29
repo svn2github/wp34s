@@ -1291,7 +1291,6 @@ static void set_annunciators(void)
 	dot(RPN, ShowRPN >= 1 && ! Running);
 }
 
-
 /*
  *  Update the display
  */
@@ -1366,7 +1365,7 @@ void display(void) {
 			*bp++ = '\021';
 			*bp++ = '_';
 		} else {
-			const int maxdigits = State2.ind || argcmds[CmdBase].lim > 10 ? 2 : 1;
+			const int maxdigits = State2.ind ? 2 : num_arg_digits(CmdBase);
 			if (State2.local)
 				*bp++ = '.';
 			if (State2.numdigit > 0)

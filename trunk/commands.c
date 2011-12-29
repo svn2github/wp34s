@@ -652,6 +652,11 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
+
+#ifdef XROM_COMMANDS
+	FUNC0(OP_XROM_IN,	&cmdxin,		"xIN")
+#endif
+
 #undef FUNC
 #undef FUNC0
 #undef FUNC1
@@ -753,8 +758,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_TEST_GE,	&cmdtest,				"x\012?")
 	CMDcstk(RARG_TEST_ZEQ,	&cmdztest,				"\024x=?")
 	CMDcstk(RARG_TEST_ZNE,	&cmdztest,				"\024x\013?")
-	CMD(RARG_SKIP,		&cmdskip,	100,			"SKIP")
-	CMD(RARG_BACK,		&cmdback,	100,			"BACK")
+	CMDnoI(RARG_SKIP,	&cmdskip,	255,			"SKIP")
+	CMDnoI(RARG_BACK,	&cmdback,	255,			"BACK")
 	CMDstk(RARG_DSE,	&cmdloop,				"DSE")
 	CMDstk(RARG_ISG,	&cmdloop,				"ISG")
 	CMDstk(RARG_DSL,	&cmdloop,				"DSL")
@@ -847,6 +852,10 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL,		"LocR")
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
+
+#ifdef XROM_COMMANDS
+	CMD(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
+#endif
 
 #undef CMDlbl
 #undef CMDlblnI

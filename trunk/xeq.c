@@ -4052,6 +4052,62 @@ void cmdxlocal(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	}
 }
 
+#ifdef XROM_COMMANDS
+void cmdxin(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+	if (! isXROM(state_pc())) {
+		err(ERR_ILLEGAL);
+		return;
+	}
+	if (is_intmode()) {
+		err(ERR_BAD_MODE);
+		return;
+	}
+
+	cmdxlocal(NULL, NULL, OP_XLOCAL);
+	if (is_dblmode())
+		set_user_flag(LOCAL_FLAG_BASE + MAX_LOCAL_DIRECT - 1);
+	op_double(NULL, NULL, OP_DBLON);
+	cmdstostk(LOCAL_REG_BASE + MAX_LOCAL_DIRECT - 4, RARG_STOSTK);
+}
+
+void cmdxout(unsigned int arg, enum rarg op) {
+	const int lastX = arg & 0x40;
+	const int complex = arg & 0x80;
+	const int pop = arg & 0007;
+	const int push = (arg >> 3) & 0007;
+
+	if (! isXROM(state_pc() || pop > 4 || push > 4)) {
+		err(ERR_ILLEGAL);
+		return;
+	}
+	if (is_intmode()) {
+		err(ERR_BAD_MODE);
+		return;
+	}
+
+	if (complex)
+		set_was_complex();
+/*
+>>       restore stack
+*/
+	if (lastX) {
+		if (complex) {
+			setlastXY();
+		} else {
+			setlastX();
+		}
+	}
+/*
+>>       consume ccc items from stack
+>>       push ppp items from internal stack to saved stack
+*/
+	if (get_user_flag(LOCAL_FLAG_BASE + MAX_LOCAL_DIRECT - 1))
+		op_double(NULL, NULL, OP_DBLOFF);
+
+	do_rtn(0);
+}
+#endif
+
 /*
  *  Undo the effect of LOCL by popping the current local frame.
  *  Needs to be executed from the same level that has established the frame.

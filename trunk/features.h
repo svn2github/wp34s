@@ -26,6 +26,9 @@
 // Rudimentary double precision mode, mainly for XROM use
 #define INCLUDE_DOUBLE_PRECISION
 
+// Push commands into XROM instead of being in C
+#define XROM_COMMANDS
+
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
 // #define INCLUDE_STOPWATCH
@@ -137,6 +140,9 @@
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
+#if defined(XROM_COMMANDS) && ! defined(INCLUDE_DOUBLE_PRECISION)
+#define INCLUDE_DOUBLE_PRECISION
+#endif
 
 #if defined(INCLUDE_COMPLEX_ZETA) && ! defined(INCLUDE_ZETA)
 /* Complex zeta implies real zeta */

@@ -150,6 +150,18 @@ static const char *prt_conv(unsigned int arg, char *instr) {
 }
 
 
+/* The number of argument digits needed for a command */
+int num_arg_digits(int cmd) {
+	if (argcmds[cmd].lim <= 10)
+		return 1;
+	if (argcmds[cmd].lim <= 100)
+		return 2;
+	if (argcmds[cmd].stckreg)
+		return 2;
+	return 3;
+}
+
+
 /* Commands that take an argument */
 static const char *prt_rargs(const opcode op, char *instr) {
 	unsigned int arg = op & RARG_MASK;
@@ -159,8 +171,13 @@ static const char *prt_rargs(const opcode op, char *instr) {
 	char *p;
 	int n = 2;
 
+	if (! argcmds[cmd].indirectokay) {
+		if (ind) arg += RARG_IND;
+		ind = 0;
+	}
+
 	if (cmd == RARG_ALPHA) {
-		*scopy(instr, "\240 ") = arg + (ind?RARG_IND:0);
+		*scopy(instr, "\240 ") = arg;
 	} else if (cmd >= num_argcmds || argcmds[cmd].cmd == NULL)
 		return "???";
 	else if (!ind) {
@@ -190,8 +207,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 				*p = arg - 100 + 'A';
 			}
 			else {
-				if (argcmds[cmd].lim < 10)
-					n = 1;
+				n = num_arg_digits(cmd);
 				goto print_reg;
 			}
 		}
@@ -204,7 +220,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		if (arg >= regX_idx && arg <= regK_idx && (ind || argcmds[cmd].stckreg))
 			*p = REGNAMES[arg-regX_idx];
 		else {
-			if (arg > regK_idx) {
+			if (arg > regK_idx && argcmds[cmd].indirectokay) {
 				arg -= regK_idx + 1;
 				*p++ = '.';
 			}

@@ -704,6 +704,10 @@ static s_opcode internal_catalogue[] = {
 	//NILIC(OP_SOLVESTEP,	"SLVS")
 	//NILIC(OP_GSBuser,	"XEQUSR")
 	//NILIC(OP_POPUSR,	"POPUSR")
+#ifdef XROM_COMMANDS
+	NILIC(OP_XROM_IN,	"xIN")
+	RARGCMD(RARG_XROM_OUT,	"xOUT")
+#endif
 };
 #endif
 
