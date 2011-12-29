@@ -294,7 +294,11 @@ extern TStateWhileOn StateWhileOn;
  *  A private set of registers for non recursive, non interruptible XROM code
  *  They are addressed as local registers from .00 to .15
  */
+#ifdef INCLUDE_DOUBLE_PRECISION
+#define NUMXREGS 32
+#else
 #define NUMXREGS 16
+#endif
 typedef struct _xrom_local
 {
 	decimal64 _regs[NUMXREGS];

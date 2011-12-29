@@ -1029,10 +1029,11 @@ static int process_arrow(const keycode c) {
  */
 static int gtodot_digit(const int n) {
 	const int val = State2.digval * 10 + n;
+	const int lib = nLIB(state_pc());
 
-	if (val > sizeLIB(nLIB(state_pc())) / 10)
+	if (val > sizeLIB(lib) / 10)
 		return val;
-	if (++State2.numdigit == 4)
+	if (++State2.numdigit == 3 + (lib & 1))
 		return val;
 	State2.digval = val;
 	return -1;
@@ -1974,7 +1975,7 @@ static int process_status(const keycode c) {
 static int is_label_or_end_at(unsigned int pc) {
 	const unsigned int op = getprog(pc);
 
-	return op == (OP_NIL | OP_END) || (isDBL(op) && opDBL(op) == DBL_LBL);
+	return !isXROM(pc) && (op == (OP_NIL | OP_END) || (isDBL(op) && opDBL(op) == DBL_LBL));
 }
 
 static unsigned int advance_to_next_label(unsigned int pc) {
@@ -2019,14 +2020,14 @@ static int process_labellist(const keycode c) {
 	const int opcode = getprog(pc);
 	const int label = isDBL(opcode) ? (getprog(pc) & 0xfffff0ff) : 0;
 #ifdef REALBUILD
-	const int direct = State2.runmode && ! isXROM(pc);
+	const int direct = State2.runmode /* && ! isXROM(pc) */;
 #else
-	const int direct = State2.runmode && (State2.trace ||! isXROM(pc));
+	const int direct = State2.runmode /* && (State2.trace ||! isXROM(pc)) */;
 #endif
 	const enum shifts shift = reset_shift();
 	int op = STATE_UNFINISHED;
 
-	if (n <= REGION_XROM) {
+	if (n < REGION_XROM) {
 		// Digits take you to that segment
 		pc = addrLIB(1, n);
 		if (! is_label_or_end_at(pc))
@@ -2048,16 +2049,20 @@ static int process_labellist(const keycode c) {
 		break;
 
 	case K24 | (SHIFT_F << 8):		// CLP
+#if 0
 		if (isXROM(pc))
 			return STATE_UNFINISHED;
+#endif
 		set_pc(pc);
 		op = (OP_NIL | OP_CLPROG);
 		break;
 
 	case K10:				// STO
 	case K11:				// RCL
+#if 0
 		if (isXROM(pc))
 			return STATE_UNFINISHED;
+#endif
 		set_pc(pc);
 		op = c == K10 ? (OP_NIL | OP_PSTO) : (OP_NIL | OP_PRCL);
 		State2.runmode = 1;
@@ -2084,8 +2089,10 @@ static int process_labellist(const keycode c) {
 		break;
 
 	case K63 | (SHIFT_H << 8):		// P/R
+#if 0
 		if (isXROM(pc))
 			return STATE_UNFINISHED;
+#endif
 		set_pc(pc);
 		State2.runmode = 0;
 		break;

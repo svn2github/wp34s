@@ -47,11 +47,18 @@ static const char S7_ERROR[] = "Error";		/* Default lower line error display */
 static const char S7_NaN[] = "not nuMmerIc";	/* Displaying NaN in lower line */
 static const char S7_INF[] = "infinity";	/* Displaying infinity in lower line */
 
-static const char S7_STEP[] = " Step ";		/* Step marker in program mode (lower line) */
+static const char S7_STEP[] = "Step ";		/* Step marker in program mode (lower line) */
 
 static const char S7_fract_EQ[] = " = ";	/* Exponent in fraction mode indicates low, equal or high */
 static const char S7_fract_LT[] = " Lt";
 static const char S7_fract_GT[] = " Gt";
+
+static const char libname[][5] = {
+	"rAMm", "Lib ", "Bup ",
+#ifndef REALBUILD
+	"roMm"
+#endif
+};
 
 
 /* Table of error messages.
@@ -1226,18 +1233,13 @@ static void show_status(void) {
 
 /* Display the list of alpha labels */
 static void show_label(void) {
-	char buf[16];
+	char buf[15];
 	unsigned short int pc = State2.digval;
 	unsigned int op = getprog(pc);
+	const int n = nLIB(pc);
 
 	set_status(prt((opcode)op, buf));
-	if (isLIB(pc)) {
-		xset(buf, '\0', 16);
-		scopy(buf, "Lib ");
-		num_arg_0(buf + 4, nLIB(pc), 1);
-		set_digits_string(buf, 0);
-	} else
-		set_digits_string("rAMm", 0);
+	set_digits_string(libname[n], 0);
 }
 
 /* Display a list of register contents */
@@ -1349,10 +1351,11 @@ void display(void) {
 			*bp++ = '\235';
 		set_status(buf);
 	} else if (State2.gtodot) {
+		const int n = 3 + (nLIB(state_pc()) & 1); // Number of digits to display/expect
 		bp = scopy_char(bp, argcmds[RARG_GTO].cmd, '.');
 		if (State2.numdigit > 0)
 			bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
-		for (i=State2.numdigit; i<4; i++)
+		for (i=State2.numdigit; i<n; i++)
 			*bp++ = '_';
 		set_status(buf);
 	} else if (State2.rarg) {
@@ -1514,17 +1517,12 @@ nostk:	show_flags();
 		} else {
 			unsigned int upc = user_pc();
 			unsigned int pc = state_pc();
+			const int n = nLIB(pc);
 			xset(buf, '\0', sizeof(buf));
-			if (isLIB(pc)) {
-				const int n = nLIB(pc);
-				scopy(buf, "Lib ?-");
-				num_arg_0(buf + 4, n, 1);
-				num_arg_0(buf + 6, upc, n == REGION_BACKUP ? 3 : 4);
-			} else {
-				set_exp(ProgFree, 1, NULL);
-				num_arg_0(scopy_spc(buf, S7_STEP), upc, 3);
-			}
-			set_digits_string(buf, 0);
+			set_exp(ProgFree, 1, NULL);
+			num_arg_0(scopy_spc(buf, n == 0 ? S7_STEP : libname[n]), 
+				  upc, 3 + (n & 1));  // 4 digits in ROM and Library
+			set_digits_string(buf, SEGS_PER_DIGIT);
 		}
 	}
 	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || State2.disp_as_alpha)

@@ -234,6 +234,7 @@ maxlibsteps=4094
 0x01c1	cmd	DBL?
 0x01c2	cmd	[pi]
 0x01c3	cmd	[cmplx][pi]
+0x01c4	cmd	xIN
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -949,8 +950,8 @@ maxlibsteps=4094
 0x5400	arg	x[>=]?	max=212,indirect,stack
 0x5500	arg	[cmplx]x=?	max=211,indirect,stack,complex
 0x5600	arg	[cmplx]x[!=]?	max=211,indirect,stack,complex
-0x5700	arg	SKIP	max=100,indirect
-0x5800	arg	BACK	max=100,indirect
+0x5700	arg	SKIP	max=255
+0x5800	arg	BACK	max=255
 0x5900	arg	DSE	max=212,indirect,stack
 0x5a00	arg	ISG	max=212,indirect,stack
 0x5b00	arg	DSL	max=212,indirect,stack
@@ -1091,6 +1092,7 @@ maxlibsteps=4094
 0x9900	arg	MSG	max=24,indirect
 0x9a00	arg	LocR	max=100,indirect
 0x9b00	arg	REGS	max=100,indirect
+0x9c00	arg	xOUT	max=255,indirect
 0xf000	mult	LBL
 0xf100	mult	LBL?
 0xf200	mult	XEQ
