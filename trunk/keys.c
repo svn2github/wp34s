@@ -1948,7 +1948,7 @@ static int process_status(const keycode c) {
 	}
 	else if (c == K50) {
 		if (++n > max)
-			n = 0;
+			n = -2;
 	}
 	else if (c == K24 /* || c == K60 */) {
 		State2.status = 0;

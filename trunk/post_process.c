@@ -31,9 +31,9 @@ unsigned char buffer[ ( 64 + 128 ) * 1024 ];
 struct _command_info *info = (struct _command_info *) buffer;
 #define BUFF(p) (buffer + (int)(p) - 0xf0000)
 #define ADJUST(p,type) (info->p = (struct type *) BUFF(info->p))
-#define UPDATE(p,cmp) \
+#define UPDATE(p,cmp, max) \
 	if ( info->p != cmp ) { \
-		fprintf( stderr, "Data error in line %d, i=%d\n", __LINE__, i ); \
+		fprintf( stderr, "Data error in line %d, i=%d/%d (%4x)\n", __LINE__, i, max, info->p ); \
 		return 2; \
 	} else info->p = (unsigned short) ( fp >> 1 )
 
@@ -89,37 +89,37 @@ int main(int argc, char *argv[])
 	 */
 	for ( i = 0; i < NUM_MONADIC; ++i ) {
 		fp = (int) info->p_monfuncs_ct[ i ].mondreal;
-		UPDATE( p_monfuncs[ i ].mondreal, 0xaa55 );
+		UPDATE( p_monfuncs[ i ].mondreal, 0xaa55, NUM_MONADIC );
 		fp = (int) info->p_monfuncs_ct[ i ].mondcmplx;
-		UPDATE( p_monfuncs[ i ].mondcmplx, 0x55aa );
+		UPDATE( p_monfuncs[ i ].mondcmplx, 0x55aa, NUM_MONADIC );
 		fp = (int) info->p_monfuncs_ct[ i ].monint;
-		UPDATE( p_monfuncs[ i ].monint, 0xa55a );
+		UPDATE( p_monfuncs[ i ].monint, 0xa55a, NUM_MONADIC );
 	}
 	for ( i = 0; i < NUM_DYADIC; ++i ) {
 		fp = (int) info->p_dyfuncs_ct[ i ].dydreal;
-		UPDATE( p_dyfuncs[ i ].dydreal, 0xaa55 );
+		UPDATE( p_dyfuncs[ i ].dydreal, 0xaa55, NUM_DYADIC );
 		fp = (int) info->p_dyfuncs_ct[ i ].dydcmplx;
-		UPDATE( p_dyfuncs[ i ].dydcmplx, 0x55aa );
+		UPDATE( p_dyfuncs[ i ].dydcmplx, 0x55aa, NUM_DYADIC );
 		fp = (int) info->p_dyfuncs_ct[ i ].dydint;
-		UPDATE( p_dyfuncs[ i ].dydint, 0xa55a );
+		UPDATE( p_dyfuncs[ i ].dydint, 0xa55a, NUM_DYADIC );
 	}
 	for ( i = 0; i < NUM_TRIADIC; ++i ) {
 		fp = (int) info->p_trifuncs_ct[ i ].trireal;
-		UPDATE( p_trifuncs[ i ].trireal, 0xaa55 );
+		UPDATE( p_trifuncs[ i ].trireal, 0xaa55, NUM_TRIADIC );
 		fp = (int) info->p_trifuncs_ct[ i ].triint;
-		UPDATE( p_trifuncs[ i ].triint, 0xa55a );
+		UPDATE( p_trifuncs[ i ].triint, 0xa55a, NUM_TRIADIC );
 	}
 	for ( i = 0; i < NUM_NILADIC; ++i ) {
 		fp = (int) info->p_niladics_ct[ i ].niladicf;
-		UPDATE( p_niladics[ i ].niladicf, 0xaa55 );
+		UPDATE( p_niladics[ i ].niladicf, 0xaa55, NUM_NILADIC );
 	}
 	for ( i = 0; i < NUM_RARG; ++i ) {
 		fp = (int) info->p_argcmds_ct[ i ].f;
-		UPDATE( p_argcmds[ i ].f, 0xaa55 );
+		UPDATE( p_argcmds[ i ].f, 0xaa55, NUM_RARG );
 	}
 	for ( i = 0; i < NUM_MULTI; ++i ) {
 		fp = (int) info->p_multicmds_ct[ i ].f;
-		UPDATE( p_multicmds[ i ].f, 0xaa55 );
+		UPDATE( p_multicmds[ i ].f, 0xaa55, NUM_MULTI );
 	}
 
 	/*

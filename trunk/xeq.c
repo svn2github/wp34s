@@ -3968,7 +3968,8 @@ void set_running_on() {
 	GoFast = 1;
 	set_running_on_sst();
 	LastKey = 0;
-	error_message(ERR_NONE);
+	if (!isXROM(state_pc()))
+		error_message(ERR_NONE);
 	dot(BEG, 0);
 	finish_display();
 }

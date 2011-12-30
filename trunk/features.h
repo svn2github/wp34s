@@ -23,11 +23,14 @@
 /*
  *  Select optional features here
  */
-// Rudimentary double precision mode, mainly for XROM use
+// Enable double precision mode
 #define INCLUDE_DOUBLE_PRECISION
 
+#if !defined(REALBUILD) && !defined(POST_PROCESSING)
 // Push commands into XROM instead of being in C
+// postpone this define for the real thing until xIN and xOUT are working
 #define XROM_COMMANDS
+#endif
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
