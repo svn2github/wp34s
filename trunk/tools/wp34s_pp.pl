@@ -58,6 +58,9 @@ my $longest_label = 0; # Recorded for pretty print purposes.
 my $NUM_TARGET_LABEL_COLONS = 2;
 
 my $xrom_mode = 0;
+my %xlbl = (); # keys LBL with ASCII label, and WORD with 0-based word number.
+my $DEFAULT_XLBL_FILE = "xrom_labels.h";
+my $xlbl_file = $DEFAULT_XLBL_FILE;
 
 my @files;
 
@@ -228,7 +231,33 @@ foreach (@end_groups) {
   show_targets() if $show_targets;
 }
 
+
+# If we are in XROM mode, write a header file with any XLBL labels we find. If
+# no XLBL labels are found, write the header file anyway since some other C-file is
+# probably trying to include it.
+if ($xrom_mode) {
+  open XLBL, "> $xlbl_file" or die "ERROR: Cannot open XLBL header file '$xlbl_file' for writing: $!\n";
+  print XLBL "#ifndef XLBL_LABELS_H\n";
+  print XLBL "#define XLBL_LABELS_H\n\n";
+  my $longest_xlabel = 0;
+  for my $xlabel (sort keys %xlbl) {
+    $longest_xlabel = length $xlabel if length($xlabel) > $longest_xlabel;
+  }
+  for my $xlabel (sort keys %xlbl) {
+    print XLBL "#define XROM_${xlabel}" . " " x ($longest_xlabel - length($xlabel) + 3) . "${xlbl{$xlabel}}\n";
+  }
+  print XLBL "\n";
+  print XLBL "#endif // XLBL_LABELS_H\n";
+  close XLBL;
+}
+
+
+
+
 #######################################################################
+#
+# Start of subroutine suite.
+#
 #######################################################################
 #
 # Execute the preprocessor steps on the lines in the global @lines array.
@@ -508,6 +537,7 @@ sub add_LBL_if_required {
     adjust_targets($target_step);
     adjust_branches($target_step);
     adjust_branch_array($target_step);
+    adjust_xlbls($target_step) if $xrom_mode;
 
     # If the label is required to be inserted before this step, the step is going to be incremented
     # to compensate for this.
@@ -532,6 +562,7 @@ sub load_cleaned_source {
   @lines = redact_comments(@lines);
   @lines = remove_blank_lines(@lines);
 #  @lines = strip_strip_numbers(@lines);
+  @lines = extract_xlbls(@lines) if $xrom_mode;
   return @lines;
 } # load_cleaned_source
 
@@ -1309,7 +1340,7 @@ sub adjust_labels_used {
 #######################################################################
 #
 # Increment any step associated with an existing target if that step is past the
-# point at which a step was inserted.
+# point at which a new step was inserted.
 #
 sub adjust_targets {
   my $step = shift;
@@ -1327,7 +1358,7 @@ sub adjust_targets {
 #######################################################################
 #
 # Increment any step associated with an existing label if that step is past the
-# point at which a step was inserted. This requries new keys and to avoid colliding
+# point at which a new step was inserted. This requries new keys and to avoid colliding
 # with existing keys, just recreate the hash.
 #
 sub adjust_branches {
@@ -1355,8 +1386,7 @@ sub adjust_branches {
 #######################################################################
 #
 # Increment any step associated with an existing label if that step is past the
-# point at which a step was inserted. This requries new keys and to avoid colliding
-# with existing keys, just recreate the hash.
+# point at which a new step was inserted.
 #
 sub adjust_branch_array {
   my $step = shift;
@@ -1370,6 +1400,25 @@ sub adjust_branch_array {
   show_branches_remaining() if $debug;
   return;
 } # adjust_branch_array
+
+
+#######################################################################
+#
+# Increment any step associated with an existing XLBL if that step is past the
+# point at which a new step was inserted.
+#
+# XXX Note that since the XLBL points are 0-based, they have to be
+#     pre-incremented before the test is made.
+#
+sub adjust_xlbls {
+  my $step = shift;
+  for my $xlabel (sort keys %xlbl) {
+    if (($xlbl{$xlabel} + 1) > $step) {
+      $xlbl{$xlabel}++;
+    }
+  }
+  return;
+} # adjust_xlbls
 
 
 #######################################################################
@@ -1480,6 +1529,40 @@ sub remove_blank_lines {
   }
   return @new_lines;
 } #remove_blank_lines
+
+
+#######################################################################
+#
+# Extract and record any XLBL pseudo op-codes. Insert into a global hash
+# using the label as the key and the 0-based line number as the data.
+# After they are processed, scrub them from the source since they are
+# treated the same as comments after that.
+#
+sub extract_xlbls {
+  my @lines = @_;
+  my (@new_lines);
+  my $line = 0; # Use a 0-based counter!
+  foreach (@lines) {
+    if (/^\s*XLBL\"(.+)\"(\s+|$)/) {
+      my $xlabel = $1;
+      if (exists $xlbl{$xlabel}) {
+        if( $debug ) {
+          print "ERROR: extract_xlbls: Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.\n";
+          show_state(__LINE__);
+          die;
+        } else {
+          die "ERROR: extract_xlbls: Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.\n";
+        }
+      } else {
+        $xlbl{$xlabel} = $line;
+      }
+      next;
+    }
+    push @new_lines, $_;
+    $line++;
+  }
+  return @new_lines;
+} # extract_xlbls
 
 
 #######################################################################
@@ -1657,6 +1740,10 @@ sub get_options {
 
     elsif( $arg eq "-cat" ) {
       $show_catalogue = 1;
+    }
+
+    elsif( $arg eq "-xlbl_file" ) {
+      $xlbl_file = shift(@ARGV);
     }
 
     elsif( $arg eq "-targets" ) {
