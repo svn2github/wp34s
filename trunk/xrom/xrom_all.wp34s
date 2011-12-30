@@ -1,3 +1,9 @@
+/* This file contains the code for the xrom commands that take label arguments
+ * and call back into user space.  These are all different to the remainder
+ * of the commands in that they perform their own stack management and never
+ * replace the user stack with the private xrom stack.
+ */
+
 /* Solve code.
  *
  * On entry the stack looks like:
