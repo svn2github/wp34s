@@ -19,7 +19,7 @@
  * 3	f(a)
  * 4	f(b)
  */
-		LBL 97				/* Entry: SOLVE */
+		LBL ENTRY_SOLVE			/* Entry: SOLVE */
 			XEQ entry
 			LocR 04			/* Need 5 registers and flags */
 			x[approx]? Y
@@ -155,7 +155,7 @@ int_zero_interval::	XEQ int_restore_limits
 			RTN
 
 
-		LBL 94					/* Entry: INTEGRATE */
+		LBL ENTRY_INTEGRATE			/* Entry: INTEGRATE */
 			XEQ entry
 			LocR 04				/* Need registers .00 to .04 */
 			SPEC?
@@ -309,7 +309,7 @@ int_restore_limits::	RCL .01
  * 2	carry for sum
  * 3	saved I
  */
-		LBL 99					/* Entry: SUMMATION */
+		LBL ENTRY_SIGMA				/* Entry: SUMMATION */
 			XEQ entry
 			LocR 03				/* Registers .00 to .03 */
 			STO .03				/* Save for LastX*/
@@ -348,7 +348,7 @@ sum_entry::		DSL .00
 			JMP sum_product_okay
 
 
-		LBL 98					/* Entry: PRODUCT */
+		LBL ENTRY_PI				/* Entry: PRODUCT */
 			XEQ entry
 			LocR 03				/* Registers .00 to .03 */
 			STO .03
@@ -398,7 +398,7 @@ sum_product_nan::	Num NaN
  * Flag use:
  * 0	second derivative
  */
-		LBL 95					/* Entry: SECOND DERIVATIVE */
+		LBL ENTRY_2DERIV			/* Entry: SECOND DERIVATIVE */
 			XEQ entry
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
@@ -489,7 +489,7 @@ deriv_6point::		RCL .01
 			JMP deriv_return
 
 
-		LBL 96					/* Entry: DERIVATIVE */
+		LBL ENTRY_DERIV				/* Entry: DERIVATIVE */
 			XEQ entry
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
@@ -630,7 +630,7 @@ deltaX::		XEQ'[delta]X'
  * 3	t
  * 4	I
  */
-		LBL 89					/* Entry: QUADRATIC SOLVER */
+		LBL ENTRY_QUAD				/* Entry: QUADRATIC SOLVER */
 			XEQ entry
 			XLOCAL				/* Registers .00 to .04 are used */
 			STOS .00
@@ -689,7 +689,7 @@ quad_fix_stack::	RCL .00
 
 /**************************************************************************/
 
-		LBL 84
+		LBL ENTRY_W1
 			XEQ entry
 			XLOCAL
 			STOS .08
@@ -735,7 +735,7 @@ LamW_NaN2::	FC? D
 		
 
 /**************************************************************************/
-		LBL 85				/* Bernoulli number Bn* = +/- Bn(2 n) */
+		LBL ENTRY_Bn_star		/* Bernoulli number Bn* = +/- Bn(2 n) */
 			XEQ entry
 			FP?
 				ERR 01
@@ -749,7 +749,7 @@ LamW_NaN2::	FC? D
 			ABS
 			JMP zeta_exit
 
-		LBL 86				/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
+		LBL ENTRY_Bn			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
 			XEQ entry
 			FP?
 				ERR 01
@@ -791,7 +791,7 @@ zeta_0::		.
  * This is the same algorithm as the C version uses, just with fewer terms and
  * with the constants computed on the fly.
  */
-		LBL 87				/* Zeta function */
+		LBL ENTRY_ZETA			/* Zeta function */
 			XEQ entry
 			XLOCAL
 			STOS .08
@@ -894,7 +894,7 @@ entry::			INTM?
 /**************************************************************************/
 /* Very minimal routine to return the next prime in sequence
  */
-		LBL 88
+		LBL ENTRY_NEXTPRIME
 			FLOOR
 			x[<=]1?
 				JMP prime_2
@@ -910,80 +910,3 @@ prime_loop::			INC X
 prime_2::		CLx
 			2
 			RTN
-
-/**************************************************************************/
-/* Locale setting commands
- */
-		LBL 83		// European
-			XEQ locale_common
-			RDX,
-			JG1582
-			RTN
-		LBL 82		// UK/Australia
-			XEQ locale_common
-			12H
-			RTN
-		LBL 81		// USA
-			XEQ locale_common
-			12H
-			M.DY
-			RTN
-		LBL 80		// India
-			XEQ locale_common
-			E3OFF
-			RTN
-		LBL 79		// China
-			XEQ locale_common
-			E3OFF
-			Y.MD
-			RTN
-		LBL 78		// Japan
-			XEQ locale_common
-			Y.MD
-			RTN
-
-locale_common::		RDX.
-			E3ON
-			24H
-			JG1752
-			D.MY
-			RTN
-
-/**************************************************************************/
-
-		LBL 77
-			CL[alpha]
-			XEQ who_wp
-			"by"
-			XEQ who_show
-			"Pauli"
-			XEQ who_show
-			"Walter"
-			XEQ who_show
-			"Marcus"
-			XEQ who_show
-			"Neil"
-			XEQ who_show
-			"& more"
-			XEQ who_show
-			XEQ who_wp
-			VERS
-			RTN
-
-who_wp::		"WP 34S"
-
-who_show::		[alpha]VIEW
-			PSE 08
-			CL[alpha]
-			RTN
-/*
-		LBL'TST'
-			XLOCAL
-			DBL?
-			SF .15
-			DBLON
-			[cmplx]RCL J
-			FC? .15
-			DBLOFF
-			RTN
-*/

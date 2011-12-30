@@ -216,6 +216,7 @@ all: qtobjs
 qtobjs: $(DIRS) $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) $(LDCTRL) Makefile
 else
 all: calc
+	echo XXXX$(XROM)XXXX
 calc: $(DIRS) $(OUTPUTDIR)/calc
 endif
 endif

@@ -1,0 +1,29 @@
+/**************************************************************************/
+
+		LBL ENTRY_WHO
+			CL[alpha]
+			XEQ who_wp
+			"by"
+			XEQ who_show
+			"Pauli"
+			XEQ who_show
+			"Walter"
+			XEQ who_show
+			"Marcus"
+			XEQ who_show
+			"Neil"
+			XEQ who_show
+			"& more"
+			XEQ who_show
+			XEQ who_wp
+			VERS
+			RTN
+
+who_wp::		"WP 34S"
+
+who_show::		[alpha]VIEW
+			PSE 08
+			CL[alpha]
+			RTN
+
+/**************************************************************************/
