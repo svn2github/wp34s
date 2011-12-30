@@ -620,74 +620,6 @@ deltaX::		XEQ'[delta]X'
 			RTN
 
 /**************************************************************************/
-/* A quadratic equation solver.
- * Based on code by Franz.
- *
- * Register use:
- * 0	c
- * 1	b^2 - 4ac
- * 2	2a
- * 3	t
- * 4	I
- */
-		LBL ENTRY_QUAD				/* Entry: QUADRATIC SOLVER */
-			XEQ entry
-			XLOCAL				/* Registers .00 to .04 are used */
-			STOS .00
-			RCL I
-			STO .04
-			R[v]
-
-			RCL+ X				/* 2c b a . */
-			x[<->] Z				/* a b 2c . */
-			x=0?
-				ERR 18			/* Invalid arugment error */
-			RCL+ X				/* 2a b 2c . */
-			STO .02
-			RCL Y				/* b 2a b 2c */
-			[cmplx][times]			/* b^2-4ac 2b(a+c) b 2c */
-			STO .01
-			x<0?
-				JMP quad_complex
-			[sqrt]				/* sqrt 2b(a+c) b 2c */
-			x[<->] Y				/* . sqrt b 2c */
-			DROP				/* sqrt b 2c 2c */
-			x[<->] Y				/* b sqrt 2c 2c */
-			x[>=]0?
-				[cmplx]CONJ
-			-				/* -b-sqrt 2c 2c 2c */
-                        x[!=]0?
-			STO/ Y				/* -b-sqrt 2c/(-b-sqrt) 2c 2c */
-			RCL/ .02			/* (b-sqrt)/2a 2c/(b-sqrt) 2c 2c */
-			JMP quad_fix_stack
-
-quad_complex::		ABS
-			[sqrt]				/* sqrt ? b 2c */
-			RCL/ .02			/* sqrt/2a ? b 2c */
-			RCL Z				/* b sqrt/2a ? b */
-			RCL/ .02			/* b/2a sqrt/2a ? b */
-			+/-
-			XEQ quad_fix_stack
-			TOP?
-				JMP quad_message
-			RTN+1
-
-quad_message::		CL[alpha]
-			[alpha] C
-			VW[alpha]+ X
-			RTN
-
-quad_fix_stack::	RCL .00
-			STO L				/* Push c into Last X*/
-			RCL .04
-			STO I				/* Restore I*/
-			[cmplx]x[<->] Z
-			RCL .04				/* Restore T*/
-			RCL .01				/* Preserve b^2 - 4ac*/
-			[cmplx]x[<->] Z
-			RTN
-
-/**************************************************************************/
 
 		LBL ENTRY_W1
 			XEQ entry
@@ -882,31 +814,4 @@ zeta_loop::		RCL .05
 			[times]
 			e[^x]-1
 			/
-			RTN
-
-/**************************************************************************/
-
-			/* We do not work in integer mode */
-entry::			INTM?
-				ERR 13			/* Error: bad mode error*/
-			RTN
-
-/**************************************************************************/
-/* Very minimal routine to return the next prime in sequence
- */
-		LBL ENTRY_NEXTPRIME
-			FLOOR
-			x[<=]1?
-				JMP prime_2
-			PRIME?
-				INC X
-			EVEN?
-prime_loop::			INC X
-			PRIME?
-				RTN
-			INC X
-			JMP prime_loop
-
-prime_2::		CLx
-			2
 			RTN

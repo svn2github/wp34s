@@ -1,0 +1,20 @@
+/**************************************************************************/
+/* Very minimal routine to return the next prime in sequence
+ */
+		LBL ENTRY_NEXTPRIME
+			FLOOR
+			x[<=]1?
+				JMP prime_2
+			PRIME?
+				INC X
+			EVEN?
+prime_loop::			INC X
+			PRIME?
+				RTN
+			INC X
+			JMP prime_loop
+
+prime_2::		CLx
+			2
+			RTN
+
