@@ -52,6 +52,7 @@ my $CRC_INITIALIZER = 0x5aa5;
 
 my $DEFAULT_ASM = "wp34s_asm.pl";
 my $asm_script = $DEFAULT_ASM;
+my $preproc_script = ""; # Allows pass-thru of script name to ASM.
 
 my $disasm_options = (exists $ENV{WP34S_LIB_DISASM_OPTIONS})
                    ? $ENV{WP34S_LIB_DISASM_OPTIONS} : "-s 2 -ns";
@@ -128,6 +129,14 @@ if (exists $ENV{WP34S_LIB_OS_DBG} and ($ENV{WP34S_LIB_OS_DBG} == 1)) {
   debug_msg($script_name, "script_dir        = '$script_dir'");
   debug_msg($script_name, "script_suffix     = '$script_suffix'");
 }
+
+if( $script_name =~ /\.exe$/ ) {
+  print "// NOTE: Detected running EXE version.\n" if $debug;
+  print "         Adjusting child ASM script name from '$asm_script' to " if $debug;
+  $asm_script =~ s/\.pl$/\.exe/;
+  print "'$asm_script'\n" if $debug;
+}
+
 
 my $script  = "$script_name  - $Description";
 my $usage = <<EOM;
@@ -329,7 +338,7 @@ if (@new_srcs or @rm_progs) {
           "remove_${rm_prog_name}_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
           if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
     } else {
-      warn_msg(this_function_script((caller(0))[3]), "Program to remove (\"$rm_prog_name\") does not exist in the library.");
+      warn_msg(this_function((caller(0))[3]), "Program to remove (\"$rm_prog_name\") does not exist in the library.");
     }
   }
 
@@ -388,7 +397,7 @@ if (not @new_srcs and not @rm_progs and not $conv_state2flash) {
 #
 sub disassemble_binary {
   my $file = shift;
-  debug_msg(this_function_script((caller(0))[3]), "Processing library binary for '$file'") if $debug;
+  debug_msg(this_function((caller(0))[3]), "Processing library binary for '$file'") if $debug;
   local $_;
   my @raw_src = ();
   my @src = ();
@@ -403,14 +412,14 @@ sub disassemble_binary {
 #######################################################################
 #
 # Split a disassembled listing into program segments bounded by END
-# statements. Parses these program segments into a hash of arrays references
+# statements. Parse these program segments into a hash of arrays references
 # using the program name as the key. If the program name is single quoted,
 # the quotes are part of the key name. Returns a reference to a hash.
 #
 sub catalogue_binary {
   my $src_file = shift;
   my @src = @_; # Array of 'cleaned' program lines.
-  debug_msg(this_function_script((caller(0))[3]), "Parsing listing catalogue...") if $debug;
+  debug_msg(this_function((caller(0))[3]), "Parsing listing catalogue...") if $debug;
   local $_;
   my %cat = ();
 
@@ -432,17 +441,17 @@ sub catalogue_binary {
     # This will effectively scrub any non-program from the catalogue. This would
     # include NULL programs (ie: a program consisting of only an 'END' statement).
     } else {
-      warn_msg(this_function_script((caller(0))[3]), "Removing single line program: '$first_line'") if $debug or not $quiet;
+      warn_msg(this_function((caller(0))[3]), "Removing single line program: '$first_line'") if $debug or not $quiet;
       next;
     }
 
-    debug_msg(this_function_script((caller(0))[3]), "  Found program: \"$prog_name\"") if $debug;
+    debug_msg(this_function((caller(0))[3]), "  Found program: \"$prog_name\"") if $debug;
     push @this_prog_src, $first_line;
 
     # Make sure we don't already have a duplicate. This would indicate a badly built
     # library.
     if (exists $cat{$prog_name} and $die_on_existing_duplicate) {
-      die_msg(this_function_script((caller(0))[3]), "Invalid library. Has duplicate label: \"$prog_name\".");
+      die_msg(this_function((caller(0))[3]), "Invalid library. Has duplicate label: \"$prog_name\".");
     }
 
     # Slurp up the rest of the program segment.
@@ -469,7 +478,7 @@ sub catalogue_binary {
 #
 sub parse_state_file {
   my $file = shift;
-  debug_msg(this_function_script((caller(0))[3]), "Processing state file '$file'") if $debug > 1;
+  debug_msg(this_function((caller(0))[3]), "Processing state file '$file'") if $debug > 1;
   local $_;
   my %state = ();
   my @state_file_array = read_bin($file);
@@ -489,10 +498,10 @@ sub parse_state_file {
     my $recalc_crc = calc_crc16(@state_file_array[0 .. $state{STATE_END}]);
     if ($recalc_crc != $state{ORG_CRC}) {
       my $msg = "Original CRC (0x" . dec2hex4($state{ORG_CRC}) . ") not equal to recalculated CRC (0x" . dec2hex4($recalc_crc) . ").";
-      die_msg(this_function_script((caller(0))[3]), $msg);
+      die_msg(this_function((caller(0))[3]), $msg);
     } else {
       my $msg = "Original CRC (0x" . dec2hex4($state{ORG_CRC}) . ") matches recalculated CRC (0x" . dec2hex4($recalc_crc) . ").";
-      debug_msg(this_function_script((caller(0))[3]), $msg);
+      debug_msg(this_function((caller(0))[3]), $msg);
     }
   }
 
@@ -520,11 +529,12 @@ sub prepare_new_srcs {
   my $src_list = join " ", @srcs;
 
   my $dbg_msg = "Preparing new source(s): " . join ", ", @srcs;
-  debug_msg(this_function_script((caller(0))[3]), "$dbg_msg") if $debug;
+  debug_msg(this_function((caller(0))[3]), "$dbg_msg") if $debug;
 
   my $tmp_file = gen_random_writeable_filename();
   my $cmd = $asm_script;
   my $cmd_line = "$use_pp $src_list -o $tmp_file $asm_options -lib";
+  $cmd_line .= " -pp_script $preproc_script" if $preproc_script;
   my @result = run_prog($cmd, $cmd_line);
   my @new_src = disassemble_binary($tmp_file);
   my %news_src_cat = %{catalogue_binary($tmp_file, @new_src)};
@@ -551,25 +561,25 @@ sub split_END {
   local $_;
 
   unless (@src) {
-    die_msg(this_function_script((caller(0))[3]), "Likely the assembler run failed. Halting $script_name.");
+    die_msg(this_function((caller(0))[3]), "Likely the assembler run failed. Halting $script_name.");
   }
 
   # Make sure there is an END as the last step.
   unless ($src[-1] =~ /(^|\s+)END($|\s+)/) {
-    die_msg(this_function_script((caller(0))[3]), "Invalid library ($src_file). Missing END statement as last line.");
+    die_msg(this_function((caller(0))[3]), "Invalid library ($src_file). Missing END statement as last line.");
   }
 
   # Scan through the source cutting it up into segments delimited by "END".
   my @segment = ();
   my $ln = 1; # Debug use only
   $dbg_msg = "Starting out with " . scalar @src . " lines.";
-  debug_msg(this_function_script((caller(0))[3]), $dbg_msg) if $debug > 3;
+  debug_msg(this_function((caller(0))[3]), $dbg_msg) if $debug > 3;
   while (@src) {
     my $l = shift @src;
     next if $l =~ /^\s*$/;
     next if $l =~ /^\s*\/\//;
 
-    debug_msg(this_function_script((caller(0))[3]), "New line: '$l' at line number '$ln'.") if $debug > 3;
+    debug_msg(this_function((caller(0))[3]), "New line: '$l' at line number '$ln'.") if $debug > 3;
     push @segment, $l;
 
     # Detect an END instruction and split off source group.
@@ -577,14 +587,14 @@ sub split_END {
       my @this_segment = @segment;
       push @END_segments, \@this_segment;
       @segment = ();
-      debug_msg(this_function_script((caller(0))[3]), "Found and split off an END segment at line $ln.") if $debug > 3;
+      debug_msg(this_function((caller(0))[3]), "Found and split off an END segment at line $ln.") if $debug > 3;
       $dbg_msg = "Currently there are " . scalar @END_segments . " segments.";
-      debug_msg(this_function_script((caller(0))[3]), $dbg_msg) if $debug > 3;
+      debug_msg(this_function((caller(0))[3]), $dbg_msg) if $debug > 3;
     }
     $ln++; # Debug use only
   }
   $dbg_msg = "Ended up with " . scalar @END_segments . " segments.";
-  debug_msg(this_function_script((caller(0))[3]), $dbg_msg) if $debug > 3;
+  debug_msg(this_function((caller(0))[3]), $dbg_msg) if $debug > 3;
   return @END_segments;
 } # split_END
 
@@ -598,9 +608,9 @@ sub replace_prog {
   my $prog_name = shift;
   my $prog_src_ref = shift;
   if (not exists $cat_ref->{$prog_name}) {
-    die_msg(this_function_script((caller(0))[3]), "Internal error: Program \"$prog_name\" does not exist in current library.");
+    die_msg(this_function((caller(0))[3]), "Internal error: Program \"$prog_name\" does not exist in current library.");
   }
-  debug_msg(this_function_script((caller(0))[3]), "Replacing program: \"$prog_name\"") if $debug;
+  debug_msg(this_function((caller(0))[3]), "Replacing program: \"$prog_name\"") if $debug;
   $cat_ref->{$prog_name} = $prog_src_ref;
   return $cat_ref;
 } # replace_prog
@@ -615,9 +625,9 @@ sub add_prog {
   my $prog_name = shift;
   my $prog_src_ref = shift;
   if (exists $cat_ref->{$prog_name}) {
-    die_msg(this_function_script((caller(0))[3]), "Internal error: Program \"$prog_name\" already exists in current library.");
+    die_msg(this_function((caller(0))[3]), "Internal error: Program \"$prog_name\" already exists in current library.");
   }
-  debug_msg(this_function_script((caller(0))[3]), "Adding program: \"$prog_name\"") if $debug > 0;
+  debug_msg(this_function((caller(0))[3]), "Adding program: \"$prog_name\"") if $debug > 0;
   $cat_ref->{$prog_name} = $prog_src_ref;
   return $cat_ref;
 } # add_prog
@@ -631,9 +641,9 @@ sub remove_prog {
   my $cat_ref = shift;
   my $prog_name = shift;
   if (not exists $cat_ref->{$prog_name}) {
-    die_msg(this_function_script((caller(0))[3]), "Internal error: Program \"$prog_name\" does not exist in current library.");
+    die_msg(this_function((caller(0))[3]), "Internal error: Program \"$prog_name\" does not exist in current library.");
   }
-  debug_msg(this_function_script((caller(0))[3]), "Removing program: \"$prog_name\"") if $debug > 0;
+  debug_msg(this_function((caller(0))[3]), "Removing program: \"$prog_name\"") if $debug > 0;
   delete $cat_ref->{$prog_name};
   return $cat_ref;
 } # remove_prog
@@ -663,9 +673,7 @@ sub reassemble_output {
 
   # Create a temporary intermediate file holding the raw sources concatenated together.
   my $tmp_file = gen_random_writeable_filename();
-  open TMP, "> $tmp_file" or die_msg(this_function_script((caller(0))[3]), "Cannot open temp file '$tmp_file' for writing: $!");
-
-#  debug_msg(this_function_script((caller(0))[3]), "Assembling final catalogue into \"$output_file\"") if $debug > 0;
+  open TMP, "> $tmp_file" or die_msg(this_function((caller(0))[3]), "Cannot open temp file '$tmp_file' for writing: $!");
 
   # Rebuild the file source file.
   my %cat = %{$cat_ref};
@@ -680,6 +688,7 @@ sub reassemble_output {
 
   my $cmd = $asm_script;
   my $cmd_line = "$use_pp $tmp_file $mode -o $output_file";
+  $cmd_line .= " -pp_script $preproc_script" if $preproc_script;
   my @result = run_prog($cmd, $cmd_line);
   unlink $tmp_file unless (exists $ENV{WP34S_LIB_KEEP_TEMP} and ($ENV{WP34S_LIB_KEEP_TEMP} == 1));
 
@@ -714,7 +723,7 @@ sub rebuild_state_file {
   if ($state_ref->{LAST_WORD_USED} > $state_ref->{MAX_SIZE_AVAIL}) {
     my $msg = "Program(s) size of final state file exceeds maximum allowed in configuration: 0x"
             . dec2hex4($state_ref->{LAST_WORD_USED}) . " > 0x" . dec2hex4($state_ref->{MAX_SIZE_AVAIL}) . ".";
-    die_msg(this_function_script((caller(0))[3]), $msg);
+    die_msg(this_function((caller(0))[3]), $msg);
   }
 
   # Copy the assembled output to the new array. We need to add 2 extra words because we need
@@ -739,7 +748,7 @@ sub rebuild_state_file {
 
   write_bin($output_file, @new_state_words);
 
-#  debug_msg(this_function_script((caller(0))[3]), "Assembling final catalogue into \"$output_file\"") if $debug > 0;
+#  debug_msg(this_function((caller(0))[3]), "Assembling final catalogue into \"$output_file\"") if $debug > 0;
   return;
 } # rebuild_state_file
 
@@ -767,19 +776,19 @@ sub run_prog {
     $cmd = "$location/$prog $cmd_line"
 
   } else {
-    die_msg(this_function_script((caller(0))[3]), "Cannot locate daughter script '$prog' in current directory or '$script_dir'.");
+    die_msg(this_function((caller(0))[3]), "Cannot locate daughter script '$prog' in current directory or '$script_dir'.");
   }
-  debug_msg(this_function_script((caller(0))[3]), "Spawning command line: '$cmd'")
+  debug_msg(this_function((caller(0))[3]), "Spawning command line: '$cmd'")
     if ($debug > 1) or (exists $ENV{WP34S_LIB_SPAWN_DBG} and ($ENV{WP34S_LIB_SPAWN_DBG} == 1));
 
   @output = `$cmd 2>&1`; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
   my @cleaned = clean_array_of_eol(@output);
   if (has_errors(@cleaned)) {
     warn join "\n", @cleaned, "\n";
-    die_msg(this_function_script((caller(0))[3]), "Error occured executing '$cmd'");
+    die_msg(this_function((caller(0))[3]), "Error occured executing '$cmd'");
   }
   my $dbg_msg = "Output of spawned program:\n" . join "\n", @cleaned;
-  debug_msg(this_function_script((caller(0))[3]), $dbg_msg) if $debug > 1;
+  debug_msg(this_function((caller(0))[3]), $dbg_msg) if $debug > 1;
 
   return @cleaned;
 } # run_prog
@@ -833,7 +842,7 @@ sub gen_random_writeable_filename {
     $filename = ".__${filename}.tmp";
     $attempts_left--;
     if( $attempts_left < 0 ) {
-      die_msg(this_function_script((caller(0))[3]), "Could not succeed in creating a temporary file: $!");
+      die_msg(this_function((caller(0))[3]), "Could not succeed in creating a temporary file: $!");
     }
   }
   return $filename;
@@ -913,7 +922,7 @@ sub write_bin {
   my $file = shift;
   my @bin_array = @_;
   local $_;
-  open OUT, "> $file" or die_msg(this_function_script((caller(0))[3]), "Cannot open file '$file' for writing: $!");
+  open OUT, "> $file" or die_msg(this_function((caller(0))[3]), "Cannot open file '$file' for writing: $!");
   binmode OUT;
   foreach (@bin_array) {
     my $bin_lo = $_ & 0xFF;
@@ -931,7 +940,7 @@ sub write_bin {
 #
 sub read_bin {
   my $file = shift;
-  open BIN, $file or die_msg(this_function_script((caller(0))[3]), "Cannot open file '$file' for reading: $!");
+  open BIN, $file or die_msg(this_function((caller(0))[3]), "Cannot open file '$file' for reading: $!");
   # This trick will read in the binary image in 16-bit words of the correct endian.
   local $/;
   my @bin_array = unpack("S*", <BIN>);
@@ -947,10 +956,10 @@ sub dbg_show_cat {
   my $epoch = shift; # "When" this dump is occuring in the flow of processing.
   my $hash_name = shift;
   my $cat_ref = shift;
-  debug_msg(this_function_script((caller(0))[3]), "Current contents of \%${hash_name} $epoch:");
+  debug_msg(this_function((caller(0))[3]), "Current contents of \%${hash_name} $epoch:");
   for my $prog_name (sort keys %{$cat_ref}) {
     my $steps = scalar @{$cat_ref->{$prog_name}};
-    debug_msg(this_function_script((caller(0))[3]), "  Program: \"$prog_name\", steps: $steps");
+    debug_msg(this_function((caller(0))[3]), "  Program: \"$prog_name\", steps: $steps");
   }
   return;
 } # dbg_show_cat
@@ -965,8 +974,8 @@ sub dbg_dump_cat {
   my $file = shift;
   my $hash_name = shift;
   my $cat_ref = shift;
-  debug_msg(this_function_script((caller(0))[3]), "Dumping contents of \%${hash_name} $epoch to '$file'");
-  open DUMP, "> $file" or die_msg(this_function_script((caller(0))[3]), "Cannot open cat dump file '$file' for writing: $!");
+  debug_msg(this_function((caller(0))[3]), "Dumping contents of \%${hash_name} $epoch to '$file'");
+  open DUMP, "> $file" or die_msg(this_function((caller(0))[3]), "Cannot open cat dump file '$file' for writing: $!");
   for my $prog_name (sort keys %{$cat_ref}) {
     local $_;
     foreach (@{$cat_ref->{$prog_name}}) {
@@ -987,25 +996,25 @@ sub dbg_show_state {
   my $hash_name = shift;
   my $hash_ref = shift;
   my $msg = "";
-  debug_msg(this_function_script((caller(0))[3]), "Contents of ${hash_name} $epoch");
+  debug_msg(this_function((caller(0))[3]), "Contents of ${hash_name} $epoch");
 
   $msg = "  Max size available: " . $hash_ref->{MAX_SIZE_AVAIL} . " (0x" . dec2hex4($hash_ref->{MAX_SIZE_AVAIL}) . ")";
-  debug_msg(this_function_script((caller(0))[3]), $msg);
+  debug_msg(this_function((caller(0))[3]), $msg);
 
   $msg = "  Last word used:     " . $hash_ref->{LAST_WORD_USED} . " (0x" . dec2hex4($hash_ref->{LAST_WORD_USED}) . ")";
-  debug_msg(this_function_script((caller(0))[3]), $msg);
+  debug_msg(this_function((caller(0))[3]), $msg);
 
   $msg = "  Original CRC:       " . $hash_ref->{ORG_CRC} . " (0x" . dec2hex4($hash_ref->{ORG_CRC}) . ")";
-  debug_msg(this_function_script((caller(0))[3]), $msg);
+  debug_msg(this_function((caller(0))[3]), $msg);
 
   $msg = "  State start loc:    " . $hash_ref->{STATE_START} . " (0x" . dec2hex4($hash_ref->{STATE_START}) . ")";
-  debug_msg(this_function_script((caller(0))[3]), $msg);
+  debug_msg(this_function((caller(0))[3]), $msg);
 
   $msg = "  State end loc:      " . $hash_ref->{STATE_END} . " (0x" . dec2hex4($hash_ref->{STATE_END}) . ")";
-  debug_msg(this_function_script((caller(0))[3]), $msg);
+  debug_msg(this_function((caller(0))[3]), $msg);
 
   $msg = "  Source length:      " . scalar @{$hash_ref->{SRC}};
-  debug_msg(this_function_script((caller(0))[3]), $msg);
+  debug_msg(this_function((caller(0))[3]), $msg);
   if ($debug > 2) {
     print join "\n", @{$hash_ref->{SRC}};
   }
@@ -1031,10 +1040,10 @@ sub print_prog_name {
     if ($debug or $quiet) {
       print "${leader}Source: $src_id, Program name: --Bare END--, Line number: $ln\n";
     } else {
-      warn_msg(this_function_script((caller(0))[3]), "Appears to be a NULL program. First line of propram was 'END'.") unless $quiet and not $debug;
+      warn_msg(this_function((caller(0))[3]), "Appears to be a NULL program. First line of propram was 'END'.") unless $quiet and not $debug;
     }
   } else {
-    die_msg(this_function_script((caller(0))[3]), "First line of propram was not a correctly formatted LBL: '$prog_line'");
+    die_msg(this_function((caller(0))[3]), "First line of propram was not a correctly formatted LBL: '$prog_line'");
   }
   return;
 } # print_prog_name
@@ -1128,12 +1137,12 @@ sub has_errors {
 #
 # Swap the main:: for the actual script name.
 #
-sub this_function_script {
+sub this_function {
   my $this_function = shift;
   $this_function = "main" if not defined $this_function or ($this_function eq "");
   $this_function =~ s/main/$script_name/;
   return $this_function;
-} # this_function_script
+} # this_function
 
 
 #######################################################################
@@ -1225,6 +1234,14 @@ sub get_options {
 
     elsif( ($arg eq "-ac") or ($arg eq "-colour") or ($arg eq "-color") ) {
       $use_ansi_colour = 1;
+    }
+
+    elsif( $arg eq "-asm_script" ) {
+      $asm_script = shift(@ARGV);
+    }
+
+    elsif( $arg eq " -pp_script" ) {
+      $preproc_script = shift(@ARGV);
     }
 
     else {
