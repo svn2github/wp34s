@@ -171,8 +171,8 @@ HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		stats.h xeq.h xrom.h xrom_labels.h storage.h serial.h matrix.h \
 		stopwatch.h
 
-XROM := xrom_all.wp34s
-XROM := $(XROM:%.wp34s=xrom/%.wp34s)
+XROM := common_entry derivative lambert_w locales next_prime quadratic who xrom_all zeta
+XROM := $(XROM:%=xrom/%.wp34s)
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 
