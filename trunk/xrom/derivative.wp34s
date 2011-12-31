@@ -13,28 +13,16 @@
  * 2	E1
  * 3	X
  * 4	H
- */
-
-#define E3	.00
-#define E2	.01
-#define E1	.02
-#define X	.03
-#define H	.04
-
-
-/*
+ *
  * Flag use:
  * 0	second derivative
  */
-
-#define FL_2ND		.00
-
 		XLBL"2DERIV"			/* Entry: SECOND DERIVATIVE */
 			XEQ entry
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
 				JMP deriv_bad_input
-			SF FL_2ND
+			SF .00
 			XEQ deriv_default_h
 			1
 			XEQ deriv_eval_func		/* f(x+h) + f(x-h)*/
@@ -42,37 +30,37 @@
 			1
 			6
 			[times]
-			STO E2				/* order four estimate*/
+			STO .01				/* order four estimate*/
 			4
 			2
 			EEX
 			3
-			RCL[times] E3
-			STO E1				/* order ten estimate*/
+			RCL[times] .00
+			STO .02				/* order ten estimate*/
 			0
 			XEQ deriv_eval_func		/* f(x)*/
 				JMP deriv_bad_input
 			3
 			0
 			[times]
-			STO- E2
+			STO- .01
 			7
 			3
 			7
 			6
 			6
-			RCL[times] E3
-			STO- E1
+			RCL[times] .00
+			STO- .02
 
 			2
 			XEQ deriv_eval_func		/* f(x+2h) + f(x-2h)*/
 				JMP deriv_bad_input
-			STO- E2
+			STO- .01
 			6
 			EEX
 			3
 			[times]
-			STO- E1
+			STO- .02
 
 			3
 			XEQ deriv_eval_func		/* f(x+3h) + f(x-3h)*/
@@ -80,7 +68,7 @@
 			EEX
 			3
 			[times]
-			STO+ E1
+			STO+ .02
 
 			4
 			XEQ deriv_eval_func		/* f(x+4h) + f(x-4h)*/
@@ -89,20 +77,20 @@
 			2
 			5
 			[times]
-			STO- E1
+			STO- .02
 
 			5
 			XEQ deriv_eval_func		/* f(x+5h) + f(x-5h)*/
 				JMP deriv2_4point
 			8
 			[times]
-			RCL+ E1
+			RCL+ .02
 			2
 			5
 			2
 			SDL 02				/* * 100 = 25200*/
-			RCL[times] H
-			RCL[times] H
+			RCL[times] .04
+			RCL[times] .04
 			/
 			JMP deriv_return
 
@@ -111,12 +99,12 @@ deriv_bad_input::	Num NaN
 
 deriv2_4point::		1
 			2
-			RCL[times] H
-			RCL[times] H
+			RCL[times] .04
+			RCL[times] .04
 			1/x
-			STO[times] E2
+			STO[times] .01
 
-deriv_6point::		RCL E2
+deriv_6point::		RCL .01
 			JMP deriv_return
 
 
@@ -125,17 +113,17 @@ deriv_6point::		RCL E2
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
 				JMP deriv_bad_input
-			CF FL_2ND
+			CF .00
 			XEQ deriv_default_h
 			1
 			XEQ deriv_eval_func		/* f(x+h) - f(x-h)*/
 				JMP deriv_bad_input
-			STO E2
+			STO .01
 
 			2
 			XEQ deriv_eval_func		/* f(x+2h) - f(x-2h)*/
 				JMP deriv_bad_input
-			STO E1
+			STO .02
 
 			/* At this point we can do a four point estimate if something goes awry */
 			3
@@ -145,91 +133,91 @@ deriv_6point::		RCL E2
 			/* At this point we can do the six point estimate - calculate it now */
 			4
 			5
-			RCL[times] E2
+			RCL[times] .01
 			9
-			RCL[times] E1
+			RCL[times] .02
 			-
 			+
 			6
 			0
-			RCL[times] H
+			RCL[times] .04
 			/
-			x[<->] E2			/* Six point stimate in E2 & start ten point estimate*/
+			x[<->] .01			/* Six point stimate in E2 & start ten point estimate*/
 			2
 			1
 			SDL 02				/* * 100 = 2100*/
 			[times]
 			6
 			SDL 02				/* * 100 = 600*/
-			RCL[times] E1
+			RCL[times] .02
 			-
 			1
 			5
 			0
-			RCL[times] E3
+			RCL[times] .00
 			+				/* Ten point estimate to end up in E1*/
 
-			STO E1
+			STO .02
 			4
 			XEQ deriv_eval_func		/* f(x+4h) - f(x-4h)*/
 				JMP deriv_6point
 			2
 			5
 			[times]
-			STO- E1
+			STO- .02
 
 			5
 			XEQ deriv_eval_func		/* f(x+5h) - f(x-5h)*/
 				JMP deriv_6point
-			RCL+ E3
-			RCL+ E1
+			RCL+ .00
+			RCL+ .02
 			2
 			5
 			2
 			0
-			RCL[times] H
+			RCL[times] .04
 			/
 			JMP deriv_return
 
 			/* Eval f(X + k h) k on stack */
-deriv_eval_func::	STO E3
-			RCL[times] H
-			RCL+ X
+deriv_eval_func::	STO .00
+			RCL[times] .04
+			RCL+ .03
 			FILL
 			XEQUSR				/* f(x + k h)*/
 			POPUSR
 			SPEC?
 				RTN
-			x[<->] E3
+			x[<->] .00
 			x=0?
 				JMP deriv_skip_midpoint
 			+/-
-			RCL[times] H
-			RCL+ X
+			RCL[times] .04
+			RCL+ .03
 			FILL
 			XEQUSR				/* f(x - k h)*/
 			POPUSR
 			SPEC?
 				RTN
-			FS? FL_2ND
+			FS? .00
 			+/-
-			STO- E3
+			STO- .00
 
-deriv_skip_midpoint::	RCL E3
+deriv_skip_midpoint::	RCL .00
 			RTN+1
 
 deriv_4point::		8
-			RCL[times] E2
-			RCL- E1
+			RCL[times] .01
+			RCL- .02
 			1
 			2
-			RCL[times] H
+			RCL[times] .04
 			/
 
 deriv_return::		STO L
 			iC 0
 			FILL
-			RCL X
+			RCL .03
 			x[<->] L
 			RTN
 /*
@@ -237,15 +225,15 @@ deriv_return::		STO L
  *  JMP and its label because in XROM, BACK and SKIP are computed instead of 
  *  walking the PC. This would fail with a long instruction in between.
  */
-deriv_default_h::	STO X
+deriv_default_h::	STO .03
 			FILL
 			LBL?'[delta]X'
 				JMP deltaX
 			iC 1
 			SDR 01				/* default h = 0.1 */
-			STO H
+			STO .04
 			RTN
 
 deltaX::		XEQ'[delta]X'
-			STO H
+			STO .04
 			RTN
