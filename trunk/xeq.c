@@ -2183,21 +2183,27 @@ void fin_tst(const int a) {
 
 /* Skip a number of instructions forwards */
 void cmdskip(unsigned int arg, enum rarg op) {
-	unsigned int pc = state_pc();
-	if (isXROM(pc))
-		raw_set_pc(pc + arg);
+	const unsigned int origpc = state_pc();
+	unsigned int pc;
+
+	if (isXROM(origpc))
+		pc = origpc + arg;
 	else {
 		while (arg-- && !incpc());
 		if (PcWrapped) {
 			err(ERR_RANGE);
 		}
+		pc = state_pc();
 	}
+	gsbgto(pc, op == RARG_BSF, origpc);
 }
 
 /* Skip backwards */
 void cmdback(unsigned int arg, enum rarg op) {
-	unsigned int pc = state_pc();
-	if (isXROM(pc))
+	const unsigned int origpc = state_pc();
+	unsigned int pc = origpc;
+
+	if (isXROM(origpc))
 		pc -= arg + 1;
         else if (arg) {
 		if ( Running ) {
@@ -2212,7 +2218,7 @@ void cmdback(unsigned int arg, enum rarg op) {
 			return;
 		}
 	}
-	raw_set_pc(pc);
+	gsbgto(pc, op == RARG_BSB, origpc);
 }
 
 

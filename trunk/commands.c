@@ -760,6 +760,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstk(RARG_TEST_ZNE,	&cmdztest,				"\024x\013?")
 	CMDnoI(RARG_SKIP,	&cmdskip,	255,			"SKIP")
 	CMDnoI(RARG_BACK,	&cmdback,	255,			"BACK")
+	CMDnoI(RARG_BSF,	&cmdskip,	255,			"BSRF")
+	CMDnoI(RARG_BSB,	&cmdback,	255,			"BSRB")
 	CMDstk(RARG_DSE,	&cmdloop,				"DSE")
 	CMDstk(RARG_ISG,	&cmdloop,				"ISG")
 	CMDstk(RARG_DSL,	&cmdloop,				"DSL")
