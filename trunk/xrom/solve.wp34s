@@ -1,0 +1,124 @@
+/* The exposed functions in this file don't use the normal prologue/epilogue
+ * and do not operate in double precision.  They call back to user code and
+ * manage the stack, input, output and locals themselves.
+ *
+ * Changes to this will likely cause breakage.
+ */
+
+/**************************************************************************/
+/* Solve code.
+ *
+ * On entry the stack looks like:
+ *	Y	Guess a
+ *	X	Guess b
+ *
+ * On return the stack looks like:
+ *	L	0
+ *
+ *	T	0
+ *	Z	f(X)
+ *	Y	previous root estimate
+ *	X	root estimate
+ *
+ * Register use:
+ * 0	a	lower bound
+ * 1	b	upper bound
+ * 2	c	new guess
+ * 3	f(a)
+ * 4	f(b)
+ */
+		XLBL"SOLVE"			/* Entry: SOLVE */
+			XEQ entry
+			LocR 04			/* Need 5 registers and flags */
+			x[approx]? Y
+				INC Y
+			x[approx]? Y
+				SDR 01
+			x>? Y
+				x[<->] Y
+			[cmplx]STO .00
+			FILL
+			XEQUSR
+			POPUSR
+			STO .03
+			x[approx]0?
+				JMP slv_initial1_perfect
+			RCL .01
+			FILL
+			XEQUSR
+			POPUSR
+			STO .04
+			x[approx]0?
+				JMP slv_initial2_perfect
+			SLVI
+			RCL .02
+
+slv_loop::		FILL
+			XEQUSR
+			POPUSR
+			FILL
+			x[approx]0?
+				JMP slv_success
+			SLVS
+			x[!=]0?			/* Check for failure to complete*/
+				JMP slv_failed
+			RCL .02
+			x[approx]? .00
+				JMP slv_fin
+			x[approx]? .01
+				JMP slv_fin
+			JMP slv_loop
+
+			/* Solver estimates converged */
+slv_fin::		iC 0
+			STO L
+			RCL T
+			RCL .01
+			RCL .02
+			RTN
+
+slv_failed::		RCL .03
+			ABS
+			RCL .04
+			ABS
+			x<? Y
+				JMP slv_fail_BltA
+			RCL T			/* Return the better estimate being A */
+			STO L
+			iC 0
+			x[<->] Y
+			RCL .00
+			RCL .02
+			JMP slv_fail_common
+
+slv_fail_BltA::		RCL T
+			STO L
+			iC 0
+			x[<->] Y
+			RCL .01
+			RCL .02
+
+slv_fail_common::	TOP?
+				ERR 20
+			RTN+1
+
+slv_success::		iC 0
+			STO L
+			RCL Z
+			RCL .01
+			RCL .02
+			RTN
+
+slv_initial2_perfect::	RCL .04
+			RCL .01
+			JMP slv_initial_common
+
+slv_initial1_perfect::	RCL .03
+			RCL .00
+
+slv_initial_common::	RCL X
+			iC 0
+			STO L
+			[cmplx]x[<->] Z
+			RTN
+

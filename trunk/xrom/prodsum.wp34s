@@ -1,0 +1,92 @@
+/* The exposed functions in this file don't use the normal prologue/epilogue
+ * and do not operate in double precision.  They call back to user code and
+ * manage the stack, input, output and locals themselves.
+ *
+ * Changes to this will likely cause breakage.
+ */
+
+/**************************************************************************/
+/* Sigma and products
+ * Register use:
+ * 0	I
+ * 1	product/sum
+ * 2	carry for sum
+ * 3	saved I
+ */
+		XLBL"SIGMA"				/* Entry: SUMMATION */
+			XEQ entry
+			LocR 03				/* Registers .00 to .03 */
+			STO .03				/* Save for LastX*/
+			SPEC?
+				JMP sum_product_nan
+			STO .00
+			IP				/* First function call is separate*/
+			FILL				/* to avoid Kahan summing from zero*/
+			XEQUSR				/* six extra instructions save nine*/
+			POPUSR
+			SPEC?				/* from executing*/
+				JMP sum_product_nan
+			STO .01
+			iC 0
+			STO .02
+			JMP sum_entry
+
+sum_loop::		RCL .00
+			IP
+			FILL
+			XEQUSR
+			POPUSR
+			SPEC?
+				JMP sum_product_nan
+			RCL- .02
+			ENTER[^]
+			RCL+ .01
+			ENTER[^]
+			RCL- .01
+			RCL- Z
+			x[<->] Y
+			[cmplx]STO .01
+
+sum_entry::		DSL .00
+				JMP sum_loop
+			JMP sum_product_okay
+
+
+		XLBL"PRODUCT"				/* Entry: PRODUCT */
+			XEQ entry
+			LocR 03				/* Registers .00 to .03 */
+			STO .03
+			SPEC?
+				JMP sum_product_nan
+			STO .00
+			IP				/* First function call is separate*/
+			FILL				/* to avoid a multiply*/
+			XEQUSR
+			POPUSR
+			SPEC?
+				JMP sum_product_nan
+			STO .01
+			JMP product_entry
+
+product_loop::		RCL .00
+			IP
+			FILL
+			XEQUSR
+			POPUSR
+			SPEC?
+				JMP sum_product_nan
+			STO[times] .01
+product_entry::		DSL .00
+				JMP product_loop
+
+sum_product_okay::	RCL .03
+			STO L
+			iC 0
+			FILL
+			RCL .01
+			RTN
+
+sum_product_nan::	Num NaN
+			STO .01
+			JMP sum_product_okay
+
