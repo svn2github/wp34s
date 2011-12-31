@@ -2368,6 +2368,16 @@ static void show_opcode(void)
  */
 void process_keycode(int c)
 {
+	static int was_paused;
+
+	if (was_paused && Pause == 0) {
+		/*
+		 *  Continue XROM execution after a pause
+		 */
+		xeq_xrom();
+	}
+	was_paused = Pause;
+
 	if (c == K_HEARTBEAT) {
 		/*
 		 *  Heartbeat processing goes here.
@@ -2378,16 +2388,16 @@ void process_keycode(int c)
 		 *  Toggle the RPN annunciator as a visual feedback
 		 *  While the display is frozen, the annunciator stays cleared.
 		 */
-		if ( ShowRPN == 1 && !Running ) {
+		if (ShowRPN == 1 && !Running) {
 			dot(RPN, 1);
 			finish_display();
 			ShowRPN = 2;
 		}
-		else if ( ShowRPN == -1 ) {
+		else if (ShowRPN == -1) {
 			ShowRPN = 1;
 		}
 
-		if ( Keyticks >= 2 ) {
+		if (Keyticks >= 2) {
 			/*
 			 *  Some time has passed after last key press
 			 */
@@ -2428,7 +2438,7 @@ void process_keycode(int c)
 		/*
 		 *  If buffer is empty re-allow R/S to start a program
 		 */
-		if ( JustStopped && !is_key_pressed() ) {
+		if (JustStopped && !is_key_pressed()) {
 			JustStopped = 0;
 		}
 #endif

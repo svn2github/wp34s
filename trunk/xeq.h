@@ -1030,6 +1030,7 @@ extern void init_state(void);
 extern void reset_volatile_state(void);
 extern void xeq(opcode);
 extern void xeqprog(void);
+extern void xeq_xrom(void);
 extern void xeqone(char *);
 extern void xeq_init_contexts(void);
 extern void process_keycode(int);

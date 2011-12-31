@@ -62,6 +62,7 @@ void clralpha(REGISTER *a, REGISTER *b, enum nilop op) {
 void alpha_view_common(int reg) {
 	DispMsg = Alpha;
 	ShowRegister = reg;
+	State2.disp_small = 0;
 	frozen_display();
 }
 

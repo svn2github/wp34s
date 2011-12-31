@@ -409,9 +409,13 @@ unsigned int user_pc(void) {
 	unsigned int n = 1;
 	unsigned int base;
 
+#ifndef REALBUILD
+	if (pc == 0 || isXROM(pc))
+		return offsetLIB(pc) + 1;
+#else
 	if (pc == 0)
 		return 0;
-
+#endif
 	base = startLIB(pc);
 	while (base < pc) {
 		base = do_inc(base, 0);
@@ -429,7 +433,10 @@ unsigned int find_user_pc(unsigned int target) {
 	const int libp = isLIB(upc);
 	unsigned int base = libp ? startLIB(upc) : 0;
 	unsigned int n = libp ? 1 : 0;
-
+#ifndef REALBUILD
+	if (isXROM(upc))
+		return addrXROM(target);
+#endif
 	while (n++ < target) {
 		const unsigned int oldbase = base;
 		base = do_inc(oldbase, 0);
@@ -2069,7 +2076,11 @@ void op_gtoalpha(REGISTER *a, REGISTER *b, enum nilop op) {
 // XEQ to an XROM command
 // We have assembler produces jump tables to work with which is nice.  These tables must be in exactly
 // the same order as the relevant opcodes.
-#define XR(offset, op)	addrXROM(offset) // op
+
+//#define XR(offset, op)	addrXROM(offset) // op
+// Temporary fix!
+#define XR(offset, op)	addrXROM(offset+1) // op
+
 static const unsigned short int xrom_rarg_entries[] = {
 	XR(XROM_SIGMA,		RARG_SUM),
 	XR(XROM_PRODUCT,	RARG_PROD),
@@ -3862,7 +3873,8 @@ static void xeq_single(void) {
 
 /* Continue execution trough xrom code
  */
-static void xeq_xrom(void) {
+void xeq_xrom(void) {
+	int is_running = Running;
 #ifndef REALBUILD
 	if (State2.trace)
 		return;
@@ -3870,8 +3882,10 @@ static void xeq_xrom(void) {
 	/* Now if we've stepped into the xROM area, keep going until
 	 * we break free.
 	 */
+	Running = 1;	// otherwise RTN doesn't work
 	while (!Pause && isXROM(state_pc()))
 		xeq_single();
+	Running = is_running;
 }
 
 /* Check to see if we're running a program and if so execute it
