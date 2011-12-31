@@ -213,27 +213,6 @@ static const struct {
 	const char *const name;
 } xrom_labels[] = {
 #define X(op, n, s)	{ RARG(RARG_ ## op, (n) & RARG_MASK), s},
-#define XL(n, s)	X(LBL, n, s)
-	XL(ENTRY_SIGMA, "Entry: SUMMATION")
-	XL(ENTRY_PI, "Entry: PRODUCT")
-	XL(ENTRY_SOLVE, "Entry: SOLVE")
-	XL(ENTRY_INTEGRATE, "Entry: INTEGRATE")
-	XL(ENTRY_DERIV, "Entry: DERIVATIVE")
-	XL(ENTRY_2DERIV, "Entry: SECOND DERIVATIVE")
-	XL(ENTRY_QUAD, "Entry: QUADRATIC SOLVER")
-	XL(ENTRY_NEXTPRIME, "Entry: NEXT PRIME")
-	XL(ENTRY_ZETA, "Entry: ZETA FUNCTION")
-	XL(ENTRY_Bn, "Entry: BERNOULLI NUMBER (modern)")
-	XL(ENTRY_Bn_star, "Entry: BERNOULLI NUMBER (old)")
-	XL(ENTRY_W1, "Entry: Lambert W negative branch")
-        XL(ENTRY_SETEUR, "Entry: Set Eupopean locale")
-        XL(ENTRY_SETUK, "Entry: Set English locale")
-        XL(ENTRY_SETUSA, "Entry: Set USA locale")
-        XL(ENTRY_SETIND, "Entry: Set Indian locale")
-        XL(ENTRY_SETCHN, "Entry: Set Chinese locale")
-        XL(ENTRY_SETJAP, "Entry: Set Japanese locale")
-	XL(ENTRY_WHO, "Entry: WHO")
-#undef XL
 #define XE(n, s)	X(ERROR, n, s)
 	XE(ERR_DOMAIN, "Error: Domain Error")
 	XE(ERR_BAD_DATE, "Error: Bad Date Error")

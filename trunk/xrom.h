@@ -19,7 +19,6 @@
 
 #include "xeq.h"
 #include "xrom_labels.h"	// New style
-#include "xrom_entries.h"	// Old style
 
 extern const s_opcode xrom[];
 extern const unsigned short int xrom_size;

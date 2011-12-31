@@ -44,6 +44,7 @@
 #include "date.h"
 #include "lcd.h"
 #include "xrom.h"
+#include "xrom_labels.h"
 #include "alpha.h"
 
 /* Define the number of program Ticks that must elapse between flashing the
@@ -2002,8 +2003,11 @@ static unsigned int findmultilbl(const opcode o, int flags) {
 		lbl = find_opcode_from(addrLIB(0, REGION_LIBRARY), dest, 0);	// Library
 	if (lbl == 0)
 		lbl = find_opcode_from(addrLIB(0, REGION_BACKUP), dest, 0);	// Backup
+#if 0
+	// Disable searching for global labels in xrom
 	if (lbl == 0)
 		lbl = find_opcode_from(addrXROM(0), dest, 0);			// XROM
+#endif
 	if (lbl == 0 && (flags & FIND_OP_ERROR) != 0)
 		err(ERR_NO_LBL);
 	return lbl;
@@ -2063,9 +2067,39 @@ void op_gtoalpha(REGISTER *a, REGISTER *b, enum nilop op) {
 
 
 // XEQ to an XROM command
-static void do_xrom(int lbl) {
+// We have assembler produces jump tables to work with which is nice.  These tables must be in exactly
+// the same order as the relevant opcodes.
+#define XR(offset, op)	addrXROM(offset) // op
+static const unsigned short int xrom_rarg_entries[] = {
+	XR(XROM_SIGMA,		RARG_SUM),
+	XR(XROM_PRODUCT,	RARG_PROD),
+	XR(XROM_SOLVE,		RARG_SOLVE),
+	XR(XROM_DERIV,		RARG_DERIV),
+	XR(XROM_2DERIV,		RARG_2DERIV),
+	XR(XROM_INTEGRATE,	RARG_INTG),
+};
+
+static const unsigned short int xrom_niladic_entries[] = {
+	XR(XROM_QUAD,		OP_QUAD),
+	XR(XROM_NEXTPRIME,	OP_NEXTPRIME),
+	XR(XROM_ZETA,		OP_USR_ZETA),
+	XR(XROM_Bn,		OP_USR_Bn),
+	XR(XROM_Bn_star,	OP_USR_BnS),
+	XR(XROM_W1,		OP_USR_W1),
+	XR(XROM_SETEUR,		OP_SETEUR),
+	XR(XROM_SETUK,		OP_SETUK),
+	XR(XROM_SETUSA,		OP_SETUSA),
+	XR(XROM_SETIND,		OP_SETIND),
+	XR(XROM_SETCHN,		OP_SETCHN),
+	XR(XROM_SETJAP,		OP_SETJPN),
+	XR(XROM_WHO,		OP_WHO),
+};
+#undef XR
+
+
+static void do_xrom(int idx, const unsigned short int entries[]) {
 	const unsigned int oldpc = state_pc();
-	const unsigned int pc = find_label_from(addrXROM(0), lbl, 0);
+	const unsigned int pc = entries[idx];
 
 	UserLocalRegs = LocalRegs;
 	gsbgto(pc, 1, oldpc);
@@ -2074,20 +2108,20 @@ static void do_xrom(int lbl) {
 static void xromargcommon(int lbl, unsigned int userpc) {
 	if (userpc != 0) {
 		XromUserPc = userpc;
-		do_xrom(lbl);
+		do_xrom(lbl, xrom_rarg_entries);
 	}
 }
 
 void xromarg(unsigned int arg, enum rarg op) {
-	xromargcommon(ENTRY_SIGMA - (op - RARG_SUM), find_label_from(state_pc(), arg, 0));
+	xromargcommon(op - RARG_SUM, find_label_from(state_pc(), arg, 0));
 }
 
 void multixromarg(const opcode o, enum multiops mopr) {
-	xromargcommon(ENTRY_SIGMA - (mopr - DBL_SUM), findmultilbl(o, FIND_OP_ERROR));
+	xromargcommon(mopr - DBL_SUM, findmultilbl(o, FIND_OP_ERROR));
 }
 
 void xrom_routines(REGISTER *a, REGISTER *nul2, enum nilop op) {
-	do_xrom(ENTRY_QUAD - (op - OP_QUAD));
+	do_xrom(op - OP_QUAD, xrom_niladic_entries);
 }
 
 void cmddisp(unsigned int arg, enum rarg op) {

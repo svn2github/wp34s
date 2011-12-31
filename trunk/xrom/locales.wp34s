@@ -1,35 +1,35 @@
 /**************************************************************************/
 /* Locale setting commands
  */
-		LBL ENTRY_SETEUR		// European
+		XLBL"SETEUR"		// European
 			XEQ locale_common
 			RDX,
 			JG1582
 			RTN
 
-		LBL ENTRY_SETUK			// UK/Australia
+		XLBL"SETUK"		// UK/Australia
 			XEQ locale_common
 			12H
 			RTN
 
-		LBL ENTRY_SETUSA		// USA
+		XLBL"SETUSA"		// USA
 			XEQ locale_common
 			12H
 			M.DY
 			RTN
 
-		LBL ENTRY_SETIND		// India
+		XLBL"SETIND"		// India
 			XEQ locale_common
 			E3OFF
 			RTN
 
-		LBL ENTRY_SETCHN		// China
+		XLBL"SETCHN"		// China
 			XEQ locale_common
 			E3OFF
 			Y.MD
 			RTN
 
-		LBL ENTRY_SETJAP		// Japan
+		XLBL"SETJAP"		// Japan
 			XEQ locale_common
 			Y.MD
 			RTN

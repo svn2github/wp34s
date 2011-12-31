@@ -1,5 +1,5 @@
 /**************************************************************************/
-		LBL ENTRY_Bn_star		/* Bernoulli number Bn* = +/- Bn(2 n) */
+		XLBL"Bn_star"			/* Bernoulli number Bn* = +/- Bn(2 n) */
 			XEQ entry
 			FP?
 				ERR 01
@@ -13,7 +13,7 @@
 			ABS
 			JMP zeta_exit
 
-		LBL ENTRY_Bn			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
+		XLBL"Bn"			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
 			XEQ entry
 			FP?
 				ERR 01
@@ -55,7 +55,7 @@ zeta_0::		.
  * This is the same algorithm as the C version uses, just with fewer terms and
  * with the constants computed on the fly.
  */
-		LBL ENTRY_ZETA			/* Zeta function */
+		XLBL"ZETA"			/* Zeta function */
 			XEQ entry
 			XLOCAL
 			STOS .08

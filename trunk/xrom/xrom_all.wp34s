@@ -25,7 +25,7 @@
  * 3	f(a)
  * 4	f(b)
  */
-		LBL ENTRY_SOLVE			/* Entry: SOLVE */
+		XLBL"SOLVE"			/* Entry: SOLVE */
 			XEQ entry
 			LocR 04			/* Need 5 registers and flags */
 			x[approx]? Y
@@ -161,7 +161,7 @@ int_zero_interval::	XEQ int_restore_limits
 			RTN
 
 
-		LBL ENTRY_INTEGRATE			/* Entry: INTEGRATE */
+		XLBL"INTEGRATE"			/* Entry: INTEGRATE */
 			XEQ entry
 			LocR 04				/* Need registers .00 to .04 */
 			SPEC?
@@ -315,7 +315,7 @@ int_restore_limits::	RCL .01
  * 2	carry for sum
  * 3	saved I
  */
-		LBL ENTRY_SIGMA				/* Entry: SUMMATION */
+		XLBL"SIGMA"				/* Entry: SUMMATION */
 			XEQ entry
 			LocR 03				/* Registers .00 to .03 */
 			STO .03				/* Save for LastX*/
@@ -354,7 +354,7 @@ sum_entry::		DSL .00
 			JMP sum_product_okay
 
 
-		LBL ENTRY_PI				/* Entry: PRODUCT */
+		XLBL"PRODUCT"				/* Entry: PRODUCT */
 			XEQ entry
 			LocR 03				/* Registers .00 to .03 */
 			STO .03
@@ -404,7 +404,7 @@ sum_product_nan::	Num NaN
  * Flag use:
  * 0	second derivative
  */
-		LBL ENTRY_2DERIV			/* Entry: SECOND DERIVATIVE */
+		XLBL"2DERIV"			/* Entry: SECOND DERIVATIVE */
 			XEQ entry
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
@@ -495,7 +495,7 @@ deriv_6point::		RCL .01
 			JMP deriv_return
 
 
-		LBL ENTRY_DERIV				/* Entry: DERIVATIVE */
+		XLBL"DERIV"				/* Entry: DERIVATIVE */
 			XEQ entry
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
