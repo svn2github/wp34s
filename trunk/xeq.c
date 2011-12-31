@@ -2077,9 +2077,8 @@ void op_gtoalpha(REGISTER *a, REGISTER *b, enum nilop op) {
 // We have assembler produces jump tables to work with which is nice.  These tables must be in exactly
 // the same order as the relevant opcodes.
 
-//#define XR(offset, op)	addrXROM(offset) // op
-// Temporary fix!
-#define XR(offset, op)	addrXROM(offset+1) // op
+// The XROM_START trick makes the fix automatic. :-)
+#define XR(offset, op)	addrXROM(offset+1-XROM_START) // op
 
 static const unsigned short int xrom_rarg_entries[] = {
 	XR(XROM_SIGMA,		RARG_SUM),
