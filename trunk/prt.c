@@ -156,7 +156,7 @@ int num_arg_digits(int cmd) {
 		return 1;
 	if (argcmds[cmd].lim <= 100)
 		return 2;
-	if (argcmds[cmd].stckreg)
+	if (argcmds[cmd].stckreg || argcmds[cmd].label || argcmds[cmd].flag || argcmds[cmd].stos)
 		return 2;
 	return 3;
 }
