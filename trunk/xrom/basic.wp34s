@@ -1,0 +1,50 @@
+/**************************************************************************/
+/* Basic functions that are better done in user code without prologue or
+ * epilogue.
+ */
+
+	/* Max of X and Y.
+	 * Works for integers.
+	 * Would work for reals if NaNs are handled.
+	 */
+	XLBL"MAX"
+		STO L
+		x< Y
+			x[<->] Y
+		DROP
+		RTN
+
+	/* Minimum of X and Y.
+	 * Works for integers.
+	 * Would work for reals if NaNs are handled.
+	 */
+	XLBL"MIN"
+		STO L
+		x> Y
+			x[<->] Y
+		DROP
+		RTN
+
+	/* Square of X.
+	 * Works for both reals and integers.
+	 */
+	XLBL"SQUARE"
+		RCL[times] X
+		RTN
+
+	/* Square of XY.  Works for complex numbers.
+	 * MORE - this is less efficient than the C version of this command.
+	 */
+	XLBL"CPX_SQUARE"
+		[cmplx]RCL[times] X
+		RTN
+
+	/* Cube of X.
+	 * Works for reals only.  Integer sets flags which can be lost
+	 */
+	XLBL"CUBE"
+		RCL[times] X
+		x[<->] L
+		RCL[times] L
+		RTN
+
