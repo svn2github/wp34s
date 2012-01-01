@@ -1,6 +1,6 @@
 /**************************************************************************/
 		XLBL"Bn_star"			/* Bernoulli number Bn* = +/- Bn(2 n) */
-			XEQ entry
+			GSB entry
 			FP?
 				ERR 01
 			x[<=]0?
@@ -8,13 +8,13 @@
 			XLOCAL
 			STOS .08
 			STO+ X
-			XEQ bernoulli
+			GSB bernoulli
 			STO+ X
 			ABS
 			JMP zeta_exit
 
 		XLBL"Bn"			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
-			XEQ entry
+			GSB entry
 			FP?
 				ERR 01
 			x<0?
@@ -27,13 +27,13 @@
 				JMP zeta_0
 			ODD?
 				JMP Bn_odd
-			XEQ bernoulli
+			GSB bernoulli
 			JMP zeta_exit
 
 bernoulli::		STO 12
 			DEC X
 			+/-
-			XEQ zeta_int
+			GSB zeta_int
 			RCL[times] .08
 			+/-
 			RTN
@@ -56,12 +56,12 @@ zeta_0::		.
  * with the constants computed on the fly.
  */
 		XLBL"ZETA"			/* Zeta function */
-			XEQ entry
+			GSB entry
 			XLOCAL
 			STOS .08
 			x=0?
 				JMP zeta_0
-			XEQ zeta_int
+			GSB zeta_int
 
 zeta_exit::		x[<->] .08
 			STO L
@@ -79,7 +79,7 @@ zeta_neg::		SIGN
 			x[<->] Y
 			-
 			STO .01
-			XEQ zeta_calc
+			GSB zeta_calc
 			iC 1
 			ASIN
 			RCL[times] .07

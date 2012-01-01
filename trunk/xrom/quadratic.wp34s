@@ -10,7 +10,7 @@
  * 4	I
  */
 		XLBL"QUAD"				/* Entry: QUADRATIC SOLVER */
-			XEQ entry
+			GSB entry
 			XLOCAL				/* Registers .00 to .04 are used */
 			STOS .00
 			RCL I
@@ -46,7 +46,7 @@ quad_complex::		ABS
 			RCL Z				/* b sqrt/2a ? b */
 			RCL/ .02			/* b/2a sqrt/2a ? b */
 			+/-
-			XEQ quad_fix_stack
+			GSB quad_fix_stack
 			TOP?
 				JMP quad_message
 			RTN+1

@@ -2,35 +2,35 @@
 /* Locale setting commands
  */
 		XLBL"SETEUR"		// European
-			XEQ locale_common
+			GSB locale_common
 			RDX,
 			JG1582
 			RTN
 
 		XLBL"SETUK"		// UK/Australia
-			XEQ locale_common
+			GSB locale_common
 			12H
 			RTN
 
 		XLBL"SETUSA"		// USA
-			XEQ locale_common
+			GSB locale_common
 			12H
 			M.DY
 			RTN
 
 		XLBL"SETIND"		// India
-			XEQ locale_common
+			GSB locale_common
 			E3OFF
 			RTN
 
 		XLBL"SETCHN"		// China
-			XEQ locale_common
+			GSB locale_common
 			E3OFF
 			Y.MD
 			RTN
 
 		XLBL"SETJAP"		// Japan
-			XEQ locale_common
+			GSB locale_common
 			Y.MD
 			RTN
 

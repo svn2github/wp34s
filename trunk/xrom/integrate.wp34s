@@ -33,13 +33,13 @@
  * 4	Index
  */
 
-int_bad_range::		XEQ int_restore_limits
+int_bad_range::		GSB int_restore_limits
 			Num NaN
 			ENTER[^]
 			STO L
 			RTN
 
-int_zero_interval::	XEQ int_restore_limits
+int_zero_interval::	GSB int_restore_limits
 			iC 0
 			ENTER[^]
 			STO L
@@ -47,7 +47,7 @@ int_zero_interval::	XEQ int_restore_limits
 
 
 		XLBL"INTEGRATE"			/* Entry: INTEGRATE */
-			XEQ entry
+			GSB entry
 			LocR 04				/* Need registers .00 to .04 */
 			SPEC?
 				JMP int_bad_range
@@ -79,18 +79,18 @@ int_zero_interval::	XEQ int_restore_limits
 			STO .04
 
 			/* Sum Gauss and Kronrod common points */
-int_gkloop::		XEQ int_first_point
+int_gkloop::		GSB int_first_point
 			XEQUSR
 			POPUSR
 			SPEC?
 				JMP int_bad_range
-			XEQ int_gauss
-			XEQ int_second_point
+			GSB int_gauss
+			GSB int_second_point
 			XEQUSR
 			POPUSR
 			SPEC?
 				JMP int_bad_range
-			XEQ int_gauss
+			GSB int_gauss
 			ISG .04
 				JMP int_gkloop
 
@@ -112,18 +112,18 @@ int_gkloop::		XEQ int_first_point
 			STO .04
 
 			/* Sum Kronrod only points */
-int_kloop::		XEQ int_first_point
+int_kloop::		GSB int_first_point
 			XEQUSR
 			POPUSR
 			SPEC?
 				JMP int_bad_range2
-			XEQ int_kronrod
-			XEQ int_second_point
+			GSB int_kronrod
+			GSB int_second_point
 			XEQUSR
 			POPUSR
 			SPEC?
 				JMP int_bad_range2
-			XEQ int_kronrod
+			GSB int_kronrod
 			ISG .04
 				JMP int_kloop
 
@@ -131,7 +131,7 @@ int_kloop::		XEQ int_first_point
 			STO[times] .03
 
 			/* Set up the stack for our output */
-			XEQ int_restore_limits
+			GSB int_restore_limits
 			RCL .03
 			RCL- .02				/* err, l, u, ?, G*/
 			RCL .03				/* K, err, l, u, G*/
@@ -179,7 +179,7 @@ int_gauss::		RCL .04
 			RTN
 
 			/* A value is NaN after the Gauss estimate */
-int_bad_range2:: 	XEQ int_restore_limits
+int_bad_range2:: 	GSB int_restore_limits
 			Num NaN
 			RCL .02
 			STO L

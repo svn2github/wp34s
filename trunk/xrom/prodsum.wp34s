@@ -14,7 +14,7 @@
  * 3	saved I
  */
 		XLBL"SIGMA"				/* Entry: SUMMATION */
-			XEQ entry
+			GSB entry
 			LocR 03				/* Registers .00 to .03 */
 			STO .03				/* Save for LastX*/
 			SPEC?
@@ -53,7 +53,7 @@ sum_entry::		DSL .00
 
 
 		XLBL"PRODUCT"				/* Entry: PRODUCT */
-			XEQ entry
+			GSB entry
 			LocR 03				/* Registers .00 to .03 */
 			STO .03
 			SPEC?

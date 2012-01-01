@@ -18,14 +18,14 @@
  * 0	second derivative
  */
 		XLBL"2DERIV"			/* Entry: SECOND DERIVATIVE */
-			XEQ entry
+			GSB entry
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
 				JMP deriv_bad_input
 			SF .00
-			XEQ deriv_default_h
+			GSB deriv_default_h
 			1
-			XEQ deriv_eval_func		/* f(x+h) + f(x-h)*/
+			GSB deriv_eval_func		/* f(x+h) + f(x-h)*/
 				JMP deriv_bad_input
 			1
 			6
@@ -38,7 +38,7 @@
 			RCL[times] .00
 			STO .02				/* order ten estimate*/
 			0
-			XEQ deriv_eval_func		/* f(x)*/
+			GSB deriv_eval_func		/* f(x)*/
 				JMP deriv_bad_input
 			3
 			0
@@ -53,7 +53,7 @@
 			STO- .02
 
 			2
-			XEQ deriv_eval_func		/* f(x+2h) + f(x-2h)*/
+			GSB deriv_eval_func		/* f(x+2h) + f(x-2h)*/
 				JMP deriv_bad_input
 			STO- .01
 			6
@@ -63,7 +63,7 @@
 			STO- .02
 
 			3
-			XEQ deriv_eval_func		/* f(x+3h) + f(x-3h)*/
+			GSB deriv_eval_func		/* f(x+3h) + f(x-3h)*/
 				JMP deriv2_4point
 			EEX
 			3
@@ -71,7 +71,7 @@
 			STO+ .02
 
 			4
-			XEQ deriv_eval_func		/* f(x+4h) + f(x-4h)*/
+			GSB deriv_eval_func		/* f(x+4h) + f(x-4h)*/
 				JMP deriv2_4point
 			1
 			2
@@ -80,7 +80,7 @@
 			STO- .02
 
 			5
-			XEQ deriv_eval_func		/* f(x+5h) + f(x-5h)*/
+			GSB deriv_eval_func		/* f(x+5h) + f(x-5h)*/
 				JMP deriv2_4point
 			8
 			[times]
@@ -109,25 +109,25 @@ deriv_6point::		RCL .01
 
 
 		XLBL"DERIV"				/* Entry: DERIVATIVE */
-			XEQ entry
+			GSB entry
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
 				JMP deriv_bad_input
 			CF .00
-			XEQ deriv_default_h
+			GSB deriv_default_h
 			1
-			XEQ deriv_eval_func		/* f(x+h) - f(x-h)*/
+			GSB deriv_eval_func		/* f(x+h) - f(x-h)*/
 				JMP deriv_bad_input
 			STO .01
 
 			2
-			XEQ deriv_eval_func		/* f(x+2h) - f(x-2h)*/
+			GSB deriv_eval_func		/* f(x+2h) - f(x-2h)*/
 				JMP deriv_bad_input
 			STO .02
 
 			/* At this point we can do a four point estimate if something goes awry */
 			3
-			XEQ deriv_eval_func		/* f(x+3h)-f(x-3h)*/
+			GSB deriv_eval_func		/* f(x+3h)-f(x-3h)*/
 				JMP deriv_4point
 
 			/* At this point we can do the six point estimate - calculate it now */
@@ -159,7 +159,7 @@ deriv_6point::		RCL .01
 
 			STO .02
 			4
-			XEQ deriv_eval_func		/* f(x+4h) - f(x-4h)*/
+			GSB deriv_eval_func		/* f(x+4h) - f(x-4h)*/
 				JMP deriv_6point
 			2
 			5
@@ -167,7 +167,7 @@ deriv_6point::		RCL .01
 			STO- .02
 
 			5
-			XEQ deriv_eval_func		/* f(x+5h) - f(x-5h)*/
+			GSB deriv_eval_func		/* f(x+5h) - f(x-5h)*/
 				JMP deriv_6point
 			RCL+ .00
 			RCL+ .02
