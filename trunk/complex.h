@@ -90,7 +90,6 @@ extern void cmplxLog2(decNumber *rx, decNumber *ry, const decNumber *a, const de
 extern void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxInvW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxSin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxCos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);

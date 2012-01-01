@@ -134,7 +134,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_EXPM1,	&decNumberExpm1,	&cmplxExpm1,	NOFN,		"e\234-1")
 	FUNC(OP_LAMW,	&decNumberLamW,		&cmplxlamW,	NOFN,		"W\276")
 	FUNC(OP_LAMW1,	XMR(W1),		NOFN,		NOFN,		"W\033")
-	FUNC(OP_INVW,	&decNumberInvW,		&cmplxInvW,	NOFN,		"W\235")
+	FUNC(OP_INVW,	XMR(W_INVERSE),		XMC(CPX_W_INVERSE),NOFN,		"W\235")
 	FUNC(OP_SQR,	&decNumberSquare,	&cmplxSqr,	&intSqr,	"x\232")
 	FUNC(OP_CUBE,	&decNumberCube,		&cmplxCube,	&intCube,	"CUBE")
 	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intCubeRoot,	"CUBERT")

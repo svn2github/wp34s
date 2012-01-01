@@ -855,13 +855,6 @@ decNumber *decNumberLamW(decNumber *r, const decNumber *x) {
 #endif
 }
 
-decNumber *decNumberInvW(decNumber *r, const decNumber *x) {
-	decNumber t;
-
-	dn_exp(&t, x);
-	return dn_multiply(r, &t, x);
-}
-
 
 /* Square - this almost certainly could be done more efficiently
  */

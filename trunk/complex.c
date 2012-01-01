@@ -728,15 +728,6 @@ void cmplxlamW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 #endif
 }
 
-void cmplxInvW(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber t1, t2;
-
-	cmplxExp(&t1, &t2, a, b);
-	cmplxMultiply(rx, ry, &t1, &t2, a, b);
-#endif
-}
-
 // ln(a + i b) = ln(sqrt(a*a + b*b)) + i (2*arctan(signum(b)) - arctan(a/b))
 // signum(b) = 1 if b>0, 0 if b=0, -1 if b<0, atan(1) = pi/4
 void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {

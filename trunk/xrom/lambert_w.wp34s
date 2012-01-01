@@ -52,7 +52,6 @@ LamW_exit::	x[<->] .08
 		RCLS .08
 		RTN
 
-#if 0
 /**************************************************************************/
 /* The inverse W function in both real and complex domains.
  * These can be done inline without the usual prelude and epilogue code.
@@ -68,11 +67,11 @@ LamW_exit::	x[<->] .08
 		       DBLOFF
 		       RTN
 
+		/* MORE - this doesn't work in DBL mode for some reason */
 		XLBL"CPX_W_INVERSE"
-		       DBLON
+		       /* DBLON */
 		       [cmplx]e[^x]
 		       [cmplx]x[<->] L
 		       [cmplx]RCL[times] L
-		       DBLOFF
+		       /* DBLOFF */
 		       RTN
-#endif
