@@ -162,10 +162,8 @@ extern decNumber *decNumberLnGamma(decNumber *res, const decNumber *x);
 extern decNumber *decNumberPsi(decNumber *res, const decNumber *x);
 extern decNumber *decNumberBeta(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *y);
-extern decNumber *decNumberZeta(decNumber *res, const decNumber *x);
 
 extern const decNumber *const gamma_consts[];
-extern const decNumber *const zeta_consts[];
 extern const decNumber *const digamma_consts[];
 
 extern decNumber *decNumberERF(decNumber *res, const decNumber *x);
@@ -202,16 +200,7 @@ extern decNumber *decNumberParallel(decNumber *res, const decNumber *x, const de
 extern decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y);
 
 extern decNumber *decNumberNot(decNumber *res, const decNumber *x);
-#if 1
 extern decNumber *decNumberBooleanOp(decNumber *res, const decNumber *x, const decNumber *y);
-#else
-extern decNumber *decNumberAnd(decNumber *res, const decNumber *x, const decNumber *y);
-extern decNumber *decNumberOr(decNumber *res, const decNumber *x, const decNumber *y);
-extern decNumber *decNumberXor(decNumber *res, const decNumber *x, const decNumber *y);
-extern decNumber *decNumberNand(decNumber *res, const decNumber *x, const decNumber *y);
-extern decNumber *decNumberNor(decNumber *res, const decNumber *x, const decNumber *y);
-extern decNumber *decNumberNxor(decNumber *res, const decNumber *x, const decNumber *y);
-#endif
 
 extern void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv);
 extern void dn_sinhcosh(const decNumber *v, decNumber *sinhv, decNumber *coshv);
@@ -253,9 +242,6 @@ extern decNumber *decNumberPolyLn(decNumber *res, const decNumber *y, const decN
 extern decNumber *decNumberPolyLnAlpha(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x);
 extern decNumber *decNumberPolyHEn(decNumber *res, const decNumber *y, const decNumber *x);
 extern decNumber *decNumberPolyHn(decNumber *res, const decNumber *y, const decNumber *x);
-
-extern decNumber *decNumberBernBn(decNumber *res, const decNumber *n);
-extern decNumber *decNumberBernBnS(decNumber *res, const decNumber *n);
 
 extern decNumber *decFactor(decNumber *r, const decNumber *x);
 

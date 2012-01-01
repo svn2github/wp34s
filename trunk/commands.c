@@ -40,6 +40,18 @@
 #define XLBL(name) XROM_ ## name
 #define XPTR(name) (xrom+XLBL(name)-XROM_START)
 
+#define XMR(name)	(FP_MONADIC_REAL) XPTR(name)
+#define XDR(name)	(FP_DYADIC_REAL) XPTR(name)
+#define XTR(name)	(FP_TRIADIC_REAL) XPTR(name)
+
+#define XMC(name)	(FP_MONADIC_CMPLX) XPTR(name)
+#define XDC(name)	(FP_DYADIC_CMPLX) XPTR(name)
+
+#define XMI(name)	(FP_MONADIC_INT) XPTR(name)
+#define XDI(name)	(FP_DYADIC_INT) XPTR(name)
+#define XTI(name)	(FP_TRIADIC_INT) XPTR(name)
+
+
 #ifdef SHORT_POINTERS
 #ifndef COMMANDS_PASS
 #define COMMANDS_PASS 1
@@ -121,6 +133,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_LN1P,	&decNumberLn1p,		&cmplxLn1p,	NOFN,		"LN1+x")
 	FUNC(OP_EXPM1,	&decNumberExpm1,	&cmplxExpm1,	NOFN,		"e\234-1")
 	FUNC(OP_LAMW,	&decNumberLamW,		&cmplxlamW,	NOFN,		"W\276")
+	FUNC(OP_LAMW1,	XMR(W1),		NOFN,		NOFN,		"W\033")
 	FUNC(OP_INVW,	&decNumberInvW,		&cmplxInvW,	NOFN,		"W\235")
 	FUNC(OP_SQR,	&decNumberSquare,	&cmplxSqr,	&intSqr,	"x\232")
 	FUNC(OP_CUBE,	&decNumberCube,		&cmplxCube,	&intCube,	"CUBE")
@@ -226,17 +239,10 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_AR_DB,	&convAR2DB,		NOFN,		NOFN,		"ar.\015dB")
 	FUNC(OP_DB_PR,	&convDB2PR,		NOFN,		NOFN,		"dB\015pr.")
 	FUNC(OP_PR_DB,	&convPR2DB,		NOFN,		NOFN,		"pr.\015dB")
-#ifdef INCLUDE_ZETA
-#ifdef INCLUDE_COMPLEX_ZETA
-	FUNC(OP_ZETA,	&decNumberZeta,		&cmplxZeta,	NOFN,		"\245")
-#else
-	FUNC(OP_ZETA,	&decNumberZeta,		NOFN,		NOFN,		"\245")
-#endif
-#ifdef INCLUDE_BERNOULLI
-	FUNC(OP_Bn,	&decNumberBernBn,	NOFN,		NOFN,		"B\275")
-	FUNC(OP_BnS,	&decNumberBernBnS,	NOFN,		NOFN,		"B\275*")
-#endif
-#endif
+	FUNC(OP_ZETA,	XMR(ZETA),		NOFN,		NOFN,		"\245")
+	FUNC(OP_Bn,	XMR(Bn),		NOFN,		NOFN,		"B\275")
+	FUNC(OP_BnS,	XMR(Bn_star),		NOFN,		NOFN,		"B\275*")
+
 #ifdef INCLUDE_EASTER
 	FUNC(OP_EASTER,	&dateEaster,		NOFN,		NOFN,		"EASTER")
 #endif
@@ -581,10 +587,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_QUAD,		(FP_NILADIC) XPTR(QUAD),	"SLVQ")
 	FUNC0(OP_NEXTPRIME,	(FP_NILADIC) XPTR(NEXTPRIME),	"NEXTP")
-	FUNC0(OP_USR_ZETA,	(FP_NILADIC) XPTR(ZETA),	"\245")
-	FUNC0(OP_USR_Bn,	(FP_NILADIC) XPTR(Bn),		"B\275")
-	FUNC0(OP_USR_BnS,	(FP_NILADIC) XPTR(Bn_star),	"B\275*")
-	FUNC0(OP_USR_W1,	(FP_NILADIC) XPTR(W1),		"W\033")
 	FUNC0(OP_SETEUR,	(FP_NILADIC) XPTR(SETEUR),	"SETEUR")   // 83
 	FUNC0(OP_SETUK,		(FP_NILADIC) XPTR(SETUK),	"SETUK")
 	FUNC0(OP_SETUSA,	(FP_NILADIC) XPTR(SETUSA),	"SETUSA")

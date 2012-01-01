@@ -124,7 +124,6 @@ extern void cmplxBeta(decNumber *rx, decNumber *ry,
 extern void cmplxLnBeta(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d);
-extern void cmplxZeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxParallel(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,

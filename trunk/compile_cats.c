@@ -86,7 +86,7 @@ static s_opcode program_xfcn[] = {
 	NILIC(OP_WHO,		"WHO")
 	MON(OP_LAMW,		"W\276")
 	MON(OP_INVW,		"W\235")
-	NILIC(OP_USR_W1,	"W\033")
+	MON(OP_LAMW1,		"W\033")
 	DYA(OP_LXNOR,		"XNOR")
 	NILIC(OP_ALPHADATE,	"\240DATE")
 	NILIC(OP_ALPHADAY,	"\240DAY")
@@ -127,17 +127,9 @@ static s_opcode program_xfcn[] = {
 #ifdef INCLUDE_EASTER
 	MON(OP_EASTER,		"EASTER")
 #endif
-#ifdef INCLUDE_ZETA
 	MON(OP_ZETA,		"\245")
-#ifdef INCLUDE_BERNOULLI
 	MON(OP_Bn,		"B[sub-n]")
 	MON(OP_BnS,		"B[sub-n]*")
-#endif
-#else
-	NILIC(OP_USR_ZETA,	"\245")
-	NILIC(OP_USR_Bn,	"B[sub-n]")
-	NILIC(OP_USR_BnS,	"B[sub-n]*")
-#endif
 #ifdef INCLUDE_DIGAMMA
 	MON(OP_PSI,		"\226")
 #endif
@@ -250,7 +242,7 @@ static s_opcode catalogue[] = {
 	NILIC(OP_WHO,		"WHO")
 	MON(OP_LAMW,		"W\276")
 	MON(OP_INVW,		"W\235")
-	NILIC(OP_USR_W1,	"W\033")
+	MON(OP_LAMW1,		"W\033")
 	DYA(OP_LXNOR,		"XNOR")
 	NILIC(OP_ALPHADATE,	"\240DATE")
 	NILIC(OP_ALPHADAY,	"\240DAY")
@@ -291,17 +283,9 @@ static s_opcode catalogue[] = {
 #ifdef INCLUDE_EASTER
 	MON(OP_EASTER,		"EASTER")
 #endif
-#ifdef INCLUDE_ZETA
 	MON(OP_ZETA,		"\245")
-#ifdef INCLUDE_BERNOULLI
 	MON(OP_Bn,		"B[sub-n]")
 	MON(OP_BnS,		"B[sub-n]*")
-#endif
-#else
-	NILIC(OP_USR_ZETA,	"\245")
-	NILIC(OP_USR_Bn,	"B[sub-n]")
-	NILIC(OP_USR_BnS,	"B[sub-n]*")
-#endif
 #ifdef INCLUDE_DIGAMMA
 	MON(OP_PSI,		"\226")
 #endif
@@ -358,9 +342,6 @@ static s_opcode cplx_catalogue[] = {
 	CDYA(OP_AGM,		"AGM")
 #ifdef INCLUDE_DBLFACT
 	CMON(OP_DBLFACT,	"x!!")
-#endif
-#ifdef INCLUDE_COMPLEX_ZETA
-	CMON(OP_ZETA,		"\245")
 #endif
 #ifdef INCLUDE_DIGAMMA
 	CMON(OP_PSI,		"\226")
