@@ -1188,183 +1188,6 @@ void clrretstk_pc(void) {
 
 
 
-
-
-/***************************************************************************
- * Monadic function handling.
- */
-
-/* Dispatch routine for monadic operations.
- * Since these functions take an argument from the X register, save it in
- * lastx and then replace it with their result, we can factor out the common
- * stack manipulatin code.
- */
-static void monadic(const opcode op) 
-{
-	unsigned int f;
-	process_cmdline_set_lift();
-
-	f = argKIND(op);
-	if (f < num_monfuncs) {
-		if (is_intmode()) {
-			if (! isNULL(monfuncs[f].monint)) {
-				long long int x = regToInt(&regX);
-				x = ICALL(monfuncs[f].monint)(x);
-				setlastX();
-				regFromInt(&regX, x);
-			} else
-				bad_mode_error();
-		} else {
-			if (! isNULL(monfuncs[f].mondreal)) {
-				decNumber x, r;
-
-				getX(&x);
-
-				if ( NULL == DCALL(monfuncs[f].mondreal)(&r, &x) )
-					set_NaN(&r);
-				setlastX();
-				setX(&r);
-			} else
-				bad_mode_error();
-		}
-	} else
-		illegal(op);
-}
-
-static void monadic_cmplex(const opcode op) {
-	decNumber x, y, rx, ry;
-	unsigned int f;
-
-	process_cmdline_set_lift();
-
-	f = argKIND(op);
-
-	if (f < num_monfuncs) {
-		if (! isNULL(monfuncs[f].mondcmplx)) {
-			getXY(&x, &y);
-
-			CALL(monfuncs[f].mondcmplx)(&rx, &ry, &x, &y);
-
-			setlastXY();
-			setXY(&rx, &ry);
-			set_was_complex();
-		} else
-			bad_mode_error();
-	} else
-		illegal(op);
-}
-
-/***************************************************************************
- * Dyadic function handling.
- */
-
-/* Dispatch routine for dyadic operations.
- * Again, these functions have a common argument decode and record and
- * common stack manipulation.
- */
-static void dyadic(const opcode op) {
-
-	unsigned int f;
-	process_cmdline_set_lift();
-
-	f = argKIND(op);
-	if (f < num_dyfuncs) {
-		if (is_intmode()) {
-			if (! isNULL(dyfuncs[f].dydint)) {
-				long long int x = regToInt(&regX);
-				long long int y = regToInt(&regY);
-				x = ICALL(dyfuncs[f].dydint)(y, x);
-				setlastX();
-				lower();
-				regFromInt(&regX, x);
-			} else
-				bad_mode_error();
-		} else {
-			if (! isNULL(dyfuncs[f].dydreal)) {
-				decNumber x, y, r;
-
-				getXY(&x, &y);
-
-				if (NULL == DCALL(dyfuncs[f].dydreal)(&r, &y, &x))
-					set_NaN(&r);
-				setlastX();
-				lower();
-				setX(&r);
-			} else
-				bad_mode_error();
-		}
-	} else
-		illegal(op);
-}
-
-static void dyadic_cmplex(const opcode op) {
-	decNumber x1, y1, x2, y2, xr, yr;
-	unsigned int f;
-
-	process_cmdline_set_lift();
-
-	f = argKIND(op);
-	if (f < num_dyfuncs) {
-		if (! isNULL(dyfuncs[f].dydcmplx)) {
-			getXYZT(&x1, &y1, &x2, &y2);
-
-			CALL(dyfuncs[f].dydcmplx)(&xr, &yr, &x2, &y2, &x1, &y1);
-
-			setlastXY();
-			lower2();
-			setXY(&xr, &yr);
-			set_was_complex();
-		} else
-			bad_mode_error();
-	} else
-		illegal(op);
-}
-/***************************************************************************
- * Triadic function handling.
- */
-
-/* Dispatch routine for dyadic operations.
- * Again, these functions have a common argument decode and record and
- * common stack manipulation.
- */
-static void triadic(const opcode op) {
-	unsigned int f;
-	process_cmdline_set_lift();
-
-	f = argKIND(op);
-	if (f < num_trifuncs) {
-		if (is_intmode()) {
-			if (! isNULL(trifuncs[f].triint)) {
-				long long int x = regToInt(&regX);
-				long long int y = regToInt(&regY);
-				long long int z = regToInt(&regZ);
-				x = ICALL(trifuncs[f].triint)(z, y, x);
-				setlastX();
-				lower();
-				lower();
-				regFromInt(&regX, x);
-			} else
-				bad_mode_error();
-		} else {
-			if (! isNULL(trifuncs[f].trireal)) {
-				decNumber x, y, z, r;
-
-				getXYZ(&x, &y, &z);
-
-				if (NULL == DCALL(trifuncs[f].trireal)(&r, &z, &y, &x))
-					set_NaN(&r);
-				setlastX();
-				lower();
-				lower();
-				setX(&r);
-			} else
-				bad_mode_error();
-		}
-	} else
-		illegal(op);
-}
-
-
 #ifdef INCLUDE_DOUBLE_PRECISION
 /*
  *  PI in high precision
@@ -1756,7 +1579,7 @@ int free_flash(void) {
 }
 
 void get_mem(REGISTER *a, REGISTER *nul2, enum nilop op) {
-	put_int( op == OP_MEMQ ? free_mem() : 
+	put_int( op == OP_MEMQ ? free_mem() :
 		 op == OP_LOCRQ ? local_regs() :
 		 op == OP_FLASHQ ? free_flash() :
 		 global_regs(),
@@ -2073,67 +1896,6 @@ void op_gtoalpha(REGISTER *a, REGISTER *b, enum nilop op) {
 }
 
 
-// XEQ to an XROM command
-// We have assembler produces jump tables to work with which is nice.  These tables must be in exactly
-// the same order as the relevant opcodes.
-
-// The XROM_START trick makes the fix automatic. :-)
-#define XR(offset, op)	addrXROM(offset+1-XROM_START) // op
-
-static const unsigned short int xrom_rarg_entries[] = {
-	XR(XROM_SIGMA,		RARG_SUM),
-	XR(XROM_PRODUCT,	RARG_PROD),
-	XR(XROM_SOLVE,		RARG_SOLVE),
-	XR(XROM_DERIV,		RARG_DERIV),
-	XR(XROM_2DERIV,		RARG_2DERIV),
-	XR(XROM_INTEGRATE,	RARG_INTG),
-};
-
-static const unsigned short int xrom_niladic_entries[] = {
-	XR(XROM_QUAD,		OP_QUAD),
-	XR(XROM_NEXTPRIME,	OP_NEXTPRIME),
-	XR(XROM_ZETA,		OP_USR_ZETA),
-	XR(XROM_Bn,		OP_USR_Bn),
-	XR(XROM_Bn_star,	OP_USR_BnS),
-	XR(XROM_W1,		OP_USR_W1),
-	XR(XROM_SETEUR,		OP_SETEUR),
-	XR(XROM_SETUK,		OP_SETUK),
-	XR(XROM_SETUSA,		OP_SETUSA),
-	XR(XROM_SETIND,		OP_SETIND),
-	XR(XROM_SETCHN,		OP_SETCHN),
-	XR(XROM_SETJAP,		OP_SETJPN),
-	XR(XROM_WHO,		OP_WHO),
-};
-#undef XR
-
-
-static void do_xrom(int idx, const unsigned short int entries[]) {
-	const unsigned int oldpc = state_pc();
-	const unsigned int pc = entries[idx];
-
-	UserLocalRegs = LocalRegs;
-	gsbgto(pc, 1, oldpc);
-}
-
-static void xromargcommon(int lbl, unsigned int userpc) {
-	if (userpc != 0) {
-		XromUserPc = userpc;
-		do_xrom(lbl, xrom_rarg_entries);
-	}
-}
-
-void xromarg(unsigned int arg, enum rarg op) {
-	xromargcommon(op - RARG_SUM, find_label_from(state_pc(), arg, 0));
-}
-
-void multixromarg(const opcode o, enum multiops mopr) {
-	xromargcommon(mopr - DBL_SUM, findmultilbl(o, FIND_OP_ERROR));
-}
-
-void xrom_routines(REGISTER *a, REGISTER *nul2, enum nilop op) {
-	do_xrom(op - OP_QUAD, xrom_niladic_entries);
-}
-
 void cmddisp(unsigned int arg, enum rarg op) {
 	UState.dispdigs = arg;
 	if (op != RARG_DISP)
@@ -2193,7 +1955,7 @@ void do_conv(decNumber *r, unsigned int arg, const decNumber *x) {
 	}
 
 	decimal64ToNumber(&CONSTANT_CONV(conv), &m);
-	
+
 	if (dirn == 0)		// metric to imperial
 		dn_divide(r, x, &m);
 	else			// imperial to metric
@@ -2296,36 +2058,6 @@ static void cmdlinechs(void) {
 	}
 }
 
-
-/* Output a niladic function.
- */
-static void niladic(const opcode op) {
-	const unsigned int idx = argKIND(op);
-
-	process_cmdline();
-	if (idx < num_niladics) {
-		if (is_intmode() && NILADIC_NOTINT(niladics[idx]))
-			bad_mode_error();
-		else if (! isNULL(niladics[idx].niladicf)) {
-			REGISTER *x = NULL, *y = NULL;
-
-			switch (NILADIC_NUMRESULTS(niladics[idx])) {
-			case 2:	lift_if_enabled();
-				y = get_stack(1);
-			case 1:	x = &regX;
-				lift_if_enabled();
-			default:
-				CALL(niladics[idx].niladicf)(x, y, (enum nilop)idx);
-				break;
-			}
-		}
-	} else
-		illegal(op);
-	if (idx != OP_rCLX)
-		State.state_lift = 1;
-}
-
-
 /* Execute a tests command
  */
 #ifdef INCLUDE_DOUBLE_PRECISION
@@ -2423,7 +2155,7 @@ void cmdtest(unsigned int arg, enum rarg op) {
 
 #ifdef INCLUDE_DOUBLE_PRECISION
 static void do_ztst(const REGISTER *r_s, const REGISTER *i_s,
-		    const REGISTER *r_d, const REGISTER *i_d, 
+		    const REGISTER *r_d, const REGISTER *i_d,
 		    const enum tst_op op) {
 #else
 #define do_ztst(r_s, i_s, r_d, i_d, op, cnst) do_tst_(r_s, i_s, op)
@@ -2543,7 +2275,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 			dn_minus(&n, &n);
 		dn_mulpow10(&i, &u, 3);			// i = fff.ii
 		decNumberTrunc(&f, &i);			// f = fff
-		dn_subtract(&i, &i, &f);		// i = .ii		
+		dn_subtract(&i, &i, &f);		// i = .ii
 		dn_mul100(&x, &i);
 		decNumberTrunc(&i, &x);			// i = ii
 		if (dn_eq0(&i))
@@ -2672,7 +2404,7 @@ void cmdflag(unsigned int arg, enum rarg op) {
 	case RARG_FCS:	fin_tst(! flg);	flg = 1;	   break;
 	case RARG_FCF:	fin_tst(! flg);	flg = flg ? 0 : 1; break;
 
-	default:					
+	default:
 		return;
 	}
 
@@ -3084,7 +2816,7 @@ void op_fixscieng(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 #ifdef INCLUDE_DOUBLE_PRECISION
 void op_double(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	static const unsigned char reglist[] = {
-		regX_idx, regY_idx, regZ_idx, regT_idx, regL_idx, regI_idx, regJ_idx, regK_idx 
+		regX_idx, regY_idx, regZ_idx, regT_idx, regL_idx, regI_idx, regJ_idx, regK_idx
 	};
 	const int dbl = (op == OP_DBLON);
 	const int xrom = (isXROM(state_pc()));
@@ -3366,7 +3098,7 @@ void do_usergsb(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	const unsigned int pc = state_pc();
 	if (isXROM(pc) && XromUserPc != 0) {
 		gsbgto(pc, 1, XromUserPc);    // push address of callee
-		gsbgto(pc, 1, LocalRegs);     // push my local registers 
+		gsbgto(pc, 1, LocalRegs);     // push my local registers
 		gsbgto(pc, 1, UserLocalRegs); // push former local registers
 		gsbgto(XromUserPc, 1, pc);    // push return address, transfer control
 		XromUserPc = 0;
@@ -3386,7 +3118,7 @@ void op_popusr(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 /* Tests if the user program is at the top level */
 void isTop(REGISTER *a, REGISTER *b, enum nilop op) {
 	int top = 0;
-	
+
 	if (Running) {
 		top = RetStkPtr >= -1 - local_levels();
 	}
@@ -3478,7 +3210,7 @@ static int reg_decode(REGISTER **s, unsigned int *n, REGISTER **d, int flash) {
 			goto range_error;
 		rsrc = -rsrc;
 	}
-	else 
+	else
 		flash = 0;
 
 	rdest = rsrc % 1000;		// ddd
@@ -3503,7 +3235,7 @@ static int reg_decode(REGISTER **s, unsigned int *n, REGISTER **d, int flash) {
 				if (rsrc > rdest) {
 					num = mx_src - rsrc;
 					q = rsrc - rdest;
-				} 
+				}
 				else {
 					num = mx_dest - rdest;
 					q = rdest - rsrc;
@@ -3635,6 +3367,338 @@ void op_regsort(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 }
 
 
+
+/* Print a single program step nicely.
+ */
+static void print_step(const opcode op) {
+	char buf[16];
+	const unsigned int pc = state_pc();
+	char *p = TraceBuffer;
+
+	if (isXROM(pc)) {
+		*p++ = 'x';
+	} else if (isLIB(pc)) {
+		p = num_arg_0(p, nLIB(pc), 1);
+		*p++ = ' ';
+	}
+	if (pc == 0)
+		scopy(p, "000:");
+	else {
+		p = num_arg_0(p, user_pc(), 3);
+		*p++ = ':';
+		scopy_char(p, prt(op, buf), '\0');
+		if (*p == '?')
+			*p = '\0';
+	}
+	State2.disp_small = 1;
+	DispMsg = TraceBuffer;
+}
+
+
+/* When stuff gets done, there are some bits of state that need
+ * to be reset -- SHOW, ->base change the display mode until something
+ * happens.  This should be called on that something.
+ */
+void reset_volatile_state(void) {
+	State2.int_window = 0;
+	UState.int_maxw = 0;
+	State2.smode = SDISP_NORMAL;
+}
+
+
+/*
+ *  Called by any long running function
+ */
+void busy(void)
+{
+	/*
+	 *  Serve the hardware watch dog
+	 */
+	watchdog();
+
+	/*
+	 *  Increase the speed
+	 */
+	update_speed(1);
+
+	/*
+	 *  Indicate busy state to the user
+	 */
+	if ( !Busy && !Running ) {
+		Busy = 1;
+		message( "Wait...", NULL );
+	}
+}
+
+/***************************************************************************
+ * Function dispatchers.
+ */
+
+/*
+ *  Check for a call into XROM space.
+ *  Fix the pointer alignment on the go.
+ */
+static const s_opcode *check_for_xrom_address(void *fp)
+{
+	const s_opcode *xp = (const s_opcode *) ((unsigned int) fp & ~1);
+	if (xp < xrom)
+		return NULL;
+#ifndef REALBUILD
+	// On the device, XROM is at the end so this is not needed
+	if (xp >= xrom + xrom_size)
+		return NULL;
+#endif
+	return xp;
+}
+
+/*
+ *  Check for a call into XROM space and dispatch it.
+ */
+static int dispatch_xrom(void *fp)
+{
+	const s_opcode *xp = check_for_xrom_address(fp);
+	if (xp == NULL)
+		return 0;
+
+	UserLocalRegs = LocalRegs;
+	gsbgto(addrXROM((xp - xrom) + 1), 1, state_pc());
+	return 1;
+}
+
+
+/* Dispatch routine for niladic functions.
+ */
+static void niladic(const opcode op) {
+	const unsigned int idx = argKIND(op);
+
+	process_cmdline();
+	if (idx < num_niladics) {
+		if (is_intmode() && NILADIC_NOTINT(niladics[idx]))
+			bad_mode_error();
+		else if (! isNULL(niladics[idx].niladicf)) {
+			FP_NILADIC fp = (FP_NILADIC) EXPAND_ADDRESS(niladics[idx].niladicf);
+			if (dispatch_xrom(fp))
+				return;
+			else {
+				REGISTER *x = NULL, *y = NULL;
+
+				switch (NILADIC_NUMRESULTS(niladics[idx])) {
+				case 2:	lift_if_enabled();
+					y = get_stack(1);
+				case 1:	x = &regX;
+					lift_if_enabled();
+				default:
+					fp(x, y, (enum nilop)idx);
+					break;
+				}
+			}
+		}
+	} else
+		illegal(op);
+	if (idx != OP_rCLX)
+		State.state_lift = 1;
+}
+
+
+/* Dispatch routine for monadic operations.
+ * Since these functions take an argument from the X register, save it in
+ * lastx and then replace it with their result, we can factor out the common
+ * stack manipulatin code.
+ */
+static void monadic(const opcode op)
+{
+	unsigned int f;
+	process_cmdline_set_lift();
+
+	f = argKIND(op);
+	if (f < num_monfuncs) {
+		if (is_intmode()) {
+			if (! isNULL(monfuncs[f].monint)) {
+				FP_MONADIC_INT fp = (FP_MONADIC_INT) EXPAND_ADDRESS(monfuncs[f].monint);
+				if (dispatch_xrom(fp))
+					return;
+				else {
+					long long int x = regToInt(&regX);
+					x = fp(x);
+					setlastX();
+					regFromInt(&regX, x);
+				}
+			} else
+				bad_mode_error();
+		} else {
+			if (! isNULL(monfuncs[f].mondreal)) {
+				FP_MONADIC_REAL fp = (FP_MONADIC_REAL) EXPAND_ADDRESS(monfuncs[f].mondreal);
+				if (dispatch_xrom(fp))
+					return;
+				else {
+					decNumber x, r;
+					getX(&x);
+					if (NULL == fp(&r, &x))
+						set_NaN(&r);
+					setlastX();
+					setX(&r);
+				}
+			} else
+				bad_mode_error();
+		}
+	} else
+		illegal(op);
+}
+
+static void monadic_cmplex(const opcode op) {
+	decNumber x, y, rx, ry;
+	unsigned int f;
+
+	process_cmdline_set_lift();
+
+	f = argKIND(op);
+
+	if (f < num_monfuncs) {
+		if (! isNULL(monfuncs[f].mondcmplx)) {
+			FP_MONADIC_CMPLX fp = (FP_MONADIC_CMPLX) EXPAND_ADDRESS(monfuncs[f].mondcmplx);
+			if (dispatch_xrom(fp))
+				return;
+			else {
+				getXY(&x, &y);
+				fp(&rx, &ry, &x, &y);
+				setlastXY();
+				setXY(&rx, &ry);
+				set_was_complex();
+			}
+		} else
+			bad_mode_error();
+	} else
+		illegal(op);
+}
+
+/***************************************************************************
+ * Dyadic function handling.
+ */
+
+/* Dispatch routine for dyadic operations.
+ * Again, these functions have a common argument decode and record and
+ * common stack manipulation.
+ */
+static void dyadic(const opcode op) {
+
+	unsigned int f;
+	process_cmdline_set_lift();
+
+	f = argKIND(op);
+	if (f < num_dyfuncs) {
+		if (is_intmode()) {
+			if (! isNULL(dyfuncs[f].dydint)) {
+				FP_DYADIC_INT fp = (FP_DYADIC_INT) EXPAND_ADDRESS(dyfuncs[f].dydint);
+				if (dispatch_xrom(fp))
+					return;
+				else {
+					long long int x = regToInt(&regX);
+					long long int y = regToInt(&regY);
+					x = fp(y, x);
+					setlastX();
+					lower();
+					regFromInt(&regX, x);
+				}
+			} else
+				bad_mode_error();
+		} else {
+			if (! isNULL(dyfuncs[f].dydreal)) {
+				FP_DYADIC_REAL fp = (FP_DYADIC_REAL) EXPAND_ADDRESS(dyfuncs[f].dydreal);
+				if (dispatch_xrom(fp))
+					return;
+				else {
+					decNumber x, y, r;
+					getXY(&x, &y);
+					if (NULL == fp(&r, &y, &x))
+						set_NaN(&r);
+					setlastX();
+					lower();
+					setX(&r);
+				}
+			} else
+				bad_mode_error();
+		}
+	} else
+		illegal(op);
+}
+
+static void dyadic_cmplex(const opcode op) {
+	decNumber x1, y1, x2, y2, xr, yr;
+	unsigned int f;
+
+	process_cmdline_set_lift();
+
+	f = argKIND(op);
+	if (f < num_dyfuncs) {
+		if (! isNULL(dyfuncs[f].dydcmplx)) {
+			FP_DYADIC_CMPLX fp = (FP_DYADIC_CMPLX) EXPAND_ADDRESS(dyfuncs[f].dydcmplx);
+			if (dispatch_xrom(fp))
+				return;
+			else {
+				getXYZT(&x1, &y1, &x2, &y2);
+
+				fp(&xr, &yr, &x2, &y2, &x1, &y1);
+
+				setlastXY();
+				lower2();
+				setXY(&xr, &yr);
+				set_was_complex();
+			}
+		} else
+			bad_mode_error();
+	} else
+		illegal(op);
+}
+
+/* Dispatch routine for triadic operations.
+ * Again, these functions have a common argument decode and record and
+ * common stack manipulation.
+ */
+static void triadic(const opcode op) {
+	unsigned int f;
+	process_cmdline_set_lift();
+
+	f = argKIND(op);
+	if (f < num_trifuncs) {
+		if (is_intmode()) {
+			if (! isNULL(trifuncs[f].triint)) {
+				FP_TRIADIC_INT fp = (FP_TRIADIC_INT) EXPAND_ADDRESS(trifuncs[f].triint);
+				if (dispatch_xrom(fp))
+					return;
+				else {
+					long long int x = regToInt(&regX);
+					long long int y = regToInt(&regY);
+					long long int z = regToInt(&regZ);
+					x = fp(z, y, x);
+					setlastX();
+					lower();
+					lower();
+					regFromInt(&regX, x);
+				}
+			} else
+				bad_mode_error();
+		} else {
+			if (! isNULL(trifuncs[f].trireal)) {
+				FP_TRIADIC_REAL fp = (FP_TRIADIC_REAL) EXPAND_ADDRESS(trifuncs[f].trireal);
+				if (dispatch_xrom(fp))
+					return;
+				else {
+					decNumber x, y, z, r;
+					getXYZ(&x, &y, &z);
+					if (NULL == fp(&r, &z, &y, &x))
+						set_NaN(&r);
+					setlastX();
+					lower();
+					lower();
+					setX(&r);
+				}
+			} else
+				bad_mode_error();
+		}
+	} else
+		illegal(op);
+}
+
 /* Handle a command that takes an argument.  The argument is encoded
  * in the low order bits of the opcode.  We also have to take
  * account of the indirection flag and various limits -- we always work modulo
@@ -3699,7 +3763,15 @@ static void rargs(const opcode op) {
 	else if (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1))
 		err(ERR_ILLEGAL);
 	else {
-		CALL(argcmds[cmd].f)(arg, (enum rarg)cmd);
+		FP_RARG fp = (FP_RARG) EXPAND_ADDRESS(argcmds[cmd].f);
+		if (NULL != check_for_xrom_address(fp)) {
+			XromUserPc = find_label_from(state_pc(), arg, 0);
+			if (XromUserPc != 0)
+				dispatch_xrom(fp);
+			return;
+		}
+		else
+			fp(arg, (enum rarg)cmd);
 		State.state_lift = 1;
 	}
 }
@@ -3716,71 +3788,19 @@ static void multi(const opcode op) {
 	}
 	if (isNULL(multicmds[cmd].f))	// LBL does nothing
 		return;
-	CALL(multicmds[cmd].f)(op, (enum multiops)cmd);
-}
-
-
-/* Print a single program step nicely.
- */
-static void print_step(const opcode op) {
-	char buf[16];
-	const unsigned int pc = state_pc();
-	char *p = TraceBuffer;
-
-	if (isXROM(pc)) {
-		*p++ = 'x';
-	} else if (isLIB(pc)) {
-		p = num_arg_0(p, nLIB(pc), 1);
-		*p++ = ' ';
-	} 
-	if (pc == 0)
-		scopy(p, "000:");
 	else {
-		p = num_arg_0(p, user_pc(), 3);
-		*p++ = ':';
-		scopy_char(p, prt(op, buf), '\0');
-		if (*p == '?')
-			*p = '\0';
-	}
-	State2.disp_small = 1;
-	DispMsg = TraceBuffer;
-}
-
-
-/* When stuff gets done, there are some bits of state that need
- * to be reset -- SHOW, ->base change the display mode until something
- * happens.  This should be called on that something.
- */
-void reset_volatile_state(void) {
-	State2.int_window = 0;
-	UState.int_maxw = 0;
-	State2.smode = SDISP_NORMAL;
-}
-
-
-/*
- *  Called by any long running function
- */
-void busy(void)
-{
-	/*
-	 *  Serve the hardware watch dog
-	 */
-	watchdog();
-
-	/*
-	 *  Increase the speed
-	 */
-	update_speed(1);
-
-	/*
-	 *  Indicate busy state to the user
-	 */
-	if ( !Busy && !Running ) {
-		Busy = 1;
-		message( "Wait...", NULL );
+		FP_MULTI fp = (FP_MULTI) EXPAND_ADDRESS(multicmds[cmd].f);
+		if (NULL != check_for_xrom_address(fp)) {
+			XromUserPc = findmultilbl(op, FIND_OP_ERROR);
+			if (XromUserPc != 0)
+				dispatch_xrom(fp);
+			return;
+		}
+		else
+			fp(op, (enum multiops)cmd);
 	}
 }
+
 
 
 /* Main dispatch routine that decodes the top level of the opcode and

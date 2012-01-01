@@ -15,6 +15,7 @@
  */
 #if COMMANDS_PASS != 2
 #include "xeq.h"
+#include "xrom.h"
 #include "decn.h"
 #include "complex.h"
 #include "stats.h"
@@ -31,6 +32,13 @@
 #include "stopwatch.h"
 #endif
 #endif
+
+/*
+ *  Macro to define pointers to XROM routines
+ *  Usage: XPTR(WHO) instead of a function pointer
+ */
+#define XLBL(name) XROM_ ## name
+#define XPTR(name) (xrom+XLBL(name)-XROM_START)
 
 #ifdef SHORT_POINTERS
 #ifndef COMMANDS_PASS
@@ -381,19 +389,19 @@ CMDTAB const struct trifunc_cmdtab trifuncs_ct[ NUM_TRIADIC ] = {
 #else
 const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #endif
-	FUNC(OP_BETAI,		&betai,		NOFN,		"I\241")
-	FUNC(OP_DBL_DIV, 	NOFN,		&intDblDiv,	"DBL/")
-	FUNC(OP_DBL_MOD, 	NOFN,		&intDblRmdr,	"DBLR")
+	FUNC(OP_BETAI,		&betai,			(FP_TRIADIC_INT) NOFN,	"I\241")
+	FUNC(OP_DBL_DIV, 	(FP_TRIADIC_REAL) NOFN,	&intDblDiv,		"DBL/")
+	FUNC(OP_DBL_MOD, 	(FP_TRIADIC_REAL) NOFN,	&intDblRmdr,		"DBLR")
 #ifdef INCLUDE_MULADD
-	FUNC(OP_MULADD, 	&decNumberMAdd,	&intMAdd,	"\034+")
+	FUNC(OP_MULADD, 	&decNumberMAdd,		&intMAdd,		"\034+")
 #endif
-	FUNC(OP_PERMRR,		&decNemberPerMRR, NOFN,		"%MRR")
-        FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha, NOFN,    "L\275\240")
+	FUNC(OP_PERMRR,		&decNemberPerMRR,	(FP_TRIADIC_INT) NOFN,	"%MRR")
+        FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha,	(FP_TRIADIC_INT) NOFN,	"L\275\240")
 #ifdef MATRIX_SUPPORT
-	FUNC(OP_MAT_MUL,	&matrix_multiply,	NOFN,	"M\034")
-	FUNC(OP_MAT_GADD,	&matrix_genadd,		NOFN,	"M+\034")
-	FUNC(OP_MAT_REG,	&matrix_getreg,		NOFN,	"M.REG")
-	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	NOFN,	"LINEQS")
+	FUNC(OP_MAT_MUL,	&matrix_multiply,	(FP_TRIADIC_INT) NOFN,	"M\034")
+	FUNC(OP_MAT_GADD,	&matrix_genadd,		(FP_TRIADIC_INT) NOFN,	"M+\034")
+	FUNC(OP_MAT_REG,	&matrix_getreg,		(FP_TRIADIC_INT) NOFN,	"M.REG")
+	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	(FP_TRIADIC_INT) NOFN,	"LINEQS")
 #endif
 #undef FUNC
 };
@@ -425,7 +433,7 @@ CMDTAB const struct niladic_cmdtab niladics_ct[ NUM_NILADIC ] = {
 #else
 const struct niladic niladics[ NUM_NILADIC ] = {
 #endif
-	FUNC0(OP_NOP,		NOFN,			"NOP")
+	FUNC0(OP_NOP,		(FP_NILADIC) NOFN,	"NOP")
 	FUNC0(OP_VERSION,	&version,		"VERS")
 	FUNC0(OP_OFF,		&cmd_off,		"OFF")
 	FUNC1(OP_STKSIZE,	&get_stack_size,	"SSIZE?")
@@ -571,19 +579,19 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC1(OP_TICKS,		&op_ticks,		"TICKS")
 	FUNC1(OP_VOLTAGE,	&op_voltage,		"BATT")
 
-	FUNC0(OP_QUAD,		&xrom_routines,		"SLVQ")
-	FUNC0(OP_NEXTPRIME,	&xrom_routines,		"NEXTP")
-	FUNC0(OP_USR_ZETA,	&xrom_routines,		"\245")
-	FUNC0(OP_USR_Bn,	&xrom_routines,		"B\275")
-	FUNC0(OP_USR_BnS,	&xrom_routines,		"B\275*")
-	FUNC0(OP_USR_W1,	&xrom_routines,		"W\033")
-	FUNC0(OP_SETEUR,	&xrom_routines,		"SETEUR")   // 83
-	FUNC0(OP_SETUK,		&xrom_routines,		"SETUK")
-	FUNC0(OP_SETUSA,	&xrom_routines,		"SETUSA")
-	FUNC0(OP_SETIND,	&xrom_routines,		"SETIND")
-	FUNC0(OP_SETCHN,	&xrom_routines,		"SETCHN")
-	FUNC0(OP_SETJPN,	&xrom_routines,		"SETJPN")
-	FUNC0(OP_WHO,		&xrom_routines,		"WHO")	
+	FUNC0(OP_QUAD,		(FP_NILADIC) XPTR(QUAD),	"SLVQ")
+	FUNC0(OP_NEXTPRIME,	(FP_NILADIC) XPTR(NEXTPRIME),	"NEXTP")
+	FUNC0(OP_USR_ZETA,	(FP_NILADIC) XPTR(ZETA),	"\245")
+	FUNC0(OP_USR_Bn,	(FP_NILADIC) XPTR(Bn),		"B\275")
+	FUNC0(OP_USR_BnS,	(FP_NILADIC) XPTR(Bn_star),	"B\275*")
+	FUNC0(OP_USR_W1,	(FP_NILADIC) XPTR(W1),		"W\033")
+	FUNC0(OP_SETEUR,	(FP_NILADIC) XPTR(SETEUR),	"SETEUR")   // 83
+	FUNC0(OP_SETUK,		(FP_NILADIC) XPTR(SETUK),	"SETUK")
+	FUNC0(OP_SETUSA,	(FP_NILADIC) XPTR(SETUSA),	"SETUSA")
+	FUNC0(OP_SETIND,	(FP_NILADIC) XPTR(SETIND),	"SETIND")
+	FUNC0(OP_SETCHN,	(FP_NILADIC) XPTR(SETCHN),	"SETCHN")
+	FUNC0(OP_SETJPN,	(FP_NILADIC) XPTR(SETJAP),	"SETJPN")
+	FUNC0(OP_WHO,		(FP_NILADIC) XPTR(WHO),		"WHO")	
 
 	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")
@@ -775,12 +783,12 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDlbl(RARG_LBLP,	&cmdlblp,				"LBL?")
 	CMDlbl(RARG_XEQ,	&cmdgto,				"XEQ")
 	CMDlbl(RARG_GTO,	&cmdgto,				"GTO")
-	CMDlbl(RARG_SUM,	&xromarg,				"\221")
-	CMDlbl(RARG_PROD,	&xromarg,				"\217")
-	CMDlbl(RARG_SOLVE,	&xromarg,				"SLV")
-	CMDlbl(RARG_DERIV,	&xromarg,				"f'(x)")
-	CMDlbl(RARG_2DERIV,	&xromarg,				"f\"(x)")
-	CMDlbl(RARG_INTG,	&xromarg,				"\004")
+	CMDlbl(RARG_SUM,	(FP_RARG) XPTR(SIGMA),			"\221")
+	CMDlbl(RARG_PROD,	(FP_RARG) XPTR(PRODUCT),		"\217")
+	CMDlbl(RARG_SOLVE,	(FP_RARG) XPTR(SOLVE),			"SLV")
+	CMDlbl(RARG_DERIV,	(FP_RARG) XPTR(DERIV),			"f'(x)")
+	CMDlbl(RARG_2DERIV,	(FP_RARG) XPTR(2DERIV),			"f\"(x)")
+	CMDlbl(RARG_INTG,	(FP_RARG) XPTR(INTEGRATE),		"\004")
 
 	CMD(RARG_STD,		&cmddisp,	DISPLAY_DIGITS,		"ALL")
 	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX")
@@ -891,17 +899,17 @@ CMDTAB const struct multicmd_cmdtab multicmds_ct[ NUM_MULTI ] = {
 #else
 const struct multicmd multicmds[ NUM_MULTI ] = {
 #endif
-	CMD(DBL_LBL,	NOFN,		"LBL")
-	CMD(DBL_LBLP,	&cmdmultilblp,	"LBL?")
-	CMD(DBL_XEQ,	&cmdmultigto,	"XEQ")
-	CMD(DBL_GTO,	&cmdmultigto,	"GTO")
-	CMD(DBL_SUM,	&multixromarg,	"\221")
-	CMD(DBL_PROD,	&multixromarg,	"\217")
-	CMD(DBL_SOLVE,	&multixromarg,	"SLV")
-	CMD(DBL_DERIV,	&multixromarg,	"f'(x)")
-	CMD(DBL_2DERIV,	&multixromarg,	"f\"(x)")
-	CMD(DBL_INTG,	&multixromarg,	"\004")
-	CMD(DBL_ALPHA,	&multialpha,	"\240")
+	CMD(DBL_LBL,	NOFN,				"LBL")
+	CMD(DBL_LBLP,	&cmdmultilblp,			"LBL?")
+	CMD(DBL_XEQ,	&cmdmultigto,			"XEQ")
+	CMD(DBL_GTO,	&cmdmultigto,			"GTO")
+	CMD(DBL_SUM,	(FP_MULTI) XPTR(SIGMA),		"\221")
+	CMD(DBL_PROD,	(FP_MULTI) XPTR(PRODUCT),	"\217")
+	CMD(DBL_SOLVE,	(FP_MULTI) XPTR(SOLVE),		"SLV")
+	CMD(DBL_DERIV,	(FP_MULTI) XPTR(DERIV),		"f'(x)")
+	CMD(DBL_2DERIV,	(FP_MULTI) XPTR(2DERIV),	"f\"(x)")
+	CMD(DBL_INTG,	(FP_MULTI) XPTR(INTEGRATE),	"\004")
+	CMD(DBL_ALPHA,	&multialpha,			"\240")
 #undef CMD
 };
 

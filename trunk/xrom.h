@@ -18,7 +18,13 @@
 #define __XROM_H__
 
 #include "xeq.h"
-#include "xrom_labels.h"	// New style
+#include "xrom_labels.h"
+
+#ifdef REALBUILD
+#define XROM_DATA __attribute__((section(".xrom")))
+#else
+#define XROM_DATA /**/
+#endif
 
 extern const s_opcode xrom[];
 extern const unsigned short int xrom_size;

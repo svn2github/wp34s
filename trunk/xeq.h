@@ -93,15 +93,54 @@ typedef unsigned short int s_opcode;
 #define SHORT_POINTERS
 #endif
 
+/*
+ *  Types of functions in command tables
+ */
+#ifndef COMPILE_CATALOGUES
+
+typedef decNumber *(*FP_MONADIC_REAL)(decNumber *r, const decNumber *x);
+typedef decNumber *(*FP_DYADIC_REAL) (decNumber *r, const decNumber *x, const decNumber *y);
+typedef decNumber *(*FP_TRIADIC_REAL)(decNumber *r, const decNumber *x, const decNumber *y, const decNumber *z);
+
+typedef void (*FP_MONADIC_CMPLX)(decNumber *ra, decNumber *rb, const decNumber *a, const decNumber *b);
+typedef void (*FP_DYADIC_CMPLX) (decNumber *rr, decNumber *ri, const decNumber *a, const decNumber *b,
+							       const decNumber *c, const decNumber *d);
+
+typedef long long (*FP_MONADIC_INT)(long long x);
+typedef long long (*FP_DYADIC_INT) (long long x, long long y);
+typedef long long (*FP_TRIADIC_INT)(long long x, long long y, long long z);
+
+typedef	void (*FP_NILADIC)(REGISTER *x, REGISTER *y, enum nilop op);
+typedef void (*FP_RARG)(unsigned int arg, enum rarg op);
+typedef void (*FP_MULTI)(opcode code, enum multiops op);
+
+#else
+// Dummies for catalogue creation
+typedef const char FP_MONADIC_REAL[30];
+typedef const char FP_DYADIC_REAL[30];
+typedef const char FP_TRIADIC_REAL[30];
+
+typedef const char FP_MONADIC_CMPLX[30];
+typedef const char FP_DYADIC_CMPLX[30];
+
+typedef const char FP_MONADIC_INT[30];
+typedef const char FP_DYADIC_INT[30];
+typedef const char FP_TRIADIC_INT[30];
+
+typedef const char FP_NILADIC[30];
+typedef const char FP_RARG[30];
+typedef const char FP_MULTI[30];
+
+#endif
+
 #ifdef SHORT_POINTERS
 /*
  *  Pointers are offset to zero and shifted to the right to fit in a short
  *  This macro reverses the operation.
  */
-#define CALL(f) (*((void (*)())(0x100001 | ( f << 1 ))))
-#define DCALL(f) (*((decNumber *(*)())(0x100001 | ( f << 1 ))))
-#define ICALL(f) (*((long long (*)())(0x100001 | ( f << 1 ))))
+#define EXPAND_ADDRESS(f) (0x100001 | (f << 1))
 #define FNULL 0
+
 #ifdef POST_PROCESSING
 #define _CONST /**/
 #else
@@ -122,9 +161,7 @@ extern _CONST struct _command_info {
 	_CONST struct multicmd_cmdtab *p_multicmds_ct;
 } command_info;
 #else
-#define CALL(f) (*f)
-#define DCALL(f) (*f)
-#define ICALL(f) (*f)
+#define EXPAND_ADDRESS(f) (f)
 #define FNULL NULL
 #endif
 
@@ -151,16 +188,12 @@ struct monfunc_cmdtab
 struct monfunc
 #endif
 {
-#ifdef COMPILE_CATALOGUES
-	const char mondreal[30], mondcmplx[30], monint[30];
-#else
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	decNumber *(*mondreal)(decNumber *, const decNumber *);
-	void (*mondcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber *);
-	long long int (*monint)(long long int);
-#endif
+	FP_MONADIC_REAL mondreal;
+	FP_MONADIC_CMPLX mondcmplx;
+	FP_MONADIC_INT  monint;
 	const char fname[NAME_LEN];
 };
 extern const struct monfunc monfuncs[];
@@ -189,17 +222,12 @@ struct dyfunc_cmdtab
 struct dyfunc
 #endif
 {
-#ifdef COMPILE_CATALOGUES
-	const char dydreal[30], dydcmplx[30], dydint[30];
-#else
 #ifdef DEBUG
 	unsigned short n;
 #endif
-	decNumber *(*dydreal)(decNumber *, const decNumber *, const decNumber *);
-	void (*dydcmplx)(decNumber *, decNumber *, const decNumber *, const decNumber*,
-				const decNumber *, const decNumber *);
-	long long int (*dydint)(long long int, long long int);
-#endif
+	FP_DYADIC_REAL dydreal;
+	FP_DYADIC_CMPLX dydcmplx;
+	FP_DYADIC_INT  dydint;
 	const char fname[NAME_LEN];
 };
 extern const struct dyfunc dyfuncs[];
@@ -231,12 +259,8 @@ struct trifunc
 #ifdef DEBUG
 	unsigned short n;
 #endif
-#ifdef COMPILE_CATALOGUES
-	const char trireal[30], triint[30];
-#else
-	decNumber *(*trireal)(decNumber *, const decNumber *, const decNumber *, const decNumber *);
-	long long int (*triint)(long long int, long long int, long long int);
-#endif
+	FP_TRIADIC_REAL trireal;
+	FP_TRIADIC_INT  triint;
 	const char fname[NAME_LEN];
 };
 extern const struct trifunc trifuncs[];
@@ -270,11 +294,7 @@ struct niladic
 #ifdef DEBUG
 	unsigned short n;
 #endif
-#ifdef COMPILE_CATALOGUES
-	const char niladicf[30];
-#else
-	void (*niladicf)(REGISTER *, REGISTER *, enum nilop);
-#endif
+	FP_NILADIC niladicf;
 	unsigned char numresults;
 	const char nname[NAME_LEN];
 };
@@ -320,11 +340,7 @@ struct argcmd
 #ifdef DEBUG
 	unsigned short n;
 #endif
-#ifdef COMPILE_CATALOGUES
-	const char f[30];
-#else
-	void (*f)(unsigned int, enum rarg);
-#endif
+	FP_RARG f;
 	unsigned int lim : 8;
 	unsigned int indirectokay : 1;
 	unsigned int reg : 1;
@@ -364,11 +380,7 @@ struct multicmd
 #ifdef DEBUG
 	unsigned short n;
 #endif
-#ifdef COMPILE_CATALOGUES
-	const char f[30];
-#else
-	void (*f)(opcode, enum multiops);
-#endif
+	FP_MULTI f;
 	const char cmd[NAME_LEN];
 };
 extern const struct multicmd multicmds[];

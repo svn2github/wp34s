@@ -240,7 +240,7 @@ my $mode = $DEFAULT_MODE;
 # 1) XROM output into a C array (use '-c_xrom' switch)
 # 2) XROM output into a binary image (use '-xrom' switch)
 my $xrom_c_mode = 0;
-my $xrom_leader = "#include \"xeq.h\"\nconst s_opcode xrom[] = {";
+my $xrom_leader = "#include \"xrom.h\"\nconst XROM_DATA s_opcode xrom[] = {";
 my $xrom_indent_spaces = 8;
 my $xrom_bin_mode = 0;
 
