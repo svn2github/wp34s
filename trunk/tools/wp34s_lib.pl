@@ -84,7 +84,7 @@ my $ansi_rev_cyan_bg      = "\e[30;46m";
 
 my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_LIB_COLOUR})
                             ? $ENV{WP34S_LIB_COLOUR}
-                            : 1;
+                            : 0;
 my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
 # ---------------------------------------------------------------------
@@ -130,10 +130,10 @@ if (exists $ENV{WP34S_LIB_OS_DBG} and ($ENV{WP34S_LIB_OS_DBG} == 1)) {
   debug_msg($script_name, "script_suffix     = '$script_suffix'");
 }
 
-if( $script_name =~ /\.exe$/ ) {
+if( $script_name =~ /\.exe$/i ) {
   print "// NOTE: Detected running EXE version.\n" if $debug;
   print "         Adjusting child ASM script name from '$asm_script' to " if $debug;
-  $asm_script =~ s/\.pl$/\.exe/;
+  $asm_script =~ s/\.pl$/\.exe/i;
   print "'$asm_script'\n" if $debug;
 }
 
@@ -767,13 +767,13 @@ sub run_prog {
 
   # Look in the current directory.
   if (-e "${prog}") {
-    $location = ".";
-    $cmd = "$location/$prog $cmd_line"
+    $location = "";
+    $cmd = "$prog $cmd_line"
 
   # Look in the same location as the script that is executing.
   } elsif ($script_dir and -e "${script_dir}${prog}") {
     $location = "$script_dir";
-    $cmd = "$location/$prog $cmd_line"
+    $cmd = "${location}$prog $cmd_line"
 
   } else {
     die_msg(this_function((caller(0))[3]), "Cannot locate daughter script '$prog' in current directory or '$script_dir'.");

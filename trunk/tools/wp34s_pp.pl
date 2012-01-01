@@ -1407,13 +1407,10 @@ sub adjust_branch_array {
 # Increment any step associated with an existing XLBL if that step is past the
 # point at which a new step was inserted.
 #
-# XXX Note that since the XLBL points are 0-based, they have to be
-#     pre-incremented before the test is made.
-#
 sub adjust_xlbls {
   my $step = shift;
   for my $xlabel (sort keys %xlbl) {
-    if (($xlbl{$xlabel} + 1) > $step) {
+    if ($xlbl{$xlabel} > $step) {
       $xlbl{$xlabel}++;
     }
   }
@@ -1541,7 +1538,7 @@ sub remove_blank_lines {
 sub extract_xlbls {
   my @lines = @_;
   my (@new_lines);
-  my $line = 0; # Use a 0-based counter!
+  my $line = 1; # Use a 1-based counter!
   foreach (@lines) {
     if (/^\s*XLBL\"(.+)\"(\s+|$)/) {
       my $xlabel = $1;
