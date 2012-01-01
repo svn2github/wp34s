@@ -340,17 +340,18 @@ my %pragma_table = ( maxlibsteps => \$max_flash_words,
 my $script_executable = $0;
 my ($script_name, $script_dir, $script_suffix) = fileparse($script_executable);
 
-print "// DEBUG: script_executable = '$script_executable'\n" if $debug;
-print "// DEBUG: script_name       = '$script_name'\n" if $debug;
-print "// DEBUG: script_dir        = '$script_dir'\n" if $debug;
-print "// DEBUG: script_suffix     = '$script_suffix'\n" if $debug;
-if(1) {
-  if( $script_name =~ /\.exe$/ ) {
-    print "// NOTE: Detected running EXE version.\n" if $debug;
-    print "         Adjusting child preprocessor script name from '$preproc' to " if $debug;
-    $preproc =~ s/\.pl$/\.exe/;
-    print "'$preproc'\n" if $debug;
-  }
+if (exists $ENV{WP34S_ASM_OS_DBG} and ($ENV{WP34S_ASM_OS_DBG} == 1)) {
+  print "// DEBUG: script_executable = '$script_executable'\n";
+  print "// DEBUG: script_name       = '$script_name'\n";
+  print "// DEBUG: script_dir        = '$script_dir'\n";
+  print "// DEBUG: script_suffix     = '$script_suffix'\n";
+}
+
+if( $script_name =~ /\.exe$/i ) {
+  print "// NOTE: Detected running EXE version.\n" if $debug;
+  print "         Adjusting child preprocessor script name from '$preproc' to " if $debug;
+  $preproc =~ s/\.pl$/\.exe/i;
+  print "'$preproc'\n" if $debug;
 }
 
 my $script  = "$script_name  - $Description";
