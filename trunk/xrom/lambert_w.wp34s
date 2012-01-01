@@ -1,4 +1,8 @@
 /**************************************************************************/
+/* The negative branch of the real W function.
+ *
+ * MORE - needs conversion to double precision.
+ */
 
 		XLBL"W1"
 			GSB entry
@@ -47,4 +51,28 @@ LamW_exit::	x[<->] .08
 		STO L
 		RCLS .08
 		RTN
-		
+
+#if 0
+/**************************************************************************/
+/* The inverse W function in both real and complex domains.
+ * These can be done inline without the usual prelude and epilogue code.
+ *
+ * MORE -- check these are shorter than using the prelude/epilogue.
+ */
+
+		XLBL"W_INVERSE"
+		       DBLON
+		       e[^x]
+		       x[<->] L
+		       RCL[times] L
+		       DBLOFF
+		       RTN
+
+		XLBL"CPX_W_INVERSE"
+		       DBLON
+		       [cmplx]e[^x]
+		       [cmplx]x[<->] L
+		       [cmplx]RCL[times] L
+		       DBLOFF
+		       RTN
+#endif
