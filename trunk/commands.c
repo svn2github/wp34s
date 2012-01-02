@@ -492,9 +492,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_BEST,		&stats_mode,		"BestF")
 	FUNC1(OP_RANDOM,	&stats_random,		"RAN#")
 	FUNC0(OP_STORANDOM,	&stats_sto_random,	"SEED")
-	FUNC0(OP_DEG,		&op_trigmode,		"DEG")
-	FUNC0(OP_RAD,		&op_trigmode,		"RAD")
-	FUNC0(OP_GRAD,		&op_trigmode,		"GRAD")
+	FUNC0(OP_DEG,		XNIL(DEGREES),		"DEG")
+	FUNC0(OP_RAD,		XNIL(RADIANS),		"RAD")
+	FUNC0(OP_GRAD,		XNIL(GRADIANS),		"GRAD")
 	FUNC0(OP_RTN,		&op_rtn,		"RTN")
 	FUNC0(OP_RTNp1,		&op_rtn,		"RTN+1")
 	FUNC0(OP_END,		&op_rtn,		"END")
@@ -518,8 +518,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_DENFAC,	&op_denom,		"DENFAC")
 	FUNC0(OP_FRACIMPROPER,	&op_fract,		"IMPFRC")
 	FUNC0(OP_FRACPROPER,	&op_fract,		"PROFRC")
-	FUNC0(OP_RADDOT,	&op_radix,		"RDX.")
-	FUNC0(OP_RADCOM,	&op_radix,		"RDX,")
+	FUNC0(OP_RADDOT,	XNIL(RADIX_DOT),	"RDX.")
+	FUNC0(OP_RADCOM,	XNIL(RADIX_COM),	"RDX,")
 	FUNC0(OP_THOUS_ON,	&op_separator,		"E3ON")
 	FUNC0(OP_THOUS_OFF,	&op_separator,		"E3OFF")
 	FUNC0(OP_INTSEP_ON,	&op_separator,		"SEPON")
@@ -542,8 +542,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_DATEDMY,	&op_datemode,		"D.MY")
 	FUNC0(OP_DATEYMD,	&op_datemode,		"Y.MD")
 	FUNC0(OP_DATEMDY,	&op_datemode,		"M.DY")
-	FUNC0(OP_JG1752,	&op_jgchange,		"JG1752")
-	FUNC0(OP_JG1582,	&op_jgchange,		"JG1582")
+	FUNC0(OP_JG1752,	XNIL(JG1752),		"JG1752")
+	FUNC0(OP_JG1582,	XNIL(JG1582),		"JG1582")
 	FN_I0(OP_ISLEAP,	&date_isleap,		"LEAP?")
 	FN_I0(OP_ALPHADAY,	&date_alphaday,		"\240DAY")
 	FN_I0(OP_ALPHAMONTH,	&date_alphamonth,	"\240MONTH")
@@ -551,8 +551,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FN_I0(OP_ALPHATIME,	&date_alphatime,	"\240TIME")
 	FN_I1(OP_DATE,		&date_date,		"DATE")
 	FN_I1(OP_TIME,		&date_time,		"TIME")
-	FUNC0(OP_24HR,		&op_timemode,		"24H")
-	FUNC0(OP_12HR,		&op_timemode,		"12H")
+	FUNC0(OP_24HR,		XNIL(HR24),		"24H")
+	FUNC0(OP_12HR,		XNIL(HR12),		"12H")
 	FN_I0(OP_SETDATE,	&date_setdate,		"SETDAT")
 	FN_I0(OP_SETTIME,	&date_settime,		"SETTIM")
 	FUNC0(OP_CLRALPHA,	&clralpha,		"CL\240")
@@ -871,6 +871,9 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #ifdef XROM_COMMANDS
 	CMD(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
 #endif
+
+	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
+	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")
 
 #undef CMDlbl
 #undef CMDlblnI

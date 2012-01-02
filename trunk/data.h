@@ -88,7 +88,8 @@ struct _ustate {
 #define UState_int_maxw       48 // 3	// maximum available window
 #define UState_stack_depth    51 // 1	// Stack depth
 #define UState_date_mode      52 // 2	// Date input/output format
-#define UState_trigmode       54 // 2	// Trig mode (DEG, RAD, GRAD)
+#define UState_trigmode1      54 // 2	// Trig mode (DEG, RAD, GRAD)
+#define UState_trigmode2      55 // 2	// Trig mode (DEG, RAD, GRAD)
 #define UState_sigma_mode     56 // 3	// Which sigma regression mode we're using
 #define UState_slow_speed     59 // 1	// Speed setting, 1 = slow, 0 = fast
 #define UState_rounding_mode  60 // 3	// Which rounding mode we're using

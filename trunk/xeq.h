@@ -865,6 +865,7 @@ enum rarg {
 #ifdef XROM_COMMANDS
 	RARG_XROM_OUT,
 #endif
+	RARG_MODE_SET, RARG_MODE_CLEAR,
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -1245,7 +1246,6 @@ extern void op_pause(unsigned int arg, enum rarg op);
 extern void op_intsign(REGISTER *a, REGISTER *b, enum nilop op);
 extern void set_int_base(unsigned int arg, enum rarg op);
 extern void op_datemode(REGISTER *a, REGISTER *nul, enum nilop op);
-extern void op_timemode(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void op_rtn(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void op_popusr(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void op_rs(REGISTER *nul1, REGISTER *nul2, enum nilop op);
@@ -1292,6 +1292,7 @@ extern void cmdregs(unsigned int arg, enum rarg op);
 extern void cmdxlocal(REGISTER *nul1, REGISTER *nul2, enum nilop op);
 extern void cmdxin(REGISTER *, REGISTER *, enum nilop);
 extern void cmdxout(unsigned int, enum rarg);
+extern void cmdmode(unsigned int, enum rarg);
 
 extern int not_running(void);
 extern void set_running_off_sst(void);

@@ -1,0 +1,84 @@
+/**************************************************************************/
+/* Locale setting commands
+ */
+
+		XLBL"SETEUR"		// European
+			GSB locale_common
+			GSB mode_comma
+			GSB jg1582
+			RTN
+
+		XLBL"SETUK"		// UK/Australia
+			GSB locale_common
+			GSB hr12
+			RTN
+
+		XLBL"SETUSA"		// USA
+			GSB locale_common
+			GSB hr12
+			M.DY
+			RTN
+
+		XLBL"SETIND"		// India
+			GSB locale_common
+			E3OFF
+			RTN
+
+		XLBL"SETCHN"		// China
+			GSB locale_common
+			E3OFF
+			Y.MD
+			RTN
+
+		XLBL"SETJAP"		// Japan
+			GSB locale_common
+			Y.MD
+			RTN
+
+
+locale_common::		GSB mode_dot
+			E3ON
+			GSB hr24
+			GSB jg1582
+			D.MY
+			RTN
+
+/* Set the radix mode */
+		XLBL"RADIX_COM"
+mode_comma::		xMSET UState_fraccomma
+			JMP mode_nofract
+		XLBL"RADIX_DOT"
+mode_dot::		xMCLR UState_fraccomma
+mode_nofract::		xMCLR UState_fract
+			RTN
+
+
+/* Set the trig angle mode */
+		XLBL"DEGREES"
+mode_deg::		xMCLR UState_trigmode1
+			JMP mode_trigc
+		XLBL"RADIANS"
+mode_rad::		xMSET UState_trigmode1
+mode_trigc::		xMCLR UState_trigmode2
+			RTN
+		XLBL"GRADIANS"
+mode_grad::		xMCLR UState_trigmode1
+			xMSET UState_trigmode2
+			RTN
+
+/* Julian Gregorian chance over year setting */
+		XLBL"JG1582"
+jg1582::		xMSET UState_jg1582
+			RTN
+		XLBL"JG1752"
+jg1752::		xMCLR UState_jg1582
+			RTN
+
+/* 12 or 24 hour mode */
+		XLBL"HR12"
+hr12::			xMSET UState_t12
+			RTN
+		XLBL"HR24"
+hr24::			xMCLR UState_t12
+			RTN
+

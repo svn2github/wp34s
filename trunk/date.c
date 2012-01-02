@@ -27,11 +27,6 @@
 #endif
 
 
-void op_jgchange(REGISTER *a, REGISTER *b, enum nilop op) {
-	UState.jg1582 = (op == OP_JG1582) ? 1 : 0;
-}
-
-
 /* Test if a date is Gregorian or Julian
  */
 static int isGregorian(int year, int month, int day) {

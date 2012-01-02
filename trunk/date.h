@@ -42,6 +42,4 @@ extern void date_settime(REGISTER *, REGISTER *, enum nilop op);
 extern void date_setdate(REGISTER *, REGISTER *, enum nilop op);
 extern void date_24(REGISTER *, REGISTER *, enum nilop op);
 
-extern void op_jgchange(REGISTER *, REGISTER *, enum nilop op);
-
 #endif

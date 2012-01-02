@@ -2784,6 +2784,7 @@ enum trig_modes get_trig_mode(void) {
 	return UState.trigmode;
 }
 
+/*
 static void set_trig_mode(enum trig_modes m) {
 	UState.trigmode = m;
 }
@@ -2791,12 +2792,7 @@ static void set_trig_mode(enum trig_modes m) {
 void op_trigmode(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	set_trig_mode((enum trig_modes)(TRIG_DEG + (op - OP_DEG)));
 }
-
-void op_radix(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
-	UState.fraccomma = (op == OP_RADCOM) ? 1 : 0;
-	UState.fract = 0;
-}
-
+*/
 
 void op_separator(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	int x = (op - OP_THOUS_ON);
@@ -3021,54 +3017,8 @@ void set_int_base(unsigned int arg, enum rarg op) {
 		set_base(arg);
 }
 
-#if 0
-void op_locale(REGISTER *a, REGISTER *nul, enum nilop op) {
-	enum {
-		LOCALE_RADIX_COM=1,	LOCALE_RADIX_DOT=0,
-		LOCALE_TIME_24=2,	LOCALE_TIME_12=0,
-		LOCALE_THOUS_OFF=4,	LOCALE_THOUS_ON=0,
-		LOCALE_JG1582=8,	LOCALE_JG1752=0,
-		LOCALE_DATE_MDY=16,	LOCALE_DATE_DMY=0,
-		LOCALE_DATE_YMD=32,
-	};
-	static const unsigned char locales[] = {
-		// Europe
-		LOCALE_RADIX_COM | LOCALE_THOUS_ON | LOCALE_TIME_24 |
-			LOCALE_JG1582 | LOCALE_DATE_DMY,
-		// UK/British
-		LOCALE_RADIX_DOT | LOCALE_THOUS_ON | LOCALE_TIME_12 |
-			LOCALE_JG1752 | LOCALE_DATE_DMY,
-		// USA
-		LOCALE_RADIX_DOT | LOCALE_THOUS_ON | LOCALE_TIME_12 |
-			LOCALE_JG1752 | LOCALE_DATE_MDY,
-		// India
-		LOCALE_RADIX_DOT | LOCALE_THOUS_OFF | LOCALE_TIME_24 |
-			LOCALE_JG1752 | LOCALE_DATE_DMY,
-		// China
-		LOCALE_RADIX_DOT | LOCALE_THOUS_OFF | LOCALE_TIME_24 |
-			LOCALE_JG1752 | LOCALE_DATE_YMD,
-		// Japan
-		LOCALE_RADIX_DOT | LOCALE_THOUS_ON | LOCALE_TIME_24 |
-			LOCALE_JG1752 | LOCALE_DATE_YMD,
-	};
-	const unsigned char f = locales[op - OP_SETEUR];
-
-	op_radix(NULL, NULL, (f & LOCALE_RADIX_COM) ? OP_RADCOM : OP_RADDOT);
-	//op_separator(NULL, NULL, (f & LOCALE_THOUS_OFF) ? OP_THOUS_OFF : OP_THOUS_ON);
-	UState.nothousands = (f & LOCALE_THOUS_OFF) ? 1 : 0;
-
-	op_timemode(NULL, NULL, (f & LOCALE_TIME_24) ? OP_24HR : OP_12HR);
-	op_datemode(NULL, NULL, (f & LOCALE_DATE_MDY) ? OP_DATEMDY : ((f & LOCALE_DATE_YMD) ? OP_DATEYMD : OP_DATEDMY));
-	op_jgchange(NULL, NULL, (f & LOCALE_JG1582) ? OP_JG1582 : OP_JG1752);
-}
-#endif
-
 void op_datemode(REGISTER *a, REGISTER *nul, enum nilop op) {
 	UState.date_mode = (op - OP_DATEDMY) + DATE_DMY;
-}
-
-void op_timemode(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
-	UState.t12 = (op == OP_12HR) ? 1 : 0;
 }
 
 void op_setspeed(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
@@ -4180,6 +4130,16 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	do_rtn(0);
 }
 #endif
+
+extern void cmdmode(unsigned int arg, enum rarg cmd) {
+	unsigned long long int bit = 1 << arg;
+	unsigned long long int *mode = (unsigned long long int *) & UState;
+
+	if (cmd == RARG_MODE_SET)
+		*mode |= bit;
+	else
+		*mode &= ~bit;
+}
 
 /*
  *  Undo the effect of LOCL by popping the current local frame.
