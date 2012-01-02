@@ -97,7 +97,6 @@ extern decNumber *decNumberExpm1(decNumber *r, const decNumber *x);
 extern decNumber *dn_log2(decNumber *r, const decNumber *x);
 extern decNumber *dn_log10(decNumber *r, const decNumber *x);
 extern decNumber *decNumberLogxy(decNumber *r, const decNumber *x, const decNumber *y);
-extern decNumber *decNumberLamW(decNumber *r, const decNumber *x);
 
 extern decNumber *decNumberSquare(decNumber *r, const decNumber *x);
 extern decNumber *decNumberCube(decNumber *r, const decNumber *x);

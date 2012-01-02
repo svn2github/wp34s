@@ -1,3 +1,42 @@
+
+/**************************************************************************/
+/* The positive branch of the real W function.
+ * A rough guess is made and then Newton's method is used to attain
+ * convergence.  The C version works similarily but uses Halley's
+ * method which converges a cubically instead of quadratically.
+ *
+ * MORE - needs conversion to double precision.
+ */
+
+		XLBL"W0"
+			GSB entry
+			XLOCAL
+			STOS .08
+			SPEC?
+				JMP LamW_NaN2
+			x=0?
+				JMP LamW_exit
+			Num eE
+			1/x
+			+/-
+			x[<->] Y
+			x<? Y
+				JMP LamW_NaN
+			STO .00
+			LN1+x
+LamW0_loop::		FILL
+			+/-
+			e[^x]
+			RCL[times] .00
+			-
+			x[<->] Y
+			INC X
+			/
+			-
+			x[approx]? Y
+			JMP LamW_exit
+			JMP LamW0_loop
+
 /**************************************************************************/
 /* The negative branch of the real W function.
  *
@@ -20,7 +59,7 @@
 			x>? Y
 				JMP LamW_NaN
 			RCL .00
-LamW_loop::		STO .01
+LamW1_loop::		STO .01
 			LN
 			RCL[times] .00
 			RCL .01
@@ -29,7 +68,7 @@ LamW_loop::		STO .01
 			x=0?
 				JMP LamW_converged
 			RCL L
-			JMP LamW_loop
+			JMP LamW1_loop
 LamW_converged::	RCL L
 			RCL/ .00
 			+/-
@@ -51,6 +90,17 @@ LamW_exit::	x[<->] .08
 		STO L
 		RCLS .08
 		RTN
+
+
+/**************************************************************************/
+/* The positive branch of the complex W function.
+ * A rough guess is made and then Newton's method is used to attain
+ * convergence.  The C version works similarily but uses Halley's
+ * method which converges a cubically instead of quadratically.
+ *
+ * MORE - needs to be written.
+ */
+		XLBL"CPX_W0"
 
 /**************************************************************************/
 /* The inverse W function in both real and complex domains.
