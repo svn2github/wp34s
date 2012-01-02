@@ -171,8 +171,6 @@ HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		stats.h xeq.h xrom.h xrom_labels.h storage.h serial.h matrix.h \
 		stopwatch.h
 
-#XROM := common_entry derivative lambert_w locales next_prime quadratic who solve integrate prodsum zeta
-#XROM := $(XROM:%=xrom/%.wp34s)
 XROM := $(wildcard xrom/*.wp34s)
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
@@ -318,7 +316,7 @@ $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h
-	$(HOSTCC) -E -P -x c -Ixrom xrom.wp34s > xrom_pre.wp34s
+	$(HOSTCC) -E -P -x c -Ixrom -DCOMPILE_XROM xrom.wp34s > xrom_pre.wp34s
 	tools/wp34s_asm.pl -pp -op $(OPCODES) -c -o xrom.c xrom_pre.wp34s
 
 xeq.h:

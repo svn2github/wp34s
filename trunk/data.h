@@ -22,6 +22,7 @@
 #ifndef DATA_H_
 #define DATA_H_
 
+#ifndef COMPILE_XROM
 #define MAGIC_MARKER 0xA53C
 
 #pragma pack(push)
@@ -29,14 +30,11 @@
 
 /*
  *  State that must be saved across power off
- */
-
-/*
+ *
  *  User visible state
  */
 struct _ustate {
 	unsigned int contrast :      4;	// Display contrast
-
 	unsigned int denom_mode :    2;	// Fractions denominator mode
 	unsigned int denom_max :    14;	// Maximum denominator
 	unsigned int improperfrac :  1;	// proper or improper fraction display
@@ -65,8 +63,38 @@ struct _ustate {
 	unsigned int rounding_mode : 3;	// Which rounding mode we're using
 	unsigned int jg1582 :        1;	// Julian/Gregorian change over in 1582 instead of 1752
 };
+#endif
 
+/*
+ *  Bit offsets for XROM use
+ */
+#define UState_contrast        0 // 4	// Display contrast
+#define UState_denom_mode      4 // 2	// Fractions denominator mode
+#define UState_denom_max       6 // 14	// Maximum denominator
+#define UState_improperfrac   20 // 1	// proper or improper fraction display
+#define UState_fract          21 // 1	// Fractions mode
+#define UState_dispmode       22 // 2	// Display mode (ALL, FIX, SCI, ENG)
+#define UState_dispdigs       24 // 4	// Display digits
+#define UState_fixeng         28 // 1	// Fix flips to ENG instead of SCI
+#define UState_fraccomma      29 // 1	// radix mark . or ,
+#define UState_nothousands    30 // 1	// opposite of radix mark or nothing for thousands separator
+#define UState_nointseparator 31 // 1	// opposite of radix mark or nothing for integer display separator
+#define UState_intm           32 // 1	// In integer mode
+#define UState_leadzero       33 // 1	// forced display of leading zeros in integer mode
+#define UState_int_mode       34 // 2	// Integer sign mode
+#define UState_int_base       36 // 4	// Integer input/output base
+#define UState_int_len        40 // 7	// Length of Integers
+#define UState_t12            47 // 1	// 12 hour time mode
+#define UState_int_maxw       48 // 3	// maximum available window
+#define UState_stack_depth    51 // 1	// Stack depth
+#define UState_date_mode      52 // 2	// Date input/output format
+#define UState_trigmode       54 // 2	// Trig mode (DEG, RAD, GRAD)
+#define UState_sigma_mode     56 // 3	// Which sigma regression mode we're using
+#define UState_slow_speed     59 // 1	// Speed setting, 1 = slow, 0 = fast
+#define UState_rounding_mode  60 // 3	// Which rounding mode we're using
+#define UState_jg1582         63 // 1	// Julian/Gregorian change over in 1582 instead of 1752
 
+#ifndef COMPILE_XROM
 /*
  *  System state
  */
@@ -348,4 +376,5 @@ extern unsigned long long int instruction_count;
 extern int view_instruction_counter;
 #endif
 
+#endif /* COMPILE_XROM */
 #endif /* DATA_H_ */
