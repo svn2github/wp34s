@@ -93,7 +93,7 @@
       <AdditionalDependencies>..\bin\emulator_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>Prebuild.cmd</Command>
+      <Command>Prebuild.cmd $(ConfigurationName)</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Create release.txt and version info for About dialogue</Message>
@@ -130,7 +130,7 @@
       <AdditionalDependencies>..\bin\emulator_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>Prebuild.cmd</Command>
+      <Command>Prebuild.cmd $(ConfigurationName)</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Create release.txt and version info for About dialogue</Message>
@@ -174,7 +174,7 @@
       <AdditionalDependencies>..\bin\emulator.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
-      <Command>Prebuild.cmd</Command>
+      <Command>Prebuild.cmd $(ConfigurationName)</Command>
       <Message>Create release.txt and version info for About dialogue</Message>
     </PreBuildEvent>
     <PostBuildEvent>
@@ -246,6 +246,9 @@
     <ProjectReference Include="..\consts\consts.vcxproj">
       <Project>{8fd769b8-b6c6-4794-bdc0-6d0a3652f53e}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\create_revision\create_revision.vcxproj">
+      <Project>{ce47bb6a-846d-4a8b-bf4d-95d570fed301}</Project>
     </ProjectReference>
     <ProjectReference Include="..\decnumber\decnumber.vcxproj">
       <Project>{a91d87a3-2800-4d00-8ae0-aeb987269c0d}</Project>
