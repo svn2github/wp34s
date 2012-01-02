@@ -116,20 +116,20 @@ typedef void (*FP_MULTI)(opcode code, enum multiops op);
 
 #else
 // Dummies for catalogue creation
-typedef const char FP_MONADIC_REAL[30];
-typedef const char FP_DYADIC_REAL[30];
-typedef const char FP_TRIADIC_REAL[30];
+typedef const char FP_MONADIC_REAL[50];
+typedef const char FP_DYADIC_REAL[50];
+typedef const char FP_TRIADIC_REAL[50];
 
-typedef const char FP_MONADIC_CMPLX[30];
-typedef const char FP_DYADIC_CMPLX[30];
+typedef const char FP_MONADIC_CMPLX[50];
+typedef const char FP_DYADIC_CMPLX[50];
 
-typedef const char FP_MONADIC_INT[30];
-typedef const char FP_DYADIC_INT[30];
-typedef const char FP_TRIADIC_INT[30];
+typedef const char FP_MONADIC_INT[50];
+typedef const char FP_DYADIC_INT[50];
+typedef const char FP_TRIADIC_INT[50];
 
-typedef const char FP_NILADIC[30];
-typedef const char FP_RARG[30];
-typedef const char FP_MULTI[30];
+typedef const char FP_NILADIC[50];
+typedef const char FP_RARG[50];
+typedef const char FP_MULTI[50];
 
 #endif
 

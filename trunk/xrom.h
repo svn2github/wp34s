@@ -18,7 +18,9 @@
 #define __XROM_H__
 
 #include "xeq.h"
+#ifndef COMPILE_CATALOGUES
 #include "xrom_labels.h"
+#endif
 
 #ifdef REALBUILD
 #define XROM_DATA __attribute__((section(".xrom")))

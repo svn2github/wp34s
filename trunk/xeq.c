@@ -44,7 +44,6 @@
 #include "date.h"
 #include "lcd.h"
 #include "xrom.h"
-#include "xrom_labels.h"
 #include "alpha.h"
 
 /* Define the number of program Ticks that must elapse between flashing the
