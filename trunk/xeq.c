@@ -762,7 +762,7 @@ void getYZ(decNumber *y, decNumber *z) {
 
 void roll_down(enum nilop op) {
 	REGISTER r;
-	copyreg(&r, &regX);
+	copyreg(&r, get_reg_n(regX_idx));
 	lower();
 	copyreg(get_stack_top(), &r);
 }
@@ -771,7 +771,7 @@ void roll_up(enum nilop op) {
 	REGISTER r;
 	copyreg(&r, get_stack_top());
 	lift();
-	copyreg(&regX, &r);
+	copyreg(get_reg_n(regX_idx), &r);
 }
 
 void cpx_roll_down(enum nilop op) {
@@ -787,16 +787,16 @@ void cpx_roll_up(enum nilop op) {
 void cpx_enter(enum nilop op) {
 	lift();
 	lift();
-	copyreg(get_stack(1), get_stack(3));
+	copyreg(get_reg_n(regY_idx), get_reg_n(regT_idx));
 }
 
 void cpx_fill(enum nilop op) {
 	const int n = stack_size();
-	const void *y = get_stack(1);
+	const REGISTER *y = get_reg_n(regY_idx);
 	int i;
 
 	for (i=2; i<n; i++)
-		copyreg(get_stack(i), (i & 1) ? &y : (void *) &regX);
+		copyreg(get_stack(i), (i & 1) ? y : get_reg_n(regX_idx));
 }
 
 void fill(enum nilop op) {
@@ -804,7 +804,7 @@ void fill(enum nilop op) {
 	int i;
 
 	for (i=1; i<n; i++)
-		copyreg(get_stack(i), &regX);
+		copyreg(get_stack(i), get_reg_n(regX_idx));
 }
 
 void drop(enum nilop op) {
@@ -1159,7 +1159,7 @@ void clrx(enum nilop op) {
 /* Zero out the stack
  */
 void clrstk(enum nilop op) {
-	zero_regs((REGISTER *) &regX, stack_size());
+	zero_regs(get_reg_n(regX_idx), stack_size());
 	CmdLineLength = 0;
 	State.state_lift = 1;
 }
@@ -1209,6 +1209,7 @@ void op_pi(enum nilop op)
 /* Commands to allow access to constants
  */
 void cmdconst(unsigned int arg, enum rarg op) {
+	REGISTER *x = get_reg_n(regX_idx);
 	if (is_intmode()) {
 		bad_mode_error();
 		return;
@@ -1218,10 +1219,10 @@ void cmdconst(unsigned int arg, enum rarg op) {
 	else
 		lift_if_enabled();
 
-	regX.s = op == RARG_CONST_INT ? CONSTANT_INT(arg) : CONSTANT(arg);
+	x->s = op == RARG_CONST_INT ? CONSTANT_INT(arg) : CONSTANT(arg);
 #ifdef INCLUDE_DOUBLE_PRECISION
 	if (is_dblmode())
-		packed128_from_packed(&(regX.d), &(regX.s));
+		packed128_from_packed(&(x->d), &(x->s));
 #endif
 	if (op == RARG_CONST_CMPLX)
 		setY(&const_0);
@@ -2526,13 +2527,13 @@ void op_float(enum nilop op) {
 		UState.intm = 0;
 		// UState.int_len = 0;
 #ifdef HP16C_MODE_CHANGE
-		int2dn(&x, &regX);
-		int2dn(&y, get_stack(1));
+		int2dn(&x, get_reg_n(regX_idx));
+		int2dn(&y, get_reg_n(regY_idx));
 		clrstk(NULL, NULL, NULL);
 		decNumberPower(&z, &const_2, &x);
 		dn_multiply(&x, &z, &y);
 		set_overflow(decNumberIsInfinite(&x));
-		packed_from_number(&regX, &x);
+		packed_from_number(get_reg_n(regX_idx), &x);
 #else
 		float_mode_convert(regL_idx, Regs + regL_idx);
 		for (i = regX_idx + stack_size() - 1; i >= regX_idx; --i)
@@ -2813,7 +2814,7 @@ void op_double(enum nilop op) {
 			}
 		}
 		if (xrom)
-			xcopy(XromAtoD, &regA, sizeof(XromAtoD));
+			xcopy(XromAtoD, get_reg_n(regA_idx), sizeof(XromAtoD));
 
 		State.mode_double = 1;
 		// Convert X, Y, Z, T, L, I, J & K to double precision
@@ -2845,10 +2846,12 @@ void op_double(enum nilop op) {
 			packed_from_packed128(Regs + j, &(get_reg_n(j)->d));
 		}
 		State.mode_double = 0;
+
 		if (xrom)
-			xcopy(&regA, XromAtoD, sizeof(XromAtoD));
+			xcopy(get_reg_n(regA_idx), XromAtoD, sizeof(XromAtoD));
 		else
-			zero_regs(&regA, 4);
+			zero_regs(get_reg_n(regA_idx), 4);
+
 		if (NumRegs > TOPREALREG)
 			cmdregs(TOPREALREG - 1, RARG_REGS);
 	}
@@ -3228,8 +3231,7 @@ void op_regswap(enum nilop op) {
 }
 
 void op_regclr(enum nilop op) {
-	int s;
-	unsigned int n;
+	int s, n;
 
 	if (reg_decode(&s, &n, NULL, 0))
 		return;
@@ -3237,8 +3239,7 @@ void op_regclr(enum nilop op) {
 }
 
 void op_regsort(enum nilop op) {
-	int s;
-	unsigned int n;
+	int s, n;
 	decNumber pivot, a, t;
 	int beg[10], end[10], i;
 
@@ -3727,7 +3728,11 @@ static void multi(const opcode op) {
  */
 void xeq(opcode op) 
 {
-	decimal64 save[STACK_SIZE+4];
+#ifdef INCLUDE_DOUBLE_PRECISION
+	decimal128 save[STACK_SIZE+2];
+#else
+	decimal64 save[STACK_SIZE+2];
+#endif
 	struct _ustate old = UState;
 	unsigned short old_pc = state_pc();
 	int old_cl = *((int *)&CommandLine);
@@ -3746,7 +3751,7 @@ void xeq(opcode op)
 	}
 #endif
 	Busy = 0;
-	xcopy(save, &regX, sizeof(save));
+	xcopy(save, get_reg_n(regX_idx), sizeof(save));
 	if (isDBL(op))
 		multi(op);
 	else if (isRARG(op))
@@ -3769,7 +3774,7 @@ void xeq(opcode op)
 		// Repair stack and state
 		// Clear return stack
 		Error = ERR_NONE;
-		xcopy(&regX, save, sizeof(save));
+		xcopy(get_reg_n(regX_idx), save, sizeof(save));
 		UState = old;
 		raw_set_pc(old_pc);
 		*((int *)&CommandLine) = old_cl;

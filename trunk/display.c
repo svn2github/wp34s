@@ -1449,7 +1449,7 @@ void display(void) {
 		skip = 1;
 #ifdef SHIFT_HOLD_TEMPVIEW
 	} else if (State2.disp_as_alpha) {
-		set_status(alpha_rcl_s(&regX, buf));
+		set_status(alpha_rcl_s(regX_idx, buf));
 #endif
 	} else if (State2.runmode) {
 		if (DispMsg) {

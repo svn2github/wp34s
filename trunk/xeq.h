@@ -432,6 +432,7 @@ extern int current_catalogue_max(void);
 #define regJ_idx	(TOPREALREG+10)
 #define regK_idx	(TOPREALREG+11)
 
+#if 0
 // The following work only in single precision or integer mode
 // For general use, get_stack(n) or get_reg_n(reg?_idx) is required.
 #define regX	(*((REGISTER *)(Regs+regX_idx)))
@@ -446,6 +447,7 @@ extern int current_catalogue_max(void);
 #define regI	(*((REGISTER *)(Regs+regI_idx)))
 #define regJ	(*((REGISTER *)(Regs+regJ_idx)))
 #define regK	(*((REGISTER *)(Regs+regK_idx)))
+#endif
 
 /*
  *  The various program regions

@@ -33,17 +33,17 @@ static unsigned char dots[400];
 #pragma GCC diagnostic ignored "-Wformat-extra-args"
 #endif
 
-static void dispreg(const char n, REGISTER *p) {
+static void dispreg(const char n, int index) {
         char buf[64];
         if (is_intmode())
-                sprintf(buf, "%llx", (unsigned long long int)get_reg_n_int(p));
+                sprintf(buf, "%llx", (unsigned long long int)get_reg_n_int(index));
         else {
 #ifdef INCLUDE_DOUBLE_PRECISION
 		if (is_dblmode())
-			decimal128ToString(&(p->d), buf);
+			decimal128ToString(&(get_reg_n(index)->d), buf);
 		else
 #endif
-			decimal64ToString(&(p->s), buf);
+			decimal64ToString(&(get_reg_n(index)->s), buf);
 	}
         PRINTF("%c: %s", n, buf);
 }
@@ -354,18 +354,18 @@ void show_stack(void) {
         for (i=4; i<STACK_SIZE; i++) {
                 MOVE(26, 8-i);
                 PRINTF("%c ", i<stack_size()?'*':' ');
-                dispreg(REGNAMES[i], get_stack(i));
+                dispreg(REGNAMES[i], i);
         }
-        MOVE(53, 2);    dispreg(REGNAMES[regJ_idx-regX_idx], get_reg_n(regJ_idx));
-        MOVE(53, 1);    dispreg(REGNAMES[regK_idx-regX_idx], get_reg_n(regK_idx));
+        MOVE(53, 2);    dispreg(REGNAMES[regJ_idx-regX_idx], regJ_idx);
+        MOVE(53, 1);    dispreg(REGNAMES[regK_idx-regX_idx], regK_idx);
         for (i=0; i<4; i++) {
                 MOVE(0, 4-i);
-                dispreg(REGNAMES[i], get_stack(i));
+                dispreg(REGNAMES[i], regX_idx + i);
         }
         MOVE(53, 4);
-        dispreg(REGNAMES[regL_idx-regX_idx], &regL);
+        dispreg(REGNAMES[regL_idx-regX_idx], regL_idx);
         MOVE(53, 3);
-        dispreg(REGNAMES[regI_idx-regX_idx], &regI);
+        dispreg(REGNAMES[regI_idx-regX_idx], regI_idx);
         MOVE(53, 0);
         PRINTF("stack depth: %d", stack_size());
 #endif

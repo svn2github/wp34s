@@ -566,7 +566,7 @@ static int serial_open_default( void )
 void send_byte( enum nilop op )
 {
 	int sgn;
-	const unsigned char byte = get_int( &regX, &sgn ) & 0xff;
+	const unsigned char byte = getX_int_sgn( &sgn ) & 0xff;
 
 	if ( !serial_open_default() ) {
 		put_byte( byte );
@@ -598,7 +598,7 @@ void send_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op )
 void recv_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op )
 {
 	int i, c = 0;
-	int timeout = (int) get_int( &regX, &i );
+	int timeout = (int) getX_int_sgn( &i );
 
 	if ( i || timeout < 0 ) timeout = -1;
 	
