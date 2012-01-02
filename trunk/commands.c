@@ -40,6 +40,9 @@
 #define XLBL(name) XROM_ ## name
 #define XPTR(name) (xrom+XLBL(name)-XROM_START)
 
+/* Utility macros to reduce the horizontal space of using XPTR directly
+ * Usage is the same.
+ */
 #define XMR(name)	(FP_MONADIC_REAL) XPTR(name)
 #define XDR(name)	(FP_DYADIC_REAL) XPTR(name)
 #define XTR(name)	(FP_TRIADIC_REAL) XPTR(name)
@@ -50,6 +53,10 @@
 #define XMI(name)	(FP_MONADIC_INT) XPTR(name)
 #define XDI(name)	(FP_DYADIC_INT) XPTR(name)
 #define XTI(name)	(FP_TRIADIC_INT) XPTR(name)
+
+#define XNIL(name)	(FP_NILADIC) XPTR(name)
+#define XARG(name)	(FP_RARG) XPTR(name)
+#define XMULTI(name)	(FP_MULTI) XPTR(name)
 
 
 #ifdef SHORT_POINTERS
@@ -332,27 +339,20 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_PERM,	&decNumberPerm,		&cmplxPerm,	NOFN,		"PERM")
 	FUNC(OP_PERMG,	&decNumberPerMargin,	NOFN,		NOFN,		"%+MG")
 	FUNC(OP_MARGIN,	&decNumberMargin,	NOFN,		NOFN,		"%MG")
-	FUNC(OP_PARAL,	&decNumberParallel,	&cmplxParallel,	NOFN,		"||")
+	FUNC(OP_PARAL,	XDR(PARL),		XDC(PARL),	NOFN,		"||")
 	FUNC(OP_AGM,	&decNumberAGM,		&cmplxAGM,	NOFN,		"AGM")
 	FUNC(OP_HMSADD,	&decNumberHMSAdd,	NOFN,		NOFN,		"H.MS+")
 	FUNC(OP_HMSSUB,	&decNumberHMSSub,	NOFN,		NOFN,		"H.MS-")
 	FUNC(OP_GCD,	&decNumberGCD,		NOFN,		&intGCD,	"GCD")
 	FUNC(OP_LCM,	&decNumberLCM,		NOFN,		&intLCM,	"LCM")
-#if 1
+
 	FUNC(OP_LAND,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"AND")
 	FUNC(OP_LOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"OR")
 	FUNC(OP_LXOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"XOR")
 	FUNC(OP_LNAND,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"NAND")
 	FUNC(OP_LNOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"NOR")
 	FUNC(OP_LXNOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"XNOR")
-#else
-	FUNC(OP_LAND,	&decNumberAnd,		NOFN,		&intAnd,	"AND")
-	FUNC(OP_LOR,	&decNumberOr,		NOFN,		&intOr,		"OR")
-	FUNC(OP_LXOR,	&decNumberXor,		NOFN,		&intXor,	"XOR")
-	FUNC(OP_LNAND,	&decNumberNand,		NOFN,		&intNand,	"NAND")
-	FUNC(OP_LNOR,	&decNumberNor,		NOFN,		&intNor,	"NOR")
-	FUNC(OP_LXNOR,	&decNumberNxor,		NOFN,		&intEquiv,	"XNOR")
-#endif
+
 	FUNC(OP_DTADD,	&dateAdd,		NOFN,		NOFN,		"DAYS+")
 	FUNC(OP_DTDIF,	&dateDelta,		NOFN,		NOFN,		"\203DAYS")
 
@@ -585,15 +585,15 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC1(OP_TICKS,		&op_ticks,		"TICKS")
 	FUNC1(OP_VOLTAGE,	&op_voltage,		"BATT")
 
-	FUNC0(OP_QUAD,		(FP_NILADIC) XPTR(QUAD),	"SLVQ")
-	FUNC0(OP_NEXTPRIME,	(FP_NILADIC) XPTR(NEXTPRIME),	"NEXTP")
-	FUNC0(OP_SETEUR,	(FP_NILADIC) XPTR(SETEUR),	"SETEUR")   // 83
-	FUNC0(OP_SETUK,		(FP_NILADIC) XPTR(SETUK),	"SETUK")
-	FUNC0(OP_SETUSA,	(FP_NILADIC) XPTR(SETUSA),	"SETUSA")
-	FUNC0(OP_SETIND,	(FP_NILADIC) XPTR(SETIND),	"SETIND")
-	FUNC0(OP_SETCHN,	(FP_NILADIC) XPTR(SETCHN),	"SETCHN")
-	FUNC0(OP_SETJPN,	(FP_NILADIC) XPTR(SETJAP),	"SETJPN")
-	FUNC0(OP_WHO,		(FP_NILADIC) XPTR(WHO),		"WHO")	
+	FUNC0(OP_QUAD,		XNIL(QUAD),		"SLVQ")
+	FUNC0(OP_NEXTPRIME,	XNIL(NEXTPRIME),	"NEXTP")
+	FUNC0(OP_SETEUR,	XNIL(SETEUR),		"SETEUR")
+	FUNC0(OP_SETUK,		XNIL(SETUK),		"SETUK")
+	FUNC0(OP_SETUSA,	XNIL(SETUSA),		"SETUSA")
+	FUNC0(OP_SETIND,	XNIL(SETIND),		"SETIND")
+	FUNC0(OP_SETCHN,	XNIL(SETCHN),		"SETCHN")
+	FUNC0(OP_SETJPN,	XNIL(SETJAP),		"SETJPN")
+	FUNC0(OP_WHO,		XNIL(WHO),		"WHO")	
 
 	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240")
 	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240")
@@ -772,6 +772,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDnoI(RARG_BACK,	&cmdback,	255,			"BACK")
 	CMDnoI(RARG_BSF,	&cmdskip,	255,			"BSRF")
 	CMDnoI(RARG_BSB,	&cmdback,	255,			"BSRB")
+
 	CMDstk(RARG_DSE,	&cmdloop,				"DSE")
 	CMDstk(RARG_ISG,	&cmdloop,				"ISG")
 	CMDstk(RARG_DSL,	&cmdloop,				"DSL")
@@ -785,18 +786,20 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDlbl(RARG_LBLP,	&cmdlblp,				"LBL?")
 	CMDlbl(RARG_XEQ,	&cmdgto,				"XEQ")
 	CMDlbl(RARG_GTO,	&cmdgto,				"GTO")
-	CMDlbl(RARG_SUM,	(FP_RARG) XPTR(SIGMA),			"\221")
-	CMDlbl(RARG_PROD,	(FP_RARG) XPTR(PRODUCT),		"\217")
-	CMDlbl(RARG_SOLVE,	(FP_RARG) XPTR(SOLVE),			"SLV")
-	CMDlbl(RARG_DERIV,	(FP_RARG) XPTR(DERIV),			"f'(x)")
-	CMDlbl(RARG_2DERIV,	(FP_RARG) XPTR(2DERIV),			"f\"(x)")
-	CMDlbl(RARG_INTG,	(FP_RARG) XPTR(INTEGRATE),		"\004")
+
+	CMDlbl(RARG_SUM,	XARG(SIGMA),				"\221")
+	CMDlbl(RARG_PROD,	XARG(PRODUCT),				"\217")
+	CMDlbl(RARG_SOLVE,	XARG(SOLVE),				"SLV")
+	CMDlbl(RARG_DERIV,	XARG(DERIV),				"f'(x)")
+	CMDlbl(RARG_2DERIV,	XARG(2DERIV),				"f\"(x)")
+	CMDlbl(RARG_INTG,	XARG(INTEGRATE),			"\004")
 
 	CMD(RARG_STD,		&cmddisp,	DISPLAY_DIGITS,		"ALL")
 	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX")
 	CMD(RARG_SCI,		&cmddisp,	DISPLAY_DIGITS,		"SCI")
 	CMD(RARG_ENG,		&cmddisp,	DISPLAY_DIGITS,		"ENG")
 	CMD(RARG_DISP,		&cmddisp,	DISPLAY_DIGITS,		"DISP")
+
 	CMDflg(RARG_SF,		&cmdflag,				"SF")
 	CMDflg(RARG_CF,		&cmdflag,				"CF")
 	CMDflg(RARG_FF,		&cmdflag,				"FF")
@@ -905,12 +908,12 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_LBLP,	&cmdmultilblp,			"LBL?")
 	CMD(DBL_XEQ,	&cmdmultigto,			"XEQ")
 	CMD(DBL_GTO,	&cmdmultigto,			"GTO")
-	CMD(DBL_SUM,	(FP_MULTI) XPTR(SIGMA),		"\221")
-	CMD(DBL_PROD,	(FP_MULTI) XPTR(PRODUCT),	"\217")
-	CMD(DBL_SOLVE,	(FP_MULTI) XPTR(SOLVE),		"SLV")
-	CMD(DBL_DERIV,	(FP_MULTI) XPTR(DERIV),		"f'(x)")
-	CMD(DBL_2DERIV,	(FP_MULTI) XPTR(2DERIV),	"f\"(x)")
-	CMD(DBL_INTG,	(FP_MULTI) XPTR(INTEGRATE),	"\004")
+	CMD(DBL_SUM,	XMULTI(SIGMA),			"\221")
+	CMD(DBL_PROD,	XMULTI(PRODUCT),		"\217")
+	CMD(DBL_SOLVE,	XMULTI(SOLVE),			"SLV")
+	CMD(DBL_DERIV,	XMULTI(DERIV),			"f'(x)")
+	CMD(DBL_2DERIV,	XMULTI(2DERIV),			"f\"(x)")
+	CMD(DBL_INTG,	XMULTI(INTEGRATE),		"\004")
 	CMD(DBL_ALPHA,	&multialpha,			"\240")
 #undef CMD
 };

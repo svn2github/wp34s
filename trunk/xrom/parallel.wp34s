@@ -1,0 +1,41 @@
+/**************************************************************************/
+/* The real parallel operator.
+ *
+ *	par(x, y) = (x . y) / (x + y)
+ *
+ * MORE - needs conversion to double precision and proper prologue / epilogue
+ */
+	XLBL"PARL"
+		GSB entry
+		XLOCAL
+		STOS .08
+		RCL[times] Y
+		x[<->] Y
+		RCL+ L
+		/
+		x[<->] .08
+		STO L
+		RCLS .08
+		RTN
+
+/**************************************************************************/
+/* The complex parallel operator:
+ *
+ *	par(x, y) = (x . y) / (x + y)
+ *
+ * MORE - needs conversion to double precision and proper prologue / epilogue
+ * MORE - needs testing
+ */
+	XLBL"CPX_PARL"
+		GSB entry
+		XLOCAL
+		STOS .08
+		[cmplx]RCL[times] Z
+		[cmplx]x[<->] Z
+		[cmplx]RCL+ L
+		[cmplx]/
+		[cmplx]x[<->] .08
+		[cmplx]STO L
+		RCLS .08
+		RTN
+/**************************************************************************/

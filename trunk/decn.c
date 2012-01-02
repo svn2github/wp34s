@@ -2031,15 +2031,6 @@ decNumber *decNumberHMSSub(decNumber *res, const decNumber *x, const decNumber *
 	return res;
 }
 
-decNumber *decNumberParallel(decNumber *res, const decNumber *x, const decNumber *y) {
-	decNumber p, s;
-
-	dn_multiply(&p, x, y);
-	dn_add(&s, x, y);
-	dn_divide(res, &p, &s);
-	return res;
-}
-
 decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y) {
 	int n;
 	decNumber a, g, t, u;

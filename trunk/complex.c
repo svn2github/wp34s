@@ -1082,18 +1082,6 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 #endif 
 
 
-void cmplxParallel(decNumber *rx, decNumber *ry,
-		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d) {
-#ifndef TINY_BUILD
-	decNumber p1, p2, s1, s2;
-
-	cmplxMultiply(&p1, &p2, a, b, c, d);
-	cmplxAdd(&s1, &s2, a, b, c, d);
-	cmplxDivide(rx, ry, &p1, &p2, &s1, &s2);
-#endif
-}
-
 void cmplxAGM(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d) {
