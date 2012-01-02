@@ -824,10 +824,6 @@ int is_dblmode(void) {
 }
 #endif
 
-void lead0(enum nilop op) {
-	UState.leadzero = (op == OP_LEAD0) ? 1 : 0;
-}
-
 
 /* Convert a possibly signed string to an integer
  */
@@ -1509,11 +1505,6 @@ void cmdrestm(unsigned int arg, enum rarg op) {
 		UState.contrast = 7;
 }
 #endif
-
-/* Set the stack size */
-void set_stack_size(enum nilop op) {
-	UState.stack_depth = (op == OP_STK4) ? 0 : 1;
-}
 
 /* Get the stack size */
 void get_stack_size(enum nilop op) {
@@ -2481,10 +2472,6 @@ void op_fracdenom(enum nilop op) {
 	}
 }
 
-void op_denom(enum nilop op) {
-	UState.denom_mode = DENOM_ANY + (op - OP_DENANY);
-}
-
 
 /* Switching from an integer mode to real mode requires us
  * to make an effort at converting x and y into a real numbers
@@ -2766,31 +2753,6 @@ enum trig_modes get_trig_mode(void) {
 	return (enum trig_modes) UState.trigmode;
 }
 
-/*
-static void set_trig_mode(enum trig_modes m) {
-	UState.trigmode = m;
-}
-
-void op_trigmode(enum nilop op) {
-	set_trig_mode((enum trig_modes)(TRIG_DEG + (op - OP_DEG)));
-}
-*/
-
-
-void op_separator(enum nilop op) {
-	int x = (op - OP_THOUS_ON);
-	int state = x & 1;
-	if ((x&2) != 0)
-		UState.nointseparator = state;
-	else
-		UState.nothousands = state;
-}
-
-void op_fixscieng(enum nilop op) {
-	UState.fixeng = (op == OP_FIXSCI) ? 0 : 1;
-	UState.fract = 0;
-}
-
 #ifdef INCLUDE_DOUBLE_PRECISION
 void op_double(enum nilop op) {
 	static const unsigned char reglist[] = {
@@ -2872,10 +2834,6 @@ void op_pause(unsigned int arg, enum rarg op) {
 	usleep(arg * 100000);
 #endif
 #endif
-}
-
-void op_intsign(enum nilop op) {
-	UState.int_mode = (op - OP_2COMP) + MODE_2COMP;
 }
 
 
@@ -3001,10 +2959,6 @@ void set_int_base(unsigned int arg, enum rarg op) {
 			op_fract(OP_FRACT);
 	} else
 		set_base(arg);
-}
-
-void op_datemode(enum nilop op) {
-	UState.date_mode = (op - OP_DATEDMY) + DATE_DMY;
 }
 
 void op_setspeed(enum nilop op) {

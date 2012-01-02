@@ -68,9 +68,10 @@ struct _ustate {
 /*
  *  Bit offsets for XROM use
  */
-#define UState_contrast        0 // 4	// Display contrast
-#define UState_denom_mode      4 // 2	// Fractions denominator mode
-#define UState_denom_max       6 // 14	// Maximum denominator
+#define UState_contrast       00 // 4	// Display contrast
+#define UState_denom_mode1    04 // 1	// Fractions denominator mode
+#define UState_denom_mode2    05 // 1	// Fractions denominator mode
+#define UState_denom_max      06 // 14	// Maximum denominator
 #define UState_improperfrac   20 // 1	// proper or improper fraction display
 #define UState_fract          21 // 1	// Fractions mode
 #define UState_dispmode       22 // 2	// Display mode (ALL, FIX, SCI, ENG)
@@ -81,13 +82,15 @@ struct _ustate {
 #define UState_nointseparator 31 // 1	// opposite of radix mark or nothing for integer display separator
 #define UState_intm           32 // 1	// In integer mode
 #define UState_leadzero       33 // 1	// forced display of leading zeros in integer mode
-#define UState_int_mode       34 // 2	// Integer sign mode
+#define UState_int_mode1      34 // 1	// Integer sign mode
+#define UState_int_mode2      35 // 1	// Integer sign mode
 #define UState_int_base       36 // 4	// Integer input/output base
 #define UState_int_len        40 // 7	// Length of Integers
 #define UState_t12            47 // 1	// 12 hour time mode
 #define UState_int_maxw       48 // 3	// maximum available window
 #define UState_stack_depth    51 // 1	// Stack depth
-#define UState_date_mode      52 // 2	// Date input/output format
+#define UState_date_mode1     52 // 1	// Date input/output format
+#define UState_date_mode2     53 // 1	// Date input/output format
 #define UState_trigmode1      54 // 1	// Trig mode (DEG, RAD, GRAD)
 #define UState_trigmode2      55 // 1	// Trig mode (DEG, RAD, GRAD)
 #define UState_sigma_mode     56 // 3	// Which sigma regression mode we're using

@@ -5,43 +5,36 @@
 		XLBL"SETEUR"		// European
 			GSB locale_common
 			GSB mode_comma
-			GSB jg1582
-			RTN
+			JMP jg1582
 
 		XLBL"SETUK"		// UK/Australia
 			GSB locale_common
-			GSB hr12
-			RTN
+			JMP hr12
 
 		XLBL"SETUSA"		// USA
 			GSB locale_common
 			GSB hr12
-			M.DY
-			RTN
+			JMP date_mdy
 
 		XLBL"SETIND"		// India
 			GSB locale_common
-			E3OFF
-			RTN
+			JMP e3off
 
 		XLBL"SETCHN"		// China
 			GSB locale_common
-			E3OFF
-			Y.MD
-			RTN
+			GSB e3off
+			JMP date_ymd
 
 		XLBL"SETJAP"		// Japan
 			GSB locale_common
-			Y.MD
-			RTN
+			JMP date_ymd
 
 
 locale_common::		GSB mode_dot
-			E3ON
+			GSB e3on
 			GSB hr24
 			GSB jg1582
-			D.MY
-			RTN
+			JMP date_dmy
 
 /* Set the radix mode */
 		XLBL"RADIX_COM"
@@ -82,3 +75,84 @@ hr12::			xMSET UState_t12
 hr24::			xMCLR UState_t12
 			RTN
 
+/* Date format */
+		XLBL"D_DMY"
+date_dmy::		xMCLR UState_date_mode1
+			JMP date_common
+		XLBL"D_YMD"
+date_ymd::		xMSET UState_date_mode1
+date_common::		xMCLR UState_date_mode2
+			RTN
+		XLBL"D_MDY"
+date_mdy::		xMCLR UState_date_mode1
+			xMSET UState_date_mode2
+			RTN
+
+/* Thousands separator */
+		XLBL"E3ON"
+e3on::			xMCLR UState_nothousands
+			RTN
+		XLBL"E3OFF"
+e3off::			xMSET UState_nothousands
+			RTN
+
+/* Integer byte/digit separator */
+		XLBL"SEPON"
+intsepon::		xMCLR UState_nointseparator
+			RTN
+		XLBL"SEPOFF"
+intsepoff::		xMSET UState_nointseparator
+			RTN
+
+/* Integer sign mode */
+		XLBL"ISGN_2C"
+			xMCLR UState_int_mode1
+isgn_clr2::		xMCLR UState_int_mode2
+			RTN
+		XLBL"ISGN_1C"
+			xMSET UState_int_mode1
+			JMP isgn_clr2
+		XLBL"ISGN_UN"
+			xMCLR UState_int_mode1
+			JMP isgn_set2
+		XLBL"ISGN_SM"
+			xMSET UState_int_mode1
+isgn_set2::		xMSET UState_int_mode2
+			RTN
+
+/* Integer mode leading zeros */
+		XLBL"IM_LZON"
+			xMSET UState_leadzero
+			RTN
+		XLBL"IM_LZOFF"
+			xMCLR UState_leadzero
+			
+/* FIXSCI and FIXENG overflow mode setting */
+		XLBL"FIXSCI"
+			xMCLR UState_fixeng
+			JMP fixsci_nofrac
+		XLBL"FIXENG"
+			xMSET UState_fixeng
+fixsci_nofrac::		xMCLR UState_fract
+			RTN
+
+/* Fractions denominator mode */
+		XLBL"F_DENANY"
+			xMCLR UState_denom_mode1
+			JMP denom_common
+		XLBL"F_DENFIX"
+			xMSET UState_denom_mode1
+denom_common::		xMCLR UState_denom_mode2
+			RTN
+		XLBL"F_DENFAC"
+			xMCLR UState_denom_mode1
+			xMSET UState_denom_mode2
+			RTN
+
+/* Stack size 4 or 8 levels */
+		XLBL"STACK_4_LEVEL"
+			xMCLR UState_stack_depth
+			RTN
+		XLBL"STACK_8_LEVEL"
+			xMSET UState_stack_depth
+			RTN
