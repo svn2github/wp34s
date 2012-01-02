@@ -2894,13 +2894,13 @@ void op_intsign(enum nilop op) {
 #ifndef HP16C_MODE_CHANGE
 void int_mode_convert(int index) {
 	decNumber x;
-	int s;
-	unsigned long long int v;
+	int sgn;
+	unsigned long long int val;
 
 	getRegister(&x, index);
         decNumberTrunc(&x, &x);
-	v = dn_to_ull(&x, &s);
-	set_reg_n_int_sgn(index, v, s);
+	val = dn_to_ull(&x, &sgn);
+	set_reg_n_int(index, build_value(val, sgn));
 }
 #endif
 
@@ -2982,7 +2982,7 @@ static void check_int_switch(void) {
 		const int j = stack_size() + regX_idx;
 		for (i = regX_idx; i < j; ++i)
 			int_mode_convert(i);
-		int_mode_convert(i);
+		int_mode_convert(regL_idx);
 #endif
 		UState.intm = 1;
 	}
