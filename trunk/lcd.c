@@ -36,7 +36,7 @@ static unsigned char dots[400];
 static void dispreg(const char n, REGISTER *p) {
         char buf[64];
         if (is_intmode())
-                sprintf(buf, "%llx", (unsigned long long int)regToInt(p));
+                sprintf(buf, "%llx", (unsigned long long int)get_reg_n_int(p));
         else {
 #ifdef INCLUDE_DOUBLE_PRECISION
 		if (is_dblmode())

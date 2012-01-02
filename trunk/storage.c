@@ -229,10 +229,10 @@ void clrall(void)
 {
 	NumRegs = TOPREALREG;
 	xeq_init_contexts();
-	clrreg( NULL, NULL, OP_CLREG );
-	clrstk( NULL, NULL, OP_CLSTK );
-	clralpha( NULL, NULL, OP_CLRALPHA );
-	clrflags( NULL, NULL, OP_CLFLAGS );
+	clrreg( OP_CLREG );
+	clrstk( OP_CLSTK );
+	clralpha( OP_CLRALPHA );
+	clrflags( OP_CLFLAGS );
 	clpall();
 
 	reset_shift();
@@ -592,7 +592,7 @@ int flash_remove( int step_no, int count )
  *  Started with ON+STO or ON+RCL or the SAVE/LOAD commands
  *  The backup area is the last 2KB of flash (pages 504 to 511)
  */
-void flash_backup( REGISTER *nul1, REGISTER *nul2, enum nilop op )
+void flash_backup( enum nilop op )
 {
 	if ( not_running() ) {
 		process_cmdline_set_lift();
@@ -610,7 +610,7 @@ void flash_backup( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 }
 
 
-void flash_restore( REGISTER *nul1, REGISTER *nul2, enum nilop op )
+void flash_restore( enum nilop op )
 {
 	if ( not_running() ) {
 		if ( checksum_backup() ) {
@@ -629,7 +629,7 @@ void flash_restore( REGISTER *nul1, REGISTER *nul2, enum nilop op )
  *  Load the user program area from the backup.
  *  Called by PLOAD.
  */
-void load_program( REGISTER *nul1, REGISTER *nul2, enum nilop op )
+void load_program( enum nilop op )
 {
 	if ( not_running() ) {
 		if ( checksum_backup() ) {
@@ -648,7 +648,7 @@ void load_program( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 /*
  *  Load registers from backup
  */
-void load_registers( REGISTER *nul1, REGISTER *nul2, enum nilop op )
+void load_registers( enum nilop op )
 {
 	int count;
 	if ( checksum_backup() ) {
@@ -669,7 +669,7 @@ void load_registers( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 /*
  *  Load the statistical summation registers from backup
  */
-void load_sigma( REGISTER *nul1, REGISTER *nul2, enum nilop op )
+void load_sigma( enum nilop op )
 {
 	if ( checksum_backup() ) {
 		/*
@@ -692,7 +692,7 @@ void load_sigma( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 /*
  *  Load the configuration data from the backup
  */
-void load_state( REGISTER *nul1, REGISTER *nul2, enum nilop op )
+void load_state( enum nilop op )
 {
 	if ( not_running() ) {
 		if ( checksum_backup() ) {
@@ -712,7 +712,7 @@ void load_state( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 /*
  *  Save a user program to the library region. Called by PSTO.
  */
-void store_program( REGISTER *nul1, REGISTER *nul2, enum nilop op )
+void store_program( enum nilop op )
 {
 	opcode lbl; 
 	unsigned int pc;
@@ -771,7 +771,7 @@ void store_program( REGISTER *nul1, REGISTER *nul2, enum nilop op )
 /*
  *  Load a user program from any region. Called by PRCL.
  */
-void recall_program( REGISTER *nul1, REGISTER *nul2, enum nilop op )
+void recall_program( enum nilop op )
 {
 	if ( not_running() ) {
 		update_program_bounds( 0 );

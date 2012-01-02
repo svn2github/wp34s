@@ -54,17 +54,17 @@ extern void clpall(void);
 extern void clrall(void);
 extern void reset(void);
 
-extern void flash_backup(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void flash_restore(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void flash_backup(enum nilop op);
+extern void flash_restore(enum nilop op);
 extern int flash_remove( int step_no, int count );
 extern void sam_ba_boot(void);
-extern void save_program(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void load_program(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void load_registers(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void load_sigma(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void load_state(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void store_program(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void recall_program(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void save_program(enum nilop op);
+extern void load_program(enum nilop op);
+extern void load_registers(enum nilop op);
+extern void load_sigma(enum nilop op);
+extern void load_state(enum nilop op);
+extern void store_program(enum nilop op);
+extern void recall_program(enum nilop op);
 
 #if !defined(REALBUILD) && !defined (QTGUI)
 extern void save_statefile(void);

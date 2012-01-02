@@ -30,14 +30,14 @@ extern decNumber *matrix_multiply(decNumber *r, const decNumber *a, const decNum
 extern decNumber *matrix_transpose(decNumber *r, const decNumber *m);
 extern decNumber *matrix_getreg(decNumber *r, const decNumber *k, const decNumber *b, const decNumber *a);
 extern decNumber *matrix_getrc(decNumber *r, const decNumber *x);
-extern void matrix_rowops(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void matrix_is_square(REGISTER *nul1, REGISTER *nul2, enum nilop op);
-extern void matrix_create(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void matrix_rowops(enum nilop op);
+extern void matrix_is_square(enum nilop op);
+extern void matrix_create(enum nilop op);
 extern decNumber *matrix_copy(decNumber *r, const decNumber *y, const decNumber *x);
 
 extern decNumber *matrix_determinant(decNumber *r, const decNumber *x);
 extern decNumber *matrix_lu_decomp(decNumber *r, const decNumber *x);
-extern void matrix_inverse(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void matrix_inverse(enum nilop op);
 extern decNumber *matrix_linear_eqn(decNumber *r, const decNumber *a, const decNumber *b, const decNumber *c);
 
 #endif

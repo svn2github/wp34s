@@ -28,11 +28,11 @@
 extern char SerialOn;
 
 // User visible routines
-extern void send_program( REGISTER *nul1, REGISTER *nul2, enum nilop op );
-extern void send_registers( REGISTER *nul1, REGISTER *nul2, enum nilop op );
-extern void send_sigma( REGISTER *nul1, REGISTER *nul2, enum nilop op );
-extern void send_all( REGISTER *nul1, REGISTER *nul2, enum nilop op );
-extern void recv_any( REGISTER *nul1, REGISTER *nul2, enum nilop op );
+extern void send_program( enum nilop op );
+extern void send_registers( enum nilop op );
+extern void send_sigma( enum nilop op );
+extern void send_all( enum nilop op );
+extern void recv_any( enum nilop op );
 extern int recv_byte( int timeout );
 #ifdef INCLUDE_USER_IO
 extern void send_byte( REGISTER *nul1, REGISTER *nul, enum nilop op2 );

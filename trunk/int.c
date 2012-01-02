@@ -572,7 +572,7 @@ static unsigned long long int packup(unsigned short int x[4]) {
 }
 #endif
 
-void intDblMul(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void intDblMul(enum nilop op) {
 #ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	unsigned long long int xv, yv;
@@ -586,8 +586,8 @@ void intDblMul(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		long long int xr, yr;
 		int sx, sy;
 
-		xr = regToInt(&regX);
-		yr = regToInt(&regY);
+		xr = get_reg_n_int(regX_idx);
+		yr = get_reg_n_int(regY_idx);
 
 		xv = extract_value(xr, &sx);
 		yv = extract_value(yr, &sy);
@@ -643,8 +643,8 @@ void intDblMul(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 			xv |= topbit_mask();
 	}
 
-	regFromInt(&regY, mask_value(yv));
-	regFromInt(&regX, mask_value(xv));
+	set_reg_n_int(regY_idx, mask_value(yv));
+	setX_int(mask_value(xv));
 	set_overflow(0);
 #endif
 }
@@ -969,7 +969,7 @@ void introt(unsigned int arg, enum rarg op) {
 		return;
 	}
 	ws = word_size();
-	x = regToInt(&regX);
+	x = get_reg_n_int(regX_idx);
 
 	if (arg != 0) {
 		switch (op) {
@@ -993,7 +993,7 @@ void introt(unsigned int arg, enum rarg op) {
 			x = (*f)(x);
 	}
 	setlastX();
-	regFromInt(&regX, mask_value(x));
+	setX_int(mask_value(x));
 #endif
 }
 
@@ -1269,13 +1269,11 @@ long long int intMirror(long long int x) {
 
 /* Justify to the end of the register
  */
-static void justify(REGISTER *ct,
-			long long int (*shift)(long long int),
-			const long long int mask) {
+static void justify(long long int (*shift)(long long int), const long long int mask) {
 	unsigned int c = 0;
 	long long int v;
 
-	v = regToInt(&regX);
+	v = get_reg_n_int(regX_idx);
 	setlastX();
 	lift();
 	if (v != 0) {
@@ -1285,14 +1283,14 @@ static void justify(REGISTER *ct,
 			c++;
 		}
 		restore_flags(flags);
-		regFromInt(&regY, v);
+		set_reg_n_int(regY_idx, v);
 	}
-	regFromInt(ct, (long long int)c);
+	setX_int((long long int)c);
 }
 
-void int_justify(REGISTER *x, REGISTER *nul, enum nilop op) {
+void int_justify(enum nilop op) {
 	const unsigned long long int mask = (op == OP_LJ) ? topbit_mask() : 1LL;
-	justify(x, (op == OP_LJ) ? &intLSL : &intLSR, mask);
+	justify((op == OP_LJ) ? &intLSL : &intLSR, mask);
 }
 
 
@@ -1326,7 +1324,7 @@ void intmsks(unsigned int arg, enum rarg op) {
 			mask = (*f)(mask);
 		}
 	}
-	regFromInt(&regX, x);
+	setX_int(x);
 	set_carry(carry);
 #endif
 }
@@ -1341,7 +1339,7 @@ void intbits(unsigned int arg, enum rarg op) {
 		return;
 	}
 	m =  (arg >= word_size())?0:(1LL << arg);
-	x = regToInt(&regX);
+	x = get_reg_n_int(regX_idx);
 
 	switch (op) {
 	case RARG_SB:	x |= m;		setlastX();		break;
@@ -1353,7 +1351,7 @@ void intbits(unsigned int arg, enum rarg op) {
 		return;
 	}
 
-	regFromInt(&regX, x);
+	setX_int(x);
 #endif
 }
 

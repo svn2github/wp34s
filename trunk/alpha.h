@@ -21,28 +21,28 @@
 
 #define CHARS_IN_REG	6
 
-extern void clralpha(REGISTER *, REGISTER *, enum nilop);
+extern void clralpha(enum nilop);
 extern void cmdalpha(unsigned int, enum rarg);
 extern void alpha_ip(unsigned int, enum rarg);
-extern void alpha_length(REGISTER *, REGISTER *, enum nilop);
+extern void alpha_length(enum nilop);
 extern void alpha_shift_l(unsigned int, enum rarg);
 extern void alpha_shift_r(unsigned int, enum rarg);
 extern void alpha_rot_r(unsigned int, enum rarg);
 
-extern void alpha_view(REGISTER *, REGISTER *, enum nilop);
+extern void alpha_view(enum nilop);
 extern void alpha_view_reg(unsigned int arg, enum rarg op);
 extern void alpha_view_common(int reg);
 
-extern void alpha_tox(REGISTER *, REGISTER *, enum nilop);
-extern void alpha_fromx(REGISTER *, REGISTER *, enum nilop);
+extern void alpha_tox(enum nilop);
+extern void alpha_fromx(enum nilop);
 extern void alpha_sto(unsigned int, enum rarg);
 extern void alpha_rcl(unsigned int, enum rarg);
-extern char *alpha_rcl_s(const REGISTER *, char buf[12]);
+extern char *alpha_rcl_s(int index, char buf[12]);
 
 extern void multialpha(opcode, enum multiops);
 
 extern void alpha_reg(unsigned int, enum rarg);
-extern void alpha_onoff(REGISTER *, REGISTER *, enum nilop);
+extern void alpha_onoff(enum nilop);
 
 
 extern void add_string(const char *);

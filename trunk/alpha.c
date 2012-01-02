@@ -51,7 +51,7 @@ void add_string(const char *s) {
 
 /* Clear the Alpha register
  */
-void clralpha(REGISTER *a, REGISTER *b, enum nilop op) {
+void clralpha(enum nilop op) {
 	DispMsg = NULL;
 	xset(Alpha, '\0', NUMALPHA);
 }
@@ -66,7 +66,7 @@ void alpha_view_common(int reg) {
 	frozen_display();
 }
 
-void alpha_view(REGISTER *a, REGISTER *b, enum nilop op) {
+void alpha_view(enum nilop op) {
 	alpha_view_common((unsigned int)-1);
 }
 
@@ -105,16 +105,16 @@ void alpha_ip(unsigned int arg, enum rarg op) {
 	int sgn;
 
 	if (is_intmode()) {
-		n = (unsigned int) extract_value(get_reg_n_as_int(arg), &sgn);
+		n = (unsigned int) extract_value(get_reg_n_int(arg), &sgn);
 		// should convert this using the current display mode...
 	} else {
 		decNumber x;
 		int z;
 
-		get_reg_n_as_dn(arg, &x);
+		getRegister(&x, arg);
 		z = dn_to_int(&x);
-		n = z<0?-z:z;
-		sgn = z<0;
+		sgn = z < 0;
+		n = sgn ? -z : z;
 	}
 
 	p = tbuf;
@@ -132,8 +132,8 @@ unsigned int alen(void) {
 	return find_char(Alpha, '\0') - Alpha;
 }
 
-void alpha_length(REGISTER *x, REGISTER *b, enum nilop op) {
-	put_int(alen(), 0, x);
+void alpha_length(enum nilop op) {
+	setX_int_sgn(alen(), 0);
 }
 
 /* Shift or rotate Alpha register arg positions
@@ -173,14 +173,14 @@ void alpha_rot_r(unsigned int arg, enum rarg op) {
 /* Take first character from Alpha and return its code in X.
  * remove the character from Alpha
  */
-void alpha_tox(REGISTER *a, REGISTER *b, enum nilop op) {
-	put_int(Alpha[0] & 0xff, 0, a);
+void alpha_tox(enum nilop op) {
+	setX_int_sgn(Alpha[0] & 0xff, 0);
 	alpha_shift_l(1, RARG_ALSL);
 }
 
-void alpha_fromx(REGISTER *a, REGISTER *b, enum nilop op) {
+void alpha_fromx(enum nilop op) {
 	int s;
-	add_char(0xff & get_int(&regX, &s));
+	add_char(0xff & get_reg_n_int_sgn(regX_idx, &s));
 }
 
 /* Recall a register and append to Alpha.
@@ -190,7 +190,7 @@ void alpha_reg(unsigned int arg, enum rarg op) {
 	char buf[64];
 
 	xset(buf, '\0', sizeof(buf));
-	format_reg(get_reg_n(arg), buf);
+	format_reg(arg, buf);
 	add_string(buf);
 }
 
@@ -213,17 +213,17 @@ void alpha_sto(unsigned int arg, enum rarg op) {
 
 	for (i=0; Alpha[i] != '\0' && i<n; i++)
 		z = (z << 8) | (0xff & Alpha[i]);
-	reg_put_int(arg, z, 0);
+	set_reg_n_int_sgn(arg, z, 0);
 }
 
 
-/* Alpha recall a register and convert it in to the supplied
+/* Alpha recall a register and convert it into the supplied
  * buffer and return a pointer to the first character (which won't
  * always be the start of the buffer.
  */
-char *alpha_rcl_s(const REGISTER *reg, char buf[12]) {
+char *alpha_rcl_s(int index, char buf[12]) {
 	int i;
-	unsigned long long int z = get_int(reg, &i);
+	unsigned long long int z = get_reg_n_int_sgn(index, &i);
 	char *p = buf + 11;
 	int n = char_per_reg();
 
@@ -240,11 +240,11 @@ char *alpha_rcl_s(const REGISTER *reg, char buf[12]) {
 void alpha_rcl(unsigned int arg, enum rarg op) {
 	char buf[12];
 
-	add_string(alpha_rcl_s(get_reg_n(arg), buf));
+	add_string(alpha_rcl_s(arg, buf));
 }
 
 /* Turn alpha mode on and off
  */
-void alpha_onoff(REGISTER *a, REGISTER *b, enum nilop op) {
+void alpha_onoff(enum nilop op) {
 	State2.alphas = (op == OP_ALPHAON) ? 1 : 0;
 }

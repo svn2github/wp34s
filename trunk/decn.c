@@ -1371,7 +1371,7 @@ decNumber *decNumberArcTan2(decNumber *res, const decNumber *a, const decNumber 
 	return res;	
 }
 
-void op_r2p(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_r2p(enum nilop op) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &y);
@@ -1381,7 +1381,7 @@ void op_r2p(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	setXY(&rx, &y);
 }
 
-void op_p2r(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_p2r(enum nilop op) {
 	decNumber x, y, rx, ry;
 
 	getXY(&x, &ry);
@@ -3096,20 +3096,20 @@ void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNum
 #define _FLAG_COUNT_N	0	/* 0 - 7, eight flags in all */
 
 // User code interface to the solver
-void solver(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void solver(enum nilop op) {
 	decNumber a, b, c, fa, fb, fc;
 	unsigned int flags;
 	int r;
 
-	get_reg_n_as_dn(LOCAL_REG_BASE + 0, &a);
-	get_reg_n_as_dn(LOCAL_REG_BASE + 1, &b);
-	get_reg_n_as_dn(LOCAL_REG_BASE + 3, &fa);
-	get_reg_n_as_dn(LOCAL_REG_BASE + 4, &fb);
+	getRegister(&a, LOCAL_REG_BASE + 0);
+	getRegister(&b, LOCAL_REG_BASE + 1);
+	getRegister(&fa, LOCAL_REG_BASE + 3);
+	getRegister(&fb, LOCAL_REG_BASE + 4);
 
 	if (op == OP_INISOLVE) {
 		solver_init(&c, &a, &b, &fa, &fb, &flags);
 	} else {
-		get_reg_n_as_dn(LOCAL_REG_BASE + 2, &c);
+		getRegister(&c, LOCAL_REG_BASE + 2);
 		flags = 0;
 		for (r=0; r<8; r++)
 			if (get_user_flag(LOCAL_FLAG_BASE + r + _FLAG_COUNT_N))
@@ -3130,11 +3130,11 @@ void solver(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		setX(r==0?&const_0:&const_1);
 	}
 
-	put_reg_n(LOCAL_REG_BASE + 0, &a);
-	put_reg_n(LOCAL_REG_BASE + 1, &b);
-	put_reg_n(LOCAL_REG_BASE + 2, &c);
-	put_reg_n(LOCAL_REG_BASE + 3, &fa);
-	put_reg_n(LOCAL_REG_BASE + 4, &fb);
+	setRegister(LOCAL_REG_BASE + 0, &a);
+	setRegister(LOCAL_REG_BASE + 1, &b);
+	setRegister(LOCAL_REG_BASE + 2, &c);
+	setRegister(LOCAL_REG_BASE + 3, &fa);
+	setRegister(LOCAL_REG_BASE + 4, &fb);
 
 	put_user_flag(LOCAL_FLAG_BASE + _FLAG_BRACKET_N, IS_BRACKET(flags));
 	put_user_flag(LOCAL_FLAG_BASE + _FLAG_CONST_N, IS_CONST(flags));

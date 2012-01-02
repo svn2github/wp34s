@@ -45,31 +45,31 @@ extern STAT_DATA *StatRegs;
 extern int  sigmaCheck(void);
 extern void sigmaDeallocate(void);
 extern int  sigmaCopy(void *source);
-extern void sigma_clear(REGISTER *, REGISTER *, enum nilop);
+extern void sigma_clear(enum nilop);
 extern void sigma_plus(void);
 extern void sigma_minus(void);
 
-extern void stats_mean(REGISTER *, REGISTER *, enum nilop);
-extern void stats_wmean(REGISTER *, REGISTER *, enum nilop);
-extern void stats_gmean(REGISTER *, REGISTER *, enum nilop);
-extern void stats_deviations(REGISTER *, REGISTER *, enum nilop);
-extern void stats_wdeviations(REGISTER *, REGISTER *, enum nilop);
+extern void stats_mean(enum nilop);
+extern void stats_wmean(enum nilop);
+extern void stats_gmean(enum nilop);
+extern void stats_deviations(enum nilop);
+extern void stats_wdeviations(enum nilop);
 extern decNumber *stats_xhat(decNumber *, const decNumber *);
 extern decNumber *stats_yhat(decNumber *, const decNumber *);
-extern void stats_correlation(REGISTER *, REGISTER *, enum nilop);
-extern void stats_COV(REGISTER *, REGISTER *, enum nilop);
-extern void stats_LR(REGISTER *, REGISTER *, enum nilop);
-extern void stats_SErr(REGISTER *, REGISTER *, enum nilop);
+extern void stats_correlation(enum nilop);
+extern void stats_COV(enum nilop);
+extern void stats_LR(enum nilop);
+extern void stats_SErr(enum nilop);
 extern decNumber *stats_sigper(decNumber *, const decNumber *);
 
-extern void sigma_val(REGISTER *, REGISTER *, enum nilop);
+extern void sigma_val(enum nilop);
 
-extern void sigma_sum(REGISTER *, REGISTER *, enum nilop);
+extern void sigma_sum(enum nilop);
 
-extern void stats_mode(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void stats_mode(enum nilop op);
 
-extern void stats_random(REGISTER *, REGISTER *, enum nilop);
-extern void stats_sto_random(REGISTER *, REGISTER *, enum nilop);
+extern void stats_random(enum nilop);
+extern void stats_sto_random(enum nilop);
 
 extern decNumber *betai(decNumber *, const decNumber *, const decNumber *, const decNumber *);
 

@@ -85,11 +85,11 @@ extern int isPrime(unsigned long long int x);
 extern long long int intMirror(long long int x);
 extern void intmsks(unsigned arg, enum rarg op);
 
-extern void int_justify(REGISTER *, REGISTER *, enum nilop);
+extern void int_justify(enum nilop);
 
 extern void intbits(unsigned arg, enum rarg op);
 
-extern void intDblMul(REGISTER *, REGISTER *, enum nilop);
+extern void intDblMul(enum nilop);
 extern long long int intDblDiv(long long int, long long int, long long int);
 extern long long int intDblRmdr(long long int, long long int, long long int);
 

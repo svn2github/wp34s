@@ -113,7 +113,7 @@ static decimal64 *matrix_decomp(const decNumber *x, int *rows, int *cols) {
 
 /* Check if a matrix is square or not.
  */
-void matrix_is_square(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void matrix_is_square(enum nilop op) {
 	int r, c;
 	decNumber x;
 
@@ -126,7 +126,7 @@ void matrix_is_square(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 #ifdef SILLY_MATRIX_SUPPORT
 /* Create either a zero matrix or an identity matrix.
  */
-void matrix_create(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void matrix_create(enum nilop op) {
 	decNumber x;
 	int r, c, i, j;
 	decimal64 *base;
@@ -389,7 +389,7 @@ decNumber *matrix_transpose(decNumber *r, const decNumber *m) {
 }
 
 #ifdef MATRIX_ROWOPS
-void matrix_rowops(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void matrix_rowops(enum nilop op) {
 	decNumber m, ydn, zdn, t;
 	decimal64 *base, *r1, *r2;
 	int rows, cols;
@@ -615,7 +615,7 @@ decNumber *matrix_determinant(decNumber *r, const decNumber *m) {
  * Do this by calculating the LU decomposition and solving lots of systems
  * of linear equations.
  */
-void matrix_inverse(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void matrix_inverse(enum nilop op) {
 	decimal128 mat[MAX_SQUARE*MAX_SQUARE];
 	decNumber x[MAX_SQUARE];
 	unsigned char pivots[MAX_SQUARE];

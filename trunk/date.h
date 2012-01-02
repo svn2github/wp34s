@@ -29,17 +29,17 @@ extern decNumber *dateToJ(decNumber *res, const decNumber *x);
 extern decNumber *dateFromJ(decNumber *res, const decNumber *x);
 
 extern decNumber *dateEaster(decNumber *res, const decNumber *x);
-extern void date_isleap(REGISTER *, REGISTER *, enum nilop op);
+extern void date_isleap(enum nilop op);
 
-extern void date_alphaday(REGISTER *, REGISTER *, enum nilop op);
-extern void date_alphamonth(REGISTER *, REGISTER *, enum nilop op);
-extern void date_alphadate(REGISTER *r, REGISTER *nul, enum nilop op);
-extern void date_alphatime(REGISTER *nul1, REGISTER *nul2, enum nilop op);
+extern void date_alphaday(enum nilop op);
+extern void date_alphamonth(enum nilop op);
+extern void date_alphadate(enum nilop op);
+extern void date_alphatime(enum nilop op);
 
-extern void date_time(REGISTER *, REGISTER *, enum nilop op);
-extern void date_date(REGISTER *, REGISTER *, enum nilop op);
-extern void date_settime(REGISTER *, REGISTER *, enum nilop op);
-extern void date_setdate(REGISTER *, REGISTER *, enum nilop op);
-extern void date_24(REGISTER *, REGISTER *, enum nilop op);
+extern void date_time(enum nilop op);
+extern void date_date(enum nilop op);
+extern void date_settime(enum nilop op);
+extern void date_setdate(enum nilop op);
+extern void date_24(enum nilop op);
 
 #endif

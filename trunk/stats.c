@@ -133,11 +133,11 @@ static int check_data(unsigned int n) {
 }
 
 
-void stats_mode(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void stats_mode(enum nilop op) {
 	UState.sigma_mode = (op - OP_LINF) + SIGMA_LINEAR;
 }
 
-void sigma_clear(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void sigma_clear(enum nilop op) {
 	sigmaDeallocate();
 }
 
@@ -331,22 +331,18 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
  *  Opcodes have been reaaranged to move sigmaN to the end of the list.
  *  decimal64 values are grouped together, if decimal128 is used, regrouping is required
  */
-void sigma_val(REGISTER *x, REGISTER *y, enum nilop op) {
+void sigma_val(enum nilop op) {
+	REGISTER *const x = get_reg_n(regX_idx);
 #ifdef INCLUDE_DOUBLE_PRECISION
 	const int dbl = is_dblmode();
 #endif
 	if (SizeStatRegs == 0) {
-#ifdef INCLUDE_DOUBLE_PRECISION
-		if (dbl)
-			x->d = CONSTANT_DBL(OP_ZERO);
-		else
-#endif
-			x->s = CONSTANT_INT(OP_ZERO);
+		zero_X();
 		return;
 	}
 	sigmaCheck();
 	if (op == OP_sigmaN) {
-		put_int(sigmaN, 0, x);
+		setX_int_sgn(sigmaN, 0);
 	}
 	else if (op < OP_sigmaX) {
 		decimal128 *d = (&sigmaX2Y) + (op - OP_sigmaX2Y);
@@ -366,7 +362,10 @@ void sigma_val(REGISTER *x, REGISTER *y, enum nilop op) {
 	}
 }
 
-void sigma_sum(REGISTER *x, REGISTER *y, enum nilop op) {
+void sigma_sum(enum nilop op) {
+	REGISTER *const x = get_reg_n(regX_idx);
+	REGISTER *const y = get_reg_n(regY_idx);
+
 	if (SizeStatRegs == 0) {
 		x->s = y->s = CONSTANT_INT(OP_ZERO);
 	}
@@ -383,16 +382,16 @@ void sigma_sum(REGISTER *x, REGISTER *y, enum nilop op) {
 }
 
 
-static void mean_common(REGISTER *res, const decNumber *x, const decNumber *n, int exp) {
+static void mean_common(int index, const decNumber *x, const decNumber *n, int exp) {
 	decNumber t, u, *p = &t;
 
 	dn_divide(&t, x, n);
 	if (exp)
 		dn_exp(p=&u, &t);
-	setResult(res, p);
+	setRegister(index, p);
 }
 
-void stats_mean(REGISTER *x, REGISTER *y, enum nilop op) {
+void stats_mean(enum nilop op) {
 	decNumber N;
 	decNumber sx, sy;
 
@@ -400,24 +399,24 @@ void stats_mean(REGISTER *x, REGISTER *y, enum nilop op) {
 		return;
 	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_QUIET_LINEAR);
 
-	mean_common(x, &sx, &N, 0);
-	mean_common(y, &sy, &N, 0);
+	mean_common(regX_idx, &sx, &N, 0);
+	mean_common(regY_idx, &sy, &N, 0);
 }
 
 
 // weighted mean sigmaXY / sigmaY
-void stats_wmean(REGISTER *x, REGISTER *nul, enum nilop op) {
+void stats_wmean(enum nilop op) {
 	decNumber xy, y;
 
 	if (check_data(1))
 		return;
 	get_sigmas(NULL, NULL, &y, NULL, NULL, &xy, SIGMA_QUIET_LINEAR);
 
-	mean_common(x, &xy, &y, 0);
+	mean_common(regX_idx, &xy, &y, 0);
 }
 
 // geometric mean e^(sigmaLnX / N)
-void stats_gmean(REGISTER *x, REGISTER *y, enum nilop op) {
+void stats_gmean(enum nilop op) {
 	decNumber N;
 	decNumber sx, sy;
 
@@ -425,12 +424,12 @@ void stats_gmean(REGISTER *x, REGISTER *y, enum nilop op) {
 		return;
 	get_sigmas(&N, &sx, &sy, NULL, NULL, NULL, SIGMA_QUIET_POWER);
 
-	mean_common(x, &sx, &N, 1);
-	mean_common(y, &sy, &N, 1);
+	mean_common(regX_idx, &sx, &N, 1);
+	mean_common(regY_idx, &sy, &N, 1);
 }
 
 // Standard deviations and standard errors
-static void do_s(REGISTER *s,
+static void do_s(int index,
 		const decNumber *sxx, const decNumber *sx,
 		const decNumber *N, const decNumber *denom, 
 		int rootn, int exp) {
@@ -450,25 +449,17 @@ static void do_s(REGISTER *s,
 		dn_exp(&u, p);
 		p = &u;
 	}
-	setResult(s, p);
-}
-
-static void S(REGISTER *x, REGISTER *y, int sample, int rootn, int exp) {
-	decNumber N, nm1, *n = &N;
-	decNumber sx, sxx, sy, syy;
-
-	if (check_data(2))
-		return;
-	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, exp?SIGMA_QUIET_POWER:SIGMA_QUIET_LINEAR);
-	if (sample)
-		dn_m1(n = &nm1, &N);
-	do_s(x, &sxx, &sx, &N, n, rootn, exp);
-	do_s(y, &syy, &sy, &N, n, rootn, exp);
+	setRegister(index, p);
 }
 
 // sx = sqrt(sigmaX^2 - (sigmaX ^ 2 ) / (n-1))
-void stats_deviations(REGISTER *x, REGISTER *y, enum nilop op) {
+void stats_deviations(enum nilop op) {
+	decNumber N, nm1, *n = &N;
+	decNumber sx, sxx, sy, syy;
 	int sample = 1, rootn = 0, exp = 0;
+
+	if (check_data(2))
+		return;
 
 	if (op == OP_statSigma || op == OP_statGSigma)
 		sample = 0;
@@ -476,15 +467,26 @@ void stats_deviations(REGISTER *x, REGISTER *y, enum nilop op) {
 		rootn = 1;
 	if (op == OP_statGS || op == OP_statGSigma || op == OP_statGSErr)
 		exp = 1;
-	S(x, y, sample, rootn, exp);
+
+	get_sigmas(&N, &sx, &sy, &sxx, &syy, NULL, exp?SIGMA_QUIET_POWER:SIGMA_QUIET_LINEAR);
+	if (sample)
+		dn_m1(n = &nm1, &N);
+	do_s(regX_idx, &sxx, &sx, &N, n, rootn, exp);
+	do_s(regY_idx, &syy, &sy, &N, n, rootn, exp);
 }
 
 
 
 // Weighted standard deviation
-void WS(REGISTER *x, int sample, int rootn) {
+void stats_wdeviations(enum nilop op) {
 	decNumber sxxy, sy, sxy, syy;
 	decNumber t, u, v, w, *p;
+	int sample = 1, rootn = 0;
+
+	if (op == OP_statWSigma)
+		sample = 0;
+	if (op == OP_statWSErr)
+		rootn = 1;
 
 	if (sigmaCheck())
 		return;
@@ -504,19 +506,8 @@ void WS(REGISTER *x, int sample, int rootn) {
 		dn_sqrt(&t, &sy);
 		dn_divide(p = &v, &u, &t);
 	}
-	setResult(x, p);
+	setX(p);
 }
-
-void stats_wdeviations(REGISTER *x, REGISTER *y, enum nilop op) {
-	int sample = 1, rootn = 0;
-
-	if (op == OP_statWSigma)
-		sample = 0;
-	if (op == OP_statWSErr)
-		rootn = 0;
-	WS(x, sample, rootn);
-}
-
 
 
 decNumber *stats_sigper(decNumber *res, const decNumber *x) {
@@ -562,23 +553,24 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 }
 
 
-void stats_correlation(REGISTER *r, REGISTER *nul, enum nilop op) {
+void stats_correlation(enum nilop op) {
 	decNumber t;
 
 	if (check_data(2))
 		return;
 	correlation(&t, (enum sigma_modes) UState.sigma_mode);
-	setResult(r, &t);
+	setX(&t);
 }
 
 
-static void covariance(REGISTER *r, int sample) {
+void stats_COV(enum nilop op) {
+	const int sample = (op == OP_statCOV) ? 0 : 1;
 	decNumber N, t, u, v;
 	decNumber sx, sy, sxy;
 
 	if (check_data(2))
 		return;
-	get_sigmas(&N, &sx, &sy, NULL, NULL, &sxy, UState.sigma_mode);
+	get_sigmas(&N, &sx, &sy, NULL, NULL, &sxy, (enum sigma_modes) UState.sigma_mode);
 	dn_multiply(&t, &sx, &sy);
 	dn_divide(&u, &t, &N);
 	dn_subtract(&t, &sxy, &u);
@@ -587,11 +579,7 @@ static void covariance(REGISTER *r, int sample) {
 		dn_divide(&u, &t, &v);
 	} else
 		dn_divide(&u, &t, &N);
-	setResult(r, &u);
-}
-
-void stats_COV(REGISTER *r, REGISTER *nul, enum nilop op) {
-	covariance(r, (op == OP_statCOV) ? 0 : 1);
+	setX(&u);
 }
 
 
@@ -621,14 +609,14 @@ static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
 }
 
 
-void stats_LR(REGISTER *bout, REGISTER *aout, enum nilop op) {
+void stats_LR(enum nilop op) {
 	decNumber a, b;
 
 	if (check_data(2))
 		return;
 	do_LR(&b, &a);
-	setResult(aout, &a);
-	setResult(bout, &b);
+	setY(&a);
+	setX(&b);
 }
 
 
@@ -730,7 +718,7 @@ static void taus_seed(unsigned long int s) {
 		taus_get();
 }
 
-void stats_random(REGISTER *r, REGISTER *nul, enum nilop op) {
+void stats_random(enum nilop op) {
 	// Start by generating the next in sequence
 	unsigned long int s;
 	decNumber y, z;
@@ -740,23 +728,23 @@ void stats_random(REGISTER *r, REGISTER *nul, enum nilop op) {
 	s = taus_get();
 
 	// Now build ourselves a number
-	if (is_intmode()) {
-		regFromInt(r, build_value((((unsigned long long int)taus_get()) << 32) | s, 0));
-	} else {
+	if (is_intmode())
+		setX_int_sgn((((unsigned long long int)taus_get()) << 32) | s, 0);
+	else {
 		ullint_to_dn(&z, s);
 		dn_multiply(&y, &z, &const_randfac);
-		setResult(r, &y);
+		setX(&y);
 	}
 }
 
 
-void stats_sto_random(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void stats_sto_random(enum nilop op) {
 	unsigned long int s;
 	int z;
 	decNumber x;
 
 	if (is_intmode()) {
-		 s = regToInt(&regX) & 0xffffffff;
+		 s = get_reg_n_int(regX_idx) & 0xffffffff;
 	} else {
 		getX(&x);
 		s = (unsigned long int) dn_to_ull(&x, &z);
@@ -1014,12 +1002,12 @@ static int check_probability(decNumber *r, const decNumber *x, int min_zero) {
 
 /* Get parameters for a distribution */
 static void dist_one_param(decNumber *a) {
-	get_reg_n_as_dn(regJ_idx, a);
+	getRegister(a, regJ_idx);
 }
 
 static void dist_two_param(decNumber *a, decNumber *b) {
-	get_reg_n_as_dn(regJ_idx, a);
-	get_reg_n_as_dn(regK_idx, b);
+	getRegister(a, regJ_idx);
+	getRegister(b, regK_idx);
 }
 
 static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {

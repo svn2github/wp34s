@@ -438,10 +438,9 @@ static void disp_x(const char *p) {
 
 static const char DIGITS[] = "0123456789ABCDEF";
 
-static void set_int_x(REGISTER *rgx, char *res) {
+static void set_int_x(const long long int value, char *res) {
 	const int ws = word_size();
 	unsigned int b;
-	const long long int value = regToInt(rgx);
 	long long int vs = value;
 	unsigned long long int v;
 	char buf[MAX_WORD_SIZE + 1];
@@ -1119,16 +1118,21 @@ static void set_x_(const REGISTER *rgx, char *res) {
 }
 
 
-void format_reg(REGISTER *r, char *buf) {
-	REGISTER z;
+void format_reg(int index, char *buf) {
+	const REGISTER *const r = get_reg_n(index);
 
 	if (is_intmode())
-		set_int_x(r, buf);
+		set_int_x(get_reg_n_int(index), buf);
 #ifndef HP16C_MODE_CHANGE
 	else if (buf == NULL && State2.smode > SDISP_SHOW) {
-		copyreg(&z, r);
-		int_mode_convert(&z, &z);
-		set_int_x(&z, NULL);
+		decNumber x;
+		int s;
+		unsigned long long int v;
+
+		getRegister(&x, index);
+		decNumberTrunc(&x, &x);
+		v = dn_to_ull(&x, &s);
+		set_int_x(build_value(v, s), NULL);
 	}
 #endif
 	else
@@ -1245,12 +1249,11 @@ static void show_label(void) {
 /* Display a list of register contents */
 static void show_registers(void) {
 	char buf[16], *bp;
-	REGISTER *reg;
 	const int n = State2.digval;
-
-	reg = State2.digval2 ? get_flash_reg_n(n) : 
-	      State2.local   ? get_reg_n(LOCAL_REG_BASE + n) : 
-	      get_reg_n(n);
+	
+	const int reg = State2.digval2 ? FLASH_REG_BASE + n : 
+			State2.local   ? LOCAL_REG_BASE + n : 
+			n;
 
 	if (State2.disp_as_alpha) {
 		set_status(alpha_rcl_s(reg, buf));
@@ -1419,9 +1422,11 @@ void display(void) {
 				set_x((REGISTER *)&z, NULL, 0);
 				skip = 1;
 			} else if (op >= (OP_NIL | OP_sigmaX2Y) && op < (OP_NIL | OP_sigmaX2Y) + NUMSTATREG) {
-				REGISTER z;
-				sigma_val(&z, NULL, (enum nilop) argKIND(op));
-				set_x(&z, NULL, 0);
+				REGISTER z, *const x = get_reg_n(regX_idx);
+				copyreg(&z, x);
+				sigma_val((enum nilop) argKIND(op));
+				set_x(x, NULL, 0);
+				copyreg(x, &z);
 				skip = 1;
 			}
 		}
@@ -1507,7 +1512,7 @@ nostk:	show_flags();
 			if (p == NULL || cata) {
 				if (ShowRegister != -1) {
 					x_disp = (ShowRegister == regX_idx) && !State2.hms;
-					format_reg(get_reg_n(ShowRegister), NULL);
+					format_reg(ShowRegister, NULL);
 				}
 				else
 					set_digits_string(" ---", 4 * SEGS_PER_DIGIT);

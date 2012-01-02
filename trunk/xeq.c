@@ -195,13 +195,13 @@ unsigned int get_local_flags(void) {
 }
 #endif
 
-void version(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void version(enum nilop op) {
 	State2.version = 1;
 	if (!State2.runmode)
 		display();
 }
 
-void cmd_off(REGISTER *a, REGISTER *nul2, enum nilop op) {
+void cmd_off(enum nilop op) {
 	shutdown();
 }
 
@@ -527,8 +527,8 @@ static enum rounding get_rounding_mode() {
 	return (enum rounding) modes[UState.rounding_mode];
 }
 
-void op_roundingmode(REGISTER *x, REGISTER *nul2, enum nilop op) {
-	put_int(UState.rounding_mode, 0, x);
+void op_roundingmode(enum nilop op) {
+	setX_int_sgn(UState.rounding_mode, 0);
 }
 
 void rarg_roundingmode(unsigned int arg, enum rarg op) {
@@ -632,11 +632,14 @@ static REGISTER *get_stack_top(void) {
 }
 
 #ifdef INCLUDE_DOUBLE_PRECISION
-void copyreg(REGISTER *d, const REGISTER *s)
-{
+void copyreg(REGISTER *d, const REGISTER *s) {
 	xcopy(d, s, is_dblmode() ? sizeof(decimal128) : sizeof(decimal64));
 }
 #endif
+
+void copyreg_n(int d, int s) {
+	copyreg(get_reg_n(d), get_reg_n(s));
+}
 
 /* Lift the stack one level.
  */
@@ -675,58 +678,53 @@ static void lower2(void) {
 
 
 void setlastX(void) {
-	copyreg(&regL, &regX);
+	copyreg_n(regL_idx, regX_idx);
 }
 
 static void setlastXY(void) {
 	setlastX();
-	copyreg(&regI, get_stack(1));
+	copyreg_n(regI_idx, regY_idx);
 }
 
 
 #ifdef INCLUDE_DOUBLE_PRECISION
-static decNumber *getRegister(decNumber *r, const REGISTER *rs, const REGISTER *rd) {
+decNumber *getRegister(decNumber *r, int index) {
+	const REGISTER *const reg = get_reg_n(index);
 	if (is_dblmode())
-		decimal128ToNumber(&(rd->d), r);
+		decimal128ToNumber(&(reg->d), r);
 	else
-		decimal64ToNumber(&(rs->s), r);
+		decimal64ToNumber(&(reg->s), r);
 	return r;
 }
 
-void setRegister(REGISTER *rs, REGISTER *rd, const decNumber *x) {
+void setRegister(int index, const decNumber *x) {
+	REGISTER *const reg = get_reg_n(index);
 	decNumber dn;
 
 	if (! check_special(x)) {
 		decNumberNormalize(&dn, x, &Ctx);
 		if (is_dblmode())
-			packed128_from_number(&(rd->d), &dn);
+			packed128_from_number(&(reg->d), &dn);
 		else
-			packed_from_number(&(rs->s), &dn);
+			packed_from_number(&(reg->s), &dn);
 	}
 }
-
-void setResult(REGISTER *r, const decNumber *x) {
-	setRegister(r, r, x);
-}
-
-#else
-#define getRegister(r, rs, rd) decimal64ToNumber(&((rs)->s), r)
 #endif
 
 decNumber *getX(decNumber *x) {
-	return getRegister(x, &regX, &dblX);
+	return getRegister(x, regX_idx);
 }
 
 void setX(const decNumber *x) {
-	setRegister(&regX, &dblX, x);
+	setRegister(regX_idx, x);
 }
 
 void getY(decNumber *y) {
-	getRegister(y, &regY, &dblY);
+	getRegister(y, regY_idx);
 }
 
 void setY(const decNumber *y) {
-	setRegister(&regY, &dblY, y);
+	setRegister(regY_idx, y);
 }
 
 void setXY(const decNumber *x, const decNumber *y) {
@@ -735,11 +733,11 @@ void setXY(const decNumber *x, const decNumber *y) {
 }
 
 static void getZ(decNumber *z) {
-	getRegister(z, &regZ, &dblZ);
+	getRegister(z, regZ_idx);
 }
 
 static void getT(decNumber *t) {
-	getRegister(t, &regT, &dblT);
+	getRegister(t, regT_idx);
 }
 
 void getXY(decNumber *x, decNumber *y) {
@@ -762,37 +760,37 @@ void getYZ(decNumber *y, decNumber *z) {
 	getZ(z);
 }
 
-void roll_down(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void roll_down(enum nilop op) {
 	REGISTER r;
 	copyreg(&r, &regX);
 	lower();
 	copyreg(get_stack_top(), &r);
 }
 
-void roll_up(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void roll_up(enum nilop op) {
 	REGISTER r;
 	copyreg(&r, get_stack_top());
 	lift();
 	copyreg(&regX, &r);
 }
 
-void cpx_roll_down(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
-	roll_down(NULL, NULL, OP_RDOWN);
-	roll_down(NULL, NULL, OP_RDOWN);
+void cpx_roll_down(enum nilop op) {
+	roll_down(OP_RDOWN);
+	roll_down(OP_RDOWN);
 }
 
-void cpx_roll_up(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
-	roll_up(NULL, NULL, OP_RUP);
-	roll_up(NULL, NULL, OP_RUP);
+void cpx_roll_up(enum nilop op) {
+	roll_up(OP_RUP);
+	roll_up(OP_RUP);
 }
 
-void cpx_enter(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void cpx_enter(enum nilop op) {
 	lift();
 	lift();
 	copyreg(get_stack(1), get_stack(3));
 }
 
-void cpx_fill(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void cpx_fill(enum nilop op) {
 	const int n = stack_size();
 	const void *y = get_stack(1);
 	int i;
@@ -801,7 +799,7 @@ void cpx_fill(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		copyreg(get_stack(i), (i & 1) ? &y : (void *) &regX);
 }
 
-void fill(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void fill(enum nilop op) {
 	const int n = stack_size();
 	int i;
 
@@ -809,7 +807,7 @@ void fill(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		copyreg(get_stack(i), &regX);
 }
 
-void drop(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void drop(enum nilop op) {
 	lower();
 	if (op == OP_DROPXY)
 		lower();
@@ -826,7 +824,7 @@ int is_dblmode(void) {
 }
 #endif
 
-void lead0(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void lead0(enum nilop op) {
 	UState.leadzero = (op == OP_LEAD0) ? 1 : 0;
 }
 
@@ -924,7 +922,7 @@ void process_cmdline(void) {
 		if (is_intmode()) {
 			const int sgn = (cmdline[0] == '-')?1:0;
 			unsigned long long int x = s_to_ull(cmdline+sgn, int_base());
-			regFromInt(&regX, build_value(x, sgn));
+			setX_int_sgn(x, sgn);
 		} else if (cmdlinedot == 2) {
 			char *d0, *d1, *d2;
 			int neg;
@@ -1020,6 +1018,18 @@ static decimal64 *reg_address(int n, decimal64 *const regs, decimal64 *const nam
 #endif
 
 REGISTER *get_reg_n(int n) {
+	const int dbl = is_dblmode();
+
+	if (n >= CONST_REG_BASE) {
+		n -= CONST_REG_BASE;
+		if (dbl) 
+			return (REGISTER *) (cnsts_dbl + n);
+		else
+			return (REGISTER *) (cnsts_int + n);
+	}
+	if (n >= FLASH_REG_BASE)
+		return get_flash_reg_n(n - FLASH_REG_BASE);
+
 	if (n >= LOCAL_REG_BASE && LocalRegs < 0) {
 		n -= LOCAL_REG_BASE;
 #ifdef INCLUDE_DOUBLE_PRECISION
@@ -1043,30 +1053,59 @@ REGISTER *get_flash_reg_n(int n) {
 					   BackupFlash._regs + regX_idx);
 }
 
-void get_reg_n_as_dn(int n, decNumber *x) {
-	const REGISTER *const r = get_reg_n(n);
-	getRegister(x, r, r);
+
+/*  Some conversion routines to take decimals and produce integers
+ *  This is for opaque storage, no conversion takes place.
+ */
+long long int get_reg_n_int(int index) {
+	long long int ll;
+	xcopy(&ll, get_reg_n(index), sizeof(ll));
+	return ll;
 }
 
-void put_reg_n(int n, const decNumber *x) {
-	setResult(get_reg_n(n), x);
+void set_reg_n_int(int index, long long int ll) {
+	xcopy(get_reg_n(index), &ll, sizeof(ll));
 }
 
-long long int get_reg_n_as_int(int n) {
-	return regToInt(get_reg_n(n));
+/* Get an integer from a register
+ */
+unsigned long long int get_reg_n_int_sgn(int index, int *sgn) {
+	if (is_intmode()) {
+		return extract_value(get_reg_n_int(index), sgn);
+	} else {
+		decNumber n;
+
+		getRegister(&n, index);
+		return dn_to_ull(&n, sgn);
+	}
 }
 
-void put_reg_n_from_int(int n, const long long int x) {
-	regFromInt(get_reg_n(n), x);
+/* Put an integer into a register
+ */
+void set_reg_n_int_sgn(int index, unsigned long long int val, int sgn) {
+	if (is_intmode()) {
+		set_reg_n_int(index, build_value(val, sgn));
+	} else {
+		decNumber t;
+
+		ullint_to_dn(&t, val);
+		if (sgn)
+			dn_minus(&t, &t);
+		setRegister(index, &t);
+	}
 }
 
-void reg_put_int(int n, unsigned long long int val, int sgn) {
-	put_int(val, sgn, get_reg_n(n));
+/* Put an integer into X
+ */
+void setX_int(long long int val) {
+	set_reg_n_int(regX_idx, val);
 }
 
-unsigned long long int reg_get_int(int n, int *sgn) {
-	return get_int(get_reg_n(n), sgn);
+void setX_int_sgn(unsigned long long int val, int sgn) {
+	set_reg_n_int_sgn(regX_idx, val, sgn);
 }
+
+
 
 /*
  *  Set the register value explicitely
@@ -1098,45 +1137,6 @@ void move_regs(REGISTER *dest, REGISTER *src, int n) {
 	xcopy(dest, src, n << 3);
 }
 
-/* Put an integer into the specified real
- */
-void put_int(unsigned long long int val, int sgn, REGISTER *x) {
-	if (is_intmode()) {
-		regFromInt(x, build_value(val, sgn));
-	} else {
-		decNumber t;
-
-		ullint_to_dn(&t, val);
-		if (sgn)
-			dn_minus(&t, &t);
-		setResult(x, &t);
-	}
-}
-
-unsigned long long int get_int(const REGISTER *x, int *sgn) {
-	if (is_intmode()) {
-		return extract_value(regToInt(x), sgn);
-	} else {
-		decNumber n;
-
-		getRegister(&n, x, x);
-		return dn_to_ull(&n, sgn);
-	}
-}
-
-
-/* Some conversion routines to take decimals and produce integers
- */
-long long int regToInt(const REGISTER *n) {
-	long long int ll;
-	xcopy(&ll, n, sizeof(ll));
-	return ll;
-}
-
-void regFromInt(REGISTER *n, const long long int ll) {
-	xcopy(n, &ll, sizeof(decimal64));
-}
-
 
 /* Zero a register
  */
@@ -1144,14 +1144,21 @@ static void set_zero(REGISTER *x) {
 	zero_regs(x, 1);
 }
 
-void clrx(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
-	set_zero((REGISTER *) &regX);
-	State.state_lift = 0;
+void zero_X(void) {
+	set_zero(get_reg_n(regX_idx));
+}
+
+void zero_Y(void) {
+	set_zero(get_reg_n(regY_idx));
+}
+
+void clrx(enum nilop op) {
+	zero_X();
 }
 
 /* Zero out the stack
  */
-void clrstk(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void clrstk(enum nilop op) {
 	zero_regs((REGISTER *) &regX, stack_size());
 	CmdLineLength = 0;
 	State.state_lift = 1;
@@ -1160,7 +1167,7 @@ void clrstk(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 
 /* Zero out all registers excluding the stack and lastx
  */	
-void clrreg(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void clrreg(enum nilop op) {
 	process_cmdline_set_lift();
 
 	// erase register memory
@@ -1191,11 +1198,11 @@ void clrretstk_pc(void) {
 /*
  *  PI in high precision
  */
-void op_pi(REGISTER *x, REGISTER *y, enum nilop op)
+void op_pi(enum nilop op)
 {
-	setRegister(x, x, &const_PI);
+	setRegister(regX_idx, &const_PI);
 	if (op == OP_cmplxPI)
-		set_zero(y);
+		set_zero(get_reg_n(regY_idx));
 }
 #endif
 
@@ -1227,11 +1234,11 @@ void cmdconst(unsigned int arg, enum rarg op) {
 
 /* Do a basic STO/RCL arithmetic operation.
  */
-static int storcl_op(unsigned short opr, const REGISTER *yr, decNumber *r, int rev) {
+static int storcl_op(unsigned short opr, int index, decNumber *r, int rev) {
 	decNumber a, b, *x = &a, *y = &b;
 
 	getX(x);
-	getRegister(y, yr, yr);
+	getRegister(y, index);
 	if (rev) {
 		x = y;
 		y = &a;
@@ -1262,11 +1269,11 @@ static int storcl_op(unsigned short opr, const REGISTER *yr, decNumber *r, int r
 	return 0;
 }
 
-static int storcl_intop(unsigned short opr, const REGISTER *yr, long long int *r, int rev) {
+static int storcl_intop(unsigned short opr, int index, long long int *r, int rev) {
 	long long int x, y;
 
-	x = regToInt(&regX);
-	y = regToInt(yr);
+	x = get_reg_n_int(regX_idx);
+	y = get_reg_n_int(index);
 
 	if (rev) {
 		const long long int t = x;
@@ -1302,47 +1309,45 @@ static int storcl_intop(unsigned short opr, const REGISTER *yr, long long int *r
 /* We've got a STO operation to do.
  */
 void cmdsto(unsigned int arg, enum rarg op) {
-	REGISTER *rn = get_reg_n(arg);
-
 	if (op == RARG_STO) {
-		copyreg(rn, &regX);
+		copyreg_n(arg, regX_idx);
 	} else {
 		if (is_intmode()) {
 			long long int r;
 
-			if (storcl_intop(op - RARG_STO, rn, &r, 0))
+			if (storcl_intop(op - RARG_STO, arg, &r, 0))
 				illegal(op);
-			regFromInt(rn, r);
+			set_reg_n_int(arg, r);
 		} else {
 			decNumber r;
 
-			if (storcl_op(op - RARG_STO, rn, &r, 0))
+			if (storcl_op(op - RARG_STO, arg, &r, 0))
 				illegal(op);
-			setResult(rn, &r);
+			setRegister(arg, &r);
 		}
 	}
 }
 
 /* We've got a RCL operation to do.
  */
-static void do_rcl(REGISTER *rn, enum rarg op) {
+static void do_rcl(int index, enum rarg op) {
 	if (op == RARG_RCL) {
 		REGISTER temp;
-		copyreg(&temp, rn);
+		copyreg(&temp, get_reg_n(index));
 		lift_if_enabled();
-		copyreg(&regX, &temp);
+		copyreg(get_reg_n(regX_idx), &temp);
 	} else {
 		if (is_intmode()) {
 			long long int r;
 
-			if (storcl_intop(op - RARG_RCL, rn, &r, 1))
+			if (storcl_intop(op - RARG_RCL, index, &r, 1))
 				illegal(op);
 			setlastX();
-			regFromInt(&regX, r);
+			setX_int(r);
 		} else {
 			decNumber r;
 
-			if (storcl_op(op - RARG_RCL, rn, &r, 1))
+			if (storcl_op(op - RARG_RCL, index, &r, 1))
 				illegal(op);
 			setlastX();
 			setX(&r);
@@ -1351,26 +1356,24 @@ static void do_rcl(REGISTER *rn, enum rarg op) {
 }
 
 void cmdrcl(unsigned int arg, enum rarg op) {
-	do_rcl(get_reg_n(arg), op);
+	do_rcl(arg, op);
 }
 
 #ifdef INCLUDE_FLASH_RECALL
 void cmdflashrcl(unsigned int arg, enum rarg op) {
-	do_rcl(get_flash_reg_n(arg), op - RARG_FLRCL + RARG_RCL);
+	do_rcl(FLASH_REG_BASE + arg, op - RARG_FLRCL + RARG_RCL);
 }
 #endif
 
 /* And the complex equivalents for the above.
  * We pair registers arg & arg+1 to provide a complex number
  */
-static int storcl_cop(unsigned short opr,
-		const REGISTER *y1r, const REGISTER *y2r,
-		decNumber *r1, decNumber *r2, int rev) {
+static int storcl_cop(unsigned short opr, int index, decNumber *r1, decNumber *r2, int rev) {
 	decNumber a[2], b[2], *x = a, *y = b;
 
 	getXY(x + 0, x + 1);
-	getRegister(y + 0, y1r, y1r);
-	getRegister(y + 1, y2r, y2r);
+	getRegister(y + 0, index);
+	getRegister(y + 1, index + 1);
 
 	if (rev) {
 		x = y;
@@ -1405,35 +1408,35 @@ void cmdcsto(unsigned int arg, enum rarg op) {
 	t2 = get_reg_n(arg + 1);
 
 	if (op == RARG_CSTO) {
-		copyreg(t1, &regX);
-		copyreg(t2, get_stack(1));
+		copyreg(t1, get_reg_n(regX_idx));
+		copyreg(t2, get_reg_n(regY_idx));
 	} else {
 		if (is_intmode())
 			bad_mode_error();
-		else if (storcl_cop(op - RARG_CSTO, t1, t2, &r1, &r2, 0))
+		else if (storcl_cop(op - RARG_CSTO, arg, &r1, &r2, 0))
 			illegal(op);
 		else {
-			setRegister(t1, t1, &r1);
-			setRegister(t2, t2, &r2);
+			setRegister(arg, &r1);
+			setRegister(arg + 1, &r2);
 		}
 	}
 	set_was_complex();
 }
 
-static void do_crcl(const REGISTER *t1, const REGISTER *t2, enum rarg op) {
+static void do_crcl(int index, enum rarg op) {
 	decNumber r1, r2;
 
 	if (op == RARG_CRCL) {
 		REGISTER x, y;
-		copyreg(&x, t1);
-		copyreg(&y, t2);
+		copyreg(&x, get_reg_n(index));
+		copyreg(&y, get_reg_n(index + 1));
 		lift2_if_enabled();
-		copyreg(&regX, &x);
-		copyreg(get_stack(1), &y);
+		copyreg(get_reg_n(regX_idx), &x);
+		copyreg(get_reg_n(regY_idx), &y);
 	} else {
 		if (is_intmode())
 			bad_mode_error();
-		else if (storcl_cop(op - RARG_CRCL, t1, t2, &r1, &r2, 1))
+		else if (storcl_cop(op - RARG_CRCL, index, &r1, &r2, 1))
 			illegal(op);
 		else {
 			setlastXY();
@@ -1444,12 +1447,12 @@ static void do_crcl(const REGISTER *t1, const REGISTER *t2, enum rarg op) {
 }
 
 void cmdcrcl(unsigned int arg, enum rarg op) {
-	do_crcl(get_reg_n(arg), get_reg_n(arg + 1), op);
+	do_crcl(arg, op);
 }
 
 #ifdef INCLUDE_FLASH_RECALL
 void cmdflashcrcl(unsigned int arg, enum rarg op) {
-	do_crcl(get_flash_reg_n(arg), get_flash_reg_n(arg+1), op - RARG_FLCRCL + RARG_CRCL);
+	do_crcl(FLASH_REG_BASE + arg, op - RARG_FLCRCL + RARG_CRCL);
 }
 #endif
 
@@ -1507,20 +1510,20 @@ void cmdrestm(unsigned int arg, enum rarg op) {
 #endif
 
 /* Set the stack size */
-void set_stack_size(REGISTER *a, REGISTER *nul2, enum nilop op) {
+void set_stack_size(enum nilop op) {
 	UState.stack_depth = (op == OP_STK4) ? 0 : 1;
 }
 
 /* Get the stack size */
-void get_stack_size(REGISTER *a, REGISTER *nul2, enum nilop op) {
-	put_int(stack_size(), 0, a);
+void get_stack_size(enum nilop op) {
+	setX_int_sgn(stack_size(), 0);
 }
 
-void get_word_size(REGISTER *a, REGISTER *nul2, enum nilop op) {
-	put_int((int)word_size(), 0, a);
+void get_word_size(enum nilop op) {
+	setX_int_sgn((int)word_size(), 0);
 }
 
-void get_sign_mode(REGISTER *a, REGISTER *nul2, enum nilop op) {
+void get_sign_mode(enum nilop op) {
 	static const unsigned char modes[4] = {
 		0x02,		// 2's complement
 		0x01,		// 1's complement
@@ -1528,28 +1531,28 @@ void get_sign_mode(REGISTER *a, REGISTER *nul2, enum nilop op) {
 		0x81		// sign and mantissa
 	};
 	const unsigned char v = modes[(int)int_mode()];
-	put_int(v & 3, v & 0x80, a);
+	setX_int_sgn(v & 3, v & 0x80);
 }
 
-void get_base(REGISTER *a, REGISTER *nul2, enum nilop op) {
-	put_int((int)int_base(), 0, a);
+void get_base(enum nilop op) {
+	setX_int_sgn((int)int_base(), 0);
 }
 
 /* Get the current ticker value */
-void op_ticks(REGISTER *a, REGISTER *nul2, enum nilop op) {
+void op_ticks(enum nilop op) {
 #ifndef CONSOLE
-    put_int(Ticker, 0, a);
+    setX_int_sgn(Ticker, 0);
 #else
     struct timeval tv;
     long long int t;
     gettimeofday(&tv, NULL);
     t = tv.tv_sec * 10 + tv.tv_usec / 100000;
-    put_int(t, 0, a);
+    setX_int_sgn(t, 0);
 #endif
 }
 
 /* Display the battery voltage */
-void op_voltage(REGISTER *a, REGISTER *nul2, enum nilop op) {
+void op_voltage(enum nilop op) {
 	decNumber t, u;
 #ifdef REALBUILD
 	unsigned long long int v = 19 + Voltage;
@@ -1558,11 +1561,11 @@ void op_voltage(REGISTER *a, REGISTER *nul2, enum nilop op) {
 #endif
 
 	if (is_intmode()) {
-		put_int(v, 0, a);
+		setX_int_sgn(v, 0);
 	} else {
 		ullint_to_dn(&t, v);
 		dn_mulpow10(&u, &t, -1);
-		setRegister(a, a, &u);
+		setX(&u);
 	}
 }
 
@@ -1577,12 +1580,12 @@ int free_flash(void) {
 	return NUMPROG_FLASH_MAX - UserFlash.size;
 }
 
-void get_mem(REGISTER *a, REGISTER *nul2, enum nilop op) {
-	put_int( op == OP_MEMQ ? free_mem() :
+void get_mem(enum nilop op) {
+	setX_int_sgn( op == OP_MEMQ ? free_mem() :
 		 op == OP_LOCRQ ? local_regs() :
 		 op == OP_FLASHQ ? free_flash() :
 		 global_regs(),
-		 0, a );
+		 0);
 }
 
 
@@ -1594,7 +1597,7 @@ void op_keyp(unsigned int arg, enum rarg op) {
 	if (!cond) {
 		int k = LastKey - 1;
 		LastKey = 0;
-		reg_put_int(arg, keycode_to_row_column(k), 0);
+		set_reg_n_int_sgn(arg, keycode_to_row_column(k), 0);
 	}
 	fin_tst(cond);
 }
@@ -1606,7 +1609,7 @@ void op_keyp(unsigned int arg, enum rarg op) {
 static int get_keycode_from_reg(unsigned int n)
 {
 	int sgn;
-	const int c = row_column_to_keycode((int) reg_get_int((int) n, &sgn));
+	const int c = row_column_to_keycode((int) get_reg_n_int_sgn((int) n, &sgn));
 	if ( c < 0 )
 		err(ERR_RANGE);
 	return c;
@@ -1645,7 +1648,7 @@ void op_keytype(unsigned int arg, enum rarg op)
 			12,  1,  2,  3, 12, 12,
 			12,  0, 10, 12, 12 };
 		lift_if_enabled();
-		put_int(types[c], 0, &regX);
+		setX_int_sgn(types[c], 0);
 	}
 }
 
@@ -1653,7 +1656,7 @@ void op_keytype(unsigned int arg, enum rarg op)
 /* Check which operating mode we're in -- integer or real -- they both
  * vector through this routine.
  */
-void check_mode(REGISTER *a, REGISTER *nul2, enum nilop op) {
+void check_mode(enum nilop op) {
 	const int intmode = is_intmode() ? 1 : 0;
 	const int desired = (op == OP_ISINT) ? 1 : 0;
 
@@ -1664,7 +1667,7 @@ void check_mode(REGISTER *a, REGISTER *nul2, enum nilop op) {
 #ifdef INCLUDE_DOUBLE_PRECISION
 /* Check if DBLON is active
  */
-void check_dblmode(REGISTER *a, REGISTER *nul2, enum nilop op) {
+void check_dblmode(enum nilop op) {
 	fin_tst(is_dblmode());
 }
 #endif
@@ -1802,7 +1805,7 @@ static void do_rtn(int plus1) {
 }
 
 // RTN and RTN+1
-void op_rtn(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_rtn(enum nilop op) {
 	do_rtn(op == OP_RTNp1 ? 1 : 0);
 }
 
@@ -1879,7 +1882,7 @@ void cmdalphagto(unsigned int arg, enum rarg op) {
 	char buf[12];
 
 	xset(buf, '\0', sizeof(buf));
-	branchtoalpha(op != RARG_ALPHAGTO, alpha_rcl_s(get_reg_n(arg), buf));
+	branchtoalpha(op != RARG_ALPHAGTO, alpha_rcl_s(arg, buf));
 }
 
 static void do_branchalpha(int is_gsb) {
@@ -1890,7 +1893,7 @@ static void do_branchalpha(int is_gsb) {
 	branchtoalpha(is_gsb, buf);
 }
 
-void op_gtoalpha(REGISTER *a, REGISTER *b, enum nilop op) {
+void op_gtoalpha(enum nilop op) {
 	do_branchalpha((op == OP_GTOALPHA) ? 0 : 1);
 }
 
@@ -1899,7 +1902,7 @@ void cmddisp(unsigned int arg, enum rarg op) {
 	UState.dispdigs = arg;
 	if (op != RARG_DISP)
 		UState.dispmode = (op - RARG_STD) + MODE_STD;
-	op_float(NULL, NULL, OP_FLOAT);
+	op_float(OP_FLOAT);
 }
 
 
@@ -2059,12 +2062,7 @@ static void cmdlinechs(void) {
 
 /* Execute a tests command
  */
-#ifdef INCLUDE_DOUBLE_PRECISION
-static void do_tst(const REGISTER *cmp_s, const REGISTER *cmp_d, const enum tst_op op, int cnst) {
-#else
-#define do_tst(cmp_s, cmp_d, op, cnst) do_tst_(cmp_s, op, cnst)
-static void do_tst_(const REGISTER *cmp_s, const enum tst_op op, int cnst) {
-#endif
+static void do_tst(int cmp, const enum tst_op op) {
 	int a = 0;
 	int iszero, isneg;
 
@@ -2074,12 +2072,12 @@ static void do_tst_(const REGISTER *cmp_s, const enum tst_op op, int cnst) {
 		unsigned long long int xv, yv;
 		int xs, ys;
 
-		xv = extract_value(regToInt(&regX), &xs);
-		if (cnst >= 0) {
-			yv = cnst;
+		xv = extract_value(get_reg_n_int(regX_idx), &xs);
+		if (cmp >= CONST_REG_BASE) {
+			yv = cmp - CONST_REG_BASE;
 			ys = 1;
 		} else
-			yv = extract_value(regToInt(cmp_s), &ys);
+			yv = extract_value(get_reg_n_int(cmp), &ys);
 
 		if (xv == 0 && yv == 0)
 			iszero = 1;
@@ -2100,13 +2098,13 @@ static void do_tst_(const REGISTER *cmp_s, const enum tst_op op, int cnst) {
 		if (decNumberIsNaN(&x))
 			goto flse;
 
-		getRegister(&t, cmp_s, cmp_d);
+		getRegister(&t, cmp);
 		if (decNumberIsNaN(&t))
 			goto flse;
 
 		if (op == TST_APX) {
 			decNumberRnd(&x, &x);
-			if (cnst < 0)
+			if (cmp < CONST_REG_BASE)
 				decNumberRnd(&t, &t);
 		}
 		dn_compare(&r, &x, &t);
@@ -2128,12 +2126,12 @@ static void do_tst_(const REGISTER *cmp_s, const enum tst_op op, int cnst) {
 flse:	fin_tst(a);
 }
 
-void check_zero(REGISTER *a, REGISTER *nul2, enum nilop op) {
+void check_zero(enum nilop op) {
 	int neg;
 	int zero;
 
 	if (is_intmode()) {
-		const unsigned long long int xv = extract_value(regToInt(&regX), &neg);
+		const unsigned long long int xv = extract_value(get_reg_n_int(regX_idx), &neg);
 		zero = (xv == 0);
 	} else {
 		decNumber x;
@@ -2148,20 +2146,12 @@ void check_zero(REGISTER *a, REGISTER *nul2, enum nilop op) {
 }
 
 void cmdtest(unsigned int arg, enum rarg op) {
-	const REGISTER *const cmp = get_reg_n(arg);
-	do_tst(cmp, cmp, (enum tst_op)(op - RARG_TEST_EQ), -1);
+	do_tst(arg, (enum tst_op)(op - RARG_TEST_EQ));
 }
 
-#ifdef INCLUDE_DOUBLE_PRECISION
-static void do_ztst(const REGISTER *r_s, const REGISTER *i_s,
-		    const REGISTER *r_d, const REGISTER *i_d,
-		    const enum tst_op op) {
-#else
-#define do_ztst(r_s, i_s, r_d, i_d, op, cnst) do_tst_(r_s, i_s, op)
-static void do_ztst_(const REGISTER *r_s, const REGISTER *i_s, const enum tst_op op) {
-#endif
+static void do_ztst(const decNumber *re, const decNumber *im, enum tst_op op) {
 	int c = 0;
-	decNumber x, y, t, a, b;
+	decNumber x, y, t;
 	int eq = 1;
 
 	process_cmdline_set_lift();
@@ -2171,17 +2161,13 @@ static void do_ztst_(const REGISTER *r_s, const REGISTER *i_s, const enum tst_op
 		return;
 	}
 	getXY(&x, &y);
-	if (decNumberIsNaN(&x) || decNumberIsNaN(&y))
+	if (decNumberIsNaN(&x) || decNumberIsNaN(&y) || decNumberIsNaN(re) || decNumberIsNaN(im))
 		goto flse;
-	getRegister(&a, r_s, r_d);
-	getRegister(&b, i_s, i_d);
-	if (decNumberIsNaN(&a) || decNumberIsNaN(&b))
-		goto flse;
-	dn_compare(&t, &x, &a);
+	dn_compare(&t, &x, re);
 	if (!dn_eq0(&t))
 		eq = 0;
 	else {
-		dn_compare(&t, &y, &b);
+		dn_compare(&t, &y, im);
 		if (!dn_eq0(&t))
 			eq = 0;
 	}
@@ -2193,18 +2179,15 @@ flse:	fin_tst(c);
 }
 
 void cmdztest(unsigned int arg, enum rarg op) {
-	const REGISTER *const re = get_reg_n(arg);
-#ifdef INCLUDE_DOUBLE_PRECISION
-	const REGISTER *const im = get_reg_n(arg + 1 + is_dblmode());
-#else
-	const REGISTER *const im = get_reg_n(arg + 1);
-#endif
-	do_ztst(re, im, re, im, (enum tst_op)(op - RARG_TEST_ZEQ));
+	decNumber re, im;
+	getRegister(&re, arg);
+	getRegister(&im, arg + 1);
+	do_ztst(&re, &im, (enum tst_op)(op - RARG_TEST_ZEQ));
 }
 
 static int incdec(unsigned int arg, int inc) {
 	if (is_intmode()) {
-		long long int x = get_reg_n_as_int(arg);
+		long long int x = get_reg_n_int(arg);
 		int xs;
 		unsigned long long int xv;
 
@@ -2212,19 +2195,19 @@ static int incdec(unsigned int arg, int inc) {
 			x = intAdd(x, 1LL);
 		else
 			x = intSubtract(x, 1LL);
-		put_reg_n_from_int(arg, x);
+		set_reg_n_int(arg, x);
 
 		xv = extract_value(x, &xs);
 		return xv != 0;
 	} else {
 		decNumber x, y;
 
-		get_reg_n_as_dn(arg, &x);
+		getRegister(&x, arg);
 		if (inc)
 			dn_inc(&x);
 		else
 			dn_dec(&x);
-		put_reg_n(arg, &x);
+		setRegister(arg, &x);
 		decNumberTrunc(&y, &x);
 		return ! dn_eq0(&y);
 	}
@@ -2240,7 +2223,7 @@ void cmdloopz(unsigned int arg, enum rarg op) {
 
 void cmdloop(unsigned int arg, enum rarg op) {
 	if (is_intmode()) {
-		long long int x = get_reg_n_as_int(arg);
+		long long int x = get_reg_n_int(arg);
 		int xs;
 		unsigned long long int xv;
 
@@ -2248,7 +2231,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 			x = intAdd(x, 1LL);
 		else
 			x = intSubtract(x, 1LL);
-		put_reg_n_from_int(arg, x);
+		set_reg_n_int(arg, x);
 
 		xv = extract_value(x, &xs);
 		if (op == RARG_ISG)
@@ -2263,7 +2246,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 	} else {
 		decNumber x, i, f, n, u;
 
-		get_reg_n_as_dn(arg, &x);
+		getRegister(&x, arg);
 
 		// Break the number into the important bits
 		// nnnnn.fffii
@@ -2301,7 +2284,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 			dn_subtract(&x, &n, &u);
 		} else
 			dn_add(&x, &n, &u);
-		put_reg_n(arg, &x);
+		setRegister(arg, &x);
 	}
 }
 
@@ -2421,7 +2404,7 @@ void cmdflag(unsigned int arg, enum rarg op) {
 
 /* Reset all flags to off/false
  */
-void clrflags(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void clrflags(enum nilop op) {
 	xset(UserFlags, 0, sizeof(UserFlags));
 	if (LocalRegs < 0) {
 		* flag_word(LOCAL_REG_BASE, NULL) = 0;
@@ -2438,14 +2421,14 @@ void intws(unsigned int arg, enum rarg op) {
 		long long int v;
 
 		for (i=0; i<ss; i++) {
-			v = get_reg_n_as_int(regX_idx + i);
+			v = get_reg_n_int(regX_idx + i);
 			UState.int_len = arg;
-			put_reg_n_from_int(regX_idx + i, mask_value(v));
+			set_reg_n_int(regX_idx + i, mask_value(v));
 			UState.int_len = oldlen;
 		}
-		v = get_reg_n_as_int(regL_idx);
+		v = get_reg_n_int(regL_idx);
 		UState.int_len = arg;
-		put_reg_n_from_int(regL_idx, mask_value(v));
+		set_reg_n_int(regL_idx, mask_value(v));
 	} else
 	    UState.int_len = arg;
 }
@@ -2459,11 +2442,11 @@ void get_maxdenom(decNumber *d) {
 	int_to_dn(d, dm==0?9999:dm);
 }
 
-void op_2frac(REGISTER *x, REGISTER *b, enum nilop op) {
+void op_2frac(enum nilop op) {
 	decNumber z, n, d, t;
 
 	if (UState.intm) {
-		regFromInt(x, 1);
+		setX_int(1);
 		return;
 	}
 
@@ -2482,22 +2465,22 @@ void op_2frac(REGISTER *x, REGISTER *b, enum nilop op) {
 	}
 }
 
-void op_fracdenom(REGISTER *a, REGISTER *b, enum nilop op) {
+void op_fracdenom(enum nilop op) {
 	int s;
 	unsigned long long int i;
 
-	i = get_int(&regX, &s);
+	i = get_reg_n_int_sgn(regX_idx, &s);
 	if (i > 9999)
 		UState.denom_max = 0;
 	else if (i != 1)
 		UState.denom_max = (unsigned int) i;
 	else {
 		setlastX();
-		put_int(UState.denom_max, 0, &regX);
+		setX_int_sgn(UState.denom_max, 0);
 	}
 }
 
-void op_denom(REGISTER *a, REGISTER *b, enum nilop op) {
+void op_denom(enum nilop op) {
 	UState.denom_mode = DENOM_ANY + (op - OP_DENANY);
 }
 
@@ -2509,26 +2492,30 @@ void op_denom(REGISTER *a, REGISTER *b, enum nilop op) {
 #ifdef HP16C_MODE_CHANGE
 static void int2dn(decNumber *x, REGISTER *a) {
 	int s;
-	unsigned long long int v = extract_value(regToInt(a), &s);
+	unsigned long long int v = extract_value(get_reg_n_int(a), &s);
 
 	ullint_to_dn(x, v);
 	if (s)
 		dn_minus(x, x);
 }
 #else
-static void float_mode_convert(REGISTER *r, decimal64 *i) {
+static void float_mode_convert(int index, decimal64 *i) {
 	decNumber x;
 	int s;
-	unsigned long long int v = extract_value(regToInt((REGISTER *) i), &s);
+	unsigned long long int ll;
+	unsigned long long int v;
+	
+	xcopy(&ll, i, sizeof(ll));
+	v = extract_value(ll, &s);
 
 	ullint_to_dn(&x, v);
 	if (s)
 		dn_minus(&x, &x);
-	setRegister(r, r, &x);
+	setRegister(index, &x);
 }
 #endif
 
-void op_float(REGISTER *a, REGISTER *b, enum nilop op) {
+void op_float(enum nilop op) {
 #ifdef HP16C_MODE_CHANGE
 	decNumber x, y, z;
 #else
@@ -2547,17 +2534,17 @@ void op_float(REGISTER *a, REGISTER *b, enum nilop op) {
 		set_overflow(decNumberIsInfinite(&x));
 		packed_from_number(&regX, &x);
 #else
-		float_mode_convert(&regL, Regs + regL_idx);
-		for (i = stack_size() - 1; i >= 0; --i)
-			float_mode_convert(get_stack(i), Regs + regX_idx + i);
+		float_mode_convert(regL_idx, Regs + regL_idx);
+		for (i = regX_idx + stack_size() - 1; i >= regX_idx; --i)
+			float_mode_convert(i, Regs + i);
 #endif
 	}
 	UState.fract = 0;
         State2.hms = (op == OP_HMS) ? 1 : 0;
 }
 
-void op_fract(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
-	op_float(NULL, NULL, OP_FLOAT);
+void op_fract(enum nilop op) {
+	op_float(OP_FLOAT);
 	UState.fract = 1;
 	if (op == OP_FRACIMPROPER)
 		UState.improperfrac = 1;
@@ -2700,7 +2687,7 @@ static void specials(const opcode op) {
 		if (CmdLineLength)
 			cmdlinechs();
 		else if (is_intmode()) {
-			regFromInt(&regX, intChs(regToInt(&regX)));
+			setX_int(intChs(get_reg_n_int(regX_idx)));
 			State.state_lift = 1;
 		} else {
 			decNumber x, r;
@@ -2722,7 +2709,7 @@ static void specials(const opcode op) {
 			else if (Cmdline[CmdLineLength] == '.')
 				CmdLineDot--;
 		} else
-			clrx(NULL, NULL, OP_rCLX);
+			clrx(OP_rCLX);
 		break;
 
 	case OP_ENTER:
@@ -2744,32 +2731,26 @@ static void specials(const opcode op) {
 			sigma_plus();
 		else
 			sigma_minus();
-		sigma_val(&regX, NULL, OP_sigmaN);
+		sigma_val(OP_sigmaN);
 		break;
 
 	// Conditional tests vs registers....
 	case OP_Xeq0:	case OP_Xlt0:	case OP_Xgt0:
 	case OP_Xne0:	case OP_Xle0:	case OP_Xge0:
 	case OP_Xapx0:
-		do_tst((REGISTER *) &CONSTANT_INT(OP_ZERO), (REGISTER *) &CONSTANT_DBL(OP_ZERO),
-			(enum tst_op)(opm - OP_Xeq0), 0);
+		do_tst(CONST_REG_BASE + OP_ZERO, (enum tst_op)(opm - OP_Xeq0));
 		break;
 	case OP_Zeq0: case OP_Zne0:
-		do_ztst((REGISTER *) &CONSTANT_INT(OP_ZERO), (REGISTER *) &CONSTANT_INT(OP_ZERO),
-			(REGISTER *) &CONSTANT_DBL(OP_ZERO), (REGISTER *) &CONSTANT_DBL(OP_ZERO),
-			(enum tst_op)(opm - OP_Zeq0));
+		do_ztst(&const_0, &const_0, (enum tst_op)(opm - OP_Zeq0));
 		break;
 
 	case OP_Xeq1:	case OP_Xlt1:	case OP_Xgt1:
 	case OP_Xne1:	case OP_Xle1:	case OP_Xge1:
 	case OP_Xapx1:
-		do_tst((REGISTER *) &CONSTANT_INT(OP_ONE), (REGISTER *) &CONSTANT_DBL(OP_ONE),
-			(enum tst_op)(opm - OP_Xeq1), 1);
+		do_tst(CONST_REG_BASE + OP_ONE, (enum tst_op)(opm - OP_Xeq1));
 		break;
 	case OP_Zeq1:	case OP_Zne1:
-		do_ztst((REGISTER *) &CONSTANT_INT(OP_ONE), (REGISTER *) &CONSTANT_INT(OP_ZERO),
-			(REGISTER *) &CONSTANT_DBL(OP_ONE), (REGISTER *) &CONSTANT_DBL(OP_ZERO),
-			(enum tst_op)(opm - OP_Zeq1));
+		do_ztst(&const_1, &const_0, (enum tst_op)(opm - OP_Zeq1));
 		break;
 
 	default:
@@ -2781,7 +2762,7 @@ enum trig_modes get_trig_mode(void) {
 	if (State2.cmplx)
 		return TRIG_RAD;
 	//if (State2.hyp)	return TRIG_RAD;
-	return UState.trigmode;
+	return (enum trig_modes) UState.trigmode;
 }
 
 /*
@@ -2789,12 +2770,13 @@ static void set_trig_mode(enum trig_modes m) {
 	UState.trigmode = m;
 }
 
-void op_trigmode(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_trigmode(enum nilop op) {
 	set_trig_mode((enum trig_modes)(TRIG_DEG + (op - OP_DEG)));
 }
 */
 
-void op_separator(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+
+void op_separator(enum nilop op) {
 	int x = (op - OP_THOUS_ON);
 	int state = x & 1;
 	if ((x&2) != 0)
@@ -2803,13 +2785,13 @@ void op_separator(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		UState.nothousands = state;
 }
 
-void op_fixscieng(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_fixscieng(enum nilop op) {
 	UState.fixeng = (op == OP_FIXSCI) ? 0 : 1;
 	UState.fract = 0;
 }
 
 #ifdef INCLUDE_DOUBLE_PRECISION
-void op_double(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_double(enum nilop op) {
 	static const unsigned char reglist[] = {
 		regX_idx, regY_idx, regZ_idx, regT_idx, regL_idx, regI_idx, regJ_idx, regK_idx
 	};
@@ -2889,7 +2871,7 @@ void op_pause(unsigned int arg, enum rarg op) {
 #endif
 }
 
-void op_intsign(REGISTER *a, REGISTER *b, enum nilop op) {
+void op_intsign(enum nilop op) {
 	UState.int_mode = (op - OP_2COMP) + MODE_2COMP;
 }
 
@@ -2907,15 +2889,15 @@ void op_intsign(REGISTER *a, REGISTER *b, enum nilop op) {
  * to account for zero, infinities and NaNs.
  */
 #ifndef HP16C_MODE_CHANGE
-void int_mode_convert(REGISTER *rs, REGISTER *rd) {
+void int_mode_convert(int index) {
 	decNumber x;
 	int s;
-	unsigned long long int n;
-	getRegister(&x, rs, rd);
+	unsigned long long int v;
 
+	getRegister(&x, index);
         decNumberTrunc(&x, &x);
-	n = dn_to_ull(&x, &s);
-	regFromInt(rs, build_value(n, s));
+	v = dn_to_ull(&x, &s);
+	set_reg_n_int_sgn(index, v, s);
 }
 #endif
 
@@ -2935,18 +2917,18 @@ static void check_int_switch(void) {
 			 * we might be in unsigned mode so we code them as 1 & 2.
 			 * NaN's get 3.
 			 */
-			regFromInt(get_stack(1), 0);
+			set_reg_n_int(regY_idx, 0);
 			if (decNumberIsNaN(&x))
-				regFromInt(&regX, 3);
+				setX_int(3);
 			else if (decNumberIsNegative(&x))
-				regFromInt(&regX, 2);
+				setX_int(2);
 			else
-				regFromInt(&regX, 1);
+				setX_int(1);
 
 		} else if (dn_eq0(&x)) {
 			/* 0 exponent, 0 mantissa -- although this can be negative zero */
-			regFromInt(get_stack(1), build_value(0, decNumberIsNegative(&x)?1:0));
-			regFromInt(&regX, 0);
+			set_reg_n_int_sgn(regY_idx, 0, decNumberIsNegative(&x) ? 1 : 0);
+			setX_int(0);
 		} else {
 			/* Deal with the sign */
 			if (decNumberIsNegative(&x)) {
@@ -2983,20 +2965,21 @@ static void check_int_switch(void) {
 				}
 			}
 			/* The mantissa */
-			regFromInt(get_stack(1), build_value(m, sgn));
+			set_reg_n_int_sgn(regY_idx, m, sgn);
 			/* The exponent */
 			if (ex < 0) {
 				ex = -ex;
 				sgn = 1;
 			} else
 				sgn = 0;
-			regFromInt(&regX, build_value(ex, sgn));
+			setX_int_sgn(ex, sgn);
 		}
 #else
 		int i;
-		for (i = 0; i < stack_size(); ++i)
-			int_mode_convert((REGISTER *) (Regs + regX_idx + i), get_stack(i));
-		int_mode_convert(&regL, &regL);
+		const int j = stack_size() + regX_idx;
+		for (i = regX_idx; i < j; ++i)
+			int_mode_convert(i);
+		int_mode_convert(i);
 #endif
 		UState.intm = 1;
 	}
@@ -3010,23 +2993,23 @@ static void set_base(unsigned int b) {
 void set_int_base(unsigned int arg, enum rarg op) {
 	if (arg < 2) {
 		if (arg == 0)
-			op_float(NULL, NULL, OP_FLOAT);
+			op_float(OP_FLOAT);
 		else
-			op_fract(NULL, NULL, OP_FRACT);
+			op_fract(OP_FRACT);
 	} else
 		set_base(arg);
 }
 
-void op_datemode(REGISTER *a, REGISTER *nul, enum nilop op) {
+void op_datemode(enum nilop op) {
 	UState.date_mode = (op - OP_DATEDMY) + DATE_DMY;
 }
 
-void op_setspeed(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_setspeed(enum nilop op) {
 	UState.slow_speed = (op == OP_SLOW) ? 1 : 0;
 	update_speed(1);
 }
 
-void op_rs(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_rs(enum nilop op) {
 	if (Running)
 		set_running_off();
 	else {
@@ -3036,14 +3019,14 @@ void op_rs(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 	}
 }
 
-void op_prompt(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_prompt(enum nilop op) {
 	set_running_off();
 	alpha_view_common(regX_idx);
 }
 
 // XEQUSR
 // Command pushes 4 values on stack, needs to be followed by POPUSR
-void do_usergsb(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void do_usergsb(enum nilop op) {
 	const unsigned int pc = state_pc();
 	if (isXROM(pc) && XromUserPc != 0) {
 		gsbgto(pc, 1, XromUserPc);    // push address of callee
@@ -3056,7 +3039,7 @@ void do_usergsb(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 }
 
 // POPUSR
-void op_popusr(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void op_popusr(enum nilop op) {
 	if (isXROM(state_pc())) {
 		UserLocalRegs = RetStk[RetStkPtr++]; // previous local registers
 		LocalRegs =     RetStk[RetStkPtr++]; // my local registers
@@ -3065,7 +3048,7 @@ void op_popusr(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 }
 
 /* Tests if the user program is at the top level */
-void isTop(REGISTER *a, REGISTER *b, enum nilop op) {
+void isTop(enum nilop op) {
 	int top = 0;
 
 	if (Running) {
@@ -3076,7 +3059,7 @@ void isTop(REGISTER *a, REGISTER *b, enum nilop op) {
 
 /* Test if a number is an integer or fractional */
 /* Special numbers are neither */
-void XisInt(REGISTER *a, REGISTER *b, enum nilop op) {
+void XisInt(enum nilop op) {
 	decNumber x;
 	int result, op_int = (op == OP_XisINT);
 	if ( is_intmode() )
@@ -3090,12 +3073,12 @@ void XisInt(REGISTER *a, REGISTER *b, enum nilop op) {
 
 /* Test if a number is an even or odd integer */
 /* fractional or special values are neither even nor odd */
-void XisEvenOrOdd(REGISTER *a, REGISTER *b, enum nilop op) {
+void XisEvenOrOdd(enum nilop op) {
 	decNumber x;
 	int odd = (op == OP_XisODD);
 
 	if (is_intmode()) {
-		fin_tst((regToInt(&regX) & 1) == odd);
+		fin_tst((get_reg_n_int(regX_idx) & 1) == odd);
 	} else {
 		fin_tst(is_even(getX(&x)) == !odd);
 	}
@@ -3103,15 +3086,15 @@ void XisEvenOrOdd(REGISTER *a, REGISTER *b, enum nilop op) {
 
 
 /* Test if a number is prime */
-void XisPrime(REGISTER *a, REGISTER *b, enum nilop op) {
+void XisPrime(enum nilop op) {
 	int sgn;
 
-	fin_tst(isPrime(get_int(&regX, &sgn)) && sgn == 0);
+	fin_tst(isPrime(get_reg_n_int_sgn(regX_idx, &sgn)) && sgn == 0);
 }
 
 /* Test is a number is infinite.
  */
-void isInfinite(REGISTER *a, REGISTER *b, enum nilop op) {
+void isInfinite(enum nilop op) {
 	decNumber x;
 
 	getX(&x);
@@ -3122,26 +3105,26 @@ void isInfinite(REGISTER *a, REGISTER *b, enum nilop op) {
  * this could be done by testing x != x, but having a special command
  * for it reads easier.
  */
-void isNan(REGISTER *a, REGISTER *b, enum nilop op) {
+void isNan(enum nilop op) {
 	decNumber x;
 
 	getX(&x);
 	fin_tst(!is_intmode() && decNumberIsNaN(&x));
 }
 
-void isSpecial(REGISTER *a, REGISTER *b, enum nilop op) {
+void isSpecial(enum nilop op) {
 	decNumber x;
 
 	getX(&x);
 	fin_tst(!is_intmode() && decNumberIsSpecial(&x));
 }
 
-void op_entryp(REGISTER *a, REGISTER *b, enum nilop op) {
+void op_entryp(enum nilop op) {
 	fin_tst(State.entryp);
 }
 
 /* Bulk register operations */
-static int reg_decode(REGISTER **s, unsigned int *n, REGISTER **d, int flash) {
+static int reg_decode(int *s, int *n, int *d, int flash) {
 	decNumber x, y;
 	int rsrc, num, rdest, q, mx_src, mx_dest;
 
@@ -3198,7 +3181,7 @@ static int reg_decode(REGISTER **s, unsigned int *n, REGISTER **d, int flash) {
 		if (rdest + num > mx_dest)
 			goto range_error;
 		// Set pointer
-		*d = get_reg_n(rdest);
+		*d = rdest;
 	}
 	else {
 		if (num == 0) {
@@ -3211,7 +3194,7 @@ static int reg_decode(REGISTER **s, unsigned int *n, REGISTER **d, int flash) {
 		goto range_error;
 
 	// Now point to the correct source register
-	*s = flash ? get_flash_reg_n(rsrc) : get_reg_n(rsrc);
+	*s = flash ? FLASH_REG_BASE + rsrc : rsrc;
 	*n = num;
 
 	return 0;
@@ -3221,49 +3204,40 @@ range_error:
 	return 1;
 }
 
-void op_regcopy(REGISTER *a, REGISTER *b, enum nilop op) {
-	REGISTER *s, *d;
-	unsigned int n;
+void op_regcopy(enum nilop op) {
+	int s, n, d;
 
 	if (reg_decode(&s, &n, &d, 1))
 		return;
-	move_regs(d, s, n);
+	move_regs(get_reg_n(d), get_reg_n(s), n);
 }
 
-void op_regswap(REGISTER *a, REGISTER *b, enum nilop op) {
-	REGISTER *s, *d;
-	unsigned int n, i;
+void op_regswap(enum nilop op) {
+	int s, n, d, i;
 
 	if (reg_decode(&s, &n, &d, 0) || s == d)
 		return;
 	else {
-		REGISTER *t;
-		if (s > d) {
-			t = s;
-			s = d;
-			d = t;
-		}
-		t = is_dblmode() ? s + n : (REGISTER *) (&(s->s) + n);
-		if (t > d)
+		if ((s > d && d + n > s) || (d > s && s + n > d))
 			err(ERR_RANGE);
 		else {
 			for (i = 0; i < n; i++)
-				swap_reg(s + i, d + i);
+				swap_reg(get_reg_n(s + i), get_reg_n(d + i));
 		}
 	}
 }
 
-void op_regclr(REGISTER *a, REGISTER *b, enum nilop op) {
-	REGISTER *s;
+void op_regclr(enum nilop op) {
+	int s;
 	unsigned int n;
 
 	if (reg_decode(&s, &n, NULL, 0))
 		return;
-	zero_regs(s, n);
+	zero_regs(get_reg_n(s), n);
 }
 
-void op_regsort(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
-	REGISTER *s;
+void op_regsort(enum nilop op) {
+	int s;
 	unsigned int n;
 	decNumber pivot, a, t;
 	int beg[10], end[10], i;
@@ -3279,27 +3253,27 @@ void op_regsort(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		int L = beg[i];
 		int R = end[i] - 1;
 		if (L<R) {
-			const REGISTER pvt = s[L];
-			getRegister(&pivot, &pvt, &pvt);
+			const int pvt = s + L;
+			getRegister(&pivot, pvt);
 			while (L<R) {
 				while (L<R) {
-					getRegister(&a, s + R, s + R);
+					getRegister(&a, s + R);
 					if (dn_lt0(dn_compare(&t, &a, &pivot)))
 						break;
 					R--;
 				}
 				if (L<R)
-					s[L++] = s[R];
+					copyreg_n(s + L++, s + R);
 				while (L<R) {
-					getRegister(&a, s + L, s + L);
+					getRegister(&a, s + L);
 					if (dn_lt0(dn_compare(&t, &pivot, &a)))
 						break;
 					L++;
 				}
 				if (L<R)
-					s[R--] = s[L];
+					copyreg_n(s + R--, s + L);
 			}
-			s[L] = pvt;
+			setRegister(s + L, &pivot);
 			if (L - beg[i] < end[i] - (L+1)) {
 				beg[i+1] = beg[i];
 				end[i+1] = L;
@@ -3429,15 +3403,11 @@ static void niladic(const opcode op) {
 			if (dispatch_xrom(fp))
 				return;
 			else {
-				REGISTER *x = NULL, *y = NULL;
-
 				switch (NILADIC_NUMRESULTS(niladics[idx])) {
 				case 2:	lift_if_enabled();
-					y = get_stack(1);
-				case 1:	x = &regX;
-					lift_if_enabled();
+				case 1:	lift_if_enabled();
 				default:
-					fp(x, y, (enum nilop)idx);
+					fp((enum nilop)idx);
 					break;
 				}
 			}
@@ -3467,10 +3437,10 @@ static void monadic(const opcode op)
 				if (dispatch_xrom(fp))
 					return;
 				else {
-					long long int x = regToInt(&regX);
+					long long int x = get_reg_n_int(regX_idx);
 					x = fp(x);
 					setlastX();
-					regFromInt(&regX, x);
+					setX_int(x);
 				}
 			} else
 				bad_mode_error();
@@ -3541,12 +3511,12 @@ static void dyadic(const opcode op) {
 				if (dispatch_xrom(fp))
 					return;
 				else {
-					long long int x = regToInt(&regX);
-					long long int y = regToInt(&regY);
+					long long int x = get_reg_n_int(regX_idx);
+					long long int y = get_reg_n_int(regY_idx);
 					x = fp(y, x);
 					setlastX();
 					lower();
-					regFromInt(&regX, x);
+					setX_int(x);
 				}
 			} else
 				bad_mode_error();
@@ -3615,14 +3585,14 @@ static void triadic(const opcode op) {
 				if (dispatch_xrom(fp))
 					return;
 				else {
-					long long int x = regToInt(&regX);
-					long long int y = regToInt(&regY);
-					long long int z = regToInt(&regZ);
+					long long int x = get_reg_n_int(regX_idx);
+					long long int y = get_reg_n_int(regY_idx);
+					long long int z = get_reg_n_int(regZ_idx);
 					x = fp(z, y, x);
 					setlastX();
 					lower();
 					lower();
-					regFromInt(&regX, x);
+					setX_int(x);
 				}
 			} else
 				bad_mode_error();
@@ -3676,9 +3646,9 @@ static void rargs(const opcode op) {
 
 	if (ind && argcmds[cmd].indirectokay) {
 		if (is_intmode()) {
-			arg = (unsigned int) get_reg_n_as_int(arg);
+			arg = (unsigned int) get_reg_n_int(arg);
 		} else {
-			get_reg_n_as_dn(arg, &x);
+			getRegister(&x, arg);
 			arg = dn_to_int(&x);
 		}
 	} else {
@@ -4054,7 +4024,7 @@ void cmdlocr(unsigned int arg, enum rarg op) {
  *  for non recursive non interruptible XROM routines.
  *  We need a single stack level for a special marker
  */
-void cmdxlocal(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void cmdxlocal(enum nilop op) {
 	if (isXROM(state_pc())) {
 		if (RetStkPtr >= RetStkSize) {
 			err(ERR_RAM_FULL);
@@ -4076,7 +4046,7 @@ void cmdxlocal(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 }
 
 #ifdef XROM_COMMANDS
-void cmdxin(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void cmdxin(enum nilop op) {
 	if (! isXROM(state_pc())) {
 		err(ERR_ILLEGAL);
 		return;
@@ -4086,10 +4056,10 @@ void cmdxin(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
 		return;
 	}
 
-	cmdxlocal(NULL, NULL, OP_XLOCAL);
+	cmdxlocal(OP_XLOCAL);
 	if (is_dblmode())
 		set_user_flag(LOCAL_FLAG_BASE + MAX_LOCAL_DIRECT - 1);
-	op_double(NULL, NULL, OP_DBLON);
+	op_double(OP_DBLON);
 	cmdstostk(LOCAL_REG_BASE + MAX_LOCAL_DIRECT - 4, RARG_STOSTK);
 }
 
@@ -4125,14 +4095,17 @@ void cmdxout(unsigned int arg, enum rarg op) {
 >>       push ppp items from internal stack to saved stack
 */
 	if (get_user_flag(LOCAL_FLAG_BASE + MAX_LOCAL_DIRECT - 1))
-		op_double(NULL, NULL, OP_DBLOFF);
+		op_double(OP_DBLOFF);
 
 	do_rtn(0);
 }
 #endif
 
-extern void cmdmode(unsigned int arg, enum rarg cmd) {
-	unsigned long long int bit = 1 << arg;
+/*
+ *  Toggle UState mode bits from XROM
+ */
+void cmdmode(unsigned int arg, enum rarg cmd) {
+	unsigned long long int bit = 1ll << arg;
 	unsigned long long int *mode = (unsigned long long int *) & UState;
 
 	if (cmd == RARG_MODE_SET)
@@ -4145,7 +4118,7 @@ extern void cmdmode(unsigned int arg, enum rarg cmd) {
  *  Undo the effect of LOCL by popping the current local frame.
  *  Needs to be executed from the same level that has established the frame.
  */
-void cmdlpop(REGISTER *nul1, REGISTER *nul2, enum nilop op) {
+void cmdlpop(enum nilop op) {
 	if (LocalRegs != RetStkPtr) {
 		err(ERR_ILLEGAL);
 		return;
