@@ -859,9 +859,9 @@ enum rarg {
 	RARG_REGS,
 
 #ifdef XROM_COMMANDS
+	RARG_MODE_SET, RARG_MODE_CLEAR,
 	RARG_XROM_IN, RARG_XROM_OUT,
 #endif
-	RARG_MODE_SET, RARG_MODE_CLEAR,
 
 	NUM_RARG	// Last entry defines number of operations
 };

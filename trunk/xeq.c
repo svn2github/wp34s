@@ -3871,15 +3871,17 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	else
 		op_double(OP_DBLON);
 
-	if (! get_user_flag(NAN_FLAG)) {
-		// check for any NaNs in input
-		while (--i) {
-			decNumber x;
-			if (decNumberIsNaN(getRegister(&x, regX_idx + i))) {
-				// this will do all the cleanup
-				err(ERR_DOMAIN);
-				return;
-			}
+	// check for any NaNs in input
+	while (--i) {
+		decNumber x;
+		if (decNumberIsNaN(getRegister(&x, regX_idx + i))) {
+			// Got a NaN as input, now either NaN the outputs or raise a
+			// domain error
+			if (get_user_flag(NAN_FLAG)) {
+				;
+			} else
+				err(ERR_DOMAIN);	// this will do all the cleanup
+			return;
 		}
 	}
 	State.mode_double = 1;
