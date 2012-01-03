@@ -36,6 +36,7 @@ use File::Basename;
 
 my $debug = 0;
 my $quiet = 0;
+my $stderr2stdout = 0;
 
 my $in_libfile = "";
 my $out_libfile = "";
@@ -82,8 +83,8 @@ my $ansi_rev_red_bg       = "\e[41;1;7;33;1m";
 my $ansi_rev_blue_bg      = "\e[47;1;7;34;1m";
 my $ansi_rev_cyan_bg      = "\e[30;46m";
 
-my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_LIB_COLOUR})
-                            ? $ENV{WP34S_LIB_COLOUR}
+my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_ASM_COLOUR})
+                            ? $ENV{WP34S_ASM_COLOUR}
                             : 0;
 my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
@@ -781,7 +782,8 @@ sub run_prog {
   debug_msg(this_function((caller(0))[3]), "Spawning command line: '$cmd'")
     if ($debug > 1) or (exists $ENV{WP34S_LIB_SPAWN_DBG} and ($ENV{WP34S_LIB_SPAWN_DBG} == 1));
 
-  @output = `$cmd 2>&1`; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
+  $cmd .= " -e2so"; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
+  @output = `$cmd`;
   my @cleaned = clean_array_of_eol(@output);
   if (has_errors(@cleaned)) {
     warn join "\n", @cleaned, "\n";
@@ -1062,7 +1064,12 @@ sub die_msg {
   $msg .= "ERROR: $func_name:";
   $msg .= "$ansi_normal " if $use_ansi_colour;
   $msg .= " $text";
-  die "$msg\n";
+  if ($stderr2stdout) {
+    print "$msg\n";
+    die "\n";
+  } else {
+    die "$msg\n";
+  }
 } # die_msg
 
 
@@ -1079,7 +1086,11 @@ sub warn_msg {
   $msg .= "WARNING: $func_name:";
   $msg .= "$ansi_normal " if $use_ansi_colour;
   $msg .= " $text";
-  warn "$msg\n";
+  if ($stderr2stdout) {
+    print "$msg\n";
+  } else {
+    warn "$msg\n";
+  }
 } # warn_msg
 
 
@@ -1242,6 +1253,10 @@ sub get_options {
 
     elsif( $arg eq " -pp_script" ) {
       $preproc_script = shift(@ARGV);
+    }
+
+    elsif( ($arg eq "-e2so") or ($arg eq "-stderr2stdout")) {
+      $stderr2stdout = 1;
     }
 
     else {

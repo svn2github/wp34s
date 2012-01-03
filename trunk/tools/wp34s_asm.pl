@@ -150,6 +150,7 @@ use File::Basename;
 
 my $debug = 0;
 my $quiet = 1;
+my $stderr2stdout = 0;
 my (%mnem2hex, %hex2mnem, %ord2escaped_alpha, %escaped_alpha2ord);
 my @files = ();
 
@@ -279,10 +280,13 @@ my $ansi_normal           = "\e[0m";
 my $ansi_red_bg           = "\e[41;33;1m";
 my $ansi_green_bg         = "\e[42;33;1m";
 my $ansi_rev_green_bg     = "\e[42;1;7;33;1m";
+my $ansi_rev_red_bg       = "\e[41;1;7;33;1m";
 my $ansi_rev_blue_bg      = "\e[47;1;7;34;1m";
 my $ansi_rev_cyan_bg      = "\e[30;46m";
 
-my $DEFAULT_USE_ANSI_COLOUR = 1;
+my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_ASM_COLOUR})
+                            ? $ENV{WP34S_ASM_COLOUR}
+                            : 0;
 my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
 # ---------------------------------------------------------------------
@@ -341,10 +345,10 @@ my $script_executable = $0;
 my ($script_name, $script_dir, $script_suffix) = fileparse($script_executable);
 
 if (exists $ENV{WP34S_ASM_OS_DBG} and ($ENV{WP34S_ASM_OS_DBG} == 1)) {
-  print "// DEBUG: script_executable = '$script_executable'\n";
-  print "// DEBUG: script_name       = '$script_name'\n";
-  print "// DEBUG: script_dir        = '$script_dir'\n";
-  print "// DEBUG: script_suffix     = '$script_suffix'\n";
+  debug_msg($script_name, "script_executable = '$script_executable'");
+  debug_msg($script_name, "script_name       = '$script_name'");
+  debug_msg($script_name, "script_dir        = '$script_dir'");
+  debug_msg($script_name, "script_suffix     = '$script_suffix'");
 }
 
 if( $script_name =~ /\.exe$/i ) {
@@ -487,7 +491,6 @@ my $flash_blank_fill_hex_str = ($user_flash_blank_fill) ? $user_flash_blank_fill
 # This is where the script decides what it is going to do.
 if( $build_an_empty_image ) {
   build_empty_flash_image( $outfile );
-  warn "Built empty flash image...\n";
 } elsif( $expanded_op_file ) {
   write_expanded_opcode_table_to_file( $expanded_op_file );
 } elsif( $dump_escaped_alpha_table ) {
@@ -497,7 +500,7 @@ if( $build_an_empty_image ) {
 } elsif( $mode eq $DISASSEMBLE_MODE ) {
   disassemble( $outfile, @files );
 } else {
-  warn "Internal error: Huh! How did I get here?\n";
+  die_msg(this_function((caller(0))[3]), "Internal error: Huh! How did I get here?");
 }
 
 
@@ -553,12 +556,11 @@ sub assemble {
       ($_, $alpha_text) = assembler_preformat_handling($_);
 
       if( not exists $mnem2hex{$_} ) {
-        warn "ERROR: $script_name: Cannot recognize mnemonic at line $k of file '${file}': -> ${org_line} <-\n";
+        warn_msg(this_function((caller(0))[3]), "Cannot recognize mnemonic at line $k of file '${file}': -> ${org_line} <-");
         if( $org_line =~ /::/ ) {
-          warn "       There seems to be WP 34S Preprocessor labels here. Try using the '-pp' switch.\n";
-          die  "       Enter '$script_name -h' for help.\n";
+          die_msg(this_function((caller(0))[3]), "There seems to be WP 34S Preprocessor labels here. Try using the '-pp' switch.\n Enter '$script_name -h' for help.");
         } else {
-          die "\n";
+          die_msg(this_function((caller(0))[3]), "Cannot continue.");
         }
       } else {
         $steps_used++;
@@ -577,7 +579,7 @@ sub assemble {
               # that screws things up!
               $alpha_text = str_replace("\[${escaped_alpha}\]", $char, $alpha_text);
             } else {
-              die "ERROR: Cannot locate escaped alpha: [$escaped_alpha] in table.\n";
+              die_msg(this_function((caller(0))[3]), "Cannot locate escaped alpha: [$escaped_alpha] in table.");
             }
           }
 
@@ -595,7 +597,7 @@ sub assemble {
             #     are in the 3rd character slot. To work around this, we will limit them to not being
             #     allowed in that slot.
             if( (ord($chars[2]) >= $ILLEGAL_3rd_CHAR_LO) and (ord($chars[2]) <= $ILLEGAL_3rd_CHAR_HI) ) {
-              die "ERROR: Cannot use this escaped alpha '$org_alpha_text' in 3rd character slot in step '$org_line'.\n";
+              die_msg(this_function((caller(0))[3]), "Cannot use this escaped alpha '$org_alpha_text' in 3rd character slot in step '$org_line'.");
             }
             $words[++$next_free_word] = ord($chars[1]) | (ord($chars[2]) << 8);
 
@@ -618,9 +620,9 @@ sub assemble {
       # Lib-mode and RAM/State-mode (ie: not $lib_mode) have different size limitations.
       # Calculate if the limit is exceeded accordingly.
       if ($lib_mode and ($next_free_word >= $max_flash_words)) {
-          die "ERROR: Too many program steps encountered in lib-mode (> $max_flash_words words).\n";
+        die_msg(this_function((caller(0))[3]), "Too many program steps encountered in lib-mode (> $max_flash_words words).");
       } elsif (not $lib_mode and ($next_free_word >= $max_ram_words) and not $disable_flash_limit) {
-          die "ERROR: Too many program steps encountered (> $max_ram_words words).\n";
+        die_msg(this_function((caller(0))[3]), "Too many program steps encountered (> $max_ram_words words).");
       }
     }
   }
@@ -687,13 +689,12 @@ sub disassemble {
   my $outfile = shift;
   my @files = @_;
 
-  open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
-
+  open OUT, "> $outfile" or die_msg(this_function((caller(0))[3]), "Cannot open file '$outfile' for writing: $!");
   print "// $script_name: Source file(s): ", join (", ", @files), "\n";
 
   foreach my $file (@files) {
     my $double_words = 0;
-    open DAT, $file or die "ERROR: Cannot open dat file '$file' for reading: $!\n";
+    open DAT, $file or die_msg(this_function((caller(0))[3]), "Cannot open dat file '$file' for reading: $!");
 
     # This trick will read in the binary image in 16-bit words of the correct endian.
     local $/;
@@ -742,7 +743,8 @@ sub print_disassemble_normal {
   my $word = shift;
   my $hex_str = lc dec2hex4($word);
   if( not exists $hex2mnem{$hex_str} ) {
-    die "ERROR: Opcode '$hex_str' does not exist at line ", $idx+1, " at print_disassemble_normal\n";
+    my $msg = "Opcode '$hex_str' does not exist at line " . $idx+1 . " at print_disassemble_normal";
+    die_msg(this_function((caller(0))[3]), "$msg");
   }
 
   # Set up the correct number of leading asterisks if requested.
@@ -772,7 +774,8 @@ sub print_disassemble_text {
   my @chars = @_;
   my $hex_str = lc dec2hex4($opcode);
   if( not exists $hex2mnem{$hex_str} ) {
-    die "ERROR: Opcode '$hex_str' does not exist at line ", $idx+1, " at print_disassemble_text\n";
+    my $msg = "Opcode '$hex_str' does not exist at line " . $idx+1 . " at print_disassemble_text";
+    die_msg(this_function((caller(0))[3]), "$msg");
   }
 
   # Set up the correct number of leading asterisks if requested.
@@ -850,7 +853,7 @@ sub write_binary {
   my $pad_mode = shift;
   my @words = @_;
 
-  open OUT, "> $outfile" or die "ERROR: Cannot open file '$outfile' for writing: $!\n";
+  open OUT, "> $outfile" or die_msg(this_function((caller(0))[3]), "Cannot open file '$outfile' for writing: $!");
   binmode OUT;
 
   if ($pad_mode == $V3_PAD_MODE) {
@@ -940,23 +943,23 @@ sub load_opcode_tables {
 
   # If the user has specified an opcode table via the -opcodes switch, use that one.
   if( $file ) {
-    open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+    open DATA, $file or die_msg(this_function((caller(0))[3]), "Cannot open opcode map file '$file' for reading: $!");
     $file .= " (specified)";
 
   } else {
     # Search the current directory for an opcode table.
     if( -e "${DEFAULT_OPCODE_MAP_FILE}" ) {
       $file = "${DEFAULT_OPCODE_MAP_FILE}";
-      open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+      open DATA, $file or die_msg(this_function((caller(0))[3]), "Cannot open opcode map file '$file' for reading: $!");
       $file .= " (local directory)";
 
     # Search the directory the script is running out of.
     } elsif( -e "${script_dir}${DEFAULT_OPCODE_MAP_FILE}" ) {
       $file = "${script_dir}${DEFAULT_OPCODE_MAP_FILE}";
-      open DATA, $file or die "ERROR: Cannot open opcode map file '$file' for reading: $!\n";
+      open DATA, $file or die_msg(this_function((caller(0))[3]), "Cannot open opcode map file '$file' for reading: $!");
 
     } else {
-      die "ERROR: Cannot locate op-code table '$DEFAULT_OPCODE_MAP_FILE' in either current directory or '${script_dir}'.\n";
+      die_msg(this_function((caller(0))[3]), "Cannot locate op-code table '$DEFAULT_OPCODE_MAP_FILE' in either current directory or '${script_dir}'.");
     }
   }
   print "// Opcode map source: $file\n";
@@ -1064,14 +1067,16 @@ sub load_opcode_tables {
       # multi-character strings.
       # The lower band...
       if( hex2dec($hex_str) < $multi_char_target_lo ) {
-        print "DEBUG: Replacing the multi-char lower limit using '$mnemonic'. Was: ", dec2hex4($multi_char_target_lo), ", Now is: $hex_str\n" if $debug > 2;
+        my $msg = "Replacing the multi-char lower limit using '$mnemonic'. Was: " . dec2hex4($multi_char_target_lo) . ", Now is: $hex_str";
+        debug_msg(this_function((caller(0))[3]), $msg) if $debug > 2;
         $multi_char_target_lo = hex2dec($hex_str);
       }
 
       # The upper band... Note that this will be offset by 256 when used to account for
       # the offset byte within the opcode.
       if( hex2dec($hex_str) > $multi_char_target_hi ) {
-        print "DEBUG: Replacing the multi-char upper limit using '$mnemonic'. Was: ", dec2hex4($multi_char_target_hi), ", Now is: $hex_str\n" if $debug > 2;
+        my $msg = "Replacing the multi-char upper limit using '$mnemonic'. Was: " . dec2hex4($multi_char_target_hi) . ", Now is: $hex_str";
+        debug_msg(this_function((caller(0))[3]), $msg) if $debug > 2;
         $multi_char_target_hi = hex2dec($hex_str);
       }
 
@@ -1087,7 +1092,7 @@ sub load_opcode_tables {
       }
 
     } else {
-      die "ERROR: Cannot parse opcode table line $.: '$_'\n";
+      die_msg(this_function((caller(0))[3]), "Cannot parse opcode table line $.: '$_'");
     }
   }
   close DATA;
@@ -1102,7 +1107,7 @@ sub load_opcode_tables {
 sub write_expanded_opcode_table_to_file {
   my $file = shift;
   local $_;
-  open EXPND, "> $file" or die "ERROR: Cannot open expanded opcode file '$file' for writing: $!\n";
+  open EXPND, "> $file" or die_msg(this_function((caller(0))[3]), "Cannot open expanded opcode file '$file' for writing: $!");
   print EXPND "// Opcode SVN version: $op_svn\n";
   for my $hex_str (sort keys %hex2mnem) {
     print EXPND "$hex_str  ${hex2mnem{$hex_str}}\n";
@@ -1119,7 +1124,7 @@ sub write_expanded_opcode_table_to_file {
 sub write_escaped_alpha_table_to_file {
   my $file = shift;
   local $_;
-  open ALPHA, "> $file" or die "ERROR: Cannot open escaped alpha file '$file' for writing: $!\n";
+  open ALPHA, "> $file" or die_msg(this_function((caller(0))[3]), "Cannot open escaped alpha file '$file' for writing: $!");
   for my $ord (sort {$a <=> $b} keys %ord2escaped_alpha) {
     print ALPHA "ord = $ord (decimal), 0x", dec2hex2($ord), "(hex); alpha = '${ord2escaped_alpha{$ord}}'\n";
   }
@@ -1164,7 +1169,7 @@ sub parse_arg_type {
   if( $arg =~ /(\S+)\s+/ ) {
     $base_mnemonic = $1;
   } else {
-    die "ERROR: Cannot parse base mnemonic from arg-type line $line_num: '$arg'\n";
+    die_msg(this_function((caller(0))[3]), "Cannot parse base mnemonic from arg-type line $line_num: '$arg'");
   }
 
   if( $arg =~ /max=(\d+)/ ) {
@@ -1174,7 +1179,7 @@ sub parse_arg_type {
       $direct_max = 128;
     }
   } else {
-    die "ERROR: Cannot parse max parameter from arg-type line $line_num: '$arg'\n";
+    die_msg(this_function((caller(0))[3]), "Cannot parse max parameter from arg-type line $line_num: '$arg'");
   }
 
   $indirect_modifier = 1 if $arg =~ /indirect/;
@@ -1253,14 +1258,15 @@ sub load_escaped_alpha_tables {
   if( not exists $ord2escaped_alpha{$ord} ) {
     $ord2escaped_alpha{$ord} = $escaped_alpha;
   } else {
-    warn "# WARNING: Duplicate ordinal for escaped alpha: $ord (0x", dec2hex2($ord), ") at line $line_num\n" unless $quiet;
+    my $msg = "Duplicate ordinal for escaped alpha: $ord (0x" . dec2hex2($ord) . ") at line $line_num";
+    warn_msg(this_function((caller(0))[3]), $msg) unless $quiet;
   }
 
   # Build the table to convert escaped alpha to ordinals, ie: "[approx]" => 0x1D = 29.
   if( not exists $escaped_alpha2ord{$escaped_alpha} ) {
     $escaped_alpha2ord{$escaped_alpha} = $ord;
   } else {
-    warn "# WARNING: Duplicate escaped alpha: '$escaped_alpha' at line $line_num\n" unless $quiet;
+    warn_msg(this_function((caller(0))[3]), "Duplicate escaped alpha: '$escaped_alpha' at line $line_num") unless $quiet;
   }
   return;
 } # load_escaped_alpha_tables
@@ -1322,7 +1328,7 @@ sub load_mnem2hex_entry {
   if( not exists $mnem2hex{$mnemonic} ) {
     $mnem2hex{$mnemonic} = lc $op_hex_str;
   } else {
-    warn "# WARNING: Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')\n";
+    warn_msg(this_function((caller(0))[3]), "Duplicate mnemonic: '$mnemonic' at line $line_num (new definition: '$op_hex_str', previous definition: '${mnem2hex{$mnemonic}}')");
   }
   return;
 } # load_mnem2hex_entry
@@ -1340,7 +1346,7 @@ sub load_hex2mnem_entry {
   if( not exists $hex2mnem{$op_hex_str} ) {
     $hex2mnem{lc $op_hex_str} = $mnemonic;
   } else {
-    warn "# WARNING: Duplicate opcode hex: '$op_hex_str' at line $line_num (new definition: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')\n";
+    warn_msg(this_function((caller(0))[3]), "Duplicate opcode hex: '$op_hex_str' at line $line_num (new definition: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')");
   }
   return;
 } # load_hex2mnem_entry
@@ -1399,7 +1405,7 @@ sub read_file {
   my $do_redact = shift;
   local $_;
   my (@lines);
-  open FILE, $file or die "ERROR: Cannot open input file '$file' for reading: $!\n";
+  open FILE, $file or die_msg(this_function((caller(0))[3]), "Cannot open input file '$file' for reading: $!");
   while( <FILE> ) {
     s/\r//; s/\n//;
     push @lines, $_;
@@ -1568,7 +1574,7 @@ sub run_pp {
 
   # Create a temporary intermediate file holding the raw sources concatenated together.
   my $tmp_file = gen_random_writeable_filename();
-  open TMP, "> $tmp_file" or die "ERROR: Cannot open temp file '$tmp_file' for writing: $!\n";
+  open TMP, "> $tmp_file" or die_msg(this_function((caller(0))[3]), "Cannot open temp file '$tmp_file' for writing: $!");
   foreach (@{$ref_src_lines}) {
     print TMP "$_\n";
   }
@@ -1579,7 +1585,7 @@ sub run_pp {
   # 1) Specified dir from command line.
   # 2) local direct
   # 3) where the main script is running from
-  print "// DEBUG: Base name of the preprocessor being searched for: '${preproc}'\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Base name of the preprocessor being searched for: '${preproc}'") if $debug;
   if( $preproc_fallback_dir and -e "${preproc_fallback_dir}${preproc}" ) {
     $pp_location = "${preproc_fallback_dir}${preproc}";
     $cmd = "${preproc_fallback_dir}${preproc} $pp_options $tmp_file"
@@ -1594,7 +1600,7 @@ sub run_pp {
     if( $preproc_fallback_dir ) {
       $locations .= " or '${preproc_fallback_dir}${preproc}'";
     }
-    die "ERROR: Cannot locate the assembly preprocessor in $locations\n";
+    die_msg(this_function((caller(0))[3]), "Cannot locate the assembly preprocessor in $locations");
   }
 
   if ($v3_mode) {
@@ -1603,6 +1609,10 @@ sub run_pp {
 
   if ($v3_mode and ($xrom_bin_mode or $xrom_c_mode)) {
     $cmd .= " -xrom";
+  }
+
+  if ($stderr2stdout) {
+    $cmd .= " -e2so";
   }
 
   # Override the step digits as required.
@@ -1616,8 +1626,8 @@ sub run_pp {
   @lines = `$cmd`;
   $err_msg = $?;
   if( $err_msg ) {
-    warn "ERROR: WP 34S preprocessor failed. Temp file: '$tmp_file'\n";
-    die  "       Perhaps you can try running it in isolation using: \$ $cmd\n";
+    warn_msg(this_function((caller(0))[3]), "WP 34S preprocessor failed. Temp file: '$tmp_file'");
+    die_msg(this_function((caller(0))[3]), "Perhaps you can try running it in isolation using: \$ $cmd");
   }
   unlink $tmp_file unless exists $ENV{WP34s_ASM_PRESERVE_PP_TMP} and ($ENV{WP34s_ASM_PRESERVE_PP_TMP} == 1);
 
@@ -1627,7 +1637,7 @@ sub run_pp {
     push @clean_lines, $_;
   }
 
-  open PP_LST, "> $pp_listing" or die "ERROR: Cannot open preprocessor list file '$pp_listing' for writing: $!\n";
+  open PP_LST, "> $pp_listing" or die_msg(this_function((caller(0))[3]), "Cannot open preprocessor list file '$pp_listing' for writing: $!");
   print PP_LST "// $script_name: Source file(s): ", join (", ", @files), "\n";
   foreach (@clean_lines) {
     print PP_LST "$_\n";
@@ -1647,7 +1657,7 @@ sub dump_c_array {
   my $leader = shift;
   my $indent_spaces = shift;
   my @val_array = @_;
-  open OUT, "> $file" or die "ERROR: Could not open C-array file '$file' for writing: $!\n";
+  open OUT, "> $file" or die_msg(this_function((caller(0))[3]), "Could not open C-array file '$file' for writing: $!");
   print OUT "$leader\n";
   for my $hex_str (0 .. (scalar @val_array)-2) {
     printf OUT "%0s0x%04x,\n", " " x $indent_spaces, $val_array[$hex_str];
@@ -1672,7 +1682,7 @@ sub gen_random_writeable_filename {
     $filename = ".__${filename}.tmp";
     $attempts_left--;
     if( $attempts_left < 0 ) {
-      die "ERROR: Could not succeed in creating a temporary file: $!\n";
+      die_msg(this_function((caller(0))[3]), "Could not succeed in creating a temporary file: $!");
     }
   }
   return $filename;
@@ -1714,6 +1724,78 @@ sub extract_svn_version {
 
 
 #######################################################################
+#
+# Format a fatal message.
+#
+sub die_msg {
+  my $func_name = shift;
+  my $text = shift;
+  my $msg = "";
+
+  $msg = "$ansi_red_bg" if $use_ansi_colour;
+  $msg .= "ERROR: $func_name:";
+  $msg .= "$ansi_normal " if $use_ansi_colour;
+  $msg .= " $text";
+  if ($stderr2stdout) {
+    print "$msg\n";
+    die "\n";
+  } else {
+    die "$msg\n";
+  }
+} # die_msg
+
+
+#######################################################################
+#
+# Format a warning message.
+#
+sub warn_msg {
+  my $func_name = shift;
+  my $text = shift;
+  my $msg = "";
+
+  $msg = "$ansi_rev_red_bg" if $use_ansi_colour;
+  $msg .= "WARNING: $func_name:";
+  $msg .= "$ansi_normal " if $use_ansi_colour;
+  $msg .= " $text";
+  if ($stderr2stdout) {
+    print "$msg\n";
+  } else {
+    warn "$msg\n";
+  }
+} # warn_msg
+
+
+#######################################################################
+#
+# Format a debug message.
+#
+sub debug_msg {
+  my $func_name = shift;
+  my $text = shift;
+  my $msg = "";
+
+  $msg = "$ansi_green_bg" if $use_ansi_colour;
+  $msg .= "// DEBUG: $func_name:";
+  $msg .= "$ansi_normal " if $use_ansi_colour;
+  $msg .= " $text";
+  print "$msg\n";
+} # debug_msg
+
+
+#######################################################################
+#
+# Swap the main:: for the actual script name.
+#
+sub this_function {
+  my $this_function = shift;
+  $this_function = "main" if not defined $this_function or ($this_function eq "");
+  $this_function =~ s/main/$script_name/;
+  return $this_function;
+} # this_function
+
+
+########################################################################
 #######################################################################
 #
 # Process the command line option list.
@@ -1789,6 +1871,10 @@ sub get_options {
       $outfile = shift(@ARGV);
     }
 
+    elsif( ($arg eq "-e2so") or ($arg eq "-stderr2stdout")) {
+      $stderr2stdout = 1;
+    }
+
     elsif( $arg eq "-pp" ) {
       $enable_pp = 1;
     }
@@ -1851,6 +1937,14 @@ sub get_options {
       $dump_escaped_alpha_table = shift(@ARGV);
     }
 
+    elsif( $arg eq "-nc" ) {
+      $use_ansi_colour = 0;
+    }
+
+    elsif( ($arg eq "-ac") or ($arg eq "-colour") or ($arg eq "-color") ) {
+      $use_ansi_colour = 1;
+    }
+
     else {
       push @files, $arg;
     }
@@ -1859,8 +1953,7 @@ sub get_options {
   #----------------------------------------------
   # Verify that we have an output file if we are in assembler mode.
   if( ($mode eq $ASSEMBLE_MODE) and ($outfile eq "-") and not $expanded_op_file ) {
-    warn "ERROR: Must enter an output file name in assembler mode (-o SomeFileName).\n";
-    die  "       Enter '$script_name -h' for help.\n";
+    die_msg(this_function((caller(0))[3]), "Must enter an output file name in assembler mode (-o SomeFileName).\n Enter '$script_name -h' for help.");
   }
 
   if( $enable_pp ) {

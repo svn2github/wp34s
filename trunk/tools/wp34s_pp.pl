@@ -34,6 +34,7 @@ use File::Basename;
 # ---------------------------------------------------------------------
 
 my $debug = 0;
+my $stderr2stdout = 0;
 my (%LBLs, %targets, %branches, @branches, @steps);
 
 # Allow these to be over-ridden using environment variables.
@@ -63,6 +64,20 @@ my $DEFAULT_XLBL_FILE = "xrom_labels.h";
 my $xlbl_file = $DEFAULT_XLBL_FILE;
 
 my @files;
+
+# ANSI colour codes.
+my $ansi_normal           = "\e[0m";
+my $ansi_red_bg           = "\e[41;33;1m";
+my $ansi_green_bg         = "\e[42;33;1m";
+my $ansi_rev_green_bg     = "\e[42;1;7;33;1m";
+my $ansi_rev_red_bg       = "\e[41;1;7;33;1m";
+my $ansi_rev_blue_bg      = "\e[47;1;7;34;1m";
+my $ansi_rev_cyan_bg      = "\e[30;46m";
+
+my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_ASM_COLOUR})
+                            ? $ENV{WP34S_ASM_COLOUR}
+                            : 0;
+my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
 my $prt_step_num = 1;
 my $show_catalogue = 0;
@@ -192,7 +207,7 @@ if ($override_step_digits) {
   $step_digits = 4;
 }
 
-print "// DEBUG: main: MAX_JMP_OFFSET = $MAX_JMP_OFFSET\n" if $debug;
+debug_msg(this_function((caller(0))[3]), "MAX_JMP_OFFSET = $MAX_JMP_OFFSET") if $debug;
 
 my (@src, @lines);
 foreach my $file (@files) {
@@ -222,8 +237,8 @@ print "// $script_name: Preprocessor revision: $SVN_Current_Revision \n";
 foreach (@end_groups) {
   @lines = @{$_}; # Cast the reference as an array.
   my $length = scalar @lines; # Debug use only.
-  print "// DEBUG: main: ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n" if $debug and $v3_mode;
-  print "// DEBUG: main: Processing new END group. Contains $length lines.\n" if $debug and $v3_mode;
+  debug_msg(this_function((caller(0))[3]), "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++") if $debug and $v3_mode;
+  debug_msg(this_function((caller(0))[3]), "Processing new END group. Contains $length lines.") if $debug and $v3_mode;
   initialize_tables();
   preprocessor();
   display_steps("");
@@ -236,7 +251,7 @@ foreach (@end_groups) {
 # no XLBL labels are found, write the header file anyway since some other C-file is
 # probably trying to include it.
 if ($xrom_mode) {
-  open XLBL, "> $xlbl_file" or die "ERROR: Cannot open XLBL header file '$xlbl_file' for writing: $!\n";
+  open XLBL, "> $xlbl_file" or die_msg(this_function((caller(0))[3]), "Cannot open XLBL header file '$xlbl_file' for writing: $!");
   print XLBL "#ifndef XLBL_LABELS_H\n";
   print XLBL "#define XLBL_LABELS_H\n\n";
   my $longest_xlabel = 0;
@@ -297,7 +312,7 @@ sub split_END {
   # Make sure there is an END as the last instruction. If not, add one.
   unless( $src[-1] =~ /(^|\s+)END($|\s+)/) {
     push @src, "END";
-    print "// WARNING: $script_name: Missing terminal \"END\". Appending after last statement in source.\n";
+    warn_msg(this_function((caller(0))[3]), "Missing terminal \"END\". Appending after last statement in source.");
   }
 
   # Scan through the source cutting it up into groups delimited by "END".
@@ -312,7 +327,7 @@ sub split_END {
       my @this_group = @group;
       push @END_groups, \@this_group;
       @group = ();
-      print "// DEBUG: split_END: Found and split off an END group at line $line_num.\n" if $debug;
+      debug_msg(this_function((caller(0))[3]), "Found and split off an END group at line $line_num.") if $debug;
     }
     $line_num++;
   }
@@ -366,16 +381,16 @@ sub process_double_quotes {
       while( $string ) {
         my $fmt_step = format_step($step);
         ($substring, $num_chars, $string) = extract_substring($string, $step);
-        print "// DEBUG: process_double_quotes: Extracted $num_chars characters composed of substring '$substring' from line '$line'\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "Extracted $num_chars characters composed of substring '$substring' from line '$line'") if $debug;
         if( $num_chars == 3 ) {
           $new_line = "${label}[alpha]'${substring}'";
         } elsif( $num_chars == 2 ) {
           if( $debug ) {
-            print "ERROR: process_double_quotes: Why did we return a 2-character string at step $fmt_step! String: '$string'\n";
+            print "ERROR: " . this_function((caller(0))[3]) . ": Why did we return a 2-character string at step $fmt_step! String: '$string'\n";
             show_state(__LINE__);
-            die;
+            die_msg(this_function((caller(0))[3]), "Cannot continue...");
           } else {
-            die "ERROR: process_double_quotes: Why did we return a 2-character string at step $fmt_step! String: '$string'\n";
+            die_msg(this_function((caller(0))[3]), "Why did we return a 2-character string at step $fmt_step! String: '$string'");
           }
         } else {
           $new_line = "${label}[alpha] ${substring}";
@@ -385,11 +400,11 @@ sub process_double_quotes {
         # insert anymore lines.
         if( $is_first ) {
           $is_first = 0;
-          print "// DEBUG: process_double_quotes: Replacing step '$fmt_step' with '$new_line'\n" if $debug;
+          debug_msg(this_function((caller(0))[3]), "Replacing step '$fmt_step' with '$new_line'") if $debug;
           $lines[$step-1] = $new_line . " // $line";
           $label = "";
         } else {
-          print "// DEBUG: process_double_quotes: Inserting step '$fmt_step' with '$new_line'\n" if $debug;
+          debug_msg(this_function((caller(0))[3]), "Inserting step '$fmt_step' with '$new_line'") if $debug;
           @lines = insert_step($new_line, $step, @lines);
         }
         $step++;
@@ -398,7 +413,7 @@ sub process_double_quotes {
       $step++;
     }
   }
-  print "// DEBUG: process_double_quotes: Popped out at step '$step'.\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Popped out at step '$step'.") if $debug;
   return;
 } # process_double_quotes
 
@@ -411,10 +426,10 @@ sub preprocess_synthetic_targets {
   local $_;
   my ($current_step);
 
-  print "// DEBUG: preprocess_synthetic_targets: Prior to processing...\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Prior to processing...") if $debug;
   show_state(__LINE__) if $debug;
   while( $current_step = shift @branches ) {
-    print "// DEBUG: preprocess_synthetic_targets: Processing branch at step $current_step...\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Processing branch at step $current_step...") if $debug;
     my ($target_label, $target_step);
     my $fmt_cur_step = format_step($current_step);
 
@@ -434,11 +449,11 @@ sub preprocess_synthetic_targets {
       $label = $2;
     } else {
       if( $debug ) {
-        print "ERROR: preprocess_synthetic_targets: Cannot parse the line at step $current_step! Line: '$line'\n";
+        print "ERROR: " . this_function((caller(0))[3]) . ": Cannot parse the line at step $current_step! Line: '$line'\n";
         show_state(__LINE__);
-        die;
+        die_msg(this_function((caller(0))[3]), "Cannot continue...");
       } else {
-        die "ERROR: preprocess_synthetic_targets: Cannot parse the line at step $current_step! Line: '$line'\n";
+        die_msg(this_function((caller(0))[3]), "Cannot parse the line at step $current_step! Line: '$line'");
       }
     }
 
@@ -462,11 +477,11 @@ sub preprocess_synthetic_targets {
         $target_label = $branches{$fmt_cur_step};
       } else {
         if( $debug ) {
-          print "ERROR: preprocess_synthetic_targets: Cannot locate current step (${fmt_cur_step}) in \%branches.\n";
+          print "ERROR: " . this_function((caller(0))[3]) . ": Cannot locate current step (${fmt_cur_step}) in \%branches.\n";
           show_state(__LINE__);
-          die;
+          die_msg(this_function((caller(0))[3]), "Cannot continue...");
         } else {
-          die "ERROR: preprocess_synthetic_targets: Cannot locate current step (${fmt_cur_step}) in \%branches.\n";
+          die_msg(this_function((caller(0))[3]), "Cannot locate current step (${fmt_cur_step}) in \%branches.");
         }
       }
 
@@ -475,11 +490,11 @@ sub preprocess_synthetic_targets {
         $target_step = $targets{$target_label};
       } else {
         if( $debug ) {
-          print "ERROR: preprocess_synthetic_targets: Cannot locate target label '${target_label}' in \%targets.\n";
+          print "ERROR: " . this_function((caller(0))[3]) . ": Cannot locate target label '${target_label}' in \%targets.\n";
           show_state(__LINE__);
-          die;
+          die_msg(this_function((caller(0))[3]), "Cannot continue...");
         } else {
-          die "ERROR: preprocess_synthetic_targets: Cannot locate target label '${target_label}' in \%targets.\n";
+          die_msg(this_function((caller(0))[3]), "Cannot locate target label '${target_label}' in \%targets.");
         }
       }
 
@@ -487,7 +502,7 @@ sub preprocess_synthetic_targets {
       if( abs($offset) > $MAX_JMP_OFFSET ) {
         my ($new_label_num);
 
-        print "// DEBUG: preprocess_synthetic_targets: Offset exceeds maximum (abs(${offset}) > ${MAX_JMP_OFFSET}). target_step = $target_step, current_step = $current_step.\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "Offset exceeds maximum (abs(${offset}) > ${MAX_JMP_OFFSET}). target_step = $target_step, current_step = $current_step") if $debug;
         ($new_label_num, $current_step) = add_LBL_if_required($target_step, $offset, $current_step);
         $line = replace_with_LBLd_target($new_label_num, $line, "GTO");
         $lines[$current_step-1] = $line;
@@ -502,10 +517,10 @@ sub preprocess_synthetic_targets {
         $lines[$current_step-1] = $line;
       }
     }
-    print "// DEBUG: preprocess_synthetic_targets: Next branch...\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Next branch...") if $debug;
     show_state(__LINE__) if $debug;
   }
-  print "// DEBUG: preprocess_synthetic_targets: Done...\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Done...") if $debug;
   return;
 } # assemble
 
@@ -526,12 +541,12 @@ sub add_LBL_if_required {
 
   # Is there already a LBL that we can take advantage of?
   $new_label_num = is_existing_label($target_step); # Returns <0 if no appropriate label already in existance.
-  print "// DEBUG: add_LBL_if_required: is_existing_label(${target_step}) => ${new_label_num}\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "is_existing_label(${target_step}) => ${new_label_num}") if $debug;
 
   if( $new_label_num < 0 ) {
     # We need to inject a label at the target.
     $new_label_num = get_next_label($target_step+1); # Reserve it for the next step.
-    print "// DEBUG: add_LBL_if_required: Adding new label '$new_label_num' at step '$target_step'.\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Adding new label '$new_label_num' at step '$target_step'.") if $debug;
     @lines = insert_step("LBL $new_label_num", $target_step, @lines);
     adjust_labels_used($target_step);
     adjust_targets($target_step);
@@ -545,7 +560,7 @@ sub add_LBL_if_required {
       $current_step++;
     }
   } else {
-    print "// DEBUG: add_LBL_if_required: Label number '$new_label_num' already exists at step '$target_step' -- reusing it.\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Label number '$new_label_num' already exists at step '$target_step' -- reusing it.") if $debug;
   }
   return ($new_label_num, $current_step);
 } # add_LBL_if_required
@@ -589,9 +604,9 @@ sub extract_labels {
       my $fmt_LBL = format_LBL($LBL);
       if( not exists $LBLs{$fmt_LBL} ) {
         $LBLs{$fmt_LBL} = $fmt_step;
-        print "// DEBUG: extract_labels: Found user 'LBL $fmt_LBL' at step $fmt_step.\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "Found user 'LBL $fmt_LBL' at step $fmt_step.") if $debug;
       } else {
-        die "ERROR: extract_labels: Cannot support multiple labels with the same name. LBL $fmt_LBL, seen at step $fmt_step, was already seen at step ", $LBLs{$fmt_LBL}, "\n";
+        die_msg(this_function((caller(0))[3]), "Cannot support multiple labels with the same name. LBL $fmt_LBL, seen at step $fmt_step, was already seen at step ${LBLs{$fmt_LBL}}");
       }
     }
   }
@@ -619,9 +634,9 @@ sub extract_targets {
       if( not exists $targets{$label} ) {
         my $fmt_step = format_step($step);
         $targets{$label} = $fmt_step;
-        print "// DEBUG: extract_targets: Found target label ('$label') at step $fmt_step.\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "Found target label ('$label') at step $fmt_step.") if $debug;
       } else {
-        die "ERROR: Cannot support multiple target labels at different steps. Target label '$label' aleady seen at step ${targets{$label}}\n";
+        die_msg(this_function((caller(0))[3]), "Cannot support multiple target labels at different steps. Target label '$label' aleady seen at step ${targets{$label}}");
       }
     }
   }
@@ -661,13 +676,13 @@ sub extract_branches {
       my $label = $2;
       if( $label =~ /^\d{2}$/ ) {
         # This is a "hard" target. We want to convert these to "soft" ones.
-        print "// DEBUG: extract_branches: Found 'hard' branch at step $fmt_step with label '$label'.\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "Found 'hard' branch at step $fmt_step with label '$label'.") if $debug;
       } else {
         if( not exists $branches{$fmt_step} ) {
           $branches{$fmt_step} = $label;
-          print "// DEBUG: extract_branches: Found branch at step $fmt_step with label '$label'.\n" if $debug;
+          debug_msg(this_function((caller(0))[3]), "Found branch at step $fmt_step with label '$label'.") if $debug;
         } else {
-          die "ERROR: Cannot support multiple target labels per step. Target label '$label' was already seen at step ${targets{$fmt_step}}\n";
+          die_msg(this_function((caller(0))[3]), "Cannot support multiple target labels per step. Target label '$label' was already seen at step ${targets{$fmt_step}}");
         }
       }
     }
@@ -724,16 +739,16 @@ sub extract_LBLd_opcodes {
 
           # Check out if the label is a hard label or symbolic one.
           if( $label =~ /^\d{2}$|^[A-Z]{1}$/ ) {
-            print "// DEBUG: extract_LBLd_opcodes: Skipping 'hard' LBL'd opcode at step $fmt_step with LBL '$label': '$line'.\n" if $debug;
+            debug_msg(this_function((caller(0))[3]), "Skipping 'hard' LBL'd opcode at step $fmt_step with LBL '$label': '$line'.") if $debug;
 
           # Does the target label exist already?
           } elsif( exists $targets{$label} ) {
-            print "// DEBUG: extract_LBLd_opcodes: Found LBL'd opcode at step $fmt_step with label '$label': '$line'.\n" if $debug;
+            debug_msg(this_function((caller(0))[3]), "Found LBL'd opcode at step $fmt_step with label '$label': '$line'.") if $debug;
 
             # Get the target label.
             my $target_step = $targets{$label};
             my ($assigned_label);
-            print "// DEBUG: extract_LBLd_opcodes: fmt_step = $fmt_step, targets{label} = $target_step\n" if $debug > 1;
+            debug_msg(this_function((caller(0))[3]), "fmt_step = $fmt_step, targets{label} = $target_step") if $debug;
 
             # Search the existing LBLs for a match of the target step. If a LBL at the target step is found, we
             # can reuse it for this purposes of this LBL.
@@ -750,39 +765,39 @@ sub extract_LBLd_opcodes {
             # effect of moving everything below it down one step.
             if( not $found ) {
               my $offset = $target_step - $step;
-              print "// DEBUG: extract_LBLd_opcodes: Label not found at target step '$target_step'. Offset to target is $offset.\n" if $debug > 2;
+              debug_msg(this_function((caller(0))[3]), "Label not found at target step '$target_step'. Offset to target is $offset.") if $debug > 2;
               ($assigned_label, $step) = add_LBL_if_required($target_step, $offset, $step);
               $fmt_step = format_step($step);
             } else {
-              print "// DEBUG: extract_LBLd_opcodes: Found label '$assigned_label' for tarteg step '$target_step'\n" if $debug > 2;
+              debug_msg(this_function((caller(0))[3]), "Found label '$assigned_label' for tarteg step '$target_step'") if $debug > 2;
             }
 
             if( not exists $branches{$fmt_step} ) {
               if( $debug ) {
-                print "// DEBUG: extract_LBLd_opcodes: Prior to inserting label '$label' into \%branches:\n";
+                debug_msg(this_function((caller(0))[3]), "Prior to inserting label '$label' into \%branches:");
                 show_branches();
               }
               $branches{$fmt_step} = $label;
               if( $debug ) {
-                print "// DEBUG: extract_LBLd_opcodes: After inserting label '$label' into \%branches:\n";
+                debug_msg(this_function((caller(0))[3]), "After inserting label '$label' into \%branches:");
                 show_branches();
-                print "// DEBUG: extract_LBLd_opcodes: Prior to inserting step '$fmt_step' into \@branches:\n";
+                debug_msg(this_function((caller(0))[3]), "Prior to inserting step '$fmt_step' into \@branches:");
                 show_branches_remaining();
               }
               insert_into_branch_array($step);
             } else {
               if(1) {
                 if( $debug ) {
-                  print "// DEBUG: extract_LBLd_opcodes: Locate step '$fmt_step' already in \%branches.\n";
+                  debug_msg(this_function((caller(0))[3]), "Locate step '$fmt_step' already in \%branches.");
                   show_state(__LINE__);
                 }
               } else {
                 if( $debug ) {
-                  print "ERROR: extract_LBLd_opcodes: Locate step '$fmt_step' already in \%branches.\n";
+                  print "ERROR: " . this_function((caller(0))[3]) . ": Locate step '$fmt_step' already in \%branches.\n";
                   show_state(__LINE__);
-                  die;
+                  die_msg(this_function((caller(0))[3]), "Cannot continue...");
                 } else {
-                  die "ERROR: extract_LBLd_opcodes: Locate step '$fmt_step' already in \%branches.\n";
+                  die_msg(this_function((caller(0))[3]), "Locate step '$fmt_step' already in \%branches.");
                 }
               }
             }
@@ -790,20 +805,20 @@ sub extract_LBLd_opcodes {
           # The required target label does not exist so it is a user error in the source code.
           } else {
             if( $debug ) {
-              print "ERROR: extract_LBLd_opcodes: No target label exists for line '$line' at step '$fmt_step'\n";
+              print "ERROR: " . this_function((caller(0))[3]) . ": No target label exists for line '$line' at step '$fmt_step'\n";
               show_state(__LINE__);
-              die;
+              die_msg(this_function((caller(0))[3]), "Cannot continue...");
             } else {
-              die "ERROR: extract_LBLd_opcodes: No target label exists for line '$line' at step '$fmt_step\n";
+              die_msg(this_function((caller(0))[3]), "No target label exists for line '$line' at step '$fmt_step");
             }
           }
           last;
         } else {
-          print "// DEBUG: extract_LBLd_opcodes: Line is eligible for LBL '$LBLd_op' but does not have an eligible label: line '$line' at step '$fmt_step'\n" if $debug > 1;
+         debug_msg(this_function((caller(0))[3]), "Line is eligible for LBL '$LBLd_op' but does not have an eligible label: line '$line' at step '$fmt_step'") if $debug > 1;
         }
         next;
       } else {
-        print "// DEBUG: extract_LBLd_opcodes: Line is not eligible for LBL '$LBLd_op': line '$line' at step '$fmt_step'\n" if $debug > 3;
+        debug_msg(this_function((caller(0))[3]), "Line is not eligible for LBL '$LBLd_op': line '$line' at step '$fmt_step'") if $debug > 3;
       }
     }
   }
@@ -832,26 +847,26 @@ sub insert_synthetic_labels {
         my $offset = $1;
         my $target_step = format_step($step - $offset);
         my $new_label = search_and_insert_synthetic_label("BACK", $offset, $target_step);
-        print "// DEBUG: insert_synthetic_labels: Replacing: '$line'\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "Replacing: '$line'") if $debug;
         $line =~ s/BACK\s+(\d{2})/BACK ${new_label} \/\/ $1/;
         $lines[$step-1] = $line;
-        print "// DEBUG: insert_synthetic_labels: With:      '$line'\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "With:      '$line'") if $debug;
         replace_branch($step, $new_label);
       } elsif( $line =~ /SKIP\s+(\d{2})/ ) {
         my $offset = $1;
         my $target_step = format_step($step + $offset + 1);
         my $new_label = search_and_insert_synthetic_label("SKIP", $offset, $target_step);
-        print "// DEBUG: insert_synthetic_labels: Replacing: '$line'\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "Replacing: '$line'") if $debug;
         $line =~ s/SKIP\s+(\d{2})/SKIP ${new_label} \/\/ $1/;
         $lines[$step-1] = $line;
-        print "// DEBUG: insert_synthetic_labels: With:      '$line'\n" if $debug;
+        debug_msg(this_function((caller(0))[3]), "With:      '$line'") if $debug;
         replace_branch($step, $new_label);
       } else {
-        die "ERROR: insert_synthetic_labels: Cannot parse line at step '$step': '$line'.\n";
+        die_msg(this_function((caller(0))[3]), "Cannot parse line at step '$step': '$line'.");
       }
     }
   }
-  print "// DEBUG: insert_synthetic_labels: Done.\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Done.") if $debug;
   return;
 } # insert_synthetic_labels
 
@@ -865,16 +880,16 @@ sub replace_branch {
   my $new_label = shift;
   my $fmt_step = format_step($step);
   if( exists $branches{$fmt_step} ) {
-    print "// DEBUG: replace_branch: Replacing branch: '${branches{$fmt_step}}'\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Replacing branch: '${branches{$fmt_step}}'") if $debug;
     $branches{$fmt_step} = $new_label;
-    print "// DEBUG: replace_branch: With:             '${branches{$fmt_step}}'\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "With:             '${branches{$fmt_step}}'") if $debug;
   } else {
     if( $debug ) {
-      print "ERROR: replace_branch: Branch unexpectedly does not exist for step '$fmt_step'.\n";
+      print "ERROR: " . this_function((caller(0))[3]) . ": Branch unexpectedly does not exist for step '$fmt_step'.\n";
       show_state(__LINE__);
-      die;
+      die_msg(this_function((caller(0))[3]), "Cannot continue...");
     } else {
-      die "ERROR: replace_branch: Branch unexpectedly does not exist for step '$fmt_step'.\n";
+      die_msg(this_function((caller(0))[3]), "Branch unexpectedly does not exist for step '$fmt_step'.");
     }
   }
   return;
@@ -903,19 +918,21 @@ sub search_and_insert_synthetic_label {
   if( not $found ) {
     $assigned_label = gen_unique_synthetic_label($type, $seed);
     $targets{$assigned_label} = $fmt_step;
-    print "// DEBUG: search_and_insert_synthetic_label: Inserting synthetic label ('$assigned_label') at step '$fmt_step' for '$type $seed'.\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Inserting synthetic label ('$assigned_label') at step '$fmt_step' for '$type $seed'.") if $debug;
 
     # We have confirmed that no actual label exists so substitute it in.
-    print "// DEBUG: search_and_insert_synthetic_label: Original line: '", $lines[$label_step-1], "'\n" if $debug > 1;
+    my $msg = "Original line: '" . $lines[$label_step-1] . "'";
+    debug_msg(this_function((caller(0))[3]), $msg) if $debug;
     if( $lines[$label_step-1] =~ /^\s*\d{$step_digits}:{0,1}/ ) {
       $lines[$label_step-1] =~ s/^(\s*\d{$step_digits}:{0,1})\s+(.+)/${1} ${assigned_label}:: $2/;
     } else {
       $lines[$label_step-1] =~ s/^(\s*)(.+)/${1}${assigned_label}:: $2/;
     }
-    print "// DEBUG: search_and_insert_synthetic_label: Modified line: '", $lines[$label_step-1], "'\n" if $debug > 1;
+    $msg = "Modified line: '" . $lines[$label_step-1] . "'";
+    debug_msg(this_function((caller(0))[3]), $msg) if $debug;
 
   } else {
-    print "// DEBUG: search_and_insert_synthetic_label: Label ('$assigned_label') already exists at step '$fmt_step' for label '$type $seed'.\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Label ('$assigned_label') already exists at step '$fmt_step' for label '$type $seed'.") if $debug;
   }
   return ($assigned_label);
 } # search_and_insert_synthetic_label
@@ -957,7 +974,7 @@ sub adjust_longest_label_length {
 # Check the tables for consistency.
 #
 sub check_consistency {
-  print "// DEBUG: check_consistency: Stubbed....\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Stubbed...") if $debug;
   return;
 } # check_consistency
 
@@ -999,18 +1016,18 @@ sub reconstruct_steps {
     if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})\s+(\S+.*)/ ) { # Line with target label
       $label = ${1} . (" " x ($label_field_length - length($1)));
       $opcode = $2;
-      print "// DEBUG: reconstruct_steps: Type 1: '$line'\n" if $debug > 3;
+      debug_msg(this_function((caller(0))[3]), "Type 1: '$line'") if $debug > 3;
     } elsif( $line =~ /^\s*(\S+.*)/ ) { # Line without target label
       $label = " " x $label_field_length;
       $opcode = $1;
-      print "// DEBUG: reconstruct_steps: Type 2: '$line'\n" if $debug > 3;
+      debug_msg(this_function((caller(0))[3]), "Type 2: '$line'") if $debug > 3;
     } else {
       if( $debug ) {
-        print "ERROR: reconstruct_steps: Cannot parse the line at step $step! Line: '$line'\n";
+        print "ERROR: " . this_function((caller(0))[3]) . ": Cannot parse the line at step $step! Line: '$line'\n";
         show_state(__LINE__);
-        die;
+        die_msg(this_function((caller(0))[3]), "Cannot continue...");
       } else {
-        die "ERROR: reconstruct_steps: Cannot parse the line at step $step! Line: '$line'\n";
+        die_msg(this_function((caller(0))[3]), "Cannot parse the line at step $step! Line: '$line'");
       }
     }
 
@@ -1042,7 +1059,7 @@ sub extract_substring {
   my $actual_alpha = "";
   my $org_string = $string;
   my $substring = "";
-  print "// DEBUG: extract_substring: Attempting to extract substring from '$string'\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Attempting to extract substring from '$string'") if $debug;
   while($string and ($num_chars < 3) ) {
     # Check for any escaped alphas since these need to be treated differently.
     if( $string =~ /^(\[.+?\])/ ) {
@@ -1058,14 +1075,14 @@ sub extract_substring {
       }
     } else {
       if( $debug ) {
-        print "ERROR: extract_substring: Cannot parse the string string at step $fmt_step! String: '$org_string'\n";
+        print "ERROR: " . this_function((caller(0))[3]) . ": Cannot parse the string string at step $fmt_step! String: '$org_string'\n";
         show_state(__LINE__);
-        die;
+        die_msg(this_function((caller(0))[3]), "Cannot continue...");
       } else {
-        die "ERROR: extract_substring: Cannot parse the string string at step $fmt_step! String: '$org_string'\n";
+        die_msg(this_function((caller(0))[3]), "Cannot parse the string string at step $fmt_step! String: '$org_string'");
       }
     }
-    print "// DEBUG: extract_substring: Found character '$actual_alpha' equated to '$alpha' in '$string'\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Found character '$actual_alpha' equated to '$alpha' in '$string'") if $debug;
     push @alphas, $alpha;
 
     # Use a different replacement function rather than a regex because the text
@@ -1079,17 +1096,17 @@ sub extract_substring {
   # Put some back if we can't get a full 3 characters. In this case we only want to return
   # a single character.
   if( $num_chars != 3 ) {
-    print "// DEBUG: extract_substring: Could only collect $num_chars -- putting some back. Current string is '$string'.\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Could only collect $num_chars -- putting some back. Current string is '$string'.") if $debug;
     $substring = shift @alphas;
     $num_chars = 1;
     while( @alphas ) {
       $string .= shift @alphas;
     }
-    print "// DEBUG: extract_substring: Reconstituted string to '$string'.\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Reconstituted string to '$string'.") if $debug;
   } else {
     $substring = join "", @alphas;
   }
-  print "// DEBUG: extract_substring: Extracted $num_chars character(s): '$substring'. Left with string of '$string'.\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Extracted $num_chars character(s): '$substring'. Left with string of '$string'.") if $debug;
   return ($substring, $num_chars, $string);
 } # extract_substring
 
@@ -1131,15 +1148,16 @@ sub insert_step {
   my $line = shift;
   my $location = shift;
   my @lines = @_;
-  print "// DEBUG: insert_step: Inserting mnemonic '$line' at step ", format_step($location), ".\n" if $debug;
+  my $msg = "Inserting mnemonic '$line' at step " . format_step($location) . ".";
+  debug_msg(this_function((caller(0))[3]), $msg) if $debug;
 #  if( $debug ) {
-#    print "// DEBUG: insert_step: Prior to inserting: '$line'\n";
+#    debug_msg(this_function((caller(0))[3]), "Prior to inserting: '$line'") if $debug;
 #    panl(@lines);
 #    print "\n...done\n";
 #  }
   splice @lines, ($location-1), 0, $line;
 #  if( $debug ) {
-#    print "// DEBUG: insert_step: After inserting: '$line'\n";
+#    debug_msg(this_function((caller(0))[3]), "After inserting: '$line'") if $debug;
 #    panl(@lines);
 #    print "\n...done\n";
 #  }
@@ -1156,14 +1174,14 @@ sub search_targets {
   my $target_step = -1;
   if( exists $targets{$label} ) {
     $target_step = $targets{$label};
-    print "// DEBUG: search_targets: Found target step '$target_step' with target label '$label' in \%targets.\n" if $debug > 3;
+    debug_msg(this_function((caller(0))[3]), "Found target step '$target_step' with target label '$label' in \%targets.") if $debug > 3;
   } else {
     if( $debug ) {
-      print "ERROR: search_targets: Cannot find label '$label' in \%targets.\n";
+      print "ERROR: " . this_function((caller(0))[3]) . ": Cannot find label '$label' in \%targets.\n";
       show_state(__LINE__);
-      die;
+      die_msg(this_function((caller(0))[3]), "Cannot continue...");
     } else {
-      die "ERROR: search_targets: Cannot find label '$label' in \%targets.\n";
+      die_msg(this_function((caller(0))[3]), "Cannot find label '$label' in \%targets.");
     }
   }
   return $target_step;
@@ -1188,14 +1206,14 @@ sub search_LBLs {
   }
   if( not $found ) {
     if( $debug ) {
-      print "ERROR: search_LBLs: Cannot find target step '$target_step' in \%LBLs.\n";
+      print "ERROR: " . this_function((caller(0))[3]) . ": Cannot find target step '$target_step' in \%LBLs.\n";
       show_state(__LINE__);
-      die;
+      die_msg(this_function((caller(0))[3]), "Cannot continue...");
     } else {
-      die "ERROR: search_LBLs: Cannot find target step '$target_step' in \%LBLs.\n";
+      die_msg(this_function((caller(0))[3]), "Cannot find target step '$target_step' in \%LBLs.");
     }
   } else {
-    print "// DEBUG: search_LBLs: Found target step '$target_step' with LBL '$LBL' in \%LBLs.\n" if $debug > 3;
+    debug_msg(this_function((caller(0))[3]), "Found target step '$target_step' with LBL '$LBL' in \%LBLs.") if $debug > 3;
   }
   return $LBL;
 } # search_LBLs
@@ -1238,8 +1256,8 @@ sub get_next_label {
   while( exists $LBLs{format_LBL($label)} ) {
     $label--;
     if( $label < 0 ) {
-      warn "ERROR: get_next_label: Numeric label supply has been exhausted.\n";
-      die  "                       Greater then ", $MAX_LABEL_NUM+1, " numeric labels used.\n";
+      my $msg = "Numeric label supply has been exhausted.\n Greater then " . $MAX_LABEL_NUM+1 . " numeric labels used.";
+      die_msg(this_function((caller(0))[3]), $msg);
     }
   }
   $LBLs{format_LBL($label)} = format_step($step);
@@ -1266,16 +1284,16 @@ sub replace_with_branch {
     $label = $1;
     $spaces = $2;
     $opcode = $3;
-    print "// DEBUG: replace_with_branch: Replacing: '$line' (type 1)\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Replacing: '$line' (type 1)") if $debug;
     $line =~ s/^[$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS}\s+(.+)/${label}::${spaces}${mnemonic} $offset \/\/ $1/;
-    print "// DEBUG: replace_with_branch: With:      '$line' (type 1)\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "With:      '$line' (type 1)") if $debug;
   } elsif( $line =~ /^(.+)/ ) {
     $opcode = $1;
-    print "// DEBUG: replace_with_branch: Replacing: '$line' (type 2)\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Replacing: '$line' (type 2)") if $debug;
     $line =~ s/(.+)/${mnemonic} $offset \/\/ $1/;
-    print "// DEBUG: replace_with_branch: With:      '$line' (type 2)\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "With:      '$line' (type 2)") if $debug;
   } else {
-    die "ERROR: replace_with_branch: Cannot parse the line: '$line' (offset $offset)\n";
+    die_msg(this_function((caller(0))[3]), "Cannot parse the line: '$line' (offset $offset)");
   }
   return $line;
 } # replace_with_branch
@@ -1302,17 +1320,17 @@ sub replace_with_LBLd_target {
     $spaces = $2;
     $opcode = $3;
     $target = $4;
-    print "// DEBUG: replace_with_LBLd_target: Replacing: '$line' (type 1)\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Replacing: '$line' (type 1)") if $debug;
     $line = "${label}::${spaces}${mnemonic} $fmt_label_num // $opcode $target";
-    print "// DEBUG: replace_with_LBLd_target: With:      '$line' (type 1)\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "With:      '$line' (type 1)") if $debug;
   } elsif( $line =~ /^\s*(\S+)\s+(\S+)/ ) {
     $opcode = $1;
     $target = $2;
-    print "// DEBUG: replace_with_LBLd_target: Replacing: '$line' (type 2)\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "Replacing: '$line' (type 2)") if $debug;
     $line = "${mnemonic} $fmt_label_num // $opcode $target";
-    print "// DEBUG: replace_with_LBLd_target: With:      '$line' (type 2)\n" if $debug;
+    debug_msg(this_function((caller(0))[3]), "With:      '$line' (type 2)") if $debug;
   } else {
-    die "ERROR: replace_with_LBLd_target: Cannot parse the line: '$line'\n";
+    die_msg(this_function((caller(0))[3]), "Cannot parse the line: '$line'");
   }
 
   return $line;
@@ -1329,7 +1347,7 @@ sub adjust_labels_used {
   for my $label (sort keys %LBLs) {
     my $target = $LBLs{$label};
     if( $target > ($step + 1) ) {
-      print "// DEBUG: adjust_labels_used: Incrementing target ('$target') for label '$label' because it is at or past step '$step'.\n" if $debug;
+      debug_msg(this_function((caller(0))[3]), "Incrementing target ('$target') for label '$label' because it is at or past step '$step'.") if $debug;
       $LBLs{$label} = format_step($target+1);
     }
   }
@@ -1347,7 +1365,7 @@ sub adjust_targets {
   for my $label (sort keys %targets) {
     my $target = $targets{$label};
     if( eval($target+0) >= eval($step+0) ) {
-      print "// DEBUG: adjust_targets: Incrementing step ('$target') for label '$label' because it is at or past step '$step'.\n" if $debug;
+      debug_msg(this_function((caller(0))[3]), "Incrementing step ('$target') for label '$label' because it is at or past step '$step'.") if $debug;
       $targets{$label}++;
     }
   }
@@ -1369,13 +1387,13 @@ sub adjust_branches {
     my $eval_branch_step = eval($branch_step + 0);
     if( $eval_branch_step >= eval($step + 0) ) {
       $new_branches{format_step($eval_branch_step+1)} = $label;
-      print "// DEBUG: adjust_branches: Incrementing branch step ('$branch_step') with label '$label' because it is at or past step '$step'.\n" if $debug;
+      debug_msg(this_function((caller(0))[3]), "Incrementing branch step ('$branch_step') with label '$label' because it is at or past step '$step'.") if $debug;
     } else {
       if( exists $new_branches{$branch_step} ) {
-        die "ERROR: adjust_branches: Existing branch already present for branch step ('$branch_step') with label '$label' prior to step '$step'.\n";
+        die_msg(this_function((caller(0))[3]), "Existing branch already present for branch step ('$branch_step') with label '$label' prior to step '$step'.");
       }
       $new_branches{$branch_step} = $label;
-      print "// DEBUG: adjust_branches: Leaving branch step ('$branch_step') with label '$label' untouched because it is prior to step '$step'.\n" if $debug > 1;
+      debug_msg(this_function((caller(0))[3]), "Leaving branch step ('$branch_step') with label '$label' untouched because it is prior to step '$step'.") if $debug > 1;
     }
   }
   %branches = %new_branches; # Replace the branches hash.
@@ -1393,7 +1411,7 @@ sub adjust_branch_array {
   show_branches_remaining() if $debug;
   for( my $k = 0; $k < scalar(@branches); $k++ ) {
     if( $branches[$k] >= $step ) {
-      print "// DEBUG: adjust_branch_array: Incrementing branch array step ('${branches[$k]}').\n" if $debug;
+      debug_msg(this_function((caller(0))[3]), "Incrementing branch array step ('${branches[$k]}').") if $debug;
       $branches[$k] = format_step($branches[$k] + 1);
     }
   }
@@ -1444,7 +1462,7 @@ sub read_file {
   my $file = shift;
   local $_;
   my (@lines);
-  open SRC, $file or die "ERROR: Cannot open input file '$file' for reading: $!\n";
+  open SRC, $file or die_msg(this_function((caller(0))[3]), "Cannot open input file '$file' for reading: $!");
   while( <SRC> ) {
     chomp; chomp; chomp;
     push @lines, $_;
@@ -1544,11 +1562,11 @@ sub extract_xlbls {
       my $xlabel = $1;
       if (exists $xlbl{$xlabel}) {
         if( $debug ) {
-          print "ERROR: extract_xlbls: Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.\n";
+          print "ERROR: " . this_function((caller(0))[3]) . ": Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.\n";
           show_state(__LINE__);
-          die;
+          die_msg(this_function((caller(0))[3]), "Cannot continue...");
         } else {
-          die "ERROR: extract_xlbls: Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.\n";
+          die_msg(this_function((caller(0))[3]), "Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.");
         }
       } else {
         $xlbl{$xlabel} = $line;
@@ -1567,7 +1585,7 @@ sub extract_xlbls {
 #
 #
 sub populate_branch_array {
-  print "// DEBUG: populate_branch_array: Extracting sorted branch steps...\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Extracting sorted branch steps....") if $debug;
   @branches = sort keys %branches;
   return;
 } # populate_branch_array
@@ -1579,12 +1597,12 @@ sub populate_branch_array {
 #
 sub insert_into_branch_array {
   my $fmt_step = format_step(shift);
-  print "// DEBUG: insert_into_branch_array: Inserting step '$fmt_step' into \@branches if required.\n" if $debug;
+  debug_msg(this_function((caller(0))[3]), "Inserting step '$fmt_step' into \@branches if required.") if $debug;
   my $found = 0;
   for my $existing_step (@branches) {
     if( $existing_step eq $fmt_step ) {
       $found = 1;
-      print "// DEBUG: insert_into_branch_array: Step '$fmt_step' already exists in \@branches. Abandoning insert.\n" if $debug;
+      debug_msg(this_function((caller(0))[3]), "Step '$fmt_step' already exists in \@branches. Abandoning insert.") if $debug;
       last;
     }
   }
@@ -1592,7 +1610,7 @@ sub insert_into_branch_array {
     push @branches, $fmt_step;
     @branches = sort {eval($a+0) <=> eval($b+0)} @branches;
     if( $debug ) {
-      print "// DEBUG: insert_into_branch_array: After inserting step '$fmt_step' into \@branches:\n";
+      debug_msg(this_function((caller(0))[3]), "After inserting step '$fmt_step' into \@branches:") if $debug;
       show_branches_remaining();
     }
   }
@@ -1689,6 +1707,78 @@ sub extract_svn_version {
 
 
 #######################################################################
+#
+# Format a fatal message.
+#
+sub die_msg {
+  my $func_name = shift;
+  my $text = shift;
+  my $msg = "";
+
+  $msg = "$ansi_red_bg" if $use_ansi_colour;
+  $msg .= "ERROR: $func_name:";
+  $msg .= "$ansi_normal " if $use_ansi_colour;
+  $msg .= " $text";
+  if ($stderr2stdout) {
+    print "$msg\n";
+    die "\n";
+  } else {
+    die "$msg\n";
+  }
+} # die_msg
+
+
+#######################################################################
+#
+# Format a warning message.
+#
+sub warn_msg {
+  my $func_name = shift;
+  my $text = shift;
+  my $msg = "";
+
+  $msg = "$ansi_rev_red_bg" if $use_ansi_colour;
+  $msg .= "WARNING: $func_name:";
+  $msg .= "$ansi_normal " if $use_ansi_colour;
+  $msg .= " $text";
+  if ($stderr2stdout) {
+    print "$msg\n";
+  } else {
+    warn "$msg\n";
+  }
+} # warn_msg
+
+
+#######################################################################
+#
+# Format a debug message.
+#
+sub debug_msg {
+  my $func_name = shift;
+  my $text = shift;
+  my $msg = "";
+
+  $msg = "$ansi_green_bg" if $use_ansi_colour;
+  $msg .= "// DEBUG: $func_name:";
+  $msg .= "$ansi_normal " if $use_ansi_colour;
+  $msg .= " $text";
+  print "$msg\n";
+} # debug_msg
+
+
+#######################################################################
+#
+# Swap the main:: for the actual script name.
+#
+sub this_function {
+  my $this_function = shift;
+  $this_function = "main" if not defined $this_function or ($this_function eq "");
+  $this_function =~ s/main/$script_name/;
+  return $this_function;
+} # this_function
+
+
+#######################################################################
 #######################################################################
 #
 # Process the command line option list.
@@ -1763,6 +1853,18 @@ sub get_options {
       $override_step_digits = shift(@ARGV);
     }
 
+    elsif( ($arg eq "-e2so") or ($arg eq "-stderr2stdout")) {
+      $stderr2stdout = 1;
+    }
+
+    elsif( $arg eq "-nc" ) {
+      $use_ansi_colour = 0;
+    }
+
+    elsif( ($arg eq "-ac") or ($arg eq "-colour") or ($arg eq "-color") ) {
+      $use_ansi_colour = 1;
+    }
+
     # Might behave badly if files have already been entered.
     # XXX Leave undocumented for now.
     elsif( $arg eq "--" ) {
@@ -1778,8 +1880,7 @@ sub get_options {
   #----------------------------------------------
   # Check consistency of the options.
   unless( @files ) {
-    warn "ERROR: Must enter at least one file to process.\n";
-    die  "       Enter '$script_name -h' for help.\n";
+    die_msg(this_function((caller(0))[3]), "Must enter at least one file to process.\n Enter '$script_name -h' for help.");
   }
 
   return;
