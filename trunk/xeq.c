@@ -202,6 +202,8 @@ unsigned int state_pc(void) {
 static void raw_set_pc(unsigned int pc) {
 	State.pc = pc;
 	update_program_bounds(0);
+	if (! isXROM(pc))
+		XromFlags.xIN = 0;	// Make sure we break out of special XROM handling
 }
 
 /*
@@ -967,7 +969,7 @@ static decimal64 *reg_address(int n, decimal64 *const regs, decimal64 *const nam
 	if (XromFlags.xIN)
 		return (decimal64 *) (XromStack + n);
 	if (dbl)
-		n = (n << 1) - EXTRA_REG;
+		n = (n << 1) - STACK_SIZE - EXTRA_REG;
 	return named_regs + n;
 }
 
@@ -3129,7 +3131,7 @@ void busy(void)
  */
 static const s_opcode *check_for_xrom_address(void *fp)
 {
-	const s_opcode *xp = (const s_opcode *) ((unsigned int) fp & ~1);
+	const s_opcode *xp = (const s_opcode *) ((unsigned long) fp & ~1);
 	if (xp < xrom)
 		return NULL;
 #ifndef REALBUILD
@@ -3680,7 +3682,7 @@ void xeq_init_contexts(void) {
 	RetStkSize = s + RET_STACK_SIZE - ProgSize;
 	ProgMax = s + RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE;
 	ProgFree = ProgMax - ProgSize + RetStkPtr;
-	StackBase = StackBase;
+	StackBase = get_reg_n(regX_idx);
 
 	/*
 	 *  Initialise our standard contexts.
