@@ -180,7 +180,7 @@ void alpha_tox(enum nilop op) {
 
 void alpha_fromx(enum nilop op) {
 	int s;
-	add_char(0xff & get_reg_n_int_sgn(regX_idx, &s));
+	add_char(0xff & getX_int_sgn(&s));
 }
 
 /* Recall a register and append to Alpha.

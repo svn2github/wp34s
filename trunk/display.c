@@ -251,12 +251,9 @@ static void set_exp(short exp, int zerop, char *res) {
 		else set_dot(EXP_SIGN);
 		exp = -exp;
 	}
-#ifdef INCLUDE_DOUBLE_PRECISION
 	if (res == NULL && exp > 999)
 		scopy(buf, "HIG");
-	else
-#endif
-	{
+	else {
 		xset(buf, '\0', sizeof(buf));
 		if (zerop)
 			num_arg_0(buf, exp, 3);
@@ -309,12 +306,9 @@ static void annunciators(void) {
 	switch (cur_shift()) {
 	default:
 	case SHIFT_N:
-#ifdef INCLUDE_DOUBLE_PRECISION
 		if (is_dblmode())
 			*p++ = 'D';
-		else
-#endif
-		if (State2.wascomplex) {
+		else if (State2.wascomplex) {
 			*p++ = 'C';
 			State2.wascomplex = 0;
 		} else
@@ -806,21 +800,12 @@ enum display_modes std_round_fix(const decNumber *z) {
  * We have to account for the various display modes and numbers of
  * digits.
  */
-#ifdef INCLUDE_DOUBLE_PRECISION
 static void set_x(const REGISTER *rgx, char *res, int dbl) {
-#else
-#define set_x(rgx, res, dbl) set_x_(rgx, res)
-static void set_x_(const REGISTER *rgx, char *res) {
-#endif
 	char x[50], *obp = x;
 	int odig = 0;
 	int show_exp = 0;
 	int j;
-#ifdef INCLUDE_DOUBLE_PRECISION
 	char mantissa[64];
-#else
-	char mantissa[32];
-#endif
 	int exp;
 	char *p = mantissa;
 	char *r;
@@ -834,14 +819,11 @@ static void set_x_(const REGISTER *rgx, char *res) {
 	decNumber z;
 	int trimzeros = 0;
 
-#ifdef INCLUDE_DOUBLE_PRECISION
 	if (dbl)
 		decimal128ToNumber(&(rgx->d), &z);
 	else
 		decimal64ToNumber(&(rgx->s), &z);
-#else
-	decimal64ToNumber(rgx, &z);
-#endif
+
 	if (!State2.smode && ! State2.cmplx) {
 		if (State2.hms) {
 			set_x_hms(&z, res);
@@ -1422,7 +1404,7 @@ void display(void) {
 				set_x((REGISTER *)&z, NULL, 0);
 				skip = 1;
 			} else if (op >= (OP_NIL | OP_sigmaX2Y) && op < (OP_NIL | OP_sigmaX2Y) + NUMSTATREG) {
-				REGISTER z, *const x = get_reg_n(regX_idx);
+				REGISTER z, *const x = StackBase;
 				copyreg(&z, x);
 				sigma_val((enum nilop) argKIND(op));
 				set_x(x, NULL, 0);

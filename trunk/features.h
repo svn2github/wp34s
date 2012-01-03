@@ -23,14 +23,8 @@
 /*
  *  Select optional features here
  */
-// Enable double precision mode
-#define INCLUDE_DOUBLE_PRECISION
-
-#if !defined(REALBUILD) && !defined(POST_PROCESSING)
 // Push commands into XROM instead of being in C
-// postpone this define for the real thing until xIN and xOUT are working
 #define XROM_COMMANDS
-#endif
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
@@ -101,13 +95,6 @@
 // Space cost 480 bytes.
 // #define INCLUDE_FACTOR
 
-// Define this to support HP16c integer/real mode conversions.
-// The 16c breaks a real into a mantissa and base two exponent on entry
-// to integer mode and reverses the process on exit.  It clears the rest of
-// the stack.  The alternative (which is much smaller), converts the stack and
-// last X on the mode switch (so e.g. 34 stays 34).
-// #define HP16C_MODE_CHANGE
-
 // Include some basic matrix support commands.
 #define MATRIX_SUPPORT
 
@@ -132,9 +119,6 @@
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
-#if defined(XROM_COMMANDS) && ! defined(INCLUDE_DOUBLE_PRECISION)
-#define INCLUDE_DOUBLE_PRECISION
-#endif
 
 #if defined(INCLUDE_COMPLEX_ZETA) && ! defined(INCLUDE_ZETA)
 /* Complex zeta implies real zeta */

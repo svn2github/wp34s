@@ -586,7 +586,7 @@ void intDblMul(enum nilop op) {
 		long long int xr, yr;
 		int sx, sy;
 
-		xr = get_reg_n_int(regX_idx);
+		xr = getX_int();
 		yr = get_reg_n_int(regY_idx);
 
 		xv = extract_value(xr, &sx);
@@ -969,7 +969,7 @@ void introt(unsigned int arg, enum rarg op) {
 		return;
 	}
 	ws = word_size();
-	x = get_reg_n_int(regX_idx);
+	x = getX_int();
 
 	if (arg != 0) {
 		switch (op) {
@@ -1273,7 +1273,7 @@ static void justify(long long int (*shift)(long long int), const long long int m
 	unsigned int c = 0;
 	long long int v;
 
-	v = get_reg_n_int(regX_idx);
+	v = getX_int();
 	setlastX();
 	lift();
 	if (v != 0) {
@@ -1339,7 +1339,7 @@ void intbits(unsigned int arg, enum rarg op) {
 		return;
 	}
 	m =  (arg >= word_size())?0:(1LL << arg);
-	x = get_reg_n_int(regX_idx);
+	x = getX_int();
 
 	switch (op) {
 	case RARG_SB:	x |= m;		setlastX();		break;

@@ -38,11 +38,9 @@ static void dispreg(const char n, int index) {
         if (is_intmode())
                 sprintf(buf, "%llx", (unsigned long long int)get_reg_n_int(index));
         else {
-#ifdef INCLUDE_DOUBLE_PRECISION
 		if (is_dblmode())
 			decimal128ToString(&(get_reg_n(index)->d), buf);
 		else
-#endif
 			decimal64ToString(&(get_reg_n(index)->s), buf);
 	}
         PRINTF("%c: %s", n, buf);

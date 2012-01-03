@@ -332,10 +332,8 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
  *  decimal64 values are grouped together, if decimal128 is used, regrouping is required
  */
 void sigma_val(enum nilop op) {
-	REGISTER *const x = get_reg_n(regX_idx);
-#ifdef INCLUDE_DOUBLE_PRECISION
+	REGISTER *const x = StackBase;
 	const int dbl = is_dblmode();
-#endif
 	if (SizeStatRegs == 0) {
 		zero_X();
 		return;
@@ -346,24 +344,20 @@ void sigma_val(enum nilop op) {
 	}
 	else if (op < OP_sigmaX) {
 		decimal128 *d = (&sigmaX2Y) + (op - OP_sigmaX2Y);
-#ifdef INCLUDE_DOUBLE_PRECISION
 		if (! dbl)
 			x->d = *d;
 		else
-#endif
 			packed_from_packed128(&(x->s), d);
 	}
 	else {
 		x->s = (&sigmaX)[op - OP_sigmaX];
-#ifdef INCLUDE_DOUBLE_PRECISION
 		if (dbl)
 			packed128_from_packed(&(x->d), &(x->s));
-#endif
 	}
 }
 
 void sigma_sum(enum nilop op) {
-	REGISTER *const x = get_reg_n(regX_idx);
+	REGISTER *const x = StackBase;
 	REGISTER *const y = get_reg_n(regY_idx);
 
 	if (SizeStatRegs == 0) {
@@ -373,12 +367,10 @@ void sigma_sum(enum nilop op) {
 		x->s = sigmaX;
 		y->s = sigmaY;
 	}
-#ifdef INCLUDE_DOUBLE_PRECISION
 	if (is_dblmode()) {
 		packed128_from_packed(&(x->d), &(x->s));
 		packed128_from_packed(&(y->d), &(y->s));
 	}
-#endif
 }
 
 
@@ -744,7 +736,7 @@ void stats_sto_random(enum nilop op) {
 	decNumber x;
 
 	if (is_intmode()) {
-		 s = get_reg_n_int(regX_idx) & 0xffffffff;
+		 s = getX_int() & 0xffffffff;
 	} else {
 		getX(&x);
 		s = (unsigned long int) dn_to_ull(&x, &z);

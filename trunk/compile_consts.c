@@ -45,9 +45,7 @@
 
 #include "decNumber.h"
 #include "decimal64.h"
-#ifdef INCLUDE_DOUBLE_PRECISION
 #include "decimal128.h"
-#endif
 
 static FILE *fh;
 
@@ -285,9 +283,7 @@ struct constsml constsml[] = {
 	CONSTANT("eE",		"CNSTE",	"2.71828182845904523536028747135266249775724709369995"),
 	CONSTANT("F\243",	"PC_F_delta",	"4.66920160910299067185320382"),
 	CONSTANT("F\240",	"PC_F_alpha",	"2.502907875095892822283902873218"),
-#ifndef INCLUDE_DOUBLE_PRECISION
 	//CONSTANT("\257",	"PI",		"3.14159265358979323846264338327950288419716939937510"),
-#endif
 	//CONSTANT("\207",	"PC_MILLS",	"1.3063778838630806904686144926026057129167845851567136443680537599664340537668265988215014037011973957"),
 	//CONSTANT("\252",	"PC_lam",	"0.62432998854355087099293638310083724417964262018"),
 	//CONSTANT("\217\272",	"PI2",		"0.660161815846869573927812110014555778432623336"),
@@ -361,14 +357,12 @@ struct constsml constsint[] = {
 	CONSTANT(NULL, NULL, NULL)
 };
 
-#ifdef INCLUDE_DOUBLE_PRECISION
 struct constsml constsdbl[] = {
 	CONSTANT("d_zero",	"ZERO",		"0"),
 	CONSTANT("d_one",	"ONE",		"1"),
 
 	CONSTANT(NULL, NULL, NULL)
 };
-#endif
 
 /* Imperial/metric conversions.
  * Data taken from http://physics.nist.gov/Pubs/SP811/appenB9.html
@@ -637,7 +631,6 @@ static void const_small_tbl(FILE *f, const int incname, const struct constsml ct
 			"};\n\n");
 }
 
-#ifdef INCLUDE_DOUBLE_PRECISION
 static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
 		const char *tname, const char *num_name, const char *macro_name,
 		const char *value_name,
@@ -671,7 +664,7 @@ static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
 	}
 	fprintf(f,"};\n\n");
 }
-#endif
+
 static void unpack(const char *b, int *u) {
 	while (*b != 0 && *b != ' ') {
 		*u++ = remap_chars(0xff & *b++);
@@ -729,7 +722,6 @@ static void const_small(FILE *fh) {
 			"#define B(b1,b2,b3,b4,b5,b6,b7,b8) {{ b8,b7,b6,b5,b4,b3,b2,b1 }}\n"
 			"#endif\n\n"
 		);
-#ifdef INCLUDE_DOUBLE_PRECISION
 	fprintf(f,	"#if BYTE_ORDER == BIG_ENDIAN\n"
 			"#define D(b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,b15,b16) \\\n"
 			"       {{ b1,b2,b3,b4,b5,b6,b7,b8,b9,b10,b11,b12,b13,b14,b15,b16 }}\n"
@@ -738,7 +730,6 @@ static void const_small(FILE *fh) {
 			"       {{ b16,b15,b14,b13,b12,b11,b10,b9,b8,b7,b6,b5,b4,b3,b2,b1 }}\n"
 			"#endif\n\n"
 		);
-#endif
 	const_small_sort(constsml);
 	const_small_tbl(f, 1, constsml, "cnsts", "NUM_CONSTS",
 				"CONSTANT", "CONST", "RARG_CONST", "RARG_CONST_CMPLX",
@@ -746,10 +737,8 @@ static void const_small(FILE *fh) {
 	const_small_tbl(f, 0, constsint, "cnsts_int", "NUM_CONSTS_INT",
 				"CONSTANT_INT", "CONST_INT", "RARG_CONST_INT", NULL,
 				"Table of internally used constants");
-#ifdef INCLUDE_DOUBLE_PRECISION
 	const_dbl_tbl(f, constsdbl, "cnsts_dbl", "NUM_CONSTS_DBL", "CONSTANT_DBL", "CONST_DBL",
 				"Table of internally used double precision constants");
-#endif
 	const_small_tbl(f, -1, conversions, "cnsts_conv", "NUM_CONSTS_CONV",
 				"CONSTANT_CONV", "CONST_CONV", "RARG_CONST_CONV", NULL,
 				"Table of metric/imperial conversion constants");

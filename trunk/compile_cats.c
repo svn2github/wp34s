@@ -554,9 +554,7 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_XisEVEN,	"EVEN?")
 	NILIC(OP_XisFRAC,	"FP?")
 	NILIC(OP_XisINT,	"INT?")
-#ifdef INCLUDE_DOUBLE_PRECISION
 	NILIC(OP_ISDBL,		"DBL?")
-#endif
 	NILIC(OP_ISLEAP,	"LEAP?")
 	NILIC(OP_XisNaN,	"NaN?")
 	NILIC(OP_XisODD,	"ODD?")
@@ -741,10 +739,8 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_SETJPN,	"SETJPN")
 	RARGCMD(RARG_STOM,	"STOM")
 	RARGCMD(RARG_RCLM,	"RCLM")
-#ifdef INCLUDE_DOUBLE_PRECISION
 	NILIC(OP_DBLON,		"DBLON")
 	NILIC(OP_DBLOFF,	"DBLOFF")
-#endif
 };
 
 static s_opcode alpha_catalogue[] = {

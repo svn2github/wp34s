@@ -343,11 +343,9 @@ int append_program( const s_opcode *source, int length )
 	}
 	if ( space_needed > 0 ) {
 		int regs;
-#ifdef INCLUDE_DOUBLE_PRECISION
 		if (is_dblmode())
 			regs = global_regs() - ( ( space_needed + 7 ) >> 3 ) - 1;
 		else
-#endif
 			regs = NumRegs - ( ( space_needed + 3 ) >> 2 ) - 1;
 
 		if ( regs < 0 ) {

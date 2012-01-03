@@ -108,11 +108,7 @@ struct _state {
 	unsigned int entryp :        1;	// Has the user entered something since the last program stop
 	unsigned int state_lift :    1;	// XEQ internal - don't use
 	unsigned int deep_sleep :    1; // Used to wake up correctly
-#ifdef INCLUDE_DOUBLE_PRECISION
 	unsigned int mode_double :   1;	// Double precision mode, should go to UState but that is full. :-(
-#else
-	unsigned int filler :        1;	// force alignment
-#endif
 	signed   int local_regs :   16; // Position on return stack where current local variables start
 
 	/*
@@ -325,31 +321,48 @@ extern TStateWhileOn StateWhileOn;
 /*
  *  A private set of registers for non recursive, non interruptible XROM code
  *  They are addressed as local registers from .00 to .15
+ *  A complete private RPN stack is provided for double precision XROM code.
  */
-#ifdef INCLUDE_DOUBLE_PRECISION
 #define NUMXREGS 32
-#else
-#define NUMXREGS 16
-#endif
 typedef struct _xrom_local
 {
-	decimal64 _regs[NUMXREGS];
-#ifdef INCLUDE_DOUBLE_PRECISION
-	// Save area for DBL mode switch
-	decimal64 _regsAtoD[4];
-	// Private location for J & K in DBLON mode
-	decimal64 _regsJK[4];
-#endif
-	unsigned short int _flags;
+	struct {
+		unsigned int flags : 10;	// 11 generic local flags .00 to .09
+		unsigned int stack_depth : 1;	// user stack size was 8
+		unsigned int mode_double : 1;	// user was in double precision mode
+		unsigned int complex : 1;	// complex command
+		unsigned int setLastX : 1;	// request to set L (and probably I)
+		unsigned int state_lift : 1;	// Status of stack_lift after xOUT
+		unsigned int xIN : 1;		// xIN is in effect
+	} _flags;
+
+	unsigned char _in;			// input parameters to consume
+	unsigned char _out;			// output parameters to insert
+
+	REGISTER _stack[STACK_SIZE+EXTRA_REG];	// Private stack for XROM, complete set X to K
+	decimal64 _regs[NUMXREGS];		// Local registers: 16 double or 32 single precision
+
 } TXromLocal;
 
 extern TXromLocal XromLocal;
 
-#define XromRegs (XromLocal._regs)
 #define XromFlags (XromLocal._flags)
-#define XromAtoD (XromLocal._regsAtoD)
-#define XromJK (XromLocal._regsJK)
+#define XromIn    (XromLocal._in)
+#define XromOut   (XromLocal._out)
+#define XromStack (XromLocal._stack)
+#define XromRegs  (XromLocal._regs)
 
+#else /* COMPILE_XROM */
+
+#define Flag_stack_depth .10
+#define Flag_mode_double .11
+#define Flag_complex     .12
+#define Flag_setLastX    .13
+#define Flag_state_lift  .14
+#define Flag_xIN         .15
+#endif
+
+#ifndef COMPILE_XROM
 #pragma pack(pop)
 
 /*
@@ -373,6 +386,7 @@ extern unsigned char GoFast;	   // Speed-up might be necessary
 extern unsigned short *RetStk;	   // Pointer to current top of return stack
 extern int RetStkSize;		   // actual size of retiurn stack
 extern int ProgFree;		   // Remaining program steps
+extern REGISTER *StackBase;	   // Location of the RPN stack
 extern decContext Ctx;		   // decNumber library context
 extern int JustDisplayed;	   // Avoid duplicate calls to display();
 #ifdef CONSOLE

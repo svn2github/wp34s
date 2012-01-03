@@ -38,10 +38,8 @@ static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, in
 static int matrix_range_check(int base, int rows, int cols) {
 	int limit = NumRegs;
 
-#ifdef INCLUDE_DOUBLE_PRECISION
 	if (is_dblmode())
 		base = -1;
-#endif
 	if (base >= LOCAL_REG_BASE && LocalRegs < 0) {
 		base -= LOCAL_REG_BASE;
 		limit = local_regs();

@@ -652,19 +652,13 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_LOADP,		&load_program,		"LOADP")
 	FUNC0(OP_PRCL,		&recall_program,	"PRCL")
 	FUNC0(OP_PSTO,		&store_program,		"PSTO")
-#ifdef INCLUDE_DOUBLE_PRECISION
 	FUNC0(OP_DBLON,		&op_double,		"DBLON")
 	FUNC0(OP_DBLOFF,	&op_double,		"DBLOFF")
 	FUNC0(OP_ISDBL,		&check_dblmode,		"DBL?")
 	FUNC1(OP_PI,		&op_pi,			"\257")
 	FUNC2(OP_cmplxPI,	&op_pi,			"\024\257")
-#endif
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
-#endif
-
-#ifdef XROM_COMMANDS
-	FUNC0(OP_XROM_IN,	&cmdxin,		"xIN")
 #endif
 
 #undef FUNC
@@ -868,12 +862,13 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL,		"LocR")
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
 
-#ifdef XROM_COMMANDS
-	CMD(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
-#endif
-
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")
+
+#ifdef XROM_COMMANDS
+	CMD(RARG_XROM_IN,	&cmdxin,	255,			"xIN")
+	CMD(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
+#endif
 
 #undef CMDlbl
 #undef CMDlblnI

@@ -772,16 +772,11 @@ enum nilop {
 	OP_LOADR, OP_LOADsigma, OP_LOADST, 
 	OP_LOADP, OP_PRCL, OP_PSTO,
 
-#ifdef INCLUDE_DOUBLE_PRECISION
 	OP_DBLON, OP_DBLOFF, OP_ISDBL, OP_PI, OP_cmplxPI,
-#endif
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
 
-#ifdef XROM_COMMANDS
-	OP_XROM_IN,
-#endif
 	NUM_NILADIC	// Last entry defines number of operations
 };
 
@@ -864,7 +859,7 @@ enum rarg {
 	RARG_REGS,
 
 #ifdef XROM_COMMANDS
-	RARG_XROM_OUT,
+	RARG_XROM_IN, RARG_XROM_OUT,
 #endif
 	RARG_MODE_SET, RARG_MODE_CLEAR,
 
@@ -1012,9 +1007,7 @@ extern int num_arg_digits(int);
 extern const char *get_cmdline(void);
 
 extern int is_intmode(void);
-#ifdef INCLUDE_DOUBLE_PRECISION
 extern int is_dblmode(void);
-#endif
 
 extern enum shifts cur_shift(void);
 extern enum shifts reset_shift(void);
@@ -1042,11 +1035,7 @@ extern unsigned int find_user_pc(unsigned int);
 extern int local_levels(void);
 extern int local_regs(void);
 extern int move_retstk(int distance);
-#ifdef INCLUDE_DOUBLE_PRECISION
 extern unsigned int global_regs(void);
-#else
-#define global_regs() NumRegs
-#endif
 
 extern void clrretstk(void);
 extern void clrretstk_pc(void);
@@ -1069,12 +1058,8 @@ extern const char *catcmd(opcode, char *);
 
 extern int stack_size(void);
 extern REGISTER *get_stack(int pos);
-#ifdef INCLUDE_DOUBLE_PRECISION
 extern void copyreg(REGISTER *d, const REGISTER *s);
 extern void copyreg_n(int d, int s);
-#else
-#define copyreg(d, s) (*(d) = *(s))
-#endif
 
 extern REGISTER *get_reg_n(int);
 extern REGISTER *get_flash_reg_n(int);
@@ -1100,25 +1085,20 @@ extern void setlastX(void);
 extern void packed_from_number(decimal64 *r, const decNumber *x);
 extern void packed128_from_number(decimal128 *r, const decNumber *x);
 extern void packed_from_packed128(decimal64 *r, const decimal128 *s);
-#ifdef INCLUDE_DOUBLE_PRECISION
 extern void packed128_from_packed(decimal128 *r, const decimal64 *s);
-#endif
-extern void int_mode_convert(int index);
 
-#ifdef INCLUDE_DOUBLE_PRECISION
 extern decNumber *getRegister(decNumber *r, int index);
 extern void setRegister(int index, const decNumber *x);
-#else
-#define getRegister(r, index) decimal64ToNumber(&(get_reg_n(index)->s), r)
-#define setRegister(index, r) packed_from_number(&(get_reg_n(index)->s), r)
-#endif
 
 extern long long int get_reg_n_int(int index);
+extern unsigned long long int get_reg_n_int_sgn(int index, int *sgn);
+extern long long int getX_int(void);
+extern unsigned long long int getX_int_sgn(int *sgn);
+
 extern void set_reg_n_int(int index, long long int ll);
 extern void set_reg_n_int_sgn(int index, unsigned long long int val, int sgn);
-extern unsigned long long int get_reg_n_int_sgn(int index, int *sgn);
-extern void setX_int_sgn(unsigned long long int val, int sgn);
 extern void setX_int(long long int ll);
+extern void setX_int_sgn(unsigned long long int val, int sgn);
 
 extern void lift(void);
 extern void process_cmdline_set_lift(void);
@@ -1272,7 +1252,7 @@ extern void cmdlocr(unsigned int arg, enum rarg op);
 extern void cmdlpop(enum nilop op);
 extern void cmdregs(unsigned int arg, enum rarg op);
 extern void cmdxlocal(enum nilop op);
-extern void cmdxin(enum nilop);
+extern void cmdxin(unsigned int, enum rarg);
 extern void cmdxout(unsigned int, enum rarg);
 extern void cmdmode(unsigned int, enum rarg);
 
