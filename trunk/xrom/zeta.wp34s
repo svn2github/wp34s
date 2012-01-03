@@ -2,9 +2,9 @@
 		XLBL"Bn_star"			/* Bernoulli number Bn* = +/- Bn(2 n) */
 			GSB entry
 			FP?
-				ERR 01
+				ERR ERR_DOMAIN
 			x[<=]0?
-				ERR 01
+				ERR ERR_DOMAIN
 			XLOCAL
 			STOS .08
 			STO+ X
@@ -16,9 +16,9 @@
 		XLBL"Bn"			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
 			GSB entry
 			FP?
-				ERR 01
+				ERR ERR_DOMAIN
 			x<0?
-				ERR 01
+				ERR ERR_DOMAIN
 			XLOCAL
 			STOS .08
 			x=0?

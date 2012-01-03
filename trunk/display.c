@@ -66,9 +66,9 @@ static const char libname[][5] = {
  * top line, the second in the bottom.  If the second is empty, "Error"
  * is displayed instead.  To get a blank lower line, include a space.
  */
-void error_message(const enum errors e) 
+void error_message(const unsigned int e) 
 {
-	// NB: this MUST be in the same order as `enum errors'
+	// NB: this MUST be in the same order as the error #defines in errors.h
 	static const char *const error_table[] = 
 	{
 		// manually get the order correct!

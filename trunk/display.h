@@ -34,7 +34,7 @@
 extern int setuptty(int reset);
 extern void display(void);
 extern void frozen_display(void);
-extern void error_message(const enum errors e);
+extern void error_message(const unsigned int e);
 extern void message(const char *str1, const char *str2);
 
 extern void format_reg(int index, char *buf);

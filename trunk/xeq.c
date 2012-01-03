@@ -457,7 +457,7 @@ static void set_was_complex(void) {
 
 /* Produce an error and stop
  */
-int err(const enum errors e) {
+int err(const unsigned int e) {
 	if (Error == ERR_NONE) {
 		Error = e;
 		error_message(e);
@@ -469,7 +469,7 @@ int err(const enum errors e) {
 
 /* Display a warning
  */
-int warn(const enum errors e) {
+int warn(const unsigned int e) {
 	if (Running) {
 		return err(e);
 	}
@@ -490,13 +490,13 @@ static void bad_mode_error(void) {
 
 /* User command to produce an error */
 void cmderr(unsigned int arg, enum rarg op) {
-	err((enum errors) arg);
+	err(arg);
 }
 
 
 /* User command to display a warning */
 void cmdmsg(unsigned int arg, enum rarg op) {
-	error_message((enum errors) arg);
+	error_message(arg);
 }
 
 

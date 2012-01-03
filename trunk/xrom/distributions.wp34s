@@ -52,7 +52,7 @@ cauchy_1::		1
 			TAN
 			RCL K
 			x[<=]0?
-				ERR 16
+				ERR ERR_BAD_PARAM
 			[times]
 			RCL+ J
 
@@ -65,7 +65,7 @@ cauchy_exit::		x[<->] .08
 cauchy_xform::		RCL- J
 			RCL K
 			x[<=]0?
-				ERR 16
+				ERR ERR_BAD_PARAM
 			/
 			RTN
 
@@ -79,14 +79,14 @@ check_probability::	x<0?
 				JMP dist_NaN
 			RTN+1
 dist_neginf::		FC? D
-				ERR 05
+				ERR ERR_MINFINITY
 			Num -[infinity]
 			RTN
 dist_posinf::		FC? D
-				ERR 04
+				ERR ERR_INFINITY
 			Num [infinity]
 			RTN
 dist_NaN::		FC? D
-				ERR 01
+				ERR ERR_DOMAIN
 			Num NaN
 			RTN

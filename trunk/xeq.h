@@ -25,6 +25,10 @@
  */
 #include "features.h"
 
+/* Error number definitions */
+#include "errors.h"
+
+
 /*
  * Define endianess if not on GCC
  */
@@ -895,25 +899,6 @@ enum multiops {
 };
 
 
-
-// Error codes
-enum errors {
-	ERR_NONE = 0,
-	ERR_DOMAIN,	ERR_BAD_DATE,	ERR_PROG_BAD,
-	ERR_INFINITY,	ERR_MINFINITY,	ERR_NO_LBL,
-	ERR_ILLEGAL,	ERR_RANGE,	ERR_DIGIT,
-	ERR_TOO_LONG,	ERR_RAM_FULL,	ERR_STK_CLASH,
-	ERR_BAD_MODE,	ERR_INT_SIZE,	ERR_MORE_POINTS,
-	ERR_BAD_PARAM,  ERR_IO,		ERR_INVALID,
-	ERR_READ_ONLY,	ERR_SOLVE,
-#ifdef MATRIX_SUPPORT
-	ERR_MATRIX_DIM,	ERR_SINGULAR,
-#endif
-	ERR_FLASH_FULL,
-	MAX_ERROR
-};
-
-
 // Integer modes
 enum arithmetic_modes {
 	MODE_2COMP=0,	MODE_1COMP,	MODE_UNSIGNED,	MODE_SGNMANT
@@ -1018,8 +1003,8 @@ enum shifts {
 /*
  *  Function prototypes
  */
-extern int err(const enum errors);
-extern int warn(const enum errors);
+extern int err(const unsigned int);
+extern int warn(const unsigned int);
 extern const char *pretty(unsigned char);
 extern void prettify(const char *in, char *out);
 extern int num_arg_digits(int);

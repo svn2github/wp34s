@@ -80,13 +80,13 @@ LamW_converged::	RCL L
 LamW_inf::	x>0?
 			JMP LamW_NaN2
 		FC? D
-			ERR 05
+			ERR ERR_MINFINITY
 		Num -[infinity]
 		JMP LamW_exit
 
 LamW_NaN::	RCLS .08
 LamW_NaN2::	FC? D
-			ERR 01
+			ERR ERR_DOMAIN
 		Num NaN
 
 LamW_exit::	x[<->] .08
