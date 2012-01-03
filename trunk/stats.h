@@ -133,9 +133,4 @@ extern decNumber *pdf_logistic(decNumber *, const decNumber *);
 extern decNumber *cdf_logistic(decNumber *, const decNumber *);
 extern decNumber *qf_logistic(decNumber *, const decNumber *);
 
-/* Cauchy distribution x0, gamma in registers J and K */
-extern decNumber *pdf_cauchy(decNumber *, const decNumber *);
-extern decNumber *cdf_cauchy(decNumber *, const decNumber *);
-extern decNumber *qf_cauchy(decNumber *, const decNumber *);
-
 #endif

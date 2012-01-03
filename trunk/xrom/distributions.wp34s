@@ -1,0 +1,92 @@
+		XLBL"PDF_CAUCHY"
+			GSB entry
+			XLOCAL
+			STOS .08
+			SPEC?
+				JMP cauchy_pdf_special
+			GSB cauchy_xform
+			RCL[times] X
+			INC X
+			RCL[times] K
+			[pi]
+			[times]
+			1/x
+			JMP cauchy_exit
+cauchy_pdf_special::	NaN?
+				JMP dist_NaN
+			0
+			JMP cauchy_exit
+
+		XLBL"CDF_CAUCHY"
+			GSB entry
+			XLOCAL
+			STOS .08
+			SPEC?
+				JMP cauchy_cdf_special
+			GSB cauchy_xform
+			ATAN
+			[pi]
+			/
+			.
+			5
+			+
+			JMP cauchy_exit
+
+cauchy_cdf_special::	x>0?
+				JMP cauchy_1
+			JMP dist_NaN
+cauchy_1::		1
+			JMP cauchy_exit
+
+		XLBL"QF_CAUCHY"
+			GSB entry
+			XLOCAL
+			STOS .08
+			GSB check_probability
+				JMP cauchy_exit
+			.
+			5
+			-
+			[pi]
+			[times]
+			TAN
+			RCL K
+			x[<=]0?
+				ERR 16
+			[times]
+			RCL+ J
+
+cauchy_exit::		x[<->] .08
+			STO L
+			RCLS .08
+			RTN
+
+
+cauchy_xform::		RCL- J
+			RCL K
+			x[<=]0?
+				ERR 16
+			/
+			RTN
+
+/* Utility conditional that checks if the argument is a valid probability or not */
+
+check_probability::	x<0?
+				JMP dist_neginf
+			x>1?
+				JMP dist_posinf
+			SPEC?
+				JMP dist_NaN
+			RTN+1
+dist_neginf::		FC? D
+				ERR 05
+			Num -[infinity]
+			RTN
+dist_posinf::		FC? D
+				ERR 04
+			Num [infinity]
+			RTN
+dist_NaN::		FC? D
+				ERR 01
+			Num NaN
+			RTN
