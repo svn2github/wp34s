@@ -315,7 +315,7 @@ $(UTILITIES)/create_revision$(EXE): create_revision.c Makefile
 $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h
+xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h data.h errors.h
 	$(HOSTCC) -E -P -x c -Ixrom -DCOMPILE_XROM xrom.wp34s > xrom_pre.wp34s
 	tools/wp34s_asm.pl -pp -op $(OPCODES) -c -o xrom.c xrom_pre.wp34s
 
@@ -332,35 +332,35 @@ vpath %.c = atmel
 $(OBJECTDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
-$(OBJECTDIR)/alpha.o: alpha.c alpha.h xeq.h data.h decn.h int.h display.h consts.h \
+$(OBJECTDIR)/alpha.o: alpha.c alpha.h xeq.h errors.h data.h decn.h int.h display.h consts.h \
 		Makefile features.h
-$(OBJECTDIR)/charmap.o: charmap.c xeq.h data.h Makefile features.h
-$(OBJECTDIR)/commands.o: commands.c xeq.h data.h storage.h serial.h Makefile \
+$(OBJECTDIR)/charmap.o: charmap.c xeq.h errors.h data.h Makefile features.h
+$(OBJECTDIR)/commands.o: commands.c xeq.h errors.h data.h storage.h serial.h Makefile \
 		features.h
-$(OBJECTDIR)/complex.o: complex.c decn.h complex.h xeq.h data.h consts.h \
+$(OBJECTDIR)/complex.o: complex.c decn.h complex.h xeq.h errors.h data.h consts.h \
 		Makefile features.h
 $(OBJECTDIR)/consts.o: consts.c consts.h Makefile features.h
-$(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h data.h alpha.h atmel/rtc.h \
+$(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h errors.h data.h alpha.h atmel/rtc.h \
 		Makefile features.h
-$(OBJECTDIR)/decn.o: decn.c decn.h xeq.h data.h consts.h complex.h int.h serial.h lcd.h Makefile features.h
-$(OBJECTDIR)/display.o: display.c xeq.h data.h display.h consts.h lcd.h int.h revision.h \
+$(OBJECTDIR)/decn.o: decn.c decn.h xeq.h errors.h data.h consts.h complex.h int.h serial.h lcd.h Makefile features.h
+$(OBJECTDIR)/display.o: display.c xeq.h errors.h data.h display.h consts.h lcd.h int.h revision.h \
 		charset.h charset7.h decn.h alpha.h decn.h storage.h Makefile features.h
-$(OBJECTDIR)/int.o: int.c int.h xeq.h data.h serial.h Makefile features.h
-$(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h data.h display.h lcdmap.h atmel/board.h \
+$(OBJECTDIR)/int.o: int.c int.h xeq.h errors.h data.h serial.h Makefile features.h
+$(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h errors.h data.h display.h lcdmap.h atmel/board.h \
 		Makefile features.h
-$(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h data.h keys.h consts.h display.h lcd.h \
+$(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h errors.h data.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h storage.h Makefile features.h
-$(OBJECTDIR)/matrix.o: matrix.c matrix.h xeq.h decn.h consts.h Makefile features.h
-$(OBJECTDIR)/prt.o: prt.c xeq.h data.h consts.h display.h Makefile features.h
-$(OBJECTDIR)/serial.o: serial.c xeq.h serial.h storage.h Makefile
-$(OBJECTDIR)/stats.o: stats.c xeq.h data.h decn.h stats.h consts.h int.h \
+$(OBJECTDIR)/matrix.o: matrix.c matrix.h xeq.h errors.h decn.h consts.h Makefile features.h
+$(OBJECTDIR)/prt.o: prt.c xeq.h errors.h data.h consts.h display.h Makefile features.h
+$(OBJECTDIR)/serial.o: serial.c xeq.h errors.h serial.h storage.h Makefile
+$(OBJECTDIR)/stats.o: stats.c xeq.h errors.h data.h decn.h stats.h consts.h int.h \
 		Makefile features.h
-$(OBJECTDIR)/string.o: string.c xeq.h data.h Makefile features.h
-$(OBJECTDIR)/storage.o: storage.c xeq.h data.h storage.h Makefile features.h
-$(OBJECTDIR)/xeq.o: xeq.c xeq.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
+$(OBJECTDIR)/string.o: string.c xeq.h errors.h data.h Makefile features.h
+$(OBJECTDIR)/storage.o: storage.c xeq.h errors.h data.h storage.h Makefile features.h
+$(OBJECTDIR)/xeq.o: xeq.c xeq.h errors.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h storage.h Makefile features.h
-$(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h data.h consts.h Makefile features.h
-$(OBJECTDIR)/stopwatch.o: stopwatch.c stopwatch.h decn.h xeq.h consts.h alpha.h display.h keys.h \
+$(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h errors.h data.h consts.h Makefile features.h
+$(OBJECTDIR)/stopwatch.o: stopwatch.c stopwatch.h decn.h xeq.h errors.h consts.h alpha.h display.h keys.h \
                 Makefile features.h
 
 ifdef REALBUILD
@@ -371,9 +371,9 @@ $(OBJECTDIR)/board_memories.o: atmel/board_memories.c atmel/board_memories.h \
 $(OBJECTDIR)/rtc.o: atmel/rtc.c atmel/rtc.h \
 		atmel/board.h Makefile
 
-$(OBJECTDIR)/main.o: main.c xeq.h data.h
+$(OBJECTDIR)/main.o: main.c xeq.h errors.h data.h
 else
-$(OBJECTDIR)/console.o: console.c catalogues.h xeq.h data.h keys.h consts.h display.h lcd.h \
+$(OBJECTDIR)/console.o: console.c catalogues.h xeq.h errors.h data.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h storage.h Makefile features.h pretty.c
 ifeq ($(SYSTEM),windows32)
 $(OBJECTDIR)/winserial.o: winserial.c serial.h Makefile
