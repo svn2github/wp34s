@@ -883,6 +883,7 @@ enum multiops {
 	DBL_LBL=0, DBL_LBLP, DBL_XEQ, DBL_GTO,
 	DBL_SUM, DBL_PROD, DBL_SOLVE, DBL_DERIV, DBL_2DERIV, DBL_INTG,
 	DBL_ALPHA,
+	DBL_XBR,
 	//DBL_NUMBER,
 	NUM_MULTI	// Last entry defines number of operations
 };

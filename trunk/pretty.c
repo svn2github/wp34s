@@ -77,7 +77,10 @@ void dump_opcodes(FILE *f) {
 			xset(cmdname, '\0', 16);
 			xcopy(cmdname, multicmds[cmd].cmd, NAME_LEN);
 			prettify(cmdname, cmdpretty);
-			fprintf(f, "0x%04x\tmult\t%s\n", c, cmdpretty);
+			if (cmd == DBL_XBR)
+				fprintf(f, "0x%04x\tmult\t%s\txrom\n", c, cmdpretty);
+			else
+				fprintf(f, "0x%04x\tmult\t%s\n", c, cmdpretty);
 		} else if (isRARG(c)) {
 			const unsigned int cmd = RARG_CMD(c);
 			unsigned int limit;
