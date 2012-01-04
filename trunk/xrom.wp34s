@@ -9,16 +9,28 @@
 #include "errors.h"		// for error numbers
 
 /*
+ * Define some utility macros to assist with xIN
+ */
+#define xIN_INARGS(n)	(n & 7)
+#define xIN_OUTARGS(n)	((n & 7) << 3)
+#define xIN_ARGS(i, o)	(xIN_INARGS(i) | xIN_OUTARGS(o))
+#define xIN_LASTX	64
+#define xIN_COMPLEX	128
+
+/*
  *  Defines for some argument combinations for xIN
  */
-#define NILADIC_0		000	// octal value
-#define NILADIC_1		072	// 0110
-#define NILADIC_2		080	// 0120
-#define NILADIC_COMPLEX		208	// 0320
-#define MONADIC			073	// 0111 
-#define MONADIC_COMPLEX		210	// 0322 
-#define DYADIC			074	// 0112 
-#define DYADIC_COMPLEX		212	// 0324 
+#define NILADIC_0		(xIN_ARGS(0, 0))				// octal value
+#define NILADIC_1		(xIN_ARGS(0, 1))				// 0010
+#define NILADIC_2		(xIN_ARGS(0, 2))				// 0020
+#define NILADIC_1_COMPLEX	(xIN_ARGS(0, 2) | xIN_COMPLEX)			// 0320
+
+#define MONADIC			(xIN_ARGS(1, 1) | xIN_LASTX)			// 0111 
+#define DYADIC			(xIN_ARGS(2, 1) | xIN_LASTX)			// 0112 
+#define TRIADIC			(xIN_ARGS(3, 1) | xIN_LASTX)			// 0112
+
+#define MONADIC_COMPLEX		(xIN_ARGS(2, 1) | xIN_LASTX | xIN_COMPLEX)	// 0322 
+#define DYADIC_COMPLEX		(xIN_ARGS(4, 1) | xIN_LASTX | xIN_COMPLEX)	// 0324 
 
 
 /*
