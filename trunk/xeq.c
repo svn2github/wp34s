@@ -3823,7 +3823,7 @@ static int check_xin_xout(void) {
  *
  *  - 12 Private double precision stack & special registers X to K
  *  - 16 double precision local registers .00 to .15
- *  - 11 general purpose and 5 system flags
+ *  - 10 general purpose and 6 system flags
  *
  *  Argument:
  *      in       - bits 0..2		
