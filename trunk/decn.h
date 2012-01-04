@@ -194,8 +194,6 @@ extern decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x);
 extern decNumber *decNumberHMSAdd(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberHMSSub(decNumber *res, const decNumber *x, const decNumber *y);
 
-extern decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y);
-
 extern decNumber *decNumberNot(decNumber *res, const decNumber *x);
 extern decNumber *decNumberBooleanOp(decNumber *res, const decNumber *x, const decNumber *y);
 

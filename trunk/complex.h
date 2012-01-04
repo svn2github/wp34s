@@ -124,10 +124,6 @@ extern void cmplxLnBeta(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d);
 
-extern void cmplxAGM(decNumber *rx, decNumber *ry,
-		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d);
-
 extern void cmplxFrac(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 

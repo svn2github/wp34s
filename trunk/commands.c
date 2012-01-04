@@ -337,8 +337,8 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_PERM,	&decNumberPerm,		&cmplxPerm,	NOFN,		"PERM")
 	FUNC(OP_PERMG,	&decNumberPerMargin,	NOFN,		NOFN,		"%+MG")
 	FUNC(OP_MARGIN,	&decNumberMargin,	NOFN,		NOFN,		"%MG")
-	FUNC(OP_PARAL,	XDR(PARL),		XDC(PARL),	NOFN,		"||")
-	FUNC(OP_AGM,	&decNumberAGM,		&cmplxAGM,	NOFN,		"AGM")
+	FUNC(OP_PARAL,	XDR(PARL),		XDC(CPX_PARL),	NOFN,		"||")
+	FUNC(OP_AGM,	XDR(AGM),		XDC(CPX_AGM),	NOFN,		"AGM")
 	FUNC(OP_HMSADD,	&decNumberHMSAdd,	NOFN,		NOFN,		"H.MS+")
 	FUNC(OP_HMSSUB,	&decNumberHMSSub,	NOFN,		NOFN,		"H.MS-")
 	FUNC(OP_GCD,	&decNumberGCD,		NOFN,		&intGCD,	"GCD")
@@ -855,13 +855,14 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL,		"LocR")
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
 
+#ifdef XROM_COMMANDS
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")
 
-#ifdef XROM_COMMANDS
 	CMD(RARG_XROM_IN,	&cmdxin,	255,			"xIN")
 	CMD(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
 #endif
+	CMD(RARG_CONVERGED,	&cmdconvertged,	9,			"CNVG?")
 
 #undef CMDlbl
 #undef CMDlblnI

@@ -2031,38 +2031,6 @@ decNumber *decNumberHMSSub(decNumber *res, const decNumber *x, const decNumber *
 	return res;
 }
 
-decNumber *decNumberAGM(decNumber *res, const decNumber *x, const decNumber *y) {
-	int n;
-	decNumber a, g, t, u;
-
-	if (decNumberIsNegative(x) || decNumberIsNegative(y))
-		goto nan;
-	if (decNumberIsSpecial(x) || decNumberIsSpecial(y)) {
-		if (decNumberIsNaN(x) || decNumberIsNaN(y))
-			goto nan;
-		if (dn_eq0(x) || dn_eq0(y))
-			goto nan;
-		return set_inf(res);
-	}
-	decNumberCopy(&a, x);
-	decNumberCopy(&g, y);
-	for (n=0; n<1000; n++) {
-		if (relative_error(&a, &g, &const_1e_32))
-			return decNumberCopy(res, &a);
-
-		dn_add(&t, &a, &g);
-		dn_div2(&u, &t);
-
-		dn_multiply(&t, &a, &g);
-		if (dn_eq0(&t))
-			return decNumberZero(res);
-		dn_sqrt(&g, &t);
-		decNumberCopy(&a, &u);
-	}
-nan:	return set_NaN(res);
-}
-
-
 /* Logical operations on decNumbers.
  * We treat 0 as false and non-zero as true.
  */

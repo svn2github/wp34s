@@ -856,6 +856,7 @@ enum rarg {
 	RARG_MODE_SET, RARG_MODE_CLEAR,
 	RARG_XROM_IN, RARG_XROM_OUT,
 #endif
+	RARG_CONVERGED,
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -1247,6 +1248,7 @@ extern void cmdregs(unsigned int arg, enum rarg op);
 extern void cmdxlocal(enum nilop op);
 extern void cmdxin(unsigned int, enum rarg);
 extern void cmdxout(unsigned int, enum rarg);
+extern void cmdconvertged(unsigned int, enum rarg);
 extern void cmdmode(unsigned int, enum rarg);
 
 extern int not_running(void);

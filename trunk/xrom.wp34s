@@ -44,6 +44,13 @@
 #define FLAG_XIN_ACTIVE			.15	/* read only */
 
 
+/*
+ * Defined for the convergence test command
+ */
+#define CVG_RELATIVE			00
+#define CVS_ABSOLUTE			03
+#define CVG_COMPLEX			06
+
 	XLBL"START"		// generate XROM_START symbol
 /*
  *  Include each routine here
@@ -53,6 +60,7 @@
 #include "prodsum.wp34s"
 #include "quadratic.wp34s"
 #include "parallel.wp34s"
+#include "agm.wp34s"
 #include "lambert_w.wp34s"
 #include "zeta.wp34s"
 #include "distributions.wp34s"

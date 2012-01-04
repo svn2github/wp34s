@@ -1082,40 +1082,6 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 #endif 
 
 
-void cmplxAGM(decNumber *rx, decNumber *ry,
-		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d) {
-#ifndef TINY_BUILD
-	decNumber x1, x2, y1, y2, t1, t2, u1, u2;
-	int n;
-
-	if (decNumberIsSpecial(a) || decNumberIsSpecial(b) ||
-			decNumberIsSpecial(c) || decNumberIsSpecial(d)) {
-			goto nan;
-	}
-	cmplxCopy(&x1, &x2, a, b);
-	cmplxCopy(&y1, &y2, c, d);
-	for (n=0; n<1000; n++) {
-		cmplxSubtract(&t1, &t2, &x1, &x2, &y1, &y2);
-		cmplxR(&u1, &t1, &t2);
-		dn_compare(&u2, &u1, &const_1e_32);
-		if (decNumberIsNegative(&u2)) {
-			cmplxCopy(rx, ry, &x1, &x2);
-			return;
-		}
-
-		cmplxAdd(&t1, &t2, &x1, &x2, &y1, &y2);
-		cmplxDiv2(&u1, &u2, &t1, &t2);
-
-		cmplxMultiply(&t1, &t2, &x1, &x2, &y1, &y2);
-		cmplxSqrt(&y1, &y2, &t1, &t2);
-
-		cmplxCopy(&x1, &x2, &u1, &u2);
-	}
-nan:	cmplx_NaN(rx, ry);
-#endif
-}
-
 void cmplxRnd(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 	decNumberRnd(rx, a);
 	decNumberRnd(ry, b);

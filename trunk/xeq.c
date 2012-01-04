@@ -3944,6 +3944,58 @@ void cmdxout(unsigned int arg, enum rarg op) {
 }
 #endif
 
+
+/* A slightly obtuse command to check for convergence.
+ * Arguments are:
+ *	0	check for real X & Y being close based on current double mode
+ *	1	check for real X & Y being close based on single precision
+ *	2	check for real X & Y being close based on double precision
+ *
+ *	+3	check absolute error not relative	(3, 4, 5)
+ *	+6	check complex (X, Y) vs (Z, T)		(6, 7, 8 no absolute/relative)
+ *	+9	NaN / infinites aren't considered converged
+ *
+ * In integer mode, the arguemnt is complete ignored.
+ */
+void cmdconvertged(unsigned int arg, enum rarg cmd) {
+	int precision = arg % 3;
+	const int specials = arg < 9;
+	const int complex = (arg % 9) >= 6;
+	const int absolute = (arg % 9) >= 3;
+	const decNumber *tolerance;
+	decNumber t, x, y, z, a, b;
+	int res;
+
+	if (int_mode()) {
+		do_tst(CONST_REG_BASE + OP_ZERO, TST_EQ);
+		return;
+	}
+
+	if (precision == 0)
+		precision = is_dblmode() ? 2 : 1;
+	tolerance = precision == 1 ? &const_1e_32 : &const_1e_24;
+
+	getXYZT(&x, &y, &z, &t);
+	if (decNumberIsSpecial(&x) || decNumberIsSpecial(&y))
+		res = specials;
+	else if (complex) {
+		if (decNumberIsSpecial(&z) || decNumberIsSpecial(&t))
+			res = specials;
+		else {
+			cmplxSubtract(&a, &b, &x, &y, &z, &t);
+			cmplxR(&x, &a, &b);
+			res = dn_le0(dn_compare(&y, &x, tolerance));
+		}
+	} else {
+		if (absolute)
+			res = absolute_error(&x, &y, tolerance);
+		else
+			res = relative_error(&x, &y, tolerance);
+	}
+	fin_tst(res);
+}
+
+
 /*
  *  Toggle UState mode bits from XROM
  */

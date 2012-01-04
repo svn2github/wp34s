@@ -584,6 +584,7 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_ISFLOAT,	"REALM?")
 	NILIC(OP_Xeq_pos0,	"x=+0?")
 	NILIC(OP_Xeq_neg0,	"x=-0?")
+	RARGCMD(RARG_CONVERGED,	"CNVG?")
 
 	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
 };
