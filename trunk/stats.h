@@ -98,11 +98,6 @@ extern decNumber *pdf_WB(decNumber *, const decNumber *);
 extern decNumber *cdf_WB(decNumber *, const decNumber *);
 extern decNumber *qf_WB(decNumber *, const decNumber *);
 
-/* Exponential distribution with parameter lambda in register J */
-extern decNumber *pdf_EXP(decNumber *, const decNumber *);
-extern decNumber *cdf_EXP(decNumber *, const decNumber *);
-extern decNumber *qf_EXP(decNumber *, const decNumber *);
-
 /* Poisson distribution with parameter lambda (in register J) */
 extern decNumber *pdf_P(decNumber *, const decNumber *);
 extern decNumber *cdf_P(decNumber *, const decNumber *);

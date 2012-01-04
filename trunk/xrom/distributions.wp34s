@@ -1,8 +1,18 @@
+/**************************************************************************/
+/* Cauchy distribution
+ * Two parameters:
+ *	J = location (real)
+ *	K = scale > 0
+ * Formulas:
+ *	pdf = (PI K (1 + ((x-J) / K)^2) )^-1
+ *	cdf = arctan((x-J) / K) / PI + 1/2
+ *	qf = J + K TAN(PI (p - 1/2))
+ */
 		XLBL"PDF_CAUCHY"
 			xIN MONADIC
-			SPEC?
-				JMP cauchy_pdf_special
 			GSB cauchy_xform
+			SPEC?
+				JMP dist_0	/* Can only be infinite which has zero probability */
 			RCL[times] X
 			INC X
 			RCL[times] K
@@ -11,14 +21,11 @@
 			1/x
 			xOUT 000
 
-cauchy_pdf_special::	iC 0		/* Can only be infinite which has zero probability */
-			xOUT 000
-
 		XLBL"CDF_CAUCHY"
 			xIN MONADIC
-			SPEC?
-				JMP cauchy_cdf_special
 			GSB cauchy_xform
+			SPEC?
+				JMP cdf_infinite
 			ATAN
 			[pi]
 			/
@@ -28,17 +35,11 @@ cauchy_pdf_special::	iC 0		/* Can only be infinite which has zero probability */
 			xOUT 000
 
 cauchy_xform::		RCL- J
+			GSB check_special
 			RCL K
-			x[<=]0?
-				ERR ERR_BAD_PARAM
+			GSB check_special_pos
 			/
 			RTN
-
-cauchy_cdf_special::	x<0?
-				iC 0
-			x>0?
-				iC 1
-			xOUT 000
 
 		XLBL"QF_CAUCHY"
 			xIN MONADIC
@@ -50,13 +51,65 @@ cauchy_cdf_special::	x<0?
 			[times]
 			TAN
 			RCL K
-			x[<=]0?
-				ERR ERR_BAD_PARAM
+			GSB check_special_pos
 			[times]
 			RCL+ J
+			GSB check_special
 			xOUT 000
 
+/**************************************************************************/
+/* Exponential distribution
+ * One parameters:
+ *	J = lambda (shape) > 0
+ * Formulas:
+ *	pdf = lambda exp(-lambda x)
+ *	cdf = 1 - exp(-lambda x)
+ *	qf = ln(1 - p) / -lambda
+ */
+		XLBL"PDF_EXPON"
+			xIN MONADIC
+			GSB expon_param
+			SPEC?
+				JMP dist_0	/* Can only be infinite which has zero probability */
+			[times]
+			x<0?
+				JMP dist_0
+			+/-
+			e[^x]
+			RCL[times] J
+			xOUT 000
+
+		XLBL"CDF_EXPON"
+			xIN MONADIC
+			GSB expon_param
+			SPEC?
+				JMP cdf_infinite
+			[times]
+			+/-
+			e[^x]-1
+			+/-
+			xOUT 000
+
+		XLBL"QF_EXPON"
+			xIN MONADIC
+			GSB check_probability
+			GSB log1m
+			GSB expon_param
+			/
+			+/-
+			xOUT 000
+
+expon_param::		RCL J
+			GSB check_special_pos
+			RTN
+
+
+/**************************************************************************/
 /* Utility conditional that checks if the argument is a valid probability or not */
+
+cdf_infinite::		x<0?
+				JMP dist_0
+			JMP dist_1
 
 check_probability::	NaN?
 				JMP dist_NaN
@@ -65,7 +118,17 @@ check_probability::	NaN?
 			x>1?
 				JMP dist_posinf
 			RTN
+/* Error out if a number is zero, negative or special */
+check_special_pos::	x[<=]0?
+				ERR ERR_BAD_PARAM
 
+/* Error out if a number is special */
+check_special::		SPEC?
+				ERR ERR_BAD_PARAM
+			RTN
+
+/**************************************************************************/
+/* Some utility functions to return common constants */
 dist_neginf::		FC? D
 				ERR ERR_MINFINITY
 			Num -[infinity]
@@ -80,3 +143,19 @@ dist_NaN::		FC? D
 				ERR ERR_DOMAIN
 			Num NaN
 			xOUT 000
+
+dist_0::		iC 0
+			xOUT 000
+
+dist_1::		iC 1
+			xOUT 000
+
+/**************************************************************************/
+/* Some utility subroutines */
+
+/* Log (1 - x) */
+log1m::		+/-
+		LN1+x
+		RTN
+
+
