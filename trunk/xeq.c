@@ -1728,34 +1728,33 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 
 // Handle a RTN
 static void do_rtn(int plus1) {
-	if (Running) {
-		if (RetStkPtr < 0) {
-			// Pop any LOCALS off the stack
-			retstk_up();
-		}
-		if (RetStkPtr <= 0) {
-			// Normal RTN within program
-			unsigned short pc = RetStk[RetStkPtr - 1];
-			raw_set_pc(pc);
-			// If RTN+1 inc PC if not at END or a POPUSR command would be skipped
-			fin_tst(! plus1 || getprog(pc) == (OP_NIL | OP_POPUSR));
-		}
-		else {
-			// program was started without a valid return address on the stack
-			clrretstk_pc();
-		}
-		if (RetStkPtr == 0) {
-			// RTN with empty stack stops
-			set_running_off();
-		}
-	} else {
-		// Manual return goes to step 0 and clears the return stack
+	if (RetStkPtr < 0) {
+		// Pop any LOCALS off the stack
+		retstk_up();
+	}
+	if (RetStkPtr <= 0) {
+		// Normal RTN within program
+		unsigned short pc = RetStk[RetStkPtr - 1];
+		raw_set_pc(pc);
+		// If RTN+1 inc PC if not at END or a POPUSR command would be skipped
+		fin_tst(! plus1 || getprog(pc) == (OP_NIL | OP_POPUSR));
+	}
+	else {
+		// program was started without a valid return address on the stack
 		clrretstk_pc();
+	}
+	if (RetStkPtr == 0) {
+		// RTN with empty stack stops
+		set_running_off();
 	}
 }
 
 // RTN and RTN+1
 void op_rtn(enum nilop op) {
+	if (! Running) {
+		// Manual return goes to step 0 and clears the return stack
+		clrretstk_pc();
+	}
 	do_rtn(op == OP_RTNp1 ? 1 : 0);
 }
 
@@ -2797,23 +2796,19 @@ void op_prompt(enum nilop op) {
 // Command pushes 4 values on stack, needs to be followed by POPUSR
 void do_usergsb(enum nilop op) {
 	const unsigned int pc = state_pc();
-	if (isXROM(pc) && XromUserPc != 0) {
-		gsbgto(pc, 1, XromUserPc);    // push address of callee
-		gsbgto(pc, 1, LocalRegs);     // push my local registers
-		gsbgto(pc, 1, UserLocalRegs); // push former local registers
-		gsbgto(XromUserPc, 1, pc);    // push return address, transfer control
-		XromUserPc = 0;
-		LocalRegs = UserLocalRegs;    // reestablish user environment
-	}
+	gsbgto(pc, 1, XromUserPc);    // push address of callee
+	gsbgto(pc, 1, LocalRegs);     // push my local registers
+	gsbgto(pc, 1, UserLocalRegs); // push former local registers
+	gsbgto(XromUserPc, 1, pc);    // push return address, transfer control
+	XromUserPc = 0;
+	LocalRegs = UserLocalRegs;    // reestablish user environment
 }
 
 // POPUSR
 void op_popusr(enum nilop op) {
-	if (isXROM(state_pc())) {
-		UserLocalRegs = RetStk[RetStkPtr++]; // previous local registers
-		LocalRegs =     RetStk[RetStkPtr++]; // my local registers
-		XromUserPc =    RetStk[RetStkPtr++]; // adress of callee
-	}
+	UserLocalRegs = RetStk[RetStkPtr++]; // previous local registers
+	LocalRegs =     RetStk[RetStkPtr++]; // my local registers
+	XromUserPc =    RetStk[RetStkPtr++]; // adress of callee
 }
 
 /* Tests if the user program is at the top level */
@@ -3610,7 +3605,6 @@ static void xeq_single(void) {
 /* Continue execution trough xrom code
  */
 void xeq_xrom(void) {
-	int is_running = Running;
 #ifndef REALBUILD
 	if (State2.trace)
 		return;
@@ -3618,10 +3612,8 @@ void xeq_xrom(void) {
 	/* Now if we've stepped into the xROM area, keep going until
 	 * we break free.
 	 */
-	Running = 1;	// otherwise RTN doesn't work
 	while (!Pause && isXROM(state_pc()))
 		xeq_single();
-	Running = is_running;
 }
 
 /* Check to see if we're running a program and if so execute it

@@ -123,9 +123,9 @@ void Shutdown( void )
 void KeyPress( int i )
 {
 #ifdef INCLUDE_STOPWATCH
-		if(KeyCallback!=NULL) {
-			i=(*KeyCallback)(i);
-		} else {
+	if(KeyCallback!=NULL) {
+		i=(*KeyCallback)(i);
+	} else {
 #endif
 
 	process_keycode( i );
@@ -134,7 +134,7 @@ void KeyPress( int i )
 	}
 
 #ifdef INCLUDE_STOPWATCH
-		}
+	}
 #endif
 }
 
