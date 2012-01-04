@@ -101,12 +101,12 @@
 
 typedef QMap<QString, QString> SkinMap;
 
-class QtEmulator : public QMainWindow
+class QtEmulator: public QMainWindow
 {
 	Q_OBJECT
 
 public:
-     QtEmulator(QApplication& anApplication);
+     QtEmulator();
      ~QtEmulator();
 
 public:
@@ -119,7 +119,7 @@ public:
      char* getRegionPath(int aRegionIndex);
      void resetUserMemory();
 
-public slots:
+private slots:
 	void editPreferences();
 	void showAbout();
 	void confirmReset();
@@ -171,7 +171,6 @@ private:
      void skinError(const QString& aMessage, bool aFatalFlag);
 
 private:
-     QApplication& application;
      QtKeyboard* keyboard;
      QtScreen* screen;
      QtBackgroundImage* backgroundImage;

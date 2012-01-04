@@ -37,13 +37,6 @@ SYSTEM := Output
 endif
 ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
 SYSTEM := windows32
-MAKE=mingw32-make
-CC=mingw32-gcc
-CXX=mingw32-g++
-else
-MAKE=make
-CC=gcc
-CXX=g++
 endif
 ifeq "$(findstring CYGWIN,$(SYSTEM))" "CYGWIN"
 SYSTEM := windows32
@@ -55,6 +48,11 @@ endif
 
 ifeq ($(SYSTEM),windows32)
 EXE := .exe
+ifdef QTGUI
+MAKE=mingw32-make
+CC=mingw32-gcc
+CXX=mingw32-g++
+endif
 else
 EXE :=
 endif
@@ -169,7 +167,7 @@ endif
 HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
 		stats.h xeq.h xrom.h xrom_labels.h storage.h serial.h matrix.h \
-		stopwatch.h
+		stopwatch.h 
 
 XROM := $(wildcard xrom/*.wp34s)
 

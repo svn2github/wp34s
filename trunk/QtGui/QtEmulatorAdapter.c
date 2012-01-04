@@ -19,6 +19,7 @@
 #include "display.h"
 #include "data.h"
 #include "storage.h"
+#include "serial.h"
 
 extern const char SvnRevision[];
 extern int is_key_pressed_adapter();
@@ -189,11 +190,16 @@ char* get_formatted_displayed_number()
 	static char buffer[FORMATTED_DISPLAYED_NUMBER_LENGTH];
 
 	memfill(buffer, 0, FORMATTED_DISPLAYED_NUMBER_LENGTH);
-	format_reg(&regX, buffer);
+	format_reg(regX_idx, buffer);
 	return buffer;
 }
 
 char *get_displayed_text()
 {
  	return (char *) (DispMsg == NULL ? Alpha : DispMsg);
+}
+
+int forward_byte_received(short byte)
+{
+	return byte_received(byte);
 }

@@ -3131,7 +3131,7 @@ void busy(void)
  */
 static const s_opcode *check_for_xrom_address(void *fp)
 {
-	const s_opcode *xp = (const s_opcode *) ((unsigned long) fp & ~1);
+	const s_opcode *xp = (const s_opcode *) ((uintptr_t ) fp & ~1);
 	if (xp < xrom)
 		return NULL;
 #ifndef REALBUILD

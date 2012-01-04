@@ -37,6 +37,12 @@ To compile:
 Either enter the QtGui subdirectory of the wp34s project (where you should have found this file) and simply launch make.
 Or, in the wp34s directory, type: make qt_qui
 
+Using recent versions of Cygwin, you may have to use mingw32-make instead to support C:/Qt/... pathnames in the Makefile.
+And to launch it using "mingw32-make CC=gcc-4 CPP=g++-4" to circumvent Cygwin use of symbolink links (not their best idea so far)
+You may also have to add the misc libcrypt/ssh/openssl packages to make their broken perl installation work again. 
+And libexpat-0 for svnversion too...
+And be careful to install an 1.6 version of subversion because version 1.7 of svnversion does not work on an 1.6 repository :-(
+
 If the compilation ends with no error, you can then launch the emulator but only from the QtGui directory yet.
 
   - on MacOSX, launch ./Darwin/QtGui.app/Contents/MacOS/QtGui

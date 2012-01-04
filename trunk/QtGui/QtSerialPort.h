@@ -20,16 +20,37 @@
 #include <QtCore>
 #include "qextserialport.h"
 
-class QtSerialPort
+#define WAIT_SERIAL_BUFFER_TIME 10
+
+// We inherit from QThread just to call msleep
+class QtSerialPort: public QThread
 {
+	Q_OBJECT
+
 public:
 	QtSerialPort();
+	~QtSerialPort();
 
 public:
 	const QString& getSerialPortName() const;
 	void setSerialPortName(const QString& aSerialPortName);
 	bool open(const PortSettings& thePortSettings);
 	void close();
+	void flush();
+	void writeByte(unsigned char aByte);
+
+signals:
+    void openInEventLoop(const PortSettings& thePortSettings);
+    void closeInEventLoop();
+    void flushInEventLoop();
+    void writeByteInEventLoop(unsigned char aByte);
+
+private slots:
+	void readBytes();
+	void onOpenInEventLoop(const PortSettings& thePortSettings);
+	void onCloseInEventLoop();
+	void onFlushInEventLoop();
+    void onWriteByteInEventLoop(unsigned char aByte);
 
 public:
 	static QStringList getSerialPorts();

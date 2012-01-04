@@ -24,7 +24,7 @@ int main(int argv, char **args)
 	QApplication::setApplicationName(APPLICATION_NAME);
 	try
 	{
-		QtEmulator emulator(application);
+		QtEmulator emulator;
 		emulator.show();
 
 		return application.exec();

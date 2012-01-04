@@ -152,7 +152,7 @@ static void store_stopwatch_in_memory() {
 	dn_add(&h2, &h1, &m2);
 	dn_add(&h1, &h2, &s2);
 	dn_add(&h2, &h1, &t2);
-	setResult(memory, &h2);
+	packed_from_number(&(memory->s), &h2);
 }
 
 static int get_digit(int key) {

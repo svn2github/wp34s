@@ -32,14 +32,12 @@ endif
 ifeq "$(findstring indows,$(SYSTEM))" "indows"
 # Force REALBUILD on windows under MinGW / alternate uname utility
 SYSTEM := windows32
-ifdef QTGUI
 MAKE=mingw32-make
 CC=mingw32-gcc
 CXX=mingw32-g++
-else
-REALBUILD := 1
 endif
-endif
+
+LINK=$(CXX)
 
 OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
@@ -93,11 +91,11 @@ all:
 	@echo "Recursive calling, something is wrong in ../Makefile: BASELIBS not defined"
 else
 all:
-	cd ..; $(MAKE) RECURSIVE=1 qt_gui
+	cd ..; $(MAKE) RECURSIVE=1 qt_gui CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 endif
 else 
 all: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
-	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS="$(BASEOBJS) $(BASELIBS)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)"
+	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS="$(BASEOBJS) $(BASELIBS)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 endif
 
 build_date: 

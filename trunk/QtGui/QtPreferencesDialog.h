@@ -54,7 +54,7 @@ public:
 	int getHShiftDelay() const;
 	QString getSerialPortName() const;
 
-public slots:
+private slots:
 	void customDirectoryToggled(bool aButtonChecked);
 	void chooseDirectory();
 	void serialPortChanged(const QString& aSerialPortName);

@@ -23,11 +23,11 @@
 
 QtEmulator* currentEmulator;
 
-QtEmulator::QtEmulator(QApplication& anApplication)
-: application(anApplication), calculatorThread(NULL), heartBeatThread(NULL), skinsActionGroup(NULL)
+QtEmulator::QtEmulator()
+: calculatorThread(NULL), heartBeatThread(NULL), skinsActionGroup(NULL)
 {
-	debug=application.arguments().contains(DEBUG_OPTION);
-	development=application.arguments().contains(DEVELOPMENT_OPTION);
+	debug=qApp->arguments().contains(DEBUG_OPTION);
+	development=qApp->arguments().contains(DEVELOPMENT_OPTION);
 
 #ifdef Q_WS_MAC
 	QSettings::Format format=QSettings::NativeFormat;
@@ -188,22 +188,22 @@ void QtEmulator::confirmReset()
 
 void QtEmulator::copyNumber()
 {
-	application.clipboard()->setText(get_formatted_displayed_number());
+	qApp->clipboard()->setText(get_formatted_displayed_number());
 }
 
 void QtEmulator::copyTextLine()
 {
-	application.clipboard()->setText(get_displayed_text());
+	qApp->clipboard()->setText(get_displayed_text());
 }
 
 void QtEmulator::copyImage()
 {
-	screen->copy(*backgroundImage, *application.clipboard());
+	screen->copy(*backgroundImage, *qApp->clipboard());
 }
 
 void QtEmulator::pasteNumber()
 {
-	QtNumberPaster::paste(application.clipboard()->text(), *keyboard);
+	QtNumberPaster::paste(qApp->clipboard()->text(), *keyboard);
 }
 
 void QtEmulator::selectSkin(QAction* anAction)
@@ -245,7 +245,7 @@ void QtEmulator::buildMainMenu()
 
 #ifndef Q_WS_MAC
 	mainMenu->addSeparator();
-	mainMenu->addAction(QUIT_ACTION_TEXT, &application, SLOT(quit()), QKeySequence::Quit);
+	mainMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
 #endif
 }
 
@@ -657,7 +657,7 @@ void QtEmulator::skinError(const QString& aMessage, bool aFatalFlag)
 	messageBox.exec();
 	if(aFatalFlag)
 	{
-		application.exit(-1);
+		qApp->exit(-1);
 	}
 }
 

@@ -59,11 +59,11 @@ public:
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
 	void invertHKey(QtBackgroundImage& aBackgroundImage);
 	void invert(const QtKey* aKey, QtBackgroundImage& aBackgroundImage);
-
-public slots:
-	void hShift();
 	int getHShiftDelay();
 	void setHShiftDelay(int anHShiftDelay);
+
+private slots:
+	void hShift();
 
 signals:
 	void keyPressed();

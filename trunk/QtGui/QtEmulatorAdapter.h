@@ -35,6 +35,7 @@ extern char* get_svn_revision_string();
 extern char* get_formatted_displayed_number();
 extern char *get_displayed_text();
 extern void set_hshift_locked(int);
+extern int forward_byte_received(short);
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */
