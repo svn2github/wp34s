@@ -93,10 +93,8 @@ void error_message(const unsigned int e)
 		"Invalid\0dAtA",
 		"Write\0Protect",
 		"Solve\0FAILEd",
-	#ifdef MATRIX_SUPPORT
 		"Matrix\0MmISMmAtCH",
 		"Singular\0",
-	#endif
 		"Flash is\0Full",
 	};
 

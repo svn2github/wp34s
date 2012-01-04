@@ -234,10 +234,8 @@ static const struct {
 	XE(ERR_INVALID, "Error: invalid data")
 	XE(ERR_READ_ONLY, "Error: write protected")
 	XE(ERR_SOLVE, "Error: solve failed")
-#ifdef MATRIX_SUPPORT
 	XE(ERR_MATRIX_DIM, "Error: matrix dimension mismatch")
 	XE(ERR_SINGULAR, "Error: matrix singular")
-#endif
 	XE(ERR_FLASH_FULL, "Error: flash is full")
 #undef XE
 #undef X
@@ -430,9 +428,7 @@ int main(int argc, char *argv[]) {
 			dump_menu("summations", "", CATALOGUE_SUMS);
 			dump_menu("probability", "", CATALOGUE_PROB);
 			dump_menu("integer", "", CATALOGUE_INT);
-#ifdef MATRIX_SUPPORT
 			dump_menu("matrix", "", CATALOGUE_MATRIX);
-#endif
 			dump_menu("alpha", "", CATALOGUE_ALPHA);
 			dump_menu("alpha special letters upper", "", CATALOGUE_ALPHA_LETTERS);
 			State2.alphashift = 1;

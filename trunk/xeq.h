@@ -616,14 +616,12 @@ enum {
 #ifdef INCLUDE_MANTISSA
 	OP_MANTISSA, OP_EXPONENT,
 #endif
-#ifdef MATRIX_SUPPORT
 	OP_MAT_ALL, OP_MAT_DIAG,
 	OP_MAT_TRN,
 	OP_MAT_RQ, OP_MAT_CQ, OP_MAT_IJ,
 	OP_MAT_DET,
 #ifdef MATRIX_LU_DECOMP
 	OP_MAT_LU,
-#endif
 #endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
@@ -664,10 +662,9 @@ enum {
 #ifdef INCLUDE_XROOT
 	OP_XROOT,
 #endif
-#ifdef MATRIX_SUPPORT
 	OP_MAT_ROW, OP_MAT_COL,
 	OP_MAT_COPY,
-#endif
+
 	NUM_DYADIC	// Last entry defines number of operations
 };
 
@@ -680,12 +677,11 @@ enum {
 #endif
 	OP_PERMRR,
 	OP_GEN_LAGUERRE,
-#ifdef MATRIX_SUPPORT
 	OP_MAT_MUL,
 	OP_MAT_GADD,
 	OP_MAT_REG,
 	OP_MAT_LIN_EQN,
-#endif
+
 	NUM_TRIADIC	// Last entry defines number of operations
 };  
 
@@ -746,13 +742,11 @@ enum nilop {
 	OP_ISINT, OP_ISFLOAT,
 	OP_Xeq_pos0, OP_Xeq_neg0,
 
-#ifdef MATRIX_SUPPORT
 #ifdef MATRIX_ROWOPS
 	OP_MAT_ROW_SWAP, OP_MAT_ROW_MUL, OP_MAT_ROW_GADD,
 #endif
 	OP_MAT_CHECK_SQUARE,
 	OP_MAT_INVERSE,
-#endif
 #ifdef SILLY_MATRIX_SUPPORT
 	OP_MAT_ZERO, OP_MAT_IDENT,
 #endif
@@ -960,9 +954,7 @@ enum catalogues
 	CATALOGUE_COMPLEX_CONST,
 	CATALOGUE_CONV,
 	CATALOGUE_SUMS,
-#ifdef MATRIX_SUPPORT
 	CATALOGUE_MATRIX,
-#endif
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CATALOGUE_INTERNAL,
 #endif

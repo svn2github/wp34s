@@ -506,7 +506,6 @@ static s_opcode int_catalogue[] = {
 #endif
 };
 
-#ifdef MATRIX_SUPPORT
 static s_opcode matrix_catalogue[] = {
 	MON(OP_MAT_DET,		"DET")
 	TRI(OP_MAT_LIN_EQN,	"LINEQS")
@@ -537,7 +536,6 @@ static s_opcode matrix_catalogue[] = {
 	NILIC(OP_MAT_IDENT,	"M.IDEN")
 #endif
 };
-#endif
 
 static s_opcode test_catalogue[] = {
 	RARGCMD(RARG_BC,	"BC?")
@@ -587,9 +585,7 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_Xeq_pos0,	"x=+0?")
 	NILIC(OP_Xeq_neg0,	"x=-0?")
 
-#ifdef MATRIX_SUPPORT
 	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
-#endif
 };
 
 static s_opcode prog_catalogue[] = {
@@ -681,12 +677,14 @@ static s_opcode prog_catalogue[] = {
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 static s_opcode internal_catalogue[] = {
 	RARGCMD(RARG_CONST_INT,	"iC")
-	//NILIC(OP_INISOLVE,	"SLVI")
-	//NILIC(OP_SOLVESTEP,	"SLVS")
-	//NILIC(OP_GSBuser,	"XEQUSR")
-	//NILIC(OP_POPUSR,	"POPUSR")
+	NILIC(OP_INISOLVE,	"SLVI")
+	NILIC(OP_SOLVESTEP,	"SLVS")
+	NILIC(OP_GSBuser,	"XEQUSR")
+	NILIC(OP_POPUSR,	"POPUSR")
+	RARGCMD(RARG_MODE_SET,	"xMSET")
+	RARGCMD(RARG_MODE_CLEAR,"xMCLR)
 #ifdef XROM_COMMANDS
-	NILIC(OP_XROM_IN,	"xIN")
+	RARGCMD(OP_XROM_IN,	"xIN")
 	RARGCMD(RARG_XROM_OUT,	"xOUT")
 #endif
 };
@@ -1166,9 +1164,7 @@ int main(int argc, char *argv[]) {
 	CAT(mode_catalogue);
 	CAT(alpha_catalogue);
 	CONVERSION(conv_catalogue);
-#ifdef MATRIX_SUPPORT
 	CAT(matrix_catalogue);
-#endif
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CAT(internal_catalogue);
 #endif

@@ -266,7 +266,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_MANTISSA, &decNumberMantissa,	NOFN,		NOFN,		"MANT")
 	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT")
 #endif
-#ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M-ALL")
 	FUNC(OP_MAT_DIAG, &matrix_diag,		NOFN,		NOFN,		"M-DIAG")
 	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"TRANSP")
@@ -276,7 +275,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_MAT_DET, &matrix_determinant,	NOFN,		NOFN,		"DET")
 #ifdef MATRIX_LU_DECOMP
 	FUNC(OP_MAT_LU, &matrix_lu_decomp,	NOFN,		NOFN,		"M.LU")
-#endif
 #endif
 #undef FUNC
 };
@@ -365,11 +363,9 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #ifdef INCLUDE_XROOT
 	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
 #endif
-#ifdef MATRIX_SUPPORT
 	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M-ROW")
 	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M-COL")
 	FUNC(OP_MAT_COPY, &matrix_copy,		NOFN,		NOFN,		"M.COPY")
-#endif
 #undef FUNC
 };
 #if COMMANDS_PASS != 2
@@ -403,12 +399,11 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #endif
 	FUNC(OP_PERMRR,		&decNemberPerMRR,	(FP_TRIADIC_INT) NOFN,	"%MRR")
         FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha,	(FP_TRIADIC_INT) NOFN,	"L\275\240")
-#ifdef MATRIX_SUPPORT
+
 	FUNC(OP_MAT_MUL,	&matrix_multiply,	(FP_TRIADIC_INT) NOFN,	"M\034")
 	FUNC(OP_MAT_GADD,	&matrix_genadd,		(FP_TRIADIC_INT) NOFN,	"M+\034")
 	FUNC(OP_MAT_REG,	&matrix_getreg,		(FP_TRIADIC_INT) NOFN,	"M.REG")
 	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	(FP_TRIADIC_INT) NOFN,	"LINEQS")
-#endif
 #undef FUNC
 };
 
@@ -611,7 +606,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_Xeq_pos0,	&check_zero,		"x=+0?")
 	FUNC0(OP_Xeq_neg0,	&check_zero,		"x=-0?")
 
-#ifdef MATRIX_SUPPORT
 #ifdef MATRIX_ROWOPS
 	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"MROW\027")
 	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"MROW\034")
@@ -619,7 +613,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #endif
 	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
 	FUNC0(OP_MAT_INVERSE,	&matrix_inverse,	"M\235")
-#endif
 #ifdef SILLY_MATRIX_SUPPORT
 	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
 	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")

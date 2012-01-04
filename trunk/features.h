@@ -95,9 +95,6 @@
 // Space cost 480 bytes.
 // #define INCLUDE_FACTOR
 
-// Include some basic matrix support commands.
-#define MATRIX_SUPPORT
-
 // Include matrix functions better implemented in user code
 // #define SILLY_MATRIX_SUPPORT
 
@@ -137,17 +134,6 @@
 #if defined(INCLUDE_BESSEL) && ! defined(INCLUDE_DIGAMMA)
 /* Second kind functions of integer order need digamma */
 #define INCLUDE_DIGAMMA
-#endif
-
-/* Check for matrix options that imply matrix itself */
-#if defined(SILLY_MATRIX_SUPPORT) && ! defined(MATRIX_SUPPORT)
-#define MATRIX_SUPPORT
-#endif
-#if defined(MATRIX_ROWOPS) && ! defined(MATRIX_SUPPORT)
-#define MATRIX_SUPPORT
-#endif
-#if defined(MATRIX_LU_DECOMP) && ! defined(MATRIX_SUPPORT)
-#define MATRIX_SUPPORT
 #endif
 
 #endif  /* TINY_BUILD*/
