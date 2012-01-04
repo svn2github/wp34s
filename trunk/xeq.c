@@ -3129,6 +3129,10 @@ void busy(void)
  *  Check for a call into XROM space.
  *  Fix the pointer alignment on the go.
  */
+#ifdef REALBUILD
+typedef unsigned long uintptr_t;
+#endif
+
 static const s_opcode *check_for_xrom_address(void *fp)
 {
 	const s_opcode *xp = (const s_opcode *) ((uintptr_t ) fp & ~1);
