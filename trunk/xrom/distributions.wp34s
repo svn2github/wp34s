@@ -18,14 +18,16 @@ cauchy_pdf_special::	0
 			SPEC?
 				JMP cauchy_cdf_special
 			GSB cauchy_xform
-			ATAN
+			STOM .00
+				GSB mode_rad
+				ATAN
+			RCLM .00
 			[pi]
 			/
 			.
 			5
 			+
 			xOUT 00
-			RTN
 
 cauchy_xform::		RCL- J
 			RCL K
@@ -48,27 +50,24 @@ cauchy_cdf_special::	x<0?
 			-
 			[pi]
 			[times]
-			TAN
+			STOM .00
+				GSB mode_rad
+				TAN
+			RCLM .00
 			RCL K
 			x[<=]0?
 				ERR ERR_BAD_PARAM
 			[times]
 			RCL+ J
 
-cauchy_exit::		x[<->] .08
-			STO L
-			RCLS .08
-			RTN
-
-
 /* Utility conditional that checks if the argument is a valid probability or not */
 
-check_probability::	x<0?
+check_probability::	NaN?
+				JMP dist_NaN
+			x<0?
 				JMP dist_neginf
 			x>1?
 				JMP dist_posinf
-			SPEC?
-				JMP dist_NaN
 			RTN
 
 dist_neginf::		FC? D
