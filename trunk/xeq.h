@@ -1248,7 +1248,7 @@ extern void cmdregs(unsigned int arg, enum rarg op);
 extern void cmdxlocal(enum nilop op);
 extern void cmdxin(unsigned int, enum rarg);
 extern void cmdxout(unsigned int, enum rarg);
-extern void cmdconvertged(unsigned int, enum rarg);
+extern void cmdconverged(unsigned int, enum rarg);
 extern void cmdmode(unsigned int, enum rarg);
 
 extern int not_running(void);

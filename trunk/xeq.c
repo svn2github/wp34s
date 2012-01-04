@@ -3961,7 +3961,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
  *
  * In integer mode, the arguemnt is complete ignored.
  */
-void cmdconvertged(unsigned int arg, enum rarg cmd) {
+void cmdconverged(unsigned int arg, enum rarg cmd) {
 	int precision = arg % 3;
 	const int specials = arg < 9;
 	const int complex = (arg % 9) >= 6;
