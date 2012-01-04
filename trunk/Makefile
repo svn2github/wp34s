@@ -37,6 +37,9 @@ SYSTEM := Output
 endif
 ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
 SYSTEM := windows32
+MAKE=mingw32-make
+CC=mingw32-gcc
+CXX=mingw32-g++
 endif
 ifeq "$(findstring CYGWIN,$(SYSTEM))" "CYGWIN"
 SYSTEM := windows32
@@ -48,11 +51,6 @@ endif
 
 ifeq ($(SYSTEM),windows32)
 EXE := .exe
-#ifdef QTGUI
-MAKE=mingw32-make
-CC=mingw32-gcc
-CXX=mingw32-g++
-#endif
 else
 EXE :=
 endif
