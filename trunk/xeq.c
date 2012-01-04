@@ -167,11 +167,22 @@ int local_regs(void) {
 
 /*
  *  How many global registers have we?
+ *  The result depends on the RARG operation to allow for "alien" RCL commands
+ */
+unsigned int global_regs_rarg(enum rarg op) {
+	if (is_dblmode() || op == RARG_dRCL)
+		return op == RARG_sRCL ? NumRegs - (STACK_SIZE + EXTRA_REG) / 2
+		     : op == RARG_iRCL ? NumRegs
+		                       : (NumRegs - STACK_SIZE - EXTRA_REG) >> 1; 
+	else
+		return NumRegs;
+}
+
+/*
+ *  How many global registers have we?
  */
 unsigned int global_regs(void) {
-	if (is_dblmode())
-		return (NumRegs - STACK_SIZE - EXTRA_REG) >> 1;
-	return NumRegs;
+	return global_regs_rarg(RARG_RCL);
 }
 
 
@@ -1043,9 +1054,22 @@ unsigned long long int getX_int_sgn(int *sgn) {
 	return get_reg_n_int_sgn(regX_idx, sgn);
 }
 
+/*
+ *  Forced conversion from real to intger
+ *  Leaves integer mode active on return!
+ */
+static void int_from_register(int out, int in) {
+	int sgn;
+	unsigned long long int val;
+	
+	UState.intm = 0;	// Force real mode access
+	val = get_reg_n_int_sgn(in, &sgn);
+
+	UState.intm = 1;	// Force integer access
+	set_reg_n_int_sgn(out, val, sgn);
+}
 
 /* Put an integer into a register
- * Integer registers are always single precision!
  */
 void set_reg_n_int_sgn(int index, unsigned long long int val, int sgn) {
 	if (is_intmode()) {
@@ -1060,12 +1084,29 @@ void set_reg_n_int_sgn(int index, unsigned long long int val, int sgn) {
 	}
 }
 
+/* 
+ *  Forced conversion from integer to register format.
+ *  Leaves integer mode off after conversion.
+ */
+static void register_from_int(int out, int in) {
+	int sgn;
+	unsigned long long int val;
+	
+	UState.intm = 1;
+	val = get_reg_n_int_sgn(in, &sgn);
+
+	UState.intm = 0;
+	set_reg_n_int_sgn(out, val, sgn);
+}
+
+
 /* Put an integer into X
  * Integer registers are always single precision!
  */
 void setX_int(long long int val) {
 	set_reg_n_int(regX_idx, val);
 }
+
 
 void setX_int_sgn(unsigned long long int val, int sgn) {
 	set_reg_n_int_sgn(regX_idx, val, sgn);
@@ -1077,18 +1118,25 @@ void setX_int_sgn(unsigned long long int val, int sgn) {
  *  Set the register value explicitely
  */
 void zero_regs(REGISTER *dest, int n) {
+#if 0
 	int i;
-
 	if (is_intmode())
 		xset(dest, 0, n << 3);
 	else {
 		const int dbl = is_dblmode();
-		for (i=0; i<n; i++)
+		for (i=0; i<n; i++) {
 			if (dbl)
 				(&(dest->d))[i] = CONSTANT_DBL(OP_ZERO);
 			else
 				(&(dest->s))[i] = CONSTANT_INT(OP_ZERO);
+		}
+
 	}
+#else
+	// This works for all modes
+	xset(dest, 0, n << (3 + is_dblmode()));
+#endif
+
 }
 
 void move_regs(REGISTER *dest, REGISTER *src, int n) {
@@ -1412,6 +1460,40 @@ void cmdflashcrcl(unsigned int arg, enum rarg op) {
 	do_crcl(FLASH_REG_BASE + arg, op - RARG_FLCRCL + RARG_CRCL);
 }
 #endif
+
+/*
+ *  "Alien" RCL commands to convert registers originally stored in a different format
+ */
+// RCL of an integer value
+void cmdircl(unsigned int arg, enum rarg op) {
+	if (is_intmode())
+		cmdrcl(arg, RARG_RCL);
+	else
+		register_from_int(regX_idx, arg);
+}
+
+// RCL of a single or double precision real value
+void cmdrrcl(unsigned int arg, enum rarg op) {
+	const int was_dbl = is_dblmode();
+	const int rcl_dbl = (op == RARG_dRCL);
+
+	State.mode_double = rcl_dbl;
+	if (is_intmode()) {
+		int_from_register(regX_idx, arg);
+		State.mode_double = was_dbl;
+	}
+	else if (is_dblmode() && arg >= regX_idx && arg <= regK_idx)
+		err(ERR_RANGE);
+	else {
+		decNumber x;
+		State.mode_double = rcl_dbl; // Force reading in requested format
+		getRegister(&x, arg);
+
+		State.mode_double = was_dbl; // Force access in original mode
+		setX(&x);
+	}
+}
+
 
 /* SWAP x with the specified register
  */
@@ -2430,37 +2512,46 @@ void op_fracdenom(enum nilop op) {
 }
 
 
-/* Switching from an integer mode to real mode requires us
- * to make an effort at converting x and y into a real numbers
- * x' = y . 2^x
+/*  Switching from an integer mode to real mode
+ *  We convert all named registers
  */
-static void float_mode_convert(int index) {
-	decNumber x;
-	int s;
-	unsigned long long int val;
-	
-	xcopy(&val, Regs + index, sizeof(val));
-	val = extract_value((long long) val, &s);
-
-	ullint_to_dn(&x, val);
-	if (s)
-		dn_minus(&x, &x);
-	setRegister(index, &x);
-}
-
 void op_float(enum nilop op) {
 	int i;
 
 	if (is_intmode()) {
-		const int j = regX_idx + stack_size();
-		UState.intm = 0;
-		for (i = regX_idx; i < j; ++i)
-			float_mode_convert(i);
-		float_mode_convert(regL_idx);
+		for (i = regX_idx; i <= regK_idx; ++i)
+			register_from_int(i, i);
 	}
 	UState.fract = 0;
         State2.hms = (op == OP_HMS) ? 1 : 0;
 }
+
+/*  Switch to integer mode.
+ *  We convert all named registers.
+ */
+static void check_int_switch(void) {
+	if (!is_intmode()) {
+		int i;
+		for (i = regK_idx; i >= regX_idx; --i)
+			int_from_register(i, i);
+	}
+}
+
+static void set_base(unsigned int b) {
+	UState.int_base = b - 1;
+	check_int_switch();
+}
+
+void set_int_base(unsigned int arg, enum rarg op) {
+	if (arg < 2) {
+		if (arg == 0)
+			op_float(OP_FLOAT);
+		else
+			op_fract(OP_FRACT);
+	} else
+		set_base(arg);
+}
+
 
 void op_fract(enum nilop op) {
 	op_float(OP_FLOAT);
@@ -2733,44 +2824,6 @@ void op_pause(unsigned int arg, enum rarg op) {
 }
 
 
-/* Switch to integer mode.
- */
-static void int_mode_convert(int index) {
-	decNumber x;
-	int sgn;
-	unsigned long long int val;
-
-	getRegister(&x, index);
-        decNumberTrunc(&x, &x);
-	val = dn_to_ull(&x, &sgn);
-	val = (unsigned long long) build_value(val, sgn);
-	xcopy(Regs + index, &val, sizeof(val));
-}
-
-static void check_int_switch(void) {
-	if (!is_intmode()) {
-		int i;
-		int_mode_convert(regL_idx);
-		for (i = stack_size() + regX_idx - 1; i >= regX_idx; --i)
-			int_mode_convert(i);
-		UState.intm = 1;
-	}
-}
-
-static void set_base(unsigned int b) {
-	UState.int_base = b - 1;
-	check_int_switch();
-}
-
-void set_int_base(unsigned int arg, enum rarg op) {
-	if (arg < 2) {
-		if (arg == 0)
-			op_float(OP_FLOAT);
-		else
-			op_fract(OP_FRACT);
-	} else
-		set_base(arg);
-}
 
 void op_setspeed(enum nilop op) {
 	UState.slow_speed = (op == OP_SLOW) ? 1 : 0;
@@ -3423,7 +3476,7 @@ static void rargs(const opcode op) {
 	}
 	if (argcmds[cmd].reg && arg < TOPREALREG) {
 		// Range checking for registers against variable boundary
-		lim = global_regs();
+		lim = global_regs_rarg((enum rarg) cmd);
 		if (argcmds[cmd].cmplx)
 			--lim;
 	}

@@ -852,6 +852,8 @@ enum rarg {
 	RARG_LOCR,
 	RARG_REGS,
 
+	RARG_iRCL, RARG_sRCL, RARG_dRCL,
+
 #ifdef XROM_COMMANDS
 	RARG_MODE_SET, RARG_MODE_CLEAR,
 	RARG_XROM_IN, RARG_XROM_OUT,
@@ -1030,6 +1032,7 @@ extern int local_levels(void);
 extern int local_regs(void);
 extern int move_retstk(int distance);
 extern unsigned int global_regs(void);
+extern unsigned int global_regs_rarg(enum rarg op);
 
 extern void clrretstk(void);
 extern void clrretstk_pc(void);
@@ -1159,6 +1162,8 @@ extern void cmdsto(unsigned int arg, enum rarg op);
 extern void cmdrcl(unsigned int arg, enum rarg op);
 extern void cmdcsto(unsigned int arg, enum rarg op);
 extern void cmdcrcl(unsigned int arg, enum rarg op);
+extern void cmdircl(unsigned int arg, enum rarg op);
+extern void cmdrrcl(unsigned int arg, enum rarg op);
 extern void cmdswap(unsigned int arg, enum rarg op);
 extern void cmdflashrcl(unsigned int arg, enum rarg op);
 extern void cmdflashcrcl(unsigned int arg, enum rarg op);

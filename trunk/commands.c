@@ -855,6 +855,10 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL,		"LocR")
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
 
+	CMDstk(RARG_iRCL,	&cmdircl,				"iRCL")
+	CMDstk(RARG_sRCL,	&cmdrrcl,				"sRCL")
+	CMDstk(RARG_dRCL,	&cmdrrcl,				"dRCL")
+
 #ifdef XROM_COMMANDS
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")

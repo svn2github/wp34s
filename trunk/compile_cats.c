@@ -157,6 +157,9 @@ static s_opcode program_xfcn[] = {
 #ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL, 	"RCF")
 #endif
+	RARGCMD(RARG_iRCL,	"iRCL")
+	RARGCMD(RARG_sRCL,	"sRCL")
+	RARGCMD(RARG_dRCL,	"dRCL")
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
@@ -313,6 +316,10 @@ static s_opcode catalogue[] = {
 #ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL,	"RCF")
 #endif
+	RARGCMD(RARG_iRCL,	"iRCL")
+	RARGCMD(RARG_sRCL,	"sRCL")
+	RARGCMD(RARG_dRCL,	"dRCL")
+
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
@@ -501,6 +508,8 @@ static s_opcode int_catalogue[] = {
 #ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL, 	"RCF")
 #endif
+	RARGCMD(RARG_sRCL,	"sRCL")
+	RARGCMD(RARG_dRCL,	"dRCL")
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
 #endif

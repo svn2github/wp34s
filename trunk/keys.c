@@ -1231,9 +1231,9 @@ static int arg_eval(unsigned int val) {
 
 static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
-	const int mx = (State2.ind || argcmds[base].reg) ? (State2.runmode ? global_regs() : NUMREG) :
-		        State2.local ? MAX_LOCAL_DIRECT :
-			argcmds[base].lim;
+	const int mx = (State2.ind || argcmds[base].reg) 
+		     ? (State2.runmode ? global_regs_rarg((enum rarg) base) : NUMREG) 
+		     : (State2.local ? MAX_LOCAL_DIRECT : argcmds[base].lim);
 	const unsigned int val = State2.digval * 10 + n;
 
 	if (State2.numdigit == 0) {
