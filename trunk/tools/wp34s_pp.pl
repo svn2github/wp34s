@@ -281,6 +281,8 @@ sub preprocessor {
   display_steps("// ") if $debug;
   process_double_quotes();
   display_steps("// ") if $debug;
+  process_expressions();
+  display_steps("// ") if $debug;
   extract_labels();           # Look for existing "LBL \d{2}" or "LBL [A-Z]"opcodes
   extract_targets();          # Look for "SomeLabel::"
   extract_branches();         # Look for "(BACK|SKIP|JMP) SomeLabel"
@@ -416,6 +418,42 @@ sub process_double_quotes {
   debug_msg(this_function((caller(0))[3]), "Popped out at step '$step'.") if $debug;
   return;
 } # process_double_quotes
+
+
+#######################################################################
+#
+# Process expressions within instructions. The expressions must be surrounded by an
+# outer set of brackets. The inside expression will be evaluated using 'eval'.
+#
+# "xIN ((1 << 3) | 2)"  =>  "xIN 010 // (1 << 3) | 2"
+#
+sub process_expressions {
+  local $_;
+  my ($line, $new_line, $label);
+  my $step = 1;
+  while( $step <= scalar(@lines) ) {
+    $line = $lines[$step-1];
+    $line =~ s/^\s*\d{0,3}:{0,1}//;
+    if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})/ ) {
+      $label = $1 . " ";
+      $line =~ s/^\s*([$label_spec]{2,}):{$NUM_TARGET_LABEL_COLONS}//;
+    } else {
+      $label = "";
+    }
+    # We need to be greedy with this search!
+    if( $line =~ /(^\s*[^\(]+)\((.+)\)/ ) {
+      my $the_rest = $1;
+      my $expression = $2;
+      my $evaluated = eval $expression;
+
+      my $new_line = sprintf "%0s%0s%03d // %0s", $label, $the_rest, $evaluated, $expression;
+      $lines[$step-1] = $new_line;
+      debug_msg(this_function((caller(0))[3]), "Evaluated '$expression' to get '$evaluated'") if $debug;
+    }
+    $step++;
+  }
+  return;
+} # process_expressions
 
 
 #######################################################################

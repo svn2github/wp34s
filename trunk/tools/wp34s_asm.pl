@@ -273,6 +273,8 @@ my $ILLEGAL_3rd_CHAR_HI = 0xFF;
 my %table_exception_format = ( "PRCL"   => "%01d",
                                "PSTO"   => "%01d",
                                "P[<->]" => "%01d",
+                               "xIN"    => "%03d",
+                               "xOUT"   => "%03d",
                              );
 
 # ANSI colour codes.
@@ -967,6 +969,8 @@ sub load_opcode_tables {
   # Read from whatever source happened to be caught. If none of the above opened
   # a file, read the attached DATA segment at the end of the script as the fallback.
   while(<DATA>) {
+    my $xrom_only = 0;
+
     # Extract the SVN version of the opcode table -- if it exists.
     if( /^\s*#\s+Generated .+ svn_(\d+)\.op/ ) {
       $op_svn = $1;
@@ -1020,6 +1024,19 @@ sub load_opcode_tables {
     # basically restricts numeric registers to be 0 - 98 instead of 0 - 99 and it restricts
     # lettered registers to be X, Z, A, C, L and J.
     #
+
+    # See if there is an XROM tag on the instruction. If so, it is ONLY valid when running in
+    # an XROM mode.
+    # XXX For now, just record this fact and remove the tag. We will encode this later.
+    if (/\,xrom/) {
+      s/\,xrom//;
+      $xrom_only = 1;
+    } elsif (/\s+xrom/) {
+      s/\s+xrom//;
+      $xrom_only = 1;
+    } else {
+      $xrom_only = 0;
+    }
 
     # cmd-type line
     if( /0x([0-9a-fA-F]{4})\s+cmd\s+(.+)$/ ) {
