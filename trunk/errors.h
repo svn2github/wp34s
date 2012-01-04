@@ -9,8 +9,13 @@
 #define	ERR_MINFINITY		05
 #define	ERR_NO_LBL		06
 #define	ERR_ILLEGAL		07
+#ifdef COMPILE_XROM
+#define	ERR_RANGE		08
+#define	ERR_DIGIT		09
+#else
 #define	ERR_RANGE		8
 #define	ERR_DIGIT		9
+#endif
 #define	ERR_TOO_LONG		10
 #define	ERR_RAM_FULL		11
 #define	ERR_STK_CLASH		12

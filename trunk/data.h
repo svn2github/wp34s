@@ -354,12 +354,12 @@ extern TXromLocal XromLocal;
 
 #else /* COMPILE_XROM */
 
-#define Flag_stack_depth .10
-#define Flag_mode_double .11
+#define Flag_stack_depth .10	// Read only!
+#define Flag_mode_double .11	// Read only!
 #define Flag_complex     .12
 #define Flag_setLastX    .13
 #define Flag_state_lift  .14
-#define Flag_xIN         .15
+#define Flag_xIN         .15	// Read only!
 #endif
 
 #ifndef COMPILE_XROM
