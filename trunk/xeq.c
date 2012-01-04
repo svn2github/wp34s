@@ -2714,6 +2714,7 @@ void op_double(enum nilop op) {
 		if (NumRegs > TOPREALREG)
 			cmdregs(TOPREALREG - 1, RARG_REGS);
 	}
+	StackBase = get_reg_n(regX_idx);
 }
 
 void op_pause(unsigned int arg, enum rarg op) {
@@ -3461,8 +3462,9 @@ static void rargs(const opcode op) {
 		}
 		else {
 			fp(arg, (enum rarg)cmd);
-			State.state_lift = 1;
 		}
+		if (cmd != RARG_XROM_OUT)
+			State.state_lift = 1;
 	}
 }
 
@@ -3885,8 +3887,10 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		return;
 
 	// Switch to double precision mode
-	if (State.mode_double)
+	if (State.mode_double) {
 		xcopy(XromStack, StackBase, sizeof(XromStack));
+		StackBase = XromStack;
+	}
 	else
 		op_double(OP_DBLON);
 
@@ -3903,7 +3907,6 @@ void cmdxin(unsigned int arg, enum rarg op) {
 			return;
 		}
 	}
-	State.mode_double = 1;
 	State.state_lift = 1;
 	UState.stack_depth = 1;
 }
