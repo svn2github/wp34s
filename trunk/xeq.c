@@ -2519,8 +2519,15 @@ void op_float(enum nilop op) {
 	int i;
 
 	if (is_intmode()) {
-		for (i = regX_idx; i <= regK_idx; ++i)
+		for (i = regX_idx; i < regJ_idx; ++i)
 			register_from_int(i, i);
+
+		if (is_dblmode()) {
+			// expand J & K which have been left in decimal64 format 
+			// by the int mode switch
+			packed128_from_packed(&(get_reg_n(regJ_idx)->d), Regs + regJ_idx);
+			packed128_from_packed(&(get_reg_n(regK_idx)->d), Regs + regK_idx);
+		}
 	}
 	UState.fract = 0;
         State2.hms = (op == OP_HMS) ? 1 : 0;
@@ -2532,7 +2539,13 @@ void op_float(enum nilop op) {
 static void check_int_switch(void) {
 	if (!is_intmode()) {
 		int i;
-		for (i = regK_idx; i >= regX_idx; --i)
+		if (is_dblmode()) {
+			// compress J & K to save them while inter mode is active 
+			packed_from_packed128(Regs + regK_idx, &(get_reg_n(regK_idx)->d));
+			packed_from_packed128(Regs + regJ_idx, &(get_reg_n(regJ_idx)->d));
+		}
+
+		for (i = regI_idx; i >= regX_idx; --i)
 			int_from_register(i, i);
 	}
 }
