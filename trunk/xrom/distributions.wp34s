@@ -10,7 +10,8 @@
 			[times]
 			1/x
 			xOUT 000
-cauchy_pdf_special::	0
+
+cauchy_pdf_special::	iC 0		/* Can only be infinite which has zero probability */
 			xOUT 000
 
 		XLBL"CDF_CAUCHY"
@@ -36,10 +37,10 @@ cauchy_xform::		RCL- J
 			/
 			RTN
 
-
 cauchy_cdf_special::	x<0?
-				JMP dist_NaN
-			1
+				iC 0
+			x>0?
+				iC 1
 			xOUT 000
 
 		XLBL"QF_CAUCHY"
