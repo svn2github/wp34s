@@ -9,9 +9,9 @@
 			[pi]
 			[times]
 			1/x
-			xOUT 00
+			xOUT 000
 cauchy_pdf_special::	0
-			xOUT 00
+			xOUT 000
 
 		XLBL"CDF_CAUCHY"
 			xIN MONADIC
@@ -27,7 +27,7 @@ cauchy_pdf_special::	0
 			.
 			5
 			+
-			xOUT 00
+			xOUT 000
 
 cauchy_xform::		RCL- J
 			RCL K
@@ -40,7 +40,7 @@ cauchy_xform::		RCL- J
 cauchy_cdf_special::	x<0?
 				JMP dist_NaN
 			1
-			xOUT 00
+			xOUT 000
 
 		XLBL"QF_CAUCHY"
 			xIN MONADIC
@@ -73,14 +73,14 @@ check_probability::	NaN?
 dist_neginf::		FC? D
 				ERR ERR_MINFINITY
 			Num -[infinity]
-			xOUT 00
+			xOUT 000
 
 dist_posinf::		FC? D
 				ERR ERR_INFINITY
 			Num [infinity]
-			xOUT 00
+			xOUT 000
 
 dist_NaN::		FC? D
 				ERR ERR_DOMAIN
 			Num NaN
-			xOUT 00
+			xOUT 000
