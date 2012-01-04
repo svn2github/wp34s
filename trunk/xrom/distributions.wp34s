@@ -59,7 +59,7 @@ cauchy_xform::		RCL- J
 
 /**************************************************************************/
 /* Exponential distribution
- * One parameters:
+ * One parameter:
  *	J = lambda (shape) > 0
  * Formulas:
  *	pdf = lambda exp(-lambda x)
@@ -103,6 +103,71 @@ expon_param::		RCL J
 			GSB check_special_pos
 			RTN
 
+
+/**************************************************************************/
+/* Weibull distribution
+ * Two parameters:
+ *	J = lambda (shape) > 0
+ *	K = k (scale) > 0
+ * Formulas:
+ *	pdf = k/J (x/J)^(k-1) exp(-(x/J)^k)  x>=0, 0 otherwise
+ *	cdf = 1 - exp( -(x/J)^k)
+ *	qf = (-ln(1-p) ^ (1/k)) * J
+ */
+		XLBL"PDF_WEIB"
+			xIN MONADIC
+			GSB weibull_param
+			RCL Y
+			SPEC?
+				JMP dist_0
+			x[<=]0?
+				JMP dist_0
+			x[<->] Y
+			y[^x]
+			STO Z
+			+/-
+			e[^x]
+			RCL[times] Z
+			RCL/ Y
+			RCL[times] K
+			RCL/ J
+			xOUT 000
+
+		XLBL"CDF_WEIB"
+			xIN MONADIC
+			GSB weibull_param
+			x[<->] Y
+			x[<=]0?
+				JMP dist_0
+			SPEC?
+				JMP dist_1	/* only +infinte left */
+			x[<->] Y
+			y[^x]
+			+/-
+			e[^x]-1
+			+/-
+			xOUT 000
+
+weibull_param::		RCL J
+			GSB check_special_pos
+			/
+			RCL K
+			GSB check_special_pos
+			RTN
+
+		XLBL"QF_WEIB"			/* (-ln(1-p) ^ (1/k)) * J */
+			xIN MONADIC
+			GSB check_probability
+			GSB log1m
+			+/-
+			RCL K
+			GSB check_special_pos
+			1/x
+			y[^x]
+			RCL J
+			GSB check_special_pos
+			[times]
+			xOUT 000
 
 /**************************************************************************/
 /* Utility conditional that checks if the argument is a valid probability or not */

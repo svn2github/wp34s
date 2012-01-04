@@ -27,7 +27,6 @@
  *	cdf = arctan((x-J) / K) / PI + 1/2
  *	qf = J + K TAN(PI (p - 1/2))
  */
-/* Cauchy distribution 322 bytes in total */
 
 // 70 bytes
 static int cauchy_xform(decNumber *r, decNumber *c, const decNumber *x, decNumber *gamma) {
@@ -83,9 +82,16 @@ decNumber *qf_cauchy(decNumber *r, const decNumber *p) {
 }
 
 
-
-/* Exponential distribution cdf = 1 - exp(-lambda . x)
+/**************************************************************************/
+/* Exponential distribution
+ * One parameter:
+ *	J = lambda (shape) > 0
+ * Formulas:
+ *	pdf = lambda exp(-lambda x)
+ *	cdf = 1 - exp(-lambda x)
+ *	qf = ln(1 - p) / -lambda
  */
+
 // 56 bytes
 static int exponential_xform(decNumber *r, decNumber *lam, const decNumber *x) {
 	dist_one_param(lam);
@@ -157,6 +163,88 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p) {
 	dn_ln1m(&u, p);
 	dn_divide(&t, &u, &lam);
 	return dn_minus(r, &t);
+}
+
+
+
+/* Weibull distribution cdf = 1 - exp(-(x/lambda)^k)
+ */
+// 60 bytes
+static int weibull_param(decNumber *r, decNumber *k, decNumber *lam, const decNumber *x) {
+	dist_two_param(k, lam);
+	if (param_positive(r, k) || param_positive(r, lam))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	return 0;
+}
+
+// 122 bytes
+decNumber *pdf_WB(decNumber *r, const decNumber *x) {
+	decNumber k, lam, t, u, v, q;
+
+	if (weibull_param(r, &k, &lam, x))
+		return r;
+	if (dn_lt0(x)) {
+		decNumberZero(r);
+		return r;
+	}
+	dn_divide(&q, x, &lam);
+	dn_power(&u, &q, &k);		// (x/lam)^k
+	dn_divide(&t, &u, &q);		// (x/lam)^(k-1)
+	dn_exp(&v, &u);
+	dn_divide(&q, &t, &v);
+	dn_divide(&t, &q, &lam);
+	return dn_multiply(r, &t, &k);
+}
+
+// 112 bytes
+decNumber *cdf_WB(decNumber *r, const decNumber *x) {
+	decNumber k, lam, t;
+
+	if (weibull_param(r, &k, &lam, x))
+		return r;
+	if (dn_le0(x))
+		return decNumberZero(r);
+	if (decNumberIsInfinite(x))
+		return dn_1(r);
+
+	dn_divide(&t, x, &lam);
+	dn_power(&lam, &t, &k);
+	dn_minus(&t, &lam);
+	decNumberExpm1(&lam, &t);
+	return dn_minus(r, &lam);
+}
+
+
+/* Weibull distribution quantile function:
+ *	p = 1 - exp(-(x/lambda)^k)
+ *	exp(-(x/lambda)^k) = 1 - p
+ *	-(x/lambda)^k = ln(1-p)
+ * Thus, the qf is:
+ *	x = (-ln(1-p) ^ (1/k)) * lambda
+ * So no searching is required.
+ */
+// 140 bytes
+decNumber *qf_WB(decNumber *r, const decNumber *p) {
+	decNumber t, u, k, lam;
+
+	if (weibull_param(r, &k, &lam, p))
+		return r;
+	if (check_probability(r, p, 1))
+	    return r;
+	if (decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
+			dn_le0(&k) || dn_le0(&lam)) {
+		return set_NaN(r);
+	}
+
+	dn_ln1m(&u, p);
+	dn_minus(&t, &u);
+	decNumberRecip(&u, &k);
+	dn_power(&k, &t, &u);
+	return dn_multiply(r, &lam, &k);
 }
 
 
