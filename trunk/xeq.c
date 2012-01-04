@@ -202,8 +202,6 @@ unsigned int state_pc(void) {
 static void raw_set_pc(unsigned int pc) {
 	State.pc = pc;
 	update_program_bounds(0);
-	if (! isXROM(pc))
-		XromFlags.xIN = 0;	// Make sure we break out of special XROM handling
 }
 
 /*
@@ -3154,7 +3152,7 @@ static int dispatch_xrom(void *fp)
 	const s_opcode *xp = check_for_xrom_address(fp);
 	if (xp == NULL)
 		return 0;
-
+	State.state_lift = 1;
 	UserLocalRegs = LocalRegs;
 	gsbgto(addrXROM((xp - xrom) + 1), 1, state_pc());
 	return 1;
@@ -3461,9 +3459,10 @@ static void rargs(const opcode op) {
 				dispatch_xrom(fp);
 			return;
 		}
-		else
+		else {
 			fp(arg, (enum rarg)cmd);
-		State.state_lift = 1;
+			State.state_lift = 1;
+		}
 	}
 }
 
@@ -3487,8 +3486,10 @@ static void multi(const opcode op) {
 				dispatch_xrom(fp);
 			return;
 		}
-		else
+		else {
 			fp(op, (enum multiops)cmd);
+			State.state_lift = 1;
+		}
 	}
 }
 
@@ -3548,7 +3549,24 @@ void xeq(opcode op)
 		process_cmdline_set_lift();
 		if (Running) {
 #ifndef REALBUILD
-			if (! State2.trace ) {
+			if (State2.trace ) {
+				// Special handling for debug environment
+				if (XromFlags.xIN) {
+					// Restore private stack to normal stack
+					if (! XromFlags.mode_double && NumRegs < STACK_SIZE + EXTRA_REG) {
+						// Need space for double precision stack
+						cmdregs(STACK_SIZE + EXTRA_REG - 1, RARG_REGS);
+					}
+					XromFlags.xIN = 0;		// Clear flag before get_reg_n!
+					if (Error == ERR_NONE) {
+						State.mode_double = 1;
+						xcopy(get_reg_n(regX_idx), XromStack, sizeof(XromStack));
+					}
+					else
+						Error = ERR_NONE;	// Not enough RAM, can't restore
+				}
+			}
+			else {
 #endif
 				unsigned short int pc = state_pc();
 				while (isXROM(pc)) {
@@ -3561,6 +3579,12 @@ void xeq(opcode op)
 						++pc; // compensate for decpc below
 				}
 				raw_set_pc(pc);
+				if (XromFlags.xIN) {
+					// Restore state to before xIN
+					XromFlags.xIN = 0;
+					State.mode_double = XromFlags.mode_double;
+					UState.stack_depth = XromFlags.stack_depth;
+				}
 #ifndef REALBUILD
 			}
 #endif
@@ -3794,27 +3818,18 @@ void cmdlocr(unsigned int arg, enum rarg op) {
  *  We need a single stack level for a special marker
  */
 void cmdxlocal(enum nilop op) {
-	if (isXROM(state_pc())) {
-		if (RetStkPtr >= RetStkSize) {
-			err(ERR_RAM_FULL);
-			return;
-		}
-		RetStk[--RetStkPtr] = LOCAL_MASK | 1;
-		// fill with 0
-		xset(&XromLocal, 0, sizeof(XromLocal));
-		LocalRegs = RetStkPtr;
+	if (RetStkPtr >= RetStkSize) {
+		err(ERR_RAM_FULL);
+		return;
 	}
-	else {
-		cmdlocr(15, RARG_LOCR);
-	}
+	RetStk[--RetStkPtr] = LOCAL_MASK | 1;
+	// fill with 0
+	xset(&XromLocal, 0, sizeof(XromLocal));
+	LocalRegs = RetStkPtr;
 }
 
 #ifdef XROM_COMMANDS
 static int check_xin_xout(void) {
-	if (! isXROM(state_pc())) {
-		err(ERR_ILLEGAL);
-		return 1;
-	}
 	if (is_intmode()) {
 		err(ERR_BAD_MODE);
 		return 1;

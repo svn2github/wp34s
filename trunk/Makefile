@@ -48,11 +48,11 @@ endif
 
 ifeq ($(SYSTEM),windows32)
 EXE := .exe
-ifdef QTGUI
+#ifdef QTGUI
 MAKE=mingw32-make
 CC=mingw32-gcc
 CXX=mingw32-g++
-endif
+#endif
 else
 EXE :=
 endif
