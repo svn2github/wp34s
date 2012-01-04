@@ -2681,7 +2681,7 @@ static void specials(const opcode op) {
 }
 
 enum trig_modes get_trig_mode(void) {
-	if (State2.cmplx)
+	if (State2.cmplx || XromFlags.xIN)
 		return TRIG_RAD;
 	//if (State2.hyp)	return TRIG_RAD;
 	return (enum trig_modes) UState.trigmode;

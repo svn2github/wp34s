@@ -19,10 +19,7 @@ cauchy_pdf_special::	iC 0		/* Can only be infinite which has zero probability */
 			SPEC?
 				JMP cauchy_cdf_special
 			GSB cauchy_xform
-			STOM .00
-				GSB mode_rad
-				ATAN
-			RCLM .00
+			ATAN
 			[pi]
 			/
 			.
@@ -51,15 +48,13 @@ cauchy_cdf_special::	x<0?
 			-
 			[pi]
 			[times]
-			STOM .00
-				GSB mode_rad
-				TAN
-			RCLM .00
+			TAN
 			RCL K
 			x[<=]0?
 				ERR ERR_BAD_PARAM
 			[times]
 			RCL+ J
+			xOUT 000
 
 /* Utility conditional that checks if the argument is a valid probability or not */
 
