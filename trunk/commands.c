@@ -862,7 +862,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_XROM_IN,	&cmdxin,	255,			"xIN")
 	CMD(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
 #endif
-	CMD(RARG_CONVERGED,	&cmdconvertged,	9,			"CNVG?")
+	CMD(RARG_CONVERGED,	&cmdconvertged,	18,			"CNVG?")
 
 #undef CMDlbl
 #undef CMDlblnI
