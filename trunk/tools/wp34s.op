@@ -165,10 +165,10 @@ maxlibsteps=4094
 0x017c	cmd	R-SWAP
 0x017d	cmd	R-CLR
 0x017e	cmd	R-SORT
-0x017f	cmd	SLVI
-0x0180	cmd	SLVS
-0x0181	cmd	XEQUSR
-0x0182	cmd	POPUSR
+0x017f	cmd	SLVI	xrom
+0x0180	cmd	SLVS	xrom
+0x0181	cmd	XEQUSR	xrom
+0x0182	cmd	POPUSR	xrom
 0x0183	cmd	[infinity]?
 0x0184	cmd	NaN?
 0x0185	cmd	SPEC?
@@ -1093,10 +1093,10 @@ maxlibsteps=4094
 0x9b00	arg	MSG	max=24,indirect
 0x9c00	arg	LocR	max=100,indirect
 0x9d00	arg	REGS	max=100,indirect
-0x9e00	arg	xMSET	max=64,indirect
-0x9f00	arg	xMCLR	max=64,indirect
-0xa000	arg	xIN	max=255,indirect
-0xa100	arg	xOUT	max=255,indirect
+0x9e00	arg	xMSET	max=64,indirect,xrom
+0x9f00	arg	xMCLR	max=64,indirect,xrom
+0xa000	arg	xIN	max=255,indirect,xrom
+0xa100	arg	xOUT	max=255,indirect,xrom
 0xf000	mult	LBL
 0xf100	mult	LBL?
 0xf200	mult	XEQ
