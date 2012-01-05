@@ -332,7 +332,7 @@ $(OBJECTDIR)/alpha.o: alpha.c alpha.h xeq.h errors.h data.h decn.h int.h display
 		Makefile features.h
 $(OBJECTDIR)/charmap.o: charmap.c xeq.h errors.h data.h Makefile features.h
 $(OBJECTDIR)/commands.o: commands.c xeq.h errors.h data.h storage.h serial.h Makefile \
-		features.h
+		features.h xrom.h xrom_labels.h
 $(OBJECTDIR)/complex.o: complex.c decn.h complex.h xeq.h errors.h data.h consts.h \
 		Makefile features.h
 $(OBJECTDIR)/consts.o: consts.c consts.h Makefile features.h
@@ -345,7 +345,7 @@ $(OBJECTDIR)/int.o: int.c int.h xeq.h errors.h data.h serial.h Makefile features
 $(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h errors.h data.h display.h lcdmap.h atmel/board.h \
 		Makefile features.h
 $(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h errors.h data.h keys.h consts.h display.h lcd.h \
-		int.h xrom.h storage.h Makefile features.h
+		int.h xrom.h xrom_labels.h storage.h Makefile features.h
 $(OBJECTDIR)/matrix.o: matrix.c matrix.h xeq.h errors.h decn.h consts.h Makefile features.h
 $(OBJECTDIR)/prt.o: prt.c xeq.h errors.h data.h consts.h display.h Makefile features.h
 $(OBJECTDIR)/serial.o: serial.c xeq.h errors.h serial.h storage.h Makefile
@@ -354,8 +354,8 @@ $(OBJECTDIR)/stats.o: stats.c xeq.h errors.h data.h decn.h stats.h consts.h int.
 $(OBJECTDIR)/string.o: string.c xeq.h errors.h data.h Makefile features.h
 $(OBJECTDIR)/storage.o: storage.c xeq.h errors.h data.h storage.h Makefile features.h
 $(OBJECTDIR)/xeq.o: xeq.c xeq.h errors.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
-		display.h consts.h date.h storage.h Makefile features.h
-$(OBJECTDIR)/xrom.o: xrom.c xrom.h xeq.h errors.h data.h consts.h Makefile features.h
+		display.h consts.h date.h storage.h xrom.h xrom_labels.h Makefile features.h
+$(OBJECTDIR)/xrom.o: xrom.c xrom.h xrom_labels.h xeq.h errors.h data.h consts.h Makefile features.h
 $(OBJECTDIR)/stopwatch.o: stopwatch.c stopwatch.h decn.h xeq.h errors.h consts.h alpha.h display.h keys.h \
                 Makefile features.h
 
@@ -370,7 +370,7 @@ $(OBJECTDIR)/rtc.o: atmel/rtc.c atmel/rtc.h \
 $(OBJECTDIR)/main.o: main.c xeq.h errors.h data.h
 else
 $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h errors.h data.h keys.h consts.h display.h lcd.h \
-		int.h xrom.h storage.h Makefile features.h pretty.c
+		int.h xrom.h xrom_labels.h storage.h Makefile features.h pretty.c
 ifeq ($(SYSTEM),windows32)
 $(OBJECTDIR)/winserial.o: winserial.c serial.h Makefile
 endif		
