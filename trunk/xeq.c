@@ -1118,7 +1118,7 @@ void setX_int_sgn(unsigned long long int val, int sgn) {
  *  Set the register value explicitely
  */
 void zero_regs(REGISTER *dest, int n) {
-#if 0
+#if 1
 	int i;
 	if (is_intmode())
 		xset(dest, 0, n << 3);
@@ -1134,6 +1134,7 @@ void zero_regs(REGISTER *dest, int n) {
 	}
 #else
 	// This works for all modes
+	// no it doesn't -- it leaves varying values of zero around
 	xset(dest, 0, n << (3 + is_dblmode()));
 #endif
 
@@ -4026,23 +4027,43 @@ void cmdxout(unsigned int arg, enum rarg op) {
 
 
 /* A slightly obtuse command to check for convergence.
- * Arguments are:
- *	0	check for real X & Y being close based on current double mode
- *	1	check for real X & Y being close based on single precision
- *	2	check for real X & Y being close based on double precision
+ * Arguments are organised bitwise in this form:
  *
- *	+3	check absolute error not relative	(3, 4, 5)
- *	+6	check complex (X, Y) vs (Z, T)		(6, 7, 8 no absolute/relative)
- *	+9	NaN / infinites aren't considered converged
+ *	SMMTT
  *
- * In integer mode, the arguemnt is complete ignored.
+ * where:
+ *	TT is the tolerance parameter:
+ *
+ *	  	0	1e-14 tolerance
+ *	  	1	1e-24 tolerance
+ *	  	2	1e-32 tolerance
+ *	  	3	choose the best tolerance for the current modes
+ *			for user mode this means 0 for single precision and 2 for double precision
+ *
+ *	MM is the mode parameter:
+ *	  	0	compare real X & Y relatively
+ *	  	1	compare real X & Y absolutely
+ *	  	2	compare complex X/Y & Z/T for absolute difference
+ *	  	3	compare real X & Y relatively
+ *
+ *	S is the special number validation:
+ *		0	Nan & infinities are considered converged
+ *		1	NaN & infinities are not considered converged
+ *
+ * In integer mode, the arguemnt is completely ignored and an equality
+ * comparision is undertaken instead.
  */
+static const decNumber * const convergence_tolerances[3] = {
+	&const_1e_14, &const_1e_24, &const_1e_32
+};
+
 void cmdconverged(unsigned int arg, enum rarg cmd) {
-	int precision = arg % 3;
-	const int specials = arg < 9;
-	const int complex = (arg % 9) >= 6;
-	const int absolute = (arg % 9) >= 3;
 	const decNumber *tolerance;
+	unsigned int tol = arg & 3;
+	const unsigned int mode = (arg >> 2) & 3;
+	const int specials = arg & 0x10;
+	const int complex = mode == 2;
+	const int absolute = mode == 1;
 	decNumber t, x, y, z, a, b;
 	int res;
 
@@ -4051,9 +4072,13 @@ void cmdconverged(unsigned int arg, enum rarg cmd) {
 		return;
 	}
 
-	if (precision == 0)
-		precision = is_dblmode() ? 2 : 1;
-	tolerance = precision == 1 ? &const_1e_32 : &const_1e_24;
+	if (tol == 3) {
+		if (is_dblmode())
+			tol = (! XromFlags.xIN || XromFlags.mode_double) ? 2 : 1;
+		else
+			tol = 0;
+	}
+	tolerance = convergence_tolerances[tol];
 
 	getXYZT(&x, &y, &z, &t);
 	if (decNumberIsSpecial(&x) || decNumberIsSpecial(&y))
