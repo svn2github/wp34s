@@ -1920,65 +1920,6 @@ decNumber *decNumberPsi(decNumber *res, const decNumber *xin) {
 #endif
 
 
-// % = x . y / 100
-decNumber *decNumberPercent(decNumber *res, const decNumber *x) {
-	decNumber y, z;
-
-	getY(&y);
-	dn_mulpow10(&z, &y, -2);
-	return dn_multiply(res, &z, x);
-}
-
-// %chg = 100 ( x - y ) / y
-decNumber *decNumberPerchg(decNumber *res, const decNumber *x) {
-	decNumber w, y, z;
-
-	getY(&y);
-	dn_subtract(&z, x, &y);
-	dn_divide(&w, &z, &y);
-	dn_mul100(res, &w);
-	return res;
-}
-
-// %tot = 100 . x / y
-decNumber *decNumberPertot(decNumber *res, const decNumber *x) {
-	decNumber y, z;
-
-	getY(&y);
-	dn_divide(&z, x, &y);
-	dn_mul100(res, &z);
-	return res;
-}
-
-// Markup Margin = y / ( 1 - x / 100 )
-decNumber *decNumberPerMargin(decNumber *res, const decNumber *y, const decNumber *x) {
-	decNumber a, b;
-
-	dn_mulpow10(&a, x, -2);
-	dn_1m(&b, &a);
-	return dn_divide(res, y, &b);
-}
-
-// Margin = 100 (x - y) / x
-decNumber *decNumberMargin(decNumber *res, const decNumber *y, const decNumber *x) {
-	decNumber a, b;
-
-	dn_subtract(&a, x, y);
-	dn_mul100(&b, &a);
-	return dn_divide(res, &b, x);
-}
-
-decNumber *decNemberPerMRR(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x) {
-	decNumber a, b, c;
-
-	dn_divide(&a, x, y);
-	decNumberRecip(&b, z);
-	dn_power(&c, &a, &b);
-	dn_m1(&a, &c);
-	return dn_mul100(r, &a);
-}
-
-
 decNumber *decNumberHMS2HR(decNumber *res, const decNumber *x) {
 	decNumber m, s, t;
 

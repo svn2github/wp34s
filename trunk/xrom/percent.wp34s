@@ -1,0 +1,66 @@
+/**************************************************************************/
+/* Percentage calculations
+ */
+
+/* Percent
+ * % = x . y / 100
+ * Y is not consomued by this function.
+ */
+	XLBL"PERCENT"
+xrom_percent::	xIN MONADIC
+			RCL[times] Y
+			SDR 02
+		xOUT 000
+
+/* Percent change
+ * %chg = 100 ( x - y ) / y
+ * Y is not consomued by this function.
+ */
+ 	XLBL"PERCHG"
+xrom_perchg::	xIN MONADIC
+			RCL- Y
+			RCL/ Y
+per_mul100::		SDL 02
+		xOUT 000
+
+/* Percent total
+ * %tot = 100 . x / y
+ * Y is not consomued by this function.
+ */
+	XLBL"PERTOT"
+xrom_pertot::	xIN MONADIC
+			RCL Y
+			/
+			JMP per_mul100
+
+/* Margin
+ * Margin = 100 (x - y) / x
+ */
+	XLBL"MARGIN"
+xrom_margin::	xIN DYADIC
+			RCL- Y
+			RCL/ L
+			JMP per_mul100
+
+/* Percent MMR
+ * PerMRR = ((x/y) ^ 1/z - 1 ) * 100
+ */
+	XLBL"PERMMR"
+xrom_permmr::	xIN TRIADIC
+			x[<->] Y
+			/
+			x[<->] Y
+			[^x][sqrt]y
+			DEC X
+			JMP per_mul100
+
+/* Percent markup margin
+ * Markup Margin = y / ( 1 - x / 100 )
+ */
+	XLBL"PERMARGIN"
+xrom_permgn::	xIN DYADIC
+			SDR 02
+			+/-
+			INC X
+			/
+		xOUT 000

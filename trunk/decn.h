@@ -182,13 +182,6 @@ extern void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x);
 extern decNumber *decNumberComb(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberPerm(decNumber *res, const decNumber *x, const decNumber *y);
 
-extern decNumber *decNumberPercent(decNumber *res, const decNumber *x);
-extern decNumber *decNumberPerchg(decNumber *res, const decNumber *x);
-extern decNumber *decNumberPertot(decNumber *res, const decNumber *x);
-extern decNumber *decNumberPerMargin(decNumber *res, const decNumber *x, const decNumber *y);
-extern decNumber *decNumberMargin(decNumber *res, const decNumber *x, const decNumber *y);
-extern decNumber *decNemberPerMRR(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x);
-
 extern decNumber *decNumberHMS2HR(decNumber *res, const decNumber *x);
 extern decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x);
 extern decNumber *decNumberHMSAdd(decNumber *res, const decNumber *x, const decNumber *y);

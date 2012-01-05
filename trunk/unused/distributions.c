@@ -2,17 +2,17 @@
  *
  * Binomial	570
  * Cauchy	322
+ * Chi^2	844
  * Exponential	298
  * F		792
  * Geometric	394
+ * LogNormal	96
+ * Logistic	258
+ * Normal	162
  * Poisson	466
  * Q		856
  * T		1106
  * Weibull	450
- * Chi^2	844
- * Logistic	258
- * LogNormal	96
- * Normal	162
  * 
  * extras	190
  */

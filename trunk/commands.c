@@ -229,9 +229,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_xhat,	&stats_xhat,		NOFN,		NOFN,		"\031")
 	FUNC(OP_yhat,	&stats_yhat,		NOFN,		NOFN,		"\032")
 	FUNC(OP_sigper,	&stats_sigper,		NOFN,		NOFN,		"%\221")
-	FUNC(OP_PERCNT,	&decNumberPercent,	NOFN,		NOFN,		"%")
-	FUNC(OP_PERCHG,	&decNumberPerchg,	NOFN,		NOFN,		"\203%")
-	FUNC(OP_PERTOT,	&decNumberPertot,	NOFN,		NOFN,		"%T")
+	FUNC(OP_PERCNT,	XMR(PERCENT),		NOFN,		NOFN,		"%")
+	FUNC(OP_PERCHG,	XMR(PERCHG),		NOFN,		NOFN,		"\203%")
+	FUNC(OP_PERTOT,	XMR(PERTOT),		NOFN,		NOFN,		"%T")
 	FUNC(OP_HMS2,	&decNumberHMS2HR,	NOFN,		NOFN,		"\015HR")
 	FUNC(OP_2HMS,	&decNumberHR2HMS,	NOFN,		NOFN,		"\015H.MS")
 	FUNC(OP_NOT,	&decNumberNot,		NOFN,		&intNot,	"NOT")
@@ -335,8 +335,8 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #endif
 	FUNC(OP_COMB,	&decNumberComb,		&cmplxComb,	NOFN,		"COMB")
 	FUNC(OP_PERM,	&decNumberPerm,		&cmplxPerm,	NOFN,		"PERM")
-	FUNC(OP_PERMG,	&decNumberPerMargin,	NOFN,		NOFN,		"%+MG")
-	FUNC(OP_MARGIN,	&decNumberMargin,	NOFN,		NOFN,		"%MG")
+	FUNC(OP_PERMG,	XDR(PERMARGIN),		NOFN,		NOFN,		"%+MG")
+	FUNC(OP_MARGIN,	XDR(MARGIN),		NOFN,		NOFN,		"%MG")
 	FUNC(OP_PARAL,	XDR(PARL),		XDC(CPX_PARL),	NOFN,		"||")
 	FUNC(OP_AGM,	XDR(AGM),		XDC(CPX_AGM),	NOFN,		"AGM")
 	FUNC(OP_HMSADD,	&decNumberHMSAdd,	NOFN,		NOFN,		"H.MS+")
@@ -397,7 +397,7 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #ifdef INCLUDE_MULADD
 	FUNC(OP_MULADD, 	&decNumberMAdd,		&intMAdd,		"\034+")
 #endif
-	FUNC(OP_PERMRR,		&decNemberPerMRR,	(FP_TRIADIC_INT) NOFN,	"%MRR")
+	FUNC(OP_PERMRR,		XTR(PERMMR),		(FP_TRIADIC_INT) NOFN,	"%MRR")
         FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha,	(FP_TRIADIC_INT) NOFN,	"L\275\240")
 
 	FUNC(OP_MAT_MUL,	&matrix_multiply,	(FP_TRIADIC_INT) NOFN,	"M\034")
