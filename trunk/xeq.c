@@ -4002,7 +4002,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		set_was_complex();
 
 	// Move the stack according to the in/out fields
-	i = (int) XromIn - (int) XromOut;
+	i = (int) XromOut - (int) XromIn;
 	while (i < 0) {
 		lower();	// more to consume then to push back
 		++i;
@@ -4021,6 +4021,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		while (i--)
 			packed_from_packed128(&(get_stack(i)->s), &(XromStack[i].d));
 	}
+	RetStkPtr = LocalRegs;
 	do_rtn(0);
 }
 #endif
