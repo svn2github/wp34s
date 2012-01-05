@@ -18,7 +18,8 @@
  * 0	second derivative
  */
 		XLBL"2DERIV"			/* Entry: SECOND DERIVATIVE */
-			GSB entry
+			INTM?
+				ERR ERR_BAD_MODE
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
 				JMP deriv_bad_input
@@ -109,7 +110,8 @@ deriv_6point::		RCL .01
 
 
 		XLBL"DERIV"				/* Entry: DERIVATIVE */
-			GSB entry
+			INTM?
+				ERR ERR_BAD_MODE
 			LocR 04				/* Registers .00 to .04 */
 			SPEC?
 				JMP deriv_bad_input

@@ -10,7 +10,8 @@
  * 4	I
  */
 		XLBL"QUAD"				/* Entry: QUADRATIC SOLVER */
-			GSB entry
+			INTM?
+				ERR ERR_BAD_MODE
 			XLOCAL				/* Registers .00 to .04 are used */
 			STOS .00
 			RCL I

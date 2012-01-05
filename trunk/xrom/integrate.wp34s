@@ -47,7 +47,8 @@ int_zero_interval::	GSB int_restore_limits
 
 
 		XLBL"INTEGRATE"			/* Entry: INTEGRATE */
-			GSB entry
+			INTM?
+				ERR ERR_BAD_MODE
 			LocR 04				/* Need registers .00 to .04 */
 			SPEC?
 				JMP int_bad_range

@@ -1,6 +1,7 @@
 /**************************************************************************/
 		XLBL"Bn_star"			/* Bernoulli number Bn* = +/- Bn(2 n) */
-			GSB entry
+			INTM?
+				ERR ERR_BAD_MODE
 			FP?
 				ERR ERR_DOMAIN
 			x[<=]0?
@@ -14,7 +15,8 @@
 			JMP zeta_exit
 
 		XLBL"Bn"			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
-			GSB entry
+			INTM?
+				ERR ERR_BAD_MODE
 			FP?
 				ERR ERR_DOMAIN
 			x<0?
@@ -56,7 +58,8 @@ zeta_0::		.
  * with the constants computed on the fly.
  */
 		XLBL"ZETA"			/* Zeta function */
-			GSB entry
+			INTM?
+				ERR ERR_BAD_MODE
 			XLOCAL
 			STOS .08
 			x=0?

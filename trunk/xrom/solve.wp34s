@@ -28,7 +28,8 @@
  * 4	f(b)
  */
 		XLBL"SOLVE"			/* Entry: SOLVE */
-			GSB entry
+			INTM?
+				ERR ERR_BAD_MODE
 			LocR 04			/* Need 5 registers and flags */
 			x[approx]? Y
 				INC Y
