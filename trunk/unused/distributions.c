@@ -219,6 +219,73 @@ decNumber *cdf_WB(decNumber *r, const decNumber *x) {
 }
 
 
+/**************************************************************************/
+/* Logistic distribution
+ * Two parameters:
+ *	J = mu (location)
+ *	K = s (scale) > 0
+ * Formulas:
+ *	pdf = 1 / ( (cosh( (x-J) / 2K ) )^2 * 4 K)
+ *	cdf = 1/2 + tanh( (x-J) / 2K ) / 2 = (1 + tanh( (x-J) / 2K)) / 2
+ *	qf = arctanh( (p-1/2) * 2) * 2K + j = archtanh(2p - 1) * 2K + J
+ */
+
+/* 78 bytes */
+static int logistic_xform(decNumber *r, decNumber *c, const decNumber *x, decNumber *s) {
+	decNumber mu, a, b;
+	
+	dist_two_param(&mu, s);
+	if (param_positive(r, s))
+		return 1;
+	dn_subtract(&a, x, &mu);
+	dn_divide(&b, &a, s);
+	dn_div2(c, &b);
+	return 0;
+}
+
+/* 80 bytes */
+decNumber *pdf_logistic(decNumber *r, const decNumber *x) {
+	decNumber a, b, s;
+
+	if (logistic_xform(r, &a, x, &s))
+		return r;
+	decNumberCosh(&b, &a);
+	decNumberSquare(&a, &b);
+	dn_multiply(&b, &a, &const_4);
+	dn_multiply(&a, &b, &s);
+	return decNumberRecip(r, &a);
+}
+
+/* 62 bytes */
+decNumber *cdf_logistic(decNumber *r, const decNumber *x) {
+	decNumber a, b, s;
+
+	if (logistic_xform(r, &a, x, &s))
+		return r;
+	decNumberTanh(&b, &a);
+	dn_div2(&a, &b);
+	return dn_add(r, &a, &const_0_5);
+}
+
+/* 116 bytes */
+decNumber *qf_logistic(decNumber *r, const decNumber *p) {
+	decNumber a, b, mu, s;
+
+	dist_two_param(&mu, &s);
+	if (param_positive(r, &s))
+		return r;
+	if (check_probability(r, p, 0))
+	    return r;
+	dn_subtract(&a, p, &const_0_5);
+	dn_mul2(&b, &a);
+	decNumberArcTanh(&a, &b);
+	dn_mul2(&b, &a);
+	dn_multiply(&a, &b, &s);
+	return dn_add(r, &a, &mu);
+}
+
+
+
 /* Weibull distribution quantile function:
  *	p = 1 - exp(-(x/lambda)^k)
  *	exp(-(x/lambda)^k) = 1 - p

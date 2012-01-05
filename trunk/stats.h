@@ -93,11 +93,6 @@ extern decNumber *pdf_F(decNumber *, const decNumber *);
 extern decNumber *cdf_F(decNumber *, const decNumber *);
 extern decNumber *qf_F(decNumber *, const decNumber *);
 
-/* Weibull distribution with parameters k and lambda in registers J and K */
-extern decNumber *pdf_WB(decNumber *, const decNumber *);
-extern decNumber *cdf_WB(decNumber *, const decNumber *);
-extern decNumber *qf_WB(decNumber *, const decNumber *);
-
 /* Poisson distribution with parameter lambda (in register J) */
 extern decNumber *pdf_P(decNumber *, const decNumber *);
 extern decNumber *cdf_P(decNumber *, const decNumber *);
@@ -122,10 +117,5 @@ extern decNumber *qf_normal(decNumber *, const decNumber *);
 extern decNumber *pdf_lognormal(decNumber *, const decNumber *);
 extern decNumber *cdf_lognormal(decNumber *, const decNumber *);
 extern decNumber *qf_lognormal(decNumber *, const decNumber *);
-
-/* Lognormal distribution m, sigma in registers J and K */
-extern decNumber *pdf_logistic(decNumber *, const decNumber *);
-extern decNumber *cdf_logistic(decNumber *, const decNumber *);
-extern decNumber *qf_logistic(decNumber *, const decNumber *);
 
 #endif

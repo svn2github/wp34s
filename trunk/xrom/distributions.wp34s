@@ -105,6 +105,68 @@ expon_param::		RCL J
 
 
 /**************************************************************************/
+/* Logistic distribution
+ * Two parameters:
+ *	J = mu (location)
+ *	K = s (scale) > 0
+ * Formulas:
+ *	pdf = 1 / ( (cosh( (x-J) / 2K ) )^2 * 4 K)
+ *	cdf = 1/2 + tanh( (x-J) / 2K ) / 2 = (1 + tanh( (x-J) / 2K)) / 2
+ *	qf = arctanh( (p-1/2) * 2) * 2K + j = archtanh(2p - 1) * 2K + J
+ */
+		XLBL"PDF_LOGIT"
+xlbl_pdf_logit::	xIN MONADIC
+			GSB logistic_param
+			SPEC?
+				JMP dist_0
+			COSH
+			x[^2]
+			RCL[times] K
+			4
+			[times]
+			1/x
+			xOUT 000
+
+		XLBL"CDF_LOGIT"		/* (1 + tanh( (x-J) / 2K)) / 2 */
+xlbl_cdf_logit::	xIN MONADIC
+			GSB logistic_param
+			SPEC?
+				GSB cdf_infinite
+			x[<=]0?
+				JMP dist_0
+			TANH
+			INC X
+			2
+			/
+			xOUT 000
+
+/* Extra the logistic rescaled parameter (x-J) / 2K */
+logistic_param::	RCL- J
+			GSB check_special
+			RCL K
+			GSB check_special_pos
+			RCL+ X
+			/
+			RTN
+			
+		XLBL"QF_LOGIT"		/* archtanh(2p - 1) * 2K + J */
+xlbl_qf_logit::		xIN MONADIC
+			GSB check_probability
+			RCL+ X
+			DEC X
+			ATANH
+			RCL+ X
+			RCL K
+			GSB check_special_pos
+			[times]
+			RCL J
+			GSB check_special
+			+
+			xOUT 000
+
+
+
+/**************************************************************************/
 /* Weibull distribution
  * Two parameters:
  *	J = lambda (shape) > 0
