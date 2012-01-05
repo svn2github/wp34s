@@ -11,26 +11,26 @@
 /*
  * Define some utility macros to assist with xIN
  */
-#define xIN_INARGS(n)	(n & 7)
-#define xIN_OUTARGS(n)	((n & 7) << 3)
+#define xIN_OUTARGS(n)	((n & 7) << 5)
+#define xIN_INARGS(n)	((n & 7) << 2)
 #define xIN_ARGS(i, o)	(xIN_INARGS(i) | xIN_OUTARGS(o))
-#define xIN_LASTX	64
-#define xIN_COMPLEX	128
+#define xIN_LASTX	2
+#define xIN_COMPLEX	1
 
 /*
  *  Defines for some argument combinations for xIN
- */										// octal value	
-#define NILADIC_0		(xIN_ARGS(0, 0))				// 0000
-#define NILADIC_1		(xIN_ARGS(0, 1))				// 0010
-#define NILADIC_2		(xIN_ARGS(0, 2))				// 0020
-#define NILADIC_1_COMPLEX	(xIN_ARGS(0, 2) | xIN_COMPLEX)			// 0220
+ */										
+#define NILADIC_0		(xIN_ARGS(0, 0))			
+#define NILADIC_1		(xIN_ARGS(0, 1))			
+#define NILADIC_2		(xIN_ARGS(0, 2))			
+#define NILADIC_1_COMPLEX	(NILADIC_1 | xIN_COMPLEX)		
 
-#define MONADIC			(xIN_ARGS(1, 1) | xIN_LASTX)			// 0111 
-#define DYADIC			(xIN_ARGS(2, 1) | xIN_LASTX)			// 0112 
-#define TRIADIC			(xIN_ARGS(3, 1) | xIN_LASTX)			// 0113
+#define MONADIC			(xIN_ARGS(1, 1) | xIN_LASTX)		
+#define DYADIC			(xIN_ARGS(2, 1) | xIN_LASTX)		
+#define TRIADIC			(xIN_ARGS(3, 1) | xIN_LASTX)		
 
-#define MONADIC_COMPLEX		(xIN_ARGS(2, 2) | xIN_LASTX | xIN_COMPLEX)	// 0322 
-#define DYADIC_COMPLEX		(xIN_ARGS(4, 2) | xIN_LASTX | xIN_COMPLEX)	// 0324 
+#define MONADIC_COMPLEX		(MONADIC | xIN_COMPLEX)
+#define DYADIC_COMPLEX		(DYADIC  | xIN_COMPLEX)
 
 
 /*

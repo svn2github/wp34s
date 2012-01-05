@@ -3938,12 +3938,15 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		XromFlags.xIN = 1;
 	}
 	// Parse the argument into fields
-	XromFlags.setLastX = (arg & 0x40) != 0;
-	XromFlags.complex = (arg & 0x80) != 0;
-	XromIn = i = arg & 0007;
-	XromOut = (arg >> 3) & 0007;
-	if (! i)
-		return;
+	XromFlags.setLastX = (arg & 0x02) != 0;
+	XromFlags.complex = (arg & 0x01) != 0;
+	XromIn = (arg >> 2) & 0x07;
+	XromOut = (arg >> 5) & 0x07;
+	if (XromFlags.complex) {
+		// Complex arguments are always in pairs
+		XromIn <<= 1;
+		XromOut <<= 1;
+	}
 
 	// Switch to double precision mode
 	if (State.mode_double) {
@@ -3953,21 +3956,27 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	else
 		op_double(OP_DBLON);
 
+	// Set stack size to 8 and turn on stack_lift
+	State.state_lift = 1;
+	UState.stack_depth = 1;
+
 	// check for any NaNs in input
-	while (--i) {
+	for (i = 0; i < XromIn; ++i) {
 		decNumber x;
 		if (decNumberIsNaN(getRegister(&x, regX_idx + i))) {
 			// Got a NaN as input, now either NaN the outputs or raise a
 			// domain error
 			if (get_user_flag(NAN_FLAG)) {
-				;
-			} else
+				for (i = 0; i < XromOut; ++i)
+					setRegister(regX_idx + i, &const_NaN);
+				// Early exit of routine
+				cmdxout(0, RARG_XROM_OUT);
+			} 
+			else
 				err(ERR_DOMAIN);	// this will do all the cleanup
 			return;
 		}
 	}
-	State.state_lift = 1;
-	UState.stack_depth = 1;
 }
 
 /*
