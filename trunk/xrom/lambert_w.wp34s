@@ -14,7 +14,7 @@ xrom_wo::		xIN MONADIC
 			SPEC?
 				JMP LamW_NaN
 			x=0?
-				xOUT 000
+				xOUT xOUT_NORMAL
 			Num eE
 			1/x
 			+/-
@@ -33,7 +33,7 @@ LamW0_loop::		FILL
 			/
 			-
 			CNVG? CVG_RELATIVE
-				xOUT 000
+				xOUT xOUT_NORMAL
 			JMP LamW0_loop
 
 /**************************************************************************/
@@ -63,19 +63,19 @@ LamW1_loop::		STO .01
 			JMP LamW1_loop
 LamW_converged::	RCL/ .00
 			+/-
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 LamW_inf::	x>0?
 			JMP LamW_NaN
 		FC? D
 			ERR ERR_MINFINITY
 		Num -[infinity]
-		xOUT 000
+		xOUT xOUT_NORMAL
 
 LamW_NaN::	FC? D
 			ERR ERR_DOMAIN
 		Num NaN
-		xOUT 000
+		xOUT xOUT_NORMAL
 
 
 
@@ -98,10 +98,10 @@ LamW_NaN::	FC? D
 xrom_winv::		xIN MONADIC
 				e[^x]
 				RCL[times] L
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 		XLBL"CPX_W_INVERSE"
 xrom_c_winv::		xIN MONADIC_COMPLEX
 				[cmplx]e[^x]
 				[cmplx]RCL[times] L
-			xOUT 000
+			xOUT xOUT_NORMAL

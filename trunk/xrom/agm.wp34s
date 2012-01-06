@@ -13,7 +13,7 @@ agm_loop::	RCL[times] Y
 		x[<->] Y
 		[sqrt]
 		CNVG? CVG_RELATIVE
-			xOUT 000
+			xOUT xOUT_NORMAL
 		JMP agm_loop
 
 /**************************************************************************/
@@ -30,7 +30,7 @@ cagm_loop::	[cmplx]RCL[times] Z
 		[cmplx]x[<->] Z
 		[cmplx][sqrt]
 		CNVG? CVG_COMPLEX
-			xOUT 000
+			xOUT xOUT_NORMAL
 		JMP cagm_loop
 
 /**************************************************************************/

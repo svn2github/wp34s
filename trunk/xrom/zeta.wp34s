@@ -11,7 +11,7 @@
 			GSB bernoulli
 			STO+ X
 			ABS
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 		XLBL"Bn"			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
 			xIN MONADIC
@@ -27,7 +27,7 @@
 				JMP Bn_odd
 			STO BERN_SAVEX
 			GSB bernoulli
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 bernoulli::		DEC X
 			+/-
@@ -38,15 +38,15 @@ bernoulli::		DEC X
 #undef BERN_SAVEX
 
 Bn_odd::		iC 0
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 Bn_0::			iC 1
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 zeta_0::		.
 			5
 			+/-
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 /**************************************************************************/
 /* Zeta function implementation based on Jean-Marc Baillard's from:
@@ -59,7 +59,7 @@ zeta_0::		.
 			x=0?
 				JMP zeta_0
 			GSB zeta_int
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 zeta_int::		STO .01
 			STO .07

@@ -19,7 +19,7 @@
 			[pi]
 			[times]
 			1/x
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 		XLBL"CDF_CAUCHY"
 			xIN MONADIC
@@ -32,7 +32,7 @@
 			.
 			5
 			+
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 cauchy_xform::		RCL- J
 			GSB check_special
@@ -55,7 +55,7 @@ cauchy_xform::		RCL- J
 			[times]
 			RCL+ J
 			GSB check_special
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 /**************************************************************************/
 /* Exponential distribution
@@ -77,7 +77,7 @@ cauchy_xform::		RCL- J
 			+/-
 			e[^x]
 			RCL[times] J
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 		XLBL"CDF_EXPON"
 			xIN MONADIC
@@ -88,7 +88,7 @@ cauchy_xform::		RCL- J
 			+/-
 			e[^x]-1
 			+/-
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 		XLBL"QF_EXPON"
 			xIN MONADIC
@@ -97,7 +97,7 @@ cauchy_xform::		RCL- J
 			GSB expon_param
 			/
 			+/-
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 expon_param::		RCL J
 			GSB check_special_pos
@@ -125,7 +125,7 @@ xlbl_pdf_logit::	xIN MONADIC
 			4
 			[times]
 			1/x
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 		XLBL"CDF_LOGIT"		/* (1 + tanh( (x-J) / 2K)) / 2 */
 xlbl_cdf_logit::	xIN MONADIC
@@ -138,7 +138,7 @@ xlbl_cdf_logit::	xIN MONADIC
 			INC X
 			2
 			/
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 /* Extra the logistic rescaled parameter (x-J) / 2K */
 logistic_param::	RCL- J
@@ -162,7 +162,7 @@ xlbl_qf_logit::		xIN MONADIC
 			RCL J
 			GSB check_special
 			+
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 
 
@@ -193,7 +193,7 @@ xlbl_qf_logit::		xIN MONADIC
 			RCL/ Y
 			RCL[times] K
 			RCL/ J
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 		XLBL"CDF_WEIB"
 			xIN MONADIC
@@ -208,7 +208,7 @@ xlbl_qf_logit::		xIN MONADIC
 			+/-
 			e[^x]-1
 			+/-
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 weibull_param::		RCL J
 			GSB check_special_pos
@@ -229,7 +229,7 @@ weibull_param::		RCL J
 			RCL J
 			GSB check_special_pos
 			[times]
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 /**************************************************************************/
 /* Utility conditional that checks if the argument is a valid probability or not */
@@ -259,23 +259,23 @@ check_special::		SPEC?
 dist_neginf::		FC? D
 				ERR ERR_MINFINITY
 			Num -[infinity]
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 dist_posinf::		FC? D
 				ERR ERR_INFINITY
 			Num [infinity]
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 dist_NaN::		FC? D
 				ERR ERR_DOMAIN
 			Num NaN
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 dist_0::		iC 0
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 dist_1::		iC 1
-			xOUT 000
+			xOUT xOUT_NORMAL
 
 /**************************************************************************/
 /* Some utility subroutines */

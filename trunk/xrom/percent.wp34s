@@ -10,7 +10,7 @@
 xrom_percent::	xIN MONADIC
 			RCL[times] Y
 			SDR 02
-		xOUT 000
+		xOUT xOUT_NORMAL
 
 /* Percent change
  * %chg = 100 ( x - y ) / y
@@ -21,7 +21,7 @@ xrom_perchg::	xIN MONADIC
 			RCL- Y
 			RCL/ Y
 per_mul100::		SDL 02
-		xOUT 000
+		xOUT xOUT_NORMAL
 
 /* Percent total
  * %tot = 100 . x / y
@@ -63,4 +63,4 @@ xrom_permgn::	xIN DYADIC
 			+/-
 			INC X
 			/
-		xOUT 000
+		xOUT xOUT_NORMAL
