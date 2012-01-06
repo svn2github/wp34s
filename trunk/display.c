@@ -304,12 +304,11 @@ static void annunciators(void) {
 	switch (cur_shift()) {
 	default:
 	case SHIFT_N:
-		if (is_dblmode())
-			*p++ = 'D';
-		else if (State2.wascomplex) {
+		if (State2.wascomplex)
 			*p++ = 'C';
-			State2.wascomplex = 0;
-		} else
+		else if (is_dblmode())
+			*p++ = 'D';
+		else
 			p = scopy(p, " \006");
 		break;
 	case SHIFT_F:	p = scopy(p, "\021\006");	break;

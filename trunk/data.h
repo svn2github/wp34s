@@ -229,9 +229,9 @@ struct _state2 {
 
 	unsigned int confirm : 3;	// Confirmation of operation required
 	unsigned int int_window : 3;	// Which window to display 0=rightmost
+	unsigned int wascomplex : 2;	// Previous operation was complex
 	unsigned int gtodot : 1;	// GTO . sequence met
 	unsigned int cmplx : 1;		// Complex prefix pressed
-	unsigned int wascomplex : 1;	// Previous operation was complex
 	unsigned int arrow : 1;		// Conversion in progress
 	unsigned int multi : 1;		// Multi-word instruction being entered
 	unsigned int version : 1;	// Version display mode

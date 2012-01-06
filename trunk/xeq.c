@@ -447,11 +447,10 @@ unsigned int find_user_pc(unsigned int target) {
 
 
 /* Set a flag to indicate that a complex operation has taken place
- * This only happens if we're not in a program.
+ * The flag disappears with the next command executed.
  */
 static void set_was_complex(void) {
-	if (! Running)
-		State2.wascomplex = 1;
+	State2.wascomplex = 1;
 }
 
 
@@ -3583,6 +3582,7 @@ void xeq(opcode op)
 	}
 #endif
 	Busy = 0;
+	State2.wascomplex = 0;
 	xcopy(save, StackBase, sizeof(save));
 	if (isDBL(op))
 		multi(op);
@@ -3981,7 +3981,8 @@ void cmdxin(unsigned int arg, enum rarg op) {
 
 /*
  *  xOUT: Return from an XROM routine that has previously called xIN
- *  The argument is presently unused.
+ *  Argument:
+ *     bit 0 set - do a RTN+1
  */
 void cmdxout(unsigned int arg, enum rarg op) {
 	int i, dbl;
