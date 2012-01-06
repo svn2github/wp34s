@@ -1833,7 +1833,8 @@ void op_rtn(enum nilop op) {
 		// Manual return goes to step 0 and clears the return stack
 		clrretstk_pc();
 	}
-	do_rtn(op == OP_RTNp1 ? 1 : 0);
+	else
+		do_rtn(op == OP_RTNp1 ? 1 : 0);
 }
 
 
