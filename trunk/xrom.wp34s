@@ -14,8 +14,14 @@
 #define xIN_OUTARGS(n)	((n & 7) << 5)
 #define xIN_INARGS(n)	((n & 7) << 2)
 #define xIN_ARGS(i, o)	(xIN_INARGS(i) | xIN_OUTARGS(o))
-#define xIN_LASTX	2
-#define xIN_COMPLEX	1
+#define xIN_LASTX	(2)
+#define xIN_COMPLEX	(1)
+
+/*
+ * Define some utility macros to assist with xOUT
+ */
+#define xOUT_NORMAL	(0)
+#define xOUT_RET_SKIP	(1)
 
 /*
  *  Defines for some argument combinations for xIN

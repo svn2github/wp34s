@@ -4031,7 +4031,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 			packed_from_packed128(&(get_stack(i)->s), &(XromStack[i].d));
 	}
 	RetStkPtr = LocalRegs;
-	do_rtn(0);
+	do_rtn(arg & 1);
 }
 #endif
 
