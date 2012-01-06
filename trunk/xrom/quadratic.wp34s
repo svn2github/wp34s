@@ -3,7 +3,7 @@
  * Based on code by Franz.
  */
 		XLBL"QUAD"				/* Entry: QUADRATIC SOLVER */
-xrom_quad::		xIN (xIN_ARGS(0, 2))
+xrom_quad::		xIN (xIN_ARGS(0, 2) | xIN_LASTX) 
 			RCL+ X				/* 2c b a . . . . . */
 			x[<->] Z				/* a b 2c . . . . . */
 			x=0?
@@ -37,4 +37,4 @@ quad_complex::		ABS
 			RCL/ B				/* b/2a sqrt/2a ? b 2c 2a . . */
 			+/-
 			SF Flag_complex
-			xOUT xOUT_RET_SKIP
+			xOUT (xOUT_RET_SKIP | xOUT_NO_LASTY)

@@ -3983,6 +3983,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
  *  xOUT: Return from an XROM routine that has previously called xIN
  *  Argument:
  *     bit 0 set - do a RTN+1
+ *     bit 1 set - leave I alone even with a complex result
  */
 void cmdxout(unsigned int arg, enum rarg op) {
 	int i, dbl;
@@ -4003,7 +4004,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 
 	// Last X handling and complex flag
 	if (XromFlags.setLastX) {
-		if (XromFlags.complex)
+		if (XromFlags.complex && ! (arg & 2))
 			setlastXY();
 		else
 			setlastX();
