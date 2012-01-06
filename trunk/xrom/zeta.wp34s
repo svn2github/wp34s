@@ -1,55 +1,52 @@
 /**************************************************************************/
+#define BERN_SAVEX	.08
 		XLBL"Bn_star"			/* Bernoulli number Bn* = +/- Bn(2 n) */
-			INTM?
-				ERR ERR_BAD_MODE
+			xIN MONADIC
 			FP?
 				ERR ERR_DOMAIN
 			x[<=]0?
 				ERR ERR_DOMAIN
-			XLOCAL
-			STOS .08
+			STO BERN_SAVEX
 			STO+ X
 			GSB bernoulli
 			STO+ X
 			ABS
-			JMP zeta_exit
+			xOUT 000
 
 		XLBL"Bn"			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
-			INTM?
-				ERR ERR_BAD_MODE
+			xIN MONADIC
 			FP?
 				ERR ERR_DOMAIN
 			x<0?
 				ERR ERR_DOMAIN
-			XLOCAL
-			STOS .08
 			x=0?
 				JMP Bn_0
 			x=1?
 				JMP zeta_0
 			ODD?
 				JMP Bn_odd
+			STO BERN_SAVEX
 			GSB bernoulli
-			JMP zeta_exit
+			xOUT 000
 
-bernoulli::		STO 12
-			DEC X
+bernoulli::		DEC X
 			+/-
 			GSB zeta_int
-			RCL[times] .08
+			RCL[times] BERN_SAVEX
 			+/-
 			RTN
+#undef BERN_SAVEX
 
 Bn_odd::		iC 0
-			JMP zeta_exit
+			xOUT 000
 
 Bn_0::			iC 1
-			JMP zeta_exit
+			xOUT 000
 
 zeta_0::		.
 			5
 			+/-
-			JMP zeta_exit
+			xOUT 000
 
 /**************************************************************************/
 /* Zeta function implementation based on Jean-Marc Baillard's from:
@@ -58,19 +55,12 @@ zeta_0::		.
  * with the constants computed on the fly.
  */
 		XLBL"ZETA"			/* Zeta function */
-			INTM?
-				ERR ERR_BAD_MODE
-			XLOCAL
-			STOS .08
+			xIN MONADIC
 			x=0?
 				JMP zeta_0
 			GSB zeta_int
+			xOUT 000
 
-zeta_exit::		x[<->] .08
-			STO L
-			RCLS .08
-			RTN
-		
 zeta_int::		STO .01
 			STO .07
 			.

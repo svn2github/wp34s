@@ -12,14 +12,11 @@
  */
 
 		XLBL"W0"
-			INTM?
-				ERR ERR_BAD_MODE
-			XLOCAL
-			STOS .08
+xrom_wo::		xIN MONADIC
 			SPEC?
-				JMP LamW_NaN2
+				JMP LamW_NaN
 			x=0?
-				JMP LamW_exit
+				xOUT 000
 			Num eE
 			1/x
 			+/-
@@ -37,26 +34,20 @@ LamW0_loop::		FILL
 			INC X
 			/
 			-
-			x[approx]? Y
-			JMP LamW_exit
+			CNVG? CVG_RELATIVE
+				xOUT 000
 			JMP LamW0_loop
 
 /**************************************************************************/
 /* The negative branch of the real W function.
- *
- * MORE - needs conversion to double precision.
  */
 
 		XLBL"W1"
-			INTM?
-				ERR ERR_BAD_MODE
-			XLOCAL
-			STOS .08
+xrom_w1::		xIN MONADIC
 			SPEC?
-				JMP LamW_NaN2
+				JMP LamW_NaN
 			x[>=]0?
 				JMP LamW_inf
-			STOS .08
 			+/-
 			1/x
 			STO .00
@@ -69,32 +60,25 @@ LamW1_loop::		STO .01
 			RCL[times] .00
 			RCL .01
 			x[<->] Y
-			-
-			x=0?
+			CNVG? CVG_RELATIVE
 				JMP LamW_converged
-			RCL L
 			JMP LamW1_loop
-LamW_converged::	RCL L
-			RCL/ .00
+LamW_converged::	RCL/ .00
 			+/-
-			JMP LamW_exit
+			xOUT 000
 
 LamW_inf::	x>0?
-			JMP LamW_NaN2
+			JMP LamW_NaN
 		FC? D
 			ERR ERR_MINFINITY
 		Num -[infinity]
-		JMP LamW_exit
+		xOUT 000
 
-LamW_NaN::	RCLS .08
-LamW_NaN2::	FC? D
+LamW_NaN::	FC? D
 			ERR ERR_DOMAIN
 		Num NaN
+		xOUT 000
 
-LamW_exit::	x[<->] .08
-		STO L
-		RCLS .08
-		RTN
 
 
 /**************************************************************************/
@@ -115,18 +99,13 @@ LamW_exit::	x[<->] .08
  */
 
 		XLBL"W_INVERSE"
-		       DBLON
-		       e[^x]
-		       x[<->] L
-		       RCL[times] L
-		       DBLOFF
-		       RTN
+xrom_winv::		xIN MONADIC
+				e[^x]
+				RCL[times] L
+			xOUT 000
 
-		/* MORE - this doesn't work in DBL mode for some reason */
 		XLBL"CPX_W_INVERSE"
-		       /* DBLON */
-		       [cmplx]e[^x]
-		       [cmplx]x[<->] L
-		       [cmplx]RCL[times] L
-		       /* DBLOFF */
-		       RTN
+xrom_c_winv::		xIN MONADIC_COMPLEX
+				[cmplx]e[^x]
+				[cmplx]RCL[times] L
+			xOUT 000
