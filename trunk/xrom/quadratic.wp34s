@@ -4,37 +4,37 @@
  */
 		XLBL"QUAD"				/* Entry: QUADRATIC SOLVER */
 xrom_quad::		xIN (xIN_ARGS(0, 2))
-			RCL+ X				/* 2c b a . */
-			x[<->] Z			/* a b 2c . */
+			RCL+ X				/* 2c b a . . . . . */
+			x[<->] Z				/* a b 2c . . . . . */
 			x=0?
 				ERR ERR_INVALID		/* Invalid arugment error */
-			R[v]
-			[cmplx]STO Z
-			R[^]
-			RCL+ X				/* 2a b 2c . */
-			STO B
-			RCL Y				/* b 2a b 2c */
-			[cmplx][times]			/* b^2-4ac 2b(a+c) b 2c */
-			//STO .01				/* Save the discriminant for later */
+			R[v]				/* b 2c . . . . . a */
+			[cmplx]STO Z			/* b 2c b 2c . . . a */
+			R[^]				/* a b 2c b 2c . . . */
+			RCL+ X				/* 2a b 2c b 2c . . . */
+			STO B				/* 2a b 2c b 2c 2a . . */
+			RCL Y				/* b 2a b 2c b 2c 2a . */
+			[cmplx][times]			/* b^2-4ac 2b(a+c) b 2c 2a . . . */
+			//STO .01			/* Save the discriminant for later */
 			x<0?
 				JMP quad_complex
-			[sqrt]				/* sqrt 2b(a+c) b 2c */
-			x[<->] Y			/* . sqrt b 2c */
-			DROP				/* sqrt b 2c 2c */
-			x[<->] Y			/* b sqrt 2c 2c */
+			[sqrt]				/* sqrt 2b(a+c) b 2c 2a . . . */
+			x[<->] Y				/* . sqrt b 2c 2a . . . */
+			DROP				/* sqrt b 2c 2a . . . . */
+			x[<->] Y				/* b sqrt 2c 2a . . . . */
 			x[>=]0?
 				[cmplx]CONJ
-			-				/* -b-sqrt 2c 2c 2c */
+			-				/* -b-sqrt 2c 2a . . . . . */
                         x[!=]0?
-				STO/ Y			/* -b-sqrt 2c/(-b-sqrt) 2c 2c */
-			RCL/ Z				/* (b-sqrt)/2a 2c/(b-sqrt) 2c 2c */
+				STO/ Y			/* -b-sqrt 2c/(-b-sqrt) 2c 2a . . . . */
+			RCL/ Z				/* (b-sqrt)/2a 2c/(b-sqrt) 2c 2a . . . . */
 			xOUT xOUT_NORMAL
 
 quad_complex::		ABS
-			[sqrt]				/* sqrt ? b 2c */
-			RCL/ A				/* sqrt/2a ? b 2c */
-			RCL Z				/* b sqrt/2a ? b */
-			RCL/ B				/* b/2a sqrt/2a ? b */
+			[sqrt]				/* sqrt ? b 2c 2a . . . */
+			RCL/ A				/* sqrt/2a ? b 2c 2a . . . */
+			RCL Z				/* b sqrt/2a ? b 2c 2a . . */
+			RCL/ B				/* b/2a sqrt/2a ? b 2c 2a . . */
 			+/-
 			SF Flag_complex
 			xOUT xOUT_RET_SKIP
