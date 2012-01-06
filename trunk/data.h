@@ -319,36 +319,54 @@ extern TStateWhileOn StateWhileOn;
 #define Cmdline		 (StateWhileOn._cmdline)
 
 /*
+ *  A private set of flags for non recursive, non interruptible XROM code
+ *  They are addressed as local flags from .00 to .15.
+ *
+ *  Parameter information for xIN/xOUT.
+ */
+typedef struct _xrom_params
+{
+	union {
+		struct {
+			unsigned int flags : 10;	// 11 generic local flags .00 to .09
+			unsigned int stack_depth : 1;	// user stack size was 8
+			unsigned int mode_double : 1;	// user was in double precision mode
+			unsigned int complex : 1;	// complex command
+			unsigned int setLastX : 1;	// request to set L (and probably I)
+			unsigned int state_lift : 1;	// Status of stack_lift after xOUT
+			unsigned int xIN : 1;		// xIN is in effect
+		} bits;
+		unsigned short word;
+	} flags;
+
+	unsigned char in;			// input parameters to consume
+	unsigned char out;			// output parameters to insert
+} TXromParams;
+
+extern TXromParams XromParams;
+
+#define XromFlags    (XromParams.flags.bits)
+#define XromFlagWord (XromParams.flags.word)
+#define XromIn       (XromParams.in)
+#define XromOut      (XromParams.out)
+
+/*
  *  A private set of registers for non recursive, non interruptible XROM code
  *  They are addressed as local registers from .00 to .15
  *  A complete private RPN stack is provided for double precision XROM code.
+ *
+ *  This block is not set to zero on power up but cleared on xIN!
  */
-#define NUMXREGS 32
+#define NUMXREGS 16
 typedef struct _xrom_local
 {
-	struct {
-		unsigned int flags : 10;	// 11 generic local flags .00 to .09
-		unsigned int stack_depth : 1;	// user stack size was 8
-		unsigned int mode_double : 1;	// user was in double precision mode
-		unsigned int complex : 1;	// complex command
-		unsigned int setLastX : 1;	// request to set L (and probably I)
-		unsigned int state_lift : 1;	// Status of stack_lift after xOUT
-		unsigned int xIN : 1;		// xIN is in effect
-	} _flags;
-
-	unsigned char _in;			// input parameters to consume
-	unsigned char _out;			// output parameters to insert
-
 	REGISTER _stack[STACK_SIZE+EXTRA_REG];	// Private stack for XROM, complete set X to K
-	decimal64 _regs[NUMXREGS];		// Local registers: 16 double or 32 single precision
+	REGISTER _regs[NUMXREGS];		// Local registers: 16 double precision
 
 } TXromLocal;
 
 extern TXromLocal XromLocal;
 
-#define XromFlags (XromLocal._flags)
-#define XromIn    (XromLocal._in)
-#define XromOut   (XromLocal._out)
 #define XromStack (XromLocal._stack)
 #define XromRegs  (XromLocal._regs)
 

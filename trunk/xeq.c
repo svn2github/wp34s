@@ -158,11 +158,7 @@ int local_levels(void) {
  *  How many local registers have we?
  */
 int local_regs(void) {
-	const int l = local_levels();
-	const int n = l == 1 ? NUMXREGS : l >> 2;
-	if (is_dblmode())
-		return n >> 1;
-	return n;
+	return XromFlags.xIN ? NUMXREGS : local_levels() >> (2 + is_dblmode());
 }
 
 /*
@@ -994,15 +990,15 @@ REGISTER *get_reg_n(int n) {
 	if (n >= FLASH_REG_BASE)
 		return get_flash_reg_n(n - FLASH_REG_BASE);
 
-	if (n >= LOCAL_REG_BASE && LocalRegs < 0) {
+	if (n >= LOCAL_REG_BASE && local_regs() > 0) {
 		n -= LOCAL_REG_BASE;
-		if (is_dblmode())
-			n <<= 1;
-		if (local_levels() == 1) {
+		if (XromFlags.xIN) {
 			// Local XROM register in volatile RAM
-			return (REGISTER *) (XromRegs + n);
+			return XromRegs + n;
 		} else {
 			// local register on the return stack
+			if (dbl)
+				n <<= 1;
 			return (REGISTER *) ((decimal64 *) (RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n);
 		}
 	}
@@ -1176,15 +1172,15 @@ void clrstk(enum nilop op) {
 /* Zero out all registers excluding the stack and lastx
  */	
 void clrreg(enum nilop op) {
+	const int local = local_regs();
 	process_cmdline_set_lift();
 
 	// erase register memory
 	zero_regs(get_reg_n(0), global_regs() + STACK_SIZE + EXTRA_REG);
 
 	// erase local registers but keep them allocated
-	if (LocalRegs < 0) {
-		zero_regs(get_reg_n(LOCAL_REG_BASE), local_regs());
-	}
+	if (local)
+		zero_regs(get_reg_n(LOCAL_REG_BASE), local);
 }
 
 
@@ -2346,23 +2342,26 @@ void op_shift_digit(unsigned int n, enum rarg op) {
  * Also, handle local flags.
  */
 static unsigned short int *flag_word(int n, unsigned short int *mask) {
-	unsigned short int *p = UserFlags;
+	unsigned short int *p;
+
 	if (n >= LOCAL_FLAG_BASE) {
-		const int l = local_levels();
 		n -= LOCAL_FLAG_BASE;
-		if (l == 1) {
+		if (XromFlags.xIN) {
 			// XROM special
-			p = (unsigned short *) &XromFlags;
+			p = &XromFlagWord;
 		}
 		else if (LocalRegs & 1) {
 			// Odd frame: flags are at end of frame
-			p = RetStk + LocalRegs + l - 1;
+			p = RetStk + LocalRegs + local_levels() - 1;
 		}
 		else {
 			// Even frame: Flags are at beginning of frame
 			p = RetStk + LocalRegs + 1;
 		}
 	}
+	else
+		p = UserFlags;
+
 	if (mask != NULL)
 		*mask = 1 << (n & 15);
 	return p + (n >> 4);
@@ -2437,7 +2436,7 @@ void cmdflag(unsigned int arg, enum rarg op) {
  */
 void clrflags(enum nilop op) {
 	xset(UserFlags, 0, sizeof(UserFlags));
-	if (LocalRegs < 0) {
+	if (local_regs()) {
 		* flag_word(LOCAL_REG_BASE, NULL) = 0;
 	}
 }
@@ -3494,7 +3493,7 @@ static void rargs(const opcode op) {
 			--lim;
 	}
 	else if (argcmds[cmd].flag) {
-		if (LocalRegs == 0)
+		if (local_regs() == 0)
 			lim -= 16;
 		if ((int)arg < 0)
 			arg = NUMFLG - (int)arg;
@@ -3873,21 +3872,6 @@ void cmdlocr(unsigned int arg, enum rarg op) {
 	*flag_word(LOCAL_FLAG_BASE, NULL) = old_flags;
 }
 
-/*
- *  Command to support a single set of local variables
- *  for non recursive non interruptible XROM routines.
- *  We need a single stack level for a special marker
- */
-void cmdxlocal(enum nilop op) {
-	if (RetStkPtr >= RetStkSize) {
-		err(ERR_RAM_FULL);
-		return;
-	}
-	RetStk[--RetStkPtr] = LOCAL_MASK | 1;
-	// fill with 0
-	xset(&XromLocal, 0, sizeof(XromLocal));
-	LocalRegs = RetStkPtr;
-}
 
 #ifdef XROM_COMMANDS
 static int check_xin_xout(void) {
@@ -3928,9 +3912,11 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	if (check_xin_xout())
 		return;
 
-	// Setup the XromLocal structure in volatile RAM
+	// Setup the XromLocal and XromParams structures in volatile RAM
 	if (! i) {
-		cmdxlocal(OP_XLOCAL);	// clears everything!
+		// fill with 0
+		xset(&XromLocal, 0, sizeof(XromLocal));
+		XromFlagWord = 0;
 
 		XromFlags.stack_depth = UState.stack_depth;
 		XromFlags.mode_double = State.mode_double;

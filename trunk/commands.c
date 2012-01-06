@@ -622,7 +622,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC1(OP_LOCRQ,		&get_mem,		"LocR?")
 	FUNC1(OP_REGSQ,		&get_mem,		"REGS?")
 	FUNC1(OP_FLASHQ,	&get_mem,		"FLASH?")
-	FUNC0(OP_XLOCAL,	&cmdxlocal,		"XLOCAL")
 
 #ifdef INCLUDE_USER_IO
 	FUNC0(OP_SEND1,		&send_byte,		"SEND1")

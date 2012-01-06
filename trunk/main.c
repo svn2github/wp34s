@@ -1522,11 +1522,6 @@ NO_RETURN int main(void)
 	xset( (void *) 0x200200, 0x5A, 0x800 );
 #endif
 
-	/*
-	 *  Minimum initialisation for decNumber library
-	 */
-	// xeq_init_contexts();
-
 #ifdef ALLOW_DEEP_SLEEP
 	/*
 	 *  Initialisation depends on the wake up reason
@@ -1637,6 +1632,11 @@ NO_RETURN int main(void)
 		 */
 		Keyticks = 0;
 	}
+
+	/*
+	 *  Minimum initialisation for decNumber library and RAM pointers
+	 */
+	// xeq_init_contexts();
 
 	/*
 	 *  Start periodic interrupts

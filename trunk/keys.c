@@ -1928,7 +1928,7 @@ static int process_confirm(const keycode c) {
  */
 static int process_status(const keycode c) {
 	int n = ((int)State2.status) - 3;
-	int max = LocalRegs < 0 ? 11 : 10;
+	int max = local_regs() < 0 ? 11 : 10;
 
 	if (c == K40) {
 		if (--n < -2)
@@ -2100,7 +2100,7 @@ static int process_registerlist(const keycode c) {
 	const int max = State2.local ? local_regs() : NUMREG;
 
 	if ( n == LOCAL_REG_BASE ) {	// '.'
-		if (LocalRegs < 0)
+		if (local_regs())
 			State2.local = ! State2.local && ! State2.digval2;
 		State2.digval = State2.local ? 0 : regX_idx;
 		return STATE_UNFINISHED;

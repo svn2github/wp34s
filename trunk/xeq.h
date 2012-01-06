@@ -752,7 +752,6 @@ enum nilop {
 #endif
 	OP_POPLR,
 	OP_MEMQ, OP_LOCRQ, OP_REGSQ, OP_FLASHQ,
-	OP_XLOCAL,
 
 #ifdef INCLUDE_USER_IO
 	OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
@@ -1253,7 +1252,6 @@ extern void op_keytype(unsigned int arg, enum rarg op);
 extern void cmdlocr(unsigned int arg, enum rarg op);
 extern void cmdlpop(enum nilop op);
 extern void cmdregs(unsigned int arg, enum rarg op);
-extern void cmdxlocal(enum nilop op);
 extern void cmdxin(unsigned int, enum rarg);
 extern void cmdxout(unsigned int, enum rarg);
 extern void cmdconverged(unsigned int, enum rarg);

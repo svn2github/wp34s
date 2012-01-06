@@ -65,6 +65,7 @@ SLCDCMEM TStateWhileOn StateWhileOn;
  *  A private register area for XROM code in volatile RAM
  *  It replaces the local registers and flags if active.
  */
+TXromParams XromParams;
 VOLATILE_RAM TXromLocal XromLocal;
 
 /*
