@@ -4119,7 +4119,7 @@ void cmdshuffle(unsigned int arg, enum rarg cmd) {
 
 	getXYZT(xyzt, xyzt+1, xyzt+2, xyzt+3);
 
-	for (i=3; i>=0; i--) {
+	for (i=0; i<4; i++) {
 		setRegister(regX_idx + i, & xyzt[arg & 3]);
 		arg >>= 2;
 	}
