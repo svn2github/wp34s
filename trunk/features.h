@@ -26,6 +26,9 @@
 // Push commands into XROM instead of being in C
 #define XROM_COMMANDS
 
+// Define this to support a four level stack arbitary shuffle command
+#define INCLUDE_SHUFFLE
+
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
 // #define INCLUDE_STOPWATCH

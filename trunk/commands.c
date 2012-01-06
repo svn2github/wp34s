@@ -863,10 +863,13 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")
 
-	CMD(RARG_XROM_IN,	&cmdxin,	255,			"xIN")
-	CMD(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
+	CMDnoI(RARG_XROM_IN,	&cmdxin,	255,			"xIN")
+	CMDnoI(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
 #endif
-	CMD(RARG_CONVERGED,	&cmdconverged,	32,			"CNVG?")
+	CMDnoI(RARG_CONVERGED,	&cmdconverged,	32,			"CNVG?")
+#ifdef INCLUDE_SHUFFLE
+	CMDnoI(RARG_SHUFFLE,	&cmdshuffle,	255,			"SHFL")
+#endif
 
 #undef CMDlbl
 #undef CMDlblnI

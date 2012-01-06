@@ -859,6 +859,9 @@ enum rarg {
 	RARG_XROM_IN, RARG_XROM_OUT,
 #endif
 	RARG_CONVERGED,
+#ifdef INCLUDE_SHUFFLE
+	RARG_SHUFFLE,
+#endif
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -1254,6 +1257,7 @@ extern void cmdxlocal(enum nilop op);
 extern void cmdxin(unsigned int, enum rarg);
 extern void cmdxout(unsigned int, enum rarg);
 extern void cmdconverged(unsigned int, enum rarg);
+extern void cmdshuffle(unsigned int, enum rarg);
 extern void cmdmode(unsigned int, enum rarg);
 
 extern int not_running(void);

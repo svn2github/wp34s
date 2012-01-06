@@ -275,6 +275,7 @@ my %table_exception_format = ( "PRCL"   => "%01d",
                                "P[<->]" => "%01d",
                                "xIN"    => "%03d",
                                "xOUT"   => "%03d",
+			       "SHFL"   => "%03d",
                              );
 
 # ANSI colour codes.
