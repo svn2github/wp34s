@@ -3,7 +3,7 @@
  * Based on code by Franz.
  */
 		XLBL"QUAD"				/* Entry: QUADRATIC SOLVER */
-xrom_quad::		xIN (xIN_ARGS(0, 2) | xIN_LASTX)
+xrom_quad::		xIN (xIN_ARGS(0, 2))
 			RCL+ X				/* 2c b a . */
 			x[<->] Z			/* a b 2c . */
 			x=0?
