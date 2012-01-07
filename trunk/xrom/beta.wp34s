@@ -1,0 +1,68 @@
+
+/**************************************************************************/
+/* The real beta function.
+ *	B(x, y) = Gamma(x) Gamma (y) / Gamma(x+y)
+ */
+		XLBL"beta"
+xrom_beta::		xIN DYADIC
+			[GAMMA]
+			RCL L
+			RCL+ Z
+			[GAMMA]
+			/
+			x[<->] Y
+			[GAMMA]
+			[times]
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* The real log beta function is used by the statistical functions.
+ *	B(x, y) = log Gamma(x) + log Gamma (y) - log Gamma(x+y)
+ */
+#if 0
+ 		XLBL"lnbeta"
+xrom_lnbeta::		xIN DYADIC
+			LN[GAMMA]
+			RCL L
+			RCL+ Z
+			LN[GAMMA]
+			-
+			x[<->] Y
+			LN[GAMMA]
+			+
+			xOUT xOUT_NORMAL
+#endif
+
+
+/**************************************************************************/
+/* The complex beta function.
+ *	B(x, y) = Gamma(x) Gamma (y) / Gamma(x+y)
+ */
+		XLBL"cpx_beta"
+xrom_c_beta::		xIN DYADIC_COMPLEX
+			[cmplx][GAMMA]
+			[cmplx]RCL L
+			[cmplx]RCL+ A
+			[cmplx][GAMMA]
+			[cmplx]/
+			[cmplx]x[<->] Z
+			[cmplx][GAMMA]
+			[cmplx][times]
+			xOUT xOUT_NORMAL
+
+
+/**************************************************************************/
+/* The complex log beta function.
+ *	B(x, y) = log Gamma(x) + log Gamma (y) - log Gamma(x+y)
+ */
+		XLBL"cpx_lnbeta"
+xrom_c_lnbeta::		xIN DYADIC_COMPLEX
+			[cmplx]LN[GAMMA]
+			[cmplx]RCL L
+			[cmplx]RCL+ A
+			[cmplx]LN[GAMMA]
+			[cmplx]-
+			[cmplx]x[<->] Z
+			[cmplx]LN[GAMMA]
+			[cmplx]+
+			xOUT xOUT_NORMAL

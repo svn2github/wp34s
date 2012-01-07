@@ -117,12 +117,6 @@ extern void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, 
 extern void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxBeta(decNumber *rx, decNumber *ry,
-		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d);
-extern void cmplxLnBeta(decNumber *rx, decNumber *ry,
-		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d);
 
 extern void cmplxFrac(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);

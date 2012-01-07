@@ -158,7 +158,6 @@ extern decNumber *decNumberSubFactorial(decNumber *r, const decNumber *xin);
 extern decNumber *decNumberGamma(decNumber *res, const decNumber *x);
 extern decNumber *decNumberLnGamma(decNumber *res, const decNumber *x);
 extern decNumber *decNumberPsi(decNumber *res, const decNumber *x);
-extern decNumber *decNumberBeta(decNumber *res, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *y);
 
 extern const decNumber *const gamma_consts[];

@@ -995,33 +995,6 @@ void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const d
 #endif
 }
 #endif
-
-// Beta(a, b) = exp(lngamma(a) + lngamma(b) - lngamma(a+b))
-void cmplxLnBeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *c, const decNumber *d) {
-#ifndef TINY_BUILD
-	decNumber s1, s2, t1, t2, u1, u2;
-
-	cmplxLnGamma(&s1, &s2, a, b);
-	busy();
-	cmplxLnGamma(&t1, &t2, c, d);
-	busy();
-	cmplxAdd(&u1, &u2, &s1, &s2, &t1, &t2);
-	cmplxAdd(&s1, &s2, a, b, c, d);
-	cmplxLnGamma(&t1, &t2, &s1, &s2);
-	cmplxSubtract(rx, ry, &u1, &u2, &t1, &t2);
-#endif
-}
-
-// Beta(a, b) = exp(lngamma(a) + lngamma(b) - lngamma(a+b))
-void cmplxBeta(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *c, const decNumber *d) {
-#ifndef TINY_BUILD
-	decNumber s1, s2;
-
-	cmplxLnBeta(&s1, &s2, a, b, c, d);
-	cmplxExp(rx, ry, &s1, &s2);
-#endif
-}
-
 #ifdef INCLUDE_DIGAMMA
 // Digamma function
 extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const decNumber *bin) {

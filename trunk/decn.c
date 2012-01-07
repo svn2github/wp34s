@@ -1841,15 +1841,6 @@ decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *
 	return res;
 }
 
-// Beta(x, y) = exp(lngamma(x) + lngamma(y) - lngamma(x+y))
-decNumber *decNumberBeta(decNumber *res, const decNumber *x, const decNumber *y) {
-	decNumber s;
-
-	decNumberLnBeta(&s, x, y);
-	dn_exp(res, &s);
-	return res;
-}
-
 #ifdef INCLUDE_DIGAMMA
 #ifndef TINY_BUILD
 const decNumber *const digamma_consts[10] = {
