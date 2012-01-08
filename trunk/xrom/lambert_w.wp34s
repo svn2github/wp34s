@@ -14,19 +14,18 @@ xrom_w0::		xIN MONADIC
 				JMP LamW_NaN
 			x=0?
 				xOUT xOUT_NORMAL
-			LocR 00
 			Num eE
 			1/x
 			+/-
 			x[<->] Y
 			x<? Y
 				JMP LamW_NaN
-			STO .00
+			STO I
 			LN1+x
 LamW0_loop::		FILL
 			+/-
 			e[^x]
-			RCL[times] .00
+			RCL[times] I
 			-
 			x[<->] Y
 			INC X
@@ -46,23 +45,22 @@ xrom_w1::		xIN MONADIC
 				JMP LamW_NaN
 			x[>=]0?
 				JMP LamW_inf
-			LocR 01
 			+/-
 			1/x
-			STO .00
+			STO I
 			Num eE
 			x>? Y
 				JMP LamW_NaN
-			RCL .00
-LamW1_loop::		STO .01
+			RCL I
+LamW1_loop::		STO J
 			LN
-			RCL[times] .00
-			RCL .01
+			RCL[times] I
+			RCL J
 			x[<->] Y
 			CNVG? CVG_RELATIVE
 				JMP LamW_converged
 			JMP LamW1_loop
-LamW_converged::	RCL/ .00
+LamW_converged::	RCL/ I
 			+/-
 			xOUT xOUT_NORMAL
 
@@ -88,12 +86,12 @@ LamW_NaN::		FC? D
  *
  * Register use:
  *	.00/.01	z
- *	.02/.03 w
- *	.04/.05 temporary
+ *	.02/.03	w
+ *	J/K	temporary
  */
 		XLBL"CPX_W0"
 xrom_c_w::		xIN MONADIC_COMPLEX
-			LocR 05
+			LocR 03
 			[cmplx]STO .00
 			iC 1
 			STO .02
@@ -105,11 +103,11 @@ xrom_c_w::		xIN MONADIC_COMPLEX
 			[cmplx]STO .02
 LamW_cloop::		[cmplx]ENTER
 			[cmplx]e[^x]
-			[cmplx]STO .04
+			[cmplx]STO J
 			[cmplx]RCL[times] .02
-			[cmplx]STO+ .04
+			[cmplx]STO+ J
 			[cmplx]RCL- .00
-			[cmplx]RCL/ .04
+			[cmplx]RCL/ J
 			[cmplx]STO- .02
 			[cmplx]DROP
 			[cmplx]RCL .02
