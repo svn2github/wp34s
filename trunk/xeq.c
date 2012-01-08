@@ -3186,6 +3186,8 @@ void busy(void)
  */
 #ifdef REALBUILD
 typedef unsigned long uintptr_t;
+#else
+#include <stdint.h>
 #endif
 
 static const s_opcode *check_for_xrom_address(void *fp)
