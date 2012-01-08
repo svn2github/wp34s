@@ -3,42 +3,42 @@
  * Based on code by Franz.
  */
 		XLBL"QUAD"				/* Entry: QUADRATIC SOLVER */
-xrom_quad::		xIN (xIN_ARGS(3, 2) | xIN_LASTX)/* change to (3, 3) after ASM is fixed ! */
+xrom_quad::		xIN (xIN_ARGS(3, 3) | xIN_LASTX)
 			SSIZE4
 			RCL+ X				/* 2c b a . */
 			x[<->] Z				/* a b 2c . */
 			x=0?
 				ERR ERR_INVALID		/* Invalid arugment error */
 			RCL+ X				/* 2a b 2c . */
-			STO .00
+			STO A
 			RCL Y				/* b 2a b 2c */
 			[cmplx][times]			/* b^2-4ac 2b(a+c) b 2c */
-			STO .01
+			STO D
 			x<0?
 				JMP quad_complex
 			[sqrt]				/* sqrt 2b(a+c) b 2c */
 #ifdef INCLUDE_SHUFFLE
 			SHF_XYZT(2, 0, 3, 0)		/* b sqrt 2c sqrt */
 #else
-			x[<->] Y			/* . sqrt b 2c */
+			x[<->] Y				/* . sqrt b 2c */
 			DROP				/* sqrt b 2c 2c */
-			x[<->] Y			/* b sqrt 2c 2c */
+			x[<->] Y				/* b sqrt 2c 2c */
 #endif
 			x[>=]0?
 				[cmplx]CONJ
 			-				/* -b-sqrt 2c . . */
                         x[!=]0?
 				STO/ Y			/* -b-sqrt 2c/(-b-sqrt) 2c . */
-			RCL/ .00			/* (b-sqrt)/2a 2c/(b-sqrt) 2c . */
-			z[<->] .01			/* (b-sqrt)/2a 2c/(b-sqrt) b^2-4ac . */
+			RCL/ A				/* (b-sqrt)/2a 2c/(b-sqrt) 2c . */
+			z[<->] D				/* (b-sqrt)/2a 2c/(b-sqrt) b^2-4ac . */
 			xOUT xOUT_NORMAL
 
 quad_complex::		ABS
 			[sqrt]				/* sqrt ? b 2c */
-			RCL/ .00			/* sqrt/2a ? b 2c */
+			RCL/ A				/* sqrt/2a ? b 2c */
 			RCL Z				/* b sqrt/2a ? b */
-			RCL/ .00			/* b/2a sqrt/2a ? b */
+			RCL/ A				/* b/2a sqrt/2a ? b */
 			+/-
 			SF Flag_complex
-			z[<->] .01			/* b/2a sqrt/2a b^2-4ac b */
+			z[<->] D				/* b/2a sqrt/2a b^2-4ac b */
 			xOUT (xOUT_RET_SKIP | xOUT_NO_LASTY)
