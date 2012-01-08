@@ -51,6 +51,13 @@ my $MAX_JMP_OFFSET = $DEFAULT_MAX_JMP_OFFSET; # Maximum offset for a BACK/SKIP s
 my $MAX_LABEL_NUM = 99;  # Maximum label number
 my $last_label_used = $MAX_LABEL_NUM+1;
 
+my $branch_digits = 2; # Default to V2
+my $label_digits = 2;
+my $label_digits_range = "2";
+
+my $OPEN_COMMENT = "/*";  # These are only used because my editor's syntax based chroma-coding sucks.
+my $CLOSE_COMMENT = "*/"; # These are only used because my editor's syntax based chroma-coding sucks.
+
 # The labels used as targets for program branches are only allowed to be made from
 # the following characters. Additionally, they are always terminated by a double colon.
 my $label_spec = "A-Za-z0-9_";
@@ -79,6 +86,11 @@ my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_ASM_COLOUR})
                             : 0;
 my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
+my $ENUM_OP = 0;
+my $ENUM_NUM_WORDS = 1;
+my $ENUM_PRECOMMENT = 2;
+my $ENUM_POSTCOMMENT = 3;
+
 my $prt_step_num = 1;
 my $show_catalogue = 0;
 my $show_targets = 0;
@@ -103,6 +115,41 @@ my %LBLd_ops = (
         'f\'\(x\)' => 1,
         'f\'(x)' => 1,
         );
+
+# Build a table that will translate any O/S reported to what we should be using.
+# Note: At one point I thought I might need to convert cygwin to Windows type
+#       so I thought I need a translation table. I worked around that but
+#       will keep the table anyway because it allows me to detect O/S that
+#       are "approved" with the script.
+my %useable_OS = ("linux"   => "linux",
+                  "MSWin32" => "MSWin32",
+                  "MSDOS"   => "MSDOS",
+                  "cygwin"  => "cygwin",
+                  "Darwin"  => "Darwin",
+                  "darwin"  => "darwin",
+                  "MacOS"   => "MacOS",
+                 );
+
+if( exists $useable_OS{$^O} ) {
+  fileparse_set_fstype($useable_OS{$^O});
+
+  # Check for OS-specific options to enable or disable.
+  if ($^O =~ /MSDOS/) {
+    $use_ansi_colour = 0; # Supposedly, terminal emulators under MS-DOS have a hard time running
+                          # in full ANSI mode. Sigh! So, no matter what the user tries, make it
+                          # difficult to turn ANSI codes on.
+
+  # Conversely, if the OS is linux, turn colour on.
+  } elsif ($^O =~ /linux/i) {
+    $use_ansi_colour = 1;
+  }
+
+} else {
+  # If we get here, the set file system type function has NOT been run and we may not
+  # be able to locate "relative" file such as the standard external opcode table or the
+  # PP script. If worst comes to worse, we can specify both of these from the command line.
+  print "// WARNING: Unrecognized O/S ($^O). Some features may not work as expected.\n";
+}
 
 
 # ---------------------------------------------------------------------
@@ -235,8 +282,8 @@ print "// $script_name: Source file(s): ", join (", ", @files), "\n";
 print "// $script_name: Preprocessor revision: $SVN_Current_Revision \n";
 
 foreach (@end_groups) {
-  @lines = @{$_}; # Cast the reference as an array.
-  my $length = scalar @lines; # Debug use only.
+  @lines = init_line_str(@{$_}); # Cast the reference as an array.
+  my $length = scalar @lines; # Debug use only. # XXX Needs work for tracking words/step and comments.
   debug_msg(this_function((caller(0))[3]), "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++") if $debug and $v3_mode;
   debug_msg(this_function((caller(0))[3]), "Processing new END group. Contains $length lines.") if $debug and $v3_mode;
   initialize_tables();
@@ -278,23 +325,16 @@ if ($xrom_mode) {
 # Execute the preprocessor steps on the lines in the global @lines array.
 #
 sub preprocessor {
-  display_steps("// ") if $debug;
+  display_steps("// ") if $debug; # Initial debug image
   process_double_quotes();
-  display_steps("// ") if $debug;
   process_expressions();
-  display_steps("// ") if $debug;
-  extract_labels();           # Look for existing "LBL \d{2}" or "LBL [A-Z]"opcodes
+  extract_labels();           # Look for existing "LBL \d{$label_digits_range}" or "LBL [A-Z]"opcodes
   extract_targets();          # Look for "SomeLabel::"
   extract_branches();         # Look for "(BACK|SKIP|JMP) SomeLabel"
-  show_state(__LINE__) if $debug;
   insert_synthetic_labels();  # Add synthetic symbolic label for any %LBLs without a counterpart in %targets
-  show_state(__LINE__) if $debug;
   check_consistency();
-  show_state(__LINE__) if $debug;
   populate_branch_array();
-  show_state(__LINE__) if $debug;
   extract_LBLd_opcodes();  # Look for "(GTO|XEQ|SLV|etc) SomeLabel"
-  show_state(__LINE__) if $debug;
   preprocess_synthetic_targets();
   return;
 } # preprocessor
@@ -365,10 +405,11 @@ sub initialize_tables {
 #
 sub process_double_quotes {
   local $_;
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   my ($substring, $num_chars, $string, $line, $new_line, $label);
   my $step = 1;
-  while( $step <= scalar(@lines) ) {
-    $line = $lines[$step-1];
+  while( $step <= scalar(@lines) ) { # XXX Needs work for tracking words/step and comments.
+    $line = get_line($ENUM_OP, $step);
     $line =~ s/^\s*\d{0,3}:{0,1}//;
     if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})/ ) {
       $label = $1 . " ";
@@ -403,7 +444,7 @@ sub process_double_quotes {
         if( $is_first ) {
           $is_first = 0;
           debug_msg(this_function((caller(0))[3]), "Replacing step '$fmt_step' with '$new_line'") if $debug;
-          $lines[$step-1] = $new_line . " // $line";
+          put_line($ENUM_OP, $step, $new_line . " // $line");
           $label = "";
         } else {
           debug_msg(this_function((caller(0))[3]), "Inserting step '$fmt_step' with '$new_line'") if $debug;
@@ -416,6 +457,7 @@ sub process_double_quotes {
     }
   }
   debug_msg(this_function((caller(0))[3]), "Popped out at step '$step'.") if $debug;
+  display_steps("// ") if $debug;
   return;
 } # process_double_quotes
 
@@ -429,10 +471,11 @@ sub process_double_quotes {
 #
 sub process_expressions {
   local $_;
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   my ($line, $new_line, $label);
   my $step = 1;
-  while( $step <= scalar(@lines) ) {
-    $line = $lines[$step-1];
+  while( $step <= scalar(@lines) ) { # XXX Needs work for tracking words/step and comments.
+    $line = get_line($ENUM_OP, $step);
     $line =~ s/^\s*\d{0,3}:{0,1}//;
     if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})/ ) {
       $label = $1 . " ";
@@ -447,11 +490,12 @@ sub process_expressions {
       my $evaluated = eval $expression;
 
       my $new_line = sprintf "%0s%0s%03d // %0s", $label, $the_rest, $evaluated, $expression;
-      $lines[$step-1] = $new_line;
+      put_line($ENUM_OP, $step, $new_line);
       debug_msg(this_function((caller(0))[3]), "Evaluated '$expression' to get '$evaluated'") if $debug;
     }
     $step++;
   }
+  display_steps("// ") if $debug;
   return;
 } # process_expressions
 
@@ -461,6 +505,7 @@ sub process_expressions {
 # Process branches and attempt to resolve them.
 #
 sub preprocess_synthetic_targets {
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   local $_;
   my ($current_step);
 
@@ -472,7 +517,7 @@ sub preprocess_synthetic_targets {
     my $fmt_cur_step = format_step($current_step);
 
     # See if the instruction is one of the LBL'd ones like XEQ, INT, etc.
-    my $line = $lines[$current_step-1];
+    my $line = get_line($ENUM_OP, $current_step);
     my ($op, $label);
 
     $line =~ s/^\s*\d{0,3}:{0,1}//;
@@ -496,17 +541,17 @@ sub preprocess_synthetic_targets {
     }
 
     # Need to exclude any square bracketing because this confuses the hash search. The
-    # square brackets can't be in the hash becuase they are then treated as search sets
+    # square brackets can't be in the hash because they are then treated as search sets
     # in regex's.
     my $tmp_op = $op;
     $tmp_op =~ s/\[//;
     $tmp_op =~ s/\]//;
     if( exists $LBLd_ops{$tmp_op} ) {
-      $op =~ s<\\><>g; # Remove any escape characters in the hash template.
+      $op =~ s/\\//g; # Remove any escape characters in the hash template.
       my $target_step = search_targets($label);
       my $target_LBL = search_LBLs($target_step);
       $line = replace_with_LBLd_target($target_LBL, $line, $op);
-      $lines[$current_step-1] = $line;
+      put_line($ENUM_OP, $current_step, $line);
       print 1 if 0; # Breakpoint
 
     } else {
@@ -536,23 +581,26 @@ sub preprocess_synthetic_targets {
         }
       }
 
-      my $offset = $target_step - $current_step;
+      my $offset = calculate_offset($target_step, $current_step);
       if( abs($offset) > $MAX_JMP_OFFSET ) {
         my ($new_label_num);
 
         debug_msg(this_function((caller(0))[3]), "Offset exceeds maximum (abs(${offset}) > ${MAX_JMP_OFFSET}). target_step = $target_step, current_step = $current_step") if $debug;
         ($new_label_num, $current_step) = add_LBL_if_required($target_step, $offset, $current_step);
         $line = replace_with_LBLd_target($new_label_num, $line, "GTO");
-        $lines[$current_step-1] = $line;
+        put_line($ENUM_OP, $current_step, $line);
         print $_ if 0; # Breakpoint!
       } else {
         # At this moment, the offset is within range so we can use a SKIP/BACK opcode.
         # Note that this may change as a result of LBL injections so this may not always stay
         # within range.
+
+        # The calculation is asymmetric in that the forward direction already accounts for
+        # and offset of 1, so we must remove that offset.
         $offset-- if $offset > 0; # Adjust the SKIP offsets by 1.
         $line =~ s/\s+$//;
         $line = replace_with_branch($offset, $line);
-        $lines[$current_step-1] = $line;
+        put_line($ENUM_OP, $current_step, $line);
       }
     }
     debug_msg(this_function((caller(0))[3]), "Next branch...") if $debug;
@@ -611,7 +659,7 @@ sub add_LBL_if_required {
 #
 sub load_cleaned_source {
   my $file = shift;
-  my @lines = read_file($file);
+  my @lines = init_line_str(read_file($file));
   @lines = redact_comments(@lines);
   @lines = remove_blank_lines(@lines);
 #  @lines = strip_strip_numbers(@lines);
@@ -634,9 +682,10 @@ sub load_cleaned_source {
 #     45 => 035
 #
 sub extract_labels {
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) {
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
+  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
     my $fmt_step = format_step($step+1); # Because we are pointing at the active step *after* the label.
-    my $line = $lines[$step-1];
+    my $line = get_line($ENUM_OP, $step);
     if( $line =~ /LBL\s+(\d+)/ or $line =~ /LBL\s+([A-Z])([^A-Z]|$)/ ) {
       my $LBL = $1;
       my $fmt_LBL = format_LBL($LBL);
@@ -665,8 +714,9 @@ sub extract_labels {
 #     DoItAgain5 => 024
 #
 sub extract_targets {
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) {
-    if( $lines[$step-1] =~ /^\s*\d{0,3}:{0,1}\s*([$label_spec]{2,}):{$NUM_TARGET_LABEL_COLONS}\s+/ ) {
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
+  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
+    if( get_line($ENUM_OP, $step) =~ /^\s*\d{0,3}:{0,1}\s*([$label_spec]{2,}):{$NUM_TARGET_LABEL_COLONS}\s+/ ) {
       my $label = $1;
       adjust_longest_label_length($label);
       if( not exists $targets{$label} ) {
@@ -708,11 +758,12 @@ sub extract_targets {
 # direction, it will eventually be resolved as a BACK opcode at the proper time.
 #
 sub extract_branches {
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) {
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
+  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
     my $fmt_step = format_step($step);
-    if( $lines[$step-1] =~ /(BACK|SKIP|JMP)\s+([$label_spec]{2,})/ ) {
+    if( get_line($ENUM_OP, $step) =~ /(BACK|SKIP|JMP)\s+([$label_spec]{2,})/ ) {
       my $label = $2;
-      if( $label =~ /^\d{2}$/ ) {
+      if( $label =~ /^\d{$label_digits_range}$/ ) {
         # This is a "hard" target. We want to convert these to "soft" ones.
         debug_msg(this_function((caller(0))[3]), "Found 'hard' branch at step $fmt_step with label '$label'.") if $debug;
       } else {
@@ -725,6 +776,7 @@ sub extract_branches {
       }
     }
   }
+  show_state(__LINE__) if $debug;
   return;
 } # extract_branches
 
@@ -756,8 +808,9 @@ sub extract_branches {
 #
 #
 sub extract_LBLd_opcodes {
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) {
-    my $line = $lines[$step-1];
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
+  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
+    my $line = get_line($ENUM_OP, $step);
     my $fmt_step = format_step($step);
 
     # Sort through any operation that can target a LBL. These include XEQ, INT, etc.
@@ -776,7 +829,7 @@ sub extract_LBLd_opcodes {
           my $label = $1;
 
           # Check out if the label is a hard label or symbolic one.
-          if( $label =~ /^\d{2}$|^[A-Z]{1}$/ ) {
+          if( $label =~ /^\d{$label_digits_range}$|^[A-Z]{1}$/ ) {
             debug_msg(this_function((caller(0))[3]), "Skipping 'hard' LBL'd opcode at step $fmt_step with LBL '$label': '$line'.") if $debug;
 
           # Does the target label exist already?
@@ -802,7 +855,7 @@ sub extract_LBLd_opcodes {
             # If a LBL at the target address does not exist, we need to insert one. This will have the ripple
             # effect of moving everything below it down one step.
             if( not $found ) {
-              my $offset = $target_step - $step;
+              my $offset = calculate_offset($target_step, $step);
               debug_msg(this_function((caller(0))[3]), "Label not found at target step '$target_step'. Offset to target is $offset.") if $debug > 2;
               ($assigned_label, $step) = add_LBL_if_required($target_step, $offset, $step);
               $fmt_step = format_step($step);
@@ -860,6 +913,7 @@ sub extract_LBLd_opcodes {
       }
     }
   }
+  show_state(__LINE__) if $debug;
   return;
 } # extract_LBLd_opcodes
 
@@ -869,34 +923,35 @@ sub extract_LBLd_opcodes {
 # Add synthetic symbolic label for any %LBLs without a counterpart in %targets.
 #
 sub insert_synthetic_labels {
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   # Process the existing LBLs.
   for my $LBL (sort keys %LBLs) {
     my $label_step = $LBLs{$LBL};
     search_and_insert_synthetic_label("LBL", $LBL, $label_step);
   }
 
-  # Add synthetic labels for %branches with %02d labels and fix up the orignal statement.
+  # Add synthetic labels for %branches with labels and fix up the orignal statement.
   for my $step (sort keys %branches) {
     my $fmt_step = format_step($step);
     my $target_label = $branches{$step};
-    if( $target_label =~ /^\d{2}$/ ) {
-      my $line = $lines[$step-1];
-      if( $line =~ /BACK\s+(\d{2})/ ) {
+    if( $target_label =~ /^\d{$label_digits_range}$/ ) {
+      my $line = get_line($ENUM_OP, $step);
+      if( $line =~ /BACK\s+(\d{$label_digits_range})/ ) {
         my $offset = $1;
         my $target_step = format_step($step - $offset);
         my $new_label = search_and_insert_synthetic_label("BACK", $offset, $target_step);
         debug_msg(this_function((caller(0))[3]), "Replacing: '$line'") if $debug;
-        $line =~ s/BACK\s+(\d{2})/BACK ${new_label} \/\/ $1/;
-        $lines[$step-1] = $line;
+        $line =~ s/BACK\s+(\d{$label_digits_range})/BACK ${new_label} \/\/ $1/;
+        put_line($ENUM_OP, $step, $line);
         debug_msg(this_function((caller(0))[3]), "With:      '$line'") if $debug;
         replace_branch($step, $new_label);
-      } elsif( $line =~ /SKIP\s+(\d{2})/ ) {
+      } elsif( $line =~ /SKIP\s+(\d{$label_digits_range})/ ) {
         my $offset = $1;
         my $target_step = format_step($step + $offset + 1);
         my $new_label = search_and_insert_synthetic_label("SKIP", $offset, $target_step);
         debug_msg(this_function((caller(0))[3]), "Replacing: '$line'") if $debug;
-        $line =~ s/SKIP\s+(\d{2})/SKIP ${new_label} \/\/ $1/;
-        $lines[$step-1] = $line;
+        $line =~ s/SKIP\s+(\d{$label_digits_range})/SKIP ${new_label} \/\/ $1/;
+        put_line($ENUM_OP, $step, $line);
         debug_msg(this_function((caller(0))[3]), "With:      '$line'") if $debug;
         replace_branch($step, $new_label);
       } else {
@@ -905,6 +960,7 @@ sub insert_synthetic_labels {
     }
   }
   debug_msg(this_function((caller(0))[3]), "Done.") if $debug;
+  show_state(__LINE__) if $debug;
   return;
 } # insert_synthetic_labels
 
@@ -959,15 +1015,17 @@ sub search_and_insert_synthetic_label {
     debug_msg(this_function((caller(0))[3]), "Inserting synthetic label ('$assigned_label') at step '$fmt_step' for '$type $seed'.") if $debug;
 
     # We have confirmed that no actual label exists so substitute it in.
-    my $msg = "Original line: '" . $lines[$label_step-1] . "'";
+    my $tmp_line = get_line($ENUM_OP, $label_step);
+    my $msg = "Original line: '" . get_line($ENUM_OP, $label_step) . "'";
     debug_msg(this_function((caller(0))[3]), $msg) if $debug;
-    if( $lines[$label_step-1] =~ /^\s*\d{$step_digits}:{0,1}/ ) {
-      $lines[$label_step-1] =~ s/^(\s*\d{$step_digits}:{0,1})\s+(.+)/${1} ${assigned_label}:: $2/;
+    if( $tmp_line =~ /^\s*\d{$step_digits}:{0,1}/ ) {
+      $tmp_line =~ s/^(\s*\d{$step_digits}:{0,1})\s+(.+)/${1} ${assigned_label}:: $2/;
     } else {
-      $lines[$label_step-1] =~ s/^(\s*)(.+)/${1}${assigned_label}:: $2/;
+      $tmp_line =~ s/^(\s*)(.+)/${1}${assigned_label}:: $2/;
     }
-    $msg = "Modified line: '" . $lines[$label_step-1] . "'";
+    $msg = "Modified line: '$tmp_line'";
     debug_msg(this_function((caller(0))[3]), $msg) if $debug;
+    put_line($ENUM_OP, $label_step, $tmp_line);
 
   } else {
     debug_msg(this_function((caller(0))[3]), "Label ('$assigned_label') already exists at step '$fmt_step' for label '$type $seed'.") if $debug;
@@ -1012,7 +1070,9 @@ sub adjust_longest_label_length {
 # Check the tables for consistency.
 #
 sub check_consistency {
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   debug_msg(this_function((caller(0))[3]), "Stubbed...") if $debug;
+  show_state(__LINE__) if $debug;
   return;
 } # check_consistency
 
@@ -1045,8 +1105,8 @@ sub reconstruct_steps {
   my $label_field_length = $longest_label+$NUM_TARGET_LABEL_COLONS;
   my ($label, $opcode, @reconstructed_steps);
 
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) {
-    my $line = $lines[$step-1];
+  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
+    my $line = get_line($ENUM_OP, $step);
 
     # Scrub any step number present. It will be recreated on the other end, unless otherwise requested.
     $line =~ s/^\s*\d{$step_digits}:{0,1}//;
@@ -1071,9 +1131,9 @@ sub reconstruct_steps {
 
     # See if the user has turned off step number generation from the command line.
     if( $prt_step_num ) {
-      push @reconstructed_steps, sprintf "%0${step_digits}d /* %0s */ %0s", $step, $label, $opcode;
+      push @reconstructed_steps, sprintf "%0${step_digits}d $OPEN_COMMENT %0s $CLOSE_COMMENT %0s", $step, $label, $opcode;
     } else {
-      push @reconstructed_steps, sprintf "/* %0s */ %0s", $label, $opcode;
+      push @reconstructed_steps, sprintf "$OPEN_COMMENT %0s $CLOSE_COMMENT %0s", $label, $opcode;
     }
   }
   return @reconstructed_steps;
@@ -1185,7 +1245,7 @@ sub str_replace {
 sub insert_step {
   my $line = shift;
   my $location = shift;
-  my @lines = @_;
+  my @lines = @_; # XXX Needs work for tracking words/step and comments.
   my $msg = "Inserting mnemonic '$line' at step " . format_step($location) . ".";
   debug_msg(this_function((caller(0))[3]), $msg) if $debug;
 #  if( $debug ) {
@@ -1193,7 +1253,7 @@ sub insert_step {
 #    panl(@lines);
 #    print "\n...done\n";
 #  }
-  splice @lines, ($location-1), 0, $line;
+  splice @lines, ($location-1), 0, $line; # XXX Needs work for tracking words/step and comments.
 #  if( $debug ) {
 #    debug_msg(this_function((caller(0))[3]), "After inserting: '$line'") if $debug;
 #    panl(@lines);
@@ -1270,7 +1330,7 @@ sub format_step {
 
 #######################################################################
 #
-# Format the step into either a 3-digit number or a single upper case character.
+# Format the step into either a 2-digit number or a single upper case character.
 #
 sub format_LBL {
   my $LBL = shift;
@@ -1278,10 +1338,26 @@ sub format_LBL {
   if( $LBL =~ /[A-Z]/ ) {
     $output = sprintf "%1s", $LBL;
   } else {
-    $output = sprintf "%02d", $LBL;
+    $output = sprintf "%0${label_digits}d", $LBL;
   }
   return $output;
 } # format_LBL
+
+
+#######################################################################
+#
+# Format the step into either a {2,3}-digit number or a single upper case character.
+#
+sub format_branch {
+  my $branch = shift;
+  my $output = "";
+  if( $branch =~ /[A-Z]/ ) {
+    $output = sprintf "%1s", $branch;
+  } else {
+    $output = sprintf "%0${branch_digits}d", $branch;
+  }
+  return $output;
+} # format_branch
 
 
 #######################################################################
@@ -1312,7 +1388,7 @@ sub replace_with_branch {
   my $line = shift;
   my ($step, $label, $spaces, $opcode);
   my $mnemonic = ($offset < 0) ? "BACK" : "SKIP";
-  $offset = format_LBL(abs($offset));
+  $offset = format_branch(abs($offset));
 
   $line =~ s/^\s*\d{0,3}:{0,1}//;
   $line =~ s/^\s+//;
@@ -1520,7 +1596,7 @@ sub read_file {
 # weird cases that it does not handle.
 #
 sub redact_comments {
-  my @lines = @_;
+  my @lines = @_; # XXX Needs work for tracking words/step and comments.
   local $_;
 
   # Oh no!! Slanted toothpick syndrome! :-)
@@ -1530,7 +1606,7 @@ sub redact_comments {
   my $in_mlc = 0;    # In-multiline-comment flag.
   my (@redacted_lines);
 
-  foreach (@lines) {
+  foreach (@lines) { # XXX Needs work for tracking words/step and comments.
     chomp; chomp;
 
     # Detect if we are currently in a multiline comment and we see the end of a
@@ -1538,22 +1614,22 @@ sub redact_comments {
     # comment marker.
     if( $in_mlc and m<${mlce}> ) {
       $in_mlc = 0;
-      s<^.*?\*/><>;
+      s/^.*?\*\///;
     }
 
     # Remove any single line comment sections from the line.
-    s<${slc}.*$><>;
+    s/${slc}.*$//;
 
     # Detect complete multiline comments ...and remove them. (don't be greedy)
-    while( m<${mlcs}.+?${mlce}> ) {
-      s<${mlcs}.*?${mlce}><>;
+    while( m/${mlcs}.+?${mlce}/ ) {
+      s/${mlcs}.*?${mlce}//;
     }
 
     # If we still have a start of a multiline comment, set the flag on (possibly again).
     # It means we don't have a terminated comment set so delete to the end of the line.
     if( m<${mlcs}> ) {
       $in_mlc = 1;
-      s<${mlcs}.*$><>;
+      s/${mlcs}.*$//;
     }
 
     # If we are still in a multiline comment and we get here, scrub the entire line.
@@ -1573,10 +1649,10 @@ sub redact_comments {
 # Remove any array elements that are blank lines.
 #
 sub remove_blank_lines {
-  my @lines = @_;
+  my @lines = @_; # XXX Needs work for tracking words/step and comments.
   my (@new_lines);
   local $_;
-  foreach (@lines) {
+  foreach (@lines) { # XXX Needs work for tracking words/step and comments.
     next if /^\s*$/;
     push @new_lines, $_;
   }
@@ -1592,10 +1668,10 @@ sub remove_blank_lines {
 # treated the same as comments after that.
 #
 sub extract_xlbls {
-  my @lines = @_;
+  my @lines = @_; # XXX Needs work for tracking words/step and comments.
   my (@new_lines);
   my $line = 1; # Use a 1-based counter!
-  foreach (@lines) {
+  foreach (@lines) { # XXX Needs work for tracking words/step and comments.
     if (/^\s*XLBL\"(.+)\"(\s+|$)/) {
       my $xlabel = $1;
       if (exists $xlbl{$xlabel}) {
@@ -1623,8 +1699,10 @@ sub extract_xlbls {
 #
 #
 sub populate_branch_array {
+  debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   debug_msg(this_function((caller(0))[3]), "Extracting sorted branch steps....") if $debug;
   @branches = sort keys %branches;
+  show_state(__LINE__) if $debug;
   return;
 } # populate_branch_array
 
@@ -1658,7 +1736,65 @@ sub insert_into_branch_array {
 
 #######################################################################
 #
+# Create the array for the lines database.
+# XXX In future, this will be an array of hash references. Each hash will
+#     contain the following keys:
+#
+#     OP          - opcode (equivalent to current entry)
+#     NUM_WORDS   - number of words in this line, can be 0, 1, or 2
+#     PRECOMMENT  - one or more lines of comments
+#     POSTCOMMENT - Trailing comments
+#
+sub init_line_str {
+  my @steps = @_;
+  return @steps;
+} # init_line_str
+
+
+#######################################################################
+#
+#
+#
+sub get_line {
+  my $field = shift;
+  my $step_num = shift;
+  my $str = "";
+  my $index = $step_num-1;
+  $str = $lines[$index];
+  return $str;
+} # get_line
+
+
+#######################################################################
+#
+#
+#
+sub put_line {
+  my $field = shift;
+  my $step_num = shift;
+  my $str = shift;
+  my $index = $step_num-1;
+  $lines[$index] = $str;
+  return $str;
+} # put_line_str
+
+
+#######################################################################
+#
+# XXX Preliminary stubb for dealing with comments in source and 1 or 2 words per step in XROM mode.
+#
+sub calculate_offset {
+  my $target_step = shift;
+  my $current_step = shift;
+  return $target_step - $current_step;
+} # calculate_offset
+
+
+#######################################################################
+#
 # Perl debugger helpers: Print array joined with \n.
+#
+# Print A with New Line (panl)
 #
 sub panl { # Print array joined with \n.
   print "// ", join "\n", @_;
@@ -1844,6 +1980,10 @@ sub get_options {
 
     elsif( ($arg eq "-v3") or ($arg eq "-end") ) {
       $v3_mode = 1;
+#      $label_digits = 3;
+      $label_digits = 2;
+      $branch_digits = 3;
+      $label_digits_range = "2,3"
     }
 
     elsif( $arg eq "-no_v3" ) {
@@ -1901,6 +2041,10 @@ sub get_options {
 
     elsif( ($arg eq "-ac") or ($arg eq "-colour") or ($arg eq "-color") ) {
       $use_ansi_colour = 1;
+    }
+
+    elsif ($arg eq "-colour_mode") {
+      $use_ansi_colour = shift(@ARGV);
     }
 
     # Might behave badly if files have already been entered.

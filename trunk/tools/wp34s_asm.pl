@@ -175,11 +175,13 @@ my $DEFAULT_PREPROC = "wp34s_pp.pl";
 my $preproc = $DEFAULT_PREPROC;
 my $preproc_fallback_dir = "";
 
-my $pp_options = " -m 90 -cat "; # XXX Limit the max SKIP/BACK offset to 90 to reduce the
-                                 #     likelihood of a recursive LBL insertion pushing a
-                                 #     resolved SKIP/BACK beyond 99. Not a robust fix but
-                                 #     likely to catch 99.99% of cases.
-                                 # XXX Generate a LBL catalogue.
+my $DEFAULT_PP_OPTIONS_V2 = " -m 90 -cat "; # XXX Limit the max SKIP/BACK offset to 90 to reduce the
+                                            #     likelihood of a recursive LBL insertion pushing a
+                                            #     resolved SKIP/BACK beyond 99. Not a robust fix but
+                                            #     likely to catch 99.99% of cases.
+                                            # XXX Generate a LBL catalogue.
+my $DEFAULT_PP_OPTIONS_V3 = " -m 235 -cat "; # Same reasons, different limits.
+my $pp_options = $DEFAULT_PP_OPTIONS_V2;
 my $pp_listing = "wp34s_pp.lst";
 
 my $PADDING_BLOCK_SIZE = 128; # XXX 128 16-bit words = 256 bytes!!
@@ -240,10 +242,11 @@ my $mode = $DEFAULT_MODE;
 # There are 2 XROM modes:
 # 1) XROM output into a C array (use '-c_xrom' switch)
 # 2) XROM output into a binary image (use '-xrom' switch)
-my $xrom_c_mode = 0;
+my $XROM_C_MODE = 1;
+my $XROM_BIN_MODE = 2;
 my $xrom_leader = "#include \"xrom.h\"\nconst XROM_DATA s_opcode xrom[] = {";
 my $xrom_indent_spaces = 8;
-my $xrom_bin_mode = 0;
+my $xrom_mode = 0;
 
 # These are used to convert all the registers into numeric offsets.
 #
@@ -273,9 +276,6 @@ my $ILLEGAL_3rd_CHAR_HI = 0xFF;
 my %table_exception_format = ( "PRCL"   => "%01d",
                                "PSTO"   => "%01d",
                                "P[<->]" => "%01d",
-                               "xIN"    => "%03d",
-                               "xOUT"   => "%03d",
-			       "SHFL"   => "%03d",
                              );
 
 # ANSI colour codes.
@@ -310,6 +310,18 @@ my %useable_OS = ("linux"   => "linux",
 
 if( exists $useable_OS{$^O} ) {
   fileparse_set_fstype($useable_OS{$^O});
+
+  # Check for OS-specific options to enable or disable.
+  if ($^O =~ /MSDOS/) {
+    $use_ansi_colour = 0; # Supposedly, terminal emulators under MS-DOS have a hard time running
+                          # in full ANSI mode. Sigh! So, no matter what the user tries, make it
+                          # difficult to turn ANSI codes on.
+
+  # Conversely, if the OS is linux, turn colour on.
+  } elsif ($^O =~ /linux/i) {
+    $use_ansi_colour = 1;
+  }
+
 } else {
   # If we get here, the set file system type function has NOT been run and we may not
   # be able to locate "relative" file such as the standard external opcode table or the
@@ -634,10 +646,10 @@ sub assemble {
   #  - A C-array for use with XROM
   #  - An XROM binary with no output of the CRC or step count.
   #  - Standard assembler binary output.
-  if( $xrom_c_mode ) {
+  if( $xrom_mode == $XROM_C_MODE ) {
     dump_c_array( $outfile, $xrom_leader, $xrom_indent_spaces, @words[2 .. $next_free_word] );
 
-  } elsif( $xrom_bin_mode ) {
+  } elsif( $xrom_mode == $XROM_BIN_MODE ) {
     $crc16 = calc_crc16( @words[2 .. $next_free_word] );
     write_binary( $outfile, $next_free_word, @words[2 .. $next_free_word] ); # Limit the words that are processed.
     print "// XROM mode -- NOTE: Currently cannot be disassembled.\n";
@@ -970,8 +982,6 @@ sub load_opcode_tables {
   # Read from whatever source happened to be caught. If none of the above opened
   # a file, read the attached DATA segment at the end of the script as the fallback.
   while(<DATA>) {
-    my $xrom_only = 0;
-
     # Extract the SVN version of the opcode table -- if it exists.
     if( /^\s*#\s+Generated .+ svn_(\d+)\.op/ ) {
       $op_svn = $1;
@@ -985,7 +995,7 @@ sub load_opcode_tables {
     # Remove any comments ('#' or '//') and any blank lines.
     next if /^\s*#/;
     next if /^\s*$/;
-    next if m<^\s*//>;
+    next if m/^\s*\/\//;
     chomp; chomp;
 
     # Annihilate every end-of-line known to mankind! The "chomp; chomp;" doesn't
@@ -1027,16 +1037,17 @@ sub load_opcode_tables {
     #
 
     # See if there is an XROM tag on the instruction. If so, it is ONLY valid when running in
-    # an XROM mode.
-    # XXX For now, just record this fact and remove the tag. We will encode this later.
-    if (/\,xrom/) {
-      s/\,xrom//;
-      $xrom_only = 1;
-    } elsif (/\s+xrom/) {
-      s/\s+xrom//;
-      $xrom_only = 1;
+    # an XROM mode. If we are not in xrom mode, simply remove the instruction from consideration.
+    # If this instruction is used when we are not in XROM mode, an error will be generated
+    # indicating the instruction is invalid -- which is true in non-XROM modes. No need to
+    # elaborate to the user that the instruction is only valid in XROM mode.
+    if (not $xrom_mode) {
+      next if /\,xrom/ or /\s+xrom/; # Simply skip the instructions.
     } else {
-      $xrom_only = 0;
+      # If we are in XROM mode, scrub the tag from the line prior to normal processing.
+      # There are 2 slightly different forms and we need to deal with both.
+      s/\,xrom//;
+      s/\s+xrom//;
     }
 
     # cmd-type line
@@ -1047,6 +1058,7 @@ sub load_opcode_tables {
 
       if ($mnemonic eq "END") {
         $v3_mode = 1;
+        $pp_options = $DEFAULT_PP_OPTIONS_V3;
         $step_digits = 4;
       }
 
@@ -1192,10 +1204,6 @@ sub parse_arg_type {
 
   if( $arg =~ /max=(\d+)/ ) {
     $direct_max = $1;
-    if( $direct_max > 128 ) {
-      # LOCAL seems to be in effect
-      $direct_max = 128;
-    }
   } else {
     die_msg(this_function((caller(0))[3]), "Cannot parse max parameter from arg-type line $line_num: '$arg'");
   }
@@ -1205,10 +1213,15 @@ sub parse_arg_type {
   $stostack_modifier = 1 if $arg =~ /stostack/;
   $complex_modifier  = 1 if $arg =~ /complex/;
 
+  if ($indirect_modifier and ($direct_max > 128)) {
+    # Limit max to 128 if we are in an indirect-applicable opcode. LOCAL seems to be in effect.
+    $direct_max = 128;
+  }
+
   # Load the direct argument variants
   if( $direct_max ) {
     for my $offset (0 .. ($direct_max - 1)) {
-      parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, $stostack_modifier);
+      parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, $stostack_modifier, $indirect_modifier);
     }
   }
 
@@ -1240,19 +1253,30 @@ sub parse_arg_type_dir_max {
   my $base_hex_str = shift;
   my $line_num = shift;
   my $stostack_modifier = shift;
+  my $indirect_modifier = shift;
   my ($reg_str);
 
   # Find out which instruction offset group we are to use.
-  if( $stostack_modifier or ($direct_max > $MAX_INDIRECT_104) ) {
+  if ($stostack_modifier or ($direct_max > $MAX_INDIRECT_104)) {
     $reg_str = $reg_offset_REG[$offset];
   } else {
     $reg_str = $reg_offset_104[$offset];
   }
+  $reg_str = "--UNDEFINED--" if not defined $reg_str;
+
 
   # "Correct" the format if it is in the numeric range [0-99]. However, a few of the instructions
-  # are limited to a single digit. Detect these and format accordingly.
+  # are limited to a single digit, some have 3 digits. Detect these and format accordingly.
   if( not exists $table_exception_format{$base_mnemonic} ) {
-    $reg_str = sprintf("%02d", $offset) if $offset < 100;
+    if (not $indirect_modifier and ($direct_max > 128)) {
+      # Any opcode that does not have indirect capability can use a 3-digit value IFF
+      # max indicates > 128.
+      $reg_str = sprintf("%03d", $offset);
+    } else {
+      # Anything exceeding 99 in an opcode with indirect capability is coming from the
+      # hybrid number-letter table (reg_offset_REG [why the sill name?]).
+      $reg_str = sprintf("%02d", $offset) if $offset < 100;
+    }
   } else {
     $reg_str = sprintf($table_exception_format{$base_mnemonic}, $offset) if $offset < 100;
   }
@@ -1441,7 +1465,7 @@ sub read_file {
   @lines = remove_line_numbers(@lines);
 
   # Enforce the last line being an END if in V3 mode, unless we are XROM mode.
-  if ($v3_mode and not $xrom_c_mode and not $xrom_bin_mode) {
+  if ($v3_mode and not $xrom_mode) {
     # Make sure there is an END as the last instruction. If not, add one.
     unless( $lines[-1] =~ /(^|\s+)END($|\s+)/) {
       push @lines, "END";
@@ -1625,21 +1649,24 @@ sub run_pp {
     $cmd .= " -v3";
   }
 
-  if ($v3_mode and ($xrom_bin_mode or $xrom_c_mode)) {
+  if ($v3_mode and $xrom_mode) {
     $cmd .= " -xrom";
   }
 
-  if ($stderr2stdout) {
-    $cmd .= " -e2so";
-  }
+  # The new spawned job linkage mechanism sends all daughter output to STDOUT, even what used
+  # to be sent to STDERR. THIS SHOULD ONLY HAPPENS WHEN THE JOB IS SPAWNED. (This is to "fix"
+  # deficiencies in the MS-DOS COMMAND.EXE shell.) When stand-alone, errors are still sent to
+  # STDERR.
+  $cmd .= " -e2so";
 
   # Override the step digits as required.
   # XXX Hah! Who knew?! In Perl, 'log' is actually log2, not log10, like everywhere else!!
   my $sd = ceil(log($max_flash_words)/log(10));
   $cmd .= " -sd $sd";
+  $cmd .= " -colour_mode $use_ansi_colour";
 
   print "// Running WP 34S preprocessor from: $pp_location\n";
-  print "// Running: '$cmd'\n" if exists $ENV{WP34s_ASM_PRESERVE_PP_DBG} and ($ENV{WP34s_ASM_PRESERVE_PP_DBG} == 1);
+  debug_msg(this_function((caller(0))[3]), "Running: '$cmd'") if ($debug > 2) or exists $ENV{WP34s_ASM_PRESERVE_PP_DBG} and ($ENV{WP34s_ASM_PRESERVE_PP_DBG} == 1);
 
   @lines = `$cmd`;
   $err_msg = $?;
@@ -1931,7 +1958,7 @@ sub get_options {
     # Automatically disables the flash length limit since the XROM can be larger than a
     # flash image.
     elsif( ($arg eq "-c_xrom") or ($arg eq "-c") ) {
-      $xrom_c_mode = 1;
+      $xrom_mode = $XROM_C_MODE;
       $disable_flash_limit = 1;
     }
 
@@ -1939,7 +1966,7 @@ sub get_options {
     # Automatically disables the flash length limit since the XROM can be larger than a
     # flash image.
     elsif( $arg eq "-xrom" ) {
-      $xrom_bin_mode = 1;
+      $xrom_mode = $XROM_BIN_MODE;
       $disable_flash_limit = 1;
     }
 
@@ -1961,6 +1988,10 @@ sub get_options {
 
     elsif( ($arg eq "-ac") or ($arg eq "-colour") or ($arg eq "-color") ) {
       $use_ansi_colour = 1;
+    }
+
+    elsif ($arg eq "-colour_mode") {
+      $use_ansi_colour = shift(@ARGV);
     }
 
     else {

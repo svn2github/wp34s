@@ -112,7 +112,12 @@ if( exists $useable_OS{$^O} ) {
     $use_ansi_colour = 0; # Supposedly, terminal emulators under MS-DOS have a hard time running
                           # in full ANSI mode. Sigh! So, no matter what the user tries, make it
                           # difficult to turn ANSI codes on.
+
+  # Conversely, if the OS is linux, turn colour on.
+  } elsif ($^O =~ /linux/i) {
+    $use_ansi_colour = 1;
   }
+
 } else {
   # If we get here, the set file system type function has NOT been run and we may not
   # be able to locate "relative" file.
@@ -201,7 +206,8 @@ Examples:
     and 'A[times][beta]' from the named input library and write the resulting output library
     back to the a file of the same name. The first invocation 'forces' the input library to
     be overwritten. The second explicitly names the input and output libraries to the same
-    name. Notice that the escaped-alpha program name must be surrounded by quotes at all times.
+    name. Notice that program names that contain escaped-alphas must be surrounded by quotes
+    at all times.
 
   \$ $script_name great_circle.wp34s floating_point.wp34s -ilib wp34s.dat -f -state -rm XYZ
   - Assembles the named WP34s program source files and either replaces existing versions in the
@@ -212,10 +218,10 @@ Examples:
   - Provides a catalogue of the input lib.
 
   \$ $script_name -ilib wp34s.dat -olib wp34s-lib.dat -conv -cat
-  - Convert a state file to a flash library file. Provides a catalogue of the library.
+  - Convert a state file to a flash library file. Provide a catalogue of the library.
 
   \$ $script_name -ilib wp34s.dat -olib wp34s-lib.dat -conv -rm ABC myprog.wp34s
-  - Convert a state file to a flash library file. The progra, 'ABC' will be removed from the
+  - Convert a state file to a flash library file. The program, 'ABC' will be removed from the
     flash copy. Whatever programs are in 'myprog.wp34s' will be added or replaced, as the case
     may be, from the flash copy.
 
@@ -258,9 +264,13 @@ if ($in_libfile) {
     $initial_lib = $in_libfile;
 
   } else {
-    # Disassemble the library.
+    # Disassemble the flash library.
     @lib_src = disassemble_binary($in_libfile);
     $initial_lib = $in_libfile;
+  }
+
+  unless (@lib_src) {
+    die_msg(this_function((caller(0))[3]), "Input library ($in_libfile) is empty!");
   }
 
   if ($gen_cat) {
@@ -779,10 +789,13 @@ sub run_prog {
   } else {
     die_msg(this_function((caller(0))[3]), "Cannot locate daughter script '$prog' in current directory or '$script_dir'.");
   }
+  $cmd .= " -e2so"; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
+  $cmd .= " -colour_mode $use_ansi_colour";
+  $cmd .= " -d $debug";
+
   debug_msg(this_function((caller(0))[3]), "Spawning command line: '$cmd'")
     if ($debug > 1) or (exists $ENV{WP34S_LIB_SPAWN_DBG} and ($ENV{WP34S_LIB_SPAWN_DBG} == 1));
 
-  $cmd .= " -e2so"; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
   @output = `$cmd`;
   my @cleaned = clean_array_of_eol(@output);
   if (has_errors(@cleaned)) {
@@ -1247,7 +1260,11 @@ sub get_options {
       $use_ansi_colour = 1;
     }
 
-    elsif( $arg eq "-asm_script" ) {
+    elsif ($arg eq "-colour_mode") {
+      $use_ansi_colour = shift(@ARGV);
+    }
+
+    elsif ($arg eq "-asm_script") {
       $asm_script = shift(@ARGV);
     }
 
