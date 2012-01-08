@@ -1,5 +1,5 @@
 /**************************************************************************/
-#define BERN_SAVEX	.08
+#define BERN_SAVEX	I
 		XLBL"Bn_star"			/* Bernoulli number Bn* = +/- Bn(2 n) */
 			xIN MONADIC
 			FP?
@@ -58,11 +58,11 @@ zeta_0::		.
 			xIN MONADIC
 			x=0?
 				JMP zeta_0
-			LocR 07
 			GSB zeta_int
 			xOUT xOUT_NORMAL
 
-zeta_int::		STO .01
+zeta_int::		LocR 07
+			STO .01
 			STO .07
 			.
 			5
@@ -95,7 +95,6 @@ zeta_calc::		2
 			STO .00
 			STO .03
 			SIGN
-			STO .02
 			STO .04
 			STO .05
 			+/-
