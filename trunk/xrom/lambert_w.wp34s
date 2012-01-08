@@ -10,7 +10,7 @@
  */
 
 		XLBL"W0"
-xrom_wo::		xIN MONADIC
+xrom_w0::		xIN MONADIC
 			SPEC?
 				JMP LamW_NaN
 			x=0?
@@ -81,13 +81,34 @@ LamW_NaN::	FC? D
 
 /**************************************************************************/
 /* The positive branch of the complex W function.
- * A rough guess is made and then Newton's method is used to attain
- * convergence.  The C version works similarily but uses Halley's
- * method which converges a cubically instead of quadratically.
  *
- * MORE - needs to be written.
+ * This code is based on Jean-Marc Baillard's HP-41 version from:
+ *	http://hp41programs.yolasite.com/lambertw.php
  */
 		XLBL"CPX_W0"
+xrom_c_w::		xIN MONADIC_COMPLEX
+			[cmplx]STO .01
+			iC 1
+			STO .03
+			STO .04
+			+
+			[cmplx]x=0?
+				JMP LamW_cloop
+			[cmplx]LN
+			[cmplx]STO .03
+LamW_cloop::		[cmplx]ENTER
+			[cmplx]e[^x]
+			[cmplx]STO .05
+			[cmplx]RCL[times] .03
+			[cmplx]STO+ .05
+			[cmplx]RCL- .01
+			[cmplx]RCL/ .05
+			[cmplx]STO- .03
+			[cmplx]DROP
+			[cmplx]RCL .03
+			CNVG? CVG_COMPLEX
+				xOUT xOUT_NORMAL
+			JMP LamW_cloop
 
 /**************************************************************************/
 /* The inverse W function in both real and complex domains.
