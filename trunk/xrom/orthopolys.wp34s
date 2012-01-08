@@ -150,17 +150,8 @@ poly_NaN::	FC? D
 
 /**************************************************************************/
 /* Common evaluation code
- * x in X, n in Y and optionally param in register rParam
- *
- * Registers:
- */
-/*
- *
- * Flags:
- *	.00	incA
- *	.01	incB
- *	.02	incC
- */
+ * Everything is assumed properly set up at this point.
+  */
 ortho_common::	RCL rT1
 		RCL[times] A
 		RCL rT0
@@ -182,7 +173,7 @@ ortho_noA::	RCL incB
 		ISG I
 			JMP ortho_common
 		RCL rT1
-ortho_fin::		xOUT xOUT_NORMAL
+ortho_fin::	xOUT xOUT_NORMAL
 
 
 /**************************************************************************/
