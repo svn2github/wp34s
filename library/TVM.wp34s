@@ -124,12 +124,12 @@ LBL'TVM'        // extended TVM-Solver
 
 LBL 00  // return after input or calculation
 	FS?C 00
-	SKIP 03
+	SKIP 003
 	RCL- X
 	FILL    // remove intermediate results
 	RCL L
 	STOP    // wait for input or calculation
-	BACK 01 // [R/S] -> clears ENTRY? flag
+	BACK 001 // [R/S] -> clears ENTRY? flag
 
 LBL A
 	ENTRY?
@@ -190,7 +190,7 @@ LBL 23
 LBL 01  // N=?
 	XEQ 07
 	x=0?
-	SKIP 14
+	SKIP 014
 	RCL 04
 	RCL[times] 09
 	RCL/ 08
@@ -198,13 +198,13 @@ LBL 01  // N=?
 	RCL L
 	RCL+ 03
 	x=0?
-	SKIP 09
+	SKIP 009
 	/
 	LN
 	x[<->] Y
 	LN1+x
 	/
-	SKIP 03
+	SKIP 003
 	RCL- 03
 	RCL- 05
 	RCL/ 04
@@ -214,33 +214,33 @@ LBL 02  // I=?
 	XEQ 06
 	RCL 01
 	x[!=]0?
-	SKIP 07
+	SKIP 007
 	RCL+ 03
 	FS? 06
 	RCL+ 04
 	RCL/ 04
 	1/x
 	+/-
-	SKIP 11
+	SKIP 011
 	RCL[times] 04
 	RCL+ 03
 	RCL+ 05
 	x=0?
-	SKIP 06
+	SKIP 006
 	0               // I1=0% (1st initial guess for I solver)
 	RCL 00  // I2=1% (2nd initial guess for I solver)
 	XEQ 07
 	SLV 08  // call iterative solver
-	SKIP 01
+	SKIP 001
 	ERR 20  // no solution found for I! -> Error: "Solve failed"
 	x=0?
-	SKIP 10
+	SKIP 010
 	LN1+x   // i -> I
 	RCL 06
 	ABS
 	[times]
 	FS? 07
-	SKIP 03
+	SKIP 003
 	RCL/ 07
 	e[^x]-1
 	RCL[times] 07
@@ -250,13 +250,13 @@ LBL 02  // I=?
 LBL 03  // PV=?
 	XEQ 07
 	x=0?
-	SKIP 16
+	SKIP 016
 	RCL 04
 	RCL[times] 09
 	RCL/ 08
 	RCL 01
 	x=0?
-	SKIP 08
+	SKIP 008
 	RCL Y
 	RCL- 05
 	x[<->] Y
@@ -266,7 +266,7 @@ LBL 03  // PV=?
 	e[^x]
 	/
 	RCL- Y
-	SKIP 05
+	SKIP 005
 	RCL- 01
 	x=0?
 	ERR 18  // N=0 and I=0! -> Error: "Invalid data"
@@ -277,18 +277,18 @@ LBL 03  // PV=?
 LBL 04  // PMT=?
 	XEQ 07
 	x=0?
-	SKIP 11
+	SKIP 011
 	RCL 01
 	x=0?
-	SKIP 04
+	SKIP 004
 	0
 	STO 04
 	XEQ 09
-	SKIP 10
+	SKIP 010
 	RCL 03
 	RCL[times] 08
 	RCL/ 09
-	SKIP 06
+	SKIP 006
 	RCL 01
 	x=0?
 	ERR 18  // N=0 and I=0! -> Error: "Invalid data"
@@ -305,7 +305,7 @@ LBL 05  // FV=?
 	ERR 13  // FV invalid for N=0! -> Error: "Bad mode"
 	x[<->] Y
 	x=0?
-	SKIP 11
+	SKIP 011
 	LN1+x
 	[times]
 	e[^x]
@@ -316,7 +316,7 @@ LBL 05  // FV=?
 	RCL+ 03
 	[times]
 	-
-	SKIP 03
+	SKIP 003
 	RCL- 04
 	[times]
 	RCL- 03
@@ -341,10 +341,10 @@ LBL 07  // I -> i,k
 	STO 09
 	RCL[times] 02
 	x=0?
-	SKIP 12
+	SKIP 012
 	SDR 02
 	FS? 07
-	SKIP 03
+	SKIP 003
 	RCL/ 07
 	LN1+x
 	RCL[times] 07
@@ -371,7 +371,7 @@ LBL 09  // TVM expression
 	RCL+ 05
 	RCL 08
 	x=0?
-	SKIP 09
+	SKIP 009
 	LN1+x
 	RCL[times] 01
 	e[^x]-1
@@ -380,7 +380,7 @@ LBL 09  // TVM expression
 	RCL[times] 08
 	RCL/ 09
 	RCL+ 04
-	SKIP 03
+	SKIP 003
 	RCL+ 01
 	RCL[times] 04
 	+

@@ -30,7 +30,7 @@
 020  x=?[->]Y	// check random number against register pointed to ny Y
 021  GTO 02	// if equal, go back and generate new number
 022  DSZ Y	// decrement Y register, skip when zero
-023  BACK 03	// jump back three steps to compare digit to next register pointed to by Y
+023  BACK 003	// jump back three steps to compare digit to next register pointed to by Y
 024  STO[->]I	 // If random number is not equal to any existing digit, store in register pointed to by I
 025  DSE I
 026  GTO 02	// Go back to random number generator to store next digit
@@ -58,11 +58,11 @@
 048  x=?[->]Y	// Compare to digit pointed to by Y
 049  GTO 05 //	if equal, go to scoring for correct digit in incorrect location
 050  DSZ Y
-051  BACK 03	// jump back three steps to compare digit to next register pointed
+051  BACK 003	// jump back three steps to compare digit to next register pointed
 052  0
-053  SKIP 05	// Go to scoring
+053  SKIP 005	// Go to scoring
 054  ****LBL 04
-055  SKIP 02	// skip two steps to enter 1 for correct digit in correct location
+055  SKIP 002	// skip two steps to enter 1 for correct digit in correct location
 056  ****LBL 05
 057  .
 058  1  	// for .1 for guess digit in number in incorrect location, 1 for correct digit in correct location.)
