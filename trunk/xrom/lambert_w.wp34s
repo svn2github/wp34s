@@ -84,28 +84,33 @@ LamW_NaN::	FC? D
  *
  * This code is based on Jean-Marc Baillard's HP-41 version from:
  *	http://hp41programs.yolasite.com/lambertw.php
+ *
+ * Register use:
+ *	.00/.01	z
+ *	.02/.03 w
+ *	.04/.05 temporary
  */
 		XLBL"CPX_W0"
 xrom_c_w::		xIN MONADIC_COMPLEX
-			[cmplx]STO .01
+			[cmplx]STO .00
 			iC 1
+			STO .02
 			STO .03
-			STO .04
 			+
 			[cmplx]x=0?
 				JMP LamW_cloop
 			[cmplx]LN
-			[cmplx]STO .03
+			[cmplx]STO .02
 LamW_cloop::		[cmplx]ENTER
 			[cmplx]e[^x]
-			[cmplx]STO .05
-			[cmplx]RCL[times] .03
-			[cmplx]STO+ .05
-			[cmplx]RCL- .01
-			[cmplx]RCL/ .05
-			[cmplx]STO- .03
+			[cmplx]STO .04
+			[cmplx]RCL[times] .02
+			[cmplx]STO+ .04
+			[cmplx]RCL- .00
+			[cmplx]RCL/ .04
+			[cmplx]STO- .02
 			[cmplx]DROP
-			[cmplx]RCL .03
+			[cmplx]RCL .02
 			CNVG? CVG_COMPLEX
 				xOUT xOUT_NORMAL
 			JMP LamW_cloop
