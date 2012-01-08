@@ -105,12 +105,6 @@ extern void cmplxAsinh(decNumber *rx, decNumber *ry, const decNumber *a, const d
 extern void cmplxAcosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxComb(decNumber *rx, decNumber *ry,
-		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d);
-extern void cmplxPerm(decNumber *rx, decNumber *ry,
-		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d);
 extern void cmplxFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);

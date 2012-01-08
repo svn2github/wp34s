@@ -1,0 +1,34 @@
+
+/**************************************************************************/
+/* Permutations of complex argument
+ * P(x, y) = x! / (x-y)!
+ */
+		XLBL"CPX_PERM"
+xrom_c_perm::		xIN DYADIC_COMPLEX
+			GSB cperm_common
+			JMP cperm_exit
+
+/**************************************************************************/
+/* Combinations of complex argument
+ * C(x, y) = P(x, y) / y! = x! / ( (x-y)! y! )
+ */
+		XLBL"CPX_COMB"
+xrom_c_comb::		xIN DYADIC_COMPLEX
+			[cmplx]STO A
+			GSB cperm_common
+			[cmplx]RCL A
+			INC X
+			[cmplx]LN[GAMMA]
+			[cmplx]-
+cperm_exit::		[cmplx]e[^x]
+			xOUT xOUT_NORMAL
+
+cperm_common::		SSIZE4
+			INC Z
+			[cmplx]-
+			[cmplx]LN[GAMMA]
+			[cmplx]x[<->] Z
+			[cmplx]LN[GAMMA]
+			[cmplx]x[<->] Z
+			[cmplx]-
+			RTN
