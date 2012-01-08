@@ -19,7 +19,7 @@
 
 
 // The actual size will be shorter on the device
-#define NUMPROG_FLASH	4094
+#define NUMPROG_FLASH	9999
 
 #ifdef REALBUILD
 // Actual size of user flash area, Linker symbol on the device

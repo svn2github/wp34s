@@ -1,4 +1,3 @@
-
 /**************************************************************************/
 /* The positive branch of the real W function.
  * A rough guess is made and then Newton's method is used to attain
@@ -15,6 +14,7 @@ xrom_w0::		xIN MONADIC
 				JMP LamW_NaN
 			x=0?
 				xOUT xOUT_NORMAL
+			LocR 00
 			Num eE
 			1/x
 			+/-
@@ -46,6 +46,7 @@ xrom_w1::		xIN MONADIC
 				JMP LamW_NaN
 			x[>=]0?
 				JMP LamW_inf
+			LocR 01
 			+/-
 			1/x
 			STO .00
@@ -65,17 +66,17 @@ LamW_converged::	RCL/ .00
 			+/-
 			xOUT xOUT_NORMAL
 
-LamW_inf::	x>0?
-			JMP LamW_NaN
-		FC? D
-			ERR ERR_MINFINITY
-		Num -[infinity]
-		xOUT xOUT_NORMAL
+LamW_inf::		x>0?
+				JMP LamW_NaN
+			FC? D
+				ERR ERR_MINFINITY
+			Num -[infinity]
+			xOUT xOUT_NORMAL
 
-LamW_NaN::	FC? D
-			ERR ERR_DOMAIN
-		Num NaN
-		xOUT xOUT_NORMAL
+LamW_NaN::		FC? D
+				ERR ERR_DOMAIN
+			Num NaN
+			xOUT xOUT_NORMAL
 
 
 
@@ -92,6 +93,7 @@ LamW_NaN::	FC? D
  */
 		XLBL"CPX_W0"
 xrom_c_w::		xIN MONADIC_COMPLEX
+			LocR 05
 			[cmplx]STO .00
 			iC 1
 			STO .02

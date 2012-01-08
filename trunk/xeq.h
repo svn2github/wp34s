@@ -462,12 +462,12 @@ extern int current_catalogue_max(void);
 #define REGION_XROM	3
 
 /* Special return stack marker for local registers */
-#define LOCAL_MASK      (0x8000u)
-#define isLOCAL(s)	((s) & LOCAL_MASK)
-#define LOCAL_LEVELS(s)	((s) & 0x1ff)
+#define LOCAL_MASK      (0xf000u)
+#define isLOCAL(s)	(((s) >> 12) == 1)	// A local frame is marked by 0x1nnn
+#define LOCAL_LEVELS(s)	((s) & 0xfff)
 
-/* Macros to access flash library space */
-#define LIB_SHIFT	(13)
+/* Macros to access flash library space and user program space */
+#define LIB_SHIFT	(14)
 #define LIB_MASK	(3 << LIB_SHIFT)
 #define LIB_ADDR_MASK	((1 << LIB_SHIFT) - 1)
 #define isLIB(pc)	((pc) & LIB_MASK)
@@ -479,7 +479,7 @@ extern int current_catalogue_max(void);
 #define isRAM(pc)	(((pc) & (LIB_MASK | LOCAL_MASK)) == 0)
 
 /* Macros to access program ROM */
-#define isXROM(pc)	(((pc) & LIB_MASK) == LIB_MASK)
+#define isXROM(pc)	(nLIB(pc) == REGION_XROM)
 #define addrXROM(pc)	addrLIB(pc,REGION_XROM)
 
 /* Define the operation codes and various masks to simplify access to them all

@@ -328,7 +328,8 @@ typedef struct _xrom_params
 {
 	union {
 		struct {
-			unsigned int flags : 10;	// 11 generic local flags .00 to .09
+			unsigned int reserved : 10;	// room for 11 generic local flags .00 to .09
+			                                // just a placeholder here
 			unsigned int stack_depth : 1;	// user stack size was 8
 			unsigned int mode_double : 1;	// user was in double precision mode
 			unsigned int complex : 1;	// complex command
@@ -341,14 +342,24 @@ typedef struct _xrom_params
 
 	unsigned char in;			// input parameters to consume
 	unsigned char out;			// output parameters to insert
+
+	// Fields to be saved on xIN and restored on xOUT
+	unsigned short int *user_ret_stk;	// save the user return stack base
+	signed short int user_ret_stk_ptr;      // ... the user stack pointer
+	signed short int user_local_regs;       // ... the local regs pointer
 } TXromParams;
 
 extern TXromParams XromParams;
 
-#define XromFlags    (XromParams.flags.bits)
-#define XromFlagWord (XromParams.flags.word)
-#define XromIn       (XromParams.in)
-#define XromOut      (XromParams.out)
+#define XROM_SYSTEM_FLAG_BASE (10)
+
+#define XromFlags	  (XromParams.flags.bits)
+#define XromFlagWord	  (XromParams.flags.word)
+#define XromIn		  (XromParams.in)
+#define XromOut		  (XromParams.out)
+#define XromUserRetStk	  (XromParams.user_ret_stk)
+#define XromUserRetStkPtr (XromParams.user_ret_stk_ptr)
+#define XromUserLocalRegs (XromParams.user_local_regs)
 
 /*
  *  A private set of registers for non recursive, non interruptible XROM code
@@ -357,18 +368,18 @@ extern TXromParams XromParams;
  *
  *  This block is not set to zero on power up but cleared on xIN!
  */
-#define NUMXREGS 16
+#define XROM_RET_STACK_SIZE (17 * sizeof(REGISTER) / sizeof(unsigned short)) // Hopefully enough
 typedef struct _xrom_local
 {
-	REGISTER _stack[STACK_SIZE+EXTRA_REG];	// Private stack for XROM, complete set X to K
-	REGISTER _regs[NUMXREGS];		// Local registers: 16 double precision
+	REGISTER _stack[STACK_SIZE+EXTRA_REG];	      // Private stack for XROM, complete set X to K
+	unsigned short _ret_stk[XROM_RET_STACK_SIZE]; // Local registers and return stack
 
 } TXromLocal;
 
 extern TXromLocal XromLocal;
 
-#define XromStack (XromLocal._stack)
-#define XromRegs  (XromLocal._regs)
+#define XromStack  (XromLocal._stack)
+#define XromRetStk (XromLocal._ret_stk + XROM_RET_STACK_SIZE)
 
 #else /* COMPILE_XROM */
 

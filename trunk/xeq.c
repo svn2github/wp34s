@@ -158,7 +158,7 @@ int local_levels(void) {
  *  How many local registers have we?
  */
 int local_regs(void) {
-	return XromFlags.xIN ? NUMXREGS : local_levels() >> (2 + is_dblmode());
+	return local_levels() >> (2 + is_dblmode());
 }
 
 /*
@@ -991,16 +991,11 @@ REGISTER *get_reg_n(int n) {
 		return get_flash_reg_n(n - FLASH_REG_BASE);
 
 	if (n >= LOCAL_REG_BASE && local_regs() > 0) {
+		// local register on the return stack
 		n -= LOCAL_REG_BASE;
-		if (XromFlags.xIN) {
-			// Local XROM register in volatile RAM
-			return XromRegs + n;
-		} else {
-			// local register on the return stack
-			if (dbl)
-				n <<= 1;
-			return (REGISTER *) ((decimal64 *) (RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n);
-		}
+		if (dbl)
+			n <<= 1;
+		return (REGISTER *) ((decimal64 *) (RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n);
 	}
 	return (REGISTER *) reg_address(n, Regs + TOPREALREG - NumRegs, Regs + regX_idx);
 }
@@ -2347,7 +2342,7 @@ static unsigned short int *flag_word(int n, unsigned short int *mask) {
 
 	if (n >= LOCAL_FLAG_BASE) {
 		n -= LOCAL_FLAG_BASE;
-		if (XromFlags.xIN) {
+		if (n > XROM_SYSTEM_FLAG_BASE && XromFlags.xIN) {
 			// XROM special
 			p = &XromFlagWord;
 		}
@@ -3494,13 +3489,13 @@ static void rargs(const opcode op) {
 			--lim;
 	}
 	else if (argcmds[cmd].flag) {
-		if (local_regs() == 0)
-			lim -= 16;
+		if (LocalRegs == 0)
+			lim = NUMFLG;
 		if ((int)arg < 0)
 			arg = NUMFLG - (int)arg;
 	}
 	else if (argcmds[cmd].local) {
-		// Range checking for local registers or flags
+		// Range checking for local registers
 		lim = NUMREG + local_regs();
 		if (argcmds[cmd].cmplx)
 			--lim;
@@ -3652,8 +3647,10 @@ void xeq(opcode op)
 #ifndef REALBUILD
 			}
 #endif
-			decpc();	// Back to error instruction
-			RetStkPtr = 0;  // clear return stack
+			decpc();		// Back to error instruction
+			RetStkPtr = 0;		// clear return stack
+			xeq_init_contexts();	// Repair any pointers clobberd by xIN
+
 			set_running_off();
 		}
 	} 
@@ -3917,13 +3914,25 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	if (! i) {
 		// fill with 0
 		xset(&XromLocal, 0, sizeof(XromLocal));
-		XromFlagWord = 0;
+		xset(&XromParams, 0, sizeof(XromParams));
 
+		// Flags
 		XromFlags.stack_depth = UState.stack_depth;
 		XromFlags.mode_double = State.mode_double;
 		XromFlags.state_lift = 1;
 		XromFlags.xIN = 1;
+
+		// Establish local return stack
+		XromUserRetStk = RetStk;
+		XromUserRetStkPtr = RetStkPtr;
+		XromUserLocalRegs = LocalRegs;
+
+		RetStk = XromRetStk;
+		RetStkPtr = -2;			    // Room for a local frame with just the flags
+		RetStk[RetStkPtr] = LOCAL_MASK | 2;
+		LocalRegs = RetStkPtr;
 	}
+
 	// Parse the argument into fields
 	XromFlags.setLastX = (arg & 0x02) != 0;
 	XromFlags.complex = (arg & 0x01) != 0;
@@ -3934,6 +3943,8 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		XromIn <<= 1;
 		XromOut <<= 1;
 	}
+	if (i)
+		return;		// Nested call, just set parameters
 
 	// Switch to double precision mode
 	if (State.mode_double) {
@@ -4019,7 +4030,13 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		while (i--)
 			packed_from_packed128(&(get_stack(i)->s), &(XromStack[i].d));
 	}
-	RetStkPtr = LocalRegs;
+
+	// Restore the global return stack
+	RetStk = XromUserRetStk;
+	RetStkPtr = XromUserRetStkPtr;
+	LocalRegs = XromUserLocalRegs;
+
+	// RTN or RTN+1 depending on bit 0 of argument
 	do_rtn(arg & 1);
 }
 #endif

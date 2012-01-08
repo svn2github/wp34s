@@ -5,6 +5,7 @@
 #define rT0	.03
 #define rT1	.04
 #define incB	.05
+#define LocalRegs LocR 05
 
 /* Flags used:
  *	.00	incA
@@ -16,7 +17,8 @@
  */
 		XLBL"LegendrePn"
 xrom_LegendrePn::	xIN DYADIC
-			GSB othro_default
+			LocalRegs
+			GSB ortho_default
 			RCL rX
 			STO+ A
 			RCL+ X
@@ -28,7 +30,8 @@ xrom_LegendrePn::	xIN DYADIC
  */
 		XLBL"ChebychevTn"
 xrom_ChebychevIn::	xIN DYADIC
-			GSB othro_default
+			LocalRegs
+			GSB ortho_default
 			JMP ortho_common
 
 /**************************************************************************/
@@ -36,7 +39,8 @@ xrom_ChebychevIn::	xIN DYADIC
  */
 		XLBL"ChebychevUn"
 xrom_ChebychevUn::	xIN DYADIC
-			GSB othro_default
+			LocalRegs
+			GSB ortho_default
 			RCL rX
 			STO+ rT1
 			JMP ortho_common
@@ -46,6 +50,7 @@ xrom_ChebychevUn::	xIN DYADIC
  */
 		XLBL"LaguerreLn"
 xrom_LaguerreLn::	xIN DYADIC
+			LocalRegs
 			iC 0
 			JMP laguerre_common
 
@@ -54,6 +59,7 @@ xrom_LaguerreLn::	xIN DYADIC
  */
 		XLBL"LaguerreLnA"
 xrom_LaguerreLnA::	xIN TRIADIC
+			LocalRegs
 			RCL Z
 			SPEC?
 				JMP poly_NaN
@@ -62,7 +68,7 @@ laguerre_common::	STO rParam
 			x[<=]0?
 				JMP poly_NaN
 			DROP			
-			GSB othro_default
+			GSB ortho_default
 			RCL rParam
 			STO+ B
 			3
@@ -83,7 +89,8 @@ ortho_allinc::		SF .00
  */
 		XLBL"HermiteHe"
 xrom_HermiteHe::	xIN DYADIC
-			GSB othro_default
+			LocalRegs
+			GSB ortho_default
 			RCL rX
 			STO A
 			INC incB
@@ -94,7 +101,8 @@ xrom_HermiteHe::	xIN DYADIC
  */
 		XLBL"HermiteH"
 xrom_HermiteH::		xIN DYADIC
-			GSB othro_default
+			LocalRegs
+			GSB ortho_default
 			RCL rX
 			STO+ rT1
 			2
@@ -104,7 +112,7 @@ xrom_HermiteH::		xIN DYADIC
 
 /**************************************************************************/
 
-othro_default::	SSIZE4
+ortho_default::	SSIZE4
 		[cmplx]STO rX
 		SPEC?
 			JMP poly_NaN
@@ -183,3 +191,5 @@ ortho_noA::	RCL incB
 #undef rT0
 #undef rT1
 #undef incB
+#undef LocalRegs
+
