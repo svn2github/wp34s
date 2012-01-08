@@ -354,12 +354,12 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_DTADD,	&dateAdd,		NOFN,		NOFN,		"DAYS+")
 	FUNC(OP_DTDIF,	&dateDelta,		NOFN,		NOFN,		"\203DAYS")
 
-	FUNC(OP_LEGENDRE_PN,	&decNumberPolyCommon,	NOFN,	NOFN,		"P\275")
-	FUNC(OP_CHEBYCHEV_TN,	&decNumberPolyCommon,	NOFN,	NOFN,		"T\275")
-	FUNC(OP_CHEBYCHEV_UN,	&decNumberPolyCommon,	NOFN,	NOFN,		"U\275")
-	FUNC(OP_LAGUERRE,	&decNumberPolyLn,	NOFN,	NOFN,		"L\275")
-	FUNC(OP_HERMITE_HE,	&decNumberPolyCommon,	NOFN,	NOFN,		"H\275")
-	FUNC(OP_HERMITE_H,	&decNumberPolyCommon,	NOFN,	NOFN,		"H\275\276")
+	FUNC(OP_LEGENDRE_PN,	XDR(LegendrePn),	NOFN,	NOFN,		"P\275")
+	FUNC(OP_CHEBYCHEV_TN,	XDR(ChebychevTn),	NOFN,	NOFN,		"T\275")
+	FUNC(OP_CHEBYCHEV_UN,	XDR(ChebychevUn),	NOFN,	NOFN,		"U\275")
+	FUNC(OP_LAGUERRE,	XDR(LaguerreLn),	NOFN,	NOFN,		"L\275")
+	FUNC(OP_HERMITE_HE,	XDR(HermiteHe),		NOFN,	NOFN,		"H\275")
+	FUNC(OP_HERMITE_H,	XDR(HermiteH),		NOFN,	NOFN,		"H\275\276")
 #ifdef INCLUDE_XROOT
 	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
 #endif
@@ -398,7 +398,7 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 	FUNC(OP_MULADD, 	&decNumberMAdd,		&intMAdd,		"\034+")
 #endif
 	FUNC(OP_PERMRR,		XTR(PERMMR),		(FP_TRIADIC_INT) NOFN,	"%MRR")
-        FUNC(OP_GEN_LAGUERRE,   &decNumberPolyLnAlpha,	(FP_TRIADIC_INT) NOFN,	"L\275\240")
+        FUNC(OP_GEN_LAGUERRE,   XTR(LaguerreLnA),	(FP_TRIADIC_INT) NOFN,	"L\275\240")
 
 	FUNC(OP_MAT_MUL,	&matrix_multiply,	(FP_TRIADIC_INT) NOFN,	"M\034")
 	FUNC(OP_MAT_GADD,	&matrix_genadd,		(FP_TRIADIC_INT) NOFN,	"M+\034")
