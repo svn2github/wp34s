@@ -580,65 +580,81 @@ sub assemble {
       ($_, $alpha_text) = assembler_preformat_handling($_);
 
       if( not exists $mnem2hex{$_} ) {
-        warn_msg(this_function((caller(0))[3]), "Cannot recognize mnemonic at line $k of file '${file}': -> ${org_line} <-");
-        if( $org_line =~ /::/ ) {
-          die_msg(this_function((caller(0))[3]), "There seems to be WP 34S Preprocessor labels here. Try using the '-pp' switch.\n Enter '$script_name -h' for help.");
-        } else {
-          die_msg(this_function((caller(0))[3]), "Cannot continue.");
-        }
-      } else {
-        $steps_used++;
-        # Alpha text needs to be treated separately since it encodes to 2 words.
-        my $org_alpha_text = $alpha_text;
-        if( $alpha_text ) {
-          # See if the text has any escaped characters in it. Substitute them if found.
-          # There may be more than one so loop until satisfied.
-          while( $alpha_text =~ /\[(.+?)\]/ ) {
-            my $escaped_alpha = $1;
-            if( exists $escaped_alpha2ord{$escaped_alpha} ) {
-              my $char = chr($escaped_alpha2ord{$escaped_alpha});
-
-              # Use a custom replacement function rather than a regex because the text
-              # pattern for the substitution have regex control sequences in them and
-              # that screws things up!
-              $alpha_text = str_replace("\[${escaped_alpha}\]", $char, $alpha_text);
-            } else {
-              die_msg(this_function((caller(0))[3]), "Cannot locate escaped alpha: [$escaped_alpha] in table.");
-            }
+        # If not found, try zero extending the operand and search again.
+        my $zero_extend_attempts = 2;
+        my $found = 0;
+        while ($zero_extend_attempts) {
+          $_ = zero_extend_operand($_);
+          if (exists $mnem2hex{$_}) {
+            $found = 1;
+            last;
           }
+          $zero_extend_attempts--;
+        }
 
-          my @chars = split "", $alpha_text;
-          $words[++$next_free_word] = hex2dec($mnem2hex{$_}) | ord($chars[0]);
-
-          # Quoted alpha slots have room for 3 characters -- 1 sits with the main op-code,
-          # and 2 more are in the next words. We can have any combination of 1, 2, or 3
-          # characters. Any character slot that is not used is nulled out.
-          #
-          # Characters are present in all three of the quote slots -- 1 in the main slot
-          # and 2 in the secondary slot.
-          if( $chars[1] and $chars[2] ) {
-            # XXX Due to a bug discovered by Pauli, the calculator misbehaves when these characters
-            #     are in the 3rd character slot. To work around this, we will limit them to not being
-            #     allowed in that slot.
-            if( (ord($chars[2]) >= $ILLEGAL_3rd_CHAR_LO) and (ord($chars[2]) <= $ILLEGAL_3rd_CHAR_HI) ) {
-              die_msg(this_function((caller(0))[3]), "Cannot use this escaped alpha '$org_alpha_text' in 3rd character slot in step '$org_line'.");
-            }
-            $words[++$next_free_word] = ord($chars[1]) | (ord($chars[2]) << 8);
-
-          # Characters are present in just 2 of the 3 quote slots -- ie: 1 in the main
-          # slot and only 1 of these 2.
-          } elsif( $chars[1] ) {
-            $words[++$next_free_word] = ord($chars[1]);
-
-          # No characters are present in final 2 quote slots. Just blank it out.
+        # Check why we came out of the loop.
+        if (not $found) {
+          warn_msg(this_function((caller(0))[3]), "Cannot recognize mnemonic at line $k of file '${file}': -> ${org_line} <-");
+          if( $org_line =~ /::/ ) {
+            die_msg(this_function((caller(0))[3]), "There seems to be WP 34S Preprocessor labels here. Try using the '-pp' switch.\n Enter '$script_name -h' for help.");
           } else {
-            $words[++$next_free_word] = 0;
+            die_msg(this_function((caller(0))[3]), "Cannot continue.");
           }
-
-        # "Normal" opcodes...
-        } else {
-          $words[++$next_free_word] = hex2dec($mnem2hex{$_});
         }
+      }
+
+      # We will crap out before here if the instruction is not recognized.
+      $steps_used++;
+      # Alpha text needs to be treated separately since it encodes to 2 words.
+      my $org_alpha_text = $alpha_text;
+      if( $alpha_text ) {
+        # See if the text has any escaped characters in it. Substitute them if found.
+        # There may be more than one so loop until satisfied.
+        while( $alpha_text =~ /\[(.+?)\]/ ) {
+          my $escaped_alpha = $1;
+          if( exists $escaped_alpha2ord{$escaped_alpha} ) {
+            my $char = chr($escaped_alpha2ord{$escaped_alpha});
+
+            # Use a custom replacement function rather than a regex because the text
+            # pattern for the substitution have regex control sequences in them and
+            # that screws things up!
+            $alpha_text = str_replace("\[${escaped_alpha}\]", $char, $alpha_text);
+          } else {
+            die_msg(this_function((caller(0))[3]), "Cannot locate escaped alpha: [$escaped_alpha] in table.");
+          }
+        }
+
+        my @chars = split "", $alpha_text;
+        $words[++$next_free_word] = hex2dec($mnem2hex{$_}) | ord($chars[0]);
+
+        # Quoted alpha slots have room for 3 characters -- 1 sits with the main op-code,
+        # and 2 more are in the next words. We can have any combination of 1, 2, or 3
+        # characters. Any character slot that is not used is nulled out.
+        #
+        # Characters are present in all three of the quote slots -- 1 in the main slot
+        # and 2 in the secondary slot.
+        if( $chars[1] and $chars[2] ) {
+          # XXX Due to a bug discovered by Pauli, the calculator misbehaves when these characters
+          #     are in the 3rd character slot. To work around this, we will limit them to not being
+          #     allowed in that slot.
+          if( (ord($chars[2]) >= $ILLEGAL_3rd_CHAR_LO) and (ord($chars[2]) <= $ILLEGAL_3rd_CHAR_HI) ) {
+            die_msg(this_function((caller(0))[3]), "Cannot use this escaped alpha '$org_alpha_text' in 3rd character slot in step '$org_line'.");
+          }
+          $words[++$next_free_word] = ord($chars[1]) | (ord($chars[2]) << 8);
+
+        # Characters are present in just 2 of the 3 quote slots -- ie: 1 in the main
+        # slot and only 1 of these 2.
+        } elsif( $chars[1] ) {
+          $words[++$next_free_word] = ord($chars[1]);
+
+        # No characters are present in final 2 quote slots. Just blank it out.
+        } else {
+          $words[++$next_free_word] = 0;
+        }
+
+      # "Normal" opcodes...
+      } else {
+        $words[++$next_free_word] = hex2dec($mnem2hex{$_});
       }
 
       # Lib-mode and RAM/State-mode (ie: not $flash_mode) have different size limitations.
@@ -1758,6 +1774,23 @@ sub gen_random_writeable_filename {
   }
   return $filename;
 } # gen_random_writeable_filename
+
+
+#######################################################################
+#
+# Zero extend the operand. For example, modify the following:
+#
+#   RCL 5
+#
+# to:
+#
+#   RCL 05
+#
+sub zero_extend_operand {
+  my $operand = shift;
+  $operand =~ s/(\s+)(\d+)/${1}0${2}/; # Retain the exact whitespace!
+  return $operand;
+} # zero_extend_operand
 
 
 #######################################################################
