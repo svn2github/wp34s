@@ -191,9 +191,10 @@ Parameters:
    -colour          Turn on ANSI colour codes in warning and error messages.  [default for all other O/S's]
    -color           Turn on ANSI color codes in warning and error messages. Same as previous (provides
                     for American color/spelling palette :-).
-   -sb2to3          Convert old-style 2-digit SKIP/BACK offsets to 3-digit ones on the fly. Only intended for
-                    use with old-style V2 programs that were not designed to take advantage of PP when porting
-                    to V3. Use with discretion! (Far better to use PP JMP instructions instead!)
+   -sb2to3          Convert old-style 2-digit SKIP/BACK offsets to 3-digit ones on the fly. Only
+                    intended for use with old-style V2 programs that were not designed to take
+                    advantage of PP when porting to V3. Use with discretion! (Far better to use
+                    PP JMP instructions instead!)
    -h               This help script.
 
 Examples:

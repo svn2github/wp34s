@@ -176,7 +176,7 @@ Parameters:
    -cat             Generate a LBL catalogue.
    -ns              Suppress generation of step numbers.
    -m max_offset    Change the maximum offset limit.  [default: $DEFAULT_MAX_JMP_OFFSET]
-   -v3              Enable v3 mode ehnacnements.
+   -v3              Enable v3 mode enhancements.
    -renum           Renumber step lines sequentially. Only has meaning in v3 mode.
    -xrom            Run in XROM mode. NOTE: This is normally only used by the internal
                     tool-chain. Not intended for use by the end-user!

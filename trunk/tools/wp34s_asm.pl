@@ -406,9 +406,10 @@ Parameters:
    -syntax outfile  Turns on syntax guide file dumping. Output will be sent to 'outfile'.
    -ns              Turn off step numbers in disassembler listing.
    -no_svn          Suppress report of compressed opcode table SVN version number.
-   -sb2to3          Convert old-style 2-digit SKIP/BACK offsets to 3-digit ones on the fly. Only intended for
-                    use with old-style V2 programs that were not designed to take advantage of PP when porting
-                    to V3. Use with discretion! (Far better to use PP JMP instructions instead!)
+   -sb2to3          Convert old-style 2-digit SKIP/BACK offsets to 3-digit ones on the fly. Only
+                    intended for use with old-style V2 programs that were not designed to take
+                    advantage of PP when porting to V3. Use with discretion! (Far better to use
+                    PP JMP instructions instead!)
    -h               This help script.
 
 Examples:
