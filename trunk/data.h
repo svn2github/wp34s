@@ -368,7 +368,7 @@ extern TXromParams XromParams;
  *
  *  This block is not set to zero on power up but cleared on xIN!
  */
-#define XROM_RET_STACK_SIZE (17 * sizeof(REGISTER) / sizeof(unsigned short)) // Hopefully enough
+#define XROM_RET_STACK_SIZE (int)(17 * sizeof(REGISTER) / sizeof(unsigned short)) // Hopefully enough
 typedef struct _xrom_local
 {
 	REGISTER _stack[STACK_SIZE+EXTRA_REG];	      // Private stack for XROM, complete set X to K

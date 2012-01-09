@@ -137,6 +137,13 @@ REGISTER *StackBase;
  */
 int move_retstk(int distance)
 {
+#ifndef REALBUILD
+	// Sanity check
+	if (XromFlags.xIN) {
+		err(ERR_ILLEGAL);
+		return 1;
+	}
+#endif
 	if (RetStkSize + RetStkPtr + distance < 0) {
 		err(ERR_RAM_FULL);
 		return 1;
@@ -1787,7 +1794,7 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 			clrretstk();
 			set_running_on();
 		}
-		if (-RetStkPtr >= RetStkSize) {
+		if (-RetStkPtr >= (XromFlags.xIN ? XROM_RET_STACK_SIZE : RetStkSize)) {
 			// Stack is full
 			err(ERR_RAM_FULL);
 			// clrretstk();
@@ -3834,7 +3841,7 @@ void set_running_on() {
 void cmdlocr(unsigned int arg, enum rarg op) {
 	short int sp = RetStkPtr;
 	int size = (++arg << (is_dblmode() ? 3 : 2)) + 2;
-	const unsigned short marker = LOCAL_MASK | size;
+	const unsigned short marker = LOCAL_MARKER | size;
 	int old_size = 0;
 	short unsigned int old_flags = 0;
 
@@ -3931,7 +3938,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 
 		RetStk = XromRetStk;
 		RetStkPtr = -2;			    // Room for a local frame with just the flags
-		RetStk[RetStkPtr] = LOCAL_MASK | 2;
+		RetStk[RetStkPtr] = LOCAL_MARKER | 2;
 		LocalRegs = RetStkPtr;
 	}
 

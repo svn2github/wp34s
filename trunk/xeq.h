@@ -463,6 +463,7 @@ extern int current_catalogue_max(void);
 
 /* Special return stack marker for local registers */
 #define LOCAL_MASK      (0xf000u)
+#define LOCAL_MARKER    (0x1000u)
 #define isLOCAL(s)	(((s) >> 12) == 1)	// A local frame is marked by 0x1nnn
 #define LOCAL_LEVELS(s)	((s) & 0xfff)
 
