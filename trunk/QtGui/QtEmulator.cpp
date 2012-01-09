@@ -340,7 +340,7 @@ void QtEmulator::stopThreads()
 
 void QtEmulator::setPaths()
 {
-	QString applicationDir=QApplication::applicationDirPath();
+	QString applicationDir=QApplication::applicationDirPath()+'/';
 #ifdef RESOURCES_DIR
 	QString resourcesDir(applicationDir+RESOURCES_DIR);
 #endif

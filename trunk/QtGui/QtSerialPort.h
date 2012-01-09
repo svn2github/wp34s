@@ -18,7 +18,9 @@
 #define QTSERIALPORT_H_
 
 #include <QtCore>
+#if HAS_SERIAL
 #include "qextserialport.h"
+#endif
 
 #define WAIT_SERIAL_BUFFER_TIME 10
 
@@ -34,20 +36,26 @@ public:
 public:
 	const QString& getSerialPortName() const;
 	void setSerialPortName(const QString& aSerialPortName);
+#if HAS_SERIAL
 	bool open(const PortSettings& thePortSettings);
+#endif
 	void close();
 	void flush();
 	void writeByte(unsigned char aByte);
 
 signals:
+#if HAS_SERIAL
     void openInEventLoop(const PortSettings& thePortSettings);
+#endif
     void closeInEventLoop();
     void flushInEventLoop();
     void writeByteInEventLoop(unsigned char aByte);
 
 private slots:
 	void readBytes();
+#if HAS_SERIAL
 	void onOpenInEventLoop(const PortSettings& thePortSettings);
+#endif
 	void onCloseInEventLoop();
 	void onFlushInEventLoop();
     void onWriteByteInEventLoop(unsigned char aByte);
@@ -57,7 +65,9 @@ public:
 
 private:
 	QString serialPortName;
+#if HAS_SERIAL
 	QextSerialPort* serialPort;
+#endif
 };
 
 #endif /* QTSERIALPORT_H_ */

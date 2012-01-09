@@ -131,7 +131,7 @@ static void display_stopwatch(char* message) {
 }
 
 static void store_stopwatch_in_memory() {
-	REGISTER *memory = get_reg_n((StopwatchMemory++)%MAX_STOPWATCH_MEMORY);
+	int registerIndex=(StopwatchMemory++)%MAX_STOPWATCH_MEMORY;
 	int tenths, secs, mins, hours;
 	decNumber t1, t2, s1, s2, m1, m2, h1, h2;
 	
@@ -152,7 +152,7 @@ static void store_stopwatch_in_memory() {
 	dn_add(&h2, &h1, &m2);
 	dn_add(&h1, &h2, &s2);
 	dn_add(&h2, &h1, &t2);
-	packed_from_number(&(memory->s), &h2);
+	setRegister(registerIndex, &h2);
 }
 
 static int get_digit(int key) {

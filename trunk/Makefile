@@ -43,6 +43,11 @@ CXX=mingw32-g++
 endif
 ifeq "$(findstring CYGWIN,$(SYSTEM))" "CYGWIN"
 SYSTEM := windows32
+ifdef QTGUI
+MAKE=mingw32-make
+CC=mingw32-gcc
+CXX=mingw32-g++
+endif
 endif
 ifeq "$(findstring indows,$(SYSTEM))" "indows"
 # Any other Windows GCC is mapped to windows32
@@ -380,6 +385,16 @@ endif
 qt_gui:
 	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui
 
+qt_gui_dist:
+	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui_dist
+
+qt_gui_no_serial:
+	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui_no_serial
+
+qt_gui_dist_no_serial:
+	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui_dist_no_serial
+
+
 ifdef QTGUI
 
 CALCLIB := $(OBJECTDIR)/libCalculator.a
@@ -390,9 +405,27 @@ $(CALCLIB): $(OBS)
 
 real_qt_gui: all $(CALCLIB)
 	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts"
+
+real_qt_gui_dist: all $(CALCLIB)
+	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts" dist
+
+real_qt_gui_no_serial: all $(CALCLIB)
+	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts" NO_SERIAL=1 
+
+real_qt_gui_dist_no_serial: all $(CALCLIB)
+	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts" NO_SERIAL=1 dist
 else
 real_qt_gui:
 	@echo "real_qt_gui should be called if QTGUI is not defined"
+
+real_qt_gui_dist:
+	@echo "real_qt_gui_dist should be called if QTGUI is not defined"
+	
+real_qt_gui_no_serial:
+	@echo "real_qt_gui_no_serial should be called if QTGUI is not defined"
+
+real_qt_gui_dist_no_serial:
+	@echo "real_qt_gui_dist_no_serial should be called if QTGUI is not defined"	
 endif
 
 qt_clean:

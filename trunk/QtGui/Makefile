@@ -69,8 +69,10 @@ DIRS_TO_CLEAN += debug release
 EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.QtGui.debug object_script.QtGui.release
 endif
 
+ifeq "$(NO_SERIAL)" ""
+	HAS_SERIAL=1
 ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "windows32"), "")
-	SERIAL_LIB=""
+	SERIAL_LIB=
 else
 	SERIAL_LIB=-Lserial/lib/$(SYSTEM) -lqextserialport
 endif
@@ -78,6 +80,11 @@ ifeq ("$(SYSTEM)", "windows32")
 	SERIAL_INCLUDE=serial/include/windows32
 else
 	SERIAL_INCLUDE=serial/include
+endif
+else
+  SERIAL_LIB=
+  SERIAL_INCLUDE=
+  HAS_SERIAL=0
 endif
 
 $(OUTPUTDIR)/%.o: %.c
@@ -89,13 +96,28 @@ ifeq "$(BASELIBS)" ""
 ifdef RECURSIVE
 all:
 	@echo "Recursive calling, something is wrong in ../Makefile: BASELIBS not defined"
+	
+dist:
+	@echo "Recursive calling, something is wrong in ../Makefile: BASELIBS not defined"
 else
 all:
 	cd ..; $(MAKE) RECURSIVE=1 qt_gui CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+	
+dist:
+	cd ..; $(MAKE) RECURSIVE=1 qt_gui_dist CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 endif
 else 
 all: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
-	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS="$(BASEOBJS) $(BASELIBS)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS="$(BASEOBJS) $(BASELIBS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+	
+dist: release
+endif
+
+ifeq ($(SYSTEM),windows32)
+release: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
+	$(MAKE) -f $(QTMAKEFILE) release BASE_LIBS="$(BASEOBJS) $(BASELIBS)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+else
+release: all
 endif
 
 build_date: 

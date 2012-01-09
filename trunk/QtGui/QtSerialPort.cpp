@@ -17,21 +17,27 @@
 #include "QtSerialPort.h"
 #include "QtEmulator.h"
 #include "QtEmulatorAdapter.h"
+#if HAS_SERIAL
 #include <qextserialenumerator.h>
+#endif
 #include <QList>
 #include <QThread>
 
 static QtSerialPort* currentSerialPort;
 
 QtSerialPort::QtSerialPort()
+#if HAS_SERIAL
 : serialPort(NULL)
+#endif
 {
-	qRegisterMetaType<PortSettings>("PortSettings");
 	currentSerialPort=this;
+#if HAS_SERIAL
+	qRegisterMetaType<PortSettings>("PortSettings");
 	connect(this, SIGNAL(openInEventLoop(const PortSettings&)), this, SLOT(onOpenInEventLoop(const PortSettings&)), Qt::BlockingQueuedConnection);
 	connect(this, SIGNAL(closeInEventLoop()), this, SLOT(onCloseInEventLoop()), Qt::BlockingQueuedConnection);
 	connect(this, SIGNAL(flushInEventLoop()), this, SLOT(onFlushInEventLoop()), Qt::BlockingQueuedConnection);
 	connect(this, SIGNAL(writeByteInEventLoop(unsigned char)), this, SLOT(onWriteByteInEventLoop(unsigned char)), Qt::BlockingQueuedConnection);
+#endif
 }
 
 QtSerialPort::~QtSerialPort()
@@ -51,6 +57,7 @@ void QtSerialPort::setSerialPortName(const QString& aSerialPortName)
 
 // Qextserialport must run in the same thread as the event loop because it uses a QSocketNotifier at least
 // So we use slots/signals to ensure it.
+#if HAS_SERIAL
 bool QtSerialPort::open(const PortSettings& thePortSettings)
 {
 	if(QThread::currentThread() == qApp->thread())
@@ -64,10 +71,11 @@ bool QtSerialPort::open(const PortSettings& thePortSettings)
 
 	return serialPort->isOpen();
 }
+#endif
 
+#if HAS_SERIAL
 void QtSerialPort::onOpenInEventLoop(const PortSettings& thePortSettings)
 {
-
 	close();
 	serialPort=new QextSerialPort(serialPortName, QextSerialPort::EventDriven);
 	qDebug() << "BaudRate " << thePortSettings.BaudRate << ", DataBits " << thePortSettings.DataBits << ", Parity " << thePortSettings.Parity << ", StopBits " << thePortSettings.StopBits;
@@ -88,10 +96,12 @@ void QtSerialPort::onOpenInEventLoop(const PortSettings& thePortSettings)
         connect(serialPort, SIGNAL(readyRead()), this, SLOT(readBytes()));
 	}
 }
+#endif
 
 // See comment on open
 void QtSerialPort::close()
 {
+#if HAS_SERIAL
 	if(QThread::currentThread() == qApp->thread())
 	{
 		onCloseInEventLoop();
@@ -100,11 +110,12 @@ void QtSerialPort::close()
 	{
 		emit closeInEventLoop();
 	}
-
+#endif
 }
 
 void QtSerialPort::onCloseInEventLoop()
 {
+#if HAS_SERIAL
 	if(serialPort!=NULL)
 	{
 		if(serialPort->isOpen())
@@ -114,11 +125,13 @@ void QtSerialPort::onCloseInEventLoop()
 		delete serialPort;
 		serialPort=NULL;
 	}
+#endif
 }
 
 // See comment on open
 void QtSerialPort::flush()
 {
+#if HAS_SERIAL
 	if(QThread::currentThread() == qApp->thread())
 	{
 		onFlushInEventLoop();
@@ -127,32 +140,37 @@ void QtSerialPort::flush()
 	{
 		emit flushInEventLoop();
 	}
-
+#endif
 }
 
 void QtSerialPort::onFlushInEventLoop()
 {
+#if HAS_SERIAL
 	if(serialPort!=NULL && serialPort->isOpen())
 	{
 		serialPort->flush();
 	}
+#endif
 }
 
 QStringList QtSerialPort::getSerialPorts()
 {
 	QStringList portNames;
+#if HAS_SERIAL
     QList<QextPortInfo> portsInfos = QextSerialEnumerator::getPorts();
     for (int i = 0; i < portsInfos.size(); i++)
     {
     	portNames << portsInfos[i].portName;
     }
     portNames.sort();
+#endif
     return portNames;
 }
 
 // See comment on open
 void QtSerialPort::writeByte(unsigned char aByte)
 {
+#if HAS_SERIAL
 	if(QThread::currentThread() == qApp->thread())
 	{
 		onWriteByteInEventLoop(aByte);
@@ -161,19 +179,27 @@ void QtSerialPort::writeByte(unsigned char aByte)
 	{
 		emit writeByteInEventLoop(aByte);
 	}
-
+#else
+	Q_UNUSED(aByte)
+#endif
 }
 
 void QtSerialPort::onWriteByteInEventLoop(unsigned char aByte)
 {
+#if HAS_SERIAL
 	char* byteBuffer=(char*) &aByte;
 	qDebug() << "Writing " << QString("%1").arg((int) byteBuffer[0], 0, 16);
 	serialPort->write(byteBuffer, 1);
 	qDebug() << "Written " << QString("%1").arg((int) byteBuffer[0], 0, 16);
+#else
+	Q_UNUSED(aByte)
+#endif
 }
+
 
 void QtSerialPort::readBytes()
 {
+#if HAS_SERIAL
     QByteArray bytes;
     int length= serialPort->bytesAvailable();
     qDebug() << "Received " << length;
@@ -195,12 +221,14 @@ void QtSerialPort::readBytes()
     		msleep(WAIT_SERIAL_BUFFER_TIME);
     	}
     }
+#endif
 }
 
 extern "C"
 {
 int open_port(int baud, int bits, int parity, int stopbits)
 {
+#if HAS_SERIAL
 	PortSettings portSettings;
 	switch(baud)
 	{
@@ -265,6 +293,13 @@ int open_port(int baud, int bits, int parity, int stopbits)
 
 	// Return 0 if everything was ok, 1 if not
 	return currentEmulator->getSerialPort().open(portSettings)?0:1;
+#else
+	Q_UNUSED(baud)
+	Q_UNUSED(bits)
+	Q_UNUSED(parity)
+	Q_UNUSED(stopbits)
+	return 1;
+#endif
 }
 
 void close_port()
