@@ -1779,7 +1779,7 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 	/* We've got a key press, map it to a character and try to
 	 * jump to the appropriate catalogue entry.
 	 */
-	ch = remap_chars(keycode_to_alpha(c, shift));
+	ch = remap_chars(keycode_to_alpha(c, shift == SHIFT_G ? SHIFT_LC_G : shift));
 	reset_shift();
 	if (ch == '\0')
 		return STATE_UNFINISHED;
