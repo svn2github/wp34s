@@ -45,8 +45,9 @@ my $state_file = 0;
 my %state_data = ();
 my $chk_crc = 0;
 my $conv_state2flash = 0;
+my $conv_skip_back_2to3 = 0;
 
-my $FLASH_MODE = "-lib";
+my $FLASH_MODE = "-flash";
 my $STATE_MODE = "";
 
 my $CRC_INITIALIZER = 0x5aa5;
@@ -60,17 +61,21 @@ my $disasm_options = (exists $ENV{WP34S_LIB_DISASM_OPTIONS})
 my $asm_options    = (exists $ENV{WP34S_LIB_ASM_OPTIONS})
                    ? $ENV{WP34S_LIB_ASM_OPTIONS} : "";
 
+# Custom arguments that can be passed to ASM and to PP via ASM.
+my $asm_args = "";
+my $pp_args = "";
+
 my $die_on_existing_duplicate = 1;
 
 my $use_pp = "-pp";
 my @new_srcs = ();
 my @rm_progs = ();
 
-my $lib_cat_dump_basefile = (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""))
+my $lib_cat_dump_basefile = (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP}=~ /^\s*$/))
                           ? $ENV{WP34S_LIB_CAT_DUMP}
                           : "wp34s_lib_cat_dump.wp34s";
 
-my $lib_cat_dump_final_file = (exists $ENV{WP34S_LIB_FINAL_SRC} and ($ENV{WP34S_LIB_FINAL_SRC} ne ""))
+my $lib_cat_dump_final_file = (exists $ENV{WP34S_LIB_FINAL_SRC} and ($ENV{WP34S_LIB_FINAL_SRC}=~ /^\s*$/))
                           ? $ENV{WP34S_LIB_FINAL_SRC}
                           : "wp34s_lib_final_dump.wp34s";
 
@@ -129,7 +134,7 @@ if( exists $useable_OS{$^O} ) {
 my $script_executable = $0;
 my ($script_name, $script_dir, $script_suffix) = fileparse($script_executable);
 
-if (exists $ENV{WP34S_LIB_OS_DBG} and ($ENV{WP34S_LIB_OS_DBG} == 1)) {
+if (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /OS_DBG/i)) {
   debug_msg($script_name, "script_executable = '$script_executable'");
   debug_msg($script_name, "script_name       = '$script_name'");
   debug_msg($script_name, "script_dir        = '$script_dir'");
@@ -186,6 +191,9 @@ Parameters:
    -colour          Turn on ANSI colour codes in warning and error messages.  [default for all other O/S's]
    -color           Turn on ANSI color codes in warning and error messages. Same as previous (provides
                     for American color/spelling palette :-).
+   -sb2to3          Convert old-style 2-digit SKIP/BACK offsets to 3-digit ones on the fly. Only intended for
+                    use with old-style V2 programs that were not designed to take advantage of PP when porting
+                    to V3. Use with discretion! (Far better to use PP JMP instructions instead!)
    -h               This help script.
 
 Examples:
@@ -289,9 +297,9 @@ if ($in_libfile) {
 
 
   dbg_show_cat("after initial in_lib processing", "lib_cat", \%lib_cat)
-      if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
+      if $debug or (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /CAT_DBG/i));
   dbg_dump_cat("after processing org lib", "org_lib_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
-      if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+      if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP}=~ /^\s*$/));
 }
 
 # Only execute the modification section if we have been requested to do something.
@@ -302,9 +310,9 @@ if (@new_srcs or @rm_progs) {
     %new_progs = %{prepare_new_srcs(@new_srcs)};
 
     dbg_show_cat("after new programs preparation", "new_progs", \%new_progs)
-        if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
+        if $debug or (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /CAT_DBG/i));
     dbg_dump_cat("after processing new files", "new_src_${lib_cat_dump_basefile}", "new_progs", \%new_progs)
-        if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+        if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP}=~ /^\s*$/));
 
 
     # Replace any existing programs with the new programs, or add the new programs
@@ -318,10 +326,10 @@ if (@new_srcs or @rm_progs) {
         %lib_cat = %{replace_prog(\%lib_cat, $new_prog_name, $new_prog_src_ref)};
 
         dbg_show_cat("after replacing \"$new_prog_name\"", "lib_cat", \%lib_cat)
-            if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
+            if $debug or (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /CAT_DBG/i));
         dbg_dump_cat("after processing replacement of $new_prog_name",
                     "replace_${new_prog_name}_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
-            if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+            if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP}=~ /^\s*$/));
       } else {
         printf "Adding program: \"%0s\", new program steps: %0d\n",
                 $new_prog_name, scalar @{$new_prog_src_ref} unless $quiet;
@@ -329,10 +337,10 @@ if (@new_srcs or @rm_progs) {
         %lib_cat = %{add_prog(\%lib_cat, $new_prog_name, $new_prog_src_ref)};
 
         dbg_show_cat("after adding \"$new_prog_name\"", "lib_cat", \%lib_cat)
-            if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
+            if $debug or (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /CAT_DBG/i));
         dbg_dump_cat("after processing addition of $new_prog_name",
                     "add_${new_prog_name}_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
-            if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+            if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP}=~ /^\s*$/));
       }
     }
   }
@@ -343,18 +351,19 @@ if (@new_srcs or @rm_progs) {
       printf "Removing program: \"%0s\", old program steps: %0d\n",
               $rm_prog_name, scalar @{$lib_cat{$rm_prog_name}} unless $quiet;
       %lib_cat = %{remove_prog(\%lib_cat, $rm_prog_name)};
-      dbg_show_cat("after removing \"$rm_prog_name\"", "lib_cat", \%lib_cat) if $debug or (exists $ENV{WP34S_LIB_CAT_DBG} and ($ENV{WP34S_LIB_CAT_DBG} == 1));
+      dbg_show_cat("after removing \"$rm_prog_name\"", "lib_cat", \%lib_cat)
+          if $debug or (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /CAT_DBG/i));
 
       dbg_dump_cat("after processing removal of $rm_prog_name",
           "remove_${rm_prog_name}_${lib_cat_dump_basefile}", "lib_cat", \%lib_cat)
-          if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP} ne ""));
+          if ($debug > 1) or (exists $ENV{WP34S_LIB_CAT_DUMP} and ($ENV{WP34S_LIB_CAT_DUMP}=~ /^\s*$/));
     } else {
       warn_msg(this_function((caller(0))[3]), "Program to remove (\"$rm_prog_name\") does not exist in the library.");
     }
   }
 
   dbg_dump_cat("after all processing", $lib_cat_dump_final_file, "lib_cat", \%lib_cat)
-      if ($debug > 1) or (exists $ENV{WP34S_LIB_FINAL_SRC} and ($ENV{WP34S_LIB_FINAL_SRC} ne ""));
+      if ($debug > 1) or (exists $ENV{WP34S_LIB_FINAL_SRC} and ($ENV{WP34S_LIB_FINAL_SRC}=~ /^\s*$/));
 }
 
 if ($state_file and not $conv_state2flash) {
@@ -544,12 +553,12 @@ sub prepare_new_srcs {
 
   my $tmp_file = gen_random_writeable_filename();
   my $cmd = $asm_script;
-  my $cmd_line = "$use_pp $src_list -o $tmp_file $asm_options -lib";
+  my $cmd_line = "$use_pp $src_list -o $tmp_file $asm_options $FLASH_MODE";
   $cmd_line .= " -pp_script $preproc_script" if $preproc_script;
   my @result = run_prog($cmd, $cmd_line);
   my @new_src = disassemble_binary($tmp_file);
   my %news_src_cat = %{catalogue_binary($tmp_file, @new_src)};
-  unlink $tmp_file unless (exists $ENV{WP34S_LIB_KEEP_TEMP} and ($ENV{WP34S_LIB_KEEP_TEMP} == 1));
+  unlink $tmp_file unless (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /KEEP_TEMP/i));
   return \%news_src_cat;
 } # prepare_new_srcs
 
@@ -680,7 +689,7 @@ sub extract_svn_version {
 sub reassemble_output {
   my $cat_ref = shift;
   my $output_file = shift;
-  my $mode = shift; # '-lib' for a flash library, and '' for a state file.
+  my $mode = shift; # '-flash' for a flash library, and '' for a state file.
 
   # Create a temporary intermediate file holding the raw sources concatenated together.
   my $tmp_file = gen_random_writeable_filename();
@@ -701,7 +710,7 @@ sub reassemble_output {
   my $cmd_line = "$use_pp $tmp_file $mode -o $output_file";
   $cmd_line .= " -pp_script $preproc_script" if $preproc_script;
   my @result = run_prog($cmd, $cmd_line);
-  unlink $tmp_file unless (exists $ENV{WP34S_LIB_KEEP_TEMP} and ($ENV{WP34S_LIB_KEEP_TEMP} == 1));
+  unlink $tmp_file unless (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /KEEP_TEMP/i));
 
   return @result;
 } # reassemble_output
@@ -790,11 +799,22 @@ sub run_prog {
     die_msg(this_function((caller(0))[3]), "Cannot locate daughter script '$prog' in current directory or '$script_dir'.");
   }
   $cmd .= " -e2so"; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
-  $cmd .= " -colour_mode $use_ansi_colour";
-  $cmd .= " -d $debug";
+
+  # Force the colour mode to be off if in debug mode because with this damn MS-DOS STDERR
+  # thing, all the colour attributes contaminate the STDOUT stream and the ASM cannot parse
+  # them correctly. (It could help if I put an ANSI filter in the reader.)
+  if ($debug) {
+    $cmd .= " -colour_mode 0";
+    $cmd .= " -d $debug";
+  } else {
+    $cmd .= " -colour_mode $use_ansi_colour";
+  }
+  $cmd .= " $asm_args";
+  $cmd .= " $pp_args";
+  $cmd .= " -sb2to3" if $conv_skip_back_2to3;
 
   debug_msg(this_function((caller(0))[3]), "Spawning command line: '$cmd'")
-    if ($debug > 1) or (exists $ENV{WP34S_LIB_SPAWN_DBG} and ($ENV{WP34S_LIB_SPAWN_DBG} == 1));
+    if ($debug > 1) or (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /SPAWN_DBG/i));
 
   @output = `$cmd`;
   my @cleaned = clean_array_of_eol(@output);
@@ -1274,6 +1294,18 @@ sub get_options {
 
     elsif( ($arg eq "-e2so") or ($arg eq "-stderr2stdout")) {
       $stderr2stdout = 1;
+    }
+
+    elsif ($arg eq "-pp_args") {
+      $pp_args = " -pp_args " . shift(@ARGV);
+    }
+
+    elsif ($arg eq "-asm_args") {
+      $asm_args = shift(@ARGV);
+    }
+
+    elsif ($arg eq "-sb2to3") {
+      $conv_skip_back_2to3 = 1;
     }
 
     else {

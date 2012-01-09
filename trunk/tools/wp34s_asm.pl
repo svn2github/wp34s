@@ -154,13 +154,14 @@ my $stderr2stdout = 0;
 my (%mnem2hex, %hex2mnem, %ord2escaped_alpha, %escaped_alpha2ord);
 my @files = ();
 
-my $lib_mode = 0; # Special mode for flash libraries in V3.
+my $flash_mode = 0; # Special mode for flash libraries in V3.
 my $NO_PAD_MODE = 0;
 my $V2_PAD_MODE = 1;
 my $V3_PAD_MODE = 2;
 
 my $v3_mode = 0;
 my $step_digits = 3; # Default to older style 3-digit step numbers.
+my $conv_skip_back_2to3 = 0;
 
 my $outfile = "-";
 my $REDACT_COMMENTS = 1;
@@ -174,6 +175,9 @@ my $enable_pp = 0;
 my $DEFAULT_PREPROC = "wp34s_pp.pl";
 my $preproc = $DEFAULT_PREPROC;
 my $preproc_fallback_dir = "";
+
+# Custom arguments that can be passed to PP.
+my $pp_args = "";
 
 my $DEFAULT_PP_OPTIONS_V2 = " -m 90 -cat "; # XXX Limit the max SKIP/BACK offset to 90 to reduce the
                                             #     likelihood of a recursive LBL insertion pushing a
@@ -359,7 +363,7 @@ my %pragma_table = ( maxlibsteps => \$max_flash_words,
 my $script_executable = $0;
 my ($script_name, $script_dir, $script_suffix) = fileparse($script_executable);
 
-if (exists $ENV{WP34S_ASM_OS_DBG} and ($ENV{WP34S_ASM_OS_DBG} == 1)) {
+if (exists $ENV{WP34S_ASM} and ($ENV{WP34S_ASM} =~ /OS_DBG/i)) {
   debug_msg($script_name, "script_executable = '$script_executable'");
   debug_msg($script_name, "script_name       = '$script_name'");
   debug_msg($script_name, "script_dir        = '$script_dir'");
@@ -402,6 +406,9 @@ Parameters:
    -syntax outfile  Turns on syntax guide file dumping. Output will be sent to 'outfile'.
    -ns              Turn off step numbers in disassembler listing.
    -no_svn          Suppress report of compressed opcode table SVN version number.
+   -sb2to3          Convert old-style 2-digit SKIP/BACK offsets to 3-digit ones on the fly. Only intended for
+                    use with old-style V2 programs that were not designed to take advantage of PP when porting
+                    to V3. Use with discretion! (Far better to use PP JMP instructions instead!)
    -h               This help script.
 
 Examples:
@@ -557,6 +564,7 @@ sub assemble {
   foreach my $file (@files) {
     @lines = ();
     @lines = read_file($file, $REDACT_COMMENTS);
+    @lines = conv_skip_back_v2_to_v3(@lines) if $conv_skip_back_2to3;
 
     for my $k (1 .. (scalar @lines)) {
       $_ = $lines[$k-1];
@@ -632,11 +640,11 @@ sub assemble {
         }
       }
 
-      # Lib-mode and RAM/State-mode (ie: not $lib_mode) have different size limitations.
+      # Lib-mode and RAM/State-mode (ie: not $flash_mode) have different size limitations.
       # Calculate if the limit is exceeded accordingly.
-      if ($lib_mode and ($next_free_word >= $max_flash_words)) {
+      if ($flash_mode and ($next_free_word >= $max_flash_words)) {
         die_msg(this_function((caller(0))[3]), "Too many program steps encountered in lib-mode (> $max_flash_words words).");
-      } elsif (not $lib_mode and ($next_free_word >= $max_ram_words) and not $disable_flash_limit) {
+      } elsif (not $flash_mode and ($next_free_word >= $max_ram_words) and not $disable_flash_limit) {
         die_msg(this_function((caller(0))[3]), "Too many program steps encountered (> $max_ram_words words).");
       }
     }
@@ -660,7 +668,7 @@ sub assemble {
   } elsif ($v3_mode) {
     $words[1] = $next_free_word - 1;
     $crc16 = ($use_magic_marker) ? $MAGIC_MARKER : calc_crc16( @words[2 .. $next_free_word] );
-    if (not $lib_mode) {
+    if (not $flash_mode) {
       $words[0] = $max_ram_words;
       push @words, $crc16; # Place CRC after everything else.
       write_binary( $outfile, $next_free_word+1, $NO_PAD_MODE, @words ); # Need to extend to include newly appended CRC.
@@ -671,10 +679,10 @@ sub assemble {
     print "// WP 34s version: $calc_version\n" if $calc_version;
     print "// CRC16: ", dec2hex4($crc16), "\n";
 
-    if (not $lib_mode) {
+    if (not $flash_mode) {
       print "// Running in V3 State-mode. Max words: $max_ram_words\n";
     } else {
-      print "// Running in V3 Lib-mode. Max words: $max_flash_words\n";
+      print "// Running in V3 Flash-mode. Max words: $max_flash_words\n";
     }
     print "// Total words: ", $next_free_word-1, "\n";
     print "// Total steps: $steps_used\n";
@@ -1467,7 +1475,10 @@ sub read_file {
   # Enforce the last line being an END if in V3 mode, unless we are XROM mode.
   if ($v3_mode and not $xrom_mode) {
     # Make sure there is an END as the last instruction. If not, add one.
-    unless( $lines[-1] =~ /(^|\s+)END($|\s+)/) {
+    if (not @lines) {
+      push @lines, "END";
+      print "// WARNING: $script_name: V3 mode: Empty program in '$file'. Adding \"END\" as last statement in source...\n";
+    } elsif ($lines[-1] !~ /(^|\s+)END($|\s+)/) {
       push @lines, "END";
       print "// WARNING: $script_name: V3 mode: Missing terminal \"END\" in file '$file'. Appending after last statement in source...\n";
     }
@@ -1654,19 +1665,33 @@ sub run_pp {
   }
 
   # The new spawned job linkage mechanism sends all daughter output to STDOUT, even what used
-  # to be sent to STDERR. THIS SHOULD ONLY HAPPENS WHEN THE JOB IS SPAWNED. (This is to "fix"
+  # to be sent to STDERR. THIS SHOULD ONLY HAPPEN WHEN A JOB IS SPAWNED. (This is to "fix"
   # deficiencies in the MS-DOS COMMAND.EXE shell.) When stand-alone, errors are still sent to
-  # STDERR.
+  # STDERR. What is lost is the fact that debug statements are no longer sent to STDERR where
+  # they should have been but contaminate the output stream. (SIGH!!) This makes debugging MUCH
+  # more challenging.
   $cmd .= " -e2so";
 
   # Override the step digits as required.
   # XXX Hah! Who knew?! In Perl, 'log' is actually log2, not log10, like everywhere else!!
   my $sd = ceil(log($max_flash_words)/log(10));
+
   $cmd .= " -sd $sd";
-  $cmd .= " -colour_mode $use_ansi_colour";
+
+  # Force the colour mode to be off if in debug mode because with this damn MS-DOS STDERR
+  # thing, all the colour attributes contaminate the STDOUT stream and the ASM cannot parse
+  # them correctly. (It could help if I put an ANSI filter in the reader.)
+  if ($debug) {
+    $cmd .= " -colour_mode 0";
+    $cmd .= " -d $debug";
+  } else {
+    $cmd .= " -colour_mode $use_ansi_colour";
+  }
+  $cmd .= " $pp_args";
 
   print "// Running WP 34S preprocessor from: $pp_location\n";
-  debug_msg(this_function((caller(0))[3]), "Running: '$cmd'") if ($debug > 2) or exists $ENV{WP34s_ASM_PRESERVE_PP_DBG} and ($ENV{WP34s_ASM_PRESERVE_PP_DBG} == 1);
+  debug_msg(this_function((caller(0))[3]), "Running: '$cmd'")
+    if ($debug > 2) or (exists $ENV{WP34S_ASM} and ($ENV{WP34S_ASM} =~ /PRESERVE_PP_DBG/i));
 
   @lines = `$cmd`;
   $err_msg = $?;
@@ -1674,7 +1699,7 @@ sub run_pp {
     warn_msg(this_function((caller(0))[3]), "WP 34S preprocessor failed. Temp file: '$tmp_file'");
     die_msg(this_function((caller(0))[3]), "Perhaps you can try running it in isolation using: \$ $cmd");
   }
-  unlink $tmp_file unless exists $ENV{WP34s_ASM_PRESERVE_PP_TMP} and ($ENV{WP34s_ASM_PRESERVE_PP_TMP} == 1);
+  unlink $tmp_file unless exists $ENV{WP34S_ASM} and ($ENV{WP34S_ASM} =~ /PRESERVE_PP_TMP/i);
 
   my (@clean_lines);
   foreach (@lines) {
@@ -1753,6 +1778,26 @@ sub str_replace {
   }
   return $string;
 } # str_replace
+
+
+#######################################################################
+#
+# Convert 2-digit BACK/SKIP to 3-digit versions.
+# Far better to use PP's JMP instruction in the first place!
+#
+sub conv_skip_back_v2_to_v3 {
+  my @src = @_;
+  for (my $k = 0; $k < scalar @src; $k++) {
+    if ($src[$k] =~ /(SKIP|BACK)\s+(\d{2})($|\s+)/) {
+      my $offset2 = $2;
+      my $offset3 = sprintf "%03d", $offset2;
+      # Replace the 2-digit SKIP/BACK with a 3-digit variant.
+      # Be careful to put the white space back exactly as it was found!
+      $src[$k] =~ s/(SKIP|BACK)(\s+)${offset2}/${1}${2}${offset3}/;
+    }
+  }
+  return @src;
+} # conv_skip_back_v2_to_v3
 
 
 #######################################################################
@@ -1896,8 +1941,8 @@ sub get_options {
       $star_labels = shift(@ARGV);
     }
 
-    elsif( ($arg eq "-l") or ($arg eq "-lib") ) {
-      $lib_mode = 1;
+    elsif( ($arg eq "-l") or ($arg eq "-lib") or ($arg eq "-flash") ) {
+      $flash_mode = 1;
     }
 
     elsif( $arg eq "-fill" ) {
@@ -1933,6 +1978,10 @@ sub get_options {
       unless( $preproc_fallback_dir =~ m</$> ) {
         $preproc_fallback_dir .= "/";
       }
+    }
+
+    elsif ($arg eq "-pp_args") {
+      $pp_args = shift(@ARGV);
     }
 
     elsif( $arg eq "-nc" ) {
@@ -1992,6 +2041,10 @@ sub get_options {
 
     elsif ($arg eq "-colour_mode") {
       $use_ansi_colour = shift(@ARGV);
+    }
+
+    elsif ($arg eq "-sb2to3") {
+      $conv_skip_back_2to3 = 1;
     }
 
     else {

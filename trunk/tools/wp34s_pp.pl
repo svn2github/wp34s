@@ -57,6 +57,7 @@ my $label_digits_range = "2";
 
 my $OPEN_COMMENT = "/*";  # These are only used because my editor's syntax based chroma-coding sucks.
 my $CLOSE_COMMENT = "*/"; # These are only used because my editor's syntax based chroma-coding sucks.
+my $DOUBLE_QUOTE = "\"";
 
 # The labels used as targets for program branches are only allowed to be made from
 # the following characters. Additionally, they are always terminated by a double colon.
@@ -66,7 +67,7 @@ my $longest_label = 0; # Recorded for pretty print purposes.
 my $NUM_TARGET_LABEL_COLONS = 2;
 
 my $xrom_mode = 0;
-my %xlbl = (); # keys LBL with ASCII label, and WORD with 0-based word number.
+my %xlbl = (); # keys LBL with ASCII label, and entry WORD number.
 my $DEFAULT_XLBL_FILE = "xrom_labels.h";
 my $xlbl_file = $DEFAULT_XLBL_FILE;
 
@@ -86,10 +87,10 @@ my $DEFAULT_USE_ANSI_COLOUR = (exists $ENV{WP34S_ASM_COLOUR})
                             : 0;
 my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
-my $ENUM_OP = 0;
-my $ENUM_NUM_WORDS = 1;
-my $ENUM_PRECOMMENT = 2;
-my $ENUM_POSTCOMMENT = 3;
+my $ENUM_OP = "OP";
+my $ENUM_NUM_WORDS = "WORDS";
+my $ENUM_PRECOMMENT = "PRECMNT";
+my $ENUM_POSTCOMMENT = "POSTCMNT";
 
 my $prt_step_num = 1;
 my $show_catalogue = 0;
@@ -175,7 +176,7 @@ Parameters:
    -cat             Generate a LBL catalogue.
    -ns              Suppress generation of step numbers.
    -m max_offset    Change the maximum offset limit.  [default: $DEFAULT_MAX_JMP_OFFSET]
-   -v3              Enable v3.* mode ehnacnements.
+   -v3              Enable v3 mode ehnacnements.
    -renum           Renumber step lines sequentially. Only has meaning in v3 mode.
    -xrom            Run in XROM mode. NOTE: This is normally only used by the internal
                     tool-chain. Not intended for use by the end-user!
@@ -256,12 +257,12 @@ if ($override_step_digits) {
 
 debug_msg(this_function((caller(0))[3]), "MAX_JMP_OFFSET = $MAX_JMP_OFFSET") if $debug;
 
-my (@src, @lines);
+my (@src, @src_db);
 foreach my $file (@files) {
   push @src, load_cleaned_source($file);
 }
 
-my @end_groups;
+my @end_groups; # Groups of lines delimited by EDN statements.
 if ($v3_mode and not $xrom_mode) {
   # Split the lines into an array of array references based on END.
   @end_groups = split_END(@src);
@@ -281,16 +282,18 @@ if ($v3_mode and not $xrom_mode) {
 print "// $script_name: Source file(s): ", join (", ", @files), "\n";
 print "// $script_name: Preprocessor revision: $SVN_Current_Revision \n";
 
+# Process each END-delimited program in its own "space". This allows the reuse of local LBLs.
 foreach (@end_groups) {
-  @lines = init_line_str(@{$_}); # Cast the reference as an array.
-  my $length = scalar @lines; # Debug use only. # XXX Needs work for tracking words/step and comments.
+  my @src_lines = @{$_};
+  my $length = scalar @src_lines; # Debug use only.
   debug_msg(this_function((caller(0))[3]), "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++") if $debug and $v3_mode;
   debug_msg(this_function((caller(0))[3]), "Processing new END group. Contains $length lines.") if $debug and $v3_mode;
-  initialize_tables();
+  initialize_tables(@src_lines);
   preprocessor();
   display_steps("");
   show_LBLs() if $show_catalogue;
   show_targets() if $show_targets;
+  ssdb() if exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /SSDB/i);
 }
 
 
@@ -327,6 +330,7 @@ if ($xrom_mode) {
 sub preprocessor {
   display_steps("// ") if $debug; # Initial debug image
   process_double_quotes();
+  extract_xlbls() if $xrom_mode;
   process_expressions();
   extract_labels();           # Look for existing "LBL \d{$label_digits_range}" or "LBL [A-Z]"opcodes
   extract_targets();          # Look for "SomeLabel::"
@@ -382,11 +386,14 @@ sub split_END {
 # Setup the tables for a new run.
 #
 sub initialize_tables {
+  my @src_lines = @_;
   %LBLs = ();
   %targets = ();
   %branches = ();
   @branches = ();
   @steps = ();
+  @src_db = ();
+  src2src_db(@src_lines);
   return;
 } # initialize_tables
 
@@ -408,9 +415,9 @@ sub process_double_quotes {
   debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   my ($substring, $num_chars, $string, $line, $new_line, $label);
   my $step = 1;
-  while( $step <= scalar(@lines) ) { # XXX Needs work for tracking words/step and comments.
+  while ($step <= scalar(@src_db)) {
     $line = get_line($ENUM_OP, $step);
-    $line =~ s/^\s*\d{0,3}:{0,1}//;
+    $line =~ s/^\s*\d{0,3}:{0,1}//; # Remove any line numbers.
     if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})/ ) {
       $label = $1 . " ";
       $line =~ s/^\s*([$label_spec]{2,}):{$NUM_TARGET_LABEL_COLONS}//;
@@ -418,17 +425,17 @@ sub process_double_quotes {
       $label = "";
     }
     # By not being greedy with this search, we can support embedded double quotes.
-    if( $line =~ /^\s*\"(.+)\"/ ) {
+    if ($line =~ /^\s*\"(.+)\"/) {
       my $string = $1;
       my $is_first = 1;
-      while( $string ) {
+      while ($string) {
         my $fmt_step = format_step($step);
         ($substring, $num_chars, $string) = extract_substring($string, $step);
         debug_msg(this_function((caller(0))[3]), "Extracted $num_chars characters composed of substring '$substring' from line '$line'") if $debug;
-        if( $num_chars == 3 ) {
+        if ($num_chars == 3) {
           $new_line = "${label}[alpha]'${substring}'";
-        } elsif( $num_chars == 2 ) {
-          if( $debug ) {
+        } elsif ($num_chars == 2) {
+          if ($debug) {
             print "ERROR: " . this_function((caller(0))[3]) . ": Why did we return a 2-character string at step $fmt_step! String: '$string'\n";
             show_state(__LINE__);
             die_msg(this_function((caller(0))[3]), "Cannot continue...");
@@ -441,14 +448,15 @@ sub process_double_quotes {
 
         # Replace the line we are processing if this is the first time through. Thereafter
         # insert anymore lines.
-        if( $is_first ) {
+        if ($is_first) {
           $is_first = 0;
           debug_msg(this_function((caller(0))[3]), "Replacing step '$fmt_step' with '$new_line'") if $debug;
           put_line($ENUM_OP, $step, $new_line . " // $line");
+          adjust_words_per_step($step, $new_line);
           $label = "";
         } else {
           debug_msg(this_function((caller(0))[3]), "Inserting step '$fmt_step' with '$new_line'") if $debug;
-          @lines = insert_step($new_line, $step, @lines);
+          insert_step($new_line, $step);
         }
         $step++;
       }
@@ -474,7 +482,7 @@ sub process_expressions {
   debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   my ($line, $new_line, $label);
   my $step = 1;
-  while( $step <= scalar(@lines) ) { # XXX Needs work for tracking words/step and comments.
+  while( $step <= scalar(@src_db) ) {
     $line = get_line($ENUM_OP, $step);
     $line =~ s/^\s*\d{0,3}:{0,1}//;
     if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})/ ) {
@@ -633,7 +641,7 @@ sub add_LBL_if_required {
     # We need to inject a label at the target.
     $new_label_num = get_next_label($target_step+1); # Reserve it for the next step.
     debug_msg(this_function((caller(0))[3]), "Adding new label '$new_label_num' at step '$target_step'.") if $debug;
-    @lines = insert_step("LBL $new_label_num", $target_step, @lines);
+    insert_step("LBL $new_label_num", $target_step);
     adjust_labels_used($target_step);
     adjust_targets($target_step);
     adjust_branches($target_step);
@@ -659,12 +667,10 @@ sub add_LBL_if_required {
 #
 sub load_cleaned_source {
   my $file = shift;
-  my @lines = init_line_str(read_file($file));
-  @lines = redact_comments(@lines);
-  @lines = remove_blank_lines(@lines);
-#  @lines = strip_strip_numbers(@lines);
-  @lines = extract_xlbls(@lines) if $xrom_mode;
-  return @lines;
+  my @src = read_file($file);
+  @src = redact_comments(@src);
+  @src = remove_blank_lines(@src);
+  return @src;
 } # load_cleaned_source
 
 
@@ -683,7 +689,7 @@ sub load_cleaned_source {
 #
 sub extract_labels {
   debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
+  for( my $step = 1; $step <= scalar(@src_db); $step++ ) {
     my $fmt_step = format_step($step+1); # Because we are pointing at the active step *after* the label.
     my $line = get_line($ENUM_OP, $step);
     if( $line =~ /LBL\s+(\d+)/ or $line =~ /LBL\s+([A-Z])([^A-Z]|$)/ ) {
@@ -715,7 +721,7 @@ sub extract_labels {
 #
 sub extract_targets {
   debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
+  for( my $step = 1; $step <= scalar(@src_db); $step++ ) {
     if( get_line($ENUM_OP, $step) =~ /^\s*\d{0,3}:{0,1}\s*([$label_spec]{2,}):{$NUM_TARGET_LABEL_COLONS}\s+/ ) {
       my $label = $1;
       adjust_longest_label_length($label);
@@ -759,7 +765,7 @@ sub extract_targets {
 #
 sub extract_branches {
   debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
+  for( my $step = 1; $step <= scalar(@src_db); $step++ ) {
     my $fmt_step = format_step($step);
     if( get_line($ENUM_OP, $step) =~ /(BACK|SKIP|JMP)\s+([$label_spec]{2,})/ ) {
       my $label = $2;
@@ -809,7 +815,7 @@ sub extract_branches {
 #
 sub extract_LBLd_opcodes {
   debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
+  for( my $step = 1; $step <= scalar(@src_db); $step++ ) {
     my $line = get_line($ENUM_OP, $step);
     my $fmt_step = format_step($step);
 
@@ -1105,22 +1111,26 @@ sub reconstruct_steps {
   my $label_field_length = $longest_label+$NUM_TARGET_LABEL_COLONS;
   my ($label, $opcode, @reconstructed_steps);
 
-  for( my $step = 1; $step <= scalar(@lines); $step++ ) { # XXX Needs work for tracking words/step and comments.
+  for (my $step = 1; $step <= scalar(@src_db); $step++) {
     my $line = get_line($ENUM_OP, $step);
+    my $opsize = get_line($ENUM_NUM_WORDS, $step);
 
     # Scrub any step number present. It will be recreated on the other end, unless otherwise requested.
     $line =~ s/^\s*\d{$step_digits}:{0,1}//;
 
-    if( $line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})\s+(\S+.*)/ ) { # Line with target label
+    if ($opsize == 0) {
+      $opcode = $line;
+      debug_msg(this_function((caller(0))[3]), "Type 0: '$line', op-size=$opsize") if $debug > 3;
+    } elsif ($line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})\s+(\S+.*)/) { # Line with target label
       $label = ${1} . (" " x ($label_field_length - length($1)));
       $opcode = $2;
       debug_msg(this_function((caller(0))[3]), "Type 1: '$line'") if $debug > 3;
-    } elsif( $line =~ /^\s*(\S+.*)/ ) { # Line without target label
+    } elsif ($line =~ /^\s*(\S+.*)/) { # Line without target label
       $label = " " x $label_field_length;
       $opcode = $1;
       debug_msg(this_function((caller(0))[3]), "Type 2: '$line'") if $debug > 3;
     } else {
-      if( $debug ) {
+      if ($debug) {
         print "ERROR: " . this_function((caller(0))[3]) . ": Cannot parse the line at step $step! Line: '$line'\n";
         show_state(__LINE__);
         die_msg(this_function((caller(0))[3]), "Cannot continue...");
@@ -1129,8 +1139,13 @@ sub reconstruct_steps {
       }
     }
 
+    # If the instruction is 0-length, it will be made a comment.
+    # XXX This gets us XLBLs for free in the listing. It could be used to push the input
+    #     comments through as well. Have to work on the redact_comments() function for this.
+    if ($opsize == 0) {
+      push @reconstructed_steps, "$line";
     # See if the user has turned off step number generation from the command line.
-    if( $prt_step_num ) {
+    } elsif ($prt_step_num) {
       push @reconstructed_steps, sprintf "%0${step_digits}d $OPEN_COMMENT %0s $CLOSE_COMMENT %0s", $step, $label, $opcode;
     } else {
       push @reconstructed_steps, sprintf "$OPEN_COMMENT %0s $CLOSE_COMMENT %0s", $label, $opcode;
@@ -1245,7 +1260,6 @@ sub str_replace {
 sub insert_step {
   my $line = shift;
   my $location = shift;
-  my @lines = @_; # XXX Needs work for tracking words/step and comments.
   my $msg = "Inserting mnemonic '$line' at step " . format_step($location) . ".";
   debug_msg(this_function((caller(0))[3]), $msg) if $debug;
 #  if( $debug ) {
@@ -1253,13 +1267,18 @@ sub insert_step {
 #    panl(@lines);
 #    print "\n...done\n";
 #  }
-  splice @lines, ($location-1), 0, $line; # XXX Needs work for tracking words/step and comments.
+  my %entry = ();
+  $entry{$ENUM_OP} = $line;
+  $entry{$ENUM_NUM_WORDS} = step2words($line);
+  show_src_db_step("Processed step: ", $location) if $debug > 3;
+
+  splice @src_db, ($location-1), 0, \%entry;
 #  if( $debug ) {
 #    debug_msg(this_function((caller(0))[3]), "After inserting: '$line'") if $debug;
 #    panl(@lines);
 #    print "\n...done\n";
 #  }
-  return @lines;
+  return;
 } # insert_step
 
 
@@ -1596,7 +1615,7 @@ sub read_file {
 # weird cases that it does not handle.
 #
 sub redact_comments {
-  my @lines = @_; # XXX Needs work for tracking words/step and comments.
+  my @lines = @_;
   local $_;
 
   # Oh no!! Slanted toothpick syndrome! :-)
@@ -1606,7 +1625,7 @@ sub redact_comments {
   my $in_mlc = 0;    # In-multiline-comment flag.
   my (@redacted_lines);
 
-  foreach (@lines) { # XXX Needs work for tracking words/step and comments.
+  foreach (@lines) {
     chomp; chomp;
 
     # Detect if we are currently in a multiline comment and we see the end of a
@@ -1649,10 +1668,10 @@ sub redact_comments {
 # Remove any array elements that are blank lines.
 #
 sub remove_blank_lines {
-  my @lines = @_; # XXX Needs work for tracking words/step and comments.
+  my @lines = @_;
   my (@new_lines);
   local $_;
-  foreach (@lines) { # XXX Needs work for tracking words/step and comments.
+  foreach (@lines) {
     next if /^\s*$/;
     push @new_lines, $_;
   }
@@ -1663,17 +1682,22 @@ sub remove_blank_lines {
 #######################################################################
 #
 # Extract and record any XLBL pseudo op-codes. Insert into a global hash
-# using the label as the key and the 0-based line number as the data.
+# using the label as the key and the 1-based line number as the data.
 # After they are processed, scrub them from the source since they are
 # treated the same as comments after that.
 #
 sub extract_xlbls {
-  my @lines = @_; # XXX Needs work for tracking words/step and comments.
   my (@new_lines);
-  my $line = 1; # Use a 1-based counter!
-  foreach (@lines) { # XXX Needs work for tracking words/step and comments.
-    if (/^\s*XLBL\"(.+)\"(\s+|$)/) {
+  my $line = 1;
+  local $_;
+  my $accumulated_words = 0;
+  for (my $k = 0; $k < scalar @src_db; $k++ ) {
+    my $line = $src_db[$k]->{$ENUM_OP};
+    if ($line =~ /^\s*XLBL\"(.+)\"(\s+|$)/) {
       my $xlabel = $1;
+      debug_msg(this_function((caller(0))[3]), "Found XLBL ($xlabel) at line $line.") if $debug or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /XLBL/i));
+      $src_db[$k]->{$ENUM_NUM_WORDS} = 0; # Effectively remove this from further processing by setting the op size to 0.
+      $src_db[$k]->{$ENUM_OP} = "// $src_db[$k]->{$ENUM_OP}";
       if (exists $xlbl{$xlabel}) {
         if( $debug ) {
           print "ERROR: " . this_function((caller(0))[3]) . ": Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.\n";
@@ -1683,14 +1707,13 @@ sub extract_xlbls {
           die_msg(this_function((caller(0))[3]), "Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.");
         }
       } else {
-        $xlbl{$xlabel} = $line;
+        $xlbl{$xlabel} = $accumulated_words;
       }
       next;
     }
-    push @new_lines, $_;
-    $line++;
+    $accumulated_words += $src_db[$k]->{$ENUM_NUM_WORDS};
   }
-  return @new_lines;
+  return;
 } # extract_xlbls
 
 
@@ -1736,32 +1759,88 @@ sub insert_into_branch_array {
 
 #######################################################################
 #
-# Create the array for the lines database.
-# XXX In future, this will be an array of hash references. Each hash will
-#     contain the following keys:
+# Convert the array of scrubbed source lines to the database containing
+# an array of hashes. Each hash has multiple keys to record various atributes
+# about the line.
 #
-#     OP          - opcode (equivalent to current entry)
-#     NUM_WORDS   - number of words in this line, can be 0, 1, or 2
-#     PRECOMMENT  - one or more lines of comments
-#     POSTCOMMENT - Trailing comments
+# XXX In future we will put comments in other keys in this database.
 #
-sub init_line_str {
-  my @steps = @_;
-  return @steps;
-} # init_line_str
+sub src2src_db {
+  my @src = @_;
+  local $_;
+  foreach (@src) {
+    my %entry = ();
+    $entry{$ENUM_OP} = $_;
+    $entry{$ENUM_NUM_WORDS} = step2words($_);
+    push @src_db, \%entry;
+  }
+  ssdb() if $debug;
+  return @src_db;
+} # src2src_db
 
 
 #######################################################################
 #
+# Adjust the words/step attribute. Usually called after a change has been
+# made to the line or a line has been inserted.
 #
+sub adjust_words_per_step {
+  my $step = shift;
+  my $line = shift;
+  my $index = $step - 1;
+  $src_db[$index]->{$ENUM_NUM_WORDS} = step2words($line);
+  return;
+} # adjust_words_per_step
+
+
+#######################################################################
+#
+# Based on the mode (XROM or not) and the content of the line, the instructions
+# might have 1 or 2 (or 0!) words per step. (A 0 is a special case indicating that the
+# line contains probably only a comment).
+#
+sub step2words {
+  my $src_line = shift;
+  my $num_words = 1;
+  if ($xrom_mode) {
+    debug_msg(this_function((caller(0))[3]), "XROM mode: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+    if ($src_line !~ /${DOUBLE_QUOTE}.+${DOUBLE_QUOTE}/) {
+      debug_msg(this_function((caller(0))[3]), "No double quotes: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+      if ($src_line =~ /\[alpha\]'/) {
+        $num_words = 2;
+        debug_msg(this_function((caller(0))[3]), "Instruction has escaped alpha single quote resulting in 2 words ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+      } elsif ($src_line !~ /\[alpha\]/) {
+        debug_msg(this_function((caller(0))[3]), "No escaped alpha: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+        if ($src_line =~ /\'.+\'/) {
+          $num_words = 2;
+          debug_msg(this_function((caller(0))[3]), "Instruction has quoted quoted label resulting in 2 words ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+        } else {
+          debug_msg(this_function((caller(0))[3]), "No single quotes: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+        }
+      } else {
+        debug_msg(this_function((caller(0))[3]), "Has escaped alpha: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+      }
+    } else {
+      debug_msg(this_function((caller(0))[3]), "Has double quotes: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+    }
+  } else {
+    $num_words = 1;
+  }
+  return $num_words;
+} # steps2words
+
+
+#######################################################################
+#
+# Get the asked for attribute from the
 #
 sub get_line {
   my $field = shift;
   my $step_num = shift;
-  my $str = "";
+  my $val = "";
   my $index = $step_num-1;
-  $str = $lines[$index];
-  return $str;
+  $val = $src_db[$index]->{$field};
+  return $val;
 } # get_line
 
 
@@ -1772,21 +1851,44 @@ sub get_line {
 sub put_line {
   my $field = shift;
   my $step_num = shift;
-  my $str = shift;
+  my $val = shift;
   my $index = $step_num-1;
-  $lines[$index] = $str;
-  return $str;
-} # put_line_str
+  $src_db[$index]->{$field} = $val;
+  return;
+} # put_line
 
 
 #######################################################################
 #
-# XXX Preliminary stubb for dealing with comments in source and 1 or 2 words per step in XROM mode.
+#
 #
 sub calculate_offset {
   my $target_step = shift;
   my $current_step = shift;
-  return $target_step - $current_step;
+  my $offset = 0;
+  my $target_index = $target_step - 1;    # Adjust the steps to be indexes (ie: -1).
+  my $current_index = $current_step - 1;
+  my ($max, $min);
+  if ($target_index > $current_index) {
+    ($max, $min) = ($target_index, $current_index);
+    debug_msg(this_function((caller(0))[3]), "Noninverted offset calculation: max=$max, min=$min") if $debug;
+  } else {
+    ($max, $min) = ($current_index, $target_index);
+    debug_msg(this_function((caller(0))[3]), "Inverted offset calculation: max=$max, min=$min") if $debug;
+  }
+  if ($debug > 2) {
+    show_src_db_step("Current step: ", $current_step);
+    show_src_db_step("Target step:  ", $target_step);
+  }
+
+  for (my $k = $min; $k < $max; $k++) {
+    $offset += $src_db[$k]->{$ENUM_NUM_WORDS} if exists $src_db[$k]->{$ENUM_NUM_WORDS};
+  }
+
+  if ($target_index < $current_index) {
+    $offset = -$offset;
+  }
+  return $offset;
 } # calculate_offset
 
 
@@ -1847,6 +1949,7 @@ sub dump_hash { # Dump the specified hash
 
 sub show_lines {
   display_steps("// ");
+  return;
 } # show_lines
 
 sub show_tables {
@@ -1865,6 +1968,33 @@ sub show_state {
   show_tables();
   return;
 } # show_state
+
+# Show SRC DataBase -- quickie debugger version
+sub ssdb {
+  show_src_db();
+  return;
+} # ssdb
+
+sub show_src_db {
+  local $_;
+  for (my $step = 1; $step < (scalar @src_db)+1; $step++) {
+    show_src_db_step("", $step);
+  }
+  return;
+} # show_src_db
+
+# Show a single step
+sub show_src_db_step {
+  my $leader = shift;
+  my $step = shift;
+  my $index = $step - 1;
+  print "// ${leader}Step: $step\n";
+  print "//  OP:           ", $src_db[$index]->{$ENUM_OP}, "\n"           if exists $src_db[$index]->{$ENUM_OP};
+  print "//  WORDS:        ", $src_db[$index]->{$ENUM_NUM_WORDS}, "\n"    if exists $src_db[$index]->{$ENUM_NUM_WORDS};
+  print "//  POST-COMMENT: ", $src_db[$index]->{$ENUM_PRECOMMENT}, "\n"   if exists $src_db[$index]->{$ENUM_PRECOMMENT};
+  print "//  PRE-COMMENT:  ", $src_db[$index]->{$ENUM_POSTCOMMENT}, "\n"  if exists $src_db[$index]->{$ENUM_POSTCOMMENT};
+  return;
+} # show_src_db_step
 
 
 #######################################################################
@@ -1980,7 +2110,6 @@ sub get_options {
 
     elsif( ($arg eq "-v3") or ($arg eq "-end") ) {
       $v3_mode = 1;
-#      $label_digits = 3;
       $label_digits = 2;
       $branch_digits = 3;
       $label_digits_range = "2,3"
@@ -1993,10 +2122,6 @@ sub get_options {
     # Step the maximum BACK/SKIP offset limit.
     elsif( $arg eq "-m" ) {
       $MAX_JMP_OFFSET = shift(@ARGV);
-      if( ($MAX_JMP_OFFSET > 99) or ($MAX_JMP_OFFSET < 4) ) {
-        print "// WARNING: Maximum BACK/SKIP offset limit (-m) must be between 5 and 99. Resetting to 90.\n";
-        $MAX_JMP_OFFSET = 90;
-      }
     }
 
     elsif( $arg eq "-ns" ) {
@@ -2064,6 +2189,15 @@ sub get_options {
   unless( @files ) {
     die_msg(this_function((caller(0))[3]), "Must enter at least one file to process.\n Enter '$script_name -h' for help.");
   }
+
+  if ((not $v3_mode and ($MAX_JMP_OFFSET > 99) or ($MAX_JMP_OFFSET < 4))
+    or ($v3_mode and ($MAX_JMP_OFFSET > 255) or ($MAX_JMP_OFFSET < 4))) {
+    my $max = ($v3_mode) ? 255 : 99;
+    my $MAX_JMP_OFFSET = ($v3_mode) ? 240 : 90;
+    print "// WARNING: Maximum BACK/SKIP offset limit (-m) must be between 5 and $max. Resetting to $MAX_JMP_OFFSET.\n";
+  }
+
+  debug_msg(this_function((caller(0))[3]), "Debug level set to: $debug") if $debug;
 
   return;
 } # get_options
