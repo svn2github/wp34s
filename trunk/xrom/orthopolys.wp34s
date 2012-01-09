@@ -62,11 +62,11 @@ xrom_LaguerreLnA::	xIN TRIADIC
 			LocalRegs
 			RCL Z
 			SPEC?
-				JMP poly_NaN
+				JMP ret_NaN
 laguerre_common::	STO rParam
 			INC X
 			x[<=]0?
-				JMP poly_NaN
+				JMP ret_NaN
 			DROP			
 			GSB ortho_default
 			RCL rParam
@@ -115,23 +115,23 @@ xrom_HermiteH::		xIN DYADIC
 ortho_default::	SSIZE4
 		[cmplx]STO rX
 		SPEC?
-			JMP poly_NaN
+			JMP ret_NaN
 		RCL rN
 		FP?
-			JMP poly_NaN
+			JMP ret_NaN
 		x<0?
-			JMP poly_NaN
+			JMP ret_NaN
 		x=0?
-			JMP poly_t0
+			JMP ret_1
 		SDR 03
 		x[>=]1?
-			JMP poly_NaN
+			JMP ret_NaN
 		STO I		// i = 2.xxx
 		iC 1
 		STO rT0		// t0 = 1
 		SDL 03
 		x<? Y
-			JMP poly_NaN
+			JMP ret_NaN
 		/* Now initialise everything else */
 		2
 		STO+ I
@@ -145,15 +145,7 @@ ortho_default::	SSIZE4
 		STO A		// a = 2x
 		RTN
 
-poly_t0::	iC 1
-		xOUT xOUT_NORMAL
-
 poly_t1::	RCL rT1
-		xOUT xOUT_NORMAL
-
-poly_NaN::	FC? D
-			ERR ERR_DOMAIN
-		Num NaN
 		xOUT xOUT_NORMAL
 
 /**************************************************************************/

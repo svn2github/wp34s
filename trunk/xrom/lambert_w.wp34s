@@ -8,10 +8,10 @@
  *	http://hp41programs.yolasite.com/lambertw.php
  */
 
-		XLBL"W0"
+			XLBL"W0"
 xrom_w0::		xIN MONADIC
 			SPEC?
-				JMP LamW_NaN
+				JMP ret_NaN
 			x=0?
 				xOUT xOUT_NORMAL
 			Num eE
@@ -19,7 +19,7 @@ xrom_w0::		xIN MONADIC
 			+/-
 			x[<->] Y
 			x<? Y
-				JMP LamW_NaN
+				JMP ret_NaN
 			STO I
 			LN1+x
 LamW0_loop::		FILL
@@ -39,18 +39,20 @@ LamW0_loop::		FILL
 /* The negative branch of the real W function.
  */
 
-		XLBL"W1"
+			XLBL"W1"
 xrom_w1::		xIN MONADIC
 			SPEC?
-				JMP LamW_NaN
-			x[>=]0?
-				JMP LamW_inf
+				JMP ret_NaN
+			x>0?
+				JMP ret_NaN
+			x=0?
+				JMP ret_neginf
 			+/-
 			1/x
 			STO I
 			Num eE
 			x>? Y
-				JMP LamW_NaN
+				JMP ret_NaN
 			RCL I
 LamW1_loop::		STO J
 			LN
@@ -64,19 +66,6 @@ LamW_converged::	RCL/ I
 			+/-
 			xOUT xOUT_NORMAL
 
-LamW_inf::		x>0?
-				JMP LamW_NaN
-			FC? D
-				ERR ERR_MINFINITY
-			Num -[infinity]
-			xOUT xOUT_NORMAL
-
-LamW_NaN::		FC? D
-				ERR ERR_DOMAIN
-			Num NaN
-			xOUT xOUT_NORMAL
-
-
 
 /**************************************************************************/
 /* The positive branch of the complex W function.
@@ -89,7 +78,7 @@ LamW_NaN::		FC? D
  *	.02/.03	w
  *	J/K	temporary
  */
-		XLBL"CPX_W0"
+			XLBL"CPX_W0"
 xrom_c_w::		xIN MONADIC_COMPLEX
 			LocR 03
 			[cmplx]STO .00
@@ -120,13 +109,13 @@ LamW_cloop::		[cmplx]ENTER
  * These can be done inline without the usual prelude and epilogue code.
  */
 
-		XLBL"W_INVERSE"
+			XLBL"W_INVERSE"
 xrom_winv::		xIN MONADIC
 				e[^x]
 				RCL[times] L
 			xOUT xOUT_NORMAL
 
-		XLBL"CPX_W_INVERSE"
+			XLBL"CPX_W_INVERSE"
 xrom_c_winv::		xIN MONADIC_COMPLEX
 				[cmplx]e[^x]
 				[cmplx]RCL[times] L

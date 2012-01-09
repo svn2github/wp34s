@@ -1,0 +1,32 @@
+/**************************************************************************/
+/* Some utility functions to return common constants */
+
+/* NaN for all results */
+ret_NaN::	FC? D
+			ERR ERR_DOMAIN
+		Num NaN
+		FILL
+		xOUT xOUT_NORMAL
+
+/* Return 1 in X */
+ret_1::		iC 1
+		xOUT xOUT_NORMAL
+
+/* Return 0 in X */
+ret_0::		iC 0
+		xOUT xOUT_NORMAL
+
+/* return -infinite for all results */
+ret_neginf::	FC? D
+			ERR ERR_MINFINITY
+		Num -[infinity]
+		FILL
+		xOUT xOUT_NORMAL
+
+/* return infinite for all results */
+ret_posinf::	FC? D
+			ERR ERR_INFINITY
+		Num [infinity]
+		FILL
+		xOUT xOUT_NORMAL
+

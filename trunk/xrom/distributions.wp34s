@@ -12,7 +12,7 @@
 			xIN MONADIC
 			GSB cauchy_xform
 			SPEC?
-				JMP dist_0	/* Can only be infinite which has zero probability */
+				JMP ret_0	/* Can only be infinite which has zero probability */
 			RCL[times] X
 			INC X
 			RCL[times] K
@@ -70,10 +70,10 @@ cauchy_xform::		RCL- J
 			xIN MONADIC
 			GSB expon_param
 			SPEC?
-				JMP dist_0	/* Can only be infinite which has zero probability */
+				JMP ret_0	/* Can only be infinite which has zero probability */
 			[times]
 			x<0?
-				JMP dist_0
+				JMP ret_0
 			+/-
 			e[^x]
 			RCL[times] J
@@ -118,7 +118,7 @@ expon_param::		RCL J
 xlbl_pdf_logit::	xIN MONADIC
 			GSB logistic_param
 			SPEC?
-				JMP dist_0
+				JMP ret_0
 			COSH
 			x[^2]
 			RCL[times] K
@@ -133,7 +133,7 @@ xlbl_cdf_logit::	xIN MONADIC
 			SPEC?
 				GSB cdf_infinite
 			x[<=]0?
-				JMP dist_0
+				JMP ret_0
 			TANH
 			INC X
 			2
@@ -181,9 +181,9 @@ xlbl_qf_logit::		xIN MONADIC
 			GSB weibull_param
 			RCL Y
 			SPEC?
-				JMP dist_0
+				JMP ret_0
 			x[<=]0?
-				JMP dist_0
+				JMP ret_0
 			x[<->] Y
 			y[^x]
 			STO Z
@@ -200,9 +200,9 @@ xlbl_qf_logit::		xIN MONADIC
 			GSB weibull_param
 			x[<->] Y
 			x[<=]0?
-				JMP dist_0
+				JMP ret_0
 			SPEC?
-				JMP dist_1	/* only +infinte left */
+				JMP ret_1	/* only +infinte left */
 			x[<->] Y
 			y[^x]
 			+/-
@@ -235,15 +235,15 @@ weibull_param::		RCL J
 /* Utility conditional that checks if the argument is a valid probability or not */
 
 cdf_infinite::		x<0?
-				JMP dist_0
-			JMP dist_1
+				JMP ret_0
+			JMP ret_1
 
 check_probability::	NaN?
-				JMP dist_NaN
+				JMP ret_NaN
 			x<0?
-				JMP dist_neginf
+				JMP ret_neginf
 			x>1?
-				JMP dist_posinf
+				JMP ret_posinf
 			RTN
 /* Error out if a number is zero, negative or special */
 check_special_pos::	x[<=]0?
@@ -253,29 +253,6 @@ check_special_pos::	x[<=]0?
 check_special::		SPEC?
 				ERR ERR_BAD_PARAM
 			RTN
-
-/**************************************************************************/
-/* Some utility functions to return common constants */
-dist_neginf::		FC? D
-				ERR ERR_MINFINITY
-			Num -[infinity]
-			xOUT xOUT_NORMAL
-
-dist_posinf::		FC? D
-				ERR ERR_INFINITY
-			Num [infinity]
-			xOUT xOUT_NORMAL
-
-dist_NaN::		FC? D
-				ERR ERR_DOMAIN
-			Num NaN
-			xOUT xOUT_NORMAL
-
-dist_0::		iC 0
-			xOUT xOUT_NORMAL
-
-dist_1::		iC 1
-			xOUT xOUT_NORMAL
 
 /**************************************************************************/
 /* Some utility subroutines */
