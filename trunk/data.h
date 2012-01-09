@@ -254,6 +254,7 @@ struct _state2 {
 #ifndef REALBUILD
 	unsigned int trace : 1;
 	unsigned int flags : 1;		// Display state flags
+	unsigned int sst : 1;		// SST is active (no trace display wanted)
 #else
 	unsigned int test_flag : 1;	// Test flag for various software tests
 #endif
@@ -328,8 +329,8 @@ typedef struct _xrom_params
 {
 	union {
 		struct {
-			unsigned int reserved : 10;	// room for 11 generic local flags .00 to .09
-			                                // just a placeholder here
+			unsigned int reserved : 10;	// room for 10 generic local flags .00 to .09
+			                                // just a placeholder here, the flags are on RetStk
 			unsigned int stack_depth : 1;	// user stack size was 8
 			unsigned int mode_double : 1;	// user was in double precision mode
 			unsigned int complex : 1;	// complex command
@@ -346,7 +347,6 @@ typedef struct _xrom_params
 	// Fields to be saved on xIN and restored on xOUT
 	unsigned short int *user_ret_stk;	// save the user return stack base
 	signed short int user_ret_stk_ptr;      // ... the user stack pointer
-	signed short int user_local_regs;       // ... the local regs pointer
 } TXromParams;
 
 extern TXromParams XromParams;
@@ -359,7 +359,6 @@ extern TXromParams XromParams;
 #define XromOut		  (XromParams.out)
 #define XromUserRetStk	  (XromParams.user_ret_stk)
 #define XromUserRetStkPtr (XromParams.user_ret_stk_ptr)
-#define XromUserLocalRegs (XromParams.user_local_regs)
 
 /*
  *  A private set of registers for non recursive, non interruptible XROM code

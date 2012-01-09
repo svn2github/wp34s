@@ -55,6 +55,7 @@
  *  A program is running
  */
 int Running;
+int XromRunning;
 
 #ifndef CONSOLE
 /*
@@ -1789,7 +1790,7 @@ unsigned int find_label_from(unsigned int pc, unsigned int arg, int flags) {
 static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 	raw_set_pc(pc);
 	if (gsb) {
-		if (!Running) {
+		if (!Running && !XromRunning) {
 			// XEQ or hot key from keyboard
 			clrretstk();
 			set_running_on();
@@ -1831,7 +1832,7 @@ static void do_rtn(int plus1) {
 
 // RTN and RTN+1
 void op_rtn(enum nilop op) {
-	if (! Running) {
+	if (! Running && ! XromRunning) {
 		// Manual return goes to step 0 and clears the return stack
 		clrretstk_pc();
 	}
@@ -1880,11 +1881,12 @@ void cmdmultilblp(const opcode o, enum multiops mopr) {
 }
 
 static void do_multigto(int is_gsb, unsigned int lbl) {
-	if (!Running && isXROM(lbl) && ! is_gsb) {
+#if 0 // No multi labels in XROM anymore
+	if (! Running && isXROM(lbl) && ! is_gsb) {
 		lbl = 0;
 		err(ERR_RANGE);
 	}
-
+#endif
 	cmdgtocommon(is_gsb, lbl);
 }
 
@@ -2010,7 +2012,7 @@ void cmdconv(unsigned int arg, enum rarg op) {
  *  If it is zero, the test fails.
  */
 void fin_tst(const int a) {
-	if (Running) {
+	if (Running || XromRunning) {
 		if (! a && incpc())
 			decpc();
 	}
@@ -3177,9 +3179,9 @@ void busy(void)
 	/*
 	 *  Indicate busy state to the user
 	 */
-	if ( !Busy && !Running ) {
+	if (!Busy && !Running) {
 		Busy = 1;
-		message( "Wait...", NULL );
+		message("Wait...", NULL);
 	}
 }
 
@@ -3220,7 +3222,9 @@ static int dispatch_xrom(void *fp)
 		return 0;
 	State.state_lift = 1;
 	UserLocalRegs = LocalRegs;
+	XromRunning = 1;
 	gsbgto(addrXROM((xp - xrom) + 1), 1, state_pc());
+	xeq_xrom();
 	return 1;
 }
 
@@ -3576,7 +3580,7 @@ void xeq(opcode op)
 	instruction_count++;
 #endif
 #ifndef REALBUILD
-	if (State2.trace) {
+	if (State2.trace && ! State2.sst) {
 		char buf[16];
 		if (Running)
 			print_step(op);
@@ -3615,7 +3619,7 @@ void xeq(opcode op)
 		raw_set_pc(old_pc);
 		*((int *)&CommandLine) = old_cl;
 		process_cmdline_set_lift();
-		if (Running) {
+		if (Running || XromRunning) {
 #ifndef REALBUILD
 			if (State2.trace ) {
 				// Special handling for debug environment
@@ -3678,15 +3682,26 @@ static void xeq_single(void) {
 /* Continue execution trough xrom code
  */
 void xeq_xrom(void) {
+	int count = 0;
 #ifndef REALBUILD
 	if (State2.trace)
 		return;
 #endif
-	/* Now if we've stepped into the xROM area, keep going until
+	/* Now if we've stepped into the XROM area, keep going until
 	 * we break free.
 	 */
-	while (!Pause && isXROM(state_pc()))
+	while (!Pause && isXROM(state_pc())) {
+		XromRunning = 1;
+		if ((++count & 31) == 0)
+			busy();
 		xeq_single();
+		if (Pause) {
+			// Special case: WHO has a PSE built in.
+			// Switch to Running mode to force continued execution.
+			Running = 1;
+		}
+		XromRunning = 0;
+	}
 }
 
 /* Check to see if we're running a program and if so execute it
@@ -3697,7 +3712,7 @@ void xeqprog(void)
 {
 	int state = 0;
 
-	if ( Running || Pause ) {
+	if (Running || Pause) {
 #ifndef CONSOLE
 		long long last_ticker = Ticker;
 		state = ((int) last_ticker % (2*TICKS_PER_FLASH) < TICKS_PER_FLASH);
@@ -3707,15 +3722,16 @@ void xeqprog(void)
 		dot(RCL_annun, state);
 		finish_display();
 
-		while (!Pause && Running) {
+		while (! Pause && Running) {
 			xeq_single();
 			if (is_key_pressed()) {
-				xeq_xrom();
+				// Key press or heart beat
+				// xeq_xrom(); // Already done by dispatch_xrom()
 				break;
 			}
 		}
 	}
-	if (!Running && !Pause) {
+	if (! Running && ! Pause) {
 		// Program has terminated
 		clr_dot(RCL_annun);
 		display();
@@ -3743,16 +3759,15 @@ void xeq_sst_bst(int kind)
 		if (kind == 1) {
 			// Execute the step on key up
 #ifndef REALBUILD
-			unsigned int trace = State2.trace;
-			State2.trace = 0;
+			State2.sst = 1;
 #endif
 			set_running_on_sst();
 			incpc();
 			xeq(op);
 #ifndef REALBUILD
-			State2.trace = trace;
+			State2.sst = 0;
 #endif
-			xeq_xrom();
+			// xeq_xrom();  Already done by dispatch_xrom()
 			set_running_off_sst();
 		}
 	}
@@ -3934,7 +3949,6 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		// Establish local return stack
 		XromUserRetStk = RetStk;
 		XromUserRetStkPtr = RetStkPtr;
-		XromUserLocalRegs = LocalRegs;
 
 		RetStk = XromRetStk;
 		RetStkPtr = -2;			    // Room for a local frame with just the flags
@@ -4043,7 +4057,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	// Restore the global return stack
 	RetStk = XromUserRetStk;
 	RetStkPtr = XromUserRetStkPtr;
-	LocalRegs = XromUserLocalRegs;
+	LocalRegs = UserLocalRegs;	// set by dispatch_xrom()
 
 	// RTN or RTN+1 depending on bit 0 of argument
 	do_rtn(arg & 1);
