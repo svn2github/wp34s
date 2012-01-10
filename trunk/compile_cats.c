@@ -15,7 +15,6 @@
  */
 
 #define COMPILE_CATALOGUES
-#undef DEBUG
 #define NOCURSES 1
 #undef REALBUILD
 
@@ -33,7 +32,6 @@
 #define SPECIAL(op, n)		op | OP_SPEC,
 #define RARGCMD(op, n)		RARG_BASEOP(op),
 #define CONV(n, d, name)	RARG_BASEOP(RARG_CONV) + (n)*2 + (d),
-
 
 static s_opcode program_xfcn[] = {
 	MON(OP__1POW,		"(-1)^x")
@@ -684,6 +682,9 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_POPLR,		"PopLR")
 #ifndef INCLUDE_INTERNAL_CATALOGUE
 	RARGCMD(RARG_CONST_INT,	"iC")
+#endif
+#ifdef _DEBUG
+	NILIC(OP_DEBUG,		"DBG")
 #endif
 };
 

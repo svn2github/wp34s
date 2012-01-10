@@ -770,7 +770,9 @@ enum nilop {
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
-
+#ifdef _DEBUG
+	OP_DEBUG,
+#endif
 	NUM_NILADIC	// Last entry defines number of operations
 };
 

@@ -652,6 +652,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
+#ifdef _DEBUG
+	FUNC0(OP_DEBUG,		XNIL(DBG),		"DBG")
+#endif
 
 #undef FUNC
 #undef FUNC0
@@ -913,7 +916,7 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_2DERIV,	XMULTI(2DERIV),			"f\"(x)")
 	CMD(DBL_INTG,	XMULTI(INTEGRATE),		"\004")
 	CMD(DBL_ALPHA,	&multialpha,			"\240")
-	CMD(DBL_XBR,	NOFN,				"xBR")
+	CMD(DBL_XBR,	&cmdmultigto,			"xBR")
 #undef CMD
 };
 

@@ -65,6 +65,12 @@
 #define CVG_COMPLEX			11	/* complex, chosen tolerance  */
 
 	XLBL"START"		// generate XROM_START symbol
+// Test
+#ifdef _DEBUG
+	XLBL"DBG"
+	xBR'C[ae][a-tilde]'
+	RTN
+#endif
 /*
  *  Include each routine here
  */
@@ -90,3 +96,4 @@
 	NOP	// temporary fix to shift XLBL down
 	NOP
 #include "who.wp34s"
+

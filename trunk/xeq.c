@@ -1891,9 +1891,22 @@ static void do_multigto(int is_gsb, unsigned int lbl) {
 }
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
-	unsigned int lbl = findmultilbl(o, FIND_OP_ERROR);
-	int is_gsb = mopr != DBL_GTO;
-
+	unsigned int lbl;
+	int is_gsb;
+	
+	if (mopr == DBL_XBR) {
+		/*
+		 *  Encoding of xBR argument is 'Cxy' or 'Jxy'
+		 *  x = most significant 7 bits of target
+		 *  y = least significant 7 bits of target
+		 */
+		is_gsb = (o & 0xff) == 'C';
+		lbl = addrXROM(((o >> 24) & 0x7f) | ((o >> 9) & 0x3f80)) + (1 - XROM_START);
+	}
+	else {
+		is_gsb = mopr != DBL_GTO;
+		lbl = findmultilbl(o, FIND_OP_ERROR);
+	}
 	do_multigto(is_gsb, lbl);
 }
 

@@ -46,7 +46,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>$(ProjectDir)compile_xrom.cmd</Command>
+      <Command>$(ProjectDir)compile_xrom.cmd $(ConfigurationName)</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Compiling XROM</Message>
@@ -81,6 +81,7 @@
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)..\..\xrom.c;$(ProjectDir)..\..\xrom_labels.h;%(Outputs)</Outputs>
       <FileType>Document</FileType>
     </None>
+    <None Include="compile_xrom.cmd" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\data.h" />
@@ -93,6 +94,7 @@
   <ItemGroup>
     <None Include="..\..\xrom\agm.wp34s" />
     <None Include="..\..\xrom\beta.wp34s" />
+    <None Include="..\..\xrom\common.wp34s" />
     <None Include="..\..\xrom\derivative.wp34s" />
     <None Include="..\..\xrom\distributions.wp34s" />
     <None Include="..\..\xrom\integrate.wp34s" />
