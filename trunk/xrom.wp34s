@@ -73,17 +73,12 @@
 
 
 	XLBL"START"		// generate XROM_START symbol
-// Test
-#ifdef _DEBUG
-	XLBL"DBG"
-	xBR'C[ae][a-tilde]'
-	RTN
-#endif
 /*
  *  Include each routine here
  */
 #include "solve.wp34s"
 #include "integrate.wp34s"
+#include "derivative.wp34s"
 #include "prodsum.wp34s"
 #include "quadratic.wp34s"
 #include "parallel.wp34s"
@@ -99,10 +94,12 @@
 #include "common.wp34s"
 #include "next_prime.wp34s"
 #include "modes.wp34s"
-
-// Do not move these until the tools are fixed!
-#include "derivative.wp34s"
-	NOP	// temporary fix to shift XLBL down
-	NOP
 #include "who.wp34s"
+
+// Test
+#ifdef _DEBUG
+	XLBL"DBG"
+	xBR'C[ae][a-tilde]'
+	RTN
+#endif
 

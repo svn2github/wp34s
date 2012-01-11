@@ -39,7 +39,7 @@ my (%LBLs, %targets, %branches, @branches, @steps);
 
 # Allow these to be over-ridden using environment variables.
 my $v3_mode = (exists $ENV{WP34S_PP_V3}) ? $ENV{WP34S_PP_V3} : 0;
-my $renumber_steps = (exists $ENV{WP34S_PP_RENUM}) ? $ENV{WP34S_PP_RENUM} : 1;
+my $renumber_steps = (exists $ENV{WP34S_PP_RENUM}) ? $ENV{WP34S_PP_RENUM} : 0;
 my $step = (exists $ENV{WP34S_PP_RENUM_START}) ? $ENV{WP34S_PP_RENUM_START} : 1;
 
 my $step_digits = 3; # Default to older style 3-digit step numbers.
@@ -89,6 +89,7 @@ my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 
 my $ENUM_OP = "OP";
 my $ENUM_NUM_WORDS = "WORDS";
+my $ENUM_STEP = "STEP";
 my $ENUM_PRECOMMENT = "PRECMNT";
 my $ENUM_POSTCOMMENT = "POSTCMNT";
 
@@ -330,12 +331,17 @@ if ($xrom_mode) {
 sub preprocessor {
   display_steps("// ") if $debug; # Initial debug image
   process_double_quotes();
-  extract_xlbls() if $xrom_mode;
+  build_step_numbers();
+  if( $xrom_mode ) {
+  	extract_xlbls() if $xrom_mode;
+        build_step_numbers();
+  }
   process_expressions();
   extract_labels();           # Look for existing "LBL \d{$label_digits_range}" or "LBL [A-Z]"opcodes
   extract_targets();          # Look for "SomeLabel::"
   extract_branches();         # Look for "(BACK|SKIP|JMP) SomeLabel"
   insert_synthetic_labels();  # Add synthetic symbolic label for any %LBLs without a counterpart in %targets
+  build_step_numbers();
   check_consistency();
   populate_branch_array();
   extract_LBLd_opcodes();  # Look for "(GTO|XEQ|SLV|etc) SomeLabel"
@@ -396,6 +402,24 @@ sub initialize_tables {
   src2src_db(@src_lines);
   return;
 } # initialize_tables
+
+
+#######################################################################
+#
+# Build the step numbers depending on op-code sizes
+#
+sub build_step_numbers {
+  my $step_num = 1;
+
+  for (my $step = 1; $step <= scalar(@src_db); $step++) {
+    my $opsize = get_line($ENUM_NUM_WORDS, $step);
+
+    # Update database with modified step number
+    put_line($ENUM_STEP, $step, $step_num);
+    $step_num += $opsize;
+  }
+  return;
+} # build_step_numbers
 
 
 #######################################################################
@@ -497,7 +521,7 @@ sub process_expressions {
       my $expression = $2;
       my $evaluated = eval $expression;
 
-      my $new_line = sprintf "%0s%0s%03d // %0s", $label, $the_rest, $evaluated, $expression;
+      my $new_line = sprintf "%0s%0s%0d // %0s", $label, $the_rest, $evaluated, $expression;
       put_line($ENUM_OP, $step, $new_line);
       debug_msg(this_function((caller(0))[3]), "Evaluated '$expression' to get '$evaluated'") if $debug;
     }
@@ -1109,26 +1133,27 @@ sub display_steps {
 #
 sub reconstruct_steps {
   my $label_field_length = $longest_label+$NUM_TARGET_LABEL_COLONS;
-  my ($label, $opcode, @reconstructed_steps);
+  my ($label, $opcode, @reconstructed_steps, $step_num);
 
   for (my $step = 1; $step <= scalar(@src_db); $step++) {
     my $line = get_line($ENUM_OP, $step);
     my $opsize = get_line($ENUM_NUM_WORDS, $step);
+    my $step_num = get_line($ENUM_STEP, $step);
 
     # Scrub any step number present. It will be recreated on the other end, unless otherwise requested.
     $line =~ s/^\s*\d{$step_digits}:{0,1}//;
 
     if ($opsize == 0) {
       $opcode = $line;
-      debug_msg(this_function((caller(0))[3]), "Type 0: '$line', op-size=$opsize") if $debug > 3;
+      debug_msg(this_function((caller(0))[3]), "$step:$step_num - Type 0: '$line', op-size=$opsize") if $debug > 3;
     } elsif ($line =~ /^\s*([$label_spec]{2,}:{$NUM_TARGET_LABEL_COLONS})\s+(\S+.*)/) { # Line with target label
       $label = ${1} . (" " x ($label_field_length - length($1)));
       $opcode = $2;
-      debug_msg(this_function((caller(0))[3]), "Type 1: '$line'") if $debug > 3;
+      debug_msg(this_function((caller(0))[3]), "$step:$step_num - Type 1: '$line', op-size=$opsize") if $debug > 3;
     } elsif ($line =~ /^\s*(\S+.*)/) { # Line without target label
       $label = " " x $label_field_length;
       $opcode = $1;
-      debug_msg(this_function((caller(0))[3]), "Type 2: '$line'") if $debug > 3;
+      debug_msg(this_function((caller(0))[3]), "$step:$step_num - Type 2: '$line', op-size=$opsize") if $debug > 3;
     } else {
       if ($debug) {
         print "ERROR: " . this_function((caller(0))[3]) . ": Cannot parse the line at step $step! Line: '$line'\n";
@@ -1146,7 +1171,7 @@ sub reconstruct_steps {
       push @reconstructed_steps, "$line";
     # See if the user has turned off step number generation from the command line.
     } elsif ($prt_step_num) {
-      push @reconstructed_steps, sprintf "%0${step_digits}d $OPEN_COMMENT %0s $CLOSE_COMMENT %0s", $step, $label, $opcode;
+      push @reconstructed_steps, sprintf "%0${step_digits}d $OPEN_COMMENT %0s $CLOSE_COMMENT %0s", $step_num, $label, $opcode;
     } else {
       push @reconstructed_steps, sprintf "$OPEN_COMMENT %0s $CLOSE_COMMENT %0s", $label, $opcode;
     }
@@ -1273,6 +1298,7 @@ sub insert_step {
   show_src_db_step("Processed step: ", $location) if $debug > 3;
 
   splice @src_db, ($location-1), 0, \%entry;
+  build_step_numbers();
 #  if( $debug ) {
 #    debug_msg(this_function((caller(0))[3]), "After inserting: '$line'") if $debug;
 #    panl(@lines);
@@ -1477,6 +1503,7 @@ sub replace_with_LBLd_target {
 #
 sub adjust_labels_used {
   my $step = shift;
+  debug_msg(this_function((caller(0))[3]), "Step '$step'.") if $debug;
   for my $label (sort keys %LBLs) {
     my $target = $LBLs{$label};
     if( $target > ($step + 1) ) {
@@ -1509,7 +1536,7 @@ sub adjust_targets {
 #######################################################################
 #
 # Increment any step associated with an existing label if that step is past the
-# point at which a new step was inserted. This requries new keys and to avoid colliding
+# point at which a new step was inserted. This requires new keys and to avoid colliding
 # with existing keys, just recreate the hash.
 #
 sub adjust_branches {
@@ -1560,9 +1587,11 @@ sub adjust_branch_array {
 #
 sub adjust_xlbls {
   my $step = shift;
+  $step = get_line($ENUM_STEP, $step);
   for my $xlabel (sort keys %xlbl) {
     if ($xlbl{$xlabel} > $step) {
       $xlbl{$xlabel}++;
+      debug_msg(this_function((caller(0))[3]), "Incrementing xlabel $xlabel to $xlbl{$xlabel} because it is at or past step '$step'.") if $debug;
     }
   }
   return;
@@ -1610,8 +1639,8 @@ sub read_file {
 # Redact any commented sections.
 #
 # Currently this will handle "//", "/* ... */" on a single line, "/*" alone
-# on a line up to and including the next occurance of "*/", plus more than one
-# occurance of "/* ... */ ... /* ... */" on a single line. There may be some
+# on a line up to and including the next occurence of "*/", plus more than one
+# occurence of "/* ... */ ... /* ... */" on a single line. There may be some
 # weird cases that it does not handle.
 #
 sub redact_comments {
@@ -1690,7 +1719,6 @@ sub extract_xlbls {
   my (@new_lines);
   my $line = 1;
   local $_;
-  my $accumulated_words = 0;
   for (my $k = 0; $k < scalar @src_db; $k++ ) {
     my $line = $src_db[$k]->{$ENUM_OP};
     if ($line =~ /^\s*XLBL\"(.+)\"(\s+|$)/) {
@@ -1707,11 +1735,10 @@ sub extract_xlbls {
           die_msg(this_function((caller(0))[3]), "Duplicate XLBL ($xlabel) at line $line. First seen at line ${xlbl{$xlabel}}.");
         }
       } else {
-        $xlbl{$xlabel} = $accumulated_words;
+        $xlbl{$xlabel} = $src_db[$k]->{$ENUM_STEP};
       }
       next;
     }
-    $accumulated_words += $src_db[$k]->{$ENUM_NUM_WORDS};
   }
   return;
 } # extract_xlbls
@@ -1760,7 +1787,7 @@ sub insert_into_branch_array {
 #######################################################################
 #
 # Convert the array of scrubbed source lines to the database containing
-# an array of hashes. Each hash has multiple keys to record various atributes
+# an array of hashes. Each hash has multiple keys to record various attributes
 # about the line.
 #
 # XXX In future we will put comments in other keys in this database.
@@ -1768,11 +1795,15 @@ sub insert_into_branch_array {
 sub src2src_db {
   my @src = @_;
   local $_;
+  my $step_num = 1;
   foreach (@src) {
     my %entry = ();
+    my $words = step2words($_);
     $entry{$ENUM_OP} = $_;
-    $entry{$ENUM_NUM_WORDS} = step2words($_);
+    $entry{$ENUM_NUM_WORDS} = $words;
+    $entry{$ENUM_STEP} = $step_num;
     push @src_db, \%entry;
+    $step_num += $words;
   }
   ssdb() if $debug;
   return @src_db;
@@ -1813,7 +1844,7 @@ sub step2words {
         debug_msg(this_function((caller(0))[3]), "No escaped alpha: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
         if ($src_line =~ /\'.+\'/) {
           $num_words = 2;
-          debug_msg(this_function((caller(0))[3]), "Instruction has quoted quoted label resulting in 2 words ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+          debug_msg(this_function((caller(0))[3]), "Instruction has quoted label resulting in 2 words ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
         } else {
           debug_msg(this_function((caller(0))[3]), "No single quotes: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
         }
@@ -1822,6 +1853,7 @@ sub step2words {
       }
     } else {
       debug_msg(this_function((caller(0))[3]), "Has double quotes: ($src_line)") if ($debug > 3) or (exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /S2W/i));
+      $num_words = 0 if ($src_line =~ /XLBL${DOUBLE_QUOTE}/);
     }
   } else {
     $num_words = 1;
@@ -1902,8 +1934,8 @@ sub panl { # Print array joined with \n.
   print "// ", join "\n", @_;
 }
 
-sub show_LBLs { # Dump the %LBLs hash
-  dump_hash("LBLs", \%LBLs, " Label Step");
+sub show_LBLd_ops { # Dump the %LBLd_ops hash
+  dump_hash("LBLd_ops", \%LBLd_ops);
   return;
 }
 
@@ -1917,8 +1949,16 @@ sub show_branches { # Dump the %branches hash
   return;
 }
 
-sub show_LBLd_ops { # Dump the %LBLd_opss hash
-  dump_hash("LBLd_ops", \%LBLd_ops);
+sub show_LBLs { # Dump the %LBLs hash
+  my $ref_hash = \%LBLs;
+  my $count = 0;
+  print "// Label Step\n";
+  for my $key (sort keys %{$ref_hash}) {
+    my $content = get_line($ENUM_STEP, $ref_hash->{$key});
+    print "//  $key => $content\n";
+    $count++;
+  }
+  print "// $count LBLs used.\n";
   return;
 }
 
@@ -1989,6 +2029,7 @@ sub show_src_db_step {
   my $step = shift;
   my $index = $step - 1;
   print "// ${leader}Step: $step\n";
+  print "//  STEP:         ", $src_db[$index]->{$ENUM_STEP}, "\n"         if exists $src_db[$index]->{$ENUM_STEP};
   print "//  OP:           ", $src_db[$index]->{$ENUM_OP}, "\n"           if exists $src_db[$index]->{$ENUM_OP};
   print "//  WORDS:        ", $src_db[$index]->{$ENUM_NUM_WORDS}, "\n"    if exists $src_db[$index]->{$ENUM_NUM_WORDS};
   print "//  POST-COMMENT: ", $src_db[$index]->{$ENUM_PRECOMMENT}, "\n"   if exists $src_db[$index]->{$ENUM_PRECOMMENT};

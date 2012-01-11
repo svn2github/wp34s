@@ -3703,7 +3703,7 @@ void xeq_xrom(void) {
 	/* Now if we've stepped into the XROM area, keep going until
 	 * we break free.
 	 */
-	while (!Pause && isXROM(state_pc())) {
+	while (!Pause && isXROM(state_pc()) && RetStkPtr != 0) {
 		XromRunning = 1;
 		if ((++count & 31) == 0)
 			busy();
