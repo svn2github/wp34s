@@ -4,7 +4,7 @@
  *	par(x, y) = (x . y) / (x + y)
  */
 	XLBL"PARL"
-xrom_paral::	xIN DYADIC
+		xIN DYADIC
 			RCL[times] Y
 			x[<->] Y
 			RCL+ L
@@ -17,7 +17,7 @@ xrom_paral::	xIN DYADIC
  *	par(x, y) = (x . y) / (x + y)
  */
 	XLBL"CPX_PARL"
-xrom_c_paral::	xIN DYADIC_COMPLEX
+		xIN DYADIC_COMPLEX
 			[cmplx]RCL[times] Z
 			[cmplx]x[<->] Z
 			[cmplx]RCL+ L

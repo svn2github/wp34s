@@ -4,7 +4,7 @@
  * P(x, y) = x! / (x-y)!
  */
 		XLBL"CPX_PERM"
-xrom_c_perm::		xIN DYADIC_COMPLEX
+			xIN DYADIC_COMPLEX
 			GSB cperm_common
 			JMP cperm_exit
 
@@ -13,7 +13,7 @@ xrom_c_perm::		xIN DYADIC_COMPLEX
  * C(x, y) = P(x, y) / y! = x! / ( (x-y)! y! )
  */
 		XLBL"CPX_COMB"
-xrom_c_comb::		xIN DYADIC_COMPLEX
+			xIN DYADIC_COMPLEX
 			[cmplx]STO A
 			GSB cperm_common
 			[cmplx]RCL A

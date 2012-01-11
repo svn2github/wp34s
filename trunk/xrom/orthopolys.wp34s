@@ -16,7 +16,7 @@
 /* Legendre's Pn
  */
 		XLBL"LegendrePn"
-xrom_LegendrePn::	xIN DYADIC
+			xIN DYADIC
 			LocalRegs
 			GSB ortho_default
 			RCL rX
@@ -29,7 +29,7 @@ xrom_LegendrePn::	xIN DYADIC
 /* Chebychev's Tn
  */
 		XLBL"ChebychevTn"
-xrom_ChebychevIn::	xIN DYADIC
+			xIN DYADIC
 			LocalRegs
 			GSB ortho_default
 			JMP ortho_common
@@ -38,7 +38,7 @@ xrom_ChebychevIn::	xIN DYADIC
 /* Chebychev's Un
  */
 		XLBL"ChebychevUn"
-xrom_ChebychevUn::	xIN DYADIC
+			xIN DYADIC
 			LocalRegs
 			GSB ortho_default
 			RCL rX
@@ -49,7 +49,7 @@ xrom_ChebychevUn::	xIN DYADIC
 /* Laguerre's Ln
  */
 		XLBL"LaguerreLn"
-xrom_LaguerreLn::	xIN DYADIC
+			xIN DYADIC
 			LocalRegs
 			iC 0
 			JMP laguerre_common
@@ -58,7 +58,7 @@ xrom_LaguerreLn::	xIN DYADIC
 /* Laguerre's Ln with parameter alpha
  */
 		XLBL"LaguerreLnA"
-xrom_LaguerreLnA::	xIN TRIADIC
+			xIN TRIADIC
 			LocalRegs
 			RCL Z
 			SPEC?
@@ -88,7 +88,7 @@ ortho_allinc::		SF .00
 /* Hermite's He (Hn)
  */
 		XLBL"HermiteHe"
-xrom_HermiteHe::	xIN DYADIC
+			xIN DYADIC
 			LocalRegs
 			GSB ortho_default
 			RCL rX
@@ -100,7 +100,7 @@ xrom_HermiteHe::	xIN DYADIC
 /* Hermite's H  (Hnp)
  */
 		XLBL"HermiteH"
-xrom_HermiteH::		xIN DYADIC
+			xIN DYADIC
 			LocalRegs
 			GSB ortho_default
 			RCL rX

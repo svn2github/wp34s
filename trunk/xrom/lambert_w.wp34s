@@ -11,7 +11,7 @@
  */
 
 			XLBL"W0"
-xrom_w0::		xIN MONADIC
+			xIN MONADIC
 			SPEC?
 				JMP ret_NaN
 			x=0?
@@ -43,7 +43,7 @@ LamW0_loop::		FILL
  */
 
 			XLBL"W1"
-xrom_w1::		xIN MONADIC
+			xIN MONADIC
 			SPEC?
 				JMP ret_NaN
 			x>0?
@@ -82,7 +82,7 @@ LamW_converged::	RCL/ I
  *	.04/.05	temporary
  */
 			XLBL"CPX_W0"
-xrom_c_w::		xIN MONADIC_COMPLEX
+			xIN MONADIC_COMPLEX
 			LocR 05
 			[cmplx]STO .00
 			iC 1
@@ -113,13 +113,13 @@ LamW_cloop::		[cmplx]ENTER
  */
 
 			XLBL"W_INVERSE"
-xrom_winv::		xIN MONADIC
+			xIN MONADIC
 				e[^x]
 				RCL[times] L
 			xOUT xOUT_NORMAL
 
 			XLBL"CPX_W_INVERSE"
-xrom_c_winv::		xIN MONADIC_COMPLEX
+			xIN MONADIC_COMPLEX
 				[cmplx]e[^x]
 				[cmplx]RCL[times] L
 			xOUT xOUT_NORMAL

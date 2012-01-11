@@ -4,7 +4,7 @@
  *	B(x, y) = Gamma(x) Gamma (y) / Gamma(x+y)
  */
 		XLBL"beta"
-xrom_beta::		xIN DYADIC
+			xIN DYADIC
 			[GAMMA]
 			RCL L
 			RCL+ Z
@@ -21,7 +21,7 @@ xrom_beta::		xIN DYADIC
  */
 #if 0
  		XLBL"lnbeta"
-xrom_lnbeta::		xIN DYADIC
+			xIN DYADIC
 			LN[GAMMA]
 			RCL L
 			RCL+ Z
@@ -39,7 +39,7 @@ xrom_lnbeta::		xIN DYADIC
  *	B(x, y) = Gamma(x) Gamma (y) / Gamma(x+y)
  */
 		XLBL"cpx_beta"
-xrom_c_beta::		xIN DYADIC_COMPLEX
+			xIN DYADIC_COMPLEX
 			[cmplx][GAMMA]
 			[cmplx]RCL L
 			[cmplx]RCL+ A
@@ -56,7 +56,7 @@ xrom_c_beta::		xIN DYADIC_COMPLEX
  *	B(x, y) = log Gamma(x) + log Gamma (y) - log Gamma(x+y)
  */
 		XLBL"cpx_lnbeta"
-xrom_c_lnbeta::		xIN DYADIC_COMPLEX
+			xIN DYADIC_COMPLEX
 			[cmplx]LN[GAMMA]
 			[cmplx]RCL L
 			[cmplx]RCL+ A
