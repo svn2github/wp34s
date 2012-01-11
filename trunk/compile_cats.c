@@ -165,6 +165,10 @@ static s_opcode program_xfcn[] = {
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
 #endif
+#ifdef INCLUDE_GUDERMANNIAN
+	MON(OP_GUDER,		"gd")
+	MON(OP_INVGUD,		"gd[^-1]")
+#endif
 
 
 	/* Integer mode commands */
@@ -325,6 +329,10 @@ static s_opcode catalogue[] = {
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
 #endif
+#ifdef INCLUDE_GUDERMANNIAN
+	MON(OP_GUDER,		"gd")
+	MON(OP_INVGUD,		"gd[^-1]")
+#endif
 };
 
 static s_opcode cplx_catalogue[] = {
@@ -367,6 +375,10 @@ static s_opcode cplx_catalogue[] = {
 #endif
 #ifdef INCLUDE_XROOT
 	CDYA(OP_XROOT,		"\234\003y")
+#endif
+#ifdef INCLUDE_GUDERMANNIAN
+	CMON(OP_GUDER,		"gd")
+	CMON(OP_INVGUD,		"gd[^-1]")
 #endif
 };
 

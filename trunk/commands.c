@@ -141,7 +141,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_EXPM1,	&decNumberExpm1,	&cmplxExpm1,	NOFN,		"e\234-1")
 	FUNC(OP_LAMW,	XMR(W0),		XMC(CPX_W0),	NOFN,		"W\276")
 	FUNC(OP_LAMW1,	XMR(W1),		NOFN,		NOFN,		"W\033")
-	FUNC(OP_INVW,	XMR(W_INVERSE),		XMC(CPX_W_INVERSE),NOFN,		"W\235")
+	FUNC(OP_INVW,	XMR(W_INVERSE),		XMC(CPX_W_INVERSE),NOFN,	"W\235")
 	FUNC(OP_SQR,	&decNumberSquare,	&cmplxSqr,	&intSqr,	"x\232")
 	FUNC(OP_CUBE,	&decNumberCube,		&cmplxCube,	&intCube,	"CUBE")
 	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intCubeRoot,	"CUBERT")
@@ -165,6 +165,11 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_ASINH,	&decNumberArcSinh,	&cmplxAsinh,	NOFN,		"ASINH")
 	FUNC(OP_ACOSH,	&decNumberArcCosh,	&cmplxAcosh,	NOFN,		"ACOSH")
 	FUNC(OP_ATANH,	&decNumberArcTanh,	&cmplxAtanh,	NOFN,		"ATANH")
+#ifdef INCLUDE_GUDERMANNIAN
+	FUNC(OP_GUDER,	XMR(gd),		XMC(cpx_gd),	NOFN,		"gd")
+	FUNC(OP_INVGUD,	XMR(inv_gd),		XMC(cpx_inv_gd),NOFN,		"gd\235")
+#endif
+
 	FUNC(OP_FACT,	&decNumberFactorial,	&cmplxFactorial,NOFN,		"x!")
 	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	NOFN,		"\202")
 	FUNC(OP_LNGAMMA,&decNumberLnGamma,	&cmplxLnGamma,	NOFN,		"LN\202")

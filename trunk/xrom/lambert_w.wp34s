@@ -6,6 +6,8 @@
  *
  * This code is based on Jean-Marc Baillard's HP-41 version from:
  *	http://hp41programs.yolasite.com/lambertw.php
+ *
+ * Uses regiser I for temproary storage.
  */
 
 			XLBL"W0"
@@ -37,6 +39,7 @@ LamW0_loop::		FILL
 
 /**************************************************************************/
 /* The negative branch of the real W function.
+ * Uses registesr J and K for temporary storage.
  */
 
 			XLBL"W1"
@@ -76,11 +79,11 @@ LamW_converged::	RCL/ I
  * Register use:
  *	.00/.01	z
  *	.02/.03	w
- *	J/K	temporary
+ *	.04/.05	temporary
  */
 			XLBL"CPX_W0"
 xrom_c_w::		xIN MONADIC_COMPLEX
-			LocR 03
+			LocR 05
 			[cmplx]STO .00
 			iC 1
 			STO .02
@@ -92,11 +95,11 @@ xrom_c_w::		xIN MONADIC_COMPLEX
 			[cmplx]STO .02
 LamW_cloop::		[cmplx]ENTER
 			[cmplx]e[^x]
-			[cmplx]STO J
+			[cmplx]STO .04
 			[cmplx]RCL[times] .02
-			[cmplx]STO+ J
+			[cmplx]STO+ .04
 			[cmplx]RCL- .00
-			[cmplx]RCL/ J
+			[cmplx]RCL/ .04
 			[cmplx]STO- .02
 			[cmplx]DROP
 			[cmplx]RCL .02

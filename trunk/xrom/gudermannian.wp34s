@@ -1,0 +1,56 @@
+/**************************************************************************/
+/* The Gudermannian function and its inverse.
+ *
+ * The Gudermannian function is a link between the circular trig functions and
+ * the hyperbolic functions.
+ *
+ * It is defined:
+ *
+ *	gd(x) = integral(0, x, sech(t) dt).
+ */
+#ifdef INCLUDE_GUDERMANNIAN
+		XLBL"gd"
+xrom_gd::	xIN MONADIC
+		2
+		/
+		TANH
+		ATAN
+		RCL+ X
+		xOUT xOUT_NORMAL
+
+
+		XLBL"cpx_gd"
+xrom_c_gd::	xIN MONADIC_COMPLEX
+		iC 0
+		2
+		[cmplx]/
+		[cmplx]TANH
+		[cmplx]ATAN
+		[cmplx]RCL+ Z
+		xOUT xOUT_NORMAL
+
+
+		XLBL"inv_gd"
+xrom_inv_gd::	2
+		/
+		[pi]
+		4
+		/
+		+
+		TAN
+		LN
+		xOUT xOUT_NORMAL
+
+
+		XLBL"cpx_inv_gd"
+xrom_c_inv_gd::	iC 0
+		2
+		/
+		[cmplx][pi]
+		4
+		/
+		[cmplx]+
+		[cmplx]TAN
+		[cmplx]LN
+		xOUT xOUT_NORMAL
+#endif
