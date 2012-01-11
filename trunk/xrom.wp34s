@@ -64,6 +64,14 @@
 #define CVG_ABSOLUTE			07	/* absolute, chosen tolerance */
 #define CVG_COMPLEX			11	/* complex, chosen tolerance  */
 
+
+/* Mode setting macros since they are more efficient than calling the xrom
+ * subroutines to do the same thing.
+ */
+#define SSIZE4	xMCLR UState_stack_depth
+#define SSIZE8	xMSET UState_stack_depth
+
+
 	XLBL"START"		// generate XROM_START symbol
 // Test
 #ifdef _DEBUG
