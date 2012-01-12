@@ -245,16 +245,6 @@ qf_normal::		GSB qf_q
 				GSB pdf_q
 			xOUT xOUT_NORMAL
 
-		XLBL"CDF_Q"
-			xIN MONADIC
-				GSB cdf_q
-			xOUT xOUT_NORMAL
-
-		XLBL"QF_Q"
-			xIN MONADIC
-				GSB qf_q
-			xOUT xOUT_NORMAL
-
 /* Standard entry point.  Uses one stack level and no last X */
 pdf_q::			x[^2]
 			2
@@ -264,6 +254,12 @@ pdf_q::			x[^2]
 			GSB sqrt_2pi
 			/
 			RTN
+
+
+		XLBL"CDF_Q"
+			xIN MONADIC
+				GSB cdf_q
+			xOUT xOUT_NORMAL
 
 /* Standard entry point.  Destroys the stack and uses local registers and
  * several stack level.  The alternate entry point is used, registers
@@ -327,7 +323,7 @@ cdf_q_lp2::		RCL[times] .01	// term * x^2
 			x[<->] .02
 			STO+ .02
 			RCL .02
-			CNVG? CVG_RELATIVE
+			CNVG? CVG_RELATIVE_DBL
 				JMP cdf_q_skip2
 			[cmplx]DROP
 			INC .03
@@ -343,17 +339,85 @@ cdf_q_skip2::		RCL[times] .04
 				+
 			RTN
 
+
+		XLBL"QF_Q"
+			xIN MONADIC
+				GSB qf_q
+			xOUT xOUT_NORMAL
+
+/* The internal Q qf entry point.  Sets flag .01 if x < 0.
+ */
 qf_q::			GSB qf_check_probability
-			LocR 10
-			STO .00		// save x
+			LocR 06
+			STO .05		// save x
 			.
 			5
 			x[<->] Y
 			-
-			STO .01		// b = 1/2 - x
+			STO .06		// b = 1/2 - x
 			x=0?
 				RTN
-			/*MORE*/
+			/* Estimate an initial try */
+			x[>=]0?
+				JMP qf_q_inrange
+			iC 1
+			RCL- .05
+			STO .05
+			SF .01
+qf_q_inrange::		RCL .05
+			.
+			2
+			x<? Y
+				JMP qf_q_skip2
+			RCL .05
+			LN
+			RCL+ X
+			+/-
+			STO .06		// u = -2 LN(x)
+			DEC X
+			[sqrt]
+			GSB sqrt_2pi
+			[times]
+			RCL[times] .05
+			LN
+			RCL+ X
+			+/-
+			[sqrt]
+			x[<->] .06
+			/
+			RCL+ .06
+				+/-
+			JMP qf_q_est_done
+
+qf_q_skip2::		GSB sqrt_2pi
+			RCL[times] .06
+			ENTER[^]
+			CUBE
+			6
+			/
+			+
+			+/-
+
+/* Now refine the estimate via Newton steps */
+qf_q_est_done::		STO .06
+qf_q_loop::		GSB cdf_q_alt		/* pdf in .04 */
+			RCL- .05		/* cdf - x */
+			RCL/ .04		/* (cdf - x) / pdf */
+			ENTER[^]
+			RCL[times] .06
+			2
+			/
+			DEC X
+			/
+			x[<->] .06
+			STO+ .06
+			RCL .06
+			CNVG? CVG_RELATIVE_DBL
+				JMP qf_loop_end
+			JMP qf_q_loop
+
+qf_loop_end::		FS? .01
+				+/-
 			RTN
 
 sqrt_2pi::		[pi]
