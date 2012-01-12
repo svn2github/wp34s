@@ -1061,7 +1061,7 @@ decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
 	dn_abs(&absx, x);
 	dn_compare(&u, &const_PI, &absx);	// We need a number about 3.2 and this is close enough
 	if (decNumberIsNegative(&u)) {
-		dn_minus(&x2, &absx);
+		//dn_minus(&x2, &absx);
 		//n = ceil(5 + k / (|x| - 1))
 		dn_m1(&v, &absx);
 		dn_divide(&t, &const_256, &v);
@@ -1821,70 +1821,5 @@ decNumber *qf_G(decNumber *r, const decNumber *x) {
 	dn_p1(&v, r);
 	cdf_G(&z, &v);
 	return discrete_final_check(r, &p, &t, &z, &v);
-}
-
-/* Normal with specified mean and variance */
-static int normal_xform(decNumber *r, decNumber *q, const decNumber *x, decNumber *var) {
-	decNumber a, mu;
-
-	dist_two_param(&mu, var);
-	if (param_positive(r, var))
-		return 1;
-	dn_subtract(&a, x, &mu);
-	dn_divide(q, &a, var);
-	return 0;
-}
-
-decNumber *pdf_normal(decNumber *r, const decNumber *x) {
-	decNumber q, var, s;
-
-	if (normal_xform(r, &q, x, &var))
-		return r;
-	pdf_Q(&s, &q);
-	return dn_divide(r, &s, &var);
-}
-
-decNumber *cdf_normal(decNumber *r, const decNumber *x) {
-	decNumber q, var;
-
-	if (normal_xform(r, &q, x, &var))
-		return r;
-	return cdf_Q(r, &q);
-}
-
-decNumber *qf_normal(decNumber *r, const decNumber *p) {
-	decNumber a, b, mu, var;
-
-	dist_two_param(&mu, &var);
-	if (param_positive(r, &var))
-		return r;
-	qf_Q(&a, p);
-	dn_multiply(&b, &a, &var);
-	return dn_add(r, &b, &mu);
-}
-
-
-/* Log normal with specified mean and variance */
-decNumber *pdf_lognormal(decNumber *r, const decNumber *x) {
-	decNumber t, lx;
-
-	dn_ln(&lx, x);
-	pdf_normal(&t, &lx);
-	return dn_divide(r, &t, x);
-}
-
-decNumber *cdf_lognormal(decNumber *r, const decNumber *x) {
-	decNumber lx;
-
-	dn_ln(&lx, x);
-	return cdf_normal(r, &lx);
-}
-
-
-decNumber *qf_lognormal(decNumber *r, const decNumber *p) {
-	decNumber lr;
-
-	qf_normal(&lr, p);
-	return dn_exp(r, &lr);
 }
 

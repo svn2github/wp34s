@@ -157,10 +157,15 @@ int_second_point::	RCL .01
 int_kronrod::		RCL .04				/* i, f, ?, ?*/
 			INC X				/* i+1, f, ?, ?*/
 			iC[->]X				/* ki, i+1, f, ?*/
+#ifdef INCLUDE_SHUFFLE
+			SHF_XYZT(0, 2, 2, 2)		/* ki, f, f, f */
+			[times]				/* ki*f, f, f, f */
+#else
 			STO L
 			RCL Z				/* f, ki, i+1, f*/
-			FILL				/* f, f, f, f*/
-			RCL[times] L			/* ki*f, f, f, f*/
+			FILL				/* f, f, f, f */
+			RCL[times] L			/* ki*f, f, f, f */
+#endif
 			STO+ .03
 			RTN
 

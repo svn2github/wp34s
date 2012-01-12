@@ -43,7 +43,7 @@ cauchy_xform::		RCL- J
 
 		XLBL"QF_CAUCHY"
 			xIN MONADIC
-			GSB check_probability
+			GSB qf_check_probability
 			.
 			5
 			-
@@ -92,7 +92,7 @@ cauchy_xform::		RCL- J
 
 		XLBL"QF_EXPON"
 			xIN MONADIC
-			GSB check_probability
+			GSB qf_check_probability
 			GSB log1m
 			GSB expon_param
 			/
@@ -115,7 +115,7 @@ expon_param::		RCL J
  *	qf = arctanh( (p-1/2) * 2) * 2K + j = archtanh(2p - 1) * 2K + J
  */
 		XLBL"PDF_LOGIT"
-xlbl_pdf_logit::	xIN MONADIC
+			xIN MONADIC
 			GSB logistic_param
 			SPEC?
 				JMP ret_0
@@ -128,10 +128,10 @@ xlbl_pdf_logit::	xIN MONADIC
 			xOUT xOUT_NORMAL
 
 		XLBL"CDF_LOGIT"		/* (1 + tanh( (x-J) / 2K)) / 2 */
-xlbl_cdf_logit::	xIN MONADIC
+			xIN MONADIC
 			GSB logistic_param
 			SPEC?
-				GSB cdf_infinite
+				JMP cdf_infinite
 			x[<=]0?
 				JMP ret_0
 			TANH
@@ -150,8 +150,8 @@ logistic_param::	RCL- J
 			RTN
 			
 		XLBL"QF_LOGIT"		/* archtanh(2p - 1) * 2K + J */
-xlbl_qf_logit::		xIN MONADIC
-			GSB check_probability
+			xIN MONADIC
+			GSB qf_check_probability
 			RCL+ X
 			DEC X
 			ATANH
@@ -164,6 +164,202 @@ xlbl_qf_logit::		xIN MONADIC
 			+
 			xOUT xOUT_NORMAL
 
+
+
+/**************************************************************************/
+/* Log Normal distribution
+ */
+ 		XLBL"PDF_LGNORM"
+			xIN MONADIC
+				LocR 00
+				STO .00
+				LN
+				GSB pdf_normal
+				RCL/ .00
+			xOUT xOUT_NORMAL
+
+		XLBL"CDF_LGNORM"
+			xIN MONADIC
+				SPEC?
+					JMP cdf_infinite
+				x[<=]0?
+					JMP ret_0
+				LN
+				JMP cdf_normal
+
+		XLBL"QF_LGNORM"
+			xIN MONADIC
+				GSB qf_normal
+				e[^x]
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Normal distribution
+ */
+ 		XLBL"PDF_NORMAL"
+			xIN MONADIC
+				GSB pdf_normal
+			xOUT xOUT_NORMAL
+
+pdf_normal::		GSB normal_param
+			GSB pdf_q
+			RCL/ K
+			RTN
+
+		XLBL"CDF_NORMAL"
+			xIN MONADIC
+			SPEC?
+				JMP cdf_infinite
+cdf_normal::		GSB normal_param
+			GSB cdf_q
+			xOUT xOUT_NORMAL
+
+normal_param::		RCL J
+			GSB check_special
+			-
+			RCL K
+			GSB check_special_pos
+			/
+			RTN
+
+		XLBL"QF_NORMAL"
+			xIN MONADIC
+				GSB qf_normal
+			xOUT xOUT_NORMAL
+
+qf_normal::		GSB qf_q
+			RCL K
+			GSB check_special_pos
+			[times]
+			RCL J
+			GSB check_special
+			+
+			RTN
+
+
+/**************************************************************************/
+/* Standard Normal distribution
+ */
+		XLBL"PDF_Q"
+			xIN MONADIC
+				GSB pdf_q
+			xOUT xOUT_NORMAL
+
+		XLBL"CDF_Q"
+			xIN MONADIC
+				GSB cdf_q
+			xOUT xOUT_NORMAL
+
+		XLBL"QF_Q"
+			xIN MONADIC
+				GSB qf_q
+			xOUT xOUT_NORMAL
+
+/* Standard entry point.  Uses one stack level and no last X */
+pdf_q::			x[^2]
+			2
+			/
+			+/-
+			e[^x]
+			GSB sqrt_2pi
+			/
+			RTN
+
+/* Standard entry point.  Destroys the stack and uses local registers and
+ * several stack level.  The alternate entry point is used, registers
+ * .01 - .03 are destroyed, .00 holds the initial X and .04 holds the pdf(x).
+ * Additionally, flag .00 is set if the X value is negative.
+ */
+cdf_q::			LocR 04
+cdf_q_alt::		STO .00		// x in .00
+			x<0?
+				SF .00
+			GSB pdf_q
+			STO .04
+			RCL .00
+			ABS
+			[pi]
+			x[>=]? Y
+				JMP cdf_q2
+
+/* Code for |x| > 3.15 */
+			DROP
+			DEC X
+			2
+			5
+			6
+			x[<->] Y
+			/
+			4
+			+
+			CEIL
+			STO .02		// n = (|x|-1)/256+4
+			iC 0
+cdf_q_lp1::		RCL .02		// n
+			RCL .00		// x
+			RCL+ Z		// x + term
+			/		// n / (x + term)
+			DSZ .02
+				JMP cdf_q_lp1
+			RCL+ .00
+			RCL .04
+			x[<->] Y
+			/
+			x<0?
+				JMP cdf_q_skip1
+			iC 1
+			x[<->] Y
+			-
+cdf_q_skip1::		FS? .00
+			+/-
+			RTN
+
+/* Alternate code for |x| < 3.15 */
+cdf_q2::		3
+			STO .03		// d = 3
+			[cmplx]DROP
+			STO .01
+			STO[times] .01	// x2 = x^2
+			STO .02		// a = |x|
+cdf_q_lp2::		RCL[times] .01	// term * x^2
+			RCL/ .03	// term * x^2 / d
+			ENTER[^]
+			x[<->] .02
+			STO+ .02
+			RCL .02
+			CNVG? CVG_RELATIVE
+				JMP cdf_q_skip2
+			[cmplx]DROP
+			INC .03
+			INC .03
+			JMP cdf_q_lp2
+cdf_q_skip2::		RCL[times] .04
+			.
+			5
+			x[<->] Y
+			FS? .00
+				-
+			FC? .00
+				+
+			RTN
+
+qf_q::			GSB qf_check_probability
+			LocR 10
+			STO .00		// save x
+			.
+			5
+			x[<->] Y
+			-
+			STO .01		// b = 1/2 - x
+			x=0?
+				RTN
+			/*MORE*/
+			RTN
+
+sqrt_2pi::		[pi]
+			RCL+ X
+			[sqrt]
+			RTN
 
 
 /**************************************************************************/
@@ -219,7 +415,7 @@ weibull_param::		RCL J
 
 		XLBL"QF_WEIB"			/* (-ln(1-p) ^ (1/k)) * J */
 			xIN MONADIC
-			GSB check_probability
+			GSB qf_check_probability
 			GSB log1m
 			+/-
 			RCL K
@@ -240,7 +436,7 @@ cdf_infinite::		x<0?
 
 check_probability::	NaN?
 				JMP ret_NaN
-			x<0?
+qf_check_probability::	x<0?
 				JMP ret_neginf
 			x>1?
 				JMP ret_posinf

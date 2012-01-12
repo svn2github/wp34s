@@ -219,6 +219,37 @@ decNumber *cdf_WB(decNumber *r, const decNumber *x) {
 }
 
 
+/* Weibull distribution quantile function:
+ *	p = 1 - exp(-(x/lambda)^k)
+ *	exp(-(x/lambda)^k) = 1 - p
+ *	-(x/lambda)^k = ln(1-p)
+ * Thus, the qf is:
+ *	x = (-ln(1-p) ^ (1/k)) * lambda
+ * So no searching is required.
+ */
+// 140 bytes
+decNumber *qf_WB(decNumber *r, const decNumber *p) {
+	decNumber t, u, k, lam;
+
+	if (weibull_param(r, &k, &lam, p))
+		return r;
+	if (check_probability(r, p, 1))
+	    return r;
+	if (decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
+			dn_le0(&k) || dn_le0(&lam)) {
+		return set_NaN(r);
+	}
+
+	dn_ln1m(&u, p);
+	dn_minus(&t, &u);
+	decNumberRecip(&u, &k);
+	dn_power(&k, &t, &u);
+	return dn_multiply(r, &lam, &k);
+}
+
+
+
+
 /**************************************************************************/
 /* Logistic distribution
  * Two parameters:
@@ -285,33 +316,218 @@ decNumber *qf_logistic(decNumber *r, const decNumber *p) {
 }
 
 
+/* Standard normal distribution */
 
-/* Weibull distribution quantile function:
- *	p = 1 - exp(-(x/lambda)^k)
- *	exp(-(x/lambda)^k) = 1 - p
- *	-(x/lambda)^k = ln(1-p)
- * Thus, the qf is:
- *	x = (-ln(1-p) ^ (1/k)) * lambda
- * So no searching is required.
- */
-// 140 bytes
-decNumber *qf_WB(decNumber *r, const decNumber *p) {
-	decNumber t, u, k, lam;
+// Normal(0,1) PDF
+// 1/sqrt(2 PI) . exp(-x^2/2)
 
-	if (weibull_param(r, &k, &lam, p))
-		return r;
-	if (check_probability(r, p, 1))
-	    return r;
-	if (decNumberIsSpecial(&lam) || decNumberIsSpecial(&k) ||
-			dn_le0(&k) || dn_le0(&lam)) {
-		return set_NaN(r);
-	}
+// 60 bytes
+decNumber *pdf_Q(decNumber *q, const decNumber *x) {
+	decNumber r, t;
 
-	dn_ln1m(&u, p);
-	dn_minus(&t, &u);
-	decNumberRecip(&u, &k);
-	dn_power(&k, &t, &u);
-	return dn_multiply(r, &lam, &k);
+	decNumberSquare(&t, x);
+	dn_div2(&r, &t);
+	dn_minus(&t, &r);
+	dn_exp(&r, &t);
+	return dn_multiply(q, &r, &const_recipsqrt2PI);
 }
 
+// Normal(0,1) CDF function
+// 356 bytes
+decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
+	decNumber t, u, v, a, x2, d, absx, n;
+	int i;
+
+	pdf_Q(pdf, x);
+	dn_abs(&absx, x);
+	dn_compare(&u, &const_PI, &absx);	// We need a number about 3.2 and this is close enough
+	if (decNumberIsNegative(&u)) {
+		//dn_minus(&x2, &absx);
+		//n = ceil(5 + k / (|x| - 1))
+		dn_m1(&v, &absx);
+		dn_divide(&t, &const_256, &v);
+		dn_add(&u, &t, &const_4);
+		decNumberCeil(&n, &u);
+		decNumberZero(&t);
+		do {
+			dn_add(&u, x, &t);
+			dn_divide(&t, &n, &u);
+			dn_dec(&n);
+		} while (! dn_eq0(&n));
+
+		dn_add(&u, &t, x);
+		dn_divide(q, pdf, &u);
+		if (! decNumberIsNegative(q))
+			dn_1m(q, q);
+		if (decNumberIsNegative(x))
+			dn_minus(q, q);
+		return q;
+	} else {
+		decNumberSquare(&x2, &absx);
+		decNumberCopy(&t, &absx);
+		decNumberCopy(&a, &absx);
+		decNumberCopy(&d, &const_3);
+		for (i=0;i<500; i++) {
+			dn_multiply(&u, &t, &x2);
+			dn_divide(&t, &u, &d);
+			dn_add(&u, &a, &t);
+			dn_compare(&v, &u, &a);
+			if (dn_eq0(&v))
+				break;
+			decNumberCopy(&a, &u);
+			dn_p2(&d, &d);
+		}
+		dn_multiply(&v, &a, pdf);
+		if (decNumberIsNegative(x))
+			return dn_subtract(q, &const_0_5, &v);
+		return dn_add(q, &const_0_5, &v);
+	}
+}
+
+// 18 bytes
+decNumber *cdf_Q(decNumber *q, const decNumber *x) {
+	decNumber t;
+	return cdf_Q_helper(q, &t, x);
+}
+
+
+// 230 bytes
+static void qf_Q_est(decNumber *est, const decNumber *x, const decNumber *x05) {
+	const int invert = decNumberIsNegative(x05);
+	decNumber a, b, u, xc;
+
+	if (invert) {
+		dn_1m(&xc, x);
+		x = &xc;
+	}
+
+	dn_compare(&a, x, &const_0_2);
+	if (decNumberIsNegative(&a)) {
+		dn_ln(&a, x);
+		dn_multiply(&u, &a, &const__2);
+		dn_m1(&a, &u);
+		dn_sqrt(&b, &a);
+		dn_multiply(&a, &b, &const_sqrt2PI);
+		dn_multiply(&b, &a, x);
+		dn_ln(&a, &b);
+		dn_multiply(&b, &a, &const__2);
+		dn_sqrt(&a, &b);
+		dn_divide(&b, &const_0_2, &u);
+		dn_add(est, &a, &b);
+		if (!invert)
+			dn_minus(est, est);
+	} else {
+		dn_multiply(&a, &const_sqrt2PI, x05);
+		decNumberCube(&b, &a);
+		dn_divide(&u, &b, &const_6);
+		dn_add(est, &u, &a);
+		dn_minus(est, est);
+	}
+}
+
+// 192 bytes
+decNumber *qf_Q(decNumber *r, const decNumber *x) {
+	decNumber a, b, t, cdf, pdf;
+	int i;
+
+
+	if (check_probability(r, x, 0))
+		return r;
+	dn_subtract(&b, &const_0_5, x);
+	if (dn_eq0(&b)) {
+		decNumberZero(r);
+		return r;
+	}
+
+	qf_Q_est(r, x, &b);
+	for (i=0; i<10; i++) {
+		cdf_Q_helper(&cdf, &pdf, r);
+		dn_subtract(&a, &cdf, x);
+		dn_divide(&t, &a, &pdf);
+		dn_multiply(&a, &t, r);
+		dn_div2(&b, &a);
+		dn_m1(&a, &b);
+		dn_divide(&b, &t, &a);
+		dn_add(&a, &b, r);
+		if (relative_error(&a, r, &const_1e_32))
+			break;
+		decNumberCopy(r, &a);
+	}
+	return decNumberCopy(r, &a);
+}
+
+
+
+/* Normal with specified mean and variance */
+
+// 70 bytes
+static int normal_xform(decNumber *r, decNumber *q, const decNumber *x, decNumber *var) {
+	decNumber a, mu;
+
+	dist_two_param(&mu, var);
+	if (param_positive(r, var))
+		return 1;
+	dn_subtract(&a, x, &mu);
+	dn_divide(q, &a, var);
+	return 0;
+}
+
+// 50 bytes
+decNumber *pdf_normal(decNumber *r, const decNumber *x) {
+	decNumber q, var, s;
+
+	if (normal_xform(r, &q, x, &var))
+		return r;
+	pdf_Q(&s, &q);
+	return dn_divide(r, &s, &var);
+}
+
+// 40 bytes
+decNumber *cdf_normal(decNumber *r, const decNumber *x) {
+	decNumber q, var;
+
+	if (normal_xform(r, &q, x, &var))
+		return r;
+	return cdf_Q(r, &q);
+}
+
+// 72 bytes
+decNumber *qf_normal(decNumber *r, const decNumber *p) {
+	decNumber a, b, mu, var;
+
+	dist_two_param(&mu, &var);
+	if (param_positive(r, &var))
+		return r;
+	qf_Q(&a, p);
+	dn_multiply(&b, &a, &var);
+	return dn_add(r, &b, &mu);
+}
+
+
+/* Log normal with specified mean and variance */
+
+// 40 bytes
+decNumber *pdf_lognormal(decNumber *r, const decNumber *x) {
+	decNumber t, lx;
+
+	dn_ln(&lx, x);
+	pdf_normal(&t, &lx);
+	return dn_divide(r, &t, x);
+}
+
+// 28 bytes
+decNumber *cdf_lognormal(decNumber *r, const decNumber *x) {
+	decNumber lx;
+
+	dn_ln(&lx, x);
+	return cdf_normal(r, &lx);
+}
+
+// 28 bytes
+decNumber *qf_lognormal(decNumber *r, const decNumber *p) {
+	decNumber lr;
+
+	qf_normal(&lr, p);
+	return dn_exp(r, &lr);
+}
 
