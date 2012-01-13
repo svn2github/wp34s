@@ -56,7 +56,7 @@ m_init_4::			INC[->]X
 			CF C
 m_trace_common::	ABS
 			M-DIAG
-			iC 0
+			# 0
 m_trace_loop::		RCL[->]Y
 			FS? C
 			ABS
@@ -71,12 +71,12 @@ m_trace_loop::		RCL[->]Y
  * Uses one stack level.
  */
 			LBL'M-'	/* X = X - Y */
-			iC 1
+			# 1
 			+/-
 			JMP m_add_sub_common
 
 			LBL'M+'	/* X = X + Y */
-			iC 1
+			# 1
 m_add_sub_common::	x[<->] Z
 			x[<->] Y
 			M+[times]
@@ -126,9 +126,9 @@ m_norm_common::		STOM B			/* save mode settings */
 			ABS
 			+/-
 			STO C			/* save matrix descriptor */
-			iC 0
+			# 0
 			STO A
-			iC 1
+			# 1
 			RCL Z
 			FS? C
 			M-COL

@@ -115,7 +115,7 @@ void dump_opcodes(FILE *f) {
 			} else if (cmd == RARG_CONST_INT) {
 				p = prt(c, cmdname);
 				if (strcmp(p, "???") != 0)
-					fprintf(f, "0x%04x\tcmd\t%s\n", c, p);
+					fprintf(f, "0x%04x\tcmd\t%s\txrom\n", c, p);
 				if ((c & 0xff) != 0)
 					continue;
 				limit = 0;
@@ -134,7 +134,8 @@ void dump_opcodes(FILE *f) {
 			if (argcmds[cmd].cmplx)
 				fprintf(f, ",complex");
 			if (cmd == RARG_MODE_SET || cmd == RARG_MODE_CLEAR ||
-					cmd == RARG_XROM_IN || cmd == RARG_XROM_OUT
+					cmd == RARG_XROM_IN || cmd == RARG_XROM_OUT ||
+					cmd == RARG_CONST_INT
 			   )
 				fprintf(f, ",xrom");
 			fprintf(f, "\n");

@@ -33,7 +33,7 @@
 	009: SPEC?		// from executing
 	010: SKIP 26
 	011: STO 01
-	012: iC 0		// Zero
+	012: # 0		// Zero
 	013: STO 02
 	014: SKIP 14		// Skip to the DSE at the end of the loop
 	015: RCL 00		// Main summing loop start
@@ -54,13 +54,13 @@
 	030: BACK 15		// Back to the start of the loop above
 	031: RCL 03		// Normal exit
 	032: STO L
-	033: iC 0		// Zero
+	033: # 0		// Zero
 	034: FILL
 	035: RCL 01
 	036: RTN
 	037: RCL 03		// Function returned an infinity or NaN
 	038: STO L		// Come here if we started with infinity or NaN
-	039: iC 0		// Zero
+	039: # 0		// Zero
 	040: FILL
 	041: # NaN
 	042: RTN

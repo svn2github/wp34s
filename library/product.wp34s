@@ -45,13 +45,13 @@
 	021: BACK 08		// Back to the start above
 	022: RCL 03		// Normal exit
 	023: STO L
-	024: iC 00		// Zero
+	024: # 00		// Zero
 	025: FILL
 	026: RCL 01
 	027: RTN
 	028: RCL 03		// Function returned an infinity or NaN
 	029: STO L		// Come here if we started with infinity or NaN
-	030: iC 00		// Zero
+	030: # 00		// Zero
 	031: FILL
 	032: # NaN
 	033: RTN
