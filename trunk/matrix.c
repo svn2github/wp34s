@@ -36,7 +36,7 @@ static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, in
 static int matrix_range_check(int base, int rows, int cols) {
 	int limit = NumRegs;
 
-	if (is_dblmode()) {
+	if (is_intmode() || is_dblmode()) {
 		err(ERR_BAD_MODE);
 		return 0;
 	}
