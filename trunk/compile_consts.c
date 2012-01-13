@@ -215,6 +215,8 @@ struct constsml {
 #define CONV(n1, n2, op, val)	{ n1, op, val, n2 }
 
 struct constsml constsml[] = {
+	CONSTANT("0",		"PC_0",		"0"),			// Zero
+	CONSTANT("1",		"PC_1",		"1"),			// One
 	CONSTANT("a",		"PC_a",		"365.2425"),		// Days in a Gregorian year
 	CONSTANT("a\270",	"PC_a0",	"5.2917721092E-11"),	// Bohr radius
 	CONSTANT("c",		"PC_C",		"299792458"),		// Speed of light in a vacuum
