@@ -837,7 +837,8 @@ static int process_normal_cmplx(const keycode c) {
 	case K34:	return OP_CDYA | OP_DIV;
 	case K44:	return OP_CDYA | OP_MUL;
 	case K54:	return OP_CDYA | OP_SUB;
-	case K62:	return OP_NIL | OP_cmplxI;		// '.' returns i
+	case K51:	return OP_NIL | OP_cmplxI;		// '1' returns i
+	case K61:	return OP_NIL | OP_cmplx0;		// '0' returns (0, 0)
 	case K64:	return OP_CDYA | OP_ADD;
 	default:	break;
 	}

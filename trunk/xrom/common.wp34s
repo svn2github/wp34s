@@ -31,10 +31,17 @@ ret_posinf::	FC? D
 		xOUT xOUT_NORMAL
 
 
+/* Push complex (0, 0) on stack */
+		XLBL"CPX_0"
+		xIN NILADIC_1_COMPLEX
+		iC 0
+		JMP cmplx_real_0
+
+
 /* Push complex i on stack */
 		XLBL"CPX_I"
 		xIN NILADIC_1_COMPLEX
 		iC 1
-		iC 0
+cmplx_real_0::	iC 0
 		xOUT xOUT_NORMAL
 
