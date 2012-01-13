@@ -627,15 +627,15 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_Xeq_neg0,	&check_zero,		"x=-0?")
 
 #ifdef MATRIX_ROWOPS
-	FUNC0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"MROW\027")
-	FUNC0(OP_MAT_ROW_MUL,	&matrix_rowops,		"MROW\034")
-	FUNC0(OP_MAT_ROW_GADD,	&matrix_rowops,		"MROW+\034")
+	FN_I0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"MROW\027")
+	FN_I0(OP_MAT_ROW_MUL,	&matrix_rowops,		"MROW\034")
+	FN_I0(OP_MAT_ROW_GADD,	&matrix_rowops,		"MROW+\034")
 #endif
-	FUNC0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
-	FUNC0(OP_MAT_INVERSE,	&matrix_inverse,	"M\235")
+	FN_I0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?")
+	FN_I0(OP_MAT_INVERSE,	&matrix_inverse,	"M\235")
 #ifdef SILLY_MATRIX_SUPPORT
-	FUNC0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
-	FUNC0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
+	FN_I0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO")
+	FN_I0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN")
 #endif
 	FUNC0(OP_POPLR,		&cmdlpop,		"PopLR")
 	FUNC1(OP_MEMQ,		&get_mem,		"MEM?")
@@ -667,9 +667,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_DBLON,		&op_double,		"DBLON")
 	FUNC0(OP_DBLOFF,	&op_double,		"DBLOFF")
 	FUNC0(OP_ISDBL,		&check_dblmode,		"DBL?")
-	FUNC1(OP_PI,		&op_pi,			"\257")
-	FUNC2(OP_cmplxPI,	&op_pi,			"\024\257")
-	FUNC2(OP_cmplxI,	XNIL(CPX_I),		"\024i")
+
+	FN_I1(OP_PI,		&op_pi,			"\257")
+	FN_I2(OP_cmplxPI,	&op_pi,			"\024\257")
+	FN_I2(OP_cmplxI,	XNIL(CPX_I),		"\024i")
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif
