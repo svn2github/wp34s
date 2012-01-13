@@ -882,6 +882,7 @@ enum specials {
 	OP_Xeq1, OP_Xne1, OP_Xapx1, OP_Xlt1, OP_Xle1, OP_Xgt1, OP_Xge1,
 	OP_Zeq0, OP_Zne0,
 	OP_Zeq1, OP_Zne1,
+	OP_Zeqi, OP_Znei,
 
 	// These are pseudo ops that don't actually do anything outside the keyboard handler
 	OP_SST, OP_BST, OP_BACKSPACE, OP_RUNNING, OP_IGNORE, OP_UNFINISHED,

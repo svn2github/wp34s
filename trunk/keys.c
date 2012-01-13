@@ -1488,9 +1488,12 @@ static int process_test(const keycode c) {
 	State2.cmplx = 0;
 	if (n != NO_REG && n >= TOPREALREG && n < LOCAL_REG_BASE ) {
 		// Lettered register
-		if (cmpx && (n & 1))
+		if (cmpx && (n & 1)) {
+			if (n == regI_idx)
+				return OP_SPEC + OP_Zeqi + r;
 			// Disallow odd complex registers > A
 			goto again;
+		}
 		// Return the command with the register completed
 		return RARG(base, n);
 	}

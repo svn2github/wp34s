@@ -2792,6 +2792,9 @@ static void specials(const opcode op) {
 	case OP_Zeq1:	case OP_Zne1:
 		do_ztst(&const_1, &const_0, (enum tst_op)(opm - OP_Zeq1));
 		break;
+	case OP_Zeqi:	case OP_Znei:
+		do_ztst(&const_0, &const_1, (enum tst_op)(opm - OP_Zeqi));
+		break;
 
 	default:
 		illegal(op);

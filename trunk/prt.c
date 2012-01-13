@@ -127,6 +127,8 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 	case OP_Zeq1:	case OP_Zne1:
 	//case OP_Zapx1:
 		return prt_tst("1", (enum tst_op)(opm - OP_Zeq1), instr, 1);
+	case OP_Zeqi:	case OP_Znei:
+		return prt_tst("i", (enum tst_op)(opm - OP_Zeqi), instr, 1);
 	}
 	return "???";
 }
