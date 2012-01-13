@@ -692,9 +692,6 @@ static s_opcode prog_catalogue[] = {
 
 	RARGCMD(RARG_LOCR,	"LocR")
 	NILIC(OP_POPLR,		"PopLR")
-#ifndef INCLUDE_INTERNAL_CATALOGUE
-	RARGCMD(RARG_CONST_INT,	"iC")
-#endif
 #ifdef _DEBUG
 	NILIC(OP_DEBUG,		"DBG")
 #endif

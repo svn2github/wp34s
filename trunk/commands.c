@@ -192,9 +192,15 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_CCONJ,	NOFN,			&cmplxConj,	NOFN,		"CONJ")
 	FUNC(OP_ERF,	&decNumberERF,		NOFN,		NOFN,		"erf")
 	FUNC(OP_ERFC,	&decNumberERFC,		NOFN,		NOFN,		"erfc")
+#ifdef NORMAL_DISTRIBUTION_AS_XROM
+	FUNC(OP_pdf_Q,	XMR(PDF_Q), 		NOFN,		NOFN,		"\264(x)")
+	FUNC(OP_cdf_Q,	XMR(CDF_Q), 		NOFN,		NOFN,		"\224(x)")
+	FUNC(OP_qf_Q,	XMR(QF_Q),  		NOFN,		NOFN,		"\224\235(p)")
+#else
 	FUNC(OP_pdf_Q,	&pdf_Q, 		NOFN,		NOFN,		"\264(x)")
 	FUNC(OP_cdf_Q,	&cdf_Q, 		NOFN,		NOFN,		"\224(x)")
 	FUNC(OP_qf_Q,	&qf_Q,  		NOFN,		NOFN,		"\224\235(p)")
+#endif
 	FUNC(OP_pdf_chi2, &pdf_chi2,		NOFN,		NOFN,		"\265\232\276")
 	FUNC(OP_cdf_chi2, &cdf_chi2,		NOFN,		NOFN,		"\265\232")
 	FUNC(OP_qf_chi2,  &qf_chi2,		NOFN,		NOFN,		"\265\232INV")
@@ -219,12 +225,21 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_pdf_G,	&pdf_G,			NOFN,		NOFN,		"Geom\276")
 	FUNC(OP_cdf_G,	&cdf_G,			NOFN,		NOFN,		"Geom")
 	FUNC(OP_qf_G,	&qf_G,			NOFN,		NOFN,		"Geom\235")
+#ifdef NORMAL_DISTRIBUTION_AS_XROM
+	FUNC(OP_pdf_N,	XMR(PDF_NORMAL),	NOFN,		NOFN,		"Norml\276")
+	FUNC(OP_cdf_N,	XMR(CDF_NORMAL),	NOFN,		NOFN,		"Norml")
+	FUNC(OP_qf_N,	XMR(QF_NORMAL),		NOFN,		NOFN,		"Norml\235")
+	FUNC(OP_pdf_LN,	XMR(PDF_LGNORMAL),	NOFN,		NOFN,		"LgNrm\276")
+	FUNC(OP_cdf_LN,	XMR(CDF_LGNORMAL),	NOFN,		NOFN,		"LgNrm")
+	FUNC(OP_qf_LN,	XMR(QF_LGNORMAL),	NOFN,		NOFN,		"LgNrm\235")
+#else
 	FUNC(OP_pdf_N,	&pdf_normal,		NOFN,		NOFN,		"Norml\276")
 	FUNC(OP_cdf_N,	&cdf_normal,		NOFN,		NOFN,		"Norml")
 	FUNC(OP_qf_N,	&qf_normal,		NOFN,		NOFN,		"Norml\235")
 	FUNC(OP_pdf_LN,	&pdf_lognormal,		NOFN,		NOFN,		"LgNrm\276")
 	FUNC(OP_cdf_LN,	&cdf_lognormal,		NOFN,		NOFN,		"LgNrm")
 	FUNC(OP_qf_LN,	&qf_lognormal,		NOFN,		NOFN,		"LgNrm\235")
+#endif
 	FUNC(OP_pdf_LG,	XMR(PDF_LOGIT),		NOFN,		NOFN,		"Logis\276")
 	FUNC(OP_cdf_LG,	XMR(CDF_LOGIT),		NOFN,		NOFN,		"Logis")
 	FUNC(OP_qf_LG,	XMR(QF_LOGIT),		NOFN,		NOFN,		"Logis\235")
