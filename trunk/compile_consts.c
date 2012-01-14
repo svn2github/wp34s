@@ -321,6 +321,7 @@ struct constsml constsint[] = {
 	CONSTANT("zero",	"ZERO",		"0"),
 	CONSTANT("one",		"ONE",		"1"),
 
+#ifdef INTEGRATION_GAUSS_KRONROD
 	CONSTANT("kloop",	"KL",		"5.01402"),
 	CONSTANT("gkloop",	"GKL",		"15.02903"),
 
@@ -356,6 +357,7 @@ struct constsml constsint[] = {
 	CONSTANT("xgk09",	"XGK09",	"0.148874338981631210884826001129720"),
 	CONSTANT("wg04",	"WG04",		"0.295524224714752870173892994651338"),
 	CONSTANT("wk09",	"WK09",		"0.147739104901338491374841515972068"),
+#endif
 
 	CONSTANT(NULL, NULL, NULL)
 };

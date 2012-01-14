@@ -81,7 +81,11 @@
  *  Include each routine here
  */
 #include "solve.wp34s"
-#include "integrate.wp34s"
+#ifdef INTEGRATION_GAUSS_KRONROD
+#include "integrateGK.wp34s"
+#else
+#include "integrateR.wp34s"
+#endif
 #include "derivative.wp34s"
 #include "prodsum.wp34s"
 #include "quadratic.wp34s"

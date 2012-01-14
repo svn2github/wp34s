@@ -1,0 +1,162 @@
+/* The exposed functions in this file don't use the normal prologue/epilogue
+ * and do not operate in double precision.  They call back to user code and
+ * manage the stack, input, output and locals themselves.
+ *
+ * Changes to this will likely cause breakage.
+ */
+
+/**************************************************************************/
+/* Integrate code
+ * This routine is based on the PPC 'IG' routine which was ported to the 34S
+ * by Les Wright and slightly modified for inclusion in the firmware.
+ */
+
+/* Registers */
+#define r_k		.00		/* counter */
+#define r_ui		.01		/* Ui */
+#define r_ui2		.02		/* 1 - Ui ^ 2 */
+#define r_deltau	.03		/* 2 ^ (1-k) */
+#define r_Sk		.04		/* Sk */
+#define r_ba4		.05		/* (b-a) / 4 */
+#define r_middle	.06		/* (b+a) / 2 */
+#define cr_limits	.07		/* lower and upper limits in .07 and .08 */
+#define r_base		.09
+
+/* Flags */
+#define f_force		.00
+
+
+int_bad_range::		[cmplx]RCL cr_limits
+			Num NaN
+			ENTER[^]
+			STO L
+			RTN
+
+int_zero_interval::	[cmplx]RCL cr_limits
+			iC 0
+			ENTER[^]
+			STO L
+			RTN
+
+
+			XLBL"INTEGRATE"
+			INTM?
+				ERR ERR_BAD_MODE
+			LocR 20				/* Need registers .00 to .20 */
+			[cmplx]STO cr_limits
+			SPEC?
+				JMP int_bad_range
+			x[<->] Y
+			SPEC?
+				JMP int_bad_range
+			x=? Y				/* Check if range is zero*/
+				JMP int_zero_interval
+			x[<->] Y
+
+			STO r_middle
+			x[<->] Y
+			-
+			4
+			/
+			STO r_ba4
+			STO- r_middle
+			STO- r_middle
+			iC 0
+			STO r_Sk
+			STO r_k
+			STO r_base
+			SF f_force
+
+int_next_size::		iC 1
+			ENTER[^]
+			2
+			STO r_deltau
+			RCL r_k
+			+/-
+			y[^x]
+			STO[times] r_deltau
+			DEC X
+
+int_inner::		STO r_ui
+			x[^2]
+			-
+			STO r_ui2
+			2
+			+
+			RCL[times] r_ui
+			RCL[times] r_ba4
+			RCL+ r_middle
+
+			/* Call the user's subroutine */
+			FILL
+			XEQUSR
+			POPUSR
+			SPEC?
+				JMP int_bad_range
+
+			RCL[times] r_ui2
+			STO+ r_Sk
+			iC 1
+			RCL r_ui
+			RCL+ r_deltau
+			x<? Y
+				JMP int_inner
+
+			RCL r_k
+			STO r_ui2
+			1
+			1
+			1
+			STO r_ui
+			iC 1
+			INC r_k
+			RCL r_Sk
+			RCL r_ba4
+			1
+			.
+			5
+			[times]
+			[times]
+			RCL[times] r_deltau
+
+int_row_update::	R[^]
+			4
+			[times]
+			ENTER[^]
+			DSE Y
+				x[<->] Z
+			ENTER[^]
+			x[<->][->]r_ui
+			STO- Y
+			x[<->] Z
+			/
+			RCL+[->]r_ui
+			INC r_ui
+			DSE r_ui2
+				JMP int_row_update
+			STO[->]r_ui
+			/*FS? 10
+				VIEW X*/
+			FS?C f_force
+				JMP int_next_size
+			x[approx]? Y
+				JMP int_done
+			JMP int_next_size
+
+int_done::		[cmplx]RCL cr_limits
+			STO L
+			[cmplx]x[<->] Z
+			RTN
+
+
+#undef r_k
+#undef r_ui
+#undef r_ui2
+#undef r_deltau
+#undef r_Sk
+#undef r_ba4
+#undef r_middle
+#undef cr_limits
+#undef r_base
+
+#undef f_force
