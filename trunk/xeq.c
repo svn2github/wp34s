@@ -2887,6 +2887,8 @@ void do_usergsb(enum nilop op) {
 	gsbgto(pc, 1, UserLocalRegs); // push former local registers
 	gsbgto(XromUserPc, 1, pc);    // push return address, transfer control
 	XromUserPc = 0;
+	if (! Running)
+		set_running_on();     // We are running outside XROM now!
 	LocalRegs = UserLocalRegs;    // reestablish user environment
 }
 
