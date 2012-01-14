@@ -24,6 +24,7 @@
 
 /* Flags */
 #define f_force		.00
+#define f_twice		.01
 
 
 int_bad_range::		[cmplx]RCL cr_limits
@@ -68,14 +69,14 @@ int_zero_interval::	[cmplx]RCL cr_limits
 			SF f_force
 
 int_next_size::		iC 1
-			ENTER[^]
 			2
 			STO r_deltau
 			RCL r_k
 			+/-
 			y[^x]
 			STO[times] r_deltau
-			DEC X
+			iC 1
+			-
 
 int_inner::		STO r_ui
 			x[^2]
@@ -99,13 +100,13 @@ int_inner::		STO r_ui
 			iC 1
 			RCL r_ui
 			RCL+ r_deltau
-			x<? Y
+			x<1?
 				JMP int_inner
 
 			RCL r_k
 			STO r_ui2
 			1
-			1
+			2
 			1
 			STO r_ui
 			iC 1
@@ -135,15 +136,21 @@ int_row_update::	R[^]
 			DSE r_ui2
 				JMP int_row_update
 			STO[->]r_ui
-			/*FS? 10
-				VIEW X*/
 			FS?C f_force
 				JMP int_next_size
 			x[approx]? Y
 				JMP int_done
+			CF f_twice
 			JMP int_next_size
 
-int_done::		[cmplx]RCL cr_limits
+/* Special check now that we've got two matches in a row, we want to wait for three. */
+int_done::		FS? f_twice
+				JMP int_really_done
+			SF f_twice
+			JMP int_next_size
+
+/* Three matches in a row is goodness. */
+int_really_done::	[cmplx]RCL cr_limits
 			STO L
 			[cmplx]x[<->] Z
 			RTN
