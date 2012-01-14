@@ -344,7 +344,7 @@ void sigma_val(enum nilop op) {
 	}
 	else if (op < OP_sigmaX) {
 		decimal128 *d = (&sigmaX2Y) + (op - OP_sigmaX2Y);
-		if (! dbl)
+		if (dbl)
 			x->d = *d;
 		else
 			packed_from_packed128(&(x->s), d);

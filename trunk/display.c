@@ -1404,7 +1404,7 @@ void display(void) {
 				REGISTER z, *const x = StackBase;
 				copyreg(&z, x);
 				sigma_val((enum nilop) argKIND(op));
-				set_x(x, NULL, 0);
+				set_x(x, NULL, is_dblmode());
 				copyreg(x, &z);
 				skip = 1;
 			}
