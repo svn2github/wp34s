@@ -125,11 +125,6 @@
 // are needed.
 // #define NORMAL_DISTRIBUTION_AS_XROM
 
-// Use a 10/21 point Gauss-Kronrod integration scheme instead of the Romberg
-// Method.  The G-K is much faster, is exact for polynomials up to degree circa
-// forty but completely non-adaptive.
-//#define INTEGRATION_GAUSS_KRONROD
-
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
