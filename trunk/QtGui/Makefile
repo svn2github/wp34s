@@ -123,7 +123,7 @@ endif
 build_date: 
 	$(CC) -c $(CFLAGS) -o $(BUILDDATEOBJ) $(BUILDDATESRC)
 
-$(QTMAKEFILE): QtGui.pro
+$(QTMAKEFILE): WP-34s.pro
 	$(MAKE) qtclean
 	$(QMAKE) -makefile DESTDIR=$(OUTPUTDIR) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILE)
 
