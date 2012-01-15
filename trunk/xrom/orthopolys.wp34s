@@ -51,7 +51,7 @@
 		XLBL"LaguerreLn"
 			xIN DYADIC
 			LocalRegs
-			iC 0
+			Num 0
 			JMP laguerre_common
 
 /**************************************************************************/
@@ -127,7 +127,7 @@ ortho_default::	SSIZE4
 		x[>=]1?
 			JMP ret_NaN
 		STO I		// i = 2.xxx
-		iC 1
+		Num 1
 		STO rT0		// t0 = 1
 		SDL 03
 		x<? Y
@@ -136,7 +136,7 @@ ortho_default::	SSIZE4
 		2
 		STO+ I
 		STO D		// dA = 2
-		iC 1
+		Num 1
 		STO C		// c = 1
 		STO B		// b = 1
 		RCL rX

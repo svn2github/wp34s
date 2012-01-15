@@ -34,7 +34,7 @@ int_bad_range::		[cmplx]RCL cr_limits
 			RTN
 
 int_zero_interval::	[cmplx]RCL cr_limits
-			iC 0
+			Num 0
 			ENTER[^]
 			STO L
 			RTN
@@ -62,20 +62,20 @@ int_zero_interval::	[cmplx]RCL cr_limits
 			STO r_ba4
 			STO- r_middle
 			STO- r_middle
-			iC 0
+			Num 0
 			STO r_Sk
 			STO r_k
 			STO r_base
 			SF f_force
 
-int_next_size::		iC 1
+int_next_size::		Num 1
 			2
 			STO r_deltau
 			RCL r_k
 			+/-
 			y[^x]
 			STO[times] r_deltau
-			iC 1
+			Num 1
 			-
 
 int_inner::		STO r_ui
@@ -97,7 +97,7 @@ int_inner::		STO r_ui
 
 			RCL[times] r_ui2
 			STO+ r_Sk
-			iC 1
+			Num 1
 			RCL r_ui
 			RCL+ r_deltau
 			x<1?
@@ -109,7 +109,7 @@ int_inner::		STO r_ui
 			2
 			1
 			STO r_ui
-			iC 1
+			Num 1
 			INC r_k
 			RCL r_Sk
 			RCL r_ba4

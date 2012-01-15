@@ -16,7 +16,7 @@
 			RCL[times] X
 			INC X
 			RCL[times] K
-			[pi]
+			Num [pi]
 			[times]
 			1/x
 			xOUT xOUT_NORMAL
@@ -27,7 +27,7 @@
 			SPEC?
 				JMP cdf_infinite
 			ATAN
-			[pi]
+			Num [pi]
 			/
 			.
 			5
@@ -47,7 +47,7 @@ cauchy_xform::		RCL- J
 			.
 			5
 			-
-			[pi]
+			Num [pi]
 			[times]
 			TAN
 			RCL K
@@ -273,7 +273,7 @@ cdf_q_alt::		STO .00		// x in .00
 			STO .04
 			RCL .00
 			ABS
-			[pi]
+			Num [pi]
 			x[>=]? Y
 				JMP cdf_q2
 
@@ -289,7 +289,7 @@ cdf_q_alt::		STO .00		// x in .00
 			+
 			CEIL
 			STO .02		// n = (|x|-1)/256+4
-			iC 0
+			Num 0
 cdf_q_lp1::		RCL .02		// n
 			RCL .00		// x
 			RCL+ Z		// x + term
@@ -302,7 +302,7 @@ cdf_q_lp1::		RCL .02		// n
 			/
 			x<0?
 				JMP cdf_q_skip1
-			iC 1
+			Num 1
 			x[<->] Y
 			-
 cdf_q_skip1::		FS? .00
@@ -359,7 +359,7 @@ qf_q::			GSB qf_check_probability
 			/* Estimate an initial try */
 			x[>=]0?
 				JMP qf_q_inrange
-			iC 1
+			Num 1
 			RCL- .05
 			STO .05
 			SF .01
@@ -419,7 +419,7 @@ qf_loop_end::		FS? .01
 				+/-
 			RTN
 
-sqrt_2pi::		[pi]
+sqrt_2pi::		Num [pi]
 			RCL+ X
 			[sqrt]
 			RTN

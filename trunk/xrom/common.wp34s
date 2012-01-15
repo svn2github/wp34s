@@ -9,11 +9,11 @@ ret_NaN::	FC? D
 		xOUT xOUT_NORMAL
 
 /* Return 1 in X */
-ret_1::		iC 1
+ret_1::		Num 1
 		xOUT xOUT_NORMAL
 
 /* Return 0 in X */
-ret_0::		iC 0
+ret_0::		Num 0
 		xOUT xOUT_NORMAL
 
 /* return -infinite for all results */
@@ -34,7 +34,7 @@ ret_posinf::	FC? D
 /* Push complex i on stack */
 		XLBL"CPX_I"
 		xIN NILADIC_1_COMPLEX
-		iC 1
-cmplx_real_0::	iC 0
+		Num 1
+cmplx_real_0::	Num 0
 		xOUT xOUT_NORMAL
 

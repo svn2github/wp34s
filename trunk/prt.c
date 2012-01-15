@@ -207,21 +207,13 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			return instr;
 		}
 #endif
-		if (cmd == RARG_CONST_INT) {
-			char buf[32];
-
-			decimal64ToString(&CONSTANT_INT(arg), buf);
-			buf[10] = '\0';
-			scopy(scopy(instr, "iC "), buf);
-		} else {
-			p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
-			if (argcmds[cmd].label && arg >= 100) {
-				*p = arg - 100 + 'A';
-			}
-			else {
-				n = num_arg_digits(cmd);
-				goto print_reg;
-			}
+		p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
+		if (argcmds[cmd].label && arg >= 100) {
+			*p = arg - 100 + 'A';
+		}
+		else {
+			n = num_arg_digits(cmd);
+			goto print_reg;
 		}
 	} else {
 		if (!argcmds[cmd].indirectokay)

@@ -668,8 +668,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_DBLOFF,	&op_double,		"DBLOFF")
 	FUNC0(OP_ISDBL,		&check_dblmode,		"DBL?")
 
-	FN_I1(OP_PI,		&op_pi,			"\257")
-	FN_I2(OP_cmplxPI,	&op_pi,			"\024\257")
 	FN_I2(OP_cmplxI,	XNIL(CPX_I),		"\024i")
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
@@ -726,7 +724,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #endif
 	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
 	CMDnoI(RARG_CONST_CMPLX,&cmdconst,	NUM_CONSTS,		"\024CNST")
-	CMD(RARG_CONST_INT,	&cmdconst,	NUM_CONSTS_INT,		"iC")
 	CMD(RARG_ERROR,		&cmderr,	MAX_ERROR,		"ERR")
 	CMDstk(RARG_STO, 	&cmdsto,				"STO")
 	CMDstk(RARG_STO_PL, 	&cmdsto,				"STO+")

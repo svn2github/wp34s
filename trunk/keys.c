@@ -752,7 +752,7 @@ static int process_h_shifted(const keycode c) {
 		STATE_UNFINISHED,	// CONST
 		_RARG   | RARG_SWAPX,
 		OP_MON  | OP_NOT,
-		OP_NIL  | OP_PI | NO_INT,
+		CONST(OP_PI) | NO_INT,
 		OP_NIL  | OP_rCLX,
 		// Row 4
 		_RARG   | RARG_GTO,
@@ -867,7 +867,7 @@ static int process_fgh_shifted_cmplx(const keycode c) {
 		{ STATE_UNFINISHED,    OP_NIL | OP_CFILL,   OP_NIL | OP_CFILL   }, // ENTER
 		{ STATE_UNFINISHED,    RARG_CSWAPZ,         RARG_CSWAPX         },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_CMON | OP_CCONJ  },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_cmplxPI },
+		{ STATE_UNFINISHED,    STATE_UNFINISHED,    CONST_CMPLX(OP_PI)  },
 		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
 		// Row 4
 		{ OP_CMON | OP_EXP,    OP_CMON | OP_LN,     STATE_UNFINISHED    },

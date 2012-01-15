@@ -993,7 +993,7 @@ REGISTER *get_reg_n(int n) {
 		if (dbl) 
 			return (REGISTER *) (cnsts_dbl + n);
 		else
-			return (REGISTER *) (cnsts_int + n);
+			return (REGISTER *) (cnsts + n);
 	}
 	if (n >= FLASH_REG_BASE)
 		return get_flash_reg_n(n - FLASH_REG_BASE);
@@ -1117,18 +1117,13 @@ void setX_int_sgn(unsigned long long int val, int sgn) {
  */
 void zero_regs(REGISTER *dest, int n) {
 #if 1
-	int i;
 	if (is_intmode())
 		xset(dest, 0, n << 3);
 	else {
-		const int dbl = is_dblmode();
-		for (i=0; i<n; i++) {
-			if (dbl)
-				(&(dest->d))[i] = CONSTANT_DBL(OP_ZERO);
-			else
-				(&(dest->s))[i] = CONSTANT_INT(OP_ZERO);
-		}
-
+		REGISTER *const zero = get_reg_n(CONST_REG_BASE + OP_ZERO);
+		int i;
+		for (i = 0; i < n; ++i)
+			move_regs(dest + i, zero, 1);
 	}
 #else
 	// This works for all modes
@@ -1200,17 +1195,6 @@ void clrretstk_pc(void) {
 }
 
 
-
-/*
- *  PI in high precision
- */
-void op_pi(enum nilop op)
-{
-	setRegister(regX_idx, &const_PI);
-	if (op == OP_cmplxPI)
-		set_zero(get_reg_n(regY_idx));
-}
-
 /* Commands to allow access to constants
  */
 void cmdconst(unsigned int arg, enum rarg op) {
@@ -1224,9 +1208,31 @@ void cmdconst(unsigned int arg, enum rarg op) {
 	else
 		lift_if_enabled();
 
-	x->s = op == RARG_CONST_INT ? CONSTANT_INT(arg) : CONSTANT(arg);
-	if (is_dblmode())
-		packed128_from_packed(&(x->d), &(x->s));
+	x->s = CONSTANT(arg);
+	if (is_dblmode()) {
+		if (arg == OP_PI)
+			arg = OP_PI_DBL;
+#ifdef INCLUDE_DBL_CONSTANTS
+		else if(arg == OP_CNSTE)
+			arg = OP_CNSTE_DBL;
+		else if(arg == OP_EULER)
+			arg = OP_EULER_DBL;
+		else if(arg == OP_PHI)
+			arg = OP_PHI_DBL;
+		else if(arg == OP_PC_catalan)
+			arg = OP_PC_catalan_DBL;
+		else if(arg == OP_PC_F_alpha)
+			arg = OP_PC_F_alpha_DBL;
+		else if(arg == OP_PC_F_delta)
+			arg = OP_PC_F_delta_DBL;
+#endif
+		else 
+			arg = NUM_CONSTS_DBL;
+		if (arg < NUM_CONSTS_DBL)
+			x->d = CONSTANT_DBL(arg);
+		else
+			packed128_from_packed(&(x->d), &(x->s));
+	}
 	if (op == RARG_CONST_CMPLX)
 		setY(&const_0);
 }

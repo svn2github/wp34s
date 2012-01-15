@@ -768,7 +768,7 @@ enum nilop {
 	OP_LOADR, OP_LOADsigma, OP_LOADST, 
 	OP_LOADP, OP_PRCL, OP_PSTO,
 
-	OP_DBLON, OP_DBLOFF, OP_ISDBL, OP_PI, OP_cmplxPI, OP_cmplxI,
+	OP_DBLON, OP_DBLOFF, OP_ISDBL, OP_cmplxI,
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -784,7 +784,6 @@ enum nilop {
 enum rarg {
 	RARG_CONST,		// user visible constants
 	RARG_CONST_CMPLX,
-	RARG_CONST_INT,		// like the above but for internal constants
 	RARG_ERROR,
 	/* STO and RCL must be in operator order */
 	RARG_STO, RARG_STO_PL, RARG_STO_MI, RARG_STO_MU, RARG_STO_DV,
@@ -1165,7 +1164,6 @@ extern void cpx_enter(enum nilop op);
 extern void cpx_fill(enum nilop op);
 extern void fill(enum nilop op);
 extern void drop(enum nilop op);
-extern void op_pi(enum nilop op); 
 extern void cmdconst(unsigned int arg, enum rarg op);
 extern void cmdconstcmplx(unsigned int arg, enum rarg op);
 extern void cmdconstint(unsigned int arg, enum rarg op);

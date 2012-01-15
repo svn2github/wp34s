@@ -286,7 +286,7 @@ struct constsml constsml[] = {
 	CONSTANT("eE",		"CNSTE",	"2.71828182845904523536028747135266249775724709369995"),
 	CONSTANT("F\243",	"PC_F_delta",	"4.66920160910299067185320382"),
 	CONSTANT("F\240",	"PC_F_alpha",	"2.502907875095892822283902873218"),
-	//CONSTANT("\257",	"PI",		"3.14159265358979323846264338327950288419716939937510"),
+	CONSTANT("\257",	"PI",		"3.14159265358979323846264338327950288419716939937510"),
 	//CONSTANT("\207",	"PC_MILLS",	"1.3063778838630806904686144926026057129167845851567136443680537599664340537668265988215014037011973957"),
 	//CONSTANT("\252",	"PC_lam",	"0.62432998854355087099293638310083724417964262018"),
 	//CONSTANT("\217\272",	"PI2",		"0.660161815846869573927812110014555778432623336"),
@@ -317,17 +317,18 @@ struct constsml constsml[] = {
 	CONSTANT(NULL, NULL, NULL)
 };
 
-struct constsml constsint[] = {
-	CONSTANT("zero",	"ZERO",		"0"),
-	CONSTANT("one",		"ONE",		"1"),
-
-	CONSTANT(NULL, NULL, NULL)
-};
-
 struct constsml constsdbl[] = {
-	CONSTANT("d_zero",	"ZERO",		"0"),
-	CONSTANT("d_one",	"ONE",		"1"),
-
+	CONSTANT("d_zero",	"ZERO",		  "0"),
+	CONSTANT("d_one",	"ONE",		  "1"),
+	CONSTANT("d_pi",	"PI_DBL",	  "3.14159265358979323846264338327950288419716939937510"),
+#ifdef INCLUDE_DBL_CONSTANTS
+	CONSTANT("\242EM",	"EULER_DBL",	  "0.5772156649015328606065120900824024310421593359399235988"),
+	CONSTANT("\224",	"PHI_DBL",	  "1.61803398874989484820458683436563811772030917980576"),
+	CONSTANT("G\273",	"PC_catalan_DBL", "0.915965594177219015054603514932384110774"),			// Catalan's constant
+	CONSTANT("eE",		"CNSTE_DBL",	  "2.71828182845904523536028747135266249775724709369995"),
+	CONSTANT("F\243",	"PC_F_delta_DBL", "4.66920160910299067185320382"),
+	CONSTANT("F\240",	"PC_F_alpha_DBL", "2.502907875095892822283902873218"),
+#endif
 	CONSTANT(NULL, NULL, NULL)
 };
 
@@ -616,10 +617,15 @@ static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
 	fprintf(fh,	"/* %s */\n"
 			"extern const struct %s %s[];\n"
 			"#define %s %d\n"
-			"#define %s(n)	(%s[n].x)\n\n",
+			"#define %s(n)	(%s[n].x)\n\n"
+			"enum {\n",
 			comment, tname, tname, num_name, i, macro_name, tname);
 	fprintf(f, "/* %s\n */\nconst struct %s %s[] = {\n", comment, tname, tname);
 	for (i=0; ctbl[i].val != NULL; i++) {
+		fprintf(fh, "\tOP_%s", ctbl[i].op);
+		if (i == 0)
+			fprintf(fh, " = 0");
+		fprintf(fh, ",\n");
 		fprintf(f, "\t{ D(");
 		decimal128FromString(&d, ctbl[i].val, &ctx);
 		p = (unsigned char *)&d;
@@ -629,6 +635,7 @@ static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
 		put_name(f, ctbl[i].op);
 		fprintf(f, " */\n");
 	}
+	fprintf(fh, "};\n");
 	fprintf(f,"};\n\n");
 }
 
@@ -701,9 +708,11 @@ static void const_small(FILE *fh) {
 	const_small_tbl(f, 1, constsml, "cnsts", "NUM_CONSTS",
 				"CONSTANT", "CONST", "RARG_CONST", "RARG_CONST_CMPLX",
 				"Table of user visible constants");
+#if 0
 	const_small_tbl(f, 0, constsint, "cnsts_int", "NUM_CONSTS_INT",
 				"CONSTANT_INT", "CONST_INT", "RARG_CONST_INT", NULL,
 				"Table of internally used constants");
+#endif
 	const_dbl_tbl(f, constsdbl, "cnsts_dbl", "NUM_CONSTS_DBL", "CONSTANT_DBL", "CONST_DBL",
 				"Table of internally used double precision constants");
 	const_small_tbl(f, -1, conversions, "cnsts_conv", "NUM_CONSTS_CONV",

@@ -29,6 +29,10 @@
 // Allow for any generic argument taking commands in XROM
 // #define XROM_RARG_COMMANDS
 
+// Include some more mathematical constatnts to higher acccuary
+// PI is always included
+#define INCLUDE_DBL_CONSTANTS
+
 // Define this to support a four level stack arbitary shuffle command
 #define INCLUDE_SHUFFLE
 

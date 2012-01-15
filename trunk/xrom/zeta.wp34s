@@ -20,11 +20,11 @@
 			x<0?
 				ERR ERR_DOMAIN
 			x=0?
-				JMP ret_1
+				JMP Bn_0
 			x=1?
 				JMP zeta_0
 			ODD?
-				JMP ret_0
+				JMP Bn_odd
 			STO BERN_SAVEX
 			GSB bernoulli
 			xOUT xOUT_NORMAL
@@ -35,13 +35,18 @@ bernoulli::		DEC X
 			RCL[times] BERN_SAVEX
 			+/-
 			RTN
+#undef BERN_SAVEX
+
+Bn_odd::		Num 0
+			xOUT xOUT_NORMAL
+
+Bn_0::			Num 1
+			xOUT xOUT_NORMAL
 
 zeta_0::		.
 			5
 			+/-
 			xOUT xOUT_NORMAL
-#undef BERN_SAVEX
-
 
 /**************************************************************************/
 /* Zeta function implementation based on Jean-Marc Baillard's from:
@@ -69,12 +74,12 @@ zeta_neg::		SIGN
 			-
 			STO .01
 			GSB zeta_calc
-			iC 1
+			Num 1
 			ASIN
 			RCL[times] .07
 			SIN
 			[times]
-			[pi]		// Num [pi]
+			Num [pi]		// Num Num [pi]
 			STO/ Y
 			STO+ X
 			RCL .07
@@ -91,12 +96,12 @@ zeta_calc::		2
 				STO+ X
 			STO .00
 			STO .03
-			iC 1
+			SIGN
 			STO .04
 			STO .05
 			+/-
 			STO .06
-			iC 0
+			Num 0
 zeta_loop::		RCL .05
 			RCL .00
 			RCL .01
@@ -131,7 +136,7 @@ zeta_loop::		RCL .05
 			RCL/ .05
 			2
 			LN
-			iC 1
+			Num 1
 			RCL- .01
 			[times]
 			e[^x]-1

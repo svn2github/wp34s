@@ -71,7 +71,7 @@ slv_loop::		FILL
 			JMP slv_loop
 
 			/* Solver estimates converged */
-slv_fin::		iC 0
+slv_fin::		Num 0
 			STO L
 			RCL T
 			RCL .01
@@ -86,7 +86,7 @@ slv_failed::		RCL .03
 				JMP slv_fail_BltA
 			RCL T			/* Return the better estimate being A */
 			STO L
-			iC 0
+			Num 0
 			x[<->] Y
 			RCL .00
 			RCL .02
@@ -94,7 +94,7 @@ slv_failed::		RCL .03
 
 slv_fail_BltA::		RCL T
 			STO L
-			iC 0
+			Num 0
 			x[<->] Y
 			RCL .01
 			RCL .02
@@ -103,7 +103,7 @@ slv_fail_common::	TOP?
 				ERR ERR_SOLVE
 			RTN+1
 
-slv_success::		iC 0
+slv_success::		Num 0
 			STO L
 			RCL Z
 			RCL .01
@@ -118,7 +118,7 @@ slv_initial1_perfect::	RCL .03
 			RCL .00
 
 slv_initial_common::	RCL X
-			iC 0
+			Num 0
 			STO L
 			[cmplx]x[<->] Z
 			RTN

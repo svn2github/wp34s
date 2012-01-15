@@ -81,7 +81,8 @@ void dump_opcodes(FILE *f) {
 				fprintf(f, "0x%04x\tmult\t%s\txrom\n", c, cmdpretty);
 			else
 				fprintf(f, "0x%04x\tmult\t%s\n", c, cmdpretty);
-		} else if (isRARG(c)) {
+		} 
+		else if (isRARG(c)) {
 			const unsigned int cmd = RARG_CMD(c);
 			unsigned int limit;
 
@@ -106,19 +107,14 @@ void dump_opcodes(FILE *f) {
 				else
 					fprintf(f, "0x%04x\tcmd\t[alpha] %s\n", c, cmdpretty);
 				continue;
-			} else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
+			} 
+			else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
 				fprintf(f, "0x%04x\tcmd\t%s# %s\n", c, cmd == RARG_CONST_CMPLX?"[cmplx]":"", cmdpretty);
 				continue;
-			} else if (cmd == RARG_CONV) {
+			} 
+			else if (cmd == RARG_CONV) {
 				fprintf(f, "0x%04x\tcmd\t%s\n", c, cmdpretty);
 				continue;
-			} else if (cmd == RARG_CONST_INT) {
-				p = prt(c, cmdname);
-				if (strcmp(p, "???") != 0)
-					fprintf(f, "0x%04x\tcmd\t%s\txrom\n", c, p);
-				if ((c & 0xff) != 0)
-					continue;
-				limit = 0;
 			}
 			if ((c & 0xff) != 0)
 				continue;
@@ -133,20 +129,20 @@ void dump_opcodes(FILE *f) {
 				fprintf(f, ",local");
 			if (argcmds[cmd].cmplx)
 				fprintf(f, ",complex");
-			if (cmd == RARG_CONST_INT
 #ifdef XROM_COMMANDS
-			 || cmd == RARG_MODE_SET 
+			if (cmd == RARG_MODE_SET 
 			 || cmd == RARG_MODE_CLEAR 
 			 || cmd == RARG_XROM_IN 
 			 || cmd == RARG_XROM_OUT
 #ifdef XROM_RARG_COMMANDS
 			 || cmd == RARG_XROM_ARG
 #endif
-#endif
 			   )
 				fprintf(f, ",xrom");
+#endif
 			fprintf(f, "\n");
-		} else {
+		}
+		else {
 			p = catcmd(c, cmdname);
 			if (strcmp(p, "???") == 0)
 				continue;

@@ -217,7 +217,7 @@ deriv_4point::		8
 			/
 
 deriv_return::		STO L
-			iC 0
+			Num 0
 			FILL
 			RCL .03
 			x[<->] L
@@ -231,7 +231,7 @@ deriv_default_h::	STO .03
 			FILL
 			LBL?'[delta]X'
 				JMP deltaX
-			iC 1
+			Num 1
 			SDR 01				/* default h = 0.1 */
 			STO .04
 			RTN

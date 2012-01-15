@@ -28,7 +28,7 @@
 			SPEC?				/* from executing*/
 				JMP sum_product_nan
 			STO .01
-			iC 0
+			Num 0
 			STO .02
 			JMP sum_entry
 
@@ -83,7 +83,7 @@ product_entry::		DSL .00
 
 sum_product_okay::	RCL .03
 			STO L
-			iC 0
+			Num 0
 			FILL
 			RCL .01
 			RTN
