@@ -233,9 +233,7 @@ deriv_default_h::	STO .03
 				JMP deltaX
 			Num 1
 			SDR 01				/* default h = 0.1 */
-			STO .04
-			RTN
-
+			JMP deltaX_return
 deltaX::		XEQ'[delta]X'
-			STO .04
+deltaX_return::		STO .04
 			RTN
