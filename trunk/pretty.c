@@ -133,9 +133,16 @@ void dump_opcodes(FILE *f) {
 				fprintf(f, ",local");
 			if (argcmds[cmd].cmplx)
 				fprintf(f, ",complex");
-			if (cmd == RARG_MODE_SET || cmd == RARG_MODE_CLEAR ||
-					cmd == RARG_XROM_IN || cmd == RARG_XROM_OUT ||
-					cmd == RARG_CONST_INT
+			if (cmd == RARG_CONST_INT
+#ifdef XROM_COMMANDS
+			 || cmd == RARG_MODE_SET 
+			 || cmd == RARG_MODE_CLEAR 
+			 || cmd == RARG_XROM_IN 
+			 || cmd == RARG_XROM_OUT
+#ifdef XROM_RARG_COMMANDS
+			 || cmd == RARG_XROM_ARG
+#endif
+#endif
 			   )
 				fprintf(f, ",xrom");
 			fprintf(f, "\n");
