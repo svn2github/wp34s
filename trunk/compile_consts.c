@@ -718,7 +718,8 @@ static void const_small(FILE *fh) {
 	const_small_tbl(f, -1, conversions, "cnsts_conv", "NUM_CONSTS_CONV",
 				"CONSTANT_CONV", "CONST_CONV", "RARG_CONST_CONV", NULL,
 				"Table of metric/imperial conversion constants");
-	fprintf(f, "\n#undef B\n\n");
+	fprintf(f, "\n#undef B\n");
+	fprintf(f, "#undef D\n\n\n");
 
 	fprintf(f, "const unsigned short int charlengthtbl[%d] = {\n\t", (512 + 4) / 5);
 	for (i=0; i<512; i+=5) {
