@@ -222,11 +222,7 @@ deriv_return::		STO L
 			RCL .03
 			x[<->] L
 			RTN
-/*
- *  This part contains double word instructions and must not be located between a
- *  JMP and its label because in XROM, BACK and SKIP are computed instead of 
- *  walking the PC. This would fail with a long instruction in between.
- */
+
 deriv_default_h::	STO .03
 			FILL
 			LBL?'[delta]X'
