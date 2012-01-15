@@ -1199,6 +1199,8 @@ void clrretstk_pc(void) {
  */
 void cmdconst(unsigned int arg, enum rarg op) {
 	REGISTER *x = StackBase;
+	int i;
+
 	if (is_intmode()) {
 		bad_mode_error();
 		return;
@@ -1210,30 +1212,14 @@ void cmdconst(unsigned int arg, enum rarg op) {
 
 	x->s = CONSTANT(arg);
 	if (is_dblmode()) {
-		if (arg == OP_PI)
-			arg = OP_PI_DBL;
-#ifdef INCLUDE_DBL_CONSTANTS
-		else if(arg == OP_CNSTE)
-			arg = OP_CNSTE_DBL;
-		else if(arg == OP_EULER)
-			arg = OP_EULER_DBL;
-		else if(arg == OP_PHI)
-			arg = OP_PHI_DBL;
-		else if(arg == OP_PC_catalan)
-			arg = OP_PC_catalan_DBL;
-		else if(arg == OP_PC_F_alpha)
-			arg = OP_PC_F_alpha_DBL;
-		else if(arg == OP_PC_F_delta)
-			arg = OP_PC_F_delta_DBL;
-#endif
-		else 
-			arg = NUM_CONSTS_DBL;
-		if (arg < NUM_CONSTS_DBL)
-			x->d = CONSTANT_DBL(arg);
-		else
-			packed128_from_packed(&(x->d), &(x->s));
+		for (i=0; i<NUM_CONSTS_DBL_MAP; i++)
+			if (arg == cnsts_dbl_map[i]) {
+				x->d = CONSTANT_DBL(i);
+				goto escape;
+			}
+		packed128_from_packed(&(x->d), &(x->s));
 	}
-	if (op == RARG_CONST_CMPLX)
+escape:	if (op == RARG_CONST_CMPLX)
 		setY(&const_0);
 }
 

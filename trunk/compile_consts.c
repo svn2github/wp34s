@@ -210,9 +210,11 @@ struct constsml {
 	const char *op;
 	const char *val;
 	const char *n2;
+	const char *sop;
 };
-#define CONSTANT(n, op, val)	{ n, op, val, "" }
-#define CONV(n1, n2, op, val)	{ n1, op, val, n2 }
+#define CONSTANT(n, op, val)		{ n, op, val, "", NULL }
+#define DCONSTANT(n, op, sop, val)	{ n, op, val, "", sop }
+#define CONV(n1, n2, op, val)		{ n1, op, val, n2, NULL }
 
 struct constsml constsml[] = {
 	CONSTANT("0",		"PC_0",		"0"),			// Zero
@@ -318,16 +320,16 @@ struct constsml constsml[] = {
 };
 
 struct constsml constsdbl[] = {
-	CONSTANT("d_zero",	"ZERO",		  "0"),
-	CONSTANT("d_one",	"ONE",		  "1"),
-	CONSTANT("d_pi",	"PI_DBL",	  "3.14159265358979323846264338327950288419716939937510"),
+	DCONSTANT("d_zero",	"ZERO",		  "PC_0",	"0"),
+	DCONSTANT("d_one",	"ONE",		  "PC_1",	"1"),
+	DCONSTANT("d_pi",	"PI_DBL",	  "PI",		"3.14159265358979323846264338327950288419716939937510"),
 #ifdef INCLUDE_DBL_CONSTANTS
-	CONSTANT("\242EM",	"EULER_DBL",	  "0.5772156649015328606065120900824024310421593359399235988"),
-	CONSTANT("\224",	"PHI_DBL",	  "1.61803398874989484820458683436563811772030917980576"),
-	CONSTANT("G\273",	"PC_catalan_DBL", "0.915965594177219015054603514932384110774"),			// Catalan's constant
-	CONSTANT("eE",		"CNSTE_DBL",	  "2.71828182845904523536028747135266249775724709369995"),
-	CONSTANT("F\243",	"PC_F_delta_DBL", "4.66920160910299067185320382"),
-	CONSTANT("F\240",	"PC_F_alpha_DBL", "2.502907875095892822283902873218"),
+	DCONSTANT("\242EM",	"EULER_DBL",	  "EULER",	"0.5772156649015328606065120900824024310421593359399235988"),
+	DCONSTANT("\224",	"PHI_DBL",	  "PHI",	"1.61803398874989484820458683436563811772030917980576"),
+	DCONSTANT("G\273",	"PC_catalan_DBL", "PC_catalan",	"0.915965594177219015054603514932384110774"),			// Catalan's constant
+	DCONSTANT("eE",		"CNSTE_DBL",	  "CNSTE",	"2.71828182845904523536028747135266249775724709369995"),
+	DCONSTANT("F\243",	"PC_F_delta_DBL", "PC_F_delta",	"4.66920160910299067185320382"),
+	DCONSTANT("F\240",	"PC_F_alpha_DBL", "PC_F_alpha",	"2.502907875095892822283902873218"),
 #endif
 	CONSTANT(NULL, NULL, NULL)
 };
@@ -637,6 +639,13 @@ static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
 	}
 	fprintf(fh, "};\n");
 	fprintf(f,"};\n\n");
+
+	fprintf(f, "const unsigned char %s_map[] = {\n", tname);
+	for (i=0; ctbl[i].sop != NULL; i++)
+		fprintf(f, "\tOP_%s,\n", ctbl[i].sop);
+	fprintf(f, "};\n\n");
+	fprintf(fh, "extern const unsigned char %s_map[%d];\n", tname, i);
+	fprintf(fh, "#define %s_MAP (%d)\n\n", num_name, i);
 }
 
 static void unpack(const char *b, int *u) {
