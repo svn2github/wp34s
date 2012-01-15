@@ -29,6 +29,9 @@
 // Define this to support a four level stack arbitary shuffle command
 #define INCLUDE_SHUFFLE
 
+// Define this to support nice printing of the stack shuffle command
+#define PRETTY_SHUFFLE
+
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
 // #define INCLUDE_STOPWATCH
@@ -146,6 +149,10 @@
 #if defined(INCLUDE_BESSEL) && ! defined(INCLUDE_DIGAMMA)
 /* Second kind functions of integer order need digamma */
 #define INCLUDE_DIGAMMA
+#endif
+
+#if defined(PRETTY_SHUFFLE) && ! defined(INCLUDE_SHUFFLE)
+#define INCLUDE_SHUFFLE
 #endif
 
 #endif  /* TINY_BUILD*/

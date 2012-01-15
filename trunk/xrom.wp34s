@@ -43,7 +43,7 @@
 /*
  * Defines for the stack shuffling command
  */
-#define SHF_XYZT(a, b, c, d)	SHFL (((a) << 0) + ((b) << 2) + ((c) << 4) + ((d) << 6))
+#define SHF_XYZT(a, b, c, d)	[<->] (((a) << 0) + ((b) << 2) + ((c) << 4) + ((d) << 6))
 #define SHF_X(a)		SHF_XYZT(a, 1, 2, 3)
 #define SHF_XY(a, b)		SHF_XYZT(a, b, 2, 3)
 #define SHF_XYZ(a, b, c)	SHF_XYZT(a, b, c, 3)

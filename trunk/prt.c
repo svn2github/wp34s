@@ -197,6 +197,16 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		}
 		if (cmd == RARG_CONV)
 			return prt_conv(arg, instr);
+#ifdef PRETTY_SHUFFLE
+		if (cmd == RARG_SHUFFLE) {
+			p = scopy(instr, "\027 ");
+			for (n=0; n<4; n++) {
+				*p++ = REGNAMES[arg & 3];
+				arg >>= 2;
+			}
+			return instr;
+		}
+#endif
 		if (cmd == RARG_CONST_INT) {
 			char buf[32];
 
