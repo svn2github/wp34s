@@ -46,7 +46,7 @@ my $step_digits = 3; # Default to older style 3-digit step numbers.
 my $override_step_digits = 0;
 
 my $DEFAULT_MAX_JMP_OFFSET = 99;
-my $MAX_JMP_OFFSET = $DEFAULT_MAX_JMP_OFFSET; # Maximum offset for a BACK/SKIP statement.
+my $MAX_JMP_OFFSET = $DEFAULT_MAX_JMP_OFFSET; # Maximum offset for a BACK/SKIP/BSRF/BSRB statement.
 
 my $MAX_LABEL_NUM = 99;  # Maximum label number
 my $last_label_used = $MAX_LABEL_NUM+1;
@@ -72,6 +72,7 @@ my $DEFAULT_XLBL_FILE = "xrom_labels.h";
 my $xlbl_file = $DEFAULT_XLBL_FILE;
 
 my @files;
+my @cmd_args;
 
 # ANSI colour codes.
 my $ansi_normal           = "\e[0m";
@@ -93,9 +94,16 @@ my $ENUM_STEP = "STEP";
 my $ENUM_PRECOMMENT = "PRECMNT";
 my $ENUM_POSTCOMMENT = "POSTCMNT";
 
-my $prt_step_num = 1;
+my $prt_step_num = exists $ENV{WP34S_PP_PRT_STEP}
+                 ? $ENV{WP34S_PP_PRT_STEP}
+                 : 1;
 my $show_catalogue = 0;
 my $show_targets = 0;
+
+my $max_skip = 0;
+my $max_back = 0;
+my $max_bsrb = 0;
+my $max_bsrf = 0;
 
 # These instructions are eligible for use with the symbolic label. They all can take a symbolic label
 # which will eventualy be replaced with a numeric LBL. The value in the hash means:
@@ -200,12 +208,12 @@ Notes:
      and must be terminated by a double colon. They must be at least 2 characters
      long and must not be only 2 decimal digits ('00::' is illegal but '_00::' is
      acceptable).
-  2) You can use JMP instead of BACK and/or SKIP. The tool will decide which
-     direction the target label is and will substitute a BACK or SKIP for the
-     JMP instruction if the target offset is with the maximum of $DEFAULT_MAX_JMP_OFFSET steps.
-     If the target offset if greater than $DEFAULT_MAX_JMP_OFFSET steps, the tool will insert a
-     symbolic LBL and will GTO that label. There is no limit to the text-length
-     of the labels. Alpha text strings can be entered within double quotes.
+  2) You can use JMP instead of BACK, SKIP, or GTO and GSB instead of BSRB, BSRF, or XEQ.
+     The tool will decide which direction the target label is and will substitute the
+     appropriate instruction if the target offset is with the maximum of $DEFAULT_MAX_JMP_OFFSET
+     steps. If the target offset if greater than $DEFAULT_MAX_JMP_OFFSET steps, the tool
+     will insert a symbolic LBL and will GTO or XEQ to that label. There is no limit to
+     the text-length of the labels. Alpha text strings can be entered within double quotes.
 
      Example program (modified excerpt from 'library/vectors.wp34s'):
           Vector::  LBL'VEC'
@@ -280,6 +288,7 @@ if ($v3_mode and not $xrom_mode) {
 }
 
 
+print "// $script_name: Command line: ", join ("  ", @cmd_args), "\n";
 print "// $script_name: Source file(s): ", join (", ", @files), "\n";
 print "// $script_name: Preprocessor revision: $SVN_Current_Revision \n";
 
@@ -292,6 +301,7 @@ foreach (@end_groups) {
   initialize_tables(@src_lines);
   preprocessor();
   display_steps("");
+  display_max_branch_offsets();
   show_LBLs() if $show_catalogue;
   show_targets() if $show_targets;
   ssdb() if exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /SSDB/i);
@@ -332,14 +342,14 @@ sub preprocessor {
   display_steps("// ") if $debug; # Initial debug image
   process_double_quotes();
   build_step_numbers();
-  if( $xrom_mode ) {
-  	extract_xlbls() if $xrom_mode;
-        build_step_numbers();
+  if ($xrom_mode) {
+    extract_xlbls();
+    build_step_numbers();
   }
   process_expressions();
   extract_labels();           # Look for existing "LBL \d{$label_digits_range}" or "LBL [A-Z]"opcodes
   extract_targets();          # Look for "SomeLabel::"
-  extract_branches();         # Look for "(BACK|SKIP|JMP) SomeLabel"
+  extract_branches();         # Look for "(BACK|SKIP|JMP|BSRB|BSRF|GSB) SomeLabel"
   insert_synthetic_labels();  # Add synthetic symbolic label for any %LBLs without a counterpart in %targets
   build_step_numbers();
   check_consistency();
@@ -614,16 +624,30 @@ sub preprocess_synthetic_targets {
       }
 
       my $offset = calculate_offset($target_step, $current_step);
+      # The offset is outside the range so we can use a SKIP/BACK/BSRB/BSRF opcode. We need to use a local label.
       if( abs($offset) > $MAX_JMP_OFFSET ) {
-        my ($new_label_num);
+        my ($new_label_num, $op_replacement);
 
         debug_msg(this_function((caller(0))[3]), "Offset exceeds maximum (abs(${offset}) > ${MAX_JMP_OFFSET}). target_step = $target_step, current_step = $current_step") if $debug;
         ($new_label_num, $current_step) = add_LBL_if_required($target_step, $offset, $current_step);
-        $line = replace_with_LBLd_target($new_label_num, $line, "GTO");
+        if ($line =~ /JMP|GTO|SKIP|BACK/) {
+          $op_replacement = "GTO";
+        } elsif ($line =~ /GSB|XEQ|BSRB|BSRF/) {
+          $op_replacement = "XEQ";
+        } else {
+          if( $debug ) {
+            print "ERROR: " . this_function((caller(0))[3]) . ": Unrecognized branch instruction in line: '$line'.\n";
+            show_state(__LINE__);
+            die_msg(this_function((caller(0))[3]), "Cannot continue...");
+          } else {
+            die_msg(this_function((caller(0))[3]), "Unrecognized branch instruction in line: '$line'.");
+          }
+        }
+        $line = replace_with_LBLd_target($new_label_num, $line, $op_replacement);
         put_line($ENUM_OP, $current_step, $line);
         print $_ if 0; # Breakpoint!
       } else {
-        # At this moment, the offset is within range so we can use a SKIP/BACK opcode.
+        # At this moment, the offset is within range so we can use a SKIP/BACK/BSRB/BSRF opcode.
         # Note that this may change as a result of LBL injections so this may not always stay
         # within range.
 
@@ -791,7 +815,7 @@ sub extract_branches {
   debug_msg(this_function((caller(0))[3]), "**** Starting function") if $debug;
   for( my $step = 1; $step <= scalar(@src_db); $step++ ) {
     my $fmt_step = format_step($step);
-    if( get_line($ENUM_OP, $step) =~ /(BACK|SKIP|JMP)\s+([$label_spec]{2,})/ ) {
+    if( get_line($ENUM_OP, $step) =~ /(BACK|SKIP|JMP|BSRB|BSRF|GSB)\s+([$label_spec]{2,})/ ) {
       my $label = $2;
       if( $label =~ /^\d{$label_digits_range}$/ ) {
         # This is a "hard" target. We want to convert these to "soft" ones.
@@ -1121,10 +1145,35 @@ sub display_steps {
       my $format = length($1);
       $_ = sprintf "%0${format}d%0s", $step++, $2;
     }
+    if (/SKIP\s+(\d+)/) {
+      $max_skip = $1 if $1 > $max_skip;
+    }
+    if (/BACK\s+(\d+)/) {
+      $max_back = $1 if $1 > $max_back;
+    }
+    if (/BSRB\s+(\d+)/) {
+      $max_bsrb = $1 if $1 > $max_bsrb;
+    }
+    if (/BSRF\s+(\d+)/) {
+      $max_bsrf = $1 if $1 > $max_bsrf;
+    }
     print "${leader}$_\n";
   }
   return;
 } # display_steps
+
+
+#######################################################################
+#
+# Display the reconstructed steps.
+#
+sub display_max_branch_offsets {
+  print "// Max SKIP offset: $max_skip\n";
+  print "// Max BACK offset: $max_back\n";
+  print "// Max BSRB offset: $max_bsrb\n";
+  print "// Max BSRF offset: $max_bsrf\n";
+  return;
+} # display_max_branch_offsets
 
 
 #######################################################################
@@ -1432,7 +1481,21 @@ sub replace_with_branch {
   my $offset = shift;
   my $line = shift;
   my ($step, $label, $spaces, $opcode);
-  my $mnemonic = ($offset < 0) ? "BACK" : "SKIP";
+  my ($mnemonic);
+
+  if ($line =~ /JMP|BACK|SKIP/) {
+    $mnemonic = ($offset < 0) ? "BACK" : "SKIP";
+  } elsif ($line =~ /GSB|BSRB|BSRF/) {
+    $mnemonic = ($offset < 0) ? "BSRB" : "BSRF";
+  } else {
+    if( $debug ) {
+      print "ERROR: " . this_function((caller(0))[3]) . ": Unrecognized branch instruction in line: '$line'.\n";
+      show_state(__LINE__);
+      die_msg(this_function((caller(0))[3]), "Cannot continue...");
+    } else {
+      die_msg(this_function((caller(0))[3]), "Unrecognized branch instruction in line: '$line'.");
+    }
+  }
   $offset = format_branch(abs($offset));
 
   $line =~ s/^\s*\d{0,3}:{0,1}//;
@@ -1491,7 +1554,6 @@ sub replace_with_LBLd_target {
   } else {
     die_msg(this_function((caller(0))[3]), "Cannot parse the line: '$line'");
   }
-
   return $line;
 } # replace_with_LBLd_target
 
@@ -2130,6 +2192,7 @@ sub this_function {
 #
 sub get_options {
   my ($arg);
+  @cmd_args = @ARGV;
   while ($arg = shift(@ARGV)) {
 
     # See if help is asked for
@@ -2237,9 +2300,7 @@ sub get_options {
     my $MAX_JMP_OFFSET = ($v3_mode) ? 240 : 90;
     print "// WARNING: Maximum BACK/SKIP offset limit (-m) must be between 5 and $max. Resetting to $MAX_JMP_OFFSET.\n";
   }
-
   debug_msg(this_function((caller(0))[3]), "Debug level set to: $debug") if $debug;
-
   return;
 } # get_options
 
