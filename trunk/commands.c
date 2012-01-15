@@ -841,8 +841,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 
 	CMDnoI(RARG_CONV,	&cmdconv,	NUM_CONSTS_CONV*2,	"conv")
 
-	CMD(RARG_PAUSE,		&op_pause,	100,			"PSE")
-	CMDstk(RARG_KEY,	&op_keyp,				"KEY?")
+	CMD(RARG_PAUSE,		&cmdpause,	100,			"PSE")
+	CMDstk(RARG_KEY,	&cmdkeyp,				"KEY?")
 
 	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,				"\240XEQ")
 	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,				"\240GTO")
@@ -872,8 +872,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_STOM,	&cmdsavem,				"STOM")
 	CMDstk(RARG_RCLM,	&cmdrestm,				"RCLM")
 #endif
-	CMDstk(RARG_PUTKEY,	&op_putkey,				"PUTK")
-	CMDstk(RARG_KEYTYPE,	&op_keytype,				"KTP?")
+	CMDstk(RARG_PUTKEY,	&cmdputkey,				"PUTK")
+	CMDstk(RARG_KEYTYPE,	&cmdkeytype,				"KTP?")
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL,		"LocR")
@@ -889,6 +889,9 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 
 	CMDnoI(RARG_XROM_IN,	&cmdxin,	255,			"xIN")
 	CMDnoI(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
+#ifdef XROM_RARG_COMMANDS
+	CMDstk(RARG_XROM_ARG,	&cmdxarg,				"xARG")
+#endif
 #endif
 	CMDnoI(RARG_CONVERGED,	&cmdconverged,	32,			"CNVG?")
 #ifdef INCLUDE_SHUFFLE

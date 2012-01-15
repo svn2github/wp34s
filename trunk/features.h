@@ -26,6 +26,9 @@
 // Push commands into XROM instead of being in C
 #define XROM_COMMANDS
 
+// Allow for any generic argument taking commands in XROM
+// #define XROM_RARG_COMMANDS
+
 // Define this to support a four level stack arbitary shuffle command
 #define INCLUDE_SHUFFLE
 

@@ -338,7 +338,10 @@ typedef struct _xrom_params
 			unsigned int state_lift : 1;	// Status of stack_lift after xOUT
 			unsigned int xIN : 1;		// xIN is in effect
 		} bits;
-		unsigned short word;
+		unsigned short word;			// returned by flag_word()
+#ifdef XROM_RARG_COMMANDS
+		unsigned char rarg;			// used by argument taking commands
+#endif
 	} flags;
 
 	unsigned char in;			// input parameters to consume
@@ -355,6 +358,9 @@ extern TXromParams XromParams;
 
 #define XromFlags	  (XromParams.flags.bits)
 #define XromFlagWord	  (XromParams.flags.word)
+#ifdef XROM_RARG_COMMANDS
+#define XromArg		  (XromParams.flags.rarg)
+#endif
 #define XromIn		  (XromParams.in)
 #define XromOut		  (XromParams.out)
 #define XromUserRetStk	  (XromParams.user_ret_stk)

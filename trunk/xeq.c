@@ -1625,7 +1625,7 @@ void get_mem(enum nilop op) {
 /* Check if a keystroke is pending in the buffer, if so return it to the specified
  * register, if not skip the next step.
  */
-void op_keyp(unsigned int arg, enum rarg op) {
+void cmdkeyp(unsigned int arg, enum rarg op) {
 	int cond = LastKey == 0;
 	if (!cond) {
 		int k = LastKey - 1;
@@ -1653,7 +1653,7 @@ static int get_keycode_from_reg(unsigned int n)
  *  This stops program execution first to make sure, the key is not
  *  read in by KEY? again.
  */
-void op_putkey(unsigned int arg, enum rarg op)
+void cmdputkey(unsigned int arg, enum rarg op)
 {
 	const int c = get_keycode_from_reg(arg);
 
@@ -1668,7 +1668,7 @@ void op_putkey(unsigned int arg, enum rarg op)
  *  returns 0-9 for digits, 10 for ., +/-, EEX, 11 for f,g,h, 12 for all other keys.
  *  Invalid codes produce an error.
  */
-void op_keytype(unsigned int arg, enum rarg op)
+void cmdkeytype(unsigned int arg, enum rarg op)
 {
 	const int c = get_keycode_from_reg(arg);
 	if ( c >= 0 ) {
@@ -2840,7 +2840,7 @@ void op_double(enum nilop op) {
 	StackBase = get_reg_n(regX_idx);
 }
 
-void op_pause(unsigned int arg, enum rarg op) {
+void cmdpause(unsigned int arg, enum rarg op) {
 	display();
 #ifndef CONSOLE
 	// decremented in the low level heartbeat
@@ -3542,9 +3542,20 @@ static void rargs(const opcode op) {
 	else {
 		FP_RARG fp = (FP_RARG) EXPAND_ADDRESS(argcmds[cmd].f);
 		if (NULL != check_for_xrom_address(fp)) {
+#ifdef XROM_RARG_COMMANDS
+			if (argcmds[cmd].label) {
+				XromUserPc = find_label_from(state_pc(), arg, 0);
+				if (XromUserPc == 0)
+					return;
+			}
+			else
+				XromArg = (unsigned char) arg;
+#else
 			XromUserPc = find_label_from(state_pc(), arg, 0);
-			if (XromUserPc != 0)
-				dispatch_xrom(fp);
+			if (XromUserPc == 0)
+				return;
+#endif
+			dispatch_xrom(fp);
 			return;
 		}
 		else {
@@ -4079,6 +4090,15 @@ void cmdxout(unsigned int arg, enum rarg op) {
 
 	// RTN or RTN+1 depending on bit 0 of argument
 	do_rtn(arg & 1);
+}
+#endif
+
+#ifdef XROM_RARG_COMMANDS
+/*
+ *  Allow access to command argument from XROM
+ */
+void cmdxarg(unsigned int arg, enum rarg op) {
+	set_reg_n_int_sgn(arg, XromArg, 0);
 }
 #endif
 

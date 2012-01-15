@@ -861,6 +861,9 @@ enum rarg {
 #ifdef XROM_COMMANDS
 	RARG_MODE_SET, RARG_MODE_CLEAR,
 	RARG_XROM_IN, RARG_XROM_OUT,
+#ifdef XROM_RARG_COMMANDS
+	RARG_XROM_ARG,
+#endif
 #endif
 	RARG_CONVERGED,
 #ifdef INCLUDE_SHUFFLE
@@ -1214,7 +1217,7 @@ extern void op_fract(enum nilop op);
 extern void op_trigmode(enum nilop op);
 extern void op_radix(enum nilop op);
 extern void op_double(enum nilop op);
-extern void op_pause(unsigned int arg, enum rarg op);
+extern void cmdpause(unsigned int arg, enum rarg op);
 extern void set_int_base(unsigned int arg, enum rarg op);
 extern void op_rtn(enum nilop op);
 extern void op_popusr(enum nilop op);
@@ -1247,19 +1250,20 @@ extern void op_ticks(enum nilop op);
 extern void op_voltage(enum nilop op);
 extern void check_mode(enum nilop op);
 extern void check_dblmode(enum nilop op);
-extern void op_keyp(unsigned int arg, enum rarg op);
 extern void op_shift_digit(unsigned int n, enum rarg op);
 extern void op_roundingmode(enum nilop);
 extern void rarg_roundingmode(unsigned int arg, enum rarg op);
 extern void rarg_round(unsigned int arg, enum rarg op);
 extern void op_setspeed(enum nilop);
-extern void op_putkey(unsigned int arg, enum rarg op);
-extern void op_keytype(unsigned int arg, enum rarg op);
+extern void cmdkeyp(unsigned int arg, enum rarg op);
+extern void cmdputkey(unsigned int arg, enum rarg op);
+extern void cmdkeytype(unsigned int arg, enum rarg op);
 extern void cmdlocr(unsigned int arg, enum rarg op);
 extern void cmdlpop(enum nilop op);
 extern void cmdregs(unsigned int arg, enum rarg op);
 extern void cmdxin(unsigned int, enum rarg);
 extern void cmdxout(unsigned int, enum rarg);
+extern void cmdxarg(unsigned int, enum rarg);
 extern void cmdconverged(unsigned int, enum rarg);
 extern void cmdshuffle(unsigned int, enum rarg);
 extern void cmdmode(unsigned int, enum rarg);
