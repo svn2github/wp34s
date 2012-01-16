@@ -535,7 +535,7 @@ static void put_name(FILE *f, const char *name) {
 				"CONSTANT", "CONST", "RARG_CONST", "RARG_CONST_CMPLX",
 */
 static void const_small_tbl(FILE *f) {
-	int i, j, s_index, d_index;
+	int i, j=0, s_index, d_index;
 	unsigned char *p;
 	decimal64  s_tab[128];
 	decimal128 d_tab[128];
