@@ -16,15 +16,17 @@
 		xOUT xOUT_NORMAL
 
 /* Complex generalised Fibonacci function
+ * Fib(1.5+3i) = -1335.28 - 169.819i
+ * Fib(5+3i) = 32.3140904486738 - 242.9110771328777
+ *	[ phi^z + phi^-z . cosh(Im(z) PI) ] / sqrt(5)
  */
 		XLBL"CPX_FIB"
 		xIN MONADIC_COMPLEX
 		[cmplx]# [PHI]
 		[cmplx]x[<->] Z
 		[cmplx]y[^x]
-		[cmplx]# [pi]
-		[cmplx]RCL[times] L
-		[cmplx]COS
+		[cmplx]RCL L
+		[cmplx](-1)[^x]
 		[cmplx]RCL/ Z
 		[cmplx]-
 		[cmplx]# 1/[sqrt]5
