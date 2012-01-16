@@ -47,10 +47,11 @@
 #include "decimal64.h"
 #include "decimal128.h"
 
-static FILE *fh;
+static FILE *fh, *fxrom;
 
 static char consts_h[ FILENAME_MAX ];
 static char consts_c[ FILENAME_MAX ];
+static char consts_xrom[ FILENAME_MAX ];
 static char *libconsts = "";
 
 /* The table of constants we're going to compile.
@@ -157,7 +158,6 @@ static struct {
 	{ DFLT,  "ln2",			"0.6931471805599453094172321214581765680755001343602553"	},
 	{ DFLT,  "ln10",		"2.30258509299404568401799145468436420760110148862877"	},
 	{ DFLT,  "phi",			"1.61803398874989484820458683436563811772030917980576" },
-	{ DFLT,  "recipsqrt5",		"0.4472135954999579392818347337462552470881236719223" },
 	{ DFLT,  "egamma",		"0.5772156649015328606065120900824024310421593359399235988" },
 	{ DFLT,  "_1onPI",		"-0.31830988618379067153776752674502872406891929148091" },
 
@@ -331,6 +331,7 @@ struct constsml constsdbl[] = {
 	DCONSTANT("F\243",	"PC_F_delta_DBL", "PC_F_delta",	"4.669201609102990671853203820466201617258185577475768632745651"),
 	DCONSTANT("F\240",	"PC_F_alpha_DBL", "PC_F_alpha",	"2.502907875095892822283902873218215786381271376727149977336192"),
 #endif
+	DCONSTANT("1/\003""5",	"RECIP_SQRT5",		NULL,	"0.4472135954999579392818347337462552470881236719223"),
 	CONSTANT(NULL, NULL, NULL)
 };
 
@@ -624,6 +625,8 @@ static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
 			comment, tname, tname, num_name, i, macro_name, tname);
 	fprintf(f, "/* %s\n */\nconst struct %s %s[] = {\n", comment, tname, tname);
 	for (i=0; ctbl[i].val != NULL; i++) {
+		fprintf(fxrom, "#define DBL_%-20s (%d)\n", ctbl[i].op, i);
+
 		fprintf(fh, "\tOP_%s", ctbl[i].op);
 		if (i == 0)
 			fprintf(fh, " = 0");
@@ -637,7 +640,8 @@ static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
 		put_name(f, ctbl[i].op);
 		fprintf(f, " */\n");
 	}
-	fprintf(fh, "};\n");
+	fprintf(fh, "\tNUM_DBL_CONSTS\n"
+			"};\n");
 	fprintf(f,"};\n\n");
 
 	fprintf(f, "const unsigned char %s_map[] = {\n", tname);
@@ -751,15 +755,21 @@ int main(int argc, char *argv[])
 		// Acts as a prefix so be careful to supply the path delimiter
 		strcpy( consts_h, argv[1] );
 		strcpy( consts_c, argv[1] );
+		strcpy( consts_xrom, argv[1] );
 		strcpy( tmp, argv[1] );
 	}
 	strcat( consts_h, "consts.h" );
 	strcat( consts_c, "consts.c" );
+	strcat( consts_xrom, "xrom_consts.wp34s" );
 	strcat( tmp, "tmp_consts.h" );
 	if ( argc > 2 ) {
 		// Path for libconsts.a in makefile
 		libconsts = argv[2];
 	}
+
+	fxrom = fopen(consts_xrom, "w");
+	gpl_text(fxrom, "/* ", " * ", " */");
+	
 	fh = fopen(consts_h, "w");
 	gpl_text(fh, "/* ", " * ", " */");
 	fprintf(fh,	"#ifndef __CONSTS_H__\n"
@@ -777,5 +787,7 @@ int main(int argc, char *argv[])
 	const_big();
 	fprintf(fh,	"\n#endif\n");
 	fclose(fh);
+	fprintf(fxrom,	"\n");
+	fclose(fxrom);
 	return 0;
 }

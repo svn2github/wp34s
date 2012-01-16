@@ -114,8 +114,6 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *a, const dec
 extern void cmplxFrac(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxFib(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-
 extern void cmplx_NaN(decNumber *, decNumber *);
 
 /* Jacobi's elliptical functions */

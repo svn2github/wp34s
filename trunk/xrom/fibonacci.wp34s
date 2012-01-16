@@ -1,0 +1,33 @@
+/**************************************************************************/
+/* Real generalised Fibonacci function
+ */
+
+		XLBL"FIB"
+		xIN MONADIC
+		Num [PHI]
+		x[<->] Y
+		y[^x]
+		Num [pi]
+		RCL[times] L
+		COS
+		RCL/ Y
+		-
+		D# DBL_RECIP_SQRT5
+		[times]
+		xOUT xOUT_NORMAL
+
+/* Complex generalised Fibonacci function
+ */
+		XLBL"CPX_FIB"
+		xIN MONADIC_COMPLEX
+		[cmplx]# [PHI]
+		[cmplx]x[<->] Z
+		[cmplx]y[^x]
+		[cmplx]# [pi]
+		[cmplx]RCL[times] L
+		[cmplx]COS
+		[cmplx]RCL/ Z
+		[cmplx]-
+		[cmplx]D# DBL_RECIP_SQRT5
+		[cmplx][times]
+		xOUT xOUT_NORMAL

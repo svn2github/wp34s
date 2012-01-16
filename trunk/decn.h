@@ -167,8 +167,6 @@ extern decNumber *decNumberERF(decNumber *res, const decNumber *x);
 extern decNumber *decNumberERFC(decNumber *res, const decNumber *x);
 extern decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *x);
 
-extern decNumber *decNumberFib(decNumber *res, const decNumber *x);
-
 extern decNumber *decNumberD2G(decNumber *res, const decNumber *x);
 extern decNumber *decNumberD2R(decNumber *res, const decNumber *x);
 extern decNumber *decNumberG2D(decNumber *res, const decNumber *x);

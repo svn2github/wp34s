@@ -941,19 +941,6 @@ void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 	decNumberTrunc(ry, b);
 }
 
-void cmplxFib(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber r1, r2, s1, s2, t1, t2;
-
-	cmplxRealPower(&r1, &r2, &const_phi, a, b);
-	cmplxMultiplyReal(&t1, &t2, a, b, &const_PI);
-	cmplxCos(&s1, &s2, &t1, &t2);
-	cmplxDivide(&t1, &t2, &s1, &s2, &r1, &r2);
-	cmplxSubtract(&s1, &s2, &r1, &r2, &t1, &t2);
-	cmplxMultiplyReal(rx, ry, &s1, &s2, &const_recipsqrt5);
-#endif
-}
-
 #ifdef INCLUDE_ELLIPTIC
 #ifndef TINY_BUILD
 static void elliptic_setup(decNumber *r,

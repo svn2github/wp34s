@@ -2114,18 +2114,6 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 		dn_minus(n, n);
 }
 
-decNumber *decNumberFib(decNumber *res, const decNumber *x) {
-	decNumber r, s, t;
-
-	dn_power(&r, &const_phi, x);
-	dn_mulPI(&t, x);
-	dn_sincos(&t, NULL, &s);
-	dn_divide(&t, &s, &r);
-	dn_subtract(&s, &r, &t);
-	return dn_multiply(res, &s, &const_recipsqrt5);
-}
-
-
 static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, const decNumber *gln) {
 	decNumber ap, del, sum, t, u;
 	int i;

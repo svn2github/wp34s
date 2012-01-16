@@ -784,6 +784,8 @@ enum nilop {
 enum rarg {
 	RARG_CONST,		// user visible constants
 	RARG_CONST_CMPLX,
+	RARG_DCONST,		// system constants
+	RARG_DCONST_CMPLX,
 	RARG_ERROR,
 	/* STO and RCL must be in operator order */
 	RARG_STO, RARG_STO_PL, RARG_STO_MI, RARG_STO_MU, RARG_STO_DV,
@@ -1165,6 +1167,7 @@ extern void cpx_fill(enum nilop op);
 extern void fill(enum nilop op);
 extern void drop(enum nilop op);
 extern void cmdconst(unsigned int arg, enum rarg op);
+extern void cmddconst(unsigned int, enum rarg);
 extern void cmdconstcmplx(unsigned int arg, enum rarg op);
 extern void cmdconstint(unsigned int arg, enum rarg op);
 extern void cmdsto(unsigned int arg, enum rarg op);

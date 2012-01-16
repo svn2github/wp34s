@@ -1205,9 +1205,10 @@ void cmdconst(unsigned int arg, enum rarg op) {
 		bad_mode_error();
 		return;
 	}
-	if (op == RARG_CONST_CMPLX)
+	if (op == RARG_CONST_CMPLX) {
 		lift2_if_enabled();
-	else
+		setY(&const_0);
+	} else
 		lift_if_enabled();
 
 	x->s = CONSTANT(arg);
@@ -1215,12 +1216,32 @@ void cmdconst(unsigned int arg, enum rarg op) {
 		for (i=0; i<NUM_CONSTS_DBL_MAP; i++)
 			if (arg == cnsts_dbl_map[i]) {
 				x->d = CONSTANT_DBL(i);
-				goto escape;
+				return;
 			}
 		packed128_from_packed(&(x->d), &(x->s));
 	}
-escape:	if (op == RARG_CONST_CMPLX)
+}
+
+
+/* Commands to allow access to constants
+ */
+void cmddconst(unsigned int arg, enum rarg op) {
+	REGISTER *x = StackBase;
+
+	if (is_intmode()) {
+		bad_mode_error();
+		return;
+	}
+	if (op == RARG_DCONST_CMPLX) {
+		lift2_if_enabled();
 		setY(&const_0);
+	} else
+		lift_if_enabled();
+
+	if (is_dblmode())
+		x->d = CONSTANT_DBL(arg);
+	else
+		packed_from_packed128(&(x->s), &( CONSTANT_DBL(arg)));
 }
 
 

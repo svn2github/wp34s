@@ -145,7 +145,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_SQR,	&decNumberSquare,	&cmplxSqr,	&intSqr,	"x\232")
 	FUNC(OP_CUBE,	&decNumberCube,		&cmplxCube,	&intCube,	"CUBE")
 	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intCubeRoot,	"CUBERT")
-	FUNC(OP_FIB,	&decNumberFib,		&cmplxFib,	&intFib,	"FIB")
+	FUNC(OP_FIB,	XMR(FIB),		XMC(CPX_FIB),	&intFib,	"FIB")
 	FUNC(OP_2DEG,	&decNumber2Deg,		NOFN,		NOFN,		"\015DEG")
 	FUNC(OP_2RAD,	&decNumber2Rad,		NOFN,		NOFN,		"\015RAD")
 	FUNC(OP_2GRAD,	&decNumber2Grad,	NOFN,		NOFN,		"\015GRAD")
@@ -724,6 +724,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #endif
 	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
 	CMDnoI(RARG_CONST_CMPLX,&cmdconst,	NUM_CONSTS,		"\024CNST")
+	CMDnoI(RARG_DCONST,	&cmddconst,	NUM_DBL_CONSTS,		"D#")
+	CMDnoI(RARG_DCONST_CMPLX,&cmddconst,	NUM_DBL_CONSTS,		"\024D#")
 	CMD(RARG_ERROR,		&cmderr,	MAX_ERROR,		"ERR")
 	CMDstk(RARG_STO, 	&cmdsto,				"STO")
 	CMDstk(RARG_STO_PL, 	&cmdsto,				"STO+")

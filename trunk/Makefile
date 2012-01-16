@@ -316,7 +316,7 @@ $(UTILITIES)/create_revision$(EXE): create_revision.c Makefile
 $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h data.h errors.h
+xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h data.h errors.h xrom_consts.wp34s
 	$(HOSTCC) -E -P -x c -Ixrom -DCOMPILE_XROM xrom.wp34s > xrom_pre.wp34s
 	tools/wp34s_asm.pl -pp -op $(OPCODES) -c -o xrom.c xrom_pre.wp34s
 
