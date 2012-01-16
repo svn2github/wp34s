@@ -169,7 +169,7 @@ logistic_param::	RCL- J
 /**************************************************************************/
 /* Log Normal distribution
  */
- 		XLBL"PDF_LGNORM"
+ 		XLBL"PDF_LOGNORMAL"
 			xIN MONADIC
 				LocR 00
 				STO .00
@@ -178,7 +178,7 @@ logistic_param::	RCL- J
 				RCL/ .00
 			xOUT xOUT_NORMAL
 
-		XLBL"CDF_LGNORM"
+		XLBL"CDF_LOGNORMAL"
 			xIN MONADIC
 				SPEC?
 					JMP cdf_infinite
@@ -187,7 +187,7 @@ logistic_param::	RCL- J
 				LN
 				JMP cdf_normal
 
-		XLBL"QF_LGNORM"
+		XLBL"QF_LOGNORMAL"
 			xIN MONADIC
 				GSB qf_normal
 				e[^x]
@@ -250,7 +250,7 @@ pdf_q::			x[^2]
 			/
 			+/-
 			e[^x]
-			GSB sqrt_2pi
+			D# DBL_SQRT_2_PI
 			/
 			RTN
 
@@ -375,7 +375,7 @@ qf_q_inrange::		RCL .05
 			STO .06		// u = -2 LN(x)
 			DEC X
 			[sqrt]
-			GSB sqrt_2pi
+			D# DBL_SQRT_2_PI
 			[times]
 			RCL[times] .05
 			LN
@@ -388,7 +388,7 @@ qf_q_inrange::		RCL .05
 				+/-
 			JMP qf_q_est_done
 
-qf_q_skip2::		GSB sqrt_2pi
+qf_q_skip2::		D# DBL_SQRT_2_PI
 			RCL[times] .06
 			ENTER[^]
 			CUBE
@@ -417,11 +417,6 @@ qf_q_loop::		GSB cdf_q_alt		/* pdf in .04 */
 
 qf_loop_end::		FS? .01
 				+/-
-			RTN
-
-sqrt_2pi::		Num [pi]
-			RCL+ X
-			[sqrt]
 			RTN
 
 #endif

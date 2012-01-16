@@ -229,9 +229,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_pdf_N,	XMR(PDF_NORMAL),	NOFN,		NOFN,		"Norml\276")
 	FUNC(OP_cdf_N,	XMR(CDF_NORMAL),	NOFN,		NOFN,		"Norml")
 	FUNC(OP_qf_N,	XMR(QF_NORMAL),		NOFN,		NOFN,		"Norml\235")
-	FUNC(OP_pdf_LN,	XMR(PDF_LGNORMAL),	NOFN,		NOFN,		"LgNrm\276")
-	FUNC(OP_cdf_LN,	XMR(CDF_LGNORMAL),	NOFN,		NOFN,		"LgNrm")
-	FUNC(OP_qf_LN,	XMR(QF_LGNORMAL),	NOFN,		NOFN,		"LgNrm\235")
+	FUNC(OP_pdf_LN,	XMR(PDF_LOGNORMAL),	NOFN,		NOFN,		"LgNrm\276")
+	FUNC(OP_cdf_LN,	XMR(CDF_LOGNORMAL),	NOFN,		NOFN,		"LgNrm")
+	FUNC(OP_qf_LN,	XMR(QF_LOGNORMAL),	NOFN,		NOFN,		"LgNrm\235")
 #else
 	FUNC(OP_pdf_N,	&pdf_normal,		NOFN,		NOFN,		"Norml\276")
 	FUNC(OP_cdf_N,	&cdf_normal,		NOFN,		NOFN,		"Norml")
