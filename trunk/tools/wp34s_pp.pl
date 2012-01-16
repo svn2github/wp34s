@@ -526,7 +526,8 @@ sub process_expressions {
       $label = "";
     }
     # We need to be greedy with this search!
-    if( $line =~ /(^\s*[^\(]+)\((.+)\)/ ) {
+    if( $line =~ /(^\s*[^\(]+)\s+\((.+)\)/ ) {
+
       my $the_rest = $1;
       my $expression = $2;
       my $evaluated = eval $expression;
