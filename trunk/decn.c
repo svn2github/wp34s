@@ -53,9 +53,6 @@ static void dump1(const decNumber *a, const char *msg) {
 #define BIGMOD_DIGITS	820		/* Big enough for maxreal mod minreal */
 
 
-/* Forward declaration */
-static void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c);
-
 /* Some basic conditional tests */
 int dn_lt0(const decNumber *x) {
 	return decNumberIsNegative(x) && ! decNumberIsZero(x);
@@ -907,7 +904,7 @@ decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *
 
 /* Calculate sin and cos by Taylor series
  */
-static void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c) {
+void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c) {
 	decNumber a2, t, j, z;
 	int i, fins = 0, finc = 0;
 

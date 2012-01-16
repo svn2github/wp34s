@@ -637,7 +637,15 @@ void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *
 }
 
 void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplxRealPower(rx, ry, &const__1, a, b);
+	decNumber t, u, s, c;
+
+	decNumberMod(&u, a, &const_2);
+	dn_mulPI(&t, &u);
+	sincosTaylor(&t, &s, &c);
+	dn_mulPI(&u, b);
+	dn_minus(&t, &u);
+	dn_exp(&u, &t);
+	cmplxMultiplyReal(rx, ry, &c, &s, &u);
 }
 
 void cmplxLogxy(decNumber *rx, decNumber *ry,

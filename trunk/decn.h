@@ -188,6 +188,7 @@ extern decNumber *decNumberNot(decNumber *res, const decNumber *x);
 extern decNumber *decNumberBooleanOp(decNumber *res, const decNumber *x, const decNumber *y);
 
 extern void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv);
+extern void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c);
 extern void dn_sinhcosh(const decNumber *v, decNumber *sinhv, decNumber *coshv);
 extern void do_asin(decNumber *, const decNumber *);
 extern void do_acos(decNumber *, const decNumber *);
