@@ -123,7 +123,7 @@ static void rarg_values(const opcode c, int l) {
 		} else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
 			while (l-- > 0)
 				putchar(' ');
-			printf("%s", decimal64ToString(&CONSTANT(c & 0x7f), bf));
+			printf("%s", decimal64ToString((decimal64 *) get_const(c & 0x7f, 0), bf));
 		}
 	}
 }

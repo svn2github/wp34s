@@ -724,8 +724,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #endif
 	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
 	CMDnoI(RARG_CONST_CMPLX,&cmdconst,	NUM_CONSTS,		"\024CNST")
-	CMDnoI(RARG_DCONST,	&cmddconst,	NUM_DBL_CONSTS,		"D#")
-	CMDnoI(RARG_DCONST_CMPLX,&cmddconst,	NUM_DBL_CONSTS,		"\024D#")
 	CMD(RARG_ERROR,		&cmderr,	MAX_ERROR,		"ERR")
 	CMDstk(RARG_STO, 	&cmdsto,				"STO")
 	CMDstk(RARG_STO_PL, 	&cmdsto,				"STO+")

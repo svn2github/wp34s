@@ -635,7 +635,7 @@ void matrix_inverse(enum nilop op) {
 
 	for (i=0; i<n; i++) {
 		for (j=0; j<n; j++)
-			b[j] = (i==j) ? &CONSTANT(OP_ONE) : &CONSTANT(OP_ZERO);
+			b[j] = (i==j) ? cnsts_d64 + OP_ONE : cnsts_d64 + OP_ZERO;
 		matrix_pivoting_solve(mat, b, pivots, x, n);
 		for (j=0; j<n; j++)
 			packed_from_number(base + matrix_idx(j, i, n), x+j);

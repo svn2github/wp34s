@@ -41,7 +41,7 @@
 #include "features.h"
 
 #define NEED_D64FROMSTRING  1
-#define NEED_D128FROMSTRING  1
+// #define NEED_D128FROMSTRING  1
 
 #include "decNumber.h"
 #include "decimal64.h"
@@ -210,15 +210,13 @@ struct constsml {
 	const char *op;
 	const char *val;
 	const char *n2;
-	const char *sop;
 };
-#define CONSTANT(n, op, val)		{ n, op, val, "", NULL }
-#define DCONSTANT(n, op, sop, val)	{ n, op, val, "", sop }
-#define CONV(n1, n2, op, val)		{ n1, op, val, n2, NULL }
+#define CONSTANT(n, op, val)		{ n, op, val, "" }
+#define CONV(n1, n2, op, val)		{ n1, op, val, n2 }
 
 struct constsml constsml[] = {
-	CONSTANT("0",		"PC_0",		"0"),			// Zero
-	CONSTANT("1",		"PC_1",		"1"),			// One
+	CONSTANT("0",		"ZERO",		"0"),			// Zero
+	CONSTANT("1",		"ONE",		"1"),			// One
 	CONSTANT("a",		"PC_a",		"365.2425"),		// Days in a Gregorian year
 	CONSTANT("a\270",	"PC_a0",	"5.2917721092E-11"),	// Bohr radius
 	CONSTANT("c",		"PC_C",		"299792458"),		// Speed of light in a vacuum
@@ -316,25 +314,12 @@ struct constsml constsml[] = {
 	CONSTANT("a\256",	"PC_SM_terra",	"149.5979E9"),		// Semi-major axis Earth NASA Earth fact sheet
 //	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
 
-	CONSTANT(NULL, NULL, NULL)
-};
-
-struct constsml constsdbl[] = {
-	DCONSTANT("d_zero",	"ZERO",		  "PC_0",	"0"),
-	DCONSTANT("d_one",	"ONE",		  "PC_1",	"1"),
-	DCONSTANT("d_pi",	"PI_DBL",	  "PI",		"3.14159265358979323846264338327950288419716939937510"),
-#ifdef INCLUDE_DBL_CONSTANTS
-	DCONSTANT("\242EM",	"EULER_DBL",	  "EULER",	"0.5772156649015328606065120900824024310421593359399235988"),
-	DCONSTANT("\224",	"PHI_DBL",	  "PHI",	"1.61803398874989484820458683436563811772030917980576"),
-	DCONSTANT("G\273",	"PC_catalan_DBL", "PC_catalan",	"0.915965594177219015054603514932384110774149374281672134266498"),
-	DCONSTANT("eE",		"CNSTE_DBL",	  "CNSTE",	"2.71828182845904523536028747135266249775724709369995"),
-	DCONSTANT("F\243",	"PC_F_delta_DBL", "PC_F_delta",	"4.669201609102990671853203820466201617258185577475768632745651"),
-	DCONSTANT("F\240",	"PC_F_alpha_DBL", "PC_F_alpha",	"2.502907875095892822283902873218215786381271376727149977336192"),
-#endif
-	DCONSTANT("1/\003""5",	"RECIP_SQRT5",		NULL,	"0.4472135954999579392818347337462552470881236719223"),
+	/* These are used by internal routines */
+	CONSTANT("1/\003""5",	"RECIP_SQRT5",	"0.4472135954999579392818347337462552470881236719223"),
 #ifdef NORMAL_DISTRIBUTION_AS_XROM
-	DCONSTANT("\003""2PI",	"SQRT_2_PI",		NULL,	"2.50662827463100050241576528481104525300698674060994"),
+	CONSTANT("\003""2PI",	"SQRT_2_PI",	"2.50662827463100050241576528481104525300698674060994"),
 #endif
+
 	CONSTANT(NULL, NULL, NULL)
 };
 
@@ -545,114 +530,141 @@ static void put_name(FILE *f, const char *name) {
 	}
 }
 
-static void const_small_tbl(FILE *f, const int incname, const struct constsml ctbl[],
-		const char *tname, const char *num_name, const char *macro_name,
-		const char *value_name, const char *rarg_name, const char *rarg_complex,
-		const char *comment) {
+/*
+ 	const_small_tbl(f, 
+				"CONSTANT", "CONST", "RARG_CONST", "RARG_CONST_CMPLX",
+*/
+static void const_small_tbl(FILE *f) {
+	int i, j, s_index, d_index;
+	unsigned char *p;
+	decimal64  s_tab[128];
+	decimal128 d_tab[128];
+	decContext ctx, ctx64, ctx128;
+	decNumber x, y;
+
+	decContextDefault(&ctx64,  DEC_INIT_DECIMAL64);
+	decContextDefault(&ctx128, DEC_INIT_DECIMAL128);
+	decContextDefault(&ctx, DEC_INIT_BASE);
+	ctx.digits = DECIMAL128_Pmax;
+	ctx.emax=DEC_MAX_MATH;
+	ctx.emin=-DEC_MAX_MATH;
+	ctx.round = DEC_ROUND_HALF_EVEN;
+
+	for (i=0; constsml[i].val != NULL; i++);
+	fprintf(fh, "\nstruct cnsts {\n"
+			"\tunsigned char index;\n"
+			"\tconst char cname[CONST_NAMELEN];\n");
+	fprintf(fh, "};\n\n");
+
+	fprintf(fh,	"/* Table of user visible constants */\n"
+			"extern const struct cnsts cnsts[];\n"
+			"#define NUM_CONSTS      %d\n"
+			"#define CONSTANT(n)     ((decimal64 *)  get_const(n, 0))\n\n"
+			"#define CONSTANT_DBL(n) ((decimal128 *) get_const(n, 1)\n\n"
+			"#define CONST(n)        RARG(RARG_CONST, n)\n"
+			"#define CONST_CMPLX(n)  RARG(RARG_CONST_CMPLX, n)\n\n"
+			"enum {\n",
+		i);
+	fprintf(f, "/* Table of user visible constants\n */\nconst struct cnsts cnsts[] = {\n");
+	fprintf(f, "#define CNST(n, index, fn) { index, fn },\n");
+
+	s_index = 0; d_index = 0;
+	for (i = 0; constsml[i].val != NULL; i++) {
+		fprintf(fh, "\tOP_%s", constsml[i].op);
+		if (i == 0)
+			fprintf(fh, " = 0");
+		fprintf(fh, ",\n");
+
+		decNumberFromString(&x, constsml[i].val, &ctx);
+		decNumberNormalize(&y, &x, &ctx);
+		if (y.digits > DECIMAL64_Pmax || i <= 1) {
+			decimal128FromNumber(d_tab + d_index, &y, &ctx128);
+			j = d_index | 0x80;
+			d_index += 1;
+		}
+		if (y.digits <= DECIMAL64_Pmax || i <= 1) {
+			decimal64FromNumber(s_tab + s_index, &y, &ctx128);
+			j = s_index;
+			s_index += 1;
+		}
+		if ( s_index >= 128 || d_index >= 128 ) {
+			fprintf(stderr, "Too many small constants defined\n");
+			abort();
+		}
+		fprintf(f, "\tCNST(OP_%s, 0x%02x, \"", constsml[i].op, j);
+		put_name(f, constsml[i].name);
+		fprintf(f, "\")\n");
+	}
+	fprintf(fh, "};\n\n");			// enum
+	fprintf(f, "#undef CNST\n};\n\n");	// array of structs
+
+	fprintf(fh, "extern const decimal64 cnsts_d64[];\n");
+	fprintf(f, "const decimal64 cnsts_d64[] = {\n");
+	for (i = 0; i < s_index; i++) {
+		fprintf(f, "\tB(");
+		p = (unsigned char *) (s_tab + i);
+		for (j = 0; j < 8; j++)
+			fprintf(f, "0x%02x%c", p[ 7 - j ], j == 7 ? ')' : ',');
+		fprintf(f, ",\n");
+	}
+	fprintf(f, "};\n\n");			// array of decial64
+
+	fprintf(fh, "extern const decimal128 cnsts_d128[];\n");
+	fprintf(f, "const decimal128 cnsts_d128[] = {\n");
+	for (i = 0; i < d_index; i++) {
+		fprintf(f, "\tD(");
+		p = (unsigned char *) (d_tab + i);
+		for (j = 0; j < 16; j++)
+			fprintf(f, "0x%02x%c", p[ 15 - j ], j == 15 ? ')' : ',');
+		fprintf(f, ",\n");
+	}
+	fprintf(f, "};\n\n");			// array of decimal128
+}
+
+
+static void const_conv_tbl(FILE *f) {
 	int i, j;
 	unsigned char *p;
 	decimal64 d;
 	decContext ctx;
 
 	decContextDefault(&ctx, DEC_INIT_DECIMAL64);
-	for (i=0; ctbl[i].val != NULL; i++);
-	fprintf(fh, "\nstruct %s {\n"
-			"\tdecimal64 x;\n", tname);
-	if (incname > 0)
-		fprintf(fh, "\tconst char cname[CONST_NAMELEN];\n");
-	else if (incname < 0)
-		fprintf(fh, "\tconst char metric[METRIC_NAMELEN];\n"
-				"\tconst char imperial[IMPERIAL_NAMELEN];\n");
-	fprintf(fh, "};\n\n");
+	for (i=0; conversions[i].val != NULL; i++);
+	fprintf(fh, "\nstruct cnsts_conv {\n"
+			"\tdecimal64 x;\n"
+			"\tconst char metric[METRIC_NAMELEN];\n"
+			"\tconst char imperial[IMPERIAL_NAMELEN];\n"
+		    "};\n\n");
 
-	fprintf(fh,	"/* %s */\n"
-			"extern const struct %s %s[];\n"
-			"#define %s %d\n"
-			"#define %s(n)	(%s[n].x)\n\n"
-			"enum {\n", comment,
-				tname, tname, num_name, i, macro_name, tname);
-	fprintf(f, "/* %s\n */\nconst struct %s %s[] = {\n", comment, tname, tname);
-	if (incname > 0)
-		fprintf(f, "#define CNST(n, b1,b2,b3,b4,b5,b6,b7,b8, fn, nul) { B(b1,b2,b3,b4,b5,b6,b7,b8), fn },\n");
-	else if (incname < 0)
-		fprintf(f, "#define CNST(n, b1,b2,b3,b4,b5,b6,b7,b8, fm, fi) { B(b1,b2,b3,b4,b5,b6,b7,b8), fm, fi },\n");
-	else
-		fprintf(f, "#define CNST(n, b1,b2,b3,b4,b5,b6,b7,b8, fn, nul) { B(b1,b2,b3,b4,b5,b6,b7,b8) },\n");
-	for (i=0; ctbl[i].val != NULL; i++) {
-		fprintf(fh, "\tOP_%s", ctbl[i].op);
+	fprintf(fh,	"/* Table of metric/imperial conversion constants */\n"
+			"extern const struct cnsts_conv cnsts_conv[];\n"
+			"#define NUM_CONSTS_CONV %d\n"
+			"#define CONSTANT_CONV(n)\t(cnsts_conv[n].x)\n\n"
+			"enum {\n",
+		i);
+	fprintf(f,	"/* Table of metric/imperial conversion constants\n */\n"
+			"const struct cnsts_conv cnsts_conv[] = {\n");
+	fprintf(f, "#define CNST(n, b1,b2,b3,b4,b5,b6,b7,b8, fm, fi) { B(b1,b2,b3,b4,b5,b6,b7,b8), fm, fi },\n");
+
+	for (i=0; conversions[i].val != NULL; i++) {
+		fprintf(fh, "\tOP_%s", conversions[i].op);
 		if (i == 0)
 			fprintf(fh, " = 0");
 		fprintf(fh, ",\n");
 
-		fprintf(f, "\tCNST(OP_%s, ", ctbl[i].op);
-		decimal64FromString(&d, ctbl[i].val, &ctx);
+		fprintf(f, "\tCNST(OP_%s, ", conversions[i].op);
+		decimal64FromString(&d, conversions[i].val, &ctx);
 		p = (unsigned char *)&d;
 		for (j=0; j<8; j++)
 			fprintf(f, "0x%02x, ", p[7-j]);
 		fprintf(f, "\"");
-		put_name(f, ctbl[i].name);
+		put_name(f, conversions[i].name);
 		fprintf(f, "\", \"");
-		put_name(f, ctbl[i].n2);
+		put_name(f, conversions[i].n2);
 		fprintf(f, "\")\n");
 	}
-	fprintf(fh, "};\n"
-			"#define %s(n) RARG(%s, n)\n",
-			value_name, rarg_name);
-	if (rarg_complex != NULL)
-		fprintf(fh, "#define %s_CMPLX(n) RARG(%s, n)\n", value_name, rarg_complex);
-	fprintf(fh, "\n");
-	fprintf(f, "#undef CNST\n"
-			"};\n\n");
-}
-
-static void const_dbl_tbl(FILE *f, const struct constsml ctbl[],
-		const char *tname, const char *num_name, const char *macro_name,
-		const char *value_name,
-		const char *comment) {
-	int i, j;
-	unsigned char *p;
-	decimal128 d;
-	decContext ctx;
-
-	decContextDefault(&ctx, DEC_INIT_DECIMAL128);
-	for (i=0; ctbl[i].val != NULL; i++);
-	fprintf(fh, "\nstruct %s {\n"
-			"\tdecimal128 x;\n", tname);
-	fprintf(fh, "};\n\n");
-
-	fprintf(fh,	"/* %s */\n"
-			"extern const struct %s %s[];\n"
-			"#define %s %d\n"
-			"#define %s(n)	(%s[n].x)\n\n"
-			"enum {\n",
-			comment, tname, tname, num_name, i, macro_name, tname);
-	fprintf(f, "/* %s\n */\nconst struct %s %s[] = {\n", comment, tname, tname);
-	for (i=0; ctbl[i].val != NULL; i++) {
-		fprintf(fxrom, "#define DBL_%-20s (%d)\n", ctbl[i].op, i);
-
-		fprintf(fh, "\tOP_%s", ctbl[i].op);
-		if (i == 0)
-			fprintf(fh, " = 0");
-		fprintf(fh, ",\n");
-		fprintf(f, "\t{ D(");
-		decimal128FromString(&d, ctbl[i].val, &ctx);
-		p = (unsigned char *)&d;
-		for (j=0; j<16; j++)
-			fprintf(f, "0x%02x%c ", p[15-j], j == 15 ? ')' : ',');
-		fprintf(f, "}, /* OP_");
-		put_name(f, ctbl[i].op);
-		fprintf(f, " */\n");
-	}
-	fprintf(fh, "\tNUM_DBL_CONSTS\n"
-			"};\n");
-	fprintf(f,"};\n\n");
-
-	fprintf(f, "const unsigned char %s_map[] = {\n", tname);
-	for (i=0; ctbl[i].sop != NULL; i++)
-		fprintf(f, "\tOP_%s,\n", ctbl[i].sop);
-	fprintf(f, "};\n\n");
-	fprintf(fh, "extern const unsigned char %s_map[%d];\n", tname, i);
-	fprintf(fh, "#define %s_MAP (%d)\n\n", num_name, i);
+	fprintf(fh, "};\n#define CONST_CONV(n) RARG(RARG_CONST_CONV, n)\n\n");
+	fprintf(f, "#undef CNST\n};\n\n");
 }
 
 static void unpack(const char *b, int *u) {
@@ -721,19 +733,8 @@ static void const_small(FILE *fh) {
 			"#endif\n\n"
 		);
 	const_small_sort(constsml);
-	const_small_tbl(f, 1, constsml, "cnsts", "NUM_CONSTS",
-				"CONSTANT", "CONST", "RARG_CONST", "RARG_CONST_CMPLX",
-				"Table of user visible constants");
-#if 0
-	const_small_tbl(f, 0, constsint, "cnsts_int", "NUM_CONSTS_INT",
-				"CONSTANT_INT", "CONST_INT", "RARG_CONST_INT", NULL,
-				"Table of internally used constants");
-#endif
-	const_dbl_tbl(f, constsdbl, "cnsts_dbl", "NUM_CONSTS_DBL", "CONSTANT_DBL", "CONST_DBL",
-				"Table of internally used double precision constants");
-	const_small_tbl(f, -1, conversions, "cnsts_conv", "NUM_CONSTS_CONV",
-				"CONSTANT_CONV", "CONST_CONV", "RARG_CONST_CONV", NULL,
-				"Table of metric/imperial conversion constants");
+	const_small_tbl(f);
+	const_conv_tbl(f);
 	fprintf(f, "\n#undef B\n");
 	fprintf(f, "#undef D\n\n\n");
 

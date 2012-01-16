@@ -532,7 +532,7 @@ sub process_expressions {
       my $expression = $2;
       my $evaluated = eval $expression;
 
-      my $new_line = sprintf "%0s%0s%0d // %0s", $label, $the_rest, $evaluated, $expression;
+      my $new_line = sprintf "%0s%0s %0d // %0s", $label, $the_rest, $evaluated, $expression;
       put_line($ENUM_OP, $step, $new_line);
       debug_msg(this_function((caller(0))[3]), "Evaluated '$expression' to get '$evaluated'") if $debug;
     }

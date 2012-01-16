@@ -784,8 +784,6 @@ enum nilop {
 enum rarg {
 	RARG_CONST,		// user visible constants
 	RARG_CONST_CMPLX,
-	RARG_DCONST,		// system constants
-	RARG_DCONST_CMPLX,
 	RARG_ERROR,
 	/* STO and RCL must be in operator order */
 	RARG_STO, RARG_STO_PL, RARG_STO_MI, RARG_STO_MU, RARG_STO_DV,
@@ -1072,6 +1070,7 @@ extern void copyreg_n(int d, int s);
 
 extern REGISTER *get_reg_n(int);
 extern REGISTER *get_flash_reg_n(int);
+extern REGISTER *get_const(int index, int dbl);
 
 extern void swap_reg(REGISTER *, REGISTER *);
 extern void zero_regs(REGISTER *dest, int n);

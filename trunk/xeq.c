@@ -990,10 +990,7 @@ REGISTER *get_reg_n(int n) {
 
 	if (n >= CONST_REG_BASE) {
 		n -= CONST_REG_BASE;
-		if (dbl) 
-			return (REGISTER *) (cnsts_dbl + n);
-		else
-			return (REGISTER *) (cnsts + n);
+		return get_const(n, dbl);
 	}
 	if (n >= FLASH_REG_BASE)
 		return get_flash_reg_n(n - FLASH_REG_BASE);
@@ -1012,6 +1009,28 @@ REGISTER *get_reg_n(int n) {
 REGISTER *get_flash_reg_n(int n) {
 	return (REGISTER *) reg_address(n, BackupFlash._regs + TOPREALREG - BackupFlash._numregs,
 					   BackupFlash._regs + regX_idx);
+}
+
+
+/*
+ *  Get a constatnt by index and mode
+ *  In case of a conversion, a private copy is returned
+ */
+REGISTER *get_const(int index, int dbl)
+{
+	static REGISTER result;
+	const int i = cnsts[index].index;
+	if (dbl) {
+		if (i <= 1 || i >= 128)
+			return (REGISTER *) (cnsts_d128 + (i & 0x7f));
+		packed128_from_packed(&(result.d), cnsts_d64 + i);
+	}
+	else {
+		if (i < 128)
+			return (REGISTER *) (cnsts_d64 + i);
+		packed_from_packed128(&(result.s), cnsts_d128 - 128 + i);
+	}
+	return &result;
 }
 
 
@@ -1195,11 +1214,10 @@ void clrretstk_pc(void) {
 }
 
 
-/* Commands to allow access to constants
+/* Command to allow access to constants
  */
 void cmdconst(unsigned int arg, enum rarg op) {
 	REGISTER *x = StackBase;
-	int i;
 
 	if (is_intmode()) {
 		bad_mode_error();
@@ -1211,37 +1229,7 @@ void cmdconst(unsigned int arg, enum rarg op) {
 	} else
 		lift_if_enabled();
 
-	x->s = CONSTANT(arg);
-	if (is_dblmode()) {
-		for (i=0; i<NUM_CONSTS_DBL_MAP; i++)
-			if (arg == cnsts_dbl_map[i]) {
-				x->d = CONSTANT_DBL(i);
-				return;
-			}
-		packed128_from_packed(&(x->d), &(x->s));
-	}
-}
-
-
-/* Commands to allow access to constants
- */
-void cmddconst(unsigned int arg, enum rarg op) {
-	REGISTER *x = StackBase;
-
-	if (is_intmode()) {
-		bad_mode_error();
-		return;
-	}
-	if (op == RARG_DCONST_CMPLX) {
-		lift2_if_enabled();
-		setY(&const_0);
-	} else
-		lift_if_enabled();
-
-	if (is_dblmode())
-		x->d = CONSTANT_DBL(arg);
-	else
-		packed_from_packed128(&(x->s), &( CONSTANT_DBL(arg)));
+	copyreg(x, get_const(arg, is_dblmode()));
 }
 
 

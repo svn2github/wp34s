@@ -250,7 +250,7 @@ pdf_q::			x[^2]
 			/
 			+/-
 			e[^x]
-			D# DBL_SQRT_2_PI
+			Num [sqrt]2[pi]
 			/
 			RTN
 
@@ -375,7 +375,7 @@ qf_q_inrange::		RCL .05
 			STO .06		// u = -2 LN(x)
 			DEC X
 			[sqrt]
-			D# DBL_SQRT_2_PI
+			Num [sqrt]2[pi]
 			[times]
 			RCL[times] .05
 			LN
@@ -388,7 +388,7 @@ qf_q_inrange::		RCL .05
 				+/-
 			JMP qf_q_est_done
 
-qf_q_skip2::		D# DBL_SQRT_2_PI
+qf_q_skip2::		Num [sqrt]2[pi]
 			RCL[times] .06
 			ENTER[^]
 			CUBE
