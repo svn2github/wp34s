@@ -205,16 +205,17 @@ static struct {
 	{ -1,  NULL,	  NULL		  }
 };
 
-struct constsml {
+struct _constsml {
 	const char *name;
 	const char *op;
 	const char *val;
 	const char *n2;
 };
 #define CONSTANT(n, op, val)		{ n, op, val, "" }
+#define SYSCONST(n, op, val)		{ n, op, val, "-" }
 #define CONV(n1, n2, op, val)		{ n1, op, val, n2 }
 
-struct constsml constsml[] = {
+struct _constsml constsml[] = {
 	CONSTANT("0",		"ZERO",		"0"),			// Zero
 	CONSTANT("1",		"ONE",		"1"),			// One
 	CONSTANT("a",		"PC_a",		"365.2425"),		// Days in a Gregorian year
@@ -315,9 +316,9 @@ struct constsml constsml[] = {
 //	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
 
 	/* These are used by internal routines */
-	CONSTANT("1/\003""5",	"RECIP_SQRT5",	"0.4472135954999579392818347337462552470881236719223"),
+	SYSCONST("1/\003""5",	"RECIP_SQRT5",	"0.4472135954999579392818347337462552470881236719223"),
 #ifdef NORMAL_DISTRIBUTION_AS_XROM
-	CONSTANT("\003""2PI",	"SQRT_2_PI",	"2.50662827463100050241576528481104525300698674060994"),
+	SYSCONST("\003""2PI",	"SQRT_2_PI",	"2.50662827463100050241576528481104525300698674060994"),
 #endif
 
 	CONSTANT(NULL, NULL, NULL)
@@ -328,7 +329,7 @@ struct constsml constsml[] = {
  * In general, the values are rounded to 6 or 7 digits even though
  * more accurate values are known for many of these.
  */
-struct constsml conversions[] = {
+struct _constsml conversions[] = {
 	CONV("kg",	"lb",		"KG_LBM",	"0.4535924"),		// source: NIST
 	CONV("kg",	"stone",	"KG_STONE",	"6.3502936"),		// derived: 14 lbs to a stone
 	CONV("kg",	"cwt",		"KG_CWT",	"50.8023488"),		// derived: 112lb to a long cwt
@@ -535,7 +536,7 @@ static void put_name(FILE *f, const char *name) {
 				"CONSTANT", "CONST", "RARG_CONST", "RARG_CONST_CMPLX",
 */
 static void const_small_tbl(FILE *f) {
-	int i, j=0, s_index, d_index;
+	int i, j, s_index, d_index;
 	unsigned char *p;
 	decimal64  s_tab[128];
 	decimal128 d_tab[128];
@@ -550,7 +551,8 @@ static void const_small_tbl(FILE *f) {
 	ctx.emin=-DEC_MAX_MATH;
 	ctx.round = DEC_ROUND_HALF_EVEN;
 
-	for (i=0; constsml[i].val != NULL; i++);
+	for (i=0; constsml[i].val != NULL && constsml[i].n2[0] == '\0'; i++);	// user visible
+	for (j=i; constsml[j].val != NULL; j++);				// system	
 	fprintf(fh, "\nstruct cnsts {\n"
 			"\tunsigned char index;\n"
 			"\tconst char cname[CONST_NAMELEN];\n");
@@ -558,13 +560,14 @@ static void const_small_tbl(FILE *f) {
 
 	fprintf(fh,	"/* Table of user visible constants */\n"
 			"extern const struct cnsts cnsts[];\n"
+			"#define NUM_CONSTS_CAT  %d\n"
 			"#define NUM_CONSTS      %d\n"
 			"#define CONSTANT(n)     ((decimal64 *)  get_const(n, 0))\n\n"
 			"#define CONSTANT_DBL(n) ((decimal128 *) get_const(n, 1)\n\n"
 			"#define CONST(n)        RARG(RARG_CONST, n)\n"
 			"#define CONST_CMPLX(n)  RARG(RARG_CONST_CMPLX, n)\n\n"
 			"enum {\n",
-		i);
+		i, j);
 	fprintf(f, "/* Table of user visible constants\n */\nconst struct cnsts cnsts[] = {\n");
 	fprintf(f, "#define CNST(n, index, fn) { index, fn },\n");
 
@@ -675,10 +678,13 @@ static void unpack(const char *b, int *u) {
 }
 
 static int const_small_compare(const void *v1, const void *v2) {
-	const struct constsml *cs1 = (const struct constsml *)v1;
-	const struct constsml *cs2 = (const struct constsml *)v2;
+	const struct _constsml *cs1 = (const struct _constsml *)v1;
+	const struct _constsml *cs2 = (const struct _constsml *)v2;
 	int u1[16], u2[16];
 	int i;
+
+	if (cs1->n2[0] != cs2->n2[0])
+		return cs1->n2[0] - cs2->n2[0];		// System constants moved to high index
 
 	for (i=0; i<16; i++)
 		u1[i] = u2[i] = 0;
@@ -694,11 +700,11 @@ static int const_small_compare(const void *v1, const void *v2) {
 	return - strcmp(cs1->name, cs2->name);
 }
 
-static void const_small_sort(struct constsml ctbl[]) {
+static void const_small_sort(struct _constsml ctbl[]) {
 	int n;
 
 	for (n=0; ctbl[n].val != NULL; n++);
-	qsort(ctbl, n, sizeof(struct constsml), &const_small_compare);
+	qsort(ctbl, n, sizeof(struct _constsml), &const_small_compare);
 }
 
 
