@@ -4304,7 +4304,7 @@ static void check_const_cat(void) {
 	char b1[16], b2[16];
 	char p1[64], p2[64];
 
-	for (i=1; i<NUM_CONSTS; i++) {
+	for (i=1; i<NUM_CONSTS_CAT; i++) {
 		if (compare(CONST(i-1), CONST(i), 0)) {
 			prettify(catcmd(CONST(i-1), b1), p1);
 			prettify(catcmd(CONST(i), b2), p2);
