@@ -33,6 +33,10 @@
 #define DECNUMDIGITS	1000
 #define DFLT		39
 
+#define CONST_NAMELEN		4
+#define METRIC_NAMELEN		2
+#define IMPERIAL_NAMELEN	6
+
 #define xcopy memcpy
 
 
@@ -47,11 +51,10 @@
 #include "decimal64.h"
 #include "decimal128.h"
 
-static FILE *fh, *fxrom;
+static FILE *fh;
 
 static char consts_h[ FILENAME_MAX ];
 static char consts_c[ FILENAME_MAX ];
-static char consts_xrom[ FILENAME_MAX ];
 static char *libconsts = "";
 
 /* The table of constants we're going to compile.
@@ -318,7 +321,7 @@ struct _constsml constsml[] = {
 	/* These are used by internal routines */
 	SYSCONST("1/\003""5",	"RECIP_SQRT5",	"0.4472135954999579392818347337462552470881236719223"),
 #ifdef NORMAL_DISTRIBUTION_AS_XROM
-	SYSCONST("\003""2PI",	"SQRT_2_PI",	"2.50662827463100050241576528481104525300698674060994"),
+	SYSCONST("\003""2\257",	"SQRT_2_PI",	"2.50662827463100050241576528481104525300698674060994"),
 #endif
 
 	CONSTANT(NULL, NULL, NULL)
@@ -765,21 +768,16 @@ int main(int argc, char *argv[])
 		// Acts as a prefix so be careful to supply the path delimiter
 		strcpy( consts_h, argv[1] );
 		strcpy( consts_c, argv[1] );
-		strcpy( consts_xrom, argv[1] );
 		strcpy( tmp, argv[1] );
 	}
 	strcat( consts_h, "consts.h" );
 	strcat( consts_c, "consts.c" );
-	strcat( consts_xrom, "xrom_consts.wp34s" );
 	strcat( tmp, "tmp_consts.h" );
 	if ( argc > 2 ) {
 		// Path for libconsts.a in makefile
 		libconsts = argv[2];
 	}
 
-	fxrom = fopen(consts_xrom, "w");
-	gpl_text(fxrom, "/* ", " * ", " */");
-	
 	fh = fopen(consts_h, "w");
 	gpl_text(fh, "/* ", " * ", " */");
 	fprintf(fh,	"#ifndef __CONSTS_H__\n"
@@ -787,17 +785,15 @@ int main(int argc, char *argv[])
 			"\n"
 			"#include \"xeq.h\"\n"
 			"\n"
-			"#define CONST_NAMELEN 4\n"
-			"#define METRIC_NAMELEN 2\n"
-			"#define IMPERIAL_NAMELEN 6\n"
-			"\n\n");
+			"#define CONST_NAMELEN %d\n"
+			"#define METRIC_NAMELEN %d\n"
+			"#define IMPERIAL_NAMELEN %d\n"
+			"\n\n", CONST_NAMELEN, METRIC_NAMELEN, IMPERIAL_NAMELEN);
 	fprintf(fh, "extern const unsigned short int charlengthtbl[];\n\n");
 	const_small(fh);
 	fprintf(fh, "\n\n");
 	const_big();
 	fprintf(fh,	"\n#endif\n");
 	fclose(fh);
-	fprintf(fxrom,	"\n");
-	fclose(fxrom);
 	return 0;
 }
