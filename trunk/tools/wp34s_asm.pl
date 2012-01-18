@@ -607,7 +607,7 @@ sub assemble {
       $steps_used++;
       # Alpha text needs to be treated separately since it encodes to 2 words.
       my $org_alpha_text = $alpha_text;
-      if( $alpha_text ) {
+      if( length $alpha_text ) {
         # See if the text has any escaped characters in it. Substitute them if found.
         # There may be more than one so loop until satisfied.
         while( $alpha_text =~ /\[(.+?)\]/ ) {
@@ -625,6 +625,7 @@ sub assemble {
         }
 
         my @chars = split "", $alpha_text;
+        debug_msg("assemble", "chars: " . scalar @chars) if $debug gt 1;
         $words[++$next_free_word] = hex2dec($mnem2hex{$_}) | ord($chars[0]);
 
         # Quoted alpha slots have room for 3 characters -- 1 sits with the main op-code,
@@ -633,7 +634,7 @@ sub assemble {
         #
         # Characters are present in all three of the quote slots -- 1 in the main slot
         # and 2 in the secondary slot.
-        if( $chars[1] and $chars[2] ) {
+        if( length $chars[1] and length $chars[2] ) {
           # XXX Due to a bug discovered by Pauli, the calculator misbehaves when these characters
           #     are in the 3rd character slot. To work around this, we will limit them to not being
           #     allowed in that slot.
@@ -644,7 +645,7 @@ sub assemble {
 
         # Characters are present in just 2 of the 3 quote slots -- ie: 1 in the main
         # slot and only 1 of these 2.
-        } elsif( $chars[1] ) {
+        } elsif( length $chars[1] ) {
           $words[++$next_free_word] = ord($chars[1]);
 
         # No characters are present in final 2 quote slots. Just blank it out.
@@ -941,6 +942,7 @@ sub assembler_preformat_handling {
   if( $line =~ /\S+\'(\S+)\'/ ) {
     $alpha_text = $1;
     $line =~ s/\'\S+/\'/;
+    debug_msg("assembler_preformat_handling", "'" . $alpha_text . "'") if $debug gt 1;
   }
 
   return ($line, $alpha_text);
