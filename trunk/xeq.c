@@ -1140,9 +1140,10 @@ void zero_regs(REGISTER *dest, int n) {
 		xset(dest, 0, n << 3);
 	else {
 		REGISTER *const zero = get_reg_n(CONST_REG_BASE + OP_ZERO);
+		int reg_size = is_dblmode() ? sizeof(decimal128) : sizeof(decimal64);
 		int i;
 		for (i = 0; i < n; ++i)
-			move_regs(dest + i, zero, 1);
+			move_regs(((void *)dest) + i * reg_size, zero, 1);
 	}
 #else
 	// This works for all modes
