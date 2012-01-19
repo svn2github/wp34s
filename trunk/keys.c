@@ -2197,9 +2197,9 @@ static int process(const int c) {
 		if (c == K60 || c == K63) {
 			if (Pause && isXROM(state_pc()))
 				set_pc(0);
-			set_running_off();
 			Pause = 0;
 			xeq_xrom();
+			set_running_off();
 			DispMsg = "Stopped";
 			State2.disp_freeze = 0;
 			return STATE_UNFINISHED;

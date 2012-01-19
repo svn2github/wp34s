@@ -3725,15 +3725,9 @@ void xeq_xrom(void) {
 	while (!Pause && isXROM(state_pc()) && RetStkPtr != 0) {
 		XromRunning = 1;
 		xeq_single();
-		if ((++count & 31) == 0) {
-			busy();
-			if (! XromFlags.xIN && Running == 0 && count > 1000) {
-				// Something is awry here
-				RetStkPtr = LocalRegs;
-				do_rtn(0);
-			}
-		}
 		XromRunning = 0;
+		if ((++count & 31) == 0)
+			busy();
 		if (Pause) {
 			// Special case: WHO has a PSE built in.
 			// Switch to Running mode to force continued execution.
