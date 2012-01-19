@@ -84,8 +84,7 @@ int_zero_interval::	[cmplx]RCL cr_limits
 			STO r_base
 			SF f_force
 
-int_next_size::		CL[alpha]
-			Num 1
+int_next_size::		Num 1
 			2
 			STO r_deltau
 			RCL r_k
@@ -162,8 +161,6 @@ int_no_error::		DSE r_ui2
 			x[approx]? Y
 				JMP int_done
 			CF f_twice
-			"[integral] [approx]"
-			VW[alpha]+ X
 			JMP int_next_size
 
 /* Special check now that we've got two matches in a row, we want to wait for three. */
@@ -176,7 +173,6 @@ int_done::		FS? f_twice
 int_really_done::	[cmplx]RCL cr_limits
 			STO L
 			[cmplx]x[<->] Z
-			VW[alpha]+ X
 			RTN
 
 
