@@ -121,9 +121,7 @@ int_inner::		STO r_ui
 
 			RCL r_k
 			STO r_ui2
-			1
-			2
-			1
+			Num [integral]RgB
 			STO r_ui
 			Num 1
 			INC r_k
@@ -148,8 +146,13 @@ int_row_update::	R[^]
 			x[<->] Z
 			/
 			RCL+[->]r_ui
-			INC r_ui
-			DSE r_ui2
+			ISG r_ui
+				JMP int_fin_loop
+
+			/* We're run out of registers and have to terminate now */
+			JMP int_really_done
+
+int_fin_loop::		DSE r_ui2
 				JMP int_row_update
 			STO[->]r_ui
 			FS?C f_force
