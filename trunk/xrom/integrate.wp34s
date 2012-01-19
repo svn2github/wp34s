@@ -158,6 +158,8 @@ int_no_error::		DSE r_ui2
 			STO[->]r_ui
 			FS?C f_force
 				JMP int_next_size
+			TOP?
+				MSG MSG_INTEGRATE
 			x[approx]? Y
 				JMP int_done
 			CF f_twice

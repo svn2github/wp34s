@@ -25,6 +25,7 @@
 #define	ERR_MATRIX_DIM		21
 #define	ERR_SINGULAR		22
 #define	ERR_FLASH_FULL		23
+#define MSG_INTEGRATE		24
 
-#define	MAX_ERROR		24
+#define	MAX_ERROR		25
 #endif

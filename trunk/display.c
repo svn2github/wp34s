@@ -89,13 +89,14 @@ void error_message(const unsigned int e)
 		"Word size\0too SMmALL",
 		"Too few\0dAtA Points",
 		"Invalid\0ParaMmEtEr",
-		"I/O\0Error",
+		"I/O\0",
 		"Invalid\0dAtA",
 		"Write\0Protect",
 		"Solution\0not found",
 		"Matrix\0MmISMmAtCH",
 		"Singular\0",
 		"Flash is\0Full",
+		"\004 \035\0X",		// Integral ~
 	};
 
 	if (e != ERR_NONE || Running) {
@@ -103,7 +104,15 @@ void error_message(const unsigned int e)
 		const char *q = find_char(p, '\0') + 1;
 		if (*q == '\0')
 			q = S7_ERROR;
-		message( p, q );
+		if (*q == 'X') {
+			DispMsg = p;
+			State2.disp_freeze = 0;
+			display();
+			State2.disp_freeze = Running;
+		}
+		else {
+			message( p, q );
+		}
 		State2.disp_freeze = (e != ERR_NONE);
 	}
 }
