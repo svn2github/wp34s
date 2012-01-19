@@ -1216,7 +1216,7 @@ static void show_status(void) {
 
 /* Display the list of alpha labels */
 static void show_label(void) {
-	char buf[15];
+	char buf[16];
 	unsigned short int pc = State2.digval;
 	unsigned int op = getprog(pc);
 	const int n = nLIB(pc);
