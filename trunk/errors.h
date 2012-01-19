@@ -1,21 +1,16 @@
 #ifndef __ERRORS_H__
 #define __ERRORS_H__
 
-#define	ERR_NONE		00
-#define	ERR_DOMAIN		01
-#define	ERR_BAD_DATE		02
-#define	ERR_PROG_BAD		03
-#define	ERR_INFINITY		04
-#define	ERR_MINFINITY		05
-#define	ERR_NO_LBL		06
-#define	ERR_ILLEGAL		07
-#ifdef COMPILE_XROM
-#define	ERR_RANGE		08
-#define	ERR_DIGIT		09
-#else
+#define	ERR_NONE		0
+#define	ERR_DOMAIN		1
+#define	ERR_BAD_DATE		2
+#define	ERR_PROG_BAD		3
+#define	ERR_INFINITY		4
+#define	ERR_MINFINITY		5
+#define	ERR_NO_LBL		6
+#define	ERR_ILLEGAL		7
 #define	ERR_RANGE		8
 #define	ERR_DIGIT		9
-#endif
 #define	ERR_TOO_LONG		10
 #define	ERR_RAM_FULL		11
 #define	ERR_STK_CLASH		12

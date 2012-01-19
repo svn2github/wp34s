@@ -41,6 +41,7 @@
 /* Flags */
 #define f_force		.00
 #define f_twice		.01
+#define f_error		.02
 
 
 int_bad_range::		[cmplx]RCL cr_limits
@@ -146,13 +147,13 @@ int_row_update::	R[^]
 			x[<->] Z
 			/
 			RCL+[->]r_ui
+			SF f_error
 			ISG r_ui
-				JMP int_fin_loop
+				CF f_error
+			FS? f_error
+				JMP int_really_done /* We're run out of registers and have to terminate now */
 
-			/* We're run out of registers and have to terminate now */
-			JMP int_really_done
-
-int_fin_loop::		DSE r_ui2
+			DSE r_ui2
 				JMP int_row_update
 			STO[->]r_ui
 			FS?C f_force
@@ -172,6 +173,8 @@ int_done::		FS? f_twice
 int_really_done::	[cmplx]RCL cr_limits
 			STO L
 			[cmplx]x[<->] Z
+			FS? f_error
+				JMP slv_fail_common
 			RTN
 
 

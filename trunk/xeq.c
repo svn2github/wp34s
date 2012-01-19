@@ -1140,10 +1140,11 @@ void zero_regs(REGISTER *dest, int n) {
 		xset(dest, 0, n << 3);
 	else {
 		REGISTER *const zero = get_reg_n(CONST_REG_BASE + OP_ZERO);
-		int reg_size = is_dblmode() ? sizeof(decimal128) : sizeof(decimal64);
+		const int reg_size = is_dblmode() ? sizeof(decimal128) : sizeof(decimal64);
+		char *d = (char *) dest;
 		int i;
-		for (i = 0; i < n; ++i)
-			move_regs(((void *)dest) + i * reg_size, zero, 1);
+		for (i = 0; i < n; ++i, dest += reg_size)
+			copyreg((REGISTER *) d, zero);
 	}
 #else
 	// This works for all modes
@@ -3553,7 +3554,7 @@ static void rargs(const opcode op) {
 			else
 				XromArg = (unsigned char) arg;
 #else
-			XromUserPc = find_label_from(state_pc(), arg, 0);
+			XromUserPc = find_label_from(state_pc(), arg, FIND_OP_ERROR | FIND_OP_ENDS);
 			if (XromUserPc == 0)
 				return;
 #endif
@@ -3723,15 +3724,21 @@ void xeq_xrom(void) {
 	 */
 	while (!Pause && isXROM(state_pc()) && RetStkPtr != 0) {
 		XromRunning = 1;
-		if ((++count & 31) == 0)
-			busy();
 		xeq_single();
+		if ((++count & 31) == 0) {
+			busy();
+			if (! XromFlags.xIN && Running == 0 && count > 1000) {
+				// Something is awry here
+				RetStkPtr = LocalRegs;
+				do_rtn(0);
+			}
+		}
+		XromRunning = 0;
 		if (Pause) {
 			// Special case: WHO has a PSE built in.
 			// Switch to Running mode to force continued execution.
 			Running = 1;
 		}
-		XromRunning = 0;
 	}
 }
 

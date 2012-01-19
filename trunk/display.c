@@ -92,7 +92,7 @@ void error_message(const unsigned int e)
 		"I/O\0Error",
 		"Invalid\0dAtA",
 		"Write\0Protect",
-		"Solve\0FAILEd",
+		"Solution\0not found",
 		"Matrix\0MmISMmAtCH",
 		"Singular\0",
 		"Flash is\0Full",

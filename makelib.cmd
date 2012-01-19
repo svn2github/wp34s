@@ -22,6 +22,10 @@ echo on
 %LIB% -cat -ilib %DAT% >library.cat
 copy %DAT% ..\trunk\windows\wp34sgui
 copy %DAT% ..\trunk\realbuild
+@setlocal
+cd ..\trunk\realbuild
+copy/b calc.bin+%DAT% calc_full.bin
+@endlocal
 @goto exit
 
 REM unused so far

@@ -2199,6 +2199,7 @@ static int process(const int c) {
 				set_pc(0);
 			set_running_off();
 			Pause = 0;
+			xeq_xrom();
 			DispMsg = "Stopped";
 			State2.disp_freeze = 0;
 			return STATE_UNFINISHED;
