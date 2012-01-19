@@ -41,7 +41,6 @@
 /* Flags */
 #define f_force		.00
 #define f_twice		.01
-#define f_error		.02
 
 
 int_bad_range::		[cmplx]RCL cr_limits
@@ -85,7 +84,8 @@ int_zero_interval::	[cmplx]RCL cr_limits
 			STO r_base
 			SF f_force
 
-int_next_size::		Num 1
+int_next_size::		CL[alpha]
+			Num 1
 			2
 			STO r_deltau
 			RCL r_k
@@ -147,13 +147,14 @@ int_row_update::	R[^]
 			x[<->] Z
 			/
 			RCL+[->]r_ui
-			SF f_error
 			ISG r_ui
-				CF f_error
-			FS? f_error
-				JMP int_really_done /* We're run out of registers and have to terminate now */
+				JMP int_no_error
 
-			DSE r_ui2
+			/* Out of registers -- produce an error or skip */
+			GSB int_really_done
+			JMP slv_fail_common
+
+int_no_error::		DSE r_ui2
 				JMP int_row_update
 			STO[->]r_ui
 			FS?C f_force
@@ -161,6 +162,8 @@ int_row_update::	R[^]
 			x[approx]? Y
 				JMP int_done
 			CF f_twice
+			"[integral] [approx]"
+			VW[alpha]+ X
 			JMP int_next_size
 
 /* Special check now that we've got two matches in a row, we want to wait for three. */
@@ -173,8 +176,7 @@ int_done::		FS? f_twice
 int_really_done::	[cmplx]RCL cr_limits
 			STO L
 			[cmplx]x[<->] Z
-			FS? f_error
-				JMP slv_fail_common
+			VW[alpha]+ X
 			RTN
 
 
@@ -189,3 +191,4 @@ int_really_done::	[cmplx]RCL cr_limits
 #undef r_base
 
 #undef f_force
+#undef f_twice
