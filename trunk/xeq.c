@@ -1143,7 +1143,7 @@ void zero_regs(REGISTER *dest, int n) {
 		const int reg_size = is_dblmode() ? sizeof(decimal128) : sizeof(decimal64);
 		char *d = (char *) dest;
 		int i;
-		for (i = 0; i < n; ++i, dest += reg_size)
+		for (i = 0; i < n; ++i, d += reg_size)
 			copyreg((REGISTER *) d, zero);
 	}
 #else
