@@ -360,6 +360,21 @@ decNumber *decNumberExponent(decNumber *r, const decNumber *x) {
 	int_to_dn(r, x->exponent + x->digits - 1);
 	return r;
 }
+
+/* 1 ULP
+ */
+decNumber *decNumberULP(decNumber *r, const decNumber *x) {
+	if (decNumberIsNaN(x))
+		return set_NaN(r);
+	if (decNumberIsInfinite(x))
+		return set_inf(r);
+
+	if (dn_eq0(x))
+		return decNumberZero(r);
+	dn_1(r);
+	r->exponent = x->exponent + x->digits - (is_dblmode() ? 34 : 16);
+	return r;
+}
 #endif
 
 /* Multiply Add: x + y * z

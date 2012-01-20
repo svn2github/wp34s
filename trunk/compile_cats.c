@@ -161,6 +161,7 @@ static s_opcode program_xfcn[] = {
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
+	MON(OP_ULP,		"ULP")
 #endif
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
@@ -325,6 +326,7 @@ static s_opcode catalogue[] = {
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
+	MON(OP_ULP,		"ULP")
 #endif
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
@@ -522,6 +524,9 @@ static s_opcode int_catalogue[] = {
 	RARGCMD(RARG_dRCL,	"dRCL")
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
+#endif
+#ifdef INCLUDE_MANTISSA
+	MON(OP_ULP,		"ULP")
 #endif
 };
 
