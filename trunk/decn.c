@@ -364,15 +364,20 @@ decNumber *decNumberExponent(decNumber *r, const decNumber *x) {
 /* 1 ULP
  */
 decNumber *decNumberULP(decNumber *r, const decNumber *x) {
+	int dblmode;
+
 	if (decNumberIsNaN(x))
 		return set_NaN(r);
 	if (decNumberIsInfinite(x))
 		return set_inf(r);
 
-	if (dn_eq0(x))
-		return decNumberZero(r);
+	dblmode = is_dblmode();
+
 	dn_1(r);
-	r->exponent = x->exponent + x->digits - (is_dblmode() ? 34 : 16);
+	if (dn_eq0(x))
+		r->exponent = dblmode ? -6176 : -398;
+	else
+		r->exponent = x->exponent + x->digits - (dblmode ? 34 : 16);
 	return r;
 }
 #endif

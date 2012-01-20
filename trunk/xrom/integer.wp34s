@@ -23,26 +23,5 @@
 			CLx
 			INC X
 			RTN
-
-		XLBL"SUCC"
-			SPEC?
-				JMP pred_succ_special
-		XLBL"int_SUCC"
-			ULP
-			x[<->] L
-			RCL+ L
-			RTN
-
-		XLBL"PRED"
-			SPEC?
-				JMP pred_succ_special
-		XLBL"int_PRED"
-			ULP
-			x[<->] L
-			RCL- L
-			RTN
-
-pred_succ_special::	STO L
-			RTN
 #endif
 

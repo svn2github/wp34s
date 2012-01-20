@@ -162,8 +162,6 @@ static s_opcode program_xfcn[] = {
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
 	MON(OP_ULP,		"ULP")
-	MON(OP_SUCC,		"SUCC")
-	MON(OP_PRED,		"PRED")
 #endif
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
@@ -329,8 +327,6 @@ static s_opcode catalogue[] = {
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
 	MON(OP_ULP,		"ULP")
-	MON(OP_SUCC,		"SUCC")
-	MON(OP_PRED,		"PRED")
 #endif
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
@@ -531,8 +527,6 @@ static s_opcode int_catalogue[] = {
 #endif
 #ifdef INCLUDE_MANTISSA
 	MON(OP_ULP,		"ULP")
-	MON(OP_SUCC,		"SUCC")
-	MON(OP_PRED,		"PRED")
 #endif
 };
 
