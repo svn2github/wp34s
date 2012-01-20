@@ -59,7 +59,7 @@ int_zero_interval::	[cmplx]RCL cr_limits
 			XLBL"INTEGRATE"
 			INTM?
 				ERR ERR_BAD_MODE
-			LocR 20				/* Need registers .00 to .20 */
+			LocR 21				/* Need registers .00 to .21 */
 			[cmplx]STO cr_limits
 			SPEC?
 				JMP int_bad_range
@@ -149,9 +149,8 @@ int_row_update::	R[^]
 			ISG r_ui
 				JMP int_no_error
 
-			/* Out of registers -- produce an error or skip */
-			GSB int_really_done
-			JMP slv_fail_common
+			/* Out of registers, can't get a better result */
+			JMP int_really_done
 
 int_no_error::		DSE r_ui2
 				JMP int_row_update
@@ -175,6 +174,8 @@ int_done::		FS? f_twice
 int_really_done::	[cmplx]RCL cr_limits
 			STO L
 			[cmplx]x[<->] Z
+			TOP?
+				MSG MSG_INTEGRATE
 			RTN
 
 
