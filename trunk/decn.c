@@ -377,14 +377,14 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 	dblmode = is_dblmode();
 
 	if (dblmode) {
-		expshift = 34;
-		minexp = -6176;
-		if (x->exponent < -5143)
+		expshift = DECIMAL128_Pmax;
+		minexp = DECIMAL128_Emin - DECIMAL128_Pmax + 1;
+		if (x->exponent < DECIMAL128_Emin)
 			subnormal = 1;
 	} else {
-		expshift = 16;
-		minexp = -398;
-		if (x->exponent < -383)
+		expshift = DECIMAL64_Pmax;
+		minexp = DECIMAL64_Emin - DECIMAL64_Pmax + 1;
+		if (x->exponent < DECIMAL64_Emin)
 			subnormal = 1;
 	}
 
