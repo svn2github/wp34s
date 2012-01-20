@@ -365,6 +365,9 @@ decNumber *decNumberExponent(decNumber *r, const decNumber *x) {
  */
 decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 	int dblmode;
+	int subnormal = 0;
+	int expshift;
+	int minexp;
 
 	if (decNumberIsNaN(x))
 		return set_NaN(r);
@@ -373,11 +376,23 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 
 	dblmode = is_dblmode();
 
+	if (dblmode) {
+		expshift = 34;
+		minexp = -6176;
+		if (x->exponent < -5143)
+			subnormal = 1;
+	} else {
+		expshift = 16;
+		minexp = -398;
+		if (x->exponent < -383)
+			subnormal = 1;
+	}
+
 	dn_1(r);
-	if (dn_eq0(x))
-		r->exponent = dblmode ? -6176 : -398;
+	if (dn_eq0(x) || subnormal)
+		r->exponent = minexp;
 	else
-		r->exponent = x->exponent + x->digits - (dblmode ? 34 : 16);
+		r->exponent = x->exponent + x->digits - expshift;
 	return r;
 }
 #endif
