@@ -368,6 +368,7 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 	int subnormal = 0;
 	int expshift;
 	int minexp;
+	int func;
 
 	if (decNumberIsNaN(x))
 		return set_NaN(r);
@@ -375,6 +376,7 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 		return set_inf(r);
 
 	dblmode = is_dblmode();
+	func = argKIND(XeqOpCode);
 
 	if (dblmode) {
 		expshift = DECIMAL128_Pmax;
@@ -393,6 +395,14 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 		r->exponent = minexp;
 	else
 		r->exponent = x->exponent + x->digits - expshift;
+	if (func != OP_ULP) {
+		if (x->digits == 1 && x->lsu[0] == 1)
+			r->exponent -= (! decNumberIsNegative(x)) == (func == OP_PRED);
+		if (func == OP_PRED)
+			dn_subtract(r, x, r);
+		else
+			dn_add(r, x, r);
+	}
 	return r;
 }
 #endif
