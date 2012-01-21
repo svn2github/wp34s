@@ -758,36 +758,6 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 }
 
 
-static void show_x(char *x) {
-	int i, j = 0;
-	char *p = find_char(x, '\0');
-
-	for (i=0; i<16; i++)
-		p[i] = '0';
-
-#if 0
-	// 1 + 12 + 3 version
-	for (i=1; i<=12; i++) {
-		set_dig_s(j, x[i], NULL);
-		j += SEGS_PER_DIGIT;
-	}
-	for (i=13; i<=15; i++) {
-		set_dig_s(j, x[i], NULL);
-		j += SEGS_PER_EXP_DIGIT;
-	}
-	x[1] = '\0';
-#else
-	// 4 + 12 version
-	for (i=4; i<=15; i++) {
-		set_dig_s(j, x[i], NULL);
-		j += SEGS_PER_DIGIT;
-	}
-	x[4] = '\0';
-#endif
-	set_status(x);
-}
-
-
 enum display_modes std_round_fix(const decNumber *z) {
 	decNumber b, c;
 
@@ -799,6 +769,26 @@ enum display_modes std_round_fix(const decNumber *z) {
 	if (dn_gt0(&b) && dn_gt0(&c))
 		return MODE_FIX;
 	return MODE_STD;
+}
+
+
+/* SHOW display mode
+ * in double precision show left or right part
+ */
+static void show_x(char *x) {
+	const int upper = State2.digval == 0 ? 4 : 6;
+	char *const p = find_char(x, '\0');
+	int i, j;
+
+	xset(p, '0', x + 34 - p);
+	if (State2.digval)
+		x += 16;
+
+	// 4(6) + 12 version
+	for (i = 0, j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
+		set_dig_s(j, x[upper + i], NULL);
+	x[upper] = '\0';
+	set_status(x);
 }
 
 

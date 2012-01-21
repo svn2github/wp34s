@@ -31,6 +31,9 @@
 #define STATE_BST		(OP_SPEC | OP_BST)
 #define STATE_RUNNING		(OP_SPEC | OP_RUNNING)
 #define STATE_IGNORE		(OP_SPEC | OP_IGNORE)
+#define STATE_WINDOWLEFT	(OP_SPEC | OP_WINDOWLEFT)
+#define STATE_WINDOWRIGHT	(OP_SPEC | OP_WINDOWRIGHT)
+#define STATE_SHOW		(OP_SPEC | OP_SHOW)
 
 /* Define this if the key codes map rows sequentially */
 
@@ -605,7 +608,7 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_NIL | OP_RANDOM,              OP_NIL | OP_GRAD            },
 		// Row 3
 		{ STATE_UNFINISHED,		   OP_NIL | OP_FILL            }, // ENTER
-		{ STATE_UNFINISHED,   		   STATE_UNFINISHED    	       },
+		{ STATE_WINDOWLEFT,   		   STATE_WINDOWRIGHT   	       },
 		{ RARG(RARG_BASE, 2),		   RARG(RARG_BASE, 8)          },
 		{ RARG(RARG_BASE, 10),		   RARG(RARG_BASE, 16)         },
 		{ OP_NIL | OP_CLPROG,		   OP_NIL | OP_SIGMACLEAR      },
@@ -628,7 +631,7 @@ static int process_fg_shifted(const keycode c) {
 		{ RARG_PROD            | NO_INT,   RARG_SUM           | NO_INT },
 		{ OP_MON | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },
 		// Row 7
-		{ STATE_UNFINISHED,		   STATE_UNFINISHED            },
+		{ STATE_UNFINISHED,		   STATE_SHOW		       },
 		{ OP_MON | OP_ABS,		   OP_MON | OP_RND             },
 		{ OP_MON | OP_TRUNC,		   OP_MON | OP_FRAC            },
 		{ RARG_LBL,			   OP_NIL | OP_RTN             },
@@ -673,30 +676,9 @@ static int process_fg_shifted(const keycode c) {
 		}
 		break;
 
-	case K21:				// Window left/right
-		if (UState.intm) {
-			if (shift == SHIFT_F) {
-				if (UState.int_maxw > State2.int_window)
-					State2.int_window++;
-			}
-			else {
-				if (UState.int_maxw > 0 && State2.int_window > 0)
-					State2.int_window--;
-			}
-		}	
-		break;
-
-
 	case K51:
 		State2.test = op;
 		return STATE_UNFINISHED;
-
-	case K60:
-		if (shift == SHIFT_G) {
-			process_cmdline_set_lift();
-			set_smode(SDISP_SHOW);
-		}
-		break;
 
 	case K50:
 #ifndef REALBUILD
@@ -710,7 +692,7 @@ static int process_fg_shifted(const keycode c) {
 	case K63:
 	case K64:
 		if (op != (OP_NIL | OP_RTN)) {
-			init_arg((enum rarg) (op & ~NO_INT));
+			init_arg((enum rarg) op);
 			return STATE_UNFINISHED;
 		}
 		break;
@@ -718,14 +700,9 @@ static int process_fg_shifted(const keycode c) {
 	default:
 		break;
 	}
-	if (UState.intm) {
-		if (op == (OP_NIL | OP_SIGMACLEAR)) {
-			init_arg(RARG_CF);
-			return STATE_UNFINISHED;
-		}
-		if (no_int)
-			return STATE_UNFINISHED;
-	}
+	if (no_int && UState.intm)
+		return STATE_UNFINISHED;
+
 	return check_confirm(op);
 #undef NO_INT
 }
@@ -2521,6 +2498,32 @@ void process_keycode(int c)
 
 		case STATE_RUNNING:
 			xeqprog();  // continue execution
+			break;
+
+		case STATE_WINDOWLEFT:
+			if (UState.intm) {
+				if (UState.int_maxw > State2.int_window)
+					State2.int_window++;
+				break;
+			}
+			State2.digval = 0;
+			goto dbl_show;
+
+		case STATE_WINDOWRIGHT:
+			if (UState.intm) {
+				if (UState.int_maxw > 0 && State2.int_window > 0)
+					State2.int_window--;
+				break;
+			}
+			State2.digval = 1;
+dbl_show:
+			if (is_dblmode() && State2.runmode)
+				set_smode(SDISP_SHOW);
+			break;
+
+		case STATE_SHOW:
+			process_cmdline_set_lift();
+			set_smode(SDISP_SHOW);
 			break;
 
 		case STATE_UNFINISHED:
