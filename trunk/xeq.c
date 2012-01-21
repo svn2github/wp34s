@@ -2654,14 +2654,16 @@ static void digit(unsigned int c) {
 	Cmdline[CmdLineLength] = '\0';
 
 	if (! intm && CmdLineEex) {
+		const int dblmode = is_dblmode();
 		char *p = &Cmdline[CmdLineEex + 1];
-		int emax = 384;
+		int emax = dblmode ? 999 : DECIMAL64_Emax;
 		int n;
 
 		/* Figure out the range limit for the exponent */
 		if (*p == '-') {
 			p++;
-			emax = 383;
+			if (! dblmode)
+				emax = -(DECIMAL64_Emin);
 		}
 
 		/* Now, check if the current exponent exceeds the range.
