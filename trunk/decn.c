@@ -371,12 +371,9 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 	const int func = argKIND(XeqOpCode);
 
 	if (decNumberIsSpecial(x)) {
-		if (func != OP_ULP)
-			return decNumberCopy(r, x);
-		if (decNumberIsNaN(x))
-			return set_NaN(r);
-		if (decNumberIsInfinite(x))
+		if (func == OP_ULP && decNumberIsInfinite(x))
 			return set_inf(r);
+		return decNumberCopy(r, x);
 	}
 
 	dblmode = is_dblmode();
