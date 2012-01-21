@@ -396,7 +396,7 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 	else
 		r->exponent = x->exponent + x->digits - expshift;
 	if (func != OP_ULP) {
-		if (x->digits == 1 && x->lsu[0] == 1)
+		if (! subnormal && x->digits == 1 && x->lsu[0] == 1)
 			r->exponent -= (! decNumberIsNegative(x)) == (func == OP_PRED);
 		if (func == OP_PRED)
 			dn_subtract(r, x, r);
