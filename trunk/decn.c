@@ -368,15 +368,18 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 	int subnormal = 0;
 	int expshift;
 	int minexp;
-	int func;
+	const int func = argKIND(XeqOpCode);
 
-	if (decNumberIsNaN(x))
-		return set_NaN(r);
-	if (decNumberIsInfinite(x))
-		return set_inf(r);
+	if (decNumberIsSpecial(x)) {
+		if (func != OP_ULP)
+			return decNumberCopy(r, x);
+		if (decNumberIsNaN(x))
+			return set_NaN(r);
+		if (decNumberIsInfinite(x))
+			return set_inf(r);
+	}
 
 	dblmode = is_dblmode();
-	func = argKIND(XeqOpCode);
 
 	if (dblmode) {
 		expshift = DECIMAL128_Pmax;
