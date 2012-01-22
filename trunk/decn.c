@@ -994,6 +994,46 @@ void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c) {
 }
 
 
+/*
+ *  Common helper for angle conversions
+ *  Checks the present mode and converts accordingly
+ */
+static decNumber *decNumberDRG_internal(decNumber *res, const decNumber *x, s_opcode op) {
+#define DRG(op,mode) (((op) << 2) | (mode))
+	
+	switch (DRG(argKIND(op), get_trig_mode())) {
+
+	case DRG(OP_2DEG,  TRIG_RAD):
+	case DRG(OP_RAD2,  TRIG_DEG):
+		return decNumberR2D(res, x);
+
+	case DRG(OP_2DEG,  TRIG_GRAD):
+	case DRG(OP_GRAD2, TRIG_DEG):
+		return decNumberG2D(res, x);
+
+	case DRG(OP_2RAD,  TRIG_DEG):
+	case DRG(OP_DEG2,  TRIG_RAD):
+		return decNumberD2R(res, x);
+
+	case DRG(OP_2RAD,  TRIG_GRAD):
+	case DRG(OP_GRAD2, TRIG_RAD):
+		return decNumberG2R(res, x);
+
+	case DRG(OP_2GRAD, TRIG_DEG):
+	case DRG(OP_DEG2,  TRIG_GRAD):
+		return decNumberD2G(res, x);
+
+	case DRG(OP_2GRAD, TRIG_RAD):
+	case DRG(OP_RAD2,  TRIG_GRAD):
+		return decNumberR2G(res, x);
+
+	default:
+		return decNumberCopy(res, x);
+	}
+#undef DRG
+}
+
+
 /* Check for right angle multiples and if exact, return the apropriate
  * quadrant constant directly.
  */
@@ -1033,37 +1073,36 @@ static int cvt_2rad(decNumber *res, const decNumber *x,
 		const decNumber *r0, const decNumber *r1,
 		const decNumber *r2, const decNumber *r3) {
 	decNumber fm;
+	const decNumber *circle, *right;
 
 	switch (get_trig_mode()) {
+
 	case TRIG_RAD:
 		decNumberMod(res, x, &const_2PI);
 		break;
+
 	case TRIG_DEG:
-		decNumberMod(&fm, x, &const_360);
-                if (decNumberIsNegative(&fm))
-                    dn_add(&fm, &fm, &const_360);
-		if (r0 != NULL && right_angle(res, &fm, &const_90, r0, r1, r2, r3))
-			return 0;
-		decNumberD2R(res, &fm);
-		break;
+		circle = &const_360;
+		right = &const_90;
+		goto convert;
+
 	case TRIG_GRAD:
-		decNumberMod(&fm, x, &const_400);
+		circle = &const_400;
+		right = &const_100;
+	convert:
+		decNumberMod(&fm, x, circle);
                 if (decNumberIsNegative(&fm))
-                    dn_add(&fm, &fm, &const_400);
-		if (r0 != NULL && right_angle(res, &fm, &const_100, r0, r1, r2, r3))
+                    dn_add(&fm, &fm, circle);
+		if (r0 != NULL && right_angle(res, &fm, right, r0, r1, r2, r3))
 			return 0;
-		decNumberG2R(res, &fm);
+		decNumberDRG_internal(res, &fm, OP_2RAD);
 		break;
 	}
 	return 1;
 }
 
 static void cvt_rad2(decNumber *res, const decNumber *x) {
-	switch (get_trig_mode()) {
-	case TRIG_RAD:	decNumberCopy(res, x);		break;
-	case TRIG_DEG:	decNumberR2D(res, x);	break;
-	case TRIG_GRAD:	decNumberR2G(res, x);	break;
-	}
+	decNumberDRG_internal(res, x, OP_RAD2);	
 }
 
 /* Calculate sin and cos of the given number in radians.
@@ -1586,58 +1625,8 @@ decNumber *decNumberD2G(decNumber *res, const decNumber *x) {
 	return dn_divide(res, x, &const_0_9);
 }
 
-decNumber *decNumber2Deg(decNumber *res, const decNumber *x) {
-	switch (get_trig_mode()) {
-	case TRIG_DEG:	decNumberCopy(res, x);		break;
-	case TRIG_RAD:	decNumberR2D(res, x);	break;
-	case TRIG_GRAD:	decNumberG2D(res, x);	break;
-	}
-	return res;
-}
-
-decNumber *decNumber2Rad(decNumber *res, const decNumber *x) {
-	switch (get_trig_mode()) {
-	case TRIG_DEG:	decNumberD2R(res, x);	break;
-	case TRIG_RAD:	decNumberCopy(res, x);		break;
-	case TRIG_GRAD:	decNumberG2R(res, x);	break;
-	}
-	return res;
-}
-
-decNumber *decNumber2Grad(decNumber *res, const decNumber *x) {
-	switch (get_trig_mode()) {
-	case TRIG_DEG:	decNumberD2G(res, x);	break;
-	case TRIG_RAD:	decNumberR2G(res, x);	break;
-	case TRIG_GRAD:	decNumberCopy(res, x);		break;
-	}
-	return res;
-}
-
-decNumber *decNumberDeg2(decNumber *res, const decNumber *x) {
-	switch (get_trig_mode()) {
-	case TRIG_DEG:	decNumberCopy(res, x);		break;
-	case TRIG_RAD:	decNumberD2R(res, x);	break;
-	case TRIG_GRAD:	decNumberD2G(res, x);	break;
-	}
-	return res;
-}
-
-decNumber *decNumberRad2(decNumber *res, const decNumber *x) {
-	switch (get_trig_mode()) {
-	case TRIG_DEG:	decNumberR2D(res, x);	break;
-	case TRIG_RAD:	decNumberCopy(res, x);		break;
-	case TRIG_GRAD:	decNumberR2G(res, x);	break;
-	}
-	return res;
-}
-
-decNumber *decNumberGrad2(decNumber *res, const decNumber *x) {
-	switch (get_trig_mode()) {
-	case TRIG_DEG:	decNumberG2D(res, x);	break;
-	case TRIG_RAD:	decNumberG2R(res, x);	break;
-	case TRIG_GRAD:	decNumberCopy(res, x);		break;
-	}
-	return res;
+decNumber *decNumberDRG(decNumber *res, const decNumber *x) {
+	return decNumberDRG_internal(res, x, XeqOpCode);
 }
 
 /* Check the arguments a little and perform the computation of

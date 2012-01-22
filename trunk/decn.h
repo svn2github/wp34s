@@ -103,12 +103,7 @@ extern decNumber *decNumberSquare(decNumber *r, const decNumber *x);
 extern decNumber *decNumberCube(decNumber *r, const decNumber *x);
 extern decNumber *decNumberCubeRoot(decNumber *r, const decNumber *x);
 
-extern decNumber *decNumber2Deg(decNumber *res, const decNumber *x);
-extern decNumber *decNumber2Rad(decNumber *res, const decNumber *x);
-extern decNumber *decNumber2Grad(decNumber *res, const decNumber *x);
-extern decNumber *decNumberDeg2(decNumber *res, const decNumber *x);
-extern decNumber *decNumberRad2(decNumber *res, const decNumber *x);
-extern decNumber *decNumberGrad2(decNumber *res, const decNumber *x);
+extern decNumber *decNumberDRG(decNumber *res, const decNumber *x);
 
 extern decNumber *decNumberSin(decNumber *res, const decNumber *x);
 extern decNumber *decNumberCos(decNumber *res, const decNumber *x);
