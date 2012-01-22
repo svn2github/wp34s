@@ -774,19 +774,35 @@ enum display_modes std_round_fix(const decNumber *z) {
 
 /* SHOW display mode
  * in double precision show left or right part
+ * 4 + 12 + 3 or 6 + 10 + 4 version
  */
-static void show_x(char *x) {
-	const int upper = State2.digval == 0 ? 4 : 6;
+static void show_x(char *x, int exp) {
+	const int dbl = is_dblmode();
+	const int upper = dbl ? 6 : 4;
 	char *const p = find_char(x, '\0');
 	int i, j;
 
 	xset(p, '0', x + 34 - p);
 	if (State2.digval)
-		x += 16;
+		x += 16;	// right half
+	else {
+		if (dbl) {
+			if (exp < 0) {
+				x[16] = '-';
+				exp = -exp;
+			}
+			else
+				x[16] = ' ';
+			j = exp / 1000;
+			x[17] = '0' + j;
+			exp -= 1000 * j;
+		}
+		set_exp(exp, 1, NULL);
+	}
 
-	// 4(6) + 12 version
 	for (i = 0, j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
 		set_dig_s(j, x[upper + i], NULL);
+
 	x[upper] = '\0';
 	set_status(x);
 }
@@ -802,7 +818,7 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 	int show_exp = 0;
 	int j;
 	char mantissa[64];
-	int exp;
+	int exp = 0;
 	char *p = mantissa;
 	char *r;
 	const char *q;
@@ -836,6 +852,7 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 	if (State2.smode == SDISP_SHOW) {
 		dn_abs(&z, &z);
 		decNumberNormalize(&z, &z, &Ctx);
+		exp = z.exponent + z.digits - 1;
 		z.exponent = 0;
 	}
 
@@ -851,7 +868,7 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 		decNumberToString(&z, x);
 
 	if (State2.smode == SDISP_SHOW) {
-		show_x(x);
+		show_x(x, exp);
 		return;
 	}
 

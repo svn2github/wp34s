@@ -2500,30 +2500,29 @@ void process_keycode(int c)
 			xeqprog();  // continue execution
 			break;
 
-		case STATE_WINDOWLEFT:
-			if (UState.intm) {
-				if (UState.int_maxw > State2.int_window)
-					State2.int_window++;
-				break;
-			}
-			State2.digval = 0;
-			goto dbl_show;
-
 		case STATE_WINDOWRIGHT:
 			if (UState.intm) {
 				if (UState.int_maxw > 0 && State2.int_window > 0)
 					State2.int_window--;
 				break;
 			}
-			State2.digval = 1;
-dbl_show:
-			if (is_dblmode() && State2.runmode)
-				set_smode(SDISP_SHOW);
-			break;
+			State2.digval = is_dblmode();
+			goto show;
 
+		case STATE_WINDOWLEFT:
+			if (UState.intm) {
+				if (UState.int_maxw > State2.int_window)
+					State2.int_window++;
+				break;
+			}
+			// no break;
 		case STATE_SHOW:
-			process_cmdline_set_lift();
-			set_smode(SDISP_SHOW);
+			State2.digval = 0;
+		show:
+			if (State2.runmode || c == STATE_SHOW) {
+				process_cmdline_set_lift();
+				set_smode(SDISP_SHOW);
+			}
 			break;
 
 		case STATE_UNFINISHED:
