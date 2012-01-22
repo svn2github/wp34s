@@ -173,10 +173,11 @@ void int_to_dn(decNumber *x, int n) {
 }
 
 int dn_to_int(const decNumber *x) {
-	decNumber y;
+	decNumber y, z;
 	char buf[64];
 
-	decNumberRescale(&y, x, &const_0, &Ctx);
+        decNumberTrunc(&z, x);
+	decNumberRescale(&y, &z, &const_0, &Ctx);
 	decNumberToString(&y, buf);
 	return s_to_i(buf);
 }
