@@ -19,8 +19,12 @@
 
 #include "xeq.h"
 
-// true iff the number is a NaN or infinite
+// true if the number is a NaN or infinite
 #define decNumberIsSpecial(x)	((x)->bits & DECSPECIAL)
+
+#ifdef INCLUDE_DIGAMMA
+extern const decNumber *const digamma_consts[];
+#endif
 
 extern int dn_gt0(const decNumber *x);
 extern int dn_lt0(const decNumber *x);
@@ -155,9 +159,6 @@ extern decNumber *decNumberGamma(decNumber *res, const decNumber *x);
 extern decNumber *decNumberLnGamma(decNumber *res, const decNumber *x);
 extern decNumber *decNumberPsi(decNumber *res, const decNumber *x);
 extern decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *y);
-
-extern const decNumber *const gamma_consts[];
-extern const decNumber *const digamma_consts[];
 
 extern decNumber *decNumberERF(decNumber *res, const decNumber *x);
 extern decNumber *decNumberERFC(decNumber *res, const decNumber *x);

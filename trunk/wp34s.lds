@@ -40,6 +40,7 @@ SECTIONS
     .cmdtab :
     {
     	*(.cmdtab)
+    	*(.implicit_consts)
     } >cmdtab 
       
     .fixed : 

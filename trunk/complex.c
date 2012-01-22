@@ -724,7 +724,8 @@ static void c_lg(decNumber *rx, decNumber *ry, const decNumber *x, const decNumb
 	decNumberZero(&s2);
 	dn_add(&t1, x, &const_21);		// ( t1, y )
 	for (k=20; k>=0; k--) {
-		cmplxDivideRealBy(&u1, &u2, gamma_consts[k], &t1, y);
+		decimal128ToNumber(CONSTANT_DBL(OP_GAMMA_C01 + k), &v1);
+		cmplxDivideRealBy(&u1, &u2, &v1, &t1, y);
 		dn_dec(&t1);
 		cmplxAdd(&s1, &s2, &s1, &s2, &u1, &u2);
 	}

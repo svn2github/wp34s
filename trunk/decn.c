@@ -15,6 +15,7 @@
  */
 
 #include "decn.h"
+#include "decNumber/decimal128.h"
 #include "xeq.h"
 #include "consts.h"
 #include "complex.h"
@@ -22,6 +23,7 @@
 #include "int.h"
 #include "serial.h"
 #include "lcd.h"
+
 
 // #define DUMP1
 #ifdef DUMP1
@@ -1699,16 +1701,6 @@ decNumber *decNumberPerm(decNumber *res, const decNumber *x, const decNumber *y)
 }
 
 
-const decNumber *const gamma_consts[21] = {
-	&const_gammaC01, &const_gammaC02, &const_gammaC03,
-	&const_gammaC04, &const_gammaC05, &const_gammaC06,
-	&const_gammaC07, &const_gammaC08, &const_gammaC09,
-	&const_gammaC10, &const_gammaC11, &const_gammaC12,
-	&const_gammaC13, &const_gammaC14, &const_gammaC15,
-	&const_gammaC16, &const_gammaC17, &const_gammaC18,
-	&const_gammaC19, &const_gammaC20, &const_gammaC21,
-};
-
 static void dn_LnGamma(decNumber *res, const decNumber *x) {
 	decNumber s, t, u, v;
 	int k;
@@ -1716,7 +1708,8 @@ static void dn_LnGamma(decNumber *res, const decNumber *x) {
 	decNumberZero(&s);
 	dn_add(&t, x, &const_21);
 	for (k=20; k>=0; k--) {
-		dn_divide(&u, gamma_consts[k], &t);
+		decimal128ToNumber(CONSTANT_DBL(OP_GAMMA_C01 + k), &v);
+		dn_divide(&u, &v, &t);
 		dn_dec(&t);
 		dn_add(&s, &s, &u);
 	}
