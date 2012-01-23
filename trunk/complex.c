@@ -843,15 +843,6 @@ void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decN
 #endif
 }
 
-void cmplxFactorial(decNumber *rx, decNumber *ry, const decNumber *xin, const decNumber *y) {
-#ifndef TINY_BUILD
-	decNumber x;
-
-	dn_p1(&x, xin);
-	cmplxGamma(rx, ry, &x, y);
-#endif
-}
-
 #ifdef INCLUDE_DBLFACT
 void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 #ifndef TINY_BUILD
