@@ -91,17 +91,11 @@ extern void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const dec
 extern void cmplxSin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxCos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxAsin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxAcos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxAtan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxSinc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxSinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxCosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxAsinh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxAcosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
