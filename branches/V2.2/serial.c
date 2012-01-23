@@ -168,7 +168,7 @@ static int open_port_default( void )
 	}
 #endif
 	close_port_reset_state();
-	if ( open_port( baud, 8, 1, 'N' ) ) {
+	if ( open_port( baud, 8, 'N', 1 ) ) {
 		return 1;
 	}
 	serial_state( 1 );
