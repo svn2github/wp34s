@@ -1,0 +1,129 @@
+		XLBL"cpx_ROUND"
+			xIN MONADIC_COMPLEX
+			ROUND
+			x[<->] Y
+			ROUND
+			JMP cpx_trunc_exit
+
+		XLBL"cpx_FRAC"
+			xIN MONADIC_COMPLEX
+			FP
+			x[<->] Y
+			FP
+			JMP cpx_trunc_exit
+
+		XLBL"cpx_TRUNC"
+			xIN MONADIC_COMPLEX
+			IP
+			x[<->] Y
+			IP
+cpx_trunc_exit::	x[<->] Y
+			xOUT xOUT_NORMAL
+
+		XLBL"cpx_CONJ"
+			xIN MONADIC_COMPLEX
+			GSB cpx_conj
+			xOUT xOUT_NORMAL
+
+cpx_conj::		x[<->] Y
+			+/-
+			x[<->] Y
+			RTN
+
+		XLBL"cpx_FACT"
+			xIN MONADIC_COMPLEX
+			INC X
+			[cmplx][GAMMA]
+			xOUT xOUT_NORMAL
+
+
+/**************************************************************************/
+/* Complex inverse trig functions.
+ */
+		XLBL"cpx_ASIN"
+			xIN MONADIC_COMPLEX
+			GSB cpx_asin
+			xOUT xOUT_NORMAL
+
+cpx_asin::		+/-
+			x[<->] Y
+			GSB cpx_asinh
+			x[<->] Y
+			+/-
+			RTN
+
+		XLBL"cpx_ACOS"
+			xIN MONADIC_COMPLEX
+			GSB cpx_asin
+			[cmplx]+/-
+			Num [pi]/2
+			+
+			xOUT xOUT_NORMAL
+
+		XLBL"cpx_ATAN"
+			xIN MONADIC_COMPLEX
+			RCL X
+			+/-
+			RCL Z
+			INC X
+			[cmplx]LN
+			RCL Z
+			Num 1
+			RCL- B
+			[cmplx]LN
+			[cmplx]-
+			.
+			5
+			Num 0
+			[cmplx][times]
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Complex inverse hyperbolic trig functions.
+ */
+		XLBL"cpx_ASINH"
+			xIN MONADIC_COMPLEX
+			GSB cpx_asinh
+			xOUT xOUT_NORMAL
+			
+cpx_asinh::		x[>=]0?
+				JMP cpx_asinh_pos
+			SF .00
+			[cmplx]+/-
+cpx_asinh_pos::		[cmplx]FILL
+			[cmplx]x[^2]
+			INC X
+			[cmplx][sqrt]
+			[cmplx]+
+			[cmplx]LN
+			FS? .00
+				[cmplx]+/-
+			RTN
+
+		XLBL"cpx_ACOSH"
+			xIN MONADIC_COMPLEX
+			[cmplx]FILL
+			INC X
+			[cmplx][sqrt]
+			[cmplx]x[<->] Z
+			DEC X
+			[cmplx][sqrt]
+			[cmplx][times]
+			[cmplx]+
+			[cmplx]LN
+			xOUT xOUT_NORMAL
+
+		XLBL"cpx_ATANH"
+			xIN MONADIC_COMPLEX
+			[cmplx]# 1
+			[cmplx]x[<->] Z
+			[cmplx]-
+			[cmplx]RCL L
+			INC X
+			[cmplx]x[<->] Z
+			[cmplx]/
+			[cmplx]LN
+			Num 0
+			2
+			[cmplx]/
+			xOUT xOUT_NORMAL
