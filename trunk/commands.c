@@ -286,8 +286,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_MANTISSA, &decNumberMantissa,	NOFN,		NOFN,		"MANT")
 	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT")
 	FUNC(OP_ULP,	  &decNumberULP,	NOFN,		XMI(int_ULP),	"ULP")
-	FUNC(OP_SUCC,	  &decNumberULP,	NOFN,		XMI(int_SUCC),	"SUCC")
-	FUNC(OP_PRED,	  &decNumberULP,	NOFN,		XMI(int_PRED),	"PRED")
 #endif
 	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M-ALL")
 	FUNC(OP_MAT_DIAG, &matrix_diag,		NOFN,		NOFN,		"M-DIAG")
@@ -389,6 +387,9 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M-ROW")
 	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M-COL")
 	FUNC(OP_MAT_COPY, &matrix_copy,		NOFN,		NOFN,		"M.COPY")
+#ifdef INCLUDE_MANTISSA
+	FUNC(OP_NEIGHBOUR,&decNumberNeighbour,	NOFN,		NOFN,		"NEIGHB")
+#endif
 #undef FUNC
 };
 #if COMMANDS_PASS != 2

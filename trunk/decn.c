@@ -32,7 +32,7 @@ static FILE *debugf = NULL;
 
 static void open_debug(void) {
 	if (debugf == NULL) {
-		debugf = fopen("/dev/ttys001", "w");
+		debugf = fopen("/dev/pts/3", "w");
 	}
 }
 static void dump1(const decNumber *a, const char *msg) {
@@ -365,17 +365,18 @@ decNumber *decNumberExponent(decNumber *r, const decNumber *x) {
 
 /* 1 ULP
  */
-decNumber *decNumberULP(decNumber *r, const decNumber *x) {
+static int realULP(decNumber *r, const decNumber *x) {
 	int dblmode;
 	int subnormal = 0;
 	int expshift;
 	int minexp;
-	const int func = argKIND(XeqOpCode);
 
 	if (decNumberIsSpecial(x)) {
-		if (func == OP_ULP && decNumberIsInfinite(x))
-			return set_inf(r);
-		return decNumberCopy(r, x);
+		if (decNumberIsInfinite(x))
+			set_inf(r);
+		else
+			set_NaN(r);
+		return 0;
 	}
 
 	dblmode = is_dblmode();
@@ -397,14 +398,35 @@ decNumber *decNumberULP(decNumber *r, const decNumber *x) {
 		r->exponent = minexp;
 	else
 		r->exponent = x->exponent + x->digits - expshift;
-	if (func != OP_ULP) {
-		if (! subnormal && x->digits == 1 && x->lsu[0] == 1)
-			r->exponent -= (! decNumberIsNegative(x)) == (func == OP_PRED);
-		if (func == OP_PRED)
-			dn_subtract(r, x, r);
-		else
-			dn_add(r, x, r);
-	}
+	return subnormal;
+}
+
+decNumber *decNumberULP(decNumber *r, const decNumber *x) {
+	realULP(r, x);
+	return r;
+}
+
+decNumber *decNumberNeighbour(decNumber *r, const decNumber *y, const decNumber *x) {
+	decNumber ulp;
+	int down, subnormal;
+
+	if (decNumberIsNaN(y))
+		return set_NaN(r);
+	if (decNumberIsSpecial(x))
+		return decNumberCopy(r, x);
+	dn_compare(&ulp, y, x);
+	if (dn_eq0(&ulp))
+		return decNumberCopy(r, y);
+
+	down = decNumberIsNegative(&ulp) ? 1 : 0;
+	subnormal = realULP(&ulp, x);
+
+	if (! subnormal && x->digits == 1 && x->lsu[0] == 1)
+		ulp.exponent -= (! decNumberIsNegative(x)) == down;
+	if (down)
+		dn_subtract(r, x, &ulp);
+	else
+		dn_add(r, x, &ulp);
 	return r;
 }
 #endif

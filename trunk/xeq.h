@@ -617,7 +617,7 @@ enum {
 	OP_RECV1,
 #endif
 #ifdef INCLUDE_MANTISSA
-	OP_MANTISSA, OP_EXPONENT, OP_ULP, OP_SUCC, OP_PRED,
+	OP_MANTISSA, OP_EXPONENT, OP_ULP,
 #endif
 	OP_MAT_ALL, OP_MAT_DIAG,
 	OP_MAT_TRN,
@@ -667,6 +667,10 @@ enum {
 #endif
 	OP_MAT_ROW, OP_MAT_COL,
 	OP_MAT_COPY,
+
+#ifdef INCLUDE_MANTISSA
+	OP_NEIGHBOUR,
+#endif
 
 	NUM_DYADIC	// Last entry defines number of operations
 };

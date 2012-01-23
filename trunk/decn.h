@@ -68,6 +68,7 @@ extern int is_int(const decNumber *);
 extern decNumber *decNumberMantissa(decNumber *r, const decNumber *a);
 extern decNumber *decNumberExponent(decNumber *r, const decNumber *a);
 extern decNumber *decNumberULP(decNumber *r, const decNumber *a);
+extern decNumber *decNumberNeighbour(decNumber *, const decNumber *, const decNumber *);
 
 extern decNumber *decNumberXRoot(decNumber *r, const decNumber *a, const decNumber *b);
 extern long long int intXRoot(long long int y, long long int x);
