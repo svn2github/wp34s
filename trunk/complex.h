@@ -67,11 +67,9 @@ extern void cmplxToPolar(decNumber *r, decNumber *t, const decNumber *x, const d
 
 
 /* Monadic operations */
-extern void cmplxRnd(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxAbs(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxMinus(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxConj(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
@@ -110,9 +108,6 @@ extern void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, 
 extern void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-
-extern void cmplxFrac(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplx_NaN(decNumber *, decNumber *);
 

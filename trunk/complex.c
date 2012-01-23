@@ -270,12 +270,6 @@ void cmplxMinus(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 	dn_minus(ry, b);
 }
 
-// conj(a + i b) = a - i b
-void cmplxConj(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	decNumberCopy(rx, a);
-	dn_minus(ry, b);
-}
-
 // 1 / (c + i d) = c / (c*c + d*d) + i (- d) / (c*c + d*d)
 void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *c, const decNumber *d) {
 #ifndef TINY_BUILD
@@ -933,22 +927,6 @@ extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *ain, const d
 }
 #endif 
 
-
-void cmplxRnd(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	decNumberRnd(rx, a);
-	decNumberRnd(ry, b);
-}
-
-
-void cmplxFrac(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	decNumberFrac(rx, a);
-	decNumberFrac(ry, b);
-}
-
-void cmplxTrunc(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	decNumberTrunc(rx, a);
-	decNumberTrunc(ry, b);
-}
 
 #ifdef INCLUDE_ELLIPTIC
 #ifndef TINY_BUILD

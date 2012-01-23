@@ -120,13 +120,13 @@ CMDTAB const struct monfunc_cmdtab monfuncs_ct[ NUM_MONADIC ] = {
 #else
 const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #endif
-	FUNC(OP_FRAC,	&decNumberFrac,		&cmplxFrac,	&intFP,		"FP")
+	FUNC(OP_FRAC,	&decNumberFrac,		XMC(cpx_FRAC),	&intFP,		"FP")
 	FUNC(OP_FLOOR,	&decNumberFloor,	NOFN,		&intIP,		"FLOOR")
 	FUNC(OP_CEIL,	&decNumberCeil,		NOFN,		&intIP,		"CEIL")
 	FUNC(OP_ROUND,	&decNumberRound,	NOFN,		&intIP,		"ROUNDI")
-	FUNC(OP_TRUNC,	&decNumberTrunc,	&cmplxTrunc,	&intIP,		"IP")
+	FUNC(OP_TRUNC,	&decNumberTrunc,	XMC(cpx_TRUNC),	&intIP,		"IP")
 	FUNC(OP_ABS,	&dn_abs,		&cmplxAbs,	&intAbs,	"ABS")
-	FUNC(OP_RND,	&decNumberRnd,		&cmplxRnd,	&intIP,		"ROUND")
+	FUNC(OP_RND,	&decNumberRnd,		XMC(cpx_ROUND),	&intIP,		"ROUND")
 	FUNC(OP_SIGN,	&decNumberSign,		&cmplxSign,	&intSign,	"SIGN")
 	FUNC(OP_LN,	&dn_ln,			&cmplxLn,	NOFN,		"LN")
 	FUNC(OP_EXP,	&dn_exp,		&cmplxExp,	NOFN,		"e\234")
@@ -189,7 +189,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_RAD2GRD,&decNumberR2G,		NOFN,		NOFN,		"rad\015G")
 	FUNC(OP_GRD2RAD,&decNumberG2R,		NOFN,		NOFN,		"G\015rad")
 	FUNC(OP_CCHS,	NOFN,			&cmplxMinus,	NOFN,		"\024+/-")
-	FUNC(OP_CCONJ,	NOFN,			&cmplxConj,	NOFN,		"CONJ")
+	FUNC(OP_CCONJ,	NOFN,			XMC(cpx_CONJ),	NOFN,		"CONJ")
 	FUNC(OP_ERF,	&decNumberERF,		NOFN,		NOFN,		"erf")
 	FUNC(OP_ERFC,	&decNumberERFC,		NOFN,		NOFN,		"erfc")
 #ifdef NORMAL_DISTRIBUTION_AS_XROM
