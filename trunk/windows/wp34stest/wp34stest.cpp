@@ -240,17 +240,17 @@ int main()
     // begin tests. uncomment as necessary
     // more need adding..
 
-    //logTest();
-    //logTestNear1();
-    //logTestVeryNear1();
-    //sinTest();
-    //cosTest();
-    //tanTest();
-    //expTest();
-    //asinTest();
-    //acosTest();
-    //atanTest();
-    //sinhTest();
+    logTest();
+    logTestNear1();
+    logTestVeryNear1();
+    sinTest();
+    cosTest();
+    tanTest();
+    expTest();
+    asinTest();
+    acosTest();
+    atanTest();
+    sinhTest();
     gammaTest();
  
     return 0;

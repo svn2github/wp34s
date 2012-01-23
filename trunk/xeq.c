@@ -1177,6 +1177,7 @@ void zero_Y(void) {
 
 void clrx(enum nilop op) {
 	zero_X();
+	State.state_lift = 0;
 }
 
 /* Zero out the stack
