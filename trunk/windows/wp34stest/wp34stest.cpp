@@ -35,7 +35,7 @@ extern "C" {
 	enum shifts shift_down(void) { return SHIFT_N; }
 }
 // we have one context
-static decContext Ctx;
+extern decContext Ctx;
 
 typedef Dec Bf(const Dec&);
 typedef MAPM Mf(const MAPM&);
@@ -224,9 +224,12 @@ static void gammaTest()
 
 int main()
 {
-
     // initialise the dec context
-    xeq_init_contexts();
+    decContextDefault(&Ctx, DEC_INIT_BASE);
+    Ctx.digits = DECNUMDIGITS;
+    Ctx.emax=DEC_MAX_MATH;
+    Ctx.emin=-DEC_MAX_MATH;
+    Ctx.round = DEC_ROUND_HALF_EVEN;
     
     // be sure to be in radians
     UState.trigmode = TRIG_RAD;
