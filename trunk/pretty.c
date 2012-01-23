@@ -109,9 +109,8 @@ void dump_opcodes(FILE *f) {
 				continue;
 			} 
 			else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
-				fprintf(f, "0x%04x\tcmd\t%s# %s%s\n", c, 
-					cmd == RARG_CONST_CMPLX ? "[cmplx]" : "", cmdpretty, 
-					(c & RARG_MASK) >= NUM_CONSTS_CAT ? "\txrom" : "" );
+				fprintf(f, "0x%04x\tcmd\t%s# %s\n", c, 
+					cmd == RARG_CONST_CMPLX ? "[cmplx]" : "", cmdpretty );
 				continue;
 			} 
 			else if (cmd == RARG_CONV) {

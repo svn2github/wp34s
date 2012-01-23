@@ -1235,6 +1235,15 @@ void cmdconst(unsigned int arg, enum rarg op) {
 	copyreg(x, get_const(arg, is_dblmode()));
 }
 
+/*
+ *  Return the argument as a small integer
+ */
+void cmdindex(unsigned int arg, enum rarg op)
+{
+	lift_if_enabled();
+	setX_int_sgn(arg, 0);
+}
+
 
 /* Store/recall code here.
  * These two are pretty much the same so we define some utility routines first.

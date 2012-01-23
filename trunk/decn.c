@@ -1714,12 +1714,22 @@ static void dn_LnGamma(decNumber *res, const decNumber *x) {
 		dn_add(&s, &s, &u);
 	}
 	dn_add(&t, &s, &const_gammaC00);
+#if 0
 	dn_multiply(&u, &t, &const_2rootEonPI);
 	dn_ln(&s, &u);
+#else
+	dn_ln(&u, &t);
+	dn_add(&s, &u, &const_ln2rootEonPI);
+#endif
 
 	dn_add(&t, x, &const_gammaR);
+#if 0
 	dn_divide(&u, &t, &const_e);
 	dn_ln(&t, &u);
+#else
+	dn_ln(&u, &t);
+	dn_add(&t, &u, &const__1);
+#endif
 	dn_add(&u, x, &const_0_5);
 	dn_multiply(&v, &u, &t);
 	dn_add(res, &v, &s);

@@ -868,6 +868,8 @@ enum rarg {
 #ifdef INCLUDE_SHUFFLE
 	RARG_SHUFFLE,
 #endif
+	RARG_INDEX,
+	RARG_CONST_INDIRECT,
 
 	NUM_RARG	// Last entry defines number of operations
 };
@@ -1167,9 +1169,8 @@ extern void cpx_fill(enum nilop op);
 extern void fill(enum nilop op);
 extern void drop(enum nilop op);
 extern void cmdconst(unsigned int arg, enum rarg op);
-extern void cmddconst(unsigned int, enum rarg);
 extern void cmdconstcmplx(unsigned int arg, enum rarg op);
-extern void cmdconstint(unsigned int arg, enum rarg op);
+extern void cmdindex(unsigned int arg, enum rarg op);
 extern void cmdsto(unsigned int arg, enum rarg op);
 extern void cmdrcl(unsigned int arg, enum rarg op);
 extern void cmdcsto(unsigned int arg, enum rarg op);

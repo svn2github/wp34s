@@ -725,8 +725,8 @@ CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
 #else
 const struct argcmd argcmds[ NUM_RARG ] = {
 #endif
-	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"CNST")
-	CMDnoI(RARG_CONST_CMPLX,&cmdconst,	NUM_CONSTS,		"\024CNST")
+	CMDnoI(RARG_CONST,	&cmdconst,	NUM_CONSTS,		"#")
+	CMDnoI(RARG_CONST_CMPLX,&cmdconst,	NUM_CONSTS,		"\024#")
 	CMD(RARG_ERROR,		&cmderr,	MAX_ERROR,		"ERR")
 	CMDstk(RARG_STO, 	&cmdsto,				"STO")
 	CMDstk(RARG_STO_PL, 	&cmdsto,				"STO+")
@@ -897,6 +897,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #ifdef INCLUDE_SHUFFLE
 	CMDnoI(RARG_SHUFFLE,	&cmdshuffle,	255,			"\027")
 #endif
+	CMDnoI(RARG_INDEX,	&cmdindex,	255,			"INDX")
+	CMD(RARG_CONST_INDIRECT,&cmdconst,	NUM_CONSTS,		"CNST")
 
 #undef CMDlbl
 #undef CMDlblnI

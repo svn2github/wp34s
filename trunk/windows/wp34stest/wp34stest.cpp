@@ -240,7 +240,7 @@ int main()
     // begin tests. uncomment as necessary
     // more need adding..
 
-    logTest();
+    /* logTest();
     logTestNear1();
     logTestVeryNear1();
     sinTest();
@@ -250,7 +250,7 @@ int main()
     asinTest();
     acosTest();
     atanTest();
-    sinhTest();
+    sinhTest(); */
     gammaTest();
  
     return 0;
