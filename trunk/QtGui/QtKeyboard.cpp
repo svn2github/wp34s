@@ -166,7 +166,7 @@ void QtKeyboard::putKeyCode(const QtKeyCode& aKeyCode)
 	currentKeyHShifted=false;
 	if(aKeyCode.isValid())
 	{
-		if(!hShiftLocked && aKeyCode.isHShifted())
+		if(!hShiftLocked && !is_hshifted() && aKeyCode.isHShifted())
 		{
 			currentKeyHShifted=true;
 			putKey(H_CODE);

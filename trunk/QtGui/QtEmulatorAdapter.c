@@ -68,6 +68,11 @@ enum shifts shift_down()
 	return hshift_locked?SHIFT_H:SHIFT_N;
 }
 
+int is_hshifted()
+{
+	return cur_shift()==SHIFT_H;
+}
+
 void set_hshift_locked(int an_hshift_locked)
 {
 	hshift_locked=an_hshift_locked;
