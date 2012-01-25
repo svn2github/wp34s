@@ -285,7 +285,7 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		$(DNHDRS) Makefile
 	cd $(UTILITIES) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
-		&& make "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
+		&& $(MAKE) "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 		
 catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile
 	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>$(OPCODES)
