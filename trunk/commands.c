@@ -191,7 +191,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_CCHS,	NOFN,			&cmplxMinus,	NOFN,		"\024+/-")
 	FUNC(OP_CCONJ,	NOFN,			XMC(cpx_CONJ),	NOFN,		"CONJ")
 	FUNC(OP_ERF,	&decNumberERF,		NOFN,		NOFN,		"erf")
-	FUNC(OP_ERFC,	&decNumberERFC,		NOFN,		NOFN,		"erfc")
+	FUNC(OP_ERFC,	XMR(ERFC),		NOFN,		NOFN,		"erfc")
 #ifdef NORMAL_DISTRIBUTION_AS_XROM
 	FUNC(OP_pdf_Q,	XMR(PDF_Q), 		NOFN,		NOFN,		"\264(x)")
 	FUNC(OP_cdf_Q,	XMR(CDF_Q), 		NOFN,		NOFN,		"\224(x)")

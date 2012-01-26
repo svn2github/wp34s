@@ -14,7 +14,12 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if 0
+#ifdef NORMAL_DISTRIBUTION_AS_XROM
+#define X(a, b)		a
+#else
+#define X(a, b)		b
+#endif
+
 /**************************************************************************/
 /* Complementary error function
  */
@@ -24,8 +29,9 @@
 			[sqrt]
 			[times]
 			+/-
-			GSB cdf_q
+			X(GSB cdf_q, [PHI](x))
 			RCL+ X
 			xOUT xOUT_NORMAL
 
-#endif
+#undef X
+
