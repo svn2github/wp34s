@@ -143,6 +143,7 @@ static s_opcode program_xfcn[] = {
 	MON(OP_DATE_DAY,	"DAY")
 	MON(OP_DATE_MONTH,	"MONTH")
 	MON(OP_DATE_YEAR,	"YEAR")
+	TRI(OP_TO_DATE,		"\015DATE")
 
 	DYA(OP_LEGENDRE_PN,	"P\275")
 	DYA(OP_CHEBYCHEV_TN,	"T\275")
@@ -307,6 +308,7 @@ static s_opcode catalogue[] = {
 	MON(OP_DATE_DAY,	"DAY")
 	MON(OP_DATE_MONTH,	"MONTH")
 	MON(OP_DATE_YEAR,	"YEAR")
+	TRI(OP_TO_DATE,		"\015DATE")
 
 	DYA(OP_LEGENDRE_PN,	"P\275")
 	DYA(OP_CHEBYCHEV_TN,	"T\275")

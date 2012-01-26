@@ -179,6 +179,16 @@ static decNumber *build_date(decNumber *res, int year, int month, int day) {
 	return res;
 }
 
+/*
+ *  Convert Z = year, y = month, x = day to a valid date in X
+ */
+decNumber *dateFromYMD(decNumber *res, const decNumber *z, const decNumber *y, const decNumber *x) {
+	if (decNumberIsSpecial(x) || decNumberIsSpecial(y) || decNumberIsSpecial(z))
+		return set_NaN(res);
+	else {
+		return build_date(res, dn_to_int(z), dn_to_int(y), dn_to_int(x));
+	}
+}
 
 /* Convert a decimal real to a date.
  * We have to honour the current date mode and make sure that things

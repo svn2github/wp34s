@@ -27,6 +27,7 @@ extern decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber 
 
 extern decNumber *dateToJ(decNumber *res, const decNumber *x);
 extern decNumber *dateFromJ(decNumber *res, const decNumber *x);
+extern decNumber *dateFromYMD(decNumber *res, const decNumber *z, const decNumber *y, const decNumber *x);
 
 extern decNumber *dateEaster(decNumber *res, const decNumber *x);
 extern void date_isleap(enum nilop op);

@@ -692,6 +692,7 @@ enum {
 	OP_MAT_GADD,
 	OP_MAT_REG,
 	OP_MAT_LIN_EQN,
+	OP_TO_DATE,
 
 	NUM_TRIADIC	// Last entry defines number of operations
 };  
@@ -1113,6 +1114,7 @@ extern long long int get_reg_n_int(int index);
 extern unsigned long long int get_reg_n_int_sgn(int index, int *sgn);
 extern long long int getX_int(void);
 extern unsigned long long int getX_int_sgn(int *sgn);
+extern int decGetInt(const decNumber *x);
 
 extern void set_reg_n_int(int index, long long int ll);
 extern void set_reg_n_int_sgn(int index, unsigned long long int val, int sgn);

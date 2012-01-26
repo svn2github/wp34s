@@ -178,7 +178,6 @@ int dn_to_int(const decNumber *x) {
 	decNumberToString(&y, buf);
 	return s_to_i(buf);
 #else
-	extern int decGetInt(const decNumber *);
 	return decGetInt(decNumberTrunc(&y, x));
 #endif
 }
