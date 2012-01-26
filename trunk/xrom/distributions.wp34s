@@ -181,7 +181,6 @@ logistic_param::	RCL- J
 			xOUT xOUT_NORMAL
 
 
-#ifdef NORMAL_DISTRIBUTION_AS_XROM
 /**************************************************************************/
 /* Log Normal distribution
  */
@@ -212,13 +211,18 @@ logistic_param::	RCL- J
 /**************************************************************************/
 /* Normal distribution
  */
+#ifdef NORMAL_DISTRIBUTION_AS_XROM
+#define X(a, b)		a
+#else
+#define X(a, b)		b
+#endif
  		XLBL"PDF_NORMAL"
 			xIN MONADIC
 				GSB pdf_normal
 			xOUT xOUT_NORMAL
 
 pdf_normal::		GSB normal_param
-			GSB pdf_q
+			X(GSB pdf_q, [phi](x))
 			RCL/ K
 			RTN
 
@@ -227,7 +231,7 @@ pdf_normal::		GSB normal_param
 			SPEC?
 				JMP cdf_infinite
 cdf_normal::		GSB normal_param
-			GSB cdf_q
+			X(GSB cdf_q, [PHI](x))
 			xOUT xOUT_NORMAL
 
 normal_param::		RCL J
@@ -243,7 +247,7 @@ normal_param::		RCL J
 				GSB qf_normal
 			xOUT xOUT_NORMAL
 
-qf_normal::		GSB qf_q
+qf_normal::		X(GSB qf_q, [PHI][^-1](p))
 			RCL K
 			GSB check_special_pos
 			[times]
@@ -251,7 +255,9 @@ qf_normal::		GSB qf_q
 			GSB check_special
 			+
 			RTN
+#undef X
 
+#ifdef NORMAL_DISTRIBUTION_AS_XROM
 /**************************************************************************/
 /* Standard Normal distribution
  */
