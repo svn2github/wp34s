@@ -15,7 +15,6 @@
  */
 
 #include "decn.h"
-#include "decNumber/decimal128.h"
 #include "xeq.h"
 #include "consts.h"
 #include "complex.h"
@@ -23,7 +22,6 @@
 #include "int.h"
 #include "serial.h"
 #include "lcd.h"
-
 
 // #define DUMP1
 #ifdef DUMP1
@@ -1722,39 +1720,64 @@ decNumber *decNumberPerm(decNumber *res, const decNumber *x, const decNumber *y)
 	return res;
 }
 
+#ifdef _DEBUG
+#include <stdio.h>
+char dump[DECNUMDIGITS + 10];
+#endif
+
+const decNumber *const gamma_consts[21] = {
+	&const_gammaC01, &const_gammaC02, &const_gammaC03,
+	&const_gammaC04, &const_gammaC05, &const_gammaC06,
+	&const_gammaC07, &const_gammaC08, &const_gammaC09,
+	&const_gammaC10, &const_gammaC11, &const_gammaC12,
+	&const_gammaC13, &const_gammaC14, &const_gammaC15,
+	&const_gammaC16, &const_gammaC17, &const_gammaC18,
+	&const_gammaC19, &const_gammaC20, &const_gammaC21,
+};
 
 static void dn_LnGamma(decNumber *res, const decNumber *x) {
-	decNumber s, t, u, v;
+	decNumber r, s, t, u, v;
 	int k;
-
+#ifdef _DEBUG_
+	FILE *f = fopen("calc.out","w");
+	decNumberToString(x, dump); fprintf(f, "z=%s\n", dump);
+#endif
 	decNumberZero(&s);
 	dn_add(&t, x, &const_21);
 	for (k=20; k>=0; k--) {
-		decimal128ToNumber(CONSTANT_DBL(OP_GAMMA_C01 + k), &v);
-		dn_divide(&u, &v, &t);
+		dn_divide(&u, gamma_consts[k], &t);
 		dn_dec(&t);
 		dn_add(&s, &s, &u);
 	}
 	dn_add(&t, &s, &const_gammaC00);
-#if 0
-	dn_multiply(&u, &t, &const_2rootEonPI);
-	dn_ln(&s, &u);
-#else
-	dn_ln(&u, &t);
-	dn_add(&s, &u, &const_ln2rootEonPI);
+	dn_ln(&s, &t);
+#ifdef _DEBUG_
+	decNumberToString(&t, dump); fprintf(f, "sum:%s\n", dump);
+	decNumberToString(&s, dump); fprintf(f, "ln:%s\n", dump);
+#endif
+//		r = z + g + .5;
+	dn_add(&r, x, &const_gammaR);
+#ifdef _DEBUG_
+	decNumberToString(&r, dump);
+	fprintf(f, "r=%s\n", dump);
 #endif
 
-	dn_add(&t, x, &const_gammaR);
-#if 0
-	dn_divide(&u, &t, &const_e);
-	dn_ln(&t, &u);
-#else
-	dn_ln(&u, &t);
-	dn_add(&t, &u, &const__1);
-#endif
-	dn_add(&u, x, &const_0_5);
+//		r = log(R[0][0]) + (z+.5) * log(r) - r;
+	dn_ln(&u, &r);
+	dn_add(&t, x, &const_0_5);
 	dn_multiply(&v, &u, &t);
-	dn_add(res, &v, &s);
+#ifdef _DEBUG_
+	decNumberToString(&v, dump); fprintf(f, "(z+.5)*log(r)=%s\n", dump);
+#endif
+
+	dn_subtract(&u, &v, &r);
+	dn_add(res, &u, &s);
+
+#ifdef _DEBUG_
+	decNumberToString(res, dump);
+	fprintf(f, "res:%s\n", dump);
+	fclose(f);
+#endif
 }
 
 decNumber *decNumberFactorial(decNumber *res, const decNumber *xin) {

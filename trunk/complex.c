@@ -627,28 +627,27 @@ void cmplxExp(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 
 #ifndef TINY_BUILD
 static void c_lg(decNumber *rx, decNumber *ry, const decNumber *x, const decNumber *y) {
-	decNumber s1, s2, t1, t2, u1, u2, v1, v2;
+	decNumber s1, s2, t1, u1, u2, v1, v2, r;
 	int k;
 
-	decNumberZero(&s1);
-	decNumberZero(&s2);
-	dn_add(&t1, x, &const_21);		// ( t1, y )
+	decNumberZero(&u1);
+	decNumberZero(&u2);
+	dn_add(&t1, x, &const_21);		// (t1, y)
 	for (k=20; k>=0; k--) {
-		decimal128ToNumber(CONSTANT_DBL(OP_GAMMA_C01 + k), &v1);
-		cmplxDivideRealBy(&u1, &u2, &v1, &t1, y);
+		extern const decNumber *const gamma_consts[];
+		cmplxDivideRealBy(&s1, &s2, gamma_consts[k], &t1, y);
 		dn_dec(&t1);
-		cmplxAdd(&s1, &s2, &s1, &s2, &u1, &u2);
+		cmplxAdd(&u1, &u2, &u1, &u2, &s1, &s2);
 	}
-	dn_add(&t1, &s1, &const_gammaC00);	// (t1, s2)
-	cmplxMultiplyReal(&u1, &u2, &t1, &s2, &const_2rootEonPI);
-	cmplxLn(&s1, &s2, &u1, &u2);
+	dn_add(&t1, &u1, &const_gammaC00);	// (t1, u2)
+	cmplxLn(&s1, &s2, &t1, &u2);		// (s1, s2)
 
-	dn_add(&t1, x, &const_gammaR);	// (t1, y)
-	cmplxDivideReal(&u1, &u2, &t1, y, &const_e);
-	cmplxLn(&t1, &t2, &u1, &u2);
-	dn_add(&u1, x, &const_0_5);		// (u1, y)
-	cmplxMultiply(&v1, &v2, &u1, y, &t1, &t2);
-	cmplxAdd(rx, ry, &v1, &v2, &s1, &s2);
+	dn_add(&r, x, &const_gammaR);		// (r, y)
+	cmplxLn(&u1, &u2, &r, y);
+	dn_add(&t1, x, &const_0_5);		// (t1, y)
+	cmplxMultiply(&v1, &v2, &t1, y, &u1, &u2);
+	cmplxSubtract(&u1, &u2, &v1, &v2, &r, y);
+	cmplxAdd(rx, ry, &u1, &u2, &s1, &s2);
 }
 #endif
 

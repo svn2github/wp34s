@@ -219,6 +219,7 @@ static void gammaTest()
     Bf* bf = factorial;
     Mf* mf = gammaFactorialSlow<MAPM>;
     runTest(1, 6900, bf, mf);
+    // runTest(6890, 6900, bf, mf, 1);
 }
 
 
