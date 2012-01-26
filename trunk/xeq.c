@@ -3253,7 +3253,7 @@ static int dispatch_xrom(void *fp)
 	const s_opcode *xp = check_for_xrom_address(fp);
 	if (xp == NULL)
 		return 0;
-	State.state_lift = 1;
+	// State.state_lift = 1;
 	UserLocalRegs = LocalRegs;
 	XromRunning = 1;
 	gsbgto(addrXROM((xp - xrom) + 1), 1, state_pc());
@@ -3985,6 +3985,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		xset(&XromParams, 0, sizeof(XromParams));
 
 		// Flags
+		XromFlags.state_lift_in = State.state_lift;
 		XromFlags.stack_depth = UState.stack_depth;
 		XromFlags.mode_double = State.mode_double;
 		XromFlags.state_lift = 1;
@@ -4074,18 +4075,33 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		else
 			setlastX();
 	}
-	if (XromFlags.complex)
-		set_was_complex();
 
 	// Move the stack according to the in/out fields
 	i = (int) XromOut - (int) XromIn;
-	while (i < 0) {
-		lower();	// more to consume then to push back
-		++i;
+	if (XromFlags.complex) {
+		set_was_complex();
+		while (i < 0) {
+			// different stack handling in complex mode
+			// more to consume then to push back
+			lower2();
+			i += 2;
+		}
 	}
-	while (i > 0) {
-		lift();		// more to push back then to consume
-		--i;
+	else {
+		while (i < 0) {
+			// more to consume then to push back
+			lower();	
+			++i;
+		}
+	}
+	if (i > 0) {
+	// more to push back then to consume
+		if (! XromFlags.state_lift_in)
+			--i;
+		while (i > 0) {
+			lift();
+			--i;
+		}
 	}
 	State.state_lift = XromFlags.state_lift;
 
