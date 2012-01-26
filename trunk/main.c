@@ -514,9 +514,9 @@ NO_RETURN void shutdown( void )
 	SLCDC_DisableInterrupts( AT91C_SLCDC_ENDFRAME );
 
 	/*
-	 *  Allow wake up on ON key only, set debouncer to 0.125 sec
+	 *  Allow wake up on ON key only, set debouncer to 0.015625 sec (4096 gives 0.125 sec)
 	 */
-	AT91C_BASE_SUPC->SUPC_WUMR = AT91C_SUPC_FWUPDBC_4096_SLCK | AT91C_SUPC_FWUPEN;
+	AT91C_BASE_SUPC->SUPC_WUMR = AT91C_SUPC_FWUPDBC_512_SLCK | AT91C_SUPC_FWUPEN;
 	AT91C_BASE_SUPC->SUPC_WUIR = 0;
 
 	/*
