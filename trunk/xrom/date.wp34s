@@ -14,17 +14,15 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* This file contains a routine that determines the day number within the year.
- * January 1st is numbered 1, December 31st is 365 or 366 depending on the year.
+/**************************************************************************/
+/* Convert a date to its individual components.
+ * This is the opposite of the ->DATE command.
  */
-
-	LBL'YDA'
-	ENTER[^]
-	YEAR
-	# 1
-	# 1
-	[->]DATE
-	[DELTA]DAYS
-	+/-
-	INC X
-	END
+			XLBL"DATE_TO"
+			xIN (xIN_ARGS(1, 3) | xIN_LASTX)
+			YEAR
+			RCL L
+			MONTH
+			RCL L
+			DAY
+			xOUT xOUT_NORMAL
