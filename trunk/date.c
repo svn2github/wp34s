@@ -108,26 +108,11 @@ static int isleap(int year) {
 					return 1;
 				return 0;
 			}
-			//return 1;
 		}
 		return 1;
 	}
 	return 0;
 }
-
-#if 0
-/* Given a year and month, return the number of days in that month.
- * This is primarily used to range check days.
- */
-static int month_lengths(int year, int month) {
-	switch (month) {
-	default:				return 31;
-	case 4:	case 6:	case 9:	case 11:	return 30;
-	case 2:
-		return isleap(year)?29:28;
-	}
-}
-#endif
 
 
 /* Validate that a date is in fact within our calculation range.
@@ -141,25 +126,7 @@ static int check_date(int year, int month, int day) {
 	if (year == y && month == m && day == d)
 		return 0;
 	return -1;
-#if 0
-	if (year < -4799 || year > 9999)
-		return -1;
-	if (month < 1 || month > 12)
-		return -1;
-	if (day < 1 || day > month_lengths(year, month))
-		return -1;
-	if (State.jg1582) {
-		if (year == 
-	} else {
-		if (year == 1752 && month == 9) {
-			if (day > 2 && day < 14)
-				return -1;
-		}
-	}
-	return 0;
-#endif
 }
-
 
 
 /* Day of week.
@@ -218,7 +185,7 @@ static decNumber *build_date(decNumber *res, int year, int month, int day) {
  * don't go out of range.
  */
 static int extract_date(const decNumber *x, int *year, int *month, int *day) {
-	int /* bc, */ ip, fp, y, m, d;
+	int ip, fp, y, m, d;
 	decNumber z, a;
 
 	if (is_intmode())
@@ -226,10 +193,8 @@ static int extract_date(const decNumber *x, int *year, int *month, int *day) {
 
 	if (decNumberIsNegative(x)) {
 		dn_minus(&z, x);
-		// bc = 0;
 	} else {
 		decNumberCopy(&z, x);
-		// bc = 1;
 	}
 	decNumberTrunc(&a, &z);			// a = iii	z = iii.ffrrrr
 	ip = dn_to_int(&a);
@@ -265,16 +230,10 @@ year:		dn_mulpow10(&a, &z, 4);
 	 */
 	if (year != NULL)
 		*year = y;
-//	else if (y < -4799 || y > 9999)
-//		y = 2000;
 	if (month != NULL)
 		*month = m;
-//	else if (m < 1 || m > 12)
-//		m = 12;
 	if (day != NULL)
 		*day = d;
-//	else if (d < 1 || d > month_lengths(y, m))
-//		d = 1;
 	return check_date(y, m, d);
 }
 
