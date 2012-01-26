@@ -226,7 +226,7 @@ version:
 clean:
 	-rm -fr $(DIRS)
 	-rm -fr consts.h consts.c allconsts.c catalogues.h xrom.c
-	-rm -f xrom_pre.wp34s user_consts.h
+	-rm -f xrom_pre.wp34s user_consts.h wp34s_pp.lst xrom_labels.h
 #       -$(MAKE) -C decNumber clean
 #       -$(MAKE) -C utilities clean
 
