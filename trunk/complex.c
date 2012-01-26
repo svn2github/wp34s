@@ -558,18 +558,6 @@ void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 	cmplxMultiplyReal(rx, ry, &c, &s, &u);
 }
 
-void cmplxLogxy(decNumber *rx, decNumber *ry,
-		const decNumber *a, const decNumber *b,
-		const decNumber *c, const decNumber *d) {
-#ifndef TINY_BUILD
-	decNumber la, lb, lc, ld;
-
-	cmplxLn(&la, &lb, a, b);
-	cmplxLn(&lc, &ld, c, d);
-	cmplxDivide(rx, ry, &la, &lb, &lc, &ld);
-#endif
-}
-
 // ln(a + i b) = ln(sqrt(a*a + b*b)) + i (2*arctan(signum(b)) - arctan(a/b))
 // signum(b) = 1 if b>0, 0 if b=0, -1 if b<0, atan(1) = pi/4
 void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {

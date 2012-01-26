@@ -320,7 +320,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_MUL,	&dn_multiply,		&cmplxMultiply,	&intMultiply,	"\034")
 	FUNC(OP_DIV,	&dn_divide,		&cmplxDivide,	&intDivide,	"/")
 	FUNC(OP_MOD,	&decNumberBigMod,	NOFN,		&intMod,	"RMDR")
-	FUNC(OP_LOGXY,	&decNumberLogxy,	&cmplxLogxy,	NOFN,		"LOGx")
+	FUNC(OP_LOGXY,	&decNumberLogxy,	XDC(cpx_LOGXY),	NOFN,		"LOGx")
 	FUNC(OP_MIN,	&dn_min,		NOFN,		&intMin,	"MIN")
 	FUNC(OP_MAX,	&dn_max,		NOFN,		&intMax,	"MAX")
 	FUNC(OP_ATAN2,	&decNumberArcTan2,	NOFN,		NOFN,		"ANGLE")

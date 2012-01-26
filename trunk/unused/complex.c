@@ -128,3 +128,19 @@ void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 
 	cmplxDiv2(rx, ry, &t1, &t2);
 }
+
+
+
+/* Logarithm related functions */
+// 56 bytes
+void cmplxLogxy(decNumber *rx, decNumber *ry,
+		const decNumber *a, const decNumber *b,
+		const decNumber *c, const decNumber *d) {
+	decNumber la, lb, lc, ld;
+
+	cmplxLn(&la, &lb, a, b);
+	cmplxLn(&lc, &ld, c, d);
+	cmplxDivide(rx, ry, &la, &lb, &lc, &ld);
+}
+
+
