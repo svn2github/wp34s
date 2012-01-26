@@ -82,10 +82,6 @@ extern void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decN
 extern void cmplxExp(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxLog(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplx10x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxLog2(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxSin(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);

@@ -140,3 +140,34 @@ cpx_asinh_pos::		[cmplx]FILL
 			[cmplx]x[<->] Z
 			[cmplx]/
 			xOUT xOUT_NORMAL
+
+		XLBL"cpx_LOG10"
+			xIN MONADIC_COMPLEX
+			[cmplx]LN
+			[cmplx]# L10[^-1]
+			JMP cpx_log_common
+
+		XLBL"cpx_LOG2"
+			xIN MONADIC_COMPLEX
+			[cmplx]LN
+			[cmplx]# LN2[^-1]
+cpx_log_common::	[cmplx][times]
+			xOUT xOUT_NORMAL
+			
+/**************************************************************************/
+/* Complex powers.
+ */
+		XLBL"cpx_POW10"
+			xIN MONADIC_COMPLEX
+			1
+			0
+			JMP cpx_pow_common
+
+		XLBL"cpx_POW2"
+			xIN MONADIC_COMPLEX
+			2
+cpx_pow_common::	Num 0			// 0 n x y
+			SHF_XYZT(2, 3, 1, 0)	// x y n 0
+			[cmplx]y[^x]
+			xOUT xOUT_NORMAL
+		

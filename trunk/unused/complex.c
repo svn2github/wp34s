@@ -132,6 +132,29 @@ void cmplxAtanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 
 
 /* Logarithm related functions */
+// 74 bytes
+void cmplx_do_log(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *base) {
+	decNumber s1, s2;
+
+	if (decNumberIsInfinite(a) || decNumberIsInfinite(b)) {
+		set_inf(rx);
+		decNumberZero(ry);
+	} else {
+		cmplxLn(&s1, &s2, a, b);
+		cmplxDivideReal(rx, ry, &s1, &s2, base);
+	}
+}
+
+// 20 bytes
+void cmplxLog(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+	cmplx_do_log(rx, ry, a, b, &const_ln10);
+}
+
+// 22 bytes
+void cmplxLog2(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+	cmplx_do_log(rx, ry, a, b, &const_ln2);
+}
+
 // 56 bytes
 void cmplxLogxy(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
@@ -144,3 +167,20 @@ void cmplxLogxy(decNumber *rx, decNumber *ry,
 }
 
 
+/* Power functions */
+// This was inlined in the latter two
+static void cmplxRealPower(decNumber *rx, decNumber *ry,
+		const decNumber *r,
+		const decNumber *a, const decNumber *b) {
+	cmplxPower(rx, ry, r, &const_0, a, b);
+}
+
+// 28 bytes
+void cmplx10x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+	cmplxRealPower(rx, ry, &const_10, a, b);
+}
+
+// 28 bytes
+void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+	cmplxRealPower(rx, ry, &const_2, a, b);
+}

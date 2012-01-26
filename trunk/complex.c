@@ -194,14 +194,6 @@ static void cmplxPowerReal(decNumber *rx, decNumber *ry,
 }
 #endif
 
-static void cmplxRealPower(decNumber *rx, decNumber *ry,
-		const decNumber *r,
-		const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	cmplxPower(rx, ry, r, &const_0, a, b);
-#endif
-}
-
 // a ^ b = e ^ (b ln(a))
 void cmplxPower(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
@@ -515,37 +507,6 @@ void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 #endif
 }
 
-
-void cmplx_do_log(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b, const decNumber *base) {
-#ifndef TINY_BUILD
-	decNumber s1, s2;
-
-	if (decNumberIsInfinite(a) || decNumberIsInfinite(b)) {
-		set_inf(rx);
-		decNumberZero(ry);
-	} else {
-		cmplxLn(&s1, &s2, a, b);
-		cmplxDivideReal(rx, ry, &s1, &s2, base);
-	}
-#endif
-}
-
-void cmplxLog(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplx_do_log(rx, ry, a, b, &const_ln10);
-}
-
-void cmplx10x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplxRealPower(rx, ry, &const_10, a, b);
-}
-
-void cmplxLog2(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplx_do_log(rx, ry, a, b, &const_ln2);
-}
-
-void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-	cmplxRealPower(rx, ry, &const_2, a, b);
-}
-
 void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 	decNumber t, u, s, c;
 
@@ -747,6 +708,18 @@ void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decN
 }
 
 #ifdef INCLUDE_DBLFACT
+static void cmplxRealPower(decNumber *rx, decNumber *ry,
+		const decNumber *r,
+		const decNumber *a, const decNumber *b) {
+#ifndef TINY_BUILD
+	cmplxPower(rx, ry, r, &const_0, a, b);
+#endif
+}
+
+void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+	cmplxRealPower(rx, ry, &const_2, a, b);
+}
+
 void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 #ifndef TINY_BUILD
 	decNumber t, u1, u2, v1, v2, w1, w2;
