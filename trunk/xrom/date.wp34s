@@ -26,3 +26,29 @@
 			RCL L
 			DAY
 			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Days between dates.
+ * Convert to Julian days and subtract.
+ */
+			XLBL"DATE_DELTA"
+			xIN DYADIC
+			D[->]J
+			x[<->] Y
+			D[->]J
+			-
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Add or subtract days from a date.
+ * Convert to Julian days, do the addition or subtraction and convert back.
+ */
+			XLBL"DATE_ADD"
+			xIN DYADIC
+			FP?
+				JMP ret_NaN
+			x[<->] Y
+			D[->]J
+			+
+			J[->]D
+			xOUT xOUT_NORMAL

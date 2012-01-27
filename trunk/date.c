@@ -138,7 +138,7 @@ static int day_of_week(int year, int month, int day, const char **msg) {
 				"Sunday\0Monday\0Tuesday\0Wednesday\0"
 				"Thursday\0Friday\0Saturday";
 	h = (JDN(year, month, day)+1) % 7;
-	if (msg != NULL && ! Running)
+	if (msg != NULL)
 		*msg = days + ((unsigned char *)days)[h];
 	return h!=0?h:7;
 }
@@ -276,7 +276,7 @@ static int find_year(const decNumber *x, int *year) {
  * the Gregorian version.
  */
 static void easter(int year, int *month, int *day) {
-	if (year > 1752) {	// Gregorian
+	if (year > (UState.jg1582 ? 1582 : 1752)) {	// Gregorian
 		const int a = year % 19;
 		const int b = year / 100;
 		const int c = year % 100;
@@ -402,48 +402,6 @@ void date_alphamonth(enum nilop op) {
 		copy3(mons + 3*m - 3);
 	}
 }
-
-/* Add or subtract days from a date.
- * Convert to Julian days, do the addition or subtraction and convert back.
- */
-decNumber *dateAdd(decNumber *res, const decNumber *x, const decNumber *y) {
-	int j;
-	int yr, m, d;
-
-	if (decNumberIsSpecial(x) || decNumberIsSpecial(y) || ! is_int(y)) {
-err:		set_NaN(res);
-		return res;
-	}
-	if (extract_date(x, &yr, &m, &d))
-		goto err;
-	j = dn_to_int(y) + JDN(yr, m, d);
-	if (j < 0)
-		goto err;
-	JDN2(j, &yr, &m, &d);
-	return build_date(res, yr, m, d);
-}
-
-
-/* Days between dates.
- * Convert to Julian days and subtract.
- */
-decNumber *dateDelta(decNumber *res, const decNumber *x, const decNumber *y) {
-	int d, m, yr, j1, j2;
-
-	if (decNumberIsSpecial(x) || decNumberIsSpecial(y))
-err:		set_NaN(res);
-	else {
-		if (extract_date(x, &yr, &m, &d))
-			goto err;
-		j1 = JDN(yr, m, d);
-		if (extract_date(y, &yr, &m, &d))
-			goto err;
-		j2 = JDN(yr, m, d);
-		int_to_dn(res, j2-j1);
-	}
-	return res;
-}
-
 
 /* Conversion routines from Julian days to and from dates
  */
