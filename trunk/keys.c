@@ -200,7 +200,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K43,     { CATALOGUE_SUMS,   CATALOGUE_NONE,   CATALOGUE_SUMS          } },
 			{ K44,     { CATALOGUE_MATRIX, CATALOGUE_NONE,   CATALOGUE_MATRIX        } },
 			{ K50,     { CATALOGUE_STATUS, CATALOGUE_STATUS, CATALOGUE_STATUS        } },
-			{ K51,     { CATALOGUE_TEST,   CATALOGUE_TEST,   CATALOGUE_NONE          } },
+			{ K51,     { CATALOGUE_TEST,   CATALOGUE_TEST,   CATALOGUE_TEST          } },
 			{ K52,     { CATALOGUE_PROG,   CATALOGUE_PROG,   CATALOGUE_PROG          } },
 			{ K53,     { CATALOGUE_NORMAL, CATALOGUE_INT,    CATALOGUE_COMPLEX       } },
 		};
