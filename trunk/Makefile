@@ -205,11 +205,16 @@ OPCODES := $(TOOLS)/wp34s.op
 
 # Targets and rules
 
-.PHONY: clean tgz asone flash version qt_gui real_qt_gui qt_clean qt_clean_all
+.PHONY: clean tgz flash version qt_gui real_qt_gui qt_clean qt_clean_all
 
 ifdef REALBUILD
+ifdef XTAL
+TARGET=calc_xtal
+else
+TARGET=calc
+endif
 all: flash
-flash: $(DIRS) $(OUTPUTDIR)/calc.bin
+flash: $(DIRS) $(OUTPUTDIR)/$(TARGET).bin
 else
 ifdef QTGUI
 all: qtobjs
@@ -241,17 +246,16 @@ $(DIRS):
 ifdef REALBUILD
 
 # Target flash
-
-$(OUTPUTDIR)/calc.bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
+$(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNum34s.a \
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE)
 	$(UTILITIES)/create_revision$(EXE) >revision.h
-	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/calc $(LDFLAGS) \
+	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/$(TARGET) $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s -save-temps
-	$(NM) -n $(OUTPUTDIR)/calc >$(SYMBOLS)
-	$(NM) -S $(OUTPUTDIR)/calc >>$(SYMBOLS)
-	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/calc $(OUTPUTDIR)/calc.tmp 
-	$(UTILITIES)/post_process$(EXE) $(OUTPUTDIR)/calc.tmp $@
+	$(NM) -n $(OUTPUTDIR)/$(TARGET) >$(SYMBOLS)
+	$(NM) -S $(OUTPUTDIR)/$(TARGET) >>$(SYMBOLS)
+	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/$(TARGET) $(OUTPUTDIR)/$(TARGET).tmp 
+	$(UTILITIES)/post_process$(EXE) $(OUTPUTDIR)/$(TARGET).tmp $@
 	@grep "^\.fixed"          $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	@grep "^\.revision"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "UserFlash"         $(MAPFILE) | tail -n 2 >> $(SUMMARY)

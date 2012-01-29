@@ -767,10 +767,17 @@
 				<buildTargets>
 					<target name="flash" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments/>
 						<buildTarget>REALBUILD=1 all</buildTarget>
 						<stopOnError>false</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="xtal" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments>REALBUILD=1 XTAL=1</buildArguments>
+						<buildTarget>all</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
 					</target>
 				</buildTargets>

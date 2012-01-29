@@ -121,7 +121,11 @@ unsigned char Contrast;
 volatile unsigned char LcdFadeOut;
 volatile unsigned char InIrq;
 unsigned char DebugFlag;
+#ifdef XTAL
+#define Xtal (1)
+#else
 unsigned char Xtal;
+#endif
 #ifdef SLEEP_ANNUNCIATOR
 unsigned char SleepAnnunciatorOn;
 #endif
@@ -1510,11 +1514,12 @@ NO_RETURN int main(void)
 	// Dummy access for optimiser
 	xcopy( (void *) &command_info, &command_info, 0 );
 #endif
+#ifndef XTAL
 	/*
 	 *  Timing is dependent on the presence of a crystal
 	 */
 	Xtal = ( ( AT91C_BASE_SUPC->SUPC_SR & AT91C_SUPC_OSCSEL ) == AT91C_SUPC_OSCSEL );
-
+#endif
 #ifdef STACK_DEBUG
 	/*
 	 *  Fill RAM with 0x5A for debugging

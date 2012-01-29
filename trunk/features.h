@@ -41,7 +41,9 @@
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
+#if !defined(REALBUILD) || defined(XTAL)
 // #define INCLUDE_STOPWATCH
+#endif
 #ifdef INCLUDE_STOPWATCH
 // Define this to activate directly the STOPWATCH function by pressing the F then
 // G prefixes quickly
