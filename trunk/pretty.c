@@ -68,7 +68,7 @@ void dump_opcodes(FILE *f) {
 			const unsigned int cmd = opDBL(c);
 			if ((c & 0xff) != 0)
 				continue;
-			if (cmd >= num_multicmds)
+			if (cmd >= NUM_MULTI)
 				continue;
 #ifdef INCLUDE_MULTI_DELETE
 			if (cmd == DBL_DELPROG)
@@ -154,17 +154,17 @@ void dump_opcodes(FILE *f) {
 				break;
 
 			case KIND_MON:
-				if (d < num_monfuncs && (! isNULL(monfuncs[d].mondreal) || ! isNULL(monfuncs[d].monint)))
+				if (d < NUM_MONADIC && (! isNULL(monfuncs[d].mondreal) || ! isNULL(monfuncs[d].monint)))
 					break;
 				continue;
 
 			case KIND_DYA:
-				if (d < num_dyfuncs && (! isNULL(dyfuncs[d].dydreal) || ! isNULL(dyfuncs[d].dydint)))
+				if (d < NUM_DYADIC && (! isNULL(dyfuncs[d].dydreal) || ! isNULL(dyfuncs[d].dydint)))
 					break;
 				continue;
 
 			case KIND_CMON:
-				if (d < num_monfuncs && ! isNULL(monfuncs[d].mondcmplx)) {
+				if (d < NUM_MONADIC && ! isNULL(monfuncs[d].mondcmplx)) {
 					if (cmdname[0] == COMPLEX_PREFIX)
 						break;
 					fprintf(f, "0x%04x\tcmd\t[cmplx]%s\n", c, cmdpretty);
@@ -172,7 +172,7 @@ void dump_opcodes(FILE *f) {
 				continue;
 
 			case KIND_CDYA:
-				if (d < num_dyfuncs && ! isNULL(dyfuncs[d].dydcmplx)) {
+				if (d < NUM_DYADIC && ! isNULL(dyfuncs[d].dydcmplx)) {
 					if (cmdname[0] == COMPLEX_PREFIX)
 						break;
 					fprintf(f, "0x%04x\tcmd\t[cmplx]%s\n", c, cmdpretty);

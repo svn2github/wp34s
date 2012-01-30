@@ -82,12 +82,12 @@ extern const struct multicmd_cmdtab multicmds_ct[];
 
 CMDTAB __attribute__((externally_visible))
 const struct _command_info command_info = {
-	monfuncs,  monfuncs_ct,
-	dyfuncs,   dyfuncs_ct,
-	trifuncs,  trifuncs_ct,
-	niladics,  niladics_ct,
-	argcmds,   argcmds_ct,
-	multicmds, multicmds_ct,
+	NUM_MONADIC, monfuncs,  monfuncs_ct,
+	NUM_DYADIC,  dyfuncs,   dyfuncs_ct,
+	NUM_TRIADIC, trifuncs,  trifuncs_ct,
+	NUM_NILADIC, niladics,  niladics_ct,
+	NUM_RARG,    argcmds,   argcmds_ct,
+	NUM_MULTI,   multicmds, multicmds_ct,
 };
 
 #endif
@@ -290,9 +290,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #endif
 #undef FUNC
 };
-#if COMMANDS_PASS != 2
-const unsigned short num_monfuncs = sizeof(monfuncs) / sizeof(struct monfunc);
-#endif
 
 
 /* Define our table of dyadic functions.
@@ -383,9 +380,6 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #endif
 #undef FUNC
 };
-#if COMMANDS_PASS != 2
-const unsigned short num_dyfuncs = sizeof(dyfuncs) / sizeof(struct dyfunc);
-#endif
 
 /* Define our table of triadic functions.
  * These must be in the same order as the triadic function enum but we'll
@@ -423,9 +417,6 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #undef FUNC
 };
 
-#if COMMANDS_PASS != 2
-const unsigned short num_trifuncs = sizeof(trifuncs) / sizeof(struct trifunc);
-#endif
 
 
 #ifdef COMPILE_CATALOGUES
@@ -684,10 +675,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #undef FN_I2
 };
 
-#if COMMANDS_PASS != 2
-const unsigned short num_niladics = sizeof(niladics) / sizeof(struct niladic);
-#endif
-
 
 #ifdef COMPILE_CATALOGUES
 #define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
@@ -904,10 +891,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #undef allCMD
 };
 
-#if COMMANDS_PASS != 2
-const unsigned short num_argcmds = sizeof(argcmds) / sizeof(struct argcmd);
-#endif
-
 
 #ifdef COMPILE_CATALOGUES
 #define CMD(name, func, nm)			\
@@ -942,10 +925,6 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_XBR,	&cmdmultigto,			"xBR")
 #undef CMD
 };
-
-#if COMMANDS_PASS != 2
-const unsigned short num_multicmds = sizeof(multicmds) / sizeof(struct multicmd);
-#endif
 
 
 /*

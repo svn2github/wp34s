@@ -3268,7 +3268,7 @@ static void niladic(const opcode op) {
 	const unsigned int idx = argKIND(op);
 
 	process_cmdline();
-	if (idx < num_niladics) {
+	if (idx < NUM_NILADIC) {
 		if (is_intmode() && NILADIC_NOTINT(niladics[idx]))
 			bad_mode_error();
 		else if (! isNULL(niladics[idx].niladicf)) {
@@ -3303,7 +3303,7 @@ static void monadic(const opcode op)
 	process_cmdline_set_lift();
 
 	f = argKIND(op);
-	if (f < num_monfuncs) {
+	if (f < NUM_MONADIC) {
 		if (is_intmode()) {
 			if (! isNULL(monfuncs[f].monint)) {
 				FP_MONADIC_INT fp = (FP_MONADIC_INT) EXPAND_ADDRESS(monfuncs[f].monint);
@@ -3345,7 +3345,7 @@ static void monadic_cmplex(const opcode op) {
 
 	f = argKIND(op);
 
-	if (f < num_monfuncs) {
+	if (f < NUM_MONADIC) {
 		if (! isNULL(monfuncs[f].mondcmplx)) {
 			FP_MONADIC_CMPLX fp = (FP_MONADIC_CMPLX) EXPAND_ADDRESS(monfuncs[f].mondcmplx);
 			if (dispatch_xrom(fp))
@@ -3377,7 +3377,7 @@ static void dyadic(const opcode op) {
 	process_cmdline_set_lift();
 
 	f = argKIND(op);
-	if (f < num_dyfuncs) {
+	if (f < NUM_DYADIC) {
 		if (is_intmode()) {
 			if (! isNULL(dyfuncs[f].dydint)) {
 				FP_DYADIC_INT fp = (FP_DYADIC_INT) EXPAND_ADDRESS(dyfuncs[f].dydint);
@@ -3421,7 +3421,7 @@ static void dyadic_cmplex(const opcode op) {
 	process_cmdline_set_lift();
 
 	f = argKIND(op);
-	if (f < num_dyfuncs) {
+	if (f < NUM_DYADIC) {
 		if (! isNULL(dyfuncs[f].dydcmplx)) {
 			FP_DYADIC_CMPLX fp = (FP_DYADIC_CMPLX) EXPAND_ADDRESS(dyfuncs[f].dydcmplx);
 			if (dispatch_xrom(fp))
@@ -3451,7 +3451,7 @@ static void triadic(const opcode op) {
 	process_cmdline_set_lift();
 
 	f = argKIND(op);
-	if (f < num_trifuncs) {
+	if (f < NUM_TRIADIC) {
 		if (is_intmode()) {
 			if (! isNULL(trifuncs[f].triint)) {
 				FP_TRIADIC_INT fp = (FP_TRIADIC_INT) EXPAND_ADDRESS(trifuncs[f].triint);
@@ -3508,7 +3508,7 @@ static void rargs(const opcode op) {
 
 	process_cmdline();
 
-	if (cmd >= num_argcmds) {
+	if (cmd >= NUM_RARG) {
 		illegal(op);
 		return;
 	}
@@ -3587,7 +3587,7 @@ static void multi(const opcode op) {
 
 	process_cmdline_set_lift();
 
-	if (cmd >= num_multicmds) {
+	if (cmd >= NUM_MULTI) {
 		illegal(op);
 		return;
 	}
@@ -4377,22 +4377,22 @@ int init_34s(void)
 	 * This code validates that this is true and prints error messages
 	 * if it isn't.
 	 */
-	for (i=0; i<num_monfuncs; i++)
+	for (i=0; i<NUM_MNADIC; i++)
 		if (monfuncs[i].n != i)
 			bad_table("monadic function", i, monfuncs[i].fname, NAME_LEN);
-	for (i=0; i<num_dyfuncs; i++)
+	for (i=0; i<NUM_DYADIC; i++)
 		if (dyfuncs[i].n != i)
 			bad_table("dyadic function", i, dyfuncs[i].fname, NAME_LEN);
-	for (i=0; i<num_trifuncs; i++)
+	for (i=0; i<NUM_TRIADIC; i++)
 		if (trifuncs[i].n != i)
 			bad_table("triadic function", i, trifuncs[i].fname, NAME_LEN);
-	for (i=0; i<num_niladics; i++)
+	for (i=0; i<NUM_NILADIC; i++)
 		if (niladics[i].n != i)
 			bad_table("niladic function", i, niladics[i].nname, NAME_LEN);
-	for (i=0; i<num_argcmds; i++)
+	for (i=0; i<NUM_RARG; i++)
 		if (argcmds[i].n != i)
 			bad_table("argument command", i, argcmds[i].cmd, NAME_LEN);
-	for (i=0; i<num_multicmds; i++)
+	for (i=0; i<NUM_MULTI; i++)
 		if (multicmds[i].n != i)
 			bad_table("multi command", i, multicmds[i].cmd, NAME_LEN);
 	check_const_cat();

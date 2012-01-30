@@ -29,11 +29,7 @@
 // Allow for any generic argument taking commands in XROM
 // #define XROM_RARG_COMMANDS
 
-// Include some more mathematical constatnts to higher acccuary
-// PI is always included
-#define INCLUDE_DBL_CONSTANTS
-
-// Define this to support a four level stack arbitary shuffle command
+// Define this to support a four level stack arbitrary shuffle command
 #define INCLUDE_SHUFFLE
 
 // Define this to support nice printing of the stack shuffle command
@@ -42,7 +38,9 @@
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
 #if !defined(REALBUILD) || defined(XTAL)
-// #define INCLUDE_STOPWATCH
+#define INCLUDE_STOPWATCH
+#else
+//#define INCLUDE_STOPWATCH
 #endif
 #ifdef INCLUDE_STOPWATCH
 // Define this to activate directly the STOPWATCH function by pressing the F then

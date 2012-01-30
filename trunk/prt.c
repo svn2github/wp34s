@@ -29,19 +29,19 @@ static const char *make_complex(const char *str, char *instr) {
 }
 
 static const char *prt_monadic(const unsigned int f, char *instr) {
-	if (f < num_monfuncs && (! isNULL(monfuncs[f].mondreal) || ! isNULL(monfuncs[f].monint)))
+	if (f < NUM_MONADIC && (! isNULL(monfuncs[f].mondreal) || ! isNULL(monfuncs[f].monint)))
 		return sncopy(instr, monfuncs[f].fname, NAME_LEN);
 	return "???";
 }
 
 static const char *prt_dyadic(const unsigned int f, char *instr) {
-	if (f < num_dyfuncs && (! isNULL(dyfuncs[f].dydreal) || ! isNULL(dyfuncs[f].dydint)))
+	if (f < NUM_DYADIC && (! isNULL(dyfuncs[f].dydreal) || ! isNULL(dyfuncs[f].dydint)))
 		return sncopy(instr, dyfuncs[f].fname, NAME_LEN);
 	return "???";
 }
 
 static const char *prt_triadic(const unsigned int f, char *instr) {
-	if (f < num_trifuncs && (! isNULL(trifuncs[f].trireal) || ! isNULL(trifuncs[f].triint)))
+	if (f < NUM_TRIADIC && (! isNULL(trifuncs[f].trireal) || ! isNULL(trifuncs[f].triint)))
 		return sncopy(instr, trifuncs[f].fname, NAME_LEN);
 	return "???";
 }
@@ -49,7 +49,7 @@ static const char *prt_triadic(const unsigned int f, char *instr) {
 static const char *prt_monadic_cmplx(const unsigned int f, char *instr) {
 	char buf[NAME_LEN + 1];
 
-	if (f < num_monfuncs && ! isNULL(monfuncs[f].mondcmplx)) {
+	if (f < NUM_MONADIC && ! isNULL(monfuncs[f].mondcmplx)) {
 		if (isNULL(monfuncs[f].mondreal))
 			return monfuncs[f].fname;
 		
@@ -61,7 +61,7 @@ static const char *prt_monadic_cmplx(const unsigned int f, char *instr) {
 static const char *prt_dyadic_cmplx(const unsigned int f, char *instr) {
 	char buf[NAME_LEN + 1];
 
-	if (f < num_dyfuncs && ! isNULL(dyfuncs[f].dydcmplx)) {
+	if (f < NUM_DYADIC && ! isNULL(dyfuncs[f].dydcmplx)) {
 		if (isNULL(dyfuncs[f].dydreal))
 			return dyfuncs[f].fname;
 		return make_complex(sncopy(buf, dyfuncs[f].fname, NAME_LEN), instr);
@@ -70,7 +70,7 @@ static const char *prt_dyadic_cmplx(const unsigned int f, char *instr) {
 }
 
 static const char *prt_niladic(const unsigned int idx, char *instr) {
-	if (idx < num_niladics)
+	if (idx < NUM_NILADIC)
 		return sncopy(instr, niladics[idx].nname, NAME_LEN);
 	return "???";
 }
@@ -180,7 +180,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 
 	if (cmd == RARG_ALPHA) {
 		*scopy(instr, "\240 ") = arg;
-	} else if (cmd >= num_argcmds || argcmds[cmd].cmd == NULL)
+	} else if (cmd >= NUM_RARG || argcmds[cmd].cmd == NULL)
 		return "???";
 	else if (!ind) {
 		if (arg >= argcmds[cmd].lim)
@@ -238,7 +238,7 @@ static const char *prt_multi(const opcode op, char *instr) {
 	char *p, c;
 	int cmd = opDBL(op);
 
-	if (cmd >= num_multicmds)
+	if (cmd >= NUM_MULTI)
 		return "???";
 	p = sncopy_char(instr, multicmds[cmd].cmd, NAME_LEN, '\'');
 	*p++ = op & 0xff;
@@ -281,7 +281,7 @@ const char *catcmd(opcode op, char instr[16]) {
 		return prt_multi(op, instr);
 	} else if (isRARG(op)) {
 		f = RARG_CMD(op);
-		if (f < num_argcmds) {
+		if (f < NUM_RARG) {
 			if (f == RARG_CONST || f == RARG_CONST_CMPLX) {
 				const unsigned int arg = op & RARG_MASK;
 				if (arg < NUM_CONSTS)
@@ -302,23 +302,23 @@ const char *catcmd(opcode op, char instr[16]) {
 		case KIND_SPEC:
 			return prt_specials(f, instr);
 		case KIND_NIL:
-			if (f < num_niladics)
+			if (f < NUM_NILADIC)
 				return sncopy(instr, niladics[f].nname, NAME_LEN);
 			break;
 
 		case KIND_MON:
 		case KIND_CMON:
-			if (f < num_monfuncs)
+			if (f < NUM_MONADIC)
 				return sncopy(instr, monfuncs[f].fname, NAME_LEN);
 			break;
 
 		case KIND_DYA:
 		case KIND_CDYA:
-			if (f < num_dyfuncs)
+			if (f < NUM_DYADIC)
 				return sncopy(instr, dyfuncs[f].fname, NAME_LEN);
 			break;
 		case KIND_TRI:
-			if (f < num_trifuncs)
+			if (f < NUM_TRIADIC)
 				return sncopy(instr, trifuncs[f].fname, NAME_LEN);
 			break;
 		}

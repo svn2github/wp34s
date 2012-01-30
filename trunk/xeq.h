@@ -155,16 +155,22 @@ typedef const char FP_MULTI[50];
 #define _CONST const
 #endif
 extern _CONST struct _command_info {
+	_CONST int num_monadic;
 	_CONST struct monfunc *p_monfuncs;
 	_CONST struct monfunc_cmdtab *p_monfuncs_ct;
+	_CONST int num_dyadic;
 	_CONST struct dyfunc *p_dyfuncs;
 	_CONST struct dyfunc_cmdtab *p_dyfuncs_ct;
+	_CONST int num_triadic;
 	_CONST struct trifunc *p_trifuncs;
 	_CONST struct trifunc_cmdtab *p_trifuncs_ct;
+	_CONST int num_niladic;
 	_CONST struct niladic *p_niladics;
 	_CONST struct niladic_cmdtab *p_niladics_ct;
+	_CONST int num_rarg;
 	_CONST struct argcmd *p_argcmds;
 	_CONST struct argcmd_cmdtab *p_argcmds_ct;
+	_CONST int num_multi;
 	_CONST struct multicmd *p_multicmds;
 	_CONST struct multicmd_cmdtab *p_multicmds_ct;
 } command_info;
@@ -205,7 +211,6 @@ struct monfunc
 	const char fname[NAME_LEN];
 };
 extern const struct monfunc monfuncs[];
-extern const unsigned short num_monfuncs;
 
 /* Table of dyadic functions */
 #ifdef SHORT_POINTERS
@@ -239,7 +244,6 @@ struct dyfunc
 	const char fname[NAME_LEN];
 };
 extern const struct dyfunc dyfuncs[];
-extern const unsigned short num_dyfuncs;
 
 /* Table of triadic functions */
 #ifdef SHORT_POINTERS
@@ -272,7 +276,6 @@ struct trifunc
 	const char fname[NAME_LEN];
 };
 extern const struct trifunc trifuncs[];
-extern const unsigned short num_trifuncs;
 
 
 /* Table of niladic functions */
@@ -307,7 +310,6 @@ struct niladic
 	const char nname[NAME_LEN];
 };
 extern const struct niladic niladics[];
-extern const unsigned short num_niladics;
 #define NILADIC_NOINT		(0x80)
 #define NILADIC_NUMRESULTS(n)	((n).numresults & 0x3)
 #define NILADIC_NOTINT(n)	((n).numresults & NILADIC_NOINT)
@@ -361,7 +363,6 @@ struct argcmd
 	const char cmd[NAME_LEN];
 };
 extern const struct argcmd argcmds[];
-extern const unsigned short num_argcmds;
 
 #ifdef SHORT_POINTERS
 /*
@@ -392,7 +393,6 @@ struct multicmd
 	const char cmd[NAME_LEN];
 };
 extern const struct multicmd multicmds[];
-extern const unsigned short num_multicmds;
 
 #if defined(REALBUILD) && !defined(COMPILE_CATALOGUES)
 #pragma pack(pop)

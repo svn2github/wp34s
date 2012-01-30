@@ -48,14 +48,14 @@ struct _stopwatch_status {
 	int display_tenths:1;
 	int	 stopwatch_show_memory:1;
 	int stopwatch_select_memory_mode:1;
-} StopwatchStatus={ 0, 1, 0, 0, };
+} StopwatchStatus; // ={ 0, 1, 0, 0, };
 
 
 int (*KeyCallback)(int)=(int (*)(int)) NULL;
-long long int FirstTicker=-1;
-long long int Stopwatch=0;
-signed char StopwatchMemory=0;
-signed char StopwatchMemoryFirstDigit=-1;
+long long int FirstTicker; //-1;
+long long int Stopwatch;
+signed char StopwatchMemory;
+signed char StopwatchMemoryFirstDigit; //-1;
 char* StopWatchMessage;
 
 #define STOPWATCH_RS K63
@@ -325,7 +325,9 @@ void stopwatch(enum nilop op) {
 	StopWatchMessage="STOPWATCH\0\0\0";
 	StopwatchStatus.stopwatch_show_memory=0;
 	StopwatchStatus.stopwatch_select_memory_mode=0;
+	StopwatchStatus.display_tenths=1;
 	StopwatchMemory=0;
+	FirstTicker=-1;
 	StopwatchMemoryFirstDigit=-1;
 	KeyCallback=&stopwatch_callback;
 }

@@ -123,6 +123,7 @@ CFLAGS += -DNOWD
 endif
 ifdef XTAL
 CFLAGS += -DXTAL
+HOSTCFLAGS += -DXTAL
 endif
 CFLAGS += -DNO_BACKUP_INIT -DNO_RAM_COPY
 LDFLAGS := -nostartfiles 
@@ -160,16 +161,16 @@ endif
 # Files and libraries
 
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
-		lcd.c int.c date.c xrom.c consts.c alpha.c charmap.c \
+		lcd.c int.c date.c consts.c alpha.c charmap.c \
 		commands.c string.c storage.c serial.c matrix.c \
 		stopwatch.c
 ifeq ($(SYSTEM),windows32)
 SRCS += winserial.c
 endif
 
-HEADERS := alpha.h catalogues.h charset.h charset7.h complex.h consts.h data.h \
+HEADERS := alpha.h charset.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
-		stats.h xeq.h xrom.h xrom_labels.h storage.h serial.h matrix.h \
+		stats.h xeq.h xrom.h storage.h serial.h matrix.h \
 		stopwatch.h 
 
 XROM := $(wildcard xrom/*.wp34s)
@@ -186,6 +187,17 @@ DNSRCS := $(DNSRCS:%.c=decNumber/%.c)
 DNHDRS := $(DNSRCS:%.c=%.h) 
 
 ifdef REALBUILD
+ifdef XTAL
+TARGET=calc_xtal
+MAPFILE := $(OUTPUTDIR)/mapfile_xtal.txt
+SUMMARY := $(OUTPUTDIR)/summary_xtal.txt
+SYMBOLS := $(OUTPUTDIR)/symbols_xtal.txt
+else
+TARGET=calc
+MAPFILE := $(OUTPUTDIR)/mapfile.txt
+SUMMARY := $(OUTPUTDIR)/summary.txt
+SYMBOLS := $(OUTPUTDIR)/symbols.txt
+endif
 STARTUP := atmel/board_cstartup.S
 ATSRCS := board_lowlevel.c board_memories.c aic.c pmc.c rtc.c slcdc.c supc.c 
 ATOBJS := $(ATSRCS:%.c=$(OBJECTDIR)/%.o)
@@ -193,9 +205,6 @@ ATSRCS := $(ATSRCS:%.c=atmel/%.c)
 ATHDRS := $(ATSRCS:%.c=%.h) atmel/board.h atmel/at91sam7l128/AT91SAM7L128.h 
 
 LDCTRL := wp34s.lds
-MAPFILE := $(OUTPUTDIR)/mapfile.txt
-SUMMARY := $(OUTPUTDIR)/summary.txt
-SYMBOLS := $(OUTPUTDIR)/symbols.txt
 LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
 MAIN := $(OBJECTDIR)/main.o
 else
@@ -208,11 +217,6 @@ OPCODES := $(TOOLS)/wp34s.op
 .PHONY: clean tgz flash version qt_gui real_qt_gui qt_clean qt_clean_all
 
 ifdef REALBUILD
-ifdef XTAL
-TARGET=calc_xtal
-else
-TARGET=calc
-endif
 all: flash
 flash: $(DIRS) $(OUTPUTDIR)/$(TARGET).bin
 else
@@ -249,6 +253,8 @@ ifdef REALBUILD
 $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNum34s.a \
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE)
+	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h xrom.c
+	$(MAKE) catalogues.h xrom.c
 	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/$(TARGET) $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s -save-temps

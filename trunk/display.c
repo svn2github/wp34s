@@ -1403,7 +1403,7 @@ void display(void) {
 				getX(&x);
 				if (opKIND(op) == KIND_MON) {
 					const unsigned int f = argKIND(op);
-					if (f < num_monfuncs && ! isNULL(monfuncs[f].mondreal)) {
+					if (f < NUM_MONADIC && ! isNULL(monfuncs[f].mondreal)) {
 						FP_MONADIC_REAL fp = (FP_MONADIC_REAL) EXPAND_ADDRESS(monfuncs[f].mondreal);
 						update_speed(0);
 						fp(&r, &x);

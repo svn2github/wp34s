@@ -48,6 +48,7 @@ int main(int argc, char *argv[])
 		fprintf( stderr, "usage: post_process <calc.tmp calc.bin>\n" );
 		return 1;
 	}
+	printf( "Post-processing address tables\n" );
 
 	/*
 	 *  Open files and read input into buffer
@@ -78,7 +79,6 @@ int main(int argc, char *argv[])
 	ADJUST( p_niladics,     niladic );
 	ADJUST( p_niladics_ct,  niladic_cmdtab );
 	ADJUST( p_argcmds,      argcmd );
-	printf( "sizeof(struct argcmd) = %d\n", (int)sizeof(struct argcmd) );
 	ADJUST( p_argcmds_ct,   argcmd_cmdtab );
 	ADJUST( p_multicmds,    multicmd );
 	ADJUST( p_multicmds_ct, multicmd_cmdtab );
@@ -87,7 +87,8 @@ int main(int argc, char *argv[])
 	 *  Now make the pointers fit into a short
 	 *  Copy the untouched rest of the structure
 	 */
-	for ( i = 0; i < NUM_MONADIC; ++i ) {
+	printf( "Monadic commands:    %3d\n", info->num_monadic );
+	for ( i = 0; i < info->num_monadic; ++i ) {
 		fp = (int) info->p_monfuncs_ct[ i ].mondreal;
 		UPDATE( p_monfuncs[ i ].mondreal, 0xaa55, NUM_MONADIC );
 		fp = (int) info->p_monfuncs_ct[ i ].mondcmplx;
@@ -95,7 +96,8 @@ int main(int argc, char *argv[])
 		fp = (int) info->p_monfuncs_ct[ i ].monint;
 		UPDATE( p_monfuncs[ i ].monint, 0xa55a, NUM_MONADIC );
 	}
-	for ( i = 0; i < NUM_DYADIC; ++i ) {
+	printf( "Dyadic commands:     %3d\n", info->num_dyadic );
+	for ( i = 0; i < info->num_dyadic; ++i ) {
 		fp = (int) info->p_dyfuncs_ct[ i ].dydreal;
 		UPDATE( p_dyfuncs[ i ].dydreal, 0xaa55, NUM_DYADIC );
 		fp = (int) info->p_dyfuncs_ct[ i ].dydcmplx;
@@ -103,21 +105,25 @@ int main(int argc, char *argv[])
 		fp = (int) info->p_dyfuncs_ct[ i ].dydint;
 		UPDATE( p_dyfuncs[ i ].dydint, 0xa55a, NUM_DYADIC );
 	}
-	for ( i = 0; i < NUM_TRIADIC; ++i ) {
+	printf( "Triadic commands:    %3d\n", info->num_triadic );
+	for ( i = 0; i < info->num_triadic; ++i ) {
 		fp = (int) info->p_trifuncs_ct[ i ].trireal;
 		UPDATE( p_trifuncs[ i ].trireal, 0xaa55, NUM_TRIADIC );
 		fp = (int) info->p_trifuncs_ct[ i ].triint;
 		UPDATE( p_trifuncs[ i ].triint, 0xa55a, NUM_TRIADIC );
 	}
-	for ( i = 0; i < NUM_NILADIC; ++i ) {
+	printf( "Niladic commands:    %3d\n", info->num_niladic );
+	for ( i = 0; i < info->num_niladic; ++i ) {
 		fp = (int) info->p_niladics_ct[ i ].niladicf;
 		UPDATE( p_niladics[ i ].niladicf, 0xaa55, NUM_NILADIC );
 	}
-	for ( i = 0; i < NUM_RARG; ++i ) {
+	printf( "Argument commands:   %3d\n", info->num_rarg );
+	for ( i = 0; i < info->num_rarg; ++i ) {
 		fp = (int) info->p_argcmds_ct[ i ].f;
 		UPDATE( p_argcmds[ i ].f, 0xaa55, NUM_RARG );
 	}
-	for ( i = 0; i < NUM_MULTI; ++i ) {
+	printf( "Multi word commands: %3d\n", info->num_multi );
+	for ( i = 0; i < info->num_multi; ++i ) {
 		fp = (int) info->p_multicmds_ct[ i ].f;
 		UPDATE( p_multicmds[ i ].f, 0xaa55, NUM_MULTI );
 	}

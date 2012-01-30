@@ -456,21 +456,21 @@ int main(int argc, char *argv[]) {
 		printf("total number of opcodes %d\n", n);
 		printf("\tniladic commands %d\n", NUM_NILADIC);
 
-		for (n=c=0; c<num_monfuncs; c++) {
+		for (n=c=0; c<NUM_MONADIC; c++) {
 			if (monfuncs[c].mondreal != NULL) n++;
 			if (monfuncs[c].mondcmplx != NULL) n++;
 			if (monfuncs[c].monint != NULL) n++;
 		}
 		printf("\tmonadic commands %d with %d functions\n", NUM_MONADIC, n);
 
-		for (n=c=0; c<num_dyfuncs; c++) {
+		for (n=c=0; c<NUM_DYADIC; c++) {
 			if (dyfuncs[c].dydreal != NULL) n++;
 			if (dyfuncs[c].dydcmplx != NULL) n++;
 			if (dyfuncs[c].dydint != NULL) n++;
 		}
 		printf("\tdyadic commands %d with %d functions\n", NUM_DYADIC, n);
 
-		for (n=c=0; c<num_trifuncs; c++) {
+		for (n=c=0; c<NUM_TRIADIC; c++) {
 			if (trifuncs[c].trireal != NULL) n++;
 			if (trifuncs[c].triint != NULL) n++;
 		}

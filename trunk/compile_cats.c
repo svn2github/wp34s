@@ -16,7 +16,7 @@
 
 #define COMPILE_CATALOGUES
 #define NOCURSES 1
-#undef REALBUILD
+// #undef REALBUILD
 
 #include "consts.h"
 #include "xeq.h"
@@ -992,6 +992,15 @@ static unsigned char alpha_letters_lower[] = {
 #include "decimal64.c"
 #endif
 
+static const unsigned char opcode_breaks[KIND_MAX] = {
+	NUM_SPECIAL,		// Number of specials
+	NUM_NILADIC,		// Number of niladics
+	NUM_MONADIC,		// Number of monadics
+	NUM_DYADIC,		// Number of dyadics
+	NUM_TRIADIC,		// Number of triadics
+	NUM_MONADIC,		// Number of complex monadics
+	NUM_DYADIC,		// Number of complex dyadics
+};
 
 static int total_cat, total_alpha, total_conv;
 
@@ -1065,15 +1074,6 @@ static int compare_cat(const void *v1, const void *v2) {
 static void emit_catalogue(const char *name, s_opcode cat[], int num_cat) {
 	int i;
 	unsigned short int x;
-	static const unsigned char opcode_breaks[KIND_MAX] = {
-		NUM_SPECIAL,		// Number of specials
-		NUM_NILADIC,		// Number of niladics
-		NUM_MONADIC,		// Number of monadics
-		NUM_DYADIC,		// Number of dyadics
-		NUM_TRIADIC,		// Number of triadics
-		NUM_MONADIC,		// Number of complex monadics
-		NUM_DYADIC,		// Number of complex dyadics
-	};
 	unsigned short int opcode_sums[1 + KIND_MAX];
 	unsigned char buffer[10000];
 	unsigned char *bp = buffer;
@@ -1185,7 +1185,14 @@ static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
 #define ALPHA(n)	emit_alpha(#n , n, sizeof(n))
 
 int main(int argc, char *argv[]) {
+	int i;
+
 	gpl_text("/* ", " * ", " */");
+
+	printf("\n/* op-code breaks: ");
+	for (i = 0; i < sizeof(opcode_breaks)/sizeof(opcode_breaks[0]); ++i)
+		printf(" %d", opcode_breaks[i]);
+	printf(" */\n\n");
 
 	CAT(catalogue);
 	CAT(program_xfcn);
