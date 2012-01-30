@@ -3681,6 +3681,15 @@ void xeq(opcode op)
 			else {
 #endif
 				unsigned short int pc = state_pc();
+				if (XromFlags.xIN) {
+					// Restore state to before xIN
+					XromFlags.xIN = 0;
+					State.mode_double = XromFlags.mode_double;
+					UState.stack_depth = XromFlags.stack_depth;
+					// Restore the global return stack
+					RetStk = XromUserRetStk;
+					RetStkPtr = XromUserRetStkPtr;
+				}
 				while (isXROM(pc)) {
 					// Leave XROM
 					if (RetStkPtr != 0) {
@@ -3691,12 +3700,6 @@ void xeq(opcode op)
 						++pc; // compensate for decpc below
 				}
 				raw_set_pc(pc);
-				if (XromFlags.xIN) {
-					// Restore state to before xIN
-					XromFlags.xIN = 0;
-					State.mode_double = XromFlags.mode_double;
-					UState.stack_depth = XromFlags.stack_depth;
-				}
 #ifndef REALBUILD
 			}
 #endif
