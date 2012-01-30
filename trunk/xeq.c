@@ -1822,20 +1822,16 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 
 // Handle a RTN
 static void do_rtn(int plus1) {
+	unsigned short pc;
+
 	if (RetStkPtr < 0) {
-		// Pop any LOCALS off the stack
-		retstk_up();
-	}
-	if (RetStkPtr <= 0) {
 		// Normal RTN within program
-		unsigned short pc = RetStk[RetStkPtr - 1];
+		// Pop any LOCALS off the stack, increment sp
+		retstk_up();
+		pc = RetStk[RetStkPtr - 1];
 		raw_set_pc(pc);
-		// If RTN+1 inc PC if not at END or a POPUSR command would be skipped
+		// If RTN+1 inc PC unless a POPUSR command would be skipped
 		fin_tst(! plus1 || getprog(pc) == (OP_NIL | OP_POPUSR));
-	}
-	else {
-		// program was started without a valid return address on the stack
-		clrretstk_pc();
 	}
 	if (RetStkPtr == 0) {
 		// RTN with empty stack stops
@@ -4377,7 +4373,7 @@ int init_34s(void)
 	 * This code validates that this is true and prints error messages
 	 * if it isn't.
 	 */
-	for (i=0; i<NUM_MNADIC; i++)
+	for (i=0; i<NUM_MONADIC; i++)
 		if (monfuncs[i].n != i)
 			bad_table("monadic function", i, monfuncs[i].fname, NAME_LEN);
 	for (i=0; i<NUM_DYADIC; i++)
