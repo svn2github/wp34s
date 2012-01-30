@@ -1189,10 +1189,10 @@ int main(int argc, char *argv[]) {
 
 	gpl_text("/* ", " * ", " */");
 
-	printf("\n/* op-code breaks: ");
+	printf("static const unsigned char opcode_breaks[KIND_MAX] = {\n\t");
 	for (i = 0; i < sizeof(opcode_breaks)/sizeof(opcode_breaks[0]); ++i)
-		printf(" %d", opcode_breaks[i]);
-	printf(" */\n\n");
+		printf("%d, ", opcode_breaks[i]);
+	printf("\n};\n\n");
 
 	CAT(catalogue);
 	CAT(program_xfcn);

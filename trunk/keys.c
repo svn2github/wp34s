@@ -1587,15 +1587,6 @@ opcode current_catalogue(int n) {
 		internal_catalogue,
 #endif
 	};
-	static const unsigned char opcode_breaks[KIND_MAX] = {
-		NUM_SPECIAL,		// Number of specials
-		NUM_NILADIC,		// Number of niladics
-		NUM_MONADIC,		// Number of monadics
-		NUM_DYADIC,		// Number of dyadics
-		NUM_TRIADIC,		// Number of triadics
-		NUM_MONADIC,		// Number of complex monadics
-		NUM_DYADIC,		// Number of complex dyadics
-	};
 	const unsigned char *cat;
 	unsigned int c = State2.catalogue;
 	int m, i;
