@@ -38,6 +38,20 @@ cpx_conj::		x[<->] Y
 
 
 /**************************************************************************/
+/* Complex squares and cubes.
+ */
+		XLBL"cpx_x2"
+			xIN MONADIC_COMPLEX
+			[cmplx]RCL[times] X
+			xOUT xOUT_NORMAL
+
+		XLBL"cpx_x3"
+			xIN MONADIC_COMPLEX
+			[cmplx]RCL[times] X
+			[cmplx]RCL[times] L
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
 /* Complex inverse trig functions.
  */
 		XLBL"cpx_ASIN"
@@ -91,7 +105,7 @@ cpx_asinh::		x[>=]0?
 			SF .00
 			[cmplx]+/-
 cpx_asinh_pos::		[cmplx]FILL
-			[cmplx]x[^2]
+			RCL[times] X
 			INC X
 			[cmplx][sqrt]
 			[cmplx]+

@@ -33,6 +33,34 @@ void cmplxFactorial(decNumber *rx, decNumber *ry, const decNumber *xin, const de
 }
 
 
+// (a + ib)^2 = (a^2 - b^2) + i ( 2 * a * b )
+// 66 bytes
+void cmplxSqr(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+#ifndef TINY_BUILD
+	decNumber t, u, v;
+
+	decNumberSquare(&t, a);
+	decNumberSquare(&u, b);
+	dn_multiply(&v, a, b);
+
+	dn_subtract(rx, &t, &u);
+	dn_add(ry, &v, &v);
+#endif
+}
+
+
+
+// (a + ib)^3 = (a^2 + b^2) + i ( 2 * a * b ) . ( a + i b )
+// 44 bytes
+void cmplxCube(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+#ifndef TINY_BUILD
+	decNumber s1, s2;
+
+	cmplxSqr(&s1, &s2, a, b);
+	cmplxMultiply(rx, ry, &s1, &s2, a, b);
+#endif
+}
+
 // arcsinh(a + i b) = ln((a + i b) + sqrt((a + i b) (a + i b) + 1)
 // arcsin(z) = k PI + -i ln (iz + sqrt(1-z^2))
 // 46 bytes

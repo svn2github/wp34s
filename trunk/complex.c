@@ -281,20 +281,6 @@ void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *c, const decNumbe
 #endif
 }
 
-// (a + ib)^2 = (a^2 - b^2) + i ( 2 * a * b )
-void cmplxSqr(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber t, u, v;
-
-	decNumberSquare(&t, a);
-	decNumberSquare(&u, b);
-	dn_multiply(&v, a, b);
-
-	dn_subtract(rx, &t, &u);
-	dn_add(ry, &v, &v);
-#endif
-}
-
 // sqrt(a + i b) = +- (sqrt(r + a) + i sqrt(r - a) sign(b)) sqrt(2) / 2
 //		where r = sqrt(a^2 + b^2)
 void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
@@ -327,16 +313,6 @@ void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		dn_sqrt(&t1, &v);
 		dn_multiply(rx, &t1, &const_root2on2);
 	}
-#endif
-}
-
-// (a + ib)^3 = (a^2 + b^2) + i ( 2 * a * b ) . ( a + i b )
-void cmplxCube(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber s1, s2;
-
-	cmplxSqr(&s1, &s2, a, b);
-	cmplxMultiply(rx, ry, &s1, &s2, a, b);
 #endif
 }
 

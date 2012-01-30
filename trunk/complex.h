@@ -73,9 +73,7 @@ extern void cmplxMinus(decNumber *rx, decNumber *ry, const decNumber *a, const d
 
 extern void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxSqr(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxCube(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxCubeRoot(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxLn(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
