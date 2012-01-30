@@ -3,9 +3,13 @@
 <head>
 
 
+
+  
   
   <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
 
+
+  
   
   <title>WP 34S - Memory Management</title>
 </head>
@@ -14,7 +18,9 @@
 <body>
 
 
+
 <h1>WP 34S Memory Management</h1>
+
 
 
 <p>This
@@ -22,33 +28,43 @@ chapter discusses how memory is divided between the program area, local
 and global data.</p>
 
 
+
 <h2>Memory Layout </h2>
+
 
 
 <p>The two kilobytes of non volatile RAM are divided in five
 distinct areas:</p>
 
 
+
 <ol>
+
 
 
   <li>Program Memory,</li>
 
 
+
   <li>The subroutine return stack,</li>
+
 
 
   <li>The registers used for cumulative statistics (may be
 missing)</li>
 
 
+
   <li>The global registers, including the stack,</li>
+
 
 
   <li>Status and configuration data.</li>
 
 
+
 </ol>
+
 
 
 <p>The areas are arranged in the order noted above. This chapter
@@ -56,46 +72,57 @@ deals with information about the variable boundaries between these
 areas.</p>
 
 
-<p>A complete copy of the nonvolatile RAM can be written to flash
-region <span style="font-family: monospace;">0</span>
+
+<p>A complete copy of the nonvolatile RAM can be written to flash memory
 with the Command <span style="font-family: monospace;">SAVE</span>
 (<span style="font-family: Helvetica,Arial,sans-serif;">ON</span>+<span style="font-family: Helvetica,Arial,sans-serif;">STO</span>).
 The document <a href="flash.txt">flash.txt</a> or
 the manual have more information about the handling of flash memory.</p>
 
 
+
 <h2>Program Data in RAM or Flash</h2>
 
 
-<p>The block reserved for program data is one kilobyte in size.
-This is exactly the size of a flash region. A step occupies two bytes,
-the fields holding the current size and the checksum are two bytes wide
-each. This translates to a maximum of 510 program steps. A program step
-typically is just one physical step. The multi byte labels and multi
-character alpha strings take two steps each.</p>
+
+<p>Program memory shares the space with the subroutine return stack and
+starts at low memory addresses. A step occupies two bytes,&nbsp; a
+'word'. A program step
+typically is just one word. The multi byte labels and multi
+character alpha strings take two words each. The total size of this
+area is dependent on the number of registers allocated with MEM. For
+the full setting, registers 00 to 99, and no summation registers used,
+the size is 532 words. The return stack needs at least six words. If
+you reduce the number of registers you gain four words for each. To be
+precise, this is only valid for single precision mode, in double
+precision each register is worth eight words.</p>
 
 
-<p> The program area is followed by the subroutine return stack.
-Unused program steps can be taken over by return addresses and local
+
+<p> The program area is followed by the subroutine return stack. It is
+used for return addresses and local
 data. There is no command to set the size. The boundary between the
-return stack and the program data is determined by the number of steps
+return stack and the program data is determined by the number of
+program steps
 currently stored.&nbsp;When new program steps are entered, the
-subroutine return stack is reset to make room. There are situations
-where this will not return programm memory to the full size: The
-summation registers may have taken their share (see below).<br>
+subroutine return stack is reset, not only to make room but because any
+stored address my be no longer valid after changing the program.<br>
+
 
 
 </p>
 
 
+
 <h2>Global Registers</h2>
+
 
 
 <p>Global registers are placed near the end of available memory.
 The numberered registers <span style="font-family: monospace;">00</span>
 to <span style="font-family: monospace;">99</span>
 precede the stack and special registers <span style="font-family: monospace;">X</span>, <span style="font-family: monospace;">Y</span>, <span style="font-family: monospace;">Z</span>, <span style="font-family: monospace;">T</span>, <span style="font-family: monospace;">A</span>, <span style="font-family: monospace;">B</span>, <span style="font-family: monospace;">C</span>, <span style="font-family: monospace;">D</span>, <span style="font-family: monospace;">L</span>, <span style="font-family: monospace;">I</span>, <span style="font-family: monospace;">J</span> and <span style="font-family: monospace;">K</span>. This totals
-to 112 registers, each occupying eight bytes (or four steps). For
+to 112 registers, each occupying eight bytes (or four words). For
 programs
 which do not need all the numbered registers the amount can be reduced
 by specifying the highest numbered register with the command <span style="font-family: monospace;">REGS nn</span>. With <span style="font-family: monospace;">REGS 99</span> you get
@@ -104,8 +131,6 @@ the default state, <span style="font-family: monospace;">REGS
 query the current allocation with <span style="font-family: monospace;">REGS?</span>. This
 command returns the number of registers allocated, a number&nbsp;between
 1 and 100.</p>
-
-
 <p>What happens when <span style="font-family: monospace;">REGS</span>
 is executed is that the beginning of the register area is moved. When
 the new upper limit is lower then it was, the move goes towards higher
@@ -127,6 +152,7 @@ memory allocation. In the example above, index values 90 to 99 become
 invalid and will throw a range error.</p>
 
 
+
 <p>The space gained is added to the return stack. It may be
 necessary to reduce the number of global registers before using <span style="font-family: monospace;">[Sigma]+</span>
 because the summation registers reside outside the numbered register
@@ -134,9 +160,16 @@ set (see below). Since the return stack and the summation data are tied
 to the boundary just moved, they are copied into their new location
 together with the register data. This makes it possible to execute <span style="font-family: monospace;">REGS</span> in the
 middle of a subroutine without disrupting the program.</p>
+<p>In double precision, the total number of registers is halved to 56 wich
+translates to 44 numbered registers, 00 to 43, plus the special
+registers. It is possible to execute MEM with a higher number then 43
+after switching to&nbsp;&nbsp;double precision mode but this will eat into the
+available program and return stack area.</p>
+
 
 
 <h2>Local Registers and Flags</h2>
+
 
 
 <p>Being able to store private data without worrying about
@@ -146,65 +179,81 @@ store not only return adresses but also local registers and flags.
 Before you can use the feature, you may have to make room.</p>
 
 
+
 <h3><a name="How_to_Make_Room"></a>How to Make
 Room</h3>
+
 
 
 <p>The total size of the return stack is given by the following
 equation:</p>
 
 
+
 <p># of steps = free program memory + fixed stack size + memory
 freed by REGS command - memory used by summation data.</p>
 
 
+
 <p>With 100 fixed registers and a full program area, you will get
-about 20 return levels. In this configuration it is impossible to
+just six return levels. In this configuration it is impossible to
 allocate the summation registers. You have several options to increase
 the available space:</p>
+
 
 
 <ol>
 
 
+
   <li>Reduce the number of fixed registers. Each register is
-worth four steps (or levels).</li>
+worth four words (in single precision).</li>
+
 
 
   <li>Move the programm to a flash region and clear the program
 in RAM.</li>
 
 
+
 </ol>
+
 
 
 Which solution suites you best depends on the application. You may of
 course do both. Use <span style="font-family: monospace;">MEM?</span>
-to query the free space in steps.
+to query the free space in words.
 <h3>Commands involved<br>
 
 
+
 </h3>
+
 
 
 <p><span style="font-family: monospace;">LocR&nbsp;nn&nbsp;</span>- Reserve <span style="font-family: monospace;">nn</span>+1 local
 registers and 16 local flags.<br>
 
 
+
 <span style="font-family: monospace;">PopL &nbsp;&nbsp;
 -</span> Pop the local registers without returning.<br>
+
 
 
 <span style="font-family: monospace;">RTN&nbsp;&nbsp;&nbsp;
 &nbsp;</span>- Pop the local registers and return.<br>
 
 
+
 <span style="font-family: monospace;">LocR?&nbsp;&nbsp;&nbsp;</span>-
 How many local registers are allocated?<br>
 
 
+
 <span style="font-family: monospace;">MEM?&nbsp;&nbsp;&nbsp;&nbsp;</span>-
 How much memory (in steps) is left?</p>
+
 
 
 <p>There are no special commands to access the local data, just
@@ -212,10 +261,13 @@ the
 regular register and flag operations with a modified address part.<br>
 
 
+
 </p>
 
 
+
 <h3>Addressing</h3>
+
 
 
 <p>Local registers and flags are addressed with a dot before the
@@ -226,6 +278,7 @@ technical limit. Higher numbered registers can be used by indirect
 addressing only. The maximum value for <span style="font-family: monospace;">nn</span> is <span style="font-family: monospace;">99</span>, giving 100
 local registers. Local flags are always allocated from <span style="font-family: monospace;">.00</span> to <span style="font-family: monospace;">.15</span>, regardless
 of the argument given to <span style="font-family: monospace;">LocR</span>.</p>
+
 
 
 <p>Indirect addresses go from 112
@@ -242,6 +295,7 @@ mode. It's just an alternative for those who don't like the magic value
 Flags and registers are addressed with the exact same index values.</p>
 
 
+
 <p>This scheme makes it possible to address a global register
 with a local
 index register (<span style="font-family: monospace;">STO-&gt;.00</span>
@@ -254,35 +308,46 @@ with an index from 112
 onwards).<br>
 
 
+
 </p>
+
 
 
 <h3>Allocation and Visibility<br>
 
 
+
 </h3>
+
 
 
 <p>After executing <span style="font-family: monospace;">LocR</span>,
 a frame is allocated on the return stack which contains:<br>
 
 
+
 </p>
+
 
 
 <ol>
 
 
+
   <li>A&nbsp;marker,</li>
+
 
 
   <li>A&nbsp;flag word,</li>
 
 
+
   <li>The register data (4 steps per register).</li>
 
 
+
 </ol>
+
 
 
 <p>A pointer in memory is initialized to point to this frame. If
@@ -293,6 +358,7 @@ start to ensure a 32 bit alignment of the register data. This is
 handled transparently. Newly allocated registers are cleared to zero.</p>
 
 
+
 <p>Executing <span style="font-family: monospace;">LocR</span>
 again from the same subroutine level will adjust the number of
 registers. This requires data copying because the registers are
@@ -301,8 +367,10 @@ opposite direction. If the number of registers increases, the new
 registers a zeroed.</p>
 
 
+
 <p><span style="font-family: monospace;">LocR?</span>
 will give you the number of local registers available.</p>
+
 
 
 <p><span style="font-family: monospace;">XEQ</span>
@@ -312,6 +380,7 @@ that does not execute a <span style="font-family: monospace;">LocR</span>
 command itself will have access to the caller's local registers. Once <span style="font-family: monospace;">LocR</span> is
 executed by the callee, the caller's local registers are hidden from
 view.</p>
+
 
 
 <p><span style="font-family: monospace;">RTN</span>
@@ -328,6 +397,7 @@ will just continue execution. As a result, the current local frame is
 dropped and the next higher frame reactivated.</p>
 
 
+
 <p>Manually executing <span style="font-family: monospace;">RTN</span>,
 starting a new program with <span style="font-family: monospace;">XEQ</span>,
 or
@@ -336,7 +406,9 @@ by clearing the pointer. Any contents in any local register or
 flag is lost!</p>
 
 
+
 <h3>Recursive Programming</h3>
+
 
 
 <p>Using local registers makes it possible to create a subroutine
@@ -345,14 +417,18 @@ data only. Of course the RPN stack is global so you should be careful
 not to corrupt it.</p>
 
 
+
 <p> Here is a recursive implementation of the factorial (not
 setting LastX correctly):</p>
+
 
 
 <pre>	LBL'FAC'<br>	IP<br>	x&gt;1?<br>	SKIP 02<br>	1<br>	RTN<br>	LocR 00<br>	STO .00<br>	DEC X<br>	XEQ'FAC'<br>	RCL[times] .00<br>	RTN</pre>
 
 
+
 <h2>Cumulative Statistics</h2>
+
 
 
 <p>The summation registers for the cumulative statistics are no
@@ -365,26 +441,30 @@ only, not by <span style="font-family: monospace;">STO</span>
 or <span style="font-family: monospace;">RCL</span>. All these commands show the stored values when browsed from the catalogue without the need to execute them.</p>
 
 
+
 <p>The first invocation of <span style="font-family: monospace;">[Sigma]+</span>
 allocates the required space just below register <span style="font-family: monospace;">00</span> and above
 the subroutine return stack, pushing it down in memory. It may be
 necessary <a href="#How_to_Make_Room">to make room</a>
-first. At present 70&nbsp; steps are required for the
+first. At present 70&nbsp; words are required for the
 data.&nbsp; When the number of data points reaches zero, either by <span style="font-family: monospace;">[Sigma]-</span> or by <span style="font-family: monospace;">CL[Sigma]</span>, the
 block is deallocated again. All pointers are
 automatically&nbsp;adjusted so that this allocation or deallocation
 does not disrupt a running program.</p>
 
 
+
 <p>When memory allocation fails, an error is thrown. Most
 functions will throw an error if not enough data points have been
 entered. The register query commands such as <span style="font-family: monospace;">[Sigma]n</span> return
 zero if no data is allocated.</p>
+
 <p>The summation data will be cleared automatically when&nbsp;a long
 program is copied from flash or loaded via the serial interface and
 after the load the registers would no longer fit in memory. You can
 avoid this by reducing the amount of numbered registers with the
-command <span style="font-family: monospace;">REGS 86</span> (or less) before the load attempt. This will move the summation data beyond the program area boundary. </p>
+command <span style="font-family: monospace;">REGS 01 </span>before the load attempt. This will (hopefully) move the summation data out of the way. </p>
+
 
 
 </body>
