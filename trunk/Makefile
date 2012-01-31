@@ -93,7 +93,7 @@ endif
 endif
 endif
 endif
- 	
+
 TOOLS := tools
 AR=ar
 RANLIB=ranlib
@@ -103,7 +103,7 @@ LDCTRL :=
 HOSTCC := $(CC)
 HOSTAR := $(AR)
 HOSTRANLIB := $(RANLIB)
-HOSTCFLAGS := -Wall -Werror -O1 -g
+HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD
 
 ifdef REALBUILD
 # Settings for the Yagarto tool chain under Windows (or MacOS)
@@ -296,7 +296,7 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 	cd $(UTILITIES) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
 		&& $(MAKE) "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
-		
+
 catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile
 	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>$(OPCODES)
 
@@ -312,7 +312,7 @@ $(UTILITIES)/compile_consts$(EXE): compile_consts.c $(DNSRCS) Makefile features.
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
 		commands.c string.c prt.c consts.c pretty.c Makefile features.h
-	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $< -O0 -g
+	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
 
 $(UTILITIES)/lcdgen$(EXE): lcdgen.c Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
@@ -430,7 +430,7 @@ real_qt_gui:
 
 real_qt_gui_dist:
 	@echo "real_qt_gui_dist should be called if QTGUI is not defined"
-	
+
 real_qt_gui_no_serial:
 	@echo "real_qt_gui_no_serial should be called if QTGUI is not defined"
 

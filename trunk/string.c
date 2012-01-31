@@ -43,7 +43,7 @@ void *xset(void *d, const char c, int n) {
 }
 
 
-#ifdef REALBUILD
+#if defined(REALBUILD) && !defined(HOSTBUILD)
 /* Needed by the C runtime */
 #undef memcpy
 #undef memset
