@@ -1807,6 +1807,8 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 			// XEQ or hot key from keyboard
 			clrretstk();
 			set_running_on();
+			if (! isXROM(pc))
+				oldpc = pc;
 		}
 		if (-RetStkPtr >= (XromFlags.xIN ? XROM_RET_STACK_SIZE : RetStkSize)) {
 			// Stack is full
@@ -1824,7 +1826,12 @@ static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
 static void do_rtn(int plus1) {
 	unsigned short pc;
 
-	if (RetStkPtr < 0) {
+	if (RetStkPtr >= 0) {
+		// stray RTN: Go to ProgBegin
+		clrretstk();
+		raw_set_pc(ProgBegin);
+	}
+	else {
 		// Normal RTN within program
 		// Pop any LOCALS off the stack, increment sp
 		retstk_up();
@@ -1875,11 +1882,6 @@ static unsigned int findmultilbl(const opcode o, int flags) {
 		lbl = find_opcode_from(addrLIB(0, REGION_LIBRARY), dest, 0);	// Library
 	if (lbl == 0)
 		lbl = find_opcode_from(addrLIB(0, REGION_BACKUP), dest, 0);	// Backup
-#if 0
-	// Disable searching for global labels in xrom
-	if (lbl == 0)
-		lbl = find_opcode_from(addrXROM(0), dest, 0);			// XROM
-#endif
 	if (lbl == 0 && (flags & FIND_OP_ERROR) != 0)
 		err(ERR_NO_LBL);
 	return lbl;
@@ -1887,16 +1889,6 @@ static unsigned int findmultilbl(const opcode o, int flags) {
 
 void cmdmultilblp(const opcode o, enum multiops mopr) {
 	fin_tst(findmultilbl(o, 0) != 0);
-}
-
-static void do_multigto(int is_gsb, unsigned int lbl) {
-#if 0 // No multi labels in XROM anymore
-	if (! Running && isXROM(lbl) && ! is_gsb) {
-		lbl = 0;
-		err(ERR_RANGE);
-	}
-#endif
-	cmdgtocommon(is_gsb, lbl);
 }
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
@@ -1916,7 +1908,7 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 		is_gsb = mopr != DBL_GTO;
 		lbl = findmultilbl(o, FIND_OP_ERROR);
 	}
-	do_multigto(is_gsb, lbl);
+	cmdgtocommon(is_gsb, lbl);
 }
 
 
@@ -1929,7 +1921,7 @@ static void branchtoalpha(int is_gsb, char buf[]) {
 	op |= (buf[2] & 0xff) << 24;
 	lbl = findmultilbl(op, FIND_OP_ERROR);
 
-	do_multigto(is_gsb, lbl);
+	cmdgtocommon(is_gsb, lbl);
 }
 
 void cmdalphagto(unsigned int arg, enum rarg op) {

@@ -774,6 +774,8 @@ static int process_h_shifted(const keycode c) {
 		State2.runmode = 1 - State2.runmode;
 		process_cmdline_set_lift();
 		update_program_bounds(1);
+		if (! State2.runmode && state_pc() == 1 && ProgEnd == 1)
+			set_pc(0);
 		break;
 
 	default:
@@ -2043,7 +2045,7 @@ static int process_labellist(const keycode c) {
 		if (label) {
 			if (direct) {
 				cmdgtocommon(1, pc);	// set pc and push return address
-				op = OP_NIL | OP_RS;
+				op = STATE_IGNORE;	// Just quit the browser
 			}
 			else 
 				op = (DBL_XEQ << DBL_SHIFT) + label;
