@@ -3930,7 +3930,6 @@ void cmdlocr(unsigned int arg, enum rarg op) {
 }
 
 
-#ifdef XROM_COMMANDS
 static int check_xin_xout(void) {
 	if (is_intmode()) {
 		err(ERR_BAD_MODE);
@@ -4113,7 +4112,6 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	// RTN or RTN+1 depending on bit 0 of argument
 	do_rtn(arg & 1);
 }
-#endif
 
 #ifdef XROM_RARG_COMMANDS
 /*

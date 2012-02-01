@@ -866,7 +866,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_sRCL,	&cmdrrcl,				"sRCL")
 	CMDstk(RARG_dRCL,	&cmdrrcl,				"dRCL")
 
-#ifdef XROM_COMMANDS
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")
 
@@ -874,7 +873,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDnoI(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
 #ifdef XROM_RARG_COMMANDS
 	CMDstk(RARG_XROM_ARG,	&cmdxarg,				"xARG")
-#endif
 #endif
 	CMDnoI(RARG_CONVERGED,	&cmdconverged,	32,			"CNVG?")
 #ifdef INCLUDE_SHUFFLE

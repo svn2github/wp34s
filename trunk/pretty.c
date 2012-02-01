@@ -130,7 +130,6 @@ void dump_opcodes(FILE *f) {
 				fprintf(f, ",local");
 			if (argcmds[cmd].cmplx)
 				fprintf(f, ",complex");
-#ifdef XROM_COMMANDS
 			if (cmd == RARG_MODE_SET 
 			 || cmd == RARG_MODE_CLEAR 
 			 || cmd == RARG_XROM_IN 
@@ -140,7 +139,6 @@ void dump_opcodes(FILE *f) {
 #endif
 			   )
 				fprintf(f, ",xrom");
-#endif
 			fprintf(f, "\n");
 		}
 		else {

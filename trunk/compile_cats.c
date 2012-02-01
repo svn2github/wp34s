@@ -718,10 +718,8 @@ static s_opcode internal_catalogue[] = {
 	NILIC(OP_POPUSR,	"POPUSR")
 	RARGCMD(RARG_MODE_SET,	"xMSET")
 	RARGCMD(RARG_MODE_CLEAR,"xMCLR")
-#ifdef XROM_COMMANDS
 	RARGCMD(OP_XROM_IN,	"xIN")
 	RARGCMD(RARG_XROM_OUT,	"xOUT")
-#endif
 };
 #endif
 
