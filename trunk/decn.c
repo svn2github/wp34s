@@ -749,6 +749,7 @@ decNumber *do_log(decNumber *r, const decNumber *x, const decNumber *base) {
  */
 decNumber *dn_ln(decNumber *r, const decNumber *x) {
 	decNumber z, t, f, n, m, i, v, w, e;
+	const decNumber *tol = is_dblmode() ? &const_1e_37 : &const_1e_32;
 	int expon;
 
 	if (decNumberIsSpecial(x)) {
@@ -792,7 +793,7 @@ decNumber *dn_ln(decNumber *r, const decNumber *x) {
 		dn_multiply(&n, &m, &n);
 		dn_divide(&e, &n, &i);
 		dn_add(&w, &v, &e);
-		if (relative_error(&w, &v, &const_1e_32))
+		if (relative_error(&w, &v, tol))
 			break;
 		decNumberCopy(&v, &w);
 		dn_p2(&i, &i);
@@ -1719,9 +1720,11 @@ decNumber *decNumberPerm(decNumber *res, const decNumber *x, const decNumber *y)
 	return res;
 }
 
-#ifdef _DEBUG
+#ifdef _DEBUG_
 #include <stdio.h>
 char dump[DECNUMDIGITS + 10];
+#define DUMP(d, s) ((int) decNumberToString(d, dump), fprintf(f, s "=%s\n", dump))
+
 #endif
 
 const decNumber *const gamma_consts[21] = {
@@ -1737,44 +1740,42 @@ const decNumber *const gamma_consts[21] = {
 static void dn_LnGamma(decNumber *res, const decNumber *x) {
 	decNumber r, s, t, u, v;
 	int k;
-#ifdef _DEBUG_
-	FILE *f = fopen("calc.out","w");
-	decNumberToString(x, dump); fprintf(f, "z=%s\n", dump);
+#ifdef DUMP
+	FILE *f = fopen("calc.out","a");
+	DUMP(x, "z");
 #endif
 	decNumberZero(&s);
 	dn_add(&t, x, &const_21);
-	for (k=20; k>=0; k--) {
+	for (k = 20; k >= 0; k--) {
 		dn_divide(&u, gamma_consts[k], &t);
 		dn_dec(&t);
 		dn_add(&s, &s, &u);
 	}
 	dn_add(&t, &s, &const_gammaC00);
 	dn_ln(&s, &t);
-#ifdef _DEBUG_
-	decNumberToString(&t, dump); fprintf(f, "sum:%s\n", dump);
-	decNumberToString(&s, dump); fprintf(f, "ln:%s\n", dump);
+#ifdef DUMP
+	DUMP(&t, "sum");
+	DUMP(&s, "ln");
 #endif
 //		r = z + g + .5;
 	dn_add(&r, x, &const_gammaR);
-#ifdef _DEBUG_
-	decNumberToString(&r, dump);
-	fprintf(f, "r=%s\n", dump);
+#ifdef DUMP
+	DUMP(&r, "r");
 #endif
 
 //		r = log(R[0][0]) + (z+.5) * log(r) - r;
 	dn_ln(&u, &r);
 	dn_add(&t, x, &const_0_5);
 	dn_multiply(&v, &u, &t);
-#ifdef _DEBUG_
-	decNumberToString(&v, dump); fprintf(f, "(z+.5)*log(r)=%s\n", dump);
+#ifdef DUMP
+	DUMP(&v, "(z+.5)*log(r)");
 #endif
 
 	dn_subtract(&u, &v, &r);
 	dn_add(res, &u, &s);
 
-#ifdef _DEBUG_
-	decNumberToString(res, dump);
-	fprintf(f, "res:%s\n", dump);
+#ifdef DUMP
+	DUMP(res, "res");
 	fclose(f);
 #endif
 }

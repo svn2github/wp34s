@@ -218,6 +218,7 @@ static void gammaTest()
 {
     Bf* bf = factorial;
     Mf* mf = gammaFactorialSlow<MAPM>;
+    // runTest(1, 1000, bf, mf, 100);
     runTest(1, 6900, bf, mf);
     // runTest(6890, 6900, bf, mf, 1);
 }
@@ -234,6 +235,7 @@ int main()
     
     // be sure to be in radians
     UState.trigmode = TRIG_RAD;
+    State.mode_double = 1;
     
     // initialise MAPM lib to 100
     m_apm_cpp_precision(100);         /* default is 30 */

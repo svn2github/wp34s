@@ -55,7 +55,7 @@
 // Note: when changing this, consider adjusting DECBUFFER in DecNumberLocal.h
 // to size the temp buffer size and avoid malloc/free
 #ifdef _DEBUG_
-#define DECNUMDIGITS 130	/* debugging algorthms... */
+#define DECNUMDIGITS 170	/* debugging algorthms... */
 #else
 #define DECNUMDIGITS 39		/* 32 bytes per real for 28 .. 33, 36 bytes for 34 .. 39 */
 #endif
