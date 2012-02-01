@@ -2,16 +2,20 @@
 <html>
 <head>
 
+
+  
   <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+
+  
   <title>WP 34S - Interactive Programming</title>
-
-
 </head>
 
 
 <body>
 
+
 <h1>WP 34S Interactive Programming</h1>
+
 
 <p>This
 chapter&nbsp;deals with writing programs that interact with the
@@ -19,7 +23,9 @@ user.
 Topics covered are the display of messages, geting input from the user,
 hot keys and truely interactive "real time" programs.</p>
 
+
 <h2>Interrupting a Program for Display of Information</h2>
+
 
 <p>When
 a program is started, the display contents are replaced by the "Running
@@ -38,6 +44,7 @@ bit with each update. This is especially true if the displays follow
 each other in a tight loop because the flicker avoidance logic needs to
 wait for a complete display refresh cycle before the next update is
 allowed.</p>
+
 
 <p>Another way to show what would normally appear on the
 display when no program were running is to use the <span style="font-family: monospace;">PSE</span>
@@ -62,6 +69,7 @@ will display
 register <span style="font-family: monospace;">nn</span>
 until the user presses a key.</p>
 
+
 <p>To make things clearer:
 <span style="font-family: monospace;">VIEW</span>
 immediatly displays the register when encountered during execution
@@ -81,7 +89,9 @@ by a programmed display use the command <span style="font-family: monospace;">MS
 displays one of the system error messages without disturbing the
 program, zero being a special case.&nbsp;</p>
 
+
 <h2>Displaying Messages</h2>
+
 
 <p>A message in
 <span style="font-family: Helvetica,Arial,sans-serif;">WP
@@ -101,20 +111,20 @@ because most commands append their output to what is already stored. To
 save space, characters in program mode may be entered in groups of
 three by typing <span style="font-family: Helvetica,Arial,sans-serif;">f
 ENTER^</span>
-while already in alpha mode. This saves one program step per three
-characters but does not allow all special symbols to be entered because
-the catalogues are not available in this mode. Single characters and
+while already in alpha mode. This saves one&nbsp;program step per three
+characters. A few special characters are not allowed in the last position for technical reasons. Single characters and
 grouped characters can be freely mixed. The register is 31 characters
 wide. The display capacity is considerably smaller and depends on the
 width of each symbol. The display switches to a smaller font if
 necessary. The contents can be scrolled in interactive alpha mode with
 the up and down arrow keys.</p>
 
+
 <p>If you just want to display the
 message and no number with it, use the <span style="font-family: monospace;">[alpha]VIEW</span>
 command. To get to
 this command you must be out of alpha mode and open the <span style="font-family: Helvetica,Arial,sans-serif;">P.FCN</span>
-catalogue. 0 brings you
+catalogue. <span style="font-family: Helvetica,Arial,sans-serif;">g A</span>&nbsp; brings you
 to the alpha commands. The <span style="font-family: monospace;">[alpha]VIEW</span>
 display starts at the first
 character of the string. The numeric portion of the LCD is replaced by
@@ -129,6 +139,7 @@ or <span style="font-family: monospace;">STOP</span>
 following any of these
 commands are valid here, too.</p>
 
+
 <p>Another way to display the alpha
 register is to switch to alpha mode with [<span style="font-family: monospace;">alpha]ON</span>. The
 main difference
@@ -142,7 +153,9 @@ user input to go to the upper display! <span style="font-family: monospace;">[al
 returns everything to
 normal.</p>
 
+
 <h2>Temporary Displays</h2>
+
 
 <p>Whenever the display does not show the actual contents of the <span style="font-family: monospace;">X</span>
 register in the current mode, this is considered a temporary display.
@@ -152,35 +165,47 @@ during temporary displays and on otherwise.&nbsp;The following
 displays
 are considered temporary:</p>
 
+
 <ol>
+
 
   <li>Any errors,</li>
 
+
   <li><span style="font-family: monospace;">[alpha]VIEW</span>,</li>
+
 
   <li><span style="font-family: monospace;">[alpha]VW+
 nn</span>,</li>
+
 
   <li><span style="font-family: monospace;">VIEW nn</span>
 where <span style="font-family: monospace;">nn</span>
 is not <span style="font-family: monospace;">X</span>,</li>
 
+
   <li><span style="font-family: monospace;">VIEW X</span>
 if encountered in a program because <span style="font-family: monospace;">X</span> may have
 changed before the stop,</li>
 
+
   <li><span style="font-family: Helvetica,Arial,sans-serif;">H.MS</span>
 display,</li>
 
+
   <li>Temporary display in another base (not programmable).</li>
 
+
 </ol>
+
 
 <p>Press <span style="font-family: Helvetica,Arial,sans-serif;">EXIT</span>
 or <span style="font-family: Helvetica,Arial,sans-serif;">&lt;-</span>
 to get back to the normal display.</p>
 
+
 <h2>Data Input</h2>
+
 
 <p>The easiest way of getting&nbsp;user
 input, apart from expecting everything on the stack, is just stopping
@@ -204,7 +229,9 @@ halts
 program execution. This is good for entering a lengthy list of
 parameters in a given order without much programming.</p>
 
+
 <h2>Hot Keys</h2>
+
 
 <p>A more versatile way of doing things is using the dedicated
 keys <span style="font-family: Helvetica,Arial,sans-serif;">A</span>
@@ -216,7 +243,9 @@ or in a flash region, it's necessary to move the program counter (PC)
 to the top of the program and stop there. A typical program structure
 might be the following:</p>
 
-<pre>LBL 'MYP'<br>CL[alpha]<br>[alpha]'Hel'<br>[alpha]'lo!'<br>LBL 00<br>PROMPT<br>BACK 01<br>LBL A<br>ENTRY?<br>SKIP 01<br>XEQ 01<br>STO 01<br>GTO 00<br>LBL B<br>...<br></pre>
+
+<pre>LBL 'MYP'<br>CL[alpha]<br>[alpha]'Hel'<br>[alpha]'lo!'<br>PROMPT<br>BACK 01<br>LBL A<br>ENTRY?<br>SKIP 01<br>XEQ 01<br>STO 01<br>RTN<br>LBL B<br>...<br>END<br></pre>
+
 
 <p>This sets up a message and stops. <span style="font-family: Helvetica,Arial,sans-serif;">R/S</span>
 does nothing, it simply returns to the prompt. If the user enters a
@@ -229,7 +258,9 @@ information after the last prompt, subroutine <span style="font-family: monospac
 called to compute a new value which is then stored and displayed. This
 is the way the TVM application is implemented.</p>
 
+
 <h2>The Keyboard Codes</h2>
+
 
 <p>Sometimes, the hot keys <span style="font-family: Helvetica,Arial,sans-serif;">A</span>
 to <span style="font-family: Helvetica,Arial,sans-serif;">D</span>
@@ -238,7 +269,9 @@ addressable subroutines by a simple trick: shorthand addressing of
 numeric labels. To make this possible, each key is identified by a row
 and a column, each star1ing with <span style="font-family: monospace;">1</span>.</p>
 
-<pre> A B C D -&gt; CPX<br>11 12 13 14 <span style="font-style: italic;">15 16</span><br><br>STO RCL Rv f g h<br><span style="font-style: italic;">21 22 23</span> <span style="color: rgb(163, 163, 163);">24</span> 25 26<br><br>ENTER^ x&lt;&gt;y +/- EEX &lt;-<br>31 <span style="font-style: italic;">32 33 34</span> 35<br><br>XEQ 7 8 9 /<br><span style="font-style: italic;">41</span> 42 43 44 <span style="font-style: italic;">45</span><br><br> ^ 4 5 6 x<br><span style="font-style: italic;">51</span> 52 53 54 <span style="font-style: italic;">55</span><br><br> v 1 2 3 -<br><span style="font-style: italic;">61</span> 62 63 64 <span style="font-style: italic;">65</span><br><br>EXIT 0 . R/S +<br><span style="font-style: italic;">71</span> 72 73 <span style="font-style: italic;">74 75</span>&nbsp;</pre>
+
+<pre>A  B  C  D  -&gt;  CPX<br>11 12 13 14 <span style="font-style: italic;">15 16</span><br><br>STO RCL Rv f  g  h<br><span style="font-style: italic;">21  22 23</span> <span style="color: rgb(163, 163, 163);"> 24</span> 25 26<br><br>ENTER^ x&lt;&gt;y +/- EEX &lt;-<br>31 <span style="font-style: italic;">   32    33  34</span>  35<br><br>XEQ 7  8  9  /<br><span style="font-style: italic;">41</span>  42 43 44 <span style="font-style: italic;">45</span><br><br>^  4  5  6  x<br><span style="font-style: italic;">51</span> 52 53 54 <span style="font-style: italic;">55</span><br><br>v  1  2  3  -<br><span style="font-style: italic;">61</span> 62 63 64 <span style="font-style: italic;">65</span><br><br>EXIT 0  .  R/S +<br><span style="font-style: italic;">71</span>   72 73 <span style="font-style: italic;">74  75</span>&nbsp;</pre>
+
 
 <p>Whenever you are asked for the entry of a two-digit label, any
 of the keys marked in <span style="font-style: italic;">italic</span>
@@ -254,7 +287,9 @@ just put the label <span style="font-family: monospace;">21</span>
 in front of the routine and it can be conveniently called with <span style="font-family: Helvetica,Arial,sans-serif;">XEQ
 STO</span> by the user.</p>
 
+
 <h2>Direct Keyboard&nbsp;Access</h2>
+
 
 <p>The
 same codes are returned by the <span style="font-family: monospace;">KEY?</span>
@@ -278,7 +313,9 @@ statement in a loop to wait for input. <span style="font-family: monospace;">KEY
 conditional at
 the same time so a typical user input loop will look like this:</p>
 
-<pre>LBL 'USR'<br>CL[alpha]<br>[alpha]'KEY'<br>[alpha] ?<br>LBL 00<br>[alpha]VIEW<br>PSE 99<br>KEY? 00<br>GTO 00<br>LBL?-&gt;00<br>XEQ-&gt;00<br>GTO 00<br></pre>
+
+<pre>LBL 'USR'<br>CL[alpha]<br>[alpha]'KEY'<br>[alpha] ?<br>LBL 00<br>[alpha]VIEW<br>PSE 99<br>KEY? 00<br>GTO 00<br>LBL?-&gt;00<br>XEQ-&gt;00<br>GTO 00<br>END<br></pre>
+
 
 <p>This code fragment prompts for a key and stores it in register
 <span style="font-family: monospace;">00</span>.
@@ -294,6 +331,7 @@ of the dumb waiting loop, the program can do some computations and
 update the display before the next call to <span style="font-family: monospace;">PSE</span> and <span style="font-family: monospace;">KEY?</span>&nbsp;-&nbsp;think
 of a lunar lander game.</p>
 
+
 <p>To be even more versatile, the instruction <span style="font-family: monospace;">KTP? nn</span> is
 available and returns the key type of a row/column code in register <span style="font-family: monospace;">nn</span>: <span style="font-family: monospace;">0</span> to <span style="font-family: monospace;">9</span> for the
 respective digits, <span style="font-family: monospace;">10</span>
@@ -303,6 +341,7 @@ for the other numeric keys (<span style="font-family: Helvetica,Arial,sans-serif
 the three shift keys and <span style="font-family: monospace;">12</span>
 for the rest. An invalid code in the target register throws an "Invalid
 Range Error".</p>
+
 
 <p>If
 you decide not to handle the key in the program you may feed it back to
@@ -318,15 +357,8 @@ command the user is responsible for letting the
 program continue its work by pressing <span style="font-family: Helvetica,Arial,sans-serif;">R/S</span>
 or a hot key.</p>
 
-<pre></pre>
 
-<p></p>
 
-<p></p>
-
-<p></p>
-
-<pre></pre>
 
 </body>
 </html>

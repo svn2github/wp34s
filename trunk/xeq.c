@@ -3656,6 +3656,9 @@ void xeq(opcode op)
 			if (State2.trace ) {
 				// Special handling for debug environment
 				if (XromFlags.xIN) {
+					// Restore the global return stack
+					RetStk = XromUserRetStk;
+					RetStkPtr = XromUserRetStkPtr;
 					// Restore private stack to normal stack
 					if (! XromFlags.mode_double && NumRegs < STACK_SIZE + EXTRA_REG) {
 						// Need space for double precision stack
