@@ -421,6 +421,17 @@ public:
 		{create();m_apm_set_long(val(),l);}
 	MAPM(long l) /* Constructor from long int */
 		{create();m_apm_set_long(val(),l);}
+
+#ifdef WIN32
+    MAPM(__int64 v)
+    {
+        char buf[64];
+        sprintf(buf, "%I64d", v);
+        create();
+        m_apm_set_string(val(),buf);
+    }
+#endif
+
 	/* Destructor */
 	~MAPM() {destroy();}
 	

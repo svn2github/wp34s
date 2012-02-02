@@ -22,8 +22,10 @@
 
 #pragma once
 
-#define K 12
-#define GG 12
+#define K 18
+#define GG 18
+
+typedef __int64 int64_t;
 
 template<class N> N _gammaFactorialSlow(const N& z)
 {
@@ -41,9 +43,9 @@ template<class N> N _gammaFactorialSlow(const N& z)
     N fgc[K+1];
     N pks;
     N aa;
-    int a[K];
-    int b[K+1];
-    int tb;
+    int64_t a[K];
+    int64_t b[K+1];
+    int64_t tb;
     int i, j;
     N half = N(1)/2;
 
