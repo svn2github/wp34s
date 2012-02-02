@@ -408,9 +408,10 @@ qt_gui_dist_no_serial:
 ifdef QTGUI
 
 CALCLIB := $(OBJECTDIR)/libCalculator.a
-$(CALCLIB): $(OBS)
+CALCOBJS := $(OBJS) xrom.o
+$(CALCLIB): $(CALCOBJS)
 	-rm -f $@
-	$(AR) -r $@ $(OBJS)
+	$(AR) -r $@ $(CALCOBJS)
 	$(RANLIB) $@
 
 real_qt_gui: all $(CALCLIB)
