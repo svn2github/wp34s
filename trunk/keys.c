@@ -1213,10 +1213,27 @@ static int arg_eval(unsigned int val) {
 
 static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
-	const int mx = (State2.ind || argcmds[base].reg) 
-		     ? (State2.runmode ? global_regs_rarg((enum rarg) base) : NUMREG) 
-		     : (State2.local ? MAX_LOCAL_DIRECT : argcmds[base].lim);
 	const unsigned int val = State2.digval * 10 + n;
+	const int is_reg = argcmds[base].reg || State2.ind;
+	int mx;
+	
+	if (State2.local) {
+		if (State2.runmode) {
+			const int lregs = local_regs();
+			mx = is_reg     ? lregs			// register
+			   : lregs != 0 ? MAX_LOCAL_DIRECT	// can only be a flag
+					: 0;			// no local flags defined
+			if (mx > MAX_LOCAL_DIRECT)
+				mx = MAX_LOCAL_DIRECT;		// in case of more than 16 locals
+		}
+		else
+			mx = MAX_LOCAL_DIRECT;			// program mode allows all direct locals
+	}
+	else if (is_reg)					// normal register
+		mx = State2.runmode ? global_regs_rarg((enum rarg) base) 
+				    : NUMREG;
+	else
+		mx = argcmds[base].lim;				// any other command
 
 	if (State2.numdigit == 0) {
 		if (mx <= 10) {
