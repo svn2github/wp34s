@@ -862,7 +862,7 @@ long long int intNot(long long int x) {
 
 long long int intBooleanOp(long long int y, long long int x) {
 	long long result;
-	const int op = XeqOpCode - OP_LAND;
+	const int op = argKIND(XeqOpCode) - OP_LAND;
 	const int not = op >= 3 ? 3 : 0;
 
 	switch (op - not) {
