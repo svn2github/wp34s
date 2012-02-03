@@ -393,16 +393,16 @@ endif
 
 
 qt_gui:
-	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui
+	$(MAKE) QTGUI=1 real_qt_gui
 
 qt_gui_dist:
-	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui_dist
+	$(MAKE) QTGUI=1 real_qt_gui_dist
 
 qt_gui_no_serial:
-	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui_no_serial
+	$(MAKE) QTGUI=1 real_qt_gui_no_serial
 
 qt_gui_dist_no_serial:
-	$(MAKE) QTGUI=1 REALBUILD="" real_qt_gui_dist_no_serial
+	$(MAKE) QTGUI=1 real_qt_gui_dist_no_serial
 
 
 ifdef QTGUI
