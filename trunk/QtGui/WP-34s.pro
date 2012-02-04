@@ -23,3 +23,7 @@ SOURCES = QtGuiMain.cpp QtEmulator.cpp QtBackgroundImage.cpp QtKey.cpp QtKeyCode
 HEADERS = QtEmulator.h QtBackgroundImage.h QtKey.h QtKeyCode.h QtSkin.h QtScreenPainter.h \
 	QtKeyboard.h QtSerialPort.h QtScreen.h QtCalculatorThread.h QtHeartBeatThread.h QtPreferencesDialog.h \
 	QtNumberPaster.h
+
+win32 {
+	RC_FILE = WP-34s.rc
+}
