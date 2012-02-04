@@ -15,7 +15,6 @@
 
 # Settings for Unix like environments with gcc
 # Creates the Console version of the emulator or the real thing
-# To build the GUI version on Windows use Microsoft Visual C++ (Express)
 
 SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
@@ -41,6 +40,11 @@ LINK=$(CXX)
 
 OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
+DISTDIR := wp-34s
+DISTFILE := wp-34s.zip
+# Warning the trailing / is mandatory
+QTLIBSDIR := c:/QtSDK/Desktop/Qt/4.8.0/mingw/bin/
+QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll mingwm10.dll libgcc_s_dw2-1.dll)
 
 # we need the MAKE variable to be defined
 # if not, we try the default value
@@ -49,10 +53,12 @@ MAKE := make
 endif
 
 QMAKE := qmake
-MKDIR := mkdir
+MKDIR := mkdir -p
 RM := rm -f
 RMDIR := rm -rf
-
+CP := cp
+CPDIR := cp -r
+ZIP := zip -r
 QTMAKEFILE := QtMakefile.$(SYSTEM)
 QTMAKEFILE_EXISTS := $(wildcard $(QTMAKEFILE))
 
@@ -62,8 +68,8 @@ ADAPTEROBJS=$(ADAPTERSRCS:%.c=$(OUTPUTDIR)/%.o)
 BUILDDATESRC=QtBuildDate.c
 BUILDDATEOBJ=$(BUILDDATESRC:%.c=$(OUTPUTDIR)/%.o)
 
-DIRS_TO_CLEAN := $(DIRS)
-EXTRA_FILES_TO_CLEAN := moc_QtBackgroundImage.cpp moc_QtEmulator.cpp moc_QtPreferencesDialog.cpp moc_QtKeyboard.cpp
+DIRS_TO_CLEAN := $(DIRS) $(DISTDIR)
+EXTRA_FILES_TO_CLEAN := $(DISTFILE) moc_QtBackgroundImage.cpp moc_QtEmulator.cpp moc_QtPreferencesDialog.cpp moc_QtKeyboard.cpp
 ifeq "$(SYSTEM)" "windows32"
 DIRS_TO_CLEAN += debug release
 EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.QtGui.debug object_script.QtGui.release
@@ -96,26 +102,40 @@ ifeq "$(BASELIBS)" ""
 ifdef RECURSIVE
 all:
 	@echo "Recursive calling, something is wrong in ../Makefile: BASELIBS not defined"
-	
+
 dist:
 	@echo "Recursive calling, something is wrong in ../Makefile: BASELIBS not defined"
 else
 all:
 	cd ..; $(MAKE) RECURSIVE=1 qt_gui CC=$(CC) CXX=$(CXX) LINK=$(LINK)
-	
+
 dist:
 	cd ..; $(MAKE) RECURSIVE=1 qt_gui_dist CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 endif
 else 
 all: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
 	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS="$(BASEOBJS) $(BASELIBS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
-	
-dist: release
+
+ifeq "$(SYSTEM)" "windows32"
+WP34SEXE := $(OUTPUTDIR)/wp-34s.exe
+endif
+
+dist: release $(DISTDIR)
+ifeq "$(SYSTEM)" "windows32"
+	$(CP) $(WP34SEXE) $(DISTDIR)
+	$(CPDIR) skins $(DISTDIR)
+	$(CPDIR) images $(DISTDIR)
+	$(CP) $(QTLIBS) $(DISTDIR)
+	$(ZIP) $(DISTFILE) $(DISTDIR)
+endif
+
+$(DISTDIR):
+	$(MKDIR) $(DISTDIR)
 endif
 
 ifeq ($(SYSTEM),windows32)
 release: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
-	$(MAKE) -f $(QTMAKEFILE) release BASE_LIBS="$(BASEOBJS) $(BASELIBS)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+	$(MAKE) -f $(QTMAKEFILE) release BASE_LIBS="$(BASEOBJS) $(BASELIBS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 else
 release: all
 endif
@@ -128,7 +148,7 @@ $(QTMAKEFILE): WP-34s.pro
 	$(QMAKE) -makefile DESTDIR=$(OUTPUTDIR) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILE)
 
 $(DIRS):
-	$(MKDIR) -p -v $@
+	$(MKDIR) $@
 
 clean: qtclean
 	-$(RM) $(QTMAKEFILE) $(EXTRA_FILES_TO_CLEAN)
