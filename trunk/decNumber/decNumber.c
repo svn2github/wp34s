@@ -207,6 +207,18 @@ static const Unit uarrone[1]={1};   // Unit array of 1, used for incrementing
   #define ueInt uLong         // unsigned extended integer
 #endif
 
+#ifdef DECNUMBER_PROFILE
+/* Profiling info */
+int dnpf_add, dnpf_mul, dnpf_div;
+#define PF_ADD() (++dnpf_add)
+#define PF_MUL() (++dnpf_mul)
+#define PF_DIV() (++dnpf_div)
+#else
+#define PF_ADD()
+#define PF_MUL()
+#define PF_DIV()
+#endif
+
 /* Local routines */
 static decNumber * decAddOp(decNumber *, const decNumber *, const decNumber *,
                               decContext *, uByte, uInt *);
@@ -664,6 +676,7 @@ decNumber * decNumberAdd(decNumber *res, const decNumber *lhs,
   uInt status=0;                        // accumulator
   decAddOp(res, lhs, rhs, set, 0, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_ADD();
   return res;
   } // decNumberAdd
 
@@ -684,6 +697,7 @@ decNumber * decNumberCompare(decNumber *res, const decNumber *lhs,
   uInt status=0;                        // accumulator
   decCompareOp(res, lhs, rhs, set, COMPARE, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_ADD();
   return res;
   } // decNumberCompare
 
@@ -727,6 +741,7 @@ decNumber * decNumberDivide(decNumber *res, const decNumber *lhs,
   uInt status=0;                        // accumulator
   decDivideOp(res, lhs, rhs, set, DIVIDE, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_DIV();
   return res;
   } // decNumberDivide
 
@@ -1066,6 +1081,7 @@ decNumber * decNumberMax(decNumber *res, const decNumber *lhs,
   uInt status=0;                        // accumulator
   decCompareOp(res, lhs, rhs, set, COMPMAX, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_ADD();
   return res;
   } // decNumberMax
 
@@ -1086,6 +1102,7 @@ decNumber * decNumberMin(decNumber *res, const decNumber *lhs,
   uInt status=0;                        // accumulator
   decCompareOp(res, lhs, rhs, set, COMPMIN, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_ADD();
   return res;
   } // decNumberMin
 
@@ -1115,6 +1132,7 @@ decNumber * decNumberMinus(decNumber *res, const decNumber *rhs,
   dzero.exponent=rhs->exponent;         // [no coefficient expansion]
   decAddOp(res, &dzero, rhs, set, DECNEG, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_ADD();
   return res;
   } // decNumberMinus
 
@@ -1146,6 +1164,7 @@ decNumber * decNumberPlus(decNumber *res, const decNumber *rhs,
   dzero.exponent=rhs->exponent;         // [no coefficient expansion]
   decAddOp(res, &dzero, rhs, set, 0, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_ADD();
   return res;
   } // decNumberPlus
 
@@ -1166,6 +1185,7 @@ decNumber * decNumberMultiply(decNumber *res, const decNumber *lhs,
   uInt status=0;                   // accumulator
   decMultiplyOp(res, lhs, rhs, set, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_MUL();
   return res;
   } // decNumberMultiply
 
@@ -1646,6 +1666,7 @@ decNumber * decNumberRemainder(decNumber *res, const decNumber *lhs,
   uInt status=0;                        // accumulator
   decDivideOp(res, lhs, rhs, set, REMAINDER, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_DIV();
   return res;
   } // decNumberRemainder
 
@@ -1929,7 +1950,9 @@ decNumber * decNumberSquareRoot(decNumber *res, const decNumber *rhs,
       #endif
       }
     decMultiplyOp(a, a, f, &workset, &ignore);    // a=a*f
+    PF_MUL();
     decAddOp(a, a, t, &workset, 0, &ignore);      // ..+t
+    PF_ADD();
     // [a is now the initial approximation for sqrt(f), calculated with
     // currentprecision, which is also a's precision.]
 
@@ -1946,10 +1969,14 @@ decNumber * decNumberSquareRoot(decNumber *res, const decNumber *rhs,
       // a = 0.5 * (a + f/a)
       // [calculated at p then rounded to currentprecision]
       decDivideOp(b, f, a, &workset, DIVIDE, &ignore); // b=f/a
+      PF_DIV();
       decAddOp(b, b, a, &workset, 0, &ignore);    // b=b+a
+      PF_ADD();
       decMultiplyOp(a, b, t, &workset, &ignore);  // a=b*0.5
+      PF_MUL();
       // assign to approx [round to length]
       decAddOp(a, &dzero, a, &approxset, 0, &ignore);
+      PF_ADD();
       if (workset.digits==maxp) break;            // just did final
       } // loop
 
@@ -1961,6 +1988,7 @@ decNumber * decNumberSquareRoot(decNumber *res, const decNumber *rhs,
     t->exponent=-set->digits-1;                   // make 0.5 ulp
     decNumberCopy(b, a);
     decAddOp(b, b, t, &workset, DECNEG, &ignore); // b = a - 0.5 ulp
+    PF_ADD();
     workset.round=DEC_ROUND_UP;
     decMultiplyOp(b, b, b, &workset, &ignore);    // b = mulru(b, b)
     decCompareOp(b, f, b, &workset, COMPARE, &ignore); // b ? f, reversed
@@ -1969,21 +1997,28 @@ decNumber * decNumberSquareRoot(decNumber *res, const decNumber *rhs,
       t->exponent++;                              // make 1.0 ulp
       t->lsu[0]=1;                                // ..
       decAddOp(a, a, t, &workset, DECNEG, &ignore); // a = a - 1 ulp
+      PF_ADD();
       // assign to approx [round to length]
       decAddOp(a, &dzero, a, &approxset, 0, &ignore);
+      PF_ADD();
       }
      else {
       decNumberCopy(b, a);
       decAddOp(b, b, t, &workset, 0, &ignore);    // b = a + 0.5 ulp
+      PF_ADD();
       workset.round=DEC_ROUND_DOWN;
       decMultiplyOp(b, b, b, &workset, &ignore);  // b = mulrd(b, b)
+      PF_MUL();
       decCompareOp(b, b, f, &workset, COMPARE, &ignore);   // b ? f
+      PF_ADD();
       if (decNumberIsNegative(b)) {               // b < f
         t->exponent++;                            // make 1.0 ulp
         t->lsu[0]=1;                              // ..
         decAddOp(a, a, t, &workset, 0, &ignore);  // a = a + 1 ulp
+        PF_ADD();
         // assign to approx [round to length]
         decAddOp(a, &dzero, a, &approxset, 0, &ignore);
+        PF_ADD();
         }
       }
     // [no errors are possible in the above, and rounding/inexact during
@@ -2009,11 +2044,13 @@ decNumber * decNumberSquareRoot(decNumber *res, const decNumber *rhs,
      else {                                  // could be exact/unrounded
       uInt mstatus=0;                        // local status
       decMultiplyOp(b, b, b, &workset, &mstatus); // try the multiply
+      PF_MUL();
       if (mstatus!=0) {                      // result won't fit
         status|=DEC_Inexact|DEC_Rounded;
         }
        else {                                // plausible
         decCompareOp(t, b, rhs, &workset, COMPARE, &mstatus); // b ? rhs
+        PF_ADD();
         if (!ISZERO(t)) {
           status|=DEC_Inexact|DEC_Rounded;
           }
@@ -2067,6 +2104,7 @@ decNumber * decNumberSubtract(decNumber *res, const decNumber *lhs,
 
   decAddOp(res, lhs, rhs, set, DECNEG, &status);
   if (status!=0) decStatus(res, status, set);
+  PF_ADD();
   return res;
   } // decNumberSubtract
 
@@ -4041,8 +4079,11 @@ decNumber * decExpOp(decNumber *res, const decNumber *rhs,
         // only the status from the accumulation is interesting
         // [but it should remain unchanged after first add]
         decAddOp(a, a, t, &aset, 0, status);           // a=a+t
+        PF_ADD();
         decMultiplyOp(t, t, x, &tset, &ignore);        // t=t*x
+        PF_MUL();
         decDivideOp(t, t, d, &tset, DIVIDE, &ignore);  // t=t/d
+        PF_DIV();
         // the iteration ends when the term cannot affect the result,
         // if rounded to p digits, which is when its value is smaller
         // than the accumulator by p+1 digits.  There must also be
@@ -4050,6 +4091,7 @@ decNumber * decExpOp(decNumber *res, const decNumber *rhs,
         if (((a->digits+a->exponent)>=(t->digits+t->exponent+p+1))
             && (a->digits>=p)) break;
         decAddOp(d, d, &numone, &dset, 0, &ignore);    // d=d+1
+        PF_ADD();
         } // iterate
 
       #if DECCHECK
@@ -4079,10 +4121,12 @@ decNumber * decExpOp(decNumber *res, const decNumber *rhs,
         if (n<0) {                 // top bit is set
           seenbit=1;               // OK, have a significant bit
           decMultiplyOp(t, t, a, &aset, status); // acc=acc*x
+          PF_MUL();
           }
         if (i==31) break;          // that was the last bit
         if (!seenbit) continue;    // no need to square 1
         decMultiplyOp(t, t, t, &aset, status); // acc=acc*acc [square]
+        PF_MUL();
         } /*i*/ // 32 bits
       // decNumberShow(t);
       a=t;                         // and carry on using t instead of a

@@ -74,8 +74,6 @@ static s_opcode program_xfcn[] = {
 	NILIC(OP_RESET,		"RESET")
 	MON(OP_ROUND,		"ROUNDI")
 	RARGCMD(RARG_ROUND,	"RND")
-	NILIC(OP_SETDATE,	"SETDAT")
-	NILIC(OP_SETTIME,	"SETTIM")
 	MON(OP_SIGN,		"SIGN")
 	MON(OP_SINC,		"SINC")
 	RARGCMD(RARG_SLD,	"SDL")
@@ -145,7 +143,8 @@ static s_opcode program_xfcn[] = {
 	MON(OP_DATE_YEAR,	"YEAR")
 	TRI(OP_TO_DATE,		"\015DATE")
 	NILIC(OP_DATE_TO,	"DATE\015")
-
+	NILIC(OP_DATE,		"DATE")
+	NILIC(OP_TIME,		"TIME")
 	DYA(OP_LEGENDRE_PN,	"P\275")
 	DYA(OP_CHEBYCHEV_TN,	"T\275")
 	DYA(OP_CHEBYCHEV_UN,	"U\275")
@@ -240,8 +239,6 @@ static s_opcode catalogue[] = {
 	NILIC(OP_RESET,		"RESET")
 	MON(OP_ROUND,		"ROUNDI")
 	RARGCMD(RARG_ROUND,	"RND")
-	NILIC(OP_SETDATE,	"SETDAT")
-	NILIC(OP_SETTIME,	"SETTIM")
 	MON(OP_SIGN,		"SIGN")
 	MON(OP_SINC,		"SINC")
 	RARGCMD(RARG_SLD,	"SDL")
@@ -339,6 +336,11 @@ static s_opcode catalogue[] = {
 #ifdef INCLUDE_GUDERMANNIAN
 	MON(OP_GUDER,		"gd")
 	MON(OP_INVGUD,		"gd[^-1]")
+#endif
+	NILIC(OP_DATE,		"DATE")
+	NILIC(OP_TIME,		"TIME")
+#ifdef INCLUDE_STOPWATCH
+	NILIC(OP_STOPWATCH,	"STOPW")
 #endif
 };
 
@@ -634,7 +636,6 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_CLFLAGS,	"CLFLAG")
 	NILIC(OP_CLSTK,		"CLSTK")
 	NILIC(OP_CLRALPHA,	"CLalpha")
-	NILIC(OP_DATE,		"DATE")
 	RARGCMD(RARG_DEC,	"DEC")
 	NILIC(OP_DROP,		"DROP")
 	RARGCMD(RARG_DSL,	"DSL")
@@ -652,10 +653,6 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_REGSORT,	"R.SORT")
 	NILIC(OP_REGSWAP,	"R.SWAP")
 	NILIC(OP_TICKS,		"TICKS")
-	NILIC(OP_TIME,		"TIME")
-#ifdef INCLUDE_STOPWATCH
-	NILIC(OP_STOPWATCH,	"STOPW")
-#endif
 	NILIC(OP_ALPHAOFF,	"\240OFF")
 	NILIC(OP_ALPHAON,	"\240ON")
 	RARGCMD(RARG_VIEW_REG,	"VW\240+")
@@ -772,6 +769,8 @@ static s_opcode mode_catalogue[] = {
 	RARGCMD(RARG_RCLM,	"RCLM")
 	NILIC(OP_DBLON,		"DBLON")
 	NILIC(OP_DBLOFF,	"DBLOFF")
+	NILIC(OP_SETDATE,	"SETDAT")
+	NILIC(OP_SETTIME,	"SETTIM")
 };
 
 static s_opcode alpha_catalogue[] = {

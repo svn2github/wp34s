@@ -778,10 +778,12 @@ decNumber *dn_ln(decNumber *r, const decNumber *x) {
 	// Range reduce the value by repeated square roots.
 	// Making the constant here larger will reduce the number of later
 	// iterations at the expense of more square root operations.
-	while (dn_le0(dn_compare(&t, &z, &const_root2on2))) {
+#if 1
+	while (dn_le0(dn_compare(&t, &z, &const_0_75 /* &const_root2on2 */))) {
 		dn_mul2(&f, &f);
 		dn_sqrt(&z, &z);
 	}
+#endif
 	dn_p1(&t, &z);
 	dn_m1(&v, &z);
 	dn_divide(&n, &v, &t);
