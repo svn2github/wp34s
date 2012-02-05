@@ -945,8 +945,8 @@ maxlibsteps=9999
 0x5500	arg	[cmplx]x[!=]?	max=211,indirect,stack,complex
 0x5600	arg	SKIP	max=255
 0x5700	arg	BACK	max=255
-0x5800	arg	BSRF	max=255
-0x5900	arg	BSRB	max=255
+0x5800	arg	BSRF	max=255,xrom
+0x5900	arg	BSRB	max=255,xrom
 0x5a00	arg	DSE	max=212,indirect,stack
 0x5b00	arg	ISG	max=212,indirect,stack
 0x5c00	arg	DSL	max=212,indirect,stack
@@ -1096,8 +1096,8 @@ maxlibsteps=9999
 0xa300	arg	xOUT	max=255,xrom
 0xa400	arg	CNVG?	max=32
 0xa500	arg	[<->]	max=255
-0xa600	arg	INDX	max=255
-0xa700	arg	CNST	max=82,indirect
+0xa600	arg	INDX	max=255,xrom
+0xa700	arg	CNST	max=82,indirect,xrom
 0xf000	mult	LBL
 0xf100	mult	LBL?
 0xf200	mult	XEQ
