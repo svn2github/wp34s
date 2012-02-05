@@ -319,6 +319,16 @@ static void dump_registers(void) {
 }
 
 
+static void dump_constants(void) {
+	char buf[100];
+	int i;
+
+	for (i=0; i<NUM_CONSTS; i++) {
+		decimal128ToString(&(get_const(i, 1)->d), buf);
+		printf("\t%02d\t%s\n", i, buf);
+	}
+}
+
 void shutdown( void )
 {
 	checksum_all();
@@ -420,6 +430,10 @@ int main(int argc, char *argv[]) {
 			}
 			if (strcmp(argv[1], "opcodes") == 0) {
 				dump_opcodes(stdout);
+				return 0;
+			}
+			if (strcmp(argv[1], "constants") == 0) {
+				dump_constants();
 				return 0;
 			}
 			dump_menu("float", "", CATALOGUE_NORMAL);
