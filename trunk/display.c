@@ -1151,12 +1151,11 @@ static void show_status(void) {
 		set_digits_string(buf, 0);
 	}
 	else if (status == -1) {
-		const int l = local_regs();
 		set_status("Regs:");
 		p = num_arg(buf, global_regs());
-		if (l) {
+		if (LocalRegs < 0) {
 			p = scopy(p, " , Loc. ");
-			p = num_arg(p, l);
+			p = num_arg(p, local_regs());
 		}
 		*p = '\0';
 		set_digits_string(buf, 0);

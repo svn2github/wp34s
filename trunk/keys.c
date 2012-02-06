@@ -1219,10 +1219,9 @@ static int arg_digit(int n) {
 	
 	if (State2.local) {
 		if (State2.runmode) {
-			const int lregs = local_regs();
-			mx = is_reg     ? lregs			// register
-			   : lregs != 0 ? MAX_LOCAL_DIRECT	// can only be a flag
-					: 0;			// no local flags defined
+			mx = is_reg        ? local_regs()	// register
+			   : LocalRegs < 0 ? MAX_LOCAL_DIRECT	// can only be a flag
+					   : 0;			// no local flags defined
 			if (mx > MAX_LOCAL_DIRECT)
 				mx = MAX_LOCAL_DIRECT;		// in case of more than 16 locals
 		}
@@ -1921,7 +1920,7 @@ static int process_confirm(const keycode c) {
  */
 static int process_status(const keycode c) {
 	int n = ((int)State2.status) - 3;
-	int max = local_regs() < 0 ? 11 : 10;
+	int max = LocalRegs < 0 ? 11 : 10;
 
 	if (c == K40) {
 		if (--n < -2)

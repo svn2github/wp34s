@@ -2455,7 +2455,7 @@ void cmdflag(unsigned int arg, enum rarg op) {
  */
 void clrflags(enum nilop op) {
 	xset(UserFlags, 0, sizeof(UserFlags));
-	if (local_regs()) {
+	if (LocalRegs < 0) {
 		* flag_word(LOCAL_REG_BASE, NULL) = 0;
 	}
 }
