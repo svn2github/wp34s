@@ -119,8 +119,10 @@ void dump_opcodes(FILE *f) {
 			}
 			if ((c & 0xff) != 0)
 				continue;
-			if (argcmds[cmd].indirectokay && limit > RARG_IND)
+			if (argcmds[cmd].indirectokay && limit > RARG_IND) {
 				fprintf(f, "ERROR - command %s indirect argument range problem (limit is %u)\n", cmdpretty, limit);
+				limit = RARG_IND;
+			}
 			fprintf(f, "0x%04x\targ\t%s\tmax=%u", c, cmdpretty, limit);
 			if (argcmds[cmd].indirectokay) {
 				fprintf(f, ",indirect");
