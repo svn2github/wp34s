@@ -2820,7 +2820,7 @@ void op_double(enum nilop op) {
 	if (dbl) {
 		if (NumRegs < STACK_SIZE + EXTRA_REG) {
 			// Need space for double precision stack
-			cmdregs(STACK_SIZE + EXTRA_REG - 1, RARG_REGS);
+			cmdregs(STACK_SIZE + EXTRA_REG, RARG_REGS);
 			if (Error) {
 				return;
 			}
@@ -2838,7 +2838,7 @@ void op_double(enum nilop op) {
 		State.mode_double = 0;
 
 		if (NumRegs > TOPREALREG)
-			cmdregs(TOPREALREG - 1, RARG_REGS);
+			cmdregs(TOPREALREG, RARG_REGS);
 	}
 	StackBase = get_reg_n(regX_idx);
 }
@@ -3662,7 +3662,7 @@ void xeq(opcode op)
 					// Restore private stack to normal stack
 					if (! XromFlags.mode_double && NumRegs < STACK_SIZE + EXTRA_REG) {
 						// Need space for double precision stack
-						cmdregs(STACK_SIZE + EXTRA_REG - 1, RARG_REGS);
+						cmdregs(STACK_SIZE + EXTRA_REG, RARG_REGS);
 					}
 					XromFlags.xIN = 0;		// Clear flag before get_reg_n!
 					if (Error == ERR_NONE) {
@@ -3893,7 +3893,7 @@ void set_running_on() {
  */
 void cmdlocr(unsigned int arg, enum rarg op) {
 	short int sp = RetStkPtr;
-	int size = (++arg << (is_dblmode() ? 3 : 2)) + 2;
+	int size = (arg << (is_dblmode() ? 3 : 2)) + 2;
 	const unsigned short marker = LOCAL_MARKER | size;
 	int old_size = 0;
 	short unsigned int old_flags = 0;
@@ -4247,12 +4247,9 @@ void cmdlpop(enum nilop op) {
  */
 void cmdregs(unsigned int arg, enum rarg op) {
 	int distance;
-	++arg;
-	if (is_dblmode()) {
-		arg <<= 1;
-		if( arg < 2 )
-			arg = 2;	// Reserve space for J&K
-	}
+	//++arg;
+	if (is_dblmode())
+		arg = (arg << 1) + STACK_SIZE + EXTRA_REG;
 	distance = NumRegs - arg;
 	// Move return stack, check for room
 	if (move_retstk(distance << 2))

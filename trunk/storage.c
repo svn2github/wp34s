@@ -345,9 +345,9 @@ int append_program( const s_opcode *source, int length )
 	if ( space_needed > 0 ) {
 		int regs;
 		if (is_dblmode())
-			regs = global_regs() - ( ( space_needed + 7 ) >> 3 ) - 1;
+			regs = global_regs() - ( ( space_needed + 7 ) >> 3 );
 		else
-			regs = NumRegs - ( ( space_needed + 3 ) >> 2 ) - 1;
+			regs = NumRegs - ( ( space_needed + 3 ) >> 2 );
 
 		if ( regs < 0 ) {
 			return err( ERR_RAM_FULL );

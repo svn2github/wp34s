@@ -32,7 +32,7 @@
 		XLBL"SIGMA"				/* Entry: SUMMATION */
 			INTM?
 				ERR ERR_BAD_MODE
-			LocR 03				/* Registers .00 to .03 */
+			LocR 04				/* Registers .00 to .03 */
 			STO .03				/* Save for LastX*/
 			SPEC?
 				JMP sum_product_nan
@@ -72,7 +72,7 @@ sum_entry::		DSL .00
 		XLBL"PRODUCT"				/* Entry: PRODUCT */
 			INTM?
 				ERR ERR_BAD_MODE
-			LocR 03				/* Registers .00 to .03 */
+			LocR 04				/* Registers .00 to .03 */
 			STO .03
 			SPEC?
 				JMP sum_product_nan

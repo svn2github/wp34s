@@ -186,7 +186,7 @@ logistic_param::	RCL- J
  */
  		XLBL"PDF_LOGNORMAL"
 			xIN MONADIC
-				LocR 00
+				LocR 01
 				STO .00
 				LN
 				GSB pdf_normal
@@ -287,7 +287,7 @@ pdf_q::			x[^2]
  * .01 - .03 are destroyed, .00 holds the initial X and .04 holds the pdf(x).
  * Additionally, flag .00 is set if the X value is negative.
  */
-cdf_q::			LocR 04
+cdf_q::			LocR 05
 cdf_q_alt::		STO .00		// x in .00
 			x<0?
 				SF .00
@@ -369,7 +369,7 @@ cdf_q_skip2::		RCL[times] .04
 /* The internal Q qf entry point.  Sets flag .01 if x < 0.
  */
 qf_q::			GSB qf_check_probability
-			LocR 06
+			LocR 07
 			STO .05		// save x
 			.
 			5

@@ -844,8 +844,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstknL(RARG_FLCRCL_MU, &cmdflashcrcl,			"\024RCF\034")
 	CMDcstknL(RARG_FLCRCL_DV, &cmdflashcrcl,			"\024RCF/")
 #endif
-	CMD(RARG_SLD,		&op_shift_digit,100,			"SDL")
-	CMD(RARG_SRD,		&op_shift_digit,100,			"SDR")
+	CMD(RARG_SLD,		&op_shift_digit, 100,			"SDL")
+	CMD(RARG_SRD,		&op_shift_digit, 100,			"SDR")
 
 	CMDstk(RARG_VIEW_REG,	&alpha_view_reg,			"VW\240+")
 	CMD(RARG_ROUNDING,	&rarg_roundingmode, DEC_ROUND_MAX,	"RM")
@@ -859,8 +859,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_KEYTYPE,	&cmdkeytype,				"KTP?")
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
-	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL,		"LocR")
-	CMD(RARG_REGS,		&cmdregs,	TOPREALREG,		"REGS")
+	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL + 1,		"LocR")
+	CMD(RARG_REGS,		&cmdregs,	TOPREALREG + 1,		"REGS")
 
 	CMDstk(RARG_iRCL,	&cmdircl,				"iRCL")
 	CMDstk(RARG_sRCL,	&cmdrrcl,				"sRCL")

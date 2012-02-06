@@ -7,9 +7,16 @@ rem PATH C:\APPS\CodeSourcery\bin;%PATH%
 cd trunk
 rem touch features.h
 make REALBUILD=1 version all > ..\flash-build.log 2>&1
+if errorlevel 1 goto exit
 rem touch features.h
 make REALBUILD=1 XTAL=1 all >> ..\flash-build.log 2>&1
-chcp 850 >nul
+if errorlevel 1 goto exit
 endlocal
-makelib.cmd 
-
+call makelib.cmd
+@echo off
+echo NORMAL:
+cat trunk/realbuild/summary.txt
+echo XTAL:
+cat trunk/realbuild/summary_xtal.txt
+:exit
+chcp 850 >nul
