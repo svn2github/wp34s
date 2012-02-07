@@ -1000,7 +1000,7 @@ enum shifts {
 #define K_HEARTBEAT 99			// Pseudo key, "pressed" every 100ms
 #define K_RELEASE 98			// Pseudo key, sent on key release
 
-#define	MAX_LOCAL	(16+127)	// maximum number of local registers
+#define	MAX_LOCAL	(16+128)	// maximum number of local registers
 #define MAX_LOCAL_DIRECT 16		// # of directly addressable local registers
 
 #define LOCAL_FLAG_BASE	(NUMFLG)

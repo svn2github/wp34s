@@ -3492,7 +3492,6 @@ static void rargs(const opcode op) {
 	unsigned int lim = argcmds[cmd].lim;
 
 	XeqOpCode = (s_opcode) cmd;
-	if (lim == 0) lim = 256; // default
 
 	process_cmdline();
 
@@ -3505,32 +3504,32 @@ static void rargs(const opcode op) {
 		return;
 	}
 
-	if (ind && argcmds[cmd].indirectokay) {
-		if (is_intmode()) {
-			arg = (unsigned int) get_reg_n_int(arg);
-		} else {
-			getRegister(&x, arg);
-			arg = dn_to_int(&x);
-		}
-	} else {
-		if (lim > 128 && ind)		// put the top bit back in
-			arg |= RARG_IND;
+	if (ind) {
+		if (argcmds[cmd].indirectokay) {
+			if (is_intmode()) {
+				arg = (unsigned int) get_reg_n_int(arg);
+			} else {
+				getRegister(&x, arg);
+				arg = dn_to_int(&x);
+			}
+		} else
+			arg |= RARG_IND;	// put the top bit back in
 	}
 	if (argcmds[cmd].reg && arg < TOPREALREG) {
 		// Range checking for registers against variable boundary
-		lim = global_regs_rarg((enum rarg) cmd);
+		lim = global_regs_rarg((enum rarg) cmd) - 1;
 		if (argcmds[cmd].cmplx)
 			--lim;
 	}
 	else if (argcmds[cmd].flag) {
 		if (LocalRegs == 0)
-			lim = NUMFLG;
+			lim = NUMFLG - 1;
 		if ((int)arg < 0)
 			arg = NUMFLG - (int)arg;
 	}
 	else if (argcmds[cmd].local) {
 		// Range checking for local registers
-		lim = NUMREG + local_regs();
+		lim = NUMREG - 1 + local_regs();
 		if (argcmds[cmd].cmplx)
 			--lim;
 		else if (argcmds[cmd].stos)
@@ -3538,7 +3537,7 @@ static void rargs(const opcode op) {
 		if ((int)arg < 0)
 			arg = NUMREG - (int)arg;
 	}
-	if (arg >= lim )
+	if (arg > lim )
 		err(ERR_RANGE);
 	else if (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1))
 		err(ERR_ILLEGAL);

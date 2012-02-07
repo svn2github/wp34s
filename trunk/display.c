@@ -1243,7 +1243,7 @@ static void show_label(void) {
 /* Display a list of register contents */
 static void show_registers(void) {
 	char buf[16], *bp;
-	const int n = State2.digval;
+	int n = State2.digval;
 	
 	const int reg = State2.digval2 ? FLASH_REG_BASE + n : 
 			State2.local   ? LOCAL_REG_BASE + n : 
@@ -1255,8 +1255,13 @@ static void show_registers(void) {
 	else {
 		xset(buf, '\0', 16);
 		bp = scopy_spc(buf, State2.digval2 ? "Bkup" : "Reg ");
-		if (State2.local)
+		if (State2.local) {
 			*bp++ = '.';
+			if (n >= 100) {
+				*bp++ = '1';
+				n -= 100;
+			}
+		}
 		if (n < 100)
 			num_arg_0(bp, n, 2);
 		else

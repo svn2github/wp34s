@@ -50,7 +50,7 @@
 // #define TINY_BUILD
 
 // Include a catalogue of the internal commands
-//#define INCLUDE_INTERNAL_CATALOGUE
+#define INCLUDE_INTERNAL_CATALOGUE
 
 #ifndef TINY_BUILD
 

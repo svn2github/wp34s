@@ -943,10 +943,10 @@ maxlibsteps=9999
 0x5300	arg	x[>=]?	max=128,indirect,stack
 0x5400	arg	[cmplx]x=?	max=128,indirect,stack,complex
 0x5500	arg	[cmplx]x[!=]?	max=128,indirect,stack,complex
-0x5600	arg	SKIP	max=255
-0x5700	arg	BACK	max=255
-0x5800	arg	BSRF	max=255,xrom
-0x5900	arg	BSRB	max=255,xrom
+0x5600	arg	SKIP	max=256
+0x5700	arg	BACK	max=256
+0x5800	arg	BSRF	max=256
+0x5900	arg	BSRB	max=256
 0x5a00	arg	DSE	max=128,indirect,stack
 0x5b00	arg	ISG	max=128,indirect,stack
 0x5c00	arg	DSL	max=128,indirect,stack
@@ -1075,8 +1075,8 @@ maxlibsteps=9999
 0x8e00	arg	KEY?	max=128,indirect,stack
 0x8f00	arg	[alpha]XEQ	max=128,indirect,stack
 0x9000	arg	[alpha]GTO	max=128,indirect,stack
-0x9100	arg	SDL	max=100,indirect
-0x9200	arg	SDR	max=100,indirect
+0x9100	arg	SDL	max=128,indirect
+0x9200	arg	SDR	max=128,indirect
 0x9300	arg	VW[alpha]+	max=128,indirect,stack
 0x9400	arg	RM	max=7,indirect
 0x9500	arg	RSD	max=34,indirect
@@ -1085,19 +1085,19 @@ maxlibsteps=9999
 0x9800	arg	PUTK	max=128,indirect,stack
 0x9900	arg	KTP?	max=128,indirect,stack
 0x9a00	arg	MSG	max=25,indirect
-0x9b00	arg	LocR	max=101,indirect
+0x9b00	arg	LocR	max=128,indirect
 0x9c00	arg	REGS	max=101,indirect
 0x9d00	arg	iRCL	max=128,indirect,stack
 0x9e00	arg	sRCL	max=128,indirect,stack
 0x9f00	arg	dRCL	max=128,indirect,stack
 0xa000	arg	xMSET	max=64,indirect,xrom
 0xa100	arg	xMCLR	max=64,indirect,xrom
-0xa200	arg	xIN	max=255,xrom
-0xa300	arg	xOUT	max=255,xrom
+0xa200	arg	xIN	max=256,xrom
+0xa300	arg	xOUT	max=256,xrom
 0xa400	arg	CNVG?	max=32
-0xa500	arg	[<->]	max=255
-0xa600	arg	INDX	max=255,xrom
-0xa700	arg	CNST	max=82,indirect,xrom
+0xa500	arg	[<->]	max=256
+0xa600	arg	INT#	max=256
+0xa700	arg	CNST	max=82,indirect
 0xf000	mult	LBL
 0xf100	mult	LBL?
 0xf200	mult	XEQ

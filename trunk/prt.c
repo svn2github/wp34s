@@ -154,11 +154,16 @@ static const char *prt_conv(unsigned int arg, char *instr) {
 
 /* The number of argument digits needed for a command */
 int num_arg_digits(int cmd) {
-	if (argcmds[cmd].lim <= 10)
+	int lim = argcmds[cmd].lim;
+	if (lim < 10)
 		return 1;
-	if (argcmds[cmd].lim <= 100)
+	if (lim < 100)
 		return 2;
-	if (argcmds[cmd].stckreg || argcmds[cmd].label || argcmds[cmd].flag || argcmds[cmd].stos)
+#ifdef COMPILE_CATALOGUES
+	if (argcmds[cmd].reg || argcmds[cmd].flag || argcmds[cmd].label)
+#else
+	if (State2.ind || argcmds[cmd].reg || argcmds[cmd].flag || argcmds[cmd].label)
+#endif
 		return 2;
 	return 3;
 }
@@ -183,7 +188,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 	} else if (cmd >= NUM_RARG || argcmds[cmd].cmd == NULL)
 		return "???";
 	else if (!ind) {
-		if (arg >= argcmds[cmd].lim)
+		if (arg > argcmds[cmd].lim)
 			return "???";
 		if (cmd == RARG_CONST) {
 			//return sncopy(instr, cnsts[arg].cname, CONST_NAMELEN);
@@ -224,7 +229,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		if (arg >= regX_idx && arg <= regK_idx && (ind || argcmds[cmd].stckreg))
 			*p = REGNAMES[arg-regX_idx];
 		else {
-			if (arg > regK_idx && argcmds[cmd].indirectokay) {
+			if (arg > regK_idx && (ind || argcmds[cmd].local)) {
 				arg -= regK_idx + 1;
 				*p++ = '.';
 			}

@@ -92,7 +92,7 @@ void dump_opcodes(FILE *f) {
 			if (cmd == RARG_DELPROG)
 				continue;
 #endif
-			limit = argcmds[cmd].lim;
+			limit = argcmds[cmd].lim + 1;
 			if (cmd != RARG_ALPHA && (c & RARG_IND) != 0)
 				continue;
 			p = catcmd(c, cmdname);
@@ -119,10 +119,8 @@ void dump_opcodes(FILE *f) {
 			}
 			if ((c & 0xff) != 0)
 				continue;
-			if (argcmds[cmd].indirectokay && limit > RARG_IND) {
-				//fprintf(f, "ERROR - command %s indirect argument range problem (limit is %u)\n", cmdpretty, limit);
+			if (argcmds[cmd].indirectokay && limit > RARG_IND)
 				limit = RARG_IND;
-			}
 			fprintf(f, "0x%04x\targ\t%s\tmax=%u", c, cmdpretty, limit);
 			if (argcmds[cmd].indirectokay) {
 				fprintf(f, ",indirect");
@@ -139,10 +137,10 @@ void dump_opcodes(FILE *f) {
 			 || cmd == RARG_MODE_CLEAR 
 			 || cmd == RARG_XROM_IN 
 			 || cmd == RARG_XROM_OUT
-			 || cmd == RARG_BSF
-			 || cmd == RARG_BSB
-			 || cmd == RARG_INDEX
-			 || cmd == RARG_CONST_INDIRECT
+		       //|| cmd == RARG_BSF
+		       //|| cmd == RARG_BSB
+		       //|| cmd == RARG_INDEX
+		       //|| cmd == RARG_CONST_INDIRECT
 #ifdef XROM_RARG_COMMANDS
 			 || cmd == RARG_XROM_ARG
 #endif

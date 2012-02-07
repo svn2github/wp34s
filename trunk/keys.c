@@ -1215,46 +1215,38 @@ static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
 	const unsigned int val = State2.digval * 10 + n;
 	const int is_reg = argcmds[base].reg || State2.ind;
-	int mx;
+	unsigned int mx;
 	
 	if (State2.local) {
+		// Hndle local registers and flags
+		mx = MAX_LOCAL_DIRECT - 1;				// default
 		if (State2.runmode) {
-			mx = is_reg        ? local_regs()	// register
-			   : LocalRegs < 0 ? MAX_LOCAL_DIRECT	// can only be a flag
-					   : 0;			// no local flags defined
-			if (mx > MAX_LOCAL_DIRECT)
-				mx = MAX_LOCAL_DIRECT;		// in case of more than 16 locals
+			if (LocalRegs == 0)
+				return STATE_UNFINISHED;		// no locals defined
+			if (is_reg) {
+				mx = local_regs() - 1;
+				if (mx >= MAX_LOCAL_DIRECT)
+					mx = MAX_LOCAL_DIRECT - 1;	// in case of more than 16 locals
+			}
 		}
-		else
-			mx = MAX_LOCAL_DIRECT;			// program mode allows all direct locals
 	}
-	else if (is_reg)					// normal register
-		mx = State2.runmode ? global_regs_rarg((enum rarg) base) 
-				    : NUMREG;
+	else if (is_reg)						// normal register
+		mx = State2.runmode ? global_regs_rarg((enum rarg) base) - 1 : TOPREALREG - 1;
 	else {
-		mx = argcmds[base].lim;				// any other command
-		if (mx > RARG_IND && argcmds[base].indirectokay)
-			mx = RARG_IND;
+		mx = argcmds[base].lim;					// any other command
+		if (mx >= RARG_IND && argcmds[base].indirectokay)
+			mx = RARG_IND - 1;
 	}
 
-	if (State2.numdigit == 0) {
-		if (mx <= 10) {
-			if (n < mx)
-				return arg_eval(n);
-			return STATE_UNFINISHED;
-		}
-		if (n * 10 >= mx)
-			return arg_eval(n);
-	} else {
-		if ((int) val >= mx)
-			return STATE_UNFINISHED;
-	}
+	if (val > mx)
+		return STATE_UNFINISHED;
+
 	State2.digval = val;
-	State2.numdigit++;
-	if (State2.numdigit == num_arg_digits(base)) {
+	++State2.numdigit;
+	if (val * 10 > mx || State2.numdigit == num_arg_digits(base)) {
 		int result = arg_eval(val);
 		if ( result == STATE_UNFINISHED ) {
-			State2.numdigit = 1;
+			--State2.numdigit;
 			State2.digval /= 10;
 		}
 		return result;
@@ -1269,7 +1261,7 @@ static int arg_fkey(int n) {
 	{
 		if (State2.ind || State2.numdigit > 0)
 			return STATE_UNFINISHED;
-		if (argcmds[b].lim <= 100)
+		if (argcmds[b].lim < 100)
 			return STATE_UNFINISHED;
 		return arg_eval(n + 100);
 	}

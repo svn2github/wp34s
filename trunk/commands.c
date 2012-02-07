@@ -678,16 +678,16 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 #ifdef COMPILE_CATALOGUES
 #define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
-	{ #func, limit, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
+	{ #func, (limit) - 1, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
 #elif DEBUG
 #define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)			\
-	{ name, func, limit, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
+	{ name, func, (limit) - 1, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
 #elif COMMANDS_PASS == 1
 #define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
-	{ 0xaa55, limit, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
+	{ 0xaa55, (limit) - 1, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
 #else
 #define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
-	{ func, limit, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
+	{ func, (limit) - 1, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
 #endif
                                                                  //  i  r  s  l  c  lb f  ss
 #define CMD(n, f, lim, nm)	allCMD(n, f, lim,                nm, 1, 0, 0, 0, 0, 0, 0, 0)
@@ -762,10 +762,10 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_TEST_GE,	&cmdtest,				"x\012?")
 	CMDcstk(RARG_TEST_ZEQ,	&cmdztest,				"\024x=?")
 	CMDcstk(RARG_TEST_ZNE,	&cmdztest,				"\024x\013?")
-	CMDnoI(RARG_SKIP,	&cmdskip,	255,			"SKIP")
-	CMDnoI(RARG_BACK,	&cmdback,	255,			"BACK")
-	CMDnoI(RARG_BSF,	&cmdskip,	255,			"BSRF")
-	CMDnoI(RARG_BSB,	&cmdback,	255,			"BSRB")
+	CMDnoI(RARG_SKIP,	&cmdskip,	256,			"SKIP")
+	CMDnoI(RARG_BACK,	&cmdback,	256,			"BACK")
+	CMDnoI(RARG_BSF,	&cmdskip,	256,			"BSRF")
+	CMDnoI(RARG_BSB,	&cmdback,	256,			"BSRB")
 
 	CMDstk(RARG_DSE,	&cmdloop,				"DSE")
 	CMDstk(RARG_ISG,	&cmdloop,				"ISG")
@@ -844,12 +844,12 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstknL(RARG_FLCRCL_MU, &cmdflashcrcl,			"\024RCF\034")
 	CMDcstknL(RARG_FLCRCL_DV, &cmdflashcrcl,			"\024RCF/")
 #endif
-	CMD(RARG_SLD,		&op_shift_digit, 100,			"SDL")
-	CMD(RARG_SRD,		&op_shift_digit, 100,			"SDR")
+	CMD(RARG_SLD,		&op_shift_digit, 256,			"SDL")
+	CMD(RARG_SRD,		&op_shift_digit, 256,			"SDR")
 
 	CMDstk(RARG_VIEW_REG,	&alpha_view_reg,			"VW\240+")
 	CMD(RARG_ROUNDING,	&rarg_roundingmode, DEC_ROUND_MAX,	"RM")
-	CMD(RARG_ROUND,		&rarg_round, 34,			"RSD")
+	CMD(RARG_ROUND,		&rarg_round,	34,			"RSD")
 
 #ifdef INCLUDE_USER_MODE
 	CMDstk(RARG_STOM,	&cmdsavem,				"STOM")
@@ -859,7 +859,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_KEYTYPE,	&cmdkeytype,				"KTP?")
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
-	CMD(RARG_LOCR,		&cmdlocr,	101,			"LocR")
+	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL + 1,		"LocR")
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG + 1,		"REGS")
 
 	CMDstk(RARG_iRCL,	&cmdircl,				"iRCL")
@@ -869,16 +869,16 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")
 
-	CMDnoI(RARG_XROM_IN,	&cmdxin,	255,			"xIN")
-	CMDnoI(RARG_XROM_OUT,	&cmdxout,	255,			"xOUT")
+	CMDnoI(RARG_XROM_IN,	&cmdxin,	256,			"xIN")
+	CMDnoI(RARG_XROM_OUT,	&cmdxout,	256,			"xOUT")
 #ifdef XROM_RARG_COMMANDS
 	CMDstk(RARG_XROM_ARG,	&cmdxarg,				"xARG")
 #endif
 	CMDnoI(RARG_CONVERGED,	&cmdconverged,	32,			"CNVG?")
 #ifdef INCLUDE_SHUFFLE
-	CMDnoI(RARG_SHUFFLE,	&cmdshuffle,	255,			"\027")
+	CMDnoI(RARG_SHUFFLE,	&cmdshuffle,	256,			"\027")
 #endif
-	CMDnoI(RARG_INDEX,	&cmdindex,	255,			"INDX")
+	CMDnoI(RARG_INDEX,	&cmdindex,	256,			"INT#")
 	CMD(RARG_CONST_INDIRECT,&cmdconst,	NUM_CONSTS,		"CNST")
 
 #undef CMDlbl
