@@ -625,9 +625,7 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_SWAPY,	"y[<->]")
 	RARGCMD(RARG_SWAPZ,	"z[<->]")
 	RARGCMD(RARG_SWAPT,	"t[<->]")
-#ifdef INCLUDE_SHUFFLE
-	RARGCMD(RARG_SHUFFLE,	"SHFL")
-#endif
+	RARGCMD(RARG_SHUFFLE,	"[<->]")
 	RARGCMD(RARG_STOSTK,	"\015STK")
 	RARGCMD(RARG_RCLSTK,	"\016STK")
 	NILIC(OP_CLALL,		"CLALL")

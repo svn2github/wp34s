@@ -4199,7 +4199,6 @@ void cmdconverged(unsigned int arg, enum rarg cmd) {
 	fin_tst(res);
 }
 
-#ifdef INCLUDE_SHUFFLE
 void cmdshuffle(unsigned int arg, enum rarg cmd) {
 	decNumber xyzt[4];
 	int i;
@@ -4211,8 +4210,6 @@ void cmdshuffle(unsigned int arg, enum rarg cmd) {
 		arg >>= 2;
 	}
 }
-#endif
-
 
 /*
  *  Toggle UState mode bits from XROM

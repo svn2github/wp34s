@@ -93,7 +93,7 @@ void dump_opcodes(FILE *f) {
 				continue;
 #endif
 			limit = argcmds[cmd].lim + 1;
-			if (cmd != RARG_ALPHA && (c & RARG_IND) != 0)
+			if (cmd != RARG_ALPHA && cmd != RARG_SHUFFLE && (c & RARG_IND) != 0)
 				continue;
 			p = catcmd(c, cmdname);
 			if (strcmp(p, "???") == 0)
@@ -115,6 +115,12 @@ void dump_opcodes(FILE *f) {
 			} 
 			else if (cmd == RARG_CONV) {
 				fprintf(f, "0x%04x\tcmd\t%s\n", c, cmdpretty);
+				continue;
+			}
+			else if (cmd == RARG_SHUFFLE) {
+				fprintf(f, "0x%04x\tcmd\t%s %c%c%c%c\n", c, cmdpretty,
+						REGNAMES[c & 3], REGNAMES[(c >> 2) & 3],
+						REGNAMES[(c >> 4) & 3], REGNAMES[(c >> 6) & 3]);
 				continue;
 			}
 			if ((c & 0xff) != 0)

@@ -1370,12 +1370,19 @@ void display(void) {
 			*bp++ = '\021';
 			*bp++ = '_';
 		} else {
-			const int maxdigits = State2.ind ? 2 : num_arg_digits(CmdBase);
+			const int maxdigits = State2.shuffle ? 4 
+				            : State2.ind ? 2 
+				            : num_arg_digits(CmdBase);
 			if (State2.local)
 				*bp++ = '.';
-			if (State2.numdigit > 0)
-				bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
-			for (i=State2.numdigit; i<maxdigits; i++)
+			if (State2.numdigit > 0) {
+				if (State2.shuffle)
+					for (i = 0, j = State2.digval; i<State2.numdigit; i++, j >>= 2)
+						*bp++ = REGNAMES[j & 3];
+				else
+					bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
+			}
+			for (i = State2.numdigit; i < maxdigits; i++)
 				*bp++ = '_';
 		}
 		set_status(buf);

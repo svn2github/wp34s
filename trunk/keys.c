@@ -333,6 +333,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 }
 
 static void init_arg(const enum rarg base) {
+	process_cmdline_set_lift();
 	CmdBase = base;
 	State2.ind = 0;
 	State2.digval = 0;
@@ -340,6 +341,7 @@ static void init_arg(const enum rarg base) {
 	State2.rarg = 1;
 	State2.dot = 0;
 	State2.local = 0;
+	State2.shuffle = (base == RARG_SHUFFLE);
 }
 
 static void init_cat(enum catalogues cat) {
@@ -677,6 +679,7 @@ static int process_fg_shifted(const keycode c) {
 		break;
 
 	case K51:
+		process_cmdline_set_lift();
 		State2.test = op;
 		return STATE_UNFINISHED;
 
@@ -882,6 +885,7 @@ static int process_fgh_shifted_cmplx(const keycode c) {
 	switch (c) {
 	case K00:
 		if (op != STATE_UNFINISHED) {
+			process_cmdline_set_lift();
 			State2.hyp = 1;
 			State2.dot = op;
 			State2.cmplx = 1;
@@ -899,6 +903,7 @@ static int process_fgh_shifted_cmplx(const keycode c) {
 
 	case K51:
 		if (op != STATE_UNFINISHED) {
+			process_cmdline_set_lift();
 			State2.cmplx = 1;
 			State2.test = op;
 		}
@@ -954,6 +959,7 @@ static int process_hyp(const keycode c) {
 		f = (c == K_F);
 		// fall trough
 	default:
+		process_cmdline_set_lift();
 		State2.hyp = 1;
 		State2.cmplx = cmplx;
 		State2.dot = f;
@@ -1319,6 +1325,14 @@ static int process_arg_dot(const unsigned int base) {
 	return STATE_UNFINISHED;
 }
 
+static int process_arg_shuffle(int r) {
+	State2.digval += r << (State2.numdigit++ << 1);
+	if (State2.numdigit < 4)
+		return STATE_UNFINISHED;
+	return arg_eval(State2.digval);
+}
+
+
 static int process_arg(const keycode c) {
 	unsigned int base = CmdBase;
 	unsigned int n = keycode_to_digit_or_register(c);
@@ -1334,7 +1348,7 @@ static int process_arg(const keycode c) {
 		reset_arg();
 		return STATE_UNFINISHED;
 	}
-	if (n <= 9 && ! shorthand && ! State2.dot)
+	if (n <= 9 && ! shorthand && ! State2.dot && ! State2.shuffle)
 		return arg_digit(n);
 
 	if (shorthand)
@@ -1377,7 +1391,9 @@ static int process_arg(const keycode c) {
 	case K22:	// K
 	case K23:	// L (lastX)
 	case K63:	// Y
-		if (State2.dot || stack_reg)
+		if (State2.shuffle)
+			return process_arg_shuffle(1);
+		else if (State2.dot || stack_reg)
 			return arg_eval(n);
 		else if ( c <= K03 ) {
 			return arg_fkey(c - K00);		// Labels or flags A to D
@@ -1385,10 +1401,14 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K62:	// X, '.'
+		if (State2.shuffle)
+			return process_arg_shuffle(0);
 		return process_arg_dot(base);
 
 	/* STO and RCL can take an arithmetic argument */
 	case K64:		// Z register
+		if (State2.shuffle)
+			return process_arg_shuffle(2);
 		if (State2.dot || ( ! arg_storcl(RARG_STO_PL - RARG_STO, 1) && stack_reg))
 			return arg_eval(n);
 		break;
@@ -1402,6 +1422,8 @@ static int process_arg(const keycode c) {
 		break;
 
 	case K44:		// T register
+		if (State2.shuffle)
+			return process_arg_shuffle(3);
 		if (State2.dot || ( ! arg_storcl(RARG_STO_MU - RARG_STO, 1) && stack_reg))
 			return arg_eval(n);
 		break;
@@ -1452,7 +1474,10 @@ static int process_arg(const keycode c) {
 		}
 		else {
 			--State2.numdigit;
-			State2.digval /= 10;
+			if (State2.shuffle)
+				State2.digval &= ~(3 << (State2.numdigit << 1));
+			else
+				State2.digval /= 10;
 		}
 		break;
 

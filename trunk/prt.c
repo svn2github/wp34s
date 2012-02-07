@@ -202,7 +202,6 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		}
 		if (cmd == RARG_CONV)
 			return prt_conv(arg, instr);
-#ifdef PRETTY_SHUFFLE
 		if (cmd == RARG_SHUFFLE) {
 			p = scopy(instr, "\027 ");
 			for (n=0; n<4; n++) {
@@ -211,7 +210,6 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			}
 			return instr;
 		}
-#endif
 		p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
 		if (argcmds[cmd].label && arg >= 100) {
 			*p = arg - 100 + 'A';

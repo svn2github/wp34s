@@ -33,13 +33,7 @@
 			x<0?
 				JMP quad_complex
 			[sqrt]				/* sqrt 2b(a+c) b 2c */
-#ifdef INCLUDE_SHUFFLE
-			SHF_XYZT(2, 0, 3, 0)		/* b sqrt 2c sqrt */
-#else
-			x[<->] Y				/* . sqrt b 2c */
-			DROP				/* sqrt b 2c 2c */
-			x[<->] Y				/* b sqrt 2c 2c */
-#endif
+			[<->] ZXTX			/* b sqrt 2c sqrt */
 			x[>=]0?
 				GSB cpx_conj
 			-				/* -b-sqrt 2c . . */
