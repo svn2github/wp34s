@@ -1231,8 +1231,11 @@ static int arg_digit(int n) {
 	else if (is_reg)					// normal register
 		mx = State2.runmode ? global_regs_rarg((enum rarg) base) 
 				    : NUMREG;
-	else
+	else {
 		mx = argcmds[base].lim;				// any other command
+		if (mx > RARG_IND && argcmds[base].indirectokay)
+			mx = RARG_IND;
+	}
 
 	if (State2.numdigit == 0) {
 		if (mx <= 10) {
