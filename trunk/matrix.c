@@ -35,6 +35,7 @@ static void matrix_get(decNumber *r, const decimal64 *base, int row, int col, in
  */
 static int matrix_range_check(int base, int rows, int cols) {
 	int limit = NumRegs;
+	int s;
 
 	if (is_intmode() || is_dblmode()) {
 		err(ERR_BAD_MODE);
@@ -44,7 +45,8 @@ static int matrix_range_check(int base, int rows, int cols) {
 		base -= LOCAL_REG_BASE;
 		limit = local_regs();
 	}
-	if (base < 0 || base + rows * cols > limit) {
+	s = rows * cols;
+	if (base < 0 || base + s > limit || s > MAX_DIMENSION) {
 		err(ERR_RANGE);
 		return 0;
 	}
