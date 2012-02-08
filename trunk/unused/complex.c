@@ -250,7 +250,6 @@ void cmplx2x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *
 
 // next 2 together: 140 bytes
 void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
 	decNumber t;
 
 	if (dn_eq0(b)) {
@@ -264,11 +263,9 @@ void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 	}
 	dn_p1(&t, a);
 	cmplxLn(rx, ry, &t, b);
-#endif
 }
 
 void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
 	decNumber t;
 
 	if (dn_eq0(b)) {
@@ -280,5 +277,4 @@ void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 	}
 	cmplxExp(&t, ry, a, b);
 	dn_m1(rx, &t);
-#endif
 }
