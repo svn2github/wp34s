@@ -1895,7 +1895,7 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 	unsigned int lbl;
 	int is_gsb;
 
-#ifdef INCLUDE_XBR
+#ifdef XROM_LONG_BRANCH
 	if (mopr == DBL_XBR) {
 		/*
 		 *  Encoding of xBR argument is 'Cxy' or 'Jxy'
@@ -1913,7 +1913,6 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 	}
 	cmdgtocommon(is_gsb, lbl);
 }
-
 
 static void branchtoalpha(int is_gsb, char buf[]) {
 	unsigned int op, lbl;

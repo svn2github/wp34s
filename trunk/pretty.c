@@ -77,7 +77,7 @@ void dump_opcodes(FILE *f) {
 			xset(cmdname, '\0', 16);
 			xcopy(cmdname, multicmds[cmd].cmd, NAME_LEN);
 			prettify(cmdname, cmdpretty);
-#ifdef INCLUDE_XBR
+#ifdef XROM_LONG_BRANCH
 			if (cmd == DBL_XBR)
 				fprintf(f, "0x%04x\tmult\t%s\txrom\n", c, cmdpretty);
 			else
