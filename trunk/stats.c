@@ -1679,16 +1679,13 @@ decNumber *qf_B(decNumber *r, const decNumber *p) {
 /* Poisson cdf f(k, lam) = 1 - iGamma(floor(k+1), lam) / floor(k)! k>=0
  */
 static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x) {
-	decNumber prob, count;
-
-	dist_two_param(&prob, &count);
-	if (param_range01(r, &prob) || param_nonnegative_int(r, &count))
+	dist_one_param(lambda);
+	if (param_nonnegative(r, lambda))
 		return 1;
 	if (decNumberIsNaN(x)) {
 		set_NaN(r);
 		return 1;
 	}
-	dn_multiply(lambda, &prob, &count);
 	return 0;
 }
 

@@ -449,6 +449,33 @@ qf_loop_end::		FS? .01
 
 
 /**************************************************************************/
+/* Two parameter Poission distribution
+ */
+		XLBL"PDF_POIS2"
+			xIN MONADIC
+			GSB poisson2_param
+			Pois[lambda][sub-p]
+			xOUT xOUT_NORMAL
+
+		XLBL"CDF_POIS2"
+			xIN MONADIC
+			GSB poisson2_param
+			Pois[lambda]
+			xOUT xOUT_NORMAL
+
+		XLBL"QF_POIS2"
+			xIN MONADIC
+			GSB poisson2_param
+			Pois[lambda][^-1]
+			xOUT xOUT_NORMAL
+
+poisson2_param::	x[<->] J
+			GSB check_probability
+			RCL[times] K
+			x[<->] J
+			RTN
+
+/**************************************************************************/
 /* Weibull distribution
  * Two parameters:
  *	J = lambda (shape) > 0

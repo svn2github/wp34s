@@ -584,6 +584,7 @@ enum {
 	OP_pdf_WB, OP_cdf_WB, OP_qf_WB,
 	OP_pdf_EXP, OP_cdf_EXP, OP_qf_EXP,
 	OP_pdf_B, OP_cdf_B, OP_qf_B,
+	OP_pdf_Plam, OP_cdf_Plam, OP_qf_Plam,
 	OP_pdf_P, OP_cdf_P, OP_qf_P,
 	OP_pdf_G, OP_cdf_G, OP_qf_G,
 	OP_pdf_N, OP_cdf_N, OP_qf_N,
