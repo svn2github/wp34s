@@ -53,6 +53,43 @@ cpx_conj::		x[<->] Y
 			xOUT xOUT_NORMAL
 
 
+		/* sign(a + i b) = (a + i b) / |a + i b| */
+		XLBL"cpx_SIGN"
+			xIN MONADIC_COMPLEX
+			SPEC?
+				JMP sign_real_special
+			x=0?
+				JMP sign_real_zero
+			[<->] YXXY
+			SPEC?
+				JMP sign_cmplx_special
+			x=0?
+				JMP sign_cmplx_zero
+			[cmplx]ABS
+			[cmplx]/
+			xOUT xOUT_NORMAL
+
+sign_real_zero::	SWAP
+			GSB sign
+sign_swap_exit::	SWAP
+			xOUT xOUT_NORMAL
+
+sign_cmplx_zero::	SWAP
+			GSB sign
+			xOUT xOUT_NORMAL
+
+sign_real_special::	GSB sign
+			SWAP
+			SPEC?
+				JMP ret_NaN
+			CLx
+			JMP sign_swap_exit
+			
+sign_cmplx_special::	GSB sign
+			Num 0
+			xOUT xOUT_NORMAL
+
+
 /**************************************************************************/
 /* Complex squares and cubes.
  */

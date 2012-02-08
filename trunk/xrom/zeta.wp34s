@@ -85,7 +85,7 @@ zeta_int::		LocR 08
 			x[<=]? Y
 				JMP zeta_calc
 
-zeta_neg::		SIGN
+zeta_neg::		GSB sign
 			x[<->] Y
 			-
 			STO .01
@@ -112,7 +112,7 @@ zeta_calc::		2
 				STO+ X
 			STO .00
 			STO .03
-			SIGN
+			GSB sign
 			STO .04
 			STO .05
 			+/-
@@ -157,4 +157,22 @@ zeta_loop::		RCL .05
 			[times]
 			e[^x]-1
 			/
+			RTN
+
+		XLBL"SIGN"
+			xIN MONADIC
+			GSB sign
+			xOUT xOUT_NORMAL
+
+sign::			x=0?
+				RTN
+			x<0?
+				JMP sign_negative
+			DROP
+			Num 1
+			RTN
+
+sign_negative::		DROP
+			Num 1
+			+/-
 			RTN

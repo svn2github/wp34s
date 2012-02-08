@@ -127,7 +127,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_TRUNC,	&decNumberTrunc,	XMC(cpx_TRUNC),	&intIP,		"IP")
 	FUNC(OP_ABS,	&dn_abs,		&cmplxAbs,	&intAbs,	"ABS")
 	FUNC(OP_RND,	&decNumberRnd,		XMC(cpx_ROUND),	&intIP,		"ROUND")
-	FUNC(OP_SIGN,	&decNumberSign,		&cmplxSign,	&intSign,	"SIGN")
+	FUNC(OP_SIGN,	XMR(SIGN),		XMC(cpx_SIGN),	&intSign,	"SIGN")
 	FUNC(OP_LN,	&dn_ln,			&cmplxLn,	NOFN,		"LN")
 	FUNC(OP_EXP,	&dn_exp,		&cmplxExp,	NOFN,		"e\234")
 	FUNC(OP_SQRT,	&dn_sqrt,		&cmplxSqrt,	&intSqrt,	"\003")

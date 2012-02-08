@@ -68,7 +68,6 @@ extern void cmplxToPolar(decNumber *r, decNumber *t, const decNumber *x, const d
 
 /* Monadic operations */
 extern void cmplxAbs(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxMinus(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);

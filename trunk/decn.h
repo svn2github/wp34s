@@ -90,7 +90,6 @@ extern decNumber *decNumberTrunc(decNumber *r, const decNumber *x);
 extern decNumber *decNumberRoundDigits(decNumber *r, const decNumber *x, const int digits, const enum rounding round);
 extern decNumber *decNumberRound(decNumber *r, const decNumber *x);
 extern decNumber *decNumberFrac(decNumber *r, const decNumber *x);
-extern decNumber *decNumberSign(decNumber *r, const decNumber *x);
 
 extern decNumber *decNumberGCD(decNumber *r, const decNumber *x, const decNumber *y);
 extern decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y);

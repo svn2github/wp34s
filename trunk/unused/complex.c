@@ -33,6 +33,41 @@ void cmplxFactorial(decNumber *rx, decNumber *ry, const decNumber *xin, const de
 }
 
 
+// sign(a + i b) = (a + i b) / |a + i b|
+// 164 bytes
+void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
+	decNumber z;
+
+	if (decNumberIsSpecial(a) || decNumberIsSpecial(b)) {
+		if (decNumberIsNaN(a) || decNumberIsNaN(b))
+			cmplx_NaN(rx, ry);
+		else if (decNumberIsInfinite(a)) {
+			if (decNumberIsInfinite(b))
+				cmplx_NaN(rx, ry);
+			else {
+				decNumberSign(rx, a);
+				decNumberZero(ry);
+			}
+		} else {
+			decNumberSign(ry, b);
+			decNumberZero(rx);
+		}
+		return;
+	}
+	if (dn_eq0(b)) {
+		decNumberSign(rx, a);
+		decNumberZero(ry);
+	} else if (dn_eq0(a)) {
+		decNumberZero(rx);
+		decNumberSign(ry, b);
+	} else {
+		cmplxR(&z, a, b);
+		cmplxDivideReal(rx, ry, a, b, &z);
+	}
+}
+
+
+
 // (a + ib)^2 = (a^2 - b^2) + i ( 2 * a * b )
 // 66 bytes
 void cmplxSqr(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {

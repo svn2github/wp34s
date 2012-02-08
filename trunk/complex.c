@@ -77,6 +77,7 @@ static void cmplxDiv2(decNumber *rx, decNumber *ry,
 }
 #endif
 
+#if 0
 // (a + i b) / c = ( a / r ) + i ( b / r)
 static void cmplxDivideReal(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
@@ -84,6 +85,7 @@ static void cmplxDivideReal(decNumber *rx, decNumber *ry,
 	dn_divide(rx, a, r);
 	dn_divide(ry, b, r);
 }
+#endif
 
 // a / (c + i d) = (a*c) / (c*c + d*d) + i (- a*d) / (c*c + d*d)
 static void cmplxDivideRealBy(decNumber *rx, decNumber *ry,
@@ -224,40 +226,6 @@ void cmplxXRoot(decNumber *rx, decNumber *ry,
 void cmplxAbs(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 	cmplxR(rx, a, b);
 	decNumberZero(ry);
-}
-
-// sign(a + i b) = (a + i b) / |a + i b|
-void cmplxSign(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber z;
-
-	if (decNumberIsSpecial(a) || decNumberIsSpecial(b)) {
-		if (decNumberIsNaN(a) || decNumberIsNaN(b))
-			cmplx_NaN(rx, ry);
-		else if (decNumberIsInfinite(a)) {
-			if (decNumberIsInfinite(b))
-				cmplx_NaN(rx, ry);
-			else {
-				decNumberSign(rx, a);
-				decNumberZero(ry);
-			}
-		} else {
-			decNumberSign(ry, b);
-			decNumberZero(rx);
-		}
-		return;
-	}
-	if (dn_eq0(b)) {
-		decNumberSign(rx, a);
-		decNumberZero(ry);
-	} else if (dn_eq0(a)) {
-		decNumberZero(rx);
-		decNumberSign(ry, b);
-	} else {
-		cmplxR(&z, a, b);
-		cmplxDivideReal(rx, ry, a, b, &z);
-	}
-#endif
 }
 
 // - (a + i b) = - a - i b
