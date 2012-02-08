@@ -417,40 +417,6 @@ void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 }
 
 
-void cmplxLn1p(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber t;
-
-	if (dn_eq0(b)) {
-		dn_abs(&t, a);
-		dn_compare(&t, &t, &const_0_0001);
-		if (decNumberIsNegative(&t)) {
-			decNumberZero(ry);
-			decNumberLn1p(rx, a);
-			return;
-		}
-	}
-	dn_p1(&t, a);
-	cmplxLn(rx, ry, &t, b);
-#endif
-}
-
-void cmplxExpm1(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
-#ifndef TINY_BUILD
-	decNumber t;
-
-	if (dn_eq0(b)) {
-		if (decNumberIsNegative(dn_compare(&t, dn_abs(&t, a), &const_0_0001))) {
-			decNumberZero(ry);
-			decNumberExpm1(rx, a);
-			return;
-		}
-	}
-	cmplxExp(&t, ry, a, b);
-	dn_m1(rx, &t);
-#endif
-}
-
 void cmplx_1x(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 	decNumber t, u, s, c;
 
