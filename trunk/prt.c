@@ -19,15 +19,6 @@
 #include "consts.h"
 
 
-static const char *make_complex(const char *str, char *instr) {
-	char *p = instr;
-	const char *s = str;
-
-	*p++ = COMPLEX_PREFIX;
-	while ((*p++ = *s++) != '\0');
-	return instr;
-}
-
 static const char *prt_monadic(const unsigned int f, char *instr) {
 	if (f < NUM_MONADIC && (! isNULL(monfuncs[f].mondreal) || ! isNULL(monfuncs[f].monint)))
 		return sncopy(instr, monfuncs[f].fname, NAME_LEN);
@@ -46,26 +37,23 @@ static const char *prt_triadic(const unsigned int f, char *instr) {
 	return "???";
 }
 
-static const char *prt_monadic_cmplx(const unsigned int f, char *instr) {
-	char buf[NAME_LEN + 1];
+static const char *prt_cmplx(int add_prefix, const char *name, char *instr) {
+	char *p = instr;
+	if (add_prefix)
+		*p++ = COMPLEX_PREFIX;
+	sncopy(p, name, NAME_LEN);
+	return instr;
+}
 
-	if (f < NUM_MONADIC && ! isNULL(monfuncs[f].mondcmplx)) {
-		if (isNULL(monfuncs[f].mondreal))
-			return monfuncs[f].fname;
-		
-		return make_complex(sncopy(buf, monfuncs[f].fname, NAME_LEN), instr);
-	}
+static const char *prt_monadic_cmplx(const unsigned int f, char *instr) {
+	if (f < NUM_MONADIC && ! isNULL(monfuncs[f].mondcmplx))
+		return prt_cmplx(! isNULL(monfuncs[f].mondreal), monfuncs[f].fname, instr);
 	return "???";
 }
 
 static const char *prt_dyadic_cmplx(const unsigned int f, char *instr) {
-	char buf[NAME_LEN + 1];
-
-	if (f < NUM_DYADIC && ! isNULL(dyfuncs[f].dydcmplx)) {
-		if (isNULL(dyfuncs[f].dydreal))
-			return dyfuncs[f].fname;
-		return make_complex(sncopy(buf, dyfuncs[f].fname, NAME_LEN), instr);
-	}
+	if (f < NUM_DYADIC && ! isNULL(dyfuncs[f].dydcmplx))
+		return prt_cmplx(! isNULL(dyfuncs[f].dydreal), dyfuncs[f].fname, instr);
 	return "???";
 }
 
@@ -75,35 +63,37 @@ static const char *prt_niladic(const unsigned int idx, char *instr) {
 	return "???";
 }
 
-static const char *prt_tst(const char *r, const enum tst_op op, char *instr, int cmplx) {
+static const char *prt_tst(const char r, const enum tst_op op, char *instr, int cmplx) {
 	char *p = instr;
 	if (cmplx)
 		*p++ = COMPLEX_PREFIX;
 	*p++ = 'x';
 	*p++ = "=\013\035<\011>\012"[op];
-	*scopy(p, r) = '?';
+	*p++ = r;
+	*p++ = '?';
 	return instr;
 }
 
-static const char *prt_specials(const unsigned int opm, char *instr) {
+static const char *prt_specials(unsigned int opm, char *instr) {
+	static const char digits[16] = "0123456789ABCDEF";
+	char cmp = '0';
+
+	if (opm >= OP_0 && opm <= OP_F) {
+		*instr = digits[opm - OP_0];
+		return instr;
+	}
+	if (opm >= OP_Xeq1 && opm <= OP_Xge1) {
+		opm += OP_Xeq0 - OP_Xeq1;
+		cmp = '1';
+	}
+	if (opm >= OP_Xeq0 && opm <= OP_Xge0)
+		return prt_tst(cmp, (enum tst_op)(opm - OP_Xeq0), instr, 0);
 
 	switch (opm) {
-	case OP_0:	case OP_1:	case OP_2:
-	case OP_3:	case OP_4:	case OP_5:
-	case OP_6:	case OP_7:	case OP_8:
-	case OP_9:
-		instr[0] = opm - OP_0 + '0';
-		return instr;
-
-	case OP_A:	case OP_B:	case OP_C:
-	case OP_D:	case OP_E:	case OP_F:
-		instr[0] = opm - OP_A + 'A';
-		return instr;
-
 #ifdef COMPILE_CATALOGUES
 	case OP_DOT:	return ".";
 #else
-	case OP_DOT:	return UState.fraccomma?",":".";
+	case OP_DOT:	return UState.fraccomma ? "," : ".";
 #endif
 	case OP_CHS:	return "+/-";
 	//case OP_CLX:	return "CLx";
@@ -112,29 +102,20 @@ static const char *prt_specials(const unsigned int opm, char *instr) {
 	case OP_SIGMAPLUS:	return "\221+";
 	case OP_SIGMAMINUS:	return "\221-";
 
-	case OP_Xeq0:	case OP_Xlt0:	case OP_Xle0:
-	case OP_Xne0:	case OP_Xgt0:	case OP_Xge0:
-	case OP_Xapx0:
-		return prt_tst("0", (enum tst_op)(opm - OP_Xeq0), instr, 0);
-	case OP_Zeq0:	case OP_Zne0:
-	//case OP_Zapx0:
-		return prt_tst("0", (enum tst_op)(opm - OP_Zeq0), instr, 1);
+	case OP_Zeq0:	case OP_Zne0:	//case OP_Zapx0:
+		return prt_tst('0', (enum tst_op)(opm - OP_Zeq0), instr, 1);
 
-	case OP_Xeq1:	case OP_Xlt1:	case OP_Xle1:
-	case OP_Xne1:	case OP_Xgt1:	case OP_Xge1:
-	case OP_Xapx1:
-		return prt_tst("1", (enum tst_op)(opm - OP_Xeq1), instr, 0);
-	case OP_Zeq1:	case OP_Zne1:
-	//case OP_Zapx1:
-		return prt_tst("1", (enum tst_op)(opm - OP_Zeq1), instr, 1);
+	case OP_Zeq1:	case OP_Zne1:	//case OP_Zapx1:
+		return prt_tst('1', (enum tst_op)(opm - OP_Zeq1), instr, 1);
+
 	case OP_Zeqi:	case OP_Znei:
-		return prt_tst("i", (enum tst_op)(opm - OP_Zeqi), instr, 1);
+		return prt_tst('i', (enum tst_op)(opm - OP_Zeqi), instr, 1);
 	}
 	return "???";
 }
 
 
-/* Metric <-> imperiam conversions */
+/* Metric <-> imperial conversions */
 static const char *prt_conv(unsigned int arg, char *instr) {
 	const unsigned int conv = arg / 2;
 	const unsigned int dirn = arg & 1;
@@ -174,7 +155,6 @@ static const char *prt_rargs(const opcode op, char *instr) {
 	unsigned int arg = op & RARG_MASK;
 	int ind = op & RARG_IND;
 	const unsigned int cmd = RARG_CMD(op);
-	char buf[CONST_NAMELEN + 1];
 	char *p;
 	int n = 2;
 
@@ -185,50 +165,57 @@ static const char *prt_rargs(const opcode op, char *instr) {
 
 	if (cmd == RARG_ALPHA) {
 		*scopy(instr, "\240 ") = arg;
-	} else if (cmd >= NUM_RARG || argcmds[cmd].cmd == NULL)
+	} 
+	else if (cmd >= NUM_RARG)
 		return "???";
+
 	else if (!ind) {
 		if (arg > argcmds[cmd].lim)
 			return "???";
-		if (cmd == RARG_CONST) {
-			//return sncopy(instr, cnsts[arg].cname, CONST_NAMELEN);
-			sncopy(scopy(instr, "# "), cnsts[arg].cname, CONST_NAMELEN);
+
+		p = instr;
+		switch(cmd) {
+
+		case RARG_CONST_CMPLX:
+			*p++ = COMPLEX_PREFIX;
+		case RARG_CONST:
+			sncopy(scopy(p, "# "), cnsts[arg].cname, CONST_NAMELEN);
 			return instr;
-		}
-		if (cmd == RARG_CONST_CMPLX) {
-			//return make_complex(sncopy(buf, cnsts[arg].cname, CONST_NAMELEN), instr);
-			sncopy(scopy(buf, "# "), cnsts[arg].cname, CONST_NAMELEN);
-			return make_complex(buf, instr);
-		}
-		if (cmd == RARG_CONV)
+
+		case RARG_CONV:
 			return prt_conv(arg, instr);
-		if (cmd == RARG_SHUFFLE) {
+
+		case RARG_SHUFFLE:
 			p = scopy(instr, "\027 ");
-			for (n=0; n<4; n++) {
+			for (n = 0; n < 4; n++) {
 				*p++ = REGNAMES[arg & 3];
 				arg >>= 2;
 			}
 			return instr;
+
+		default:
+			p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
+			if (argcmds[cmd].label && arg >= 100) {
+				*p = arg - 100 + 'A';
+			}
+			else {
+				n = num_arg_digits(cmd);
+				goto print_reg;
+			}
 		}
-		p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
-		if (argcmds[cmd].label && arg >= 100) {
-			*p = arg - 100 + 'A';
-		}
-		else {
-			n = num_arg_digits(cmd);
-			goto print_reg;
-		}
-	} else {
+	} 
+	else {
 		if (!argcmds[cmd].indirectokay)
 			return "???";
-		p = sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\015');
+
+		p = sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\015');	// ->
 
 	print_reg:
 		if (arg >= regX_idx && arg <= regK_idx && (ind || argcmds[cmd].stckreg))
-			*p = REGNAMES[arg-regX_idx];
+			*p = REGNAMES[arg - regX_idx];
 		else {
-			if (arg > regK_idx && (ind || argcmds[cmd].local)) {
-				arg -= regK_idx + 1;
+			if (arg >= LOCAL_REG_BASE && (ind || argcmds[cmd].local)) {
+				arg -= LOCAL_REG_BASE;
 				*p++ = '.';
 			}
 			num_arg_0(p, arg, n );
