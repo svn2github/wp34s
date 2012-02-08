@@ -918,7 +918,9 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_2DERIV,	XMULTI(2DERIV),			"f\"(x)")
 	CMD(DBL_INTG,	XMULTI(INTEGRATE),		"\004")
 	CMD(DBL_ALPHA,	&multialpha,			"\240")
+#ifdef INCLUDE_XBR
 	CMD(DBL_XBR,	&cmdmultigto,			"xBR")
+#endif
 #undef CMD
 };
 

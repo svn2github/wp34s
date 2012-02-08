@@ -1894,7 +1894,8 @@ void cmdmultilblp(const opcode o, enum multiops mopr) {
 void cmdmultigto(const opcode o, enum multiops mopr) {
 	unsigned int lbl;
 	int is_gsb;
-	
+
+#ifdef INCLUDE_XBR
 	if (mopr == DBL_XBR) {
 		/*
 		 *  Encoding of xBR argument is 'Cxy' or 'Jxy'
@@ -1904,7 +1905,9 @@ void cmdmultigto(const opcode o, enum multiops mopr) {
 		is_gsb = (o & 0xff) == 'C';
 		lbl = addrXROM(((o >> 24) & 0x7f) | ((o >> 9) & 0x3f80)) + (1 - XROM_START);
 	}
-	else {
+	else
+#endif
+	{
 		is_gsb = mopr != DBL_GTO;
 		lbl = findmultilbl(o, FIND_OP_ERROR);
 	}
