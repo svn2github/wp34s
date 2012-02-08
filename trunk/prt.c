@@ -265,6 +265,7 @@ const char *prt(opcode op, char *instr) {
 
 const char *catcmd(opcode op, char instr[16]) {
 	unsigned int f;
+	const char *name;
 
 	xset(instr, '\0', 16);
 	if (isDBL(op)) {
@@ -291,26 +292,29 @@ const char *catcmd(opcode op, char instr[16]) {
 			break;
 		case KIND_SPEC:
 			return prt_specials(f, instr);
+
 		case KIND_NIL:
-			if (f < NUM_NILADIC)
-				return sncopy(instr, niladics[f].nname, NAME_LEN);
-			break;
+			if (f >= NUM_NILADIC) break;
+			name = niladics[f].nname;
+			goto copy;
 
 		case KIND_MON:
 		case KIND_CMON:
-			if (f < NUM_MONADIC)
-				return sncopy(instr, monfuncs[f].fname, NAME_LEN);
-			break;
+			if (f >= NUM_MONADIC) break;
+			name = monfuncs[f].fname;
+			goto copy;
 
 		case KIND_DYA:
 		case KIND_CDYA:
-			if (f < NUM_DYADIC)
-				return sncopy(instr, dyfuncs[f].fname, NAME_LEN);
-			break;
+			if (f >= NUM_DYADIC) break;
+			name = dyfuncs[f].fname;
+			goto copy;
+
 		case KIND_TRI:
-			if (f < NUM_TRIADIC)
-				return sncopy(instr, trifuncs[f].fname, NAME_LEN);
-			break;
+			if (f >= NUM_TRIADIC) break;
+			name = trifuncs[f].fname;
+		copy:
+			return sncopy(instr, name, NAME_LEN);
 		}
 	}
 	return "???";
