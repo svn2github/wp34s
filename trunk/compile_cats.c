@@ -158,7 +158,6 @@ static s_opcode program_xfcn[] = {
 #endif
 	RARGCMD(RARG_iRCL,	"iRCL")
 	RARGCMD(RARG_sRCL,	"sRCL")
-	RARGCMD(RARG_dRCL,	"dRCL")
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
@@ -322,7 +321,6 @@ static s_opcode catalogue[] = {
 #endif
 	RARGCMD(RARG_iRCL,	"iRCL")
 	RARGCMD(RARG_sRCL,	"sRCL")
-	RARGCMD(RARG_dRCL,	"dRCL")
 
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
@@ -531,7 +529,6 @@ static s_opcode int_catalogue[] = {
 	RARGCMD(RARG_FLRCL, 	"RCF")
 #endif
 	RARGCMD(RARG_sRCL,	"sRCL")
-	RARGCMD(RARG_dRCL,	"dRCL")
 #ifdef INCLUDE_XROOT
 	DYA(OP_XROOT,		"\234\003y")
 #endif
@@ -587,7 +584,6 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_XisEVEN,	"EVEN?")
 	NILIC(OP_XisFRAC,	"FP?")
 	NILIC(OP_XisINT,	"INT?")
-	NILIC(OP_ISDBL,		"DBL?")
 	NILIC(OP_ISLEAP,	"LEAP?")
 	NILIC(OP_XisNaN,	"NaN?")
 	NILIC(OP_XisODD,	"ODD?")
@@ -713,9 +709,9 @@ static s_opcode prog_catalogue[] = {
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 static s_opcode internal_catalogue[] = {
-#if 0
 	NILIC(OP_INISOLVE,	"SLVI")
 	NILIC(OP_SOLVESTEP,	"SLVS")
+#if 0
 	RARGCMD(RARG_MODE_SET,	"xMSET")
 	RARGCMD(RARG_MODE_CLEAR,"xMCLR")
 #endif
@@ -723,6 +719,12 @@ static s_opcode internal_catalogue[] = {
 	RARGCMD(RARG_BSB,	"BSRB")
 	RARGCMD(RARG_INDEX,	"INT#")
 	RARGCMD(RARG_CONST_INDIRECT, "CNST")
+
+	NILIC(OP_DBLON,		"DBLON")
+	NILIC(OP_DBLOFF,	"DBLOFF")
+	NILIC(OP_ISDBL,		"DBL?")
+	RARGCMD(RARG_dRCL,	"dRCL")
+
 #ifdef _DEBUG
 	NILIC(OP_DEBUG,		"DBG")
 #endif
@@ -776,8 +778,6 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_SETJPN,	"SETJPN")
 	RARGCMD(RARG_STOM,	"STOM")
 	RARGCMD(RARG_RCLM,	"RCLM")
-	NILIC(OP_DBLON,		"DBLON")
-	NILIC(OP_DBLOFF,	"DBLOFF")
 	NILIC(OP_SETDATE,	"SETDAT")
 	NILIC(OP_SETTIME,	"SETTIM")
 };
