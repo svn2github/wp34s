@@ -709,9 +709,9 @@ static s_opcode prog_catalogue[] = {
 
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 static s_opcode internal_catalogue[] = {
+#if 0
 	NILIC(OP_INISOLVE,	"SLVI")
 	NILIC(OP_SOLVESTEP,	"SLVS")
-#if 0
 	RARGCMD(RARG_MODE_SET,	"xMSET")
 	RARGCMD(RARG_MODE_CLEAR,"xMCLR")
 #endif
