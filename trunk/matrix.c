@@ -467,7 +467,7 @@ static int LU_decomposition(decimal128 *A, unsigned char *pivots, const int n) {
 		for (j=k+1; j<n; j++) {
 			matrix_get128(&t, A, j, k, n);
 			dn_abs(&u, &t);
-			if (dn_lt0(dn_compare(&t, &max, &u))) {
+			if (dn_gt(&u, &max)) {
 				decNumberCopy(&max, &u);
 				pvt = j;
 			}

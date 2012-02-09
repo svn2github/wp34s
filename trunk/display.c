@@ -685,10 +685,10 @@ static void set_x_hms(const decNumber *rgx, char *res) {
 	// j += SEGS_PER_EXP_DIGIT;
 
 	// Check for values too big or small
-	if (dn_le0(dn_compare(&x, &const_9000, &a))) {
+	if (dn_ge(&a, &const_9000)) {
 		res = set_dig_s(exp_last, 'o', res);
 	} else if (! dn_eq0(&a)) {
-		if (decNumberIsNegative(dn_compare(&x, &a, &const_0_0000005))) {
+		if (dn_lt(&a, &const_0_0000005)) {
 			res = set_dig_s(exp_last, 'u', res);
 		}
 	}
@@ -703,11 +703,9 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 	if (check_special_dn(rgx, res))
 		return 1;
 	dn_abs(&x, rgx);
-	dn_compare(&d, &const_100000, &x);
-	if (dn_le0(&d))
+	if (dn_ge(&x, &const_100000))
 		return 0;
-	dn_compare(&d, &x, &const_0_0001);
-	if (decNumberIsNegative(&d))
+	if (dn_lt(&x, &const_0_0001))
 		return 0;
 	if (decNumberIsNegative(rgx)) {
 		if (res != NULL)
@@ -764,9 +762,7 @@ enum display_modes std_round_fix(const decNumber *z) {
 	dn_1(&b);
 	b.exponent -= UState.dispdigs;
 	dn_abs(&c, z);
-	dn_compare(&b, &c, &b);
-	dn_compare(&c, &const_1, &c);
-	if (dn_gt0(&b) && dn_gt0(&c))
+	if (dn_gt(&c, &b) && dn_lt(&c, &const_1))
 		return MODE_FIX;
 	return MODE_STD;
 }

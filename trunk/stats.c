@@ -114,16 +114,6 @@ static void dump1(const decNumber *a, const char *msg) {
 
 static void correlation(decNumber *, const enum sigma_modes);
 
-static int check_number(const decNumber *r, int n) {
-	decNumber s;
-
-	if (dn_lt0(dn_compare(&s, r, small_int(n)))) {
-		err(ERR_MORE_POINTS);
-		return 1;
-	}
-	return 0;
-}
-
 static int check_data(unsigned int n) {
 	if (sigmaCheck() || sigmaN < n) {
 		err(ERR_MORE_POINTS);
@@ -131,7 +121,6 @@ static int check_data(unsigned int n) {
 	}
 	return 0;
 }
-
 
 void stats_mode(enum nilop op) {
 	UState.sigma_mode = (op - OP_LINF) + SIGMA_LINEAR;
@@ -227,13 +216,12 @@ void sigma_minus() {
 /* Loop through the various modes and work out
  * which has the highest absolute correlation.
  */
-static enum sigma_modes determine_best(const decNumber *n) {
+static enum sigma_modes determine_best(void) {
 	enum sigma_modes m = SIGMA_LINEAR;
 	int i;
 	decNumber b, c, d;
 
-	dn_compare(&b, &const_2, n);
-	if (dn_lt0(&b)) {
+	if (sigmaN > 2) {
 		correlation(&c, SIGMA_LINEAR);
 		dn_abs(&b, &c);
 		for (i=SIGMA_LINEAR+1; i<SIGMA_BEST; i++) {
@@ -241,8 +229,7 @@ static enum sigma_modes determine_best(const decNumber *n) {
 
 			if (! decNumberIsNaN(&d)) {
 				dn_abs(&c, &d);
-				dn_compare(&d, &b, &c);
-				if (dn_lt0(&d)) {
+				if (dn_gt(&c, &b)) {
 					decNumberCopy(&b, &c);
 					m = (enum sigma_modes) i;
 				}
@@ -261,12 +248,10 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 					decNumber *sxx, decNumber *syy,
 					decNumber *sxy, enum sigma_modes mode) {
 	int lnx, lny;
-	decNumber n;
 	decimal64 *xy = NULL;
 
-	int_to_dn(&n, sigmaN);
 	if (mode == SIGMA_BEST)
-		mode = determine_best(&n);
+		mode = determine_best();
 
 	switch (mode) {
 	default:
@@ -299,7 +284,7 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 	}
 
 	if (N != NULL)
-		decNumberCopy(N, &n);
+		int_to_dn(N, sigmaN);
 	if (sx != NULL)
 		decimal64ToNumber(lnx ? &sigmalnX : &sigmaX, sx);
 	if (sy != NULL)
@@ -483,8 +468,10 @@ void stats_wdeviations(enum nilop op) {
 	if (sigmaCheck())
 		return;
 	get_sigmas(NULL, NULL, &sy, NULL, &syy, &sxy, SIGMA_QUIET_LINEAR);
-	if (check_number(&sy, 2))
+	if (dn_lt(&sy, &const_2)) {
+		err(ERR_MORE_POINTS);
 		return;
+	}
 	decimal128ToNumber(&sigmaX2Y, &sxxy);
 	dn_multiply(&t, &sy, &sxxy);
 	decNumberSquare(&u, &sxy);
@@ -534,14 +521,10 @@ static void correlation(decNumber *t, const enum sigma_modes m) {
 	dn_subtract(&v, t, &u);
 	dn_divide(t, &v, &w);
 
-	dn_compare(&u, &const_1, t);
-	if (decNumberIsNegative(&u))
+	if (dn_gt(t, &const_1))
 		dn_1(t);
-	else {
-		dn_compare(&u, t, &const__1);
-		if (decNumberIsNegative(&u))
-			dn__1(t);
-	}
+	else if (dn_lt(t, &const__1))
+		dn__1(t);
 }
 
 
@@ -746,11 +729,7 @@ void stats_sto_random(enum nilop op) {
 
 
 static void check_low(decNumber *d) {
-	decNumber t, u;
-
-	dn_abs(&t, d);
-	dn_compare(&u, &t, &const_1e_32);
-	if (decNumberIsNegative(&u))
+	if (dn_abs_lt(d, &const_1e_32))
 		decNumberCopy(d, &const_1e_32);
 }
 
@@ -765,11 +744,9 @@ static void check_low(decNumber *d) {
  * determine if the best guess plus one is below the target.
  */
 static decNumber *discrete_final_check(decNumber *r, const decNumber *p, const decNumber *fr, const decNumber *frp1, const decNumber *rp1) {
-	decNumber a;
-
-	if (decNumberIsNegative(dn_compare(&a, p, fr)))
+	if (dn_lt(p, fr))
 		dn_dec(r);
-	else if (dn_le0(dn_compare(&a, frp1, p)))
+	else if (dn_le(frp1, p))
 		decNumberCopy(r, rp1);
 	return r;
 }
@@ -803,7 +780,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 		// Check if things are getting worse
 		if (wandercheck) {
 			dn_abs(&x, &z);
-			if (i > 0 && decNumberIsNegative(dn_compare(&w, &prev, &x)))
+			if (i > 0 && dn_lt(&prev, &x))
 				return set_NaN(r);
 			decNumberCopy(&prev, &x);
 		}
@@ -823,7 +800,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 		// Limit the step size if necessary
 		if (maxstep != NULL) {
 			dn_abs(&x, &w);
-			if (decNumberIsNegative(dn_compare(&z, &md, &x))) {
+			if (dn_lt(&md, &x)) {
 				if (decNumberIsNegative(&w))
 					dn_minus(&w, &md);
 				else
@@ -913,8 +890,7 @@ static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const d
 		ib_step(&d, &c, &aa);
 		dn_multiply(&v, &d, &c);
 		dn_multiply(r, r, &v);	// r *= d*c
-		dn_compare(&u, &oldr, r);
-		if (dn_eq0(&u))
+		if (dn_eq(&oldr, r))
 			break;
 	}
 }
@@ -946,8 +922,7 @@ decNumber *betai(decNumber *r, const decNumber *a, const decNumber *b, const dec
 	dn_p2(&u, &v);				// u = a+b+2
 	dn_p1(&t, a);				// t = a+1
 	dn_divide(&v, &t, &u);			// u = (a+1)/(a+b+2)
-	dn_compare(&t, x, &v);
-	if (decNumberIsNegative(&t)) {
+	if (dn_lt(x, &v)) {
 		if (limit)
 			return decNumberZero(r);
 		betacf(&t, a, b, x);
@@ -1019,10 +994,7 @@ static int param_verify(decNumber *r, const decNumber *n, int zero, int intg) {
 #define param_nonnegative_int(r, n)	(param_verify(r, n, 1, 1))
 
 static int param_range01(decNumber *r, const decNumber *p) {
-	decNumber h;
-
-	dn_compare(&h, &const_1, p);
-	if (decNumberIsSpecial(p) || dn_lt0(p) || dn_lt0(&h)) {
+	if (decNumberIsSpecial(p) || dn_lt0(p) || dn_gt(p, &const_1)) {
 		decNumberZero(r);
 		err(ERR_BAD_PARAM);
 		return 1;
@@ -1059,8 +1031,7 @@ decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
 
 	pdf_Q(pdf, x);
 	dn_abs(&absx, x);
-	dn_compare(&u, &const_PI, &absx);	// We need a number about 3.2 and this is close enough
-	if (decNumberIsNegative(&u)) {
+	if (dn_gt(&absx, &const_PI)) {		// We need a number about 3.2 and this is close enough
 		//dn_minus(&x2, &absx);
 		//n = ceil(5 + k / (|x| - 1))
 		dn_m1(&v, &absx);
@@ -1090,8 +1061,7 @@ decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
 			dn_multiply(&u, &t, &x2);
 			dn_divide(&t, &u, &d);
 			dn_add(&u, &a, &t);
-			dn_compare(&v, &u, &a);
-			if (dn_eq0(&v))
+			if (dn_eq(&u, &a))
 				break;
 			decNumberCopy(&a, &u);
 			dn_p2(&d, &d);
@@ -1118,8 +1088,7 @@ static void qf_Q_est(decNumber *est, const decNumber *x, const decNumber *x05) {
 		x = &xc;
 	}
 
-	dn_compare(&a, x, &const_0_2);
-	if (decNumberIsNegative(&a)) {
+	if (dn_lt(x, &const_0_2)) {
 		dn_ln(&a, x);
 		dn_multiply(&u, &a, &const__2);
 		dn_m1(&a, &u);
@@ -1236,7 +1205,7 @@ decNumber *cdf_chi2(decNumber *r, const decNumber *x) {
 static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p) {
 	decNumber a, b, d;
 
-	if (decNumberIsNegative(dn_compare(&a, &const_15, n)))
+	if (dn_gt(n, &const_15))
 		decNumberCopy(&a, &const_0_85);
 	else
 		dn_1(&a);
@@ -1244,7 +1213,7 @@ static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p
 	dn_multiply(&b, &a, n);
 	dn_minus(&a, &b);
 	dn_exp(&b, &a);
-	if (decNumberIsNegative(dn_compare(&a, p, &b))) {
+	if (dn_lt(p, &b)) {
 		dn_div2(&a, n);
 		decNumberLnGamma(&b, &a);
 		dn_divide(guess, &b, &a);
@@ -1269,7 +1238,7 @@ static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p
 		dn_multiply(guess, &a, n);
 		dn_multiply(&a, n, &const_6);
 		dn_add(&b, &a, &const_16);
-		if (decNumberIsNegative(dn_compare(&a, &b, guess))) {
+		if (dn_lt(&b, guess)) {
 			dn_ln1m(&a, p);
 			dn_multiply(&b, &const_150, n);
 			dn_divide(&d, &a, &b);
@@ -1277,7 +1246,7 @@ static void qf_chi2_est(decNumber *guess, const decNumber *n, const decNumber *p
 			dn_multiply(guess, guess, &d);
 		}
 	}
-	if (dn_le0(dn_compare(&a, guess, &const_1e_400)))
+	if (dn_le(guess, &const_1e_400))
 		decNumberZero(guess);
 }
 
@@ -1378,7 +1347,7 @@ static void qf_T_est(decNumber *r, const decNumber *df, const decNumber *p, cons
 	dn_ln(&a, p);
 	dn_minus(&a, &a);
 	dn_multiply(&b, df, &const_1_7);
-	if (dn_lt0(dn_compare(&u, &a, &b))) {
+	if (dn_lt(&a, &b)) {
 		qf_Q_est(&x, p, p05);
 		decNumberSquare(&x2, &x);
 		dn_multiply(&x3, &x2, &x);
@@ -1422,21 +1391,19 @@ static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
 		decNumberZero(r);
 		return 1;
 	}
-	if (decNumberIsInfinite(v)) {					// Normal in the limit
+	if (decNumberIsInfinite(v)) {			// Normal in the limit
 		qf_Q(r, x);
 		return 1;
 	}
 
-	dn_compare(&a, v, &const_1);
-	if (dn_eq0(&a)) {					// special case v = 1
+	if (dn_eq1(v)) {				// special case v = 1
 		dn_mulPI(&a, &b);
 		dn_sincos(&a, &c, &d);
 		dn_divide(&a, &c, &d);			// lower = tan(pi (x - 1/2))
 		dn_minus(r, &a);
 		return 1;
 	}
-	dn_compare(&d, v, &const_2);			// special case v = 2
-	if (dn_eq0(&d)) {
+	if (dn_eq(v, &const_2)) {			// special case v = 2
 		dn_1m(&a, x);
 		dn_multiply(&c, &a, x);
 		dn_multiply(&d, &c, &const_4);		// alpha = 4p(1-p)
@@ -1622,7 +1589,7 @@ decNumber *cdf_B_helper(decNumber *r, const decNumber *x, const decNumber *p, co
 
 	if (dn_lt0(x))
 		return decNumberZero(r);
-	if (dn_lt0(dn_compare(&t, n, x)))
+	if (dn_lt(n, x))
 		return dn_1(r);
 
 	dn_p1(&u, x);

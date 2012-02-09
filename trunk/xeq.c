@@ -2198,32 +2198,19 @@ void cmdtest(unsigned int arg, enum rarg op) {
 }
 
 static void do_ztst(const decNumber *re, const decNumber *im, enum tst_op op) {
-	int c = 0;
-	decNumber x, y, t;
-	int eq = 1;
+	decNumber x, y;
 
 	process_cmdline_set_lift();
-
 	if (is_intmode()) {
 		bad_mode_error();
 		return;
 	}
 	getXY(&x, &y);
-	if (decNumberIsNaN(&x) || decNumberIsNaN(&y) || decNumberIsNaN(re) || decNumberIsNaN(im))
-		goto flse;
-	dn_compare(&t, &x, re);
-	if (!dn_eq0(&t))
-		eq = 0;
-	else {
-		dn_compare(&t, &y, im);
-		if (!dn_eq0(&t))
-			eq = 0;
+	if (decNumberIsNaN(&x) || decNumberIsNaN(&y) || decNumberIsNaN(re) || decNumberIsNaN(im)) {
+		fin_tst(0);
+		return;
 	}
-	if (op != TST_NE)
-		c = eq;
-	else
-		c = !eq;
-flse:	fin_tst(c);
+	fin_tst((op == TST_EQ) == (dn_eq(&x, re) && dn_eq(&y, im)));
 }
 
 void cmdztest(unsigned int arg, enum rarg op) {
@@ -3094,7 +3081,7 @@ void op_regclr(enum nilop op) {
 
 void op_regsort(enum nilop op) {
 	int s, n;
-	decNumber pivot, a, t;
+	decNumber pivot, a;
 	int beg[10], end[10], i;
 
 	if (reg_decode(&s, &n, NULL, 0) || n == 1)
@@ -3113,7 +3100,7 @@ void op_regsort(enum nilop op) {
 			while (L<R) {
 				while (L<R) {
 					getRegister(&a, s + R);
-					if (dn_lt0(dn_compare(&t, &a, &pivot)))
+					if (dn_lt(&a, &pivot))
 						break;
 					R--;
 				}
@@ -3121,7 +3108,7 @@ void op_regsort(enum nilop op) {
 					copyreg_n(s + L++, s + R);
 				while (L<R) {
 					getRegister(&a, s + L);
-					if (dn_lt0(dn_compare(&t, &pivot, &a)))
+					if (dn_gt(&a, &pivot))
 						break;
 					L++;
 				}
@@ -4190,7 +4177,7 @@ void cmdconverged(unsigned int arg, enum rarg cmd) {
 		else {
 			cmplxSubtract(&a, &b, &x, &y, &z, &t);
 			cmplxR(&x, &a, &b);
-			res = dn_le0(dn_compare(&y, &x, tolerance));
+			res = dn_lt(&x, tolerance);
 		}
 	} else {
 		if (absolute)
