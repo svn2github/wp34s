@@ -86,8 +86,8 @@
 #define ABOUT_ACTION_TEXT "About"
 #define PREFERENCES_ACTION_TEXT "Preferences"
 
-#define HIDE_TITLEBAR_ACTION_TEXT "Hide Titlebar"
-#define SHOW_TITLEBAR_ACTION_TEXT "Show Titlebar"
+#define HIDE_TITLEBAR_ACTION_TEXT "Hide TitleBar"
+#define SHOW_TITLEBAR_ACTION_TEXT "Show TitleBar"
 #define RESET_ACTION_TEXT "Reset Memory"
 #define QUIT_ACTION_TEXT "Quit"
 
@@ -125,7 +125,7 @@ public:
 private slots:
 	void editPreferences();
 	void showAbout();
-	void toggleTitlebar();
+	void toggleTitleBar();
 	void confirmReset();
 	void copyNumber();
 	void copyTextLine();
@@ -198,8 +198,9 @@ private:
      bool development;
      bool debug;
      bool titleBarVisible;
-     QAction* toggleTitlebarAction;
+     QAction* toggleTitleBarAction;
      QMenu* contextMenu;
+     Qt::WindowFlags titleBarVisibleFlags;
 
 signals:
 	void screenChanged();

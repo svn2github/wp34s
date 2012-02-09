@@ -80,7 +80,12 @@ void QtEmulator::setVisible(bool visible)
 {
 	if(visible)
 	{
-		setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
+	  	setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
+		if(titleBarVisible)
+	{
+	titleBarVisibleFlags=windowFlags();
+	}
+
 		setFixedSize(sizeHint());
 	}
 
@@ -182,21 +187,29 @@ void QtEmulator::showDocumentation()
 	}
 }
 
-void QtEmulator::toggleTitlebar()
+void QtEmulator::toggleTitleBar()
 {
 	if(titleBarVisible)
 	{
+#ifdef Q_WS_WIN
+		setWindowFlags(Qt::FramelessWindowHint);
+		menuBar()->hide();
+#else
 		setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
-		setAttribute(Qt::WA_TranslucentBackground, true);
+#endif
+	setAttribute(Qt::WA_TranslucentBackground, true);
 		setAutoFillBackground(false);
-		toggleTitlebarAction->setText(SHOW_TITLEBAR_ACTION_TEXT);
+		toggleTitleBarAction->setText(SHOW_TITLEBAR_ACTION_TEXT);
 	}
 	else
 	{
-		setWindowFlags(windowFlags() & ~Qt::FramelessWindowHint);
+	  setWindowFlags(titleBarVisibleFlags);
+#ifdef Q_WS_WIN
+	  menuBar()->show();
+#endif
 		setAttribute(Qt::WA_TranslucentBackground, false);
 		setAutoFillBackground(true);
-		toggleTitlebarAction->setText(HIDE_TITLEBAR_ACTION_TEXT);
+		toggleTitleBarAction->setText(HIDE_TITLEBAR_ACTION_TEXT);
 	}
 	titleBarVisible=!titleBarVisible;
 	show();
@@ -279,8 +292,8 @@ void QtEmulator::buildMainMenu()
 	menuBar->addMenu(mainMenu);
 	QMenu* mainContextMenu=contextMenu->addMenu(MAIN_MENU);
 
-	toggleTitlebarAction=mainMenu->addAction(HIDE_TITLEBAR_ACTION_TEXT, this, SLOT(toggleTitlebar()));
-	mainContextMenu->addAction(toggleTitlebarAction);
+	toggleTitleBarAction=mainMenu->addAction(HIDE_TITLEBAR_ACTION_TEXT, this, SLOT(toggleTitleBar()));
+	mainContextMenu->addAction(toggleTitleBarAction);
 
 	QAction* resetAction=mainMenu->addAction(RESET_ACTION_TEXT, this, SLOT(confirmReset()));
 	mainContextMenu->addAction(resetAction);
