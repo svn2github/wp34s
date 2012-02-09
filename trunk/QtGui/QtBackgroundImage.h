@@ -40,9 +40,14 @@ protected:
 	 void paintEvent(QPaintEvent *);
 
 private:
+	 void moveWindow(QMouseEvent* aMouseEvent);
+
+private:
 	 QPixmap pixmap;
 	 QtScreen& screen;
 	 QtKeyboard& keyboard;
+	 bool dragging;
+	 QPoint lastDragPosition;
 };
 
 #endif /* QTBACKGROUNDIMAGE_H_ */

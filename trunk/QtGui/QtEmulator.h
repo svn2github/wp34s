@@ -86,6 +86,8 @@
 #define ABOUT_ACTION_TEXT "About"
 #define PREFERENCES_ACTION_TEXT "Preferences"
 
+#define HIDE_TITLEBAR_ACTION_TEXT "Hide Titlebar"
+#define SHOW_TITLEBAR_ACTION_TEXT "Show Titlebar"
 #define RESET_ACTION_TEXT "Reset Memory"
 #define QUIT_ACTION_TEXT "Quit"
 
@@ -110,6 +112,7 @@ public:
      ~QtEmulator();
 
 public:
+     void setVisible(bool visible);
      void quit();
      QtKeyboard& getKeyboard() const;
      QtScreen& getScreen() const;
@@ -122,6 +125,7 @@ public:
 private slots:
 	void editPreferences();
 	void showAbout();
+	void toggleTitlebar();
 	void confirmReset();
 	void copyNumber();
 	void copyTextLine();
@@ -130,11 +134,13 @@ private slots:
 	void selectSkin(QAction* anAction);
 	void showWebSite();
 	void showDocumentation();
+	void showContextMenu(const QPoint& aPoint);
 
 private:
      void setPaths();
      void checkCustomDirectory();
-     void buildMenuBar();
+     void buildMenus();
+     void buildContextMenu();
      void buildMainMenu();
      void buildEditMenu();
      void buildSkinsMenu();
@@ -191,6 +197,9 @@ private:
      bool active;
      bool development;
      bool debug;
+     bool titleBarVisible;
+     QAction* toggleTitlebarAction;
+     QMenu* contextMenu;
 
 signals:
 	void screenChanged();

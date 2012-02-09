@@ -10,10 +10,11 @@
 
 
 QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard)
-	: screen(aScreen), keyboard(aKeyboard)
+	: screen(aScreen), keyboard(aKeyboard), dragging(false)
 {
 	setSkin(aSkin);
 	setPixmap(pixmap);
+	setMask(pixmap.mask());
 	setFocusPolicy(Qt::StrongFocus);
 	setFixedSize(pixmap.size());
 	connect(&aKeyboard, SIGNAL(keyPressed()), this, SLOT(updateScreen()));
@@ -26,6 +27,7 @@ void QtBackgroundImage::setSkin(const QtSkin& aSkin)
 		throw *(new QtSkinException(QString("Cannot find picture ")+aSkin.getPictureName()));
 	}
 	setPixmap(pixmap);
+	setMask(pixmap.mask());
 	setFixedSize(pixmap.size());
 }
 
@@ -46,17 +48,39 @@ void QtBackgroundImage::keyReleaseEvent(QKeyEvent* aKeyEvent)
 
 void QtBackgroundImage::mousePressEvent(QMouseEvent* aMouseEvent)
 {
-	keyboard.processButtonPressedEvent(*aMouseEvent);
+	if(!keyboard.processButtonPressedEvent(*aMouseEvent) && aMouseEvent->button()==Qt::LeftButton)
+	{
+		dragging=true;
+		lastDragPosition=aMouseEvent->globalPos();
+	}
 }
 
 void QtBackgroundImage::mouseReleaseEvent(QMouseEvent* aMouseEvent)
 {
-	keyboard.processButtonReleasedEvent(*aMouseEvent);
+	if(!dragging)
+	{
+		keyboard.processButtonReleasedEvent(*aMouseEvent);
+	}
+	dragging=false;
 }
 
 void QtBackgroundImage::mouseMoveEvent(QMouseEvent* aMouseEvent)
 {
-	keyboard.processMouseMovedEvent(*aMouseEvent);
+	if(!dragging)
+	{
+		keyboard.processMouseMovedEvent(*aMouseEvent);
+	}
+	else
+	{
+		moveWindow(aMouseEvent);
+	}
+}
+
+void QtBackgroundImage::moveWindow(QMouseEvent* aMouseEvent)
+{
+	QWidget* parentWindow=window();
+	parentWindow->move(parentWindow->pos()+aMouseEvent->globalPos()-lastDragPosition);
+	lastDragPosition=aMouseEvent->globalPos();
 }
 
 void QtBackgroundImage::mouseDoubleClickEvent(QMouseEvent* aMouseEvent)

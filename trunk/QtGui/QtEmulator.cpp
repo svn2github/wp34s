@@ -24,11 +24,10 @@
 QtEmulator* currentEmulator;
 
 QtEmulator::QtEmulator()
-: calculatorThread(NULL), heartBeatThread(NULL), skinsActionGroup(NULL)
+: calculatorThread(NULL), heartBeatThread(NULL), skinsActionGroup(NULL), titleBarVisible(true)
 {
 	debug=qApp->arguments().contains(DEBUG_OPTION);
 	development=qApp->arguments().contains(DEVELOPMENT_OPTION);
-
 #ifdef Q_WS_MAC
 	QSettings::Format format=QSettings::NativeFormat;
 #else
@@ -52,7 +51,7 @@ QtEmulator::QtEmulator()
 
 	// setInitialSkin must be before buildSkinMenu, called from buildMenuBar
 	setInitialSkin();
-	buildMenuBar();
+	buildMenus();
 
 	QVBoxLayout* layout = new QVBoxLayout();
 	layout->addWidget(backgroundImage);
@@ -75,6 +74,17 @@ QtEmulator::~QtEmulator()
 	{
 		quit();
 	}
+}
+
+void QtEmulator::setVisible(bool visible)
+{
+	if(visible)
+	{
+		setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
+		setFixedSize(sizeHint());
+	}
+
+    QMainWindow::setVisible(visible);
 }
 
 void QtEmulator::quit()
@@ -172,6 +182,25 @@ void QtEmulator::showDocumentation()
 	}
 }
 
+void QtEmulator::toggleTitlebar()
+{
+	if(titleBarVisible)
+	{
+		setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
+		setAttribute(Qt::WA_TranslucentBackground, true);
+		setAutoFillBackground(false);
+		toggleTitlebarAction->setText(SHOW_TITLEBAR_ACTION_TEXT);
+	}
+	else
+	{
+		setWindowFlags(windowFlags() & ~Qt::FramelessWindowHint);
+		setAttribute(Qt::WA_TranslucentBackground, false);
+		setAutoFillBackground(true);
+		toggleTitlebarAction->setText(HIDE_TITLEBAR_ACTION_TEXT);
+	}
+	titleBarVisible=!titleBarVisible;
+	show();
+}
 
 void QtEmulator::confirmReset()
 {
@@ -227,12 +256,20 @@ void QtEmulator::selectSkin(QAction* anAction)
 	}
 }
 
-void QtEmulator::buildMenuBar()
+void QtEmulator::buildMenus()
 {
+	buildContextMenu();
 	buildMainMenu();
 	buildEditMenu();
 	buildSkinsMenu();
 	buildHelpMenu();
+}
+
+void QtEmulator::buildContextMenu()
+{
+	contextMenu=new QMenu(this);
+	setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(this, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
 }
 
 void QtEmulator::buildMainMenu()
@@ -240,12 +277,22 @@ void QtEmulator::buildMainMenu()
 	QMenuBar* menuBar=this->menuBar();
 	QMenu* mainMenu=new QMenu(MAIN_MENU);
 	menuBar->addMenu(mainMenu);
+	QMenu* mainContextMenu=contextMenu->addMenu(MAIN_MENU);
 
-	mainMenu->addAction(RESET_ACTION_TEXT, this, SLOT(confirmReset()));
+	toggleTitlebarAction=mainMenu->addAction(HIDE_TITLEBAR_ACTION_TEXT, this, SLOT(toggleTitlebar()));
+	mainContextMenu->addAction(toggleTitlebarAction);
+
+	QAction* resetAction=mainMenu->addAction(RESET_ACTION_TEXT, this, SLOT(confirmReset()));
+	mainContextMenu->addAction(resetAction);
+
+	mainContextMenu->addSeparator();
 
 #ifndef Q_WS_MAC
 	mainMenu->addSeparator();
-	mainMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
+	QAction* quitAction=mainMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
+	mainContextMenu->addAction(quitAction);
+#else
+	mainContextMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
 #endif
 }
 
@@ -254,17 +301,24 @@ void QtEmulator::buildEditMenu()
 	QMenuBar* menuBar=this->menuBar();
 	QMenu* editMenu=new QMenu(EDIT_MENU);
 	menuBar->addMenu(editMenu);
+	QMenu* editContextMenu=contextMenu->addMenu(EDIT_MENU);
 
-	editMenu->addAction(COPY_NUMBER_ACTION_TEXT, this, SLOT(copyNumber()), QKeySequence::Copy);
-	editMenu->addAction(COPY_TEXTLINE_ACTION_TEXT, this, SLOT(copyTextLine()));
-	editMenu->addAction(COPY_IMAGE_ACTION_TEXT, this, SLOT(copyImage()));
-	editMenu->addAction(PASTE_NUMBER_ACTION_TEXT, this, SLOT(pasteNumber()), QKeySequence::Paste);
+	QAction* copyNumberAction=editMenu->addAction(COPY_NUMBER_ACTION_TEXT, this, SLOT(copyNumber()), QKeySequence::Copy);
+	editContextMenu->addAction(copyNumberAction);
+	QAction* copyTextLineAction=editMenu->addAction(COPY_TEXTLINE_ACTION_TEXT, this, SLOT(copyTextLine()));
+	editContextMenu->addAction(copyTextLineAction);
+	QAction* copyImageAction=editMenu->addAction(COPY_IMAGE_ACTION_TEXT, this, SLOT(copyImage()));
+	editContextMenu->addAction(copyImageAction);
+	QAction* pasteNumberAction=editMenu->addAction(PASTE_NUMBER_ACTION_TEXT, this, SLOT(pasteNumber()), QKeySequence::Paste);
+	editContextMenu->addAction(pasteNumberAction);
 
 #ifndef Q_WS_MAC
 	editMenu->addSeparator();
 #endif
+	editContextMenu->addSeparator();
 	QAction* preferencesAction=editMenu->addAction(PREFERENCES_ACTION_TEXT, this, SLOT(editPreferences()));
 	preferencesAction->setMenuRole(QAction::PreferencesRole);
+	editContextMenu->addAction(preferencesAction);
 }
 
 void QtEmulator::buildSkinsMenu()
@@ -272,6 +326,7 @@ void QtEmulator::buildSkinsMenu()
 	QMenuBar* menuBar=this->menuBar();
 	QMenu* skinsMenu=new QMenu(SKINS_MENU);
 	menuBar->addMenu(skinsMenu);
+	QMenu* skinsContextMenu=contextMenu->addMenu(SKINS_MENU);
 
 	delete skinsActionGroup;
 	skinsActionGroup=new QActionGroup(this);
@@ -280,6 +335,7 @@ void QtEmulator::buildSkinsMenu()
 	for(SkinMap::const_iterator skinIterator=skins.constBegin(); skinIterator!=skins.constEnd(); ++skinIterator)
 	{
 		QAction* skinAction=skinsMenu->addAction(skinIterator.key());
+		skinsContextMenu->addAction(skinAction);
 		skinsActionGroup->addAction(skinAction);
 		skinAction->setCheckable(true);
 		if(skinAction->text()==currentSkinName)
@@ -295,12 +351,16 @@ void QtEmulator::buildHelpMenu()
 	QMenuBar* menuBar=this->menuBar();
 	QMenu* helpMenu=new QMenu(HELP_MENU);
 	menuBar->addMenu(helpMenu);
+	QMenu* helpContextMenu=contextMenu->addMenu(HELP_MENU);
 
 	QAction* aboutAction=helpMenu->addAction(ABOUT_ACTION_TEXT, this, SLOT(showAbout()));
 	aboutAction->setMenuRole(QAction::AboutRole);
+	helpContextMenu->addAction(aboutAction);
 
-	helpMenu->addAction(SHOW_WEBSITE_ACTION_TEXT, this, SLOT(showWebSite()));
-	helpMenu->addAction(SHOW_DOCUMENTATION_ACTION_TEXT, this, SLOT(showDocumentation()));
+	QAction* showWebsiteAction=helpMenu->addAction(SHOW_WEBSITE_ACTION_TEXT, this, SLOT(showWebSite()));
+	helpContextMenu->addAction(showWebsiteAction);
+	QAction* showDocumentationAction=helpMenu->addAction(SHOW_DOCUMENTATION_ACTION_TEXT, this, SLOT(showDocumentation()));
+	helpContextMenu->addAction(showDocumentationAction);
 }
 
 void QtEmulator::buildComponents(const QtSkin& aSkin)
@@ -313,6 +373,11 @@ void QtEmulator::buildComponents(const QtSkin& aSkin)
 void QtEmulator::buildSerialPort()
 {
 	serialPort=new QtSerialPort;
+}
+
+void QtEmulator::showContextMenu(const QPoint& aPoint)
+{
+	contextMenu->exec(mapToGlobal(aPoint));
 }
 
 void QtEmulator::startThreads()
@@ -507,6 +572,7 @@ void QtEmulator::loadMemory()
 	loadState();
 	loadBackup();
 	loadLibrary();
+	after_state_load();
 }
 
 void QtEmulator::loadState()
@@ -533,25 +599,37 @@ void QtEmulator::loadState()
 		memoryWarning("Error whilst reading "+memoryFile.fileName());
 		return;
 	}
-
-	after_state_load();
 }
 
 void QtEmulator::loadBackup()
 {
+	QFile backupFile(QString(MEMORY_FILE_TYPE)+':'+BACKUP_FILENAME);
+	if(!backupFile.exists() || !backupFile.open(QIODevice::ReadOnly))
+	{
+		return;
+	}
 
+	int backupSize=get_backup_size();
+	QDataStream dataStream(&backupFile);
+	dataStream.readRawData(get_backup(), backupSize);
 }
 
 void QtEmulator::loadLibrary()
 {
+	QFile libraryFile(QString(MEMORY_FILE_TYPE)+':'+LIBRARY_FILENAME);
+	if(!libraryFile.exists() || !libraryFile.open(QIODevice::ReadOnly))
+	{
+		return;
+	}
 
+	int librarySize=get_user_flash_size();
+	QDataStream dataStream(&libraryFile);
+	dataStream.readRawData(get_user_flash(), librarySize);
 }
 
 void QtEmulator::saveMemory()
 {
 	saveState();
-	saveBackup();
-	saveLibrary();
 }
 
 void QtEmulator::saveState()

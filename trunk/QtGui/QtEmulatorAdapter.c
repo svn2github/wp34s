@@ -131,6 +131,27 @@ int get_memory_size()
 	return sizeof(PersistentRam);
 }
 
+char* get_backup()
+{
+	return (char*) &BackupFlash;
+}
+
+int get_backup_size()
+{
+	return sizeof(BackupFlash);
+}
+
+
+char* get_user_flash()
+{
+	return (char*) &UserFlash;
+}
+
+int get_user_flash_size()
+{
+	return sizeof(UserFlash);
+}
+
 char* get_region_path(int region_index)
 {
 	return get_region_path_adapter(region_index);

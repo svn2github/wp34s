@@ -83,7 +83,7 @@ bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 	currentKeyHShifted=false;
 	startHShiftTimer();
 	emit keyPressed();
-	return true;
+	return currentKeyCode!=INVALID_KEY_CODE;
 }
 
 bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)

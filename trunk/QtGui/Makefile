@@ -16,6 +16,8 @@
 # Settings for Unix like environments with gcc
 # Creates the Console version of the emulator or the real thing
 
+
+
 SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
 SYSTEM := Output
@@ -62,11 +64,13 @@ ZIP := zip -r
 QTMAKEFILE := QtMakefile.$(SYSTEM)
 QTMAKEFILE_EXISTS := $(wildcard $(QTMAKEFILE))
 
-ADAPTERSRCS=QtEmulatorAdapter.c
+ADAPTERSRCS=QtEmulatorAdapter.c 
 ADAPTEROBJS=$(ADAPTERSRCS:%.c=$(OUTPUTDIR)/%.o)
 
 BUILDDATESRC=QtBuildDate.c
 BUILDDATEOBJ=$(BUILDDATESRC:%.c=$(OUTPUTDIR)/%.o)
+
+EXTRAOBJS=$(ADAPTEROBJS) $(BUILDDATEOBJ)
 
 DIRS_TO_CLEAN := $(DIRS) $(DISTDIR)
 EXTRA_FILES_TO_CLEAN := $(DISTFILE) moc_QtBackgroundImage.cpp moc_QtEmulator.cpp moc_QtPreferencesDialog.cpp moc_QtKeyboard.cpp
@@ -92,7 +96,7 @@ else
   SERIAL_INCLUDE=
   HAS_SERIAL=0
 endif
-
+	
 $(OUTPUTDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -I.. -o $@ $<
 
@@ -113,8 +117,8 @@ dist:
 	cd ..; $(MAKE) RECURSIVE=1 qt_gui_dist CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 endif
 else 
-all: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
-	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS="$(BASEOBJS) $(BASELIBS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+all: $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
+	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS="$(BASEOBJS) $(BASELIBS) $(EXTRAOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 
 ifeq "$(SYSTEM)" "windows32"
 WP34SEXE := $(OUTPUTDIR)/wp-34s.exe
@@ -134,8 +138,8 @@ $(DISTDIR):
 endif
 
 ifeq ($(SYSTEM),windows32)
-release: $(QTMAKEFILE) $(DIRS) $(ADAPTEROBJS)
-	$(MAKE) -f $(QTMAKEFILE) release BASE_LIBS="$(BASEOBJS) $(BASELIBS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+release: $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
+	$(MAKE) -f $(QTMAKEFILE) release BASE_LIBS="$(BASEOBJS) $(BASELIBS) $(EXTRAOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 else
 release: all
 endif
