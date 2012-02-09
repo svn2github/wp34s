@@ -282,9 +282,9 @@ else
 
 # Target calc, console emulator
 
-$(OUTPUTDIR)/calc: $(OBJS) xrom.o $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
+$(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/xrom.o $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
 		$(MAIN) $(LDCTRL) Makefile
-	$(HOSTCC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) xrom.o $(LIBDN) $(LIBS)
+	$(HOSTCC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(OBJECTDIR)/xrom.o $(LIBDN) $(LIBS)
 
 revision.h: $(UTILITIES)/create_revision$(EXE) $(HEADERS) $(SRCS) Makefile
 	$(UTILITIES)/create_revision$(EXE) >$@
@@ -409,7 +409,7 @@ qt_gui_dist_no_serial:
 ifdef QTGUI
 
 CALCLIB := $(OBJECTDIR)/libCalculator.a
-CALCOBJS := $(OBJS) xrom.o
+CALCOBJS := $(OBJS) $(OBJECTDIR)/xrom.o
 $(CALCLIB): $(CALCOBJS)
 	-rm -f $@
 	$(AR) -r $@ $(CALCOBJS)
