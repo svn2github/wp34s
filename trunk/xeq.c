@@ -4169,7 +4169,7 @@ void cmdconverged(unsigned int arg, enum rarg cmd) {
 	int res;
 
 	if (int_mode()) {
-		do_tst(CONST_REG_BASE + OP_ZERO, TST_EQ);
+		do_tst(regY_idx, TST_EQ);
 		return;
 	}
 
