@@ -281,7 +281,6 @@ cpx_pow_common::	Num 0			// 0 n x y
 
 		XLBL"cpx_LN1P"
 			xIN MONADIC_COMPLEX
-			LocR 01
 			[cmplx]FILL
 			[cmplx]ABS
 			+
@@ -294,7 +293,8 @@ cpx_pow_common::	Num 0			// 0 n x y
 			[cmplx]LN
 			xOUT xOUT_NORMAL
 
-cpx_ln1p_small::	[cmplx]DROP
+cpx_ln1p_small::	LocR 01
+			[cmplx]DROP
 			Num 0
 			INT# NUM_LNP1_TERMS
 			STO .00
