@@ -14,23 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* NaN for all results */
-/* This is a duplicate of ret_NaN but within range of the branches to it from this file */
-w_ret_NaN::	FC? D
-			ERR ERR_DOMAIN
-		Num NaN
-		FILL
-		xOUT xOUT_NORMAL
-
-/* return -infinite for all results */
-/* This is a duplicate of ret_NaN but within range of the branches to it from this file */
-w_ret_neginf::	FC? D
-			ERR ERR_MINFINITY
-		Num -[infinity]
-		FILL
-		xOUT xOUT_NORMAL
-
-
 /**************************************************************************/
 /* The positive branch of the real W function.
  * A rough guess is made and then Newton's method is used to attain
@@ -46,7 +29,7 @@ w_ret_neginf::	FC? D
 			XLBL"W0"
 			xIN MONADIC
 			SPEC?
-				JMP w_ret_NaN
+				JMP ret_NaN
 			x=0?
 				xOUT xOUT_NORMAL
 			Num eE
@@ -54,7 +37,7 @@ w_ret_neginf::	FC? D
 			+/-
 			x[<->] Y
 			x<? Y
-				JMP w_ret_NaN
+				JMP ret_NaN
 			STO I
 			LN1+x
 LamW0_loop::		FILL
@@ -78,17 +61,17 @@ LamW0_loop::		FILL
 			XLBL"W1"
 			xIN MONADIC
 			SPEC?
-				JMP w_ret_NaN
+				JMP ret_NaN
 			x>0?
-				JMP w_ret_NaN
+				JMP ret_NaN
 			x=0?
-				JMP w_ret_neginf
+				JMP ret_neginf
 			+/-
 			1/x
 			STO I
 			Num eE
 			x>? Y
-				JMP w_ret_NaN
+				JMP ret_NaN
 			RCL I
 LamW1_loop::		STO J
 			LN

@@ -138,7 +138,7 @@ expon_param::		RCL J
 			COSH
 			x[^2]
 			RCL[times] K
-			4
+			INT# 4
 			[times]
 			1/x
 			xOUT xOUT_NORMAL
@@ -152,7 +152,7 @@ expon_param::		RCL J
 				JMP ret_0
 			TANH
 			INC X
-			2
+			INT# 2
 			/
 			xOUT xOUT_NORMAL
 
@@ -272,7 +272,7 @@ ret_0::		Num 0
 
 /* Standard entry point.  Uses one stack level and no last X */
 pdf_q::			x[^2]
-			2
+			INT# 2
 			/
 			+/-
 			e[^x]
@@ -306,12 +306,11 @@ cdf_q_alt::		STO .00		// x in .00
 /* Code for |x| > 3.15 */
 			DROP
 			DEC X
-			2
-			5
-			6
+			INT# 128	// 256 the hard way
+			RCL+ X
 			x[<->] Y
 			/
-			4
+			INT# 4
 			+
 			CEIL
 			STO .02		// n = (|x|-1)/256+4
@@ -336,7 +335,7 @@ cdf_q_skip1::		FS? .00
 			RTN
 
 /* Alternate code for |x| < 3.15 */
-cdf_q2::		3
+cdf_q2::		INT# 3
 			STO .03		// d = 3
 			[cmplx]DROP
 			STO .01
@@ -418,7 +417,7 @@ qf_q_skip2::		Num [sqrt]2[pi]
 			RCL[times] .06
 			ENTER[^]
 			CUBE
-			6
+			INT# 6
 			/
 			+
 			+/-
@@ -430,7 +429,7 @@ qf_q_loop::		GSB cdf_q_alt		/* pdf in .04 */
 			RCL/ .04		/* (cdf - x) / pdf */
 			ENTER[^]
 			RCL[times] .06
-			2
+			INT# 2
 			/
 			DEC X
 			/

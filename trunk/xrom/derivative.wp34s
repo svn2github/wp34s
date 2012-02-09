@@ -41,24 +41,20 @@
 				JMP deriv_bad_input
 			SF .00
 			GSB deriv_default_h
-			1
+			Num 1
 			GSB deriv_eval_func		/* f(x+h) + f(x-h)*/
 				JMP deriv_bad_input
-			1
-			6
+			INT# 16
 			[times]
 			STO .01				/* order four estimate*/
-			4
-			2
-			EEX
-			3
+			INT# 42
+			SDL 03
 			RCL[times] .00
 			STO .02				/* order ten estimate*/
-			0
+			Num 0
 			GSB deriv_eval_func		/* f(x)*/
 				JMP deriv_bad_input
-			3
-			0
+			INT# 30
 			[times]
 			STO- .01
 			7
@@ -69,17 +65,16 @@
 			RCL[times] .00
 			STO- .02
 
-			2
+			INT# 2
 			GSB deriv_eval_func		/* f(x+2h) + f(x-2h)*/
 				JMP deriv_bad_input
 			STO- .01
-			6
-			EEX
-			3
+			INT# 6
+			SDL 03
 			[times]
 			STO- .02
 
-			3
+			INT# 3
 			GSB deriv_eval_func		/* f(x+3h) + f(x-3h)*/
 				JMP deriv2_4point
 			EEX
@@ -87,24 +82,20 @@
 			[times]
 			STO+ .02
 
-			4
+			INT# 4
 			GSB deriv_eval_func		/* f(x+4h) + f(x-4h)*/
 				JMP deriv2_4point
-			1
-			2
-			5
+			INT# 125
 			[times]
 			STO- .02
 
-			5
+			INT# 5
 			GSB deriv_eval_func		/* f(x+5h) + f(x-5h)*/
 				JMP deriv2_4point
-			8
+			INT# 8
 			[times]
 			RCL+ .02
-			2
-			5
-			2
+			INT# 252
 			SDL 02				/* * 100 = 25200*/
 			RCL[times] .04
 			RCL[times] .04
@@ -114,8 +105,7 @@
 deriv_bad_input::	Num NaN
 			JMP deriv_return
 
-deriv2_4point::		1
-			2
+deriv2_4point::		INT# 12
 			RCL[times] .04
 			RCL[times] .04
 			1/x
@@ -133,66 +123,58 @@ deriv_6point::		RCL .01
 				JMP deriv_bad_input
 			CF .00
 			GSB deriv_default_h
-			1
+			Num 1
 			GSB deriv_eval_func		/* f(x+h) - f(x-h)*/
 				JMP deriv_bad_input
 			STO .01
 
-			2
+			INT# 2
 			GSB deriv_eval_func		/* f(x+2h) - f(x-2h)*/
 				JMP deriv_bad_input
 			STO .02
 
 			/* At this point we can do a four point estimate if something goes awry */
-			3
+			INT# 3
 			GSB deriv_eval_func		/* f(x+3h)-f(x-3h)*/
 				JMP deriv_4point
 
 			/* At this point we can do the six point estimate - calculate it now */
-			4
-			5
+			INT# 45
 			RCL[times] .01
-			9
+			INT# 9
 			RCL[times] .02
 			-
 			+
-			6
-			0
+			INT# 60
 			RCL[times] .04
 			/
 			x[<->] .01			/* Six point stimate in E2 & start ten point estimate*/
-			2
-			1
+			INT# 21
 			SDL 02				/* * 100 = 2100*/
 			[times]
-			6
+			INT# 6
 			SDL 02				/* * 100 = 600*/
 			RCL[times] .02
 			-
-			1
-			5
-			0
+			INT# 150
 			RCL[times] .00
 			+				/* Ten point estimate to end up in E1*/
 
 			STO .02
-			4
+			INT# 4
 			GSB deriv_eval_func		/* f(x+4h) - f(x-4h)*/
 				JMP deriv_6point
-			2
-			5
+			INT# 25
 			[times]
 			STO- .02
 
-			5
+			INT# 5
 			GSB deriv_eval_func		/* f(x+5h) - f(x-5h)*/
 				JMP deriv_6point
 			RCL+ .00
 			RCL+ .02
-			2
-			5
-			2
-			0
+			INT# 252
+			SDL 01
 			RCL[times] .04
 			/
 			JMP deriv_return
@@ -224,11 +206,10 @@ deriv_eval_func::	STO .00
 deriv_skip_midpoint::	RCL .00
 			RTN+1
 
-deriv_4point::		8
+deriv_4point::		INT# 8
 			RCL[times] .01
 			RCL- .02
-			1
-			2
+			INT# 12
 			RCL[times] .04
 			/
 
