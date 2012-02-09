@@ -266,32 +266,56 @@ cpx_pow_common::	Num 0			// 0 n x y
 
 /**************************************************************************/
 /* Complex LN(1+z)
+ *
+ * For |z| small, we use the series expansion:
+ *
+ *	log(1+z) = z - z^2/2 + z^3/3 - z^4/4 + ...
+ *
+ * Thresholding |z| against 1e-5, means each term after the first will produce
+ * approximately five more digits.
  */
+
+/* Define the number of terms to sum.  We sum one more term than this and this
+ * parameter must be even.  To get 34 digits (double precision), we therefore
+ * need at least eight terms and nine works out nicely.
+ */
+#define NUM_LNP1_TERMS	(8)
+
 		XLBL"cpx_LN1P"
 			xIN MONADIC_COMPLEX
-			GSB cpx_ln_exp_check
-			FC? .00
-				JMP cpx_ln1p
-			LN1+x
-			xOUT xOUT_NORMAL
-
-cpx_ln1p::		INC X
+			LocR 01
+			[cmplx]FILL
+			[cmplx]ABS
+			+
+			Num 1
+			SDR 4
+			x>? Y
+				JMP cpx_ln1p_small
+			[cmplx]DROP
+			INC X
 			[cmplx]LN
 			xOUT xOUT_NORMAL
 
-                        
+cpx_ln1p_small::	[cmplx]DROP
+			Num 0
+			INT# NUM_LNP1_TERMS
+			STO .00
+			INC X
+			1/x
+			[cmplx]/
+cpx_ln1p_loop::		Num 0
+			RCL .00
+			1/x
+			[cmplx]-
+			[cmplx][times]
+			DEC .00
+			Num 0
+			RCL .00
+			1/x
+			[cmplx]+
+			[cmplx][times]
+			DSZ .00
+				JMP cpx_ln1p_loop
+			xOUT xOUT_NORMAL
 
-// Set flag .00 if argument is real and absolutely smaller than 10^-5
-
-cpx_ln_exp_check::	x[<->] Y			// b a
-			x[!=]0?
-				JMP cpx_ln_exp_ret
-			[<->] YYXT		// a a b
-			ABS
-			Num 1
-			SDR 4			// 1e-5 |a| a b
-			x>? Y
-				SF .00
-			[<->] TZTT		// b a 
-cpx_ln_exp_ret::	x[<->] Y			// a b
-			RTN
+#undef NUM_LNP1_TERMS
