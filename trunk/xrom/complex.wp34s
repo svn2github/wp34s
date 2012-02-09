@@ -239,7 +239,33 @@ cpx_pow_common::	Num 0			// 0 n x y
 			xOUT xOUT_NORMAL
 		
 /**************************************************************************/
-/* Complex LN(1+z) and (e^z)-1.
+/* Complex (e^z)-1.
+ *
+ * With a bit of algebra it can be shown that:
+ *	e^z - 1 = -exp(z/2) * 2*i*sin(i*z/2)
+ * there are no obvious loss of accuracy issues inherent here.
+ */
+
+		XLBL"cpx_EXPM1"
+			xIN MONADIC_COMPLEX
+                        Num 0
+                        2
+                        [cmplx]/
+                        [cmplx]e[^x]
+                        [cmplx]RCL L
+                        SWAP
+                        +/-
+                        [cmplx]SIN
+                        2
+                        Num 0
+                        [cmplx][times]
+                        CSWAP
+                        [cmplx]+/-
+                        [cmplx][times]
+                        xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Complex LN(1+z)
  */
 		XLBL"cpx_LN1P"
 			xIN MONADIC_COMPLEX
@@ -253,18 +279,7 @@ cpx_ln1p::		INC X
 			[cmplx]LN
 			xOUT xOUT_NORMAL
 
-
-		XLBL"cpx_EXPM1"
-			xIN MONADIC_COMPLEX
-			GSB cpx_ln_exp_check
-			FC? .00
-				JMP cpx_expm1
-			e[^x]-1
-			xOUT xOUT_NORMAL
-
-cpx_expm1::		[cmplx]e[^x]
-			DEC X
-			xOUT xOUT_NORMAL
+                        
 
 // Set flag .00 if argument is real and absolutely smaller than 10^-5
 
