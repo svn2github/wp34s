@@ -77,9 +77,7 @@
 			INT# 3
 			GSB deriv_eval_func		/* f(x+3h) + f(x-3h)*/
 				JMP deriv2_4point
-			EEX
-			3
-			[times]
+			SDL 03
 			STO+ .02
 
 			INT# 4
