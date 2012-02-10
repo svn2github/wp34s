@@ -175,6 +175,7 @@ private:
      void findSkins();
      void setSkin(const QString& aSkinName) throw (QtSkinException);
      void skinError(const QString& aMessage, bool aFatalFlag);
+     void setTransparency(bool enabled);
 
 private:
      QtKeyboard* keyboard;

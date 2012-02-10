@@ -82,9 +82,9 @@ void QtEmulator::setVisible(bool visible)
 	{
 	  	setWindowFlags(windowFlags() & ~Qt::WindowMaximizeButtonHint);
 		if(titleBarVisible)
-	{
-	titleBarVisibleFlags=windowFlags();
-	}
+		{
+			titleBarVisibleFlags=windowFlags();
+		}
 
 		setFixedSize(sizeHint());
 	}
@@ -193,26 +193,38 @@ void QtEmulator::toggleTitleBar()
 	{
 #ifdef Q_WS_WIN
 		setWindowFlags(Qt::FramelessWindowHint);
-		menuBar()->hide();
 #else
 		setWindowFlags(windowFlags() | Qt::FramelessWindowHint);
 #endif
-	setAttribute(Qt::WA_TranslucentBackground, true);
-		setAutoFillBackground(false);
+		menuBar()->hide();
+		setTransparency(true);
 		toggleTitleBarAction->setText(SHOW_TITLEBAR_ACTION_TEXT);
 	}
 	else
 	{
-	  setWindowFlags(titleBarVisibleFlags);
-#ifdef Q_WS_WIN
-	  menuBar()->show();
-#endif
-		setAttribute(Qt::WA_TranslucentBackground, false);
-		setAutoFillBackground(true);
+		setWindowFlags(titleBarVisibleFlags);
+		menuBar()->show();
+		setTransparency(false);
 		toggleTitleBarAction->setText(HIDE_TITLEBAR_ACTION_TEXT);
 	}
 	titleBarVisible=!titleBarVisible;
 	show();
+}
+
+void QtEmulator::setTransparency(bool enabled)
+{
+	    if (enabled)
+	    {
+	        setAutoFillBackground(false);
+	    }
+	    else
+	    {
+	        setAttribute(Qt::WA_NoSystemBackground, false);
+	    }
+
+	    setAttribute(Qt::WA_TranslucentBackground, enabled);
+	    repaint();
+
 }
 
 void QtEmulator::confirmReset()
