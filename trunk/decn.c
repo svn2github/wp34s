@@ -140,6 +140,10 @@ decNumber *dn_minus(decNumber *r, const decNumber *a) {
 	return decNumberMinus(r, a, &Ctx);
 }
 
+decNumber *dn_plus(decNumber *r, const decNumber *a) {
+	return decNumberPlus(r, a, &Ctx);
+}
+
 decNumber *dn_sqrt(decNumber *r, const decNumber *a) {
 	return decNumberSquareRoot(r, a, &Ctx);
 }

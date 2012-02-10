@@ -46,6 +46,32 @@ static void dump2(const decNumber *a, const decNumber *b, const char *msg) {
 }
 #endif
 
+#define COMPLEX_DIGITS	72
+
+typedef struct {
+	decNumber n;
+	decNumberUnit extra[((COMPLEX_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
+} complexNumber;
+
+static int setComplexContext(void) {
+	int digits = Ctx.digits;
+	if (is_dblmode())
+		Ctx.digits = COMPLEX_DIGITS;
+	return digits;
+}
+
+static void resetComplexContext(int x) {
+	Ctx.digits = x;
+}
+
+static void complexResult(decNumber *x, decNumber *y, complexNumber *xin, complexNumber *yin, int saved) {
+	resetComplexContext(saved);
+	dn_plus(x, &xin->n);
+	dn_plus(y, &yin->n);
+}
+
+
+
 void cmplx_NaN(decNumber *x, decNumber *y) {
 	set_NaN(x);
 	set_NaN(y);
@@ -126,37 +152,43 @@ void cmplxSubtract(decNumber *rx, decNumber *ry,
 void cmplxMultiply(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d) {
-	decNumber t1, t2, u1, u2;
+	complexNumber t1, t2, u1, u2, x, y;
 
-	dn_multiply(&t1, a, c);
-	dn_multiply(&t2, b, d);
-	dn_multiply(&u1, a, d);
-	dn_multiply(&u2, b, c);
+	const int save = setComplexContext();
+	dn_multiply(&t1.n, a, c);
+	dn_multiply(&t2.n, b, d);
+	dn_subtract(&x.n, &t1.n, &t2.n);
 
-	dn_subtract(rx, &t1, &t2);
-	dn_add(ry, &u1, &u2);
+	dn_multiply(&u1.n, a, d);
+	dn_multiply(&u2.n, b, c);
+	dn_add(&y.n, &u1.n, &u2.n);
+
+	complexResult(rx, ry, &x, &y, save);
 }
 
 // (a + i b) / (c + i d) = (a*c + b*d) / (c*c + d*d) + i (b*c - a*d) / (c*c + d*d)
 void cmplxDivide(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d) {
-	decNumber t1, t2, t3, t4, den;
+	complexNumber t1, t2, t3, t4, den, x, y;
 
-	dn_multiply(&t1, c, c);
-	dn_multiply(&t2, d, d);
-	dn_add(&den, &t1, &t2);
+	const int save = setComplexContext();
+	dn_multiply(&t1.n, c, c);
+	dn_multiply(&t2.n, d, d);
+	dn_add(&den.n, &t1.n, &t2.n);
 
-	dn_multiply(&t3, a, c);
-	dn_multiply(&t2, b, d);
-	dn_add(&t1, &t3, &t2);
+	dn_multiply(&t3.n, a, c);
+	dn_multiply(&t2.n, b, d);
+	dn_add(&t1.n, &t3.n, &t2.n);
 
-	dn_multiply(&t4, b, c);
-	dn_multiply(&t2, a, d);
-	dn_subtract(&t3, &t4, &t2);
+	dn_multiply(&t4.n, b, c);
+	dn_multiply(&t2.n, a, d);
+	dn_subtract(&t3.n, &t4.n, &t2.n);
 
-	dn_divide(rx, &t1, &den);
-	dn_divide(ry, &t3, &den);
+	dn_divide(&x.n, &t1.n, &den.n);
+	dn_divide(&y.n, &t3.n, &den.n);
+
+	complexResult(rx, ry, &x, &y, save);
 }
 
 void cmplxArg(decNumber *arg, const decNumber *a, const decNumber *b) {
