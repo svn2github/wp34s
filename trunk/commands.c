@@ -879,8 +879,11 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #endif
 	CMDnoI(RARG_CONVERGED,	&cmdconverged,	32,			"CNVG?")
 	CMDnoI(RARG_SHUFFLE,	&cmdshuffle,	256,			"\027")
-	CMDnoI(RARG_INDEX,	&cmdindex,	256,			"INT#")
-	CMD(RARG_CONST_INDIRECT,&cmdconst,	NUM_CONSTS,		"CNST")
+
+	CMDnoI(RARG_INTNUM,	  &cmdintnum,	256,			"INT#")
+	CMDnoI(RARG_INTNUM_CMPLX, &cmdintnum,	256,			"\024INT#")
+	CMD(RARG_IND_CONST,	  &cmdconst,	NUM_CONSTS,		"CNST")
+	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
 
 #undef CMDlbl
 #undef CMDlblnI
@@ -921,9 +924,6 @@ const struct multicmd multicmds[ NUM_MULTI ] = {
 	CMD(DBL_2DERIV,	XMULTI(2DERIV),			"f\"(x)")
 	CMD(DBL_INTG,	XMULTI(INTEGRATE),		"\004")
 	CMD(DBL_ALPHA,	&multialpha,			"\240")
-#ifdef XROM_LONG_BRANCH
-	CMD(DBL_XBR,	&cmdmultigto,			"xBR")
-#endif
 #undef CMD
 };
 

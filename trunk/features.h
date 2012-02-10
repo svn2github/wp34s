@@ -27,10 +27,6 @@
 // Allow for any generic argument taking commands in XROM
 // #define XROM_RARG_COMMANDS
 
-// Allow for a direct branch within XROM space encoded as a double length instruction.
-// This is pending automatic assembler support currently.
-// #define XROM_LONG_BRANCH
-
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
 #if !defined(REALBUILD) || defined(XTAL)

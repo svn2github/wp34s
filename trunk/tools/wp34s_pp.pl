@@ -72,7 +72,7 @@ my $xrom_mode = 0;
 my %xlbl = (); # keys LBL with ASCII label, and entry WORD number.
 my $DEFAULT_XLBL_FILE = "xrom_labels.h";
 my $xlbl_file = $DEFAULT_XLBL_FILE;
-my $DEFAULT_XOFFSET_FILE = "xrom_offsets.c";
+my $DEFAULT_XOFFSET_FILE = "xrom_targets.c";
 my $xoffset_file = $DEFAULT_XOFFSET_FILE;
 my $DEFAULT_XOFFSET_LEADER = "\t";
 my $xoffset_leader = $DEFAULT_XOFFSET_LEADER;
@@ -343,7 +343,7 @@ if ($xrom_mode) {
   print XOFFSET "\n";
   print XOFFSET "// XROM virtual LBL target step addresses.\n";
   print XOFFSET "\n";
-  print XOFFSET "unsigned short int xrom_targets[] = {\n";
+  print XOFFSET "const unsigned short int xrom_targets[] = {\n";
 
   # Dump it to an array so we can more easily suppress the last comma.
   my @offsets = ();

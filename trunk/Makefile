@@ -174,7 +174,8 @@ HEADERS := alpha.h charset.h charset7.h complex.h consts.h data.h \
 		stats.h xeq.h xrom.h storage.h serial.h matrix.h \
 		stopwatch.h 
 
-XROM := $(wildcard xrom/*.wp34s)
+XROM := xrom.wp34s $(wildcard xrom/*.wp34s)
+XROM_GENERATED := xrom.c xrom_targets.c xrom_labels.h
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 
@@ -235,8 +236,8 @@ version:
 
 clean:
 	-rm -fr $(DIRS)
-	-rm -fr consts.h consts.c allconsts.c catalogues.h xrom.c
-	-rm -f xrom_pre.wp34s user_consts.h wp34s_pp.lst xrom_labels.h
+	-rm -fr consts.h consts.c allconsts.c user_consts.h catalogues.h
+	-rm -f xrom_pre.wp34s wp34s_pp.lst $(XROM_GENERATED)
 #       -$(MAKE) -C decNumber clean
 #       -$(MAKE) -C utilities clean
 
@@ -254,8 +255,8 @@ ifdef REALBUILD
 $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNum34s.a \
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE)
-	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h xrom.c
-	$(MAKE) REALBUILD=1 XTAL=$(XTAL) catalogues.h xrom.c
+	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h $(XROM_GENERATED)
+	$(MAKE) REALBUILD=1 XTAL=$(XTAL) catalogues.h $(XROM_GENERATED)
 	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/$(TARGET) $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s -save-temps
@@ -327,7 +328,7 @@ $(UTILITIES)/create_revision$(EXE): create_revision.c Makefile
 $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h data.h errors.h
+$(XROM_GENERATED): $(XROM) $(OPCODES) Makefile features.h data.h errors.h
 	$(HOSTCC) -E -P -x c -Ixrom -DCOMPILE_XROM xrom.wp34s > xrom_pre.wp34s
 	$(TOOLS)/wp34s_asm.pl -pp $(PPDIR) -op $(OPCODES) -c -o xrom.c xrom_pre.wp34s
 
@@ -370,7 +371,8 @@ $(OBJECTDIR)/stats.o: stats.c xeq.h errors.h data.h decn.h stats.h consts.h int.
 $(OBJECTDIR)/string.o: string.c xeq.h errors.h data.h Makefile features.h
 $(OBJECTDIR)/storage.o: storage.c xeq.h errors.h data.h storage.h Makefile features.h
 $(OBJECTDIR)/xeq.o: xeq.c xeq.h errors.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
-		display.h consts.h date.h storage.h xrom.h xrom_labels.h Makefile features.h
+		display.h consts.h date.h storage.h xrom.h xrom_labels.h xrom_targets.c \
+		Makefile features.h
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xrom_labels.h xeq.h errors.h data.h consts.h Makefile features.h
 $(OBJECTDIR)/stopwatch.o: stopwatch.c stopwatch.h decn.h xeq.h errors.h consts.h alpha.h display.h keys.h \
                 Makefile features.h

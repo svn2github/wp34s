@@ -1221,35 +1221,34 @@ static int arg_digit(int n) {
 	const unsigned int base = CmdBase;
 	const unsigned int val = State2.digval * 10 + n;
 	const int is_reg = argcmds[base].reg || State2.ind;
-	unsigned int mx;
+	int lim;
 	
 	if (State2.local) {
 		// Hndle local registers and flags
-		mx = MAX_LOCAL_DIRECT - 1;				// default
+		lim = MAX_LOCAL_DIRECT - 1;				// default
 		if (State2.runmode) {
 			if (LocalRegs == 0)
 				return STATE_UNFINISHED;		// no locals defined
 			if (is_reg) {
-				mx = local_regs() - 1;
-				if (mx >= MAX_LOCAL_DIRECT)
-					mx = MAX_LOCAL_DIRECT - 1;	// in case of more than 16 locals
+				lim = local_regs() - 1;
+				if (lim >= MAX_LOCAL_DIRECT)
+					lim = MAX_LOCAL_DIRECT - 1;	// in case of more than 16 locals
 			}
 		}
 	}
 	else if (is_reg)						// normal register
-		mx = State2.runmode ? global_regs_rarg((enum rarg) base) - 1 : TOPREALREG - 1;
+		lim = State2.runmode ? global_regs_rarg((enum rarg) base) - 1 : TOPREALREG - 1;
 	else {
-		mx = argcmds[base].lim;					// any other command
-		if (mx >= RARG_IND && argcmds[base].indirectokay)
-			mx = RARG_IND - 1;
+		lim = (int) argcmds[base].lim;				// any other command
+		if (lim >= RARG_IND && argcmds[base].indirectokay)
+			lim = RARG_IND - 1;
 	}
-
-	if (val > mx)
+	if ((int) val > lim)
 		return STATE_UNFINISHED;
 
 	State2.digval = val;
 	++State2.numdigit;
-	if (val * 10 > mx || State2.numdigit == num_arg_digits(base)) {
+	if ((int) val * 10 > lim || State2.numdigit == num_arg_digits(base)) {
 		int result = arg_eval(val);
 		if ( result == STATE_UNFINISHED ) {
 			--State2.numdigit;
@@ -1629,14 +1628,22 @@ opcode current_catalogue(int n) {
 	unsigned int c = State2.catalogue;
 	int m, i;
 	unsigned p, q;
+	static s_opcode special_const[4] = {
+		RARG_BASEOP(RARG_INTNUM), RARG_BASEOP(RARG_IND_CONST),
+		RARG_BASEOP(RARG_INTNUM_CMPLX), RARG_BASEOP(RARG_IND_CONST_CMPLX)
+	};
 
-	if ( c == CATALOGUE_CONST )
+	if (c == CATALOGUE_CONST) {
+		if (n < 2)
+			return special_const[ n ];
 		return CONST(n);
-
-	if ( c == CATALOGUE_COMPLEX_CONST )
+	}
+	if (c == CATALOGUE_COMPLEX_CONST) {
+		if (n < 2)
+			return special_const[ 2 + n ];
 		return CONST_CMPLX(n);
-
-	if ( c == CATALOGUE_CONV ) {
+	}
+	if (c == CATALOGUE_CONV) {
 		const unsigned char cnv = conv_catalogue[n];
 		if (cnv & 0x80)
 			// Monadic conversion routine
@@ -1645,12 +1652,12 @@ opcode current_catalogue(int n) {
 			return RARG(RARG_CONV, cnv);
 	}
 
-	if ( c == CATALOGUE_ALPHA_LETTERS && State2.alphashift )
+	if (c == CATALOGUE_ALPHA_LETTERS && State2.alphashift)
 		cat = (const unsigned char *) alpha_letters_lower;
 	else
 		cat = (const unsigned char *) catalogues[c];
 
-	if ( c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS ) {
+	if (c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS) {
 		return alpha_code(n, (const char *) cat);
 	}
 
