@@ -79,7 +79,7 @@
 
 // Include the Gudermannian functions and their inverses in the real
 // and complex domain.
-#define INCLUDE_GUDERMANNIAN
+// #define INCLUDE_GUDERMANNIAN
 
 // Include a fused multiply add instruction
 // This isn't vital since this can be done using a complex addition.
