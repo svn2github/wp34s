@@ -149,7 +149,11 @@ int num_arg_digits(int cmd) {
 	return 3;
 }
 
-
+#ifdef COMPILE_CATALOGUES
+#define SPACE_AFTER_CMD " "
+#else
+#define SPACE_AFTER_CMD "\006\006"
+#endif
 /* Commands that take an argument */
 static const char *prt_rargs(const opcode op, char *instr) {
 	unsigned int arg = op & RARG_MASK;
@@ -164,7 +168,7 @@ static const char *prt_rargs(const opcode op, char *instr) {
 	}
 
 	if (cmd == RARG_ALPHA) {
-		*scopy(instr, "\240 ") = arg;
+		*scopy(instr, "\240" SPACE_AFTER_CMD) = arg;
 	} 
 	else if (cmd >= NUM_RARG)
 		return "???";
@@ -179,14 +183,14 @@ static const char *prt_rargs(const opcode op, char *instr) {
 		case RARG_CONST_CMPLX:
 			*p++ = COMPLEX_PREFIX;
 		case RARG_CONST:
-			sncopy(scopy(p, "# "), cnsts[arg].cname, CONST_NAMELEN);
+			sncopy(scopy(p, "#" SPACE_AFTER_CMD), cnsts[arg].cname, CONST_NAMELEN);
 			return instr;
 
 		case RARG_CONV:
 			return prt_conv(arg, instr);
 
 		case RARG_SHUFFLE:
-			p = scopy(instr, "\027 ");
+			p = scopy(instr, "\027" SPACE_AFTER_CMD);
 			for (n = 0; n < 4; n++) {
 				*p++ = REGNAMES[arg & 3];
 				arg >>= 2;
@@ -194,7 +198,12 @@ static const char *prt_rargs(const opcode op, char *instr) {
 			return instr;
 
 		default:
+#ifdef COMPILE_CATALOGUES
 			p = sncopy_spc(instr, argcmds[cmd].cmd, NAME_LEN);
+#else
+			p = sncopy_char(instr, argcmds[cmd].cmd, NAME_LEN, '\006');
+			*p++ = '\006';
+#endif
 			if (argcmds[cmd].label && arg >= 100) {
 				*p = arg - 100 + 'A';
 			}

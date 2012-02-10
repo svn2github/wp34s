@@ -729,7 +729,7 @@ static int process_h_shifted(const keycode c) {
 		_RARG   | RARG_VIEW,
 		OP_NIL  | OP_RUP,
 		// Row 3
-		STATE_UNFINISHED,	// CONST
+		_RARG	| RARG_INTNUM,	// CONST, will be emitted in integer mode only
 		_RARG   | RARG_SWAPX,
 		OP_MON  | OP_NOT,
 		CONST(OP_PI) | NO_INT,

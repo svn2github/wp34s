@@ -1139,7 +1139,7 @@ static void show_status(void) {
 	unsigned int pc;
 
 	if (status == -2) {
-		set_status("Steps:");
+		set_status("Free:");
 		p = num_arg(buf, free_mem());
 		p = scopy(p, " , FL. ");
 		p = num_arg(p, free_flash());
@@ -1349,16 +1349,17 @@ void display(void) {
 			*bp++ = '\235';
 		set_status(buf);
 	} else if (State2.gtodot) {
-		const int n = 3 + (nLIB(state_pc()) & 1); // Number of digits to display/expect
+		// const int n = 3 + (nLIB(state_pc()) & 1); // Number of digits to display/expect
 		bp = scopy_char(bp, argcmds[RARG_GTO].cmd, '.');
 		if (State2.numdigit > 0)
 			bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
-		for (i=State2.numdigit; i<n; i++)
+		// for (i=State2.numdigit; i<n; i++)
 			*bp++ = '_';
 		set_status(buf);
 	} else if (State2.rarg) {
 		/* Commands with arguments */
-		bp = scopy_char(bp, argcmds[CmdBase].cmd, State2.ind?'\015':' ');
+		bp = scopy(bp, argcmds[CmdBase].cmd);
+		bp = scopy(bp, State2.ind?"\015" : "\006\006");
 		if (State2.dot) {
 			*bp++ = 's';
 			*bp++ = '_';
@@ -1366,9 +1367,9 @@ void display(void) {
 			*bp++ = '\021';
 			*bp++ = '_';
 		} else {
-			const int maxdigits = State2.shuffle ? 4 
+			/* const int maxdigits = State2.shuffle ? 4 
 				            : State2.ind ? 2 
-				            : num_arg_digits(CmdBase);
+				            : num_arg_digits(CmdBase); */
 			if (State2.local)
 				*bp++ = '.';
 			if (State2.numdigit > 0) {
@@ -1378,7 +1379,7 @@ void display(void) {
 				else
 					bp = num_arg_0(bp, (unsigned int)State2.digval, (int)State2.numdigit);
 			}
-			for (i = State2.numdigit; i < maxdigits; i++)
+			// for (i = State2.numdigit; i < maxdigits; i++)
 				*bp++ = '_';
 		}
 		set_status(buf);
