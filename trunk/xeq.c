@@ -2304,7 +2304,7 @@ void cmdloop(unsigned int arg, enum rarg op) {
 			if (op == RARG_ISE)
 				fin_tst(dn_gt0(&x));
 			else
-				fin_tst(! dn_lt0(&x));
+				fin_tst(dn_ge0(&x));
 		} else {
 			dn_subtract(&n, &n, &i);
 			dn_compare(&x, &f, &n);
