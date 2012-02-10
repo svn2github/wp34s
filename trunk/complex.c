@@ -170,7 +170,7 @@ void cmplxMultiply(decNumber *rx, decNumber *ry,
 void cmplxDivide(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d) {
-	complexNumber t1, t2, t3, t4, den, x, y;
+	complexNumber t1, t2, t3, t4, den;
 
 	const int save = setComplexContext();
 	dn_multiply(&t1.n, c, c);
@@ -185,10 +185,10 @@ void cmplxDivide(decNumber *rx, decNumber *ry,
 	dn_multiply(&t2.n, a, d);
 	dn_subtract(&t3.n, &t4.n, &t2.n);
 
-	dn_divide(&x.n, &t1.n, &den.n);
-	dn_divide(&y.n, &t3.n, &den.n);
+	dn_divide(&t2.n, &t1.n, &den.n);
+	dn_divide(&t4.n, &t3.n, &den.n);
 
-	complexResult(rx, ry, &x, &y, save);
+	complexResult(rx, ry, &t2, &t4, save);
 }
 
 void cmplxArg(decNumber *arg, const decNumber *a, const decNumber *b) {
