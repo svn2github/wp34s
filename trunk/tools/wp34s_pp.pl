@@ -49,7 +49,9 @@ my $DEFAULT_MAX_JMP_OFFSET = 99;
 my $MAX_JMP_OFFSET = $DEFAULT_MAX_JMP_OFFSET; # Maximum offset for a BACK/SKIP/BSRF/BSRB statement.
 
 my $MAX_LABEL_NUM = 99;  # Maximum label number
-my $last_label_used = $MAX_LABEL_NUM+1;
+my $last_label_used = $MAX_LABEL_NUM+1; # It will be decremented before being used.
+my $DEFAULT_NEXT_LABEL_DIR = -1;
+my $next_label_dir = $DEFAULT_NEXT_LABEL_DIR ;
 
 my $branch_digits = 2; # Default to V2
 my $label_digits = 2;
@@ -70,6 +72,10 @@ my $xrom_mode = 0;
 my %xlbl = (); # keys LBL with ASCII label, and entry WORD number.
 my $DEFAULT_XLBL_FILE = "xrom_labels.h";
 my $xlbl_file = $DEFAULT_XLBL_FILE;
+my $DEFAULT_XOFFSET_FILE = "xrom_offsets.c";
+my $xoffset_file = $DEFAULT_XOFFSET_FILE;
+my $DEFAULT_XOFFSET_LEADER = "\t";
+my $xoffset_leader = $DEFAULT_XOFFSET_LEADER;
 
 my @files;
 my @cmd_args;
@@ -304,15 +310,21 @@ foreach (@end_groups) {
   display_max_branch_offsets();
   show_LBLs() if $show_catalogue;
   show_targets() if $show_targets;
-  ssdb() if exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /SSDB/i);
+  show_src_db() if exists $ENV{WP34S_PP} and ($ENV{WP34S_PP} =~ /SSDB/i);
 }
 
 
 # If we are in XROM mode, write a header file with any XLBL labels we find. If
 # no XLBL labels are found, write the header file anyway since some other C-file is
-# probably trying to include it.
+# probably trying to include it. Also write a C GTO/XEQ offset file as well.
 if ($xrom_mode) {
+  my $str = "";
+
+  # Print out the XROM C header file.
   open XLBL, "> $xlbl_file" or die_msg(this_function((caller(0))[3]), "Cannot open XLBL header file '$xlbl_file' for writing: $!");
+  print XLBL "\n";
+  print XLBL "// XROM XLBL source step addresses.\n";
+  print XLBL "\n";
   print XLBL "#ifndef XLBL_LABELS_H\n";
   print XLBL "#define XLBL_LABELS_H\n\n";
   my $longest_xlabel = 0;
@@ -325,6 +337,31 @@ if ($xrom_mode) {
   print XLBL "\n";
   print XLBL "#endif // XLBL_LABELS_H\n";
   close XLBL;
+
+  # Print out the XROM C offset file.
+  open XOFFSET, "> $xoffset_file" or die_msg(this_function((caller(0))[3]), "Cannot open XROM oofset file '$xoffset_file' for writing: $!");
+  print XOFFSET "\n";
+  print XOFFSET "// XROM virtual LBL target step addresses.\n";
+  print XOFFSET "\n";
+  print XOFFSET "unsigned short int xrom_targets[] = {\n";
+
+  # Dump it to an array so we can more easily suppress the last comma.
+  my @offsets = ();
+  for my $label (sort keys %LBLs) {
+    my $content = get_line($ENUM_STEP, $LBLs{$label});
+    push @offsets, $content;
+  }
+  if (scalar @offsets > 1) {
+    for (my $k = 0; $k < (scalar @offsets) - 1; $k++) {
+      $str = sprintf "%0s%0s, // virtual LBL %02d", $xoffset_leader, $offsets[$k], $k;
+      print XOFFSET "$str\n";
+    }
+  }
+  $str = sprintf "%0s%0s  // virtual LBL %02d", $xoffset_leader, $offsets[-1], (scalar @offsets) - 1;
+  print XOFFSET "$str\n";
+  print XOFFSET "}; // xrom_targets[]\n";
+  print XOFFSET "\n";
+  close XOFFSET;
 }
 
 
@@ -686,7 +723,13 @@ sub add_LBL_if_required {
   $new_label_num = is_existing_label($target_step); # Returns <0 if no appropriate label already in existance.
   debug_msg(this_function((caller(0))[3]), "is_existing_label(${target_step}) => ${new_label_num}") if $debug;
 
-  if( $new_label_num < 0 ) {
+  if ($xrom_mode) {
+    if ($new_label_num < 0) {
+      $new_label_num = get_next_label($target_step); # Reserve it for the next step.
+    } else {
+      debug_msg(this_function((caller(0))[3]), "Reusing virtual LBL '$new_label_num' at step '$target_step' in XROM mode") if $debug;
+    }
+  } if ($new_label_num < 0) {
     # We need to inject a label at the target.
     $new_label_num = get_next_label($target_step+1); # Reserve it for the next step.
     debug_msg(this_function((caller(0))[3]), "Adding new label '$new_label_num' at step '$target_step'.") if $debug;
@@ -900,6 +943,8 @@ sub extract_LBLd_opcodes {
             # can reuse it for this purposes of this LBL.
             my $found = 0;
             for my $LBL (sort keys %LBLs) {
+              # Make sure the LBL is treated in the comtext of a number by adding 0 to it. This
+              # will allow the use of the '==' instead of the numerically inexact 'eq'.
               if( eval($LBLs{$LBL}+0) == $target_step ) {
                 $found = 1;
                 $assigned_label = $LBL;
@@ -1459,12 +1504,25 @@ sub format_branch {
 #
 # Find an unused label. When it is found, reserve it for that step.
 #
+# The direction of the next label (+/-1) is contained in the $next_label_dir
+# offset. XROM starts at 00 and increments while normal programs start at
+# 99 and decrement.
+#
+# The reason the normal programs start at 99 and decrement is to keep them
+# out of the way of the user. A very quick sample of users usages of LBL
+# showed they most often started at 00 and and worked their way up. XROM,
+# on the other hand, is used as a numerical offset into a table. So it needs
+# to start at 00.
+#
 sub get_next_label {
   my $step = shift;
-  my $label = $last_label_used - 1;
+  my $label = $last_label_used + $next_label_dir;
   while( exists $LBLs{format_LBL($label)} ) {
-    $label--;
-    if( $label < 0 ) {
+    $label += $next_label_dir; # Point at next label in sequence.
+
+    # Make sure we know which direction the next label is to be found (+/-1) and test
+    # for overflow/underflow accordingly.
+    if( (($next_label_dir == -1) and ($label < 0)) or (($next_label_dir == 1) and ($label > $MAX_LABEL_NUM) ) ) {
       my $msg = "Numeric label supply has been exhausted.\n Greater then " . $MAX_LABEL_NUM+1 . " numeric labels used.";
       die_msg(this_function((caller(0))[3]), $msg);
     }
@@ -1868,7 +1926,7 @@ sub src2src_db {
     push @src_db, \%entry;
     $step_num += $words;
   }
-  ssdb() if $debug;
+  show_src_db() if $debug;
   return @src_db;
 } # src2src_db
 
@@ -2002,7 +2060,7 @@ sub show_LBLd_ops { # Dump the %LBLd_ops hash
   return;
 }
 
-sub show_targets { # Dump the %ytargets hash
+sub show_targets { # Dump the %targets hash
   dump_hash("targets", \%targets, " Label    Step");
   return;
 }
@@ -2040,7 +2098,7 @@ sub dump_hash { # Dump the specified hash
   my $second_line = shift;
   my $count = 0;
   print "// \%${name}:\n";
-  print "// $second_line\n" if defined $second_line and $second_line;
+  print "// $second_line\n" if defined $second_line;
   for my $key (sort keys %{$ref_hash}) {
     my $content = $ref_hash->{$key};
     print "//  $key => $content\n";
@@ -2302,6 +2360,14 @@ sub get_options {
     print "// WARNING: Maximum BACK/SKIP offset limit (-m) must be between 5 and $max. Resetting to $MAX_JMP_OFFSET.\n";
   }
   debug_msg(this_function((caller(0))[3]), "Debug level set to: $debug") if $debug;
+
+  # XROM mode increments the virtual LBLs from the 00 instead of decrementing them from MAX.
+  # Change the sense of the next-offset and the starting location of the first virtual LBL.
+  if ($xrom_mode) {
+    $next_label_dir = +1;  # Next virtual LBL offset direction
+    $last_label_used = -1; # Initial virtual LBL (it will be incremented before being used).
+  }
+
   return;
 } # get_options
 
