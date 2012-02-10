@@ -269,15 +269,19 @@ void cmplxMinus(decNumber *rx, decNumber *ry, const decNumber *a, const decNumbe
 // 1 / (c + i d) = c / (c*c + d*d) + i (- d) / (c*c + d*d)
 void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *c, const decNumber *d) {
 #ifndef TINY_BUILD
-	decNumber t, u, v, den;
+	complexNumber t, u, v, den;
 
-	dn_multiply(&u, c, c);
-	dn_multiply(&v, d, d);
-	dn_add(&den, &u, &v);
-	dn_minus(&t, d);
+	const int save = setComplexContext();
 
-	dn_divide(rx, c, &den);
-	dn_divide(ry, &t, &den);
+	dn_multiply(&u.n, c, c);
+	dn_multiply(&v.n, d, d);
+	dn_add(&den.n, &u.n, &v.n);
+	dn_minus(&t.n, d);
+
+	dn_divide(&u.n, c, &den.n);
+	dn_divide(&v.n, &t.n, &den.n);
+
+	complexResult(rx, ry, &u, &v, save);
 #endif
 }
 
@@ -285,13 +289,13 @@ void cmplxRecip(decNumber *rx, decNumber *ry, const decNumber *c, const decNumbe
 //		where r = sqrt(a^2 + b^2)
 void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 #ifndef TINY_BUILD
-	decNumber fac, t1, u, v;
+	complexNumber fac, t1, u, v, x, y;
 
 	if (dn_eq0(b)) {
 		// Detect a purely real input and shortcut the computation
 		if (decNumberIsNegative(a)) {
-			dn_minus(&t1, a);
-			dn_sqrt(ry, &t1);
+			dn_minus(&t1.n, a);
+			dn_sqrt(ry, &t1.n);
 			decNumberZero(rx);
 		} else {
 			dn_sqrt(rx, a);
@@ -299,19 +303,22 @@ void cmplxSqrt(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		}
 		return;
 	} else {
-		cmplxR(&fac, a, b);
+		const int save = setComplexContext();
+		cmplxR(&fac.n, a, b);
 
-		dn_subtract(&v, &fac, a);
-		dn_sqrt(&u, &v);
-		dn_add(&v, &fac, a);
+		dn_subtract(&v.n, &fac.n, a);
+		dn_sqrt(&u.n, &v.n);
+		dn_add(&v.n, &fac.n, a);
 		if (decNumberIsNegative(b)) {
-			dn_minus(&t1, &u);
-			dn_multiply(ry, &t1, &const_root2on2);
+			dn_minus(&t1.n, &u.n);
+			dn_multiply(&y.n, &t1.n, &const_root2on2);
 		} else
-			dn_multiply(ry, &u, &const_root2on2);
+			dn_multiply(&y.n, &u.n, &const_root2on2);
 
-		dn_sqrt(&t1, &v);
-		dn_multiply(rx, &t1, &const_root2on2);
+		dn_sqrt(&t1.n, &v.n);
+		dn_multiply(&x.n, &t1.n, &const_root2on2);
+
+		complexResult(rx, ry, &x, &y, save);
 	}
 #endif
 }
