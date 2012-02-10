@@ -190,8 +190,7 @@ cpx_asinh_pos::		[cmplx]FILL
 			[cmplx]x[<->] Z
 			[cmplx]/
 			[cmplx]LN
-			Num 0
-			INT# 2
+			[cmplx]INT# 2
 			[cmplx]/
 			xOUT xOUT_NORMAL
 
@@ -226,14 +225,13 @@ cpx_log_common::	[cmplx][times]
  */
 		XLBL"cpx_POW10"
 			xIN MONADIC_COMPLEX
-			INT# 10
+			[cmplx]INT# 10
 			JMP cpx_pow_common
 
 		XLBL"cpx_POW2"
 			xIN MONADIC_COMPLEX
-			INT# 2
-cpx_pow_common::	Num 0			// 0 n x y
-			[<->] ZTYX		// x y n 0
+			[cmplx]INT# 2
+cpx_pow_common::	CSWAP
 			[cmplx]y[^x]
 			xOUT xOUT_NORMAL
 		
@@ -247,8 +245,7 @@ cpx_pow_common::	Num 0			// 0 n x y
 
 		XLBL"cpx_EXPM1"
 			xIN MONADIC_COMPLEX
-                        Num 0
-                        INT# 2
+                        [cmplx]INT# 2
                         [cmplx]/
                         [cmplx]e[^x]
                         [cmplx]RCL L
@@ -295,8 +292,7 @@ cpx_pow_common::	Num 0			// 0 n x y
 
 cpx_ln1p_small::	LocR 01
 			[cmplx]DROP
-			Num 0
-			INT# NUM_LNP1_TERMS
+			[cmplx]INT# NUM_LNP1_TERMS
 			STO .00
 			INC X
 			1/x
