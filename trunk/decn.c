@@ -62,10 +62,6 @@ int dn_le0(const decNumber *x) {
 	return decNumberIsNegative(x) || decNumberIsZero(x);
 }
 
-int dn_gt0(const decNumber *x) {
-	return ! decNumberIsNegative(x) && ! decNumberIsZero(x);
-}
-
 int dn_eq0(const decNumber *x) {
 	return decNumberIsZero(x);
 }

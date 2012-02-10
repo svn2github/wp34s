@@ -26,9 +26,10 @@
 extern const decNumber *const digamma_consts[];
 #endif
 
-extern int dn_gt0(const decNumber *x);
 extern int dn_lt0(const decNumber *x);
 extern int dn_le0(const decNumber *x);
+#define dn_gt0(x) (! dn_le0(x))
+#define dn_ge0(x) (! dn_lt0(x))
 extern int dn_eq0(const decNumber *x);
 extern int dn_eq1(const decNumber *x);
 extern int dn_eq(const decNumber *x, const decNumber *y);
