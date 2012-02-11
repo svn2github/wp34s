@@ -73,7 +73,7 @@ int_zero_interval::	[cmplx]RCL cr_limits
 			STO r_middle
 			x[<->] Y
 			-
-			INT# 4
+			_INT 4
 			/
 			STO r_ba4
 			STO- r_middle
@@ -85,7 +85,7 @@ int_zero_interval::	[cmplx]RCL cr_limits
 			SF f_force
 
 int_next_size::		Num 1
-			INT# 2
+			_INT 2
 			STO r_deltau
 			RCL r_k
 			+/-
@@ -98,7 +98,7 @@ int_inner::		STO r_ui
 			x[^2]
 			-
 			STO r_ui2
-			INT# 2
+			_INT 2
 			+
 			RCL[times] r_ui
 			RCL[times] r_ba4
@@ -135,7 +135,7 @@ int_inner::		STO r_ui
 			RCL[times] r_deltau
 
 int_row_update::	R[^]
-			INT# 4
+			_INT 4
 			[times]
 			ENTER[^]
 			DSE Y

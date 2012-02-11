@@ -87,7 +87,7 @@ laguerre_common::	STO rParam
 			GSB ortho_default
 			RCL rParam
 			STO+ B
-			INT# 3
+			_INT 3
 			+
 			RCL- rX
 			STO A
@@ -121,7 +121,7 @@ ortho_allinc::		SF .00
 			GSB ortho_default
 			RCL rX
 			STO+ rT1
-			INT# 2
+			_INT 2
 			STO B
 			STO incB
 			JMP ortho_common
@@ -149,7 +149,7 @@ ortho_default::	SSIZE4
 		x<? Y
 			JMP ret_NaN
 		/* Now initialise everything else */
-		INT# 2
+		_INT 2
 		STO+ I
 		STO D		// dA = 2
 		Num 1

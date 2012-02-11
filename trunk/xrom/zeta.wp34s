@@ -106,7 +106,7 @@ zeta_neg::		GSB sign
 			RCL[times] .01
 			RTN
 
-zeta_calc::		INT# 22
+zeta_calc::		_INT 22
 			FS? Flag_mode_double
 				STO+ X
 			STO .00
@@ -149,7 +149,7 @@ zeta_loop::		RCL .05
 				JMP zeta_loop
 
 			RCL/ .05
-			INT# 2
+			_INT 2
 			LN
 			Num 1
 			RCL- .01
