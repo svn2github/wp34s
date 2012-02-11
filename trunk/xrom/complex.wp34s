@@ -37,13 +37,11 @@ cpx_trunc_exit::	x[<->] Y
 			xOUT xOUT_NORMAL
 
 		XLBL"cpx_CONJ"
-			xIN MONADIC_COMPLEX
-			GSB cpx_conj
-			xOUT xOUT_NORMAL
-
 cpx_conj::		x[<->] Y
+			STO I
 			+/-
 			x[<->] Y
+			STO L
 			RTN
 
 		XLBL"cpx_FACT"
