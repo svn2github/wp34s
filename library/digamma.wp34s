@@ -1,0 +1,78 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* This program is based on Jean-Marc Baillard's HP-41 digamma code:
+ *	http://hp41programs.yolasite.com/gamma.php
+ */
+
+	LBL"[PSI]"
+		LocR 003
+		x<0?
+			SF .00
+		ABS
+		STO .02
+		#INT 008
+		x[<->] Y
+		LBL 00
+		1/x
+		STO+ .00
+		x[<->] L
+		INC X
+		x<? Y
+		GTO 00
+		1/x
+		STO .01
+		x[^2]
+		STO Y
+		#INT 005
+		%
+		#INT 021
+		1/x
+		-
+		[times]
+		#INT 001
+		SDR 001
+		+
+		[times]
+		DEC X
+		[times]
+		#INT 012
+		/
+		RCL .01
+		LN
+		RCL L
+		#INT 002
+		/
+		+
+		-
+		RCL- .00
+		FC? .00
+			RTN
+		RCL .02
+		1/x
+		+
+		#INT [pi]
+		RCL .02
+		RCL .02
+		ROUNDI
+		-
+		#INT [pi]
+		[times]
+		RAD[->]
+		TAN
+		/
+		+
+		END
