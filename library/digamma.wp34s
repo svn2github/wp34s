@@ -75,4 +75,81 @@
 		TAN
 		/
 		+
+		RTN
+
+	LBL"[cmplx][PSI]"
+		LocR 007
+		STOM .06
+		[cmplx]STO .01
+		LBL 01
+		#INT 010
+		RCL .01
+		x>? Y
+			GTO 02
+		[cmplx]RCL .01
+		[->]POL
+		1/x
+		CONJ
+		[->]REC
+		[cmplx]STO+ .03
+		INC .01
+		GTO 01
+		LBL 02
+		[cmplx]RCL .01
+		[->]POL
+		x[^2]
+		STO .00
+		1/x
+		x[<->] Y
+		STO+ X
+		STO .05
+		+/-
+		x[<->] Y
+		#INT 021
+		/
+		[->]REC
+		#INT 001
+		SDR 001
+		-
+		[->]POL
+		RCL/ .00
+		x[<->] Y
+		RCL- .05
+		x[<->] Y
+		[->]REC
+		INC X
+		[->]POL
+		#INT 012
+		/
+		[cmplx]RCL .01
+		[->]POL
+		R[v]
+		ST- Z
+		x[<->] T
+		/
+		[->]REC
+		#INT 002
+		1/x
+		+
+		[->]POL
+		[cmplx]RCL .01
+		[->]POL
+		R[v]
+		STO- Z
+		x[<->] T
+		/
+		[->]REC
+		[cmplx]RCL .01
+		RAD
+		[->]POL
+		LN
+		RCLM .06
+		R[^]
+		STO- Z
+		X[<->] T
+		-
+		RCL .04
+		STO- Z
+		x[<->] .03
+		-
 		END
