@@ -65,6 +65,7 @@ QtEmulator::QtEmulator()
 
 	loadMemory();
 	startThreads();
+	setTitleBarVisible(titleBarVisible);
 	active=true;
 }
 
@@ -189,7 +190,20 @@ void QtEmulator::showDocumentation()
 
 void QtEmulator::toggleTitleBar()
 {
+	setTitleBarVisible(!titleBarVisible);
+}
+
+void QtEmulator::setTitleBarVisible(bool aTitleBarVisibleFlag)
+{
+	titleBarVisible=aTitleBarVisibleFlag;
 	if(titleBarVisible)
+	{
+		setWindowFlags(titleBarVisibleFlags);
+		menuBar()->show();
+		setTransparency(false);
+		toggleTitleBarAction->setText(HIDE_TITLEBAR_ACTION_TEXT);
+	}
+	else
 	{
 #ifdef Q_WS_WIN
 		setWindowFlags(Qt::FramelessWindowHint);
@@ -200,14 +214,6 @@ void QtEmulator::toggleTitleBar()
 		setTransparency(true);
 		toggleTitleBarAction->setText(SHOW_TITLEBAR_ACTION_TEXT);
 	}
-	else
-	{
-		setWindowFlags(titleBarVisibleFlags);
-		menuBar()->show();
-		setTransparency(false);
-		toggleTitleBarAction->setText(HIDE_TITLEBAR_ACTION_TEXT);
-	}
-	titleBarVisible=!titleBarVisible;
 	show();
 }
 
@@ -517,6 +523,7 @@ void QtEmulator::loadUserInterfaceSettings()
 {
 	settings.beginGroup(WINDOWS_SETTINGS_GROUP);
 	move(settings.value(WINDOWS_POSITION_SETTING, QPoint(DEFAULT_POSITION_X, DEFAULT_POSITION_Y)).toPoint());
+	titleBarVisible=settings.value(WINDOWS_TITLEBAR_VISIBLE_SETTING, true).toBool();
 	settings.endGroup();
 
 	settings.beginGroup(SKIN_SETTINGS_GROUP);
@@ -561,6 +568,7 @@ void QtEmulator::saveUserInterfaceSettings()
 {
     settings.beginGroup(WINDOWS_SETTINGS_GROUP);
     settings.setValue(WINDOWS_POSITION_SETTING, pos());
+    settings.setValue(WINDOWS_TITLEBAR_VISIBLE_SETTING, titleBarVisible);
     settings.endGroup();
 
     settings.beginGroup(SKIN_SETTINGS_GROUP);

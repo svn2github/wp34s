@@ -8,6 +8,8 @@
 #include "QtBackgroundImage.h"
 #include "QtEmulator.h"
 
+static QPoint MOVE_MARGIN(MOVE_MARGIN_X, MOVE_MARGIN_Y);
+static QPoint MOVE_OTHER_MARGIN(MOVE_MARGIN_X, -MOVE_MARGIN_Y);
 
 QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard)
 	: screen(aScreen), keyboard(aKeyboard), dragging(false)
@@ -79,7 +81,19 @@ void QtBackgroundImage::mouseMoveEvent(QMouseEvent* aMouseEvent)
 void QtBackgroundImage::moveWindow(QMouseEvent* aMouseEvent)
 {
 	QWidget* parentWindow=window();
-	parentWindow->move(parentWindow->pos()+aMouseEvent->globalPos()-lastDragPosition);
+	QPoint offset=aMouseEvent->globalPos()-lastDragPosition;
+	QPoint topLeft=parentWindow->pos()+parentWindow->rect().topLeft()+MOVE_MARGIN+offset;
+	QPoint topRight=parentWindow->pos()+parentWindow->rect().topRight()-MOVE_OTHER_MARGIN+offset;
+	QPoint bottomLeft=parentWindow->pos()+parentWindow->rect().bottomLeft()+MOVE_OTHER_MARGIN+offset;
+	QPoint bottomRight=parentWindow->pos()+parentWindow->rect().bottomRight()-MOVE_MARGIN+offset;
+	QDesktopWidget* desktopWidget=QApplication::desktop();
+	if(desktopWidget->availableGeometry(topLeft).contains(topLeft)
+			|| desktopWidget->availableGeometry(topRight).contains(topRight)
+			|| desktopWidget->availableGeometry(bottomLeft).contains(bottomLeft)
+			|| desktopWidget->availableGeometry(bottomRight).contains(bottomRight))
+	{
+		parentWindow->move(parentWindow->pos()+offset);
+	}
 	lastDragPosition=aMouseEvent->globalPos();
 }
 

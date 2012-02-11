@@ -31,6 +31,7 @@
 #define APPLICATION_NAME "WP34sEmulator"
 #define WINDOWS_SETTINGS_GROUP "MainWindow"
 #define WINDOWS_POSITION_SETTING "Position"
+#define WINDOWS_TITLEBAR_VISIBLE_SETTING "Frameless"
 #define DEFAULT_POSITION_X 50
 #define DEFAULT_POSITION_Y 50
 
@@ -126,6 +127,7 @@ private slots:
 	void editPreferences();
 	void showAbout();
 	void toggleTitleBar();
+	void setTitleBarVisible(bool aTitleBarVisibleFlag);
 	void confirmReset();
 	void copyNumber();
 	void copyTextLine();

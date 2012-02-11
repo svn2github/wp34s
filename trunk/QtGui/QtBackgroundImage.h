@@ -12,6 +12,9 @@
 #include "QtScreen.h"
 #include "QtKeyboard.h"
 
+#define MOVE_MARGIN_X 10
+#define MOVE_MARGIN_Y 10
+
 class QtBackgroundImage: public QLabel
 {
 	Q_OBJECT
