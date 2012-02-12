@@ -19,7 +19,9 @@
  */
 
 	LBL'[PSI]'
-		LocR 3
+		LocR 4
+		STOM .03
+		SSIZE4
 		x<0?
 			SF .00
 		ABS
@@ -59,6 +61,7 @@
 		+
 		-
 		RCL- .00
+		RCLM .03
 		FC? .00
 			RTN
 		RCL .02
@@ -81,6 +84,7 @@
 		LocR 7
 		STOM .06
 		[cmplx]STO .01
+		SSIZE4
 		LBL 01
 		# 10
 		RCL .01
@@ -143,7 +147,6 @@
 		RAD
 		[->]POL
 		LN
-		RCLM .06
 		R[^]
 		STO- Z
 		x[<->] T
@@ -152,4 +155,5 @@
 		STO- Z
 		x[<->] .03
 		-
+		RCLM .06
 		END
