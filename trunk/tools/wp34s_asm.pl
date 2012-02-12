@@ -261,11 +261,11 @@ my $xrom_mode = 0;
 my @reg_offset_REG = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I", "J", "K",
                       ".00", ".01", ".02", ".03", ".04", ".05", ".06", ".07",
                       ".08", ".09", ".10", ".11", ".12", ".13", ".14", ".15");
-my $MAX_INDIRECT_REG = scalar @reg_offset_REG; # Set to length of the array.
+my $MAX_REG = scalar @reg_offset_REG; # Set to length of the array.
 
 # This is for labels and flags
-my @reg_offset_104 = (0 .. 99, "A", "B", "C", "D");
-my $MAX_INDIRECT_104 = scalar @reg_offset_104; # Set to length of the array.
+my @reg_offset_LBL = (0 .. 99, "A", "B", "C", "D");
+my $MAX_LBL = scalar @reg_offset_LBL; # Set to length of the array.
 
 # The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
@@ -274,13 +274,6 @@ my $INDIRECT_FLAG = 0x80;
 #     in the 3rd character slot of escaped alpha instructions.
 my $ILLEGAL_3rd_CHAR_LO = 0xF0;
 my $ILLEGAL_3rd_CHAR_HI = 0xFF;
-
-# There are several instructions that require a "custom" format for printing the
-# "arg" type descriptor. Access that format through this table.
-my %table_exception_format = ( "PRCL"   => "%01d",
-                               "PSTO"   => "%01d",
-                               "P[<->]" => "%01d",
-                             );
 
 # ANSI colour codes.
 my $ansi_normal           = "\e[0m";
@@ -1219,9 +1212,8 @@ sub parse_arg_type {
   my ($base_mnemonic);
   my $direct_max = 0;
   my $indirect_modifier = 0;
-  my $stack_modifier = 0;
+  my $stackreg_modifier = 0;
   my $stostack_modifier = 0;
-  my $complex_modifier = 0;
 
   if( $arg =~ /(\S+)\s+/ ) {
     $base_mnemonic = $1;
@@ -1236,25 +1228,28 @@ sub parse_arg_type {
   }
 
   $indirect_modifier = 1 if $arg =~ /indirect/;
-  $stack_modifier    = 1 if $arg =~ /[^o]stack/; # Eliminate the stostack from any matches here.
+  $stackreg_modifier = 1 if $arg =~ /stack/; # We allow the stostack match here because the format is the same.
   $stostack_modifier = 1 if $arg =~ /stostack/;
-  $complex_modifier  = 1 if $arg =~ /complex/;
 
-  if ($indirect_modifier and ($direct_max > 128)) {
+  if( $indirect_modifier and ($direct_max > 128) ) {
     # Limit max to 128 if we are in an indirect-applicable opcode. LOCAL seems to be in effect.
+    # Shouldn't happen any more.
     $direct_max = 128;
   }
 
   # Load the direct argument variants
   if( $direct_max ) {
     for my $offset (0 .. ($direct_max - 1)) {
-      parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, $stostack_modifier, $indirect_modifier);
+      if( ! $stostack_modifier || ($offset <= 96) || ($offset >= 112) ) {
+        parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, 
+                               $indirect_modifier, $stackreg_modifier);
+      }
     }
   }
 
   # Load the indirect argument variants. These always comes from the REG set.
   if( $indirect_modifier ) {
-    for my $offset (0 .. ($MAX_INDIRECT_REG - 1)) {
+    for my $offset (0 .. ($MAX_REG - 1)) {
       # "Correct" the format if it is in the numeric range [0-99].
       my $reg_str = ($offset < 100) ? sprintf("%02d", $offset) : $reg_offset_REG[$offset];
       my $indirect_offset = $offset + $INDIRECT_FLAG;
@@ -1279,34 +1274,24 @@ sub parse_arg_type_dir_max {
   my $base_mnemonic = shift;
   my $base_hex_str = shift;
   my $line_num = shift;
-  my $stostack_modifier = shift;
   my $indirect_modifier = shift;
+  my $stackreg_modifier = shift;
   my ($reg_str);
 
   # Find out which instruction offset group we are to use.
-  if ($stostack_modifier or ($direct_max > $MAX_INDIRECT_104)) {
-    $reg_str = $reg_offset_REG[$offset];
+  if ($direct_max <= 10) {
+    $reg_str = $offset;
+  } elsif ($direct_max <= 100 || $stackreg_modifier) {
+    $reg_str = sprintf("%02d", $offset)
   } else {
-    $reg_str = $reg_offset_104[$offset];
+    $reg_str = sprintf("%03d", $offset)
+  }
+  if ($offset >= 100) {
+    $reg_str = $reg_offset_LBL[$offset] if ($direct_max == $MAX_LBL);
+    $reg_str = $reg_offset_REG[$offset] if ($stackreg_modifier);
   }
   $reg_str = "--UNDEFINED--" if not defined $reg_str;
 
-
-  # "Correct" the format if it is in the numeric range [0-99]. However, a few of the instructions
-  # are limited to a single digit, some have 3 digits. Detect these and format accordingly.
-  if( not exists $table_exception_format{$base_mnemonic} ) {
-    if (not $indirect_modifier and ($direct_max > 128)) {
-      # Any opcode that does not have indirect capability can use a 3-digit value IFF
-      # max indicates > 128.
-      $reg_str = sprintf("%03d", $offset);
-    } else {
-      # Anything exceeding 99 in an opcode with indirect capability is coming from the
-      # hybrid number-letter table (reg_offset_REG [why the sill name?]).
-      $reg_str = sprintf("%02d", $offset) if $offset < 100;
-    }
-  } else {
-    $reg_str = sprintf($table_exception_format{$base_mnemonic}, $offset) if $offset < 100;
-  }
   my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $offset, "$base_mnemonic ", $reg_str);
   load_table_entry($hex_str, $mnemonic, $line_num);
   return;
@@ -1379,6 +1364,7 @@ sub load_table_entry {
   my $op_hex_str = shift;
   my $mnemonic = shift;
   my $line_num = shift;
+  debug_msg(this_function((caller(0))[3]), "Loading entry ${line_num} ${op_hex_str} ${mnemonic}") if $debug > 1;
   load_mnem2hex_entry($op_hex_str, $mnemonic, $line_num);
   load_hex2mnem_entry($op_hex_str, $mnemonic, $line_num);
   return;
