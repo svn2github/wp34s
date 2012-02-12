@@ -135,14 +135,14 @@ void matrix_create(enum nilop op) {
 	getX(&x);
 	base = matrix_decomp(&x, &r, &c);
 	if (base != NULL) {
-		off = &CONSTANT_INT(OP_ZERO);
+		off = get_const(OP_ZERO, 0)->s;
 
 		if (op == OP_MAT_IDENT) {
 			if (r != c) {
 				err(ERR_MATRIX_DIM);
 				return;
 			}
-			diag = &CONSTANT_INT(OP_ONE);
+			diag = get_const(OP_ONE, 0)->s;
 		} else
 			diag = off;
 
@@ -637,7 +637,7 @@ void matrix_inverse(enum nilop op) {
 
 	for (i=0; i<n; i++) {
 		for (j=0; j<n; j++)
-			b[j] = (i==j) ? cnsts_d64 + OP_ONE : cnsts_d64 + OP_ZERO;
+			b[j] = (i==j) ? (decimal64 *) get_const(OP_ONE, 0) : (decimal64 *) get_const(OP_ZERO, 0);
 		matrix_pivoting_solve(mat, b, pivots, x, n);
 		for (j=0; j<n; j++)
 			packed_from_number(base + matrix_idx(j, i, n), x+j);

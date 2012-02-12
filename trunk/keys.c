@@ -818,9 +818,9 @@ static int process_normal_cmplx(const keycode c) {
 
 	case K34:	return OP_CDYA | OP_DIV;
 	case K44:	return OP_CDYA | OP_MUL;
-	case K51:	return CONST_CMPLX(OP_ONE);
+	case K51:	return RARG(RARG_INTNUM_CMPLX, 0);
 	case K54:	return OP_CDYA | OP_SUB;
-	case K61:	return CONST_CMPLX(OP_ZERO);
+	case K61:	return RARG(RARG_INTNUM_CMPLX, 1);
 	case K62:	return OP_NIL | OP_cmplxI;		// . returns i
 	case K64:	return OP_CDYA | OP_ADD;
 	default:	break;
@@ -1628,19 +1628,15 @@ opcode current_catalogue(int n) {
 	unsigned int c = State2.catalogue;
 	int m, i;
 	unsigned p, q;
-	static s_opcode special_const[4] = {
-		RARG_BASEOP(RARG_IND_CONST), RARG_BASEOP(RARG_INTNUM), 
-		RARG_BASEOP(RARG_IND_CONST_CMPLX), RARG_BASEOP(RARG_INTNUM_CMPLX)
-	};
 
 	if (c == CATALOGUE_CONST) {
-		if (n < 2)
-			return special_const[ n ];
+		if (n == OP_ZERO)
+			return RARG_BASEOP(RARG_INTNUM);
 		return CONST(n);
 	}
 	if (c == CATALOGUE_COMPLEX_CONST) {
-		if (n < 2)
-			return special_const[ 2 + n ];
+		if (n == OP_ZERO)
+			return RARG_BASEOP(RARG_INTNUM_CMPLX);
 		return CONST_CMPLX(n);
 	}
 	if (c == CATALOGUE_CONV) {

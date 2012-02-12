@@ -220,8 +220,7 @@ struct _constsml {
 #define CONV(n1, n2, op, val)		{ n1, op, val, n2 }
 
 struct _constsml constsml[] = {
-	CONSTANT("0",		"ZERO",		"0"),			// Zero
-	CONSTANT("1",		"ONE",		"1"),			// One
+	CONSTANT("#",		"ZERO",		"0"),			// Zero & placeholder for small integers
 	CONSTANT("a",		"PC_a",		"365.2425"),		// Days in a Gregorian year
 	CONSTANT("a\270",	"PC_a0",	"5.2917721092E-11"),	// Bohr radius
 	CONSTANT("c",		"PC_C",		"299792458"),		// Speed of light in a vacuum
@@ -320,6 +319,7 @@ struct _constsml constsml[] = {
 //	CONSTANT("H\270",	"PC_Hubble",	"70.1"),		// Hubble constant
 
 	/* These are used by internal routines */
+	SYSCONST("1",		"ONE",		"1"),			// One
 	SYSCONST("1/\003""5",	"RECIP_SQRT5",	"0.4472135954999579392818347337462552470881236719223"),
 #ifdef NORMAL_DISTRIBUTION_AS_XROM
 	SYSCONST("\003""2\257",	"SQRT_2_PI",	"2.50662827463100050241576528481104525300698674060994"),

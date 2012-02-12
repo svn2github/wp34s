@@ -880,10 +880,12 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDnoI(RARG_CONVERGED,	&cmdconverged,	32,			"CNVG?")
 	CMDnoI(RARG_SHUFFLE,	&cmdshuffle,	256,			"\027")
 
-	CMDnoI(RARG_INTNUM,	  &cmdintnum,	256,			"#INT")
-	CMDnoI(RARG_INTNUM_CMPLX, &cmdintnum,	256,			"\024#INT")
-	CMD(RARG_IND_CONST,	  &cmdconst,	NUM_CONSTS,		"#")
-	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024#")
+	CMDnoI(RARG_INTNUM,	  &cmdintnum,	256,			"#")
+	CMDnoI(RARG_INTNUM_CMPLX, &cmdintnum,	256,			"\024#")
+#ifdef INCLUDE_INDIRECT_CONSTS
+	CMD(RARG_IND_CONST,	  &cmdconst,	NUM_CONSTS,		"CNST")
+	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
+#endif
 
 #undef CMDlbl
 #undef CMDlblnI

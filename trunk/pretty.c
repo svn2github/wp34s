@@ -111,7 +111,8 @@ void dump_opcodes(FILE *f) {
 				continue;
 			} 
 			else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
-				if ((c & 0xff) <= 1)
+				const int n = c & 0xff;
+				if (n == OP_ZERO || n == OP_ONE)
 					continue;
 				fprintf(f, "0x%04x\tcmd\t%s# %s\n", c, 
 					cmd == RARG_CONST_CMPLX ? "[cmplx]" : "", cmdpretty );

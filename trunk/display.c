@@ -1401,7 +1401,10 @@ void display(void) {
 		bp = scopy(bp, p);
 		set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
-			set_x(get_const(op & RARG_MASK, 0), NULL, 0);
+			if (op == RARG_BASEOP(RARG_INTNUM))
+				set_digits_string("0-255", 0);
+			else
+				set_x(get_const(op & RARG_MASK, 0), NULL, 0);
 			skip = 1;
 		} else if (State2.runmode) {
 			if (cata == CATALOGUE_CONV) {

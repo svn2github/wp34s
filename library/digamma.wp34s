@@ -18,13 +18,13 @@
  *	http://hp41programs.yolasite.com/gamma.php
  */
 
-	LBL"[PSI]"
-		LocR 003
+	LBL'[PSI]'
+		LocR 3
 		x<0?
 			SF .00
 		ABS
 		STO .02
-		#INT 008
+		# 8
 		x[<->] Y
 		LBL 00
 		1/x
@@ -37,24 +37,24 @@
 		STO .01
 		x[^2]
 		STO Y
-		#INT 005
+		# 5
 		%
-		#INT 021
+		# 21
 		1/x
 		-
 		[times]
-		#INT 001
-		SDR 001
+		# 1
+		SDR 1
 		+
 		[times]
 		DEC X
 		[times]
-		#INT 012
+		# 12
 		/
 		RCL .01
 		LN
 		RCL L
-		#INT 002
+		# 2
 		/
 		+
 		-
@@ -64,12 +64,12 @@
 		RCL .02
 		1/x
 		+
-		#INT [pi]
+		# [pi]
 		RCL .02
 		RCL .02
 		ROUNDI
 		-
-		#INT [pi]
+		# [pi]
 		[times]
 		RAD[->]
 		TAN
@@ -77,19 +77,19 @@
 		+
 		RTN
 
-	LBL"[cmplx][PSI]"
-		LocR 007
+	LBL'[cmplx][PSI]'
+		LocR 7
 		STOM .06
 		[cmplx]STO .01
 		LBL 01
-		#INT 010
+		# 10
 		RCL .01
 		x>? Y
 			GTO 02
 		[cmplx]RCL .01
 		[->]POL
 		1/x
-		CONJ
+		[cmplx]CONJ
 		[->]REC
 		[cmplx]STO+ .03
 		INC .01
@@ -105,11 +105,11 @@
 		STO .05
 		+/-
 		x[<->] Y
-		#INT 021
+		# 21
 		/
 		[->]REC
-		#INT 001
-		SDR 001
+		# 1
+		SDR 1
 		-
 		[->]POL
 		RCL/ .00
@@ -119,16 +119,16 @@
 		[->]REC
 		INC X
 		[->]POL
-		#INT 012
+		# 12
 		/
 		[cmplx]RCL .01
 		[->]POL
 		R[v]
-		ST- Z
+		STO- Z
 		x[<->] T
 		/
 		[->]REC
-		#INT 002
+		# 2
 		1/x
 		+
 		[->]POL
@@ -146,7 +146,7 @@
 		RCLM .06
 		R[^]
 		STO- Z
-		X[<->] T
+		x[<->] T
 		-
 		RCL .04
 		STO- Z

@@ -46,6 +46,9 @@
 // Include a catalogue of the internal commands
 #define INCLUDE_INTERNAL_CATALOGUE
 
+// Include the CNSTS command to access cnstants via indirection
+// #define INCLUDE_INDIRECT_CONSTS
+
 #ifndef TINY_BUILD
 
 // Include the Mantissa and exponent function

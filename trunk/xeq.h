@@ -879,9 +879,10 @@ enum rarg {
 	RARG_SHUFFLE,
 	RARG_INTNUM,
 	RARG_INTNUM_CMPLX,
+#ifdef INCLUDE_INDIRECT_CONSTS
 	RARG_IND_CONST,
 	RARG_IND_CONST_CMPLX,
-
+#endif
 	NUM_RARG	// Last entry defines number of operations
 };
 

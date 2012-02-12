@@ -1226,7 +1226,11 @@ void cmdconst(unsigned int arg, enum rarg op) {
 		bad_mode_error();
 		return;
 	}
+#ifdef INCLUDE_INDIRECT_CONSTS
 	if (op == RARG_CONST_CMPLX || op == RARG_IND_CONST_CMPLX) {
+#else
+	if (op == RARG_CONST_CMPLX) {
+#endif
 		lift2_if_enabled();
 		zero_Y();
 	} else

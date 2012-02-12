@@ -346,7 +346,7 @@ void sigma_sum(enum nilop op) {
 	REGISTER *const y = get_reg_n(regY_idx);
 
 	if (SizeStatRegs == 0) {
-		x->s = y->s = cnsts_d64[OP_ZERO];
+		x->s = y->s = get_const(OP_ZERO, 0)->s;
 	}
 	else {
 		x->s = sigmaX;
