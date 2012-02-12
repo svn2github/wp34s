@@ -306,7 +306,7 @@ my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 my %useable_OS = ("linux"   => "linux",
                   "MSWin32" => "MSWin32",
                   "MSDOS"   => "MSDOS",
-                  "cygwin"  => "cygwin",
+                  "cygwin"  => "MSWin32",
                   "Darwin"  => "Darwin",
                   "darwin"  => "darwin",
                   "MacOS"   => "MacOS",
@@ -1660,13 +1660,10 @@ sub run_pp {
   debug_msg(this_function((caller(0))[3]), "Base name of the preprocessor being searched for: '${preproc}'") if $debug;
   if( $preproc_fallback_dir and -e "${preproc_fallback_dir}${preproc}" ) {
     $pp_location = "${preproc_fallback_dir}${preproc}";
-    $cmd = "${preproc_fallback_dir}${preproc} $pp_options $tmp_file"
   } elsif( -e "${preproc}" ) {
     $pp_location = "${preproc}";
-    $cmd = "${preproc} $pp_options $tmp_file"
   } elsif( -e "${script_dir}${preproc}" ) {
     $pp_location = "${script_dir}${preproc}";
-    $cmd = "${script_dir}${preproc} $pp_options $tmp_file";
   } else {
     my $locations = "'${preproc}' or '${script_dir}${preproc}'";
     if( $preproc_fallback_dir ) {
@@ -1674,6 +1671,8 @@ sub run_pp {
     }
     die_msg(this_function((caller(0))[3]), "Cannot locate the assembly preprocessor in $locations");
   }
+  $pp_location =~ s:\\:/:g; 
+  $cmd = "${pp_location} $pp_options $tmp_file";
 
   if ($v3_mode) {
     $cmd .= " -v3";

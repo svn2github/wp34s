@@ -17,6 +17,7 @@
 # Creates the Console version of the emulator or the real thing
 
 
+TOOLS=../tools
 
 SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
@@ -28,6 +29,7 @@ SYSTEM := windows32
 endif
 ifeq "$(findstring CYGWIN,$(SYSTEM))" "CYGWIN"
 SYSTEM := windows32
+PPDIR := -pp_dir $(TOOLS)
 endif
 # Force REALBUILD on windows under MinGW
 ifeq "$(findstring indows,$(SYSTEM))" "indows"
@@ -44,9 +46,25 @@ OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
 DISTDIR := wp-34s
 DISTFILE := wp-34s.zip
+DISTMEMORYDIR := $(DISTDIR)/memory
+DISTMEMORYFILE := $(DISTMEMORYDIR)/wp34s-lib.dat
 # Warning the trailing / is mandatory
 QTLIBSDIR := c:/QtSDK/Desktop/Qt/4.8.0/mingw/bin/
 QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll mingwm10.dll libgcc_s_dw2-1.dll)
+
+# Warning the trailing / is mandatory
+WP34SLIBDIR=../../library/
+WP34SMATRIXFILES :=  $(addprefix $(WP34SLIBDIR), matrix.wp34s matrixedit.wp34s vectors.wp34s)
+WP34SSOLVERFILES :=  $(addprefix $(WP34SLIBDIR), TVM.wp34s)
+WP34STRIGOFACTOFILES :=  $(addprefix $(WP34SLIBDIR), TRIGON.wp34s PF.wp34s)
+WP34SLIB=$(TOOLS)/wp34s_lib.pl -d 0
+
+
+DOCFILENAME := Manual_wp_34s_3_0.pdf
+DOCDIR := ../../doc
+DOCFILE := $(DOCDIR)/$(DOCFILENAME)
+DISTDOCDIR := $(DISTDIR)/doc
+DISTDOCFILE := $(DISTDOCDIR)/$(DOCFILENAME)
 
 # we need the MAKE variable to be defined
 # if not, we try the default value
@@ -124,7 +142,7 @@ ifeq "$(SYSTEM)" "windows32"
 WP34SEXE := $(OUTPUTDIR)/wp-34s.exe
 endif
 
-dist: release $(DISTDIR)
+dist: release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE)
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(WP34SEXE) $(DISTDIR)
 	$(CPDIR) skins $(DISTDIR)
@@ -135,11 +153,26 @@ endif
 
 $(DISTDIR):
 	$(MKDIR) $(DISTDIR)
+	
+$(DISTMEMORYDIR): 
+	$(MKDIR) $(DISTMEMORYDIR)
+	
+$(DISTMEMORYFILE): $(WP34SMATRIXFILES) $(WP34SSOLVERFILES) $(WP34STRIGOFACTOFILES)
+	$(WP34SLIB) -pp $(PPDIR) $(WP34SMATRIXFILES) -olib $(DISTMEMORYFILE)
+	$(WP34SLIB) $(WP34SSOLVERFILES) -ilib $(DISTMEMORYFILE)	-olib $(DISTMEMORYFILE)
+	$(WP34SLIB) -pp $(PPDIR) $(WP34STRIGOFACTOFILES) -ilib $(DISTMEMORYFILE)	-olib $(DISTMEMORYFILE)
+	
+$(DISTDOCDIR): 
+	$(MKDIR) $(DISTDOCDIR)
+	
+$(DISTDOCFILE): $(DOCFILE) 
+	$(CP) $(DOCFILE) $(DISTDOCFILE)
+
 endif
 
 ifeq ($(SYSTEM),windows32)
 release: $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
-	$(MAKE) -f $(QTMAKEFILE) release BASE_LIBS="$(BASEOBJS) $(BASELIBS) $(EXTRAOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+	$(MAKE) -f $(QTMAKEFILE) release BASE_LIBS="$(EXTRAOBJS) $(BASEOBJS) $(BASELIBS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 else
 release: all
 endif

@@ -103,7 +103,7 @@ my $use_ansi_colour       = $DEFAULT_USE_ANSI_COLOUR;
 my %useable_OS = ("linux"   => "linux",
                   "MSWin32" => "MSWin32",
                   "MSDOS"   => "MSDOS",
-                  "cygwin"  => "cygwin",
+                  "cygwin"  => "MSWin32",
                   "Darwin"  => "Darwin",
                   "darwin"  => "darwin",
                   "MacOS"   => "MacOS",
@@ -789,16 +789,15 @@ sub run_prog {
   # Look in the current directory.
   if (-e "${prog}") {
     $location = "";
-    $cmd = "$prog $cmd_line"
-
+  
   # Look in the same location as the script that is executing.
   } elsif ($script_dir and -e "${script_dir}${prog}") {
     $location = "$script_dir";
-    $cmd = "${location}$prog $cmd_line"
-
   } else {
     die_msg(this_function((caller(0))[3]), "Cannot locate daughter script '$prog' in current directory or '$script_dir'.");
   }
+  $location =~ s:\\:/:g; 
+  $cmd = "${location}$prog $cmd_line";
   $cmd .= " -e2so"; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
 
   # Force the colour mode to be off if in debug mode because with this damn MS-DOS STDERR
