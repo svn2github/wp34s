@@ -38,6 +38,8 @@ extern char* get_version_string();
 extern char* get_svn_revision_string();
 extern char* get_formatted_displayed_number();
 extern char *get_displayed_text();
+extern void set_fshift_locked(int);
+extern void set_gshift_locked(int);
 extern void set_hshift_locked(int);
 extern int is_hshifted();
 extern int forward_byte_received(short);

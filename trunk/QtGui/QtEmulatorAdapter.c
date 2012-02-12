@@ -61,16 +61,43 @@ int put_key(int key)
 	return put_key_adapter(key);
 }
 
+static int fshift_locked=0;
+static int gshift_locked=0;
 static int hshift_locked=0;
 
 enum shifts shift_down()
 {
-	return hshift_locked?SHIFT_H:SHIFT_N;
+	if(fshift_locked)
+	{
+		return SHIFT_F;
+	}
+	else if(gshift_locked)
+	{
+		return SHIFT_G;
+	}
+	else if(hshift_locked)
+	{
+		return SHIFT_H;
+	}
+	else
+	{
+		return SHIFT_N;
+	}
 }
 
 int is_hshifted()
 {
 	return cur_shift()==SHIFT_H;
+}
+
+void set_fshift_locked(int a_fshift_locked)
+{
+	fshift_locked=a_fshift_locked;
+}
+
+void set_gshift_locked(int a_gshift_locked)
+{
+	gshift_locked=a_gshift_locked;
 }
 
 void set_hshift_locked(int an_hshift_locked)

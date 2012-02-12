@@ -27,6 +27,8 @@ QtKeyboard::QtKeyboard(const QtSkin& aSkin, int anHShiftDelay)
 	  currentKeyCode(INVALID_KEY_CODE),
 	  hShiftDelay(anHShiftDelay),
 	  currentKeyHShifted(false),
+	  fShiftLocked(false),
+	  gShiftLocked(false),
 	  hShiftLocked(false)
 {
 	setSkin(aSkin);
@@ -112,17 +114,48 @@ bool QtKeyboard::processMouseMovedEvent(const QMouseEvent& aMouseEvent)
 	return true;
 }
 
-
 bool QtKeyboard::processDoubleClickEvent(const QMouseEvent& aMouseEvent)
 {
 	QtKeyCode keyCode=findKeyCode(aMouseEvent.pos());
-	if(keyCode.getCode()==H_CODE)
+	if(setShifts(keyCode.getCode()))
 	{
-		hShiftLocked=!hShiftLocked;
-		set_hshift_locked(hShiftLocked);
 		emit keyPressed();
 	}
 	return true;
+}
+
+bool QtKeyboard::setShifts(int aCode)
+{
+	bool* shiftChanged=NULL;
+	if(aCode==F_CODE)
+	{
+		shiftChanged=&fShiftLocked;
+	}
+	else if(aCode==G_CODE)
+	{
+		shiftChanged=&gShiftLocked;
+	}
+	else if(aCode==H_CODE)
+	{
+		shiftChanged=&hShiftLocked;
+	}
+
+	if(shiftChanged!=NULL)
+	{
+		bool newValue=!*shiftChanged;
+		fShiftLocked=false;
+		gShiftLocked=false;
+		hShiftLocked=false;
+		*shiftChanged=newValue;
+		set_fshift_locked(fShiftLocked);
+		set_gshift_locked(gShiftLocked);
+		set_hshift_locked(hShiftLocked);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 void QtKeyboard::hShift()
@@ -294,31 +327,39 @@ void QtKeyboard::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintE
 {
 	Q_UNUSED(aPaintEvent);
 
-	if(hShiftLocked)
+	if(fShiftLocked)
 	{
-		invertHKey(aBackgroundImage);
+		invertKeycode(F_CODE, aBackgroundImage);
+	}
+	else if(gShiftLocked)
+	{
+		invertKeycode(G_CODE, aBackgroundImage);
+	}
+	else if(hShiftLocked)
+	{
+		invertKeycode(H_CODE, aBackgroundImage);
 	}
 
 	const QtKey* key=findKey(currentKeyCode);
 	if(key!=NULL && key->getRectangle().isValid())
 	{
-		invert(key, aBackgroundImage);
+		invertKey(key, aBackgroundImage);
 		if(currentKeyHShifted && !hShiftLocked)
 		{
-			invertHKey(aBackgroundImage);
+			invertKeycode(H_CODE, aBackgroundImage);
 		}
 	}
 }
 
-void QtKeyboard::invertHKey(QtBackgroundImage& aBackgroundImage)
+void QtKeyboard::invertKeycode(int aCode, QtBackgroundImage& aBackgroundImage)
 {
-	static const QtKey* hKey=findKey(H_CODE);
-	invert(hKey, aBackgroundImage);
+	const QtKey* Key=findKey(aCode);
+	invertKey(Key, aBackgroundImage);
 }
 
-void QtKeyboard::invert(const QtKey* aKey, QtBackgroundImage& aBackgroundImage)
+void QtKeyboard::invertKey(const QtKey* aKey, QtBackgroundImage& aBackgroundImage)
 {
-	// There are simple way to invert video but this one works on every platform tested yet
+	// There are simpler way to invert video but this one works on every platform tested yet
 	QRect keyRectangle=aKey->getRectangle();
 	QPixmap keyPixmap=aBackgroundImage.getBackgroundPixmap().copy(keyRectangle);
 	QImage keyImage=keyPixmap.toImage();

@@ -50,6 +50,7 @@ public:
 	bool processButtonReleasedEvent(const QMouseEvent& aMouseEvent);
 	bool processMouseMovedEvent(const QMouseEvent& aMouseEvent);
 	bool processDoubleClickEvent(const QMouseEvent& aMouseEvent);
+	bool setShifts(int aCode);
 	int getKey();
 	void putKeyCode(const QtKeyCode& aKeyCode);
 	void putKey(char aKey);
@@ -57,8 +58,8 @@ public:
 	bool isKeyPressed();
 	int waitKey();
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
-	void invertHKey(QtBackgroundImage& aBackgroundImage);
-	void invert(const QtKey* aKey, QtBackgroundImage& aBackgroundImage);
+	void invertKeycode(int aCode, QtBackgroundImage& aBackgroundImage);
+	void invertKey(const QtKey* aKey, QtBackgroundImage& aBackgroundImage);
 	int getHShiftDelay();
 	void setHShiftDelay(int anHShiftDelay);
 
@@ -86,7 +87,7 @@ private:
     QtKeyCode currentKeyCode;
     int hShiftDelay;
     bool currentKeyHShifted;
-    bool hShiftLocked;
+    bool fShiftLocked, gShiftLocked, hShiftLocked;
     QTimer* hShiftTimer;
     QHash<int, const QtKey*> keysByCode;
 };
