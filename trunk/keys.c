@@ -58,7 +58,7 @@ unsigned char GoFast;
 /*
  *  Needed before definition
  */ 
-static unsigned int advance_to_next_label(unsigned int pc);
+static unsigned int advance_to_next_label(unsigned int pc, int inc);
 
 /*
  *  Return the shift state
@@ -361,7 +361,7 @@ static void init_cat(enum catalogues cat) {
 	case CATALOGUE_LABELS:
 		// Label browser
 		State2.labellist = 1;
-		State2.digval = advance_to_next_label(0);
+		State2.digval = advance_to_next_label(ProgBegin, 0);
 		break;
 	
 	case CATALOGUE_REGISTERS:
@@ -1981,10 +1981,11 @@ static int is_label_or_end_at(unsigned int pc) {
 	return op == (OP_NIL | OP_END) || (isDBL(op) && opDBL(op) == DBL_LBL);
 }
 
-static unsigned int advance_to_next_label(unsigned int pc) {
+static unsigned int advance_to_next_label(unsigned int pc, int inc) {
 	do {
 		for (;;) {
-			pc = do_inc(pc, 0);
+			if (inc)
+				pc = do_inc(pc, 0);
 			if (PcWrapped)
 				break;
 			if (is_label_or_end_at(pc)) {
@@ -2034,14 +2035,14 @@ static int process_labellist(const keycode c) {
 		// Digits take you to that segment
 		pc = addrLIB(1, n);
 		if (! is_label_or_end_at(pc))
-			pc = advance_to_next_label(pc);
+			pc = advance_to_next_label(pc, 1);
 		State2.digval = pc;
 		return STATE_UNFINISHED;
 	}
 
 	switch (c | (shift << 8)) {
 	case K50:				// Find next label
-		State2.digval = advance_to_next_label(pc);
+		State2.digval = advance_to_next_label(pc, 1);
 		return STATE_UNFINISHED;
 
 	case K40:				// Find previous label
