@@ -956,6 +956,7 @@ static unsigned char alpha_subscripts[] = {
 static unsigned char alpha_letters[] = {
 	0300, 0301, 0302, 0303, 0304, 0210,	// A
 	0305, 0306, 0307,			// C
+	0204,					// D-bar
 	0310, 0311, 0312, 0313,			// E
 	0236,					// h-bar
 	0314, 0315, 0316, 0317,			// I
@@ -972,6 +973,7 @@ static unsigned char alpha_letters[] = {
 static unsigned char alpha_letters_lower[] = {
 	0340, 0341, 0342, 0343, 0344, 0211,	// A
 	0345, 0346, 0347,			// C
+	0205,					// d-bar
 	0350, 0351, 0352, 0353,			// E
 	0236,					// h-bar
 	0354, 0355, 0356, 0357,			// I
