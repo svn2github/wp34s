@@ -11,7 +11,7 @@ static const char *const map32[32] = {
 
 static const char *const maptop[129] = {
 	"^v",
-	"^3", "sub-w", "GAMMA", "DELTA", "0204", "0205", "0206", "THETA",
+	"^3", "sub-w", "GAMMA", "DELTA", "D-bar", "d-bar", "0206", "THETA",
 	"AE", "ae", "LAMBDA", "0213", "0214", "XI", "sol", "PI",
 	"0220", "SIGMA", "0222", "0223", "PHI", "0225", "PSI", "OMEGA",
 	"sub-B", "sub-mu", "^2", "sub-infinity", "^x", "^-1", "h-bar", "infinity",
