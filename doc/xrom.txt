@@ -41,7 +41,7 @@ xIN does a lot:
 * it allocates a temporary stack in volatile RAM
 * it sets the stack size to 8 (thus we needs the SSIZE4 to go back to four levels)
 * if local registers are allocated (via LocR), they are allocated in volatile RAM.
-* all lettered registers are copied into the new work space, they aren't copied back and a freely available.
+* all lettered registers are copied into the new work space, they aren't copied back and are freely available.
 
 
 
@@ -55,7 +55,7 @@ xOUT exits XROM.  It also does quite a bit:
 
 The XLBL command doesn't generate any code, it provides an entry point that the C function tables can take advantage of.
 
-There are only a couple of restrictions in xrom code.  There are no LBL statement.  Instead use JMP for branches and GSB for subroutine calls.  These get automatically converted to relative branches if possible and branches via a jump table otherwise.
+There are only a couple of restrictions in xrom code.  There are no LBL statements.  Instead use JMP for branches and GSB for subroutine calls.  These get automatically converted to relative branches if possible and branches via a jump table otherwise.
 
 
 
@@ -88,5 +88,5 @@ Time for a second example.  Again from Jean-Marc Baillard, an implementation of 
 					xOUT xOUT_NORMAL
 				JMP LamW_cloop
 
-Here, the xIN specifies a complex function of one argument and one result (both complex occupying X and Y), agai with last X being saved (which in this case is L and I since it is a complex function).  The LocR allocates local registers .00 through .05 and local flags .00 through .15.  The branches of the original program are replaced by a JMP instructions that expands into a SKIP and a BACK instruction automatically.  The CNVG? test checks the loop termination condition and xOUT fixes the exit stack appropriately.
+Here, the xIN specifies a complex function of one argument and one result (both complex, occupying X and Y), again with last X being saved (which in this case is L and I since it is a complex function).  The LocR allocates local registers .00 through .05 and local flags .00 through .15.  The branches of the original program are replaced by JMP instructions that expand into a SKIP and a BACK instruction automatically.  The CNVG? test checks the loop termination condition and xOUT fixes the exit stack appropriately.
 

@@ -1,6 +1,6 @@
-October 2011
+February 2011
 
-Version 2.2
+Version 3.0
 
 This is beta firmware for the WP34S calculator.  This is for HP's 20b
 and 30b hardware.  Being beta software, there will be problems and
@@ -12,6 +12,27 @@ real hardware is provided, too.
 You will need a special programming cable and the MySamba software
 to reflash a 20b or 30b (see the folder FlashTool on our SourceForge 
 pages where you found this file.)
+
+Highlights of this release:
+
+* Dynamic allocation of memory to registers, program and subroutine 
+  levels,
+
+* Local registers and flags,
+
+* Much improved handling of libraries in flash memory,
+
+* Matrices with up to 100 elements,
+
+* Separate statistical accumulators some of which stored in higher
+  precision for greater accuracy,
+
+* Increased accuracy for some mathematical functions,
+
+* Double precision mode, allows user programs to implement fully
+  accurate functions,
+
+* Even more functions.
 
 Before asking questions or posting bug reports, please read the
 included manual.  Not all of the many features of this powerful
