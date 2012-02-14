@@ -146,8 +146,8 @@
 	C( 6, 0, 0, 0, 0, 21, 31 ),		/* sub w */
 	C( 6, 31, 17, 1, 1, 1, 1 ),		/* GAMMA */
 	C( 6, 4, 4, 10, 10, 17, 31 ),		/* DELTA */
-	C( 1, 0, 0, 0, 0, 0, 0 ),		/* D-bar */
-	C( 1, 0, 0, 0, 0, 0, 0 ),		/* d-bar */
+	C( 6, 15, 18, 25, 18, 18, 15 ),		/* Serbian/Croatian D_bar */
+	C( 6, 8, 28, 8, 14, 9, 14 ),		/* Serbian/Croatian d_bar  */
 	C( 1, 0, 0, 0, 0, 0, 0 ),		/*  */
 	C( 6, 14, 17, 17, 31, 17, 14 ),		/* THETA */
 	C( 6, 30, 5, 29, 7,  5, 29 ),		/* Danish/Norvegian AE = 0210 */
@@ -406,8 +406,8 @@
 	C( 6, 0, 0, 0, 0, 21, 31 ),		/* small sub w */
 	C( 4, 7, 1, 1, 1, 1, 0 ),		/* small GAMMA */
 	C( 5, 8, 12, 10, 9, 15, 0 ),		/* small DELTA */
-	C( 1, 0, 0, 0, 0, 0, 0 ),		/* small  */
-	C( 1, 0, 0, 0, 0, 0, 0 ),		/* small  */
+	C( 5, 6, 10, 11, 10, 6, 0 ),		/* small Serbian/Croatian D_bar */
+	C( 5, 4, 14, 5, 5, 6, 0 ),		/* small Serbian/Croatian d_bar  */
 	C( 1, 0, 0, 0, 0, 0, 0 ),		/* small  */
 	C( 5, 6, 9, 15, 9, 6, 0 ),		/* small THETA */
 	C( 5, 14, 5, 15, 5, 13, 0 ),		/* small Danish/Norvegian AE = 0610 */
