@@ -18,7 +18,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "gpl.h"
+#include "licence.h"
 
 
 static struct s_charset {

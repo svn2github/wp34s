@@ -18,7 +18,7 @@
 
 #define NOCURSES
 #include "lcd.h"
-#include "gpl.h"
+#include "licence.h"
 
 #define AT91C_SLCDC_MEM 0xFFFB4200
 

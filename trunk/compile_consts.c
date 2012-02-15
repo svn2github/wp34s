@@ -40,7 +40,7 @@
 #define xcopy memcpy
 
 
-#include "gpl.h"
+#include "licence.h"
 #include "charmap.c"
 
 #include "features.h"

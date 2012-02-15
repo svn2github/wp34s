@@ -309,23 +309,23 @@ pretty.h charset.h charmap.c: $(UTILITIES)/genfont$(EXE) Makefile
 	$(UTILITIES)/genfont$(EXE) >$@
 
 $(UTILITIES)/compile_consts$(EXE): compile_consts.c $(DNSRCS) Makefile features.h \
-		gpl.h charset.h charmap.c
+		licence.h charset.h charmap.c
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -DNEED_D64FROMSTRING -DNEED_D128FROMSTRING -o $@ $< $(DNSRCS)
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
-		gpl.h commands.c string.c prt.c consts.c pretty.c pretty.h Makefile features.h
+		licence.h commands.c string.c prt.c consts.c pretty.c pretty.h Makefile features.h
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
 
-$(UTILITIES)/lcdgen$(EXE): lcdgen.c gpl.h Makefile lcd.h
+$(UTILITIES)/lcdgen$(EXE): lcdgen.c licence.h Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-$(UTILITIES)/genchars7$(EXE): genchars7.c gpl.h Makefile lcd.h
+$(UTILITIES)/genchars7$(EXE): genchars7.c licence.h Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-$(UTILITIES)/genfont$(EXE): genfont.c gpl.h Makefile
+$(UTILITIES)/genfont$(EXE): genfont.c licence.h Makefile
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-$(UTILITIES)/create_revision$(EXE): create_revision.c gpl.h Makefile
+$(UTILITIES)/create_revision$(EXE): create_revision.c licence.h Makefile
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h

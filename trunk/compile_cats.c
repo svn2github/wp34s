@@ -941,7 +941,7 @@ static unsigned char alpha_letters_lower[] = {
 #include "string.c"
 #include "prt.c"
 #include "consts.c"
-#include "gpl.h"
+#include "licence.h"
 
 
 #if defined(WIN32) && !defined(__GNUC__)

@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-#include "gpl.h"
+#include "licence.h"
 
 
 #define DIG(ch, bits) { ch, # bits }
