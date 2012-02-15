@@ -18,6 +18,7 @@
 
 #define NOCURSES
 #include "lcd.h"
+#include "gpl.h"
 
 #define AT91C_SLCDC_MEM 0xFFFB4200
 
@@ -196,23 +197,9 @@ static const char *addr_map(unsigned int addr, unsigned int mask) {
 int main() {
 	int i;
 
-	printf("/* This file is part of 34S.\n"
-		" *\n"
-		" * 34S is free software: you can redistribute it and/or modify\n"
-		" * it under the terms of the GNU General Public License as published by\n"
-		" * the Free Software Foundation, either version 3 of the License, or\n"
-		" * (at your option) any later version.\n"
-		" *\n"
-		" * 34S is distributed in the hope that it will be useful,\n"
-		" * but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-		" * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-		" * GNU General Public License for more details.\n"
-		" *\n"
-		" * You should have received a copy of the GNU General Public License\n"
-		" * along with 34S.  If not, see <http://www.gnu.org/licenses/>.\n"
-		" *\n"
-		" * LCD graphics map - automatically generated do not edit\n"
-		" */\n");
+	license(stdout, "/* ", " * ", " */");
+	printf("/* LCD graphics map\n"
+		" */\n\n");
 
 	/* Annunicators */
 	for (i=0; annun[i].name != NULL; i++)
