@@ -290,7 +290,6 @@ revision.h: $(UTILITIES)/create_revision$(EXE) $(HEADERS) $(SRCS) Makefile
 endif
 
 # Build generated files
-
 consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		$(DNHDRS) Makefile
 	cd $(UTILITIES) \
@@ -306,18 +305,24 @@ lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
 charset7.h: $(UTILITIES)/genchars7$(EXE)
 	$(UTILITIES)/genchars7$(EXE) >$@
 
+pretty.h charset.h charmap.c: $(UTILITIES)/genfont$(EXE) Makefile
+	$(UTILITIES)/genfont$(EXE) >$@
+
 $(UTILITIES)/compile_consts$(EXE): compile_consts.c $(DNSRCS) Makefile features.h \
 		charset.h charmap.c
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -DNEED_D64FROMSTRING -DNEED_D128FROMSTRING -o $@ $< $(DNSRCS)
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
-		commands.c string.c prt.c consts.c pretty.c Makefile features.h
+		commands.c string.c prt.c consts.c pretty.c pretty.h Makefile features.h
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -o $@ $<
 
 $(UTILITIES)/lcdgen$(EXE): lcdgen.c Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 $(UTILITIES)/genchars7$(EXE): genchars7.c Makefile lcd.h
+	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
+
+$(UTILITIES)/genfont$(EXE): genfont.c Makefile
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 $(UTILITIES)/create_revision$(EXE): create_revision.c Makefile
@@ -385,7 +390,7 @@ $(OBJECTDIR)/rtc.o: atmel/rtc.c atmel/rtc.h \
 $(OBJECTDIR)/main.o: main.c xeq.h errors.h data.h
 else
 $(OBJECTDIR)/console.o: console.c catalogues.h xeq.h errors.h data.h keys.h consts.h display.h lcd.h \
-		int.h xrom.h xrom_labels.h storage.h Makefile features.h pretty.c
+		int.h xrom.h xrom_labels.h storage.h Makefile features.h pretty.c pretty.h
 ifeq ($(SYSTEM),windows32)
 $(OBJECTDIR)/winserial.o: winserial.c serial.h Makefile
 endif		

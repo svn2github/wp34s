@@ -15,7 +15,7 @@
 
 .PHONY: clean all
 
-PROGS := gl zc font font-renum
+PROGS := gl zc font
 
 all: $(PROGS)
 
@@ -27,9 +27,6 @@ zc: zetaconsts.c Makefile
 
 font: font.c Makefile ../charset.h
 	cc -o font font.c
-
-font-renum: font-renum.c Makefile ../charmap.c
-	cc -o font-renum font-renum.c
 
 clean:
 	rm -f *.o $(PROGS)

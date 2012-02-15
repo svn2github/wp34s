@@ -1,33 +1,20 @@
-/* Mappings from our internal character codes to readable strings.
- * The first table is for characters below space and the second for those
- * >=127 (del).
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
-static const char *const map32[32] = {
-	NULL,	"x-bar", "y-bar", "sqrt", "integral", "degree", "narrow-space", "grad",
-	"+/-", "<=", ">=", "!=", "euro", "->", "<-", "v",
-	"^", "f-shift", "g-shift", "h-shift", "cmplx", "O-slash", "o-slash", "<->",
-	"sz", "x-hat", "y-hat", "sub-m", "times", "approx", "pound", "yen"
-};
 
-static const char *const maptop[129] = {
-	"^v",
-	"^3", "sub-w", "GAMMA", "DELTA", "D-bar", "d-bar", "0206", "THETA",
-	"AE", "ae", "LAMBDA", "0213", "0214", "XI", "sol", "PI",
-	"0220", "SIGMA", "0222", "0223", "PHI", "0225", "PSI", "OMEGA",
-	"sub-B", "sub-mu", "^2", "sub-infinity", "^x", "^-1", "h-bar", "infinity",
-	"alpha", "beta", "gamma", "delta", "epsilon", "zeta", "eta", "theta",
-	"iota", "kappa", "lambda", "mu", "nu", "xi", "terra", "pi",
-	"rho", "sigma", "tau", "upsilon", "phi", "chi", "psi", "omega",
-	"sub-0", "sub-1", "sub-2", "sub-c", "sub-e", "sub-n", "sub-p", "sub-u",
-	"A-grave", "A-acute", "A-tilde", "A-umlaut", "A-dot", "C-acute", "C-hook", "C-cedilla",
-	"E-grave", "E-acute", "E-filde", "E-trema", "I-grave", "I-acute", "I-tilde", "I-trema",
-	"N-tilde", "O-grave", "O-acute", "O-tilde", "O-umlaut", "R-hook", "S-hook", "sub-A",
-	"U-grave", "U-acute", "U-tilde", "U-umlaut", "U-dot", "Y-acute", "Y-trema", "Z-hook",
-	"a-grave", "a-acute", "a-tilde", "a-umlaut", "a-dot", "c-acute", "c-hook", "c-cedilla",
-	"e-grave", "e-acute", "e-tilde", "e-trema", "i-grave", "i-acute", "i-tilde", "i-trema",
-	"n-tilde", "o-grave", "o-acute", "o-tilde", "o-umlaut", "r-hook", "s-hook", "sub-k",
-	"u-grave", "u-acute", "u-tilde", "u-umlaut", "u-dot", "y-acute", "y-trema", "z-hook"
-};
+#include "pretty.h"
 
 const char *pretty(unsigned char z) {
 	if (z < 32)
