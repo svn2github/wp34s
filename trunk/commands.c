@@ -173,15 +173,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	NOFN,		"x!")
 	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	NOFN,		"\202")
 	FUNC(OP_LNGAMMA,&decNumberLnGamma,	&cmplxLnGamma,	NOFN,		"LN\202")
-#ifdef INCLUDE_DIGAMMA
-	FUNC(OP_PSI,	&decNumberPsi,		&cmplxPsi,	NOFN,		"\226")
-#endif
-#ifdef INCLUDE_DBLFACT
-	FUNC(OP_DBLFACT,&decNumberDblFactorial,	&cmplxDblFactorial,NOFN,	"x!!")
-#endif
-#ifdef INCLUDE_SUBFACT
-	FUNC(OP_SUBFACT,&decNumberSubFactorial,	NOFN,		NOFN,	"!n")
-#endif
 	FUNC(OP_DEG2RAD,&decNumberD2R,		NOFN,		NOFN,		"\005\015rad")
 	FUNC(OP_RAD2DEG,&decNumberR2D,		NOFN,		NOFN,		"rad\015\005")
 	FUNC(OP_DEG2GRD,&decNumberD2G,		NOFN,		NOFN,		"\005\015G")
@@ -331,19 +322,6 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_SN,	&decNumberSN,		&cmplxSN,	NOFN,		"SN")
 	FUNC(OP_CN,	&decNumberCN,		&cmplxCN,	NOFN,		"CN")
 	FUNC(OP_DN,	&decNumberDN,		&cmplxDN,	NOFN,		"DN")
-#endif
-#ifdef INCLUDE_BESSEL
-#ifdef COMPLEX_BESSEL
-	FUNC(OP_BSJN,	&decNumberBSJN,		&cmplxBSJN,	NOFN,		"J\275")
-	FUNC(OP_BSIN,	&decNumberBSIN,		&cmplxBSIN,	NOFN,		"I\275")
-	FUNC(OP_BSYN,	&decNumberBSYN,		&cmplxBSYN,	NOFN,		"Y\275")
-	FUNC(OP_BSKN,	&decNumberBSKN,		&cmplxBSKN,	NOFN,		"K\275")
-#else
-	FUNC(OP_BSJN,	&decNumberBSJN,		NOFN,		NOFN,		"J\275")
-	FUNC(OP_BSIN,	&decNumberBSIN,		NOFN,		NOFN,		"I\275")
-	FUNC(OP_BSYN,	&decNumberBSYN,		NOFN,		NOFN,		"Y\275")
-	FUNC(OP_BSKN,	&decNumberBSKN,		NOFN,		NOFN,		"K\275")
-#endif
 #endif
 	FUNC(OP_COMB,	&decNumberComb,		XDC(CPX_COMB),	NOFN,		"COMB")
 	FUNC(OP_PERM,	&decNumberPerm,		XDC(CPX_PERM),	NOFN,		"PERM")

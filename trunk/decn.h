@@ -22,10 +22,6 @@
 // true if the number is a NaN or infinite
 #define decNumberIsSpecial(x)	((x)->bits & DECSPECIAL)
 
-#ifdef INCLUDE_DIGAMMA
-extern const decNumber *const digamma_consts[];
-#endif
-
 extern int dn_lt0(const decNumber *x);
 extern int dn_le0(const decNumber *x);
 #define dn_gt0(x) (! dn_le0(x))
@@ -149,23 +145,9 @@ extern decNumber *decNumberArcSinh(decNumber *res, const decNumber *x);
 extern decNumber *decNumberArcCosh(decNumber *res, const decNumber *x);
 extern decNumber *decNumberArcTanh(decNumber *res, const decNumber *x);
 
-/* Elliptic functions */
-extern decNumber *decNumberSN(decNumber *res, const decNumber *k, const decNumber *u);
-extern decNumber *decNumberCN(decNumber *res, const decNumber *k, const decNumber *u);
-extern decNumber *decNumberDN(decNumber *res, const decNumber *k, const decNumber *u);
-
-/* Bessel functions */
-extern decNumber *decNumberBSJN(decNumber *res, const decNumber *, const decNumber *u);
-extern decNumber *decNumberBSIN(decNumber *res, const decNumber *, const decNumber *u);
-extern decNumber *decNumberBSYN(decNumber *res, const decNumber *, const decNumber *u);
-extern decNumber *decNumberBSKN(decNumber *res, const decNumber *, const decNumber *u);
-
 extern decNumber *decNumberFactorial(decNumber *r, const decNumber *xin);
-extern decNumber *decNumberDblFactorial(decNumber *r, const decNumber *xin);
-extern decNumber *decNumberSubFactorial(decNumber *r, const decNumber *xin);
 extern decNumber *decNumberGamma(decNumber *res, const decNumber *x);
 extern decNumber *decNumberLnGamma(decNumber *res, const decNumber *x);
-extern decNumber *decNumberPsi(decNumber *res, const decNumber *x);
 extern decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *y);
 
 extern decNumber *decNumberERF(decNumber *res, const decNumber *x);

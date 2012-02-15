@@ -66,20 +66,6 @@
 // Include the SAVEM/RESTM user mode save and restore commands
 #define INCLUDE_USER_MODE
 
-// Include the digamma function for real and complex arguments
-// Space cost 1156 bytes
-//#define INCLUDE_DIGAMMA
-
-// Include Jacobi's Elliptical Functions: SN, CN & DN for real & complex arguments
-// Space cost 1624 bytes
-//#define INCLUDE_ELLIPTIC
-
-// Include Bessel functions of first and second kind
-// Complex versions aren't working properly yet.
-// Space cost for real version only 1704 bytes
-//#define INCLUDE_BESSEL
-//#define COMPLEX_BESSEL
-
 // Include the Gudermannian functions and their inverses in the real
 // and complex domain.
 #define INCLUDE_GUDERMANNIAN
@@ -88,13 +74,6 @@
 // This isn't vital since this can be done using a complex addition.
 // Space cost 108 bytes.
 // #define INCLUDE_MULADD
-
-// Include the x!! function defined over the complex plane
-// Space cost for this and !n 368 bytes.
-//#define INCLUDE_DBLFACT
-
-// Include the !n function defined over the reals (integers)
-//#define INCLUDE_SUBFACT
 
 // Include a date function to determine the date of Easter in a given year
 //#define INCLUDE_EASTER
@@ -142,15 +121,6 @@
 #if defined(INCLUDE_BERNOULLI) && ! defined(INCLUDE_ZETA)
 /* Bernoulli numbers need real zeta */
 #define INCLUDE_ZETA
-#endif
-
-#if defined(COMPLEX_BESSEL) && ! defined(INCLUDE_BESSEL)
-/* Complex bessel functions require real versions */
-#define INCLUDE_BESSEL
-#endif
-#if defined(INCLUDE_BESSEL) && ! defined(INCLUDE_DIGAMMA)
-/* Second kind functions of integer order need digamma */
-#define INCLUDE_DIGAMMA
 #endif
 
 #endif  /* TINY_BUILD*/

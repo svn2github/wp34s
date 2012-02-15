@@ -106,19 +106,8 @@ static s_opcode program_xfcn[] = {
 	MON(OP_DEG2,		"DED\015")
 	MON(OP_RAD2,		"RAD\015")
 	MON(OP_GRAD2,		"GRAD\015")
-#ifdef INCLUDE_SUBFACT
-	MON(OP_SUBFACT,		"!n")
-#endif
-#ifdef INCLUDE_DBLFACT
-	MON(OP_DBLFACT,		"x!!")
-#endif
 #ifdef INCLUDE_MULADD
 	TRI(OP_MULADD,		"\034+")
-#endif
-#ifdef INCLUDE_ELLIPTIC
-	DYA(OP_CN,		"CN")
-	DYA(OP_DN,		"DN")
-	DYA(OP_SN,		"SN")
 #endif
 #ifdef INCLUDE_EASTER
 	MON(OP_EASTER,		"EASTER")
@@ -126,15 +115,6 @@ static s_opcode program_xfcn[] = {
 	MON(OP_ZETA,		"\245")
 	MON(OP_Bn,		"B[sub-n]")
 	MON(OP_BnS,		"B[sub-n]*")
-#ifdef INCLUDE_DIGAMMA
-	MON(OP_PSI,		"\226")
-#endif
-#ifdef INCLUDE_BESSEL
-	DYA(OP_BSIN,		"In")
-	DYA(OP_BSJN,		"Jn")
-	DYA(OP_BSKN,		"Kn")
-	DYA(OP_BSYN,		"Yn")
-#endif
 	NILIC(OP_QUAD,		"QUAD")
 	NILIC(OP_NEXTPRIME,	"NEXTP")
 
@@ -270,19 +250,8 @@ static s_opcode catalogue[] = {
 	MON(OP_DEG2,		"DED\015")
 	MON(OP_RAD2,		"RAD\015")
 	MON(OP_GRAD2,		"GRAD\015")
-#ifdef INCLUDE_SUBFACT
-	MON(OP_SUBFACT,		"!n")
-#endif
-#ifdef INCLUDE_DBLFACT
-	MON(OP_DBLFACT,		"x!!")
-#endif
 #ifdef INCLUDE_MULADD
 	TRI(OP_MULADD,		"\034+")
-#endif
-#ifdef INCLUDE_ELLIPTIC
-	DYA(OP_CN,		"CN")
-	DYA(OP_DN,		"DN")
-	DYA(OP_SN,		"SN")
 #endif
 #ifdef INCLUDE_EASTER
 	MON(OP_EASTER,		"EASTER")
@@ -290,15 +259,6 @@ static s_opcode catalogue[] = {
 	MON(OP_ZETA,		"\245")
 	MON(OP_Bn,		"B[sub-n]")
 	MON(OP_BnS,		"B[sub-n]*")
-#ifdef INCLUDE_DIGAMMA
-	MON(OP_PSI,		"\226")
-#endif
-#ifdef INCLUDE_BESSEL
-	DYA(OP_BSIN,		"In")
-	DYA(OP_BSJN,		"Jn")
-	DYA(OP_BSKN,		"Kn")
-	DYA(OP_BSYN,		"Yn")
-#endif
 	NILIC(OP_QUAD,		"QUAD")
 	NILIC(OP_NEXTPRIME,	"NEXTP")
 
@@ -360,23 +320,6 @@ static s_opcode cplx_catalogue[] = {
 	CDYA(OP_BETA,		"\241")
 	CMON(OP_GAMMA,		"\202")
 	CDYA(OP_AGM,		"AGM")
-#ifdef INCLUDE_DBLFACT
-	CMON(OP_DBLFACT,	"x!!")
-#endif
-#ifdef INCLUDE_DIGAMMA
-	CMON(OP_PSI,		"\226")
-#endif
-#ifdef COMPLEX_BESSEL
-	CDYA(OP_BSIN,		"In")
-	CDYA(OP_BSJN,		"Jn")
-	CDYA(OP_BSKN,		"Kn")
-	CDYA(OP_BSYN,		"Yn")
-#endif
-#ifdef INCLUDE_ELLIPTIC
-	CDYA(OP_CN,		"CN")
-	CDYA(OP_DN,		"DN")
-	CDYA(OP_SN,		"SN")
-#endif
 #ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLCRCL, 	"\024RCF")
 #endif

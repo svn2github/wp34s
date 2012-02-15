@@ -88,36 +88,9 @@ extern void cmplxSinh(decNumber *rx, decNumber *ry, const decNumber *a, const de
 extern void cmplxCosh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
-extern void cmplxDblFactorial(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 extern void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
-extern void cmplxPsi(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b);
 
 extern void cmplx_NaN(decNumber *, decNumber *);
-
-/* Jacobi's elliptical functions */
-extern void cmplxSN(decNumber *rx, decNumber *ry,
-		const decNumber *u, const decNumber *v,
-		const decNumber *k, const decNumber *ki);
-extern void cmplxCN(decNumber *rx, decNumber *ry,
-		const decNumber *u, const decNumber *v,
-		const decNumber *k, const decNumber *ki);
-extern void cmplxDN(decNumber *rx, decNumber *ry,
-		const decNumber *u, const decNumber *v,
-		const decNumber *k, const decNumber *ki);
-
-/* Bessel functions of first and second kinds */
-extern void cmplxBSJN(decNumber *rx, decNumber *ry,
-		const decNumber *alphax, const decNumber *alphay,
-		const decNumber *xx, const decNumber *xy);
-extern void cmplxBSIN(decNumber *rx, decNumber *ry,
-		const decNumber *alphax, const decNumber *alphay,
-		const decNumber *xx, const decNumber *xy);
-extern void cmplxBSYN(decNumber *rx, decNumber *ry,
-		const decNumber *alphax, const decNumber *alphay,
-		const decNumber *xx, const decNumber *xy);
-extern void cmplxBSKN(decNumber *rx, decNumber *ry,
-		const decNumber *alphax, const decNumber *alphay,
-		const decNumber *xx, const decNumber *xy);
 
 #endif
