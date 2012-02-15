@@ -44,9 +44,20 @@ LINK=$(CXX)
 
 OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
+ifeq "$(SYSTEM)" "windows32"
 DISTDIR := wp-34s
 DISTFILE := wp-34s.zip
-DISTMEMORYDIR := $(DISTDIR)/memory
+RESOURCESDIR := $(DISTDIR)
+endif
+ifeq "$(SYSTEM)" "Darwin"
+DISTDIR := $(OUTPUTDIR)/WP-34s.app
+RESOURCESDIR := $(DISTDIR)/Contents/Resources
+MACDEPLOYQT := macdeployqt
+DMGFILE := WP-34s.dmg
+BUILTDMG := $(OUTPUTDIR)/$(DMGFILE)
+DISTDMG := ./$(DMGFILE)
+endif
+DISTMEMORYDIR := $(RESOURCESDIR)/memory
 DISTMEMORYFILE := $(DISTMEMORYDIR)/wp34s-lib.dat
 # Warning the trailing / is mandatory
 QTLIBSDIR := c:/QtSDK/Desktop/Qt/4.8.0/mingw/bin/
@@ -63,7 +74,8 @@ WP34SLIB=$(TOOLS)/wp34s_lib.pl -d 0
 DOCFILENAME := Manual_wp_34s_3_0.pdf
 DOCDIR := ../../doc
 DOCFILE := $(DOCDIR)/$(DOCFILENAME)
-DISTDOCDIR := $(DISTDIR)/doc
+DISTDOCDIR := $(RESOURCESDIR)/doc
+DISTDOCDIR := $(RESOURCESDIR)/doc
 DISTDOCFILE := $(DISTDOCDIR)/$(DOCFILENAME)
 
 # we need the MAKE variable to be defined
@@ -76,6 +88,7 @@ QMAKE := qmake
 MKDIR := mkdir -p
 RM := rm -f
 RMDIR := rm -rf
+MV := mv -f
 CP := cp
 CPDIR := cp -r
 ZIP := zip -r
@@ -142,7 +155,7 @@ ifeq "$(SYSTEM)" "windows32"
 WP34SEXE := $(OUTPUTDIR)/wp-34s.exe
 endif
 
-dist: release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE)
+dist: distclean release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE)
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(WP34SEXE) $(DISTDIR)
 	$(CPDIR) skins $(DISTDIR)
@@ -150,7 +163,20 @@ ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(QTLIBS) $(DISTDIR)
 	$(ZIP) $(DISTFILE) $(DISTDIR)
 endif
+ifeq "$(SYSTEM)" "Darwin"
+	$(CPDIR) skins $(RESOURCESDIR)
+	$(CPDIR) images $(RESOURCESDIR)
+	$(MACDEPLOYQT) $(DISTDIR) -dmg
+	$(MV) $(BUILTDMG) $(DISTDMG)
+endif
 
+distclean:
+	-$(RMDIR) $(DISTDIR)
+ifeq "$(SYSTEM)" "Darwin"
+	-$(RM) $(BUILTDMG)
+	-$(RM) $(DISTDMG)
+endif	
+	
 $(DISTDIR):
 	$(MKDIR) $(DISTDIR)
 	

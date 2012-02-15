@@ -70,7 +70,7 @@
 #define DEVELOPMENT_OPTION "-dev"
 
 #ifdef Q_WS_MAC
-#define RESOURCES_DIR "/../resources/"
+#define RESOURCES_DIR "/../Resources/"
 #else
 #ifdef Q_OS_UNIX
 #define RESOURCES_DIR "/../lib/WP-34s/"

@@ -27,3 +27,7 @@ HEADERS = QtEmulator.h QtBackgroundImage.h QtKey.h QtKeyCode.h QtSkin.h QtScreen
 win32 {
 	RC_FILE = WP-34s.rc
 }
+
+macx {
+ICON = icons/wp34s-logo.icns
+}
