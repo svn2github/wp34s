@@ -151,6 +151,12 @@ static s_opcode program_xfcn[] = {
 	MON(OP_GUDER,		"gd")
 	MON(OP_INVGUD,		"gd[^-1]")
 #endif
+#ifdef INCLUDE_XROM_BESSEL
+	DYA(OP_BESJN,		"Jn")
+	DYA(OP_BESIN,		"In")
+	DYA(OP_BESYN,		"Yn")
+	DYA(OP_BESKN,		"Kn")
+#endif
 
 
 	/* Integer mode commands */
@@ -295,6 +301,13 @@ static s_opcode catalogue[] = {
 	MON(OP_GUDER,		"gd")
 	MON(OP_INVGUD,		"gd[^-1]")
 #endif
+#ifdef INCLUDE_XROM_BESSEL
+	DYA(OP_BESJN,		"Jn")
+	DYA(OP_BESIN,		"In")
+	DYA(OP_BESYN,		"Yn")
+	DYA(OP_BESKN,		"Kn")
+#endif
+
 	NILIC(OP_DATE,		"DATE")
 	NILIC(OP_TIME,		"TIME")
 #ifdef INCLUDE_STOPWATCH
@@ -329,6 +342,12 @@ static s_opcode cplx_catalogue[] = {
 #ifdef INCLUDE_GUDERMANNIAN
 	CMON(OP_GUDER,		"gd")
 	CMON(OP_INVGUD,		"gd[^-1]")
+#endif
+#ifdef INCLUDE_XROM_BESSEL
+	CDYA(OP_BESJN,		"Jn")
+	CDYA(OP_BESIN,		"In")
+	CDYA(OP_BESYN,		"Yn")
+	CDYA(OP_BESKN,		"Kn")
 #endif
 };
 

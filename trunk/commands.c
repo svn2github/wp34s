@@ -359,6 +359,12 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #ifdef INCLUDE_MANTISSA
 	FUNC(OP_NEIGHBOUR,&decNumberNeighbour,	NOFN,		NOFN,		"NEIGHB")
 #endif
+#ifdef INCLUDE_XROM_BESSEL
+	FUNC(OP_BESJN,	XDR(BES_JN),		XDC(CPX_JN),	NOFN,		"Jn")
+	FUNC(OP_BESIN,	XDR(BES_IN),		XDC(CPX_IN),	NOFN,		"In")
+	FUNC(OP_BESYN,	XDR(BES_YN),		XDC(CPX_YN),	NOFN,		"Yn")
+	FUNC(OP_BESKN,	XDR(BES_KN),		XDC(CPX_KN),	NOFN,		"Kn")
+#endif
 #undef FUNC
 };
 

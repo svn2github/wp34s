@@ -70,6 +70,10 @@
 // and complex domain.
 #define INCLUDE_GUDERMANNIAN
 
+// Include first and second order Bessel functions Jn, In, Yn and Kn for
+// both real and complex arguments.  These are implemented in XROM.
+// #define INCLUDE_XROM_BESSEL
+
 // Include a fused multiply add instruction
 // This isn't vital since this can be done using a complex addition.
 // Space cost 108 bytes.

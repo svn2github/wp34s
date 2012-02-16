@@ -662,6 +662,10 @@ enum {
 	OP_NEIGHBOUR,
 #endif
 
+#ifdef INCLUDE_XROM_BESSEL
+	OP_BESJN, OP_BESIN, OP_BESYN, OP_BESKN,
+#endif
+
 	NUM_DYADIC	// Last entry defines number of operations
 };
 
