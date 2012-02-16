@@ -36,6 +36,12 @@
 bessel1_common::		GSB bessel1
 				xOUT xOUT_NORMAL
 
+/* Main first order subroutine entry point.
+ * Takes the arguments on the stack as usual and uses regisers I, J and K
+ * as temporaries.  Convergence will be to double precision always.
+ *
+ * Returns Jn if flag .01 is clear and In if it is set.
+ */
 bessel1::			[cmplx]x[!=]0?
 					JMP bessel1_nonzero
 				Num 1
@@ -163,6 +169,12 @@ bessel2_int::			ERR ERR_DOMAIN
 				GSB cpx_bessel1_entry
 				xOUT xOUT_NORMAL
 
+/* Main first order complex suboutine entry point.
+ * Takes the arguments on the stack as usual and uses regisers .00 through .10
+ * as temporaries.  Convergence will be to double precision always.
+ *
+ * Returns Jn if flag .01 is clear and In if it is set.
+ */
 cpx_bessel1_entry::		[cmplx]STO .01
 				CSWAP
 				[cmplx]STO .05
