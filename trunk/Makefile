@@ -306,7 +306,7 @@ charset7.h: $(UTILITIES)/genchars7$(EXE)
 	$(UTILITIES)/genchars7$(EXE) >$@
 
 pretty.h charset.h charmap.c: $(UTILITIES)/genfont$(EXE) Makefile
-	$(UTILITIES)/genfont$(EXE) >$@
+	$(UTILITIES)/genfont$(EXE)
 
 $(UTILITIES)/compile_consts$(EXE): compile_consts.c $(DNSRCS) Makefile features.h \
 		licence.h charset.h charmap.c
