@@ -20,20 +20,67 @@
  * We just move into the complex argument and order and call the complex
  * equivalents.
  *
- * MORE: make this work natively for reals and integer order.
+ * MORE: make this work for integer order and large arguments.
  */
 			XLBL"BES_IN"
 				xIN DYADIC
-				LocR 11
+				SPEC?
+					JMP ret_posinf
 				SF .01
-				JMP bessel1_entry
+				JMP bessel1_common
 
 			XLBL"BES_JN"
 				xIN DYADIC
-				LocR 11
-bessel1_entry::			GSB bessel_fix_zeros
-				GSB cpx_bessel1_entry
+				SPEC?
+					JMP ret_0
+bessel1_common::		GSB bessel1
 				xOUT xOUT_NORMAL
+
+bessel1::			[cmplx]x[!=]0?
+					JMP bessel1_nonzero
+				Num 1
+				RTN
+
+bessel1_nonzero::		x=0?
+					RTN
+				_INT 2
+				/
+				[cmplx]STO J
+				SWAP
+				INT?
+					JMP bessel1_int
+				Num 1
+				FILL
+				STO I
+bessel1_lp1::			x[<->] Z
+				FC? .01
+					+/-
+				RCL[times] J
+				RCL[times] J
+				RCL I
+				STO/ Y
+				RCL K
+				+
+				/
+				INC I
+				[<->] XYYY
+				STO+ Y
+				x[<->] Z
+				CNVG? CVG_RELATIVE_DBL
+					JMP bessel1_fin
+				JMP bessel1_lp1
+
+bessel1_fin::			RCL J
+				RCL K
+				y[^x]
+				[times]
+				RCL K
+				x!
+				/
+				RTN
+
+bessel1_int::			ERR ERR_DOMAIN
+				RTN
 
 /**************************************************************************/
 /* Second order real argument Bessel functions Yn and Kn.
@@ -44,22 +91,56 @@ bessel1_entry::			GSB bessel_fix_zeros
  */
 			XLBL"BES_KN"
 				xIN DYADIC
-				LocR 15
+				x=0?
+					JMP ret_posinf
+				SPEC?
+					JMP ret_0
+				LocR 3
 				SF .01
 				JMP bessel2_entry
 
 			XLBL"BES_YN"
 				xIN DYADIC
-				LocR 15
-bessel2_entry::			GSB bessel_fix_zeros
-				JMP cpx_bessel2_entry
+				x=0?
+					JMP ret_neginf
+				SPEC?
+					JMP ret_0
+				LocR 3
 
-bessel_fix_zeros::		Num 0
-				STO T
+bessel2_entry::			[cmplx]STO .00
 				SWAP
+				INT?
+					JMP bessel2_int
+				+/-
+				SWAP
+				GSB bessel1
+				STO .02
+				[cmplx]RCL .00
+				GSB bessel1
+				FS? .01
+					JMP bessel2_Kn
+				Num [pi]
+				RCL[times] .01
+				COS
+				[times]
+				RCL- .02
+				JMP bessel_denom
+
+bessel2_Kn::			RCL- .02
+				+/-
+				Num [pi]
+				[times]
+				_INT 2
+				/
+bessel_denom::			Num [pi]
+				RCL[times] .01
+				SIN
+				/
+				xOUT xOUT_NORMAL
+
+
+bessel2_int::			ERR ERR_DOMAIN
 				RTN
-
-
 
 /**************************************************************************/
 /* First order complex argument and order Bessel functions Jn and In.
@@ -110,7 +191,7 @@ cpx_bessel1_loop::		[cmplx]RCL .09
 				[cmplx]x[<->] .07
 				[cmplx]RCL .07
 				INC .00
-				CNVG? CVG_COMPLEX
+				CNVG? CVG_COMPLEX_DBL
 					JMP cpx_bessel1_fin
 				JMP cpx_bessel1_loop
 cpx_bessel1_fin::		[cmplx]RCL .01
@@ -130,7 +211,7 @@ cpx_bessel1_fin::		[cmplx]RCL .01
  * This code is based on Jean-Marc Baillard's HP-41 version from:
  *	http://hp41programs.yolasite.com/bessel.php
  *
- * MORE: make this work natively for reals and integer order.
+ * MORE: make this work natively for large arguments and integer order.
  */
 			XLBL"CPX_KN"
 				xIN DYADIC_COMPLEX
@@ -182,18 +263,5 @@ cpx_bessel2_int_check::		SWAP
 				JMP cpx_bessel2_notint
 cpx_bessel2_int::		[<->] ZTYX
 				ERR ERR_DOMAIN
-#if 0
-				GSB cpx_bessel1_entry
-				[cmplx]STO .01
-				_INT 2
-				STO/ .11
-				STO/ .12
-				[cmplx]RCL .11
-				[cmplx]LN
-				Num 1
-				FS? .01
-					+/-
-				STO .00
-#endif
 
 #endif
