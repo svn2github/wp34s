@@ -878,3 +878,13 @@ void QtEmulator::findSkins()
 	}
 }
 
+extern "C"
+{
+
+void shutdown_adapter()
+{
+	QCoreApplication::quit();
+}
+
+}
+

@@ -43,6 +43,7 @@ extern void set_gshift_locked(int);
 extern void set_hshift_locked(int);
 extern int is_hshifted();
 extern int forward_byte_received(short);
+extern void shutdown_adapter();
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */

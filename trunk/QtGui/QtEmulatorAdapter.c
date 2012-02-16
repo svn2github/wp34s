@@ -26,6 +26,7 @@ extern int is_key_pressed_adapter();
 extern int put_key_adapter(int);
 extern void add_heartbeat_adapter(int);
 extern char* get_region_path_adapter(int);
+extern void* shutdown_adapter();
 
 #define SVN_REVISION_SIZE 4
 static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
@@ -146,6 +147,7 @@ void forward_key_released()
 
 void shutdown()
 {
+	shutdown_adapter();
 }
 
 char* get_memory()

@@ -81,11 +81,18 @@ bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 
 bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 {
-	currentKeyCode=findKeyCode(aMouseEvent.pos());
-	currentKeyHShifted=false;
-	startHShiftTimer();
-	emit keyPressed();
-	return currentKeyCode!=INVALID_KEY_CODE;
+	if(aMouseEvent.button()==Qt::LeftButton)
+	{
+		currentKeyCode=findKeyCode(aMouseEvent.pos());
+		currentKeyHShifted=false;
+		startHShiftTimer();
+		emit keyPressed();
+		return currentKeyCode!=INVALID_KEY_CODE;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)
