@@ -72,30 +72,30 @@ void error_message(const unsigned int e)
 	static const char *const error_table[] = 
 	{
 		// manually get the order correct!
-		"Running\0PrograMm", 
+		"Running\0ProGraMm", 
 		"Domain\0",
 		"Bad time\0or dAtE",
-		"Undefined\0Op-CODE",
+		"Undefined\0Op-COdE",
 		"+\237\0",
 		"-\237\0",
-		"No such\0LABEL",
-		"Illegal\0OperAtion",
+		"No such\0LAbEL",
+		"Illegal\0OPErAtion",
 		"Out of range\0",
 		"Bad digit\0",
 		"Too long\0",
-		"RAM is\0Full",
+		"RAM is\0FuLL",
 		"Stack\0CLASH",
 		"Bad mode\0",
 		"Word size\0too SMmALL",
-		"Too few\0dAtA Points",
+		"Too few\0dAtA PointS",
 		"Invalid\0ParaMmEtEr",
 		"I/O\0",
 		"Invalid\0dAtA",
-		"Write\0Protected",
-		"No root\0found",
+		"Write\0ProtEctEd",
+		"No root\0Found",
 		"Matrix\0MmISMmAtCH",
 		"Singular\0",
-		"Flash is\0Full",
+		"Flash is\0FuLL",
 		"\004 \035\0X",		// Integral ~
 	};
 
@@ -120,10 +120,10 @@ void error_message(const unsigned int e)
 
 /* Variable width font for the dot matrix part of the display.
  * Each character consists of a length and six
- * five bit bit masks that define the character.
- * This means that the maximum character width is six,
- * five real bits and a space column.  It is possible to
- * set make a character wider than this, but the right side
+ * five-bit bit masks that define the character.
+ * This means that the maximum character width is six columns,
+ * five real bit columns and a space column.  It is possible to
+ * make a character wider than this, but the right side
  * will be blank.  We store the lengths and definitions in
  * separate arrays to make for shorter/faster access.
  */
