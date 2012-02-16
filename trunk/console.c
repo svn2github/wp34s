@@ -213,30 +213,31 @@ static const struct {
 	const char *const name;
 } xrom_labels[] = {
 #define X(op, n, s)	{ RARG(RARG_ ## op, (n) & RARG_MASK), s},
-#define XE(n, s)	X(ERROR, n, s)
-	XE(ERR_DOMAIN, "Error: Domain Error")
-	XE(ERR_BAD_DATE, "Error: Bad Date Error")
-	XE(ERR_PROG_BAD, "Error: Undefined Op-code")
-	XE(ERR_INFINITY, "Error: +infinity")
-	XE(ERR_MINFINITY, "Error: -infinity")
-	XE(ERR_NO_LBL, "Error: no such label")
-	XE(ERR_ILLEGAL, "Error: Illegal operation")
-	XE(ERR_RANGE, "Error: out of range error")
-	XE(ERR_DIGIT, "Error: bad digit error")
-	XE(ERR_TOO_LONG, "Error: too long error")
-	XE(ERR_RAM_FULL, "Error: RTN stack full")
-	XE(ERR_STK_CLASH, "Error: stack clash")
-	XE(ERR_BAD_MODE, "Error: bad mode error")
-	XE(ERR_INT_SIZE, "Error: word size too small")
-	XE(ERR_MORE_POINTS, "Error: more data points required")
-	XE(ERR_BAD_PARAM, "Error: invalid parameter")
-	XE(ERR_IO, "Error: input / output problem")
-	XE(ERR_INVALID, "Error: invalid data")
-	XE(ERR_READ_ONLY, "Error: write protected")
-	XE(ERR_SOLVE, "Error: solve failed")
-	XE(ERR_MATRIX_DIM, "Error: matrix dimension mismatch")
-	XE(ERR_SINGULAR, "Error: matrix singular")
-	XE(ERR_FLASH_FULL, "Error: flash is full")
+#define XE(n, s)	X(ERROR, n, "Error: " # s)	X(MESSAGE, n, "Message: " # s)
+	XE(ERR_DOMAIN, "Domain Error")
+	XE(ERR_BAD_DATE, "Bad Date Error")
+	XE(ERR_PROG_BAD, "Undefined Op-code")
+	XE(ERR_INFINITY, "+infinity")
+	XE(ERR_MINFINITY, "-infinity")
+	XE(ERR_NO_LBL, "no such label")
+	XE(ERR_ILLEGAL, "Illegal operation")
+	XE(ERR_RANGE, "out of range error")
+	XE(ERR_DIGIT, "bad digit error")
+	XE(ERR_TOO_LONG, "too long error")
+	XE(ERR_RAM_FULL, "RTN stack full")
+	XE(ERR_STK_CLASH, "stack clash")
+	XE(ERR_BAD_MODE, "bad mode error")
+	XE(ERR_INT_SIZE, "word size too small")
+	XE(ERR_MORE_POINTS, "more data points required")
+	XE(ERR_BAD_PARAM, "invalid parameter")
+	XE(ERR_IO, "input / output problem")
+	XE(ERR_INVALID, "invalid data")
+	XE(ERR_READ_ONLY, "write protected")
+	XE(ERR_SOLVE, "solve failed")
+	XE(ERR_MATRIX_DIM, "matrix dimension mismatch")
+	XE(ERR_SINGULAR, "matrix singular")
+	XE(ERR_FLASH_FULL, "flash is full")
+	XE(MSG_INTEGRATE, "integration progress")
 #undef XE
 #undef X
 };
@@ -245,7 +246,7 @@ static const struct {
 static void dump_code(unsigned int pc, unsigned int max, int annotate) {
 	int dbl = 0, sngl = 0;
 
-	printf("ADDR  OPCODE     MNEMONIC%s\n\n", annotate?"\tComment":"");
+	printf("ADDR  OPCODE     MNEMONIC%s\n\n", annotate?"\t\tComment":"");
 	do {
 		char instr[16];
 		const opcode op = getprog(pc);
@@ -262,18 +263,29 @@ static void dump_code(unsigned int pc, unsigned int max, int annotate) {
 		if (op == RARG(RARG_ALPHA, ' '))
 			strcpy(instr+2, "[space]");
 
-		pc = do_inc(pc, 0);
 		while (*p != '\0') {
 			char c = *p++;
 			const char *q = pretty(c);
 			if (q == NULL) putchar(c);
-			else printf("[%s]", q);
+			else if (strcmp("narrow-space", q) == 0 && *p == c) {
+				printf(" ");
+				p++;
+			} else printf("[%s]", q);
 		}
-		if (annotate)
+		if (annotate) {
+			extern const unsigned short int xrom_targets[];
 			for (i=0; i<num_xrom_labels; i++)
 				if (xrom_labels[i].op == op)
-					printf("\t\t%s", xrom_labels[i].name);
+					printf("\t\t\t%s", xrom_labels[i].name);
+			if (RARG_CMD(op) == RARG_SKIP || RARG_CMD(op) == RARG_BSF)
+				printf("\t\t-> %04x", pc + (op & 0xff) + 1);
+			else if (RARG_CMD(op) == RARG_BACK || RARG_CMD(op) == RARG_BSB)
+				printf("\t\t-> %04x", pc - (op & 0xff));
+			else if (RARG_CMD(op) == RARG_XEQ || RARG_CMD(op) == RARG_GTO)
+				printf("\t\t\t-> %04x", addrXROM(0) + xrom_targets[op & RARG_MASK]);
+		}
 		putchar('\n');
+		pc = do_inc(pc, 0);
 	} while (! PcWrapped);
 	if (annotate)
 		printf("%u XROM words\n%d single word instructions\n%d double word instructions\n", max-pc, sngl, dbl);
