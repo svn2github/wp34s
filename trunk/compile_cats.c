@@ -1149,6 +1149,9 @@ int main(int argc, char *argv[]) {
 
 	license(stdout, "/* ", " * ", " */");
 
+	printf("#ifndef CATALOGUES_H_INCLUDED\n"
+		"#define CATALOGUES_H_INCLUDED\n\n");
+
 	printf("static const unsigned char opcode_breaks[KIND_MAX] = {\n\t");
 	for (i = 0; i < sizeof(opcode_breaks)/sizeof(opcode_breaks[0]); ++i)
 		printf("%d, ", opcode_breaks[i]);
@@ -1191,5 +1194,6 @@ int main(int argc, char *argv[]) {
 		" * Total number of conversion entries %d\n"
 		" * Total number of alpha entries %d\n"
 		" */\n", total_cat, total_conv, total_alpha);
+	printf("#endif\n");
 	return 0;
 }
