@@ -703,19 +703,6 @@ static void const_small(FILE *fh) {
 	const_conv_tbl(f);
 	fprintf(f, "\n#undef B\n");
 	fprintf(f, "#undef D\n\n");
-
-#if 0
-	fprintf(f, "const unsigned short int charlengthtbl[%d] = {\n\t", (512 + 4) / 5);
-	for (i=0; i<512; i+=5) {
-		unsigned short val = 0;
-		int j;
-		for (j=4; j>=0; j--)
-			val = (val << 3) + (7 & charlengths[i+j]);
-		fprintf(f, "%5u,%s", val, (n%8)==0?"\n\t":" ");
-		n++;
-	}
-	fprintf(f, "\n};\n\n");
-#endif
 	fclose(f);
 }
 

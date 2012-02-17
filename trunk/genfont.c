@@ -698,40 +698,6 @@ static void gen_charset(FILE *f) {
 			"\t\t}\n"
 			"\t}\n"
 			"}\n\n");
-#if 0
-/* Variable width font for the dot matrix part of the display.
- * Each character consists of a length and six
- * five-bit bit masks that define the character.
- * This means that the maximum character width is six columns,
- * five real bit columns and a space column.  It is possible to
- * make a character wider than this, but the right side
- * will be blank.  We store the lengths and definitions in
- * separate arrays to make for shorter/faster access.
- */
-
-static void unpack6(unsigned long s, unsigned char d[6]) {
-	int i;
-
-	for (i=5; i>=0; i--) {
-		d[i] = s & 31;
-		s >>= 5;
-	}
-}
-
-#endif
-#if 0
-	for (i=0; i<512; i++) {
-		const char *name = charset[i].name;
-		if (name == NULL)
-			name = "non-character";
-
-		fprintf(f, "\tC( %d, %2d, %2d, %2d, %2d, %2d, %2d ),\t\t/* %s */\n",
-			charset[i].width,
-			charset[i].bitrows[0], charset[i].bitrows[1], charset[i].bitrows[2],
-			charset[i].bitrows[3], charset[i].bitrows[4], charset[i].bitrows[5],
-			name);
-	}
-#endif
 }
 
 int main(int argc, char *argv[]) {
