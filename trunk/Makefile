@@ -163,12 +163,12 @@ endif
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c consts.c alpha.c charmap.c \
 		commands.c string.c storage.c serial.c matrix.c \
-		stopwatch.c
+		stopwatch.c font.c
 ifeq ($(SYSTEM),windows32)
 SRCS += winserial.c
 endif
 
-HEADERS := alpha.h charset.h charset7.h complex.h consts.h data.h \
+HEADERS := alpha.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
 		stats.h xeq.h xrom.h storage.h serial.h matrix.h \
 		stopwatch.h 
@@ -305,11 +305,11 @@ lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
 charset7.h: $(UTILITIES)/genchars7$(EXE)
 	$(UTILITIES)/genchars7$(EXE) >$@
 
-pretty.h charset.h charmap.c: $(UTILITIES)/genfont$(EXE) Makefile
+pretty.h font.c charmap.c: $(UTILITIES)/genfont$(EXE) Makefile
 	$(UTILITIES)/genfont$(EXE)
 
 $(UTILITIES)/compile_consts$(EXE): compile_consts.c $(DNSRCS) Makefile features.h \
-		licence.h charset.h charmap.c
+		licence.h charmap.c
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -DNEED_D64FROMSTRING -DNEED_D128FROMSTRING -o $@ $< $(DNSRCS)
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
@@ -360,7 +360,8 @@ $(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h errors.h data.h alpha.h
 		Makefile features.h
 $(OBJECTDIR)/decn.o: decn.c decn.h xeq.h errors.h data.h consts.h complex.h int.h serial.h lcd.h Makefile features.h
 $(OBJECTDIR)/display.o: display.c xeq.h errors.h data.h display.h consts.h lcd.h int.h revision.h \
-		charset.h charset7.h decn.h alpha.h decn.h storage.h Makefile features.h
+		charset7.h decn.h alpha.h decn.h storage.h Makefile features.h
+$(OBJECTDIR)/font.o: font.c
 $(OBJECTDIR)/int.o: int.c int.h xeq.h errors.h data.h serial.h Makefile features.h
 $(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h errors.h data.h display.h lcdmap.h atmel/board.h \
 		Makefile features.h

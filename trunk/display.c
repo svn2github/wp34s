@@ -118,40 +118,6 @@ void error_message(const unsigned int e)
 }
 
 
-/* Variable width font for the dot matrix part of the display.
- * Each character consists of a length and six
- * five-bit bit masks that define the character.
- * This means that the maximum character width is six columns,
- * five real bit columns and a space column.  It is possible to
- * make a character wider than this, but the right side
- * will be blank.  We store the lengths and definitions in
- * separate arrays to make for shorter/faster access.
- */
-
-static void unpack6(unsigned long s, unsigned char d[6]) {
-	int i;
-
-	for (i=5; i>=0; i--) {
-		d[i] = s & 31;
-		s >>= 5;
-	}
-}
-
-#define pack6(a, b, c, x, y, z)					\
-		(	((a & 31) << 25) | ((b & 31) << 20) |	\
-			((c & 31) << 15) | ((x & 31) << 10) |	\
-			((y & 31) << 5) | (z & 31)	)
-
-static unsigned int charlengths(unsigned int c) {
-	return (charlengthtbl[c/5] >> (3*(c%5))) & 7;
-}
-
-static const unsigned long chars[512] = {
-#define C(len, a, b, c, x, y, z)	pack6(a, b, c, x, y, z)
-#include "charset.h"
-#undef C
-};
-
 /* Define a limited character set for the 7-segment portion of the
  * display.
  */
@@ -1575,6 +1541,7 @@ void frozen_display()
  * column is almost always blank.
  */
 static void set_status_sized(const char *str, int smallp) {
+	unsigned short int posns[257];
 	unsigned int x = 0;
 	int i, j;
 	const unsigned short szmask = smallp?0x100:0;
@@ -1584,6 +1551,7 @@ static void set_status_sized(const char *str, int smallp) {
 	xset(mat, 0, sizeof(mat));
 #endif
 
+	findlengths(posns, smallp);
 	while (*str != '\0' && x <= BITMAP_WIDTH+1)  {
 		const unsigned char ch = *str++;
 		const unsigned short c = ch | szmask;
@@ -1597,7 +1565,7 @@ static void set_status_sized(const char *str, int smallp) {
 			break;
 
 		/* Decode the packed character bytes */
-		unpack6(chars[c], cmap);
+		unpackchar(ch, cmap, smallp, posns);
 		for (i=0; i<6; i++)
 			for (j=0; j<width; j++) {
 				if (x+j >= BITMAP_WIDTH)

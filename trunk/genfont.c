@@ -569,24 +569,6 @@ static void gen_pretty(FILE *f) {
 	fprintf(f, "};\n\n");
 }
 
-static void gen_charset(FILE *f) {
-	int i;
-
-	license(f, "/* ", " * ", " */");
-
-	for (i=0; i<512; i++) {
-		const char *name = charset[i].name;
-		if (name == NULL)
-			name = "non-character";
-
-		fprintf(f, "\tC( %d, %2d, %2d, %2d, %2d, %2d, %2d ),\t\t/* %s */\n",
-			charset[i].width,
-			charset[i].bitrows[0], charset[i].bitrows[1], charset[i].bitrows[2],
-			charset[i].bitrows[3], charset[i].bitrows[4], charset[i].bitrows[5],
-			name);
-	}
-}
-
 static int map_sort(const void *v1, const void *v2) {
 	const int i1 = *(const int *)v1;
 	const int i2 = *(const int *)v2;
@@ -636,9 +618,125 @@ skip:
 			"}\n");
 }
 
+static void emit_bitmap(FILE *f, int beg, int end, const char *name) {
+	int i, n, row;
+	unsigned char buffer[10000];
+
+	for (n=0, i=beg; i<end; i++)
+		n += charset[i].width - 1;
+	fprintf(f,	"\tstatic const unsigned char %s[6][%d] = {\n", name, (n+7)/8);
+	for (row=0; row<6; row++) {
+		int l = 0;
+		int base = 0;
+		int b;
+
+		fprintf(f,	"\t\t{\n\t\t\t");
+		for (i=0; i<10000; i++)
+			buffer[i] = 0;
+		for (i=beg; i<end; i++)
+			for (b=0; b<charset[i].width-1; b++, base++)
+				if (charset[i].bitrows[row] & (1 << b))
+					buffer[base / 8] |= (1 << (base % 8));
+		for (i=0; i< (n+7)/8; i++) {
+			fprintf(f,	"%3u,%s", buffer[i], (l++ % 12) == 11 ? "\n\t\t\t" : " ");
+		}
+		fprintf(f,	"\n\t\t},\n");
+	}
+	fprintf(f,	"\t};\n");
+}
+
+static void gen_charset(FILE *f) {
+	int i;
+	int n=0, l=0;
+
+	license(f, "/* ", " * ", " */");
+
+	fprintf(f,	"/* Function to return the length of a specific character in pixels\n"
+			" */\n\n"
+			"unsigned int charlengths(unsigned int c) {\n"
+			"\tstatic const unsigned char widths[%d] = {\n\t\t", (512 + 2) / 3);
+	for (i=0; i<512; i++) {
+		const int w = charset[i].width - 1;
+		if (w < 0 || w > 5) {
+			fprintf(stderr, "Error with character %d: width is out of range%d\n", i, charset[i].width);
+			exit(1);
+		}
+		switch (i%3) {
+		case 0:	n = w;		break;
+		case 1:	n += w*6;	break;
+		case 2:
+			n += w*36;
+			fprintf(f, "%3d,%s", n, (l++ % 12) == 11 ? "\n\t\t" : " ");
+		}
+	}
+	fprintf(f, 	"%3d\n\t};\n"
+			"\tstatic const unsigned char divs[3] = { 1, 6, 36 };\n"
+			"\treturn (widths[c/3] / divs[c%%3]) %% 6 + 1;\n"
+			"}\n\n",
+		n);
+
+	fprintf(f,	"void findlengths(unsigned short int posns[257], int smallp) {\n"
+			"\tconst int mask = smallp ? 256 : 0;\n"
+			"\tint i;\n\n"
+			"\tposns[0] = 0;\n"
+			"\tfor(i=0; i<256; i++)\n"
+			"\t\tposns[i+1] = posns[i] + charlengths(i + mask) - 1;\n"
+			"}\n\n");
+
+	fprintf(f,	"void unpackchar(unsigned int c, unsigned char d[6], int smallp, const unsigned short int posns[257]) {\n");
+	emit_bitmap(f, 0, 256, "bm_large");
+	emit_bitmap(f, 256, 512, "bm_small");
+	fprintf(f,	"\tunsigned int n = posns[c&255];\n"
+			"\tconst unsigned int fin = posns[(c&255)+1];\n"
+			"\tunsigned int i, j;\n\n"
+			"\tfor(i=0; i<6; i++) d[i] = 0;\n"
+			"\tfor (i=0; n < fin; i++,n++) {\n"
+			"\t\tfor (j=0; j<6; j++) {\n"
+			"\t\t\tconst unsigned char z = smallp ? (bm_small[j][n>>3]) : (bm_large[j][n>>3]);\n"
+			"\t\t\tif (z & (1 << (n&7)))\n"
+			"\t\t\t\td[j] |= 1 << i;\n"
+			"\t\t}\n"
+			"\t}\n"
+			"}\n\n");
+#if 0
+/* Variable width font for the dot matrix part of the display.
+ * Each character consists of a length and six
+ * five-bit bit masks that define the character.
+ * This means that the maximum character width is six columns,
+ * five real bit columns and a space column.  It is possible to
+ * make a character wider than this, but the right side
+ * will be blank.  We store the lengths and definitions in
+ * separate arrays to make for shorter/faster access.
+ */
+
+static void unpack6(unsigned long s, unsigned char d[6]) {
+	int i;
+
+	for (i=5; i>=0; i--) {
+		d[i] = s & 31;
+		s >>= 5;
+	}
+}
+
+#endif
+#if 0
+	for (i=0; i<512; i++) {
+		const char *name = charset[i].name;
+		if (name == NULL)
+			name = "non-character";
+
+		fprintf(f, "\tC( %d, %2d, %2d, %2d, %2d, %2d, %2d ),\t\t/* %s */\n",
+			charset[i].width,
+			charset[i].bitrows[0], charset[i].bitrows[1], charset[i].bitrows[2],
+			charset[i].bitrows[3], charset[i].bitrows[4], charset[i].bitrows[5],
+			name);
+	}
+#endif
+}
+
 int main(int argc, char *argv[]) {
 	FILE * f_pretty = fopen("pretty.h", "w");
-	FILE * f_charset = fopen("charset.h", "w");
+	FILE * f_charset = fopen("font.c", "w");
 	FILE * f_charmap = fopen("charmap.c", "w");
 
 	gen_pretty(f_pretty);

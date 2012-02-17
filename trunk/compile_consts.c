@@ -676,16 +676,8 @@ static void const_small_sort(struct _constsml ctbl[]) {
 }
 
 
-static const unsigned char charlengths[512+5] = {
-#define C(len, a, b, c, x, y, z)	len
-#include "charset.h"
-#undef C
-	0, 0, 0, 0, 0
-};
-
 static void const_small(FILE *fh) {
 	FILE *f;
-	int i, n=1;
 
 	f = fopen(consts_c, "w");
 	if (f == NULL)
@@ -710,8 +702,9 @@ static void const_small(FILE *fh) {
 	const_small_tbl(f);
 	const_conv_tbl(f);
 	fprintf(f, "\n#undef B\n");
-	fprintf(f, "#undef D\n\n\n");
+	fprintf(f, "#undef D\n\n");
 
+#if 0
 	fprintf(f, "const unsigned short int charlengthtbl[%d] = {\n\t", (512 + 4) / 5);
 	for (i=0; i<512; i+=5) {
 		unsigned short val = 0;
@@ -722,6 +715,7 @@ static void const_small(FILE *fh) {
 		n++;
 	}
 	fprintf(f, "\n};\n\n");
+#endif
 	fclose(f);
 }
 
@@ -756,7 +750,6 @@ int main(int argc, char *argv[])
 			"#define METRIC_NAMELEN %d\n"
 			"#define IMPERIAL_NAMELEN %d\n"
 			"\n\n", CONST_NAMELEN, METRIC_NAMELEN, IMPERIAL_NAMELEN);
-	fprintf(fh, "extern const unsigned short int charlengthtbl[];\n\n");
 	fu = fopen(user_consts_h, "w");
 	if (fu == NULL) {
 		perror(user_consts_h);

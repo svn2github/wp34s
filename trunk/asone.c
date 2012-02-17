@@ -36,6 +36,7 @@ __attribute__((externally_visible)) void LowLevelInit(void);
 #include "console.c"
 #endif
 
+#include "font.c"
 #include "charmap.c"
 #include "commands.c"
 #include "alpha.c"

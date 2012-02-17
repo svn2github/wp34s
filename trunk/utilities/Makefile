@@ -25,7 +25,7 @@ gl: gausslegendre.c Makefile
 zc: zetaconsts.c Makefile
 	cc -o zc zetaconsts.c -I.. -L../decNumber -ldecNumber 
 
-font: font.c Makefile ../charset.h
+font: font.c Makefile ../font.c ../charmap.c
 	cc -o font font.c
 
 clean:

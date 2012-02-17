@@ -44,4 +44,8 @@ extern void dot(int n, int on);
 extern void stopwatch_message(const char *str1, const char *str2, int dot_pos, char* exponent);
 #endif // INCLUDE_STOPWATCH
 
+extern unsigned int charlengths(unsigned int);
+extern void findlengths(unsigned short int posns[257], int smallp);
+extern void unpackchar(unsigned int c, unsigned char d[6], int smallp, const unsigned short int posns[257]);
+
 #endif

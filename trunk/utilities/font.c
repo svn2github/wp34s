@@ -17,33 +17,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define C(w, a,b,c,d,e,f)	{ w, { a,b,c,d,e,f } }
+#define NCH	512
 
-struct ch {
-	int width;
-	int p[6];
-} chars[] = {
-#include "../charset.h"
-};
-#define NCH	(sizeof(chars) / sizeof(struct ch))
-
+#include "../font.c"
 #include "../charmap.c"
+
+extern unsigned int charlengths(unsigned int c);
+extern void findlengths(unsigned short int posns[257], int smallp);
+extern void unpackchar(unsigned int c, unsigned char d[6], int smallp, const unsigned short int posns[257]);
 
 int main() {
 	int i, j, k;
+	unsigned short int pos_small[257], pos_large[257];
 	int total_width = 0;
+
+	findlengths(pos_small, 1);
+	findlengths(pos_large, 0);
 
 	for (i=0; i<NCH; i++) {
 		int gap[6];
+		const int width = charlengths(i);
+		unsigned char p[6];
+		int small = i > 255;
 
 		for (k=0; k<6; k++)
 			gap[k] = 0;
 
 		printf("Character %d  sort position %u\n", i, remap_chars(0xff & i));
+		unpackchar(i & 255, p, small, small ? pos_small : pos_large);
 		for (j=0; j<6; j++) {
 			printf("\t%d\t", j);
-			for (k=0; k<chars[i].width; k++) {
-				if (chars[i].p[j] & (1 << k)) {
+			for (k=0; k<width; k++) {
+				if (p[j] & (1 << k)) {
 					putchar('#');
 				} else {
 					gap[k]++;
@@ -52,15 +57,15 @@ int main() {
 			}
 			putchar('\n');
 		}
-		for (k=0; k<chars[i].width-1; k++) {
+		for (k=0; k<width-1; k++) {
 			if (gap[k] == 6)
 				printf("warning: column %d is blank\n", k+1);
 		}
-		if (gap[chars[i].width-1] != 6)
+		if (gap[width-1] != 6)
 			printf("warning: last column isn't all blanks\n");
 		printf("\n");
-		total_width += chars[i].width;
+		total_width += width;
 	}
-	printf("Total width is %d (%lu real columns)\n", total_width, total_width - NCH);
+	printf("Total width is %d (%d real columns)\n", total_width, total_width - NCH);
 	return 0;
 }
