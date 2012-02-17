@@ -23,6 +23,25 @@
  *
  * This uses a fourth order approximation and isn't sufficiently accurate for
  * inclusion as a built in function.
+ *
+ * The series used here and for the complex version is:
+ *
+ * Psi(x) = ln x - 1/(2^x) -1/(12x2) + 1/(120x^4) - 1/(252x&6) + 1/(240x^8)  is used for  x > 8 
+ * Psi(x+1) = Psi(x) + 1/x 
+ * Psi(-x) = 1/x + Psi(x) + Pi/Tan ( Pi x )
+ *
+ *
+ * Adding more terms to the first of these should greatly improve accuracy:
+ *
+ * psi(x) = -log(1/x) - 1/(2 x) - 1/(12 x^2) + 1/(120 x^4) - 1/(252 x^6) +
+ *		1/(240 x^8) - 1/(132 x^10) + 691/(32760 x^12) - 1/(12 x^14) +
+ *		3617/(8160 x^16) - 43867/(14364 x^18) + 174611/(6600 x^20) -
+ *		77683/(276 x^22) + 236364091/(65520 x^24) -
+ *		657931/(12 x^26) + 3392780147/(3480 x^28) -
+ *		1723168255201/(85932 x^30) + 7709321041217/(16320 x^32) -
+ *		151628697551/(12 x^34) + 26315271553053477373/(69090840 x^36) -
+ *		154210205991661/(12 x^38) + 261082718496449122051/(541200 x^40) +
+ *	    O((1/x)^42)
  */
 		XLBL"DIGAMMA"
 			xIN MONADIC
