@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
 	decContext ctx;
 
 	decContextDefault(&ctx, DEC_INIT_BASE);
-	ctx.traps = 0;
+	// ctx.traps = 0;
 	ctx.digits = DECNUMDIGITS;
 	ctx.emax=DEC_MAX_MATH;
 	ctx.emin=-DEC_MAX_MATH;

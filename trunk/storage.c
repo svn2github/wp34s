@@ -658,6 +658,10 @@ void load_registers( enum nilop op )
 		return;
 	}
 	count = NumRegs;
+	if ( is_dblmode() ) {
+		// Don't clobber the stack in DP mode
+		count -= EXTRA_REG + STACK_SIZE;
+	}
 	if ( count > BackupFlash._numregs ) {
 		count = BackupFlash._numregs;
 	}
