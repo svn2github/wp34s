@@ -31,6 +31,7 @@ struct ch {
 
 int main() {
 	int i, j, k;
+	int total_width = 0;
 
 	for (i=0; i<NCH; i++) {
 		int gap[6];
@@ -58,6 +59,8 @@ int main() {
 		if (gap[chars[i].width-1] != 6)
 			printf("warning: last column isn't all blanks\n");
 		printf("\n");
+		total_width += chars[i].width;
 	}
+	printf("Total width is %d (%lu real columns)\n", total_width, total_width - NCH);
 	return 0;
 }
