@@ -1,0 +1,149 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifdef INCLUDE_XROM_DIGAMMA
+/**************************************************************************/
+/* Real digamma function.
+ *
+ * This code is based on Jean-Marc Baillard's HP-41 version from:
+ *	http://hp41programs.yolasite.com/gamma.php
+ *
+ * This uses a fourth order approximation and isn't sufficiently accurate for
+ * inclusion as a built in function.
+ */
+		XLBL"DIGAMMA"
+			xIN MONADIC
+			LocR 3
+			SSIZE4
+			x<0?
+				SF .00
+			ABS
+			STO .02
+			_INT 8
+			SWAP
+digamma_lp::		1/x
+			STO+ .00
+			x[<->] L
+			INC X
+			x<? Y
+				JMP digamma_lp
+			1/x
+			STO .01
+			x[^2]
+			STO Y
+			RCL Y
+			_INT 20
+			/
+			_INT 21
+			1/x
+			-
+			[times]
+			Num 1
+			SDR 1
+			+
+			[times]
+			DEC X
+			[times]
+			_INT 12
+			/
+			RCL .01
+			LN
+			RCL L
+			_INT 2
+			/
+			+
+			-
+			RCL- .00
+			FC? .00
+				xOUT xOUT_NORMAL
+			RCL .02
+			1/x
+			+
+			Num [pi]
+			RCL .02
+			RCL .02
+			ROUNDI
+			-
+			Num [pi]
+			[times]
+			TAN
+			/
+			+
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Complex digamma function.
+ *
+ * This uses a fourth order approximation and isn't sufficiently accurate for
+ * inclusion as a built in function.
+ */
+		XLBL"CPX_DIGAMMA"
+			xIN MONADIC_COMPLEX
+			LocR 6
+			x<0?
+				SF .00
+			FS? .00
+				[cmplx]+/-
+			[cmplx]STO .04
+			[cmplx]_INT 8
+			CSWAP
+c_digamma_lp::		[cmplx]1/x
+			[cmplx]STO+ .00
+			[cmplx]x[<->] L
+			INC X
+			x<? Z
+				JMP c_digamma_lp
+			[cmplx]1/x
+			[cmplx]STO .02
+			[cmplx]RCL[times] X
+			[cmplx]STO Z
+			[cmplx]RCL Z
+			[cmplx]_INT 20
+			[cmplx]/
+			[cmplx]_INT 21
+			[cmplx]1/x
+			[cmplx]-
+			[cmplx][times]
+			[cmplx]Num 1
+			SDR 1
+			[cmplx]+
+			[cmplx][times]
+			DEC X
+			[cmplx][times]
+			[cmplx]_INT 12
+			[cmplx]/
+			[cmplx]RCL .02
+			[cmplx]LN
+			[cmplx]RCL L
+			[cmplx]_INT 2
+			[cmplx]/
+			[cmplx]+
+			[cmplx]-
+			[cmplx]RCL- .00
+			FC? .00
+				xOUT xOUT_NORMAL
+			[cmplx]RCL .04
+			[cmplx]1/x
+			[cmplx]+
+			[cmplx]Num [pi]
+			[cmplx]RCL .04
+			[cmplx]RCL[times] Z
+			[cmplx]TAN
+			[cmplx]/
+			[cmplx]+
+			xOUT xOUT_NORMAL
+
+#endif

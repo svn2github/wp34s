@@ -74,6 +74,10 @@
 // both real and complex arguments.  These are implemented in XROM.
 // #define INCLUDE_XROM_BESSEL
 
+// Inlcude real and complex flavours of the digamma function.  These are
+// implemented in XROM and are not very accurate at present -- do not enable.
+// #define INCLUDE_XROM_DIGAMMA
+
 // Include a fused multiply add instruction
 // This isn't vital since this can be done using a complex addition.
 // Space cost 108 bytes.

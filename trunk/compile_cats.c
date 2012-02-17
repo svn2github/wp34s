@@ -157,6 +157,9 @@ static s_opcode program_xfcn[] = {
 	DYA(OP_BESYN,		"Yn")
 	DYA(OP_BESKN,		"Kn")
 #endif
+#ifdef INCLUDE_XROM_DIGAMMA
+	MON(OP_DIGAMMA,		"[PSI]")
+#endif
 
 
 	/* Integer mode commands */
@@ -307,6 +310,9 @@ static s_opcode catalogue[] = {
 	DYA(OP_BESYN,		"Yn")
 	DYA(OP_BESKN,		"Kn")
 #endif
+#ifdef INCLUDE_XROM_DIGAMMA
+	MON(OP_DIGAMMA,		"[PSI]")
+#endif
 
 	NILIC(OP_DATE,		"DATE")
 	NILIC(OP_TIME,		"TIME")
@@ -348,6 +354,9 @@ static s_opcode cplx_catalogue[] = {
 	CDYA(OP_BESIN,		"In")
 	CDYA(OP_BESYN,		"Yn")
 	CDYA(OP_BESKN,		"Kn")
+#endif
+#ifdef INCLUDE_XROM_DIGAMMA
+	CMON(OP_DIGAMMA,	"[PSI]")
 #endif
 };
 

@@ -282,6 +282,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #ifdef MATRIX_LU_DECOMP
 	FUNC(OP_MAT_LU, &matrix_lu_decomp,	NOFN,		NOFN,		"M.LU")
 #endif
+#ifdef INCLUDE_XROM_DIGAMMA
+	FUNC(OP_DIGAMMA,XMR(DIGAMMA),		XMC(CPX_DIGAMMA),	NOFN,	"\226")
+#endif
 #undef FUNC
 };
 

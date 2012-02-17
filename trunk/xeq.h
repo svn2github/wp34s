@@ -622,6 +622,9 @@ enum {
 #ifdef MATRIX_LU_DECOMP
 	OP_MAT_LU,
 #endif
+#ifdef INCLUDE_XROM_DIGAMMA
+	OP_DIGAMMA,
+#endif
 	NUM_MONADIC	// Last entry defines number of operations
 };
     
