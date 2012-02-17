@@ -12,8 +12,10 @@ D - Debug:     Disables all power saving. Unlocks the following ON+S
 
 S - SAM-BA:    Clears the GPNVM1 bit and turns the calculator off.
                S is on the '6' key. Works only in debug mode.
-               ATTENTION: You can now only boot into SAM-BA mode!
+               ATTENTION: You can now only boot into SAM-BA boot mode!
                Without the SAM-BA software and the cable, you're lost!
+	       ON+S is disabled until ON+D is active. This shall prevent
+	       accidental access to this possibly dangerous feature.
 
 These ON key combinations have to be pressed twice in a row without
 releasing the ON key to be executed.
@@ -25,20 +27,28 @@ instead to get into SAM-BA boot mode.
 
 I/O commands in the P.FCN catalogue:
 
-PSTO     Store the current program in the flash library.
-         Alphanumeric labels in flash can be called with XEQ.
-         Use the label browser (CAT, f+RCL) to see the labels.
+PSTO     Store the current program in the flash library. The program
+         needs to have an alphanumeric label somewhere. Alphanumeric
+	 labels in flash can be called with XEQ. Use the label browser
+	 (CAT, accessed with h-shift RCL) to see the labels.
+	 If a program with the same label exists in the library it will
+	 be removed first. The new data is always added at the end of
+	 the library in flash memory.
 
-PRCL     Restore a program to RAM where data can be edited.
-         You can PRCL a program from RAM to RAM to make duplicate.
+PRCL     Restore a program to RAM where data can be edited. You can 
+         PRCL a program from RAM to RAM to make a duplicate.
 
 LOAD     Executes ON+RCL. This is available on the emulator, too.
 
 SAVE     Executes ON+STO. See above.
 
-RRCL     Recall the register data only from a previously created backup.
+LOADR    Recall the register data only from a previously created backup.
+         The command just recalls the numbered registers, not the stack
+	 or special registers.
 
-SRCL     Recall the setup data only from a previously created backup.
+LOADS    Recall the setup data only from a previously created backup.
+
+LOAD[SIGMA] Recall the summation data from the backup.
 
 You can recall a group of registers from the backup with the command
 R-COPY from the program catalogue. Just give it a negative value in X
@@ -64,7 +74,9 @@ How to transfer data between the calculator and your PC (SAM-BA)
 ================================================================
 
 This discussion is superceded by the new serial I/O commands. It's
-still interesting enough to leave it here as a reference.
+still interesting enough to leave it here as a reference. It needs
+Atmel's original SAM_BA.exe program. For regular flashing of the
+firmware, MySamba from the flashtools directory on SF is recommended.
 
 The whole RAM is saved to address 0x11f800 (relative address 0x1f800)
 with ON+STO. This can be copied to your PC or loaded from it.
@@ -80,10 +92,10 @@ with ON+STO. This can be copied to your PC or loaded from it.
    g) The emulator should accept the file. Your registers and programs
       will than be in place.
    h) To get your calculator back in business, start the "Boot from flash"
-      script in SAM-BA, the same procedure you should know from flashing
-      the firmware.
-   i) Reset and power the calculator up and perform a restore with ON+RCL.
-      The latest version does the restore automatically when RAM is lost.
+      script in SAM-BA, the same procedure you might already know from 
+      flashing the firmware with this tool.
+   i) Reset and power the calculator up. The RAM is automatically
+      restored from the backup.
 
 2. From PC to calculator
 
@@ -99,12 +111,16 @@ How to transfer data between the calculator and your PC (Serial I/O)
 Both the emulator and the calculator can talk to each other with the
 same cable used for programming. In the emulator directory a text file
 wp34s.ini must be placed that contains the name of the port such as COM2:
+The new Qt based emulators for Windows and MacOS contain a setup option
+for the serial interface. They will eventually replace the current
+Windows emulator completely. With a proper cable it is even possible to
+transfer data between two calculators with the same set of commands.
 
 On the receiver (emulator or calculator) execute RECV (from P.FCN).
 
 On the sender, you can send data with the following P.FCN commands:
 
-SENDA   sends all memory including state.
+SENDA   sends all memory, including state.
 SENDP   sends the currently selected program. It may reside in any
         memory area in the calculator. It is appended to the programs
         already in RAM on the receiving device.
