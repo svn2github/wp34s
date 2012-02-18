@@ -78,7 +78,7 @@
 // implemented in XROM.  THe first setting is sufficient for accuracy for
 // single precision, the second needs to be enabled as well to get good
 // results for double precision..
-#define INCLUDE_XROM_DIGAMMA
+// #define INCLUDE_XROM_DIGAMMA
 // #define XROM_DIGAMMA_DOUBLE_PRECISION
 
 // Include a fused multiply add instruction
