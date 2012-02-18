@@ -157,13 +157,13 @@ digamma_loop::		_INT (CONST_DG02)
 			_INT (CONST_DG20)
 
 #ifdef XROM_DIGAMMA_DOUBLE_PRECISION
-			FC? .11
+			FC? Flag_mode_double
 				JMP digamma_single_loop
 			DROP
 			_INT (CONST_DG40)
 #endif
 digamma_single_loop::	+
-			STO 00
+			// STO 00	What was meant here, Pauli?
 			STO J
 			DROP
 			RTN
