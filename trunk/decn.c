@@ -30,7 +30,7 @@ static FILE *debugf = NULL;
 
 static void open_debug(void) {
 	if (debugf == NULL) {
-		debugf = fopen("/dev/pts/3", "w");
+		debugf = fopen("/dev/ttys001", "w");
 	}
 }
 static void dump1(const decNumber *a, const char *msg) {
@@ -1906,7 +1906,17 @@ decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x) {
 	dn_add(&t, &s, &m);			// t = mm.ss
 	dn_mulpow10(&m, &t, -2);		// t = .mmss
 	decNumberTrunc(&s, x);			// s = hh
-	dn_add(res, &m, &s);			// res = hh.mmss
+	dn_add(&t, &m, &s);			// t = hh.mmss = result
+
+	// Now fix any rounding/carry issues
+	dn_mulpow10(&s, &t, 2);			// hhmm.ssss
+	decNumberFrac(&m, &s);			// .ssss
+	if (dn_ge(&m, &const_0_6))
+		dn_add(&s, &s, &const_0_4);
+	dn_mulpow10(res, &s, -2);		// hh.mmssss
+	decNumberFrac(&m, res);
+	if (dn_ge(&m, &const_0_6))
+		dn_add(res, res, &const_0_4);
 	return res;
 }
 
