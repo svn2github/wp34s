@@ -3952,6 +3952,17 @@ static int check_xin_xout(void) {
 void cmdxin(unsigned int arg, enum rarg op) {
 
 	int i = XromFlags.xIN;
+
+#ifndef REALBUILD
+	/* This should never happen in a real build but it causes havoc writing
+	 * xrom code, so trap it here.
+	 */
+	if (i) {
+		err(ERR_ILLEGAL);
+		return;
+	}
+#endif
+
 	if (check_xin_xout())
 		return;
 
