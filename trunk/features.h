@@ -47,7 +47,7 @@
 #define INCLUDE_INTERNAL_CATALOGUE
 
 // Include the CNSTS command to access cnstants via indirection
-// #define INCLUDE_INDIRECT_CONSTS
+#define INCLUDE_INDIRECT_CONSTS
 
 #ifndef TINY_BUILD
 
@@ -75,8 +75,11 @@
 // #define INCLUDE_XROM_BESSEL
 
 // Inlcude real and complex flavours of the digamma function.  These are
-// implemented in XROM and are not very accurate at present -- do not enable.
-// #define INCLUDE_XROM_DIGAMMA
+// implemented in XROM.  THe first setting is sufficient for accuracy for
+// single precision, the second needs to be enabled as well to get good
+// results for double precision..
+#define INCLUDE_XROM_DIGAMMA
+// #define XROM_DIGAMMA_DOUBLE_PRECISION
 
 // Include a fused multiply add instruction
 // This isn't vital since this can be done using a complex addition.
@@ -129,6 +132,11 @@
 #if defined(INCLUDE_BERNOULLI) && ! defined(INCLUDE_ZETA)
 /* Bernoulli numbers need real zeta */
 #define INCLUDE_ZETA
+#endif
+
+#if defined(XROM_DIGAMMA_DOUBLE_PRECISION) && ! defined(INCLUDE_XROM_DIGAMMA)
+/* Accurate digamma needs normal digamma */
+#define INCLUDE_XROM_DIGAMMA
 #endif
 
 #endif  /* TINY_BUILD*/

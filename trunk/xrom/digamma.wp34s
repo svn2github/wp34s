@@ -18,42 +18,44 @@
 /**************************************************************************/
 /* Real digamma function.
  *
- * This code is based on Jean-Marc Baillard's HP-41 version from:
- *	http://hp41programs.yolasite.com/gamma.php
+ * The formulas used here and for the complex version are as follows.
  *
- * This uses a fourth order approximation and isn't sufficiently accurate for
- * inclusion as a built in function.
+ * First, the reflection formula is used to bring the argument positive:
+ *	Psi(-x) = 1/x + Psi(x) + Pi/Tan ( Pi x )
  *
- * The series used here and for the complex version is:
+ * Then small arguments are bought large enough for the series expansion (see DIGAMMA_LOWER_BOUND below):
+ *	Psi(x+1) = Psi(x) + 1/x
  *
- * Psi(x) = ln x - 1/(2^x) -1/(12x2) + 1/(120x^4) - 1/(252x&6) + 1/(240x^8)  is used for  x > 8 
- * Psi(x+1) = Psi(x) + 1/x 
- * Psi(-x) = 1/x + Psi(x) + Pi/Tan ( Pi x )
+ * Finally, this expansion is used to evaluate the function:
+ *	Psi(x) = -log(1/x) - 1/(2 x) -
+ 			1/(12 x^2) + 1/(120 x^4) - 1/(252 x^6) +
+ *			1/(240 x^8) - 1/(132 x^10) + 691/(32760 x^12) - 1/(12 x^14) +
+ *			3617/(8160 x^16) - 43867/(14364 x^18) + 174611/(6600 x^20) -
+ *			77683/(276 x^22) + 236364091/(65520 x^24) -
+ *			657931/(12 x^26) + 3392780147/(3480 x^28) -
+ *			1723168255201/(85932 x^30) + 7709321041217/(16320 x^32) -
+ *			151628697551/(12 x^34) + 26315271553053477373/(69090840 x^36) -
+ *			154210205991661/(12 x^38) + 261082718496449122051/(541200 x^40) +
+ *	    			O((1/x)^42)
  *
- *
- * Adding more terms to the first of these should greatly improve accuracy:
- *
- * psi(x) = -log(1/x) - 1/(2 x) - 1/(12 x^2) + 1/(120 x^4) - 1/(252 x^6) +
- *		1/(240 x^8) - 1/(132 x^10) + 691/(32760 x^12) - 1/(12 x^14) +
- *		3617/(8160 x^16) - 43867/(14364 x^18) + 174611/(6600 x^20) -
- *		77683/(276 x^22) + 236364091/(65520 x^24) -
- *		657931/(12 x^26) + 3392780147/(3480 x^28) -
- *		1723168255201/(85932 x^30) + 7709321041217/(16320 x^32) -
- *		151628697551/(12 x^34) + 26315271553053477373/(69090840 x^36) -
- *		154210205991661/(12 x^38) + 261082718496449122051/(541200 x^40) +
- *	    O((1/x)^42)
+ * Currently, terms up to and including x^20 are used which suffices for single precision.
+ * Double precision could do with more terms.  These terms are stored as their reciprocals
+ * to reduce space requirements in the early terms.
  */
+
+#define DIGAMMA_LOWER_BOUND	12
+
 		XLBL"DIGAMMA"
 			xIN MONADIC
 			LocR 3
-			SSIZE4
+			GSB digamma_loop
 			x<0?
 				SF .00
 			ABS
 			STO .02
-			_INT 8
+			_INT DIGAMMA_LOWER_BOUND
 			SWAP
-digamma_lp::		1/x
+digamma_lp::		1/x				/* Preconditioning loop until x is large enough */
 			STO+ .00
 			x[<->] L
 			INC X
@@ -62,22 +64,14 @@ digamma_lp::		1/x
 			1/x
 			STO .01
 			x[^2]
-			STO Y
-			RCL Y
-			_INT 20
-			/
-			_INT 21
+			FILL
+			Num 0
+digamma_horner::	CNST[->]J
 			1/x
-			-
-			[times]
-			Num 1
-			SDR 1
 			+
 			[times]
-			DEC X
-			[times]
-			_INT 12
-			/
+			DSL J
+				JMP digamma_horner
 			RCL .01
 			LN
 			RCL L
@@ -112,13 +106,14 @@ digamma_lp::		1/x
 		XLBL"CPX_DIGAMMA"
 			xIN MONADIC_COMPLEX
 			LocR 6
+			GSB digamma_loop
 			x<0?
 				SF .00
 			FS? .00
 				[cmplx]+/-
 			[cmplx]STO .04
-			[cmplx]_INT 8
-			CSWAP
+			_INT DIGAMMA_LOWER_BOUND
+			[<->] YZXX
 c_digamma_lp::		[cmplx]1/x
 			[cmplx]STO+ .00
 			[cmplx]x[<->] L
@@ -128,22 +123,14 @@ c_digamma_lp::		[cmplx]1/x
 			[cmplx]1/x
 			[cmplx]STO .02
 			[cmplx]RCL[times] X
-			[cmplx]STO Z
-			[cmplx]RCL Z
-			[cmplx]_INT 20
-			[cmplx]/
-			[cmplx]_INT 21
-			[cmplx]1/x
-			[cmplx]-
-			[cmplx][times]
-			[cmplx]Num 1
-			SDR 1
+			[cmplx]FILL
+			[cmplx]Num 0
+cpx_digamma_horner::	[cmplx]CNST[->]J
+			1/x
 			[cmplx]+
 			[cmplx][times]
-			DEC X
-			[cmplx][times]
-			[cmplx]_INT 12
-			[cmplx]/
+			DSL J
+				JMP cpx_digamma_horner
 			[cmplx]RCL .02
 			[cmplx]LN
 			[cmplx]RCL L
@@ -164,5 +151,23 @@ c_digamma_lp::		[cmplx]1/x
 			[cmplx]/
 			[cmplx]+
 			xOUT xOUT_NORMAL
+
+digamma_loop::		_INT (CONST_DG02)
+			SDR 3
+			_INT (CONST_DG20)
+
+#ifdef XROM_DIGAMMA_DOUBLE_PRECISION
+			FC? .11
+				JMP digamma_single_loop
+			DROP
+			_INT (CONST_DG40)
+#endif
+digamma_single_loop::	+
+			STO 00
+			STO J
+			DROP
+			RTN
+
+#undef DIGAMMA_LOWER_BOUND
 
 #endif
