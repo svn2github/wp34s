@@ -596,8 +596,13 @@ static void gen_charmap(FILE *f) {
 			" * than a switch statement to catch the exception.  Lower case is for\n"
 			" * Greek letters and the Roman letter doesn't correspond at all with the Greek.\n"
 			" */\n\n"
-			"/* Maximum distinguished value is %d */\n\n\n"
-			"static const unsigned char character_remapping_order[256] = {\n\t", n);
+			"/* Maximum distinguished value is %d */\n\n"
+			"/* Take a character and remap it into sort order.\n"
+			" * Also cater for different cases, diacriticals and some\n"
+			" * special symbols being identical from an ordering perspective.\n"
+			" */\n"
+			"unsigned char remap_chars(unsigned char ch) {\n"
+			"\tstatic const unsigned char character_remapping_order[256] = {\n\t", n);
 	for (i=0; i<256; i++) {
 		for (j=0; j<=n; j++)
 			if (idx[j] == charset[i].sortas)
@@ -608,13 +613,8 @@ skip:
 		if ((i%8) == 7)
 			fprintf(f, "\t// %04o\n\t", i-7);
 	}
-	fprintf(f, "};\n\n\n"
-			"/* Take a character and remap it into sort order.\n"
-			" * Also cater for different cases, diacriticals and some\n"
-			" * special symbols being identical from an ordering perspective.\n"
-			" */\n"
-			"unsigned char remap_chars(unsigned char ch) {\n"
-			"	return character_remapping_order[ch & 0xff];\n"
+	fprintf(f,	"};\n\n"
+			"\treturn character_remapping_order[ch & 0xff];\n"
 			"}\n");
 }
 
