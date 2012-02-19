@@ -913,6 +913,7 @@ static unsigned char alpha_superscripts[] = {
 static unsigned char alpha_subscripts[] = {
 	0270,	0271,	0272,			// sub-0, sub-1, sub-2
 	0327,	0230,	0273,			// sub-A, sub-B, sub-c
+        0206,                                   // sub-d
 	0274,	0367,	0033,			// sub-e, sub-k, sub-m
 	0275,	0276,	0277,			// sub-n, sub-p, sub-u
 	0201,					// sub-w

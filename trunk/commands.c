@@ -166,8 +166,8 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_ACOSH,	&decNumberArcCosh,	XMC(cpx_ACOSH),	NOFN,		"ACOSH")
 	FUNC(OP_ATANH,	&decNumberArcTanh,	XMC(cpx_ATANH),	NOFN,		"ATANH")
 #ifdef INCLUDE_GUDERMANNIAN
-	FUNC(OP_GUDER,	XMR(gd),		XMC(cpx_gd),	NOFN,		"gd")
-	FUNC(OP_INVGUD,	XMR(inv_gd),		XMC(cpx_inv_gd),NOFN,		"gd\235")
+	FUNC(OP_GUDER,	XMR(gd),		XMC(cpx_gd),	NOFN,		"g\206")
+	FUNC(OP_INVGUD,	XMR(inv_gd),		XMC(cpx_inv_gd),NOFN,		"g\206\235")
 #endif
 
 	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	NOFN,		"x!")
