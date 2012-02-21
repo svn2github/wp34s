@@ -43,8 +43,6 @@
  * to reduce space requirements in the early terms.
  */
 
-#define DIGAMMA_LOWER_BOUND	12
-
 		XLBL"DIGAMMA"
 			xIN MONADIC
 			LocR 3
@@ -53,7 +51,7 @@
 				SF .00
 			ABS
 			STO .02
-			_INT DIGAMMA_LOWER_BOUND
+			GSB digamma_lower
 			SWAP
 digamma_lp::		1/x				/* Preconditioning loop until x is large enough */
 			STO+ .00
@@ -112,7 +110,7 @@ digamma_horner::	CNST[->]J
 			FS? .00
 				[cmplx]+/-
 			[cmplx]STO .04
-			_INT DIGAMMA_LOWER_BOUND
+			GSB digamma_lower
 			[<->] YZXX
 c_digamma_lp::		[cmplx]1/x
 			[cmplx]STO+ .00
@@ -152,21 +150,27 @@ cpx_digamma_horner::	[cmplx]CNST[->]J
 			[cmplx]+
 			xOUT xOUT_NORMAL
 
+digamma_lower::		_INT 10
+#ifdef XROM_DIGAMMA_DOUBLE_PRECISION
+			FS? Flag_mode_double
+			RCL+ X
+#endif
+			RTN
+
+
 digamma_loop::		_INT (CONST_DG02)
 			SDR 3
-			_INT (CONST_DG20)
+			_INT (CONST_DG22)
 
 #ifdef XROM_DIGAMMA_DOUBLE_PRECISION
 			FC? Flag_mode_double
 				JMP digamma_single_loop
 			DROP
-			_INT (CONST_DG40)
+			_INT (CONST_DG34)
 #endif
 digamma_single_loop::	+
 			STO J
 			DROP
 			RTN
-
-#undef DIGAMMA_LOWER_BOUND
 
 #endif
