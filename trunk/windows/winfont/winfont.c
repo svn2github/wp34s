@@ -19,8 +19,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <memory.h>
+#include <ctype.h>
 
 #include "../../font.c"
+#include "../../translate.c"
 
 extern unsigned int charlengths( unsigned int c );
 extern void findlengths( unsigned short int posns[ 257 ], int smallp);
@@ -29,83 +32,22 @@ extern void unpackchar(unsigned int c, unsigned char d[ 6 ], int smallp, const u
 #define MAX_ROWS 6
 #define MAX_COLS 6
 
-typedef unsigned short WORD;
-typedef unsigned long  DWORD;
-typedef char	       CHAR;
-typedef unsigned char  BYTE;
-
-#pragma pack(1)
-
-#define DF_VERSION       0x0300
-#define DF_COPYRIGHT	 "(c) 2012 The WP 34S Team. Covered by the GPL V3."
-#define DF_RESOLUTION	 72
-#define DFF_PROPORTIONAL 2
-#define DFT_BITMAP       0
-#define FW_REGULAR       400
-#define DF_CHARSET       0		// what should it be?
-#define PW_PROPORTIONAL  0		// proportional
-#define FF_SWISS	 ( 2 << 4 )	// no serifs, proportional
-
-typedef struct {
-	WORD  dfVersion;
-	DWORD dfSize;
-	CHAR  dfCopyright[60];
-	WORD  dfType;
-	WORD  dfPoints;
-	WORD  dfVertRes;
-	WORD  dfHorizRes;
-	WORD  dfAscent;
-	WORD  dfInternalLeading;
-	WORD  dfExternalLeading;
-	BYTE  dfItalic;
-	BYTE  dfUnderline;
-	BYTE  dfStrikeOut;
-	WORD  dfWeight;
-	BYTE  dfCharSet;
-	WORD  dfPixWidth;
-	WORD  dfPixHeight;
-	BYTE  dfPitchAndFamily;
-	WORD  dfAvgWidth;
-	WORD  dfMaxWidth;
-	BYTE  dfFirstChar;
-	BYTE  dfLastChar;
-	BYTE  dfDefaultChar;
-	BYTE  dfBreakChar;
-	WORD  dfWidthBytes;
-	DWORD dfDevice;
-	DWORD dfFace;
-	DWORD dfBitsPointer;
-	DWORD dfBitsOffset;
-	BYTE  dfReserved;
-	DWORD dfFlags;
-	WORD  dfAspace, dfBspace, dfCspace;
-	DWORD dfColorPointer;
-	BYTE  dfReserved1[ 16 ];
-	struct _glyphentry {
-		WORD  geWidth;
-		DWORD geOffset;
-	}     dfCharTable[ 257 ];
-	CHAR  szFaceName[ 1 ];
-	// CHAR  szDeviceName;
-} FONT;
-
 const char *FaceName[ 2 ] = {
-	"WP 34S Raster Font Regular",
-	"WP 34S Raster Font Small"
+	"Regular",
+	"Small"
 };
 
 int main( int argc, char **argv ) 
 {
-	int i;
-	int file_size;
+	int i, j, k, l;
 	unsigned short int positions[257];
 	int smallfont = 0;
-	int scale = 1;
-	int gap = 0;
-	int bytes_per_row;
+	int cp1252 = 0;
+	int gap = 5;
+	FILE *t;
 	FILE *f;
-	FONT *font;
-	char *p;
+	char *p = "Template.sfd";
+	char buffer[ 256 ];
 
 	/*
 	 *  Get arguments
@@ -114,30 +56,43 @@ int main( int argc, char **argv )
 		if ( strcmp( argv[ 1 ], "-s" ) == 0 ) {
 			smallfont = 1;
 		}
+		if ( strcmp( argv[ 1 ], "-t" ) == 0 ) {
+			cp1252 = 1;
+		}
 		++argv;
 		--argc;
 	}
 	if ( argc >= 3 ) {
-		scale = atoi( argv[ 2 ] );
+		p = argv[ 2 ];
 		if ( argc >= 4 ) {
 			gap = atoi( argv[ 3 ] );
 		}
 	}
 
-	if ( argc < 2 || scale == 0 || gap >= scale ) {
-		printf( "Usage: winfont [-s] <font-file> [<scale> [<gap>]]\n"
+	/* 
+	 *  Open template file
+	 */
+	t = fopen( p, "r" );
+
+	if ( argc < 2 || t == NULL || gap > 50 || gap < 0 ) {
+		printf( "Usage: winfont [-s] [-t] <font-file> [<template> [<gap>]]\n"
 			"       -s creates the small font\n"
-			"       <font-file> should end in .fnt\n"
+			"	-t translates to CP1252 (sort of)\n"
+			"       <font-file> should end in .sfd\n"
 			"       <scale> defines the pixel size (including gap)\n"
-			"       <gap> defines the space between pixels\n");
+			"       <gap> defines the space between pixels between 0 and 50% \n");
+		if ( t == NULL ) {
+			perror( p );
+			abort();
+		}
 		exit( 1 );
 	}
 
 	/*
-	 *  Open the FNT file
+	 *  Open the font file
 	 */
-	printf( "Writing %s font to file %s, scale=%d, gap=%d\n", 
-		smallfont ? "small" : "regular", argv[ 1 ], scale, gap );
+	fprintf( stderr, "Writing %s font to file %s, template=%s, gap=%d, cp1252=%d\n", 
+			 smallfont ? "small" : "regular", argv[ 1 ], p, gap, cp1252 );
 	f = fopen( argv[ 1 ], "wb" );
 	if ( f == NULL ) {
 		perror( argv[ 1 ] );
@@ -145,93 +100,126 @@ int main( int argc, char **argv )
 	}
 
 	/*
-	 *  Allocate buffer (size is estimated)
+	 *  Read the template and copy contents to font file
+	 *  $1 will be substituted by "Regular" or "Small"
+	 *  $$ will contain the font information, starting with 1
 	 */
-	bytes_per_row = ( MAX_COLS * scale + 7 ) / 8;
-	file_size = sizeof( FONT ) + strlen( FaceName[ smallfont ] ) + 257 * bytes_per_row * MAX_ROWS * scale;
-	font = (FONT *) malloc( file_size );
-	if ( font == NULL ) {
-		perror( "malloc" );
-		abort();
-	}
-	memset( font, 0, file_size );
+	while ( !feof( t ) ) {
 
-	/*
-	 *  Fill the header
-	 */
-	font->dfVersion = DF_VERSION;
-	strcpy( font->dfCopyright, DF_COPYRIGHT );
-	font->dfType = DFT_BITMAP;
-	font->dfPoints = scale * (MAX_ROWS - smallfont);
-	font->dfVertRes = DF_RESOLUTION;
-	font->dfHorizRes = DF_RESOLUTION;
-	font->dfAscent = scale * (MAX_ROWS - smallfont);
-	font->dfInternalLeading = 0;
-	font->dfExternalLeading = scale;
-	font->dfWeight = FW_REGULAR;
-	font->dfCharSet = DF_CHARSET;
-	font->dfPixHeight = scale * MAX_ROWS;
-	font->dfPitchAndFamily = FF_SWISS;
-	font->dfAvgWidth = scale * charlengths( 'X' );
-	font->dfMaxWidth = scale * MAX_COLS;
-	font->dfFirstChar = 0;
-	font->dfLastChar = 255;
-	font->dfDefaultChar = '.';
-	font->dfBreakChar = ' ';
-	font->dfWidthBytes = bytes_per_row;
-	font->dfFace = font->szFaceName - (char *) font;
-	strcpy( font->szFaceName, FaceName[ smallfont ] );
-	p = font->szFaceName + strlen( font->szFaceName ) + 1;
-	if ( (int) p & 1 ) {
-		++p;
-	}
-	font->dfBitsOffset = p - (char *) font;
-	font->dfFlags = DFF_PROPORTIONAL;
+		p = fgets( buffer, sizeof( buffer ), t );
+		if ( p == NULL ) {
+			if ( errno ) {
+				perror( "Read template" );
+				fclose( f );
+				abort();
+			}
+			continue;
+		}
 
-	/*
-	 *  Create the glyphs
-	 */
-	findlengths( positions, smallfont );
+		p = strstr( buffer, "$1" );
+		if ( p != NULL ) {
+			/*
+			 *  Complete the face name
+			 */
+			const char *face = FaceName[ smallfont ];
+			const int l = strlen( face );
+			const int rest = strlen( p + 2 );
 
-	for ( i = 0; i < 257; ++i ) {
-		const int width = charlengths( ( i & 0xff ) + 256 * smallfont );
-		unsigned char bits[ 6 ];
-		int j, k, b;
+			memmove( p + l, p + 2, rest + 1 );
+			memcpy( p, face, l );
+		}
+		if ( strncmp( buffer, "$$", 2 ) != 0 ) {
+			/*
+			 *  Write the line unchanged
+			 */
+			if ( EOF == fputs( buffer, f ) ) {
+				goto error;
+			}
+			continue;
+		}
 
-		font->dfCharTable[ i ].geWidth = width * scale;
-		font->dfCharTable[ i ].geOffset = p - (char *) font;
+		/*
+		 *  Create the glyphs
+		 */
+		findlengths( positions, smallfont );
 
-		unpackchar( i & 0xff, bits, smallfont, positions );
+		for ( i = 1; i < 256; ++i ) {
+			const int width = charlengths( i + 256 * smallfont );
+			const int c = cp1252 ? from_cp1252[ i ] : i;
+			unsigned char bits[ 6 ];
+			const char *cp;
+			int empty = 1;
 
-		for ( j = 0; j < MAX_ROWS; ++j ) {
-			unsigned char pattern = bits[ j ];
-			int jj;
-			for ( jj = 0; jj < scale - gap; ++jj ) {
+			unpackchar( i, bits, smallfont, positions );
+
+			l = fprintf( f, "StartChar: " );
+			for ( cp = charnames[ i ]; *cp != '\0'; ++cp ) {
+				if ( isalnum( *cp ) ) {
+					fputc( *cp, f );
+				}
+			}
+			if ( l <= 0 ) {
+				goto error;
+			}
+			l = fprintf( f, "\nEncoding: %d %d %d\n", c, unicode[ i ], i );
+			if ( l <= 0 ) {
+				goto error;
+			}
+			l = fprintf( f, "Width: %d\n", width * 100 );
+			if ( l <= 0 ) {
+				goto error;
+			}
+			l = fprintf( f, "VWidth: 0\nFlags:\nLayerCount: 2\nFore\nSplineSet\n" );
+			if ( l <= 0 ) {
+				goto error;
+			}
+
+			/*
+			 *  Generate the drawing instructions
+			 */
+			for ( j = 0; j < MAX_ROWS; ++j ) {
+				unsigned char pattern = bits[ j ];
+				int y1 = ( MAX_ROWS - 1 - j ) * 100;
+
 				for ( k = 0; k < width; k++ ) {
+					int x1 = k * 100;
+					int x2 = x1 + 100 - gap;
+					int y2 = y1 + 100 - gap;
 					if ( pattern & ( 1 << k ) ) {
-						for ( b = scale * k; b < scale * ( k + 1 ) - gap; ++b ) {
-							p[ scale * MAX_ROWS * ( b / 8 ) ] |= ( 0x80 >> ( b % 8 ) );
+						empty = 0;
+						l = fprintf( f, " %d %d m 1\n"
+							        " %d %d l 1\n"
+							        " %d %d l 1\n"
+							        " %d %d l 1\n"
+							        " %d %d l 1\n",
+							        x1, y1,
+							        x1, y2,
+							        x2, y2, 
+							        x2, y1,
+							        x1, y1 );
+						if ( l <= 0 ) {
+							goto error;
 						}
 					}
 				}
-				++p;
 			}
-			p += gap;
+			if ( empty ) {
+				l = fprintf( f, " -1 801 m 1\n -1 801 l 1\n" );
+				if ( l <= 0 ) {
+					goto error;
+				}
+			}
+			fprintf( f, "EndSplineSet\nEndChar\n\n" );
+			if ( j < 0 ) {
+				goto error;
+			}
 		}
-		p += scale * MAX_ROWS * ( bytes_per_row - 1 );
-	}
-	
-	/*
-	 *  Write the font file
-	 */
-	file_size = p - (char *) font;
-	font->dfSize = file_size;
-	
-	if ( 1 != fwrite( font, file_size, 1, f ) ) {
-		perror( "frwite" );
-		fclose( f );
-		abort();
 	}
 	fclose( f );
 	return 0;
+
+error:
+	perror( "Write font file" );
+	fclose( f );
+	abort();
 }

@@ -53,7 +53,7 @@
     </Link>
     <PostBuildEvent>
       <Command>make_fonts.cmd $(Configuration)</Command>
-      <Message>Erzeuge die FNT-Dateien</Message>
+      <Message>Erzeuge die Fontdateien</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -73,11 +73,12 @@
       <Command>make_fonts.cmd $(Configuration)</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>Erzeuge die FNT-Dateien</Message>
+      <Message>Erzeuge die Fontdateien</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\font.c" />
+    <ClInclude Include="..\..\translate.c" />
     <ClCompile Include="winfont.c" />
   </ItemGroup>
   <ItemGroup>
