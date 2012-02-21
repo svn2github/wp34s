@@ -1,0 +1,124 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* The exposed functions in this file don't use the normal prologue/epilogue
+ * and do not operate in double precision.  They call back to user code and
+ * manage the stack, input, output and locals themselves.
+ *
+ * Changes to this will likely cause breakage.
+ */
+
+/**************************************************************************/
+/* Solve code.
+ * Based on code by Valentin Albillo for the HP 35s available from:
+ *
+ *	http://membres.multimania.fr/albillo/calc/pdf/DatafileVA031.pdf
+ *
+ * and also published in Datafile.
+ *
+ *
+ * On entry the stack looks like:
+ *
+ *	Y	Guess complex component
+ *	X	Guess real component
+ *
+ *
+ * On return the stack looks like:
+ *
+ *	Y/X	Complex result
+ *
+ * The rest of the stack is zeroed.
+ */
+
+	LBL'[cmplx]SV'
+	LocR 12
+		[cmplx]STO .10
+		1
+		SDR 4
+		STO .00
+		.
+		5
+		STO .02
+
+		LBL 00
+			[cmplx]RCL .10
+			[cmplx]FILL
+			XEQ'FNC'
+			XEQ 01
+			[cmplx]RCL/ .02
+			[cmplx]STO .04
+
+			[cmplx]RCL .10
+			RCL+ .00
+			[cmplx]FILL
+			XEQ'FNC'
+			XEQ 01
+			[cmplx]STO .06
+
+			[cmplx]RCL .10
+			RCL- .00
+			[cmplx]FILL
+			XEQ'FNC'
+			XEQ 01
+			[cmplx]STO .08
+
+			[cmplx]RCL+ .06
+			[cmplx]RCL- .04
+			0
+			ENTER[^]
+			1
+			SDL 8
+			[cmplx][times]
+			[cmplx]RCL .06
+			[cmplx]RCL- .08
+			[cmplx]RCL/ .00
+			[cmplx]RCL[times] .02
+			[cmplx]STO .08
+			[cmplx]/
+			[cmplx]STO .06
+			[cmplx]RCL .00
+			[cmplx]STO+ .10
+			[cmplx]x[<->] Z
+			[cmplx]RCL[times] .04
+			[cmplx]RCL/ .08
+			DEC X
+			[cmplx]+/-
+			[cmplx]RCL .02
+			[cmplx]y[^x]
+			DEC X
+			[cmplx]RCL/ .10
+			[cmplx]x[<->] .10
+			[cmplx]STO+ .10
+			[cmplx]RCL .10
+			[cmplx]-
+			[cmplx]ABS
+			x>? .00
+				GTO 00
+		
+		CLSTK
+		[cmplx]STO L
+		[cmplx]x[<->] Z
+		[cmplx]RCL .10
+		RTN
+
+		LBL 01
+			SPEC?
+				ERR 20
+			x[<->] Y
+			SPEC?
+				ERR 20
+			x[<->] Y
+		RTN
