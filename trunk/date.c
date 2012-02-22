@@ -476,7 +476,7 @@ void date_alphadate(enum nilop op) {
 /*
  *  Time functions
  */
-static int extract_time(int *h, int *m, int *s) {
+static int extract_time(int *h, int *m, int *s, int hour_threshold) {
 	int hms;
 	decNumber a, b;
 
@@ -487,7 +487,7 @@ static int extract_time(int *h, int *m, int *s) {
 	hms /= 100;
 	*m = (hms % 100);
 	*h = hms / 100;
-	if (hms < 0 || *h >= 24 || *m >= 60 || *s >= 60) {
+	if (hms < 0 || *h >= hour_threshold || *m >= 60 || *s >= 60) {
 		err(ERR_BAD_DATE);
 		return 1;
 	}
@@ -499,7 +499,7 @@ void date_alphatime(enum nilop op) {
 	int h, m, s;
 	const char *suffix;
 
-	if (extract_time(&h, &m, &s))
+	if (extract_time(&h, &m, &s, 100))
 		return;
 	xset(buf, '\0', sizeof(buf));
 	if (UState.t12) {
@@ -605,7 +605,7 @@ void date_setdate(enum nilop op) {
 
 void date_settime(enum nilop op) {
 	int h, m, s;
-	if (extract_time(&h, &m, &s))
+	if (extract_time(&h, &m, &s, 24))
 		return;
 #ifdef REALBUILD
 	busy();
