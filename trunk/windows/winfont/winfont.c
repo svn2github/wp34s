@@ -270,8 +270,8 @@ int main( int argc, char **argv )
 
 				for ( k = 0; k < width; k++ ) {
 					int x1 = k * 1600 / 13;
-					int x2 = x1 + ( 100 - gap ) * 16 / 13;
-					int y2 = y1 + ( 100 - gap ) * 16 / 13;
+					int x2 = x1 + ( 100 - gap ) * 16 / 13 - ( gap == 0 );
+					int y2 = y1 + ( 100 - gap ) * 16 / 13 - ( gap == 0 );
 					if ( pattern & ( 1 << k ) ) {
 						empty = 0;
 						l = fprintf( f, " %d %d m 1\n"
