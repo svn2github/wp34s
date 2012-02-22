@@ -137,6 +137,9 @@ LBL A
 	FC? 00
 	XEQ 01
 	STO 01
+	CL[alpha]
+	[alpha]'N='
+	VW[alpha]+ 01
 	GTO 00
 
 LBL B
@@ -145,6 +148,9 @@ LBL B
 	FC? 00
 	XEQ 03
 	STO 03
+	CL[alpha]
+	[alpha]'PV='
+	VW[alpha]+ 03
 	GTO 00
 
 LBL C
@@ -153,6 +159,10 @@ LBL C
 	FC? 00
 	XEQ 04
 	STO 04
+	CL[alpha]
+	[alpha]'PMT'
+	[alpha] =
+	VW[alpha]+ 04
 	GTO 00
 
 LBL D
@@ -161,6 +171,9 @@ LBL D
 	FC? 00
 	XEQ 05
 	STO 05
+	CL[alpha]
+	[alpha]'FV='
+	VW[alpha]+ 05
 	GTO 00
 
 LBL 21
@@ -169,6 +182,9 @@ LBL 21
 	FC?S 00
 	RCL 06
 	STO 06
+	CL[alpha]
+	[alpha]'NP='
+	VW[alpha]+ 06
 	GTO 00
 
 LBL 22
@@ -177,6 +193,9 @@ LBL 22
 	FC?S 00
 	RCL 07
 	STO 07
+	CL[alpha]
+	[alpha]'NI='
+	VW[alpha]+ 07
 	GTO 00
 
 LBL 23
@@ -185,6 +204,9 @@ LBL 23
 	FC? 00
 	XEQ 02
 	STO 02
+	CL[alpha]
+	[alpha]'I='
+	VW[alpha]+ 02
 	GTO 00
 
 LBL 01  // N=?
