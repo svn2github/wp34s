@@ -417,6 +417,7 @@ extern int PcWrapped;		   // decpc() or incpc() have wrapped around
 extern int ShowRPN;		   // controls the RPN annunciator
 extern const char *DispMsg;	   // What to display in message area
 extern char TraceBuffer[];         // Display current instruction
+extern char LastDisplayedText[NUMALPHA + 1];	   // This is for the emulator (clipboard)
 extern unsigned int OpCode;        // Pending execution waiting for key-release
 extern s_opcode XeqOpCode;	   // Currently executed function
 extern unsigned char GoFast;	   // Speed-up might be necessary

@@ -189,7 +189,9 @@ void reset_disp(void) {
 	int rcl = is_dot(RCL_annun);
 	int bat = is_dot(BATTERY);
 	int leq = is_dot(LIT_EQ);
-
+#ifndef REALBUILD
+	*LastDisplayedText = '\0';
+#endif
         wait_for_display();
 #ifdef QTGUI
     	xset(LcdData, 0, sizeof(LcdData));

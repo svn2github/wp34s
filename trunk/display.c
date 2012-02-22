@@ -33,6 +33,9 @@ static void set_status(const char *);
 static void set_status_right(const char *);
 
 const char *DispMsg;	   // What to display in message area
+#ifndef REALBUILD
+char LastDisplayedText[NUMALPHA + 1];	   // For clipboard export
+#endif
 
 int ShowRPN;		   // controls visibility of RPN annunciator
 int JustDisplayed;	   // Avoid duplicate calls to display()
@@ -1550,7 +1553,9 @@ static void set_status_sized(const char *str, int smallp) {
 
 	xset(mat, 0, sizeof(mat));
 #endif
-
+#ifndef REALBUILD
+	scopy(LastDisplayedText, str);
+#endif
 	findlengths(posns, smallp);
 	while (*str != '\0' && x <= BITMAP_WIDTH+1)  {
 		const unsigned char ch = *str++;

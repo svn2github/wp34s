@@ -170,12 +170,20 @@ void ClearFlag( int flag )
 wchar_t *GetTopLineW( void )
 {
 	static wchar_t buffer[ NUMALPHA + 1 ];
- 	const unsigned char *p = (const unsigned char *) ( DispMsg == NULL ? Alpha : DispMsg );
+ 	char *p = *LastDisplayedText == '\0' ? Alpha : LastDisplayedText;
 	wchar_t *q = buffer;
+	int only_blanks = 1;
 
 	memset( buffer, 0, sizeof( buffer ) );
 	while ( *p != '\0' ) {
-		*q++ = (wchar_t) unicode[ *p++ ]; 
+		if ( *p != ' ' && *p != 006 ) {
+			only_blanks = 0;
+		}
+		*q++ = (wchar_t) unicode[ *p++ & 0xff ]; 
+	}
+	if ( only_blanks ) {
+		*LastDisplayedText = '\0';
+		return GetTopLineW();
 	}
 	return buffer;
 }
