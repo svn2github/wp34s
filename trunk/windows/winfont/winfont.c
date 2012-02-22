@@ -248,7 +248,7 @@ int main( int argc, char **argv )
 			if ( j ) {
 				putc( '\n', f );
 			}
-			l = fprintf( f, "Width: %d\n", width * 100 );
+			l = fprintf( f, "Width: %d\n", width * 1600 / 13 );
 			if ( l <= 0 ) {
 				goto error;
 			}
@@ -266,12 +266,12 @@ int main( int argc, char **argv )
 			}
 			for ( j = 0; j < MAX_ROWS; ++j ) {
 				unsigned char pattern = bits[ j ];
-				int y1 = ( MAX_ROWS - 1 - j ) * 100;
+				int y1 = ( MAX_ROWS - 1 - smallfont - j ) * 1600 / 13;
 
 				for ( k = 0; k < width; k++ ) {
-					int x1 = k * 100;
-					int x2 = x1 + 100 - gap;
-					int y2 = y1 + 100 - gap;
+					int x1 = k * 1600 / 13;
+					int x2 = x1 + ( 100 - gap ) * 16 / 13;
+					int y2 = y1 + ( 100 - gap ) * 16 / 13;
 					if ( pattern & ( 1 << k ) ) {
 						empty = 0;
 						l = fprintf( f, " %d %d m 1\n"
