@@ -28,7 +28,7 @@ static bool  (*P_GetFlag)(int);
 static void  (*P_SetFlag)(int);
 static void  (*P_ClearFlag)(int);
 static short (*P_GetOffset)(void);
-static char *(*P_GetTopLine)(void);
+static wchar_t *(*P_GetTopLineW)(void);
 static char *(*P_GetBottomLine)(void);
 static bool  (*P_CheckCommunication)(void);
 static int EmulatorFlags;
@@ -50,7 +50,7 @@ int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 		    void *p_SetFlag,
 		    void *p_ClearFlag,
 		    void *p_GetOffset,
-		    void *p_GetTopLine,
+		    void *p_GetTopLineW,
 		    void *p_GetBottomLine,
 		    void *p_CheckCommunication )
 {
@@ -58,19 +58,19 @@ int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	BuildDate = builddate;
 	LcdData = p_LcdData;
 
-	P_Init               = (void (*)(void))  p_Init;
-	P_Reset              = (void (*)(bool))  p_Reset;
-	P_Shutdown           = (void (*)(void))  p_Shutdown;
-	P_KeyPress           = (void (*)(int))   p_KeyPress;
-	P_UpdateScreen       = (void (*)(bool))  p_UpdateScreen;
-	P_ScrollTopLine      = (bool (*)(void))  p_ScrollTopLine;
-	P_GetFlag            = (bool (*)(int))   p_GetFlag;
-	P_SetFlag            = (void (*)(int))   p_SetFlag;
-	P_ClearFlag          = (void (*)(int))   p_ClearFlag;
-	P_GetOffset          = (short (*)(void)) p_GetOffset;
-	P_GetTopLine         = (char *(*)(void)) p_GetTopLine;
-	P_GetBottomLine      = (char *(*)(void)) p_GetBottomLine;
-	P_CheckCommunication = (bool (*)(void))  p_CheckCommunication;
+	P_Init               = (void (*)(void))     p_Init;
+	P_Reset              = (void (*)(bool))     p_Reset;
+	P_Shutdown           = (void (*)(void))     p_Shutdown;
+	P_KeyPress           = (void (*)(int))      p_KeyPress;
+	P_UpdateScreen       = (void (*)(bool))     p_UpdateScreen;
+	P_ScrollTopLine      = (bool (*)(void))     p_ScrollTopLine;
+	P_GetFlag            = (bool (*)(int))      p_GetFlag;
+	P_SetFlag            = (void (*)(int))      p_SetFlag;
+	P_ClearFlag          = (void (*)(int))      p_ClearFlag;
+	P_GetOffset          = (short (*)(void))    p_GetOffset;
+	P_GetTopLineW        = (wchar_t *(*)(void)) p_GetTopLineW;
+	P_GetBottomLine      = (char *(*)(void))    p_GetBottomLine;
+	P_CheckCommunication = (bool (*)(void))     p_CheckCommunication;
 
 	/*
 	 *  Delegate to WinMain
@@ -140,10 +140,10 @@ char *GetBottomLine( void )
 	return "0";
 }
 
-char *GetTopLine( void )
+wchar_t *GetTopLineW( void )
 {
-	if ( P_GetTopLine ) return P_GetTopLine();
-	return "";
+	if ( P_GetTopLineW ) return P_GetTopLineW();
+	return L"";
 }
 
 bool CheckCommunication( void )

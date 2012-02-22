@@ -79,6 +79,7 @@ public:
 
 	void hpCopyToClipboard(void);
 	void hpCopyToClipboard(CString text);
+	void hpCopyToClipboardUnicode(wchar_t *text);
 	CString hpCopyToHP20b(void);
 
 	void hpStartTimerBlinkCur(void);

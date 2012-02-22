@@ -1267,7 +1267,11 @@ void CHP20b_cDlg::OnEditCopyNumber()
 //
 void CHP20b_cDlg::OnEditCopyTextline()
 { 
+#ifdef wp34s
+  m_VirtualLCD.hpCopyToClipboardUnicode(GetTopLineW());
+#else
   m_VirtualLCD.hpCopyToClipboard(GetTopLine());
+#endif
 }
 /***************************************************************
 ** 

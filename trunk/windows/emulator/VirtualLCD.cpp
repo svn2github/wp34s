@@ -220,6 +220,60 @@ void CVirtualLCD::hpCopyToClipboard(CString text)
 
 /***************************************************************
 ** 
+** Responsible to copy bitmap from memory device context to 
+** clipboard in Unicode text format
+**
+***************************************************************/
+//
+void CVirtualLCD::hpCopyToClipboardUnicode(wchar_t *text)
+{
+	// opens the clipboard for examination and prevents other applications 
+	// from modifying the clipboard content
+	if ( !OpenClipboard() )
+  {
+		AfxMessageBox("Cannot open the Clipboard", MB_OK | MB_ICONINFORMATION );
+		return;
+	}
+	// empties the clipboard and frees handles to data in the clipboard
+	if( !EmptyClipboard() )
+  {
+		AfxMessageBox( "Cannot empty the Clipboard",MB_OK | MB_ICONINFORMATION );
+		return;
+	}
+
+	wchar_t *lptstrCopy	= NULL; 
+	HGLOBAL hglbCopy	= NULL; 
+	size_t l = sizeof(wchar_t) * (wcslen(text) + 1);
+	// Allocate a global memory object for the text. 
+	hglbCopy = GlobalAlloc(GMEM_MOVEABLE, l); 
+	if (hglbCopy == NULL) 
+  { 
+		CloseClipboard(); 
+		return ; 
+	} 
+
+	// Lock the handle and copy the text to the buffer. 
+	lptstrCopy = (wchar_t *)GlobalLock(hglbCopy); 
+	memset(lptstrCopy, 0, l); 
+	memcpy(lptstrCopy, text, l); 
+	GlobalUnlock(hglbCopy); 
+
+	// Place the handle on the clipboard. 
+	if ( ::SetClipboardData( CF_UNICODETEXT, hglbCopy ) == NULL )
+  {
+		AfxMessageBox( "Unable to set Clipboard data",MB_OK | MB_ICONINFORMATION );
+		GlobalFree(hglbCopy);
+		CloseClipboard();
+		return;
+	}
+	GlobalFree(hglbCopy);
+		
+	// closes the clipboard
+	CloseClipboard();
+}
+
+/***************************************************************
+** 
 ** Responsible to reterive text from clipboard  
 **
 ***************************************************************/

@@ -111,7 +111,11 @@ void ClearFlag(int flag);
 #ifndef _ARM_
 unsigned short GetOffset(void);
 char *GetBottomLine(void);
+#ifdef wp34s
+wchar_t *GetTopLineW(void);
+#else
 char *GetTopLine(void);
+#endif
 #endif
 void SendString(char const *s);
 bool CheckCommunication(void);

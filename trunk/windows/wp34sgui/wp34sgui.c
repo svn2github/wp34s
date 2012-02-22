@@ -89,7 +89,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 		        NULL,
 		        GetFlag, SetFlag, ClearFlag,
 		        NULL,
-			GetTopLine,
+			GetTopLineW,
 		        GetBottomLine,
 		        NULL );
 }
@@ -159,16 +159,25 @@ void SetFlag( int flag )
 	EmulatorFlags |= flag;
 }
 
-void ClearFlag( int flag)
+void ClearFlag( int flag )
 {
 	flag &= ~shift; // We handle shift differently then the 20b
 	EmulatorFlags &= ~flag;
 }
 
+#include "../../translate.c"	// Contains Unicode translation table
 
-char *GetTopLine( void )
+wchar_t *GetTopLineW( void )
 {
- 	return (char *) (DispMsg == NULL ? Alpha : DispMsg);
+	static wchar_t buffer[ NUMALPHA + 1 ];
+ 	const unsigned char *p = (const unsigned char *) ( DispMsg == NULL ? Alpha : DispMsg );
+	wchar_t *q = buffer;
+
+	memset( buffer, 0, sizeof( buffer ) );
+	while ( *p != '\0' ) {
+		*q++ = (wchar_t) unicode[ *p++ ]; 
+	}
+	return buffer;
 }
 
 

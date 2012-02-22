@@ -37,17 +37,56 @@ const char *FaceName[ 2 ] = {
 	"Small"
 };
 
+const char *Encodings[ 3 ] = {
+	"Original",
+	"Windows",
+	"UnicodeBmp"
+};
+
+const struct _altuni {
+	int code;
+	int alternate;
+} AltUni[] = {
+	{ '"',  0x201c },
+	{ '"',  0x201d },
+	{ '"',  0x201e },
+	{ '\'', 0x0060 },
+	{ '\'', 0x2018 },
+	{ '\'', 0x2019 },
+	{ '\'', 0x201a },
+	{ 'A',  0x0391 },
+	{ 'B',  0x0392 },
+	{ 'E',  0x0395 },
+	{ 'Z',  0x0396 },
+	{ 'H',  0x0397 },
+	{ 'I',  0x0399 },
+	{ 'K',  0x039a },
+	{ 'M',  0x039c },
+	{ 'N',  0x039d },
+	{ 'O',  0x039f },
+	{ 'P',  0x03a1 },
+	{ 'T',  0x03a4 },
+	{ 'Y',  0x03a5 },
+	{ 'X',  0x03a7 },
+	{ 'o',  0x03bf },
+	{ '|',  0x00A6 },
+	{ 0xab, 0x00b5 }, // µ
+	{ 0 }
+};
+
+
 int main( int argc, char **argv ) 
 {
 	int i, j, k, l;
 	unsigned short int positions[257];
 	int smallfont = 0;
-	int cp1252 = 0;
+	int encoding = 0;
 	int gap = 5;
 	FILE *t;
 	FILE *f;
 	char *p = "Template.sfd";
 	char buffer[ 256 ];
+	const struct _altuni *alt;
 
 	/*
 	 *  Get arguments
@@ -56,8 +95,11 @@ int main( int argc, char **argv )
 		if ( strcmp( argv[ 1 ], "-s" ) == 0 ) {
 			smallfont = 1;
 		}
-		if ( strcmp( argv[ 1 ], "-t" ) == 0 ) {
-			cp1252 = 1;
+		if ( strcmp( argv[ 1 ], "-w" ) == 0 ) {
+			encoding = 1;
+		}
+		if ( strcmp( argv[ 1 ], "-u" ) == 0 ) {
+			encoding = 2;
 		}
 		++argv;
 		--argc;
@@ -75,9 +117,10 @@ int main( int argc, char **argv )
 	t = fopen( p, "r" );
 
 	if ( argc < 2 || t == NULL || gap > 50 || gap < 0 ) {
-		printf( "Usage: winfont [-s] [-t] <font-file> [<template> [<gap>]]\n"
+		printf( "Usage: winfont [-s] [-w|-u] <font-file> [<template> [<gap>]]\n"
 			"       -s creates the small font\n"
-			"	-t translates to CP1252 (sort of)\n"
+			"	-w encode as CP1252 (sort of)\n"
+			"       -u encode as Unicode\n"
 			"       <font-file> should end in .sfd\n"
 			"       <scale> defines the pixel size (including gap)\n"
 			"       <gap> defines the space between pixels between 0 and 50% \n");
@@ -91,8 +134,8 @@ int main( int argc, char **argv )
 	/*
 	 *  Open the font file
 	 */
-	fprintf( stderr, "Writing %s font to file %s, template=%s, gap=%d, cp1252=%d\n", 
-			 smallfont ? "small" : "regular", argv[ 1 ], p, gap, cp1252 );
+	fprintf( stderr, "Writing %s font to file %s, template=%s, gap=%d, encoding is %s\n", 
+			 smallfont ? "small" : "regular", argv[ 1 ], p, gap, Encodings[encoding] );
 	f = fopen( argv[ 1 ], "wb" );
 	if ( f == NULL ) {
 		perror( argv[ 1 ] );
@@ -128,6 +171,23 @@ int main( int argc, char **argv )
 			memmove( p + l, p + 2, rest + 1 );
 			memcpy( p, face, l );
 		}
+		p = strstr( buffer, "$2" );
+		if ( p != NULL ) {
+			/*
+			 *  Insert the ascent and decent
+			 */
+			int ascent = smallfont ? 700 : 800;
+			int descent = 1000 - ascent;
+			sprintf( buffer, "Ascent: %d\nDescent: %d\n", ascent, descent );
+		}
+		p = strstr( buffer, "$3" );
+		if ( p != NULL ) {
+			/*
+			 *  Insert the encoding
+			 */
+			const char *enc = Encodings[ encoding ];
+			sprintf( buffer, "Encoding: %s\n", enc );
+		}
 		if ( strncmp( buffer, "$$", 2 ) != 0 ) {
 			/*
 			 *  Write the line unchanged
@@ -145,7 +205,9 @@ int main( int argc, char **argv )
 
 		for ( i = 1; i < 256; ++i ) {
 			const int width = charlengths( i + 256 * smallfont );
-			const int c = cp1252 ? from_cp1252[ i ] : i;
+			const int c = encoding == 1 ? from_cp1252[ i ] 
+			            : encoding == 2 ? unicode[ i ]
+				    : i;
 			unsigned char bits[ 6 ];
 			const char *cp;
 			int empty = 1;
@@ -165,11 +227,32 @@ int main( int argc, char **argv )
 			if ( l <= 0 ) {
 				goto error;
 			}
+			/*
+			 *  Alternate code points
+			 */
+			j = 0;
+			for ( alt = AltUni; alt->code; ++alt ) {
+				if ( alt->code == i ) {
+					if ( j++ == 0 ) {
+						fprintf( f, "AltUni2:" );
+						if ( l <= 0 ) {
+							goto error;
+						}
+					}
+					l = fprintf( f, " %04x.ffffffff.0", alt->alternate );
+					if ( l <= 0 ) {
+						goto error;
+					}
+				}
+			}
+			if ( j ) {
+				putc( '\n', f );
+			}
 			l = fprintf( f, "Width: %d\n", width * 100 );
 			if ( l <= 0 ) {
 				goto error;
 			}
-			l = fprintf( f, "VWidth: 0\nFlags:\nLayerCount: 2\nFore\nSplineSet\n" );
+			l = fprintf( f, "VWidth: 0\nFlags:\nLayerCount: 2\n" );
 			if ( l <= 0 ) {
 				goto error;
 			}
@@ -177,6 +260,10 @@ int main( int argc, char **argv )
 			/*
 			 *  Generate the drawing instructions
 			 */
+			l = fprintf( f, "Fore\nSplineSet\n" );
+			if ( l <= 0 ) {
+				goto error;
+			}
 			for ( j = 0; j < MAX_ROWS; ++j ) {
 				unsigned char pattern = bits[ j ];
 				int y1 = ( MAX_ROWS - 1 - j ) * 100;

@@ -36,7 +36,7 @@ bool GetFlag(int flag);
 void SetFlag(int flag);
 void ClearFlag(int flag);
 unsigned short GetOffset(void);
-char *GetTopLine(void);
+wchar_t *GetTopLineW(void);
 char *GetBottomLine(void);
 bool CheckCommunication(void);
 
@@ -62,7 +62,7 @@ int EXPORT start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR p
 			   void *p_SetFlag,
 			   void *p_ClearFlag,
 			   void *p_GetOffset,
-			   void *p_GetTopLine,
+			   void *p_GetTopLineW,
 			   void *p_GetBottomLine,
 			   void *p_CheckCommunication );
 
