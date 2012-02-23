@@ -148,7 +148,7 @@ void QtSerialPort::onFlushInEventLoop()
 #if HAS_SERIAL
 	if(serialPort!=NULL && serialPort->isOpen())
 	{
-		serialPort->flush();
+		//serialPort->flush();
 	}
 #endif
 }

@@ -46,16 +46,15 @@ OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
 ifeq "$(SYSTEM)" "windows32"
 DISTDIR := wp-34s
-DISTFILE := wp-34s.zip
+DISTFILE := wp-34s-emulator-windows.zip
 RESOURCESDIR := $(DISTDIR)
 endif
 ifeq "$(SYSTEM)" "Darwin"
 DISTDIR := $(OUTPUTDIR)/WP-34s.app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
-DMGFILE := WP-34s.dmg
-BUILTDMG := $(OUTPUTDIR)/$(DMGFILE)
-DISTDMG := ./$(DMGFILE)
+BUILTDMG := $(OUTPUTDIR)/WP-34s.dmg
+DISTDMG := ./wp-34s-emulator-macosx.dmg
 endif
 DISTMEMORYDIR := $(RESOURCESDIR)/memory
 DISTMEMORYFILE := $(DISTMEMORYDIR)/wp34s-lib.dat
@@ -113,9 +112,9 @@ endif
 ifeq "$(NO_SERIAL)" ""
 	HAS_SERIAL=1
 ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "windows32"), "")
-	SERIAL_LIB=
+	SERIALLIB=
 else
-	SERIAL_LIB=-Lserial/lib/$(SYSTEM) -lqextserialport
+	SERIALLIB=-Lserial/lib/$(SYSTEM) -lqextserialport
 endif
 ifeq ("$(SYSTEM)", "windows32")
 	SERIAL_INCLUDE=serial/include/windows32
@@ -123,7 +122,7 @@ else
 	SERIAL_INCLUDE=serial/include
 endif
 else
-  SERIAL_LIB=
+  SERIALLIB=
   SERIAL_INCLUDE=
   HAS_SERIAL=0
 endif
@@ -149,7 +148,7 @@ dist:
 endif
 else 
 all: $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
-	$(MAKE) -f $(QTMAKEFILE) BASE_LIBS=" $(EXTRAOBJS) $(BASEOBJS) $(BASELIBS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+	$(MAKE) -f $(QTMAKEFILE) BASELIBS="$(BASELIBS)" OTHEROBJS="$(EXTRAOBJS) $(BASEOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIALLIB="$(SERIALLIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 
 ifeq "$(SYSTEM)" "windows32"
 WP34SEXE := $(OUTPUTDIR)/wp-34s.exe
@@ -198,7 +197,7 @@ endif
 
 ifeq ($(SYSTEM),windows32)
 release: $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
-	$(MAKE) -f $(QTMAKEFILE) release BASE_LIBS="$(EXTRAOBJS) $(BASEOBJS) $(BASELIBS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIAL_LIB="$(SERIAL_LIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+	$(MAKE) -f $(QTMAKEFILE) release BASELIBS="$(BASELIBS)" OTHEROBJS="$(EXTRAOBJS) $(BASEOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIALLIB="$(SERIALLIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 else
 release: all
 endif

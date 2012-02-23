@@ -34,7 +34,7 @@ public:
 private:
 	bool valid;
 	int code;
-	bool hShiftedFlag;
+	bool hShifted;
 };
 
 #endif /* QTKEYCODE_H_ */

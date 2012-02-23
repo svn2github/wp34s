@@ -415,22 +415,23 @@ ifdef QTGUI
 
 CALCLIB := $(OBJECTDIR)/libCalculator.a
 CALCOBJS := $(OBJS) $(OBJECTDIR)/xrom.o
+BASELIBS := ../$(OBJECTDIR)/libCalculator.a ../$(OBJECTDIR)/libdecNum34s.a ../$(OBJECTDIR)/libconsts.a
 $(CALCLIB): $(CALCOBJS)
 	-rm -f $@
 	$(AR) -r $@ $(CALCOBJS)
 	$(RANLIB) $@
 
 real_qt_gui: all $(CALCLIB)
-	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts"
+	cd QtGui; $(MAKE) BASELIBS="$(BASELIBS)"
 
 real_qt_gui_dist: all $(CALCLIB)
-	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts" dist
+	cd QtGui; $(MAKE) BASELIBS="$(BASELIBS)" dist
 
 real_qt_gui_no_serial: all $(CALCLIB)
-	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts" NO_SERIAL=1 
+	cd QtGui; $(MAKE) BASELIBS="$(BASELIBS)" NO_SERIAL=1 
 
 real_qt_gui_dist_no_serial: all $(CALCLIB)
-	cd QtGui; $(MAKE) BASELIBS="-L../$(OBJECTDIR) -lCalculator -ldecNum34s -lconsts" NO_SERIAL=1 dist
+	cd QtGui; $(MAKE) BASELIBS="$(BASELIBS)" NO_SERIAL=1 dist
 else
 real_qt_gui:
 	@echo "real_qt_gui should be called if QTGUI is not defined"
