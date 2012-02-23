@@ -251,6 +251,8 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_AR_DB,	&convAR2DB,		NOFN,		NOFN,		"ar.\015dB")
 	FUNC(OP_DB_PR,	&convDB2PR,		NOFN,		NOFN,		"dB\015pr.")
 	FUNC(OP_PR_DB,	&convPR2DB,		NOFN,		NOFN,		"pr.\015dB")
+	FUNC(OP_HZ2WL,	&convFreqToWavelength,	NOFN,		NOFN,		"Hz\015m")
+	FUNC(OP_WL2HZ,	&convFreqToWavelength,	NOFN,		NOFN,		"m\015Hz")
 	FUNC(OP_ZETA,	XMR(ZETA),		NOFN,		NOFN,		"\245")
 	FUNC(OP_Bn,	XMR(Bn),		NOFN,		NOFN,		"B\275")
 	FUNC(OP_BnS,	XMR(Bn_star),		NOFN,		NOFN,		"B\275*")

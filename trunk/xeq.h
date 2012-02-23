@@ -601,6 +601,7 @@ enum {
 
 	OP_DEGC_F, OP_DEGF_C,
 	OP_DB_AR, OP_AR_DB, OP_DB_PR, OP_PR_DB,
+		OP_HZ2WL, OP_WL2HZ,
 	OP_ZETA, OP_Bn, OP_BnS,
 #ifdef INCLUDE_EASTER
 	OP_EASTER,
@@ -1289,6 +1290,7 @@ extern decNumber *convDB2AR(decNumber *r, const decNumber *x);
 extern decNumber *convAR2DB(decNumber *r, const decNumber *x);
 extern decNumber *convDB2PR(decNumber *r, const decNumber *x);
 extern decNumber *convPR2DB(decNumber *r, const decNumber *x);
+extern decNumber *convFreqToWavelength(decNumber *r, const decNumber *x);
 
 extern void xrom_routines(enum nilop op);
 

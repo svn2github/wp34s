@@ -1989,6 +1989,10 @@ decNumber *convPR2DB(decNumber *r, const decNumber *x) {
 	return dn_mulpow10(r, &t, 1);
 }
 
+decNumber *convFreqToWavelength(decNumber *r, const decNumber *x) {
+	return dn_divide(r, &const_vel_c, x);
+}
+
 /* Scale conversions */
 void do_conv(decNumber *r, unsigned int arg, const decNumber *x) {
 	decNumber m;
