@@ -868,8 +868,6 @@ static s_opcode conv_catalogue[] = {
 	MON(OP_GRD2DEG,		   "G\015D")
 	MON(OP_RAD2GRD,		   "R\015G")
 	MON(OP_GRD2RAD,		   "G\015R")
-	MON(OP_HZ2WL,		   "Hz\015m")
-	MON(OP_WL2HZ,		   "m\015Hz")
 //	CONV(OP_M_SQUARE,	0, "m^2->square")
 //	CONV(OP_M_SQUARE,	1, "square->m^2")
 //	CONV(OP_M_PERCH,	0, "m^2->perch")

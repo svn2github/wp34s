@@ -1767,7 +1767,6 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 				OP_MON | OP_DEG2RAD,	OP_MON | OP_RAD2DEG,
 				OP_MON | OP_DEG2GRD,	OP_MON | OP_GRD2DEG,
 				OP_MON | OP_RAD2GRD,	OP_MON | OP_GRD2RAD,
-				OP_MON | OP_HZ2WL,	OP_MON | OP_WL2HZ,
 			};
 			const opcode op = current_catalogue(pos);
 			int i;
