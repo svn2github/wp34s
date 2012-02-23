@@ -886,14 +886,13 @@ static unsigned char alpha_symbols[] = {
 };
 
 static unsigned char alpha_compares[] = {
-	'<',	0011,	'=',	0013,	0012,	'>',
+	'<',	0011,	'=',	0012,	'>',
 	'[',	']',	'{',	'}',	0035
 };
 
 static unsigned char alpha_arrows[] = {
 	0015,	0016,				// left arrow, right arrow
 	0017,	0020,				// up arrow, down arrow,
-	0027,					// exchange
 	0003,	0004,				// root, integral
 	0177,					// up/down arrow
 	'^',	0237				// ^, infinity
