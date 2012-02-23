@@ -25,6 +25,19 @@
 #include "../../font.c"
 #include "../../translate.c"
 
+/* Define a limited character set for the 7-segment portion of the
+ * display.
+ */
+#define D_TOP 64
+#define D_TL 32
+#define D_TR 8
+#define D_MIDDLE 16
+#define D_BL 4
+#define D_BR 1
+#define D_BOTTOM 2
+
+#include "../../charset7.h"
+
 extern unsigned int charlengths( unsigned int c );
 extern void findlengths( unsigned short int posns[ 257 ], int smallp);
 extern void unpackchar(unsigned int c, unsigned char d[ 6 ], int smallp, const unsigned short int posns[ 257 ]);
@@ -80,6 +93,7 @@ int main( int argc, char **argv )
 	int i, j, k, l;
 	unsigned short int positions[257];
 	int smallfont = 0;
+	int sevenseg = 0;
 	int encoding = 0;
 	int gap = 5;
 	FILE *t;
@@ -92,6 +106,10 @@ int main( int argc, char **argv )
 	 *  Get arguments
 	 */
 	while ( argc > 2 && *argv[1] == '-' ) {
+		if ( strcmp( argv[ 1 ], "-7" ) == 0 ) {
+			sevenseg = 1;
+			p = "TemplateSegment.sfd";
+		}
 		if ( strcmp( argv[ 1 ], "-s" ) == 0 ) {
 			smallfont = 1;
 		}
@@ -135,7 +153,8 @@ int main( int argc, char **argv )
 	 *  Open the font file
 	 */
 	fprintf( stderr, "Writing %s font to file %s, template=%s, gap=%d, encoding is %s\n", 
-			 smallfont ? "small" : "regular", argv[ 1 ], p, gap, Encodings[encoding] );
+			 sevenseg ? "7-segment" : smallfont ? "small" : "regular", 
+			 argv[ 1 ], p, gap, Encodings[encoding] );
 	f = fopen( argv[ 1 ], "wb" );
 	if ( f == NULL ) {
 		perror( argv[ 1 ] );
@@ -200,6 +219,82 @@ int main( int argc, char **argv )
 
 		/*
 		 *  Create the glyphs
+		 */
+		if ( sevenseg ) {
+			/*
+			 *  Font for the seven segment display
+			 */
+			const int first_gid = 13;
+
+			for ( i = 0; i < N_DIGTBL; ++i ) {
+				unsigned char bits = digtbl[ i ];
+				const char *cp;
+				const int code = i < 32 ? 0xA0 + i : i;
+				char buff[ 10 ];
+
+				if ( i == ',' || i == '.' || ( bits == 0 && code > 0xa0 ) ) {
+					/*
+					 *  These have special code
+					 */
+					continue;
+				}
+
+				l = fprintf( f, "StartChar: " );
+
+				if ( i >= ' ' && i <= 127 ) {
+					cp = i == 0x40 ? "degree" : charnames[ i ];
+				}
+				else {
+					sprintf( buff, "uni%04X", code );
+					cp = buff;
+				}
+				for ( ; *cp != '\0'; ++cp ) {
+					if ( isalnum( *cp ) ) {
+						fputc( *cp, f );
+					}
+				}
+				if ( l <= 0 ) {
+					goto error;
+				}
+				l = fprintf( f, "\nEncoding: %d %d %d\n", code, code, i + first_gid - 1 );
+				if ( l <= 0 ) {
+					goto error;
+				}
+				l = fprintf( f, "Width: 600\nVWidth: 0\nFlags:\nLayerCount: 2\nFore\n" );
+				if ( l <= 0 ) {
+					goto error;
+				}
+
+				/*
+				 *  Generate the references to the segments
+				 */
+				if ( bits == 0 ) {
+					l = fprintf( f, "Refer: 0 240 N 1 0 0 1 0 0 0\n" );
+					if ( l <= 0 ) {
+						goto error;
+					}
+				}
+				else {
+					for ( j = 0; j < 7; ++j ) {
+						if ( bits & ( 1 << j ) ) {
+							l = fprintf( f, "Refer: %d %d N 1 0 0 1 0 0 0\n",
+									j + 1, j + 0xf1 );
+							if ( l <= 0 ) {
+								goto error;
+							}
+						}
+					}
+				}
+				fprintf( f, "EndChar\n\n" );
+				if ( j < 0 ) {
+					goto error;
+				}
+			}
+			continue;
+		}
+
+		/*
+		 *  This is for the pixel font
 		 */
 		findlengths( positions, smallfont );
 

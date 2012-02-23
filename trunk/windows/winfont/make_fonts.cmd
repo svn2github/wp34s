@@ -8,3 +8,5 @@ if not "%1"=="" set bindir=%1
 
 %bindir%\winfont -u WP34SSolidFontRegular.sfd  TemplateSolid.sfd 0
 %bindir%\winfont -u -s WP34SSolidFontSmall.sfd TemplateSolid.sfd 0
+
+%bindir%\winfont -7 WP34SSegmentFont.sfd TemplateSegment.sfd
