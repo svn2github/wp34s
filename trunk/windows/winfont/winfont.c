@@ -325,14 +325,13 @@ int main( int argc, char **argv )
 			/*
 			 *  Alternate code points
 			 */
-			j = 0;
+			fprintf( f, "AltUni2: %04x.ffffffff.0", i + 0xe000 );
+			if ( l <= 0 ) {
+				goto error;
+			}
 			for ( alt = AltUni; alt->code; ++alt ) {
 				if ( alt->code == i ) {
 					if ( j++ == 0 ) {
-						fprintf( f, "AltUni2:" );
-						if ( l <= 0 ) {
-							goto error;
-						}
 					}
 					l = fprintf( f, " %04x.ffffffff.0", alt->alternate );
 					if ( l <= 0 ) {
@@ -340,10 +339,7 @@ int main( int argc, char **argv )
 					}
 				}
 			}
-			if ( j ) {
-				putc( '\n', f );
-			}
-			l = fprintf( f, "Width: %d\n", width * 1600 / 13 );
+			l = fprintf( f, "\nWidth: %d\n", width * 1600 / 13 );
 			if ( l <= 0 ) {
 				goto error;
 			}
