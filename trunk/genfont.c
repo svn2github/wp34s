@@ -20,80 +20,85 @@
 #include <stdlib.h>
 #include "licence.h"
 
+#define CODE(w, n)	(((w) << 16) | (n))
+#define WIDTH(n)	((n) >> 16)
+#define BITMAP(n)	((n) & 0xffff)
+
+
 /* Width 1 */
-#define _        0
+#define _        CODE(1, 0)
 
 /* Width 2 */
-#define __       0
-#define O_       1
+#define __       CODE(2, 0)
+#define O_       CODE(2, 1)
 
 /* Width 3 */
-#define ___      0
-#define O__      1
-#define _O_      2
-#define OO_      3
+#define ___      CODE(3, 0)
+#define O__      CODE(3, 1)
+#define _O_      CODE(3, 2)
+#define OO_      CODE(3, 3)
 
 /* Width 4 */
-#define ____     0
-#define O___     1
-#define _O__     2
-#define OO__     3
-#define __O_     4
-#define O_O_     5
-#define _OO_     6
-#define OOO_     7
+#define ____     CODE(4, 0)
+#define O___     CODE(4, 1)
+#define _O__     CODE(4, 2)
+#define OO__     CODE(4, 3)
+#define __O_     CODE(4, 4)
+#define O_O_     CODE(4, 5)
+#define _OO_     CODE(4, 6)
+#define OOO_     CODE(4, 7)
 
 /* Width 5 */
-#define _____    0
-#define O____    1
-#define _O___    2
-#define OO___    3
-#define __O__    4
-#define O_O__    5
-#define _OO__    6
-#define OOO__    7
-#define ___O_    8
-#define O__O_    9
-#define _O_O_    10
-#define OO_O_    11
-#define __OO_    12
-#define O_OO_    13
-#define _OOO_    14
-#define OOOO_    15
+#define _____    CODE(5, 0)
+#define O____    CODE(5, 1)
+#define _O___    CODE(5, 2)
+#define OO___    CODE(5, 3)
+#define __O__    CODE(5, 4)
+#define O_O__    CODE(5, 5)
+#define _OO__    CODE(5, 6)
+#define OOO__    CODE(5, 7)
+#define ___O_    CODE(5, 8)
+#define O__O_    CODE(5, 9)
+#define _O_O_    CODE(5, 10)
+#define OO_O_    CODE(5, 11)
+#define __OO_    CODE(5, 12)
+#define O_OO_    CODE(5, 13)
+#define _OOO_    CODE(5, 14)
+#define OOOO_    CODE(5, 15)
 
 /* Width 6 */
-#define ______   0
-#define O_____   1
-#define _O____   2
-#define OO____   3
-#define __O___   4
-#define O_O___   5
-#define _OO___   6
-#define OOO___   7
-#define ___O__   8
-#define O__O__   9
-#define _O_O__   10
-#define OO_O__   11
-#define __OO__   12
-#define O_OO__   13
-#define _OOO__   14
-#define OOOO__   15
-#define ____O_   16
-#define O___O_   17
-#define _O__O_   18
-#define OO__O_   19
-#define __O_O_   20
-#define O_O_O_   21
-#define _OO_O_   22
-#define OOO_O_   23
-#define ___OO_   24
-#define O__OO_   25
-#define _O_OO_   26
-#define OO_OO_   27
-#define __OOO_   28
-#define O_OOO_   29
-#define _OOOO_   30
-#define OOOOO_   31
+#define ______   CODE(6, 0)
+#define O_____   CODE(6, 1)
+#define _O____   CODE(6, 2)
+#define OO____   CODE(6, 3)
+#define __O___   CODE(6, 4)
+#define O_O___   CODE(6, 5)
+#define _OO___   CODE(6, 6)
+#define OOO___   CODE(6, 7)
+#define ___O__   CODE(6, 8)
+#define O__O__   CODE(6, 9)
+#define _O_O__   CODE(6, 10)
+#define OO_O__   CODE(6, 11)
+#define __OO__   CODE(6, 12)
+#define O_OO__   CODE(6, 13)
+#define _OOO__   CODE(6, 14)
+#define OOOO__   CODE(6, 15)
+#define ____O_   CODE(6, 16)
+#define O___O_   CODE(6, 17)
+#define _O__O_   CODE(6, 18)
+#define OO__O_   CODE(6, 19)
+#define __O_O_   CODE(6, 20)
+#define O_O_O_   CODE(6, 21)
+#define _OO_O_   CODE(6, 22)
+#define OOO_O_   CODE(6, 23)
+#define ___OO_   CODE(6, 24)
+#define O__OO_   CODE(6, 25)
+#define _O_OO_   CODE(6, 26)
+#define OO_OO_   CODE(6, 27)
+#define __OOO_   CODE(6, 28)
+#define O_OOO_   CODE(6, 29)
+#define _OOOO_   CODE(6, 30)
+#define OOOOO_   CODE(6, 31)
 
 
 static struct s_charset {
@@ -201,10 +206,18 @@ static void emit_bitmap(FILE *f, int beg, int end, const char *name) {
 		fprintf(f,	"\t\t{\n\t\t\t");
 		for (i=0; i<10000; i++)
 			buffer[i] = 0;
-		for (i=beg; i<end; i++)
-			for (b=0; b<charset[i].width-1; b++, base++)
-				if (charset[i].bitrows[row] & (1 << b))
+		for (i=beg; i<end; i++) {
+			/* Sanity check the width of this character */
+			if (WIDTH(charset[i].bitrows[row]) != charset[i].width) {
+				fprintf(stderr, "Character %04o bitmap row %d has wrong width of %d (should be %d)\n", i, row+1, WIDTH(charset[i].bitrows[row]), charset[i].width);
+				exit(1);
+			}
+
+			for (b=0; b<charset[i].width-1; b++, base++) {
+				if (BITMAP(charset[i].bitrows[row]) & (1 << b))
 					buffer[base / 8] |= (1 << (base % 8));
+			}
+		}
 		for (i=0; i< (n+7)/8; i++) {
 			fprintf(f,	"%3u,%s", buffer[i], (l++ % 12) == 11 ? "\n\t\t\t" : " ");
 		}
