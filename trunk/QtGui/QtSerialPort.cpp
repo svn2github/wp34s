@@ -153,7 +153,11 @@ QStringList QtSerialPort::getSerialPorts()
     QList<QextPortInfo> portsInfos = QextSerialEnumerator::getPorts();
     for (int i = 0; i < portsInfos.size(); i++)
     {
+#if defined(Q_WS_MAC) || defined(Q_WS_WIN)
     	portNames << portsInfos[i].portName;
+#else
+    	portNames << portsInfos[i].physName;
+#endif
     }
     portNames.sort();
 #endif

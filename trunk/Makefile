@@ -62,7 +62,10 @@ endif
 
 CFLAGS = $(BASE_CFLAGS)
 ifdef QTGUI
-CFLAGS += -O0 -DDEBUG -DQTGUI 
+CFLAGS += -O0 -DDEBUG -DQTGUI
+ifeq ($(SYSTEM),Darwin)
+CFLAGS += -DFIX_64_BITS
+endif 
 else
 CFLAGS += -O0 -DDEBUG -DUSECURSES
 endif

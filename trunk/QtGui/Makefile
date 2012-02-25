@@ -49,6 +49,12 @@ DISTDIR := wp-34s
 DISTFILE := wp-34s-emulator-windows.zip
 RESOURCESDIR := $(DISTDIR)
 endif
+ifeq "$(SYSTEM)" "Linux"
+DISTDIR := wp-34s
+DISTFILE := wp-34s-emulator-linux.tgz
+RESOURCESDIR := $(DISTDIR)
+LINUX_EXTRA_FILES := README_Linux.txt icons/wp34s-logo.png
+endif
 ifeq "$(SYSTEM)" "Darwin"
 DISTDIR := $(OUTPUTDIR)/WP-34s.app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
@@ -91,6 +97,7 @@ MV := mv -f
 CP := cp
 CPDIR := cp -r
 ZIP := zip -r
+TAR := tar czf
 QTMAKEFILE := QtMakefile.$(SYSTEM)
 QTMAKEFILE_EXISTS := $(wildcard $(QTMAKEFILE))
 
@@ -151,22 +158,38 @@ all: $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
 	$(MAKE) -f $(QTMAKEFILE) BASELIBS="$(BASELIBS)" OTHEROBJS="$(EXTRAOBJS) $(BASEOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIALLIB="$(SERIALLIB)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 
 ifeq "$(SYSTEM)" "windows32"
-WP34SEXE := $(OUTPUTDIR)/wp-34s.exe
+WP34SEXE := $(OUTPUTDIR)/WP-34s.exe
+endif
+ifeq "$(SYSTEM)" "Linux"
+WP34SEXE := $(OUTPUTDIR)/WP-34s
 endif
 
 dist: distclean release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE)
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(WP34SEXE) $(DISTDIR)
-	$(CPDIR) skins $(DISTDIR)
-	$(CPDIR) images $(DISTDIR)
+	$(MKDIR) $(DISTDIR)/skins
+	$(CPDIR) skins/* $(DISTDIR)/skins
+	$(MKDIR) $(DISTDIR)/images
+	$(CPDIR) images/* $(DISTDIR)/images
 	$(CP) $(QTLIBS) $(DISTDIR)
 	$(ZIP) $(DISTFILE) $(DISTDIR)
 endif
 ifeq "$(SYSTEM)" "Darwin"
-	$(CPDIR) skins $(RESOURCESDIR)
-	$(CPDIR) images $(RESOURCESDIR)
+	$(MKDIR) $(RESOURCESDIR)/skins
+	$(CPDIR) skins/* $(RESOURCESDIR)/skins
+	$(MKDIR) $(RESOURCESDIR)/images
+	$(CPDIR) images/* $(RESOURCESDIR)/images
 	$(MACDEPLOYQT) $(DISTDIR) -dmg
 	$(MV) $(BUILTDMG) $(DISTDMG)
+endif
+ifeq "$(SYSTEM)" "Linux"
+	$(CP) $(WP34SEXE) $(DISTDIR)
+	$(MKDIR) $(DISTDIR)/skins
+	$(CPDIR) skins/* $(DISTDIR)/skins
+	$(MKDIR) $(DISTDIR)/images
+	$(CPDIR) images/* $(DISTDIR)/images
+	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)
+	$(TAR) $(DISTFILE) $(DISTDIR)
 endif
 
 distclean:
@@ -175,21 +198,21 @@ ifeq "$(SYSTEM)" "Darwin"
 	-$(RM) $(BUILTDMG)
 	-$(RM) $(DISTDMG)
 endif	
-	
+
 $(DISTDIR):
 	$(MKDIR) $(DISTDIR)
-	
+
 $(DISTMEMORYDIR): 
 	$(MKDIR) $(DISTMEMORYDIR)
-	
+
 $(DISTMEMORYFILE): $(WP34SMATRIXFILES) $(WP34SSOLVERFILES) $(WP34STRIGOFACTOFILES)
 	$(WP34SLIB) -pp $(PPDIR) $(WP34SMATRIXFILES) -olib $(DISTMEMORYFILE)
 	$(WP34SLIB) $(WP34SSOLVERFILES) -ilib $(DISTMEMORYFILE)	-olib $(DISTMEMORYFILE)
 	$(WP34SLIB) -pp $(PPDIR) $(WP34STRIGOFACTOFILES) -ilib $(DISTMEMORYFILE)	-olib $(DISTMEMORYFILE)
-	
+
 $(DISTDOCDIR): 
 	$(MKDIR) $(DISTDOCDIR)
-	
+
 $(DISTDOCFILE): $(DOCFILE) 
 	$(CP) $(DOCFILE) $(DISTDOCFILE)
 
