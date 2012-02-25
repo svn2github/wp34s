@@ -40,6 +40,15 @@
 
 #define SERIAL_ANNUNCIATOR LIT_EQ
 
+#ifdef QTGUI
+extern void serial_lock(void);
+extern void serial_unlock(void);
+#undef lock
+#undef unlock
+#define lock() serial_lock()
+#define unlock() serial_unlock()
+#endif
+
 /*
  *  Flags and hardware buffer for received data
  */
@@ -116,10 +125,15 @@ int byte_received( short byte )
 		return 1;
 #endif
 	}
-
+#ifdef QTGUI
+	lock();
+#endif
 	InBuffer[ (int) InWrite ] = byte;
 	InWrite = ( InWrite + 1 ) & IN_BUFF_MASK;
 	++InCount;
+#ifdef QTGUI
+	unlock();
+#endif
 	return 0;
 }
 
@@ -338,6 +352,7 @@ void recv_any( enum nilop op )
 		}
 
 		tag = get_word();
+
 		if ( tag < 0 ) goto err;
 
 		length = get_word();

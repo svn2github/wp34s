@@ -6,7 +6,22 @@ communication with real WP-34s units.
 See http://code.google.com/p/qextserialport/ for more information about this project.
 
 It comes with precompiled libraries for Windows, Mac OSX & Linux. However, as these libraries where compiled
-on specific platforms (Windows 7/MinGW, OSX Lion, Ubuntu 11.10/gcc-4.6), they may not work on your platform.
+on specific platforms (Windows 7/MinGW, OSX Lion, Ubuntu 11.10/gcc-4.6), they may not work on your platform and are not suitable
+because of a bug.
+
+###########################################
+IMPORTANT: at the time I write this, there is a bug in qextserialport preventing it to be used with the WP-34s emulator.
+Line 762 of posix_qextserialport.cpp, flush is implemented as:
+
+ tcflush(fd, TCIOFLUSH);
+ 
+But tcflush clears the buffers without sending or receiving their contents. This lead to byte loss. 
+This line must be replaced by:
+
+ tcdrain(fd);
+ 
+And qextserialport recompiled. This apply only to the Mac & Linux version  
+###########################################
 
 First, you'll have to make sure that the Mercurial, free source control management tool, is installed on your system.
 

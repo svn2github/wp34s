@@ -78,18 +78,11 @@ void QtSerialPort::onOpenInEventLoop(const PortSettings& thePortSettings)
 {
 	close();
 	serialPort=new QextSerialPort(serialPortName, QextSerialPort::EventDriven);
-	qDebug() << "BaudRate " << thePortSettings.BaudRate << ", DataBits " << thePortSettings.DataBits << ", Parity " << thePortSettings.Parity << ", StopBits " << thePortSettings.StopBits;
-//	serialPort->setBaudRate(thePortSettings.BaudRate);
-//	serialPort->setDataBits(thePortSettings.DataBits);
-//	serialPort->setParity(thePortSettings.Parity);
-//	serialPort->setStopBits(thePortSettings.StopBits);
-//	serialPort->setFlowControl(FLOW_OFF);
-	serialPort->setBaudRate(BAUD9600);
+	serialPort->setBaudRate(thePortSettings.BaudRate);
+	serialPort->setDataBits(thePortSettings.DataBits);
+	serialPort->setParity(thePortSettings.Parity);
+	serialPort->setStopBits(thePortSettings.StopBits);
 	serialPort->setFlowControl(FLOW_OFF);
-	serialPort->setParity(PAR_NONE);
-	serialPort->setDataBits(DATA_8);
-	serialPort->setStopBits(STOP_1);
-
 	serialPort->open(QIODevice::ReadWrite);
 	if(serialPort->isOpen())
 	{
@@ -148,7 +141,7 @@ void QtSerialPort::onFlushInEventLoop()
 #if HAS_SERIAL
 	if(serialPort!=NULL && serialPort->isOpen())
 	{
-		//serialPort->flush();
+		serialPort->flush();
 	}
 #endif
 }
@@ -188,9 +181,7 @@ void QtSerialPort::onWriteByteInEventLoop(unsigned char aByte)
 {
 #if HAS_SERIAL
 	char* byteBuffer=(char*) &aByte;
-	qDebug() << "Writing " << QString("%1").arg((int) byteBuffer[0], 0, 16);
 	serialPort->write(byteBuffer, 1);
-	qDebug() << "Written " << QString("%1").arg((int) byteBuffer[0], 0, 16);
 #else
 	Q_UNUSED(aByte)
 #endif
@@ -202,21 +193,12 @@ void QtSerialPort::readBytes()
 #if HAS_SERIAL
     QByteArray bytes;
     int length= serialPort->bytesAvailable();
-    qDebug() << "Received " << length;
     bytes.resize(length);
     serialPort->read(bytes.data(), bytes.size());
 
-    {
-    	QDebug debug=qDebug();
-    	debug << "bytes: ";
-    	for(int i=0; i<bytes.size(); i++)
-    	{
-    		debug << QString("%1").arg((int) bytes[i], 0, 16) << " ";
-    	}
-    }
     for(int i=0; i<bytes.size(); i++)
     {
-    	while(forward_byte_received(bytes[i]))
+    	while(forward_byte_received((unsigned char) bytes[i]))
     	{
     		msleep(WAIT_SERIAL_BUFFER_TIME);
     	}
@@ -315,6 +297,18 @@ void put_byte(unsigned char byte)
 void flush_comm()
 {
 	currentSerialPort->flush();
+}
+
+static QMutex serialMurex;
+
+void serial_lock()
+{
+	serialMurex.lock();
+}
+
+void serial_unlock()
+{
+	serialMurex.unlock();
 }
 
 }
