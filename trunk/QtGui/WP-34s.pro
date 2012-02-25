@@ -10,7 +10,6 @@ DEFINES+=$(HAS_SERIAL)
 
 macx {
   LIBS += -framework IOKit -framework CoreFoundation -framework Foundation
-  CFLAGS += -m32
 }
 win32 {
   LIBS += -lsetupapi

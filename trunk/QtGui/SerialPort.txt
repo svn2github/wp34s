@@ -1,7 +1,14 @@
+---------------------- USAGE ----------------------
+To use the serial port, simply enter the preferences dialog and select one. If it does not appear in the list, you can simply enter its name
+
+---------------------- RECOMPILING THE SERIAL LIBRARIES (Optional) ----------------------
+
 The serial port communication is optional. To compile without it, simply type 'make qt_gui_no_serial' in the wp34s trunk directory
 
 This module uses the open-source project qextserialport to provide serial-port
-communication with real WP-34s units.
+communication with real WP-34s units. 
+
+I have compiled the librairies and added them to the WP-34s project so you should not have to recompile them but here are the instructions do to so.
 
 See http://code.google.com/p/qextserialport/ for more information about this project.
 
@@ -33,11 +40,9 @@ On Mac OSX & Linux, get the sources:
 hg clone https://code.google.com/p/qextserialport
 
 Then edit the src/src.pro qmake config file and make sure that the "CONFIG += staticlib" is uncommented.
-run 'qmake' at the top level then make.
+run 'qmake' at the top level then 'make release'.
 
-On Mac OSX, copy the src/build/libqextserialportd.a into the QtGui/serial/lib/Darwin directory 
-and rename it to libqextserialport.a 
-
+On Mac OSX, copy the src/build/libqextserialport.a into the QtGui/serial/lib/Darwin directory 
 On Linux, copy the src/build/libqextserialport.a into the QtGui/serial/lib/Linux directory 
 
 
@@ -57,10 +62,21 @@ Then in the dbzhang800-qextserialport directory created by hg:
 - copy config_example.pri to config.pri
 - edit config.pri and uncomment the 'QEXTSERIALPORT_LIBRARY = yes' & 'QEXTSERIALPORT_STATIC = yes'
 - run qmake
-- run the appropriate make, usually the mingw32-make that comes with Qt
+- run the appropriate make, usually the mingw32-make that comes with Qt as 'mingw32-make release'
 
-The enter the 'lib' subdirectory and copy 'libqextserialport-1.2d.a' into the QtGui/serial/windows32 directory.
-Rename it to libqextserialport.a
+The enter the 'lib' subdirectory and copy 'libqextserialport-1.2.a' into the QtGui/serial/windows32 directory.
 
----------------------- USAGE ----------------------
-To use the serial port, simply enter the preferences dialog and select one. If it does not appear in the list, you can simply enter its name
+###########################################
+
+IMPORTANT: 
+
+If dbzhang800-qextserialport does not compile, edit src/qextserialport.pri and replace line 35, i.e:
+
+    win32:!exists($$[QT_INSTALL_HEADERS]/QtCore/private/qwineventnotifier_p.h){
+
+By
+
+#    win32:!exists($$[QT_INSTALL_HEADERS]/QtCore/private/qwineventnotifier_p.h){
+     win32:{
+
+###########################################

@@ -149,8 +149,11 @@ typedef struct _ram {
 	/*
 	 *  Random number seeds
 	 */
+#ifdef FIX_64_BITS
+	unsigned int _rand_s1, _rand_s2, _rand_s3;
+#else
 	unsigned long int _rand_s1, _rand_s2, _rand_s3;
-
+#endif
 	/*
 	 *  Generic state
 	 */

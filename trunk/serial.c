@@ -320,7 +320,6 @@ static void put_block( unsigned short tag, unsigned short length, const void *da
 	return;
 }
 
-
 /*
  *  Receive block from the serial port and validate the checksum.
  *  If the checksum doesn't match, set error condition.

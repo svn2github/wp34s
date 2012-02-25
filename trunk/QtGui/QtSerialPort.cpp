@@ -311,5 +311,10 @@ void serial_unlock()
 	serialMurex.unlock();
 }
 
+void debug_memory(char* string,long pos)
+{
+  qDebug() << string << "=" << pos;
+}
+
 }
 
