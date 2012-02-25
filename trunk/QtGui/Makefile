@@ -113,7 +113,7 @@ DIRS_TO_CLEAN := $(DIRS) $(DISTDIR)
 EXTRA_FILES_TO_CLEAN := $(DISTFILE) moc_QtBackgroundImage.cpp moc_QtEmulator.cpp moc_QtPreferencesDialog.cpp moc_QtKeyboard.cpp
 ifeq "$(SYSTEM)" "windows32"
 DIRS_TO_CLEAN += debug release
-EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.QtGui.debug object_script.QtGui.release
+EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.WP-34s.debug object_script.WP-34s.release
 endif
 
 ifeq "$(NO_SERIAL)" ""
