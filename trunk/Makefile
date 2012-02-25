@@ -322,7 +322,7 @@ $(UTILITIES)/lcdgen$(EXE): lcdgen.c licence.h Makefile lcd.h
 $(UTILITIES)/genchars7$(EXE): genchars7.c licence.h Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-$(UTILITIES)/genfont$(EXE): genfont.c licence.h Makefile
+$(UTILITIES)/genfont$(EXE): genfont.c font.inc licence.h Makefile
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 $(UTILITIES)/create_revision$(EXE): create_revision.c licence.h Makefile
