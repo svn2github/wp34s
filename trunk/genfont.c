@@ -208,14 +208,15 @@ static void emit_bitmap(FILE *f, int beg, int end, const char *name) {
 			buffer[i] = 0;
 		for (i=beg; i<end; i++) {
 			const int width = WIDTH(charset[i&0xff].bitrows[small]);
+			const int bitrow = charset[i&0xff].bitrows[2 * row+small];
 			/* Sanity check the width of this character */
-			if (WIDTH(charset[i&0xff].bitrows[2 * row+small]) != width) {
-				fprintf(stderr, "Character %04o bitmap row %d has wrong width of %d (should be %d)\n", i, row+1, WIDTH(charset[i&0xff].bitrows[row]), width);
+			if (WIDTH(bitrow) != width) {
+				fprintf(stderr, "Character %04o bitmap row %d has wrong width of %d (should be %d)\n", i, row+1, WIDTH(bitrow), width);
 				exit(1);
 			}
 
 			for (b=0; b<width-1; b++, base++) {
-				if (BITMAP(charset[i&0xff].bitrows[2*row + small]) & (1 << b))
+				if (BITMAP(bitrow) & (1 << b))
 					buffer[base / 8] |= (1 << (base % 8));
 			}
 		}
