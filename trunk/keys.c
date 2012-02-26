@@ -1984,10 +1984,13 @@ static int is_label_or_end_at(unsigned int pc) {
 static unsigned int advance_to_next_label(unsigned int pc, int inc) {
 	do {
 		for (;;) {
-			if (inc)
+			if (inc) {
 				pc = do_inc(pc, 0);
-			if (PcWrapped)
-				break;
+				if (PcWrapped)
+					break;
+			}
+			else
+				inc = 1;
 			if (is_label_or_end_at(pc)) {
 				return pc;
 			}
