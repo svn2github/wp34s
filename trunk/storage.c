@@ -801,7 +801,7 @@ void save_statefile( void )
 	printf( "sizeof struct _ustate = %d\n", (int)sizeof( struct _ustate ) );
 	printf( "sizeof RAM = %d (%d free)\n", (int)sizeof(PersistentRam), 2048 - (int)sizeof(PersistentRam));
 	printf( "sizeof struct _state2 = %d\n", (int)sizeof( struct _state2 ) );
-	printf( "sizeof while on = %d (%d free)\n", (int)sizeof(TStateWhileOn), 55 - (int)sizeof(TStateWhileOn));
+	printf( "sizeof while on = %d\n", (int)sizeof(TStateWhileOn));
 	printf( "sizeof decNumber = %d\n", (int)sizeof(decNumber));
 	printf( "sizeof decContext = %d\n", (int)sizeof(decContext));
 #endif
