@@ -1908,6 +1908,9 @@ decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x) {
 	decNumberTrunc(&s, x);			// s = hh
 	dn_add(&t, &m, &s);			// t = hh.mmss = result
 
+	// Round to the appropriate number of digits for the result
+	decNumberRoundDigits(&t, &t, is_dblmode() ? 34 : 16, DEC_ROUND_HALF_EVEN);
+
 	// Now fix any rounding/carry issues
 	dn_mulpow10(&s, &t, 2);			// hhmm.ssss
 	decNumberFrac(&m, &s);			// .ssss
