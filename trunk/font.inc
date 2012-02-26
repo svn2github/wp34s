@@ -205,36 +205,36 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0021, "f-shift",           100, 0x24d5,     0x11, NULL,
 		{
-			 _OO_ ,   _OO_ ,
-			 _O__ ,   _O__ ,
-			 OOO_ ,   OOO_ ,
-			 _O__ ,   _O__ ,
-			 ____ ,   ____ ,
-			 ____ ,   ____ ,
+			 __OO_ ,   _OO_ ,	/* do NOT change the width */
+			 _O___ ,   _O__ ,	/* of this character	   */
+			 OOO__ ,   OOO_ ,
+			 _O___ ,   _O__ ,
+			 _O___ ,   ____ ,
+			 _____ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0022, "g-shift",           200, 0x24d6,     0x12, NULL,
 		{
-			 _OO_ ,   _OO_ ,
-			 OOO_ ,   OOO_ ,
-			 __O_ ,   __O_ ,
-			 OO__ ,   OO__ ,
-			 ____ ,   ____ ,
-			 ____ ,   ____ ,
+			 _OOO_ ,   OOO_ ,	/* do NOT change the width */
+			 O__O_ ,   OOO_ ,	/* of this character	   */
+			 _OOO_ ,   __O_ ,
+			 ___O_ ,   OO__ ,
+			 OOO__ ,   ____ ,
+			 _____ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0023, "h-shift",           300, 0x24d7,     0x13, NULL,
 		{
-			 O___ ,   O___ ,
-			 OOO_ ,   OOO_ ,
-			 O_O_ ,   O_O_ ,
-			 ____ ,   ____ ,
-			 ____ ,   ____ ,
-			 ____ ,   ____ ,
+			 O____ ,   O___ ,	/* do NOT change the width */
+			 O____ ,   OOO_ ,	/* of this character	   */
+			 OOO__ ,   O_O_ ,
+			 O__O_ ,   ____ ,
+			 O__O_ ,   ____ ,
+			 _____ ,   ____ ,
 		}
 	},
 
