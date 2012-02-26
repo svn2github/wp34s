@@ -217,10 +217,10 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0022, "g-shift",           200, 0x24d6,     0x12, NULL,
 		{
-			 OOO_ ,   OOO_ ,
+			 _OO_ ,   _OO_ ,
 			 OOO_ ,   OOO_ ,
 			 __O_ ,   __O_ ,
-			 _OO_ ,   _OO_ ,
+			 OO__ ,   OO__ ,
 			 ____ ,   ____ ,
 			 ____ ,   ____ ,
 		}
@@ -2291,7 +2291,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
-	{ 0277, "sub-u",            6600, 0x1d64,     0xbf, NULL,
+	{ 0277, "sub-u",            6700, 0x1d64,     0xbf, NULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
