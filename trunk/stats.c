@@ -605,7 +605,7 @@ decNumber *stats_xhat(decNumber *res, const decNumber *y) {
 	switch (m) {
 	default:
 		dn_subtract(&t, y, &b);
-		return dn_divide(res, &a, &t);
+		return dn_divide(res, &t, &a);
 
 	case SIGMA_EXP:
 		dn_ln(&t, y);
