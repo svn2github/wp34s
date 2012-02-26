@@ -205,36 +205,36 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0021, "f-shift",           100, 0x24d5,     0x11, NULL,
 		{
-			 __OO_ ,   _OO_ ,
-			 _O___ ,   _O__ ,
-			 OOO__ ,   OOO_ ,
-			 _O___ ,   _O__ ,
-			 _O___ ,   ____ ,
-			 _____ ,   ____ ,
+			 _OO_ ,   _OO_ ,
+			 _O__ ,   _O__ ,
+			 OOO_ ,   OOO_ ,
+			 _O__ ,   _O__ ,
+			 ____ ,   ____ ,
+			 ____ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0022, "g-shift",           200, 0x24d6,     0x12, NULL,
 		{
-			 _OOO_ ,   OOO_ ,
-			 O__O_ ,   OOO_ ,
-			 _OOO_ ,   __O_ ,
-			 ___O_ ,   OO__ ,
-			 OOO__ ,   ____ ,
-			 _____ ,   ____ ,
+			 OOO_ ,   OOO_ ,
+			 OOO_ ,   OOO_ ,
+			 __O_ ,   __O_ ,
+			 _OO_ ,   _OO_ ,
+			 ____ ,   ____ ,
+			 ____ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0023, "h-shift",           300, 0x24d7,     0x13, NULL,
 		{
-			 O____ ,   O___ ,
-			 O____ ,   OOO_ ,
-			 OOO__ ,   O_O_ ,
-			 O__O_ ,   ____ ,
-			 O__O_ ,   ____ ,
-			 _____ ,   ____ ,
+			 O___ ,   O___ ,
+			 OOO_ ,   OOO_ ,
+			 O_O_ ,   O_O_ ,
+			 ____ ,   ____ ,
+			 ____ ,   ____ ,
+			 ____ ,   ____ ,
 		}
 	},
 
@@ -328,8 +328,8 @@
 			______ , ______ ,
 			______ , ______ ,
 			______ , ______ ,
-			______ , ______ ,
-			OOOOO_ , OOOOO_ ,
+			______ , OOOO__ ,
+			OOOOO_ , O O O_ ,
 			O_O_O_ , O_O_O_ ,
 		}
 	},
@@ -1552,9 +1552,9 @@
 			______ , ______ ,
 			______ , ______ ,
 			______ , ______ ,
-			______ , ______ ,
+			______ , O_O_O_ ,
 			O_O_O_ , O_O_O_ ,
-			OOOOO_ , OOOOO_ ,
+			OOOOO_ , ­_O_O__ ,
 		}
 	},
 
@@ -1609,12 +1609,12 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0206, "sub-d",            3100, 0x249f,     0x0e, NULL,
 		{
-			  ____ ,    ___ ,
-			  ____ ,    ___ ,
-			  ____ ,    ___ ,
-			  __O_ ,    _O_ ,
-			  OOO_ ,    OO_ ,
-			  OOO_ ,    OO_ ,
+			  ____ ,    ____ ,
+			  ____ ,    ____ ,
+			  ____ ,    ____ ,
+			  __O_ ,    __O_ ,
+			  OOO_ ,    OOO_ ,
+			  OOO_ ,    OOO_ ,
 		}
 	},
 
@@ -1717,12 +1717,12 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0217, "PI",              10600, 0x03a0,     0x8f, NULL,
 		{
-			OOOOO_ ,   OOO_ ,
-			_O_O__ ,   O_O_ ,
-			_O_O__ ,   O_O_ ,
-			_O_O__ ,   O_O_ ,
-			_O_O__ ,   O_O_ ,
-			_O_O__ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   ____ ,
 		}
 	},
 
@@ -2272,8 +2272,8 @@
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
-			  ____ ,   ____ ,
-			  OOO_ ,   OOO_ ,
+			  ____ ,   OO__ ,
+			  OOO_ ,   O_O_ ,
 			  O_O_ ,   O_O_ ,
 		}
 	},
@@ -2296,7 +2296,7 @@
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
-			  ____ ,   ____ ,
+			  ____ ,   O_O_ ,
 			  O_O_ ,   O_O_ ,
 			  OOO_ ,   OOO_ ,
 		}
