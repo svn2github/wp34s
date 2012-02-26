@@ -103,15 +103,14 @@
 
 static struct s_charset {
 	unsigned int octal;
-	int width;
 	const char *name;
 	int sortas;
 	int unicode;
 	int windows;
 	const char *uname;
 
-	int bitrows[6];
-} charset[512] = {
+	int bitrows[12];
+} charset[256] = {
 #include "font.inc"
 };
 
@@ -194,9 +193,10 @@ skip:
 static void emit_bitmap(FILE *f, int beg, int end, const char *name) {
 	int i, n, row;
 	unsigned char buffer[10000];
+	const int small = (beg >= 256) ? 1 : 0;
 
 	for (n=0, i=beg; i<end; i++)
-		n += charset[i].width - 1;
+		n += WIDTH(charset[i&0xff].bitrows[small]) - 1;
 	fprintf(f,	"\tstatic const unsigned char %s[6][%d] = {\n", name, (n+7)/8);
 	for (row=0; row<6; row++) {
 		int l = 0;
@@ -207,14 +207,15 @@ static void emit_bitmap(FILE *f, int beg, int end, const char *name) {
 		for (i=0; i<10000; i++)
 			buffer[i] = 0;
 		for (i=beg; i<end; i++) {
+			const int width = WIDTH(charset[i&0xff].bitrows[small]);
 			/* Sanity check the width of this character */
-			if (WIDTH(charset[i].bitrows[row]) != charset[i].width) {
-				fprintf(stderr, "Character %04o bitmap row %d has wrong width of %d (should be %d)\n", i, row+1, WIDTH(charset[i].bitrows[row]), charset[i].width);
+			if (WIDTH(charset[i&0xff].bitrows[2 * row+small]) != width) {
+				fprintf(stderr, "Character %04o bitmap row %d has wrong width of %d (should be %d)\n", i, row+1, WIDTH(charset[i&0xff].bitrows[row]), width);
 				exit(1);
 			}
 
-			for (b=0; b<charset[i].width-1; b++, base++) {
-				if (BITMAP(charset[i].bitrows[row]) & (1 << b))
+			for (b=0; b<width-1; b++, base++) {
+				if (BITMAP(charset[i&0xff].bitrows[2*row + small]) & (1 << b))
 					buffer[base / 8] |= (1 << (base % 8));
 			}
 		}
@@ -237,9 +238,10 @@ static void gen_charset(FILE *f) {
 			"unsigned int charlengths(unsigned int c) {\n"
 			"\tstatic const unsigned char widths[%d] = {\n\t\t", (512 + 2) / 3);
 	for (i=0; i<512; i++) {
-		const int w = charset[i].width - 1;
+		const int small = (i>=256) ? 1 : 0;
+		const int w = WIDTH(charset[i&0xff].bitrows[small]) - 1;
 		if (w < 0 || w > 5) {
-			fprintf(stderr, "Error with character %d: width is out of range%d\n", i, charset[i].width);
+			fprintf(stderr, "Error with character %d: width is out of range%d\n", i, w);
 			exit(1);
 		}
 		switch (i%3) {
@@ -320,7 +322,7 @@ static int sanity_check(void) {
 	unsigned int i;
 	int err = 0;
 
-	for (i=0; i<512; i++)
+	for (i=0; i<256; i++)
 		if (charset[i].octal != i) {
 			fprintf(stderr, "character %04o is tagged in position %04o\n", i, charset[i].octal);
 			err = 1;
