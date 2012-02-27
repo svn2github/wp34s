@@ -37,7 +37,7 @@ extern void reset_wp34s();
 extern char* get_version_string();
 extern char* get_svn_revision_string();
 extern char* get_formatted_displayed_number();
-extern wchar_t* get_displayed_text();
+extern int* get_displayed_text();
 extern void set_fshift_locked(int);
 extern void set_gshift_locked(int);
 extern void set_hshift_locked(int);

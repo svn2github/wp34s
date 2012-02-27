@@ -253,7 +253,18 @@ void QtEmulator::copyNumber()
 
 void QtEmulator::copyTextLine()
 {
-	qApp->clipboard()->setText(QString::fromWCharArray(get_displayed_text()));
+	int* rawText=get_displayed_text();
+	int length=0;
+	while(rawText[length]!=0)
+	{
+		length++;
+	}
+	QChar* text=new QChar[length];
+	for(int i=0; i<length; i++)
+	{
+		text[i]=QChar(rawText[i]);
+	}
+	qApp->clipboard()->setText(QString(text, length));
 }
 
 void QtEmulator::copyImage()

@@ -14,7 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
 #include "xeq.h"
 #include "stopwatch.h"
 #include "display.h"
@@ -257,11 +256,11 @@ int forward_byte_received(short byte)
 
 #include "../translate.c"
 
-wchar_t* get_displayed_text()
+int* get_displayed_text()
 {
-	static wchar_t buffer[NUMALPHA + 1];
+	static int buffer[NUMALPHA + 1];
  	char* p = *LastDisplayedText == '\0' ? Alpha : LastDisplayedText;
-	wchar_t* b = buffer;
+	int* b = buffer;
 	int only_blanks = 1;
 
 	memfill( buffer, 0, sizeof( buffer ));
@@ -271,7 +270,7 @@ wchar_t* get_displayed_text()
 		{
 			only_blanks = 0;
 		}
-		*b++ = (wchar_t) unicode[*p++ & 0xff];
+		*b++ = unicode[*p++ & 0xff];
 	}
 	if (only_blanks)
 	{
