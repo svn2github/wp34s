@@ -14,6 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h>
 #include "xeq.h"
 #include "stopwatch.h"
 #include "display.h"
@@ -249,12 +250,33 @@ char* get_formatted_displayed_number()
 	return buffer;
 }
 
-char *get_displayed_text()
-{
- 	return (char *) (DispMsg == NULL ? Alpha : DispMsg);
-}
-
 int forward_byte_received(short byte)
 {
 	return byte_received(byte);
+}
+
+#include "../translate.c"
+
+wchar_t* get_displayed_text()
+{
+	static wchar_t buffer[NUMALPHA + 1];
+ 	char* p = *LastDisplayedText == '\0' ? Alpha : LastDisplayedText;
+	wchar_t* b = buffer;
+	int only_blanks = 1;
+
+	memfill( buffer, 0, sizeof( buffer ));
+	while(*p != '\0')
+	{
+		if (*p != ' ' && *p != 006)
+		{
+			only_blanks = 0;
+		}
+		*b++ = (wchar_t) unicode[*p++ & 0xff];
+	}
+	if (only_blanks)
+	{
+		*LastDisplayedText = '\0';
+		return get_displayed_text();
+	}
+	return buffer;
 }
