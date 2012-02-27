@@ -453,7 +453,7 @@ void show_flags(void) {
 		PRINTF("[running]");
 	}
 	MOVE(70, 5);
-	PRINTF("iw = %u/%u", State2.int_window, UState.int_maxw);
+	PRINTF("iw = %u/%u", State2.window, UState.int_maxw);
 	MOVE(30, FLAG_BASE+1);
 	PRINTF("shft = %u", cur_shift());
 	MOVE(40, FLAG_BASE+1);

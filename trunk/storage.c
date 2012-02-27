@@ -390,8 +390,8 @@ static int flash_command( unsigned int cmd )
  */
 static int program_flash( void *destination, void *source, int count )
 {
-	int *flash = (int *) destination;
-	int *ip = (int *) source;
+	unsigned int *flash = (unsigned int *) destination;
+	unsigned short int *sp = (unsigned short int *) source;
 
 	lock();  // No interrupts, please!
 
@@ -405,8 +405,8 @@ static int program_flash( void *destination, void *source, int count )
 		/*
 		 *  Copy the source to the flash write buffer
 		 */
-		for ( i = 0; i < PAGE_SIZE / 4; ++i ) {
-			*flash++ = *ip++;
+		for ( i = 0; i < PAGE_SIZE / 4; ++i, sp += 2 ) {
+			*flash++ = *sp | ( (unsigned int) ( sp[ 1 ] ) << 16 );
 		}
 
 		/*

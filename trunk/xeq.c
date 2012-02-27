@@ -3161,7 +3161,7 @@ static void print_step(const opcode op) {
  * happens.  This should be called on that something.
  */
 void reset_volatile_state(void) {
-	State2.int_window = 0;
+	State2.window = 0;
 	UState.int_maxw = 0;
 	State2.smode = SDISP_NORMAL;
 }

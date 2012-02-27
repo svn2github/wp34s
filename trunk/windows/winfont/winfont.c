@@ -285,8 +285,8 @@ int main( int argc, char **argv )
 						}
 					}
 				}
-				fprintf( f, "EndChar\n\n" );
-				if ( j < 0 ) {
+				l = fprintf( f, "EndChar\n\n" );
+				if ( l < 0 ) {
 					goto error;
 				}
 			}

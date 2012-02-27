@@ -231,7 +231,7 @@ struct _state2 {
 	signed char last_key;		// Most recent key pressed while program is running
 
 	unsigned int confirm : 3;	// Confirmation of operation required
-	unsigned int int_window : 3;	// Which window to display 0=rightmost
+	unsigned int window : 3;	// Which window to display 0=rightmost
 	unsigned int wascomplex : 2;	// Previous operation was complex
 	unsigned int gtodot : 1;	// GTO . sequence met
 	unsigned int cmplx : 1;		// Complex prefix pressed

@@ -306,10 +306,7 @@ static void annunciators(void) {
 		goto skip;
 	}
 
-	if (!State2.runmode && State2.alphas) {
-		*p++ = '\240';
-		*p++ = ':';
-	} else if (!is_intmode()) {
+	if (!is_intmode()) {
 		switch (UState.date_mode) {
 		//case DATE_DMY:	q = "d.my\006\006";	break;
 		case DATE_YMD:	q = "y.md\006\006";	break;
@@ -340,7 +337,7 @@ static void annunciators(void) {
 				*p++ = '\006';
 
 			for (n=UState.int_maxw; n>=0; n--)
-				*p++ = State2.int_window == n ? '|':'\'';
+				*p++ = State2.window == n ? '|':'\'';
 		}
 
 	}
@@ -502,12 +499,12 @@ static void set_int_x(const long long int value, char *res) {
 		const int group = (b == 2 || b == 4) ? 4
 				: b == 16 ? 2 : 3;
 #endif
-		const int window = State2.int_window;
-
 		UState.int_maxw = (i - 1) / shift;
+		if (State2.window > UState.int_maxw)
+			State2.window = 0;
 		buf[i] = '\0';
 
-		j = window * shift;	// digits at a time
+		j = State2.window * shift;	// digits at a time
 		for (k = 0; k < 12; k++)
 			if (buf[j + k] == '\0')
 				break;
@@ -748,7 +745,7 @@ static void show_x(char *x, int exp) {
 	int i, j;
 
 	xset(p, '0', x + 34 - p);
-	if (State2.digval)
+	if (State2.window)
 		x += 16;	// right half
 	else {
 		if (dbl) {
@@ -1210,16 +1207,25 @@ static void show_registers(void) {
 	char buf[16], *bp;
 	int n = State2.digval;
 	
+#ifdef INCLUDE_FLASH_RECALL
 	const int reg = State2.digval2 ? FLASH_REG_BASE + n : 
 			State2.local   ? LOCAL_REG_BASE + n : 
 			n;
+#else
+	const int reg = State2.local   ? LOCAL_REG_BASE + n : 
+			n;
+#endif
 
 	if (State2.disp_as_alpha) {
 		set_status(alpha_rcl_s(reg, buf));
 	}
 	else {
 		xset(buf, '\0', 16);
+#ifdef INCLUDE_FLASH_RECALL
 		bp = scopy_spc(buf, State2.digval2 ? "Bkup" : "Reg ");
+#else
+		bp = scopy_spc(buf, "Reg ");
+#endif
 		if (State2.local) {
 			*bp++ = '.';
 			if (n >= 100) {
@@ -1228,7 +1234,7 @@ static void show_registers(void) {
 			}
 		}
 		if (n < 100)
-			num_arg_0(bp, n, 2);
+			bp = num_arg_0(bp, n, 2);
 		else
 			*bp++ = REGNAMES[n - regX_idx];
 		set_status(buf);
@@ -1271,6 +1277,7 @@ void display(void) {
 	const enum catalogues cata = (enum catalogues) State2.catalogue;
 	int skip = 0;
 	int x_disp = 0;
+	const int shift = cur_shift();
 
 	if (State2.disp_freeze) {
 		State2.disp_freeze = 0;
@@ -1332,7 +1339,7 @@ void display(void) {
 		if (State2.dot) {
 			*bp++ = 's';
 			*bp++ = '_';
-		} else if (cur_shift() == SHIFT_F) {
+		} else if (shift == SHIFT_F) {
 			*bp++ = '\021';
 			*bp++ = '_';
 		} else {
@@ -1422,6 +1429,9 @@ void display(void) {
 	} else if (State2.registerlist) {
 		show_registers();
 		skip = 1;
+		if (shift != SHIFT_N || (State2.smode == SDISP_SHOW && is_intmode())) {
+			annunciators();
+		}
 #ifdef SHIFT_HOLD_TEMPVIEW
 	} else if (State2.disp_as_alpha) {
 		set_status(alpha_rcl_s(regX_idx, buf));
@@ -1446,14 +1456,13 @@ void display(void) {
 					set_status(buf);
 				}
 			} else {
-				i = cur_shift();
-				if (i != SHIFT_N) {
-					*bp++ = 021 + i - SHIFT_F;
+				if (shift != SHIFT_N) {
+					*bp++ = 021 + shift - SHIFT_F;
 					*bp++ = '\0';
 				}
 				set_status_right(buf);
 			}
-		} else if (State2.smode != SDISP_SHOW) {
+		} else {
 			annuc = 1;
 		}
 	} else {
@@ -1464,6 +1473,7 @@ void display(void) {
 		else
 			set_status("");
 		set_dot(STO_annun);
+#if 0
 		if (State2.smode == SDISP_SHOW) {
 			unsigned short int crc;
 			crc = checksum_program();
@@ -1475,7 +1485,9 @@ void display(void) {
 			}
 			skip = 1;
 		}
-		else if (cur_shift() != SHIFT_N || State2.cmplx || State2.arrow)
+		else
+#endif
+		if (cur_shift() != SHIFT_N || State2.cmplx || State2.arrow)
 			annuc = 1;
 		goto nostk;
 	}
@@ -1511,7 +1523,7 @@ nostk:	show_flags();
 	set_annunciators();
 
 	State2.disp_temp = (ShowRPN == 0 && State2.runmode 
-		            && (! State2.registerlist || State2.disp_as_alpha));
+		            && (! State2.registerlist || State2.smode == SDISP_SHOW || State2.disp_as_alpha));
 	if (annuc && !State2.disp_temp)
 		annunciators();
 	State2.version = 0;

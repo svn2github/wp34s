@@ -33,7 +33,7 @@
 #define STATE_IGNORE		(OP_SPEC | OP_IGNORE)
 #define STATE_WINDOWLEFT	(OP_SPEC | OP_WINDOWLEFT)
 #define STATE_WINDOWRIGHT	(OP_SPEC | OP_WINDOWRIGHT)
-#define STATE_SHOW		(OP_SPEC | OP_SHOW)
+//#define STATE_SHOW		(OP_SPEC | OP_SHOW)
 
 /* Define this if the key codes map rows sequentially */
 
@@ -187,31 +187,30 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 *  Normal processing - Not alpha mode
 		 */
 		static const struct _map cmap[] = {
-			{ K_ARROW, { CATALOGUE_CONV,   CATALOGUE_NONE,   CATALOGUE_CONV          } },
+			{ K_ARROW, { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
 #ifdef INCLUDE_INTERNAL_CATALOGUE
-			{ K05,     { CATALOGUE_MODE,   CATALOGUE_MODE,   CATALOGUE_INTERNAL      } },
+			{ K05,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_INTERNAL      } },
 #else
-			{ K05,     { CATALOGUE_MODE,   CATALOGUE_MODE,   CATALOGUE_MODE          } },
+			{ K05,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
 #endif
-			{ K10,     { CATALOGUE_LABELS, CATALOGUE_LABELS, CATALOGUE_LABELS        } },
-			{ K20,     { CATALOGUE_CONST,  CATALOGUE_NONE,   CATALOGUE_COMPLEX_CONST } },
-			{ K41,     { CATALOGUE_PROB,   CATALOGUE_NONE,   CATALOGUE_PROB          } },
-			{ K42,     { CATALOGUE_STATS,  CATALOGUE_NONE,   CATALOGUE_STATS         } },
-			{ K43,     { CATALOGUE_SUMS,   CATALOGUE_NONE,   CATALOGUE_SUMS          } },
-			{ K44,     { CATALOGUE_MATRIX, CATALOGUE_NONE,   CATALOGUE_MATRIX        } },
-			{ K50,     { CATALOGUE_STATUS, CATALOGUE_STATUS, CATALOGUE_STATUS        } },
-			{ K51,     { CATALOGUE_TEST,   CATALOGUE_TEST,   CATALOGUE_TEST          } },
-			{ K52,     { CATALOGUE_PROG,   CATALOGUE_PROG,   CATALOGUE_PROG          } },
-			{ K53,     { CATALOGUE_NORMAL, CATALOGUE_INT,    CATALOGUE_COMPLEX       } },
+			{ K10,     { CATALOGUE_LABELS,    CATALOGUE_LABELS,    CATALOGUE_LABELS        } },
+			{ K20,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
+			{ K41,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
+			{ K42,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
+			{ K43,     { CATALOGUE_SUMS,      CATALOGUE_NONE,      CATALOGUE_SUMS          } },
+			{ K44,     { CATALOGUE_MATRIX,    CATALOGUE_NONE,      CATALOGUE_MATRIX        } },
+			{ K50,     { CATALOGUE_STATUS,    CATALOGUE_STATUS,    CATALOGUE_STATUS        } },
+			{ K51,     { CATALOGUE_TEST,      CATALOGUE_TEST,      CATALOGUE_TEST          } },
+			{ K52,     { CATALOGUE_PROG,      CATALOGUE_PROG,      CATALOGUE_PROG          } },
+			{ K53,     { CATALOGUE_NORMAL,    CATALOGUE_INT,       CATALOGUE_COMPLEX       } },
 		};
 
-		if (shift == SHIFT_F && c == K60) {
+		if (c == K60 && shift == SHIFT_G) {
 			/*
-			 *  Exception from the rule: f+EXIT is register browser
+			 *  SHOW starts register browser
 			 */
 			return CATALOGUE_REGISTERS;
 		}
-
 		if (c == K53 && shift == SHIFT_N && State2.cmplx && State2.catalogue == CATALOGUE_NONE) {
 			/*
 			 *  Shorthand to complex X.FCN - h may be omitted
@@ -633,7 +632,7 @@ static int process_fg_shifted(const keycode c) {
 		{ RARG_PROD            | NO_INT,   RARG_SUM           | NO_INT },
 		{ OP_MON | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },
 		// Row 7
-		{ STATE_UNFINISHED,		   STATE_SHOW		       },
+		{ STATE_UNFINISHED,		   STATE_UNFINISHED	       },
 		{ OP_MON | OP_ABS,		   OP_MON | OP_RND             },
 		{ OP_MON | OP_TRUNC,		   OP_MON | OP_FRAC            },
 		{ RARG_LBL,			   OP_NIL | OP_RTN             },
@@ -671,10 +670,13 @@ static int process_fg_shifted(const keycode c) {
 		}
 		break;
 
+	case K60:				// Lowercase Alpha
 	case K20:				// Alpha
 		if (shift == SHIFT_F) {
 			process_cmdline_set_lift();
 			State2.alphas = 1;
+			if (c == K60)
+				State2.alphashift = 1;
 		}
 		break;
 
@@ -2113,25 +2115,56 @@ static int process_labellist(const keycode c) {
 }
 
 
+static void set_window(int c) {
+
+	if (State2.runmode) {
+		process_cmdline_set_lift();
+		if (c == STATE_WINDOWRIGHT) {
+			if (UState.intm) {
+				if (UState.int_maxw > 0 && State2.window > 0)
+					State2.window--;
+				return;
+			}
+			else 
+				State2.window = is_dblmode();
+		}
+		else {
+			if (UState.intm) {
+				if (UState.int_maxw > State2.window)
+					State2.window++;
+				return;
+			}
+			else
+				State2.window = 0;
+		}
+		set_smode(SDISP_SHOW);
+	}
+}
+
+
 static int process_registerlist(const keycode c) {
 	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
 	enum shifts shift = reset_shift();
 	const int max = State2.local ? local_regs() : NUMREG;
 
-	if ( n == LOCAL_REG_BASE ) {	// '.'
+	if (n == LOCAL_REG_BASE) {	// '.'
 		if (local_regs())
 			State2.local = ! State2.local && ! State2.digval2;
 		State2.digval = State2.local ? 0 : regX_idx;
-		return STATE_UNFINISHED;
+		goto reset_window;
 	}
-	else if ( n <= 9 ) {
+	else if (n <= 9) {
 		int dv = (State2.digval * 10 + n) % 100;
 		State2.digval = dv < max ? dv : n;
-		return STATE_UNFINISHED;
+		goto reset_window;
 	}
-	else if ( n != NO_REG ) {
+	else if ((shift == SHIFT_F || shift == SHIFT_G) && c == K21) {  // <( )>
+		set_window(shift == SHIFT_F ? STATE_WINDOWLEFT : STATE_WINDOWRIGHT);
+		set_smode(SDISP_SHOW);
+	}
+	else if (n != NO_REG) {
 		State2.digval = n;
-		return STATE_UNFINISHED;
+		goto reset_window;
 	}
 
 	switch (c) {
@@ -2143,7 +2176,7 @@ static int process_registerlist(const keycode c) {
 		}
 		else
 			State2.digval = max - 1;
-		return STATE_UNFINISHED;
+		goto reset_window;
 
 	case K50:
 		if (State2.digval < max - 1) {
@@ -2153,12 +2186,12 @@ static int process_registerlist(const keycode c) {
 		}
 		else	
 			State2.digval = 0;
-		return STATE_UNFINISHED;
+		goto reset_window;
 
 #ifdef INCLUDE_FLASH_RECALL
 	case K04:
 		State2.digval2 = ! State2.digval2 && ! State2.local;
-		return STATE_UNFINISHED;
+		goto reset_window;
 #endif
 
 	case K24:			
@@ -2170,7 +2203,7 @@ static int process_registerlist(const keycode c) {
 	case K20:		// ENTER
 		if (shift == SHIFT_F) {
 			State2.disp_as_alpha = 1;
-			return STATE_UNFINISHED;
+			goto reset_window;
 		}
 	case K11:		// RCL
 		if ( shift == SHIFT_N ) {
@@ -2190,6 +2223,8 @@ static int process_registerlist(const keycode c) {
 	State2.registerlist = 0;
 	State2.digval = 0;
 	State2.digval2 = 0;
+reset_window:
+	State2.window = 0;
 	return STATE_UNFINISHED;
 }
 
@@ -2521,28 +2556,8 @@ void process_keycode(int c)
 			break;
 
 		case STATE_WINDOWRIGHT:
-			if (UState.intm) {
-				if (UState.int_maxw > 0 && State2.int_window > 0)
-					State2.int_window--;
-				break;
-			}
-			State2.digval = is_dblmode();
-			goto show;
-
 		case STATE_WINDOWLEFT:
-			if (UState.intm) {
-				if (UState.int_maxw > State2.int_window)
-					State2.int_window++;
-				break;
-			}
-			// no break;
-		case STATE_SHOW:
-			State2.digval = 0;
-		show:
-			if (State2.runmode || c == STATE_SHOW) {
-				process_cmdline_set_lift();
-				set_smode(SDISP_SHOW);
-			}
+			set_window(c);
 			break;
 
 		case STATE_UNFINISHED:
