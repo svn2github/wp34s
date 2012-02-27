@@ -217,7 +217,7 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0022, "g-shift",           200, 0x24d6,     0x12, NULL,
 		{
-			 _OOO_ ,   OOO_ ,	/* do NOT change the width */
+			 _OOO_ ,   _OO_ ,	/* do NOT change the width */
 			 O__O_ ,   OOO_ ,	/* of this character	   */
 			 _OOO_ ,   __O_ ,
 			 ___O_ ,   OO__ ,
