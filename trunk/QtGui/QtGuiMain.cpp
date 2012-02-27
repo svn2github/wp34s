@@ -17,9 +17,9 @@
 #include <QtGui>
 #include "QtEmulator.h"
 
-int main(int argv, char **args)
+int main(int argc, char **argv)
 {
-	QApplication application(argv, args);
+	QApplication application(argc, argv);
 	QApplication::setOrganizationName(ORGANIZATION_NAME);
 	QApplication::setApplicationName(APPLICATION_NAME);
 	try
