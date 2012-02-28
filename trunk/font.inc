@@ -217,12 +217,12 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0022, "g-shift",           200, 0x24d6,     0x12, NULL,
 		{
-			 _OO__ ,   _OO_ ,	/* do NOT change the width */
-			 O_O__ ,   OOO_ ,	/* of this character	   */
+			 _____ ,   ____ ,	/* do NOT change the width */
+			 _OO__ ,   _OO_ ,	/* of this character	   */
+			 O_O__ ,   OOO_ ,
 			 OOO__ ,   __O_ ,
 			 __O__ ,   OO__ ,
 			 OO___ ,   ____ ,
-			 _____ ,   ____ ,
 		}
 	},
 
@@ -231,7 +231,7 @@
 		{
 			 O____ ,   O___ ,	/* do NOT change the width */
 			 O____ ,   OOO_ ,	/* of this character	   */
-			 OO___ ,   O_O_ ,
+			 OOO__ ,   O_O_ ,
 			 O_O__ ,   ____ ,
 			 O_O__ ,   ____ ,
 			 _____ ,   ____ ,
