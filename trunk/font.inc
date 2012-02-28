@@ -1825,12 +1825,12 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0230, "sub-B",            2600, 0x249d,     0x98, NULL,
 		{
-			  ____ ,   ____ ,
-			  OO__ ,   OO__ ,
-			  O_O_ ,   O_O_ ,
-			  OO__ ,   OO__ ,
-			  O_O_ ,   O_O_ ,
-			  OO__ ,   OO__ ,
+			  _____ ,   ____ ,
+			  _____ ,   ____ ,
+			  OOO__ ,   OO__ ,
+			  OOO__ ,   OO__ ,
+			  O__O_ ,   O_O_ ,
+			  OOO__ ,   OO__ ,
 		}
 	},
 
