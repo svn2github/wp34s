@@ -237,7 +237,7 @@ struct _constsml constsml[] = {
 	CONSTANT("\253\270",	"PC_mu0",	"12.566370614E-7"),	// Magnetic constant
 	CONSTANT("\253\230",	"PC_muB",	"927.400968E-26"),	// Bohr's magneton
 	CONSTANT("\253\277",	"PC_mu_u",	"5.05078353E-27"),	// Nuclear magneton
-	CONSTANT("\261\230",	"PC_sigma",	"5.670373E-8"),		// Stefan BOltzmann consant
+	CONSTANT("\261\230",	"PC_sigma",	"5.670373E-8"),		// Stefan Boltzmann constant
 	CONSTANT("\224\270",	"PC_phi0",	"2.067833758E-15"),	// Magnetic flux quantum
 
 	/* Plank related constants */
