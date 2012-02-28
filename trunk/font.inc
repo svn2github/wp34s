@@ -206,10 +206,10 @@
 	{ 0021, "f-shift",           100, 0x24d5,     0x11, NULL,
 		{
 			 _OO__ ,   _OO_ ,	/* do NOT change the width */
-			 O____ ,   O___ ,	/* of this character	   */
-			 OO___ ,   OO__ ,
-			 O____ ,   O___ ,
-			 O____ ,   ____ ,
+			 _O___ ,   OOO_ ,	/* of this character	   */
+			 OOO__ ,   _O__ ,
+			 _O___ ,   _O__ ,
+			 _O___ ,   ____ ,
 			 _____ ,   ____ ,
 		}
 	},
@@ -217,12 +217,12 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0022, "g-shift",           200, 0x24d6,     0x12, NULL,
 		{
-			 _____ ,   ____ ,	/* do NOT change the width */
-			 _OO__ ,   _OO_ ,	/* of this character	   */
-			 O_O__ ,   OOO_ ,
+			 _OO__ ,   _OO_ ,	/* do NOT change the width */
+			 O_O__ ,   OOO_ ,	/* of this character	   */
 			 OOO__ ,   __O_ ,
 			 __O__ ,   OO__ ,
 			 OO___ ,   ____ ,
+			 _____ ,   ____ ,
 		}
 	},
 
