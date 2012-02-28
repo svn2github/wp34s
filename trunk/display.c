@@ -1375,8 +1375,8 @@ void display(void) {
 		if (*p != COMPLEX_PREFIX && State2.cmplx)
 			*bp++ = COMPLEX_PREFIX;
 		bp = scopy(bp, p);
-		set_status(buf);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
+			State2.disp_small = 1;
 			if (op == RARG_BASEOP(RARG_INTNUM))
 				set_digits_string("0 to 255", 0);
 			else
@@ -1412,6 +1412,7 @@ void display(void) {
 				skip = 1;
 			}
 		}
+		set_status(buf);
 	} else if (State2.multi) {
 		bp = scopy_char(bp, multicmds[CmdBase].cmd, '\'');
 		if (State2.numdigit > 0) {
