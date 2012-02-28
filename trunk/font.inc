@@ -205,11 +205,11 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0021, "f-shift",           100, 0x24d5,     0x11, NULL,
 		{
-			 __OO_ ,   _OO_ ,	/* do NOT change the width */
-			 _O___ ,   _O__ ,	/* of this character	   */
-			 OOO__ ,   OOO_ ,
-			 _O___ ,   _O__ ,
-			 _O___ ,   ____ ,
+			 _OO__ ,   _OO_ ,	/* do NOT change the width */
+			 O____ ,   O___ ,	/* of this character	   */
+			 OO___ ,   OO__ ,
+			 O____ ,   O___ ,
+			 O____ ,   ____ ,
 			 _____ ,   ____ ,
 		}
 	},
@@ -217,11 +217,11 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0022, "g-shift",           200, 0x24d6,     0x12, NULL,
 		{
-			 _OOO_ ,   _OO_ ,	/* do NOT change the width */
-			 O__O_ ,   OOO_ ,	/* of this character	   */
-			 _OOO_ ,   __O_ ,
-			 ___O_ ,   OO__ ,
-			 OOO__ ,   ____ ,
+			 _OO__ ,   _OO_ ,	/* do NOT change the width */
+			 O_O__ ,   OOO_ ,	/* of this character	   */
+			 OOO__ ,   __O_ ,
+			 __O__ ,   OO__ ,
+			 OO___ ,   ____ ,
 			 _____ ,   ____ ,
 		}
 	},
@@ -231,9 +231,9 @@
 		{
 			 O____ ,   O___ ,	/* do NOT change the width */
 			 O____ ,   OOO_ ,	/* of this character	   */
-			 OOO__ ,   O_O_ ,
-			 O__O_ ,   ____ ,
-			 O__O_ ,   ____ ,
+			 OO___ ,   O_O_ ,
+			 O_O__ ,   ____ ,
+			 O_O__ ,   ____ ,
 			 _____ ,   ____ ,
 		}
 	},
