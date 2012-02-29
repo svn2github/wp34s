@@ -1376,7 +1376,7 @@ void display(void) {
 			*bp++ = COMPLEX_PREFIX;
 		bp = scopy(bp, p);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
-			State2.disp_small = 1;
+			// State2.disp_small = 1;
 			if (op == RARG_BASEOP(RARG_INTNUM))
 				set_digits_string("0 to 255", 0);
 			else
