@@ -206,8 +206,8 @@
 	{ 0021, "f-shift",           100, 0x24d5,     0x11, NULL,
 		{
 			 __OO_ ,   _OO_ ,	/* do NOT change the width */
-			 __O__ ,   OOO_ ,	/* of this character	   */
-			 _OOO_ ,   _O__ ,
+			 __O__ ,   _O__ ,	/* of this character	   */
+			 _OOO_ ,   OOO_ ,
 			 __O__ ,   _O__ ,
 			 __O__ ,   ____ ,
 			 _____ ,   ____ ,
