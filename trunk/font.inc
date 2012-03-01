@@ -1778,9 +1778,9 @@
 	{ 0224, "PHI",             11100, 0x03a6,     0x94, NULL,
 		{
 			__O___ , __O___ ,
-			_OOO__ , _OOOO_ ,
+			_OOO__ , OOOOO_ ,
 			O_O_O_ , O_O_O_ ,
-			O_O_O_ , OOOO__ ,
+			O_O_O_ , OOOOO_ ,
 			_OOO__ , __O___ ,
 			__O___ , ______ ,
 		}
