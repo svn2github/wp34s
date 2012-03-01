@@ -1740,6 +1740,9 @@ NO_RETURN int main(void)
 			/*
 			 *  A real key was pressed or released
 			 */
+			if ( KbCount && SpeedSetting < SPEED_HALF ) {
+				set_speed( SPEED_HALF );
+			}
 			if ( !OnKeyPressed && confirm_counter == 1 ) {
 				// ON key was released
 				confirm_counter = 0;

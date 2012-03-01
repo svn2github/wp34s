@@ -1196,7 +1196,7 @@ void clrreg(enum nilop op) {
 	process_cmdline_set_lift();
 
 	// erase register memory
-	zero_regs(get_reg_n(0), global_regs() + STACK_SIZE + EXTRA_REG);
+	zero_regs(get_reg_n(0), global_regs());
 
 	// erase local registers but keep them allocated
 	if (local)
