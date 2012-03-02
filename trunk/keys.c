@@ -2146,6 +2146,7 @@ static int process_registerlist(const keycode c) {
 	unsigned int n = keycode_to_digit_or_register(c) & ~NO_SHORT;
 	enum shifts shift = reset_shift();
 	const int max = State2.local ? local_regs() : NUMREG;
+	const int g_max = global_regs();
 
 	if (n == LOCAL_REG_BASE) {	// '.'
 		if (local_regs())
@@ -2155,7 +2156,9 @@ static int process_registerlist(const keycode c) {
 	}
 	else if (n <= 9) {
 		int dv = (State2.digval * 10 + n) % 100;
-		State2.digval = dv < max ? dv : n;
+		if (dv >= max || (! State2.local && (State2.digval >= g_max || dv >= g_max)))
+			dv = n;
+		State2.digval = dv;
 		goto reset_window;
 	}
 	else if ((shift == SHIFT_F || shift == SHIFT_G) && c == K21) {  // <( )>
@@ -2168,7 +2171,7 @@ static int process_registerlist(const keycode c) {
 	}
 
 	switch (c) {
-	case K40:
+	case K50:
 		if (State2.digval > 0) {
 			if (! State2.local && State2.digval == TOPREALREG)
 				State2.digval = global_regs();
@@ -2178,7 +2181,7 @@ static int process_registerlist(const keycode c) {
 			State2.digval = max - 1;
 		goto reset_window;
 
-	case K50:
+	case K40:
 		if (State2.digval < max - 1) {
 			State2.digval++;
 			if (! State2.local && State2.digval == global_regs())
