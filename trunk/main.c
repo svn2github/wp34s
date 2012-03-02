@@ -340,9 +340,9 @@ void scan_keyboard( void )
 	if ( keys.ll == 0 ) {
 		/*
 		 *  No new key to decode: test for key-up
-		 *  Key must have been twice down for debounce reasons
+		 *  (used to be: Key must have been twice down for debounce reasons)
 		 */
-		if ( ( last_keys & KbDebounce & ~KbData ) != 0 ) {
+		if ( ( /* last_keys & */ KbDebounce & ~KbData ) != 0 ) {
 			/*
 			 *  A key has been released
 			 */
