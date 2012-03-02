@@ -915,6 +915,8 @@ void QtEmulator::findSkins()
 void QtEmulator::toggleDebugger()
 {
 	debugger->show();
+	raise();
+	activateWindow();
 }
 
 extern "C"
