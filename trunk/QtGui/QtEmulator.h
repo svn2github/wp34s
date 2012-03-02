@@ -26,6 +26,7 @@
 #include "QtCalculatorThread.h"
 #include "QtHeartBeatThread.h"
 #include "QtSerialPort.h"
+#include "QtDebugger.h"
 
 #define ORGANIZATION_NAME "WP-34s"
 #define APPLICATION_NAME "WP34sEmulator"
@@ -81,6 +82,7 @@
 
 #define MAIN_MENU "Calculator"
 #define EDIT_MENU "Edit"
+#define DEBUG_MENU "Debug"
 #define SKINS_MENU "Skins"
 #define HELP_MENU "Help"
 
@@ -96,6 +98,10 @@
 #define COPY_TEXTLINE_ACTION_TEXT "Copy Textline"
 #define COPY_IMAGE_ACTION_TEXT "Copy Screen Image"
 #define PASTE_NUMBER_ACTION_TEXT "Paste Number"
+
+#define HIDE_DEBUGGER_ACTION_TEXT "Hide Debugger"
+#define SHOW_DEBUGGER_ACTION_TEXT "Show Debugger"
+
 
 #define SHOW_WEBSITE_ACTION_TEXT "Show Website"
 // Manual could be change to "Documentation" if we can generate it in HTML for instance
@@ -118,6 +124,7 @@ public:
      QtKeyboard& getKeyboard() const;
      QtScreen& getScreen() const;
      QtSerialPort& getSerialPort() const;
+     QtDebugger& getDebugger() const;
      void updateScreen();
      // Used by program_flash via QtEmulatorAdapter.c
      char* getRegionPath(int aRegionIndex);
@@ -133,6 +140,7 @@ private slots:
 	void copyTextLine();
 	void copyImage();
 	void pasteNumber();
+    void toggleDebugger();
 	void selectSkin(QAction* anAction);
 	void showWebSite();
 	void showDocumentation();
@@ -145,10 +153,12 @@ private:
      void buildContextMenu();
      void buildMainMenu();
      void buildEditMenu();
+     void buildDebugMenu();
      void buildSkinsMenu();
      void buildHelpMenu();
      void buildComponents(const QtSkin& aSkin);
      void buildSerialPort();
+     void buildDebugger();
      void startThreads();
      void stopThreads();
      void loadSettings();
@@ -185,6 +195,7 @@ private:
      QtBackgroundImage* backgroundImage;
      QtCalculatorThread* calculatorThread;
      QtHeartBeatThread* heartBeatThread;
+     QtDebugger* debugger;
      QSettings settings;
      QString userSettingsDirectoryName;
      // We need to keep this variable to return a properly allocated char*

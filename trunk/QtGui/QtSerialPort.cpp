@@ -23,14 +23,12 @@
 #include <QList>
 #include <QThread>
 
-static QtSerialPort* currentSerialPort;
 
 QtSerialPort::QtSerialPort()
 #if HAS_SERIAL
 : serialPort(NULL)
 #endif
 {
-	currentSerialPort=this;
 #if HAS_SERIAL
 	qRegisterMetaType<PortSettings>("PortSettings");
 	connect(this, SIGNAL(openInEventLoop(const PortSettings&)), this, SLOT(onOpenInEventLoop(const PortSettings&)), Qt::BlockingQueuedConnection);
@@ -212,6 +210,7 @@ void QtSerialPort::readBytes()
 
 extern "C"
 {
+
 int open_port(int baud, int bits, int parity, int stopbits)
 {
 #if HAS_SERIAL
@@ -290,29 +289,29 @@ int open_port(int baud, int bits, int parity, int stopbits)
 
 void close_port()
 {
-	currentSerialPort->close();
+	currentEmulator->getSerialPort().close();
 }
 
 void put_byte(unsigned char byte)
 {
-	currentSerialPort->writeByte(byte);
+	currentEmulator->getSerialPort().writeByte(byte);
 }
 
 void flush_comm()
 {
-	currentSerialPort->flush();
+	currentEmulator->getSerialPort().flush();
 }
 
-static QMutex serialMurex;
+static QMutex serialMutex;
 
 void serial_lock()
 {
-	serialMurex.lock();
+	serialMutex.lock();
 }
 
 void serial_unlock()
 {
-	serialMurex.unlock();
+	serialMutex.unlock();
 }
 
 void debug_memory(char* string,long pos)

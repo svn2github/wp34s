@@ -14,30 +14,35 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QTCALCULATORTHREAD_H_
-#define QTCALCULATORTHREAD_H_
+#ifndef QTREGISTERSMODEL_H_
+#define QTREGISTERSMODEL_H_
 
-#include <QThread>
-#include <QMutex>
+#include <QAbstractTableModel>
+#include <QPair>
+#include <QList>
 
-class QtEmulator;
-
-class QtCalculatorThread: public QThread
+class QtRegistersModel: public QAbstractTableModel
 {
-public:
-	QtCalculatorThread(QtEmulator& anEmulator);
+	Q_OBJECT
 
 public:
-	void run();
-	void end();
+	QtRegistersModel(QObject* aParent=0);
+
+public:
+    int rowCount(const QModelIndex& aParent) const;
+    int columnCount(const QModelIndex& aParent) const;
+    QVariant data(const QModelIndex& anIndex, int aRole) const;
+    QVariant headerData(int aSection, Qt::Orientation anOrientation, int aRole) const;
+
+public:
+    void refresh();
+
+protected:
+    int rowCount() const;
+    int columnCount() const;
 
 private:
-	bool isEnded();
-
-private:
-	QtEmulator& emulator;
-	QMutex mutex;
-	volatile bool ended;
+    QList< QPair<QString, int> > displayedRegisters;
 };
 
-#endif /* QTCALCULATORTHREAD_H_ */
+#endif /* QTREGISTERSMODEL_H_ */

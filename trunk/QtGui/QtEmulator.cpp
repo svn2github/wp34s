@@ -24,7 +24,7 @@
 QtEmulator* currentEmulator;
 
 QtEmulator::QtEmulator()
-: calculatorThread(NULL), heartBeatThread(NULL), skinsActionGroup(NULL), titleBarVisible(true)
+: calculatorThread(NULL), heartBeatThread(NULL), debugger(NULL), skinsActionGroup(NULL), titleBarVisible(true)
 {
 	debug=qApp->arguments().contains(DEBUG_OPTION);
 	development=qApp->arguments().contains(DEVELOPMENT_OPTION);
@@ -64,6 +64,7 @@ QtEmulator::QtEmulator()
 	currentEmulator = this;
 
 	loadMemory();
+	buildDebugger();
 	startThreads();
 	setTitleBarVisible(titleBarVisible);
 	active=true;
@@ -118,6 +119,11 @@ QtScreen& QtEmulator::getScreen() const
 QtSerialPort& QtEmulator::getSerialPort() const
 {
 	return *serialPort;
+}
+
+QtDebugger& QtEmulator::getDebugger() const
+{
+	return *debugger;
 }
 
 void QtEmulator::updateScreen()
@@ -303,6 +309,7 @@ void QtEmulator::buildMenus()
 	buildContextMenu();
 	buildMainMenu();
 	buildEditMenu();
+	buildDebugMenu();
 	buildSkinsMenu();
 	buildHelpMenu();
 }
@@ -363,6 +370,17 @@ void QtEmulator::buildEditMenu()
 	editContextMenu->addAction(preferencesAction);
 }
 
+void QtEmulator::buildDebugMenu()
+{
+	QMenuBar* menuBar=this->menuBar();
+	QMenu* debugMenu=new QMenu(DEBUG_MENU);
+	menuBar->addMenu(debugMenu);
+	QMenu* debugContextMenu=contextMenu->addMenu(DEBUG_MENU);
+
+	QAction* debugAction=debugMenu->addAction(SHOW_DEBUGGER_ACTION_TEXT, this, SLOT(toggleDebugger()));
+	debugContextMenu->addAction(debugAction);
+}
+
 void QtEmulator::buildSkinsMenu()
 {
 	QMenuBar* menuBar=this->menuBar();
@@ -417,6 +435,11 @@ void QtEmulator::buildSerialPort()
 	serialPort=new QtSerialPort;
 }
 
+void QtEmulator::buildDebugger()
+{
+	debugger=new QtDebugger;
+}
+
 void QtEmulator::showContextMenu(const QPoint& aPoint)
 {
 	contextMenu->exec(mapToGlobal(aPoint));
@@ -424,7 +447,7 @@ void QtEmulator::showContextMenu(const QPoint& aPoint)
 
 void QtEmulator::startThreads()
 {
-	calculatorThread=new QtCalculatorThread(*keyboard);
+	calculatorThread=new QtCalculatorThread(*this);
 	calculatorThread->start();
 
 	heartBeatThread=new QtHeartBeatThread();
@@ -887,6 +910,11 @@ void QtEmulator::findSkins()
 			skins[fileInfoIterator->baseName()]=fileInfoIterator->fileName();
 		}
 	}
+}
+
+void QtEmulator::toggleDebugger()
+{
+	debugger->show();
 }
 
 extern "C"

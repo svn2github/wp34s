@@ -240,13 +240,19 @@ char* get_svn_revision_string()
 	return SvnRevisionString;
 }
 
-char* get_formatted_displayed_number()
+
+char* get_formatted_register(int anIndex)
 {
 	static char buffer[FORMATTED_DISPLAYED_NUMBER_LENGTH];
 
 	memfill(buffer, 0, FORMATTED_DISPLAYED_NUMBER_LENGTH);
-	format_reg(regX_idx, buffer);
+	format_reg(anIndex, buffer);
 	return buffer;
+}
+
+char* get_formatted_displayed_number()
+{
+	return get_formatted_register(regX_idx);
 }
 
 int forward_byte_received(short byte)
@@ -279,3 +285,15 @@ int* get_displayed_text()
 	}
 	return buffer;
 }
+
+char* get_register_names()
+{
+	return REGNAMES;
+}
+
+int get_first_register_index()
+{
+	return regX_idx;
+}
+
+

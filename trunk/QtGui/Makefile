@@ -192,13 +192,6 @@ ifeq "$(SYSTEM)" "Linux"
 	$(TAR) $(DISTFILE) $(DISTDIR)
 endif
 
-distclean:
-	-$(RMDIR) $(DISTDIR)
-ifeq "$(SYSTEM)" "Darwin"
-	-$(RM) $(BUILTDMG)
-	-$(RM) $(DISTDMG)
-endif	
-
 $(DISTDIR):
 	$(MKDIR) $(DISTDIR)
 
@@ -246,3 +239,10 @@ else
 qtclean:
 	-$(MAKE) -f $(QTMAKEFILE) clean
 endif
+
+distclean:
+	-$(RMDIR) $(DISTDIR)
+ifeq "$(SYSTEM)" "Darwin"
+	-$(RM) $(BUILTDMG)
+	-$(RM) $(DISTDMG)
+endif	

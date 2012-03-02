@@ -14,30 +14,18 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QTCALCULATORTHREAD_H_
-#define QTCALCULATORTHREAD_H_
+#ifndef QTDEBUGGER_H_
+#define QTDEBUGGER_H_
 
-#include <QThread>
-#include <QMutex>
+#include <QtGui>
 
-class QtEmulator;
-
-class QtCalculatorThread: public QThread
+class QtDebugger: public QTableView
 {
 public:
-	QtCalculatorThread(QtEmulator& anEmulator);
+	QtDebugger();
 
 public:
-	void run();
-	void end();
-
-private:
-	bool isEnded();
-
-private:
-	QtEmulator& emulator;
-	QMutex mutex;
-	volatile bool ended;
+	void refresh();
 };
 
-#endif /* QTCALCULATORTHREAD_H_ */
+#endif /* QTDEBUGGER_H_ */

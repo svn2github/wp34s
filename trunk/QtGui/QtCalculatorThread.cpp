@@ -15,6 +15,7 @@
  */
 
 #include "QtCalculatorThread.h"
+#include "QtEmulator.h"
 #include "QtEmulatorAdapter.h"
 
 extern "C"
@@ -22,14 +23,15 @@ extern "C"
 	extern void add_heartbeat();
 }
 
-QtCalculatorThread::QtCalculatorThread(QtKeyboard& aKeyboard)
-: keyboard(aKeyboard), ended(false)
+QtCalculatorThread::QtCalculatorThread(QtEmulator& anEmulator)
+: emulator(anEmulator), ended(false)
 {
 }
 
 void QtCalculatorThread::run()
 {
-	init_calculator();;
+	init_calculator();
+	QtKeyboard& keyboard=emulator.getKeyboard();
 	while(!isEnded())
 	{
 
@@ -37,6 +39,7 @@ void QtCalculatorThread::run()
 		if(key>=0)
 		{
 			forward_keycode(key);
+			emulator.getDebugger().refresh();
 		}
 	}
 }

@@ -453,4 +453,7 @@ qt_clean:
 	cd QtGui; $(MAKE) clean
 
 qt_clean_all: qt_clean
-		$(MAKE) QTGUI=1 clean	
+		$(MAKE) QTGUI=1 clean
+
+qt_clean_dist:
+	cd QtGui; $(MAKE) distclean

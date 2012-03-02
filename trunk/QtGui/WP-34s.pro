@@ -19,11 +19,11 @@ QT += xml
 
 SOURCES = QtGuiMain.cpp QtEmulator.cpp QtBackgroundImage.cpp QtKey.cpp QtKeyCode.cpp QtSkin.cpp QtScreenPainter.cpp \
 	QtKeyboard.cpp QtSerialPort.cpp QtScreen.cpp QtCalculatorThread.cpp QtHeartBeatThread.cpp QtPreferencesDialog.cpp \
-	QtNumberPaster.cpp
+	QtNumberPaster.cpp QtDebugger.cpp QtRegistersModel.cpp
 	
 HEADERS = QtEmulator.h QtBackgroundImage.h QtKey.h QtKeyCode.h QtSkin.h QtScreenPainter.h \
 	QtKeyboard.h QtSerialPort.h QtScreen.h QtCalculatorThread.h QtHeartBeatThread.h QtPreferencesDialog.h \
-	QtNumberPaster.h
+	QtNumberPaster.h QtDebugger.h QtRegistersModel.h
 
 win32 {
 	RC_FILE = WP-34s.rc

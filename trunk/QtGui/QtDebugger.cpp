@@ -14,30 +14,22 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QTCALCULATORTHREAD_H_
-#define QTCALCULATORTHREAD_H_
+#include "QtDebugger.h"
+#include "QtRegistersModel.h"
+#include "QtEmulator.h"
 
-#include <QThread>
-#include <QMutex>
 
-class QtEmulator;
-
-class QtCalculatorThread: public QThread
+QtDebugger::QtDebugger()
 {
-public:
-	QtCalculatorThread(QtEmulator& anEmulator);
+	setModel(new QtRegistersModel());
+}
 
-public:
-	void run();
-	void end();
+void QtDebugger::refresh()
+{
+	if(isVisible())
+	{
+		static_cast<QtRegistersModel*>(model())->refresh();
+	}
+}
 
-private:
-	bool isEnded();
 
-private:
-	QtEmulator& emulator;
-	QMutex mutex;
-	volatile bool ended;
-};
-
-#endif /* QTCALCULATORTHREAD_H_ */
