@@ -39,6 +39,7 @@
  *  Some conditional compilation defines
  */
 #define SLOW_SERIAL
+// #define SPEEDUP_ON_KEY_WAITING
 
 /*
  *  CPU speed settings
@@ -340,9 +341,18 @@ void scan_keyboard( void )
 	if ( keys.ll == 0 ) {
 		/*
 		 *  No new key to decode: test for key-up
-		 *  (used to be: Key must have been twice down for debounce reasons)
 		 */
-		if ( ( /* last_keys & */ KbDebounce & ~KbData ) != 0 ) {
+#ifdef DEBOUNCE_ON_LOW
+		/*
+		 *  Key must have been twice UP for debounce reasons)
+		 */
+		if ( ( KbDebounce & ~KbData ) != 0 ) {
+#else
+		/*
+		 *  Key must have been twice DOWN for debounce reasons)
+		 */
+		if ( ( last_keys & KbDebounce & ~KbData ) != 0 ) {
+#endif
 			/*
 			 *  A key has been released
 			 */
@@ -1740,9 +1750,11 @@ NO_RETURN int main(void)
 			/*
 			 *  A real key was pressed or released
 			 */
+#ifdef SPEEDUP_ON_KEY_WAITING
 			if ( KbCount && SpeedSetting < SPEED_HALF ) {
 				set_speed( SPEED_HALF );
 			}
+#endif
 			if ( !OnKeyPressed && confirm_counter == 1 ) {
 				// ON key was released
 				confirm_counter = 0;
