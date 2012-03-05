@@ -2093,15 +2093,16 @@ static int process_labellist(const keycode c) {
 			op = (DBL_GTO << DBL_SHIFT) + label;
 		break;
 
-	case K30:				// XEQ
 	case K63:				// R/S
+		if (direct && label) {
+			cmdgtocommon(1, pc);	// set pc and push return address
+			op = STATE_RUNNING;	// Quit the browser, start program
+		}
+		break;
+
+	case K30:				// XEQ
 		if (label) {
-			if (direct) {
-				cmdgtocommon(1, pc);	// set pc and push return address
-				op = STATE_RUNNING;	// Quit the browser, start program
-			}
-			else 
-				op = (DBL_XEQ << DBL_SHIFT) + label;
+			op = (DBL_XEQ << DBL_SHIFT) + label;
 		}
 		break;
 
