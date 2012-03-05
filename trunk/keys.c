@@ -58,7 +58,7 @@ unsigned char GoFast;
 /*
  *  Needed before definition
  */ 
-static unsigned int advance_to_next_label(unsigned int pc, int inc);
+static unsigned int advance_to_next_label(unsigned int pc, int inc, int search_end);
 
 /*
  *  Return the shift state
@@ -360,7 +360,7 @@ static void init_cat(enum catalogues cat) {
 	case CATALOGUE_LABELS:
 		// Label browser
 		State2.labellist = 1;
-		State2.digval = advance_to_next_label(ProgBegin, 0);
+		State2.digval = advance_to_next_label(ProgBegin, 0, 0);
 		break;
 	
 	case CATALOGUE_REGISTERS:
@@ -1977,13 +1977,13 @@ static int process_status(const keycode c) {
 /*
  *  CAT helper
  */
-static int is_label_or_end_at(unsigned int pc) {
+static int is_label_or_end_at(unsigned int pc, int search_end) {
 	const unsigned int op = getprog(pc);
 
-	return op == (OP_NIL | OP_END) || (isDBL(op) && opDBL(op) == DBL_LBL);
+	return op == (OP_NIL | OP_END) || (!search_end && (isDBL(op) && opDBL(op) == DBL_LBL));
 }
 
-static unsigned int advance_to_next_label(unsigned int pc, int inc) {
+static unsigned int advance_to_next_label(unsigned int pc, int inc, int search_end) {
 	do {
 		for (;;) {
 			if (inc) {
@@ -1993,28 +1993,28 @@ static unsigned int advance_to_next_label(unsigned int pc, int inc) {
 			}
 			else
 				inc = 1;
-			if (is_label_or_end_at(pc)) {
+			if (is_label_or_end_at(pc, search_end)) {
 				return pc;
 			}
 		}
 		pc = addrLIB(1, (nLIB(pc) + 1) & 3);
-	} while (! is_label_or_end_at(pc));
+	} while (! is_label_or_end_at(pc, search_end));
 	return pc;
 }
 
-static unsigned int advance_to_previous_label(unsigned int pc) {
+static unsigned int advance_to_previous_label(unsigned int pc, int search_end) {
 	do {
 		for (;;) {
 			pc = do_dec(pc, 0);
 			if (PcWrapped)
 				break;
-			if (is_label_or_end_at(pc)) {
+			if (is_label_or_end_at(pc, search_end)) {
 				return pc;
 			}
 		}
 		pc = addrLIB(1, (nLIB(pc) - 1) & 3);
 		pc = do_dec(pc, 0);
-	} while (! is_label_or_end_at(pc));
+	} while (! is_label_or_end_at(pc, search_end));
 	return pc;
 }
 
@@ -2039,19 +2039,27 @@ static int process_labellist(const keycode c) {
 	if (n < REGION_XROM) {
 		// Digits take you to that segment
 		pc = addrLIB(1, n);
-		if (! is_label_or_end_at(pc))
-			pc = advance_to_next_label(pc, 1);
+		if (! is_label_or_end_at(pc, 0))
+			pc = advance_to_next_label(pc, 1, 0);
 		State2.digval = pc;
 		return STATE_UNFINISHED;
 	}
 
 	switch (c | (shift << 8)) {
+
+	case K40 | (SHIFT_F << 8):		// Find first label of previous program
+		pc = advance_to_previous_label(advance_to_previous_label(pc, 1), 1);
+		goto next;
+
+	case K50 | (SHIFT_F << 8):		// Find next program
+		pc = advance_to_next_label(pc, 0, 1);
 	case K50:				// Find next label
-		State2.digval = advance_to_next_label(pc, 1);
+	next:
+		State2.digval = advance_to_next_label(pc, 1, 0);
 		return STATE_UNFINISHED;
 
 	case K40:				// Find previous label
-		State2.digval = advance_to_previous_label(pc);
+		State2.digval = advance_to_previous_label(pc, 0);
 		return STATE_UNFINISHED;
 
 	case K24:				// <- exits
