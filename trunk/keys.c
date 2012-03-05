@@ -2098,7 +2098,7 @@ static int process_labellist(const keycode c) {
 		if (label) {
 			if (direct) {
 				cmdgtocommon(1, pc);	// set pc and push return address
-				op = STATE_IGNORE;	// Just quit the browser
+				op = STATE_RUNNING;	// Quit the browser, start program
 			}
 			else 
 				op = (DBL_XEQ << DBL_SHIFT) + label;
