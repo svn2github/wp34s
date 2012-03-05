@@ -19,6 +19,9 @@ echo on
 %LIB% -pp TRIGON.wp34s PF.wp34s -ilib %DAT% -olib %DAT%
 @if errorlevel 1 goto exit
 :
+%LIB% recursive_fac.wp34s -ilib %DAT% -olib %DAT%
+@if errorlevel 1 goto exit
+:
 %LIB% -cat -ilib %DAT% >library.cat
 copy %DAT% ..\trunk\windows\wp34sgui
 copy %DAT% ..\trunk\realbuild
