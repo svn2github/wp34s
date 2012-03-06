@@ -3690,7 +3690,6 @@ void xeq(opcode op)
 			}
 #endif
 			decpc();		// Back to error instruction
-			RetStkPtr = 0;		// clear return stack
 			xeq_init_contexts();	// Repair any pointers clobberd by xIN
 
 			set_running_off();

@@ -2028,11 +2028,7 @@ static int process_labellist(const keycode c) {
 		                        : keycode_to_digit_or_register(c) & ~NO_SHORT;
 	const int opcode = getprog(pc);
 	const int label = isDBL(opcode) ? (getprog(pc) & 0xfffff0ff) : 0;
-#ifdef REALBUILD
-	const int direct = State2.runmode /* && ! isXROM(pc) */;
-#else
-	const int direct = State2.runmode /* && (State2.trace ||! isXROM(pc)) */;
-#endif
+	const int direct = State2.runmode;
 	const enum shifts shift = reset_shift();
 	int op = STATE_UNFINISHED;
 
@@ -2065,55 +2061,43 @@ static int process_labellist(const keycode c) {
 	case K24:				// <- exits
 		break;
 
-	case K24 | (SHIFT_F << 8):		// CLP
-#if 0
-		if (isXROM(pc))
-			return STATE_UNFINISHED;
-#endif
-		set_pc(pc);
-		op = (OP_NIL | OP_CLPROG);
+	case K20:				// ENTER^
+	set_pc_and_exit:
+		set_pc(pc);			// forced branch
 		break;
+
+	case K24 | (SHIFT_F << 8):		// CLP
+		op = (OP_NIL | OP_CLPROG);
+		goto set_pc_and_exit;
 
 	case K10:				// STO
 	case K11:				// RCL
-#if 0
-		if (isXROM(pc))
-			return STATE_UNFINISHED;
-#endif
-		set_pc(pc);
 		op = c == K10 ? (OP_NIL | OP_PSTO) : (OP_NIL | OP_PRCL);
 		State2.runmode = 1;
-		break;
+		goto set_pc_and_exit;
 
-	case K20:				// ENTER^
+	case K30:				// XEQ
+		op = (DBL_XEQ << DBL_SHIFT) + label;
+		goto xeq_or_gto;
+
 	case K30 | (SHIFT_H << 8):		// GTO
-		if (direct)
-			set_pc(pc);		// Forced branch
-		else if (label)
-			op = (DBL_GTO << DBL_SHIFT) + label;
-		break;
+		op = (DBL_GTO << DBL_SHIFT) + label;
+	xeq_or_gto:
+		if (label)
+			break;
+		return STATE_UNFINISHED;
 
 	case K63:				// R/S
 		if (direct && label) {
 			cmdgtocommon(1, pc);	// set pc and push return address
-			op = STATE_RUNNING;	// Quit the browser, start program
+			op = STATE_RUNNING;	// quit the browser, start program
+			break;
 		}
-		break;
-
-	case K30:				// XEQ
-		if (label) {
-			op = (DBL_XEQ << DBL_SHIFT) + label;
-		}
-		break;
+		return STATE_UNFINISHED;
 
 	case K63 | (SHIFT_H << 8):		// P/R
-#if 0
-		if (isXROM(pc))
-			return STATE_UNFINISHED;
-#endif
-		set_pc(pc);
-		State2.runmode = 0;
-		break;
+		State2.runmode = 0;		// switch to program mode
+		goto set_pc_and_exit;
 
 	default:
 		return STATE_UNFINISHED;
