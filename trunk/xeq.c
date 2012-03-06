@@ -1897,7 +1897,7 @@ void cmdgto(unsigned int arg, enum rarg op) {
 	cmdgtocommon(op != RARG_GTO, lbl);
 }
 
-static unsigned int findmultilbl(const opcode o, int flags) {
+unsigned int findmultilbl(const opcode o, int flags) {
 	const opcode dest = (o & 0xfffff0ff) + (DBL_LBL << DBL_SHIFT);
 	unsigned int lbl;
 

@@ -215,11 +215,16 @@ static void set_digits_string(const char *msg, int j) {
 	}
 }
 
+static void set_exp_digits_string(const char *msg, char *res) {
+	int i;
+
+	for (i=0; i<3 && msg[i] != '\0'; i++)
+		res = set_dig_s(SEGS_EXP_BASE + i * SEGS_PER_EXP_DIGIT, msg[i], res);
+}
 
 /* Force the exponent display */
 static void set_exp(short exp, int zerop, char *res) {
-	char buf[6], *p;
-	int j = SEGS_EXP_BASE;
+	char buf[6];
 
 	if (res) *res++ = 'e';
 	if (exp < 0) {
@@ -236,10 +241,7 @@ static void set_exp(short exp, int zerop, char *res) {
 		else
 			num_arg(buf, exp);
 	}
-	for (p = buf; *p !='\0'; p++) {
-		res = set_dig_s(j, *p, res);
-		j += SEGS_PER_EXP_DIGIT;
-	}
+	set_exp_digits_string(buf, res);
 }
 
 static void carry_overflow(void) {
@@ -1196,10 +1198,21 @@ static void show_label(void) {
 	char buf[16];
 	unsigned short int pc = State2.digval;
 	unsigned int op = getprog(pc);
-	const int n = nLIB(pc);
+	int n = nLIB(pc);
+	unsigned short int lblpc;
 
 	set_status(prt((opcode)op, buf));
 	set_digits_string(libname[n], 0);
+
+	if (op & OP_DBL) {
+		lblpc = findmultilbl(op, 0);
+		if (lblpc != pc) {
+			n = nLIB(lblpc);
+			//set_digits_string("in", SEGS_PER_DIGIT * 5);
+			set_digits_string(libname[n], SEGS_PER_DIGIT * 8);
+			set_exp_digits_string("run", NULL);
+		}
+	}
 }
 
 /* Display a list of register contents */

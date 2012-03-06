@@ -1067,6 +1067,7 @@ extern void decpc(void);
 #define FIND_OP_ENDS	2
 extern unsigned int find_opcode_from(unsigned int pc, const opcode l, const int flags);
 extern unsigned int find_label_from(unsigned int, unsigned int, int);
+extern unsigned int findmultilbl(const opcode, int);
 extern void fin_tst(const int);
 
 extern const char *prt(opcode, char *);
