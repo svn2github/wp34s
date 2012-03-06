@@ -1207,10 +1207,12 @@ static void show_label(void) {
 	if (op & OP_DBL) {
 		lblpc = findmultilbl(op, 0);
 		if (lblpc != pc) {
+			set_digits_string("CALLS", SEGS_PER_DIGIT * 7);
 			n = nLIB(lblpc);
-			set_digits_string(", run", SEGS_PER_DIGIT * 3);
-			set_digits_string(libname[n], SEGS_PER_DIGIT * 8);
-			set_exp_digits_string("dUP", NULL);
+			if (n == REGION_RAM)
+				set_exp(lblpc, 1, NULL);
+			else
+				set_exp_digits_string(libname[n], NULL);
 		}
 	}
 }
