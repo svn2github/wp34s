@@ -1208,9 +1208,9 @@ static void show_label(void) {
 		lblpc = findmultilbl(op, 0);
 		if (lblpc != pc) {
 			n = nLIB(lblpc);
-			//set_digits_string("in", SEGS_PER_DIGIT * 5);
+			set_digits_string(", run", SEGS_PER_DIGIT * 3);
 			set_digits_string(libname[n], SEGS_PER_DIGIT * 8);
-			set_exp_digits_string("run", NULL);
+			set_exp_digits_string("dUP", NULL);
 		}
 	}
 }
