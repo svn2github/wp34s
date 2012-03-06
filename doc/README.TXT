@@ -77,7 +77,7 @@ The Qt based multi platform emulators are maintained by:
 
 The programming tools are provided by:
 
-    Neil Hamilton <njsdham@ncf.ca>
+    Neil Hamilton <nfhwp34s.tbw9z@ncf.ca>
 
 The programming cable is available for the costs of shipping from
 
