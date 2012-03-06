@@ -272,6 +272,7 @@ void stoprog( opcode c ) {
 		return;
 	}
 	clrretstk();
+	xeq_init_contexts();
 	if ( ProgFree < off ) {
 		return;
 	}
