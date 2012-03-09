@@ -47,10 +47,10 @@ int JustDisplayed;	   // Avoid duplicate calls to display()
 static const char S_SURE[] = "Sure?";
 
 static const char S7_ERROR[] = "Error";		/* Default lower line error display */
-static const char S7_NaN[] = "not nuMmerIc";	/* Displaying NaN in lower line */
-static const char S7_INF[] = "infinity";	/* Displaying infinity in lower line */
+static const char S7_NaN[] = "not nuMmEric";	/* Displaying NaN in lower line */
+static const char S7_INF[] = "Infinity";	/* Displaying infinity in lower line */
 
-static const char S7_STEP[] = "Step ";		/* Step marker in program mode (lower line) */
+static const char S7_STEP[] = "StEP ";		/* Step marker in program mode (lower line) */
 
 static const char S7_fract_EQ[] = " = ";	/* Exponent in fraction mode indicates low, equal or high */
 static const char S7_fract_LT[] = " Lt";
