@@ -37,7 +37,7 @@ typedef struct _stat_data {
 	decimal64 sXlnY;	
 	decimal64 sYlnX;
 
-	unsigned int sN;		
+	signed int sN;		
 } STAT_DATA;
 
 extern STAT_DATA *StatRegs;

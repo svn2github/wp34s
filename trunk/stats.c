@@ -46,6 +46,13 @@ STAT_DATA *StatRegs;
 #define sigmaXlnY	(StatRegs->sXlnY)
 #define sigmaYlnX	(StatRegs->sYlnX)
 
+
+static int int_abs(int n) {
+	if (n >= 0)
+		return n;
+	return -n;
+}
+
 /*
  *  Handle block (de)allocation
  */
@@ -114,8 +121,8 @@ static void dump1(const decNumber *a, const char *msg) {
 
 static void correlation(decNumber *, const enum sigma_modes);
 
-static int check_data(unsigned int n) {
-	if (sigmaCheck() || sigmaN < n) {
+static int check_data(int n) {
+	if (sigmaCheck() || sigmaN < int_abs(n)) {
 		err(ERR_MORE_POINTS);
 		return 1;
 	}
@@ -205,11 +212,10 @@ void sigma_plus() {
 }
 
 void sigma_minus() {
-	if (sigmaCheck())
+	if (sigmaAllocate())
 		return;
 	sigma_helper(&dn_subtract);
-	if (--sigmaN <= 0)
-		sigmaDeallocate();
+	--sigmaN;
 }
 
 
@@ -325,7 +331,7 @@ void sigma_val(enum nilop op) {
 	}
 	sigmaCheck();
 	if (op == OP_sigmaN) {
-		setX_int_sgn(sigmaN, 0);
+		setX_int_sgn(int_abs(sigmaN), sigmaN < 0 ? 1 : 0);
 	}
 	else if (op < OP_sigmaX) {
 		decimal128 *d = (&sigmaX2Y) + (op - OP_sigmaX2Y);
