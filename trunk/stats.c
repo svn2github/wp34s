@@ -46,12 +46,10 @@ STAT_DATA *StatRegs;
 #define sigmaXlnY	(StatRegs->sXlnY)
 #define sigmaYlnX	(StatRegs->sYlnX)
 
-
-static int int_abs(int n) {
-	if (n >= 0)
-		return n;
-	return -n;
-}
+/*
+ *  Actual size of this block (may be zero)
+ */
+int SizeStatRegs;
 
 /*
  *  Handle block (de)allocation
@@ -67,13 +65,14 @@ int sigmaCheck(void) {
 
 static int sigmaAllocate(void)
 {
-	if (SizeStatRegs == 0) {
+	if (State.have_stats == 0) {
 		SizeStatRegs = sizeof(STAT_DATA) >> 1;	// in 16 bit words!
 		if (move_retstk(-SizeStatRegs)) {
 			SizeStatRegs = 0;
 			err(ERR_RAM_FULL);
 			return 1;
 		}
+		State.have_stats = 1;
 		sigmaCheck();
 		xset(StatRegs, 0, sizeof(STAT_DATA));
 	}
@@ -83,6 +82,7 @@ static int sigmaAllocate(void)
 void sigmaDeallocate(void) {
 	move_retstk(SizeStatRegs);
 	SizeStatRegs = 0;
+	State.have_stats = 0;
 }
 
 /*
@@ -331,7 +331,10 @@ void sigma_val(enum nilop op) {
 	}
 	sigmaCheck();
 	if (op == OP_sigmaN) {
-		setX_int_sgn(int_abs(sigmaN), sigmaN < 0 ? 1 : 0);
+		if (sigmaN > 0)
+			setX_int_sgn( sigmaN, 0);
+		else
+			setX_int_sgn( -sigmaN, 1);
 	}
 	else if (op < OP_sigmaX) {
 		decimal128 *d = (&sigmaX2Y) + (op - OP_sigmaX2Y);

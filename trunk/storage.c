@@ -682,7 +682,7 @@ void load_sigma( enum nilop op )
 		err( ERR_INVALID );
 		return;
 	}
-	if ( BackupFlash._sizestatregs == 0 ) {
+	if ( ! BackupFlash._state.have_stats ) {
 		/*
 		 *  Backup has no data
 		 */

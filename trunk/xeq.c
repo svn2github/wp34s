@@ -644,7 +644,7 @@ void lift(void) {
 }
 
 static void lift_if_enabled(void) {
-	if (State.state_lift)
+	if (State2.state_lift)
 		lift();
 }
 
@@ -901,7 +901,7 @@ void process_cmdline(void) {
 		}
 		CmdLineLength = 0;
 		lift_if_enabled();
-		State.state_lift = 1;
+		State2.state_lift = 1;
 		CmdLineDot = 0;
 		CmdLineEex = 0;
 		if (is_intmode()) {
@@ -955,7 +955,7 @@ void process_cmdline(void) {
 
 void process_cmdline_set_lift(void) {
 	process_cmdline();
-	State.state_lift = 1;
+	State2.state_lift = 1;
 }
 
 
@@ -1177,7 +1177,7 @@ void zero_Y(void) {
 
 void clrx(enum nilop op) {
 	zero_X();
-	State.state_lift = 0;
+	State2.state_lift = 0;
 }
 
 /* Zero out the stack
@@ -1185,7 +1185,7 @@ void clrx(enum nilop op) {
 void clrstk(enum nilop op) {
 	zero_regs(StackBase, stack_size());
 	CmdLineLength = 0;
-	State.state_lift = 1;
+	State2.state_lift = 1;
 }
 
 
@@ -2723,14 +2723,14 @@ static void specials(const opcode op) {
 			cmdlinechs();
 		else if (is_intmode()) {
 			setX_int(intChs(getX_int()));
-			State.state_lift = 1;
+			State2.state_lift = 1;
 		} else {
 			decNumber x, r;
 
 			getX(&x);
 			dn_minus(&r, &x);
 			setX(&r);
-			State.state_lift = 1;
+			State2.state_lift = 1;
 		}
 		break;
 
@@ -2750,7 +2750,7 @@ static void specials(const opcode op) {
 	case OP_ENTER:
 		process_cmdline();
 		lift();
-		State.state_lift = 0;
+		State2.state_lift = 0;
 		break;
 
 	case OP_SIGMAPLUS:
@@ -2760,7 +2760,7 @@ static void specials(const opcode op) {
 			break;
 		}
 		process_cmdline();
-		State.state_lift = 0;
+		State2.state_lift = 0;
 		setlastX();
 		if (opm == OP_SIGMAPLUS)
 			sigma_plus();
@@ -3233,7 +3233,7 @@ static int dispatch_xrom(void *fp)
 	const s_opcode *xp = check_for_xrom_address(fp);
 	if (xp == NULL)
 		return 0;
-	// State.state_lift = 1;
+	// State2.state_lift = 1;
 	UserLocalRegs = LocalRegs;
 	XromRunning = 1;
 	gsbgto(addrXROM((xp - xrom) + 1), 1, state_pc());
@@ -3268,7 +3268,7 @@ static void niladic(const opcode op) {
 	} else
 		illegal(op);
 	if (idx != OP_rCLX)
-		State.state_lift = 1;
+		State2.state_lift = 1;
 }
 
 
@@ -3492,7 +3492,7 @@ static void rargs(const opcode op) {
 		return;
 	}
 	if (isNULL(argcmds[cmd].f)) {
-		State.state_lift = 1;
+		State2.state_lift = 1;
 		return;
 	}
 
@@ -3556,7 +3556,7 @@ static void rargs(const opcode op) {
 			fp(arg, (enum rarg)cmd);
 		}
 		if (cmd != RARG_XROM_OUT)
-			State.state_lift = 1;
+			State2.state_lift = 1;
 	}
 }
 
@@ -3582,7 +3582,7 @@ static void multi(const opcode op) {
 		}
 		else {
 			fp(op, (enum multiops)cmd);
-			State.state_lift = 1;
+			State2.state_lift = 1;
 		}
 	}
 }
@@ -3815,8 +3815,10 @@ void xeq_init_contexts(void) {
 	/*
 	 *  Compute the sizes of the various memory portions
 	 */
-	const short int s = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs; // additional register space
-	RetStk = RetStkBase + s;					  // Move RetStk up or down
+	short int s;
+	SizeStatRegs = State.have_stats ? sizeof(STAT_DATA) >> 1 : 0;	// in 16 bit words!
+	s = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs;		// additional register space
+	RetStk = RetStkBase + s;					// Move RetStk up or down
 	RetStkSize = s + RET_STACK_SIZE - ProgSize;
 	ProgMax = s + RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE;
 	ProgFree = ProgMax - ProgSize + RetStkPtr;
@@ -3979,7 +3981,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		xset(&XromParams, 0, sizeof(XromParams));
 
 		// Flags
-		XromFlags.state_lift_in = State.state_lift;
+		XromFlags.state_lift_in = State2.state_lift;
 		XromFlags.stack_depth = UState.stack_depth;
 		XromFlags.mode_double = State.mode_double;
 		XromFlags.state_lift = 1;
@@ -4017,7 +4019,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		op_double(OP_DBLON);
 
 	// Set stack size to 8 and turn on stack_lift
-	State.state_lift = 1;
+	State2.state_lift = 1;
 	UState.stack_depth = 1;
 
 	// check for any NaNs in input
@@ -4097,7 +4099,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 			--i;
 		}
 	}
-	State.state_lift = XromFlags.state_lift;
+	State2.state_lift = XromFlags.state_lift;
 
 	// Copy results
 	i = XromOut;

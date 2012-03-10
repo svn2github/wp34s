@@ -409,14 +409,14 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
-#define RET_STACK_SIZE	532      /* Combined return stack and program space */
+#define RET_STACK_SIZE	534      /* Combined return stack and program space */
 #define MINIMUM_RET_STACK_SIZE 6 /* Minimum headroom for program execution */
 #define NUMPROG_LIMIT	(RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE + (TOPREALREG - 1) * 4) /* Absolute maximum for sanity checks */
 
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
 #define NUMLBL		104	/* Number of program labels */
-#define NUMALPHA	31	/* Number of characters in Alpha */
+#define NUMALPHA	30	/* Number of characters in Alpha */
 #define CMDLINELEN	19	/* 12 mantissa + dot + sign + E + sign + 3 exponent = 19 */
 
 /* Stack lives in the register set */

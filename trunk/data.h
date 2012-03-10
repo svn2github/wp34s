@@ -106,7 +106,7 @@ struct _state {
 	unsigned int last_cat :      5;	// Most recent catalogue browsed
 	unsigned int catpos :        7;	// Position in said catalogue
 	unsigned int entryp :        1;	// Has the user entered something since the last program stop
-	unsigned int state_lift :    1;	// XEQ internal - don't use
+	unsigned int have_stats :    1;	// Statistics registers are allocated
 	unsigned int deep_sleep :    1; // Used to wake up correctly
 	unsigned int mode_double :   1;	// Double precision mode, should go to UState but that is full. :-(
 	signed   int local_regs :   16; // Position on return stack where current local variables start
@@ -144,7 +144,13 @@ typedef struct _ram {
 	/*
 	 *  Alpha register gets its own space
 	 */
-	char _alpha[NUMALPHA+1];
+	char _alpha[NUMALPHA+1];	// 30 + 1
+
+	/*
+	 *  Number of currently allocated global registers
+	 *  Gives a nice alignment together with Alpha
+	 */
+	unsigned char _numregs;		// in single precision registers
 
 	/*
 	 *  Random number seeds
@@ -176,14 +182,6 @@ typedef struct _ram {
 	unsigned short int _user_flags[(NUMFLG+15) >> 4];
 
 	/*
-	 *  Number of currently allocated global registers
-	 */
-	unsigned char _numregs;		// in registers
-	unsigned char _sizestatregs;	// in levels
-
-	unsigned short filler;		// alignment
-
-	/*
 	 *  CRC or magic marker to detect failed RAM
 	 */
 	unsigned short _crc;
@@ -205,7 +203,6 @@ extern TPersistentRam PersistentRam;
 #define ProgEnd		(PersistentRam._prog_end)
 #define NumRegs		(PersistentRam._numregs)
 #define UserFlags	(PersistentRam._user_flags)
-#define SizeStatRegs	(PersistentRam._sizestatregs)
 #define RetStkPtr	(PersistentRam._state.retstk_ptr)
 #define LocalRegs	(PersistentRam._state.local_regs)
 #define RandS1		(PersistentRam._rand_s1)
@@ -255,6 +252,7 @@ struct _state2 {
 	unsigned int registerlist : 1;	// Displaying the register's contents
 	unsigned int disp_freeze : 1;   // Set by VIEW to avoid refresh
 	unsigned int disp_temp : 1;     // Indicates a temporary display, disables <-
+	unsigned int state_lift : 1;	// Stack lift is enabled
 #ifndef REALBUILD
 	unsigned int trace : 1;
 	unsigned int flags : 1;		// Display state flags
@@ -427,6 +425,7 @@ extern unsigned char GoFast;	   // Speed-up might be necessary
 extern unsigned short *RetStk;	   // Pointer to current top of return stack
 extern int RetStkSize;		   // actual size of retiurn stack
 extern int ProgFree;		   // Remaining program steps
+extern int SizeStatRegs;	   // Size of summation register block
 extern REGISTER *StackBase;	   // Location of the RPN stack
 extern decContext Ctx;		   // decNumber library context
 extern int JustDisplayed;	   // Avoid duplicate calls to display();

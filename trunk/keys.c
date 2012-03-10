@@ -400,7 +400,7 @@ void init_state(void) {
 	unsigned char v = Voltage;
 	signed char k = LastKey;
 
-	State.state_lift = 1;
+	State2.state_lift = 1;
 	CmdBase = 0;
 	// Removed: will clear any locals on power off
 	// clrretstk(0);
