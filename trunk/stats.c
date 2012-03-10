@@ -122,7 +122,7 @@ static void dump1(const decNumber *a, const char *msg) {
 static void correlation(decNumber *, const enum sigma_modes);
 
 static int check_data(int n) {
-	if (sigmaCheck() || sigmaN < int_abs(n)) {
+	if (sigmaCheck() || sigmaN < n) {
 		err(ERR_MORE_POINTS);
 		return 1;
 	}
