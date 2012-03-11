@@ -1115,15 +1115,14 @@ static void show_status(void) {
 		set_digits_string(buf, 0);
 	}
 	else if (status == -1) {
-#if 0
+		/* Top line */
 		p = scopy(buf, "Regs:");
 		if (SizeStatRegs)
-			p = scopy(p, "  \006\006\006\006\221");
+			p = scopy(p, " \221\006\006+");
 		*p = '\0';
 		set_status(buf);
-#else
-		set_status("Regs:");
-#endif
+
+		/* Bottom line */
 		p = num_arg(buf, global_regs());
 		if (LocalRegs < 0) {
 			p = scopy(p, " , Loc. ");
@@ -1131,8 +1130,6 @@ static void show_status(void) {
 		}
 		*p = '\0';
 		set_digits_string(buf, 0);
-		if (SizeStatRegs != 0)
-			set_exp_digits_string("SIG", NULL);
 	} else {
 		int base;
 		int end;
@@ -1309,7 +1306,7 @@ void display(void) {
 		ShowRPN = 0;
 		State2.disp_temp = 1;
 #ifdef CONSOLE
-	        JustDisplayed = 1;
+		JustDisplayed = 1;
 #endif
 		return;
 	}
@@ -1369,8 +1366,8 @@ void display(void) {
 			*bp++ = '_';
 		} else {
 			/* const int maxdigits = State2.shuffle ? 4 
-				            : State2.ind ? 2 
-				            : num_arg_digits(CmdBase); */
+						: State2.ind ? 2 
+						: num_arg_digits(CmdBase); */
 			if (State2.local)
 				*bp++ = '.';
 			if (State2.numdigit > 0) {
@@ -1561,7 +1558,7 @@ nostk:	show_flags();
 	State2.disp_small = 0;
 	finish_display();
 #ifdef CONSOLE
-        JustDisplayed = 1;
+	JustDisplayed = 1;
 #endif
 }
 
