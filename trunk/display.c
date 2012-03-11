@@ -1115,7 +1115,15 @@ static void show_status(void) {
 		set_digits_string(buf, 0);
 	}
 	else if (status == -1) {
+#if 0
+		p = scopy(buf, "Regs:");
+		if (SizeStatRegs)
+			p = scopy(p, "  \006\006\006\006\221");
+		*p = '\0';
+		set_status(buf);
+#else
 		set_status("Regs:");
+#endif
 		p = num_arg(buf, global_regs());
 		if (LocalRegs < 0) {
 			p = scopy(p, " , Loc. ");
@@ -1123,6 +1131,8 @@ static void show_status(void) {
 		}
 		*p = '\0';
 		set_digits_string(buf, 0);
+		if (SizeStatRegs != 0)
+			set_exp_digits_string("SIG", NULL);
 	} else {
 		int base;
 		int end;
