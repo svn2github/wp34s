@@ -778,7 +778,10 @@ void store_program( enum nilop op )
 void recall_program( enum nilop op )
 {
 	if ( not_running() ) {
-		update_program_bounds( 0 );
+		if ( state_pc() == 0 ) {
+			State.pc = 1;
+		}
+		update_program_bounds( 1 );
 		append_program( get_current_prog(), ProgEnd - ProgBegin + 1 );
 	}
 }

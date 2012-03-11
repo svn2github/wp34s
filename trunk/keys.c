@@ -54,6 +54,7 @@ enum confirmations {
 unsigned int OpCode;
 unsigned char OpCodeDisplayPending;
 unsigned char GoFast;
+unsigned char NonProgrammable;
 
 /*
  *  Needed before definition
@@ -455,7 +456,7 @@ static int check_confirm(int op) {
 		}
 		if (nilop >= OP_RECV && nilop <= OP_PSTO) {
 			// These commands are not programmable
-			State2.runmode = 1;
+			NonProgrammable = 1;
 		}
 	}
 	return op;
@@ -2073,7 +2074,6 @@ static int process_labellist(const keycode c) {
 	case K10:				// STO
 	case K11:				// RCL
 		op = c == K10 ? (OP_NIL | OP_PSTO) : (OP_NIL | OP_PRCL);
-		State2.runmode = 1;
 		goto set_pc_and_exit;
 
 	case K30:				// XEQ
@@ -2561,7 +2561,8 @@ void process_keycode(int c)
 			break;
 
 		default:
-			if (State2.runmode) {
+			if (State2.runmode || NonProgrammable) {
+				NonProgrammable = 0;
 				if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F))
 					// Data entry key
 					xeq(c);

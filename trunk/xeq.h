@@ -767,9 +767,10 @@ enum nilop {
 	// Not programmable	
 	OP_RECV,
 	OP_SAVE, OP_LOAD,
-	OP_LOADR, OP_LOADsigma, OP_LOADST, 
+	OP_LOADST, 
 	OP_LOADP, OP_PRCL, OP_PSTO,
 
+	OP_LOADR, OP_LOADsigma, 
 	OP_DBLON, OP_DBLOFF, OP_ISDBL, OP_cmplxI,
 
 	OP_DATE_TO,

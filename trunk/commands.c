@@ -635,12 +635,14 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_RECV,		&recv_any,		"RECV")
 	FUNC0(OP_SAVE,		&flash_backup,		"SAVE")
 	FUNC0(OP_LOAD,		&flash_restore,		"LOAD")
-	FUNC0(OP_LOADR,		&load_registers,	"LOADR")
-	FUNC0(OP_LOADsigma,	&load_sigma,		"LOAD\221")
 	FUNC0(OP_LOADST,	&load_state,		"LOADSS")
 	FUNC0(OP_LOADP,		&load_program,		"LOADP")
 	FUNC0(OP_PRCL,		&recall_program,	"PRCL")
 	FUNC0(OP_PSTO,		&store_program,		"PSTO")
+
+	FUNC0(OP_LOADR,		&load_registers,	"LOADR")
+	FUNC0(OP_LOADsigma,	&load_sigma,		"LOAD\221")
+
 	FUNC0(OP_DBLON,		&op_double,		"DBLON")
 	FUNC0(OP_DBLOFF,	&op_double,		"DBLOFF")
 	FUNC0(OP_ISDBL,		&check_dblmode,		"DBL?")
