@@ -39,7 +39,7 @@
  *  Some conditional compilation defines
  */
 #define SLOW_SERIAL
-// #define SPEEDUP_ON_KEY_WAITING
+#define SPEEDUP_ON_KEY_WAITING
 
 /*
  *  CPU speed settings
