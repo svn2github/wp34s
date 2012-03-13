@@ -651,6 +651,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_DATE_TO,	XNIL(DATE_TO),		"DATE\015")
 
+	FUNC0(OP_DOTPROD,	XNIL(cpx_DOT),		"\024DOT")
+	FUNC0(OP_CROSSPROD,	XNIL(cpx_CROSS),	"\024CROSS")
+
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif

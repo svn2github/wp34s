@@ -313,3 +313,23 @@ cpx_ln1p_loop::		Num 0
 			xOUT xOUT_NORMAL
 
 #undef NUM_LNP1_TERMS
+
+
+/**************************************************************************/
+/* Dot and cross products.
+ *
+ *	DOT returning x times z plus y times t in X and clearing Y,
+ *	CROSS returning x times t minus z times y in X and clearing Y
+ */
+		XLBL"cpx_DOT"
+			xIN DYADIC_COMPLEX
+			GSB cpx_conj
+			JMP cpx_dot_cross_exit
+
+		XLBL"cpx_CROSS"
+			xIN DYADIC_COMPLEX
+			z[<->] T
+cpx_dot_cross_exit::	[cmplx][times]
+			Num 0
+			SWAP
+			xOUT xOUT_NORMAL

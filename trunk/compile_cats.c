@@ -360,6 +360,8 @@ static s_opcode cplx_catalogue[] = {
 #ifdef INCLUDE_XROM_DIGAMMA
 	CMON(OP_DIGAMMA,	"[PSI]")
 #endif
+	NILIC(OP_DOTPROD,	"DOT")
+	NILIC(OP_CROSSPROD,	"CROSS")
 };
 
 static s_opcode sums_catalogue[] = {
