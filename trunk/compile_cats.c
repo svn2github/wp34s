@@ -919,7 +919,7 @@ static unsigned char alpha_subscripts[] = {
         0206,                                   // sub-d
 	0274,	0367,	0033,			// sub-e, sub-k, sub-m
 	0275,	0276,	0277,			// sub-n, sub-p, sub-u
-	0201,					// sub-w
+	0201,	0213,	0214,			// sub-w, sub-x, sub-y
 	0231,	0233,				// sub-mu, sub-infinity
 	0235,	0232, 0200,			// ^-1, ^2, ^3
 	0234,					// ^x

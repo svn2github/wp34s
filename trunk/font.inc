@@ -1667,7 +1667,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
-	{ 0213, "sub-x",               0, 0xe100,     0x08, NULL,
+	{ 0213, "sub-x",            7500, 0xe100,     0x08, NULL,
 		{
 			 ____ ,    ____ ,
 			 ____ ,    ____ ,
@@ -1679,7 +1679,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
-	{ 0214, "sub-y",               0, 0xe101,     0x09, NULL,
+	{ 0214, "sub-y",            7800, 0xe101,     0x09, NULL,
 		{
 			 ____ ,    ____ ,
 			 ____ ,    ____ ,
