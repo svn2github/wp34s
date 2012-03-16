@@ -465,12 +465,11 @@ static void set_int_x(const long long int value, char *res) {
 			}
 		} else {
 			int n;
+			const unsigned int b1 = b >> 1;
+			const unsigned int fac = ((b1 & 0xa) != 0) | (((b1 & 0xc) != 0) << 1);
 			v = (unsigned long long int)vs;
 
-			if (b == 2)		n = ws;
-			else if (b == 4)	n = (ws + 1) / 2;
-			else if (b == 8)	n = (ws + 2) / 3;
-			else			n = (ws + 3) / 4;
+			n = (ws + fac) / (fac+1);
 			for (i=0; i<n; i++) {
 				const int r = v % b;
 				v /= b;
