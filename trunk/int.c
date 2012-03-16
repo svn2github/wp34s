@@ -21,34 +21,21 @@
 /* Some utility routines to extract bits of long longs */
 
 unsigned int int_base(void) {
-#ifndef TINY_BUILD
 	unsigned int b = UState.int_base + 1;
 	if (b < 2)
 		return 10;
 	return b;
-#else
-	return 10;
-#endif
 }
 
 enum arithmetic_modes int_mode(void) {
-#ifndef TINY_BUILD
-	unsigned int b = int_base();
-	if (b == 10 || (b & (b-1)) == 0)
-		return (enum arithmetic_modes) UState.int_mode;
-#endif
-	return MODE_UNSIGNED;
+	return (enum arithmetic_modes) UState.int_mode;
 }
 
 unsigned int word_size(void) {
-#ifndef TINY_BUILD
 	unsigned int il = UState.int_len;
 	if (il >= MAX_WORD_SIZE || il == 0)
 		return MAX_WORD_SIZE;
 	return il;
-#else
-	return MAX_WORD_SIZE;
-#endif
 }
 
 int get_carry(void) {

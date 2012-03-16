@@ -429,7 +429,7 @@ static void set_int_x(const long long int value, char *res) {
 		carry_overflow();
 	}
 
-	if (b == 10) {
+	if ((0x7f75 & (1 << (b-1))) != 0) {
 		v = extract_value(value, &sign);
 		if (int_mode() == MODE_2COMP && sign == 1 && v == 0)
 			v = value;
@@ -468,6 +468,7 @@ static void set_int_x(const long long int value, char *res) {
 			v = (unsigned long long int)vs;
 
 			if (b == 2)		n = ws;
+			else if (b == 4)	n = (ws + 1) / 2;
 			else if (b == 8)	n = (ws + 2) / 3;
 			else			n = (ws + 3) / 4;
 			for (i=0; i<n; i++) {
