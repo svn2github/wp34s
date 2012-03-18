@@ -2587,4 +2587,5 @@ void process_keycode(int c)
 	}
 #endif
         JustDisplayed = 0;
+        watchdog();
 }
