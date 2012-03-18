@@ -1595,6 +1595,7 @@ int main(void)
 		 *  CRC checking the RAM is a bit slow so we speed up.
 		 *  Idling will slow us down again.
 		 */
+		InIrq = 1;		// Disable lock/unlock here 
 		set_speed( SPEED_HALF );
 
 		/*
