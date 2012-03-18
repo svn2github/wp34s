@@ -57,10 +57,9 @@
 //#define XTAL
 
 // We do not need the default Interrupt handlers here
-#define FIQ_HANDLER resetHandler
-#define IRQ_HANDLER resetHandler
-#define SPU_HANDLER resetHandler
-extern void resetHandler(void);
+#define FIQ_HANDLER ForceReset
+#define IRQ_HANDLER ForceReset
+#define SPU_HANDLER ForceReset
 
 // Do not initialize the PLL, leave clock at 2 MHz
 #define NOPLL  
@@ -130,6 +129,12 @@ void defaultIrqHandler(void)
 //         Exported functions
 //------------------------------------------------------------------------------
 
+// Force a reset
+void ForceReset(void)
+{
+	AT91C_BASE_RSTC->RSTC_RCR = AT91C_RSTC_PERRST | AT91C_RSTC_PROCRST | (0xA5 << 24);
+}
+
 //------------------------------------------------------------------------------
 /// Performs the low-level initialization of the chip. This includes EFC, master
 /// clock, AIC & watchdog configuration, as well as memory remapping.
@@ -138,6 +143,9 @@ void defaultIrqHandler(void)
 void LowLevelInit(void)
 {
     volatile unsigned int i;
+
+    // Force a peripheral reset here
+    AT91C_BASE_RSTC->RSTC_RCR = AT91C_RSTC_PERRST | (0xA5 << 24);
 
 #ifndef NOPLL
     // Set flash wait states in the EFC
@@ -203,8 +211,7 @@ void LowLevelInit(void)
 #else
     // Settings borrowed from HP20b SDK
     AT91C_BASE_WDTC->WDTC_WDMR = 
-        (AT91C_WDTC_WDV/2)    // (WDTC) Watchdog Timer Restart set to 8 seconds
-                              // used to be 2 seconds but we've long running code
+        (AT91C_WDTC_WDV/4)    // (WDTC) Watchdog Timer Restart set to 4 seconds
       |  AT91C_WDTC_WDRSTEN   // (WDTC) Watchdog Reset Enable
       |  AT91C_WDTC_WDD       // (WDTC) Watchdog Delta Value
       |  AT91C_WDTC_WDDBGHLT  // (WDTC) Watchdog Debug Halt

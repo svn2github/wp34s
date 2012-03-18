@@ -12,6 +12,7 @@
  *
  * Author (this file only): Marcus von Cube, http://www.mvcsys.de
  */
+// #define DEBUG_MAIN  // Adds some key sequences for debugging
 
 /*
  * This is the main module for the real hardware
@@ -35,11 +36,13 @@
 #include "slcdc.h"
 #include "rtc.h"
 
+extern void ForceReset(void);
+
 /*
  *  Some conditional compilation defines
  */
 #define SLOW_SERIAL
-#define SPEEDUP_ON_KEY_WAITING
+//#define SPEEDUP_ON_KEY_WAITING
 
 /*
  *  CPU speed settings
@@ -129,6 +132,10 @@ unsigned char Xtal;
 #endif
 #ifdef SLEEP_ANNUNCIATOR
 unsigned char SleepAnnunciatorOn;
+#endif
+
+#ifdef DEBUG_MAIN
+int WdDisable;
 #endif
 
 /*
@@ -1396,6 +1403,11 @@ int put_key( int k )
 void watchdog( void )
 {
 #ifndef NOWD
+#ifdef DEBUG_MAIN
+	if ( WdDisable ) {
+		return;
+	}
+#endif
 	AT91C_BASE_WDTC->WDTC_WDCR = 0xA5000001;
 #endif
 }
@@ -1604,6 +1616,7 @@ NO_RETURN int main(void)
 		 *  CRC checking the RAM is a bit slow so we speed up.
 		 *  Idling will slow us down again.
 		 */
+		InIrq = 1;		// disable lock/unlock
 		set_speed( SPEED_HALF );
 
 		/*
@@ -1694,7 +1707,7 @@ NO_RETURN int main(void)
 			 */
 			if ( !is_debug() && !Running && !SerialOn
 #ifdef INCLUDE_STOPWATCH
-				 && KeyCallback==NULL
+			     && KeyCallback == NULL
 #endif
 			     && KbData == 0LL && Pause == 0 && StartupTicks >= 10
 			     && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
@@ -1883,7 +1896,32 @@ NO_RETURN int main(void)
 					}
 					break;
 
-				}
+#ifdef DEBUG_MAIN
+				case K42:
+					// ON-"R" RESET
+					if ( is_debug() ) {
+						if ( confirm_counter == 1 ) {
+							message( "RESET?", NULL );
+						}
+						else {
+							ForceReset();
+						}
+					}
+					break;
+
+				case K41:
+					// ON-"Q" WD-Disable
+					if ( is_debug() ) {
+						if ( confirm_counter == 1 ) {
+							message( "Watchdog?", NULL );
+						}
+						else {
+							WdDisable = 1;
+						}
+					}
+					break;
+#endif
+		}
 				// No further processing
 				k = -1;
 			}

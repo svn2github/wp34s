@@ -98,7 +98,6 @@ fiqHandler:
 //------------------------------------------------------------------------------
 /// Handles incoming interrupt requests by branching to the corresponding
 /// handler, as defined in the AIC. Supports interrupt nesting.
-//  The code resides in RAM so that it works even with flash disabled
 //------------------------------------------------------------------------------
 irqHandler:
 

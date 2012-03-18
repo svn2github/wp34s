@@ -844,7 +844,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 
 	CMDstk(RARG_VIEW_REG,	&alpha_view_reg,			"VW\240+")
 	CMD(RARG_ROUNDING,	&rarg_roundingmode, DEC_ROUND_MAX,	"RM")
-	CMD(RARG_ROUND,		&rarg_round,	34,			"RSD")
+	CMD(RARG_ROUND,		&rarg_round,	35,			"RSD")
 
 #ifdef INCLUDE_USER_MODE
 	CMDstk(RARG_STOM,	&cmdsavem,				"STOM")
