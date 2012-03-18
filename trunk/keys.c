@@ -401,7 +401,6 @@ void init_state(void) {
 	unsigned char v = Voltage;
 	signed char k = LastKey;
 
-	State2.state_lift = 1;
 	CmdBase = 0;
 	// Removed: will clear any locals on power off
 	// clrretstk(0);
@@ -411,6 +410,7 @@ void init_state(void) {
 	xset(&State2, 0, sizeof(State2));
 	State2.test = TST_NONE;
 	State2.runmode = 1;
+	State2.state_lift = 1;
 
 	// Restore stuff that has been moved to State2 for space reasons
 	// but must not be cleared.
