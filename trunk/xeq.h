@@ -411,7 +411,7 @@ extern int current_catalogue_max(void);
  */
 #define RET_STACK_SIZE	534      /* Combined return stack and program space */
 #define MINIMUM_RET_STACK_SIZE 6 /* Minimum headroom for program execution */
-#define NUMPROG_LIMIT	(RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE + (TOPREALREG - 1) * 4) /* Absolute maximum for sanity checks */
+#define NUMPROG_LIMIT	(RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE + TOPREALREG * 4) /* Absolute maximum for sanity checks */
 
 #define STACK_SIZE	8	/* Maximum depth of RPN stack */
 #define EXTRA_REG	4
