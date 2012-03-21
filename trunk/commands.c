@@ -170,7 +170,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_INVGUD,	XMR(inv_gd),		XMC(cpx_inv_gd),NOFN,		"g\206\235")
 #endif
 
-	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	NOFN,		"x!")
+	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	&intFactorial,	"x!")
 	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	NOFN,		"\202")
 	FUNC(OP_LNGAMMA,&decNumberLnGamma,	&cmplxLnGamma,	NOFN,		"LN\202")
 	FUNC(OP_DEG2RAD,&decNumberD2R,		NOFN,		NOFN,		"\005\015rad")

@@ -509,6 +509,24 @@ long long int intCube(long long int x) {
 #endif
 }
 
+long long int intFactorial(long long int x) {
+	int s;
+	unsigned long long int xv = extract_value(x, &s);
+	unsigned int n, i;
+
+	if (xv > 65) {
+		set_overflow(1);
+		return build_value(0ull, s);
+	}
+
+	n = xv & 0xff;
+	xv = 1;
+
+	for (i=1; i<=n; i++)
+		xv *= i;
+	set_overflow(n > 20 || mask_value(xv) != xv);
+	return build_value(xv, s);
+}
 
 long long int intChs(long long int x) {
 #ifndef TINY_BUILD

@@ -744,7 +744,7 @@ static int process_h_shifted(const keycode c) {
 		OP_DYA  | OP_LXOR,
 		OP_DYA  | OP_MOD,
 		// Row 5
-		OP_MON  | OP_FACT | NO_INT,
+		OP_MON  | OP_FACT,
 		STATE_UNFINISHED,	// PROB
 		STATE_UNFINISHED,	// STAT
 		STATE_UNFINISHED,	// CFIT
