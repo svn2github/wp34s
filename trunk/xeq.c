@@ -979,7 +979,7 @@ static decimal64 *reg_address(int n, decimal64 *const regs, decimal64 *const nam
 	n -= regX_idx;
 	// Lettered register
 	if (XromFlags.xIN)
-		return (decimal64 *) (XromStack + n);
+		return dbl ? (decimal64 *) (XromStack + n) : (decimal64 *) XromStack + n;
 	if (dbl)
 		n = (n << 1) - STACK_SIZE - EXTRA_REG;
 	return named_regs + n;
@@ -3651,17 +3651,24 @@ void xeq(opcode op)
 					RetStk = XromUserRetStk;
 					RetStkPtr = XromUserRetStkPtr;
 					// Restore private stack to normal stack
-					if (! XromFlags.mode_double && NumRegs < STACK_SIZE + EXTRA_REG) {
-						// Need space for double precision stack
-						cmdregs(STACK_SIZE + EXTRA_REG, RARG_REGS);
+					if (UState.intm) {
+						XromFlags.xIN = 0;		// Clear flag before get_reg_n!
+						xcopy(get_reg_n(regX_idx), XromStack, 
+						      sizeof(long long int) * (STACK_SIZE + EXTRA_REG));
 					}
-					XromFlags.xIN = 0;		// Clear flag before get_reg_n!
-					if (Error == ERR_NONE) {
-						State.mode_double = 1;
-						xcopy(get_reg_n(regX_idx), XromStack, sizeof(XromStack));
+					else {
+						if (! XromFlags.mode_double && NumRegs < STACK_SIZE + EXTRA_REG) {
+							// Need space for double precision stack
+							cmdregs(STACK_SIZE + EXTRA_REG, RARG_REGS);
+						}
+						XromFlags.xIN = 0;		// Clear flag before get_reg_n!
+						if (Error == ERR_NONE) {
+							State.mode_double = 1;
+							xcopy(get_reg_n(regX_idx), XromStack, sizeof(XromStack));
+						}
+						else
+							Error = ERR_NONE;	// Not enough RAM, can't restore
 					}
-					else
-						Error = ERR_NONE;	// Not enough RAM, can't restore
 				}
 			}
 			else {
@@ -3925,14 +3932,6 @@ void cmdlocr(unsigned int arg, enum rarg op) {
 }
 
 
-static int check_xin_xout(void) {
-	if (is_intmode()) {
-		err(ERR_BAD_MODE);
-		return 1;
-	}
-	return 0;
-}
-
 /*
  *  xIN: Setup an environment for XROM based math routines:
  *
@@ -3971,9 +3970,6 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	}
 #endif
 
-	if (check_xin_xout())
-		return;
-
 	// Setup the XromLocal and XromParams structures in volatile RAM
 	if (! i) {
 		// fill with 0
@@ -4011,8 +4007,10 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		return;		// Nested call, just set parameters
 
 	// Switch to double precision mode
-	if (State.mode_double) {
-		xcopy(XromStack, StackBase, sizeof(XromStack));
+	if (State.mode_double || UState.intm) {
+		const int size = UState.intm ? (STACK_SIZE + 1) * sizeof(long long int) 
+			                     : sizeof(XromStack);
+		xcopy(XromStack, StackBase, size);
 		StackBase = XromStack;
 	}
 	else
@@ -4023,7 +4021,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	UState.stack_depth = 1;
 
 	// check for any NaNs in input
-	for (i = 0; i < XromIn; ++i) {
+	for (i = 0; i < XromIn && !UState.intm; ++i) {
 		decNumber x;
 		if (decNumberIsNaN(getRegister(&x, regX_idx + i))) {
 			// Got a NaN as input, now either NaN the outputs or raise a
@@ -4049,8 +4047,6 @@ void cmdxin(unsigned int arg, enum rarg op) {
  */
 void cmdxout(unsigned int arg, enum rarg op) {
 	int i, dbl;
-	if (check_xin_xout())
-		return;
 #ifndef REALBUILD
 	// shouldn't happen in final build
 	if (! XromFlags.xIN) {
@@ -4103,7 +4099,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 
 	// Copy results
 	i = XromOut;
-	if (dbl)
+	if (dbl || UState.intm)
 		move_regs(StackBase, XromStack, i);
 	else {
 		while (i--)

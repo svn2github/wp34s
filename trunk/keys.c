@@ -619,7 +619,7 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_MON | OP_10POWX,		   OP_MON | OP_LOG             },
 		{ OP_MON | OP_2POWX,		   OP_MON | OP_LG2             },
 		{ OP_DYA | OP_POW,                 OP_DYA | OP_LOGXY  | NO_INT },
-		{ OP_MON | OP_RECIP    | NO_INT,   OP_DYA | OP_PARAL  | NO_INT },
+		{ OP_MON | OP_RECIP    | NO_INT,   OP_DYA | OP_PARAL	       },
 		// Row 5
 		{ OP_DYA | OP_COMB     | NO_INT,   OP_DYA | OP_PERM   | NO_INT },
 		{ OP_MON | OP_cdf_Q    | NO_INT,   OP_MON | OP_qf_Q   | NO_INT },
