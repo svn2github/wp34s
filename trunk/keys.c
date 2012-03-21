@@ -650,7 +650,7 @@ static int process_fg_shifted(const keycode c) {
 	enum shifts shift = reset_shift();
 	int lc = keycode_to_linear(c);
 	int op = op_map[lc][shift == SHIFT_G];
-	const int no_int = ((op & NO_INT) == NO_INT);
+	int no_int = ((op & NO_INT) == NO_INT);
 	if (no_int)
 		op &= ~NO_INT;
 
@@ -698,7 +698,8 @@ static int process_fg_shifted(const keycode c) {
 	case K63:
 	case K64:
 		if (op != (OP_NIL | OP_RTN)) {
-			init_arg((enum rarg) op);
+			if (! (no_int && UState.intm))
+				init_arg((enum rarg) op);
 			return STATE_UNFINISHED;
 		}
 		break;
