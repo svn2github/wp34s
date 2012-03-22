@@ -75,7 +75,7 @@ bool QtSerialPort::open(const PortSettings& thePortSettings)
 void QtSerialPort::onOpenInEventLoop(const PortSettings& thePortSettings)
 {
 	close();
-	serialPort=new QextSerialPort(serialPortName, QextSerialPort::EventDriven);
+	serialPort=new ExtendedSerialPort(serialPortName, QextSerialPort::EventDriven);
 	serialPort->setBaudRate(thePortSettings.BaudRate);
 	serialPort->setDataBits(thePortSettings.DataBits);
 	serialPort->setParity(thePortSettings.Parity);
@@ -139,27 +139,9 @@ void QtSerialPort::onFlushInEventLoop()
 #if HAS_SERIAL
 	if(serialPort!=NULL && serialPort->isOpen())
 	{
-		serialPort->flush();
+		serialPort->flushBuffers();
 	}
 #endif
-}
-
-QStringList QtSerialPort::getSerialPorts()
-{
-	QStringList portNames;
-#if HAS_SERIAL
-    QList<QextPortInfo> portsInfos = QextSerialEnumerator::getPorts();
-    for (int i = 0; i < portsInfos.size(); i++)
-    {
-#if defined(Q_WS_MAC) || defined(Q_WS_WIN)
-    	portNames << portsInfos[i].portName;
-#else
-    	portNames << portsInfos[i].physName;
-#endif
-    }
-    portNames.sort();
-#endif
-    return portNames;
 }
 
 // See comment on open

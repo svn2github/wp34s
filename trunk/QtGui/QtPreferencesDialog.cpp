@@ -140,7 +140,9 @@ QWidget* QtPreferencesDialog::buildSerialTab(const QString& aSerialPortName)
 
 void QtPreferencesDialog::fillSerialPorts(QListWidget& aListWidget)
 {
-	aListWidget.addItems(QtSerialPort::getSerialPorts());
+#if HAS_SERIAL
+	aListWidget.addItems(ExtendedSerialPort::getSerialPorts());
+#endif
 }
 
 bool QtPreferencesDialog::isCustomDirectoryActive() const
