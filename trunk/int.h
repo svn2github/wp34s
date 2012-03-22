@@ -51,7 +51,6 @@ extern long long int intLCM(long long int y, long long int x);
 
 extern long long int intSqr(long long int x);
 extern long long int intCube(long long int x);
-extern long long int intFactorial(long long int x);
 
 extern long long int intChs(long long int x);
 extern long long int intAbs(long long int x);

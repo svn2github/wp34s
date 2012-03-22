@@ -159,6 +159,13 @@ long long int build_value(const unsigned long long int x, const int sign) {
 }
 
 
+/* Utility routine to check if a value has overflowed or not */
+int check_overflow(long long int x) {
+	return mask_value(x) != x ||
+		(int_mode() != MODE_UNSIGNED && (x & topbit_mask()) != 0);
+}
+
+
 #ifndef TINY_BUILD
 /* Helper routine for addition and subtraction that detemines the proper
  * setting for the overflow bit.  This routine should only be called when
@@ -507,30 +514,6 @@ long long int intCube(long long int x) {
 #else
 	return 0;
 #endif
-}
-
-int check_overflow(long long int x) {
-	return mask_value(x) != x ||
-		(int_mode() != MODE_UNSIGNED && (x & topbit_mask()) != 0);
-}
-
-long long int intFactorial(long long int x) {
-	int s;
-	unsigned long long int xv = extract_value(x, &s);
-	unsigned int n, i;
-
-	if (xv > 65) {
-		set_overflow(1);
-		return 0;
-	}
-
-	n = xv & 0xff;
-	xv = 1;
-
-	for (i=n; i>1; i--)
-		xv *= i;
-	set_overflow(n > 20 || check_overflow(xv));
-	return build_value(xv, 0);
 }
 
 long long int intChs(long long int x) {

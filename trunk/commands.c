@@ -170,7 +170,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_INVGUD,	XMR(inv_gd),		XMC(cpx_inv_gd),NOFN,		"g\206\235")
 #endif
 
-	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	&intFactorial,	"x!")
+	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	&intMonadic,	"x!")
 	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	NOFN,		"\202")
 	FUNC(OP_LNGAMMA,&decNumberLnGamma,	&cmplxLnGamma,	NOFN,		"LN\202")
 	FUNC(OP_DEG2RAD,&decNumberD2R,		NOFN,		NOFN,		"\005\015rad")
@@ -326,8 +326,8 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_CN,	&decNumberCN,		&cmplxCN,	NOFN,		"CN")
 	FUNC(OP_DN,	&decNumberDN,		&cmplxDN,	NOFN,		"DN")
 #endif
-	FUNC(OP_COMB,	&decNumberComb,		XDC(CPX_COMB),	&intCombPerm,	"COMB")
-	FUNC(OP_PERM,	&decNumberPerm,		XDC(CPX_PERM),	&intCombPerm,	"PERM")
+	FUNC(OP_COMB,	&decNumberComb,		XDC(CPX_COMB),	&intDyadic,	"COMB")
+	FUNC(OP_PERM,	&decNumberPerm,		XDC(CPX_PERM),	&intDyadic,	"PERM")
 	FUNC(OP_PERMG,	XDR(PERMARGIN),		NOFN,		NOFN,		"%+MG")
 	FUNC(OP_MARGIN,	XDR(MARGIN),		NOFN,		NOFN,		"%MG")
 	FUNC(OP_PARAL,	XDR(PARL),		XDC(CPX_PARL),	NOFN,		"||")

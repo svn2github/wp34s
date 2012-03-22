@@ -1018,6 +1018,7 @@ enum shifts {
  */
 extern int err(const unsigned int);
 extern int warn(const unsigned int);
+extern void bad_mode_error(void);
 extern const char *pretty(unsigned char);
 extern void prettify(const char *in, char *out);
 extern int num_arg_digits(int);
@@ -1167,6 +1168,11 @@ int row_column_to_keycode(const int c);
 
 /* Control program execution */
 extern void xeq_sst_bst(int kind);
+
+
+/* Integer mode wrapper functions */
+extern long long int intMonadic(long long int x);
+extern long long int intDyadic(long long int y, long long int x);
 
 /* Command functions */
 extern void version(enum nilop op);

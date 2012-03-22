@@ -486,7 +486,7 @@ int warn(const unsigned int e) {
 
 
 /* Doing something in the wrong mode */
-static void bad_mode_error(void) {
+void bad_mode_error(void) {
 	err(ERR_BAD_MODE);
 }
 
@@ -3239,6 +3239,81 @@ static int dispatch_xrom(void *fp)
 	gsbgto(addrXROM((xp - xrom) + 1), 1, state_pc());
 	xeq_xrom();
 	return 1;
+}
+
+static long long int intResult(decNumber *r) {
+	unsigned long long int i;
+	int s;
+	decNumber ri;
+
+	decNumberFloor(&ri, r);
+	set_carry(dn_eq(&ri, r) ? 0 : 1);
+
+	if (decNumberIsNaN(r)) {
+		err(ERR_DOMAIN);
+		return 0;
+	}
+	if (decNumberIsSpecial(r)) {
+		set_overflow(1);
+		return 0;
+	}
+	i = dn_to_ull(&ri, &s);
+	dn_abs(r, r);
+	set_overflow(check_overflow(i) || dn_ge(r, &const_2pow64));
+	return build_value(i, s);
+}
+
+long long int intMonadic(long long int x) {
+	int s;
+	unsigned long long int vx = extract_value(x, &s);
+	decNumber rx, r;
+	unsigned int f = argKIND(XeqOpCode);
+
+	if (isNULL(monfuncs[f].mondreal))
+		bad_mode_error();
+	else {
+		FP_MONADIC_REAL fp = (FP_MONADIC_REAL) EXPAND_ADDRESS(monfuncs[f].mondreal);
+
+		if (check_for_xrom_address(fp) != NULL)
+			bad_mode_error();
+		else {
+			ullint_to_dn(&rx, vx);
+			if (s)
+				dn_minus(&rx, &rx);
+			if (NULL == fp(&r, &rx))
+				err(ERR_DOMAIN);
+			else
+				return intResult(&r);
+		}
+	}
+	return 0;
+}
+
+long long int intDyadic(long long int y, long long int x) {
+	int sx, sy;
+	unsigned long long int vx = extract_value(x, &sx);
+	unsigned long long int vy = extract_value(y, &sy);
+	decNumber rx, ry, r;
+	unsigned int f = argKIND(XeqOpCode);
+
+	if (isNULL(dyfuncs[f].dydreal))
+		bad_mode_error();
+	else {
+		FP_DYADIC_REAL fp = (FP_DYADIC_REAL) EXPAND_ADDRESS(dyfuncs[f].dydreal);
+
+		if (check_for_xrom_address(fp) != NULL)
+			bad_mode_error();
+		else {
+			ullint_to_dn(&rx, vx);	if (sx) dn_minus(&rx, &rx);
+			ullint_to_dn(&ry, vy);	if (sy)	dn_minus(&ry, &ry);
+
+			if (NULL == fp(&r, &ry, &rx))
+				err(ERR_DOMAIN);
+			else
+				return intResult(&r);
+		}
+	}
+	return 0;
 }
 
 
