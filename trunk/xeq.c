@@ -3244,22 +3244,23 @@ static int dispatch_xrom(void *fp)
 static long long int intResult(decNumber *r) {
 	unsigned long long int i;
 	int s;
-	decNumber ri;
+	decNumber ri, t;
 
-	decNumberFloor(&ri, r);
-	set_carry(dn_eq(&ri, r) ? 0 : 1);
+	decNumberRoundDigits(&t, r, 25, DEC_ROUND_HALF_EVEN);
+	decNumberFloor(&ri, &t);
+	set_carry(dn_eq(&ri, &t) ? 0 : 1);
 
-	if (decNumberIsNaN(r)) {
+	if (decNumberIsNaN(&t)) {
 		err(ERR_DOMAIN);
 		return 0;
 	}
-	if (decNumberIsSpecial(r)) {
+	if (decNumberIsSpecial(&t)) {
 		set_overflow(1);
 		return 0;
 	}
 	i = dn_to_ull(&ri, &s);
-	dn_abs(r, r);
-	set_overflow(check_overflow(i) || dn_ge(r, &const_2pow64));
+	dn_abs(&t, &t);
+	set_overflow(check_overflow(i) || dn_ge(&t, &const_2pow64));
 	return build_value(i, s);
 }
 

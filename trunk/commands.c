@@ -354,7 +354,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_HERMITE_HE,	XDR(HermiteHe),		NOFN,	NOFN,		"H\275")
 	FUNC(OP_HERMITE_H,	XDR(HermiteH),		NOFN,	NOFN,		"H\275\276")
 #ifdef INCLUDE_XROOT
-	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intXRoot,	"\234\003y")
+	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intDyadic,	"\234\003y")
 #endif
 	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M-ROW")
 	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M-COL")
