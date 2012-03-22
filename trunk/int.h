@@ -34,6 +34,8 @@ extern void set_overflow(int);
 extern int get_carry(void);
 extern int get_overflow(void);
 
+extern int check_overflow(long long int);
+
 extern long long int intAdd(long long int y, long long int x);
 extern long long int intSubtract(long long int y, long long int x);
 extern long long int intMultiply(long long int y, long long int x);

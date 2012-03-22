@@ -928,6 +928,29 @@ long long int intXRoot(long long int y, long long int x) {
 
 #endif
 
+long long int intCombPerm(long long int y, long long int x) {
+	int s;
+	unsigned long long int vx = extract_value(x, &s);
+	unsigned long long int vy = extract_value(y, &s);
+	decNumber rx, ry, rz;
+
+	ullint_to_dn(&rx, vx);
+	ullint_to_dn(&ry, vy);
+
+	if (XeqOpCode == (OP_DYA | OP_PERM))
+		decNumberPerm(&rz, &ry, &rx);
+	else
+		decNumberComb(&rz, &ry, &rx);
+
+	if (decNumberIsSpecial(&rz)) {
+		set_overflow(1);
+		return 0;
+	}
+	vy = dn_to_ull(&rz, &s);
+	set_overflow(check_overflow(vy) || dn_ge(&rz, &const_2pow64));
+	return build_value(vy, 0);
+}
+
 
 decNumber *decNumberMod(decNumber *res, const decNumber *x, const decNumber *y) {
 	/* Declare a structure large enough to hold a really long number.

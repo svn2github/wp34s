@@ -76,6 +76,7 @@ extern decNumber *decNumberNeighbour(decNumber *, const decNumber *, const decNu
 
 extern decNumber *decNumberXRoot(decNumber *r, const decNumber *a, const decNumber *b);
 extern long long int intXRoot(long long int y, long long int x);
+extern long long int intCombPerm(long long int y, long long int x);
 
 extern int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol);
 extern int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol);

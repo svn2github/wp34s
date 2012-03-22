@@ -509,7 +509,7 @@ long long int intCube(long long int x) {
 #endif
 }
 
-static int check_overflow(long long int x) {
+int check_overflow(long long int x) {
 	return mask_value(x) != x ||
 		(int_mode() != MODE_UNSIGNED && (x & topbit_mask()) != 0);
 }
@@ -521,16 +521,16 @@ long long int intFactorial(long long int x) {
 
 	if (xv > 65) {
 		set_overflow(1);
-		return build_value(0ull, s);
+		return 0;
 	}
 
 	n = xv & 0xff;
 	xv = 1;
 
-	for (i=1; i<=n; i++)
+	for (i=n; i>1; i--)
 		xv *= i;
 	set_overflow(n > 20 || check_overflow(xv));
-	return build_value(xv, s);
+	return build_value(xv, 0);
 }
 
 long long int intChs(long long int x) {

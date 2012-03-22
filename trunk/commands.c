@@ -326,8 +326,8 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_CN,	&decNumberCN,		&cmplxCN,	NOFN,		"CN")
 	FUNC(OP_DN,	&decNumberDN,		&cmplxDN,	NOFN,		"DN")
 #endif
-	FUNC(OP_COMB,	&decNumberComb,		XDC(CPX_COMB),	NOFN,		"COMB")
-	FUNC(OP_PERM,	&decNumberPerm,		XDC(CPX_PERM),	NOFN,		"PERM")
+	FUNC(OP_COMB,	&decNumberComb,		XDC(CPX_COMB),	&intCombPerm,	"COMB")
+	FUNC(OP_PERM,	&decNumberPerm,		XDC(CPX_PERM),	&intCombPerm,	"PERM")
 	FUNC(OP_PERMG,	XDR(PERMARGIN),		NOFN,		NOFN,		"%+MG")
 	FUNC(OP_MARGIN,	XDR(MARGIN),		NOFN,		NOFN,		"%MG")
 	FUNC(OP_PARAL,	XDR(PARL),		XDC(CPX_PARL),	NOFN,		"||")
