@@ -1047,41 +1047,6 @@ long long int intSqrt(long long int x) {
 #endif
 }
 
-/* Integer cube root
- */
-long long int intCubeRoot(long long int v) {
-#ifndef TINY_BUILD
-	int sx;
-	unsigned long long int w = extract_value(v, &sx);
-	unsigned long long int x, y, b, bs, y2;
-	int s;
-
-	if (w == 0) {
-		set_carry(0);
-		return 0;
-	}
-	x = w;
-	y2 = 0;
-	y = 0;
-	for (s=63; s>=0; s -= 3) {
-		y2 <<= 2;
-		y <<= 1;
-		b = 3*(y2 + y) + 1;
-		bs = b << s;
-		if (x >= bs && b == (bs >> s)) {
-			x -= bs;
-			y2 += (y << 1) + 1;
-			y++;
-		}
-	}
-	set_carry((y*y*y != w)?1:0);
-	return build_value(y, sx);
-#else
-	return 0;
-#endif
-}
-
-
 /* Integer power y^x
  */
 long long int intPower(long long int y, long long int x) {

@@ -144,7 +144,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_INVW,	XMR(W_INVERSE),		XMC(CPX_W_INVERSE),NOFN,	"W\235")
 	FUNC(OP_SQR,	&decNumberSquare,	XMC(cpx_x2),	&intSqr,	"x\232")
 	FUNC(OP_CUBE,	&decNumberCube,		XMC(cpx_x3),	&intCube,	"x\200")
-	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intCubeRoot,	"\200\003")
+	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intMonadic,	"\200\003")
 	FUNC(OP_FIB,	XMR(FIB),		XMC(CPX_FIB),	&intFib,	"FIB")
 	FUNC(OP_2DEG,	&decNumberDRG,		NOFN,		NOFN,		"\015DEG")
 	FUNC(OP_2RAD,	&decNumberDRG,		NOFN,		NOFN,		"\015RAD")
@@ -171,7 +171,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #endif
 
 	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	&intMonadic,	"x!")
-	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	NOFN,		"\202")
+	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	&intMonadic,	"\202")
 	FUNC(OP_LNGAMMA,&decNumberLnGamma,	&cmplxLnGamma,	NOFN,		"LN\202")
 	FUNC(OP_DEG2RAD,&decNumberD2R,		NOFN,		NOFN,		"\005\015rad")
 	FUNC(OP_RAD2DEG,&decNumberR2D,		NOFN,		NOFN,		"rad\015\005")
