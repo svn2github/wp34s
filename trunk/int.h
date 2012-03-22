@@ -74,7 +74,6 @@ extern void introt(unsigned arg, enum rarg op);
 
 extern long long int intNumBits(long long int x);
 extern long long int intSqrt(long long int x);
-extern long long int intCubeRoot(long long int x);
 extern long long int intLog2(long long int x);
 extern long long int int2pow(long long int x);
 extern long long int intLog10(long long int x);
