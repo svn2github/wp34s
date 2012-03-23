@@ -222,11 +222,12 @@ int dn_to_int(const decNumber *x) {
 }
 
 unsigned long long int dn_to_ull(const decNumber *x, int *sgn) {
-	decNumber y;
+	decNumber y, z;
 	char buf[64];
 
-	decNumberRescale(&y, x, &const_0, &Ctx);
-	if (decNumberIsNegative(x)) {
+	decNumberTrunc(&z, x);
+	decNumberRescale(&y, &z, &const_0, &Ctx);
+	if (decNumberIsNegative(&z)) {
 		dn_minus(&y, &y);
 		*sgn = 1;
 	} else

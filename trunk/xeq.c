@@ -3247,7 +3247,7 @@ static long long int intResult(decNumber *r) {
 	decNumber ri, t;
 
 	decNumberRoundDigits(&t, r, 25, DEC_ROUND_HALF_EVEN);
-	decNumberFloor(&ri, &t);
+	decNumberTrunc(&ri, &t);
 	set_carry(dn_eq(&ri, &t) ? 0 : 1);
 
 	if (decNumberIsNaN(&t)) {

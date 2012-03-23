@@ -1089,7 +1089,6 @@ void format_reg(int index, char *buf) {
 		unsigned long long int v;
 
 		getRegister(&x, index);
-		decNumberTrunc(&x, &x);
 		v = dn_to_ull(&x, &s);
 		set_int_x(build_value(v, s), NULL);
 	}
