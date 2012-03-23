@@ -20,5 +20,11 @@ call %FF% WP34SSolidFontRegular.sfd  WP34SSolidFontRegular.otf
 call %FF% WP34SSolidFontSmall.sfd    WP34SSolidFontSmall.otf
 call %FF% WP34SSegmentFont.sfd       WP34SSegmentFont.otf
 
+call %FF% WP34SRasterFontRegular.sfd WP34SRasterFontRegular.ttf
+call %FF% WP34SRasterFontSmall.sfd   WP34SRasterFontSmall.ttf
+call %FF% WP34SSolidFontRegular.sfd  WP34SSolidFontRegular.ttf
+call %FF% WP34SSolidFontSmall.sfd    WP34SSolidFontSmall.ttf
+call %FF% WP34SSegmentFont.sfd       WP34SSegmentFont.ttf
+
 :exit
 endlocal

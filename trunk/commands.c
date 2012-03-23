@@ -318,7 +318,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_MIN,	&dn_min,		NOFN,		&intMin,	"MIN")
 	FUNC(OP_MAX,	&dn_max,		NOFN,		&intMax,	"MAX")
 	FUNC(OP_ATAN2,	&decNumberArcTan2,	NOFN,		NOFN,		"ANGLE")
-	FUNC(OP_BETA,	XDR(beta),		XDC(cpx_beta),	NOFN,		"\241")
+	FUNC(OP_BETA,	XDR(beta),		XDC(cpx_beta),	XDI(beta),	"\241")
 	FUNC(OP_LNBETA,	&decNumberLnBeta,	XDC(cpx_lnbeta),NOFN,		"LN\241")
 	FUNC(OP_GAMMAP,	&decNumberGammap,	NOFN,		NOFN,		"I\202")
 #ifdef INCLUDE_ELLIPTIC
@@ -330,7 +330,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_PERM,	&decNumberPerm,		XDC(CPX_PERM),	&intDyadic,	"PERM")
 	FUNC(OP_PERMG,	XDR(PERMARGIN),		NOFN,		NOFN,		"%+MG")
 	FUNC(OP_MARGIN,	XDR(MARGIN),		NOFN,		NOFN,		"%MG")
-	FUNC(OP_PARAL,	XDR(PARL),		XDC(CPX_PARL),	NOFN,		"||")
+	FUNC(OP_PARAL,	XDR(PARL),		XDC(CPX_PARL),	XDI(PARL),	"||")
 	FUNC(OP_AGM,	XDR(AGM),		XDC(CPX_AGM),	NOFN,		"AGM")
 	FUNC(OP_HMSADD,	&decNumberHMSAdd,	NOFN,		NOFN,		"H.MS+")
 	FUNC(OP_HMSSUB,	&decNumberHMSSub,	NOFN,		NOFN,		"H.MS-")
