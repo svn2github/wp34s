@@ -374,6 +374,7 @@ void show_stack(void) {
 void show_flags(void) {
 #ifdef CONSOLE
 	extern unsigned int get_local_flags(void);
+	extern int IntMaxWindow;
 
 	if (!State2.flags)
 		return;
@@ -453,7 +454,7 @@ void show_flags(void) {
 		PRINTF("[running]");
 	}
 	MOVE(70, 5);
-	PRINTF("iw = %u/%u", State2.window, UState.int_maxw);
+	PRINTF("iw = %u/%u", State2.window, IntMaxWindow);
 	MOVE(30, FLAG_BASE+1);
 	PRINTF("shft = %u", cur_shift());
 	MOVE(40, FLAG_BASE+1);

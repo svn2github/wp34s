@@ -810,7 +810,7 @@ int is_intmode(void) {
 }
 
 int is_dblmode(void) {
-	return (! UState.intm && State.mode_double);
+	return (! UState.intm && UState.mode_double);
 }
 
 
@@ -1510,19 +1510,19 @@ void cmdrrcl(unsigned int arg, enum rarg op) {
 	const int was_dbl = is_dblmode();
 	const int rcl_dbl = (op == RARG_dRCL);
 
-	State.mode_double = rcl_dbl;
+	UState.mode_double = rcl_dbl;
 	if (is_intmode()) {
 		int_from_register(regX_idx, arg);
-		State.mode_double = was_dbl;
+		UState.mode_double = was_dbl;
 	}
 	else if (is_dblmode() && arg >= regX_idx && arg <= regK_idx)
 		err(ERR_RANGE);
 	else {
 		decNumber x;
-		State.mode_double = rcl_dbl; // Force reading in requested format
+		UState.mode_double = rcl_dbl; // Force reading in requested format
 		getRegister(&x, arg);
 
-		State.mode_double = was_dbl; // Force access in original mode
+		UState.mode_double = was_dbl; // Force access in original mode
 		setX(&x);
 	}
 }
@@ -2820,34 +2820,45 @@ enum trig_modes get_trig_mode(void) {
 
 void op_double(enum nilop op) {
 	const int dbl = (op == OP_DBLON);
+	const int intm = int_mode();
 	int i;
-	if (dbl == State.mode_double) {
-		return;
-	}
-	if (dbl) {
-		if (NumRegs < STACK_SIZE + EXTRA_REG) {
-			// Need space for double precision stack
-			cmdregs(STACK_SIZE + EXTRA_REG, RARG_REGS);
-			if (Error) {
-				return;
+
+	if (dbl != UState.mode_double) {
+		// Mode switch
+		if (dbl) {
+			if (NumRegs < STACK_SIZE + EXTRA_REG) {
+				// Need space for double precision stack
+				cmdregs(STACK_SIZE + EXTRA_REG, RARG_REGS);
+				if (Error) {
+					return;
+				}
+			}
+
+			UState.mode_double = 1;
+			if (! intm) {
+				// Convert X to K to double precision
+				// Avoid this in integer mode
+				for (i = 0; i < STACK_SIZE + EXTRA_REG; ++i)
+					packed128_from_packed(&(get_stack(i)->d), Regs + regX_idx + i);
 			}
 		}
-
-		State.mode_double = 1;
-		// Convert X to K to double precision
-		for (i = 0; i < STACK_SIZE + EXTRA_REG; ++i)
-			packed128_from_packed(&(get_stack(i)->d), Regs + regX_idx + i);
-	}
-	else {
-		// Convert X to K to single precision
-		for (i = STACK_SIZE + EXTRA_REG - 1; i >= 0; --i)
-			packed_from_packed128(Regs + regX_idx + i, &(get_stack(i)->d));
-		State.mode_double = 0;
-
-		if (NumRegs > TOPREALREG)
-			cmdregs(TOPREALREG, RARG_REGS);
+		else {
+			if (! intm) {
+				// Convert X to K to single precision
+				// Avoid this in integer mode
+				for (i = STACK_SIZE + EXTRA_REG - 1; i >= 0; --i)
+					packed_from_packed128(Regs + regX_idx + i, &(get_stack(i)->d));
+			}
+			UState.mode_double = 0;
+			if (NumRegs > TOPREALREG)
+				cmdregs(TOPREALREG, RARG_REGS);
+		}
 	}
 	StackBase = get_reg_n(regX_idx);
+	if (intm) {
+		// Do the necessary conversions from integer mode
+		op_float((enum nilop) 0);
+	}
 }
 
 void cmdpause(unsigned int arg, enum rarg op) {
@@ -3183,8 +3194,9 @@ static void print_step(const opcode op) {
  * happens.  This should be called on that something.
  */
 void reset_volatile_state(void) {
+	// extern int IntMaxWindow;
+	// IntMaxWindow = 0;
 	State2.window = 0;
-	UState.int_maxw = 0;
 	State2.smode = SDISP_NORMAL;
 }
 
@@ -3764,7 +3776,7 @@ void xeq(opcode op)
 					}
 					XromFlags.xIN = 0;		// Clear flag before get_reg_n!
 					if (Error == ERR_NONE) {
-						State.mode_double = 1;
+						UState.mode_double = 1;
 						xcopy(get_reg_n(regX_idx), XromStack, sizeof(XromStack));
 					}
 					else
@@ -3777,7 +3789,7 @@ void xeq(opcode op)
 				if (XromFlags.xIN) {
 					// Restore state to before xIN
 					XromFlags.xIN = 0;
-					State.mode_double = XromFlags.mode_double;
+					UState.mode_double = XromFlags.mode_double;
 					UState.intm = XromFlags.mode_int;
 					UState.stack_depth = XromFlags.stack_depth;
 					// Restore the global return stack
@@ -4080,7 +4092,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		// Flags
 		XromFlags.state_lift_in = State2.state_lift;
 		XromFlags.stack_depth = UState.stack_depth;
-		XromFlags.mode_double = State.mode_double;
+		XromFlags.mode_double = UState.mode_double;
 		XromFlags.mode_int = UState.intm;
 		XromFlags.state_lift = 1;
 		XromFlags.xIN = 1;
@@ -4111,10 +4123,10 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	// Switch to double precision mode
 	if (UState.intm) {
 		// Convert integers to decimal128
-		State.mode_double = 1;
+		UState.mode_double = 1;
 		op_float((enum nilop) 0);
 	}
-	else if (State.mode_double) {
+	else if (UState.mode_double) {
 		// No conversion necessary
 		xcopy(XromStack, StackBase, sizeof(XromStack));
 		StackBase = XromStack;
@@ -4165,7 +4177,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 #endif
 	// Switch back to user stack settings
 	XromFlags.xIN = 0;
-	dbl = State.mode_double = XromFlags.mode_double;
+	dbl = UState.mode_double = XromFlags.mode_double;
 	intm = UState.intm = XromFlags.mode_int;
 	UState.stack_depth = XromFlags.stack_depth;
 	StackBase = get_reg_n(regX_idx);
@@ -4370,6 +4382,12 @@ void cmdregs(unsigned int arg, enum rarg op) {
 		arg = (arg << 1) + STACK_SIZE + EXTRA_REG;
 	}
 	else {
+		if (UState.mode_double && arg < STACK_SIZE + EXTRA_REG) {
+			// Special case: we're in int mode but came from DP
+			// We must not release the space needed for the DP lettered registers
+			err(ERR_RANGE);
+			return;
+		}
 		// register length 8 bytes
 		length = (arg << 3);
 	}

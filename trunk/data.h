@@ -50,9 +50,12 @@ struct _ustate {
 	unsigned int leadzero :      1;	// forced display of leading zeros in integer mode
 	unsigned int int_mode :      2;	// Integer sign mode
 	unsigned int int_base :      4;	// Integer input/output base
-	unsigned int int_len :       7;	// Length of Integers
+	unsigned int int_len :       6;	// Length of Integers
+	unsigned int mode_double :   1;	// Double precision mode
 	unsigned int t12 :           1;	// 12 hour time mode
-	unsigned int int_maxw :      3;	// maximum available window
+	unsigned int unused_3 :      1;	// free
+	unsigned int unused_2 :      1;	// free
+	unsigned int unused_1 :      1;	// free
 	unsigned int stack_depth :   1;	// Stack depth
 
 	unsigned int date_mode :     2;	// Date input/output format
@@ -85,9 +88,12 @@ struct _ustate {
 #define UState_int_mode1      34 // 1	// Integer sign mode
 #define UState_int_mode2      35 // 1	// Integer sign mode
 #define UState_int_base       36 // 4	// Integer input/output base
-#define UState_int_len        40 // 7	// Length of Integers
+#define UState_int_len        40 // 6	// Length of Integers
+#define UState_mode_double    46 // 1   // Double precision mode
 #define UState_t12            47 // 1	// 12 hour time mode
-#define UState_int_maxw       48 // 3	// maximum available window
+#define UState_unused_3       48 // 1	// free
+#define UState_unused_2       49 // 1	// free
+#define UState_unused_1       50 // 1	// free
 #define UState_stack_depth    51 // 1	// Stack depth
 #define UState_date_mode1     52 // 1	// Date input/output format
 #define UState_date_mode2     53 // 1	// Date input/output format
@@ -103,13 +109,13 @@ struct _ustate {
  *  System state
  */
 struct _state {
-	unsigned int last_cat :      5;	// Most recent catalogue browsed
-	unsigned int catpos :        7;	// Position in said catalogue
-	unsigned int entryp :        1;	// Has the user entered something since the last program stop
-	unsigned int have_stats :    1;	// Statistics registers are allocated
-	unsigned int deep_sleep :    1; // Used to wake up correctly
-	unsigned int mode_double :   1;	// Double precision mode, should go to UState but that is full. :-(
-	signed   int local_regs :   16; // Position on return stack where current local variables start
+	unsigned int last_cat :    5;	// Most recent catalogue browsed
+	unsigned int catpos :      7;	// Position in said catalogue
+	unsigned int entryp :      1;	// Has the user entered something since the last program stop
+	unsigned int have_stats :  1;	// Statistics registers are allocated
+	unsigned int deep_sleep :  1;   // Used to wake up correctly
+	unsigned int unused :      1;	// free
+	signed   int local_regs : 16;   // Position on return stack where current local variables start
 
 	/*
 	 *  Not bit fields

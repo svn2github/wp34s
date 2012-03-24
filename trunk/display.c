@@ -39,6 +39,7 @@ char LastDisplayedText[NUMALPHA + 1];	   // For clipboard export
 
 int ShowRPN;		   // controls visibility of RPN annunciator
 int JustDisplayed;	   // Avoid duplicate calls to display()
+unsigned int IntMaxWindow; // Number of windows for integer display
 
 /* Message strings
  * Strings starting S7_ are for the lower 7 segment line.  Strings starting S_
@@ -329,8 +330,8 @@ static void annunciators(void) {
 		*q++ = '\006';
 		p = num_arg_0(q, word_size(), 2);
 
-		if (UState.int_maxw > 0) {
-			n = 4 + 2 * (5 - UState.int_maxw);
+		if (IntMaxWindow > 0) {
+			n = 4 + 2 * (5 - IntMaxWindow);
 			if (*q == '1')
 				n += 2;
 			if (q[1] == '1')
@@ -338,8 +339,8 @@ static void annunciators(void) {
 			while (n-- > 0)
 				*p++ = '\006';
 
-			for (n=UState.int_maxw; n>=0; n--)
-				*p++ = State2.window == n ? '|':'\'';
+			for (n = IntMaxWindow; n >= 0; n--)
+				*p++ = State2.window == n ? '|' : '\'';
 		}
 
 	}
@@ -425,7 +426,7 @@ static void set_int_x(const long long int value, char *res) {
 	}
 
 	if (!res) {
-		UState.int_maxw = 0;
+		IntMaxWindow = 0;
 		carry_overflow();
 	}
 
@@ -501,8 +502,8 @@ static void set_int_x(const long long int value, char *res) {
 		const int group = (b == 2 || b == 4) ? 4
 				: b == 16 ? 2 : 3;
 #endif
-		UState.int_maxw = (i - 1) / shift;
-		if (State2.window > UState.int_maxw)
+		IntMaxWindow = (i - 1) / shift;
+		if (State2.window > IntMaxWindow)
 			State2.window = 0;
 		buf[i] = '\0';
 
@@ -1094,7 +1095,7 @@ void format_reg(int index, char *buf) {
 	}
 #endif
 	else
-		set_x(r, buf, State.mode_double);
+		set_x(r, buf, UState.mode_double);
 }
 
 /* Display the status screen */

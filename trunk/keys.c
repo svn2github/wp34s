@@ -2110,12 +2110,16 @@ static int process_labellist(const keycode c) {
 
 
 static void set_window(int c) {
+	extern unsigned int IntMaxWindow;
 
 	if (State2.runmode) {
 		process_cmdline_set_lift();
+		// Make sure IntMaxWindow is recalculated
+		State2.disp_freeze = 0;
+		display();	
 		if (c == STATE_WINDOWRIGHT) {
 			if (UState.intm) {
-				if (UState.int_maxw > 0 && State2.window > 0)
+				if (IntMaxWindow > 0 && State2.window > 0)
 					State2.window--;
 				return;
 			}
@@ -2124,7 +2128,7 @@ static void set_window(int c) {
 		}
 		else {
 			if (UState.intm) {
-				if (UState.int_maxw > State2.window)
+				if (IntMaxWindow > State2.window)
 					State2.window++;
 				return;
 			}
