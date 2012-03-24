@@ -509,7 +509,6 @@ static s_opcode int_catalogue[] = {
 	MON(OP_ULP,		"ULP")
 	DYA(OP_NEIGHBOUR,	"NEIGHB")
 #endif
-	DYA(OP_BETA,		"\241")
 	MON(OP_GAMMA,		"\202")
 };
 

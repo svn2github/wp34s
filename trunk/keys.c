@@ -615,10 +615,10 @@ static int process_fg_shifted(const keycode c) {
 		{ RARG(RARG_BASE, 10),		   RARG(RARG_BASE, 16)         },
 		{ OP_NIL | OP_CLPROG,		   OP_NIL | OP_SIGMACLEAR      },
 		// Row 4
-		{ OP_MON | OP_EXP      | NO_INT,   OP_MON | OP_LN     | NO_INT },
+		{ OP_MON | OP_EXP,                 OP_MON | OP_LN              },
 		{ OP_MON | OP_10POWX,		   OP_MON | OP_LOG             },
 		{ OP_MON | OP_2POWX,		   OP_MON | OP_LG2             },
-		{ OP_DYA | OP_POW,                 OP_DYA | OP_LOGXY  | NO_INT },
+		{ OP_DYA | OP_POW,                 OP_DYA | OP_LOGXY           },
 		{ OP_MON | OP_RECIP    | NO_INT,   OP_DYA | OP_PARAL	       },
 		// Row 5
 		{ OP_DYA | OP_COMB,                OP_DYA | OP_PERM            },
