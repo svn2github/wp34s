@@ -783,7 +783,11 @@ enum nilop {
 #ifdef _DEBUG
 	OP_DEBUG,
 #endif
-	NUM_NILADIC	// Last entry defines number of operations
+	NUM_NILADIC,	// Last entry defines number of operations
+
+	// following are dummy operations for internal use
+	OP_FLOAT_XIN,
+	OP_FLOAT_RCLM
 };
 
 #define EMPTY_PROGRAM_OPCODE	RARG(RARG_ERROR, ERR_PROG_BAD)
@@ -1025,9 +1029,12 @@ extern int num_arg_digits(int);
 
 extern const char *get_cmdline(void);
 
+#if 1
+#define is_intmode() (UState.intm)
+#else
 extern int is_intmode(void);
+#endif
 extern int is_dblmode(void);
-
 extern enum shifts cur_shift(void);
 extern enum shifts reset_shift(void);
 
@@ -1053,9 +1060,10 @@ extern unsigned int find_user_pc(unsigned int);
 
 extern int local_levels(void);
 extern int local_regs(void);
-extern int move_retstk(int distance);
+extern int local_regs_rarg(enum rarg op);
 extern unsigned int global_regs(void);
 extern unsigned int global_regs_rarg(enum rarg op);
+extern int move_retstk(int distance);
 
 extern void clrretstk(void);
 extern void clrretstk_pc(void);

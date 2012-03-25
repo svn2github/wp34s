@@ -164,9 +164,18 @@ int local_levels(void) {
 
 /*
  *  How many local registers have we?
+ *  The result depends on the RARG operation to allow for "alien" RCL commands
+ */
+int local_regs_rarg(enum rarg op) {
+	const int dbl = op != RARG_sRCL && op != RARG_iRCL && (op == RARG_dRCL || is_dblmode()); 
+	return local_levels() >> (2 + dbl);
+}
+
+/*
+ *  How many local registers have we?
  */
 int local_regs(void) {
-	return local_levels() >> (2 + is_dblmode());
+	return local_regs_rarg(RARG_RCL);
 }
 
 /*
@@ -174,10 +183,10 @@ int local_regs(void) {
  *  The result depends on the RARG operation to allow for "alien" RCL commands
  */
 unsigned int global_regs_rarg(enum rarg op) {
-	if (is_dblmode() || op == RARG_dRCL)
-		return op == RARG_sRCL ? NumRegs - (STACK_SIZE + EXTRA_REG) / 2
-		     : op == RARG_iRCL ? NumRegs
-		                       : (NumRegs - STACK_SIZE - EXTRA_REG) >> 1; 
+	if (is_dblmode() || op == RARG_dRCL) {
+		const int num_regs = NumRegs - STACK_SIZE - EXTRA_REG;
+		return op == RARG_sRCL || op == RARG_iRCL ? num_regs : num_regs >> 1; 
+	}
 	else
 		return NumRegs;
 }
@@ -804,15 +813,15 @@ void drop(enum nilop op) {
 		lower();
 }
 
-
+#ifndef is_intmode
 int is_intmode(void) {
 	return UState.intm;
 }
+#endif
 
 int is_dblmode(void) {
 	return (! UState.intm && UState.mode_double);
 }
-
 
 /* Convert a possibly signed string to an integer
  */
@@ -1106,17 +1115,18 @@ void set_reg_n_int_sgn(int index, unsigned long long int val, int sgn) {
  *  Leaves integer mode off after conversion.
  *  Destination may be in XROM register space
  */
-static void register_from_int(int out, int in) {
+static void register_from_int(int out, int in, int called_from_xin) {
 	int sgn;
 	unsigned long long int val;
 	const int xin = XromFlags.xIN;
 	
+	if (called_from_xin)
+		XromFlags.xIN = 0;
 	UState.intm = 1;
-	XromFlags.xIN = 0;
 	val = get_reg_n_int_sgn(in, &sgn);
 
-	UState.intm = 0;
 	XromFlags.xIN = xin;
+	UState.intm = 0;
 	set_reg_n_int_sgn(out, val, sgn);
 }
 
@@ -1502,24 +1512,27 @@ void cmdircl(unsigned int arg, enum rarg op) {
 	if (is_intmode())
 		cmdrcl(arg, RARG_RCL);
 	else
-		register_from_int(regX_idx, arg);
+		register_from_int(regX_idx, arg, 0);
 }
 
 // RCL of a single or double precision real value
 void cmdrrcl(unsigned int arg, enum rarg op) {
-	const int was_dbl = is_dblmode();
+	const int was_dbl = UState.mode_double;
 	const int rcl_dbl = (op == RARG_dRCL);
 
-	UState.mode_double = rcl_dbl;
+	if (rcl_dbl && arg >= regX_idx && arg <= regK_idx) {
+		// dRCL is not valid for lettered registers
+		err(ERR_RANGE);
+		return;
+	}
+
+	UState.mode_double = rcl_dbl; // Force reading in requested format
 	if (is_intmode()) {
 		int_from_register(regX_idx, arg);
 		UState.mode_double = was_dbl;
 	}
-	else if (is_dblmode() && arg >= regX_idx && arg <= regK_idx)
-		err(ERR_RANGE);
 	else {
 		decNumber x;
-		UState.mode_double = rcl_dbl; // Force reading in requested format
 		getRegister(&x, arg);
 
 		UState.mode_double = was_dbl; // Force access in original mode
@@ -1566,20 +1579,6 @@ void cmdview(unsigned int arg, enum rarg op) {
 	State2.disp_freeze = Running || arg != regX_idx;
 }
 
-
-#ifdef INCLUDE_USER_MODE
-/* Save and restore user state.
- */
-void cmdsavem(unsigned int arg, enum rarg op) {
-	xcopy( get_reg_n(arg), &UState, sizeof(unsigned long long int) );
-}
-
-void cmdrestm(unsigned int arg, enum rarg op) {
-	xcopy( &UState, get_reg_n(arg), sizeof(unsigned long long int) );
-	if ( UState.contrast == 0 )
-		UState.contrast = 7;
-}
-#endif
 
 /* Get the stack size */
 void get_stack_size(enum nilop op) {
@@ -2539,7 +2538,7 @@ void op_float(enum nilop op) {
 		for (i = regX_idx; i <= regK_idx; ++i, mask >>= 1) {
 			if (mask & 1) {
 				// register belongs to stack
-				register_from_int(i, i);
+				register_from_int(i, i, op == OP_FLOAT_XIN);
 			}
 			else if (is_dblmode()) {
 				// expand the other registers which have been left
@@ -2548,7 +2547,7 @@ void op_float(enum nilop op) {
 			}
 		}
 	}
-	if (op) {
+	if (op != OP_FLOAT_XIN && op != OP_FLOAT_RCLM) {
 		UState.fract = 0;
 		State2.hms = (op == OP_HMS) ? 1 : 0;
 	}
@@ -2558,26 +2557,27 @@ void op_float(enum nilop op) {
 /*  Switch to integer mode.
  *  We convert the stack and LastX
  */
-static void check_int_switch(void) {
-	if (!is_intmode()) {
-		int i;
-		int mask = StackRegMask[UState.stack_depth];
-		for (i = regK_idx; i >= regX_idx; --i, mask <<= 1) {
-			if (mask & 0x800) {
-				// register belongs to stack
-				int_from_register(i, i);
-			}
-			else if (is_dblmode()) {
-				// compress the other registers to save them while integer mode is active
-				packed_from_packed128(Regs + i, &(get_reg_n(i)->d));
-			}
+static void switch_to_int(void) {
+	int i;
+	int mask = StackRegMask[UState.stack_depth];
+	const int dbl = is_dblmode();
+
+	for (i = regK_idx; i >= regX_idx; --i, mask <<= 1) {
+		if (mask & 0x800) {
+			// register belongs to stack
+			int_from_register(i, i);
+		}
+		else if (dbl) {
+			// compress the other registers to save them while integer mode is active
+			packed_from_packed128(Regs + i, &(get_reg_n(i)->d));
 		}
 	}
 }
 
 static void set_base(unsigned int b) {
 	UState.int_base = b - 1;
-	check_int_switch();
+	if (!is_intmode())
+		switch_to_int();
 }
 
 void set_int_base(unsigned int arg, enum rarg op) {
@@ -2600,6 +2600,40 @@ void op_fract(enum nilop op) {
 		UState.improperfrac = 0;
 }
 
+#ifdef INCLUDE_USER_MODE
+/* Save and restore user state.
+ */
+void cmdsavem(unsigned int arg, enum rarg op) {
+	xcopy( get_reg_n(arg), &UState, sizeof(unsigned long long int) );
+}
+
+void cmdrestm(unsigned int arg, enum rarg op) {
+	const int dbl = is_dblmode();
+	const int intm = is_intmode();
+	xcopy( &UState, get_reg_n(arg), sizeof(unsigned long long int) );
+
+	// Fix things
+	if ( UState.contrast == 0 )
+		UState.contrast = 7;
+
+	if (intm != is_intmode()) {
+		// Switch back to decimal or integer mode
+		UState.intm = intm;
+		if (intm)
+			op_float(OP_FLOAT_RCLM);
+		else
+			switch_to_int();
+	}
+	if (! is_intmode() && dbl != is_dblmode()) {
+		// Switch back to double/single precision
+		UState.mode_double = dbl;
+		op_double(dbl ? OP_DBLOFF : OP_DBLON);
+	}
+}
+#endif
+
+/* Process a single digit.
+ */
 static int is_digit(const char c) {
 	if (c >= '0' && c <= '9')
 		return 1;
@@ -2612,8 +2646,6 @@ static int is_xdigit(const char c) {
 	return 0;
 }
 
-/* Process a single digit.
- */
 static void digit(unsigned int c) {
 	const int intm = is_intmode();
 	int i, j;
@@ -2820,7 +2852,7 @@ enum trig_modes get_trig_mode(void) {
 
 void op_double(enum nilop op) {
 	const int dbl = (op == OP_DBLON);
-	const int intm = int_mode();
+	const int intm = is_intmode();
 	int i;
 
 	if (dbl != UState.mode_double) {
@@ -2857,7 +2889,7 @@ void op_double(enum nilop op) {
 	StackBase = get_reg_n(regX_idx);
 	if (intm) {
 		// Do the necessary conversions from integer mode
-		op_float((enum nilop) 0);
+		op_float(OP_FLOAT_XIN);
 	}
 }
 
@@ -3638,7 +3670,7 @@ static void rargs(const opcode op) {
 	}
 	else if (argcmds[cmd].local) {
 		// Range checking for local registers
-		lim = NUMREG - 1 + local_regs();
+		lim = NUMREG - 1 + local_regs_rarg((enum rarg) cmd);
 		if (argcmds[cmd].cmplx)
 			--lim;
 		else if (argcmds[cmd].stos)
@@ -4124,7 +4156,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	if (UState.intm) {
 		// Convert integers to decimal128
 		UState.mode_double = 1;
-		op_float((enum nilop) 0);
+		op_float(OP_FLOAT_XIN);
 	}
 	else if (UState.mode_double) {
 		// No conversion necessary
@@ -4296,7 +4328,7 @@ void cmdconverged(unsigned int arg, enum rarg cmd) {
 	decNumber t, x, y, z, a, b;
 	int res;
 
-	if (int_mode()) {
+	if (is_intmode()) {
 		do_tst(regY_idx, TST_EQ);
 		return;
 	}

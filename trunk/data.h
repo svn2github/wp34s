@@ -424,6 +424,7 @@ extern int Error;		   // Did an error occur, if so what code?
 extern int ShowRegister; 	   // Temporary display (not X)
 extern int PcWrapped;		   // decpc() or incpc() have wrapped around
 extern int ShowRPN;		   // controls the RPN annunciator
+extern unsigned int IntMaxWindow;  // Number of windows for integer display
 extern const char *DispMsg;	   // What to display in message area
 extern char TraceBuffer[];         // Display current instruction
 extern char LastDisplayedText[NUMALPHA + 1];	   // This is for the emulator (clipboard)

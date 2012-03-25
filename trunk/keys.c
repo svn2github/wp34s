@@ -1228,13 +1228,13 @@ static int arg_digit(int n) {
 	int lim;
 	
 	if (State2.local) {
-		// Hndle local registers and flags
+		// Handle local registers and flags
 		lim = MAX_LOCAL_DIRECT - 1;				// default
 		if (State2.runmode) {
 			if (LocalRegs == 0)
-				return STATE_UNFINISHED;		// no locals defined
+				return STATE_UNFINISHED;		// no local flags or registers
 			if (is_reg) {
-				lim = local_regs() - 1;
+				lim = local_regs_rarg((enum rarg) base) - 1;
 				if (lim >= MAX_LOCAL_DIRECT)
 					lim = MAX_LOCAL_DIRECT - 1;	// in case of more than 16 locals
 			}
@@ -2110,7 +2110,6 @@ static int process_labellist(const keycode c) {
 
 
 static void set_window(int c) {
-	extern unsigned int IntMaxWindow;
 
 	if (State2.runmode) {
 		process_cmdline_set_lift();

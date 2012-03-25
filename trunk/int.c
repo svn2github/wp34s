@@ -18,6 +18,12 @@
 #include "xeq.h"
 #include "serial.h"
 
+static int check_intmode(void) {
+	if (! is_intmode())
+		return err(ERR_BAD_MODE);
+	return 0;
+}
+
 /* Some utility routines to extract bits of long longs */
 
 unsigned int int_base(void) {
@@ -957,10 +963,9 @@ void introt(unsigned int arg, enum rarg op) {
 	long long int x;
 	unsigned int i;
 	
-	if (!is_intmode()) {
-		err(ERR_BAD_MODE);
+	if (check_intmode())
 		return;
-	}
+
 	ws = word_size();
 	x = getX_int();
 
@@ -1292,10 +1297,10 @@ void intmsks(unsigned int arg, enum rarg op) {
 void intbits(unsigned int arg, enum rarg op) {
 #ifndef TINY_BUILD
 	long long int m, x;
-	if (!is_intmode()) {
-		err(ERR_BAD_MODE);
+
+	if (check_intmode())
 		return;
-	}
+
 	m =  (arg >= word_size())?0:(1LL << arg);
 	x = getX_int();
 

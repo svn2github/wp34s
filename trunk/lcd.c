@@ -374,7 +374,6 @@ void show_stack(void) {
 void show_flags(void) {
 #ifdef CONSOLE
 	extern unsigned int get_local_flags(void);
-	extern int IntMaxWindow;
 
 	if (!State2.flags)
 		return;
