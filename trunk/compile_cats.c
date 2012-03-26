@@ -113,7 +113,7 @@ static s_opcode program_xfcn[] = {
 #endif
 	MON(OP_ZETA,		"\245")
 	MON(OP_Bn,		"B[sub-n]")
-	MON(OP_BnS,		"B[sub-n]*")
+	MON(OP_BnS,		"B[sub-n][super-*]")
 	NILIC(OP_QUAD,		"QUAD")
 	NILIC(OP_NEXTPRIME,	"NEXTP")
 
@@ -265,7 +265,7 @@ static s_opcode catalogue[] = {
 #endif
 	MON(OP_ZETA,		"\245")
 	MON(OP_Bn,		"B[sub-n]")
-	MON(OP_BnS,		"B[sub-n]*")
+	MON(OP_BnS,		"B[sub-n][super-*]")
 	NILIC(OP_QUAD,		"QUAD")
 	NILIC(OP_NEXTPRIME,	"NEXTP")
 
@@ -909,6 +909,7 @@ static unsigned char alpha_superscripts[] = {
 	0024,					// complex prefix
 	0031,	0001,				// x-hat, x-bar
 	0032,	0002,				// y-hat, y-bar
+	0220,					// ^*
 };
 #endif
 
@@ -922,6 +923,7 @@ static unsigned char alpha_subscripts[] = {
 	0231,	0233,				// sub-mu, sub-infinity
 	0235,	0232, 0200,			// ^-1, ^2, ^3
 	0234,					// ^x
+	0220,					// ^*
 	0005,					// degree
 	0024					// complex prefix
 };

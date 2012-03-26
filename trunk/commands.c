@@ -253,7 +253,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_PR_DB,	&convPR2DB,		NOFN,		NOFN,		"pr.\015dB")
 	FUNC(OP_ZETA,	XMR(ZETA),		NOFN,		NOFN,		"\245")
 	FUNC(OP_Bn,	XMR(Bn),		NOFN,		NOFN,		"B\275")
-	FUNC(OP_BnS,	XMR(Bn_star),		NOFN,		NOFN,		"B\275*")
+	FUNC(OP_BnS,	XMR(Bn_star),		NOFN,		NOFN,		"B\275\220")
 
 #ifdef INCLUDE_EASTER
 	FUNC(OP_EASTER,	&dateEaster,		NOFN,		NOFN,		"EASTER")
