@@ -1727,7 +1727,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
-	{ 0220, "super-star",      13700, 0xe100,     0x0a, NULL,
+	{ 0220, "super-star",      13700, 0x207a,     0xa4, NULL,
 		{
 			O_O_O_ , _O__ ,
 			_OOO__ , O_O_ ,
@@ -1751,7 +1751,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
-	{ 0222, "0222",                0, 0xe101,     0x0b, NULL,
+	{ 0222, "0222",                0, 0xe100,     0x09, NULL,
 		{
 			     _ ,      _ ,
 			     _ ,      _ ,
@@ -1763,7 +1763,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
-	{ 0223, "0223",                0, 0xe102,     0x0c, NULL,
+	{ 0223, "0223",                0, 0xe101,     0x0a, NULL,
 		{
 			     _ ,      _ ,
 			     _ ,      _ ,
@@ -1787,7 +1787,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
-	{ 0225, "0225",                0, 0xe103,     0x0d, NULL,
+	{ 0225, "0225",                0, 0xe102,     0x0b, NULL,
 		{
 			     _ ,      _ ,
 			     _ ,      _ ,
