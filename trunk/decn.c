@@ -2299,19 +2299,19 @@ static int solve_bracket(decNumber *s, const decNumber *a, const decNumber *b) {
  * between the existing points.
  */
 static void limit_jump(decNumber *s, const decNumber *a, const decNumber *b) {
-	decNumber x, y, z;
+	decNumber x, y;
 
 	dn_subtract(&x, a, b);
 	dn_abs(&y, &x);
 	dn_mul100(&x, &y);			// 100 |a-b|
 	dn_subtract(&y, a, &x);
 	if (dn_lt(s, &y)) {
-		decNumberCopy(s, &z);
+		decNumberCopy(s, &y);
 		return;
 	}
 	dn_add(&y, b, &x);
 	if (dn_lt(&y, s))
-		decNumberCopy(s, &z);
+		decNumberCopy(s, &y);
 }
 
 /* Swap two numbers in place
