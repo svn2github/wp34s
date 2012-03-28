@@ -3073,13 +3073,13 @@ static void limit_jump(decNumber *s, const decNumber *a, const decNumber *b) {
 	dn_subtract(&y, a, &x);
 	dn_compare(&z, s, &y);
 	if (decNumberIsNegative(&z)) {
-		decNumberCopy(s, &z);
+		decNumberCopy(s, &y);
 		return;
 	}
 	dn_add(&y, b, &x);
 	dn_compare(&z, &y, s);
 	if (decNumberIsNegative(&z))
-		decNumberCopy(s, &z);
+		decNumberCopy(s, &y);
 }
 
 /* Swap two numbers in place
