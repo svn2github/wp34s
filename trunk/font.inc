@@ -1151,7 +1151,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
-	{ 0140, "back-quote",      13450, 0x0095,     0x95, "quoteback",
+	{ 0140, "back-quote",      13450, 0x0095,     0x95, "grave",
 		{
 			    O__ ,     O__ ,
 			    _O_ ,     _O_ ,
