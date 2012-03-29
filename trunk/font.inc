@@ -2305,95 +2305,95 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0300, "A-grave",          2100, 0x00c0,     0xc0, NULL,
 		{
-			OO____ ,   OO__ ,
-			______ ,   ____ ,
-			_OOO__ ,   _O__ ,
-			O___O_ ,   OOO_ ,
-			OOOOO_ ,   O_O_ ,
-			O___O_ ,   ____ ,
+			OO___ ,   OO__ ,
+			_____ ,   ____ ,
+			_OO__ ,   _O__ ,
+			O__O_ ,   OOO_ ,
+			OOOO_ ,   O_O_ ,
+			O__O_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0301, "A-acute",          2200, 0x00c1,     0xc1, NULL,
 		{
-			___OO_ ,   _OO_ ,
-			______ ,   ____ ,
-			_OOO__ ,   _O__ ,
-			O___O_ ,   OOO_ ,
-			OOOOO_ ,   O_O_ ,
-			O___O_ ,   ____ ,
+			__OO_ ,   _OO_ ,
+			_____ ,   ____ ,
+			_OO__ ,   _O__ ,
+			O__O_ ,   OOO_ ,
+			OOOO_ ,   O_O_ ,
+			O__O_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0302, "A-tilde",          2300, 0x00c3,     0xc3, NULL,
 		{
-			_OOO__ ,   OOO_ ,
-			______ ,   ____ ,
-			_OOO__ ,   _O__ ,
-			O___O_ ,   OOO_ ,
-			OOOOO_ ,   O_O_ ,
-			O___O_ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			_____ ,   ____ ,
+			_OO__ ,   _O__ ,
+			O__O_ ,   OOO_ ,
+			OOOO_ ,   O_O_ ,
+			O__O_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0303, "A-umlaut",         2400, 0x00c4,     0xc4, NULL,
 		{
-			_O_O__ ,   O_O_ ,
-			______ ,   ____ ,
-			_OOO__ ,   _O__ ,
-			O___O_ ,   OOO_ ,
-			OOOOO_ ,   O_O_ ,
-			O___O_ ,   ____ ,
+			O__O_ ,   O_O_ ,
+			_____ ,   ____ ,
+			_OO__ ,   _O__ ,
+			O__O_ ,   OOO_ ,
+			OOOO_ ,   O_O_ ,
+			O__O_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0304, "A-dot",            2600, 0x00c2,     0xc2, NULL,
 		{
-			__O___ ,   _O__ ,
-			______ ,   ____ ,
-			_OOO__ ,   _O__ ,
-			O___O_ ,   OOO_ ,
-			OOOOO_ ,   O_O_ ,
-			O___O_ ,   ____ ,
+			_OO__ ,   _O__ ,
+			_____ ,   ____ ,
+			_OO__ ,   _O__ ,
+			O__O_ ,   OOO_ ,
+			OOOO_ ,   O_O_ ,
+			O__O_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0305, "C-acute",          2800, 0x0106,     0xf7, NULL,
 		{
-			___OO_ ,   _OO_ ,
-			______ ,   ____ ,
-			_OOOO_ ,   OOO_ ,
-			O_____ ,   O___ ,
-			O_____ ,   OOO_ ,
-			_OOOO_ ,   ____ ,
+			__OO_ ,   _OO_ ,
+			_____ ,   ____ ,
+			_OOO_ ,   OOO_ ,
+			O____ ,   O___ ,
+			O____ ,   OOO_ ,
+			_OOO_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0306, "C-hook",           2900, 0x010c,     0xfe, NULL,
 		{
-			_OOO__ ,   OOO_ ,
-			______ ,   ____ ,
-			_OOOO_ ,   OOO_ ,
-			O_____ ,   O___ ,
-			O_____ ,   OOO_ ,
-			_OOOO_ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			_____ ,   ____ ,
+			_OOO_ ,   OOO_ ,
+			O____ ,   O___ ,
+			O____ ,   OOO_ ,
+			_OOO_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0307, "C-cedilla",        3000, 0x00c7,     0xc7, NULL,
 		{
-			_OOO__ ,   _OO_ ,
-			O___O_ ,   O___ ,
-			O_____ ,   O___ ,
-			O_____ ,   O___ ,
-			_OOOO_ ,   _OO_ ,
+			_OO__ ,   _OO_ ,
+			O__O_ ,   O___ ,
+			O____ ,   O___ ,
+			O____ ,   O___ ,
+			_OOO_ ,   _OO_ ,
 			OO____ ,   OO__ ,
 		}
 	},
@@ -2401,48 +2401,48 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0310, "E-grave",          3400, 0x00c8,     0xc8, NULL,
 		{
-			OO____ ,   OO__ ,
-			______ ,   ____ ,
-			OOOOO_ ,   OOO_ ,
-			OOOO__ ,   OO__ ,
-			O_____ ,   OOO_ ,
-			OOOOO_ ,   ____ ,
+			OO___ ,   OO__ ,
+			_____ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			OOO__ ,   OO__ ,
+			O____ ,   OOO_ ,
+			OOOO_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0311, "E-acute",          3500, 0x00c9,     0xc9, NULL,
 		{
-			___OO_ ,   _OO_ ,
-			______ ,   ____ ,
-			OOOOO_ ,   OOO_ ,
-			OOOO__ ,   OO__ ,
-			O_____ ,   OOO_ ,
-			OOOOO_ ,   ____ ,
+			__OO_ ,   _OO_ ,
+			_____ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			OOO__ ,   OO__ ,
+			O____ ,   OOO_ ,
+			OOOO_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0312, "E-tilde",          3600, 0x0112,     0xca, NULL,
 		{
-			_OOO__ ,   OOO_ ,
-			______ ,   ____ ,
-			OOOOO_ ,   OOO_ ,
-			OOOO__ ,   OO__ ,
-			O_____ ,   OOO_ ,
-			OOOOO_ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			_____ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			OOO__ ,   OO__ ,
+			O____ ,   OOO_ ,
+			OOOO_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0313, "E-trema",          3700, 0x00cb,     0xcb, NULL,
 		{
-			_O_O__ ,   O_O_ ,
-			______ ,   ____ ,
-			OOOOO_ ,   OOO_ ,
-			OOOO__ ,   OO__ ,
-			O_____ ,   OOO_ ,
-			OOOOO_ ,   ____ ,
+			O__O_ ,   O_O_ ,
+			_____ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			OOO__ ,   OO__ ,
+			O____ ,   OOO_ ,
+			OOOO_ ,   ____ ,
 		}
 	},
 
@@ -2497,12 +2497,12 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0320, "N-tilde",          5200, 0x00d1,     0xd1, NULL,
 		{
-			_OOO__ ,  OOOO_ ,
-			______ ,  _____ ,
-			OO__O_ ,  OO_O_ ,
-			O_O_O_ ,  O_OO_ ,
-			O__OO_ ,  O__O_ ,
-			O___O_ ,  _____ ,
+			OOOO_ ,  OOOO_ ,
+			_____ ,  _____ ,
+			O__O_ ,  OO_O_ ,
+			OO_O_ ,  O_OO_ ,
+			O_OO_ ,  O__O_ ,
+			O__O_ ,  _____ ,
 		}
 	},
 
@@ -2557,19 +2557,19 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0325, "R-hook",           6200, 0x0158,     0x15, NULL,
 		{
-			_OOO__ ,   OOO_ ,
-			______ ,   ____ ,
-			OOOO__ ,   OO__ ,
-			O___O_ ,   OO__ ,
-			OOOO__ ,   O_O_ ,
-			O___O_ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			_____ ,   ____ ,
+			OOO__ ,   OO__ ,
+			O__O_ ,   OO__ ,
+			OOO__ ,   O_O_ ,
+			O__O_ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0326, "S-hook",           6400, 0x0160,     0x8a, NULL,
 		{
-			 _OOO_ ,   OOO_ ,
+			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
 			 _OOO_ ,   _OO_ ,
 			 OO___ ,   _O__ ,
@@ -2593,60 +2593,60 @@
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0330, "U-grave",          6800, 0x00d9,     0xd9, NULL,
 		{
-			_O____ ,   OO__ ,
-			__O___ ,   ____ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   OOO_ ,
-			_OOO__ ,   ____ ,
+			OO___ ,   OO__ ,
+			_____ ,   ____ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   OOO_ ,
+			_OO__ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0331, "U-acute",          6900, 0x00da,     0xda, NULL,
 		{
-			___O__ ,   _OO_ ,
-			__O___ ,   ____ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   OOO_ ,
-			_OOO__ ,   ____ ,
+			__OO_ ,   _OO_ ,
+			_____ ,   ____ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   OOO_ ,
+			_OO__ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0332, "U-tilde",          7000, 0x0168,     0x18, NULL,
 		{
-			_OOO__ ,   OOO_ ,
-			______ ,   ____ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   OOO_ ,
-			_OOO__ ,   ____ ,
+			OOOO_ ,   OOO_ ,
+			_____ ,   ____ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   OOO_ ,
+			_OO__ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0333, "U-umlaut",         7100, 0x00dc,     0xdc, NULL,
 		{
-			_O_O__ ,   O_O_ ,
-			______ ,   ____ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   OOO_ ,
-			_OOO__ ,   ____ ,
+			O__O_ ,   O_O_ ,
+			_____ ,   ____ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   OOO_ ,
+			_OO__ ,   ____ ,
 		}
 	},
 
 /*	  octal  name               sort  Unicode  Windows  UnicodeName */
 	{ 0334, "U-dot",            7200, 0x00db,     0xdb, NULL,
 		{
-			__O___ ,   _O__ ,
-			______ ,   ____ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   O_O_ ,
-			O___O_ ,   OOO_ ,
-			_OOO__ ,   ____ ,
+			_OO__ ,   _O__ ,
+			_____ ,   ____ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   O_O_ ,
+			O__O_ ,   OOO_ ,
+			_OO__ ,   ____ ,
 		}
 	},
 
