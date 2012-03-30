@@ -54,9 +54,8 @@ char receivingProgramCodes[] = { 0x70, 0x47, 0x78, 0x47,
 
 
 WP34sFlash::WP34sFlash(const QString& aFirmwareFilename, const QString& aPortName, bool aDebug)
-: firmwareFile(aFirmwareFilename), console(NULL), debug(aDebug)
+: firmwareFile(aFirmwareFilename), portName(aPortName), console(NULL), debug(aDebug)
 {
-	openPort(aPortName);
 }
 
 bool WP34sFlash::isValid()
@@ -69,11 +68,6 @@ bool WP34sFlash::isValid()
 	if(!QFileInfo(firmwareFile).isReadable())
 	{
 		error="Firmware file cannot be read";
-		return false;
-	}
-	if(!port->isOpen())
-	{
-		error="Cannot open serial port";
 		return false;
 	}
 	error.clear();
@@ -91,18 +85,28 @@ void WP34sFlash::start(WP34sFlashConsole* aConsole)
 	QThread::start();
 }
 
+int WP34sFlash::run(WP34sFlashConsole* aConsole)
+{
+	console=aConsole;
+	run();
+	return status;
+}
+
 void WP34sFlash::run()
 {
 	try
 	{
+		openPort();
 		connect();
 		sendInitialInstructions();
 		sendReceivingProgram();
 		sendFirmware();
 		closePort();
+		status=0;
 	}
 	catch(SerialException& exception)
 	{
+		status=-1;
 		reportError(exception.errorMessage);
 		closePort();
 	}
@@ -197,7 +201,6 @@ void WP34sFlash::sendFirmware() throw(SerialException)
 	    QByteArray crcArray;
 	    crcArray.append((char) crc);
 	    write(crcArray);
-	    flushBuffers();
 	    QByteArray answer=read(1);
 	    if(answer.isEmpty())
 	    {
@@ -430,9 +433,9 @@ void WP34sFlash::reportProgress(int kilobytes)
 }
 
 
-void WP34sFlash::openPort(const QString& aPortName) throw(SerialException)
+void WP34sFlash::openPort() throw(SerialException)
 {
-	port=new ExtendedSerialPort(aPortName, QextSerialPort::Polling);
+	port=new ExtendedSerialPort(portName, QextSerialPort::Polling);
     port->setBaudRate(BAUD115200);
     port->setFlowControl(FLOW_OFF);
     port->setParity(PAR_NONE);
@@ -441,7 +444,7 @@ void WP34sFlash::openPort(const QString& aPortName) throw(SerialException)
 	if(!port->open(QIODevice::ReadWrite))
 	{
 		throw *(new SerialException("Cannot open serial port"));
-	}
+	};
 }
 
 void WP34sFlash::reopenPort() throw(SerialException)
@@ -473,7 +476,7 @@ QByteArray WP34sFlash::read(int aCounter, qint64 aTimeout)
 		}
 		else if(timer.hasExpired(aTimeout))
 		{
-			return false;
+			break;
 		}
 	}
 	return result;

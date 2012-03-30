@@ -24,6 +24,9 @@
 #define FLASH_DIALOG_TITLE "Flashing WP34s"
 #define DEFAULT_CONSOLE_WIDTH 200
 
+#define CONSOLE_WIDTH 60
+#define CONSOLE_PROTOTYPE_CHAR 'X'
+
 class WP34sFlashDialog: public QDialog, WP34sFlashConsole
 {
 	Q_OBJECT
@@ -37,6 +40,7 @@ public:
 	void reportBytes(const QString& aString, const QByteArray& aByteArray, bool error=false);
 	void prepareProgressReport(int totalKilobytes);
 	void reportProgress(int kilobytes);
+	void endProgress();
 
 public:
 	void accept();
@@ -45,6 +49,7 @@ public:
 
 protected:
 	void closeEvent (QCloseEvent* aCloseEvent);
+	void setConsoleWidth(QTextEdit* aConsole);
 
 signals:
 	void reportInEventLoop(const QString& aString);
@@ -52,6 +57,7 @@ signals:
 	void reportBytesInEventLoop(const QString& aString, const QByteArray& aByteArray, bool error);
 	void prepareProgressReportInEventLoop(int totalKilobytes);
 	void reportProgressInEventLoop(int kilobytes);
+	void endProgressInEventLoop();
 
 private slots:
 	void onCloseButtonClicked(bool checked);
@@ -61,12 +67,15 @@ private slots:
 	void onReportBytes(const QString& aMessage, const QByteArray& aByteArray, bool error);
 	void onPrepareProgressReport(int totalKilobytes);
 	void onReportProgress(int kilobytes);
+	void onEndProgress();
 
 private:
 	WP34sFlash& flash;
 	bool flashStarted;
 	bool closeAllowed;
 	QProgressBar* progressBar;
+	QLabel* progressLabel;
+	QTime* progressTimer;
     QTextEdit* console;
     QPushButton* closeButton;
 };

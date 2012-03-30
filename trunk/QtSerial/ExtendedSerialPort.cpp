@@ -56,6 +56,20 @@ void ExtendedSerialPort::flushBuffers()
 #endif
 }
 
+void ExtendedSerialPort::sendBreak()
+{
+#ifdef Q_OS_UNIX
+	QMutexLocker lock(mutex);
+	if(isOpen())
+	{
+		tcsendbreak(fd, 0);
+	}
+#else
+
+#endif
+
+}
+
 QStringList ExtendedSerialPort::getSerialPorts()
 {
 	QStringList portNames;

@@ -14,25 +14,29 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EXTENDEDSERIALPORT_H_
-#define EXTENDEDSERIALPORT_H_
+#ifndef WP34STEXTCONSOLE_H_
+#define WP34STEXTCONSOLE_H_
 
-#include "qextserialport.h"
-#include <QStringList>
+#include <QTime>
+#include "WP34sFlashConsole.h"
 
-class ExtendedSerialPort: public QextSerialPort
+class WP34sTextConsole: public WP34sFlashConsole
 {
 public:
-	ExtendedSerialPort(QueryMode mode = EventDriven);
-	ExtendedSerialPort(const QString & name, QueryMode mode = EventDriven);
-	ExtendedSerialPort(PortSettings const& settings, QueryMode mode = EventDriven);
-	ExtendedSerialPort(const QString & name, PortSettings const& settings, QueryMode mode = EventDriven);
-	~ExtendedSerialPort();
+	WP34sTextConsole(bool aProgress);
 
 public:
-	void flushBuffers();
-	void sendBreak();
-	static QStringList getSerialPorts();
+	void report(const QString& aString);
+	void reportError(const QString& aString);
+	void reportBytes(const QString& aMessage, const QByteArray& aByteArray, bool error=false);
+	void prepareProgressReport(int aTotalKilobytes);
+	void reportProgress(int kilobytes);
+	void endProgress();
+
+private:
+	bool progress;
+	QTime* progressTimer;
+	int totalKilobytes;
 };
 
-#endif /* EXTENDEDSERIALPORT_H_ */
+#endif /* WP34STEXTCONSOLE_H_ */

@@ -24,12 +24,19 @@ WP34sFlashDialog::WP34sFlashDialog(WP34sFlash& aFlash, QWidget* aParent)
 	dialogLayout->setSizeConstraint(QLayout::SetFixedSize);
 	setLayout(dialogLayout);
 
+	QWidget* progressWidget=new QWidget;
+	QVBoxLayout* progressLayout=new QVBoxLayout;
+	progressWidget->setLayout(progressLayout);
 	progressBar=new QProgressBar;
-	dialogLayout->addWidget(progressBar);
+	progressLayout->addWidget(progressBar);
+	progressLabel=new QLabel;
+	progressLayout->addWidget(progressLabel);
+	dialogLayout->addWidget(progressWidget);
 	console=new QTextEdit;
 	console->setReadOnly(true);
 	console->setLineWrapMode(QTextEdit::FixedColumnWidth);
 	console->setLineWrapColumnOrWidth(DEFAULT_CONSOLE_WIDTH);
+	setConsoleWidth(console);
 	dialogLayout->addWidget(console);
 	closeButton=new QPushButton("Close");
 	closeButton->setEnabled(false);
@@ -42,6 +49,7 @@ WP34sFlashDialog::WP34sFlashDialog(WP34sFlash& aFlash, QWidget* aParent)
 	connect(this, SIGNAL(reportBytesInEventLoop(const QString&, const QByteArray&, bool)), this, SLOT(onReportBytes(const QString&, const QByteArray&, bool)), Qt::BlockingQueuedConnection);
 	connect(this, SIGNAL(prepareProgressReportInEventLoop(int)), this, SLOT(onPrepareProgressReport(int)), Qt::BlockingQueuedConnection);
 	connect(this, SIGNAL(reportProgressInEventLoop(int)), this, SLOT(onReportProgress(int)), Qt::BlockingQueuedConnection);
+	connect(this, SIGNAL(endProgressInEventLoop()), this, SLOT(onEndProgress()), Qt::BlockingQueuedConnection);
 }
 
 void WP34sFlashDialog::accept()
@@ -82,6 +90,14 @@ void WP34sFlashDialog::closeEvent (QCloseEvent* aCloseEvent)
 	{
 		aCloseEvent->ignore();
 	}
+}
+
+void WP34sFlashDialog::setConsoleWidth(QTextEdit* aConsole)
+{
+	QFontMetrics metrics(aConsole->font());
+	QString prototype;
+	prototype.fill(CONSOLE_PROTOTYPE_CHAR, CONSOLE_WIDTH);
+	aConsole->setMinimumWidth(metrics.width(prototype));
 }
 
 void WP34sFlashDialog::onCloseButtonClicked(bool checked)
@@ -185,6 +201,8 @@ void WP34sFlashDialog::onPrepareProgressReport(int totalKilobytes)
 {
 	progressBar->setRange(0, totalKilobytes);
 	progressBar->setFormat("%v/%mKB, %p%");
+	progressTimer=new QTime;
+	progressTimer->start();
 }
 
 void WP34sFlashDialog::reportProgress(int kilobytes)
@@ -202,5 +220,32 @@ void WP34sFlashDialog::reportProgress(int kilobytes)
 void WP34sFlashDialog::onReportProgress(int kilobytes)
 {
 	progressBar->setValue(kilobytes);
+	qint64 elapsed=progressTimer->elapsed()/1000L;
+#ifdef Q_WS_MAC
+	int value=progressBar->value();
+	int maximum=progressBar->maximum();
+	int percentage=(int) ((100.0*progressBar->value())/progressBar->maximum());
+	QString progressText=QString("%1/%2KB, %3% in %4 sec").arg(value).arg(maximum).arg(percentage).arg(elapsed);
+#else
+	QString progressText=QString("%1 sec").arg(elapsed);
+#endif
+	progressLabel->setText(progressText);
+}
+
+void WP34sFlashDialog::endProgress()
+{
+	if(QThread::currentThread() == qApp->thread())
+	{
+		onEndProgress();
+	}
+	else
+	{
+		emit endProgressInEventLoop();
+	}
+}
+
+void WP34sFlashDialog::onEndProgress()
+{
+	delete progressTimer;
 }
 

@@ -51,6 +51,7 @@ public:
 
 public:
 	void start(WP34sFlashConsole* aConsole);
+	int run(WP34sFlashConsole* aConsole);
 	void run();
 	bool isValid();
 	QString errorMessage();
@@ -75,7 +76,7 @@ protected:
 	void reportBytes(const QString& aMessage, const QByteArray& aByteArray, bool error=false);
 	void prepareProgressReport(int totalKilobytes);
 	void reportProgress(int kilobytes);
-	void openPort(const QString & aPortName) throw(SerialException);
+	void openPort() throw(SerialException);
 	void reopenPort() throw(SerialException);
 	void closePort();
 	QByteArray read(int aCounter, qint64 aTimeout=DEFAULT_TIMEOUT);
@@ -84,9 +85,11 @@ protected:
 
 private:
 	QFile firmwareFile;
+	QString portName;
 	ExtendedSerialPort* port;
 	WP34sFlashConsole* console;
 	bool debug;
+	int status;
 	QString error;
 };
 

@@ -55,7 +55,7 @@ protected:
 private slots:
 	void serialPortChanged(const QString& aSerialPortName);
 	void onFileDialogButtonClicked(bool checked);
-	void onSendButtonClicked(bool checked);
+	void onFlashButtonClicked(bool checked);
 	void onQuitButtonClicked(bool checked);
 
 private:

@@ -28,7 +28,10 @@ TAR := tar czf
 LINK=$(CXX)
 
 OUTPUTDIR := $(SYSTEM)
-DIRS := $(OUTPUTDIR)
+OUTPUTDIRCMD := cmd/$(SYSTEM)
+DESTDIR := $(OUTPUTDIR)
+DESTDIRCMD := $(OUTPUTDIRCMD)
+
 ifeq "$(SYSTEM)" "windows32"
 DISTDIR := wp34sFlash
 DISTFILE := wp-34s-flash-windows.zip
@@ -41,21 +44,37 @@ RESOURCESDIR := $(DISTDIR)
 LINUX_EXTRA_FILES := icons/wp34s-flash-logo.png
 endif
 ifeq "$(SYSTEM)" "Darwin"
-DISTDIR := $(OUTPUTDIR)/WP34sFlash.app
+DESTDIR := $(OUTPUTDIR)/app
+DISTDIR := $(DESTDIR)/WP34sFlash.app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
-BUILTDMG := $(OUTPUTDIR)/WP34sFlash.dmg
 DISTDMG := ./wp-34s-flash-macosx.dmg
+BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname WP34sFlash -srcfolder $(DESTDIR) $(DISTDMG)
 endif
 # Warning the trailing / is mandatory
 QTLIBSDIR := c:/QtSDK/Desktop/Qt/4.8.0/mingw/bin/
 QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll mingwm10.dll libgcc_s_dw2-1.dll)
 
 ifeq "$(SYSTEM)" "windows32"
-WP34SFLASHEXE := $(OUTPUTDIR)/WP34sFlash.exe
+WP34SFLASHEXE := $(DESTDIR)/WP34sFlash.exe
+WP34SFLASHCMDEXE := $(DESTDIRCMD)/wp34sflashcmd.exe
 endif
 ifeq "$(SYSTEM)" "Linux"
-WP34SFLASHEXE := $(OUTPUTDIR)/WP34sFlash
+WP34SFLASHEXE := $(DESTDIR)/WP34sFlash
+WP34SFLASHCMDEXE := $(DESTDIRCMD)/wp34sflashcmd
+endif
+ifeq "$(SYSTEM)" "Darwin"
+WP34SFLASHCMDEXE := $(DESTDIRCMD)/wp34sflashcmd
+endif
+
+
+DIRS := $(OUTPUTDIR)
+ifneq "$(OUTPUTDIR)" "$(DESTDIR)"
+DIRS += $(DESTDIR)
+endif
+DIRS == $(OUTPUTDIRCMD)
+ifneq "$(OUTPUTDIRCMD)" "$(DESTDIRCMD)"
+DIRS += $(DESTDIRCMD)
 endif
 
 
@@ -67,10 +86,12 @@ endif
 
 QMAKE := qmake
 QTMAKEFILE := QtMakefile.$(SYSTEM)
-QTMAKEFILE_EXISTS := $(wildcard $(QTMAKEFILE))
+QTPROJECTFILE := wp34sflash.pro
+QTMAKEFILECMD := QtMakefileCmd.$(SYSTEM)
+QTPROJECTFILECMD := wp34sflashcmd.pro
 
 
-DIRS_TO_CLEAN := $(DIRS) 
+DIRS_TO_CLEAN := $(DIRS)
 EXTRA_FILES_TO_CLEAN := moc_WP34sFlash.cpp moc_WP34sFlashGui.cpp moc_WP34sFlashDialog.cpp
 ifeq "$(SYSTEM)" "windows32"
 DIRS_TO_CLEAN += debug release
@@ -96,31 +117,41 @@ endif
 
 .PHONY: all clean qtserial
 
-all: $(QTMAKEFILE) $(DIRS)
+all: $(QTMAKEFILE) $(DIRS) qtserial
 	$(MAKE) -f $(QTMAKEFILE) SERIALLIB="$(SERIALLIB)" QTSERIAL_INCLUDE="$(QTSERIAL_INCLUDE)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 
+cmd: $(QTMAKEFILECMD) $(DIRS) qtserial
+	$(MAKE) -f $(QTMAKEFILECMD) SERIALLIB="$(SERIALLIB)" QTSERIAL_INCLUDE="$(QTSERIAL_INCLUDE)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 
-$(QTMAKEFILE): wp34sflash.pro
-	$(QMAKE) -makefile DESTDIR=$(OUTPUTDIR) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILE)
+
+$(QTMAKEFILE): $(QTPROJECTFILE)
+	$(QMAKE) -makefile DESTDIR=$(DESTDIR) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILE) $(QTPROJECTFILE)
+
+$(QTMAKEFILECMD): $(QTPROJECTFILECMD)
+	$(QMAKE) -makefile DESTDIR=$(DESTDIRCMD) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILECMD) $(QTPROJECTFILECMD)
+
 
 qtserial:
 	cd $(QTSERIALDIR); $(MAKE)
 	
 $(DIRS):
 	$(MKDIR) $@
-
-dist: distclean release $(DISTDIR) 
+	
+dist: distclean release $(DISTDIR) cmd
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(WP34SFLASHEXE) $(DISTDIR)
+	$(CP) $(WP34SFLASHCMDEXE) $(DISTDIR)
 	$(CP) $(QTLIBS) $(DISTDIR)
 	$(ZIP) $(DISTFILE) $(DISTDIR)
 endif
 ifeq "$(SYSTEM)" "Darwin"
-	$(MACDEPLOYQT) $(DISTDIR) -dmg
-	$(MV) $(BUILTDMG) $(DISTDMG)
+	$(MACDEPLOYQT) $(DISTDIR)
+	$(CP) $(WP34SFLASHCMDEXE) $(DESTDIR) 
+	$(BUILDDMG)
 endif
 ifeq "$(SYSTEM)" "Linux"
 	$(CP) $(WP34SFLASHEXE) $(DISTDIR)
+	$(CP) $(WP34SFLASHCMDEXE) $(DISTDIR)
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)
 	$(TAR) $(DISTFILE) $(DISTDIR)
 endif
@@ -129,14 +160,14 @@ $(DISTDIR):
 	$(MKDIR) $(DISTDIR)
 
 ifeq ($(SYSTEM),windows32)
-release: $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
-	$(MAKE) -f $(QTMAKEFILE) release BASELIBS="$(BASELIBS)" OTHEROBJS="$(EXTRAOBJS) $(BASEOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIALLIB="$(SERIALLIB)" QTSERIAL_INCLUDE="$(QTSERIAL_INCLUDE)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
+release: $(QTMAKEFILE) $(DIRS) qtserial
+	$(MAKE) -f $(QTMAKEFILE) release SERIALLIB="$(SERIALLIB)" QTSERIAL_INCLUDE="$(QTSERIAL_INCLUDE)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 else
 release: all
 endif
 
 clean:
-	-$(RM) $(QTMAKEFILE) $(EXTRA_FILES_TO_CLEAN)
+	-$(RM) $(QTMAKEFILE) $(QTMAKEFILECMD) $(EXTRA_FILES_TO_CLEAN)
 	-$(RMDIR) $(DIRS_TO_CLEAN)
 
 distclean:

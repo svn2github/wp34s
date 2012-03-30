@@ -151,9 +151,9 @@ QWidget* WP34sFlashGui::buildButtons()
 	QHBoxLayout* buttonsLayout=new QHBoxLayout;
 	buttonsComponent->setLayout(buttonsLayout);
 
-	QPushButton* sendButton=new QPushButton("Send");
-	connect(sendButton, SIGNAL(clicked(bool)), this, SLOT(onSendButtonClicked(bool)));
-	buttonsLayout->addWidget(sendButton);
+	QPushButton* flashButton=new QPushButton("Flash");
+	connect(flashButton, SIGNAL(clicked(bool)), this, SLOT(onFlashButtonClicked(bool)));
+	buttonsLayout->addWidget(flashButton);
 	QPushButton* exitButton=new QPushButton("Exit");
 	connect(exitButton, SIGNAL(clicked(bool)), this, SLOT(onQuitButtonClicked(bool)));
 	buttonsLayout->addWidget(exitButton);
@@ -188,7 +188,7 @@ void WP34sFlashGui::onFileDialogButtonClicked(bool checked)
 	}
 }
 
-void WP34sFlashGui::onSendButtonClicked(bool checked)
+void WP34sFlashGui::onFlashButtonClicked(bool checked)
 {
 	Q_UNUSED(checked)
 

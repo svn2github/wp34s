@@ -8,7 +8,7 @@ macx {
   LIBS += -framework IOKit -framework CoreFoundation -framework Foundation
 }
 win32 {
-  LIBS += -lsetupapi
+  LIBS += -lsetupapi 
 }
 
 SOURCES = WP34sFlashMain.cpp WP34sFlash.cpp WP34sFlashGui.cpp WP34sFlashConsole.cpp WP34sFlashDialog.cpp
