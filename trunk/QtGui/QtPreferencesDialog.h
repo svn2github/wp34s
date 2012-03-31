@@ -23,6 +23,8 @@
 #define MEMORY_TAB_NAME "Memory"
 #define KEYBOARD_TAB_NAME "Keyboard"
 #define HSHIFT_DELAY_LABEL_TEXT "H-Shift Delay"
+#define USE_H_CLICK_TEXT "Use H-shift click"
+#define ALWAYS_USE_H_CLICK_TEXT "Always use H-shift click"
 #define SERIAL_PORT_TAB_NAME "Serial Port"
 #define SERIAL_PORT_NAME_LABEL_TEXT "Serial Port Name"
 #define USE_CUSTOM_DIRECTORY_TEXT "Use a custom directory for memory files"
@@ -43,6 +45,8 @@ class QtPreferencesDialog: public QDialog
 public:
 	QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 			const QString& aCustomDirectoryName,
+			bool anUseHShiftClickFlag,
+			bool anAlwaysUseHShiftClickFlag,
 			int anHShiftDelay,
 			const QString& aSerialPortName,
 			QWidget* aParent=NULL);
@@ -51,6 +55,8 @@ public:
 public:
 	bool isCustomDirectoryActive() const;
 	QString getCustomDirectoryName() const;
+	bool isUseHShiftClickActive() const;
+	bool isAlwaysUseHShiftClickActive() const;
 	int getHShiftDelay() const;
 	QString getSerialPortName() const;
 
@@ -58,11 +64,17 @@ private slots:
 	void customDirectoryToggled(bool aButtonChecked);
 	void chooseDirectory();
 	void serialPortChanged(const QString& aSerialPortName);
+	void useHShiftClickToggled(bool aButtonChecked);
 
 private:
-	void buildComponents(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, int anHShiftDelay, const QString& aSerialPortName);
+	void buildComponents(bool aCustomDirectoryActiveFlag,
+			const QString& aCustomDirectoryName,
+			bool anUseHShiftClickFlag,
+			bool anAlwaysUseHShiftClickFlag,
+			int anHShiftDelay,
+			const QString& aSerialPortName);
 	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName);
-	QWidget* buildKeyboardTab(int anHShiftDelay);
+	QWidget* buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay);
 	QWidget* buildSerialTab(const QString& aSerialPortName);
 	void fillSerialPorts(QListWidget& aListWidget);
 
@@ -70,6 +82,8 @@ private:
 	QRadioButton* useCustomDirectoryButton;
 	QLineEdit* directoryNameEdit;
 	QPushButton* chooseButton;
+	QCheckBox *useHShiftClickButton;
+	QCheckBox *alwaysUseHShiftClickButton;
 	QSpinBox* hShiftDelayBox;
 	QLineEdit* serialPortNameEdit;
 };

@@ -21,12 +21,15 @@
 
 static const QtKeyCode INVALID_KEY_CODE;
 
-QtKeyboard::QtKeyboard(const QtSkin& aSkin, int anHShiftDelay)
+QtKeyboard::QtKeyboard(const QtSkin& aSkin, bool anUseHShiftClick, bool anAlwaysUseHShiftClick, int anHShiftDelay)
 	: keyboardBufferBegin(0),
 	  keyboardBufferEnd(0),
 	  currentKeyCode(INVALID_KEY_CODE),
+	  useHShiftClick(anUseHShiftClick),
+	  alwaysUseHShiftClick(anAlwaysUseHShiftClick),
 	  hShiftDelay(anHShiftDelay),
 	  currentKeyHShifted(false),
+	  autoRepeat(false),
 	  fShiftLocked(false),
 	  gShiftLocked(false),
 	  hShiftLocked(false)
@@ -34,7 +37,10 @@ QtKeyboard::QtKeyboard(const QtSkin& aSkin, int anHShiftDelay)
 	setSkin(aSkin);
 	hShiftTimer=new QTimer(this);
 	hShiftTimer->setSingleShot(true);
-	connect(hShiftTimer, SIGNAL(timeout()), this, SLOT(hShift()));
+	connect(hShiftTimer, SIGNAL(timeout()), this, SLOT(onHShift()));
+	autoRepeatTimer=new QTimer(this);
+	autoRepeatTimer->setSingleShot(true);
+	connect(autoRepeatTimer, SIGNAL(timeout()), this, SLOT(onAutoRepeat()));
 }
 
 QtKeyboard::~QtKeyboard()
@@ -63,29 +69,43 @@ void QtKeyboard::setSkin(const QtSkin& aSkin)
 
 bool QtKeyboard::processKeyPressedEvent(const QKeyEvent& aKeyEvent)
 {
+	autoRepeat=false;
 	QtKeyCode keyCode=findKeyCode(aKeyEvent);
-	putKeyCode(keyCode);
-	currentKeyCode=keyCode;
-	emit keyPressed();
+	if(!aKeyEvent.isAutoRepeat() || keyCode.getCode()==uparrow_code() || (keyCode.getCode()==downarrow_code() && !is_runmode()))
+	{
+		putKeyCode(keyCode);
+		currentKeyCode=keyCode;
+		emit keyPressed();
+	}
 	return true;
 }
 
 bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 {
-	Q_UNUSED(aKeyEvent)
-
-	forward_key_released();
-	currentKeyCode=INVALID_KEY_CODE;
+	autoRepeat=false;
+	if(!aKeyEvent.isAutoRepeat())
+	{
+		forward_key_released();
+		currentKeyCode=INVALID_KEY_CODE;
+	}
 	return true;
 }
 
 bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 {
+	autoRepeat=false;
 	if(aMouseEvent.button()==Qt::LeftButton)
 	{
-		currentKeyCode=findKeyCode(aMouseEvent.pos());
+		QtKeyCode keyCode=findKeyCode(aMouseEvent.pos());
+		putKeyCode(keyCode);
+		currentKeyCode=keyCode;
 		currentKeyHShifted=false;
 		startHShiftTimer();
+		if((keyCode.getCode()==uparrow_code()) || (keyCode.getCode()==downarrow_code() && !is_runmode()))
+		{
+			autoRepeat=true;
+			startAutoRepeatTimer();
+		}
 		emit keyPressed();
 		return currentKeyCode!=INVALID_KEY_CODE;
 	}
@@ -99,7 +119,7 @@ bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)
 {
 	Q_UNUSED(aMouseEvent)
 
-	putKeyCode(findKeyCode(aMouseEvent.pos()));
+	autoRepeat=false;
 	forward_key_released();
 	currentKeyCode=INVALID_KEY_CODE;
 	return true;
@@ -112,10 +132,7 @@ bool QtKeyboard::processMouseMovedEvent(const QMouseEvent& aMouseEvent)
 		QtKeyCode newKeyCode=findKeyCode(aMouseEvent.pos());
 		if(newKeyCode.isValid() && newKeyCode!=currentKeyCode)
 		{
-			currentKeyCode=newKeyCode;
-			currentKeyHShifted=false;
-			startHShiftTimer();
-			emit keyPressed();
+			autoRepeat=false;
 		}
 	}
 	return true;
@@ -123,6 +140,7 @@ bool QtKeyboard::processMouseMovedEvent(const QMouseEvent& aMouseEvent)
 
 bool QtKeyboard::processDoubleClickEvent(const QMouseEvent& aMouseEvent)
 {
+	autoRepeat=false;
 	QtKeyCode keyCode=findKeyCode(aMouseEvent.pos());
 	if(setShifts(keyCode.getCode()))
 	{
@@ -165,10 +183,57 @@ bool QtKeyboard::setShifts(int aCode)
 	}
 }
 
-void QtKeyboard::hShift()
+// Used to visually show that a key is hShifted when clicking on its green/H-Label
+// but only after a while
+void QtKeyboard::onHShift()
 {
 	currentKeyHShifted=currentKeyCode.isValid() && currentKeyCode.isHShifted();
 	emit keyPressed();
+}
+
+void QtKeyboard::startAutoRepeatTimer()
+{
+	autoRepeatTimer->stop();
+	if(autoRepeat)
+	{
+		autoRepeatTimer->start(AUTOREPEAT_FIRST_DELAY);
+	}
+}
+
+void QtKeyboard::onAutoRepeat()
+{
+	autoRepeatTimer->stop();
+	if(autoRepeat && currentKeyCode.isValid() && (currentKeyCode.getCode()==uparrow_code() || (currentKeyCode.getCode()==downarrow_code() && !is_runmode())))
+	{
+		putKeyCode(currentKeyCode);
+		emit keyPressed();
+		autoRepeatTimer->start(AUTOREPEAT_DELAY);
+	}
+	else
+	{
+		autoRepeat=false;
+	}
+
+}
+
+bool QtKeyboard::isUseHShiftClick()
+{
+	return useHShiftClick;
+}
+
+void QtKeyboard::setUseHShiftClick(bool anUseHShiftClick)
+{
+	useHShiftClick=anUseHShiftClick;
+}
+
+bool QtKeyboard::isAlwaysUseHShiftClick()
+{
+	return alwaysUseHShiftClick;
+}
+
+void QtKeyboard::setAlwaysUseHShiftClick(bool anAlwaysUseHShiftClick)
+{
+	alwaysUseHShiftClick=anAlwaysUseHShiftClick;
 }
 
 int QtKeyboard::getHShiftDelay()
@@ -296,7 +361,7 @@ QtKeyCode QtKeyboard::findKeyCode(const QPoint& aPoint) const
 			{
 				bool hShifted=false;
 				int code=(*keyIterator)->getCode();
-				if(code!=F_CODE && code!=G_CODE && code!=H_CODE)
+				if(code!=F_CODE && code!=G_CODE && code!=H_CODE && useHShiftClick && (alwaysUseHShiftClick || is_not_shifted()))
 				{
 					QRect hRect(keyRect);
 					hRect.setTop(keyRect.bottom()-hShiftHeight);

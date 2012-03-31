@@ -135,6 +135,8 @@ void QtEmulator::editPreferences()
 {
 	QtPreferencesDialog preferencesDialog(customDirectoryActive,
 			customDirectory.path(),
+			keyboard->isUseHShiftClick(),
+			keyboard->isAlwaysUseHShiftClick(),
 			keyboard->getHShiftDelay(),
 			serialPort->getSerialPortName(), this);
 	int result=preferencesDialog.exec();
@@ -145,6 +147,8 @@ void QtEmulator::editPreferences()
 		checkCustomDirectory();
 		saveCustomDirectorySettings();
 
+		keyboard->setUseHShiftClick(preferencesDialog.isUseHShiftClickActive());
+		keyboard->setAlwaysUseHShiftClick(preferencesDialog.isAlwaysUseHShiftClickActive());
 		keyboard->setHShiftDelay(preferencesDialog.getHShiftDelay());
 		saveKeyboardSettings();
 
@@ -312,6 +316,7 @@ void QtEmulator::buildMenus()
 	buildDebugMenu();
 	buildSkinsMenu();
 	buildHelpMenu();
+    buildContextualQuit();
 }
 
 void QtEmulator::buildContextMenu()
@@ -339,9 +344,6 @@ void QtEmulator::buildMainMenu()
 #ifndef Q_WS_MAC
 	mainMenu->addSeparator();
 	QAction* quitAction=mainMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
-	mainContextMenu->addAction(quitAction);
-#else
-	mainContextMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
 #endif
 }
 
@@ -423,10 +425,16 @@ void QtEmulator::buildHelpMenu()
 	helpContextMenu->addAction(showDocumentationAction);
 }
 
+void QtEmulator::buildContextualQuit()
+{
+	contextMenu->addSeparator();
+	contextMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
+}
+
 void QtEmulator::buildComponents(const QtSkin& aSkin)
 {
 	screen=new QtScreen(aSkin);
-	keyboard=new QtKeyboard(aSkin, hShiftDelay);
+	keyboard=new QtKeyboard(aSkin, useHShiftClick, alwaysUseHShiftClick, hShiftDelay);
 	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard);
 }
 
@@ -568,6 +576,8 @@ void QtEmulator::loadUserInterfaceSettings()
 void QtEmulator::loadKeyboardSettings()
 {
 	settings.beginGroup(KEYBOARD_SETTINGS_GROUP);
+	useHShiftClick=settings.value(USE_HSHIFT_CLICK_SETTING, DEFAULT_USE_HSHIFT_CLICK).toBool();
+	alwaysUseHShiftClick=settings.value(ALWAYS_USE_HSHIFT_CLICK_SETTING, DEFAULT_ALWAYS_USE_HSHIFT_CLICK).toBool();
 	hShiftDelay=settings.value(HSHIFT_DELAY_SETTING, DEFAULT_HSHIFT_DELAY).toInt();
 	settings.endGroup();
 }
@@ -613,6 +623,8 @@ void QtEmulator::saveUserInterfaceSettings()
 void QtEmulator::saveKeyboardSettings()
 {
     settings.beginGroup(KEYBOARD_SETTINGS_GROUP);
+    settings.setValue(USE_HSHIFT_CLICK_SETTING, keyboard->isUseHShiftClick());
+    settings.setValue(ALWAYS_USE_HSHIFT_CLICK_SETTING, keyboard->isAlwaysUseHShiftClick());
     settings.setValue(HSHIFT_DELAY_SETTING, keyboard->getHShiftDelay());
     settings.endGroup();
 }

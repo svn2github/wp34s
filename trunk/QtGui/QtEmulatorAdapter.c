@@ -20,6 +20,7 @@
 #include "data.h"
 #include "storage.h"
 #include "serial.h"
+#include "keys.h"
 
 extern const char SvnRevision[];
 extern int is_key_pressed_adapter();
@@ -84,6 +85,11 @@ enum shifts shift_down()
 	{
 		return SHIFT_N;
 	}
+}
+
+int is_not_shifted()
+{
+	return cur_shift()==SHIFT_N;
 }
 
 int is_hshifted()
@@ -296,4 +302,18 @@ int get_first_register_index()
 	return regX_idx;
 }
 
+int is_runmode()
+{
+	return State2.runmode;
+}
+
+int uparrow_code()
+{
+	return K40;
+}
+
+int downarrow_code()
+{
+	return K50;
+}
 

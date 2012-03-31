@@ -46,6 +46,8 @@
 #define CUSTOM_DIRECTORY_NAME_SETTING "CustomDirectoryName"
 
 #define KEYBOARD_SETTINGS_GROUP "Keyboard"
+#define USE_HSHIFT_CLICK_SETTING "UseHShiftClick"
+#define ALWAYS_USE_HSHIFT_CLICK_SETTING "AlwaysUseHShiftClick"
 #define HSHIFT_DELAY_SETTING "HShiftDelay"
 
 #define SERIAL_PORT_SETTINGS_GROUP "SerialPort"
@@ -156,6 +158,7 @@ private:
      void buildDebugMenu();
      void buildSkinsMenu();
      void buildHelpMenu();
+     void buildContextualQuit();
      void buildComponents(const QtSkin& aSkin);
      void buildSerialPort();
      void buildDebugger();
@@ -206,6 +209,8 @@ private:
      QActionGroup* skinsActionGroup;
      SkinMap skins;
      QString currentSkinName;
+     bool useHShiftClick;
+     bool alwaysUseHShiftClick;
      int hShiftDelay;
      QtSerialPort* serialPort;
      bool active;

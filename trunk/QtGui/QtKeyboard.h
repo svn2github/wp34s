@@ -32,14 +32,20 @@ class QtBackgroundImage;
 #define G_CODE 10
 #define H_CODE 11
 
+
+#define DEFAULT_USE_HSHIFT_CLICK true
+#define DEFAULT_ALWAYS_USE_HSHIFT_CLICK false
 #define DEFAULT_HSHIFT_DELAY 200
+
+#define AUTOREPEAT_FIRST_DELAY 500
+#define AUTOREPEAT_DELAY 100
 
 class QtKeyboard: public QObject
 {
 	Q_OBJECT
 
 public:
-	QtKeyboard(const QtSkin& aSkin, int anHShiftDelay);
+	QtKeyboard(const QtSkin& aSkin, bool anUseHShiftClick, bool anAlwaysUseHShiftClick, int anHShiftDelay);
 	virtual ~QtKeyboard();
 
 public:
@@ -60,11 +66,16 @@ public:
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
 	void invertKeycode(int aCode, QtBackgroundImage& aBackgroundImage);
 	void invertKey(const QtKey* aKey, QtBackgroundImage& aBackgroundImage);
+	bool isUseHShiftClick();
+	void setUseHShiftClick(bool anUseHShiftClick);
+	bool isAlwaysUseHShiftClick();
+	void setAlwaysUseHShiftClick(bool anAlwaysUseHShiftClick);
 	int getHShiftDelay();
 	void setHShiftDelay(int anHShiftDelay);
 
 private slots:
-	void hShift();
+	void onHShift();
+	void onAutoRepeat();
 
 signals:
 	void keyPressed();
@@ -76,6 +87,7 @@ private:
 	QtKeyCode findKeyCode(const QPoint& aPoint) const;
     const QtKey* findKey(const QtKeyCode& aKeyCode) const;
     void startHShiftTimer();
+    void startAutoRepeatTimer();
 
 private:
     int hShiftHeight;
@@ -85,10 +97,14 @@ private:
     char keyboardBuffer[KEYBOARD_BUFFER_SIZE];
     volatile int keyboardBufferBegin, keyboardBufferEnd;
     QtKeyCode currentKeyCode;
+    bool useHShiftClick;
+    bool alwaysUseHShiftClick;
     int hShiftDelay;
     bool currentKeyHShifted;
+    bool autoRepeat;
     bool fShiftLocked, gShiftLocked, hShiftLocked;
     QTimer* hShiftTimer;
+    QTimer* autoRepeatTimer;
     QHash<int, const QtKey*> keysByCode;
 };
 
