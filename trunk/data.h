@@ -416,7 +416,7 @@ extern TXromLocal XromLocal;
  */
 extern volatile int WaitForLcd;	   // Sync with display refresh
 extern volatile int Pause;         // Count down for programmed pause
-extern int Running;		   // Program is active
+extern int Running, XromRunning;   // Program is active
 #ifndef CONSOLE
 extern int JustStopped;            // Set on program stop to ignore the next R/S key in the buffer
 #endif

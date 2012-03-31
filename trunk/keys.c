@@ -2512,7 +2512,8 @@ void process_keycode(int c)
 				if (Running || Pause)
 					xeqprog();
 			}
-			ShowRPN = 1; // Back to normal display and processing
+			if (ShowRPN != 0)
+				ShowRPN = 1; // Back to normal display and processing
 		}
 		else {
 			// Ignore key-up if no operation was pending

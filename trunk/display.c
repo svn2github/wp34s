@@ -112,12 +112,12 @@ void error_message(const unsigned int e)
 			DispMsg = p;
 			State2.disp_freeze = 0;
 			display();
-			State2.disp_freeze = Running;
+			State2.disp_freeze = Running || XromRunning;
 		}
 		else {
 			message( p, q );
+			State2.disp_freeze = (e != ERR_NONE);
 		}
-		State2.disp_freeze = (e != ERR_NONE);
 	}
 }
 
@@ -1654,6 +1654,7 @@ static void set_status(const char *str) {
 extern void message(const char *str1, const char *str2)
 {
 	State2.disp_freeze = 0;
+	State2.disp_small = 0;
 	if ( State2.invalid_disp && str2 == NULL ) {
 		// Complete redraw necessary
 		DispMsg = str1;
@@ -1662,6 +1663,7 @@ extern void message(const char *str1, const char *str2)
 	else {
 		if ( str2 != NULL ) {
 			reset_disp();
+			ShowRPN = 0;
 			set_annunciators();
 			set_digits_string( str2, 0 );
 		}
