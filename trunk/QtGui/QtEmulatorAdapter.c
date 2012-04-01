@@ -176,7 +176,6 @@ int get_backup_size()
 	return sizeof(BackupFlash);
 }
 
-
 char* get_user_flash()
 {
 	return (char*) &UserFlash;
@@ -201,13 +200,11 @@ void prepare_memory_save()
 
 void after_state_load()
 {
-	init_34s();
 }
 
 void after_backup_load()
 {
 }
-
 
 void after_library_load()
 {

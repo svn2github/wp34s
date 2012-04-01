@@ -343,7 +343,7 @@ void QtEmulator::buildMainMenu()
 
 #ifndef Q_WS_MAC
 	mainMenu->addSeparator();
-	QAction* quitAction=mainMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
+	mainMenu->addAction(QUIT_ACTION_TEXT, qApp, SLOT(quit()), QKeySequence::Quit);
 #endif
 }
 
