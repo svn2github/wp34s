@@ -212,13 +212,15 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			 */
 			return CATALOGUE_REGISTERS;
 		}
+#if 0 
+		// conflicts with c# 003
 		if (c == K53 && shift == SHIFT_N && State2.cmplx && State2.catalogue == CATALOGUE_NONE) {
 			/*
 			 *  Shorthand to complex X.FCN - h may be omitted
 			 */
 			shift = SHIFT_H;
 		}
-
+#endif
 		if (shift != SHIFT_H) {
 			/*
 			 *  All standard catalogues are on h-shifted keys
@@ -803,124 +805,100 @@ static int process_h_shifted(const keycode c) {
 /*
  *  Process a key code after CPX
  */
-static int process_normal_cmplx(const keycode c) {
-	State2.cmplx = 0;
-	switch (c) {
-	case K00:	return check_f_key(0, STATE_UNFINISHED);
-	case K01:	return check_f_key(1, OP_CMON | OP_RECIP);
-	case K02:	return check_f_key(2, OP_CDYA | OP_POW);
-	case K03:	return check_f_key(3, OP_CMON | OP_SQRT);
+static int process_cmplx(const keycode c) {
+#define _RARG   0xFF00
+#define CSWAPXZ RARG(RARG_CSWAPX, regZ_idx)
+#define CNUM(n) RARG(RARG_INTNUM_CMPLX, n)
 
-	case K10:	init_arg(RARG_CSTO);	break;	// complex STO
-	case K11:	init_arg(RARG_CRCL);	break;	// complex RCL
-	case K12:	return OP_NIL | OP_CRDOWN;
-
-	case K20:	return OP_NIL | OP_CENTER;
-	case K21:	return RARG(RARG_CSWAPX, regZ_idx);
-
-	case K22:	return OP_CMON | OP_CCHS;		// CHS
-
-	case K34:	return OP_CDYA | OP_DIV;
-	case K44:	return OP_CDYA | OP_MUL;
-	case K51:	return RARG(RARG_INTNUM_CMPLX, 0);
-	case K54:	return OP_CDYA | OP_SUB;
-	case K61:	return RARG(RARG_INTNUM_CMPLX, 1);
-	case K62:	return OP_NIL | OP_cmplxI;		// . returns i
-	case K64:	return OP_CDYA | OP_ADD;
-	default:	break;
-	}
-	return STATE_UNFINISHED;
-}
-
-/*
- *  Process a key code after f or g shift and CPX
- */
-static int process_fgh_shifted_cmplx(const keycode c) {
-
-	static const unsigned short int op_map[][3] = {
+	static const unsigned short int op_map[][4] = {
 		// Row 1
-		{ 1,                   0,                   STATE_UNFINISHED    }, // HYP
-		{ OP_CMON | OP_SIN,    OP_CMON | OP_ASIN,   STATE_UNFINISHED    },
-		{ OP_CMON | OP_COS,    OP_CMON | OP_ACOS,   STATE_UNFINISHED    },
-		{ OP_CMON | OP_TAN,    OP_CMON | OP_ATAN,   STATE_UNFINISHED    },
-		{ OP_NIL | OP_P2R,     OP_NIL | OP_R2P,     STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    }, // CPX
+		{ STATE_UNFINISHED,	1,                   0,                   STATE_UNFINISHED    }, // HYP
+		{ OP_CMON | OP_RECIP,	OP_CMON | OP_SIN,    OP_CMON | OP_ASIN,   STATE_UNFINISHED    },
+		{ OP_CDYA | OP_POW,	OP_CMON | OP_COS,    OP_CMON | OP_ACOS,   STATE_UNFINISHED    },
+		{ OP_CMON | OP_SQRT,	OP_CMON | OP_TAN,    OP_CMON | OP_ATAN,   STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,	OP_NIL | OP_P2R,     OP_NIL | OP_R2P,     STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    }, // CPX
 		// Row 2
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_CRUP    }, // R^
+		{ _RARG | RARG_CSTO,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ _RARG | RARG_CRCL,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ OP_NIL | OP_CRDOWN,	STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_CRUP    }, // R^
 		// Row 3
-		{ STATE_UNFINISHED,    OP_NIL | OP_CFILL,   OP_NIL | OP_CFILL   }, // ENTER
-		{ STATE_UNFINISHED,    RARG_CSWAPZ,         RARG_CSWAPX         },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_CMON | OP_CCONJ  },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    CONST_CMPLX(OP_PI)  },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ OP_NIL | OP_CENTER,	STATE_UNFINISHED,    OP_NIL | OP_CFILL,   OP_NIL | OP_CFILL   }, // ENTER
+		{ CSWAPXZ,		STATE_UNFINISHED,    STATE_UNFINISHED,    _RARG | RARG_CSWAPX },
+		{ OP_CMON | OP_CCHS,	STATE_UNFINISHED,    STATE_UNFINISHED,    OP_CMON | OP_CCONJ  },
+		{ CONST_CMPLX(OP_PI),	STATE_UNFINISHED,    STATE_UNFINISHED,    CONST_CMPLX(OP_PI)  },
+		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
 		// Row 4
-		{ OP_CMON | OP_EXP,    OP_CMON | OP_LN,     STATE_UNFINISHED    },
-		{ OP_CMON | OP_10POWX, OP_CMON | OP_LOG,    STATE_UNFINISHED    },
-		{ OP_CMON | OP_2POWX,  OP_CMON | OP_LG2,    STATE_UNFINISHED    },
-		{ OP_CDYA | OP_POW,    OP_CDYA | OP_LOGXY,  STATE_UNFINISHED    },
-		{ OP_CMON | OP_RECIP,  OP_CDYA | OP_PARAL,  STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,	OP_CMON | OP_EXP,    OP_CMON | OP_LN,     STATE_UNFINISHED    },
+		{ CNUM(7),		OP_CMON | OP_10POWX, OP_CMON | OP_LOG,    STATE_UNFINISHED    },
+		{ CNUM(8),		OP_CMON | OP_2POWX,  OP_CMON | OP_LG2,    STATE_UNFINISHED    },
+		{ CNUM(9),		OP_CDYA | OP_POW,    OP_CDYA | OP_LOGXY,  STATE_UNFINISHED    },
+		{ OP_CDYA | OP_DIV,	OP_CMON | OP_RECIP,  OP_CDYA | OP_PARAL,  STATE_UNFINISHED    },
 		// Row 5
-		{ OP_CDYA | OP_COMB,   OP_CDYA | OP_PERM,   OP_CMON | OP_FACT   },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ OP_CMON | OP_SQRT,   OP_CMON | OP_SQR,    OP_CMON | OP_SQR    },
+		{ STATE_UNFINISHED,	OP_CDYA | OP_COMB,   OP_CDYA | OP_PERM,   OP_CMON | OP_FACT   },
+		{ CNUM(4),		STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ CNUM(5),		STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ CNUM(6),		STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ OP_CDYA | OP_MUL,	OP_CMON | OP_SQRT,   OP_CMON | OP_SQR,    OP_CMON | OP_SQR    },
 		// Row 6
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ TST_EQ,              TST_NE,              STATE_UNFINISHED    }, // tests
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED  },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ CNUM(1),		TST_EQ,              TST_NE,              STATE_UNFINISHED    }, // tests
+		{ CNUM(2),		STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ CNUM(3),		STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ OP_CDYA | OP_SUB,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
 		// Row 7
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_OFF     },
-		{ OP_CMON | OP_ABS,    OP_CMON | OP_RND,    STATE_UNFINISHED    },
-		{ OP_CMON | OP_TRUNC,  OP_CMON | OP_FRAC,   STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
-		{ STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    }
+		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_OFF     },
+		{ CNUM(0),		OP_CMON | OP_ABS,    OP_CMON | OP_RND,    STATE_UNFINISHED    },
+		{ OP_NIL | OP_cmplxI,	OP_CMON | OP_TRUNC,  OP_CMON | OP_FRAC,   STATE_UNFINISHED    },
+		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+		{ OP_CDYA | OP_ADD,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    }
 	};
 
 	enum shifts shift = reset_shift();
 	int lc = keycode_to_linear(c);
-	int op = op_map[lc][shift - SHIFT_F];
+	int op = op_map[lc][shift];
 	State2.cmplx = 0;
 
-	switch (c) {
-	case K00:
-		if (op != STATE_UNFINISHED) {
-			process_cmdline_set_lift();
-			State2.hyp = 1;
-			State2.dot = op;
-			State2.cmplx = 1;
+	if ((op & _RARG) == _RARG) {
+		init_arg((enum rarg) (op & ~_RARG));
+		return STATE_UNFINISHED;
+	}
+
+	if (shift != SHIFT_N) {
+		switch (c) {
+		case K00:
+			if (op != STATE_UNFINISHED) {
+				process_cmdline_set_lift();
+				State2.hyp = 1;
+				State2.dot = op;
+				State2.cmplx = 1;
+			}
+			return STATE_UNFINISHED;
+
+		case K_CMPLX:
+			set_shift(shift);
+			break;
+
+		case K51:
+			if (op != STATE_UNFINISHED) {
+				process_cmdline_set_lift();
+				State2.cmplx = 1;
+				State2.test = op;
+			}
+			return STATE_UNFINISHED;
+
+		case K60:
+			init_state();
+			break;
+
+		default:
+			break;
 		}
-		return STATE_UNFINISHED;
-
-	case K_CMPLX:
-		set_shift(shift);
-		break;
-
-	case K21:
-		if (op != STATE_UNFINISHED)
-			init_arg((enum rarg)op);
-		return STATE_UNFINISHED;
-
-	case K51:
-		if (op != STATE_UNFINISHED) {
-			process_cmdline_set_lift();
-			State2.cmplx = 1;
-			State2.test = op;
-		}
-		return STATE_UNFINISHED;
-
-	case K60:
-		init_state();
-		break;
-
-	default:
-		break;
 	}
 	return op;
+#undef _RARG
+#undef CSWAPXZ
+#undef CNUM
 }
 
 
@@ -2369,9 +2347,7 @@ static int process(const int c) {
 		return process_alpha((const keycode)c);
 
 	if (State2.cmplx) {
-		if (shift != SHIFT_N)
-			return process_fgh_shifted_cmplx((const keycode)c);
-		return process_normal_cmplx((const keycode)c);
+		return process_cmplx((const keycode)c);
 	} else {
 		if (shift == SHIFT_F || shift == SHIFT_G)
 			return process_fg_shifted((const keycode)c);
