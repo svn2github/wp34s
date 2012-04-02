@@ -812,7 +812,7 @@ static int process_cmplx(const keycode c) {
 
 	static const unsigned short int op_map[][4] = {
 		// Row 1
-		{ STATE_UNFINISHED,	1,                   0,                   STATE_UNFINISHED    }, // HYP
+		{ 1,			1,                   0,                   0		      }, // HYP
 		{ OP_CMON | OP_RECIP,	OP_CMON | OP_SIN,    OP_CMON | OP_ASIN,   STATE_UNFINISHED    },
 		{ OP_CDYA | OP_POW,	OP_CMON | OP_COS,    OP_CMON | OP_ACOS,   STATE_UNFINISHED    },
 		{ OP_CMON | OP_SQRT,	OP_CMON | OP_TAN,    OP_CMON | OP_ATAN,   STATE_UNFINISHED    },
@@ -863,18 +863,17 @@ static int process_cmplx(const keycode c) {
 		init_arg((enum rarg) (op & ~_RARG));
 		return STATE_UNFINISHED;
 	}
+	if (c == K00) {
+		// HYP
+		process_cmdline_set_lift();
+		State2.hyp = 1;
+		State2.dot = op;
+		State2.cmplx = 1;
+		return STATE_UNFINISHED;
+	}
 
 	if (shift != SHIFT_N) {
 		switch (c) {
-		case K00:
-			if (op != STATE_UNFINISHED) {
-				process_cmdline_set_lift();
-				State2.hyp = 1;
-				State2.dot = op;
-				State2.cmplx = 1;
-			}
-			return STATE_UNFINISHED;
-
 		case K_CMPLX:
 			set_shift(shift);
 			break;
@@ -912,8 +911,12 @@ static int process_cmplx(const keycode c) {
  * the ON key are dealt with by our caller.
  */
 static int process_hyp(const keycode c) {
-	const int cmplx = State2.cmplx;
-	const opcode op = cmplx ? OP_CMON : OP_MON;
+	static const unsigned char op_map[][2] = {
+		{ OP_ASINH, OP_SINH },
+		{ OP_ACOSH, OP_COSH },
+		{ OP_ATANH, OP_TANH }
+	};
+	int cmplx = State2.cmplx;
 	int f = State2.dot;
 
 	State2.hyp = 0;
@@ -923,24 +926,24 @@ static int process_hyp(const keycode c) {
 	switch ((int)c) {
 
 	case K00:
-	//case K60:
 	case K24:
 		break;
 
 	case K01:
-		return op | (f ? OP_SINH : OP_ASINH);
-
 	case K02:
-		return op | (f ? OP_COSH : OP_ACOSH);
-
 	case K03:
-		return op | (f ? OP_TANH : OP_ATANH);
+		return (cmplx ? OP_CMON : OP_MON) | op_map[c - K01][f];
+
+	case K_CMPLX:
+		cmplx = ! cmplx;
+		goto deflt;
 
 	case K_F:
 	case K_G:
 		f = (c == K_F);
 		// fall trough
 	default:
+	deflt:
 		process_cmdline_set_lift();
 		State2.hyp = 1;
 		State2.cmplx = cmplx;
@@ -955,34 +958,25 @@ static int process_hyp(const keycode c) {
  *  Process a key code after ->
  */
 static int process_arrow(const keycode c) {
-	const enum shifts shift = reset_shift();
+	static const unsigned short int op_map[][2] = {
+		{ OP_MON | OP_2DEG,  OP_MON | OP_2HMS },
+		{ OP_MON | OP_2RAD,  OP_MON | OP_HMS2 },
+		{ OP_MON | OP_2GRAD, STATE_UNFINISHED }
+	};
+	static const enum single_disp disp[][2] = {
+		{ SDISP_OCT, SDISP_BIN },
+		{ SDISP_HEX, SDISP_DEC }
+	};
+	const int f = (reset_shift() == SHIFT_F);
 
 	State2.arrow = 0;
-	switch (c) {
-	case K10:
-		if (shift == SHIFT_N || shift == SHIFT_G)
-			return OP_MON | OP_2DEG;
-		return OP_MON | OP_2HMS;
+	
+	if (c >= K10 && c <= K12)
+		return op_map[c - K10][f];
 
-	case K11:
-		if (shift == SHIFT_N || shift == SHIFT_G)
-			return OP_MON | OP_2RAD;
-		return OP_MON | OP_HMS2;
+	if (c == K22 || c == K23)
+		set_smode(disp[c - K22][f]);
 
-	case K12:
-		return OP_MON | OP_2GRAD;
-
-	case K22:
-		set_smode((shift == SHIFT_F) ? SDISP_BIN : SDISP_OCT);
-		break;
-
-	case K23:
-		set_smode((shift == SHIFT_F) ? SDISP_DEC : SDISP_HEX);
-		break;
-
-	default:
-		break;
-	}
 	return STATE_UNFINISHED;
 }
 
