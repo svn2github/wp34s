@@ -925,10 +925,6 @@ static int process_hyp(const keycode c) {
 
 	switch ((int)c) {
 
-	case K00:
-	case K24:
-		break;
-
 	case K01:
 	case K02:
 	case K03:
@@ -936,18 +932,20 @@ static int process_hyp(const keycode c) {
 
 	case K_CMPLX:
 		cmplx = ! cmplx;
-		goto deflt;
+		goto stay;
 
 	case K_F:
 	case K_G:
 		f = (c == K_F);
 		// fall trough
-	default:
-	deflt:
-		process_cmdline_set_lift();
+	stay:
+		// process_cmdline_set_lift();
 		State2.hyp = 1;
 		State2.cmplx = cmplx;
 		State2.dot = f;
+		break;
+
+	default:
 		break;
 	}
 	return STATE_UNFINISHED;
@@ -2475,6 +2473,8 @@ void process_keycode(int c)
 			GoFast = 1;
 			c = OpCode;
 			OpCode = 0;
+			ShowRPN = 1; // Back to normal display and processing
+
 			if (c == STATE_SST)
 				xeq_sst_bst(1);
 			else {
@@ -2482,8 +2482,6 @@ void process_keycode(int c)
 				if (Running || Pause)
 					xeqprog();
 			}
-			if (ShowRPN != 0)
-				ShowRPN = 1; // Back to normal display and processing
 		}
 		else {
 			// Ignore key-up if no operation was pending

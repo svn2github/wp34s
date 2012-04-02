@@ -1238,41 +1238,27 @@ void clrretstk_pc(void) {
 }
 
 
-/* Command to allow access to constants
+/*
+ *  Command to allow access to constants and small integers
  */
 void cmdconst(unsigned int arg, enum rarg op) {
-	REGISTER *x = StackBase;
-
-	if (is_intmode()) {
-		bad_mode_error();
-		return;
-	}
 #ifdef INCLUDE_INDIRECT_CONSTS
-	if (op == RARG_CONST_CMPLX || op == RARG_IND_CONST_CMPLX) {
+	if (op == RARG_INTNUM_CMPLX || op == RARG_CONST_CMPLX || op == RARG_IND_CONST_CMPLX) {
 #else
-	if (op == RARG_CONST_CMPLX) {
+	if (op == RARG_INTNUM_CMPLX || op == RARG_CONST_CMPLX) {
 #endif
 		lift2_if_enabled();
 		zero_Y();
+		State2.wascomplex = 1;
 	} else
 		lift_if_enabled();
 
-	copyreg(x, get_const(arg, is_dblmode()));
-}
-
-/*
- *  Return the argument as a small integer
- */
-void cmdintnum(unsigned int arg, enum rarg op)
-{
-	if (op == RARG_INTNUM_CMPLX) {
-		lift2_if_enabled();
-		zero_Y();
-	}
-	else
-		lift_if_enabled();
-
-	setX_int_sgn(arg, 0);
+	if (op == RARG_INTNUM || op == RARG_INTNUM_CMPLX)
+		setX_int_sgn(arg, 0);
+	else if (is_intmode())
+		bad_mode_error();
+	else 
+		copyreg(StackBase, get_const(arg, is_dblmode()));
 }
 
 

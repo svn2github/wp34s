@@ -1195,7 +1195,6 @@ extern void fill(enum nilop op);
 extern void drop(enum nilop op);
 extern void cmdconst(unsigned int arg, enum rarg op);
 extern void cmdconstcmplx(unsigned int arg, enum rarg op);
-extern void cmdintnum(unsigned int arg, enum rarg op);
 extern void cmdsto(unsigned int arg, enum rarg op);
 extern void cmdrcl(unsigned int arg, enum rarg op);
 extern void cmdcsto(unsigned int arg, enum rarg op);

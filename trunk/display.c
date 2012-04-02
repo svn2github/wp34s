@@ -286,7 +286,7 @@ static void annunciators(void) {
 	default:
 	case SHIFT_N:
 		if (State2.wascomplex)
-			*p++ = 'C';
+			p = scopy(p, "C\006");
 		else if (is_dblmode())
 			*p++ = 'D';
 		else
@@ -1399,7 +1399,7 @@ void display(void) {
 		bp = scopy(bp, p);
 		if (cata == CATALOGUE_CONST || cata == CATALOGUE_COMPLEX_CONST) {
 			// State2.disp_small = 1;
-			if (op == RARG_BASEOP(RARG_INTNUM))
+			if (op == RARG_BASEOP(RARG_INTNUM) || op == RARG_BASEOP(RARG_INTNUM_CMPLX))
 				set_digits_string("0 to 255", 0);
 			else
 				set_x(get_const(op & RARG_MASK, 0), NULL, 0);
