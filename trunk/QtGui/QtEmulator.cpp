@@ -727,7 +727,6 @@ void QtEmulator::saveState()
 	if(reallyWritten!=memorySize)
 	{
 		memoryWarning("Cannot write "+memoryFile.fileName());
-		return;
 	}
 }
 
