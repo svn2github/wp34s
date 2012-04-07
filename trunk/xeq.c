@@ -1807,13 +1807,15 @@ unsigned int find_label_from(unsigned int pc, unsigned int arg, int flags) {
 /* Handle a GTO/GSB instruction
  */
 static void gsbgto(unsigned int pc, int gsb, unsigned int oldpc) {
+	const unsigned short int old_begin = ProgBegin;
 	raw_set_pc(pc);
 	if (gsb) {
 		if (!Running && !XromRunning) {
 			// XEQ or hot key from keyboard
 			clrretstk();
 			set_running_on();
-			if (! isXROM(pc))
+			if (! isXROM(pc) && ProgBegin != old_begin)
+				// RTN will bring us to the label if a different program is selected
 				oldpc = pc;
 		}
 		if (-RetStkPtr >= (XromFlags.xIN ? XROM_RET_STACK_SIZE : RetStkSize)) {
