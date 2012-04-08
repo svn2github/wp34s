@@ -548,7 +548,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FN_I0(OP_SETDATE,	&date_setdate,		"SETDAT")
 	FN_I0(OP_SETTIME,	&date_settime,		"SETTIM")
 	FUNC0(OP_CLRALPHA,	&clralpha,		"CL\240")
-	FUNC0(OP_VIEWALPHA,	&alpha_view,		"\240VIEW")
+	FUNC0(OP_VIEWALPHA,	&alpha_view,		"VIEW\240")
 	FUNC1(OP_ALPHALEN,	&alpha_length,		"\240LENG")
 	FUNC1(OP_ALPHATOX,	&alpha_tox,		"\240\015x")
 	FUNC0(OP_XTOALPHA,	&alpha_fromx,		"x\015\240")
