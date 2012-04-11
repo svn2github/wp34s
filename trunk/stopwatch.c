@@ -54,7 +54,8 @@ unsigned long FirstTicker;
 unsigned long StopWatch;
 signed char StopWatchMemory;
 signed char StopWatchMemoryFirstDigit; //-1;
-char* StopWatchMessage;
+signed char RclMemory;
+unsigned char RclMemoryRemanentDisplay;
 
 #define STOPWATCH_RS K63
 #define STOPWATCH_EXIT K60
@@ -64,8 +65,11 @@ char* StopWatchMessage;
 #define STOPWATCH_UP K40
 #define STOPWATCH_DOWN K50
 #define STOPWATCH_SHOW_MEMORY K04
+#define STOPWATCH_RCL K11
 
 #define MAX_STOPWATCH_MEMORY 100
+
+#define RCL_MEMORY_REMANENCE 3
 
 unsigned long getTicker() {
 #ifndef CONSOLE
@@ -77,8 +81,7 @@ unsigned long getTicker() {
 #endif
 }
 
-static void fill_exponent(char* exponent)
-{
+static void fill_exponent(char* exponent) {
 	if(StopWatchStatus.select_memory_mode) {
 		if(StopWatchMemoryFirstDigit>=0) {
 			exponent[0]='0'+StopWatchMemoryFirstDigit;
@@ -96,6 +99,7 @@ static void display_stopwatch() {
 	char buf[13], *p;
 	char exponent[3];
 	int tenths, secs, mins, hours;
+	char rclMessage[8];
 	
 	tenths=StopWatch%10;	
 	secs=(StopWatch/10)%60;
@@ -125,7 +129,21 @@ static void display_stopwatch() {
 		*p++='"';
 		*p=0;
 	}
-	stopwatch_message(STOPWATCH_MESSAGE, buf, -1, StopWatchStatus.show_memory?exponent:(char*)NULL);
+	char display_rcl_message=StopWatchStatus.rcl_mode || RclMemory>=0;
+	if(display_rcl_message) {
+		char* rp=scopy(rclMessage, "RCL\006\006");
+		if(RclMemory>=0) {
+			rp=num_arg_0(rp, RclMemory, 2);
+		}
+		else {
+			if(StopWatchMemoryFirstDigit>=0) {
+				*rp++='0'+StopWatchMemoryFirstDigit;
+			}
+			*rp++='_';
+		}
+		*rp=0;
+	}
+	stopwatch_message(display_rcl_message?rclMessage:STOPWATCH_MESSAGE, buf, -1, StopWatchStatus.show_memory?exponent:(char*)NULL);
 }
 
 static void store_stopwatch_in_memory() {
@@ -156,20 +174,42 @@ static void toggle_running() {
 	}
 }
 
+static void recall_memory(int index) {
+	decNumber memory, s, s2, hms;
+	unsigned long long previous;
+	int sign;
+
+	StopWatchMemoryFirstDigit=-1;
+	RclMemory=index;
+	StopWatchStatus.rcl_mode=0;
+	RclMemoryRemanentDisplay=0;
+	getRegister(&memory, index);
+	decNumberHMS2HR(&hms, &memory);
+	dn_multiply(&s2, &hms, &const_100);
+	dn_multiply(&s, &s2, &const_360);
+	previous=dn_to_ull(&s, &sign);
+
+	FirstTicker=getTicker()-previous;
+	StopWatch=previous;
+}
+
 static int process_select_memory_key(int key) {
 	switch(key)	{
 			case STOPWATCH_RS: {
 				toggle_running();
 				StopWatchStatus.select_memory_mode=0;
+				StopWatchStatus.rcl_mode=0;
 				break;
 			}
 			case STOPWATCH_EXIT: {
 				StopWatchStatus.select_memory_mode=0;
+				StopWatchStatus.rcl_mode=0;
 				break;
 			}
 			case STOPWATCH_CLEAR: {
 				if(StopWatchMemoryFirstDigit<0) {
 					StopWatchStatus.select_memory_mode=0;
+					StopWatchStatus.rcl_mode=0;
 				} else {
 					StopWatchMemoryFirstDigit=-1;
 				}
@@ -188,7 +228,10 @@ static int process_select_memory_key(int key) {
 			case K61: {
 				if(StopWatchMemoryFirstDigit<0) {
 					StopWatchMemoryFirstDigit=get_digit(key);
-				} else {
+				} else if(StopWatchStatus.rcl_mode){
+					recall_memory(StopWatchMemoryFirstDigit*10+get_digit(key));
+				}
+				else {
 					StopWatchMemory=StopWatchMemoryFirstDigit*10+get_digit(key);
 					StopWatchMemoryFirstDigit=-1;
 					StopWatchStatus.select_memory_mode=0;
@@ -200,8 +243,7 @@ static int process_select_memory_key(int key) {
 	return -1;
 }
 
-static int process_stopwatch_key(int key)
-{
+static int process_stopwatch_key(int key) {
 	switch(key)	{
 			case STOPWATCH_RS: {
 				toggle_running();
@@ -245,6 +287,11 @@ static int process_stopwatch_key(int key)
 				StopWatchStatus.show_memory=!StopWatchStatus.show_memory;
 				break;
 				}
+			case STOPWATCH_RCL: {
+				StopWatchStatus.rcl_mode=1;
+				StopWatchMemoryFirstDigit=-1;
+				break;
+				}
 			 //Digits
 			case K31:
 			case K32:
@@ -276,13 +323,16 @@ int stopwatch_callback(int key) {
 
 	if(key!=K_HEARTBEAT && key!=K_RELEASE) {
 		StopWatchKeyticks=0;
-		if(StopWatchStatus.select_memory_mode) {
+		if(StopWatchStatus.select_memory_mode || StopWatchStatus.rcl_mode) {
 			key=process_select_memory_key(key);
 		} else {
 			key=process_stopwatch_key(key);
 		}
 	}
 	display_stopwatch();
+	if(RclMemory>=0 && RclMemoryRemanentDisplay++ > RCL_MEMORY_REMANENCE) {
+		RclMemory=-1;
+	}
 
 	return key==K_RELEASE?-1:key;
 }
@@ -292,7 +342,9 @@ void stopwatch(enum nilop op) {
 		StopWatchStatus.show_memory=0;
 		StopWatchStatus.select_memory_mode=0;
 		StopWatchStatus.display_tenths=1;
+		StopWatchStatus.rcl_mode=0;
 		StopWatchMemory=0;
+		RclMemory=-1;
 		StopWatch=0;
 		FirstTicker=0;
 		StopWatchMemoryFirstDigit=-1;

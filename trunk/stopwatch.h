@@ -32,6 +32,7 @@ typedef struct _stopwatch_status {
 	int display_tenths:1;
 	int	show_memory:1;
 	int select_memory_mode:1;
+	int rcl_mode:1;
 } TStopWatchStatus;
 
 extern TStopWatchStatus StopWatchStatus;
