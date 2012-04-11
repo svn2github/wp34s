@@ -58,4 +58,6 @@ typedef enum {
 #define K_ARROW		K04
 #define K_CMPLX		K05
 
+extern unsigned int keycode_to_digit_or_register(const keycode);
+
 #endif

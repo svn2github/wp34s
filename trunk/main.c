@@ -1684,11 +1684,15 @@ NO_RETURN int main(void)
 	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
 	finish_display();
 #endif
+
+#ifdef INCLUDE_STOPWATCH
+		StopWatchRunning = 0;
+#endif
 	/*
 	 *  Wait for event and execute it
 	 */
 	while( 1 ) {
-                int k;
+        int k;
 
 		/*
 		 *  Adjust the display contrast if it has been changed
@@ -1738,7 +1742,16 @@ NO_RETURN int main(void)
 						goto key_pressed;
 					}
 				}
-				deep_sleep();
+#ifdef INCLUDE_STOPWATCH
+				if(StopWatchRunning)
+				{
+					set_speed( SPEED_IDLE );
+				}
+				else
+#endif
+				{
+					deep_sleep();
+				}
 			}
 #endif
 			/*
@@ -1756,6 +1769,12 @@ NO_RETURN int main(void)
 		if(KeyCallback!=NULL) {
 			k=(*KeyCallback)(k);
 		}
+#ifndef CONSOLE
+		else if(StopWatchRunning && (Ticker % 5)==0) {
+			dot(LIT_EQ, !is_dot(LIT_EQ));
+			finish_display();
+		}
+#endif
 		if ( k !=-1 && k != K_HEARTBEAT ) {
 #else
 		if ( k != K_HEARTBEAT ) {

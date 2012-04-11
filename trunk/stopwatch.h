@@ -24,8 +24,19 @@
 #include "features.h"
 
 #ifdef INCLUDE_STOPWATCH
+
 extern void stopwatch(enum nilop op);
 extern int (*KeyCallback)(int);
+typedef struct _stopwatch_status {
+	int running:1;
+	int display_tenths:1;
+	int	show_memory:1;
+	int select_memory_mode:1;
+} TStopWatchStatus;
+
+extern TStopWatchStatus StopWatchStatus;
+#define StopWatchRunning (StopWatchStatus.running)
+
 #endif
 
 #endif

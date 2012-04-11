@@ -28,7 +28,7 @@ char* command;
 
 void usageAndExit()
 {
-	qerr << "Usage: " << command << "[-debug] [-noprogress] <firmware file> <serial port>";
+	qerr << "Usage: " << command << "[-debug] [-noprogress] <firmware file> <serial port>\n";
 	exit(-1);
 }
 

@@ -34,7 +34,6 @@ void QtCalculatorThread::run()
 	QtKeyboard& keyboard=emulator.getKeyboard();
 	while(!isEnded())
 	{
-
 		int key=keyboard.waitKey();
 		if(key>=0)
 		{

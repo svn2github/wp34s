@@ -141,7 +141,7 @@ int row_column_to_keycode(const int c)
  */
 #define NO_REG 0x7f
 #define NO_SHORT 0x80
-static unsigned int keycode_to_digit_or_register(const keycode c)
+unsigned int keycode_to_digit_or_register(const keycode c)
 {
 	static const unsigned char map[] = {
 		// K00 - K05

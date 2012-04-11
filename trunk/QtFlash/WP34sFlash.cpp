@@ -157,7 +157,7 @@ void WP34sFlash::sendInitialInstructions() throw(SerialException)
     QByteArray answer=read(4);
     if(answer.length()==4)
     {
-    	report("Initial instructions received");
+    	report("Initial instructions sent");
     	return;
     }
     else

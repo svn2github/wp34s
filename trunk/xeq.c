@@ -45,6 +45,7 @@
 #include "lcd.h"
 #include "xrom.h"
 #include "alpha.h"
+#include "stopwatch.h"
 
 /* Define the number of program Ticks that must elapse between flashing the
  * RCL annunciator.
@@ -4523,6 +4524,9 @@ int init_34s(void)
 	xeq_init_contexts();
 	ShowRPN = 1;
 
+#ifdef INCLUDE_STOPWATCH
+	StopWatchRunning = 0;
+#endif
 #if defined(CONSOLE) && !defined(WP34STEST) && defined(DEBUG)
 	{
 		int i;

@@ -21,6 +21,7 @@
 #include "storage.h"
 #include "serial.h"
 #include "keys.h"
+#include "lcd.h"
 
 extern const char SvnRevision[];
 extern int is_key_pressed_adapter();
@@ -28,6 +29,7 @@ extern int put_key_adapter(int);
 extern void add_heartbeat_adapter(int);
 extern char* get_region_path_adapter(int);
 extern void* shutdown_adapter();
+extern void updateScreen();
 
 #define SVN_REVISION_SIZE 4
 static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
@@ -124,6 +126,13 @@ void add_heartbeat()
 		Keyticks=1000;
 	}
 	add_heartbeat_adapter(K_HEARTBEAT);
+
+#if defined(INCLUDE_STOPWATCH) && !defined(CONSOLE)
+	if(KeyCallback==NULL && StopWatchRunning && (Ticker % 5)==0) {
+		dot(LIT_EQ, !is_dot(LIT_EQ));
+		updateScreen();
+	}
+#endif
 }
 
 void forward_keycode(int key)
