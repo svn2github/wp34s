@@ -593,6 +593,8 @@ void rarg_round(unsigned int arg, enum rarg op) {
 }
 
 /* Check if a value is bogus and error out if so.
+ * A value is bogus if it is infinite, NaN *and* flag D is not set.
+ * If flag D is set, these values are allowed through just fine.
  */
 static int check_special(const decNumber *x) {
 	decNumber y;
@@ -703,7 +705,7 @@ void setRegister(int index, const decNumber *x) {
 	REGISTER *const reg = get_reg_n(index);
 	decNumber dn;
 
-	if (! check_special(x)) {
+	if (! check_special(x)) {	/* This correctly deals with infinities and NaN based on flag D */
 		decNumberNormalize(&dn, x, &Ctx);
 		if (is_dblmode())
 			packed128_from_number(&(reg->d), &dn);
