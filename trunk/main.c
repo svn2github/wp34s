@@ -1787,11 +1787,13 @@ NO_RETURN int main(void)
 				set_speed( SPEED_HALF );
 			}
 #endif
-			if ( !OnKeyPressed && confirm_counter == 1 ) {
+			if ( !OnKeyPressed ) {
 				// ON key was released
+				if ( confirm_counter < 0 ) {
+					DispMsg = "Cancelled";
+					display();
+				}
 				confirm_counter = 0;
-				DispMsg = "Cancelled";
-				display();
 			}
 			if ( OnKeyPressed && k != K60 && !Running ) {
 				/*
@@ -1831,6 +1833,7 @@ NO_RETURN int main(void)
 					// ON + <-
 					if ( confirm_counter == 1 ) {
 						message( "Erase?", "ALL" );
+						confirm_counter = -1;
 					}
 					else {
 						set_speed( SPEED_HALF );
@@ -1853,6 +1856,7 @@ NO_RETURN int main(void)
 					// ON-STO Backup to flash
 					if ( confirm_counter == 1 ) {
 						message( "Backup?", "to FLASH" );
+						confirm_counter = -1;
 					}
 					else {
 						set_speed( SPEED_HALF );
@@ -1866,6 +1870,7 @@ NO_RETURN int main(void)
 					// ON-RCL Restore from backup
 					if ( confirm_counter == 1 ) {
 						message( "Restore?", "FLASH" );
+						confirm_counter = -1;
 					}
 					else {
 						set_speed( SPEED_HALF );
@@ -1893,6 +1898,7 @@ NO_RETURN int main(void)
 					if ( !Xtal ) {
 						if ( confirm_counter == 1 ) {
 							message( "Crystal?", "Installed" );
+							confirm_counter = -1;
 							break;
 						}
 						else {
@@ -1908,6 +1914,7 @@ NO_RETURN int main(void)
 					if ( is_debug() ) {
 						if ( confirm_counter == 1 ) {
 							message( "SAM-BA?", "boot" );
+							confirm_counter = -1;
 						}
 						else {
 							sam_ba_boot();
@@ -1921,6 +1928,7 @@ NO_RETURN int main(void)
 					if ( is_debug() ) {
 						if ( confirm_counter == 1 ) {
 							message( "RESET?", NULL );
+							confirm_counter = -1;
 						}
 						else {
 							ForceReset();
@@ -1933,6 +1941,7 @@ NO_RETURN int main(void)
 					if ( is_debug() ) {
 						if ( confirm_counter == 1 ) {
 							message( "Watchdog?", NULL );
+							confirm_counter = -1;
 						}
 						else {
 							WdDisable = 1;
@@ -1940,7 +1949,7 @@ NO_RETURN int main(void)
 					}
 					break;
 #endif
-		}
+				}
 				// No further processing
 				k = -1;
 			}
