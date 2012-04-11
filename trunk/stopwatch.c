@@ -50,8 +50,8 @@
 TStopWatchStatus StopWatchStatus; // ={ 0, 1, 0, 0, };
 
 int (*KeyCallback)(int)=(int (*)(int)) NULL;
-long long int FirstTicker; //-1;
-long long int StopWatch;
+unsigned long FirstTicker;
+unsigned long StopWatch;
 signed char StopWatchMemory;
 signed char StopWatchMemoryFirstDigit; //-1;
 char* StopWatchMessage;
@@ -67,7 +67,7 @@ char* StopWatchMessage;
 
 #define MAX_STOPWATCH_MEMORY 100
 
-long long int getTicker() {
+unsigned long getTicker() {
 #ifndef CONSOLE
     return Ticker;
 #else
@@ -132,7 +132,7 @@ static void store_stopwatch_in_memory() {
 	int registerIndex=(StopWatchMemory++)%MAX_STOPWATCH_MEMORY;
 	decNumber s, s2, hms;
 	StopWatchStatus.show_memory=1;
-	int_to_dn(&s, StopWatch);
+	ullint_to_dn(&s, StopWatch);
 	dn_divide(&s2, &s, &const_360);
 	dn_divide(&s, &s2, &const_100);
 	decNumberHR2HMS(&hms, &s);
@@ -147,7 +147,7 @@ static int get_digit(int key) {
 static void toggle_running() {
 	StopWatchStatus.running=!StopWatchStatus.running;
 	if(StopWatchStatus.running) {
-		if(FirstTicker<0) {
+		if(FirstTicker==0) {
 			FirstTicker=getTicker();
 		}
 		else {
@@ -294,7 +294,7 @@ void stopwatch(enum nilop op) {
 		StopWatchStatus.display_tenths=1;
 		StopWatchMemory=0;
 		StopWatch=0;
-		FirstTicker=-1;
+		FirstTicker=0;
 		StopWatchMemoryFirstDigit=-1;
 	}
 	clr_dot(LIT_EQ);
