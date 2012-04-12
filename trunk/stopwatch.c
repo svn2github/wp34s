@@ -100,6 +100,7 @@ static void display_stopwatch() {
 	char exponent[3];
 	int tenths, secs, mins, hours;
 	char rclMessage[8];
+	char display_rcl_message;
 	
 	tenths=StopWatch%10;	
 	secs=(StopWatch/10)%60;
@@ -129,7 +130,7 @@ static void display_stopwatch() {
 		*p++='"';
 		*p=0;
 	}
-	char display_rcl_message=StopWatchStatus.rcl_mode || RclMemory>=0;
+	display_rcl_message=StopWatchStatus.rcl_mode || RclMemory>=0;
 	if(display_rcl_message) {
 		char* rp=scopy(rclMessage, "RCL\006\006");
 		if(RclMemory>=0) {
@@ -176,7 +177,7 @@ static void toggle_running() {
 
 static void recall_memory(int index) {
 	decNumber memory, s, s2, hms;
-	unsigned long long previous;
+	unsigned long previous;
 	int sign;
 
 	StopWatchMemoryFirstDigit=-1;
@@ -187,7 +188,7 @@ static void recall_memory(int index) {
 	decNumberHMS2HR(&hms, &memory);
 	dn_multiply(&s2, &hms, &const_100);
 	dn_multiply(&s, &s2, &const_360);
-	previous=dn_to_ull(&s, &sign);
+	previous=(unsigned long) dn_to_ull(&s, &sign);
 
 	FirstTicker=getTicker()-previous;
 	StopWatch=previous;
