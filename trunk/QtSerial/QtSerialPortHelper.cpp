@@ -14,63 +14,11 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ExtendedSerialPort.h"
+#include "QtSerialPortHelper.h"
+
 #include <qextserialenumerator.h>
-#include <fcntl.h>
 
-ExtendedSerialPort::ExtendedSerialPort(QueryMode mode)
-: QextSerialPort(mode)
-{
-}
-
-ExtendedSerialPort::ExtendedSerialPort(const QString & name, QueryMode mode)
-: QextSerialPort(name, mode)
-{
-}
-
-ExtendedSerialPort::ExtendedSerialPort(PortSettings const& settings, QueryMode mode)
-: QextSerialPort(settings, mode)
-{
-}
-
-
-ExtendedSerialPort::ExtendedSerialPort(const QString & name, PortSettings const& settings, QueryMode mode)
-: QextSerialPort(name, settings, mode)
-{
-}
-
-ExtendedSerialPort::~ExtendedSerialPort()
-{
-}
-
-void ExtendedSerialPort::flushBuffers()
-{
-#ifdef Q_OS_UNIX
-	QMutexLocker lock(mutex);
-	if(isOpen())
-	{
-		tcdrain(fd);
-	}
-#else
-	flush();
-#endif
-}
-
-void ExtendedSerialPort::sendBreak()
-{
-#ifdef Q_OS_UNIX
-	QMutexLocker lock(mutex);
-	if(isOpen())
-	{
-		tcsendbreak(fd, 0);
-	}
-#else
-
-#endif
-
-}
-
-QStringList ExtendedSerialPort::getSerialPorts()
+QStringList QtSerialPortHelper::getSerialPorts()
 {
 	QStringList portNames;
     QList<QextPortInfo> portsInfos = QextSerialEnumerator::getPorts();

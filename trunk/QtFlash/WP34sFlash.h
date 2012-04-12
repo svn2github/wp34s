@@ -20,8 +20,8 @@
 #include <QThread>
 #include <QFile>
 #include <exception>
+#include <qextserialport.h>
 #include "WP34sFlashConsole.h"
-#include "ExtendedSerialPort.h"
 
 
 #define DEFAULT_TIMEOUT 1000
@@ -81,12 +81,12 @@ protected:
 	void closePort();
 	QByteArray read(int aCounter, qint64 aTimeout=DEFAULT_TIMEOUT);
 	int write(const QByteArray& aByteArray);
-	void flushBuffers();
+	void flush();
 
 private:
 	QFile firmwareFile;
 	QString portName;
-	ExtendedSerialPort* port;
+	QextSerialPort* port;
 	WP34sFlashConsole* console;
 	bool debug;
 	int status;

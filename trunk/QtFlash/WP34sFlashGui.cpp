@@ -17,7 +17,7 @@
 #include "WP34sFlashGui.h"
 #include "WP34sFlashDialog.h"
 #include <qextserialenumerator.h>
-#include "ExtendedSerialPort.h"
+#include "QtSerialPortHelper.h"
 
 WP34sFlashGui::WP34sFlashGui()
 {
@@ -132,7 +132,7 @@ QWidget* WP34sFlashGui::buildSerialPortComponent()
 	serialPortChooserLayout->addWidget(serialPortNameComponent);
 
 	serialPortList=new QListWidget;
-	serialPortList->addItems(ExtendedSerialPort::getSerialPorts());
+	serialPortList->addItems(QtSerialPortHelper::getSerialPorts());
 	connect(serialPortList, SIGNAL(currentTextChanged(const QString&)), this, SLOT(serialPortChanged(const QString&)));
 	serialPortChooserLayout->addWidget(serialPortList);
 

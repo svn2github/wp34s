@@ -216,7 +216,7 @@ void WP34sFlash::sendFirmware() throw(SerialException)
 	    }
 	    reportProgress((((float) i)*TRANSFER_DATA_SIZE)/KILOBYTE);
 	}
-	flushBuffers();
+	flush();
 	report("\nFirmware flashed successfully. You can reset your WP34s");
 }
 
@@ -435,7 +435,7 @@ void WP34sFlash::reportProgress(int kilobytes)
 
 void WP34sFlash::openPort() throw(SerialException)
 {
-	port=new ExtendedSerialPort(portName, QextSerialPort::Polling);
+	port=new QextSerialPort(portName, QextSerialPort::Polling);
     port->setBaudRate(BAUD115200);
     port->setFlowControl(FLOW_OFF);
     port->setParity(PAR_NONE);
@@ -487,9 +487,9 @@ int WP34sFlash::write(const QByteArray& aByteArray)
 	return port->write(aByteArray);
 }
 
-void WP34sFlash::flushBuffers()
+void WP34sFlash::flush()
 {
-	port->flushBuffers();
+	port->flush();
 }
 
 SerialException::SerialException(const QString& anErrorMessage)

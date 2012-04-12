@@ -1,5 +1,6 @@
 /****************************************************************************
-** Copyright (c) 2000-2007 Stefan Sander
+** Copyright (c) 2000-2003 Wayne Roth
+** Copyright (c) 2004-2007 Stefan Sander
 ** Copyright (c) 2007 Michal Policht
 ** Copyright (c) 2008 Brandon Fosdick
 ** Copyright (c) 2009-2010 Liam Staskawicz
@@ -110,7 +111,7 @@ public:
             first = buf;
         }
         char* writePtr = first + len;
-        len += size;
+        len += (int)size;
         return writePtr;
     }
 
@@ -146,34 +147,27 @@ public:
         return QByteArray(f, l);
     }
 
+    inline int readLine(char* target, int size) {
+        int r = qMin(size, len);
+        char* eol = static_cast<char*>(memchr(first, '\n', r));
+        if (eol)
+            r = 1+(eol-first);
+        memcpy(target, first, r);
+        len -= r;
+        first += r;
+        return int(r);
+    }
+
+    inline bool canReadLine() const {
+        return memchr(first, '\n', len);
+    }
+
 private:
     int len;
     char* first;
     char* buf;
     size_t capacity;
     size_t basicBlockSize;
-};
-
-
-class QextPortSettings
-{
-public:
-    explicit QextPortSettings(BaudRateType b=BAUD9600
-            , DataBitsType d=DATA_8
-            , ParityType p=PAR_NONE
-            , StopBitsType s=STOP_1
-            , FlowType f=FLOW_OFF
-            , long timeout=10
-            , int customBaudRate=-1);
-    QextPortSettings(const PortSettings &);
-
-    BaudRateType BaudRate;
-    DataBitsType DataBits;
-    ParityType Parity;
-    StopBitsType StopBits;
-    FlowType FlowControl;
-    long Timeout_Millisec;
-    int CustomBaudRate;
 };
 
 class QextWinEventNotifier;
@@ -200,7 +194,7 @@ public:
     };
     mutable QReadWriteLock lock;
     QString port;
-    QextPortSettings Settings;
+    PortSettings Settings;
     QextReadBuffer readBuffer;
     int settingsDirtyFlags;
     ulong lastErr;
@@ -217,7 +211,7 @@ public:
     OVERLAPPED overlap;
     COMMCONFIG Win_CommConfig;
     COMMTIMEOUTS Win_CommTimeouts;
-#  ifndef QESP_NO_QT_PRIVATE
+#  ifndef QESP_NO_QT4_PRIVATE
     QWinEventNotifier *winEventNotifier;
 #  else
     QextWinEventNotifier *winEventNotifier;
@@ -235,8 +229,7 @@ public:
     void setStopBits(StopBitsType stopbits, bool update=true);
     void setFlowControl(FlowType flow, bool update=true);
     void setTimeout(long millisec, bool update=true);
-    void setCustomBaudRate(int customBaudRate, bool update=true);
-    void setPortSettings(const QextPortSettings& settings, bool update=true);
+    void setPortSettings(const PortSettings& settings, bool update=true);
 
     void platformSpecificDestruct();
     void platformSpecificInit();

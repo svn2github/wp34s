@@ -14,25 +14,15 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EXTENDEDSERIALPORT_H_
-#define EXTENDEDSERIALPORT_H_
+#ifndef QTSERIALPORTHELPER_H_
+#define QTSERIALPORTHELPER_H_
 
-#include "qextserialport.h"
 #include <QStringList>
 
-class ExtendedSerialPort: public QextSerialPort
+class QtSerialPortHelper
 {
 public:
-	ExtendedSerialPort(QueryMode mode = EventDriven);
-	ExtendedSerialPort(const QString & name, QueryMode mode = EventDriven);
-	ExtendedSerialPort(PortSettings const& settings, QueryMode mode = EventDriven);
-	ExtendedSerialPort(const QString & name, PortSettings const& settings, QueryMode mode = EventDriven);
-	~ExtendedSerialPort();
-
-public:
-	void flushBuffers();
-	void sendBreak();
 	static QStringList getSerialPorts();
 };
 
-#endif /* EXTENDEDSERIALPORT_H_ */
+#endif /* QTSERIALPORTHELPER_H_ */

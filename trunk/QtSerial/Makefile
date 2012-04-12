@@ -42,11 +42,8 @@ DIRS_TO_CLEAN += debug release
 EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release 
 endif
 
-ifeq ("$(SYSTEM)", "windows32")
-	SERIAL_INCLUDE=include/windows32
-else
-	SERIAL_INCLUDE=include
-endif
+SERIAL_INCLUDE=include
+
 
 .PHONY: all clean
 

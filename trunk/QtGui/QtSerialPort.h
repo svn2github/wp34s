@@ -19,7 +19,8 @@
 
 #include <QtCore>
 #if HAS_SERIAL
-#include "ExtendedSerialPort.h"
+#include <qextserialport.h>
+#include "QtSerialPortHelper.h"
 #endif
 
 #define WAIT_SERIAL_BUFFER_TIME 10
@@ -63,7 +64,7 @@ private slots:
 private:
 	QString serialPortName;
 #if HAS_SERIAL
-	ExtendedSerialPort* serialPort;
+	QextSerialPort* serialPort;
 #endif
 };
 

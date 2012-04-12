@@ -158,7 +158,9 @@ QWidget* QtPreferencesDialog::buildSerialTab(const QString& aSerialPortName)
 void QtPreferencesDialog::fillSerialPorts(QListWidget& aListWidget)
 {
 #if HAS_SERIAL
-	aListWidget.addItems(ExtendedSerialPort::getSerialPorts());
+	aListWidget.addItems(QtSerialPortHelper::getSerialPorts());
+#else
+	Q_UNUSED(aListWidget)
 #endif
 }
 

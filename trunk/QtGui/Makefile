@@ -126,14 +126,11 @@ else
 	SERIALLIB=-L$(QTSERIALDIR)/$(SYSTEM) -lQtSerial -L$(QTSERIALDIR)/lib/$(SYSTEM) -lqextserialport
 	QTSERIALLIB=$(QTSERIALDIR)/$(SYSTEM)/libQtSerial.a
 endif
-ifeq ("$(SYSTEM)", "windows32")
-	SERIAL_INCLUDE=$(QTSERIALDIR)/include/windows32
-else
 	SERIAL_INCLUDE=$(QTSERIALDIR)/include
-endif
 	QTSERIAL_INCLUDE=$(QTSERIALDIR)
 else
   SERIALLIB=
+  QTSERIALLIB=
   SERIAL_INCLUDE=
   QTSERIAL_INCLUDE=
   HAS_SERIAL=0
@@ -169,8 +166,12 @@ ifeq "$(SYSTEM)" "Linux"
 WP34SEXE := $(OUTPUTDIR)/WP-34s
 endif
 
+ifeq "$(HAS_SERIAL)" "0"
+qtserial:
+else
 qtserial:
 	cd $(QTSERIALDIR); $(MAKE)
+endif
 
 dist: distclean release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE)
 ifeq "$(SYSTEM)" "windows32"

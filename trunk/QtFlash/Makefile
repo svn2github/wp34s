@@ -107,12 +107,8 @@ else
 	SERIALLIB=-L$(QTSERIALDIR)/$(SYSTEM) -lQtSerial -L$(QTSERIALDIR)/lib/$(SYSTEM) -lqextserialport
 	QTSERIALLIB=$(QTSERIALDIR)/$(SYSTEM)/libQtSerial.a
 endif
-ifeq ("$(SYSTEM)", "windows32")
-	SERIAL_INCLUDE=$(QTSERIALDIR)/include/windows32
-else
-	SERIAL_INCLUDE=$(QTSERIALDIR)/include
-endif
-	QTSERIAL_INCLUDE=$(QTSERIALDIR)
+SERIAL_INCLUDE=$(QTSERIALDIR)/include
+QTSERIAL_INCLUDE=$(QTSERIALDIR)
 
 
 .PHONY: all clean qtserial
