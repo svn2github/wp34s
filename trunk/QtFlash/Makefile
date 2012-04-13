@@ -2,6 +2,12 @@ SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
 SYSTEM := Output
 endif
+ifeq "$(SYSTEM)" "Linux"
+LINUXSIZE := $(shell getconf LONG_BIT)
+ifeq "$(LINUXSIZE)" "64"
+SYSTEM := Linux64
+endif
+endif
 ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
 # Force REALBUILD on windows under MinGW
 SYSTEM := windows32
@@ -37,9 +43,13 @@ DISTDIR := wp34sFlash
 DISTFILE := wp-34s-flash-windows.zip
 RESOURCESDIR := $(DISTDIR)
 endif
-ifeq "$(SYSTEM)" "Linux"
+ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
 DISTDIR := wp34sFlash
+ifeq "$(SYSTEM)" "Linux64"
+DISTFILE := wp-34s-flash-linux64.tgz
+else
 DISTFILE := wp-34s-flash-linux.tgz
+endif
 RESOURCESDIR := $(DISTDIR)
 LINUX_EXTRA_FILES := icons/wp34s-flash-logo.png
 endif
@@ -59,7 +69,7 @@ ifeq "$(SYSTEM)" "windows32"
 WP34SFLASHEXE := $(DESTDIR)/WP34sFlash.exe
 WP34SFLASHCMDEXE := $(DESTDIRCMD)/wp34sflashcmd.exe
 endif
-ifeq "$(SYSTEM)" "Linux"
+ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
 WP34SFLASHEXE := $(DESTDIR)/WP34sFlash
 WP34SFLASHCMDEXE := $(DESTDIRCMD)/wp34sflashcmd
 endif
@@ -129,10 +139,10 @@ $(QTMAKEFILECMD): $(QTPROJECTFILECMD)
 
 qtserial:
 	cd $(QTSERIALDIR); $(MAKE)
-	
+
 $(DIRS):
 	$(MKDIR) $@
-	
+
 dist: distclean release $(DISTDIR) cmd
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(WP34SFLASHEXE) $(DISTDIR)
@@ -145,7 +155,7 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(CP) $(WP34SFLASHCMDEXE) $(DESTDIR) 
 	$(BUILDDMG)
 endif
-ifeq "$(SYSTEM)" "Linux"
+ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
 	$(CP) $(WP34SFLASHEXE) $(DISTDIR)
 	$(CP) $(WP34SFLASHCMDEXE) $(DISTDIR)
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)

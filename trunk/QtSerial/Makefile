@@ -2,6 +2,12 @@ SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
 SYSTEM := Output
 endif
+ifeq "$(SYSTEM)" "Linux"
+LINUXSIZE := $(shell getconf LONG_BIT)
+ifeq "$(LINUXSIZE)" "64"
+SYSTEM := Linux64
+endif
+endif
 ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
 # Force REALBUILD on windows under MinGW
 SYSTEM := windows32

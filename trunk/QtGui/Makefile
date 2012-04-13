@@ -23,6 +23,12 @@ SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
 SYSTEM := Output
 endif
+ifeq "$(SYSTEM)" "Linux"
+LINUXSIZE := $(shell getconf LONG_BIT)
+ifeq "$(LINUXSIZE)" "64"
+SYSTEM := Linux64
+endif
+endif
 ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
 # Force REALBUILD on windows under MinGW
 SYSTEM := windows32
@@ -49,9 +55,13 @@ DISTDIR := wp-34s
 DISTFILE := wp-34s-emulator-windows.zip
 RESOURCESDIR := $(DISTDIR)
 endif
-ifeq "$(SYSTEM)" "Linux"
+ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
 DISTDIR := wp-34s
+ifeq "$(SYSTEM)" "Linux64"
+DISTFILE := wp-34s-emulator-linux64.tgz
+else
 DISTFILE := wp-34s-emulator-linux.tgz
+endif
 RESOURCESDIR := $(DISTDIR)
 LINUX_EXTRA_FILES := README_Linux.txt icons/wp34s-logo.png
 endif
@@ -162,7 +172,7 @@ all: qtserial $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
 ifeq "$(SYSTEM)" "windows32"
 WP34SEXE := $(OUTPUTDIR)/WP-34s.exe
 endif
-ifeq "$(SYSTEM)" "Linux"
+ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
 WP34SEXE := $(OUTPUTDIR)/WP-34s
 endif
 
@@ -191,7 +201,7 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(MACDEPLOYQT) $(DISTDIR) -dmg
 	$(MV) $(BUILTDMG) $(DISTDMG)
 endif
-ifeq "$(SYSTEM)" "Linux"
+ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
 	$(CP) $(WP34SEXE) $(DISTDIR)
 	$(MKDIR) $(DISTDIR)/skins
 	$(CPDIR) skins/* $(DISTDIR)/skins

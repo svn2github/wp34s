@@ -35,6 +35,12 @@ SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
 SYSTEM := Output
 endif
+ifeq "$(SYSTEM)" "Linux"
+LINUXSIZE := $(shell getconf LONG_BIT)
+ifeq "$(LINUXSIZE)" "64"
+SYSTEM := Linux64
+endif
+endif
 ifeq "$(findstring MINGW,$(SYSTEM))" "MINGW"
 SYSTEM := windows32
 MAKE=mingw32-make
@@ -63,7 +69,10 @@ endif
 CFLAGS = $(BASE_CFLAGS)
 ifdef QTGUI
 CFLAGS += -O0 -DDEBUG -DQTGUI
-ifeq ($(SYSTEM),Darwin)
+ifeq "$(SYSTEM)" "Darwin"
+CFLAGS += -DFIX_64_BITS
+endif 
+ifeq "$(SYSTEM)" "Linux64"
 CFLAGS += -DFIX_64_BITS
 endif 
 else
@@ -73,7 +82,7 @@ endif
 ifndef REALBUILD
 ifndef QTGUI
 # Select the correct parameters and libs for various Unix flavours
-ifeq ($(SYSTEM),Linux)
+ifeq "$(findstring Linux,$(SYSTEM))" "Linux"
 LIBS += -lcurses
 else
 ifeq ($(SYSTEM),Darwin)
