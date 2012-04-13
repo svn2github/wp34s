@@ -52,7 +52,7 @@ TStopWatchStatus StopWatchStatus; // ={ 0, 1, 0, 0, };
 int (*KeyCallback)(int)=(int (*)(int)) NULL;
 unsigned long FirstTicker;
 unsigned long StopWatch;
-signed char StopWatchMemory;
+unsigned char StopWatchMemory;
 signed char StopWatchMemoryFirstDigit; //-1;
 signed char RclMemory;
 unsigned char RclMemoryRemanentDisplay;
@@ -66,8 +66,6 @@ unsigned char RclMemoryRemanentDisplay;
 #define STOPWATCH_DOWN K50
 #define STOPWATCH_SHOW_MEMORY K04
 #define STOPWATCH_RCL K11
-
-#define MAX_STOPWATCH_MEMORY 100
 
 #define RCL_MEMORY_REMANENCE 3
 
@@ -148,19 +146,22 @@ static void display_stopwatch() {
 }
 
 static void store_stopwatch_in_memory() {
-	int registerIndex=(StopWatchMemory++)%MAX_STOPWATCH_MEMORY;
-	decNumber s, s2, hms;
-	StopWatchStatus.show_memory=1;
-	ullint_to_dn(&s, StopWatch);
-	dn_divide(&s2, &s, &const_360);
-	dn_divide(&s, &s2, &const_100);
-	decNumberHR2HMS(&hms, &s);
-	setRegister(registerIndex, &hms);
+	int max=global_regs();
+	if(max>0) {
+		decNumber s, s2, hms;
+		StopWatchStatus.show_memory=1;
+		ullint_to_dn(&s, StopWatch);
+		dn_divide(&s2, &s, &const_360);
+		dn_divide(&s, &s2, &const_100);
+		decNumberHR2HMS(&hms, &s);
+		setRegister(StopWatchMemory, &hms);
+		StopWatchMemory=(StopWatchMemory+1)%max;
+	}
 }
 
 static int get_digit(int key) {
 	int digit=keycode_to_digit_or_register(key);
-	return digit>=0 && digit<=9?digit:-1;
+	return digit>=0 && digit<=9 && global_regs() > 0 ? digit : -1;
 }
 
 static void toggle_running() {
@@ -239,6 +240,7 @@ static int process_select_memory_key(int key) {
 }
 
 static int process_stopwatch_key(int key) {
+	int gr=global_regs();
 	switch(key)	{
 			case STOPWATCH_RS: {
 				toggle_running();
@@ -267,7 +269,7 @@ static int process_stopwatch_key(int key) {
 				break;
 				}
 			case STOPWATCH_UP: {
-				if(StopWatchMemory<MAX_STOPWATCH_MEMORY-1) {
+				if(StopWatchMemory<gr-1) {
 					StopWatchMemory++;
 				}
 				break;
@@ -283,7 +285,7 @@ static int process_stopwatch_key(int key) {
 				break;
 				}
 			case STOPWATCH_RCL: {
-				StopWatchStatus.rcl_mode=1;
+				StopWatchStatus.rcl_mode=gr>0;
 				StopWatchMemoryFirstDigit=-1;
 				break;
 				}
