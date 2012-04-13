@@ -195,6 +195,7 @@ static void recall_memory(int index) {
 }
 
 static int process_select_memory_key(int key) {
+	int d = get_digit(key);
 	switch(key)	{
 			case STOPWATCH_RS: {
 				toggle_running();
@@ -216,26 +217,19 @@ static int process_select_memory_key(int key) {
 				}
 				break;
 			   }
-			// Digits
-			case K31:
-			case K32:
-			case K33:
-			case K41:
-			case K42:
-			case K43:
-			case K51:
-			case K52:
-			case K53:
-			case K61: {
-				if(StopWatchMemoryFirstDigit<0) {
-					StopWatchMemoryFirstDigit=get_digit(key);
-				} else if(StopWatchStatus.rcl_mode){
-					recall_memory(StopWatchMemoryFirstDigit*10+get_digit(key));
-				}
-				else {
-					StopWatchMemory=StopWatchMemoryFirstDigit*10+get_digit(key);
-					StopWatchMemoryFirstDigit=-1;
-					StopWatchStatus.select_memory_mode=0;
+			default: {
+				if (d >= 0) {
+					// Digits
+					if(StopWatchMemoryFirstDigit<0) {
+						StopWatchMemoryFirstDigit=d;
+					} else if(StopWatchStatus.rcl_mode){
+						recall_memory(StopWatchMemoryFirstDigit*10+d);
+					}
+					else {
+						StopWatchMemory=StopWatchMemoryFirstDigit*10+d;
+						StopWatchMemoryFirstDigit=-1;
+						StopWatchStatus.select_memory_mode=0;
+					}
 				}
 				break;
 			  }
@@ -293,21 +287,14 @@ static int process_stopwatch_key(int key) {
 				StopWatchMemoryFirstDigit=-1;
 				break;
 				}
-			 //Digits
-			case K31:
-			case K32:
-			case K33:
-			case K41:
-			case K42:
-			case K43:
-			case K51:
-			case K52:
-			case K53:
-			case K61: {
-				StopWatchStatus.select_memory_mode=1;
-				StopWatchMemoryFirstDigit=-1;
-				StopWatchStatus.show_memory=1;
-				return process_select_memory_key(key);
+			default: {
+				if (get_digit(key) >= 0) {
+					//Digits
+					StopWatchStatus.select_memory_mode=1;
+					StopWatchMemoryFirstDigit=-1;
+					StopWatchStatus.show_memory=1;
+					return process_select_memory_key(key);
+				}
 			  }
 			}
 	return -1;
