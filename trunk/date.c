@@ -613,6 +613,7 @@ void date_setdate(enum nilop op) {
 #else
 	// So that very strict compilers (i.e. gcc4.6 do not complain that dow is unused with -Wall)
 	(void) dow;
+	err(ERR_ILLEGAL);
 #endif
 #endif
 }
@@ -627,6 +628,8 @@ void date_settime(enum nilop op) {
 #ifdef REALBUILD
 	busy();
 	RTC_SetTime((unsigned char) h, (unsigned char) m, (unsigned char) s);
+#else
+	err(ERR_ILLEGAL);
 #endif
 #endif
 }
