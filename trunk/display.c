@@ -1332,7 +1332,11 @@ void display(void) {
 		set_status(buf);
 	}
 	if (State2.version) {
+#if !defined(REALBUILD) || defined(XTAL)
+		char vers[] = "34Sx\006" VERSION_STRING "\006????";
+#else
 		char vers[] = "34S\006" VERSION_STRING "\006????";
+#endif
 		set_digits_string("pAULI, WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
 		xcopy( vers + sizeof(vers) - 5, SvnRevision, 4 );
