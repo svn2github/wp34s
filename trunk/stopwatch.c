@@ -365,6 +365,7 @@ void stopwatch(enum nilop op) {
 		StopWatch=0;
 		FirstTicker=0;
 	}
+	clr_dot(LIT_EQ);
 	StopWatchStatus.select_memory_mode=0;
 	StopWatchStatus.rcl_mode=0;
 	StopWatchMemoryFirstDigit=-1;
