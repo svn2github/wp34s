@@ -125,9 +125,7 @@ unsigned char Contrast;
 volatile unsigned char LcdFadeOut;
 volatile unsigned char InIrq;
 unsigned char DebugFlag;
-#ifdef XTAL
-#define Xtal (1)
-#else
+#ifndef XTAL
 unsigned char Xtal;
 #endif
 #ifdef SLEEP_ANNUNCIATOR

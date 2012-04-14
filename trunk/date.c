@@ -524,7 +524,6 @@ void date_alphatime(enum nilop op) {
 
 /* These routines get the real time and day from the RTC */
 
-#if !defined(REALBUILD) || defined(XTAL)
 static void query_time(unsigned int *s, unsigned int *m, unsigned int *h) {
 #ifdef REALBUILD
 	unsigned char hour, minute, second;
@@ -562,41 +561,35 @@ static void query_date(unsigned int *d, unsigned int *m, unsigned int *y) {
 	*d = dt->tm_mday;
 #endif
 }
-#endif
 
 
 void date_date(enum nilop op) {
-#if defined(REALBUILD) && ! defined(XTAL)
-	err(ERR_ILLEGAL);
-#else
-	unsigned int d, m, y;
-	decNumber z;
+	if (Xtal) {
+		unsigned int d, m, y;
+		decNumber z;
 
-	query_date(&d, &m, &y);
-	build_date(&z, y, m, d);
-	setX(&z);
-#endif
+		query_date(&d, &m, &y);
+		build_date(&z, y, m, d);
+		setX(&z);
+	} else
+		err(ERR_ILLEGAL);
 }
 
 void date_time(enum nilop op) {
-#if defined(REALBUILD) && ! defined(XTAL)
-	err(ERR_ILLEGAL);
-#else
-	unsigned int h, m, s;
-	decNumber a, b;
+	if (Xtal) {
+		unsigned int h, m, s;
+		decNumber a, b;
 
-	query_time(&s, &m, &h);
-	h = (h * 100 + m) * 100 + s;
-	int_to_dn(&a, h);
-	dn_mulpow10(&b, &a, -4);
-	setX(&b);
-#endif
+		query_time(&s, &m, &h);
+		h = (h * 100 + m) * 100 + s;
+		int_to_dn(&a, h);
+		dn_mulpow10(&b, &a, -4);
+		setX(&b);
+	} else
+		err(ERR_ILLEGAL);
 }
 
 void date_setdate(enum nilop op) {
-#if defined(REALBUILD) && ! defined(XTAL)
-	err(ERR_ILLEGAL);
-#else
 	int d, m, y, dow;
 	decNumber x;
 
@@ -607,29 +600,30 @@ void date_setdate(enum nilop op) {
 	}
 	dow = day_of_week(y, m, d, NULL);
 #ifdef REALBUILD
-	busy();
-	RTC_SetDate((unsigned short) y, (unsigned char) m,
-		    (unsigned char) d, (unsigned char) dow);
+	if (Xtal) {
+		busy();
+		RTC_SetDate((unsigned short) y, (unsigned char) m,
+			    (unsigned char) d, (unsigned char) dow);
+	} else
+		err(ERR_ILLEGAL);
 #else
 	// So that very strict compilers (i.e. gcc4.6 do not complain that dow is unused with -Wall)
 	(void) dow;
 	err(ERR_ILLEGAL);
 #endif
-#endif
 }
 
 void date_settime(enum nilop op) {
-#if defined(REALBUILD) && ! defined(XTAL)
-	err(ERR_ILLEGAL);
-#else
 	int h, m, s;
 	if (extract_time(&h, &m, &s, 24))
 		return;
 #ifdef REALBUILD
-	busy();
-	RTC_SetTime((unsigned char) h, (unsigned char) m, (unsigned char) s);
+	if (Xtal) {
+		busy();
+		RTC_SetTime((unsigned char) h, (unsigned char) m, (unsigned char) s);
+	} else
+		err(ERR_ILLEGAL);
 #else
 	err(ERR_ILLEGAL);
-#endif
 #endif
 }

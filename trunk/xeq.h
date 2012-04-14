@@ -66,6 +66,12 @@
 #include "decNumber/decimal64.h"
 #include "decNumber/decimal128.h"
 
+#if defined(XTAL) || ! defined(REALBUILD)
+#define Xtal (1)
+#else
+extern unsigned char Xtal;
+#endif
+
 // Generic register type
 typedef union {
 	decimal128 d;
