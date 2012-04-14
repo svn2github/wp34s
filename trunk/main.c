@@ -1743,11 +1743,10 @@ NO_RETURN int main(void)
 					}
 				}
 #ifdef INCLUDE_STOPWATCH
-				if(StopWatchRunning)
-				{
+				if ( StopWatchRunning ) {
 					set_speed( SPEED_IDLE );
 				}
-				else
+				else 
 #endif
 				{
 					deep_sleep();
@@ -1765,17 +1764,16 @@ NO_RETURN int main(void)
 		 */
 	key_pressed:
 		k = get_key();
+
 #ifdef INCLUDE_STOPWATCH
-		if(KeyCallback!=NULL) {
-			k=(*KeyCallback)(k);
+		if ( KeyCallback != NULL ) {
+			k = (*KeyCallback)( k );
 		}
-#ifndef CONSOLE
-		else if(StopWatchRunning && (Ticker % STOPWATCH_BLINK)==0) {
-			dot(LIT_EQ, !is_dot(LIT_EQ));
+		else if ( StopWatchRunning && ( Ticker % STOPWATCH_BLINK ) == 0 ) {
+			dot( LIT_EQ, !is_dot( LIT_EQ ) );
 			finish_display();
 		}
-#endif
-		if ( k !=-1 && k != K_HEARTBEAT ) {
+		if ( k != -1 && k != K_HEARTBEAT ) {
 #else
 		if ( k != K_HEARTBEAT ) {
 #endif
