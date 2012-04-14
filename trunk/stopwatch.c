@@ -353,6 +353,10 @@ int stopwatch_callback(int key) {
 }
 
 void stopwatch(enum nilop op) {
+	if (Running) {
+		err(ERR_ILLEGAL);
+		return;
+	}
 	if(!StopWatchRunning) {
 		StopWatchStatus.show_memory=0;
 		StopWatchStatus.display_tenths=1;
