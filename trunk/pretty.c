@@ -183,7 +183,10 @@ void dump_opcodes(FILE *f) {
 				continue;
 
 			case KIND_NIL:
-				d = c & 0xff;
+#ifdef INCLUDE_STOPWATCH
+				if (d == OP_STOPWATCH)
+					continue;
+#endif
 				if (d >= OP_CLALL && d <= OP_CLPALL) {
 					continue;
 				}
