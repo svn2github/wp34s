@@ -128,7 +128,7 @@ void add_heartbeat()
 	add_heartbeat_adapter(K_HEARTBEAT);
 
 #if defined(INCLUDE_STOPWATCH) && !defined(CONSOLE)
-	if(KeyCallback==NULL && StopWatchRunning && (Ticker % 5)==0) {
+	if(KeyCallback==NULL && StopWatchRunning && (Ticker % STOPWATCH_BLINK)==0) {
 		dot(LIT_EQ, !is_dot(LIT_EQ));
 		updateScreen();
 	}

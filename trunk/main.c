@@ -1770,7 +1770,7 @@ NO_RETURN int main(void)
 			k=(*KeyCallback)(k);
 		}
 #ifndef CONSOLE
-		else if(StopWatchRunning && (Ticker % 5)==0) {
+		else if(StopWatchRunning && (Ticker % STOPWATCH_BLINK)==0) {
 			dot(LIT_EQ, !is_dot(LIT_EQ));
 			finish_display();
 		}

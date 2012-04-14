@@ -62,6 +62,7 @@ unsigned char RclMemoryRemanentDisplay;
 #define STOPWATCH_CLEAR K24
 #define STOPWATCH_EEX K23
 #define STOPWATCH_STORE K20
+#define STOPWATCH_STORE_ROUND K62
 #define STOPWATCH_UP K40
 #define STOPWATCH_DOWN K50
 #define STOPWATCH_SHOW_MEMORY K04
@@ -146,8 +147,8 @@ static void display_stopwatch() {
 }
 
 static void store_stopwatch_in_memory() {
-	int max=global_regs();
-	if(max>0) {
+	int max_registers=global_regs();
+	if(max_registers>0) {
 		decNumber s, s2, hms;
 		StopWatchStatus.show_memory=1;
 		ullint_to_dn(&s, StopWatch);
@@ -155,7 +156,7 @@ static void store_stopwatch_in_memory() {
 		dn_divide(&s, &s2, &const_100);
 		decNumberHR2HMS(&hms, &s);
 		setRegister(StopWatchMemory, &hms);
-		StopWatchMemory=(StopWatchMemory+1)%max;
+		StopWatchMemory=(StopWatchMemory+1)%max_registers;
 	}
 }
 
@@ -195,8 +196,19 @@ static void recall_memory(int index) {
 	StopWatch=previous;
 }
 
+static void end_memory_selection(int index) {
+	if(StopWatchStatus.rcl_mode){
+		recall_memory(index);
+	}
+	else {
+		StopWatchMemory=index;
+		StopWatchMemoryFirstDigit=-1;
+		StopWatchStatus.select_memory_mode=0;
+	}
+}
+
 static int process_select_memory_key(int key) {
-	int d = get_digit(key);
+	int digit = get_digit(key);
 	switch(key)	{
 			case STOPWATCH_RS: {
 				toggle_running();
@@ -218,18 +230,26 @@ static int process_select_memory_key(int key) {
 				}
 				break;
 			   }
+			case STOPWATCH_STORE: {
+				if(StopWatchMemoryFirstDigit>=0) {
+					end_memory_selection(StopWatchMemoryFirstDigit);
+				}
+			}
 			default: {
-				if (d >= 0) {
+				if (digit >= 0) {
+					int max_registers=global_regs();
 					// Digits
 					if(StopWatchMemoryFirstDigit<0) {
-						StopWatchMemoryFirstDigit=d;
-					} else if(StopWatchStatus.rcl_mode){
-						recall_memory(StopWatchMemoryFirstDigit*10+d);
+						if(digit<=max_registers/10) {
+							StopWatchMemoryFirstDigit=digit;
+						} else if(max_registers<=10 && digit<max_registers) {
+							end_memory_selection(digit);
+						}
+					} else {
+					int index=StopWatchMemoryFirstDigit*10+digit;
+					if(index<max_registers) {
+						end_memory_selection(index);
 					}
-					else {
-						StopWatchMemory=StopWatchMemoryFirstDigit*10+d;
-						StopWatchMemoryFirstDigit=-1;
-						StopWatchStatus.select_memory_mode=0;
 					}
 				}
 				break;
@@ -240,7 +260,7 @@ static int process_select_memory_key(int key) {
 }
 
 static int process_stopwatch_key(int key) {
-	int gr=global_regs();
+	int max_registers=global_regs();
 	switch(key)	{
 			case STOPWATCH_RS: {
 				toggle_running();
@@ -268,8 +288,13 @@ static int process_stopwatch_key(int key) {
 				store_stopwatch_in_memory();
 				break;
 				}
+			case STOPWATCH_STORE_ROUND: {
+				store_stopwatch_in_memory();
+				FirstTicker=getTicker();
+				break;
+				}
 			case STOPWATCH_UP: {
-				if(StopWatchMemory<gr-1) {
+				if(StopWatchMemory<max_registers-1) {
 					StopWatchMemory++;
 				}
 				break;
@@ -285,7 +310,7 @@ static int process_stopwatch_key(int key) {
 				break;
 				}
 			case STOPWATCH_RCL: {
-				StopWatchStatus.rcl_mode=gr>0;
+				StopWatchStatus.rcl_mode=max_registers>0;
 				StopWatchMemoryFirstDigit=-1;
 				break;
 				}
@@ -330,16 +355,15 @@ int stopwatch_callback(int key) {
 void stopwatch(enum nilop op) {
 	if(!StopWatchRunning) {
 		StopWatchStatus.show_memory=0;
-		StopWatchStatus.select_memory_mode=0;
 		StopWatchStatus.display_tenths=1;
-		StopWatchStatus.rcl_mode=0;
 		StopWatchMemory=0;
 		RclMemory=-1;
 		StopWatch=0;
 		FirstTicker=0;
-		StopWatchMemoryFirstDigit=-1;
 	}
-	clr_dot(LIT_EQ);
+	StopWatchStatus.select_memory_mode=0;
+	StopWatchStatus.rcl_mode=0;
+	StopWatchMemoryFirstDigit=-1;
 	KeyCallback=&stopwatch_callback;
 }
 

@@ -34,6 +34,7 @@
 #include "keys.h"
 #ifdef INCLUDE_STOPWATCH
 #include "stopwatch.h"
+#include "lcd.h"
 #endif
 
 /*
@@ -126,6 +127,10 @@ void KeyPress( int i )
 	if(KeyCallback!=NULL) {
 		i=(*KeyCallback)(i);
 	} else {
+		if(StopWatchRunning && (Ticker % STOPWATCH_BLINK)==0) {
+			dot(LIT_EQ, !is_dot(LIT_EQ));
+			finish_display();
+		}
 #endif
 
 	process_keycode( i );

@@ -37,6 +37,7 @@ typedef struct _stopwatch_status {
 
 extern TStopWatchStatus StopWatchStatus;
 #define StopWatchRunning (StopWatchStatus.running)
+#define STOPWATCH_BLINK 5
 
 #endif
 
