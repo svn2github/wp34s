@@ -714,7 +714,8 @@ bool QtSkin::charactersPolygon(const QString& aString)
 	}
     for (QStringList::const_iterator iterator = list.constBegin(); iterator != list.constEnd(); ++iterator)
     {
-    	iterator->trimmed();
+    	// dummy to avoid a warning
+    	QString dummy=iterator->trimmed();
     }
 
     QPolygon polygon;

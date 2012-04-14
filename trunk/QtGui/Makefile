@@ -48,6 +48,8 @@ endif
 
 LINK=$(CXX)
 
+LINUX := $(findstring "$(SYSTEM)", "Linux" "Linux64")
+	
 OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
 ifeq "$(SYSTEM)" "windows32"
@@ -55,7 +57,7 @@ DISTDIR := wp-34s
 DISTFILE := wp-34s-emulator-windows.zip
 RESOURCESDIR := $(DISTDIR)
 endif
-ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
+ifneq "$(LINUX)" ""
 DISTDIR := wp-34s
 ifeq "$(SYSTEM)" "Linux64"
 DISTFILE := wp-34s-emulator-linux64.tgz
@@ -129,7 +131,7 @@ endif
 ifeq "$(NO_SERIAL)" ""
 	QTSERIALDIR=../QtSerial
 	HAS_SERIAL=1
-ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "windows32"), "")
+ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "Linux64" "windows32"), "")
 	SERIALLIB=
 	QTSERIALLIB=
 else
@@ -172,7 +174,7 @@ all: qtserial $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
 ifeq "$(SYSTEM)" "windows32"
 WP34SEXE := $(OUTPUTDIR)/WP-34s.exe
 endif
-ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
+ifneq "$(LINUX)" ""
 WP34SEXE := $(OUTPUTDIR)/WP-34s
 endif
 
@@ -201,7 +203,7 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(MACDEPLOYQT) $(DISTDIR) -dmg
 	$(MV) $(BUILTDMG) $(DISTDMG)
 endif
-ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
+ifneq "$(LINUX)" ""
 	$(CP) $(WP34SEXE) $(DISTDIR)
 	$(MKDIR) $(DISTDIR)/skins
 	$(CPDIR) skins/* $(DISTDIR)/skins

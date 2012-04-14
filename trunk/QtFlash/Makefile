@@ -33,6 +33,8 @@ TAR := tar czf
 
 LINK=$(CXX)
 
+LINUX := $(findstring "$(SYSTEM)", "Linux" "Linux64")
+	
 OUTPUTDIR := $(SYSTEM)
 OUTPUTDIRCMD := cmd/$(SYSTEM)
 DESTDIR := $(OUTPUTDIR)
@@ -43,7 +45,7 @@ DISTDIR := wp34sFlash
 DISTFILE := wp-34s-flash-windows.zip
 RESOURCESDIR := $(DISTDIR)
 endif
-ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
+ifneq "$(LINUX)" ""
 DISTDIR := wp34sFlash
 ifeq "$(SYSTEM)" "Linux64"
 DISTFILE := wp-34s-flash-linux64.tgz
@@ -69,7 +71,7 @@ ifeq "$(SYSTEM)" "windows32"
 WP34SFLASHEXE := $(DESTDIR)/WP34sFlash.exe
 WP34SFLASHCMDEXE := $(DESTDIRCMD)/wp34sflashcmd.exe
 endif
-ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
+ifneq "$(LINUX)" ""
 WP34SFLASHEXE := $(DESTDIR)/WP34sFlash
 WP34SFLASHCMDEXE := $(DESTDIRCMD)/wp34sflashcmd
 endif
@@ -110,7 +112,7 @@ endif
 
 QTSERIALDIR=../QtSerial
 	HAS_SERIAL=1
-ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "windows32"), "")
+ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "Linux64" "windows32"), "")
 	SERIALLIB=
 	QTSERIALLIB=
 else
@@ -155,7 +157,7 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(CP) $(WP34SFLASHCMDEXE) $(DESTDIR) 
 	$(BUILDDMG)
 endif
-ifneq ($(findstring "$(SYSTEM)", "Linux" "Linux64"), "")
+ifneq "$(LINUX)" ""
 	$(CP) $(WP34SFLASHEXE) $(DISTDIR)
 	$(CP) $(WP34SFLASHCMDEXE) $(DISTDIR)
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)

@@ -82,9 +82,6 @@ static int find_dot(int n) {
 		LcdAddr = AT91C_SLCDC_MEM + lcd_addr[n];
 		return m;
 	}
-#ifdef DEBUG
-        *((char *)NULL)=0;
-#endif
 	return 0;
 }
 
