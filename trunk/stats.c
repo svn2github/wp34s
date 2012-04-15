@@ -774,25 +774,45 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 				decNumber *(*cdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
 				const decNumber *arg1, const decNumber *arg2, const decNumber *maxstep) {
 	decNumber v, w, x, z, md, prev;
+	decNumber low, high;
 	int i;
 	const int discrete = (flags & NEWTON_DISCRETE) != 0;
-	const int nonnegative = (flags & NEWTON_NONNEGATIVE) != 0;
+	const int nonnegative = (flags & (NEWTON_NONNEGATIVE | NEWTON_WANDERCHECK)) != 0;
 	const int wandercheck = (flags & NEWTON_WANDERCHECK) != 0;
+	int wc = wandercheck;
+
+	set_NaN(&high);
+	decNumberZero(&low);
 
 	if (maxstep != NULL)
 		dn_multiply(&md, r, maxstep);
 
 	for (i=0; i<50; i++) {
-//dump1(r, "est");
+retry:		//dump1(r, "est");
 		dn_subtract(&z, (*cdf)(&w, r, arg1, arg2), p);
+		//dump1(&z, "   err");
 
 		// Check if things are getting worse
-		if (wandercheck) {
+		if (wc) {
 			dn_abs(&x, &z);
-			if (i > 0 && dn_lt(&prev, &x))
-				return set_NaN(r);
+			if (i > 0 && dn_lt(&prev, &x)) {
+				if (! decNumberIsSpecial(&high)) {
+					//fprintf(debugf, "bisection step %d\n", i);dump1(&low, "low");dump1(&high, "high");
+					dn_add(&z, &high, &low);
+					dn_multiply(r, &z, &const_0_5);
+				} else
+					dn_add(r, r, r);
+				wc = 0;
+				goto retry;
+			}
 			decNumberCopy(&prev, &x);
+			if (dn_lt0(&z))
+				decNumberCopy(&low, r);
+			else
+				decNumberCopy(&high, r);
 		}
+		wc = wandercheck;
+
 		if (discrete) {
 			// Using the pdf for the slope isn't great for the discrete distributions
 			// So we do something more akin to a secant approach
@@ -833,6 +853,8 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 			break;
 		busy();
 	}
+	if (i>50)
+		return set_NaN(r);
 	if (discrete) {
 		decNumberFloor(r, r);
 		(*cdf)(&x, r, arg1, arg2);
