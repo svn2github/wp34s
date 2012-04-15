@@ -1537,8 +1537,7 @@ static decNumber *qf_F_est(decNumber *r, const decNumber *n1, const decNumber *n
 	dn_subtract(&dr, &u, &k);
 
 	dn_subtract(&t, &const_0_5, pp);
-	qf_Q_est(&u, pp, &t);
-	dn_minus(r, &u);
+	qf_Q_est(r, pp, &t);
 	decNumberSquare(&k, r);
 	dn_subtract(&u, &k, &const_3);
 	dn_divide(&k, &u, &const_6);
