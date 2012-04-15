@@ -395,10 +395,6 @@ end function
 
 
 
-
-
-
-
 Binomial quantile:
 
 For the record: here is a complete binomial quantile function. It
@@ -484,3 +480,26 @@ small. Then decrement resp. increment x and adjust the cdf accordingly.
 This is easy since the new pdf can be calculated from the previous one.
 Test again until the cdf drops below resp. exceeds pp. If you prefer
 integer results, omit the final linear interpolation.
+
+
+
+
+
+
+Finally the normal distribution estimate:
+
+The 0.2/u term in the longest line may be replaced by 1/u^2.
+
+Function guess_normal(p)
+Const root2pi = 2.506628274631
+If p < 0.5 Then q = p Else q = 1 - p
+If q > 0.2 Then
+  u = root2pi * (0.5 - q)
+  z = u + u ^ 3 / 6
+Else
+  u = -2 * Log(q)
+  z = Sqr(-2 * Log(q * root2pi * Sqr(u - 1))) + 0.2 / u
+End If
+If p < 0.5 Then z = -z
+z_guess = z
+End Function
