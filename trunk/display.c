@@ -1333,7 +1333,7 @@ void display(void) {
 	}
 	if (State2.version) {
 #if !defined(REALBUILD) || defined(XTAL)
-		char vers[] = "34S\006" VERSION_STRING "t\006????";
+		char vers[] = "34S\006" VERSION_STRING "T\006????";
 #else
 		char vers[] = "34S\006" VERSION_STRING "\006????";
 #endif
