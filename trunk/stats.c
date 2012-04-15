@@ -767,51 +767,44 @@ static decNumber *discrete_final_check(decNumber *r, const decNumber *p, const d
  */
 #define NEWTON_DISCRETE		0x0001
 #define NEWTON_NONNEGATIVE	0x0002
-#define NEWTON_WANDERCHECK	0x0004
 
 static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned short int flags,
 				decNumber *(*pdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
 				decNumber *(*cdf)(decNumber *r, const decNumber *x, const decNumber *a1, const decNumber *a2),
 				const decNumber *arg1, const decNumber *arg2, const decNumber *maxstep) {
-	decNumber v, w, x, z, md, prev;
-	decNumber low, high;
+	decNumber v, w, x, z, md, low, high;
 	int i;
 	const int discrete = (flags & NEWTON_DISCRETE) != 0;
-	const int nonnegative = (flags & (NEWTON_NONNEGATIVE | NEWTON_WANDERCHECK)) != 0;
-	const int wandercheck = (flags & NEWTON_WANDERCHECK) != 0;
-	int wc = wandercheck;
+	const int nonnegative = (flags & NEWTON_NONNEGATIVE) != 0;
+	int allow_bisect = 1;
+	const int max_iterations = 50;
 
-	set_NaN(&high);
-	decNumberZero(&low);
+	set_inf(&high);
+	decNumberCopy(&low, nonnegative ? &const_0 : &const__inf);
 
 	if (maxstep != NULL)
 		dn_multiply(&md, r, maxstep);
 
-	for (i=0; i<50; i++) {
-retry:		//dump1(r, "est");
+	for (i=0; i<max_iterations; i++) {
+		if (0) {
+bisect:			allow_bisect = 0;
+			dn_add(&z, &low, &high);
+			dn_multiply(r, &z, &const_0_5);
+		}
+		//dump1(r, "est");
 		dn_subtract(&z, (*cdf)(&w, r, arg1, arg2), p);
 		//dump1(&z, "   err");
 
-		// Check if things are getting worse
-		if (wc) {
-			dn_abs(&x, &z);
-			if (i > 0 && dn_lt(&prev, &x)) {
-				if (! decNumberIsSpecial(&high)) {
-					//fprintf(debugf, "bisection step %d\n", i);dump1(&low, "low");dump1(&high, "high");
-					dn_add(&z, &high, &low);
-					dn_multiply(r, &z, &const_0_5);
-				} else
-					dn_add(r, r, r);
-				wc = 0;
-				goto retry;
-			}
-			decNumberCopy(&prev, &x);
-			if (dn_lt0(&z))
-				decNumberCopy(&low, r);
-			else
-				decNumberCopy(&high, r);
+		if (dn_lt0(&z)) {
+			if (allow_bisect && dn_lt(r, &low) && ! decNumberIsInfinite(&high))
+				goto bisect;
+			dn_max(&low, &low, r);
+		} else {
+			if (allow_bisect && dn_gt(r, &high) && ! decNumberIsInfinite(&low))
+				goto bisect;
+			dn_min(&high, &high, r);
 		}
-		wc = wandercheck;
+		allow_bisect = 1;
 
 		if (discrete) {
 			// Using the pdf for the slope isn't great for the discrete distributions
@@ -853,8 +846,9 @@ retry:		//dump1(r, "est");
 			break;
 		busy();
 	}
-	if (i>50)
+	if (i>=max_iterations)
 		return set_NaN(r);
+
 	if (discrete) {
 		decNumberFloor(r, r);
 		(*cdf)(&x, r, arg1, arg2);
@@ -1289,7 +1283,7 @@ decNumber *qf_chi2(decNumber *r, const decNumber *p) {
 	qf_chi2_est(r, &v, p);
 	if (dn_eq0(r))
 		return r;
-	return newton_qf(r, p, NEWTON_NONNEGATIVE | NEWTON_WANDERCHECK, &pdf_chi2_helper, &cdf_chi2_helper, &v, NULL, &const_0_04);
+	return newton_qf(r, p, NEWTON_NONNEGATIVE, &pdf_chi2_helper, &cdf_chi2_helper, &v, NULL, &const_0_04);
 }
 
 
@@ -1572,7 +1566,7 @@ decNumber *qf_F(decNumber *r, const decNumber *x) {
 		return decNumberZero(r);
 
 	qf_F_est(r, &df1, &df2, x);
-	return newton_qf(r, x, NEWTON_NONNEGATIVE | NEWTON_WANDERCHECK, &pdf_F_helper, &cdf_F_helper, &df1, &df2, &const_0_75);
+	return newton_qf(r, x, NEWTON_NONNEGATIVE, &pdf_F_helper, &cdf_F_helper, &df1, &df2, &const_0_75);
 }
 
 /* Binomial cdf f(k; n, p) = iBeta(n-floor(k), 1+floor(k); 1-p)
