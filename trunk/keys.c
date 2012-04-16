@@ -850,7 +850,11 @@ static int process_cmplx(const keycode c) {
 		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_OFF     },
 		{ CNUM(0),		OP_CMON | OP_ABS,    OP_CMON | OP_RND,    STATE_UNFINISHED    },
 		{ OP_NIL | OP_cmplxI,	OP_CMON | OP_TRUNC,  OP_CMON | OP_FRAC,   STATE_UNFINISHED    },
+#ifdef INCLUDE_STOPWATCH_HOTKEY
+		{ OP_NIL | OP_STOPWATCH, STATE_UNFINISHED,   STATE_UNFINISHED,    STATE_UNFINISHED    },
+#else
 		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
+#endif
 		{ OP_CDYA | OP_ADD,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    }
 	};
 
@@ -2241,13 +2245,6 @@ static int process(const int c) {
 		soft_init_state();
 		return STATE_UNFINISHED;
 	}
-
-#ifdef INCLUDE_STOPWATCH_HOTKEY
-	if (c == K60 && shift_down() == SHIFT_H) {
-		set_shift(SHIFT_N);
-		return (OP_NIL | OP_STOPWATCH);
-	}
-#endif // INCLUDE_STOPWATCH_HOTKEY
 
 #ifndef CONSOLE
 	if (c == K63 && JustStopped) {

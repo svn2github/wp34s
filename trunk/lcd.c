@@ -203,7 +203,7 @@ void reset_disp(void) {
 // Console
 #ifdef USECURSES
 	int i;
-        for (i=0; i<MATRIX_BASE; i++)
+        for (i=0; i<400; i++)
 		if (i != RCL_annun && i != BATTERY && i != LIT_EQ )
 			clr_dot(i);
 
