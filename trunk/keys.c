@@ -456,7 +456,11 @@ static int check_confirm(int op) {
 			State2.confirm = confirm_clall + (nilop - OP_CLALL);
 			return STATE_UNFINISHED;
 		}
+#ifdef INCLUDE_STOPWATCH
+		if ((nilop >= OP_RECV && nilop <= OP_PSTO) || nilop == OP_STOPWATCH) {
+#else
 		if (nilop >= OP_RECV && nilop <= OP_PSTO) {
+#endif
 			// These commands are not programmable
 			NonProgrammable = 1;
 		}
@@ -850,7 +854,7 @@ static int process_cmplx(const keycode c) {
 		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    OP_NIL | OP_OFF     },
 		{ CNUM(0),		OP_CMON | OP_ABS,    OP_CMON | OP_RND,    STATE_UNFINISHED    },
 		{ OP_NIL | OP_cmplxI,	OP_CMON | OP_TRUNC,  OP_CMON | OP_FRAC,   STATE_UNFINISHED    },
-#ifdef INCLUDE_STOPWATCH_HOTKEY
+#ifdef INCLUDE_STOPWATCH
 		{ OP_NIL | OP_STOPWATCH, STATE_UNFINISHED,   STATE_UNFINISHED,    STATE_UNFINISHED    },
 #else
 		{ STATE_UNFINISHED,	STATE_UNFINISHED,    STATE_UNFINISHED,    STATE_UNFINISHED    },
@@ -898,7 +902,12 @@ static int process_cmplx(const keycode c) {
 			break;
 		}
 	}
+#ifdef INCLUDE_STOPWATCH
+	return check_confirm(op);
+#else
 	return op;
+#endif
+
 #undef _RARG
 #undef CSWAPXZ
 #undef CNUM

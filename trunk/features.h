@@ -34,11 +34,6 @@
 #else
 //#define INCLUDE_STOPWATCH
 #endif
-#ifdef INCLUDE_STOPWATCH
-// Define this to activate directly the STOPWATCH function by pressing the F then
-// G prefixes quickly
-#define INCLUDE_STOPWATCH_HOTKEY
-#endif
 
 // Build a tiny version of the device
 // #define TINY_BUILD
