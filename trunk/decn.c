@@ -100,6 +100,9 @@ int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol)
 	return dn_abs_lt(dn_subtract(&a, x, y), tol);
 }
 
+const decNumber *convergence_threshold(void) {
+	return is_dblmode() ? &const_1e_32 : &const_1e_24;
+}
 
 
 /* Some wrapper rountines to save space
@@ -2378,6 +2381,7 @@ int solver_step(decNumber *a, decNumber *b, decNumber *c,
 	int s1, s2;
 	unsigned int slv_state = *statep;
 	int count, r;
+	const decNumber * const cnvg_threshold = convergence_threshold();
 #ifdef USE_RIDDERS
 	const int was_bisect = IS_BISECT(slv_state);
 	CLEAR_BISECT(slv_state);
@@ -2475,9 +2479,9 @@ nonconst:
 			limit_jump(&q, a, b);
 		}
 	}
-	if (compare(c, &q, &const_1e_24)) goto failed;
-	if (compare(a, &q, &const_1e_24)) goto failed;
-	if (compare(b, &q, &const_1e_24)) goto failed;
+	if (compare(c, &q, cnvg_threshold)) goto failed;
+	if (compare(a, &q, cnvg_threshold)) goto failed;
+	if (compare(b, &q, cnvg_threshold)) goto failed;
 	decNumberCopy(c, &q);
 	*statep = slv_state;
 	return 0;

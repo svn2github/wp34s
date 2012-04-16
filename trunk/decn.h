@@ -79,6 +79,7 @@ extern long long int intXRoot(long long int y, long long int x);
 
 extern int relative_error(const decNumber *x, const decNumber *y, const decNumber *tol);
 extern int absolute_error(const decNumber *x, const decNumber *y, const decNumber *tol);
+extern const decNumber *convergence_threshold(void);
 
 extern decNumber *decNumberMAdd(decNumber *r, const decNumber *z, const decNumber *y, const decNumber *x);
 

@@ -778,6 +778,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 	const int nonnegative = (flags & NEWTON_NONNEGATIVE) != 0;
 	int allow_bisect = 1;
 	const int max_iterations = 50;
+	const decNumber * const cnvg_threshold = convergence_threshold();
 
 	set_inf(&high);
 	decNumberCopy(&low, nonnegative ? &const_0 : &const__inf);
@@ -842,7 +843,7 @@ bisect:			allow_bisect = 0;
 		if (discrete) {
 			if (absolute_error(r, &z, DISCRETE_TOLERANCE))
 				break;
-		} else if (relative_error(r, &z, &const_1e_24))
+		} else if (relative_error(r, &z, cnvg_threshold))
 			break;
 		busy();
 	}
