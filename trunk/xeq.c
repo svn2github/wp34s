@@ -489,6 +489,7 @@ int warn(const unsigned int e) {
 	error_message(e);
 #ifndef CONSOLE
 	State2.disp_freeze = 0;
+	ShowRPN = 1;
 	JustDisplayed = 1;
 #endif
 	return e != ERR_NONE;
