@@ -1323,11 +1323,49 @@ void flush_comm( void )
 /*
  *  IR transmitter on pin TIOA0
  */
-static void test_ir( void )
+static void test_ir( int on )
 {
-	// Make the timer spit out a signal
-	SerialOn = 1;
+	if ( on ) {
+		// Make the timer spit out a signal
+		SerialOn = 1;
+		set_speed( SPEED_HALF );
 
+		// Enable the peripheral clocks of TC0 and TC1
+		AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
+
+		// Assign I/O pin PC7 to TIOA0, disable pull-ups
+		AT91C_BASE_PIOC->PIO_PDR   = AT91C_PC7_TIOA0;	// Disable PIO
+		AT91C_BASE_PIOC->PIO_BSR   = AT91C_PC7_TIOA0;	// Peripheral B is TC0
+		AT91C_BASE_PIOC->PIO_PPUDR = AT91C_PC7_TIOA0;	// No pull-up
+
+		// TC0: 32768 Hz square wave
+		AT91C_BASE_TC0->TC_CMR = AT91C_TC_CLKS_TIMER_DIV1_CLOCK | AT91C_TC_BURST_XC0
+				       | AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR;
+		AT91C_BASE_TC0->TC_RA = ( PLLMUL_HALF + 1 ) / 4;
+		AT91C_BASE_TC0->TC_RC = ( PLLMUL_HALF + 1 ) / 2;
+		AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKEN;
+
+		// TC1: (32768/14) Hz square wave
+		AT91C_BASE_TC1->TC_CMR = AT91C_TC_CLKS_TIMER_DIV2_CLOCK
+				       | AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR;
+		AT91C_BASE_TC1->TC_RA = 14 * ( PLLMUL_HALF + 1 ) / 4;
+		AT91C_BASE_TC1->TC_RC = 14 * ( PLLMUL_HALF + 1 ) / 2;
+		AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKEN;
+
+		// We need to enable interrupts on RC compare
+		// ...
+
+		// TC1 gates clock of TC0 via signal XC0
+		AT91C_BASE_TCB->TCB_BMR = AT91C_TCB_TC0XC0S_TIOA1 | AT91C_TCB_TC1XC1S_NONE | AT91C_TCB_TC2XC2S_NONE;
+
+		// Go!
+		AT91C_BASE_TCB->TCB_BCR = AT91C_TCB_SYNC;
+	}
+	else {
+		// Shut down
+		AT91C_BASE_PMC->PMC_PCDR = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
+		SerialOn = 0;
+	}
 }
 #endif
 

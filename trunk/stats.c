@@ -358,6 +358,7 @@ void sigma_sum(enum nilop op) {
 		x->s = y->s = get_const(OP_ZERO, 0)->s;
 	}
 	else {
+		sigmaCheck();	// recompute pointer to StatRegs
 		x->s = sigmaX;
 		y->s = sigmaY;
 	}
