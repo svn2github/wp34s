@@ -597,27 +597,8 @@ void rarg_round(unsigned int arg, enum rarg op) {
 	getX(&x);
 	if (op == RARG_ROUND)
 		decNumberRoundDigits(&res, &x, arg, rm);
-	else /* if (op == RARG_ROUND_DEC) */ {
-#if 0
-		/* The slow but always correct way */
-		decNumber p10;
-
-		int_to_dn(&res, (int)arg);
-		decNumberPow10(&p10, &res);
-		dn_multiply(&res, &x, &p10);
-		round2int(&x, &res, rm);
-		dn_divide(&res, &x, &p10);
-#else
-		/* The much faster way but relying on base 10 numbers with exponents */
-		if (decNumberIsSpecial(&x))
-			decNumberCopy(&res, &x);
-		else {
-			x.exponent += arg;
-			round2int(&res, &x, rm);
-			res.exponent -= arg;
-		}
-#endif
-	}
+	else /* if (op == RARG_ROUND_DEC) */
+		decNumberRoundDecimals(&res, &x, arg, rm);
 	setX(&res);
 }
 

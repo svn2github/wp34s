@@ -493,7 +493,7 @@ static decNumber *dn_recip(decNumber *r, const decNumber *x,
  * that saves the current rounding mode, rounds as required and restores
  * the rounding mode properly.
  */
-decNumber *round2int(decNumber *r, const decNumber *x, enum rounding mode) {
+static decNumber *round2int(decNumber *r, const decNumber *x, enum rounding mode) {
 	enum rounding a = Ctx.round;
 
 	Ctx.round = mode;
@@ -1981,28 +1981,35 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		numdig = DISPLAY_DIGITS;
 	}
 
-	if (dmode == MODE_FIX) {
+	if (dmode == MODE_FIX)
 		/* FIX is different since the number of digits changes */
-#if 0
-		/* The slow but always correct way */
-		decNumber p10;
-
-		int_to_dn(&u, numdig-1);
-		decNumberPow10(&p10, &u);
-		dn_multiply(&t, x, &p10);
-		decNumberRound(&u, &t);
-		return dn_divide(res, &u, &p10);
-#else
-		/* The much faster way but relying on base 10 numbers with exponents */
-		decNumberCopy(&t, x);
-		t.exponent += numdig - 1;
-		decNumberRound(res, &t);
-		res->exponent -= numdig - 1;
-		return res;
-#endif
-	}
+		return decNumberRoundDecimals(res, x, numdig-1, DEC_ROUND_HALF_UP);
 
 	return decNumberRoundDigits(res, x, numdig, DEC_ROUND_HALF_UP); 
+}
+
+decNumber *decNumberRoundDecimals(decNumber *r, const decNumber *x, const int n, const enum rounding round) {
+	decNumber t;
+#if 0
+	/* The slow but always correct way */
+	decNumber u, p10;
+
+	int_to_dn(&u, n);
+	decNumberPow10(&p10, &u);
+	dn_multiply(&t, x, &p10);
+	round2int(&u, &t, round);
+	return dn_divide(r, &u, &p10);
+#else
+	/* The much faster way but relying on base 10 numbers with exponents */
+	if (decNumberIsSpecial(x))
+		return decNumberCopy(r, x);
+
+	decNumberCopy(&t, x);
+	t.exponent += n;
+	round2int(r, &t, round);
+	r->exponent -= n;
+	return r;
+#endif
 }
 
 void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {

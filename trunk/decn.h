@@ -59,7 +59,6 @@ extern void int_to_dn(decNumber *, int);
 extern int dn_to_int(const decNumber *);
 extern void ullint_to_dn(decNumber *, unsigned long long int);
 extern unsigned long long int dn_to_ull(const decNumber *, int *);
-extern decNumber *round2int(decNumber *r, const decNumber *x, enum rounding mode);
 
 extern void decNumberPI(decNumber *pi);
 extern void decNumberPIon2(decNumber *pion2);
@@ -89,6 +88,7 @@ extern decNumber *decNumberFloor(decNumber *r, const decNumber *x);
 extern decNumber *decNumberCeil(decNumber *r, const decNumber *x);
 extern decNumber *decNumberTrunc(decNumber *r, const decNumber *x);
 extern decNumber *decNumberRoundDigits(decNumber *r, const decNumber *x, const int digits, const enum rounding round);
+extern decNumber *decNumberRoundDecimals(decNumber *r, const decNumber *x, const int n, const enum rounding round);
 extern decNumber *decNumberRound(decNumber *r, const decNumber *x);
 extern decNumber *decNumberFrac(decNumber *r, const decNumber *x);
 
