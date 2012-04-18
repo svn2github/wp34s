@@ -909,6 +909,7 @@ static long long int intLSR(long long int x) {
 }
 
 static long long int intASR(long long int x) {
+#if 0
 	const long long int tbm = topbit_mask();
     	set_carry(x & 1);
 	if (x & tbm) {
@@ -916,6 +917,13 @@ static long long int intASR(long long int x) {
 	} else {
 		return mask_value((x >> 1) & ~tbm);
 	}
+#else
+	int sx;
+	unsigned long long int xv = extract_value(x, &sx);
+
+	set_carry(xv & 1);
+	return build_value(xv >> 1, sx);
+#endif
 }
 
 static long long int intRL(long long int x) {
