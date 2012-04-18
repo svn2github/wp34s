@@ -1965,7 +1965,6 @@ decNumber *decNumberRoundDigits(decNumber *res, const decNumber *x, const int di
  */
 decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 	int numdig = UState.dispdigs + 1;
-	decNumber p10;
 	decNumber t, u;
 	enum display_modes dmode = (enum display_modes) UState.dispmode;
 
@@ -1986,17 +1985,21 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		/* FIX is different since the number of digits changes */
 #if 0
 		/* The slow but always correct way */
+		decNumber p10;
+
 		int_to_dn(&u, numdig-1);
 		decNumberPow10(&p10, &u);
-#else
-		/* The much faster way but relying on base 10 numbers with exponents */
-		dn_1(&p10);
-		p10.exponent += numdig-1;
-		
-#endif
 		dn_multiply(&t, x, &p10);
 		decNumberRound(&u, &t);
 		return dn_divide(res, &u, &p10);
+#else
+		/* The much faster way but relying on base 10 numbers with exponents */
+		decNumberCopy(&t, x);
+		t.exponent += numdig - 1;
+		decNumberRound(res, &t);
+		res->exponent -= numdig - 1;
+		return res;
+#endif
 	}
 
 	return decNumberRoundDigits(res, x, numdig, DEC_ROUND_HALF_UP); 
