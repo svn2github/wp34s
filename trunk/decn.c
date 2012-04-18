@@ -2330,10 +2330,10 @@ void decNumberSwap(decNumber *a, decNumber *b) {
 }
 
 
-/*; two numbers to see if they are mostly equal.
+/* Compare two numbers to see if they are mostly equal.
  * Return non-zero if they are the same.
  */
-static int slv_compare(const decNumber *a, const decNumber *b, const decNumber *tol) {
+static int slv_compare(const decNumber *a, const decNumber *b) {
 	decNumber ar, br;
 
 	decNumberRnd(&ar, a);
@@ -2376,14 +2376,13 @@ static int slv_compare(const decNumber *a, const decNumber *b, const decNumber *
 #define SET_BISECT(f)		(f) |= _FLAG_BISECT
 #endif
 
-int solver_step(decNumber *a, decNumber *b, decNumber *c,
-		decNumber *fa, decNumber *fb, const decNumber *fc,
-		unsigned int *statep, int (*compare)(const decNumber *, const decNumber *, const decNumber *)) {
+static int solver_step(decNumber *a, decNumber *b, decNumber *c,
+				decNumber *fa, decNumber *fb, const decNumber *fc,
+				unsigned int *statep) {
 	decNumber q, x, y, z;
 	int s1, s2;
 	unsigned int slv_state = *statep;
 	int count, r;
-	const decNumber * const cnvg_threshold = convergence_threshold();
 #ifdef USE_RIDDERS
 	const int was_bisect = IS_BISECT(slv_state);
 	CLEAR_BISECT(slv_state);
@@ -2481,18 +2480,18 @@ nonconst:
 			limit_jump(&q, a, b);
 		}
 	}
-	if (compare(c, &q, cnvg_threshold)) goto failed;
-	if (compare(a, &q, cnvg_threshold)) goto failed;
-	if (compare(b, &q, cnvg_threshold)) goto failed;
-	decNumberCopy(c, &q);
 	*statep = slv_state;
+	if (slv_compare(c, &q)) return 1;
+	if (slv_compare(a, &q)) return 1;
+	if (slv_compare(b, &q)) return 1;
+	decNumberCopy(c, &q);
 	return 0;
 failed:
 	*statep = slv_state;
 	return -1;
 }
 
-void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNumber *fb, unsigned int *flagp) {
+static void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNumber *fb, unsigned int *flagp) {
 	int sa, sb;
 	unsigned int flags = 0;
 
@@ -2571,8 +2570,8 @@ void solver(enum nilop op) {
 #endif
 
 		getX(&fc);
-		r = solver_step(&a, &b, &c, &fa, &fb, &fc, &flags, &slv_compare);
-		setX(r==0?&const_0:&const_1);
+		int_to_dn(&fc, solver_step(&a, &b, &c, &fa, &fb, &fc, &flags));
+		setX(&fc);
 	}
 
 	setRegister(LOCAL_REG_BASE + 0, &a);

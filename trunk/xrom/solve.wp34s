@@ -77,13 +77,11 @@ slv_loop::		FILL
 			x[approx]0?
 				JMP slv_success
 			SLVS
-			x[!=]0?			/* Check for failure to complete*/
+			x<0?			/* Check for failure to complete*/
 				JMP slv_failed
+			x>0?
+				JMP slv_fin
 			RCL .02
-			x[approx]? .00
-				JMP slv_fin
-			x[approx]? .01
-				JMP slv_fin
 			JMP slv_loop
 
 			/* Solver estimates converged */

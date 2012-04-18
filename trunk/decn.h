@@ -198,9 +198,6 @@ extern decNumber *dn_mul1000(decNumber *, const decNumber *);
 extern decNumber *dn_mulPI(decNumber *, const decNumber *);
 extern decNumber *dn_mulpow10(decNumber *, const decNumber *, int);
 
-extern void solver_init(decNumber *c, decNumber *, decNumber *, decNumber *, decNumber *, unsigned int *);
-extern int solver_step(decNumber *, decNumber *, decNumber *, decNumber *, decNumber *, const decNumber *, unsigned int *, int (*)(const decNumber *, const decNumber *, const decNumber *));
-
 extern void solver(enum nilop op);
 
 extern decNumber *decFactor(decNumber *r, const decNumber *x);
