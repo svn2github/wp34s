@@ -777,7 +777,7 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 	const int discrete = (flags & NEWTON_DISCRETE) != 0;
 	const int nonnegative = (flags & NEWTON_NONNEGATIVE) != 0;
 	int allow_bisect = 1;
-	const int max_iterations = 50;
+	const int max_iterations = 100;
 	const decNumber * const cnvg_threshold = convergence_threshold();
 
 	set_inf(&high);
@@ -787,14 +787,13 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 		dn_multiply(&md, r, maxstep);
 
 	for (i=0; i<max_iterations; i++) {
-		if (0) {
+		if (dn_ge(r, &high) || dn_le(r, &low)) {
 bisect:			allow_bisect = 0;
 			dn_add(&z, &low, &high);
 			dn_multiply(r, &z, &const_0_5);
 		}
-		//dump1(r, "est");
+		//{char buf[20]; sprintf(buf, "%03d: est", i);dump1(r, buf);}
 		dn_subtract(&z, (*cdf)(&w, r, arg1, arg2), p);
-		//dump1(&z, "   err");
 
 		if (dn_lt0(&z)) {
 			if (allow_bisect && dn_lt(r, &low) && ! decNumberIsInfinite(&high))
@@ -839,6 +838,13 @@ bisect:			allow_bisect = 0;
 		if (nonnegative && decNumberIsNegative(r))
 			dn_mulpow10(r, &z, -5);
 
+		// If our upper and lower limits are close enough together we give up searching
+		if (! decNumberIsInfinite(&high) && ! decNumberIsInfinite(&low) && relative_error(&high, &low, cnvg_threshold)) {
+			dn_add(&z, &low, &high);
+			dn_multiply(r, &z, &const_0_5);
+			break;
+		}
+
 		// Check for finished
 		if (discrete) {
 			if (absolute_error(r, &z, DISCRETE_TOLERANCE))
@@ -847,7 +853,7 @@ bisect:			allow_bisect = 0;
 			break;
 		busy();
 	}
-	if (i>=max_iterations)
+	if (i >= max_iterations)
 		return set_NaN(r);
 
 	if (discrete) {
