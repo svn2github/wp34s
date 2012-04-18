@@ -1319,6 +1319,18 @@ void flush_comm( void )
 }
 
 
+#ifdef INFRARED
+/*
+ *  IR transmitter on pin TIOA0
+ */
+static void test_ir( void )
+{
+	// Make the timer spit out a signal
+	SerialOn = 1;
+
+}
+#endif
+
 /*************************************************************************
  *  Entry points called from the application
  *************************************************************************/

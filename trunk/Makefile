@@ -24,6 +24,9 @@
 # Define to use a crystal oscillator on slow clock after hardware modification
 #XTAL = 1
 
+# Define to compile code for an IR transmitter on TIOA0
+#INFRARED = 1
+
 BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-exceptions 
 OPT_CFLAGS := -Os -fira-region=one
 
@@ -136,6 +139,10 @@ endif
 ifdef XTAL
 CFLAGS += -DXTAL
 HOSTCFLAGS += -DXTAL
+ifdef INFRARED
+CFLAGS += -DINFRARED
+HOSTCFLAGS += -DINFRARED
+endif
 endif
 CFLAGS += -DNO_BACKUP_INIT -DNO_RAM_COPY
 LDFLAGS := -nostartfiles 
@@ -200,10 +207,17 @@ DNHDRS := $(DNSRCS:%.c=%.h)
 
 ifdef REALBUILD
 ifdef XTAL
+ifdef INFRARED
+TARGET=calc_ir
+MAPFILE := $(OUTPUTDIR)/mapfile_ir.txt
+SUMMARY := $(OUTPUTDIR)/summary_ir.txt
+SYMBOLS := $(OUTPUTDIR)/symbols_ir.txt
+else
 TARGET=calc_xtal
 MAPFILE := $(OUTPUTDIR)/mapfile_xtal.txt
 SUMMARY := $(OUTPUTDIR)/summary_xtal.txt
 SYMBOLS := $(OUTPUTDIR)/symbols_xtal.txt
+endif
 else
 TARGET=calc
 MAPFILE := $(OUTPUTDIR)/mapfile.txt

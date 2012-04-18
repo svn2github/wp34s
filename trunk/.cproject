@@ -34,6 +34,7 @@
 									<listOptionValue builtIn="false" value="REALBUILD=1"/>
 									<listOptionValue builtIn="false" value="at91sam7l128=1"/>
 									<listOptionValue builtIn="false" value="NO_RAM_COPY=1"/>
+									<listOptionValue builtIn="false" value="INFRARED=1"/>
 								</option>
 								<option id="gnu.c.compiler.option.include.paths.841294175" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;C:\Programme\Microsoft Visual Studio 10.0\VC\atlmfc\include&quot;"/>
@@ -767,6 +768,7 @@
 				<buildTargets>
 					<target name="flash" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
+						<buildArguments/>
 						<buildTarget>REALBUILD=1 all</buildTarget>
 						<stopOnError>false</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
@@ -776,6 +778,14 @@
 						<buildCommand>make</buildCommand>
 						<buildArguments>REALBUILD=1 XTAL=1</buildArguments>
 						<buildTarget>all</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="infrared" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments/>
+						<buildTarget>INFRARED=1 REALBUILD=1 XTAL=1 all</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>
