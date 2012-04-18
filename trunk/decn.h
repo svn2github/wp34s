@@ -49,13 +49,8 @@ extern decNumber *dn_sqrt(decNumber *r, const decNumber *a);
 extern decNumber *dn_exp(decNumber *r, const decNumber *a);
 extern decNumber *dn_power(decNumber *r, const decNumber *a, const decNumber *b);
 
-/*
-#define decNumberAdd(r, a, b, ctx)	dn_add(r, a, b)
-#define decNumberSubtract(r, a, b, ctx)	dn_subtract(r, a, b)
-#define decNumberMultiply(r, a, b, ctx)	dn_multiply(r, a, b)
-#define decNumberDivide(r, a, b, ctx)	dn_divide(r, a, b)
-#define decNumberAbs(r, a, ctx)		dn_abs(r, a)
-*/
+extern decNumber *dn_average(decNumber *r, const decNumber *a, const decNumber *b);
+
 
 extern void decNumberSwap(decNumber *a, decNumber *b);
 

@@ -788,9 +788,13 @@ static decNumber *newton_qf(decNumber *r, const decNumber *p, const unsigned sho
 
 	for (i=0; i<max_iterations; i++) {
 		if (dn_ge(r, &high) || dn_le(r, &low)) {
-bisect:			allow_bisect = 0;
-			dn_add(&z, &low, &high);
-			dn_multiply(r, &z, &const_0_5);
+			if (decNumberIsInfinite(&high))
+				dn_mul2(r, &low);
+			else if (decNumberIsInfinite(&low))
+				dn_div2(r, &high);
+			else
+bisect:				dn_average(r, &low, &high);
+			allow_bisect = 0;
 		}
 		//{char buf[20]; sprintf(buf, "%03d: est", i);dump1(r, buf);}
 		dn_subtract(&z, (*cdf)(&w, r, arg1, arg2), p);
@@ -840,8 +844,7 @@ bisect:			allow_bisect = 0;
 
 		// If our upper and lower limits are close enough together we give up searching
 		if (! decNumberIsInfinite(&high) && ! decNumberIsInfinite(&low) && relative_error(&high, &low, cnvg_threshold)) {
-			dn_add(&z, &low, &high);
-			dn_multiply(r, &z, &const_0_5);
+			dn_average(r, &low, &high);
 			break;
 		}
 

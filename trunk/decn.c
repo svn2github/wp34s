@@ -156,6 +156,14 @@ decNumber *dn_exp(decNumber *r, const decNumber *a) {
 }
 
 
+decNumber *dn_average(decNumber *r, const decNumber *a, const decNumber *b) {
+	decNumber z;
+
+	dn_add(&z, a, b);
+	return dn_div2(r, &z);
+}
+
+
 /* Define a table of small integers.
  * This should be equal or larger than any of the summation integers required in the
  * various series approximations to avoid needless computation.
@@ -1473,8 +1481,7 @@ void dn_sinhcosh(const decNumber *x, decNumber *sinhv, decNumber *coshv) {
 	if (coshv != NULL) {
 		dn_exp(&u, x);			// u = e^x
 		decNumberRecip(&v, &u);		// v = e^-x
-		dn_add(&t, &v, &u);		// r = e^x + e^-x
-		dn_div2(coshv, &t);
+		dn_average(coshv, &v, &u);	// r = (e^x + e^-x)/2
 	}
 }
 
@@ -2271,12 +2278,7 @@ static int solve_ridder(decNumber *xnew, const decNumber *x0, const decNumber *x
 
 /* perform a bisection step.
  */
-static void solve_bisect(decNumber *s, const decNumber *a, const decNumber *b) {
-	decNumber x;
-
-	dn_add(&x, a, b);
-	dn_div2(s, &x);
-}
+#define solve_bisect(s, a, b)	dn_average(s, a, b)
 
 
 /* Check if the new point is inside the bracketed interval, if not do a bisection
