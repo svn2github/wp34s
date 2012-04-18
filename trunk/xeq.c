@@ -585,11 +585,32 @@ void packed128_from_packed(decimal128 *r, const decimal64 *s) {
  *  User command to round to a specific number of digits
  */
 void rarg_round(unsigned int arg, enum rarg op) {
-	decNumber res, x;
+	decNumber res, x, p10;
+	const enum rounding rm = get_rounding_mode();
+
+	if (is_intmode()) {
+		err(ERR_BAD_MODE);
+		return;
+	}
 
 	setlastX();
 	getX(&x);
-	decNumberRoundDigits(&res, &x, arg, get_rounding_mode());
+	if (op == RARG_ROUND)
+		decNumberRoundDigits(&res, &x, arg, rm);
+	else /* if (op == RARG_ROUND_DEC) */ {
+#if 0
+		/* The slow but always correct way */
+		int_to_dn(&res, (int)arg);
+		decNumberPow10(&p10, &res);
+#else
+		/* The much faster way but relying on base 10 numbers with exponents */
+		dn_1(&p10);
+		p10.exponent += arg;
+#endif
+		dn_multiply(&res, &x, &p10);
+		round2int(&x, &res, rm);
+		dn_divide(&res, &x, &p10);
+	}
 	setX(&res);
 }
 

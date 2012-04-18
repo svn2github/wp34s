@@ -493,7 +493,7 @@ static decNumber *dn_recip(decNumber *r, const decNumber *x,
  * that saves the current rounding mode, rounds as required and restores
  * the rounding mode properly.
  */
-static decNumber *round2int(decNumber *r, const decNumber *x, enum rounding mode) {
+decNumber *round2int(decNumber *r, const decNumber *x, enum rounding mode) {
 	enum rounding a = Ctx.round;
 
 	Ctx.round = mode;

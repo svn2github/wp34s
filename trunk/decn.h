@@ -59,6 +59,7 @@ extern void int_to_dn(decNumber *, int);
 extern int dn_to_int(const decNumber *);
 extern void ullint_to_dn(decNumber *, unsigned long long int);
 extern unsigned long long int dn_to_ull(const decNumber *, int *);
+extern decNumber *round2int(decNumber *r, const decNumber *x, enum rounding mode);
 
 extern void decNumberPI(decNumber *pi);
 extern void decNumberPIon2(decNumber *pion2);
