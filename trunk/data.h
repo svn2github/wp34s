@@ -337,8 +337,9 @@ typedef struct _xrom_params
 {
 	union {
 		struct {
-			unsigned int reserved : 8;	// room for 8 generic local flags .00 to .07
+			unsigned int reserved : 7;	// room for generic local flags .00 to ...
 			                                // just a placeholder here, the flags are on RetStk
+			unsigned int noLocals : 1;	// xIN did not allocate a local frame (for SLV)
 			unsigned int mode_int : 1;	// user was in integer mode
 			unsigned int state_lift_in : 1; // stack lift on entry
 			unsigned int stack_depth : 1;	// user stack size was 8

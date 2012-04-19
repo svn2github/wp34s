@@ -104,7 +104,7 @@ static void display_stopwatch() {
 	tenths=StopWatch%10;	
 	secs=(StopWatch/10)%60;
 	mins=(StopWatch/600)%60;
-	hours=(StopWatch/36000)%99;
+	hours=(StopWatch/36000)%100;
 	fill_exponent(exponent);
 	if(StopWatchStatus.display_tenths) {
 		p=buf;

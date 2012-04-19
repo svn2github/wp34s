@@ -4082,14 +4082,15 @@ void cmdlocr(unsigned int arg, enum rarg op) {
  *  xIN: Setup an environment for XROM based math routines:
  *
  *  - 12 Private double precision stack & special registers X to K
- *  - 16 double precision local registers .00 to .15
- *  - 10 general purpose and 6 system flags
+ *  - private return stack for local flags & registers
+ *  - 6 system flags
  *
  *  Argument:
- *      in       - bits 0..2		
- *      out      - bits 3..5
- *      setLastX - bit 6
- *      complex  - bit 7
+ *      noLocals - bit 7
+ *      out      - bits 4..5
+ *      in       - bits 2..4		
+ *      setLastX - bit 1
+ *      complex  - bit 0
  *
  *  Local flags:
  *      .00 to .09 are free for general use.
@@ -4135,16 +4136,22 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		XromUserRetStkPtr = RetStkPtr;
 
 		RetStk = XromRetStk;
-		RetStkPtr = -2;			    // Room for a local frame with just the flags
-		RetStk[RetStkPtr] = LOCAL_MARKER | 2;
-		LocalRegs = RetStkPtr;
+		if ((arg & 0x80) != 0) {
+			XromFlags.noLocals = 1;
+			RetStkPtr = -1;		// No local frame, access caller's data instead
+		}
+		else {
+			RetStkPtr = -2;		// Room for a local frame with just the flags
+			RetStk[RetStkPtr] = LOCAL_MARKER | 2;
+			LocalRegs = RetStkPtr;
+		}
 	}
 
 	// Parse the argument into fields
 	XromFlags.setLastX = (arg & 0x02) != 0;
 	XromFlags.complex = (arg & 0x01) != 0;
 	XromIn = (arg >> 2) & 0x07;
-	XromOut = (arg >> 5) & 0x07;
+	XromOut = (arg >> 5) & 0x03;
 	if (XromFlags.complex) {
 		// Complex arguments are always in pairs
 		XromIn <<= 1;
@@ -4272,7 +4279,8 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	// Restore the global return stack
 	RetStk = XromUserRetStk;
 	RetStkPtr = XromUserRetStkPtr;
-	LocalRegs = UserLocalRegs;	// set by dispatch_xrom()
+	if (! XromFlags.noLocals ) 
+		LocalRegs = UserLocalRegs;	// set by dispatch_xrom()
 
 	// RTN or RTN+1 depending on bit 0 of argument
 	do_rtn(arg & 1);
