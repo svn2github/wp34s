@@ -475,6 +475,9 @@ extern int current_catalogue_max(void);
 #define LOCAL_MASK      (0xf000u)
 #define LOCAL_MARKER    (0x1000u)
 #define isLOCAL(s)	(((s) >> 12) == 1)	// A local frame is marked by 0x1nnn
+#define LOCAL_HIDDEN    (0x2000u)
+#define isHIDDEN(s)	(((s) >> 12) == 3)	// A hidden local frame is marked by 0x3nnn
+
 #define LOCAL_LEVELS(s)	((s) & 0xfff)
 
 /* Macros to access flash library space and user program space */

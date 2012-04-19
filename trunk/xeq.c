@@ -1770,17 +1770,20 @@ static void retstk_up(void)
 	if (RetStkPtr < 0) {
 		int sp = RetStkPtr++;
 		unsigned int s = RetStk[sp++];
-		if (isLOCAL(s)) {
+		if (isLOCAL(s) || isHIDDEN(s)) {
 			sp += LOCAL_LEVELS(s);
 			RetStkPtr = sp;
 			// Re-adjust the LocalRegs pointer
 			LocalRegs = 0;
 			while (sp < 0) {
-				if (isLOCAL(RetStk[sp])) {
+				s = RetStk[sp];
+				if (isLOCAL(s)) {
 					LocalRegs = sp;
 					break;
 				}
 				++sp;
+				if (isHIDDEN(s))
+					sp += LOCAL_LEVELS(s);
 			}
 		}
 	}
@@ -2942,7 +2945,7 @@ void do_usergsb(enum nilop op) {
 	gsbgto(XromUserPc, 1, pc);	     // Push return address, transfer control
 
 	XromUserPc = 0;			     // Hide information irrelevant to user code
-	RetStk[LocalRegs] &= ~LOCAL_MASK;    // Hide the local frame
+	RetStk[LocalRegs] |= LOCAL_HIDDEN;   // Hide the local frame
 	LocalRegs = UserLocalRegs;	     // Reestablish user environment
 	if (! Running)
 		set_running_on();	     // We are running outside XROM now!
@@ -2953,7 +2956,7 @@ void op_popusr(enum nilop op) {
 	UserLocalRegs = RetStk[RetStkPtr++]; // Previous local registers
 	LocalRegs =     RetStk[RetStkPtr++]; // My local registers
 	XromUserPc =    RetStk[RetStkPtr++]; // Adress of callee
-	RetStk[LocalRegs] |= LOCAL_MARKER;   // Repair the local frame
+	RetStk[LocalRegs] &= ~LOCAL_HIDDEN;   // Repair the local frame
 }
 
 /* Tests if the user program is at the top level */
