@@ -2936,21 +2936,24 @@ void op_prompt(enum nilop op) {
 // Command pushes 4 values on stack, needs to be followed by POPUSR
 void do_usergsb(enum nilop op) {
 	const unsigned int pc = state_pc();
-	gsbgto(pc, 1, XromUserPc);    // push address of callee
-	gsbgto(pc, 1, LocalRegs);     // push my local registers
-	gsbgto(pc, 1, UserLocalRegs); // push former local registers
-	gsbgto(XromUserPc, 1, pc);    // push return address, transfer control
-	XromUserPc = 0;
+	gsbgto(pc, 1, XromUserPc);	     // Push address of callee
+	gsbgto(pc, 1, LocalRegs);	     // Push my local registers
+	gsbgto(pc, 1, UserLocalRegs);	     // Push former local registers
+	gsbgto(XromUserPc, 1, pc);	     // Push return address, transfer control
+
+	XromUserPc = 0;			     // Hide information irrelevant to user code
+	RetStk[LocalRegs] &= ~LOCAL_MASK;    // Hide the local frame
+	LocalRegs = UserLocalRegs;	     // Reestablish user environment
 	if (! Running)
-		set_running_on();     // We are running outside XROM now!
-	LocalRegs = UserLocalRegs;    // reestablish user environment
+		set_running_on();	     // We are running outside XROM now!
 }
 
 // POPUSR
 void op_popusr(enum nilop op) {
-	UserLocalRegs = RetStk[RetStkPtr++]; // previous local registers
-	LocalRegs =     RetStk[RetStkPtr++]; // my local registers
-	XromUserPc =    RetStk[RetStkPtr++]; // adress of callee
+	UserLocalRegs = RetStk[RetStkPtr++]; // Previous local registers
+	LocalRegs =     RetStk[RetStkPtr++]; // My local registers
+	XromUserPc =    RetStk[RetStkPtr++]; // Adress of callee
+	RetStk[LocalRegs] |= LOCAL_MARKER;   // Repair the local frame
 }
 
 /* Tests if the user program is at the top level */
