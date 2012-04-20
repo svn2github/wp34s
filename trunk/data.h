@@ -53,8 +53,12 @@ struct _ustate {
 	unsigned int int_len :       6;	// Length of Integers
 	unsigned int mode_double :   1;	// Double precision mode
 	unsigned int t12 :           1;	// 12 hour time mode
+#ifdef INFRARED
+	unsigned int print_mode :    2;	// printer modes
+#else
 	unsigned int unused_3 :      1;	// free
 	unsigned int unused_2 :      1;	// free
+#endif
 	unsigned int unused_1 :      1;	// free
 	unsigned int stack_depth :   1;	// Stack depth
 
@@ -339,7 +343,7 @@ typedef struct _xrom_params
 		struct {
 			unsigned int reserved : 7;	// room for generic local flags .00 to ...
 			                                // just a placeholder here, the flags are on RetStk
-			unsigned int noLocals : 1;	// xIN did not allocate a local frame (for SLV)
+			unsigned int copyLocals : 1;	// xIN has copied the local data from the user (for SLV)
 			unsigned int mode_int : 1;	// user was in integer mode
 			unsigned int state_lift_in : 1; // stack lift on entry
 			unsigned int stack_depth : 1;	// user stack size was 8
@@ -399,14 +403,15 @@ extern TXromLocal XromLocal;
 
 #else /* COMPILE_XROM */
 
+#define Flag_copy_locals   .07  // If set, local data is copied back and forth
 #define Flag_mode_int	   .08  // Read only!
 #define Flag_state_lift_in .09  // Read only!
-#define Flag_stack_depth   .10	// Read only!
-#define Flag_mode_double   .11	// Read only!
+#define Flag_stack_depth   .10  // Read only!
+#define Flag_mode_double   .11  // Read only!
 #define Flag_complex       .12
 #define Flag_setLastX      .13
 #define Flag_state_lift    .14
-#define Flag_xIN           .15	// Read only!
+#define Flag_xIN           .15  // Read only!
 #endif
 
 #ifndef COMPILE_XROM
