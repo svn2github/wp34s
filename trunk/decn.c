@@ -2501,46 +2501,6 @@ failed:
 	return -1;
 }
 
-static void solver_init(decNumber *c, decNumber *a, decNumber *b, decNumber *fa, decNumber *fb, unsigned int *flagp) {
-	int sa, sb;
-	unsigned int flags = 0;
-
-	/*
-	if (dn_lt(b, a))) {
-		decNumberSwap(a, b);
-		decNumberSwap(fa, fb);
-	}
-	*/
-	sa = decNumberIsNegative(fa);
-	sb = decNumberIsNegative(fb);
-	if (sa == sb) {				// Same side of line
-		if (dn_eq(fa, fb)) {	// Worse equal...
-			SET_CONST(flags);
-		}
-		// Both estimates are the same side of the line.
-#if 1
-		// A bisection step puts a degree of trust in the user's
-		// estimates.
-		solve_bisect(c, a, b);
-#else
-		// A secant step, this runs the risk of flying off
-		// into infinity and having to work its way back again.
-		solve_secant(c, a, b, fa, fb);
-		limit_jump(c, a, b);
-#endif
-	} else {
-		SET_BRACKET(flags);
-		solve_secant(c, a, b, fa, fb);
-		if (solve_bracket(c, a, b)) {
-			solve_bisect(c, a, b);
-#ifdef USE_RIDDERS
-			SET_BISECT(flags);
-#endif
-		}
-	}
-	*flagp = flags;
-}
-
 // User code flag numbers
 #define _FLAG_BRACKET_N	8
 #define _FLAG_CONST_N	9
@@ -2560,29 +2520,25 @@ void solver(enum nilop op) {
 	getRegister(&fa, LOCAL_REG_BASE + 3);
 	getRegister(&fb, LOCAL_REG_BASE + 4);
 
-	if (op == OP_INISOLVE) {
-		solver_init(&c, &a, &b, &fa, &fb, &flags);
-	} else {
-		getRegister(&c, LOCAL_REG_BASE + 2);
-		flags = 0;
-		for (r=0; r<8; r++)
-			if (get_user_flag(LOCAL_FLAG_BASE + r + _FLAG_COUNT_N))
-				flags |= 1<<r;
-		flags = SLV_SET_COUNT(0, flags);
+	getRegister(&c, LOCAL_REG_BASE + 2);
+	flags = 0;
+	for (r=0; r<8; r++)
+		if (get_user_flag(LOCAL_FLAG_BASE + r + _FLAG_COUNT_N))
+			flags |= 1<<r;
+	flags = SLV_SET_COUNT(0, flags);
 
-		if (get_user_flag(LOCAL_FLAG_BASE + _FLAG_BRACKET_N))
-			SET_BRACKET(flags);
-		if (get_user_flag(LOCAL_FLAG_BASE + _FLAG_CONST_N))
-			SET_CONST(flags);
+	if (get_user_flag(LOCAL_FLAG_BASE + _FLAG_BRACKET_N))
+		SET_BRACKET(flags);
+	if (get_user_flag(LOCAL_FLAG_BASE + _FLAG_CONST_N))
+		SET_CONST(flags);
 #ifdef USE_RIDDERS
-		if (get_user_flag(NUMFLG + _FLAG_BISECT_N))
-			SET_BISECT(flags);
+	if (get_user_flag(NUMFLG + _FLAG_BISECT_N))
+		SET_BISECT(flags);
 #endif
 
-		getX(&fc);
-		int_to_dn(&fc, solver_step(&a, &b, &c, &fa, &fb, &fc, &flags));
-		setX(&fc);
-	}
+	getX(&fc);
+	int_to_dn(&fc, solver_step(&a, &b, &c, &fa, &fb, &fc, &flags));
+	setX(&fc);
 
 	setRegister(LOCAL_REG_BASE + 0, &a);
 	setRegister(LOCAL_REG_BASE + 1, &b);
