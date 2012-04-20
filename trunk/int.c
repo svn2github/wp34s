@@ -909,21 +909,18 @@ static long long int intLSR(long long int x) {
 }
 
 static long long int intASR(long long int x) {
-#if 0
+	const enum arithmetic_modes mode = int_mode();
 	const long long int tbm = topbit_mask();
-    	set_carry(x & 1);
-	if (x & tbm) {
-		return mask_value((x >> 1) | tbm);
-	} else {
-		return mask_value((x >> 1) & ~tbm);
-	}
-#else
-	int sx;
-	unsigned long long int xv = extract_value(x, &sx);
+	long long int y;
 
-	set_carry(xv & 1);
-	return build_value(xv >> 1, sx);
-#endif
+    	set_carry(x & 1);
+	if (mode == MODE_SGNMANT)
+		return ((x & ~tbm) >> 1) | tbm;
+
+	y = x >> 1;
+	if (mode != MODE_UNSIGNED && (x & tbm) != 0)
+		y |= tbm;
+	return y;
 }
 
 static long long int intRL(long long int x) {
