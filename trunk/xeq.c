@@ -4112,6 +4112,9 @@ void cmdlocr(unsigned int arg, enum rarg op) {
 void cmdxin(unsigned int arg, enum rarg op) {
 
 	int i = XromFlags.xIN;
+	REGISTER *previousLocals;
+	unsigned short previousFlags;
+	int num_locals = 0;
 
 #ifndef REALBUILD
 	/* This should never happen in a real build but it causes havoc writing
@@ -4137,20 +4140,20 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		XromFlags.state_lift = 1;
 		XromFlags.xIN = 1;
 
+		// Save pointers to original local data
+		if ((arg & 0x80) != 0 && LocalRegs < 0) {
+			XromFlags.copyLocals = 1;
+			previousFlags = *flag_word(LOCAL_FLAG_BASE, NULL);
+			previousLocals = get_reg_n(LOCAL_REG_BASE);
+			num_locals = local_regs();
+		}
+
 		// Establish local return stack
 		XromUserRetStk = RetStk;
 		XromUserRetStkPtr = RetStkPtr;
 
 		RetStk = XromRetStk;
-		if ((arg & 0x80) != 0) {
-			XromFlags.noLocals = 1;
-			RetStkPtr = -1;		// No local frame, access caller's data instead
-		}
-		else {
-			RetStkPtr = -2;		// Room for a local frame with just the flags
-			RetStk[RetStkPtr] = LOCAL_MARKER | 2;
-			LocalRegs = RetStkPtr;
-		}
+		RetStkPtr = -1; // Locals will be allocated later
 	}
 
 	// Parse the argument into fields
@@ -4166,20 +4169,34 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	if (i)
 		return;		// Nested call, just set parameters
 
+	// Allocate the local frame
+	LocalRegs = 0;
+	cmdlocr(num_locals, RARG_LOCR);
+	if (XromFlags.copyLocals)
+		*flag_word(LOCAL_FLAG_BASE, NULL) = previousFlags;
+
 	// Switch to double precision mode
 	if (UState.intm) {
 		// Convert integers to decimal128
 		UState.mode_double = 1;
 		op_float(OP_FLOAT_XIN);
+		// Do not copy the local registers because we don't use this case anyway
 	}
 	else if (UState.mode_double) {
 		// No conversion necessary
 		xcopy(XromStack, StackBase, sizeof(XromStack));
 		StackBase = XromStack;
+		if (XromFlags.copyLocals)
+			move_regs(get_reg_n(LOCAL_REG_BASE), previousLocals, num_locals);
 	}
 	else {
 		// Convert decimal64 to decinal128
 		op_double(OP_DBLON);
+		if (XromFlags.copyLocals) {
+			decimal64 *src = &(previousLocals->s);
+			for (i = 0; i < num_locals; ++i)
+				packed128_from_packed(&(get_reg_n(LOCAL_REG_BASE + i)->d), src++);
+		}
 	}
 
 	// Set stack size to 8 and turn on stack_lift
@@ -4213,6 +4230,9 @@ void cmdxin(unsigned int arg, enum rarg op) {
  */
 void cmdxout(unsigned int arg, enum rarg op) {
 	int i, dbl, intm;
+	unsigned short flags = *flag_word(LOCAL_FLAG_BASE, NULL);
+	REGISTER *locals = get_reg_n(LOCAL_REG_BASE);
+	int num_locals = local_regs();
 
 #ifndef REALBUILD
 	// shouldn't happen in final build
@@ -4285,8 +4305,25 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	// Restore the global return stack
 	RetStk = XromUserRetStk;
 	RetStkPtr = XromUserRetStkPtr;
-	if (! XromFlags.noLocals ) 
-		LocalRegs = UserLocalRegs;	// set by dispatch_xrom()
+	LocalRegs = UserLocalRegs;	// set by dispatch_xrom()
+
+	// Copy back local data
+	if (XromFlags.copyLocals) {
+		i = local_regs();
+		num_locals = i < num_locals ? i : num_locals; 
+		*flag_word(LOCAL_FLAG_BASE, NULL) = flags;
+		if (intm) {
+			// not used
+		}
+		else if (dbl) {
+			move_regs(get_reg_n(LOCAL_REG_BASE), locals, num_locals);
+		}
+		else {
+			decimal64 *dest = &(get_reg_n(LOCAL_REG_BASE)->s);
+			while (num_locals--)
+				packed_from_packed128(dest++, &(locals++)->d);
+		}
+	}
 
 	// RTN or RTN+1 depending on bit 0 of argument
 	do_rtn(arg & 1);
