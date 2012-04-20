@@ -29,7 +29,7 @@
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
-#if !defined(REALBUILD) || defined(XTAL)
+#if !defined(REALBUILD) || (defined(XTAL) && !defined(INFRARED))
 #define INCLUDE_STOPWATCH
 #else
 //#define INCLUDE_STOPWATCH

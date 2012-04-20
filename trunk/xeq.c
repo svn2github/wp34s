@@ -4171,18 +4171,18 @@ void cmdxin(unsigned int arg, enum rarg op) {
 
 	// Allocate the local frame
 	LocalRegs = 0;
+	UState.mode_double = 1;		// Needed to allocate enough registers
 	cmdlocr(num_locals, RARG_LOCR);
 	if (XromFlags.copyLocals)
 		*flag_word(LOCAL_FLAG_BASE, NULL) = previousFlags;
 
 	// Switch to double precision mode
-	if (UState.intm) {
+	if (XromFlags.mode_int) {
 		// Convert integers to decimal128
-		UState.mode_double = 1;
 		op_float(OP_FLOAT_XIN);
 		// Do not copy the local registers because we don't use this case anyway
 	}
-	else if (UState.mode_double) {
+	else if (XromFlags.mode_double) {
 		// No conversion necessary
 		xcopy(XromStack, StackBase, sizeof(XromStack));
 		StackBase = XromStack;
@@ -4191,11 +4191,13 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	}
 	else {
 		// Convert decimal64 to decinal128
-		op_double(OP_DBLON);
+		UState.mode_double = 0;		// This was the original state before xIN
+		op_double(OP_DBLON);		// Now mode_double should be set again
 		if (XromFlags.copyLocals) {
-			decimal64 *src = &(previousLocals->s);
-			for (i = 0; i < num_locals; ++i)
-				packed128_from_packed(&(get_reg_n(LOCAL_REG_BASE + i)->d), src++);
+			decimal64  *src  = &(previousLocals->s);
+			decimal128 *dest = &(get_reg_n(LOCAL_REG_BASE)->d);
+			while (num_locals--)
+				packed128_from_packed(dest++, src++);
 		}
 	}
 
@@ -4319,9 +4321,10 @@ void cmdxout(unsigned int arg, enum rarg op) {
 			move_regs(get_reg_n(LOCAL_REG_BASE), locals, num_locals);
 		}
 		else {
-			decimal64 *dest = &(get_reg_n(LOCAL_REG_BASE)->s);
+			decimal64  *dest = &(get_reg_n(LOCAL_REG_BASE)->s);
+			decimal128 *src  = &(locals->d);
 			while (num_locals--)
-				packed_from_packed128(dest++, &(locals++)->d);
+				packed_from_packed128(dest++, src++);
 		}
 	}
 

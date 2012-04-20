@@ -153,7 +153,7 @@ static void clear_buffer( void )
  *  Open port with default settings.
  *  Returns non zero in case of failure.
  */
-static void close_port_reset_state( void )
+void close_port_reset_state( void )
 {
 	if ( SerialOn ) {
 		flush_comm();
@@ -171,7 +171,7 @@ static void close_port_reset_state( void )
  *  compared to the nominal speed may be specified as a percentage in X.
  *  For a slow device, try 90, for a fast device try 110.
  */
-static int open_port_default( void )
+int open_port_default( void )
 {
 	int baud = 9600;
 #if defined(REALBUILD) && !defined(XTAL)
@@ -562,7 +562,7 @@ void serial_close( enum nilop op )
 
 
 /*
- *  Open with default parameters if not aöready opend by SOPEN
+ *  Open with default parameters if not already opened by SOPEN
  */
 static int serial_open_default( void )
 {
@@ -592,7 +592,7 @@ void send_byte( enum nilop op )
 /*
  *  Send the contents of the Alpha register, terminated by a CR
  */
-void send_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op )
+void send_alpha( enum nilop op )
 {
 	const char *p;
 	if ( !serial_open_default() ) {
@@ -609,7 +609,7 @@ void send_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op )
  *  Receive the contents of the alpha register.
  *  CR stops the reception.
  */
-void recv_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op )
+void recv_alpha( enum nilop op )
 {
 	int i, c = 0;
 	int timeout = (int) getX_int_sgn( &i );

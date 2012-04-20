@@ -706,10 +706,12 @@ void detect_voltage( void )
 	/*
 	 *  Test low voltage conditions
 	 */
+#ifndef INFRARED
 	if ( is_test_mode() ) {
 		Voltage = LOW_VOLTAGE - 1;
 		return;
 	}
+#endif
 
 	/*
 	 *  Don't be active all the time
@@ -907,6 +909,7 @@ void set_speed( unsigned int speed )
 		case SPEED_HALF:
 			/*
 			 *  20 MHz PLL, used in case of low battery or user request
+			 *  Also when serial or infrared I/O is active
 			 */
 
 		case SPEED_HIGH:
@@ -1258,7 +1261,9 @@ int open_port( int baud, int bits, int parity, int stopbits )
 	     : parity == 'O' ? AT91C_US_PAR_ODD
 	     : AT91C_US_PAR_NONE;
 	div = ClockSpeed / ( baud * 16 );
-	if ( div <= 1 ) return 1;
+	if ( div <= 1 ) {
+		return 1;
+	}
 
 	// Configure baud rate
 	AT91C_BASE_DBGU->DBGU_BRGR = div;
@@ -1327,8 +1332,8 @@ static void test_ir( int on )
 {
 	if ( on ) {
 		// Make the timer spit out a signal
-		SerialOn = 1;
 		set_speed( SPEED_HALF );
+		SerialOn = 1;
 
 		// Enable the peripheral clocks of TC0 and TC1
 		AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
@@ -1336,23 +1341,26 @@ static void test_ir( int on )
 		// Assign I/O pin PC7 to TIOA0, disable pull-ups
 		AT91C_BASE_PIOC->PIO_PDR   = AT91C_PC7_TIOA0;	// Disable PIO
 		AT91C_BASE_PIOC->PIO_BSR   = AT91C_PC7_TIOA0;	// Peripheral B is TC0
+		AT91C_BASE_PIOC->PIO_MDDR  = AT91C_PC7_TIOA0;   // No multi drive
 		AT91C_BASE_PIOC->PIO_PPUDR = AT91C_PC7_TIOA0;	// No pull-up
 
-		// TC0: 32768 Hz square wave
+		// TC0: 32768 Hz square wave, gated by TC1
 		AT91C_BASE_TC0->TC_CMR = AT91C_TC_CLKS_TIMER_DIV1_CLOCK | AT91C_TC_BURST_XC0
-				       | AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR;
-		AT91C_BASE_TC0->TC_RA = ( PLLMUL_HALF + 1 ) / 4;
-		AT91C_BASE_TC0->TC_RC = ( PLLMUL_HALF + 1 ) / 2;
+				       | AT91C_TC_ACPA_TOGGLE
+				       | AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO;
+		AT91C_BASE_TC0->TC_RA = ( PLLMUL_HALF + 1 ) / 8;	//  75
+		AT91C_BASE_TC0->TC_RC = ( PLLMUL_HALF + 1 ) / 4;	// 150
 		AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKEN;
 
 		// TC1: (32768/14) Hz square wave
 		AT91C_BASE_TC1->TC_CMR = AT91C_TC_CLKS_TIMER_DIV2_CLOCK
-				       | AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR;
-		AT91C_BASE_TC1->TC_RA = 14 * ( PLLMUL_HALF + 1 ) / 4;
-		AT91C_BASE_TC1->TC_RC = 14 * ( PLLMUL_HALF + 1 ) / 2;
+				       | AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR
+				       | AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO;
+		AT91C_BASE_TC1->TC_RA = 14 * ( PLLMUL_HALF + 1 ) / 16;
+		AT91C_BASE_TC1->TC_RC = 14 * ( PLLMUL_HALF + 1 ) / 8;
 		AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKEN;
 
-		// We need to enable interrupts on RC compare
+		// We need to enable interrupts on RC compare of timer 1
 		// ...
 
 		// TC1 gates clock of TC0 via signal XC0
@@ -1545,6 +1553,9 @@ void toggle_test_mode( void )
 {
 	TestFlag = !TestFlag;
 	message( is_test_mode() ? "Test ON" : "Test OFF", NULL );
+#ifdef INFRARED
+	test_ir( is_test_mode() );
+#endif
 }
 
 

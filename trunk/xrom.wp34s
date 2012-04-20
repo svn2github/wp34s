@@ -33,7 +33,7 @@
 #define xIN_ARGS(i, o)	(xIN_INARGS(i) + xIN_OUTARGS(o))
 #define xIN_LASTX	(32)
 #define xIN_COMPLEX	(64)
-#define xIN_NOLOCAL	(128)
+#define xIN_COPYLOCALS	(128)
 
 /*
  * Define some utility macros to assist with xOUT
@@ -130,6 +130,11 @@
 #ifdef _DEBUG
 	XLBL"DBG"
 	// Add xrom only commands to test here
+	xIN xIN_COPYLOCALS
+	RCL .00
+	DEC .00
+	SF .00
+	xOUT xOUT_NORMAL
 	RTN
 #endif
 

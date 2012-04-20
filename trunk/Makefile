@@ -182,7 +182,7 @@ endif
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c consts.c alpha.c charmap.c \
 		commands.c string.c storage.c serial.c matrix.c \
-		stopwatch.c font.c
+		stopwatch.c printer.c font.c 
 ifeq ($(SYSTEM),windows32)
 SRCS += winserial.c
 endif
@@ -190,7 +190,7 @@ endif
 HEADERS := alpha.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
 		stats.h xeq.h xrom.h storage.h serial.h matrix.h \
-		stopwatch.h 
+		stopwatch.h printer.h
 
 XROM := $(wildcard xrom/*.wp34s)
 
@@ -406,6 +406,7 @@ $(OBJECTDIR)/xeq.o: xeq.c xeq.h errors.h data.h alpha.h decn.h complex.h int.h l
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xrom_labels.h xeq.h errors.h data.h consts.h Makefile features.h
 $(OBJECTDIR)/stopwatch.o: stopwatch.c stopwatch.h decn.h xeq.h errors.h consts.h alpha.h display.h keys.h \
                 Makefile features.h
+$(OBJECTDIR)/printer.o: printer.c printer.h xeq.h errors.h alpha.h serial.h Makefile features.h
 
 ifdef REALBUILD
 $(OBJECTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \

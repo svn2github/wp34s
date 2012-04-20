@@ -27,6 +27,9 @@
 #include "lcd.h"
 #include "storage.h"
 #include "serial.h"
+#ifdef INFRARED
+#include "printer.h"
+#endif
 #include "matrix.h"
 #ifdef INCLUDE_STOPWATCH
 #include "stopwatch.h"
@@ -624,8 +627,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SEND1,		&send_byte,		"SEND1")
 	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN")
 	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE")
-	FUNC0(OP_ALPHASEND,	&send_alpha,		"\240SEND")
-	FUNC0(OP_ALPHARECV,	&recv_alpha,		"\240RECV")
+	FUNC0(OP_ALPHASEND,	&send_alpha,		"SEND\240")
+	FUNC0(OP_ALPHARECV,	&recv_alpha,		"RECV\240")
 #endif
 	FUNC0(OP_SENDP,		&send_program,		"SENDP")
 	FUNC0(OP_SENDR,		&send_registers,	"SENDR")
@@ -653,6 +656,15 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_DOTPROD,	XNIL(cpx_DOT),		"\024DOT")
 	FUNC0(OP_CROSSPROD,	XNIL(cpx_CROSS),	"\024CROSS")
+#ifdef INFRARED
+	FUNC0(OP_PRINT_PGM,	&print_program,		"PRTPGM")
+	FUNC0(OP_PRINT_REGS,	&print_registers,	"PRTREG")
+	FUNC0(OP_PRINT_STACK,	&print_registers,	"PRTSTK")
+	FUNC0(OP_PRINT_SIGMA,	&print_sigma,		"PRINT\221")
+	FUNC0(OP_PRINT_BYTE,	&print_byte,		"PRINTB")
+	FUNC0(OP_PRINT_ALPHA,	&print_alpha,		"PRINT\240")
+	FUNC0(OP_PRINT_ADV,	&print_lf,		"PRTADV")
+#endif
 
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
@@ -861,7 +873,10 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_iRCL,	&cmdircl,				"iRCL")
 	CMDstk(RARG_sRCL,	&cmdrrcl,				"sRCL")
 	CMDstk(RARG_dRCL,	&cmdrrcl,				"dRCL")
-
+#ifdef INFRARED
+	CMDstk(RARG_PRINT,	&cmdprint,				"PRNT")
+	CMD(RARG_PMODE,		&cmdprintmode,  4,			"PMODE")
+#endif
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")
 

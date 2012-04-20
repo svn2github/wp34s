@@ -42,6 +42,10 @@ extern void send_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op2 );
 extern void recv_alpha( REGISTER *nul1, REGISTER *nul, enum nilop op2 );
 #endif
 
+// Helpers
+extern int open_port_default( void );
+extern void close_port_reset_state( void );
+
 // Call-back for a received byte with error information
 extern int byte_received( short byte );
 
