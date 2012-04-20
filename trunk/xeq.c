@@ -4153,7 +4153,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		XromUserRetStkPtr = RetStkPtr;
 
 		RetStk = XromRetStk;
-		RetStkPtr = -1; // Locals will be allocated later
+		RetStkPtr = 0; // Locals will be allocated later
 	}
 
 	// Parse the argument into fields
