@@ -28,11 +28,12 @@
 /*
  * Define some utility macros to assist with xIN
  */
-#define xIN_OUTARGS(n)	((n & 7) << 5)
-#define xIN_INARGS(n)	((n & 7) << 2)
-#define xIN_ARGS(i, o)	(xIN_INARGS(i) | xIN_OUTARGS(o))
-#define xIN_LASTX	(2)
-#define xIN_COMPLEX	(1)
+#define xIN_OUTARGS(n)	((n & 7) * 5)
+#define xIN_INARGS(n)	(n & 7)
+#define xIN_ARGS(i, o)	(xIN_INARGS(i) + xIN_OUTARGS(o))
+#define xIN_LASTX	(32)
+#define xIN_COMPLEX	(64)
+#define xIN_NOLOCAL	(128)
 
 /*
  * Define some utility macros to assist with xOUT

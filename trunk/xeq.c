@@ -4154,10 +4154,10 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	}
 
 	// Parse the argument into fields
-	XromFlags.setLastX = (arg & 0x02) != 0;
-	XromFlags.complex = (arg & 0x01) != 0;
-	XromIn = (arg >> 2) & 0x07;
-	XromOut = (arg >> 5) & 0x03;
+	XromFlags.setLastX = (arg & 0x20) != 0;
+	XromFlags.complex = (arg & 0x40) != 0;
+	XromIn = (arg & 0x1f) % 5;
+	XromOut = (arg & 0x1f) / 5;
 	if (XromFlags.complex) {
 		// Complex arguments are always in pairs
 		XromIn <<= 1;
