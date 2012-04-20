@@ -1375,6 +1375,15 @@ static void test_ir( int on )
 		SerialOn = 0;
 	}
 }
+
+
+/*
+ *  Send a byte out to the IR transmitter
+ */
+void put_ir( unsigned char c )
+{
+
+}
 #endif
 
 /*************************************************************************

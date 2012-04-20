@@ -4112,8 +4112,8 @@ void cmdlocr(unsigned int arg, enum rarg op) {
 void cmdxin(unsigned int arg, enum rarg op) {
 
 	int i = XromFlags.xIN;
-	REGISTER *previousLocals;
-	unsigned short previousFlags;
+	REGISTER *previousLocals = NULL;
+	unsigned short previousFlags = 0;
 	int num_locals = 0;
 
 #ifndef REALBUILD
