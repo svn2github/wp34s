@@ -152,6 +152,7 @@ slvi_done_init::	STO XC
  * Evaluate at the current guess and update.
  */
 slv_loop::		[->]A..D
+			RCL XC
 			FILL
 			XEQUSR
 			POPUSR
@@ -229,11 +230,22 @@ slv_br_check::		STO T2
 slv_est_fin::		STO XC
 			dbg(VIEW[alpha])
 			dbg(PSE 04)
-			/* Check for convergence but no zero */
-			x[approx]? XA
+
+			/* Check for convergence but not zero with 5 ULP is good enough */
+			RCL XB
+			RCL- XA
+			ABS
+			RCL XB
+			ABS
+			RCL XA
+			ABS
+			MIN
+			ULP
+			_INT 5
+			[times]
+			x>? Y
 				JMP slv_fin
-			x[approx]? XB
-				JMP slv_fin
+
 			JMP slv_loop
 
 
