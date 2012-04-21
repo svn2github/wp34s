@@ -71,6 +71,34 @@
 #define CONST_MAXCOUNT		20		/* The maximum number of iterations when the function appears constant */
 #define ONESIDE_MAXCOUNT	100		/* The maximum number of iterations when the function always has the same sign */
 
+
+#ifdef USE_RIDDERS
+/* Perform a Ridder's method step.  Return with the estimate in X if good.
+ * If not good return with a skip.
+ *
+ * https://en.wikipedia.org/wiki/Ridders%27_method
+ */
+slv_ridders::		[cmplx]RCL FXA		/* a b ? ? */
+			RCL FXC			/* c a b ? */
+			[<->] XZXY		/* c b c a */
+			[cmplx][times]		/* c^ - ab */
+			x[<=]0?
+				RTN+1
+			[sqrt]
+			1/x
+			RCL FXA
+			RCL- FXB
+			GSB sign
+			RCL[times] FXC
+			[times]
+			RCL XC
+			RCL- XA
+			[times]
+			RCL+ XC
+			dbg("Rd ")
+			RTN
+#endif
+
 		XLBL"SOLVE"			/* Entry: SOLVE */
 			INTM?
 				ERR ERR_BAD_MODE
@@ -477,33 +505,6 @@ slv_q_step::		R[v]		/* f2	f3	x	f1 */
 			/		/* x / xprod x	x	x */
 			RCL[times] T2
 			RTN+1
-
-#ifdef USE_RIDDERS
-/* Perform a Ridder's method step.  Return with the estimate in X if good.
- * If not good return with a skip.
- *
- * https://en.wikipedia.org/wiki/Ridders%27_method
- */
-slv_ridders::		[cmplx]RCL FXA		/* a b ? ? */
-			RCL FXC			/* c a b ? */
-			[<->] XZXY		/* c b c a */
-			[cmplx][times]		/* c^ - ab */
-			x[<=]0?
-				RTN+1
-			[sqrt]
-			1/x
-			RCL FXA
-			RCL- FXB
-			GSB sign
-			RCL[times] FXC
-			[times]
-			RCL XC
-			RCL- XA
-			[times]
-			RCL+ XC
-			dbg("Rd ")
-			RTN
-#endif
 
 #undef XA
 #undef XB
