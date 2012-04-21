@@ -157,9 +157,9 @@ slv_br_update::		STO T1
 
 			/* Update the interval appropriately */
 			RCL FXC
-			SIGN
+			GSB sign
 			RCL FXB
-			SIGN
+			GSB sign
 			x=? Y
 				JMP slv_br_same_sign
 			RCL XC
@@ -209,9 +209,9 @@ slv_est_fin::		x[approx]? XA
  * Deal with this and the constant case.
  */
 slv_not_bracket::	RCL FXC
-			SIGN
+			GSB sign
 			RCL FXB
-			SIGN
+			GSB sign
 			x=? Y
 				JMP slv_nb_still
 
@@ -494,7 +494,7 @@ slv_ridders::		[cmplx]RCL FXA		/* a b ? ? */
 			1/x
 			RCL FXA
 			RCL- FXB
-			SIGN
+			GSB sign
 			RCL[times] FXC
 			[times]
 			RCL XC
