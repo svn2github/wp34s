@@ -4193,8 +4193,8 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		XromOut <<= 1;
 	}
 
-	// Allocate the local frame
 #ifdef ENABLE_COPYLOCALS
+	// Allocate the local frame
 	LocalRegs = 0;
 	UState.mode_double = 1;		// Needed to allocate enough registers
 	cmdlocr(num_locals, RARG_LOCR);
@@ -4204,6 +4204,9 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	// Switch to double precision mode
 	if (XromFlags.mode_int) {
 		// Convert integers to decimal128
+#ifndef ENABLE_COPYLOCALS
+		UState.mode_double = 1;
+#endif
 		op_float(OP_FLOAT_XIN);
 		// Do not copy the local registers because we don't use this case anyway
 	}
@@ -4218,15 +4221,17 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	}
 	else {
 		// Convert decimal64 to decinal128
+#ifdef ENABLE_COPYLOCALS
 		UState.mode_double = 0;		// This was the original state before xIN
 		op_double(OP_DBLON);		// Now mode_double should be set again
-#ifdef ENABLE_COPYLOCALS
 		if (XromFlags.copyLocals) {
 			decimal64  *src  = &(previousLocals->s);
 			decimal128 *dest = &(get_reg_n(LOCAL_REG_BASE)->d);
 			while (num_locals--)
 				packed128_from_packed(dest++, src++);
 		}
+#else
+		op_double(OP_DBLON);		// Now mode_double should be set again
 #endif
 	}
 
