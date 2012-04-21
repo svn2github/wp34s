@@ -178,8 +178,7 @@ slv_skip_ridders::	GSB slv_quadratic
 				GSB slv_secant
 #else
 slv_newly_bracket::	GSB slv_quadratic
-				JMP slv_br_update
-			GSB slv_secant
+				GSB slv_secant
 #endif
 slv_br_update::		STO T1
 
@@ -221,16 +220,17 @@ slv_br_check::		RCL T1			/* est	y	?	? */
 /* Common exit code to check for equal estimates.
  * New estimate in X
  */
-slv_est_fin::		x[approx]? XA
+slv_est_fin::		STO XC
+			dbg(VIEW[alpha])
+			dbg(PSE 04)
+			/* Check for convergence but no zero */
+			x[approx]? XA
 				JMP slv_fin
 			x[approx]? XB
 				JMP slv_fin
 			x[approx]? XC
 				JMP slv_fin
-			dbg(STO XC)
-			dbg(VIEW[alpha])
-			dbg(PSE 04)
-			JMP slvi_done_init
+			JMP slv_loop
 
 
 /* Estimates don't bracket the solution.
