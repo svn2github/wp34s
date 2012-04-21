@@ -52,8 +52,6 @@ extern decNumber *dn_power(decNumber *r, const decNumber *a, const decNumber *b)
 extern decNumber *dn_average(decNumber *r, const decNumber *a, const decNumber *b);
 
 
-extern void decNumberSwap(decNumber *a, decNumber *b);
-
 extern const decNumber *small_int(int i);
 extern void int_to_dn(decNumber *, int);
 extern int dn_to_int(const decNumber *);
@@ -198,8 +196,6 @@ extern decNumber *dn_mul100(decNumber *, const decNumber *);
 extern decNumber *dn_mul1000(decNumber *, const decNumber *);
 extern decNumber *dn_mulPI(decNumber *, const decNumber *);
 extern decNumber *dn_mulpow10(decNumber *, const decNumber *, int);
-
-extern void solver(enum nilop op);
 
 extern decNumber *decFactor(decNumber *r, const decNumber *x);
 
