@@ -28,12 +28,20 @@
 /*
  * Define some utility macros to assist with xIN
  */
-#define xIN_OUTARGS(n)	((n & 7) * 5)
+#ifdef ENABLE_COPYLOCALS
 #define xIN_INARGS(n)	(n & 7)
+#define xIN_OUTARGS(n)	((n & 7) * 5)
 #define xIN_ARGS(i, o)	(xIN_INARGS(i) + xIN_OUTARGS(o))
 #define xIN_LASTX	(32)
 #define xIN_COMPLEX	(64)
 #define xIN_COPYLOCALS	(128)
+#else
+#define xIN_INARGS(n)	(n & 7)
+#define xIN_OUTARGS(n)	((n & 7) << 3)
+#define xIN_ARGS(i, o)	(xIN_INARGS(i) | xIN_OUTARGS(o))
+#define xIN_LASTX	(64)
+#define xIN_COMPLEX	(128)
+#endif
 
 /*
  * Define some utility macros to assist with xOUT
@@ -130,11 +138,13 @@
 #ifdef _DEBUG
 	XLBL"DBG"
 	// Add xrom only commands to test here
+#ifdef ENABLE_COPYLOCALS
 	xIN xIN_COPYLOCALS
 	RCL .00
 	DEC .00
 	SF .00
 	xOUT xOUT_NORMAL
+#endif
 	RTN
 #endif
 

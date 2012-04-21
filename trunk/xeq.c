@@ -4125,71 +4125,82 @@ void cmdlocr(unsigned int arg, enum rarg op) {
  */
 void cmdxin(unsigned int arg, enum rarg op) {
 
-	int i = XromFlags.xIN;
+	int i;
+#ifdef ENABLE_COPYLOCALS
 	REGISTER *previousLocals = NULL;
 	unsigned short previousFlags = 0;
 	int num_locals = 0;
-
+#endif
 #ifndef REALBUILD
 	/* This should never happen in a real build but it causes havoc writing
 	 * xrom code, so trap it here.
 	 */
-	if (i) {
+	if (XromFlags.xIN) {
 		err(ERR_ILLEGAL);
 		return;
 	}
 #endif
 
 	// Setup the XromLocal and XromParams structures in volatile RAM
-	if (! i) {
-		// fill with 0
-		xset(&XromLocal, 0, sizeof(XromLocal));
-		xset(&XromParams, 0, sizeof(XromParams));
+	// fill with 0
+	xset(&XromLocal, 0, sizeof(XromLocal));
+	xset(&XromParams, 0, sizeof(XromParams));
 
-		// Flags
-		XromFlags.state_lift_in = State2.state_lift;
-		XromFlags.stack_depth = UState.stack_depth;
-		XromFlags.mode_double = UState.mode_double;
-		XromFlags.mode_int = UState.intm;
-		XromFlags.state_lift = 1;
-		XromFlags.xIN = 1;
+	// Flags
+	XromFlags.state_lift_in = State2.state_lift;
+	XromFlags.stack_depth = UState.stack_depth;
+	XromFlags.mode_double = UState.mode_double;
+	XromFlags.mode_int = UState.intm;
+	XromFlags.state_lift = 1;
+	XromFlags.xIN = 1;
 
-		// Save pointers to original local data
-		if ((arg & 0x80) != 0 && LocalRegs < 0) {
-			XromFlags.copyLocals = 1;
-			previousFlags = *flag_word(LOCAL_FLAG_BASE, NULL);
-			previousLocals = get_reg_n(LOCAL_REG_BASE);
-			num_locals = local_regs();
-		}
-
-		// Establish local return stack
-		XromUserRetStk = RetStk;
-		XromUserRetStkPtr = RetStkPtr;
-
-		RetStk = XromRetStk;
-		RetStkPtr = 0; // Locals will be allocated later
+#ifdef ENABLE_COPYLOCALS
+	// Save pointers to original local data
+	if ((arg & 0x80) != 0 && LocalRegs < 0) {
+		XromFlags.copyLocals = 1;
+		previousFlags = *flag_word(LOCAL_FLAG_BASE, NULL);
+		previousLocals = get_reg_n(LOCAL_REG_BASE);
+		num_locals = local_regs();
 	}
+#endif
+	// Establish local return stack
+	XromUserRetStk = RetStk;
+	XromUserRetStkPtr = RetStkPtr;
+
+	RetStk = XromRetStk;
+#ifdef ENABLE_COPYLOCALS
+	RetStkPtr = 0;			// Locals will be allocated later
+#else
+	LocalRegs = RetStkPtr = -2;	// Allocate just the local flags
+	XromRetStk[-2] = 2 | LOCAL_MARKER;
+#endif
 
 	// Parse the argument into fields
+#ifdef ENABLE_COPYLOCALS
 	XromFlags.setLastX = (arg & 0x20) != 0;
 	XromFlags.complex = (arg & 0x40) != 0;
 	XromIn = (arg & 0x1f) % 5;
 	XromOut = (arg & 0x1f) / 5;
+#else
+	XromFlags.setLastX = (arg & 0x40) != 0;
+	XromFlags.complex = (arg & 0x80) != 0;
+	XromIn = (arg & 0x7);
+	XromOut = ((arg >> 3) & 0x7);
+#endif
 	if (XromFlags.complex) {
 		// Complex arguments are always in pairs
 		XromIn <<= 1;
 		XromOut <<= 1;
 	}
-	if (i)
-		return;		// Nested call, just set parameters
 
 	// Allocate the local frame
+#ifdef ENABLE_COPYLOCALS
 	LocalRegs = 0;
 	UState.mode_double = 1;		// Needed to allocate enough registers
 	cmdlocr(num_locals, RARG_LOCR);
 	if (XromFlags.copyLocals)
 		*flag_word(LOCAL_FLAG_BASE, NULL) = previousFlags;
-
+#endif
 	// Switch to double precision mode
 	if (XromFlags.mode_int) {
 		// Convert integers to decimal128
@@ -4200,19 +4211,23 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		// No conversion necessary
 		xcopy(XromStack, StackBase, sizeof(XromStack));
 		StackBase = XromStack;
+#ifdef ENABLE_COPYLOCALS
 		if (XromFlags.copyLocals)
 			move_regs(get_reg_n(LOCAL_REG_BASE), previousLocals, num_locals);
+#endif
 	}
 	else {
 		// Convert decimal64 to decinal128
 		UState.mode_double = 0;		// This was the original state before xIN
 		op_double(OP_DBLON);		// Now mode_double should be set again
+#ifdef ENABLE_COPYLOCALS
 		if (XromFlags.copyLocals) {
 			decimal64  *src  = &(previousLocals->s);
 			decimal128 *dest = &(get_reg_n(LOCAL_REG_BASE)->d);
 			while (num_locals--)
 				packed128_from_packed(dest++, src++);
 		}
+#endif
 	}
 
 	// Set stack size to 8 and turn on stack_lift
@@ -4246,10 +4261,11 @@ void cmdxin(unsigned int arg, enum rarg op) {
  */
 void cmdxout(unsigned int arg, enum rarg op) {
 	int i, dbl, intm;
+#ifdef ENABLE_COPYLOCALS
 	unsigned short flags = *flag_word(LOCAL_FLAG_BASE, NULL);
 	REGISTER *locals = get_reg_n(LOCAL_REG_BASE);
 	int num_locals = local_regs();
-
+#endif
 #ifndef REALBUILD
 	// shouldn't happen in final build
 	if (! XromFlags.xIN) {
@@ -4323,6 +4339,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	RetStkPtr = XromUserRetStkPtr;
 	LocalRegs = UserLocalRegs;	// set by dispatch_xrom()
 
+#ifdef ENABLE_COPYLOCALS
 	// Copy back local data
 	if (XromFlags.copyLocals) {
 		i = local_regs();
@@ -4341,7 +4358,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 				packed_from_packed128(dest++, src++);
 		}
 	}
-
+#endif
 	// RTN or RTN+1 depending on bit 0 of argument
 	do_rtn(arg & 1);
 }

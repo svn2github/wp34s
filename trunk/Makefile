@@ -281,7 +281,7 @@ $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRC
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE) \
 		compile_cats.c xrom.wp34s $(XROM) $(OPCODES)
 	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h xrom.c
-	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 XTAL=$(XTAL) catalogues.h xrom.c
+	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 XTAL=$(XTAL) INFRARED=$(INFRARED) catalogues.h xrom.c
 	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/$(TARGET) $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s -save-temps

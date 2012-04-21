@@ -136,6 +136,10 @@ unsigned char SleepAnnunciatorOn;
 int WdDisable;
 #endif
 
+#ifdef INFRARED
+unsigned int IrPulse;
+#endif
+
 /*
  *  Definitions for the keyboard scan
  */
@@ -1187,6 +1191,47 @@ void system_irq( void )
 }
 #endif
 
+#ifdef INFRARED
+/*
+ *  Timer/Counter 1 interrupt
+ */
+void TC1_irq( void )
+{
+	SUPC_DisableDeepMode();
+
+	if ( AT91C_BASE_TC1->TC_SR & AT91C_TC_CPCS ) {
+		/*
+		 *  RC has reached its compare value.
+		 *  Now the signal on TCIO0 is low because the clock is gated.
+		 */
+		IrPulse >>= 1;
+		if ( IrPulse == 3 ) {
+			/*
+			 *  We are done with this frame, stop the transmission.
+			 */
+			AT91C_BASE_TC1->TC_IDR = AT91C_TC_CPCS;
+			AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKDIS;
+			AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKDIS;
+			AT91C_BASE_TC0->TC_CMR = 0;
+			AT91C_BASE_TC1->TC_CMR = 0;
+			AT91C_BASE_PMC->PMC_PCDR = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
+			IrPulse = 0;
+		}
+		else {
+			/*
+			 *  Setup TC0 to emit (or not) a burst on the next active phase of TC1
+			 */
+			AT91C_BASE_TC0->TC_CCR =  IrPulse & 1 ? AT91C_TC_CLKEN | AT91C_TC_SWTRG
+					                      : AT91C_TC_CLKDIS;
+		}
+#if 0
+		// test pattern
+		IrPulse = IrPulse & 1 ? 4 : 2;
+#endif
+	}
+}
+#endif
+
 
 /*
  *  Enable the interrupt sources
@@ -1228,7 +1273,22 @@ void enable_interrupts()
 	 */
 	SLCDC_EnableInterrupts( AT91C_SLCDC_ENDFRAME );
 	UserHeartbeatCountDown = 5;
-	// --prio;
+
+#ifdef INFRARED
+	--prio;
+	/*
+	 *  Tell the interrupt controller where to go
+	 *  This is for the Timer/Counter 1
+	 */
+	AIC_ConfigureIT( AT91C_ID_TC1,
+		         AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL | prio,
+		         TC1_irq );
+	/*
+	 *  Enable IRQ 13
+	 */
+	AIC_EnableIT( AT91C_ID_TC1 );
+
+#endif
 }
 
 
@@ -1361,16 +1421,24 @@ static void test_ir( int on )
 		AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKEN;
 
 		// We need to enable interrupts on RC compare of timer 1
-		// ...
+		AT91C_BASE_TC1->TC_IER = AT91C_TC_CPCS;
 
 		// TC1 gates clock of TC0 via signal XC0
 		AT91C_BASE_TCB->TCB_BMR = AT91C_TCB_TC0XC0S_TIOA1 | AT91C_TCB_TC1XC1S_NONE | AT91C_TCB_TC2XC2S_NONE;
 
 		// Go!
 		AT91C_BASE_TCB->TCB_BCR = AT91C_TCB_SYNC;
+
+		IrPulse = 0xC6666667;	// Start with test pattern
 	}
 	else {
 		// Shut down
+		AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKDIS;
+		AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKDIS;
+		AT91C_BASE_TC1->TC_IDR = AT91C_TC_CPCS;
+		AT91C_BASE_TC0->TC_CMR = 0;
+		AT91C_BASE_TC1->TC_CMR = 0;
+
 		AT91C_BASE_PMC->PMC_PCDR = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
 		SerialOn = 0;
 	}

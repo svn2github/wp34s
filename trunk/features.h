@@ -44,6 +44,9 @@
 // Include the CNSTS command to access cnstants via indirection
 #define INCLUDE_INDIRECT_CONSTS
 
+// Code to allow acces to caller's local data from xIN-code
+// #define ENABLE_COPYLOCALS
+
 #ifndef TINY_BUILD
 
 // Include the Mantissa and exponent function
