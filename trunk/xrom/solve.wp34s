@@ -20,7 +20,8 @@
  *
  * Changes to this will likely cause breakage.
  */
-//#define _DEBUG
+
+// #define _DEBUG
 #ifdef _DEBUG
 #define dbg(x)	x
 #else
@@ -64,6 +65,8 @@
 #define F_BRACKET	.00			/* The two estaimtes a and b bracket a solution */
 #define F_CONST		.01			/* The function is constant */
 #define F_CAN_RIDDERS	.02			/* Can perform a Ridder's step */
+#define F_DO_SECANT	.03			/* Do a secant step */
+
 
 /* Some constants that can be used to tune the search
  */
@@ -175,10 +178,10 @@ slv_newly_bracket::	FC?C F_CAN_RIDDERS
 			GSB slv_ridders
 				JMP slv_br_update
 slv_skip_ridders::	GSB slv_quadratic
-				GSB slv_secant
+				SF F_DO_SECANT
 #else
 slv_newly_bracket::	GSB slv_quadratic
-				GSB slv_secant
+				SF F_DO_SECANT
 #endif
 slv_br_update::		STO T1
 
@@ -202,13 +205,16 @@ slv_br_same_sign::	RCL XC
 			STO FXB
 			RCL XA
 
-slv_br_check::		RCL T1			/* est	y	?	? */
+slv_br_check::		STO T2
+			FS?C F_DO_SECANT
+				GSB slv_secant
+			RCL T1			/* est	?	?	? */
 #if 1
-			SWAP
+			RCL T2			/* y	est	?	? */
 #else
 			/* Try to prevent short jumps */
-			_INT 3			/* 3	est	y	? */
-			RCL[times] Z		/* 3y	est	y	? */
+			_INT 3			/* 3	est	?	? */
+			RCL[times] T2		/* 3y	est	?	? */
 			RCL+ XC
 			_INT 4
 			/
@@ -227,8 +233,6 @@ slv_est_fin::		STO XC
 			x[approx]? XA
 				JMP slv_fin
 			x[approx]? XB
-				JMP slv_fin
-			x[approx]? XC
 				JMP slv_fin
 			JMP slv_loop
 
@@ -257,7 +261,7 @@ slv_nb_still::		FS? F_CONST
 			x<? COUNT
 				JMP slv_failed
 slv_newly_oneside::	GSB slv_quadratic
-				GSB slv_secant
+				SF F_DO_SECANT
 			STO T1
 			RCL FXB
 			ABS
@@ -276,12 +280,15 @@ slv_nb_1::		RCL XC
 			STO FXB
 slv_nb_0::		RCL XB
 			x[>=]? XA
-				JMP slv_nb_limit
+				JMP slv_nb_maybe_secant
 			x[<->] XA
 			STO XB
 			RCL FXB
 			x[<->] FXA
 			STO FXB
+
+slv_nb_maybe_secant::	FS?C F_DO_SECANT
+				GSB slv_secant
 
 /* Limit the dsitance a new estimate can be to within 100 times the distance between the
  * existing x values.  Either the current estimate or the new limited estimate should be in X
@@ -442,7 +449,9 @@ slv_bisect::		RCL XA
 #endif
 			RTN
 
-/* Perform a secant step and return the new x value on the stack. */
+/* Perform a secant step and return the new x value on the stack and
+ * in register T1.
+ */
 slv_secant::		RCL XB		/* b	?	?	? */
 			ENTER[^]	/* b	b	?	? */
 			RCL- XA		/* b-a	b	?	? */
@@ -451,6 +460,7 @@ slv_secant::		RCL XB		/* b	?	?	? */
 			/		/* R	b	?	? */
 			RCL[times] FXB	/* Fb*R	b	?	? */
 			-		/* b - Fb*R  ?	?	? */
+			STO T1
 			dbg("Se ")
 			RTN
 
