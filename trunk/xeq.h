@@ -740,7 +740,7 @@ enum nilop {
 	OP_CLRALPHA, OP_VIEWALPHA, OP_ALPHALEN,
 	OP_ALPHATOX, OP_XTOALPHA, OP_ALPHAON, OP_ALPHAOFF,
 	OP_REGCOPY, OP_REGSWAP, OP_REGCLR, OP_REGSORT,
-	OP_SOLVESTEP, OP_GSBuser, OP_POPUSR,
+	OP_LOADA2D, OP_SAVEA2D, OP_GSBuser, OP_POPUSR,
 	OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
 	OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
 	OP_ENTRYP,
@@ -1266,7 +1266,7 @@ extern void op_rtn(enum nilop op);
 extern void op_popusr(enum nilop op);
 extern void op_rs(enum nilop op);
 extern void op_prompt(enum nilop op);
-extern void solver(enum nilop op);
+extern void store_a_to_d(enum nilop op);
 extern void do_usergsb(enum nilop op);
 extern void do_userclear(enum nilop op);
 extern void isTop(enum nilop op);

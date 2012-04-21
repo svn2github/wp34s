@@ -110,31 +110,41 @@ slvi_same_sign::	RCL FXA			/* Both estaimtes have the same sign */
 			GSB slv_bisect		/* Trust the user's initial estimates and bisect */
 
 slvi_done_init::	STO XC
-
+			A..D[->]
 #endif
 
 /* The main solver loop.
  * Evaluate at the current guess and update.
  */
-slv_loop::		RCL XC
+slv_loop::		[->]A..D
+			RCL XC
 			FILL
 			XEQUSR
 			POPUSR
 			FILL
 			x[approx]0?
 				JMP slv_success
+			A..D[->]
+
+			/* Figure out our next estimate.  Use a variety of methods and guard conditions
+			 * to try to keep things sane.
+			 */
 			GSB slv_newestimate
 				JMP slv_loop
 			x<0?			/* Check for failure to complete */
 				JMP slv_failed
 			JMP slv_fin
 
-			/* Solver estimates converged */
+
+/* Solver estimates converged.
+ * Clean up and exit
+ */
 slv_fin::		Num 0
 			STO L
 			RCL T
 			RCL XB
 			RCL XC
+			[->]A..D
 			RTN
 
 slv_failed::		RCL FXA
@@ -158,7 +168,8 @@ slv_fail_BltA::		RCL T
 			RCL XB
 			RCL XC
 
-slv_fail_common::	TOP?
+slv_fail_common::	[->]A..D
+			TOP?
 				ERR ERR_SOLVE
 			RTN+1
 
@@ -208,7 +219,7 @@ slvi_done_init::	STO XC
 			xOUT xOUT_NORMAL
 #endif
 
-slv_newestimate::	SLVS
+slv_newestimate::	NOP //SLVS
 			x=0?
 				RTN
 			RTN+1
@@ -322,18 +333,18 @@ slv_quadratic::		RCL XA
  *
  * Uses register D for temporary storage
  */
-slv_q_step::		R[v]
+slv_q_step::		R[v]		/* f2	f3	x	f1 */
 			STO T2
-			R[v]
+			R[v]		/* f3	x	f1	f2 */
 			STO[times] T2
-			[cmplx]R[^]
-			STO- Y
-			STO- Z
-			DROP
-			[times]
+			[cmplx]R[^]	/* f1	f2	f3	x */
+			STO- Y		/* f1	f2-f1	f3	x */
+			STO- Z		/* f1	f2-f1	f3-f1	x */
+			DROP		/* d21	d31	x	x */
+			[times]		/* xprod  x	x	x */
 			x=0?
 				RTN
-			/
+			/		/* x / xprod x	x	x */
 			RCL[times] T2
 			RTN+1
 #endif

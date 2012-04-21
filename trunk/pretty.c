@@ -190,7 +190,7 @@ void dump_opcodes(FILE *f) {
 				if (d >= OP_CLALL && d <= OP_CLPALL) {
 					continue;
 				}
-				if (d == OP_SOLVESTEP ||
+				if (d == OP_LOADA2D || d == OP_SAVEA2D ||
 						d == OP_GSBuser || d == OP_POPUSR) {
 					fprintf(f, "0x%04x\tcmd\t%s\txrom\n", c, cmdpretty);
 					continue;

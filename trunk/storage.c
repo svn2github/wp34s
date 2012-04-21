@@ -68,6 +68,10 @@ SLCDCMEM TStateWhileOn StateWhileOn;
 TXromParams XromParams;
 VOLATILE_RAM TXromLocal XromLocal;
 
+/* Private space for four registers temporarily
+ */
+VOLATILE_RAM REGISTER XromA2D[4];
+
 /*
  *  The backup flash area:
  *  2 KB for storage of programs and registers

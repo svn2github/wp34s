@@ -381,6 +381,11 @@ extern TXromParams XromParams;
 #define XromUserRetStk	  (XromParams.user_ret_stk)
 #define XromUserRetStkPtr (XromParams.user_ret_stk_ptr)
 
+/* Private memory for storing registers A-D
+ */
+extern REGISTER XromA2D[4];
+
+
 /*
  *  A private set of registers for non recursive, non interruptible XROM code
  *  They are addressed as local registers from .00 to .15

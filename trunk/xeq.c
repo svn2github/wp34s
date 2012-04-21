@@ -4034,6 +4034,20 @@ void set_running_on() {
 	finish_display();
 }
 
+/* Command to stash registers A through D into volatile RAM and to restore them
+ * again.
+ */
+void store_a_to_d(enum nilop op) {
+	const void *src = XromA2D;
+	void *dest = get_reg_n(regA_idx);
+
+	if (op == OP_SAVEA2D) {
+		src = dest;
+		dest = XromA2D;
+	}
+	xcopy(dest, src, sizeof(REGISTER) * 4);
+}
+
 /*
  *  Command to support local variables.
  *  A stack frame is constructed:

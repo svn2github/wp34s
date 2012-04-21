@@ -562,7 +562,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FN_I0(OP_REGCLR,	&op_regclr,		"R-CLR")
 	FN_I0(OP_REGSORT,	&op_regsort,		"R-SORT")
 
-	FUNC0(OP_SOLVESTEP,	&solver,		"SLVS")
+	FUNC0(OP_LOADA2D,	&store_a_to_d,		"\015A..D")
+	FUNC0(OP_SAVEA2D,	&store_a_to_d,		"A..D\015")
+
 	FUNC0(OP_GSBuser,	&do_usergsb,		"XEQUSR")
 	FUNC0(OP_POPUSR,	&op_popusr,		"POPUSR")
 

@@ -705,7 +705,8 @@ static s_opcode prog_catalogue[] = {
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 static s_opcode internal_catalogue[] = {
 #if 0
-	NILIC(OP_SOLVESTEP,	"SLVS")
+	NILIC(OP_LOADA2D,	"[->]A..D")
+	NILIC(OP_SAVEA2D,	"A..D[->]")
 	RARGCMD(RARG_MODE_SET,	"xMSET")
 	RARGCMD(RARG_MODE_CLEAR,"xMCLR")
 #endif
