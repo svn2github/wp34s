@@ -85,8 +85,9 @@
 //#define INCLUDE_EASTER
 
 // Include code to use a Ridder's method step after a bisection in the solver.
-// This increases code size and doesn't see to help the solver's convergence.
-//#define USE_RIDDERS
+// For some functions this seems to help a lot, for others there is limited
+// benefit.
+#define USE_RIDDERS
 
 // Include code to find integer factors
 // Space cost 480 bytes.

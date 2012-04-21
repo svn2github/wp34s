@@ -20,6 +20,12 @@
  *
  * Changes to this will likely cause breakage.
  */
+//#define _DEBUG
+#ifdef _DEBUG
+#define dbg(x)	x
+#else
+#define dbg(x)
+#endif
 
 /**************************************************************************/
 /* Solve code.
@@ -49,21 +55,21 @@
 /* Register use in subroutines protected by xIN:
  */
 #define FXC	A				/* function evaluated at XC */
+#define T0	B
 #define T1	C				/* temporaries -- must be next to each other and on a complex boundary */
 #define T2	D
 
 /* Flag use:
  */
-#define F_WAS_BISECT	.07			/* True iff the previos step was bisection */
-#define F_BRACKET	.08			/* The two estaimtes a and b bracket a solution */
-#define F_CONST		.09			/* The function is constant */
+#define F_BRACKET	.00			/* The two estaimtes a and b bracket a solution */
+#define F_CONST		.01			/* The function is constant */
+#define F_CAN_RIDDERS	.02			/* Can perform a Ridder's step */
 
 /* Some constants that can be used to tune the search
  */
-#define BRACKET_MAXCOUNT	150		/* The maximum number of iterations when the solution is bracketed */
+#define BRACKET_MAXCOUNT	250		/* The maximum number of iterations when the solution is bracketed */
 #define CONST_MAXCOUNT		20		/* The maximum number of iterations when the function appears constant */
 #define ONESIDE_MAXCOUNT	100		/* The maximum number of iterations when the function always has the same sign */
-
 
 		XLBL"SOLVE"			/* Entry: SOLVE */
 			INTM?
@@ -89,11 +95,11 @@
 			STO FXB
 			x[approx]0?
 				JMP slv_initial2_perfect
-#ifdef _DEBUG
-			GSB slv_initialise
-#else
-/* Initialise everything for the solver
- */
+
+			/* Initialise everything for the solver
+			 */
+			A..D[->]
+
 			RCL[times] FXA
 			x[>=]0?
 				JMP slvi_same_sign
@@ -110,30 +116,216 @@ slvi_same_sign::	RCL FXA			/* Both estaimtes have the same sign */
 			GSB slv_bisect		/* Trust the user's initial estimates and bisect */
 
 slvi_done_init::	STO XC
-			A..D[->]
-#endif
 
 /* The main solver loop.
  * Evaluate at the current guess and update.
  */
 slv_loop::		[->]A..D
-			RCL XC
 			FILL
 			XEQUSR
 			POPUSR
-			FILL
 			x[approx]0?
 				JMP slv_success
 			A..D[->]
+			STO FXC
 
-			/* Figure out our next estimate.  Use a variety of methods and guard conditions
-			 * to try to keep things sane.
-			 */
-			GSB slv_newestimate
-				JMP slv_loop
-			x<0?			/* Check for failure to complete */
+/* Figure out our next estimate.  Use a variety of methods and guard conditions
+ * to try to keep things sane.
+ */
+			INC COUNT
+			dbg(CL[alpha])
+			FC? F_BRACKET
+				JMP slv_not_bracket
+			dbg("br ")
+			/* Solution is bracketed by the estimates */
+			_INT BRACKET_MAXCOUNT
+			x<? COUNT
 				JMP slv_failed
-			JMP slv_fin
+#ifdef USE_RIDDERS
+slv_newly_bracket::	FC?C F_CAN_RIDDERS
+				JMP slv_skip_ridders
+			GSB slv_ridders
+				JMP slv_br_update
+slv_skip_ridders::	GSB slv_quadratic
+				GSB slv_secant
+#else
+slv_newly_bracket::	GSB slv_quadratic
+				JMP slv_br_update
+			GSB slv_secant
+#endif
+slv_br_update::		STO T1
+
+			/* Update the interval appropriately */
+			RCL FXC
+			SIGN
+			RCL FXB
+			SIGN
+			x=? Y
+				JMP slv_br_same_sign
+			RCL XC
+			STO XA
+			RCL FXC
+			STO FXA
+			RCL XB
+			JMP slv_br_check
+
+slv_br_same_sign::	RCL XC
+			STO XB
+			RCL FXC
+			STO FXB
+			RCL XA
+
+slv_br_check::		RCL T1			/* est	y	?	? */
+#if 1
+			SWAP
+#else
+			/* Try to prevent short jumps */
+			_INT 3			/* 3	est	y	? */
+			RCL[times] Z		/* 3y	est	y	? */
+			RCL+ XC
+			_INT 4
+			/
+#endif
+			RCL XC			/* c	y	est	? */
+			GSB slv_bracket
+				GSB slv_bisect
+
+/* Common exit code to check for equal estimates.
+ * New estimate in X
+ */
+slv_est_fin::		x[approx]? XA
+				JMP slv_fin
+			x[approx]? XB
+				JMP slv_fin
+			x[approx]? XC
+				JMP slv_fin
+			dbg(STO XC)
+			dbg(VIEW[alpha])
+			dbg(PSE 04)
+			JMP slvi_done_init
+
+
+/* Estimates don't bracket the solution.
+ * Deal with this and the constant case.
+ */
+slv_not_bracket::	RCL FXC
+			SIGN
+			RCL FXB
+			SIGN
+			x=? Y
+				JMP slv_nb_still
+
+			/* We're bracketed finally */
+			_INT 0
+			STO COUNT
+			SF F_BRACKET
+			JMP slv_newly_bracket
+
+/* The new function value is still one sided */
+slv_nb_still::		FS? F_CONST
+				JMP slv_const
+			dbg("1s ")
+			_INT ONESIDE_MAXCOUNT
+			x<? COUNT
+				JMP slv_failed
+slv_newly_oneside::	GSB slv_quadratic
+				GSB slv_secant
+			STO T1
+			RCL FXB
+			ABS
+			RCL FXA
+			ABS
+			x>? Y
+				JMP slv_nb_1
+			RCL XC
+			STO XA
+			RCL FXC
+			STO FXA
+			JMP slv_nb_0
+slv_nb_1::		RCL XC
+			STO XB
+			RCL FXC
+			STO FXB
+slv_nb_0::		RCL XB
+			x[>=]? XA
+				JMP slv_nb_limit
+			x[<->] XA
+			STO XB
+			RCL FXB
+			x[<->] FXA
+			STO FXB
+
+/* Limit the dsitance a new estimate can be to within 100 times the distance between the
+ * existing x values.  Either the current estimate or the new limited estimate should be in X
+ * on return.
+ */
+slv_nb_limit::		RCL T1
+			RCL XB
+			RCL- XA		/* a-b	est	?	? */
+			ABS
+			SDL 02		/* |a-b| est	?	? */
+			RCL XA		/* a	||	est	? */
+			RCL- Y		/* a-||	||	est	? */
+			x[>=]? Z
+				JMP slv_est_fin
+			DROP
+			RCL+ XB		/* b+||	est	?	? */
+			x[<=]? Y
+				JMP slv_est_fin
+			SWAP
+			JMP slv_est_fin
+			
+
+/* The function looks constant so far.
+ */
+slv_const::		_INT CONST_MAXCOUNT
+			dbg("cn ")
+			x<? COUNT
+				JMP slv_failed
+			RCL FXC
+			x=? FXB
+				JMP slv_still_const
+			_INT 0
+			STO COUNT
+			CF F_CONST
+			JMP slv_newly_oneside
+
+/* Still constant */
+slv_still_const::	RCL COUNT
+			EVEN?
+				JMP slv_const_even
+
+/* Move the lower end & replace the higher */
+			RCL XC
+			STO XB
+			RCL FXC
+			STO FXB
+			RCL XA
+			x<0?
+				JMP slv_const_1
+			_INT 2
+			/
+			JMP slv_const_0
+slv_const_1::		RCL+ X
+slv_const_0::		_INT 10
+			-
+			JMP slv_est_fin
+
+/* Move the higher end & replace the lower */
+slv_const_even::	RCL XC
+			STO XA
+			RCL FXC
+			STO FXA
+			RCL XB
+			x<0?
+				JMP slv_const_3
+			RCL+ X
+			JMP slv_const_4
+slv_const_3::		_INT 2
+			/
+slv_const_4::		_INT 10
+			+
+			JMP slv_est_fin
 
 
 /* Solver estimates converged.
@@ -193,37 +385,6 @@ slv_initial_common::	RCL X
 			[cmplx]x[<->] Z
 			RTN
 
-/* Initialise everything for the solver
- * This is a subroutine so it can switch to xrom mode and use extra registers in the
- * bisection check.
- */
-#ifdef _DEBUG
-slv_initialise::	xIN (NILADIC_0 | xIN_NOLOCAL)
-			SSIZE4
-			RCL[times] FXA
-			x[>=]0?
-				JMP slvi_same_sign
-			SF F_BRACKET
-			GSB slv_secant
-			[cmplx]RCL XA
-			GSB slv_bracket
-				GSB slv_bisect
-			JMP slvi_done_init
-
-slvi_same_sign::	RCL FXA			/* Both estaimtes have the same sign */
-			x=? FXB
-				SF F_CONST	/* Both estimates identical function values */
-			GSB slv_bisect		/* Trust the user's initial estimates and bisect */
-
-slvi_done_init::	STO XC
-			xOUT xOUT_NORMAL
-#endif
-
-slv_newestimate::	NOP //SLVS
-			x=0?
-				RTN
-			RTN+1
-
 
 /* Check if the estimate in Z is within the interval bounded by a and b in (X & Y).  If so return
  * with a skip, if not do a plain return.  Either way the value that was in Z must end up in X.
@@ -231,19 +392,6 @@ slv_newestimate::	NOP //SLVS
  *
  * Uses registers T1 & T2 for temporary storage
  */
-#ifdef _DEBUG
-slv_bracket::		[cmplx]STO T1
-			MIN
-			x[>=]? Y
-				RTN
-			SWAP
-			RCL T1
-			RCL[^] T2
-			SWAP
-			x[<=]? Y
-				RTN+1
-			RTN
-#else
 slv_bracket::		ENTER[^]	/* a	a	b	x	*/
 			RCL[v] Z	/* min	a	b	x	*/
 			[<->] YZXT	/* a	b	min	x	*/
@@ -254,15 +402,15 @@ slv_bracket::		ENTER[^]	/* a	a	b	x	*/
 			x[>=]? Z
 				RTN
 			RTN+1
-#endif
 
 /* Perform a bisection step and return the new x value on the stack. */
 slv_bisect::		RCL XA
 			RCL+ XB
 			_INT 2
 			/
+			dbg("Bi ")
 #ifdef USE_RIDDERS
-			SF F_WAS_BISECT
+			SF F_CAN_RIDDERS
 #endif
 			RTN
 
@@ -275,33 +423,14 @@ slv_secant::		RCL XB		/* b	?	?	? */
 			/		/* R	b	?	? */
 			RCL[times] FXB	/* Fb*R	b	?	? */
 			-		/* b - Fb*R  ?	?	? */
+			dbg("Se ")
 			RTN
 
 
 
-#if 0
-/* Limit the dsitance a new estimate can be to within 100 times the distance between the
- * existing x values.  Either the current estimate or the new limited estimate should be in X
- * on return.
- */
-slv_limit_jump::	RCL XB
-			RCL- XA		/* a-b	est	?	? */
-			ABS
-			SDL 02		/* |a-b| est	?	? */
-			RCL XA		/* a	||	est	? */
-			RCL- Y		/* a-||	||	est	? */
-			x[>=]? Z
-				RTN
-			DROP
-			RCL+ XB		/* b+||	est	?	? */
-			x[<=]? Y
-				RTN
-			SWAP
-			RTN
 
-
-/* Perform a quadratic interpolation step.  Return with a skip & the estimate in X if good.
- * If not good return without skipping.
+/* Perform a quadratic interpolation step.  Return with a skip and the estimate in X if good.
+ * If not good return with without skip.
  *
  * Uses registers T1 & T2 for temporary storage
  */
@@ -326,6 +455,7 @@ slv_quadratic::		RCL XA
 			GSB slv_q_step
 				RTN
 			RCL+ T1
+			dbg("Qu ")
 			RTN+1
 
 /* A third of the inverse quadratic interpolation step.
@@ -347,21 +477,19 @@ slv_q_step::		R[v]		/* f2	f3	x	f1 */
 			/		/* x / xprod x	x	x */
 			RCL[times] T2
 			RTN+1
-#endif
 
 #ifdef USE_RIDDERS
-/* Perform a quadratic interpolation step.  Return with a skip & the estimate in X if good.
- * If not good return without skipping.
+/* Perform a Ridder's method step.  Return with the estimate in X if good.
+ * If not good return with a skip.
  *
  * https://en.wikipedia.org/wiki/Ridders%27_method
  */
-slv_ridders::		RCL FXA
-			RCL FXC
-			RCL FXB
-			RCL FXC
-			[cmplx][times]
+slv_ridders::		[cmplx]RCL FXA		/* a b ? ? */
+			RCL FXC			/* c a b ? */
+			[<->] XZXY		/* c b c a */
+			[cmplx][times]		/* c^ - ab */
 			x[<=]0?
-				RTN
+				RTN+1
 			[sqrt]
 			1/x
 			RCL FXA
@@ -373,7 +501,8 @@ slv_ridders::		RCL FXA
 			RCL- XA
 			[times]
 			RCL+ XC
-			RtN+1
+			dbg("Rd ")
+			RTN
 #endif
 
 #undef XA
@@ -383,8 +512,13 @@ slv_ridders::		RCL FXA
 #undef FXB
 #undef COUNT
 
+#undef FXC
+#undef T1
+#undef T2
+
 #undef F_BRACKET
 #undef F_CONST
+#undef F_CAN_RIDDERS
 
 #undef BRACKET_MAXCOUNT
 #undef CONST_MAXCOUNT
