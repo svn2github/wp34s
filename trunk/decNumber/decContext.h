@@ -43,7 +43,11 @@ typedef long long int		integer64_t;
 typedef unsigned char		uint8_t;
 typedef unsigned short int	uint16_t;
 typedef unsigned int		uint32_t;
+#ifdef FIX_LINUX_64_BITS
+typedef unsigned long int	uint64_t;
+#else
 typedef unsigned long long int	uint64_t;
+#endif
 
   /* Conditional code flag -- set this to 0 for best performance */
   #define DECSUBSET 0              // 1=enable subset arithmetic
