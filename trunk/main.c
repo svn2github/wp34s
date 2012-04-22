@@ -137,7 +137,7 @@ int WdDisable;
 #endif
 
 #ifdef INFRARED
-unsigned int IrPulse;
+volatile unsigned int IrPulse;
 #endif
 
 /*
@@ -710,12 +710,10 @@ void detect_voltage( void )
 	/*
 	 *  Test low voltage conditions
 	 */
-#ifndef INFRARED
 	if ( is_test_mode() ) {
 		Voltage = LOW_VOLTAGE - 1;
 		return;
 	}
-#endif
 
 	/*
 	 *  Don't be active all the time
@@ -1224,10 +1222,6 @@ void TC1_irq( void )
 			AT91C_BASE_TC0->TC_CCR =  IrPulse & 1 ? AT91C_TC_CLKEN | AT91C_TC_SWTRG
 					                      : AT91C_TC_CLKDIS;
 		}
-#if 0
-		// test pattern
-		IrPulse = IrPulse & 1 ? 4 : 2;
-#endif
 	}
 }
 #endif
@@ -1386,70 +1380,90 @@ void flush_comm( void )
 
 #ifdef INFRARED
 /*
- *  IR transmitter on pin TIOA0
- */
-static void test_ir( int on )
-{
-	if ( on ) {
-		// Make the timer spit out a signal
-		set_speed( SPEED_HALF );
-		SerialOn = 1;
-
-		// Enable the peripheral clocks of TC0 and TC1
-		AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
-
-		// Assign I/O pin PC7 to TIOA0, disable pull-ups
-		AT91C_BASE_PIOC->PIO_PDR   = AT91C_PC7_TIOA0;	// Disable PIO
-		AT91C_BASE_PIOC->PIO_BSR   = AT91C_PC7_TIOA0;	// Peripheral B is TC0
-		AT91C_BASE_PIOC->PIO_MDDR  = AT91C_PC7_TIOA0;   // No multi drive
-		AT91C_BASE_PIOC->PIO_PPUDR = AT91C_PC7_TIOA0;	// No pull-up
-
-		// TC0: 32768 Hz square wave, gated by TC1
-		AT91C_BASE_TC0->TC_CMR = AT91C_TC_CLKS_TIMER_DIV1_CLOCK | AT91C_TC_BURST_XC0
-				       | AT91C_TC_ACPA_TOGGLE
-				       | AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO;
-		AT91C_BASE_TC0->TC_RA = ( PLLMUL_HALF + 1 ) / 8;	//  75
-		AT91C_BASE_TC0->TC_RC = ( PLLMUL_HALF + 1 ) / 4;	// 150
-		AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKEN;
-
-		// TC1: (32768/14) Hz square wave
-		AT91C_BASE_TC1->TC_CMR = AT91C_TC_CLKS_TIMER_DIV2_CLOCK
-				       | AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR
-				       | AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO;
-		AT91C_BASE_TC1->TC_RA = 14 * ( PLLMUL_HALF + 1 ) / 16;
-		AT91C_BASE_TC1->TC_RC = 14 * ( PLLMUL_HALF + 1 ) / 8;
-		AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKEN;
-
-		// We need to enable interrupts on RC compare of timer 1
-		AT91C_BASE_TC1->TC_IER = AT91C_TC_CPCS;
-
-		// TC1 gates clock of TC0 via signal XC0
-		AT91C_BASE_TCB->TCB_BMR = AT91C_TCB_TC0XC0S_TIOA1 | AT91C_TCB_TC1XC1S_NONE | AT91C_TCB_TC2XC2S_NONE;
-
-		// Go!
-		AT91C_BASE_TCB->TCB_BCR = AT91C_TCB_SYNC;
-
-		IrPulse = 0xC6666667;	// Start with test pattern
-	}
-	else {
-		// Shut down
-		AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKDIS;
-		AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKDIS;
-		AT91C_BASE_TC1->TC_IDR = AT91C_TC_CPCS;
-		AT91C_BASE_TC0->TC_CMR = 0;
-		AT91C_BASE_TC1->TC_CMR = 0;
-
-		AT91C_BASE_PMC->PMC_PCDR = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
-		SerialOn = 0;
-	}
-}
-
-
-/*
  *  Send a byte out to the IR transmitter
  */
 void put_ir( unsigned char c )
 {
+	unsigned int p;
+	int i;
+	unsigned char cc;
+
+	set_speed( SPEED_HALF );
+	SerialOn = 1;
+#ifdef SLEEP_ANNUNCIATOR
+	dot( SLEEP_ANNUNCIATOR, 1 );
+	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
+#endif
+	/*
+	 *  Assemble the half bit pattern:
+	 *  start bit (3 times on), ECC (4 full bits), data (8 full bits), stop bit (3 times off)
+	 */
+	// stop + terminating pattern for IRQ: 11000
+	p = 0x18;
+
+	// data: 16 half bits
+	for ( cc = c, i = 0; i < 8; ++i ) {
+		p <<= 2;
+		p |= ( cc & 1 ) ? 1 : 2;
+		cc >>= 1;
+	}
+
+	// ECC: 8 half bits
+	for ( i = 0; i < 4; ++i ) {
+		// ECC bit masks for bits 8 to 11
+		static const unsigned char mask[ 4 ] = { 0x8b, 0xd5, 0xe6, 0x78 };
+		p <<= 2;
+		p |= __builtin_parity( c & mask[ i ] ) ? 1 : 2;
+	}
+
+	// start
+	IrPulse = ( p << 3 ) | 7;
+
+	// Enable the peripheral clocks of TC0 and TC1
+	AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
+
+	// Assign I/O pin PC7 to TIOA0, disable pull-ups
+	AT91C_BASE_PIOC->PIO_PDR   = AT91C_PC7_TIOA0;	// Disable PIO
+	AT91C_BASE_PIOC->PIO_BSR   = AT91C_PC7_TIOA0;	// Peripheral B is TC0
+	AT91C_BASE_PIOC->PIO_MDDR  = AT91C_PC7_TIOA0;   // No multi drive
+	AT91C_BASE_PIOC->PIO_PPUDR = AT91C_PC7_TIOA0;	// No pull-up
+
+	// TC0: 32768 Hz square wave, gated by TC1
+	AT91C_BASE_TC0->TC_CMR = AT91C_TC_CLKS_TIMER_DIV1_CLOCK | AT91C_TC_BURST_XC0
+			       | AT91C_TC_ACPA_TOGGLE
+			       | AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO;
+	AT91C_BASE_TC0->TC_RA = ( PLLMUL_HALF + 1 ) / 8;	//  75
+	AT91C_BASE_TC0->TC_RC = ( PLLMUL_HALF + 1 ) / 4;	// 150
+	AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKEN;
+
+	// TC1: (32768/14) Hz square wave
+	AT91C_BASE_TC1->TC_CMR = AT91C_TC_CLKS_TIMER_DIV2_CLOCK
+			       | AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR
+			       | AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO;
+	AT91C_BASE_TC1->TC_RA = 14 * ( PLLMUL_HALF + 1 ) / 16;
+	AT91C_BASE_TC1->TC_RC = 14 * ( PLLMUL_HALF + 1 ) / 8;
+	AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKEN;
+
+	// We need to enable interrupts on RC compare of timer 1
+	AT91C_BASE_TC1->TC_IER = AT91C_TC_CPCS;
+
+	// TC1 gates clock of TC0 via signal XC0
+	AT91C_BASE_TCB->TCB_BMR = AT91C_TCB_TC0XC0S_TIOA1 | AT91C_TCB_TC1XC1S_NONE | AT91C_TCB_TC2XC2S_NONE;
+
+	// Go!
+	AT91C_BASE_TCB->TCB_BCR = AT91C_TCB_SYNC;
+
+	/*
+	 *  Now wait until the pattern is sent
+	 */
+	while ( IrPulse ) {
+		go_idle();
+	}
+
+#ifdef SLEEP_ANNUNCIATOR
+	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
+	WaitForLcd = 1;
+#endif
 
 }
 #endif
@@ -1631,7 +1645,7 @@ void toggle_test_mode( void )
 	TestFlag = !TestFlag;
 	message( is_test_mode() ? "Test ON" : "Test OFF", NULL );
 #ifdef INFRARED
-	test_ir( is_test_mode() );
+	put_ir( '\n' );
 #endif
 }
 
