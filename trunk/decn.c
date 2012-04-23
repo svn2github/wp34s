@@ -2053,7 +2053,7 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 			decNumberTrunc(&s, &z);
 			dn_multiply(&t, &s, d);
 			dn_add(&s, &t, &dold);	// s is new denominator estimate
-			if (dn_le(&maxd, &s))
+			if (dn_lt(&maxd, &s))
 				break;
 			decNumberCopy(&dold, d);
 			decNumberCopy(d, &s);
