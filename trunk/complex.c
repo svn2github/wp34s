@@ -196,12 +196,12 @@ void cmplxArg(decNumber *arg, const decNumber *a, const decNumber *b) {
 }
 
 void cmplxR(decNumber *r, const decNumber *a, const decNumber *b) {
-	decNumber a2, b2, s;
+	complexNumber a2, b2, s;
 
-	dn_multiply(&a2, a, a);
-	dn_multiply(&b2, b, b);
-	dn_add(&s, &a2, &b2);
-	dn_sqrt(r, &s);
+	dn_multiply(&a2.n, a, a);
+	dn_multiply(&b2.n, b, b);
+	dn_add(&s.n, &a2.n, &b2.n);
+	dn_sqrt(r, &s.n);
 }
 
 void cmplxFromPolar(decNumber *x, decNumber *y, const decNumber *r, const decNumber *t) {
