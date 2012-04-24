@@ -20,6 +20,9 @@
 #include "xeq.h"
 #include "serial.h"
 #include "stats.h"
+#include "display.h"
+
+#define SERIAL_LINE_DELAY 3
 
 /*
  *  Where will the next data be printed?
@@ -30,28 +33,35 @@ unsigned char PrinterColumn;
 /*
  *  Print to IR or serial port, depending on the PMODE setting
  */
-static void print( unsigned char c )
+static int print( unsigned char c )
 {
 	if ( UState.print_mode == PMODE_SERIAL ) {
+		int abort = 0;
 		open_port_default();
 		if ( c == '\n' ) {
 			put_byte( '\r' );
+			put_byte( '\n' );
+			abort = recv_byte( SERIAL_LINE_DELAY ) == R_BREAK;
 		}
-		put_byte( c );
+		else {
+			put_byte( c );
+		}
 		close_port_reset_state();
+		return abort;
 	}
 	else {
-		put_ir( c );
+		return put_ir( c );
 	}
 }
 
-static void advance( void )
+static int advance( void )
 {
-	print( '\n' );
+	int abort = print( '\n' );
 	PrinterColumn = 0;
 #ifdef REALBUILD
 	PrintDelay = PRINT_DELAY;
 #endif
+	return abort;
 }
 
 /*
@@ -59,7 +69,7 @@ static void advance( void )
  */
 static void wrap( int width )
 {
-	if ( PrinterColumn + width >= 166 ) {
+	if ( PrinterColumn + width > 166 ) {
 		advance();
 	}
 	PrinterColumn += width;
@@ -68,26 +78,23 @@ static void wrap( int width )
 /*
  *  Print a complete line using character set translation
  */
-static void print_line( const char *buff, int with_lf )
+static int print_line( const char *buff, int with_lf )
 {
 	const int mode = UState.print_mode;
 	unsigned int c;
 	unsigned short int posns[ 257 ];
 	unsigned char pattern[ 6 ];	// rows
 	unsigned char i, j, m, w = 0;
+	int abort = 0;
 
 	// Import code from generated file font.c
-	extern unsigned int charlengths( unsigned int c );
-	extern void findlengths( unsigned short int posns[ 257 ], int smallp );
-	extern void unpackchar( unsigned int c, unsigned char d[ 6 ], int smallp, 
-				const unsigned short int posns[ 257 ] );
 	extern const unsigned char printer_chars[ 31 + 129 ];
 
 	// Determine character sizes and pointers
 	findlengths( posns, mode == PMODE_SMALLGRAPHICS );
 
 	// Print line
-	while ( ( c = *( (const unsigned char *) buff++ ) ) != '\0' ) {
+	while ( ( c = *( (const unsigned char *) buff++ ) ) != '\0' && !abort ) {
 
 		w= 0;
 		switch ( mode ) {
@@ -100,7 +107,7 @@ static void print_line( const char *buff, int with_lf )
 			w = PrinterColumn == 0 ? 5 : 7;
 			if ( i != 0 ) {
 				wrap( w );
-				put_ir( i );
+				abort = put_ir( i );
 				break;
 			}
 			goto graphic_print;
@@ -116,7 +123,9 @@ static void print_line( const char *buff, int with_lf )
 				w = charlengths( c );
 			}
 			wrap( w );
-			put_ir( 27 );
+			if ( 0 != ( abort = put_ir( 27 ) ) ) {
+				break;
+			}
 			put_ir( w );
 			if ( w == 7 ) {
 				// Add spacing between characters
@@ -143,8 +152,9 @@ static void print_line( const char *buff, int with_lf )
 		}
 	}
 	if ( with_lf ) {
-		advance();
+		abort |= advance();
 	}
+	return abort;
 }
 
 /*
@@ -155,12 +165,76 @@ void print_program( enum nilop op )
 
 }
 
+
 /*
- *  Print register data
+ *  Print a single register
+ */
+int print_reg( int reg, const char *label )
+{
+	char buf[ 65 ];
+	int abort = 0;
+	int len;
+	const int pmode = UState.print_mode;
+
+	if ( label != NULL ) {
+		abort = print_line( label, 0 );
+	}
+	xset( buf, '\0', sizeof( buf ) );
+	format_reg( reg, buf );
+	len = pmode == PMODE_DEFAULT ? slen( buf ) * 7
+	    : pmode == PMODE_SERIAL  ? 0
+	    : pixel_length( buf, pmode == PMODE_SMALLGRAPHICS );
+
+	if ( len >= 166 ) {
+		len = 166;
+	}
+	if ( len ) {
+		cmdprint( 166 - len, RARG_PRINT_TAB );
+	}
+	abort |= print_line( buf, 1 );
+	return abort;
+}	
+
+
+/*
+ *  Print a block of registers with labels
  */
 void print_registers( enum nilop op )
 {
+	int s, n;
 
+	if ( op == OP_PRINT_STACK ) {
+		s = regX_idx;
+		n = stack_size();
+	}
+	else {
+		if ( reg_decode( &s, &n, NULL, 0 ) ) {
+			return;
+		}
+	}
+
+	while ( n-- ) {
+		int r = s;
+		char name[ 5 ], *p = name;
+
+		if ( r >= regX_idx && r <= regK_idx ) {
+			*p++ = REGNAMES[ r - regX_idx ];
+		}
+		else {
+			*p++ = '.';
+			r -= LOCAL_REG_BASE;
+			if ( r >= 100 ) {
+				*p++ = '1';
+				r -= 100;
+			}
+			p = num_arg_0( p, r, 2 );
+		}
+		*p++ = '=';
+		*p = '\0';
+		if ( 0 != print_reg( s++, name ) ) {
+			return;
+		}
+	}
 }
 
 /*
@@ -209,6 +283,9 @@ void cmdprint( unsigned int arg, enum rarg op )
 
 	case RARG_PRINT_TAB:
 		// Move to specific column
+		if ( PrinterColumn > arg ) {
+			advance();
+		}
 		if ( PrinterColumn < arg ) {
 			int i = arg - PrinterColumn;
 			PrinterColumn = arg;
@@ -224,13 +301,15 @@ void cmdprint( unsigned int arg, enum rarg op )
 	}
 }
 
+
 /*
  *  Print a named register
  */
 void cmdprintreg( unsigned int arg, enum rarg op )
 {
-
+	print_reg( arg, NULL );
 }
+
 
 /*
  *  Set printing modes
@@ -239,6 +318,7 @@ void cmdprintmode( unsigned int arg, enum rarg op )
 {
 	UState.print_mode = arg;
 }
+
 
 #ifdef WINGUI
 /*
@@ -252,7 +332,7 @@ void cmdprintmode( unsigned int arg, enum rarg op )
 #define UDPPORT 5025
 #define UDPHOST "127.0.0.1"
 
-void put_ir( unsigned char c )
+int put_ir( unsigned char c )
 {
 	int s;
 	WSADATA ws;
@@ -267,6 +347,7 @@ void put_ir( unsigned char c )
 	s = socket( AF_INET, SOCK_DGRAM, 0 );
 	sendto( s, (const char *) &c, 1, 0, (struct sockaddr *) &sa, sizeof( struct sockaddr_in ) );
 	closesocket( s );
+	return 0;
 }
 
 #elif !defined(REALBUILD)
@@ -274,7 +355,7 @@ void put_ir( unsigned char c )
  *  Simple emulation for debug purposes
  */
 #include <stdio.h>
-void put_ir( unsigned char c )
+int put_ir( unsigned char c )
 {
 	static FILE *f;
 
@@ -285,6 +366,7 @@ void put_ir( unsigned char c )
 	if ( c == 0x04 || c == '\n' ) {
 		fflush( f );
 	}
+	return 0;
 }
 #endif
 

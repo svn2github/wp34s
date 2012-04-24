@@ -167,9 +167,9 @@ static char *set_decimal(const int posn, const enum decimal_modes decimal, char 
  * This can be nothing, a comma or a dot depending on the state of the
  * sep argument.
  */
-static void set_separator(int posn, const enum separator_modes sep, char *res) {
+static char *set_separator(int posn, const enum separator_modes sep, char *res) {
 	if (sep == SEP_NONE)
-		return;
+		return res;
 	if (res) {
 		if (sep == SEP_COMMA) *res++ = ',';
 		else *res++ = '.';
@@ -179,6 +179,7 @@ static void set_separator(int posn, const enum separator_modes sep, char *res) {
 		if (sep == SEP_COMMA)
 			set_dot(posn+8);
 	}
+	return res;
 }
 
 
@@ -1065,7 +1066,7 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 		if (c == '.') {
 			res = set_decimal(j - SEGS_PER_DIGIT, DecimalMode, res);
 		} else if (c == ',') {
-			set_separator(j, SeparatorMode, res);
+			res = set_separator(j, SeparatorMode, res);
 		} else {
 			res = set_dig_s(j, c, res);
 			j += SEGS_PER_DIGIT;
@@ -1633,15 +1634,24 @@ static void set_status_sized(const char *str, int smallp) {
 
 
 /* Determine the pixel length of the string if it were displayed.
+ */
+int pixel_length(const char *s, int smallp)
+{
+	int len = 0;
+	int offset = smallp ? 256 : 0;
+	while (*s != '\0') {
+		const unsigned char c = *s++;
+		len += charlengths( c + offset );
+	}
+	return len;
+}
+
+
+/* Determine the pixel length of the string if it were displayed.
  * If this is larger than the display, return true.
  */
 static int string_too_large(const char *s) {
-	int x = 0;
-	while (*s != '\0') {
-		const unsigned char c = *s++;
-		x += charlengths(c);
-	}
-	return x > BITMAP_WIDTH+1;
+	return pixel_length(s, 0) > BITMAP_WIDTH+1;
 }
 
 

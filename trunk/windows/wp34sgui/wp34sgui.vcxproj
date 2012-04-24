@@ -72,7 +72,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..;../catalogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WINGUI;_DEBUG;DEBUG;INFRARED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WINGUI;_DEBUG;DEBUG;INFRARED;%(PreprocessorDefinitions);INFRARED</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -90,7 +90,7 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
       <IgnoreSpecificDefaultLibraries>mfc100.lib;mfc100d.lib;mfcs100.lib;mfcs100d.lib;atls.lib;atlsd.lib;nafxcwd.lib;</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>..\bin\emulator_d.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\bin\emulator_d.lib;wsock32.lib;%(AdditionalDependencies);WSOCK32.LIB</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>Prebuild.cmd $(ConfigurationName)</Command>
@@ -109,7 +109,7 @@
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..;../catalogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WINGUI;_DEBUG;DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WINGUI;_DEBUG;DEBUG;%(PreprocessorDefinitions);INFRARED</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -127,7 +127,7 @@
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
       <IgnoreSpecificDefaultLibraries>mfc100.lib;mfc100d.lib;mfcs100.lib;mfcs100d.lib;atls.lib;atlsd.lib;nafxcwd.lib;</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>..\bin\emulator_d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\bin\emulator_d.lib;%(AdditionalDependencies);WSOCK32.LIB</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>Prebuild.cmd $(ConfigurationName)</Command>
@@ -149,7 +149,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <AdditionalIncludeDirectories>..;../catalogs;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;WINGUI;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WINGUI;NDEBUG;%(PreprocessorDefinitions);INFRARED</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>
       </ExceptionHandling>
@@ -171,7 +171,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
       <IgnoreSpecificDefaultLibraries>mfc100.lib;mfc100d.lib;mfcs100.lib;mfcs100d.lib;atls.lib;atlsd.lib;nafxcwd.lib;</IgnoreSpecificDefaultLibraries>
-      <AdditionalDependencies>..\bin\emulator.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>..\bin\emulator.lib;%(AdditionalDependencies);WSOCK32.LIB</AdditionalDependencies>
     </Link>
     <PreBuildEvent>
       <Command>Prebuild.cmd $(ConfigurationName)</Command>

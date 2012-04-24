@@ -1,0 +1,87 @@
+Printing with WP 34S
+====================
+
+The Windows emulator and the image calc_ir.bin contain printing commands.
+To set up printing on the emulator you will need to install the HP 82240B
+emulator by Christoph Giesselink: http://hp.giesselink.com/hp82240b.htm.
+The default UDP setup works fine. You need to open the graphic display to
+see all output.
+
+To print on the device you have to modify it:
+
+- Add a crystal.
+- Add an IR transmitter.
+
+The necessary schematics will be provided.
+
+
+Setting the operation mode
+--------------------------
+
+PMODE n (in MODE) sets the printing mode:
+
+0 - Default mode, use the printer character set where possible.
+    All characters have the same width of 5 columns + 2 columns spacing.
+
+1 - Use the variable pitch display character set instead. This results in
+    some jitter on the printout but packs more characters on a single line.
+
+2 - Use the small display font which packs even more info on a single line.
+
+3 - Send the output to the serial channel. This does not do any character
+    set translation and works only for plain ASCII. The line setup is the
+    same as for serial communications: 9600 baud, 8 bits, no parity.
+
+SF T / CF T enable / disable tracing. (To be implemented.)
+
+
+Listing programs
+----------------
+
+PRTPGM prints the current program. (To be implemented.)
+
+
+Printing text
+-------------
+
+All commands following are in P.FCN.
+
+PRINT[alpha] prints the contents of the alpha register.
+
+PRNT[alpha]+ prints alpha but does not send a line feed. This is useful
+for chaining output or labeling numeric data.
+
+
+Printing data
+-------------
+
+PRNT n prints any register (including stack or local registers) without
+labeling the output. The data is printed to the right. You can add a label
+with the alpha print commands above.
+
+PRTSTK prints the stack registers with a label to the left.
+
+PRTREG takes a descriptor of the form rrr.nnn in X (see R-SORT for an
+example) and prints the registers with a label to the left.
+
+PRINT[SIGMA] prints the summation registers. (To be implemented.)
+
+
+Formatting and special commands
+-------------------------------
+
+PRTADV sends a line feed and causes the printer to spit out the data.
+
+PRTAB n positions the print head to a chosen column (0 to 165). This can
+be used for formatting, especially when using PMODE 1 or 2. A simple
+plot function is possible, too.
+
+PRNTC n sends a single character to the printer. The command uses the
+current PMODE setting.
+
+PRNTB n sends a single byte without any translation. You can use this to 
+send control codes to the printer.
+
+The above commands allow indirection which limits the argument that can
+be passed to values from 0 to 127. Larger values can be sent by putting
+them in a register and using indirection.

@@ -1278,6 +1278,7 @@ extern void isNan(enum nilop op);
 extern void isInfinite(enum nilop op);
 extern void check_zero(enum nilop op);
 extern void op_entryp(enum nilop op);
+extern int reg_decode(int *s, int *n, int *d, int flash);
 extern void op_regcopy(enum nilop op);
 extern void op_regswap(enum nilop op);
 extern void op_regclr(enum nilop op);

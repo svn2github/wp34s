@@ -1093,7 +1093,7 @@ void LCD_interrupt( void )
 	/*
 	 *  Check if a serial transfer has to be interrupted
 	 */
-	if ( SerialOn && OnKeyPressed ) {
+	if ( SerialOn == 1 && OnKeyPressed ) {
 		byte_received( R_BREAK );
 	}
 
@@ -1395,25 +1395,25 @@ void flush_comm( void )
 /*
  *  Send a byte out to the IR transmitter
  */
-void put_ir( unsigned char c )
+int put_ir( unsigned char c )
 {
 	unsigned int p;
 	int i;
 	unsigned char cc;
 
-	if ( OnKeyPressed ) {
-		return;
-	}
-
 	/*
 	 *  We may have to wait for the printer
 	 */
 	while ( PrintDelay ) {
+		if ( OnKeyPressed ) {
+			return 1;
+		}
+		busy();
 		idle();
 	}
 
 	set_speed( SPEED_HALF );
-	SerialOn = 1;
+	SerialOn = 2;
 #ifdef SLEEP_ANNUNCIATOR
 	dot( SLEEP_ANNUNCIATOR, 1 );
 	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
@@ -1483,12 +1483,13 @@ void put_ir( unsigned char c )
 	while ( IrPulse ) {
 		go_idle();
 	}
+	SerialOn = 0;
 
 #ifdef SLEEP_ANNUNCIATOR
 	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
 	WaitForLcd = 1;
 #endif
-
+	return 0;
 }
 #endif
 

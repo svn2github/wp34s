@@ -3059,7 +3059,7 @@ void op_entryp(enum nilop op) {
 }
 
 /* Bulk register operations */
-static int reg_decode(int *s, int *n, int *d, int flash) {
+int reg_decode(int *s, int *n, int *d, int flash) {
 	decNumber x, y;
 	int rsrc, num, rdest, q, mx_src, mx_dest;
 
