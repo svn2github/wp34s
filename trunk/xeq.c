@@ -1923,6 +1923,9 @@ void cmdmultilblp(const opcode o, enum multiops mopr) {
 }
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
+	if (isXROM(state_pc()) && !Running)
+		set_running_on();	     // We are running outside XROM now!
+
 	cmdgtocommon(mopr != DBL_GTO, findmultilbl(o, FIND_OP_ERROR));
 }
 
