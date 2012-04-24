@@ -107,6 +107,7 @@ static struct s_charset {
 	int sortas;
 	int unicode;
 	int windows;
+	int printer;
 	const char *uname;
 
 	int bitrows[12];
@@ -282,6 +283,17 @@ static void gen_charset(FILE *f) {
 			"\t\t}\n"
 			"\t}\n"
 			"}\n\n");
+
+	fprintf(f,	"#ifdef INFRARED\n"
+			"/* Translation table to printer character set\n"
+			" */\n\n"
+			"const unsigned char printer_chars[31+129] = {\n\t" );
+	for (i = 1, l = 0; i < 256; i++) {
+		if (i < 32 || i > 126)
+			fprintf(f, "0x%02X,%s", charset[i].printer, (l++ % 12) == 11 ? "\n\t" : " ");
+	}
+	fprintf(f,	"};\n#endif\n\n");
+
 }
 
 static void gen_translate(FILE *f) {

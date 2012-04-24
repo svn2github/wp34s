@@ -32,14 +32,20 @@ enum print_modes {
 extern void print_program( enum nilop op );
 extern void print_registers( enum nilop op );
 extern void print_sigma( enum nilop op );
-extern void print_byte( enum nilop op );
 extern void print_alpha( enum nilop op );
 extern void print_lf( enum nilop op );
 extern void cmdprint( unsigned int arg, enum rarg op );
+extern void cmdprintreg( unsigned int arg, enum rarg op );
 extern void cmdprintmode( unsigned int arg, enum rarg op );
 
 // Implemented by the hardware layer
 extern void put_ir( unsigned char byte );
+
+#ifdef REALBUILD
+#define PRINT_DELAY 18	// 1.8 seconds
+extern volatile unsigned char PrintDelay;
+#endif
+extern unsigned char PrinterColumn;
 
 #endif
 #endif

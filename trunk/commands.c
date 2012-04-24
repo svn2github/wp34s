@@ -662,8 +662,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_PRINT_REGS,	&print_registers,	"PRTREG")
 	FUNC0(OP_PRINT_STACK,	&print_registers,	"PRTSTK")
 	FUNC0(OP_PRINT_SIGMA,	&print_sigma,		"PRINT\221")
-	FUNC0(OP_PRINT_BYTE,	&print_byte,		"PRINTB")
 	FUNC0(OP_PRINT_ALPHA,	&print_alpha,		"PRINT\240")
+	FUNC0(OP_PRINT_ALPHA_NOADV, &print_alpha,	"PRNT\240+")
 	FUNC0(OP_PRINT_ADV,	&print_lf,		"PRTADV")
 #endif
 
@@ -874,10 +874,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_iRCL,	&cmdircl,				"iRCL")
 	CMDstk(RARG_sRCL,	&cmdrrcl,				"sRCL")
 	CMDstk(RARG_dRCL,	&cmdrrcl,				"dRCL")
-#ifdef INFRARED
-	CMDstk(RARG_PRINT,	&cmdprint,				"PRNT")
-	CMD(RARG_PMODE,		&cmdprintmode,  4,			"PMODE")
-#endif
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET")
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR")
 
@@ -894,6 +890,13 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #ifdef INCLUDE_INDIRECT_CONSTS
 	CMD(RARG_IND_CONST,	  &cmdconst,	NUM_CONSTS,		"CNST")
 	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
+#endif
+#ifdef INFRARED
+	CMDstk(RARG_PRINT_REG,	&cmdprintreg,				"PRNT")
+	CMD(RARG_PRINT_BYTE,	&cmdprint,	256,			"PRNTB")
+	CMD(RARG_PRINT_CHAR,	&cmdprint,	256,			"PRNTC")
+	CMD(RARG_PRINT_TAB,	&cmdprint,	166,			"PRTAB")
+	CMD(RARG_PMODE,		&cmdprintmode,  4,			"PMODE")
 #endif
 
 #undef CMDlbl

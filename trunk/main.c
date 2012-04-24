@@ -26,6 +26,9 @@
 #ifdef INCLUDE_STOPWATCH
 #include "stopwatch.h"
 #endif
+#ifdef INFRARED
+#include "printer.h"
+#endif
 
 #ifndef at91sam7l128
 #define at91sam7l128 1
@@ -138,6 +141,7 @@ int WdDisable;
 
 #ifdef INFRARED
 volatile unsigned int IrPulse;
+volatile unsigned char PrintDelay;
 #endif
 
 /*
@@ -1022,6 +1026,15 @@ void user_heartbeat( void )
 		++Keyticks;
 	}
 
+#ifdef INFRARED
+	/*
+	 *  Decrement delay counter for printer LF
+	 */
+	if ( PrintDelay ) {
+		--PrintDelay;
+	}
+#endif
+
 	/*
 	 *  Put a dummy key code in buffer to wake up application
 	 */
@@ -1387,6 +1400,17 @@ void put_ir( unsigned char c )
 	unsigned int p;
 	int i;
 	unsigned char cc;
+
+	if ( OnKeyPressed ) {
+		return;
+	}
+
+	/*
+	 *  We may have to wait for the printer
+	 */
+	while ( PrintDelay ) {
+		idle();
+	}
 
 	set_speed( SPEED_HALF );
 	SerialOn = 1;
@@ -1862,6 +1886,9 @@ NO_RETURN int main(void)
 			if ( !is_debug() && !Running && !SerialOn
 #ifdef INCLUDE_STOPWATCH
 			     && KeyCallback == NULL
+#endif
+#ifdef INFRARED
+			     && PrinterColumn == 0
 #endif
 			     && KbData == 0LL && Pause == 0 && StartupTicks >= 10
 			     && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
