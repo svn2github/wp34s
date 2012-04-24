@@ -220,11 +220,23 @@ deriv_return::		STO L
 
 deriv_default_h::	STO .03
 			FILL
+			LBL?'[delta]x'
+				JMP deltax
 			LBL?'[delta]X'
 				JMP deltaX
+			LBL?'[DELTA]x'
+				JMP DELTAx
+			LBL?'[DELTA]X'
+				JMP DELTAX
 			Num 1
 			SDR 01				/* default h = 0.1 */
 			JMP deltaX_return
+DELTAx::		XEQ'[DELTA]x'
+        		JMP deltaX_return
+DELTAX::		XEQ'[DELTA]X'
+			JMP deltaX_return
 deltaX::		XEQ'[delta]X'
+			JMP deltaX_return
+deltax::		XEQ'[delta]x'
 deltaX_return::		STO .04
 			RTN
