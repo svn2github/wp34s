@@ -639,7 +639,11 @@ static int process_fg_shifted(const keycode c) {
 		{ RARG_PROD            | NO_INT,   RARG_SUM           | NO_INT },
 		{ OP_MON | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },
 		// Row 7
+#ifdef INFRARED
+		{ RARG(RARG_PRINT_REG,regX_idx),   STATE_UNFINISHED	       },
+#else
 		{ STATE_UNFINISHED,		   STATE_UNFINISHED	       },
+#endif
 		{ OP_MON | OP_ABS,		   OP_MON | OP_RND             },
 		{ OP_MON | OP_TRUNC,		   OP_MON | OP_FRAC            },
 		{ RARG_LBL,			   OP_NIL | OP_RTN             },
@@ -677,13 +681,10 @@ static int process_fg_shifted(const keycode c) {
 		}
 		break;
 
-	case K60:				// Lowercase Alpha
 	case K20:				// Alpha
 		if (shift == SHIFT_F) {
 			process_cmdline_set_lift();
 			State2.alphas = 1;
-			if (c == K60)
-				State2.alphashift = 1;
 		}
 		break;
 

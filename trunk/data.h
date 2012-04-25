@@ -95,8 +95,12 @@ struct _ustate {
 #define UState_int_len        40 // 6	// Length of Integers
 #define UState_mode_double    46 // 1   // Double precision mode
 #define UState_t12            47 // 1	// 12 hour time mode
+#ifdef INFRARED
+#define UState_print_mode     48 // 2	// free
+#else
 #define UState_unused_3       48 // 1	// free
 #define UState_unused_2       49 // 1	// free
+#endif
 #define UState_unused_1       50 // 1	// free
 #define UState_stack_depth    51 // 1	// Stack depth
 #define UState_date_mode1     52 // 1	// Date input/output format
@@ -119,7 +123,12 @@ struct _state {
 	unsigned int have_stats :  1;	// Statistics registers are allocated
 	unsigned int deep_sleep :  1;   // Used to wake up correctly
 	unsigned int unused :      1;	// free
+#ifdef INFRARED
+	unsigned int print_delay : 5;   // LF delay for printer
+	signed   int local_regs : 11;   // Position on return stack where current local variables start
+#else
 	signed   int local_regs : 16;   // Position on return stack where current local variables start
+#endif
 
 	/*
 	 *  Not bit fields

@@ -59,20 +59,43 @@ static int advance( void )
 	int abort = print( '\n' );
 	PrinterColumn = 0;
 #ifdef REALBUILD
-	PrintDelay = PRINT_DELAY;
+	PrintDelay = State.print_delay;
 #endif
 	return abort;
 }
 
 /*
+ *  Print a graphic sequence
+ */
+static int print_graphic( int glen, unsigned char *graphic )
+{
+	if ( glen > 0 ) {
+		if ( put_ir( 27 ) ) {
+			return 1;
+		}
+		put_ir( glen );
+		while ( glen-- ) {
+			put_ir( *graphic++ );
+		}
+	}
+	return 0;
+}
+
+/*
  *  Wrap if line is full
  */
-static void wrap( int width )
+static int wrap( int width )
 {
 	if ( PrinterColumn + width > 166 ) {
-		advance();
+		if ( advance() ) {
+			return 1;
+		}
+		if ( width == 7 ) {
+			width = 5;
+		}
 	}
 	PrinterColumn += width;
+	return 0;
 }
 
 /*
@@ -83,7 +106,9 @@ static int print_line( const char *buff, int with_lf )
 	const int mode = UState.print_mode;
 	unsigned int c;
 	unsigned short int posns[ 257 ];
-	unsigned char pattern[ 6 ];	// rows
+	unsigned char pattern[ 6 ];	// Rows
+	unsigned char graphic[ 166 ];	// Columns
+	unsigned char glen = 0;
 	unsigned char i, j, m, w = 0;
 	int abort = 0;
 
@@ -104,13 +129,41 @@ static int print_line( const char *buff, int with_lf )
 			  : c > 126 ? printer_chars[ c - 127 + 31 ]
 			  : c;
 
-			w = PrinterColumn == 0 ? 5 : 7;
 			if ( i != 0 ) {
-				wrap( w );
-				abort = put_ir( i );
-				break;
+				// Use printer character set
+#ifdef WINGUI
+				w = PrinterColumn == 0 ? 5 : 7;
+#else
+				w = PrinterColumn == 0 || PrinterColumn == 160 ? 6 : 7;
+#endif		
+				abort = print_graphic( glen, graphic );
+				glen = 0;
+				abort |= wrap( w );
+				abort |= put_ir( i );
 			}
-			goto graphic_print;
+			else {
+				// graphic printing of characters unknown to the printer
+#ifdef WINGUI
+				w = 5;
+#else
+				w = 6;
+#endif
+				if ( PrinterColumn > 0 && PrinterColumn < 166 ) {
+					// Add horizontal spacing
+					graphic[ glen++ ] = 0;
+					++PrinterColumn;
+#ifdef WINGUI
+					graphic[ glen++ ] = 0;
+					++PrinterColumn;
+#else
+					if ( PrinterColumn == 161 ) {
+						w = 5;
+					}
+#endif
+				}
+				goto graphic_print;
+			}
+			break;
 
 		case PMODE_SMALLGRAPHICS:		// Smalll font
 			c += 256;
@@ -121,18 +174,16 @@ static int print_line( const char *buff, int with_lf )
 			unpackchar( c, pattern, mode == PMODE_SMALLGRAPHICS, posns );
 			if ( w == 0 ) {
 				w = charlengths( c );
+				if ( PrinterColumn + w == 167 ) {
+					// drop last column on last character in line
+					--w;
+				}
 			}
-			wrap( w );
-			if ( 0 != ( abort = put_ir( 27 ) ) ) {
-				break;
+			if ( PrinterColumn + w > 166 ) {
+				abort = print_graphic( glen, graphic );
+				glen = 0;
 			}
-			put_ir( w );
-			if ( w == 7 ) {
-				// Add spacing between characters
-				put_ir( 0 );
-				put_ir( 0 );
-				w = 5;
-			}
+			abort |= wrap( w );
 			// Transpose the pattern
 			m = 1;
 			for ( i = 0; i < w; ++i ) {
@@ -142,7 +193,7 @@ static int print_line( const char *buff, int with_lf )
 						c |= ( 2 << j );
 					}
 				}
-				put_ir( c );
+				graphic[ glen++ ] = c;
 				m <<= 1;
 			}
 			break;
@@ -151,6 +202,7 @@ static int print_line( const char *buff, int with_lf )
 			print( c );
 		}
 	}
+	abort |= print_graphic( glen, graphic );
 	if ( with_lf ) {
 		abort |= advance();
 	}
@@ -215,17 +267,19 @@ void print_registers( enum nilop op )
 
 	while ( n-- ) {
 		int r = s;
-		char name[ 5 ], *p = name;
+		char name[ 6 ], *p = name;
 
 		if ( r >= regX_idx && r <= regK_idx ) {
 			*p++ = REGNAMES[ r - regX_idx ];
 		}
 		else {
-			*p++ = '.';
-			r -= LOCAL_REG_BASE;
-			if ( r >= 100 ) {
-				*p++ = '1';
-				r -= 100;
+			if ( r > LOCAL_REG_BASE ) {
+				*p++ = '.';
+				r -= LOCAL_REG_BASE;
+				if ( r >= 100 ) {
+					*p++ = '1';
+					r -= 100;
+				}
 			}
 			p = num_arg_0( p, r, 2 );
 		}
@@ -288,11 +342,17 @@ void cmdprint( unsigned int arg, enum rarg op )
 		}
 		if ( PrinterColumn < arg ) {
 			int i = arg - PrinterColumn;
+			int j = i / 7;
+			i %= 7;
 			PrinterColumn = arg;
-			put_ir( 27 );
-			put_ir( i );
-			while ( i-- )
-				put_ir( 0 );
+			if ( i ) {
+				put_ir( 27 );
+				put_ir( i );
+				while ( i-- )
+					put_ir( 0 );
+			}
+			while ( j-- )
+				put_ir( ' ' );
 		}
 		break;
 
@@ -316,7 +376,12 @@ void cmdprintreg( unsigned int arg, enum rarg op )
  */
 void cmdprintmode( unsigned int arg, enum rarg op )
 {
-	UState.print_mode = arg;
+	if ( op == RARG_PMODE ) {
+		UState.print_mode = arg;
+	}
+	else {
+		State.print_delay = arg;
+	}
 }
 
 

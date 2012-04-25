@@ -32,7 +32,11 @@ PMODE n (in MODE) sets the printing mode:
     set translation and works only for plain ASCII. The line setup is the
     same as for serial communications: 9600 baud, 8 bits, no parity.
 
+PDLAY n (in MODE) sets the LF delay in tenths of seconds.
+
 SF T / CF T enable / disable tracing. (To be implemented.)
+
+All commands following are in P.FCN.
 
 
 Listing programs
@@ -44,18 +48,16 @@ PRTPGM prints the current program. (To be implemented.)
 Printing text
 -------------
 
-All commands following are in P.FCN.
+PRT[alpha] prints the contents of the alpha register.
 
-PRINT[alpha] prints the contents of the alpha register.
-
-PRNT[alpha]+ prints alpha but does not send a line feed. This is useful
+PRT[alpha]+ prints alpha but does not send a line feed. This is useful
 for chaining output or labeling numeric data.
 
 
 Printing data
 -------------
 
-PRNT n prints any register (including stack or local registers) without
+PRT n prints any register (including stack or local registers) without
 labeling the output. The data is printed to the right. You can add a label
 with the alpha print commands above.
 
@@ -64,23 +66,30 @@ PRTSTK prints the stack registers with a label to the left.
 PRTREG takes a descriptor of the form rrr.nnn in X (see R-SORT for an
 example) and prints the registers with a label to the left.
 
-PRINT[SIGMA] prints the summation registers. (To be implemented.)
+PRT[SIGMA] prints the summation registers. (To be implemented.)
 
 
 Formatting and special commands
 -------------------------------
 
-PRTADV sends a line feed and causes the printer to spit out the data.
+PRTADV sends a line feed and causes the printer to spit out any pending
+data.
 
 PRTAB n positions the print head to a chosen column (0 to 165). This can
 be used for formatting, especially when using PMODE 1 or 2. A simple
 plot function is possible, too.
 
-PRNTC n sends a single character to the printer. The command uses the
-current PMODE setting.
+PRTC n sends a single character to the printer. The command uses the
+current PMODE setting. The printer buffer is limited to 200 bytes. If
+you print many characters in mode 1 or 2 with this command a buffer
+overrun may occur because of the overhead of adding the necessary two
+byte ESC code to each character pattern. If that occurs use PRT[alpha]
+instead which buffers the characters in larger graphic blocks.
 
-PRNTB n sends a single byte without any translation. You can use this to 
-send control codes to the printer.
+PRTB n sends a single byte without any translation. You can use this to 
+send control codes to the printer. The column counter is not updated
+which means PRTAB and right justified number printing won't work if you
+send commands which affect the print position. Use at your own risk!
 
 The above commands allow indirection which limits the argument that can
 be passed to values from 0 to 127. Larger values can be sent by putting

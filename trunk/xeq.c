@@ -2674,7 +2674,7 @@ void cmdrestm(unsigned int arg, enum rarg op) {
 
 	// Fix things
 	if ( UState.contrast == 0 )
-		UState.contrast = 7;
+		UState.contrast = 6;
 
 	if (intm != is_intmode()) {
 		// Switch back to decimal or integer mode
@@ -3085,7 +3085,7 @@ int reg_decode(int *s, int *n, int *d, int flash) {
 	rsrc /= 100;			// sss
 
 	mx_src = flash ? BackupFlash._numregs :
-		 rsrc >= LOCAL_REG_BASE ? local_regs() : global_regs();
+		 rsrc >= LOCAL_REG_BASE ? local_regs() + LOCAL_REG_BASE : global_regs();
 	if (rsrc >= mx_src)
 		goto range_error;
 
@@ -3122,8 +3122,6 @@ int reg_decode(int *s, int *n, int *d, int flash) {
 			num = mx_src - rsrc;
 		}
 	}
-	if (rsrc >= LOCAL_REG_BASE)
-		mx_src += LOCAL_REG_BASE;
 	if (rsrc + num > mx_src)
 		goto range_error;
 

@@ -661,9 +661,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_PRINT_PGM,	&print_program,		"PRTPGM")
 	FUNC0(OP_PRINT_REGS,	&print_registers,	"PRTREG")
 	FUNC0(OP_PRINT_STACK,	&print_registers,	"PRTSTK")
-	FUNC0(OP_PRINT_SIGMA,	&print_sigma,		"PRINT\221")
-	FUNC0(OP_PRINT_ALPHA,	&print_alpha,		"PRINT\240")
-	FUNC0(OP_PRINT_ALPHA_NOADV, &print_alpha,	"PRNT\240+")
+	FUNC0(OP_PRINT_SIGMA,	&print_sigma,		"PRT\221")
+	FUNC0(OP_PRINT_ALPHA,	&print_alpha,		"PRT\240")
+	FUNC0(OP_PRINT_ALPHA_NOADV, &print_alpha,	"PRT\240+")
 	FUNC0(OP_PRINT_ADV,	&print_lf,		"PRTADV")
 #endif
 
@@ -892,11 +892,12 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
 #endif
 #ifdef INFRARED
-	CMDstk(RARG_PRINT_REG,	&cmdprintreg,				"PRNT")
-	CMD(RARG_PRINT_BYTE,	&cmdprint,	256,			"PRNTB")
-	CMD(RARG_PRINT_CHAR,	&cmdprint,	256,			"PRNTC")
+	CMDstk(RARG_PRINT_REG,	&cmdprintreg,				"PRT")
+	CMD(RARG_PRINT_BYTE,	&cmdprint,	256,			"PRTB")
+	CMD(RARG_PRINT_CHAR,	&cmdprint,	256,			"PRTC")
 	CMD(RARG_PRINT_TAB,	&cmdprint,	166,			"PRTAB")
 	CMD(RARG_PMODE,		&cmdprintmode,  4,			"PMODE")
+	CMD(RARG_PDELAY,	&cmdprintmode,  32,			"PDLAY")
 #endif
 
 #undef CMDlbl
