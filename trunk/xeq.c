@@ -1738,6 +1738,17 @@ void check_dblmode(enum nilop op) {
 	fin_tst(is_dblmode());
 }
 
+void op_query_xtal(enum nilop op) {
+	fin_tst(Xtal);
+}
+
+void op_query_print(enum nilop op) {
+#ifdef INFRARED
+	fin_tst(1);
+#else
+	fin_tst(0);
+#endif
+}
 
 /* Save and restore the entire stack to sequential registers */
 static int check_stack_overlap(unsigned int arg) {

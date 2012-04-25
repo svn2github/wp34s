@@ -678,6 +678,9 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_PRINT_ADV,	IRN(print_lf),		"PRTADV")
 	/* end of INFRARED commands */
 
+	FUNC0(OP_QUERY_XTAL,	&op_query_xtal,		"XTAL?")
+	FUNC0(OP_QUERY_PRINT,	&op_query_print,	"PRT?")
+
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
 #endif

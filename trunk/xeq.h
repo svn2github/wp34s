@@ -791,6 +791,8 @@ enum nilop {
 	OP_PRINT_ALPHA, OP_PRINT_ALPHA_NOADV, OP_PRINT_ADV,
 	/* end of INFRARED commands */
 
+	OP_QUERY_XTAL, OP_QUERY_PRINT,
+
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -1261,6 +1263,8 @@ extern void op_fract(enum nilop op);
 extern void op_trigmode(enum nilop op);
 extern void op_radix(enum nilop op);
 extern void op_double(enum nilop op);
+extern void op_query_xtal(enum nilop op);
+extern void op_query_print(enum nilop op);
 extern void cmdpause(unsigned int arg, enum rarg op);
 extern void set_int_base(unsigned int arg, enum rarg op);
 extern void op_rtn(enum nilop op);

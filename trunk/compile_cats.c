@@ -593,6 +593,9 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_Xeq_neg0,	"x=-0?")
 
 	NILIC(OP_MAT_CHECK_SQUARE, "M.SQR?")
+
+	NILIC(OP_QUERY_XTAL,	    "XTAL?")
+	NILIC(OP_QUERY_PRINT,	    "PRT?")
 };
 
 static s_opcode prog_catalogue[] = {
