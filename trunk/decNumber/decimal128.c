@@ -112,6 +112,7 @@ decimal128 * decimal128FromNumber(decimal128 *d128, const decNumber *dn,
 
    else { // is finite
     if (decNumberIsZero(dn)) {               // is a zero
+#if 0
       // set and clamp exponent
       if (dn->exponent<-DECIMAL128_Bias) {
         exp=0;                               // low clamp
@@ -125,6 +126,10 @@ decimal128 * decimal128FromNumber(decimal128 *d128, const decNumber *dn,
           }
         }
       comb=(exp>>9) & 0x18;             // msd=0, exp top 2 bits ..
+#else
+      exp = 0;
+      comb = 0;
+#endif
       }
      else {                             // non-zero finite number
       uInt msd;                         // work
@@ -272,6 +277,9 @@ decNumber * decimal128ToNumber(const decimal128 *d128, decNumber *dn) {
   decNumberZero(dn);               // clean number
   if (sourhi&0x80000000) dn->bits=DECNEG; // set sign if negative
 
+  if ((sourhi&0x7fffffff) == 0 && sourmh == 0 && sourml == 0 && sourlo == 0)
+	  return dn;
+  
   msd=COMBMSD[comb];               // decode the combination field
   exp=COMBEXP[comb];               // ..
 

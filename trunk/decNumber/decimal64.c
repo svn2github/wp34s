@@ -115,6 +115,7 @@ decimal64 * decimal64FromNumber(decimal64 *d64, const decNumber *dn,
    else { // is finite
     if (decNumberIsZero(dn)) {               // is a zero
       // set and clamp exponent
+#if 0
       if (dn->exponent<-DECIMAL64_Bias) {
         exp=0;                               // low clamp
         status|=DEC_Clamped;
@@ -127,6 +128,10 @@ decimal64 * decimal64FromNumber(decimal64 *d64, const decNumber *dn,
           }
         }
       comb=(exp>>5) & 0x18;             // msd=0, exp top 2 bits ..
+#else
+      exp = 0;
+      comb = 0;
+#endif
       }
      else {                             // non-zero finite number
       uInt msd;                         // work
@@ -247,6 +252,9 @@ decNumber * decimal64ToNumber(const decimal64 *d64, decNumber *dn) {
 
   decNumberZero(dn);               // clean number
   if (sourhi&0x80000000) dn->bits=DECNEG; // set sign if negative
+
+  if ((sourhi&0x7fffffff) == 0 && sourlo == 0)
+	  return dn;
 
   msd=COMBMSD[comb];               // decode the combination field
   exp=COMBEXP[comb];               // ..

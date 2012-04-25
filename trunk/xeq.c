@@ -1164,7 +1164,7 @@ void setX_int_sgn(unsigned long long int val, int sgn) {
  *  Set the register value explicitely
  */
 void zero_regs(REGISTER *dest, int n) {
-#if 1
+#if 0
 	if (is_intmode())
 		xset(dest, 0, n << 3);
 	else {
@@ -1180,7 +1180,6 @@ void zero_regs(REGISTER *dest, int n) {
 	// no it doesn't -- it leaves varying values of zero around
 	xset(dest, 0, n << (3 + is_dblmode()));
 #endif
-
 }
 
 void move_regs(REGISTER *dest, REGISTER *src, int n) {
