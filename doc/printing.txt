@@ -34,9 +34,11 @@ PMODE n (in MODE) sets the printing mode:
 
 PDLAY n (in MODE) sets the LF delay in tenths of seconds.
 
-SF T / CF T enable / disable tracing. (To be implemented.)
+SF T / CF T enable / disable tracing.
 
-All commands following are in P.FCN.
+
+All following commands are in P.FCN but will eventually be relocated to a
+new printing catalogue.
 
 
 Listing programs
@@ -57,15 +59,16 @@ for chaining output or labeling numeric data.
 Printing data
 -------------
 
-PRT n prints any register (including stack or local registers) without
+PRTR n prints any register (including stack or local registers) without
 labeling the output. The data is printed to the right. You can add a label
 with the alpha print commands above. PRT X can be reached from the keyboard
 with f+EXIT (the yellow arrow).
 
 PRTSTK prints the stack registers with a label to the left.
 
-PRTREG takes a descriptor of the form rrr.nnn in X (see R-SORT for an
-example) and prints the registers with a label to the left.
+PRTREG takes a descriptor of the form rrr.nn in X (see R-SORT for an
+example) and prints the registers with a label to the left. To print local
+registers start with 112. nn=00 is treated as 'all available' registers.
 
 PRT[SIGMA] prints the summation registers. (To be implemented.)
 
@@ -76,7 +79,7 @@ Formatting and special commands
 PRTADV sends a line feed and causes the printer to spit out any pending
 data.
 
-PRTAB n positions the print head to a chosen column (0 to 165). This can
+PRTT n positions the print head to a chosen column (0 to 165). This can
 be used for formatting, especially when using PMODE 1 or 2. A simple
 plot function is possible, too.
 
@@ -84,8 +87,9 @@ PRTC n sends a single character to the printer. The command uses the
 current PMODE setting. The printer buffer is limited to 200 bytes. If
 you print many characters in mode 1 or 2 with this command a buffer
 overrun may occur because of the overhead of adding the necessary two
-byte ESC code to each character pattern. If that occurs use PRT[alpha]
-instead which buffers the characters in larger graphic blocks.
+byte ESC code to each character pattern. If that occurs print multiple
+characters at once with the commands PRT[alpha]+ or PRT[alpha] instead
+which buffer the characters in larger graphic blocks.
 
 PRTB n sends a single byte without any translation. You can use this to 
 send control codes to the printer. The column counter is not updated

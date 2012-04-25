@@ -125,6 +125,10 @@ static int print_line( const char *buff, int with_lf )
 		switch ( mode ) {
 
 		case PMODE_DEFAULT:			// Mixed character and graphic printing
+			if ( c == 006 && *buff == 006 ) {
+				// merge small spaces
+				continue;
+			}
 			i = c < ' ' ? printer_chars[ c - 1 ]
 			  : c > 126 ? printer_chars[ c - 127 + 31 ]
 			  : c;
@@ -208,15 +212,6 @@ static int print_line( const char *buff, int with_lf )
 	}
 	return abort;
 }
-
-/*
- *  Print a program listing
- */
-void print_program( enum nilop op )
-{
-
-}
-
 
 /*
  *  Print a single register
@@ -383,6 +378,34 @@ void cmdprintmode( unsigned int arg, enum rarg op )
 		State.print_delay = arg;
 	}
 }
+
+
+/*
+ *  Trace an instruction
+ */
+void print_trace( opcode op )
+{
+	char buffer[ 16 ];
+	const char *p = NULL;
+
+	if ( get_user_flag( regT_idx ) ) {
+		if ( op != 0xffffffff ) {
+			p = prt( op, buffer );
+		}
+		print_reg( regX_idx, p );
+	}
+}
+
+
+/*
+ *  Print a program listing
+ */
+void print_program( enum nilop op )
+{
+
+}
+
+
 
 
 #ifdef WINGUI

@@ -23,6 +23,7 @@
 #include "storage.h"
 #include "stats.h"
 #include "catalogues.h"
+#include "printer.h"
 
 
 #define STATE_UNFINISHED	(OP_SPEC | OP_UNFINISHED)
@@ -2342,8 +2343,16 @@ static int process(const int c) {
 	if (State2.catalogue)
 		return process_catalogue((const keycode)c, reset_shift(), 0);
 
-	if (State2.alphas)
+	if (State2.alphas) {
+#ifndef INFRARED
 		return process_alpha((const keycode)c);
+#else
+		int i = process_alpha((const keycode)c);
+		if (! State2.alphas && get_user_flag(regT_idx))
+			print_alpha(OP_PRINT_ALPHA);
+		return i;
+#endif
+	}
 
 	if (State2.cmplx) {
 		return process_cmplx((const keycode)c);

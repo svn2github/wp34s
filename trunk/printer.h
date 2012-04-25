@@ -17,7 +17,7 @@
 #ifndef __PRINTER_H__
 #define __PRINTER_H__
 
-#ifdef INFRARED
+#include "xeq.h"
 
 #define PRINTING_ANNUNCIATOR LIT_EQ
 
@@ -30,6 +30,7 @@ enum print_modes {
 
 // User visible routines
 extern int print_reg( int reg, const char *label );
+extern void print_trace( opcode op );
 extern void print_program( enum nilop op );
 extern void print_registers( enum nilop op );
 extern void print_sigma( enum nilop op );
@@ -48,5 +49,8 @@ extern volatile unsigned char PrintDelay;
 #endif
 extern unsigned char PrinterColumn;
 
+#ifndef INFRARED
+#define print_trace( op ) /**/
 #endif
+
 #endif

@@ -903,10 +903,10 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
 #endif
 	/* INFRARED commands */
-	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"PRT")
+	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"PRTR")
 	CMD(RARG_PRINT_BYTE,	IRA(cmdprint),	256,			"PRTB")
 	CMD(RARG_PRINT_CHAR,	IRA(cmdprint),	256,			"PRTC")
-	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"PRTAB")
+	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"PRTT")
 	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"PMODE")
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"PDLAY")
 	/* end of INFRARED commands */
