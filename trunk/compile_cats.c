@@ -672,7 +672,7 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_LOCR,	"LocR")
 	NILIC(OP_POPLR,		"PopLR")
 
-#ifdef INFRARED
+	/* INFRARED commands */
 	RARGCMD(RARG_PRINT_REG,	    "PRT")
 	RARGCMD(RARG_PRINT_BYTE,    "PRTB")
 	RARGCMD(RARG_PRINT_CHAR,    "PRTC")
@@ -684,7 +684,7 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_PRINT_REGS,	    "PRTREG")
 	NILIC(OP_PRINT_SIGMA,	    "PRT\221")
 	NILIC(OP_PRINT_STACK,	    "PRTSTK")
-#endif
+	/* end of INFRARED commands */
 
 #ifndef INCLUDE_INTERNAL_CATALOGUE
 	RARGCMD(RARG_BSF,	"BSRF")
@@ -781,10 +781,10 @@ static s_opcode mode_catalogue[] = {
 	RARGCMD(RARG_RCLM,	"RCLM")
 	NILIC(OP_SETDATE,	"SETDAT")
 	NILIC(OP_SETTIME,	"SETTIM")
-#ifdef INFRARED
+	/* INFRARED commands */
 	RARGCMD(RARG_PMODE,	"PMODE")
 	RARGCMD(RARG_PDELAY,	"PDLAY")
-#endif
+	/* end of INFRARED commands */
 };
 
 static s_opcode alpha_catalogue[] = {

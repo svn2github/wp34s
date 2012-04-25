@@ -62,6 +62,16 @@
 #define XMULTI(name)	(FP_MULTI) XPTR(name)
 
 
+/* Infrared command wrappers to maintain binary compatibility across images */
+#ifdef INFRARED
+#define IRN(x)		& (x)
+#define IRA(x)		& (x)
+#else
+#define IRN(x)		(FP_NILADIC) NOFN
+#define IRA(x)		NOFN
+#endif
+
+
 #ifdef SHORT_POINTERS
 #ifndef COMMANDS_PASS
 #define COMMANDS_PASS 1
@@ -657,15 +667,16 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_DOTPROD,	XNIL(cpx_DOT),		"\024DOT")
 	FUNC0(OP_CROSSPROD,	XNIL(cpx_CROSS),	"\024CROSS")
-#ifdef INFRARED
-	FUNC0(OP_PRINT_PGM,	&print_program,		"PRTPGM")
-	FUNC0(OP_PRINT_REGS,	&print_registers,	"PRTREG")
-	FUNC0(OP_PRINT_STACK,	&print_registers,	"PRTSTK")
-	FUNC0(OP_PRINT_SIGMA,	&print_sigma,		"PRT\221")
-	FUNC0(OP_PRINT_ALPHA,	&print_alpha,		"PRT\240")
-	FUNC0(OP_PRINT_ALPHA_NOADV, &print_alpha,	"PRT\240+")
-	FUNC0(OP_PRINT_ADV,	&print_lf,		"PRTADV")
-#endif
+
+	/* INFRARED commands */
+	FUNC0(OP_PRINT_PGM,	IRN(print_program),	"PRTPGM")
+	FUNC0(OP_PRINT_REGS,	IRN(print_registers),	"PRTREG")
+	FUNC0(OP_PRINT_STACK,	IRN(print_registers),	"PRTSTK")
+	FUNC0(OP_PRINT_SIGMA,	IRN(print_sigma),	"PRT\221")
+	FUNC0(OP_PRINT_ALPHA,	IRN(print_alpha),	"PRT\240")
+	FUNC0(OP_PRINT_ALPHA_NOADV, IRN(print_alpha),	"PRT\240+")
+	FUNC0(OP_PRINT_ADV,	IRN(print_lf),		"PRTADV")
+	/* end of INFRARED commands */
 
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
@@ -891,14 +902,14 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_IND_CONST,	  &cmdconst,	NUM_CONSTS,		"CNST")
 	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
 #endif
-#ifdef INFRARED
-	CMDstk(RARG_PRINT_REG,	&cmdprintreg,				"PRT")
-	CMD(RARG_PRINT_BYTE,	&cmdprint,	256,			"PRTB")
-	CMD(RARG_PRINT_CHAR,	&cmdprint,	256,			"PRTC")
-	CMD(RARG_PRINT_TAB,	&cmdprint,	166,			"PRTAB")
-	CMD(RARG_PMODE,		&cmdprintmode,  4,			"PMODE")
-	CMD(RARG_PDELAY,	&cmdprintmode,  32,			"PDLAY")
-#endif
+	/* INFRARED commands */
+	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"PRT")
+	CMD(RARG_PRINT_BYTE,	IRA(cmdprint),	256,			"PRTB")
+	CMD(RARG_PRINT_CHAR,	IRA(cmdprint),	256,			"PRTC")
+	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"PRTAB")
+	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"PMODE")
+	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"PDLAY")
+	/* end of INFRARED commands */
 
 #undef CMDlbl
 #undef CMDlblnI
