@@ -669,17 +669,17 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_CROSSPROD,	XNIL(cpx_CROSS),	"\024CROSS")
 
 	/* INFRARED commands */
-	FUNC0(OP_PRINT_PGM,	IRN(print_program),	"PRTPGM")
-	FUNC0(OP_PRINT_REGS,	IRN(print_registers),	"PRTREG")
-	FUNC0(OP_PRINT_STACK,	IRN(print_registers),	"PRTSTK")
-	FUNC0(OP_PRINT_SIGMA,	IRN(print_sigma),	"PRT\221")
-	FUNC0(OP_PRINT_ALPHA,	IRN(print_alpha),	"PRT\240")
-	FUNC0(OP_PRINT_ALPHA_NOADV, IRN(print_alpha),	"PRT\240+")
-	FUNC0(OP_PRINT_ADV,	IRN(print_lf),		"PRTADV")
+	FUNC0(OP_PRINT_PGM,	IRN(print_program),	"\222PGM")
+	FUNC0(OP_PRINT_REGS,	IRN(print_registers),	"\222REG")
+	FUNC0(OP_PRINT_STACK,	IRN(print_registers),	"\222STK")
+	FUNC0(OP_PRINT_SIGMA,	IRN(print_sigma),	"\222\221")
+	FUNC0(OP_PRINT_ALPHA,	IRN(print_alpha),	"\222\240")
+	FUNC0(OP_PRINT_ALPHA_NOADV, IRN(print_alpha),	"\222\240+")
+	FUNC0(OP_PRINT_ADV,	IRN(print_lf),		"\222ADV")
 	/* end of INFRARED commands */
 
 	FUNC0(OP_QUERY_XTAL,	&op_query_xtal,		"XTAL?")
-	FUNC0(OP_QUERY_PRINT,	&op_query_print,	"PRT?")
+	FUNC0(OP_QUERY_PRINT,	&op_query_print,	"\222?")
 
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW")
@@ -906,12 +906,12 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
 #endif
 	/* INFRARED commands */
-	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"PRTR")
-	CMD(RARG_PRINT_BYTE,	IRA(cmdprint),	256,			"PRTB")
-	CMD(RARG_PRINT_CHAR,	IRA(cmdprint),	256,			"PRTC")
-	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"PRTT")
-	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"PMODE")
-	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"PDLAY")
+	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"\222R")
+	CMD(RARG_PRINT_BYTE,	IRA(cmdprint),	256,			"\222B")
+	CMD(RARG_PRINT_CHAR,	IRA(cmdprint),	256,			"\222C")
+	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"\222T")
+	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"\222MODE")
+	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY")
 	/* end of INFRARED commands */
 
 #undef CMDlbl

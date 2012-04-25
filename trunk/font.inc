@@ -1751,14 +1751,14 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0222, "0222",                0, 0xe100,     0x09, 0x00,    NULL,
+	{ 0222, "print",           19000, 0x2399,     0x09, 0x00,    "printscreensymbol",
 		{
-			     _ ,      _ ,
-			     _ ,      _ ,
-			     _ ,      _ ,
-			     _ ,      _ ,
-			     _ ,      _ ,
-			     _ ,      _ ,
+			     _OOO__ ,      _OO__ ,
+			     _O_O__ ,      _OO__ ,
+			     OOOOO_ ,      OOOO_ ,
+			     O___O_ ,      O__O_ ,
+			     O___O_ ,      OOOO_ ,
+			     OOOOO_ ,      _____ ,
 		}
 	},
 
