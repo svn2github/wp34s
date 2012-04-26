@@ -371,8 +371,7 @@ void cmplxCos(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 // tan(a + i b) = (sin(a) cosh(b) + i cos(a) sinh(b)) / (cos(a) cosh(b) - i sin(a) sinh(b))
 void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber *b) {
 #ifndef TINY_BUILD
-	decNumber sb, cb;
-	decNumber t1, t2, t3;
+	decNumber c1, c2, s1, s2;
 
 	if (dn_eq0(a) && decNumberIsInfinite(b)) {
 		decNumberZero(rx);
@@ -381,16 +380,8 @@ void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 		else
 			dn_1(ry);
 	} else {
-		dn_sincos(a, rx, ry);
-		dn_sinhcosh(b, &sb, &cb);
-
-		dn_multiply(&t1, rx, &cb);
-		dn_multiply(&t2, ry, &sb);
-		dn_multiply(&t3, ry, &cb);
-		dn_multiply(&cb, rx, &sb);
-		dn_minus(&sb, &cb);
-
-		cmplxDivide(rx, ry, &t1, &t2, &t3, &sb);
+		cmplx_sincos(a, b, &s1, &s2, &c1, &c2);
+		cmplxDivide(rx, ry, &s1, &s2, &c1, &c2);
 	}
 #endif
 }
