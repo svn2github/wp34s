@@ -56,8 +56,6 @@ extern void ForceReset(void);
 #define SPEED_HALF     3
 #define SPEED_HIGH     4
 
-#define SLEEP_ANNUNCIATOR LIT_EQ
-// #define SPEED_ANNUNCIATOR LIT_EQ
 void set_speed( unsigned int speed );
 
 /*
@@ -120,28 +118,25 @@ void set_speed( unsigned int speed );
  *  Local data
  */
 volatile unsigned int ClockSpeed;
-volatile unsigned short StartupTicks;
-volatile unsigned char SpeedSetting;
-volatile unsigned char Heartbeats;
-unsigned char UserHeartbeatCountDown;
-unsigned char Contrast;
-volatile unsigned char LcdFadeOut;
-volatile unsigned char InIrq;
-unsigned char DebugFlag;
+volatile SMALL_INT StartupTicks;
+volatile SMALL_INT SpeedSetting;
+volatile SMALL_INT Heartbeats;
+SMALL_INT UserHeartbeatCountDown;
+SMALL_INT Contrast;
+SMALL_INT LcdFadeOut;
+FLAG InIrq;
+FLAG DebugFlag;
 #ifndef XTAL
-unsigned char Xtal;
-#endif
-#ifdef SLEEP_ANNUNCIATOR
-unsigned char SleepAnnunciatorOn;
+FLAG Xtal;
 #endif
 
 #ifdef DEBUG_MAIN
-int WdDisable;
+FLAG WdDisable;
 #endif
 
 #ifdef INFRARED
 volatile unsigned int IrPulse;
-volatile unsigned char PrintDelay;
+volatile SMALL_INT PrintDelay;
 #endif
 
 /*
@@ -451,13 +446,12 @@ void disable_lcd( void )
 	Contrast = 0;
 }
 
-
 /*
  *  Go to idle mode
  */
 void go_idle( void )
 {
-	if ( is_debug() ) {
+	if ( DebugFlag ) {
 		/*
 		 *  Idle and  modes cannot be debugged
 		 */
@@ -841,7 +835,7 @@ void set_speed( unsigned int speed )
 		/*
 		 *  Speed changes not allowed while the serial port is active
 		 */
-		if ( speed < SPEED_MEDIUM && ( is_debug() || StartupTicks < 10 ) ) {
+		if ( speed < SPEED_MEDIUM && ( DebugFlag || StartupTicks < 10 ) ) {
 			/*
 			 *  Allow JTAG debugging
 			 */
@@ -1204,7 +1198,7 @@ void system_irq( void )
 
 #ifdef INFRARED
 /*
- *  Timer/Counter 1 interrupt
+ *  Timer/Counter 1 interrupt, used for infrared printing
  */
 void TC1_irq( void )
 {
@@ -1227,6 +1221,7 @@ void TC1_irq( void )
 			AT91C_BASE_TC1->TC_CMR = 0;
 			AT91C_BASE_PMC->PMC_PCDR = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
 			IrPulse = 0;
+			SerialOn = 0;
 		}
 		else {
 			/*
@@ -1395,12 +1390,13 @@ void flush_comm( void )
 /*
  *  Send a byte out to the IR transmitter
  */
-int put_ir( unsigned char c )
+int put_ir( int c )
 {
 	unsigned int p;
 	int i;
-	unsigned char cc;
+	int cc;
 
+	set_IO_annunciator();
 	/*
 	 *  We may have to wait for the printer
 	 */
@@ -1411,13 +1407,16 @@ int put_ir( unsigned char c )
 		busy();
 		idle();
 	}
+	/*
+	 *  Wait until the previous pattern is sent
+	 */
+	while ( IrPulse ) {
+		go_idle();
+	}
 
 	set_speed( SPEED_HALF );
 	SerialOn = 2;
-#ifdef SLEEP_ANNUNCIATOR
-	dot( SLEEP_ANNUNCIATOR, 1 );
-	SLCDC_SetDisplayMode( AT91C_SLCDC_DISPMODE_NORMAL );
-#endif
+
 	/*
 	 *  Assemble the half bit pattern:
 	 *  start bit (3 times on), ECC (4 full bits), data (8 full bits), stop bit (3 times off)
@@ -1477,18 +1476,6 @@ int put_ir( unsigned char c )
 	// Go!
 	AT91C_BASE_TCB->TCB_BCR = AT91C_TCB_SYNC;
 
-	/*
-	 *  Now wait until the pattern is sent
-	 */
-	while ( IrPulse ) {
-		go_idle();
-	}
-	SerialOn = 0;
-
-#ifdef SLEEP_ANNUNCIATOR
-	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
-	WaitForLcd = 1;
-#endif
 	return 0;
 }
 #endif
@@ -1639,18 +1626,14 @@ void turn_on_crystal( void )
 #undef is_debug
 int is_debug( void )
 {
-	return DebugFlag == 0xA5;
+	return DebugFlag;
 }
 
 
 void toggle_debug( void )
 {
-	DebugFlag = is_debug() ? 0 : 0xA5;
-#ifdef SLEEP_ANNUNCIATOR
-	SleepAnnunciatorOn = is_debug() || SerialOn;
-	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
-#endif
-	message( is_debug() ? "Debug ON" : "Debug\006OFF", NULL );
+	DebugFlag = ! DebugFlag;
+	message( DebugFlag ? "Debug ON" : "Debug\006OFF", NULL );
 }
 
 
@@ -1855,13 +1838,12 @@ NO_RETURN int main(void)
 	}
 
 #ifdef SLEEP_ANNUNCIATOR
-	SleepAnnunciatorOn = is_debug();
-	dot( SLEEP_ANNUNCIATOR, SleepAnnunciatorOn );
+	dot( SLEEP_ANNUNCIATOR, 0 );
 	finish_display();
 #endif
 
 #ifdef INCLUDE_STOPWATCH
-		StopWatchRunning = 0;
+	StopWatchRunning = 0;
 #endif
 	/*
 	 *  Wait for event and execute it
@@ -1884,9 +1866,9 @@ NO_RETURN int main(void)
 			/*
 			 *  Test if we can turn ourself completely off
 			 */
-			if ( !is_debug() && !Running && !SerialOn
+			if ( !DebugFlag && !Running && !SerialOn
 #ifdef INCLUDE_STOPWATCH
-			     && KeyCallback == NULL
+			     && KeyCallback == NULL && !StopWatchRunning
 #endif
 #ifdef INFRARED
 			     && PrinterColumn == 0
@@ -1898,7 +1880,7 @@ NO_RETURN int main(void)
 				/*
 				 *  Yes, goto deep sleep. Will never return.
 				 */
-#ifdef SLEEP_ANNUNCIATOR
+#ifdef SLEEP_ANNUNCIATOR_x
 				if ( SleepAnnunciatorOn ) {
 					/*
 					 *  "Alive" indicator off
@@ -1921,14 +1903,12 @@ NO_RETURN int main(void)
 					}
 				}
 #ifdef INCLUDE_STOPWATCH
-				if ( StopWatchRunning ) {
-					set_speed( SPEED_IDLE );
-				}
-				else 
-#endif
-				{
+				if ( !StopWatchRunning ) {
 					deep_sleep();
 				}
+#else
+				deep_sleep();
+#endif
 			}
 #endif
 			/*
@@ -2087,7 +2067,7 @@ NO_RETURN int main(void)
 
 				case K43:
 					// ON-"S" SAM-BA boot
-					if ( is_debug() ) {
+					if ( DebugFlag ) {
 						if ( confirm_counter == 1 ) {
 							message( "SAM-BA?", "boot" );
 							confirm_counter = -1;
@@ -2101,7 +2081,7 @@ NO_RETURN int main(void)
 #ifdef DEBUG_MAIN
 				case K42:
 					// ON-"R" RESET
-					if ( is_debug() ) {
+					if ( DebugFlag ) {
 						if ( confirm_counter == 1 ) {
 							message( "RESET?", NULL );
 							confirm_counter = -1;
@@ -2114,7 +2094,7 @@ NO_RETURN int main(void)
 
 				case K41:
 					// ON-"Q" WD-Disable
-					if ( is_debug() ) {
+					if ( DebugFlag ) {
 						if ( confirm_counter == 1 ) {
 							message( "Watchdog?", NULL );
 							confirm_counter = -1;
@@ -2171,7 +2151,7 @@ NO_RETURN int main(void)
 			/*
 			 *  We have a reason to power the device off
 			 */
-			if ( !is_debug() && StartupTicks >= 10 ) {
+			if ( !DebugFlag && StartupTicks >= 10 ) {
 				shutdown();
 			}
 		}

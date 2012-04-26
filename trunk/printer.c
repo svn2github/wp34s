@@ -28,14 +28,16 @@
  *  Where will the next data be printed?
  *  Columns are in pixel units from 0 to 165
  */
-unsigned char PrinterColumn;
+unsigned int PrinterColumn;
 
 /*
  *  Print to IR or serial port, depending on the PMODE setting
  */
-static int print( unsigned char c )
+int print( int c )
 {
-	if ( UState.print_mode == PMODE_SERIAL ) {
+	const int mode = UState.print_mode;
+
+	if ( mode == PMODE_SERIAL ) {
 		int abort = 0;
 		open_port_default();
 		if ( c == '\n' ) {
@@ -50,14 +52,22 @@ static int print( unsigned char c )
 		return abort;
 	}
 	else {
+		if ( c == '\n' && ( mode == PMODE_GRAPHICS || mode == PMODE_SMALLGRAPHICS ) ) {
+			// better LF for graphics printing
+			return put_ir( 0x04 );
+		}
 		return put_ir( c );
 	}
 }
 
+/*
+ *  New line
+ */
 static int advance( void )
 {
-	int abort = print( '\n' );
+	int abort;
 	PrinterColumn = 0;
+	abort = print( '\n' );
 #ifdef REALBUILD
 	PrintDelay = State.print_delay;
 #endif
@@ -101,7 +111,7 @@ static int wrap( int width )
 /*
  *  Print a complete line using character set translation
  */
-static int print_line( const char *buff, int with_lf )
+int print_line( const char *buff, int with_lf )
 {
 	const int mode = UState.print_mode;
 	unsigned int c;
@@ -291,7 +301,30 @@ void print_registers( enum nilop op )
  */
 void print_sigma( enum nilop op )
 {
+	// Use the user commands to get the values
 
+	static const char ops[] = {
+		OP_sigmaN,
+		OP_sigmaX, OP_sigmaY, 
+		OP_sigmaX2, OP_sigmaY2, OP_sigmaXY, OP_sigmaX2Y, 
+		OP_sigmalnX, OP_sigmalnY, 
+		OP_sigmaXlnY, OP_sigmaYlnX,
+		OP_sigmalnXlnX, OP_sigmalnYlnY,
+		OP_sigmalnXlnY, 
+	};
+	int i, abort = 0;
+	REGISTER save_x;
+	char buffer[ 16 ];
+
+	// We need to save and restore X
+	copyreg( &save_x, StackBase );
+
+	for ( i = 0; !abort && i < sizeof( ops ); ++i ) {
+		sigma_val( (enum nilop) ops[ i ] );
+		prt( OP_NIL | ops[ i ], buffer );
+		abort = print_reg( regX_idx, buffer );
+	}
+	copyreg( StackBase, &save_x );
 }
 
 /*
@@ -388,7 +421,7 @@ void print_trace( opcode op )
 	char buffer[ 16 ];
 	const char *p = NULL;
 
-	if ( get_user_flag( regT_idx ) ) {
+	if ( !is_xrom() && get_user_flag( T_FLAG ) ) {
 		if ( op != 0xffffffff ) {
 			p = prt( op, buffer );
 		}
@@ -399,13 +432,40 @@ void print_trace( opcode op )
 
 /*
  *  Print a program listing
+ *  Start at the PC location
  */
 void print_program( enum nilop op )
 {
+	unsigned int pc = state_pc();
+	int abort = 0;
+	const int runmode = State2.runmode;
+	const int pmode = UState.print_mode;
+	const int numlen = isRAM( pc ) ? 3 : 4;
+	const int tab = numlen * ( 6 - pmode ) + 1;
 
+	if ( runmode ) {
+		pc = ProgBegin;
+	}
+	if ( pc == 0 ) {
+		++pc;
+	}
+
+	PcWrapped = 0;
+	while ( !PcWrapped && !abort ) {
+		char buffer[ 16 ];
+		opcode op = getprog( pc );
+		unsigned int upc = user_pc( pc );
+		*num_arg_0( buffer, upc, numlen ) = '\0';
+		abort = print_line( buffer, 0 );
+		if ( pmode == PMODE_GRAPHICS || pmode == PMODE_SMALLGRAPHICS ) {
+			cmdprint( tab, RARG_PRINT_TAB );
+		}
+		print( ' ' );
+		prt( op, buffer );
+		abort = print_line( buffer, 1 );
+		pc = do_inc( pc, runmode );
+	}
 }
-
-
 
 
 #ifdef WINGUI
@@ -420,12 +480,13 @@ void print_program( enum nilop op )
 #define UDPPORT 5025
 #define UDPHOST "127.0.0.1"
 
-int put_ir( unsigned char c )
+int put_ir( int c )
 {
 	int s;
 	WSADATA ws;
 	struct sockaddr_in sa;
 
+	set_IO_annunciator();
 	WSAStartup( 0x0101, &ws );
 
 	sa.sin_family = AF_INET;
@@ -443,10 +504,11 @@ int put_ir( unsigned char c )
  *  Simple emulation for debug purposes
  */
 #include <stdio.h>
-int put_ir( unsigned char c )
+int put_ir( int c )
 {
 	static FILE *f;
 
+	set_IO_annunciator();
 	if ( f == NULL ) {
 		f = fopen( "wp34s.ir", "wb" );
 	}

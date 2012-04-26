@@ -106,7 +106,7 @@ maxlibsteps=9999
 0x013b	cmd	STOP
 0x013c	cmd	PROMPT
 0x013d	cmd	CL[SIGMA]
-0x013e	cmd	CLREG
+0x013e	cmd	CLREGS
 0x013f	cmd	CLx
 0x0140	cmd	CLSTK
 0x0145	cmd	CFALL
@@ -233,8 +233,8 @@ maxlibsteps=9999
 0x01be	cmd	DATE[->]
 0x01bf	cmd	[cmplx]DOT
 0x01c0	cmd	[cmplx]CROSS
-0x01c1	cmd	[print]PGM
-0x01c2	cmd	[print]REG
+0x01c1	cmd	[print]PROG
+0x01c2	cmd	[print]REGS
 0x01c3	cmd	[print]STK
 0x01c4	cmd	[print][SIGMA]
 0x01c5	cmd	[print][alpha]
@@ -1365,10 +1365,10 @@ maxlibsteps=9999
 0xa800	arg	[cmplx]#	max=256
 0xa900	arg	CNST	max=82,indirect
 0xaa00	arg	[cmplx]CNST	max=82,indirect
-0xab00	arg	[print]R	max=128,indirect,stack
-0xac00	arg	[print]B	max=128,indirect
-0xad00	arg	[print]C	max=128,indirect
-0xae00	arg	[print]T	max=128,indirect
+0xab00	arg	[print]Reg	max=128,indirect,stack
+0xac00	arg	[print]#	max=128,indirect
+0xad00	arg	[print]CHR	max=128,indirect
+0xae00	arg	[print]TAB	max=128,indirect
 0xaf00	arg	[print]MODE	max=4,indirect
 0xb000	arg	[print]DLAY	max=32,indirect
 0xf000	mult	LBL

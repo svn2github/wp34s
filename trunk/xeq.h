@@ -66,12 +66,6 @@
 #include "decNumber/decimal64.h"
 #include "decNumber/decimal128.h"
 
-#if defined(XTAL) || ! defined(REALBUILD)
-#define Xtal (1)
-#else
-extern unsigned char Xtal;
-#endif
-
 // Generic register type
 typedef union {
 	decimal128 d;
@@ -89,6 +83,7 @@ enum multiops;
 #define OVERFLOW_FLAG	regB_idx	/* B = excess/exceed */
 #define CARRY_FLAG	regC_idx	/* C = carry */
 #define NAN_FLAG	regD_idx	/* D = danger */
+#define T_FLAG		regT_idx	/* T = trace */
 
 #define NAME_LEN	6	/* Length of command names */
 
@@ -1055,6 +1050,7 @@ extern const char *get_cmdline(void);
 extern int is_intmode(void);
 #endif
 extern int is_dblmode(void);
+extern int is_xrom(void);
 extern enum shifts cur_shift(void);
 extern enum shifts reset_shift(void);
 
@@ -1075,7 +1071,7 @@ extern unsigned int state_pc(void);
 #endif
 extern int sizeLIB(int);
 extern void set_pc(unsigned int);
-extern unsigned int user_pc(void);
+extern unsigned int user_pc(unsigned int);
 extern unsigned int find_user_pc(unsigned int);
 
 extern int local_levels(void);
@@ -1190,7 +1186,7 @@ extern void do_conv(decNumber *, unsigned int, const decNumber *);
 extern enum display_modes std_round_fix(const decNumber *);
 
 extern unsigned char remap_chars(unsigned char);
-extern unsigned char keycode_to_row_column(const int c);
+extern int keycode_to_row_column(const int c);
 int row_column_to_keycode(const int c);
 
 

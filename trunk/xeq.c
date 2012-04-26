@@ -58,35 +58,35 @@
 /*
  *  A program is running
  */
-int Running;
-int XromRunning;
+FLAG Running;
+FLAG XromRunning;
 
 #ifndef CONSOLE
 /*
  *  A program has just stopped
  */
-int JustStopped;
+FLAG JustStopped;
 #endif
 
 /*
- *  Stopwatch for a programmed pause
+ *  Count down counter for a programmed pause
  */
-volatile int Pause;
+volatile unsigned char Pause;
 
 /*
  *  Some long running function has called busy();
  */
-int Busy;
+FLAG Busy;
 
 /*
  *  Error code
  */
-int Error;
+SMALL_INT Error;
 
 /*
  *  Indication of PC wrap around
  */
-int PcWrapped;
+FLAG PcWrapped;
 
 /*
  *  Currently executed function
@@ -96,13 +96,13 @@ s_opcode XeqOpCode;
 /*
  *  Temporary display (not X)
  */
-int ShowRegister;
+SMALL_INT ShowRegister;
 
 /*
  *  User code being called from XROM
  */
-unsigned short XromUserPc;
-unsigned short UserLocalRegs;
+SMALL_INT XromUserPc;
+SMALL_INT UserLocalRegs;
 
 /* We need various different math contexts.
  * More efficient to define these globally and reuse them as needed.
@@ -117,12 +117,12 @@ char TraceBuffer[25];
 /*
  *  Total Size of the return stack
  */
-int RetStkSize;
+SMALL_INT RetStkSize;
 
 /*
  *  Number of remaining program steps
  */
-int ProgFree;
+SMALL_INT ProgFree;
 
 /*
  * The actual top of the return stack
@@ -133,6 +133,13 @@ unsigned short *RetStk;
  *  The location of the RPN stack
  */
 REGISTER *StackBase;
+
+/*
+ *  Check if the current PC is in XROM
+ */
+int is_xrom(void) {
+	return isXROM(state_pc());
+}
 
 /*
  *  Shift the return stack.
@@ -420,8 +427,7 @@ void update_program_bounds(const int force) {
 
 /* Determine where in program space the PC really is
  */
-unsigned int user_pc(void) {
-	unsigned int pc = state_pc();
+unsigned int user_pc(unsigned int pc) {
 	unsigned int n = 1;
 	unsigned int base;
 
@@ -638,7 +644,7 @@ static int check_special(const decNumber *x) {
 
 
 int stack_size(void) {
-	if (! UState.stack_depth || (isXROM(state_pc()) && ! XromFlags.xIN))
+	if (! UState.stack_depth || (is_xrom() && ! XromFlags.xIN))
 		return 4;
 	return 8;
 }
@@ -1955,7 +1961,7 @@ void cmdlblp(unsigned int arg, enum rarg op) {
 
 void cmdgto(unsigned int arg, enum rarg op) {
 	unsigned int lbl;
-	if (isXROM(state_pc()))
+	if (is_xrom())
 		lbl = addrXROM(xrom_targets[arg]) + (1 - XROM_START);
 	else
 		lbl = find_label_from(state_pc(), arg, FIND_OP_ERROR | FIND_OP_ENDS);
@@ -1982,7 +1988,7 @@ void cmdmultilblp(const opcode o, enum multiops mopr) {
 }
 
 void cmdmultigto(const opcode o, enum multiops mopr) {
-	if (mopr == DBL_XEQ && isXROM(state_pc())) {
+	if (mopr == DBL_XEQ && is_xrom()) {
 		// In XROM the command behaves differently!
 		unsigned short int target = findmultilbl(o, 0);
 		if (target != 0)
@@ -3250,7 +3256,7 @@ static void print_step(const opcode op) {
 	if (pc == 0)
 		scopy(p, "000:");
 	else {
-		p = num_arg_0(p, user_pc(), 3);
+		p = num_arg_0(p, user_pc(pc), 3);
 		*p++ = ':';
 		scopy_char(p, prt(op, buf), '\0');
 		if (*p == '?')
@@ -3923,7 +3929,7 @@ void xeq_xrom(void) {
 	/* Now if we've stepped into the XROM area, keep going until
 	 * we break free.
 	 */
-	while (!Pause && isXROM(state_pc()) && RetStkPtr != 0) {
+	while (!Pause && is_xrom() && RetStkPtr != 0) {
 		XromRunning = 1;
 		xeq_single();
 		XromRunning = 0;
@@ -4074,7 +4080,7 @@ void set_running_on() {
 	GoFast = 1;
 	set_running_on_sst();
 	LastKey = 0;
-	if (!isXROM(state_pc()))
+	if (!is_xrom())
 		error_message(ERR_NONE);
 	dot(BEG, 0);
 	finish_display();

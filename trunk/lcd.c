@@ -23,7 +23,7 @@
 #include "atmel/board.h"
 #include "atmel/slcdc.h"
 
-volatile int WaitForLcd;
+volatile FLAG WaitForLcd;
 #endif
 
 #ifdef USECURSES

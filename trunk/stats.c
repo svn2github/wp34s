@@ -49,7 +49,7 @@ STAT_DATA *StatRegs;
 /*
  *  Actual size of this block (may be zero)
  */
-int SizeStatRegs;
+SMALL_INT SizeStatRegs;
 
 /*
  *  Handle block (de)allocation

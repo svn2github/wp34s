@@ -53,9 +53,9 @@ enum confirmations {
 
 /* Local data to this module */
 unsigned int OpCode;
-unsigned char OpCodeDisplayPending;
-unsigned char GoFast;
-unsigned char NonProgrammable;
+FLAG OpCodeDisplayPending;
+FLAG GoFast;
+FLAG NonProgrammable;
 
 /*
  *  Needed before definition
@@ -99,7 +99,7 @@ static void toggle_shift(enum shifts shift) {
  * Mapping from the key code to a linear index
  * The trick is to move the shifts and the holes in the map out of the way
  */
-static unsigned char keycode_to_linear(const keycode c)
+static int keycode_to_linear(const keycode c)
 {
 	static const unsigned char linear_key_map[ 7 * 6 - 1 ] = {
 		 0,  1,  2,  3,  4,  5,   // K00 - K05
@@ -117,7 +117,7 @@ static unsigned char keycode_to_linear(const keycode c)
  * Mapping from the key code to a row column code ('A'=11 to '+'=75)
  * Used in KEY? and for shorthand addressing
  */
-unsigned char keycode_to_row_column(const int c)
+int keycode_to_row_column(const int c)
 {
 	return 11 + ( c / 6 ) * 10 + c % 6;
 }
@@ -281,7 +281,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
  * Mapping from key position to alpha in the four key planes plus
  * the two lower case planes.
  */
-static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
+static int keycode_to_alpha(const keycode c, unsigned int shift)
 {
 	static const unsigned char alphamap[][6] = {
 		/*upper f-sft g-sft h-sft lower g-lower */
@@ -320,7 +320,7 @@ static unsigned char keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 'V',  '3',  0000, 0000, 'v',  0000,  },  // K53
 		{ 'W',  '-',  0000, 0000, 'w',  0000,  },  // K54
 
-		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K60
+		{ 0000, 0222, 0000, 0000, 0000, 0000,  },  // K60
 		{ '0',  '0',  0226, ' ',  '0',  0266,  },  // K61
 		{ 'X',  '.',  0215, 0000, 'x',  0255,  },  // K62
 		{ 'Y',  0000, 'Y',  0000, 'y',  0263,  },  // K63
@@ -399,10 +399,10 @@ void init_state(void) {
 	unsigned int a = State2.flags;
 	unsigned int b = State2.trace;
 #else
-	unsigned char t = TestFlag;
+	FLAG t = TestFlag;
 #endif
-	unsigned char v = Voltage;
-	signed char k = LastKey;
+	int v = Voltage;
+	int k = LastKey;
 
 	CmdBase = 0;
 	// Removed: will clear any locals on power off
@@ -457,11 +457,14 @@ static int check_confirm(int op) {
 			State2.confirm = confirm_clall + (nilop - OP_CLALL);
 			return STATE_UNFINISHED;
 		}
-#ifdef INCLUDE_STOPWATCH
-		if ((nilop >= OP_RECV && nilop <= OP_PSTO) || nilop == OP_STOPWATCH) {
-#else
-		if (nilop >= OP_RECV && nilop <= OP_PSTO) {
+		if ((nilop >= OP_RECV && nilop <= OP_PSTO)
+#ifdef INFRARED
+			|| nilop == OP_PRINT_PGM
 #endif
+#ifdef INCLUDE_STOPWATCH
+			|| nilop == OP_STOPWATCH
+#endif
+		) {
 			// These commands are not programmable
 			NonProgrammable = 1;
 		}
@@ -1084,7 +1087,7 @@ fin2:		State2.gtodot = 0;
  */
 static int process_alpha(const keycode c) {
 	const enum shifts shift = reset_shift();
-	unsigned char ch = keycode_to_alpha(c, shift);
+	int ch = keycode_to_alpha(c, shift);
 	unsigned int alpha_pos = State2.alpha_pos, n;
         int op = STATE_UNFINISHED;
 	State2.alpha_pos = 0;
@@ -1629,7 +1632,7 @@ opcode current_catalogue(int n) {
 		return CONST_CMPLX(n);
 	}
 	if (c == CATALOGUE_CONV) {
-		const unsigned char cnv = conv_catalogue[n];
+		const int cnv = conv_catalogue[n];
 		if (cnv & 0x80)
 			// Monadic conversion routine
 			return OP_MON | (cnv & 0x7f);
@@ -1678,7 +1681,7 @@ static int forbidden_alpha(int pos) {
  */
 static int process_catalogue(const keycode c, const enum shifts shift, const int is_multi) {
 	int pos = State.catpos;
-	unsigned char ch;
+	int ch;
 	const int ctmax = current_catalogue_max();
 	const enum catalogues cat = (enum catalogues) State2.catalogue;
 
@@ -1805,8 +1808,8 @@ search:
 		if (*cmd == COMPLEX_PREFIX)
 			cmd++;
 		for (i=0; cmd[i] != '\0'; i++) {
-			const unsigned char c = remap_chars(cmd[i]);
-			const unsigned char cl = (unsigned char) Cmdline[i];
+			const int c = remap_chars(cmd[i]);
+			const int cl = (unsigned char) Cmdline[i];
 			if (c > cl)
 				goto set_pos;
 			else if (c < cl)
@@ -1836,7 +1839,7 @@ static void reset_multi(void) {
 
 static int process_multi(const keycode c) {
 	enum shifts shift = reset_shift();
-	unsigned char ch = 0;
+	unsigned int ch = 0;
 	unsigned int opcode;
 
 	if (State2.catalogue) {
@@ -2112,7 +2115,7 @@ static void set_window(int c) {
 		}
 		else {
 			if (UState.intm) {
-				if (IntMaxWindow > State2.window)
+				if (IntMaxWindow > (SMALL_INT) State2.window)
 					State2.window++;
 				return;
 			}
@@ -2348,7 +2351,7 @@ static int process(const int c) {
 		return process_alpha((const keycode)c);
 #else
 		int i = process_alpha((const keycode)c);
-		if (! State2.alphas && get_user_flag(regT_idx))
+		if (! State2.alphas && get_user_flag(T_FLAG))
 			print_alpha(OP_PRINT_ALPHA);
 		return i;
 #endif

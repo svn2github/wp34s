@@ -24,6 +24,8 @@
 #include "stats.h"
 #include "decn.h"
 #include "revision.h"
+#include "printer.h"
+#include "serial.h"
 
 static enum separator_modes { SEP_NONE, SEP_COMMA, SEP_DOT } SeparatorMode;
 static enum decimal_modes { DECIMAL_DOT, DECIMAL_COMMA } DecimalMode;
@@ -37,9 +39,10 @@ const char *DispMsg;	   // What to display in message area
 char LastDisplayedText[NUMALPHA + 1];	   // For clipboard export
 #endif
 
-int ShowRPN;		   // controls visibility of RPN annunciator
-int JustDisplayed;	   // Avoid duplicate calls to display()
-unsigned int IntMaxWindow; // Number of windows for integer display
+FLAG ShowRPN;		   // controls visibility of RPN annunciator
+FLAG JustDisplayed;	   // Avoid duplicate calls to display()
+SMALL_INT IntMaxWindow;    // Number of windows for integer display
+FLAG IoAnnunciator;	   // Status of the little "=" sign
 
 /* Message strings
  * Strings starting S7_ are for the lower 7 segment line.  Strings starting S_
@@ -72,36 +75,44 @@ static const char libname[][5] = {
  */
 void error_message(const unsigned int e) 
 {
+#define MSG1(top) top "\0" 
+#ifdef INFRARED
+#define MSG2(top,bottom,printer) top "\0" bottom "\0" printer
+#else
+#define MSG2(top,bottom,printer) top "\0" bottom
+#endif
 	// NB: this MUST be in the same order as the error #defines in errors.h
 	static const char *const error_table[] = 
 	{
 		// manually get the order correct!
-		"Running\0ProGraMm", 
-		"Domain\0",
-		"Bad time\0or dAtE",
-		"Undefined\0Op-COdE",
-		"+\237\0",
-		"-\237\0",
-		"No such\0LAbEL",
-		"Illegal\0OPErAtion",
-		"Out of range\0",
-		"Bad digit\0",
-		"Too long\0",
-		"RAM is\0FuLL",
-		"Stack\0CLASH",
-		"Bad mode\0",
-		"Word size\0too SMmALL",
-		"Too few\0dAtA PointS",
-		"Invalid\0ParaMmEtEr",
-		"I/O\0",
-		"Invalid\0dAtA",
-		"Write\0ProtEctEd",
-		"No root\0Found",
-		"Matrix\0MmISMmAtCH",
-		"Singular\0",
-		"Flash is\0FuLL",
-		"\004 \035\0X",		// Integral ~
+		MSG2("Running", "ProGraMm", "program"),
+		MSG1("Domain"),
+		MSG2("Bad time", "or dAtE", "or date"),
+		MSG2("Undefined", "Op-COdE", "op-code"),
+		MSG1("+\237"),
+		MSG1("-\237"),
+		MSG2("No such", "LAbEL", "label"),
+		MSG2("Illegal", "OPErAtion", "operation"),
+		MSG1("Out of range"),
+		MSG1("Bad digit"),
+		MSG1("Too long"),
+		MSG2("RAM is", "FuLL", "full"),
+		MSG2("Stack", "CLASH", "clash"),
+		MSG1("Bad mode"),
+		MSG2("Word size", "too SMmALL", "too small"),
+		MSG2("Too few", "dAtA PointS", "data points"),
+		MSG2("Invalid", "ParaMmEtEr", "parameter"),
+		MSG1("I/O"),
+		MSG2("Invalid", "dAtA", "data"),
+		MSG2("Write", "ProtEctEd", "protected"),
+		MSG2("No root", "Found", "found"),
+		MSG2("Matrix", "MmISMmAtCH", "mismatch"),
+		MSG1("Singular"),
+		MSG2("Flash is", "FuLL", "FuLL"),
+		MSG2("\004 \035", "X", "X"),		// Integral ~
 	};
+#undef MSG1
+#undef MSG2
 
 	if (e != ERR_NONE || Running) {
 		const char *p = error_table[e];
@@ -115,9 +126,22 @@ void error_message(const unsigned int e)
 			State2.disp_freeze = Running || XromRunning;
 		}
 		else {
-			message( p, q );
+			message(p, q);
 			State2.disp_freeze = (e != ERR_NONE);
 		}
+#ifdef INFRARED
+		if (get_user_flag(T_FLAG)) {
+			if (*q == 'X')
+				print_reg(regX_idx, p);
+			else {
+				if (q != S7_ERROR)
+					q = find_char(q, '\0') + 1;
+				print_line(p, 0);
+				print(' ');
+				print_line(q, 1);
+			}
+		}
+#endif
 	}
 }
 
@@ -184,10 +208,10 @@ static char *set_separator(int posn, const enum separator_modes sep, char *res) 
 
 
 /* Set a digit in positions [base, base+6] */
-static void set_dig(int base, char ch) 
+static void set_dig(int base, int ch)
 {
 	int i;
-	unsigned char c = getdig(ch);
+	int c = getdig(ch);
 	for (i=6; i>=0; i--)
 	{
 //		dot(base, c & (1 << i));
@@ -199,7 +223,7 @@ static void set_dig(int base, char ch)
 	}
 }
 
-static char *set_dig_s(int base, char ch, char *res) {
+static char *set_dig_s(int base, int ch, char *res) {
 	if (res) *res++ = ch;
 	else	set_dig(base, ch);
 	return res;
@@ -225,7 +249,7 @@ static void set_exp_digits_string(const char *msg, char *res) {
 }
 
 /* Force the exponent display */
-static void set_exp(short exp, int zerop, char *res) {
+static void set_exp(int exp, int zerop, char *res) {
 	char buf[6];
 
 	if (res) *res++ = 'e';
@@ -248,7 +272,7 @@ static void set_exp(short exp, int zerop, char *res) {
 
 static void carry_overflow(void) {
 	const int base = SEGS_EXP_BASE;
-	char c;
+	int c;
 	unsigned int b;
 
 	// Figure out the base
@@ -504,7 +528,7 @@ static void set_int_x(const long long int value, char *res) {
 				: b == 16 ? 2 : 3;
 #endif
 		IntMaxWindow = (i - 1) / shift;
-		if (State2.window > IntMaxWindow)
+		if ((SMALL_INT) State2.window > IntMaxWindow)
 			State2.window = 0;
 		buf[i] = '\0';
 
@@ -513,7 +537,7 @@ static void set_int_x(const long long int value, char *res) {
 			if (buf[j + k] == '\0')
 				break;
 		for (i=0; --k >= 0; i++) {
-			char ch = buf[j++];
+			int ch = buf[j++];
 			if (i >= shift)
 				ch -= 030;
 			set_dig(dig, ch);
@@ -792,7 +816,7 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 	int extra_digits = 0;
 	int dd = UState.dispdigs;
 	int mode = UState.dispmode;
-	char c;
+	int c;
 	int negative = 0;
 	decNumber z;
 	int trimzeros = 0;
@@ -1278,6 +1302,7 @@ static void set_annunciators(void)
 	dot(INPUT, State2.catalogue || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
 	dot(BIG_EQ, get_user_flag(A_FLAG));
+	set_IO_annunciator();
 
 	/* Set the trig mode indicator 360 or RAD.  Grad is handled elsewhere.
 	 */
@@ -1288,6 +1313,28 @@ static void set_annunciators(void)
 	 */
 	dot(RPN, ShowRPN >= 1 && ! Running);
 }
+
+
+/*
+ *  Toggle the little "=" sign
+ */
+void set_IO_annunciator(void) {
+	int on = SerialOn
+#ifdef REALBUILD
+	  || DebugFlag
+#endif
+#ifdef INFRARED
+	  || PrinterColumn != 0
+#endif
+	;
+
+	if (on != IoAnnunciator) {
+		dot(LIT_EQ, on);
+		IoAnnunciator = on;
+		finish_display();
+	}
+}
+
 
 /*
  *  Update the display
@@ -1536,8 +1583,8 @@ nostk:	show_flags();
 				x_disp = 1;
 			}
 		} else {
-			unsigned int upc = user_pc();
 			unsigned int pc = state_pc();
+			unsigned int upc = user_pc(pc);
 			const int n = nLIB(pc);
 			xset(buf, '\0', sizeof(buf));
 			set_exp(ProgFree, 1, NULL);
@@ -1587,7 +1634,7 @@ static void set_status_sized(const char *str, int smallp) {
 	unsigned short int posns[257];
 	unsigned int x = 0;
 	int i, j;
-	const unsigned short szmask = smallp?0x100:0;
+	const int offset = smallp ? 256 : 0;
 #ifndef CONSOLE
 	unsigned long long mat[6];
 
@@ -1598,8 +1645,7 @@ static void set_status_sized(const char *str, int smallp) {
 #endif
 	findlengths(posns, smallp);
 	while (*str != '\0' && x <= BITMAP_WIDTH+1)  {
-		const unsigned char ch = *str++;
-		const unsigned short c = ch | szmask;
+		const int c = (unsigned char) *str++ + offset;
 		//const unsigned char *cmap;
 		int width;
 		unsigned char cmap[6];
@@ -1610,7 +1656,7 @@ static void set_status_sized(const char *str, int smallp) {
 			break;
 
 		/* Decode the packed character bytes */
-		unpackchar(ch, cmap, smallp, posns);
+		unpackchar(c, cmap, smallp, posns);
 		for (i=0; i<6; i++)
 			for (j=0; j<width; j++) {
 				if (x+j >= BITMAP_WIDTH)
@@ -1638,10 +1684,9 @@ static void set_status_sized(const char *str, int smallp) {
 int pixel_length(const char *s, int smallp)
 {
 	int len = 0;
-	int offset = smallp ? 256 : 0;
+	const int offset = smallp ? 256 : 0;
 	while (*s != '\0') {
-		const unsigned char c = *s++;
-		len += charlengths( c + offset );
+		len += charlengths( (unsigned char) *s++ + offset );
 	}
 	return len;
 }
@@ -1722,12 +1767,11 @@ static void set_status_right(const char *str) {
 	unsigned int x = 0;
 	const char *p;
 	const int toolarge = State2.disp_small || string_too_large(str);
-	const unsigned short szmask = toolarge ? 0x100 : 0;
+	const int offset = toolarge ? 256 : 0;
 
 	for (p=str; *p != '\0'; p++);
 	while (--p >= str) {
-		const unsigned char ch = *p;
-		const unsigned short c = ch | szmask;
+		const unsigned int c = (unsigned char) *p + offset;
 
 		x += charlengths(c);
 		if (x > BITMAP_WIDTH+1)

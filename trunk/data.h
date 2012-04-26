@@ -441,30 +441,39 @@ extern TXromLocal XromLocal;
 /*
  *  More state, only kept while not idle
  */
-extern volatile int WaitForLcd;	   // Sync with display refresh
-extern volatile int Pause;         // Count down for programmed pause
-extern int Running, XromRunning;   // Program is active
-#ifndef CONSOLE
-extern int JustStopped;            // Set on program stop to ignore the next R/S key in the buffer
+typedef int FLAG;		     // int is most code efficient!
+typedef int SMALL_INT;		     // better then (unsigned) short
+
+#if defined(XTAL) || ! defined(REALBUILD)
+#define Xtal (1)
+#else
+extern FLAG Xtal;
 #endif
-extern int Error;		   // Did an error occur, if so what code?
-extern int ShowRegister; 	   // Temporary display (not X)
-extern int PcWrapped;		   // decpc() or incpc() have wrapped around
-extern int ShowRPN;		   // controls the RPN annunciator
-extern unsigned int IntMaxWindow;  // Number of windows for integer display
-extern const char *DispMsg;	   // What to display in message area
-extern char TraceBuffer[];         // Display current instruction
+
+extern volatile FLAG WaitForLcd;     // Sync with display refresh
+extern FLAG DebugFlag;		     // Set in Main
+extern volatile unsigned char Pause; // Count down for programmed pause
+extern FLAG Running, XromRunning;    // Program is active
+extern FLAG JustStopped;             // Set on program stop to ignore the next R/S key in the buffer
+extern SMALL_INT Error;	     	     // Did an error occur, if so what code?
+extern SMALL_INT ShowRegister;       // Temporary display (not X)
+extern FLAG PcWrapped;		     // decpc() or incpc() have wrapped around
+extern FLAG ShowRPN;		     // controls the RPN annunciator
+extern FLAG IoAnnunciator;	     // Indicates I/O in progress (higher power consumption)
+extern SMALL_INT IntMaxWindow;       // Number of windows for integer display
+extern const char *DispMsg;	     // What to display in message area
+extern unsigned int OpCode;          // Pending execution waiting for key-release
+extern s_opcode XeqOpCode;	     // Currently executed function
+extern FLAG GoFast;	 	     // Speed-up might be necessary
+extern unsigned short *RetStk;	     // Pointer to current top of return stack
+extern SMALL_INT RetStkSize;         // actual size of return stack
+extern SMALL_INT ProgFree;	     // Remaining program steps
+extern SMALL_INT SizeStatRegs;       // Size of summation register block
+extern REGISTER *StackBase;	     // Location of the RPN stack
+extern decContext Ctx;		     // decNumber library context
+extern FLAG JustDisplayed;	     // Avoid duplicate calls to display();
+extern char TraceBuffer[];           // Display current instruction
 extern char LastDisplayedText[NUMALPHA + 1];	   // This is for the emulator (clipboard)
-extern unsigned int OpCode;        // Pending execution waiting for key-release
-extern s_opcode XeqOpCode;	   // Currently executed function
-extern unsigned char GoFast;	   // Speed-up might be necessary
-extern unsigned short *RetStk;	   // Pointer to current top of return stack
-extern int RetStkSize;		   // actual size of retiurn stack
-extern int ProgFree;		   // Remaining program steps
-extern int SizeStatRegs;	   // Size of summation register block
-extern REGISTER *StackBase;	   // Location of the RPN stack
-extern decContext Ctx;		   // decNumber library context
-extern int JustDisplayed;	   // Avoid duplicate calls to display();
 #ifdef CONSOLE
 extern unsigned long long int instruction_count;
 extern int view_instruction_counter;

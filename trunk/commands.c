@@ -506,7 +506,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_RS,		&op_rs,			"STOP")
 	FUNC0(OP_PROMPT,	&op_prompt,		"PROMPT")
 	FUNC0(OP_SIGMACLEAR,	&sigma_clear,		"CL\221")
-	FUNC0(OP_CLREG,		&clrreg,		"CLREG")
+	FUNC0(OP_CLREG,		&clrreg,		"CLREGS")
 	FUNC0(OP_rCLX,		&clrx,			"CLx")
 	FUNC0(OP_CLSTK,		&clrstk,		"CLSTK")
 	FUNC0(OP_CLALL,		NOFN,			"CLALL")
@@ -669,8 +669,8 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_CROSSPROD,	XNIL(cpx_CROSS),	"\024CROSS")
 
 	/* INFRARED commands */
-	FUNC0(OP_PRINT_PGM,	IRN(print_program),	"\222PGM")
-	FUNC0(OP_PRINT_REGS,	IRN(print_registers),	"\222REG")
+	FUNC0(OP_PRINT_PGM,	IRN(print_program),	"\222PROG")
+	FUNC0(OP_PRINT_REGS,	IRN(print_registers),	"\222REGS")
 	FUNC0(OP_PRINT_STACK,	IRN(print_registers),	"\222STK")
 	FUNC0(OP_PRINT_SIGMA,	IRN(print_sigma),	"\222\221")
 	FUNC0(OP_PRINT_ALPHA,	IRN(print_alpha),	"\222\240")
@@ -906,10 +906,10 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
 #endif
 	/* INFRARED commands */
-	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"\222R")
-	CMD(RARG_PRINT_BYTE,	IRA(cmdprint),	256,			"\222B")
-	CMD(RARG_PRINT_CHAR,	IRA(cmdprint),	256,			"\222C")
-	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"\222T")
+	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"\222Reg")
+	CMD(RARG_PRINT_BYTE,	IRA(cmdprint),	256,			"\222#")
+	CMD(RARG_PRINT_CHAR,	IRA(cmdprint),	256,			"\222CHR")
+	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"\222TAB")
 	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"\222MODE")
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY")
 	/* end of INFRARED commands */

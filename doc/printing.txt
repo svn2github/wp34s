@@ -18,7 +18,7 @@ The necessary schematics will be provided.
 Setting the operation mode
 --------------------------
 
-PMODE n (in MODE) sets the printing mode:
+[print]MODE n (in MODE) sets the printing mode:
 
 0 - Default mode, use the printer character set where possible.
     All characters have the same width of 5 columns + 2 columns spacing.
@@ -32,7 +32,7 @@ PMODE n (in MODE) sets the printing mode:
     set translation and works only for plain ASCII. The line setup is the
     same as for serial communications: 9600 baud, 8 bits, no parity.
 
-PDLAY n (in MODE) sets the LF delay in tenths of seconds.
+[print]DLAY n (in MODE) sets the LF delay in tenths of seconds.
 
 SF T / CF T enable / disable tracing.
 
@@ -44,46 +44,48 @@ new printing catalogue.
 Listing programs
 ----------------
 
-PRTPGM prints the current program. (To be implemented.)
+[print]PROG prints the current program if called outside program mode.
+When executed while editing a program the list starts at the current
+location and stops at the end of the region instead of the next END.
 
 
 Printing text
 -------------
 
-PRT[alpha] prints the contents of the alpha register.
+[print][alpha] prints the contents of the alpha register.
 
-PRT[alpha]+ prints alpha but does not send a line feed. This is useful
+[print][alpha]+ prints alpha but does not send a line feed. This is useful
 for chaining output or labeling numeric data.
 
 
 Printing data
 -------------
 
-PRTR n prints any register (including stack or local registers) without
+[print]Reg n prints any register (including stack or local registers) without
 labeling the output. The data is printed to the right. You can add a label
 with the alpha print commands above. PRT X can be reached from the keyboard
 with f+EXIT (the yellow arrow).
 
-PRTSTK prints the stack registers with a label to the left.
+[print]STK prints the stack registers with a label to the left.
 
-PRTREG takes a descriptor of the form rrr.nn in X (see R-SORT for an
+[print]REGS takes a descriptor of the form rrr.nn in X (see R-SORT for an
 example) and prints the registers with a label to the left. To print local
 registers start with 112. nn=00 is treated as 'all available' registers.
 
-PRT[SIGMA] prints the summation registers. (To be implemented.)
+[print][SIGMA] prints the summation registers.
 
 
 Formatting and special commands
 -------------------------------
 
-PRTADV sends a line feed and causes the printer to spit out any pending
+[print]ADV sends a line feed and causes the printer to spit out any pending
 data.
 
-PRTT n positions the print head to a chosen column (0 to 165). This can
+[print]TAB n positions the print head to a chosen column (0 to 165). This can
 be used for formatting, especially when using PMODE 1 or 2. A simple
 plot function is possible, too.
 
-PRTC n sends a single character to the printer. The command uses the
+[print]CHR n sends a single character to the printer. The command uses the
 current PMODE setting. The printer buffer is limited to 200 bytes. If
 you print many characters in mode 1 or 2 with this command a buffer
 overrun may occur because of the overhead of adding the necessary two
@@ -91,10 +93,10 @@ byte ESC code to each character pattern. If that occurs print multiple
 characters at once with the commands PRT[alpha]+ or PRT[alpha] instead
 which buffer the characters in larger graphic blocks.
 
-PRTB n sends a single byte without any translation. You can use this to 
+[print]# n sends a single byte without any translation. You can use this to 
 send control codes to the printer. The column counter is not updated
-which means PRTAB and right justified number printing won't work if you
-send commands which affect the print position. Use at your own risk!
+which means [print]TAB and right justified number printing won't work if
+you send commands which affect the print position. Use at your own risk!
 
 The above commands allow indirection which limits the argument that can
 be passed to values from 0 to 127. Larger values can be sent by putting

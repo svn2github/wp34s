@@ -175,7 +175,6 @@ int open_port_default( void )
 {
 	int baud = 9600;
 #if defined(REALBUILD) && !defined(XTAL)
-	extern unsigned char Xtal;
 	if ( !Xtal ) {
 		int factor = (int) get_reg_n_int( regX_idx );
 		if ( factor >= 80 && factor <= 120 ) {
