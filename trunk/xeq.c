@@ -981,7 +981,7 @@ void process_cmdline(void) {
 			setX(&x);
 		}
 		set_entry();
-		print_trace( 0xffffffff );
+		print_trace( TRACE_DATA_ENTRY, 1 );
 	}
 }
 
@@ -3808,6 +3808,8 @@ void xeq(opcode op)
 		DispMsg = TraceBuffer;
 	}
 #endif
+	print_trace( op, 0 );
+
 	Busy = 0;
 	State2.wascomplex = 0;
 	xcopy(save, StackBase, sizeof(save));
@@ -3894,19 +3896,7 @@ void xeq(opcode op)
 		}
 	} 
 	reset_volatile_state();
-#ifdef INFRARED
-	if (op == (OP_SPEC | OP_CHS)) {
-		if (CmdLineLength > 0)
-			return;
-	}
-	else if (op >= (OP_SPEC | OP_EEX) && op <= (OP_SPEC | OP_F))
-		return;
-	else if (op == (OP_SPEC | OP_CLX))
-		op = OP_NIL | OP_rCLX;
-	else if (! Running && isRARG(op) && RARG_CMD(op) == RARG_ALPHA )
-		return;
-	print_trace( op );
-#endif
+	print_trace( op, 1 );
 }
 
 /* Execute a single step and return.

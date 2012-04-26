@@ -28,11 +28,13 @@ enum print_modes {
 	PMODE_SERIAL = 3
 };
 
+#define TRACE_DATA_ENTRY 0xffffffff
+
 // User visible routines
 extern int print( int c );
 extern int print_line( const char *buff, int with_lf );
 extern int print_reg( int reg, const char *label );
-extern void print_trace( opcode op );
+extern void print_trace( opcode op, int phase );
 extern void print_program( enum nilop op );
 extern void print_registers( enum nilop op );
 extern void print_sigma( enum nilop op );
@@ -52,7 +54,7 @@ extern volatile SMALL_INT PrintDelay;
 extern unsigned int PrinterColumn;
 
 #ifndef INFRARED
-#define print_trace( op ) /**/
+#define print_trace( op, phase ) /**/
 #endif
 
 #endif

@@ -224,6 +224,7 @@ void clrprog( void )
 		}
 	}
 	set_pc( ProgBegin - 1 );
+	update_program_bounds( 1 );
 }
  
 

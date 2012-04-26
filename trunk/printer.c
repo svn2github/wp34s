@@ -60,6 +60,7 @@ int print( int c )
 	}
 }
 
+
 /*
  *  New line
  */
@@ -73,6 +74,46 @@ static int advance( void )
 #endif
 	return abort;
 }
+
+
+/*
+ *  New line if tracing is active
+ */
+static int advance_if_trace()
+{
+	if ( PrinterColumn != 0 && get_user_flag( T_FLAG ) ) {
+		return advance();
+	}
+	return 0;
+}
+
+
+/*
+ *  Move to column
+ */
+static int print_tab( unsigned int col )
+{
+	int abort = 0;
+	if ( PrinterColumn > col ) {
+		abort = advance();
+	}
+	if ( ! abort && PrinterColumn < col ) {
+		int i = col - PrinterColumn;
+		int j = i / 7;
+		i %= 7;
+		PrinterColumn = col;
+		if ( i ) {
+			put_ir( 27 );
+			put_ir( i );
+			while ( i-- )
+				put_ir( 0 );
+		}
+		while ( j-- )
+			put_ir( ' ' );
+	}
+	return abort;
+}
+
 
 /*
  *  Print a graphic sequence
@@ -145,11 +186,7 @@ int print_line( const char *buff, int with_lf )
 
 			if ( i != 0 ) {
 				// Use printer character set
-#ifdef WINGUI
-				w = PrinterColumn == 0 ? 5 : 7;
-#else
 				w = PrinterColumn == 0 || PrinterColumn == 160 ? 6 : 7;
-#endif		
 				abort = print_graphic( glen, graphic );
 				glen = 0;
 				abort |= wrap( w );
@@ -157,23 +194,14 @@ int print_line( const char *buff, int with_lf )
 			}
 			else {
 				// graphic printing of characters unknown to the printer
-#ifdef WINGUI
-				w = 5;
-#else
 				w = 6;
-#endif
 				if ( PrinterColumn > 0 && PrinterColumn < 166 ) {
 					// Add horizontal spacing
 					graphic[ glen++ ] = 0;
 					++PrinterColumn;
-#ifdef WINGUI
-					graphic[ glen++ ] = 0;
-					++PrinterColumn;
-#else
 					if ( PrinterColumn == 161 ) {
 						w = 5;
 					}
-#endif
 				}
 				goto graphic_print;
 			}
@@ -246,7 +274,7 @@ int print_reg( int reg, const char *label )
 		len = 166;
 	}
 	if ( len ) {
-		cmdprint( 166 - len, RARG_PRINT_TAB );
+		print_tab( 166 - len );
 	}
 	abort |= print_line( buf, 1 );
 	return abort;
@@ -260,6 +288,8 @@ void print_registers( enum nilop op )
 {
 	int s, n;
 
+	int abort = advance_if_trace();
+
 	if ( op == OP_PRINT_STACK ) {
 		s = regX_idx;
 		n = stack_size();
@@ -270,7 +300,7 @@ void print_registers( enum nilop op )
 		}
 	}
 
-	while ( n-- ) {
+	while ( !abort && n-- ) {
 		int r = s;
 		char name[ 6 ], *p = name;
 
@@ -290,9 +320,7 @@ void print_registers( enum nilop op )
 		}
 		*p++ = '=';
 		*p = '\0';
-		if ( 0 != print_reg( s++, name ) ) {
-			return;
-		}
+		abort = print_reg( s++, name );
 	}
 }
 
@@ -312,7 +340,7 @@ void print_sigma( enum nilop op )
 		OP_sigmalnXlnX, OP_sigmalnYlnY,
 		OP_sigmalnXlnY, 
 	};
-	int i, abort = 0;
+	int i, abort = advance_if_trace();
 	REGISTER save_x;
 	char buffer[ 16 ];
 
@@ -332,7 +360,9 @@ void print_sigma( enum nilop op )
  */
 void print_alpha( enum nilop op )
 {
-	print_line( Alpha, op == OP_PRINT_ALPHA );
+	if ( !advance_if_trace()) {
+		print_line( Alpha, op == OP_PRINT_ALPHA );
+	}
 }
 
 /*
@@ -340,7 +370,9 @@ void print_alpha( enum nilop op )
  */
 void print_lf( enum nilop op )
 {
-	advance();
+	if ( !advance_if_trace()) {
+		advance();
+	}
 }
 
 /*
@@ -365,23 +397,7 @@ void cmdprint( unsigned int arg, enum rarg op )
 
 	case RARG_PRINT_TAB:
 		// Move to specific column
-		if ( PrinterColumn > arg ) {
-			advance();
-		}
-		if ( PrinterColumn < arg ) {
-			int i = arg - PrinterColumn;
-			int j = i / 7;
-			i %= 7;
-			PrinterColumn = arg;
-			if ( i ) {
-				put_ir( 27 );
-				put_ir( i );
-				while ( i-- )
-					put_ir( 0 );
-			}
-			while ( j-- )
-				put_ir( ' ' );
-		}
+		print_tab( arg );
 		break;
 
 	default:
@@ -395,7 +411,9 @@ void cmdprint( unsigned int arg, enum rarg op )
  */
 void cmdprintreg( unsigned int arg, enum rarg op )
 {
-	print_reg( arg, NULL );
+	if ( !advance_if_trace()) {
+		print_reg( arg, NULL );
+	}
 }
 
 
@@ -416,16 +434,32 @@ void cmdprintmode( unsigned int arg, enum rarg op )
 /*
  *  Trace an instruction
  */
-void print_trace( opcode op )
+void print_trace( opcode op, int phase )
 {
 	char buffer[ 16 ];
-	const char *p = NULL;
 
 	if ( !is_xrom() && get_user_flag( T_FLAG ) ) {
-		if ( op != 0xffffffff ) {
-			p = prt( op, buffer );
+		if (op == (OP_SPEC | OP_CHS)) {
+			if (CmdLineLength > 0)
+				return;
 		}
-		print_reg( regX_idx, p );
+		else if (op >= (OP_SPEC | OP_EEX) && op <= (OP_SPEC | OP_F))
+			return;
+		else if (op == (OP_SPEC | OP_CLX))
+			op = OP_NIL | OP_rCLX;
+		else if (! Running && isRARG(op) && RARG_CMD(op) == RARG_ALPHA )
+			return;
+		if ( phase == 0 ) {
+			if ( CmdLineLength ) {
+				process_cmdline();
+			}
+			print_line( prt( op, buffer ), 0 );
+		}
+		else {
+			print_reg( regX_idx, op == TRACE_DATA_ENTRY ? ">>>" : 
+				             PrinterColumn == 0     ? "<<<" : 
+					     NULL );
+		}
 	}
 }
 
@@ -437,7 +471,7 @@ void print_trace( opcode op )
 void print_program( enum nilop op )
 {
 	unsigned int pc = state_pc();
-	int abort = 0;
+	int abort = advance_if_trace();
 	const int runmode = State2.runmode;
 	const int pmode = UState.print_mode;
 	const int numlen = isRAM( pc ) ? 3 : 4;
@@ -458,7 +492,7 @@ void print_program( enum nilop op )
 		*num_arg_0( buffer, upc, numlen ) = '\0';
 		abort = print_line( buffer, 0 );
 		if ( pmode == PMODE_GRAPHICS || pmode == PMODE_SMALLGRAPHICS ) {
-			cmdprint( tab, RARG_PRINT_TAB );
+			print_tab( tab );
 		}
 		print( ' ' );
 		prt( op, buffer );

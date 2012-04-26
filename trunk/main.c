@@ -1087,7 +1087,7 @@ void LCD_interrupt( void )
 	/*
 	 *  Check if a serial transfer has to be interrupted
 	 */
-	if ( SerialOn == 1 && OnKeyPressed ) {
+	if ( SerialOn && OnKeyPressed ) {
 		byte_received( R_BREAK );
 	}
 
@@ -1221,7 +1221,6 @@ void TC1_irq( void )
 			AT91C_BASE_TC1->TC_CMR = 0;
 			AT91C_BASE_PMC->PMC_PCDR = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
 			IrPulse = 0;
-			SerialOn = 0;
 		}
 		else {
 			/*
@@ -1415,7 +1414,6 @@ int put_ir( int c )
 	}
 
 	set_speed( SPEED_HALF );
-	SerialOn = 2;
 
 	/*
 	 *  Assemble the half bit pattern:
@@ -1871,7 +1869,7 @@ NO_RETURN int main(void)
 			     && KeyCallback == NULL && !StopWatchRunning
 #endif
 #ifdef INFRARED
-			     && PrinterColumn == 0
+			     && PrinterColumn == 0 && IrPulse == 0
 #endif
 			     && KbData == 0LL && Pause == 0 && StartupTicks >= 10
 			     && Keyticks >= TICKS_BEFORE_DEEP_SLEEP
