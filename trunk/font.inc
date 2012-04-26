@@ -1755,8 +1755,8 @@
 		{
 			     _OOO__ ,      _OO__ ,
 			     _O_O__ ,      _OO__ ,
-			     OOOOO_ ,      OOOO_ ,
-			     O___O_ ,      O__O_ ,
+			     OO_OO_ ,      OOOO_ ,
+			     OOOOO_ ,      O__O_ ,
 			     O___O_ ,      OOOO_ ,
 			     OOOOO_ ,      _____ ,
 		}
