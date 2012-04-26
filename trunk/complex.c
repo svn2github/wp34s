@@ -388,8 +388,9 @@ void cmplxTan(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber 
 		dn_multiply(&t2, ry, &sb);
 		dn_multiply(&t3, ry, &cb);
 		dn_multiply(&cb, rx, &sb);
+		dn_minus(&sb, &cb);
 
-		cmplxDivide(rx, ry, &t1, &t2, &t3, &cb);
+		cmplxDivide(rx, ry, &t1, &t2, &t3, &sb);
 	}
 #endif
 }
