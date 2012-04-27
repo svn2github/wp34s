@@ -109,7 +109,8 @@ MV := mv -f
 CP := cp
 CPDIR := cp -r
 ZIP := zip -r
-TAR := tar czf
+#  TAR option "--ignore-failed-read" is to prevent an error message when compiling over a SAMBA mount
+TAR := tar --ignore-failed-read -c -z -f
 QTMAKEFILE := QtMakefile.$(SYSTEM)
 QTMAKEFILE_EXISTS := $(wildcard $(QTMAKEFILE))
 
@@ -233,7 +234,7 @@ $(DISTDOCFILE): $(DOCFILE)
 endif
 
 ifeq ($(SYSTEM),windows32)
-release: $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
+release: qtserial $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
 	$(MAKE) -f $(QTMAKEFILE) release BASELIBS="$(BASELIBS)" OTHEROBJS="$(EXTRAOBJS) $(BASEOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIALLIB="$(SERIALLIB)" QTSERIAL_INCLUDE="$(QTSERIAL_INCLUDE)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 else
 release: all
