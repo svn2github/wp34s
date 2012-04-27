@@ -732,7 +732,7 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 		*p = '<';
 	} else	p = buf;
 	for (j=0; *p != '\0'; p++) {
-		set_dig_s(j, *p, res);
+		res = set_dig_s(j, *p, res);
 		j += SEGS_PER_DIGIT;
 	}
 
@@ -743,7 +743,7 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 	else
 		p = (char *)S7_fract_GT;
 	for (j = SEGS_EXP_BASE; *p != '\0'; p++) {
-		set_dig_s(j, *p, res);
+		res = set_dig_s(j, *p, res);
 		j += SEGS_PER_EXP_DIGIT;
 	}
 	return 1;
