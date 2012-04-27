@@ -81,7 +81,7 @@ static int advance( void )
  */
 static int advance_if_trace()
 {
-	if ( PrinterColumn != 0 && get_user_flag( T_FLAG ) ) {
+	if ( PrinterColumn != 0 && Tracing ) {
 		return advance();
 	}
 	return 0;
@@ -91,13 +91,13 @@ static int advance_if_trace()
 /*
  *  Move to column
  */
-static int print_tab( unsigned int col )
+int print_tab( unsigned int col )
 {
 	int abort = 0;
 	if ( PrinterColumn > col ) {
 		abort = advance();
 	}
-	if ( ! abort && PrinterColumn < col ) {
+	if ( !abort && PrinterColumn < col ) {
 		int i = col - PrinterColumn;
 		int j = i / 7;
 		i %= 7;
@@ -251,33 +251,41 @@ int print_line( const char *buff, int with_lf )
 	return abort;
 }
 
+
+/*
+ *  Print buffer right justified
+ */
+int print_justified( const char *buff )
+{
+	const int pmode = UState.print_mode;
+	int len = pmode == PMODE_DEFAULT ? slen( buff ) * 7 - 1
+	        : pmode == PMODE_SERIAL  ? 0
+	        : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
+
+	if ( len >= 166 ) {
+		len = 166;
+	}
+	if ( len > 0 ) {
+		print_tab( 166 - len );
+	}
+	return print_line( buff, 1 );
+}
+
+
 /*
  *  Print a single register
  */
 int print_reg( int reg, const char *label )
 {
-	char buf[ 65 ];
+	char buffer[ 65 ];
 	int abort = 0;
-	int len;
-	const int pmode = UState.print_mode;
 
 	if ( label != NULL ) {
 		abort = print_line( label, 0 );
 	}
-	xset( buf, '\0', sizeof( buf ) );
-	format_reg( reg, buf );
-	len = pmode == PMODE_DEFAULT ? slen( buf ) * 7
-	    : pmode == PMODE_SERIAL  ? 0
-	    : pixel_length( buf, pmode == PMODE_SMALLGRAPHICS );
-
-	if ( len >= 166 ) {
-		len = 166;
-	}
-	if ( len ) {
-		print_tab( 166 - len );
-	}
-	abort |= print_line( buf, 1 );
-	return abort;
+	xset( buffer, '\0', sizeof( buffer ) );
+	format_reg( reg, buffer );
+        return abort || print_justified( buffer );
 }	
 
 
@@ -360,8 +368,13 @@ void print_sigma( enum nilop op )
  */
 void print_alpha( enum nilop op )
 {
-	if ( !advance_if_trace()) {
-		print_line( Alpha, op == OP_PRINT_ALPHA );
+	if ( !advance_if_trace() ) {
+		if ( op == OP_PRINT_ALPHA_JUST ) {
+			print_justified( Alpha );
+		}
+		else {
+			print_line( Alpha, op == OP_PRINT_ALPHA );
+		}
 	}
 }
 
@@ -437,8 +450,11 @@ void cmdprintmode( unsigned int arg, enum rarg op )
 void print_trace( opcode op, int phase )
 {
 	char buffer[ 16 ];
-
-	if ( !is_xrom() && get_user_flag( T_FLAG ) ) {
+	
+	if ( Tracing || op == RARG( RARG_SF, T_FLAG ) ) {
+		/*
+		 *  We trace when flag T has been set
+		 */
 		if (op == (OP_SPEC | OP_CHS)) {
 			if (CmdLineLength > 0)
 				return;
@@ -449,16 +465,22 @@ void print_trace( opcode op, int phase )
 			op = OP_NIL | OP_rCLX;
 		else if (! Running && isRARG(op) && RARG_CMD(op) == RARG_ALPHA )
 			return;
+
+		// Format the command
+		prt( op, buffer );
+
 		if ( phase == 0 ) {
+			// Left part of print
 			if ( CmdLineLength ) {
 				process_cmdline();
 			}
 			print_line( prt( op, buffer ), 0 );
 		}
 		else {
+			// right part of print
 			print_reg( regX_idx, op == TRACE_DATA_ENTRY ? ">>>" : 
-				             PrinterColumn == 0     ? "<<<" : 
-					     NULL );
+				             PrinterColumn == 0     ? ( !Tracing ? buffer : "***"  ) : 
+					     (char *) NULL );
 		}
 	}
 }

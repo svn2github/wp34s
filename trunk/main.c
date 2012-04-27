@@ -831,7 +831,11 @@ void set_speed( unsigned int speed )
 		  32768 * ( 1 + PLLMUL_HALF ),
 		  32768 * ( 1 + PLLMUL_FULL ) };
 
-	if ( !SerialOn && IrPulse == 0 ) {
+	if ( !SerialOn
+#ifdef INFRARED
+	     && IrPulse == 0
+#endif
+	) {
 		/*
 		 *  Speed changes not allowed while the serial port is active
 		 */

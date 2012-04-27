@@ -675,6 +675,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_PRINT_SIGMA,	IRN(print_sigma),	"\222\221")
 	FUNC0(OP_PRINT_ALPHA,	IRN(print_alpha),	"\222\240")
 	FUNC0(OP_PRINT_ALPHA_NOADV, IRN(print_alpha),	"\222\240+")
+	FUNC0(OP_PRINT_ALPHA_JUST,  IRN(print_alpha),	"\222+\240")
 	FUNC0(OP_PRINT_ADV,	IRN(print_lf),		"\222ADV")
 	/* end of INFRARED commands */
 
@@ -906,7 +907,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST")
 #endif
 	/* INFRARED commands */
-	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"\222Reg")
+	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"\222r")
 	CMD(RARG_PRINT_BYTE,	IRA(cmdprint),	256,			"\222#")
 	CMD(RARG_PRINT_CHAR,	IRA(cmdprint),	256,			"\222CHR")
 	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"\222TAB")

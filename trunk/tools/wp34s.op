@@ -239,9 +239,10 @@ maxlibsteps=9999
 0x01c4	cmd	[print][SIGMA]
 0x01c5	cmd	[print][alpha]
 0x01c6	cmd	[print][alpha]+
-0x01c7	cmd	[print]ADV
-0x01c8	cmd	XTAL?
-0x01c9	cmd	[print]?
+0x01c7	cmd	[print]+[alpha]
+0x01c8	cmd	[print]ADV
+0x01c9	cmd	XTAL?
+0x01ca	cmd	[print]?
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -1365,7 +1366,7 @@ maxlibsteps=9999
 0xa800	arg	[cmplx]#	max=256
 0xa900	arg	CNST	max=82,indirect
 0xaa00	arg	[cmplx]CNST	max=82,indirect
-0xab00	arg	[print]Reg	max=128,indirect,stack
+0xab00	arg	[print]r	max=128,indirect,stack
 0xac00	arg	[print]#	max=128,indirect
 0xad00	arg	[print]CHR	max=128,indirect
 0xae00	arg	[print]TAB	max=128,indirect

@@ -130,12 +130,13 @@ void error_message(const unsigned int e)
 			State2.disp_freeze = (e != ERR_NONE);
 		}
 #ifdef INFRARED
-		if (get_user_flag(T_FLAG)) {
+		if (Tracing) {
 			if (*q == 'X')
 				print_reg(regX_idx, p);
 			else {
 				if (q != S7_ERROR)
 					q = find_char(q, '\0') + 1;
+				print_tab(0);
 				print_line(p, 0);
 				print(' ');
 				print_line(q, 1);

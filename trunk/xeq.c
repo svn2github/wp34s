@@ -134,6 +134,13 @@ unsigned short *RetStk;
  */
 REGISTER *StackBase;
 
+#ifdef INFRARED
+/*
+ *  Is tracing active?
+ */
+FLAG Tracing;
+#endif
+
 /*
  *  Check if the current PC is in XROM
  */
@@ -2113,12 +2120,19 @@ void cmdconv(unsigned int arg, enum rarg op) {
  *  If it is zero, the test fails.
  */
 void fin_tst(const int a) {
+	const char *msg = a ? "true" : "false";
 	if (Running || XromRunning) {
 		if (! a && incpc())
 			decpc();
 	}
 	else
-		DispMsg = a ? "true" : "false";
+		DispMsg = msg;
+#ifdef INFRARED
+	if (Tracing) {
+		print_justified( DispMsg );
+		Tracing = 0;
+	}
+#endif
 }
 
 
@@ -3808,8 +3822,10 @@ void xeq(opcode op)
 		DispMsg = TraceBuffer;
 	}
 #endif
+#ifdef INFRARED
+	Tracing = get_user_flag(T_FLAG) && !is_xrom();
 	print_trace( op, 0 );
-
+#endif
 	Busy = 0;
 	State2.wascomplex = 0;
 	xcopy(save, StackBase, sizeof(save));
@@ -3896,7 +3912,9 @@ void xeq(opcode op)
 		}
 	} 
 	reset_volatile_state();
+#ifdef INFRARED
 	print_trace( op, 1 );
+#endif
 }
 
 /* Execute a single step and return.

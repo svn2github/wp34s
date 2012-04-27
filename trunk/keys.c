@@ -2351,8 +2351,10 @@ static int process(const int c) {
 		return process_alpha((const keycode)c);
 #else
 		int i = process_alpha((const keycode)c);
-		if (! State2.alphas && get_user_flag(T_FLAG))
+		if (! State2.alphas && get_user_flag(T_FLAG)) {
+			print_tab(0);
 			print_alpha(OP_PRINT_ALPHA);
+		}
 		return i;
 #endif
 	}

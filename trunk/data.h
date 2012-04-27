@@ -474,6 +474,7 @@ extern decContext Ctx;		     // decNumber library context
 extern FLAG JustDisplayed;	     // Avoid duplicate calls to display();
 extern char TraceBuffer[];           // Display current instruction
 extern char LastDisplayedText[NUMALPHA + 1];	   // This is for the emulator (clipboard)
+extern FLAG Tracing;		     // Set by SF T for INFRARED builds
 #ifdef CONSOLE
 extern unsigned long long int instruction_count;
 extern int view_instruction_counter;
