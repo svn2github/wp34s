@@ -831,7 +831,7 @@ void set_speed( unsigned int speed )
 		  32768 * ( 1 + PLLMUL_HALF ),
 		  32768 * ( 1 + PLLMUL_FULL ) };
 
-	if ( !SerialOn ) {
+	if ( !SerialOn && IrPulse == 0 ) {
 		/*
 		 *  Speed changes not allowed while the serial port is active
 		 */
@@ -1395,7 +1395,15 @@ int put_ir( int c )
 	int i;
 	int cc;
 
+	/*
+	 *  Wait until the previous pattern is sent
+	 */
+	while ( IrPulse ) {
+		go_idle();
+	}
+
 	set_IO_annunciator();
+
 	/*
 	 *  We may have to wait for the printer
 	 */
@@ -1406,13 +1414,6 @@ int put_ir( int c )
 		busy();
 		idle();
 	}
-	/*
-	 *  Wait until the previous pattern is sent
-	 */
-	while ( IrPulse ) {
-		go_idle();
-	}
-
 	set_speed( SPEED_HALF );
 
 	/*
