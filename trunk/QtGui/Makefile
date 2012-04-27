@@ -88,7 +88,7 @@ WP34STRIGOFACTOFILES :=  $(addprefix $(WP34SLIBDIR), TRIGON.wp34s PF.wp34s)
 WP34SLIB=$(TOOLS)/wp34s_lib.pl -d 0
 
 
-DOCFILENAME := Manual_wp_34s_3_0.pdf
+DOCFILENAME := Manual_wp_34s_3_1.pdf
 DOCDIR := ../../doc
 DOCFILE := $(DOCDIR)/$(DOCFILENAME)
 DISTDOCDIR := $(RESOURCESDIR)/doc
