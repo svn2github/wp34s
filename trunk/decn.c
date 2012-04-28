@@ -2166,24 +2166,6 @@ decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *
 	}
 }
 
-decNumber *decNumberERF(decNumber *res, const decNumber *x) {
-	decNumber z;
-
-	if (decNumberIsSpecial(x)) {
-		if (decNumberIsNaN(x))
-			return set_NaN(res);
-		if (decNumberIsNegative(x))
-			return dn__1(res);
-		return dn_1(res);
-	}
-	decNumberSquare(&z, x);
-	decNumberGammap(res, &const_0_5, &z);
-	if (decNumberIsNegative(x))
-		return dn_minus(res, res);
-	return res;
-	
-}
-
 #ifdef INCLUDE_FACTOR
 decNumber *decFactor(decNumber *r, const decNumber *x) {
 	int sgn;

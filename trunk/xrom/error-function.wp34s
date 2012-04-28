@@ -33,5 +33,25 @@
 			RCL+ X
 			xOUT xOUT_NORMAL
 
+		XLBL"ERF"
+			xIN MONADIC
+			[infinity]?
+				JMP erf_infinite
+			x<0?
+				SF .00
+			x[^2]
+			.
+			5
+			SWAP
+			X(GSB gammap, I[GAMMA])
+			FS? .00
+				+/-
+			xOUT xOUT_NORMAL
+
+erf_infinite::		_INT 1
+			x>? Y
+				+/-
+			xOUT xOUT_NORMAL
+
 #undef X
 
