@@ -109,8 +109,8 @@ MV := mv -f
 CP := cp
 CPDIR := cp -r
 ZIP := zip -r
-#  TAR option "--ignore-failed-read" is to prevent an error message when compiling over a SAMBA mount
-TAR := tar --ignore-failed-read -c -z -f
+#  TAR option "--remove-files" is to prevent an error message when compiling over a SAMBA mount
+TAR := tar --remove-files -c -z -f
 QTMAKEFILE := QtMakefile.$(SYSTEM)
 QTMAKEFILE_EXISTS := $(wildcard $(QTMAKEFILE))
 
