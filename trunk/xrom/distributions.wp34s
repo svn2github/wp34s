@@ -329,6 +329,61 @@ expon_param::		RCL J
 
 
 /**************************************************************************/
+/* F distribution
+ * Two parameteres:
+ *	J = df1 (integer > 0)
+ *	K = df2 (integer > 0)
+ */
+#if 0
+		XLBL"PDF_F"
+			xIN MONADIC
+			GSB f_param
+			GSB pdf_f
+			xOUT xOUT_NORMAL
+
+pdf_f::			RTN
+
+
+		XLBL"CDF_F"
+			xIN MONADIC
+			GSB f_param
+			GSB cdf_f
+			xOUT xOUT_NORMAL
+
+cdf_f::			x[<=]0?
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			RCL[times] J
+			ENTER[^]
+			RCL+ K		// x*v1+v2  x*v1  ?  ?
+			/
+			RCL K		// v2  x*v1 / (x*v1+v2)
+			_INT 2
+			/
+			RCL J
+			_INT 2
+			/
+			[<->] ZYXT
+			JMP betai
+
+		XLBL"QF_F"
+			xIN MONADIC
+			GSB f_param
+			xOUT xOUT_NORMAL
+
+f_param::		RCL J
+			GSB check_special_pos
+			FP?
+				ERR ERR_BAD_PARAM
+			RCL K
+			GSB check_special_pos
+			FP?
+				ERR ERR_BAD_PARAM
+			[cmplx]DROP
+			RTN
+#endif
+/**************************************************************************/
 /* Logistic distribution
  * Two parameters:
  *	J = mu (location)
@@ -738,10 +793,9 @@ cdf_t::			[infinity]?
 				JMP cdf_t_infinite
 			x=0?
 				JMP dist_ret_half
-			LocR 000	// Need a local flag
 			x>0?
-				SF .00
-			RCL J		// v x ? ?
+				JMP cdf_t_invert
+cdf_t_return::		RCL J		// v x ? ?
 			SWAP		// x v ? ?
 			x[^2]		// x^2 v ? ?
 			RCL+ J		// v+x^2 v ? ?
@@ -755,8 +809,9 @@ cdf_t::			[infinity]?
 			GSB betai
 			_INT 2
 			/
-			FC?C .00
-				RTN
+			RTN
+
+cdf_t_invert::		GSB cdf_t_return
 			_INT 1
 			SWAP
 			-
@@ -1050,11 +1105,6 @@ qf_newton_cdf::		iSKIP[->]R_DIST
 #undef R_Z
 #undef R_W
 
-/* Interium measure -- just call the C versions of these */
-pdf_F::			F[sub-p](x)
-			RTN	
-cdf_F::			F(x)
-			RTN
 #endif
 
 #undef DIST_T
