@@ -360,6 +360,62 @@ f_param::		RCL J
 			RTN
 #endif
 /**************************************************************************/
+/* Geometric distribution
+ * One parameter:
+ *	J = probability
+ */
+		XLBL"PDF_GEOM"
+			xIN MONADIC
+			GSB geom_param
+			x<0?
+				JMP ret_0
+			FP?
+				JMP ret_0
+			RCL J
+			GSB log1m
+			[times]
+			e[^x]
+			RCL[times] J
+			xOUT xOUT_NORMAL
+
+		XLBL"CDF_GEOM"
+			xIN MONADIC
+			GSB geom_param
+			x<0?
+				JMP ret_0
+			[infinity]?
+				JMP ret_1
+			FLOOR
+			INC X
+			RCL J
+			GSB log1m
+			[times]
+			e[^x]-1
+			+/-
+			xOUT xOUT_NORMAL
+#if 0
+		XLBL"QF_GEOM"
+			xIN MONADIC
+			GSB geom_param
+			x<0?
+				JMP ret_0
+			GSB qf_check_probability
+			GSB log1m
+			RCL J
+			GSB log1m
+			/
+			DEC X
+			FLOOR
+			NOP	// discrete_final_check here
+			xOUT xOUT_NORMAL
+#endif
+
+geom_param::	RCL J
+		GSB check_probability
+		DROP
+		RTN
+
+/**************************************************************************/
 /* Logistic distribution
  * Two parameters:
  *	J = mu (location)
@@ -954,7 +1010,15 @@ cdf_infinite::		x<0?
 
 check_probability::	NaN?
 				JMP ret_NaN
-qf_check_probability::	x<0?
+			x<0?
+				ERR ERR_BAD_PARAM
+			x>1?
+				ERR ERR_BAD_PARAM
+			RTN
+
+qf_check_probability::	NaN?
+				JMP ret_NaN
+			x<0?
 				JMP ret_neginf
 			x>1?
 				JMP ret_posinf

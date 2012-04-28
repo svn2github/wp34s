@@ -212,7 +212,79 @@ decNumber *qf_EXP(decNumber *r, const decNumber *p) {
 	return dn_minus(r, &t);
 }
 
+/**************************************************************************/
+/* Geometric distribution
+ * One parameter:
+ *	J = probability
+ */
 
+// 52 bytes
+static int geometric_param(decNumber *r, decNumber *p, const decNumber *x) {
+	dist_one_param(p);
+	if (param_range01(r, p))
+		return 1;
+	if (decNumberIsNaN(x)) {
+		set_NaN(r);
+		return 1;
+	}
+	return 0;
+}
+
+// 98 bytes
+decNumber *pdf_G(decNumber *r, const decNumber *x) {
+	decNumber p, t, v;
+
+	if (geometric_param(r, &p, x))
+		return r;
+	if (dn_lt0(x) || !is_int(x)) {
+		decNumberZero(r);
+		return r;
+	}
+	dn_ln1m(&t, &p);
+	dn_multiply(&v, &t, x);
+	dn_exp(&t, &v);
+	return dn_multiply(r, &t, &p);
+}
+
+// 116 bytes
+decNumber *cdf_G(decNumber *r, const decNumber *x) {
+	decNumber p, t, u, v;
+
+	if (geometric_param(r, &p, x))
+		return r;
+	if (dn_lt0(x))
+		return decNumberZero(r);
+	if (decNumberIsInfinite(x))
+		return dn_1(r);
+
+	dn_ln1m(&u, &p);
+	decNumberFloor(&t, x);
+	dn_p1(&v, &t);
+	dn_multiply(&t, &u, &v);
+	decNumberExpm1(&u, &t);
+	return dn_minus(r, &u);
+}
+
+// 150 bytes
+decNumber *qf_G(decNumber *r, const decNumber *x) {
+	decNumber p, t, v, z;
+
+	if (geometric_param(r, &p, x))
+		return r;
+	if (check_probability(r, x, 1))
+		return r;
+	dn_ln1m(&v, x);
+	dn_ln1m(&t, &p);
+	dn_divide(&p, &v, &t);
+	dn_dec(&p);
+	decNumberFloor(r, &p);
+
+	/* Not sure this is absolutely necessary but it can't hurt */
+	cdf_G(&t, r);
+	dn_p1(&v, r);
+	cdf_G(&z, &v);
+	return discrete_final_check(r, &p, &t, &z, &v);
+}
 
 /* Weibull distribution cdf = 1 - exp(-(x/lambda)^k)
  */

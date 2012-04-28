@@ -94,28 +94,14 @@ extern decNumber *cdf_F(decNumber *, const decNumber *);
 extern decNumber *qf_F(decNumber *, const decNumber *);
 
 /* Poisson distribution with parameter lambda (in register J) */
-extern decNumber *pdf_P(decNumber *, const decNumber *);
 extern decNumber *cdf_P(decNumber *, const decNumber *);
 extern decNumber *qf_P(decNumber *, const decNumber *);
 
 /* Geometric distribution with parameter p (in register J) */
-extern decNumber *pdf_G(decNumber *, const decNumber *);
-extern decNumber *cdf_G(decNumber *, const decNumber *);
 extern decNumber *qf_G(decNumber *, const decNumber *);
 
 /* Binomial distribution (n, p) in registers J and K */
-extern decNumber *pdf_B(decNumber *, const decNumber *);
 extern decNumber *cdf_B(decNumber *, const decNumber *);
 extern decNumber *qf_B(decNumber *, const decNumber *);
-
-/* Normal distribution m, sigma in registers J and K */
-extern decNumber *pdf_normal(decNumber *, const decNumber *);
-extern decNumber *cdf_normal(decNumber *, const decNumber *);
-extern decNumber *qf_normal(decNumber *, const decNumber *);
-
-/* Lognormal distribution m, sigma in registers J and K */
-extern decNumber *pdf_lognormal(decNumber *, const decNumber *);
-extern decNumber *cdf_lognormal(decNumber *, const decNumber *);
-extern decNumber *qf_lognormal(decNumber *, const decNumber *);
 
 #endif

@@ -1718,22 +1718,7 @@ static int geometric_param(decNumber *r, decNumber *p, const decNumber *x) {
 	return 0;
 }
 
-decNumber *pdf_G(decNumber *r, const decNumber *x) {
-	decNumber p, t, v;
-
-	if (geometric_param(r, &p, x))
-		return r;
-	if (dn_lt0(x) || !is_int(x)) {
-		decNumberZero(r);
-		return r;
-	}
-	dn_ln1m(&t, &p);
-	dn_multiply(&v, &t, x);
-	dn_exp(&t, &v);
-	return dn_multiply(r, &t, &p);
-}
-
-decNumber *cdf_G(decNumber *r, const decNumber *x) {
+static decNumber *cdf_G(decNumber *r, const decNumber *x) {
 	decNumber p, t, u, v;
 
 	if (geometric_param(r, &p, x))
