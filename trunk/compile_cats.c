@@ -714,9 +714,9 @@ static s_opcode internal_catalogue[] = {
 #if 0
 	RARGCMD(RARG_MODE_SET,	"xMSET")
 	RARGCMD(RARG_MODE_CLEAR,"xMCLR")
-#endif
 	NILIC(OP_LOADA2D,	"[->]A..D")
 	NILIC(OP_SAVEA2D,	"A..D[->]")
+#endif
 
 	RARGCMD(RARG_BSF,	"BSRF")
 	RARGCMD(RARG_BSB,	"BSRB")
