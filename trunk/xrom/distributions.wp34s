@@ -53,6 +53,29 @@
 			[times]
 			xOUT xOUT_NORMAL
 
+#if 0
+		XLBL"CDF_BINOMIAL"
+			xIN MONADIC
+			GSB binomial_param
+			FLOOR
+			GSB cdf_binomial
+			xOUT xOUT_NORMAL
+
+cdf_binomial::		x<0?
+				JMP dist_ret_0
+			x>? K
+				JMP dist_ret_1
+			RCL K
+			RCL- Y			// n-x x+1 x
+			_INT 1
+			RCL+ Z			// x+1 x
+			_INT 1
+			RCL- J			// 1-p n-x x+1 x
+			JMP betai
+
+		XLBL"QF_BINOMIAL"
+			RTN
+#endif
 binomial_param::	RCL J
 			GSB check_probability
 			RCL K
@@ -63,6 +86,72 @@ binomial_param::	RCL J
 			x<0?
 				JMP ret_0
 			[cmplx]DROP
+			RTN
+#if 0
+betai::			I[beta]
+			RTN
+
+gammap::		I[GAMMA]
+			RTN
+
+dist_ret_0::		_INT 0
+			RTN
+
+dist_ret_1::		_INT 1
+			RTN
+#endif
+/**************************************************************************/
+/* One parameter Poission distribution
+ * Real parameter lambda in J.
+ */
+		XLBL"PDF_POISSON"
+			xIN MONADIC
+			GSB poission1_param
+pdf_poisson::		FP?
+				JMP ret_0
+			RCL J
+			SWAP
+			y[^x]
+			RCL L
+			x!
+			/
+			RCL J
+			e[^x]
+			/
+			xOUT xOUT_NORMAL
+
+#if 0
+		XLBL"CDF_POISSON"
+			xIN MONADIC
+			GSB poission1_param
+			FLOOR
+			GSB cdf_poisson
+			xOUT xOUT_NORMAL
+
+cdf_poisson::		x<0?
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			INC X
+			RCL J
+			GSB gammap
+			_INT 1
+			SWAP
+			-
+			RTN
+
+		XLBL"QF_POISSON"
+			RTN
+#endif
+
+poission1_param::	x[<->] J
+			NaN?
+				JMP ret_NaN
+			SPEC?
+				ERR ERR_BAD_PARAM
+			x<0?
+				JMP ret_0
+			x[<->] J
 			RTN
 
 /**************************************************************************/
@@ -123,6 +212,74 @@ cauchy_xform::		RCL- J
 			RCL+ J
 			GSB check_special
 			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Chi-squared distribution
+ * One parameters:
+ *	n positive integer
+ */
+#if 0
+		XLBL"PDF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB pdf_chi2
+			xOUT xOUT_NORMAL
+
+pdf_chi2::		x[<=]? 0
+				JMP dist_ret_0
+			RCL J
+			_INT 2
+			/		// k/2 x ? ?
+			[<->] YXXX	// x k/2 k/2 k/2
+			LN		// LNx k/2 k/2 k/2
+			RCL L		// x LNx k/2 k/2
+			_INT 2
+			/		// x/2 LNx k/2 ?
+			+/-		// -x/2 LNx k/2 ?
+			[<->] ZYXZ	// k/2 LNx -x/2 k/2
+			DEC X
+			[times]		// (k/2-1)LNx -x/2 k/2 ?
+			+		// sum k/2 ? ?
+			[<->] YXYY	// k/2 sum k/2 k/2
+			LN[GAMMA]
+			-		// sum k/2 k/2 ?
+			Num LN2
+			RCL[times] Z
+			-
+			e[^x]
+			RTN
+
+		XLBL"CDF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB cdf_chi2
+			xOUT xOUT_NORMAL
+
+cdf_chi2::		x[<=]? 0
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			_INT 2
+			/
+			RCL J
+			_INT 2
+			/
+			SWAP
+			JMP gammap
+
+chi2_param::		RCL J
+			GSB check_special_notneg
+			FP?
+				ERR ERR_BAD_PARAM
+			DROP
+			RTN
+				
+		XLBL"QF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			NOP
+			xOUT xOUT_NORMAL
+#endif
 
 /**************************************************************************/
 /* Exponential distribution
@@ -314,7 +471,7 @@ qf_normal::		X(GSB qf_q, [PHI][^-1](p))
  */
 		XLBL"PDF_Q"
 			xIN MONADIC
-				GSB pdf_q
+pdf_q_xout::		GSB pdf_q
 			xOUT xOUT_NORMAL
 
 /* Standard entry point.  Uses one stack level and no last X */
@@ -330,7 +487,7 @@ pdf_q::			x[^2]
 
 		XLBL"CDF_Q"
 			xIN MONADIC
-				GSB cdf_q
+cdf_q_xout::		GSB cdf_q
 			xOUT xOUT_NORMAL
 
 /* Standard entry point.  Destroys the stack and uses local registers and
@@ -413,7 +570,7 @@ cdf_q_skip2::		RCL[times] .04
 
 		XLBL"QF_Q"
 			xIN MONADIC
-				GSB qf_q
+qf_q_xout::		GSB qf_q
 			xOUT xOUT_NORMAL
 
 /* The internal Q qf entry point.  Sets flag .01 if x < 0.
@@ -495,35 +652,6 @@ qf_loop_end::		FS? .01
 
 
 /**************************************************************************/
-/* One parameter Poission distribution
- */
-		XLBL"PDF_POIS1"
-			xIN MONADIC
-			GSB poission1_param
-pdf_poisson::		FP?
-				JMP ret_0
-			RCL J
-			SWAP
-			y[^x]
-			RCL L
-			x!
-			/
-			RCL J
-			e[^x]
-			/
-			xOUT xOUT_NORMAL
-
-poission1_param::	x[<->] J
-			NaN?
-				JMP ret_NaN
-			SPEC?
-				ERR ERR_BAD_PARAM
-			x<0?
-				JMP ret_0
-			x[<->] J
-			RTN
-
-/**************************************************************************/
 /* Two parameter Poission distribution
  */
 		XLBL"PDF_POIS2"
@@ -534,7 +662,11 @@ poission1_param::	x[<->] J
 		XLBL"CDF_POIS2"
 			xIN MONADIC
 			GSB poisson2_param
+#if 0
+			GSB cdf_poisson
+#else
 			Pois[lambda]
+#endif
 			xOUT xOUT_NORMAL
 
 		XLBL"QF_POIS2"
@@ -550,6 +682,116 @@ poisson2_param::	x[<->] J
 				JMP ret_0
 			x[<->] J
 			RTN
+
+/**************************************************************************/
+/* Student's T distribution
+ * One parameter:
+ *	J = degrees of freedom (integer > 0)
+ */
+#if 0
+		XLBL"PDF_T"
+			xIN MONADIC
+			GSB t_param
+#ifdef NORMAL_DISTRIBUTION_AS_XROM
+			FS?C .00
+				JMP pdf_q_xout
+#endif
+			GSB pdf_t
+			xOUT xOUT_NORMAL
+
+pdf_t::			RCL[times] X	// x^2 ? ? ?
+			RCL J
+			_INT 2
+			/		// v/2 x^2 ? ?
+			LN[GAMMA]	// LnG x^2 ? ?
+			RCL L		// v/2 LnG x^2 ?
+			.
+			5
+			+		// (v+1)/2 LnG x^2 ?
+			STO T		// (v+1)/2 LnG x^2 (v+1)/2
+			LN[GAMMA]	// LnG2 LnG x^2 (v+1)/2
+			SWAP
+			-		// LnG-LnG2 x^2 (v+1)/2 ?
+			[<->] YZXT	// x^2 (v+1)/2 LnG-LnG2 ?
+			RCL/ J		// x^2/v (v+1)/2 LnG-LnG2 ?
+			LN1+x
+			[times]		// LN1+* LnG-LnG2 ?
+			-
+			e[^x]
+			Num [pi]
+			RCL[times] J
+			[sqrt]
+			/
+			RTN
+
+		XLBL"CDF_T"
+			xIN MONADIC
+			GSB t_param
+#ifdef NORMAL_DISTRIBUTION_AS_XROM
+			FS?C .00
+				JMP cdf_q_xout
+#endif
+			GSB cdf_t
+			xOUT xOUT_NORMAL
+
+cdf_t::			[infinity]?
+				JMP cdf_t_infinite
+			x=0?
+				JMP dist_ret_half
+			LocR 000	// Need a local flag
+			x>0?
+				SF .00
+			RCL J		// v x ? ?
+			SWAP		// x v ? ?
+			x[^2]		// x^2 v ? ?
+			RCL+ J		// v+x^2 v ? ?
+			/		// v/(v+x^2) ? ? ?
+			.
+			5
+			RCL J
+			_INT 2
+			/		// v/2 .5 v/(v+x^2) ?
+			[<->] ZYXT
+			GSB betai
+			_INT 2
+			/
+			FC?C .00
+				RTN
+			_INT 1
+			SWAP
+			-
+			RTN
+
+cdf_t_infinite::	x<0?
+				JMP dist_ret_0
+			JMP dist_ret_1
+
+dist_ret_half::		.
+			5
+			RTN
+
+
+		XLBL"QF_T"
+			xIN MONADIC
+			GSB t_param
+#ifdef NORMAL_DISTRIBUTION_AS_XROM
+			FS?C .00
+				JMP qf_q_xout
+#endif
+			xOUT xOUT_NORMAL
+
+t_param::		RCL J
+			[infinity]?
+				JMP t_param_inf
+			GSB check_special_pos
+t_drop_rtn::		DROP
+			RTN
+
+t_param_inf::		x<0?
+				ERR ERR_BAD_PARAM
+			SF .00
+			JMP t_drop_rtn
+#endif
 
 /**************************************************************************/
 /* Weibull distribution
@@ -630,8 +872,13 @@ qf_check_probability::	x<0?
 			x>1?
 				JMP ret_posinf
 			RTN
-/* Error out if a number is zero, negative or special */
-check_special_pos::	x[<=]0?
+
+/* Error out if a number is negative, zero or special */
+check_special_pos::	x=0?
+				ERR ERR_BAD_PARAM
+
+/* Error out if a number is negative or special */
+check_special_notneg::	x<0?
 				ERR ERR_BAD_PARAM
 
 /* Error out if a number is special */
@@ -804,25 +1051,9 @@ qf_newton_cdf::		iSKIP[->]R_DIST
 #undef R_W
 
 /* Interium measure -- just call the C versions of these */
-pdf_t::			t[sub-p](x)
-			RTN
-pdf_chi2::		[chi][^2][sub-p]
-			RTN	
 pdf_F::			F[sub-p](x)
 			RTN	
-pdf_poisson::		Poiss[sub-p]
-			RTN
-pdf_binomial::		Binom[sub-p]
-			RTN
-cdf_t::			t(x)
-			RTN
-cdf_chi2::		[chi][^2]
-			RTN
 cdf_F::			F(x)
-			RTN
-cdf_poisson::		Poiss
-			RTN
-cdf_binomial::		Binom
 			RTN
 #endif
 

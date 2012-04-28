@@ -223,7 +223,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_pdf_B,	XMR(PDF_BINOMIAL),	NOFN,		NOFN,		"Binom\276")
 	FUNC(OP_cdf_B,	&cdf_B,			NOFN,		NOFN,		"Binom")
 	FUNC(OP_qf_B,	&qf_B,			NOFN,		NOFN,		"Binom\235")
-	FUNC(OP_pdf_Plam, XMR(PDF_POIS1),	NOFN,		NOFN,		"Pois\252\276")
+	FUNC(OP_pdf_Plam, XMR(PDF_POISSON),	NOFN,		NOFN,		"Pois\252\276")
 	FUNC(OP_cdf_Plam, &cdf_P,		NOFN,		NOFN,		"Pois\252")
 	FUNC(OP_qf_Plam,  &qf_P,		NOFN,		NOFN,		"Pois\252\235")
 	FUNC(OP_pdf_P,	XMR(PDF_POIS2),		NOFN,		NOFN,		"Poiss\276")
