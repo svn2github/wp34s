@@ -135,7 +135,7 @@ void dump_opcodes(FILE *f) {
 			 || cmd == RARG_MODE_CLEAR 
 			 || cmd == RARG_XROM_IN 
 			 || cmd == RARG_XROM_OUT
-			 || cmd == RARG_iSKIP
+		       //|| cmd == RARG_iSKIP
 		       //|| cmd == RARG_BSF
 		       //|| cmd == RARG_BSB
 		       //|| cmd == RARG_INDEX
