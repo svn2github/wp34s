@@ -1592,33 +1592,6 @@ static int binomial_param(decNumber *r, decNumber *p, decNumber *n, const decNum
 	return 0;
 }
 
-decNumber *pdf_B_helper(decNumber *r, const decNumber *x, const decNumber *p, const decNumber *n) {
-	decNumber t, u, v;
-
-	dn_subtract(&u, n, x);
-	if (dn_lt0(&u) || dn_lt0(x)) {
-		decNumberZero(r);
-		return r;
-	}
-	dn_ln1m(&v, p);
-	dn_multiply(&t, &u, &v);
-	dn_exp(&v, &t);
-	decNumberComb(&t, n, x);
-	dn_multiply(&u, &t, &v);
-	dn_power(&t, p, x);
-	return dn_multiply(r, &t, &u);
-}
-
-decNumber *pdf_B(decNumber *r, const decNumber *x) {
-	decNumber n, p;
-
-	if (binomial_param(r, &p, &n, x))
-		return r;
-	if (!is_int(x))
-		return decNumberZero(r);
-	return pdf_B_helper(r, x, &p, &n);
-}
-
 decNumber *cdf_B_helper(decNumber *r, const decNumber *x, const decNumber *p, const decNumber *n) {
 	decNumber t, u, v;
 
@@ -1674,7 +1647,7 @@ decNumber *qf_B(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_B_est(r, p, &prob, &n);
-	newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, &pdf_B_helper, &cdf_B_helper, &prob, &n, NULL);
+	newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, NULL, &cdf_B_helper, &prob, &n, NULL);
 	return dn_min(r, r, &n);
 }
 
@@ -1689,30 +1662,6 @@ static int poisson_param(decNumber *r, decNumber *lambda, const decNumber *x) {
 		return 1;
 	}
 	return 0;
-}
-
-decNumber *pdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambda, const decNumber *null) {
-	decNumber t, u, v;
-
-	if (dn_lt0(x)) {
-		decNumberZero(r);
-		return r;
-	}
-	dn_power(&t, lambda, x);
-	decNumberFactorial(&u, x);
-	dn_divide(&v, &t, &u);
-	dn_exp(&t, lambda);
-	return dn_divide(r, &v, &t);
-}
-
-decNumber *pdf_P(decNumber *r, const decNumber *x) {
-	decNumber lambda;
-
-	if (poisson_param(r, &lambda, x))
-		return r;
-	if (!is_int(x))
-		return decNumberZero(r);
-	return pdf_P_helper(r, x, &lambda, NULL);
 }
 
 decNumber *cdf_P_helper(decNumber *r, const decNumber *x, const decNumber *lambda, const decNumber *null) {
@@ -1753,7 +1702,7 @@ decNumber *qf_P(decNumber *r, const decNumber *p) {
 	if (check_probability(r, p, 1))
 		return r;
 	qf_P_est(r, p, &lambda);
-	return newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, &pdf_P_helper, &cdf_P_helper, &lambda, NULL, NULL);
+	return newton_qf(r, p, NEWTON_DISCRETE | NEWTON_NONNEGATIVE, NULL, &cdf_P_helper, &lambda, NULL, NULL);
 }
 
 /* Geometric cdf

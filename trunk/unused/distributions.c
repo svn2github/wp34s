@@ -33,6 +33,37 @@
  * extras	190
  */
 
+/* Binomial
+ * Two parameters:
+ *	J = probabiliy
+ *	K = n, positive integer
+ */
+
+// 192 for older version with helper function
+decNumber *pdf_B(decNumber *r, const decNumber *x) {
+	decNumber n, p, t, u, v;
+
+	if (binomial_param(r, &p, &n, x))
+		return r;
+	if (!is_int(x))
+		return decNumberZero(r);
+
+	dn_subtract(&u, &n, x);
+	if (dn_lt0(&u) || dn_lt0(x)) {
+		decNumberZero(r);
+		return r;
+	}
+	dn_ln1m(&v, &p);
+	dn_multiply(&t, &u, &v);
+	dn_exp(&v, &t);
+	decNumberComb(&t, &n, x);
+	dn_multiply(&u, &t, &v);
+	dn_power(&t, &p, x);
+	return dn_multiply(r, &t, &u);
+}
+
+
+
 /**************************************************************************/
 /* Cauchy distribution
  * Two parameters:
@@ -547,3 +578,25 @@ decNumber *qf_lognormal(decNumber *r, const decNumber *p) {
 	return dn_exp(r, &lr);
 }
 
+
+
+/* Poission */
+// 150 bytes for older version with a helper function
+decNumber *pdf_P(decNumber *r, const decNumber *x) {
+	decNumber lambda, t, u, v;
+
+	if (poisson_param(r, &lambda, x))
+		return r;
+	if (!is_int(x))
+		return decNumberZero(r);
+
+	if (dn_lt0(x)) {
+		decNumberZero(r);
+		return r;
+	}
+	dn_power(&t, &lambda, x);
+	decNumberFactorial(&u, x);
+	dn_divide(&v, &t, &u);
+	dn_exp(&t, &lambda);
+	return dn_divide(r, &v, &t);
+}

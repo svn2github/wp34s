@@ -957,421 +957,422 @@ maxlibsteps=9999
 0x5700	arg	BACK	max=256
 0x5800	arg	BSRF	max=256
 0x5900	arg	BSRB	max=256
-0x5a00	arg	DSE	max=128,indirect,stack
-0x5b00	arg	ISG	max=128,indirect,stack
-0x5c00	arg	DSL	max=128,indirect,stack
-0x5d00	arg	ISE	max=128,indirect,stack
-0x5e00	arg	DSZ	max=128,indirect,stack
-0x5f00	arg	ISZ	max=128,indirect,stack
-0x6000	arg	DEC	max=128,indirect,stack
-0x6100	arg	INC	max=128,indirect,stack
-0x6200	arg	LBL	max=104
-0x6300	arg	LBL?	max=104,indirect
-0x6400	arg	XEQ	max=104,indirect
-0x6500	arg	GTO	max=104,indirect
-0x6600	arg	[SIGMA]	max=104,indirect
-0x6700	arg	[PI]	max=104,indirect
-0x6800	arg	SLV	max=104,indirect
-0x6900	arg	f'(x)	max=104,indirect
-0x6a00	arg	f"(x)	max=104,indirect
-0x6b00	arg	[integral]	max=104,indirect
-0x6c00	arg	ALL	max=12,indirect
-0x6d00	arg	FIX	max=12,indirect
-0x6e00	arg	SCI	max=12,indirect
-0x6f00	arg	ENG	max=12,indirect
-0x7000	arg	DISP	max=12,indirect
-0x7100	arg	SF	max=128,indirect,stack
-0x7200	arg	CF	max=128,indirect,stack
-0x7300	arg	FF	max=128,indirect,stack
-0x7400	arg	FS?	max=128,indirect,stack
-0x7500	arg	FC?	max=128,indirect,stack
-0x7600	arg	FS?C	max=128,indirect,stack
-0x7700	arg	FS?S	max=128,indirect,stack
-0x7800	arg	FS?F	max=128,indirect,stack
-0x7900	arg	FC?C	max=128,indirect,stack
-0x7a00	arg	FC?S	max=128,indirect,stack
-0x7b00	arg	FC?F	max=128,indirect,stack
-0x7c00	arg	WSIZE	max=65,indirect
-0x7d00	arg	RL	max=64,indirect
-0x7e00	arg	RR	max=64,indirect
-0x7f00	arg	RLC	max=65,indirect
-0x8000	arg	RRC	max=65,indirect
-0x8100	arg	SL	max=65,indirect
-0x8200	arg	SR	max=65,indirect
-0x8300	arg	ASR	max=65,indirect
-0x8400	arg	SB	max=64,indirect
-0x8500	arg	CB	max=64,indirect
-0x8600	arg	FB	max=64,indirect
-0x8700	arg	BS?	max=64,indirect
-0x8800	arg	BC?	max=64,indirect
-0x8900	arg	MASKL	max=65,indirect
-0x8a00	arg	MASKR	max=65,indirect
-0x8b00	arg	BASE	max=17,indirect
-0x8c00	cmd	kg[->]lb
-0x8c01	cmd	lb[->]kg
-0x8c02	cmd	kg[->]stone
-0x8c03	cmd	stone[->]kg
-0x8c04	cmd	kg[->]cwt
-0x8c05	cmd	cwt[->]kg
-0x8c06	cmd	kg[->]s.cwt
-0x8c07	cmd	s.cwt[->]kg
-0x8c08	cmd	g[->]oz
-0x8c09	cmd	oz[->]g
-0x8c0a	cmd	g[->]tr.oz
-0x8c0b	cmd	tr.oz[->]g
-0x8c0c	cmd	l[->]galUK
-0x8c0d	cmd	galUK[->]l
-0x8c0e	cmd	l[->]galUS
-0x8c0f	cmd	galUS[->]l
-0x8c10	cmd	l[->]cft
-0x8c11	cmd	cft[->]l
-0x8c12	cmd	ml[->]flozUK
-0x8c13	cmd	flozUK[->]ml
-0x8c14	cmd	ml[->]flozUS
-0x8c15	cmd	flozUS[->]ml
-0x8c16	cmd	cm[->]inches
-0x8c17	cmd	inches[->]cm
-0x8c18	cmd	m[->]fathom
-0x8c19	cmd	fathom[->]m
-0x8c1a	cmd	m[->]feet
-0x8c1b	cmd	feet[->]m
-0x8c1c	cmd	m[->]yards
-0x8c1d	cmd	yards[->]m
-0x8c1e	cmd	km[->]miles
-0x8c1f	cmd	miles[->]km
-0x8c20	cmd	km[->]l.y.
-0x8c21	cmd	l.y.[->]km
-0x8c22	cmd	km[->]pc
-0x8c23	cmd	pc[->]km
-0x8c24	cmd	km[->]AU
-0x8c25	cmd	AU[->]km
-0x8c26	cmd	km[->]nmi
-0x8c27	cmd	nmi[->]km
-0x8c28	cmd	ha[->]acres
-0x8c29	cmd	acres[->]ha
-0x8c2a	cmd	N[->]lbf
-0x8c2b	cmd	lbf[->]N
-0x8c2c	cmd	J[->]Btu
-0x8c2d	cmd	Btu[->]J
-0x8c2e	cmd	J[->]cal
-0x8c2f	cmd	cal[->]J
-0x8c30	cmd	J[->]kWh
-0x8c31	cmd	kWh[->]J
-0x8c32	cmd	Pa[->]atm
-0x8c33	cmd	atm[->]Pa
-0x8c34	cmd	Pa[->]bar
-0x8c35	cmd	bar[->]Pa
-0x8c36	cmd	Pa[->]mmHg
-0x8c37	cmd	mmHg[->]Pa
-0x8c38	cmd	Pa[->]psi
-0x8c39	cmd	psi[->]Pa
-0x8c3a	cmd	Pa[->]inHg
-0x8c3b	cmd	inHg[->]Pa
-0x8c3c	cmd	Pa[->]torr
-0x8c3d	cmd	torr[->]Pa
-0x8c3e	cmd	W[->]hpUK
-0x8c3f	cmd	hpUK[->]W
-0x8c40	cmd	W[->]hp
-0x8c41	cmd	hp[->]W
-0x8c42	cmd	W[->]PS(hp)
-0x8c43	cmd	PS(hp)[->]W
-0x8c44	cmd	W[->]HP[sub-e]
-0x8c45	cmd	HP[sub-e][->]W
-0x8c46	cmd	t[->]tons
-0x8c47	cmd	tons[->]t
-0x8c48	cmd	t[->]s.tons
-0x8c49	cmd	s.tons[->]t
-0x8d00	arg	PSE	max=100,indirect
-0x8e00	arg	KEY?	max=128,indirect,stack
-0x8f00	arg	[alpha]XEQ	max=128,indirect,stack
-0x9000	arg	[alpha]GTO	max=128,indirect,stack
-0x9100	arg	SDL	max=128,indirect
-0x9200	arg	SDR	max=128,indirect
-0x9300	arg	VW[alpha]+	max=128,indirect,stack
-0x9400	arg	RM	max=7,indirect
-0x9500	arg	RSD	max=35,indirect
-0x9600	arg	RDP	max=100,indirect
-0x9700	arg	STOM	max=128,indirect,stack
-0x9800	arg	RCLM	max=128,indirect,stack
-0x9900	arg	PUTK	max=128,indirect,stack
-0x9a00	arg	KTP?	max=128,indirect,stack
-0x9b00	arg	MSG	max=25,indirect
-0x9c00	arg	LocR	max=128,indirect
-0x9d00	arg	REGS	max=101,indirect
-0x9e00	arg	iRCL	max=128,indirect,stack
-0x9f00	arg	sRCL	max=128,indirect,stack
-0xa000	arg	dRCL	max=128,indirect,stack
-0xa100	arg	xMSET	max=64,indirect,xrom
-0xa200	arg	xMCLR	max=64,indirect,xrom
-0xa300	arg	xIN	max=256,xrom
-0xa400	arg	xOUT	max=256,xrom
-0xa500	arg	CNVG?	max=32
-0xa600	cmd	[<->] XXXX
-0xa601	cmd	[<->] YXXX
-0xa602	cmd	[<->] ZXXX
-0xa603	cmd	[<->] TXXX
-0xa604	cmd	[<->] XYXX
-0xa605	cmd	[<->] YYXX
-0xa606	cmd	[<->] ZYXX
-0xa607	cmd	[<->] TYXX
-0xa608	cmd	[<->] XZXX
-0xa609	cmd	[<->] YZXX
-0xa60a	cmd	[<->] ZZXX
-0xa60b	cmd	[<->] TZXX
-0xa60c	cmd	[<->] XTXX
-0xa60d	cmd	[<->] YTXX
-0xa60e	cmd	[<->] ZTXX
-0xa60f	cmd	[<->] TTXX
-0xa610	cmd	[<->] XXYX
-0xa611	cmd	[<->] YXYX
-0xa612	cmd	[<->] ZXYX
-0xa613	cmd	[<->] TXYX
-0xa614	cmd	[<->] XYYX
-0xa615	cmd	[<->] YYYX
-0xa616	cmd	[<->] ZYYX
-0xa617	cmd	[<->] TYYX
-0xa618	cmd	[<->] XZYX
-0xa619	cmd	[<->] YZYX
-0xa61a	cmd	[<->] ZZYX
-0xa61b	cmd	[<->] TZYX
-0xa61c	cmd	[<->] XTYX
-0xa61d	cmd	[<->] YTYX
-0xa61e	cmd	[<->] ZTYX
-0xa61f	cmd	[<->] TTYX
-0xa620	cmd	[<->] XXZX
-0xa621	cmd	[<->] YXZX
-0xa622	cmd	[<->] ZXZX
-0xa623	cmd	[<->] TXZX
-0xa624	cmd	[<->] XYZX
-0xa625	cmd	[<->] YYZX
-0xa626	cmd	[<->] ZYZX
-0xa627	cmd	[<->] TYZX
-0xa628	cmd	[<->] XZZX
-0xa629	cmd	[<->] YZZX
-0xa62a	cmd	[<->] ZZZX
-0xa62b	cmd	[<->] TZZX
-0xa62c	cmd	[<->] XTZX
-0xa62d	cmd	[<->] YTZX
-0xa62e	cmd	[<->] ZTZX
-0xa62f	cmd	[<->] TTZX
-0xa630	cmd	[<->] XXTX
-0xa631	cmd	[<->] YXTX
-0xa632	cmd	[<->] ZXTX
-0xa633	cmd	[<->] TXTX
-0xa634	cmd	[<->] XYTX
-0xa635	cmd	[<->] YYTX
-0xa636	cmd	[<->] ZYTX
-0xa637	cmd	[<->] TYTX
-0xa638	cmd	[<->] XZTX
-0xa639	cmd	[<->] YZTX
-0xa63a	cmd	[<->] ZZTX
-0xa63b	cmd	[<->] TZTX
-0xa63c	cmd	[<->] XTTX
-0xa63d	cmd	[<->] YTTX
-0xa63e	cmd	[<->] ZTTX
-0xa63f	cmd	[<->] TTTX
-0xa640	cmd	[<->] XXXY
-0xa641	cmd	[<->] YXXY
-0xa642	cmd	[<->] ZXXY
-0xa643	cmd	[<->] TXXY
-0xa644	cmd	[<->] XYXY
-0xa645	cmd	[<->] YYXY
-0xa646	cmd	[<->] ZYXY
-0xa647	cmd	[<->] TYXY
-0xa648	cmd	[<->] XZXY
-0xa649	cmd	[<->] YZXY
-0xa64a	cmd	[<->] ZZXY
-0xa64b	cmd	[<->] TZXY
-0xa64c	cmd	[<->] XTXY
-0xa64d	cmd	[<->] YTXY
-0xa64e	cmd	[<->] ZTXY
-0xa64f	cmd	[<->] TTXY
-0xa650	cmd	[<->] XXYY
-0xa651	cmd	[<->] YXYY
-0xa652	cmd	[<->] ZXYY
-0xa653	cmd	[<->] TXYY
-0xa654	cmd	[<->] XYYY
-0xa655	cmd	[<->] YYYY
-0xa656	cmd	[<->] ZYYY
-0xa657	cmd	[<->] TYYY
-0xa658	cmd	[<->] XZYY
-0xa659	cmd	[<->] YZYY
-0xa65a	cmd	[<->] ZZYY
-0xa65b	cmd	[<->] TZYY
-0xa65c	cmd	[<->] XTYY
-0xa65d	cmd	[<->] YTYY
-0xa65e	cmd	[<->] ZTYY
-0xa65f	cmd	[<->] TTYY
-0xa660	cmd	[<->] XXZY
-0xa661	cmd	[<->] YXZY
-0xa662	cmd	[<->] ZXZY
-0xa663	cmd	[<->] TXZY
-0xa664	cmd	[<->] XYZY
-0xa665	cmd	[<->] YYZY
-0xa666	cmd	[<->] ZYZY
-0xa667	cmd	[<->] TYZY
-0xa668	cmd	[<->] XZZY
-0xa669	cmd	[<->] YZZY
-0xa66a	cmd	[<->] ZZZY
-0xa66b	cmd	[<->] TZZY
-0xa66c	cmd	[<->] XTZY
-0xa66d	cmd	[<->] YTZY
-0xa66e	cmd	[<->] ZTZY
-0xa66f	cmd	[<->] TTZY
-0xa670	cmd	[<->] XXTY
-0xa671	cmd	[<->] YXTY
-0xa672	cmd	[<->] ZXTY
-0xa673	cmd	[<->] TXTY
-0xa674	cmd	[<->] XYTY
-0xa675	cmd	[<->] YYTY
-0xa676	cmd	[<->] ZYTY
-0xa677	cmd	[<->] TYTY
-0xa678	cmd	[<->] XZTY
-0xa679	cmd	[<->] YZTY
-0xa67a	cmd	[<->] ZZTY
-0xa67b	cmd	[<->] TZTY
-0xa67c	cmd	[<->] XTTY
-0xa67d	cmd	[<->] YTTY
-0xa67e	cmd	[<->] ZTTY
-0xa67f	cmd	[<->] TTTY
-0xa680	cmd	[<->] XXXZ
-0xa681	cmd	[<->] YXXZ
-0xa682	cmd	[<->] ZXXZ
-0xa683	cmd	[<->] TXXZ
-0xa684	cmd	[<->] XYXZ
-0xa685	cmd	[<->] YYXZ
-0xa686	cmd	[<->] ZYXZ
-0xa687	cmd	[<->] TYXZ
-0xa688	cmd	[<->] XZXZ
-0xa689	cmd	[<->] YZXZ
-0xa68a	cmd	[<->] ZZXZ
-0xa68b	cmd	[<->] TZXZ
-0xa68c	cmd	[<->] XTXZ
-0xa68d	cmd	[<->] YTXZ
-0xa68e	cmd	[<->] ZTXZ
-0xa68f	cmd	[<->] TTXZ
-0xa690	cmd	[<->] XXYZ
-0xa691	cmd	[<->] YXYZ
-0xa692	cmd	[<->] ZXYZ
-0xa693	cmd	[<->] TXYZ
-0xa694	cmd	[<->] XYYZ
-0xa695	cmd	[<->] YYYZ
-0xa696	cmd	[<->] ZYYZ
-0xa697	cmd	[<->] TYYZ
-0xa698	cmd	[<->] XZYZ
-0xa699	cmd	[<->] YZYZ
-0xa69a	cmd	[<->] ZZYZ
-0xa69b	cmd	[<->] TZYZ
-0xa69c	cmd	[<->] XTYZ
-0xa69d	cmd	[<->] YTYZ
-0xa69e	cmd	[<->] ZTYZ
-0xa69f	cmd	[<->] TTYZ
-0xa6a0	cmd	[<->] XXZZ
-0xa6a1	cmd	[<->] YXZZ
-0xa6a2	cmd	[<->] ZXZZ
-0xa6a3	cmd	[<->] TXZZ
-0xa6a4	cmd	[<->] XYZZ
-0xa6a5	cmd	[<->] YYZZ
-0xa6a6	cmd	[<->] ZYZZ
-0xa6a7	cmd	[<->] TYZZ
-0xa6a8	cmd	[<->] XZZZ
-0xa6a9	cmd	[<->] YZZZ
-0xa6aa	cmd	[<->] ZZZZ
-0xa6ab	cmd	[<->] TZZZ
-0xa6ac	cmd	[<->] XTZZ
-0xa6ad	cmd	[<->] YTZZ
-0xa6ae	cmd	[<->] ZTZZ
-0xa6af	cmd	[<->] TTZZ
-0xa6b0	cmd	[<->] XXTZ
-0xa6b1	cmd	[<->] YXTZ
-0xa6b2	cmd	[<->] ZXTZ
-0xa6b3	cmd	[<->] TXTZ
-0xa6b4	cmd	[<->] XYTZ
-0xa6b5	cmd	[<->] YYTZ
-0xa6b6	cmd	[<->] ZYTZ
-0xa6b7	cmd	[<->] TYTZ
-0xa6b8	cmd	[<->] XZTZ
-0xa6b9	cmd	[<->] YZTZ
-0xa6ba	cmd	[<->] ZZTZ
-0xa6bb	cmd	[<->] TZTZ
-0xa6bc	cmd	[<->] XTTZ
-0xa6bd	cmd	[<->] YTTZ
-0xa6be	cmd	[<->] ZTTZ
-0xa6bf	cmd	[<->] TTTZ
-0xa6c0	cmd	[<->] XXXT
-0xa6c1	cmd	[<->] YXXT
-0xa6c2	cmd	[<->] ZXXT
-0xa6c3	cmd	[<->] TXXT
-0xa6c4	cmd	[<->] XYXT
-0xa6c5	cmd	[<->] YYXT
-0xa6c6	cmd	[<->] ZYXT
-0xa6c7	cmd	[<->] TYXT
-0xa6c8	cmd	[<->] XZXT
-0xa6c9	cmd	[<->] YZXT
-0xa6ca	cmd	[<->] ZZXT
-0xa6cb	cmd	[<->] TZXT
-0xa6cc	cmd	[<->] XTXT
-0xa6cd	cmd	[<->] YTXT
-0xa6ce	cmd	[<->] ZTXT
-0xa6cf	cmd	[<->] TTXT
-0xa6d0	cmd	[<->] XXYT
-0xa6d1	cmd	[<->] YXYT
-0xa6d2	cmd	[<->] ZXYT
-0xa6d3	cmd	[<->] TXYT
-0xa6d4	cmd	[<->] XYYT
-0xa6d5	cmd	[<->] YYYT
-0xa6d6	cmd	[<->] ZYYT
-0xa6d7	cmd	[<->] TYYT
-0xa6d8	cmd	[<->] XZYT
-0xa6d9	cmd	[<->] YZYT
-0xa6da	cmd	[<->] ZZYT
-0xa6db	cmd	[<->] TZYT
-0xa6dc	cmd	[<->] XTYT
-0xa6dd	cmd	[<->] YTYT
-0xa6de	cmd	[<->] ZTYT
-0xa6df	cmd	[<->] TTYT
-0xa6e0	cmd	[<->] XXZT
-0xa6e1	cmd	[<->] YXZT
-0xa6e2	cmd	[<->] ZXZT
-0xa6e3	cmd	[<->] TXZT
-0xa6e4	cmd	[<->] XYZT
-0xa6e5	cmd	[<->] YYZT
-0xa6e6	cmd	[<->] ZYZT
-0xa6e7	cmd	[<->] TYZT
-0xa6e8	cmd	[<->] XZZT
-0xa6e9	cmd	[<->] YZZT
-0xa6ea	cmd	[<->] ZZZT
-0xa6eb	cmd	[<->] TZZT
-0xa6ec	cmd	[<->] XTZT
-0xa6ed	cmd	[<->] YTZT
-0xa6ee	cmd	[<->] ZTZT
-0xa6ef	cmd	[<->] TTZT
-0xa6f0	cmd	[<->] XXTT
-0xa6f1	cmd	[<->] YXTT
-0xa6f2	cmd	[<->] ZXTT
-0xa6f3	cmd	[<->] TXTT
-0xa6f4	cmd	[<->] XYTT
-0xa6f5	cmd	[<->] YYTT
-0xa6f6	cmd	[<->] ZYTT
-0xa6f7	cmd	[<->] TYTT
-0xa6f8	cmd	[<->] XZTT
-0xa6f9	cmd	[<->] YZTT
-0xa6fa	cmd	[<->] ZZTT
-0xa6fb	cmd	[<->] TZTT
-0xa6fc	cmd	[<->] XTTT
-0xa6fd	cmd	[<->] YTTT
-0xa6fe	cmd	[<->] ZTTT
-0xa6ff	cmd	[<->] TTTT
-0xa700	arg	#	max=256
-0xa800	arg	[cmplx]#	max=256
-0xa900	arg	CNST	max=82,indirect
-0xaa00	arg	[cmplx]CNST	max=82,indirect
-0xab00	arg	[print]r	max=128,indirect,stack
-0xac00	arg	[print]#	max=128,indirect
-0xad00	arg	[print]CHR	max=128,indirect
-0xae00	arg	[print]TAB	max=128,indirect
-0xaf00	arg	[print]MODE	max=4,indirect
-0xb000	arg	[print]DLAY	max=32,indirect
+0x5a00	arg	iSKIP	max=128,indirect,stack,xrom
+0x5b00	arg	DSE	max=128,indirect,stack
+0x5c00	arg	ISG	max=128,indirect,stack
+0x5d00	arg	DSL	max=128,indirect,stack
+0x5e00	arg	ISE	max=128,indirect,stack
+0x5f00	arg	DSZ	max=128,indirect,stack
+0x6000	arg	ISZ	max=128,indirect,stack
+0x6100	arg	DEC	max=128,indirect,stack
+0x6200	arg	INC	max=128,indirect,stack
+0x6300	arg	LBL	max=104
+0x6400	arg	LBL?	max=104,indirect
+0x6500	arg	XEQ	max=104,indirect
+0x6600	arg	GTO	max=104,indirect
+0x6700	arg	[SIGMA]	max=104,indirect
+0x6800	arg	[PI]	max=104,indirect
+0x6900	arg	SLV	max=104,indirect
+0x6a00	arg	f'(x)	max=104,indirect
+0x6b00	arg	f"(x)	max=104,indirect
+0x6c00	arg	[integral]	max=104,indirect
+0x6d00	arg	ALL	max=12,indirect
+0x6e00	arg	FIX	max=12,indirect
+0x6f00	arg	SCI	max=12,indirect
+0x7000	arg	ENG	max=12,indirect
+0x7100	arg	DISP	max=12,indirect
+0x7200	arg	SF	max=128,indirect,stack
+0x7300	arg	CF	max=128,indirect,stack
+0x7400	arg	FF	max=128,indirect,stack
+0x7500	arg	FS?	max=128,indirect,stack
+0x7600	arg	FC?	max=128,indirect,stack
+0x7700	arg	FS?C	max=128,indirect,stack
+0x7800	arg	FS?S	max=128,indirect,stack
+0x7900	arg	FS?F	max=128,indirect,stack
+0x7a00	arg	FC?C	max=128,indirect,stack
+0x7b00	arg	FC?S	max=128,indirect,stack
+0x7c00	arg	FC?F	max=128,indirect,stack
+0x7d00	arg	WSIZE	max=65,indirect
+0x7e00	arg	RL	max=64,indirect
+0x7f00	arg	RR	max=64,indirect
+0x8000	arg	RLC	max=65,indirect
+0x8100	arg	RRC	max=65,indirect
+0x8200	arg	SL	max=65,indirect
+0x8300	arg	SR	max=65,indirect
+0x8400	arg	ASR	max=65,indirect
+0x8500	arg	SB	max=64,indirect
+0x8600	arg	CB	max=64,indirect
+0x8700	arg	FB	max=64,indirect
+0x8800	arg	BS?	max=64,indirect
+0x8900	arg	BC?	max=64,indirect
+0x8a00	arg	MASKL	max=65,indirect
+0x8b00	arg	MASKR	max=65,indirect
+0x8c00	arg	BASE	max=17,indirect
+0x8d00	cmd	kg[->]lb
+0x8d01	cmd	lb[->]kg
+0x8d02	cmd	kg[->]stone
+0x8d03	cmd	stone[->]kg
+0x8d04	cmd	kg[->]cwt
+0x8d05	cmd	cwt[->]kg
+0x8d06	cmd	kg[->]s.cwt
+0x8d07	cmd	s.cwt[->]kg
+0x8d08	cmd	g[->]oz
+0x8d09	cmd	oz[->]g
+0x8d0a	cmd	g[->]tr.oz
+0x8d0b	cmd	tr.oz[->]g
+0x8d0c	cmd	l[->]galUK
+0x8d0d	cmd	galUK[->]l
+0x8d0e	cmd	l[->]galUS
+0x8d0f	cmd	galUS[->]l
+0x8d10	cmd	l[->]cft
+0x8d11	cmd	cft[->]l
+0x8d12	cmd	ml[->]flozUK
+0x8d13	cmd	flozUK[->]ml
+0x8d14	cmd	ml[->]flozUS
+0x8d15	cmd	flozUS[->]ml
+0x8d16	cmd	cm[->]inches
+0x8d17	cmd	inches[->]cm
+0x8d18	cmd	m[->]fathom
+0x8d19	cmd	fathom[->]m
+0x8d1a	cmd	m[->]feet
+0x8d1b	cmd	feet[->]m
+0x8d1c	cmd	m[->]yards
+0x8d1d	cmd	yards[->]m
+0x8d1e	cmd	km[->]miles
+0x8d1f	cmd	miles[->]km
+0x8d20	cmd	km[->]l.y.
+0x8d21	cmd	l.y.[->]km
+0x8d22	cmd	km[->]pc
+0x8d23	cmd	pc[->]km
+0x8d24	cmd	km[->]AU
+0x8d25	cmd	AU[->]km
+0x8d26	cmd	km[->]nmi
+0x8d27	cmd	nmi[->]km
+0x8d28	cmd	ha[->]acres
+0x8d29	cmd	acres[->]ha
+0x8d2a	cmd	N[->]lbf
+0x8d2b	cmd	lbf[->]N
+0x8d2c	cmd	J[->]Btu
+0x8d2d	cmd	Btu[->]J
+0x8d2e	cmd	J[->]cal
+0x8d2f	cmd	cal[->]J
+0x8d30	cmd	J[->]kWh
+0x8d31	cmd	kWh[->]J
+0x8d32	cmd	Pa[->]atm
+0x8d33	cmd	atm[->]Pa
+0x8d34	cmd	Pa[->]bar
+0x8d35	cmd	bar[->]Pa
+0x8d36	cmd	Pa[->]mmHg
+0x8d37	cmd	mmHg[->]Pa
+0x8d38	cmd	Pa[->]psi
+0x8d39	cmd	psi[->]Pa
+0x8d3a	cmd	Pa[->]inHg
+0x8d3b	cmd	inHg[->]Pa
+0x8d3c	cmd	Pa[->]torr
+0x8d3d	cmd	torr[->]Pa
+0x8d3e	cmd	W[->]hpUK
+0x8d3f	cmd	hpUK[->]W
+0x8d40	cmd	W[->]hp
+0x8d41	cmd	hp[->]W
+0x8d42	cmd	W[->]PS(hp)
+0x8d43	cmd	PS(hp)[->]W
+0x8d44	cmd	W[->]HP[sub-e]
+0x8d45	cmd	HP[sub-e][->]W
+0x8d46	cmd	t[->]tons
+0x8d47	cmd	tons[->]t
+0x8d48	cmd	t[->]s.tons
+0x8d49	cmd	s.tons[->]t
+0x8e00	arg	PSE	max=100,indirect
+0x8f00	arg	KEY?	max=128,indirect,stack
+0x9000	arg	[alpha]XEQ	max=128,indirect,stack
+0x9100	arg	[alpha]GTO	max=128,indirect,stack
+0x9200	arg	SDL	max=128,indirect
+0x9300	arg	SDR	max=128,indirect
+0x9400	arg	VW[alpha]+	max=128,indirect,stack
+0x9500	arg	RM	max=7,indirect
+0x9600	arg	RSD	max=35,indirect
+0x9700	arg	RDP	max=100,indirect
+0x9800	arg	STOM	max=128,indirect,stack
+0x9900	arg	RCLM	max=128,indirect,stack
+0x9a00	arg	PUTK	max=128,indirect,stack
+0x9b00	arg	KTP?	max=128,indirect,stack
+0x9c00	arg	MSG	max=25,indirect
+0x9d00	arg	LocR	max=128,indirect
+0x9e00	arg	REGS	max=101,indirect
+0x9f00	arg	iRCL	max=128,indirect,stack
+0xa000	arg	sRCL	max=128,indirect,stack
+0xa100	arg	dRCL	max=128,indirect,stack
+0xa200	arg	xMSET	max=64,indirect,xrom
+0xa300	arg	xMCLR	max=64,indirect,xrom
+0xa400	arg	xIN	max=256,xrom
+0xa500	arg	xOUT	max=256,xrom
+0xa600	arg	CNVG?	max=32
+0xa700	cmd	[<->] XXXX
+0xa701	cmd	[<->] YXXX
+0xa702	cmd	[<->] ZXXX
+0xa703	cmd	[<->] TXXX
+0xa704	cmd	[<->] XYXX
+0xa705	cmd	[<->] YYXX
+0xa706	cmd	[<->] ZYXX
+0xa707	cmd	[<->] TYXX
+0xa708	cmd	[<->] XZXX
+0xa709	cmd	[<->] YZXX
+0xa70a	cmd	[<->] ZZXX
+0xa70b	cmd	[<->] TZXX
+0xa70c	cmd	[<->] XTXX
+0xa70d	cmd	[<->] YTXX
+0xa70e	cmd	[<->] ZTXX
+0xa70f	cmd	[<->] TTXX
+0xa710	cmd	[<->] XXYX
+0xa711	cmd	[<->] YXYX
+0xa712	cmd	[<->] ZXYX
+0xa713	cmd	[<->] TXYX
+0xa714	cmd	[<->] XYYX
+0xa715	cmd	[<->] YYYX
+0xa716	cmd	[<->] ZYYX
+0xa717	cmd	[<->] TYYX
+0xa718	cmd	[<->] XZYX
+0xa719	cmd	[<->] YZYX
+0xa71a	cmd	[<->] ZZYX
+0xa71b	cmd	[<->] TZYX
+0xa71c	cmd	[<->] XTYX
+0xa71d	cmd	[<->] YTYX
+0xa71e	cmd	[<->] ZTYX
+0xa71f	cmd	[<->] TTYX
+0xa720	cmd	[<->] XXZX
+0xa721	cmd	[<->] YXZX
+0xa722	cmd	[<->] ZXZX
+0xa723	cmd	[<->] TXZX
+0xa724	cmd	[<->] XYZX
+0xa725	cmd	[<->] YYZX
+0xa726	cmd	[<->] ZYZX
+0xa727	cmd	[<->] TYZX
+0xa728	cmd	[<->] XZZX
+0xa729	cmd	[<->] YZZX
+0xa72a	cmd	[<->] ZZZX
+0xa72b	cmd	[<->] TZZX
+0xa72c	cmd	[<->] XTZX
+0xa72d	cmd	[<->] YTZX
+0xa72e	cmd	[<->] ZTZX
+0xa72f	cmd	[<->] TTZX
+0xa730	cmd	[<->] XXTX
+0xa731	cmd	[<->] YXTX
+0xa732	cmd	[<->] ZXTX
+0xa733	cmd	[<->] TXTX
+0xa734	cmd	[<->] XYTX
+0xa735	cmd	[<->] YYTX
+0xa736	cmd	[<->] ZYTX
+0xa737	cmd	[<->] TYTX
+0xa738	cmd	[<->] XZTX
+0xa739	cmd	[<->] YZTX
+0xa73a	cmd	[<->] ZZTX
+0xa73b	cmd	[<->] TZTX
+0xa73c	cmd	[<->] XTTX
+0xa73d	cmd	[<->] YTTX
+0xa73e	cmd	[<->] ZTTX
+0xa73f	cmd	[<->] TTTX
+0xa740	cmd	[<->] XXXY
+0xa741	cmd	[<->] YXXY
+0xa742	cmd	[<->] ZXXY
+0xa743	cmd	[<->] TXXY
+0xa744	cmd	[<->] XYXY
+0xa745	cmd	[<->] YYXY
+0xa746	cmd	[<->] ZYXY
+0xa747	cmd	[<->] TYXY
+0xa748	cmd	[<->] XZXY
+0xa749	cmd	[<->] YZXY
+0xa74a	cmd	[<->] ZZXY
+0xa74b	cmd	[<->] TZXY
+0xa74c	cmd	[<->] XTXY
+0xa74d	cmd	[<->] YTXY
+0xa74e	cmd	[<->] ZTXY
+0xa74f	cmd	[<->] TTXY
+0xa750	cmd	[<->] XXYY
+0xa751	cmd	[<->] YXYY
+0xa752	cmd	[<->] ZXYY
+0xa753	cmd	[<->] TXYY
+0xa754	cmd	[<->] XYYY
+0xa755	cmd	[<->] YYYY
+0xa756	cmd	[<->] ZYYY
+0xa757	cmd	[<->] TYYY
+0xa758	cmd	[<->] XZYY
+0xa759	cmd	[<->] YZYY
+0xa75a	cmd	[<->] ZZYY
+0xa75b	cmd	[<->] TZYY
+0xa75c	cmd	[<->] XTYY
+0xa75d	cmd	[<->] YTYY
+0xa75e	cmd	[<->] ZTYY
+0xa75f	cmd	[<->] TTYY
+0xa760	cmd	[<->] XXZY
+0xa761	cmd	[<->] YXZY
+0xa762	cmd	[<->] ZXZY
+0xa763	cmd	[<->] TXZY
+0xa764	cmd	[<->] XYZY
+0xa765	cmd	[<->] YYZY
+0xa766	cmd	[<->] ZYZY
+0xa767	cmd	[<->] TYZY
+0xa768	cmd	[<->] XZZY
+0xa769	cmd	[<->] YZZY
+0xa76a	cmd	[<->] ZZZY
+0xa76b	cmd	[<->] TZZY
+0xa76c	cmd	[<->] XTZY
+0xa76d	cmd	[<->] YTZY
+0xa76e	cmd	[<->] ZTZY
+0xa76f	cmd	[<->] TTZY
+0xa770	cmd	[<->] XXTY
+0xa771	cmd	[<->] YXTY
+0xa772	cmd	[<->] ZXTY
+0xa773	cmd	[<->] TXTY
+0xa774	cmd	[<->] XYTY
+0xa775	cmd	[<->] YYTY
+0xa776	cmd	[<->] ZYTY
+0xa777	cmd	[<->] TYTY
+0xa778	cmd	[<->] XZTY
+0xa779	cmd	[<->] YZTY
+0xa77a	cmd	[<->] ZZTY
+0xa77b	cmd	[<->] TZTY
+0xa77c	cmd	[<->] XTTY
+0xa77d	cmd	[<->] YTTY
+0xa77e	cmd	[<->] ZTTY
+0xa77f	cmd	[<->] TTTY
+0xa780	cmd	[<->] XXXZ
+0xa781	cmd	[<->] YXXZ
+0xa782	cmd	[<->] ZXXZ
+0xa783	cmd	[<->] TXXZ
+0xa784	cmd	[<->] XYXZ
+0xa785	cmd	[<->] YYXZ
+0xa786	cmd	[<->] ZYXZ
+0xa787	cmd	[<->] TYXZ
+0xa788	cmd	[<->] XZXZ
+0xa789	cmd	[<->] YZXZ
+0xa78a	cmd	[<->] ZZXZ
+0xa78b	cmd	[<->] TZXZ
+0xa78c	cmd	[<->] XTXZ
+0xa78d	cmd	[<->] YTXZ
+0xa78e	cmd	[<->] ZTXZ
+0xa78f	cmd	[<->] TTXZ
+0xa790	cmd	[<->] XXYZ
+0xa791	cmd	[<->] YXYZ
+0xa792	cmd	[<->] ZXYZ
+0xa793	cmd	[<->] TXYZ
+0xa794	cmd	[<->] XYYZ
+0xa795	cmd	[<->] YYYZ
+0xa796	cmd	[<->] ZYYZ
+0xa797	cmd	[<->] TYYZ
+0xa798	cmd	[<->] XZYZ
+0xa799	cmd	[<->] YZYZ
+0xa79a	cmd	[<->] ZZYZ
+0xa79b	cmd	[<->] TZYZ
+0xa79c	cmd	[<->] XTYZ
+0xa79d	cmd	[<->] YTYZ
+0xa79e	cmd	[<->] ZTYZ
+0xa79f	cmd	[<->] TTYZ
+0xa7a0	cmd	[<->] XXZZ
+0xa7a1	cmd	[<->] YXZZ
+0xa7a2	cmd	[<->] ZXZZ
+0xa7a3	cmd	[<->] TXZZ
+0xa7a4	cmd	[<->] XYZZ
+0xa7a5	cmd	[<->] YYZZ
+0xa7a6	cmd	[<->] ZYZZ
+0xa7a7	cmd	[<->] TYZZ
+0xa7a8	cmd	[<->] XZZZ
+0xa7a9	cmd	[<->] YZZZ
+0xa7aa	cmd	[<->] ZZZZ
+0xa7ab	cmd	[<->] TZZZ
+0xa7ac	cmd	[<->] XTZZ
+0xa7ad	cmd	[<->] YTZZ
+0xa7ae	cmd	[<->] ZTZZ
+0xa7af	cmd	[<->] TTZZ
+0xa7b0	cmd	[<->] XXTZ
+0xa7b1	cmd	[<->] YXTZ
+0xa7b2	cmd	[<->] ZXTZ
+0xa7b3	cmd	[<->] TXTZ
+0xa7b4	cmd	[<->] XYTZ
+0xa7b5	cmd	[<->] YYTZ
+0xa7b6	cmd	[<->] ZYTZ
+0xa7b7	cmd	[<->] TYTZ
+0xa7b8	cmd	[<->] XZTZ
+0xa7b9	cmd	[<->] YZTZ
+0xa7ba	cmd	[<->] ZZTZ
+0xa7bb	cmd	[<->] TZTZ
+0xa7bc	cmd	[<->] XTTZ
+0xa7bd	cmd	[<->] YTTZ
+0xa7be	cmd	[<->] ZTTZ
+0xa7bf	cmd	[<->] TTTZ
+0xa7c0	cmd	[<->] XXXT
+0xa7c1	cmd	[<->] YXXT
+0xa7c2	cmd	[<->] ZXXT
+0xa7c3	cmd	[<->] TXXT
+0xa7c4	cmd	[<->] XYXT
+0xa7c5	cmd	[<->] YYXT
+0xa7c6	cmd	[<->] ZYXT
+0xa7c7	cmd	[<->] TYXT
+0xa7c8	cmd	[<->] XZXT
+0xa7c9	cmd	[<->] YZXT
+0xa7ca	cmd	[<->] ZZXT
+0xa7cb	cmd	[<->] TZXT
+0xa7cc	cmd	[<->] XTXT
+0xa7cd	cmd	[<->] YTXT
+0xa7ce	cmd	[<->] ZTXT
+0xa7cf	cmd	[<->] TTXT
+0xa7d0	cmd	[<->] XXYT
+0xa7d1	cmd	[<->] YXYT
+0xa7d2	cmd	[<->] ZXYT
+0xa7d3	cmd	[<->] TXYT
+0xa7d4	cmd	[<->] XYYT
+0xa7d5	cmd	[<->] YYYT
+0xa7d6	cmd	[<->] ZYYT
+0xa7d7	cmd	[<->] TYYT
+0xa7d8	cmd	[<->] XZYT
+0xa7d9	cmd	[<->] YZYT
+0xa7da	cmd	[<->] ZZYT
+0xa7db	cmd	[<->] TZYT
+0xa7dc	cmd	[<->] XTYT
+0xa7dd	cmd	[<->] YTYT
+0xa7de	cmd	[<->] ZTYT
+0xa7df	cmd	[<->] TTYT
+0xa7e0	cmd	[<->] XXZT
+0xa7e1	cmd	[<->] YXZT
+0xa7e2	cmd	[<->] ZXZT
+0xa7e3	cmd	[<->] TXZT
+0xa7e4	cmd	[<->] XYZT
+0xa7e5	cmd	[<->] YYZT
+0xa7e6	cmd	[<->] ZYZT
+0xa7e7	cmd	[<->] TYZT
+0xa7e8	cmd	[<->] XZZT
+0xa7e9	cmd	[<->] YZZT
+0xa7ea	cmd	[<->] ZZZT
+0xa7eb	cmd	[<->] TZZT
+0xa7ec	cmd	[<->] XTZT
+0xa7ed	cmd	[<->] YTZT
+0xa7ee	cmd	[<->] ZTZT
+0xa7ef	cmd	[<->] TTZT
+0xa7f0	cmd	[<->] XXTT
+0xa7f1	cmd	[<->] YXTT
+0xa7f2	cmd	[<->] ZXTT
+0xa7f3	cmd	[<->] TXTT
+0xa7f4	cmd	[<->] XYTT
+0xa7f5	cmd	[<->] YYTT
+0xa7f6	cmd	[<->] ZYTT
+0xa7f7	cmd	[<->] TYTT
+0xa7f8	cmd	[<->] XZTT
+0xa7f9	cmd	[<->] YZTT
+0xa7fa	cmd	[<->] ZZTT
+0xa7fb	cmd	[<->] TZTT
+0xa7fc	cmd	[<->] XTTT
+0xa7fd	cmd	[<->] YTTT
+0xa7fe	cmd	[<->] ZTTT
+0xa7ff	cmd	[<->] TTTT
+0xa800	arg	#	max=256
+0xa900	arg	[cmplx]#	max=256
+0xaa00	arg	CNST	max=82,indirect
+0xab00	arg	[cmplx]CNST	max=82,indirect
+0xac00	arg	[print]r	max=128,indirect,stack
+0xad00	arg	[print]#	max=128,indirect
+0xae00	arg	[print]CHR	max=128,indirect
+0xaf00	arg	[print]TAB	max=128,indirect
+0xb000	arg	[print]MODE	max=4,indirect
+0xb100	arg	[print]DLAY	max=32,indirect
 0xf000	mult	LBL
 0xf100	mult	LBL?
 0xf200	mult	XEQ
