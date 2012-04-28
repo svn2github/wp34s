@@ -101,60 +101,6 @@ dist_ret_1::		_INT 1
 			RTN
 #endif
 /**************************************************************************/
-/* One parameter Poission distribution
- * Real parameter lambda in J.
- */
-		XLBL"PDF_POISSON"
-			xIN MONADIC
-			GSB poission1_param
-pdf_poisson::		FP?
-				JMP ret_0
-			RCL J
-			SWAP
-			y[^x]
-			RCL L
-			x!
-			/
-			RCL J
-			e[^x]
-			/
-			xOUT xOUT_NORMAL
-
-#if 0
-		XLBL"CDF_POISSON"
-			xIN MONADIC
-			GSB poission1_param
-			FLOOR
-			GSB cdf_poisson
-			xOUT xOUT_NORMAL
-
-cdf_poisson::		x<0?
-				JMP dist_ret_0
-			[infinity]?
-				JMP dist_ret_1
-			INC X
-			RCL J
-			GSB gammap
-			_INT 1
-			SWAP
-			-
-			RTN
-
-		XLBL"QF_POISSON"
-			RTN
-#endif
-
-poission1_param::	x[<->] J
-			NaN?
-				JMP ret_NaN
-			SPEC?
-				ERR ERR_BAD_PARAM
-			x<0?
-				JMP ret_0
-			x[<->] J
-			RTN
-
-/**************************************************************************/
 /* Cauchy distribution
  * Two parameters:
  *	J = location (real)
@@ -331,8 +277,8 @@ expon_param::		RCL J
 /**************************************************************************/
 /* F distribution
  * Two parameteres:
- *	J = df1 (integer > 0)
- *	K = df2 (integer > 0)
+ *	J = df1 (real > 0)
+ *	K = df2 (real > 0)
  */
 #if 0
 		XLBL"PDF_F"
@@ -341,7 +287,37 @@ expon_param::		RCL J
 			GSB pdf_f
 			xOUT xOUT_NORMAL
 
-pdf_f::			RTN
+pdf_f::			FILL
+			RCL K
+			LN		// Lnd2 x x
+			RCL[times] K	// d2Lnd2 x x
+			RCL J		// d1 d2Lnd2 x x
+			RCL[times] Z	// xd1 d2Lnd2 x x
+			STO Z
+			LN		// LNxd1 d2Lnd2 xd1 x
+			RCL[times] J	// d1Lnxd1 d2Lnd2 xd1 x
+			+		// sum xd1 x
+			SWAP		// xd1 sum x
+			RCL+ K		// xd1+d2 sum x
+			LN		// Lnxd1+d2 sum x
+			RCL J		// d1 Lnxd1+d2 sum x
+			RCL+ K		// d1+d2 Lnxd1+d2 sum x
+			[times]		//(d1+d2)Lnxd1+d2 sum x
+			-		// sum x ? ?
+			_INT 2
+			/		// Sum/2 x ? ?
+			RCL J
+			_INT 2		// 2 d1 Sum/2 x
+			/		// d1/2 Sum/2 x
+			RCL K		// d2 d1/2 Sum/2 x
+			RCL/ L		// d2/2 d1/2 Sum/2 x
+			LN[beta]	// Lnbeta Sum/2 x
+			-
+			e[^x]
+			SWAP
+			/
+			RTN
+
 
 
 		XLBL"CDF_F"
@@ -374,12 +350,12 @@ cdf_f::			x[<=]0?
 
 f_param::		RCL J
 			GSB check_special_pos
-			FP?
-				ERR ERR_BAD_PARAM
+//			FP?
+//				ERR ERR_BAD_PARAM
 			RCL K
 			GSB check_special_pos
-			FP?
-				ERR ERR_BAD_PARAM
+//			FP?
+//				ERR ERR_BAD_PARAM
 			[cmplx]DROP
 			RTN
 #endif
@@ -707,7 +683,63 @@ qf_loop_end::		FS? .01
 
 
 /**************************************************************************/
+/* One parameter Poission distribution
+ * Real parameter lambda in J.
+ */
+		XLBL"PDF_POISSON"
+			xIN MONADIC
+			GSB poission1_param
+pdf_poisson::		FP?
+				JMP ret_0
+			RCL J
+			SWAP
+			y[^x]
+			RCL L
+			x!
+			/
+			RCL J
+			e[^x]
+			/
+			xOUT xOUT_NORMAL
+
+#if 0
+		XLBL"CDF_POISSON"
+			xIN MONADIC
+			GSB poission1_param
+			FLOOR
+			GSB cdf_poisson
+			xOUT xOUT_NORMAL
+
+cdf_poisson::		x<0?
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			INC X
+			RCL J
+			GSB gammap
+			_INT 1
+			SWAP
+			-
+			RTN
+
+		XLBL"QF_POISSON"
+			RTN
+#endif
+
+poission1_param::	x[<->] J
+			NaN?
+				JMP ret_NaN
+			SPEC?
+				ERR ERR_BAD_PARAM
+			x<0?
+				JMP ret_0
+			x[<->] J
+			RTN
+
+/**************************************************************************/
 /* Two parameter Poission distribution
+ * Porbability in J
+ * n in K
  */
 		XLBL"PDF_POIS2"
 			xIN MONADIC
@@ -741,7 +773,7 @@ poisson2_param::	x[<->] J
 /**************************************************************************/
 /* Student's T distribution
  * One parameter:
- *	J = degrees of freedom (integer > 0)
+ *	J = degrees of freedom (real > 0)
  */
 #if 0
 		XLBL"PDF_T"
@@ -1070,7 +1102,7 @@ qf_newton_pdf::		iSKIP[->]R_DIST
 			JMP pdf_chi2
 			JMP pdf_F
 			JMP pdf_discrete		// Poisson
-			JMP pdf_discrete		// Binomial
+			//JMP pdf_discrete		// Binomial
 
 /* Using the pdf for the slope isn't great for the discrete distributions
  * So we do something more akin to a secant approach
