@@ -2244,13 +2244,6 @@ static int process(const int c) {
 		return STATE_RUNNING;
 	}
 
-	/*
-	 * Turn off the RPN annunciator as a visual feedback
-	 */
-	ShowRPN = -1;
-	dot(RPN, 0);
-	finish_display();
-
 	/* Check for ON in the unshifted state -- this is a reset sequence
 	 * common across all modes.  Shifted modes need to check this themselves
 	 * if required.
@@ -2373,8 +2366,13 @@ static int process(const int c) {
 
 static void show_opcode(void)
 {
-	scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
-	DispMsg = TraceBuffer;
+	if (OpCode == (OP_NIL | OP_RS)) {
+		DispMsg = "RUN";
+	}
+	else {
+		scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
+		DispMsg = TraceBuffer;
+	}
 	OpCodeDisplayPending = 0;
 }
 
@@ -2399,20 +2397,6 @@ void process_keycode(int c)
 		 *  Heartbeat processing goes here.
 		 *  This is totally thread safe!
 		 */
-
-		/*
-		 *  Toggle the RPN annunciator as a visual feedback
-		 *  While the display is frozen, the annunciator stays cleared.
-		 */
-		if (ShowRPN == 1 && !Running) {
-			dot(RPN, 1);
-			finish_display();
-			ShowRPN = 2;
-		}
-		else if (ShowRPN == -1) {
-			ShowRPN = 1;
-		}
-
 		if (Keyticks >= 2) {
 			/*
 			 *  Some time has passed after last key press
@@ -2427,6 +2411,7 @@ void process_keycode(int c)
 					 */
 					show_opcode();
 					display();
+					ShowRPN = 1;	// Off because of DispMsg setting
 				}
 				else if (Keyticks > 12) {
 					/*
@@ -2436,7 +2421,6 @@ void process_keycode(int c)
 					message("NULL", NULL);
 					// Force display update on key-up
 					State2.disp_temp = 0;
-					ShowRPN = 2;
 				}
 			}
 			if (Keyticks > 12 && shift_down() != SHIFT_N) {
@@ -2471,6 +2455,14 @@ void process_keycode(int c)
 		 */
 		xeq_init_contexts();
 
+		if (is_dot(RPN)) {
+			/*
+			 * Turn off the RPN annunciator as a visual feedback
+			 */
+			clr_dot(RPN);
+			finish_display();
+		}
+
 #ifndef CONSOLE
 		/*
 		 *  Reallow display refresh which is temporarily disabled after a stop
@@ -2494,7 +2486,6 @@ void process_keycode(int c)
 			GoFast = 1;
 			c = OpCode;
 			OpCode = 0;
-			ShowRPN = 1; // Back to normal display and processing
 
 			if (c == STATE_SST)
 				xeq_sst_bst(1);
@@ -2503,9 +2494,11 @@ void process_keycode(int c)
 				if (Running || Pause)
 					xeqprog();
 			}
+			dot(RPN, ShowRPN);
 		}
 		else {
 			// Ignore key-up if no operation was pending
+			dot(RPN, ShowRPN);
 #ifndef CONSOLE
 			if (! State2.disp_temp ) {
 				// This will get rid of the last displayed op-code
@@ -2514,12 +2507,21 @@ void process_keycode(int c)
 #endif
 			return;
 		}
+
+		/*
+		 *  Turn on the RPN symbol if desired
+		 */
+		if (ShowRPN) {
+			finish_display();
+		}
 	}
 	else {
 		/*
 		 *  Decode the key 
 		 */
-		c = process(c);
+		ShowRPN = ! Running;	// Default behaviour, may be turned off later
+
+		c = process(c);		// returns an op-code or state
 		switch (c) {
 		case STATE_SST:
 			OpCode = c;

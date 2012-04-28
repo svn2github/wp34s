@@ -505,7 +505,6 @@ int warn(const unsigned int e) {
 	error_message(e);
 #ifndef CONSOLE
 	State2.disp_freeze = 0;
-	ShowRPN = 1;
 	JustDisplayed = 1;
 #endif
 	return e != ERR_NONE;
@@ -3981,7 +3980,12 @@ void xeqprog(void)
 	if (! Running && ! Pause) {
 		// Program has terminated
 		clr_dot(RCL_annun);
+		ShowRPN = 1;	// display() may turn it off again
 		display();
+		if (ShowRPN) {
+			set_dot(RPN);
+			finish_display();
+		}
 #ifndef CONSOLE
 		// Avoid accidental restart with R/S or APD after program ends
 		JustStopped = 1;
@@ -4678,13 +4682,14 @@ static void bad_table(const char *t, int row, const char *n, int nlen) {
  */
 int init_34s(void)
 {
-	int cleared = checksum_all();
-	if ( cleared ) {
+	const int cleared = checksum_all();
+	if (cleared) {
 		reset();
 	}
 	init_state();
 	xeq_init_contexts();
 	ShowRPN = 1;
+	set_dot(RPN);
 
 #ifdef INCLUDE_STOPWATCH
 	StopWatchRunning = 0;

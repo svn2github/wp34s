@@ -54,6 +54,9 @@ void set_dot(int n) {
 void clr_dot(int n) {
         dots[n] = 0;
 }
+int is_dot(int n) {
+	return dots[n];
+}
 #else
 
 static const unsigned char lcd_addr[] = {
@@ -186,6 +189,7 @@ void reset_disp(void) {
 	int rcl = is_dot(RCL_annun);
 	int bat = is_dot(BATTERY);
 	int leq = is_dot(LIT_EQ);
+	int rpn = is_dot(RPN);
 #ifndef REALBUILD
 	*LastDisplayedText = '\0';
 #endif
@@ -199,6 +203,7 @@ void reset_disp(void) {
 	dot(RCL_annun, rcl);
 	dot(BATTERY, bat);
 	dot(LIT_EQ, leq);
+	dot(RPN, rpn);
 #else
 // Console
 #ifdef USECURSES

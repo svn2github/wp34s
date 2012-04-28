@@ -20,6 +20,15 @@
 /* Version number */
 #define VERSION_STRING	"3.1"
 
+#if defined(REALBUILD) && defined(INFRARED)
+#define VERS_DISPLAY "34S\006" VERSION_STRING "\222\006"
+#elif defined(REALBUILD) && defined(INCLUDE_STOPWATCH)
+#define VERS_DISPLAY "34S\006" VERSION_STRING "T\006"
+#else
+#define VERS_DISPLAY "34S\006" VERSION_STRING "\006\006"
+#endif
+#define VERS_SVN_OFFSET (sizeof(VERS_DISPLAY) - 1)
+
 /*
  * Optional features are defined in features.h
  */
@@ -828,7 +837,7 @@ enum rarg {
 			RARG_TEST_GT, RARG_TEST_GE,
 			
 	RARG_TEST_ZEQ, RARG_TEST_ZNE, //RARG_TEST_ZAPX,
-	RARG_SKIP, RARG_BACK, RARG_BSF, RARG_BSB, RARG_iSKIP,
+	RARG_SKIP, RARG_BACK, RARG_BSF, RARG_BSB,
 	RARG_DSE, RARG_ISG,
 	RARG_DSL, RARG_ISE,
 	RARG_DSZ, RARG_ISZ,
@@ -897,6 +906,10 @@ enum rarg {
 	RARG_PRINT_REG, RARG_PRINT_BYTE, RARG_PRINT_CHAR, RARG_PRINT_TAB, 
 	RARG_PMODE, RARG_PDELAY,
 	/* end of INFRARED commands */
+
+	/* indirect SKIP/BACK */
+	RARG_iSKIP, RARG_iBACK, RARG_iBSF, RARG_iBSB,
+
 	NUM_RARG	// Last entry defines number of operations
 };
 

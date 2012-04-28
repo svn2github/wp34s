@@ -1883,16 +1883,6 @@ NO_RETURN int main(void)
 				/*
 				 *  Yes, goto deep sleep. Will never return.
 				 */
-#ifdef SLEEP_ANNUNCIATOR_x
-				if ( SleepAnnunciatorOn ) {
-					/*
-					 *  "Alive" indicator off
-					 */
-					dot( SLEEP_ANNUNCIATOR, 0 );
-					SleepAnnunciatorOn = 0;
-				}
-#endif
-				dot( RPN, ShowRPN != 0 );	// might still be off
 				show_keyticks();		// debugging
 				finish_display();
 				while ( WaitForLcd || KbData != 0 ) {

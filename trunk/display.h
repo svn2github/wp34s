@@ -40,6 +40,7 @@ extern void message(const char *str1, const char *str2);
 extern void format_reg(int index, char *buf);
 extern void dot(int n, int on);
 extern void set_IO_annunciator(void);
+extern void set_RPN_annunciator(int on);
 
 #ifdef INCLUDE_STOPWATCH
 extern void stopwatch_message(const char *str1, const char *str2, int dot_pos, char* exponent);

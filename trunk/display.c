@@ -1299,7 +1299,7 @@ static void set_annunciators(void)
 	 * typing lower case in alpha mode.  Turn the big equals if we're
 	 * browsing constants.
 	 */
-	dot(BEG, state_pc() <= 1);
+	dot(BEG, state_pc() <= 1 && ! Running);
 	dot(INPUT, State2.catalogue || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
 	dot(BIG_EQ, get_user_flag(A_FLAG));
@@ -1309,10 +1309,6 @@ static void set_annunciators(void)
 	 */
 	dot(DEG, !is_intmode() && tm == TRIG_DEG);
 	dot(RAD, !is_intmode() && tm == TRIG_RAD);
-
-	/* Show the RPN indicator only if display shows X in the normal mode
-	 */
-	dot(RPN, ShowRPN >= 1 && ! Running);
 }
 
 
@@ -1352,11 +1348,11 @@ void display(void) {
 
 	if (State2.disp_freeze) {
 		State2.disp_freeze = 0;
-		ShowRPN = 0;
 		State2.disp_temp = 1;
 #ifdef CONSOLE
 		JustDisplayed = 1;
 #endif
+		ShowRPN = 0;
 		return;
 	}
 
@@ -1381,14 +1377,10 @@ void display(void) {
 		set_status(buf);
 	}
 	if (State2.version) {
-#if !defined(REALBUILD) || defined(XTAL)
-		char vers[] = "34S\006" VERSION_STRING "T\006????";
-#else
-		char vers[] = "34S\006" VERSION_STRING "\006????";
-#endif
+		char vers[VERS_SVN_OFFSET + 5] = VERS_DISPLAY;
 		set_digits_string("pAULI, WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
-		xcopy( vers + sizeof(vers) - 5, SvnRevision, 4 );
+		xcopy( vers + VERS_SVN_OFFSET, SvnRevision, 4 );
 		set_status(vers);
 		skip = 1;
 		goto nostk;
@@ -1594,20 +1586,24 @@ nostk:	show_flags();
 			set_digits_string(buf, SEGS_PER_DIGIT);
 		}
 	}
-	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || State2.disp_as_alpha)
-		ShowRPN = 0;
 	set_annunciators();
 
-	State2.disp_temp = (ShowRPN == 0 && State2.runmode 
-		            && (! State2.registerlist || State2.smode == SDISP_SHOW || State2.disp_as_alpha));
-	if (annuc && !State2.disp_temp)
+	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || State2.disp_as_alpha)
+		ShowRPN = 0;
+
+	// disp_temp disables the <- key
+	State2.disp_temp = ! ShowRPN && State2.runmode 
+		           && (! State2.registerlist || State2.smode == SDISP_SHOW || State2.disp_as_alpha);
+
+	if (annuc && ! State2.disp_temp)
 		annunciators();
+
 	State2.version = 0;
 	State2.disp_as_alpha = 0;
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;
-	DispMsg = NULL;
+	DispMsg = (char *) NULL;
 	State2.disp_small = 0;
 	finish_display();
 #ifdef CONSOLE
@@ -1621,7 +1617,6 @@ nostk:	show_flags();
 void frozen_display()
 {
 	State2.disp_freeze = 0;
-	ShowRPN = 0;
 	display();
 	State2.disp_freeze = 1;
 }

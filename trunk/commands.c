@@ -789,7 +789,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDnoI(RARG_BACK,	&cmdback,	256,			"BACK")
 	CMDnoI(RARG_BSF,	&cmdskip,	256,			"BSRF")
 	CMDnoI(RARG_BSB,	&cmdback,	256,			"BSRB")
-	CMDstk(RARG_iSKIP,	&cmdskip,				"iSKIP")
 
 	CMDstk(RARG_DSE,	&cmdloop,				"DSE")
 	CMDstk(RARG_ISG,	&cmdloop,				"ISG")
@@ -915,6 +914,11 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"\222MODE")
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY")
 	/* end of INFRARED commands */
+
+	CMD(RARG_iSKIP,		&cmdskip,	256,			"iSKIP")
+	CMD(RARG_iBACK,		&cmdback,	256,			"iBACK")
+	CMD(RARG_iBSF,		&cmdskip,	256,			"iBSRF")
+	CMD(RARG_iBSB,		&cmdback,	256,			"iBSRB")
 
 #undef CMDlbl
 #undef CMDlblnI
