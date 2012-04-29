@@ -231,7 +231,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_qf_P,	XMR(QF_POIS2),		NOFN,		NOFN,		"Poiss\235")
 	FUNC(OP_pdf_G,	XMR(PDF_GEOM),		NOFN,		NOFN,		"Geom\276")
 	FUNC(OP_cdf_G,	XMR(CDF_GEOM),		NOFN,		NOFN,		"Geom")
-	FUNC(OP_qf_G,	&qf_G,			NOFN,		NOFN,		"Geom\235")
+	FUNC(OP_qf_G,	XMR(QF_GEOM),		NOFN,		NOFN,		"Geom\235")
 	FUNC(OP_pdf_N,	XMR(PDF_NORMAL),	NOFN,		NOFN,		"Norml\276")
 	FUNC(OP_cdf_N,	XMR(CDF_NORMAL),	NOFN,		NOFN,		"Norml")
 	FUNC(OP_qf_N,	XMR(QF_NORMAL),		NOFN,		NOFN,		"Norml\235")

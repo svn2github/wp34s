@@ -22,6 +22,7 @@
 #define DIST_F		(2)
 #define DIST_POISSON	(3)
 #define DIST_BINOMIAL	(4)
+#define DIST_GEOMETRIC	(5)
 
 
 /**************************************************************************/
@@ -87,7 +88,7 @@ binomial_param::	RCL J
 				JMP ret_0
 			[cmplx]DROP
 			RTN
-#if 0
+#if 1
 betai::			I[beta]
 			RTN
 
@@ -381,10 +382,13 @@ f_param::		RCL J
 		XLBL"CDF_GEOM"
 			xIN MONADIC
 			GSB geom_param
-			x<0?
-				JMP ret_0
+			GSB cdf_geom
+			xOUT xOUT_NORMAL
+
+cdf_geom::		x<0?
+				JMP dist_ret_0
 			[infinity]?
-				JMP ret_1
+				JMP dist_ret_1
 			FLOOR
 			INC X
 			RCL J
@@ -392,28 +396,60 @@ f_param::		RCL J
 			[times]
 			e[^x]-1
 			+/-
-			xOUT xOUT_NORMAL
-#if 0
+			RTN
+
 		XLBL"QF_GEOM"
 			xIN MONADIC
 			GSB geom_param
 			x<0?
 				JMP ret_0
 			GSB qf_check_probability
+			ENTER[^]
 			GSB log1m
 			RCL J
 			GSB log1m
 			/
 			DEC X
 			FLOOR
-			NOP	// discrete_final_check here
-			xOUT xOUT_NORMAL
-#endif
+			_INT (DIST_GEOMETRIC - DIST_POISSON)
 
-geom_param::	RCL J
-		GSB check_probability
-		DROP
-		RTN
+#define R_DIST	.00
+#define R_R	.01
+#define R_P	.02
+qf_discrete_final::	LocR 3
+			[cmplx]STO R_DIST
+			z[<->] R_P
+			DROP
+			GSB qf_discrete_cdf
+			x>? R_P
+				JMP qf_discrete_1high
+			RCL R_R
+			INC X
+			GSB qf_discrete_cdf
+			x[<=]? R_P
+				INC R_R
+qf_discrere_out::	RCL R_R
+			xOUT xOUT_NORMAL
+qf_discrete_1high::	DEC R_R
+			JMP qf_discrere_out
+qf_discrete_cdf::	iSKIP[->]R_DIST
+			JMP cdf_poisson
+			JMP cdf_binomial
+			JMP cdf_geom	
+#undef R_R
+#undef R_P
+#undef R_DIST
+
+
+cdf_poisson::		Pois[lambda]
+			RTN
+cdf_binomial::		Binom
+			RTN
+
+geom_param::		RCL J
+			GSB check_probability
+			DROP
+			RTN
 
 /**************************************************************************/
 /* Logistic distribution
@@ -577,13 +613,11 @@ pdf_q::			x[^2]
 cdf_q_xout::		GSB cdf_q
 			xOUT xOUT_NORMAL
 
-/* Standard entry point.  Destroys the stack and uses local registers and
- * several stack level.  The alternate entry point is used, registers
- * .01 - .03 are destroyed, .00 holds the initial X and .04 holds the pdf(x).
- * Additionally, flag .00 is set if the X value is negative.
+/* Standard entry point.  Destroys the stack.
+ * Returns the CDF in X and the PDF in Y.
  */
 cdf_q::			LocR 05
-cdf_q_alt::		STO .00		// x in .00
+			STO .00		// x in .00
 			x<0?
 				SF .00
 			GSB pdf_q
@@ -599,7 +633,7 @@ cdf_q_alt::		STO .00		// x in .00
 			DEC X
 			_INT 128	// 256 the hard way
 			RCL+ X
-			x[<->] Y
+			SWAP
 			/
 			_INT 4
 			+
@@ -614,15 +648,17 @@ cdf_q_lp1::		RCL .02		// n
 				JMP cdf_q_lp1
 			RCL+ .00
 			RCL .04
-			x[<->] Y
+			SWAP
 			/
 			x<0?
 				JMP cdf_q_skip1
 			Num 1
-			x[<->] Y
+			SWAP
 			-
 cdf_q_skip1::		FS? .00
-			+/-
+				+/-
+cdf_q_exit::		RCL .04
+			SWAP
 			RTN
 
 /* Alternate code for |x| < 3.15 */
@@ -647,86 +683,39 @@ cdf_q_lp2::		RCL[times] .01	// term * x^2
 cdf_q_skip2::		RCL[times] .04
 			.
 			5
-			x[<->] Y
+			SWAP
 			FS? .00
 				-
 			FC? .00
 				+
-			RTN
+			JMP cdf_q_exit
 
 
 		XLBL"QF_Q"
 			xIN MONADIC
 qf_q_xout::		GSB qf_q
 			xOUT xOUT_NORMAL
-
-/* The internal Q qf entry point.  Sets flag .01 if x < 0.
- */
 qf_q::			GSB qf_check_probability
-			LocR 07
-			STO .05		// save x
-			.
-			5
-			x[<->] Y
-			-
-			STO .06		// b = 1/2 - x
-			x=0?
-				RTN
-			/* Estimate an initial try */
-			x[>=]0?
-				JMP qf_q_inrange
-			Num 1
-			RCL- .05
-			STO .05
-			SF .01
-qf_q_inrange::		RCL .05
-			.
-			2
-			x<? Y
-				JMP qf_q_skip2
-			RCL .05
-			LN
-			RCL+ X
-			+/-
-			STO .06		// u = -2 LN(x)
-			DEC X
-			[sqrt]
-			Num [sqrt]2[pi]
-			[times]
-			RCL[times] .05
-			LN
-			RCL+ X
-			+/-
-			[sqrt]
-			x[<->] .06
-			/
-			RCL+ .06
-				+/-
-			JMP qf_q_est_done
-
-qf_q_skip2::		Num [sqrt]2[pi]
-			RCL[times] .06
-			ENTER[^]
-			x[^3]
-			_INT 6
-			/
-			+
-			+/-
+			LocR 002
+			STO .00
+			x<0?
+				SF .01
+			GSB qf_q_est
+			STO .01
 
 /* Now refine the estimate via Newton steps */
-qf_q_est_done::		STO .06
-qf_q_loop::		GSB cdf_q_alt		/* pdf in .04 */
-			RCL- .05		/* cdf - x */
-			RCL/ .04		/* (cdf - x) / pdf */
+qf_q_loop::		GSB cdf_q		/* pdf in Y */
+			RCL- .00		/* cdf - x */
+			RCL/ Y			/* (cdf - x) / pdf */
 			ENTER[^]
-			RCL[times] .06
+			RCL[times] .01
 			_INT 2
 			/
 			DEC X
 			/
-			x[<->] .06
-			STO+ .06
-			RCL .06
+			x[<->] .01
+			STO+ .01
+			RCL .01
 			CNVG? CVG_RELATIVE_DBL
 				JMP qf_loop_end
 			JMP qf_q_loop
@@ -734,6 +723,59 @@ qf_q_loop::		GSB cdf_q_alt		/* pdf in .04 */
 qf_loop_end::		FS? .01
 				+/-
 			RTN
+
+/* The internal Q qf entry point.
+ */
+qf_q_est::		LocR 02
+			STO .00		// save x
+			.
+			5
+			SWAP
+			-
+			STO .01		// b = 1/2 - x
+			x=0?
+				RTN
+			/* Estimate an initial try */
+			x[>=]0?
+				JMP qf_q_inrange
+			Num 1
+			RCL- .00
+			STO .00
+			SF .00
+qf_q_inrange::		RCL .00
+			.
+			2
+			x<? Y
+				JMP qf_q_skip2
+			RCL .00
+			LN
+			RCL+ X
+			+/-
+			STO .01		// u = -2 LN(x)
+			DEC X
+			[sqrt]
+			Num [sqrt]2[pi]
+			[times]
+			RCL[times] .00
+			LN
+			RCL+ X
+			+/-
+			[sqrt]
+			x[<->] .01
+			/
+			RCL+ .01
+			FC? .00
+qf_q_neg_fin::			+/-
+			RTN
+
+qf_q_skip2::		Num [sqrt]2[pi]
+			RCL[times] .01
+			ENTER[^]
+			x[^3]
+			_INT 6
+			/
+			+
+			JMP qf_q_neg_fin
 
 #endif
 
@@ -917,6 +959,7 @@ dist_ret_half::		.
 		XLBL"QF_T"
 			xIN MONADIC
 			GSB t_param
+			GSB qf_check_probability
 #ifdef NORMAL_DISTRIBUTION_AS_XROM
 			FS?C .00
 				JMP qf_q_xout
@@ -954,7 +997,7 @@ t_param_inf::		x<0?
 				JMP ret_0
 			x[<=]0?
 				JMP ret_0
-			x[<->] Y
+			SWAP
 			y[^x]
 			STO Z
 			+/-
@@ -968,12 +1011,12 @@ t_param_inf::		x<0?
 		XLBL"CDF_WEIB"
 			xIN MONADIC
 			GSB weibull_param
-			x[<->] Y
+			SWAP
 			x[<=]0?
 				JMP ret_0
 			SPEC?
 				JMP ret_1	/* only +infinte left */
-			x[<->] Y
+			SWAP
 			y[^x]
 			+/-
 			e[^x]-1
@@ -1019,9 +1062,9 @@ check_probability::	NaN?
 qf_check_probability::	NaN?
 				JMP ret_NaN
 			x<0?
-				JMP ret_neginf
+				JMP ret_NaN
 			x>1?
-				JMP ret_posinf
+				JMP ret_NaN
 			RTN
 
 /* Error out if a number is negative, zero or special */
@@ -1208,4 +1251,5 @@ qf_newton_cdf::		iSKIP[->]R_DIST
 #undef DIST_F
 #undef DIST_POISSON
 #undef DIST_BINOMIAL
+#undef DIST_GEOMETRIC
 
