@@ -29,7 +29,7 @@
 
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
-#if !defined(REALBUILD) || (defined(XTAL) && !defined(INFRARED))
+#if !defined(REALBUILD) || (defined(XTAL) /* && !defined(INFRARED) */)
 #define INCLUDE_STOPWATCH
 #else
 //#define INCLUDE_STOPWATCH
@@ -41,10 +41,10 @@
 // Include a catalogue of the internal commands
 #define INCLUDE_INTERNAL_CATALOGUE
 
-// Include the CNSTS command to access cnstants via indirection
+// Include the CNSTS command to access constants via indirection
 #define INCLUDE_INDIRECT_CONSTS
 
-// Code to allow acces to caller's local data from xIN-code
+// Code to allow access to caller's local data from xIN-code
 // #define ENABLE_COPYLOCALS
 
 #ifndef TINY_BUILD
@@ -113,6 +113,9 @@
 
 // Include the flash register recall routines RCF and their variants
 // #define INCLUDE_FLASH_RECALL
+
+// Include iSKIP, iBACK, etc. as user visible commands
+// #define INCLUDE_INDIRECT_BRANCHES
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */

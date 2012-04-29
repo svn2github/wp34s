@@ -909,10 +909,13 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY")
 	/* end of INFRARED commands */
 
+	// Only the first of this group is used in XROM
 	CMD(RARG_iSKIP,		&cmdskip,	256,			"iSKIP")
+#ifdef INCLUDE_INDIRECT_BRANCHES
 	CMD(RARG_iBACK,		&cmdback,	256,			"iBACK")
 	CMD(RARG_iBSF,		&cmdskip,	256,			"iBSRF")
 	CMD(RARG_iBSB,		&cmdback,	256,			"iBSRB")
+#endif
 
 #undef CMDlbl
 #undef CMDlblnI

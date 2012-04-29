@@ -907,8 +907,12 @@ enum rarg {
 	RARG_PMODE, RARG_PDELAY,
 	/* end of INFRARED commands */
 
-	/* indirect SKIP/BACK */
-	RARG_iSKIP, RARG_iBACK, RARG_iBSF, RARG_iBSB,
+	// Indirect SKIP/BACK 
+	// Only the first of this group is used in XROM
+	RARG_iSKIP, 
+#ifdef INCLUDE_INDIRECT_BRANCHES
+	RARG_iBACK, RARG_iBSF, RARG_iBSB,
+#endif
 
 	NUM_RARG	// Last entry defines number of operations
 };

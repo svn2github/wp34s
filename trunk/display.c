@@ -76,40 +76,37 @@ static const char libname[][5] = {
 void error_message(const unsigned int e) 
 {
 #define MSG1(top) top "\0" 
-#ifdef INFRARED
-#define MSG2(top,bottom,printer) top "\0" bottom "\0" printer
-#else
-#define MSG2(top,bottom,printer) top "\0" bottom
-#endif
+#define MSG2(top,bottom) top "\0" bottom
+
 	// NB: this MUST be in the same order as the error #defines in errors.h
 	static const char *const error_table[] = 
 	{
 		// manually get the order correct!
-		MSG2("Running", "ProGraMm", "program"),
+		MSG2("Running", "ProGraMm"),
 		MSG1("Domain"),
-		MSG2("Bad time", "or dAtE", "or date"),
-		MSG2("Undefined", "Op-COdE", "op-code"),
+		MSG2("Bad time", "or dAtE"),
+		MSG2("Undefined", "Op-COdE"),
 		MSG1("+\237"),
 		MSG1("-\237"),
-		MSG2("No such", "LAbEL", "label"),
-		MSG2("Illegal", "OPErAtion", "operation"),
+		MSG2("No such", "LAbEL"),
+		MSG2("Illegal", "OPErAtion"),
 		MSG1("Out of range"),
 		MSG1("Bad digit"),
 		MSG1("Too long"),
-		MSG2("RAM is", "FuLL", "full"),
-		MSG2("Stack", "CLASH", "clash"),
+		MSG2("RAM is", "FuLL"),
+		MSG2("Stack", "CLASH"),
 		MSG1("Bad mode"),
-		MSG2("Word size", "too SMmALL", "too small"),
-		MSG2("Too few", "dAtA PointS", "data points"),
-		MSG2("Invalid", "ParaMmEtEr", "parameter"),
+		MSG2("Word size", "too SMmALL"),
+		MSG2("Too few", "dAtA PointS"),
+		MSG2("Invalid", "ParaMmEtEr"),
 		MSG1("I/O"),
-		MSG2("Invalid", "dAtA", "data"),
-		MSG2("Write", "ProtEctEd", "protected"),
-		MSG2("No root", "Found", "found"),
-		MSG2("Matrix", "MmISMmAtCH", "mismatch"),
+		MSG2("Invalid", "dAtA"),
+		MSG2("Write", "ProtEctEd"),
+		MSG2("No root", "Found"),
+		MSG2("Matrix", "MmISMmAtCH"),
 		MSG1("Singular"),
-		MSG2("Flash is", "FuLL", "FuLL"),
-		MSG2("\004 \035", "X", "X"),		// Integral ~
+		MSG2("Flash is", "FuLL"),
+		MSG2("\004 \035", "X"),		// Integral ~
 	};
 #undef MSG1
 #undef MSG2
@@ -132,14 +129,21 @@ void error_message(const unsigned int e)
 #ifdef INFRARED
 		if (Tracing) {
 			if (*q == 'X')
-				print_reg(regX_idx, p);
+				print_reg(regX_idx, p, 0);
 			else {
-				if (q != S7_ERROR)
-					q = find_char(q, '\0') + 1;
 				print_tab(0);
 				print_line(p, 0);
 				print(' ');
-				print_line(q, 1);
+				while (*q != '\0') {
+					int c = *q;
+					if (c >= 'A')
+						c |= 0x60; // ASCII lower case
+					print(c);
+					if (c == 'm' /* || c == 'w' */)
+						++q;
+					++q;
+				}
+				print_advance();
 			}
 		}
 #endif
@@ -1099,7 +1103,7 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 	}
 	if (show_exp)
 		set_exp(exp, 0, res);
-	if (obp[-1] == '.')
+	if (obp[-1] == '.' && res == NULL)
 		set_decimal((DISPLAY_DIGITS - 1) * SEGS_PER_DIGIT, DecimalMode, res);
 }
 

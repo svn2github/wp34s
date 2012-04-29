@@ -64,7 +64,7 @@ int print( int c )
 /*
  *  New line
  */
-static int advance( void )
+int print_advance( void )
 {
 	int abort;
 	PrinterColumn = 0;
@@ -82,7 +82,7 @@ static int advance( void )
 static int advance_if_trace()
 {
 	if ( PrinterColumn != 0 && Tracing ) {
-		return advance();
+		return print_advance();
 	}
 	return 0;
 }
@@ -95,7 +95,7 @@ int print_tab( unsigned int col )
 {
 	int abort = 0;
 	if ( PrinterColumn > col ) {
-		abort = advance();
+		abort = print_advance();
 	}
 	if ( !abort && PrinterColumn < col ) {
 		int i = col - PrinterColumn;
@@ -138,7 +138,7 @@ static int print_graphic( int glen, unsigned char *graphic )
 static int wrap( int width )
 {
 	if ( PrinterColumn + width > 166 ) {
-		if ( advance() ) {
+		if ( print_advance() ) {
 			return 1;
 		}
 		if ( width == 7 ) {
@@ -246,7 +246,7 @@ int print_line( const char *buff, int with_lf )
 	}
 	abort |= print_graphic( glen, graphic );
 	if ( with_lf ) {
-		abort |= advance();
+		abort |= print_advance();
 	}
 	return abort;
 }
@@ -275,13 +275,13 @@ int print_justified( const char *buff )
 /*
  *  Print a single register
  */
-int print_reg( int reg, const char *label )
+int print_reg( int reg, const char *label, int eq )
 {
 	char buffer[ 65 ];
 	int abort = 0;
 
 	if ( label != NULL ) {
-		abort = print_line( label, 0 );
+		abort = print_line( label, 0 ) || ( eq && print_line( " =", 0 ) );
 	}
 	xset( buffer, '\0', sizeof( buffer ) );
 	format_reg( reg, buffer );
@@ -316,6 +316,7 @@ void print_registers( enum nilop op )
 			*p++ = REGNAMES[ r - regX_idx ];
 		}
 		else {
+			*p++ = 'r';
 			if ( r > LOCAL_REG_BASE ) {
 				*p++ = '.';
 				r -= LOCAL_REG_BASE;
@@ -326,9 +327,12 @@ void print_registers( enum nilop op )
 			}
 			p = num_arg_0( p, r, 2 );
 		}
-		*p++ = '=';
 		*p = '\0';
-		abort = print_reg( s++, name );
+		abort = print_reg( s++, name, 1 );
+	}
+	if ( op == OP_PRINT_STACK && !abort ) {
+		print_reg( regL_idx, "Last X", 1 );
+		print_reg( regI_idx, "Last I", 1 );
 	}
 }
 
@@ -358,7 +362,7 @@ void print_sigma( enum nilop op )
 	for ( i = 0; !abort && i < sizeof( ops ); ++i ) {
 		sigma_val( (enum nilop) ops[ i ] );
 		prt( OP_NIL | ops[ i ], buffer );
-		abort = print_reg( regX_idx, buffer );
+		abort = print_reg( regX_idx, buffer, 1 );
 	}
 	copyreg( StackBase, &save_x );
 }
@@ -384,7 +388,7 @@ void print_alpha( enum nilop op )
 void print_lf( enum nilop op )
 {
 	if ( !advance_if_trace()) {
-		advance();
+		print_advance();
 	}
 }
 
@@ -425,7 +429,7 @@ void cmdprint( unsigned int arg, enum rarg op )
 void cmdprintreg( unsigned int arg, enum rarg op )
 {
 	if ( !advance_if_trace()) {
-		print_reg( arg, NULL );
+		print_reg( arg, NULL, 0 );
 	}
 }
 
@@ -478,9 +482,11 @@ void print_trace( opcode op, int phase )
 		}
 		else {
 			// right part of print
-			print_reg( regX_idx, op == TRACE_DATA_ENTRY ? ">>>" : 
-				             PrinterColumn == 0     ? ( !Tracing ? buffer : "***"  ) : 
-					     (char *) NULL );
+			print_reg( regX_idx,
+				   op == TRACE_DATA_ENTRY ? ">>>" :
+				   PrinterColumn == 0     ? ( !Tracing ? buffer : "***"  ) :
+				   (char *) NULL,
+				   0 );
 		}
 	}
 }
