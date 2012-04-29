@@ -567,7 +567,8 @@ maxlibsteps=9999
 0x204f	cmd	# LN2[^-1]
 0x2050	cmd	# [pi]
 0x2051	cmd	# [pi]/2
-0x2052	cmd	# [integral]RgB
+0x2052	cmd	# [sqrt]2[pi]
+0x2053	cmd	# [integral]RgB
 0x2100	cmd	[cmplx]# a
 0x2101	cmd	[cmplx]# a[sub-0]
 0x2102	cmd	[cmplx]# a[sub-m]
@@ -648,7 +649,8 @@ maxlibsteps=9999
 0x214f	cmd	[cmplx]# LN2[^-1]
 0x2150	cmd	[cmplx]# [pi]
 0x2151	cmd	[cmplx]# [pi]/2
-0x2152	cmd	[cmplx]# [integral]RgB
+0x2152	cmd	[cmplx]# [sqrt]2[pi]
+0x2153	cmd	[cmplx]# [integral]RgB
 0x2200	arg	ERR	max=25,indirect
 0x2300	arg	STO	max=128,indirect,stack
 0x2400	arg	STO+	max=128,indirect,stack
@@ -1366,8 +1368,8 @@ maxlibsteps=9999
 0xa6ff	cmd	[<->] TTTT
 0xa700	arg	#	max=256
 0xa800	arg	[cmplx]#	max=256
-0xa900	arg	CNST	max=83,indirect
-0xaa00	arg	[cmplx]CNST	max=83,indirect
+0xa900	arg	CNST	max=84,indirect
+0xaa00	arg	[cmplx]CNST	max=84,indirect
 0xab00	arg	[print]r	max=128,indirect,stack
 0xac00	arg	[print]#	max=128,indirect
 0xad00	arg	[print]CHR	max=128,indirect

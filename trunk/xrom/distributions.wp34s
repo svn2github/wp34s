@@ -545,18 +545,13 @@ logistic_param::	RCL- J
 /**************************************************************************/
 /* Normal distribution
  */
-#ifdef NORMAL_DISTRIBUTION_AS_XROM
-#define X(a, b)		a
-#else
-#define X(a, b)		b
-#endif
  		XLBL"PDF_NORMAL"
 			xIN MONADIC
 				GSB pdf_normal
 			xOUT xOUT_NORMAL
 
 pdf_normal::		GSB normal_param
-			X(GSB pdf_q, [phi](x))
+			GSB pdf_q
 			RCL/ K
 			RTN
 
@@ -565,8 +560,7 @@ pdf_normal::		GSB normal_param
 			SPEC?
 				JMP cdf_infinite
 cdf_normal::		GSB normal_param
-			X(GSB cdf_q, [PHI](x))
-			xOUT xOUT_NORMAL
+			JMP cdf_q_xout
 
 normal_param::		RCL J
 			GSB check_special
@@ -581,7 +575,7 @@ normal_param::		RCL J
 				GSB qf_normal
 			xOUT xOUT_NORMAL
 
-qf_normal::		X(GSB qf_q, [PHI][^-1](p))
+qf_normal::		GSB qf_q
 			RCL K
 			GSB check_special_pos
 			[times]
@@ -591,7 +585,7 @@ qf_normal::		X(GSB qf_q, [PHI][^-1](p))
 			RTN
 #undef X
 
-#ifdef NORMAL_DISTRIBUTION_AS_XROM
+
 /**************************************************************************/
 /* Standard Normal distribution
  */
@@ -780,8 +774,6 @@ qf_q_skip2::		Num [sqrt]2[pi]
 			+
 			JMP qf_q_neg_fin
 
-#endif
-
 
 /**************************************************************************/
 /* One parameter Poission distribution
@@ -880,10 +872,8 @@ poisson2_param::	x[<->] J
 		XLBL"PDF_T"
 			xIN MONADIC
 			GSB t_param
-#ifdef NORMAL_DISTRIBUTION_AS_XROM
 			FS?C .00
 				JMP pdf_q_xout
-#endif
 			GSB pdf_t
 			xOUT xOUT_NORMAL
 
@@ -915,10 +905,8 @@ pdf_t::			RCL[times] X	// x^2 ? ? ?
 		XLBL"CDF_T"
 			xIN MONADIC
 			GSB t_param
-#ifdef NORMAL_DISTRIBUTION_AS_XROM
 			FS?C .00
 				JMP cdf_q_xout
-#endif
 			GSB cdf_t
 			xOUT xOUT_NORMAL
 
@@ -963,10 +951,8 @@ dist_ret_half::		.
 			xIN MONADIC
 			GSB t_param
 			GSB qf_check_probability
-#ifdef NORMAL_DISTRIBUTION_AS_XROM
 			FS?C .00
 				JMP qf_q_xout
-#endif
 			xOUT xOUT_NORMAL
 
 t_param::		RCL J

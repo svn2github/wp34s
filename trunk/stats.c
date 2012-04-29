@@ -1048,73 +1048,6 @@ decNumber *dn_ln1m(decNumber *r, const decNumber *x) {
 }
 
 
-// Normal(0,1) PDF
-// 1/sqrt(2 PI) . exp(-x^2/2)
-decNumber *pdf_Q(decNumber *q, const decNumber *x) {
-	decNumber r, t;
-
-	decNumberSquare(&t, x);
-	dn_div2(&r, &t);
-	dn_minus(&t, &r);
-	dn_exp(&r, &t);
-	return dn_multiply(q, &r, &const_recipsqrt2PI);
-}
-
-// Normal(0,1) CDF function
-decNumber *cdf_Q_helper(decNumber *q, decNumber *pdf, const decNumber *x) {
-	decNumber t, u, v, a, x2, d, absx, n;
-	int i;
-
-	pdf_Q(pdf, x);
-	dn_abs(&absx, x);
-	if (dn_gt(&absx, &const_PI)) {		// We need a number about 3.2 and this is close enough
-		//dn_minus(&x2, &absx);
-		//n = ceil(5 + k / (|x| - 1))
-		dn_m1(&v, &absx);
-		dn_divide(&t, &const_256, &v);
-		dn_add(&u, &t, &const_4);
-		decNumberCeil(&n, &u);
-		decNumberZero(&t);
-		do {
-			dn_add(&u, x, &t);
-			dn_divide(&t, &n, &u);
-			dn_dec(&n);
-		} while (! dn_eq0(&n));
-
-		dn_add(&u, &t, x);
-		dn_divide(q, pdf, &u);
-		if (! decNumberIsNegative(q))
-			dn_1m(q, q);
-		if (decNumberIsNegative(x))
-			dn_minus(q, q);
-		return q;
-	} else {
-		decNumberSquare(&x2, &absx);
-		decNumberCopy(&t, &absx);
-		decNumberCopy(&a, &absx);
-		decNumberCopy(&d, &const_3);
-		for (i=0;i<500; i++) {
-			dn_multiply(&u, &t, &x2);
-			dn_divide(&t, &u, &d);
-			dn_add(&u, &a, &t);
-			if (dn_eq(&u, &a))
-				break;
-			decNumberCopy(&a, &u);
-			dn_p2(&d, &d);
-		}
-		dn_multiply(&v, &a, pdf);
-		if (decNumberIsNegative(x))
-			return dn_subtract(q, &const_0_5, &v);
-		return dn_add(q, &const_0_5, &v);
-	}
-}
-
-decNumber *cdf_Q(decNumber *q, const decNumber *x) {
-	decNumber t;
-	return cdf_Q_helper(q, &t, x);
-}
-
-
 static void qf_Q_est(decNumber *est, const decNumber *x, const decNumber *x05) {
 	const int invert = decNumberIsNegative(x05);
 	decNumber a, b, u, xc;
@@ -1146,37 +1079,6 @@ static void qf_Q_est(decNumber *est, const decNumber *x, const decNumber *x05) {
 		dn_minus(est, est);
 	}
 }
-
-decNumber *qf_Q(decNumber *r, const decNumber *x) {
-	decNumber a, b, t, cdf, pdf;
-	int i;
-
-
-	if (check_probability(r, x, 0))
-		return r;
-	dn_subtract(&b, &const_0_5, x);
-	if (dn_eq0(&b)) {
-		decNumberZero(r);
-		return r;
-	}
-
-	qf_Q_est(r, x, &b);
-	for (i=0; i<10; i++) {
-		cdf_Q_helper(&cdf, &pdf, r);
-		dn_subtract(&a, &cdf, x);
-		dn_divide(&t, &a, &pdf);
-		dn_multiply(&a, &t, r);
-		dn_div2(&b, &a);
-		dn_m1(&a, &b);
-		dn_divide(&b, &t, &a);
-		dn_add(&a, &b, r);
-		if (relative_error(&a, r, &const_1e_32))
-			break;
-		decNumberCopy(r, &a);
-	}
-	return decNumberCopy(r, &a);
-}
-
 
 // Pv(x) = (x/2)^(v/2) . exp(-x/2) / Gamma(v/2+1) . (1 + sum(x^k/(v+2)(v+4)..(v+2k))
 static int chi2_param(decNumber *r, decNumber *k, const decNumber *x) {
@@ -1345,8 +1247,10 @@ decNumber *cdf_T_helper(decNumber *r, const decNumber *x, const decNumber *v, co
 			return decNumberZero(r);
 		return dn_1(r);
 	}
+#if 0
 	if (decNumberIsInfinite(v))			// Normal in the limit
 		return cdf_Q(r, x);
+#endif
 	if (dn_eq0(x))
 		return decNumberCopy(r, &const_0_5);
 	invert = ! decNumberIsNegative(x);
@@ -1427,10 +1331,12 @@ static int qf_T_init(decNumber *r, decNumber *v, const decNumber *x) {
 		decNumberZero(r);
 		return 1;
 	}
+#if 0
 	if (decNumberIsInfinite(v)) {			// Normal in the limit
 		qf_Q(r, x);
 		return 1;
 	}
+#endif
 
 	if (dn_eq1(v)) {				// special case v = 1
 		dn_mulPI(&a, &b);

@@ -196,15 +196,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_CCONJ,	NOFN,			XMC(cpx_CONJ),	NOFN,		"CONJ")
 	FUNC(OP_ERF,	XMR(ERF),		NOFN,		NOFN,		"erf")
 	FUNC(OP_ERFC,	XMR(ERFC),		NOFN,		NOFN,		"erfc")
-#ifdef NORMAL_DISTRIBUTION_AS_XROM
 	FUNC(OP_pdf_Q,	XMR(PDF_Q), 		NOFN,		NOFN,		"\264(x)")
 	FUNC(OP_cdf_Q,	XMR(CDF_Q), 		NOFN,		NOFN,		"\224(x)")
 	FUNC(OP_qf_Q,	XMR(QF_Q),  		NOFN,		NOFN,		"\224\235(p)")
-#else
-	FUNC(OP_pdf_Q,	&pdf_Q, 		NOFN,		NOFN,		"\264(x)")
-	FUNC(OP_cdf_Q,	&cdf_Q, 		NOFN,		NOFN,		"\224(x)")
-	FUNC(OP_qf_Q,	&qf_Q,  		NOFN,		NOFN,		"\224\235(p)")
-#endif
 	FUNC(OP_pdf_chi2, &pdf_chi2,		NOFN,		NOFN,		"\265\232\276")
 	FUNC(OP_cdf_chi2, &cdf_chi2,		NOFN,		NOFN,		"\265\232")
 	FUNC(OP_qf_chi2,  &qf_chi2,		NOFN,		NOFN,		"\265\232INV")

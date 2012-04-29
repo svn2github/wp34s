@@ -114,11 +114,6 @@
 // Include the flash register recall routines RCF and their variants
 // #define INCLUDE_FLASH_RECALL
 
-// Define this if you want the normal distribution coded as XROM instead of C
-// This should be postponed until no more internal references to the C code
-// are needed.
-// #define NORMAL_DISTRIBUTION_AS_XROM
-
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/

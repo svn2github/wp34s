@@ -73,11 +73,6 @@ extern void stats_sto_random(enum nilop);
 
 extern decNumber *betai(decNumber *, const decNumber *, const decNumber *, const decNumber *);
 
-/* Normal (0, 1) distribution */
-extern decNumber *pdf_Q(decNumber *, const decNumber *);
-extern decNumber *cdf_Q(decNumber *, const decNumber *);
-extern decNumber *qf_Q(decNumber *, const decNumber *);
-
 /* Chi squared n distribution r in register J */
 extern decNumber *pdf_chi2(decNumber *, const decNumber *);
 extern decNumber *cdf_chi2(decNumber *, const decNumber *);
@@ -96,9 +91,6 @@ extern decNumber *qf_F(decNumber *, const decNumber *);
 /* Poisson distribution with parameter lambda (in register J) */
 extern decNumber *cdf_P(decNumber *, const decNumber *);
 extern decNumber *qf_P(decNumber *, const decNumber *);
-
-/* Geometric distribution with parameter p (in register J) */
-extern decNumber *qf_G(decNumber *, const decNumber *);
 
 /* Binomial distribution (n, p) in registers J and K */
 extern decNumber *cdf_B(decNumber *, const decNumber *);

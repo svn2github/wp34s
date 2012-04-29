@@ -14,12 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef NORMAL_DISTRIBUTION_AS_XROM
-#define X(a, b)		a
-#else
-#define X(a, b)		b
-#endif
-
 /**************************************************************************/
 /* Complementary error function
  */
@@ -29,7 +23,7 @@
 			[sqrt]
 			[times]
 			+/-
-			X(GSB cdf_q, [PHI](x))
+			GSB cdf_q
 			RCL+ X
 			xOUT xOUT_NORMAL
 
@@ -43,7 +37,7 @@
 			.
 			5
 			SWAP
-			X(GSB gammap, I[GAMMA])
+			GSB gammap
 			FS? .00
 				+/-
 			xOUT xOUT_NORMAL
@@ -52,6 +46,4 @@ erf_infinite::		_INT 1
 			x>? Y
 				+/-
 			xOUT xOUT_NORMAL
-
-#undef X
 
