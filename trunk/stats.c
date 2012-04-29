@@ -1539,7 +1539,7 @@ static void qf_B_est(decNumber *r, const decNumber *p, const decNumber *prob, co
 	decNumber mu, sigma;
 
 	dn_multiply(&mu, prob, n);
-	dn_1m(&sigma, p);
+	dn_1m(&sigma, prob);
 	dn_multiply(r, &mu, &sigma);
 	dn_sqrt(&sigma, r);
 	normal_approximation_via_moment(r, p, &mu, &sigma);
