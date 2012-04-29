@@ -432,6 +432,8 @@ qf_discrere_out::	RCL R_R
 			xOUT xOUT_NORMAL
 qf_discrete_1high::	DEC R_R
 			JMP qf_discrere_out
+
+
 qf_discrete_cdf::	iSKIP[->]R_DIST
 			JMP cdf_poisson
 			JMP cdf_binomial
@@ -440,11 +442,12 @@ qf_discrete_cdf::	iSKIP[->]R_DIST
 #undef R_P
 #undef R_DIST
 
-
+#if 1
 cdf_poisson::		Pois[lambda]
 			RTN
 cdf_binomial::		Binom
 			RTN
+#endif
 
 geom_param::		RCL J
 			GSB check_probability
@@ -1202,6 +1205,16 @@ qf_newton_underhigh::	RCL R_HIGH
 			_INT 2
 			/
 			JMP qf_newton_bisect_out
+
+
+/* Discrete distribtions require an extra check to push the final answer
+ * up or down one to account for any possible rounding issues.
+ */
+qf_discrete_exit::	RCL R_DIST
+			_INT DIST_POISSON
+			-
+			z[<->] R_P
+			JMP qf_discrete_final
 
 /* Dispatchers to the PDF and CDF of the distribution being searched */
 qf_newton_pdf::		iSKIP[->]R_DIST
