@@ -24,7 +24,6 @@
 #define DIST_BINOMIAL	(4)
 #define DIST_GEOMETRIC	(5)
 
-
 /**************************************************************************/
 /* Binomial distribution
  * Two parameters:
@@ -54,7 +53,6 @@
 			[times]
 			xOUT xOUT_NORMAL
 
-#if 0
 		XLBL"CDF_BINOMIAL"
 			xIN MONADIC
 			GSB binomial_param
@@ -75,8 +73,22 @@ cdf_binomial::		x<0?
 			JMP betai
 
 		XLBL"QF_BINOMIAL"
-			RTN
-#endif
+			xIN MONADIC
+			GSB binomial_param
+			GSB qf_check_probability
+			RCL J
+			RCL[times] K		// mean = np
+			_INT 1
+			RCL- J
+			RCL[times] Y		// variance = np(1-p)
+			[sqrt]
+			SWAP
+			GSB normal_moment_approx
+			_INT DIST_BINOMIAL
+			XEQ qf_newton
+			RCL[v] K
+			xOUT xOUT_NORMAL
+
 binomial_param::	RCL J
 			GSB check_probability
 			RCL K
@@ -88,7 +100,8 @@ binomial_param::	RCL J
 				JMP ret_0
 			[cmplx]DROP
 			RTN
-#if 1
+
+
 betai::			I[beta]
 			RTN
 
@@ -100,7 +113,8 @@ dist_ret_0::		_INT 0
 
 dist_ret_1::		_INT 1
 			RTN
-#endif
+
+
 /**************************************************************************/
 /* Cauchy distribution
  * Two parameters:
@@ -165,7 +179,6 @@ cauchy_xform::		RCL- J
  * One parameters:
  *	n positive integer
  */
-#if 0
 		XLBL"PDF_CHI2"
 			xIN MONADIC
 			GSB chi2_param
@@ -224,9 +237,78 @@ chi2_param::		RCL J
 		XLBL"QF_CHI2"
 			xIN MONADIC
 			GSB chi2_param
-			NOP
+			GSB qf_check_probability
+			GSB qf_chi2_est
+			_INT DIST_CHI2
+			XEQ qf_newton
 			xOUT xOUT_NORMAL
-#endif
+
+#define R_P	.00
+#define R_T	.01
+qf_chi2_est::		LocR 2
+			STO R_P
+			_INT 15
+			x<? J
+				JMP qf_chi2_est_ll
+			_INT 1
+			JMP qf_chi2_est_ld
+qf_chi2_est_ll::	_INT 85
+			SDR 2
+qf_chi2_est_ld::	+/-
+			RCL[times] J
+			e[^x]
+			x[<=]? R_P
+				JMP qf_chi2_large
+			RCL J
+			_INT 2
+			/
+			ENTER[^]	// n/2 n/2 ? ?
+			LN[GAMMA]
+			RCL/ Y
+			e[^x]
+			RCL Y		// n/2 exp n/2 ?
+			RCL[times] R_P	// pn/2 exp n/2 ?
+			RCL Z
+			[^x][sqrt]y	// xroot exp n/2
+			[times]
+			RCL+ X
+			JMP qf_chi2_est_exit
+
+qf_chi2_large::		RCL R_P
+			GSB qf_q_est
+			_INT 97
+			SDR 2
+			[times]		// .97q
+			Num Chi2	// 0.2214
+			RCL/ J		// .2214/n .97q
+			ENTER[^]	// .2214/N .2214/N .97q
+			[sqrt]
+			RCL[times] Z	// sqrt(.2214/N)*.97q .2214/N .97q
+			RCL- Y		// sqrt(.2214/N)*.97q-.2214/N .2214/N .97q
+			INC X
+			x[^3]
+			RCL[times] J	// ch3 .2214/N .97q
+			_INT 6
+			RCL[times] J
+			_INT 16
+			+
+			SWAP
+			x[<=]? Y
+				JMP qf_chi2_est_exit
+			RCL R_P
+			GSB log1m
+			_INT 150
+			RCL[times] J
+			/
+			INC X
+			[times]
+
+qf_chi2_est_exit::	RCL R_P
+			RTN
+
+#undef R_P
+#undef R_T
+
 
 /**************************************************************************/
 /* Exponential distribution
@@ -281,7 +363,6 @@ expon_param::		RCL J
  *	J = df1 (real > 0)
  *	K = df2 (real > 0)
  */
-#if 0
 		XLBL"PDF_F"
 			xIN MONADIC
 			GSB f_param
@@ -347,7 +428,56 @@ cdf_f::			x[<=]0?
 		XLBL"QF_F"
 			xIN MONADIC
 			GSB f_param
+			GSB qf_f_est
+			_INT DIST_F
+			XEQ qf_newton
 			xOUT xOUT_NORMAL
+
+qf_f_est::		LocR 003
+			STO .00
+			GSB qf_q_est
+			RCL J
+			x>1?
+				DEC X
+			1/x
+			RCL K
+			x>1?
+				DEC X
+			1/x
+			[cmplx]STO .01
+			+
+			_INT 2
+			SWAP
+			/		// 2/dofs QF
+			RCL Y
+			x[^2]
+			_INT 3
+			-
+			_INT 6
+			/		// k h x
+			RCL Y
+			RCL+ Y		// h+k k h x
+			[sqrt]
+			RCL[times] T	// xSqrt() k h x
+			RCL/ Z
+			_INT 2		// 2 first k h
+			RCL/ T
+			_INT 3
+			/
+			+/-		// -2/3/h first k
+			RCL+ Z
+			_INT 5
+			_INT 6
+			/
+			+		// k+5/6-2/3/h first
+			[cmplx]RCL .01
+			-
+			[times]
+			-
+			RCL+ X
+			e[^x]
+			RCL .00
+			RTN
 
 f_param::		RCL J
 			GSB check_special_pos
@@ -359,7 +489,7 @@ f_param::		RCL J
 //				ERR ERR_BAD_PARAM
 			[cmplx]DROP
 			RTN
-#endif
+
 /**************************************************************************/
 /* Geometric distribution
  * One parameter:
@@ -396,6 +526,11 @@ cdf_geom::		x<0?
 			[times]
 			e[^x]-1
 			+/-
+			RTN
+
+geom_param::		RCL J
+			GSB check_probability
+			DROP
 			RTN
 
 		XLBL"QF_GEOM"
@@ -441,18 +576,6 @@ qf_discrete_cdf::	iSKIP[->]R_DIST
 #undef R_R
 #undef R_P
 #undef R_DIST
-
-#if 1
-cdf_poisson::		Pois[lambda]
-			RTN
-cdf_binomial::		Binom
-			RTN
-#endif
-
-geom_param::		RCL J
-			GSB check_probability
-			DROP
-			RTN
 
 /**************************************************************************/
 /* Logistic distribution
@@ -733,7 +856,7 @@ qf_q_est::		LocR 02
 			x=0?
 				RTN
 			/* Estimate an initial try */
-			x[>=]0?
+			x>0?
 				JMP qf_q_inrange
 			Num 1
 			RCL- .00
@@ -779,10 +902,30 @@ qf_q_skip2::		Num [sqrt]2[pi]
 /* One parameter Poission distribution
  * Real parameter lambda in J.
  */
+/* Stack contains probability in Z, variance in Y and mean in X.
+ * Returns a normal approximation in X.
+ */
+normal_moment_approx::	LocR 003
+			[cmplx]STO .00
+			[cmplx]DROP
+			STO .02
+			GSB qf_q_est
+			ENTER[^]
+			x[^2]		// z2  z ? ?
+			DEC X		// z2-1  z ? ?
+			_INT 6
+			/
+			RCL/ .01
+			+
+			RCL[times] .01
+			RCL+ .00
+			RCL .02
+			RTN
+
 		XLBL"PDF_POISSON"
 			xIN MONADIC
 			GSB poission1_param
-pdf_poisson::		FP?
+pdf_poisson_xout::	FP?
 				JMP ret_0
 			RCL J
 			SWAP
@@ -795,11 +938,10 @@ pdf_poisson::		FP?
 			/
 			xOUT xOUT_NORMAL
 
-#if 0
 		XLBL"CDF_POISSON"
 			xIN MONADIC
 			GSB poission1_param
-			FLOOR
+cdf_poisson_xout::	FLOOR
 			GSB cdf_poisson
 			xOUT xOUT_NORMAL
 
@@ -816,8 +958,17 @@ cdf_poisson::		x<0?
 			RTN
 
 		XLBL"QF_POISSON"
-			RTN
-#endif
+			xIN MONADIC
+			GSB poission1_param
+qf_poisson_xout::	GSB qf_check_probability
+			RCL J
+			[sqrt]
+			RCL J
+			GSB normal_moment_approx
+			_INT DIST_POISSON
+			XEQ qf_newton
+			xOUT xOUT_NORMAL
+
 
 poission1_param::	x[<->] J
 			NaN?
@@ -837,23 +988,17 @@ poission1_param::	x[<->] J
 		XLBL"PDF_POIS2"
 			xIN MONADIC
 			GSB poisson2_param
-			JMP pdf_poisson
+			JMP pdf_poisson_xout
 
 		XLBL"CDF_POIS2"
 			xIN MONADIC
 			GSB poisson2_param
-#if 0
-			GSB cdf_poisson
-#else
-			Pois[lambda]
-#endif
-			xOUT xOUT_NORMAL
+			JMP cdf_poisson_xout
 
 		XLBL"QF_POIS2"
 			xIN MONADIC
 			GSB poisson2_param
-			Pois[lambda][^-1]
-			xOUT xOUT_NORMAL
+			JMP qf_poisson_xout
 
 poisson2_param::	x[<->] J
 			GSB check_probability
@@ -868,7 +1013,6 @@ poisson2_param::	x[<->] J
  * One parameter:
  *	J = degrees of freedom (real > 0)
  */
-#if 0
 		XLBL"PDF_T"
 			xIN MONADIC
 			GSB t_param
@@ -953,7 +1097,112 @@ dist_ret_half::		.
 			GSB qf_check_probability
 			FS?C .00
 				JMP qf_q_xout
+			GSB qf_t_est
+			_INT DIST_T
+			XEQ qf_newton
 			xOUT xOUT_NORMAL
+
+qf_t_est::		LocR 003
+			STO .00
+			STO .02
+			RCL J
+			x=1?
+				JMP qf_t1
+			_INT 2
+			x=? Y
+				JMP qf_t2
+
+			.
+			5
+			RCL .00
+			x<? Y
+				JMP qf_t_lower
+			_INT 1
+			RCL- .00
+			STO .00
+			SF .00
+
+			/* Now do the estimate */
+qf_t_lower::		_INT 17
+			SDR 1
+			RCL[times] J
+			RCL .00
+			LN
+			+/-
+			x[>=]? Y
+				JMP qf_t_est2
+			RCL .00
+			GSB qf_q_est
+			STO .01
+			x[^3]
+			ENTER[^]
+			RCL+ .01	// x^3+x x^3
+			_INT 4		// 4 x^3+x x^3
+			RCL[times] J	// 4n x^3+x x^3
+			/		// u=(x^3+x)/4/n x^3
+			SWAP		// x^3 u
+			_INT 4
+			/		// x^3/4 u
+			RCL X		// x^3/4 x^3/4 u
+			RCL[times] .01	// x^4/4 x^3/4 u
+			RCL[times] .01	// x^5/4 x^3/4 u
+			_INT 3
+			/		// x^5/12 x^3/4 u
+			+		// x^5/12+x^3/4 u
+			RCL J
+			RCL[times] J
+			/
+			+
+			RCL+ .01
+			JMP qf_t_est_end
+
+qf_t_est2::		RCL J
+			[sqrt]
+			Num [pi]
+			RCL J
+			RCL+ X		// 2n pi
+			DEC X		// 2n-1 pi sqrt(n)
+			/
+			[sqrt]		// sqrt(pi/(2n-1)) sqrt(n)
+			RCL[times] J
+			RCL+ X
+			RCL[times] .00
+			RCL J
+			[^x][sqrt]y
+			/
+			+/-
+
+qf_t_est_end::		FS? .00
+				+/-
+			RCL .02
+			RTN
+
+/* For one degree of freedom, we use an explicit formula */
+qf_t1::			RCL .00
+			.
+			5
+			-
+			Num [pi]
+			[times]
+			TAN
+			xOUT xOUT_NORMAL
+
+/* For two degrees of freedom, we use an explicit formula */
+qf_t2::			_INT 1
+			RCL- .00	// 1-p 2
+			RCL[times] .00	// p(1-p) 2
+			_INT 2
+			[times]
+			1/x		// 2 / (4p(1-p))
+			[sqrt]
+			.
+			5
+			RCL- .00
+			[times]
+			RCL+ X
+			+/-
+			xOUT xOUT_NORMAL
+
 
 t_param::		RCL J
 			[infinity]?
@@ -966,7 +1215,6 @@ t_param_inf::		x<0?
 				ERR ERR_BAD_PARAM
 			SF .00
 			JMP t_drop_rtn
-#endif
 
 /**************************************************************************/
 /* Weibull distribution
@@ -1077,20 +1325,20 @@ log1m::		+/-
 		LN1+x
 		RTN
 
-#if 0
 /**************************************************************************/
 /* The Newton step solver.
- * Target value in Y, function identifier in X.
+ * Target value in Y, function identifier in X, estimate in Z.
  */
+
 /* Register use:
  */
-#define R_DIST		.00
-#define R_P		.01
-#define R_ITERATIONS	.02
-#define R_LOW		.03
-#define R_HIGH		.04
-#define R_MAXSTEP	.05
-#define R_R		.06
+#define R_DIST		.00		/* Which distribution are we using? */
+#define R_P		.01		/* Target probability */
+#define R_ITERATIONS	.02		/* Iteration counter */
+#define R_LOW		.03		/* lower bounds for solution */
+#define R_HIGH		.04		/* upper bounds for solution */
+#define R_MAXSTEP	.05		/* Step size limiting */
+#define R_R		.06		/* Current best estimate */
 #define R_Z		.07
 #define R_W		.08
 
@@ -1099,9 +1347,10 @@ log1m::		+/-
 #define F_DISCRETE	.00
 #define F_NONNEGATIVE	.01
 #define F_NOBISECT	.02
+#define F_LIMITJUMP	.03
 
 qf_newton::		LocR 009
-			[cmplx]STO .00
+			[cmplx]STO R_DIST
 			z[<->] R_R
 
 			/* Set flags based on distribution */
@@ -1110,32 +1359,44 @@ qf_newton::		LocR 009
 			SF F_NONNEGATIVE		/* All the rest are non-negative */
 			DEC X
 			x>1?
-				SF F_DISCRETE		/* Binomial is discrete and non-negative */
+				JMP qf_newton_dis	/* Poisson & Binomial are discrete and non-negative */
+			SF F_LIMITJUMP			/* Chi^2 and F limit the jump distance */
+			x=0?
+				JMP qf_newton_chi2_lim
+			_INT 75				/* 100 * F jump limit */
+			JMP qf_netwon_do_limit
+qf_newton_chi2_lim::	_INT 4				/* 100 * Chi^2 jump limit */
+qf_netwon_do_limit::	SDR 02
+			RCL[times] R_R
+			STO R_MAXSTEP
+			JMP qf_newton_flag_done
 
+qf_newton_dis::		SF F_DISCRETE
 qf_newton_flag_done::	_INT 100
 			STO R_ITERATIONS
-			_Num infinity
+			Num [infinity]
 			STO R_HIGH
-			STO R_MAXSTEP
-			+/-
+			Num -[infinity]
 			FS? F_NONNEGATIVE
-				_INT 0
+				CLx
 			STO R_LOW
 
-
+/* Initialisation done, now the main loop itself */
 qf_newton_search::	RCL R_R
 			x[>=]? R_HIGH
 				JMP qf_newton_try_bisect
 			x[<=]? R_LOW
 				JMP qf_newton_try_bisect
+
 qf_newton_no_bisect::	RCL R_R
 			GSB qf_newton_cdf
 			STO R_W
 			RCL- R_P
 			STO R_Z
-			x>0?
+
+			x[>=]0?
 				JMP qf_newton_fix_high
-			FS? F_NOBISECT
+			FS?C F_NOBISECT
 				JMP qf_newton_fix_low2
 			RCL R_R
 			x>? R_LOW
@@ -1147,7 +1408,8 @@ qf_newton_no_bisect::	RCL R_R
 qf_newton_fix_low2::	RCL R_R
 qf_newton_fix_low3::	STO[^] R_LOW
 			JMP qf_newton_fixed
-qf_newton_fix_high::	FS? F_NOBISECT
+
+qf_newton_fix_high::	FS?C F_NOBISECT
 				JMP qf_newton_fix_high2
 			RCL R_R
 			x<? R_HIGH
@@ -1159,23 +1421,96 @@ qf_newton_fix_high::	FS? F_NOBISECT
 qf_newton_fix_high2::	RCL R_R
 qf_newton_fix_high3::	STO[v] R_HIGH
 
+
 /* Evaluated the CDF and it is within the bounds */
-qf_newton_fixed::	CF F_NOBISECT
-			GSB qf_newton_pdf
+qf_newton_fixed::	GSB qf_newton_pdf
 			x=0?
-				JMP qf_newton_flat
+				JMP qf_newton_done	/* Function is flat -- can't estimate */
 			RCL R_Z
-			SWAP
+			RCL/ Y
+			STO R_W
+
+			FC? F_LIMITJUMP		// limit max step
+				JMP qf_newton_no_limit
+			ABS
+			x<? R_MAXSTEP
+				JMP qf_newton_no_limit			
+			RCL R_W
+			x<0?
+				JMP qf_newton_neg_limit
+			RCL R_MAXSTEP
+			JMP qf_newton_fin_limit
+qf_newton_neg_limit::	RCL R_MAXSTEP
+			+/-
+qf_newton_fin_limit::	STO R_W
+
+			// update estimate
+qf_newton_no_limit::	RCL R_R
+			STO R_Z
+			RCL- R_W
+			STO R_R
+
+/* If this distribution doesn't take negative values, limit outselves to positive ones */
+			FC? F_NONNEGATIVE
+				JMP qf_newton_nosign
+			x[>=]0?
+				JMP qf_newton_nosign
+			RCL R_Z
+			SDR 05
+			STO R_R
+
+/* If our upper and lower limits are close enough together we give up searching */
+qf_newton_nosign::	RCL R_HIGH
+			[infinity]?
+				JMP qf_newton_nobounds
+			RCL R_LOW
+			[infinity]?
+				JMP qf_newton_nobounds
+			CNVG? (CVG_RELATIVE + CVG_SPECIAL_CONTINUE)
+				JMP qf_newton_bounds_cnvg
+			JMP qf_newton_nobounds
+qf_newton_bounds_cnvg::	+
+			_INT 2
 			/
-			NOP	// limit max step
+			JMP qf_newton_done2
+
+/* Check for convergence of the estimates */
+qf_newton_nobounds::	RCL R_Z
+			RCL R_R
+			FS? F_DISCRETE
+				JMP qf_newton_dis_end
+
+/* Check for continuous distribution convergence */
+			CNVG? CVG_RELATIVE
+				JMP qf_newton_done2
+			JMP qf_newton_again
+
+/* Check for discrete distribution convergence */
+qf_newton_dis_end::	-
+			ABS
+			_INT 1
+			SDR 01
+			x>? Y
+				JMP qf_newton_done
+
+/* Loop again */
+qf_newton_again::	DSE R_ITERATIONS
+				JMP qf_newton_search
+			JMP ret_NaN
+
+/* Finished.  For discrete distributions, there is a bit more to do */
+qf_newton_done::	RCL R_R
+qf_newton_done2::	FS? F_DISCRETE
+				JMP qf_discrete_exit
 			RTN
 
-/* The estimate is out of the ( low, high ) bounds.  Check to see if we can bisect instead */
+
+/* The estimate is out of the (low, high) bounds.  Check to see if we can bisect instead */
 qf_newton_try_bisect::	RCL R_HIGH
-			[infinite]?
+			[infinity]?
 				JMP qf_newton_overlow
 			RCL R_LOW
-			[infinite]?
+			[infinity]?
 				JMP qf_newton_underhigh	
 qf_newton_do_bisect::	RCL R_LOW
 			RCL+ R_HIGH
@@ -1193,22 +1528,24 @@ qf_newton_underhigh::	RCL R_HIGH
 			JMP qf_newton_bisect_out
 
 
+
 /* Discrete distribtions require an extra check to push the final answer
  * up or down one to account for any possible rounding issues.
  */
-qf_discrete_exit::	RCL R_DIST
+qf_discrete_exit::	FLOOR
+			RCL R_DIST
 			_INT DIST_POISSON
 			-
 			z[<->] R_P
 			JMP qf_discrete_final
 
-/* Dispatchers to the PDF and CDF of the distribution being searched */
+/* Dispatch to the PDF of the distribution being searched */
 qf_newton_pdf::		iSKIP[->]R_DIST
 			JMP pdf_t
 			JMP pdf_chi2
-			JMP pdf_F
-			JMP pdf_discrete		// Poisson
-			//JMP pdf_discrete		// Binomial
+			JMP pdf_f
+			NOP				// Poisson
+			//NOP				// Binomial
 
 /* Using the pdf for the slope isn't great for the discrete distributions
  * So we do something more akin to a secant approach
@@ -1223,15 +1560,19 @@ pdf_discrete::		_INT 1
 			[times]
 			RTN
 
+/* Dispatch to the CDF of the distribution being searched */
 qf_newton_cdf::		iSKIP[->]R_DIST
 			JMP cdf_t
 			JMP cdf_chi2
-			JMP cdf_F
+			JMP cdf_f
 			JMP cdf_poisson
 			JMP cdf_binomial
+
+
 #undef F_DISCRETE
 #undef F_NONNEGATIVE
 #undef F_ALLOWBISECT
+#undef F_LIMITJUMP
 
 #undef R_P
 #undef R_DIST
@@ -1243,7 +1584,6 @@ qf_newton_cdf::		iSKIP[->]R_DIST
 #undef R_Z
 #undef R_W
 
-#endif
 
 #undef DIST_T
 #undef DIST_CHI2
