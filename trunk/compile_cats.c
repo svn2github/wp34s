@@ -633,6 +633,8 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_ALPHAON,	"\240ON")
 	RARGCMD(RARG_VIEW_REG,	"VW\240+")
 	NILIC(OP_VIEWALPHA,	"\240VIEW")
+	RARGCMD(RARG_BACK,	"BACK")
+	RARGCMD(RARG_SKIP,	"SKIP")
 	NILIC(OP_RTNp1,		"RTN+1")
 	NILIC(OP_END,		"END")
 	RARGCMD(RARG_ERROR,	"ERR")
@@ -641,6 +643,7 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_GTOALPHA,	"GTO\240")
 	RARGCMD(RARG_ALPHAXEQ,	"\240XEQ")
 	RARGCMD(RARG_ALPHAGTO,	"\240GTO")
+
 
 	/* Serial commands */
 	NILIC(OP_SENDP,		"SENDP")
@@ -723,8 +726,6 @@ static s_opcode internal_catalogue[] = {
 	RARGCMD(RARG_iBSB,	"iBSRB")
 	RARGCMD(RARG_iBACK,	"iBACK")
 #endif
-	RARGCMD(RARG_BACK,	"BACK")
-	RARGCMD(RARG_SKIP,	"SKIP")
 	RARGCMD(RARG_iSKIP,	"iSKIP")
 	NILIC(OP_DBLON,		"DBLON")
 	NILIC(OP_DBLOFF,	"DBLOFF")
