@@ -3116,8 +3116,10 @@ int reg_decode(int *s, int *n, int *d, int flash) {
 	num = rsrc % 100;		// nn
 	rsrc /= 100;			// sss
 
-	mx_src = flash ? BackupFlash._numregs :
-		 rsrc >= LOCAL_REG_BASE ? local_regs() + LOCAL_REG_BASE : global_regs();
+	mx_src = flash ? BackupFlash._numregs
+	       : rsrc >= LOCAL_REG_BASE ? local_regs() + LOCAL_REG_BASE
+	       : rsrc >= regX_idx ? LOCAL_REG_BASE
+	       : global_regs();
 	if (rsrc >= mx_src)
 		goto range_error;
 

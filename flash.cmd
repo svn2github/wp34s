@@ -8,13 +8,16 @@ cd trunk
 rem touch features.h
 make REALBUILD=1 version all > ..\flash-build.log 2>&1
 if errorlevel 1 goto exit
+
 rem touch features.h
 make REALBUILD=1 XTAL=1 all >> ..\flash-build.log 2>&1
 if errorlevel 1 goto exit
+
 rem touch features.h
 make REALBUILD=1 XTAL=1 INFRARED=1 all >> ..\flash-build.log 2>&1
 if errorlevel 1 goto exit
 endlocal
+
 call makelib.cmd
 @echo off
 echo NORMAL:

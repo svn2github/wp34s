@@ -313,7 +313,7 @@ void print_registers( enum nilop op )
 		char name[ 6 ], *p = name;
 
 		if ( r >= regX_idx && r <= regK_idx ) {
-			*p++ = REGNAMES[ r - regX_idx ];
+			*p++ = REGNAMES[ r - regX_idx ] | 0x60; // force lower case
 		}
 		else {
 			*p++ = 'r';
@@ -331,8 +331,8 @@ void print_registers( enum nilop op )
 		abort = print_reg( s++, name, 1 );
 	}
 	if ( op == OP_PRINT_STACK && !abort ) {
-		print_reg( regL_idx, "Last X", 1 );
-		print_reg( regI_idx, "Last I", 1 );
+		print_reg( regL_idx, "l", 1 );
+		print_reg( regI_idx, "i", 1 );
 	}
 }
 
