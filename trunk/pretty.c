@@ -136,7 +136,7 @@ void dump_opcodes(FILE *f) {
 			 || cmd == RARG_XROM_IN 
 			 || cmd == RARG_XROM_OUT
 #ifndef INCLUDE_INDIRECT_BRANCHES
-		         || cmd == RARG_iSKIP
+		       //|| cmd == RARG_iSKIP
 #endif
 		       //|| cmd == RARG_BSF
 		       //|| cmd == RARG_BSB
