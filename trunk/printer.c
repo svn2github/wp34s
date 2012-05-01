@@ -478,6 +478,7 @@ void print_trace( opcode op, int phase )
 			if ( CmdLineLength ) {
 				process_cmdline();
 			}
+			print_tab( 0 );
 			print_line( prt( op, buffer ), 0 );
 		}
 		else {
@@ -487,6 +488,9 @@ void print_trace( opcode op, int phase )
 				   PrinterColumn == 0     ? ( !Tracing ? buffer : "***"  ) :
 				   (char *) NULL,
 				   0 );
+			if ( State2.wascomplex ) {
+				print_reg( regY_idx, "cpx", 0 );
+			}
 		}
 	}
 }

@@ -2366,13 +2366,8 @@ static int process(const int c) {
 
 static void show_opcode(void)
 {
-	if (OpCode == (OP_NIL | OP_RS)) {
-		DispMsg = "RUN";
-	}
-	else {
-		scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
-		DispMsg = TraceBuffer;
-	}
+	scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
+	DispMsg = TraceBuffer;
 	OpCodeDisplayPending = 0;
 }
 

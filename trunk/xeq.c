@@ -1887,8 +1887,10 @@ static void do_rtn(int plus1) {
 		retstk_up();
 		pc = RetStk[RetStkPtr - 1];
 		raw_set_pc(pc);
-		// If RTN+1 inc PC unless a POPUSR command would be skipped
-		fin_tst(! plus1 || getprog(pc) == (OP_NIL | OP_POPUSR));
+		// If RTN+1 inc PC unless a POPUSR command or the program end would be skipped
+		if (plus1 || getprog(pc) == (OP_NIL | OP_POPUSR))
+			if (incpc())
+				decpc();
 	}
 	if (RetStkPtr == 0) {
 		// RTN with empty stack stops
@@ -2128,7 +2130,7 @@ void fin_tst(const int a) {
 		DispMsg = msg;
 #ifdef INFRARED
 	if (Tracing) {
-		print_justified( DispMsg );
+		print_justified( msg );
 		Tracing = 0;
 	}
 #endif
@@ -3008,15 +3010,6 @@ void op_setspeed(enum nilop op) {
 	update_speed(1);
 }
 
-void op_rs(enum nilop op) {
-	if (Running)
-		set_running_off();
-	else {
-		set_running_on();
-		if (RetStkPtr == 0)
-			RetStk[--RetStkPtr] = state_pc();
-	}
-}
 
 void op_prompt(enum nilop op) {
 	set_running_off();
@@ -3809,6 +3802,9 @@ void xeq(opcode op)
 	struct _ustate old = UState;
 	unsigned short old_pc = state_pc();
 	int old_cl = *((int *)&CommandLine);
+#ifdef INFRARED
+	int tracing;
+#endif
 
 #ifdef CONSOLE
 	instruction_count++;
@@ -3824,7 +3820,12 @@ void xeq(opcode op)
 	}
 #endif
 #ifdef INFRARED
-	Tracing = get_user_flag(T_FLAG) && !is_xrom();
+#ifdef REALBUILD
+	tracing = get_user_flag(T_FLAG) && ! is_xrom() && State2.runmode;
+#else
+	tracing = get_user_flag(T_FLAG) && (! is_xrom() || State2.trace) && State2.runmode;
+#endif
+	Tracing = tracing;
 	print_trace( op, 0 );
 #endif
 	Busy = 0;
@@ -3914,6 +3915,7 @@ void xeq(opcode op)
 	} 
 	reset_volatile_state();
 #ifdef INFRARED
+	Tracing = tracing;
 	print_trace( op, 1 );
 #endif
 }
@@ -3929,12 +3931,12 @@ static void xeq_single(void) {
 
 /* Continue execution trough xrom code
  */
+#ifdef REALBUILD
 void xeq_xrom(void) {
-	int count = 0;
-#ifndef REALBUILD
-	if (State2.trace)
-		return;
+#else
+static void xeq_xrom2(void) {
 #endif
+	int count = 0;
 	/* Now if we've stepped into the XROM area, keep going until
 	 * we break free.
 	 */
@@ -3952,7 +3954,15 @@ void xeq_xrom(void) {
 	}
 }
 
-/* Check to see if we're running a program and if so execute it
+#ifndef REALBUILD
+void xeq_xrom(void) {
+	// We split the routine in two parts for debugging only
+	if (! State2.trace)
+		xeq_xrom2();
+}
+#endif
+
+	/* Check to see if we're running a program and if so execute it
  * for a while.
  *
  */
@@ -4028,6 +4038,33 @@ void xeq_sst_bst(int kind)
 		// Key down in program mode
 		incpc();
 		OpCode = 0;
+	}
+}
+
+
+/*
+ *  User command to start or stop execution
+ */
+void op_rs(enum nilop op) {
+#ifndef REALBUILD
+	// This is for debugging purposes only
+	// STOP does not appear in XROM normally
+	if (is_xrom()) {
+		if (State2.trace && (Running || XromRunning)) {
+			Running = XromRunning = 0;
+		}
+		else {
+			xeq_xrom2();
+		}
+		return;
+	}
+#endif
+	if (Running)
+		set_running_off();
+	else {
+		set_running_on();
+		if (RetStkPtr == 0)
+			RetStk[--RetStkPtr] = state_pc();
 	}
 }
 
