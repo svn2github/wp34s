@@ -4484,16 +4484,15 @@ void cmdxarg(unsigned int arg, enum rarg op) {
 /* A slightly obtuse command to check for convergence.
  * Arguments are organised bitwise in this form:
  *
- *	SMMTTT
+ *	SMMTT
  *
  * where:
  *	TT is the tolerance parameter:
  *
  *	  	0	1e-14 tolerance
  *	  	1	1e-24 tolerance
- *		2	1e-30 tolerance
- *	  	3	1e-32 tolerance
- *	  	4-7	choose the best tolerance for the current modes
+ *	  	2	1e-32 tolerance
+ *	  	3	choose the best tolerance for the current modes
  *			for user mode this means 0 for single precision and 2 for double precision
  *
  *	MM is the mode parameter:
@@ -4509,15 +4508,15 @@ void cmdxarg(unsigned int arg, enum rarg op) {
  * In integer mode, the arguemnt is completely ignored and an equality
  * comparision is undertaken instead.
  */
-static const decNumber * const convergence_tolerances[4] = {
-	&const_1e_14, &const_1e_24, &const_1e_30, &const_1e_32
+static const decNumber * const convergence_tolerances[3] = {
+	&const_1e_14, &const_1e_24, &const_1e_32
 };
 
 void cmdconverged(unsigned int arg, enum rarg cmd) {
 	const decNumber *tolerance;
-	unsigned int tol = arg & 7;
-	const unsigned int mode = (arg >> 3) & 3;
-	const int specials = arg & 0x20;
+	unsigned int tol = arg & 3;
+	const unsigned int mode = (arg >> 2) & 3;
+	const int specials = arg & 0x10;
 	const int complex = mode == 2;
 	const int absolute = mode == 1;
 	decNumber t, x, y, z, a, b;
@@ -4528,9 +4527,9 @@ void cmdconverged(unsigned int arg, enum rarg cmd) {
 		return;
 	}
 
-	if (tol > 3) {
+	if (tol == 3) {
 		if (is_dblmode())
-			tol = (! XromFlags.xIN || XromFlags.mode_double) ? 3 : 1;
+			tol = (! XromFlags.xIN || XromFlags.mode_double) ? 2 : 1;
 		else
 			tol = 0;
 	}

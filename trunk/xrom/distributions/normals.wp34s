@@ -192,34 +192,14 @@ cdf_q_skip2::		RCL[times] .04
 			xIN MONADIC
 qf_q_xout::		GSB qf_q
 			xOUT xOUT_NORMAL
+
 qf_q::			GSB qf_check_probability
-			LocR 002
+			LocR 001
 			STO .00
-			x<0?
-				SF .01
 			GSB qf_q_est
-			STO .01
-
-/* Now refine the estimate via Newton steps */
-qf_q_loop::		GSB cdf_q		/* pdf in Y */
-			RCL- .00		/* cdf - x */
-			RCL/ Y			/* (cdf - x) / pdf */
-			ENTER[^]
-			RCL[times] .01
-			_INT 2
-			/
-			DEC X
-			/
-			x[<->] .01
-			STO+ .01
-			RCL .01
-			CNVG? CVG_RELATIVE_ALMOST_DBL
-				JMP qf_loop_end
-			JMP qf_q_loop
-
-qf_loop_end::		FS? .01
-				+/-
-			RTN
+			RCL .00
+			_INT DIST_NORMAL
+			JMP qf_newton
 
 /* The internal Q qf entry point.
  */
