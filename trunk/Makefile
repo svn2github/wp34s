@@ -192,7 +192,7 @@ HEADERS := alpha.h charset7.h complex.h consts.h data.h \
 		stats.h xeq.h xrom.h storage.h serial.h matrix.h \
 		stopwatch.h printer.h
 
-XROM := $(wildcard xrom/*.wp34s)
+XROM := $(wildcard xrom/*.wp34s) $(wildcard xrom/distributions/*.wp34s)
 
 OBJS := $(SRCS:%.c=$(OBJECTDIR)/%.o)
 

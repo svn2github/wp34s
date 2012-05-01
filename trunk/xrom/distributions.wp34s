@@ -230,7 +230,7 @@ qf_newton_nosign::	RCL R_HIGH
 			RCL R_LOW
 			[infinity]?
 				JMP qf_newton_nobounds
-			CNVG? (CVG_RELATIVE + CVG_SPECIAL_CONTINUE)
+			CNVG? CVG_RELATIVE_ALMOST_DBL
 				JMP qf_newton_bounds_cnvg
 			JMP qf_newton_nobounds
 qf_newton_bounds_cnvg::	+

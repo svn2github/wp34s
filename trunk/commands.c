@@ -891,7 +891,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #ifdef XROM_RARG_COMMANDS
 	CMDstk(RARG_XROM_ARG,	&cmdxarg,				"xARG")
 #endif
-	CMDnoI(RARG_CONVERGED,	&cmdconverged,	32,			"CNVG?")
+	CMDnoI(RARG_CONVERGED,	&cmdconverged,	64,			"CNVG?")
 	CMDnoI(RARG_SHUFFLE,	&cmdshuffle,	256,			"\027")
 
 	CMDnoI(RARG_INTNUM,	  &cmdconst,	256,			"#")
