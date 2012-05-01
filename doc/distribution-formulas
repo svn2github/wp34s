@@ -177,7 +177,180 @@ return z
 
 
 
+-----------------------------------------------------------------------------
+Ah, the Normal quantile again. :-) I would like to add some remarks that
+might help a bit here.
 
+The applied algorithm itself is quite stable - as long as there is
+sufficient precision both in the CDF and, even more important, while
+evaluating the term
+
+        CDF(x) - p
+  t  =  ----------
+          PDF(x)
+
+This expression is used both in the Halley method as well in another
+approach I tend to prefer. The more x approaches the true quantile,
+i.e. the better CDF(x) matches p, the more important this point gets as
+the number of significant digits in the difference decreases. Another
+problem is the fact that, at least for x < 1, there are multiple n-digit
+values for x that will return the same n-digit CDF, so the nominator
+may become zero even if x is not yet exact.
+
+My current solution (used in a 41 and 35s) works as follows:
+
+    Provide a better initial estimate with an error order of 0,001.
+
+    Improve this estimate with one single correction step, which leads
+    to a result with about 11 valid digits for p > 1E-100, i.e. for the
+    whole working range of the classic 10-digit machines.
+
+    One more iteration should return more than 20 valid digits -
+    I will yet have to try this in an environment with sufficient
+    presicion. Maybe a Mathematica user can do this.
+
+    Calculators with wider working range (down to 1E-500) require one
+    more iteration step - or a slight adjustment of the intial estimate.
+
+And here are the details. As always, p < 0,5 and x > 0,
+i.e. p = 0,1  =>  x = +1,28155...
+
+Initial estimate, using a very simple rational approximation:
+ 
+  r = sqrt(-2 * ln(p))
+  x = r - (0,394r + 2,366) / ((0,0728r + 1,108)r + 1)
+ 
+  if x < 0,003 then x = 0   ' improves numeric stability close to 0
+ 
+Refinement:
+ 
+  t = (CDF(x) - p) / PDF(x)   ' CDF here is to the right hand integral !
+  x =  x  +  t  +  x/2 * t^2 + (2*x^2+1)/6 * t^3
+
+The refinement is based on the method suggested in Abramovitz & Stegun,
+p. 954. I think it works very well. ;-)
+
+I originally used this method for the 41C with its 10-digit precision
+and a range down to 1E-99. With at least 12 digits working accuracy, one
+single iteration step should provide 11 valid digits +/- 1 ULP, i.e. it
+should be fine for a machine code routine that carries 13 internal digits
+before it returns an exact 10-digit result to the user. During my tests
+in Excel (15-digit binary arithmetics) I did not notice any error beyond
++0 and -4 units in the 12th significant digit.
+
+For calculators with a working range down to 1E-500 a different rational
+approximation for the initial estimate may be used, or the latter gets
+a slight adjustment:
+
+  if x > 21,3  then  x = x - exp(x/21,3 - 7,7)
+
+Alternatively, one or two more iterations are fine, too - and very
+fast as well since the PDF is evaluated very quickly far out in the
+distribution tails.
+
+The desired 16-digit accuracy for the 34s should be no problem with just
+two iterations, or three in double precision mode. That's why I agree
+that a fixed number of iterations may avoid the problem of oscillating
+approximations while the desired accuracy is still achieved. On the other
+hand I would recommend a different way of calculating the quotient t. For
+instance, the ratio CDF(x)/PDF(x) usually shows up during the calculation
+of the CDF (by series or continued fraction), so this might be used for
+an alternative way to calculate t.
+-----------------------------------------------------------------------------
+
+
+And some code from Les Wright:
+
+It is basically a stripped down version of your own routine--I get the
+initial estimate using the formulae Dieter provided, and simply do three
+successive Halley refinements against the calc's Phi(x) whether I need
+them or not. No convergence tests. As you know, two Halley refinements
+give at least 18 digits (in theory), and three give at least 54 in
+an environment of adequate intermediate precision. More than enough
+for the calc's SP and DP. For SP it is overkill, but it is still fast
+enough for me. I suspect I lose a digit here and there due to rounding,
+as I can't take advantage of the full 39 internal digits, but it really
+was a fruitful programming exercise for me.
+
+Here is my listing--forgive me for not commenting on it due to being
+rushed:
+
+	0001 ****LBL'INN'
+	0002 LocR 005
+	0003 # [pi]
+	0004 STO+ X
+	0005 [sqrt]
+	0006 STO .00
+	0007 R[v]
+	0008 # 022
+	0009 # 100
+	0010 /
+	0011 x[<->] Y
+	0012 STO .02
+	0013 x>? Y
+	0014 GTO 001
+	0015 LN
+	0016 STO+ X
+	0017 +/-
+	0018 STO .03
+	0019 DEC X
+	0020 [sqrt]
+	0021 RCL[times] .00
+	0022 RCL[times] .02
+	0023 LN
+	0024 STO+ X
+	0025 +/-
+	0026 [sqrt]
+	0027 # 005
+	0028 RCL[times] .03
+	0029 1/x
+	0030 +
+	0031 GTO 002
+	0032 **LBL 001
+	0033 # 002
+	0034 1/x
+	0035 RCL- Y
+	0036 RCL[times] .00
+	0037 FILL
+	0038 STO[times] X
+	0039 # 006
+	0040 /
+	0041 INC X
+	0042 [times]
+	0043 **LBL 002
+	0044 +/-
+	0045 STO .04
+	0046 # 003
+	0047 STO .01
+	0048 R[v]
+	0049 **LBL 003
+	0050 [PHI](x)
+	0051 RCL- .02
+	0052 RCL[times] .00
+	0053 RCL .04
+	0054 RCL[times] .04
+	0055 # 002
+	0056 /
+	0057 e[^x]
+	0058 [times]
+	0059 FILL
+	0060 RCL[times] .04
+	0061 # 002
+	0062 /
+	0063 INC X
+	0064 /
+	0065 STO- .04
+	0066 RCL .04
+	0067 DSZ .01
+	0068 GTO 003
+	0069 RTN
+	0070 END
+
+My sense is that you would do well in your XROM version just to do three
+Halley refinements and not bother with tests of convergence. It may seem
+overkill, but I bet it will speed things up.
+
+-----------------------------------------------------------------------------
 
 
 
