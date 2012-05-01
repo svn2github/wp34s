@@ -1,0 +1,225 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* Student's T distribution
+ * One parameter:
+ *	J = degrees of freedom (real > 0)
+ */
+		XLBL"PDF_T"
+			xIN MONADIC
+			GSB t_param
+			FS?C .00
+				JMP pdf_q_xout
+			GSB pdf_t
+			xOUT xOUT_NORMAL
+
+pdf_t::			RCL[times] X	// x^2 ? ? ?
+			RCL J
+			_INT 2
+			/		// v/2 x^2 ? ?
+			LN[GAMMA]	// LnG x^2 ? ?
+			RCL L		// v/2 LnG x^2 ?
+			.
+			5
+			+		// (v+1)/2 LnG x^2 ?
+			STO T		// (v+1)/2 LnG x^2 (v+1)/2
+			LN[GAMMA]	// LnG2 LnG x^2 (v+1)/2
+			SWAP
+			-		// LnG-LnG2 x^2 (v+1)/2 ?
+			[<->] YZXT	// x^2 (v+1)/2 LnG-LnG2 ?
+			RCL/ J		// x^2/v (v+1)/2 LnG-LnG2 ?
+			LN1+x
+			[times]		// LN1+* LnG-LnG2 ?
+			-
+			e[^x]
+			Num [pi]
+			RCL[times] J
+			[sqrt]
+			/
+			RTN
+
+		XLBL"CDF_T"
+			xIN MONADIC
+			GSB t_param
+			FS?C .00
+				JMP cdf_q_xout
+			GSB cdf_t
+			xOUT xOUT_NORMAL
+
+cdf_t::			[infinity]?
+				JMP cdf_t_infinite
+			x=0?
+				JMP dist_ret_half
+			x>0?
+				JMP cdf_t_invert
+cdf_t_return::		RCL J		// v x ? ?
+			SWAP		// x v ? ?
+			x[^2]		// x^2 v ? ?
+			RCL+ J		// v+x^2 v ? ?
+			/		// v/(v+x^2) ? ? ?
+			.
+			5
+			RCL J
+			_INT 2
+			/		// v/2 .5 v/(v+x^2) ?
+			[<->] ZYXT
+			GSB betai
+			_INT 2
+			/
+			RTN
+
+cdf_t_invert::		GSB cdf_t_return
+			_INT 1
+			SWAP
+			-
+			RTN
+
+cdf_t_infinite::	x<0?
+				JMP dist_ret_0
+			JMP dist_ret_1
+
+dist_ret_half::		.
+			5
+			RTN
+
+
+		XLBL"QF_T"
+			xIN MONADIC
+			GSB t_param
+			GSB qf_check_probability
+			FS?C .00
+				JMP qf_q_xout
+			GSB qf_t_est
+			_INT DIST_T
+			XEQ qf_newton
+			xOUT xOUT_NORMAL
+
+qf_t_est::		LocR 003
+			STO .00
+			STO .02
+			RCL J
+			x=1?
+				JMP qf_t1
+			_INT 2
+			x=? Y
+				JMP qf_t2
+
+			.
+			5
+			RCL .00
+			x<? Y
+				JMP qf_t_lower
+			_INT 1
+			RCL- .00
+			STO .00
+			SF .00
+
+			/* Now do the estimate */
+qf_t_lower::		_INT 17
+			SDR 1
+			RCL[times] J
+			RCL .00
+			LN
+			+/-
+			x[>=]? Y
+				JMP qf_t_est2
+			RCL .00
+			GSB qf_q_est
+			STO .01
+			x[^3]
+			ENTER[^]
+			RCL+ .01	// x^3+x x^3
+			_INT 4		// 4 x^3+x x^3
+			RCL[times] J	// 4n x^3+x x^3
+			/		// u=(x^3+x)/4/n x^3
+			SWAP		// x^3 u
+			_INT 4
+			/		// x^3/4 u
+			RCL X		// x^3/4 x^3/4 u
+			RCL[times] .01	// x^4/4 x^3/4 u
+			RCL[times] .01	// x^5/4 x^3/4 u
+			_INT 3
+			/		// x^5/12 x^3/4 u
+			+		// x^5/12+x^3/4 u
+			RCL J
+			RCL[times] J
+			/
+			+
+			RCL+ .01
+			JMP qf_t_est_end
+
+qf_t_est2::		RCL J
+			[sqrt]
+			Num [pi]
+			RCL J
+			RCL+ X		// 2n pi
+			DEC X		// 2n-1 pi sqrt(n)
+			/
+			[sqrt]		// sqrt(pi/(2n-1)) sqrt(n)
+			RCL[times] J
+			RCL+ X
+			RCL[times] .00
+			RCL J
+			[^x][sqrt]y
+			/
+			+/-
+
+qf_t_est_end::		FS? .00
+				+/-
+			RCL .02
+			RTN
+
+/* For one degree of freedom, we use an explicit formula */
+qf_t1::			RCL .00
+			.
+			5
+			-
+			Num [pi]
+			[times]
+			TAN
+			xOUT xOUT_NORMAL
+
+/* For two degrees of freedom, we use an explicit formula */
+qf_t2::			_INT 1
+			RCL- .00	// 1-p 2
+			RCL[times] .00	// p(1-p) 2
+			_INT 2
+			[times]
+			1/x		// 2 / (4p(1-p))
+			[sqrt]
+			.
+			5
+			RCL- .00
+			[times]
+			RCL+ X
+			+/-
+			xOUT xOUT_NORMAL
+
+
+t_param::		RCL J
+			[infinity]?
+				JMP t_param_inf
+			GSB check_special_pos
+t_drop_rtn::		DROP
+			RTN
+
+t_param_inf::		x<0?
+				ERR ERR_BAD_PARAM
+			SF .00
+			JMP t_drop_rtn
+

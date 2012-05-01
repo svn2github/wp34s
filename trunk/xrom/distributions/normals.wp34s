@@ -1,0 +1,277 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* Log Normal distribution
+ */
+ 		XLBL"PDF_LOGNORMAL"
+			xIN MONADIC
+				LocR 01
+				STO .00
+				LN
+				GSB pdf_normal
+				RCL/ .00
+			xOUT xOUT_NORMAL
+
+		XLBL"CDF_LOGNORMAL"
+			xIN MONADIC
+				SPEC?
+					JMP cdf_infinite
+				x[<=]0?
+					JMP ret_0
+				LN
+				JMP cdf_normal
+
+		XLBL"QF_LOGNORMAL"
+			xIN MONADIC
+				GSB qf_normal
+				e[^x]
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Normal distribution
+ */
+ 		XLBL"PDF_NORMAL"
+			xIN MONADIC
+				GSB pdf_normal
+			xOUT xOUT_NORMAL
+
+pdf_normal::		GSB normal_param
+			GSB pdf_q
+			RCL/ K
+			RTN
+
+		XLBL"CDF_NORMAL"
+			xIN MONADIC
+			SPEC?
+				JMP cdf_infinite
+cdf_normal::		GSB normal_param
+			JMP cdf_q_xout
+
+normal_param::		RCL J
+			GSB check_special
+			-
+			RCL K
+			GSB check_special_pos
+			/
+			RTN
+
+		XLBL"QF_NORMAL"
+			xIN MONADIC
+				GSB qf_normal
+			xOUT xOUT_NORMAL
+
+qf_normal::		GSB qf_q
+			RCL K
+			GSB check_special_pos
+			[times]
+			RCL J
+			GSB check_special
+			+
+			RTN
+#undef X
+
+
+/**************************************************************************/
+/* Standard Normal distribution
+ */
+		XLBL"PDF_Q"
+			xIN MONADIC
+pdf_q_xout::		GSB pdf_q
+			xOUT xOUT_NORMAL
+
+/* Standard entry point.  Uses one stack level and no last X */
+pdf_q::			x[^2]
+			_INT 2
+			/
+			+/-
+			e[^x]
+			Num [sqrt]2[pi]
+			/
+			RTN
+
+
+		XLBL"CDF_Q"
+			xIN MONADIC
+cdf_q_xout::		GSB cdf_q
+			xOUT xOUT_NORMAL
+
+/* Standard entry point.  Destroys the stack.
+ * Returns the CDF in X and the PDF in Y.
+ */
+cdf_q::			LocR 05
+			STO .00		// x in .00
+			x<0?
+				SF .00
+			GSB pdf_q
+			STO .04
+			RCL .00
+			ABS
+			Num [pi]
+			x[>=]? Y
+				JMP cdf_q2
+
+/* Code for |x| > 3.15 */
+			DROP
+			DEC X
+			_INT 128	// 256 the hard way
+			RCL+ X
+			SWAP
+			/
+			_INT 4
+			+
+			CEIL
+			STO .02		// n = (|x|-1)/256+4
+			Num 0
+cdf_q_lp1::		RCL .02		// n
+			RCL .00		// x
+			RCL+ Z		// x + term
+			/		// n / (x + term)
+			DSZ .02
+				JMP cdf_q_lp1
+			RCL+ .00
+			RCL .04
+			SWAP
+			/
+			x<0?
+				JMP cdf_q_skip1
+			Num 1
+			SWAP
+			-
+cdf_q_skip1::		FS? .00
+				+/-
+cdf_q_exit::		RCL .04
+			SWAP
+			RTN
+
+/* Alternate code for |x| < 3.15 */
+cdf_q2::		_INT 3
+			STO .03		// d = 3
+			[cmplx]DROP
+			STO .01
+			STO[times] .01	// x2 = x^2
+			STO .02		// a = |x|
+cdf_q_lp2::		RCL[times] .01	// term * x^2
+			RCL/ .03	// term * x^2 / d
+			ENTER[^]
+			x[<->] .02
+			STO+ .02
+			RCL .02
+			CNVG? CVG_RELATIVE_DBL
+				JMP cdf_q_skip2
+			[cmplx]DROP
+			INC .03
+			INC .03
+			JMP cdf_q_lp2
+cdf_q_skip2::		RCL[times] .04
+			.
+			5
+			SWAP
+			FS? .00
+				-
+			FC? .00
+				+
+			JMP cdf_q_exit
+
+
+		XLBL"QF_Q"
+			xIN MONADIC
+qf_q_xout::		GSB qf_q
+			xOUT xOUT_NORMAL
+qf_q::			GSB qf_check_probability
+			LocR 002
+			STO .00
+			x<0?
+				SF .01
+			GSB qf_q_est
+			STO .01
+
+/* Now refine the estimate via Newton steps */
+qf_q_loop::		GSB cdf_q		/* pdf in Y */
+			RCL- .00		/* cdf - x */
+			RCL/ Y			/* (cdf - x) / pdf */
+			ENTER[^]
+			RCL[times] .01
+			_INT 2
+			/
+			DEC X
+			/
+			x[<->] .01
+			STO+ .01
+			RCL .01
+			CNVG? CVG_RELATIVE_DBL
+				JMP qf_loop_end
+			JMP qf_q_loop
+
+qf_loop_end::		FS? .01
+				+/-
+			RTN
+
+/* The internal Q qf entry point.
+ */
+qf_q_est::		LocR 02
+			STO .00		// save x
+			.
+			5
+			SWAP
+			-
+			STO .01		// b = 1/2 - x
+			x=0?
+				RTN
+			/* Estimate an initial try */
+			x>0?
+				JMP qf_q_inrange
+			Num 1
+			RCL- .00
+			STO .00
+			SF .00
+qf_q_inrange::		RCL .00
+			.
+			2
+			x<? Y
+				JMP qf_q_skip2
+			RCL .00
+			LN
+			RCL+ X
+			+/-
+			STO .01		// u = -2 LN(x)
+			DEC X
+			[sqrt]
+			Num [sqrt]2[pi]
+			[times]
+			RCL[times] .00
+			LN
+			RCL+ X
+			+/-
+			[sqrt]
+			x[<->] .01
+			/
+			RCL+ .01
+			FC? .00
+qf_q_neg_fin::			+/-
+			RTN
+
+qf_q_skip2::		Num [sqrt]2[pi]
+			RCL[times] .01
+			ENTER[^]
+			x[^3]
+			_INT 6
+			/
+			+
+			JMP qf_q_neg_fin
+
+
