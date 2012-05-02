@@ -306,7 +306,7 @@ qf_discrete_exit::	FLOOR
 			JMP qf_discrete_final
 
 /* Dispatch to the PDF of the distribution being searched */
-qf_newton_pdf::		iSKIP[->]R_DIST
+qf_newton_pdf::		CASE R_DIST
 			JMP pdf_q
 			JMP pdf_t
 			JMP pdf_chi2
@@ -328,7 +328,7 @@ pdf_discrete::		_INT 1
 			RTN
 
 /* Dispatch to the CDF of the distribution being searched */
-qf_newton_cdf::		iSKIP[->]R_DIST
+qf_newton_cdf::		CASE R_DIST
 			JMP cdf_q
 			JMP cdf_t
 			JMP cdf_chi2

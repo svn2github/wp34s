@@ -1099,8 +1099,8 @@ maxlibsteps=9999
 0x9600	arg	RDP	max=100,indirect
 0x9700	arg	STOM	max=128,indirect,stack
 0x9800	arg	RCLM	max=128,indirect,stack
-0x9900	arg	PUTK	max=128,indirect,stack
-0x9a00	arg	KTP?	max=128,indirect,stack
+0x9900	arg	PUTK	max=128,stack
+0x9a00	arg	KTP?	max=128,stack
 0x9b00	arg	MSG	max=25,indirect
 0x9c00	arg	LocR	max=128,indirect
 0x9d00	arg	REGS	max=101,indirect
@@ -1378,7 +1378,7 @@ maxlibsteps=9999
 0xae00	arg	[print]TAB	max=128,indirect
 0xaf00	arg	[print]MODE	max=4,indirect
 0xb000	arg	[print]DLAY	max=32,indirect
-0xb100	arg	iSKIP	max=128,indirect
+0xb100	arg	CASE	max=128,stack
 0xf000	mult	LBL
 0xf100	mult	LBL?
 0xf200	mult	XEQ

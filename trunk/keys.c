@@ -1200,7 +1200,7 @@ static int arg_eval(unsigned int val) {
 		if (argcmds[base].cmplx && (val > TOPREALREG - 2 && (val & 1)))
 			// Disallow odd complex register > 98
 			return STATE_UNFINISHED;
-		if (argcmds[base].stos && (val > TOPREALREG - ssize))
+		if ((base == RARG_STOSTK || base == RARG_RCLSTK) && (val > TOPREALREG - ssize))
 			// Avoid stack clash for STOS/RCLS
 			return STATE_UNFINISHED;
 	}

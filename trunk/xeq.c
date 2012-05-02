@@ -1686,10 +1686,9 @@ void cmdkeyp(unsigned int arg, enum rarg op) {
  *  Get a key code from a register and translate it from row/colum to internal
  *  Check for valid arguments
  */
-static int get_keycode_from_reg(unsigned int n)
+static int get_keycode_from_arg(unsigned int arg)
 {
-	int sgn;
-	const int c = row_column_to_keycode((int) get_reg_n_int_sgn((int) n, &sgn));
+	const int c = row_column_to_keycode(arg);
 	if ( c < 0 )
 		err(ERR_RANGE);
 	return c;
@@ -1702,7 +1701,7 @@ static int get_keycode_from_reg(unsigned int n)
  */
 void cmdputkey(unsigned int arg, enum rarg op)
 {
-	const int c = get_keycode_from_reg(arg);
+	const int c = get_keycode_from_arg(arg);
 
 	if (c >= 0) {
 		set_running_off();
@@ -1717,7 +1716,7 @@ void cmdputkey(unsigned int arg, enum rarg op)
  */
 void cmdkeytype(unsigned int arg, enum rarg op)
 {
-	const int c = get_keycode_from_reg(arg);
+	const int c = get_keycode_from_arg(arg);
 	if ( c >= 0 ) {
 		const char types[] = {
 			12, 12, 12, 12, 12, 12,
@@ -3674,17 +3673,46 @@ static void triadic(const opcode op) {
 		illegal(op);
 }
 
+/*
+ *  Helper to check the maximum allowed register number, 
+ *  depending on command flags and current allocation.
+ *  This needs to be seperate because its called twice for indirect arguments
+ */
+static unsigned int get_reg_limit(unsigned int cmd, unsigned int arg)
+{
+	unsigned int lim = LOCAL_REG_BASE;
+
+	if (arg < TOPREALREG) {
+		// Range checking for registers against variable boundary
+		lim = global_regs_rarg((enum rarg) cmd) - 1;
+	}
+	else if (argcmds[cmd].local) {
+		// Range checking for local registers
+		lim = NUMREG - 1 + local_regs_rarg((enum rarg) cmd);
+	}
+	if (argcmds[cmd].cmplx) {
+		// one short of the last avialable register for complex access
+		--lim;
+	}
+	else if (cmd == RARG_STOSTK || cmd == RARG_RCLSTK) {
+		// avoid stack clash error in these commands
+		lim -= stack_size() - 1;
+	}
+	return lim;
+}
+
+
 /* Handle a command that takes an argument.  The argument is encoded
  * in the low order bits of the opcode.  We also have to take
- * account of the indirection flag and various limits -- we always work modulo
- * the limit.
+ * account of the indirection flag and various limits.
  */
 static void rargs(const opcode op) {
 	unsigned int arg = op & RARG_MASK;
-	int ind = op & RARG_IND;
 	const unsigned int cmd = RARG_CMD(op);
+	FLAG autoind = argcmds[cmd].autoindirect;
+	FLAG ind = op & RARG_IND || autoind;
 	decNumber x;
-	int lim = (int) argcmds[cmd].lim;
+	unsigned int lim = autoind ? 256 : argcmds[cmd].lim;
 
 	XeqOpCode = (s_opcode) cmd;
 
@@ -3700,43 +3728,49 @@ static void rargs(const opcode op) {
 	}
 
 	if (ind) {
-		if (argcmds[cmd].indirectokay) {
+		if (argcmds[cmd].indirectokay || autoind) {
+			// Get the argument by reading a register
+			if (arg > get_reg_limit(RARG_RCL, arg)) {
+				// Invalid register specified for indirect access
+				err(ERR_RANGE);
+				return;
+			}
 			if (is_intmode()) {
 				arg = (unsigned int) get_reg_n_int(arg);
 			} else {
 				getRegister(&x, arg);
 				arg = dn_to_int(&x);
 			}
-		} else
-			arg |= RARG_IND;	// put the top bit back in
+			if (argcmds[cmd].local && (int) arg < 0) {
+				// negative arguments address local registers or flags
+				arg = LOCAL_REG_BASE - arg;
+			}
+		} 
+		else {
+			// put the top bit back in
+			arg |= RARG_IND;
+		}
 	}
-	if (argcmds[cmd].reg && arg < TOPREALREG) {
+	if (argcmds[cmd].reg) {
 		// Range checking for registers against variable boundary
-		lim = global_regs_rarg((enum rarg) cmd) - 1;
-		if (argcmds[cmd].cmplx)
-			--lim;
+		lim = get_reg_limit(cmd, arg);
 	}
 	else if (argcmds[cmd].flag) {
 		if (LocalRegs == 0)
 			lim = NUMFLG - 1;
-		if ((int)arg < 0)
-			arg = NUMFLG - (int)arg;
+		else 
+			lim = LOCAL_FLAG_BASE + MAX_LOCAL_DIRECT - 1;
 	}
-	else if (argcmds[cmd].local) {
-		// Range checking for local registers
-		lim = NUMREG - 1 + local_regs_rarg((enum rarg) cmd);
-		if (argcmds[cmd].cmplx)
-			--lim;
-		else if (argcmds[cmd].stos)
-			lim -= stack_size() - 1;
-		if ((int)arg < 0)
-			arg = NUMREG - (int)arg;
-	}
-	if ((int) arg > lim)
+	if (arg > lim) {
+		// Argument is too large
 		err(ERR_RANGE);
-	else if (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1))
+	}
+	else if (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1)) {
+		// Complex commands on special registers only allowed for X, Z, A, C, L & J
 		err(ERR_ILLEGAL);
+	}
 	else {
+		// Dispatch the command
 		FP_RARG fp = (FP_RARG) EXPAND_ADDRESS(argcmds[cmd].f);
 		if (NULL != check_for_xrom_address(fp)) {
 #ifdef XROM_RARG_COMMANDS
@@ -3758,8 +3792,10 @@ static void rargs(const opcode op) {
 		else {
 			fp(arg, (enum rarg)cmd);
 		}
-		if (cmd != RARG_XROM_OUT)
+		if (cmd != RARG_XROM_OUT) {
+			// xOUT controls stack lift itself, set it for all other commands
 			State2.state_lift = 1;
+		}
 	}
 }
 

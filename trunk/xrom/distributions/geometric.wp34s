@@ -94,7 +94,7 @@ qf_discrete_1high::	DEC R_R
 			JMP qf_discrere_out
 
 
-qf_discrete_cdf::	iSKIP[->]R_DIST
+qf_discrete_cdf::	CASE R_DIST
 			JMP cdf_poisson
 			JMP cdf_binomial
 			JMP cdf_geom	

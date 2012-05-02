@@ -15,6 +15,7 @@
  */
 
 #include "pretty.h"
+#include "xeq.h"		// This helps the syntax checker
 
 const char *pretty(unsigned char z) {
 	if (z < 32)
@@ -123,7 +124,7 @@ void dump_opcodes(FILE *f) {
 			if (argcmds[cmd].indirectokay) {
 				fprintf(f, ",indirect");
 			}
-			if (argcmds[cmd].stos)
+			if (cmd == RARG_STOSTK || cmd == RARG_RCLSTK)
 				fprintf(f, ",stostack");
 			else if (argcmds[cmd].stckreg)
 				fprintf(f, ",stack");

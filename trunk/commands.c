@@ -694,31 +694,31 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 
 #ifdef COMPILE_CATALOGUES
-#define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
-	{ #func, (limit) - 1, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
+#define allCMD(name, func, limit, nm, ind, autoind, reg, stk, loc, cpx, lbl, flag)				\
+	{ #func, (limit) - 1, ind, autoind, reg, stk, loc, cpx, lbl, flag, nm },
 #elif DEBUG
-#define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)			\
-	{ name, func, (limit) - 1, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
+#define allCMD(name, func, limit, nm, ind, autoind, reg, stk, loc, cpx, lbl, flag)			\
+	{ name, func, (limit) - 1, ind, autoind, reg, stk, loc, cpx, lbl, flag, nm },
 #elif COMMANDS_PASS == 1
-#define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
-	{ 0xaa55, (limit) - 1, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
+#define allCMD(name, func, limit, nm, ind, autoind, reg, stk, loc, cpx, lbl, flag)				\
+	{ 0xaa55, (limit) - 1, ind, autoind, reg, stk, loc, cpx, lbl, flag, nm },
 #else
-#define allCMD(name, func, limit, nm, ind, reg, stk, loc, cpx, lbl, flag, stos)				\
-	{ func, (limit) - 1, ind, reg, stk, loc, cpx, lbl, flag, stos, nm },
+#define allCMD(name, func, limit, nm, ind, autoind, reg, stk, loc, cpx, lbl, flag)				\
+	{ func, (limit) - 1, ind, autoind, reg, stk, loc, cpx, lbl, flag, nm },
 #endif
-                                                                 //  i  r  s  l  c  lb f  ss
-#define CMD(n, f, lim, nm)	allCMD(n, f, lim,                nm, 1, 0, 0, 0, 0, 0, 0, 0)
-#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim,                nm, 0, 0, 0, 0, 0, 0, 0, 0)
-#define CMDreg(n, f, nm)	allCMD(n, f, TOPREALREG,         nm, 1, 1, 0, 1, 0, 0, 0, 0)
-#define CMDstk(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL,   nm, 1, 1, 1, 1, 0, 0, 0, 0)
-#define CMDcstk(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-1, nm, 1, 1, 1, 1, 1, 0, 0, 0)
-#define CMDregnL(n, f, nm)	allCMD(n, f, TOPREALREG,         nm, 1, 1, 0, 0, 0, 0, 0, 0)
-#define CMDstknL(n, f, nm)	allCMD(n, f, NUMREG,             nm, 1, 0, 1, 0, 0, 0, 0, 0)
-#define CMDcstknL(n, f, nm)	allCMD(n, f, NUMREG-1,           nm, 1, 0, 1, 0, 1, 0, 0, 0)
-#define CMDlbl(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 1, 0, 0, 0, 0, 1, 0, 0)
-#define CMDlblnI(n, f, nm)	allCMD(n, f, NUMLBL,             nm, 0, 0, 0, 0, 0, 1, 0, 0)
-#define CMDflg(n, f, nm)	allCMD(n, f, NUMFLG+16,		 nm, 1, 0, 1, 1, 0, 0, 1, 0)
-#define CMDstos(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-3, nm, 1, 1, 0, 1, 0, 0, 0, 1)
+                                                                       //  i ai  r  s  l  c  lb f
+#define CMD(n, f, lim, nm)	allCMD(n, f, lim,                      nm, 1, 0, 0, 0, 0, 0, 0, 0)
+#define CMDnoI(n, f, lim, nm)	allCMD(n, f, lim,                      nm, 0, 0, 0, 0, 0, 0, 0, 0)
+#define CMDreg(n, f, nm)	allCMD(n, f, TOPREALREG,               nm, 1, 0, 1, 0, 1, 0, 0, 0)
+#define CMDstk(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL,         nm, 1, 0, 1, 1, 1, 0, 0, 0)
+#define CMDautoI(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL_DIRECT,  nm, 0, 1, 1, 1, 1, 0, 0, 0)
+#define CMDcstk(n, f, nm)	allCMD(n, f, NUMREG+MAX_LOCAL-1,       nm, 1, 0, 1, 1, 1, 1, 0, 0)
+#define CMDregnL(n, f, nm)	allCMD(n, f, TOPREALREG,               nm, 1, 0, 1, 0, 0, 0, 0, 0)
+#define CMDstknL(n, f, nm)	allCMD(n, f, NUMREG,                   nm, 1, 0, 0, 1, 0, 0, 0, 0)
+#define CMDcstknL(n, f, nm)	allCMD(n, f, NUMREG-1,                 nm, 1, 0, 0, 1, 0, 1, 0, 0)
+#define CMDlbl(n, f, nm)	allCMD(n, f, NUMLBL,                   nm, 1, 0, 0, 0, 0, 0, 1, 0)
+#define CMDlblnI(n, f, nm)	allCMD(n, f, NUMLBL,                   nm, 0, 0, 0, 0, 0, 0, 1, 0)
+#define CMDflg(n, f, nm)	allCMD(n, f, NUMFLG+16,		       nm, 1, 0, 0, 1, 1, 0, 0, 1)
 
 #if COMMANDS_PASS == 2
 CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
@@ -759,8 +759,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDcstk(RARG_CSWAPX,	&cmdswap,				"\024x\027")
 	CMDcstk(RARG_CSWAPZ,	&cmdswap,				"\024z\027")
 	CMDstk(RARG_VIEW,	&cmdview,				"VIEW")
-	CMDstos(RARG_STOSTK,	&cmdstostk,				"STOS")
-	CMDstos(RARG_RCLSTK,	&cmdrclstk,				"RCLS")
+	CMDstk(RARG_STOSTK,	&cmdstostk,				"STOS")
+	CMDstk(RARG_RCLSTK,	&cmdrclstk,				"RCLS")
 	CMDnoI(RARG_ALPHA,	&cmdalpha,	0,			"")
 	CMDstk(RARG_AREG,	&alpha_reg,				"\240RC#")
 	CMDstk(RARG_ASTO,	&alpha_sto,				"\240STO")
@@ -873,8 +873,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_STOM,	&cmdsavem,				"STOM")
 	CMDstk(RARG_RCLM,	&cmdrestm,				"RCLM")
 #endif
-	CMDstk(RARG_PUTKEY,	&cmdputkey,				"PUTK")
-	CMDstk(RARG_KEYTYPE,	&cmdkeytype,				"KTP?")
+	CMDautoI(RARG_PUTKEY,	&cmdputkey,				"PUTK")
+	CMDautoI(RARG_KEYTYPE,	&cmdkeytype,				"KTP?")
 
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG")
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL + 1,		"LocR")
@@ -910,11 +910,11 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	/* end of INFRARED commands */
 
 	// Only the first of this group is used in XROM
-	CMD(RARG_iSKIP,		&cmdskip,	256,			"iSKIP")
+	CMDautoI(RARG_CASE,	&cmdskip,				"CASE")
 #ifdef INCLUDE_INDIRECT_BRANCHES
-	CMD(RARG_iBACK,		&cmdback,	256,			"iBACK")
-	CMD(RARG_iBSF,		&cmdskip,	256,			"iBSRF")
-	CMD(RARG_iBSB,		&cmdback,	256,			"iBSRB")
+	CMD(RARG_iBACK,		&cmdback,				"iBACK")
+	CMD(RARG_iBSF,		&cmdskip,				"iBSRF")
+	CMD(RARG_iBSB,		&cmdback,				"iBSRB")
 #endif
 
 #undef CMDlbl

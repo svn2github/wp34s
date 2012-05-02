@@ -336,13 +336,13 @@ struct argcmd
 	unsigned short f;
 	unsigned char lim;
 	unsigned int indirectokay : 1;
+	unsigned int autoindirect : 1;
 	unsigned int reg : 1;
 	unsigned int stckreg : 1;
 	unsigned int local : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
 	unsigned int flag : 1;
-	unsigned int stos : 1;
 	_CONST char cmd[NAME_LEN];
 };
 
@@ -363,13 +363,13 @@ struct argcmd
 	FP_RARG f;
 	unsigned int lim : 8;
 	unsigned int indirectokay : 1;
+	unsigned int autoindirect : 1;
 	unsigned int reg : 1;
 	unsigned int stckreg : 1;
 	unsigned int local : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
 	unsigned int flag : 1;
-	unsigned int stos : 1;
 	const char cmd[NAME_LEN];
 };
 extern const struct argcmd argcmds[];
@@ -909,7 +909,7 @@ enum rarg {
 
 	// Indirect SKIP/BACK 
 	// Only the first of this group is used in XROM
-	RARG_iSKIP, 
+	RARG_CASE, 
 #ifdef INCLUDE_INDIRECT_BRANCHES
 	RARG_iBACK, RARG_iBSF, RARG_iBSB,
 #endif

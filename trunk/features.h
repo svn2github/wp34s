@@ -114,7 +114,7 @@
 // Include the flash register recall routines RCF and their variants
 // #define INCLUDE_FLASH_RECALL
 
-// Include iSKIP, iBACK, etc. as user visible commands
+// Include iBACK, etc. as user visible commands
 // #define INCLUDE_INDIRECT_BRANCHES
 
 /*******************************************************************/
