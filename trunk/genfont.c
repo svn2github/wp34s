@@ -24,6 +24,7 @@
 #define WIDTH(n)	((n) >> 16)
 #define BITMAP(n)	((n) & 0xffff)
 
+#define CNULL ((char *) NULL)
 
 /* Width 1 */
 #define _        CODE(1, 0)

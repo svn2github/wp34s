@@ -96,6 +96,8 @@ enum multiops;
 
 #define NAME_LEN	6	/* Length of command names */
 
+#define CNULL	((char *) 0)	/* Avoid silly warnings in Visual C editor) */
+
 typedef unsigned int opcode;
 typedef unsigned short int s_opcode;
 
@@ -219,6 +221,9 @@ struct monfunc
 	FP_MONADIC_CMPLX mondcmplx;
 	FP_MONADIC_INT  monint;
 	const char fname[NAME_LEN];
+#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+	const char *alias;
+#endif
 };
 extern const struct monfunc monfuncs[];
 
@@ -252,6 +257,9 @@ struct dyfunc
 	FP_DYADIC_CMPLX dydcmplx;
 	FP_DYADIC_INT  dydint;
 	const char fname[NAME_LEN];
+#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+	const char *alias;
+#endif
 };
 extern const struct dyfunc dyfuncs[];
 
@@ -284,6 +292,9 @@ struct trifunc
 	FP_TRIADIC_REAL trireal;
 	FP_TRIADIC_INT  triint;
 	const char fname[NAME_LEN];
+#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+	const char *alias;
+#endif
 };
 extern const struct trifunc trifuncs[];
 
@@ -318,6 +329,9 @@ struct niladic
 	FP_NILADIC niladicf;
 	unsigned char numresults;
 	const char nname[NAME_LEN];
+#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+	const char *alias;
+#endif
 };
 extern const struct niladic niladics[];
 #define NILADIC_NOINT		(0x80)
@@ -336,13 +350,13 @@ struct argcmd
 	unsigned short f;
 	unsigned char lim;
 	unsigned int indirectokay : 1;
-	unsigned int autoindirect : 1;
 	unsigned int reg : 1;
 	unsigned int stckreg : 1;
 	unsigned int local : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
 	unsigned int flag : 1;
+	unsigned int reserved : 1;
 	_CONST char cmd[NAME_LEN];
 };
 
@@ -363,14 +377,17 @@ struct argcmd
 	FP_RARG f;
 	unsigned int lim : 8;
 	unsigned int indirectokay : 1;
-	unsigned int autoindirect : 1;
 	unsigned int reg : 1;
 	unsigned int stckreg : 1;
 	unsigned int local : 1;
 	unsigned int cmplx : 1;
 	unsigned int label : 1;
 	unsigned int flag : 1;
+	unsigned int reserved : 1;
 	const char cmd[NAME_LEN];
+#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+	const char *alias;
+#endif
 };
 extern const struct argcmd argcmds[];
 
@@ -401,6 +418,9 @@ struct multicmd
 #endif
 	FP_MULTI f;
 	const char cmd[NAME_LEN];
+#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+	const char *alias;
+#endif
 };
 extern const struct multicmd multicmds[];
 
@@ -1056,7 +1076,7 @@ extern int err(const unsigned int);
 extern int warn(const unsigned int);
 extern void bad_mode_error(void);
 extern const char *pretty(unsigned char);
-extern void prettify(const char *in, char *out);
+extern void prettify(const char *in, char *out, int no_brackets);
 extern int num_arg_digits(int);
 
 extern const char *get_cmdline(void);

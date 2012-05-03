@@ -2413,7 +2413,7 @@ void process_keycode(int c)
 					 *  Key is too long held down
 					 */
 					OpCode = 0;
-					message("NULL", NULL);
+					message("NULL", CNULL);
 					// Force display update on key-up
 					State2.disp_temp = 0;
 				}

@@ -238,9 +238,9 @@ static char *set_dig_s(int base, int ch, char *res) {
 static void set_digits_string(const char *msg, int j) {
 	for (; *msg != '\0'; msg++) {
 		if (*msg == '.' || *msg == ',')
-			set_decimal(j - SEGS_PER_DIGIT, *msg == '.' ? DECIMAL_DOT : DECIMAL_COMMA, NULL);
+			set_decimal(j - SEGS_PER_DIGIT, *msg == '.' ? DECIMAL_DOT : DECIMAL_COMMA, CNULL);
 		else {
-			set_dig_s(j, *msg, NULL);
+			set_dig_s(j, *msg, CNULL);
 			j += SEGS_PER_DIGIT;
 		}
 	}
@@ -400,10 +400,10 @@ static void disp_x(const char *p) {
 				if (gotdot == -1)
 					gotdot = i;
 				if (i > 0)
-					set_decimal(i - SEGS_PER_DIGIT, DecimalMode, NULL);
+					set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
 				else {
 					set_dig(i, '0');
-					set_decimal(i, DecimalMode, NULL);
+					set_decimal(i, DecimalMode, CNULL);
 					i += SEGS_PER_DIGIT;	
 				}
 			} else {
@@ -419,7 +419,7 @@ static void disp_x(const char *p) {
 			gotdot -= 3 * SEGS_PER_DIGIT;
 			if (gotdot <= 0)			// MvC: was '<', caused crash
 				break;
-			set_separator(gotdot, SeparatorMode, NULL);
+			set_separator(gotdot, SeparatorMode, CNULL);
 		}
 
 		if (*p == 'E') {
@@ -430,7 +430,7 @@ static void disp_x(const char *p) {
 					p++;
 				}
 			}
-			set_exp(s_to_i(p), 1, NULL);
+			set_exp(s_to_i(p), 1, CNULL);
 		}
 	}
 }
@@ -547,7 +547,7 @@ static void set_int_x(const long long int value, char *res) {
 				ch -= 030;
 			set_dig(dig, ch);
 			if ((j % group) == 0 && k != 0)
-				set_separator(dig, SeparatorMode, NULL);
+				set_separator(dig, SeparatorMode, CNULL);
 			dig -= SEGS_PER_DIGIT;
 		}
 		if (sign) {
@@ -792,11 +792,11 @@ static void show_x(char *x, int exp) {
 			x[17] = '0' + j;
 			exp -= 1000 * j;
 		}
-		set_exp(exp, 1, NULL);
+		set_exp(exp, 1, CNULL);
 	}
 
 	for (i = 0, j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
-		set_dig_s(j, x[upper + i], NULL);
+		set_dig_s(j, x[upper + i], CNULL);
 
 	x[upper] = '\0';
 	set_status(x);
@@ -1121,7 +1121,7 @@ void format_reg(int index, char *buf) {
 
 		getRegister(&x, index);
 		v = dn_to_ull(&x, &s);
-		set_int_x(build_value(v, s), NULL);
+		set_int_x(build_value(v, s), CNULL);
 	}
 #endif
 	else
@@ -1189,7 +1189,7 @@ static void show_status(void) {
 			set_status("FL.00-.15");
 		}
 		j = start * SEGS_PER_DIGIT;
-		set_decimal(j, DECIMAL_DOT, NULL);
+		set_decimal(j, DECIMAL_DOT, CNULL);
 		j += SEGS_PER_DIGIT;
 		for (i = start; i < group + start; i++) {
 			int k = i + base - start;
@@ -1202,11 +1202,11 @@ static void show_status(void) {
 					l |= (get_user_flag(k) << 2);
 			}
 			set_dig(j, l);
-			set_decimal(j, DECIMAL_DOT, NULL);
+			set_decimal(j, DECIMAL_DOT, CNULL);
 			j += SEGS_PER_DIGIT;
 			if (i == 4) {
 				set_dig(j, 8);
-				set_decimal(j, DECIMAL_DOT, NULL);
+				set_decimal(j, DECIMAL_DOT, CNULL);
 				j += SEGS_PER_DIGIT;
 			}
 		}
@@ -1247,9 +1247,9 @@ static void show_label(void) {
 			set_digits_string("CALLS", SEGS_PER_DIGIT * 7);
 			n = nLIB(lblpc);
 			if (n == REGION_RAM)
-				set_exp(lblpc, 1, NULL);
+				set_exp(lblpc, 1, CNULL);
 			else
-				set_exp_digits_string(libname[n], NULL);
+				set_exp_digits_string(libname[n], CNULL);
 		}
 	}
 }
@@ -1291,7 +1291,7 @@ static void show_registers(void) {
 			*bp++ = REGNAMES[n - regX_idx];
 		set_status(buf);
 	}
-	format_reg(reg, NULL);
+	format_reg(reg, CNULL);
 }
 
 
@@ -1383,7 +1383,7 @@ void display(void) {
 	if (State2.version) {
 		char vers[VERS_SVN_OFFSET + 5] = VERS_DISPLAY;
 		set_digits_string("pAULI, WwALtE", 0);
-		set_dig_s(SEGS_EXP_BASE, 'r', NULL);
+		set_dig_s(SEGS_EXP_BASE, 'r', CNULL);
 		xcopy( vers + VERS_SVN_OFFSET, SvnRevision, 4 );
 		set_status(vers);
 		skip = 1;
@@ -1451,7 +1451,7 @@ void display(void) {
 			if (op == RARG_BASEOP(RARG_INTNUM) || op == RARG_BASEOP(RARG_INTNUM_CMPLX))
 				set_digits_string("0 to 255", 0);
 			else
-				set_x(get_const(op & RARG_MASK, 0), NULL, 0);
+				set_x(get_const(op & RARG_MASK, 0), CNULL, 0);
 			skip = 1;
 		} else if (State2.runmode) {
 			if (cata == CATALOGUE_CONV) {
@@ -1472,13 +1472,13 @@ void display(void) {
 					do_conv(&r, op & RARG_MASK, &x);
 				decNumberNormalize(&r, &r, &Ctx);
 				packed_from_number(&z, &r);
-				set_x((REGISTER *)&z, NULL, 0);
+				set_x((REGISTER *)&z, CNULL, 0);
 				skip = 1;
 			} else if (op >= (OP_NIL | OP_sigmaX2Y) && op < (OP_NIL | OP_sigmaX2Y) + NUMSTATREG) {
 				REGISTER z, *const x = StackBase;
 				copyreg(&z, x);
 				sigma_val((enum nilop) argKIND(op));
-				set_x(x, NULL, is_dblmode());
+				set_x(x, CNULL, is_dblmode());
 				copyreg(x, &z);
 				skip = 1;
 			}
@@ -1571,7 +1571,7 @@ nostk:	show_flags();
 			if (p == NULL || cata) {
 				if (ShowRegister != -1) {
 					x_disp = (ShowRegister == regX_idx) && !State2.hms;
-					format_reg(ShowRegister, NULL);
+					format_reg(ShowRegister, CNULL);
 				}
 				else
 					set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
@@ -1584,7 +1584,7 @@ nostk:	show_flags();
 			unsigned int upc = user_pc(pc);
 			const int n = nLIB(pc);
 			xset(buf, '\0', sizeof(buf));
-			set_exp(ProgFree, 1, NULL);
+			set_exp(ProgFree, 1, CNULL);
 			num_arg_0(scopy_spc(buf, n == 0 ? S7_STEP : libname[n]), 
 				  upc, 3 + (n & 1));  // 4 digits in ROM and Library
 			set_digits_string(buf, SEGS_PER_DIGIT);
@@ -1607,7 +1607,7 @@ nostk:	show_flags();
 	State2.smode = SDISP_NORMAL;
 	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;
-	DispMsg = (char *) NULL;
+	DispMsg = CNULL;
 	State2.disp_small = 0;
 	finish_display();
 #ifdef CONSOLE
@@ -1736,7 +1736,7 @@ extern void message(const char *str1, const char *str2)
 static void stopwatch_exponent(const char* exponent) {
 	int j = SEGS_EXP_BASE;
 	for (; *exponent!=0; exponent++) {
-		set_dig_s(j, *exponent, NULL);
+		set_dig_s(j, *exponent, CNULL);
 		j += SEGS_PER_EXP_DIGIT;
 	}
 }
@@ -1747,7 +1747,7 @@ void stopwatch_message(const char *str1, const char *str2, int dot_pos, char* ex
 	set_dot(DEG);
 	set_digits_string( str2, 0 );
 	if( dot_pos>=0 ) {
-		set_decimal( dot_pos*SEGS_PER_DIGIT, DECIMAL_DOT, NULL );
+		set_decimal( dot_pos*SEGS_PER_DIGIT, DECIMAL_DOT, CNULL );
 	}
 	if( exponent!=NULL ) {
 		stopwatch_exponent(exponent);

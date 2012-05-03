@@ -1686,9 +1686,10 @@ void cmdkeyp(unsigned int arg, enum rarg op) {
  *  Get a key code from a register and translate it from row/colum to internal
  *  Check for valid arguments
  */
-static int get_keycode_from_arg(unsigned int arg)
+static int get_keycode_from_reg(unsigned int n)
 {
-	const int c = row_column_to_keycode(arg);
+	int sgn;
+	const int c = row_column_to_keycode((int) get_reg_n_int_sgn((int) n, &sgn));
 	if ( c < 0 )
 		err(ERR_RANGE);
 	return c;
@@ -1701,7 +1702,7 @@ static int get_keycode_from_arg(unsigned int arg)
  */
 void cmdputkey(unsigned int arg, enum rarg op)
 {
-	const int c = get_keycode_from_arg(arg);
+	const int c = get_keycode_from_reg(arg);
 
 	if (c >= 0) {
 		set_running_off();
@@ -1716,7 +1717,7 @@ void cmdputkey(unsigned int arg, enum rarg op)
  */
 void cmdkeytype(unsigned int arg, enum rarg op)
 {
-	const int c = get_keycode_from_arg(arg);
+	const int c = get_keycode_from_reg(arg);
 	if ( c >= 0 ) {
 		const char types[] = {
 			12, 12, 12, 12, 12, 12,
@@ -2140,6 +2141,15 @@ void fin_tst(const int a) {
 void cmdskip(unsigned int arg, enum rarg op) {
 	const unsigned int origpc = state_pc();
 	unsigned int pc;
+
+	if (op == RARG_CASE) {
+		int sgn;
+		arg = (int) get_reg_n_int_sgn((int) arg, &sgn);
+		if (sgn || arg >= 100) {
+			err(ERR_RANGE);
+			return;
+		}
+	}
 
 	if (isXROM(origpc))
 		pc = origpc + arg;
@@ -3709,10 +3719,8 @@ static unsigned int get_reg_limit(unsigned int cmd, unsigned int arg)
 static void rargs(const opcode op) {
 	unsigned int arg = op & RARG_MASK;
 	const unsigned int cmd = RARG_CMD(op);
-	FLAG autoind = argcmds[cmd].autoindirect;
-	FLAG ind = op & RARG_IND || autoind;
-	decNumber x;
-	unsigned int lim = autoind ? 256 : argcmds[cmd].lim;
+	FLAG ind = op & RARG_IND;
+	unsigned int lim = argcmds[cmd].lim;
 
 	XeqOpCode = (s_opcode) cmd;
 
@@ -3728,22 +3736,18 @@ static void rargs(const opcode op) {
 	}
 
 	if (ind) {
-		if (argcmds[cmd].indirectokay || autoind) {
+		if (argcmds[cmd].indirectokay) {
 			// Get the argument by reading a register
+			int sgn;
 			if (arg > get_reg_limit(RARG_RCL, arg)) {
 				// Invalid register specified for indirect access
 				err(ERR_RANGE);
 				return;
 			}
-			if (is_intmode()) {
-				arg = (unsigned int) get_reg_n_int(arg);
-			} else {
-				getRegister(&x, arg);
-				arg = dn_to_int(&x);
-			}
-			if (argcmds[cmd].local && (int) arg < 0) {
+			arg = (unsigned int) get_reg_n_int_sgn(arg, &sgn);
+			if (argcmds[cmd].local && sgn) {
 				// negative arguments address local registers or flags
-				arg = LOCAL_REG_BASE - arg;
+				arg = LOCAL_REG_BASE + arg;
 			}
 		} 
 		else {
@@ -4732,8 +4736,8 @@ static void check_const_cat(void) {
 
 	for (i=1; i<NUM_CONSTS_CAT; i++) {
 		if (compare(CONST(i-1), CONST(i), 0)) {
-			prettify(catcmd(CONST(i-1), b1), p1);
-			prettify(catcmd(CONST(i), b2), p2);
+			prettify(catcmd(CONST(i-1), b1), p1, 0);
+			prettify(catcmd(CONST(i), b2), p2, 0);
 			error("constants row %d / %d: %s / %s", i, i+1, p1, p2);
 		}
 	}
@@ -4746,7 +4750,7 @@ static void bad_table(const char *t, int row, const char *n, int nlen) {
 	for (i=0; i<nlen; i++)
 		name[i] = n[i];
 	name[nlen] = '\0';
-	prettify(name, buf);
+	prettify(name, buf, 0);
 	error("%s table row %d: %6s", t, row, buf);
 }
 

@@ -303,7 +303,7 @@ void print_registers( enum nilop op )
 		n = stack_size();
 	}
 	else {
-		if ( reg_decode( &s, &n, NULL, 0 ) ) {
+		if ( reg_decode( &s, &n, (int *) NULL, 0 ) ) {
 			return;
 		}
 	}
@@ -429,7 +429,7 @@ void cmdprint( unsigned int arg, enum rarg op )
 void cmdprintreg( unsigned int arg, enum rarg op )
 {
 	if ( !advance_if_trace()) {
-		print_reg( arg, NULL, 0 );
+		print_reg( arg, CNULL, 0 );
 	}
 }
 
@@ -480,13 +480,14 @@ void print_trace( opcode op, int phase )
 			}
 			print_tab( 0 );
 			print_line( prt( op, buffer ), 0 );
+			print_line( " ", 0 );
 		}
 		else {
 			// right part of print
 			print_reg( regX_idx,
 				   op == TRACE_DATA_ENTRY ? ">>>" :
 				   PrinterColumn == 0     ? ( !Tracing ? buffer : "***"  ) :
-				   (char *) NULL,
+				   CNULL,
 				   0 );
 			if ( State2.wascomplex ) {
 				print_reg( regY_idx, "cpx", 0 );

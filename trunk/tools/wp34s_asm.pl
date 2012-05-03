@@ -1036,7 +1036,8 @@ sub load_opcode_tables {
     #
     # The second field is the type of op-code. cmd is a standard command. mult is a
     # multi-character alpha command (double length). arg is a command that takes an
-    # argument.
+    # argument. alias-c, alias-m and alias-a are alias names for the command types
+    # listed above.
     #
     # The third field is the op-code itself.
     #
@@ -1099,12 +1100,27 @@ sub load_opcode_tables {
         load_2digit_iC_entry($hex_str, $mnemonic, $line_num);
       }
 
+    # alias to the above
+    } elsif( /0x([0-9a-fA-F]{4})\s+alias-c\s+(.+)$/ ) {
+      my $hex_str = $1;
+      my $mnemonic = $2;
+      my $line_num = $.;
+
+      load_mnem2hex_entry($hex_str, $mnemonic, $line_num);
+
     # arg-type line
     } elsif( /0x([0-9a-fA-F]{4})\s+arg\s+(.+)$/ ) {
       my $hex_str = $1;
       my $parameter = $2;
       my $line_num = $.;
-      parse_arg_type($hex_str, $parameter, $line_num);
+      parse_arg_type($hex_str, $parameter, $line_num, 0);
+
+    # alias to the above
+    } elsif( /0x([0-9a-fA-F]{4})\s+alias-a\s+(.+)$/ ) {
+      my $hex_str = $1;
+      my $parameter = $2;
+      my $line_num = $.;
+      parse_arg_type($hex_str, $parameter, $line_num, 1);
 
     # mult-type line
     } elsif( /0x([0-9a-fA-F]{4})\s+mult\s+(.+)$/ ) {
@@ -1129,6 +1145,13 @@ sub load_opcode_tables {
         debug_msg(this_function((caller(0))[3]), $msg) if $debug > 2;
         $multi_char_target_hi = hex2dec($hex_str);
       }
+
+    # alias of the above
+    } elsif( /0x([0-9a-fA-F]{4})\s+alias-m\s+(.+)$/ ) {
+      my $hex_str = $1;
+      my $mnemonic = "${2}'"; # append a single quote.
+      my $line_num = $.;
+      load_mnem2hex_entry ($hex_str, $mnemonic, $line_num);
 
     # Parse any of the pragma-like values.
     } elsif( /^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\=\s*(\d+\.{0,1}\d*)\s*$/ ) {
@@ -1208,6 +1231,7 @@ sub parse_arg_type {
   my $base_hex_str = shift;
   my $arg = shift;
   my $line_num = shift;
+  my $is_alias = shift;
 
   my ($base_mnemonic);
   my $direct_max = 0;
@@ -1242,7 +1266,7 @@ sub parse_arg_type {
     for my $offset (0 .. ($direct_max - 1)) {
       if( ! $stostack_modifier || ($offset <= 96) || ($offset >= 112) ) {
         parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, 
-                               $indirect_modifier, $stackreg_modifier);
+                               $indirect_modifier, $stackreg_modifier, $is_alias);
       }
     }
   }
@@ -1256,7 +1280,11 @@ sub parse_arg_type {
       my $mnemonic_str = "$base_mnemonic";
       $mnemonic_str .= "[->]";
       my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $indirect_offset, $mnemonic_str, $reg_str);
-      load_table_entry($hex_str, $mnemonic, $line_num);
+      if( $is_alias ) {
+        load_mnem2hex_entry($hex_str, $mnemonic, $line_num);
+      } else {  
+        load_table_entry($hex_str, $mnemonic, $line_num);
+      }
     }
   }
 
@@ -1276,6 +1304,7 @@ sub parse_arg_type_dir_max {
   my $line_num = shift;
   my $indirect_modifier = shift;
   my $stackreg_modifier = shift;
+  my $is_alias = shift;
   my ($reg_str);
 
   # Find out which instruction offset group we are to use.
@@ -1293,7 +1322,11 @@ sub parse_arg_type_dir_max {
   $reg_str = "--UNDEFINED--" if not defined $reg_str;
 
   my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $offset, "$base_mnemonic ", $reg_str);
-  load_table_entry($hex_str, $mnemonic, $line_num);
+  if( $is_alias ) {
+    load_mnem2hex_entry($hex_str, $mnemonic, $line_num);
+  } else {  
+    load_table_entry($hex_str, $mnemonic, $line_num);
+  }
   return;
 } # parse_arg_type_dir_max
 
