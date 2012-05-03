@@ -406,9 +406,9 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_pdf_C,		"Cap(x)")
 	MON(OP_cdf_C,		"Ca(x)")
 	MON(OP_qf_C,		"Ca\235(p)")
-	MON(OP_pdf_EXP,		"Exp(x)")
-	MON(OP_cdf_EXP,		"Ex(x)")
-	MON(OP_qf_EXP,		"Ex/235(p)")
+	MON(OP_pdf_EXP,		"Expon[sub-p]")
+	MON(OP_cdf_EXP,		"Expon")
+	MON(OP_qf_EXP,		"Expon[^-1]")
 	MON(OP_pdf_F,		"F\276(x)")
 	MON(OP_cdf_F,		"F(x)")
 	MON(OP_qf_F,		"F/235(p)")
@@ -418,12 +418,12 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_pdf_LG,		"Lgp(x)")
 	MON(OP_cdf_LG,		"Lg(x)")
 	MON(OP_qf_LG,		"Lg\235(p)")
-	MON(OP_pdf_LN,		"Lnp(x)")
-	MON(OP_cdf_LN,		"Ln(x)")
-	MON(OP_qf_LN,		"Ln\235(p)")
-	MON(OP_pdf_N,		"Np(x)")
-	MON(OP_cdf_N,		"N(x)")
-	MON(OP_qf_N,		"N\235(p)")
+	MON(OP_pdf_LN,		"LgNrm(x)")
+	MON(OP_cdf_LN,		"LgNrm(x)")
+	MON(OP_qf_LN,		"LgNrm\235(p)")
+	MON(OP_pdf_N,		"Normlp")
+	MON(OP_cdf_N,		"Norml")
+	MON(OP_qf_N,		"Norml\235")
 	MON(OP_pdf_Plam,	"Pois[lambda]\276")
 	MON(OP_cdf_Plam,	"Pois[lambda]")
 	MON(OP_qf_Plam,		"Pois[lambda]/235")
@@ -433,13 +433,24 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_pdf_T,		"t\276(x)")
 	MON(OP_cdf_T,		"t(x)")
 	MON(OP_qf_T,		"t/235(p)")
-	MON(OP_pdf_WB,		"WB\276")
-	MON(OP_cdf_WB,		"WB(x)")
-	MON(OP_qf_WB,		"WB/235(p)")
+	MON(OP_pdf_WB,		"Weibl\276")
+	MON(OP_cdf_WB,		"Weibl")
+	MON(OP_qf_WB,		"Weibl/235")
 	MON(OP_pdf_chi2,	"\225\232\276")
 	MON(OP_cdf_chi2,	"\225\232")
 	MON(OP_qf_chi2,		"\225\232INV")
 	MON(OP_pdf_Q,		"\224p(x)")
+#ifdef INCLUDE_CDFU
+	MON(OP_cdfu_Q,		"\224\277(x)")
+	MON(OP_cdfu_T,		"t\277(x)")
+	MON(OP_cdfu_WB,		"Weibl\277")
+	MON(OP_cdfu_EXP,	"Expon\277")
+	MON(OP_cdfu_G,		"Geom\277")
+	MON(OP_cdfu_N,		"Norml\277")
+	MON(OP_cdfu_LN,		"LgNrm\277")
+	MON(OP_cdfu_LG,		"Logis\277")
+	MON(OP_cdfu_C,		"Cauch\277")
+#endif
 };
 
 static s_opcode int_catalogue[] = {
@@ -1133,7 +1144,7 @@ static void emit_conv_catalogue(const char *name, s_opcode cat[], int num_cat) {
 	for (i=0; i<num_cat; i++) {
 		unsigned char c = (unsigned char) cat[i];
 		if (opKIND(cat[i]) == KIND_MON)
-			c |= 0x80;
+			c += num_cat;
 		printf("%s0x%02x,", (i%6) == 0?"\n\t":" ", c);
 	}
 	printf("\n};\n\n");

@@ -596,8 +596,8 @@ enum {
 	OP_pdf_LG, OP_cdf_LG, OP_qf_LG,
 	OP_pdf_C, OP_cdf_C, OP_qf_C,
 #ifdef INCLUDE_CDFU
-	OP_cdfu_Q,  OP_cdfu_chi2, OP_cdfu_T, OP_cdfu_F, OP_cdfu_WB,
-	OP_cdfu_EXP, OP_cdfu_B, OP_cdfu_P, OP_cdfu_G, OP_cdfu_N,
+	OP_cdfu_Q,  /*OP_cdfu_chi2, */OP_cdfu_T,/* OP_cdfu_F,*/ OP_cdfu_WB,
+	OP_cdfu_EXP, /*OP_cdfu_B, OP_cdfu_P, */OP_cdfu_G, OP_cdfu_N,
 	OP_cdfu_LN, OP_cdfu_LG, OP_cdfu_C,
 #endif
 	OP_xhat, OP_yhat,

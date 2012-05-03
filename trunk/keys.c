@@ -1633,9 +1633,9 @@ opcode current_catalogue(int n) {
 	}
 	if (c == CATALOGUE_CONV) {
 		const int cnv = conv_catalogue[n];
-		if (cnv & 0x80)
+		if (cnv >= SIZE_conv_catalogue)
 			// Monadic conversion routine
-			return OP_MON | (cnv & 0x7f);
+			return OP_MON | (cnv - SIZE_conv_catalogue);
 		else
 			return RARG(RARG_CONV, cnv);
 	}

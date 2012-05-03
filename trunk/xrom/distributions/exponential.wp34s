@@ -36,6 +36,19 @@
 			RCL[times] J
 			xOUT xOUT_NORMAL
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_EXPON"
+			xIN MONADIC
+			GSB expon_param
+			SPEC?
+				JMP cdf_infinite
+			[times]
+			+/-
+			e[^x]
+			xOUT xOUT_NORMAL
+			
+#endif
+
 		XLBL"CDF_EXPON"
 			xIN MONADIC
 			GSB expon_param

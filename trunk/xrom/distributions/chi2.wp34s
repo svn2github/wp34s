@@ -25,7 +25,7 @@
 			GSB pdf_chi2
 			xOUT xOUT_NORMAL
 
-pdf_chi2::		x[<=]? 0
+pdf_chi2::		x[<=]0?
 				JMP dist_ret_0
 			RCL J
 			_INT 2
@@ -55,7 +55,7 @@ pdf_chi2::		x[<=]? 0
 			GSB cdf_chi2
 			xOUT xOUT_NORMAL
 
-cdf_chi2::		x[<=]? 0
+cdf_chi2::		x[<=]0?
 				JMP dist_ret_0
 			[infinity]?
 				JMP dist_ret_1

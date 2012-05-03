@@ -53,9 +53,16 @@ pdf_t::			RCL[times] X	// x^2 ? ? ?
 			/
 			RTN
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_T"
+			xIN MONADIC
+			+/-
+			JMP cdf_t_common
+#endif
+
 		XLBL"CDF_T"
 			xIN MONADIC
-			GSB t_param
+cdf_t_common::		GSB t_param
 			FS?C .00
 				JMP cdf_q_xout
 			GSB cdf_t

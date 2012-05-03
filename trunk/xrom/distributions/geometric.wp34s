@@ -34,6 +34,23 @@
 			RCL[times] J
 			xOUT xOUT_NORMAL
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_GEOM"
+			xIN MONADIC
+			GSB geom_param
+			x<0?
+				JMP dist_ret_1
+			[infinity]?
+				JMP dist_ret_0
+			FLOOR
+			INC X
+			_INT 1
+			RCL- J
+			SWAP
+			y[^x]
+			xOUT xOUT_NORMAL
+#endif
+			
 		XLBL"CDF_GEOM"
 			xIN MONADIC
 			GSB geom_param

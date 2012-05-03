@@ -43,6 +43,22 @@
 			RCL/ J
 			xOUT xOUT_NORMAL
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_WEIB"
+			xIN MONADIC
+			GSB weibull_param
+			SWAP
+			x[<=]0?
+				JMP ret_1
+			SPEC?
+				JMP ret_0
+			SWAP
+			y[^x]
+			+/-
+			e[^x]
+			xOUT xOUT_NORMAL
+#endif
+
 		XLBL"CDF_WEIB"
 			xIN MONADIC
 			GSB weibull_param

@@ -38,14 +38,23 @@
 			1/x
 			xOUT xOUT_NORMAL
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_CAUCHY"
+			xIN MONADIC
+			SF .00
+			JMP cdf_cauchy_common
+#endif
+
 		XLBL"CDF_CAUCHY"
 			xIN MONADIC
-			GSB cauchy_xform
+cdf_cauchy_common::	GSB cauchy_xform
 			SPEC?
 				JMP cdf_infinite
 			ATAN
 			Num [pi]
 			/
+			FS? .00
+				+/-
 			.
 			5
 			+

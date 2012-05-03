@@ -27,6 +27,17 @@
 				RCL/ .00
 			xOUT xOUT_NORMAL
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_LOGNORMAL"
+			xIN MONADIC
+				SPEC?
+					JMP cdf_infinite
+				x[<=]0?
+					JMP ret_1
+				LN
+				JMP cdfu_normal
+#endif
+
 		XLBL"CDF_LOGNORMAL"
 			xIN MONADIC
 				SPEC?
@@ -55,11 +66,22 @@ pdf_normal::		GSB normal_param
 			RCL/ K
 			RTN
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_NORMAL"
+			xIN MONADIC
+cdfu_normal::		SF .00
+			JMP cdf_norm_common
+#endif
+
 		XLBL"CDF_NORMAL"
 			xIN MONADIC
-			SPEC?
+cdf_norm_common::	SPEC?
 				JMP cdf_infinite
 cdf_normal::		GSB normal_param
+#ifdef INCLUDE_CDFU
+			FS? .00
+				+/-
+#endif
 			JMP cdf_q_xout
 
 normal_param::		RCL J
@@ -104,6 +126,12 @@ pdf_q::			x[^2]
 			/
 			RTN
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_Q"
+			xIN MONADIC
+			+/-
+			JMP cdf_q_xout
+#endif
 
 		XLBL"CDF_Q"
 			xIN MONADIC

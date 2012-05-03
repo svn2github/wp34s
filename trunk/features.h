@@ -117,6 +117,9 @@
 // Include iBACK, etc. as user visible commands
 // #define INCLUDE_INDIRECT_BRANCHES
 
+// Include the upper tail cumulative distribution functions
+#define INCLUDE_CDFU
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
