@@ -220,16 +220,23 @@ void dump_opcodes(FILE *f) {
 			} 
 			else if (cmd == RARG_CONST || cmd == RARG_CONST_CMPLX) {
 				const int n = c & 0xff;
+				const char *pre = n == OP_PI ? "" : "# ";
+				const char *alias = cnsts[n].alias;
+
 				if (n == OP_ZERO || n == OP_ONE)
 					continue;
+				if (strchr(cmdpretty, '[') == NULL)
+					alias = NULL;
 				if (cmd == RARG_CONST_CMPLX) {
 					sprintf(temp, "[cmplx]# %s", cmdpretty);
-					sprintf(buf, "c# %s", cmdpretty);
-					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, (n==OP_PI) ? "cPI" : buf, 0);
+					sprintf(buf, "c%s%s", pre, alias ? alias : cmdpretty);
+					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, buf, 0);
 				}
 				else {
 					sprintf(temp, "# %s", cmdpretty);
-					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, (n==OP_PI) ? "PI" : CNULL, 0);
+					if (alias)
+						sprintf(buf, "%s%s", pre, alias);
+					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, alias ? buf : CNULL, 0);
 				}
 				continue;
 			} 

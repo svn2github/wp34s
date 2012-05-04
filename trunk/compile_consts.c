@@ -542,10 +542,13 @@ static void const_small_tbl(FILE *f) {
 
 	for (i=0; constsml[i].val != NULL && constsml[i].n2[0] == '\0'; i++);	// user visible
 	for (j=i; constsml[j].val != NULL; j++);				// system	
-	fprintf(fh, "\nstruct cnsts {\n"
+	fprintf(fh,	"\nstruct cnsts {\n"
 			"\tunsigned char index;\n"
-			"\tconst char cname[CONST_NAMELEN];\n");
-	fprintf(fh, "};\n\n");
+			"\tconst char cname[CONST_NAMELEN];\n"
+			"#if ! defined(REALBUILD) || defined(COMPILE_CATALOGUES)\n"
+			"\tconst char *alias;\n"
+			"#endif\n"
+			"};\n\n");
 
 	fprintf(fh,	"/* Table of user visible constants */\n"
 			"extern const struct cnsts cnsts[];\n"
@@ -557,17 +560,29 @@ static void const_small_tbl(FILE *f) {
 			"#define CONST_CMPLX(n)  RARG(RARG_CONST_CMPLX, n)\n\n"
 			"enum {\n",
 		i, j);
-	fprintf(f, "/* Table of user visible constants\n */\nconst struct cnsts cnsts[] = {\n");
-	fprintf(f, "#define CNST(n, index, fn) { index, fn },\n");
+
+	fprintf(f,	"/* Table of user visible constants\n */\nconst struct cnsts cnsts[] = {\n");
+	fprintf(f,	"#if ! defined(REALBUILD) || defined(COMPILE_CATALOGUES)\n"
+			"#define CNST(n, index, fn, alias) { index, fn, alias },\n"
+			"#else\n"
+			"#define CNST(n, index, fn, alias) { index, fn },\n"
+			"#endif\n\n");
 
 	s_index = 0; d_index = 0;
 	for (i = 0; constsml[i].val != NULL; i++) {
-		fprintf(fh, "\tOP_%s", constsml[i].op);
+		const char *op = constsml[i].op;
+		const char *alias = op;
+		if (strncmp(alias, "PC_", 3) == 0)
+			alias += 3;
+		if (strcmp(alias, constsml[i].name) == 0)
+			alias = NULL;
+
+		fprintf(fh, "\tOP_%s", op);
 		if (i == 0)
 			fprintf(fh, " = 0");
 		fprintf(fh, ",\n");
 
-		fprintf(fu, "#define CONST_%s (%d)\n", constsml[i].op, i);
+		fprintf(fu, "#define CONST_%s (%d)\n", op, i);
 
 		decNumberFromString(&x, constsml[i].val, &ctx);
 		decNumberNormalize(&y, &x, &ctx);
@@ -585,9 +600,9 @@ static void const_small_tbl(FILE *f) {
 			fprintf(stderr, "Too many small constants defined\n");
 			abort();
 		}
-		fprintf(f, "\tCNST(OP_%s, 0x%02x, \"", constsml[i].op, j);
+		fprintf(f, "\tCNST(OP_%s, 0x%02x, \"", op, j);
 		put_name(f, constsml[i].name);
-		fprintf(f, "\")\n");
+		fprintf(f, alias == NULL ? "\", CNULL)\n" : "\", \"%s\")\n", alias);
 	}
 	fprintf(fh, "};\n\n");			// enum
 	fprintf(f, "#undef CNST\n};\n\n");	// array of structs
