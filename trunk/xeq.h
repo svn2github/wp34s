@@ -221,7 +221,7 @@ struct monfunc
 	FP_MONADIC_CMPLX mondcmplx;
 	FP_MONADIC_INT  monint;
 	const char fname[NAME_LEN];
-#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+#if defined(COMPILE_CATALOGUES) || ! (defined(REALBUILD) || defined(POST_PROCESSING))
 	const char *alias;
 #endif
 };
@@ -257,7 +257,7 @@ struct dyfunc
 	FP_DYADIC_CMPLX dydcmplx;
 	FP_DYADIC_INT  dydint;
 	const char fname[NAME_LEN];
-#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+#if defined(COMPILE_CATALOGUES) || ! (defined(REALBUILD) || defined(POST_PROCESSING))
 	const char *alias;
 #endif
 };
@@ -292,7 +292,7 @@ struct trifunc
 	FP_TRIADIC_REAL trireal;
 	FP_TRIADIC_INT  triint;
 	const char fname[NAME_LEN];
-#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+#if defined(COMPILE_CATALOGUES) || ! (defined(REALBUILD) || defined(POST_PROCESSING))
 	const char *alias;
 #endif
 };
@@ -329,7 +329,7 @@ struct niladic
 	FP_NILADIC niladicf;
 	unsigned char numresults;
 	const char nname[NAME_LEN];
-#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+#if defined(COMPILE_CATALOGUES) || ! (defined(REALBUILD) || defined(POST_PROCESSING))
 	const char *alias;
 #endif
 };
@@ -385,7 +385,7 @@ struct argcmd
 	unsigned int flag : 1;
 	unsigned int reserved : 1;
 	const char cmd[NAME_LEN];
-#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+#if defined(COMPILE_CATALOGUES) || ! (defined(REALBUILD) || defined(POST_PROCESSING))
 	const char *alias;
 #endif
 };
@@ -418,7 +418,7 @@ struct multicmd
 #endif
 	FP_MULTI f;
 	const char cmd[NAME_LEN];
-#if defined(COMPILE_CATALOGUES) || ! defined(REALBUILD)
+#if defined(COMPILE_CATALOGUES) || ! (defined(REALBUILD) || defined(POST_PROCESSING))
 	const char *alias;
 #endif
 };
