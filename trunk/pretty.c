@@ -230,6 +230,8 @@ void dump_opcodes(FILE *f) {
 			case KIND_SPEC:
 				if (d == OP_ENTER)
 					p = "ENTER";
+				else if (d == OP_CHS)
+					p = "CHS";
 				break;
 
 			case KIND_MON:
@@ -295,6 +297,8 @@ void dump_opcodes(FILE *f) {
 			fprintf(f, "0x%04x\tcmd\t%s\n", c, cmdpretty);
 			if (p)
 				fprintf(f, C "0x%04x\talias-c\t%s\n", c, p);
+			if (c == (OP_CMON | OP_CCHS))
+				fprintf(f, C "0x%04x\talias-c\tc%s\n", c, "CHS");
 		}
 	}
 }
