@@ -20,9 +20,9 @@
 /* Version number */
 #define VERSION_STRING	"3.1"
 
-#if defined(REALBUILD) && defined(INFRARED)
+#if defined(INFRARED)
 #define VERS_DISPLAY "34S\006" VERSION_STRING "\222\006"
-#elif defined(REALBUILD) && defined(INCLUDE_STOPWATCH)
+#elif defined(INCLUDE_STOPWATCH)
 #define VERS_DISPLAY "34S\006" VERSION_STRING "T\006"
 #else
 #define VERS_DISPLAY "34S\006" VERSION_STRING "\006\006"
