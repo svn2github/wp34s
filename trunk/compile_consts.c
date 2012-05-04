@@ -602,7 +602,11 @@ static void const_small_tbl(FILE *f) {
 		}
 		fprintf(f, "\tCNST(OP_%s, 0x%02x, \"", op, j);
 		put_name(f, constsml[i].name);
-		fprintf(f, alias == NULL ? "\", CNULL)\n" : "\", \"%s\")\n", alias);
+		if(alias==NULL) {
+			fprintf(f, "\", CNULL)\n" );
+		} else {
+			fprintf(f, "\", \"%s\")\n", alias);
+		}
 	}
 	fprintf(fh, "};\n\n");			// enum
 	fprintf(f, "#undef CNST\n};\n\n");	// array of structs
