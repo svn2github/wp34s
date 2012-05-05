@@ -13,9 +13,20 @@
  * You should have received a copy of the GNU General Public License
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include <stdio.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdlib.h>
 
 #include "pretty.h"
 #include "xeq.h"		// This helps the syntax checker
+
+#include "translate.c"		// unicode[]
+
+#ifdef _MSC_VER
+#define strdup _strdup
+#define strcasecmp _stricmp
+#endif
 
 const char *pretty(unsigned char z) {
 	if (z < 32)
@@ -40,21 +51,27 @@ void prettify(const char *in, char *out, int no_brackets) {
 	while (*in != '\0') {
 		c = *in++;
 		p = pretty(c);
-		if (p == NULL)
+		if (p == NULL) {
 			*out++ = c;
+		}
 		else {
-			if (no_brackets) {
-				if (strcmp(p, "approx") == 0)
-					p = "~";
-				else if (strcmp(p, "cmplx") == 0)
-					p = "c";
-			}
-			else
+			if (! no_brackets) {
 				*out++ = '[';
-			while (*p != '\0')
+			}
+			else if (no_brackets == 1) {
+				if (strcmp(p, "approx") == 0) {
+					p = "~";
+				}
+				else if (strcmp(p, "cmplx") == 0) {
+					p = "c";
+				}
+			}
+			while (*p != '\0') {
 				*out++ = *p++;
-			if (! no_brackets )
+			}
+			if (! no_brackets ) {
 				*out++ = ']';
+			}
 		}
 	}
 	*out = '\0';
@@ -144,13 +161,21 @@ struct xref_s {
 	const char *alias;
 };
 static struct xref_s alias_table[10000];
-static unsigned int alias_tbl_n = 0;
+static int alias_tbl_n = 0;
+
+static int xref_pretty_compare(const void *v1, const void *v2);
+static int xref_alias_compare(const void *v1, const void *v2);
 
 static int xref_cmd_compare(const void *v1, const void *v2) {
 	const struct xref_s *s1 = (const struct xref_s *)v1;
 	const struct xref_s *s2 = (const struct xref_s *)v2;
 	const unsigned char *p1 = (const unsigned char *)s1->name;
 	const unsigned char *p2 = (const unsigned char *)s2->name;
+
+	if (*(s1->name) == '\024')
+		++p1;
+	if (*(s2->name) == '\024')
+		++p2;
 
 	while (*p1 != '\0' && *p2 != '\0') {
 		const int c1 = remap_chars(*p1++);
@@ -161,7 +186,7 @@ static int xref_cmd_compare(const void *v1, const void *v2) {
 			return 1;
 	}
 	if (*p1 == '\0' && *p2 == '\0')
-		return 0;
+		return xref_pretty_compare(v1, v2);
 	if (*p1 == '\0') return -1;
 	return 1;
 }
@@ -171,8 +196,26 @@ static int xref_alias_compare(const void *v1, const void *v2) {
 	const struct xref_s *s2 = (const struct xref_s *)v2;
 	const char *p1 = (const char *)s1->alias;
 	const char *p2 = (const char *)s2->alias;
+	int result;
 
-	return strcasecmp(p1, p2);
+	if (p1 == CNULL)
+		p1 = "";
+	if (p2 == CNULL)
+		p2 = "";
+
+	if (*(s1->name) == '\024')
+		++p1;
+	if (*(s2->name) == '\024')
+		++p2;
+
+	result = strcasecmp(p1, p2);
+	if (0 == result) {
+		if (*(s1->name) == '\024' && *(s2->name) != '\024')
+			return 1;
+		if (*(s1->name) != '\024' && *(s2->name) == '\024')
+			return -1;
+	}
+	return result;
 }
 
 static int xref_pretty_compare(const void *v1, const void *v2) {
@@ -180,27 +223,76 @@ static int xref_pretty_compare(const void *v1, const void *v2) {
 	const struct xref_s *s2 = (const struct xref_s *)v2;
 	const char *p1 = (const char *)s1->pretty;
 	const char *p2 = (const char *)s2->pretty;
+	int result;
 
-	return strcasecmp(p1, p2);
+	if (*(s1->name) == '\024')
+		p1 += 7;	// "[cmplx]"
+	if (*(s2->name) == '\024')
+		p2 += 7;
+
+	result = strcasecmp(p1, p2);
+	if (0 == result)
+		return xref_alias_compare(v1, v2);
+	return result;
+}
+
+static void uprintf(FILE *f, const char *fmt, ...)
+{
+	char line[500];
+	char *p;
+	int c;
+
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsprintf(line, fmt, ap);
+	va_end(ap);
+
+	for (p = line; *p != 0; ++p) {
+		c = unicode[*p & 0xff];
+		if (c <= 0x7f)
+			fputc(c, f);
+		else if (c <= 0x7ff) {
+			fputc(0xc0 | (c >> 6), f);
+			fputc(0x80 | (c & 0x3f), f);
+		}
+		else {
+			fputc(0xe0 | (c >> 12), f);
+			fputc(0x80 | ((c >> 6) & 0x3f), f);
+			fputc(0x80 | (c & 0x3f), f);
+		}
+	}
 }
 
 static void output_xref_table(FILE *f) {
 	int i;
-
+	const char *p;
+	
 	fprintf(f, "By Command\n");
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_cmd_compare);
-	for (i=0; i<alias_tbl_n; i++)
-		printf("%s\t%s\t%s\n", alias_table[i].name, alias_table[i].pretty, alias_table[i].alias);
-
+	for (i=0; i<alias_tbl_n; i++) {
+		p = alias_table[i].alias;
+		uprintf(f, "%s", alias_table[i].name);
+		fprintf(f, "\t%s\t%s\n", alias_table[i].pretty, p == CNULL ? "" : p);
+	}
 	fprintf(f, "\n\n\n\nBy Alias\n");
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_alias_compare);
-	for (i=0; i<alias_tbl_n; i++)
-		printf("%s\t%s\t%s\n", alias_table[i].alias, alias_table[i].name, alias_table[i].pretty);
-
+	for (i=0; i<alias_tbl_n; i++) {
+		p = alias_table[i].alias;
+		if (p) {
+			fprintf(f, "%s\t",   p);
+			uprintf(f, "%s",     alias_table[i].name);
+			fprintf(f, "\t%s\n", alias_table[i].pretty);
+		}
+	}
 	fprintf(f, "\n\n\n\nBy Pretty Command\n");
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_pretty_compare);
-	for (i=0; i<alias_tbl_n; i++)
-		printf("%s\t%s\t%s\n", alias_table[i].pretty, alias_table[i].name, alias_table[i].alias);
+	for (i=0; i<alias_tbl_n; i++) {
+		p = alias_table[i].alias;
+		fprintf(f, "%s\t",   alias_table[i].pretty);
+		uprintf(f, "%s",     alias_table[i].name);
+		fprintf(f, "\t%s\n", p == CNULL ? "" : p);
+	}
 }
 
 static void dump_one_opcode(FILE *f, int c, const char *cmdname, enum eCmdType type, const char *cmdpretty,
@@ -218,10 +310,11 @@ static void dump_one_opcode(FILE *f, int c, const char *cmdname, enum eCmdType t
 			dump_attributes(f, attributes);
 			fprintf(f, "\n");
 		}
-	} else if (cmdalias != CNULL) {
-		alias_table[alias_tbl_n].pretty = strdup(cmdpretty);
-		alias_table[alias_tbl_n].alias = strdup(cmdalias);
+	} 
+	else if (cmdalias != CNULL || strcmp(cmdname,cmdpretty) != 0) {
 		alias_table[alias_tbl_n].name = strdup(cmdname);
+		alias_table[alias_tbl_n].pretty = strdup(cmdpretty);
+		alias_table[alias_tbl_n].alias = cmdalias == CNULL ? CNULL : strdup(cmdalias);
 		alias_tbl_n++;
 	}
 }
@@ -231,7 +324,7 @@ void dump_opcodes(FILE *f, int xref) {
 	char cmdname[16];
 	char cmdpretty[500];
 	char cmdalias[20];
-	char buf[50], temp[500];
+	char buf[50], temp[500], temp2[50];
 	const char *p, *cn;
 	char *q;
 
@@ -274,18 +367,18 @@ void dump_opcodes(FILE *f, int xref) {
 			if (strcmp(p, "???") == 0)
 				continue;
 			prettify(p, cmdpretty, 0);
-			prettify(p, cmdalias, 1);
+			prettify(p, cmdalias, 2);
 			if (cmd == RARG_ALPHA) {
 				if ((c & 0xff) == 0)
 					continue;
-				p = ((c < ' ' || c > 126) && strlen(cmdalias) == 1) ? cmdpretty : cmdalias;
-				sprintf(buf, "'%s'", p);
+				sprintf(buf, "'%s'", strlen(cmdpretty) == 3 ? cmdpretty : cmdalias);
 				if ((c & 0xff) == ' ') {
-					dump_one_opcode(f, c, cn, E_CMD_CMD, "[alpha] [space]", E_ALIAS, buf, 0, xref);
+					dump_one_opcode(f, c, "\240  ", E_CMD_CMD, "[alpha] [space]", E_ALIAS, buf, 0, xref);
 				}
 				else {
+					sprintf(temp2, "\240 %s", cn);
 					sprintf(temp, "[alpha] %s", cmdpretty);
-					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
+					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				}
 				continue;
 			} 
@@ -294,20 +387,24 @@ void dump_opcodes(FILE *f, int xref) {
 				const char *pre = n == OP_PI ? "" : "# ";
 				const char *alias = cnsts[n].alias;
 
+				if (xref && cmd == RARG_CONST_CMPLX)
+					continue;
 				if (n == OP_ZERO || n == OP_ONE)
 					continue;
 				if (strchr(cmdpretty, '[') == NULL)
 					alias = NULL;
 				if (cmd == RARG_CONST_CMPLX) {
+					sprintf(temp2, "\024# %s", cn);
 					sprintf(temp, "[cmplx]# %s", cmdpretty);
 					sprintf(buf, "c%s%s", pre, alias ? alias : cmdpretty);
-					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
+					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				}
 				else {
+					sprintf(temp2, "# %s", cn);
 					sprintf(temp, "# %s", cmdpretty);
 					if (alias)
 						sprintf(buf, "%s%s", pre, alias);
-					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, alias ? buf : CNULL, 0, xref);
+					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, alias ? buf : CNULL, 0, xref);
 				}
 				continue;
 			} 
@@ -327,6 +424,12 @@ void dump_opcodes(FILE *f, int xref) {
 				continue;
 			}
 			else if (cmd == RARG_SHUFFLE) {
+				if (xref) {
+					if ((c & 0xff) == 0)
+						dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "<>", 0, 1);
+					continue;
+				}
+
 				sprintf(temp, "%s %c%c%c%c", cmdpretty,
 						REGNAMES[c & 3], REGNAMES[(c >> 2) & 3],
 						REGNAMES[(c >> 4) & 3], REGNAMES[(c >> 6) & 3]);
@@ -339,7 +442,8 @@ void dump_opcodes(FILE *f, int xref) {
 			else if (c == RARG(RARG_SWAPX, regY_idx)) {
 				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "x<>y", E_ATTR_NO_CMD, xref);
 				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "SWAP", E_ATTR_NO_CMD, xref);
-			} else if (c == RARG(RARG_CSWAPX, regZ_idx))
+			} 
+			else if (c == RARG(RARG_CSWAPX, regZ_idx))
 				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "cSWAP", E_ATTR_NO_CMD, xref);
 			if ((c & 0xff) != 0)
 				continue;
@@ -426,9 +530,10 @@ void dump_opcodes(FILE *f, int xref) {
 					if (cmdname[0] == COMPLEX_PREFIX)
 						break;
 					p = monfuncs[d].alias;
+					sprintf(temp2, "\024%s", cn);
 					sprintf(temp, "[cmplx]%s", cmdpretty);
 					sprintf(buf, "c%s", p ? p : cmdpretty);
-					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
+					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				}
 				continue;
 
@@ -437,9 +542,10 @@ void dump_opcodes(FILE *f, int xref) {
 					if (cmdname[0] == COMPLEX_PREFIX)
 						break;
 					p = dyfuncs[d].alias;
+					sprintf(temp2, "\024%s", cn);
 					sprintf(temp, "[cmplx]%s", cmdpretty);
 					sprintf(buf, "c%s", p ? p : cmdpretty);
-					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
+					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				}
 				continue;
 
