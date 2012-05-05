@@ -159,6 +159,8 @@ my $NO_PAD_MODE = 0;
 my $V2_PAD_MODE = 1;
 my $V3_PAD_MODE = 2;
 
+my $choose_disassemble_opcode = -1; # Choose 0 for original
+
 my $v3_mode = 0;
 my $step_digits = 3; # Default to older style 3-digit step numbers.
 my $conv_skip_back_2to3 = 0;
@@ -179,14 +181,16 @@ my $preproc_fallback_dir = "";
 # Custom arguments that can be passed to PP.
 my $pp_args = "";
 
-my $DEFAULT_PP_OPTIONS_V2 = " -m 90 -cat "; # XXX Limit the max SKIP/BACK offset to 90 to reduce the
+my $DEFAULT_PP_OPTIONS_V2 = " -m 90 "; # XXX Limit the max SKIP/BACK offset to 90 to reduce the
                                             #     likelihood of a recursive LBL insertion pushing a
                                             #     resolved SKIP/BACK beyond 99. Not a robust fix but
                                             #     likely to catch 99.99% of cases.
                                             # XXX Generate a LBL catalogue.
-my $DEFAULT_PP_OPTIONS_V3 = " -m 235 -cat "; # Same reasons, different limits.
+my $DEFAULT_PP_OPTIONS_V3 = " -m 235 "; # Same reasons, different limits.
+
 my $pp_options = $DEFAULT_PP_OPTIONS_V2;
 my $pp_listing = "wp34s_pp.lst";
+my $no_skip_override = ""; # Will be set to 1 if noskip is desired.
 
 my $PADDING_BLOCK_SIZE = 128; # XXX 128 16-bit words = 256 bytes!!
 my $PADDING_FILL_VALUE = 0xFFFF;
@@ -781,15 +785,19 @@ sub print_disassemble_normal {
     die_msg(this_function((caller(0))[3]), "$msg");
   }
 
+  # Select the mnemic to display.
+  my $active_mnem = ${$hex2mnem{$hex_str}}[$choose_disassemble_opcode];
+
   # Set up the correct number of leading asterisks if requested.
-  my $label_flag = (($hex2mnem{$hex_str} =~ /LBL/) and $star_labels) ? "*" x $star_labels : "";
+  my $label_flag = (($active_mnem =~ /LBL/) and $star_labels) ? "*" x $star_labels : "";
+
 
   if( $no_step_numbers ) {
-    printf OUT "%0s%0s\n", $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0s%0s\n", $label_flag, $active_mnem;
   } elsif( $debug ) {
-    printf OUT "%0${step_digits}d /* %04s */ %0s%0s\n", $idx, $hex_str, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0${step_digits}d /* %04s */ %0s%0s\n", $idx, $hex_str, $label_flag, $active_mnem;
   } else {
-    printf OUT "%0${step_digits}d %0s%0s\n", $idx, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0${step_digits}d %0s%0s\n", $idx, $label_flag, $active_mnem;
   }
   return;
 } # print_disassemble_normal
@@ -812,16 +820,19 @@ sub print_disassemble_text {
     die_msg(this_function((caller(0))[3]), "$msg");
   }
 
+  # Select the mnemic to display.
+  my $active_mnem = ${$hex2mnem{$hex_str}}[$choose_disassemble_opcode];
+
   # Set up the correct number of leading asterisks if requested.
-  my $label_flag = (($hex2mnem{$hex_str} =~ /LBL/) and $star_labels) ? "*" x (2 * $star_labels) : "";
+  my $label_flag = (($active_mnem =~ /LBL/) and $star_labels) ? "*" x (2 * $star_labels) : "";
 
   if( $no_step_numbers ) {
-    printf OUT "%0s%0s", $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0s%0s", $label_flag, $active_mnem;
   } elsif( $debug ) {
     my $op_hex = sprintf "%04s %04s", lc dec2hex4(hex2dec($hex_str)+$chars[0]), lc dec2hex4($chars[2]*256+$chars[1]);
-    printf OUT "%0${step_digits}d /* %04s */ %0s%0s", $idx, $op_hex, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0${step_digits}d /* %04s */ %0s%0s", $idx, $op_hex, $label_flag, $active_mnem;
   } else {
-    printf OUT "%0${step_digits}d %0s%0s", $idx, $label_flag, $hex2mnem{$hex_str};
+    printf OUT "%0${step_digits}d %0s%0s", $idx, $label_flag, $active_mnem;
   }
 
   # Check to see if the character is an escaped-alpha. If so, print the escaped string
@@ -1105,22 +1116,21 @@ sub load_opcode_tables {
       my $hex_str = $1;
       my $mnemonic = $2;
       my $line_num = $.;
-
-      load_mnem2hex_entry($hex_str, $mnemonic, $line_num);
+      load_table_entry($hex_str, $mnemonic, $line_num);
 
     # arg-type line
     } elsif( /0x([0-9a-fA-F]{4})\s+arg\s+(.+)$/ ) {
       my $hex_str = $1;
       my $parameter = $2;
       my $line_num = $.;
-      parse_arg_type($hex_str, $parameter, $line_num, 0);
+      parse_arg_type($hex_str, $parameter, $line_num);
 
     # alias to the above
     } elsif( /0x([0-9a-fA-F]{4})\s+alias-a\s+(.+)$/ ) {
       my $hex_str = $1;
       my $parameter = $2;
       my $line_num = $.;
-      parse_arg_type($hex_str, $parameter, $line_num, 1);
+      parse_arg_type($hex_str, $parameter, $line_num);
 
     # mult-type line
     } elsif( /0x([0-9a-fA-F]{4})\s+mult\s+(.+)$/ ) {
@@ -1151,7 +1161,7 @@ sub load_opcode_tables {
       my $hex_str = $1;
       my $mnemonic = "${2}'"; # append a single quote.
       my $line_num = $.;
-      load_mnem2hex_entry ($hex_str, $mnemonic, $line_num);
+      load_table_entry($hex_str, $mnemonic, $line_num);
 
     # Parse any of the pragma-like values.
     } elsif( /^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\=\s*(\d+\.{0,1}\d*)\s*$/ ) {
@@ -1182,8 +1192,14 @@ sub write_expanded_opcode_table_to_file {
   local $_;
   open EXPND, "> $file" or die_msg(this_function((caller(0))[3]), "Cannot open expanded opcode file '$file' for writing: $!");
   print EXPND "// Opcode SVN version: $op_svn\n";
+
+  # Print an entry for each potential alias in the op-code table.
   for my $hex_str (sort keys %hex2mnem) {
-    print EXPND "$hex_str  ${hex2mnem{$hex_str}}\n";
+    my $array_pntr = $hex2mnem{$hex_str};
+    my @mnems = @{$array_pntr};
+    foreach my $mnem (@mnems) {
+      print EXPND "$hex_str  $mnem\n";
+    }
   }
   close EXPND;
   return;
@@ -1231,7 +1247,6 @@ sub parse_arg_type {
   my $base_hex_str = shift;
   my $arg = shift;
   my $line_num = shift;
-  my $is_alias = shift;
 
   my ($base_mnemonic);
   my $direct_max = 0;
@@ -1265,8 +1280,8 @@ sub parse_arg_type {
   if( $direct_max ) {
     for my $offset (0 .. ($direct_max - 1)) {
       if( ! $stostack_modifier || ($offset <= 96) || ($offset >= 112) ) {
-        parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num, 
-                               $indirect_modifier, $stackreg_modifier, $is_alias);
+        parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num,
+                               $indirect_modifier, $stackreg_modifier);
       }
     }
   }
@@ -1280,11 +1295,11 @@ sub parse_arg_type {
       my $mnemonic_str = "$base_mnemonic";
       $mnemonic_str .= "[->]";
       my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $indirect_offset, $mnemonic_str, $reg_str);
-      if( $is_alias ) {
-        load_mnem2hex_entry($hex_str, $mnemonic, $line_num);
-      } else {  
-        load_table_entry($hex_str, $mnemonic, $line_num);
-      }
+      load_table_entry($hex_str, $mnemonic, $line_num);
+
+      # Construct the alias. Hex value remains the same.
+      $mnemonic = "${base_mnemonic} ->$reg_str";
+      load_table_entry($hex_str, $mnemonic, $line_num);
     }
   }
 
@@ -1304,7 +1319,6 @@ sub parse_arg_type_dir_max {
   my $line_num = shift;
   my $indirect_modifier = shift;
   my $stackreg_modifier = shift;
-  my $is_alias = shift;
   my ($reg_str);
 
   # Find out which instruction offset group we are to use.
@@ -1322,11 +1336,7 @@ sub parse_arg_type_dir_max {
   $reg_str = "--UNDEFINED--" if not defined $reg_str;
 
   my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $offset, "$base_mnemonic ", $reg_str);
-  if( $is_alias ) {
-    load_mnem2hex_entry($hex_str, $mnemonic, $line_num);
-  } else {  
-    load_table_entry($hex_str, $mnemonic, $line_num);
-  }
+  load_table_entry($hex_str, $mnemonic, $line_num);
   return;
 } # parse_arg_type_dir_max
 
@@ -1425,16 +1435,24 @@ sub load_mnem2hex_entry {
 #######################################################################
 #
 # Load the translation hash tables with opcode (as a hex string) and the mnemonic.
+# The mnemonic is stored in an array in order to account for aliases for the op-code.
 #
 sub load_hex2mnem_entry {
   my $op_hex_str = shift;
   my $mnemonic = shift;
   my $line_num = shift;
+  my (@mnem_array);
 
-  if( not exists $hex2mnem{$op_hex_str} ) {
-    $hex2mnem{lc $op_hex_str} = $mnemonic;
+  # If this is the first entry for this op-code, create a new array to load the options.
+  if( not exists $hex2mnem{lc $op_hex_str} ) {
+    push @mnem_array, $mnemonic;
+    $hex2mnem{lc $op_hex_str} = \@mnem_array;
+
+  # If this is not the first entry for this op-code, add a new entry to the array.
   } else {
-    warn_msg(this_function((caller(0))[3]), "Duplicate opcode hex: '$op_hex_str' at line $line_num (new definition: '$mnemonic', previous definition: '${hex2mnem{$op_hex_str}}')");
+    @mnem_array = @{$hex2mnem{lc $op_hex_str}};
+    push @mnem_array, $mnemonic;
+    $hex2mnem{lc $op_hex_str} = \@mnem_array;
   }
   return;
 } # load_hex2mnem_entry
@@ -1690,8 +1708,9 @@ sub run_pp {
     }
     die_msg(this_function((caller(0))[3]), "Cannot locate the assembly preprocessor in $locations");
   }
-  $pp_location =~ s:\\:/:g; 
-  $cmd = "${pp_location} $pp_options $tmp_file";
+  $pp_location =~ s:\\:/:g;
+  $pp_options = $no_skip_override if $no_skip_override;
+  $cmd = "${pp_location} $pp_options -cat $tmp_file";
 
   if ($v3_mode) {
     $cmd .= " -v3";
@@ -2029,13 +2048,17 @@ sub get_options {
 
     elsif( $arg eq "-pp_dir" ) {
       $preproc_fallback_dir = shift(@ARGV);
-      unless( $preproc_fallback_dir =~ m</$> ) {
+      unless( $preproc_fallback_dir =~ /\/$/ ) {
         $preproc_fallback_dir .= "/";
       }
     }
 
     elsif ($arg eq "-pp_args") {
       $pp_args = shift(@ARGV);
+    }
+
+    elsif ($arg eq "-noskip") {
+      $no_skip_override = " -m 1 ";
     }
 
     elsif( $arg eq "-nc" ) {

@@ -46,6 +46,7 @@ my %state_data = ();
 my $chk_crc = 0;
 my $conv_state2flash = 0;
 my $conv_skip_back_2to3 = 0;
+my $possible_no_skip_override = "";
 
 my $FLASH_MODE = "-flash";
 my $STATE_MODE = "";
@@ -67,7 +68,7 @@ my $pp_args = "";
 
 my $die_on_existing_duplicate = 1;
 
-my $use_pp = "-pp";
+my $possible_use_pp = "-pp";
 my @new_srcs = ();
 my @rm_progs = ();
 
@@ -554,7 +555,7 @@ sub prepare_new_srcs {
 
   my $tmp_file = gen_random_writeable_filename();
   my $cmd = $asm_script;
-  my $cmd_line = "$use_pp $src_list -o $tmp_file $asm_options $FLASH_MODE";
+  my $cmd_line = "$possible_use_pp $possible_no_skip_override $src_list -o $tmp_file $asm_options $FLASH_MODE";
   $cmd_line .= " -pp_script $preproc_script" if $preproc_script;
   my @result = run_prog($cmd, $cmd_line);
   my @new_src = disassemble_binary($tmp_file);
@@ -708,7 +709,7 @@ sub reassemble_output {
   close TMP;
 
   my $cmd = $asm_script;
-  my $cmd_line = "$use_pp $tmp_file $mode -o $output_file";
+  my $cmd_line = "$possible_use_pp $possible_no_skip_override $tmp_file $mode -o $output_file";
   $cmd_line .= " -pp_script $preproc_script" if $preproc_script;
   my @result = run_prog($cmd, $cmd_line);
   unlink $tmp_file unless (exists $ENV{WP34S_LIB} and ($ENV{WP34S_LIB} =~ /KEEP_TEMP/i));
@@ -789,14 +790,14 @@ sub run_prog {
   # Look in the current directory.
   if (-e "${prog}") {
     $location = "";
-  
+
   # Look in the same location as the script that is executing.
   } elsif ($script_dir and -e "${script_dir}${prog}") {
     $location = "$script_dir";
   } else {
     die_msg(this_function((caller(0))[3]), "Cannot locate daughter script '$prog' in current directory or '$script_dir'.");
   }
-  $location =~ s:\\:/:g; 
+  $location =~ s:\\:/:g;
   $cmd = "${location}$prog $cmd_line";
   $cmd .= " -e2so"; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
 
@@ -1265,11 +1266,11 @@ sub get_options {
     }
 
     elsif( $arg eq "-pp" ) {
-      $use_pp = "-pp";
+      $possible_use_pp = "-pp";
     }
 
     elsif( $arg eq "-no_pp" ) {
-      $use_pp = "";
+      $possible_use_pp = "";
     }
 
     elsif( $arg eq "-nc" ) {
@@ -1306,6 +1307,10 @@ sub get_options {
 
     elsif ($arg eq "-sb2to3") {
       $conv_skip_back_2to3 = 1;
+    }
+
+    elsif ($arg eq "-noskip") {
+      $possible_no_skip_override = " -noskip ";
     }
 
     else {

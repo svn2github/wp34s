@@ -2353,8 +2353,8 @@ sub get_options {
     die_msg(this_function((caller(0))[3]), "Must enter at least one file to process.\n Enter '$script_name -h' for help.");
   }
 
-  if ((not $v3_mode and ($MAX_JMP_OFFSET > 99) or ($MAX_JMP_OFFSET < 4))
-    or ($v3_mode and ($MAX_JMP_OFFSET > 255) or ($MAX_JMP_OFFSET < 4))) {
+  if ((not $v3_mode and ($MAX_JMP_OFFSET > 99) or ($MAX_JMP_OFFSET < 1))
+    or ($v3_mode and ($MAX_JMP_OFFSET > 255) or ($MAX_JMP_OFFSET < 1))) {
     my $max = ($v3_mode) ? 255 : 99;
     my $MAX_JMP_OFFSET = ($v3_mode) ? 240 : 90;
     print "// WARNING: Maximum BACK/SKIP offset limit (-m) must be between 5 and $max. Resetting to $MAX_JMP_OFFSET.\n";
