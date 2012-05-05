@@ -138,30 +138,101 @@ static void dump_attributes(FILE *f, unsigned int attributes) {
 	}
 }
 
+struct xref_s {
+	const char *name;
+	const char *pretty;
+	const char *alias;
+};
+static struct xref_s alias_table[10000];
+static unsigned int alias_tbl_n = 0;
 
-static void dump_one_opcode(FILE *f, int c, enum eCmdType type, const char *cmdpretty,
-				enum eCmdType atype, const char *cmdalias, unsigned int attributes) {
-	/* Output the opcode */
-	if ((attributes & E_ATTR_NO_CMD) == 0) {
-		fprintf(f, "0x%04x\t%s\t%s", c, command_type(type), cmdpretty);
-		dump_attributes(f, attributes);
-		fprintf(f, "\n");
+static int xref_cmd_compare(const void *v1, const void *v2) {
+	const struct xref_s *s1 = (const struct xref_s *)v1;
+	const struct xref_s *s2 = (const struct xref_s *)v2;
+	const unsigned char *p1 = (const unsigned char *)s1->name;
+	const unsigned char *p2 = (const unsigned char *)s2->name;
+
+	while (*p1 != '\0' && *p2 != '\0') {
+		const int c1 = remap_chars(*p1++);
+		const int c2 = remap_chars(*p2++);
+		if (c1 < c2)
+			return -1;
+		if (c1 > c2)
+			return 1;
 	}
+	if (*p1 == '\0' && *p2 == '\0')
+		return 0;
+	if (*p1 == '\0') return -1;
+	return 1;
+}
 
-	if (cmdalias != CNULL) {
-		fprintf(f, C "0x%04x\t%s\t%s", c, alias_type(atype, type), cmdalias);
-		dump_attributes(f, attributes);
-		fprintf(f, "\n");
+static int xref_alias_compare(const void *v1, const void *v2) {
+	const struct xref_s *s1 = (const struct xref_s *)v1;
+	const struct xref_s *s2 = (const struct xref_s *)v2;
+	const char *p1 = (const char *)s1->alias;
+	const char *p2 = (const char *)s2->alias;
+
+	return strcasecmp(p1, p2);
+}
+
+static int xref_pretty_compare(const void *v1, const void *v2) {
+	const struct xref_s *s1 = (const struct xref_s *)v1;
+	const struct xref_s *s2 = (const struct xref_s *)v2;
+	const char *p1 = (const char *)s1->pretty;
+	const char *p2 = (const char *)s2->pretty;
+
+	return strcasecmp(p1, p2);
+}
+
+static void output_xref_table(FILE *f) {
+	int i;
+
+	fprintf(f, "By Command\n");
+	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_cmd_compare);
+	for (i=0; i<alias_tbl_n; i++)
+		printf("%s\t%s\t%s\n", alias_table[i].name, alias_table[i].pretty, alias_table[i].alias);
+
+	fprintf(f, "\n\n\n\nBy Alias\n");
+	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_alias_compare);
+	for (i=0; i<alias_tbl_n; i++)
+		printf("%s\t%s\t%s\n", alias_table[i].alias, alias_table[i].name, alias_table[i].pretty);
+
+	fprintf(f, "\n\n\n\nBy Pretty Command\n");
+	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_pretty_compare);
+	for (i=0; i<alias_tbl_n; i++)
+		printf("%s\t%s\t%s\n", alias_table[i].pretty, alias_table[i].name, alias_table[i].alias);
+}
+
+static void dump_one_opcode(FILE *f, int c, const char *cmdname, enum eCmdType type, const char *cmdpretty,
+				enum eCmdType atype, const char *cmdalias, unsigned int attributes, int xrefonly) {
+	/* Output the opcode */
+	if (xrefonly == 0) {
+		if ((attributes & E_ATTR_NO_CMD) == 0) {
+			fprintf(f, "0x%04x\t%s\t%s", c, command_type(type), cmdpretty);
+			dump_attributes(f, attributes);
+			fprintf(f, "\n");
+		}
+
+		if (cmdalias != CNULL) {
+			fprintf(f, C "0x%04x\t%s\t%s", c, alias_type(atype, type), cmdalias);
+			dump_attributes(f, attributes);
+			fprintf(f, "\n");
+		}
+	} else if (cmdalias != CNULL) {
+		alias_table[alias_tbl_n].pretty = strdup(cmdpretty);
+		alias_table[alias_tbl_n].alias = strdup(cmdalias);
+		alias_table[alias_tbl_n].name = strdup(cmdname);
+		alias_tbl_n++;
 	}
 }
 
-void dump_opcodes(FILE *f) {
+void dump_opcodes(FILE *f, int xref) {
 	int c, d;
 	char cmdname[16];
 	char cmdpretty[500];
 	char cmdalias[20];
 	char buf[50], temp[500];
-	const char *p;
+	const char *p, *cn;
 	char *q;
 
 	for (c=0; c<65536; c++) {
@@ -180,10 +251,10 @@ void dump_opcodes(FILE *f) {
 			prettify(cmdname, cmdpretty, 0);
 #ifdef XROM_LONG_BRANCH
 			if (cmd == DBL_XBR)
-				dump_one_opcode(f, c, E_CMD_MULTI, cmdpretty, E_ALIAS, multicmds[cmd].alias, E_ATTR_XROM);
+				dump_one_opcode(f, c, cmdname, E_CMD_MULTI, cmdpretty, E_ALIAS, multicmds[cmd].alias, E_ATTR_XROM, xref);
 			else
 #endif
-				dump_one_opcode(f, c, E_CMD_MULTI, cmdpretty, E_ALIAS, multicmds[cmd].alias, 0);
+				dump_one_opcode(f, c, cmdname, E_CMD_MULTI, cmdpretty, E_ALIAS, multicmds[cmd].alias, 0, xref);
 
 		} 
 		else if (isRARG(c)) {
@@ -199,7 +270,7 @@ void dump_opcodes(FILE *f) {
 			limit = argcmds[cmd].lim + 1;
 			if (cmd != RARG_ALPHA && cmd != RARG_SHUFFLE && (c & RARG_IND) != 0)
 				continue;
-			p = catcmd(c, cmdname);
+			p = cn = catcmd(c, cmdname);
 			if (strcmp(p, "???") == 0)
 				continue;
 			prettify(p, cmdpretty, 0);
@@ -210,11 +281,11 @@ void dump_opcodes(FILE *f) {
 				p = ((c < ' ' || c > 126) && strlen(cmdalias) == 1) ? cmdpretty : cmdalias;
 				sprintf(buf, "'%s'", p);
 				if ((c & 0xff) == ' ') {
-					dump_one_opcode(f, c, E_CMD_CMD, "[alpha] [space]", E_ALIAS, buf, 0);
+					dump_one_opcode(f, c, cn, E_CMD_CMD, "[alpha] [space]", E_ALIAS, buf, 0, xref);
 				}
 				else {
 					sprintf(temp, "[alpha] %s", cmdpretty);
-					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, buf, 0);
+					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				}
 				continue;
 			} 
@@ -230,13 +301,13 @@ void dump_opcodes(FILE *f) {
 				if (cmd == RARG_CONST_CMPLX) {
 					sprintf(temp, "[cmplx]# %s", cmdpretty);
 					sprintf(buf, "c%s%s", pre, alias ? alias : cmdpretty);
-					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, buf, 0);
+					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				}
 				else {
 					sprintf(temp, "# %s", cmdpretty);
 					if (alias)
 						sprintf(buf, "%s%s", pre, alias);
-					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, alias ? buf : CNULL, 0);
+					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, alias ? buf : CNULL, 0, xref);
 				}
 				continue;
 			} 
@@ -252,7 +323,7 @@ void dump_opcodes(FILE *f) {
 					*q = '\0';
 					p = temp;
 				} else p = CNULL;
-				dump_one_opcode(f, c, E_CMD_CMD, cmdpretty, E_ALIAS, p, 0);
+				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, p, 0, xref);
 				continue;
 			}
 			else if (cmd == RARG_SHUFFLE) {
@@ -262,13 +333,14 @@ void dump_opcodes(FILE *f) {
 				sprintf(buf, "%s %c%c%c%c", "<>",
 						REGNAMES[c & 3], REGNAMES[(c >> 2) & 3],
 						REGNAMES[(c >> 4) & 3], REGNAMES[(c >> 6) & 3]);
-				dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, buf, 0);
+				dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				continue;
 			}
-			else if (c == RARG(RARG_SWAPX, regY_idx))
-				dump_one_opcode(f, c, E_CMD_CMD, cmdpretty, E_ALIAS, "x<>y", E_ATTR_NO_CMD);
-			else if (c == RARG(RARG_CSWAPX, regZ_idx))
-				dump_one_opcode(f, c, E_CMD_CMD, cmdpretty, E_ALIAS, "cSWAP", E_ATTR_NO_CMD);
+			else if (c == RARG(RARG_SWAPX, regY_idx)) {
+				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "x<>y", E_ATTR_NO_CMD, xref);
+				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "SWAP", E_ATTR_NO_CMD, xref);
+			} else if (c == RARG(RARG_CSWAPX, regZ_idx))
+				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "cSWAP", E_ATTR_NO_CMD, xref);
 			if ((c & 0xff) != 0)
 				continue;
 			if (argcmds[cmd].indirectokay && limit > RARG_IND)
@@ -302,10 +374,10 @@ void dump_opcodes(FILE *f) {
 			   )
 				limit |= E_ATTR_XROM;
 
-			dump_one_opcode(f, c, E_CMD_ARG, cmdpretty, E_ALIAS, argcmds[cmd].alias, limit);
+			dump_one_opcode(f, c, cn, E_CMD_ARG, cmdpretty, E_ALIAS, argcmds[cmd].alias, limit, xref);
 		}
 		else {
-			p = catcmd(c, cmdname);
+			p = cn = catcmd(c, cmdname);
 			if (strcmp(p, "???") == 0)
 				continue;
 			prettify(p, cmdpretty, 0);
@@ -356,7 +428,7 @@ void dump_opcodes(FILE *f) {
 					p = monfuncs[d].alias;
 					sprintf(temp, "[cmplx]%s", cmdpretty);
 					sprintf(buf, "c%s", p ? p : cmdpretty);
-					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, buf, 0);
+					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				}
 				continue;
 
@@ -367,7 +439,7 @@ void dump_opcodes(FILE *f) {
 					p = dyfuncs[d].alias;
 					sprintf(temp, "[cmplx]%s", cmdpretty);
 					sprintf(buf, "c%s", p ? p : cmdpretty);
-					dump_one_opcode(f, c, E_CMD_CMD, temp, E_ALIAS, buf, 0);
+					dump_one_opcode(f, c, cn, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
 				}
 				continue;
 
@@ -381,7 +453,7 @@ void dump_opcodes(FILE *f) {
 				}
 				if (d == OP_LOADA2D || d == OP_SAVEA2D ||
 						d == OP_GSBuser || d == OP_POPUSR) {
-					dump_one_opcode(f, c, E_CMD_CMD, cmdpretty, E_ALIAS, CNULL, E_ATTR_XROM);
+					dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, CNULL, E_ATTR_XROM, xref);
 					continue;
 				}
 				if (d < NUM_NILADIC) {
@@ -390,10 +462,12 @@ void dump_opcodes(FILE *f) {
 				}
 				continue;
 			}
-			dump_one_opcode(f, c, E_CMD_CMD, cmdpretty, E_ALIAS, p, 0);
+			dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, p, 0, xref);
 			if (c == (OP_CMON | OP_CCHS))
-				dump_one_opcode(f, c, E_CMD_CMD, cmdpretty, E_ALIAS, "cCHS", E_ATTR_NO_CMD);
+				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "cCHS", E_ATTR_NO_CMD, xref);
 		}
 	}
+	if (xref)
+		output_xref_table(f);
 }
 

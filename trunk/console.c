@@ -441,7 +441,11 @@ int main(int argc, char *argv[]) {
 				goto skipargs;
 			}
 			if (strcmp(argv[1], "opcodes") == 0) {
-				dump_opcodes(stdout);
+				dump_opcodes(stdout, 0);
+				return 0;
+			}
+			if (strcmp(argv[1], "xref") == 0) {
+				dump_opcodes(stdout, 1);
 				return 0;
 			}
 			if (strcmp(argv[1], "constants") == 0) {

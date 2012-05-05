@@ -1235,7 +1235,7 @@ int main(int argc, char *argv[]) {
 	fprintf(stderr, "version=%c%c\n", VERSION_STRING[0], VERSION_STRING[2]);
         fprintf(stderr, "maxsteps=%d\n", NUMPROG_LIMIT);
         fprintf(stderr, "maxlibsteps=%d\n", NUMPROG_FLASH);
-	dump_opcodes(stderr);
+	dump_opcodes(stderr, 0);
 
 	printf( "/* Total number of catalogue entries %d\n"
 		" * Total number of conversion entries %d\n"
