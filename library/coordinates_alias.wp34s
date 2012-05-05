@@ -1,0 +1,121 @@
+/* Convert a latitude, longtitude, height triple into ECEF coordinate triple
+ *
+ * On entry:
+ *	Z: Latitude
+ *	Y: Longtitude
+ *	X: Height
+ *
+ * On exit:
+ *	Z: z
+ *	Y: y
+ *	X: x
+ *
+ * The rest of the stack is preserved and last X gets the initial height value.
+ */
+	LBL'G[->]C'
+		LocR 009
+		STOS .00
+		# Sa
+		# 001
+		RCL .02
+		SIN
+		STO .08
+		x[^2]
+		# Se[^2]
+		*
+		-
+		SQRT
+		/
+		RCL X
+		# 001
+		# Se[^2]
+		-
+		*
+		RCL+ .00
+		RCL* .08
+		x<> .02
+		COS
+		x<> Y
+		RCL+ .00
+		*
+		RCL X
+		RCL .01
+		COS
+		STO* Y
+		RCL .01
+		SIN
+		STO* T
+		cSWAP
+		cx<> .00
+		STO L
+		RCLS .00
+		RTN
+
+
+/* Convert an ECEF coordinate triple into a latitude, longtitude, height triple
+ *
+ * On entry:
+ *	Z: z
+ *	Y: y
+ *	X: x
+ *
+ * On exit:
+ *	Z: Latitude
+ *	Y: Longtitude
+ *	X: Height
+ *
+ * The rest of the stack is preserved and last X gets the initial x value.
+ */
+	LBL'C[->]G'
+		LocR 009
+		STOS .00
+		cABS
+		STO .08
+		cRCL .00
+		ANGLE
+		STO .01
+		# Sa
+		RCL* .02
+		# Sb
+		RCL* .08
+		ANGLE
+		COS
+		RCL L
+		SIN
+		x^3
+		# Sb
+		*
+		# WGS_ES2
+		*
+		RCL+ .02
+		x<> Y
+		x^3
+		# Sa
+		*
+		# WGS_E2
+		*
+		RCL- .08
+		+/-
+		ANGLE
+		STO .02
+		# Sa
+		# 001
+		RCL .02
+		SIN
+		x^2
+		# WGS_E2
+		*
+		-
+		SQRT
+		/
+		+/-
+		RCL .08
+		RCL .02
+		COS
+		/
+		+
+		x<> .00
+		STO L
+		RCLS .00
+		RTN
+

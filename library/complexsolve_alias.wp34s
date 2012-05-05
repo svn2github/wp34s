@@ -1,0 +1,124 @@
+/* This file is part of 34S.
+ *
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* The exposed functions in this file don't use the normal prologue/epilogue
+ * and do not operate in double precision.  They call back to user code and
+ * manage the stack, input, output and locals themselves.
+ *
+ * Changes to this will likely cause breakage.
+ */
+
+/**************************************************************************/
+/* Solve code.
+ * Based on code by Valentin Albillo for the HP 35s available from:
+ *
+ *	http://membres.multimania.fr/albillo/calc/pdf/DatafileVA031.pdf
+ *
+ * and also published in Datafile.
+ *
+ *
+ * On entry the stack looks like:
+ *
+ *	Y	Guess complex component
+ *	X	Guess real component
+ *
+ *
+ * On return the stack looks like:
+ *
+ *	Y/X	Complex result
+ *
+ * The rest of the stack is zeroed.
+ */
+
+	LBL'[cmplx]SV'
+	LocR 12
+		cSTO .10
+		1
+		SDR 4
+		STO .00
+		.
+		5
+		STO .02
+
+		LBL 00
+			cRCL .10
+			cFILL
+			XEQ'FNC'
+			XEQ 01
+			cRCL/ .02
+			cSTO .04
+
+			cRCL .10
+			RCL+ .00
+   cFILL
+			XEQ'FNC'
+			XEQ 01
+			cSTO .06
+
+			cRCL .10
+			RCL- .00
+			cFILL
+			XEQ'FNC'
+			XEQ 01
+			cSTO .08
+
+			cRCL+ .06
+			cRCL- .04
+			0
+			ENTER
+			1
+			SDL 8
+			c*
+			cRCL .06
+			cRCL- .08
+			cRCL/ .00
+			cRCL* .02
+			cSTO .08
+			c/
+			cSTO .06
+			cRCL .00
+			cSTO+ .10
+			cSWAP  // or cx<> Z
+			cRCL* .04
+			cRCL/ .08
+			DEC X
+			c+/-
+			cRCL .02
+			cy^x
+			DEC X
+			cRCL/ .10
+			cx<> .10
+			cSTO+ .10
+			cRCL .10
+			c-
+			cABS
+			x>? .00
+				GTO 00
+
+		CLSTK
+		cSTO L
+		cx<> Z
+		cRCL .10
+		RTN
+
+		LBL 01
+			SPEC?
+				ERR 20
+			SWAP
+			SPEC?
+				ERR 20
+			SWAP
+		RTN
