@@ -367,7 +367,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_LXNOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"XNOR",		CNULL)
 
 	FUNC(OP_DTADD,	XDR(DATE_ADD),		NOFN,		NOFN,		"DAYS+",	CNULL)
-	FUNC(OP_DTDIF,	XDR(DATE_DELTA),	NOFN,		NOFN,		"\203DAYS",	"DELTADAYS")
+	FUNC(OP_DTDIF,	XDR(DATE_DELTA),	NOFN,		NOFN,		"\203DAYS",	"DDAYS")
 
 	FUNC(OP_LEGENDRE_PN,	XDR(LegendrePn),	NOFN,	NOFN,		"P\275",	"Pn")
 	FUNC(OP_CHEBYCHEV_TN,	XDR(ChebychevTn),	NOFN,	NOFN,		"T\275",	"Tn")
