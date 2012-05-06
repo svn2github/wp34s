@@ -236,7 +236,7 @@ static int xref_pretty_compare(const void *v1, const void *v2) {
 	return result;
 }
 
-static void uprintf(FILE *f, const char *fmt, ...)
+static void uprintf(FILE *f, int mode, const char *fmt, ...)
 {
 	char line[500];
 	char *p;
@@ -249,7 +249,9 @@ static void uprintf(FILE *f, const char *fmt, ...)
 	va_end(ap);
 
 	for (p = line; *p != 0; ++p) {
-		c = unicode[*p & 0xff];
+		if (mode) {
+			c = unicode[*p & 0xff];
+		}
 		if (c <= 0x7f)
 			fputc(c, f);
 		else if (c <= 0x7ff) {
@@ -272,26 +274,26 @@ static void output_xref_table(FILE *f) {
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_cmd_compare);
 	for (i=0; i<alias_tbl_n; i++) {
 		p = alias_table[i].alias;
-		uprintf(f, "%s", alias_table[i].name);
-		fprintf(f, "\t%s\t%s\n", alias_table[i].pretty, p == CNULL ? "" : p);
+		uprintf(f, 1, "%s", alias_table[i].name);
+		uprintf(f, 0, "\t%s\t%s\n", alias_table[i].pretty, p == CNULL ? "" : p);
 	}
 	fprintf(f, "\n\n\n\nBy Alias\n");
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_alias_compare);
 	for (i=0; i<alias_tbl_n; i++) {
 		p = alias_table[i].alias;
 		if (p) {
-			fprintf(f, "%s\t",   p);
-			uprintf(f, "%s",     alias_table[i].name);
-			fprintf(f, "\t%s\n", alias_table[i].pretty);
+			uprintf(f, 0, "%s\t",   p);
+			uprintf(f, 1, "%s",     alias_table[i].name);
+			uprintf(f, 0, "\t%s\n", alias_table[i].pretty);
 		}
 	}
 	fprintf(f, "\n\n\n\nBy Pretty Command\n");
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_pretty_compare);
 	for (i=0; i<alias_tbl_n; i++) {
 		p = alias_table[i].alias;
-		fprintf(f, "%s\t",   alias_table[i].pretty);
-		uprintf(f, "%s",     alias_table[i].name);
-		fprintf(f, "\t%s\n", p == CNULL ? "" : p);
+		uprintf(f, 0, "%s\t",   alias_table[i].pretty);
+		uprintf(f, 1, "%s",     alias_table[i].name);
+		uprintf(f, 0, "\t%s\n", p == CNULL ? "" : p);
 	}
 }
 
@@ -376,9 +378,16 @@ void dump_opcodes(FILE *f, int xref) {
 					dump_one_opcode(f, c, "\240  ", E_CMD_CMD, "[alpha] [space]", E_ALIAS, buf, 0, xref);
 				}
 				else {
+					const int n = c & 0xff;
 					sprintf(temp2, "\240 %s", cn);
 					sprintf(temp, "[alpha] %s", cmdpretty);
 					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
+					if (to_cp1252[n] >= 0x80) {
+						sprintf(buf, "'%c'", to_cp1252[n]);
+						dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, E_ATTR_NO_CMD, xref);
+						sprintf(buf, "[alpha] %c", to_cp1252[n]);
+						dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, E_ATTR_NO_CMD, xref);
+					}
 				}
 				continue;
 			} 

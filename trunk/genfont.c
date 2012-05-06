@@ -313,8 +313,8 @@ static void gen_translate(FILE *f) {
 			"const unsigned char to_cp1252[256] = {\n");
 	for (i=0; i<256; i++) {
 		int w = charset[i].windows;
-		fprintf( f, "\t0x%02x,\t// %s\n", w, charset[i].name );
-		if (t[w] != 0) {
+		fprintf( f, "\t0x%02x,\t// %s %s\n", w, charset[i].name, w == 0 ? "(undefined)" : "" );
+		if (w != 0 && t[w] != 0) {
 			fprintf( f, "\t// Above is duplicate: %02x\n", t[w] );
 		}
 		t[w] = (unsigned char) i;

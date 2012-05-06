@@ -11,7 +11,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0001, "x-bar",            7500, 0x1e80,     0x01, 0x00,    CNULL,
+	{ 0001, "x-bar",            7500, 0x1e80,     0x00, 0x00,    CNULL,
 		{
 			  OOO_ ,   OOO_ ,
 			  ____ ,   ____ ,
@@ -23,7 +23,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0002, "y-bar",            7900, 0x0233,     0x02, 0x00,    CNULL,
+	{ 0002, "y-bar",            7900, 0x0233,     0x00, 0x00,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
@@ -35,7 +35,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0003, "sqrt",            17100, 0x221a,     0x03, 0x83,    CNULL,
+	{ 0003, "sqrt",            17100, 0x221a,     0x00, 0x83,    CNULL,
 		{
 			__OOO_ ,  _OOO_ ,
 			__O___ ,  _O___ ,
@@ -47,7 +47,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0004, "integral",        17200, 0x222b,     0x04, 0x84,    CNULL,
+	{ 0004, "integral",        17200, 0x222b,     0x00, 0x84,    CNULL,
 		{
 			___O__ ,   _OO_ ,
 			__O_O_ ,   _O__ ,
@@ -83,7 +83,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0007, "grad",            18000, 0x24bc,     0x07, 0x00,    CNULL,
+	{ 0007, "grad",            18000, 0x24bc,     0x00, 0x00,    CNULL,
 		{
 			______ ,  _OOO_ ,
 			_OOO__ ,  O____ ,
@@ -155,7 +155,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0015, "->",              14600, 0x2192,     0x05, 0x8D,    "right",
+	{ 0015, "->",              14600, 0x2192,     0x00, 0x8D,    "right",
 		{
 			______ ,  _O___ ,
 			__O___ ,  __O__ ,
@@ -167,7 +167,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0016, "<-",              14700, 0x2190,     0x06, 0x8E,    "left",
+	{ 0016, "<-",              14700, 0x2190,     0x00, 0x8E,    "left",
 		{
 			______ ,  __O__ ,
 			__O___ ,  _O___ ,
@@ -179,7 +179,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0017, "v",               14900, 0x2193,     0x0f, 0x00,    "down",
+	{ 0017, "v",               14900, 0x2193,     0x00, 0x00,    "down",
 		{
 			______ ,   _O__ ,
 			__O___ ,   _O__ ,
@@ -191,7 +191,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0020, "^",               14800, 0x2191,     0x10, 0x00,    "up",
+	{ 0020, "^",               14800, 0x2191,     0x00, 0x00,    "up",
 		{
 			______ ,   _O__ ,
 			__O___ ,   OOO_ ,
@@ -203,7 +203,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0021, "f-shift",           100, 0x24d5,     0x11, 0x00,    CNULL,
+	{ 0021, "f-shift",           100, 0x24d5,     0x00, 0x00,    CNULL,
 		{
 			 __OO_ ,   _OO_ ,	/* do NOT change the width */
 			 __O__ ,   _O__ ,	/* of this character	   */
@@ -215,7 +215,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0022, "g-shift",           200, 0x24d6,     0x12, 0x00,    CNULL,
+	{ 0022, "g-shift",           200, 0x24d6,     0x00, 0x00,    CNULL,
 		{
 			 __OO_ ,   _OO_ ,	/* do NOT change the width */
 			 _O_O_ ,   OOO_ ,	/* of this character	   */
@@ -227,7 +227,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0023, "h-shift",           300, 0x24d7,     0x13, 0x00,    CNULL,
+	{ 0023, "h-shift",           300, 0x24d7,     0x00, 0x00,    CNULL,
 		{
 			 _O___ ,   O___ ,	/* do NOT change the width */
 			 _O___ ,   OOO_ ,	/* of this character	   */
@@ -275,7 +275,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0027, "<->",             15200, 0x21c6,     0x17, 0x00,    "exchange",
+	{ 0027, "<->",             15200, 0x21c6,     0x00, 0x00,    "exchange",
 		{
 			_O____ , _O____ ,
 			OOOOO_ , OOOOO_ ,
@@ -299,7 +299,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0031, "x-hat",            7600, 0x1e8b,     0x19, 0x00,    CNULL,
+	{ 0031, "x-hat",            7600, 0x1e8b,     0x00, 0x00,    CNULL,
 		{
 			  _O__ ,   _O__ ,
 			  O_O_ ,   O_O_ ,
@@ -311,7 +311,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0032, "y-hat",            8100, 0x0177,     0x1a, 0x00,    CNULL,
+	{ 0032, "y-hat",            8100, 0x0177,     0x00, 0x00,    CNULL,
 		{
 			  _O__ ,   _O__ ,
 			  O_O_ ,   O_O_ ,
@@ -323,7 +323,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0033, "sub-m",            5000, 0x2098,     0x1b, 0x00,    CNULL,
+	{ 0033, "sub-m",            5000, 0x2098,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			______ , ______ ,
@@ -347,7 +347,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0035, "approx",          15800, 0x2248,     0x1d, 0x00,    CNULL,
+	{ 0035, "approx",          15800, 0x2248,     0x00, 0x00,    CNULL,
 		{
 			 _____ ,  _O_O_ ,
 			 _O_O_ ,  O_O__ ,
@@ -1547,7 +1547,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0201, "sub-w",            7400, 0x24b2,     0x81, 0x00,    CNULL,
+	{ 0201, "sub-w",            7400, 0x24b2,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			______ , ______ ,
@@ -1559,7 +1559,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0202, "GAMMA",            9300, 0x0393,     0x82, 0x00,    CNULL,
+	{ 0202, "GAMMA",            9300, 0x0393,     0x00, 0x00,    CNULL,
 		{
 			OOOO_ ,   OOO_ ,
 			O__O_ ,   O___ ,
@@ -1571,7 +1571,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0203, "DELTA",            9400, 0x0394,     0x83, 0x00,    CNULL,
+	{ 0203, "DELTA",            9400, 0x0394,     0x00, 0x00,    CNULL,
 		{
 			__O___ ,  ___O_ ,
 			__O___ ,  __OO_ ,
@@ -1619,7 +1619,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0207, "THETA",            9800, 0x0398,     0x86, 0x00,    CNULL,
+	{ 0207, "THETA",            9800, 0x0398,     0x00, 0x00,    CNULL,
 		{
 			_OOO__ ,  _OO__ ,
 			O___O_ ,  O__O_ ,
@@ -1655,7 +1655,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0212, "LAMBDA",          10100, 0x039b,     0x88, 0x00,    CNULL,
+	{ 0212, "LAMBDA",          10100, 0x039b,     0x00, 0x00,    CNULL,
 		{
 			__O___ ,   _O__ ,
 			__O___ ,   _O__ ,
@@ -1691,7 +1691,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0215, "XI",              10400, 0x039e,     0x8d, 0x00,    CNULL,
+	{ 0215, "XI",              10400, 0x039e,     0x00, 0x00,    CNULL,
 		{
 			OOOO_ ,  OOOO_ ,
 			_____ ,  _____ ,
@@ -1703,7 +1703,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0216, "sol",             17400, 0x2609,     0x84, 0x00,    CNULL,
+	{ 0216, "sol",             17400, 0x2609,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			_OOO__ , _OOO__ ,
@@ -1715,7 +1715,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0217, "PI",              10600, 0x03a0,     0x8f, 0x00,    CNULL,
+	{ 0217, "PI",              10600, 0x03a0,     0x00, 0x00,    CNULL,
 		{
 			OOOO_ ,   OOO_ ,
 			O__O_ ,   O_O_ ,
@@ -1739,7 +1739,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0221, "SIGMA",           10800, 0x03a3,     0x91, 0x85,    CNULL,
+	{ 0221, "SIGMA",           10800, 0x03a3,     0x00, 0x85,    CNULL,
 		{
 			OOOOO_ ,  OOOO_ ,
 			_O____ ,  _O___ ,
@@ -1751,7 +1751,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0222, "print",           19000, 0x2399,     0x09, 0x00,    "printscreensymbol",
+	{ 0222, "print",           19000, 0x2399,     0x0c, 0x00,    "printscreensymbol",
 		{
 			     _OOO__ ,      _OO__ ,
 			     _O_O__ ,      _OO__ ,
@@ -1775,7 +1775,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0224, "PHI",             11100, 0x03a6,     0x94, 0x00,    CNULL,
+	{ 0224, "PHI",             11100, 0x03a6,     0x00, 0x00,    CNULL,
 		{
 			__O___ , __O___ ,
 			_OOO__ , OOOOO_ ,
@@ -1799,7 +1799,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0226, "PSI",             11300, 0x03a8,     0x96, 0x00,    CNULL,
+	{ 0226, "PSI",             11300, 0x03a8,     0x00, 0x00,    CNULL,
 		{
 			__O___ , O_O_O_ ,
 			O_O_O_ , O_O_O_ ,
@@ -1811,7 +1811,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0227, "OMEGA",           11400, 0x03a9,     0x97, 0x00,    CNULL,
+	{ 0227, "OMEGA",           11400, 0x03a9,     0x00, 0x00,    CNULL,
 		{
 			_OOO__ ,  _OO__ ,
 			O___O_ ,  O__O_ ,
@@ -1823,7 +1823,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0230, "sub-B",            2600, 0x249d,     0x98, 0x00,    CNULL,
+	{ 0230, "sub-B",            2600, 0x249d,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -1835,7 +1835,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0231, "sub-mu",          10200, 0x00b6,     0x99, 0x00,    CNULL,
+	{ 0231, "sub-mu",          10200, 0x00b6,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -1859,7 +1859,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0233, "sub-infinity",    17300, 0x2088,     0x9b, 0x00,    CNULL,
+	{ 0233, "sub-infinity",    17300, 0x2088,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			______ , ______ ,
@@ -1871,7 +1871,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0234, "^x",               7500, 0x1d61,     0x9c, 0x00,    "super-x",
+	{ 0234, "^x",               7500, 0x1d61,     0x00, 0x00,    "super-x",
 		{
 			  O_O_ ,   O_O_ ,
 			  _O__ ,   _O__ ,
@@ -1883,7 +1883,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0235, "^-1",             12400, 0x2078,     0x9d, 0x00,    "reciprocal",
+	{ 0235, "^-1",             12400, 0x2078,     0x00, 0x00,    "reciprocal",
 		{
 			____O_ ,  ___O_ ,
 			___OO_ ,  OO_O_ ,
@@ -1895,7 +1895,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0236, "h-bar",            4100, 0x0127,     0x92, 0x00,    CNULL,
+	{ 0236, "h-bar",            4100, 0x0127,     0x00, 0x00,    CNULL,
 		{
 			_O____ ,  _O___ ,
 			OOOO__ ,  OOO__ ,
@@ -1907,7 +1907,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0237, "infinity",        17300, 0x221e,     0x85, 0x00,    CNULL,
+	{ 0237, "infinity",        17300, 0x221e,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			______ , _O_O__ ,
@@ -1919,7 +1919,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0240, "alpha",            9100, 0x03b1,     0x90, 0x8C,    CNULL,
+	{ 0240, "alpha",            9100, 0x03b1,     0x00, 0x8C,    CNULL,
 		{
 			______ ,  _____ ,
 			______ ,  _O_O_ ,
@@ -1931,7 +1931,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0241, "beta",             9200, 0x03b2,     0xa1, 0x00,    CNULL,
+	{ 0241, "beta",             9200, 0x03b2,     0x00, 0x00,    CNULL,
 		{
 			 _O___ ,   _O__ ,
 			 O_O__ ,   O_O_ ,
@@ -1943,7 +1943,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0242, "gamma",            9300, 0x03b3,     0xa2, 0x00,    CNULL,
+	{ 0242, "gamma",            9300, 0x03b3,     0x00, 0x00,    CNULL,
 		{
 			 _____ ,   ____ ,
 			 _O_O_ ,   O_O_ ,
@@ -1955,7 +1955,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0243, "delta",            9400, 0x03b4,     0x93, 0x88,    CNULL,
+	{ 0243, "delta",            9400, 0x03b4,     0x00, 0x88,    CNULL,
 		{
 			 __O__ ,   _O__ ,
 			 _O___ ,   O___ ,
@@ -1967,7 +1967,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0244, "epsilon",          9500, 0x03b5,     0xa4, 0x00,    CNULL,
+	{ 0244, "epsilon",          9500, 0x03b5,     0x00, 0x00,    CNULL,
 		{
 			 _____ ,   _OO_ ,
 			 _OO__ ,   O___ ,
@@ -1979,7 +1979,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0245, "zeta",             9600, 0x03b6,     0x95, 0x00,    CNULL,
+	{ 0245, "zeta",             9600, 0x03b6,     0x00, 0x00,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 ___O_ ,   __O_ ,
@@ -1991,7 +1991,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0246, "eta",              9700, 0x03b7,     0xa6, 0x00,    CNULL,
+	{ 0246, "eta",              9700, 0x03b7,     0x00, 0x00,    CNULL,
 		{
 			______ ,  _____ ,
 			______ ,  OOO__ ,
@@ -2003,7 +2003,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0247, "theta",            9800, 0x03b8,     0xa7, 0x00,    CNULL,
+	{ 0247, "theta",            9800, 0x03b8,     0x00, 0x00,    CNULL,
 		{
 			_OO___ ,  OOO__ ,
 			O__O__ ,  O_O__ ,
@@ -2015,7 +2015,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0250, "iota",             9900, 0x03b9,     0xa8, 0x00,    CNULL,
+	{ 0250, "iota",             9900, 0x03b9,     0x00, 0x00,    CNULL,
 		{
 			   ___ ,    ___ ,
 			   ___ ,    O__ ,
@@ -2027,7 +2027,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0251, "kappa",           10000, 0x03ba,     0xa9, 0x00,    CNULL,
+	{ 0251, "kappa",           10000, 0x03ba,     0x00, 0x00,    CNULL,
 		{
 			 _____ ,   ____ ,
 			 _____ ,   O_O_ ,
@@ -2039,7 +2039,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0252, "lambda",          10100, 0x03bb,     0xaa, 0x00,    CNULL,
+	{ 0252, "lambda",          10100, 0x03bb,     0x00, 0x00,    CNULL,
 		{
 			 O____ ,   OO__ ,
 			 _O___ ,   __O_ ,
@@ -2063,7 +2063,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0254, "nu",              10300, 0x03bd,     0x8b, 0x00,    CNULL,
+	{ 0254, "nu",              10300, 0x03bd,     0x00, 0x00,    CNULL,
 		{
 			 _____ ,   ____ ,
 			 _____ ,   O_O_ ,
@@ -2075,7 +2075,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0255, "xi",              10400, 0x03be,     0xad, 0x00,    CNULL,
+	{ 0255, "xi",              10400, 0x03be,     0x00, 0x00,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 __O__ ,   _O__ ,
@@ -2087,7 +2087,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0256, "terra",           17500, 0x2641,     0xae, 0x00,    CNULL,
+	{ 0256, "terra",           17500, 0x2641,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			_OOO__ , _OOO__ ,
@@ -2099,7 +2099,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0257, "pi",              10600, 0x03c0,     0x60, 0x87,    CNULL,
+	{ 0257, "pi",              10600, 0x03c0,     0x00, 0x87,    CNULL,
 		{
 			______ ,  _____ ,
 			______ ,  OOOO_ ,
@@ -2111,7 +2111,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0260, "rho",             10700, 0x03c1,     0xaf, 0x00,    CNULL,
+	{ 0260, "rho",             10700, 0x03c1,     0x00, 0x00,    CNULL,
 		{
 			______ ,  _____ ,
 			______ ,  __OO_ ,
@@ -2123,7 +2123,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0261, "sigma",           10800, 0x03c3,     0x8c, 0x00,    CNULL,
+	{ 0261, "sigma",           10800, 0x03c3,     0x00, 0x00,    CNULL,
 		{
 			______ ,  _____ ,
 			______ ,  _OOO_ ,
@@ -2135,7 +2135,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0262, "tau",             10900, 0x03c4,     0x89, 0x00,    CNULL,
+	{ 0262, "tau",             10900, 0x03c4,     0x00, 0x00,    CNULL,
 		{
 			 _____ ,   ____ ,
 			 _____ ,   OOO_ ,
@@ -2147,7 +2147,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0263, "upsilon",         11000, 0x03c5,     0xde, 0x00,    CNULL,
+	{ 0263, "upsilon",         11000, 0x03c5,     0x00, 0x00,    CNULL,
 		{
 			______ ,  _____ ,
 			______ ,  OO_O_ ,
@@ -2159,7 +2159,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0264, "phi",             11100, 0x03c6,     0xb4, 0x00,    CNULL,
+	{ 0264, "phi",             11100, 0x03c6,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			_OOO__ , _OOO__ ,
@@ -2171,7 +2171,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0265, "chi",             11200, 0x03c7,     0xd4, 0x00,    CNULL,
+	{ 0265, "chi",             11200, 0x03c7,     0x00, 0x00,    CNULL,
 		{
 			______ ,   ____ ,
 			_OO_O_ ,   O_O_ ,
@@ -2183,7 +2183,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0266, "psi",             11300, 0x03c8,     0xb6, 0x00,    CNULL,
+	{ 0266, "psi",             11300, 0x03c8,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			______ , O_O_O_ ,
@@ -2195,7 +2195,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0267, "omega",           11400, 0x03c9,     0xb7, 0x00,    CNULL,
+	{ 0267, "omega",           11400, 0x03c9,     0x00, 0x00,    CNULL,
 		{
 			______ , ______ ,
 			______ , _O_O__ ,
@@ -2207,7 +2207,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0270, "sub-0",            1000, 0x2080,     0xb8, 0x00,    CNULL,
+	{ 0270, "sub-0",            1000, 0x2080,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -2219,7 +2219,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0271, "sub-1",            1100, 0x2081,     0xb9, 0x95,    CNULL,
+	{ 0271, "sub-1",            1100, 0x2081,     0x00, 0x95,    CNULL,
 		{
 			   ___ ,    ___ ,
 			   ___ ,    ___ ,
@@ -2231,7 +2231,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0272, "sub-2",            1200, 0x2082,     0xba, 0x96,    CNULL,
+	{ 0272, "sub-2",            1200, 0x2082,     0x00, 0x96,    CNULL,
 		{
 			  ____ ,    ___ ,
 			  ____ ,    ___ ,
@@ -2243,7 +2243,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0273, "sub-c",            2700, 0x249e,     0xee, 0x00,    CNULL,
+	{ 0273, "sub-c",            2700, 0x249e,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,    ___ ,
 			  ____ ,    ___ ,
@@ -2255,7 +2255,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0274, "sub-e",            3300, 0x2091,     0xbc, 0x00,    CNULL,
+	{ 0274, "sub-e",            3300, 0x2091,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -2267,7 +2267,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0275, "sub-n",            5100, 0x2099,     0xbd, 0x00,    CNULL,
+	{ 0275, "sub-n",            5100, 0x2099,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -2279,7 +2279,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0276, "sub-p",            5900, 0x209a,     0xbe, 0x00,    CNULL,
+	{ 0276, "sub-p",            5900, 0x209a,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -2291,7 +2291,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0277, "sub-u",            6700, 0x1d64,     0xbf, 0x00,    CNULL,
+	{ 0277, "sub-u",            6700, 0x1d64,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -2363,7 +2363,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0305, "C-acute",          2800, 0x0106,     0xf7, 0x00,    CNULL,
+	{ 0305, "C-acute",          2800, 0x0106,     0x00, 0x00,    CNULL,
 		{
 			__OO_ ,   _OO_ ,
 			_____ ,   ____ ,
@@ -2375,7 +2375,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0306, "C-hook",           2900, 0x010c,     0xfe, 0x00,    CNULL,
+	{ 0306, "C-hook",           2900, 0x010c,     0x00, 0x00,    CNULL,
 		{
 			OOOO_ ,   OOO_ ,
 			_____ ,   ____ ,
@@ -2471,7 +2471,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0316, "I-tilde",          4500, 0x0128,     0xce, 0xA6,    CNULL,
+	{ 0316, "I-tilde",          4500, 0x0128,     0x00, 0xA6,    CNULL,
 		{
 			  OOO_ ,   OOO_ ,
 			  ____ ,   ____ ,
@@ -2555,7 +2555,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0325, "R-hook",           6200, 0x0158,     0x15, 0x00,    CNULL,
+	{ 0325, "R-hook",           6200, 0x0158,     0x00, 0x00,    CNULL,
 		{
 			OOOO_ ,   OOO_ ,
 			_____ ,   ____ ,
@@ -2579,7 +2579,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0327, "sub-A",            2000, 0x2090,     0x16, 0x00,    CNULL,
+	{ 0327, "sub-A",            2000, 0x2090,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -2747,7 +2747,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0345, "c-acute",          2800, 0x0107,     0x1c, 0x00,    CNULL,
+	{ 0345, "c-acute",          2800, 0x0107,     0x00, 0x00,    CNULL,
 		{
 			 __OO_ ,   _OO_ ,
 			 _____ ,   ____ ,
@@ -2759,7 +2759,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0346, "c-hook",           2900, 0x010d,     0x1e, 0x00,    CNULL,
+	{ 0346, "c-hook",           2900, 0x010d,     0x00, 0x00,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
@@ -2807,7 +2807,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0352, "e-tilde",          3600, 0x0113,     0x1f, 0x00,    CNULL,
+	{ 0352, "e-tilde",          3600, 0x0113,     0xea, 0x00,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
@@ -2855,7 +2855,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0356, "i-tilde",          4500, 0x0129,     0xc5, 0xD1,    CNULL,
+	{ 0356, "i-tilde",          4500, 0x0129,     0x00, 0xD1,    CNULL,
 		{
 			  OOO_ ,   OOO_ ,
 			  ____ ,   ____ ,
@@ -2939,7 +2939,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0365, "r-hook",           6200, 0x0159,     0xe5, 0x00,    CNULL,
+	{ 0365, "r-hook",           6200, 0x0159,     0x00, 0x00,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
@@ -2963,7 +2963,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0367, "sub-k",            4800, 0x2096,     0xea, 0x00,    CNULL,
+	{ 0367, "sub-k",            4800, 0x2096,     0x00, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
@@ -2999,7 +2999,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0372, "u-tilde",          7000, 0x0169,     0xf4, 0xC4,    CNULL,
+	{ 0372, "u-tilde",          7000, 0x0169,     0x00, 0xC4,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
