@@ -20,6 +20,15 @@
 // XXX This preprocessor-ready example program requires that it be
 //     assembled with the '-pp' switch.
 //     See post-processed output in wp34s_pp.lst file.
+// XXX This is intended to be an example of using the aliased command set.
+//     See http://wp34s.svn.sourceforge.net/viewvc/wp34s/doc/Command-Aliases.pdf
+//     for details.
+//     Note that indirection can be aliased using any of the following forms:
+//        RCL+[->]34
+//        RCL+ ->34
+//        RCL+ >34
+//        RCL+ =>34
+//        RCL+ @34
 // ====================================================================
 
 // See http://www.hpmuseum.org/cgi-sys/cgiwrap/hpmuseum/articles.cgi?read=700 */
@@ -33,7 +42,7 @@
 006:              x=? 00
 007:              JMP _8Qu_Done // SKIP 22
 008:              INC 00
-009:              STO ->00
+009:              STO >00 // 1st aliased form of indirection
 010: _8Qu_Again:: INC 10
 011:              RCL 00
 012:              STO 09
@@ -41,8 +50,8 @@
 014:              RCL 09
 015:              x=0?
 016:              JMP _8Qu_Loop // BACK 11
-017:              RCL ->00
-018:              RCL- ->09
+017:              RCL =>00 // 2nd aliased form of indirection
+018:              RCL- ->09 // 3rd aliased form of indirection
 019:              x=0?
 020:              JMP _8Qu_Not0 // SKIP 05
 021:              ABS
@@ -50,7 +59,7 @@
 023:              RCL- 09
 024:              x[!=]? Y
 025:              JMP _8Qu_Loop2 // BACK 12
-026: _8Qu_Not0::  DSZ ->00
+026: _8Qu_Not0::  DSZ @00 // 4th aliased form of indirection
 027:              JMP _8Qu_Again // BACK 17
 028:              DSZ 00
 029:              JMP _8Qu_Not0 // BACK 03

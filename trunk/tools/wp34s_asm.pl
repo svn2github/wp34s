@@ -159,6 +159,9 @@ my $NO_PAD_MODE = 0;
 my $V2_PAD_MODE = 1;
 my $V3_PAD_MODE = 2;
 
+my $IS_NOT_AN_ALIAS = 0;
+my $IS_AN_ALIAS = 1;
+
 my $choose_disassemble_opcode = -1; # Choose 0 for original
 
 my $v3_mode = 0;
@@ -1094,12 +1097,12 @@ sub load_opcode_tables {
         $step_digits = 4;
       }
 
-      load_table_entry($hex_str, $mnemonic, $line_num);
+      load_table_entry($hex_str, $mnemonic, $line_num, $IS_NOT_AN_ALIAS);
 
       # We need to harvest the escaped-alpha table for later substitutions.
       if( /\[alpha\]\s+\[(.+)\]/ ) {
         my $escaped_alpha = $1;
-        load_escaped_alpha_tables($hex_str, $escaped_alpha, $line_num);
+        load_escaped_alpha_tables($hex_str, $escaped_alpha, $line_num, $IS_NOT_AN_ALIAS);
       }
 
       # As a convenience, create a secondary entry for iC commands that have a 2-digit
@@ -1116,28 +1119,28 @@ sub load_opcode_tables {
       my $hex_str = $1;
       my $mnemonic = $2;
       my $line_num = $.;
-      load_table_entry($hex_str, $mnemonic, $line_num);
+      load_table_entry($hex_str, $mnemonic, $line_num, $IS_AN_ALIAS);
 
     # arg-type line
     } elsif( /0x([0-9a-fA-F]{4})\s+arg\s+(.+)$/ ) {
       my $hex_str = $1;
       my $parameter = $2;
       my $line_num = $.;
-      parse_arg_type($hex_str, $parameter, $line_num);
+      parse_arg_type($hex_str, $parameter, $line_num, $IS_NOT_AN_ALIAS);
 
     # alias to the above
     } elsif( /0x([0-9a-fA-F]{4})\s+alias-a\s+(.+)$/ ) {
       my $hex_str = $1;
       my $parameter = $2;
       my $line_num = $.;
-      parse_arg_type($hex_str, $parameter, $line_num);
+      parse_arg_type($hex_str, $parameter, $line_num, $IS_AN_ALIAS);
 
     # mult-type line
     } elsif( /0x([0-9a-fA-F]{4})\s+mult\s+(.+)$/ ) {
       my $hex_str = $1;
       my $mnemonic = "${2}'"; # append a single quote.
       my $line_num = $.;
-      load_table_entry($hex_str, $mnemonic, $line_num);
+      load_table_entry($hex_str, $mnemonic, $line_num, $IS_NOT_AN_ALIAS);
 
       # Dynamically extract the band of opcodes that require special processing for
       # multi-character strings.
@@ -1161,7 +1164,7 @@ sub load_opcode_tables {
       my $hex_str = $1;
       my $mnemonic = "${2}'"; # append a single quote.
       my $line_num = $.;
-      load_table_entry($hex_str, $mnemonic, $line_num);
+      load_table_entry($hex_str, $mnemonic, $line_num, $IS_AN_ALIAS);
 
     # Parse any of the pragma-like values.
     } elsif( /^\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*\=\s*(\d+\.{0,1}\d*)\s*$/ ) {
@@ -1247,6 +1250,12 @@ sub parse_arg_type {
   my $base_hex_str = shift;
   my $arg = shift;
   my $line_num = shift;
+  my $is_alias = shift;
+
+  # Leave in the code until we get the kinks worked out.
+  if (not defined $is_alias) {
+    warn_msg(this_function((caller(0))[3]), "Developement bug: \$is_alias is undefined");
+  }
 
   my ($base_mnemonic);
   my $direct_max = 0;
@@ -1281,7 +1290,7 @@ sub parse_arg_type {
     for my $offset (0 .. ($direct_max - 1)) {
       if( ! $stostack_modifier || ($offset <= 96) || ($offset >= 112) ) {
         parse_arg_type_dir_max($direct_max, $offset, $base_mnemonic, $base_hex_str, $line_num,
-                               $indirect_modifier, $stackreg_modifier);
+                               $indirect_modifier, $stackreg_modifier, $is_alias);
       }
     }
   }
@@ -1295,11 +1304,16 @@ sub parse_arg_type {
       my $mnemonic_str = "$base_mnemonic";
       $mnemonic_str .= "[->]";
       my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $indirect_offset, $mnemonic_str, $reg_str);
-      load_table_entry($hex_str, $mnemonic, $line_num);
+      load_table_entry($hex_str, $mnemonic, $line_num, $is_alias);
 
-      # Construct the alias. Hex value remains the same.
-      $mnemonic = "${base_mnemonic} ->$reg_str";
-      load_table_entry($hex_str, $mnemonic, $line_num);
+      # Construct aliases. Hex value remains the same for all sets.
+      # Note that any additional entries we add here are aliases by definition so
+      # flag them a such to avoid the replication warning checks.
+      my @indirection_aliases = ("@", "=>", "->", ">"); # Be generous!
+      foreach my $indirection_alias (@indirection_aliases) {
+        $mnemonic = "${base_mnemonic} ${indirection_alias}${reg_str}";
+        load_table_entry($hex_str, $mnemonic, $line_num, $IS_AN_ALIAS);
+      }
     }
   }
 
@@ -1319,6 +1333,13 @@ sub parse_arg_type_dir_max {
   my $line_num = shift;
   my $indirect_modifier = shift;
   my $stackreg_modifier = shift;
+  my $is_alias = shift;
+
+  # Leave in the code until we get the kinks worked out.
+  if (not defined $is_alias) {
+    warn_msg(this_function((caller(0))[3]), "Developement bug: \$is_alias is undefined");
+  }
+
   my ($reg_str);
 
   # Find out which instruction offset group we are to use.
@@ -1336,7 +1357,7 @@ sub parse_arg_type_dir_max {
   $reg_str = "--UNDEFINED--" if not defined $reg_str;
 
   my ($hex_str, $mnemonic) = construct_offset_mnemonic($base_hex_str, $offset, "$base_mnemonic ", $reg_str);
-  load_table_entry($hex_str, $mnemonic, $line_num);
+  load_table_entry($hex_str, $mnemonic, $line_num, $is_alias);
   return;
 } # parse_arg_type_dir_max
 
@@ -1349,17 +1370,36 @@ sub load_escaped_alpha_tables {
   my $hex_str = shift;
   my $escaped_alpha = shift;
   my $line_num = shift;
-  my $ord = hex2dec($hex_str) & 0xFF;
+  my $is_alias = shift;
 
-  # Build the table to convert ordinals to escaped alpha, ie: 0x1D = 29 => "[approx]".
-  if( not exists $ord2escaped_alpha{$ord} ) {
-    $ord2escaped_alpha{$ord} = $escaped_alpha;
-  } else {
-    my $msg = "Duplicate ordinal for escaped alpha: $ord (0x" . dec2hex2($ord) . ") at line $line_num";
-    warn_msg(this_function((caller(0))[3]), $msg) unless $quiet;
+  # Leave in the code until we get the kinks worked out.
+  if (not defined $is_alias) {
+    warn_msg(this_function((caller(0))[3]), "Developement bug: \$is_alias is undefined");
   }
 
-  # Build the table to convert escaped alpha to ordinals, ie: "[approx]" => 0x1D = 29.
+  my $ord = hex2dec($hex_str) & 0xFF;
+  my (@esc_alpha_array);
+
+  # Build the table to convert ordinals to escaped alpha, eg: the entry for 0x1D (ie: 29 decimal)
+  # would be an array containing at least "[approx]" (at least for some -- possibly distant past
+  # -- op-code table). There may be additional aliases for the 0x1D code in the array as well.
+  # These will be added to the array contained in the hash.
+  if( not exists $ord2escaped_alpha{$ord} ) {
+    push @esc_alpha_array, $escaped_alpha; # Add the initial (base) representation.
+    $ord2escaped_alpha{$ord} = \@esc_alpha_array; # ... and save the array in the hash.
+  } else {
+    if ($is_alias == $IS_NOT_AN_ALIAS) {
+      my $msg = "Duplicate ordinal for escaped alpha: $ord (0x" . dec2hex2($ord) . ") at line $line_num";
+      warn_msg(this_function((caller(0))[3]), $msg) unless $quiet;
+    } else {
+      @esc_alpha_array = @{$ord2escaped_alpha{$ord}}; # Recover the existing array to add a new entry.
+      push @esc_alpha_array, $escaped_alpha; # Add the new alias.
+      $ord2escaped_alpha{$ord} = \@esc_alpha_array; # Replace the array currently in the hash.
+    }
+  }
+
+  # Build the table to convert escaped alpha to ordinals, eg: the entry for "[approx]" would be
+  # 0x1D (ie: 29 decimal) -- (at least for some -- possibly distant past -- op-code table).
   if( not exists $escaped_alpha2ord{$escaped_alpha} ) {
     $escaped_alpha2ord{$escaped_alpha} = $ord;
   } else {
@@ -1407,9 +1447,16 @@ sub load_table_entry {
   my $op_hex_str = shift;
   my $mnemonic = shift;
   my $line_num = shift;
+  my $is_alias = shift;
+
+  # Leave in the code until we get the kinks worked out.
+  if (not defined $is_alias) {
+    warn_msg(this_function((caller(0))[3]), "Developement bug: \$is_alias is undefined");
+  }
+
   debug_msg(this_function((caller(0))[3]), "Loading entry ${line_num} ${op_hex_str} ${mnemonic}") if $debug > 1;
   load_mnem2hex_entry($op_hex_str, $mnemonic, $line_num);
-  load_hex2mnem_entry($op_hex_str, $mnemonic, $line_num);
+  load_hex2mnem_entry($op_hex_str, $mnemonic, $line_num, $is_alias);
   return;
 } # load_table_entry
 
@@ -1441,6 +1488,13 @@ sub load_hex2mnem_entry {
   my $op_hex_str = shift;
   my $mnemonic = shift;
   my $line_num = shift;
+  my $is_alias = shift;
+
+  # Leave in the code until we get the kinks worked out.
+  if (not defined $is_alias) {
+    warn_msg(this_function((caller(0))[3]), "Developement bug: \$is_alias is undefined");
+  }
+
   my (@mnem_array);
 
   # If this is the first entry for this op-code, create a new array to load the options.
@@ -1448,11 +1502,17 @@ sub load_hex2mnem_entry {
     push @mnem_array, $mnemonic;
     $hex2mnem{lc $op_hex_str} = \@mnem_array;
 
-  # If this is not the first entry for this op-code, add a new entry to the array.
+  # If this is not the first entry for this op-code, it could be either an duplication error or an alias.
+  # If the former, generate a warning. If the latter, add a new entry to the array.
   } else {
-    @mnem_array = @{$hex2mnem{lc $op_hex_str}};
-    push @mnem_array, $mnemonic;
-    $hex2mnem{lc $op_hex_str} = \@mnem_array;
+    if ($is_alias == $IS_NOT_AN_ALIAS) {
+      my $prev_defs = join ", ", @{$hex2mnem{lc $op_hex_str}};
+      warn_msg(this_function((caller(0))[3]), "Duplicate opcode hex: '$op_hex_str' at line $line_num (new definition: '$mnemonic', previous definition: '$prev_defs')");
+    } else {
+      @mnem_array = @{$hex2mnem{lc $op_hex_str}}; # Recover the existing array to add more entries.
+      push @mnem_array, $mnemonic;
+      $hex2mnem{lc $op_hex_str} = \@mnem_array;
+    }
   }
   return;
 } # load_hex2mnem_entry
