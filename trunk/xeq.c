@@ -1888,7 +1888,7 @@ static void do_rtn(int plus1) {
 		pc = RetStk[RetStkPtr - 1];
 		raw_set_pc(pc);
 		// If RTN+1 inc PC unless a POPUSR command or the program end would be skipped
-		if (plus1 || getprog(pc) == (OP_NIL | OP_POPUSR))
+		if (plus1 && getprog(pc) != (OP_NIL | OP_POPUSR))
 			if (incpc())
 				decpc();
 	}

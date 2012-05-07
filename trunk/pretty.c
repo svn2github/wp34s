@@ -249,10 +249,7 @@ static void uprintf(FILE *f, int mode, const char *fmt, ...)
 	va_end(ap);
 
 	for (p = line; *p != 0; ++p) {
-		if (mode) {
-			c = unicode[*p & 0xff];
-		} else
-			c = *p;
+		c = mode ? unicode[*p & 0xff] : *p;
 		if (c <= 0x7f)
 			fputc(c, f);
 		else if (c <= 0x7ff) {
