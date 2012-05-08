@@ -190,11 +190,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 */
 		static const struct _map cmap[] = {
 			{ K_ARROW, { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-			{ K05,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_INTERNAL      } },
-#else
 			{ K05,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
-#endif
 			{ K10,     { CATALOGUE_LABELS,    CATALOGUE_LABELS,    CATALOGUE_LABELS        } },
 			{ K20,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
 			{ K41,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
@@ -203,7 +199,11 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K44,     { CATALOGUE_MATRIX,    CATALOGUE_NONE,      CATALOGUE_MATRIX        } },
 			{ K50,     { CATALOGUE_STATUS,    CATALOGUE_STATUS,    CATALOGUE_STATUS        } },
 			{ K51,     { CATALOGUE_TEST,      CATALOGUE_TEST,      CATALOGUE_TEST          } },
+#ifdef INCLUDE_INTERNAL_CATALOGUE
+			{ K52,     { CATALOGUE_PROG,      CATALOGUE_PROG,      CATALOGUE_INTERNAL      } },
+#else
 			{ K52,     { CATALOGUE_PROG,      CATALOGUE_PROG,      CATALOGUE_PROG          } },
+#endif
 			{ K53,     { CATALOGUE_NORMAL,    CATALOGUE_INT,       CATALOGUE_COMPLEX       } },
 		};
 
@@ -213,11 +213,11 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			 */
 			return CATALOGUE_REGISTERS;
 		}
-#if 0 
-		// conflicts with c# 003
-		if (c == K53 && shift == SHIFT_N && State2.cmplx && State2.catalogue == CATALOGUE_NONE) {
+#if 0
+		// conflicts with c# 002 and c# 003
+		if ((c == K52 || c == K53) && shift == SHIFT_N && State2.cmplx && State2.catalogue == CATALOGUE_NONE) {
 			/*
-			 *  Shorthand to complex X.FCN - h may be omitted
+			 *  Shorthand to complex P.FCN & X.FCN - h may be omitted
 			 */
 			shift = SHIFT_H;
 		}
