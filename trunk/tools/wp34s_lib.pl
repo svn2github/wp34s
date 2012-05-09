@@ -784,7 +784,7 @@ sub run_prog {
   my $prog = shift;
   my $cmd_line = shift;
   my @output = ();
-
+  
   my ($location, $cmd);
 
   # Look in the current directory.

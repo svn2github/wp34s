@@ -162,7 +162,7 @@ my $V3_PAD_MODE = 2;
 my $IS_NOT_AN_ALIAS = 0;
 my $IS_AN_ALIAS = 1;
 
-my $choose_disassemble_opcode = -1; # Choose 0 for original
+my $choose_disassemble_opcode = 0; # Choose 0 for original
 
 my $v3_mode = 0;
 my $step_digits = 3; # Default to older style 3-digit step numbers.
@@ -608,9 +608,18 @@ sub assemble {
       # Alpha text needs to be treated separately since it encodes to 2 words.
       my $org_alpha_text = $alpha_text;
       if( length $alpha_text ) {
+        # See if the text has any non ASCII characters in it. Substitute them if found.
+        for( my $i = 0; $i < length $alpha_text; ++$i) {
+          my $char = substr($alpha_text, $i, 1);
+          if( ord $char > 127 && exists $escaped_alpha2ord{$char} ) {
+            $char = chr($escaped_alpha2ord{$char});
+            substr($alpha_text, $i, 1) = $char;
+          }
+        }
+        
         # See if the text has any escaped characters in it. Substitute them if found.
         # There may be more than one so loop until satisfied.
-        while( $alpha_text =~ /\[(.+?)\]/ ) {
+        while( $alpha_text =~ /(\[.+?\])/ ) {
           my $escaped_alpha = $1;
           if( exists $escaped_alpha2ord{$escaped_alpha} ) {
             my $char = chr($escaped_alpha2ord{$escaped_alpha});
@@ -618,9 +627,9 @@ sub assemble {
             # Use a custom replacement function rather than a regex because the text
             # pattern for the substitution have regex control sequences in them and
             # that screws things up!
-            $alpha_text = str_replace("\[${escaped_alpha}\]", $char, $alpha_text);
+            $alpha_text = str_replace("${escaped_alpha}", $char, $alpha_text);
           } else {
-            die_msg(this_function((caller(0))[3]), "Cannot locate escaped alpha: [$escaped_alpha] in table.");
+            die_msg(this_function((caller(0))[3]), "Cannot locate escaped alpha: $escaped_alpha in table.");
           }
         }
 
@@ -638,8 +647,11 @@ sub assemble {
           # XXX Due to a bug discovered by Pauli, the calculator misbehaves when these characters
           #     are in the 3rd character slot. To work around this, we will limit them to not being
           #     allowed in that slot.
-          if( (ord($chars[2]) >= $ILLEGAL_3rd_CHAR_LO) and (ord($chars[2]) <= $ILLEGAL_3rd_CHAR_HI) ) {
-            die_msg(this_function((caller(0))[3]), "Cannot use this escaped alpha '$org_alpha_text' in 3rd character slot in step '$org_line'.");
+          my $ord = ord($chars[2]);
+          if( ($ord >= $ILLEGAL_3rd_CHAR_LO) and ($ord <= $ILLEGAL_3rd_CHAR_HI) ) {
+            my @esc_alpha_array = @{$ord2escaped_alpha{$ord}};
+            my $bad = $esc_alpha_array[0];
+            die_msg(this_function((caller(0))[3]), "Cannot use this escaped alpha $bad ($ord) in 3rd character slot in step '$org_line'.");
           }
           $words[++$next_free_word] = ord($chars[1]) | (ord($chars[2]) << 8);
 
@@ -843,7 +855,7 @@ sub print_disassemble_text {
   foreach my $ord (@chars) {
     if( exists $ord2escaped_alpha{$ord} ) {
       my $escaped_alpha = $ord2escaped_alpha{$ord}[0];
-      print OUT "[${escaped_alpha}]" if $ord;
+      print OUT "${escaped_alpha}" if $ord;
     } else {
       print OUT chr($ord) if $ord;
     }
@@ -1101,7 +1113,7 @@ sub load_opcode_tables {
       load_table_entry($hex_str, $mnemonic, $line_num, $IS_NOT_AN_ALIAS);
 
       # We need to harvest the escaped-alpha table for later substitutions.
-      if( /\[alpha\]\s+\[(.+)\]/ ) {
+      if( /\[alpha\]\s+(\[.+\])/ ) {
         my $escaped_alpha = $1;
         load_escaped_alpha_tables($hex_str, $escaped_alpha, $line_num, $IS_NOT_AN_ALIAS);
       }
@@ -1121,6 +1133,19 @@ sub load_opcode_tables {
       my $mnemonic = $2;
       my $line_num = $.;
       load_table_entry($hex_str, $mnemonic, $line_num, $IS_AN_ALIAS);
+
+      # We need to harvest the escaped-alpha table for later substitutions.
+      if( /\[alpha\]\s+(\[.+\])/ ) {
+        my $escaped_alpha_alias = $1;
+        load_escaped_alpha_tables($hex_str, $escaped_alpha_alias, $line_num, $IS_AN_ALIAS);
+      }
+      elsif( /\[alpha\]\s+(.)/ ) {
+        my $alpha_alias = $1;
+        if( ord($alpha_alias) > 127 ) {
+          load_escaped_alpha_tables($hex_str, $alpha_alias, $line_num, $IS_AN_ALIAS);
+        }
+      }
+
 
     # arg-type line
     } elsif( /0x([0-9a-fA-F]{4})\s+arg\s+(.+)$/ ) {
@@ -1390,7 +1415,7 @@ sub load_escaped_alpha_tables {
     $ord2escaped_alpha{$ord} = \@esc_alpha_array; # ... and save the array in the hash.
   } else {
     if ($is_alias == $IS_NOT_AN_ALIAS) {
-      my $msg = "Duplicate ordinal for escaped alpha: $ord (0x" . dec2hex2($ord) . ") at line $line_num";
+      my $msg = "Duplicate ordinal for escaped alpha '$escaped_alpha': $ord (0x" . dec2hex2($ord) . ") at line $line_num";
       warn_msg(this_function((caller(0))[3]), $msg) unless $quiet;
     } else {
       @esc_alpha_array = @{$ord2escaped_alpha{$ord}}; # Recover the existing array to add a new entry.
