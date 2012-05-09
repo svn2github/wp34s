@@ -43,6 +43,18 @@
 			[times]
 			xOUT xOUT_NORMAL
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_BINOMIAL"
+			xIN MONADIC
+			GSB binomial_param
+			FLOOR
+			GSB cdf_binomial
+			_INT 1
+			SWAP
+			-
+			xOUT xOUT_NORMAL
+#endif
+			
 		XLBL"CDF_BINOMIAL"
 			xIN MONADIC
 			GSB binomial_param

@@ -49,6 +49,17 @@ pdf_chi2::		x[<=]0?
 			e[^x]
 			RTN
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB cdf_chi2
+			_INT 1
+			SWAP
+			-
+			xOUT xOUT_NORMAL
+#endif
+
 		XLBL"CDF_CHI2"
 			xIN MONADIC
 			GSB chi2_param

@@ -59,6 +59,16 @@ pdf_f::			FILL
 			RTN
 
 
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_F"
+			xIN MONADIC
+			GSB f_param
+			GSB cdf_f
+			_INT 1
+			SWAP
+			-
+			xOUT xOUT_NORMAL
+#endif
 
 		XLBL"CDF_F"
 			xIN MONADIC
