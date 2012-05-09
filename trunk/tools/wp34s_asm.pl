@@ -842,7 +842,8 @@ sub print_disassemble_text {
   # rather than the actual characters.
   foreach my $ord (@chars) {
     if( exists $ord2escaped_alpha{$ord} ) {
-      print OUT "[${ord2escaped_alpha{$ord}}]" if $ord;
+      my $escaped_alpha = $ord2escaped_alpha{$ord}[0];
+      print OUT "[${escaped_alpha}]" if $ord;
     } else {
       print OUT chr($ord) if $ord;
     }
