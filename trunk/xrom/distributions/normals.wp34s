@@ -206,8 +206,7 @@ cdf_q_lp2::		RCL[times] .01	// term * x^2
 			INC .03
 			JMP cdf_q_lp2
 cdf_q_skip2::		RCL[times] .04
-			.
-			5
+			Num half
 			SWAP
 			FS? .00
 				-
@@ -233,8 +232,7 @@ qf_q::			GSB qf_check_probability
  */
 qf_q_est::		LocR 02
 			STO .00		// save x
-			.
-			5
+			Num half
 			SWAP
 			-
 			STO .01		// b = 1/2 - x
