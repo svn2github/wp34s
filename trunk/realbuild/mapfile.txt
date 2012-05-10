@@ -505,7 +505,7 @@ LOAD windows32_realbuild/obj\libdecNum34s.a
                 0x000f149e                monfuncs_ct
  *(.implicit_consts)
 
-.fixed          0x00100000    0x1c504
+.fixed          0x00100000    0x1c53c
                 0x00100000                . = ALIGN (0x4)
                 0x00100000                _sfixed = .
  *(.text*)
@@ -773,28 +773,29 @@ LOAD windows32_realbuild/obj\libdecNum34s.a
                 0x0011adc0                COMBMSD
                 0x0011ae40                COMBEXP
  *(.xrom)
- .xrom          0x0011aec0     0x1644 asone.o
-                0x0011c504                . = ALIGN (0x4)
-                0x0011c504                _efixed = .
+ .xrom          0x0011aec0     0x167a asone.o
+                0x0011c53c                . = ALIGN (0x4)
+ *fill*         0x0011c53a        0x2 00
+                0x0011c53c                _efixed = .
 
-.glue_7         0x0011c504        0x0
+.glue_7         0x0011c53c        0x0
  .glue_7        0x00000000        0x0 linker stubs
 
-.glue_7t        0x0011c504        0x0
+.glue_7t        0x0011c53c        0x0
  .glue_7t       0x00000000        0x0 linker stubs
 
-.vfp11_veneer   0x0011c504        0x0
+.vfp11_veneer   0x0011c53c        0x0
  .vfp11_veneer  0x00000000        0x0 linker stubs
 
-.v4_bx          0x0011c504        0x0
+.v4_bx          0x0011c53c        0x0
  .v4_bx         0x00000000        0x0 linker stubs
 
-.revision       0x0011c504       0xfc
+.revision       0x0011c53c       0xc4
  *(.revision)
- .revision      0x0011c504        0x4 asone.o
-                0x0011c504                SvnRevision
+ .revision      0x0011c53c        0x4 asone.o
+                0x0011c53c                SvnRevision
                 0x0011c600                . = ALIGN (0x100)
- *fill*         0x0011c508       0xf8 00
+ *fill*         0x0011c540       0xc0 00
                 0x0011c600                UserFlash = .
 
 .backupflash    0x0011f800      0x800
