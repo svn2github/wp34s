@@ -817,6 +817,8 @@ enum nilop {
 
 	OP_QUERY_XTAL, OP_QUERY_PRINT,
 
+	OP_CDFQ_HELPER,
+
 #ifdef INCLUDE_STOPWATCH
 	OP_STOPWATCH,
 #endif // INCLUDE_STOPWATCH
@@ -1163,6 +1165,7 @@ extern void getYZ(decNumber *x, decNumber *y);
 extern void getXYZ(decNumber *x, decNumber *y, decNumber *z);
 extern void getXYZT(decNumber *x, decNumber *y, decNumber *z, decNumber *t);
 extern void setXY(const decNumber *x, const decNumber *y);
+extern void setXYZ(const decNumber *x, const decNumber *y, const decNumber *z);
 extern void setlastX(void);
 
 extern void packed_from_number(decimal64 *r, const decNumber *x);

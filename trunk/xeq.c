@@ -755,13 +755,12 @@ void setY(const decNumber *y) {
 	setRegister(regY_idx, y);
 }
 
-void setXY(const decNumber *x, const decNumber *y) {
-	setX(x);
-	setY(y);
-}
-
 static void getZ(decNumber *z) {
 	getRegister(z, regZ_idx);
+}
+
+static void setZ(const decNumber *z) {
+	setRegister(regZ_idx, z);
 }
 
 static void getT(decNumber *t) {
@@ -773,9 +772,19 @@ void getXY(decNumber *x, decNumber *y) {
 	getY(y);
 }
 
+void setXY(const decNumber *x, const decNumber *y) {
+	setX(x);
+	setY(y);
+}
+
 void getXYZ(decNumber *x, decNumber *y, decNumber *z) {
 	getXY(x, y);
 	getZ(z);
+}
+
+void setXYZ(const decNumber *x, const decNumber *y, const decNumber *z) {
+	setXY(x, y);
+	setZ(z);
 }
 
 void getXYZT(decNumber *x, decNumber *y, decNumber *z, decNumber *t) {

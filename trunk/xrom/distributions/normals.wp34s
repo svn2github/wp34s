@@ -126,6 +126,7 @@ pdf_q::			x[^2]
 			/
 			RTN
 
+
 #ifdef INCLUDE_CDFU
 		XLBL"CDFU_Q"
 			xIN MONADIC
@@ -141,79 +142,72 @@ cdf_q_xout::		GSB cdf_q
 /* Standard entry point.  Destroys the stack.
  * Returns the CDF in X and the PDF in Y.
  */
-cdf_q::			LocR 05
-			STO .00		// x in .00
-			x<0?
-				SF .00
-			GSB pdf_q
-			STO .04
-			RCL .00
-			ABS
-			Num [pi]
-			x[>=]? Y
-				JMP cdf_q2
-
-/* Code for |x| > 3.15 */
+cdf_q::			cdfqh
+			_INT 1
+			[cmplx][times]
 			DROP
-			DEC X
-			_INT 128	// 256 the hard way
-			RCL+ X
-			SWAP
-			/
-			_INT 4
-			+
-			CEIL
-			STO .02		// n = (|x|-1)/256+4
-			Num 0
-cdf_q_lp1::		RCL .02		// n
-			RCL .00		// x
-			RCL+ Z		// x + term
-			/		// n / (x + term)
-			DSZ .02
-				JMP cdf_q_lp1
-			RCL+ .00
-			RCL .04
-			SWAP
-			/
-			x<0?
-				JMP cdf_q_skip1
-			Num 1
-			SWAP
-			-
-cdf_q_skip1::		FS? .00
-				+/-
-cdf_q_exit::		RCL .04
-			SWAP
 			RTN
 
-/* Alternate code for |x| < 3.15 */
-cdf_q2::		_INT 3
-			STO .03		// d = 3
-			[cmplx]DROP
-			STO .01
-			STO[times] .01	// x2 = x^2
-			STO .02		// a = |x|
-cdf_q_lp2::		RCL[times] .01	// term * x^2
-			RCL/ .03	// term * x^2 / d
-			ENTER[^]
-			x[<->] .02
-			STO+ .02
-			RCL .02
-			CNVG? CVG_RELATIVE_DBL
-				JMP cdf_q_skip2
-			[cmplx]DROP
-			INC .03
-			INC .03
-			JMP cdf_q_lp2
-cdf_q_skip2::		RCL[times] .04
-			Num half
-			SWAP
-			FS? .00
-				-
-			FC? .00
-				+
-			JMP cdf_q_exit
+#if 0
+#define R_P	.00
+#define R_X	.01
+#define R_I	.02
+		XLBL"QF_Q"
+			xIN MONADIC
+qf_q_xout::		GSB qf_q
+			xOUT xOUT_NORMAL
 
+qf_q::			GSB qf_check_probability
+			LocR 003
+			STO R_P
+			GSB qf_q_est
+			STO R_X
+			_INT 2
+			FS? Flag_mode_double
+				_INT 3
+			STO R_I
+qf_q_loop::		RCL R_X
+			cdfqh		/* pdf a b */
+			1/x
+			RCL Z		/* b 1/pdf a b */
+			RCL- R_P	/* b-p 1/pdf a b */
+			_INT 1		/* 1 b-p 1/pdf a */
+			[cmplx][times]	/* ? a+(b-p)/pdf */
+			[<->] YYYY	/* t t t t */
+#if 0
+			RCL R_X		/* x t t t */
+			x[^2]		/* x^2 t t t */
+			RCL+ X		/* 2x^2 t t t */
+			INC X		/* 2x^2+1 t t t */
+			_INT 6		/* 6 2xx+1 t t */
+			SWAP
+			/		/* (2xx+1)/6 t t */
+			RCL[times] Y	/* t(2xx+1)/6 t t */
+			RCL X		/* x cubic t t */
+			Num half	/* 0.5 x cubic t */
+			[times]		/* x/2 cubic t */
+			+		/* x/2+cubix t */
+			RCL[times] Y	/* t(x/2+cubix) t */
+			INC X		/* 1+t(x/2+cubix) t */
+			[times]
+#else
+			_INT 1
+			RCL[times] R_X
+			Num half
+			[times]
+			-
+			/
+#endif
+			STO+ R_X
+			DSZ R_I
+				JMP qf_q_loop
+			RCL R_X
+			RTN
+#undef R_P
+#undef R_X
+#undef R_I
+--------------------
+#endif
 
 		XLBL"QF_Q"
 			xIN MONADIC

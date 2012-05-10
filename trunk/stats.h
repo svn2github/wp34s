@@ -72,5 +72,7 @@ extern void stats_random(enum nilop);
 extern void stats_sto_random(enum nilop);
 
 extern decNumber *betai(decNumber *, const decNumber *, const decNumber *, const decNumber *);
+extern decNumber *pdf_Q(decNumber *q, const decNumber *x);
+extern void cdf_Q_helper(enum nilop op);
 
 #endif

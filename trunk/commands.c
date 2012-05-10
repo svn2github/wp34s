@@ -198,7 +198,7 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_CCONJ,	NOFN,			XMC(cpx_CONJ),	NOFN,		"CONJ",		CNULL)
 	FUNC(OP_ERF,	XMR(ERF),		NOFN,		NOFN,		"erf",		CNULL)
 	FUNC(OP_ERFC,	XMR(ERFC),		NOFN,		NOFN,		"erfc",		CNULL)
-	FUNC(OP_pdf_Q,	XMR(PDF_Q), 		NOFN,		NOFN,		"\264(x)",	"phi(x)")
+	FUNC(OP_pdf_Q,	&pdf_Q, 		NOFN,		NOFN,		"\264(x)",	"phi(x)")
 	FUNC(OP_cdf_Q,	XMR(CDF_Q), 		NOFN,		NOFN,		"\224(x)",	"PHI(x)")
 	FUNC(OP_qf_Q,	XMR(QF_Q),  		NOFN,		NOFN,		"\224\235(p)",	"INV-PHI")
 	FUNC(OP_pdf_chi2, XMR(PDF_CHI2),	NOFN,		NOFN,		"\265\232\276",	"chi2-p")
@@ -700,6 +700,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_QUERY_XTAL,	&op_query_xtal,		"XTAL?",	CNULL)
 	FUNC0(OP_QUERY_PRINT,	&op_query_print,	"\222?",	"PRT?")
 
+	FUNC0(OP_CDFQ_HELPER,	&cdf_Q_helper,		"cdfqh",	CNULL)
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW",	CNULL)
 #endif
