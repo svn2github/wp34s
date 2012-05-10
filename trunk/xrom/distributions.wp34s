@@ -17,13 +17,12 @@
 /* Define some identifying numbers for the distributions that require the Newton solver to
  * invert.
  */
-#define DIST_NORMAL	(0)
-#define DIST_T		(1)
-#define DIST_CHI2	(2)
-#define DIST_F		(3)
-#define DIST_POISSON	(4)
-#define DIST_BINOMIAL	(5)
-#define DIST_GEOMETRIC	(6)
+#define DIST_T		(0)
+#define DIST_CHI2	(1)
+#define DIST_F		(2)
+#define DIST_POISSON	(3)
+#define DIST_BINOMIAL	(4)
+#define DIST_GEOMETRIC	(5)
 
 
 #include "distributions/cauchy.wp34s"
@@ -120,9 +119,8 @@ qf_newton::		LocR 009
 			z[<->] R_R
 
 			/* Set flags based on distribution */
-			DEC X
 			x[<=]0?
-				JMP qf_newton_flag_done	/* Normal & Student's T sets no flags */
+				JMP qf_newton_flag_done	/* Student's T sets no flags */
 			SF F_NONNEGATIVE		/* All the rest are non-negative */
 			DEC X
 			x>1?
@@ -308,7 +306,6 @@ qf_discrete_exit::	FLOOR
 
 /* Dispatch to the PDF of the distribution being searched */
 qf_newton_pdf::		CASE R_DIST
-			JMP pdf_q
 			JMP pdf_t
 			JMP pdf_chi2
 			JMP pdf_f
@@ -330,7 +327,6 @@ pdf_discrete::		_INT 1
 
 /* Dispatch to the CDF of the distribution being searched */
 qf_newton_cdf::		CASE R_DIST
-			JMP cdf_q
 			JMP cdf_t
 			JMP cdf_chi2
 			JMP cdf_f

@@ -148,7 +148,6 @@ cdf_q::			cdfqh
 			DROP
 			RTN
 
-#if 0
 #define R_P	.00
 #define R_X	.01
 #define R_I	.02
@@ -174,7 +173,8 @@ qf_q_loop::		RCL R_X
 			_INT 1		/* 1 b-p 1/pdf a */
 			[cmplx][times]	/* ? a+(b-p)/pdf */
 			[<->] YYYY	/* t t t t */
-#if 0
+#if 1
+			// Dieter's series from A&X
 			RCL R_X		/* x t t t */
 			x[^2]		/* x^2 t t t */
 			RCL+ X		/* 2x^2 t t t */
@@ -191,6 +191,7 @@ qf_q_loop::		RCL R_X
 			INC X		/* 1+t(x/2+cubix) t */
 			[times]
 #else
+			// Halley's method
 			_INT 1
 			RCL[times] R_X
 			Num half
@@ -198,7 +199,7 @@ qf_q_loop::		RCL R_X
 			-
 			/
 #endif
-			STO+ R_X
+			STO- R_X
 			DSZ R_I
 				JMP qf_q_loop
 			RCL R_X
@@ -206,21 +207,7 @@ qf_q_loop::		RCL R_X
 #undef R_P
 #undef R_X
 #undef R_I
---------------------
-#endif
 
-		XLBL"QF_Q"
-			xIN MONADIC
-qf_q_xout::		GSB qf_q
-			xOUT xOUT_NORMAL
-
-qf_q::			GSB qf_check_probability
-			LocR 001
-			STO .00
-			GSB qf_q_est
-			RCL .00
-			_INT DIST_NORMAL
-			JMP qf_newton
 
 /* The internal Q qf entry point.
  */
