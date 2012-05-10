@@ -62,7 +62,7 @@ static const char *prt_niladic(const unsigned int idx, char *instr) {
 #ifdef COMPILE_CATALOGUES
 		const char *p = niladics[idx].nname;
 #else
-		const char *p = (idx == OP_RS && ! Running && ! XromRunning) ? "RUN" : niladics[idx].nname;
+		const char *p = (idx == OP_RS && ! Running && ! XromRunning && State2.runmode) ? "RUN" : niladics[idx].nname;
 #endif
 		return sncopy(instr, p, NAME_LEN);
 	}
