@@ -332,7 +332,9 @@ static void dump_one_opcode(FILE *f, int c, const char *cmdname, enum eCmdType t
 	else {
 		// command xref
 		if ((cmdalias != CNULL || strcmp(cmdname,cmdpretty) != 0)
-		    && (! isDBL(c) || c == (OP_DBL | DBL_ALPHA ))) 
+		    && (! isDBL(c) || c == (OP_DBL | DBL_ALPHA))
+		    && ! (attributes & E_ATTR_XROM)
+		   ) 
 		{
 			alias_table[alias_tbl_n].name = strdup(cmdname);
 			alias_table[alias_tbl_n].pretty = strdup(cmdpretty);
