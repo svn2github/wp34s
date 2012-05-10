@@ -251,11 +251,11 @@ XEQα	XEQ[alpha]	XEQa
 Ẁw	[x-bar]w	MEAN-w
 ©x!	[cmplx]x!	cx!
 x→α	x[->][alpha]	x>a
-x⇆	x[<->]	SWAP
-©x⇆	[cmplx]x[<->]	cSWAP
 x⇆	x[<->]	x<>
 ©x⇆	[cmplx]x[<->]	cx<>
-x⇆	x[<->]	x<>y
+x⇆ Y	x[<->] Y	SWAP
+x⇆ Y	x[<->] Y	x<>y
+©x⇆ Z	[cmplx]x[<->] Z	cSWAP
 x≤0?	x[<=]0?	x<=0?
 x≤1?	x[<=]1?	x<=1?
 x≤?	x[<=]?	x<=?
@@ -286,7 +286,6 @@ y⇆	y[<->]	y<>
 ŷ	[y-hat]	FCSTy
 z⇆	z[<->]	z<>
 ©z⇆	[cmplx]z[<->]	cz<>
-α	[alpha]	a
 αDATE	[alpha]DATE	aDATE
 αDAY	[alpha]DAY	aDAY
 αGTO	[alpha]GTO	aGTO
@@ -316,9 +315,7 @@ z⇆	z[<->]	z<>
 εₚ	[epsilon][sub-p]	epsilon-pop
 ζ	[zeta]	ZETA
 Π	[PI]	PROD
-Π	[PI]	PROD
 σ	[sigma]	sigma
-Σ	[SIGMA]	SUM
 Σ	[SIGMA]	SUM
 Σln²x	[SIGMA]ln[^2]x	SUMln2x
 Σln²y	[SIGMA]ln[^2]y	SUMln2y
@@ -367,7 +364,6 @@ z⇆	z[<->]	z<>
 %Σ	%[SIGMA]	%SUM
 √	[sqrt]	SQRT
 ©√	[cmplx][sqrt]	cSQRT
-∫	[integral]	INTG
 ∫	[integral]	INTG
 ∞?	[infinity]?	INF?
 ©||	[cmplx]||	c||
@@ -544,7 +540,6 @@ c2^x	©2ᵡ	[cmplx]2[^x]
 >POL	→POL	[->]POL
 >RAD	→RAD	[->]RAD
 >REC	→REC	[->]REC
-a	α	[alpha]
 a>x	α→x	[alpha][->]x
 cABS	©ABS	[cmplx]ABS
 cACOS	©ACOS	[cmplx]ACOS
@@ -667,7 +662,6 @@ inches>cm	inches→cm	inches[->]cm
 INF?	∞?	[infinity]?
 inHg>Pa	inHg→Pa	inHg[->]Pa
 INTG	∫	[integral]
-INTG	∫	[integral]
 INV	1/x	1/x
 cINV	©1/x	[cmplx]1/x
 INV-Binom	Binom⁸	Binom[^-1]
@@ -771,8 +765,8 @@ Pa>psi	Pa→psi	Pa[->]psi
 Pa>torr	Pa→torr	Pa[->]torr
 pc>km	pc→km	pc[->]km
 cPERM	©PERM	[cmplx]PERM
-phi(x)	φ(x)	[phi](x)
 PHI(x)	Φ(x)	[PHI](x)
+phi(x)	φ(x)	[phi](x)
 PI	# π	# [pi]
 Pn	Pₙ	P[sub-n]
 Pois	Poisλ	Pois[lambda]
@@ -782,7 +776,6 @@ Pois2	Poiss	Poiss
 Pois2-p	Poissₚ	Poiss[sub-p]
 Pois2-u	Poissᵤ	Poiss[sub-u]
 pr.>dB	pr.→dB	pr.[->]dB
-PROD	Π	[PI]
 PROD	Π	[PI]
 PRT?	⎙?	[print]?
 PS(hp)>W	PS(hp)→W	PS(hp)[->]W
@@ -827,7 +820,6 @@ STOMAX	STO↑	STO[^]
 STOMIN	STO↓	STO[v]
 stone>kg	stone→kg	stone[->]kg
 SUM	Σ	[SIGMA]
-SUM	Σ	[SIGMA]
 SUMln2x	Σln²x	[SIGMA]ln[^2]x
 SUMln2y	Σln²y	[SIGMA]ln[^2]y
 SUMlnx	Σlnx	[SIGMA]lnx
@@ -841,8 +833,8 @@ SUMxy	Σxy	[SIGMA]xy
 SUMy	Σy	[SIGMA]y
 SUMy2	Σy²	[SIGMA]y[^2]
 SUMylnx	Σylnx	[SIGMA]ylnx
-SWAP	x⇆	x[<->]
-cSWAP	©x⇆	[cmplx]x[<->]
+SWAP	x⇆ Y	x[<->] Y
+cSWAP	©x⇆ Z	[cmplx]x[<->] Z
 sxy	sₓᵧ	s[sub-x][sub-y]
 t-p(x)	tₚ(x)	t[sub-p](x)
 t-u	tᵤ(x)	t[sub-u](x)
@@ -880,7 +872,7 @@ x<=1?	x≤1?	x[<=]1?
 x<=?	x≤?	x[<=]?
 x<>	x⇆	x[<->]
 cx<>	©x⇆	[cmplx]x[<->]
-x<>y	x⇆	x[<->]
+x<>y	x⇆ Y	x[<->] Y
 cx=0?	©x=0?	[cmplx]x=0?
 cx=1?	©x=1?	[cmplx]x=1?
 cx=?	©x=?	[cmplx]x=?
@@ -1005,7 +997,6 @@ c||	©||	[cmplx]||
 [cmplx][^3][sqrt]	©³√	cCROOT
 [^x][sqrt]y	ᵡ√y	XROOT
 [cmplx][^x][sqrt]y	©ᵡ√y	cXROOT
-[alpha]	α	a
 [alpha][->]x	α→x	a>x
 [alpha]DATE	αDATE	aDATE
 [alpha]DAY	αDAY	aDAY
@@ -1043,12 +1034,10 @@ c||	©||	[cmplx]||
 [cmplx][GAMMA]	©Γ	cGAMMA
 [infinity]?	∞?	INF?
 [integral]	∫	INTG
-[integral]	∫	INTG
-[phi](x)	φ(x)	phi(x)
 [PHI](x)	Φ(x)	PHI(x)
+[phi](x)	φ(x)	phi(x)
 [PHI][^-1](p)	Φ⁸(p)	INV-PHI
 [PHI][sub-u](x)	Φᵤ(x)	Q-u
-[PI]	Π	PROD
 [PI]	Π	PROD
 [print]#	⎙#	P.#
 [print]+[alpha]	⎙+α	P.+a
@@ -1066,7 +1055,6 @@ c||	©||	[cmplx]||
 [print]STK	⎙STK	P.STK
 [print]TAB	⎙TAB	P.TAB
 [sigma]	σ	sigma
-[SIGMA]	Σ	SUM
 [SIGMA]	Σ	SUM
 [SIGMA]+	Σ+	SIGMA+
 [SIGMA]-	Σ-	SIGMA-
@@ -1337,11 +1325,11 @@ x[!=]?	x≠?	x!=?
 [cmplx]x[!=]?	©x≠?	cx!=?
 [cmplx]x[!=]i?	©x≠i?	cx!=i?
 x[->][alpha]	x→α	x>a
-x[<->]	x⇆	SWAP
-[cmplx]x[<->]	©x⇆	cSWAP
 x[<->]	x⇆	x<>
 [cmplx]x[<->]	©x⇆	cx<>
-x[<->]	x⇆	x<>y
+x[<->] Y	x⇆ Y	SWAP
+x[<->] Y	x⇆ Y	x<>y
+[cmplx]x[<->] Z	©x⇆ Z	cSWAP
 x[<=]0?	x≤0?	x<=0?
 x[<=]1?	x≤1?	x<=1?
 x[<=]?	x≤?	x<=?

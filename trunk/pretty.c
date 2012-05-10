@@ -331,7 +331,9 @@ static void dump_one_opcode(FILE *f, int c, const char *cmdname, enum eCmdType t
 	}
 	else {
 		// command xref
-		if (cmdalias != CNULL || strcmp(cmdname,cmdpretty) != 0) {
+		if ((cmdalias != CNULL || strcmp(cmdname,cmdpretty) != 0)
+		    && (! isDBL(c) || c == (OP_DBL | DBL_ALPHA ))) 
+		{
 			alias_table[alias_tbl_n].name = strdup(cmdname);
 			alias_table[alias_tbl_n].pretty = strdup(cmdpretty);
 			alias_table[alias_tbl_n].alias = cmdalias == CNULL ? CNULL : strdup(cmdalias);
@@ -489,11 +491,16 @@ void dump_opcodes(FILE *f, int xref) {
 				continue;
 			}
 			else if (c == RARG(RARG_SWAPX, regY_idx)) {
-				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "x<>y", E_ATTR_NO_CMD, xref);
-				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "SWAP", E_ATTR_NO_CMD, xref);
+				sprintf(temp, "%s Y", cn);
+				sprintf(buf, "%s Y", cmdpretty); 
+				dump_one_opcode(f, c, temp, E_CMD_CMD, buf, E_ALIAS, "x<>y", E_ATTR_NO_CMD, xref);
+				dump_one_opcode(f, c, temp, E_CMD_CMD, buf, E_ALIAS, "SWAP", E_ATTR_NO_CMD, xref);
 			} 
-			else if (c == RARG(RARG_CSWAPX, regZ_idx))
-				dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, "cSWAP", E_ATTR_NO_CMD, xref);
+			else if (c == RARG(RARG_CSWAPX, regZ_idx)) {
+				sprintf(temp, "%s Z", cn);
+				sprintf(buf, "%s Z", cmdpretty); 
+				dump_one_opcode(f, c, temp, E_CMD_CMD, buf, E_ALIAS, "cSWAP", E_ATTR_NO_CMD, xref);
+			}
 			if ((c & 0xff) != 0)
 				continue;
 			if (argcmds[cmd].indirectokay && limit > RARG_IND)
