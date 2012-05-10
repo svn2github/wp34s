@@ -22,6 +22,7 @@
 #include "xeq.h"		// This helps the syntax checker
 
 #include "translate.c"		// unicode[]
+#include "font_alias.inc"	// more character aliases
 
 #ifdef _MSC_VER
 #define strdup _strdup
@@ -36,13 +37,6 @@ const char *pretty(unsigned char z) {
 	return CNULL;
 }
 
-// #define ALIAS_AS_COMMENTS
-
-#ifdef ALIAS_AS_COMMENTS
-#define C "#"
-#else
-#define C
-#endif
 
 void prettify(const char *in, char *out, int no_brackets) {
 	const char *p;
@@ -156,12 +150,20 @@ static void dump_attributes(FILE *f, unsigned int attributes) {
 }
 
 struct xref_s {
-	const char *name;
-	const char *pretty;
-	const char *alias;
+	char *name;
+	char *pretty;
+	char *alias;
 };
 static struct xref_s alias_table[10000];
 static int alias_tbl_n = 0;
+
+struct alpha_s {
+	char *pretty;
+	int n;
+	unsigned short codes[20];
+};
+
+static struct alpha_s alpha_table[256];
 
 static int xref_pretty_compare(const void *v1, const void *v2);
 static int xref_alias_compare(const void *v1, const void *v2);
@@ -236,10 +238,26 @@ static int xref_pretty_compare(const void *v1, const void *v2) {
 	return result;
 }
 
+static void uputc(int c, FILE *f)
+{
+	if (c <= 0x7f) {
+		fputc(c, f);
+	}
+	else if (c <= 0x7ff) {
+		fputc(0xc0 | (c >> 6), f);
+		fputc(0x80 | (c & 0x3f), f);
+	}
+	else {
+		fputc(0xe0 | (c >> 12), f);
+		fputc(0x80 | ((c >> 6) & 0x3f), f);
+		fputc(0x80 | (c & 0x3f), f);
+	}
+}
+
 static void uprintf(FILE *f, int mode, const char *fmt, ...)
 {
 	char line[500];
-	char *p;
+	unsigned char *p;
 	int c;
 
 	va_list ap;
@@ -248,36 +266,26 @@ static void uprintf(FILE *f, int mode, const char *fmt, ...)
 	vsprintf(line, fmt, ap);
 	va_end(ap);
 
-	for (p = line; *p != 0; ++p) {
-		c = mode ? unicode[*p & 0xff] : *p;
-		if (c <= 0x7f)
-			fputc(c, f);
-		else if (c <= 0x7ff) {
-			fputc(0xc0 | (c >> 6), f);
-			fputc(0x80 | (c & 0x3f), f);
-		}
-		else {
-			fputc(0xe0 | (c >> 12), f);
-			fputc(0x80 | ((c >> 6) & 0x3f), f);
-			fputc(0x80 | (c & 0x3f), f);
-		}
+	for (p = (unsigned char *) line; *p != 0; ++p) {
+		c = mode ? unicode[*p] : *p;
+		uputc(c, f);
 	}
 }
 
 static void output_xref_table(FILE *f) {
-	int i;
+	int i, j;
 	const char *p;
 	
 	fprintf(f, "By Command\n");
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_cmd_compare);
-	for (i=0; i<alias_tbl_n; i++) {
+	for (i = 0; i < alias_tbl_n; ++i) {
 		p = alias_table[i].alias;
 		uprintf(f, 1, "%s", alias_table[i].name);
 		uprintf(f, 0, "\t%s\t%s\n", alias_table[i].pretty, p == CNULL ? "" : p);
 	}
-	fprintf(f, "\n\n\n\nBy Alias\n");
+	fprintf(f, "\n\fBy Alias\n");
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_alias_compare);
-	for (i=0; i<alias_tbl_n; i++) {
+	for (i = 0; i < alias_tbl_n; ++i) {
 		p = alias_table[i].alias;
 		if (p) {
 			uprintf(f, 0, "%s\t",   p);
@@ -285,13 +293,23 @@ static void output_xref_table(FILE *f) {
 			uprintf(f, 0, "\t%s\n", alias_table[i].pretty);
 		}
 	}
-	fprintf(f, "\n\n\n\nBy Pretty Command\n");
+	fprintf(f, "\n\fBy Pretty Command\n");
 	qsort(alias_table, alias_tbl_n, sizeof(struct xref_s), &xref_pretty_compare);
-	for (i=0; i<alias_tbl_n; i++) {
+	for (i = 0; i < alias_tbl_n; ++i) {
 		p = alias_table[i].alias;
 		uprintf(f, 0, "%s\t",   alias_table[i].pretty);
 		uprintf(f, 1, "%s",     alias_table[i].name);
 		uprintf(f, 0, "\t%s\n", p == CNULL ? "" : p);
+	}
+	fprintf(f, "\n\fAlpha Characters\n");
+	for (i = 1; i < 256; ++i) {
+		uputc(unicode[i], f);
+		uprintf(f, 0, "\t%s\t", alpha_table[i].pretty);
+		for (j = 0; j < alpha_table[i].n; ++j) {
+			if ( j ) fputc(' ', f);
+			uputc(alpha_table[i].codes[j], f);
+		}
+		fputc('\n', f);
 	}
 }
 
@@ -306,16 +324,19 @@ static void dump_one_opcode(FILE *f, int c, const char *cmdname, enum eCmdType t
 		}
 
 		if (cmdalias != CNULL) {
-			fprintf(f, C "0x%04x\t%s\t%s", c, alias_type(atype, type), cmdalias);
+			fprintf(f, "0x%04x\t%s\t%s", c, alias_type(atype, type), cmdalias);
 			dump_attributes(f, attributes);
 			fprintf(f, "\n");
 		}
-	} 
-	else if (cmdalias != CNULL || strcmp(cmdname,cmdpretty) != 0) {
-		alias_table[alias_tbl_n].name = strdup(cmdname);
-		alias_table[alias_tbl_n].pretty = strdup(cmdpretty);
-		alias_table[alias_tbl_n].alias = cmdalias == CNULL ? CNULL : strdup(cmdalias);
-		alias_tbl_n++;
+	}
+	else {
+		// command xref
+		if (cmdalias != CNULL || strcmp(cmdname,cmdpretty) != 0) {
+			alias_table[alias_tbl_n].name = strdup(cmdname);
+			alias_table[alias_tbl_n].pretty = strdup(cmdpretty);
+			alias_table[alias_tbl_n].alias = cmdalias == CNULL ? CNULL : strdup(cmdalias);
+			alias_tbl_n++;
+		}
 	}
 }
 
@@ -368,23 +389,44 @@ void dump_opcodes(FILE *f, int xref) {
 				continue;
 			prettify(p, cmdpretty, 0);
 			prettify(p, cmdalias, 2);
+
 			if (cmd == RARG_ALPHA) {
-				if ((c & 0xff) == 0)
+				const int n = c & 0xff;
+				const struct _altuni *alt;
+
+				if (n == 0)
 					continue;
-				sprintf(buf, "'%s'", strlen(cmdpretty) == 3 ? cmdpretty : cmdalias);
-				if ((c & 0xff) == ' ') {
-					dump_one_opcode(f, c, "\240  ", E_CMD_CMD, "[alpha] [space]", E_ALIAS, buf, 0, xref);
+				if (n == ' ') {
+					strcpy(cmdpretty, "[space]");
 				}
-				else {
-					const int n = c & 0xff;
-					sprintf(temp2, "\240 %s", cn);
-					sprintf(temp, "[alpha] %s", cmdpretty);
-					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, 0, xref);
-					if (to_cp1252[n] >= 0x80) {
-						sprintf(buf, "'%c'", to_cp1252[n]);
-						dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, E_ATTR_NO_CMD, xref);
-						sprintf(buf, "[alpha] %c", to_cp1252[n]);
-						dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, E_ATTR_NO_CMD, xref);
+				if (xref) {
+					// alpha xref
+					alpha_table[n].pretty = strdup(cmdpretty);
+					alpha_table[n].codes[0] = unicode[n];
+					alpha_table[n].n = 1;
+					for (alt = AltUni; alt->code != 0; ++alt) {
+						if (alt->code == n) {
+							alpha_table[n].codes[alpha_table[n].n++] = alt->alternate;
+						}
+					}
+					continue;
+				}
+				sprintf(buf, "'%s'", strlen(cmdpretty) == 3 ? cmdpretty : cmdalias);
+				sprintf(temp2, "\240 %s", cn);
+				sprintf(temp, "[alpha] %s", cmdpretty);
+				dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, 0, 0);
+				if (to_cp1252[n] >= 0x80) {
+					sprintf(buf, "'%c'", to_cp1252[n]);
+					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, E_ATTR_NO_CMD, 0);
+					sprintf(buf, "[alpha] %c", to_cp1252[n]);
+					dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, E_ATTR_NO_CMD, 0);
+				}
+				for (alt = AltUni; alt->code != 0; ++alt) {
+					if (alt->code == n && alt->alternate <= 0xff && alt->alternate != to_cp1252[n]) {
+						sprintf(buf, "'%c'", alt->alternate);
+						dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, E_ATTR_NO_CMD, 0);
+						sprintf(buf, "[alpha] %c", alt->alternate);
+						dump_one_opcode(f, c, temp2, E_CMD_CMD, temp, E_ALIAS, buf, E_ATTR_NO_CMD, 0);
 					}
 				}
 				continue;

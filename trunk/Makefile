@@ -323,7 +323,7 @@ consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		&& ./compile_consts$(EXE) "../" "../$(OBJECTDIR)/" \
 		&& $(MAKE) "CFLAGS=$(CFLAGS) -I../.." -j2 -C consts
 
-catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile
+catalogues.h $(OPCODES): $(UTILITIES)/compile_cats$(EXE) Makefile pretty.h pretty.c font.c charmap.c translate.c font_alias.inc
 	$(UTILITIES)/compile_cats$(EXE) >catalogues.h 2>$(OPCODES)
 
 lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
@@ -332,11 +332,11 @@ lcdmap.h: $(UTILITIES)/lcdgen$(EXE)
 charset7.h: $(UTILITIES)/genchars7$(EXE)
 	$(UTILITIES)/genchars7$(EXE) >$@
 
-pretty.h font.c charmap.c: $(UTILITIES)/genfont$(EXE) Makefile
+pretty.h font.c charmap.c translate.c: $(UTILITIES)/genfont$(EXE) Makefile
 	$(UTILITIES)/genfont$(EXE)
 
 $(UTILITIES)/compile_consts$(EXE): compile_consts.c $(DNSRCS) Makefile features.h \
-		licence.h charmap.c
+		licence.h charmap.c pretty.h pretty.c translate.c font_alias.inc
 	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -DNEED_D64FROMSTRING -DNEED_D128FROMSTRING -o $@ $< $(DNSRCS)
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
@@ -349,7 +349,7 @@ $(UTILITIES)/lcdgen$(EXE): lcdgen.c licence.h Makefile lcd.h
 $(UTILITIES)/genchars7$(EXE): genchars7.c licence.h Makefile lcd.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
-$(UTILITIES)/genfont$(EXE): genfont.c font.inc licence.h Makefile
+$(UTILITIES)/genfont$(EXE): genfont.c font.inc font_alias.inc licence.h Makefile
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 $(UTILITIES)/create_revision$(EXE): create_revision.c licence.h Makefile

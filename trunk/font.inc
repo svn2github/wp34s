@@ -2327,7 +2327,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0302, "A-tilde",          2300, 0x00c3,     0xc3, 0xE1,    CNULL,
+	{ 0302, "A-circumflex",     2300, 0x00c2,     0xc2, 0xA2,    CNULL,
 		{
 			OOOO_ ,   OOO_ ,
 			_____ ,   ____ ,
@@ -2351,7 +2351,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0304, "A-dot",            2600, 0x00c2,     0xc2, 0xD0,    CNULL,
+	{ 0304, "A-dot",            2600, 0x00c5,     0xc5, 0xD0,    CNULL,
 		{
 			_OO__ ,   _O__ ,
 			_____ ,   ____ ,
@@ -2423,7 +2423,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0312, "E-tilde",          3600, 0x0112,     0xca, 0x00,    CNULL,
+	{ 0312, "E-circumflex",     3600, 0x00ca,     0xca, 0xA4,    CNULL,
 		{
 			OOOO_ ,   OOO_ ,
 			_____ ,   ____ ,
@@ -2471,7 +2471,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0316, "I-tilde",          4500, 0x0128,     0x00, 0xA6,    CNULL,
+	{ 0316, "I-circumflex",     4500, 0x00ce,     0xce, 0xA6,    CNULL,
 		{
 			  OOO_ ,   OOO_ ,
 			  ____ ,   ____ ,
@@ -2531,7 +2531,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0323, "O-tilde",          5600, 0x00d5,     0xd5, 0xE9,    CNULL,
+	{ 0323, "O-circumflex",     5600, 0x00d4,     0xd4, 0x00,    CNULL,
 		{
 			_OOO__ ,   OOO_ ,
 			______ ,   ____ ,
@@ -2615,7 +2615,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0332, "U-tilde",          7000, 0x0168,     0x18, 0x00,    CNULL,
+	{ 0332, "U-circumflex",     7000, 0x00db,     0xdb, 0xAE,    CNULL,
 		{
 			OOOO_ ,   OOO_ ,
 			_____ ,   ____ ,
@@ -2639,7 +2639,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0334, "U-dot",            7200, 0x00db,     0xdb, 0xAE,    CNULL,
+	{ 0334, "U-dot",            7200, 0x016e,     0x00, 0x00,    CNULL,
 		{
 			_OO__ ,   _O__ ,
 			_____ ,   ____ ,
@@ -2651,7 +2651,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0335, "Y-acute",          7900, 0x00dd,     0xdd, 0x00,    CNULL,
+	{ 0335, "Y-acute",          7900, 0x00dd,     0xdd, 0xB1,    CNULL,
 		{
 			___O__ ,   _OO_ ,
 			__O___ ,   ____ ,
@@ -2711,7 +2711,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0342, "a-tilde",          2300, 0x00e3,     0xe3, 0xE2,    CNULL,
+	{ 0342, "a-circumflex",     2300, 0x00e2,     0xe2, 0xC0,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
@@ -2735,7 +2735,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0344, "a-dot",            2600, 0x00e2,     0xe2, 0xD4,    CNULL,
+	{ 0344, "a-dot",            2600, 0x00e5,     0xe5, 0xD4,    CNULL,
 		{
 			 __O__ ,   _O__ ,
 			 _____ ,   ____ ,
@@ -2807,7 +2807,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0352, "e-tilde",          3600, 0x0113,     0xea, 0x00,    CNULL,
+	{ 0352, "e-circumflex",     3600, 0x00ea,     0xea, 0xC1,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
@@ -2855,7 +2855,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0356, "i-tilde",          4500, 0x0129,     0x00, 0xD1,    CNULL,
+	{ 0356, "i-circumflex",     4500, 0x00ee,     0xee, 0xD1,    CNULL,
 		{
 			  OOO_ ,   OOO_ ,
 			  ____ ,   ____ ,
@@ -2915,7 +2915,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0363, "o-tilde",          5600, 0x00f5,     0xf5, 0xC2,    CNULL,
+	{ 0363, "o-circumflex",     5600, 0x00f4,     0xf4, 0xC2,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
@@ -2999,7 +2999,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0372, "u-tilde",          7000, 0x0169,     0x00, 0xC4,    CNULL,
+	{ 0372, "u-circumflex",     7000, 0x00fb,     0xfb, 0xC4,    CNULL,
 		{
 			 OOOO_ ,   OOO_ ,
 			 _____ ,   ____ ,
@@ -3023,7 +3023,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0374, "u-dot",            7200, 0x00fb,     0xfb, 0x00,    CNULL,
+	{ 0374, "u-dot",            7200, 0x016f,     0x00, 0x00,    CNULL,
 		{
 			 __O__ ,   _O__ ,
 			 _____ ,   ____ ,
@@ -3035,7 +3035,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0375, "y-acute",          7900, 0x00fd,     0xfd, 0x00,    CNULL,
+	{ 0375, "y-acute",          7900, 0x00fd,     0xfd, 0xB2,    CNULL,
 		{
 			 __OO_ ,   _OO_ ,
 			 _____ ,   ____ ,

@@ -1,7 +1,7 @@
 @echo off
 setlocal
 cd library
-set DEBUG=1
+set DEBUG=0
 rem set WP34S_LIB_ASM_OPTIONS=-d %DEBUG%
 rem set WP34S_LIB_DISASM_OPTIONS=-d %DEBUG%
 set TOOLS=..\trunk\tools

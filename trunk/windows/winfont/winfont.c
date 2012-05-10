@@ -38,6 +38,8 @@
 
 #include "../../charset7.h"
 
+#include "../../font_alias.inc"
+
 extern unsigned int charlengths( unsigned int c );
 extern void findlengths( unsigned short int posns[ 257 ], int smallp);
 extern void unpackchar(unsigned int c, unsigned char d[ 6 ], int smallp, const unsigned short int posns[ 257 ]);
@@ -56,35 +58,6 @@ const char *Encodings[ 3 ] = {
 	"UnicodeBmp"
 };
 
-const struct _altuni {
-	int code;
-	int alternate;
-} AltUni[] = {
-	{ '"',  0x201c },
-	{ '"',  0x201d },
-	{ '"',  0x201e },
-	{ '\'', 0x2018 },
-	{ '\'', 0x2019 },
-	{ '\'', 0x201a },
-	{ 'A',  0x0391 },
-	{ 'B',  0x0392 },
-	{ 'E',  0x0395 },
-	{ 'Z',  0x0396 },
-	{ 'H',  0x0397 },
-	{ 'I',  0x0399 },
-	{ 'K',  0x039a },
-	{ 'M',  0x039c },
-	{ 'N',  0x039d },
-	{ 'O',  0x039f },
-	{ 'P',  0x03a1 },
-	{ 'T',  0x03a4 },
-	{ 'Y',  0x03a5 },
-	{ 'X',  0x03a7 },
-	{ 'o',  0x03bf },
-	{ '|',  0x00A6 },
-	{ 0xab, 0x00b5 }, // µ
-	{ 0 }
-};
 
 
 int main( int argc, char **argv ) 
@@ -330,8 +303,6 @@ int main( int argc, char **argv )
 			}
 			for ( alt = AltUni; alt->code; ++alt ) {
 				if ( alt->code == i ) {
-					if ( j++ == 0 ) {
-					}
 					l = fprintf( f, " %04x.ffffffff.0", alt->alternate );
 					if ( l <= 0 ) {
 						goto error;
