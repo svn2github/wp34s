@@ -1089,6 +1089,7 @@ extern const char *get_cmdline(void);
 extern int is_intmode(void);
 #endif
 extern int is_dblmode(void);
+extern int is_usrdblmode(void);
 extern int is_xrom(void);
 extern enum shifts cur_shift(void);
 extern enum shifts reset_shift(void);
