@@ -85,12 +85,12 @@
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0007, "grad",            18000, 0x24bc,     0x00, 0x00,    CNULL,
 		{
-			______ ,  _OOO_ ,
-			_OOO__ ,  O____ ,
-			O_____ ,  O_OO_ ,
-			O_OO__ ,  O__O_ ,
-			O__O__ ,  _OOO_ ,
-			_OOO__ ,  _____ ,
+			_OOO__ ,  _OOO_ ,
+			O_____ ,  O____ ,
+			O_OO__ ,  O_OO_ ,
+			O__O__ ,  O__O_ ,
+			_OOO__ ,  _OOO_ ,
+			______ ,  _____ ,
 		}
 	},
 
