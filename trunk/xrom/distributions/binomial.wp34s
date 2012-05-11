@@ -48,10 +48,14 @@
 			xIN MONADIC
 			GSB binomial_param
 			FLOOR
-			GSB cdf_binomial
-			_INT 1
+			x<0?
+				JMP dist_ret_1
+			x>? K
+				JMP dist_ret_0
+			GSB cdf_bin_beta_xform
 			SWAP
-			-
+			RCL J			// p x+1 n-x
+			I[beta]
 			xOUT xOUT_NORMAL
 #endif
 			
@@ -66,13 +70,20 @@ cdf_binomial::		x<0?
 				JMP dist_ret_0
 			x>? K
 				JMP dist_ret_1
-			RCL K
+			GSB cdf_bin_beta_xform
+			_INT 1
+			RCL- J			// 1-p n-x x+1 x
+			I[beta]
+			RTN
+
+/* Figure out the second two parameters for the binomial conversion
+ * to the beta.  x is in X on entry.  On exit, k+1 is in X and n-k is in Y
+ */
+cdf_bin_beta_xform::	RCL K
 			RCL- Y			// n-x x+1 x
 			_INT 1
 			RCL+ Z			// x+1 x
-			_INT 1
-			RCL- J			// 1-p n-x x+1 x
-			JMP betai
+			RTN
 
 		XLBL"QF_BINOMIAL"
 			xIN MONADIC

@@ -63,10 +63,15 @@ pdf_f::			FILL
 		XLBL"CDFU_F"
 			xIN MONADIC
 			GSB f_param
-			GSB cdf_f
-			_INT 1
-			SWAP
-			-
+			x[<=]0?
+				JMP dist_ret_1
+			[infinity]?
+				JMP dist_ret_0
+			GSB cdf_f_beta_xform
+			_INT 1		// 1 d1/2 d2/2 d1x/(d1x+d2)
+			[<->] TXYZ	// d1x/(d1x+d2) 1 d1/2 d2/2
+			-		// 1-d1x/(d1x+d2) d1/2 d2/2
+			I[beta]
 			xOUT xOUT_NORMAL
 #endif
 
@@ -80,7 +85,15 @@ cdf_f::			x[<=]0?
 				JMP dist_ret_0
 			[infinity]?
 				JMP dist_ret_1
-			RCL[times] J
+			GSB cdf_f_beta_xform
+			[<->] ZYXT	// d1x/(d1x+d2) d2/2 d1/2
+			I[beta]
+			RTN
+
+/* Enter wit x in X.
+ * return with d1 x / (d1 x + d2) in Z, d2 / 2 in Y and d1 / 2 in X
+ */
+cdf_f_beta_xform::	RCL[times] J
 			ENTER[^]
 			RCL+ K		// x*v1+v2  x*v1  ?  ?
 			/
@@ -90,8 +103,7 @@ cdf_f::			x[<=]0?
 			RCL J
 			_INT 2
 			/
-			[<->] ZYXT
-			JMP betai
+			RTN
 
 		XLBL"QF_F"
 			xIN MONADIC
