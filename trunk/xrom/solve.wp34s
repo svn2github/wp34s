@@ -350,8 +350,8 @@ slv_still_const::	RCL COUNT
 			RCL XA
 			x<0?
 				JMP slv_const_1
-			_INT 2
-			/
+			Num half
+			[times]
 			JMP slv_const_0
 slv_const_1::		RCL+ X
 slv_const_0::		_INT 10
@@ -368,8 +368,8 @@ slv_const_even::	RCL XC
 				JMP slv_const_3
 			RCL+ X
 			JMP slv_const_4
-slv_const_3::		_INT 2
-			/
+slv_const_3::		Num half
+			[times]
 slv_const_4::		_INT 10
 			+
 			JMP slv_est_fin
@@ -453,8 +453,8 @@ slv_bracket::		ENTER[^]	/* a	a	b	x	*/
 /* Perform a bisection step and return the new x value on the stack. */
 slv_bisect::		RCL XA
 			RCL+ XB
-			_INT 2
-			/
+			Num half
+			[times]
 			dbg("Bi ")
 #ifdef USE_RIDDERS
 			SF F_CAN_RIDDERS

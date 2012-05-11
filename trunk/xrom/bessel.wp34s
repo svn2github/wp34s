@@ -50,8 +50,8 @@ bessel1::			[cmplx]x[!=]0?
 
 bessel1_nonzero::		x=0?
 					RTN
-				_INT 2
-				/
+				Num half
+				[times]
 				[cmplx]STO J
 				SWAP
 				INT?
@@ -138,8 +138,8 @@ bessel2_Kn::			RCL- .02
 				+/-
 				Num [pi]
 				[times]
-				_INT 2
-				/
+				Num half
+				[times]
 bessel_denom::			Num [pi]
 				RCL[times] .01
 				SIN
@@ -265,8 +265,8 @@ cpx_bessel2_kn_skip::		[cmplx]STO .13
 				+/-
 				JMP cpx_bessel2_skip
 cpx_bessel2_2pi::		[cmplx]Num [pi]
-				_INT 2
-				/
+				Num half
+				[times]
 cpx_bessel2_skip::		[cmplx]RCL[times] .13
 				xOUT xOUT_NORMAL
 

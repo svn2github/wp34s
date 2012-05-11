@@ -27,8 +27,8 @@
 #ifdef INCLUDE_GUDERMANNIAN
 		XLBL"gd"
 		xIN MONADIC
-		_INT 2
-		/
+		Num half
+		[times]
 		TANH
 		ATAN
 		RCL+ X
@@ -37,8 +37,8 @@
 
 		XLBL"cpx_gd"
 		xIN MONADIC_COMPLEX
-		[cmplx]_INT 2
-		[cmplx]/
+		[cmplx]Num half
+		[cmplx][times]
 		[cmplx]TANH
 		[cmplx]ATAN
 		[cmplx]RCL+ Z
@@ -47,8 +47,8 @@
 
 		XLBL"inv_gd"
 		xIN MONADIC
-		_INT 2
-		/
+		Num half
+		[times]
 		Num [pi]
 		_INT 4
 		/
@@ -60,8 +60,8 @@
 
 		XLBL"cpx_inv_gd"
 		xIN MONADIC_COMPLEX
-		[cmplx]_INT 2
-		/
+		[cmplx]Num half
+		[cmplx][times]
 		[cmplx]Num [pi]
 		_INT 4
 		/

@@ -44,11 +44,11 @@ pdf_f::			FILL
 			RCL+ K		// d1+d2 Lnxd1+d2 sum x
 			[times]		//(d1+d2)Lnxd1+d2 sum x
 			-		// sum x ? ?
-			_INT 2
-			/		// Sum/2 x ? ?
+			Num half
+			[times]		// Sum/2 x ? ?
 			RCL J
-			_INT 2		// 2 d1 Sum/2 x
-			/		// d1/2 Sum/2 x
+			Num half
+			[times]		// d1/2 Sum/2 x
 			RCL K		// d2 d1/2 Sum/2 x
 			RCL/ L		// d2/2 d1/2 Sum/2 x
 			LN[beta]	// Lnbeta Sum/2 x
@@ -98,11 +98,11 @@ cdf_f_beta_xform::	RCL[times] J
 			RCL+ K		// x*v1+v2  x*v1  ?  ?
 			/
 			RCL K		// v2  x*v1 / (x*v1+v2)
-			_INT 2
-			/
+			Num half
+			[times]
 			RCL J
-			_INT 2
-			/
+			Num half
+			[times]
 			RTN
 
 		XLBL"QF_F"

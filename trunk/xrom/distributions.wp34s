@@ -233,8 +233,8 @@ qf_newton_nosign::	RCL R_HIGH
 				JMP qf_newton_bounds_cnvg
 			JMP qf_newton_nobounds
 qf_newton_bounds_cnvg::	+
-			_INT 2
-			/
+			Num half
+			[times]
 			JMP qf_newton_done2
 
 /* Check for convergence of the estimates */
@@ -277,8 +277,8 @@ qf_newton_try_bisect::	RCL R_HIGH
 				JMP qf_newton_underhigh	
 qf_newton_do_bisect::	RCL R_LOW
 			RCL+ R_HIGH
-			_INT 2
-			/
+			Num half
+			[times]
 			SF F_NOBISECT
 qf_newton_bisect_out::	STO R_R
 			JMP qf_newton_no_bisect
@@ -286,8 +286,8 @@ qf_newton_overlow::	RCL R_LOW
 			RCL+ X
 			JMP qf_newton_bisect_out
 qf_newton_underhigh::	RCL R_HIGH
-			_INT 2
-			/
+			Num half
+			[times]
 			JMP qf_newton_bisect_out
 
 
