@@ -1,23 +1,7 @@
-/* This file is part of 34S.
- * 
- * 34S is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * 34S is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- * 
- * You should have received a copy of the GNU General Public License
- * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
-*/
-
 /*
 
 =================================
-* Extended TVM-Solver for WP34s *
+* Extended TVM-Solver for WP34s *                    Author: Franz Huber
 =================================
 
 Keyboard-Layout:
@@ -34,12 +18,11 @@ Flags/Registers/Labels:
 -----------------------
        00     01   02   03   04   05   06   07   08   09    Stack
 Flag   Entry? --   --   --   --   --   <0?  =0?  --   --
-Reg.   I2     N    I    PV   PMT  FV   NP   NI   i    k
+Reg.   --     N    I    PV   PMT  FV   NP   NI   i    k
 Lbl.   Start  N?   I?   PV?  PMT? FV?  Init I->i SLV  TVM
 
 Remarks:
 ========
-- program 'TVM' should be loaded into and called from RAM
 - [XEQ]'TVM' at first to initialize registers and parameters
 - enter values for parameters NP,NI if desired (default=1)
 - all financial keys for N,PV,PMT,FV and NP,NI,I work as follows:
@@ -48,17 +31,17 @@ Remarks:
 - [R/S] resets the ENTRY? flag (e.g. after own calculations)
 - alternative method to use the program:
   [STO/RCL/XEQ]01-05 to store/recall/calculate N,I,PV,PMT,FV
-    (result after [XEQ] is not stored automatically!)
+  (result after [XEQ] is not stored automatically!)
   [STO/RCL]06-07 to store/recall NP,NI
-- a different 2nd initial guess for I (default=1%) can be entered
-  in R00 if the solver fails (the 1st guess 0% is hard-coded)
+- when solving for I the 1st initial guess is -99.9%, the 2nd guess
+  is max(1000%,I%->i) (can be changed with I [STO]02 or I [XEQ][Rv])
 - error messages are displayed if invalid values have been entered:
   (don't use [R/S] after any error message!)
-    NP=0 -> "Invalid parameter"
-    both N=0 and I=0 -> "Invalid data"
-    calculate FV if N=0 -> "Bad mode"
-    no solution found for I -> "Solve failed"
-    other invalid values -> "Domain error" or "+/- Infinity"
+   NP=0 -> "Invalid parameter"
+   both N=0 and I=0 -> "Invalid data"
+   calculate FV if N=0 -> "Bad mode"
+   no solution found for I -> "No root found"
+   other invalid values -> "Domain error" or "+/- Infinity"
 
 Values:
 -------
@@ -66,7 +49,7 @@ N = total number of periods (or payments)
     N=0 for perpetual payments (N=infinite)
         (not allowed if I=0! -> Error: "Invalid data")
 
-I = annual interest rate (in % per year)
+I = annual interest rate (in % per year, -99%..999%)
     I=0 for no compounding
         (not allowed if N=0! -> Error: "Invalid data")
 
@@ -91,6 +74,7 @@ NI = compounding frequency CF (interest periods per year)
 
 Used formulas:
 --------------
+
     /  (1+I/(100*NI))^(NI/abs(NP))-1  for NI!=0
 i = |
     \  e^(I/(100*abs(NP)))-1          for NI=0
@@ -107,304 +91,318 @@ TVM expr: ((PV+FV)/((1+i)^N-1)+PV)*i/k+PMT  (SLV iteration for i)
 
 */
 
-LBL'TVM'        // extended TVM-Solver
-	CL[alpha]
-	[alpha]'TVM'
-	[alpha] [space]
-	[alpha]'Slv'
-	VIEW[alpha]
-	.               // Initialize registers & parameters
-	1
-	R-CLR
-	1
-	STO 00  // I2=1% (2nd initial guess for I solver)
-	STO 06  // NP=1 (annual payments at END of year or period)
-	STO 07  // NI=1 (annual compounding at end of year or period)
-	CLSTK
+001 LBL'TVM'	// extended TVM-Solver
+002 CL[alpha]
+003 [alpha]'TVM'
+004 [alpha] [space]
+005 [alpha]'Sol'
+006 [alpha]'ver'
+007 VIEW[alpha]
+008 .		// Initialize registers & parameters
+009 1
+010 R-CLR
+011 1
+012 STO 06	// NP=1 (annual payments at END of year or period)
+013 STO 07	// NI=1 (annual compounding at end of year or period)
+014 CLSTK
 
-LBL 00  // return after input or calculation
-	FS?C 00
-	SKIP 003
-	RCL- X
-	FILL    // remove intermediate results
-	RCL L
-	STOP    // wait for input or calculation
-	BACK 001 // [R/S] -> clears ENTRY? flag
+015 LBL 00	// return after input or calculation
+016 FS?C 00
+017 SKIP 003
+018 RCL- X
+019 FILL	// remove intermediate results
+020 RCL L
+021 STOP	// wait for input or calculation
+022 BACK 001	// [R/S] -> clears ENTRY? flag
 
-LBL A
-	ENTRY?
-	SF 00
-	FC? 00
-	XEQ 01
-	STO 01
-	CL[alpha]
-	[alpha]'N='
-	VW[alpha]+ 01
-	GTO 00
+023 LBL A
+024 ENTRY?
+025 SF 00
+026 FC? 00
+027 XEQ 01
+028 STO 01
+029 CL[alpha]
+030 [alpha]'N='
+031 VW[alpha]+ 01
+032 GTO 00
 
-LBL B
-	ENTRY?
-	SF 00
-	FC? 00
-	XEQ 03
-	STO 03
-	CL[alpha]
-	[alpha]'PV='
-	VW[alpha]+ 03
-	GTO 00
+033 LBL B
+034 ENTRY?
+035 SF 00
+036 FC? 00
+037 XEQ 03
+038 STO 03
+039 CL[alpha]
+040 [alpha]'PV='
+041 VW[alpha]+ 03
+042 GTO 00
 
-LBL C
-	ENTRY?
-	SF 00
-	FC? 00
-	XEQ 04
-	STO 04
-	CL[alpha]
-	[alpha]'PMT'
-	[alpha] =
-	VW[alpha]+ 04
-	GTO 00
+043 LBL C
+044 ENTRY?
+045 SF 00
+046 FC? 00
+047 XEQ 04
+048 STO 04
+049 CL[alpha]
+050 [alpha]'PMT'
+051 [alpha] =
+052 VW[alpha]+ 04
+053 GTO 00
 
-LBL D
-	ENTRY?
-	SF 00
-	FC? 00
-	XEQ 05
-	STO 05
-	CL[alpha]
-	[alpha]'FV='
-	VW[alpha]+ 05
-	GTO 00
+054 LBL D
+055 ENTRY?
+056 SF 00
+057 FC? 00
+058 XEQ 05
+059 STO 05
+060 CL[alpha]
+061 [alpha]'FV='
+062 VW[alpha]+ 05
+063 GTO 00
 
-LBL 21
-	ENTRY?
-	SF 00
-	FC?S 00
-	RCL 06
-	STO 06
-	CL[alpha]
-	[alpha]'NP='
-	VW[alpha]+ 06
-	GTO 00
+064 LBL 21
+065 ENTRY?
+066 SF 00
+067 FC?S 00
+068 RCL 06
+069 STO 06
+070 CL[alpha]
+071 [alpha]'NP='
+072 VW[alpha]+ 06
+073 GTO 00
 
-LBL 22
-	ENTRY?
-	SF 00
-	FC?S 00
-	RCL 07
-	STO 07
-	CL[alpha]
-	[alpha]'NI='
-	VW[alpha]+ 07
-	GTO 00
+074 LBL 22
+075 ENTRY?
+076 SF 00
+077 FC?S 00
+078 RCL 07
+079 STO 07
+080 CL[alpha]
+081 [alpha]'NI='
+082 VW[alpha]+ 07
+083 GTO 00
 
-LBL 23
-	ENTRY?
-	SF 00
-	FC? 00
-	XEQ 02
-	STO 02
-	CL[alpha]
-	[alpha]'I='
-	VW[alpha]+ 02
-	GTO 00
+084 LBL 23
+085 ENTRY?
+086 SF 00
+087 FC? 00
+088 XEQ 02
+089 STO 02
+090 CL[alpha]
+091 [alpha]'I='
+092 VW[alpha]+ 02
+093 GTO 00
 
-LBL 01  // N=?
-	XEQ 07
-	x=0?
-	SKIP 014
-	RCL 04
-	RCL[times] 09
-	RCL/ 08
-	RCL- 05
-	RCL L
-	RCL+ 03
-	x=0?
-	SKIP 009
-	/
-	LN
-	x[<->] Y
-	LN1+x
-	/
-	SKIP 003
-	RCL- 03
-	RCL- 05
-	RCL/ 04
-	RTN
+094 LBL 01	// N=?
+095 XEQ 06
+096 XEQ 07
+097 x=0?
+098 SKIP 014
+099 RCL 04
+100 RCL[times] 09
+101 RCL/ 08
+102 RCL- 05
+103 RCL L
+104 RCL+ 03
+105 x=0?
+106 SKIP 009
+107 /
+108 LN
+109 x[<->] Y
+110 LN1+x
+111 /
+112 SKIP 003
+113 RCL- 03
+114 RCL- 05
+115 RCL/ 04
+116 RTN
 
-LBL 02  // I=?
-	XEQ 06
-	RCL 01
-	x[!=]0?
-	SKIP 007
-	RCL+ 03
-	FS? 06
-	RCL+ 04
-	RCL/ 04
-	1/x
-	+/-
-	SKIP 011
-	RCL[times] 04
-	RCL+ 03
-	RCL+ 05
-	x=0?
-	SKIP 006
-	0               // I1=0% (1st initial guess for I solver)
-	RCL 00  // I2=1% (2nd initial guess for I solver)
-	XEQ 07
-	SLV 08  // call iterative solver
-	SKIP 001
-	ERR 20  // no solution found for I! -> Error: "Solve failed"
-	x=0?
-	SKIP 010
-	LN1+x   // i -> I
-	RCL 06
-	ABS
-	[times]
-	FS? 07
-	SKIP 003
-	RCL/ 07
-	e[^x]-1
-	RCL[times] 07
-	SDL 02
-	RTN
+117 LBL 02	// I=?
+118 XEQ 06
+119 RCL 01
+120 x[!=]0?
+121 SKIP 007
+122 RCL+ 03	// N=0
+123 FS? 06
+124 RCL+ 04
+125 RCL/ 04
+126 1/x
+127 +/-
+128 SKIP 022
+129 RCL[times] 04
+130 x[!=]0?
+131 SKIP 006
+132 RCL- 05	// PMT=0
+133 RCL/ 03
+134 RCL 01
+135 XROOT
+136 DEC X
+137 SKIP 013
+138 RCL+ 03
+139 RCL+ 05
+140 x=0?
+141 SKIP 021	// I=0
+142 1
+143 SDR 03
+144 DEC X	// I1=-99.9% (1st initial guess for I solver)
+145 # 010	// I2= 1000% (2nd initial guess for I solver)
+146 XEQ 07
+147 MAX
+148 SLV 08	// call iterative solver
+149 SKIP 001
+150 ERR 20	// no solution found for I! -> Error: "No root found"
+151 x=0?
+152 SKIP 010
+153 LN1+x	// i -> I
+154 RCL 06
+155 ABS
+156 [times]
+157 FS? 07
+158 SKIP 003
+159 RCL/ 07
+160 e[^x]-1
+161 RCL[times] 07
+162 SDL 02
+163 RTN
 
-LBL 03  // PV=?
-	XEQ 07
-	x=0?
-	SKIP 016
-	RCL 04
-	RCL[times] 09
-	RCL/ 08
-	RCL 01
-	x=0?
-	SKIP 008
-	RCL Y
-	RCL- 05
-	x[<->] Y
-	RCL 08
-	LN1+x
-	[times]
-	e[^x]
-	/
-	RCL- Y
-	SKIP 005
-	RCL- 01
-	x=0?
-	ERR 18  // N=0 and I=0! -> Error: "Invalid data"
-	RCL[times] 04
-	RCL- 05
-	RTN
+164 LBL 03	// PV=?
+165 XEQ 06
+166 XEQ 07
+167 x=0?
+168 SKIP 016
+169 RCL 04
+170 RCL[times] 09
+171 RCL/ 08
+172 RCL 01
+173 x=0?
+174 SKIP 008
+175 RCL Y
+176 RCL- 05
+177 x[<->] Y
+178 RCL 08
+179 LN1+x
+180 [times]
+181 e[^x]
+182 /
+183 RCL- Y
+184 SKIP 005
+185 RCL- 01
+186 x=0?
+187 ERR 18	// N=0 and I=0! -> Error: "Invalid data"
+188 RCL[times] 04
+189 RCL- 05
+190 RTN
 
-LBL 04  // PMT=?
-	XEQ 07
-	x=0?
-	SKIP 011
-	RCL 01
-	x=0?
-	SKIP 004
-	0
-	STO 04
-	XEQ 09
-	SKIP 010
-	RCL 03
-	RCL[times] 08
-	RCL/ 09
-	SKIP 006
-	RCL 01
-	x=0?
-	ERR 18  // N=0 and I=0! -> Error: "Invalid data"
-	RCL 03
-	RCL+ 05
-	RCL/ 01
-	+/-
-	RTN
+191 LBL 04	// PMT=?
+192 XEQ 06
+193 XEQ 07
+194 x=0?
+195 SKIP 011
+196 RCL 01
+197 x=0?
+198 SKIP 004
+199 0
+200 STO 04
+201 XEQ 09
+202 SKIP 010
+203 RCL 03
+204 RCL[times] 08
+205 RCL/ 09
+206 SKIP 006
+207 RCL 01
+208 x=0?
+209 ERR 18	// N=0 and I=0! -> Error: "Invalid data"
+210 RCL 03
+211 RCL+ 05
+212 RCL/ 01
+213 +/-
+214 RTN
 
-LBL 05  // FV=?
-	XEQ 07
-	RCL 01
-	x=0?
-	ERR 13  // FV invalid for N=0! -> Error: "Bad mode"
-	x[<->] Y
-	x=0?
-	SKIP 011
-	LN1+x
-	[times]
-	e[^x]
-	RCL 04
-	RCL[times] 09
-	RCL/ 08
-	STO Z
-	RCL+ 03
-	[times]
-	-
-	SKIP 003
-	RCL- 04
-	[times]
-	RCL- 03
-	RTN
+215 LBL 05	// FV=?
+216 XEQ 06
+217 XEQ 07
+218 RCL 01
+219 x=0?
+220 ERR 13	// FV invalid for N=0! -> Error: "Bad mode"
+221 x[<->] Y
+222 x=0?
+223 SKIP 011
+224 LN1+x
+225 [times]
+226 e[^x]
+227 RCL 04
+228 RCL[times] 09
+229 RCL/ 08
+230 STO Z
+231 RCL+ 03
+232 [times]
+233 -
+234 SKIP 003
+235 RCL- 04
+236 [times]
+237 RCL- 03
+238 RTN
 
-LBL 06  // check parameters (NP,NI)
-	RCL 06
-	x=0?
-	ERR 16  // NP=0! -> Error: "Invalid parameter"
-	CF 06
-	x<0?
-	SF 06   // set payments at begin of period (BEGin mode)
-	RCL 07
-	CF 07
-	x=0?
-	SF 07   // set continuous (theoretical) compounding
-	RTN
+239 LBL 06	// check parameters (NP,NI)
+240 RCL 06
+241 x=0?
+242 ERR 16	// NP=0! -> Error: "Invalid parameter"
+243 CF 06
+244 x<0?
+245 SF 06	// set payments at begin of period (BEGin mode)
+246 RCL 07
+247 CF 07
+248 x=0?
+249 SF 07	// set continuous (theoretical) compounding
+250 [cmplx]DROP
+251 RTN
 
-LBL 07  // I -> i,k
-	XEQ 06
-	1
-	STO 09
-	RCL[times] 02
-	x=0?
-	SKIP 012
-	SDR 02
-	FS? 07
-	SKIP 003
-	RCL/ 07
-	LN1+x
-	RCL[times] 07
-	RCL 06
-	ABS
-	/
-	e[^x]-1
-	FS? 06
-	STO+ 09
-	STO 08
-	RTN
+252 LBL 07	// I -> i,k
+253 1
+254 STO 09
+255 RCL[times] 02
+256 x=0?
+257 SKIP 012
+258 SDR 02
+259 FS? 07
+260 SKIP 003
+261 RCL/ 07
+262 LN1+x
+263 RCL[times] 07
+264 RCL 06
+265 ABS
+266 /
+267 e[^x]-1
+268 FS? 06
+269 STO+ 09
+270 STO 08
+271 RTN
 
-LBL 08  // SLV routine for i
-	STO 08
-	1
-	STO 09
-	DROP
-	FS? 06
-	STO+ 09
-	DROP
+272 LBL 08	// SLV routine for i
+273 STO 08
+274 1
+275 STO 09
+276 DROP
+277 FS? 06
+278 STO+ 09
+279 DROP
 
-LBL 09  // TVM expression
-	RCL 03
-	RCL+ 05
-	RCL 08
-	x=0?
-	SKIP 009
-	LN1+x
-	RCL[times] 01
-	e[^x]-1
-	/
-	RCL+ 03
-	RCL[times] 08
-	RCL/ 09
-	RCL+ 04
-	SKIP 003
-	RCL+ 01
-	RCL[times] 04
-	+
-	END
-
+280 LBL 09	// TVM expression
+281 RCL 03
+282 RCL+ 05
+283 RCL 08
+284 x=0?
+285 SKIP 009
+286 LN1+x
+287 RCL[times] 01
+288 e[^x]-1
+289 /
+290 RCL+ 03
+291 RCL[times] 08
+292 RCL/ 09
+293 RCL+ 04
+294 SKIP 003
+295 RCL+ 01
+296 RCL[times] 04
+297 +
+298 END

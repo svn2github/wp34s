@@ -1,6 +1,6 @@
-March 28, 2012
+May 11, 2012
 
-WP 34S Version 3.0
+WP 34S Version 3.1
 ==================
 
 This is beta firmware for the WP 34S calculator. This is for HP's 20b
@@ -34,6 +34,8 @@ Highlights of this release
 
 * Double precision mode, allows user programs to implement fully
   accurate functions,
+
+* Printing to an HP 82240A/B IR printer,
 
 * Even more functions.
 

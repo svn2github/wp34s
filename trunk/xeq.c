@@ -2841,7 +2841,8 @@ static void digit(unsigned int c) {
 
 
 void set_entry() {
-	State.entryp = 1;
+	if (!Running && !XromRunning)
+		State.entryp = 1;
 }
 
 
