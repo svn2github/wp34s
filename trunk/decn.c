@@ -2145,29 +2145,35 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 
 decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *x) {
 	decNumber z, lga;
-	int invert;
+	const int gammap = XeqOpCode == (OP_DYA | OP_GAMMAP);
 
 	if (decNumberIsNegative(x) || dn_le0(a) ||
 			decNumberIsNaN(x) || decNumberIsNaN(a) || decNumberIsInfinite(a)) {
 		return set_NaN(res);
 	}
-	if (decNumberIsInfinite(x))
-		return dn_1(res);
-	if (dn_eq0(x))
+	if (decNumberIsInfinite(x)) {
+		if (gammap)
+			return dn_1(res);
 		return decNumberZero(res);
+	}
+	if (dn_eq0(x)) {
+		if (! gammap)
+			return dn_1(res);
+		return decNumberZero(res);
+	}
 
 	dn_p1(&lga, a);
 	dn_compare(&z, x, &lga);
 	decNumberLnGamma(&lga, a);
 	if (decNumberIsNegative(&z)) {
 		gser(res, a, x, &lga);
-		invert = XeqOpCode == (OP_DYA | OP_GAMMAQ);
+		if (! gammap)
+			return dn_1m(res, res);
 	} else {
-		gcf(&z, a, x, &lga);
-		invert = XeqOpCode == (OP_DYA | OP_GAMMAP);
+		gcf(res, a, x, &lga);
+		if (gammap)
+			return dn_1m(res, res);
 	}
-	if (invert)
-		return dn_1m(res, res);
 	return res;
 }
 
