@@ -881,18 +881,20 @@ void cdf_Q_helper(enum nilop op) {
 		if (decNumberIsNegative(&x))
 			dn_minus(&a, &a);
 	} else {
-		const decNumber *nom, *extra;
+		const decNumber *nom, *extra, *sub;
 		//dn_minus(&x2, &absx);
-		//n = ceil(5 + k / (|x| - 1))
+		//n = ceil(extra + nom / (|x| - sub))
 		if (is_usrdblmode()) {
-			nom = &const_500;
+			sub = &const_1_5;
+			nom = &const_300;
 			extra = &const_8;
 		}
 		else {
-			nom = &const_150;
+			sub = &const_1_3;
+			nom = &const_100;
 			extra = &const_4;
 		}
-		dn_m1(&b, &absx);
+		dn_subtract(&b, &absx, sub);
 		dn_divide(&t, nom, &b);
 		dn_add(&u, &t, extra);
 		decNumberCeil(&b, &u);
