@@ -183,9 +183,8 @@ qf_q_loop::		RCL R_X
 			SWAP
 			/		/* (2xx+1)/6 t t */
 			RCL[times] Y	/* t(2xx+1)/6 t t */
-			RCL X		/* x cubic t t */
-			Num half	/* 0.5 x cubic t */
-			[times]		/* x/2 cubic t */
+			Num half
+			RCL[times] X	/* x/2 cubic t */
 			+		/* x/2+cubix t */
 			RCL[times] Y	/* t(x/2+cubix) t */
 			INC X		/* 1+t(x/2+cubix) t */

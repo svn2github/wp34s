@@ -46,9 +46,8 @@ pdf_f::			FILL
 			-		// sum x ? ?
 			Num half
 			[times]		// Sum/2 x ? ?
-			RCL J
 			Num half
-			[times]		// d1/2 Sum/2 x
+			RCL[times] J	// d1/2 Sum/2 x
 			RCL K		// d2 d1/2 Sum/2 x
 			RCL/ L		// d2/2 d1/2 Sum/2 x
 			LN[beta]	// Lnbeta Sum/2 x
@@ -64,13 +63,19 @@ pdf_f::			FILL
 			xIN MONADIC
 			GSB f_param
 			x[<=]0?
-				JMP dist_ret_1
+				JMP ret_1
 			[infinity]?
-				JMP dist_ret_0
-			GSB cdf_f_beta_xform
-			_INT 1		// 1 d1/2 d2/2 d1x/(d1x+d2)
-			[<->] TXYZ	// d1x/(d1x+d2) 1 d1/2 d2/2
-			-		// 1-d1x/(d1x+d2) d1/2 d2/2
+				JMP ret_0
+			RCL[times] J	// x*v1
+			RCL+ K		// x*v1+v2
+			RCL K
+			SWAP
+			/		// v2/(x*v1+v2)
+			Num half
+			RCL[times] K	// v2/2  v2/(x*v1+v2)
+			Num half
+			RCL[times] J	// v1/2 v2/2 v2/(x*v1+v2)
+			[<->] ZXYT	// v2/(x*v1+v2) d2/2 d1/2
 			I[beta]
 			xOUT xOUT_NORMAL
 #endif
@@ -85,25 +90,18 @@ cdf_f::			x[<=]0?
 				JMP dist_ret_0
 			[infinity]?
 				JMP dist_ret_1
-			GSB cdf_f_beta_xform
+			RCL[times] J
+			ENTER[^]
+			RCL+ K		// x*v1+v2  x*v1  ?  ?
+			/
+			Num half
+			RCL[times] K		// v2  x*v1 / (x*v1+v2)
+			Num half
+			RCL[times] J
 			[<->] ZYXT	// d1x/(d1x+d2) d2/2 d1/2
 			I[beta]
 			RTN
 
-/* Enter wit x in X.
- * return with d1 x / (d1 x + d2) in Z, d2 / 2 in Y and d1 / 2 in X
- */
-cdf_f_beta_xform::	RCL[times] J
-			ENTER[^]
-			RCL+ K		// x*v1+v2  x*v1  ?  ?
-			/
-			RCL K		// v2  x*v1 / (x*v1+v2)
-			Num half
-			[times]
-			RCL J
-			Num half
-			[times]
-			RTN
 
 		XLBL"QF_F"
 			xIN MONADIC

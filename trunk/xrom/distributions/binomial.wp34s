@@ -47,11 +47,11 @@
 		XLBL"CDFU_BINOMIAL"
 			xIN MONADIC
 			GSB binomial_param
-			FLOOR
+			CEIL
 			x<0?
-				JMP dist_ret_1
+				JMP ret_1
 			x>? K
-				JMP dist_ret_0
+				JMP ret_0
 			GSB cdf_bin_beta_xform
 			SWAP
 			RCL J			// p x+1 n-x

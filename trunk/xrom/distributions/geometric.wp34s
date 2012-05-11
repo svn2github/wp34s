@@ -39,10 +39,10 @@
 			xIN MONADIC
 			GSB geom_param
 			x<0?
-				JMP dist_ret_1
+				JMP ret_1
 			[infinity]?
-				JMP dist_ret_0
-			FLOOR
+				JMP ret_0
+			CEIL
 			INC X
 			_INT 1
 			RCL- J

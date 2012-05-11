@@ -72,9 +72,8 @@ digamma_horner::	CNST[->]J
 				JMP digamma_horner
 			RCL .01
 			LN
-			RCL L
 			Num half
-			[times]
+			RCL[times] L
 			+
 			-
 			RCL- .00
@@ -131,9 +130,8 @@ cpx_digamma_horner::	[cmplx]CNST[->]J
 				JMP cpx_digamma_horner
 			[cmplx]RCL .02
 			[cmplx]LN
-			[cmplx]RCL L
 			[cmplx]Num half
-			[cmplx][times]
+			[cmplx]RCL[times] L
 			[cmplx]+
 			[cmplx]-
 			[cmplx]RCL- .00

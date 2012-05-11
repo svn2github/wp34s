@@ -29,13 +29,11 @@
 			xOUT xOUT_NORMAL
 
 pdf_t::			RCL[times] X	// x^2 ? ? ?
-			RCL J
 			Num half
-			[times]		// v/2 x^2 ? ?
+			RCL[times] J	// v/2 x^2 ? ?
 			LN[GAMMA]	// LnG x^2 ? ?
-			RCL L		// v/2 LnG x^2 ?
 			Num half
-			+		// (v+1)/2 LnG x^2 ?
+			RCL+ L		// (v+1)/2 LnG x^2 ?
 			STO T		// (v+1)/2 LnG x^2 (v+1)/2
 			LN[GAMMA]	// LnG2 LnG x^2 (v+1)/2
 			SWAP
@@ -79,9 +77,8 @@ cdf_t_return::		RCL J		// v x ? ?
 			RCL+ J		// v+x^2 v ? ?
 			/		// v/(v+x^2) ? ? ?
 			Num half
-			RCL J
 			Num half
-			[times]		// v/2 .5 v/(v+x^2) ?
+			RCL[times] J	// v/2 .5 v/(v+x^2) ?
 			[<->] ZYXT
 			I[beta]
 			Num half
