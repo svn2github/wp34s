@@ -2145,6 +2145,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 
 decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *x) {
 	decNumber z, lga;
+	int invert;
 
 	if (decNumberIsNegative(x) || dn_le0(a) ||
 			decNumberIsNaN(x) || decNumberIsNaN(a) || decNumberIsInfinite(a)) {
@@ -2158,12 +2159,16 @@ decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *
 	dn_p1(&lga, a);
 	dn_compare(&z, x, &lga);
 	decNumberLnGamma(&lga, a);
-	if (decNumberIsNegative(&z))
-		return gser(res, a, x, &lga);
-	else {
+	if (decNumberIsNegative(&z)) {
+		gser(res, a, x, &lga);
+		invert = XeqOpCode == (OP_DYA | OP_GAMMAQ);
+	} else {
 		gcf(&z, a, x, &lga);
-		return dn_1m(res, &z);
+		invert = XeqOpCode == (OP_DYA | OP_GAMMAP);
 	}
+	if (invert)
+		return dn_1m(res, res);
+	return res;
 }
 
 #ifdef INCLUDE_FACTOR

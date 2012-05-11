@@ -51,10 +51,16 @@ pdf_chi2::		x[<=]0?
 		XLBL"CDFU_CHI2"
 			xIN MONADIC
 			GSB chi2_param
-			GSB cdf_chi2
-			_INT 1
+			x[<=]0?
+				JMP ret_1
+			[infinity]?
+				JMP ret_0
+			Num half
+			[times]
+			Num half
+			RCL[times] J
 			SWAP
-			-
+			I[GAMMA]Q
 			xOUT xOUT_NORMAL
 #endif
 
@@ -73,7 +79,7 @@ cdf_chi2::		x[<=]0?
 			Num half
 			RCL[times] J
 			SWAP
-			I[GAMMA]
+			I[GAMMA]P
 			RTN
 
 chi2_param::		RCL J

@@ -59,10 +59,13 @@ pdf_poisson_xout::	FP?
 			xIN MONADIC
 			GSB poission1_param
 cdfu_poisson_xout::	CEIL
-			GSB cdf_poisson
-			_INT 1
-			SWAP
-			-
+			x<0?
+				JMP ret_1
+			[infinity]?
+				JMP ret_0
+			INC X
+			RCL J
+			I[GAMMA]P
 			xOUT xOUT_NORMAL
 #endif
 
@@ -79,10 +82,7 @@ cdf_poisson::		x<0?
 				JMP dist_ret_1
 			INC X
 			RCL J
-			I[GAMMA]
-			_INT 1
-			SWAP
-			-
+			I[GAMMA]Q
 			RTN
 
 		XLBL"QF_POISSON"
