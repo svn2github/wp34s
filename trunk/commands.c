@@ -347,8 +347,8 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_ATAN2,	&decNumberArcTan2,	NOFN,		NOFN,		"ANGLE",	CNULL)
 	FUNC(OP_BETA,	XDR(beta),		XDC(cpx_beta),	NOFN,		"\241",		"BETA")
 	FUNC(OP_LNBETA,	&decNumberLnBeta,	XDC(cpx_lnbeta),NOFN,		"LN\241",	"LNBETA")
-	FUNC(OP_GAMMAP,	&decNumberGammap,	NOFN,		NOFN,		"I\202\276",	"IGAMMAP")
-	FUNC(OP_GAMMAQ,	&decNumberGammap,	NOFN,		NOFN,		"I\202\223",	"IGAMMAQ")
+	FUNC(OP_GAMMAP,	&decNumberGammap,	NOFN,		NOFN,		"P(x,y)",	CNULL)
+	FUNC(OP_GAMMAQ,	&decNumberGammap,	NOFN,		NOFN,		"Q(x,y)",	CNULL)
 #ifdef INCLUDE_ELLIPTIC
 	FUNC(OP_SN,	&decNumberSN,		&cmplxSN,	NOFN,		"SN",		CNULL)
 	FUNC(OP_CN,	&decNumberCN,		&cmplxCN,	NOFN,		"CN",		CNULL)
