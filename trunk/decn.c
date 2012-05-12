@@ -2143,7 +2143,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 	return dn_multiply(res, &t, &h);
 }
 
-decNumber *decNumberGammap(decNumber *res, const decNumber *a, const decNumber *x) {
+decNumber *decNumberGammap(decNumber *res, const decNumber *x, const decNumber *a) {
 	decNumber z, lga;
 	const int gammap = XeqOpCode == (OP_DYA | OP_GAMMAP);
 
