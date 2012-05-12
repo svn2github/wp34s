@@ -933,6 +933,7 @@ static unsigned char alpha_symbols[] = {
 	'\'',	'"',	'#',	'`',
 	'*',	'%',	'@',	'_',
 	'~',
+	0222,					// print
 	'$',	0014,	0036,	0037,		// currency symbols
 	0216,	0256				// Sol, Terra
 };
