@@ -1765,12 +1765,12 @@
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0223, "0223",                0, 0xe101,     0x0a, 0x00,    CNULL,
 		{
-			     _ ,      _ ,
-			     _ ,      _ ,
-			     _ ,      _ ,
-			     _ ,      _ ,
-			     _ ,      _ ,
-			     _ ,      _ ,
+			  ____ ,   ____ ,
+			  ____ ,   ____ ,
+			  ____ ,   ____ ,
+			  OOO_ ,   OOO_ ,
+			  OOO_ ,   OOO_ ,
+			  __O_ ,   __O_ ,
 		}
 	},
 
