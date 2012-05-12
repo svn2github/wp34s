@@ -52,9 +52,8 @@
 				JMP ret_1
 			x>? K
 				JMP ret_0
-			GSB cdf_bin_beta_xform
-			SWAP
-			RCL J			// p x+1 n-x
+			GSB cdf_bin_beta_xform	// n-x x+1
+			z[<->] J		// n-x x+1 p  -- destructively however
 			I[beta]
 			xOUT xOUT_NORMAL
 #endif
@@ -73,6 +72,7 @@ cdf_binomial::		x<0?
 			GSB cdf_bin_beta_xform
 			_INT 1
 			RCL- J			// 1-p n-x x+1 x
+			[<->] ZYXT
 			I[beta]
 			RTN
 

@@ -75,7 +75,7 @@ pdf_f::			FILL
 			RCL[times] K	// v2/2  v2/(x*v1+v2)
 			Num half
 			RCL[times] J	// v1/2 v2/2 v2/(x*v1+v2)
-			[<->] ZXYT	// v2/(x*v1+v2) d2/2 d1/2
+			SWAP		// v2/2 v1/2 v2/(x*v1+2)
 			I[beta]
 			xOUT xOUT_NORMAL
 #endif
@@ -95,10 +95,9 @@ cdf_f::			x[<=]0?
 			RCL+ K		// x*v1+v2  x*v1  ?  ?
 			/
 			Num half
-			RCL[times] K		// v2  x*v1 / (x*v1+v2)
+			RCL[times] K	// v2  x*v1 / (x*v1+v2)
 			Num half
-			RCL[times] J
-			[<->] ZYXT	// d1x/(d1x+d2) d2/2 d1/2
+			RCL[times] J	// d1/2 d2/d d1x(d1x+d2)
 			I[beta]
 			RTN
 
