@@ -1763,7 +1763,7 @@
 	},
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
-	{ 0223, "sub-q",            6000, 0xe101,     0x0a, 0x00,    CNULL,
+	{ 0223, "sub-q",            6000, 0x209b,     0x0a, 0x00,    CNULL,
 		{
 			  ____ ,   ____ ,
 			  ____ ,   ____ ,
