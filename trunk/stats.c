@@ -845,6 +845,7 @@ decNumber *betai(decNumber *r, const decNumber *x, const decNumber *b, const dec
 	}
 }
 
+#if 0
 /* Standard normal support routines */
 decNumber *pdf_Q(decNumber *q, const decNumber *x) {
 	decNumber r, t;
@@ -919,4 +920,4 @@ void cdf_Q_helper(enum nilop op) {
 	pdf_Q(&t, &x);
 	setXYZ(&t, &a, &b);
 }
-
+#endif

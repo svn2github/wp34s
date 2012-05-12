@@ -759,9 +759,11 @@ static void getZ(decNumber *z) {
 	getRegister(z, regZ_idx);
 }
 
+#if 0
 static void setZ(const decNumber *z) {
 	setRegister(regZ_idx, z);
 }
+#endif
 
 static void getT(decNumber *t) {
 	getRegister(t, regT_idx);
@@ -782,10 +784,12 @@ void getXYZ(decNumber *x, decNumber *y, decNumber *z) {
 	getZ(z);
 }
 
+#if 0
 void setXYZ(const decNumber *x, const decNumber *y, const decNumber *z) {
 	setXY(x, y);
 	setZ(z);
 }
+#endif
 
 void getXYZT(decNumber *x, decNumber *y, decNumber *z, decNumber *t) {
 	getXYZ(x, y, z);

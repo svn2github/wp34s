@@ -126,13 +126,28 @@ pdf_q::			x[^2]
 			/
 			RTN
 
+/*
+ * For x > 0:
+ * 
+ * Lower Tail Normal CDF = 0.5*(1 + gammap(0.5*x^2, 0.5))
+ * Upper Tail Normal CDF = 0.5*gammaq(0.5*x^2, 0.5)
+ */
 
 #ifdef INCLUDE_CDFU
 		XLBL"CDFU_Q"
 			xIN MONADIC
-			+/-
-			JMP cdf_q_xout
+			GSB cdfu_q
+			xOUT xOUT_NORMAL
+
+cdfu_q::		x<0?
+				JMP cdfu_q_flip
 #endif
+cdf_q_flip::		x[^2]
+			Num half
+			STO[times] Y
+			I[GAMMA]Q
+			RCL[times] L
+			RTN
 
 		XLBL"CDF_Q"
 			xIN MONADIC
@@ -142,12 +157,32 @@ cdf_q_xout::		GSB cdf_q
 /* Standard entry point.  Destroys the stack.
  * Returns the CDF in X and the PDF in Y.
  */
-cdf_q::			cdfqh
-			_INT 1
-			[cmplx][times]
-			DROP
-			RTN
+cdf_q::			x<0?
+				JMP cdf_q_flip
+cdfu_q_flip::		x[^2]
+			Num half
+			STO[times] Y
+			I[GAMMA]P
+			INC X
+			Num half
+			[times]
+			FC? .00
+				RTN
 
+#if 1
+		XLBL"QF_Q"
+			xIN MONADIC
+qf_q_xout::		GSB qf_q
+			xOUT xOUT_NORMAL
+
+qf_q::			GSB qf_check_probability
+			STO I
+			GSB qf_q_est
+			RCL I
+			_INT DIST_Q
+			JMP qf_newton
+
+#else
 #define R_P	.00
 #define R_X	.01
 #define R_I	.02
@@ -206,7 +241,7 @@ qf_q_loop::		RCL R_X
 #undef R_P
 #undef R_X
 #undef R_I
-
+#endif
 
 /* The internal Q qf entry point.
  */

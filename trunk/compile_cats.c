@@ -737,7 +737,7 @@ static s_opcode internal_catalogue[] = {
 	NILIC(OP_LOADA2D,	"[->]A..D")
 	NILIC(OP_SAVEA2D,	"A..D[->]")
 #endif
-	NILIC(OP_CDFQ_HELPER,	"cdfqh")
+//	NILIC(OP_CDFQ_HELPER,	"cdfqh")
 	RARGCMD(RARG_BSF,	"BSRF")
 	RARGCMD(RARG_BSB,	"BSRB")
 #ifdef INCLUDE_INDIRECT_BRANCHES
