@@ -162,7 +162,10 @@ my $V3_PAD_MODE = 2;
 my $IS_NOT_AN_ALIAS = 0;
 my $IS_AN_ALIAS = 1;
 
-my $choose_disassemble_opcode = 0; # Choose 0 for original
+# Choose 0 for original, -1 for latest alias.
+my $choose_disassemble_opcode = (exists $ENV{WP34S_ASM_ALIAS_DIS})
+                              ? $ENV{WP34S_ASM_ALIAS_DIS}
+                              : 0;
 
 my $v3_mode = 0;
 my $step_digits = 3; # Default to older style 3-digit step numbers.
@@ -405,6 +408,8 @@ Parameters:
                     disassembly mode.                           [Default: $DEFAULT_STAR_LABELS]
    -syntax outfile  Turns on syntax guide file dumping. Output will be sent to 'outfile'.
    -ns              Turn off step numbers in disassembler listing.
+   -dis_alias       Choose the last alias for the disassembly listing.
+   -no_dis_alias    Avoid aliases for the disassembly listing.
    -no_svn          Suppress report of compressed opcode table SVN version number.
    -sb2to3          Convert old-style 2-digit SKIP/BACK offsets to 3-digit ones on the fly. Only
                     intended for use with old-style V2 programs that were not designed to take
@@ -611,12 +616,12 @@ sub assemble {
         # See if the text has any non ASCII characters in it. Substitute them if found.
         for( my $i = 0; $i < length $alpha_text; ++$i) {
           my $char = substr($alpha_text, $i, 1);
-          if( ord $char > 127 && exists $escaped_alpha2ord{$char} ) {
+          if( (ord $char > 127) and (exists $escaped_alpha2ord{$char}) ) {
             $char = chr($escaped_alpha2ord{$char});
             substr($alpha_text, $i, 1) = $char;
           }
         }
-        
+
         # See if the text has any escaped characters in it. Substitute them if found.
         # There may be more than one so loop until satisfied.
         while( $alpha_text =~ /(\[.+?\])/ ) {
@@ -854,7 +859,7 @@ sub print_disassemble_text {
   # rather than the actual characters.
   foreach my $ord (@chars) {
     if( exists $ord2escaped_alpha{$ord} ) {
-      my $escaped_alpha = $ord2escaped_alpha{$ord}[0];
+      my $escaped_alpha = $ord2escaped_alpha{$ord}[$choose_disassemble_opcode];
       print OUT "${escaped_alpha}" if $ord;
     } else {
       print OUT chr($ord) if $ord;
@@ -1138,8 +1143,7 @@ sub load_opcode_tables {
       if( /\[alpha\]\s+(\[.+\])/ ) {
         my $escaped_alpha_alias = $1;
         load_escaped_alpha_tables($hex_str, $escaped_alpha_alias, $line_num, $IS_AN_ALIAS);
-      }
-      elsif( /\[alpha\]\s+(.)/ ) {
+      } elsif( /\[alpha\]\s+(.)/ ) {
         my $alpha_alias = $1;
         if( ord($alpha_alias) > 127 ) {
           load_escaped_alpha_tables($hex_str, $alpha_alias, $line_num, $IS_AN_ALIAS);
@@ -1335,7 +1339,7 @@ sub parse_arg_type {
       # Construct aliases. Hex value remains the same for all sets.
       # Note that any additional entries we add here are aliases by definition so
       # flag them a such to avoid the replication warning checks.
-      my @indirection_aliases = ("@", "=>", "->", ">"); # Be generous!
+      my @indirection_aliases = ("=>", "->", ">", "@"); # Be generous in what we accept!
       foreach my $indirection_alias (@indirection_aliases) {
         $mnemonic = "${base_mnemonic} ${indirection_alias}${reg_str}";
         load_table_entry($hex_str, $mnemonic, $line_num, $IS_AN_ALIAS);
@@ -2208,6 +2212,14 @@ sub get_options {
 
     elsif ($arg eq "-sb2to3") {
       $conv_skip_back_2to3 = 1;
+    }
+
+    elsif (($arg eq "-dis_alias") or ($arg eq "-ds")) {
+      $choose_disassemble_opcode = -1;
+    }
+
+    elsif (($arg eq "-no_dis_alias") or ($arg eq "-nda")) {
+      $choose_disassemble_opcode = 0;
     }
 
     else {
