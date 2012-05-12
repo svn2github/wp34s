@@ -65,7 +65,7 @@ cdfu_poisson_xout::	CEIL
 				JMP ret_0
 			RCL J
 			SWAP
-			I[GAMMA]P
+			I[GAMMA][sub-p]
 			xOUT xOUT_NORMAL
 #endif
 
@@ -83,7 +83,7 @@ cdf_poisson::		x<0?
 			INC X
 			RCL J
 			SWAP
-			I[GAMMA]Q
+			I[GAMMA][sub-q]
 			RTN
 
 		XLBL"QF_POISSON"
