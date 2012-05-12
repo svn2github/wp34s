@@ -38,12 +38,11 @@
 		XLBL"CDFU_GEOM"
 			xIN MONADIC
 			GSB geom_param
-			x<0?
+			CEIL
+			x<1?
 				JMP ret_1
 			[infinity]?
 				JMP ret_0
-			CEIL
-			INC X
 			_INT 1
 			RCL- J
 			SWAP
