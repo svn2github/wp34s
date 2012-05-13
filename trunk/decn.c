@@ -2092,7 +2092,8 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 			dn_ln(&t, x);
 			dn_multiply(&u, &t, a);
 			dn_subtract(&t, &u, x);
-			dn_subtract(&u, &t, gln);
+			if (gln != NULL)
+				dn_subtract(&u, &t, gln);
 			dn_exp(&t, &u);
 			return dn_multiply(res, &sum, &t);
 		}
@@ -2138,43 +2139,61 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 	dn_ln(&t, x);
 	dn_multiply(&u, &t, a);
 	dn_subtract(&t, &u, x);
-	dn_subtract(&u, &t, gln);
+	if (gln != NULL)
+		dn_subtract(&u, &t, gln);
 	dn_exp(&t, &u);
 	return dn_multiply(res, &t, &h);
 }
+#include <stdio.h>
 
 decNumber *decNumberGammap(decNumber *res, const decNumber *x, const decNumber *a) {
-	decNumber z, lga;
-	const int gammap = XeqOpCode == (OP_DYA | OP_GAMMAP);
+	decNumber z, lga, *plga;
+	const int op = XeqOpCode - (OP_DYA | OP_GAMMAg);
+	const int regularised = op & 2;
+	const int upper = op & 1;
 
 	if (decNumberIsNegative(x) || dn_le0(a) ||
 			decNumberIsNaN(x) || decNumberIsNaN(a) || decNumberIsInfinite(a)) {
 		return set_NaN(res);
 	}
 	if (decNumberIsInfinite(x)) {
-		if (gammap)
-			return dn_1(res);
+		if (upper) {
+			if (regularised)
+				return dn_1(res);
+			return decNumberGamma(res, a);
+		}
 		return decNumberZero(res);
 	}
 	if (dn_eq0(x)) {
-		if (! gammap)
-			return dn_1(res);
+		if (! upper) {
+			if (regularised)
+				return dn_1(res);
+			return decNumberGamma(res, a);
+		}
 		return decNumberZero(res);
 	}
 
 	dn_p1(&lga, a);
 	dn_compare(&z, x, &lga);
-	decNumberLnGamma(&lga, a);
+	if (regularised)
+		decNumberLnGamma(plga = &lga, a);
+	else
+		plga = NULL;
 	if (decNumberIsNegative(&z)) {
 		gser(res, a, x, &lga);
-		if (! gammap)
-			return dn_1m(res, res);
+		if (upper)
+			goto invert;
 	} else {
 		gcf(res, a, x, &lga);
-		if (gammap)
-			return dn_1m(res, res);
+		if (! upper)
+			goto invert;
 	}
 	return res;
+
+invert:	if (regularised)
+		return dn_1m(res, res);
+	decNumberGamma(&z, a);
+	return dn_subtract(res, &z, res);
 }
 
 #ifdef INCLUDE_FACTOR
