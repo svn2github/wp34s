@@ -288,17 +288,27 @@ const char *catcmd(opcode op, char instr[16]) {
 	} else if (isRARG(op)) {
 		f = RARG_CMD(op);
 		if (f < NUM_RARG) {
-			if (f == RARG_CONST || f == RARG_CONST_CMPLX) {
+			if (f == RARG_CONV) {
+				return prt_conv(op & RARG_MASK, instr);
+			}
+#if defined(INCLUDE_USER_CATALOGUE) && !defined(COMPILE_CATALOGUES)
+			else if (f == RARG_CONST || f == RARG_CONST_CMPLX || f == RARG_ALPHA) {
+				return prt(op, instr);
+			}
+#else
+			else if (f == RARG_CONST || f == RARG_CONST_CMPLX) {
 				const unsigned int arg = op & RARG_MASK;
 				if (arg < NUM_CONSTS)
 					return sncopy(instr, cnsts[arg].cname, CONST_NAMELEN);
-			} else if (f == RARG_CONV) {
-				return prt_conv(op & RARG_MASK, instr);
-			} else if (f == RARG_ALPHA) {
+			}
+			else if (f == RARG_ALPHA) {
 				*instr = op & 0xff;
 				return instr;
-			} else
+			}
+#endif
+			else {
 				return sncopy(instr, argcmds[f].cmd, NAME_LEN);
+			}
 		}
 	} else {
 		f = argKIND(op);

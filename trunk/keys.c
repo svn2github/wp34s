@@ -191,7 +191,11 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		static const struct _map cmap[] = {
 			{ K_ARROW, { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
 			{ K05,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
+#ifdef INCLUDE_USER_CATALOGUE
+			{ K10,     { CATALOGUE_LABELS,    CATALOGUE_LABELS,    CATALOGUE_USER          } },
+#else
 			{ K10,     { CATALOGUE_LABELS,    CATALOGUE_LABELS,    CATALOGUE_LABELS        } },
+#endif
 			{ K20,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
 			{ K41,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
 			{ K42,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
@@ -233,7 +237,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 *  Prepare search
 		 */
 		cp = cmap;
-		col = UState.intm ? 1 : State2.cmplx ? 2 : 0;
+		col = State2.cmplx || shift_down() == SHIFT_H ? 2 : UState.intm ? 1 : 0;
 		max = sizeof(cmap) / sizeof(cmap[0]);
 	}
 	else {
@@ -1537,6 +1541,78 @@ again:
 	return STATE_UNFINISHED;
 }
 
+#ifdef INCLUDE_USER_CATALOGUE
+/*
+ *  Build the user catalogue on the fly in RAM and return the number of entries
+ */
+#define USER_CAT_MAX 100
+s_opcode UserCat[USER_CAT_MAX];
+
+static int build_user_cat(void)
+{
+	// find the label 'CAT'
+	const int lbl = OP_DBL + (DBL_LBL << DBL_SHIFT) + 'C' + ('A' << 16) + ('T' << 24);
+	unsigned int pc = findmultilbl(lbl, 0);
+	int len = 0;
+	while (pc && len < USER_CAT_MAX) {
+		// do a simnple insert-sort to sort the entries
+		char buf1[16];
+		int i;
+		s_opcode op;
+	next:
+		pc = do_inc(pc, 1);
+		op = (s_opcode) getprog(pc);
+		if (op == (OP_NIL | OP_END))
+			break;
+		if (isDBL(op))
+			continue;
+		if (isRARG(op)) {
+			const s_opcode rarg = RARG_CMD(op);
+			if (rarg != RARG_ALPHA && rarg != RARG_CONV
+			    && rarg != RARG_CONST && rarg != RARG_CONST_CMPLX)
+				op = op & 0xff00;	// remove argument
+		}
+		catcmd(op, buf1);
+		for (i = 0; i < len; ++i) {
+			// Find a position in the table to insert the new entry
+			char buf2[16];
+			const char *p, *q;
+			int diff = 0;
+			if (op == UserCat[i]) {
+				// duplicate entry - ignore
+				goto next;
+			}
+			p = buf1;
+			if (*p == COMPLEX_PREFIX)
+				++p;
+			q = catcmd(UserCat[i], buf2);
+			if (*q == COMPLEX_PREFIX)
+				++q;
+			diff = 0;
+			while (*p != '\0' && diff == 0) {
+				diff = remap_chars(*q++) - remap_chars(*p++);
+			}
+			if ((diff == 0 && *q == 0) ) {
+				// identical according to sort order, insert after
+				++i;
+				break;
+			}
+			if (diff > 0) {
+				// insert new entry before the one found because this is greater
+				break;
+			}
+		}
+		if (i < len) {
+			// Make room
+			xcopy(UserCat + i + 1, UserCat + i, (len - i) << 1);
+		}
+		UserCat[i] = op;
+		++len;
+	}
+	// return the number of entries
+	return len;
+}
+#endif
 
 /* Return the number of entries in the current catalogue.
  * These are all fixed size known at compile time so a table lookup will
@@ -1572,7 +1648,12 @@ int current_catalogue_max(void) {
 		SIZE_internal_catalogue,
 #endif
 	};
+#ifdef INCLUDE_USER_CATALOGUE
+	const int cat = State2.catalogue;
+	return cat == CATALOGUE_USER ? build_user_cat() : catalogue_sizes[cat];
+#else
 	return catalogue_sizes[State2.catalogue];
+#endif
 }
 
 
@@ -1639,6 +1720,10 @@ opcode current_catalogue(int n) {
 		else
 			return RARG(RARG_CONV, cnv);
 	}
+#ifdef INCLUDE_USER_CATALOGUE
+	if (c == CATALOGUE_USER)
+		return build_user_cat() ? UserCat[n] : STATE_IGNORE;
+#endif
 
 	if (c == CATALOGUE_ALPHA_LETTERS && State2.alphashift)
 		cat = (const unsigned char *) alpha_letters_lower;
@@ -1648,7 +1733,6 @@ opcode current_catalogue(int n) {
 	if (c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS) {
 		return alpha_code(n, (const char *) cat);
 	}
-
 	if (c >= sizeof(catalogues) / sizeof(void *))
 		return OP_NIL | OP_NOP;
 
@@ -1790,7 +1874,7 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 	reset_shift();
 	if (ch == '\0')
 		return STATE_UNFINISHED;
-	if ( cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST ) {
+	if (cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST) {
 		// No multi character search in alpha catalogues
 		CmdLineLength = 0;
 	}

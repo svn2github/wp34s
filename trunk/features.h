@@ -41,6 +41,9 @@
 // Include a catalogue of the internal commands
 #define INCLUDE_INTERNAL_CATALOGUE
 
+// Include a mechanism for a user defined catalogue
+#define INCLUDE_USER_CATALOGUE
+
 // Include the CNSTS command to access constants via indirection
 #define INCLUDE_INDIRECT_CONSTS
 

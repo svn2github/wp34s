@@ -348,7 +348,7 @@ void dump_opcodes(FILE *f, int xref) {
 	int c, d;
 	char cmdname[16];
 	char cmdpretty[500];
-	char cmdalias[20];
+	char cmdalias[500];
 	char buf[50], temp[500], temp2[50];
 	const char *p, *cn;
 	char *q;
@@ -393,13 +393,16 @@ void dump_opcodes(FILE *f, int xref) {
 				continue;
 			prettify(p, cmdpretty, 0);
 			prettify(p, cmdalias, 2);
-
 			if (cmd == RARG_ALPHA) {
 				const int n = c & 0xff;
 				const struct _altuni *alt;
 
 				if (n == 0)
 					continue;
+#if defined(INCLUDE_USER_CATALOGUE) && !defined(COMPILE_CATALOGUES)
+				cn = p += 3;		// Skip the alpha prefix
+				prettify(p, cmdalias, 2);
+#endif
 				if (n == ' ') {
 					strcpy(cmdpretty, "[space]");
 				}
