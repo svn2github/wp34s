@@ -1560,7 +1560,7 @@ static int build_user_cat(void)
 		int i;
 		s_opcode op;
 	next:
-		pc = do_inc(pc, 1);
+		pc = do_inc(pc, 0);
 		op = (s_opcode) getprog(pc);
 		if (op == (OP_NIL | OP_END))
 			break;
