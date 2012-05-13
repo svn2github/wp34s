@@ -25,8 +25,19 @@
 
 #ifdef INCLUDE_STOPWATCH
 
+/*
+ * The stopwatch command itself
+ */
 extern void stopwatch(enum nilop op);
+
+/*
+ * See stopwatch.c for details on KeyCallback
+ */
 extern int (*KeyCallback)(int);
+
+/* Stopwatch needs a few boolean to keep track of its status
+ * this is the lowest memory footprint solution
+ */
 typedef struct _stopwatch_status {
 	int running:1;
 	int display_tenths:1;
@@ -37,6 +48,11 @@ typedef struct _stopwatch_status {
 
 extern TStopWatchStatus StopWatchStatus;
 #define StopWatchRunning (StopWatchStatus.running)
+
+/*
+ * Every STOPWATCH_BLINK ticker, the small = sign on screen blinks
+ * in normal mode so the user knows when stopwatch still running in background
+ */
 #define STOPWATCH_BLINK 5
 
 #endif

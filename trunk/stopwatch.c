@@ -49,12 +49,36 @@
 
 TStopWatchStatus StopWatchStatus; // ={ 0, 1, 0, 0, };
 
+/*
+ *  KeyCallback is used to call the StopWatch from the main loop
+ * And set to NULL when the StopWatch is not running
+ */
 int (*KeyCallback)(int)=(int (*)(int)) NULL;
+
+/*
+ *  Stopwatch uses the ticker count. This is the starting point
+ */
 unsigned long FirstTicker;
+
+/*
+ * Current stopwatch value, in ticker count. Usually set to getTicker() - FirstTicker
+ */
 unsigned long StopWatch;
+
+/*
+ * Index on memory to store split time
+ */
 unsigned char StopWatchMemory;
-signed char StopWatchMemoryFirstDigit; //-1;
+
+/*
+ * Used to choose a memory index to store split time in
+ */
+signed char StopWatchMemoryFirstDigit;
 signed char RclMemory;
+
+/*
+ * Use to display the chosen memory for a while
+ */
 unsigned char RclMemoryRemanentDisplay;
 
 #define STOPWATCH_RS K63
@@ -70,6 +94,9 @@ unsigned char RclMemoryRemanentDisplay;
 
 #define RCL_MEMORY_REMANENCE 3
 
+/*
+ * Current ticker count. Or its emulation when not running on WP34s hardware
+ */
 unsigned long getTicker() {
 #ifndef CONSOLE
     return Ticker;
@@ -80,6 +107,9 @@ unsigned long getTicker() {
 #endif
 }
 
+/*
+ * Displays the memory index, even if partially entered
+ */
 static void fill_exponent(char* exponent) {
 	if(StopWatchStatus.select_memory_mode) {
 		if(StopWatchMemoryFirstDigit>=0) {
@@ -94,6 +124,9 @@ static void fill_exponent(char* exponent) {
 	exponent[2]=0;
 }
 
+/*
+ * Displaying the stopwatch value in HHhMM'SS"t format
+ */
 static void display_stopwatch() {
 	char buf[13], *p;
 	char exponent[3];
@@ -146,11 +179,15 @@ static void display_stopwatch() {
 	stopwatch_message(display_rcl_message?rclMessage:STOPWATCH_MESSAGE, buf, -1, StopWatchStatus.show_memory?exponent:(char*)NULL);
 }
 
+/*
+ * Storing a split time in memory
+ */
 static void store_stopwatch_in_memory() {
 	int max_registers=global_regs();
 	if(max_registers>0) {
 		decNumber s, s2, hms;
 		StopWatchStatus.show_memory=1;
+		// Converting tick count to HMS format
 		ullint_to_dn(&s, StopWatch);
 		dn_divide(&s2, &s, &const_360);
 		dn_divide(&s, &s2, &const_100);
@@ -160,11 +197,17 @@ static void store_stopwatch_in_memory() {
 	}
 }
 
+/*
+ * What is the digit for this key?
+ */
 static int get_digit(int key) {
 	int digit=keycode_to_digit_or_register(key);
 	return digit>=0 && digit<=9 && global_regs() > 0 ? digit : -1;
 }
 
+/*
+ * R/S has been pressed
+ */
 static void toggle_running() {
 	StopWatchStatus.running=!StopWatchStatus.running;
 	if(StopWatchStatus.running) {
@@ -177,6 +220,9 @@ static void toggle_running() {
 	}
 }
 
+/*
+ * Recalling a stored split time and converting it for display
+ */
 static void recall_memory(int index) {
 	decNumber memory, s, s2, hms;
 	unsigned long previous;
@@ -187,6 +233,7 @@ static void recall_memory(int index) {
 	StopWatchStatus.rcl_mode=0;
 	RclMemoryRemanentDisplay=0;
 	getRegister(&memory, index);
+	// Converting HMS format to tick count
 	decNumberHMS2HR(&hms, &memory);
 	dn_multiply(&s2, &hms, &const_100);
 	dn_multiply(&s, &s2, &const_360);
@@ -196,6 +243,9 @@ static void recall_memory(int index) {
 	StopWatch=previous;
 }
 
+/*
+ * Once a memory has been chosen, we either store in it or recall it
+ */
 static void end_memory_selection(int index) {
 	if(StopWatchStatus.rcl_mode){
 		recall_memory(index);
@@ -207,6 +257,9 @@ static void end_memory_selection(int index) {
 	}
 }
 
+/*
+ * Handling the selection of a memory index
+ */
 static int process_select_memory_key(int key) {
 	int digit = get_digit(key);
 	switch(key)	{
@@ -259,6 +312,10 @@ static int process_select_memory_key(int key) {
 	return -1;
 }
 
+/*
+ * Handling keys.As we need to be a 'special mode', we have to do it ourselves
+ * We cannot reuse the normal main loop code
+ */
 static int process_stopwatch_key(int key) {
 	int max_registers=global_regs();
 	switch(key)	{
@@ -327,6 +384,9 @@ static int process_stopwatch_key(int key) {
 	return -1;
 }
 
+/*
+ * Called by the main loop to increment stopwatch or process a pressed key
+ */
 int stopwatch_callback(int key) {
 	if(StopWatchStatus.running)	{
 		StopWatch=getTicker()-FirstTicker;
@@ -352,6 +412,10 @@ int stopwatch_callback(int key) {
 	return key==K_RELEASE?-1:key;
 }
 
+/*
+ * Entering stopwach mode. If we were already running, we continue
+ * If not, we set variables to their initial values
+ */
 void stopwatch(enum nilop op) {
 #ifndef REALBUILD
 	// Should never happen
