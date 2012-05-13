@@ -620,7 +620,6 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_SWAPY,	"y[<->]")
 	RARGCMD(RARG_SWAPZ,	"z[<->]")
 	RARGCMD(RARG_SWAPT,	"t[<->]")
-	RARGCMD(RARG_SHUFFLE,	"[<->]")
 	RARGCMD(RARG_STOSTK,	"\015STK")
 	RARGCMD(RARG_RCLSTK,	"\016STK")
 	NILIC(OP_CLREG,		"CLREG")
@@ -740,6 +739,7 @@ static s_opcode internal_catalogue[] = {
 	NILIC(OP_RTNp1,		"RTN+1")
 	RARGCMD(RARG_BSF,	"BSRF")
 	RARGCMD(RARG_BSB,	"BSRB")
+	RARGCMD(RARG_SHUFFLE,	"[<->]")
 #ifdef INCLUDE_INDIRECT_BRANCHES
 	RARGCMD(RARG_iBSF,	"iBSRF")
 	RARGCMD(RARG_iBSB,	"iBSRB")
