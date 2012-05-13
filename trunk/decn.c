@@ -2144,7 +2144,6 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 	dn_exp(&t, &u);
 	return dn_multiply(res, &t, &h);
 }
-#include <stdio.h>
 
 decNumber *decNumberGammap(decNumber *res, const decNumber *x, const decNumber *a) {
 	decNumber z, lga, *plga;
@@ -2180,11 +2179,11 @@ decNumber *decNumberGammap(decNumber *res, const decNumber *x, const decNumber *
 	else
 		plga = NULL;
 	if (decNumberIsNegative(&z)) {
-		gser(res, a, x, &lga);
+		gser(res, a, x, plga);
 		if (upper)
 			goto invert;
 	} else {
-		gcf(res, a, x, &lga);
+		gcf(res, a, x, plga);
 		if (! upper)
 			goto invert;
 	}
