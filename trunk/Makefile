@@ -284,7 +284,7 @@ $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRC
 	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 XTAL=$(XTAL) INFRARED=$(INFRARED) catalogues.h xrom.c
 	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/$(TARGET) $(LDFLAGS) \
-		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s -save-temps
+		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s # -save-temps
 	$(NM) -n $(OUTPUTDIR)/$(TARGET) >$(SYMBOLS)
 	$(NM) -S $(OUTPUTDIR)/$(TARGET) >>$(SYMBOLS)
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/$(TARGET) $(OUTPUTDIR)/$(TARGET).tmp 
