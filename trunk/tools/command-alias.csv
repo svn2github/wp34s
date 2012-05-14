@@ -98,10 +98,8 @@ inches→cm	inches[->]cm	inches>cm
 inHg→Pa	inHg[->]Pa	inHg>Pa
 ©IP	[cmplx]IP	cIP
 Iβ	I[beta]	IBETA
-Iγ	I[gamma]	IGAMMA
 IΓₚ	I[GAMMA][sub-p]	IGAMMAP
 IΓₛ	I[GAMMA][sub-q]	IGAMMAQ
-IΓᵤ	I[GAMMA][sub-u]	IGAMMAu
 J→Btu	J[->]Btu	J>Btu
 J→cal	J[->]cal	J>cal
 J→D	J[->]D	J>D
@@ -310,6 +308,8 @@ z⇆	z[<->]	z<>
 ©β	[cmplx][beta]	cBETA
 Γ	[GAMMA]	GAMMA
 ©Γ	[cmplx][GAMMA]	cGAMMA
+Γₓᵧ	[GAMMA][sub-x][sub-y]	GAMMAxy
+γₓᵧ	[gamma][sub-x][sub-y]	gammaxy
 ΔDAYS	[DELTA]DAYS	DDAYS
 Δ%	[DELTA]%	%CH
 ε	[epsilon]	epsilon
@@ -672,6 +672,8 @@ galUK>l	galUK→l	galUK[->]l
 galUS>l	galUS→l	galUS[->]l
 GAMMA	Γ	[GAMMA]
 cGAMMA	©Γ	[cmplx][GAMMA]
+GAMMAxy	Γₓᵧ	[GAMMA][sub-x][sub-y]
+gammaxy	γₓᵧ	[gamma][sub-x][sub-y]
 Geom-p	Geomₚ	Geom[sub-p]
 Geom-u	Geomᵤ	Geom[sub-u]
 GEOMEAN	Ẁg	[x-bar]g
@@ -689,10 +691,8 @@ HP[sub-e]>W	HPₑ→W	HP[sub-e][->]W
 hpUK>W	hpUK→W	hpUK[->]W
 ci	©i	[cmplx]i
 IBETA	Iβ	I[beta]
-IGAMMA	Iγ	I[gamma]
 IGAMMAP	IΓₚ	I[GAMMA][sub-p]
 IGAMMAQ	IΓₛ	I[GAMMA][sub-q]
-IGAMMAu	IΓᵤ	I[GAMMA][sub-u]
 inches>cm	inches→cm	inches[->]cm
 INF?	∞?	[infinity]?
 inHg>Pa	inHg→Pa	inHg[->]Pa
@@ -800,8 +800,8 @@ Pa>psi	Pa→psi	Pa[->]psi
 Pa>torr	Pa→torr	Pa[->]torr
 pc>km	pc→km	pc[->]km
 cPERM	©PERM	[cmplx]PERM
-PHI(x)	Φ(x)	[PHI](x)
 phi(x)	φ(x)	[phi](x)
+PHI(x)	Φ(x)	[PHI](x)
 PI	# #  π	# #[narrow-space][narrow-space][pi]
 Pn	Pₙ	P[sub-n]
 Pois	Poisλ	Pois[lambda]
@@ -977,8 +977,8 @@ c||	©||	[cmplx]||
 # #[narrow-space][narrow-space]F	# #  F	
 # #[narrow-space][narrow-space]F[alpha]	# #  Fα	# F_alpha
 # #[narrow-space][narrow-space]F[delta]	# #  Fδ	# F_delta
-# #[narrow-space][narrow-space]g	# #  g	
 # #[narrow-space][narrow-space]G	# #  G	
+# #[narrow-space][narrow-space]g	# #  g	
 # #[narrow-space][narrow-space]G[sub-0]	# #  G₀	# Go
 # #[narrow-space][narrow-space]G[sub-c]	# #  G⒞	# catalan
 # #[narrow-space][narrow-space]g[sub-e]	# #  gₑ	# Ge
@@ -1085,10 +1085,12 @@ c||	©||	[cmplx]||
 [epsilon]m	εm	epsilon-m
 [GAMMA]	Γ	GAMMA
 [cmplx][GAMMA]	©Γ	cGAMMA
+[GAMMA][sub-x][sub-y]	Γₓᵧ	GAMMAxy
+[gamma][sub-x][sub-y]	γₓᵧ	gammaxy
 [infinity]?	∞?	INF?
 [integral]	∫	INTG
-[phi](x)	φ(x)	phi(x)
 [PHI](x)	Φ(x)	PHI(x)
+[phi](x)	φ(x)	phi(x)
 [PHI][^-1](p)	Φ⁸(p)	INV-PHI
 [PHI][sub-u](x)	Φᵤ(x)	Q-u
 [PI]	Π	PROD
@@ -1219,10 +1221,8 @@ HP[sub-e][->]W	HPₑ→W	HP[sub-e]>W
 hpUK[->]W	hpUK→W	hpUK>W
 [cmplx]i	©i	ci
 I[beta]	Iβ	IBETA
-I[gamma]	Iγ	IGAMMA
 I[GAMMA][sub-p]	IΓₚ	IGAMMAP
 I[GAMMA][sub-q]	IΓₛ	IGAMMAQ
-I[GAMMA][sub-u]	IΓᵤ	IGAMMAu
 inches[->]cm	inches→cm	inches>cm
 inHg[->]Pa	inHg→Pa	inHg>Pa
 [cmplx]IP	©IP	cIP
