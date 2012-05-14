@@ -2107,7 +2107,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 
 	dn_p1(&t, x);
 	dn_subtract(&b, &t, a);			// b = (x-1) a
-	decNumberCopy(&c, &const_1e32);
+	set_inf(&c);
 	decNumberRecip(&d, &b);
 	decNumberCopy(&h, &d);
 	decNumberZero(&i);
@@ -2118,22 +2118,19 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 		dn_p2(&b, &b);
 		dn_multiply(&t, &an, &d);
 		dn_add(&v, &t, &b);
-		if (dn_abs_lt(&v, &const_1e_32))
-			decNumberCopy(&d, &const_1e32);
+		if (dn_abs_lt(&v, &const_1e_37))
+			decNumberCopy(&d, &const_1e_37);
 		else
 			decNumberRecip(&d, &v);
 		dn_divide(&t, &an, &c);
 		dn_add(&c, &b, &t);
-		if (dn_abs_lt(&c, &const_1e_32))
-			decNumberCopy(&c, &const_1e_32);
+		if (dn_abs_lt(&c, &const_1e_37))
+			decNumberCopy(&c, &const_1e_37);
 		dn_multiply(&t, &d, &c);
 		dn_multiply(&u, &h, &t);
 		if (dn_eq(&h, &u))
 			break;
 		decNumberCopy(&h, &u);
-//		dn_m1(&u, &t);
-//		if (dn_abs_lt(&u, &const_1e_32))
-//			break;
 	}
 	dn_ln(&t, x);
 	dn_multiply(&u, &t, a);
