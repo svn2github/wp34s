@@ -2092,8 +2092,7 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 			dn_ln(&t, x);
 			dn_multiply(&u, &t, a);
 			dn_subtract(&t, &u, x);
-			if (gln != NULL)
-				dn_subtract(&u, &t, gln);
+			dn_subtract(&u, &t, gln);
 			dn_exp(&t, &u);
 			return dn_multiply(res, &sum, &t);
 		}
@@ -2139,14 +2138,13 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 	dn_ln(&t, x);
 	dn_multiply(&u, &t, a);
 	dn_subtract(&t, &u, x);
-	if (gln != NULL)
-		dn_subtract(&u, &t, gln);
+	dn_subtract(&u, &t, gln);
 	dn_exp(&t, &u);
 	return dn_multiply(res, &t, &h);
 }
 
 decNumber *decNumberGammap(decNumber *res, const decNumber *x, const decNumber *a) {
-	decNumber z, lga, *plga;
+	decNumber z, lga;
 	const int op = XeqOpCode - (OP_DYA | OP_GAMMAg);
 	const int regularised = op & 2;
 	const int upper = op & 1;
@@ -2175,15 +2173,15 @@ decNumber *decNumberGammap(decNumber *res, const decNumber *x, const decNumber *
 	dn_p1(&lga, a);
 	dn_compare(&z, x, &lga);
 	if (regularised)
-		decNumberLnGamma(plga = &lga, a);
+		decNumberLnGamma(&lga, a);
 	else
-		plga = NULL;
+		decNumberZero(&lga);
 	if (decNumberIsNegative(&z)) {
-		gser(res, a, x, plga);
+		gser(res, a, x, &lga);
 		if (upper)
 			goto invert;
 	} else {
-		gcf(res, a, x, plga);
+		gcf(res, a, x, &lga);
 		if (! upper)
 			goto invert;
 	}

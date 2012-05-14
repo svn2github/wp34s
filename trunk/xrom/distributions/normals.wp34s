@@ -145,8 +145,10 @@ cdfu_q::		x<0?
 cdf_q_flip::		x[^2]
 			Num half
 			STO[times] Y
-			I[GAMMA][sub-q]
+			I[GAMMA][sub-u]
 			RCL[times] L
+			Num 1/[sqrt][pi]
+			[times]
 			RTN
 
 		XLBL"CDF_Q"
@@ -162,7 +164,9 @@ cdf_q::			x<0?
 cdfu_q_flip::		x[^2]
 			Num half
 			STO[times] Y
-			I[GAMMA][sub-p]
+			I[gamma]
+			Num 1/[sqrt][pi]
+			[times]
 			INC X
 			Num half
 			[times]
