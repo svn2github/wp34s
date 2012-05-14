@@ -42,7 +42,8 @@
 #define INCLUDE_INTERNAL_CATALOGUE
 
 // Include a mechanism for a user defined catalogue
-#define INCLUDE_USER_CATALOGUE
+// 2-3 flash pages (512 - 768 bytes) in total.
+// #define INCLUDE_USER_CATALOGUE
 
 // Include the CNSTS command to access constants via indirection
 #define INCLUDE_INDIRECT_CONSTS
@@ -76,7 +77,7 @@
 // #define INCLUDE_XROM_BESSEL
 
 // Inlcude real and complex flavours of the digamma function.  These are
-// implemented in XROM.  THe first setting is sufficient for accuracy for
+// implemented in XROM.  The first setting is sufficient for accuracy for
 // single precision, the second needs to be enabled as well to get good
 // results for double precision..
 // #define INCLUDE_XROM_DIGAMMA
