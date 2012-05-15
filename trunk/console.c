@@ -341,6 +341,55 @@ static void dump_constants(void) {
 	}
 }
 
+
+static void dump_cmd_op(unsigned int op, unsigned int *n, int silent) {
+	char buf[16];
+	char out[1000];
+	const char *pre;
+	const char *p = catcmd(op, buf);
+
+	if (strcmp(p, "???") == 0)
+		return;
+	++*n;
+	if (silent)
+		return;
+	pre = "";
+	if (opKIND(op) == KIND_CMON || opKIND(op) == KIND_CDYA ||
+			(isRARG(op) && RARG_CMD(op) == RARG_CONST_CMPLX))
+		pre = "[cmplx]";
+	else if (isRARG(op) && RARG_CMD(op) == RARG_ALPHA)
+		pre = "Alpha ";
+	prettify(p, out, 0);
+	if (strncmp("[cmplx]", out, 7) == 0 && !(isRARG(op) && RARG_CMD(op) == RARG_ALPHA))
+		pre = "";
+	printf("%-5u  %04x   %s%s\n", *n, op, pre, out);
+}
+
+static unsigned int dump_commands(int silent) {
+	unsigned int i, j, n=0;
+
+	if (! silent)
+		printf("Number Opcode Command\n");
+	for (i=0; i<KIND_MAX; i++)
+		for (j=0; j<opcode_breaks[i]; j++)
+			dump_cmd_op((i<<KIND_SHIFT) + j, &n, silent);
+	for (i=0; i<NUM_RARG; i++) {
+		if (i == RARG_CONST || i == RARG_CONST_CMPLX) {
+			for (j=0; j<NUM_CONSTS_CAT; j++)
+				dump_cmd_op(RARG(i, j), &n, silent);
+		} else if (i == RARG_CONV) {
+			for (j=0; j<NUM_CONSTS_CONV*2; j++)
+				dump_cmd_op(RARG(i, j), &n, silent);
+		} else if (i == RARG_ALPHA) {
+			for (j=1; j<256; j++)
+				dump_cmd_op(RARG(i, j), &n, silent);
+		} else
+			dump_cmd_op(RARG(i, 0), &n, silent);
+	}
+	return n;
+}
+
+
 void shutdown( void )
 {
 	checksum_all();
@@ -409,6 +458,8 @@ void flush_comm( void )
 
 #endif
 
+
+
 /*
  *  Main loop
  */
@@ -420,6 +471,10 @@ int main(int argc, char *argv[]) {
 	load_statefile();
 	if (argc > 1) {
 		if (argc == 2) {
+			if (strcmp(argv[1], "commands") == 0) {
+				dump_commands(0);
+				return 0;
+			}
 			if (strcmp(argv[1], "reg") == 0) {
 				dump_registers();
 				return 0;
@@ -510,6 +565,7 @@ int main(int argc, char *argv[]) {
 		printf("\tmultiword commands %d\n", NUM_MULTI);
 		printf("\tspecial commands %d\n", NUM_SPECIAL);
 
+		printf("\ttotal commands %u\n", dump_commands(1));
 		return 0;
 	}
 skipargs:
