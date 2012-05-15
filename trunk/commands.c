@@ -703,7 +703,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_QUERY_XTAL,	&op_query_xtal,		"XTAL?",	CNULL)
 	FUNC0(OP_QUERY_PRINT,	&op_query_print,	"\222?",	"PRT?")
 
-//	FUNC0(OP_CDFQ_HELPER,	&cdf_Q_helper,		"cdfqh",	CNULL)
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW",	CNULL)
 #endif
