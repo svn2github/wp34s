@@ -392,6 +392,7 @@ static unsigned int dump_commands(int silent) {
 		if (i == RARG_CONST || i == RARG_CONST_CMPLX) {
 			for (j=0; j<NUM_CONSTS_CAT-1; j++)
 				dump_cmd_op(RARG(i, j), &n, silent);
+			dump_cmd_op(RARG(i, OP_PI), &n, silent);
 		} else if (i == RARG_CONV) {
 			for (j=0; j<NUM_CONSTS_CONV*2; j++)
 				dump_cmd_op(RARG(i, j), &n, silent);
