@@ -347,16 +347,31 @@ static void dump_cmd_op(unsigned int op, unsigned int *n, int silent) {
 	char out[1000];
 	const char *pre;
 	const char *p = catcmd(op, buf);
+	const unsigned int opk = opKIND(op);
+	const unsigned int opa = argKIND(op);
 
 	if (strcmp(p, "???") == 0)
 		return;
+	if (! isRARG(op)) {
+		if (opk == KIND_CMON && isNULL(monfuncs[opa].mondcmplx))
+			return;
+		if (opk == KIND_CDYA && isNULL(dyfuncs[opa].dydcmplx))
+			return;
+		if (opk == KIND_MON && isNULL(monfuncs[opa].mondreal) && isNULL(monfuncs[opa].monint))
+			return ;
+		if (opk == KIND_DYA && isNULL(dyfuncs[opa].dydreal) && isNULL(dyfuncs[opa].dydint))
+			return ;
+	}
 	++*n;
 	if (silent)
 		return;
 	pre = "";
-	if (opKIND(op) == KIND_CMON || opKIND(op) == KIND_CDYA ||
-			(isRARG(op) && RARG_CMD(op) == RARG_CONST_CMPLX))
+	if (opk == KIND_CMON || opk == KIND_CDYA)
 		pre = "[cmplx]";
+	else if (isRARG(op) && RARG_CMD(op) == RARG_CONST_CMPLX)
+		pre = "[cmplx]# ";
+	else if (isRARG(op) && RARG_CMD(op) == RARG_CONST)
+		pre = "# ";
 	else if (isRARG(op) && RARG_CMD(op) == RARG_ALPHA)
 		pre = "Alpha ";
 	prettify(p, out, 0);
@@ -375,7 +390,7 @@ static unsigned int dump_commands(int silent) {
 			dump_cmd_op((i<<KIND_SHIFT) + j, &n, silent);
 	for (i=0; i<NUM_RARG; i++) {
 		if (i == RARG_CONST || i == RARG_CONST_CMPLX) {
-			for (j=0; j<NUM_CONSTS_CAT; j++)
+			for (j=0; j<NUM_CONSTS_CAT-1; j++)
 				dump_cmd_op(RARG(i, j), &n, silent);
 		} else if (i == RARG_CONV) {
 			for (j=0; j<NUM_CONSTS_CONV*2; j++)
