@@ -77,7 +77,7 @@ geom_param::		RCL J
 		XLBL"QF_GEOM"
 			xIN MONADIC
 			GSB geom_param
-			x<0?
+			x[<=]0?
 				JMP ret_0
 			GSB qf_check_probability
 			ENTER[^]
@@ -88,6 +88,8 @@ geom_param::		RCL J
 			DEC X
 			FLOOR
 			_INT (DIST_GEOMETRIC - DIST_POISSON)
+                        GSB qf_discrete_final
+                        xOUT xOUT_NORMAL
 
 #define R_DIST	.00
 #define R_R	.01
@@ -97,17 +99,10 @@ qf_discrete_final::	LocR 3
 			z[<->] R_P
 			DROP
 			GSB qf_discrete_cdf
-			x>? R_P
-				JMP qf_discrete_1high
-			RCL R_R
-			INC X
-			GSB qf_discrete_cdf
-			x[<=]? R_P
+			x<? R_P
 				INC R_R
 qf_discrere_out::	RCL R_R
-			xOUT xOUT_NORMAL
-qf_discrete_1high::	DEC R_R
-			JMP qf_discrere_out
+			RTN
 
 
 qf_discrete_cdf::	CASE R_DIST

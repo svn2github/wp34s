@@ -104,7 +104,7 @@ poission1_param::	x[<->] J
 				JMP ret_NaN
 			SPEC?
 				ERR ERR_BAD_PARAM
-			x<0?
+			x[<=]0?
 				JMP ret_0
 			x[<->] J
 			RTN

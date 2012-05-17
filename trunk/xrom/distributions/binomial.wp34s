@@ -90,6 +90,8 @@ cdf_bin_beta_xform::	RCL K
 			xIN MONADIC
 			GSB binomial_param
 			GSB qf_check_probability
+                        x[<=]0?
+                            JMP ret_0
 			RCL J
 			RCL[times] K		// mean = np
 			_INT 1
