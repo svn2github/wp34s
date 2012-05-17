@@ -113,31 +113,34 @@ dist_ret_1::		_INT 1
 #define F_NOBISECT	.02
 #define F_LIMITJUMP	.03
 
+qf_newton_setflags::	CASE R_DIST
+			RTN				/* Normal no flags */
+			RTN				/* T no flags */
+			JMP qf_chi2_flags		/* Chi^2 */
+			JMP qf_f_flags			/* F */
+			NOP				/* Poisson */
+			SF F_DISCRETE			/* Binonial */
+			JMP qf_newton_flag_pos
+
+qf_f_flags::		_INT 75
+			JMP qf_chi2_f_common
+
+qf_chi2_flags::		_INT 4
+qf_chi2_f_common::	SDR 02
+			RCL[times] R_R
+			STO R_MAXSTEP
+			SF F_LIMITJUMP
+qf_newton_flag_pos::	SF F_NONNEGATIVE
+			RTN
+
+
 qf_newton::		LocR 009
 			[cmplx]STO R_DIST
 			z[<->] R_R
 
 			/* Set flags based on distribution */
-			DEC X
-			x[<=]0?
-				JMP qf_newton_flag_done	/* Normal & Student's T sets no flags */
-			SF F_NONNEGATIVE		/* All the rest are non-negative */
-			DEC X
-			x>1?
-				JMP qf_newton_dis	/* Poisson & Binomial are discrete and non-negative */
-			SF F_LIMITJUMP			/* Chi^2 and F limit the jump distance */
-			x=0?
-				JMP qf_newton_chi2_lim
-			_INT 75				/* 100 * F jump limit */
-			JMP qf_netwon_do_limit
-qf_newton_chi2_lim::	_INT 4				/* 100 * Chi^2 jump limit */
-qf_netwon_do_limit::	SDR 02
-			RCL[times] R_R
-			STO R_MAXSTEP
-			JMP qf_newton_flag_done
-
-qf_newton_dis::		SF F_DISCRETE
-qf_newton_flag_done::	_INT 100
+			GSB qf_newton_setflags
+			_INT 100
 			STO R_ITERATIONS
 			Num [infinity]
 			STO R_HIGH
