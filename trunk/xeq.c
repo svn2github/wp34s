@@ -1951,6 +1951,7 @@ static void usergsb_common(unsigned short int target) {
 	LocalRegs = UserLocalRegs;	     // Reestablish user environment
 	if (! Running)
 		set_running_on();	     // We are running outside XROM now!
+	watchdog();			     // Just for safety. Shouldn't be needed.
 }
 
 
@@ -3802,6 +3803,8 @@ static void rargs(const opcode op) {
 				XromUserPc = find_label_from(state_pc(), arg, 0);
 				if (XromUserPc == 0)
 					return;
+				if (! Running)
+					clrretstk();
 			}
 			else
 				XromArg = (unsigned char) arg;
@@ -3809,6 +3812,8 @@ static void rargs(const opcode op) {
 			XromUserPc = find_label_from(state_pc(), arg, FIND_OP_ERROR | FIND_OP_ENDS);
 			if (XromUserPc == 0)
 				return;
+			if (! Running)
+				clrretstk();
 #endif
 			dispatch_xrom(fp);
 			return;

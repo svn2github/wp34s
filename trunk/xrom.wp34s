@@ -138,18 +138,8 @@
 #ifdef _DEBUG
 	XLBL"DBG"
 	// Add xrom only commands to test here
-#ifdef ENABLE_COPYLOCALS
-	xIN xIN_COPYLOCALS
-	RCL .00
-	DEC .00
-	SF .00
+	xIN DYADIC
+	ERR 1
 	xOUT xOUT_NORMAL
-#endif
-	LocR 1
-	_INT 99
-	STO .00
-	STOP
-	RCL .00
-	RTN
 #endif
 
