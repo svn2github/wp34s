@@ -3844,8 +3844,11 @@ static void multi(const opcode op) {
 		FP_MULTI fp = (FP_MULTI) EXPAND_ADDRESS(multicmds[cmd].f);
 		if (NULL != check_for_xrom_address(fp)) {
 			XromUserPc = findmultilbl(op, FIND_OP_ERROR);
-			if (XromUserPc != 0)
+			if (XromUserPc != 0) {
+				if (! Running)
+					clrretstk();
 				dispatch_xrom(fp);
+			}
 			return;
 		}
 		else {
