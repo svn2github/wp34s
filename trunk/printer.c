@@ -360,9 +360,10 @@ void print_sigma( enum nilop op )
 	copyreg( &save_x, StackBase );
 
 	for ( i = 0; !abort && i < sizeof( ops ); ++i ) {
+		char *p;
 		sigma_val( (enum nilop) ops[ i ] );
-		prt( OP_NIL | ops[ i ], buffer );
-		abort = print_reg( regX_idx, buffer, 1 );
+		p = prt( OP_NIL | ops[ i ], buffer );
+		abort = print_reg( regX_idx, p, 1 );
 	}
 	copyreg( StackBase, &save_x );
 }
@@ -453,7 +454,7 @@ void cmdprintmode( unsigned int arg, enum rarg op )
  */
 void print_trace( opcode op, int phase )
 {
-	char buffer[ 16 ];
+	char buffer[ 16 ], *p;
 	
 	if ( Tracing || op == RARG( RARG_SF, T_FLAG ) ) {
 		/*
@@ -471,7 +472,7 @@ void print_trace( opcode op, int phase )
 			return;
 
 		// Format the command
-		prt( op, buffer );
+		p = prt( op, buffer );
 
 		if ( phase == 0 ) {
 			// Left part of print
@@ -486,7 +487,7 @@ void print_trace( opcode op, int phase )
 			// right part of print
 			print_reg( regX_idx,
 				   op == TRACE_DATA_ENTRY ? ">>>" :
-				   PrinterColumn == 0     ? ( !Tracing ? buffer : "***"  ) :
+				   PrinterColumn == 0     ? ( !Tracing ? p : "***"  ) :
 				   CNULL,
 				   0 );
 			if ( State2.wascomplex ) {
@@ -519,7 +520,7 @@ void print_program( enum nilop op )
 
 	PcWrapped = 0;
 	while ( !PcWrapped && !abort ) {
-		char buffer[ 16 ];
+		char buffer[ 16 ], *p;
 		opcode op = getprog( pc );
 		unsigned int upc = user_pc( pc );
 		*num_arg_0( buffer, upc, numlen ) = '\0';
@@ -528,8 +529,8 @@ void print_program( enum nilop op )
 			print_tab( tab );
 		}
 		print( ' ' );
-		prt( op, buffer );
-		abort = print_line( buffer, 1 );
+		p = prt( op, buffer );
+		abort = print_line( p, 1 );
 		pc = do_inc( pc, runmode );
 	}
 }
