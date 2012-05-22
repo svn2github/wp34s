@@ -360,7 +360,7 @@ void print_sigma( enum nilop op )
 	copyreg( &save_x, StackBase );
 
 	for ( i = 0; !abort && i < sizeof( ops ); ++i ) {
-		char *p;
+		const char *p;
 		sigma_val( (enum nilop) ops[ i ] );
 		p = prt( OP_NIL | ops[ i ], buffer );
 		abort = print_reg( regX_idx, p, 1 );
@@ -454,7 +454,8 @@ void cmdprintmode( unsigned int arg, enum rarg op )
  */
 void print_trace( opcode op, int phase )
 {
-	char buffer[ 16 ], *p;
+	char buffer[ 16 ];
+	const char *p;
 	
 	if ( Tracing || op == RARG( RARG_SF, T_FLAG ) ) {
 		/*
@@ -520,7 +521,8 @@ void print_program( enum nilop op )
 
 	PcWrapped = 0;
 	while ( !PcWrapped && !abort ) {
-		char buffer[ 16 ], *p;
+		char buffer[ 16 ];
+		const char *p;
 		opcode op = getprog( pc );
 		unsigned int upc = user_pc( pc );
 		*num_arg_0( buffer, upc, numlen ) = '\0';
