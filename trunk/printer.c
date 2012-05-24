@@ -21,6 +21,7 @@
 #include "serial.h"
 #include "stats.h"
 #include "display.h"
+#include "complex.h"
 
 #define SERIAL_LINE_DELAY 3
 
@@ -132,6 +133,30 @@ static int print_graphic( int glen, unsigned char *graphic )
 	return 0;
 }
 
+
+/*
+ *  Determine the length of a string in printer pixels based on the current mode.
+ */
+#ifdef PRINT_COMPLEX_REGS
+static int buffer_width(const char *buff)
+{
+	const int mode = UState.print_mode;
+	unsigned short int posns[ 257 ];
+	unsigned char c;
+	int l = 0;
+
+	findlengths( posns, mode == PMODE_SMALLGRAPHICS );
+	while ((c = 0xff & *buff++) != '\0') {
+		switch (mode) {
+		case PMODE_DEFAULT:	l += 7;		break;
+		default:		l += posns[c];	break;
+		}
+	}
+	return l;
+}
+#endif
+
+
 /*
  *  Wrap if line is full
  */
@@ -207,7 +232,7 @@ int print_line( const char *buff, int with_lf )
 			}
 			break;
 
-		case PMODE_SMALLGRAPHICS:		// Smalll font
+		case PMODE_SMALLGRAPHICS:		// Small font
 			c += 256;
 
 		case PMODE_GRAPHICS:			// Standard font
@@ -434,6 +459,52 @@ void cmdprintreg( unsigned int arg, enum rarg op )
 	}
 }
 
+
+/*
+ *  Print a pair of registers as a complex number.
+ */
+#ifdef PRINT_COMPLEX_REGS
+void cmdprintcmplxreg( unsigned int reg, enum rarg op)
+{
+	const int polar = op == RARG_PRINT_CPOLAR;
+	decNumber x, y, r, theta;
+	const char *sep = polar ? ", \207 " : ", i ";
+	int lenx, leny;
+	char bufx[ 50 ];
+	char bufy[ 54 ];
+	char buffer[104];
+
+	if (advance_if_trace())
+		return;
+
+	if (is_intmode()) {
+		bad_mode_error();
+		return;
+	}
+
+	getRegister(&x, reg);
+	getRegister(&y, reg+1);
+	if (polar)
+		cmplxToPolar(&r, &theta, &x, &y);
+
+	xset( bufx, '\0', sizeof( bufx ) );
+	bufx[0] = bufx[1] = ' ';
+	set_x_dn( polar ? &r : &x, bufx+2);
+	lenx = buffer_width(bufx+2);
+
+	xset( bufy, '\0', sizeof( bufy ) );
+	set_x_dn( polar ? &theta : &y, scopy( bufy, sep ) );
+	leny = buffer_width(bufy);
+
+	if (lenx + leny > 166) {
+		print_justified(bufx);
+		print_justified(bufy + 2);
+	} else {
+		scopy(scopy(buffer, bufx+2), bufy);
+		print_justified(buffer);
+	}
+}	
+#endif
 
 /*
  *  Set printing modes

@@ -936,6 +936,10 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"\222TAB",	"P.TAB")
 	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"\222MODE",	"P.MODE")
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY",	"P.DLAY")
+#ifdef PRINT_COMPLEX_REGS
+	CMDcstk(RARG_PRINT_CRECT, IRA(cmdprintcmplxreg),		"\222\024REC",	"P.crect")
+	CMDcstk(RARG_PRINT_CPOLAR, IRA(cmdprintcmplxreg),		"\222\024POL",	"P.cpol")
+#endif
 	/* end of INFRARED commands */
 
 	// Only the first of this group is used in XROM

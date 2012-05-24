@@ -45,6 +45,7 @@ extern void print_alpha( enum nilop op );
 extern void print_lf( enum nilop op );
 extern void cmdprint( unsigned int arg, enum rarg op );
 extern void cmdprintreg( unsigned int arg, enum rarg op );
+extern void cmdprintcmplxreg( unsigned int arg, enum rarg op );
 extern void cmdprintmode( unsigned int arg, enum rarg op );
 
 // Implemented by the hardware layer

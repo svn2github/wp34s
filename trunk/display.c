@@ -808,6 +808,16 @@ static void show_x(char *x, int exp) {
  * digits.
  */
 static void set_x(const REGISTER *rgx, char *res, int dbl) {
+	decNumber z;
+
+	if (dbl)
+		decimal128ToNumber(&(rgx->d), &z);
+	else
+		decimal64ToNumber(&(rgx->s), &z);
+	set_x_dn(&z, res);
+}
+
+void set_x_dn(decNumber *z, char *res) {
 	char x[50], *obp = x;
 	int odig = 0;
 	int show_exp = 0;
@@ -823,44 +833,38 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 	int mode = UState.dispmode;
 	int c;
 	int negative = 0;
-	decNumber z;
 	int trimzeros = 0;
-
-	if (dbl)
-		decimal128ToNumber(&(rgx->d), &z);
-	else
-		decimal64ToNumber(&(rgx->s), &z);
 
 	if (!State2.smode && ! State2.cmplx) {
 		if (State2.hms) {
-			set_x_hms(&z, res);
+			set_x_hms(z, res);
 			State2.hms = 0;
 			return;
 		} else if (UState.fract) {
-			if (set_x_fract(&z, res))
+			if (set_x_fract(z, res))
 				return;
 		}
 	}
-	if (check_special_dn(&z, res))
+	if (check_special_dn(z, res))
 		return;
 
 	if (State2.smode == SDISP_SHOW) {
-		dn_abs(&z, &z);
-		decNumberNormalize(&z, &z, &Ctx);
-		exp = z.exponent + z.digits - 1;
-		z.exponent = 0;
+		dn_abs(z, z);
+		decNumberNormalize(z, z, &Ctx);
+		exp = z->exponent + z->digits - 1;
+		z->exponent = 0;
 	}
 
 	xset(x, '\0', sizeof(x));
 
-	if (dn_eq0(&z)) {
-		if (decNumberIsNegative(&z) && get_user_flag(NAN_FLAG)) {
+	if (dn_eq0(z)) {
+		if (decNumberIsNegative(z) && get_user_flag(NAN_FLAG)) {
 			x[0] = '-';
 			x[1] = '0';
 		} else
 			x[0] = '0';
 	} else
-		decNumberToString(&z, x);
+		decNumberToString(z, x);
 
 	if (State2.smode == SDISP_SHOW) {
 		show_x(x, exp);
@@ -868,7 +872,7 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 	}
 
 	if (mode == MODE_STD) {
-		mode = std_round_fix(&z);
+		mode = std_round_fix(z);
 		if (mode == MODE_FIX)
 			trimzeros = 1;
 		dd = DISPLAY_DIGITS - 1;

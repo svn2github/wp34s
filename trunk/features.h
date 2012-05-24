@@ -35,6 +35,9 @@
 //#define INCLUDE_STOPWATCH
 #endif
 
+// Include code to print complex register pairs
+//#define PRINT_COMPLEX_REGS
+
 // Build a tiny version of the device
 // #define TINY_BUILD
 
