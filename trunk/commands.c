@@ -937,8 +937,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"\222MODE",	"P.MODE")
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY",	"P.DLAY")
 #ifdef PRINT_COMPLEX_REGS
-	CMDcstk(RARG_PRINT_CRECT, IRA(cmdprintcmplxreg),		"\222\024REC",	"P.crect")
-	CMDcstk(RARG_PRINT_CPOLAR, IRA(cmdprintcmplxreg),		"\222\024POL",	"P.cpol")
+	CMDcstk(RARG_PRINT_CRECT, IRA(cmdprintcmplxreg),		"\222\024r\213\214",	"P.crect")
+	CMDcstk(RARG_PRINT_CPOLAR, IRA(cmdprintcmplxreg),		"\222\024r\216",	"P.cpol")
 #endif
 	/* end of INFRARED commands */
 
