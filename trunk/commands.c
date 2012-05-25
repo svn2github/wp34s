@@ -698,6 +698,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_PRINT_ALPHA_NOADV, IRN(print_alpha),	"\222\240+",	"P.a+")
 	FUNC0(OP_PRINT_ALPHA_JUST,  IRN(print_alpha),	"\222+\240",	"P.+a")
 	FUNC0(OP_PRINT_ADV,	IRN(print_lf),		"\222ADV",	"P.ADV")
+	FUNC1(OP_PRINT_WIDTH,	IRN(cmdprintwidth),	"\222WIDTH",	"P.WIDTH")
 	/* end of INFRARED commands */
 
 	FUNC0(OP_QUERY_XTAL,	&op_query_xtal,		"XTAL?",	CNULL)

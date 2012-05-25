@@ -47,6 +47,7 @@ extern void cmdprint( unsigned int arg, enum rarg op );
 extern void cmdprintreg( unsigned int arg, enum rarg op );
 extern void cmdprintcmplxreg( unsigned int arg, enum rarg op );
 extern void cmdprintmode( unsigned int arg, enum rarg op );
+extern void cmdprintwidth(enum nilop op);
 
 // Implemented by the hardware layer
 extern int put_ir( int byte );

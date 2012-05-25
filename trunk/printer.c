@@ -150,15 +150,20 @@ static int print_graphic( int glen, unsigned char *graphic )
 static int buffer_width(const char *buff)
 {
 	const int mode = UState.print_mode;
-	unsigned short int posns[ 257 ];
-	unsigned char c;
+	unsigned int c;
 	int l = 0;
 
-	findlengths( posns, mode == PMODE_SMALLGRAPHICS );
 	while ((c = 0xff & *buff++) != '\0') {
 		switch (mode) {
-		case PMODE_DEFAULT:	l += 7;		break;
-		default:		l += posns[c];	break;
+		default:
+			l += 7;
+			break;
+
+		case PMODE_SMALLGRAPHICS:
+			c += 256;
+		case PMODE_GRAPHICS:
+			l += charlengths(c);
+			break;
 		}
 	}
 	return l;
@@ -511,6 +516,14 @@ void cmdprintcmplxreg( unsigned int reg, enum rarg op)
 		print_justified(buffer);
 	}
 }
+
+/* Return the width of alpha to x
+ */
+void cmdprintwidth(enum nilop op)
+{
+	setX_int_sgn(buffer_width(Alpha), 0);
+}
+
 
 /*
  *  Set printing modes
