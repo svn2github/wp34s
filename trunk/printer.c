@@ -24,6 +24,7 @@
 #include "complex.h"
 
 #define SERIAL_LINE_DELAY 3
+#define PAPER_WIDTH 166
 
 /*
  *  Where will the next data be printed?
@@ -169,7 +170,7 @@ static int buffer_width(const char *buff)
  */
 static int wrap( int width )
 {
-	if ( PrinterColumn + width > 166 ) {
+	if ( PrinterColumn + width > PAPER_WIDTH ) {
 		if ( print_advance() ) {
 			return 1;
 		}
@@ -190,7 +191,7 @@ int print_line( const char *buff, int with_lf )
 	unsigned int c;
 	unsigned short int posns[ 257 ];
 	unsigned char pattern[ 6 ];	// Rows
-	unsigned char graphic[ 166 ];	// Columns
+	unsigned char graphic[ PAPER_WIDTH ];	// Columns
 	unsigned char glen = 0;
 	unsigned char i, j, m, w = 0;
 	int abort = 0;
@@ -227,7 +228,7 @@ int print_line( const char *buff, int with_lf )
 			else {
 				// graphic printing of characters unknown to the printer
 				w = 6;
-				if ( PrinterColumn > 0 && PrinterColumn < 166 ) {
+				if ( PrinterColumn > 0 && PrinterColumn < PAPER_WIDTH ) {
 					// Add horizontal spacing
 					graphic[ glen++ ] = 0;
 					++PrinterColumn;
@@ -253,7 +254,7 @@ int print_line( const char *buff, int with_lf )
 					--w;
 				}
 			}
-			if ( PrinterColumn + w > 166 ) {
+			if ( PrinterColumn + w > PAPER_WIDTH ) {
 				abort = print_graphic( glen, graphic );
 				glen = 0;
 			}
@@ -294,11 +295,11 @@ int print_justified( const char *buff )
 	        : pmode == PMODE_SERIAL  ? 0
 	        : pixel_length( buff, pmode == PMODE_SMALLGRAPHICS );
 
-	if ( len >= 166 ) {
-		len = 166;
+	if ( len >= PAPER_WIDTH ) {
+		len = PAPER_WIDTH;
 	}
 	if ( len > 0 ) {
-		print_tab( 166 - len );
+		print_tab( PAPER_WIDTH - len );
 	}
 	return print_line( buff, 1 );
 }
@@ -499,17 +500,17 @@ void cmdprintcmplxreg( unsigned int reg, enum rarg op)
 	set_x_dn( &y, bufy );
 	leny = buffer_width(bufy);
 
-	if (lenx + leny > 166) {
+	if (lenx + leny > PAPER_WIDTH) {
 		p[2] = '\0';
 		lenx = buffer_width(bufx);
-		maxlen = lenx > leny ? lenx : leny;
+		maxlen = PAPER_WIDTH - (lenx > leny ? lenx : leny);
 		print_string_from_tab(bufx, maxlen);
 		print_string_from_tab(bufy, maxlen);
 	} else {
 		scopy(scopy(buffer, bufx), bufy);
 		print_justified(buffer);
 	}
-}	
+}
 
 /*
  *  Set printing modes
