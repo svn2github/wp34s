@@ -116,6 +116,15 @@ int print_tab( unsigned int col )
 }
 
 
+/* Print a buffer from the given tab position and add a new line
+ */
+static void print_string_from_tab(const char *s, int tab)
+{
+	print_tab(tab);
+	print_line(s, 1);
+}
+
+
 /*
  *  Print a graphic sequence
  */
@@ -137,7 +146,6 @@ static int print_graphic( int glen, unsigned char *graphic )
 /*
  *  Determine the length of a string in printer pixels based on the current mode.
  */
-#ifdef PRINT_COMPLEX_REGS
 static int buffer_width(const char *buff)
 {
 	const int mode = UState.print_mode;
@@ -154,7 +162,6 @@ static int buffer_width(const char *buff)
 	}
 	return l;
 }
-#endif
 
 
 /*
@@ -459,20 +466,17 @@ void cmdprintreg( unsigned int arg, enum rarg op )
 	}
 }
 
-
 /*
  *  Print a pair of registers as a complex number.
  */
-#ifdef PRINT_COMPLEX_REGS
 void cmdprintcmplxreg( unsigned int reg, enum rarg op)
 {
-	const int polar = op == RARG_PRINT_CPOLAR;
-	decNumber x, y, r, theta;
-	const char *sep = polar ? ", \207 " : ", i ";
-	int lenx, leny;
+	decNumber x, y;
+	int lenx, leny, maxlen;
 	char bufx[ 50 ];
 	char bufy[ 54 ];
 	char buffer[104];
+	char *p;
 
 	if (advance_if_trace())
 		return;
@@ -484,27 +488,28 @@ void cmdprintcmplxreg( unsigned int reg, enum rarg op)
 
 	getRegister(&x, reg);
 	getRegister(&y, reg+1);
-	if (polar)
-		cmplxToPolar(&r, &theta, &x, &y);
 
 	xset( bufx, '\0', sizeof( bufx ) );
-	bufx[0] = bufx[1] = ' ';
-	set_x_dn( polar ? &r : &x, bufx+2);
-	lenx = buffer_width(bufx+2);
+	set_x_dn( &x, bufx);
+	p = find_char(bufx, '\0');
+	scopy(p, " , ");
+	lenx = buffer_width(bufx);
 
 	xset( bufy, '\0', sizeof( bufy ) );
-	set_x_dn( polar ? &theta : &y, scopy( bufy, sep ) );
+	set_x_dn( &y, bufy );
 	leny = buffer_width(bufy);
 
 	if (lenx + leny > 166) {
-		print_justified(bufx);
-		print_justified(bufy + 2);
+		p[2] = '\0';
+		lenx = buffer_width(bufx);
+		maxlen = lenx > leny ? lenx : leny;
+		print_string_from_tab(bufx, maxlen);
+		print_string_from_tab(bufy, maxlen);
 	} else {
-		scopy(scopy(buffer, bufx+2), bufy);
+		scopy(scopy(buffer, bufx), bufy);
 		print_justified(buffer);
 	}
 }	
-#endif
 
 /*
  *  Set printing modes

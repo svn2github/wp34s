@@ -696,10 +696,7 @@ static s_opcode prog_catalogue[] = {
 
 	/* INFRARED commands */
 	RARGCMD(RARG_PRINT_REG,	    "\222r")
-#ifdef PRINT_COMPLEX_REGS
-	RARGCMD(RARG_PRINT_CRECT,   "\222\024r[sub-x][sub-y]")
-	RARGCMD(RARG_PRINT_CPOLAR,  "\222\024r[sol]")
-#endif
+	RARGCMD(RARG_PRINT_CMPLX,   "\222\024r[sub-x][sub-y]")
 	RARGCMD(RARG_PRINT_BYTE,    "\222#")
 	RARGCMD(RARG_PRINT_CHAR,    "\222CHR")
 	RARGCMD(RARG_PRINT_TAB,     "\222TAB")
