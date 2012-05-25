@@ -3,9 +3,9 @@
 000f0048 R multicmds_ct
 000f00b6 R argcmds_ct
 000f079a R niladics_ct
-000f112a R trifuncs_ct
-000f11b6 R dyfuncs_ct
-000f14e0 R monfuncs_ct
+000f1136 R trifuncs_ct
+000f11c2 R dyfuncs_ct
+000f14ec R monfuncs_ct
 00100000 T _sfixed
 00100000 t resetVector
 00100004 t undefVector
@@ -123,839 +123,840 @@
 00101bb4 t clear_buffer
 00101be0 t stopwatch
 00101c38 t buffer_width
-00101c84 t cmdprintmode
-00101cb4 t dn_mulpow10
-00101ccc t dn_1
-00101ce0 t decNumberBooleanOp
-00101d30 t decNumberNot
-00101d54 t decNumberPI
-00101d68 t set_inf
-00101d7c t set_NaN
-00101d98 t cmplx_NaN
-00101dac t matrix_get128
-00101dc6 t packed128_from_number
-00101e08 t packed128_from_packed
-00101e26 t packed_from_number
-00101e68 t packed_from_packed128
-00101e86 t get_const
-00101ef4 t sigop
-00101f1e t round2int
-00101f44 t decNumberRound
-00101f52 t decNumberTrunc
-00101f60 t decNumberCeil
-00101f6e t decNumberFloor
-00101f7c t decNumberRoundDigits
-00101fb0 t complexResult
-00101fdc t decNumberBigMod
-0010201c t decNumberMod
-00102050 t dn_gcd
-00102092 t dn_to_int
-001020a8 t hms_step
-001020e4 t dn_exp
-001020f8 t dn_sqrt
-0010210c t dn_minus
-00102120 t dn_to_ull
-00102178 t cmplxMinus
-00102192 t dn_abs
-001021a8 t dn_max
-001021bc t dn_min
-001021d0 t dn_compare
-001021e4 t dn_lt
-001021fe t std_round_fix
-00102250 t dn_abs_lt
-0010226e t dn_eq
-001022b6 t is_even
-0010230c t dn_divide
-00102320 t decNumberD2G
-00102334 t decNumberR2G
-00102348 t decNumberR2D
-0010235c t decNumberRecip
-00102370 t dn_multiply
-00102384 t do_conv
-001023cc t mulop128
-001023fe t mulop
-0010241e t decNumberG2D
-00102430 t decNumberG2R
-00102444 t decNumberD2R
-00102458 t decNumberSquare
-00102466 t decNumberCube
-00102486 t dn_subtract
-0010249c t matrix_pivoting_solve
-0010257e t convF2C
-001025a8 t decNumberFrac
-001025ca t dn_1m
-001025e0 t dn_m1
-001025f4 t is_int
-00102644 t dn_check_gcd
-001026c0 t decNumberLCM
-0010272e t cmplxSubtract
-0010274c t dn_add
-00102760 t convC2F
-00102788 t decNumberHR2HMS
-00102860 t decNumberHMS2HR
-001028d4 t decNumberHMSSub
-00102906 t decNumberHMSAdd
-00102938 t dn_p1
-0010294c t dn_inc
-00102960 t do_atan
-00102ac8 t do_atan2
-00102be8 t sincosTaylor
-00102cec t cmplx_1x
-00102d54 t cmplxDivideRealBy
-00102db8 t cmplxRecip
-00102e1a t cmplxR
-00102e50 t cmplxAbs
-00102e68 t cmplxDivide
-00102f04 t cmplxMultiply
-00102f6e t cmplxAdd
-00102f8c t detect_voltage
-00103024 t put_key
-00103078 t scan_keyboard
-00103224 t go_idle
-00103258 t flush_comm
-00103280 t put_byte
-001032bc t put_word
-001032d4 t set_speed
-00103420 t update_speed
-00103434 t op_setspeed
-00103464 t SLCD_irq
-001035b8 t reset_disp
-00103634 t TC1_irq
-00103690 t set_decimal
-001036c2 t set_digits_string
-00103700 t set_separator.part.10
-00103732 t finish_display
-0010375c t set_IO_annunciator
-00103794 t prt_specials.part.13
-001038a0 t catcmd
-001039b0 t num_arg_digits
-001039f4 t prt
-00103cd4 t check_special_dn.isra.15
-00103d3c t add_char
-00103d80 t local_levels
-00103dac t local_regs_rarg
-00103dd6 t local_regs
-00103de4 t get_reg_n
-00103e94 t xeq_init_contexts
-00103f34 t getRegister
-00103f62 t getX
-00103f70 t getXY
-00103f86 t getXYZT
-00103fa6 t storcl_op
-0010401a t storcl_cop
-0010409c t get_stack
-001040aa t flag_word
-00104124 t get_user_flag
-00104140 t user_pc.part.20
-00104170 t stack_size
-001041ac t clrstk
-001041dc t global_regs_rarg
-00104210 t global_regs
-0010421e t get_reg_limit
-00104274 t retstk_up
-001042f8 t do_rtn
-0010436c t op_rtn
-0010439c t carry_overflow
-00104420 t set_int_x
-00104720 t cmdalpha
-0010475c t get_trig_mode
-00104790 t set_annunciators
-00104834 t decNumberDRG_internal
-001048b2 t decNumberDRG
-001048c8 t cvt_rad2
-001048d6 t decNumberArcTan2
-001048f4 t decNumberArcTan
-00104944 t decNumberArcCos
-001049dc t decNumberArcSin
-00104a5c t cvt_2rad
-00104b3c t annunciators
-00104cc4 t close_port_reset_state
-00104d00 t open_port_default
-00104d68 t toggle_running
-00104da8 t realULP
-00104e3c t decNumberULP
-00104e4c t decNumberMantissa
-00104e8e t check_low
-00104eb0 t ib_step
-00104efa t betacf
-00105074 t decNumberGCD
-001050d6 t relative_error
-00105110 t extract_date
-001051fc t end_memory_selection
-00105288 t process_select_memory_key
-00105364 t decNumberNeighbour
-001053f8 t decNumberTan
-00105450 t decNumberCos
-001054a4 t decNumberSin
-001054f8 t decNumberSinc
-00105544 t dn_sincos
-00105580 t cmplxExp
-001055ec t decNumberPow_1
-0010564c t ullint_to_dn
-001056cc t int_to_dn
-001056f6 t matrix_do_loop
-00105730 t get_sigmas
-001058bc t do_LR
-00105964 t correlation
-00105a2c t dn_ln
-00105b88 t sigma_helper
-00105c68 t dn_LnGamma
-00105d18 t decNumberArcCosh
-00105d4e t cmplxLn
-00105e00 t cmplxPower
-00105e38 t cmplxCubeRoot
-00105e70 t cmplxXRoot
-00105ea4 t c_lg
-00105f90 t build_date
-00106038 t dateToJ
-00106078 t dateExtraction
-001060c0 t dateDayOfWeek
-00106108 t decNumber2Fraction
-00106254 t set_x_dn
-00106bb0 t set_x
-00106bd6 t decNumberRnd
-00106c78 t decNumberLnGamma
-00106d20 t perm_helper
-00106dcc t decNumberPerm
-00106e04 t decNumberComb
-00106e5a t decNumberGamma
-00106f50 t decNumberGammap
-00107210 t decNumberFactorial
-0010722c t do_log
-00107258 t decNumberLogxy
-0010727a t dn_log10
-0010728c t convPR2DB
-001072aa t convAR2DB
-001072cc t dn_log2
-001072e0 t decNumberExpm1
-00107350 t dn_sinhcosh
-001073f4 t decNumberCosh
-00107426 t decNumberSinh
-00107456 t cmplx_sinhcosh
-001074a2 t cmplxCosh
-001074bc t cmplxSinh
-001074de t cmplx_sincos
-00107560 t cmplxCos
-0010757a t cmplxSin
-0010759c t cmplxLnGamma
-00107690 t cmplxGamma
-00107784 t decNumberTanh
-001077f8 t decNumberLn1p
-0010785a t decNumberArcSinh
-001078a8 t decNumberArcTanh
-0010792c t dn_power
-00107ab4 t decNumberXRoot
-00107b0c t decNumberCubeRoot
-00107b50 t decNumberPow10
-00107b64 t convDB2PR
-00107b84 t convDB2AR
-00107ba8 t decNumberPow2
-00107bbc t decNumberExponent
-00107bfa t dateFromJ
-00107c34 t dateFromYMD
-00107c80 t cmplxSqrt
-00107d3c t cmplxTanh
-00107d9c t cmplxSinc
-00107de6 t cmplxTan
-00107e50 t clrflags
-00107e90 t checksum_region.constprop.154
-00107ed0 t RTC_SetTimeAlarm.constprop.155
-00107f34 T __aeabi_unwind_cpp_pr0
-00107f36 T __aeabi_unwind_cpp_pr1
-00107f38 T __aeabi_unwind_cpp_pr2
-00107f3a T LowLevelInit
-00107fd8 T memcpy
-00107fd8 T xcopy
-00108004 t store_a_to_d
-00108030 t cmdsavem
-00108050 t set_reg_n_int
-00108068 t setX_int
-0010807a t get_reg_n_int
-00108094 t intws
-0010813c t getX_int
-0010814a t stats_sto_random
-0010817c t get_reg_n_int_sgn
-001081b8 t alpha_fromx
-001081d0 t alpha_rcl_s
-00108220 t alpha_rcl
-00108232 t alpha_ip
-00108290 t format_reg
-001082fc t alpha_reg
-0010831e t copyreg
-0010833e t lower2
-0010836c t lower
-0010839a t drop
-001083b0 t swap_reg
-001083d8 t cmdswap
-00108438 t fill
-00108464 t cpx_fill
-0010849c t roll_down
-001084c8 t cpx_roll_down
-001084dc t lift
-00108508 t lift_if_enabled
-00108520 t cpx_enter
-00108546 t roll_up
-00108574 t cpx_roll_up
-00108588 t copyreg_n
-001085a6 t setlastX
-001085b6 t setlastXY
-001085ca t alpha_rot_r
-00108610 t alpha_shift_r
-00108648 t display
-0010900c t cmdpause
-00109030 t cmdview
-00109070 t version
-00109090 t message
-001090f4 t busy
-00109138 t LU_decomposition
-00109312 t recv_byte
-00109390 t get_byte
-0010939e t get_word
-001093c0 t decNumberLnBeta
-00109410 t betai
-00109550 t put_ir
-00109650 t print_graphic
-00109686 t print
-001096f0 t print_advance
-0010971c t advance_if_trace
-0010973c t print_lf
-00109750 t wrap
-00109784 t print_line
-00109930 t print_tab
-001099a0 t print_program
-00109a6c t cmdprint
-00109a9a t print_justified
-00109af8 t print_alpha
-00109b2c t print_reg
-00109b8c t cmdprintreg
-00109ba6 t fin_tst
-00109bfc t op_entryp
-00109c1c t isSpecial
-00109c50 t isNan
-00109c84 t isInfinite
-00109cb4 t XisEvenOrOdd
-00109d00 t XisInt
-00109d4c t cmdflag
-00109df4 t set_overflow
-00109e0e t intFib
-00109ed8 t int_1pow
-00109f14 t intDblMul
-0010a0a8 t intAbs
-0010a100 t intMultiply
-0010a1a8 t intSqr
-0010a1b8 t intLCM
-0010a254 t intCube
-0010a296 t calc_overflow
-0010a3ae t set_carry
-0010a3c8 t intmsks
-0010a460 t intLSL
-0010a48a t intLSR
-0010a4b6 t int_justify
-0010a554 t int2pow
-0010a5cc t intASR
-0010a62c t intRRC
-0010a668 t intRLC
-0010a6a0 t intRR
-0010a6d6 t intRL
-0010a706 t intSubtract
-0010a85c t intAdd
-0010a980 t check_zero
-0010a9e4 t isTop
-0010aa18 t op_query_print
-0010aa26 t op_query_xtal
-0010aa34 t check_dblmode
-0010aa44 t check_mode
-0010aa70 t date_isleap
-0010aaee t cmdprintcmplxreg.part.112
-0010aba8 t alpha_view_common
-0010abe8 t op_prompt
-0010abfa t alpha_view_reg
-0010ac06 t alpha_view
-0010ac16 t error_message
-0010acf8 t set_running_on
-0010ad44 t op_rs
-0010ad88 t cmdmsg
-0010ad94 t err
-0010adb8 t matrix_range_check
-0010ae20 t matrix_descriptor
-0010ae62 t matrix_decompose
-0010af00 t matrix_decomp
-0010af1c t matrix_colq
-0010af44 t matrix_rowq
-0010af6c t matrix_diag
-0010afac t matrix_all
-0010afe4 t matrix_is_square
-0010b012 t matrix_transpose
-0010b0ec t matrix_lu_check
-0010b150 t matrix_determinant
-0010b1b8 t matrix_lu_decomp
-0010b26c t matrix_linear_eqn
-0010b360 t matrix_inverse
-0010b424 t matrix_rowops
-0010b524 t matrix_genadd
-0010b5c2 t matrix_getreg
-0010b61c t matrix_col
-0010b66e t matrix_row
-0010b6c2 t put_block
-0010b79c t send_all
-0010b7b8 t send_registers
-0010b7e4 t send_program
-0010b820 t cmdlpop
-0010b858 t intResult
-0010b914 t not_running
-0010b934 t gsbgto
-0010b9d0 t usergsb_common
-0010ba5c t do_usergsb
-0010ba74 t cmdgtocommon
-0010ba9c t cmdback
-0010bb08 t cmdskip
-0010bb7c t find_opcode_from
-0010bbd2 t cmdgto
-0010bc20 t cmdlblp
-0010bc4c t findmultilbl
-0010bc98 t branchtoalpha
-0010bcc4 t cmdalphagto
-0010bcee t cmdmultigto
-0010bd38 t cmdmultilblp
-0010bd4e t check_stack_overlap
-0010bd76 t cmdrclstk
-0010bda8 t cmdstostk
-0010bdda t get_keycode_from_reg
-0010be26 t cmdputkey
-0010be40 t check_special
-0010beaa t setRegister
-0010bef4 t store_stopwatch_in_memory
-0010bf5c t stopwatch_callback
-0010c290 t cmdshuffle
-0010c2c6 t cmdloop
-0010c45c t incdec
-0010c4ec t cmdloopz
-0010c502 t cmdlincdec
-0010c514 t set_reg_n_int_sgn
-0010c564 t int_from_register
-0010c5a0 t switch_to_int
-0010c600 t register_from_int
-0010c668 t op_float
-0010c714 t op_fract
-0010c754 t set_int_base
-0010c794 t cmddisp
-0010c7d4 t cmdkeyp
-0010c824 t setX_int_sgn
-0010c83a t op_fracdenom
-0010c89c t cmdkeytype
-0010c8d0 t get_mem
-0010c928 t op_ticks
-0010c940 t get_base
-0010c954 t get_sign_mode
-0010c984 t get_word_size
-0010c998 t get_stack_size
-0010c9ac t op_roundingmode
-0010c9d0 t alpha_tox
-0010c9f4 t alpha_length
-0010ca08 t alpha_sto
-0010ca68 t setX
-0010ca78 t cmdconv
-0010cab0 t op_voltage
-0010cafc t stats_random
-0010cb70 t date_time
-0010cbba t date_date
-0010cc24 t setXY
-0010cc3a t op_2frac
-0010cccc t op_p2r
-0010cd18 t op_r2p
-0010cd52 t do_s
-0010cdc6 t mean_common
-0010cdf0 t fract_convert_number
-0010ce1c t matrix_getrc
-0010ce8c t cmdrrcl
-0010cf18 t rarg_round
-0010cfac t cmderr
-0010cfb8 t bad_mode_error
-0010cfc6 t cmdprintcmplxreg
-0010cff4 t op_shift_digit
-0010d04c t cmdconst
-0010d0d4 t intDyadic
-0010d17c t intMonadic
-0010d1f0 t reg_decode
-0010d340 t print_registers
-0010d410 t op_regsort
-0010d4f8 t op_regclr
-0010d51c t op_regswap
-0010d580 t cmdcrcl
-0010d628 t cmdcsto
-0010d6c4 t program_flash
-0010d74c t init_library
-0010d788 t sigmaCheck
-0010d7cc t send_sigma
-0010d7f0 t stats_sigper
-0010d832 t sigma_sum
-0010d89c t sigma_val
-0010d930 t print_sigma
-0010d990 t check_data
-0010d9bc t stats_yhat
-0010da58 t stats_xhat
-0010dafe t stats_LR
-0010db28 t stats_COV
-0010dba8 t stats_correlation
-0010dbdc t stats_deviations
-0010dc7a t stats_gmean
-0010dcb8 t stats_wmean
-0010dcf0 t stats_mean
-0010dd32 t stats_wdeviations
-0010ddfc t XisPrime
-0010e0b8 t intbits
-0010e15c t introt
-0010e228 t intLog10
-0010e29e t intLog2
-0010e2fe t intPower
-0010e3f2 t int10pow
-0010e424 t intSqrt
-0010e4f2 t err_div0
-0010e50e t divmod
-0010e938 t intDblRmdr
-0010e966 t intDblDiv
-0010e9ae t intMod
-0010e9fc t intDivide
-0010ead8 t storcl_intop
-0010eb6c t do_rcl
-0010ebf4 t cmdrcl
-0010ec00 t cmdircl
-0010ec2c t cmdsto
-0010ec98 t extract_time
-0010ed0e t date_settime
-0010edd8 t date_alphatime
-0010ee6c t date_setdate
-0010ef74 t date_alphamonth
-0010efbc t date_alphaday
-0010f00c t date_alphadate
-0010f0b8 t warn
-0010f0f8 t digit
-0010f250 t check_delete_prog
-0010f284 t stoprog
-0010f360 t matrix_copy
-0010f3b0 t matrix_multiply
-0010f4b0 t cmdxout
-0010f65c t cmdlocr
-0010f76c t op_gtoalpha
-0010f7a0 t process_cmdline
-0010f918 t print_trace
-0010fa08 t process_cmdline_set_lift
-0010fa24 t do_tst
-0010fb70 t cmdconverged
-0010fc58 t cmdtest
-0010fc6a t clrreg
-0010fcc0 t clrall
-0010fd1c t reset
-0010fd7c t init_34s
-0010fdb8 t init_arg
-0010fdf8 t reset_arg
-0010fe14 t arg_eval
-0010fe94 t process_arg_shuffle
-0010fec8 t process_arg
-00110358 t set_window
-001103fc t shutdown
-001104b4 t cmd_off
-001104ba t do_ztst
-00110540 t cmdztest
-0011056e t flash_backup
-001105bc t op_regcopy
-001105fa t move_retstk
-00110658 t sigmaDeallocate
-00110684 t sigma_clear
-00110690 t sigmaAllocate
-001106ec t cmdregs
-001107a0 t op_double
-00110874 t cmdxin
-00110a58 t cmdrestm
-00110b04 t flash_append
-00110ba4 t clrprog
-00110c4c t store_program
-00110d18 t load_state
-00110d5c t load_registers
-00110dcc t flash_restore
-00110e14 t append_program
-00110ec0 t recall_program
-00110f08 t load_program
-00110f4c t xeq
-0011197c t xeq_sst_bst
-00111a70 t xeq_single
-00111a94 t xeqprog
-00111b3c t xeq_xrom
-00111ba0 t dispatch_xrom
-00111bfc t recv_any
-00111d88 t load_sigma
-00111de0 T memset
-00111de0 T xset
-00111dfc t keycode_to_alpha
-00111e38 t reset_multi
-00111e58 t set_status_right
-00111eb8 t is_label_or_end_at
-00111eec t advance_to_next_label
-00111f34 t advance_to_previous_label
-00111f78 t check_confirm
-00111fc8 t check_f_key
-00112014 t init_cat
-001120d8 t process_catalogue
-00112364 T main
-00113d34 T __gnu_thumb1_case_uqi
-00113d48 T __gnu_thumb1_case_uhi
-00113d5c t .udivsi3_skip_div0_test
-00113d5c T __aeabi_uidiv
-00113d5c T __udivsi3
-00113e58 T __aeabi_uidivmod
-00113e78 T __aeabi_idiv
-00113e78 T __divsi3
-00113e80 t .divsi3_skip_div0_test
-00113fa8 T __aeabi_idivmod
-00113fc8 W __aeabi_idiv0
-00113fc8 W __aeabi_ldiv0
-00113fcc T __aeabi_llsr
-00113fcc T __lshrdi3
-00113fe4 T __aeabi_lasr
-00113fe4 T __ashrdi3
-00114000 T __aeabi_llsl
-00114000 T __ashldi3
-00114018 T __aeabi_uldivmod
-00114054 T __aeabi_lmul
-00114054 T __muldi3
-001140a0 T __paritysi2
-001140c0 T __gnu_ldivmod_helper
-001140fc T __gnu_uldivmod_helper
-00114134 T __divdi3
-001144c4 T __udivdi3
-0011481c T __clzsi2
-00114864 T decContextDefault
-001148c8 T decContextSetStatus
-001148d0 t decUnitAddSub
-00114b08 t decSetOverflow
-00114bb0 t decBiStr
-00114bd4 t decGetDigits
-00114c0c t decStatus
-00114c40 t decUnitCompare
-00114d14 t decCompare
-00114e0c t decShiftToMost
-00114ef8 t decShiftToLeast.part.1
-00114fdc t decSetCoeff.isra.3
-0011521c t decCopyFit
-00115242 t decApplyRound.part.6
-001153cc t decSetSubnormal
-001154b4 t decFinalize
-0011557e t decTrim.constprop.8
-00115630 T decNumberToString
-001159c0 T decNumberFromString
-00115ce8 T decNumberCopy
-00115d34 t decNaNs
-00115d88 T decNumberNormalize
-00115de2 t decMultiplyOp
-00115f98 T decNumberMultiply
-00115fc6 t decCompareOp
-001160ce T decNumberMin
-00116100 T decNumberMax
-00116132 T decNumberCompare
-00116164 t decAddOp
-00116588 T decNumberSubtract
-001165ba T decNumberAdd
-001165ea T decNumberPlus
-0011662e T decNumberMinus
-00116674 T decNumberAbs
-001166be t decDivideOp
-00116d70 T decNumberRemainder
-00116da2 T decNumberDivide
-00116dd4 T decNumberSquareRoot
-00117254 t decExpOp
-001175fc T decNumberExp
-00117680 T decNumberZero
-0011768e T decGetInt
-00117788 t decQuantizeOp
-00117914 T decNumberRescale
-00117944 T decNumberQuantize
-00117976 T decNumberToIntegralValue
-001179f4 T decimal128FromNumber
-00117b5c T decimal128ToNumber
-00117c48 T decDigitsToDPD
-00117d7c T decimal64FromNumber
-00117ed4 T decDigitsFromDPD
-00117f60 T decimal64ToNumber
-00118034 T decimal64ToString
-00118058 t ____aeabi_idivmod_from_thumb
-00118060 t ____gnu_uldivmod_helper_from_arm
-0011806c t ____aeabi_idiv0_from_arm
-00118078 t ____aeabi_uidiv_from_thumb
-00118080 t ____clzsi2_from_thumb
-00118088 t ____aeabi_idiv_from_thumb
-00118090 t ____aeabi_uidivmod_from_thumb
-00118098 t ____aeabi_ldiv0_from_arm
-001180a4 t ____aeabi_uldivmod_from_thumb
-001180b8 t widths.5374
-00118163 t divs.5375
-00118166 t bm_small.5392
-001183c4 t bm_large.5391
-001186fe t alphamap.8955
-001187ca t linear_key_map.8920
-001187f3 t alpha_letters_lower
-0011881b t conv_catalogue
-00118874 t catalogues.9208
-001188cc t opcode_breaks
-001188d3 t lcd_bit
-00118961 t lcd_addr
-001189ef t digtbl
-00118a6a t multicmds
-00118ac4 t cnsts_conv
-00118d14 t RegionTab
-00118d24 t modes.10318
-00118d2b t cnsts
-00118ee0 t cnsts_d128
-00118fe0 t cnsts_d64
-00119228 t speeds.4609
-0011923c t argcmds
-0011980c t niladics
-0011a004 t monfuncs
-0011a730 t dyfuncs
-0011a94c t trifuncs
-0011a9b0 t S7_NaN
-0011a9bd t S7_INF
-0011a9c6 t DIGITS
-0011a9d8 t CSWTCH.937
-0011a9e0 t CSWTCH.940
-0011a9ec t map.8932
-0011aa10 t small_ints
-0011aa38 t gamma_consts
-0011aa8c t S7_fract_LT
-0011aa90 t S7_fract_GT
-0011aa94 t S7_fract_EQ
-0011aa98 t S7_STEP
-0011aaac t S_SURE
-0011aab2 t libname
-0011aac1 t mask.4681
-0011aac5 t printer_chars
-0011ab65 t S7_ERROR
-0011ab6c t error_table.7791
-0011abd0 t xrom_targets
-0011ac06 t StackRegMask
-0011ac33 t modes.10776
-0011ac37 t ops.12396
-0011ac45 t primes
-0011ac55 t mons.6782
-0011ac7c t convergence_tolerances
-0011ac88 t catalogue_sizes.9200
-0011ac9e t conv_mapping.9247
-0011acb6 t character_remapping_order
-0011adb6 t cmap.8945
-0011ade6 t amap.8946
-0011adfe t op_map.9060
-0011ae04 t smap.8947
-0011ae08 t op_map.9075
-0011ae14 t disp.9076
-0011ae18 t op_map.9048
-0011af28 t op_map.9016
-0011afb0 t op_map2.9017
-0011afb8 t op_map.9038
-0011affc t op_map.8998
-0011b185 t catalogue
-0011b205 t cplx_catalogue
-0011b221 t stats_catalogue
-0011b237 t prob_catalogue
-0011b27b t int_catalogue
-0011b2c1 t prog_catalogue
-0011b318 t program_xfcn
-0011b3b0 t test_catalogue
-0011b3e9 t mode_catalogue
-0011b428 t alpha_catalogue
-0011b43a t alpha_symbols
-0011b44d t alpha_compares
-0011b457 t alpha_arrows
-0011b460 t alpha_letters
-0011b488 t alpha_subscripts
-0011b4a2 t sums_catalogue
-0011b4b4 t matrix_catalogue
-0011b4cc t internal_catalogue
-0011b728 T const_NaN
-0011b734 T const_inf
-0011b740 T const__inf
-0011b74c T const__1
-0011b758 T const__0
-0011b764 T const_0
-0011b770 T const_1
-0011b77c T const_2
-0011b788 T const_3
-0011b794 T const_4
-0011b7a0 T const_5
-0011b7ac T const_6
-0011b7b8 T const_7
-0011b7c4 T const_8
-0011b7d0 T const_9
-0011b7dc T const_10
-0011b7e8 T const_20
-0011b7f4 T const_21
-0011b800 T const_32
-0011b80c T const_60
-0011b818 T const_90
-0011b824 T const_100
-0011b830 T const_256
-0011b83c T const_360
-0011b848 T const_400
-0011b854 T const_9000
-0011b860 T const_100000
-0011b86c T const_1e_32
-0011b878 T const_1e_37
-0011b884 T const_1e_24
-0011b890 T const_1e_14
-0011b89c T const_0_0000005
-0011b8a8 T const_0_0001
-0011b8b4 T const_0_1
-0011b8c0 T const_0_05
-0011b8cc T const_0_4
-0011b8d8 T const_0_5
-0011b8e4 T const_0_6
-0011b8f0 T const_0_75
-0011b8fc T const_0_9
-0011b908 T const_1on60
-0011b92c T const_9on5
-0011b938 T const_root2on2
-0011b95c T const_PI
-0011b980 T const_2PI
-0011bab8 T const_PIon2
-0011badc T const_PIon180
-0011bb00 T const_PIon200
-0011bb24 T const_ln2
-0011bb48 T const_ln10
-0011bb6c T const_2pow64
-0011bb84 T const_randfac
-0011bba0 T const_gammaR
-0011bbb0 T const_gammaC00
-0011bbd4 T const_gammaC01
-0011bbf8 T const_gammaC02
-0011bc1c T const_gammaC03
-0011bc40 T const_gammaC04
-0011bc64 T const_gammaC05
-0011bc88 T const_gammaC06
-0011bcac T const_gammaC07
-0011bcd0 T const_gammaC08
-0011bcf4 T const_gammaC09
-0011bd18 T const_gammaC10
-0011bd3c T const_gammaC11
-0011bd60 T const_gammaC12
-0011bd84 T const_gammaC13
-0011bda8 T const_gammaC14
-0011bdcc T const_gammaC15
-0011bdf0 T const_gammaC16
-0011be14 T const_gammaC17
-0011be38 T const_gammaC18
-0011be5c T const_gammaC19
-0011be80 T const_gammaC20
-0011bea4 T const_gammaC21
-0011bec8 T powers
-0011bef0 t multies
-0011bf04 t resmap
-0011bf0e t uarrone
-0011bf34 t mfcone
-0011bf38 t multies
-0011bf4c t mfcone
-0011bf50 T COMBMSD
-0011bfd0 T COMBEXP
-0011c050 t xrom
-0011d6c4 R SvnRevision
-0011d6c4 T _efixed
+00101c78 t cmdprintmode
+00101ca8 t dn_mulpow10
+00101cc0 t dn_1
+00101cd4 t decNumberBooleanOp
+00101d24 t decNumberNot
+00101d48 t decNumberPI
+00101d5c t set_inf
+00101d70 t set_NaN
+00101d8c t cmplx_NaN
+00101da0 t matrix_get128
+00101dba t packed128_from_number
+00101dfc t packed128_from_packed
+00101e1a t packed_from_number
+00101e5c t packed_from_packed128
+00101e7a t get_const
+00101ee8 t sigop
+00101f12 t round2int
+00101f38 t decNumberRound
+00101f46 t decNumberTrunc
+00101f54 t decNumberCeil
+00101f62 t decNumberFloor
+00101f70 t decNumberRoundDigits
+00101fa4 t complexResult
+00101fd0 t decNumberBigMod
+00102010 t decNumberMod
+00102044 t dn_gcd
+00102086 t dn_to_int
+0010209c t hms_step
+001020d8 t dn_exp
+001020ec t dn_sqrt
+00102100 t dn_minus
+00102114 t dn_to_ull
+0010216c t cmplxMinus
+00102186 t dn_abs
+0010219c t dn_max
+001021b0 t dn_min
+001021c4 t dn_compare
+001021d8 t dn_lt
+001021f2 t std_round_fix
+00102244 t dn_abs_lt
+00102262 t dn_eq
+001022aa t is_even
+00102300 t dn_divide
+00102314 t decNumberD2G
+00102328 t decNumberR2G
+0010233c t decNumberR2D
+00102350 t decNumberRecip
+00102364 t dn_multiply
+00102378 t do_conv
+001023c0 t mulop128
+001023f2 t mulop
+00102412 t decNumberG2D
+00102424 t decNumberG2R
+00102438 t decNumberD2R
+0010244c t decNumberSquare
+0010245a t decNumberCube
+0010247a t dn_subtract
+00102490 t matrix_pivoting_solve
+00102572 t convF2C
+0010259c t decNumberFrac
+001025be t dn_1m
+001025d4 t dn_m1
+001025e8 t is_int
+00102638 t dn_check_gcd
+001026b4 t decNumberLCM
+00102722 t cmplxSubtract
+00102740 t dn_add
+00102754 t convC2F
+0010277c t decNumberHR2HMS
+00102854 t decNumberHMS2HR
+001028c8 t decNumberHMSSub
+001028fa t decNumberHMSAdd
+0010292c t dn_p1
+00102940 t dn_inc
+00102954 t do_atan
+00102abc t do_atan2
+00102bdc t sincosTaylor
+00102ce0 t cmplx_1x
+00102d48 t cmplxDivideRealBy
+00102dac t cmplxRecip
+00102e0e t cmplxR
+00102e44 t cmplxAbs
+00102e5c t cmplxDivide
+00102ef8 t cmplxMultiply
+00102f62 t cmplxAdd
+00102f80 t detect_voltage
+00103018 t put_key
+0010306c t scan_keyboard
+00103218 t go_idle
+0010324c t flush_comm
+00103274 t put_byte
+001032b0 t put_word
+001032c8 t set_speed
+00103414 t update_speed
+00103428 t op_setspeed
+00103458 t SLCD_irq
+001035ac t reset_disp
+00103628 t TC1_irq
+00103684 t set_decimal
+001036b6 t set_digits_string
+001036f4 t set_separator.part.10
+00103726 t finish_display
+00103750 t set_IO_annunciator
+00103788 t prt_specials.part.13
+00103894 t catcmd
+001039a0 t num_arg_digits
+001039e4 t prt
+00103cb4 t check_special_dn.isra.15
+00103d18 t add_char
+00103d5c t local_levels
+00103d88 t local_regs_rarg
+00103db2 t local_regs
+00103dc0 t get_reg_n
+00103e70 t xeq_init_contexts
+00103f10 t getRegister
+00103f3e t getX
+00103f4c t getXY
+00103f62 t getXYZT
+00103f82 t storcl_op
+00103ff6 t storcl_cop
+00104078 t get_stack
+00104086 t flag_word
+00104100 t get_user_flag
+0010411c t user_pc.part.20
+0010414c t stack_size
+00104188 t clrstk
+001041b8 t global_regs_rarg
+001041ec t global_regs
+001041fa t get_reg_limit
+00104250 t retstk_up
+001042d4 t do_rtn
+00104348 t op_rtn
+00104378 t carry_overflow
+001043fc t set_int_x
+00104700 t cmdalpha
+0010473c t get_trig_mode
+00104770 t set_annunciators
+00104814 t decNumberDRG_internal
+00104892 t decNumberDRG
+001048a8 t cvt_rad2
+001048b6 t decNumberArcTan2
+001048d4 t decNumberArcTan
+00104924 t decNumberArcCos
+001049bc t decNumberArcSin
+00104a3c t cvt_2rad
+00104b1c t annunciators
+00104ca4 t close_port_reset_state
+00104ce0 t open_port_default
+00104d48 t toggle_running
+00104d88 t realULP
+00104e1c t decNumberULP
+00104e2c t decNumberMantissa
+00104e6e t check_low
+00104e90 t ib_step
+00104eda t betacf
+00105054 t decNumberGCD
+001050b6 t relative_error
+001050f0 t extract_date
+001051dc t end_memory_selection
+00105268 t process_select_memory_key
+00105344 t decNumberNeighbour
+001053d8 t decNumberTan
+00105430 t decNumberCos
+00105484 t decNumberSin
+001054d8 t decNumberSinc
+00105524 t dn_sincos
+00105560 t cmplxExp
+001055cc t decNumberPow_1
+0010562c t ullint_to_dn
+001056ac t int_to_dn
+001056d6 t matrix_do_loop
+00105710 t get_sigmas
+0010589c t do_LR
+00105944 t correlation
+00105a0c t dn_ln
+00105b68 t sigma_helper
+00105c48 t dn_LnGamma
+00105cfc t decNumberArcCosh
+00105d32 t cmplxLn
+00105de4 t cmplxPower
+00105e1c t cmplxCubeRoot
+00105e54 t cmplxXRoot
+00105e88 t c_lg
+00105f74 t build_date
+0010601c t dateToJ
+0010605c t dateExtraction
+001060a4 t dateDayOfWeek
+001060ec t decNumber2Fraction
+00106238 t set_x_dn
+00106b94 t set_x
+00106bba t decNumberRnd
+00106c5c t decNumberLnGamma
+00106d04 t perm_helper
+00106db0 t decNumberPerm
+00106de8 t decNumberComb
+00106e3e t decNumberGamma
+00106f34 t decNumberGammap
+001071f4 t decNumberFactorial
+00107210 t do_log
+0010723c t decNumberLogxy
+0010725e t dn_log10
+00107270 t convPR2DB
+0010728e t convAR2DB
+001072b0 t dn_log2
+001072c4 t decNumberExpm1
+00107334 t dn_sinhcosh
+001073d8 t decNumberCosh
+0010740a t decNumberSinh
+0010743a t cmplx_sinhcosh
+00107486 t cmplxCosh
+001074a0 t cmplxSinh
+001074c2 t cmplx_sincos
+00107544 t cmplxCos
+0010755e t cmplxSin
+00107580 t cmplxLnGamma
+00107674 t cmplxGamma
+00107768 t decNumberTanh
+001077dc t decNumberLn1p
+0010783e t decNumberArcSinh
+0010788c t decNumberArcTanh
+00107910 t dn_power
+00107a98 t decNumberXRoot
+00107af0 t decNumberCubeRoot
+00107b34 t decNumberPow10
+00107b48 t convDB2PR
+00107b68 t convDB2AR
+00107b8c t decNumberPow2
+00107ba0 t decNumberExponent
+00107bde t dateFromJ
+00107c18 t dateFromYMD
+00107c64 t cmplxSqrt
+00107d20 t cmplxTanh
+00107d80 t cmplxSinc
+00107dca t cmplxTan
+00107e34 t clrflags
+00107e74 t checksum_region.constprop.154
+00107eb4 t RTC_SetTimeAlarm.constprop.155
+00107f18 T __aeabi_unwind_cpp_pr0
+00107f1a T __aeabi_unwind_cpp_pr1
+00107f1c T __aeabi_unwind_cpp_pr2
+00107f1e T LowLevelInit
+00107fbc T memcpy
+00107fbc T xcopy
+00107fe8 t store_a_to_d
+00108014 t cmdsavem
+00108034 t set_reg_n_int
+0010804c t setX_int
+0010805e t get_reg_n_int
+00108078 t intws
+00108120 t getX_int
+0010812e t stats_sto_random
+00108160 t get_reg_n_int_sgn
+0010819c t alpha_fromx
+001081b4 t alpha_rcl_s
+00108204 t alpha_rcl
+00108216 t alpha_ip
+00108274 t format_reg
+001082e0 t alpha_reg
+00108302 t copyreg
+00108322 t lower2
+00108350 t lower
+0010837e t drop
+00108394 t swap_reg
+001083bc t cmdswap
+0010841c t fill
+00108448 t cpx_fill
+00108480 t roll_down
+001084ac t cpx_roll_down
+001084c0 t lift
+001084ec t lift_if_enabled
+00108504 t cpx_enter
+0010852a t roll_up
+00108558 t cpx_roll_up
+0010856c t copyreg_n
+0010858a t setlastX
+0010859a t setlastXY
+001085ae t alpha_rot_r
+001085f4 t alpha_shift_r
+0010862c t display
+00108ffc t cmdpause
+00109020 t cmdview
+00109060 t version
+00109080 t message
+001090e4 t busy
+00109128 t LU_decomposition
+00109302 t recv_byte
+00109380 t get_byte
+0010938e t get_word
+001093b0 t decNumberLnBeta
+00109400 t betai
+00109540 t put_ir
+00109640 t print_graphic
+00109676 t print
+001096e0 t print_advance
+0010970c t advance_if_trace
+0010972c t print_lf
+00109740 t wrap
+00109774 t print_line
+00109920 t print_tab
+00109990 t print_program
+00109a5c t cmdprint
+00109a8a t print_justified
+00109ae8 t print_alpha
+00109b1c t print_reg
+00109b7c t cmdprintreg
+00109b96 t fin_tst
+00109bec t op_entryp
+00109c0c t isSpecial
+00109c40 t isNan
+00109c74 t isInfinite
+00109ca4 t XisEvenOrOdd
+00109cf0 t XisInt
+00109d3c t cmdflag
+00109de4 t set_overflow
+00109dfe t intFib
+00109ec8 t int_1pow
+00109f04 t intDblMul
+0010a098 t intAbs
+0010a0f0 t intMultiply
+0010a198 t intSqr
+0010a1a8 t intLCM
+0010a244 t intCube
+0010a286 t calc_overflow
+0010a39e t set_carry
+0010a3b8 t intmsks
+0010a450 t intLSL
+0010a47a t intLSR
+0010a4a6 t int_justify
+0010a544 t int2pow
+0010a5bc t intASR
+0010a61c t intRRC
+0010a658 t intRLC
+0010a690 t intRR
+0010a6c6 t intRL
+0010a6f6 t intSubtract
+0010a84c t intAdd
+0010a970 t check_zero
+0010a9d4 t isTop
+0010aa08 t op_query_print
+0010aa16 t op_query_xtal
+0010aa24 t check_dblmode
+0010aa34 t check_mode
+0010aa60 t date_isleap
+0010aade t cmdprintcmplxreg.part.112
+0010ab98 t alpha_view_common
+0010abd8 t op_prompt
+0010abea t alpha_view_reg
+0010abf6 t alpha_view
+0010ac06 t error_message
+0010ace8 t set_running_on
+0010ad34 t op_rs
+0010ad78 t cmdmsg
+0010ad84 t err
+0010ada8 t matrix_range_check
+0010ae10 t matrix_descriptor
+0010ae52 t matrix_decompose
+0010aef0 t matrix_decomp
+0010af0c t matrix_colq
+0010af34 t matrix_rowq
+0010af5c t matrix_diag
+0010af9c t matrix_all
+0010afd4 t matrix_is_square
+0010b002 t matrix_transpose
+0010b0dc t matrix_lu_check
+0010b140 t matrix_determinant
+0010b1a8 t matrix_lu_decomp
+0010b25c t matrix_linear_eqn
+0010b350 t matrix_inverse
+0010b414 t matrix_rowops
+0010b514 t matrix_genadd
+0010b5b2 t matrix_getreg
+0010b60c t matrix_col
+0010b65e t matrix_row
+0010b6b2 t put_block
+0010b78c t send_all
+0010b7a8 t send_registers
+0010b7d4 t send_program
+0010b810 t cmdlpop
+0010b848 t intResult
+0010b904 t not_running
+0010b924 t gsbgto
+0010b9c0 t usergsb_common
+0010ba4c t do_usergsb
+0010ba64 t cmdgtocommon
+0010ba8c t cmdback
+0010baf8 t cmdskip
+0010bb6c t find_opcode_from
+0010bbc2 t cmdgto
+0010bc10 t cmdlblp
+0010bc3c t findmultilbl
+0010bc88 t branchtoalpha
+0010bcb4 t cmdalphagto
+0010bcde t cmdmultigto
+0010bd28 t cmdmultilblp
+0010bd3e t check_stack_overlap
+0010bd66 t cmdrclstk
+0010bd98 t cmdstostk
+0010bdca t get_keycode_from_reg
+0010be16 t cmdputkey
+0010be30 t check_special
+0010be9a t setRegister
+0010bee4 t store_stopwatch_in_memory
+0010bf4c t stopwatch_callback
+0010c280 t cmdshuffle
+0010c2b6 t cmdloop
+0010c44c t incdec
+0010c4dc t cmdloopz
+0010c4f2 t cmdlincdec
+0010c504 t set_reg_n_int_sgn
+0010c554 t int_from_register
+0010c590 t switch_to_int
+0010c5f0 t register_from_int
+0010c658 t op_float
+0010c704 t op_fract
+0010c744 t set_int_base
+0010c784 t cmddisp
+0010c7c4 t cmdkeyp
+0010c814 t setX_int_sgn
+0010c82a t cmdprintwidth
+0010c84c t op_fracdenom
+0010c8ac t cmdkeytype
+0010c8e0 t get_mem
+0010c938 t op_ticks
+0010c950 t get_base
+0010c964 t get_sign_mode
+0010c994 t get_word_size
+0010c9a8 t get_stack_size
+0010c9bc t op_roundingmode
+0010c9e0 t alpha_tox
+0010ca04 t alpha_length
+0010ca18 t alpha_sto
+0010ca78 t setX
+0010ca88 t cmdconv
+0010cac0 t op_voltage
+0010cb0c t stats_random
+0010cb80 t date_time
+0010cbca t date_date
+0010cc34 t setXY
+0010cc4a t op_2frac
+0010ccdc t op_p2r
+0010cd28 t op_r2p
+0010cd62 t do_s
+0010cdd6 t mean_common
+0010ce00 t fract_convert_number
+0010ce2c t matrix_getrc
+0010ce9c t cmdrrcl
+0010cf28 t rarg_round
+0010cfbc t cmderr
+0010cfc8 t bad_mode_error
+0010cfd6 t cmdprintcmplxreg
+0010d004 t op_shift_digit
+0010d05c t cmdconst
+0010d0e4 t intDyadic
+0010d18c t intMonadic
+0010d200 t reg_decode
+0010d350 t print_registers
+0010d420 t op_regsort
+0010d508 t op_regclr
+0010d52c t op_regswap
+0010d590 t cmdcrcl
+0010d638 t cmdcsto
+0010d6d4 t program_flash
+0010d75c t init_library
+0010d798 t sigmaCheck
+0010d7dc t send_sigma
+0010d800 t stats_sigper
+0010d842 t sigma_sum
+0010d8ac t sigma_val
+0010d940 t print_sigma
+0010d9a0 t check_data
+0010d9cc t stats_yhat
+0010da68 t stats_xhat
+0010db0e t stats_LR
+0010db38 t stats_COV
+0010dbb8 t stats_correlation
+0010dbec t stats_deviations
+0010dc8a t stats_gmean
+0010dcc8 t stats_wmean
+0010dd00 t stats_mean
+0010dd42 t stats_wdeviations
+0010de0c t XisPrime
+0010e0c8 t intbits
+0010e16c t introt
+0010e238 t intLog10
+0010e2ae t intLog2
+0010e30e t intPower
+0010e402 t int10pow
+0010e434 t intSqrt
+0010e502 t err_div0
+0010e51e t divmod
+0010e948 t intDblRmdr
+0010e976 t intDblDiv
+0010e9be t intMod
+0010ea0c t intDivide
+0010eae8 t storcl_intop
+0010eb7c t do_rcl
+0010ec04 t cmdrcl
+0010ec10 t cmdircl
+0010ec3c t cmdsto
+0010eca8 t extract_time
+0010ed1e t date_settime
+0010ede8 t date_alphatime
+0010ee7c t date_setdate
+0010ef84 t date_alphamonth
+0010efcc t date_alphaday
+0010f01c t date_alphadate
+0010f0c8 t warn
+0010f108 t digit
+0010f260 t check_delete_prog
+0010f294 t stoprog
+0010f370 t matrix_copy
+0010f3c0 t matrix_multiply
+0010f4c0 t cmdxout
+0010f66c t cmdlocr
+0010f77c t op_gtoalpha
+0010f7b0 t process_cmdline
+0010f928 t print_trace
+0010fa18 t process_cmdline_set_lift
+0010fa34 t do_tst
+0010fb80 t cmdconverged
+0010fc68 t cmdtest
+0010fc7a t clrreg
+0010fcd0 t clrall
+0010fd2c t reset
+0010fd8c t init_34s
+0010fdc8 t init_arg
+0010fe08 t reset_arg
+0010fe24 t arg_eval
+0010fea4 t process_arg_shuffle
+0010fed8 t process_arg
+00110368 t set_window
+0011040c t shutdown
+001104c4 t cmd_off
+001104ca t do_ztst
+00110550 t cmdztest
+0011057e t flash_backup
+001105cc t op_regcopy
+0011060a t move_retstk
+00110668 t sigmaDeallocate
+00110694 t sigma_clear
+001106a0 t sigmaAllocate
+001106fc t cmdregs
+001107b0 t op_double
+00110884 t cmdxin
+00110a68 t cmdrestm
+00110b14 t flash_append
+00110bb4 t clrprog
+00110c5c t store_program
+00110d28 t load_state
+00110d6c t load_registers
+00110ddc t flash_restore
+00110e24 t append_program
+00110ed0 t recall_program
+00110f18 t load_program
+00110f5c t xeq
+00111994 t xeq_sst_bst
+00111a88 t xeq_single
+00111aac t xeqprog
+00111b54 t xeq_xrom
+00111bb8 t dispatch_xrom
+00111c14 t recv_any
+00111da0 t load_sigma
+00111df8 T memset
+00111df8 T xset
+00111e14 t keycode_to_alpha
+00111e50 t reset_multi
+00111e70 t set_status_right
+00111ed0 t is_label_or_end_at
+00111f04 t advance_to_next_label
+00111f4c t advance_to_previous_label
+00111f90 t check_confirm
+00111fe0 t check_f_key
+0011202c t init_cat
+001120f0 t process_catalogue
+00112380 T main
+00113d48 T __gnu_thumb1_case_uqi
+00113d5c T __gnu_thumb1_case_uhi
+00113d70 t .udivsi3_skip_div0_test
+00113d70 T __aeabi_uidiv
+00113d70 T __udivsi3
+00113e6c T __aeabi_uidivmod
+00113e8c T __aeabi_idiv
+00113e8c T __divsi3
+00113e94 t .divsi3_skip_div0_test
+00113fbc T __aeabi_idivmod
+00113fdc W __aeabi_idiv0
+00113fdc W __aeabi_ldiv0
+00113fe0 T __aeabi_llsr
+00113fe0 T __lshrdi3
+00113ff8 T __aeabi_lasr
+00113ff8 T __ashrdi3
+00114014 T __aeabi_llsl
+00114014 T __ashldi3
+0011402c T __aeabi_uldivmod
+00114068 T __aeabi_lmul
+00114068 T __muldi3
+001140b4 T __paritysi2
+001140d4 T __gnu_ldivmod_helper
+00114110 T __gnu_uldivmod_helper
+00114148 T __divdi3
+001144d8 T __udivdi3
+00114830 T __clzsi2
+00114878 T decContextDefault
+001148dc T decContextSetStatus
+001148e4 t decUnitAddSub
+00114b1c t decSetOverflow
+00114bc4 t decBiStr
+00114be8 t decGetDigits
+00114c20 t decStatus
+00114c54 t decUnitCompare
+00114d28 t decCompare
+00114e20 t decShiftToMost
+00114f0c t decShiftToLeast.part.1
+00114ff0 t decSetCoeff.isra.3
+00115230 t decCopyFit
+00115256 t decApplyRound.part.6
+001153e0 t decSetSubnormal
+001154c8 t decFinalize
+00115592 t decTrim.constprop.8
+00115644 T decNumberToString
+001159d4 T decNumberFromString
+00115cfc T decNumberCopy
+00115d48 t decNaNs
+00115d9c T decNumberNormalize
+00115df6 t decMultiplyOp
+00115fac T decNumberMultiply
+00115fda t decCompareOp
+001160e2 T decNumberMin
+00116114 T decNumberMax
+00116146 T decNumberCompare
+00116178 t decAddOp
+0011659c T decNumberSubtract
+001165ce T decNumberAdd
+001165fe T decNumberPlus
+00116642 T decNumberMinus
+00116688 T decNumberAbs
+001166d2 t decDivideOp
+00116d84 T decNumberRemainder
+00116db6 T decNumberDivide
+00116de8 T decNumberSquareRoot
+00117268 t decExpOp
+00117610 T decNumberExp
+00117694 T decNumberZero
+001176a2 T decGetInt
+0011779c t decQuantizeOp
+00117928 T decNumberRescale
+00117958 T decNumberQuantize
+0011798a T decNumberToIntegralValue
+00117a08 T decimal128FromNumber
+00117b70 T decimal128ToNumber
+00117c5c T decDigitsToDPD
+00117d90 T decimal64FromNumber
+00117ee8 T decDigitsFromDPD
+00117f74 T decimal64ToNumber
+00118048 T decimal64ToString
+00118068 t ____aeabi_idivmod_from_thumb
+00118070 t ____gnu_uldivmod_helper_from_arm
+0011807c t ____aeabi_idiv0_from_arm
+00118088 t ____aeabi_uidiv_from_thumb
+00118090 t ____clzsi2_from_thumb
+00118098 t ____aeabi_idiv_from_thumb
+001180a0 t ____aeabi_uidivmod_from_thumb
+001180a8 t ____aeabi_ldiv0_from_arm
+001180b4 t ____aeabi_uldivmod_from_thumb
+001180c8 t widths.5377
+00118173 t divs.5378
+00118176 t bm_small.5395
+001183d4 t bm_large.5394
+0011870e t alphamap.8958
+001187da t linear_key_map.8923
+00118803 t alpha_letters_lower
+0011882b t conv_catalogue
+00118884 t catalogues.9211
+001188dc t opcode_breaks
+001188e3 t lcd_bit
+00118971 t lcd_addr
+001189ff t digtbl
+00118a7a t multicmds
+00118ad4 t cnsts_conv
+00118d24 t RegionTab
+00118d34 t modes.10321
+00118d3b t cnsts
+00118ef0 t cnsts_d128
+00118ff0 t cnsts_d64
+00119238 t speeds.4612
+0011924c t argcmds
+0011981c t niladics
+0011a01e t monfuncs
+0011a74a t dyfuncs
+0011a966 t trifuncs
+0011a9ca t S7_NaN
+0011a9d7 t S7_INF
+0011a9e0 t DIGITS
+0011a9f4 t CSWTCH.938
+0011a9fc t CSWTCH.941
+0011aa08 t map.8935
+0011aa2c t small_ints
+0011aa54 t gamma_consts
+0011aaa8 t S7_fract_LT
+0011aaac t S7_fract_GT
+0011aab0 t S7_fract_EQ
+0011aab4 t S7_STEP
+0011aac8 t S_SURE
+0011aace t libname
+0011aadd t mask.4684
+0011aae1 t printer_chars
+0011ab81 t S7_ERROR
+0011ab88 t error_table.7794
+0011abec t xrom_targets
+0011ac22 t StackRegMask
+0011ac4f t modes.10779
+0011ac53 t ops.12399
+0011ac61 t primes
+0011ac71 t mons.6785
+0011ac98 t convergence_tolerances
+0011aca4 t catalogue_sizes.9203
+0011acba t conv_mapping.9250
+0011acd2 t character_remapping_order
+0011add2 t cmap.8948
+0011ae02 t amap.8949
+0011ae1a t op_map.9063
+0011ae20 t smap.8950
+0011ae24 t op_map.9078
+0011ae30 t disp.9079
+0011ae34 t op_map.9051
+0011af44 t op_map.9019
+0011afcc t op_map2.9020
+0011afd4 t op_map.9041
+0011b018 t op_map.9001
+0011b1a1 t catalogue
+0011b221 t cplx_catalogue
+0011b23d t stats_catalogue
+0011b253 t prob_catalogue
+0011b297 t int_catalogue
+0011b2dd t prog_catalogue
+0011b335 t program_xfcn
+0011b3cd t test_catalogue
+0011b406 t mode_catalogue
+0011b445 t alpha_catalogue
+0011b457 t alpha_symbols
+0011b46a t alpha_compares
+0011b474 t alpha_arrows
+0011b47d t alpha_letters
+0011b4a5 t alpha_subscripts
+0011b4bf t sums_catalogue
+0011b4d1 t matrix_catalogue
+0011b4e9 t internal_catalogue
+0011b744 T const_NaN
+0011b750 T const_inf
+0011b75c T const__inf
+0011b768 T const__1
+0011b774 T const__0
+0011b780 T const_0
+0011b78c T const_1
+0011b798 T const_2
+0011b7a4 T const_3
+0011b7b0 T const_4
+0011b7bc T const_5
+0011b7c8 T const_6
+0011b7d4 T const_7
+0011b7e0 T const_8
+0011b7ec T const_9
+0011b7f8 T const_10
+0011b804 T const_20
+0011b810 T const_21
+0011b81c T const_32
+0011b828 T const_60
+0011b834 T const_90
+0011b840 T const_100
+0011b84c T const_256
+0011b858 T const_360
+0011b864 T const_400
+0011b870 T const_9000
+0011b87c T const_100000
+0011b888 T const_1e_32
+0011b894 T const_1e_37
+0011b8a0 T const_1e_24
+0011b8ac T const_1e_14
+0011b8b8 T const_0_0000005
+0011b8c4 T const_0_0001
+0011b8d0 T const_0_1
+0011b8dc T const_0_05
+0011b8e8 T const_0_4
+0011b8f4 T const_0_5
+0011b900 T const_0_6
+0011b90c T const_0_75
+0011b918 T const_0_9
+0011b924 T const_1on60
+0011b948 T const_9on5
+0011b954 T const_root2on2
+0011b978 T const_PI
+0011b99c T const_2PI
+0011bad4 T const_PIon2
+0011baf8 T const_PIon180
+0011bb1c T const_PIon200
+0011bb40 T const_ln2
+0011bb64 T const_ln10
+0011bb88 T const_2pow64
+0011bba0 T const_randfac
+0011bbbc T const_gammaR
+0011bbcc T const_gammaC00
+0011bbf0 T const_gammaC01
+0011bc14 T const_gammaC02
+0011bc38 T const_gammaC03
+0011bc5c T const_gammaC04
+0011bc80 T const_gammaC05
+0011bca4 T const_gammaC06
+0011bcc8 T const_gammaC07
+0011bcec T const_gammaC08
+0011bd10 T const_gammaC09
+0011bd34 T const_gammaC10
+0011bd58 T const_gammaC11
+0011bd7c T const_gammaC12
+0011bda0 T const_gammaC13
+0011bdc4 T const_gammaC14
+0011bde8 T const_gammaC15
+0011be0c T const_gammaC16
+0011be30 T const_gammaC17
+0011be54 T const_gammaC18
+0011be78 T const_gammaC19
+0011be9c T const_gammaC20
+0011bec0 T const_gammaC21
+0011bee4 T powers
+0011bf0c t multies
+0011bf20 t resmap
+0011bf2a t uarrone
+0011bf50 t mfcone
+0011bf54 t multies
+0011bf68 t mfcone
+0011bf6c T COMBMSD
+0011bfec T COMBEXP
+0011c06c t xrom
+0011d6e0 R SvnRevision
+0011d6e0 T _efixed
 0011d700 R UserFlash
 0011f800 b BackupFlash
 00200000 b InIrq
@@ -984,7 +985,7 @@
 002000b0 b FirstTicker
 002000b4 b StopWatchMemoryFirstDigit
 002000b8 b KeyCallback
-002000bc b result.10567
+002000bc b result.10570
 002000cc b BodStopwatch
 002000ce b BodThreshold
 002000d0 b KbCount
@@ -1030,7 +1031,7 @@
 0020017c b TraceBuffer
 00200198 b JustStopped
 0020019c b KbRead
-002001a0 b was_paused.9383
+002001a0 b was_paused.9386
 002001a4 b OpCodeDisplayPending
 002001a8 b StateWhileOn
 002001d8 b XromLocal
@@ -1041,20 +1042,20 @@
 00300000 B _spersistentram
 00300800 B _epersistentram
 00300800 A end
-00113e80 t .divsi3_skip_div0_test
-00113d5c t .udivsi3_skip_div0_test
+00113e94 t .divsi3_skip_div0_test
+00113d70 t .udivsi3_skip_div0_test
 0011f800 00000800 b BackupFlash
 002000cc 00000002 b BodStopwatch
 002000ce 00000002 b BodThreshold
 00200168 00000004 b Busy
-0011bfd0 00000080 T COMBEXP
-0011bf50 00000080 T COMBMSD
-0011a9d8 00000008 t CSWTCH.937
-0011a9e0 0000000c t CSWTCH.940
+0011bfec 00000080 T COMBEXP
+0011bf6c 00000080 T COMBMSD
+0011a9f4 00000008 t CSWTCH.938
+0011a9fc 0000000c t CSWTCH.941
 00200114 00000004 b ClockSpeed
 00200178 00000004 b Contrast
 00200028 00000018 b Ctx
-0011a9c6 00000011 t DIGITS
+0011a9e0 00000011 t DIGITS
 00200108 00000004 b DebugFlag
 0020015c 00000001 b DecimalMode
 00200010 00000004 b DispMsg
@@ -1084,10 +1085,10 @@
 002000d1 00000001 b KbWrite
 002000d2 00000010 b KeyBuffer
 002000b8 00000004 b KeyCallback
-00109138 000001da t LU_decomposition
+00109128 000001da t LU_decomposition
 0020001c 00000004 b LcdAddr
 00200124 00000004 b LcdFadeOut
-00107f3a 0000009e T LowLevelInit
+00107f1e 0000009e T LowLevelInit
 00200134 00000004 b NonProgrammable
 002000e2 00000001 b OnKeyPressed
 00200100 00000004 b OpCode
@@ -1099,25 +1100,25 @@
 00200138 00000004 b PrinterColumn
 0020014c 00000004 b ProgFree
 00100200 00000060 t RTC_GetTime
-00107ed0 00000064 t RTC_SetTimeAlarm.constprop.155
+00107eb4 00000064 t RTC_SetTimeAlarm.constprop.155
 002000a9 00000001 b RclMemory
 00200155 00000001 b RclMemoryRemanentDisplay
-00118d14 00000010 t RegionTab
+00118d24 00000010 t RegionTab
 00200054 00000004 b RetStk
 00200148 00000004 b RetStkSize
 00200014 00000004 b Running
-0011ab65 00000006 t S7_ERROR
-0011a9bd 00000009 t S7_INF
-0011a9b0 0000000d t S7_NaN
-0011aa98 00000006 t S7_STEP
-0011aa94 00000004 t S7_fract_EQ
-0011aa90 00000004 t S7_fract_GT
-0011aa8c 00000004 t S7_fract_LT
-00103464 00000154 t SLCD_irq
+0011ab81 00000006 t S7_ERROR
+0011a9d7 00000009 t S7_INF
+0011a9ca 0000000d t S7_NaN
+0011aab4 00000006 t S7_STEP
+0011aab0 00000004 t S7_fract_EQ
+0011aaac 00000004 t S7_fract_GT
+0011aaa8 00000004 t S7_fract_LT
+00103458 00000154 t SLCD_irq
 00100298 0000001c t SUPC_DisableDeepMode
 00100260 0000001c t SUPC_SetSlcdVoltage
 0010027c 0000001c t SUPC_SetVoltageOutput
-0011aaac 00000006 t S_SURE
+0011aac8 00000006 t S_SURE
 00200154 00000001 b SeparatorMode
 0020010c 00000001 b SerialOn
 00200164 00000004 b ShowRPN
@@ -1125,7 +1126,7 @@
 00200144 00000004 b SizeStatRegs
 002000e4 00000004 b SpeedSetting
 00200050 00000004 b StackBase
-0011ac06 00000004 t StackRegMask
+0011ac22 00000004 t StackRegMask
 002000e8 00000004 b StartupTicks
 00200158 00000004 b StatRegs
 002001a8 00000030 b StateWhileOn
@@ -1133,8 +1134,8 @@
 002000a8 00000001 b StopWatchMemory
 002000b4 00000001 b StopWatchMemoryFirstDigit
 002000a4 00000004 b StopWatchStatus
-0011d6c4 00000004 R SvnRevision
-00103634 0000005c t TC1_irq
+0011d6e0 00000004 R SvnRevision
+00103628 0000005c t TC1_irq
 0020017c 00000019 b TraceBuffer
 0020016c 00000004 b Tracing
 0011d700 R UserFlash
@@ -1143,944 +1144,945 @@
 00200058 00000004 b UserLocalRegs
 0020011c 00000004 b WaitForLcd
 00200018 00000002 b XeqOpCode
-00109cb4 0000004c t XisEvenOrOdd
-00109d00 0000004c t XisInt
-0010ddfc 000002bc t XisPrime
+00109ca4 0000004c t XisEvenOrOdd
+00109cf0 0000004c t XisInt
+0010de0c 000002bc t XisPrime
 002003a8 00000040 b XromA2D
 002001d8 000001d0 b XromLocal
 00200040 00000010 b XromParams
 00200140 00000004 b XromRunning
 0020005c 00000004 b XromUserPc
-0011806c 0000000c t ____aeabi_idiv0_from_arm
-00118088 00000008 t ____aeabi_idiv_from_thumb
-00118058 00000008 t ____aeabi_idivmod_from_thumb
-00118098 0000000c t ____aeabi_ldiv0_from_arm
-00118078 00000008 t ____aeabi_uidiv_from_thumb
-00118090 00000008 t ____aeabi_uidivmod_from_thumb
-001180a4 00000008 t ____aeabi_uldivmod_from_thumb
-00118080 00000008 t ____clzsi2_from_thumb
-00118060 0000000c t ____gnu_uldivmod_helper_from_arm
-00113e78 T __aeabi_idiv
-00113fc8 00000002 W __aeabi_idiv0
-00113fa8 00000020 T __aeabi_idivmod
-00113fe4 0000001a T __aeabi_lasr
-00113fc8 00000002 W __aeabi_ldiv0
-00114000 00000018 T __aeabi_llsl
-00113fcc 00000018 T __aeabi_llsr
-00114054 0000004a T __aeabi_lmul
-00113d5c T __aeabi_uidiv
-00113e58 00000020 T __aeabi_uidivmod
-00114018 T __aeabi_uldivmod
-00107f34 00000002 T __aeabi_unwind_cpp_pr0
-00107f36 00000002 T __aeabi_unwind_cpp_pr1
-00107f38 00000002 T __aeabi_unwind_cpp_pr2
-00114000 00000018 T __ashldi3
-00113fe4 0000001a T __ashrdi3
-0011481c 00000048 T __clzsi2
-00114134 00000390 T __divdi3
-00113e78 00000130 T __divsi3
-001140c0 0000003a T __gnu_ldivmod_helper
-00113d48 00000014 T __gnu_thumb1_case_uhi
-00113d34 00000012 T __gnu_thumb1_case_uqi
-001140fc 00000036 T __gnu_uldivmod_helper
-00113fcc 00000018 T __lshrdi3
-00114054 0000004a T __muldi3
-001140a0 00000020 T __paritysi2
-001144c4 00000358 T __udivdi3
-00113d5c 000000fc T __udivsi3
-0011d6c4 T _efixed
+0011807c 0000000c t ____aeabi_idiv0_from_arm
+00118098 00000008 t ____aeabi_idiv_from_thumb
+00118068 00000008 t ____aeabi_idivmod_from_thumb
+001180a8 0000000c t ____aeabi_ldiv0_from_arm
+00118088 00000008 t ____aeabi_uidiv_from_thumb
+001180a0 00000008 t ____aeabi_uidivmod_from_thumb
+001180b4 00000008 t ____aeabi_uldivmod_from_thumb
+00118090 00000008 t ____clzsi2_from_thumb
+00118070 0000000c t ____gnu_uldivmod_helper_from_arm
+00113e8c T __aeabi_idiv
+00113fdc 00000002 W __aeabi_idiv0
+00113fbc 00000020 T __aeabi_idivmod
+00113ff8 0000001a T __aeabi_lasr
+00113fdc 00000002 W __aeabi_ldiv0
+00114014 00000018 T __aeabi_llsl
+00113fe0 00000018 T __aeabi_llsr
+00114068 0000004a T __aeabi_lmul
+00113d70 T __aeabi_uidiv
+00113e6c 00000020 T __aeabi_uidivmod
+0011402c T __aeabi_uldivmod
+00107f18 00000002 T __aeabi_unwind_cpp_pr0
+00107f1a 00000002 T __aeabi_unwind_cpp_pr1
+00107f1c 00000002 T __aeabi_unwind_cpp_pr2
+00114014 00000018 T __ashldi3
+00113ff8 0000001a T __ashrdi3
+00114830 00000048 T __clzsi2
+00114148 00000390 T __divdi3
+00113e8c 00000130 T __divsi3
+001140d4 0000003a T __gnu_ldivmod_helper
+00113d5c 00000014 T __gnu_thumb1_case_uhi
+00113d48 00000012 T __gnu_thumb1_case_uqi
+00114110 00000036 T __gnu_uldivmod_helper
+00113fe0 00000018 T __lshrdi3
+00114068 0000004a T __muldi3
+001140b4 00000020 T __paritysi2
+001144d8 00000358 T __udivdi3
+00113d70 000000fc T __udivsi3
+0011d6e0 T _efixed
 00300800 B _epersistentram
 002001d8 B _ezero
 00100000 T _sfixed
 00300000 B _spersistentram
 00201000 A _sstack
 00200000 B _szero
-00103d3c 00000044 t add_char
+00103d18 00000044 t add_char
 00101220 00000054 t add_string
-0010971c 00000020 t advance_if_trace
-00111eec 00000048 t advance_to_next_label
-00111f34 00000044 t advance_to_previous_label
+0010970c 00000020 t advance_if_trace
+00111f04 00000048 t advance_to_next_label
+00111f4c 00000044 t advance_to_previous_label
 001011ec 00000020 t alen
-0011b457 00000009 t alpha_arrows
-0011b428 00000012 t alpha_catalogue
-0011b44d 0000000a t alpha_compares
-001081b8 00000018 t alpha_fromx
-00108232 0000005e t alpha_ip
-0010c9f4 00000014 t alpha_length
-0011b460 00000028 t alpha_letters
-001187f3 00000028 t alpha_letters_lower
+0011b474 00000009 t alpha_arrows
+0011b445 00000012 t alpha_catalogue
+0011b46a 0000000a t alpha_compares
+0010819c 00000018 t alpha_fromx
+00108216 0000005e t alpha_ip
+0010ca04 00000014 t alpha_length
+0011b47d 00000028 t alpha_letters
+00118803 00000028 t alpha_letters_lower
 001003e4 0000001c t alpha_onoff
-00108220 00000012 t alpha_rcl
-001081d0 00000050 t alpha_rcl_s
-001082fc 00000022 t alpha_reg
-001085ca 00000046 t alpha_rot_r
+00108204 00000012 t alpha_rcl
+001081b4 00000050 t alpha_rcl_s
+001082e0 00000022 t alpha_reg
+001085ae 00000046 t alpha_rot_r
 001012b2 0000003e t alpha_shift_l
-00108610 00000038 t alpha_shift_r
-0010ca08 00000060 t alpha_sto
-0011b488 0000001a t alpha_subscripts
-0011b43a 00000013 t alpha_symbols
-0010c9d0 00000024 t alpha_tox
-0010ac06 00000010 t alpha_view
-0010aba8 00000040 t alpha_view_common
-0010abfa 0000000c t alpha_view_reg
-001186fe 000000cc t alphamap.8955
-0011ade6 00000018 t amap.8946
-00104b3c 00000188 t annunciators
-00110e14 000000ac t append_program
-0010fe14 00000080 t arg_eval
+001085f4 00000038 t alpha_shift_r
+0010ca18 00000060 t alpha_sto
+0011b4a5 0000001a t alpha_subscripts
+0011b457 00000013 t alpha_symbols
+0010c9e0 00000024 t alpha_tox
+0010abf6 00000010 t alpha_view
+0010ab98 00000040 t alpha_view_common
+0010abea 0000000c t alpha_view_reg
+0011870e 000000cc t alphamap.8958
+0011ae02 00000018 t amap.8949
+00104b1c 00000188 t annunciators
+00110e24 000000ac t append_program
+0010fe24 00000080 t arg_eval
 00100acc 00000058 t arg_storcl
-0011923c 000005be t argcmds
+0011924c 000005be t argcmds
 000f00b6 000006e4 R argcmds_ct
-0010cfb8 0000000e t bad_mode_error
-00104efa 0000017a t betacf
-00109410 00000140 t betai
-001183c4 000002fa t bm_large.5391
-00118166 0000025e t bm_small.5392
-0010bc98 0000002c t branchtoalpha
-00101c38 0000004c t buffer_width
-00105f90 000000a8 t build_date
+0010cfc8 0000000e t bad_mode_error
+00104eda 0000017a t betacf
+00109400 00000140 t betai
+001183d4 000002fa t bm_large.5394
+00118176 0000025e t bm_small.5395
+0010bc88 0000002c t branchtoalpha
+00101c38 00000040 t buffer_width
+00105f74 000000a8 t build_date
 001007d8 00000054 t build_value
-001090f4 00000044 t busy
+001090e4 00000044 t busy
 00101b18 0000005c t byte_received
-00105ea4 000000ec t c_lg
-0010a296 00000118 t calc_overflow
-0010439c 00000084 t carry_overflow
-0011b185 00000080 t catalogue
-0011ac88 00000016 t catalogue_sizes.9200
-00118874 00000058 t catalogues.9208
-001038a0 00000110 t catcmd
-0011acb6 00000100 t character_remapping_order
+00105e88 000000ec t c_lg
+0010a286 00000118 t calc_overflow
+00104378 00000084 t carry_overflow
+0011b1a1 00000080 t catalogue
+0011aca4 00000016 t catalogue_sizes.9203
+00118884 00000058 t catalogues.9211
+00103894 0000010c t catcmd
+0011acd2 00000100 t character_remapping_order
 001002b4 00000040 t charlengths
-00111f78 00000050 t check_confirm
-0010d990 0000002c t check_data
+00111f90 00000050 t check_confirm
+0010d9a0 0000002c t check_data
 001005b8 00000050 t check_date
-0010aa34 00000010 t check_dblmode
-0010f250 00000034 t check_delete_prog
-00111fc8 0000004c t check_f_key
-00104e8e 00000022 t check_low
-0010aa44 0000002c t check_mode
-0010be40 0000006a t check_special
-00103cd4 00000068 t check_special_dn.isra.15
-0010bd4e 00000028 t check_stack_overlap
-0010a980 00000064 t check_zero
+0010aa24 00000010 t check_dblmode
+0010f260 00000034 t check_delete_prog
+00111fe0 0000004c t check_f_key
+00104e6e 00000022 t check_low
+0010aa34 0000002c t check_mode
+0010be30 0000006a t check_special
+00103cb4 00000064 t check_special_dn.isra.15
+0010bd3e 00000028 t check_stack_overlap
+0010a970 00000064 t check_zero
 001011a8 00000030 t checksum_backup
 00101174 00000034 t checksum_ram
-00107e90 00000040 t checksum_region.constprop.154
+00107e74 00000040 t checksum_region.constprop.154
 00101bb4 0000002c t clear_buffer
-00104cc4 0000003c t close_port_reset_state
+00104ca4 0000003c t close_port_reset_state
 00100c34 00000040 t clr_dot
-0010fcc0 0000005c t clrall
+0010fcd0 0000005c t clrall
 001003b4 00000030 t clralpha
-00107e50 00000040 t clrflags
-00110ba4 000000a8 t clrprog
-0010fc6a 00000056 t clrreg
+00107e34 00000040 t clrflags
+00110bb4 000000a8 t clrprog
+0010fc7a 00000056 t clrreg
 001019e8 00000020 t clrretstk
 00101a08 00000018 t clrretstk_pc
-001041ac 00000030 t clrstk
+00104188 00000030 t clrstk
 001019c4 00000024 t clrx
-0011adb6 00000030 t cmap.8945
-001104b4 00000006 t cmd_off
-00104720 0000003c t cmdalpha
-0010bcc4 0000002a t cmdalphagto
-0010ba9c 0000006c t cmdback
-0010d04c 00000088 t cmdconst
-0010ca78 00000038 t cmdconv
-0010fb70 000000e8 t cmdconverged
-0010d580 000000a8 t cmdcrcl
-0010d628 0000009c t cmdcsto
-0010c794 00000040 t cmddisp
-0010cfac 0000000c t cmderr
-00109d4c 000000a8 t cmdflag
-0010bbd2 0000004e t cmdgto
-0010ba74 00000028 t cmdgtocommon
-0010ec00 0000002c t cmdircl
-0010c7d4 00000050 t cmdkeyp
-0010c89c 00000034 t cmdkeytype
-0010bc20 0000002c t cmdlblp
-0010c502 00000012 t cmdlincdec
-0010f65c 00000110 t cmdlocr
-0010c2c6 00000196 t cmdloop
-0010c4ec 00000016 t cmdloopz
-0010b820 00000038 t cmdlpop
+0011add2 00000030 t cmap.8948
+001104c4 00000006 t cmd_off
+00104700 0000003c t cmdalpha
+0010bcb4 0000002a t cmdalphagto
+0010ba8c 0000006c t cmdback
+0010d05c 00000088 t cmdconst
+0010ca88 00000038 t cmdconv
+0010fb80 000000e8 t cmdconverged
+0010d590 000000a8 t cmdcrcl
+0010d638 0000009c t cmdcsto
+0010c784 00000040 t cmddisp
+0010cfbc 0000000c t cmderr
+00109d3c 000000a8 t cmdflag
+0010bbc2 0000004e t cmdgto
+0010ba64 00000028 t cmdgtocommon
+0010ec10 0000002c t cmdircl
+0010c7c4 00000050 t cmdkeyp
+0010c8ac 00000034 t cmdkeytype
+0010bc10 0000002c t cmdlblp
+0010c4f2 00000012 t cmdlincdec
+0010f66c 00000110 t cmdlocr
+0010c2b6 00000196 t cmdloop
+0010c4dc 00000016 t cmdloopz
+0010b810 00000038 t cmdlpop
 00101ad0 00000048 t cmdmode
-0010ad88 0000000c t cmdmsg
-0010bcee 0000004a t cmdmultigto
-0010bd38 00000016 t cmdmultilblp
-0010900c 00000024 t cmdpause
-00109a6c 0000002e t cmdprint
-0010cfc6 0000002e t cmdprintcmplxreg
-0010aaee 000000ba t cmdprintcmplxreg.part.112
-00101c84 00000030 t cmdprintmode
-00109b8c 0000001a t cmdprintreg
-0010be26 0000001a t cmdputkey
-0010ebf4 0000000c t cmdrcl
-0010bd76 00000032 t cmdrclstk
-001106ec 000000b4 t cmdregs
-00110a58 000000ac t cmdrestm
-0010ce8c 0000008c t cmdrrcl
-00108030 00000020 t cmdsavem
-0010c290 00000036 t cmdshuffle
-0010bb08 00000074 t cmdskip
-0010ec2c 0000006c t cmdsto
-0010bda8 00000032 t cmdstostk
-001083d8 00000060 t cmdswap
-0010fc58 00000012 t cmdtest
-00109030 00000040 t cmdview
-00110874 000001e4 t cmdxin
-0010f4b0 000001ac t cmdxout
-00110540 0000002e t cmdztest
-00102e50 00000018 t cmplxAbs
-00102f6e 0000001e t cmplxAdd
-00107560 0000001a t cmplxCos
-001074a2 0000001a t cmplxCosh
-00105e38 00000038 t cmplxCubeRoot
-00102e68 0000009c t cmplxDivide
-00102d54 00000064 t cmplxDivideRealBy
-00105580 0000006c t cmplxExp
-00107690 000000f4 t cmplxGamma
-00105d4e 000000b2 t cmplxLn
-0010759c 000000f4 t cmplxLnGamma
-00102178 0000001a t cmplxMinus
-00102f04 0000006a t cmplxMultiply
-00105e00 00000038 t cmplxPower
-00102e1a 00000036 t cmplxR
-00102db8 00000062 t cmplxRecip
-0010757a 00000022 t cmplxSin
-00107d9c 0000004a t cmplxSinc
-001074bc 00000022 t cmplxSinh
-00107c80 000000bc t cmplxSqrt
-0010272e 0000001e t cmplxSubtract
-00107de6 0000006a t cmplxTan
-00107d3c 00000060 t cmplxTanh
-00105e70 00000034 t cmplxXRoot
-00102cec 00000068 t cmplx_1x
-00101d98 00000014 t cmplx_NaN
-001074de 00000082 t cmplx_sincos
-00107456 0000004c t cmplx_sinhcosh
-00118d2b 000001b3 t cnsts
-00118ac4 00000250 t cnsts_conv
-00118ee0 00000100 t cnsts_d128
-00118fe0 00000248 t cnsts_d64
+0010ad78 0000000c t cmdmsg
+0010bcde 0000004a t cmdmultigto
+0010bd28 00000016 t cmdmultilblp
+00108ffc 00000024 t cmdpause
+00109a5c 0000002e t cmdprint
+0010cfd6 0000002e t cmdprintcmplxreg
+0010aade 000000ba t cmdprintcmplxreg.part.112
+00101c78 00000030 t cmdprintmode
+00109b7c 0000001a t cmdprintreg
+0010c82a 00000022 t cmdprintwidth
+0010be16 0000001a t cmdputkey
+0010ec04 0000000c t cmdrcl
+0010bd66 00000032 t cmdrclstk
+001106fc 000000b4 t cmdregs
+00110a68 000000ac t cmdrestm
+0010ce9c 0000008c t cmdrrcl
+00108014 00000020 t cmdsavem
+0010c280 00000036 t cmdshuffle
+0010baf8 00000074 t cmdskip
+0010ec3c 0000006c t cmdsto
+0010bd98 00000032 t cmdstostk
+001083bc 00000060 t cmdswap
+0010fc68 00000012 t cmdtest
+00109020 00000040 t cmdview
+00110884 000001e4 t cmdxin
+0010f4c0 000001ac t cmdxout
+00110550 0000002e t cmdztest
+00102e44 00000018 t cmplxAbs
+00102f62 0000001e t cmplxAdd
+00107544 0000001a t cmplxCos
+00107486 0000001a t cmplxCosh
+00105e1c 00000038 t cmplxCubeRoot
+00102e5c 0000009c t cmplxDivide
+00102d48 00000064 t cmplxDivideRealBy
+00105560 0000006c t cmplxExp
+00107674 000000f4 t cmplxGamma
+00105d32 000000b2 t cmplxLn
+00107580 000000f4 t cmplxLnGamma
+0010216c 0000001a t cmplxMinus
+00102ef8 0000006a t cmplxMultiply
+00105de4 00000038 t cmplxPower
+00102e0e 00000036 t cmplxR
+00102dac 00000062 t cmplxRecip
+0010755e 00000022 t cmplxSin
+00107d80 0000004a t cmplxSinc
+001074a0 00000022 t cmplxSinh
+00107c64 000000bc t cmplxSqrt
+00102722 0000001e t cmplxSubtract
+00107dca 0000006a t cmplxTan
+00107d20 00000060 t cmplxTanh
+00105e54 00000034 t cmplxXRoot
+00102ce0 00000068 t cmplx_1x
+00101d8c 00000014 t cmplx_NaN
+001074c2 00000082 t cmplx_sincos
+0010743a 0000004c t cmplx_sinhcosh
+00118d3b 000001b3 t cnsts
+00118ad4 00000250 t cnsts_conv
+00118ef0 00000100 t cnsts_d128
+00118ff0 00000248 t cnsts_d64
 000f0000 00000048 R command_info
-00101fb0 0000002c t complexResult
-0011b764 0000000c T const_0
-0011b89c 0000000c T const_0_0000005
-0011b8a8 0000000c T const_0_0001
-0011b8c0 0000000c T const_0_05
-0011b8b4 0000000c T const_0_1
-0011b8cc 0000000c T const_0_4
-0011b8d8 0000000c T const_0_5
-0011b8e4 0000000c T const_0_6
-0011b8f0 0000000c T const_0_75
-0011b8fc 0000000c T const_0_9
-0011b770 0000000c T const_1
-0011b7dc 0000000c T const_10
-0011b824 0000000c T const_100
-0011b860 0000000c T const_100000
-0011b890 0000000c T const_1e_14
-0011b884 0000000c T const_1e_24
-0011b86c 0000000c T const_1e_32
-0011b878 0000000c T const_1e_37
-0011b908 00000024 T const_1on60
-0011b77c 0000000c T const_2
-0011b7e8 0000000c T const_20
-0011b7f4 0000000c T const_21
-0011b830 0000000c T const_256
-0011b980 00000138 T const_2PI
-0011bb6c 00000018 T const_2pow64
-0011b788 0000000c T const_3
-0011b800 0000000c T const_32
-0011b83c 0000000c T const_360
-0011b794 0000000c T const_4
-0011b848 0000000c T const_400
-0011b7a0 0000000c T const_5
-0011b7ac 0000000c T const_6
-0011b80c 0000000c T const_60
-0011b7b8 0000000c T const_7
-0011b7c4 0000000c T const_8
-0011b7d0 0000000c T const_9
-0011b818 0000000c T const_90
-0011b854 0000000c T const_9000
-0011b92c 0000000c T const_9on5
-0011b728 0000000c T const_NaN
-0011b95c 00000024 T const_PI
-0011badc 00000024 T const_PIon180
-0011bab8 00000024 T const_PIon2
-0011bb00 00000024 T const_PIon200
-0011b758 0000000c T const__0
-0011b74c 0000000c T const__1
-0011b740 0000000c T const__inf
-0011bbb0 00000024 T const_gammaC00
-0011bbd4 00000024 T const_gammaC01
-0011bbf8 00000024 T const_gammaC02
-0011bc1c 00000024 T const_gammaC03
-0011bc40 00000024 T const_gammaC04
-0011bc64 00000024 T const_gammaC05
-0011bc88 00000024 T const_gammaC06
-0011bcac 00000024 T const_gammaC07
-0011bcd0 00000024 T const_gammaC08
-0011bcf4 00000024 T const_gammaC09
-0011bd18 00000024 T const_gammaC10
-0011bd3c 00000024 T const_gammaC11
-0011bd60 00000024 T const_gammaC12
-0011bd84 00000024 T const_gammaC13
-0011bda8 00000024 T const_gammaC14
-0011bdcc 00000024 T const_gammaC15
-0011bdf0 00000024 T const_gammaC16
-0011be14 00000024 T const_gammaC17
-0011be38 00000024 T const_gammaC18
-0011be5c 00000024 T const_gammaC19
-0011be80 00000024 T const_gammaC20
-0011bea4 00000024 T const_gammaC21
-0011bba0 00000010 T const_gammaR
-0011b734 0000000c T const_inf
-0011bb48 00000024 T const_ln10
-0011bb24 00000024 T const_ln2
-0011bb84 0000001c T const_randfac
-0011b938 00000024 T const_root2on2
-001072aa 00000022 t convAR2DB
-00102760 00000028 t convC2F
-00107b84 00000024 t convDB2AR
-00107b64 00000020 t convDB2PR
-0010257e 0000002a t convF2C
-0010728c 0000001e t convPR2DB
-0011881b 00000056 t conv_catalogue
-0011ac9e 00000018 t conv_mapping.9247
-0011ac7c 0000000c t convergence_tolerances
+00101fa4 0000002c t complexResult
+0011b780 0000000c T const_0
+0011b8b8 0000000c T const_0_0000005
+0011b8c4 0000000c T const_0_0001
+0011b8dc 0000000c T const_0_05
+0011b8d0 0000000c T const_0_1
+0011b8e8 0000000c T const_0_4
+0011b8f4 0000000c T const_0_5
+0011b900 0000000c T const_0_6
+0011b90c 0000000c T const_0_75
+0011b918 0000000c T const_0_9
+0011b78c 0000000c T const_1
+0011b7f8 0000000c T const_10
+0011b840 0000000c T const_100
+0011b87c 0000000c T const_100000
+0011b8ac 0000000c T const_1e_14
+0011b8a0 0000000c T const_1e_24
+0011b888 0000000c T const_1e_32
+0011b894 0000000c T const_1e_37
+0011b924 00000024 T const_1on60
+0011b798 0000000c T const_2
+0011b804 0000000c T const_20
+0011b810 0000000c T const_21
+0011b84c 0000000c T const_256
+0011b99c 00000138 T const_2PI
+0011bb88 00000018 T const_2pow64
+0011b7a4 0000000c T const_3
+0011b81c 0000000c T const_32
+0011b858 0000000c T const_360
+0011b7b0 0000000c T const_4
+0011b864 0000000c T const_400
+0011b7bc 0000000c T const_5
+0011b7c8 0000000c T const_6
+0011b828 0000000c T const_60
+0011b7d4 0000000c T const_7
+0011b7e0 0000000c T const_8
+0011b7ec 0000000c T const_9
+0011b834 0000000c T const_90
+0011b870 0000000c T const_9000
+0011b948 0000000c T const_9on5
+0011b744 0000000c T const_NaN
+0011b978 00000024 T const_PI
+0011baf8 00000024 T const_PIon180
+0011bad4 00000024 T const_PIon2
+0011bb1c 00000024 T const_PIon200
+0011b774 0000000c T const__0
+0011b768 0000000c T const__1
+0011b75c 0000000c T const__inf
+0011bbcc 00000024 T const_gammaC00
+0011bbf0 00000024 T const_gammaC01
+0011bc14 00000024 T const_gammaC02
+0011bc38 00000024 T const_gammaC03
+0011bc5c 00000024 T const_gammaC04
+0011bc80 00000024 T const_gammaC05
+0011bca4 00000024 T const_gammaC06
+0011bcc8 00000024 T const_gammaC07
+0011bcec 00000024 T const_gammaC08
+0011bd10 00000024 T const_gammaC09
+0011bd34 00000024 T const_gammaC10
+0011bd58 00000024 T const_gammaC11
+0011bd7c 00000024 T const_gammaC12
+0011bda0 00000024 T const_gammaC13
+0011bdc4 00000024 T const_gammaC14
+0011bde8 00000024 T const_gammaC15
+0011be0c 00000024 T const_gammaC16
+0011be30 00000024 T const_gammaC17
+0011be54 00000024 T const_gammaC18
+0011be78 00000024 T const_gammaC19
+0011be9c 00000024 T const_gammaC20
+0011bec0 00000024 T const_gammaC21
+0011bbbc 00000010 T const_gammaR
+0011b750 0000000c T const_inf
+0011bb64 00000024 T const_ln10
+0011bb40 00000024 T const_ln2
+0011bba0 0000001c T const_randfac
+0011b954 00000024 T const_root2on2
+0010728e 00000022 t convAR2DB
+00102754 00000028 t convC2F
+00107b68 00000024 t convDB2AR
+00107b48 00000020 t convDB2PR
+00102572 0000002a t convF2C
+00107270 0000001e t convPR2DB
+0011882b 00000056 t conv_catalogue
+0011acba 00000018 t conv_mapping.9250
+0011ac98 0000000c t convergence_tolerances
 00101274 00000020 t copy3
-0010831e 00000020 t copyreg
-00108588 0000001e t copyreg_n
-00105964 000000c8 t correlation
+00108302 00000020 t copyreg
+0010856c 0000001e t copyreg_n
+00105944 000000c8 t correlation
 001009ec 00000034 t count32bits
-0011b205 0000001c t cplx_catalogue
-00108520 00000026 t cpx_enter
-00108464 00000038 t cpx_fill
-001084c8 00000014 t cpx_roll_down
-00108574 00000014 t cpx_roll_up
+0011b221 0000001c t cplx_catalogue
+00108504 00000026 t cpx_enter
+00108448 00000038 t cpx_fill
+001084ac 00000014 t cpx_roll_down
+00108558 00000014 t cpx_roll_up
 00101130 00000044 t crc16
 00100a9a 0000001a t cur_shift
 00100b24 000000d0 t current_catalogue
-00104a5c 000000e0 t cvt_2rad
-001048c8 0000000e t cvt_rad2
+00104a3c 000000e0 t cvt_2rad
+001048a8 0000000e t cvt_rad2
 00100010 t dataAbortVector
-001060c0 00000048 t dateDayOfWeek
-00106078 00000048 t dateExtraction
-00107bfa 0000003a t dateFromJ
-00107c34 0000004c t dateFromYMD
-00106038 00000040 t dateToJ
-0010f00c 000000ac t date_alphadate
-0010efbc 00000050 t date_alphaday
-0010ef74 00000048 t date_alphamonth
-0010edd8 00000094 t date_alphatime
-0010cbba 0000006a t date_date
-0010aa70 0000007e t date_isleap
-0010ee6c 00000108 t date_setdate
-0010ed0e 000000ca t date_settime
-0010cb70 0000004a t date_time
+001060a4 00000048 t dateDayOfWeek
+0010605c 00000048 t dateExtraction
+00107bde 0000003a t dateFromJ
+00107c18 0000004c t dateFromYMD
+0010601c 00000040 t dateToJ
+0010f01c 000000ac t date_alphadate
+0010efcc 00000050 t date_alphaday
+0010ef84 00000048 t date_alphamonth
+0010ede8 00000094 t date_alphatime
+0010cbca 0000006a t date_date
+0010aa60 0000007e t date_isleap
+0010ee7c 00000108 t date_setdate
+0010ed1e 000000ca t date_settime
+0010cb80 0000004a t date_time
 00100608 0000003c t day_of_week
-00116164 00000424 t decAddOp
-00115242 0000018a t decApplyRound.part.6
-00114bb0 00000024 t decBiStr
-00114d14 000000f8 t decCompare
-00115fc6 00000108 t decCompareOp
-00114864 00000064 T decContextDefault
-001148c8 00000008 T decContextSetStatus
-0011521c 00000026 t decCopyFit
-00117ed4 0000008c T decDigitsFromDPD
-00117c48 00000134 T decDigitsToDPD
-001166be 000006b2 t decDivideOp
-00117254 000003a8 t decExpOp
-001154b4 000000ca t decFinalize
-00114bd4 00000038 t decGetDigits
-0011768e 000000fa T decGetInt
-00115de2 000001b6 t decMultiplyOp
-00115d34 00000054 t decNaNs
-00106108 0000014c t decNumber2Fraction
-00116674 0000004a T decNumberAbs
-001165ba 00000030 T decNumberAdd
-00104944 00000098 t decNumberArcCos
-00105d18 00000036 t decNumberArcCosh
-001049dc 00000080 t decNumberArcSin
-0010785a 0000004e t decNumberArcSinh
-001048f4 00000050 t decNumberArcTan
-001048d6 0000001e t decNumberArcTan2
-001078a8 00000084 t decNumberArcTanh
-00101fdc 00000040 t decNumberBigMod
-00101ce0 00000050 t decNumberBooleanOp
-00101f60 0000000e t decNumberCeil
-00106e04 00000056 t decNumberComb
-00116132 00000032 T decNumberCompare
-00115ce8 0000004c T decNumberCopy
-00105450 00000054 t decNumberCos
-001073f4 00000032 t decNumberCosh
-00102466 00000020 t decNumberCube
-00107b0c 00000044 t decNumberCubeRoot
-00102320 00000014 t decNumberD2G
-00102444 00000014 t decNumberD2R
-001048b2 00000016 t decNumberDRG
-00104834 0000007e t decNumberDRG_internal
-00116da2 00000032 T decNumberDivide
-001175fc 00000084 T decNumberExp
-001072e0 00000070 t decNumberExpm1
-00107bbc 0000003e t decNumberExponent
-00107210 0000001c t decNumberFactorial
-00101f6e 0000000e t decNumberFloor
-001025a8 00000022 t decNumberFrac
-001159c0 00000328 T decNumberFromString
-0010241e 00000012 t decNumberG2D
-00102430 00000014 t decNumberG2R
-00105074 00000062 t decNumberGCD
-00106e5a 000000f6 t decNumberGamma
-00106f50 000002c0 t decNumberGammap
-00102860 00000074 t decNumberHMS2HR
-00102906 00000032 t decNumberHMSAdd
-001028d4 00000032 t decNumberHMSSub
-00102788 000000d8 t decNumberHR2HMS
-001026c0 0000006e t decNumberLCM
-001077f8 00000062 t decNumberLn1p
-001093c0 00000050 t decNumberLnBeta
-00106c78 000000a8 t decNumberLnGamma
-00107258 00000022 t decNumberLogxy
-00104e4c 00000042 t decNumberMantissa
-00116100 00000032 T decNumberMax
-001160ce 00000032 T decNumberMin
-0011662e 00000046 T decNumberMinus
-0010201c 00000034 t decNumberMod
-00115f98 0000002e T decNumberMultiply
-00105364 00000094 t decNumberNeighbour
-00115d88 0000005a T decNumberNormalize
-00101d30 00000024 t decNumberNot
-00101d54 00000014 t decNumberPI
-00106dcc 00000038 t decNumberPerm
-001165ea 00000044 T decNumberPlus
-00107b50 00000014 t decNumberPow10
-00107ba8 00000014 t decNumberPow2
-001055ec 00000060 t decNumberPow_1
-00117944 00000032 T decNumberQuantize
-00102348 00000014 t decNumberR2D
-00102334 00000014 t decNumberR2G
-0010235c 00000014 t decNumberRecip
-00116d70 00000032 T decNumberRemainder
-00117914 00000030 T decNumberRescale
-00106bd6 000000a2 t decNumberRnd
-00101f44 0000000e t decNumberRound
-00101f7c 00000034 t decNumberRoundDigits
-001054a4 00000054 t decNumberSin
-001054f8 0000004c t decNumberSinc
-00107426 00000030 t decNumberSinh
-00102458 0000000e t decNumberSquare
-00116dd4 00000480 T decNumberSquareRoot
-00116588 00000032 T decNumberSubtract
-001053f8 00000058 t decNumberTan
-00107784 00000074 t decNumberTanh
-00117976 0000007c T decNumberToIntegralValue
-00115630 00000390 T decNumberToString
-00101f52 0000000e t decNumberTrunc
-00104e3c 00000010 t decNumberULP
-00107ab4 00000058 t decNumberXRoot
-00117680 0000000e T decNumberZero
-00117788 0000018c t decQuantizeOp
-00114fdc 00000240 t decSetCoeff.isra.3
-00114b08 000000a8 t decSetOverflow
-001153cc 000000e8 t decSetSubnormal
-00114ef8 000000e4 t decShiftToLeast.part.1
-00114e0c 000000ec t decShiftToMost
-00114c0c 00000034 t decStatus
-0011557e 000000b2 t decTrim.constprop.8
-001148d0 00000238 t decUnitAddSub
-00114c40 000000d4 t decUnitCompare
-001179f4 00000168 T decimal128FromNumber
-00117b5c 000000ec T decimal128ToNumber
-00117d7c 00000158 T decimal64FromNumber
-00117f60 000000d4 T decimal64ToNumber
-00118034 0000001e T decimal64ToString
+00116178 00000424 t decAddOp
+00115256 0000018a t decApplyRound.part.6
+00114bc4 00000024 t decBiStr
+00114d28 000000f8 t decCompare
+00115fda 00000108 t decCompareOp
+00114878 00000064 T decContextDefault
+001148dc 00000008 T decContextSetStatus
+00115230 00000026 t decCopyFit
+00117ee8 0000008c T decDigitsFromDPD
+00117c5c 00000134 T decDigitsToDPD
+001166d2 000006b2 t decDivideOp
+00117268 000003a8 t decExpOp
+001154c8 000000ca t decFinalize
+00114be8 00000038 t decGetDigits
+001176a2 000000fa T decGetInt
+00115df6 000001b6 t decMultiplyOp
+00115d48 00000054 t decNaNs
+001060ec 0000014c t decNumber2Fraction
+00116688 0000004a T decNumberAbs
+001165ce 00000030 T decNumberAdd
+00104924 00000098 t decNumberArcCos
+00105cfc 00000036 t decNumberArcCosh
+001049bc 00000080 t decNumberArcSin
+0010783e 0000004e t decNumberArcSinh
+001048d4 00000050 t decNumberArcTan
+001048b6 0000001e t decNumberArcTan2
+0010788c 00000084 t decNumberArcTanh
+00101fd0 00000040 t decNumberBigMod
+00101cd4 00000050 t decNumberBooleanOp
+00101f54 0000000e t decNumberCeil
+00106de8 00000056 t decNumberComb
+00116146 00000032 T decNumberCompare
+00115cfc 0000004c T decNumberCopy
+00105430 00000054 t decNumberCos
+001073d8 00000032 t decNumberCosh
+0010245a 00000020 t decNumberCube
+00107af0 00000044 t decNumberCubeRoot
+00102314 00000014 t decNumberD2G
+00102438 00000014 t decNumberD2R
+00104892 00000016 t decNumberDRG
+00104814 0000007e t decNumberDRG_internal
+00116db6 00000032 T decNumberDivide
+00117610 00000084 T decNumberExp
+001072c4 00000070 t decNumberExpm1
+00107ba0 0000003e t decNumberExponent
+001071f4 0000001c t decNumberFactorial
+00101f62 0000000e t decNumberFloor
+0010259c 00000022 t decNumberFrac
+001159d4 00000328 T decNumberFromString
+00102412 00000012 t decNumberG2D
+00102424 00000014 t decNumberG2R
+00105054 00000062 t decNumberGCD
+00106e3e 000000f6 t decNumberGamma
+00106f34 000002c0 t decNumberGammap
+00102854 00000074 t decNumberHMS2HR
+001028fa 00000032 t decNumberHMSAdd
+001028c8 00000032 t decNumberHMSSub
+0010277c 000000d8 t decNumberHR2HMS
+001026b4 0000006e t decNumberLCM
+001077dc 00000062 t decNumberLn1p
+001093b0 00000050 t decNumberLnBeta
+00106c5c 000000a8 t decNumberLnGamma
+0010723c 00000022 t decNumberLogxy
+00104e2c 00000042 t decNumberMantissa
+00116114 00000032 T decNumberMax
+001160e2 00000032 T decNumberMin
+00116642 00000046 T decNumberMinus
+00102010 00000034 t decNumberMod
+00115fac 0000002e T decNumberMultiply
+00105344 00000094 t decNumberNeighbour
+00115d9c 0000005a T decNumberNormalize
+00101d24 00000024 t decNumberNot
+00101d48 00000014 t decNumberPI
+00106db0 00000038 t decNumberPerm
+001165fe 00000044 T decNumberPlus
+00107b34 00000014 t decNumberPow10
+00107b8c 00000014 t decNumberPow2
+001055cc 00000060 t decNumberPow_1
+00117958 00000032 T decNumberQuantize
+0010233c 00000014 t decNumberR2D
+00102328 00000014 t decNumberR2G
+00102350 00000014 t decNumberRecip
+00116d84 00000032 T decNumberRemainder
+00117928 00000030 T decNumberRescale
+00106bba 000000a2 t decNumberRnd
+00101f38 0000000e t decNumberRound
+00101f70 00000034 t decNumberRoundDigits
+00105484 00000054 t decNumberSin
+001054d8 0000004c t decNumberSinc
+0010740a 00000030 t decNumberSinh
+0010244c 0000000e t decNumberSquare
+00116de8 00000480 T decNumberSquareRoot
+0011659c 00000032 T decNumberSubtract
+001053d8 00000058 t decNumberTan
+00107768 00000074 t decNumberTanh
+0011798a 0000007c T decNumberToIntegralValue
+00115644 00000390 T decNumberToString
+00101f46 0000000e t decNumberTrunc
+00104e1c 00000010 t decNumberULP
+00107a98 00000058 t decNumberXRoot
+00117694 0000000e T decNumberZero
+0011779c 0000018c t decQuantizeOp
+00114ff0 00000240 t decSetCoeff.isra.3
+00114b1c 000000a8 t decSetOverflow
+001153e0 000000e8 t decSetSubnormal
+00114f0c 000000e4 t decShiftToLeast.part.1
+00114e20 000000ec t decShiftToMost
+00114c20 00000034 t decStatus
+00115592 000000b2 t decTrim.constprop.8
+001148e4 00000238 t decUnitAddSub
+00114c54 000000d4 t decUnitCompare
+00117a08 00000168 T decimal128FromNumber
+00117b70 000000ec T decimal128ToNumber
+00117d90 00000158 T decimal64FromNumber
+00117f74 000000d4 T decimal64ToNumber
+00118048 0000001e T decimal64ToString
 00101734 00000020 t decpc
-00102f8c 00000098 t detect_voltage
-0010f0f8 00000158 t digit
-001189ef 0000007a t digtbl
-0011ae14 00000004 t disp.9076
-00111ba0 0000005c t dispatch_xrom
-00108648 000009c4 t display
-0010e50e 0000042a t divmod
-00118163 00000003 t divs.5375
-00101ccc 00000014 t dn_1
-001025ca 00000016 t dn_1m
-00105c68 000000b0 t dn_LnGamma
-00102192 00000016 t dn_abs
-00102250 0000001e t dn_abs_lt
-0010274c 00000014 t dn_add
-00102644 0000007c t dn_check_gcd
-001021d0 00000014 t dn_compare
-0010230c 00000014 t dn_divide
-0010226e 00000048 t dn_eq
+00102f80 00000098 t detect_voltage
+0010f108 00000158 t digit
+001189ff 0000007a t digtbl
+0011ae30 00000004 t disp.9079
+00111bb8 0000005c t dispatch_xrom
+0010862c 000009d0 t display
+0010e51e 0000042a t divmod
+00118173 00000003 t divs.5378
+00101cc0 00000014 t dn_1
+001025be 00000016 t dn_1m
+00105c48 000000b4 t dn_LnGamma
+00102186 00000016 t dn_abs
+00102244 0000001e t dn_abs_lt
+00102740 00000014 t dn_add
+00102638 0000007c t dn_check_gcd
+001021c4 00000014 t dn_compare
+00102300 00000014 t dn_divide
+00102262 00000048 t dn_eq
 00100692 00000020 t dn_eq0
-001020e4 00000014 t dn_exp
-00102050 00000042 t dn_gcd
-0010294c 00000014 t dn_inc
+001020d8 00000014 t dn_exp
+00102044 00000042 t dn_gcd
+00102940 00000014 t dn_inc
 0010066c 00000026 t dn_le0
-00105a2c 0000015c t dn_ln
-0010727a 00000012 t dn_log10
-001072cc 00000014 t dn_log2
-001021e4 0000001a t dn_lt
+00105a0c 0000015c t dn_ln
+0010725e 00000012 t dn_log10
+001072b0 00000014 t dn_log2
+001021d8 0000001a t dn_lt
 00100644 00000028 t dn_lt0
-001025e0 00000014 t dn_m1
-001021a8 00000014 t dn_max
-001021bc 00000014 t dn_min
-0010210c 00000014 t dn_minus
-00101cb4 00000018 t dn_mulpow10
-00102370 00000014 t dn_multiply
-00102938 00000014 t dn_p1
-0010792c 00000188 t dn_power
-00105544 0000003c t dn_sincos
-00107350 000000a4 t dn_sinhcosh
-001020f8 00000014 t dn_sqrt
-00102486 00000016 t dn_subtract
-00102092 00000016 t dn_to_int
-00102120 00000058 t dn_to_ull
-001058bc 000000a8 t do_LR
-00102960 00000168 t do_atan
-00102ac8 00000120 t do_atan2
-00102384 00000048 t do_conv
+001025d4 00000014 t dn_m1
+0010219c 00000014 t dn_max
+001021b0 00000014 t dn_min
+00102100 00000014 t dn_minus
+00101ca8 00000018 t dn_mulpow10
+00102364 00000014 t dn_multiply
+0010292c 00000014 t dn_p1
+00107910 00000188 t dn_power
+00105524 0000003c t dn_sincos
+00107334 000000a4 t dn_sinhcosh
+001020ec 00000014 t dn_sqrt
+0010247a 00000016 t dn_subtract
+00102086 00000016 t dn_to_int
+00102114 00000058 t dn_to_ull
+0010589c 000000a8 t do_LR
+00102954 00000168 t do_atan
+00102abc 00000120 t do_atan2
+00102378 00000048 t do_conv
 00101620 00000048 t do_dec
 001015cc 00000054 t do_inc
-0010722c 0000002c t do_log
-0010eb6c 00000088 t do_rcl
-001042f8 00000074 t do_rtn
-0010cd52 00000074 t do_s
-0010fa24 0000014c t do_tst
-0010ba5c 00000018 t do_usergsb
-001104ba 00000086 t do_ztst
+00107210 0000002c t do_log
+0010eb7c 00000088 t do_rcl
+001042d4 00000074 t do_rtn
+0010cd62 00000074 t do_s
+0010fa34 0000014c t do_tst
+0010ba4c 00000018 t do_usergsb
+001104ca 00000086 t do_ztst
 00100d80 00000016 t dot
-0010839a 00000016 t drop
-0011a730 0000021c t dyfuncs
-000f11b6 0000032a R dyfuncs_ct
+0010837e 00000016 t drop
+0011a74a 0000021c t dyfuncs
+000f11c2 0000032a R dyfuncs_ct
 00300800 A end
-001051fc 0000008c t end_memory_selection
+001051dc 0000008c t end_memory_selection
 00100068 T entry
-0010ad94 00000024 t err
-0010e4f2 0000001c t err_div0
-0010ac16 000000e2 t error_message
-0011ab6c 00000064 t error_table.7791
-00105110 000000ec t extract_date
-0010ec98 00000076 t extract_time
+0010ad84 00000024 t err
+0010e502 0000001c t err_div0
+0010ac06 000000e2 t error_message
+0011ab88 00000064 t error_table.7794
+001050f0 000000ec t extract_date
+0010eca8 00000076 t extract_time
 00100764 00000074 t extract_value
-00108438 0000002c t fill
-00109ba6 00000056 t fin_tst
+0010841c 0000002c t fill
+00109b96 00000056 t fin_tst
 001011d8 00000014 t find_char
-0010bb7c 00000056 t find_opcode_from
+0010bb6c 00000056 t find_opcode_from
 00101544 00000088 t find_section_bounds
 001002f4 00000030 t findlengths
-0010bc4c 0000004c t findmultilbl
-00103732 0000002a t finish_display
+0010bc3c 0000004c t findmultilbl
+00103726 0000002a t finish_display
 0010001c t fiqHandler
 0010001c t fiqVector
-001040aa 0000007a t flag_word
-00110b04 000000a0 t flash_append
-0011056e 0000004e t flash_backup
-00110dcc 00000048 t flash_restore
-00103258 00000028 t flush_comm
-00108290 0000006c t format_reg
-0010cdf0 0000002c t fract_convert_number
+00104086 0000007a t flag_word
+00110b14 000000a0 t flash_append
+0011057e 0000004e t flash_backup
+00110ddc 00000048 t flash_restore
+0010324c 00000028 t flush_comm
+00108274 0000006c t format_reg
+0010ce00 0000002c t fract_convert_number
 00200160 00000004 b gLowLevelInitSupcStatus
-0011aa38 00000054 t gamma_consts
-00103f34 0000002e t getRegister
-00103f62 0000000e t getX
-00103f70 00000016 t getXY
-00103f86 00000020 t getXYZT
-0010813c 0000000e t getX_int
-0010c940 00000014 t get_base
-00109390 0000000e t get_byte
-00101e86 0000006e t get_const
+0011aa54 00000054 t gamma_consts
+00103f10 0000002e t getRegister
+00103f3e 0000000e t getX
+00103f4c 00000016 t getXY
+00103f62 00000020 t getXYZT
+00108120 0000000e t getX_int
+0010c950 00000014 t get_base
+00109380 0000000e t get_byte
+00101e7a 0000006e t get_const
 0010151c 00000028 t get_current_prog
-0010bdda 0000004c t get_keycode_from_reg
-0010c8d0 00000058 t get_mem
-0010421e 00000056 t get_reg_limit
-00103de4 000000b0 t get_reg_n
-0010807a 0000001a t get_reg_n_int
-0010817c 0000003c t get_reg_n_int_sgn
-00105730 0000018c t get_sigmas
-0010c954 00000030 t get_sign_mode
-0010409c 0000000e t get_stack
-0010c998 00000014 t get_stack_size
-0010475c 00000034 t get_trig_mode
-00104124 0000001c t get_user_flag
-0010939e 00000022 t get_word
-0010c984 00000014 t get_word_size
+0010bdca 0000004c t get_keycode_from_reg
+0010c8e0 00000058 t get_mem
+001041fa 00000056 t get_reg_limit
+00103dc0 000000b0 t get_reg_n
+0010805e 0000001a t get_reg_n_int
+00108160 0000003c t get_reg_n_int_sgn
+00105710 0000018c t get_sigmas
+0010c964 00000030 t get_sign_mode
+00104078 0000000e t get_stack
+0010c9a8 00000014 t get_stack_size
+0010473c 00000034 t get_trig_mode
+00104100 0000001c t get_user_flag
+0010938e 00000022 t get_word
+0010c994 00000014 t get_word_size
 001014c4 00000058 t getprog
-00104210 0000000e t global_regs
-001041dc 00000034 t global_regs_rarg
-00103224 00000034 t go_idle
-0010b934 0000009c t gsbgto
+001041ec 0000000e t global_regs
+001041b8 00000034 t global_regs_rarg
+00103218 00000034 t go_idle
+0010b924 0000009c t gsbgto
 00100ce8 00000098 t hms_render
-001020a8 0000003c t hms_step
-00104eb0 0000004a t ib_step
-0010c45c 00000090 t incdec
+0010209c 0000003c t hms_step
+00104e90 0000004a t ib_step
+0010c44c 00000090 t incdec
 00101754 00000028 t incpc
-0010fd7c 0000003c t init_34s
-0010fdb8 00000040 t init_arg
-00112014 000000c4 t init_cat
-0010d74c 0000003c t init_library
+0010fd8c 0000003c t init_34s
+0010fdc8 00000040 t init_arg
+0011202c 000000c4 t init_cat
+0010d75c 0000003c t init_library
 00101800 00000064 t init_state
-0010e3f2 00000032 t int10pow
-0010a554 00000078 t int2pow
-0010a5cc 00000060 t intASR
-0010a0a8 00000058 t intAbs
-0010a85c 00000124 t intAdd
+0010e402 00000032 t int10pow
+0010a544 00000078 t int2pow
+0010a5bc 00000060 t intASR
+0010a098 00000058 t intAbs
+0010a84c 00000124 t intAdd
 0010097e 00000046 t intBooleanOp
-0010a254 00000042 t intCube
-0010e966 00000048 t intDblDiv
-00109f14 00000194 t intDblMul
-0010e938 0000002e t intDblRmdr
-0010e9fc 000000dc t intDivide
-0010d0d4 000000a8 t intDyadic
+0010a244 00000042 t intCube
+0010e976 00000048 t intDblDiv
+00109f04 00000194 t intDblMul
+0010e948 0000002e t intDblRmdr
+0010ea0c 000000dc t intDivide
+0010d0e4 000000a8 t intDyadic
 001009c4 00000006 t intFP
-00109e0e 000000ca t intFib
+00109dfe 000000ca t intFib
 001008e4 00000078 t intGCD
-0010a1b8 0000009c t intLCM
-0010a460 0000002a t intLSL
-0010a48a 0000002c t intLSR
-0010e228 00000076 t intLog10
-0010e29e 00000060 t intLog2
+0010a1a8 0000009c t intLCM
+0010a450 0000002a t intLSL
+0010a47a 0000002c t intLSR
+0010e238 00000076 t intLog10
+0010e2ae 00000060 t intLog2
 00100888 0000005c t intMax
 0010082c 0000005c t intMin
 00100a3e 0000005c t intMirror
-0010e9ae 0000004e t intMod
-0010d17c 00000074 t intMonadic
-0010a100 000000a8 t intMultiply
+0010e9be 0000004e t intMod
+0010d18c 00000074 t intMonadic
+0010a0f0 000000a8 t intMultiply
 0010096e 00000010 t intNot
 00100a20 0000001e t intNumBits
-0010e2fe 000000f4 t intPower
-0010a6d6 00000030 t intRL
-0010a668 00000038 t intRLC
-0010a6a0 00000036 t intRR
-0010a62c 0000003c t intRRC
-0010b858 000000bc t intResult
+0010e30e 000000f4 t intPower
+0010a6c6 00000030 t intRL
+0010a658 00000038 t intRLC
+0010a690 00000036 t intRR
+0010a61c 0000003c t intRRC
+0010b848 000000bc t intResult
 001009ca 00000022 t intSign
-0010a1a8 00000010 t intSqr
-0010e424 000000ce t intSqrt
-0010a706 00000156 t intSubtract
-00109ed8 0000003c t int_1pow
+0010a198 00000010 t intSqr
+0010e434 000000ce t intSqrt
+0010a6f6 00000156 t intSubtract
+00109ec8 0000003c t int_1pow
 001006da 0000001e t int_base
-0011b27b 00000046 t int_catalogue
-0010c564 0000003c t int_from_register
-0010a4b6 0000009e t int_justify
-001056cc 0000002a t int_to_dn
-0010e0b8 000000a4 t intbits
-0011b4cc 00000012 t internal_catalogue
-0010a3c8 00000098 t intmsks
-0010e15c 000000cc t introt
-00108094 000000a8 t intws
+0011b297 00000046 t int_catalogue
+0010c554 0000003c t int_from_register
+0010a4a6 0000009e t int_justify
+001056ac 0000002a t int_to_dn
+0010e0c8 000000a4 t intbits
+0011b4e9 00000012 t internal_catalogue
+0010a3b8 00000098 t intmsks
+0010e16c 000000cc t introt
+00108078 000000a8 t intws
 00100020 t irqHandler
 00100018 t irqVector
 00100400 00000050 t isGregorian
-00109c84 00000030 t isInfinite
-00109c50 00000034 t isNan
-00109c1c 00000034 t isSpecial
-0010a9e4 00000034 t isTop
+00109c74 00000030 t isInfinite
+00109c40 00000034 t isNan
+00109c0c 00000034 t isSpecial
+0010a9d4 00000034 t isTop
 00101888 00000024 t is_dblmode
 00100d96 0000004a t is_dot
-001022b6 00000056 t is_even
-001025f4 00000050 t is_int
-00111eb8 00000034 t is_label_or_end_at
-00111dfc 0000003c t keycode_to_alpha
-00118961 0000008e t lcd_addr
-001188d3 0000008e t lcd_bit
-0011aab2 0000000f t libname
-001084dc 0000002c t lift
-00108508 00000018 t lift_if_enabled
-001187ca 00000029 t linear_key_map.8920
-00110f08 00000044 t load_program
-00110d5c 00000070 t load_registers
-00111d88 00000058 t load_sigma
-00110d18 00000044 t load_state
-00103d80 0000002c t local_levels
-00103dd6 0000000e t local_regs
-00103dac 0000002a t local_regs_rarg
+001022aa 00000056 t is_even
+001025e8 00000050 t is_int
+00111ed0 00000034 t is_label_or_end_at
+00111e14 0000003c t keycode_to_alpha
+00118971 0000008e t lcd_addr
+001188e3 0000008e t lcd_bit
+0011aace 0000000f t libname
+001084c0 0000002c t lift
+001084ec 00000018 t lift_if_enabled
+001187da 00000029 t linear_key_map.8923
+00110f18 00000044 t load_program
+00110d6c 00000070 t load_registers
+00111da0 00000058 t load_sigma
+00110d28 00000044 t load_state
+00103d5c 0000002c t local_levels
+00103db2 0000000e t local_regs
+00103d88 0000002a t local_regs_rarg
 001000f0 00000020 t lock
-0010836c 0000002e t lower
-0010833e 0000002e t lower2
-00112364 000019ce T main
-0011a9ec 00000023 t map.8932
-0011aac1 00000004 t mask.4681
+00108350 0000002e t lower
+00108322 0000002e t lower2
+00112380 000019c6 T main
+0011aa08 00000023 t map.8935
+0011aadd 00000004 t mask.4684
 00100718 00000036 t mask_value
-0010afac 00000038 t matrix_all
-0011b4b4 00000018 t matrix_catalogue
-0010b61c 00000052 t matrix_col
-0010af1c 00000028 t matrix_colq
-0010f360 00000050 t matrix_copy
-0010af00 0000001c t matrix_decomp
-0010ae62 0000009e t matrix_decompose
-0010ae20 00000042 t matrix_descriptor
-0010b150 00000068 t matrix_determinant
-0010af6c 00000040 t matrix_diag
-001056f6 0000003a t matrix_do_loop
-0010b524 0000009e t matrix_genadd
-00101dac 0000001a t matrix_get128
-0010ce1c 00000070 t matrix_getrc
-0010b5c2 0000005a t matrix_getreg
-0010b360 000000c4 t matrix_inverse
-0010afe4 0000002e t matrix_is_square
-0010b26c 000000f4 t matrix_linear_eqn
-0010b0ec 00000064 t matrix_lu_check
-0010b1b8 000000b4 t matrix_lu_decomp
-0010f3b0 00000100 t matrix_multiply
-0010249c 000000e2 t matrix_pivoting_solve
-0010adb8 00000068 t matrix_range_check
-0010b66e 00000054 t matrix_row
-0010b424 00000100 t matrix_rowops
-0010af44 00000028 t matrix_rowq
-0010b012 000000da t matrix_transpose
-0010cdc6 0000002a t mean_common
-00107fd8 0000002c T memcpy
-00111de0 00000012 T memset
-00109090 00000064 t message
-0011bf4c 00000004 t mfcone
-0011bf34 00000004 t mfcone
-0011b3e9 0000003f t mode_catalogue
-00118d24 00000007 t modes.10318
-0011ac33 00000004 t modes.10776
-0011a004 0000072c t monfuncs
-000f14e0 00000ac2 R monfuncs_ct
-0011ac55 00000024 t mons.6782
-001105fa 0000005e t move_retstk
-001023fe 00000020 t mulop
-001023cc 00000032 t mulop128
+0010af9c 00000038 t matrix_all
+0011b4d1 00000018 t matrix_catalogue
+0010b60c 00000052 t matrix_col
+0010af0c 00000028 t matrix_colq
+0010f370 00000050 t matrix_copy
+0010aef0 0000001c t matrix_decomp
+0010ae52 0000009e t matrix_decompose
+0010ae10 00000042 t matrix_descriptor
+0010b140 00000068 t matrix_determinant
+0010af5c 00000040 t matrix_diag
+001056d6 0000003a t matrix_do_loop
+0010b514 0000009e t matrix_genadd
+00101da0 0000001a t matrix_get128
+0010ce2c 00000070 t matrix_getrc
+0010b5b2 0000005a t matrix_getreg
+0010b350 000000c4 t matrix_inverse
+0010afd4 0000002e t matrix_is_square
+0010b25c 000000f4 t matrix_linear_eqn
+0010b0dc 00000064 t matrix_lu_check
+0010b1a8 000000b4 t matrix_lu_decomp
+0010f3c0 00000100 t matrix_multiply
+00102490 000000e2 t matrix_pivoting_solve
+0010ada8 00000068 t matrix_range_check
+0010b65e 00000054 t matrix_row
+0010b414 00000100 t matrix_rowops
+0010af34 00000028 t matrix_rowq
+0010b002 000000da t matrix_transpose
+0010cdd6 0000002a t mean_common
+00107fbc 0000002c T memcpy
+00111df8 00000012 T memset
+00109080 00000064 t message
+0011bf68 00000004 t mfcone
+0011bf50 00000004 t mfcone
+0011b406 0000003f t mode_catalogue
+00118d34 00000007 t modes.10321
+0011ac4f 00000004 t modes.10779
+0011a01e 0000072c t monfuncs
+000f14ec 00000ac2 R monfuncs_ct
+0011ac71 00000024 t mons.6785
+0011060a 0000005e t move_retstk
+001023f2 00000020 t mulop
+001023c0 00000032 t mulop128
 00101294 0000001e t multialpha
-00118a6a 00000058 t multicmds
+00118a7a 00000058 t multicmds
 000f0048 0000006e R multicmds_ct
-0011bf38 00000014 t multies
-0011bef0 00000014 t multies
-0011980c 000007f8 t niladics
-000f079a 00000990 R niladics_ct
-0010b914 00000020 t not_running
+0011bf0c 00000014 t multies
+0011bf54 00000014 t multies
+0011981c 00000802 t niladics
+000f079a 0000099c R niladics_ct
+0010b904 00000020 t not_running
 0010140e 00000040 t num_arg
 001013d8 00000036 t num_arg_0
-001039b0 00000044 t num_arg_digits
-0010cc3a 00000092 t op_2frac
-001107a0 000000d4 t op_double
-00109bfc 00000020 t op_entryp
-0010c668 000000ac t op_float
-0010c83a 00000062 t op_fracdenom
-0010c714 00000040 t op_fract
-0010f76c 00000034 t op_gtoalpha
-0011affc 00000044 t op_map.8998
-0011af28 00000088 t op_map.9016
-0011afb8 00000044 t op_map.9038
-0011ae18 00000110 t op_map.9048
-0011adfe 00000006 t op_map.9060
-0011ae08 0000000c t op_map.9075
-0011afb0 00000008 t op_map2.9017
-0010cccc 0000004c t op_p2r
+001039a0 00000044 t num_arg_digits
+0010cc4a 00000092 t op_2frac
+001107b0 000000d4 t op_double
+00109bec 00000020 t op_entryp
+0010c658 000000ac t op_float
+0010c84c 00000060 t op_fracdenom
+0010c704 00000040 t op_fract
+0010f77c 00000034 t op_gtoalpha
+0011b018 00000044 t op_map.9001
+0011af44 00000088 t op_map.9019
+0011afd4 00000044 t op_map.9041
+0011ae34 00000110 t op_map.9051
+0011ae1a 00000006 t op_map.9063
+0011ae24 0000000c t op_map.9078
+0011afcc 00000008 t op_map2.9020
+0010ccdc 0000004c t op_p2r
 00101a20 00000084 t op_popusr
-0010abe8 00000012 t op_prompt
-0010aa18 0000000e t op_query_print
-0010aa26 0000000e t op_query_xtal
-0010cd18 0000003a t op_r2p
-0010d4f8 00000024 t op_regclr
-001105bc 0000003e t op_regcopy
-0010d410 000000e8 t op_regsort
-0010d51c 00000064 t op_regswap
-0010c9ac 00000024 t op_roundingmode
-0010ad44 00000044 t op_rs
-0010436c 00000030 t op_rtn
-00103434 00000030 t op_setspeed
-0010cff4 00000058 t op_shift_digit
-0010c928 00000018 t op_ticks
-0010cab0 0000004c t op_voltage
-001188cc 00000007 t opcode_breaks
-00104d00 00000068 t open_port_default
-0011ac37 0000000e t ops.12396
-00101dc6 00000042 t packed128_from_number
-00101e08 0000001e t packed128_from_packed
-00101e26 00000042 t packed_from_number
-00101e68 0000001e t packed_from_packed128
+0010abd8 00000012 t op_prompt
+0010aa08 0000000e t op_query_print
+0010aa16 0000000e t op_query_xtal
+0010cd28 0000003a t op_r2p
+0010d508 00000024 t op_regclr
+001105cc 0000003e t op_regcopy
+0010d420 000000e8 t op_regsort
+0010d52c 00000064 t op_regswap
+0010c9bc 00000024 t op_roundingmode
+0010ad34 00000044 t op_rs
+00104348 00000030 t op_rtn
+00103428 00000030 t op_setspeed
+0010d004 00000058 t op_shift_digit
+0010c938 00000018 t op_ticks
+0010cac0 0000004c t op_voltage
+001188dc 00000007 t opcode_breaks
+00104ce0 00000068 t open_port_default
+0011ac53 0000000e t ops.12399
+00101dba 00000042 t packed128_from_number
+00101dfc 0000001e t packed128_from_packed
+00101e1a 00000042 t packed_from_number
+00101e5c 0000001e t packed_from_packed128
 0010095c 00000012 t packup
-00106d20 000000ac t perm_helper
+00106d04 000000ac t perm_helper
 001006b2 00000028 t pixel_length
-0011bec8 00000028 T powers
+0011bee4 00000028 T powers
 0010000c t prefetchAbortVector
-0011ac45 00000010 t primes
-00109686 0000006a t print
-001096f0 0000002c t print_advance
-00109af8 00000034 t print_alpha
-00109650 00000036 t print_graphic
-00109a9a 0000005e t print_justified
-0010973c 00000014 t print_lf
-00109784 000001ac t print_line
-001099a0 000000cc t print_program
-00109b2c 00000060 t print_reg
-0010d340 000000d0 t print_registers
-0010d930 00000060 t print_sigma
-00109930 00000070 t print_tab
-0010f918 000000f0 t print_trace
-0011aac5 000000a0 t printer_chars
-0011b237 00000044 t prob_catalogue
-0010fec8 00000490 t process_arg
-0010fe94 00000034 t process_arg_shuffle
-001120d8 0000028c t process_catalogue
-0010f7a0 00000178 t process_cmdline
-0010fa08 0000001c t process_cmdline_set_lift
-00105288 000000dc t process_select_memory_key
-0011b2c1 00000057 t prog_catalogue
-0010d6c4 00000088 t program_flash
-0011b318 00000098 t program_xfcn
-001039f4 000002e0 t prt
+0011ac61 00000010 t primes
+00109676 0000006a t print
+001096e0 0000002c t print_advance
+00109ae8 00000034 t print_alpha
+00109640 00000036 t print_graphic
+00109a8a 0000005e t print_justified
+0010972c 00000014 t print_lf
+00109774 000001ac t print_line
+00109990 000000cc t print_program
+00109b1c 00000060 t print_reg
+0010d350 000000d0 t print_registers
+0010d940 00000060 t print_sigma
+00109920 00000070 t print_tab
+0010f928 000000f0 t print_trace
+0011aae1 000000a0 t printer_chars
+0011b253 00000044 t prob_catalogue
+0010fed8 00000490 t process_arg
+0010fea4 00000034 t process_arg_shuffle
+001120f0 00000290 t process_catalogue
+0010f7b0 00000178 t process_cmdline
+0010fa18 0000001c t process_cmdline_set_lift
+00105268 000000dc t process_select_memory_key
+0011b2dd 00000058 t prog_catalogue
+0010d6d4 00000088 t program_flash
+0011b335 00000098 t program_xfcn
+001039e4 000002d0 t prt
 00101388 00000050 t prt_conv
 00101332 00000056 t prt_multi
-00103794 0000010c t prt_specials.part.13
-0010b6c2 000000da t put_block
-00103280 0000003c t put_byte
-00109550 00000100 t put_ir
-00103024 00000054 t put_key
-001032bc 00000018 t put_word
-0010cf18 00000094 t rarg_round
+00103788 0000010c t prt_specials.part.13
+0010b6b2 000000da t put_block
+00103274 0000003c t put_byte
+00109540 00000100 t put_ir
+00103018 00000054 t put_key
+001032b0 00000018 t put_word
+0010cf28 00000094 t rarg_round
 00101864 00000024 t rarg_roundingmode
 00101718 0000001c t raw_set_pc
-00104da8 00000094 t realULP
-00110ec0 00000048 t recall_program
-00111bfc 0000018c t recv_any
-00109312 0000007e t recv_byte
+00104d88 00000094 t realULP
+00110ed0 00000048 t recall_program
+00111c14 0000018c t recv_any
+00109302 0000007e t recv_byte
 00101954 00000050 t reg_address
-0010d1f0 00000150 t reg_decode
-0010c600 00000068 t register_from_int
-001050d6 0000003a t relative_error
+0010d200 00000150 t reg_decode
+0010c5f0 00000068 t register_from_int
+001050b6 0000003a t relative_error
 00100014 t reservedVector
-0010fd1c 00000060 t reset
+0010fd2c 00000060 t reset
 00100068 T resetHandler
 00100000 t resetVector
-0010fdf8 0000001c t reset_arg
-001035b8 0000007c t reset_disp
-00111e38 00000020 t reset_multi
+0010fe08 0000001c t reset_arg
+001035ac 0000007c t reset_disp
+00111e50 00000020 t reset_multi
 00100ab4 00000018 t reset_shift
-0011bf04 0000000a t resmap
-002000bc 00000010 b result.10567
-00104274 00000084 t retstk_up
-0010849c 0000002c t roll_down
-00108546 0000002e t roll_up
-00101f1e 00000026 t round2int
+0011bf20 0000000a t resmap
+002000bc 00000010 b result.10570
+00104250 00000084 t retstk_up
+00108480 0000002c t roll_down
+0010852a 0000002e t roll_up
+00101f12 00000026 t round2int
 001018cc 0000003e t s_to_i
 0010190a 0000004a t s_to_ull
 00100130 0000005c t save_state_to_lcd_memory
-00103078 000001ac t scan_keyboard
+0010306c 000001ac t scan_keyboard
 0010120c 00000014 t scopy
-0010b79c 0000001c t send_all
-0010b7e4 0000003c t send_program
-0010b7b8 0000002c t send_registers
-0010d7cc 00000024 t send_sigma
+0010b78c 0000001c t send_all
+0010b7d4 0000003c t send_program
+0010b7a8 0000002c t send_registers
+0010d7dc 00000024 t send_sigma
 001018ac 00000020 t setComplexContext
-0010beaa 0000004a t setRegister
-0010ca68 00000010 t setX
-0010cc24 00000016 t setXY
-00108068 00000012 t setX_int
-0010c824 00000016 t setX_int_sgn
-0010375c 00000038 t set_IO_annunciator
-00101d7c 0000001c t set_NaN
-00104790 000000a4 t set_annunciators
-0010a3ae 0000001a t set_carry
-00103690 00000032 t set_decimal
+0010be9a 0000004a t setRegister
+0010ca78 00000010 t setX
+0010cc34 00000016 t setXY
+0010804c 00000012 t setX_int
+0010c814 00000016 t setX_int_sgn
+00103750 00000038 t set_IO_annunciator
+00101d70 0000001c t set_NaN
+00104770 000000a4 t set_annunciators
+0010a39e 0000001a t set_carry
+00103684 00000032 t set_decimal
 00100c74 00000034 t set_dig
 00100ca8 00000018 t set_dig_s
-001036c2 0000003e t set_digits_string
+001036b6 0000003e t set_digits_string
 00100bf4 00000040 t set_dot
 0010144e 00000076 t set_exp
 00100cc0 00000028 t set_exp_digits_string
-00101d68 00000014 t set_inf
-0010c754 00000040 t set_int_base
-00104420 00000300 t set_int_x
+00101d5c 00000014 t set_inf
+0010c744 00000040 t set_int_base
+001043fc 00000304 t set_int_x
 0010018c 00000044 t set_mckr
-00109df4 0000001a t set_overflow
+00109de4 0000001a t set_overflow
 0010177c 00000084 t set_pc
-00108050 00000018 t set_reg_n_int
-0010c514 00000050 t set_reg_n_int_sgn
+00108034 00000018 t set_reg_n_int
+0010c504 00000050 t set_reg_n_int_sgn
 00101aa4 0000002c t set_running_off
-0010acf8 0000004c t set_running_on
-00103700 00000032 t set_separator.part.10
-001032d4 0000014c t set_speed
+0010ace8 0000004c t set_running_on
+001036f4 00000032 t set_separator.part.10
+001032c8 0000014c t set_speed
 00101024 00000030 t set_status
-00111e58 00000060 t set_status_right
+00111e70 00000060 t set_status_right
 00100de0 00000244 t set_status_sized
-00110358 000000a4 t set_window
-00106bb0 00000026 t set_x
-00106254 0000095c t set_x_dn
-001085a6 00000010 t setlastX
-001085b6 00000014 t setlastXY
+00110368 000000a4 t set_window
+00106b94 00000026 t set_x
+00106238 0000095c t set_x_dn
+0010858a 00000010 t setlastX
+0010859a 00000014 t setlastXY
 001001d0 00000020 t shift_down
-001103fc 000000b8 t shutdown
-00110690 0000005c t sigmaAllocate
-0010d788 00000044 t sigmaCheck
-00110658 0000002c t sigmaDeallocate
-00110684 0000000c t sigma_clear
-00105b88 000000e0 t sigma_helper
-0010d832 0000006a t sigma_sum
-0010d89c 00000094 t sigma_val
-00101ef4 0000002a t sigop
-00102be8 00000104 t sincosTaylor
-0011aa10 00000028 t small_ints
-0011ae04 00000004 t smap.8947
+0011040c 000000b8 t shutdown
+001106a0 0000005c t sigmaAllocate
+0010d798 00000044 t sigmaCheck
+00110668 0000002c t sigmaDeallocate
+00110694 0000000c t sigma_clear
+00105b68 000000e0 t sigma_helper
+0010d842 0000006a t sigma_sum
+0010d8ac 00000094 t sigma_val
+00101ee8 0000002a t sigop
+00102bdc 00000104 t sincosTaylor
+0011aa2c 00000028 t small_ints
+0011ae20 00000004 t smap.8950
 001012f0 00000022 t sncopy
 00101312 00000020 t sncopy_char
-00119228 00000014 t speeds.4609
-00104170 0000003c t stack_size
-0010db28 00000080 t stats_COV
-0010dafe 0000002a t stats_LR
-0011b221 00000016 t stats_catalogue
-0010dba8 00000034 t stats_correlation
-0010dbdc 0000009e t stats_deviations
-0010dc7a 0000003e t stats_gmean
-0010dcf0 00000042 t stats_mean
+00119238 00000014 t speeds.4612
+0010414c 0000003c t stack_size
+0010db38 00000080 t stats_COV
+0010db0e 0000002a t stats_LR
+0011b23d 00000016 t stats_catalogue
+0010dbb8 00000034 t stats_correlation
+0010dbec 0000009e t stats_deviations
+0010dc8a 0000003e t stats_gmean
+0010dd00 00000042 t stats_mean
 00101054 00000024 t stats_mode
-0010cafc 00000074 t stats_random
-0010d7f0 00000042 t stats_sigper
-0010814a 00000032 t stats_sto_random
-0010dd32 000000ca t stats_wdeviations
-0010dcb8 00000038 t stats_wmean
-0010da58 000000a6 t stats_xhat
-0010d9bc 0000009c t stats_yhat
-001021fe 00000052 t std_round_fix
-0010f284 000000dc t stoprog
+0010cb0c 00000074 t stats_random
+0010d800 00000042 t stats_sigper
+0010812e 00000032 t stats_sto_random
+0010dd42 000000ca t stats_wdeviations
+0010dcc8 00000038 t stats_wmean
+0010da68 000000a6 t stats_xhat
+0010d9cc 0000009c t stats_yhat
+001021f2 00000052 t std_round_fix
+0010f294 000000dc t stoprog
 00101be0 00000058 t stopwatch
-0010bf5c 00000334 t stopwatch_callback
-0010401a 00000082 t storcl_cop
-0010ead8 00000094 t storcl_intop
-00103fa6 00000074 t storcl_op
-00108004 0000002c t store_a_to_d
-00110c4c 000000cc t store_program
-0010bef4 00000068 t store_stopwatch_in_memory
-0011b4a2 00000012 t sums_catalogue
-001083b0 00000028 t swap_reg
+0010bf4c 00000334 t stopwatch_callback
+00103ff6 00000082 t storcl_cop
+0010eae8 00000094 t storcl_intop
+00103f82 00000074 t storcl_op
+00107fe8 0000002c t store_a_to_d
+00110c5c 000000cc t store_program
+0010bee4 00000068 t store_stopwatch_in_memory
+0011b4bf 00000012 t sums_catalogue
+00108394 00000028 t swap_reg
 00100008 t swiVector
-0010c5a0 00000060 t switch_to_int
+0010c590 00000060 t switch_to_int
 00101b74 00000040 t system_irq
 00101078 00000058 t taus_get
 001010d0 00000060 t taus_seed
-0011b3b0 00000039 t test_catalogue
-00104d68 00000040 t toggle_running
+0011b3cd 00000039 t test_catalogue
+00104d48 00000040 t toggle_running
 0010074e 00000016 t topbit_mask
-0011a94c 00000064 t trifuncs
-000f112a 0000008c R trifuncs_ct
-0011bf0e 00000002 t uarrone
-0010564c 00000080 t ullint_to_dn
+0011a966 00000064 t trifuncs
+000f1136 0000008c R trifuncs_ct
+0011bf2a 00000002 t uarrone
+0010562c 00000080 t ullint_to_dn
 00100004 t undefVector
 00100110 00000020 t unlock
 00100324 00000090 t unpackchar
 00101668 000000b0 t update_program_bounds
-00103420 00000014 t update_speed
-00104140 00000030 t user_pc.part.20
-0010b9d0 0000008c t usergsb_common
-00109070 00000020 t version
-0010f0b8 00000040 t warn
-002001a0 00000004 b was_paused.9383
-001180b8 000000ab t widths.5374
+00103414 00000014 t update_speed
+0010411c 00000030 t user_pc.part.20
+0010b9c0 0000008c t usergsb_common
+00109060 00000020 t version
+0010f0c8 00000040 t warn
+002001a0 00000004 b was_paused.9386
+001180c8 000000ab t widths.5377
 001006f8 00000020 t word_size
-00109750 00000034 t wrap
-00107fd8 0000002c T xcopy
-00110f4c 00000a30 t xeq
-00103e94 000000a0 t xeq_init_contexts
-00111a70 00000024 t xeq_single
-0011197c 000000f4 t xeq_sst_bst
-00111b3c 00000064 t xeq_xrom
-00111a94 000000a8 t xeqprog
-0011c050 00001672 t xrom
-0011abd0 00000036 t xrom_targets
-00111de0 00000012 T xset
+00109740 00000034 t wrap
+00107fbc 0000002c T xcopy
+00110f5c 00000a38 t xeq
+00103e70 000000a0 t xeq_init_contexts
+00111a88 00000024 t xeq_single
+00111994 000000f4 t xeq_sst_bst
+00111b54 00000064 t xeq_xrom
+00111aac 000000a8 t xeqprog
+0011c06c 00001672 t xrom
+0011abec 00000036 t xrom_targets
+00111df8 00000012 T xset
 001019a4 00000020 t zero_regs
