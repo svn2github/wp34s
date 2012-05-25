@@ -498,7 +498,7 @@ void cmdprintcmplxreg( unsigned int reg, enum rarg op)
 	xset( bufx, '\0', sizeof( bufx ) );
 	set_x_dn( &x, bufx);
 	p = find_char(bufx, '\0');
-	scopy(p, " , ");
+	scopy(p, " ; ");
 	lenx = buffer_width(bufx);
 
 	xset( bufy, '\0', sizeof( bufy ) );
