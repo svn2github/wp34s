@@ -3760,12 +3760,17 @@ static void rargs(const opcode op) {
 		if (argcmds[cmd].indirectokay) {
 			// Get the argument by reading a register
 			int sgn;
+			unsigned long long int regval;
+
 			if (arg > get_reg_limit(RARG_RCL, arg)) {
 				// Invalid register specified for indirect access
 				err(ERR_RANGE);
 				return;
 			}
-			arg = (unsigned int) get_reg_n_int_sgn(arg, &sgn);
+			regval = get_reg_n_int_sgn(arg, &sgn);
+			if ((regval >> 32) != 0)
+				goto range;
+			arg = (unsigned int) regval;
 			if (argcmds[cmd].local && sgn) {
 				// negative arguments address local registers or flags
 				arg = LOCAL_REG_BASE + arg;
@@ -3788,7 +3793,7 @@ static void rargs(const opcode op) {
 	}
 	if (arg > lim) {
 		// Argument is too large
-		err(ERR_RANGE);
+range:		err(ERR_RANGE);
 	}
 	else if (argcmds[cmd].cmplx && arg >= TOPREALREG-1 && arg < NUMREG && (arg & 1)) {
 		// Complex commands on special registers only allowed for X, Z, A, C, L & J
