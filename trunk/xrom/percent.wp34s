@@ -45,8 +45,7 @@ per_mul100::		SDL 02
  */
 	XLBL"PERTOT"
 		xIN MONADIC
-			RCL Y
-			/
+			RCL/ Y
 			JMP per_mul100
 
 /* Margin
@@ -63,11 +62,10 @@ per_mul100::		SDL 02
  */
 	XLBL"PERMMR"
 		xIN TRIADIC
-			x[<->] Y
-			/
-			x[<->] Y
-			[^x][sqrt]y
-			DEC X
+			RCL/ Y
+			LN
+			RCL/ Z
+			e[^x]-1
 			JMP per_mul100
 
 /* Percent markup margin
