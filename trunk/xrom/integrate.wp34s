@@ -150,7 +150,7 @@ int_row_update::	R[^]
 				JMP int_no_error
 
 			/* Out of registers, can't get a better result */
-			JMP int_really_done
+			JMP int_done
 
 int_no_error::		DSE r_ui2
 				JMP int_row_update
@@ -161,17 +161,10 @@ int_no_error::		DSE r_ui2
 				MSG MSG_INTEGRATE
 			x[approx]? Y
 				JMP int_done
-			CF f_twice
 			JMP int_next_size
 
-/* Special check now that we've got two matches in a row, we want to wait for three. */
-int_done::		FS? f_twice
-				JMP int_really_done
-			SF f_twice
-			JMP int_next_size
-
-/* Three matches in a row is goodness. */
-int_really_done::	[cmplx]RCL cr_limits
+/* Two matches in a row is goodness. */
+int_done::		[cmplx]RCL cr_limits
 			STO L
 			[cmplx]x[<->] Z
 			TOP?
