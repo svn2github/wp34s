@@ -96,7 +96,7 @@ void error_message(const unsigned int e)
 		MSG2("RAM is", "FuLL"),
 		MSG2("Stack", "CLASH"),
 		MSG1("Bad mode"),
-		MSG2("Word size", "too SMmALL"),
+		MSG2("Word\006\006\006size", "too SMmALL"),
 		MSG2("Too few", "dAtA PointS"),
 		MSG2("Invalid", "ParaMmEtEr"),
 		MSG1("I/O"),
