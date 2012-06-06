@@ -630,7 +630,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_FAST,		&op_setspeed,		"FAST",		CNULL)
 
 	FUNC0(OP_TOP,		&isTop,			"TOP?",		CNULL)
-	FUNC1(OP_GETBASE,	&get_base,		"IBASE?",	CNULL)
+	FUNC1(OP_GETBASE,	&get_base,		"BASE?",	CNULL)
 	FUNC1(OP_GETSIGN,	&get_sign_mode,		"SMODE?",	CNULL)
 	FUNC0(OP_ISINT,		&check_mode,		"INTM?",	CNULL)
 	FUNC0(OP_ISFLOAT,	&check_mode,		"REALM?",	CNULL)
