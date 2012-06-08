@@ -680,7 +680,7 @@ void lift(void) {
 		copyreg(get_stack(i), get_stack(i-1));
 }
 
-static void lift_if_enabled(void) {
+void lift_if_enabled(void) {
 	if (State2.state_lift)
 		lift();
 }

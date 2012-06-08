@@ -682,6 +682,7 @@ void cmdplotwidth( unsigned int arg, enum rarg op )
 {
 	unsigned char *p = plot_check_range( arg, 0 );
 	if ( p != NULL ) {
+		lift_if_enabled();
 		setX_int_sgn( *p, 0 );
 	}
 
