@@ -48,6 +48,10 @@ extern void cmdprintreg( unsigned int arg, enum rarg op );
 extern void cmdprintcmplxreg( unsigned int arg, enum rarg op );
 extern void cmdprintmode( unsigned int arg, enum rarg op );
 extern void cmdprintwidth(enum nilop op);
+extern void cmdplotinit( unsigned int arg, enum rarg op );
+extern void cmdplotwidth( unsigned int arg, enum rarg op );
+extern void cmdplotpixel( unsigned int arg, enum rarg op );
+extern void cmdplotprint( unsigned int arg, enum rarg op );
 
 // Implemented by the hardware layer
 extern int put_ir( int byte );

@@ -35,6 +35,11 @@
 //#define INCLUDE_STOPWATCH
 #endif
 
+#ifdef INFRARED
+// Include the pixel plotting commands
+#define INCLUDE_PLOTTING
+#endif
+
 // Build a tiny version of the device
 // #define TINY_BUILD
 

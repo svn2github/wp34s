@@ -517,13 +517,13 @@ void cmdprintcmplxreg( unsigned int reg, enum rarg op)
 	}
 }
 
-/* Return the width of alpha to x
+/*
+ *  Return the width of alpha to x
  */
 void cmdprintwidth(enum nilop op)
 {
 	setX_int_sgn(buffer_width(Alpha), 0);
 }
-
 
 /*
  *  Set printing modes
@@ -537,7 +537,6 @@ void cmdprintmode( unsigned int arg, enum rarg op )
 		State.print_delay = arg;
 	}
 }
-
 
 /*
  *  Trace an instruction
@@ -588,7 +587,6 @@ void print_trace( opcode op, int phase )
 	}
 }
 
-
 /*
  *  Print a program listing
  *  Start at the PC location
@@ -626,6 +624,132 @@ void print_program( enum nilop op )
 		pc = do_inc( pc, runmode );
 	}
 }
+
+#ifdef INCLUDE_PLOTTING
+/*
+ *  Plotting commands
+ *
+ *  The plot buffer is a range of registers that is treated as pixel data
+ *  The first byte contains the length of the buffer in columns (bytes)
+ */
+
+/*
+ *  Check register range and return a pointer to the plot data.
+ */
+static unsigned char *plot_check_range( int arg, int width )
+{
+	unsigned char *p = (unsigned char *) get_reg_n( arg );
+	int n = is_dblmode() ? 16 : 8;
+	int lim = arg < TOPREALREG ? global_regs() : local_regs();
+
+	if ( width == 0 ) {
+		width = (int) *p;
+	}
+	/*
+	 *  Check if we have enough room
+	 */
+	if ( width > PAPER_WIDTH || arg + ( width + n ) / n > lim ) {
+		err( ERR_RANGE );
+		return (unsigned char *) NULL;
+	}
+	return p;
+}
+
+/*
+ *  Initialize a block of registers to act as a buffer for plotting
+ *  X contains the maximum width (<= 0 is default: 166)
+ */
+void cmdplotinit( unsigned int arg, enum rarg op )
+{
+	int sgn;
+	int width = (int) getX_int_sgn( &sgn );
+	unsigned char *p;
+	
+	if ( sgn || width == 0 ) {
+		width = PAPER_WIDTH;
+	}
+	p = plot_check_range( arg, width );
+	if ( p != NULL ) {
+		*p++ = (unsigned char) width;
+		xset( p, 0, width );
+	}
+}
+
+/*
+ *  Return the width of the plotting block
+ */
+void cmdplotwidth( unsigned int arg, enum rarg op )
+{
+	unsigned char *p = plot_check_range( arg, 0 );
+	if ( p != NULL ) {
+		setX_int_sgn( *p, 0 );
+	}
+
+}
+
+/*
+ *  All pixel related commands
+ *  X is the horizontal position 0..width
+ *  Y is the vertical position 0..7
+ */
+void cmdplotpixel( unsigned int arg, enum rarg op )
+{
+	unsigned char *p = plot_check_range( arg, 0 );
+	if ( p != NULL ) {
+		int sgn;
+		int row = (int) getX_int_sgn( &sgn );
+		int pix = 0;
+		if ( sgn == 0 && row < 8 ) {
+			int width = (int) *p;
+			int column = (int) get_reg_n_int_sgn( regY_idx, &sgn );
+			if ( sgn == 0 && column < width ) {
+				pix = 1 << row;
+				p += column + 1;
+				if ( op == RARG_PLOT_SETPIX ) {
+					*p |= pix;
+				}
+				else if ( op == RARG_PLOT_CLRPIX ) {
+					*p &= ~pix;
+				}
+				else if ( op == RARG_PLOT_FLIPPIX ) {
+					*p ^= pix;
+				}
+			}
+		}
+		if ( op == RARG_PLOT_ISSET ) {
+			fin_tst( *p & pix );
+		}
+	}
+}
+
+
+/*
+ *  Send the buffer to the printer
+ */
+void cmdplotprint( unsigned int arg, enum rarg op )
+{
+	unsigned char *p = plot_check_range( arg, 0 );
+
+	if ( p != NULL ) {
+		int width = *p;
+		if ( PrinterColumn + width > PAPER_WIDTH ) {
+			/*
+			 *  Data does not fit on line
+			 */
+			print_advance();
+		}
+		print_graphic( width, p + 1 );
+		PrinterColumn += width;
+		if ( PrinterColumn == PAPER_WIDTH ) {
+			/*
+			 *  Line is full
+			 */
+			print_advance();
+		}
+	}
+}
+
+#endif
 
 
 #ifdef WINGUI

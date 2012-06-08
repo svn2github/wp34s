@@ -722,22 +722,22 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 
 #ifdef COMPILE_CATALOGUES
-#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, res)	\
-	{ #func, (limit) - 1,                ind, reg, stk, loc, cpx, lbl, flag, res, nm, alias },
+#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, plot)	\
+	{ #func, (limit) - 1,                ind, reg, stk, loc, cpx, lbl, flag, plot, nm, alias },
 #elif DEBUG
-#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, res)	\
-	{ name, func, (limit) - 1,           ind, reg, stk, loc, cpx, lbl, flag, res, nm, alias },
+#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, plot)	\
+	{ name, func, (limit) - 1,           ind, reg, stk, loc, cpx, lbl, flag, plot, nm, alias },
 #elif COMMANDS_PASS == 1
-#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, res)	\
-	{ 0xaa55, (limit) - 1,               ind, reg, stk, loc, cpx, lbl, flag, res, nm },
+#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, plot)	\
+	{ 0xaa55, (limit) - 1,               ind, reg, stk, loc, cpx, lbl, flag, plot, nm },
 #elif defined(REALBUILD)
-#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, res)	\
-	{ func, (limit) - 1,                 ind, reg, stk, loc, cpx, lbl, flag, res, nm },
+#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, plot)	\
+	{ func, (limit) - 1,                 ind, reg, stk, loc, cpx, lbl, flag, plot, nm },
 #else
-#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, res)	\
-	{ func, (limit) - 1,                 ind, reg, stk, loc, cpx, lbl, flag, res, nm, alias },
+#define allCMD(name, func, limit, nm, alias, ind, reg, stk, loc, cpx, lbl, flag, plot)	\
+	{ func, (limit) - 1,                 ind, reg, stk, loc, cpx, lbl, flag, plot, nm, alias },
 #endif
-                                                                                      // in rg st lo cx lb fl  -
+                                                                                      // in rg st lo cx lb fl  pl
 #define CMD(n, f, lim, nm, alias)	allCMD(n, f, lim,                      nm, alias, 1, 0, 0, 0, 0, 0, 0, 0)
 #define CMDnoI(n, f, lim, nm, alias)	allCMD(n, f, lim,                      nm, alias, 0, 0, 0, 0, 0, 0, 0, 0)
 #define CMDreg(n, f, nm, alias)		allCMD(n, f, TOPREALREG,               nm, alias, 1, 1, 0, 1, 0, 0, 0, 0)
@@ -749,6 +749,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 #define CMDlbl(n, f, nm, alias)		allCMD(n, f, NUMLBL,                   nm, alias, 1, 0, 0, 0, 0, 1, 0, 0)
 #define CMDlblnI(n, f, nm, alias)	allCMD(n, f, NUMLBL,                   nm, alias, 0, 0, 0, 0, 0, 1, 0, 0)
 #define CMDflg(n, f, nm, alias)		allCMD(n, f, NUMFLG+16,		       nm, alias, 1, 0, 1, 1, 0, 0, 1, 0)
+#define CMDplt(n, f, nm, alias)		allCMD(n, f, NUMREG+MAX_LOCAL,	       nm, alias, 1, 1, 0, 1, 0, 0, 0, 1)
 
 #if COMMANDS_PASS == 2
 CMDTAB const struct argcmd_cmdtab argcmds_ct[ NUM_RARG ] = {
@@ -938,6 +939,15 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"\222MODE",	"P.MODE")
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY",	"P.DLAY")
 	CMDcstk(RARG_PRINT_CMPLX, IRA(cmdprintcmplxreg),		"\222\024r\213\214",	"P.crect")
+#ifdef INCLUDE_PLOTTING
+	CMDplt(RARG_PLOT_INIT,    IRA(cmdplotinit),			"\222INIT",	"P.INIT")
+	CMDplt(RARG_PLOT_WIDTH,   IRA(cmdplotwidth),			"\222WID?",	"P.WID?")
+	CMDplt(RARG_PLOT_SETPIX,  IRA(cmdplotpixel),			"\222SET",	"P.SET")
+	CMDplt(RARG_PLOT_CLRPIX,  IRA(cmdplotpixel),			"\222CLR",	"P.CLR")
+	CMDplt(RARG_PLOT_FLIPPIX, IRA(cmdplotpixel),			"\222FLP",	"P.FLP")
+	CMDplt(RARG_PLOT_ISSET,   IRA(cmdplotpixel),			"\222PIX?",	"P.PIX?")
+	CMDplt(RARG_PLOT_PRINT,   IRA(cmdplotprint),			"\222PLOT",	"P.PLOT")
+#endif
 	/* end of INFRARED commands */
 
 	// Only the first of this group is used in XROM
