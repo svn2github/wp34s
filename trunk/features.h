@@ -146,5 +146,9 @@
 #define INCLUDE_XROM_DIGAMMA
 #endif
 
+#if defined(INCLUDE_PLOTTING) || defined(INFRARED)
+#define PAPER_WIDTH 166
+#endif
+
 #endif  /* TINY_BUILD*/
 #endif  /* FEATURES_H__ */

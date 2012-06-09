@@ -940,12 +940,13 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY",	"P.DLAY")
 	CMDcstk(RARG_PRINT_CMPLX, IRA(cmdprintcmplxreg),		"\222\024r\213\214",	"P.crect")
 #ifdef INCLUDE_PLOTTING
-	CMDplt(RARG_PLOT_INIT,    IRA(cmdplotinit),			"\222INIT",	"P.INIT")
-	CMDplt(RARG_PLOT_WIDTH,   IRA(cmdplotwidth),			"\222WID?",	"P.WID?")
-	CMDplt(RARG_PLOT_SETPIX,  IRA(cmdplotpixel),			"\222SET",	"P.SET")
-	CMDplt(RARG_PLOT_CLRPIX,  IRA(cmdplotpixel),			"\222CLR",	"P.CLR")
-	CMDplt(RARG_PLOT_FLIPPIX, IRA(cmdplotpixel),			"\222FLP",	"P.FLP")
-	CMDplt(RARG_PLOT_ISSET,   IRA(cmdplotpixel),			"\222PIX?",	"P.PIX?")
+	CMDplt(RARG_PLOT_INIT,    &cmdplotinit,				"\222INIT",	"P.INIT")
+	CMDplt(RARG_PLOT_WIDTH,   &cmdplotwidth,			"\222WID?",	"P.WID?")
+	CMDplt(RARG_PLOT_SETPIX,  &cmdplotpixel,			"\222SET",	"P.SET")
+	CMDplt(RARG_PLOT_CLRPIX,  &cmdplotpixel,			"\222CLR",	"P.CLR")
+	CMDplt(RARG_PLOT_FLIPPIX, &cmdplotpixel,			"\222FLP",	"P.FLP")
+	CMDplt(RARG_PLOT_ISSET,   &cmdplotpixel,			"\222PIX?",	"P.PIX?")
+	CMDplt(RARG_PLOT_DISPLAY, &cmdplotdisplay,			"PLOT",		CNULL)
 	CMDplt(RARG_PLOT_PRINT,   IRA(cmdplotprint),			"\222PLOT",	"P.PLOT")
 #endif
 	/* end of INFRARED commands */

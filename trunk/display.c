@@ -33,8 +33,10 @@ static enum decimal_modes { DECIMAL_DOT, DECIMAL_COMMA } DecimalMode;
 static void set_status_sized(const char *, int);
 static void set_status(const char *);
 static void set_status_right(const char *);
+static void set_status_graphic(const unsigned char *);
 
 const char *DispMsg;	   // What to display in message area
+short int DispPlot;
 #ifndef REALBUILD
 char LastDisplayedText[NUMALPHA + 1];	   // For clipboard export
 #endif
@@ -1515,6 +1517,8 @@ void display(void) {
 	} else if (State2.runmode) {
 		if (DispMsg) {
 			set_status(DispMsg);
+		} else if (DispPlot) {
+			set_status_graphic((const unsigned char *)get_reg_n(DispPlot-1));
 		} else if (State2.alphas) {
 #if 0
 			set_digits_string("AlpHA", 0);
@@ -1596,7 +1600,7 @@ nostk:	show_flags();
 	}
 	set_annunciators();
 
-	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || State2.disp_as_alpha)
+	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || DispPlot || State2.disp_as_alpha)
 		ShowRPN = 0;
 
 	// disp_temp disables the <- key
@@ -1612,6 +1616,7 @@ nostk:	show_flags();
 	State2.invalid_disp = 0;
 	ShowRegister = regX_idx;
 	DispMsg = CNULL;
+	DispPlot = 0;
 	State2.disp_small = 0;
 	finish_display();
 #ifdef CONSOLE
@@ -1629,6 +1634,30 @@ void frozen_display()
 	State2.disp_freeze = 1;
 }
 
+static void set_status_graphic(const unsigned char *graphic) {
+	int glen = *graphic++;
+	int i, j;
+#ifndef CONSOLE
+	unsigned long long int mat[6];
+
+	xset(mat, 0, sizeof(mat));
+#endif
+
+	if (glen <= 0)			return;
+	if (glen > BITMAP_WIDTH)	glen = BITMAP_WIDTH;
+
+	for (i=0; i<6; i++)
+		for (j=0; j<glen; j++) {
+#ifndef CONSOLE
+			if (graphic[j] & (1 << i))
+				mat[i] |= 1LL << j;
+#else
+			dot(j*6+i+MATRIX_BASE, (graphic[j] & (1 << i))?1:0);
+#endif
+		}
+}
+
+
 /* Take the given string and display as much of it as possible on the top
  * line of the display.  The font size is set by the smallp parameter.
  * We allow character to go one pixel beyond the display since the rightmost
@@ -1640,7 +1669,7 @@ static void set_status_sized(const char *str, int smallp) {
 	int i, j;
 	const int offset = smallp ? 256 : 0;
 #ifndef CONSOLE
-	unsigned long long mat[6];
+	unsigned long long int mat[6];
 
 	xset(mat, 0, sizeof(mat));
 #endif

@@ -930,7 +930,7 @@ enum rarg {
 #ifdef INCLUDE_PLOTTING
 	RARG_PLOT_INIT, RARG_PLOT_WIDTH, 
 	RARG_PLOT_SETPIX, RARG_PLOT_CLRPIX, RARG_PLOT_FLIPPIX, RARG_PLOT_ISSET,
-	RARG_PLOT_PRINT,
+	RARG_PLOT_DISPLAY, RARG_PLOT_PRINT,
 #endif
 	/* end of INFRARED commands */
 
@@ -1368,6 +1368,12 @@ extern void set_running_off_sst(void);
 extern void set_running_on_sst(void);
 extern void set_running_off(void);
 extern void set_running_on(void);
+
+extern unsigned char *plot_check_range( int arg, int width );
+extern void cmdplotinit( unsigned int arg, enum rarg op );
+extern void cmdplotwidth( unsigned int arg, enum rarg op );
+extern void cmdplotpixel( unsigned int arg, enum rarg op );
+extern void cmdplotdisplay( unsigned int arg, enum rarg op );
 
 extern decNumber *convC2F(decNumber *r, const decNumber *x);
 extern decNumber *convF2C(decNumber *r, const decNumber *x);

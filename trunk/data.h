@@ -462,6 +462,7 @@ extern FLAG ShowRPN;		     // controls the RPN annunciator
 extern FLAG IoAnnunciator;	     // Indicates I/O in progress (higher power consumption)
 extern SMALL_INT IntMaxWindow;       // Number of windows for integer display
 extern const char *DispMsg;	     // What to display in message area
+extern short int DispPlot;	     // Which register to base graphical display from
 extern unsigned int OpCode;          // Pending execution waiting for key-release
 extern s_opcode XeqOpCode;	     // Currently executed function
 extern FLAG GoFast;	 	     // Speed-up might be necessary

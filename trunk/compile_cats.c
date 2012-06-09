@@ -730,6 +730,7 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_PLOT_CLRPIX,   "\222CLR")
 	RARGCMD(RARG_PLOT_FLIPPIX,  "\222FLP")
 	RARGCMD(RARG_PLOT_ISSET,    "\222PIX?")
+	RARGCMD(RARG_PLOT_DISPLAY,  "PLOT")
 	RARGCMD(RARG_PLOT_PRINT,    "\222PLOT")
 #endif
 	/* end of INFRARED commands */
