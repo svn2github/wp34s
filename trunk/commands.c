@@ -939,6 +939,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"\222MODE",	"P.MODE")
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY",	"P.DLAY")
 	CMDcstk(RARG_PRINT_CMPLX, IRA(cmdprintcmplxreg),		"\222\024r\213\214",	"P.crect")
+	/* end of INFRARED commands */
 #ifdef INCLUDE_PLOTTING
 	CMDplt(RARG_PLOT_INIT,    &cmdplotinit,				"gDIM",		CNULL)
 	CMDplt(RARG_PLOT_DIM,     &cmdplotdim,				"gDIM?",	CNULL)
@@ -947,9 +948,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDplt(RARG_PLOT_FLIPPIX, &cmdplotpixel,			"gFLP",		CNULL)
 	CMDplt(RARG_PLOT_ISSET,   &cmdplotpixel,			"gPIX?",	CNULL)
 	CMDplt(RARG_PLOT_DISPLAY, &cmdplotdisplay,			"gPLOT",	CNULL)
-	CMDplt(RARG_PLOT_PRINT,   IRA(cmdplotprint),			"\222PLOT",	"P.PLOT")
+	CMDplt(RARG_PLOT_PRINT,   IRA(cmdplotprint),			"\222PLOT",	"P.PLOT")	/* INFRARED command */
 #endif
-	/* end of INFRARED commands */
 
 	// Only the first of this group is used in XROM
 	CMDstk(RARG_CASE,	&cmdskip,				"CASE",		CNULL)
