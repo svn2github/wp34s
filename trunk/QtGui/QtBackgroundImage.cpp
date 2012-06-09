@@ -20,8 +20,8 @@
 static QPoint MOVE_MARGIN(MOVE_MARGIN_X, MOVE_MARGIN_Y);
 static QPoint MOVE_OTHER_MARGIN(MOVE_MARGIN_X, -MOVE_MARGIN_Y);
 
-QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard)
-	: screen(aScreen), keyboard(aKeyboard), dragging(false)
+QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard, QWidget* aParent)
+	: QLabel(aParent), screen(aScreen), keyboard(aKeyboard), dragging(false)
 {
 	setSkin(aSkin);
 	setPixmap(pixmap);

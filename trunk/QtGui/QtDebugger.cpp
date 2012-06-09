@@ -19,9 +19,11 @@
 #include "QtEmulator.h"
 
 
-QtDebugger::QtDebugger()
+QtDebugger::QtDebugger(QWidget* aParent)
+: QTableView(aParent)
 {
 	setModel(new QtRegistersModel());
+	setColumnsSizes();
 }
 
 void QtDebugger::refresh()
@@ -32,4 +34,33 @@ void QtDebugger::refresh()
 	}
 }
 
+void QtDebugger::setColumnsSizes()
+{
+	QtRegistersModel* registersModel=static_cast<QtRegistersModel*>(model());
+	registersModel->setPrototypeMode(true);
+	resizeColumnsToContents();
+	registersModel->setPrototypeMode(false);
+}
 
+QSize QtDebugger::sizeHint() const
+{
+	return minimumSizeHint();
+}
+
+QSize QtDebugger::minimumSizeHint() const
+{
+	int width = 0;
+	for(int i=0, last=model()->columnCount(); i<last; ++i)
+	{
+		width += columnWidth(i);
+	}
+
+	int height = QTableView::minimumSizeHint().height();
+
+	int doubleFrame = 2 * frameWidth();
+
+	width += verticalHeader()->width() + doubleFrame;
+	height += horizontalHeader()->height() + doubleFrame;
+
+	return QSize(width, height);
+}

@@ -22,10 +22,15 @@
 class QtDebugger: public QTableView
 {
 public:
-	QtDebugger();
+	QtDebugger(QWidget* aParent=0);
 
 public:
 	void refresh();
+    QSize sizeHint() const;
+    QSize minimumSizeHint() const;
+
+protected:
+	void setColumnsSizes();
 };
 
 #endif /* QTDEBUGGER_H_ */

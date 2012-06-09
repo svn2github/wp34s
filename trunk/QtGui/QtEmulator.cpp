@@ -24,7 +24,7 @@
 QtEmulator* currentEmulator;
 
 QtEmulator::QtEmulator()
-: calculatorThread(NULL), heartBeatThread(NULL), debugger(NULL), skinsActionGroup(NULL), titleBarVisible(true)
+: calculatorThread(NULL), heartBeatThread(NULL), debugger(NULL), skinsActionGroup(NULL), titleBarVisible(true), debuggerVisible(false)
 {
 	debug=qApp->arguments().contains(DEBUG_OPTION);
 	development=qApp->arguments().contains(DEVELOPMENT_OPTION);
@@ -53,11 +53,6 @@ QtEmulator::QtEmulator()
 	setInitialSkin();
 	buildMenus();
 
-	QVBoxLayout* layout = new QVBoxLayout();
-	layout->addWidget(backgroundImage);
-	setCentralWidget(backgroundImage);
-	layout->setSizeConstraint(QLayout::SetFixedSize);
-
 	connect(this, SIGNAL(screenChanged()), backgroundImage, SLOT(updateScreen()));
 
 	setWindowTitle(QApplication::translate("wp34s", "WP34s"));
@@ -67,6 +62,7 @@ QtEmulator::QtEmulator()
 	buildDebugger();
 	startThreads();
 	setTitleBarVisible(titleBarVisible);
+	setDebuggerVisible(debuggerVisible);
 	active=true;
 }
 
@@ -379,8 +375,8 @@ void QtEmulator::buildDebugMenu()
 	menuBar->addMenu(debugMenu);
 	QMenu* debugContextMenu=contextMenu->addMenu(DEBUG_MENU);
 
-	QAction* debugAction=debugMenu->addAction(SHOW_DEBUGGER_ACTION_TEXT, this, SLOT(toggleDebugger()));
-	debugContextMenu->addAction(debugAction);
+	toggleDebuggerAction=debugMenu->addAction(SHOW_DEBUGGER_ACTION_TEXT, this, SLOT(toggleDebugger()));
+	debugContextMenu->addAction(toggleDebuggerAction);
 }
 
 void QtEmulator::buildSkinsMenu()
@@ -433,9 +429,18 @@ void QtEmulator::buildContextualQuit()
 
 void QtEmulator::buildComponents(const QtSkin& aSkin)
 {
+	centralWidget=new QWidget;
 	screen=new QtScreen(aSkin);
 	keyboard=new QtKeyboard(aSkin, useHShiftClick, alwaysUseHShiftClick, hShiftDelay);
 	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard);
+	QBoxLayout* layout = new QHBoxLayout();
+	layout->addWidget(centralWidget);
+	setCentralWidget(centralWidget);
+	layout->setSizeConstraint(QLayout::SetFixedSize);
+	centralLayout=new QHBoxLayout;
+	centralLayout->setContentsMargins(0, 0, 0, 0);
+	centralWidget->setLayout(centralLayout);
+	centralLayout->addWidget(backgroundImage);
 }
 
 void QtEmulator::buildSerialPort()
@@ -445,7 +450,9 @@ void QtEmulator::buildSerialPort()
 
 void QtEmulator::buildDebugger()
 {
-	debugger=new QtDebugger;
+	debugger=new QtDebugger(centralWidget);
+	debugger->setVisible(false);
+	centralLayout->addWidget(debugger);
 }
 
 void QtEmulator::showContextMenu(const QPoint& aPoint)
@@ -566,6 +573,7 @@ void QtEmulator::loadUserInterfaceSettings()
 	settings.beginGroup(WINDOWS_SETTINGS_GROUP);
 	move(settings.value(WINDOWS_POSITION_SETTING, QPoint(DEFAULT_POSITION_X, DEFAULT_POSITION_Y)).toPoint());
 	titleBarVisible=settings.value(WINDOWS_TITLEBAR_VISIBLE_SETTING, true).toBool();
+	debuggerVisible=settings.value(DEBUGGER_VISIBLE_SETTING, true).toBool();
 	settings.endGroup();
 
 	settings.beginGroup(SKIN_SETTINGS_GROUP);
@@ -613,6 +621,7 @@ void QtEmulator::saveUserInterfaceSettings()
     settings.beginGroup(WINDOWS_SETTINGS_GROUP);
     settings.setValue(WINDOWS_POSITION_SETTING, pos());
     settings.setValue(WINDOWS_TITLEBAR_VISIBLE_SETTING, titleBarVisible);
+    settings.setValue(DEBUGGER_VISIBLE_SETTING, debuggerVisible);
     settings.endGroup();
 
     settings.beginGroup(SKIN_SETTINGS_GROUP);
@@ -925,9 +934,25 @@ void QtEmulator::findSkins()
 
 void QtEmulator::toggleDebugger()
 {
-	debugger->show();
-	raise();
-	activateWindow();
+	setDebuggerVisible(!debuggerVisible);
+}
+
+void QtEmulator::setDebuggerVisible(bool aDebuggerVisible)
+{
+	debuggerVisible=aDebuggerVisible;
+	if(debuggerVisible)
+	{
+		debugger->setVisible(true);
+		toggleDebuggerAction->setText(HIDE_DEBUGGER_ACTION_TEXT);
+	}
+	else
+	{
+		debugger->setVisible(false);
+		toggleDebuggerAction->setText(SHOW_DEBUGGER_ACTION_TEXT);
+	}
+	centralLayout->invalidate();
+	centralLayout->update();
+	setFixedSize(sizeHint());
 }
 
 extern "C"

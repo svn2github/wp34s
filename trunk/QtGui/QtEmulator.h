@@ -33,6 +33,7 @@
 #define WINDOWS_SETTINGS_GROUP "MainWindow"
 #define WINDOWS_POSITION_SETTING "Position"
 #define WINDOWS_TITLEBAR_VISIBLE_SETTING "Frameless"
+#define DEBUGGER_VISIBLE_SETTING "Debugger"
 #define DEFAULT_POSITION_X 50
 #define DEFAULT_POSITION_Y 50
 
@@ -191,10 +192,13 @@ private:
      void setSkin(const QString& aSkinName) throw (QtSkinException);
      void skinError(const QString& aMessage, bool aFatalFlag);
      void setTransparency(bool enabled);
+     void setDebuggerVisible(bool aDebuggerVisible);
 
 private:
      QtKeyboard* keyboard;
      QtScreen* screen;
+     QWidget* centralWidget;
+     QLayout* centralLayout;
      QtBackgroundImage* backgroundImage;
      QtCalculatorThread* calculatorThread;
      QtHeartBeatThread* heartBeatThread;
@@ -217,7 +221,9 @@ private:
      bool development;
      bool debug;
      bool titleBarVisible;
+     bool debuggerVisible;
      QAction* toggleTitleBarAction;
+     QAction* toggleDebuggerAction;
      QMenu* contextMenu;
      Qt::WindowFlags titleBarVisibleFlags;
 

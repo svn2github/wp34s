@@ -33,16 +33,17 @@ public:
     int columnCount(const QModelIndex& aParent) const;
     QVariant data(const QModelIndex& anIndex, int aRole) const;
     QVariant headerData(int aSection, Qt::Orientation anOrientation, int aRole) const;
-
-public:
+    void setPrototypeMode(bool aPrototypeMode);
     void refresh();
 
 protected:
     int rowCount() const;
     int columnCount() const;
+    QVariant prototypeData(int aColumn) const;
 
 private:
     QList< QPair<QString, int> > displayedRegisters;
+    bool prototypeMode;
 };
 
 #endif /* QTREGISTERSMODEL_H_ */

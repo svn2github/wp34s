@@ -18,7 +18,7 @@
 #include "QtEmulatorAdapter.h"
 
 QtRegistersModel::QtRegistersModel(QObject* aParent)
-: QAbstractTableModel(aParent)
+: QAbstractTableModel(aParent), prototypeMode(false)
 {
 	char* registerName=get_register_names();
 	int registerIndex=get_first_register_index();
@@ -37,78 +37,110 @@ int QtRegistersModel::rowCount(const QModelIndex& aParent) const
  }
 
 int QtRegistersModel::rowCount() const
- {
-     return displayedRegisters.size();
- }
+{
+	if(prototypeMode)
+	{
+		return 1;
+	}
+	else
+	{
+		return displayedRegisters.size();
+	}
+}
 
- int QtRegistersModel::columnCount(const QModelIndex& aParent) const
- {
-     Q_UNUSED(aParent);
-     return columnCount();
- }
+int QtRegistersModel::columnCount(const QModelIndex& aParent) const
+{
+    Q_UNUSED(aParent);
+    return columnCount();
+}
 
- int QtRegistersModel::columnCount() const
- {
-	 return 2;
- }
+int QtRegistersModel::columnCount() const
+{
+ return 2;
+}
 
- QVariant QtRegistersModel::data(const QModelIndex& anIndex, int aRole) const
- {
-     if (!anIndex.isValid())
-     {
-         return QVariant();
-     }
-     if (anIndex.row() >= rowCount() || anIndex.row() < 0)
-     {
-         return QVariant();
-     }
-     if (aRole == Qt::DisplayRole)
-     {
-    	 QPair<QString, int> pair = displayedRegisters.at(anIndex.row());
+void QtRegistersModel::setPrototypeMode(bool aPrototypeMode)
+{
+	prototypeMode=aPrototypeMode;
+}
 
-    	 if (anIndex.column() == 0)
-    	 {
-			return pair.first;
-    	 }
-    	 else if (anIndex.column() == 1)
-    	 {
-			return get_formatted_register(pair.second);
-    	 }
-     }
-     return QVariant();
- }
+QVariant QtRegistersModel::data(const QModelIndex& anIndex, int aRole) const
+{
+    if (!anIndex.isValid())
+    {
+        return QVariant();
+    }
+    if (anIndex.row() >= rowCount() || anIndex.row() < 0)
+    {
+        return QVariant();
+    }
+    if (aRole == Qt::DisplayRole)
+    {
+    	QPair<QString, int> pair = displayedRegisters.at(anIndex.row());
+    	if(prototypeMode)
+    	{
+    		return prototypeData(anIndex.column());
+    	}
+    	else if (anIndex.column() == 0)
+    	{
+    		return pair.first;
+    	}
+    	else if (anIndex.column() == 1)
+    	{
+    		return get_formatted_register(pair.second);
+    	}
+    }
+    return QVariant();
+}
 
- QVariant QtRegistersModel::headerData(int aSection, Qt::Orientation anOrientation, int aRole) const
- {
-     if (aRole != Qt::DisplayRole)
-     {
-         return QVariant();
-     }
+QVariant QtRegistersModel::prototypeData(int aColumn) const
+{
+	if (aColumn == 0)
+	{
+		return tr("WWW");
+	}
+	else if (aColumn == 1)
+	{
+		return tr("8888888888888888");
+	}
+	else
+	{
+		return QVariant();
+	}
+}
 
-     if (anOrientation == Qt::Horizontal)
-     {
-         switch (aSection)
-         {
-             case 0:
-             {
-                 return tr("Register");
-             }
-             case 1:
-             {
-                 return tr("Value");
-             }
-             default:
-             {
-                 return QVariant();
-             }
-         }
-     }
-     return QVariant();
- }
+QVariant QtRegistersModel::headerData(int aSection, Qt::Orientation anOrientation, int aRole) const
+{
+	if (aRole != Qt::DisplayRole)
+	{
+		return QVariant();
+	}
 
- void QtRegistersModel::refresh()
- {
- 	emit dataChanged(index(0, 0), index(rowCount(), columnCount()));
- }
+	if (anOrientation == Qt::Horizontal)
+	{
+		switch (aSection)
+		{
+			case 0:
+			{
+				return tr("Register");
+			}
+			case 1:
+			{
+				return tr("Value");
+			}
+			default:
+			{
+				return QVariant();
+			}
+		}
+	}
+	return QVariant();
+}
+
+void QtRegistersModel::refresh()
+{
+	emit dataChanged(index(0, 0), index(rowCount(), columnCount()));
+}
+
 
 

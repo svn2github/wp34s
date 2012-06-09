@@ -14,8 +14,8 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FLASHRECEIVER_H_
-#define FLASHRECEIVER_H_
+#ifndef WP34S_FLASH_H
+#define WP34S_FLASH_H
 
 #include <QThread>
 #include <QFile>
@@ -93,4 +93,4 @@ private:
 	QString error;
 };
 
-#endif /* FLASHRECEIVER_H_ */
+#endif /* WP34S_FLASH_H */

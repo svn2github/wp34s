@@ -29,7 +29,7 @@ class QtBackgroundImage: public QLabel
 	Q_OBJECT
 
 public:
-	QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard);
+	QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard, QWidget* aParent=0);
 
 public:
 	QPixmap& getBackgroundPixmap();
