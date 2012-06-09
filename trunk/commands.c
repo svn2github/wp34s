@@ -940,8 +940,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY",	"P.DLAY")
 	CMDcstk(RARG_PRINT_CMPLX, IRA(cmdprintcmplxreg),		"\222\024r\213\214",	"P.crect")
 #ifdef INCLUDE_PLOTTING
-	CMDplt(RARG_PLOT_INIT,    &cmdplotinit,				"gINIT",	CNULL)
-	CMDplt(RARG_PLOT_WIDTH,   &cmdplotwidth,			"gWID?",	CNULL)
+	CMDplt(RARG_PLOT_INIT,    &cmdplotinit,				"gDIM",		CNULL)
+	CMDplt(RARG_PLOT_DIM,     &cmdplotdim,				"gDIM?",	CNULL)
 	CMDplt(RARG_PLOT_SETPIX,  &cmdplotpixel,			"gSET",		CNULL)
 	CMDplt(RARG_PLOT_CLRPIX,  &cmdplotpixel,			"gCLR",		CNULL)
 	CMDplt(RARG_PLOT_FLIPPIX, &cmdplotpixel,			"gFLP",		CNULL)

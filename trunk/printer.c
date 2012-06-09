@@ -65,11 +65,11 @@ int print( int c )
 /*
  *  New line
  */
-int print_advance( void )
+int print_advance( int mode )
 {
 	int abort;
 	PrinterColumn = 0;
-	abort = print( '\n' );
+	abort = print( mode ? 0x04 : '\n' );
 #ifdef REALBUILD
 	PrintDelay = State.print_delay;
 #endif
@@ -83,7 +83,7 @@ int print_advance( void )
 static int advance_if_trace()
 {
 	if ( PrinterColumn != 0 && Tracing ) {
-		return print_advance();
+		return print_advance( 0 );
 	}
 	return 0;
 }
@@ -96,7 +96,7 @@ int print_tab( unsigned int col )
 {
 	int abort = 0;
 	if ( PrinterColumn > col ) {
-		abort = print_advance();
+		abort = print_advance( 0 );
 	}
 	if ( !abort && PrinterColumn < col ) {
 		int i = col - PrinterColumn;
@@ -175,7 +175,7 @@ static int buffer_width(const char *buff)
 static int wrap( int width )
 {
 	if ( PrinterColumn + width > PAPER_WIDTH ) {
-		if ( print_advance() ) {
+		if ( print_advance( 0 ) ) {
 			return 1;
 		}
 		if ( width == 7 ) {
@@ -283,7 +283,7 @@ int print_line( const char *buff, int with_lf )
 	}
 	abort |= print_graphic( glen, graphic );
 	if ( with_lf ) {
-		abort |= print_advance();
+		abort |= print_advance( 0 );
 	}
 	return abort;
 }
@@ -426,7 +426,7 @@ void print_alpha( enum nilop op )
 void print_lf( enum nilop op )
 {
 	if ( !advance_if_trace()) {
-		print_advance();
+		print_advance( 0 );
 	}
 }
 
@@ -630,23 +630,39 @@ void print_program( enum nilop op )
  */
 void cmdplotprint( unsigned int arg, enum rarg op )
 {
-	unsigned char *p = plot_check_range( arg, 0 );
+	unsigned char *p = plot_check_range( arg, 0, 0 );
+	int abort = 0;
 
 	if ( p != NULL ) {
-		int width = *p;
+		int width = (int) p[ 0 ];
+		int height = (int) p[ 1 ];
+		int col = PrinterColumn;
+		p += 2;
 		if ( PrinterColumn + width > PAPER_WIDTH ) {
 			/*
-			 *  Data does not fit on line
+			 *  Data does not fit on the same line
 			 */
-			print_advance();
+			col = 0;
 		}
-		print_graphic( width, p + 1 );
-		PrinterColumn += width;
+		while ( height != 0 && !abort ) {
+			/*
+			 *  Print this line
+			 */
+			abort =	( print_tab( col ) || print_graphic( width, p ) );
+			PrinterColumn = col + width;
+			if ( --height ) {
+				/*
+				 *  More lines ot print
+				 */
+				print_advance( 1 );
+				p += width;
+			}
+		}
 		if ( PrinterColumn == PAPER_WIDTH ) {
 			/*
 			 *  Line is full
 			 */
-			print_advance();
+			print_advance( 1 );
 		}
 	}
 }

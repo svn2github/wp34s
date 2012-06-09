@@ -145,7 +145,7 @@ void error_message(const unsigned int e)
 						++q;
 					++q;
 				}
-				print_advance();
+				print_advance( 0 );
 			}
 		}
 #endif
@@ -1647,7 +1647,7 @@ static void set_status_graphic(const unsigned char *graphic) {
 	if (glen > BITMAP_WIDTH)	glen = BITMAP_WIDTH;
 
 	for (i=0; i<6; i++)
-		for (j=0; j<glen; j++) {
+		for (j=1; j<=glen; j++) {
 #ifndef CONSOLE
 			if (graphic[j] & (1 << i))
 				mat[i] |= 1LL << j;

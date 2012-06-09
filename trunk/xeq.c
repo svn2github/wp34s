@@ -4183,19 +4183,27 @@ void xeq_init_contexts(void) {
 /*
  *  Check register range and return a pointer to the plot data.
  */
-unsigned char *plot_check_range( int arg, int width )
+unsigned char *plot_check_range( int arg, int width, int height )
 {
 	unsigned char *p = (unsigned char *) get_reg_n( arg );
 	int n = is_dblmode() ? 16 : 8;
 	int lim = arg < TOPREALREG ? global_regs() : local_regs();
+	int bytes;
 
 	if ( width == 0 ) {
 		width = (int) *p;
+		height = (int) p[ 1 ];
 	}
+
+	/*
+	 *  Compute total number of bytes
+	 */
+	bytes = 2 + width * height;
+
 	/*
 	 *  Check if we have enough room
 	 */
-	if ( width > PAPER_WIDTH || arg + ( width + n ) / n > lim ) {
+	if ( width > PAPER_WIDTH || arg + ( bytes + n - 1 ) / n > lim ) {
 		err( ERR_RANGE );
 		return (unsigned char *) NULL;
 	}
@@ -4207,7 +4215,7 @@ unsigned char *plot_check_range( int arg, int width )
  */
 void cmdplotdisplay( unsigned int arg, enum rarg op )
 {
-	if (plot_check_range(arg, 0) != NULL) {
+	if (plot_check_range(arg, 0, 0) != NULL) {
 		DispPlot = arg + 1;
 		display();
 	}
@@ -4219,31 +4227,43 @@ void cmdplotdisplay( unsigned int arg, enum rarg op )
  */
 void cmdplotinit( unsigned int arg, enum rarg op )
 {
-	int sgn;
-	int width = (int) getX_int_sgn( &sgn );
+	int sgnx, sgny;
+	int width = (int) getX_int_sgn( &sgnx );
+	int height = (int) get_reg_n_int_sgn( regY_idx, &sgny ); 
 	unsigned char *p;
 	
-	if ( sgn || width == 0 ) {
+	if ( sgnx || width == 0 ) {
 		width = PAPER_WIDTH;
 	}
-	p = plot_check_range( arg, width );
+	if ( sgny || height == 0 ) {
+		height = 1;
+	}
+	else {
+		/*
+		 *  Make height count the byte rows
+		 */
+		height = ( height + 7 ) >> 3;
+	}
+
+	p = plot_check_range( arg, width, height );
 	if ( p != NULL ) {
 		*p++ = (unsigned char) width;
-		xset( p, 0, width );
+		*p++ = (unsigned char) height;
+		xset( p, 0, width * height );
 	}
 }
 
 /*
- *  Return the width of the plotting block
+ *  Return the width and height of the plotting block
  */
-void cmdplotwidth( unsigned int arg, enum rarg op )
+void cmdplotdim( unsigned int arg, enum rarg op )
 {
-	unsigned char *p = plot_check_range( arg, 0 );
+	unsigned char *p = plot_check_range( arg, 0, 0 );
 	if ( p != NULL ) {
-		lift_if_enabled();
-		setX_int_sgn( *p, 0 );
+		lift2_if_enabled();
+		setX_int_sgn( p[ 0 ], 0 ); // width
+		set_reg_n_int_sgn( regY_idx, p[ 1 ] << 3, 0 ); // height
 	}
-
 }
 
 /*
@@ -4253,17 +4273,27 @@ void cmdplotwidth( unsigned int arg, enum rarg op )
  */
 void cmdplotpixel( unsigned int arg, enum rarg op )
 {
-	unsigned char *p = plot_check_range( arg, 0 );
+	unsigned char *p = plot_check_range( arg, 0, 0 );
 	if ( p != NULL ) {
+		/*
+		 *  Get row from Y
+		 */
 		int sgn;
-		int row = (int) getX_int_sgn( &sgn );
+		int row = (int) get_reg_n_int_sgn( regY_idx, &sgn );
 		int pix = 0;
-		if ( sgn == 0 && row < 8 ) {
+		if ( sgn == 0 && ( row >> 3 ) < (int) p[ 1 ] ) {
+			/*
+			 *  Row is OK, get column from X
+			 */
 			int width = (int) *p;
-			int column = (int) get_reg_n_int_sgn( regY_idx, &sgn );
+			int column = (int) getX_int_sgn( &sgn );
 			if ( sgn == 0 && column < width ) {
-				pix = 1 << row;
-				p += column + 1;
+				/*
+				 *  Modify the bit in the correct byte
+				 */
+				pix = 1 << ( row & 7 );
+				p += 2 + width * ( row >> 3 ) + column;
+
 				if ( op == RARG_PLOT_SETPIX ) {
 					*p |= pix;
 				}
@@ -4281,9 +4311,6 @@ void cmdplotpixel( unsigned int arg, enum rarg op )
 	}
 }
 #endif
-
-
-
 
 
 /*

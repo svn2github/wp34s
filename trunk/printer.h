@@ -32,7 +32,7 @@ enum print_modes {
 
 // User visible routines
 extern int print( int c );
-extern int print_advance( void );
+extern int print_advance( int mode );
 extern int print_tab( unsigned int col );
 extern int print_line( const char *buff, int with_lf );
 extern int print_justified( const char *buff );
