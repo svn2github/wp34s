@@ -1655,6 +1655,9 @@ static void set_status_graphic(const unsigned char *graphic) {
 			dot(j*6+i+MATRIX_BASE, (graphic[j] & (1 << i))?1:0);
 #endif
 		}
+#ifndef CONSOLE
+	set_status_grob(mat);
+#endif
 }
 
 
