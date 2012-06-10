@@ -4187,7 +4187,7 @@ unsigned char *plot_check_range( int arg, int width, int height )
 {
 	unsigned char *p = (unsigned char *) get_reg_n( arg );
 	int n = is_dblmode() ? 16 : 8;
-	int lim = arg < TOPREALREG ? global_regs() : local_regs();
+	int lim = arg < TOPREALREG ? global_regs() : local_regs() + LOCAL_REG_BASE;
 	int bytes;
 
 	if ( width == 0 ) {
@@ -4217,7 +4217,7 @@ void cmdplotdisplay( unsigned int arg, enum rarg op )
 {
 	if (plot_check_range(arg, 0, 0) != NULL) {
 		DispPlot = arg + 1;
-		display();
+		frozen_display();
 	}
 }
 
