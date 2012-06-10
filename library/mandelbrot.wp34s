@@ -1,0 +1,92 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Generate a Mandelbrot set for: -1.5 < x < 0.5 and -1 < y < 1
+ * Very very slow.
+ */
+	LBL A
+	LocR 006
+	# 64
+	ENTER[^]
+	gDIM 00
+	# 8
+	# 43
+	gDIM 90
+	# 63
+	STO .00
+	# 4
+	STO .03
+	LBL 00
+		# 2
+		# 63
+		RCL- .00
+		# 63
+		/
+		# 43
+		[times]
+		gSET 90
+		INC Y
+		gSET 90
+		gPLOT 90
+
+		RCL .00
+		# 32
+		/
+		1
+		.
+		5
+		-
+		STO .04
+		# 31
+		STO .01
+		LBL 03
+			RCL .01
+			# 31
+			/
+			STO .05
+			# 100
+			STO .02
+			[cmplx]RCL .04
+			LBL 01
+				[cmplx]x[^2]
+				[cmplx]RCL+ .04
+				[cmplx]ENTER
+				x[^2]
+				x[<->] Y
+				x[^2]
+				+
+				x>? .03
+					GTO 02
+				DROP
+				DSZ .02
+					GTO 01
+			# 63
+			[cmplx]RCL .00
+			gSET 00
+			R[v]
+			-
+			R[^]
+			gSET 00
+			LBL 02
+			DSZ .01
+			GTO 03
+			DSZ .00
+			GTO 00
+	"Surprise "
+	[print][alpha]+
+	[print]PLOT 00
+	[print]ADV
+	END
