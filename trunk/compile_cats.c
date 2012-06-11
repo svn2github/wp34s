@@ -620,6 +620,9 @@ static s_opcode test_catalogue[] = {
 	NILIC(OP_STKSIZE,	"SSIZE?")
 	NILIC(OP_INTSIZE,	"WSIZE?")
 #endif
+#ifdef INCLUDE_PLOTTING
+	RARGCMD(RARG_PLOT_ISSET,    "gPIX?")
+#endif
 };
 
 static s_opcode prog_catalogue[] = {
@@ -723,17 +726,16 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_PRINT_SIGMA,	    "\222\221")
 	NILIC(OP_PRINT_STACK,	    "\222STK")
 	NILIC(OP_PRINT_WIDTH,	    "\222WIDTH")
+	/* end of INFRARED commands */
 #ifdef INCLUDE_PLOTTING
 	RARGCMD(RARG_PLOT_INIT,     "gDIM")
 	RARGCMD(RARG_PLOT_DIM,      "gDIM?")
 	RARGCMD(RARG_PLOT_SETPIX,   "gSET")
 	RARGCMD(RARG_PLOT_CLRPIX,   "gCLR")
 	RARGCMD(RARG_PLOT_FLIPPIX,  "gFLP")
-	RARGCMD(RARG_PLOT_ISSET,    "gPIX?")
 	RARGCMD(RARG_PLOT_DISPLAY,  "gPLOT")
-	RARGCMD(RARG_PLOT_PRINT,    "\222PLOT")
+	RARGCMD(RARG_PLOT_PRINT,    "\222PLOT")     /* INFRARED command */
 #endif
-	/* end of INFRARED commands */
 
 #ifndef INCLUDE_INTERNAL_CATALOGUE
 	RARGCMD(RARG_BSF,	"BSRF")
