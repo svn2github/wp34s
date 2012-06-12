@@ -767,8 +767,11 @@ decNumber *dn_ln(decNumber *r, const decNumber *x) {
 			return set_NaN(r);
 		return set_inf(r);
 	}
-	if (dn_le0(x))
-		return set_NaN(r);
+	if (dn_le0(x)) {
+		if (decNumberIsNegative(x))
+			return set_NaN(r);
+		return set_neginf(r);
+	}
 	decNumberCopy(&z, x);
 	decNumberCopy(&f, &const_2);
 	dn_m1(&t, x);
