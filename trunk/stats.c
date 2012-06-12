@@ -226,10 +226,14 @@ void sigma_minus() {
  * Used by Stopwatch to compute round time averages
  */
 int sigma_plus_x( const decNumber *x) {
+	decNumber y;
+
 	if (sigmaAllocate())
 		return -1;
-	sigma_helper(&dn_add, x, &const_0);
-	return ++sigmaN;
+	
+	ullint_to_dn(&y, ++sigmaN);
+	sigma_helper(&dn_add, x, &y);
+	return sigmaN;
 }
 
 /* Loop through the various modes and work out
