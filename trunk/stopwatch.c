@@ -20,6 +20,7 @@
 #include "alpha.h"
 #include "lcd.h"
 #include "keys.h"
+#include "stats.h"
 #include "stopwatch.h"
 
 #ifdef INCLUDE_STOPWATCH
@@ -40,7 +41,6 @@
 #include <time.h>
 #endif
 
-
 #ifdef INCLUDE_STOPWATCH
 
 #define STOPWATCH_MESSAGE "STOPWATCH"
@@ -59,6 +59,12 @@ int (*KeyCallback)(int)=(int (*)(int)) NULL;
  *  Stopwatch uses the ticker count. This is the starting point
  */
 unsigned long FirstTicker;
+
+/*
+ * When resetting after a Sigma+ or a RoundTime storage, we keep the delta
+ * with the original ticker here so we can display the full time elapsed
+ */
+unsigned long FullTickerDelta;
 
 /*
  * Current stopwatch value, in ticker count. Usually set to getTicker() - FirstTicker
@@ -91,6 +97,7 @@ unsigned char RclMemoryRemanentDisplay;
 #define STOPWATCH_DOWN K50
 #define STOPWATCH_SHOW_MEMORY K04
 #define STOPWATCH_RCL K11
+#define STOPWATCH_SIGMA_PLUS K00
 
 #define RCL_MEMORY_REMANENCE 3
 
@@ -125,58 +132,73 @@ static void fill_exponent(char* exponent) {
 }
 
 /*
+ * Converts a ticker count to a String
+ */
+static void stopwatch_to_string(unsigned long stopwatch, char* p) {
+	int tenths, secs, mins, hours;
+
+	tenths=stopwatch%10;
+	secs=(stopwatch/10)%60;
+	mins=(stopwatch/600)%60;
+	hours=(stopwatch/36000)%100;
+	p=num_arg_0(p, hours, 2);
+	*p++='h';
+	p=num_arg_0(p, mins, 2);
+	*p++='\'';
+	p=num_arg_0(p, secs, 2);
+	*p++='"';
+	if(StopWatchStatus.display_tenths) {
+		*p++=' ';
+		p=num_arg_0(p, tenths, 1);
+	}
+	*p=0;
+}
+
+/*
  * Displaying the stopwatch value in HHhMM'SS"t format
  */
 static void display_stopwatch() {
-	char buf[13], *p;
+	char buf[13];
 	char exponent[3];
-	int tenths, secs, mins, hours;
-	char rclMessage[8];
+	char message[13];
 	char display_rcl_message;
 	
-	tenths=StopWatch%10;	
-	secs=(StopWatch/10)%60;
-	mins=(StopWatch/600)%60;
-	hours=(StopWatch/36000)%100;
 	fill_exponent(exponent);
-	if(StopWatchStatus.display_tenths) {
-		p=buf;
-		*p++=' ';
-		p=num_arg_0(p, hours, 2);
-		*p++='h';
-		p=num_arg_0(p, mins, 2);
-		*p++='\'';
-		p=num_arg_0(p, secs, 2);
-		*p++='"';
-		*p++=' ';
-		p=num_arg_0(p, tenths, 1);
-		*p=0;
-	} else {
-		p=buf;
-		*p++=' ';
-		p=num_arg_0(p, hours, 2);
-		*p++='h';
-		p=num_arg_0(p, mins, 2);
-		*p++='\'';
-		p=num_arg_0(p, secs, 2);
-		*p++='"';
-		*p=0;
-	}
-	display_rcl_message=StopWatchStatus.rcl_mode || RclMemory>=0;
+	stopwatch_to_string(StopWatch, buf);
+	display_rcl_message=StopWatchStatus.rcl_mode || StopWatchStatus.sigma_display_mode || RclMemory>=0;
 	if(display_rcl_message) {
-		char* rp=scopy(rclMessage, "RCL\006\006");
-		if(RclMemory>=0) {
-			rp=num_arg_0(rp, RclMemory, 2);
+		char* rp=scopy(message, StopWatchStatus.sigma_display_mode?"\221+\006":"RCL\006\006");
+		if(StopWatchStatus.sigma_display_mode) {
+			rp=num_arg(rp, RclMemory);
 		}
 		else {
-			if(StopWatchMemoryFirstDigit>=0) {
-				*rp++='0'+StopWatchMemoryFirstDigit;
+			if(RclMemory>=0) {
+				rp=num_arg_0(rp, RclMemory, 2);
 			}
-			*rp++='_';
+			else {
+				if(StopWatchMemoryFirstDigit>=0) {
+					*rp++='0'+StopWatchMemoryFirstDigit;
+				}
+				*rp++='_';
+			}
 		}
 		*rp=0;
 	}
-	stopwatch_message(display_rcl_message?rclMessage:STOPWATCH_MESSAGE, buf, -1, StopWatchStatus.show_memory?exponent:(char*)NULL);
+	else if(FullTickerDelta>0) {
+		stopwatch_to_string(StopWatch+FullTickerDelta, message);
+		display_rcl_message=1;
+	}
+	stopwatch_message(display_rcl_message?message:STOPWATCH_MESSAGE, buf, -1, StopWatchStatus.show_memory?exponent:(char*)NULL);
+}
+
+/*
+ * Convert StopWatch current value to a decNumber
+ */
+static void stopwatch_to_decNumber(decNumber* number) {
+	decNumber number2;
+	ullint_to_dn(number, StopWatch);
+	dn_divide(&number2, number, &const_360);
+	dn_divide(number, &number2, &const_100);
 }
 
 /*
@@ -185,12 +207,10 @@ static void display_stopwatch() {
 static void store_stopwatch_in_memory() {
 	int max_registers=global_regs();
 	if(max_registers>0) {
-		decNumber s, s2, hms;
+		decNumber s, hms;
 		StopWatchStatus.show_memory=1;
 		// Converting tick count to HMS format
-		ullint_to_dn(&s, StopWatch);
-		dn_divide(&s2, &s, &const_360);
-		dn_divide(&s, &s2, &const_100);
+		stopwatch_to_decNumber(&s);
 		decNumberHR2HMS(&hms, &s);
 		setRegister(StopWatchMemory, &hms);
 		StopWatchMemory=(StopWatchMemory+1)%max_registers;
@@ -231,6 +251,7 @@ static void recall_memory(int index) {
 	StopWatchMemoryFirstDigit=-1;
 	RclMemory=index;
 	StopWatchStatus.rcl_mode=0;
+	StopWatchStatus.sigma_display_mode=0;
 	RclMemoryRemanentDisplay=0;
 	getRegister(&memory, index);
 	// Converting HMS format to tick count
@@ -267,17 +288,20 @@ static int process_select_memory_key(int key) {
 				toggle_running();
 				StopWatchStatus.select_memory_mode=0;
 				StopWatchStatus.rcl_mode=0;
+				StopWatchStatus.sigma_display_mode=0;
 				break;
 			}
 			case STOPWATCH_EXIT: {
 				StopWatchStatus.select_memory_mode=0;
 				StopWatchStatus.rcl_mode=0;
+				StopWatchStatus.sigma_display_mode=0;
 				break;
 			}
 			case STOPWATCH_CLEAR: {
 				if(StopWatchMemoryFirstDigit<0) {
 					StopWatchStatus.select_memory_mode=0;
 					StopWatchStatus.rcl_mode=0;
+					StopWatchStatus.sigma_display_mode=0;
 				} else {
 					StopWatchMemoryFirstDigit=-1;
 				}
@@ -287,6 +311,7 @@ static int process_select_memory_key(int key) {
 				if(StopWatchMemoryFirstDigit>=0) {
 					end_memory_selection(StopWatchMemoryFirstDigit);
 				}
+				break;
 			}
 			default: {
 				if (digit >= 0) {
@@ -312,6 +337,22 @@ static int process_select_memory_key(int key) {
 	return -1;
 }
 
+static void stopwatch_sigma_plus() {
+	decNumber s;
+	stopwatch_to_decNumber(&s);
+	RclMemory=sigma_plus_x(&s);
+	if(RclMemory>=0) {
+		StopWatchStatus.rcl_mode=0;
+		StopWatchStatus.sigma_display_mode=1;
+		RclMemoryRemanentDisplay=0;
+		FullTickerDelta+=StopWatch;
+		FirstTicker=getTicker();
+		// StopWatch=0 is need to avoid a small display glitch
+		// in full time
+		StopWatch=0;
+	}
+}
+
 /*
  * Handling keys.As we need to be a 'special mode', we have to do it ourselves
  * We cannot reuse the normal main loop code
@@ -328,13 +369,16 @@ static int process_stopwatch_key(int key) {
 				return STOPWATCH_EXIT;
 			}
 			case STOPWATCH_CLEAR: {
-				StopWatch=0;
 				if(StopWatchStatus.running)	{
+					if(FullTickerDelta>0) {
+						FullTickerDelta+=StopWatch;
+					}
 					FirstTicker=getTicker();
 				} else {
+					FullTickerDelta=0;
 					FirstTicker=-1;
-					StopWatch=0;
 				}
+				StopWatch=0;
 				break;
 			   }
 			case STOPWATCH_EEX: {
@@ -347,7 +391,11 @@ static int process_stopwatch_key(int key) {
 				}
 			case STOPWATCH_STORE_ROUND: {
 				store_stopwatch_in_memory();
+				FullTickerDelta+=StopWatch;
 				FirstTicker=getTicker();
+				// StopWatch=0 is need to avoid a small display glitch
+				// in full time
+				StopWatch=0;
 				break;
 				}
 			case STOPWATCH_UP: {
@@ -368,9 +416,14 @@ static int process_stopwatch_key(int key) {
 				}
 			case STOPWATCH_RCL: {
 				StopWatchStatus.rcl_mode=max_registers>0;
+				StopWatchStatus.sigma_display_mode=0;
 				StopWatchMemoryFirstDigit=-1;
 				break;
 				}
+			case STOPWATCH_SIGMA_PLUS: {
+				stopwatch_sigma_plus();
+				break;
+			}
 			default: {
 				if (get_digit(key) >= 0) {
 					//Digits
@@ -379,6 +432,7 @@ static int process_stopwatch_key(int key) {
 					StopWatchStatus.show_memory=1;
 					return process_select_memory_key(key);
 				}
+				break;
 			  }
 			}
 	return -1;
@@ -406,6 +460,7 @@ int stopwatch_callback(int key) {
 	}
 	display_stopwatch();
 	if(RclMemory>=0 && RclMemoryRemanentDisplay++ > RCL_MEMORY_REMANENCE) {
+		StopWatchStatus.sigma_display_mode=0;
 		RclMemory=-1;
 	}
 
@@ -431,10 +486,12 @@ void stopwatch(enum nilop op) {
 		RclMemory=-1;
 		StopWatch=0;
 		FirstTicker=0;
+		FullTickerDelta=0;
 	}
 	clr_dot(LIT_EQ);
 	StopWatchStatus.select_memory_mode=0;
 	StopWatchStatus.rcl_mode=0;
+	StopWatchStatus.sigma_display_mode=0;
 	StopWatchMemoryFirstDigit=-1;
 	KeyCallback=&stopwatch_callback;
 }

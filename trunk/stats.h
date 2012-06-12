@@ -46,6 +46,7 @@ extern int  sigmaCheck(void);
 extern void sigmaDeallocate(void);
 extern int  sigmaCopy(void *source);
 extern void sigma_clear(enum nilop);
+extern int sigma_plus_x(const decNumber*);
 extern void sigma_plus(void);
 extern void sigma_minus(void);
 

@@ -24,6 +24,7 @@ QtDebugger::QtDebugger(QWidget* aParent)
 {
 	setModel(new QtRegistersModel());
 	setColumnsSizes();
+	setSelectionBehavior(SelectRows);
 }
 
 void QtDebugger::refresh()

@@ -218,6 +218,16 @@ void sigma_minus() {
 	--sigmaN;
 }
 
+/*
+ * Used by Stopwatch to compute round time averages
+ */
+int sigma_plus_x( const decNumber *x) {
+	if (sigmaAllocate())
+		return -1;
+	sigop(&sigmaX, x, &dn_add);
+	mulop128(&sigmaX2, x, x, &dn_add);
+	return ++sigmaN;
+}
 
 /* Loop through the various modes and work out
  * which has the highest absolute correlation.
