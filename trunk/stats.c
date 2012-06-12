@@ -174,47 +174,51 @@ static void mulop128(decimal128 *r, const decNumber *a, const decNumber *b, decN
 
 /* Define a helper function to handle sigma+ and sigma-
  */
-static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
-	decNumber x, y;
+static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const decNumber *), const decNumber *x, const decNumber *y) {
 	decNumber lx, ly;
 
-	getXY(&x, &y);
+	sigop(&sigmaX, x, op);
+	sigop(&sigmaY, y, op);
+	mulop128(&sigmaX2, x, x, op);
+	mulop128(&sigmaY2, y, y, op);
+	mulop128(&sigmaXY, x, y, op);
 
-	sigop(&sigmaX, &x, op);
-	sigop(&sigmaY, &y, op);
-	mulop128(&sigmaX2, &x, &x, op);
-	mulop128(&sigmaY2, &y, &y, op);
-	mulop128(&sigmaXY, &x, &y, op);
-
-	decNumberSquare(&lx, &x);
-	mulop128(&sigmaX2Y, &lx, &y, op);
+	decNumberSquare(&lx, x);
+	mulop128(&sigmaX2Y, &lx, y, op);
 
 //	if (UState.sigma_mode == SIGMA_LINEAR)
 //		return;
 
-	dn_ln(&lx, &x);
-	dn_ln(&ly, &y);
+	dn_ln(&lx, x);
+	dn_ln(&ly, y);
 
 	sigop(&sigmalnX, &lx, op);
 	sigop(&sigmalnY, &ly, op);
 	mulop(&sigmalnXlnX, &lx, &lx, op);
 	mulop(&sigmalnYlnY, &ly, &ly, op);
 	mulop(&sigmalnXlnY, &lx, &ly, op);
-	mulop(&sigmaXlnY, &x, &ly, op);
-	mulop(&sigmaYlnX, &y, &lx, op);
+	mulop(&sigmaXlnY, x, &ly, op);
+	mulop(&sigmaYlnX, y, &lx, op);
+}
+
+static void sigma_helper_xy(decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
+	decNumber x, y;
+
+	getXY(&x, &y);
+	sigma_helper(op, &x, &y);
 }
 
 void sigma_plus() {
 	if (sigmaAllocate())
 		return;
 	++sigmaN;
-	sigma_helper(&dn_add);
+	sigma_helper_xy(&dn_add);
 }
 
 void sigma_minus() {
 	if (sigmaAllocate())
 		return;
-	sigma_helper(&dn_subtract);
+	sigma_helper_xy(&dn_subtract);
 	--sigmaN;
 }
 
@@ -224,8 +228,7 @@ void sigma_minus() {
 int sigma_plus_x( const decNumber *x) {
 	if (sigmaAllocate())
 		return -1;
-	sigop(&sigmaX, x, &dn_add);
-	mulop128(&sigmaX2, x, x, &dn_add);
+	sigma_helper(&dn_add, x, &const_0);
 	return ++sigmaN;
 }
 
