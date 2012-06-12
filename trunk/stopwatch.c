@@ -98,6 +98,7 @@ unsigned char RclMemoryRemanentDisplay;
 #define STOPWATCH_SHOW_MEMORY K04
 #define STOPWATCH_RCL K11
 #define STOPWATCH_SIGMA_PLUS K00
+#define STOPWATCH_SIGMA_PLUS_STORE_ROUND K64
 
 #define RCL_MEMORY_REMANENCE 3
 
@@ -398,6 +399,15 @@ static int process_stopwatch_key(int key) {
 				StopWatch=0;
 				break;
 				}
+			case STOPWATCH_SIGMA_PLUS_STORE_ROUND: {
+				store_stopwatch_in_memory();
+				stopwatch_sigma_plus();
+				break;
+			}
+			case STOPWATCH_SIGMA_PLUS: {
+				stopwatch_sigma_plus();
+				break;
+			}
 			case STOPWATCH_UP: {
 				if(StopWatchMemory<max_registers-1) {
 					StopWatchMemory++;
@@ -420,10 +430,6 @@ static int process_stopwatch_key(int key) {
 				StopWatchMemoryFirstDigit=-1;
 				break;
 				}
-			case STOPWATCH_SIGMA_PLUS: {
-				stopwatch_sigma_plus();
-				break;
-			}
 			default: {
 				if (get_digit(key) >= 0) {
 					//Digits
