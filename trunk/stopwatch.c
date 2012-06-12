@@ -196,10 +196,8 @@ static void display_stopwatch() {
  * Convert StopWatch current value to a decNumber
  */
 static void stopwatch_to_decNumber(decNumber* number) {
-	decNumber number2;
 	ullint_to_dn(number, StopWatch);
-	dn_divide(&number2, number, &const_360);
-	dn_divide(number, &number2, &const_100);
+	dn_divide(number, number, &const_36000);
 }
 
 /*
@@ -245,7 +243,7 @@ static void toggle_running() {
  * Recalling a stored split time and converting it for display
  */
 static void recall_memory(int index) {
-	decNumber memory, s, s2, hms;
+	decNumber memory, s, hms;
 	unsigned long previous;
 	int sign;
 
@@ -257,8 +255,7 @@ static void recall_memory(int index) {
 	getRegister(&memory, index);
 	// Converting HMS format to tick count
 	decNumberHMS2HR(&hms, &memory);
-	dn_multiply(&s2, &hms, &const_100);
-	dn_multiply(&s, &s2, &const_360);
+	dn_multiply(&s, &hms, &const_36000);
 	previous=(unsigned long) dn_to_ull(&s, &sign);
 
 	FirstTicker=getTicker()-previous;
