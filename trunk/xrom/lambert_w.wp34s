@@ -66,25 +66,16 @@ LamW0_loop::		FILL
 				JMP ret_NaN
 			x=0?
 				JMP ret_neginf
+			STO I
 			+/-
 			1/x
-			STO I
 			Num eE
 			x>? Y
 				JMP ret_NaN
 			RCL I
-LamW1_loop::		STO J
-			LN
-			RCL[times] I
-			RCL J
-			x[<->] Y
-			CNVG? CVG_RELATIVE
-				JMP LamW_converged
-			JMP LamW1_loop
-LamW_converged::	RCL/ I
 			+/-
-			xOUT xOUT_NORMAL
-
+			LN
+			JMP LamW0_loop
 
 /**************************************************************************/
 /* The positive branch of the complex W function.
