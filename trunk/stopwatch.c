@@ -61,10 +61,15 @@ int (*KeyCallback)(int)=(int (*)(int)) NULL;
 unsigned long FirstTicker;
 
 /*
- * When resetting after a Sigma+ or a RoundTime storage, we keep the delta
- * with the original ticker here so we can display the full time elapsed
+ * When resetting after a Sigma+ or a RoundTime storage, we original FirstTicker
+ * here so we can compute TotalStopWatch the exact same way as StopWatch
  */
-unsigned long FullTickerDelta;
+unsigned long TotalFirstTicker;
+
+/*
+ * Current total stopwatch value, in ticker count. Usually set to getTicker() - TotalFirstTicker
+ */
+unsigned long TotalStopWatch;
 
 /*
  * Current stopwatch value, in ticker count. Usually set to getTicker() - FirstTicker
@@ -102,6 +107,11 @@ unsigned char RclMemoryRemanentDisplay;
 
 #define RCL_MEMORY_REMANENCE 3
 
+#ifdef REALBUILD
+extern volatile SMALL_INT SpeedSetting;
+extern void set_speed( unsigned int speed );
+#define SPEED_HIGH     4
+#endif
 /*
  * Current ticker count. Or its emulation when not running on WP34s hardware
  */
@@ -185,8 +195,8 @@ static void display_stopwatch() {
 		}
 		*rp=0;
 	}
-	else if(FullTickerDelta>0) {
-		stopwatch_to_string(StopWatch+FullTickerDelta, message);
+	else if(TotalFirstTicker>0) {
+		stopwatch_to_string(TotalStopWatch, message);
 		display_rcl_message=1;
 	}
 	stopwatch_message(display_rcl_message?message:STOPWATCH_MESSAGE, buf, -1, StopWatchStatus.show_memory?exponent:(char*)NULL);
@@ -337,18 +347,27 @@ static int process_select_memory_key(int key) {
 
 static void stopwatch_sigma_plus() {
 	decNumber s;
+#ifdef REALBUILD
+	SMALL_INT oldSpeed=SpeedSetting;
+	set_speed(SPEED_HIGH);
+#endif
 	stopwatch_to_decNumber(&s);
 	RclMemory=sigma_plus_x(&s);
 	if(RclMemory>=0) {
 		StopWatchStatus.rcl_mode=0;
 		StopWatchStatus.sigma_display_mode=1;
 		RclMemoryRemanentDisplay=0;
-		FullTickerDelta+=StopWatch;
+		if(TotalFirstTicker==0) {
+			TotalFirstTicker=FirstTicker;
+		}
 		FirstTicker=getTicker();
 		// StopWatch=0 is need to avoid a small display glitch
 		// in full time
 		StopWatch=0;
 	}
+#ifdef REALBUILD
+	set_speed(oldSpeed);
+#endif
 }
 
 /*
@@ -368,13 +387,13 @@ static int process_stopwatch_key(int key) {
 			}
 			case STOPWATCH_CLEAR: {
 				if(StopWatchStatus.running)	{
-					if(FullTickerDelta>0) {
-						FullTickerDelta+=StopWatch;
+					if(TotalFirstTicker==0) {
+						TotalFirstTicker=FirstTicker;
 					}
 					FirstTicker=getTicker();
 				} else {
-					FullTickerDelta=0;
-					FirstTicker=-1;
+					TotalFirstTicker=0;
+					FirstTicker=0;
 				}
 				StopWatch=0;
 				break;
@@ -389,11 +408,10 @@ static int process_stopwatch_key(int key) {
 				}
 			case STOPWATCH_STORE_ROUND: {
 				store_stopwatch_in_memory();
-				FullTickerDelta+=StopWatch;
+				if(TotalFirstTicker==0) {
+					TotalFirstTicker=FirstTicker;
+				}
 				FirstTicker=getTicker();
-				// StopWatch=0 is need to avoid a small display glitch
-				// in full time
-				StopWatch=0;
 				break;
 				}
 			case STOPWATCH_SIGMA_PLUS_STORE_ROUND: {
@@ -445,8 +463,11 @@ static int process_stopwatch_key(int key) {
  * Called by the main loop to increment stopwatch or process a pressed key
  */
 int stopwatch_callback(int key) {
+	unsigned long currentTicker;
 	if(StopWatchStatus.running)	{
-		StopWatch=getTicker()-FirstTicker;
+		currentTicker=getTicker();
+		StopWatch=currentTicker-FirstTicker;
+		TotalStopWatch=currentTicker-TotalFirstTicker;
 		StopWatchKeyticks=0;
 	} else if(StopWatchKeyticks >= STOPWATCH_APD_TICKS) {
 		KeyCallback=(int(*)(int)) NULL;
@@ -489,7 +510,8 @@ void stopwatch(enum nilop op) {
 		RclMemory=-1;
 		StopWatch=0;
 		FirstTicker=0;
-		FullTickerDelta=0;
+		TotalStopWatch=0;
+		TotalFirstTicker=0;
 	}
 	clr_dot(LIT_EQ);
 	StopWatchStatus.select_memory_mode=0;
