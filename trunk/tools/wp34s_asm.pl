@@ -59,7 +59,7 @@ use File::Basename;
 #       discrepancy between the usage of "steps" vs. "words" in the current definition.
 #
 # ---------------------------------------------------------------------
-# Binary Image Specifcation:
+# Binary Image Specification:
 #
 #  NOTE: All words are defined as 16-bit and are accessed in little endian order.
 #
@@ -274,8 +274,17 @@ my @reg_offset_REG = (0 .. 99, "X", "Y", "Z", "T", "A", "B", "C", "D", "L", "I",
 my $MAX_REG = scalar @reg_offset_REG; # Set to length of the array.
 
 # This is for labels and flags
-my @reg_offset_LBL = (0 .. 99, "A", "B", "C", "D");
-my $MAX_LBL = scalar @reg_offset_LBL; # Set to length of the array.
+my @lbl_and_flag_seed = (0 .. 99, "A", "B", "C", "D");
+# Reprocess the seed array to make the numbers of the format %02d.
+my (@lbl_and_flag);
+foreach (@lbl_and_flag_seed) {
+  if (/[A-D]/) {
+    push @lbl_and_flag, $_;
+  } else {
+    push @lbl_and_flag, sprintf("%02d", $_);
+  }
+}
+my $MAX_LBL_AND_FLAG = scalar @lbl_and_flag; # Set to length of the array.
 
 # The register numeric value is flagged as an indirect reference by setting bit 7.
 my $INDIRECT_FLAG = 0x80;
@@ -1375,13 +1384,14 @@ sub parse_arg_type_dir_max {
   # Find out which instruction offset group we are to use.
   if ($direct_max <= 10) {
     $reg_str = $offset;
-  } elsif ($direct_max <= 100 || $stackreg_modifier) {
+  } elsif ($direct_max == $MAX_LBL_AND_FLAG) {
+    $reg_str = $lbl_and_flag[$offset];
+  } elsif ($direct_max <= 100 or $stackreg_modifier) {
     $reg_str = sprintf("%02d", $offset)
   } else {
     $reg_str = sprintf("%03d", $offset)
   }
   if ($offset >= 100) {
-    $reg_str = $reg_offset_LBL[$offset] if ($direct_max == $MAX_LBL);
     $reg_str = $reg_offset_REG[$offset] if ($stackreg_modifier);
   }
   $reg_str = "--UNDEFINED--" if not defined $reg_str;
