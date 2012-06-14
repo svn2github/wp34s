@@ -1911,9 +1911,11 @@ NO_RETURN int main(void)
 		}
 
 		/*
-		 *  Read out the keyboard queue
+		 *  Read out the keyboard queue. Label must be #ifdef to avoid a "Not used" compile-time error
 		 */
+#ifdef ALLOW_DEEP_SLEEP
 	key_pressed:
+#endif
 		k = get_key();
 
 #ifdef INCLUDE_STOPWATCH
@@ -1924,10 +1926,8 @@ NO_RETURN int main(void)
 			dot( LIT_EQ, !is_dot( LIT_EQ ) );
 			finish_display();
 		}
-		if ( k != -1 && k != K_HEARTBEAT ) {
-#else
-		if ( k != K_HEARTBEAT ) {
 #endif
+		if ( k != K_HEARTBEAT ) {
 			/*
 			 *  A real key was pressed or released
 			 */

@@ -289,7 +289,7 @@ static void end_memory_selection(int index) {
 /*
  * Handling the selection of a memory index
  */
-static int process_select_memory_key(int key) {
+static void process_select_memory_key(int key) {
 	int digit = get_digit(key);
 	switch(key)	{
 			case STOPWATCH_RS: {
@@ -341,8 +341,6 @@ static int process_select_memory_key(int key) {
 				break;
 			  }
 	}
-
-	return -1;
 }
 
 static void stopwatch_sigma_plus() {
@@ -374,7 +372,7 @@ static void stopwatch_sigma_plus() {
  * Handling keys.As we need to be a 'special mode', we have to do it ourselves
  * We cannot reuse the normal main loop code
  */
-static int process_stopwatch_key(int key) {
+static void process_stopwatch_key(int key) {
 	int max_registers=global_regs();
 	switch(key)	{
 			case STOPWATCH_RS: {
@@ -383,7 +381,7 @@ static int process_stopwatch_key(int key) {
 			}
 			case STOPWATCH_EXIT: {
 				KeyCallback=(int(*)(int))NULL;
-				return STOPWATCH_EXIT;
+				break;
 			}
 			case STOPWATCH_CLEAR: {
 				if(StopWatchStatus.running)	{
@@ -456,7 +454,6 @@ static int process_stopwatch_key(int key) {
 				break;
 			  }
 			}
-	return -1;
 }
 
 /*
@@ -471,15 +468,15 @@ int stopwatch_callback(int key) {
 		StopWatchKeyticks=0;
 	} else if(StopWatchKeyticks >= STOPWATCH_APD_TICKS) {
 		KeyCallback=(int(*)(int)) NULL;
-		return -1;
+		return K_HEARTBEAT;
 	}
 
 	if(key!=K_HEARTBEAT && key!=K_RELEASE) {
 		StopWatchKeyticks=0;
 		if(StopWatchStatus.select_memory_mode || StopWatchStatus.rcl_mode) {
-			key=process_select_memory_key(key);
+			process_select_memory_key(key);
 		} else {
-			key=process_stopwatch_key(key);
+			process_stopwatch_key(key);
 		}
 	}
 	display_stopwatch();
@@ -488,7 +485,7 @@ int stopwatch_callback(int key) {
 		RclMemory=-1;
 	}
 
-	return key==K_RELEASE?-1:key;
+	return K_HEARTBEAT;
 }
 
 /*
