@@ -449,7 +449,7 @@ static void process_stopwatch_key(int key) {
 					StopWatchStatus.select_memory_mode=1;
 					StopWatchMemoryFirstDigit=-1;
 					StopWatchStatus.show_memory=1;
-					return process_select_memory_key(key);
+					process_select_memory_key(key);
 				}
 				break;
 			  }
