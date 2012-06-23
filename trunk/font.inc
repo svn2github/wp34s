@@ -1777,10 +1777,10 @@
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0224, "PHI",             11100, 0x03a6,     0x00, 0x00,    CNULL,
 		{
-			__O___ , __O___ ,
-			_OOO__ , OOOOO_ ,
+			__O___ , _OOO__ ,
+			_OOO__ , O_O_O_ ,
 			O_O_O_ , O_O_O_ ,
-			O_O_O_ , OOOOO_ ,
+			O_O_O_ , _OOO__ ,
 			_OOO__ , __O___ ,
 			__O___ , ______ ,
 		}
