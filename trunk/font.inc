@@ -985,7 +985,7 @@
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0122, "R",                6100, 0x0052,     0x52, 0x52,    CNULL,
 		{
-			OOO__ ,   OO__ ,
+			OOO__ ,   OOO_ ,
 			O__O_ ,   O_O_ ,
 			O__O_ ,   OO__ ,
 			OOO__ ,   O_O_ ,
