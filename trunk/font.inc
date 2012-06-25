@@ -985,12 +985,12 @@
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0122, "R",                6100, 0x0052,     0x52, 0x52,    CNULL,
 		{
-			OOO__ ,   OOO_ ,
-			O__O_ ,   O_O_ ,
-			O__O_ ,   OO__ ,
-			OOO__ ,   O_O_ ,
-			O_O__ ,   O_O_ ,
-			O__O_ ,   ____ ,
+			OOO__ ,   OOO__ ,
+			O__O_ ,   O_O__ ,
+			O__O_ ,   OO___ ,
+			OOO__ ,   O_O__ ,
+			O_O__ ,   O__O_ ,
+			O__O_ ,   _____ ,
 		}
 	},
 
