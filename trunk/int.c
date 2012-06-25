@@ -1459,7 +1459,7 @@ static long long int intmodop(long long int z, long long int y, long long int x,
 	unsigned long long int vy = extract_value(y, &sy);
 	unsigned long long int vz = extract_value(z, &sz);
 
-	if (sx || sy || sz || vx == 0)
+	if (sx || sy || sz || vx <= 1)
 		err(ERR_DOMAIN);
 	return build_value((*f)(vz, vy, vx), 0);
 }
