@@ -1045,11 +1045,11 @@
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0127, "W",                7400, 0x0057,     0x57, 0x57,    CNULL,
 		{
-			O___O_ , O___O_ ,
-			O___O_ , O___O_ ,
-			O_O_O_ , O_O_O_ ,
-			O_O_O_ , OO_OO_ ,
-			OO_OO_ , O___O_ ,
+			O___O_ , O__O_ ,
+			O___O_ , O__O_ ,
+			O_O_O_ , O__O_ ,
+			O_O_O_ , OOOO_ ,
+			OO_OO_ , O__O_ ,
 			O___O_ , ______ ,
 		}
 	},
