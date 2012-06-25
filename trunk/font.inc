@@ -1945,12 +1945,12 @@
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0242, "gamma",            9300, 0x03b3,     0x00, 0x00,    CNULL,
 		{
-			 _____ ,   ____ ,
-			 _O_O_ ,   O_O_ ,
-			 O_O__ ,   _O__ ,
-			 __O__ ,   _O__ ,
-			 __O__ ,   _O__ ,
-			 __O__ ,   _O__ ,
+			 _____ ,   _____ ,
+			 _O_O_ ,   _O_O_ ,
+			 O_O__ ,   O_O__ ,
+			 __O__ ,   __O__ ,
+			 __O__ ,   __O__ ,
+			 __O__ ,   __O__ ,
 		}
 	},
 
