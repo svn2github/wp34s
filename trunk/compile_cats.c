@@ -186,6 +186,10 @@ static s_opcode program_xfcn[] = {
 	NILIC(OP_STORANDOM,	"SEED")
 	RARGCMD(RARG_SL,	"SL")
 	RARGCMD(RARG_SR,	"SR")
+#ifdef INCLUDE_INT_MODULO_OPS
+	TRI(OP_MULMOD,		"mulmod")
+	TRI(OP_EXPMOD,		"powmod")
+#endif
 };
 
 
@@ -534,6 +538,10 @@ static s_opcode int_catalogue[] = {
 	DYA(OP_NEIGHBOUR,	"NEIGHB")
 #endif
 	MON(OP_GAMMA,		"\202")
+#ifdef INCLUDE_INT_MODULO_OPS
+	TRI(OP_MULMOD,		"mulmod")
+	TRI(OP_EXPMOD,		"powmod")
+#endif
 };
 
 static s_opcode matrix_catalogue[] = {

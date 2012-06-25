@@ -720,6 +720,9 @@ enum {
 	OP_MAT_LIN_EQN,
 	OP_TO_DATE,
 
+#ifdef INCLUDE_INT_MODULO_OPS
+	OP_MULMOD, OP_EXPMOD,
+#endif
 	NUM_TRIADIC	// Last entry defines number of operations
 };  
 

@@ -1374,7 +1374,6 @@ long long int intFib(long long int x) {
 }
 
 
-#ifndef TINY_BUILD
 /* Calculate (a . b) mod c taking care to avoid overflow */
 static unsigned long long mulmod(const unsigned long long int a, unsigned long long int b, const unsigned long long int c) {
 	unsigned long long int x=0, y=a%c;
@@ -1388,7 +1387,7 @@ static unsigned long long mulmod(const unsigned long long int a, unsigned long l
 }
 
 /* Calculate (a ^ b) mod c */
-static unsigned long long int modulo(const unsigned long long int a, unsigned long long int b, const unsigned long long int c) {
+static unsigned long long int expmod(const unsigned long long int a, unsigned long long int b, const unsigned long long int c) {
 	unsigned long long int x=1, y=a;
 	while (b > 0) {
 		if ((b & 1))
@@ -1398,7 +1397,6 @@ static unsigned long long int modulo(const unsigned long long int a, unsigned lo
 	}
 	return (x % c);
 }
-#endif
 
 /* Test if a number is prime or not using a Miller-Rabin test */
 #ifndef TINY_BUILD
@@ -1442,7 +1440,7 @@ int isPrime(unsigned long long int p) {
 
 	for(i=0; i<PRIME_ITERATION; i++) {
 		unsigned long long int temp = s;
-		unsigned long long int mod = modulo(primes[i], temp, p);
+		unsigned long long int mod = expmod(primes[i], temp, p);
 		while (temp != p-1 && mod != 1 && mod != p-1) {
 			mod = mulmod(mod, mod, p);
 			temp += temp;
@@ -1453,6 +1451,28 @@ int isPrime(unsigned long long int p) {
 #endif
 	return 1;
 }
+
+#ifdef INCLUDE_INT_MODULO_OPS
+static long long int intmodop(long long int z, long long int y, long long int x, unsigned long long int (*f)(unsigned long long int a, unsigned long long int b, unsigned long long int c)) {
+	int sx, sy, sz;
+	unsigned long long int vx = extract_value(x, &sx);
+	unsigned long long int vy = extract_value(y, &sy);
+	unsigned long long int vz = extract_value(z, &sz);
+
+	if (sx || sy || sz || vx == 0)
+		err(ERR_DOMAIN);
+	return build_value((*f)(vz, vy, vx), 0);
+}
+
+long long int intMulMod(long long int z, long long int y, long long int x) {
+	return intmodop(z, y, x, &mulmod);
+}
+
+long long int intExpMod(long long int z, long long int y, long long int x) {
+	return intmodop(z, y, x, &expmod);
+}
+#endif
+
 
 #ifdef INCLUDE_FACTOR
 

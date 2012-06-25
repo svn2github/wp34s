@@ -127,6 +127,10 @@
 // Include the upper tail cumulative distribution functions
 #define INCLUDE_CDFU
 
+// Include code to support integer mode multiplication and exponentation modulo
+// operations.
+#define INCLUDE_INT_MODULO_OPS
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/

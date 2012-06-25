@@ -46,6 +46,9 @@ extern long long int intMin(long long int y, long long int x);
 extern long long int intMax(long long int y, long long int x);
 extern long long int intMAdd(long long int z, long long int y, long long int x);
 
+extern long long int intMulMod(long long int z, long long int y, long long int x);
+extern long long int intExpMod(long long int z, long long int y, long long int x);
+
 extern long long int intGCD(long long int y, long long int x);
 extern long long int intLCM(long long int y, long long int x);
 
