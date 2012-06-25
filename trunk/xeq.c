@@ -548,7 +548,12 @@ static void error(const char *fmt, ...) {
 /* Real rounding mode access routine
  */
 static enum rounding get_rounding_mode() {
-	return (enum rounding) UState.rounding_mode;
+	static const unsigned char modes[DEC_ROUND_MAX] = {
+		DEC_ROUND_HALF_EVEN, DEC_ROUND_HALF_UP, DEC_ROUND_HALF_DOWN,
+		DEC_ROUND_UP, DEC_ROUND_DOWN,
+		DEC_ROUND_CEILING, DEC_ROUND_FLOOR
+	};
+	return (enum rounding) modes[UState.rounding_mode];
 }
 
 void op_roundingmode(enum nilop op) {
