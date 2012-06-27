@@ -665,7 +665,7 @@ enum {
 enum {
 	OP_POW = 0,
 	OP_ADD, OP_SUB, OP_MUL, OP_DIV,
-	OP_MOD,
+	OP_MOD, OP_MOD41,
 	OP_LOGXY,
 	OP_MIN, OP_MAX,
 	OP_ATAN2,

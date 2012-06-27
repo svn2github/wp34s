@@ -938,7 +938,10 @@ decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *
 	decNumberRemainder(&out.n, x, y, &Ctx);
 	Ctx.digits = digits;
 
-	return decNumberPlus(res, &out.n, &Ctx);
+	decNumberPlus(res, &out.n, &Ctx);
+	if (XeqOpCode == (OP_DYA | OP_MOD41) && decNumberIsNegative(x) != decNumberIsNegative(y))
+		dn_add(res, res, y);
+	return res;
 }
 
 

@@ -341,6 +341,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_MUL,	&dn_multiply,		&cmplxMultiply,	&intMultiply,	"\034",		"*")
 	FUNC(OP_DIV,	&dn_divide,		&cmplxDivide,	&intDivide,	"/",		CNULL)
 	FUNC(OP_MOD,	&decNumberBigMod,	NOFN,		&intMod,	"RMDR",		CNULL)
+	FUNC(OP_MOD41,	&decNumberBigMod,	NOFN,		&intMod,	"MOD",		CNULL)
 	FUNC(OP_LOGXY,	&decNumberLogxy,	XDC(cpx_LOGXY),	&intDyadic,	"LOG\213",	"LOGx")
 	FUNC(OP_MIN,	&dn_min,		NOFN,		&intMin,	"MIN",		CNULL)
 	FUNC(OP_MAX,	&dn_max,		NOFN,		&intMax,	"MAX",		CNULL)

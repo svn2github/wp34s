@@ -381,13 +381,18 @@ long long int intMod(long long int y, long long int x) {
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
+	unsigned long long int r;
 
 	if (xv == 0) {
 		err_div0(yv, sy, sx);
 		return 0;
 	}
-
-	return build_value(yv % xv, sy);
+	r = yv % xv;
+	if (XeqOpCode == (OP_DYA | OP_MOD41) && sx != sy) {
+		r = xv - r;
+		sy = sx;
+	}
+	return build_value(r, sy);
 #else
 	return y%x;
 #endif
