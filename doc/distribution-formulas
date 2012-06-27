@@ -98,10 +98,10 @@ following solution:
 Near p = 0,5 the quantile can easily be calculated directly (!) by a
 simple series:
 
-     u  =  sqrt(2*Pi) * (p - 0,5)
-                 1          7         127         4369         243649
-     z  =  u +  -- u^3  +  -- u^5  +  --- u^7  +  ---- u^9  +  ------ u^11  +  ...
-                3!         5!          7!          9!           11!
+  u  =  sqrt(2*Pi) * (p - 0,5)
+              1          7         127         4369         243649
+  z  =  u +  -- u^3  +  -- u^5  +  --- u^7  +  ---- u^9  +  ------ u^11  +  ...
+             3!         5!          7!          9!           11!
 
 The nominators of the coefficients are integer series A002067.
 
@@ -145,12 +145,21 @@ error by a factor of 10.
 And another one:
 
 
-And here it is - I designed a rational approximation, hand crafted to meet our needs. ;-) It has the following properties:
+And here it is - I designed a rational approximation, hand crafted to
+meet our needs. ;-) It has the following properties:
 
     It works for probabilities down to 1E-500 or |z| up to 48.
-    It requires only four numeric constants with just two or three significant digits.
-    No special care has been taken of the center (z very close to zero) since here the exact quantile can be evaluated easily.
-    It returns an estimate for |z| which is slightly high (in absolute terms). The absolute error is greater than 0,0001 and less than 0,0036. So this estimate and a second guess 0,0037 lower define an interval that definitely includes the exact quantile. 
+
+    It requires only four numeric constants with just two or three
+    significant digits.
+
+    No special care has been taken of the center (z very close to zero)
+    since here the exact quantile can be evaluated easily.
+
+    It returns an estimate for |z| which is slightly high (in absolute
+    terms). The absolute error is greater than 0,0001 and less than
+    0,0036. So this estimate and a second guess 0,0037 lower define an
+    interval that definitely includes the exact quantile.
 
 So the normal quantile can now be evaluated this way:
 
@@ -352,8 +361,173 @@ overkill, but I bet it will speed things up.
 
 -----------------------------------------------------------------------------
 
+Pauli, Les et al. -
 
+I'll try to summarize all this in one single post. ;-)
 
+Yesterday I replaced the initial rational approximation from by previous
+suggestion by a dedicated version for p down to 1E-400. It now provides
+an estimate with an absolute error near +/- 0,002 and requires just two
+short real constants. The rest can be done with INC commands. ;-)
+
+Estimate for 1E-400 =< p =< 0.5:
+
+   r = sqrt(-2 ln p)
+   x = r  -  (0,295*(r+1) + 2) / ((0,0511*r + 1) * r) + 1)
+
+An estimate x below 0.001 should get rounded to zero to ensure best
+results in the following correction step. The approximation was designed
+to give eight valid digits after the first iteration (max. error
+approx. +/- 2 units in the 9th digit), and with a second resp. third
+iteration we should be on the safe side for standard resp. double
+precision - as long as the working precision is sufficient. But that's
+another story - see my other remarks below.
+
+Here's my implementation for the 34s.
+
+001 **LBL A
+002 STO 00                   // save p in R00
+003 ENTER[^]
+004 DEC X
+005 +/-
+006 MIN
+007 STO 01                   // q = min(p, 1-p) in R01
+008 LN
+009 STO+ X
+010 +/-
+011 [sqrt]                   // r = sqrt(-2 ln q)
+012 ENTER[^]
+013 INC X                    // rational approximation starts here
+014 .
+015 2
+016 9
+017 5
+018 [times]
+019 INC X
+020 INC X
+021 .
+022 0
+023 5
+024 1
+025 1
+026 RCL[times] Z
+027 INC X
+028 RCL[times] Z
+029 INC X
+030 /
+031 -                        // first extimate x
+032 ENTER[^]
+033 SDL 003
+034 x<1?                     // x < 0,001?  resp. 1000 x < 1 ?
+035 CLSTK                    // then x = 0
+036 DROP
+037 STO 02                   // save x in R02 
+038 2
+039 DBL?
+040 INC X                    // 2 resp. 3 iterations will do
+041 STO 03                   // loop counter in R03
+042 **LBL 000
+043 RCL 02
+044 +/-
+045 [PHI](x)                 // Q(x) = right hand integral = Phi(-x)
+046 RCL- 01
+047 RCL 02
+048 [phi](x)
+049 /                        // t = (CDF(x) - q) / PDF(x)
+050 FILL                     // save t on stack
+051 x[^3]
+052 6
+053 /                        // least correction term is t^3 / 6...
+054 RCL 02
+055 x[^2]
+056 STO+ X
+057 INC X
+058 [times]                  // ... * (2 x^2 + 1)
+059 x[<->] Y
+060 x[^2]                    // second last term is...
+061 RCL[times] 02
+062 2
+063 /                        // ... t^2 * x / 2
+064 +                        // add two smallest terms together                 
+065 +                        // add this to t to get complete delta
+066 STO+ 02                  // correct x by delta
+067 DSZ 03
+068 GTO 000                  // repeat 2 or 3 times
+069 RCL 00
+070 .
+071 5
+072 -
+073 SIGN                     // finally adjust sign of x
+074 RCL[times] 02
+075 END
+
+0,0025 [A] -2,8070 33768 34380 41172 21810 39471 2269 E+0 exact
+
+This works fine at least for quantiles >= 1. Now let's look at p close to 0,5.
+Note: "+1D34" = +1 unit in the 34th significant digit.
+
+0,49               [A] -2,5068 90825 87110 35762 36343 18346 9043 E-2   +1D34
+0,4999             [A] -2,5066 28300 88035 09892 06501 05407 8430 E-4   +1D32
+0,4999999          [A] -2,5066 28274 63102 67517 65674 82243 4196 E-7   -3D29
+0,4999999999       [A] -2,5066 28274 63100 05024 42013 42148 8860 E-10  -1D25
+0,4999999999999999 [A] -2,5066 28274 63100 05029 49753 49666 4200 E-16  +5D20
+
+This shows the problem Les and I have been talking about
+previously. Generally spoken, our basic approach (i.e. evaluate the
+CDF for the current approximation, see how good it matches p and apply
+a correction) is good for up to 34 decimals, but not for 34 significant
+digits. This is because close to zero there are numerous n-digit quantiles
+that return the desired p so that no further correction is applied. In
+other words, a calculated quantile near zero with a magnitude of 10^-n
+may be off in its last n digits, so that we may expect something like
+34-n digit accuracy. Yes, the given examples are one digit better. ;-)
+
+What can we do? We will have to handle p close to 0,5 separately. This
+can be accomplished in several ways:
+
+    Use the Chi-square method Les suggested. We just have to find a
+    limit where the program switches from one method to the other.
+
+    Use an direct and exact series expansion. Last year I proposed a
+    suitable solution. Les mentioned it these days in one of his posts
+    as he found it in the readme files. Here is the basic approach:
+
+    let   u  =  sqrt(2*pi)*(p-0,5)
+    then  z  =  u + u^3 * 1/3! + u^5 * 7/5! + u^7 * 127/7! + u^9 * 4369/9! + ...
+
+    The nominators (1, 1, 7, 127, 4369, ...) are given by integer sequence
+    A002067. For 34 digits and p = 0,499...0,501 only a few terms up
+    to u^11 should be sufficient. The equation should be evaluated from
+    right to left, i.e. add the smallest terms first.
+
+    A quick and easy solution may be a special function that evaluates
+    Phi(x)-0,5. In other words, a solution similar to the well-known
+    e^x-1. During the Phi(x) routine this value is already calculated
+    (integral from 0 to x), before finally 0,5 is added to get Phi(x),
+    i.e. the integral from -infinity to x.
+
+But there's also another way to address this issue: Forget about 34-digit
+accuracy. There simply is no way to ensure a valid n-digit result as long
+as all calculations carry just the same n digits and no further guard
+digits. I remember how I tried to get an exact 10-digit result for the
+Normal quantile on the 41C with the same 10 digits working precision. It's
+simply not possible (at least I do not know of a method to accomplish
+this). That's why I designed the algorithm I suggested a few days ago -
+it returns 11 good digits over the 41C's working range as long as the
+calculation is done with a few more guard digits, e.g. in machine code.
+
+If I remember correctly, the original idea behind the double precision
+mode was this: enable the user to write user-code functions with lots of
+extended precision, so that the final result can be assumed to carry at
+least the usual 16 digits that are normally returned to the user. Once
+again: in many, if not most cases it's simply not possible to get a true
+34-digit result unless the working precision exceeds these 34 digits. So
+we cannot expect 34 digits anyway. What is possible? 32? 30? 25? It
+depends. Round it to 16 digits and you are on the safe side. :-)
+
+Dieter 
+
+-----------------------------------------------------------------------------
 
 Student's T estimate:
 
