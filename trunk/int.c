@@ -1453,24 +1453,22 @@ int isPrime(unsigned long long int p) {
 }
 
 #ifdef INCLUDE_INT_MODULO_OPS
-static long long int intmodop(long long int z, long long int y, long long int x, unsigned long long int (*f)(unsigned long long int a, unsigned long long int b, unsigned long long int c)) {
+long long int intmodop(long long int z, long long int y, long long int x) {
 	int sx, sy, sz;
 	unsigned long long int vx = extract_value(x, &sx);
 	unsigned long long int vy = extract_value(y, &sy);
 	unsigned long long int vz = extract_value(z, &sz);
+        unsigned long long int r;
 
 	if (sx || sy || sz || vx <= 1)
 		err(ERR_DOMAIN);
-	return build_value((*f)(vz, vy, vx), 0);
+	if (XeqOpCode == (OP_TRI | OP_MULMOD))
+		r = mulmod(vz, vy, vx);
+	else
+		r = expmod(vz, vy, vx);
+	return build_value(r, 0);
 }
 
-long long int intMulMod(long long int z, long long int y, long long int x) {
-	return intmodop(z, y, x, &mulmod);
-}
-
-long long int intExpMod(long long int z, long long int y, long long int x) {
-	return intmodop(z, y, x, &expmod);
-}
 #endif
 
 

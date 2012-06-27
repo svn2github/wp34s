@@ -437,8 +437,8 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	(FP_TRIADIC_INT) NOFN,	"LINEQS",	CNULL)
 	FUNC(OP_TO_DATE,	&dateFromYMD,		(FP_TRIADIC_INT) NOFN,	"\015DATE",	">DATE")
 #ifdef INCLUDE_INT_MODULO_OPS
-	FUNC(OP_MULMOD, 	(FP_TRIADIC_REAL) NOFN,	&intMulMod,		"\034MOD",	CNULL)
-	FUNC(OP_EXPMOD, 	(FP_TRIADIC_REAL) NOFN,	&intExpMod,		"^MOD",		CNULL)
+	FUNC(OP_MULMOD, 	(FP_TRIADIC_REAL) NOFN,	&intmodop,		"\034MOD",	CNULL)
+	FUNC(OP_EXPMOD, 	(FP_TRIADIC_REAL) NOFN,	&intmodop,		"^MOD",		CNULL)
 #endif
 #undef FUNC
 };
