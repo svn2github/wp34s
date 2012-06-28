@@ -388,10 +388,12 @@ long long int intMod(long long int y, long long int x) {
 		return 0;
 	}
 	r = yv % xv;
+#ifdef INCLUDE_MOD41
 	if (XeqOpCode == (OP_DYA | OP_MOD41) && sx != sy) {
 		r = xv - r;
 		sy = sx;
 	}
+#endif
 	return build_value(r, sy);
 #else
 	return y%x;

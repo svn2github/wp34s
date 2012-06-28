@@ -34,7 +34,9 @@
 #define CONV(n, d, name)	RARG_BASEOP(RARG_CONV) + (n)*2 + (d),
 
 static s_opcode program_xfcn[] = {
+#ifdef INCLUDE_MOD41
 	DYA(OP_MOD41,		"MOD")
+#endif
 	MON(OP__1POW,		"(-1)^x")
 	DYA(OP_PERMG,		"%+MG")
 	DYA(OP_MARGIN,		"%MG")
@@ -195,7 +197,9 @@ static s_opcode program_xfcn[] = {
 
 
 static s_opcode catalogue[] = {
+#ifdef INCLUDE_MOD41
 	DYA(OP_MOD41,		"MOD")
+#endif
 	MON(OP__1POW,		"(-1)^x")
 	DYA(OP_PERMG,		"%+MG")
 	DYA(OP_MARGIN,		"%MG")
@@ -471,7 +475,9 @@ static s_opcode prob_catalogue[] = {
 };
 
 static s_opcode int_catalogue[] = {
+#ifdef INCLUDE_MOD41
 	DYA(OP_MOD41,		"MOD")
+#endif
 	MON(OP_FLOOR,		"FLOOR")
 	MON(OP_CEIL,		"CEIL")
 	MON(OP_ROUND,		"ROUNDI")

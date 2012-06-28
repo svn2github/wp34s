@@ -127,6 +127,9 @@
 // Include the upper tail cumulative distribution functions
 #define INCLUDE_CDFU
 
+// Include code to support the 41/42's MOD operation
+#define INCLUDE_MOD41
+
 // Include code to support integer mode multiplication and exponentation modulo
 // operations.
 #define INCLUDE_INT_MODULO_OPS
