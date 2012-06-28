@@ -549,7 +549,7 @@ static void dn_gcd(decNumber *r, const decNumber *x, const decNumber *y) {
 	decNumberCopy(r, x);
 	while (! dn_eq0(&b)) {
 		decNumberCopy(&t, &b);
-		decNumberMod(&b, r, &t);
+		decNumberBigMod(&b, r, &t);
 		decNumberCopy(r, &t);
 	}
 }
