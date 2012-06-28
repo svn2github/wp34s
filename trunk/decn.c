@@ -555,13 +555,10 @@ static void dn_gcd(decNumber *r, const decNumber *x, const decNumber *y) {
 }
 
 static int dn_check_gcd(decNumber *r, const decNumber *x, const decNumber *y,
-		int *sign, decNumber *a, decNumber *b) {
-	*sign = (decNumberIsNegative(x)?1:0) != (decNumberIsNegative(y)?1:0);
+		decNumber *a, decNumber *b) {
 	if (decNumberIsSpecial(x) || decNumberIsSpecial(y)) {
 		if (decNumberIsNaN(x) || decNumberIsNaN(y))
 			set_NaN(r);
-		else if (*sign)
-			set_neginf(r);
 		else
 			set_inf(r);
 	} else if (!is_int(x) || !is_int(y))
@@ -576,9 +573,8 @@ static int dn_check_gcd(decNumber *r, const decNumber *x, const decNumber *y,
 
 decNumber *decNumberGCD(decNumber *r, const decNumber *x, const decNumber *y) {
 	decNumber a, b;
-	int sign;
 
-	if (dn_check_gcd(r, x, y, &sign, &a, &b))
+	if (dn_check_gcd(r, x, y, &a, &b))
 		return r;
 
 	if(dn_eq0(x))
@@ -587,26 +583,20 @@ decNumber *decNumberGCD(decNumber *r, const decNumber *x, const decNumber *y) {
 		decNumberCopy(r, &a);
 	else
 		dn_gcd(r, &a, &b);
-	if (sign)
-		dn_minus(r, r);
 	return r;
 }
 
 decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y) {
-	int sign;
 	decNumber gcd, a, b, t;
 
-	if (dn_check_gcd(r, x, y, &sign, &a, &b))
+	if (dn_check_gcd(r, x, y, &a, &b))
 		return r;
 
 	if(dn_eq0(x) || dn_eq0(y))
 		decNumberCopy(r, x);
 	dn_gcd(&gcd, &a, &b);
 	dn_divide(&t, &a, &gcd);
-	dn_multiply(r, &t, &b);
-	if (sign)
-		dn_minus(r, r);
-	return r;
+	return dn_multiply(r, &t, &b);
 }
 
 
@@ -1091,8 +1081,8 @@ static int cvt_2rad(decNumber *res, const decNumber *x,
 		right = &const_100;
 	convert:
 		decNumberMod(&fm, x, circle);
-                if (decNumberIsNegative(&fm))
-                    dn_add(&fm, &fm, circle);
+		if (decNumberIsNegative(&fm))
+			dn_add(&fm, &fm, circle);
 		if (r0 != NULL && right_angle(res, &fm, right, r0, r1, r2, r3))
 			return 0;
 		decNumberDRG_internal(res, &fm, OP_2RAD);
@@ -1230,9 +1220,9 @@ void do_atan(decNumber *res, const decNumber *x) {
 	// We calculate pairs of terms and stop when the estimate doesn't change
 	decNumberCopy(res, &const_3);
 	decNumberCopy(&j, &const_5);
-	dn_multiply(&a2, &a, &a);        // a^2
+	dn_multiply(&a2, &a, &a);	// a^2
 	decNumberCopy(&t, &a2);
-	dn_divide(res, &t, res);         // s = 1-t/3 -- first two terms
+	dn_divide(res, &t, res);	// s = 1-t/3 -- first two terms
 	dn_1m(res, res);
 
 	do {    // Loop until there is no digits changed

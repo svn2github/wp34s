@@ -1,15 +1,15 @@
 /* This file is part of 34S.
- * 
+ *
  * 34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * 34S is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -115,7 +115,6 @@ static long long int topbit_mask(void) {
  * value components.  The sign returned is 1 for negative and 0 for positive.
  */
 unsigned long long int extract_value(const long long int val, int *const sign) {
-#ifndef TINY_BUILD
 	const enum arithmetic_modes mode = int_mode();
 	long long int v = mask_value(val);
 	long long int tbm;
@@ -138,10 +137,6 @@ unsigned long long int extract_value(const long long int val, int *const sign) {
 	} else
 		*sign = 0;
     return mask_value(v);
-#else
-    *sign = 0;
-    return val;
-#endif
 }
 
 /* Helper routine to construct a value from the magnitude and sign
@@ -323,8 +318,8 @@ long long int intMultiply(long long int y, long long int x) {
 	u = mask_value(xv * yv);
 	set_overflow(yv != 0 && u / yv != xv);
 
-        if (mode == MODE_UNSIGNED)
-            return u;
+	if (mode == MODE_UNSIGNED)
+		return u;
 	if ((u & topbit_mask()) != 0)
 		set_overflow(1);
 	return build_value(u & ~topbit_mask(), sx ^ sy);
@@ -463,7 +458,6 @@ long long int intMAdd(long long int z, long long int y, long long int x) {
 #endif
 
 
-#ifndef TINY_BUILD
 static unsigned long long int int_gcd(unsigned long long int a, unsigned long long int b) {
 	while (b != 0) {
 		const unsigned long long int t = b;
@@ -472,15 +466,12 @@ static unsigned long long int int_gcd(unsigned long long int a, unsigned long lo
 	}
 	return a;
 }
-#endif
 
 long long int intGCD(long long int y, long long int x) {
-#ifndef TINY_BUILD
-	int sx, sy;
-	unsigned long long int xv = extract_value(x, &sx);
-	unsigned long long int yv = extract_value(y, &sy);
+	int s;
+	unsigned long long int xv = extract_value(x, &s);
+	unsigned long long int yv = extract_value(y, &s);
 	unsigned long long int v;
-	const int sign = sx != sy;
 
 	if (xv == 0)
 		v = yv;
@@ -488,27 +479,19 @@ long long int intGCD(long long int y, long long int x) {
 		v = xv;
 	else
 		v = int_gcd(xv, yv);
-	return build_value(v, sign);
-#else
-	return 0;
-#endif
+	return build_value(v, 0);
 }
 
 long long int intLCM(long long int y, long long int x) {
-#ifndef TINY_BUILD
-	int sx, sy;
-	unsigned long long int xv = extract_value(x, &sx);
-	unsigned long long int yv = extract_value(y, &sy);
+	int s;
+	unsigned long long int xv = extract_value(x, &s);
+	unsigned long long int yv = extract_value(y, &s);
 	unsigned long long int gcd;
-	const int sign = sx != sy;
 
 	if (xv == 0 || yv == 0)
-		return build_value(0, sign);
+		return 0;
 	gcd = int_gcd(xv, yv);
-	return intMultiply(mask_value(xv / gcd), build_value(yv, sign));
-#else
-	return 0;
-#endif
+	return intMultiply(mask_value(xv / gcd), build_value(yv, 0));
 }
 
 long long int intSqr(long long int x) {
@@ -695,15 +678,15 @@ static void divmnu(unsigned short q[], unsigned short r[],
 		const unsigned short u[], const unsigned short v[],
 		const int m, const int n) {
 	const unsigned int b = 65536;			// Number base (16 bits).
-	unsigned qhat;            			// Estimated quotient digit.
-	unsigned rhat;            			// A remainder.
-	unsigned p;               			// Product of two digits.
+	unsigned qhat;					// Estimated quotient digit.
+	unsigned rhat;					// A remainder.
+	unsigned p;					// Product of two digits.
 	int s, i, j, t, k;
 	unsigned short vn[8];				// Normalised denominator
 	unsigned short un[18];				// Normalised numerator
 
-	if (n == 1) {                        		// Take care of
-		k = 0;                            	// the case of a
+	if (n == 1) {					// Take care of
+		k = 0;					// the case of a
 		for (j = m - 1; j >= 0; j--) {		// single-digit
 			q[j] = (k*b + u[j])/v[0];	// divisor here.
 			k = (k*b + u[j]) - q[j]*v[0];
@@ -749,8 +732,8 @@ static void divmnu(unsigned short q[], unsigned short r[],
 	t = un[j+n] - k;
 	un[j+n] = t;
 
-	q[j] = qhat;            			// Store quotient digit.
-	if (t < 0) {              			// If we subtracted too
+	q[j] = qhat;					// Store quotient digit.
+	if (t < 0) {					// If we subtracted too
 		q[j] = q[j] - 1;       			// much, add back.
 		k = 0;
 		for (i = 0; i < n; i++) {
@@ -920,7 +903,7 @@ static long long int intASR(long long int x) {
 	const long long int tbm = topbit_mask();
 	long long int y;
 
-    	set_carry(x & 1);
+	set_carry(x & 1);
 	if (mode == MODE_SGNMANT)
 		return ((x & ~tbm) >> 1) | tbm;
 
@@ -1465,7 +1448,7 @@ long long int intmodop(long long int z, long long int y, long long int x) {
 	unsigned long long int vx = extract_value(x, &sx);
 	unsigned long long int vy = extract_value(y, &sy);
 	unsigned long long int vz = extract_value(z, &sz);
-        unsigned long long int r;
+	unsigned long long int r;
 
 	if (sx || sy || sz || vx <= 1)
 		err(ERR_DOMAIN);
@@ -1526,11 +1509,11 @@ unsigned long long int doFactor(unsigned long long int n)
 	/* find the least prime factor of `n'.
 	* numbers up to 10^14 can be factored. worst case about 30 seconds
 	* on realbuild.
-	* 
-	* returns least prime factor or `n' if prime.
-	* returns 0 if failed to find factor. 
 	*
-	* we will only fail if we have a 14 digit number with a factor > dmax (1e7). 
+	* returns least prime factor or `n' if prime.
+	* returns 0 if failed to find factor.
+	*
+	* we will only fail if we have a 14 digit number with a factor > dmax (1e7).
 	* since we have a 12 digit display, this ought to be good, but actually more digits are
 	* held internally. for example 10000019*1000079 displays as scientific, but actually all
 	* the digits are held. this example will return 0.
@@ -1542,9 +1525,9 @@ unsigned long long int doFactor(unsigned long long int n)
 	unsigned int limit;
 
 	unsigned int ad[MAX_TERMS];
-	int nd; 
+	int nd;
 	int i, j;
-        unsigned char* cp;
+	unsigned char* cp;
 
 	// eliminate small cases < 257
 	if (n <= 2) return n;
@@ -1561,46 +1544,46 @@ unsigned long long int doFactor(unsigned long long int n)
 	if (limit > dmax)
 		limit = dmax; // max time about 30 seconds
 
-        // starting factor for search
+	// starting factor for search
 	d = 257;
 
-        // since we've eliminated all factors < 257, convert
-        // the initial number to bytes to get base 256
+	// since we've eliminated all factors < 257, convert
+	// the initial number to bytes to get base 256
 	// XX ASSUME little endian here.
-        cp = (unsigned char*)&n;
-        nd = 0;
-        for (i = 0; i < sizeof(n); ++i)
-            if ((ad[i] = *cp++) != 0) ++nd;
+	cp = (unsigned char*)&n;
+	nd = 0;
+	for (i = 0; i < sizeof(n); ++i)
+		if ((ad[i] = *cp++) != 0) ++nd;
 
-        // and slide to 257
-        for (i = nd-2; i >= 0; --i)
-        {
-            for (j = i; j < nd-1; ++j)
-            {
-                if ((ad[j] -= ad[j+1]) < 0)
-                {
-                    ad[j] += d;
-                    --ad[j+1];
-                }
-            }
-            if (!ad[j]) --nd;
-        }
-        
-        if (ad[0])
-        {
-            // find factor or return 0 if limit reached
-            d = dscanOdd(d, limit, nd, ad);
-            if (!d)
-            {
-                // no factor found, if limit reached, we've failed
-                // otherwise `n' is prime
-                if (limit == dmax) 
-                    n = 0; // fail
-            }
-        }
+	// and slide to 257
+	for (i = nd-2; i >= 0; --i)
+	{
+		for (j = i; j < nd-1; ++j)
+		{
+			if ((ad[j] -= ad[j+1]) < 0)
+			{
+				ad[j] += d;
+				--ad[j+1];
+			}
+		}
+		if (!ad[j]) --nd;
+	}
 
-        if (d) n = d;
-        return n;
+	if (ad[0])
+	{
+		// find factor or return 0 if limit reached
+		d = dscanOdd(d, limit, nd, ad);
+		if (!d)
+		{
+			// no factor found, if limit reached, we've failed
+			// otherwise `n' is prime
+			if (limit == dmax)
+			n = 0; // fail
+		}
+	}
+
+	if (d) n = d;
+	return n;
 #else
 	return 0;
 #endif
