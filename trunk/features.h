@@ -42,7 +42,8 @@
 // #define TINY_BUILD
 
 // Include a catalogue of the internal commands
-#define INCLUDE_INTERNAL_CATALOGUE
+// If not defined, these commands are put into P.FCN, TEST and CPX X.FCN instead.
+// #define INCLUDE_INTERNAL_CATALOGUE
 
 // Include a mechanism for a user defined catalogue
 // 2-3 flash pages (512 - 768 bytes) in total.
