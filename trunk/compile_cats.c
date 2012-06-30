@@ -144,6 +144,9 @@ static s_opcode program_xfcn[] = {
 #endif
 	RARGCMD(RARG_iRCL,	"iRCL")
 	RARGCMD(RARG_sRCL,	"sRCL")
+#ifndef INCLUDE_INTERNAL_CATALOGUE
+	RARGCMD(RARG_dRCL,	"dRCL")
+#endif
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
@@ -306,6 +309,9 @@ static s_opcode catalogue[] = {
 #endif
 	RARGCMD(RARG_iRCL,	"iRCL")
 	RARGCMD(RARG_sRCL,	"sRCL")
+#ifndef INCLUDE_INTERNAL_CATALOGUE
+	RARGCMD(RARG_dRCL,	"dRCL")
+#endif
 
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
@@ -778,7 +784,6 @@ static s_opcode prog_catalogue[] = {
 #endif
 	NILIC(OP_DBLON,		"DBLON")
 	NILIC(OP_DBLOFF,	"DBLOFF")
-	RARGCMD(RARG_dRCL,	"dRCL")
 
 #ifdef INCLUDE_INDIRECT_CONSTS
 	RARGCMD(RARG_IND_CONST, "CNST")
