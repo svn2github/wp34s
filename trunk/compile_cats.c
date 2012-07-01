@@ -784,8 +784,6 @@ static s_opcode prog_catalogue[] = {
 	RARGCMD(RARG_iBSB,	"iBSRB")
 	RARGCMD(RARG_iBACK,	"iBACK")
 #endif
-	NILIC(OP_DBLON,		"DBLON")
-	NILIC(OP_DBLOFF,	"DBLOFF")
 
 #ifdef INCLUDE_INDIRECT_CONSTS
 	RARGCMD(RARG_IND_CONST, "CNST")
@@ -887,6 +885,10 @@ static s_opcode mode_catalogue[] = {
 	RARGCMD(RARG_PMODE,	"PMODE")
 	RARGCMD(RARG_PDELAY,	"PDLAY")
 	/* end of INFRARED commands */
+#ifndef INCLUDE_INTERNAL_CATALOGUE
+	NILIC(OP_DBLON,		"DBLON")
+	NILIC(OP_DBLOFF,	"DBLOFF")
+#endif
 };
 
 static s_opcode alpha_catalogue[] = {
