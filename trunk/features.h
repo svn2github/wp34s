@@ -44,7 +44,7 @@
 // Include a catalogue of the internal commands
 // If not defined, these commands are put into P.FCN, TEST and CPX X.FCN instead.
 // #define INCLUDE_INTERNAL_CATALOGUE
-#define INCLUDE_RELATIVE_CALLS
+// #define INCLUDE_RELATIVE_CALLS
 
 // Include a mechanism for a user defined catalogue
 // 2-3 flash pages (512 - 768 bytes) in total.
