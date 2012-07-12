@@ -27,7 +27,7 @@ static int check_intmode(void) {
 /* Some utility routines to extract bits of long longs */
 
 unsigned int int_base(void) {
-	unsigned int b = UState.int_base + 1;
+	const unsigned int b = UState.int_base + 1;
 	if (b < 2)
 		return 10;
 	return b;

@@ -6333,7 +6333,7 @@ static void decStatus(decNumber *dn, uInt status, decContext *set) {
 /* only zero Units.                                                   */
 /* ------------------------------------------------------------------ */
 // This may be called twice during some operations.
-static Int decGetDigits(Unit *uar, Int len) {
+Int decGetDigits(Unit *uar, Int len) {
   Unit *up=uar+(len-1);            // -> msu
   Int  digits=(len-1)*DECDPUN+1;   // possible digits excluding msu
                                    // (at least 1 in final msu)
@@ -6687,3 +6687,16 @@ static void decFree(void *alloc) {
 #define free(a) decFree(a)
 #endif
 
+void ullint_to_dn(decNumber *res, unsigned long long int in) {
+	Unit *up;
+
+	decNumberZero(res);
+	if (in==0)
+		return;
+
+	for (up=res->lsu; in>0; up++) {
+		*up = (Unit)(in%(DECDPUNMAX+1));
+		in /= (DECDPUNMAX+1);
+	}
+	res->digits=decGetDigits(res->lsu, up-res->lsu);
+}

@@ -52,7 +52,6 @@ extern decNumber *dn_power(decNumber *r, const decNumber *a, const decNumber *b)
 extern decNumber *dn_average(decNumber *r, const decNumber *a, const decNumber *b);
 
 
-extern const decNumber *small_int(int i);
 extern void int_to_dn(decNumber *, int);
 extern int dn_to_int(const decNumber *);
 extern void ullint_to_dn(decNumber *, unsigned long long int);

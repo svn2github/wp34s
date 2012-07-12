@@ -164,6 +164,7 @@ decNumber *dn_average(decNumber *r, const decNumber *a, const decNumber *b) {
 }
 
 
+#if 0
 /* Define a table of small integers.
  * This should be equal or larger than any of the summation integers required in the
  * various series approximations to avoid needless computation.
@@ -173,12 +174,6 @@ static const decNumber *const small_ints[MAX_SMALL_INT+1] = {
 	&const_0, &const_1, &const_2, &const_3, &const_4,
 	&const_5, &const_6, &const_7, &const_8, &const_9,
 };
-
-const decNumber *small_int(int i) {
-	if (i >= 0 && i <= MAX_SMALL_INT)
-		return small_ints[i];
-	return NULL;
-}
 
 void ullint_to_dn(decNumber *x, unsigned long long int n) {
 	/* Check to see if the number is small enough to be in our table */
@@ -202,6 +197,7 @@ void ullint_to_dn(decNumber *x, unsigned long long int n) {
 		}
 	}
 }
+#endif
 
 void int_to_dn(decNumber *x, int n) {
 	int sgn;
