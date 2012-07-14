@@ -2154,14 +2154,6 @@ decNumber *decNumberGammap(decNumber *res, const decNumber *x, const decNumber *
 		}
 		return decNumberZero(res);
 	}
-	if (dn_eq0(x)) {
-		if (! upper) {
-			if (regularised)
-				return dn_1(res);
-			return decNumberGamma(res, a);
-		}
-		return decNumberZero(res);
-	}
 
 	dn_p1(&lga, a);
 	dn_compare(&z, x, &lga);
