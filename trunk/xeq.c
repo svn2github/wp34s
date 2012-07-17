@@ -2871,7 +2871,7 @@ static void specials(const opcode op) {
 	case OP_DOT:
 		if (is_intmode())
 			break;
-		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < CMDLINELEN) {
+		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 12 + CmdLineDot) {
 			if (CmdLineLength == 0 || Cmdline[CmdLineLength-1] == '.')
 				digit(0);
 			CmdLineDot++;
