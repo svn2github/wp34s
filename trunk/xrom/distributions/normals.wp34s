@@ -14,6 +14,11 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef INCLUDE_ACCURATE_NORMAL
+#define PDFQ	[phi](x)
+#else
+#define PDFQ	GSB pdf_q
+#endif
 
 /**************************************************************************/
 /* Log Normal distribution
@@ -62,7 +67,7 @@
 			xOUT xOUT_NORMAL
 
 pdf_normal::		GSB normal_param
-			GSB pdf_q
+			PDFQ
 			RCL/ K
 			RTN
 
@@ -110,6 +115,92 @@ qf_normal::		GSB qf_q
 
 /**************************************************************************/
 /* Standard Normal distribution
+ */
+#ifdef INCLUDE_ACCURATE_NORMAL
+pdf_q_xout::	[phi](x)
+		xOUT xOUT_NORMAL
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_Q"
+			xIN MONADIC
+			+/-
+			JMP cdf_q_xout
+#endif
+
+		XLBL"CDF_Q"
+			xIN MONADIC
+cdf_q_xout::		GSB cdf_q
+			xOUT xOUT_NORMAL
+
+cdf_q::			SPEC?
+				JMP cdf_infinite
+			cdfqh
+			_INT 1
+			[cmplx][times]
+			DROP
+			RTN
+
+#define R_P	.00
+#define R_X	.01
+#define R_I	.02
+		XLBL"QF_Q"
+			xIN MONADIC
+qf_q_xout::		GSB qf_q
+			xOUT xOUT_NORMAL
+
+qf_q::			GSB qf_check_probability
+			LocR 003
+			STO R_P
+			GSB qf_q_est
+			STO R_X
+			_INT 3
+			STO R_I
+qf_q_loop::		RCL R_X
+			cdfqh		/* pdf a b */
+			1/x
+			RCL Z		/* b 1/pdf a b */
+			RCL- R_P	/* b-p 1/pdf a b */
+			_INT 1		/* 1 b-p 1/pdf a */
+			[cmplx][times]	/* ? a+(b-p)/pdf */
+			[<->] YYYY	/* t t t t */
+#if 1
+			// Dieter's series from A&X
+			RCL R_X		/* x t t t */
+			x[^2]		/* x^2 t t t */
+			RCL+ X		/* 2x^2 t t t */
+			INC X		/* 2x^2+1 t t t */
+			_INT 6		/* 6 2xx+1 t t */
+			SWAP
+			/		/* (2xx+1)/6 t t */
+			RCL[times] Y	/* t(2xx+1)/6 t t */
+			Num half
+			RCL[times] X	/* x/2 cubic t */
+			+		/* x/2+cubix t */
+			RCL[times] Y	/* t(x/2+cubix) t */
+			INC X		/* 1+t(x/2+cubix) t */
+			[times]
+#else
+			// Halley's method
+			_INT 1
+			RCL[times] R_X
+			Num half
+			[times]
+			-
+			/
+#endif
+			STO- R_X
+			DSZ R_I
+				JMP qf_q_loop
+			RCL R_X
+			RTN
+#undef R_P
+#undef R_X
+#undef R_I
+
+
+#else	/* INCLUDE_ACCURATE_NORMAL */
+/* The following code is less a accurate but smaller version of the above.
+ * It still achieves 16 digits accurately.
  */
 		XLBL"PDF_Q"
 			xIN MONADIC
@@ -172,7 +263,6 @@ cdfu_q_flip::		x[^2]
 			[times]
 			RTN
 
-#if 1
 		XLBL"QF_Q"
 			xIN MONADIC
 qf_q_xout::		GSB qf_q
@@ -184,67 +274,8 @@ qf_q::			GSB qf_check_probability
 			RCL I
 			_INT DIST_Q
 			JMP qf_newton
+#endif	/* INCLUDE_ACCURATE_NORMAL */
 
-#else
-#define R_P	.00
-#define R_X	.01
-#define R_I	.02
-		XLBL"QF_Q"
-			xIN MONADIC
-qf_q_xout::		GSB qf_q
-			xOUT xOUT_NORMAL
-
-qf_q::			GSB qf_check_probability
-			LocR 003
-			STO R_P
-			GSB qf_q_est
-			STO R_X
-			_INT 2
-			FS? Flag_mode_double
-				_INT 3
-			STO R_I
-qf_q_loop::		RCL R_X
-			cdfqh		/* pdf a b */
-			1/x
-			RCL Z		/* b 1/pdf a b */
-			RCL- R_P	/* b-p 1/pdf a b */
-			_INT 1		/* 1 b-p 1/pdf a */
-			[cmplx][times]	/* ? a+(b-p)/pdf */
-			[<->] YYYY	/* t t t t */
-#if 1
-			// Dieter's series from A&X
-			RCL R_X		/* x t t t */
-			x[^2]		/* x^2 t t t */
-			RCL+ X		/* 2x^2 t t t */
-			INC X		/* 2x^2+1 t t t */
-			_INT 6		/* 6 2xx+1 t t */
-			SWAP
-			/		/* (2xx+1)/6 t t */
-			RCL[times] Y	/* t(2xx+1)/6 t t */
-			Num half
-			RCL[times] X	/* x/2 cubic t */
-			+		/* x/2+cubix t */
-			RCL[times] Y	/* t(x/2+cubix) t */
-			INC X		/* 1+t(x/2+cubix) t */
-			[times]
-#else
-			// Halley's method
-			_INT 1
-			RCL[times] R_X
-			Num half
-			[times]
-			-
-			/
-#endif
-			STO- R_X
-			DSZ R_I
-				JMP qf_q_loop
-			RCL R_X
-			RTN
-#undef R_P
-#undef R_X
-#undef R_I
-#endif
 
 /* The internal Q qf entry point.
  */
@@ -297,5 +328,3 @@ qf_q_skip2::		Num [sqrt]2[pi]
 			/
 			+
 			JMP qf_q_neg_fin
-
-

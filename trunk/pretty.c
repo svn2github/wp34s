@@ -619,6 +619,9 @@ void dump_opcodes(FILE *f, int xref) {
 					continue;
 				}
 				if (d == OP_LOADA2D || d == OP_SAVEA2D ||
+#ifdef INCLUDE_ACCURATE_NORMAL
+						d == OP_CDFQ_HELPER ||
+#endif
 						d == OP_GSBuser || d == OP_POPUSR) {
 					dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, CNULL, E_ATTR_XROM, xref);
 					continue;

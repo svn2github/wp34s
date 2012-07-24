@@ -760,7 +760,7 @@ static void getZ(decNumber *z) {
 	getRegister(z, regZ_idx);
 }
 
-#if 0
+#ifdef INCLUDE_ACCURATE_NORMAL
 static void setZ(const decNumber *z) {
 	setRegister(regZ_idx, z);
 }
@@ -785,7 +785,7 @@ void getXYZ(decNumber *x, decNumber *y, decNumber *z) {
 	getZ(z);
 }
 
-#if 0
+#ifdef INCLUDE_ACCURATE_NORMAL
 void setXYZ(const decNumber *x, const decNumber *y, const decNumber *z) {
 	setXY(x, y);
 	setZ(z);

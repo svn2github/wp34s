@@ -136,6 +136,9 @@
 // operations.
 #define INCLUDE_INT_MODULO_OPS
 
+// Include code to prodive a more accurate standard normal distribution function
+#define INCLUDE_ACCURATE_NORMAL
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
