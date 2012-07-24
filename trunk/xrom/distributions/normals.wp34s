@@ -54,6 +54,8 @@
 
 		XLBL"QF_LOGNORMAL"
 			xIN MONADIC
+				x=0?
+					xOUT xOUT_NORMAL
 				GSB qf_normal
 				e[^x]
 			xOUT xOUT_NORMAL
@@ -149,6 +151,10 @@ qf_q_xout::		GSB qf_q
 			xOUT xOUT_NORMAL
 
 qf_q::			GSB qf_check_probability
+			x=0?
+				JMP push_neginf
+			x=1?
+				JMP push_posinf
 			LocR 003
 			STO R_P
 			GSB qf_q_est
@@ -199,6 +205,8 @@ qf_q_loop::		RCL R_X
 
 
 #else	/* INCLUDE_ACCURATE_NORMAL */
+
+
 /* The following code is less a accurate but smaller version of the above.
  * It still achieves 16 digits accurately.
  */

@@ -33,17 +33,23 @@ ret_0::		Num 0
 		xOUT xOUT_NORMAL
 
 /* return -infinite for all results */
-ret_neginf::	FC? D
+push_neginf::	FC? D
 			ERR ERR_MINFINITY
 		Num -[infinity]
 		FILL
+		RTN
+
+ret_neginf::	GSB push_neginf
 		xOUT xOUT_NORMAL
 
 /* return infinite for all results */
-ret_posinf::	FC? D
+push_posinf::	FC? D
 			ERR ERR_INFINITY
 		Num [infinity]
 		FILL
+		RTN
+
+ret_posinf::	GSB push_posinf
 		xOUT xOUT_NORMAL
 
 
