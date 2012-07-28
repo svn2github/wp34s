@@ -487,6 +487,12 @@ NO_RETURN void turn_off( void )
 	AT91C_BASE_SUPC->SUPC_BOMR = 0;
 
 	/*
+	 *  Enable the pull-ups on the DBGU port
+	 *  This is experimental and is designed to avoid excessive current drain by the USB interface.
+	 */
+	AT91C_BASE_PIOC->PIO_PPUER = DBGU_PIOC_MASK;
+
+	/*
 	 *  Off we go...
 	 */
 	SUPC_DisableVoltageRegulator();

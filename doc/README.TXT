@@ -1,12 +1,11 @@
-June 2, 2012
+July 28, 2012
 
 WP 34S Version 3.1
 ==================
 
-This is beta firmware for the WP 34S calculator. This is for HP's 20b
-and 30b hardware. Being beta software, there will be problems and
-rough edges. Please show a bit of tolerance and patience in this
-regard. We provide ROM files for use on the real hardware and
+This is firmware for the WP 34S calculator. This is for HP's 20b
+and 30b hardware. This is the first version we believe is bug free.
+We provide ROM files for use on the real hardware and
 emulation software running on the PC (see below).
 
 Programs can be written on the PC and translated to binary form with
