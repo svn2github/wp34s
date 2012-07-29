@@ -4,9 +4,9 @@ WP 34S Version 3.1
 ==================
 
 This is firmware for the WP 34S calculator. This is for HP's 20b
-and 30b hardware. This is the first version we believe is bug free.
-We provide ROM files for use on the real hardware and
-emulation software running on the PC (see below).
+and 30b hardware. The present version is the first we believe is
+mostly bug free. We provide ROM files for use on the real hardware
+and emulation software running on the PC (see below).
 
 Programs can be written on the PC and translated to binary form with
 the tools contained in the tools directory. A separate manual is
