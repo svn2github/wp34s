@@ -368,6 +368,7 @@ struct _constsml conversions[] = {
 	CONV("cm",	"inches",	"CM_INCH",	"2.54"),		// source: NIST
 	CONV("m",	"fathom",	"M_FATHOM",	"1.828804"),		// derived: 6 feet
 	CONV("m",	"feet",		"M_FEET",	"0.3048"),		// source: NIST
+	CONV("m",	"feetUS",	"M_FEETUS",	"0.3048006"),		// source: NIST
 	CONV("m",	"yards",	"M_YARD",	"0.9144"),		// source: NIST
 	CONV("km",	"miles",	"KM_MILE",	"1.609344"),		// source: NIST
 	CONV("km",	"l.y.",		"KM_LY",	"9.46073E12"),		// source: NIST
@@ -376,7 +377,8 @@ struct _constsml conversions[] = {
 	CONV("km",	"nmi",		"KM_NMI",	"1.852"),		// source: NIST
 //	CONV("m\232",	"square",	"M_SQUARE",	"9.290304"),		// derived: 
 //	CONV("m\232",	"perch",	"M_PERCH",	"25.29285264"),		// derived: 
-	CONV("ha",	"acres",	"HA_ACRE",	"0.4046873"),		// source: NIST
+	CONV("ha",	"acreUS",	"HA_ACREUS",	"0.40468564224"),	// derived: 43560 square feet
+	CONV("ha",	"acreUK",	"HA_ACREUK",	"0.4046873"),		// source: NIST
 	CONV("N",	"lbf",		"N_LBF",	"4.448222"),		// source: NIST
 	CONV("J",	"Btu",		"J_BTU",	"1055.056"),		// source: NIST BTUit
 	CONV("J",	"cal",		"J_CAL",	"4.1868"),		// source: NIST calorie it
