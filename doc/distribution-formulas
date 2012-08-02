@@ -528,6 +528,192 @@ depends. Round it to 16 digits and you are on the safe side. :-)
 Dieter 
 
 -----------------------------------------------------------------------------
+Dieter's user code implementation:
+
+As announced a few hours ago, here is my current (experimental ;-))
+version of a 34s user code program for the Normal distribution's quantile
+function (QF); i.e. enter a probability p and get the corresponding
+z-value for which the Normal integral from -infinity to z equals p.
+
+Yes, the 34s (of course) provides such a function (Phi-1 on g-shift 4),
+which has undergone many changes since its first implementation. The
+last version I used (3.1 3208) still has some issues with arguments very
+close to (but less than) 0.5 and very close to 1. It does not provide
+the accuracy level that might be possible. Results are fine in SP mode,
+but in double precision there is some room for improvement.
+
+The following program works quite straightforward. First, it evaluates
+an initial estimate for the quantile:
+
+let q = min(p, 1-p)
+then, for q > 0.23
+      u = (0.5 - q) * sqrt(2 * pi)
+      z = u + u3/6
+else
+      u = -2 * ln(q)
+      z = sqrt(-2 * ln(q * sqrt(2 * pi * (u - 1)))) + 0.254/u
+
+Then this estimate is improved by the method suggested in A&S, p. 954:
+
+      t = (upperCDF(z) - q) / PDF(z)
+      z = z + t + t2*z/2 + t3*(2z+1)/6
+
+Finally the sign of z is adjusted: for p >= 0.5 return z, else -z.
+
+Now there is a pitfall in the evaluation of t. For z less than 1 and, more
+important, close to zero, the difference between CDF(z) and q may lose
+a more or less substantial number of digits. This problem can be solved
+if the Normal integral from 0 to z is evaluated, i.e. CDF(z) - 0.5. The
+34s does not provide such a function, but there is a simple workaround:
+
+    CDF(z) - 0.5  =  1/2 Incomplete_regularized_Gamma_p(1/2, z2/2)
+
+The desired difference then simply is (0.5 - q) minus this. The program
+uses this method for z =< 0.5. Switching at z = 1 should also be fine.
+
+When evaluated with sufficient precision (I did some tests in a 38-digit
+environment), two successive correction steps should provide a result
+with a max. error of approx. 5 units in the 35th significant digit
+(5D35), i.e. at the limit of what can be done in double precision.
+
+For z < 4E-9 the error of the initial estimate is less than 6D36, so
+no further correction is required, and z < 0.04 is so close that just
+one correction step keeps the error near 2D35 or below. At least when
+evaluated in 39-digit precision. ;-)
+
+If the correction method is expanded with a fourth term, the error
+can even be pushed down to somewhere in the 40th digit. Which may be an
+option if the algorithm is adopted for an internal function with 39-digit
+precision. In this case the threshold values mentioned in the previous
+paragraph should be changed to 2E-10 resp. 0.02.
+
+Provided the CDF resp. IGamma functions have all their 34 digits correct,
+the accuracy on a 34s in DP mode should be 33 digits. I did not do any
+extensive tests, so beware and see yourself what you get. According to my
+results, z > 1 usually is either exact or sometimes 1 ULP off. For z < 1
+the last digit may be off by several units (I did not notice more than 3).
+
+And finally: here's the code.
+
+	0001 *LBL'QF'
+	0002 CF 00
+	0003 SF 01
+	0004 ENTER[^]
+	0005 +/-
+	0006 INC X
+	0007 MIN
+	0008 STO 01              // q = min(p, 1-p)
+	0009 x[!=]? L
+	0010 SF 00               // Set Flag 0 if p < 0.5 (i.e. 1-p != q)
+	0011 .
+	0012 5                   // pre-store 0.5 in R00 for later use
+	0013 STO 00
+	0014 # 023
+	0015 SDR 002
+	0016 RCL 01
+	0017 x>? Y
+	0018 GTO 01
+	0019 ENTER[^]            // tail estimate
+	0020 LN
+	0021 STO+ X
+	0022 +/-
+	0023 STO Z
+	0024 DEC X
+	0025 # [pi]
+	0026 [times]
+	0027 STO+ X
+	0028 [sqrt]
+	0029 x
+	0030 LN
+	0031 STO+ X
+	0032 +/-
+	0033 [sqrt]
+	0034 # 254
+	0035 SDR 003
+	0036 RCL/ Z
+	0037 +
+	0038 STO 02
+	0039 GTO 02
+	0040 *LBL 01             // estimate for central region
+	0041 RCL 00
+	0042 RCL- Y
+	0043 # [pi]
+	0044 STO+ X
+	0045 [sqrt]
+	0046 [times]
+	0047 ENTER[^]
+	0048 x[^3]
+	0049 # 006
+	0050 /
+	0051 +
+	0052 STO 02
+	0053 # 004
+	0054 SDR 002
+	0055 x>? Y
+	0056 CF 01               // z < 0.04 requires just one correction step
+	0057 SDR 007
+	0058 x>? Y
+	0059 GTO 03              // z < 4E-9 needs no correction at all => exit
+	0060 *LBL 02
+	0061 RCL 02
+	0062 x>? 00              // "x>1?" should be fine either
+	0063 SKIP 009
+	0064 x[^2]
+	0065 RCL[times] 00
+	0066 RCL 00
+	0067 I[GAMMA][sub-p]
+	0068 RCL[times] 00
+	0069 RCL 00
+	0070 RCL- 01            // For q close to 0.5:
+	0071 RCL- Y             // upperCDF(z) - q  =  (0.5-q) - IGamma_p(z2/2)
+	0072 SKIP 002
+	0073 [PHI][sub-u](x)    // Otherwise evaluate Phi_u(z) - q directly
+	0074 RCL- 01
+	0075 RCL 02
+	0076 [phi](x)
+	0077 /
+	0078 FILL
+	0079 x[^3]              // Apply a third-order correction
+	0080 RCL 02             // Evaluate all three terms individually
+	0081 x[^2]              // and add them in order of their magnitude,
+	0082 STO+ X             // smallest terms first, to preserve
+	0083 INC X              // as much accuracy as possible
+	0084 [times]
+	0085 # 006
+	0086 /
+	0087 x[<->] Y
+	0088 x[^2]
+	0089 RCL[times] 02
+	0090 RCL[times] 00
+	0091 +
+	0092 +
+	0093 STO+ 02
+	0094 FS?C 01
+	0095 GTO 02
+	0096 *LBL 03
+	0097 RCL 02            // exit program
+	0098 FS?C 00           // set sign if required
+	0099 +/-
+	0100 END
+
+Registers:
+	R00: 0.5 
+	R01: q = min(p, 1-p)
+	R02: |z|
+
+Flags:
+	F00: Set for p < 0.5, else clear
+	F01: Set if a second iteration is required, else clear
+
+Still all I got is the 34s emulator. So I would appreciate some feedback
+from those who use a "real" hardware 34s. How fast does this program
+run? Switch to double precision (Mode menu, DBLON) and see how it
+performs. Do you find any errors that are larger than a few units in the
+last (34th) digit? Please note that this code has not been thoroughly
+tested - simply try it and see what you get. :-) I am sure there still
+is room for the one or other improvement. All suggestions are welcome.
+
+-----------------------------------------------------------------------------
 
 Student's T estimate:
 
