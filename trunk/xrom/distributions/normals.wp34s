@@ -179,7 +179,7 @@ qf_q_loop::		RCL R_X
 			SWAP
 			/		/* (2xx+1)/6 t t */
 			RCL[times] Y	/* t(2xx+1)/6 t t */
-			Num half
+			Num 1/2
 			RCL[times] X	/* x/2 cubic t */
 			+		/* x/2+cubix t */
 			RCL[times] Y	/* t(x/2+cubix) t */
@@ -189,7 +189,7 @@ qf_q_loop::		RCL R_X
 			// Halley's method
 			_INT 1
 			RCL[times] R_X
-			Num half
+			Num 1/2
 			[times]
 			-
 			/
@@ -217,7 +217,7 @@ pdf_q_xout::		GSB pdf_q
 
 /* Standard entry point.  Uses one stack level and no last X */
 pdf_q::			x[^2]
-			Num half
+			Num 1/2
 			[times]
 			+/-
 			e[^x]
@@ -242,7 +242,7 @@ cdfu_q::		x<0?
 				JMP cdfu_q_flip
 #endif
 cdf_q_flip::		x[^2]
-			Num half
+			Num 1/2
 			STO[times] Y
 			[GAMMA][sub-x][sub-y]
 			RCL[times] L
@@ -261,13 +261,13 @@ cdf_q_xout::		GSB cdf_q
 cdf_q::			x<0?
 				JMP cdf_q_flip
 cdfu_q_flip::		x[^2]
-			Num half
+			Num 1/2
 			STO[times] Y
 			[gamma][sub-x][sub-y]
 			Num 1/[sqrt][pi]
 			[times]
 			INC X
-			Num half
+			Num 1/2
 			[times]
 			RTN
 
@@ -289,7 +289,7 @@ qf_q::			GSB qf_check_probability
  */
 qf_q_est::		LocR 02
 			STO .00		// save x
-			Num half
+			Num 1/2
 			SWAP
 			-
 			STO .01		// b = 1/2 - x

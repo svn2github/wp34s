@@ -27,11 +27,11 @@
 
 pdf_chi2::		x[<=]0?
 				JMP dist_ret_0
-			Num half
+			Num 1/2
 			RCL[times] J	// k/2 x ? ?
 			[<->] YXXX	// x k/2 k/2 k/2
 			LN		// LNx k/2 k/2 k/2
-			Num half
+			Num 1/2
 			RCL[times] L	// x/2 LNx k/2 ?
 			+/-		// -x/2 LNx k/2 ?
 			[<->] ZYXZ	// k/2 LNx -x/2 k/2
@@ -55,9 +55,9 @@ pdf_chi2::		x[<=]0?
 				JMP ret_1
 			[infinity]?
 				JMP ret_0
-			Num half
+			Num 1/2
 			[times]
-			Num half
+			Num 1/2
 			RCL[times] J
 			I[GAMMA][sub-q]
 			xOUT xOUT_NORMAL
@@ -73,9 +73,9 @@ cdf_chi2::		x[<=]0?
 				JMP dist_ret_0
 			[infinity]?
 				JMP dist_ret_1
-			Num half
+			Num 1/2
 			[times]
-			Num half
+			Num 1/2
 			RCL[times] J
 			I[GAMMA][sub-p]
 			RTN
@@ -112,7 +112,7 @@ qf_chi2_est_ld::	+/-
 			e[^x]
 			x[<=]? R_P
 				JMP qf_chi2_large
-			Num half
+			Num 1/2
 			RCL[times] J
 			ENTER[^]	// n/2 n/2 ? ?
 			LN[GAMMA]

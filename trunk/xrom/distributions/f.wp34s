@@ -44,9 +44,9 @@ pdf_f::			FILL
 			RCL+ K		// d1+d2 Lnxd1+d2 sum x
 			[times]		//(d1+d2)Lnxd1+d2 sum x
 			-		// sum x ? ?
-			Num half
+			Num 1/2
 			[times]		// Sum/2 x ? ?
-			Num half
+			Num 1/2
 			RCL[times] J	// d1/2 Sum/2 x
 			RCL K		// d2 d1/2 Sum/2 x
 			RCL[times] L	// d2/2 d1/2 Sum/2 x
@@ -71,9 +71,9 @@ pdf_f::			FILL
 			RCL K
 			SWAP
 			/		// v2/(x*v1+v2)
-			Num half
+			Num 1/2
 			RCL[times] K	// v2/2  v2/(x*v1+v2)
-			Num half
+			Num 1/2
 			RCL[times] J	// v1/2 v2/2 v2/(x*v1+v2)
 			SWAP		// v2/2 v1/2 v2/(x*v1+2)
 			I[beta]
@@ -94,9 +94,9 @@ cdf_f::			x[<=]0?
 			ENTER[^]
 			RCL+ K		// x*v1+v2  x*v1  ?  ?
 			/
-			Num half
+			Num 1/2
 			RCL[times] K	// v2  x*v1 / (x*v1+v2)
-			Num half
+			Num 1/2
 			RCL[times] J	// d1/2 d2/d d1x(d1x+d2)
 			I[beta]
 			RTN

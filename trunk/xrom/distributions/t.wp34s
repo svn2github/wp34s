@@ -29,10 +29,10 @@
 			xOUT xOUT_NORMAL
 
 pdf_t::			RCL[times] X	// x^2 ? ? ?
-			Num half
+			Num 1/2
 			RCL[times] J	// v/2 x^2 ? ?
 			LN[GAMMA]	// LnG x^2 ? ?
-			Num half
+			Num 1/2
 			RCL+ L		// (v+1)/2 LnG x^2 ?
 			STO T		// (v+1)/2 LnG x^2 (v+1)/2
 			LN[GAMMA]	// LnG2 LnG x^2 (v+1)/2
@@ -76,11 +76,11 @@ cdf_t_return::		RCL J		// v x ? ?
 			x[^2]		// x^2 v ? ?
 			RCL+ J		// v+x^2 v ? ?
 			/		// v/(v+x^2) ? ? ?
-			Num half
-			Num half
+			Num 1/2
+			Num 1/2
 			RCL[times] J	// v/2 .5 v/(v+x^2) ?
 			I[beta]
-			Num half
+			Num 1/2
 			[times]
 			RTN
 
@@ -94,7 +94,7 @@ cdf_t_infinite::	x<0?
 				JMP dist_ret_0
 			JMP dist_ret_1
 
-dist_ret_half::		Num half
+dist_ret_half::		Num 1/2
 			RTN
 
 
@@ -119,7 +119,7 @@ qf_t_est::		LocR 003
 			x=? Y
 				JMP qf_t2
 
-			Num half
+			Num 1/2
 			RCL .00
 			x<? Y
 				JMP qf_t_lower
@@ -185,7 +185,7 @@ qf_t_est_end::		FS? .00
 
 /* For one degree of freedom, we use an explicit formula */
 qf_t1::			RCL .00
-			Num half
+			Num 1/2
 			-
 			Num [pi]
 			[times]
@@ -199,7 +199,7 @@ qf_t2::			_INT 1
 			RCL+ X
 			1/x		// 2 / (4p(1-p))
 			[sqrt]
-			Num half
+			Num 1/2
 			RCL- .00
 			[times]
 			RCL+ X

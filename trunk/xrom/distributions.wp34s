@@ -249,7 +249,7 @@ qf_newton_nosign::	RCL R_HIGH
 				JMP qf_newton_bounds_cnvg
 			JMP qf_newton_nobounds
 qf_newton_bounds_cnvg::	+
-			Num half
+			Num 1/2
 			[times]
 			JMP qf_newton_done2
 
@@ -293,7 +293,7 @@ qf_newton_try_bisect::	RCL R_HIGH
 				JMP qf_newton_underhigh	
 qf_newton_do_bisect::	RCL R_LOW
 			RCL+ R_HIGH
-			Num half
+			Num 1/2
 			[times]
 			SF F_NOBISECT
 qf_newton_bisect_out::	STO R_R
@@ -302,7 +302,7 @@ qf_newton_overlow::	RCL R_LOW
 			RCL+ X
 			JMP qf_newton_bisect_out
 qf_newton_underhigh::	RCL R_HIGH
-			Num half
+			Num 1/2
 			[times]
 			JMP qf_newton_bisect_out
 
