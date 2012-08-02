@@ -344,6 +344,9 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_SUB,	&dn_subtract,		&cmplxSubtract,	&intSubtract,	"-",		CNULL)
 	FUNC(OP_MUL,	&dn_multiply,		&cmplxMultiply,	&intMultiply,	"\034",		"*")
 	FUNC(OP_DIV,	&dn_divide,		&cmplxDivide,	&intDivide,	"/",		CNULL)
+#ifdef INCLUDE_INTEGER_DIVIDE
+	FUNC(OP_IDIV,	XDR(IDIV),		XDC(cpx_IDIV),	&intDivide,	"IDIV",		CNULL)
+#endif
 	FUNC(OP_MOD,	&decNumberBigMod,	NOFN,		&intMod,	"RMDR",		CNULL)
 #ifdef INCLUDE_MOD41
 	FUNC(OP_MOD41,	&decNumberBigMod,	NOFN,		&intMod,	"MOD",		CNULL)

@@ -665,6 +665,9 @@ enum {
 enum {
 	OP_POW = 0,
 	OP_ADD, OP_SUB, OP_MUL, OP_DIV,
+#ifdef INCLUDE_INTEGER_DIVIDE
+	OP_IDIV,
+#endif
 	OP_MOD,
 #ifdef INCLUDE_MOD41
 	OP_MOD41,

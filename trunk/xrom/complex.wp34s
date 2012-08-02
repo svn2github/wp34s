@@ -14,6 +14,13 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef INCLUDE_INTEGER_DIVIDE
+		XLBL"cpx_IDIV"
+			xIN DYADIC_COMPLEX
+			[cmplx]/
+			JMP cpx_trunc
+#endif
+
 		XLBL"cpx_ROUND"
 			xIN MONADIC_COMPLEX
 			ROUND
@@ -30,7 +37,7 @@
 
 		XLBL"cpx_TRUNC"
 			xIN MONADIC_COMPLEX
-			IP
+cpx_trunc::		IP
 			x[<->] Y
 			IP
 cpx_trunc_exit::	x[<->] Y

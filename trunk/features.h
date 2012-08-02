@@ -139,6 +139,9 @@
 // Include code to prodive a more accurate standard normal distribution function
 #define INCLUDE_ACCURATE_NORMAL
 
+// Include code to support integer (truncated) division
+#define INCLUDE_INTEGER_DIVIDE
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
