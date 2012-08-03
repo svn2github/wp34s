@@ -14,11 +14,6 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef INCLUDE_ACCURATE_NORMAL
-#define PDFQ	[phi](x)
-#else
-#define PDFQ	GSB pdf_q
-#endif
 
 /**************************************************************************/
 /* Log Normal distribution
@@ -69,7 +64,7 @@
 			xOUT xOUT_NORMAL
 
 pdf_normal::		GSB normal_param
-			PDFQ
+			GSB pdf_q
 			RCL/ K
 			RTN
 
@@ -117,98 +112,6 @@ qf_normal::		GSB qf_q
 
 /**************************************************************************/
 /* Standard Normal distribution
- */
-#ifdef INCLUDE_ACCURATE_NORMAL
-pdf_q_xout::	[phi](x)
-		xOUT xOUT_NORMAL
-
-#ifdef INCLUDE_CDFU
-		XLBL"CDFU_Q"
-			xIN MONADIC
-			+/-
-			JMP cdf_q_xout
-#endif
-
-		XLBL"CDF_Q"
-			xIN MONADIC
-cdf_q_xout::		GSB cdf_q
-			xOUT xOUT_NORMAL
-
-cdf_q::			SPEC?
-				JMP cdf_infinite
-			cdfqh
-			_INT 1
-			[cmplx][times]
-			DROP
-			RTN
-
-#define R_P	.00
-#define R_X	.01
-#define R_I	.02
-		XLBL"QF_Q"
-			xIN MONADIC
-qf_q_xout::		GSB qf_q
-			xOUT xOUT_NORMAL
-
-qf_q::			GSB qf_check_probability
-			x=0?
-				JMP push_neginf
-			x=1?
-				JMP push_posinf
-			LocR 003
-			STO R_P
-			GSB qf_q_est
-			STO R_X
-			_INT 3
-			STO R_I
-qf_q_loop::		RCL R_X
-			cdfqh		/* pdf a b */
-			1/x
-			RCL Z		/* b 1/pdf a b */
-			RCL- R_P	/* b-p 1/pdf a b */
-			_INT 1		/* 1 b-p 1/pdf a */
-			[cmplx][times]	/* ? a+(b-p)/pdf */
-			[<->] YYYY	/* t t t t */
-#if 1
-			// Dieter's series from A&X
-			RCL R_X		/* x t t t */
-			x[^2]		/* x^2 t t t */
-			RCL+ X		/* 2x^2 t t t */
-			INC X		/* 2x^2+1 t t t */
-			_INT 6		/* 6 2xx+1 t t */
-			SWAP
-			/		/* (2xx+1)/6 t t */
-			RCL[times] Y	/* t(2xx+1)/6 t t */
-			Num 1/2
-			RCL[times] X	/* x/2 cubic t */
-			+		/* x/2+cubix t */
-			RCL[times] Y	/* t(x/2+cubix) t */
-			INC X		/* 1+t(x/2+cubix) t */
-			[times]
-#else
-			// Halley's method
-			_INT 1
-			RCL[times] R_X
-			Num 1/2
-			[times]
-			-
-			/
-#endif
-			STO- R_X
-			DSZ R_I
-				JMP qf_q_loop
-			RCL R_X
-			RTN
-#undef R_P
-#undef R_X
-#undef R_I
-
-
-#else	/* INCLUDE_ACCURATE_NORMAL */
-
-
-/* The following code is less a accurate but smaller version of the above.
- * It still achieves 16 digits accurately.
  */
 		XLBL"PDF_Q"
 			xIN MONADIC
@@ -271,68 +174,147 @@ cdfu_q_flip::		x[^2]
 			[times]
 			RTN
 
+
 		XLBL"QF_Q"
 			xIN MONADIC
 qf_q_xout::		GSB qf_q
 			xOUT xOUT_NORMAL
 
-qf_q::			GSB qf_check_probability
-			STO I
-			GSB qf_q_est
-			RCL I
-			_INT DIST_Q
-			JMP qf_newton
-#endif	/* INCLUDE_ACCURATE_NORMAL */
-
-
-/* The internal Q qf entry point.
+/* Dieter's code for the standard normal quantile function.
+ *
+ * Registers:
+ * 	R00: 0.5 
+ * 	R01: q = min(p, 1-p)
+ * 	R02: |z|
+ * 
+ * Flags:
+ * 	F00: Set for p < 0.5, else clear
+ * 	F01: Set if a second iteration is required, else clear
  */
-qf_q_est::		LocR 02
-			STO .00		// save x
-			Num 1/2
-			SWAP
-			-
-			STO .01		// b = 1/2 - x
-			x=0?
-				RTN
-			/* Estimate an initial try */
-			x>0?
-				JMP qf_q_inrange
-			Num 1
-			RCL- .00
-			STO .00
-			SF .00
-qf_q_inrange::		RCL .00
-			.
-			2
-			x<? Y
-				JMP qf_q_skip2
-			RCL .00
-			LN
-			RCL+ X
-			+/-
-			STO .01		// u = -2 LN(x)
-			DEC X
-			[sqrt]
-			Num [sqrt]2[pi]
-			[times]
-			RCL[times] .00
-			LN
-			RCL+ X
-			+/-
-			[sqrt]
-			x[<->] .01
-			/
-			RCL+ .01
-			FC? .00
-qf_q_neg_fin::			+/-
-			RTN
 
-qf_q_skip2::		Num [sqrt]2[pi]
-			RCL[times] .01
-			ENTER[^]
-			x[^3]
-			_INT 6
-			/
-			+
-			JMP qf_q_neg_fin
+#define R_HALF	.00
+#define R_MINP	.01
+#define R_ABSZ	.02
+
+#define F_SMALL	.01
+#define F_ITER	.02
+#define F_EXACT	.03
+
+qf_q::		GSB qf_check_probability
+                LocR 003
+		SF F_ITER
+		GSB qf_q_int_est
+		FS? F_EXACT
+			JMP qf_q_out
+
+qf_q_refine::	RCL R_ABSZ
+		x>? R_HALF              // "x>1?" should be fine either
+		    JMP qf_q_x_large
+		x[^2]
+		Num 1/2
+		STO[times] Y
+		I[GAMMA][sub-p]
+		Num 1/2
+		STO[times] Y
+		RCL- R_MINP		// For q close to 0.5:
+		RCL- Y			// upperCDF(z) - q  =  (0.5-q) - IGamma_p(z2/2)
+		JMP qf_q_common
+
+qf_q_x_large::	GSB cdfu_q		// Otherwise evaluate Phi_u(z) - q directly
+		RCL- R_MINP
+
+qf_q_common::	RCL R_ABSZ
+		GSB pdf_q
+		/
+		FILL
+		x[^3]			// Apply a third-order correction
+		RCL R_ABSZ		// Evaluate all three terms individually
+		x[^2]			// and add them in order of their magnitude,
+		STO+ X			// smallest terms first, to preserve
+		INC X			// as much accuracy as possible
+		[times]
+		_INT 006
+		/
+		x[<->] Y
+		x[^2]
+		RCL[times] R_ABSZ
+		RCL[times] R_HALF
+		+
+		+
+		STO+ R_ABSZ
+		FS?C F_ITER
+			JMP qf_q_refine
+
+qf_q_out::	RCL R_ABSZ 		// exit program
+		FS?C F_SMALL		// set sign if required
+			+/-
+		RTN
+
+
+
+qf_q_est::	LocR 003
+
+qf_q_int_est::	ENTER[^]
+		+/-
+		INC X
+		MIN
+		STO R_MINP		// q = min(p, 1-p)
+		x[!=]? L
+			SF F_SMALL	// Set Flag if p < 0.5 (i.e. 1-p != q)
+		Num 1/2			// pre-store 0.5 in a register for later use
+		STO R_HALF
+		_INT 023
+		SDR 002
+		RCL R_MINP
+		x>? Y
+			JMP qf_q_mid
+		ENTER[^]		// tail estimate
+		LN
+		STO+ X
+		+/-
+		STO Z
+		DEC X
+		Num [pi]
+		[times]
+		STO+ X
+		[sqrt]
+		[times]
+		LN
+		STO+ X
+		+/-
+		[sqrt]
+		_INT 254
+		SDR 003
+		RCL/ Z
+		+
+		STO R_ABSZ
+		RTN
+
+qf_q_mid::	Num 1/2
+		RCL- Y
+		Num [pi]
+		STO+ X
+		[sqrt]
+		[times]
+		ENTER[^]
+		x[^3]
+		_INT 006
+		/
+		+
+		STO R_ABSZ
+		_INT 004
+		SDR 002
+		x>? Y
+			CF F_ITER		// z < 0.04 requires just one correction step
+		SDR 007
+		x>? Y
+			SF F_EXACT		// z < 4E-9 needs no correction at all, flag for exit
+		RTN
+
+#undef R_HALF
+#undef R_MINP
+#undef R_ABSZ
+
+#undef F_SMALL
+#undef F_ITER
+

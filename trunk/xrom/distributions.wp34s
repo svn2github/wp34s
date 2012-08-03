@@ -17,14 +17,6 @@
 /* Define some identifying numbers for the distributions that require the Newton solver to
  * invert.
  */
-#ifdef INCLUDE_ACCURATE_NORMAL
-#define DIST_T		(0)
-#define DIST_CHI2	(1)
-#define DIST_F		(2)
-#define DIST_POISSON	(3)
-#define DIST_BINOMIAL	(4)
-#define DIST_GEOMETRIC	(5)
-#else
 #define DIST_Q		(0)
 #define DIST_T		(1)
 #define DIST_CHI2	(2)
@@ -32,7 +24,6 @@
 #define DIST_POISSON	(4)
 #define DIST_BINOMIAL	(5)
 #define DIST_GEOMETRIC	(6)
-#endif
 
 
 #include "distributions/cauchy.wp34s"
@@ -123,9 +114,6 @@ dist_ret_1::		_INT 1
 #define F_LIMITJUMP	.03
 
 qf_newton_setflags::	CASE R_DIST
-#ifndef INCLUDE_ACCURATE_NORMAL
-			RTN				/* Normal no flags */
-#endif
 			RTN				/* T no flags */
 			JMP qf_chi2_flags		/* Chi^2 */
 			JMP qf_f_flags			/* F */
@@ -320,9 +308,6 @@ qf_discrete_exit::	FLOOR
 
 /* Dispatch to the PDF of the distribution being searched */
 qf_newton_pdf::		CASE R_DIST
-#ifndef INCLUDE_ACCURATE_NORMAL
-			JMP pdf_q
-#endif
 			JMP pdf_t
 			JMP pdf_chi2
 			JMP pdf_f
@@ -344,9 +329,6 @@ pdf_discrete::		_INT 1
 
 /* Dispatch to the CDF of the distribution being searched */
 qf_newton_cdf::		CASE R_DIST
-#ifndef INCLUDE_ACCURATE_NORMAL
-			JMP cdf_q
-#endif
 			JMP cdf_t
 			JMP cdf_chi2
 			JMP cdf_f
