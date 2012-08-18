@@ -234,19 +234,29 @@ slv_est_fin::		STO XC
 			/* Check for convergence but not zero with 5 ULP is good enough */
 			RCL XB
 			RCL- XA
-			ABS
+			ABS			/* |xb-xa| xc ? ?*/
 			RCL XB
 			ABS
 			RCL XA
 			ABS
-			MIN
+			MIN			/* min(|xa|,|xb|), |xb-xa|, xc xc */
 			ULP
 			_INT 5
 			[times]
-			x>? Y
-				JMP slv_fin
+			x[<=]? Y
+				JMP slv_loop
 
-			JMP slv_loop
+/* Solver estimates converged.
+ * Clean up and exit
+ */
+			Num 0
+			STO L
+			RCL FXC
+			RCL XB
+			RCL XC
+			[->]A..D
+			RTN
+
 
 
 /* Estimates don't bracket the solution.
@@ -375,17 +385,6 @@ slv_const_4::		_INT 10
 			JMP slv_est_fin
 
 
-/* Solver estimates converged.
- * Clean up and exit
- */
-slv_fin::		Num 0
-			STO L
-			RCL T
-			RCL XB
-			RCL XC
-			[->]A..D
-			RTN
-
 slv_failed::		RCL FXA
 			ABS
 			RCL FXB
@@ -414,7 +413,7 @@ slv_fail_common::	[->]A..D
 
 slv_success::		Num 0
 			STO L
-			RCL Z
+			RCL Y			/* f(xc) */
 			RCL XB
 			RCL XC
 			RTN
