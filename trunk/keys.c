@@ -344,7 +344,6 @@ static int keycode_to_alpha(const keycode c, unsigned int shift)
 }
 
 static void init_arg(const enum rarg base) {
-	process_cmdline_set_lift();
 	CmdBase = base;
 	State2.ind = 0;
 	State2.digval = 0;
@@ -421,7 +420,7 @@ void init_state(void) {
 	xset(&State2, 0, sizeof(State2));
 	State2.test = TST_NONE;
 	State2.runmode = 1;
-	State2.state_lift = 1;
+	set_lift();
 
 	// Restore stuff that has been moved to State2 for space reasons
 	// but must not be cleared.

@@ -1209,6 +1209,7 @@ extern void lift(void);
 extern void lift_if_enabled(void);
 extern void process_cmdline_set_lift(void);
 extern void process_cmdline(void);
+extern void set_lift(void);
 extern unsigned int alen(void);
 
 extern void get_maxdenom(decNumber *);
