@@ -1325,9 +1325,9 @@ decNumber *decNumberArcTan(decNumber *res, const decNumber *x) {
 		if (decNumberIsNaN(x))
 			return set_NaN(res);
 		else {
-			decNumberCopy(res, &const_PIon2);
+			decNumberCopy(&z, &const_PIon2);
 			if (decNumberIsNegative(x))
-				dn_minus(res, res);
+				dn_minus(&z, &z);
 		}
 	} else
 		do_atan(&z, x);
