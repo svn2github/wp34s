@@ -17,6 +17,12 @@
 #ifndef __XEQ_H__
 #define __XEQ_H__
 
+/*
+ * Optional features are defined in features.h
+ */
+#include "features.h"
+
+
 /* Version number */
 #define VERSION_STRING	"3.1"
 
@@ -28,11 +34,6 @@
 #define VERS_DISPLAY "34S\006" VERSION_STRING "\006\006"
 #endif
 #define VERS_SVN_OFFSET (sizeof(VERS_DISPLAY) - 1)
-
-/*
- * Optional features are defined in features.h
- */
-#include "features.h"
 
 /* Error number definitions */
 #include "errors.h"
