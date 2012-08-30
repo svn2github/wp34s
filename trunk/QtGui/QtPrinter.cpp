@@ -15,6 +15,7 @@
  */
 
 #include <QtNetwork>
+#include "QtEmulatorAdapter.h"
 
 #define UDPPORT 5025
 
@@ -25,7 +26,9 @@ int put_ir( int c )
 {
 	QUdpSocket udpSocket;
 	char ch=(char) c;
+	forward_set_IO_annunciator();
 	udpSocket.writeDatagram(&ch, 1, QHostAddress::LocalHost, UDPPORT);
+	udpSocket.close();
 	return 0;
 }
 }

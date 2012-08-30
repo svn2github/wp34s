@@ -54,6 +54,8 @@ extern int is_runmode();
 extern int uparrow_code();
 extern int downarrow_code();
 
+extern int forward_set_IO_annunciator();
+
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */

@@ -323,3 +323,8 @@ int downarrow_code()
 	return K50;
 }
 
+void forward_set_IO_annunciator()
+{
+	set_IO_annunciator();
+}
+

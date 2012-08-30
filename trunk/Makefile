@@ -25,7 +25,11 @@
 #XTAL = 1
 
 # Define to compile code for an IR transmitter on TIOA0
+ifdef QTGUI
+INFRARED = 1
+else
 #INFRARED = 1
+endif
 
 BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-exceptions 
 OPT_CFLAGS := -Os -fira-region=one
@@ -72,6 +76,10 @@ endif
 CFLAGS = $(BASE_CFLAGS)
 ifdef QTGUI
 CFLAGS += -O0 -DDEBUG -DQTGUI
+ifdef INFRARED
+CFLAGS += -DINFRARED
+HOSTCFLAGS += -DINFRARED
+endif
 ifeq "$(SYSTEM)" "Darwin"
 CFLAGS += -DFIX_64_BITS
 endif 

@@ -701,7 +701,7 @@ int put_ir( int c )
 	return 0;
 }
 
-#elif !defined(REALBUILD)
+#elif !defined(REALBUILD) && !defined(QTGUI)
 /*
  *  Simple emulation for debug purposes
  */
