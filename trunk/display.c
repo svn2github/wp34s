@@ -1600,8 +1600,10 @@ nostk:	show_flags();
 	}
 	set_annunciators();
 
-	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || DispPlot || State2.disp_as_alpha)
+	if (x_disp == 0 || State2.smode != SDISP_NORMAL || DispMsg != NULL || DispPlot || State2.disp_as_alpha) {
 		ShowRPN = 0;
+		dot(RPN, 0);
+	}
 
 	// disp_temp disables the <- key
 	State2.disp_temp = ! ShowRPN && State2.runmode 
