@@ -21,8 +21,8 @@
  * similarily but uses Halley's method which converges a cubically
  * instead of quadratically.
  *
- * This code is based on Jean-Marc Baillard's HP-41 version from:
- *	http://hp41programs.yolasite.com/lambertw.php
+ * This code is based on a discussion on the MoHPC.  Search the archives
+ * for "Lambert W (HP-41)" starting on the 2 Sept 2012.
  *
  * Uses regiser I for temporary storage.
  */
@@ -40,16 +40,28 @@
 			x<? Y
 				JMP ret_NaN
 			STO I
-			LN1+x
-LamW0_loop::		FILL
-			+/-
-			e[^x]
-			RCL[times] I
+			_INT 2
+			+
+			LN
+			ENTER[^]
+			LN
 			-
-			x[<->] Y
+LamW0_common::		_INT 0
+			[<->] YYXT
+LamW0_loop::		[<->] YZTX
+			x=? Y
+				xOUT xOUT_NORMAL
+			RCL I
+			RCL Y
+			e[^x]
+			/
+			RCL Y
+			RCL[times] X
+			+
+			[<->] YXZY
 			INC X
 			/
-			-
+			SWAP
 			CNVG? CVG_RELATIVE
 				xOUT xOUT_NORMAL
 			JMP LamW0_loop
@@ -76,7 +88,7 @@ LamW0_loop::		FILL
 			RCL I
 			+/-
 			LN
-			JMP LamW0_loop
+			JMP LamW0_common
 
 /**************************************************************************/
 /* The positive branch of the complex W function.
