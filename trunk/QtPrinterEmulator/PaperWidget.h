@@ -21,15 +21,25 @@
 
 class PaperWidget : public QWidget
 {
+	Q_OBJECT
+
 public:
 	PaperWidget();
 
 public:
-    void append(const QByteArray& aByteArray);
-    void autoZoom(const QSize& aSize);
+    void append(const QByteArray&);
+    void clear();
+    QSize sizeHint() const;
+
+signals:
+	void printed(int anY);
 
 protected:
-    void buildPixmap(const QSize&);
+    void print(QByteArray);
+    void removeFirstLine();
+    void buildPixmap();
+    void deletePixmap();
+    void resizeEvent(QResizeEvent*);
 	void paintEvent(QPaintEvent*);
 	void processEscape(int aChar);
 	void resetPrinter();
@@ -41,12 +51,15 @@ protected:
 	void drawPoint(int anX, int anY);
 	void drawHorizontalLine(int anX, int anY, int aLength);
 
+	int toX(int anX);
+	int toY(int anY);
+
+
 private:
 	int x, y, xOffset, lineCount, zoom;
     QPixmap* pixmap;
     QPainter* painter;
     QByteArray printedText;
-    QByteArray appendedText;
     bool lastIsEscape;
     bool ecma94;
     bool underlined;

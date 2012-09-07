@@ -19,28 +19,24 @@
 
 #include "PaperWidget.h"
 
-class PaperScrollArea;
-
 class ScrollablePaper: public QWidget
 {
+	Q_OBJECT
+
 public:
 	ScrollablePaper();
 
 public:
     void append(const QByteArray& aByteArray);
+    void clear();
 
-protected:
-	void resizeEvent(QResizeEvent*);
+private slots:
+	void scrollAfterPrint(int anY);
 
 private:
 	PaperWidget* paper;
-	PaperScrollArea* scrollArea;
+	QScrollArea* scrollArea;
 };
 
-class PaperScrollArea: public QScrollArea
-{
-public:
-    void setViewportMargins(int left, int top, int right, int bottom);
-};
 
 #endif /* SCROLLABLEPAPER_H_ */

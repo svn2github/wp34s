@@ -22,12 +22,14 @@ ScrollablePaper::ScrollablePaper()
 	QVBoxLayout* layout=new QVBoxLayout;
 	setLayout(layout);
 	paper=new PaperWidget();
-	scrollArea=new PaperScrollArea();
+	scrollArea=new QScrollArea();
 	scrollArea->setWidget(paper);
 	scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	scrollArea->setWidgetResizable(true);
+	scrollArea->setMinimumSize(scrollArea->sizeHint());
 	layout->addWidget(scrollArea);
-	scrollArea->setMinimumSize(PAPER_WIDTH+2, PAPER_INITIAL_LINES*LINE_HEIGHT+2);
+	connect(paper, SIGNAL(printed(int)), this, SLOT(scrollAfterPrint(int)));
 }
 
 void ScrollablePaper::append(const QByteArray& aByteArray)
@@ -35,17 +37,12 @@ void ScrollablePaper::append(const QByteArray& aByteArray)
 	paper->append(aByteArray);
 }
 
-void ScrollablePaper::resizeEvent(QResizeEvent* aResizeEvent)
+void ScrollablePaper::clear()
 {
-	Q_UNUSED(aResizeEvent)
-
-	// setViewportMargins is called here to force the viewport layout
-	scrollArea->setViewportMargins(0, 0, 0, 0);
-	paper->autoZoom(scrollArea->viewport()->size());
+	paper->clear();
 }
 
-void PaperScrollArea::setViewportMargins(int left, int top, int right, int bottom)
+void ScrollablePaper::scrollAfterPrint(int anY)
 {
-	QScrollArea::setViewportMargins(left, top, right, bottom);
+	scrollArea->ensureVisible(0, anY, 0, 0);
 }
-

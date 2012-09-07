@@ -34,50 +34,37 @@
 #define GRAPHICS_MAX 166
 
 PaperWidget::PaperWidget()
-: x(0), y(0), xOffset(0), lineCount(PAPER_INITIAL_LINES), zoom(1), lastIsEscape(false), ecma94(false), underlined(false), expanded(false), expectedGraphicsChars(0)
+: x(0), y(0), xOffset(0), lineCount(PAPER_INITIAL_LINES), zoom(1), pixmap(0), painter(0), lastIsEscape(false), ecma94(false), underlined(false), expanded(false), expectedGraphicsChars(0)
 {
-	buildPixmap(QSize((PAPER_WIDTH+2)*zoom, (lineCount*LINE_HEIGHT+2)*zoom));
-	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+	setMinimumSize(PAPER_WIDTH+PAPER_HORIZONTAL_MARGIN, PAPER_INITIAL_LINES*LINE_HEIGHT+PAPER_VERTICAL_MARGIN);
 }
 
-void PaperWidget::append(const QByteArray& aByteArray)
+QSize PaperWidget::sizeHint() const
 {
-	printedText+=aByteArray;
-	appendedText+=aByteArray;
+	return minimumSize();
+}
+
+void PaperWidget::append(const QByteArray& aText)
+{
+	print(aText);
+	printedText+=aText;
 	update();
 }
 
-void PaperWidget::autoZoom(const QSize& aSize)
+void PaperWidget::clear()
 {
-	int newZoom=aSize.width()/(PAPER_WIDTH+2);
-	if(newZoom>0)
-	{
-		zoom=newZoom;
-		buildPixmap(aSize);
-		update();
-	}
+	printedText.clear();
+	deletePixmap();
+	update();
 }
 
-void PaperWidget::buildPixmap(const QSize& aSize)
+// We do not pass a reference as the underlying array can be changed during print to remove the first line
+void PaperWidget::print(QByteArray aText)
 {
-	xOffset=aSize.width()%((PAPER_WIDTH+2)*zoom);
-	pixmap=new QPixmap(aSize.width(), qMax(aSize.height(), (lineCount*LINE_HEIGHT+2)*zoom));
-	painter=new QPainter(pixmap);
-	painter->setPen(Qt::black);
-	setFixedSize(pixmap->size());
-}
-
-void PaperWidget::paintEvent(QPaintEvent* aPaintEvent)
-{
-	Q_UNUSED(aPaintEvent)
-
-	x=y=1;
-	lineCount=0;
-	painter->fillRect(pixmap->rect(), Qt::white);
-	for (int charIndex = 0; charIndex < printedText.size(); ++charIndex)
+	for (int charIndex = 0; charIndex < aText.size(); ++charIndex)
 	{
 		bool escapeFound=false;
-		int c=printedText.at(charIndex);
+		int c=aText.at(charIndex);
 		if(expectedGraphicsChars>0)
 		{
 			expectedGraphicsChars--;
@@ -115,6 +102,59 @@ void PaperWidget::paintEvent(QPaintEvent* aPaintEvent)
 		}
 		lastIsEscape=escapeFound;
 	}
+	emit printed(toY(y+LINE_HEIGHT));
+}
+
+void PaperWidget::buildPixmap()
+{
+	QSize currentSize=size();
+	zoom=qMax(1,currentSize.width()/(PAPER_WIDTH+PAPER_HORIZONTAL_MARGIN));
+	xOffset=(currentSize.width()-PAPER_HORIZONTAL_MARGIN)%(PAPER_WIDTH*zoom);
+	int newHeight=lineCount*LINE_HEIGHT*zoom;
+	setMinimumHeight(newHeight);
+	deletePixmap();
+	// We rebuild the pixmap using the last lineCount before resetting it. This way, initial size should be ok.
+	pixmap=new QPixmap(currentSize.width(), qMax(currentSize.height(), newHeight));
+	pixmap->fill(Qt::white);
+	painter=new QPainter(pixmap);
+	painter->setPen(Qt::black);
+
+	x=y=0;
+	lineCount=0;
+
+	print(printedText);
+}
+
+void PaperWidget::deletePixmap()
+{
+	if(painter!=0)
+	{
+		delete painter;
+		painter=0;
+	}
+	if(pixmap!=0)
+	{
+		delete pixmap;
+		pixmap=0;
+	}
+}
+
+void PaperWidget::resizeEvent(QResizeEvent* aResizeEvent)
+{
+	Q_UNUSED(aResizeEvent)
+
+	deletePixmap();
+}
+
+void PaperWidget::paintEvent(QPaintEvent* aPaintEvent)
+{
+	Q_UNUSED(aPaintEvent)
+
+	if(pixmap==0)
+	{
+		buildPixmap();
+	}
+
 	QPainter paperPainter(this);
 	paperPainter.drawPixmap(0, 0, *pixmap);
 }
@@ -174,11 +214,64 @@ void PaperWidget::processEscape(int anEscapedChar)
 	}
 }
 
+int PaperWidget::toX(int anX)
+{
+	return PAPER_HORIZONTAL_MARGIN/2+xOffset+anX*zoom;
+
+}
+
+int PaperWidget::toY(int anY)
+{
+	return PAPER_VERTICAL_MARGIN/2+anY*zoom;
+}
+
 void PaperWidget::lineFeed()
 {
+	if(lineCount>=MAX_LINES)
+	{
+		removeFirstLine();
+	}
 	y+=LINE_HEIGHT;
+	int newHeight=toY(y+LINE_HEIGHT);
+	if(newHeight>=pixmap->height())
+	{
+		QPixmap* newPixmap=new QPixmap(pixmap->width(), newHeight);
+		newPixmap->fill(Qt::white);
+		QPainter* newPainter=new QPainter(newPixmap);
+		newPainter->setPen(Qt::black);
+		newPainter->drawPixmap(0, 0, *pixmap);
+		setMinimumHeight(newHeight);
+		deletePixmap();
+		pixmap=newPixmap;
+		painter=newPainter;
+	}
 	x=0;
 	lineCount++;
+}
+
+void PaperWidget::removeFirstLine()
+{
+	for (int charIndex = 0; charIndex < printedText.size(); ++charIndex)
+	{
+		int c=printedText.at(charIndex);
+		if(c==LINE_FEED || c==END_OF_LINE)
+		{
+			printedText.remove(0, charIndex+1);
+			break;
+		}
+	}
+
+	QPixmap* newPixmap=new QPixmap(pixmap->size());
+	newPixmap->fill(Qt::white);
+	QPainter* newPainter=new QPainter(newPixmap);
+	newPainter->setPen(Qt::black);
+	int zoomedLineHeight=toY(LINE_HEIGHT);
+	newPainter->drawPixmap(0, toY(0), *pixmap, 0, zoomedLineHeight, pixmap->width(), pixmap->height()-zoomedLineHeight);
+	deletePixmap();
+	pixmap=newPixmap;
+	painter=newPainter;
+	lineCount--;
+	y-=LINE_HEIGHT;
 }
 
 void PaperWidget::endOfLine()
@@ -215,12 +308,12 @@ void PaperWidget::processNormalChar(int aChar)
 
 void PaperWidget::drawPoint(int anX, int anY)
 {
-	painter->fillRect(xOffset+anX*zoom, anY*zoom, zoom, zoom, Qt::black);
+	painter->fillRect(toX(anX),toY(anY), zoom, zoom, Qt::black);
 }
 
 void PaperWidget::drawHorizontalLine(int anX, int anY, int aLength)
 {
-	painter->fillRect(xOffset+anX*zoom, anY*zoom, aLength*zoom, zoom, Qt::black);
+	painter->fillRect(toX(anX), toY(anY), aLength*zoom, zoom, Qt::black);
 }
 
 void PaperWidget::processGraphics(int aChar)
@@ -239,7 +332,6 @@ void PaperWidget::processGraphics(int aChar)
 
 void PaperWidget::resetPrinter()
 {
-    appendedText.clear();
     lastIsEscape=false;
     ecma94=false;
     underlined=false;

@@ -20,10 +20,14 @@
 #include <QtGui>
 #include <QtNetwork>
 #include "ScrollablePaper.h"
+#include "font82240b.h"
 
 #define PAPER_WIDTH 166
-#define LINE_HEIGHT (8+1)
+#define LINE_HEIGHT (HP82240B_CHARACTER_HEIGHT+1)
 #define PAPER_INITIAL_LINES 20
+#define PAPER_HORIZONTAL_MARGIN 10
+#define PAPER_VERTICAL_MARGIN 10
+#define MAX_LINES 500
 
 #define UDPPORT 5025
 #define PRINTER_EMULATOR_TITLE "HP-82240B"
@@ -48,6 +52,8 @@ protected:
 
 private slots:
      void processPendingDatagrams();
+     void quit();
+     void clear();
 
 private:
     QUdpSocket* udpSocket;

@@ -46,7 +46,9 @@ void PrinterEmulator::buildGui()
 	QVBoxLayout* buttonsLayout=new QVBoxLayout;
 	buttons->setLayout(buttonsLayout);
 	QPushButton* clearButton=new QPushButton("Clear");
+	connect(clearButton, SIGNAL(clicked()), this, SLOT(clear()));
 	QPushButton* quitButton=new QPushButton("Quit");
+	connect(quitButton, SIGNAL(clicked()), this, SLOT(quit()));
 	buttonsLayout->addWidget(clearButton);
 	buttonsLayout->addWidget(quitButton);
 	buttonsLayout->setSizeConstraint(QLayout::SetFixedSize);
@@ -92,4 +94,12 @@ void PrinterEmulator::processPendingDatagrams()
 	}
 }
 
+void PrinterEmulator::quit()
+{
+	qApp->quit();
+}
 
+void PrinterEmulator::clear()
+{
+	scrollablePaper->clear();
+}

@@ -14,7 +14,7 @@ SOURCES = PrinterEmulatorMain.cpp PrinterEmulator.cpp PaperWidget.cpp Scrollable
 HEADERS = PrinterEmulator.h PaperWidget.h ScrollablePaper.h font82240b.h
 
 #win32 {
-#	RC_FILE = HP82240B_Emulator.rc
+#	RC_FILE = HP-82240B.rc
 #}
 
 #macx {

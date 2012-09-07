@@ -36,42 +36,40 @@ LINK=$(CXX)
 LINUX := $(findstring "$(SYSTEM)", "Linux" "Linux64")
 	
 OUTPUTDIR := $(SYSTEM)
-OUTPUTDIRCMD := cmd/$(SYSTEM)
 DESTDIR := $(OUTPUTDIR)
-DESTDIRCMD := $(OUTPUTDIRCMD)
 
 ifeq "$(SYSTEM)" "windows32"
-DISTDIR := hp82240b
-DISTFILE := hp82240b.zip
+DISTDIR := hp-82240b
+DISTFILE := hp-82240b.zip
 RESOURCESDIR := $(DISTDIR)
 endif
 ifneq "$(LINUX)" ""
-DISTDIR := hp82240b
+DISTDIR := hp-82240b
 ifeq "$(SYSTEM)" "Linux64"
-DISTFILE := hp82240b-linux64.tgz
+DISTFILE := hp-82240b-linux64.tgz
 else
-DISTFILE := hp82240b-linux.tgz
+DISTFILE := hp-82240b-linux.tgz
 endif
 RESOURCESDIR := $(DISTDIR)
 LINUX_EXTRA_FILES := icons/hp82240b-logo.png
 endif
 ifeq "$(SYSTEM)" "Darwin"
 DESTDIR := $(OUTPUTDIR)/app
-DISTDIR := $(DESTDIR)/HP82240b.app
+DISTDIR := $(DESTDIR)/HP-82240b.app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
-DISTDMG := ./hp82240b-macosx.dmg
-BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname HP82240b -srcfolder $(DESTDIR) $(DISTDMG)
+DISTDMG := ./hp-82240b-macosx.dmg
+BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname HP-82240b -srcfolder $(DESTDIR) $(DISTDMG)
 endif
 # Warning the trailing / is mandatory
 QTLIBSDIR := c:/QtSDK/Desktop/Qt/4.8.0/mingw/bin/
 QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll mingwm10.dll libgcc_s_dw2-1.dll)
 
 ifeq "$(SYSTEM)" "windows32"
-HP82240B_EXE := $(DESTDIR)/hp82240b.exe
+HP82240B_EXE := $(DESTDIR)/hp-82240b.exe
 endif
 ifneq "$(LINUX)" ""
-HP82240B_EXE := $(DESTDIR)/hp82240b
+HP82240B_EXE := $(DESTDIR)/hp-82240b
 endif
 
 
@@ -79,10 +77,6 @@ endif
 DIRS := $(OUTPUTDIR)
 ifneq "$(OUTPUTDIR)" "$(DESTDIR)"
 DIRS += $(DESTDIR)
-endif
-DIRS += $(OUTPUTDIRCMD)
-ifneq "$(OUTPUTDIRCMD)" "$(DESTDIRCMD)"
-DIRS += $(DESTDIRCMD)
 endif
 
 
@@ -94,7 +88,7 @@ endif
 
 QMAKE := qmake
 QTMAKEFILE := QtMakefile.$(SYSTEM)
-QTPROJECTFILE := HP82240B_Emulator.pro
+QTPROJECTFILE := HP-82240B.pro
 
 
 DIRS_TO_CLEAN := $(DIRS)
@@ -118,7 +112,7 @@ $(QTMAKEFILE): $(QTPROJECTFILE)
 $(DIRS):
 	$(MKDIR) $@
 
-dist: distclean release $(DISTDIR) cmd
+dist: distclean release $(DISTDIR)
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(HP82240B_EXE) $(DISTDIR)
 	$(CP) $(QTLIBS) $(DISTDIR)
@@ -126,7 +120,6 @@ ifeq "$(SYSTEM)" "windows32"
 endif
 ifeq "$(SYSTEM)" "Darwin"
 	$(MACDEPLOYQT) $(DISTDIR)
-	$(BUILDDMG)
 endif
 ifneq "$(LINUX)" ""
 	$(CP) $(HP82240B_EXE) $(DISTDIR)
@@ -145,7 +138,7 @@ release: all
 endif
 
 clean:
-	-$(RM) $(QTMAKEFILE) $(QTMAKEFILECMD) $(EXTRA_FILES_TO_CLEAN)
+	-$(RM) $(QTMAKEFILE) $(EXTRA_FILES_TO_CLEAN)
 	-$(RMDIR) $(DIRS_TO_CLEAN)
 
 distclean:
