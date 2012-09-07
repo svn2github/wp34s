@@ -51,11 +51,11 @@ else
 DISTFILE := hp-82240b-linux.tgz
 endif
 RESOURCESDIR := $(DISTDIR)
-LINUX_EXTRA_FILES := icons/hp82240b-logo.png
+LINUX_EXTRA_FILES := icons/HP-82240B.png
 endif
 ifeq "$(SYSTEM)" "Darwin"
 DESTDIR := $(OUTPUTDIR)/app
-DISTDIR := $(DESTDIR)/HP-82240b.app
+DISTDIR := $(DESTDIR)/HP-82240B.app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
 DISTDMG := ./hp-82240b-macosx.dmg
