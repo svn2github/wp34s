@@ -2597,12 +2597,12 @@ void intws(unsigned int arg, enum rarg op) {
 		long long int v;
 
 		for (i=0; i<ss; i++) {
-			v = get_reg_n_int(regX_idx + i);
+			v = mask_value(get_reg_n_int(regX_idx + i));
 			UState.int_len = arg;
 			set_reg_n_int(regX_idx + i, mask_value(v));
 			UState.int_len = oldlen;
 		}
-		v = get_reg_n_int(regL_idx);
+		v = mask_value(get_reg_n_int(regL_idx));
 		UState.int_len = arg;
 		set_reg_n_int(regL_idx, mask_value(v));
 	} else
