@@ -118,7 +118,7 @@ LamW0_iterate::		FILL			// iteration starts here
 			-
 			FS?C .01     		// "last iteration" flag set?
 				JMP LamW0_finish	// then exit
-			CNVG? 03		// relative error < 1E-24?
+			CNVG? 01		// relative error < 1E-24?  Halley's method will give us as close to full accuracy next iteration anyway
 				SF .01		// then do one final iteration
 			DSE .01			// but not more than 7
 				GTO LamW0_iterate
