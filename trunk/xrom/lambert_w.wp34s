@@ -22,9 +22,8 @@
  * instead of quadratically.
  *
  * This code is based on a discussion on the MoHPC.  Search the archives
- * for "Lambert W (HP-41)" starting on the 2 Sept 2012.
- *
- * Uses regiser I for temporary storage.
+ * for "Lambert W (HP-41)" starting on the 2 Sept 2012.  The actual code
+ * is Dieter's from a message posted on the 16th of Sept 2012.
  */
 
 			XLBL"W0"
@@ -33,42 +32,10 @@
 				JMP ret_NaN
 			x=0?
 				xOUT xOUT_NORMAL
-			Num eE
-			1/x
-			+/-
-			x[<->] Y
-			x<? Y
-				JMP ret_NaN
-			STO I
-			_INT 2
-			+
-			LN
-			ENTER[^]
-			LN
-			-
-LamW0_common::		_INT 0
-			[<->] YYXT
-LamW0_loop::		[<->] YZTX
-			x=? Y
-				xOUT xOUT_NORMAL
-			RCL I
-			RCL Y
-			e[^x]
-			/
-			RCL Y
-			RCL[times] X
-			+
-			[<->] YXZY
-			INC X
-			/
-			SWAP
-			CNVG? CVG_RELATIVE
-				xOUT xOUT_NORMAL
-			JMP LamW0_loop
+			JMP LamW0_common
 
 /**************************************************************************/
 /* The negative branch of the real W function.
- * Uses registesr I for temporary storage.
  */
 
 			XLBL"W1"
@@ -79,17 +46,96 @@ LamW0_loop::		[<->] YZTX
 				JMP ret_NaN
 			x=0?
 				JMP ret_neginf
-			STO I
+			SF .00
+
+LamW0_common::		LocR 002
+			STO .00
 			+/-
 			1/x
 			Num eE
 			x>? Y
 				JMP ret_NaN
-			RCL I
+
+			_INT 007		// max. number of iterations
+			STO .01
+			_INT 028
+			SDR 002
+			+/-			// threshold = -0.28
+			RCL .00			// is used to determine
+			x>? Y			// whether x is close to -1/e or not
+				GTO LamW0_high_guess
+			RM?			// initial guess for x close to -1/e
+			RM 0			// make sure the last digit of 1/e
+			Num eE			// rounds to ...609 (DP) resp. ...424 (SP)
+			1/x
+			RM[->]Y			// restore original rounding mode
+			RCL+ .00
+			Num eE
+			[times]
+			STO+ X
+			[sqrt]
+			FS?C .00		// use positive or negative sqrt for W_p resp. W_m
+				+/-
+			DEC X
+				GTO LamW0_iterate	// start iteration
+
+			// initial guess for x not close to -1/e
+LamW0_high_guess::	FS?C .00		// Flag 0 set => jump to W_m guess
+				GTO LamW0_Wm_guess
+			LN1+x			// else calculate a guess for W_p
+			ENTER[^]
+			x>0?
+				LN
+			x<0?
+				CLx
+			-			// initial guess for W_p and x not close to -1/e
+			GTO LamW0_iterate	// start iteration with this guess
+
+LamW0_Wm_guess::	+/-
+			LN
+			ENTER[^]
 			+/-
 			LN
-			JMP LamW0_common
+			-			// initial guess for W_m and x not close to -1/e
+LamW0_iterate::		FILL			// iteration starts here
+			RCL .00
+			x[<->] Y
+			e[^x]
+			/
+			-
+			x[<->] Y
+			INC X
+			/
+			RCL L
+			1/x
+			INC X
+			RCL[times] Y
+			Num 1/2
+			[times]
+			+/-
+			INC X
+			/
+			-
+			FS?C .01     		// "last iteration" flag set?
+				JMP LamW0_finish	// then exit
+			CNVG? 03		// relative error < 1E-24?
+				SF .01		// then do one final iteration
+			DSE .01			// but not more than 7
+				GTO LamW0_iterate
 
+#if 0
+			ENTER[^]		// estimate potential error
+			e[^x]
+			RCL+ .00
+			Num 1/2
+			x[<->] Y
+			/
+			INC X
+			ROUNDI			// estimated uncertainty in ULPs
+			x[<->] Y		// is returned in Y
+#endif
+LamW0_finish::		xOUT xOUT_NORMAL
+			
 /**************************************************************************/
 /* The positive branch of the complex W function.
  *
