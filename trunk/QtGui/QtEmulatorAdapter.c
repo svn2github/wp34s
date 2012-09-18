@@ -34,7 +34,7 @@ extern void updateScreen();
 #define SVN_REVISION_SIZE 4
 static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
 
-#define FORMATTED_DISPLAYED_NUMBER_LENGTH 30
+#define FORMATTED_DISPLAYED_NUMBER_LENGTH 65
 
 // Replacement for memset as importing WP34-s features.h header is not possible for certain C compilers such as gcc-4.6
 // as they define their own

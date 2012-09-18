@@ -187,7 +187,7 @@ void alpha_fromx(enum nilop op) {
  * This honours the current display mode.
  */
 void alpha_reg(unsigned int arg, enum rarg op) {
-	char buf[64];
+	char buf[65];
 
 	xset(buf, '\0', sizeof(buf));
 	format_reg(arg, buf);
