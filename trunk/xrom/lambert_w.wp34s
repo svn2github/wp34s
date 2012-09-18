@@ -64,11 +64,8 @@ LamW0_common::		LocR 002
 			RCL .00			// is used to determine
 			x>? Y			// whether x is close to -1/e or not
 				GTO LamW0_high_guess
-			RM?			// initial guess for x close to -1/e
-			RM 0			// make sure the last digit of 1/e
 			Num eE			// rounds to ...609 (DP) resp. ...424 (SP)
 			1/x
-			RM[->]Y			// restore original rounding mode
 			RCL+ .00
 			Num eE
 			[times]

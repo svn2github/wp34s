@@ -4478,6 +4478,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	XromFlags.stack_depth = UState.stack_depth;
 	XromFlags.mode_double = UState.mode_double;
 	XromFlags.mode_int = UState.intm;
+        XromFlags.rounding_mode = UState.rounding_mode;
 	XromFlags.state_lift = 1;
 	XromFlags.xIN = 1;
 
@@ -4519,6 +4520,8 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		XromIn <<= 1;
 		XromOut <<= 1;
 	}
+
+        UState.rounding_mode = 0;
 
 #ifdef ENABLE_COPYLOCALS
 	// Allocate the local frame
@@ -4609,6 +4612,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	XromFlags.xIN = 0;
 	dbl = UState.mode_double = XromFlags.mode_double;
 	intm = UState.intm = XromFlags.mode_int;
+        UState.rounding_mode = XromFlags.rounding_mode;
 	UState.stack_depth = XromFlags.stack_depth;
 	StackBase = get_reg_n(regX_idx);
 

@@ -366,6 +366,7 @@ typedef struct _xrom_params
 			unsigned int setLastX : 1;	// request to set L (and probably I)
 			unsigned int state_lift : 1;	// Status of stack_lift after xOUT
 			unsigned int xIN : 1;		// xIN is in effect
+                        unsigned int rounding_mode : 3; // user rounding mode
 		} bits;
 		unsigned short word;			// returned by flag_word()
 #ifdef XROM_RARG_COMMANDS
