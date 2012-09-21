@@ -1,0 +1,181 @@
+
+
+The following program evaluates W[sub]p[/sub] and W[sub]m[/sub] as well as W[sub]p[/sub]+1 and W[sub]m[/sub]+1. The code should return 30+ valid digits for W[sub]p[/sub] and W[sub]m[/sub] and some less for the two W+1 functions. This program is intended to run in double precision only (!). For x close to -1/e a series expansion is used, where the coefficients are prestored in R05...R08. The lower coefficients are coded directly. As far as I understand, in XROM this can also be done for the higher coefficients so that the respective four registers are not required.
+
+And again the usual caveat applies: this is experimental code. ;-)[nl]
+[italic]Edit: corrected an errror in line 007. Of course it's flag 01, not 02.[/italic]
+
+[pre]
+001 *LBL A  // W_p
+002 CF 00
+003 CF 01
+004 GTO 00
+005 *LBL B  // W_m
+006 SF 00
+007 CF 01
+008 GTO 00
+009 *LBL C  // W_p + 1
+010 CF 00
+011 SF 01
+012 GTO 00
+013 *LBL D  // W_m + 1
+014 SF 00
+015 SF 01
+016 *LBL 00
+017 CF 02
+018 CF 03
+019 STO 00
+020 # 007   // max. 7 iterations
+021 STO 01
+022 # 028
+023 SDR 002
+024 +/-
+025 RCL 00
+026 x>? Y
+027 GTO 01
+028 # 086
+029 SDR 009
+030 # eE
+031 1/x
+032 SDL 033
+033 IP
+034 SDR 033
+035 RCL+ 00
+036 RCL+ 02
+037 x[<=]? Y   // check if x is *very* close to -1/e
+038 SF 03      // if so, set flag 3
+039 # eE
+040 [times]
+041 STO+ X
+042 [sqrt]
+043 FS?C 00
+044 +/-
+045 FILL
+046 RCL[times] 08
+047 RCL+ 07
+048 [times]
+049 RCL+ 06    // evaluate series expansion up to 8 terms
+050 [times]    // to get 30+ digits even very close to -1/e
+051 RCL+ 05    // use coeff. 8...5 directly from r08...r05
+052 [times]
+053 # 043
+054 # 054
+055 SDL 001
+056 /          // coeff. 4  =  -43/540
+057 -
+058 [times]
+059 # 011
+060 # 072
+061 /          // coeff. 3  =   11/72
+062 +
+063 [times]
+064 # 003
+065 1/x        // coeff. 2  =  -1/3
+066 -
+067 [times]
+068 [times]
+069 +
+070 FS? 01      // add the final -1 only for W_p and W_m
+071 FC? 03      // or if the iterative method is used
+072 DEC X
+073 FS?C 03     // for x very close to -1/e
+074 GTO 04      // result has 30+ digits, so skip iteration and exit
+075 GTO 03      // else jump to iteration
+076 *LBL 01
+077 FS?C 00
+078 GTO 02
+079 LN1+x
+080 ENTER[^]
+081 x>0?
+082 LN
+083 x<0?
+084 CLx
+085 -
+086 GTO 03
+087 *LBL 02
+088 +/-
+089 LN
+090 ENTER[^]
+091 +/-
+092 LN
+093 -
+094 *LBL 03
+095 FILL
+096 RCL 00
+097 x[<->] Y
+098 e[^x]
+099 /
+100 -
+101 x[<->] Y
+102 INC X
+103 /
+104 RCL L
+105 1/x
+106 INC X
+107 RCL[times] Y
+108 # 1/2
+109 [times]
+110 +/-
+111 INC X
+112 /
+113 -
+114 FS?C 02
+115 SKIP 004
+116 CNVG? 01    // last change < 1E-24?
+117 SF 02       // then raise flag for final iteration
+118 DSE 01      // loop counter, exit after 7 loops or less
+119 GTO 03
+120 FS?C 01     // exit routine after iteration finished
+121 INC X       // add 1 if the result is W_p + 1 or W_m + 1
+122 *LBL 04     // common exit point for all cases
+123 END
+
+Flags:
+------
+ 00 clear: primary branch,  set: secondary branch
+ 01 clear: W_p and W_m,  set: W_p+1 amd W_m+1
+ 02 clear: iteration limit not yet reached, set: final loop
+ 03 clear: use iteration close to 1/e, set: result exact => exit
+
+Registers:
+----------
+ 00  x
+ 01  loop counter
+
+ R02, 05...08 store some required constants
+
+Instructions:
+-------------
+ 
+Enter the program.
+Switch to double precision
+ 
+  DBLON
+ 
+and prestore the following constants:
+
+Digits 34 to 67 of 1/e:
+ 
+  8,674458111310317678345078368016975 E-34   STO 02
+ 
+More than 12 digits cannot be entered directly,
+but it can be done this way:
+ 
+  8,67445811131 E-34   STO 02
+  0,31767834507 E-46   STO+ 02
+  8,368016975 E-58     STO+ 02
+ 
+Coefficients for the series expansion:
+ 
+    769 ENTER 17280   /   STO 05
+   -221 ENTER 8505    /   STO 06
+ 102180 ENTER 6535073 /   STO 07
+  -1963 ENTER 204120  /   STO 08
+ 
+Please note the negative sign in R06 and R08.
+[/pre]
+According to my results (and the code ;-)) W[sub]p[/sub] and W[sub]m[/sub] should carry at least 30 valid digits. The error should not exceed 2 units in the 31st digit.
+
+Please note: this is experimental code. W[sub]p[/sub]+1 and W[sub]m[/sub]+1 are quite accurate even close to -1/e, but here only 27 digits may be correct. More terms of the series expansion would provide better results.
+
+Dieter
