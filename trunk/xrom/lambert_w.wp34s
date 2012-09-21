@@ -58,8 +58,14 @@ LamW0_common::		LocR 002
 
 			_INT 007		// max. number of iterations
 			STO .01
+#if 0
 			_INT 028
 			SDR 002
+#else
+			1/x
+			FC? .00
+			STO+ X
+#endif
 			+/-			// threshold = -0.28
 			RCL .00			// is used to determine
 			x>? Y			// whether x is close to -1/e or not
