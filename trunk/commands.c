@@ -802,7 +802,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_VIEW,	&cmdview,				"VIEW",		CNULL)
 	CMDstk(RARG_STOSTK,	&cmdstostk,				"STOS",		CNULL)
 	CMDstk(RARG_RCLSTK,	&cmdrclstk,				"RCLS",		CNULL)
-	CMDnoI(RARG_ALPHA,	&cmdalpha,	0,			"",		"a")
+	CMDnoI(RARG_ALPHA,	&cmdalpha,	256,			"",		"a")
 	CMDstk(RARG_AREG,	&alpha_reg,				"\240RC#",	"aRC#")
 	CMDstk(RARG_ASTO,	&alpha_sto,				"\240STO",	"aSTO")
 	CMDstk(RARG_ARCL,	&alpha_rcl,				"\240RCL",	"aRCL")
