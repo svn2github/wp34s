@@ -52,13 +52,22 @@ LINUX := $(findstring "$(SYSTEM)", "Linux" "Linux64")
 	
 OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
+DISTPRINTERDIR := ../QtPrinterEmulator
+
 ifeq "$(SYSTEM)" "windows32"
-DISTDIR := wp-34s
+DISTDIR := $(SYSTEM)/dist/wp-34s
+ZIPCHANGEDIR := $(SYSTEM)/dist
+ZIPTOPDIR := wp-34s
 DISTFILE := wp-34s-emulator-windows.zip
+ZIPDISTFILE := ../../$(DISTFILE)
 RESOURCESDIR := $(DISTDIR)
+DISTPRINTEREXE := $(DISTPRINTERDIR)/windows32/HP-82240B.exe
 endif
 ifneq "$(LINUX)" ""
-DISTDIR := wp-34s
+DISTDIR := $(SYSTEM)/dist/wp-34s
+TARCHANGEDIR := $(SYSTEM)/dist
+TARTOPDIR := wp-34s
+DISTPRINTEREXE := $(DISTPRINTERDIR)/$(LINUX)/HP-82240B
 ifeq "$(SYSTEM)" "Linux64"
 DISTFILE := wp-34s-emulator-linux64.tgz
 else
@@ -68,11 +77,14 @@ RESOURCESDIR := $(DISTDIR)
 LINUX_EXTRA_FILES := README_Linux.txt icons/wp34s-logo.png
 endif
 ifeq "$(SYSTEM)" "Darwin"
-DISTDIR := $(OUTPUTDIR)/WP-34s.app
+APPSDISTDIR := $(OUTPUTDIR)/apps
+DISTDIR := $(APPSDISTDIR)/WP-34s.app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
 BUILTDMG := $(OUTPUTDIR)/WP-34s.dmg
 DISTDMG := ./wp-34s-emulator-macosx.dmg
+BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname WP-34s -srcfolder $(APPSDISTDIR) $(DISTDMG)
+DISTPRINTERAPP :=$(DISTPRINTERDIR)/Darwin/app/HP-82240B.app
 endif
 DISTMEMORYDIR := $(RESOURCESDIR)/memory
 DISTMEMORYFILE := $(DISTMEMORYDIR)/wp34s-lib.dat
@@ -95,6 +107,9 @@ DISTDOCDIR := $(RESOURCESDIR)/doc
 DISTDOCDIR := $(RESOURCESDIR)/doc
 DISTDOCFILE := $(DISTDOCDIR)/$(DOCFILENAME)
 
+
+
+
 # we need the MAKE variable to be defined
 # if not, we try the default value
 ifeq "$(MAKE)" ""
@@ -110,7 +125,7 @@ CP := cp
 CPDIR := cp -r
 ZIP := zip -r
 #  TAR option "--remove-files" is to prevent an error message when compiling over a SAMBA mount
-TAR := tar --remove-files -c -z -f
+TAR := tar --remove-files -C $(TARCHANGEDIR) -c -z -f
 QTMAKEFILE := QtMakefile.$(SYSTEM)
 QTMAKEFILE_EXISTS := $(wildcard $(QTMAKEFILE))
 
@@ -186,7 +201,7 @@ qtserial:
 	cd $(QTSERIALDIR); $(MAKE)
 endif
 
-dist: distclean release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE)
+dist: distclean release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE) distprinter
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(WP34SEXE) $(DISTDIR)
 	$(MKDIR) $(DISTDIR)/skins
@@ -194,15 +209,17 @@ ifeq "$(SYSTEM)" "windows32"
 	$(MKDIR) $(DISTDIR)/images
 	$(CPDIR) images/* $(DISTDIR)/images
 	$(CP) $(QTLIBS) $(DISTDIR)
-	$(ZIP) $(DISTFILE) $(DISTDIR)
+	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
+	cd $(ZIPCHANGEDIR); $(ZIP) $(ZIPDISTFILE) $(ZIPTOPDIR)
 endif
 ifeq "$(SYSTEM)" "Darwin"
 	$(MKDIR) $(RESOURCESDIR)/skins
 	$(CPDIR) skins/* $(RESOURCESDIR)/skins
 	$(MKDIR) $(RESOURCESDIR)/images
 	$(CPDIR) images/* $(RESOURCESDIR)/images
-	$(MACDEPLOYQT) $(DISTDIR) -dmg
-	$(MV) $(BUILTDMG) $(DISTDMG)
+	$(CPDIR) $(DISTPRINTERAPP) $(APPSDISTDIR)
+	$(MACDEPLOYQT) $(DISTDIR)
+	$(BUILDDMG)
 endif
 ifneq "$(LINUX)" ""
 	$(CP) $(WP34SEXE) $(DISTDIR)
@@ -211,9 +228,13 @@ ifneq "$(LINUX)" ""
 	$(MKDIR) $(DISTDIR)/images
 	$(CPDIR) images/* $(DISTDIR)/images
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)
-	$(TAR) $(DISTFILE) $(DISTDIR)
+	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
+	$(TAR) $(DISTFILE) $(TARTOPDIR)
 endif
 
+distprinter:
+	cd $(DISTPRINTERDIR); $(MAKE) dist
+	
 $(DISTDIR):
 	$(MKDIR) $(DISTDIR)
 
@@ -245,7 +266,11 @@ build_date:
 
 $(QTMAKEFILE): WP-34s.pro
 	$(MAKE) qtclean
+ifeq ($(SYSTEM),Darwin)
+	$(QMAKE) -makefile DESTDIR=$(APPSDISTDIR) MOC_DIR=$(OUTPUTDIR) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILE)
+else	
 	$(QMAKE) -makefile DESTDIR=$(OUTPUTDIR) MOC_DIR=$(OUTPUTDIR) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILE)
+endif
 
 $(DIRS):
 	$(MKDIR) $@
@@ -267,4 +292,6 @@ distclean:
 ifeq "$(SYSTEM)" "Darwin"
 	-$(RM) $(BUILTDMG)
 	-$(RM) $(DISTDMG)
+else
+	-$(RM) $(DISTFILE)	
 endif	

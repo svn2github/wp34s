@@ -39,16 +39,16 @@ OUTPUTDIR := $(SYSTEM)
 DESTDIR := $(OUTPUTDIR)
 
 ifeq "$(SYSTEM)" "windows32"
-DISTDIR := hp-82240b
-DISTFILE := hp-82240b.zip
+DISTDIR := $(SYSTEM)/dist/HP-82240B
+DISTFILE := HP-82240B.zip
 RESOURCESDIR := $(DISTDIR)
 endif
 ifneq "$(LINUX)" ""
-DISTDIR := hp-82240b
+DISTDIR := $(SYSTEM)/dist/HP-82240B
 ifeq "$(SYSTEM)" "Linux64"
-DISTFILE := hp-82240b-linux64.tgz
+DISTFILE := HP-82240B-linux64.tgz
 else
-DISTFILE := hp-82240b-linux.tgz
+DISTFILE := HP-82240B-linux.tgz
 endif
 RESOURCESDIR := $(DISTDIR)
 LINUX_EXTRA_FILES := icons/HP-82240B.png
@@ -58,18 +58,16 @@ DESTDIR := $(OUTPUTDIR)/app
 DISTDIR := $(DESTDIR)/HP-82240B.app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
-DISTDMG := ./hp-82240b-macosx.dmg
-BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname HP-82240b -srcfolder $(DESTDIR) $(DISTDMG)
 endif
 # Warning the trailing / is mandatory
 QTLIBSDIR := c:/QtSDK/Desktop/Qt/4.8.0/mingw/bin/
 QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll mingwm10.dll libgcc_s_dw2-1.dll)
 
 ifeq "$(SYSTEM)" "windows32"
-HP82240B_EXE := $(DESTDIR)/hp-82240b.exe
+HP82240B_EXE := $(DESTDIR)/HP-82240B.exe
 endif
 ifneq "$(LINUX)" ""
-HP82240B_EXE := $(DESTDIR)/hp-82240b
+HP82240B_EXE := $(DESTDIR)/HP-82240B
 endif
 
 
@@ -116,7 +114,6 @@ dist: distclean release $(DISTDIR)
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(HP82240B_EXE) $(DISTDIR)
 	$(CP) $(QTLIBS) $(DISTDIR)
-	$(ZIP) $(DISTFILE) $(DISTDIR)
 endif
 ifeq "$(SYSTEM)" "Darwin"
 	$(MACDEPLOYQT) $(DISTDIR)
@@ -124,7 +121,6 @@ endif
 ifneq "$(LINUX)" ""
 	$(CP) $(HP82240B_EXE) $(DISTDIR)
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)
-	$(TAR) $(DISTFILE) $(DISTDIR)
 endif
 
 $(DISTDIR):
