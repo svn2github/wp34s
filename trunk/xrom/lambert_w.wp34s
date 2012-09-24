@@ -69,7 +69,7 @@ LamW0_common::		LocR 002
 			+/-			// threshold = -0.28
 			RCL .00			// is used to determine
 			x>? Y			// whether x is close to -1/e or not
-				GTO LamW0_high_guess
+				JMP LamW0_high_guess
 			Num eE			// rounds to ...609 (DP) resp. ...424 (SP)
 			1/x
 			RCL+ .00
@@ -80,11 +80,11 @@ LamW0_common::		LocR 002
 			FS?C .00		// use positive or negative sqrt for W_p resp. W_m
 				+/-
 			DEC X
-				GTO LamW0_iterate	// start iteration
+				JMP LamW0_iterate	// start iteration
 
 			// initial guess for x not close to -1/e
 LamW0_high_guess::	FS?C .00		// Flag 0 set => jump to W_m guess
-				GTO LamW0_Wm_guess
+				JMP LamW0_Wm_guess
 			LN1+x			// else calculate a guess for W_p
 			ENTER[^]
 			x>0?
@@ -92,7 +92,7 @@ LamW0_high_guess::	FS?C .00		// Flag 0 set => jump to W_m guess
 			x<0?
 				CLx
 			-			// initial guess for W_p and x not close to -1/e
-			GTO LamW0_iterate	// start iteration with this guess
+			JMP LamW0_iterate	// start iteration with this guess
 
 LamW0_Wm_guess::	+/-
 			LN
@@ -124,7 +124,7 @@ LamW0_iterate::		FILL			// iteration starts here
 			CNVG? 01		// relative error < 1E-24?  Halley's method will give us as close to full accuracy next iteration anyway
 				SF .01		// then do one final iteration
 			DSE .01			// but not more than 7
-				GTO LamW0_iterate
+				JMP LamW0_iterate
 
 #if 0
 			ENTER[^]		// estimate potential error
