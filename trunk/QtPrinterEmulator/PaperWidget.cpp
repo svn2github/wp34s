@@ -33,10 +33,17 @@
 #define USE_ROMAN8 248
 #define GRAPHICS_MAX 166
 
+#define LINE_COUNT_UPDATE 5
+
+
+// A better implementation would be to have 1 pixmap per line
+// in a circular list/vector. And to paint only the need ones in paintEvent
+
 PaperWidget::PaperWidget()
 : x(0), y(0), xOffset(0), lineCount(PAPER_INITIAL_LINES), zoom(1), pixmap(0), painter(0), lastIsEscape(false), ecma94(false), underlined(false), expanded(false), expectedGraphicsChars(0)
 {
 	setMinimumSize(PAPER_WIDTH+PAPER_HORIZONTAL_MARGIN, PAPER_INITIAL_LINES*LINE_HEIGHT+PAPER_VERTICAL_MARGIN);
+	connect(this, SIGNAL(textAppended()), this, SLOT(printAppendedText()), Qt::QueuedConnection);
 }
 
 QSize PaperWidget::sizeHint() const
@@ -46,8 +53,15 @@ QSize PaperWidget::sizeHint() const
 
 void PaperWidget::append(const QByteArray& aText)
 {
-	print(aText);
-	printedText+=aText;
+	{
+		QMutexLocker locker(&textMutex);
+		appendedText+=aText;
+	}
+	emit textAppended();
+}
+
+void PaperWidget::printAppendedText()
+{
 	update();
 }
 
@@ -64,7 +78,7 @@ void PaperWidget::print(QByteArray aText)
 	for (int charIndex = 0; charIndex < aText.size(); ++charIndex)
 	{
 		bool escapeFound=false;
-		int c=aText.at(charIndex);
+		int c=(unsigned char) aText.at(charIndex);
 		if(expectedGraphicsChars>0)
 		{
 			expectedGraphicsChars--;
@@ -155,8 +169,47 @@ void PaperWidget::paintEvent(QPaintEvent* aPaintEvent)
 		buildPixmap();
 	}
 
+	// The idea is to force an update every LINE_COUNT_UPDATE
+	// If not, the scroll can be invisible and a whole new block appear on a whole
+	// For instance a program listing. OSX seem to be more prone to this.
+	// But repainting after every new line is too slow so LINE_COUNT_UPDATE is 5.
+	QByteArray appendedTextCopy;
+	{
+		QMutexLocker locker(&textMutex);
+		if(!appendedText.isEmpty())
+		{
+			int charIndex=0;
+			int lineCount=0;
+			while (charIndex < appendedText.size())
+			{
+				int c=(unsigned char) appendedText.at(charIndex);
+				++charIndex;
+				if(c==END_OF_LINE || c==LINE_FEED)
+				{
+					++lineCount;
+					if(lineCount>=LINE_COUNT_UPDATE)
+					{
+						break;
+					}
+				}
+			}
+			appendedTextCopy.append(appendedText.data(), charIndex);
+			appendedText.remove(0, charIndex);
+		}
+	}
+	if(!appendedTextCopy.isEmpty())
+	{
+		print(appendedTextCopy);
+		printedText+=appendedTextCopy;
+	}
+
 	QPainter paperPainter(this);
 	paperPainter.drawPixmap(0, 0, *pixmap);
+
+	if(!appendedText.isEmpty())
+	{
+		update();
+	}
 }
 
 void PaperWidget::processEscape(int anEscapedChar)
@@ -283,8 +336,12 @@ void PaperWidget::processNormalChar(int aChar)
 {
 	if(aChar>=FIRST_PRINTABLE_CHAR)
 	{
+		bool firstChar=(x==0);
 		int expandedIncrement=expanded?2:1;
-		x+=expandedIncrement;
+		if(!firstChar)
+		{
+			x+=expandedIncrement;
+		}
 		FONTDEF fontDef=(ecma94?sFontEcma94:sFontRoman8)[aChar-FIRST_PRINTABLE_CHAR];
 		for(int charX=0; charX<HP82240B_CHARACTER_WIDTH; charX++)
 		{
@@ -300,7 +357,14 @@ void PaperWidget::processNormalChar(int aChar)
 		}
 		if(underlined)
 		{
-			drawHorizontalLine(x-expandedIncrement, y+HP82240B_CHARACTER_HEIGHT, (HP82240B_CHARACTER_WIDTH+2)*expandedIncrement);
+			if(firstChar)
+			{
+				drawHorizontalLine(x, y+HP82240B_CHARACTER_HEIGHT, (HP82240B_CHARACTER_WIDTH+1)*expandedIncrement);
+			}
+			else
+			{
+				drawHorizontalLine(x-expandedIncrement, y+HP82240B_CHARACTER_HEIGHT, (HP82240B_CHARACTER_WIDTH+2)*expandedIncrement);
+			}
 		}
 		x+=(HP82240B_CHARACTER_WIDTH+1)*expandedIncrement;
 	}

@@ -10,8 +10,8 @@ win32 {
   LIBS += -lsetupapi 
 }
 
-SOURCES = PrinterEmulatorMain.cpp PrinterEmulator.cpp PaperWidget.cpp ScrollablePaper.cpp font82240b.cpp
-HEADERS = PrinterEmulator.h PaperWidget.h ScrollablePaper.h font82240b.h
+SOURCES = PrinterEmulatorMain.cpp PrinterEmulator.cpp PrintDataReader.cpp PaperWidget.cpp ScrollablePaper.cpp font82240b.cpp
+HEADERS = PrinterEmulator.h PrintDataReader.h PaperWidget.h ScrollablePaper.h font82240b.h
 
 win32 {
 	RC_FILE = HP-82240B.rc

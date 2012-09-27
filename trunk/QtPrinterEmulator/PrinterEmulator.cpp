@@ -15,16 +15,23 @@
  */
 
 #include "PrinterEmulator.h"
+#include "PrintDataReader.h"
 
 PrinterEmulator::PrinterEmulator()
 {
 	buildGui();
-	buildSocket();
+	buildPrinterDataReader();
 }
 
 PrinterEmulator::~PrinterEmulator()
 {
 	saveSettings();
+}
+
+void PrinterEmulator::buildPrinterDataReader()
+{
+	printDataReader=new PrintDataReader(*this);
+	printDataReader->start();
 }
 
 void PrinterEmulator::buildGui()
@@ -57,14 +64,6 @@ void PrinterEmulator::buildGui()
 	loadSettings();
 }
 
-void PrinterEmulator::buildSocket()
-{
-	udpSocket = new QUdpSocket(this);
-    udpSocket->bind(QHostAddress::LocalHost, UDPPORT, QUdpSocket::ShareAddress);
-
-    connect(udpSocket, SIGNAL(readyRead()), this, SLOT(processPendingDatagrams()));
-}
-
 void PrinterEmulator::loadSettings()
 {
     settings.beginGroup(WINDOW_SETTINGS_GROUP);
@@ -83,20 +82,14 @@ void PrinterEmulator::saveSettings()
     settings.endGroup();
 }
 
-void PrinterEmulator::processPendingDatagrams()
-{
-	while (udpSocket->hasPendingDatagrams())
-	{
-		QByteArray datagram;
-		datagram.resize(udpSocket->pendingDatagramSize());
-		udpSocket->readDatagram(datagram.data(), datagram.size());
-		scrollablePaper->append(datagram);
-	}
-}
-
 void PrinterEmulator::quit()
 {
 	qApp->quit();
+}
+
+void PrinterEmulator::append(const QByteArray& aByteArray)
+{
+	scrollablePaper->append(aByteArray);
 }
 
 void PrinterEmulator::clear()

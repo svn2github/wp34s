@@ -33,6 +33,10 @@ public:
 
 signals:
 	void printed(int anY);
+	void textAppended();
+
+private slots:
+	void printAppendedText();
 
 protected:
     void print(QByteArray);
@@ -50,7 +54,6 @@ protected:
 	void processGraphics(int aChar);
 	void drawPoint(int anX, int anY);
 	void drawHorizontalLine(int anX, int anY, int aLength);
-
 	int toX(int anX);
 	int toY(int anY);
 
@@ -60,6 +63,8 @@ private:
     QPixmap* pixmap;
     QPainter* painter;
     QByteArray printedText;
+    QByteArray appendedText;
+    QMutex textMutex;
     bool lastIsEscape;
     bool ecma94;
     bool underlined;

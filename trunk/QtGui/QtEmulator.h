@@ -67,7 +67,7 @@
 #define BACKUP_FILENAME "wp34s-backup.dat"
 #define LIBRARY_FILENAME "wp34s-lib.dat"
 
-#define DOCUMENTATION_FILENAME "Manual_wp_34s_3_0.pdf"
+#define DOCUMENTATION_FILENAME "Manual_wp_34s_3_1.pdf"
 #define WEBSITE_URL "http://wp34s.sourceforge.net/"
 
 #define DEBUG_OPTION "-debug"

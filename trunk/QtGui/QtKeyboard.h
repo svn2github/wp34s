@@ -56,6 +56,7 @@ public:
 	bool processButtonReleasedEvent(const QMouseEvent& aMouseEvent);
 	bool processMouseMovedEvent(const QMouseEvent& aMouseEvent);
 	bool processDoubleClickEvent(const QMouseEvent& aMouseEvent);
+	bool processKeyCodePressed(const QtKeyCode& aKeyCode);
 	bool setShifts(int aCode);
 	int getKey();
 	void putKeyCode(const QtKeyCode& aKeyCode);
@@ -88,6 +89,7 @@ private:
     const QtKey* findKey(const QtKeyCode& aKeyCode) const;
     void startHShiftTimer();
     void startAutoRepeatTimer();
+    bool isAutoRepeat(const QtKeyCode& aKeyCode) const;
 
 private:
     int hShiftHeight;
@@ -97,6 +99,7 @@ private:
     char keyboardBuffer[KEYBOARD_BUFFER_SIZE];
     volatile int keyboardBufferBegin, keyboardBufferEnd;
     QtKeyCode currentKeyCode;
+    QtKeyCode lastReleasedKeyCode;
     bool useHShiftClick;
     bool alwaysUseHShiftClick;
     int hShiftDelay;

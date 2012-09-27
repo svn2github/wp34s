@@ -70,8 +70,9 @@ void QtKeyboard::setSkin(const QtSkin& aSkin)
 bool QtKeyboard::processKeyPressedEvent(const QKeyEvent& aKeyEvent)
 {
 	autoRepeat=false;
+	lastReleasedKeyCode=INVALID_KEY_CODE;
 	QtKeyCode keyCode=findKeyCode(aKeyEvent);
-	if(!aKeyEvent.isAutoRepeat() || keyCode.getCode()==uparrow_code() || (keyCode.getCode()==downarrow_code() && !is_runmode()))
+	if(!aKeyEvent.isAutoRepeat() || isAutoRepeat(keyCode))
 	{
 		putKeyCode(keyCode);
 		currentKeyCode=keyCode;
@@ -83,6 +84,7 @@ bool QtKeyboard::processKeyPressedEvent(const QKeyEvent& aKeyEvent)
 bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 {
 	autoRepeat=false;
+	lastReleasedKeyCode=INVALID_KEY_CODE;
 	if(!aKeyEvent.isAutoRepeat())
 	{
 		forward_key_released();
@@ -94,20 +96,12 @@ bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 {
 	autoRepeat=false;
+
+	lastReleasedKeyCode=INVALID_KEY_CODE;
 	if(aMouseEvent.button()==Qt::LeftButton)
 	{
 		QtKeyCode keyCode=findKeyCode(aMouseEvent.pos());
-		putKeyCode(keyCode);
-		currentKeyCode=keyCode;
-		currentKeyHShifted=false;
-		startHShiftTimer();
-		if((keyCode.getCode()==uparrow_code()) || (keyCode.getCode()==downarrow_code() && !is_runmode()))
-		{
-			autoRepeat=true;
-			startAutoRepeatTimer();
-		}
-		emit keyPressed();
-		return currentKeyCode!=INVALID_KEY_CODE;
+		return processKeyCodePressed(keyCode);
 	}
 	else
 	{
@@ -115,12 +109,39 @@ bool QtKeyboard::processButtonPressedEvent(const QMouseEvent& aMouseEvent)
 	}
 }
 
+bool QtKeyboard::processKeyCodePressed(const QtKeyCode& aKeyCode)
+{
+	putKeyCode(aKeyCode);
+	currentKeyCode=aKeyCode;
+	currentKeyHShifted=false;
+	startHShiftTimer();
+	if(isAutoRepeat(aKeyCode))
+	{
+		autoRepeat=true;
+		startAutoRepeatTimer();
+	}
+	emit keyPressed();
+	return currentKeyCode!=INVALID_KEY_CODE;
+}
+
 bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)
 {
 	Q_UNUSED(aMouseEvent)
 
+	// Sometimes we received only button released events when pressing rapidly
+	// this is a fix to avoid ignoring mouse clicks in such a case
+	if(aMouseEvent.button()==Qt::LeftButton)
+	{
+		QtKeyCode keyCode=findKeyCode(aMouseEvent.pos());
+		if(lastReleasedKeyCode.isValid() && lastReleasedKeyCode==keyCode)
+		{
+			processKeyCodePressed(lastReleasedKeyCode);
+		}
+	}
+
 	autoRepeat=false;
 	forward_key_released();
+	lastReleasedKeyCode=currentKeyCode;
 	currentKeyCode=INVALID_KEY_CODE;
 	return true;
 }
@@ -133,6 +154,7 @@ bool QtKeyboard::processMouseMovedEvent(const QMouseEvent& aMouseEvent)
 		if(newKeyCode.isValid() && newKeyCode!=currentKeyCode)
 		{
 			autoRepeat=false;
+			lastReleasedKeyCode=INVALID_KEY_CODE;
 		}
 	}
 	return true;
@@ -203,7 +225,7 @@ void QtKeyboard::startAutoRepeatTimer()
 void QtKeyboard::onAutoRepeat()
 {
 	autoRepeatTimer->stop();
-	if(autoRepeat && currentKeyCode.isValid() && (currentKeyCode.getCode()==uparrow_code() || (currentKeyCode.getCode()==downarrow_code() && !is_runmode())))
+	if(autoRepeat && currentKeyCode.isValid() && (isAutoRepeat(currentKeyCode)))
 	{
 		putKeyCode(currentKeyCode);
 		emit keyPressed();
@@ -213,7 +235,11 @@ void QtKeyboard::onAutoRepeat()
 	{
 		autoRepeat=false;
 	}
+}
 
+bool QtKeyboard::isAutoRepeat(const QtKeyCode& aKeyCode) const
+{
+	return aKeyCode.getCode()==uparrow_code() || (aKeyCode.getCode()==downarrow_code() && (!is_runmode() || is_catalogue_mode()));
 }
 
 bool QtKeyboard::isUseHShiftClick()

@@ -51,6 +51,7 @@ extern int get_first_register_index();
 extern char* get_formatted_register(int anIndex);
 
 extern int is_runmode();
+extern int is_catalogue_mode();
 extern int uparrow_code();
 extern int downarrow_code();
 

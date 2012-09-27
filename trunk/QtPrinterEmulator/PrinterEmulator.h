@@ -20,6 +20,7 @@
 #include <QtGui>
 #include <QtNetwork>
 #include "ScrollablePaper.h"
+#include "PrintDataReader.h"
 #include "font82240b.h"
 
 #define PAPER_WIDTH 166
@@ -29,12 +30,12 @@
 #define PAPER_VERTICAL_MARGIN 10
 #define MAX_LINES 500
 
-#define UDPPORT 5025
 #define PRINTER_EMULATOR_TITLE "HP-82240B"
 
 #define WINDOW_SETTINGS_GROUP "MainWindow"
 #define WINDOW_GEOMETRY_SETTING "Geometry"
 
+class PrintDataReader;
 
 class PrinterEmulator: public QMainWindow
 {
@@ -44,19 +45,21 @@ public:
 	PrinterEmulator();
 	~PrinterEmulator();
 
+public:
+    void append(const QByteArray& aByteArray);
+
 protected:
 	void buildGui();
-	void buildSocket();
+	void buildPrinterDataReader();
 	void loadSettings();
 	void saveSettings();
 
 private slots:
-     void processPendingDatagrams();
      void quit();
      void clear();
 
 private:
-    QUdpSocket* udpSocket;
+    PrintDataReader* printDataReader;
     ScrollablePaper* scrollablePaper;
     QSettings settings;
 };

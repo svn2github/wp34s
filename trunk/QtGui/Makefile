@@ -74,7 +74,7 @@ else
 DISTFILE := wp-34s-emulator-linux.tgz
 endif
 RESOURCESDIR := $(DISTDIR)
-LINUX_EXTRA_FILES := README_Linux.txt icons/wp34s-logo.png
+LINUX_EXTRA_FILES := README_Linux.txt icons/wp34s-logo.png $(DISTPRINTERDIR)/icons/HP-82240B.png
 endif
 ifeq "$(SYSTEM)" "Darwin"
 APPSDISTDIR := $(OUTPUTDIR)/apps

@@ -313,6 +313,11 @@ int is_runmode()
 	return State2.runmode;
 }
 
+int is_catalogue_mode()
+{
+	return State2.catalogue!=CATALOGUE_NONE;
+}
+
 int uparrow_code()
 {
 	return K40;
