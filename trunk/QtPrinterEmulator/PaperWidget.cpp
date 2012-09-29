@@ -31,16 +31,18 @@
 #define STOP_UNDERLINING 250
 #define USE_ECMA94 249
 #define USE_ROMAN8 248
-#define GRAPHICS_MAX 166
+
+#define LINE_WIDTH 166
 
 #define LINE_COUNT_UPDATE 5
+#define ALL_LINES 0
 
 
 // A better implementation would be to have 1 pixmap per line
 // in a circular list/vector. And to paint only the need ones in paintEvent
 
 PaperWidget::PaperWidget()
-: x(0), y(0), xOffset(0), lineCount(PAPER_INITIAL_LINES), zoom(1), pixmap(0), painter(0), lastIsEscape(false), ecma94(false), underlined(false), expanded(false), expectedGraphicsChars(0)
+: x(0), y(0), xOffset(0), lineCount(PAPER_INITIAL_LINES), zoom(1), pixmap(0), painter(0), lastIsEscape(false), ecma94(false), underlined(false), expanded(1), expectedGraphicsChars(0)
 {
 	setMinimumSize(PAPER_WIDTH+PAPER_HORIZONTAL_MARGIN, PAPER_INITIAL_LINES*LINE_HEIGHT+PAPER_VERTICAL_MARGIN);
 	connect(this, SIGNAL(textAppended()), this, SLOT(printAppendedText()), Qt::QueuedConnection);
@@ -73,9 +75,11 @@ void PaperWidget::clear()
 }
 
 // We do not pass a reference as the underlying array can be changed during print to remove the first line
-void PaperWidget::print(QByteArray aText)
+int PaperWidget::print(QByteArray aText, int aMaxLines)
 {
-	for (int charIndex = 0; charIndex < aText.size(); ++charIndex)
+	printedLineCount=0;
+	int charIndex;
+	for (charIndex=0; charIndex < aText.size() && (printedLineCount<aMaxLines || aMaxLines<=0); ++charIndex)
 	{
 		bool escapeFound=false;
 		int c=(unsigned char) aText.at(charIndex);
@@ -117,6 +121,7 @@ void PaperWidget::print(QByteArray aText)
 		lastIsEscape=escapeFound;
 	}
 	emit printed(toY(y+LINE_HEIGHT));
+	return charIndex;
 }
 
 void PaperWidget::buildPixmap()
@@ -136,7 +141,7 @@ void PaperWidget::buildPixmap()
 	x=y=0;
 	lineCount=0;
 
-	print(printedText);
+	print(printedText, ALL_LINES);
 }
 
 void PaperWidget::deletePixmap()
@@ -169,44 +174,34 @@ void PaperWidget::paintEvent(QPaintEvent* aPaintEvent)
 		buildPixmap();
 	}
 
+
+	if(!appendedText.isEmpty())
+	{
+		QMutexLocker locker(&textMutex);
+		textToPrint.append(appendedText);
+		appendedText.clear();
+	}
+
+
 	// The idea is to force an update every LINE_COUNT_UPDATE
 	// If not, the scroll can be invisible and a whole new block appear on a whole
 	// For instance a program listing. OSX seem to be more prone to this.
 	// But repainting after every new line is too slow so LINE_COUNT_UPDATE is 5.
-	QByteArray appendedTextCopy;
+	if(!textToPrint.isEmpty())
 	{
-		QMutexLocker locker(&textMutex);
-		if(!appendedText.isEmpty())
-		{
-			int charIndex=0;
-			int lineCount=0;
-			while (charIndex < appendedText.size())
-			{
-				int c=(unsigned char) appendedText.at(charIndex);
-				++charIndex;
-				if(c==END_OF_LINE || c==LINE_FEED)
-				{
-					++lineCount;
-					if(lineCount>=LINE_COUNT_UPDATE)
-					{
-						break;
-					}
-				}
-			}
-			appendedTextCopy.append(appendedText.data(), charIndex);
-			appendedText.remove(0, charIndex);
-		}
-	}
-	if(!appendedTextCopy.isEmpty())
-	{
-		print(appendedTextCopy);
-		printedText+=appendedTextCopy;
+		int consumed=print(textToPrint, LINE_COUNT_UPDATE);
+		printedText.append(textToPrint.data(), consumed);
+		textToPrint.remove(0, consumed);
 	}
 
 	QPainter paperPainter(this);
 	paperPainter.drawPixmap(0, 0, *pixmap);
-
-	if(!appendedText.isEmpty())
+	if(xOffset>0)
+	{
+		paperPainter.setPen(Qt::gray);
+		paperPainter.drawLine(xOffset, 0, xOffset, height());
+	}
+	if(!textToPrint.isEmpty())
 	{
 		update();
 	}
@@ -228,12 +223,12 @@ void PaperWidget::processEscape(int anEscapedChar)
 	}
 	case USE_EXPANDED_CHARACTERS:
 	{
-		expanded=true;
+		expanded=2;
 		break;
 	}
 	case USE_NORMAL_CHARACTERS:
 	{
-		expanded=false;
+		expanded=1;
 		break;
 	}
 	case START_UNDERLINING:
@@ -258,7 +253,7 @@ void PaperWidget::processEscape(int anEscapedChar)
 	}
 	default:
 	{
-		if(anEscapedChar<=GRAPHICS_MAX)
+		if(anEscapedChar<=LINE_WIDTH)
 		{
 			expectedGraphicsChars=anEscapedChar;
 		}
@@ -300,6 +295,7 @@ void PaperWidget::lineFeed()
 	}
 	x=0;
 	lineCount++;
+	printedLineCount++;
 }
 
 void PaperWidget::removeFirstLine()
@@ -337,47 +333,50 @@ void PaperWidget::processNormalChar(int aChar)
 	if(aChar>=FIRST_PRINTABLE_CHAR)
 	{
 		bool firstChar=(x==0);
-		int expandedIncrement=expanded?2:1;
 		if(!firstChar)
 		{
-			x+=expandedIncrement;
+			for(int i=0; i<expanded; ++i)
+			{
+				drawUnderline();
+				++x;
+			}
 		}
 		FONTDEF fontDef=(ecma94?sFontEcma94:sFontRoman8)[aChar-FIRST_PRINTABLE_CHAR];
 		for(int charX=0; charX<HP82240B_CHARACTER_WIDTH; charX++)
 		{
 			unsigned char charColumn=fontDef.byCol[charX];
-			unsigned char mask=0x1;
-			for(int charY=0; charY<HP82240B_CHARACTER_HEIGHT; charY++, mask <<=1)
+			for(int i=0; i<expanded; ++i)
 			{
-				if((charColumn & mask)!=0)
+				unsigned char mask=0x1;
+				for(int charY=0; charY<HP82240B_CHARACTER_HEIGHT; charY++, mask <<=1)
 				{
-					drawHorizontalLine(x+charX, y+charY, expandedIncrement);
+					if((charColumn & mask)!=0)
+					{
+						drawPoint(charY);
+					}
 				}
+				drawUnderline();
+				++x;
 			}
 		}
-		if(underlined)
-		{
-			if(firstChar)
-			{
-				drawHorizontalLine(x, y+HP82240B_CHARACTER_HEIGHT, (HP82240B_CHARACTER_WIDTH+1)*expandedIncrement);
-			}
-			else
-			{
-				drawHorizontalLine(x-expandedIncrement, y+HP82240B_CHARACTER_HEIGHT, (HP82240B_CHARACTER_WIDTH+2)*expandedIncrement);
-			}
-		}
-		x+=(HP82240B_CHARACTER_WIDTH+1)*expandedIncrement;
 	}
 }
 
-void PaperWidget::drawPoint(int anX, int anY)
+void PaperWidget::drawPoint(int anY)
 {
-	painter->fillRect(toX(anX),toY(anY), zoom, zoom, Qt::black);
+	if(x>=LINE_WIDTH)
+	{
+		lineFeed();
+	}
+	painter->fillRect(toX(x), toY(y+anY), zoom, zoom, Qt::black);
 }
 
-void PaperWidget::drawHorizontalLine(int anX, int anY, int aLength)
+void PaperWidget::drawUnderline()
 {
-	painter->fillRect(toX(anX), toY(anY), aLength*zoom, zoom, Qt::black);
+	if(underlined)
+	{
+		painter->fillRect(toX(x), toY(y+HP82240B_CHARACTER_HEIGHT-1), zoom, zoom, Qt::black);
+	}
 }
 
 void PaperWidget::processGraphics(int aChar)
@@ -388,7 +387,7 @@ void PaperWidget::processGraphics(int aChar)
 	{
 		if((charColumn & mask)!=0)
 		{
-			drawPoint(x, y+charY);
+			drawPoint(charY);
 		}
 	}
 	++x;
@@ -399,7 +398,7 @@ void PaperWidget::resetPrinter()
     lastIsEscape=false;
     ecma94=false;
     underlined=false;
-    expanded=false;
+    expanded=1;
     expectedGraphicsChars=0;
 }
 

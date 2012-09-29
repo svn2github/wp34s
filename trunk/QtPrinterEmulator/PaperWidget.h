@@ -39,7 +39,7 @@ private slots:
 	void printAppendedText();
 
 protected:
-    void print(QByteArray);
+    int print(QByteArray, int aMaxLines);
     void removeFirstLine();
     void buildPixmap();
     void deletePixmap();
@@ -52,23 +52,24 @@ protected:
 	void endOfLine();
 	void processNormalChar(int aChar);
 	void processGraphics(int aChar);
-	void drawPoint(int anX, int anY);
-	void drawHorizontalLine(int anX, int anY, int aLength);
+	void drawPoint(int anY);
+	void drawUnderline();
 	int toX(int anX);
 	int toY(int anY);
 
 
 private:
-	int x, y, xOffset, lineCount, zoom;
+	int x, y, xOffset, lineCount, printedLineCount, zoom;
     QPixmap* pixmap;
     QPainter* painter;
     QByteArray printedText;
     QByteArray appendedText;
+    QByteArray textToPrint;
     QMutex textMutex;
     bool lastIsEscape;
     bool ecma94;
     bool underlined;
-    bool expanded;
+    int expanded;
     int expectedGraphicsChars;
 };
 
