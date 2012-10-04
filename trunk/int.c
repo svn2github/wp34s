@@ -791,12 +791,7 @@ static unsigned long long int divmod(const long long int z, const long long int 
 		h >>= (64 - ws);
 	}
 
-	if (d == 0) {					// divide by zero
-		set_overflow(1);
-		*rem = 0;
-		return 0;
-	} else
-		set_overflow(0);
+	set_overflow(0);
 	if (h == 0 && l == 0) {				// zero over
 		*rem = 0;
 		return 0;
