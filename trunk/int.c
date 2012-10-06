@@ -802,7 +802,6 @@ static unsigned long long int divmod(const long long int z, const long long int 
 		h >>= (64 - ws);
 	}
 
-	set_overflow(0);
 	if (h == 0 && l == 0) {				// zero over
 		*rem = 0;
 		return 0;
@@ -831,6 +830,7 @@ long long int intDblDiv(long long int z, long long int y, long long int x) {
 	int sx, sy;
 
 	q = divmod(z, y, x, &sx, &sy, &r);
+	set_overflow(0);
 	set_carry(r != 0);
 	return build_value(q, sx != sy);
 #else
