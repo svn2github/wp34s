@@ -307,21 +307,32 @@ long long int intSubtract(long long int y, long long int x) {
 #endif
 }
 
+static unsigned long long int multiply_with_overflow(unsigned long long int x, unsigned long long int y, int *overflow) {
+	const unsigned long long int t = x * y;
+
+	if (! *overflow && y != 0) {
+		const enum arithmetic_modes mode = int_mode();
+		const unsigned long long int tbm = (mode == MODE_UNSIGNED) ? 0 : topbit_mask();
+
+		if ((t & tbm) != 0 || t / y != x)
+			*overflow = 1;
+	}
+	return t;
+}
+
 long long int intMultiply(long long int y, long long int x) {
 #ifndef TINY_BUILD
-	const enum arithmetic_modes mode = int_mode();
 	unsigned long long int u;
 	int sx, sy;
 	unsigned long long int xv = extract_value(x, &sx);
 	unsigned long long int yv = extract_value(y, &sy);
+	int overflow = 0;
 
-	u = mask_value(xv * yv);
-	set_overflow(yv != 0 && u / yv != xv);
+	u = mask_value(multiply_with_overflow(xv, yv, &overflow));
+	set_overflow(overflow);
 
-	if (mode == MODE_UNSIGNED)
+	if (int_mode() == MODE_UNSIGNED)
 		return u;
-	if ((u & topbit_mask()) != 0)
-		set_overflow(1);
 	return build_value(u & ~topbit_mask(), sx ^ sy);
 #else
 	return x*y;
@@ -1051,6 +1062,8 @@ long long int intPower(long long int y, long long int x) {
 	unsigned long long int vy = extract_value(y, &sy);
 	unsigned long long int r = 1;
 	unsigned int ws, i;
+	int overflow = 0;
+	int overflow_next = 0;
 
 	if (vx == 0 && vy == 0) {
 		err(ERR_DOMAIN);
@@ -1077,11 +1090,15 @@ long long int intPower(long long int y, long long int x) {
 
 	ws = word_size();
 	for (i=0; i<ws && vx != 0; i++) {
-		if (vx & 1)
-			r *= vy;
+		if (vx & 1) {
+			if (overflow_next)
+				overflow = 1;
+			r = multiply_with_overflow(r, vy, &overflow);
+		}
 		vx >>= 1;
-		vy *= vy;
+		vy = multiply_with_overflow(vy, vy, &overflow_next);
 	}
+	set_overflow(overflow);
 	return build_value(r, sr);
 #else
 	return 0;
@@ -1171,15 +1188,7 @@ long long int intLog10(long long int x) {
 /* 10^x
  */
 long long int int10pow(long long int x) {
-#ifndef TINY_BUILD
-	const long long int r = intPower(10, x);
-
-	set_overflow(intLog10(r) != x);
-
-	return r;
-#else
-	return 0;
-#endif
+	return intPower(10, x);
 }
 
 
