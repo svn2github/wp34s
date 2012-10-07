@@ -1137,9 +1137,9 @@ long long int int2pow(long long int x) {
 	unsigned long long int v = extract_value(x, &sx);
 	unsigned int ws;
 
-	set_carry(0);
 	set_overflow(0);
-	if (sx)
+	set_carry(sx && v == 1);
+	if (sx && v != 0)
 		return 0;
 
 	ws = word_size();
