@@ -308,7 +308,7 @@ long long int intSubtract(long long int y, long long int x) {
 }
 
 static unsigned long long int multiply_with_overflow(unsigned long long int x, unsigned long long int y, int *overflow) {
-	const unsigned long long int t = x * y;
+	const unsigned long long int t = mask_value(x * y);
 
 	if (! *overflow && y != 0) {
 		const enum arithmetic_modes mode = int_mode();
@@ -328,7 +328,7 @@ long long int intMultiply(long long int y, long long int x) {
 	unsigned long long int yv = extract_value(y, &sy);
 	int overflow = 0;
 
-	u = mask_value(multiply_with_overflow(xv, yv, &overflow));
+	u = multiply_with_overflow(xv, yv, &overflow);
 	set_overflow(overflow);
 
 	if (int_mode() == MODE_UNSIGNED)
@@ -1072,13 +1072,13 @@ long long int intPower(long long int y, long long int x) {
 	set_carry(0);
 	set_overflow(0);
 
-	if (x == 0) {
-		if (y == 0) {
+	if (vx == 0) {
+		if (vy == 0) {
 			set_overflow(1);
 			return 0;
 		}
 		return 1;
-	} else if (y == 0)
+	} else if (vy == 0)
 		return 0;
 
 	if (sx) {
@@ -1188,6 +1188,12 @@ long long int intLog10(long long int x) {
 /* 10^x
  */
 long long int int10pow(long long int x) {
+	const unsigned int ws = word_size();
+
+	if (ws <= 3 || (int_mode() != MODE_UNSIGNED && ws == 4)) {
+		err(ERR_DOMAIN);
+		return 0;
+	}
 	return intPower(10, x);
 }
 
