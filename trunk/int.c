@@ -283,7 +283,7 @@ long long int intSubtract(long long int y, long long int x) {
 
 		v = y2 - x2;
 		if (v & tbm)
-		v = -v | tbm;
+			v = -v | tbm;
 	} else {
 		int borrow;
 
