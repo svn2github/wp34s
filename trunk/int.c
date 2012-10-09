@@ -1053,6 +1053,26 @@ long long int intSqrt(long long int x) {
 #endif
 }
 
+long long int int_power_helper(unsigned long long int vy, unsigned long long int vx, int overflow) {
+	unsigned long long int r = 1;
+	unsigned int i;
+	unsigned int ws;
+	int overflow_next = 0;
+
+	ws = word_size();
+	for (i=0; i<ws && vx != 0; i++) {
+		if (vx & 1) {
+			if (overflow_next)
+				overflow = 1;
+			r = multiply_with_overflow(r, vy, &overflow);
+		}
+		vx >>= 1;
+		vy = multiply_with_overflow(vy, vy, &overflow_next);
+	}
+	set_overflow(overflow);
+	return r;
+}
+
 /* Integer power y^x
  */
 long long int intPower(long long int y, long long int x) {
@@ -1060,10 +1080,6 @@ long long int intPower(long long int y, long long int x) {
 	int sx, sy, sr;
 	unsigned long long int vx = extract_value(x, &sx);
 	unsigned long long int vy = extract_value(y, &sy);
-	unsigned long long int r = 1;
-	unsigned int ws, i;
-	int overflow = 0;
-	int overflow_next = 0;
 
 	if (vx == 0 && vy == 0) {
 		err(ERR_DOMAIN);
@@ -1088,18 +1104,7 @@ long long int intPower(long long int y, long long int x) {
 
 	sr = (sy && (vx & 1))?1:0;	// Determine the sign of the result
 
-	ws = word_size();
-	for (i=0; i<ws && vx != 0; i++) {
-		if (vx & 1) {
-			if (overflow_next)
-				overflow = 1;
-			r = multiply_with_overflow(r, vy, &overflow);
-		}
-		vx >>= 1;
-		vy = multiply_with_overflow(vy, vy, &overflow_next);
-	}
-	set_overflow(overflow);
-	return build_value(r, sr);
+	return build_value(int_power_helper(vy, vx, 0), sr);
 #else
 	return 0;
 #endif
@@ -1188,13 +1193,24 @@ long long int intLog10(long long int x) {
 /* 10^x
  */
 long long int int10pow(long long int x) {
+	int sx;
+	unsigned long long int vx = extract_value(x, &sx);
 	const unsigned int ws = word_size();
-
-	if (ws <= 3 || (int_mode() != MODE_UNSIGNED && ws == 4)) {
-		err(ERR_DOMAIN);
+	int overflow = 0;
+	
+	set_carry(0);
+	if (vx == 0) {
+		set_overflow(0);
+		return 1;
+	}
+	if (sx) {
+		set_carry(1);
 		return 0;
 	}
-	return intPower(10, x);
+
+	if (ws <= 3 || (int_mode() != MODE_UNSIGNED && ws == 4))
+		overflow = 1;
+	return build_value(int_power_helper(10, x, overflow), 0);
 }
 
 
