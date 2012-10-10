@@ -83,12 +83,13 @@ endif
 ifeq "$(SYSTEM)" "Darwin"
 CFLAGS += -DFIX_64_BITS
 endif 
-ifeq "$(SYSTEM)" "Linux64"
-CFLAGS += -DFIX_64_BITS -DFIX_LINUX_64_BITS
-endif 
 else
 CFLAGS += -O0 -DDEBUG -DUSECURSES
 endif
+
+ifeq "$(SYSTEM)" "Linux64"
+CFLAGS += -DFIX_64_BITS -DFIX_LINUX_64_BITS
+endif 
 
 ifndef REALBUILD
 ifndef QTGUI
