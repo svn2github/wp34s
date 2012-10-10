@@ -678,8 +678,9 @@ skipargs:
 				display();
 			} else
 #endif
-			{
-				process_keycode(remap(c));
+			c=remap(c);
+			if(c != K_UNKNOWN) {
+				process_keycode(c);
 				process_keycode(K_RELEASE);
 			}
 		}
