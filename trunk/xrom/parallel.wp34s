@@ -17,31 +17,37 @@
 /**************************************************************************/
 /* The real parallel operator.
  *
- *	par(x, y) = (x . y) / (x + y)
+ *	par(x, y) = (x . y) / (x + y) = 1 / ( 1/x + 1/y )
  */
 	XLBL"PARL"
 		xIN DYADIC
-			RCL[times] Y
-			x=0?
-				xOUT xOUT_NORMAL
-			x[<->] Y
-			RCL+ L
-			/
+		x=0?
+			xOUT xOUT_NORMAL
+		1/x
+		SWAP
+		x=0?
+			xOUT xOUT_NORMAL
+		1/x
+		+
+		1/x
 		xOUT xOUT_NORMAL
 
 /**************************************************************************/
 /* The complex parallel operator:
  *
- *	par(x, y) = (x . y) / (x + y)
+ *	par(x, y) = (x . y) / (x + y) = 1 / ( 1/x + 1/y )
  */
 	XLBL"CPX_PARL"
 		xIN DYADIC_COMPLEX
-			[cmplx]RCL[times] Z
-			[cmplx]x=0?
-				xOUT xOUT_NORMAL
-			[cmplx]x[<->] Z
-			[cmplx]RCL+ L
-			[cmplx]/
+		[cmplx]x=0?
+			xOUT xOUT_NORMAL
+		[cmplx]1/x
+		CSWAP
+		[cmplx]x=0?
+			xOUT xOUT_NORMAL
+		[cmplx]1/x
+		[cmplx]+
+		[cmplx]1/x
 		xOUT xOUT_NORMAL
 
 /**************************************************************************/
