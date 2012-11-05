@@ -23,13 +23,12 @@
 		xIN DYADIC
 		x=0?
 			xOUT xOUT_NORMAL
-		1/x
-		SWAP
+		ENTER[^]
+		RCL+ Z
 		x=0?
-			xOUT xOUT_NORMAL
-		1/x
-		+
-		1/x
+			JMP ret_neginf
+		/
+		[times]
 		xOUT xOUT_NORMAL
 
 /**************************************************************************/
@@ -41,13 +40,10 @@
 		xIN DYADIC_COMPLEX
 		[cmplx]x=0?
 			xOUT xOUT_NORMAL
-		[cmplx]1/x
-		CSWAP
-		[cmplx]x=0?
-			xOUT xOUT_NORMAL
-		[cmplx]1/x
-		[cmplx]+
-		[cmplx]1/x
+		[cmplx]ENTER
+		[cmplx]RCL+ A
+		[cmplx]/
+		[cmplx][times]
 		xOUT xOUT_NORMAL
 
 /**************************************************************************/
