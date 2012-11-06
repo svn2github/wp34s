@@ -722,7 +722,9 @@ decNumber *decNumberExpm1(decNumber *r, const decNumber *x) {
 decNumber *do_log(decNumber *r, const decNumber *x, const decNumber *base) {
 	decNumber y;
 
-	if (decNumberIsInfinite(x)) {
+	if (decNumberIsSpecial(x)) {
+		if (decNumberIsNaN(x) || decNumberIsNegative(x))
+			return set_NaN(r);
 		return set_inf(r);
 	}
 	dn_ln(&y, x);
