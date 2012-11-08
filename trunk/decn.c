@@ -599,7 +599,7 @@ decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y) {
 /* The extra logarithm and power functions */
 
 /* Raise y^x */
-decNumber *dn_power(decNumber *r, const decNumber *y, const decNumber *x) {
+decNumber *dn_power_internal(decNumber *r, const decNumber *y, const decNumber *x, const decNumber *logy) {
 	decNumber s, t, my;
 	int isxint, xodd, ynegative;
 	int negate = 0;
@@ -672,12 +672,19 @@ decNumber *dn_power(decNumber *r, const decNumber *y, const decNumber *x) {
 		dn_minus(&my, y);
 		y = &my;
 	}
-	dn_ln(&t, y);
-	dn_multiply(&s, &t, x);
+	if (logy == NULL) {
+		dn_ln(&t, y);
+		logy = &t;
+	}
+	dn_multiply(&s, logy, x);
 	dn_exp(r, &s);
 	if (negate)
 		return dn_minus(r, r);
 	return r;
+}
+
+decNumber *dn_power(decNumber *r, const decNumber *y, const decNumber *x) {
+	return dn_power_internal(r, y, x, NULL);
 }
 
 
@@ -823,11 +830,11 @@ decNumber *decNumberLogxy(decNumber *r, const decNumber *y, const decNumber *x) 
 }
 
 decNumber *decNumberPow2(decNumber *r, const decNumber *x) {
-	return dn_power(r, &const_2, x);
+	return dn_power_internal(r, &const_2, x, &const_ln2);
 }
 
 decNumber *decNumberPow10(decNumber *r, const decNumber *x) {
-	return dn_power(r, &const_10, x);
+	return dn_power_internal(r, &const_10, x, &const_ln10);
 }
 
 decNumber *decNumberPow_1(decNumber *r, const decNumber *x) {
@@ -1223,7 +1230,7 @@ void do_atan(decNumber *res, const decNumber *x) {
 	dn_divide(res, &t, res);	// s = 1-t/3 -- first two terms
 	dn_1m(res, res);
 
-	do {    // Loop until there is no digits changed
+	do {	// Loop until there is no digits changed
 		decNumberCopy(&last, res);
 
 		dn_multiply(&t, &t, &a2);
