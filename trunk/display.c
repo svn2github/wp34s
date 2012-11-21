@@ -70,6 +70,24 @@ static const char libname[][5] = {
 };
 
 
+
+/* Set the separator and decimal mode globals
+ */
+static void set_separator_decimal_modes(void) {
+	// Separators used by various modes
+	if (UState.fraccomma) {
+		SeparatorMode = SEP_DOT;
+		DecimalMode = DECIMAL_COMMA;
+	}
+	else {
+		SeparatorMode = SEP_COMMA;
+		DecimalMode = DECIMAL_DOT;
+	}
+	if ((UState.intm && UState.nointseparator) || (!UState.intm && UState.nothousands))
+		SeparatorMode = SEP_NONE;
+}
+
+
 /* Table of error messages.
  * These consist of a double string.  The first is displayed in the
  * top line, the second in the bottom.  If the second is empty, "Error"
@@ -397,6 +415,7 @@ static void disp_x(const char *p) {
 		}
 		carry_overflow();
 	} else {
+		set_separator_decimal_modes();
 		for (i=0; *p != '\0' && *p != 'E'; p++) {
 			if (*p == '.') {
 				if (gotdot == -1)
@@ -518,6 +537,8 @@ static void set_int_x(const long long int value, char *res) {
 			*res++ = buf[i];
 	} else {
 #if 0
+		set_separator_decimal_modes();
+
 		// Allows configuration of digit grouping per base
 		static const char grouping[] = 
 			{       0x84, 0xb3, 0xb4, 0xb3, 0xb3, 0xb3, 0xb3, 
@@ -533,6 +554,7 @@ static void set_int_x(const long long int value, char *res) {
 		const int shift = b == 2 ? 8 : 12;
 		const int group = (b == 2 || b == 4) ? 4
 				: b == 16 ? 2 : 3;
+		set_separator_decimal_modes();
 #endif
 		IntMaxWindow = (i - 1) / shift;
 		if ((SMALL_INT) State2.window > IntMaxWindow)
@@ -643,6 +665,7 @@ static void set_x_hms(const decNumber *rgx, char *res) {
 		return;
 	}
 
+	set_separator_decimal_modes();
 	decNumberMod(&x, rgx, &const_9000);
 	dn_abs(&a, rgx);
 	if (decNumberIsNegative(&x)) {
@@ -837,6 +860,7 @@ void set_x_dn(decNumber *z, char *res) {
 	int negative = 0;
 	int trimzeros = 0;
 
+	set_separator_decimal_modes();
 	if (!State2.smode && ! State2.cmplx) {
 		if (State2.hms) {
 			set_x_hms(z, res);
@@ -1342,7 +1366,6 @@ void set_IO_annunciator(void) {
 	}
 }
 
-
 /*
  *  Update the display
  */
@@ -1365,18 +1388,6 @@ void display(void) {
 		ShowRPN = 0;
 		return;
 	}
-
-	// Separators used by various modes
-	if (UState.fraccomma) {
-		SeparatorMode = SEP_DOT;
-		DecimalMode = DECIMAL_COMMA;
-	}
-	else {
-		SeparatorMode = SEP_COMMA;
-		DecimalMode = DECIMAL_DOT;
-	}
-	if ((UState.intm && UState.nointseparator) || (!UState.intm && UState.nothousands))
-		SeparatorMode = SEP_NONE;
 
 	// Clear display
 	reset_disp();
