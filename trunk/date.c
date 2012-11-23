@@ -572,7 +572,7 @@ void date_date(enum nilop op) {
 		build_date(&z, y, m, d);
 		setX(&z);
 	} else
-		err(ERR_ILLEGAL);
+		err(ERR_NO_CRYSTAL);
 }
 
 void date_time(enum nilop op) {
@@ -586,7 +586,7 @@ void date_time(enum nilop op) {
 		dn_mulpow10(&b, &a, -4);
 		setX(&b);
 	} else
-		err(ERR_ILLEGAL);
+		err(ERR_NO_CRYSTAL);
 }
 
 void date_setdate(enum nilop op) {
@@ -605,7 +605,7 @@ void date_setdate(enum nilop op) {
 		RTC_SetDate((unsigned short) y, (unsigned char) m,
 			    (unsigned char) d, (unsigned char) dow);
 	} else
-		err(ERR_ILLEGAL);
+		err(ERR_NO_CRYSTAL);
 #else
 	// So that very strict compilers (i.e. gcc4.6 do not complain that dow is unused with -Wall)
 	(void) dow;
@@ -622,7 +622,7 @@ void date_settime(enum nilop op) {
 		busy();
 		RTC_SetTime((unsigned char) h, (unsigned char) m, (unsigned char) s);
 	} else
-		err(ERR_ILLEGAL);
+		err(ERR_NO_CRYSTAL);
 #else
 	err(ERR_ILLEGAL);
 #endif

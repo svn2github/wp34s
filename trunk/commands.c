@@ -31,9 +31,7 @@
 #include "printer.h"
 #endif
 #include "matrix.h"
-#ifdef INCLUDE_STOPWATCH
 #include "stopwatch.h"
-#endif
 #endif
 
 /*

@@ -126,6 +126,7 @@ void error_message(const unsigned int e)
 		MSG2("Matrix", "MmISMmAtCH"),
 		MSG1("Singular"),
 		MSG2("Flash is", "FuLL"),
+		MSG2("No crystal", "InStaLLEd"),
 		MSG2("\004 \035", "X"),		// Integral ~
 	};
 #undef MSG1
