@@ -26,7 +26,10 @@
 #define	ERR_SINGULAR		22
 #define	ERR_FLASH_FULL		23
 #define ERR_NO_CRYSTAL		24
+
 #define MSG_INTEGRATE		25
 
-#define	MAX_ERROR		26
+
+#define	MAX_ERROR		25
+#define MAX_MESSAGE		26
 #endif

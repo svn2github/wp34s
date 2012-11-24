@@ -917,7 +917,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_PUTKEY,	&cmdputkey,				"PUTK",		CNULL)
 	CMDstk(RARG_KEYTYPE,	&cmdkeytype,				"KTP?",		CNULL)
 
-	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_ERROR,		"MSG",		CNULL)
+	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_MESSAGE,		"MSG",		CNULL)
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL + 1,		"LocR",		CNULL)
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG + 1,		"REGS",		CNULL)
 
