@@ -518,8 +518,4 @@ void stopwatch(enum nilop op) {
 	KeyCallback=&stopwatch_callback;
 }
 
-#else
-void stopwatch(enum nilop op) {
-	err(ERR_NO_CRYSTAL);
-}
 #endif // INCLUDE_STOPWATCH
