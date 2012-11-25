@@ -250,7 +250,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 */
 		static const struct _map amap[] = {
 			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,  CATALOGUE_NONE              } },
-			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS, CATALOGUE_NONE              } },
+			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS, CATALOGUE_MODE              } },
 		//	{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_LABELS            } },
 			{ K12,     { CATALOGUE_NONE, CATALOGUE_NONE,	      CATALOGUE_ALPHA_SUBSCRIPTS  } },
 		//	{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_STATUS            } },
