@@ -139,9 +139,7 @@ void error_message(const unsigned int e)
 			q = S7_ERROR;
 		if (*q == 'X') {
 			DispMsg = p;
-			State2.disp_freeze = 0;
-			display();
-			State2.disp_freeze = Running || XromRunning;
+			frozen_display();
 		}
 		else {
 			message(p, q);

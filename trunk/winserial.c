@@ -164,8 +164,7 @@ int open_port( int baud, int bits, int parity, int stopbits )
                                  0 );  /* NO TEMPLATE */
 
 	if ( CommHandle == INVALID_HANDLE_VALUE ) {
-		CommHandle = 0;
-		return 1;
+		goto open_error;
 	}
 
 	/*
@@ -232,8 +231,18 @@ fail:
 	 *  Close in case of error
 	 */
 	CloseHandle( CommHandle );
+
+open_error:
 	CommHandle = 0;
 	CommError = GetLastError();
+#ifdef WINGUI
+	{
+		char error_text[ 80 ];
+		CommError = GetLastError();
+		sprintf( error_text, "Cannot open serial device '%s', error = %d", name, CommError );
+		MessageBox( NULL, error_text, "Communication Error", MB_OK ); 
+	}
+#endif
 	return 1;
 }
 
