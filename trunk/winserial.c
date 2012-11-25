@@ -142,19 +142,21 @@ unsigned long __stdcall CommThread( void *p )
 int open_port( int baud, int bits, int parity, int stopbits )
 {
 	char name[ 20 ];
+	char buffer[ 80 ];
 	FILE *f = fopen( "wp34s.ini", "rt" );
 	char *p = NULL;
 	BOOL res;
 	DCB dcb;
 
 	if ( f != NULL ) {
-		p = fgets( name, sizeof( name ), f );
-		strtok( name, "\r\n\t " );
+		p = fgets( buffer, sizeof( name ) - 5, f );
+		strtok( buffer, ":\r\n\t " );
 		fclose( f );
 	}
-	if ( p == NULL ) {
-		strcpy( name, "COM1:" );
+	if ( p == NULL || *buffer == '\0' ) {
+		strcpy( buffer, "COM1" );
 	}
+	sprintf( name, "\\\\.\\%s", buffer );
 	CommHandle = CreateFile( name,
                                  GENERIC_READ | GENERIC_WRITE,
                                  0,    /* EXCLUSIVE */
@@ -237,10 +239,8 @@ open_error:
 	CommError = GetLastError();
 #ifdef WINGUI
 	{
-		char error_text[ 80 ];
-		CommError = GetLastError();
-		sprintf( error_text, "Cannot open serial device '%s', error = %d", name, CommError );
-		MessageBox( NULL, error_text, "Communication Error", MB_OK ); 
+		sprintf( buffer, "Cannot open serial device '%s', error = %d", name, CommError );
+		MessageBox( NULL, buffer, "Communication Error", MB_OK ); 
 	}
 #endif
 	return 1;
