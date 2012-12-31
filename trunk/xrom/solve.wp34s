@@ -106,10 +106,10 @@ slv_ridders::		[cmplx]RCL FXA		/* a b ? ? */
 			INTM?
 				ERR ERR_BAD_MODE
 			LocR 06			/* Need 5 registers and flags */
-			x[approx]? Y
-				INC Y
-			x[approx]? Y
-				SDR 01
+			x=? Y			/* Check if our two initial guesses are the same */
+				INC Y		/* If so, make them different */
+			x=? Y			/* They could still be the same for large values */
+				SDR 01		/* Make them definitely different */
 			x>? Y
 				x[<->] Y
 			[cmplx]STO XA
@@ -117,14 +117,14 @@ slv_ridders::		[cmplx]RCL FXA		/* a b ? ? */
 			XEQUSR
 			POPUSR
 			STO FXA
-			x[approx]0?
+			x=0?
 				JMP slv_initial1_perfect
 			RCL XB
 			FILL
 			XEQUSR
 			POPUSR
 			STO FXB
-			x[approx]0?
+			x=0?
 				JMP slv_initial2_perfect
 
 			/* Initialise everything for the solver
@@ -156,7 +156,7 @@ slv_loop::		[->]A..D
 			FILL
 			XEQUSR
 			POPUSR
-			x[approx]0?
+			x=0?
 				JMP slv_success
 			A..D[->]
 			STO FXC
