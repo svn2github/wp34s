@@ -415,7 +415,7 @@ $(OBJECTDIR)/xeq.o: xeq.c xeq.h errors.h data.h alpha.h decn.h complex.h int.h l
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xrom_labels.h xeq.h errors.h data.h consts.h Makefile features.h
 $(OBJECTDIR)/stopwatch.o: stopwatch.c stopwatch.h decn.h xeq.h errors.h consts.h alpha.h display.h keys.h \
                 Makefile features.h
-$(OBJECTDIR)/printer.o: printer.c printer.h xeq.h errors.h alpha.h serial.h Makefile features.h
+$(OBJECTDIR)/printer.o: printer.c printer.h xeq.h errors.h lcd.h alpha.h serial.h Makefile features.h
 
 ifdef REALBUILD
 $(OBJECTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
