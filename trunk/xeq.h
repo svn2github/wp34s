@@ -24,7 +24,7 @@
 
 
 /* Version number */
-#define VERSION_STRING	"3.1"
+#define VERSION_STRING	"3.2"
 
 #if defined(INFRARED)
 #define VERS_DISPLAY "34S\006" VERSION_STRING "\222\006"
