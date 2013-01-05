@@ -495,13 +495,13 @@ void cmdprintcmplxreg( unsigned int reg, enum rarg op)
 	getRegister(&y, reg+1);
 
 	xset( bufx, '\0', sizeof( bufx ) );
-	set_x_dn( &x, bufx);
+	set_x_dn( &x, bufx, DISPLAY_DIGITS);
 	p = find_char(bufx, '\0');
 	scopy(p, " ; ");
 	lenx = buffer_width(bufx);
 
 	xset( bufy, '\0', sizeof( bufy ) );
-	set_x_dn( &y, bufy );
+	set_x_dn( &y, bufy, DISPLAY_DIGITS);
 	leny = buffer_width(bufy);
 
 	if (lenx + leny > PAPER_WIDTH) {

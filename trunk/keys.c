@@ -2536,6 +2536,7 @@ void process_keycode(int c)
 		 *  Not the heartbeat - prepare for execution of any commands
 		 */
 		xeq_init_contexts();
+		State2.wascomplex = 0;
 
 		if (is_dot(RPN)) {
 			/*

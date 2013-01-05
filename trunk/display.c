@@ -267,8 +267,9 @@ static void set_digits_string(const char *msg, int j) {
 
 static void set_exp_digits_string(const char *msg, char *res) {
 	int i;
+	const int n = res == NULL ? 3 : 4;
 
-	for (i=0; i<3 && msg[i] != '\0'; i++)
+	for (i=0; i<n && msg[i] != '\0'; i++)
 		res = set_dig_s(SEGS_EXP_BASE + i * SEGS_PER_EXP_DIGIT, msg[i], res);
 }
 
@@ -330,13 +331,25 @@ static void annunciators(void) {
 	char buf[42], *p = buf, *q;
 	int n;
 
+	xset(buf, '\0', sizeof(buf));
+
 	/* Set the shift key indicator */
 	switch (cur_shift()) {
 	default:
 	case SHIFT_N:
-		if (State2.wascomplex)
-			p = scopy(p, "C\006");
-		else if (is_dblmode())
+		if (State2.wascomplex) {
+			decNumber y;
+
+			p = scopy(p, "i\006");
+			getRegister(&y, get_cmdline() ? regX_idx : regY_idx);
+			for (n=DISPLAY_DIGITS; n>1; n--) {
+				set_x_dn(&y, p, n);
+				if (pixel_length(buf, 1) <= BITMAP_WIDTH)
+					break;
+				xset(p, '\0', n+10);				
+			}
+			goto skip;
+		} else if (is_dblmode())
 			*p++ = 'D';
 		else
 			p = scopy(p, " \006");
@@ -394,8 +407,7 @@ static void annunciators(void) {
 
 	}
 
-skip:	*p = '\0';
-	set_status(buf);
+skip:	set_status(buf);
 }
 
 static void disp_x(const char *p) {
@@ -838,10 +850,10 @@ static void set_x(const REGISTER *rgx, char *res, int dbl) {
 		decimal128ToNumber(&(rgx->d), &z);
 	else
 		decimal64ToNumber(&(rgx->s), &z);
-	set_x_dn(&z, res);
+	set_x_dn(&z, res, DISPLAY_DIGITS);
 }
 
-void set_x_dn(decNumber *z, char *res) {
+void set_x_dn(decNumber *z, char *res, int display_digits) {
 	char x[50], *obp = x;
 	int odig = 0;
 	int show_exp = 0;
@@ -858,6 +870,10 @@ void set_x_dn(decNumber *z, char *res) {
 	int c;
 	int negative = 0;
 	int trimzeros = 0;
+
+	// Do not allow non ALL modes to produce more digits than we're being asked to display.
+	if (mode != MODE_STD && dd > display_digits)
+		dd = display_digits;
 
 	set_separator_decimal_modes();
 	if (!State2.smode && ! State2.cmplx) {
@@ -900,7 +916,7 @@ void set_x_dn(decNumber *z, char *res) {
 		mode = std_round_fix(z);
 		if (mode == MODE_FIX)
 			trimzeros = 1;
-		dd = DISPLAY_DIGITS - 1;
+		dd = display_digits - 1;
 	}
 
 	xset(mantissa, '0', sizeof(mantissa)-1);
@@ -943,15 +959,15 @@ void set_x_dn(decNumber *z, char *res) {
 	}
 
 	if (mode == MODE_FIX) {
-		if (exp > (DISPLAY_DIGITS - 1) || exp < -dd)
+		if (exp > (display_digits - 1) || exp < -dd)
 			mode = UState.fixeng?MODE_ENG:MODE_SCI;
 		else {
 			extra_digits = exp;
 			/* We might have push the fixed decimals off the
 			 * screen so adjust if so.
 			 */
-			if (extra_digits + dd > (DISPLAY_DIGITS - 1))
-				dd = (DISPLAY_DIGITS - 1) - extra_digits;
+			if (extra_digits + dd > (display_digits - 1))
+				dd = (display_digits - 1) - extra_digits;
 		}
 	}
 
@@ -964,7 +980,7 @@ void set_x_dn(decNumber *z, char *res) {
 			for (r = mantissa; *r == '9'; *r++ = '0');
 			mantissa[0] = '1';
 			exp++;
-			if (mode == MODE_FIX && exp > (DISPLAY_DIGITS - 1)) {
+			if (mode == MODE_FIX && exp > (display_digits - 1)) {
 				mode = UState.fixeng?MODE_ENG:MODE_SCI;
 				extra_digits = 0;
 			}
@@ -982,11 +998,11 @@ void set_x_dn(decNumber *z, char *res) {
 	switch (mode) {
 	default:
 	case MODE_STD:   
-		for (count = DISPLAY_DIGITS; mantissa[count] == '0'; count--);
-		if (count != DISPLAY_DIGITS)
+		for (count = display_digits; mantissa[count] == '0'; count--);
+		if (count != display_digits)
 			count++;
 		// Too big or too small to fit on display
-		if (exp >= DISPLAY_DIGITS || exp < (count - DISPLAY_DIGITS)) {
+		if (exp >= display_digits || exp < (count - display_digits)) {
 			switch ((exp % 3) * UState.fixeng) {
 			case -1:
 			case 2:
@@ -1108,9 +1124,9 @@ void set_x_dn(decNumber *z, char *res) {
 
 	/* Finally, send the output to the display */
 	*obp = '\0';
-	if (odig > DISPLAY_DIGITS)
-		odig = DISPLAY_DIGITS;
-	j = (DISPLAY_DIGITS - odig) * SEGS_PER_DIGIT;
+	if (odig > display_digits)
+		odig = display_digits;
+	j = (display_digits - odig) * SEGS_PER_DIGIT;
 	if (negative) {
 		if (res) *res++ = '-';
 		else {
@@ -1133,7 +1149,7 @@ void set_x_dn(decNumber *z, char *res) {
 	if (show_exp)
 		set_exp(exp, 0, res);
 	if (obp[-1] == '.' && res == NULL)
-		set_decimal((DISPLAY_DIGITS - 1) * SEGS_PER_DIGIT, DecimalMode, res);
+		set_decimal((display_digits - 1) * SEGS_PER_DIGIT, DecimalMode, res);
 }
 
 

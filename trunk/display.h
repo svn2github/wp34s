@@ -51,6 +51,6 @@ extern void findlengths(unsigned short int posns[257], int smallp);
 extern void unpackchar(unsigned int c, unsigned char d[6], int smallp, const unsigned short int posns[257]);
 extern int pixel_length( const char *, int smallp );
 
-extern void set_x_dn(decNumber *z, char *res);
+extern void set_x_dn(decNumber *z, char *res, int display_digits);
 
 #endif
