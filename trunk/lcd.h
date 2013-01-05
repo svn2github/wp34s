@@ -55,8 +55,6 @@ extern void show_stack(void);
 
 #define SEGS_EXP_BASE		(DISPLAY_DIGITS*SEGS_PER_DIGIT)
 
-#define DISPLAY_DIGITS		12
-
 #define BITMAP_WIDTH		43
 
 #if defined(CONSOLE) && !defined(NOCURSES)

@@ -38,6 +38,9 @@
 /* Error number definitions */
 #include "errors.h"
 
+/* Number of mantissa digits to display */
+#define DISPLAY_DIGITS		12
+
 
 /*
  * Define endianess if not on GCC

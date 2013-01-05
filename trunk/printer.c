@@ -22,7 +22,6 @@
 #include "stats.h"
 #include "display.h"
 #include "complex.h"
-#include "lcd.h"
 
 #define SERIAL_LINE_DELAY 3
 
