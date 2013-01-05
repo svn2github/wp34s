@@ -876,7 +876,7 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 		dd = display_digits;
 
 	set_separator_decimal_modes();
-	if (!State2.smode && ! State2.cmplx) {
+	if (!State2.smode && ! State2.cmplx && ! State2.wascomplex) {
 		if (State2.hms) {
 			set_x_hms(z, res);
 			State2.hms = 0;
