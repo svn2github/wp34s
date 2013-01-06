@@ -100,7 +100,7 @@ enum multiops;
 
 #define NAME_LEN        6       /* Length of command names */
 
-#define CNULL   ((char *) 0)    /* Avoid silly warnings in Visual C editor) */
+#define CNULL   ((char *) 0)    /* Avoid silly warnings in Visual C editor */
 
 typedef unsigned int opcode;
 typedef unsigned short int s_opcode;
@@ -115,9 +115,6 @@ typedef unsigned short int s_opcode;
 #pragma pack(push)
 #pragma pack(2)
 #define SHORT_POINTERS
-#define GCC_PACKED __attribute__ ((packed))
-#else
-#define GCC_PACKED /**/
 #endif
 
 /*
@@ -356,16 +353,16 @@ struct argcmd
 {
         unsigned short f;
         unsigned char lim;
-        unsigned int indirectokay : 1;
-        unsigned int reg : 1;
-        unsigned int stckreg : 1;
-        unsigned int local : 1;
-        unsigned int cmplx : 1;
-        unsigned int label : 1;
-        unsigned int flag : 1;
-        unsigned int reserved : 1;
+        unsigned char indirectokay : 1;
+        unsigned char reg : 1;
+        unsigned char stckreg : 1;
+        unsigned char local : 1;
+        unsigned char cmplx : 1;
+        unsigned char label : 1;
+        unsigned char flag : 1;
+        unsigned char reserved : 1;
         _CONST char cmd[NAME_LEN];
-} GCC_PACKED;
+};
 
 /*
  *  The full version goes to the .cmdtab segment

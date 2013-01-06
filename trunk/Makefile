@@ -127,7 +127,7 @@ LDCTRL :=
 HOSTCC := $(CC)
 HOSTAR := $(AR)
 HOSTRANLIB := $(RANLIB)
-HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD
+HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD 
 
 ifdef REALBUILD
 # Settings for the Yagarto tool chain under Windows (or MacOS)
@@ -137,10 +137,10 @@ ifdef REALBUILD
 CFLAGS := -mthumb -mcpu=arm7tdmi $(OPT_CFLAGS) $(BASE_CFLAGS)
 CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
 
-ifeq ($(SYSTEM),Darwin)
+# ifeq ($(SYSTEM),Darwin)
 # MacOS - uses 32 bits pointer or code won't compile
 HOSTCFLAGS += -m32
-endif
+# endif
 HOSTCFLAGS += -DREALBUILD
 ifdef NOWD
 CFLAGS += -DNOWD
