@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
                 UPDATE( p_niladics[ i ].niladicf, 0xaa55, NUM_NILADIC );
         }
         printf( "Argument commands:   %3d\n", info->num_rarg );
-printf( "Struct size is %d\n", (int) (info->p_argcmds + 1) - (int) info->p_argcmds );
+//	printf( "Struct size is %d\n", (int) (info->p_argcmds + 1) - (int) info->p_argcmds );
         for ( i = 0; i < info->num_rarg; ++i ) {
                 fp = (int) info->p_argcmds_ct[ i ].f;
                 UPDATE( p_argcmds[ i ].f, 0xaa55, NUM_RARG );
