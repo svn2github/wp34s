@@ -768,7 +768,6 @@
 				<buildTargets>
 					<target name="flash" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments/>
 						<buildTarget>REALBUILD=1 all</buildTarget>
 						<stopOnError>false</stopOnError>
 						<useDefaultCommand>true</useDefaultCommand>
@@ -784,8 +783,15 @@
 					</target>
 					<target name="infrared" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
 						<buildCommand>make</buildCommand>
-						<buildArguments/>
 						<buildTarget>INFRARED=1 REALBUILD=1 XTAL=1 all</buildTarget>
+						<stopOnError>true</stopOnError>
+						<useDefaultCommand>false</useDefaultCommand>
+						<runAllBuilders>false</runAllBuilders>
+					</target>
+					<target name="post_process.exe" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+						<buildCommand>make</buildCommand>
+						<buildArguments/>
+						<buildTarget>INFRARED=1 REALBUILD=1 windows32_realbuild/post_process.exe</buildTarget>
 						<stopOnError>true</stopOnError>
 						<useDefaultCommand>false</useDefaultCommand>
 						<runAllBuilders>false</runAllBuilders>

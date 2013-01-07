@@ -32,8 +32,8 @@ struct _command_info *info = (struct _command_info *) buffer;
 #define BUFF(p) (buffer + (int)(p) - 0xf0000)
 #define ADJUST(p,type) (info->p = (struct type *) BUFF(info->p))
 #define UPDATE(p,cmp, max) \
-        if ( info->p != cmp ) { \
-                fprintf( stderr, "Data error in line %d, i=%d/%d (%4x)\n", __LINE__, i, max, info->p ); \
+        if ( info->p != cmp || ( fp & ~0x11ffff ) != 0 ) { \
+                fprintf( stderr, "Data error in line %d, i=%d/%d (%4x/%x)\n", __LINE__, i, max, info->p, fp ); \
                 return 2; \
         } else info->p = (unsigned short) ( fp >> 1 )
 

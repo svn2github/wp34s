@@ -379,15 +379,15 @@ struct argcmd
         unsigned short n;
 #endif
         FP_RARG f;
-        unsigned int lim : 8;
-        unsigned int indirectokay : 1;
-        unsigned int reg : 1;
-        unsigned int stckreg : 1;
-        unsigned int local : 1;
-        unsigned int cmplx : 1;
-        unsigned int label : 1;
-        unsigned int flag : 1;
-        unsigned int reserved : 1;
+        unsigned char lim;
+        unsigned char indirectokay : 1;
+        unsigned char reg : 1;
+        unsigned char stckreg : 1;
+        unsigned char local : 1;
+        unsigned char cmplx : 1;
+        unsigned char label : 1;
+        unsigned char flag : 1;
+        unsigned char reserved : 1;
         const char cmd[NAME_LEN];
 #if defined(COMPILE_CATALOGUES) || ! (defined(REALBUILD) || defined(POST_PROCESSING))
         const char *alias;
