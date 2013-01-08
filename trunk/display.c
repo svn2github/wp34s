@@ -322,7 +322,6 @@ static void carry_overflow(void) {
 		set_dig(base + 2*SEGS_PER_EXP_DIGIT, 'o');
 }
 
-
 /* Display the annunicator text line.
  * Care needs to be taken to keep things aligned.
  * Spaces are 5 pixels wide, \006 is a single pixel space.
@@ -339,9 +338,13 @@ static void annunciators(void) {
 	case SHIFT_N:
 		if (State2.wascomplex) {
 			decNumber y;
-
 			p = scopy(p, "i\006");
-			getRegister(&y, get_cmdline() ? regX_idx : regY_idx);
+			/* This is a bit convoluted.  ShowRegister is the real portion being shown.  Normally
+			 * ShowRegister+1 would contain the complex component, however if the register being
+			 * examined is on the stack and there is a command line present, the stack will be lifted
+			 * after we execute so we need to show ShowRegister instead.
+			 */
+			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < RegX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
 			for (n=DISPLAY_DIGITS; n>1; n--) {
 				set_x_dn(&y, p, n);
 				if (pixel_length(buf, 1) <= BITMAP_WIDTH)
@@ -1635,7 +1638,7 @@ nostk:	show_flags();
 	State2.disp_temp = ! ShowRPN && State2.runmode 
 		           && (! State2.registerlist || State2.smode == SDISP_SHOW || State2.disp_as_alpha);
 
-	if (annuc && ! State2.disp_temp)
+	if ((annuc && ! State2.disp_temp) || State2.wascomplex)
 		annunciators();
 
 	State2.version = 0;

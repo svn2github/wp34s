@@ -1615,10 +1615,13 @@ void cmdswap(unsigned int arg, enum rarg op) {
 /* View a specified register
  */
 void cmdview(unsigned int arg, enum rarg op) {
+	const int cmplx = op == RARG_CVIEW ? 1 : 0;
+
+	State2.wascomplex = cmplx;
 	ShowRegister = arg;
 	State2.disp_freeze = 0;
 	display();
-	State2.disp_freeze = Running || arg != regX_idx;
+	State2.disp_freeze = cmplx || Running || arg != regX_idx;
 }
 
 

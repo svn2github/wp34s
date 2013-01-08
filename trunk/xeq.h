@@ -954,6 +954,8 @@ enum rarg {
         RARG_iBACK, RARG_iBSF, RARG_iBSB,
 #endif
 
+        RARG_CVIEW,
+
         NUM_RARG        // Last entry defines number of operations
 };
 

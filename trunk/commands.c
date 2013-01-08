@@ -968,6 +968,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_iBSF,		&cmdskip,				"iBSRF",	CNULL)
 	CMD(RARG_iBSB,		&cmdback,				"iBSRB",	CNULL)
 #endif
+	CMDcstk(RARG_CVIEW,	&cmdview,				"\024VIEW",	"cVIEW")
 
 #undef CMDlbl
 #undef CMDlblnI
