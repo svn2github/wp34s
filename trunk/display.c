@@ -344,7 +344,7 @@ static void annunciators(void) {
 			 * examined is on the stack and there is a command line present, the stack will be lifted
 			 * after we execute so we need to show ShowRegister instead.
 			 */
-			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < RegX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
+			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
 			for (n=DISPLAY_DIGITS; n>1; n--) {
 				set_x_dn(&y, p, n);
 				if (pixel_length(buf, 1) <= BITMAP_WIDTH)
