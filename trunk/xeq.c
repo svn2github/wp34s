@@ -827,17 +827,20 @@ void roll_up(enum nilop op) {
 void cpx_roll_down(enum nilop op) {
 	roll_down(OP_RDOWN);
 	roll_down(OP_RDOWN);
+	set_was_complex();
 }
 
 void cpx_roll_up(enum nilop op) {
 	roll_up(OP_RUP);
 	roll_up(OP_RUP);
+	set_was_complex();
 }
 
 void cpx_enter(enum nilop op) {
 	lift();
 	lift();
 	copyreg(get_reg_n(regY_idx), get_reg_n(regT_idx));
+	set_was_complex();
 }
 
 void cpx_fill(enum nilop op) {
@@ -847,6 +850,7 @@ void cpx_fill(enum nilop op) {
 
 	for (i=2; i<n; i++)
 		copyreg(get_stack(i), (i & 1) ? y : StackBase);
+	set_was_complex();
 }
 
 void fill(enum nilop op) {
@@ -859,8 +863,10 @@ void fill(enum nilop op) {
 
 void drop(enum nilop op) {
 	lower();
-	if (op == OP_DROPXY)
+	if (op == OP_DROPXY) {
 		lower();
+		set_was_complex();
+	}
 }
 
 #ifndef is_intmode
@@ -1305,7 +1311,7 @@ void cmdconst(unsigned int arg, enum rarg op) {
 #endif
 		lift2_if_enabled();
 		zero_Y();
-		State2.wascomplex = 1;
+		set_was_complex();
 	} else
 		lift_if_enabled();
 
