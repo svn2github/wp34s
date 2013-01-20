@@ -1249,7 +1249,11 @@ extern int s_to_i(const char *);
 extern unsigned long long int s_to_ull(const char *, unsigned int);
 
 extern void do_conv(decNumber *, unsigned int, const decNumber *);
+#if defined(INCLUDE_SIGFIG_MODE)
+extern enum display_modes std_round_fix(const decNumber *, int *);
+#else
 extern enum display_modes std_round_fix(const decNumber *);
+#endif
 
 extern unsigned char remap_chars(unsigned char);
 extern int keycode_to_row_column(const int c);

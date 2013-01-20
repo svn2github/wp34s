@@ -18,6 +18,7 @@
 #include <ctype.h>
 #include <string.h>
 #include "licence.h"
+#include "features.h"
 
 
 #define DIG(ch, bits) { ch, # bits }
@@ -87,7 +88,11 @@ static struct pair {
 	DIG('@',		D_TOP | D_TL | D_TR | D_MIDDLE),	// degree
 	DIG('\'',		D_TL),					// minute
 	DIG('"',		D_TL | D_TR),				// second
+#if defined(INCLUDE_CASIO_SEPARATOR)
+	DIG('/',		D_BOTTOM | D_BR),		// fraction vinculum; CASIO version
+#else
 	DIG('/',		D_TR | D_MIDDLE | D_BL),		// fraction vinculum
+#endif
 	DIG('<',		D_BL | D_BOTTOM),			// fraction continuation (left arrow)
 	DIG('>',		D_BR | D_BOTTOM),			// right arrow
 	DIG('_',		D_BOTTOM),

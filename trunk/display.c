@@ -277,7 +277,21 @@ static void set_exp_digits_string(const char *msg, char *res) {
 static void set_exp(int exp, int zerop, char *res) {
 	char buf[6];
 
+#if defined(INCLUDE_YREG_CODE)
+	if (res) { // this code chooses different exponent separators depending on the number of digits to squash more in!
+		if ( exp < -999 ) {
+//			No exponent separator for large -ve exponents;
+		}
+		else if ( exp > 999 ) {
+			*res++ = ':'; // separator for large +ve exponents;
+		}
+		else {
+			*res++ = 'e'; // normal separator;
+		}
+	}
+#else
 	if (res) *res++ = 'e';
+#endif
 	if (exp < 0) {
 		if (res) *res++ = '-';
 		else set_dot(EXP_SIGN);
@@ -336,6 +350,28 @@ static void annunciators(void) {
 	switch (cur_shift()) {
 	default:
 	case SHIFT_N:
+#if defined(INCLUDE_YREG_CODE)
+ 		if (State2.wascomplex) {
+			p = scopy(p, "i\006"); // makes complex answers look nicer!
+		}
+ 		else if (is_dblmode()) {
+ 			*p++ = 'D';
+		}
+ 		else {
+ 			p = scopy(p, " \006");
+		}
+		if ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) { // don't do y-display in intmode
+			decNumber y;
+			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
+			for (n=DISPLAY_DIGITS; n>1; n--) {
+				set_x_dn(&y, p, n);
+				if (pixel_length(buf, 1) <= BITMAP_WIDTH)
+					break;
+				xset(p, '\0', n+10);				
+			}
+			goto skip; // don't add anything to the display after the y-register
+		}
+#else
 		if (State2.wascomplex) {
 			decNumber y;
 			p = scopy(p, "i\006");
@@ -356,6 +392,7 @@ static void annunciators(void) {
 			*p++ = 'D';
 		else
 			p = scopy(p, " \006");
+#endif
 		break;
 	case SHIFT_F:	p = scopy(p, "\021\006");	break;
 	case SHIFT_G:	p = scopy(p, "\022\006");	break;
@@ -434,11 +471,33 @@ static void disp_x(const char *p) {
 			if (*p == '.') {
 				if (gotdot == -1)
 					gotdot = i;
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+				if (i > 0) { // ND change: if two successive dots, set the lower part of the comma (following lines too)
+					if ( *(p+1) == '.' ) {
+						set_dot(i - SEGS_PER_DIGIT+8);
+						p++;
+					}
+					else {
+						set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
+					}
+				}
+#else
 				if (i > 0)
 					set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
+#endif
 				else {
 					set_dig(i, '0');
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+					if ( *(p+1) == '.' ) {
+						set_dot(i+8);
+						p++;
+					}
+					else {
+						set_decimal(i, DecimalMode, CNULL);
+					}
+#else
 					set_decimal(i, DecimalMode, CNULL);
+#endif
 					i += SEGS_PER_DIGIT;	
 				}
 			} else {
@@ -793,7 +852,28 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 	return 1;
 }
 
+#if defined(INCLUDE_SIGFIG_MODE)
+enum display_modes std_round_fix(const decNumber *z, int *dd) {
+	decNumber c;
+	int true_exp, x;
+ 
+	dn_abs(&c, z); // c is abs(z) and b here is 1e-3
+	true_exp = c.exponent + c.digits - 1;
 
+	if (get_user_flag(regK_idx) && UState.dispdigs < 10 ) {//trailing zeros display: flag K ignored if dispdigs > 9
+		x = *dd;
+	}
+	else {
+		x = 0;
+	}
+	if ((true_exp < x) && (true_exp > -4)) { // decimals needed; *dd adjusted to provide correct number
+		*dd += -true_exp;
+ 		return MODE_FIX;
+	}
+	if ((true_exp < -3) || (true_exp >= 9)) return UState.fixeng?MODE_ENG:MODE_SCI; // force ENG/SCI mode for big / small numbers
+ 	return MODE_STD;
+ }
+#else
 enum display_modes std_round_fix(const decNumber *z) {
 	decNumber b, c;
 
@@ -804,7 +884,7 @@ enum display_modes std_round_fix(const decNumber *z) {
 		return MODE_FIX;
 	return MODE_STD;
 }
-
+#endif
 
 /* SHOW display mode
  * in double precision show left or right part
@@ -875,10 +955,29 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 	int trimzeros = 0;
 
 	// Do not allow non ALL modes to produce more digits than we're being asked to display.
+#if defined(INCLUDE_SIGFIG_MODE)
+	if (dd > display_digits)
+		dd = display_digits;
+#else
 	if (mode != MODE_STD && dd > display_digits)
 		dd = display_digits;
-
+#endif
+		
 	set_separator_decimal_modes();
+#if defined(INCLUDE_YREG_CODE)
+	if ( !res ) { // no hms or fraction displays for the dot matrix display
+		if (!State2.smode && ! State2.cmplx) {
+			if (State2.hms) {
+				set_x_hms(z, res);
+ 				return;
+			}
+			else if (UState.fract) {
+				if (set_x_fract(z, res))
+					return;
+			}
+		}
+	}		
+#else
 	if (!State2.smode && ! State2.cmplx && ! State2.wascomplex) {
 		if (State2.hms) {
 			set_x_hms(z, res);
@@ -889,6 +988,8 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 				return;
 		}
 	}
+#endif
+
 	if (check_special_dn(z, res))
 		return;
 
@@ -915,12 +1016,26 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 		return;
 	}
 
+#if defined(INCLUDE_SIGFIG_MODE)
+	if (mode == MODE_STD) { // ND change: only called in STD mode
+		mode = std_round_fix(z, &dd); // modified function called
+		if (mode != MODE_STD) { // allow zeros to be trimmed
+			if ( get_user_flag(regK_idx) && UState.dispdigs < 10 ) { // flag K set gives zeros, but only for < 10 digits. So dispdigs=11 turns off any effect.
+				trimzeros = 0;
+			}
+			else {
+				trimzeros = 1;
+			}
+		}
+ 	}
+#else
 	if (mode == MODE_STD) {
 		mode = std_round_fix(z);
 		if (mode == MODE_FIX)
 			trimzeros = 1;
 		dd = display_digits - 1;
 	}
+#endif
 
 	xset(mantissa, '0', sizeof(mantissa)-1);
 	mantissa[sizeof(mantissa)-1] = '\0';
@@ -1087,11 +1202,13 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 				odig++;
 			}
 		}
+#if !defined(INCLUDE_SIGFIG_MODE)
 		if (trimzeros)
 			while (obp > x && obp[-1] == '0') {
 				obp--;
 				odig--;
 			}
+#endif			
 		break;
 
 	case MODE_ENG:
@@ -1124,7 +1241,13 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 		}
 		show_exp = 1;
 	}
-
+#if defined(INCLUDE_SIGFIG_MODE)
+	if (trimzeros) // ND change: trimzeros generally available
+		while (obp > x && obp[-1] == '0') {
+			obp--;
+			odig--;
+		}
+#endif	
 	/* Finally, send the output to the display */
 	*obp = '\0';
 	if (odig > display_digits)
@@ -1149,8 +1272,19 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 			j += SEGS_PER_DIGIT;
 		}
 	}
+#if defined(INCLUDE_RIGHT_EXP)
+	if (show_exp) { // ND change: leading zeros in exponent in seven-segment display
+		if ( !res ) {
+				set_exp(exp, 1, res);
+		}
+		else {
+			set_exp(exp, 0, res);
+		}
+	}
+#else
 	if (show_exp)
 		set_exp(exp, 0, res);
+#endif
 	if (obp[-1] == '.' && res == NULL)
 		set_decimal((display_digits - 1) * SEGS_PER_DIGIT, DecimalMode, res);
 }
@@ -1638,8 +1772,14 @@ nostk:	show_flags();
 	State2.disp_temp = ! ShowRPN && State2.runmode 
 		           && (! State2.registerlist || State2.smode == SDISP_SHOW || State2.disp_as_alpha);
 
+#if defined(INCLUDE_YREG_CODE)
+	if (annuc && ( (!State2.disp_temp) || State2.hms ) ) // makes sure that hms numbers appear (as decimals) in the dot-matrix display
+ 		annunciators();
+ 	State2.hms = 0;
+#else
 	if ((annuc && ! State2.disp_temp) || State2.wascomplex)
 		annunciators();
+#endif
 
 	State2.version = 0;
 	State2.disp_as_alpha = 0;

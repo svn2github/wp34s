@@ -1002,7 +1002,17 @@ void process_cmdline(void) {
 				return;
 			}
 			if (fract_convert_number(&z, d0))	return;
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+			if (d2 == d1+1) { // ND change starts here; if dots are adjacent...
+				decNumberCopy(&a, &z); // put z (integer part) into a (numerator) ...
+				decNumberZero(&z); // and zero z
+			}
+			else if (fract_convert_number(&a, d1)) {
+				return;
+			}
+#else
 			if (fract_convert_number(&a, d1))	return;
+#endif
 			if (cmdlinedot == 2) {
 				dn_divide(&t, &a, &b);
 				dn_add(&x, &z, &t);
@@ -2889,7 +2899,11 @@ static void specials(const opcode op) {
 		if (is_intmode())
 			break;
 		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 12 + CmdLineDot) {
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+			if (CmdLineLength == 0) // ND change: stop a zero being entered if two successive dots pressed
+#else
 			if (CmdLineLength == 0 || Cmdline[CmdLineLength-1] == '.')
+#endif
 				digit(0);
 			CmdLineDot++;
 			Cmdline[CmdLineLength++] = '.';
@@ -2897,6 +2911,30 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_EEX:
+#if defined(INCLUDE_EEX_PI)
+		if ( is_intmode() ) // no exponent or pi in intmode
+ 			break;
+		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
+			if ( (CmdLineLength == 0) ) // empty command line: enter pi
+			{
+				lift_if_enabled();
+				copyreg(StackBase, get_const(OP_PI, is_dblmode()));
+				set_lift();
+			}
+			else if ( (CmdLineLength > 0) && (CmdLineDot > 1) ) // fraction entered (two dots); execute ENTER and enter pi
+			{
+				process_cmdline();
+				lift();
+				copyreg(StackBase, get_const(OP_PI, is_dblmode()));
+				set_lift();
+			}
+			else if ( (! UState.fract) || (CmdLineDot < 2) ) //enter E if the above don't apply and if it's not fraction mode OR if at most one dot has been entered
+			{
+				CmdLineEex = CmdLineLength;
+				Cmdline[CmdLineLength++] = 'E';
+			}
+ 		}
+#else			
 		if (is_intmode() || UState.fract || CmdLineDot == 2)
 			break;
 		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
@@ -2905,6 +2943,7 @@ static void specials(const opcode op) {
 			CmdLineEex = CmdLineLength;
 			Cmdline[CmdLineLength++] = 'E';
 		}
+#endif
 		break;
 
 	case OP_CHS:

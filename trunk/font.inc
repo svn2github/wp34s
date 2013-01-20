@@ -555,6 +555,19 @@
 		}
 	},
 
+#if defined(SMALLER_HYPHENS)
+/*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
+ 	{ 0055, "-",               12400, 0x002d,     0x2d, 0x2D,    "hyphen",
+ 		{
+			____ ,   ___ ,
+			____ ,   ___ ,
+			____ ,   OO_ ,
+			OOO_ ,   ___ ,
+			____ ,   ___ ,
+			____ ,   ___ ,
+ 		}
+ 	},
+#else
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0055, "-",               12400, 0x002d,     0x2d, 0x2D,    "hyphen",
 		{
@@ -566,6 +579,7 @@
 			______ ,   ____ ,
 		}
 	},
+#endif
 
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0056, ".",               12900, 0x002e,     0x2e, 0x2E,    "period",

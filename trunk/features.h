@@ -139,6 +139,28 @@
 // Include code to support integer (truncated) division
 #define INCLUDE_INTEGER_DIVIDE
 
+// Make EEX key enter PI if pressed when command line empty
+//#define INCLUDE_EEX_PI
+
+// Change the fraction separator to the old Casio form _|
+//#define INCLUDE_CASIO_SEPARATOR
+
+// Make two successive decimals a..b enter an improper fraction a/b, not a 0/b
+//#define INCLUDE_DOUBLEDOT_FRACTIONS
+
+// Chamge ALL display mode to limited significant figures mode
+//#define INCLUDE_SIGFIG_MODE
+
+// Turn on constant y-register display (not just for complex results)
+//#define INCLUDE_YREG_CODE
+
+// Right-justify seven-segment exponent (007 rather than 7)
+//#define INCLUDE_RIGHT_EXP
+
+// Make hyphens smaller so that y-register display looks nicer
+//#define SMALLER_HYPHENS
+
+
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/

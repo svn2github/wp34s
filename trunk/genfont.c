@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "licence.h"
+#include "features.h"
 
 #define CODE(w, n)	(((w) << 16) | (n))
 #define WIDTH(n)	((n) >> 16)

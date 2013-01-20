@@ -257,6 +257,9 @@ void reset( void )
 	clrall();
 	init_state();
 	UState.contrast = 6;
+#if defined(INCLUDE_SIGFIG_MODE)
+	UState.dispdigs = 5; // start with 6 sig figs by default
+#endif
 #ifdef INFRARED
 	State.print_delay = 10;
 #endif

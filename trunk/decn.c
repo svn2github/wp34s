@@ -1981,11 +1981,17 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		return dn_divide(res, &t, &u);
 	}
 
+#if defined(INCLUDE_SIGFIG_MODE)	
+ 	if (dmode == MODE_STD) {
+		dmode = std_round_fix(x, &numdig); // to fit new definition of std_round_fix in display.c
+ 	}
+#else	
 	if (dmode == MODE_STD) {
 		dmode = std_round_fix(x);
 		numdig = DISPLAY_DIGITS;
 	}
-
+#endif
+	
 	if (dmode == MODE_FIX)
 		/* FIX is different since the number of digits changes */
 		return decNumberRoundDecimals(res, x, numdig-1, DEC_ROUND_HALF_UP);
