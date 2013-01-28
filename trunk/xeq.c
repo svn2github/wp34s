@@ -611,9 +611,13 @@ void rarg_round(unsigned int arg, enum rarg op) {
 
 	setlastX();
 	getX(&x);
-	if (op == RARG_ROUND)
+	if (op == RARG_ROUND) {
+		if (arg == 0) {
+			err(ERR_DOMAIN);
+			return;
+		}
 		decNumberRoundDigits(&res, &x, arg, rm);
-	else /* if (op == RARG_ROUND_DEC) */
+	} else /* if (op == RARG_ROUND_DEC) */
 		decNumberRoundDecimals(&res, &x, arg, rm);
 	setX(&res);
 }
