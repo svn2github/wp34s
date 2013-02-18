@@ -38,7 +38,7 @@
 				JMP sum_product_nan
 			STO .00
 			IP				/* First function call is separate*/
-			FILL				/* to avoid Kahan summing from zero*/
+							/* to avoid Kahan summing from zero*/
 			XEQUSR				/* six extra instructions save nine*/
 			POPUSR
 			SPEC?				/* from executing*/
@@ -50,7 +50,6 @@
 
 sum_loop::		RCL .00
 			IP
-			FILL
 			XEQUSR
 			POPUSR
 			SPEC?
@@ -78,7 +77,7 @@ sum_entry::		DSL .00
 				JMP sum_product_nan
 			STO .00
 			IP				/* First function call is separate*/
-			FILL				/* to avoid a multiply*/
+							/* to avoid a multiply*/
 			XEQUSR
 			POPUSR
 			SPEC?
@@ -88,7 +87,6 @@ sum_entry::		DSL .00
 
 product_loop::		RCL .00
 			IP
-			FILL
 			XEQUSR
 			POPUSR
 			SPEC?

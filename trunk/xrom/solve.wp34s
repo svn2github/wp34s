@@ -113,14 +113,12 @@ slv_ridders::		[cmplx]RCL FXA		/* a b ? ? */
 			x>? Y
 				x[<->] Y
 			[cmplx]STO XA
-			FILL
 			XEQUSR
 			POPUSR
 			STO FXA
 			x=0?
 				JMP slv_initial1_perfect
 			RCL XB
-			FILL
 			XEQUSR
 			POPUSR
 			STO FXB
@@ -153,7 +151,6 @@ slvi_done_init::	STO XC
  */
 slv_loop::		[->]A..D
 			RCL XC
-			FILL
 			XEQUSR
 			POPUSR
 			x=0?

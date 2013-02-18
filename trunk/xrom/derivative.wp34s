@@ -181,7 +181,6 @@ deriv_6point::		RCL .01
 deriv_eval_func::	STO .00
 			RCL[times] .04
 			RCL+ .03
-			FILL
 			XEQUSR				/* f(x + k h)*/
 			POPUSR
 			SPEC?
@@ -192,7 +191,6 @@ deriv_eval_func::	STO .00
 			+/-
 			RCL[times] .04
 			RCL+ .03
-			FILL
 			XEQUSR				/* f(x - k h)*/
 			POPUSR
 			SPEC?
