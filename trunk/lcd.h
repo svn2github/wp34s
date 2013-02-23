@@ -18,7 +18,7 @@
 #define __LCD_H__
 #include "xeq.h"
 
-#if defined(QTGUI)
+#if defined(QTGUI) || defined(IOS)
 #include <stdint.h>
 #endif
 
@@ -93,7 +93,7 @@ extern unsigned int LcdData[20];
 #define Lcd_Enable()
 #endif
 
-#if defined(QTGUI)
+#if defined(QTGUI) || defined(IOS)
 extern uint64_t LcdData[10];
 #undef AT91C_SLCDC_MEM
 #define AT91C_SLCDC_MEM ((uint32_t*) LcdData)

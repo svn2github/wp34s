@@ -40,7 +40,7 @@
 
 #define SERIAL_ANNUNCIATOR LIT_EQ
 
-#ifdef QTGUI
+#if defined(QTGUI) || defined(IOS)
 extern void serial_lock(void);
 extern void serial_unlock(void);
 #undef lock
@@ -125,13 +125,13 @@ int byte_received( short byte )
 		return 1;
 #endif
 	}
-#ifdef QTGUI
+#if defined(QTGUI) || defined(IOS)
 	lock();
 #endif
 	InBuffer[ (int) InWrite ] = byte;
 	InWrite = ( InWrite + 1 ) & IN_BUFF_MASK;
 	++InCount;
-#ifdef QTGUI
+#if defined(QTGUI) || defined(IOS)
 	unlock();
 #endif
 	return 0;

@@ -71,7 +71,7 @@ static const unsigned char lcd_bit[] = {
 #undef M
 };
 
-#ifdef QTGUI
+#if defined(QTGUI) || defined(IOS)
 volatile uint32_t *LcdAddr;
 #else
 volatile unsigned int *LcdAddr;
@@ -194,7 +194,7 @@ void reset_disp(void) {
 	*LastDisplayedText = '\0';
 #endif
         wait_for_display();
-#ifdef QTGUI
+#if defined(QTGUI) || defined(IOS)
     	xset(LcdData, 0, sizeof(LcdData));
 #else
         // terrible code which assumes int are 4 bytes long. Works fine for realbuild and for WINGUI though
@@ -520,7 +520,7 @@ void finish_display(void) {
 #elif defined(WINGUI)
         void EXPORT UpdateDlgScreen(int force);
         UpdateDlgScreen(1);
-#elif defined(QTGUI)
+#elif defined(QTGUI) || defined(IOS)
         void updateScreen();
         updateScreen();
 #else

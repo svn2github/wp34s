@@ -386,7 +386,7 @@ void date_alphaday(enum nilop op) {
 		err(ERR_BAD_DATE);
 	else {
 		dow = day_of_week(y, m, d, NULL);
-		copy3("MONTUEWEDTHUFRISATSUN" + 3*(dow-1));
+		copy3(&("MONTUEWEDTHUFRISATSUN"[3*(dow-1)]));
 	}
 }
 
@@ -399,7 +399,7 @@ void date_alphamonth(enum nilop op) {
 	if (decNumberIsSpecial(&x) || extract_date(&x, &y, &m, &d))
 		err(ERR_BAD_DATE);
 	else {
-		copy3(mons + 3*m - 3);
+		copy3(&(mons[3*m - 3]));
 	}
 }
 

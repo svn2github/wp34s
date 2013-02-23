@@ -33,12 +33,34 @@ endif
 
 BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-exceptions 
 OPT_CFLAGS := -Os -fira-region=one
+USE_CURSES := -DUSECURSES
 
 # Settings for Unix like environments with gcc
 # Creates the Console version of the emulator or the real thing
 # To build the GUI version on Windows use Microsoft Visual C++ (Express)
 
+ifeq "$(findstring Ios,$(SYSTEM))" "Ios"
+ifeq "$(SYSTEM)" "Ios"
+    ARCH=armv7
+    DEVICE=OS
+    CC_FLAGS=-arch $(ARCH) -I$(DEVROOT)/SDKs/iPhone$(DEVICE)6.1.sdk/usr/include 
+    BASE_LDFLAGS=-L$(DEVROOT)/SDKs/iPhone$(DEVICE)6.1.sdk/usr/lib
+    CFLAGS_FLAGS=-mcpu=cortex-a8 -marm
+endif
+ifeq "$(SYSTEM)" "IosSimulator"
+    ARCH=i386
+    CC_FLAGS=-arch $(ARCH)
+    DEVICE=Simulator
+endif
+DEVROOT := /Applications/Xcode.app/Contents/Developer/Platforms/iPhone$(DEVICE).platform/Developer
+SDKROOT := $(DEVROOT)/SDKs/iPhone$(DEVICE)6.1.sdk
+CC=$(DEVROOT)/usr/bin/gcc $(CC_FLAGS)
+BASE_CFLAGS += -isysroot ${SDKROOT} -Iheaders $(CFLAGS_FLAGS) -DIOS
+USE_CURSES :=
+else
 SYSTEM := $(shell uname)
+endif
+
 ifeq "$(SYSTEM)" ""
 SYSTEM := Output
 endif
@@ -84,7 +106,7 @@ ifeq "$(SYSTEM)" "Darwin"
 CFLAGS += -DFIX_64_BITS
 endif 
 else
-CFLAGS += -O0 -DDEBUG -DUSECURSES
+CFLAGS += -O0 -DDEBUG $(USE_CURSES)
 endif
 
 ifeq "$(SYSTEM)" "Linux64"
@@ -121,13 +143,20 @@ endif
 TOOLS := tools
 AR=ar
 RANLIB=ranlib
-LDFLAGS :=
+LDFLAGS := $(BASE_LDFLAGS)
 LDCTRL :=
 
+ifeq "$(SYSTEM)" "Ios"
+HOSTCC := gcc
+HOSTAR := ar
+HOSTRANLIB := ranlib
+HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD 
+else
 HOSTCC := $(CC)
 HOSTAR := $(AR)
 HOSTRANLIB := $(RANLIB)
 HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD 
+endif
 
 ifdef REALBUILD
 # Settings for the Yagarto tool chain under Windows (or MacOS)
@@ -290,8 +319,8 @@ $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRC
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE) \
 		compile_cats.c xrom.wp34s $(XROM) $(OPCODES)
 	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h xrom.c
-	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 XTAL=$(XTAL) INFRARED=$(INFRARED) catalogues.h xrom.c
+	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/$(TARGET) $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s # -save-temps
 	$(NM) -n $(OUTPUTDIR)/$(TARGET) >$(SYMBOLS)
@@ -448,8 +477,6 @@ qt_gui_dist_no_serial:
 	$(MAKE) QTGUI=1 real_qt_gui_dist_no_serial
 
 
-ifdef QTGUI
-
 CALCLIB := $(OBJECTDIR)/libCalculator.a
 CALCOBJS := $(OBJS) $(OBJECTDIR)/xrom.o
 BASELIBS := ../$(OBJECTDIR)/libCalculator.a ../$(OBJECTDIR)/libdecNum34s.a ../$(OBJECTDIR)/libconsts.a
@@ -457,6 +484,8 @@ $(CALCLIB): $(CALCOBJS)
 	-rm -f $@
 	$(AR) -r $@ $(CALCOBJS)
 	$(RANLIB) $@
+
+ifdef QTGUI
 
 real_qt_gui: all $(CALCLIB)
 	cd QtGui; $(MAKE) BASELIBS="$(BASELIBS)"
@@ -491,3 +520,20 @@ qt_clean_all: qt_clean
 
 qt_clean_dist:
 	cd QtGui; $(MAKE) distclean
+	
+.PHONY: ios ios_lib ios_objs ios_clean
+	
+ios:
+	$(MAKE) SYSTEM=IosSimulator ios_lib
+	$(MAKE) SYSTEM=Ios ios_lib
+	lipo -create -arch armv7 Ios/obj/libCalculator.a -arch i386 IosSimulator/obj/libCalculator.a -output Ios/libCalculator.a
+	lipo -create -arch armv7 Ios/obj/libconsts.a -arch i386 IosSimulator/obj/libCalculator.a -output Ios/libconsts.a
+	lipo -create -arch armv7 Ios/obj/libdecNum34s.a -arch i386 IosSimulator/obj/libdecNum34s.a -output Ios/libdecNum34s.a
+			
+ios_lib: ios_objs $(CALCLIB)
+
+ios_objs: $(DIRS) $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) $(LDCTRL) Makefile
+
+ios_clean:
+	rm -rf Ios IosSimulator
+	

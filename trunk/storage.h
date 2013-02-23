@@ -66,7 +66,7 @@ extern void load_state(enum nilop op);
 extern void store_program(enum nilop op);
 extern void recall_program(enum nilop op);
 
-#if !defined(REALBUILD) && !defined (QTGUI)
+#if !defined(REALBUILD) && !defined (QTGUI) && !defined(IOS)
 extern void save_statefile(void);
 extern void load_statefile(void);
 #endif

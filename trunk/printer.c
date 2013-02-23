@@ -701,7 +701,7 @@ int put_ir( int c )
 	return 0;
 }
 
-#elif !defined(REALBUILD) && !defined(QTGUI)
+#elif !defined(REALBUILD) && !defined(QTGUI) && !defined(IOS)
 /*
  *  Simple emulation for debug purposes
  */
@@ -722,5 +722,10 @@ int put_ir( int c )
 }
 #endif
 
+#else
+/* To avoid an empty .o and a warning in ranlib */
+void dummy_print()
+{
+}
 #endif
 
