@@ -527,7 +527,7 @@ ios:
 	$(MAKE) SYSTEM=IosSimulator ios_lib
 	$(MAKE) SYSTEM=Ios ios_lib
 	lipo -create -arch armv7 Ios/obj/libCalculator.a -arch i386 IosSimulator/obj/libCalculator.a -output Ios/libCalculator.a
-	lipo -create -arch armv7 Ios/obj/libconsts.a -arch i386 IosSimulator/obj/libCalculator.a -output Ios/libconsts.a
+	lipo -create -arch armv7 Ios/obj/libconsts.a -arch i386 IosSimulator/obj/libconsts.a -output Ios/libconsts.a
 	lipo -create -arch armv7 Ios/obj/libdecNum34s.a -arch i386 IosSimulator/obj/libdecNum34s.a -output Ios/libdecNum34s.a
 			
 ios_lib: ios_objs $(CALCLIB)
