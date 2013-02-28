@@ -1,0 +1,38 @@
+/*
+ *  Draw a circle
+ */
+0001 **LBL A
+0002 # 64
+0003 ENTER[^]
+0004 gINIT 000
+0005 2
+0006 /
+0007 STO J
+0008 DEG
+0009 0
+0010 .
+0011 3
+0012 6
+0013 0
+0014 0
+0015 1
+0016 STO I
+0017 **LBL 00
+0018 RCL I
+0019 IP
+0020 RCL J
+0021 [->]REC
+0022 RCL+ J
+0023 x[<->] Y
+0024 RCL+ J
+0025 x[<->] Y
+0026 gSET 00
+0027 ISG I
+0028 GTO 00
+0029 CL[alpha]
+0030 [alpha]'Cir'
+0031 [alpha]'cle'
+0032 [print][alpha]+
+0033 [print]PLOT 00
+0034 [print]ADV
+0035 END

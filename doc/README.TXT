@@ -1,6 +1,6 @@
-November 17, 2012
+February 28, 2013
 
-WP 34S Version 3.1
+WP 34S Version 3.2
 ==================
 
 This is firmware for the WP 34S calculator. This is for HP's 20b
