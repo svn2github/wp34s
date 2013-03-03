@@ -116,12 +116,12 @@ extern void set_speed( unsigned int speed );
  * Current ticker count. Or its emulation when not running on WP34s hardware
  */
 unsigned long getTicker() {
-#ifndef CONSOLE
-    return Ticker;
-#else
+#if defined(CONSOLE) || defined(IOS)
     struct timeval tv;
     gettimeofday(&tv,(struct timezone*) NULL);
     return tv.tv_sec * 10 + tv.tv_usec / 100000;
+#else
+    return Ticker;
 #endif
 }
 
