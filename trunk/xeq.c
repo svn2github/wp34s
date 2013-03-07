@@ -1974,6 +1974,7 @@ static void usergsb_common(unsigned short int target) {
 // Command pushes 4 values on stack, needs to be followed by POPUSR
 void do_usergsb(enum nilop op) {
 	usergsb_common(XromUserPc);
+	fill(OP_FILL);
 }
 
 
