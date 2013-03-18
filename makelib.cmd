@@ -12,7 +12,7 @@ set PP=%TOOLS%\wp34s_pp.pl
 set DAT=wp34s-lib.dat
 
 echo on
-%LIB% -pp matrix.wp34s matrixedit.wp34s vectors.wp34s digamma.wp34s coordinates.wp34s -olib %DAT%
+%LIB% -pp matrix.wp34s matrixedit.wp34s vectors.wp34s digamma.wp34s invgamma.wp34s coordinates.wp34s -olib %DAT%
 @if errorlevel 1 goto exit
 :
 %LIB% TVM.wp34s -ilib %DAT% -olib %DAT%

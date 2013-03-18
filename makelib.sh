@@ -8,7 +8,7 @@ PP=$TOOLS/wp34s_pp.pl
 
 DAT=wp34s-lib.dat
 
-$LIB -pp matrix.wp34s matrixedit.wp34s vectors.wp34s digamma.wp34s coordinates.wp34s -olib $DAT || exit
+$LIB -pp matrix.wp34s matrixedit.wp34s vectors.wp34s digamma.wp34s invgamma.wp34s coordinates.wp34s -olib $DAT || exit
 $LIB TVM.wp34s -ilib $DAT -olib $DAT || exit
 $LIB -pp TRIGON.wp34s PF.wp34s -ilib $DAT -olib $DAT || exit
 
