@@ -1289,6 +1289,22 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 		set_decimal((display_digits - 1) * SEGS_PER_DIGIT, DecimalMode, res);
 }
 
+#if defined(QTGUI) || defined(IOS)
+void format_display(char *buf) {
+	if (State2.runmode && !State2.labellist && !State2.registerlist && !State2.status)
+	{
+		const char *p = get_cmdline();
+		if (p == NULL) {
+			format_reg(regX_idx, buf);
+		} else {
+			scopy(buf, p);
+		}
+	}
+	else {
+		buf[0]=0;
+	}
+}
+#endif
 
 void format_reg(int index, char *buf) {
 	const REGISTER *const r = get_reg_n(index);

@@ -30,6 +30,7 @@ extern void add_heartbeat_adapter(int);
 extern char* get_region_path_adapter(int);
 extern void* shutdown_adapter();
 extern void updateScreen();
+extern void format_display(char *buf);
 
 #define SVN_REVISION_SIZE 4
 static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
@@ -264,7 +265,11 @@ char* get_formatted_register(int anIndex)
 
 char* get_formatted_displayed_number()
 {
-	return get_formatted_register(regX_idx);
+	static char buffer[FORMATTED_DISPLAYED_NUMBER_LENGTH];
+
+	memfill(buffer, 0, FORMATTED_DISPLAYED_NUMBER_LENGTH);
+	format_display(buffer);
+	return buffer;
 }
 
 int forward_byte_received(short byte)
