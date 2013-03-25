@@ -15,7 +15,7 @@
  */
 
 /* This program was written by Gerson W. Barbosa based on an algorithm
- * by Ángel Martin as part of a discussion thread on the Museum of HP
+ * by Angel Martin as part of a discussion thread on the Museum of HP
  * Calculators entitled "SandMath routine of the week: Inverse Gamma
  * Function" from March 2013.
  */
@@ -43,8 +43,15 @@
 			/
 			+/-
 			INC X
-			RCL Z
-			LN
+			# 1/2
+                        [<->] TXYZ
+                        /
+                        RCL L
+                        LN
+                        STO- Y
+                        x[<->] L
+                        [<->] YZTX
+                        +/-
 			/
 			[<->] XZZY
 			-
