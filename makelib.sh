@@ -1,6 +1,6 @@
 #!/bin/sh
 cd library
-DEBUG=3
+DEBUG=0
 TOOLS=../trunk/tools
 ASM=$TOOLS/wp34s_asm.pl
 LIB="$TOOLS/wp34s_lib.pl -d $DEBUG"
