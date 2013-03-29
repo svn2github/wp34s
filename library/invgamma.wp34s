@@ -43,16 +43,14 @@
 			/
 			+/-
 			INC X
-			# 1/2
-                        [<->] TXYZ
-                        /
-                        RCL L
+                        RCL T
                         LN
-                        STO- Y
-                        x[<->] L
-                        [<->] YZTX
-                        +/-
-			/
+                        RCL* L
+                        STO+ X
+                        DEC X
+                        RCL/ T
+                        /
+                        STO+ X
 			[<->] XZZY
 			-
 			CNVG? 03
