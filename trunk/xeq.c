@@ -15,7 +15,7 @@
  */
 
 #ifndef REALBUILD
-#if defined(WIN32) && !defined(QTGUI) && !defined(__GNUC__)
+#if defined(WIN32) && !defined(QTGUI) && !defined(IOS) && !defined(__GNUC__)
 #include <stdlib.h>  // sleep
 #include "win32.h"
 #define sleep _sleep
@@ -25,6 +25,9 @@
 #endif
 #include <stdio.h>   // (s)printf
 #endif // REALBUILD
+#ifdef IOS
+#include <stdarg.h>
+#endif
 
 #if __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
 #define GNUC_POP_ERROR
@@ -1984,9 +1987,11 @@ static void usergsb_common(unsigned short int target) {
 
 
 // XEQUSR
-// Command pushes 4 values on stack, needs to be followed by POPUSR
+// Command fills the stack and calls the user's code.
+// Needs to be followed by POPUSR
 void do_usergsb(enum nilop op) {
 	usergsb_common(XromUserPc);
+        fill(OP_FILL);
 }
 
 

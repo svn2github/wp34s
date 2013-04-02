@@ -16,7 +16,7 @@
 #ifndef FEATURES_H__
 #define FEATURES_H__
 
-#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI)
+#if !defined(REALBUILD) && !defined(WINGUI) && !defined(QTGUI) && !defined(IOS)
 #define CONSOLE
 #endif
 
