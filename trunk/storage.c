@@ -257,6 +257,9 @@ void reset( void )
 	clrall();
 	init_state();
 	UState.contrast = 6;
+#if defined(INCLUDE_SIGFIG_MODE)
+	UState.dispdigs = 5; // start with 6 sig figs by default
+#endif
 #ifdef INFRARED
 	State.print_delay = 10;
 #endif
@@ -453,7 +456,7 @@ void sam_ba_boot(void)
  *  Page numbers are relative to the start of the user flash
  *  count is in pages, destination % PAGE_SIZE needs to be 0.
  */
-#if defined(QTGUI) || defined(IOS)
+#ifdef QTGUI
 extern char* get_region_path(int region);
 #else
 static char* get_region_path(int region)
@@ -795,7 +798,7 @@ void recall_program( enum nilop op )
 }
 
 
-#if !defined(REALBUILD) && !defined(QTGUI) && !defined(IOS)
+#if !defined(REALBUILD) && !defined(QTGUI)
 /*
  *  Save/Load state to a file (only for emulator(s))
  */

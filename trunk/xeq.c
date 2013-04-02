@@ -15,7 +15,7 @@
  */
 
 #ifndef REALBUILD
-#if defined(WIN32) && !defined(QTGUI) && !defined(IOS) && !defined(__GNUC__)
+#if defined(WIN32) && !defined(QTGUI) && !defined(__GNUC__)
 #include <stdlib.h>  // sleep
 #include "win32.h"
 #define sleep _sleep
@@ -25,9 +25,6 @@
 #endif
 #include <stdio.h>   // (s)printf
 #endif // REALBUILD
-#ifdef IOS
-#include <stdarg.h>
-#endif
 
 #if __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
 #define GNUC_POP_ERROR
@@ -830,17 +827,20 @@ void roll_up(enum nilop op) {
 void cpx_roll_down(enum nilop op) {
 	roll_down(OP_RDOWN);
 	roll_down(OP_RDOWN);
+	set_was_complex();
 }
 
 void cpx_roll_up(enum nilop op) {
 	roll_up(OP_RUP);
 	roll_up(OP_RUP);
+	set_was_complex();
 }
 
 void cpx_enter(enum nilop op) {
 	lift();
 	lift();
 	copyreg(get_reg_n(regY_idx), get_reg_n(regT_idx));
+	set_was_complex();
 }
 
 void cpx_fill(enum nilop op) {
@@ -850,6 +850,7 @@ void cpx_fill(enum nilop op) {
 
 	for (i=2; i<n; i++)
 		copyreg(get_stack(i), (i & 1) ? y : StackBase);
+	set_was_complex();
 }
 
 void fill(enum nilop op) {
@@ -862,8 +863,10 @@ void fill(enum nilop op) {
 
 void drop(enum nilop op) {
 	lower();
-	if (op == OP_DROPXY)
+	if (op == OP_DROPXY) {
 		lower();
+		set_was_complex();
+	}
 }
 
 #ifndef is_intmode
@@ -999,7 +1002,17 @@ void process_cmdline(void) {
 				return;
 			}
 			if (fract_convert_number(&z, d0))	return;
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+			if (d2 == d1+1) { // ND change starts here; if dots are adjacent...
+				decNumberCopy(&a, &z); // put z (integer part) into a (numerator) ...
+				decNumberZero(&z); // and zero z
+			}
+			else if (fract_convert_number(&a, d1)) {
+				return;
+			}
+#else
 			if (fract_convert_number(&a, d1))	return;
+#endif
 			if (cmdlinedot == 2) {
 				dn_divide(&t, &a, &b);
 				dn_add(&x, &z, &t);
@@ -1308,7 +1321,7 @@ void cmdconst(unsigned int arg, enum rarg op) {
 #endif
 		lift2_if_enabled();
 		zero_Y();
-		State2.wascomplex = 1;
+		set_was_complex();
 	} else
 		lift_if_enabled();
 
@@ -1974,7 +1987,6 @@ static void usergsb_common(unsigned short int target) {
 // Command pushes 4 values on stack, needs to be followed by POPUSR
 void do_usergsb(enum nilop op) {
 	usergsb_common(XromUserPc);
-	fill(OP_FILL);
 }
 
 
@@ -2887,7 +2899,11 @@ static void specials(const opcode op) {
 		if (is_intmode())
 			break;
 		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 12 + CmdLineDot) {
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+			if (CmdLineLength == 0) // ND change: stop a zero being entered if two successive dots pressed
+#else
 			if (CmdLineLength == 0 || Cmdline[CmdLineLength-1] == '.')
+#endif
 				digit(0);
 			CmdLineDot++;
 			Cmdline[CmdLineLength++] = '.';
@@ -2895,6 +2911,32 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_EEX:
+#if defined(INCLUDE_EEX_PI)
+	if ( get_user_flag(regL_idx) ) {
+		if ( is_intmode() ) // no exponent or pi in intmode
+ 			break;
+		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
+			if ( (CmdLineLength == 0) ) // empty command line: enter pi
+			{
+				lift_if_enabled();
+				copyreg(StackBase, get_const(OP_PI, is_dblmode()));
+				set_lift();
+			}
+			else if ( (CmdLineLength > 0) && (CmdLineDot > 1) ) // fraction entered (two dots); execute ENTER and enter pi
+			{
+				process_cmdline();
+				lift();
+				copyreg(StackBase, get_const(OP_PI, is_dblmode()));
+				set_lift();
+			}
+			else if ( (! UState.fract) || (CmdLineDot < 2) ) //enter E if the above don't apply and if it's not fraction mode OR if at most one dot has been entered
+			{
+				CmdLineEex = CmdLineLength;
+				Cmdline[CmdLineLength++] = 'E';
+			}
+ 		}
+	}
+	else {
 		if (is_intmode() || UState.fract || CmdLineDot == 2)
 			break;
 		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
@@ -2903,6 +2945,17 @@ static void specials(const opcode op) {
 			CmdLineEex = CmdLineLength;
 			Cmdline[CmdLineLength++] = 'E';
 		}
+	}
+#else			
+		if (is_intmode() || UState.fract || CmdLineDot == 2)
+			break;
+		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
+			if (CmdLineLength == 0)
+				digit(1);
+			CmdLineEex = CmdLineLength;
+			Cmdline[CmdLineLength++] = 'E';
+		}
+#endif
 		break;
 
 	case OP_CHS:

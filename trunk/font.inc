@@ -555,7 +555,7 @@
 		}
 	},
 
-#if defined(SMALLER_HYPHENS)
+#if defined(INCLUDE_YREG_CODE)
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
  	{ 0055, "-",               12400, 0x002d,     0x2d, 0x2D,    "hyphen",
  		{

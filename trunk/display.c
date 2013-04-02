@@ -360,7 +360,7 @@ static void annunciators(void) {
  		else {
  			p = scopy(p, " \006");
 		}
-		if ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) { // don't do y-display in intmode
+		if ( (State2.wascomplex) || ( get_user_flag(regJ_idx) && ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) ) ){ // don't do y-display in intmode
 			decNumber y;
 			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
 			for (n=DISPLAY_DIGITS; n>1; n--) {
@@ -453,6 +453,10 @@ skip:	set_status(buf);
 static void disp_x(const char *p) {
 	int i;
 	int gotdot = -1;
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+	int twodot = 0; // ND change
+	const char *q; // ND change
+#endif
 
 	if (*p == '-') {
 		set_dot(MANT_SIGN);
@@ -467,40 +471,46 @@ static void disp_x(const char *p) {
 		carry_overflow();
 	} else {
 		set_separator_decimal_modes();
+
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+		q = p; // ND change; scan ahead to count dots;
+		for (i=0; *q != '\0' && *q != 'E'; q++) {
+			if (*q == '.') twodot++;
+		}
+#endif
+
 		for (i=0; *p != '\0' && *p != 'E'; p++) {
-			if (*p == '.') {
-				if (gotdot == -1)
+		if (*p == '.') {
+				if (gotdot == -1) 
 					gotdot = i;
 #if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
-				if (i > 0) { // ND change: if two successive dots, set the lower part of the comma (following lines too)
-					if ( *(p+1) == '.' ) {
-						set_dot(i - SEGS_PER_DIGIT+8);
-						p++;
+					if ( ( *(p+1) == '.' ) || ( i != gotdot ) ) {
+						set_dig(i, '/'); // put in a fraction separator
+						i += SEGS_PER_DIGIT;
+						if ( *(p+1) == '.' ) {
+							p++;
+						}
 					}
 					else {
-						set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
+						if ( twodot > 1 ) {
+							i += SEGS_PER_DIGIT;
+						}
+						else {
+							set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
+//							i += SEGS_PER_DIGIT;
+						}
 					}
-				}
+						
 #else
 				if (i > 0)
 					set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
-#endif
 				else {
 					set_dig(i, '0');
-#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
-					if ( *(p+1) == '.' ) {
-						set_dot(i+8);
-						p++;
-					}
-					else {
-						set_decimal(i, DecimalMode, CNULL);
-					}
-#else
 					set_decimal(i, DecimalMode, CNULL);
-#endif
 					i += SEGS_PER_DIGIT;	
-				}
-			} else {
+			}
+#endif
+		} else {
 				set_dig(i, *p);
 				i += SEGS_PER_DIGIT;
 			}
@@ -525,7 +535,7 @@ static void disp_x(const char *p) {
 				}
 			}
 			set_exp(s_to_i(p), 1, CNULL);
-		}
+		} 
 	}
 }
 
@@ -855,23 +865,35 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 #if defined(INCLUDE_SIGFIG_MODE)
 enum display_modes std_round_fix(const decNumber *z, int *dd) {
 	decNumber c;
-	int true_exp, x;
+	int true_exp, x=0;
+	int min_pos_exp, max_neg_exp;
+
+	if ( get_user_flag(regI_idx) ) {
+		min_pos_exp = 9;
+		max_neg_exp = -4;}
+	else {
+		min_pos_exp = 12;
+		max_neg_exp = 0 - UState.dispdigs;
+	}
  
-	dn_abs(&c, z); // c is abs(z) and b here is 1e-3
+	dn_abs(&c, z); // c is abs(z)
 	true_exp = c.exponent + c.digits - 1;
 
 	if (get_user_flag(regK_idx) && UState.dispdigs < 10 ) {//trailing zeros display: flag K ignored if dispdigs > 9
 		x = *dd;
 	}
-	else {
-		x = 0;
-	}
-	if ((true_exp < x) && (true_exp > -4)) { // decimals needed; *dd adjusted to provide correct number
+
+	if ((true_exp < x) && (true_exp > max_neg_exp)) { // decimals needed; *dd adjusted to provide correct number
 		*dd += -true_exp;
- 		return MODE_FIX;
+ 		return MODE_FIX; 
 	}
-	if ((true_exp < -3) || (true_exp >= 9)) return UState.fixeng?MODE_ENG:MODE_SCI; // force ENG/SCI mode for big / small numbers
- 	return MODE_STD;
+
+	if ((true_exp <= max_neg_exp) || (true_exp >= min_pos_exp)) {
+		return UState.fixeng?MODE_ENG:MODE_SCI; // force ENG/SCI mode for big / small numbers
+	}
+	else {
+		return MODE_STD;
+	}
  }
 #else
 enum display_modes std_round_fix(const decNumber *z) {
@@ -956,7 +978,10 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 
 	// Do not allow non ALL modes to produce more digits than we're being asked to display.
 #if defined(INCLUDE_SIGFIG_MODE)
-	if (dd > display_digits)
+	if ( ( !get_user_flag(regI_idx)) && (mode == MODE_STD) ) { //normal ALL mode: putting dd=display digits fills the display
+		dd = display_digits;
+	}
+	if (dd > display_digits) // no more digits than we can display: no exclusion for ALL as dealt with above
 		dd = display_digits;
 #else
 	if (mode != MODE_STD && dd > display_digits)
@@ -1017,7 +1042,7 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 	}
 
 #if defined(INCLUDE_SIGFIG_MODE)
-	if (mode == MODE_STD) { // ND change: only called in STD mode
+	if (mode == MODE_STD) {
 		mode = std_round_fix(z, &dd); // modified function called
 		if (mode != MODE_STD) { // allow zeros to be trimmed
 			if ( get_user_flag(regK_idx) && UState.dispdigs < 10 ) { // flag K set gives zeros, but only for < 10 digits. So dispdigs=11 turns off any effect.
