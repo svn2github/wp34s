@@ -279,10 +279,9 @@ int forward_byte_received(short byte)
 
 #include "../translate.c"
 
-int* get_displayed_text()
+
+static int fill_displayed_text(char *p, int *buffer)
 {
-	static int buffer[NUMALPHA + 1];
- 	char* p = *LastDisplayedText == '\0' ? Alpha : LastDisplayedText;
 	int* b = buffer;
 	int only_blanks = 1;
 
@@ -295,13 +294,18 @@ int* get_displayed_text()
 		}
 		*b++ = unicode[*p++ & 0xff];
 	}
-	if (only_blanks)
-	{
-		*LastDisplayedText = '\0';
-		return get_displayed_text();
+	return !only_blanks;
+}
+
+int* get_displayed_text()
+{
+	static int buffer[NUMALPHA + 1];
+	if(!fill_displayed_text(LastDisplayedText, buffer)) {
+		fill_displayed_text(Alpha, buffer);
 	}
 	return buffer;
 }
+
 
 char* get_register_names()
 {
