@@ -51,6 +51,10 @@
 #define ALWAYS_USE_HSHIFT_CLICK_SETTING "AlwaysUseHShiftClick"
 #define HSHIFT_DELAY_SETTING "HShiftDelay"
 
+#define DEBUGGER_SETTINGS_GROUP "Debugger"
+#define DISPLAY_AS_STACK_SETTING "DisplayAsStack"
+
+
 #define SERIAL_PORT_SETTINGS_GROUP "SerialPort"
 #define SERIAL_PORT_NAME_SETTING "SerialPortName"
 
@@ -168,11 +172,13 @@ private:
      void loadSettings();
      void loadUserInterfaceSettings();
      void loadKeyboardSettings();
+     void loadDebuggerSettings();
      void loadCustomDirectorySettings();
      void loadSerialPortSettings();
      void saveSettings();
      void saveUserInterfaceSettings();
      void saveKeyboardSettings();
+     void saveDebuggerSettings();
      void saveCustomDirectorySettings();
      void saveSerialPortSettings();
      void loadMemory();
@@ -216,6 +222,7 @@ private:
      bool useHShiftClick;
      bool alwaysUseHShiftClick;
      int hShiftDelay;
+     bool displayAsStack;
      QtSerialPort* serialPort;
      bool active;
      bool development;

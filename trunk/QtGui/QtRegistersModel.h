@@ -26,7 +26,7 @@ class QtRegistersModel: public QAbstractTableModel
 	Q_OBJECT
 
 public:
-	QtRegistersModel(QObject* aParent=0);
+	QtRegistersModel(QObject* aParent=0, bool aDisplayAsStack=false);
 
 public:
     int rowCount(const QModelIndex& aParent) const;
@@ -35,6 +35,8 @@ public:
     QVariant headerData(int aSection, Qt::Orientation anOrientation, int aRole) const;
     void setPrototypeMode(bool aPrototypeMode);
     void refresh();
+    bool isDisplayAsStack();
+    void setDisplayAsStack(bool aDisplayAsStack);
 
 protected:
     int rowCount() const;
@@ -44,6 +46,8 @@ protected:
 private:
     QList< QPair<QString, int> > displayedRegisters;
     bool prototypeMode;
+    bool displayAsStack;
+    int lastRowCount;
 };
 
 #endif /* QTREGISTERSMODEL_H_ */

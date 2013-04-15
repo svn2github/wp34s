@@ -48,6 +48,8 @@ extern void shutdown_adapter();
 
 extern char* get_register_names();
 extern int get_first_register_index();
+extern int get_numregs();
+extern int get_maxnumregs();
 extern char* get_formatted_register(int anIndex);
 extern int is_runmode();
 extern int is_catalogue_mode();

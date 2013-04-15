@@ -134,6 +134,7 @@ void QtEmulator::editPreferences()
 			keyboard->isUseHShiftClick(),
 			keyboard->isAlwaysUseHShiftClick(),
 			keyboard->getHShiftDelay(),
+			debugger->isDisplayAsStack(),
 			serialPort->getSerialPortName(), this);
 	int result=preferencesDialog.exec();
 	if(result==QDialog::Accepted)
@@ -147,6 +148,9 @@ void QtEmulator::editPreferences()
 		keyboard->setAlwaysUseHShiftClick(preferencesDialog.isAlwaysUseHShiftClickActive());
 		keyboard->setHShiftDelay(preferencesDialog.getHShiftDelay());
 		saveKeyboardSettings();
+
+		debugger->setDisplayAsStack(preferencesDialog.isDisplayAsStack());
+		saveDebuggerSettings();
 
 		QString serialPortName=preferencesDialog.getSerialPortName();
 		serialPort->setSerialPortName(serialPortName);
@@ -450,7 +454,7 @@ void QtEmulator::buildSerialPort()
 
 void QtEmulator::buildDebugger()
 {
-	debugger=new QtDebugger(centralWidget);
+	debugger=new QtDebugger(centralWidget, displayAsStack);
 	debugger->setVisible(false);
 	centralLayout->addWidget(debugger);
 }
@@ -562,6 +566,7 @@ void QtEmulator::loadSettings()
 {
 	loadUserInterfaceSettings();
 	loadKeyboardSettings();
+	loadDebuggerSettings();
 	loadCustomDirectorySettings();
 	loadSerialPortSettings();
 
@@ -590,6 +595,14 @@ void QtEmulator::loadKeyboardSettings()
 	settings.endGroup();
 }
 
+void QtEmulator::loadDebuggerSettings()
+{
+	settings.beginGroup(DEBUGGER_SETTINGS_GROUP);
+	displayAsStack=settings.value(DISPLAY_AS_STACK_SETTING, DEFAULT_DISPLAY_AS_STACK).toBool();
+	settings.endGroup();
+}
+
+
 void QtEmulator::loadCustomDirectorySettings()
 {
 	settings.beginGroup(CUSTOM_DIRECTORY_SETTINGS_GROUP);
@@ -610,6 +623,7 @@ void QtEmulator::saveSettings()
 {
     saveUserInterfaceSettings();
     saveKeyboardSettings();
+    saveDebuggerSettings();
     saveCustomDirectorySettings();
     saveSerialPortSettings();
 
@@ -637,6 +651,14 @@ void QtEmulator::saveKeyboardSettings()
     settings.setValue(HSHIFT_DELAY_SETTING, keyboard->getHShiftDelay());
     settings.endGroup();
 }
+
+void QtEmulator::saveDebuggerSettings()
+{
+    settings.beginGroup(DEBUGGER_SETTINGS_GROUP);
+    settings.setValue(DISPLAY_AS_STACK_SETTING, debugger->isDisplayAsStack());
+    settings.endGroup();
+}
+
 
 void QtEmulator::saveCustomDirectorySettings()
 {

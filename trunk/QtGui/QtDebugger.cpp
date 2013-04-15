@@ -19,12 +19,48 @@
 #include "QtEmulator.h"
 
 
-QtDebugger::QtDebugger(QWidget* aParent)
+QtDebugger::QtDebugger(QWidget* aParent, bool aDisplayAsStack)
 : QTableView(aParent)
 {
-	setModel(new QtRegistersModel());
+	setModel(new QtRegistersModel(NULL, aDisplayAsStack));
 	setColumnsSizes();
 	setSelectionBehavior(SelectRows);
+	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+	installEventFilter(this);
+}
+
+bool QtDebugger::isDisplayAsStack()
+{
+	return static_cast<QtRegistersModel*>(model())->isDisplayAsStack();
+}
+
+void QtDebugger::setDisplayAsStack(bool aDisplayAsStack)
+{
+	bool previous=isDisplayAsStack();
+	static_cast<QtRegistersModel*>(model())->setDisplayAsStack(aDisplayAsStack);
+	if(previous!=isDisplayAsStack())
+	{
+		if(isDisplayAsStack())
+		{
+			verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+		}
+		else
+		{
+			verticalScrollBar()->setValue(verticalScrollBar()->minimum());
+		}
+	}
+}
+
+bool QtDebugger::eventFilter(QObject *object, QEvent *event)
+{
+	if(object == this && event->type() == QEvent::Show) {
+		setMinimumWidth(minimumSizeHint().width() + verticalScrollBar()->width());
+		if(isDisplayAsStack()) {
+			verticalScrollBar()->setValue(verticalScrollBar()->maximum());
+		}
+	}
+	return false;
 }
 
 void QtDebugger::refresh()

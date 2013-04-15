@@ -317,6 +317,16 @@ int get_first_register_index()
 	return regX_idx;
 }
 
+int get_maxnumregs()
+{
+	return NUMREG;
+}
+
+int get_numregs()
+{
+	return NumRegs+STACK_SIZE+EXTRA_REG;
+}
+
 int is_runmode()
 {
 	return State2.runmode;

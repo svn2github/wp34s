@@ -16,9 +16,10 @@
 
 #include "QtRegistersModel.h"
 #include "QtEmulatorAdapter.h"
+#include <QtCore>
 
-QtRegistersModel::QtRegistersModel(QObject* aParent)
-: QAbstractTableModel(aParent), prototypeMode(false)
+QtRegistersModel::QtRegistersModel(QObject* aParent, bool aDisplayAsStack)
+: QAbstractTableModel(aParent), prototypeMode(false), displayAsStack(aDisplayAsStack)
 {
 	char* registerName=get_register_names();
 	int registerIndex=get_first_register_index();
@@ -27,6 +28,25 @@ QtRegistersModel::QtRegistersModel(QObject* aParent)
 		displayedRegisters.append(QPair<QString, int>(QString(registerName[0]), registerIndex));
 		registerName++;
 		registerIndex++;
+	}
+	for(int i=0; i<get_maxnumregs(); i++)
+	{
+		displayedRegisters.append(QPair<QString, int>(QString("R")+QString("%1").arg(QString::number(i), 2, '0'), i));
+	}
+	lastRowCount=get_numregs();
+}
+
+bool QtRegistersModel::isDisplayAsStack()
+{
+	return displayAsStack;
+}
+
+void QtRegistersModel::setDisplayAsStack(bool aDisplayAsStack)
+{
+	if(displayAsStack!=aDisplayAsStack)
+	{
+		displayAsStack=aDisplayAsStack;
+		refresh();
 	}
 }
 
@@ -44,7 +64,7 @@ int QtRegistersModel::rowCount() const
 	}
 	else
 	{
-		return displayedRegisters.size();
+		return get_numregs();
 	}
 }
 
@@ -76,7 +96,16 @@ QVariant QtRegistersModel::data(const QModelIndex& anIndex, int aRole) const
     }
     if (aRole == Qt::DisplayRole)
     {
-    	QPair<QString, int> pair = displayedRegisters.at(anIndex.row());
+    	int index;
+    	if(displayAsStack)
+    	{
+    		index=rowCount()-1-anIndex.row();
+    	}
+    	else
+    	{
+    		index=anIndex.row();
+    	}
+    	QPair<QString, int> pair = displayedRegisters.at(index);
     	if(prototypeMode)
     	{
     		return prototypeData(anIndex.column());
@@ -139,6 +168,13 @@ QVariant QtRegistersModel::headerData(int aSection, Qt::Orientation anOrientatio
 
 void QtRegistersModel::refresh()
 {
+	int currentRowCount=get_numregs();
+	if(lastRowCount!=currentRowCount)
+	{
+		lastRowCount=currentRowCount;
+		beginResetModel();
+		endResetModel();
+	}
 	emit dataChanged(index(0, 0), index(rowCount(), columnCount()));
 }
 

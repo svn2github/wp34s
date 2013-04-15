@@ -22,12 +22,13 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 		bool anUseHShiftClickFlag,
 		bool anAlwaysUseHShiftClickFlag,
 		int anHShiftDelay,
+		bool aDisplayAsStackClickFlag,
 		const QString& aSerialPortName,
 		QWidget* aParent)
 : QDialog(aParent)
 {
 	setWindowTitle(PREFERENCES_TITLE);
-	buildComponents(aCustomDirectoryActiveFlag, aCustomDirectoryName, anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, anHShiftDelay, aSerialPortName);
+	buildComponents(aCustomDirectoryActiveFlag, aCustomDirectoryName, anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, aDisplayAsStackClickFlag, anHShiftDelay, aSerialPortName);
 }
 
 QtPreferencesDialog::~QtPreferencesDialog()
@@ -38,6 +39,7 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 		const QString& aCustomDirectoryName,
 		bool anUseHShiftClickFlag,
 		bool anAlwaysUseHShiftClickFlag,
+		bool aDisplayAsStackClickFlag,
 		int anHShiftDelay,
 		const QString& aSerialPortName)
 {
@@ -49,6 +51,7 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 	QTabWidget* tabWidget = new QTabWidget;
 	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), MEMORY_TAB_NAME);
 	tabWidget->addTab(buildKeyboardTab(anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, anHShiftDelay), KEYBOARD_TAB_NAME);
+	tabWidget->addTab(buildDebuggerTab(aDisplayAsStackClickFlag), DEBUGGER_TAB_NAME);
 	tabWidget->addTab(buildSerialTab(aSerialPortName), SERIAL_PORT_TAB_NAME);
 
 	dialogLayout->addWidget(tabWidget);
@@ -124,6 +127,21 @@ QWidget* QtPreferencesDialog::buildKeyboardTab(bool anUseHShiftClickFlag, bool a
 	return keyboardTab;
 }
 
+QWidget* QtPreferencesDialog::buildDebuggerTab(bool aDisplayAsStackClickFlag)
+{
+	QWidget* debuggerTab=new QWidget;
+	QVBoxLayout* debuggerLayout=new QVBoxLayout;
+
+	displayAsStackClickButton=new QCheckBox(DISPLAY_AS_STACK_LABEL_TEXT);
+	debuggerLayout->addWidget(displayAsStackClickButton);
+
+	displayAsStackClickButton->setChecked(aDisplayAsStackClickFlag);
+
+	debuggerTab->setLayout(debuggerLayout);
+	return debuggerTab;
+}
+
+
 QWidget* QtPreferencesDialog::buildSerialTab(const QString& aSerialPortName)
 {
 	QWidget* serialTab=new QWidget;
@@ -193,6 +211,11 @@ void QtPreferencesDialog::chooseDirectory()
 			directoryNameEdit->setText(filenames[0]);
 		}
 	}
+}
+
+bool QtPreferencesDialog::isDisplayAsStack() const
+{
+	return displayAsStackClickButton->isChecked();
 }
 
 void QtPreferencesDialog::useHShiftClickToggled(bool aButtonChecked)

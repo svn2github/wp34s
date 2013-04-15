@@ -22,15 +22,20 @@
 class QtDebugger: public QTableView
 {
 public:
-	QtDebugger(QWidget* aParent=0);
+	QtDebugger(QWidget* aParent=0, bool aDisplayAsStack=false);
 
 public:
 	void refresh();
     QSize sizeHint() const;
     QSize minimumSizeHint() const;
+    bool eventFilter(QObject *object, QEvent *event);
+    bool isDisplayAsStack();
+    void setDisplayAsStack(bool aDisplayAsStack);
 
 protected:
 	void setColumnsSizes();
+
+protected:
 };
 
 #endif /* QTDEBUGGER_H_ */
