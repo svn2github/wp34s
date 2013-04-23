@@ -89,6 +89,7 @@ void QtBackgroundImage::addToolTip(const QtKey& aKey)
 	label->move(aKey.getRectangle().x(), aKey.getRectangle().y());
 	label->setAutoFillBackground(false);
 	label->setToolTip(aKey.getShortcut());
+	tooltipLabels.append(label);
 }
 
 QPixmap& QtBackgroundImage::getBackgroundPixmap()
