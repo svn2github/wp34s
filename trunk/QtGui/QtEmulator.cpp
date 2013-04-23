@@ -440,7 +440,7 @@ void QtEmulator::buildContextualQuit()
 void QtEmulator::buildComponents(const QtSkin& aSkin)
 {
 	centralWidget=new QWidget;
-	screen=new QtScreen(aSkin);
+	screen=new QtScreen(aSkin, useFonts);
 	keyboard=new QtKeyboard(aSkin, useHShiftClick, alwaysUseHShiftClick, hShiftDelay, showToolTips);
 	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard);
 	QBoxLayout* layout = new QHBoxLayout();

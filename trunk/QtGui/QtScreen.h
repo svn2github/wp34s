@@ -28,7 +28,7 @@ class QtBackgroundImage;
 class QtScreen
 {
 public:
-	QtScreen(const QtSkin& aSkin);
+	QtScreen(const QtSkin& aSkin, bool anUseFonts);
 	~QtScreen();
 
 public:

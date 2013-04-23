@@ -47,8 +47,8 @@ static int NON_PIXEL_INDEXES[] = {
 static int SPECIAL_DIGIT_INDEXES[] = { 1, 2, 3, 4, 5, 6, 7, 8, 24, 25 };
 
 
-QtScreen::QtScreen(const QtSkin& aSkin)
-: useFonts(true), font(NULL), fontLower(NULL), smallFont(NULL), smallFontLower(NULL), numberFont(NULL), exponentFont(NULL), specialDigitPainter(NULL)
+QtScreen::QtScreen(const QtSkin& aSkin, bool anUseFonts)
+: useFonts(anUseFonts), font(NULL), fontLower(NULL), smallFont(NULL), smallFontLower(NULL), numberFont(NULL), exponentFont(NULL), specialDigitPainter(NULL)
 {
 	setSkin(aSkin);
 	for(int i=0; i<(int) (sizeof(NON_PIXEL_INDEXES)/sizeof(int)); i++)
