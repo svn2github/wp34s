@@ -21,12 +21,14 @@
 
 #define PREFERENCES_TITLE "Preferences"
 #define MEMORY_TAB_NAME "Memory"
-#define DEBUGGER_TAB_NAME "Debugger"
+#define DISPLAY_TAB_NAME "Display"
 #define KEYBOARD_TAB_NAME "Keyboard"
-#define DISPLAY_AS_STACK_LABEL_TEXT "Display as Stack (X at bottom)"
+#define USE_FONTS_LABEL_TEXT "Use real fonts"
+#define DISPLAY_AS_STACK_LABEL_TEXT "Display as Stack in Debug (X at bottom)"
 #define HSHIFT_DELAY_LABEL_TEXT "H-Shift Delay"
 #define USE_H_CLICK_TEXT "Use H-shift click"
 #define ALWAYS_USE_H_CLICK_TEXT "Always use H-shift click"
+#define USE_TOOLTIPS_LABEL_TEXT "Show Tooltips"
 #define SERIAL_PORT_TAB_NAME "Serial Port"
 #define SERIAL_PORT_NAME_LABEL_TEXT "Serial Port Name"
 #define USE_CUSTOM_DIRECTORY_TEXT "Use a custom directory for memory files"
@@ -48,9 +50,11 @@ public:
 	QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 			const QString& aCustomDirectoryName,
 			bool anUseHShiftClickFlag,
-			bool anAlwaysUseHShiftClickFlag,
+			bool anAlwaysUseHShiftFlag,
 			int anHShiftDelay,
-			bool aDisplayAsStackClickFlag,
+			bool aShowToolTipFlag,
+			bool anUseFontsFlag,
+			bool aDisplayAsStackFlag,
 			const QString& aSerialPortName,
 			QWidget* aParent=NULL);
 	~QtPreferencesDialog();
@@ -60,6 +64,8 @@ public:
 	QString getCustomDirectoryName() const;
 	bool isUseHShiftClickActive() const;
 	bool isAlwaysUseHShiftClickActive() const;
+	bool isShowToolTips() const;
+	bool isUseFonts() const;
 	bool isDisplayAsStack() const;
 	int getHShiftDelay() const;
 	QString getSerialPortName() const;
@@ -75,12 +81,14 @@ private:
 			const QString& aCustomDirectoryName,
 			bool anUseHShiftClickFlag,
 			bool anAlwaysUseHShiftClickFlag,
-			bool aDisplayAsStackClickFlag,
+			bool aShowToolTipFlag,
+			bool anUseFontsFlag,
+			bool aDisplayAsStackFlag,
 			int anHShiftDelay,
 			const QString& aSerialPortName);
 	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName);
-	QWidget* buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay);
-	QWidget* buildDebuggerTab(bool aDisplayAsStackClickFlag);
+	QWidget* buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay, bool aShowToolTipFlag);
+	QWidget* buildDisplayTab(bool anUseFontsFlag, bool aDisplayAsStackFlag);
 	QWidget* buildSerialTab(const QString& aSerialPortName);
 	void fillSerialPorts(QListWidget& aListWidget);
 
@@ -90,6 +98,8 @@ private:
 	QPushButton* chooseButton;
 	QCheckBox *useHShiftClickButton;
 	QCheckBox *alwaysUseHShiftClickButton;
+	QCheckBox *showToolTipsClickButton;
+	QCheckBox *useFontsClickButton;
 	QCheckBox *displayAsStackClickButton;
 	QSpinBox* hShiftDelayBox;
 	QLineEdit* serialPortNameEdit;

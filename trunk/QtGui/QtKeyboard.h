@@ -46,7 +46,7 @@ class QtKeyboard: public QObject
 	Q_OBJECT
 
 public:
-	QtKeyboard(const QtSkin& aSkin, bool anUseHShiftClick, bool anAlwaysUseHShiftClick, int anHShiftDelay);
+	QtKeyboard(const QtSkin& aSkin, bool anUseHShiftClick, bool anAlwaysUseHShiftClick, int anHShiftDelay, bool aShowToolTips);
 	virtual ~QtKeyboard();
 
 public:
@@ -74,6 +74,8 @@ public:
 	void setAlwaysUseHShiftClick(bool anAlwaysUseHShiftClick);
 	int getHShiftDelay();
 	void setHShiftDelay(int anHShiftDelay);
+	bool isShowToolTips();
+	void setShowToolTips(bool aShowToolTips);
 
 private slots:
 	void onHShift();
@@ -104,6 +106,7 @@ private:
     bool useHShiftClick;
     bool alwaysUseHShiftClick;
     int hShiftDelay;
+    bool showToolTips;
     bool currentKeyHShifted;
     bool autoRepeat;
     bool fShiftLocked, gShiftLocked, hShiftLocked;

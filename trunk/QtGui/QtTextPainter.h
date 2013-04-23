@@ -14,34 +14,29 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QTKEY_H_
-#define QTKEY_H_
+#ifndef QTTEXTPAINTER_H_
+#define QTTEXTPAINTER_H_
 
-#include <QRect>
-#include <QLinkedList>
-#include <QKeySequence>
+#include <QHash>
+#include <QPainter>
 
-typedef QLinkedList<QKeySequence> KeySequenceList;
-typedef KeySequenceList::const_iterator KeySequenceConstIterator;
-
-class QtKey
+class QtTextPainter
 {
 public:
-	QtKey(int aCode, const QRect& aRectangle);
+	virtual ~QtTextPainter();
 
 public:
-	int getCode() const;
-	const QRect& getRectangle() const;
-	const KeySequenceList& getKeySequences() const;
-	void addKeySequence(const QKeySequence& aKeySequence);
-	QString getShortcut() const;
-	void addShortcut(const QString& aShortcut);
+	virtual void paint(const QPoint& aPoint, QPainter& aPainter, const QFont& aFontLower)=0;
+	virtual int width(QPainter& aPainter, const QFont& aFontLower)=0;
+
+public:
+	static QtTextPainter* getTextPainter(char c);
 
 private:
-	int code;
-	QRect rectangle;
-	KeySequenceList keySequences;
-	QString shortcut;
+	static void buildPainters();
+
+private:
+	static QHash<char, QtTextPainter*>* textPainters;
 };
 
-#endif /* QTKEY_H_ */
+#endif /* QTTEXTPAINTER_H_ */

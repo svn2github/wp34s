@@ -39,6 +39,8 @@ const char *DispMsg;	   // What to display in message area
 short int DispPlot;
 #ifndef REALBUILD
 char LastDisplayedText[NUMALPHA + 1];	   // For clipboard export
+char LastDisplayedNumber[NUMBER_LENGTH + 1];
+char LastDisplayedExponent[EXPONENT_LENGTH + 1];
 #endif
 
 FLAG ShowRPN;		   // controls visibility of RPN annunciator
@@ -54,9 +56,15 @@ static const char S_SURE[] = "Sure?";
 
 static const char S7_ERROR[] = "Error";		/* Default lower line error display */
 static const char S7_NaN[] = "not nuMmEric";	/* Displaying NaN in lower line */
+#ifndef REALBUILD
+static const char S7_NaN_Text[] = "N o t  n u m e r i c ";
+#endif
 static const char S7_INF[] = "Infinity";	/* Displaying infinity in lower line */
 
 static const char S7_STEP[] = "StEP ";		/* Step marker in program mode (lower line) */
+#ifndef REALBUILD
+static const char S7_STEP_ShortText[] = "STEP";
+#endif
 
 static const char S7_fract_EQ[] = " = ";	/* Exponent in fraction mode indicates low, equal or high */
 static const char S7_fract_LT[] = " Lt";
@@ -69,6 +77,14 @@ static const char libname[][5] = {
 #endif
 };
 
+#ifndef REALBUILD
+static const char libname_text[][10] = {
+	" R a m ", " L i b  ", " B u p ",	" R o m "
+};
+static const char libname_shorttext[][5] = {
+	"Ram", "Lib", "Bup", "Rom"
+};
+#endif
 
 
 /* Set the separator and decimal mode globals
@@ -183,7 +199,50 @@ void error_message(const unsigned int e)
 
 #include "charset7.h"
 
+#ifndef REALBUILD
+#define SET_MANT_SIGN set_mant_sign_dot()
+#define CLR_MANT_SIGN clr_mant_sign_dot()
+#define SET_EXP_SIGN set_exp_sign_dot()
+#define CLR_EXP_SIGN clr_exp_sign_dot()
+
+static void set_mant_sign_dot()
+{
+	LastDisplayedNumber[0]='-';
+	set_dot(MANT_SIGN);
+}
+
+static void clr_mant_sign_dot()
+{
+	LastDisplayedNumber[0]=' ';
+	clr_dot(MANT_SIGN);
+}
+
+static void set_exp_sign_dot()
+{
+	LastDisplayedExponent[0]='-';
+	set_dot(EXP_SIGN);
+}
+
+static void clr_exp_sign_dot()
+{
+	LastDisplayedExponent[0]=' ';
+	clr_dot(EXP_SIGN);
+}
+
+#else
+#define SET_MANT_SIGN set_dot(MANT_SIGN)
+#define CLR_MANT_SIGN clr_dot(MANT_SIGN)
+
+#define SET_EXP_SIGN set_dot(EXP_SIGN)
+#define CLR_EXP_SIGN clr_dot(EXP_SIGN)
+
+#endif
+
+#ifndef REALBUILD
+int getdig(int ch)
+#else
 static int getdig(int ch)
+#endif
 {
 	// perform index lookup
 	return digtbl[ch&0xff];
@@ -193,7 +252,6 @@ void dot(int n, int on) {
 	if (on)	set_dot(n);
 	else	clr_dot(n);
 }
-
 
 
 /* Set the decimal point *after* the indicated digit
@@ -207,6 +265,9 @@ static char *set_decimal(const int posn, const enum decimal_modes decimal, char 
 		set_dot(posn+7);
 		if (decimal != DECIMAL_DOT)
 			set_dot(posn+8);
+#ifndef REALBUILD
+	LastDisplayedNumber[(posn/9)*2+2]= decimal == DECIMAL_DOT?'.':',';
+#endif
 	}
 	return res;
 }
@@ -226,16 +287,24 @@ static char *set_separator(int posn, const enum separator_modes sep, char *res) 
 		set_dot(posn+7);
 		if (sep == SEP_COMMA)
 			set_dot(posn+8);
+#ifndef REALBUILD
+		LastDisplayedNumber[(posn/9)*2+2] = sep == SEP_COMMA?',':'.';
+#endif
 	}
 	return res;
 }
-
 
 /* Set a digit in positions [base, base+6] */
 static void set_dig(int base, int ch)
 {
 	int i;
 	int c = getdig(ch);
+#ifndef REALBUILD
+	if(base<SEGS_EXP_BASE)
+		LastDisplayedNumber[(base/9)*2+1] = ch==0?' ':ch;
+	else
+		LastDisplayedExponent[(base-SEGS_EXP_BASE)/7+1] = ch;
+#endif
 	for (i=6; i>=0; i--)
 	{
 //		dot(base, c & (1 << i));
@@ -294,7 +363,7 @@ static void set_exp(int exp, int zerop, char *res) {
 #endif
 	if (exp < 0) {
 		if (res) *res++ = '-';
-		else set_dot(EXP_SIGN);
+		else SET_EXP_SIGN;
 		exp = -exp;
 	}
 	if (res == NULL && exp > 999)
@@ -325,7 +394,7 @@ static void carry_overflow(void) {
 
 	// Display the base as the first exponent digit
 	if (b > 10 && b < 16)
-		set_dot(EXP_SIGN);
+		SET_EXP_SIGN;
 	c = "B34567o9D12345h"[b-2];
 	set_dig(base, c);
 
@@ -459,7 +528,7 @@ static void disp_x(const char *p) {
 #endif
 
 	if (*p == '-') {
-		set_dot(MANT_SIGN);
+		SET_MANT_SIGN;
 		p++;
 	}
 
@@ -530,7 +599,7 @@ static void disp_x(const char *p) {
 			p++;
 			if (*p != '\0') {
 				if (*p == '-') {
-					set_dot(EXP_SIGN);
+					SET_EXP_SIGN;
 					p++;
 				}
 			}
@@ -660,7 +729,7 @@ static void set_int_x(const long long int value, char *res) {
 		if (sign) {
 			if (dig >= 0)
 				set_dig(dig, '-');
-			else	set_dot(MANT_SIGN);
+			else	SET_MANT_SIGN;
 		}
 	}
 }
@@ -675,6 +744,9 @@ static int check_special_dn(const decNumber *x, char *res) {
 				scopy(res, "NaN");
 			} else {
 				set_digits_string(S7_NaN, 0);
+#ifndef REALBUILD
+				scopy(LastDisplayedText, S7_NaN_Text);
+#endif
 			}
 			return 1;
 		} else {
@@ -755,7 +827,7 @@ static void set_x_hms(const decNumber *rgx, char *res) {
 		if (res != NULL)
 			*res += '-';
 		else
-			set_dot(MANT_SIGN);
+			SET_MANT_SIGN;
 		dn_minus(&x, &x);
 	}
 
@@ -818,7 +890,7 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 		if (res != NULL)
 			*res += '-';
 		else
-			set_dot(MANT_SIGN);
+			SET_MANT_SIGN;
 	}
 	decNumberFrac(&w, &x);
 	decNumber2Fraction(&n, &d, &w);	/* Get the number as a numerator & denominator */
@@ -1072,8 +1144,8 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 	// Skip leading spaces and zeros.  Also grab the sign if it is there
 	for (q=x; *q == ' '; q++);
 	if (!res) {
-		clr_dot(EXP_SIGN);
-		clr_dot(MANT_SIGN);
+		CLR_EXP_SIGN;
+		CLR_MANT_SIGN;
 	}
 	if (*q == '-') {
 		negative = 1;
@@ -1282,7 +1354,7 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 		if (res) *res++ = '-';
 		else {
 			if (j == 0)
-				set_dot(MANT_SIGN);
+				SET_MANT_SIGN;
 			else
 				set_dig(j - SEGS_PER_DIGIT, '-');
 		}
@@ -1463,6 +1535,9 @@ static void show_label(void) {
 
 	set_status(prt((opcode)op, buf));
 	set_digits_string(libname[n], 0);
+#ifndef REALBUILD
+	scopy(LastDisplayedNumber, libname_text[n]);
+#endif
 
 	if (op & OP_DBL) {
 		lblpc = findmultilbl(op, 0);
@@ -1471,8 +1546,12 @@ static void show_label(void) {
 			n = nLIB(lblpc);
 			if (n == REGION_RAM)
 				set_exp(lblpc, 1, CNULL);
-			else
+			else {
 				set_exp_digits_string(libname[n], CNULL);
+#ifndef REALBUILD
+				scopy(LastDisplayedNumber, libname_text[n]);
+#endif
+			}
 		}
 	}
 }
@@ -1572,6 +1651,13 @@ void display(void) {
 	int x_disp = 0;
 	const int shift = cur_shift();
 
+#ifndef REALBUILD
+	xset(LastDisplayedNumber, ' ', NUMBER_LENGTH);
+	LastDisplayedNumber[NUMBER_LENGTH]=0;
+	xset(LastDisplayedExponent, ' ', EXPONENT_LENGTH);
+	LastDisplayedExponent[EXPONENT_LENGTH]=0;
+#endif
+
 	if (State2.disp_freeze) {
 		State2.disp_freeze = 0;
 		State2.disp_temp = 1;
@@ -1594,6 +1680,10 @@ void display(void) {
 		char vers[VERS_SVN_OFFSET + 5] = VERS_DISPLAY;
 		set_digits_string("pAULI, WwALtE", 0);
 		set_dig_s(SEGS_EXP_BASE, 'r', CNULL);
+#ifndef REALBUILD
+		scopy(LastDisplayedNumber, " P A U L I,  W A L T E R ");
+		scopy(LastDisplayedExponent, " ");
+#endif
 		xcopy( vers + VERS_SVN_OFFSET, SvnRevision, 4 );
 		set_status(vers);
 		skip = 1;
@@ -1800,6 +1890,20 @@ nostk:	show_flags();
 			num_arg_0(scopy_spc(buf, n == 0 ? S7_STEP : libname[n]), 
 				  upc, 3 + (n & 1));  // 4 digits in ROM and Library
 			set_digits_string(buf, SEGS_PER_DIGIT);
+#ifndef REALBUILD
+			xset(buf, '\0', sizeof(buf));
+			set_exp(ProgFree, 1, CNULL);
+			num_arg_0(scopy_spc(buf, n == 0 ? S7_STEP_ShortText : libname_shorttext[n]),
+				  upc, 3 + (n & 1));  // 4 digits in ROM and Library
+			char *b=buf;
+			char *l=LastDisplayedNumber;
+			*l++=' ';
+			while(*b) {
+				*l++=*b++;
+				*l++=' ';
+			}
+			*l=0;
+#endif
 		}
 	}
 	set_annunciators();

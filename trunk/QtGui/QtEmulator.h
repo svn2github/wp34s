@@ -50,8 +50,12 @@
 #define USE_HSHIFT_CLICK_SETTING "UseHShiftClick"
 #define ALWAYS_USE_HSHIFT_CLICK_SETTING "AlwaysUseHShiftClick"
 #define HSHIFT_DELAY_SETTING "HShiftDelay"
+#define SHOW_TOOLTIPS_SETTING "ShowToolTips"
+#define DEFAULT_SHOW_TOOLTIPS_SETTING true
 
-#define DEBUGGER_SETTINGS_GROUP "Debugger"
+#define DISPLAY_SETTINGS_GROUP "Display"
+#define USE_FONTS_SETTING "UseFonts"
+#define DEFAULT_USE_FONTS_SETTING true
 #define DISPLAY_AS_STACK_SETTING "DisplayAsStack"
 
 
@@ -70,6 +74,8 @@
 #define STATE_FILENAME "wp34s.dat"
 #define BACKUP_FILENAME "wp34s-backup.dat"
 #define LIBRARY_FILENAME "wp34s-lib.dat"
+#define FONT_FILE_TYPE "font"
+#define FONTS_DIRECTORY "fonts"
 
 #define DOCUMENTATION_FILENAME "Manual_wp_34s_3_1.pdf"
 #define WEBSITE_URL "http://wp34s.sourceforge.net/"
@@ -172,13 +178,13 @@ private:
      void loadSettings();
      void loadUserInterfaceSettings();
      void loadKeyboardSettings();
-     void loadDebuggerSettings();
+     void loadDisplaySettings();
      void loadCustomDirectorySettings();
      void loadSerialPortSettings();
      void saveSettings();
      void saveUserInterfaceSettings();
      void saveKeyboardSettings();
-     void saveDebuggerSettings();
+     void saveDisplaySettings();
      void saveCustomDirectorySettings();
      void saveSerialPortSettings();
      void loadMemory();
@@ -222,6 +228,8 @@ private:
      bool useHShiftClick;
      bool alwaysUseHShiftClick;
      int hShiftDelay;
+     bool showToolTips;
+     bool useFonts;
      bool displayAsStack;
      QtSerialPort* serialPort;
      bool active;

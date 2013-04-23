@@ -20,6 +20,7 @@
 #include <QPaintDevice>
 #include <QPaintEvent>
 #include "QtSkin.h"
+#include "QtSpecialDigitPainter.h"
 
 // We need to forward define it as we are included by QtBackgroundImage.h
 class QtBackgroundImage;
@@ -35,6 +36,8 @@ public:
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
 	void copy(QtBackgroundImage& aBackgroundImage, QClipboard& aClipboard) const;
 	void setSkin(const QtSkin& aSkin);
+	bool isUseFonts();
+	void setUseFonts(bool anUseFonts);
 
 private:
 	QRect screenRectangle;
@@ -43,6 +46,21 @@ private:
     QColor screenBackground;
     DotPainterList dotPainters;
     DotPainterList pastePainters;
+    bool useFonts;
+    QSet<int> nonPixelIndexes;
+    QSet<int> specialDigitIndexes;
+    QPoint textOrigin;
+    QFont *font;
+    QFont *fontLower;
+    QFont *smallFont;
+    QFont *smallFontLower;
+    QPoint numberOrigin;
+    QFont *numberFont;
+    int numberExtraWidth;
+    int separatorShift;
+    QPoint exponentOrigin;
+    QFont *exponentFont;
+    QtSpecialDigitPainter *specialDigitPainter;
 };
 
 extern "C"

@@ -14,34 +14,29 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QTKEY_H_
-#define QTKEY_H_
+#include "QtNormalTextPainter.h"
 
-#include <QRect>
-#include <QLinkedList>
-#include <QKeySequence>
-
-typedef QLinkedList<QKeySequence> KeySequenceList;
-typedef KeySequenceList::const_iterator KeySequenceConstIterator;
-
-class QtKey
+QtNormalTextPainter::QtNormalTextPainter(QChar aChar) :
+	string(aChar)
 {
-public:
-	QtKey(int aCode, const QRect& aRectangle);
+}
 
-public:
-	int getCode() const;
-	const QRect& getRectangle() const;
-	const KeySequenceList& getKeySequences() const;
-	void addKeySequence(const QKeySequence& aKeySequence);
-	QString getShortcut() const;
-	void addShortcut(const QString& aShortcut);
+QtNormalTextPainter::QtNormalTextPainter(QChar aFirstChar, QChar aNextChar) :
+	string(aFirstChar)
+{
+	string=string.append(aNextChar);
+}
 
-private:
-	int code;
-	QRect rectangle;
-	KeySequenceList keySequences;
-	QString shortcut;
-};
+void QtNormalTextPainter::paint(const QPoint& aPoint, QPainter& aPainter, const QFont& aFontLower)
+{
+	Q_UNUSED(aFontLower)
 
-#endif /* QTKEY_H_ */
+	aPainter.drawText(QPoint(aPoint.x(), aPoint.y()+aPainter.fontMetrics().ascent()), string);
+}
+
+int QtNormalTextPainter::width(QPainter& aPainter, const QFont& aFontLower)
+{
+	Q_UNUSED(aFontLower)
+
+	return aPainter.fontMetrics().width(string);
+}

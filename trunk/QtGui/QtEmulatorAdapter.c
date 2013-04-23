@@ -306,6 +306,25 @@ int* get_displayed_text()
 	return buffer;
 }
 
+char* get_last_displayed()
+{
+	return LastDisplayedText;
+}
+
+char* get_last_displayed_number()
+{
+	return LastDisplayedNumber;
+}
+
+char* get_last_displayed_exponent()
+{
+	return LastDisplayedExponent;
+}
+
+int is_small_font(char *p)
+{
+	return  State2.disp_small || pixel_length(p, 0) > BITMAP_WIDTH+1;
+}
 
 char* get_register_names()
 {

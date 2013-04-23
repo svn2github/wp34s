@@ -451,6 +451,8 @@ extern int current_catalogue_max(void);
 #define EXTRA_REG       4
 #define NUMLBL          104     /* Number of program labels */
 #define NUMALPHA        30      /* Number of characters in Alpha */
+#define NUMBER_LENGTH	25		/* Number of characters to display a number, needed by Qt & iOS Emulators */
+#define EXPONENT_LENGTH	4		/* Number of characters to display an exponent, needed by Qt & iOS Emulators */
 #define CMDLINELEN      19      /* 12 mantissa + dot + sign + E + sign + 3 exponent = 19 */
 
 /* Stack lives in the register set */

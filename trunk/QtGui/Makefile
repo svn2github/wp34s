@@ -208,6 +208,8 @@ ifeq "$(SYSTEM)" "windows32"
 	$(CPDIR) skins/* $(DISTDIR)/skins
 	$(MKDIR) $(DISTDIR)/images
 	$(CPDIR) images/* $(DISTDIR)/images
+	$(MKDIR) $(DISTDIR)/fonts
+	$(CPDIR) fonts/* $(DISTDIR)/fonts
 	$(CP) $(QTLIBS) $(DISTDIR)
 	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
 	cd $(ZIPCHANGEDIR); $(ZIP) $(ZIPDISTFILE) $(ZIPTOPDIR)
@@ -217,6 +219,8 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(CPDIR) skins/* $(RESOURCESDIR)/skins
 	$(MKDIR) $(RESOURCESDIR)/images
 	$(CPDIR) images/* $(RESOURCESDIR)/images
+	$(MKDIR) $(RESOURCESDIR)/fonts
+	$(CPDIR) fonts/* $(RESOURCESDIR)/fonts
 	$(CPDIR) $(DISTPRINTERAPP) $(APPSDISTDIR)
 	$(MACDEPLOYQT) $(DISTDIR)
 	$(BUILDDMG)
@@ -227,6 +231,8 @@ ifneq "$(LINUX)" ""
 	$(CPDIR) skins/* $(DISTDIR)/skins
 	$(MKDIR) $(DISTDIR)/images
 	$(CPDIR) images/* $(DISTDIR)/images
+	$(MKDIR) $(DISTDIR)/fonts
+	$(CPDIR) fonts/* $(DISTDIR)/fonts
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)
 	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
 	$(TAR) $(DISTFILE) $(TARTOPDIR)

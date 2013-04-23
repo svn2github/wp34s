@@ -21,6 +21,8 @@ extern "C"
 
 #include "QtScreen.h"
 #include "QtEmulator.h"
+#include "QtEmulatorAdapter.h"
+#include "QtTextPainter.h"
 
 extern "C"
 {
@@ -30,9 +32,47 @@ extern "C"
 #define SCREEN_ROW_COUNT 10
 #define SCREEN_COLUMN_COUNT 40
 
+#define FONT_FILENAME "DejaVuSans.ttf"
+#define DEFAULT_FONT_FAMILY "Helvetica"
+#define FONT_STYLE QFont::SansSerif
+
+#define NUMBER_FONT_FILENAME "DejaVuSans.ttf"
+#define DEFAULT_NUMBER_FONT_FAMILY "Courier"
+#define NUMBER_FONT_STYLE QFont::Monospace
+
+static int NON_PIXEL_INDEXES[] = {
+	39, 79, 118, 119, 159, 199, 239, 279, 319, 359, 399
+};
+
+static int SPECIAL_DIGIT_INDEXES[] = { 1, 2, 3, 4, 5, 6, 7, 8, 24, 25 };
+
+
 QtScreen::QtScreen(const QtSkin& aSkin)
+: useFonts(true), font(NULL), fontLower(NULL), smallFont(NULL), smallFontLower(NULL), numberFont(NULL), exponentFont(NULL), specialDigitPainter(NULL)
 {
 	setSkin(aSkin);
+	for(int i=0; i<(int) (sizeof(NON_PIXEL_INDEXES)/sizeof(int)); i++)
+	{
+		nonPixelIndexes << NON_PIXEL_INDEXES[i];
+	}
+	for(int i=0; i<(int) (sizeof(SPECIAL_DIGIT_INDEXES)/sizeof(int)); i++)
+	{
+		specialDigitIndexes << SPECIAL_DIGIT_INDEXES[i];
+	}
+}
+
+bool QtScreen::isUseFonts()
+{
+	return useFonts;
+}
+
+void QtScreen::setUseFonts(bool anUseFonts)
+{
+	if(useFonts!=anUseFonts)
+	{
+		useFonts=anUseFonts;
+		updateScreen();
+	}
 }
 
 void QtScreen::setSkin(const QtSkin& aSkin)
@@ -43,6 +83,73 @@ void QtScreen::setSkin(const QtSkin& aSkin)
 	dotPainters=aSkin.getDotPainters();
 	pasteRectangle=aSkin.getPasteRectangle();
 	pastePainters=aSkin.getPastePainters();
+
+	textOrigin=aSkin.getTextPosition();
+
+	QString fontFamily=DEFAULT_FONT_FAMILY;
+	QFont::Weight smallWeight=QFont::Normal;
+	QFile fontFile(QString(FONT_FILE_TYPE)+':'+FONT_FILENAME);
+	if(fontFile.exists() && fontFile.open(QFile::ReadOnly)) {
+		QByteArray data=fontFile.readAll();
+		int loadedFontId=QFontDatabase::addApplicationFontFromData(data);
+		QStringList loadedFontFamilies=QFontDatabase::applicationFontFamilies(loadedFontId);
+		if(!loadedFontFamilies.empty()) {
+			fontFamily = loadedFontFamilies.at(0);
+			smallWeight=QFont::Bold;
+		}
+	}
+
+	delete font;
+	font=new QFont(fontFamily);
+	font->setPixelSize(aSkin.getFontSize());
+	font->setStretch(aSkin.getFontStretch());
+
+	delete fontLower;
+	fontLower=new QFont(fontFamily);
+	fontLower->setPixelSize(aSkin.getFontLowerSize());
+	fontLower->setWeight(QFont::Bold);
+	fontLower->setStretch(aSkin.getFontStretch());
+
+	delete smallFont;
+	smallFont=new QFont(fontFamily);
+	smallFont->setPixelSize(aSkin.getSmallFontSize());
+	smallFont->setWeight(smallWeight);
+	smallFont->setStretch(aSkin.getSmallFontStretch());
+
+	delete smallFontLower;
+	smallFontLower=new QFont(fontFamily);
+	smallFontLower->setPixelSize(aSkin.getSmallFontLowerSize());
+	smallFontLower->setWeight(QFont::Bold);
+	smallFont->setStretch(aSkin.getSmallFontStretch());
+
+	numberOrigin=aSkin.getNumberPosition();
+
+	QString numberFontFamily=DEFAULT_NUMBER_FONT_FAMILY;
+	QFile numberFontFile(QString(FONT_FILE_TYPE)+':'+NUMBER_FONT_FILENAME);
+	if(numberFontFile.exists() && numberFontFile.open(QFile::ReadOnly)) {
+		QByteArray data=numberFontFile.readAll();
+		int loadedFontId=QFontDatabase::addApplicationFontFromData(data);
+		QStringList loadedFontFamilies=QFontDatabase::applicationFontFamilies(loadedFontId);
+		if(!loadedFontFamilies.empty()) {
+			numberFontFamily = loadedFontFamilies.at(0);
+		}
+	}
+
+	delete numberFont;
+	numberFont=new QFont(numberFontFamily);
+	numberFont->setPixelSize(aSkin.getNumberFontSize());
+	numberFont->setStretch(aSkin.getNumberFontStretch());
+	numberExtraWidth=aSkin.getNumberExtraWidth();
+	separatorShift=aSkin.getSeparatorShift();
+
+	exponentOrigin=aSkin.getExponentPosition();
+	delete exponentFont;
+	exponentFont=new QFont(numberFontFamily);
+	exponentFont->setPixelSize(aSkin.getExponentFontSize());
+	exponentFont->setStretch(aSkin.getExponentFontStretch());
+
+	delete specialDigitPainter;
+	specialDigitPainter = new QtSpecialDigitPainter(*numberFont);
 }
 
 QtScreen::~QtScreen()
@@ -78,8 +185,76 @@ void QtScreen::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEve
 	      if((LcdData[row] & ((uint64_t) 1) << column)!=0)
 	      {
 	    	  int dotIndex=row*SCREEN_COLUMN_COUNT+column;
-	    	  dotPainters[dotIndex]->paint(aBackgroundImage.getBackgroundPixmap(), painter);
+	    	  if(!useFonts || nonPixelIndexes.contains(dotIndex))
+	    	  {
+	    		  dotPainters[dotIndex]->paint(aBackgroundImage.getBackgroundPixmap(), painter);
+	    	  }
 	      }
+		}
+	}
+	if(useFonts)
+	{
+		char *displayedText = get_last_displayed();
+		QFont* currentFontLower;
+		if(is_small_font(displayedText))
+		{
+			painter.setFont(*smallFont);
+			currentFontLower=smallFontLower;
+		}
+		else
+		{
+			painter.setFont(*font);
+			currentFontLower=fontLower;
+		}
+		int x=textOrigin.x();
+		int y=textOrigin.y();
+		while(*displayedText!=0)
+		{
+			char c=*displayedText;
+			QtTextPainter* textPainter=QtTextPainter::getTextPainter(c);
+			textPainter->paint(QPoint(x, y), painter, *currentFontLower);
+			x+=textPainter->width(painter, *currentFontLower);
+			displayedText++;
+		}
+
+		char *displayedNumber = get_last_displayed_number();
+		painter.setFont(*numberFont);
+		x=numberOrigin.x();
+		y=numberOrigin.y()+painter.fontMetrics().ascent();
+		int width=painter.fontMetrics().width('8');
+		// First we draw the first character, usually '-' or nothing
+		painter.drawText(QPoint(x, y), QString(QChar(*displayedNumber)));
+		x+=width;
+		displayedNumber++;
+
+		while(*displayedNumber!=0)
+		{
+			char c=*displayedNumber;
+			if(specialDigitIndexes.contains(c)) {
+				specialDigitPainter->paint(painter, QPoint(x, numberOrigin.y()), getdig(c));
+			}
+			else
+			{
+				painter.drawText(QPoint(x+(width-painter.fontMetrics().width(c))/2, y), QString(QChar(c)));
+			}
+			x+=width;
+			displayedNumber++;
+			painter.drawText(QPoint(x-separatorShift, y), QString(QChar(*displayedNumber)));
+			x+=numberExtraWidth;
+			displayedNumber++;
+		}
+
+		char *displayedExponent = get_last_displayed_exponent();
+		painter.setFont(*exponentFont);
+		x=exponentOrigin.x();
+		y=exponentOrigin.y()+painter.fontMetrics().ascent();
+		width=painter.fontMetrics().width('8');
+
+		while(*displayedExponent!=0)
+		{
+			painter.drawText(QPoint(x, y), QString(QChar(*displayedExponent)));
+			x+=painter.fontMetrics().width(*displayedExponent);
+			displayedExponent++;
 		}
 	}
 }

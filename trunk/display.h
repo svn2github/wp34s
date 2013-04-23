@@ -42,6 +42,9 @@ extern void dot(int n, int on);
 extern void set_IO_annunciator(void);
 extern void set_RPN_annunciator(int on);
 
+#ifndef REALBUILD
+extern int getdig(int ch);
+#endif
 #ifdef INCLUDE_STOPWATCH
 extern void stopwatch_message(const char *str1, const char *str2, int dot_pos, char* exponent);
 #endif // INCLUDE_STOPWATCH

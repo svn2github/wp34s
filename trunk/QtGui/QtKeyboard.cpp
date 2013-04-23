@@ -21,13 +21,14 @@
 
 static const QtKeyCode INVALID_KEY_CODE;
 
-QtKeyboard::QtKeyboard(const QtSkin& aSkin, bool anUseHShiftClick, bool anAlwaysUseHShiftClick, int anHShiftDelay)
+QtKeyboard::QtKeyboard(const QtSkin& aSkin, bool anUseHShiftClick, bool anAlwaysUseHShiftClick, int anHShiftDelay, bool aShowToolTips)
 	: keyboardBufferBegin(0),
 	  keyboardBufferEnd(0),
 	  currentKeyCode(INVALID_KEY_CODE),
 	  useHShiftClick(anUseHShiftClick),
 	  alwaysUseHShiftClick(anAlwaysUseHShiftClick),
 	  hShiftDelay(anHShiftDelay),
+	  showToolTips(aShowToolTips),
 	  currentKeyHShifted(false),
 	  autoRepeat(false),
 	  fShiftLocked(false),
@@ -260,6 +261,16 @@ bool QtKeyboard::isAlwaysUseHShiftClick()
 void QtKeyboard::setAlwaysUseHShiftClick(bool anAlwaysUseHShiftClick)
 {
 	alwaysUseHShiftClick=anAlwaysUseHShiftClick;
+}
+
+bool QtKeyboard::isShowToolTips()
+{
+	return showToolTips;
+}
+
+void QtKeyboard::setShowToolTips(bool aShowToolTips)
+{
+	showToolTips=aShowToolTips;
 }
 
 int QtKeyboard::getHShiftDelay()

@@ -28,6 +28,7 @@ static const PainterHandlers painterHandlers;
 
 QtSkin::QtSkin(QFile& aFile) throw (QtSkinException)
 		: pictureSize(-1, -1), screenRectangle(-1, -1, -1, -1), screenForeground(), screenBackground(), hShiftHeight(0),
+		  numberFontSize(-1), exponentFontSize(-1), fontSize(-1), smallFontSize(-1),
 		  keys(MAX_KEY_CODE, NULL), dotPainters(DOT_PAINTERS_COUNT, NULL), pastePainters(PASTE_PAINTERS_COUNT, NULL),
 		  insertedKeys(0), insertedDotPainters(0), insertedPastePainters(0)
 {
@@ -87,6 +88,26 @@ bool QtSkin::checkSkin()
 		setSimpleErrorMessage("Invalid number of Paste painters: "+QString().setNum(insertedPastePainters)+", should be 0 or "+QString().setNum(PASTE_PAINTERS_COUNT));
 		return false;
 	}
+	if(numberFontSize<0)
+	{
+		setSimpleErrorMessage("Missing number font size");
+		return false;
+	}
+	if(exponentFontSize<0)
+	{
+		setSimpleErrorMessage("Missing exponent font size");
+		return false;
+	}
+	if(fontSize<0)
+	{
+		setSimpleErrorMessage("Missing font size");
+		return false;
+	}
+	if(smallFontSize<0)
+	{
+		setSimpleErrorMessage("Missing small font size");
+		return false;
+	}
 	return true;
 }
 
@@ -123,6 +144,81 @@ const QColor& QtSkin::getSCreenBackground() const
 int QtSkin::getHShiftHeight() const
 {
 	return hShiftHeight;
+}
+
+QPoint QtSkin::getNumberPosition() const
+{
+	return numberPosition;
+}
+
+int QtSkin::getNumberFontSize() const
+{
+	return numberFontSize;
+}
+
+int QtSkin::getNumberFontStretch() const
+{
+	return numberFontStretch;
+}
+
+int QtSkin::getNumberExtraWidth() const
+{
+	return numberExtraWidth;
+}
+
+int QtSkin::getSeparatorShift() const
+{
+	return separatorShift;
+}
+
+QPoint QtSkin::getExponentPosition() const
+{
+	return exponentPosition;
+}
+
+int QtSkin::getExponentFontSize() const
+{
+	return exponentFontSize;
+}
+
+int QtSkin::getExponentFontStretch() const
+{
+	return exponentFontStretch;
+}
+
+QPoint QtSkin::getTextPosition() const
+{
+	return textPosition;
+}
+
+int QtSkin::getFontSize() const
+{
+	return fontSize;
+}
+
+int QtSkin::getFontStretch() const
+{
+	return fontStretch;
+}
+
+int QtSkin::getFontLowerSize() const
+{
+	return fontLowerSize;
+}
+
+int QtSkin::getSmallFontSize() const
+{
+	return smallFontSize;
+}
+
+int QtSkin::getSmallFontLowerSize() const
+{
+	return smallFontLowerSize;
+}
+
+int QtSkin::getSmallFontStretch() const
+{
+	return smallFontStretch;
 }
 
 const QtKeyList& QtSkin::getKeys() const
@@ -535,6 +631,189 @@ bool QtSkin::startHShift(const QString& aName, const QXmlAttributes& theAttribut
 	return true;
 }
 
+bool QtSkin::startNumber(const QString& aName, const QXmlAttributes& theAttributes)
+{
+	Q_UNUSED(aName)
+
+	int xIndex=theAttributes.index("x");
+	int yIndex=theAttributes.index("y");
+	int sizeIndex=theAttributes.index("size");
+	int stretchIndex=theAttributes.index("stretch");
+	int extraIndex=theAttributes.index("extra");
+	int shiftIndex=theAttributes.index("shift");
+
+	if(xIndex<0 || yIndex <0 || sizeIndex < 0  || stretchIndex<0 || theAttributes.count()!=6)
+	{
+		setErrorMessage("Invalid attributes for number");
+		return false;
+	}
+	else
+	{
+		int x, y;
+		if(!convertStringToInteger(theAttributes.value(xIndex), x))
+		{
+			setErrorMessage("Invalid x "+theAttributes.value(xIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(yIndex), y))
+		{
+			setErrorMessage("Invalid y "+theAttributes.value(yIndex));
+			return false;
+		}
+		numberPosition=QPoint(x,y);
+		if(!convertStringToInteger(theAttributes.value(sizeIndex), numberFontSize))
+		{
+			setErrorMessage("Invalid number font size "+theAttributes.value(sizeIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(stretchIndex), numberFontStretch))
+		{
+			setErrorMessage("Invalid number font stretch "+theAttributes.value(stretchIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(extraIndex), numberExtraWidth))
+		{
+			setErrorMessage("Invalid number font extra width "+theAttributes.value(extraIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(shiftIndex), separatorShift))
+		{
+			setErrorMessage("Invalid number font separator shift "+theAttributes.value(shiftIndex));
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool QtSkin::startExponent(const QString& aName, const QXmlAttributes& theAttributes)
+{
+	Q_UNUSED(aName)
+
+	int xIndex=theAttributes.index("x");
+	int yIndex=theAttributes.index("y");
+	int sizeIndex=theAttributes.index("size");
+	int stretchIndex=theAttributes.index("stretch");
+
+	if(xIndex<0 || yIndex <0 || sizeIndex < 0 || stretchIndex<0 || theAttributes.count()!=4)
+	{
+		setErrorMessage("Invalid attributes for exponent");
+		return false;
+	}
+	else
+	{
+		int x, y;
+		if(!convertStringToInteger(theAttributes.value(xIndex), x))
+		{
+			setErrorMessage("Invalid x "+theAttributes.value(xIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(yIndex), y))
+		{
+			setErrorMessage("Invalid y "+theAttributes.value(yIndex));
+			return false;
+		}
+		exponentPosition=QPoint(x,y);
+		if(!convertStringToInteger(theAttributes.value(sizeIndex), exponentFontSize))
+		{
+			setErrorMessage("Invalid exponent font size "+theAttributes.value(sizeIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(stretchIndex), exponentFontStretch))
+		{
+			setErrorMessage("Invalid exponent font stretch "+theAttributes.value(stretchIndex));
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+bool QtSkin::startText(const QString& aName, const QXmlAttributes& theAttributes)
+{
+	Q_UNUSED(aName)
+
+	int xIndex=theAttributes.index("x");
+	int yIndex=theAttributes.index("y");
+	int sizeIndex=theAttributes.index("size");
+	int stretchIndex=theAttributes.index("stretch");
+	int lowerIndex=theAttributes.index("lower");
+
+	if(xIndex<0 || yIndex <0 || sizeIndex < 0 || stretchIndex<0 || lowerIndex < 0 || theAttributes.count()!=5)
+	{
+		setErrorMessage("Invalid attributes for text");
+		return false;
+	}
+	else
+	{
+		int x, y;
+		if(!convertStringToInteger(theAttributes.value(xIndex), x))
+		{
+			setErrorMessage("Invalid x "+theAttributes.value(xIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(yIndex), y))
+		{
+			setErrorMessage("Invalid y "+theAttributes.value(yIndex));
+			return false;
+		}
+		textPosition=QPoint(x,y);
+		if(!convertStringToInteger(theAttributes.value(sizeIndex), fontSize))
+		{
+			setErrorMessage("Invalid font size "+theAttributes.value(sizeIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(stretchIndex), fontStretch))
+		{
+			setErrorMessage("Invalid font stretch "+theAttributes.value(stretchIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(lowerIndex), fontLowerSize))
+		{
+			setErrorMessage("Invalid font lower size "+theAttributes.value(lowerIndex));
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool QtSkin::startSmallText(const QString& aName, const QXmlAttributes& theAttributes)
+{
+	Q_UNUSED(aName)
+
+	int sizeIndex=theAttributes.index("size");
+	int stretchIndex=theAttributes.index("stretch");
+	int lowerIndex=theAttributes.index("lower");
+
+	if(sizeIndex < 0 || stretchIndex<0 || lowerIndex < 0 || theAttributes.count()!=3)
+	{
+		setErrorMessage("Invalid attributes for smalltext");
+		return false;
+	}
+	else
+	{
+		if(!convertStringToInteger(theAttributes.value(sizeIndex), smallFontSize))
+		{
+			setErrorMessage("Invalid small font size "+theAttributes.value(sizeIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(stretchIndex), smallFontStretch))
+		{
+			setErrorMessage("Invalid small font stretch "+theAttributes.value(stretchIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(lowerIndex), smallFontLowerSize))
+		{
+			setErrorMessage("Invalid small font lower size "+theAttributes.value(lowerIndex));
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool QtSkin::startKeys(const QString& aName, const QXmlAttributes& theAttributes)
 {
 	Q_UNUSED(aName)
@@ -612,6 +891,7 @@ bool QtSkin::startShortcut(const QString& aName, const QXmlAttributes& theAttrib
 	{
 		QKeySequence keySequence(theAttributes.value(sequenceIndex));
 		currentKey->addKeySequence(keySequence);
+		currentKey->addShortcut(theAttributes.value(sequenceIndex));
 		return true;
 	}
 }
@@ -850,6 +1130,10 @@ SkinHandlers::SkinHandlers()
 	(*this)[QString("foreground")]=TagHandler(&QtSkin::startForeground, NULL, NULL);
 	(*this)[QString("background")]=TagHandler(&QtSkin::startBackground, NULL, NULL);
 	(*this)[QString("hshift")]=TagHandler(&QtSkin::startHShift, NULL, NULL);
+	(*this)[QString("number")]=TagHandler(&QtSkin::startNumber, NULL, NULL);
+	(*this)[QString("exponent")]=TagHandler(&QtSkin::startExponent, NULL, NULL);
+	(*this)[QString("text")]=TagHandler(&QtSkin::startText, NULL, NULL);
+	(*this)[QString("smalltext")]=TagHandler(&QtSkin::startSmallText, NULL, NULL);
 	(*this)[QString("keys")]=TagHandler(&QtSkin::startKeys, NULL, NULL);
 	(*this)[QString("painters")]=TagHandler(&QtSkin::startPainters, NULL, NULL);
 	(*this)[QString("pasters")]=TagHandler(&QtSkin::startPasters, NULL, NULL);

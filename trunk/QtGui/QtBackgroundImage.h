@@ -34,6 +34,7 @@ public:
 public:
 	QPixmap& getBackgroundPixmap();
 	void setSkin(const QtSkin& aSkin);
+	void showToolTips(bool aShowToolTipsFlag);
 
 // Overriden event-handling methods
 public:
@@ -44,7 +45,6 @@ public:
 	void mouseMoveEvent(QMouseEvent* aMouseEvent);
 	void mouseDoubleClickEvent(QMouseEvent* aMouseEvent);
 
-
 public slots:
 	void updateScreen();
 
@@ -53,6 +53,8 @@ protected:
 
 private:
 	 void moveWindow(QMouseEvent* aMouseEvent);
+	 void addToolTip(const QtKey& aKey);
+	 void clearToolTips();
 
 private:
 	 QPixmap pixmap;
@@ -60,6 +62,7 @@ private:
 	 QtKeyboard& keyboard;
 	 bool dragging;
 	 QPoint lastDragPosition;
+	 QList<QLabel*> tooltipLabels;
 };
 
 #endif /* QTBACKGROUNDIMAGE_H_ */

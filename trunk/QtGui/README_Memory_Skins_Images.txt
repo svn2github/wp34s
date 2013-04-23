@@ -30,3 +30,9 @@ On Linux, they are also searched in <execdir>/../lib/WP34-s/{skins,images} and o
 
 The "Use a custom Directory for memory files" and "-dev" behave differently for skins and images: they add the corresponding directories 
 to the search path.
+
+
+The system also uses the DejaVu and Droid Sans Mono free fonts. See here for more informations:
+https://sourceforge.net/projects/dejavu/
+http://www.droidfonts.com/
+

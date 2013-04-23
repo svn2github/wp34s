@@ -44,3 +44,15 @@ void QtKey::addKeySequence(const QKeySequence& aKeySequence)
 	keySequences.append(*keySequence);
 }
 
+QString QtKey::getShortcut() const
+{
+	return shortcut;
+}
+
+void QtKey::addShortcut(const QString& aShortcut)
+{
+	if(shortcut.isEmpty())
+	{
+		shortcut=aShortcut;
+	}
+}

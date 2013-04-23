@@ -38,6 +38,10 @@ extern char* get_version_string();
 extern char* get_svn_revision_string();
 extern char* get_formatted_displayed_number();
 extern int* get_displayed_text();
+extern char* get_last_displayed();
+extern char* get_last_displayed_number();
+extern char* get_last_displayed_exponent();
+extern int is_small_font(char *p);
 extern void set_fshift_locked(int);
 extern void set_gshift_locked(int);
 extern void set_hshift_locked(int);
@@ -58,6 +62,7 @@ extern int downarrow_code();
 
 extern int forward_set_IO_annunciator();
 
+extern int getdig(int ch);
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */

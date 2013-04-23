@@ -22,13 +22,23 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 		bool anUseHShiftClickFlag,
 		bool anAlwaysUseHShiftClickFlag,
 		int anHShiftDelay,
+		bool aShowToolTipFlag,
+		bool anUseFontFlag,
 		bool aDisplayAsStackClickFlag,
 		const QString& aSerialPortName,
 		QWidget* aParent)
 : QDialog(aParent)
 {
 	setWindowTitle(PREFERENCES_TITLE);
-	buildComponents(aCustomDirectoryActiveFlag, aCustomDirectoryName, anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, aDisplayAsStackClickFlag, anHShiftDelay, aSerialPortName);
+	buildComponents(aCustomDirectoryActiveFlag,
+			aCustomDirectoryName,
+			anUseHShiftClickFlag,
+			anAlwaysUseHShiftClickFlag,
+			aShowToolTipFlag,
+			anUseFontFlag,
+			aDisplayAsStackClickFlag,
+			anHShiftDelay,
+			aSerialPortName);
 }
 
 QtPreferencesDialog::~QtPreferencesDialog()
@@ -39,7 +49,9 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 		const QString& aCustomDirectoryName,
 		bool anUseHShiftClickFlag,
 		bool anAlwaysUseHShiftClickFlag,
-		bool aDisplayAsStackClickFlag,
+		bool aShowToolTipFlag,
+		bool anUseFontFlag,
+		bool aDisplayAsStackFlag,
 		int anHShiftDelay,
 		const QString& aSerialPortName)
 {
@@ -50,8 +62,8 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 
 	QTabWidget* tabWidget = new QTabWidget;
 	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), MEMORY_TAB_NAME);
-	tabWidget->addTab(buildKeyboardTab(anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, anHShiftDelay), KEYBOARD_TAB_NAME);
-	tabWidget->addTab(buildDebuggerTab(aDisplayAsStackClickFlag), DEBUGGER_TAB_NAME);
+	tabWidget->addTab(buildKeyboardTab(anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, anHShiftDelay, aShowToolTipFlag), KEYBOARD_TAB_NAME);
+	tabWidget->addTab(buildDisplayTab(anUseFontFlag, aDisplayAsStackFlag), DISPLAY_TAB_NAME);
 	tabWidget->addTab(buildSerialTab(aSerialPortName), SERIAL_PORT_TAB_NAME);
 
 	dialogLayout->addWidget(tabWidget);
@@ -93,7 +105,7 @@ QWidget* QtPreferencesDialog::buildMemoryTab(bool aCustomDirectoryActiveFlag, co
 	return memoryTab;
 }
 
-QWidget* QtPreferencesDialog::buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay)
+QWidget* QtPreferencesDialog::buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay, bool aShowToolTipFlag)
 {
 	QWidget* keyboardTab=new QWidget;
 	QVBoxLayout* keyboardLayout=new QVBoxLayout;
@@ -123,22 +135,29 @@ QWidget* QtPreferencesDialog::buildKeyboardTab(bool anUseHShiftClickFlag, bool a
 	alwaysUseHShiftClickButton->setChecked(anAlwaysUseHShiftClickFlag);
 	useHShiftClickToggled(isUseHShiftClickActive());
 
+	showToolTipsClickButton=new QCheckBox(USE_TOOLTIPS_LABEL_TEXT);
+	showToolTipsClickButton->setChecked(aShowToolTipFlag);
+	keyboardLayout->addWidget(showToolTipsClickButton);
+
 	keyboardTab->setLayout(keyboardLayout);
 	return keyboardTab;
 }
 
-QWidget* QtPreferencesDialog::buildDebuggerTab(bool aDisplayAsStackClickFlag)
+QWidget* QtPreferencesDialog::buildDisplayTab(bool anUseFontsFlag, bool aDisplayAsStackClickFlag)
 {
-	QWidget* debuggerTab=new QWidget;
-	QVBoxLayout* debuggerLayout=new QVBoxLayout;
+	QWidget* displayTab=new QWidget;
+	QVBoxLayout* displayLayout=new QVBoxLayout;
+
+	useFontsClickButton=new QCheckBox(USE_FONTS_LABEL_TEXT);
+	displayLayout->addWidget(useFontsClickButton);
+	useFontsClickButton->setChecked(anUseFontsFlag);
 
 	displayAsStackClickButton=new QCheckBox(DISPLAY_AS_STACK_LABEL_TEXT);
-	debuggerLayout->addWidget(displayAsStackClickButton);
-
+	displayLayout->addWidget(displayAsStackClickButton);
 	displayAsStackClickButton->setChecked(aDisplayAsStackClickFlag);
 
-	debuggerTab->setLayout(debuggerLayout);
-	return debuggerTab;
+	displayTab->setLayout(displayLayout);
+	return displayTab;
 }
 
 
@@ -213,6 +232,11 @@ void QtPreferencesDialog::chooseDirectory()
 	}
 }
 
+bool QtPreferencesDialog::isUseFonts() const
+{
+	return useFontsClickButton->isChecked();
+}
+
 bool QtPreferencesDialog::isDisplayAsStack() const
 {
 	return displayAsStackClickButton->isChecked();
@@ -237,6 +261,12 @@ int QtPreferencesDialog::getHShiftDelay() const
 {
 	return hShiftDelayBox->value();
 }
+
+bool QtPreferencesDialog::isShowToolTips() const
+{
+	return showToolTipsClickButton->isChecked();
+}
+
 
 QString QtPreferencesDialog::getSerialPortName() const
 {

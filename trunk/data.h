@@ -475,7 +475,11 @@ extern REGISTER *StackBase;	     // Location of the RPN stack
 extern decContext Ctx;		     // decNumber library context
 extern FLAG JustDisplayed;	     // Avoid duplicate calls to display();
 extern char TraceBuffer[];           // Display current instruction
+#ifndef REALBUILD
 extern char LastDisplayedText[NUMALPHA + 1];	   // This is for the emulator (clipboard)
+extern char LastDisplayedNumber[NUMBER_LENGTH+1]; // Used to display with fonts in emulators
+extern char LastDisplayedExponent[EXPONENT_LENGTH+1]; // Used to display with fonts in emulators
+#endif
 extern FLAG Tracing;		     // Set by SF T for INFRARED builds
 #ifdef CONSOLE
 extern unsigned long long int instruction_count;

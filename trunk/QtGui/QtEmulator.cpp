@@ -134,6 +134,8 @@ void QtEmulator::editPreferences()
 			keyboard->isUseHShiftClick(),
 			keyboard->isAlwaysUseHShiftClick(),
 			keyboard->getHShiftDelay(),
+			keyboard->isShowToolTips(),
+			screen->isUseFonts(),
 			debugger->isDisplayAsStack(),
 			serialPort->getSerialPortName(), this);
 	int result=preferencesDialog.exec();
@@ -147,10 +149,14 @@ void QtEmulator::editPreferences()
 		keyboard->setUseHShiftClick(preferencesDialog.isUseHShiftClickActive());
 		keyboard->setAlwaysUseHShiftClick(preferencesDialog.isAlwaysUseHShiftClickActive());
 		keyboard->setHShiftDelay(preferencesDialog.getHShiftDelay());
+		keyboard->setShowToolTips(preferencesDialog.isShowToolTips());
 		saveKeyboardSettings();
 
+		backgroundImage->showToolTips(preferencesDialog.isShowToolTips());
+
+		screen->setUseFonts(preferencesDialog.isUseFonts());
 		debugger->setDisplayAsStack(preferencesDialog.isDisplayAsStack());
-		saveDebuggerSettings();
+		saveDisplaySettings();
 
 		QString serialPortName=preferencesDialog.getSerialPortName();
 		serialPort->setSerialPortName(serialPortName);
@@ -435,7 +441,7 @@ void QtEmulator::buildComponents(const QtSkin& aSkin)
 {
 	centralWidget=new QWidget;
 	screen=new QtScreen(aSkin);
-	keyboard=new QtKeyboard(aSkin, useHShiftClick, alwaysUseHShiftClick, hShiftDelay);
+	keyboard=new QtKeyboard(aSkin, useHShiftClick, alwaysUseHShiftClick, hShiftDelay, showToolTips);
 	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard);
 	QBoxLayout* layout = new QHBoxLayout();
 	layout->addWidget(centralWidget);
@@ -499,6 +505,7 @@ void QtEmulator::setPaths()
 	QStringList imageSearchPath;
 	QStringList memorySearchPath;
 	QStringList documentationSearchPath;
+	QStringList fontsSearchPath;
 
 	if(customDirectoryActive)
 	{
@@ -506,6 +513,7 @@ void QtEmulator::setPaths()
 		imageSearchPath << customDirectory.path();
 		memorySearchPath << customDirectory.path();
 		documentationSearchPath << customDirectory.path();
+		fontsSearchPath << customDirectory.path();
 	}
 	else
 	{
@@ -518,6 +526,7 @@ void QtEmulator::setPaths()
 
 	skinSearchPath << userSettingsDirectoryName;
 	imageSearchPath << userSettingsDirectoryName;
+	fontsSearchPath << userSettingsDirectoryName;
 
 	if(development)
 	{
@@ -526,6 +535,7 @@ void QtEmulator::setPaths()
 		skinSearchPath << currentDir+SKIN_DIRECTORY;
 		imageSearchPath << currentDir+IMAGE_DIRECTORY;
 		documentationSearchPath << currentDir+DOCUMENTATION_DIRECTORY;
+		fontsSearchPath << currentDir+FONTS_DIRECTORY;
 		if(!customDirectoryActive)
 		{
 			memorySearchPath << currentDir+MEMORY_DIRECTORY;
@@ -536,17 +546,20 @@ void QtEmulator::setPaths()
 	skinSearchPath << resourcesDir+SKIN_DIRECTORY;
 	imageSearchPath << resourcesDir+IMAGE_DIRECTORY;
 	documentationSearchPath << resourcesDir+DOCUMENTATION_DIRECTORY;
+	fontsSearchPath << resourcesDir+FONTS_DIRECTORY;
 #endif
 
 
 	skinSearchPath << applicationDir+SKIN_DIRECTORY;
 	imageSearchPath << applicationDir+IMAGE_DIRECTORY;
 	documentationSearchPath << applicationDir+DOCUMENTATION_DIRECTORY;
+	fontsSearchPath << applicationDir+FONTS_DIRECTORY;
 
 	QDir::setSearchPaths(SKIN_FILE_TYPE, skinSearchPath);
 	QDir::setSearchPaths(IMAGE_FILE_TYPE, imageSearchPath);
 	QDir::setSearchPaths(MEMORY_FILE_TYPE, memorySearchPath);
 	QDir::setSearchPaths(DOCUMENTATION_FILE_TYPE, documentationSearchPath);
+	QDir::setSearchPaths(FONT_FILE_TYPE, fontsSearchPath);
 }
 
 QtSkin* QtEmulator::buildSkin(const QString& aSkinFilename) throw (QtSkinException)
@@ -566,7 +579,7 @@ void QtEmulator::loadSettings()
 {
 	loadUserInterfaceSettings();
 	loadKeyboardSettings();
-	loadDebuggerSettings();
+	loadDisplaySettings();
 	loadCustomDirectorySettings();
 	loadSerialPortSettings();
 
@@ -592,12 +605,14 @@ void QtEmulator::loadKeyboardSettings()
 	useHShiftClick=settings.value(USE_HSHIFT_CLICK_SETTING, DEFAULT_USE_HSHIFT_CLICK).toBool();
 	alwaysUseHShiftClick=settings.value(ALWAYS_USE_HSHIFT_CLICK_SETTING, DEFAULT_ALWAYS_USE_HSHIFT_CLICK).toBool();
 	hShiftDelay=settings.value(HSHIFT_DELAY_SETTING, DEFAULT_HSHIFT_DELAY).toInt();
+	showToolTips=settings.value(SHOW_TOOLTIPS_SETTING, DEFAULT_SHOW_TOOLTIPS_SETTING).toBool();
 	settings.endGroup();
 }
 
-void QtEmulator::loadDebuggerSettings()
+void QtEmulator::loadDisplaySettings()
 {
-	settings.beginGroup(DEBUGGER_SETTINGS_GROUP);
+	settings.beginGroup(DISPLAY_SETTINGS_GROUP);
+	useFonts=settings.value(USE_FONTS_SETTING, DEFAULT_USE_FONTS_SETTING).toBool();
 	displayAsStack=settings.value(DISPLAY_AS_STACK_SETTING, DEFAULT_DISPLAY_AS_STACK).toBool();
 	settings.endGroup();
 }
@@ -623,7 +638,7 @@ void QtEmulator::saveSettings()
 {
     saveUserInterfaceSettings();
     saveKeyboardSettings();
-    saveDebuggerSettings();
+    saveDisplaySettings();
     saveCustomDirectorySettings();
     saveSerialPortSettings();
 
@@ -649,12 +664,14 @@ void QtEmulator::saveKeyboardSettings()
     settings.setValue(USE_HSHIFT_CLICK_SETTING, keyboard->isUseHShiftClick());
     settings.setValue(ALWAYS_USE_HSHIFT_CLICK_SETTING, keyboard->isAlwaysUseHShiftClick());
     settings.setValue(HSHIFT_DELAY_SETTING, keyboard->getHShiftDelay());
+    settings.setValue(SHOW_TOOLTIPS_SETTING, keyboard->isShowToolTips());
     settings.endGroup();
 }
 
-void QtEmulator::saveDebuggerSettings()
+void QtEmulator::saveDisplaySettings()
 {
-    settings.beginGroup(DEBUGGER_SETTINGS_GROUP);
+    settings.beginGroup(DISPLAY_SETTINGS_GROUP);
+    settings.setValue(USE_FONTS_SETTING, screen->isUseFonts());
     settings.setValue(DISPLAY_AS_STACK_SETTING, debugger->isDisplayAsStack());
     settings.endGroup();
 }

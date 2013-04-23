@@ -40,6 +40,53 @@ void QtBackgroundImage::setSkin(const QtSkin& aSkin)
 	setPixmap(pixmap);
 	setMask(pixmap.mask());
 	setFixedSize(pixmap.size());
+	clearToolTips();
+	QtKeyList keys=aSkin.getKeys();
+	for(QtKeyConstIterator keyIterator=keys.constBegin(); keyIterator!=keys.constEnd(); ++keyIterator)
+	{
+		if(*keyIterator!=NULL)
+		{
+			addToolTip(**keyIterator);
+		}
+	}
+	showToolTips(keyboard.isShowToolTips());
+}
+
+void QtBackgroundImage::showToolTips(bool aShowToolTipsFlag)
+{
+	if(aShowToolTipsFlag)
+	{
+		for(QList<QLabel*>::iterator labelIterator=tooltipLabels.begin(); labelIterator!=tooltipLabels.end(); ++labelIterator)
+		{
+			(*labelIterator)->show();
+		}
+	}
+	else
+	{
+		for(QList<QLabel*>::iterator labelIterator=tooltipLabels.begin(); labelIterator!=tooltipLabels.end(); ++labelIterator)
+		{
+			(*labelIterator)->hide();
+		}
+	}
+}
+
+
+void QtBackgroundImage::clearToolTips()
+{
+	for(QList<QLabel*>::iterator labelIterator=tooltipLabels.begin(); labelIterator!=tooltipLabels.end(); ++labelIterator)
+	{
+		delete *labelIterator;
+	}
+	tooltipLabels.clear();
+}
+
+void QtBackgroundImage::addToolTip(const QtKey& aKey)
+{
+	QLabel* label=new QLabel("", this);
+	label->resize(aKey.getRectangle().width(), aKey.getRectangle().height());
+	label->move(aKey.getRectangle().x(), aKey.getRectangle().y());
+	label->setAutoFillBackground(false);
+	label->setToolTip(aKey.getShortcut());
 }
 
 QPixmap& QtBackgroundImage::getBackgroundPixmap()

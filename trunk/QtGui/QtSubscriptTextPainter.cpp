@@ -14,34 +14,27 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef QTKEY_H_
-#define QTKEY_H_
+#include "QtSubscriptTextPainter.h"
 
-#include <QRect>
-#include <QLinkedList>
-#include <QKeySequence>
-
-typedef QLinkedList<QKeySequence> KeySequenceList;
-typedef KeySequenceList::const_iterator KeySequenceConstIterator;
-
-class QtKey
+QtSubscriptTextPainter::QtSubscriptTextPainter(QChar aChar) :
+	QtNormalTextPainter(aChar)
 {
-public:
-	QtKey(int aCode, const QRect& aRectangle);
+}
 
-public:
-	int getCode() const;
-	const QRect& getRectangle() const;
-	const KeySequenceList& getKeySequences() const;
-	void addKeySequence(const QKeySequence& aKeySequence);
-	QString getShortcut() const;
-	void addShortcut(const QString& aShortcut);
+void QtSubscriptTextPainter::paint(const QPoint& aPoint, QPainter& aPainter, const QFont& aFontLower)
+{
+	aPainter.save();
+	int ascent=aPainter.fontMetrics().ascent();
+	aPainter.setFont(aFontLower);
+	aPainter.drawText(QPoint(aPoint.x(), aPoint.y()+ascent), string);
+	aPainter.restore();
+}
 
-private:
-	int code;
-	QRect rectangle;
-	KeySequenceList keySequences;
-	QString shortcut;
-};
-
-#endif /* QTKEY_H_ */
+int QtSubscriptTextPainter::width(QPainter& aPainter, const QFont& aFontLower)
+{
+	aPainter.save();
+	aPainter.setFont(aFontLower);
+	int width=aPainter.fontMetrics().width(string);
+	aPainter.restore();
+	return width;
+}
