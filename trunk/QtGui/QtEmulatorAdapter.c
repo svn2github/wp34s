@@ -356,6 +356,17 @@ int is_catalogue_mode()
 	return State2.catalogue!=CATALOGUE_NONE;
 }
 
+int is_complex_mode()
+{
+	return State2.cmplx;
+}
+
+char get_complex_prefix()
+{
+	return COMPLEX_PREFIX;
+}
+
+
 int uparrow_code()
 {
 	return K40;
@@ -370,4 +381,5 @@ void forward_set_IO_annunciator()
 {
 	set_IO_annunciator();
 }
+
 

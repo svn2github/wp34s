@@ -36,7 +36,7 @@ extern "C"
 #define DEFAULT_FONT_FAMILY "Helvetica"
 #define FONT_STYLE QFont::SansSerif
 
-#define NUMBER_FONT_FILENAME "DejaVuSans.ttf"
+#define NUMBER_FONT_FILENAME "luxisr.ttf"
 #define DEFAULT_NUMBER_FONT_FAMILY "Courier"
 #define NUMBER_FONT_STYLE QFont::Monospace
 

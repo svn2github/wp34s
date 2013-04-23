@@ -16,6 +16,7 @@
 
 #include "QtBackgroundImage.h"
 #include "QtEmulator.h"
+#include "QtEmulatorAdapter.h"
 
 static QPoint MOVE_MARGIN(MOVE_MARGIN_X, MOVE_MARGIN_Y);
 static QPoint MOVE_OTHER_MARGIN(MOVE_MARGIN_X, -MOVE_MARGIN_Y);
@@ -50,6 +51,7 @@ void QtBackgroundImage::setSkin(const QtSkin& aSkin)
 		}
 	}
 	showToolTips(keyboard.isShowToolTips());
+	textRect=QRect(aSkin.getTextPosition(), aSkin.getTextSize());
 }
 
 void QtBackgroundImage::showToolTips(bool aShowToolTipsFlag)
@@ -106,7 +108,18 @@ void QtBackgroundImage::keyReleaseEvent(QKeyEvent* aKeyEvent)
 
 void QtBackgroundImage::mousePressEvent(QMouseEvent* aMouseEvent)
 {
-	if(!keyboard.processButtonPressedEvent(*aMouseEvent) && aMouseEvent->button()==Qt::LeftButton)
+	if(aMouseEvent->button()==Qt::LeftButton && is_catalogue_mode() && textRect.contains(aMouseEvent->pos()))
+	{
+		int last=current_catalogue_max();
+		for(int i=0; i<last; i++) {
+			const unsigned int op = current_catalogue(i);
+			char buf[40];
+			const char *p;
+			p = catcmd(op, buf);
+			//qDebug() << (((is_complex_mode() && buf[0]!=get_complex_prefix())?QString("C"):QString(""))+QString(buf));
+		}
+	}
+	else if(!keyboard.processButtonPressedEvent(*aMouseEvent) && aMouseEvent->button()==Qt::LeftButton)
 	{
 		dragging=true;
 		lastDragPosition=aMouseEvent->globalPos();

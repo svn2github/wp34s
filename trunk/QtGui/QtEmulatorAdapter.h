@@ -57,11 +57,17 @@ extern int get_maxnumregs();
 extern char* get_formatted_register(int anIndex);
 extern int is_runmode();
 extern int is_catalogue_mode();
+extern unsigned int current_catalogue(int);
+extern const char *catcmd(unsigned int, char *);
+extern int is_complex_mode();
+extern char get_complex_prefix();
+
+extern int current_catalogue_max(void);
+
 extern int uparrow_code();
 extern int downarrow_code();
 
 extern int forward_set_IO_annunciator();
-
 extern int getdig(int ch);
 }
 

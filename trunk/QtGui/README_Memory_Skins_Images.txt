@@ -32,7 +32,7 @@ The "Use a custom Directory for memory files" and "-dev" behave differently for 
 to the search path.
 
 
-The system also uses the DejaVu and Droid Sans Mono free fonts. See here for more informations:
+The system also uses the DejaVu and Luxi free fonts. See here for more informations:
 https://sourceforge.net/projects/dejavu/
-http://www.droidfonts.com/
+http://en.wikipedia.org/wiki/Luxi_(fonts)
 

@@ -58,6 +58,7 @@ private:
 
 private:
 	 QPixmap pixmap;
+	 QRect textRect;
 	 QtScreen& screen;
 	 QtKeyboard& keyboard;
 	 bool dragging;

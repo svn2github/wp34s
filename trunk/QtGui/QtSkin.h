@@ -87,6 +87,7 @@ public: // getters for Skin fields
     int getExponentFontSize() const;
     int getExponentFontStretch() const;
     QPoint getTextPosition() const;
+    QSize getTextSize() const;
     int getFontSize() const;
     int getFontLowerSize() const;
     int getFontStretch() const;
@@ -147,6 +148,7 @@ private: // Skin fields
     int exponentFontSize;
     int exponentFontStretch;
     QPoint textPosition;
+    QSize textSize;
     int fontSize;
     int fontLowerSize;
     int fontStretch;

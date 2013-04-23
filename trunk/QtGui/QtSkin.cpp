@@ -191,6 +191,11 @@ QPoint QtSkin::getTextPosition() const
 	return textPosition;
 }
 
+QSize QtSkin::getTextSize() const
+{
+	return textSize;
+}
+
 int QtSkin::getFontSize() const
 {
 	return fontSize;
@@ -736,11 +741,13 @@ bool QtSkin::startText(const QString& aName, const QXmlAttributes& theAttributes
 
 	int xIndex=theAttributes.index("x");
 	int yIndex=theAttributes.index("y");
+	int widthIndex=theAttributes.index("width");
+	int heightIndex=theAttributes.index("height");
 	int sizeIndex=theAttributes.index("size");
 	int stretchIndex=theAttributes.index("stretch");
 	int lowerIndex=theAttributes.index("lower");
 
-	if(xIndex<0 || yIndex <0 || sizeIndex < 0 || stretchIndex<0 || lowerIndex < 0 || theAttributes.count()!=5)
+	if(xIndex<0 || yIndex <0 || sizeIndex < 0 || widthIndex<0 || heightIndex<0 || stretchIndex<0 || lowerIndex < 0 || theAttributes.count()!=7)
 	{
 		setErrorMessage("Invalid attributes for text");
 		return false;
@@ -759,6 +766,18 @@ bool QtSkin::startText(const QString& aName, const QXmlAttributes& theAttributes
 			return false;
 		}
 		textPosition=QPoint(x,y);
+		int width, height;
+		if(!convertStringToInteger(theAttributes.value(widthIndex), width))
+		{
+			setErrorMessage("Invalid width "+theAttributes.value(widthIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(heightIndex), height))
+		{
+			setErrorMessage("Invalid height "+theAttributes.value(heightIndex));
+			return false;
+		}
+		textSize=QSize(width, height);
 		if(!convertStringToInteger(theAttributes.value(sizeIndex), fontSize))
 		{
 			setErrorMessage("Invalid font size "+theAttributes.value(sizeIndex));
