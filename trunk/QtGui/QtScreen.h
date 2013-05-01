@@ -40,6 +40,9 @@ public:
 	void setUseFonts(bool anUseFonts);
 
 private:
+	bool shouldUseFonts() const;
+
+private:
 	QRect screenRectangle;
 	QRect pasteRectangle;
     QColor screenForeground;

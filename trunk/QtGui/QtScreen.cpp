@@ -185,14 +185,14 @@ void QtScreen::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEve
 	      if((LcdData[row] & ((uint64_t) 1) << column)!=0)
 	      {
 	    	  int dotIndex=row*SCREEN_COLUMN_COUNT+column;
-	    	  if(!useFonts || nonPixelIndexes.contains(dotIndex))
+	    	  if(!shouldUseFonts() || nonPixelIndexes.contains(dotIndex))
 	    	  {
 	    		  dotPainters[dotIndex]->paint(aBackgroundImage.getBackgroundPixmap(), painter);
 	    	  }
 	      }
 		}
 	}
-	if(useFonts)
+	if(shouldUseFonts())
 	{
 		char *displayedText = get_last_displayed();
 		QFont* currentFontLower;
@@ -292,6 +292,11 @@ void QtScreen::copy(QtBackgroundImage& aBackgroundImage, QClipboard& aClipboard)
 		}
 	}
 	aClipboard.setPixmap(pixmap);
+}
+
+bool QtScreen::shouldUseFonts() const
+{
+	return useFonts && !isForcedDispPlot();
 }
 
 extern "C"

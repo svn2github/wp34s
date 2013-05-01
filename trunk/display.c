@@ -41,6 +41,7 @@ short int DispPlot;
 char LastDisplayedText[NUMALPHA + 1];	   // For clipboard export
 char LastDisplayedNumber[NUMBER_LENGTH + 1];
 char LastDisplayedExponent[EXPONENT_LENGTH + 1];
+char forceDispPlot;
 #endif
 
 FLAG ShowRPN;		   // controls visibility of RPN annunciator
@@ -746,6 +747,7 @@ static int check_special_dn(const decNumber *x, char *res) {
 				set_digits_string(S7_NaN, 0);
 #ifndef REALBUILD
 				scopy(LastDisplayedText, S7_NaN_Text);
+				forceDispPlot=0;
 #endif
 			}
 			return 1;
@@ -1958,7 +1960,9 @@ static void set_status_graphic(const unsigned char *graphic) {
 
 	xset(mat, 0, sizeof(mat));
 #endif
-
+#ifndef REALBUILD
+	forceDispPlot=1;
+#endif
 	if (glen <= 0)			return;
 	if (glen > BITMAP_WIDTH)	glen = BITMAP_WIDTH;
 
@@ -1994,6 +1998,7 @@ static void set_status_sized(const char *str, int smallp) {
 #endif
 #ifndef REALBUILD
 	scopy(LastDisplayedText, str);
+	forceDispPlot=0;
 #endif
 	findlengths(posns, smallp);
 	while (*str != '\0' && x <= BITMAP_WIDTH+1)  {

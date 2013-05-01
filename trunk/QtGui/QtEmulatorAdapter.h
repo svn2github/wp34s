@@ -69,6 +69,7 @@ extern int downarrow_code();
 
 extern int forward_set_IO_annunciator();
 extern int getdig(int ch);
+extern char isForcedDispPlot();
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */

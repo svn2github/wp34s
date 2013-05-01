@@ -382,4 +382,10 @@ void forward_set_IO_annunciator()
 	set_IO_annunciator();
 }
 
+char isForcedDispPlot()
+{
+	return forceDispPlot;
+}
+
+
 
