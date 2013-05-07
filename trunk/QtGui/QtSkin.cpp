@@ -20,6 +20,7 @@
 static const DocumentHandlers documentHandlers;
 static const SkinHandlers skinHandlers;
 static const TagHandlers emptyHandlers;
+static const CatalogMenuKeyHandlers catalogMenuKeyHandlers;
 static const KeysHandlers keysHandlers;
 static const KeyHandlers keyHandlers;
 static const PaintersHandlers paintersHandlers;
@@ -226,6 +227,26 @@ int QtSkin::getSmallFontStretch() const
 	return smallFontStretch;
 }
 
+int QtSkin::getMenuFontSize() const
+{
+	return menuFontSize;
+}
+
+int QtSkin::getMenuFontLowerSize() const
+{
+	return menuFontLowerSize;
+}
+
+int QtSkin::getMenuMargin() const
+{
+	return menuMargin;
+}
+
+int QtSkin::getMenuWidth() const
+{
+	return menuWidth;
+}
+
 const QtKeyList& QtSkin::getKeys() const
 {
 	return keys;
@@ -241,6 +262,10 @@ const DotPainterList QtSkin::getPastePainters() const
 	return pastePainters;
 }
 
+const KeySequenceList& QtSkin::getCatalogMenuKeys() const
+{
+	return catalogMenuKeys;
+}
 
 bool QtSkin::convertStringToInteger(const QString& aString, int& anInteger)
 {
@@ -746,8 +771,23 @@ bool QtSkin::startText(const QString& aName, const QXmlAttributes& theAttributes
 	int sizeIndex=theAttributes.index("size");
 	int stretchIndex=theAttributes.index("stretch");
 	int lowerIndex=theAttributes.index("lower");
+	int menuIndex=theAttributes.index("menu");
+	int menuLowerIndex=theAttributes.index("menuLower");
+	int menuMarginIndex=theAttributes.index("menuMargin");
+	int menuWidthIndex=theAttributes.index("menuWidth");
 
-	if(xIndex<0 || yIndex <0 || sizeIndex < 0 || widthIndex<0 || heightIndex<0 || stretchIndex<0 || lowerIndex < 0 || theAttributes.count()!=7)
+	if(xIndex<0 ||
+			yIndex <0 ||
+			sizeIndex < 0 ||
+			widthIndex<0 ||
+			heightIndex<0 ||
+			stretchIndex<0 ||
+			lowerIndex < 0 ||
+			menuIndex<0 ||
+			menuLowerIndex<0 ||
+			menuMarginIndex < 0 ||
+			menuWidthIndex < 0 ||
+			theAttributes.count()!=11)
 	{
 		setErrorMessage("Invalid attributes for text");
 		return false;
@@ -791,6 +831,26 @@ bool QtSkin::startText(const QString& aName, const QXmlAttributes& theAttributes
 		if(!convertStringToInteger(theAttributes.value(lowerIndex), fontLowerSize))
 		{
 			setErrorMessage("Invalid font lower size "+theAttributes.value(lowerIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(menuIndex), menuFontSize))
+		{
+			setErrorMessage("Invalid menu font size "+theAttributes.value(menuIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(menuLowerIndex), menuFontLowerSize))
+		{
+			setErrorMessage("Invalid menu font lower size "+theAttributes.value(menuLowerIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(menuMarginIndex), menuMargin))
+		{
+			setErrorMessage("Invalid menu margin"+theAttributes.value(menuMarginIndex));
+			return false;
+		}
+		if(!convertStringToInteger(theAttributes.value(menuWidthIndex), menuWidth))
+		{
+			setErrorMessage("Invalid menu width"+theAttributes.value(menuWidthIndex));
 			return false;
 		}
 	}
@@ -840,6 +900,22 @@ bool QtSkin::startKeys(const QString& aName, const QXmlAttributes& theAttributes
 
 	pushHandlers(keysHandlers);
 	return true;
+}
+
+bool QtSkin::startCatalogMenu(const QString& aName, const QXmlAttributes& theAttributes)
+{
+	Q_UNUSED(aName)
+
+	if(theAttributes.count()!=0)
+	{
+		setErrorMessage("Invalid attributes count for catalog");
+		return false;
+	}
+	else
+	{
+		pushHandlers(catalogMenuKeyHandlers);
+		return true;
+	}
 }
 
 bool QtSkin::startKey(const QString& aName, const QXmlAttributes& theAttributes)
@@ -895,9 +971,10 @@ bool QtSkin::startShortcut(const QString& aName, const QXmlAttributes& theAttrib
 {
 	Q_UNUSED(aName)
 
-	if(theAttributes.count()!=5)
+	if(theAttributes.count()!=1)
 	{
 		setErrorMessage("Invalid attributes count for shortcut");
+		return false;
 	}
 	int sequenceIndex=theAttributes.index("sequence");
 
@@ -911,6 +988,30 @@ bool QtSkin::startShortcut(const QString& aName, const QXmlAttributes& theAttrib
 		QKeySequence keySequence(theAttributes.value(sequenceIndex));
 		currentKey->addKeySequence(keySequence);
 		currentKey->addShortcut(theAttributes.value(sequenceIndex));
+		return true;
+	}
+}
+
+bool QtSkin::startCatalogShortcut(const QString& aName, const QXmlAttributes& theAttributes)
+{
+	Q_UNUSED(aName)
+
+	if(theAttributes.count()!=1)
+	{
+		setErrorMessage("Invalid attributes count for catalog shortcut");
+		return false;
+	}
+	int sequenceIndex=theAttributes.index("sequence");
+
+	if(sequenceIndex<0)
+	{
+		setErrorMessage("Missing sequence attribute for catalog shortcut");
+		return false;
+	}
+	else
+	{
+		QKeySequence keySequence(theAttributes.value(sequenceIndex));
+		catalogMenuKeys.append(keySequence);
 		return true;
 	}
 }
@@ -1153,6 +1254,7 @@ SkinHandlers::SkinHandlers()
 	(*this)[QString("exponent")]=TagHandler(&QtSkin::startExponent, NULL, NULL);
 	(*this)[QString("text")]=TagHandler(&QtSkin::startText, NULL, NULL);
 	(*this)[QString("smalltext")]=TagHandler(&QtSkin::startSmallText, NULL, NULL);
+	(*this)[QString("catalog")]=TagHandler(&QtSkin::startCatalogMenu, NULL, NULL);
 	(*this)[QString("keys")]=TagHandler(&QtSkin::startKeys, NULL, NULL);
 	(*this)[QString("painters")]=TagHandler(&QtSkin::startPainters, NULL, NULL);
 	(*this)[QString("pasters")]=TagHandler(&QtSkin::startPasters, NULL, NULL);
@@ -1167,6 +1269,12 @@ KeyHandlers::KeyHandlers()
 {
 	(*this)[QString("shortcut")]=TagHandler(&QtSkin::startShortcut, NULL, NULL);
 }
+
+CatalogMenuKeyHandlers::CatalogMenuKeyHandlers()
+{
+	(*this)[QString("shortcut")]=TagHandler(&QtSkin::startCatalogShortcut, NULL, NULL);
+}
+
 
 PaintersHandlers::PaintersHandlers()
 {

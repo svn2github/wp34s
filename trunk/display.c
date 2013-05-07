@@ -61,6 +61,9 @@ static const char S7_NaN[] = "not nuMmEric";	/* Displaying NaN in lower line */
 static const char S7_NaN_Text[] = "N o t  n u m e r i c ";
 #endif
 static const char S7_INF[] = "Infinity";	/* Displaying infinity in lower line */
+#ifndef REALBUILD
+static const char S7_INF_Text[] = "I n f i n i t y ";
+#endif
 
 static const char S7_STEP[] = "StEP ";		/* Step marker in program mode (lower line) */
 #ifndef REALBUILD
@@ -80,7 +83,7 @@ static const char libname[][5] = {
 
 #ifndef REALBUILD
 static const char libname_text[][10] = {
-	" R a m ", " L i b  ", " B u p ",	" R o m "
+	" R a m ", " L i b ", " B u p ",	" R o m "
 };
 static const char libname_shorttext[][5] = {
 	"Ram", "Lib", "Bup", "Rom"
@@ -746,7 +749,7 @@ static int check_special_dn(const decNumber *x, char *res) {
 			} else {
 				set_digits_string(S7_NaN, 0);
 #ifndef REALBUILD
-				scopy(LastDisplayedText, S7_NaN_Text);
+				scopy(LastDisplayedNumber, S7_NaN_Text);
 				forceDispPlot=0;
 #endif
 			}
@@ -760,6 +763,10 @@ static int check_special_dn(const decNumber *x, char *res) {
 				*res++ = '\237';
 			else {
 				set_digits_string(S7_INF, SEGS_PER_DIGIT * 2);
+#ifndef REALBUILD
+				scopy(LastDisplayedNumber, S7_INF_Text);
+				forceDispPlot=0;
+#endif
 			}
 			return 1;
 		}

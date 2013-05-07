@@ -21,13 +21,13 @@ SOURCES = QtGuiMain.cpp QtEmulator.cpp QtBackgroundImage.cpp QtKey.cpp QtKeyCode
 	QtKeyboard.cpp QtSerialPort.cpp QtScreen.cpp QtCalculatorThread.cpp QtHeartBeatThread.cpp QtPreferencesDialog.cpp \
 	QtNumberPaster.cpp QtDebugger.cpp QtRegistersModel.cpp QtIrPrint.cpp QtTextPainter.cpp QtNormalTextPainter.cpp \
 	QtAccentedTextPainter.cpp QtSubscriptTextPainter.cpp QtSuperscriptTextPainter.cpp QtBoldTextPainter.cpp \
-	QtPrinterSymbolTextPainter.cpp QtSpecialDigitPainter.cpp
+	QtPrinterSymbolTextPainter.cpp QtSpecialDigitPainter.cpp QtCatalogMenuItem.cpp QtCatalogMenu.cpp
 	
 HEADERS = QtEmulator.h QtBackgroundImage.h QtKey.h QtKeyCode.h QtSkin.h QtScreenPainter.h \
 	QtKeyboard.h QtSerialPort.h QtScreen.h QtCalculatorThread.h QtHeartBeatThread.h QtPreferencesDialog.h \
 	QtNumberPaster.h QtDebugger.h QtRegistersModel.h  QtTextPainter.h QtNormalTextPainter.h \
 	QtAccentedTextPainter.h QtSubscriptTextPainter.h QtSuperscriptTextPainter.h QtBoldTextPainter.h \
-	QtPrinterSymbolTextPainter.h QtSpecialDigitPainter.h
+	QtPrinterSymbolTextPainter.h QtSpecialDigitPainter.h QtCatalogMenuItem.h QtCatalogMenu.h
 
 win32 {
 	RC_FILE = WP-34s.rc

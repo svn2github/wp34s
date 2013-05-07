@@ -20,6 +20,8 @@
 #include <QtGui>
 #include "QtScreen.h"
 #include "QtKeyboard.h"
+#include "QtCatalogMenu.h"
+#include "QtCatalogMenuItem.h"
 
 #define MOVE_MARGIN_X 10
 #define MOVE_MARGIN_Y 10
@@ -29,7 +31,7 @@ class QtBackgroundImage: public QLabel
 	Q_OBJECT
 
 public:
-	QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard, QWidget* aParent=0);
+	QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard, bool aShowCatalogMenuFlag, QWidget* aParent=0);
 
 public:
 	QPixmap& getBackgroundPixmap();
@@ -44,9 +46,16 @@ public:
 	void mouseReleaseEvent(QMouseEvent* aMouseEvent);
 	void mouseMoveEvent(QMouseEvent* aMouseEvent);
 	void mouseDoubleClickEvent(QMouseEvent* aMouseEvent);
+	virtual bool eventFilter(QObject *obj, QEvent *event);
+	bool isShowCatalogMenu() const;
+	void setShowCatalogMenu(bool aShowCatalogMenuFlag);
+	void showCatalogMenu(bool force);
 
 public slots:
 	void updateScreen();
+	void onTrigger(QAction* anAction);
+	void setActiveCatalogMenuItem();
+    void onCatalogStateChanged();
 
 protected:
 	 void paintEvent(QPaintEvent *);
@@ -58,12 +67,15 @@ private:
 
 private:
 	 QPixmap pixmap;
-	 QRect textRect;
 	 QtScreen& screen;
 	 QtKeyboard& keyboard;
 	 bool dragging;
 	 QPoint lastDragPosition;
 	 QList<QLabel*> tooltipLabels;
+	 QLabel* catalogPopupLabel;
+	 QtCatalogMenu* catalogMenu;
+	 QtCatalogMenuItem* activeMenuItem;
+	 bool showCatalogMenuFlag;
 };
 
 #endif /* QTBACKGROUNDIMAGE_H_ */

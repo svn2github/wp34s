@@ -76,6 +76,8 @@ public:
 	void setHShiftDelay(int anHShiftDelay);
 	bool isShowToolTips();
 	void setShowToolTips(bool aShowToolTips);
+	QtKeyCode findKeyCode(const QKeyEvent& aKeyEvent) const;
+	void showCatalogMenu();
 
 private slots:
 	void onHShift();
@@ -87,7 +89,7 @@ signals:
 private:
 	bool isKeyPressedNoLock();
 	int getKeyNoLock();
-	QtKeyCode findKeyCode(const QKeyEvent& aKeyEvent) const;
+	bool isShowCatalogKey(const QKeyEvent& aKeyEvent) const;
 	QtKeyCode findKeyCode(const QPoint& aPoint) const;
     const QtKey* findKey(const QtKeyCode& aKeyCode) const;
     void startHShiftTimer();
@@ -97,6 +99,7 @@ private:
 private:
     int hShiftHeight;
     QtKeyList keys;
+    KeySequenceList catalogMenuKeys;
     QMutex mutex;
     QWaitCondition keyWaitCondition;
     char keyboardBuffer[KEYBOARD_BUFFER_SIZE];

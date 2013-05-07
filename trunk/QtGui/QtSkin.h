@@ -94,6 +94,11 @@ public: // getters for Skin fields
     int getSmallFontSize() const;
     int getSmallFontLowerSize() const;
     int getSmallFontStretch() const;
+    int getMenuFontSize() const;
+    int getMenuFontLowerSize() const;
+    int getMenuMargin() const;
+    int getMenuWidth() const;
+    const KeySequenceList& getCatalogMenuKeys() const;
     const QtKeyList& getKeys() const;
     const DotPainterList getDotPainters() const;
     const DotPainterList getPastePainters() const;
@@ -110,6 +115,8 @@ public: // Parsing methods
     bool startExponent(const QString& aName, const QXmlAttributes& theAttributes);
     bool startText(const QString& aName, const QXmlAttributes& theAttributes);
     bool startSmallText(const QString& aName, const QXmlAttributes& theAttributes);
+    bool startCatalogMenu(const QString& aName, const QXmlAttributes& theAttributes);
+    bool startCatalogShortcut(const QString& aName, const QXmlAttributes& theAttributes);
     bool startKeys(const QString& aName, const QXmlAttributes& theAttributes);
     bool startKey(const QString& aName, const QXmlAttributes& theAttributes);
     bool startShortcut(const QString& aName, const QXmlAttributes& theAttributes);
@@ -155,10 +162,15 @@ private: // Skin fields
     int smallFontSize;
     int smallFontLowerSize;
     int smallFontStretch;
+    int menuFontSize;
+    int menuFontLowerSize;
+    int menuMargin;
+    int menuWidth;
     QtKeyList keys;
     DotPainterList dotPainters;
     DotPainterList pastePainters;
     DotPainterList* currentPainters;
+    KeySequenceList catalogMenuKeys;
 
 private: // Internal use fields
 	QString errorMessage;
@@ -200,10 +212,17 @@ public:
 	SkinHandlers();
 };
 
+
 class KeysHandlers: public TagHandlers
 {
 public:
 	KeysHandlers();
+};
+
+class CatalogMenuKeyHandlers: public TagHandlers
+{
+public:
+	CatalogMenuKeyHandlers();
 };
 
 class KeyHandlers: public TagHandlers

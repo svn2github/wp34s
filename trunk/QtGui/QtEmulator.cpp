@@ -28,6 +28,7 @@ QtEmulator::QtEmulator()
 {
 	debug=qApp->arguments().contains(DEBUG_OPTION);
 	development=qApp->arguments().contains(DEVELOPMENT_OPTION);
+
 #ifdef Q_WS_MAC
 	QSettings::Format format=QSettings::NativeFormat;
 #else
@@ -136,6 +137,7 @@ void QtEmulator::editPreferences()
 			keyboard->getHShiftDelay(),
 			keyboard->isShowToolTips(),
 			screen->isUseFonts(),
+			backgroundImage->isShowCatalogMenu(),
 			debugger->isDisplayAsStack(),
 			serialPort->getSerialPortName(), this);
 	int result=preferencesDialog.exec();
@@ -155,6 +157,7 @@ void QtEmulator::editPreferences()
 		backgroundImage->showToolTips(preferencesDialog.isShowToolTips());
 
 		screen->setUseFonts(preferencesDialog.isUseFonts());
+		backgroundImage->setShowCatalogMenu(preferencesDialog.isShowCatalogMenus());
 		debugger->setDisplayAsStack(preferencesDialog.isDisplayAsStack());
 		saveDisplaySettings();
 
@@ -442,7 +445,8 @@ void QtEmulator::buildComponents(const QtSkin& aSkin)
 	centralWidget=new QWidget;
 	screen=new QtScreen(aSkin, useFonts);
 	keyboard=new QtKeyboard(aSkin, useHShiftClick, alwaysUseHShiftClick, hShiftDelay, showToolTips);
-	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard);
+	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard, showCatalogMenus);
+	connect(this, SIGNAL(catalogStateChanged()), backgroundImage, SLOT(onCatalogStateChanged()), Qt::BlockingQueuedConnection);
 	QBoxLayout* layout = new QHBoxLayout();
 	layout->addWidget(centralWidget);
 	setCentralWidget(centralWidget);
@@ -613,6 +617,7 @@ void QtEmulator::loadDisplaySettings()
 {
 	settings.beginGroup(DISPLAY_SETTINGS_GROUP);
 	useFonts=settings.value(USE_FONTS_SETTING, DEFAULT_USE_FONTS_SETTING).toBool();
+	showCatalogMenus=settings.value(SHOW_CATALOG_MENUS_SETTING, DEFAULT_SHOW_CATALOG_MENUS_SETTING).toBool();
 	displayAsStack=settings.value(DISPLAY_AS_STACK_SETTING, DEFAULT_DISPLAY_AS_STACK).toBool();
 	settings.endGroup();
 }
@@ -672,6 +677,7 @@ void QtEmulator::saveDisplaySettings()
 {
     settings.beginGroup(DISPLAY_SETTINGS_GROUP);
     settings.setValue(USE_FONTS_SETTING, screen->isUseFonts());
+    settings.setValue(SHOW_CATALOG_MENUS_SETTING, backgroundImage->isShowCatalogMenu());
     settings.setValue(DISPLAY_AS_STACK_SETTING, debugger->isDisplayAsStack());
     settings.endGroup();
 }
@@ -992,6 +998,16 @@ void QtEmulator::setDebuggerVisible(bool aDebuggerVisible)
 	centralLayout->invalidate();
 	centralLayout->update();
 	setFixedSize(sizeHint());
+}
+
+void QtEmulator::onCatalogStateChanged()
+{
+	emit catalogStateChanged();
+}
+
+void QtEmulator::showCatalogMenu()
+{
+	backgroundImage->showCatalogMenu(true);
 }
 
 extern "C"

@@ -66,18 +66,26 @@ void QtKeyboard::setSkin(const QtSkin& aSkin)
 			keysByCode[(*keyIterator)->getCode()]=*keyIterator;
 		}
 	}
+	catalogMenuKeys=aSkin.getCatalogMenuKeys();
 }
 
 bool QtKeyboard::processKeyPressedEvent(const QKeyEvent& aKeyEvent)
 {
-	autoRepeat=false;
-	lastReleasedKeyCode=INVALID_KEY_CODE;
-	QtKeyCode keyCode=findKeyCode(aKeyEvent);
-	if(!aKeyEvent.isAutoRepeat() || isAutoRepeat(keyCode))
+	if(isShowCatalogKey(aKeyEvent))
 	{
-		putKeyCode(keyCode);
-		currentKeyCode=keyCode;
-		emit keyPressed();
+		currentEmulator->showCatalogMenu();
+	}
+	else
+	{
+		autoRepeat=false;
+		lastReleasedKeyCode=INVALID_KEY_CODE;
+		QtKeyCode keyCode=findKeyCode(aKeyEvent);
+		if(!aKeyEvent.isAutoRepeat() || isAutoRepeat(keyCode))
+		{
+			putKeyCode(keyCode);
+			currentKeyCode=keyCode;
+			emit keyPressed();
+		}
 	}
 	return true;
 }
@@ -223,6 +231,11 @@ void QtKeyboard::startAutoRepeatTimer()
 	}
 }
 
+void QtKeyboard::showCatalogMenu()
+{
+	currentKeyCode=INVALID_KEY_CODE;
+}
+
 void QtKeyboard::onAutoRepeat()
 {
 	autoRepeatTimer->stop();
@@ -347,7 +360,6 @@ bool QtKeyboard::isKeyPressedNoLock()
 	return keyboardBufferBegin!=keyboardBufferEnd;
 }
 
-
 int QtKeyboard::waitKey()
 {
 	QMutexLocker mutexLocker(&mutex);
@@ -359,6 +371,24 @@ int QtKeyboard::waitKey()
 }
 
 static int keyEventToKeycode(const QKeyEvent&);
+
+bool QtKeyboard::isShowCatalogKey(const QKeyEvent& aKeyEvent) const
+{
+	int keyCode=keyEventToKeycode(aKeyEvent);
+	if(keyCode<0)
+	{
+		return false;
+	}
+    QKeySequence sequence(keyCode);
+	for(KeySequenceConstIterator sequenceIterator=catalogMenuKeys.begin(); sequenceIterator!=catalogMenuKeys.end(); ++sequenceIterator)
+	{
+		if(sequence.matches(*sequenceIterator)==QKeySequence::ExactMatch)
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
 // This is not very efficient but it works and because keys are only 40, with just a few sequences each, this will do
 QtKeyCode QtKeyboard::findKeyCode(const QKeyEvent& aKeyEvent) const

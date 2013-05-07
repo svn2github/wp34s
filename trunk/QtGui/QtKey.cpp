@@ -38,10 +38,7 @@ const KeySequenceList& QtKey::getKeySequences() const
 
 void QtKey::addKeySequence(const QKeySequence& aKeySequence)
 {
-	// As we do not know if aKeySequence has been allocated on the stack or will be destroyed
-	// we make a copy of it.
-	QKeySequence* keySequence=new QKeySequence(aKeySequence);
-	keySequences.append(*keySequence);
+	keySequences.append(aKeySequence);
 }
 
 QString QtKey::getShortcut() const

@@ -17,12 +17,14 @@
 #include "QtBackgroundImage.h"
 #include "QtEmulator.h"
 #include "QtEmulatorAdapter.h"
+#include "QtTextPainter.h"
 
 static QPoint MOVE_MARGIN(MOVE_MARGIN_X, MOVE_MARGIN_Y);
 static QPoint MOVE_OTHER_MARGIN(MOVE_MARGIN_X, -MOVE_MARGIN_Y);
 
-QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard, QWidget* aParent)
-	: QLabel(aParent), screen(aScreen), keyboard(aKeyboard), dragging(false)
+QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard, bool aShowCatalogMenuFlag, QWidget* aParent)
+	: QLabel(aParent), screen(aScreen), keyboard(aKeyboard), dragging(false),
+	  catalogPopupLabel(NULL), catalogMenu(NULL), activeMenuItem(NULL), showCatalogMenuFlag(aShowCatalogMenuFlag)
 {
 	setSkin(aSkin);
 	setPixmap(pixmap);
@@ -51,7 +53,151 @@ void QtBackgroundImage::setSkin(const QtSkin& aSkin)
 		}
 	}
 	showToolTips(keyboard.isShowToolTips());
-	textRect=QRect(aSkin.getTextPosition(), aSkin.getTextSize());
+	QRect textRect=QRect(aSkin.getTextPosition(), aSkin.getTextSize());
+	delete catalogPopupLabel;
+	catalogPopupLabel=new QLabel("", this);
+	catalogPopupLabel->resize(textRect.width(), textRect.height());
+	catalogPopupLabel->move(textRect.x(), textRect.y());
+	catalogPopupLabel->setAutoFillBackground(false);
+	catalogPopupLabel->installEventFilter(this);
+	QString catalogMenuTooltip="Click";
+	if(!aSkin.getCatalogMenuKeys().isEmpty())
+	{
+		catalogMenuTooltip+=QString(" or press ")+aSkin.getCatalogMenuKeys().first().toString();
+	}
+	catalogMenuTooltip+=" to display menu in catalog mode";
+	catalogPopupLabel->setToolTip(catalogMenuTooltip);
+}
+
+bool QtBackgroundImage::isShowCatalogMenu() const
+{
+	return showCatalogMenuFlag;
+}
+
+void QtBackgroundImage::setShowCatalogMenu(bool aShowCatalogMenuFlag)
+{
+	showCatalogMenuFlag=aShowCatalogMenuFlag;
+}
+
+bool QtBackgroundImage::eventFilter(QObject *obj, QEvent *event)
+{
+    if(obj == catalogPopupLabel && event->type() == QEvent::MouseButtonPress)
+    {
+    	showCatalogMenu(true);
+        return true;
+    }
+    return QObject::eventFilter(obj, event);
+}
+
+void QtBackgroundImage::showCatalogMenu(bool force)
+{
+	if(!showCatalogMenuFlag && !force)
+	{
+		return;
+	}
+	else if(is_catalogue_mode())
+	{
+		keyboard.showCatalogMenu();
+		catalogMenu=new QtCatalogMenu;
+		int last=current_catalogue_max();
+		int maxWidth=0;
+		QFont& font=screen.getCatalogMenuFont();
+		QFont& fontLower=screen.getCatalogMenuFontLower();
+		int width=screen.getCatalogMenuWidth()+2*screen.getCatalogMenuMargin();
+		int height=font.pixelSize();
+		QPixmap* pixmaps[last];
+		QPixmap* highlightedPixmaps[last];
+		QString* menuText[last];
+		for(int i=0; i<last; i++)
+		{
+			const unsigned int op = current_catalogue(i);
+			char buf[40];
+			const char *p;
+			p = catcmd(op, buf);
+			menuText[i]=new QString(buf);
+			QString fullMenuText(((is_complex_mode() && buf[0]!=get_complex_prefix())?QString("C"):QString(""))+(*menuText[i]));
+			int x=screen.getCatalogMenuMargin();
+			pixmaps[i]=new QPixmap(width, height);
+			highlightedPixmaps[i]=new QPixmap(width, height);
+			// This block is just so the painter is deleted at the end and we can then set the mask
+			{
+				QPainter painter(pixmaps[i]);
+				painter.fillRect(pixmaps[i]->rect(), palette().base());
+				QPainter highlighedPainter(highlightedPixmaps[i]);
+				highlighedPainter.fillRect(highlightedPixmaps[i]->rect(), palette().highlight());
+			}
+			QPainter painter(pixmaps[i]);
+			QPainter highlighedPainter(highlightedPixmaps[i]);
+			painter.setFont(font);
+			painter.setBrush(palette().color(QPalette::Text));
+			painter.setPen(palette().color(QPalette::Text));
+			highlighedPainter.setFont(font);
+			highlighedPainter.setBrush(palette().color(QPalette::HighlightedText));
+			highlighedPainter.setPen(palette().color(QPalette::HighlightedText));
+			for(int j=0; j<fullMenuText.length(); j++)
+			{
+				char c=fullMenuText.at(j).toAscii();
+				QtTextPainter* textPainter=QtTextPainter::getTextPainter(c);
+				textPainter->paint(QPoint(x, 0), painter, fontLower);
+				textPainter->paint(QPoint(x, 0), highlighedPainter, fontLower);
+				x+=textPainter->width(painter, fontLower);
+			}
+			x+=screen.getCatalogMenuMargin();
+			maxWidth=qMax(x, maxWidth);
+		}
+		activeMenuItem=NULL;
+		for(int i=0; i<last; i++)
+		{
+			QtCatalogMenuItem* menuItem=new QtCatalogMenuItem(pixmaps[i]->copy(0, 0, maxWidth, height), highlightedPixmaps[i]->copy(0, 0, maxWidth, height), i, *menuText[i], NULL);
+			catalogMenu->addCatalogMenuItem(menuItem);
+			if(i==get_catpos())
+			{
+				activeMenuItem=menuItem;
+			}
+			delete pixmaps[i];
+			delete highlightedPixmaps[i];
+			delete menuText[i];
+		}
+	    connect(catalogMenu, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
+
+	    // We set the active menu item 50 ms after we have displayed it. If not, it does not know how to scroll to the active entry
+	    QTimer::singleShot(50, this, SLOT(setActiveCatalogMenuItem()));
+	    catalogMenu->exec(mapToGlobal(catalogPopupLabel->pos()));
+	    disconnect(catalogMenu, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
+	    delete catalogMenu;
+	    catalogMenu=NULL;
+	}
+	else
+	{
+		if(catalogMenu!=NULL)
+		{
+			catalogMenu->close();
+			delete catalogMenu;
+			catalogMenu=NULL;
+		}
+	}
+}
+
+void QtBackgroundImage::onCatalogStateChanged()
+{
+	showCatalogMenu(false);
+}
+
+void QtBackgroundImage::setActiveCatalogMenuItem()
+{
+	if(catalogMenu!=NULL && activeMenuItem!=NULL)
+	{
+		catalogMenu->setActiveAction(activeMenuItem);
+	}
+}
+
+void QtBackgroundImage::onTrigger(QAction* anAction)
+{
+	QtCatalogMenuItem* menuItem=dynamic_cast<QtCatalogMenuItem*>(anAction);
+	if(menuItem!=NULL)
+	{
+		execute_catpos(menuItem->getCatalogPosition());
+	}
 }
 
 void QtBackgroundImage::showToolTips(bool aShowToolTipsFlag)
@@ -109,18 +255,7 @@ void QtBackgroundImage::keyReleaseEvent(QKeyEvent* aKeyEvent)
 
 void QtBackgroundImage::mousePressEvent(QMouseEvent* aMouseEvent)
 {
-	if(aMouseEvent->button()==Qt::LeftButton && is_catalogue_mode() && textRect.contains(aMouseEvent->pos()))
-	{
-		int last=current_catalogue_max();
-		for(int i=0; i<last; i++) {
-			const unsigned int op = current_catalogue(i);
-			char buf[40];
-			const char *p;
-			p = catcmd(op, buf);
-			//qDebug() << (((is_complex_mode() && buf[0]!=get_complex_prefix())?QString("C"):QString(""))+QString(buf));
-		}
-	}
-	else if(!keyboard.processButtonPressedEvent(*aMouseEvent) && aMouseEvent->button()==Qt::LeftButton)
+	if(!keyboard.processButtonPressedEvent(*aMouseEvent) && aMouseEvent->button()==Qt::LeftButton)
 	{
 		dragging=true;
 		lastDragPosition=aMouseEvent->globalPos();
@@ -182,4 +317,14 @@ void QtBackgroundImage::paintEvent(QPaintEvent* aPaintEvent)
 void QtBackgroundImage::updateScreen()
 {
 	update(screen.getScreenRectangle());
+}
+
+extern "C"
+{
+
+void changed_catalog_state()
+{
+	currentEmulator->onCatalogStateChanged();
+}
+
 }

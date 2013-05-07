@@ -36,8 +36,12 @@ public:
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
 	void copy(QtBackgroundImage& aBackgroundImage, QClipboard& aClipboard) const;
 	void setSkin(const QtSkin& aSkin);
-	bool isUseFonts();
+	bool isUseFonts() const;
 	void setUseFonts(bool anUseFonts);
+	QFont& getCatalogMenuFont() const;
+	QFont& getCatalogMenuFontLower() const;
+	int getCatalogMenuMargin() const;
+	int getCatalogMenuWidth() const;
 
 private:
 	bool shouldUseFonts() const;
@@ -63,6 +67,10 @@ private:
     int separatorShift;
     QPoint exponentOrigin;
     QFont *exponentFont;
+    QFont *menuFont;
+    QFont *menuFontLower;
+    int menuMargin;
+    int menuWidth;
     QtSpecialDigitPainter *specialDigitPainter;
 };
 

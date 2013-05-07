@@ -25,6 +25,9 @@
 #include "catalogues.h"
 #include "printer.h"
 
+#if defined(QTGUI) || defined(IOS)
+extern void changed_catalog_state();
+#endif
 
 #define STATE_UNFINISHED	(OP_SPEC | OP_UNFINISHED)
 #define STATE_BACKSPACE		(OP_SPEC | OP_BACKSPACE)
@@ -396,6 +399,9 @@ static void init_cat(enum catalogues cat) {
 		}
 	}
 	reset_shift();
+#if defined(QTGUI) || defined(IOS)
+	changed_catalog_state();
+#endif
 }
 
 /*
@@ -1914,6 +1920,32 @@ set_pos:
 	return STATE_UNFINISHED;
 }
 
+#ifndef REALBUILD
+int find_pos(const char* text) {
+	int pos;
+	const int ctmax = current_catalogue_max();
+	for (pos = 0; pos < ctmax; ++pos) {
+		char buf[16];
+		const char *cmd = catcmd(current_catalogue(pos), buf);
+		int i;
+
+		if (*cmd == COMPLEX_PREFIX)
+			cmd++;
+		for (i=0; cmd[i] != '\0'; i++) {
+			const int c = remap_chars(cmd[i]);
+			const int cl = remap_chars(text[i]);
+			if (c > cl)
+				return pos;
+			else if (c < cl)
+				break;
+		}
+		if (text[i] == '\0')
+			return pos;
+	}
+	return pos;
+}
+
+#endif
 
 /* Multi (2) word instruction entry
  */

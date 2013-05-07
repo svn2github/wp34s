@@ -56,6 +56,8 @@
 #define DISPLAY_SETTINGS_GROUP "Display"
 #define USE_FONTS_SETTING "UseFonts"
 #define DEFAULT_USE_FONTS_SETTING true
+#define SHOW_CATALOG_MENUS_SETTING "ShowCatalogMenus"
+#define DEFAULT_SHOW_CATALOG_MENUS_SETTING true
 #define DISPLAY_AS_STACK_SETTING "DisplayAsStack"
 
 
@@ -142,6 +144,8 @@ public:
      // Used by program_flash via QtEmulatorAdapter.c
      char* getRegionPath(int aRegionIndex);
      void resetUserMemory();
+     void onCatalogStateChanged();
+     void showCatalogMenu();
 
 private slots:
 	void editPreferences();
@@ -230,6 +234,7 @@ private:
      int hShiftDelay;
      bool showToolTips;
      bool useFonts;
+     bool showCatalogMenus;
      bool displayAsStack;
      QtSerialPort* serialPort;
      bool active;
@@ -244,6 +249,7 @@ private:
 
 signals:
 	void screenChanged();
+	void catalogStateChanged();
 };
 
 extern QtEmulator* currentEmulator;

@@ -24,6 +24,7 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 		int anHShiftDelay,
 		bool aShowToolTipFlag,
 		bool anUseFontFlag,
+		bool aShowCatalogMenusFlag,
 		bool aDisplayAsStackClickFlag,
 		const QString& aSerialPortName,
 		QWidget* aParent)
@@ -36,6 +37,7 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 			anAlwaysUseHShiftClickFlag,
 			aShowToolTipFlag,
 			anUseFontFlag,
+			aShowCatalogMenusFlag,
 			aDisplayAsStackClickFlag,
 			anHShiftDelay,
 			aSerialPortName);
@@ -51,6 +53,7 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 		bool anAlwaysUseHShiftClickFlag,
 		bool aShowToolTipFlag,
 		bool anUseFontFlag,
+		bool aShowCatalogMenusFlag,
 		bool aDisplayAsStackFlag,
 		int anHShiftDelay,
 		const QString& aSerialPortName)
@@ -63,7 +66,7 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 	QTabWidget* tabWidget = new QTabWidget;
 	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), MEMORY_TAB_NAME);
 	tabWidget->addTab(buildKeyboardTab(anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, anHShiftDelay, aShowToolTipFlag), KEYBOARD_TAB_NAME);
-	tabWidget->addTab(buildDisplayTab(anUseFontFlag, aDisplayAsStackFlag), DISPLAY_TAB_NAME);
+	tabWidget->addTab(buildDisplayTab(anUseFontFlag, aShowCatalogMenusFlag, aDisplayAsStackFlag), DISPLAY_TAB_NAME);
 	tabWidget->addTab(buildSerialTab(aSerialPortName), SERIAL_PORT_TAB_NAME);
 
 	dialogLayout->addWidget(tabWidget);
@@ -143,7 +146,7 @@ QWidget* QtPreferencesDialog::buildKeyboardTab(bool anUseHShiftClickFlag, bool a
 	return keyboardTab;
 }
 
-QWidget* QtPreferencesDialog::buildDisplayTab(bool anUseFontsFlag, bool aDisplayAsStackClickFlag)
+QWidget* QtPreferencesDialog::buildDisplayTab(bool anUseFontsFlag, bool aShowCatalogMenusFlag, bool aDisplayAsStackClickFlag)
 {
 	QWidget* displayTab=new QWidget;
 	QVBoxLayout* displayLayout=new QVBoxLayout;
@@ -151,6 +154,10 @@ QWidget* QtPreferencesDialog::buildDisplayTab(bool anUseFontsFlag, bool aDisplay
 	useFontsClickButton=new QCheckBox(USE_FONTS_LABEL_TEXT);
 	displayLayout->addWidget(useFontsClickButton);
 	useFontsClickButton->setChecked(anUseFontsFlag);
+
+	showCatalogMenusClickButton=new QCheckBox(SHOW_CATALOG_MENUS_LABEL_TEXT);
+	displayLayout->addWidget(showCatalogMenusClickButton);
+	showCatalogMenusClickButton->setChecked(aShowCatalogMenusFlag);
 
 	displayAsStackClickButton=new QCheckBox(DISPLAY_AS_STACK_LABEL_TEXT);
 	displayLayout->addWidget(displayAsStackClickButton);
@@ -235,6 +242,11 @@ void QtPreferencesDialog::chooseDirectory()
 bool QtPreferencesDialog::isUseFonts() const
 {
 	return useFontsClickButton->isChecked();
+}
+
+bool QtPreferencesDialog::isShowCatalogMenus() const
+{
+	return showCatalogMenusClickButton->isChecked();
 }
 
 bool QtPreferencesDialog::isDisplayAsStack() const

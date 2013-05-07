@@ -61,11 +61,15 @@ extern unsigned int current_catalogue(int);
 extern const char *catcmd(unsigned int, char *);
 extern int is_complex_mode();
 extern char get_complex_prefix();
-
+extern void execute_catpos(int aCatPos);
+extern int get_catpos();
+extern int forward_catalog_selection(int aCatPos);
 extern int current_catalogue_max(void);
+extern int find_pos(const char* text);
 
 extern int uparrow_code();
 extern int downarrow_code();
+extern int backspace_code();
 
 extern int forward_set_IO_annunciator();
 extern int getdig(int ch);

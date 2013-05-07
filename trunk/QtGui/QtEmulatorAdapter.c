@@ -29,8 +29,10 @@ extern int put_key_adapter(int);
 extern void add_heartbeat_adapter(int);
 extern char* get_region_path_adapter(int);
 extern void* shutdown_adapter();
-extern void updateScreen();
 extern void format_display(char *buf);
+#if defined(INCLUDE_STOPWATCH) && !defined(CONSOLE)
+extern void updateScreen();
+#endif
 
 #define SVN_REVISION_SIZE 4
 static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
@@ -366,6 +368,23 @@ char get_complex_prefix()
 	return COMPLEX_PREFIX;
 }
 
+void execute_catpos(int aCatPos)
+{
+	State.catpos=aCatPos;
+	put_key_adapter(K20);
+	put_key_adapter(K_RELEASE);
+}
+
+int get_catpos()
+{
+	return State.catpos;
+}
+
+void forward_catalog_selection(int aCatPos)
+{
+	State.catpos=aCatPos;
+	display();
+}
 
 int uparrow_code()
 {
@@ -377,6 +396,12 @@ int downarrow_code()
 	return K50;
 }
 
+int backspace_code()
+{
+	return K24;
+}
+
+
 void forward_set_IO_annunciator()
 {
 	set_IO_annunciator();
@@ -386,6 +411,3 @@ char isForcedDispPlot()
 {
 	return forceDispPlot;
 }
-
-
-

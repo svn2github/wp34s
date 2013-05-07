@@ -48,7 +48,18 @@ static int SPECIAL_DIGIT_INDEXES[] = { 1, 2, 3, 4, 5, 6, 7, 8, 24, 25 };
 
 
 QtScreen::QtScreen(const QtSkin& aSkin, bool anUseFonts)
-: useFonts(anUseFonts), font(NULL), fontLower(NULL), smallFont(NULL), smallFontLower(NULL), numberFont(NULL), exponentFont(NULL), specialDigitPainter(NULL)
+: useFonts(anUseFonts),
+  font(NULL),
+  fontLower(NULL),
+  smallFont(NULL),
+  smallFontLower(NULL),
+  numberFont(NULL),
+  exponentFont(NULL),
+  menuFont(NULL),
+  menuFontLower(NULL),
+  menuMargin(0),
+  menuWidth(0),
+  specialDigitPainter(NULL)
 {
 	setSkin(aSkin);
 	for(int i=0; i<(int) (sizeof(NON_PIXEL_INDEXES)/sizeof(int)); i++)
@@ -61,7 +72,7 @@ QtScreen::QtScreen(const QtSkin& aSkin, bool anUseFonts)
 	}
 }
 
-bool QtScreen::isUseFonts()
+bool QtScreen::isUseFonts() const
 {
 	return useFonts;
 }
@@ -148,6 +159,17 @@ void QtScreen::setSkin(const QtSkin& aSkin)
 	exponentFont->setPixelSize(aSkin.getExponentFontSize());
 	exponentFont->setStretch(aSkin.getExponentFontStretch());
 
+	delete menuFont;
+	menuFont=new QFont(fontFamily);
+	menuFont->setPixelSize(aSkin.getMenuFontSize());
+
+	delete menuFontLower;
+	menuFontLower=new QFont(fontFamily);
+	menuFontLower->setPixelSize(aSkin.getMenuFontLowerSize());
+
+	menuMargin=aSkin.getMenuMargin();
+	menuWidth=aSkin.getMenuWidth();
+
 	delete specialDigitPainter;
 	specialDigitPainter = new QtSpecialDigitPainter(*numberFont);
 }
@@ -166,6 +188,26 @@ QtScreen::~QtScreen()
 const QRect& QtScreen::getScreenRectangle() const
 {
 	return screenRectangle;
+}
+
+QFont& QtScreen::getCatalogMenuFont() const
+{
+	return *menuFont;
+}
+
+QFont& QtScreen::getCatalogMenuFontLower() const
+{
+	return *menuFontLower;
+}
+
+int QtScreen::getCatalogMenuMargin() const
+{
+	return menuMargin;
+}
+
+int QtScreen::getCatalogMenuWidth() const
+{
+	return menuWidth;
 }
 
 void QtScreen::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent)
