@@ -60,7 +60,7 @@ RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
 endif
 # Warning the trailing / is mandatory
-QTLIBSDIR := c:/QtSDK/Desktop/Qt/4.8.0/mingw/bin/
+QTLIBSDIR := c:/Qt/4.8.4/bin/
 QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll mingwm10.dll libgcc_s_dw2-1.dll)
 
 ifeq "$(SYSTEM)" "windows32"

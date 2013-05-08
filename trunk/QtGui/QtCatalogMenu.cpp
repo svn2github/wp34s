@@ -119,8 +119,8 @@ QtCatalogMenu::QtCatalogMenu()
 {
 	proxyStyle = new ProxyStyle(style(), this);
     setStyle(proxyStyle);
-#ifndef Q_WS_WIN
-    // Activate scrollable popup menu. Does not work well on Windows though
+#ifndef Q_WS_MAC
+    // Activate scrollable popup menu
     setStyleSheet("QMenu { menu-scrollable: 1; }");
 #endif
     connect(this, SIGNAL(hovered(QAction*)), this, SLOT(onHover(QAction*)));
