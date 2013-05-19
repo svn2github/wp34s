@@ -138,6 +138,7 @@ void QtEmulator::editPreferences()
 			keyboard->isShowToolTips(),
 			screen->isUseFonts(),
 			backgroundImage->isShowCatalogMenu(),
+			backgroundImage->isCloseCatalogMenu(),
 			debugger->isDisplayAsStack(),
 			serialPort->getSerialPortName(), this);
 	int result=preferencesDialog.exec();
@@ -158,6 +159,7 @@ void QtEmulator::editPreferences()
 
 		screen->setUseFonts(preferencesDialog.isUseFonts());
 		backgroundImage->setShowCatalogMenu(preferencesDialog.isShowCatalogMenus());
+		backgroundImage->setCloseCatalogMenu(preferencesDialog.isSCloseCatalogMenus());
 		debugger->setDisplayAsStack(preferencesDialog.isDisplayAsStack());
 		saveDisplaySettings();
 
@@ -445,7 +447,7 @@ void QtEmulator::buildComponents(const QtSkin& aSkin)
 	centralWidget=new QWidget;
 	screen=new QtScreen(aSkin, useFonts);
 	keyboard=new QtKeyboard(aSkin, useHShiftClick, alwaysUseHShiftClick, hShiftDelay, showToolTips);
-	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard, showCatalogMenus);
+	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard, showCatalogMenus, closeCatalogMenus);
 	connect(this, SIGNAL(catalogStateChanged()), backgroundImage, SLOT(onCatalogStateChanged()), Qt::BlockingQueuedConnection);
 	QBoxLayout* layout = new QHBoxLayout();
 	layout->addWidget(centralWidget);
@@ -618,6 +620,7 @@ void QtEmulator::loadDisplaySettings()
 	settings.beginGroup(DISPLAY_SETTINGS_GROUP);
 	useFonts=settings.value(USE_FONTS_SETTING, DEFAULT_USE_FONTS_SETTING).toBool();
 	showCatalogMenus=settings.value(SHOW_CATALOG_MENUS_SETTING, DEFAULT_SHOW_CATALOG_MENUS_SETTING).toBool();
+	closeCatalogMenus=settings.value(CLOSE_CATALOG_MENUS_SETTING, DEFAULT_CLOSE_CATALOG_MENUS_SETTING).toBool();
 	displayAsStack=settings.value(DISPLAY_AS_STACK_SETTING, DEFAULT_DISPLAY_AS_STACK).toBool();
 	settings.endGroup();
 }
@@ -678,6 +681,7 @@ void QtEmulator::saveDisplaySettings()
     settings.beginGroup(DISPLAY_SETTINGS_GROUP);
     settings.setValue(USE_FONTS_SETTING, screen->isUseFonts());
     settings.setValue(SHOW_CATALOG_MENUS_SETTING, backgroundImage->isShowCatalogMenu());
+    settings.setValue(CLOSE_CATALOG_MENUS_SETTING, backgroundImage->isCloseCatalogMenu());
     settings.setValue(DISPLAY_AS_STACK_SETTING, debugger->isDisplayAsStack());
     settings.endGroup();
 }

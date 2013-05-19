@@ -31,7 +31,12 @@ class QtBackgroundImage: public QLabel
 	Q_OBJECT
 
 public:
-	QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard, bool aShowCatalogMenuFlag, QWidget* aParent=0);
+	QtBackgroundImage(const QtSkin& aSkin,
+			QtScreen& aScreen,
+			QtKeyboard& aKeyboard,
+			bool aShowCatalogMenuFlag,
+			bool aCloseCatalogMenuFlag,
+			QWidget* aParent=0);
 
 public:
 	QPixmap& getBackgroundPixmap();
@@ -49,6 +54,8 @@ public:
 	virtual bool eventFilter(QObject *obj, QEvent *event);
 	bool isShowCatalogMenu() const;
 	void setShowCatalogMenu(bool aShowCatalogMenuFlag);
+	bool isCloseCatalogMenu() const;
+	void setCloseCatalogMenu(bool aShowCatalogMenuFlag);
 	void showCatalogMenu(bool force);
 
 public slots:
@@ -76,6 +83,8 @@ private:
 	 QtCatalogMenu* catalogMenu;
 	 QtCatalogMenuItem* activeMenuItem;
 	 bool showCatalogMenuFlag;
+	 bool closeCatalogMenuFlag;
+	 bool catalogTriggered;
 };
 
 #endif /* QTBACKGROUNDIMAGE_H_ */

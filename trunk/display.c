@@ -58,11 +58,11 @@ static const char S_SURE[] = "Sure?";
 static const char S7_ERROR[] = "Error";		/* Default lower line error display */
 static const char S7_NaN[] = "not nuMmEric";	/* Displaying NaN in lower line */
 #ifndef REALBUILD
-static const char S7_NaN_Text[] = "N o t  n u m e r i c ";
+static const char S7_NaN_Text[] = " N o t  n u m e r i c ";
 #endif
 static const char S7_INF[] = "Infinity";	/* Displaying infinity in lower line */
 #ifndef REALBUILD
-static const char S7_INF_Text[] = "I n f i n i t y ";
+static const char S7_INF_Text[] = " I n f i n i t y ";
 #endif
 
 static const char S7_STEP[] = "StEP ";		/* Step marker in program mode (lower line) */

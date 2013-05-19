@@ -58,6 +58,8 @@
 #define DEFAULT_USE_FONTS_SETTING true
 #define SHOW_CATALOG_MENUS_SETTING "ShowCatalogMenus"
 #define DEFAULT_SHOW_CATALOG_MENUS_SETTING true
+#define CLOSE_CATALOG_MENUS_SETTING "CloseCatalogMenus"
+#define DEFAULT_CLOSE_CATALOG_MENUS_SETTING true
 #define DISPLAY_AS_STACK_SETTING "DisplayAsStack"
 
 
@@ -235,6 +237,7 @@ private:
      bool showToolTips;
      bool useFonts;
      bool showCatalogMenus;
+     bool closeCatalogMenus;
      bool displayAsStack;
      QtSerialPort* serialPort;
      bool active;

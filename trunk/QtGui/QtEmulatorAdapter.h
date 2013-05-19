@@ -64,6 +64,7 @@ extern char get_complex_prefix();
 extern void execute_catpos(int aCatPos);
 extern int get_catpos();
 extern int forward_catalog_selection(int aCatPos);
+extern void close_catalog();
 extern int current_catalogue_max(void);
 extern int find_pos(const char* text);
 

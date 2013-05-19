@@ -25,6 +25,7 @@
 #define KEYBOARD_TAB_NAME "Keyboard"
 #define USE_FONTS_LABEL_TEXT "Use real fonts"
 #define SHOW_CATALOG_MENUS_LABEL_TEXT "Use real menus to display catalogs"
+#define CLOSE_CATALOG_MENUS_LABEL_TEXT "Close catalog after menu"
 #define DISPLAY_AS_STACK_LABEL_TEXT "Display as Stack in Debug (X at bottom)"
 #define HSHIFT_DELAY_LABEL_TEXT "H-Shift Delay"
 #define USE_H_CLICK_TEXT "Use H-shift click"
@@ -56,6 +57,7 @@ public:
 			bool aShowToolTipFlag,
 			bool anUseFontsFlag,
 			bool aShowCatalogMenusFlag,
+			bool aCloseatalogMenusFlag,
 			bool aDisplayAsStackFlag,
 			const QString& aSerialPortName,
 			QWidget* aParent=NULL);
@@ -69,6 +71,7 @@ public:
 	bool isShowToolTips() const;
 	bool isUseFonts() const;
 	bool isShowCatalogMenus() const;
+	bool isSCloseCatalogMenus() const;
 	bool isDisplayAsStack() const;
 	int getHShiftDelay() const;
 	QString getSerialPortName() const;
@@ -87,12 +90,13 @@ private:
 			bool aShowToolTipFlag,
 			bool anUseFontsFlag,
 			bool aShowCatalogMenusFlag,
+			bool aCloseCatalogMenusFlag,
 			bool aDisplayAsStackFlag,
 			int anHShiftDelay,
 			const QString& aSerialPortName);
 	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName);
 	QWidget* buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay, bool aShowToolTipFlag);
-	QWidget* buildDisplayTab(bool anUseFontsFlag, bool aShowCatalogMenusFlag, bool aDisplayAsStackFlag);
+	QWidget* buildDisplayTab(bool anUseFontsFlag, bool aShowCatalogMenusFlag, bool aCloseCatalogMenusFlag, bool aDisplayAsStackFlag);
 	QWidget* buildSerialTab(const QString& aSerialPortName);
 	void fillSerialPorts(QListWidget& aListWidget);
 
@@ -105,6 +109,7 @@ private:
 	QCheckBox *showToolTipsClickButton;
 	QCheckBox *useFontsClickButton;
 	QCheckBox *showCatalogMenusClickButton;
+	QCheckBox *closeCatalogMenusClickButton;
 	QCheckBox *displayAsStackClickButton;
 	QSpinBox* hShiftDelayBox;
 	QLineEdit* serialPortNameEdit;

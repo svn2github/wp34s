@@ -22,9 +22,15 @@
 static QPoint MOVE_MARGIN(MOVE_MARGIN_X, MOVE_MARGIN_Y);
 static QPoint MOVE_OTHER_MARGIN(MOVE_MARGIN_X, -MOVE_MARGIN_Y);
 
-QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin, QtScreen& aScreen, QtKeyboard& aKeyboard, bool aShowCatalogMenuFlag, QWidget* aParent)
+QtBackgroundImage::QtBackgroundImage(const QtSkin& aSkin,
+		QtScreen& aScreen,
+		QtKeyboard& aKeyboard,
+		bool aShowCatalogMenuFlag,
+		bool aCloseCatalogMenuFlag,
+		QWidget* aParent)
 	: QLabel(aParent), screen(aScreen), keyboard(aKeyboard), dragging(false),
-	  catalogPopupLabel(NULL), catalogMenu(NULL), activeMenuItem(NULL), showCatalogMenuFlag(aShowCatalogMenuFlag)
+	  catalogPopupLabel(NULL), catalogMenu(NULL), activeMenuItem(NULL),
+	  showCatalogMenuFlag(aShowCatalogMenuFlag), closeCatalogMenuFlag(aCloseCatalogMenuFlag)
 {
 	setSkin(aSkin);
 	setPixmap(pixmap);
@@ -77,6 +83,16 @@ bool QtBackgroundImage::isShowCatalogMenu() const
 void QtBackgroundImage::setShowCatalogMenu(bool aShowCatalogMenuFlag)
 {
 	showCatalogMenuFlag=aShowCatalogMenuFlag;
+}
+
+bool QtBackgroundImage::isCloseCatalogMenu() const
+{
+	return closeCatalogMenuFlag;
+}
+
+void QtBackgroundImage::setCloseCatalogMenu(bool aCloseCatalogMenuFlag)
+{
+	closeCatalogMenuFlag=aCloseCatalogMenuFlag;
 }
 
 bool QtBackgroundImage::eventFilter(QObject *obj, QEvent *event)
@@ -158,6 +174,7 @@ void QtBackgroundImage::showCatalogMenu(bool force)
 			delete highlightedPixmaps[i];
 			delete menuText[i];
 		}
+		catalogTriggered = false;
 	    connect(catalogMenu, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
 
 	    // We set the active menu item 50 ms after we have displayed it. If not, it does not know how to scroll to the active entry
@@ -166,6 +183,10 @@ void QtBackgroundImage::showCatalogMenu(bool force)
 	    disconnect(catalogMenu, SIGNAL(triggered(QAction*)), this, SLOT(onTrigger(QAction*)));
 	    delete catalogMenu;
 	    catalogMenu=NULL;
+	    if(closeCatalogMenuFlag && !catalogTriggered)
+	    {
+	    	close_catalog();
+	    }
 	}
 	else
 	{
@@ -197,6 +218,7 @@ void QtBackgroundImage::onTrigger(QAction* anAction)
 	if(menuItem!=NULL)
 	{
 		execute_catpos(menuItem->getCatalogPosition());
+		catalogTriggered = true;
 	}
 }
 

@@ -386,6 +386,11 @@ void forward_catalog_selection(int aCatPos)
 	display();
 }
 
+void close_catalog()
+{
+	put_key_adapter(K60);
+}
+
 int uparrow_code()
 {
 	return K40;
@@ -400,7 +405,6 @@ int backspace_code()
 {
 	return K24;
 }
-
 
 void forward_set_IO_annunciator()
 {
