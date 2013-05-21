@@ -2105,14 +2105,15 @@ static void stopwatch_exponent(const char* exponent) {
 	}
 }
 
-void stopwatch_message(const char *str1, const char *str2, int dot_pos, char* exponent)
+void stopwatch_message(const char *str1, const char *str2, int force_small, char* exponent)
 {
+#ifndef REALBUILD
+	xset(LastDisplayedNumber, ' ', NUMBER_LENGTH);
+#endif
 	reset_disp();
 	set_dot(DEG);
 	set_digits_string( str2, 0 );
-	if( dot_pos>=0 ) {
-		set_decimal( dot_pos*SEGS_PER_DIGIT, DECIMAL_DOT, CNULL );
-	}
+	State2.disp_small = force_small;
 	if( exponent!=NULL ) {
 		stopwatch_exponent(exponent);
 	}

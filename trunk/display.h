@@ -47,7 +47,7 @@ extern int getdig(int ch);
 extern char forceDispPlot;
 #endif
 #ifdef INCLUDE_STOPWATCH
-extern void stopwatch_message(const char *str1, const char *str2, int dot_pos, char* exponent);
+extern void stopwatch_message(const char *str1, const char *str2, int force_small, char* exponent);
 #endif // INCLUDE_STOPWATCH
 
 extern unsigned int charlengths(unsigned int);

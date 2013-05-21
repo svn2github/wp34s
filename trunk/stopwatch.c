@@ -199,7 +199,7 @@ static void display_stopwatch() {
 		stopwatch_to_string(TotalStopWatch, message);
 		display_rcl_message=1;
 	}
-	stopwatch_message(display_rcl_message?message:STOPWATCH_MESSAGE, buf, -1, StopWatchStatus.show_memory?exponent:(char*)NULL);
+	stopwatch_message(display_rcl_message?message:STOPWATCH_MESSAGE, buf, StopWatchStatus.sigma_display_mode, StopWatchStatus.show_memory?exponent:(char*)NULL);
 }
 
 /*
