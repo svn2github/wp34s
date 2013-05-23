@@ -1,0 +1,87 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * Given x,y positive,
+ * XEQ'MAG' returns the Modified Arithmetic-Geometric mean
+ * of x,y (with parameter z0 = 0)
+ * according to Adlaj's recursive formulas:
+ *	http://www.ams.org/notices/201208/rtx120801094p.pdf
+ *
+ * Program by Eduardo Duenez.
+ */
+
+	LBL'MAG'    // Modified Arithmetic-Geometric mean of given x,y
+	LocR 007
+	x>? Y
+	x[<->] Y
+	STO .02
+	x[<->] Y
+	STO .01
+	[DELTA]%    // Find relative error of current approximation
+	STO .00
+	x=0?	    // If x=y go and return y
+	GTO 01
+	DROP
+	DROP
+	LBL 00      // Start iterative loop
+	RCL .03
+	STO .06     // Move current z to z_old
+	DROP
+	RCL .02
+	STO .05     // Move current y to y_old
+	RCL .01
+	STO .04     // Move current x to x_old
+	+
+	2
+	/
+	STO .01     // New x_new = (x_old + y_old)/2
+	DROP
+	RCL .06
+	STO .02
+	STO .03     // Temporarily make y_new = z_new = z_old
+	DROP
+	RCL .04
+	RCL- .06
+	RCL .05
+	RCL- .06
+	[times]
+	[sqrt]
+	STO+ .02    // y_new = z_old + sqrt(***)
+	STO- .03    // z_new = z_old - sqrt(***)
+	DROP
+	RCL .02
+	RCL .01
+	[DELTA]%    // Compute new approximation error b/w x_new & y_new
+	x[<=]0?     // If error <=0 we're done: Likely will return x_new
+	GTO 01
+	x[>=]? .00  // If error got worse we're done: Will return x_old
+	GTO 02
+	STO .00     // Update approximation error
+	DROP
+	DROP
+	GTO 00
+	LBL 01      // Return current approximation
+	ABS
+	x>? .00     // (Unless the prior one really was better)
+	GTO 02
+	DROP
+	RTN
+	LBL 02      // Return prior approximation
+	DROP
+	DROP
+	RCL .04
+	END
