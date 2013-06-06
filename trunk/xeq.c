@@ -2240,6 +2240,13 @@ void cmdback(unsigned int arg, enum rarg op) {
 }
 
 
+/* Append a character to the command line
+ */
+static void append_cmdline(char c) {
+	Cmdline[CmdLineLength++] = c;
+	Cmdline[CmdLineLength] = '\0';
+}
+
 /* We've encountered a CHS while entering the command line.
  */
 static void cmdlinechs(void) {
@@ -2247,7 +2254,7 @@ static void cmdlinechs(void) {
 		const unsigned int pos = CmdLineEex + 1;
 		if (CmdLineLength < pos) {
 			if (CmdLineLength < CMDLINELEN)
-				Cmdline[CmdLineLength++] = '-';
+				append_cmdline('-');
 		} else if (Cmdline[pos] == '-') {
 			if (CmdLineLength != pos)
 				xcopy(Cmdline + pos, Cmdline + pos + 1, CmdLineLength-pos);
@@ -2823,7 +2830,7 @@ static void digit(unsigned int c) {
 			return;
 		}
 		if (c >= 10) {
-			Cmdline[CmdLineLength++] = c - 10 + 'A';
+			append_cmdline(c - 10 + 'A');
 			return;
 		}
 	} else {
@@ -2843,8 +2850,7 @@ static void digit(unsigned int c) {
 		}
 	}
 
-	Cmdline[CmdLineLength++] = c + '0';
-	Cmdline[CmdLineLength] = '\0';
+	append_cmdline(c + '0');
 
 	if (! intm && CmdLineEex) {
 		const int dblmode = is_dblmode();
@@ -2911,7 +2917,7 @@ static void specials(const opcode op) {
 #endif
 				digit(0);
 			CmdLineDot++;
-			Cmdline[CmdLineLength++] = '.';
+			append_cmdline('.');
 		}
 		break;
 
@@ -2937,7 +2943,7 @@ static void specials(const opcode op) {
 			else if ( (! UState.fract) || (CmdLineDot < 2) ) //enter E if the above don't apply and if it's not fraction mode OR if at most one dot has been entered
 			{
 				CmdLineEex = CmdLineLength;
-				Cmdline[CmdLineLength++] = 'E';
+				append_cmdline('E');
 			}
  		}
 	}
@@ -2948,7 +2954,7 @@ static void specials(const opcode op) {
 			if (CmdLineLength == 0)
 				digit(1);
 			CmdLineEex = CmdLineLength;
-			Cmdline[CmdLineLength++] = 'E';
+			append_cmdline('E');
 		}
 	}
 #else			
@@ -2958,7 +2964,7 @@ static void specials(const opcode op) {
 			if (CmdLineLength == 0)
 				digit(1);
 			CmdLineEex = CmdLineLength;
-			Cmdline[CmdLineLength++] = 'E';
+			append_cmdline('E');
 		}
 #endif
 		break;
