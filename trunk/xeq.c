@@ -2252,7 +2252,7 @@ static void append_cmdline(char c) {
 static void cmdlinechs(void) {
 	if (CmdLineEex) {
 		const unsigned int pos = CmdLineEex + 1;
-		if (CmdLineLength < pos) {
+		if (CmdLineLength <= pos) {
 			if (CmdLineLength < CMDLINELEN)
 				append_cmdline('-');
 		} else if (Cmdline[pos] == '-') {

@@ -1904,14 +1904,16 @@ nostk:	show_flags();
 			set_exp(ProgFree, 1, CNULL);
 			num_arg_0(scopy_spc(buf, n == 0 ? S7_STEP_ShortText : libname_shorttext[n]),
 				  upc, 3 + (n & 1));  // 4 digits in ROM and Library
-			char *b=buf;
-			char *l=LastDisplayedNumber;
-			*l++=' ';
-			while(*b) {
-				*l++=*b++;
-				*l++=' ';
-			}
-			*l=0;
+      { // allow local declaration of b and l in C (not C++) on VisualStudio
+			  char *b=buf;
+			  char *l=LastDisplayedNumber;
+			  *l++=' ';
+			  while(*b) {
+				  *l++=*b++;
+				  *l++=' ';
+			  }
+			  *l=0;
+      }
 #endif
 		}
 	}
