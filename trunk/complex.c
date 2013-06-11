@@ -437,8 +437,9 @@ void cmplxTanh(decNumber *rx, decNumber *ry, const decNumber *a, const decNumber
 		decNumberTanh(rx, a);
 		decNumberZero(ry);
 	} else {
+		dn_sincos(b, &ta, &t2);
+		dn_divide(&tb, &ta, &t2);
 		decNumberTanh(&ta, a);
-		decNumberTan(&tb, b);
 
 		dn_multiply(&t2, &ta, &tb);
 
