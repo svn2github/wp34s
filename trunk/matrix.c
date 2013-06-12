@@ -659,6 +659,8 @@ decNumber *matrix_linear_eqn(decNumber *r, const decNumber *a, const decNumber *
 		return NULL;
 
 	bbase = matrix_decomp(b, &brows, &bcols);
+	if (bbase == NULL)
+		return NULL;
 	if (brows != n || bcols != 1) {
 		err(ERR_MATRIX_DIM);
 		return NULL;
