@@ -1,0 +1,138 @@
+// (C) 2013 Andrew Nikitin
+// Fit quadratic polynomial to empirical data
+
+// program operates in stack size 4
+// uses regJ and regK to accumulate [SIGMA]x^3 and [SIGMA]x^4
+// uses stat registers to accumulate other sums
+// stores coefficients of quadrature fit in regA, regB, regC
+
+
+// Initialize:
+//   XEQ'QF'
+// Clears sums, but not coefficients
+
+
+// Enter point:
+//   y ENTER x R/S (or [A])
+// Result:
+//   number of points entered so far
+
+
+// Calculate coefficients (needs at least 3 points):
+//   [B]
+// Result:
+//   a=regA=regZ
+//   b=regB=regY
+//   c=regC=regX
+//   (order compatible with SLVQ)
+
+
+// Evaluate Ax[^2]+Bx+C polynomial:
+//   x [C]
+// Result:
+//   Ax[^2]+Bx+C
+
+
+  LBL'QF'
+    SSIZE4
+    CL[SIGMA]
+    CLx
+    STO J
+    STO K
+    XEQ 00
+    STOP
+    XEQ A
+    BACK 002
+// Accumulate sums, including [SIGMA]x^3 and [SIGMA]x^4
+  LBL A
+    [SIGMA]+
+    RCL L
+    ENTER
+    x^3
+    STO+ J
+    *
+    STO+ K
+  LBL 00
+    CLx
+    n[SIGMA]
+    RTN
+
+
+// delete point
+  LBL 65 // XEQ -
+    [SIGMA]-
+    RCL L
+    ENTER
+    x^3
+    STO- J
+    *
+    STO- K
+    GTO 00
+
+
+// Fit quadratic
+  LBL B
+    LocR 016
+    RCL K
+    STO .03
+    RCL J
+    STO .02
+    STO .06
+    # 002
+    n[SIGMA]
+    x<=? Y
+    ERR 15
+    STO .07
+    [SIGMA]x
+    STO .04
+    STO .08
+    [SIGMA]x[^2]
+    STO .01
+    STO .05
+    STO .09
+    [SIGMA]y
+    STO .12
+    [SIGMA]xy
+    STO .11
+    [SIGMA]x[^2]y
+    STO .10
+    1
+    1
+    3
+    .
+    0
+    3
+    0
+    3
+    ENTER
+    1
+    2
+    2
+    .
+    0
+    3
+    0
+    1
+    # 125
+    LINEQS
+    RCL .15
+    STO A
+    RCL .14
+    STO B
+    RCL .13
+    STO C
+    RTN
+
+
+// Evaluate Ax^2+Bx+C polynomial at regX
+  LBL C
+    ENTER
+    RCL* A
+    RCL+ B
+    *
+    RCL+ C
+    RTN
+
+
+  END
+
