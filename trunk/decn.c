@@ -545,7 +545,7 @@ static void dn_gcd(decNumber *r, const decNumber *x, const decNumber *y) {
 	decNumberCopy(r, x);
 	while (! dn_eq0(&b)) {
 		decNumberCopy(&t, &b);
-		decNumberBigMod(&b, r, &t);
+		decNumberMod(&b, r, &t);
 		decNumberCopy(r, &t);
 	}
 }
@@ -2045,8 +2045,6 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 	dm = UState.denom_mode;
 	get_maxdenom(&maxd);
 
-	decNumberZero(&dold);
-	dn_1(d);
 	neg = decNumberIsNegative(x);
 	if (neg)
 		dn_minus(&z, x);
@@ -2054,6 +2052,8 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 		decNumberCopy(&z, x);
 	switch (dm) {
 	case DENOM_ANY:
+		decNumberZero(&dold);
+		dn_1(d);
 		/* Do a partial fraction expansion until the denominator is too large */
 		for (i=0; i<1000; i++) {
 			decNumberTrunc(&t, &z);
