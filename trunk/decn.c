@@ -538,14 +538,17 @@ decNumber *decNumberFrac(decNumber *r, const decNumber *x) {
 }
 
 
-static void dn_gcd(decNumber *r, const decNumber *x, const decNumber *y) {
+static void dn_gcd(decNumber *r, const decNumber *x, const decNumber *y, int bigmod) {
 	decNumber b, t;
 
 	decNumberCopy(&b, y);
 	decNumberCopy(r, x);
 	while (! dn_eq0(&b)) {
 		decNumberCopy(&t, &b);
-		decNumberMod(&b, r, &t);
+		if (bigmod)
+			decNumberBigMod(&b, r, &t);
+		else
+			decNumberMod(&b, r, &t);
 		decNumberCopy(r, &t);
 	}
 }
@@ -578,7 +581,7 @@ decNumber *decNumberGCD(decNumber *r, const decNumber *x, const decNumber *y) {
 	else if (dn_eq0(y))
 		decNumberCopy(r, &a);
 	else
-		dn_gcd(r, &a, &b);
+		dn_gcd(r, &a, &b, 1);
 	return r;
 }
 
@@ -590,7 +593,7 @@ decNumber *decNumberLCM(decNumber *r, const decNumber *x, const decNumber *y) {
 
 	if(dn_eq0(x) || dn_eq0(y))
 		decNumberCopy(r, x);
-	dn_gcd(&gcd, &a, &b);
+	dn_gcd(&gcd, &a, &b, 1);
 	dn_divide(&t, &a, &gcd);
 	return dn_multiply(r, &t, &b);
 }
@@ -2050,8 +2053,7 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 		dn_minus(&z, x);
 	else
 		decNumberCopy(&z, x);
-	switch (dm) {
-	case DENOM_ANY:
+	if (dm == DENOM_ANY) {
 		decNumberZero(&dold);
 		dn_1(d);
 		/* Do a partial fraction expansion until the denominator is too large */
@@ -2069,17 +2071,18 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 			decNumberCopy(&dold, d);
 			decNumberCopy(d, &s);
 		}
-		break;
-	default:
+	} else
 		decNumberCopy(d, &maxd);
-		break;
-	}
 	dn_multiply(&t, x, d);
 	decNumberRound(n, &t);
 	if (dm == DENOM_FACTOR) {
-		decNumberGCD(&t, n, d);
-		dn_divide(n, n, &t);
-		dn_divide(d, d, &t);
+		if (dn_eq0(n))
+			dn_1(d);
+		else {
+			dn_gcd(&t, n, d, 0);
+			dn_divide(n, n, &t);
+			dn_divide(d, d, &t);
+		}
 	}
 	if (neg)
 		dn_minus(n, n);
