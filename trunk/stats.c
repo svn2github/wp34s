@@ -437,13 +437,16 @@ static void do_s(int index,
 		const decNumber *sxx, const decNumber *sx,
 		const decNumber *N, const decNumber *denom, 
 		int rootn, int exp) {
-	decNumber t, u, v, *p;
+	decNumber t, u, v, *p = &t;
 
 	decNumberSquare(&t, sx);
 	dn_divide(&u, &t, N);
 	dn_subtract(&t, sxx, &u);
 	dn_divide(&u, &t, denom);
-	dn_sqrt(p = &t, &u);
+	if (dn_le0(&u))
+		decNumberZero(&t);
+	else
+		dn_sqrt(&t, &u);
 
 	if (rootn) {
 		dn_sqrt(&u, N);
