@@ -92,17 +92,15 @@ LBL'E24'
 	# 020
 	/
 	x>? Y
-		SKIP 005
+		SKIP 004
 
-	DROP
-	RCL .02 // Recall Upper value
+	x[<->] .02 // Recall Upper value & Drop Threshold
 	INC .00
 	INC .00
 	GTO 01 // Next parameter
 
-	[<->] ZTTT // SKIP 005 comes here.  Drop threshold and mantissa
+	[<->] ZTTT // Drop threshold & mantissa
 	DEC X
 	10[^x]
-	RCL .01 // Recall rounded mantissa
-	[times]
+	RCL[times] .01 // Recall rounded mantissa & multiply
 END // Program Separator
