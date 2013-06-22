@@ -173,6 +173,10 @@
 */
 //#define DEFAULT_DATEMODE 0
 
+/* This setting supresses the date mode display entirely if enabled.
+ */
+//#define NO_DATEMODE_INDICATION
+
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */

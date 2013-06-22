@@ -487,6 +487,7 @@ static void annunciators(void) {
 
 	if (!is_intmode()) {
 		switch (UState.date_mode) {
+#ifndef NO_DATEMODE_INDICATION
 #if defined(DEFAULT_DATEMODE) && (DEFAULT_DATEMODE != 0)
 		case DATE_DMY:	q = "d.my\006\006";	break;
 #endif
@@ -495,6 +496,7 @@ static void annunciators(void) {
 #endif
 #if ! defined(DEFAULT_DATEMODE) || (DEFAULT_DATEMODE != 2)
 		case DATE_MDY:	q = "m.dy\006\006";	break;
+#endif
 #endif
 		default:	q = "    \006";		break;
 		}
