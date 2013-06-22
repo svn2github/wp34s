@@ -14,6 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "features.h"
 #include "xeq.h" 
 #include "storage.h"
 #include "display.h"
@@ -486,9 +487,15 @@ static void annunciators(void) {
 
 	if (!is_intmode()) {
 		switch (UState.date_mode) {
-		//case DATE_DMY:	q = "d.my\006\006";	break;
+#if defined(DEFAULT_DATEMODE) && (DEFAULT_DATEMODE != 0)
+		case DATE_DMY:	q = "d.my\006\006";	break;
+#endif
+#if ! defined(DEFAULT_DATEMODE) || (DEFAULT_DATEMODE != 1)
 		case DATE_YMD:	q = "y.md\006\006";	break;
+#endif
+#if ! defined(DEFAULT_DATEMODE) || (DEFAULT_DATEMODE != 2)
 		case DATE_MDY:	q = "m.dy\006\006";	break;
+#endif
 		default:	q = "    \006";		break;
 		}
 		p = scopy(p, q);
@@ -1614,7 +1621,11 @@ static void set_annunciators(void)
 	 * typing lower case in alpha mode.  Turn the big equals if we're
 	 * browsing constants.
 	 */
+#ifdef MODIFY_BEG_SSIZE8
+	dot(BEG, UState.stack_depth && ! Running);
+#else
 	dot(BEG, state_pc() <= 1 && ! Running);
+#endif
 	dot(INPUT, State2.catalogue || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
 	dot(BIG_EQ, get_user_flag(A_FLAG));

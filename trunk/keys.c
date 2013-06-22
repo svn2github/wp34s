@@ -14,6 +14,7 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "features.h"
 #include "xeq.h"
 #include "keys.h"
 #include "display.h"
@@ -783,7 +784,11 @@ static int process_h_shifted(const keycode c) {
 		// Row 7
 		OP_NIL | OP_OFF,
 		_RARG   | RARG_PAUSE,
-		OP_NIL  | OP_RADCOM,
+#ifdef MODIFY_K62_E3_SWITCH
+		OP_NIL  | OP_THOUS_OFF,
+#else
+ 		OP_NIL  | OP_RADCOM,
+#endif
 		STATE_UNFINISHED,	// P/R
 		OP_SPEC | OP_SIGMAPLUS | NO_INT
 	};
@@ -797,8 +802,12 @@ static int process_h_shifted(const keycode c) {
 	case K62:
 		if (UState.intm)
 			op = UState.nointseparator ? (OP_NIL | OP_INTSEP_ON) : (OP_NIL | OP_INTSEP_OFF);
-		else if (UState.fraccomma)
-			op = OP_NIL | OP_RADDOT;
+		else
+#ifdef MODIFY_K62_E3_SWITCH
+			if (UState.nothousands) op = OP_NIL | OP_THOUS_ON;
+#else
+			if (UState.fraccomma) op = OP_NIL | OP_RADDOT;
+#endif
 		break;
 
 	case K63:					// Program<->Run mode

@@ -157,6 +157,22 @@
 // Right-justify seven-segment exponent (007 rather than 7  )
 //#define INCLUDE_RIGHT_EXP
 
+// h ./, in DECM mode switches E3 separator on/off (instead of chnaging radix symbol)
+//#define MODIFY_K62_E3_SWITCH
+
+// BEG annunciators indicates BIG stack size rather than beginning of program
+//#define MODIFY_BEG_SSIZE8
+
+/*
+ * This setting allows to change default mode to one of the other 2
+ * possibilities. The date mode equal to DEFAULT_DATEMODE will not be
+ * announced, the other 2 will be.
+ * If left undefined, it defaults to DMY mode.
+ * See enum date_modes for values of
+ *	DATE_DMY=0,	DATE_YMD=1,	DATE_MDY=2
+*/
+//#define DEFAULT_DATEMODE 0
+
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
