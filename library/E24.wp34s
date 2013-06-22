@@ -33,6 +33,7 @@ LBL'E24'
 	# 010  // begin
 
 	LBL 01
+	STO .01
 	CASE .00
 		# 011
 		GTO 00
@@ -86,8 +87,6 @@ LBL'E24'
 
 	LBL 00 // ROUND
 	STO .02
-	x[<->] Y
-	STO .01
 	+
 	# 020
 	/
