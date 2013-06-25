@@ -622,10 +622,9 @@ void matrix_inverse(enum nilop op) {
 	int i, j, n;
 	decimal64 *base;
 	const decimal64 *b[MAX_SQUARE];
-	decNumber regx;
 
-	getX(&regx);
-	n = matrix_lu_check(&regx, mat, &base);
+	getX(x);
+	n = matrix_lu_check(x, mat, &base);
 	if (n == 0)
 		return;
 
