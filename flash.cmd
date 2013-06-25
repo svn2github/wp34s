@@ -9,6 +9,7 @@ cd trunk
 rem touch features.h
 make REALBUILD=1 version all > ..\flash-build.log 2>&1
 if errorlevel 1 goto exit
+if "%1" == "X" goto exit
 
 rem touch features.h
 make REALBUILD=1 XTAL=1 all >> ..\flash-build.log 2>&1

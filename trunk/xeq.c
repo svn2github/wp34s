@@ -490,12 +490,12 @@ static void set_was_complex(void) {
 /* Produce an error and stop
  */
 int err(const unsigned int e) {
-	if (Error == ERR_NONE) {
-		Error = e;
-		error_message(e);
-		return 1;
+	Error = e;
+	if (e == ERR_NONE) {
+		error_message(e); // "Running Program"
+    return 0;
 	}
-	return e != ERR_NONE;
+	return 1;
 }
 
 
@@ -4003,6 +4003,8 @@ void xeq(opcode op)
 	}
 
 	if (Error != ERR_NONE) {
+		// deferred message (matrix code needs too much stack!)
+		error_message( Error );
 		// Repair stack and state
 		// Clear return stack
 		Error = ERR_NONE;
