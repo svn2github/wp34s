@@ -490,10 +490,12 @@ static void set_was_complex(void) {
 /* Produce an error and stop
  */
 int err(const unsigned int e) {
-	Error = e;
-	if (e == ERR_NONE) {
-		error_message(e); // "Running Program"
-    return 0;
+	if (Error == ERR_NONE) {
+		Error = e;
+		if (e == ERR_NONE) {
+			error_message(e); // "Running Program"
+			return 0;
+		}
 	}
 	return 1;
 }
