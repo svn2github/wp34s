@@ -1810,7 +1810,7 @@ sub run_pp {
   }
   $pp_location =~ s:\\:/:g;
   $pp_options = $no_skip_override if $no_skip_override;
-  $cmd = "${pp_location} $pp_options -cat $tmp_file";
+  $cmd = "\"${pp_location}\" $pp_options -cat $tmp_file";
 
   if ($v3_mode) {
     $cmd .= " -v3";
