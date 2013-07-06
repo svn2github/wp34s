@@ -798,7 +798,7 @@ sub run_prog {
     die_msg(this_function((caller(0))[3]), "Cannot locate daughter script '$prog' in current directory or '$script_dir'.");
   }
   $location =~ s:\\:/:g;
-  $cmd = "${location}$prog $cmd_line";
+  $cmd = "\"${location}\"$prog $cmd_line";
   $cmd .= " -e2so"; # Make sure to slurp up the STDERR to STDOUT so we can see any errors.
 
   # Force the colour mode to be off if in debug mode because with this damn MS-DOS STDERR
