@@ -1829,14 +1829,14 @@ void cmdstostk(unsigned int arg, enum rarg op) {
 	int i, n = check_stack_overlap(arg);
 
 	for (i=0; i<n; i++)
-		*get_reg_n(arg+i) = *get_stack(i);
+		copyreg_n(arg + i, regX_idx + i);
 }
 
 void cmdrclstk(unsigned int arg, enum rarg op) {
 	int i, n = check_stack_overlap(arg);
 
 	for (i=0; i<n; i++)
-		*get_stack(i) = *get_reg_n(arg+i);
+		copyreg_n(regX_idx + i, arg + i);
 }
 
 
