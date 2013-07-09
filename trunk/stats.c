@@ -819,6 +819,7 @@ static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const d
 		dn_multiply(r, r, &v);	// r *= d*c
 		if (dn_eq(&oldr, r))
 			break;
+		busy();
 	}
 }
 

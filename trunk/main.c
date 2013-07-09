@@ -13,6 +13,8 @@
  * Author (this file only): Marcus von Cube, http://www.mvcsys.de
  */
 // #define DEBUG_MAIN  // Adds some key sequences for debugging
+// #define HARDWARE_DEBUG // Turns on hardware debugging
+// #define STACK_DEBUG    // Fills stack with constant bit pattern
 
 /*
  * This is the main module for the real hardware
@@ -1699,7 +1701,9 @@ NO_RETURN int main(void)
         char confirm_counter = 0;
         char last_key_combo = 0;
 
-        // DebugFlag = 1;  // Disable and rebuild after debugging!
+#ifdef HARDWARE_DEBUG
+        DebugFlag = 1;  // Disable and rebuild after debugging!
+#endif
 #ifdef SHORT_POINTERS
         // Dummy access for optimiser
         xcopy( (void *) &command_info, &command_info, 0 );
