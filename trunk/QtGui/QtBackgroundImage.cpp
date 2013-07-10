@@ -102,7 +102,7 @@ bool QtBackgroundImage::eventFilter(QObject *obj, QEvent *event)
     	showCatalogMenu(true);
         return true;
     }
-    return QObject::eventFilter(obj, event);
+    return QFrame::eventFilter(obj, event);
 }
 
 void QtBackgroundImage::showCatalogMenu(bool force)
@@ -127,12 +127,15 @@ void QtBackgroundImage::showCatalogMenu(bool force)
 		for(int i=0; i<last; i++)
 		{
 			const unsigned int op = current_catalogue(i);
-			char buf[40];
-			const char *p;
-			p = catcmd(op, buf);
+			char buf[41];
+			catcmd(op, buf);
 			menuText[i]=new QString(buf);
-			QString fullMenuText(((is_complex_mode() && buf[0]!=get_complex_prefix())?QString("C"):QString(""))+(*menuText[i]));
-			int x=screen.getCatalogMenuMargin();
+	        if(is_complex_mode() && buf[0]!=get_complex_prefix())
+	        {
+	            memmove(buf+1, buf, 40);
+	            buf[0]=get_complex_prefix();
+	        }
+	        int x=screen.getCatalogMenuMargin();
 			pixmaps[i]=new QPixmap(width, height);
 			highlightedPixmaps[i]=new QPixmap(width, height);
 			// This block is just so the painter is deleted at the end and we can then set the mask
@@ -150,10 +153,9 @@ void QtBackgroundImage::showCatalogMenu(bool force)
 			highlighedPainter.setFont(font);
 			highlighedPainter.setBrush(palette().color(QPalette::HighlightedText));
 			highlighedPainter.setPen(palette().color(QPalette::HighlightedText));
-			for(int j=0; j<fullMenuText.length(); j++)
+			for(int j=0, last=strlen(buf); j<last; j++)
 			{
-				char c=fullMenuText.at(j).toAscii();
-				QtTextPainter* textPainter=QtTextPainter::getTextPainter(c);
+				QtTextPainter* textPainter=QtTextPainter::getTextPainter(buf[j]);
 				textPainter->paint(QPoint(x, 0), painter, fontLower);
 				textPainter->paint(QPoint(x, 0), highlighedPainter, fontLower);
 				x+=textPainter->width(painter, fontLower);

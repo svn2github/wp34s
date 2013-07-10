@@ -1673,12 +1673,7 @@ void display(void) {
 	int x_disp = 0;
 	const int shift = cur_shift();
 
-#ifndef REALBUILD
-	xset(LastDisplayedNumber, ' ', NUMBER_LENGTH);
-	LastDisplayedNumber[NUMBER_LENGTH]=0;
-	xset(LastDisplayedExponent, ' ', EXPONENT_LENGTH);
-	LastDisplayedExponent[EXPONENT_LENGTH]=0;
-#endif
+
 
 	if (State2.disp_freeze) {
 		State2.disp_freeze = 0;
@@ -1691,6 +1686,12 @@ void display(void) {
 	}
 
 	// Clear display
+#ifndef REALBUILD
+	xset(LastDisplayedNumber, ' ', NUMBER_LENGTH);
+	LastDisplayedNumber[NUMBER_LENGTH]=0;
+	xset(LastDisplayedExponent, ' ', EXPONENT_LENGTH);
+	LastDisplayedExponent[EXPONENT_LENGTH]=0;
+#endif
 	reset_disp();
 
 	xset(buf, '\0', sizeof(buf));
