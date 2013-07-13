@@ -29,8 +29,6 @@
 			SPEC?
 				JMP ret_0	/* Can only be infinite which has zero probability */
 			[times]
-			x<0?
-				JMP ret_0
 			+/-
 			e[^x]
 			RCL[times] J
@@ -42,7 +40,11 @@
 			GSB expon_param
 			SPEC?
 				JMP cdf_infinite
+			x<0?
+				JMP ret_1
 			[times]
+			x<0?
+				JMP ret_1
 			+/-
 			e[^x]
 			xOUT xOUT_NORMAL
@@ -55,6 +57,8 @@
 			SPEC?
 				JMP cdf_infinite
 			[times]
+			x<0?
+				JMP ret_0
 			+/-
 			e[^x]-1
 			+/-
@@ -70,7 +74,6 @@
 			xOUT xOUT_NORMAL
 
 expon_param::		RCL J
-			GSB check_special_pos
-			RTN
+			JMP check_special_pos
 
 
