@@ -2492,14 +2492,6 @@ static int process(const int c) {
 }
 
 
-static void show_opcode(void)
-{
-	scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
-	DispMsg = TraceBuffer;
-	OpCodeDisplayPending = 0;
-}
-
-
 /*
  *  Fed with key codes by the event loop
  */
@@ -2532,7 +2524,14 @@ void process_keycode(int c)
 					/*
 					 *  Show command to the user
 					 */
-					show_opcode();
+					OpCodeDisplayPending = 0;
+					if (OpCode == (OP_NIL | OP_RS)) {
+						DispMsg = "RUN";
+					}
+					else {
+						scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
+						DispMsg = TraceBuffer;
+					}
 					display();
 					ShowRPN = 1;	// Off because of DispMsg setting
 				}

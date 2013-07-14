@@ -59,11 +59,7 @@ static const char *prt_dyadic_cmplx(const unsigned int f, char *instr) {
 
 static const char *prt_niladic(const unsigned int idx, char *instr) {
 	if (idx < NUM_NILADIC) {
-#ifdef COMPILE_CATALOGUES
 		const char *p = niladics[idx].nname;
-#else
-		const char *p = (idx == OP_RS && ! Running && ! XromRunning && State2.runmode) ? "RUN" : niladics[idx].nname;
-#endif
 		return sncopy(instr, p, NAME_LEN);
 	}
 	return "???";
