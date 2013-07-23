@@ -196,9 +196,10 @@ void reset_disp(void) {
         wait_for_display();
 #if defined(QTGUI) || defined(IOS)
     	xset(LcdData, 0, sizeof(LcdData));
-    	xset(LastDisplayedText, 0, sizeof(LastDisplayedText));
-    	xset(LastDisplayedNumber, 0, sizeof(LastDisplayedNumber));
-    	xset(LastDisplayedExponent, 0, sizeof(LastDisplayedExponent));
+    	xset(LastDisplayedNumber, ' ', NUMBER_LENGTH);
+    	LastDisplayedNumber[NUMBER_LENGTH]=0;
+    	xset(LastDisplayedExponent, ' ', EXPONENT_LENGTH);
+    	LastDisplayedExponent[EXPONENT_LENGTH]=0;
 #else
         // terrible code which assumes int are 4 bytes long. Works fine for realbuild and for WINGUI though
 	xset((void *) AT91C_SLCDC_MEM, 0, 4 * 20);

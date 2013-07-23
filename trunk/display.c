@@ -1686,12 +1686,6 @@ void display(void) {
 	}
 
 	// Clear display
-#ifndef REALBUILD
-	xset(LastDisplayedNumber, ' ', NUMBER_LENGTH);
-	LastDisplayedNumber[NUMBER_LENGTH]=0;
-	xset(LastDisplayedExponent, ' ', EXPONENT_LENGTH);
-	LastDisplayedExponent[EXPONENT_LENGTH]=0;
-#endif
 	reset_disp();
 
 	xset(buf, '\0', sizeof(buf));
