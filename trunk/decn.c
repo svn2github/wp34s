@@ -1765,7 +1765,7 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
 	}
 
 	// Correct our argument and begin the inversion if it is negative
-	if (decNumberIsNegative(xin)) {
+	if (dn_le0(xin)) {
 		reflec = 1;
 		dn_1m(&t, xin);
 		if (is_int(&t)) {
@@ -1817,7 +1817,7 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin) {
 	}
 
 	// Correct out argument and begin the inversion if it is negative
-	if (decNumberIsNegative(xin)) {
+	if (dn_le0(xin)) {
 		reflec = 1;
 		dn_1m(&t, xin);
 		if (is_int(&t)) {
