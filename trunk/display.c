@@ -59,11 +59,12 @@ static const char S_SURE[] = "Sure?";
 static const char S7_ERROR[] = "Error";		/* Default lower line error display */
 static const char S7_NaN[] = "not nuMmEric";	/* Displaying NaN in lower line */
 #ifndef REALBUILD
-static const char S7_NaN_Text[] = " N o t  n u m e r i c ";
+static const char S7_NaN_Text[] = " N o t   n u m e r i c ";
 #endif
 static const char S7_INF[] = "Infinity";	/* Displaying infinity in lower line */
 #ifndef REALBUILD
 static const char S7_INF_Text[] = " I n f i n i t y ";
+static const char S7_NEG_INF_Text[] = "-I n f i n i t y ";
 #endif
 
 static const char S7_STEP[] = "StEP ";		/* Step marker in program mode (lower line) */
@@ -773,7 +774,12 @@ static int check_special_dn(const decNumber *x, char *res) {
 			else {
 				set_digits_string(S7_INF, SEGS_PER_DIGIT * 2);
 #ifndef REALBUILD
-				scopy(LastDisplayedNumber, S7_INF_Text);
+				if (decNumberIsNegative(x)) {
+					scopy(LastDisplayedNumber, S7_NEG_INF_Text);
+				}
+				else {
+					scopy(LastDisplayedNumber, S7_INF_Text);
+				}
 				forceDispPlot=0;
 #endif
 			}
