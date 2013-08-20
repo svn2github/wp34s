@@ -686,8 +686,12 @@ void lift(void) {
 		copyreg(get_stack(i), get_stack(i-1));
 }
 
+static int get_lift(void) {
+	return State2.state_lift;
+}
+
 void lift_if_enabled(void) {
-	if (State2.state_lift)
+	if (get_lift())
 		lift();
 }
 
@@ -3955,7 +3959,7 @@ void xeq(opcode op)
 	REGISTER save[STACK_SIZE+2];
 	const unsigned short flags = UserFlags[regA_idx >> 4];
 	const struct _ustate old = UState;
-	const unsigned char lift = State2.state_lift;
+	const unsigned char lift = get_lift();
 	const unsigned short old_pc = state_pc();
 	const int old_cl = *((int *)&CommandLine);
 #ifdef INFRARED
@@ -4551,7 +4555,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	xset(&XromParams, 0, sizeof(XromParams));
 
 	// Flags
-	XromFlags.state_lift_in = State2.state_lift;
+	XromFlags.state_lift_in = get_lift();
 	XromFlags.stack_depth = UState.stack_depth;
 	XromFlags.mode_double = UState.mode_double;
 	XromFlags.mode_int = UState.intm;
