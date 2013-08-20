@@ -3954,9 +3954,10 @@ void xeq(opcode op)
 {
 	REGISTER save[STACK_SIZE+2];
 	const unsigned short flags = UserFlags[regA_idx >> 4];
-	struct _ustate old = UState;
-	unsigned short old_pc = state_pc();
-	int old_cl = *((int *)&CommandLine);
+	const struct _ustate old = UState;
+	const unsigned char lift = State2.state_lift;
+	const unsigned short old_pc = state_pc();
+	const int old_cl = *((int *)&CommandLine);
 #ifdef INFRARED
 	int tracing;
 #endif
@@ -4013,6 +4014,7 @@ void xeq(opcode op)
 		xcopy(StackBase, save, sizeof(save));
 		UserFlags[regA_idx >> 4] = flags;
 		UState = old;
+		State2.state_lift = lift;
 		raw_set_pc(old_pc);
 		*((int *)&CommandLine) = old_cl;
 		process_cmdline_set_lift();
