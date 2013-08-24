@@ -1185,7 +1185,8 @@ decNumber *decNumberSinc(decNumber *res, const decNumber *x) {
 		dn_1(res);
 	else {
 		decNumberSin(&s, x);
-		dn_divide(res, &s, x);
+		decNumberDRG_internal(&t, x, OP_2RAD);
+		dn_divide(res, &s, &t);
 	}
 	return res;
 }
