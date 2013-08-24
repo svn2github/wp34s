@@ -1179,13 +1179,13 @@ decNumber *decNumberCot(decNumber *res, const decNumber *x) {
 decNumber *decNumberSinc(decNumber *res, const decNumber *x) {
 	decNumber s, t;
 
-	decNumberSquare(&s, x);
-	dn_p1(&t, &s);
-	if (dn_eq1(&t))
+	decNumberDRG_internal(&t, x, OP_2RAD);
+	decNumberSquare(&s, &t);
+	dn_p1(&s, &s);
+	if (dn_eq1(&s))
 		dn_1(res);
 	else {
-		decNumberSin(&s, x);
-		decNumberDRG_internal(&t, x, OP_2RAD);
+		decNumberSin(&s, x);	// Reconvert to radians for exact modulo reductions
 		dn_divide(res, &s, &t);
 	}
 	return res;
