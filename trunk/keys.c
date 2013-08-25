@@ -1395,6 +1395,9 @@ static int process_arg(const keycode c) {
 			CmdBase = RARG_RCLM;
 		break;
 
+	case K63:	// Y
+		if (State2.shuffle)
+			return process_arg_shuffle(1);
 	case K00:	// A
 	case K01:	// B
 	case K02:	// C
@@ -1403,14 +1406,10 @@ static int process_arg(const keycode c) {
 	case K21:	// J
 	case K22:	// K
 	case K23:	// L (lastX)
-	case K63:	// Y
-		if (State2.shuffle)
-			return process_arg_shuffle(1);
-		else if (State2.dot || stack_reg)
+		if (State2.dot || stack_reg)
 			return arg_eval(n);
-		else if ( c <= K03 ) {
+		if ( c <= K03 )
 			return arg_fkey(c - K00);		// Labels or flags A to D
-		}
 		break;
 
 	case K62:	// X, '.'
