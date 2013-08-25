@@ -1179,6 +1179,9 @@ decNumber *decNumberCot(decNumber *res, const decNumber *x) {
 decNumber *decNumberSinc(decNumber *res, const decNumber *x) {
 	decNumber s;
 
+	decNumberSquare(&s, x);
+	if (dn_eq1(dn_p1(&s, &s)))
+		return dn_1(res);
 	decNumberMod(res, x, &const_2PI);
 	sincosTaylor(res, &s, NULL);
 	return dn_divide(res, &s, x);
