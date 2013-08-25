@@ -1177,18 +1177,11 @@ decNumber *decNumberCot(decNumber *res, const decNumber *x) {
 #endif
 
 decNumber *decNumberSinc(decNumber *res, const decNumber *x) {
-	decNumber s, t;
+	decNumber s;
 
-	decNumberDRG_internal(&t, x, OP_2RAD);
-	decNumberSquare(&s, &t);
-	dn_p1(&s, &s);
-	if (dn_eq1(&s))
-		dn_1(res);
-	else {
-		decNumberSin(&s, x);	// Reconvert to radians for exact modulo reductions
-		dn_divide(res, &s, &t);
-	}
-	return res;
+	decNumberMod(res, x, &const_2PI);
+	sincosTaylor(res, &s, NULL);
+	return dn_divide(res, &s, x);
 }
 
 void do_atan(decNumber *res, const decNumber *x) {
