@@ -427,24 +427,15 @@ static void annunciators(void) {
 	case SHIFT_N:
 #if defined(INCLUDE_YREG_CODE)
  		if (State2.wascomplex) {
-			p = scopy(p, "i\006\006"); // makes complex answers look nicer! Size: 6 or 5
+			p = scopy(p, "i\006"); // makes complex answers look nicer!
 		}
  		else if (is_dblmode()) {
- 			p = scopy(p, "D\006");
+ 			*p++ = 'D';
 		}
-#ifdef RP_PREFIX
-		else if (State2.RP || State2.PR) {
-			p = scopy(p, " \006"); // spaceholder for angle or y: 6 or 5
-		}
-#endif
  		else {
- 			p = scopy(p, "\006 "); // 6 or 6: to match i; first character removed in set_status_d if small characters
+ 			p = scopy(p, " \006");
 		}
-#ifdef RP_PREFIX
-		if ( (State2.wascomplex) || State2.PR || State2.RP || ( get_user_flag(regJ_idx) && ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) ) ){ // don't do y-display in intmode
-#else
 		if ( (State2.wascomplex) || ( get_user_flag(regJ_idx) && ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) ) ){ // don't do y-display in intmode
-#endif
 			decNumber y;
 			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
 			for (n=DISPLAY_DIGITS; n>1; n--) {
@@ -456,11 +447,7 @@ static void annunciators(void) {
 			goto skip; // don't add anything to the display after the y-register
 		}
 #else
-#ifdef RP_PREFIX
-		if ( State2.wascomplex || State2.PR || State2.RP ) {
-#else
 		if (State2.wascomplex) {
-#endif
 			decNumber y;
 			p = scopy(p, "i\006");
 			/* This is a bit convoluted.  ShowRegister is the real portion being shown.  Normally
@@ -2035,66 +2022,6 @@ static void set_status_sized(const char *str, int smallp) {
 #ifndef REALBUILD
 	scopy(LastDisplayedText, str);
 	forceDispPlot=0;
-#endif
-#ifndef CONSOLE
-#ifdef INCLUDE_YREG_CODE
-//	if (smallp && *str == '\006') {
-//		str++;
-//	}
-#endif
-#ifdef RP_PREFIX
-	if (State2.RP) {
-		State2.RP = 0;
-		str++;
-		str++;
-#define ON(x,y) mat[y] |= 1LL << (x)
-
-// angle sign
-		ON(0,3);
-		ON(1,3);
-		ON(1,2);
-		ON(2,1);
-		ON(2,3);
-		ON(3,3);
-		ON(3,0);
-		if (smallp) {
-			x=5;
-		}
-		else {
-			x=6;
-		}
-	}
-	else if (State2.PR) {
-		State2.PR = 0;
-		str++;
-		str++;
-		ON(0,1);
-		ON(0,2);
-		ON(0,5);
-		ON(2,1);
-		ON(2,2);
-		ON(2,3);
-		ON(2,4);
-		ON(1,3);
-		ON(1,5);
-		if (smallp) { // needed so that display doesn't jump when prefix removed
-			x=5;
-		}
-		else {
-			x=6;
-		}
-	}
-#endif
-#ifdef INCLUDE_YREG_CODE
-	if (*str == '\006') { //this means that it's a space being displayed, not i or D or PR prefix
-		if (smallp) { // needed to make numbers start at pixel 6 so that they don't jump when prefixes go
-			x=2;
-		}
-		else {
-			x=0;
-		}
-	}
-#endif
 #endif
 	findlengths(posns, smallp);
 	while (*str != '\0' && x <= BITMAP_WIDTH+1)  {

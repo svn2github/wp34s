@@ -157,9 +157,6 @@
 // Right-justify seven-segment exponent (007 rather than 7  )
 //#define INCLUDE_RIGHT_EXP
 
-// Rectangular - Polar y-reg prefix change:
-//#define RP_PREFIX
-
 // h ./, in DECM mode switches E3 separator on/off (instead of chnaging radix symbol)
 //#define MODIFY_K62_E3_SWITCH
 

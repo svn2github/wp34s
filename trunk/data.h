@@ -279,10 +279,7 @@ struct _state2 {
 #else
 	unsigned int test_flag : 1;	// Test flag for various software tests
 #endif
-#ifdef RP_PREFIX
-	unsigned int RP : 1;
-	unsigned int PR : 1;
-#endif
+
 };
 
 /*
