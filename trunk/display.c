@@ -153,6 +153,37 @@ void error_message(const unsigned int e)
 	};
 #undef MSG1
 #undef MSG2
+#ifndef REALBUILD
+	static const char *const error_table_text[] =
+	{
+		" P r o g r a m ",
+		"",
+		" o r   d a t e ",
+		" O p - c o d e ",
+		"",
+		"",
+		" L a b e l ",
+		" O p e r a t i o n ",
+		"",
+		"",
+		"",
+		" F u l l ",
+		" C l a s h ",
+		"",
+		" T o o   s m a l l ",
+		" D a t a   p o i n t s ",
+		" P a r a m e t e r ",
+		"",
+		" D a t a ",
+		" P r o t e c t e d ",
+		" F o u n d ",
+		" M i s m a t c h ",
+		"",
+		" F u l l ",
+		" I n s t a l l e d ",
+		"",
+	};
+#endif
 
 	if (e != ERR_NONE || Running) {
 		const char *p = error_table[e];
@@ -166,6 +197,9 @@ void error_message(const unsigned int e)
 		else {
 			message(p, q);
 			State2.disp_freeze = (e != ERR_NONE);
+#ifndef REALBUILD
+			scopy(LastDisplayedNumber, error_table_text[e]);
+#endif
 		}
 #ifdef INFRARED
 		if (Tracing) {
