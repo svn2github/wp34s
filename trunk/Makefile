@@ -53,9 +53,10 @@ ifeq "$(SYSTEM)" "IosSimulator"
     DEVICE=Simulator
 endif
 # Warning: calling these variables DEVROOT & SDKROOT breaks compilation with some OSX gcc version as HOSTCC starts to behave like CC
-IOS_DEVROOT := /Applications/Xcode.app/Contents/Developer/Platforms/iPhone$(DEVICE).platform/Developer
-IOS_SDKROOT := $(IOS_DEVROOT)/SDKs/iPhone$(DEVICE)6.1.sdk
-CC=$(IOS_DEVROOT)/usr/bin/gcc $(CC_FLAGS)
+IOS_XCODE_ROOT := /Applications/Xcode.app/Contents/Developer
+IOS_DEVROOT := $(IOS_XCODE_ROOT)/Platforms/iPhone$(DEVICE).platform/Developer
+IOS_SDKROOT := $(IOS_DEVROOT)/SDKs/iPhone$(DEVICE)7.0.sdk
+CC=$(IOS_XCODE_ROOT)/usr/bin/gcc $(CC_FLAGS)
 BASE_CFLAGS += -isysroot ${IOS_SDKROOT} -Iheaders $(CFLAGS_FLAGS) -DIOS
 USE_CURSES :=
 else
