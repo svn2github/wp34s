@@ -1447,6 +1447,9 @@ void op_r2p(enum nilop op) {
 	cvt_rad2(&y, &ry);
 	setlastX();
 	setXY(&rx, &y);
+#ifdef RP_PREFIX
+	RectPolConv = 1;
+#endif
 }
 
 void op_p2r(enum nilop op) {
@@ -1457,6 +1460,9 @@ void op_p2r(enum nilop op) {
 	cmplxFromPolar(&rx, &ry, &x, &y);
 	setlastX();
 	setXY(&rx, &ry);
+#ifdef RP_PREFIX
+	RectPolConv = 2;
+#endif
 }	
 
 

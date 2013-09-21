@@ -461,15 +461,27 @@ static void annunciators(void) {
 	case SHIFT_N:
 #if defined(INCLUDE_YREG_CODE)
  		if (State2.wascomplex) {
-			p = scopy(p, "i\006"); // makes complex answers look nicer!
+			p = scopy(p, "i\006\006"); // makes complex answers look nicer! Two pixel spaces.
 		}
+#ifdef RP_PREFIX
+		else if (RectPolConv == 1) {
+			p = scopy(p, "<"); // spaceholder for angle: space provided elsewhere
+		}
+		else if (RectPolConv == 2) {
+			p = scopy(p, "y"); // spaceholder for y: space provided elsewhere
+		}
+#endif
  		else if (is_dblmode()) {
- 			*p++ = 'D';
+ 			p = scopy(p, "D\006");
 		}
  		else {
- 			p = scopy(p, " \006");
+ 			p = scopy(p, "\006 "); // to match new i spacing; first character removed in set_status_d if small characters
 		}
+#ifdef RP_PREFIX
+		if ( (State2.wascomplex) || RectPolConv || ( get_user_flag(regJ_idx) && ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) ) ){ // don't do y-display in intmode
+#else
 		if ( (State2.wascomplex) || ( get_user_flag(regJ_idx) && ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) ) ){ // don't do y-display in intmode
+#endif
 			decNumber y;
 			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
 			for (n=DISPLAY_DIGITS; n>1; n--) {
@@ -481,9 +493,26 @@ static void annunciators(void) {
 			goto skip; // don't add anything to the display after the y-register
 		}
 #else
+#ifdef RP_PREFIX
+		if ( State2.wascomplex || RectPolConv ) {
+			decNumber y;
+	 		if (State2.wascomplex) {
+				p = scopy(p, "i\006\006"); // makes complex answers look nicer - two pixel spaces
+			}
+			else if (RectPolConv == 1) {
+				p = scopy(p, "<"); // spaceholder for angle - space added later
+			}
+			else if (RectPolConv == 2) {
+				p = scopy(p, "y"); // spaceholder for y - space added later
+			}
+ 			else {
+ 				p = scopy(p, "\006 "); // 6 or 6: to match new i spacing
+			}
+#else
 		if (State2.wascomplex) {
 			decNumber y;
 			p = scopy(p, "i\006");
+#endif
 			/* This is a bit convoluted.  ShowRegister is the real portion being shown.  Normally
 			 * ShowRegister+1 would contain the complex component, however if the register being
 			 * examined is on the stack and there is a command line present, the stack will be lifted
@@ -2057,20 +2086,29 @@ static void set_status_sized(const char *str, int smallp) {
 	scopy(LastDisplayedText, str);
 	forceDispPlot=0;
 #endif
-	findlengths(posns, smallp);
-	while (*str != '\0' && x <= BITMAP_WIDTH+1)  {
-		const int c = (unsigned char) *str++ + offset;
-		//const unsigned char *cmap;
+#ifndef CONSOLE
+#ifdef INCLUDE_YREG_CODE
+	if (*str == '\006') { //this means that it's a space being displayed, not i or D or PR prefix
+		if (smallp) { // needed to make numbers start at pixel 6 so that they don't jump when prefixes go
+			x=3;
+		}
+		else {
+			x=0;
+		}
+	}
+#endif
+#endif
+#ifdef RP_PREFIX
+	if ( smallp && (RectPolConv == 1) ) { // this code needed to get a large angle sign even in small mode
+		const int c = (unsigned char) (60);
 		int width;
 		unsigned char cmap[6];
 
-		//cmap = &charset[c][0];
+		findlengths (posns, 0);
+		
 		width = charlengths(c);
-		if (x + width > BITMAP_WIDTH+1)
-			break;
+		unpackchar(c, cmap, 0, posns);
 
-		/* Decode the packed character bytes */
-		unpackchar(c, cmap, smallp, posns);
 		for (i=0; i<6; i++)
 			for (j=0; j<width; j++) {
 				if (x+j >= BITMAP_WIDTH)
@@ -2082,8 +2120,56 @@ static void set_status_sized(const char *str, int smallp) {
 				dot((x+j)*6+i+MATRIX_BASE, (cmap[i] & (1 << j))?1:0);
 #endif
 			}
-		x += width;
+		str++;
+		findlengths (posns, 1);
+		x = 6;
+		RectPolConv = 0;
+		}
+		else {
+			findlengths(posns, smallp);
+		}
+#else
+		findlengths(posns, smallp);
+#endif
+	while (*str != '\0' && x <= BITMAP_WIDTH+1)  {
+		const int c = (unsigned char) *str++ + offset; //doesn't matter if c is 256 too big;
+		//const unsigned char *cmap;
+		int width;
+		unsigned char cmap[6];
+
+		//cmap = &charset[c][0];
+		width = charlengths(c);
+		if (x + width > BITMAP_WIDTH+1)
+			break;
+
+		/* Decode the packed character bytes */
+		unpackchar(c, cmap, smallp, posns);
+
+		for (i=0; i<6; i++)
+			for (j=0; j<width; j++) {
+				if (x+j >= BITMAP_WIDTH)
+					break;
+#ifndef CONSOLE
+				if (cmap[i] & (1 << j))
+					mat[i] |= 1LL << (x+j);
+#else
+				dot((x+j)*6+i+MATRIX_BASE, (cmap[i] & (1 << j))?1:0);
+#endif
+			}
+#ifdef RP_PREFIX
+			if ( (x==0) && (RectPolConv) ) {
+				x = 6;
+				RectPolConv = 0;
+			}
+			else {
+				x += width;
+			}
+#else
+				x += width;
+#endif
 	}
+
+
 #ifndef CONSOLE
 	set_status_grob(mat);
 #else

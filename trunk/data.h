@@ -279,7 +279,6 @@ struct _state2 {
 #else
 	unsigned int test_flag : 1;	// Test flag for various software tests
 #endif
-
 };
 
 /*
@@ -485,6 +484,10 @@ extern FLAG Tracing;		     // Set by SF T for INFRARED builds
 extern unsigned long long int instruction_count;
 extern int view_instruction_counter;
 #endif
+#ifdef RP_PREFIX
+extern SMALL_INT RectPolConv; // 1 - R->P just done; 2 - P->R just done
+#endif
+
 
 #endif /* COMPILE_XROM */
 #endif /* DATA_H_ */

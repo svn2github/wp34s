@@ -145,6 +145,13 @@ FLAG Tracing;
 #endif
 
 /*
+*	Indicates that a coordinate converstion has just happened
+*/
+#ifdef RP_PREFIX
+SMALL_INT RectPolConv; // 1 - R->P just done; 2 - P->R just done
+#endif
+
+/*
  *  Check if the current PC is in XROM
  */
 int is_xrom(void) {
