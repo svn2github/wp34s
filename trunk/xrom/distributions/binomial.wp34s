@@ -49,7 +49,7 @@
 			GSB binomial_param
 			CEIL
 			DEC X
-			x<0?
+			x[<=]0?
 				JMP ret_1
 			x>? K
 				JMP ret_0
@@ -68,7 +68,7 @@
 
 cdf_binomial::		x<0?
 				JMP dist_ret_0
-			x>? K
+			x[>=]? K
 				JMP dist_ret_1
 			GSB cdf_bin_beta_xform
 			_INT 1
