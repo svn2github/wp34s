@@ -36,7 +36,8 @@
 #define r_ba4		.05		/* (b-a) / 4 */
 #define r_middle	.06		/* (b+a) / 2 */
 #define cr_limits	.07		/* lower and upper limits in .07 and .08 */
-#define r_base		.09
+#define r_SkAbs		.09		/* Sum Abs Sk */
+#define r_base		.10
 
 /* Flags */
 #define f_force		.00
@@ -58,7 +59,7 @@ int_zero_interval::	[cmplx]RCL cr_limits
 			XLBL"INTEGRATE"
 			INTM?
 				ERR ERR_BAD_MODE
-			LocR 22				/* Need registers .00 to .21 */
+			LocR 23				/* Need registers .00 to .22 */
 			[cmplx]STO cr_limits
 			SPEC?
 				JMP int_bad_range
@@ -111,6 +112,8 @@ int_inner::		STO r_ui
 
 			RCL[times] r_ui2
 			STO+ r_Sk
+			ABS
+			STO+ r_SkAbs
 			Num 1
 			RCL r_ui
 			RCL+ r_deltau
@@ -125,9 +128,8 @@ int_inner::		STO r_ui
 			INC r_k
 			RCL r_Sk
 			RCL r_ba4
-			1
-			.
-			5
+			_INT 15
+			SDR 001
 			[times]
 			[times]
 			RCL[times] r_deltau
@@ -159,7 +161,14 @@ int_no_error::		DSE r_ui2
 				MSG MSG_INTEGRATE
 			x[approx]? Y
 				JMP int_done
-			JMP int_next_size
+			RCL r_SkAbs
+			RCL[times] r_deltau
+			/
+			ABS
+			Num 1
+			ULP
+			x<? Y
+				JMP int_next_size
 
 /* Two matches in a row is goodness. */
 int_done::		[cmplx]RCL cr_limits
