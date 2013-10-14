@@ -41,6 +41,7 @@
 
 /* Flags */
 #define f_force		.00
+#define f_final		.01
 
 
 int_bad_range::		[cmplx]RCL cr_limits
@@ -159,16 +160,17 @@ int_no_error::		DSE r_ui2
 				JMP int_next_size
 			TOP?
 				MSG MSG_INTEGRATE
+			FC?C f_final
 			x[approx]? Y
 				JMP int_done
-			RCL r_SkAbs
-			RCL[times] r_deltau
-			/
+			RCL/ r_SkAbs
+			RCL/ r_deltau
 			ABS
 			Num 1
-			ULP
-			x<? Y
-				JMP int_next_size
+			SDR 015
+			x>? Y
+				SF f_final
+			JMP int_next_size
 
 /* Two matches in a row is goodness. */
 int_done::		[cmplx]RCL cr_limits
@@ -187,6 +189,8 @@ int_done::		[cmplx]RCL cr_limits
 #undef r_ba4
 #undef r_middle
 #undef cr_limits
+#undef r_SkAbs
 #undef r_base
 
 #undef f_force
+#undef f_final
