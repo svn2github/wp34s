@@ -1,4 +1,4 @@
-00002500 A UserFlashSize
+00002400 A UserFlashSize
 000f0000 R command_info
 000f0048 R multicmds_ct
 000f00b6 R argcmds_ct
@@ -766,15 +766,15 @@
 00117a58 T decDigitsFromDPD
 00117ae4 T decimal64ToNumber
 00117bb8 T decimal64ToString
-00117bd8 t ____aeabi_idiv_from_thumb
+00117bd8 t ____aeabi_idivmod_from_thumb
 00117be0 t ____gnu_uldivmod_helper_from_arm
-00117bec t ____aeabi_uidiv_from_thumb
-00117bf4 t ____aeabi_idivmod_from_thumb
-00117bfc t ____aeabi_ldiv0_from_arm
-00117c08 t ____aeabi_uidivmod_from_thumb
-00117c10 t ____clzsi2_from_thumb
-00117c18 t ____aeabi_uldivmod_from_thumb
-00117c20 t ____aeabi_idiv0_from_arm
+00117bec t ____aeabi_ldiv0_from_arm
+00117bf8 t ____clzsi2_from_thumb
+00117c00 t ____aeabi_idiv0_from_arm
+00117c0c t ____aeabi_uldivmod_from_thumb
+00117c14 t ____aeabi_uidiv_from_thumb
+00117c1c t ____aeabi_uidivmod_from_thumb
+00117c24 t ____aeabi_idiv_from_thumb
 00117c38 t widths.5335
 00117ce3 t divs.5336
 00117d26 t alphamap.9012
@@ -934,9 +934,9 @@
 0011babc T COMBMSD
 0011bb3c T COMBEXP
 0011bbbc t xrom
-0011d2f0 R SvnRevision
-0011d2f0 T _efixed
-0011d300 R UserFlash
+0011d300 R SvnRevision
+0011d300 T _efixed
+0011d400 R UserFlash
 0011f800 b BackupFlash
 00200000 b InIrq
 00200000 B _szero
@@ -1109,12 +1109,12 @@
 002000a8 00000001 b StopWatchMemory
 002000bc 00000001 b StopWatchMemoryFirstDigit
 002000a4 00000004 b StopWatchStatus
-0011d2f0 00000004 R SvnRevision
+0011d300 00000004 R SvnRevision
 002000b8 00000004 b TotalFirstTicker
 002000b4 00000004 b TotalStopWatch
 00200174 00000019 b TraceBuffer
-0011d300 R UserFlash
-00002500 A UserFlashSize
+0011d400 R UserFlash
+00002400 A UserFlashSize
 0020012c 00000004 b UserHeartbeatCountDown
 00200058 00000004 b UserLocalRegs
 00200120 00000004 b WaitForLcd
@@ -1127,14 +1127,14 @@
 00200040 00000010 b XromParams
 00200144 00000004 b XromRunning
 0020005c 00000004 b XromUserPc
-00117c20 0000000c t ____aeabi_idiv0_from_arm
-00117bd8 00000008 t ____aeabi_idiv_from_thumb
-00117bf4 00000008 t ____aeabi_idivmod_from_thumb
-00117bfc 0000000c t ____aeabi_ldiv0_from_arm
-00117bec 00000008 t ____aeabi_uidiv_from_thumb
-00117c08 00000008 t ____aeabi_uidivmod_from_thumb
-00117c18 00000008 t ____aeabi_uldivmod_from_thumb
-00117c10 00000008 t ____clzsi2_from_thumb
+00117c00 0000000c t ____aeabi_idiv0_from_arm
+00117c24 00000008 t ____aeabi_idiv_from_thumb
+00117bd8 00000008 t ____aeabi_idivmod_from_thumb
+00117bec 0000000c t ____aeabi_ldiv0_from_arm
+00117c14 00000008 t ____aeabi_uidiv_from_thumb
+00117c1c 00000008 t ____aeabi_uidivmod_from_thumb
+00117c0c 00000008 t ____aeabi_uldivmod_from_thumb
+00117bf8 00000008 t ____clzsi2_from_thumb
 00117be0 0000000c t ____gnu_uldivmod_helper_from_arm
 001139b4 T __aeabi_idiv
 00113b04 00000002 W __aeabi_idiv0
@@ -1163,7 +1163,7 @@
 00113b90 0000004a T __muldi3
 00113fe0 00000358 T __udivdi3
 00113898 000000fc T __udivsi3
-0011d2f0 T _efixed
+0011d300 T _efixed
 00300800 B _epersistentram
 002001d0 B _ezero
 00100000 T _sfixed
@@ -2038,7 +2038,7 @@
 0011151c 000000f4 t xeq_sst_bst
 001116dc 00000064 t xeq_xrom
 00111634 000000a8 t xeqprog
-0011bbbc 00001732 t xrom
+0011bbbc 00001742 t xrom
 0011a760 00000034 t xrom_targets
 00111980 00000012 T xset
 00101c5c 00000020 t zero_regs
