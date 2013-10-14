@@ -40,8 +40,8 @@
 #define r_base		.10
 
 /* Flags */
-#define f_force		.00
-#define f_final		.01
+#define f_force		.00		/* Force initial iteration even if it looks like convergence*/
+#define f_final		.01		/* Force a final iteration when an almost zero result appears */
 
 
 int_bad_range::		[cmplx]RCL cr_limits
@@ -160,16 +160,16 @@ int_no_error::		DSE r_ui2
 				JMP int_next_size
 			TOP?
 				MSG MSG_INTEGRATE
-			FC?C f_final
-			x[approx]? Y
+			FC?C f_final		/* final iteration done? */
+			x[approx]? Y		/* or convergence? */
 				JMP int_done
 			RCL/ r_SkAbs
 			RCL/ r_deltau
 			ABS
 			Num 1
 			SDR 015
-			x>? Y
-				SF f_final
+			x>? Y			/* integral close to zero? */
+				SF f_final	/* Force a final iteration */
 			JMP int_next_size
 
 /* Two matches in a row is goodness. */
