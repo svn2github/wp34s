@@ -234,7 +234,7 @@ struct _constsml constsml[] = {
 	CONSTANT("R\233",	"PC_Rinf",	"10973731.568539"),	// Rydberg constant
 	CONSTANT("T\270",	"PC_t",		"273.15"),		// 0 degree celcus, standard temperature
 	CONSTANT("V\033",	"PC_Vm",	"22.413968E-3"),	// Molar volume of an ideal gas at STP
-	CONSTANT("Z\270",	"PC_Zo",	"376.730313461"),	// Characteristic impedance of vacuum
+	CONSTANT("Z\270",	"PC_Zo",	"376.73031346177065546819840042031930826862350835241864672"),	// Characteristic impedance of vacuum
 	CONSTANT("\240",	"PC_alpha",	"7.2973525698E-3"),	// Fine-structure constant
 	CONSTANT("\242\276",	"PC_gamP",	"2.675222005E8"),	// Proton gyromagnetic ratio
 	CONSTANT("\244\270",	"PC_eps0",	"8.8541878176203898505365630317107502606083701665994498E-12"),	// Electric constant, vacuum permittivity
