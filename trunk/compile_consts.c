@@ -237,8 +237,8 @@ struct _constsml constsml[] = {
 	CONSTANT("Z\270",	"PC_Zo",	"376.730313461"),	// Characteristic impedance of vacuum
 	CONSTANT("\240",	"PC_alpha",	"7.2973525698E-3"),	// Fine-structure constant
 	CONSTANT("\242\276",	"PC_gamP",	"2.675222005E8"),	// Proton gyromagnetic ratio
-	CONSTANT("\244\270",	"PC_eps0",	"8.854187817E-12"),	// Electric constant, vacuum permittivity
-	CONSTANT("\253\270",	"PC_mu0",	"12.566370614E-7"),	// Magnetic constant
+	CONSTANT("\244\270",	"PC_eps0",	"8.8541878176203898505365630317107502606083701665994498E-12"),	// Electric constant, vacuum permittivity
+	CONSTANT("\253\270",	"PC_mu0",	"12.566370614359172953850573533118011536788677597500423E-7"),	// Magnetic constant
 	CONSTANT("\253\230",	"PC_muB",	"927.400968E-26"),	// Bohr's magneton
 	CONSTANT("\253\277",	"PC_mu_u",	"5.05078353E-27"),	// Nuclear magneton
 	CONSTANT("\261\230",	"PC_sigma",	"5.670373E-8"),		// Stefan Boltzmann constant
