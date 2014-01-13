@@ -42,7 +42,7 @@ int main( int argc, char **argv )
 	}
 
 	// Try to execute svnversion
-	sprintf( buffer, "svnversion -n >%s", tmpname );
+	sprintf( buffer, "svnversion -n Makefile >%s", tmpname );
 	fprintf( stderr, "Executing %s\n", buffer );
 	if (system( buffer ) == -1) {
 		perror("unable to run subversion command");

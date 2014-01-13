@@ -288,7 +288,7 @@ qf_q_int_est::	ENTER[^]
 		RCL/ Z
 		+
 		STO R_ABSZ
-		RTN
+		JMP qf_q_signfix
 
 qf_q_mid::	Num 1/2
 		RCL- Y
@@ -309,6 +309,8 @@ qf_q_mid::	Num 1/2
 		SDR 007
 		x>? Y
 			SF F_EXACT		// z < 4E-9 needs no correction at all, flag for exit
+qf_q_signfix::	FS? F_SMALL
+			+/-
 		RTN
 
 #undef R_HALF
