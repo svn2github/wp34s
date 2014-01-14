@@ -42,11 +42,7 @@ int main( int argc, char **argv )
 	}
 
 	// Try to execute svnversion
-#ifdef _MSC_VER
 	sprintf( buffer, "svnversion -n >%s", tmpname );
-#else
-	sprintf( buffer, "svnversion -n Makefile >%s", tmpname );
-#endif
 	fprintf( stderr, "Executing %s\n", buffer );
 	if (system( buffer ) == -1) {
 		perror("unable to run subversion command");
