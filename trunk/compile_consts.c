@@ -369,7 +369,7 @@ struct _constsml conversions[] = {
 	CONV("ml",	"flozUK",	"ML_FLOZUK",	"28.41306"),		// source: NIST oz UK fluid
 	CONV("ml",	"flozUS",	"ML_FLOZUS",	"29.57353"),		// source: NIST oz US fluid
 	CONV("cm",	"inches",	"CM_INCH",	"2.54"),		// source: NIST
-	CONV("m",	"fathom",	"M_FATHOM",	"1.828804"),		// derived: 6 feet
+	CONV("m",	"fathom",	"M_FATHOM",	"1.8288"),		// derived: 6 feet
 	CONV("m",	"feet",		"M_FEET",	"0.3048"),		// source: NIST
 	CONV("m",	"feetUS",	"M_FEETUS",	"0.3048006096"),		// source: Wikipedia etc
 	CONV("m",	"yards",	"M_YARD",	"0.9144"),		// source: NIST
