@@ -1,0 +1,119 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* Binomial distribution
+ * Two parameters:
+ *	J = probabiliy
+ *	K = n
+ */
+		XLBL"PDF_BINOMIAL"
+			xIN MONADIC
+			GSB binomial_param
+			x<0?
+				JMP ret_0
+			x>? K
+				JMP ret_0
+			RCL J			// P	x
+			GSB log1m		// LnP	x
+			RCL K			// n LnP  x
+			RCL- Z			// n-x LnP x
+			[times]			// (n-x)LnP x
+			e[^x]
+			RCL K
+			RCL Z
+			COMB
+			[times]
+			RCL J
+			RCL Z
+			y[^x]
+			[times]
+			xOUT xOUT_NORMAL
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_BINOMIAL"
+			xIN MONADIC
+			GSB binomial_param
+			CEIL
+			DEC X
+			x[<=]0?
+				JMP ret_1
+			x>? K
+				JMP ret_0
+			GSB cdf_bin_beta_xform	// n-x x+1
+			z[<->] J		// n-x x+1 p  -- destructively however
+			I[beta]
+			xOUT xOUT_NORMAL
+#endif
+			
+		XLBL"CDF_BINOMIAL"
+			xIN MONADIC
+			GSB binomial_param
+			FLOOR
+			GSB cdf_binomial
+			xOUT xOUT_NORMAL
+
+cdf_binomial::		x<0?
+				JMP dist_ret_0
+			x[>=]? K
+				JMP dist_ret_1
+			GSB cdf_bin_beta_xform
+			_INT 1
+			RCL- J			// 1-p n-x x+1 x
+			[<->] ZYXT
+			I[beta]
+			RTN
+
+/* Figure out the second two parameters for the binomial conversion
+ * to the beta.  x is in X on entry.  On exit, k+1 is in X and n-k is in Y
+ */
+cdf_bin_beta_xform::	RCL K
+			RCL- Y			// n-x x+1 x
+			_INT 1
+			RCL+ Z			// x+1 x
+			RTN
+
+		XLBL"QF_BINOMIAL"
+			xIN MONADIC
+			GSB binomial_param
+			GSB qf_check_probability
+                        x[<=]0?
+                            JMP ret_0
+			RCL J
+			RCL[times] K		// mean = np
+			_INT 1
+			RCL- J
+			RCL[times] Y		// variance = np(1-p)
+			[sqrt]
+			SWAP
+			GSB normal_moment_approx
+			_INT DIST_BINOMIAL
+			XEQ qf_newton
+			RCL[v] K
+			xOUT xOUT_NORMAL
+
+binomial_param::	RCL J
+			GSB check_probability
+			RCL K
+			SPEC?
+				ERR ERR_BAD_PARAM
+			FP?
+				JMP ret_0
+			x<0?
+				JMP ret_0
+			[cmplx]DROP
+			RTN
+

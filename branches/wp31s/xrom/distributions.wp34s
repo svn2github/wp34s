@@ -1,0 +1,367 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Define some identifying numbers for the distributions that require the Newton solver to
+ * invert.
+ */
+#define DIST_T		(0)
+#define DIST_CHI2	(1)
+#define DIST_F		(2)
+#define DIST_POISSON	(3)
+#define DIST_BINOMIAL	(4)
+#define DIST_GEOMETRIC	(5)
+
+
+#include "distributions/cauchy.wp34s"
+#include "distributions/exponential.wp34s"
+#include "distributions/geometric.wp34s"
+#include "distributions/logistic.wp34s"
+#include "distributions/normals.wp34s"
+#include "distributions/weibull.wp34s"
+
+/**************************************************************************/
+/* Utility conditional that checks if the argument is a valid probability or not */
+
+cdf_infinite::		x<0?
+				JMP ret_0
+			JMP ret_1
+
+check_probability::	NaN?
+				JMP ret_NaN
+			x<0?
+				ERR ERR_BAD_PARAM
+			x>1?
+				ERR ERR_BAD_PARAM
+			RTN
+
+qf_check_probability::	NaN?
+				JMP ret_NaN
+			x<0?
+				JMP ret_NaN
+			x>1?
+				JMP ret_NaN
+			RTN
+
+/* Error out if a number is negative, zero or special */
+check_special_pos::	x=0?
+				ERR ERR_BAD_PARAM
+
+/* Error out if a number is negative or special */
+check_special_notneg::	x<0?
+				ERR ERR_BAD_PARAM
+
+/* Error out if a number is special */
+check_special::		SPEC?
+				ERR ERR_BAD_PARAM
+			RTN
+
+/**************************************************************************/
+/* Some utility subroutines */
+
+/* Log (1 - x) */
+log1m::		+/-
+		LN1+x
+		RTN
+
+dist_ret_0::		_INT 0
+			RTN
+
+dist_ret_1::		_INT 1
+			RTN
+
+/**************************************************************************/
+
+#include "distributions/chi2.wp34s"
+/* Empty line need by OSX cc -E */
+#include "distributions/poissons.wp34s"
+
+/**************************************************************************/
+/* The Newton step solver.
+ * Target value in Y, function identifier in X, estimate in Z.
+ */
+
+/* Register use:
+ */
+#define R_DIST		.00		/* Which distribution are we using? */
+#define R_P		.01		/* Target probability */
+#define R_ITERATIONS	.02		/* Iteration counter */
+#define R_LOW		.03		/* lower bounds for solution */
+#define R_HIGH		.04		/* upper bounds for solution */
+#define R_MAXSTEP	.05		/* Step size limiting */
+#define R_R		.06		/* Current best estimate */
+#define R_Z		.07
+#define R_W		.08
+
+/* Flag use:
+ */
+#define F_DISCRETE	.00
+#define F_NONNEGATIVE	.01
+#define F_NOBISECT	.02
+#define F_LIMITJUMP	.03
+
+qf_newton_setflags::	CASE R_DIST
+			RTN				/* T no flags */
+			JMP qf_chi2_flags		/* Chi^2 */
+			JMP qf_f_flags			/* F */
+			NOP				/* Poisson */
+			SF F_DISCRETE			/* Binonial */
+			JMP qf_newton_flag_pos
+
+qf_f_flags::		_INT 75
+			JMP qf_chi2_f_common
+
+qf_chi2_flags::		_INT 4
+qf_chi2_f_common::	SDR 02
+			RCL[times] R_R
+			STO R_MAXSTEP
+			SF F_LIMITJUMP
+qf_newton_flag_pos::	SF F_NONNEGATIVE
+			RTN
+
+
+qf_newton::		LocR 009
+			[cmplx]STO R_DIST
+			z[<->] R_R
+
+			/* Set flags based on distribution */
+			GSB qf_newton_setflags
+			_INT 100
+			STO R_ITERATIONS
+			Num [infinity]
+			STO R_HIGH
+			Num -[infinity]
+			FS? F_NONNEGATIVE
+				CLx
+			STO R_LOW
+
+/* Initialisation done, now the main loop itself */
+qf_newton_search::	RCL R_R
+			x[>=]? R_HIGH
+				JMP qf_newton_try_bisect
+			x[<=]? R_LOW
+				JMP qf_newton_try_bisect
+
+qf_newton_no_bisect::	RCL R_R
+			GSB qf_newton_cdf
+			STO R_W
+			RCL- R_P
+			STO R_Z
+
+			x[>=]0?
+				JMP qf_newton_fix_high
+			FS?C F_NOBISECT
+				JMP qf_newton_fix_low2
+			RCL R_R
+			x>? R_LOW
+				JMP qf_newton_fix_low3
+			RCL R_HIGH
+			[infinity]?
+				JMP qf_newton_fix_low2
+			JMP qf_newton_do_bisect
+qf_newton_fix_low2::	RCL R_R
+qf_newton_fix_low3::	STO[^] R_LOW
+			JMP qf_newton_fixed
+
+qf_newton_fix_high::	FS?C F_NOBISECT
+				JMP qf_newton_fix_high2
+			RCL R_R
+			x<? R_HIGH
+				JMP qf_newton_fix_high3
+			RCL R_LOW
+			[infinity]?
+				JMP qf_newton_fix_high2
+			JMP qf_newton_do_bisect
+qf_newton_fix_high2::	RCL R_R
+qf_newton_fix_high3::	STO[v] R_HIGH
+
+
+/* Evaluated the CDF and it is within the bounds */
+qf_newton_fixed::	GSB qf_newton_pdf
+			x=0?
+				JMP qf_newton_done	/* Function is flat -- can't estimate */
+			RCL R_Z
+			RCL/ Y
+			STO R_W
+
+			FC? F_LIMITJUMP		// limit max step
+				JMP qf_newton_no_limit
+			ABS
+			x<? R_MAXSTEP
+				JMP qf_newton_no_limit			
+			RCL R_W
+			x<0?
+				JMP qf_newton_neg_limit
+			RCL R_MAXSTEP
+			JMP qf_newton_fin_limit
+qf_newton_neg_limit::	RCL R_MAXSTEP
+			+/-
+qf_newton_fin_limit::	STO R_W
+
+			// update estimate
+qf_newton_no_limit::	RCL R_R
+			STO R_Z
+			RCL- R_W
+			STO R_R
+
+/* If this distribution doesn't take negative values, limit outselves to positive ones */
+			FC? F_NONNEGATIVE
+				JMP qf_newton_nosign
+			x[>=]0?
+				JMP qf_newton_nosign
+			RCL R_Z
+			SDR 05
+			STO R_R
+
+/* If our upper and lower limits are close enough together we give up searching */
+qf_newton_nosign::	RCL R_HIGH
+			[infinity]?
+				JMP qf_newton_nobounds
+			RCL R_LOW
+			[infinity]?
+				JMP qf_newton_nobounds
+			CNVG? (CVG_RELATIVE + CVG_SPECIAL_CONTINUE)
+				JMP qf_newton_bounds_cnvg
+			JMP qf_newton_nobounds
+qf_newton_bounds_cnvg::	+
+			Num 1/2
+			[times]
+			JMP qf_newton_done2
+
+/* Check for convergence of the estimates */
+qf_newton_nobounds::	RCL R_Z
+			RCL R_R
+			FS? F_DISCRETE
+				JMP qf_newton_dis_end
+
+/* Check for continuous distribution convergence */
+			CNVG? CVG_RELATIVE
+				JMP qf_newton_done2
+			JMP qf_newton_again
+
+/* Check for discrete distribution convergence */
+qf_newton_dis_end::	-
+			ABS
+			_INT 1
+			SDR 01
+			x>? Y
+				JMP qf_newton_done
+
+/* Loop again */
+qf_newton_again::	DSE R_ITERATIONS
+				JMP qf_newton_search
+			JMP ret_NaN
+
+/* Finished.  For discrete distributions, there is a bit more to do */
+qf_newton_done::	RCL R_R
+qf_newton_done2::	FS? F_DISCRETE
+				JMP qf_discrete_exit
+			RTN
+
+
+/* The estimate is out of the (low, high) bounds.  Check to see if we can bisect instead */
+qf_newton_try_bisect::	RCL R_HIGH
+			[infinity]?
+				JMP qf_newton_overlow
+			RCL R_LOW
+			[infinity]?
+				JMP qf_newton_underhigh	
+qf_newton_do_bisect::	RCL R_LOW
+			RCL+ R_HIGH
+			Num 1/2
+			[times]
+			SF F_NOBISECT
+qf_newton_bisect_out::	STO R_R
+			JMP qf_newton_no_bisect
+qf_newton_overlow::	RCL R_LOW
+			RCL+ X
+			JMP qf_newton_bisect_out
+qf_newton_underhigh::	RCL R_HIGH
+			Num 1/2
+			[times]
+			JMP qf_newton_bisect_out
+
+
+
+/* Discrete distribtions require an extra check to push the final answer
+ * up or down one to account for any possible rounding issues.
+ */
+qf_discrete_exit::	FLOOR
+			RCL R_DIST
+			_INT DIST_POISSON
+			-
+			z[<->] R_P
+			JMP qf_discrete_final
+
+/* Dispatch to the PDF of the distribution being searched */
+qf_newton_pdf::		CASE R_DIST
+			JMP pdf_t
+			JMP pdf_chi2
+			JMP pdf_f
+			NOP				// Poisson
+			//NOP				// Binomial
+
+/* Using the pdf for the slope isn't great for the discrete distributions
+ * So we do something more akin to a secant approach
+ */
+pdf_discrete::		_INT 1
+			SDR 03
+			RCL+ R_R
+			GSB qf_newton_cdf
+			RCL- R_W
+			_INT 1
+			SDL 3
+			[times]
+			RTN
+
+/* Dispatch to the CDF of the distribution being searched */
+qf_newton_cdf::		CASE R_DIST
+			JMP cdf_t
+			JMP cdf_chi2
+			JMP cdf_f
+			JMP cdf_poisson
+			JMP cdf_binomial
+
+
+#undef F_DISCRETE
+#undef F_NONNEGATIVE
+#undef F_ALLOWBISECT
+#undef F_LIMITJUMP
+
+#undef R_P
+#undef R_DIST
+#undef R_ITERATIONS
+#undef R_LOW
+#undef R_HIGH
+#undef R_MAXSTEP
+#undef R_R
+#undef R_Z
+#undef R_W
+
+/**************************************************************************/
+#include "distributions/binomial.wp34s"
+/* Empty line need by OSX cc -E */
+#include "distributions/f.wp34s"
+#include "distributions/t.wp34s"
+/**************************************************************************/
+
+#undef DIST_NORMAL
+#undef DIST_T
+#undef DIST_CHI2
+#undef DIST_F
+#undef DIST_POISSON
+#undef DIST_BINOMIAL
+#undef DIST_GEOMETRIC
+

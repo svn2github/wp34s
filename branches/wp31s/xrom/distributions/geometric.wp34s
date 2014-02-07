@@ -1,0 +1,115 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* Geometric distribution
+ * One parameter:
+ *	J = probability
+ */
+		XLBL"PDF_GEOM"
+			xIN MONADIC
+			GSB geom_param
+			x<0?
+				JMP ret_0
+			FP?
+				JMP ret_0
+			RCL J
+			GSB log1m
+			[times]
+			e[^x]
+			RCL[times] J
+			xOUT xOUT_NORMAL
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_GEOM"
+			xIN MONADIC
+			GSB geom_param
+			CEIL
+			x<1?
+				JMP ret_1
+			[infinity]?
+				JMP ret_0
+			_INT 1
+			RCL- J
+			SWAP
+			y[^x]
+			xOUT xOUT_NORMAL
+#endif
+			
+		XLBL"CDF_GEOM"
+			xIN MONADIC
+			GSB geom_param
+			GSB cdf_geom
+			xOUT xOUT_NORMAL
+
+cdf_geom::		x<0?
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			FLOOR
+			INC X
+			RCL J
+			GSB log1m
+			[times]
+			e[^x]-1
+			+/-
+			RTN
+
+geom_param::		RCL J
+			GSB check_probability
+			DROP
+			RTN
+
+		XLBL"QF_GEOM"
+			xIN MONADIC
+			GSB geom_param
+			x[<=]0?
+				JMP ret_0
+			GSB qf_check_probability
+			ENTER[^]
+			GSB log1m
+			RCL J
+			GSB log1m
+			/
+			DEC X
+			FLOOR
+			_INT (DIST_GEOMETRIC - DIST_POISSON)
+                        GSB qf_discrete_final
+                        xOUT xOUT_NORMAL
+
+#define R_DIST	.00
+#define R_R	.01
+#define R_P	.02
+qf_discrete_final::	LocR 3
+			[cmplx]STO R_DIST
+			z[<->] R_P
+			DROP
+			GSB qf_discrete_cdf
+			x<? R_P
+				INC R_R
+qf_discrere_out::	RCL R_R
+			RTN
+
+
+qf_discrete_cdf::	CASE R_DIST
+			JMP cdf_poisson
+			JMP cdf_binomial
+			JMP cdf_geom	
+#undef R_R
+#undef R_P
+#undef R_DIST
+

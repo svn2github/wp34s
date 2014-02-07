@@ -1,0 +1,146 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* One parameter Poission distribution
+ * Real parameter lambda in J.
+ */
+/* Stack contains probability in Z, variance in Y and mean in X.
+ * Returns a normal approximation in X.
+ */
+normal_moment_approx::	LocR 003
+			[cmplx]STO .00
+			[cmplx]DROP
+			STO .02
+			GSB qf_q_est
+			ENTER[^]
+			x[^2]		// z2  z ? ?
+			DEC X		// z2-1  z ? ?
+			_INT 6
+			/
+			RCL/ .01
+			+
+			RCL[times] .01
+			RCL+ .00
+			RCL .02
+			RTN
+
+		XLBL"PDF_POISSON"
+			xIN MONADIC
+			GSB poission1_param
+pdf_poisson_xout::	FP?
+				JMP ret_0
+			RCL J
+			SWAP
+			y[^x]
+			RCL L
+			x!
+			/
+			RCL J
+			e[^x]
+			/
+			xOUT xOUT_NORMAL
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_POISSON"
+			xIN MONADIC
+			GSB poission1_param
+cdfu_poisson_xout::	CEIL
+			x<1?
+				JMP ret_1
+			[infinity]?
+				JMP ret_0
+			RCL J
+			SWAP
+			I[GAMMA][sub-p]
+			xOUT xOUT_NORMAL
+#endif
+
+		XLBL"CDF_POISSON"
+			xIN MONADIC
+			GSB poission1_param
+cdf_poisson_xout::	FLOOR
+			GSB cdf_poisson
+			xOUT xOUT_NORMAL
+
+cdf_poisson::		x<0?
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			INC X
+			RCL J
+			SWAP
+			I[GAMMA][sub-q]
+			RTN
+
+		XLBL"QF_POISSON"
+			xIN MONADIC
+			GSB poission1_param
+qf_poisson_xout::	GSB qf_check_probability
+			RCL J
+			[sqrt]
+			RCL J
+			GSB normal_moment_approx
+			_INT DIST_POISSON
+			XEQ qf_newton
+			xOUT xOUT_NORMAL
+
+
+poission1_param::	x[<->] J
+			NaN?
+				JMP ret_NaN
+			SPEC?
+				ERR ERR_BAD_PARAM
+			x[<=]0?
+				JMP ret_0
+			x[<->] J
+			RTN
+
+/**************************************************************************/
+/* Two parameter Poission distribution
+ * Porbability in J
+ * n in K
+ */
+		XLBL"PDF_POIS2"
+			xIN MONADIC
+			GSB poisson2_param
+			JMP pdf_poisson_xout
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_POIS2"
+			xIN MONADIC
+			GSB poisson2_param
+			JMP cdfu_poisson_xout
+#endif
+
+		XLBL"CDF_POIS2"
+			xIN MONADIC
+			GSB poisson2_param
+			JMP cdf_poisson_xout
+
+		XLBL"QF_POIS2"
+			xIN MONADIC
+			GSB poisson2_param
+			JMP qf_poisson_xout
+
+poisson2_param::	x[<->] J
+			GSB check_probability
+			RCL[times] K
+			x<0?
+				JMP ret_0
+			x[<->] J
+			RTN
+

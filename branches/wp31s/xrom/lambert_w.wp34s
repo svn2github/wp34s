@@ -1,0 +1,194 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* The positive branch of the real W function.
+ * A rough guess is made and then Newton's method is used to attain
+ * convergence.  The C version (in ../trunk/unused/lambertW.c) works
+ * similarily but uses Halley's method which converges a cubically
+ * instead of quadratically.
+ *
+ * This code is based on a discussion on the MoHPC.  Search the archives
+ * for "Lambert W (HP-41)" starting on the 2 Sept 2012.  The actual code
+ * is Dieter's from a message posted on the 23rd of Sept 2012.
+ */
+
+			XLBL"W0"
+			xIN MONADIC
+			SPEC?
+				JMP ret_NaN
+			x=0?
+				xOUT xOUT_NORMAL
+			JMP LamW0_common
+
+/**************************************************************************/
+/* The negative branch of the real W function.
+ */
+
+			XLBL"W1"
+			xIN MONADIC
+			SPEC?
+				JMP ret_NaN
+			x>0?
+				JMP ret_NaN
+			x=0?
+				JMP ret_neginf
+			SF .00
+
+LamW0_common::		LocR 003
+			STO .00
+			_INT 007
+			STO .01
+			_INT 035
+			FS? .00
+				_INT 025
+			SDR 002
+			+/-
+			RCL .00
+			x>? Y
+				JMP LamW0_normal
+			Num 1/eH
+			RCL+ .00
+			Num 1/eL
+			+
+			Num eE
+			[times]
+			STO .02
+			STO+ X
+			[sqrt]
+			FS?C .00
+				+/-
+			RCL L
+			_INT 003
+			/
+			-
+						// Newton iteration for W+1
+LamW0_wp1_newton::	FILL			// and x close to -1/e
+			+/-
+			e[^x]-1
+			RCL[times] .00
+			Num eE
+			[times]
+			RCL- Y
+			RCL+ .02
+			RCL/ Y
+			+
+			FS?C .02
+				JMP LamW0_converged
+			CNVG? 06		// test if absolute error < 1E-32
+				SF .02
+			DSE .01
+				JMP LamW0_wp1_newton
+LamW0_converged::	DEC X
+			JMP LamW0_finish
+
+LamW0_normal::		FS?C .00
+				JMP LamW0_smallx
+			LN1+x
+			x[<=]1?
+				JMP LamW0_halley
+			ENTER[^]
+			LN
+			-
+			JMP LamW0_halley
+
+LamW0_smallx::		+/-
+			LN
+			ENTER[^]
+			+/-
+			LN
+			-
+						// Newton-Halley iteration for W
+LamW0_halley::		FILL			// x not close to -1/e
+			RCL .00
+			x[<->] Y
+			e[^x]
+			/
+			-
+			x[<->] Y
+			INC X
+			/
+			RCL L
+			1/x
+			INC X
+			RCL[times] Y
+			Num 1/2
+			[times]
+			+/-
+			INC X
+			/
+			-
+			FS?C .02
+				JMP LamW0_finish
+			CNVG? 01		// test if relative error < 1E-24
+				SF .02
+			DSE .01
+				JMP LamW0_halley
+LamW0_finish::		xOUT xOUT_NORMAL
+
+
+/**************************************************************************/
+/* The positive branch of the complex W function.
+ *
+ * This code is based on Jean-Marc Baillard's HP-41 version from:
+ *	http://hp41programs.yolasite.com/lambertw.php
+ *
+ * Register use:
+ *	.00/.01	z
+ *	.02/.03	w
+ *	.04/.05	temporary
+ */
+			XLBL"CPX_W0"
+			xIN MONADIC_COMPLEX
+			LocR 06
+			[cmplx]STO .00
+			Num 1
+			STO .02
+			STO .03
+			+
+			[cmplx]x=0?
+				JMP LamW_cloop
+			[cmplx]LN
+			[cmplx]STO .02
+LamW_cloop::		[cmplx]ENTER
+			[cmplx]e[^x]
+			[cmplx]STO .04
+			[cmplx]RCL[times] .02
+			[cmplx]STO+ .04
+			[cmplx]RCL- .00
+			[cmplx]RCL/ .04
+			[cmplx]STO- .02
+			[cmplx]DROP
+			[cmplx]RCL .02
+			CNVG? CVG_COMPLEX
+				xOUT xOUT_NORMAL
+			JMP LamW_cloop
+
+/**************************************************************************/
+/* The inverse W function in both real and complex domains.
+ */
+
+			XLBL"W_INVERSE"
+			xIN MONADIC
+				e[^x]
+				RCL[times] L
+			xOUT xOUT_NORMAL
+
+			XLBL"CPX_W_INVERSE"
+			xIN MONADIC_COMPLEX
+				[cmplx]e[^x]
+				[cmplx]RCL[times] L
+			xOUT xOUT_NORMAL

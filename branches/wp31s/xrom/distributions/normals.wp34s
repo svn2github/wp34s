@@ -1,0 +1,322 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* Log Normal distribution
+ */
+ 		XLBL"PDF_LOGNORMAL"
+			xIN MONADIC
+				LocR 01
+				STO .00
+				LN
+				GSB pdf_normal
+				RCL/ .00
+			xOUT xOUT_NORMAL
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_LOGNORMAL"
+			xIN MONADIC
+				SPEC?
+					JMP cdf_infinite
+				x[<=]0?
+					JMP ret_1
+				LN
+				JMP cdfu_normal
+#endif
+
+		XLBL"CDF_LOGNORMAL"
+			xIN MONADIC
+				SPEC?
+					JMP cdf_infinite
+				x[<=]0?
+					JMP ret_0
+				LN
+				JMP cdf_normal
+
+		XLBL"QF_LOGNORMAL"
+			xIN MONADIC
+				x=0?
+					xOUT xOUT_NORMAL
+				GSB qf_normal
+				e[^x]
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Normal distribution
+ */
+ 		XLBL"PDF_NORMAL"
+			xIN MONADIC
+				GSB pdf_normal
+			xOUT xOUT_NORMAL
+
+pdf_normal::		GSB normal_param
+			GSB pdf_q
+			RCL/ K
+			RTN
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_NORMAL"
+			xIN MONADIC
+cdfu_normal::		SF .00
+			JMP cdf_norm_common
+#endif
+
+		XLBL"CDF_NORMAL"
+			xIN MONADIC
+cdf_norm_common::	SPEC?
+				JMP cdf_infinite
+cdf_normal::		GSB normal_param
+#ifdef INCLUDE_CDFU
+			FS? .00
+				+/-
+#endif
+			JMP cdf_q_xout
+
+normal_param::		RCL J
+			GSB check_special
+			-
+			RCL K
+			GSB check_special_pos
+			/
+			RTN
+
+		XLBL"QF_NORMAL"
+			xIN MONADIC
+				GSB qf_normal
+			xOUT xOUT_NORMAL
+
+qf_normal::		GSB qf_q
+			RCL K
+			GSB check_special_pos
+			[times]
+			RCL J
+			GSB check_special
+			+
+			RTN
+#undef X
+
+
+/**************************************************************************/
+/* Standard Normal distribution
+ */
+		XLBL"PDF_Q"
+			xIN MONADIC
+pdf_q_xout::		GSB pdf_q
+			xOUT xOUT_NORMAL
+
+/* Standard entry point.  Uses one stack level and no last X */
+pdf_q::			x[^2]
+			Num 1/2
+			[times]
+			+/-
+			e[^x]
+			Num [sqrt]2[pi]
+			/
+			RTN
+
+/*
+ * For x > 0:
+ * 
+ * Lower Tail Normal CDF = 0.5*(1 + gammap(0.5*x^2, 0.5))
+ * Upper Tail Normal CDF = 0.5*gammaq(0.5*x^2, 0.5)
+ */
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_Q"
+			xIN MONADIC
+			GSB cdfu_q
+			xOUT xOUT_NORMAL
+
+cdfu_q::		x<0?
+				JMP cdfu_q_flip
+#endif
+cdf_q_flip::		x[^2]
+			Num 1/2
+			STO[times] Y
+			[GAMMA][sub-x][sub-y]
+			RCL[times] L
+			Num 1/[sqrt][pi]
+			[times]
+			RTN
+
+		XLBL"CDF_Q"
+			xIN MONADIC
+cdf_q_xout::		GSB cdf_q
+			xOUT xOUT_NORMAL
+
+/* Standard entry point.  Destroys the stack.
+ * Returns the CDF in X and the PDF in Y.
+ */
+cdf_q::			x<0?
+				JMP cdf_q_flip
+cdfu_q_flip::		x[^2]
+			Num 1/2
+			STO[times] Y
+			[gamma][sub-x][sub-y]
+			Num 1/[sqrt][pi]
+			[times]
+			INC X
+			Num 1/2
+			[times]
+			RTN
+
+
+		XLBL"QF_Q"
+			xIN MONADIC
+qf_q_xout::		GSB qf_q
+			xOUT xOUT_NORMAL
+
+/* Dieter's code for the standard normal quantile function.
+ *
+ * Registers:
+ * 	R00: 0.5 
+ * 	R01: q = min(p, 1-p)
+ * 	R02: |z|
+ * 
+ * Flags:
+ * 	F00: Set for p < 0.5, else clear
+ * 	F01: Set if a second iteration is required, else clear
+ */
+
+#define R_HALF	.00
+#define R_MINP	.01
+#define R_ABSZ	.02
+
+#define F_SMALL	.01
+#define F_ITER	.02
+#define F_EXACT	.03
+
+qf_q::		GSB qf_check_probability
+                LocR 003
+		SF F_ITER
+		GSB qf_q_int_est
+		FS? F_EXACT
+			JMP qf_q_out
+
+qf_q_refine::	RCL R_ABSZ
+		x>? R_HALF              // "x>1?" should be fine either
+		    JMP qf_q_x_large
+		x[^2]
+		Num 1/2
+		STO[times] Y
+		I[GAMMA][sub-p]
+		Num 1/2
+		STO[times] Y
+		RCL- R_MINP		// For q close to 0.5:
+		RCL- Y			// upperCDF(z) - q  =  (0.5-q) - IGamma_p(z2/2)
+		JMP qf_q_common
+
+qf_q_x_large::	GSB cdfu_q		// Otherwise evaluate Phi_u(z) - q directly
+		RCL- R_MINP
+
+qf_q_common::	RCL R_ABSZ
+		GSB pdf_q
+		/
+		FILL
+		x[^3]			// Apply a third-order correction
+		RCL R_ABSZ		// Evaluate all three terms individually
+		x[^2]			// and add them in order of their magnitude,
+		STO+ X			// smallest terms first, to preserve
+		INC X			// as much accuracy as possible
+		[times]
+		_INT 006
+		/
+		x[<->] Y
+		x[^2]
+		RCL[times] R_ABSZ
+		RCL[times] R_HALF
+		+
+		+
+		STO+ R_ABSZ
+		FS?C F_ITER
+			JMP qf_q_refine
+
+qf_q_out::	RCL R_ABSZ 		// exit program
+		FS?C F_SMALL		// set sign if required
+			+/-
+		RTN
+
+
+
+qf_q_est::	LocR 003
+
+qf_q_int_est::	ENTER[^]
+		+/-
+		INC X
+		MIN
+		STO R_MINP		// q = min(p, 1-p)
+		x[!=]? L
+			SF F_SMALL	// Set Flag if p < 0.5 (i.e. 1-p != q)
+		Num 1/2			// pre-store 0.5 in a register for later use
+		STO R_HALF
+		_INT 023
+		SDR 002
+		RCL R_MINP
+		x>? Y
+			JMP qf_q_mid
+		ENTER[^]		// tail estimate
+		LN
+		STO+ X
+		+/-
+		STO Z
+		DEC X
+		Num [pi]
+		[times]
+		STO+ X
+		[sqrt]
+		[times]
+		LN
+		STO+ X
+		+/-
+		[sqrt]
+		_INT 254
+		SDR 003
+		RCL/ Z
+		+
+		STO R_ABSZ
+		JMP qf_q_signfix
+
+qf_q_mid::	Num 1/2
+		RCL- Y
+		Num [pi]
+		STO+ X
+		[sqrt]
+		[times]
+		ENTER[^]
+		x[^3]
+		_INT 006
+		/
+		+
+		STO R_ABSZ
+		_INT 004
+		SDR 002
+		x>? Y
+			CF F_ITER		// z < 0.04 requires just one correction step
+		SDR 007
+		x>? Y
+			SF F_EXACT		// z < 4E-9 needs no correction at all, flag for exit
+qf_q_signfix::	FS? F_SMALL
+			+/-
+		RTN
+
+#undef R_HALF
+#undef R_MINP
+#undef R_ABSZ
+
+#undef F_SMALL
+#undef F_ITER
+

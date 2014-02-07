@@ -1,0 +1,169 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* F distribution
+ * Two parameteres:
+ *	J = df1 (real > 0)
+ *	K = df2 (real > 0)
+ */
+		XLBL"PDF_F"
+			xIN MONADIC
+			GSB f_param
+			GSB pdf_f
+			xOUT xOUT_NORMAL
+
+pdf_f::			FILL
+			RCL K
+			LN		// Lnd2 x x
+			RCL[times] K	// d2Lnd2 x x
+			RCL J		// d1 d2Lnd2 x x
+			RCL[times] Z	// xd1 d2Lnd2 x x
+			STO Z
+			LN		// LNxd1 d2Lnd2 xd1 x
+			RCL[times] J	// d1Lnxd1 d2Lnd2 xd1 x
+			+		// sum xd1 x
+			SWAP		// xd1 sum x
+			RCL+ K		// xd1+d2 sum x
+			LN		// Lnxd1+d2 sum x
+			RCL J		// d1 Lnxd1+d2 sum x
+			RCL+ K		// d1+d2 Lnxd1+d2 sum x
+			[times]		//(d1+d2)Lnxd1+d2 sum x
+			-		// sum x ? ?
+			Num 1/2
+			[times]		// Sum/2 x ? ?
+			Num 1/2
+			RCL[times] J	// d1/2 Sum/2 x
+			RCL K		// d2 d1/2 Sum/2 x
+			RCL[times] L	// d2/2 d1/2 Sum/2 x
+			LN[beta]	// Lnbeta Sum/2 x
+			-
+			e[^x]
+			SWAP
+			/
+			RTN
+
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_F"
+			xIN MONADIC
+			GSB f_param
+			x[<=]0?
+				JMP ret_1
+			[infinity]?
+				JMP ret_0
+			RCL[times] J	// x*v1
+			RCL+ K		// x*v1+v2
+			RCL K
+			SWAP
+			/		// v2/(x*v1+v2)
+			Num 1/2
+			RCL[times] K	// v2/2  v2/(x*v1+v2)
+			Num 1/2
+			RCL[times] J	// v1/2 v2/2 v2/(x*v1+v2)
+			SWAP		// v2/2 v1/2 v2/(x*v1+2)
+			I[beta]
+			xOUT xOUT_NORMAL
+#endif
+
+		XLBL"CDF_F"
+			xIN MONADIC
+			GSB f_param
+			GSB cdf_f
+			xOUT xOUT_NORMAL
+
+cdf_f::			x[<=]0?
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			RCL[times] J
+			ENTER[^]
+			RCL+ K		// x*v1+v2  x*v1  ?  ?
+			/
+			Num 1/2
+			RCL[times] K	// v2  x*v1 / (x*v1+v2)
+			Num 1/2
+			RCL[times] J	// d1/2 d2/d d1x(d1x+d2)
+			I[beta]
+			RTN
+
+
+		XLBL"QF_F"
+			xIN MONADIC
+			GSB f_param
+			GSB qf_f_est
+			_INT DIST_F
+			XEQ qf_newton
+			xOUT xOUT_NORMAL
+
+qf_f_est::		LocR 003
+			STO .00
+			GSB qf_q_est
+			RCL J
+			x>1?
+				DEC X
+			1/x
+			RCL K
+			x>1?
+				DEC X
+			1/x
+			[cmplx]STO .01
+			+
+			_INT 2
+			SWAP
+			/		// 2/dofs QF
+			RCL Y
+			x[^2]
+			_INT 3
+			-
+			_INT 6
+			/		// k h x
+			RCL Y
+			RCL+ Y		// h+k k h x
+			[sqrt]
+			RCL[times] T	// xSqrt() k h x
+			RCL/ Z
+			_INT 2		// 2 first k h
+			RCL/ T
+			_INT 3
+			/
+			+/-		// -2/3/h first k
+			RCL+ Z
+			_INT 5
+			_INT 6
+			/
+			+		// k+5/6-2/3/h first
+			[cmplx]RCL .01
+			-
+			[times]
+			-
+			RCL+ X
+			e[^x]
+			RCL .00
+			RTN
+
+f_param::		RCL J
+			GSB check_special_pos
+//			FP?
+//				ERR ERR_BAD_PARAM
+			RCL K
+			GSB check_special_pos
+//			FP?
+//				ERR ERR_BAD_PARAM
+			[cmplx]DROP
+			RTN
+

@@ -1,0 +1,62 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* Some utility functions to return common constants */
+
+/* NaN for all results */
+ret_NaN::	FC? D
+			ERR ERR_DOMAIN
+		Num NaN
+		FILL
+		xOUT xOUT_NORMAL
+
+/* Return 1 in X */
+ret_1::		Num 1
+		xOUT xOUT_NORMAL
+
+/* Return 0 in X */
+ret_0::		Num 0
+		xOUT xOUT_NORMAL
+
+/* return -infinite for all results */
+push_neginf::	FC? D
+			ERR ERR_MINFINITY
+		Num -[infinity]
+		FILL
+		RTN
+
+ret_neginf::	GSB push_neginf
+		xOUT xOUT_NORMAL
+
+/* return infinite for all results */
+push_posinf::	FC? D
+			ERR ERR_INFINITY
+		Num [infinity]
+		FILL
+		RTN
+
+ret_posinf::	GSB push_posinf
+		xOUT xOUT_NORMAL
+
+
+/* Push complex i on stack */
+		XLBL"CPX_I"
+		xIN NILADIC_1_COMPLEX
+		Num 1
+cmplx_real_0::	Num 0
+		xOUT xOUT_NORMAL
+

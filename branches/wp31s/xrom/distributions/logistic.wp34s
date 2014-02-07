@@ -1,0 +1,89 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* Logistic distribution
+ * Two parameters:
+ *	J = mu (location)
+ *	K = s (scale) > 0
+ * Formulas:
+ *	pdf = 1 / ( (cosh( (x-J) / 2K ) )^2 * 4 K)
+ *	cdf = 1/2 + tanh( (x-J) / 2K ) / 2 = (1 + tanh( (x-J) / 2K)) / 2
+ *	qf = arctanh( (p-1/2) * 2) * 2K + j = archtanh(2p - 1) * 2K + J
+ */
+		XLBL"PDF_LOGIT"
+			xIN MONADIC
+			GSB logistic_param
+			SPEC?
+				JMP ret_0
+			COSH
+			x[^2]
+			RCL[times] K
+			_INT 4
+			[times]
+			1/x
+			xOUT xOUT_NORMAL
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_LOGIT"
+			xIN MONADIC
+			GSB logistic_param
+			SPEC?
+				JMP cdf_infinite
+			x[<=]0?
+				JMP ret_0
+			+/-
+			JMP cdf_logit_common			
+#endif
+
+		XLBL"CDF_LOGIT"		/* (1 + tanh( (x-J) / 2K)) / 2 */
+			xIN MONADIC
+			GSB logistic_param
+			SPEC?
+				JMP cdf_infinite
+			x[<=]0?
+				JMP ret_0
+cdf_logit_common::	TANH
+			INC X
+			Num 1/2
+			[times]
+			xOUT xOUT_NORMAL
+
+/* Extra the logistic rescaled parameter (x-J) / 2K */
+logistic_param::	RCL- J
+			GSB check_special
+			RCL K
+			GSB check_special_pos
+			RCL+ X
+			/
+			RTN
+			
+		XLBL"QF_LOGIT"		/* archtanh(2p - 1) * 2K + J */
+			xIN MONADIC
+			GSB qf_check_probability
+			RCL+ X
+			DEC X
+			ATANH
+			RCL+ X
+			RCL K
+			GSB check_special_pos
+			[times]
+			RCL J
+			GSB check_special
+			+
+			xOUT xOUT_NORMAL
+
+

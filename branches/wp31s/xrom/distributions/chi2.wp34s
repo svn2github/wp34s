@@ -1,0 +1,164 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* Chi-squared distribution
+ * One parameters:
+ *	n positive integer
+ */
+		XLBL"PDF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB pdf_chi2
+			xOUT xOUT_NORMAL
+
+pdf_chi2::		x[<=]0?
+				JMP dist_ret_0
+			Num 1/2
+			RCL[times] J	// k/2 x ? ?
+			[<->] YXXX	// x k/2 k/2 k/2
+			LN		// LNx k/2 k/2 k/2
+			Num 1/2
+			RCL[times] L	// x/2 LNx k/2 ?
+			+/-		// -x/2 LNx k/2 ?
+			[<->] ZYXZ	// k/2 LNx -x/2 k/2
+			DEC X
+			[times]		// (k/2-1)LNx -x/2 k/2 ?
+			+		// sum k/2 ? ?
+			[<->] YXYY	// k/2 sum k/2 k/2
+			LN[GAMMA]
+			-		// sum k/2 k/2 ?
+			Num LN2
+			RCL[times] Z
+			-
+			e[^x]
+			RTN
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			x[<=]0?
+				JMP ret_1
+			[infinity]?
+				JMP ret_0
+			Num 1/2
+			[times]
+			Num 1/2
+			RCL[times] J
+			I[GAMMA][sub-q]
+			xOUT xOUT_NORMAL
+#endif
+
+		XLBL"CDF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB cdf_chi2
+			xOUT xOUT_NORMAL
+
+cdf_chi2::		x[<=]0?
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			Num 1/2
+			[times]
+			Num 1/2
+			RCL[times] J
+			I[GAMMA][sub-p]
+			RTN
+
+chi2_param::		RCL J
+			GSB check_special_notneg
+			FP?
+				ERR ERR_BAD_PARAM
+			DROP
+			RTN
+				
+		XLBL"QF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB qf_check_probability
+			GSB qf_chi2_est
+			_INT DIST_CHI2
+			XEQ qf_newton
+			xOUT xOUT_NORMAL
+
+#define R_P	.00
+#define R_T	.01
+qf_chi2_est::		LocR 2
+			STO R_P
+			_INT 15
+			x<? J
+				JMP qf_chi2_est_ll
+			_INT 1
+			JMP qf_chi2_est_ld
+qf_chi2_est_ll::	_INT 85
+			SDR 2
+qf_chi2_est_ld::	+/-
+			RCL[times] J
+			e[^x]
+			x[<=]? R_P
+				JMP qf_chi2_large
+			Num 1/2
+			RCL[times] J
+			ENTER[^]	// n/2 n/2 ? ?
+			LN[GAMMA]
+			RCL/ Y
+			e[^x]
+			RCL Y		// n/2 exp n/2 ?
+			RCL[times] R_P	// pn/2 exp n/2 ?
+			RCL Z
+			[^x][sqrt]y	// xroot exp n/2
+			[times]
+			RCL+ X
+			JMP qf_chi2_est_exit
+
+qf_chi2_large::		RCL R_P
+			GSB qf_q_est
+			_INT 97
+			SDR 2
+			[times]		// .97q
+			Num Chi2	// 0.2214
+			RCL/ J		// .2214/n .97q
+			ENTER[^]	// .2214/N .2214/N .97q
+			[sqrt]
+			RCL[times] Z	// sqrt(.2214/N)*.97q .2214/N .97q
+			RCL- Y		// sqrt(.2214/N)*.97q-.2214/N .2214/N .97q
+			INC X
+			x[^3]
+			RCL[times] J	// ch3 .2214/N .97q
+			_INT 6
+			RCL[times] J
+			_INT 16
+			+
+			SWAP
+			x[<=]? Y
+				JMP qf_chi2_est_exit
+			RCL R_P
+			GSB log1m
+			_INT 150
+			RCL[times] J
+			/
+			INC X
+			[times]
+
+qf_chi2_est_exit::	RCL R_P
+			RTN
+
+#undef R_P
+#undef R_T
+
+

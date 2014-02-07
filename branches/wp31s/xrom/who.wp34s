@@ -1,0 +1,46 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+
+		XLBL"WHO"
+			CL[alpha]
+			GSB who_wp
+			"by"
+			GSB who_show
+			"Pauli"
+			GSB who_show
+			"Walter"
+			GSB who_show
+			"Marcus"
+			GSB who_show
+			"Neil"
+			GSB who_show
+			"& more"
+			GSB who_show
+			GSB who_wp
+			VERS
+			PSE 08
+			RTN
+
+who_wp::		"WP 34S"
+
+who_show::		VIEW[alpha]
+			PSE 08
+			CL[alpha]
+			RTN
+
+/**************************************************************************/

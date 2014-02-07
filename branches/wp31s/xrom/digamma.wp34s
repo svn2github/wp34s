@@ -1,0 +1,173 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#ifdef INCLUDE_XROM_DIGAMMA
+/**************************************************************************/
+/* Real digamma function.
+ *
+ * The formulas used here and for the complex version are as follows.
+ *
+ * First, the reflection formula is used to bring the argument positive:
+ *	Psi(-x) = 1/x + Psi(x) + Pi/Tan ( Pi x )
+ *
+ * Then small arguments are bought large enough for the series expansion (see DIGAMMA_LOWER_BOUND below):
+ *	Psi(x+1) = Psi(x) + 1/x
+ *
+ * Finally, this expansion is used to evaluate the function:
+ *	Psi(x) = -log(1/x) - 1/(2 x) -
+ 			1/(12 x^2) + 1/(120 x^4) - 1/(252 x^6) +
+ *			1/(240 x^8) - 1/(132 x^10) + 691/(32760 x^12) - 1/(12 x^14) +
+ *			3617/(8160 x^16) - 43867/(14364 x^18) + 174611/(6600 x^20) -
+ *			77683/(276 x^22) + 236364091/(65520 x^24) -
+ *			657931/(12 x^26) + 3392780147/(3480 x^28) -
+ *			1723168255201/(85932 x^30) + 7709321041217/(16320 x^32) -
+ *			151628697551/(12 x^34) + 26315271553053477373/(69090840 x^36) -
+ *			154210205991661/(12 x^38) + 261082718496449122051/(541200 x^40) +
+ *	    			O((1/x)^42)
+ *
+ * Currently, terms up to and including x^20 are used which suffices for single precision.
+ * Double precision could do with more terms.  These terms are stored as their reciprocals
+ * to reduce space requirements in the early terms.
+ */
+
+		XLBL"DIGAMMA"
+			xIN MONADIC
+			LocR 3
+			GSB digamma_loop
+			x<0?
+				SF .00
+			ABS
+			STO .02
+			GSB digamma_lower
+			SWAP
+digamma_lp::		1/x				/* Preconditioning loop until x is large enough */
+			STO+ .00
+			x[<->] L
+			INC X
+			x<? Y
+				JMP digamma_lp
+			1/x
+			STO .01
+			x[^2]
+			FILL
+			Num 0
+digamma_horner::	CNST[->]J
+			1/x
+			+
+			[times]
+			DSL J
+				JMP digamma_horner
+			RCL .01
+			LN
+			Num 1/2
+			RCL[times] L
+			+
+			-
+			RCL- .00
+			FC? .00
+				xOUT xOUT_NORMAL
+			RCL .02
+			1/x
+			+
+			Num [pi]
+			RCL .02
+			RCL .02
+			ROUNDI
+			-
+			Num [pi]
+			[times]
+			TAN
+			/
+			+
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Complex digamma function.
+ *
+ * Same formulas as the above.
+ */
+		XLBL"CPX_DIGAMMA"
+			xIN MONADIC_COMPLEX
+			LocR 6
+			GSB digamma_loop
+			x<0?
+				SF .00
+			FS? .00
+				[cmplx]+/-
+			[cmplx]STO .04
+			GSB digamma_lower
+			[<->] YZXX
+c_digamma_lp::		[cmplx]1/x
+			[cmplx]STO+ .00
+			[cmplx]x[<->] L
+			INC X
+			x<? Z
+				JMP c_digamma_lp
+			[cmplx]1/x
+			[cmplx]STO .02
+			[cmplx]RCL[times] X
+			[cmplx]FILL
+			[cmplx]Num 0
+cpx_digamma_horner::	[cmplx]CNST[->]J
+			1/x
+			[cmplx]+
+			[cmplx][times]
+			DSL J
+				JMP cpx_digamma_horner
+			[cmplx]RCL .02
+			[cmplx]LN
+			[cmplx]Num 1/2
+			[cmplx]RCL[times] L
+			[cmplx]+
+			[cmplx]-
+			[cmplx]RCL- .00
+			FC? .00
+				xOUT xOUT_NORMAL
+			[cmplx]RCL .04
+			[cmplx]1/x
+			[cmplx]+
+			[cmplx]Num [pi]
+			[cmplx]RCL .04
+			[cmplx]RCL[times] Z
+			[cmplx]TAN
+			[cmplx]/
+			[cmplx]+
+			xOUT xOUT_NORMAL
+
+digamma_lower::		_INT 10
+#ifdef XROM_DIGAMMA_DOUBLE_PRECISION
+			FS? Flag_mode_double
+			RCL+ X
+#endif
+			RTN
+
+
+digamma_loop::		_INT (CONST_DG02)
+			SDR 3
+			_INT (CONST_DG22)
+
+#ifdef XROM_DIGAMMA_DOUBLE_PRECISION
+			FC? Flag_mode_double
+				JMP digamma_single_loop
+			DROP
+			_INT (CONST_DG34)
+#endif
+digamma_single_loop::	+
+			STO J
+			DROP
+			RTN
+
+#endif

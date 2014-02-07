@@ -1,0 +1,203 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* Define some register definitions */
+#define rX	.00
+#define rN	.01
+#define rParam	.02
+#define rT0	.03
+#define rT1	.04
+#define incB	.05
+#define LocalRegs LocR 06
+
+/* Flags used:
+ *	.00	incA
+ *	.02	incC
+ */
+
+/**************************************************************************/
+/* Legendre's Pn
+ */
+		XLBL"LegendrePn"
+			xIN DYADIC
+			LocalRegs
+			GSB ortho_default
+			RCL rX
+			STO+ A
+			RCL+ X
+			STO D
+			JMP ortho_allinc
+
+/**************************************************************************/
+/* Chebychev's Tn
+ */
+		XLBL"ChebychevTn"
+			xIN DYADIC
+			LocalRegs
+			GSB ortho_default
+			JMP ortho_common
+
+/**************************************************************************/
+/* Chebychev's Un
+ */
+		XLBL"ChebychevUn"
+			xIN DYADIC
+			LocalRegs
+			GSB ortho_default
+			RCL rX
+			STO+ rT1
+			JMP ortho_common
+
+/**************************************************************************/
+/* Laguerre's Ln
+ */
+		XLBL"LaguerreLn"
+			xIN DYADIC
+			LocalRegs
+			Num 0
+			JMP laguerre_common
+
+/**************************************************************************/
+/* Laguerre's Ln with parameter alpha
+ */
+		XLBL"LaguerreLnA"
+			xIN TRIADIC
+			LocalRegs
+			RCL Z
+			SPEC?
+				JMP ret_NaN
+laguerre_common::	STO rParam
+			INC X
+			x[<=]0?
+				JMP ret_NaN
+			DROP			
+			GSB ortho_default
+			RCL rParam
+			STO+ B
+			_INT 3
+			+
+			RCL- rX
+			STO A
+			RCL rParam
+			INC X
+			RCL- rX
+			STO rT1
+ortho_allinc::		SF .00
+			INC incB
+			SF .02
+			JMP ortho_common
+
+/**************************************************************************/
+/* Hermite's He (Hn)
+ */
+		XLBL"HermiteHe"
+			xIN DYADIC
+			LocalRegs
+			GSB ortho_default
+			RCL rX
+			STO A
+			INC incB
+			JMP ortho_common
+
+/**************************************************************************/
+/* Hermite's H  (Hnp)
+ */
+		XLBL"HermiteH"
+			xIN DYADIC
+			LocalRegs
+			GSB ortho_default
+			RCL rX
+			STO+ rT1
+			_INT 2
+			STO B
+			STO incB
+			JMP ortho_common
+
+/**************************************************************************/
+
+ortho_default::	SSIZE4
+		[cmplx]STO rX
+		SPEC?
+			JMP ret_NaN
+		RCL rN
+		FP?
+			JMP ret_NaN
+		x<0?
+			JMP ret_NaN
+		x=0?
+			JMP ret_1
+		SDR 03
+		x[>=]1?
+			JMP ret_NaN
+		STO I		// i = 2.xxx
+		Num 1
+		STO rT0		// t0 = 1
+		SDL 03
+		x<? Y
+			JMP ret_NaN
+		/* Now initialise everything else */
+		_INT 2
+		STO+ I
+		STO D		// dA = 2
+		Num 1
+		STO C		// c = 1
+		STO B		// b = 1
+		RCL rX
+		STO rT1		// t1 = x
+		RCL+ X
+		STO A		// a = 2x
+		RTN
+
+poly_t1::	RCL rT1
+		xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Common evaluation code
+ * Everything is assumed properly set up at this point.
+  */
+ortho_common::	RCL rT1
+		RCL[times] A
+		RCL rT0
+		RCL[times] B
+		-
+		x[<->] rT1
+		STO rT0
+		FC? .02
+			JMP ortho_noC
+		INC C
+		RCL C
+		STO/ rT1
+ortho_noC::	FC? .00
+			JMP ortho_noA
+		RCL D
+		STO+ A
+ortho_noA::	RCL incB
+		STO+ B
+		ISG I
+			JMP ortho_common
+		RCL rT1
+		xOUT xOUT_NORMAL
+
+
+/**************************************************************************/
+#undef rX
+#undef rN
+#undef rParam
+#undef rT0
+#undef rT1
+#undef incB
+#undef LocalRegs
+

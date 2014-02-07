@@ -1,0 +1,196 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* The exposed functions in this file don't use the normal prologue/epilogue
+ * and do not operate in double precision.  They call back to user code and
+ * manage the stack, input, output and locals themselves.
+ *
+ * Changes to this will likely cause breakage.
+ */
+
+/**************************************************************************/
+/* Integrate code
+ * This routine is based on the PPC 'IG' routine which was ported to the 34S
+ * by Les Wright and slightly modified for inclusion in the firmware.
+ */
+
+/* Registers */
+#define r_k		.00		/* counter */
+#define r_ui		.01		/* Ui */
+#define r_ui2		.02		/* 1 - Ui ^ 2 */
+#define r_deltau	.03		/* 2 ^ (1-k) */
+#define r_Sk		.04		/* Sk */
+#define r_ba4		.05		/* (b-a) / 4 */
+#define r_middle	.06		/* (b+a) / 2 */
+#define cr_limits	.07		/* lower and upper limits in .07 and .08 */
+#define r_SkAbs		.09		/* Sum Abs Sk */
+#define r_base		.10
+
+/* Flags */
+#define f_force		.00		/* Force initial iteration even if it looks like convergence*/
+#define f_final		.01		/* Force a final iteration when an almost zero result appears */
+
+
+int_bad_range::		[cmplx]RCL cr_limits
+			Num NaN
+			ENTER[^]
+			STO L
+			RTN
+
+int_zero_interval::	[cmplx]RCL cr_limits
+			Num 0
+			ENTER[^]
+			STO L
+			RTN
+
+
+			XLBL"INTEGRATE"
+			INTM?
+				ERR ERR_BAD_MODE
+			LocR 23				/* Need registers .00 to .22 */
+			[cmplx]STO cr_limits
+			SPEC?
+				JMP int_bad_range
+			x[<->] Y
+			SPEC?
+				JMP int_bad_range
+			x=? Y				/* Check if range is zero*/
+				JMP int_zero_interval
+			x[<->] Y
+
+			STO r_middle
+			x[<->] Y
+			-
+			_INT 4
+			/
+			STO r_ba4
+			STO- r_middle
+			STO- r_middle
+			Num 0
+			STO r_Sk
+			STO r_k
+			STO r_base
+			SF f_force
+
+int_next_size::		Num 1
+			_INT 2
+			STO r_deltau
+			RCL r_k
+			+/-
+			y[^x]
+			STO[times] r_deltau
+			Num 1
+			-
+
+int_inner::		STO r_ui
+			x[^2]
+			-
+			STO r_ui2
+			_INT 2
+			+
+			RCL[times] r_ui
+			RCL[times] r_ba4
+			RCL+ r_middle
+
+			/* Call the user's subroutine */
+			XEQUSR
+			POPUSR
+			SPEC?
+				JMP int_bad_range
+
+			RCL[times] r_ui2
+			STO+ r_Sk
+			ABS
+			STO+ r_SkAbs
+			Num 1
+			RCL r_ui
+			RCL+ r_deltau
+			x<1?
+				JMP int_inner
+
+			RCL r_k
+			STO r_ui2
+			Num [integral]RgB
+			STO r_ui
+			Num 1
+			INC r_k
+			RCL r_Sk
+			RCL r_ba4
+			_INT 15
+			SDR 001
+			[times]
+			[times]
+			RCL[times] r_deltau
+
+int_row_update::	R[^]
+			_INT 4
+			[times]
+			ENTER[^]
+			DSE Y
+				x[<->] Z
+			ENTER[^]
+			x[<->][->]r_ui
+			STO- Y
+			x[<->] Z
+			/
+			RCL+[->]r_ui
+			ISG r_ui
+				JMP int_no_error
+
+			/* Out of registers, can't get a better result */
+			JMP int_done
+
+int_no_error::		DSE r_ui2
+				JMP int_row_update
+			STO[->]r_ui
+			FS?C f_force
+				JMP int_next_size
+			TOP?
+				MSG MSG_INTEGRATE
+			FC?C f_final		/* final iteration done? */
+			x[approx]? Y		/* or convergence? */
+				JMP int_done
+			RCL/ r_SkAbs
+			RCL/ r_deltau
+			ABS
+			Num 1
+			SDR 015
+			x>? Y			/* integral close to zero? */
+				SF f_final	/* Force a final iteration */
+			JMP int_next_size
+
+/* Two matches in a row is goodness. */
+int_done::		[cmplx]RCL cr_limits
+			STO L
+			[cmplx]x[<->] Z
+			TOP?
+				MSG MSG_INTEGRATE
+			RTN
+
+
+#undef r_k
+#undef r_ui
+#undef r_ui2
+#undef r_deltau
+#undef r_Sk
+#undef r_ba4
+#undef r_middle
+#undef cr_limits
+#undef r_SkAbs
+#undef r_base
+
+#undef f_force
+#undef f_final

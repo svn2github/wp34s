@@ -1,0 +1,77 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* Exponential distribution
+ * One parameter:
+ *	J = lambda (shape) > 0
+ * Formulas:
+ *	pdf = lambda exp(-lambda x)
+ *	cdf = 1 - exp(-lambda x)
+ *	qf = ln(1 - p) / -lambda
+ */
+		XLBL"PDF_EXPON"
+			xIN MONADIC
+			GSB expon_param
+			SPEC?
+				JMP ret_0	/* Can only be infinite which has zero probability */
+			[times]
+			+/-
+			e[^x]
+			RCL[times] J
+			xOUT xOUT_NORMAL
+
+#ifdef INCLUDE_CDFU
+		XLBL"CDFU_EXPON"
+			xIN MONADIC
+			GSB expon_param
+			SPEC?
+				JMP cdf_infinite
+			[times]
+			x<0?
+				JMP ret_1
+			+/-
+			e[^x]
+			xOUT xOUT_NORMAL
+			
+#endif
+
+		XLBL"CDF_EXPON"
+			xIN MONADIC
+			GSB expon_param
+			SPEC?
+				JMP cdf_infinite
+			[times]
+			x<0?
+				JMP ret_0
+			+/-
+			e[^x]-1
+			+/-
+			xOUT xOUT_NORMAL
+
+		XLBL"QF_EXPON"
+			xIN MONADIC
+			GSB qf_check_probability
+			GSB log1m
+			GSB expon_param
+			/
+			+/-
+			xOUT xOUT_NORMAL
+
+expon_param::		RCL J
+			JMP check_special_pos
+
+
