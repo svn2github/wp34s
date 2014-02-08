@@ -5,3 +5,37 @@ The plan for the keyboard layout and menu functions is in
 docs/WP-31s-plan-v1.pdf, courtesy of Walter Bonin.
 
 
+1. Key Mapping
+---------------
+
+-you will have to look at keycode_to_linear in keys.c. It maps the codes in the rectangular key map to a linear code. Change the mapping so that the shift keys (currently mapped to 34) are properly aligned with the rest of the keys. This will renumber all other key codes so an update to the key definitions (K??) is necessary.
+
+-If you want to enable shift-hold sequences, you must change shift_down() in wp34sgui.c (and in main.c for the hardware).
+
+-To reduce amount of code rework, move the Key definitions for G_SHIFT, H_SHIFT and K_CMPLX out of the way in keys.h
+
+
+2. Primary Key Assignments
+---------------------------
+
+-define them in process_normal in keys.c
+
+
+3. Shifted Key assignments
+--------------------------
+- Using f-Shift as the Primary Shift Key
+
+
+4. Catalogs
+-----------
+- New catalogs are currently stubbed in using existing catalogs
+
+
+5. Work not done:
+-----------------
+HYP-1 needs some thought
+a b/c - needs some thought
+
+
+
+
