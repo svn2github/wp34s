@@ -106,13 +106,13 @@ static void toggle_shift(enum shifts shift) {
 static int keycode_to_linear(const keycode c)
 {
 	static const unsigned char linear_key_map[ 7 * 6 - 1 ] = {
-		 0,  1,  2,  3,  4,  5,   // K00 - K05
-		 6,  7,  8, 34, 34, 34,   // K10 - K15
-		 9, 10, 11, 12, 13,  0,   // K20 - K24
-		14, 15, 16, 17, 18,  0,   // K30 - K34
-		19, 20, 21, 22, 23,  0,   // K40 - K44
-		24, 25, 26, 27, 28,  0,   // K50 - K54
-		29, 30, 31, 32, 33        // K60 - K63
+		 0,  1,  2,  3,  4,  5,   // K00 - K05 WORKS
+		 6,  7,  8,  9, 10, 11,   // K10 - K15 WORKS 
+		12, 13, 14, 15, 16,  0,   // K20 - K24 WORKS 
+		17, 18, 19, 20, 21,  0,   // K30 - K34 WORKS 
+		36, 22, 23, 24, 25,  0,   // K40 - K44 WORKS
+		26, 27, 28, 29, 30,  0,   // K50 - K54 WORKS
+		31, 32, 33, 34, 35        // K60 - K63 WORKS
 	};
 	return linear_key_map[c];
 }
@@ -193,26 +193,14 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 *  Normal processing - Not alpha mode
 		 */
 		static const struct _map cmap[] = {
-			{ K_ARROW, { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
-			{ K05,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
-#ifdef INCLUDE_USER_CATALOGUE
-			{ K10,     { CATALOGUE_LABELS,    CATALOGUE_LABELS,    CATALOGUE_USER          } },
-#else
-			{ K10,     { CATALOGUE_LABELS,    CATALOGUE_LABELS,    CATALOGUE_LABELS        } },
-#endif
-			{ K20,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
-			{ K41,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
-			{ K42,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
-			{ K43,     { CATALOGUE_SUMS,      CATALOGUE_NONE,      CATALOGUE_SUMS          } },
-			{ K44,     { CATALOGUE_MATRIX,    CATALOGUE_NONE,      CATALOGUE_MATRIX        } },
-			{ K50,     { CATALOGUE_STATUS,    CATALOGUE_STATUS,    CATALOGUE_STATUS        } },
-			{ K51,     { CATALOGUE_TEST,      CATALOGUE_TEST,      CATALOGUE_TEST          } },
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-			{ K52,     { CATALOGUE_PROG,      CATALOGUE_PROG,      CATALOGUE_INTERNAL      } },
-#else
-			{ K52,     { CATALOGUE_PROG,      CATALOGUE_PROG,      CATALOGUE_PROG          } },
-#endif
-			{ K53,     { CATALOGUE_NORMAL,    CATALOGUE_INT,       CATALOGUE_COMPLEX       } },
+			{ K11,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
+			{ K21,     { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
+			{ K22,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
+			{ K23,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
+			{ K24,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
+			{ K31,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
+			{ K32,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
+			{ K33,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
 		};
 
 		if (c == K60 && shift == SHIFT_G) {
@@ -230,9 +218,9 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			shift = SHIFT_H;
 		}
 #endif
-		if (shift != SHIFT_H) {
+		if (shift != SHIFT_F) {
 			/*
-			 *  All standard catalogues are on h-shifted keys
+			 *  All standard catalogues are on f-shifted keys
 			 */
 			return CATALOGUE_NONE;
 		}
@@ -517,64 +505,55 @@ static int process_normal(const keycode c)
 {
 	static const unsigned short int op_map[] = {
 		// Row 1
-		OP_SPEC | OP_SIGMAPLUS, // A to D
-		OP_MON  | OP_RECIP,
-		OP_DYA  | OP_POW,
-		OP_MON  | OP_SQRT,
-		OP_SPEC | OP_E,		// ->
-		OP_SPEC | OP_F,		// CPX
+		OP_MON  | OP_SQRT,     // SQRT
+		OP_MON  | OP_SQR,      // x^2
+		OP_MON  | OP_LN,       // LN
+		OP_MON  | OP_EXP,      // e^x
+		OP_DYA  | OP_POW,	   // y^x
+		OP_MON  | OP_RECIP,	   // 1/x
 		// Row 2
-		RARG_STO,
-		RARG_RCL,
-		OP_NIL  | OP_RDOWN,
+		RARG_STO,              // STO
+		RARG_RCL,              // RCL
+		CONST(OP_PI),          // PI()
+		OP_MON | OP_SIN,       // SIN
+		OP_MON | OP_COS,       // COS
+		OP_MON | OP_TAN,       // TAN
 		// Row 3
-		OP_SPEC | OP_ENTER,
-		RARG(RARG_SWAPX, regY_idx),
-		OP_SPEC | OP_CHS,	// CHS
-		OP_SPEC | OP_EEX,	// EEX
-		OP_SPEC | OP_CLX,	// <-
+		OP_SPEC | OP_ENTER,         // ENTER
+		RARG(RARG_SWAPX, regY_idx), // x<>y
+		OP_SPEC | OP_CHS,	        // CHS
+		OP_SPEC | OP_EEX,	        // EEX
+		OP_SPEC | OP_CLX,	        // <-
 		// Row 4
-		RARG_XEQ,
-		OP_SPEC | OP_7,
-		OP_SPEC | OP_8,
-		OP_SPEC | OP_9,
-		OP_DYA  | OP_DIV,
+		OP_NIL  | OP_RDOWN,         // Roll Down
+		OP_SPEC | OP_7,				// 7
+		OP_SPEC | OP_8,				// 8
+		OP_SPEC | OP_9,				// 9
+		OP_DYA  | OP_DIV,			// Divide
 		// Row 5
-		STATE_BST,
-		OP_SPEC | OP_4,
-		OP_SPEC | OP_5,
-		OP_SPEC | OP_6,
-		OP_DYA  | OP_MUL,
+		// SHIFT_F					// f Shift placeholder
+		OP_SPEC | OP_4,				// 4	
+		OP_SPEC | OP_5,				// 5
+		OP_SPEC | OP_6,				// 6
+		OP_DYA  | OP_MUL,			// Multiply
 		// Row 6
-		STATE_SST,		// SST
-		OP_SPEC | OP_1,
-		OP_SPEC | OP_2,
-		OP_SPEC | OP_3,
-		OP_DYA  | OP_SUB,
+		STATE_UNFINISHED,			//ARROW
+		OP_SPEC | OP_1,				// 1
+		OP_SPEC | OP_2,				// 2
+		OP_SPEC | OP_3,				// 3
+		OP_DYA  | OP_SUB,			// Subtract
 		// Row 7
-		STATE_UNFINISHED,	// ON/C
-		OP_SPEC | OP_0,
-		OP_SPEC | OP_DOT,
-		OP_NIL  | OP_RS,	// R/S
-		OP_DYA  | OP_ADD
+		STATE_UNFINISHED,			// ON/C
+		OP_SPEC | OP_0,				// 0
+		OP_SPEC | OP_DOT,			// Decimal
+		OP_SPEC | OP_SIGMAPLUS,		// Sigma+
+		OP_DYA  | OP_ADD			// Addition
 	};
 	int lc = keycode_to_linear(c);
 	int op = op_map[lc];
 
 	// The switch handles all the special cases
 	switch (c) {
-	case K00:
-	case K01:
-		if (UState.intm)
-			op = OP_SPEC | (OP_A + lc);
-	case K02:
-	case K03:
-		if (intltr(lc + 10)) {
-			op = OP_SPEC | (OP_A + lc);
-			return op;
-		}
-		return check_f_key(lc, op);
-
 	case K_ARROW:
 #ifdef INT_MODE_TEMPVIEW
 		if (intltr(14))
@@ -603,7 +582,6 @@ static int process_normal(const keycode c)
 
 	case K10:				// STO
 	case K11:				// RCL
-	case K30:				// XEQ
 		init_arg((enum rarg)op);
 		break;
 
@@ -616,56 +594,58 @@ static int process_normal(const keycode c)
 
 /*
  *  Process a key code after f or g shift
+ *  Set g Shift functions equal to f Shift functions for WP-31S for clarity
  */
+
 static int process_fg_shifted(const keycode c) {
 
 #define NO_INT 0xf000
+#define _RARG  0x8000	// Must not interfere with existing opcode markers
 	static const unsigned short int op_map[][2] = {
 		// Row 1
-		{ 1,                               0                           }, // HYP
-		{ OP_MON | OP_SIN      | NO_INT,   OP_MON | OP_ASIN   | NO_INT },
-		{ OP_MON | OP_COS      | NO_INT,   OP_MON | OP_ACOS   | NO_INT },
-		{ OP_MON | OP_TAN      | NO_INT,   OP_MON | OP_ATAN   | NO_INT },
-		{ OP_NIL | OP_P2R      | NO_INT,   OP_NIL | OP_R2P    | NO_INT },
-		{ OP_NIL | OP_FRACPROPER,	   OP_NIL | OP_FRACIMPROPER    }, // CPX
+		{ OP_NIL  | OP_R2P,      OP_NIL  | OP_R2P },						// ->POL
+		{ OP_NIL  | OP_P2R,      OP_NIL  | OP_P2R },						// ->REC
+		{ OP_MON  | OP_LOG,      OP_MON  | OP_LOG },						// LG
+		{ OP_MON  | OP_10POWX,   OP_MON  | OP_10POWX },						// 10^x
+		{ OP_MON | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCNT | NO_INT },	// %
+		{ OP_MON | OP_PERCHG   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },	// Delta%
 		// Row 2
-		{ OP_NIL | OP_HMS,                 OP_NIL | OP_DEG             },
-		{ OP_NIL | OP_FLOAT,               OP_NIL | OP_RAD             },
-		{ OP_NIL | OP_RANDOM,              OP_NIL | OP_GRAD            },
+		{ _RARG   | RARG_SWAPX,  _RARG   | RARG_SWAPX, },					// x<>
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CONST Catalog
+		{ 1,                               1                           },   // HYP
+		{ OP_MON | OP_ASIN      | NO_INT,   OP_MON | OP_ASIN   | NO_INT },	// ASIN
+		{ OP_MON | OP_ACOS      | NO_INT,   OP_MON | OP_ACOS   | NO_INT },	// ACOS
+		{ OP_MON | OP_ATAN      | NO_INT,   OP_MON | OP_ATAN   | NO_INT },	// ATAN
 		// Row 3
-		{ STATE_UNFINISHED,		   OP_NIL | OP_FILL            }, // ENTER
-		{ STATE_WINDOWLEFT,   		   STATE_WINDOWRIGHT   	       },
-		{ RARG(RARG_BASE, 2),		   RARG(RARG_BASE, 8)          },
-		{ RARG(RARG_BASE, 10),		   RARG(RARG_BASE, 16)         },
-		{ OP_NIL | OP_CLPROG,		   OP_NIL | OP_SIGMACLEAR      },
+		{ OP_NIL | OP_FILL,		   OP_NIL | OP_FILL            },			// FILL
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CONV Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// MODE Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// DISPL Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CLEAR Catalog
 		// Row 4
-		{ OP_MON | OP_EXP,                 OP_MON | OP_LN              },
-		{ OP_MON | OP_10POWX,		   OP_MON | OP_LOG             },
-		{ OP_MON | OP_2POWX,		   OP_MON | OP_LG2             },
-		{ OP_DYA | OP_POW,                 OP_DYA | OP_LOGXY           },
-		{ OP_MON | OP_RECIP    | NO_INT,   OP_DYA | OP_PARAL	       },
+		{ OP_NIL  | OP_RUP,    	 OP_NIL  | OP_RUP },				        // Roll Up
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// PROB Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// STAT Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// MORE Catalog
+		{ OP_MON  | OP_FACT,     OP_MON  | OP_FACT},						// x!
 		// Row 5
-		{ OP_DYA | OP_COMB,                OP_DYA | OP_PERM            },
-		{ OP_MON | OP_cdf_Q    | NO_INT,   OP_MON | OP_qf_Q   | NO_INT },
-		{ OP_NIL | OP_statMEAN | NO_INT,   OP_NIL | OP_statS  | NO_INT },
-		{ OP_MON | OP_yhat     | NO_INT,   OP_NIL | OP_statR           },
-		{ OP_MON | OP_SQRT,		   OP_MON | OP_SQR             },
+		// SHIFT_F															// f Shift placeholder
+		{ OP_NIL | OP_statS     | NO_INT, OP_NIL | OP_statS     | NO_INT },	// Stats s
+		{ OP_NIL | OP_statMEAN  | NO_INT, OP_NIL | OP_statMEAN  | NO_INT },	// Stats mean 
+		{ OP_NIL | OP_statR,			  OP_NIL | OP_statR              },	// Stats r
+		{ OP_MON | OP_yhat      | NO_INT, OP_MON | OP_yhat      | NO_INT },	// Stats yhat
 		// Row 6
-		{ RARG_SF,                         RARG_CF                     },
-		{ TST_EQ,                          TST_NE                      }, // tests
-		{ RARG_SOLVE           | NO_INT,   RARG_INTG          | NO_INT },
-		{ RARG_PROD            | NO_INT,   RARG_SUM           | NO_INT },
-		{ OP_MON | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },
+		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },							// SHOW as in vintage HP Calculators
+		{ OP_NIL  | OP_DEG,     OP_NIL  | OP_DEG },							// DEG Mode
+		{ OP_NIL  | OP_FLOAT,   OP_NIL | OP_FLOAT}, 						// H.d
+		{ OP_NIL  | OP_HMS,     OP_NIL | OP_HMS  },							// H.MS
+		{ OP_DYA  | OP_HMSSUB,  OP_DYA | OP_HMSSUB },						// H.MS-
 		// Row 7
-#ifdef INFRARED
-		{ RARG(RARG_PRINT_REG,regX_idx),   STATE_UNFINISHED	       },
-#else
-		{ STATE_UNFINISHED,		   STATE_UNFINISHED	       },
-#endif
-		{ OP_MON | OP_ABS,		   OP_MON | OP_RND             },
-		{ OP_MON | OP_TRUNC,		   OP_MON | OP_FRAC            },
-		{ RARG_LBL,			   OP_NIL | OP_RTN             },
-		{ RARG_DSE,			   RARG_ISG                    }
+		{ OP_NIL  | OP_OFF,		   OP_NIL  | OP_OFF	       },				// OFF
+		{ OP_NIL  | OP_RAD,		   OP_NIL  | OP_RAD        },				// RAD Mode
+		{ OP_SPEC | OP_DOT,		   OP_SPEC | OP_DOT        },				// a b/c
+		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },				// Sigma-
+		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },				// H.MS+
 	};
 
 	static const unsigned short int op_map2[] = {
@@ -683,7 +663,7 @@ static int process_fg_shifted(const keycode c) {
 		op &= ~NO_INT;
 
 	switch (c) {
-	case K00:
+	case K12:
 		if (! UState.intm) {
 			State2.hyp = 1;
 			State2.dot = op;
@@ -699,35 +679,35 @@ static int process_fg_shifted(const keycode c) {
 		}
 		break;
 
-	case K20:				// Alpha
-		if (shift == SHIFT_F) {
-			process_cmdline_set_lift();
-			State2.alphas = 1;
-		}
-		break;
+// SV	case K20:				// Alpha
+//		if (shift == SHIFT_F) {
+//			process_cmdline_set_lift();
+//			State2.alphas = 1;
+//		}
+//		break;
 
-	case K51:
-		process_cmdline_set_lift();
-		State2.test = op;
-		return STATE_UNFINISHED;
+// SV	case K51:
+//		process_cmdline_set_lift();
+//		State2.test = op;
+//		return STATE_UNFINISHED;
 
-	case K50:
-#ifndef REALBUILD
-		if (SHIFT_N != shift_down()) {
-			State2.trace = (shift == SHIFT_F);
-			return STATE_UNFINISHED;
-		}
-#endif
-	case K52:
-	case K53:
-	case K63:
-	case K64:
-		if (op != (OP_NIL | OP_RTN)) {
-			if (! (no_int && UState.intm))
-				init_arg((enum rarg) op);
-			return STATE_UNFINISHED;
-		}
-		break;
+// SV	case K50:
+//#ifndef REALBUILD
+//		if (SHIFT_N != shift_down()) {
+//			State2.trace = (shift == SHIFT_F);
+//			return STATE_UNFINISHED;
+//		}
+//#endif
+//	case K52:
+//	case K53:
+//	case K63:
+//	case K64:
+//		if (op != (OP_NIL | OP_RTN)) {
+//			if (! (no_int && UState.intm))
+//				init_arg((enum rarg) op);
+//			return STATE_UNFINISHED;
+//		}
+//		break;
 
 	default:
 		break;
@@ -743,7 +723,7 @@ static int process_fg_shifted(const keycode c) {
  *  Process a key code after h shift
  */
 static int process_h_shifted(const keycode c) {
-#define _RARG    0x8000	// Must not interfere with existing opcode markers
+//#define _RARG    0x8000	// Must not interfere with existing opcode markers
 #define NO_INT   0x4000
 	static const unsigned short int op_map[] = {
 		// Row 1
@@ -965,10 +945,10 @@ static int process_hyp(const keycode c) {
 
 	switch ((int)c) {
 
-	case K01:
-	case K02:
-	case K03:
-		return (cmplx ? OP_CMON : OP_MON) | op_map[c - K01][f];
+	case K13:
+	case K14:
+	case K15:
+		return (cmplx ? OP_CMON : OP_MON) | op_map[c - K13][f];
 
 	case K_CMPLX:
 		cmplx = ! cmplx;
@@ -1444,13 +1424,13 @@ static int process_arg(const keycode c) {
 		arg_storcl(RARG_STO_DV - RARG_STO, 1);
 		break;
 
-	case K40:
-		arg_storcl(RARG_STO_MAX - RARG_STO, 0);
-		break;
+// SV	case K40:
+//		arg_storcl(RARG_STO_MAX - RARG_STO, 0);
+//		break;
 
-	case K50:
-		arg_storcl(RARG_STO_MIN - RARG_STO, 0);
-		break;
+//	case K50:
+//		arg_storcl(RARG_STO_MIN - RARG_STO, 0);
+//		break;
 
 	case K20:				// Enter is a short cut finisher but it also changes a few commands if it is first up
 		if (State2.numdigit == 0 && !State2.ind && !State2.dot) {
