@@ -255,10 +255,10 @@ int put_key(int k)
 enum shifts shift_down(void)
 {
 	int map = (int) GetKeyboardMap();
-	return map & ( 0x100 << SHIFT_H ) ? SHIFT_H
-	     : map & ( 0x100 << SHIFT_G ) ? SHIFT_G
-	     : map & ( 0x100 << SHIFT_F ) ? SHIFT_F
-	     : SHIFT_N;
+	return map & //( 0x100 << SHIFT_H ) ? SHIFT_H
+	     //: map & ( 0x100 << SHIFT_G ) ? SHIFT_G
+	     //: map & ( 0x100 << SHIFT_F ) ? SHIFT_F
+	     SHIFT_N;
 }
 
 
