@@ -612,7 +612,7 @@ static int process_fg_shifted(const keycode c) {
 		// Row 2
 		{ _RARG   | RARG_SWAPX,  _RARG   | RARG_SWAPX, },					// x<>
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CONST Catalog
-		{ 1,                               1                           },   // HYP
+		{ 1,                               0                           },   // HYP
 		{ OP_MON | OP_ASIN      | NO_INT,   OP_MON | OP_ASIN   | NO_INT },	// ASIN
 		{ OP_MON | OP_ACOS      | NO_INT,   OP_MON | OP_ACOS   | NO_INT },	// ACOS
 		{ OP_MON | OP_ATAN      | NO_INT,   OP_MON | OP_ATAN   | NO_INT },	// ATAN
@@ -643,7 +643,7 @@ static int process_fg_shifted(const keycode c) {
 		// Row 7
 		{ OP_NIL  | OP_OFF,		   OP_NIL  | OP_OFF	       },				// OFF
 		{ OP_NIL  | OP_RAD,		   OP_NIL  | OP_RAD        },				// RAD Mode
-		{ OP_SPEC | OP_DOT,		   OP_SPEC | OP_DOT        },				// a b/c
+		{ OP_NIL  | OP_FRACPROPER, OP_NIL  | OP_FRACPROPER },				// a b/c
 		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },				// Sigma-
 		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },				// H.MS+
 	};
@@ -956,7 +956,7 @@ static int process_hyp(const keycode c) {
 
 	case K_F:
 	case K_G:
-		f = (c == K_F);
+		f = (c == K_G);		// Use a single shift key to specify the Inverse HYP functions as well.
 		// fall trough
 	stay:
 		// process_cmdline_set_lift();
@@ -979,21 +979,24 @@ static int process_arrow(const keycode c) {
 	static const unsigned short int op_map[][2] = {
 		{ OP_MON | OP_2DEG,  OP_MON | OP_2HMS },
 		{ OP_MON | OP_2RAD,  OP_MON | OP_HMS2 },
-		{ OP_MON | OP_2GRAD, STATE_UNFINISHED }
-	};
-	static const enum single_disp disp[][2] = {
-		{ SDISP_OCT, SDISP_BIN },
-		{ SDISP_HEX, SDISP_DEC }
+		{ OP_MON | OP_HMS2,  STATE_UNFINISHED },
+		{ OP_MON | OP_2HMS,  OP_MON | OP_HMS2 }
 	};
 	const int f = (reset_shift() == SHIFT_F);
 
 	State2.arrow = 0;
 	
-	if (c >= K10 && c <= K12)
-		return op_map[c - K10][f];
+	if (c == K51 )				// ->DEG
+		return op_map[0][f];
 
-	if (c == K22 || c == K23)
-		set_smode(disp[c - K22][f]);
+	if (c == K52 )				// ->HR
+		return op_map[2][f];
+
+	if (c == K53 )				// ->H.MS
+		return op_map[3][f];
+
+	if (c == K61 )				// ->RAD
+		return op_map[1][f];
 
 	return STATE_UNFINISHED;
 }
@@ -1768,7 +1771,6 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 
 	if (shift == SHIFT_N) {
 		switch (c) {
-		case K30:			// XEQ accepts command
 		case K20:			// Enter accepts command
 			if (pos < ctmax && !(is_multi && forbidden_alpha(pos))) {
 				const opcode op = current_catalogue(pos);
@@ -1805,15 +1807,7 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 			init_cat(CATALOGUE_NONE);
 			return STATE_UNFINISHED;
 
-		case K40:
-			CmdLineLength = 0;
-			if (pos == 0)
-				goto set_max;
-			else
-				--pos;
-			goto set_pos;
-
-		case K50:
+		case K30:
 			CmdLineLength = 0;
 			while (++pos < ctmax && is_multi && forbidden_alpha(pos));
 			if (pos >= ctmax)
@@ -1824,7 +1818,17 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 			break;
 		}
 	} else if (shift == SHIFT_F) {
-		if (cat == CATALOGUE_CONV && c == K01) {
+		switch (c) {
+		case K30:
+			CmdLineLength = 0;
+			if (pos == 0)
+				goto set_max;
+			else
+				--pos;
+			goto set_pos;
+		}			
+			
+			if (cat == CATALOGUE_CONV && c == K01) {
 			/*
 			 * f 1/x in conversion catalogue
 			 */
