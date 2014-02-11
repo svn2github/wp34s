@@ -153,10 +153,10 @@ unsigned int keycode_to_digit_or_register(const keycode c)
 		NO_SHORT | regA_idx, NO_SHORT | regB_idx,
 		NO_SHORT | regC_idx, NO_SHORT | regD_idx,
 		NO_SHORT | NO_REG,   NO_REG,
-		// K10 - K12
-		NO_REG, NO_REG, regI_idx,
+		// K10 - K15
+		NO_REG, NO_REG, regI_idx, regJ_idx, regK_idx, regL_idx,
 		// K20 - K24
-		NO_SHORT | NO_REG, regJ_idx, regK_idx, regL_idx, NO_SHORT | NO_REG,
+		NO_SHORT | NO_REG, NO_REG, NO_REG, NO_REG, NO_SHORT | NO_REG,
 		// K30 - K34
 		NO_REG, 7, 8, 9, NO_REG,
 		// K40 - K44
@@ -196,11 +196,11 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K11,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
 			{ K21,     { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
 			{ K22,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
-			{ K23,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
-			{ K24,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
+			{ K23,     { CATALOGUE_DISPL,     CATALOGUE_DISPL,     CATALOGUE_DISPL         } },
+			{ K24,     { CATALOGUE_CLEAR,     CATALOGUE_CLEAR,     CATALOGUE_CLEAR         } },
 			{ K31,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
 			{ K32,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
-			{ K33,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
+			{ K33,     { CATALOGUE_MORE,      CATALOGUE_NONE,      CATALOGUE_MORE          } },
 		};
 
 		if (c == K60 && shift == SHIFT_G) {
@@ -295,36 +295,39 @@ static int keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 'G',  0000, 0202, 0000, 'g',  0242,  },  // K10
 		{ 'H',  0000, 'X',  0000, 'h',  0265,  },  // K11
 		{ 'I',  0000, 'I',  0000, 'i',  0250,  },  // K12
+		{ 'J',  '(',  ')',  0027, 'j',  ')',   },  // K13
+		{ 'K',  0010, 'K',  0225, 'k',  0251,  },  // K14
+		{ 'L',  0000, 0212, 0257, 'l',  0252,  },  // K15
 
 		{ 0000, 0000, 'H',  0000, 0000, 0246,  },  // K20 ENTER
-		{ 'J',  '(',  ')',  0027, 'j',  ')',   },  // K21
-		{ 'K',  0010, 'K',  0225, 'k',  0251,  },  // K22
-		{ 'L',  0000, 0212, 0257, 'l',  0252,  },  // K23
+		{ 'M',  '(',  ')',  0027, 'j',  ')',   },  // K21
+		{ 'N',  0010, 'K',  0225, 'k',  0251,  },  // K22
+		{ 'O',  0000, 0212, 0257, 'l',  0252,  },  // K23
 		{ 0000, 0000, 0000, 0000, 0000, 0000   },  // K24 <-
 
 		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
-		{ 'M',  '7',  'M',  '&',  'm',  0253,  },  // K31
-		{ 'N',  '8',  'N',  '|',  'n',  0254,  },  // K32
-		{ 'O',  '9',  0227, 0013, 'o',  0267,  },  // K33
-		{ 'P',  '/',  0217, '\\', 'p',  0257,  },  // K34
+		{ 'P',  '7',  'M',  '&',  'm',  0253,  },  // K31
+		{ 'Q',  '8',  'N',  '|',  'n',  0254,  },  // K32
+		{ 'R',  '9',  0227, 0013, 'o',  0267,  },  // K33
+		{ 0000, '/',  0217, '\\', 'p',  0257,  },  // K34
 
 		{ 0000, 0000, 0000, '!',  0000, 0000,  },  // K40
-		{ 'Q',  '4',  0000, 0000, 'q',  0000,  },  // K41
-		{ 'R',  '5',  'R',  0000, 'r',  0260,  },  // K42
-		{ 'S',  '6',  0221, 0000, 's',  0261,  },  // K43
-		{ 'T',  0034, 'T',  0000, 't',  0262,  },  // K44
+		{ 'S',  '4',  0000, 0000, 'q',  0000,  },  // K41
+		{ 'T',  '5',  'R',  0000, 'r',  0260,  },  // K42
+		{ 'U',  '6',  0221, 0000, 's',  0261,  },  // K43
+		{ 0000, 0034, 'T',  0000, 't',  0262,  },  // K44
 
-		{ 0000, 0000, 0000, '?',  0000, 0000,  },  // K50
-		{ '1',  '1',  0207, 0000, '1',  0247,  },  // K51
-		{ 'U',  '2',  0000, 0000, 'u',  0000,  },  // K52
-		{ 'V',  '3',  0000, 0000, 'v',  0000,  },  // K53
-		{ 'W',  '-',  0000, 0000, 'w',  0000,  },  // K54
+		{ 'V', 0000, 0000, '?',  0000, 0000,  },  // K50
+		{ 'W',  '1',  0207, 0000, '1',  0247,  },  // K51
+		{ 'X',  '2',  0000, 0000, 'u',  0000,  },  // K52
+		{ 'Y',  '3',  0000, 0000, 'v',  0000,  },  // K53
+		{ 0000, '-',  0000, 0000, 'w',  0000,  },  // K54
 
 		{ 0000, 0222, 0000, 0000, 0000, 0000,  },  // K60
-		{ '0',  '0',  0226, ' ',  '0',  0266,  },  // K61
-		{ 'X',  '.',  0215, 0000, 'x',  0255,  },  // K62
-		{ 'Y',  0000, 'Y',  0000, 'y',  0263,  },  // K63
-		{ 'Z',  '+',  'Z',  0000, 'z',  0245,  },  // K64
+		{ 'Z',  '0',  0226, ' ',  '0',  0266,  },  // K61
+		{ ',',  '.',  0215, 0000, 'x',  0255,  },  // K62
+		{ 'S',  0000, 'Y',  0000, 'y',  0263,  },  // K63
+		{ 0000, '+',  'Z',  0000, 'z',  0245,  },  // K64
 	};
 	if (State2.alphashift) {
 		if (shift == SHIFT_N)
@@ -610,7 +613,7 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_MON | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCNT | NO_INT },	// %
 		{ OP_MON | OP_PERCHG   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },	// Delta%
 		// Row 2
-		{ _RARG   | RARG_SWAPX,  _RARG   | RARG_SWAPX, },					// x<>
+		{ _RARG   | RARG_SWAPX,  _RARG   | RARG_SWAPX },					// x<>
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CONST Catalog
 		{ 1,                               0                           },   // HYP
 		{ OP_MON | OP_ASIN      | NO_INT,   OP_MON | OP_ASIN   | NO_INT },	// ASIN
@@ -1386,9 +1389,9 @@ static int process_arg(const keycode c) {
 	case K02:	// C
 	case K03:	// D
 	case K12:	// I (lastY)
-	case K21:	// J
-	case K22:	// K
-	case K23:	// L (lastX)
+	case K13:	// J
+	case K14:	// K
+	case K15:	// L (lastX)
 		if (State2.dot || stack_reg)
 			return arg_eval(n);
 		if ( c <= K03 )
@@ -1628,10 +1631,10 @@ int current_catalogue_max(void) {
 		SIZE_cplx_catalogue,
 		SIZE_stats_catalogue,
 		SIZE_prob_catalogue,
-		SIZE_int_catalogue,
+		//SIZE_int_catalogue,
 		SIZE_prog_catalogue,
 		SIZE_program_xfcn,
-		SIZE_test_catalogue,
+		//SIZE_test_catalogue,
 		SIZE_mode_catalogue,
 		SIZE_alpha_catalogue,
 		SIZE_alpha_symbols,
@@ -1643,7 +1646,10 @@ int current_catalogue_max(void) {
 		NUM_CONSTS_CAT,
 		SIZE_conv_catalogue,
 		SIZE_sums_catalogue,
-		SIZE_matrix_catalogue,
+		//SIZE_matrix_catalogue,
+		SIZE_clear_catalogue,
+		SIZE_displ_catalogue,
+    	SIZE_more_catalogue,
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		SIZE_internal_catalogue,
 #endif
@@ -1677,10 +1683,10 @@ opcode current_catalogue(int n) {
 		cplx_catalogue,
 		stats_catalogue,
 		prob_catalogue,
-		int_catalogue,
+		//int_catalogue,
 		prog_catalogue,
 		program_xfcn,
-		test_catalogue,
+		//test_catalogue,
 		mode_catalogue,
 		alpha_catalogue,
 		alpha_symbols,
@@ -1692,7 +1698,10 @@ opcode current_catalogue(int n) {
 		NULL,
 		NULL, //CONV
 		sums_catalogue,
-		matrix_catalogue,
+		//matrix_catalogue,
+		clear_catalogue,
+		displ_catalogue,
+		more_catalogue,
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 		internal_catalogue,
 #endif

@@ -5084,9 +5084,12 @@ int init_34s(void)
 	check_cat(CATALOGUE_PROB, "probability");
 	check_cat(CATALOGUE_PROG, "programme");
 	check_cat(CATALOGUE_MODE, "mode");
-	check_cat(CATALOGUE_TEST, "tests");
-	check_cat(CATALOGUE_INT, "int");
-	check_cat(CATALOGUE_MATRIX, "matrix");
+	//check_cat(CATALOGUE_TEST, "tests");
+	//check_cat(CATALOGUE_INT, "int");
+	//check_cat(CATALOGUE_MATRIX, "matrix");
+	check_cat(CATALOGUE_CLEAR, "clear");
+	check_cat(CATALOGUE_DISPL, "displ");
+	check_cat(CATALOGUE_MORE, "more");
 	/*
 	check_cat(CATALOGUE_ALPHA, "alpha");
 	check_cat(CATALOGUE_ALPHA_LETTERS, "alpha special upper case letters");

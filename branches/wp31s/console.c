@@ -598,8 +598,11 @@ int main(int argc, char *argv[]) {
 			dump_menu("statistics", "", CATALOGUE_STATS);
 			dump_menu("summations", "", CATALOGUE_SUMS);
 			dump_menu("probability", "", CATALOGUE_PROB);
-			dump_menu("integer", "", CATALOGUE_INT);
-			dump_menu("matrix", "", CATALOGUE_MATRIX);
+			//dump_menu("integer", "", CATALOGUE_INT);
+			//dump_menu("matrix", "", CATALOGUE_MATRIX);
+			dump_menu("clear", "", CATALOGUE_CLEAR);
+			dump_menu("displ", "", CATALOGUE_DISPL);
+			dump_menu("more", "", CATALOGUE_MORE);
 			dump_menu("alpha", "", CATALOGUE_ALPHA);
 			dump_menu("alpha special letters upper", "", CATALOGUE_ALPHA_LETTERS);
 			State2.alphashift = 1;
@@ -611,7 +614,7 @@ int main(int argc, char *argv[]) {
 			dump_menu("programming", "", CATALOGUE_PROG);
 			dump_menu("prog x.fcn", "", CATALOGUE_PROGXFCN);
 			dump_menu("modes", "", CATALOGUE_MODE);
-			dump_menu("test", "", CATALOGUE_TEST);
+			//dump_menu("test", "", CATALOGUE_TEST);
 			dump_menu("conversions", "", CATALOGUE_CONV);
 			dump_menu("constants", "# ", CATALOGUE_CONST);
 			dump_menu("complex constants", "[cmplx]# ", CATALOGUE_COMPLEX_CONST);

@@ -354,7 +354,7 @@ static s_opcode cplx_catalogue[] = {
 	CDYA(OP_IDIV,		"IDIV")
 #endif
 	CMON(OP__1POW,		"(-1)^x")
-	CMON(OP_CCONJ,		"CONJ")
+/*	CMON(OP_CCONJ,		"CONJ")
 	CMON(OP_CUBE,		"x[^3]")
 	CMON(OP_CUBERT,		"[^3][sqrt]")
 	NILIC(OP_DROPXY,	"DROP")
@@ -396,6 +396,45 @@ static s_opcode cplx_catalogue[] = {
 	RARGCMD(RARG_IND_CONST_CMPLX, "\024CNST")
 #endif
 #endif
+*/
+};
+
+static s_opcode clear_catalogue[] = {
+	NILIC(OP_SIGMACLEAR, "CL\221")
+	NILIC(OP_CLREG,		"CLREG")
+	NILIC(OP_CLSTK,		"CLSTK")
+	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_RESET,		"RESET")
+};
+
+static s_opcode displ_catalogue[] = {
+	RARGCMD(RARG_STD,	"ALL") 
+	RARGCMD(RARG_DISP,	"DISP")
+	RARGCMD(RARG_ENG,	"ENG")
+	RARGCMD(RARG_FIX,	"FIX")
+	NILIC(OP_RADCOM,	"RDX,")
+	NILIC(OP_RADDOT,	"RDX.")
+	RARGCMD(RARG_SCI,	"SCI")
+	NILIC(OP_THOUS_OFF,	"E3OFF")
+	NILIC(OP_THOUS_ON,	"E3ON")
+};
+
+static s_opcode more_catalogue[] = {
+	DYA(OP_ATAN2,		"ANGLE")
+	NILIC(OP_VOLTAGE,   "BATT")
+	MON(OP_FRAC,        "FP")
+	MON(OP_TRUNC,       "IP")
+	DYA(OP_LCM,         "LCM")
+	DYA(OP_MOD41,       "MOD")
+	NILIC(OP_NEXTPRIME, "NEXTP")
+	NILIC(OP_XisPRIME,  "PRIME?")
+	MON(OP_MOD,         "RMDR")
+	NILIC(OP_STKSIZE,   "SSIZE?")
+	NILIC(OP_VERSION,   "VERS")
+	MON(OP_DOWK,        "WDAY")
+	DYA(OP_DTDIF,       "\203DAYS")
+	DYA(OP_DTADD,       "DAYS+")
+	TRI(OP_PERMRR,      "MRR")
 };
 
 static s_opcode sums_catalogue[] = {
@@ -433,6 +472,20 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_statLR,	"L.R.")
 	NILIC(OP_statSxy,	"sxy")
 	MON(OP_xhat,		"\031")
+	NILIC(OP_sigmaN,	"n\221")
+	NILIC(OP_sigmalnXlnX,	"\221ln\232X")
+	NILIC(OP_sigmalnYlnY,	"\221ln\232Y")
+	NILIC(OP_sigmalnX,	"\221lnX")
+	NILIC(OP_sigmalnXlnY,	"\221lnXY")
+	NILIC(OP_sigmalnY,	"\221lnY")
+	NILIC(OP_sigmaX,	"\221x")
+	NILIC(OP_sigmaX2,	"\221x\232")
+	NILIC(OP_sigmaXlnY,	"\221XlnY")
+	NILIC(OP_sigmaXY,	"\221xy")
+	NILIC(OP_sigmaX2Y,	"\221x\232y")
+	NILIC(OP_sigmaY,	"\221y")
+	NILIC(OP_sigmaY2,	"\221y\232")
+	NILIC(OP_sigmaYlnX,	"\221YlnX")
 };
 
 static s_opcode prob_catalogue[] = {
@@ -494,7 +547,7 @@ static s_opcode prob_catalogue[] = {
 #endif
 };
 
-static s_opcode int_catalogue[] = {
+/*static s_opcode int_catalogue[] = {
 #ifdef INCLUDE_MOD41
 	DYA(OP_MOD41,		"MOD")
 #endif
@@ -575,8 +628,9 @@ static s_opcode int_catalogue[] = {
 	TRI(OP_EXPMOD,		"powmod")
 #endif
 };
+*/
 
-static s_opcode matrix_catalogue[] = {
+/*static s_opcode matrix_catalogue[] = {
 	MON(OP_MAT_DET,		"DET")
 	TRI(OP_MAT_LIN_EQN,	"LINEQS")
 	TRI(OP_MAT_GADD,	"M+[times]")
@@ -606,8 +660,9 @@ static s_opcode matrix_catalogue[] = {
 	NILIC(OP_MAT_IDENT,	"M.IDEN")
 #endif
 };
+*/
 
-static s_opcode test_catalogue[] = {
+/*static s_opcode test_catalogue[] = {
 	RARGCMD(RARG_BC,	"BC?")
 	RARGCMD(RARG_BS,	"BS?")
 	RARGCMD(RARG_FC,	"FC?")
@@ -668,6 +723,7 @@ static s_opcode test_catalogue[] = {
 	RARGCMD(RARG_CONVERGED,	"CNVG?")
 #endif
 };
+*/
 
 static s_opcode prog_catalogue[] = {
 #if 1
@@ -682,7 +738,7 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_STKSIZE,	"SSIZE?")
 	NILIC(OP_INTSIZE,	"WSIZE?")
 #endif
-	RARGCMD(RARG_SWAPY,	"y[<->]")
+/*	RARGCMD(RARG_SWAPY,	"y[<->]")
 	RARGCMD(RARG_SWAPZ,	"z[<->]")
 	RARGCMD(RARG_SWAPT,	"t[<->]")
 	RARGCMD(RARG_STOSTK,	"\015STK")
@@ -722,10 +778,10 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_GTOALPHA,	"GTO\240")
 	RARGCMD(RARG_ALPHAXEQ,	"\240XEQ")
 	RARGCMD(RARG_ALPHAGTO,	"\240GTO")
-
+*/
 
 	/* Serial commands */
-	NILIC(OP_SENDP,		"SENDP")
+/*	NILIC(OP_SENDP,		"SENDP")
 	NILIC(OP_SENDR,		"SENDR")
 	NILIC(OP_SENDsigma,	"SEND\221")
 	NILIC(OP_SENDA,		"SENDA")
@@ -754,9 +810,9 @@ static s_opcode prog_catalogue[] = {
 
 	RARGCMD(RARG_LOCR,	"LocR")
 	NILIC(OP_POPLR,		"PopLR")
-
+*/
 	/* INFRARED commands */
-	RARGCMD(RARG_PRINT_REG,	    "\222r")
+/*	RARGCMD(RARG_PRINT_REG,	    "\222r")
 	RARGCMD(RARG_PRINT_CMPLX,   "\222\024r[sub-x][sub-y]")
 	RARGCMD(RARG_PRINT_BYTE,    "\222#")
 	RARGCMD(RARG_PRINT_CHAR,    "\222CHR")
@@ -771,6 +827,7 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_PRINT_STACK,	    "\222STK")
 	NILIC(OP_PRINT_WIDTH,	    "\222WIDTH")
 	/* end of INFRARED commands */
+
 #ifdef INCLUDE_PLOTTING
 	RARGCMD(RARG_PLOT_INIT,     "gDIM")
 	RARGCMD(RARG_PLOT_DIM,      "gDIM?")
@@ -845,67 +902,28 @@ static s_opcode internal_catalogue[] = {
 #endif
 
 static s_opcode mode_catalogue[] = {
-	NILIC(OP_RADCOM,	"RDX,")
-	NILIC(OP_RADDOT,	"RDX.")
+	NILIC(OP_GRAD,	"GRAD")     
 	NILIC(OP_BEST,		"BestF")
-	NILIC(OP_EXPF,		"ExpF")
-	NILIC(OP_LINF,		"LinF")
-	NILIC(OP_LOGF,		"LogF")
-	NILIC(OP_PWRF,		"PowerF")
-	NILIC(OP_1COMP,		"1COMPL")
-	NILIC(OP_2COMP,		"2COMPL")
-	NILIC(OP_SIGNMANT,	"SIGNMT")
-	NILIC(OP_UNSIGNED,	"UNSIGN")
-	RARGCMD(RARG_WS,	"WSIZE")
-	NILIC(OP_LEAD0,		"LZON")
-	NILIC(OP_TRIM0,		"LZOFF")
-	RARGCMD(RARG_BASE,	"BASE")
 	NILIC(OP_DENANY,	"DENANY")
-	NILIC(OP_DENFAC,	"DENMFAC")
+	NILIC(OP_DENFAC,	"DENFAC")
 	NILIC(OP_DENFIX,	"DENFIX")
 	NILIC(OP_FRACDENOM,	"DENMAX")
-	RARGCMD(RARG_DISP,	"DISP")
-	NILIC(OP_THOUS_OFF,	"E3OFF")
-	NILIC(OP_THOUS_ON,	"E3ON")
-	NILIC(OP_INTSEP_OFF,	"SEPOFF")
-	NILIC(OP_INTSEP_ON,	"SEPON")
 	NILIC(OP_DATEDMY,	"D.MY")
+	NILIC(OP_EXPF,		"ExpF")
+	NILIC(OP_FRACIMPROPER,		"IMPFRC")
+	NILIC(OP_LINF,		"LinF")
+	NILIC(OP_LOGF,		"LogF")
 	NILIC(OP_DATEMDY,	"M.DY")
-	NILIC(OP_DATEYMD,	"Y.MD")
-	NILIC(OP_JG1752,	"JG1752")
-	NILIC(OP_JG1582,	"JG1582")
-	NILIC(OP_12HR,		"12H")
-	NILIC(OP_24HR,		"24H")
+	NILIC(OP_PWRF,		"PowerF")
+	NILIC(OP_FRACPROPER,		"PROFRC")
 	NILIC(OP_STK4,		"SSIZE4")
 	NILIC(OP_STK8,		"SSIZE8")
-	NILIC(OP_FRACT,		"FRACT")
-	RARGCMD(RARG_ROUNDING,	"RM")
-	NILIC(OP_SLOW,		"SLOW")
-	NILIC(OP_FAST,		"FAST")
-	RARGCMD(RARG_REGS,	"REGS")
-	NILIC(OP_SETEUR,	"SETEUR")
-	NILIC(OP_SETUK,		"SETUK")
-	NILIC(OP_SETUSA,	"SETUSA")
-	NILIC(OP_SETIND,	"SETIND")
-	NILIC(OP_SETCHN,	"SETCHN")
-	NILIC(OP_SETJPN,	"SETJPN")
-	RARGCMD(RARG_STOM,	"STOM")
-	RARGCMD(RARG_RCLM,	"RCLM")
-	NILIC(OP_SETDATE,	"SETDAT")
-	NILIC(OP_SETTIME,	"SETTIM")
-	/* INFRARED commands */
-	RARGCMD(RARG_PMODE,	"PMODE")
-	RARGCMD(RARG_PDELAY,	"PDLAY")
-	/* end of INFRARED commands */
-#ifndef INCLUDE_INTERNAL_CATALOGUE
-	NILIC(OP_DBLON,		"DBLON")
-	NILIC(OP_DBLOFF,	"DBLOFF")
-#endif
+	NILIC(OP_DATEYMD,	"Y.MD")
 };
 
 static s_opcode alpha_catalogue[] = {
 	NILIC(OP_ALPHADATE,	"\240DATE")
-	NILIC(OP_ALPHADAY,	"\240DAY")
+/*	NILIC(OP_ALPHADAY,	"\240DAY")
 	RARGCMD(RARG_AIP,	"\240IP")
 	NILIC(OP_ALPHALEN,	"\240LENG")
 	NILIC(OP_ALPHAMONTH,	"\240MONTH")
@@ -918,6 +936,7 @@ static s_opcode alpha_catalogue[] = {
 	NILIC(OP_XTOALPHA,	"x->\240")
 	NILIC(OP_ALPHATOX,	"\240->x")
 	NILIC(OP_VERSION,	"VERS")
+	*/
 };
 
 static s_opcode conv_catalogue[] = {
@@ -1309,13 +1328,16 @@ int main(int argc, char *argv[]) {
 	CAT(stats_catalogue);
 	CAT(sums_catalogue);
 	CAT(prob_catalogue);
-	CAT(int_catalogue);
-	CAT(test_catalogue);
+	//CAT(int_catalogue);
+	//CAT(test_catalogue);
 	CAT(prog_catalogue);
 	CAT(mode_catalogue);
 	CAT(alpha_catalogue);
 	CONVERSION(conv_catalogue);
-	CAT(matrix_catalogue);
+	//CAT(matrix_catalogue);
+	CAT(clear_catalogue);
+	CAT(displ_catalogue);
+	CAT(more_catalogue);
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	CAT(internal_catalogue);
 #endif
