@@ -826,6 +826,7 @@ static s_opcode prog_catalogue[] = {
 	NILIC(OP_PRINT_SIGMA,	    "\222\221")
 	NILIC(OP_PRINT_STACK,	    "\222STK")
 	NILIC(OP_PRINT_WIDTH,	    "\222WIDTH")
+*/
 	/* end of INFRARED commands */
 
 #ifdef INCLUDE_PLOTTING
