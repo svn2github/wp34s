@@ -400,11 +400,11 @@ static s_opcode cplx_catalogue[] = {
 };
 
 static s_opcode clear_catalogue[] = {
-	NILIC(OP_SIGMACLEAR, "CL\221")
-	NILIC(OP_CLREG,		"CLREG")
-	NILIC(OP_CLSTK,		"CLSTK")
 	NILIC(OP_CLALL,		"CLALL")
+	NILIC(OP_CLREG,		"CLREG")
+	NILIC(OP_SIGMACLEAR, "CL\221")
 	NILIC(OP_RESET,		"RESET")
+//	NILIC(OP_CLSTK,		"CLSTK")
 };
 
 static s_opcode displ_catalogue[] = {
@@ -422,19 +422,24 @@ static s_opcode displ_catalogue[] = {
 static s_opcode more_catalogue[] = {
 	DYA(OP_ATAN2,		"ANGLE")
 	NILIC(OP_VOLTAGE,   "BATT")
+	DYA(OP_DTADD,       "DAYS+")
 	MON(OP_FRAC,        "FP")
+	DYA(OP_GCD,		"GCD")
 	MON(OP_TRUNC,       "IP")
 	DYA(OP_LCM,         "LCM")
+	NILIC(OP_LOAD,		"LOAD")
 	DYA(OP_MOD41,       "MOD")
 	NILIC(OP_NEXTPRIME, "NEXTP")
 	NILIC(OP_XisPRIME,  "PRIME?")
-	MON(OP_MOD,         "RMDR")
+	DYA(OP_MOD,         "RMDR")
+	NILIC(OP_SAVE,		"SAVE")
 	NILIC(OP_STKSIZE,   "SSIZE?")
 	NILIC(OP_VERSION,   "VERS")
 	MON(OP_DOWK,        "WDAY")
+	DYA(OP_XROOT,		"\234\003y")
 	DYA(OP_DTDIF,       "\203DAYS")
-	DYA(OP_DTADD,       "DAYS+")
 	TRI(OP_PERMRR,      "MRR")
+    DYA(OP_PARAL,       "||")
 };
 
 static s_opcode sums_catalogue[] = {
@@ -455,23 +460,14 @@ static s_opcode sums_catalogue[] = {
 };
 
 static s_opcode stats_catalogue[] = {
-	MON(OP_sigper,		"%\221")
-	NILIC(OP_STORANDOM,	"SEED")
+	DYA(OP_PERM, "PERM")
+	DYA(OP_COMB, "COMB")
 	NILIC(OP_statSErr,	"SERR")
 	NILIC(OP_RCLSIGMA,	"SUM")
 	NILIC(OP_statWMEAN,	"\001w")
-	NILIC(OP_statGMEAN,	"\001g")
-	NILIC(OP_statGSErr,	"\244m")
-	NILIC(OP_statGS,	"\244")
-	NILIC(OP_statGSigma,	"\244\276")
-	NILIC(OP_statWSErr,	"SERRw")
+	NILIC(OP_statWSErr,	"\244w")
 	NILIC(OP_statWS,	"sw")
-	NILIC(OP_statWSigma,	"\244w")
-	NILIC(OP_statSigma,	"\261")
-	NILIC(OP_statCOV,	"COV")
 	NILIC(OP_statLR,	"L.R.")
-	NILIC(OP_statSxy,	"sxy")
-	MON(OP_xhat,		"\031")
 	NILIC(OP_sigmaN,	"n\221")
 	NILIC(OP_sigmalnXlnX,	"\221ln\232X")
 	NILIC(OP_sigmalnYlnY,	"\221ln\232Y")

@@ -1,15 +1,15 @@
 /* This file is part of 34S.
- * 
+ *
  * 34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * 34S is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -63,7 +63,7 @@ FLAG NonProgrammable;
 
 /*
  *  Needed before definition
- */ 
+ */
 static unsigned int advance_to_next_label(unsigned int pc, int inc, int search_end);
 
 /*
@@ -107,12 +107,12 @@ static int keycode_to_linear(const keycode c)
 {
 	static const unsigned char linear_key_map[ 7 * 6 - 1 ] = {
 		 0,  1,  2,  3,  4,  5,   // K00 - K05 WORKS
-		 6,  7,  8,  9, 10, 11,   // K10 - K15 WORKS 
-		12, 13, 14, 15, 16,  0,   // K20 - K24 WORKS 
-		17, 18, 19, 20, 21,  0,   // K30 - K34 WORKS 
-		36, 22, 23, 24, 25,  0,   // K40 - K44 WORKS
-		26, 27, 28, 29, 30,  0,   // K50 - K54 WORKS
-		31, 32, 33, 34, 35        // K60 - K63 WORKS
+		 6,  7,  8,  9, 10, 11,   // K10 - K15 WORKS
+		12, 13, 14, 15, 16,  0,   // K20 - K24 WORKS
+		17, 18, 19, 20, 21,  0,   // K30 - K34 WORKS
+		22, 23, 24, 25, 26,  0,   // K40 - K44 WORKS
+		37, 28, 29, 30, 31,  0,   // K50 - K54 WORKS
+		32, 33, 34, 35, 36        // K60 - K63 WORKS
 	};
 	return linear_key_map[c];
 }
@@ -160,12 +160,11 @@ unsigned int keycode_to_digit_or_register(const keycode c)
 		// K30 - K34
 		NO_REG, 7, 8, 9, NO_REG,
 		// K40 - K44
-		NO_REG, 4, 5, 6, regT_idx,
-		// K50 - K54
+		NO_REG, 4, 5, 6, NO_REG,
+		// K51 - K54
 		NO_REG, 1, 2, 3, NO_REG,
 		// K60 - K63
-		NO_SHORT | NO_REG, 0, NO_SHORT | LOCAL_REG_BASE,
-		regY_idx, regZ_idx,
+		NO_SHORT | NO_REG, 0, NO_REG, NO_REG, NO_REG,
 		// Shifts
 		NO_REG
 	};
@@ -198,9 +197,9 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K22,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
 			{ K23,     { CATALOGUE_DISPL,     CATALOGUE_DISPL,     CATALOGUE_DISPL         } },
 			{ K24,     { CATALOGUE_CLEAR,     CATALOGUE_CLEAR,     CATALOGUE_CLEAR         } },
-			{ K31,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
-			{ K32,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
-			{ K33,     { CATALOGUE_MORE,      CATALOGUE_NONE,      CATALOGUE_MORE          } },
+			{ K31,     { CATALOGUE_MORE,      CATALOGUE_NONE,      CATALOGUE_MORE          } },
+			{ K41,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
+			{ K51,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
 		};
 
 		if (c == K60 && shift == SHIFT_G) {
@@ -285,49 +284,50 @@ static int keycode_to_alpha(const keycode c, unsigned int shift)
 {
 	static const unsigned char alphamap[][6] = {
 		/*upper f-sft g-sft h-sft lower g-lower */
-		{ 'A',  0000, 'A',  0000, 'a',  0240,  },  // K00
-		{ 'B',  0000, 'B',  0000, 'b',  0241,  },  // K01
-		{ 'C',  0000, 0202, 0000, 'c',  0242,  },  // K02
-		{ 'D',  0000, 0203, 0000, 'd',  0243,  },  // K03
-		{ 'E',  0015, 'E',  0000, 'e',  0244,  },  // K04 ->
-		{ 'F',  0000, 0224, 0000, 'f',  0264,  },  // K05
+		{ 'A',  'a', 'A',  0000, 'a',  0240,  },  // K00
+		{ 'B',  'b', 'B',  0000, 'b',  0241,  },  // K01
+		{ 'C',  'c', 0202, 0000, 'c',  0242,  },  // K02
+		{ 'D',  'd', 0203, 0000, 'd',  0243,  },  // K03
+		{ 'E',  'e', 'E',  0000, 'e',  0244,  },  // K04
+		{ 'F',  'f', 0224, 0000, 'f',  0264,  },  // K05
 
-		{ 'G',  0000, 0202, 0000, 'g',  0242,  },  // K10
-		{ 'H',  0000, 'X',  0000, 'h',  0265,  },  // K11
-		{ 'I',  0000, 'I',  0000, 'i',  0250,  },  // K12
-		{ 'J',  '(',  ')',  0027, 'j',  ')',   },  // K13
-		{ 'K',  0010, 'K',  0225, 'k',  0251,  },  // K14
-		{ 'L',  0000, 0212, 0257, 'l',  0252,  },  // K15
+		{ 'G',  'g', 0202, 0000, 'g',  0242,  },  // K10
+		{ 'H',  'h', 'X',  0000, 'h',  0265,  },  // K11
+		{ 'I',  'i', 'I',  0000, 'i',  0250,  },  // K12
+		{ 'J',  'j',  ')', 0027, 'j',  ')',   },  // K13
+		{ 'K',  'k', 'K',  0225, 'k',  0251,  },  // K14
+		{ 'L',  'l', 0212, 0257, 'l',  0252,  },  // K15
 
 		{ 0000, 0000, 'H',  0000, 0000, 0246,  },  // K20 ENTER
-		{ 'M',  '(',  ')',  0027, 'j',  ')',   },  // K21
-		{ 'N',  0010, 'K',  0225, 'k',  0251,  },  // K22
-		{ 'O',  0000, 0212, 0257, 'l',  0252,  },  // K23
+		{ 'M',  'm',  ')',  0027, 'j',  ')',   },  // K21
+		{ 'N',  'm',  'K',  0225, 'k',  0251,  },  // K22
+		{ 'O',  'o',  0212, 0257, 'l',  0252,  },  // K23
 		{ 0000, 0000, 0000, 0000, 0000, 0000   },  // K24 <-
 
-		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30
-		{ 'P',  '7',  'M',  '&',  'm',  0253,  },  // K31
-		{ 'Q',  '8',  'N',  '|',  'n',  0254,  },  // K32
-		{ 'R',  '9',  0227, 0013, 'o',  0267,  },  // K33
-		{ 0000, '/',  0217, '\\', 'p',  0257,  },  // K34
+		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30 RollDown
+		{ 'P',  'p',  'M',  '&',  'm',  0253,  },  // K31
+		{ 'Q',  'q',  'N',  '|',  'n',  0254,  },  // K32
+		{ 'R',  'r',  0227, 0013, 'o',  0267,  },  // K33
+		{ 'S',  's',  0217, '\\', 'p',  0257,  },  // K34
 
-		{ 0000, 0000, 0000, '!',  0000, 0000,  },  // K40
-		{ 'S',  '4',  0000, 0000, 'q',  0000,  },  // K41
-		{ 'T',  '5',  'R',  0000, 'r',  0260,  },  // K42
-		{ 'U',  '6',  0221, 0000, 's',  0261,  },  // K43
-		{ 0000, 0034, 'T',  0000, 't',  0262,  },  // K44
+		{ 0370, 0000, 0000, '!',  0000, 0000,  },  // K40 ->
+		{ 'T',  't',  0000, 0000, 'q',  0000,  },  // K41
+		{ 'U',  'u',  'R',  0000, 'r',  0260,  },  // K42
+		{ 'V',  'v',  0221, 0000, 's',  0261,  },  // K43
+		{ 'W',  'w',  'T',  0000, 't',  0262,  },  // K44
 
-		{ 'V', 0000, 0000, '?',  0000, 0000,  },  // K50
-		{ 'W',  '1',  0207, 0000, '1',  0247,  },  // K51
-		{ 'X',  '2',  0000, 0000, 'u',  0000,  },  // K52
-		{ 'Y',  '3',  0000, 0000, 'v',  0000,  },  // K53
-		{ 0000, '-',  0000, 0000, 'w',  0000,  },  // K54
+		// Shift
+		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K50 Shift
+		{ 'X',  'x',  0207, 0000, '1',  0247,  },  // K51
+		{ 'Y',  'y',  0000, 0000, 'u',  0000,  },  // K52
+		{ 'Z',  'z',  0000, 0000, 'v',  0000,  },  // K53
+		{ 0242, 0000, 0000, 0000, 'w',  0000,  },  // K54
 
-		{ 0000, 0222, 0000, 0000, 0000, 0000,  },  // K60
-		{ 'Z',  '0',  0226, ' ',  '0',  0266,  },  // K61
-		{ ',',  '.',  0215, 0000, 'x',  0255,  },  // K62
-		{ 'S',  0000, 'Y',  0000, 'y',  0263,  },  // K63
-		{ 0000, '+',  'Z',  0000, 'z',  0245,  },  // K64
+		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K60  ON
+ 		{ 0252, 0000, 0226, ' ',  '0',  0266,  },  // K61
+		{ 0253, 0000, 0215, 0000, 'x',  0255,  },  // K62
+		{ 0221, 0000, 'Y',  0000, 'y',  0263,  },  // K63
+		{ 0264, 0000, 'Z',  0000, 'z',  0245,  },  // K64
 	};
 	if (State2.alphashift) {
 		if (shift == SHIFT_N)
@@ -368,7 +368,7 @@ static void init_cat(enum catalogues cat) {
 		State2.labellist = 1;
 		State2.digval = advance_to_next_label(ProgBegin, 0, 0);
 		break;
-	
+
 	case CATALOGUE_REGISTERS:
 		// Register browser
 		State2.registerlist = 1;
@@ -534,13 +534,13 @@ static int process_normal(const keycode c)
 		OP_SPEC | OP_9,				// 9
 		OP_DYA  | OP_DIV,			// Divide
 		// Row 5
-		// SHIFT_F					// f Shift placeholder
-		OP_SPEC | OP_4,				// 4	
+		STATE_UNFINISHED,			// ARROW
+		OP_SPEC | OP_4,				// 4
 		OP_SPEC | OP_5,				// 5
 		OP_SPEC | OP_6,				// 6
 		OP_DYA  | OP_MUL,			// Multiply
 		// Row 6
-		STATE_UNFINISHED,			//ARROW
+		STATE_UNFINISHED,			// SHIFT_F
 		OP_SPEC | OP_1,				// 1
 		OP_SPEC | OP_2,				// 2
 		OP_SPEC | OP_3,				// 3
@@ -627,25 +627,26 @@ static int process_fg_shifted(const keycode c) {
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CLEAR Catalog
 		// Row 4
 		{ OP_NIL  | OP_RUP,    	 OP_NIL  | OP_RUP },				        // Roll Up
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// PROB Catalog
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// STAT Catalog
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// MORE Catalog
-		{ OP_MON  | OP_FACT,     OP_MON  | OP_FACT},						// x!
-		// Row 5
-		// SHIFT_F															// f Shift placeholder
-		{ OP_NIL | OP_statS     | NO_INT, OP_NIL | OP_statS     | NO_INT },	// Stats s
-		{ OP_NIL | OP_statMEAN  | NO_INT, OP_NIL | OP_statMEAN  | NO_INT },	// Stats mean 
-		{ OP_NIL | OP_statR,			  OP_NIL | OP_statR              },	// Stats r
-		{ OP_MON | OP_yhat      | NO_INT, OP_MON | OP_yhat      | NO_INT },	// Stats yhat
-		// Row 6
-		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },							// SHOW as in vintage HP Calculators
 		{ OP_NIL  | OP_DEG,     OP_NIL  | OP_DEG },							// DEG Mode
+		{ OP_NIL  | OP_RAD,		   OP_NIL  | OP_RAD        },				// RAD Mode
 		{ OP_NIL  | OP_FLOAT,   OP_NIL | OP_FLOAT}, 						// H.d
+		// Row 5
+		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },							// SHOW as in vintage HP Calculators
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// STAT Catalog
+		{ OP_NIL | OP_statS     | NO_INT, OP_NIL | OP_statS     | NO_INT },	// Stats s
+		{ OP_NIL | OP_statR,			  OP_NIL | OP_statR              },	// Stats r
 		{ OP_NIL  | OP_HMS,     OP_NIL | OP_HMS  },							// H.MS
+		// Row 6
+		// SHIFT_F
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// f Shift placeholder
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// PROB Catalog
+		{ OP_NIL | OP_statMEAN  | NO_INT, OP_NIL | OP_statMEAN  | NO_INT },	// Stats mean
+		{ OP_MON | OP_yhat      | NO_INT, OP_MON | OP_yhat      | NO_INT },	// Stats yhat
 		{ OP_DYA  | OP_HMSSUB,  OP_DYA | OP_HMSSUB },						// H.MS-
 		// Row 7
 		{ OP_NIL  | OP_OFF,		   OP_NIL  | OP_OFF	       },				// OFF
-		{ OP_NIL  | OP_RAD,		   OP_NIL  | OP_RAD        },				// RAD Mode
+		{ OP_MON  | OP_FACT,     OP_MON  | OP_FACT},						// x!
 		{ OP_NIL  | OP_FRACPROPER, OP_NIL  | OP_FRACPROPER },				// a b/c
 		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },				// Sigma-
 		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },				// H.MS+
@@ -715,18 +716,27 @@ static int process_fg_shifted(const keycode c) {
 	default:
 		break;
 	}
+		if (op != STATE_UNFINISHED) {
+		if (op & _RARG) {
+			init_arg((enum rarg) (op & ~(_RARG | NO_INT)));
+			op = STATE_UNFINISHED;
+		}
+	}
+
+
 	if (no_int && UState.intm)
 		return STATE_UNFINISHED;
 
 	return check_confirm(op);
 #undef NO_INT
+#undef _RARG
 }
 
 /*
  *  Process a key code after h shift
  */
 static int process_h_shifted(const keycode c) {
-//#define _RARG    0x8000	// Must not interfere with existing opcode markers
+#define _RARG    0x8000	// Must not interfere with existing opcode markers
 #define NO_INT   0x4000
 	static const unsigned short int op_map[] = {
 		// Row 1
@@ -988,18 +998,18 @@ static int process_arrow(const keycode c) {
 	const int f = (reset_shift() == SHIFT_F);
 
 	State2.arrow = 0;
-	
-	if (c == K51 )				// ->DEG
+
+	if (c == K32 )				// ->DEG
 		return op_map[0][f];
 
-	if (c == K52 )				// ->HR
+	if (c == K33 )				// ->RAD
+		return op_map[1][f];
+
+	if (c == K34 )				// ->HR
 		return op_map[2][f];
 
-	if (c == K53 )				// ->H.MS
+	if (c == K44 )				// ->H.MS
 		return op_map[3][f];
-
-	if (c == K61 )				// ->RAD
-		return op_map[1][f];
 
 	return STATE_UNFINISHED;
 }
@@ -1196,8 +1206,8 @@ static void reset_arg(void) {
 
 static int arg_eval(unsigned int val) {
 	const unsigned int base = CmdBase;
-	const int r = RARG(base, val 
-				 + (State2.ind ? RARG_IND : 0) 
+	const int r = RARG(base, val
+				 + (State2.ind ? RARG_IND : 0)
 		                 + (State2.local ? LOCAL_REG_BASE : 0));
 	const unsigned int ssize = (! UState.stack_depth || ! State2.runmode ) ? 4 : 8;
 
@@ -1222,7 +1232,7 @@ static int arg_digit(int n) {
 	const unsigned int val = State2.digval * 10 + n;
 	const int is_reg = argcmds[base].reg || State2.ind;
 	int lim;
-	
+
 	if (State2.local) {
 		// Handle local registers and flags
 		lim = MAX_LOCAL_DIRECT - 1;				// default
@@ -1339,7 +1349,7 @@ static int process_arg(const keycode c) {
 	const enum shifts previous_shift = (enum shifts) State2.shifts;
 	const enum shifts shift = reset_shift();
 	int label_addressing = argcmds[base].label && ! State2.ind && ! State2.dot;
-	int shorthand = label_addressing && c != K_F 
+	int shorthand = label_addressing && c != K_F
 		        && (shift == SHIFT_F || (n > 9 && !(n & NO_SHORT)));
 
 	n &= ~NO_SHORT;
@@ -1364,13 +1374,13 @@ static int process_arg(const keycode c) {
 			set_shift(previous_shift == SHIFT_F ? SHIFT_N : SHIFT_F);
 		break;
 
-	case K_ARROW:		// arrow
-		if (!State2.dot && argcmds[base].indirectokay) {
-			State2.ind = ! State2.ind;
-			if (! stack_reg)
-				State2.dot = 0;
-		}
-		break;
+// SV	case K_ARROW:		// arrow
+//		if (!State2.dot && argcmds[base].indirectokay) {
+//			State2.ind = ! State2.ind;
+//			if (! stack_reg)
+//				State2.dot = 0;
+//		}
+//		break;
 
 	case K_CMPLX:
 		if (State2.ind || State2.dot)
@@ -1381,9 +1391,6 @@ static int process_arg(const keycode c) {
 			CmdBase = RARG_RCLM;
 		break;
 
-	case K63:	// Y
-		if (State2.shuffle)
-			return process_arg_shuffle(1);
 	case K00:	// A
 	case K01:	// B
 	case K02:	// C
@@ -1398,13 +1405,20 @@ static int process_arg(const keycode c) {
 			return arg_fkey(c - K00);		// Labels or flags A to D
 		break;
 
-	case K62:	// X, '.'
-		if (State2.shuffle)
-			return process_arg_shuffle(0);
-		return process_arg_dot(base);
+	case K51:	// X
+			return arg_eval(regX_idx);
+
+	case K52:	// Y
+			return arg_eval(regY_idx);
+
+	case K53:	// Z
+			return arg_eval(regZ_idx);
+
+	case K41:	// T
+			return arg_eval(regT_idx);
 
 	/* STO and RCL can take an arithmetic argument */
-	case K64:		// Z register
+	case K64:		
 		if (State2.shuffle)
 			return process_arg_shuffle(2);
 		if (State2.dot || ( ! arg_storcl(RARG_STO_PL - RARG_STO, 1) && stack_reg))
@@ -1419,7 +1433,7 @@ static int process_arg(const keycode c) {
 		arg_storcl(RARG_STO_MI - RARG_STO, 1);
 		break;
 
-	case K44:		// T register
+	case K44:		
 		if (State2.shuffle)
 			return process_arg_shuffle(3);
 		if (State2.dot || ( ! arg_storcl(RARG_STO_MU - RARG_STO, 1) && stack_reg))
@@ -1429,14 +1443,6 @@ static int process_arg(const keycode c) {
 	case K34:
 		arg_storcl(RARG_STO_DV - RARG_STO, 1);
 		break;
-
-// SV	case K40:
-//		arg_storcl(RARG_STO_MAX - RARG_STO, 0);
-//		break;
-
-//	case K50:
-//		arg_storcl(RARG_STO_MIN - RARG_STO, 0);
-//		break;
 
 	case K20:				// Enter is a short cut finisher but it also changes a few commands if it is first up
 		if (State2.numdigit == 0 && !State2.ind && !State2.dot) {
@@ -1623,8 +1629,8 @@ static int build_user_cat(void)
  */
 int current_catalogue_max(void) {
 	// A quick table of catalogue sizes
-	// NB: the order here MUST match that in `enum catalogues' 
-	static const unsigned char catalogue_sizes[] = 
+	// NB: the order here MUST match that in `enum catalogues'
+	static const unsigned char catalogue_sizes[] =
 	{
 		0, // NONE
 		SIZE_catalogue,
@@ -1835,8 +1841,8 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 			else
 				--pos;
 			goto set_pos;
-		}			
-			
+		}
+
 			if (cat == CATALOGUE_CONV && c == K01) {
 			/*
 			 * f 1/x in conversion catalogue
@@ -2020,7 +2026,7 @@ add_char:
 	reset_multi();
 
 fin:
-	opcode = OP_DBL + (CmdBase << DBL_SHIFT) 
+	opcode = OP_DBL + (CmdBase << DBL_SHIFT)
 	       + State2.digval + (State2.digval2 << 16) + (ch << 24);
 	return opcode;
 }
@@ -2031,15 +2037,15 @@ fin:
 static int process_confirm(const keycode c) {
 	// Optimization hint: a switch is shorter then a table of function pointers!
 	switch (c) {
-	case K63:			// Yes
+	case K52:			// Yes
 		switch (State2.confirm) {
 		case confirm_clall:	 clrall();	break;
 		case confirm_reset:	 reset();	break;
 		case confirm_clprog:	 clrprog();	break;
 		case confirm_clpall:	 clpall();	break;
 		}
-	case K24:
-	case K32:			// No
+	case K22:
+	case K24:			// No
 		State2.confirm = 0;
 		State2.digval = 0;
 		break;
@@ -2068,7 +2074,7 @@ static int process_status(const keycode c) {
 	else if (c == K24 /* || c == K60 */) {
 		State2.status = 0;
 		return STATE_UNFINISHED;
-	} 
+	}
 	else {
 		int nn = keycode_to_digit_or_register(c) & 0x7f;
 		if (nn <= 9)
@@ -2076,7 +2082,7 @@ static int process_status(const keycode c) {
 		else if (nn == LOCAL_REG_BASE)
 			n = n == max ? 10 : max;
 		else if (nn != NO_REG)
-			n = 10; 
+			n = 10;
 	}
 	State2.status = n + 3;
 
@@ -2134,7 +2140,7 @@ static unsigned int advance_to_previous_label(unsigned int pc, int search_end) {
  */
 static int process_labellist(const keycode c) {
 	unsigned int pc = State2.digval;
-	const unsigned int n = c == K62 ? REGION_XROM 
+	const unsigned int n = c == K62 ? REGION_XROM
 		                        : keycode_to_digit_or_register(c) & ~NO_SHORT;
 	const int opcode = getprog(pc);
 	const int label = isDBL(opcode) ? (getprog(pc) & 0xfffff0ff) : 0;
@@ -2223,14 +2229,14 @@ static void set_window(int c) {
 		process_cmdline_set_lift();
 		// Make sure IntMaxWindow is recalculated
 		State2.disp_freeze = 0;
-		display();	
+		display();
 		if (c == STATE_WINDOWRIGHT) {
 			if (UState.intm) {
 				if (IntMaxWindow > 0 && State2.window > 0)
 					State2.window--;
 				return;
 			}
-			else 
+			else
 				State2.window = is_dblmode();
 		}
 		else {
@@ -2292,7 +2298,7 @@ static int process_registerlist(const keycode c) {
 			if (! State2.local && State2.digval == global_regs())
 				State2.digval = regX_idx;
 		}
-		else	
+		else
 			State2.digval = 0;
 		goto reset_window;
 
@@ -2302,7 +2308,7 @@ static int process_registerlist(const keycode c) {
 		goto reset_window;
 #endif
 
-	case K24:			
+	case K24:
 	//case K60:
 		if (State2.disp_temp)
 			return STATE_UNFINISHED;
@@ -2632,7 +2638,7 @@ void process_keycode(int c)
 	}
 	else {
 		/*
-		 *  Decode the key 
+		 *  Decode the key
 		 */
 		ShowRPN = ! Running;	// Default behaviour, may be turned off later
 

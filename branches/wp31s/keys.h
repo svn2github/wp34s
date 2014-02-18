@@ -43,18 +43,18 @@ typedef enum {
 	K10 = 6,  K11 = 7,  K12 = 8,  K13 = 9,  K14 = 10, K15 = 11, // Row 2
 	K20 = 12, K21 = 13, K22 = 14, K23 = 15, K24 = 16,           // Row 3
 	K30 = 18, K31 = 19, K32 = 20, K33 = 21, K34 = 22,           // Row 4
-#define K40 24													// F Shift
-	          K41 = 25, K42 = 26, K43 = 27, K44 = 28,           // Row 5
-	K50 = 30, K51 = 31, K52 = 32, K53 = 33, K54 = 34,           // Row 6
+	K40 = 24, K41 = 25, K42 = 26, K43 = 27, K44 = 28,           // Row 5
+#define K50 30													// F Shift
+			  K51 = 31, K52 = 32, K53 = 33, K54 = 34,           // Row 6
 	K60 = 36, K61 = 37, K62 = 38, K63 = 39, K64 = 40,           // Row 7 
 	K70 = 41, K71 = 42, K72 = 43, K73 = 44,                     // move keys not used out of the way
 } keycode;
 
 #define K_UNKNOWN	-1
-#define K_F		K40												// K_F is the Primary Shift Key in this Layout
+#define K_F		K50												// K_F is the Primary Shift Key in this Layout
 #define K_G		K71												// K_G is unused in this layout
 #define K_H		K72												// K_H is unused in this layout
-#define K_ARROW		K50
+#define K_ARROW		K40
 #define K_CMPLX		K73											// K_CMPLX is unused in this layout
 
 extern unsigned int keycode_to_digit_or_register(const keycode);
