@@ -183,7 +183,7 @@ void QtEmulator::checkCustomDirectory()
 
 void QtEmulator::showAbout()
 {
-	QString aboutMessage("WP-34s scientific calculator ");
+	QString aboutMessage("WP-31s scientific calculator ");
 	aboutMessage+=get_version_string();
 	aboutMessage+="\nby Pauli, Walter & Marcus";
 	aboutMessage+="\nParts (c) 2008 Hewlett-Packard development L.L.P";
@@ -191,7 +191,7 @@ void QtEmulator::showAbout()
 	aboutMessage+=QString("\nBuild date: ")+get_build_date();
 	aboutMessage+=QString("\nSvn revision: ")+get_svn_revision_string();
 
-	QMessageBox::about(this, "About WP-34s", aboutMessage);
+	QMessageBox::about(this, "About WP-31s", aboutMessage);
 }
 
 void QtEmulator::showWebSite()
