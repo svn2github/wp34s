@@ -1,6 +1,6 @@
 # $Rev$
 version=32
-maxsteps=928
+maxsteps=568
 maxlibsteps=9999
 0x0000	cmd	ENTER[^]
 0x0000	alias-c	ENTER
@@ -1120,8 +1120,8 @@ maxlibsteps=9999
 0x3000	alias-a	RCLMAX	max=128,indirect,stack
 0x3100	arg	x[<->]	max=128,indirect,stack
 0x3100	alias-a	x<>	max=128,indirect,stack
-0x3165	alias-c	x<>y
-0x3165	alias-c	SWAP
+0x310b	alias-c	x<>y
+0x310b	alias-c	SWAP
 0x3200	arg	y[<->]	max=128,indirect,stack
 0x3200	alias-a	y<>	max=128,indirect,stack
 0x3300	arg	z[<->]	max=128,indirect,stack
@@ -1150,7 +1150,7 @@ maxlibsteps=9999
 0x3e00	alias-a	cRCL/	max=128,indirect,stack,complex
 0x3f00	arg	[cmplx]x[<->]	max=128,indirect,stack,complex
 0x3f00	alias-a	cx<>	max=128,indirect,stack,complex
-0x3f66	alias-c	cSWAP
+0x3f0c	alias-c	cSWAP
 0x4000	arg	[cmplx]z[<->]	max=128,indirect,stack,complex
 0x4000	alias-a	cz<>	max=128,indirect,stack,complex
 0x4100	arg	VIEW	max=128,indirect,stack
@@ -1891,17 +1891,17 @@ maxlibsteps=9999
 0x6e00	arg	SCI	max=12,indirect
 0x6f00	arg	ENG	max=12,indirect
 0x7000	arg	DISP	max=12,indirect
-0x7100	arg	SF	max=128,indirect,stack
-0x7200	arg	CF	max=128,indirect,stack
-0x7300	arg	FF	max=128,indirect,stack
-0x7400	arg	FS?	max=128,indirect,stack
-0x7500	arg	FC?	max=128,indirect,stack
-0x7600	arg	FS?C	max=128,indirect,stack
-0x7700	arg	FS?S	max=128,indirect,stack
-0x7800	arg	FS?F	max=128,indirect,stack
-0x7900	arg	FC?C	max=128,indirect,stack
-0x7a00	arg	FC?S	max=128,indirect,stack
-0x7b00	arg	FC?F	max=128,indirect,stack
+0x7100	arg	SF	max=38,indirect,stack
+0x7200	arg	CF	max=38,indirect,stack
+0x7300	arg	FF	max=38,indirect,stack
+0x7400	arg	FS?	max=38,indirect,stack
+0x7500	arg	FC?	max=38,indirect,stack
+0x7600	arg	FS?C	max=38,indirect,stack
+0x7700	arg	FS?S	max=38,indirect,stack
+0x7800	arg	FS?F	max=38,indirect,stack
+0x7900	arg	FC?C	max=38,indirect,stack
+0x7a00	arg	FC?S	max=38,indirect,stack
+0x7b00	arg	FC?F	max=38,indirect,stack
 0x7c00	arg	WSIZE	max=65,indirect
 0x7d00	arg	RL	max=64,indirect
 0x7e00	arg	RR	max=64,indirect
@@ -2093,7 +2093,7 @@ maxlibsteps=9999
 0x9a00	arg	KTP?	max=128,indirect,stack
 0x9b00	arg	MSG	max=26,indirect
 0x9c00	arg	LocR	max=128,indirect
-0x9d00	arg	REGS	max=101,indirect
+0x9d00	arg	REGS	max=11,indirect
 0x9e00	arg	iRCL	max=128,indirect,stack
 0x9f00	arg	sRCL	max=128,indirect,stack
 0xa000	arg	dRCL	max=128,indirect,stack
