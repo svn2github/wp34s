@@ -494,12 +494,15 @@ static int check_f_key(int n, const int dflt) {
 	return dflt;
 }
 
+
 /* Return non-zero if the current mode is integer and we accept letters
  * as digits.
  */
+#if 0  /* disabled until needed to prevent compiler errors in gcc -jmc */
 static int intltr(int d) {
 	return (UState.intm && (! State2.runmode || (int) int_base() > d));
 }
+#endif
 
 /*
  *  Process a key code in the unshifted mode.
@@ -1310,6 +1313,7 @@ static int arg_storcl(const unsigned int n, int cmplx) {
 	return 0;
 }
 
+#if 0  /* disabled until needed to prevent compiler errors in gcc -jmc */
 static int process_arg_dot(const unsigned int base) {
 
 	if (State2.numdigit == 0) {
@@ -1333,6 +1337,7 @@ static int process_arg_dot(const unsigned int base) {
 	}
 	return STATE_UNFINISHED;
 }
+#endif
 
 static int process_arg_shuffle(int r) {
 	State2.digval += r << (State2.numdigit++ << 1);
@@ -1841,6 +1846,9 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 			else
 				--pos;
 			goto set_pos;
+		default:
+		    // Ignore anything else
+		    break;
 		}
 
 			if (cat == CATALOGUE_CONV && c == K01) {
