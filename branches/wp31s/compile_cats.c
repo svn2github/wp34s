@@ -440,6 +440,8 @@ static s_opcode more_catalogue[] = {
 	DYA(OP_DTDIF,       "\203DAYS")
 	TRI(OP_PERMRR,      "MRR")
     DYA(OP_PARAL,       "||")
+	MON(OP_CUBERT,		"[^3][sqrt]")
+	NILIC(OP_2FRAC,		"DECOMP")
 };
 
 static s_opcode sums_catalogue[] = {

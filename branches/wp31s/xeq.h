@@ -457,7 +457,7 @@ extern int current_catalogue_max(void);
 
 /* Stack lives in the register set */
 #define NUMREG          (TOPREALREG+STACK_SIZE+EXTRA_REG)/* Number of registers */
-#define TOPREALREG      (10)                           /* Non-stack last register */
+#define TOPREALREG      (100)                           /* Non-stack last register */
 #define NUMSTATREG      (14)                            /* Summation registers */
 #define NUMFLG          NUMREG                          // These two must match!
 

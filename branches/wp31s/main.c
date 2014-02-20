@@ -1,5 +1,5 @@
 /* This file is part of 34S.
- * 
+ *
  * This file is free software. It comes without any warranty, to
  * the extent permitted by applicable law. You can redistribute it
  * and/or modify it under the terms of the WTFPL, Version 2, as
@@ -241,7 +241,7 @@ void scan_keyboard( void )
         // No pull ups on outputs, only on keyboard inputs
         AT91C_BASE_PIOC->PIO_PPUDR = ~KEY_COLS_MASK;
         AT91C_BASE_PIOC->PIO_PPUER =  KEY_COLS_MASK;
-        
+
         /*
          *  Quick check
          *  Set all rows to low and test if any key input is low
@@ -263,7 +263,7 @@ void scan_keyboard( void )
                          */
                         AT91C_BASE_PIOC->PIO_CODR = r;
                         short_wait( 2 );
-                        k = ~AT91C_BASE_PIOC->PIO_PDSR & KEY_COLS_MASK; 
+                        k = ~AT91C_BASE_PIOC->PIO_PDSR & KEY_COLS_MASK;
                         AT91C_BASE_PIOC->PIO_SODR = r;
 
                         /*
@@ -310,7 +310,7 @@ void scan_keyboard( void )
          */
         keys.ll &= ( ~last_keys & KbDebounce );
 #endif
-        
+
         /*
          *  Program PIO
          */
@@ -1259,7 +1259,7 @@ void enable_interrupts()
          *  Tell the interrupt controller where to go
          *  This is for all system peripherals
          */
-        AIC_ConfigureIT( AT91C_ID_SYS, 
+        AIC_ConfigureIT( AT91C_ID_SYS,
                          AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL | prio,
                          system_irq );
         /*
@@ -1511,10 +1511,11 @@ int is_key_pressed( void )
 enum shifts shift_down(void)
 {
         const int map = (int) KbData;
-        return map & ( 0x400 << SHIFT_H ) ? SHIFT_H
-             : map & ( 0x400 << SHIFT_G ) ? SHIFT_G
-             : map & ( 0x400 << SHIFT_F ) ? SHIFT_F
-             : SHIFT_N;
+        return map & //( 0x400 << SHIFT_H ) ? SHIFT_H  // SV
+             //: map & ( 0x400 << SHIFT_G ) ? SHIFT_G
+             //: map & ( 0x400 << SHIFT_F ) ? SHIFT_F
+             //: SHIFT_N;
+                 SHIFT_N;
 }
 
 /*
