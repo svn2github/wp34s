@@ -49,7 +49,7 @@ endif
 LINK=$(CXX)
 
 LINUX := $(findstring "$(SYSTEM)", "Linux" "Linux64")
-	
+
 OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
 DISTPRINTERDIR := ../QtPrinterEmulator
@@ -240,7 +240,7 @@ endif
 
 distprinter:
 	cd $(DISTPRINTERDIR); $(MAKE) dist
-	
+
 $(DISTDIR):
 	$(MKDIR) $(DISTDIR)
 
@@ -285,6 +285,8 @@ clean: qtclean
 	-$(RM) $(QTMAKEFILE) $(EXTRA_FILES_TO_CLEAN)
 	-$(RMDIR) $(DIRS_TO_CLEAN)
 
+test: $(WP34SEXE)
+	$(SYSTEM)/WP-34s -dev
 
 ifeq "$(QTMAKEFILE_EXISTS)" ""
 qtclean:
