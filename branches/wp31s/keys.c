@@ -218,13 +218,6 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			return CATALOGUE_NONE;
 		}
 
-		if (c == K40 && shift == SHIFT_F) {
-			/*
-			 *  SHOW starts register browser
-			 */
-			return CATALOGUE_REGISTERS;
-		}
-
 		/*
 		 *  Prepare search
 		 */
@@ -2291,7 +2284,7 @@ static int process_registerlist(const keycode c) {
 	}
 
 	switch (c) {
-	case K30:  // Down
+	case K50:  // Down
 		if (State2.digval > 0) {
 			if (! State2.local && State2.digval == TOPREALREG)
 				State2.digval = global_regs();
@@ -2301,8 +2294,7 @@ static int process_registerlist(const keycode c) {
 			State2.digval = max - 1;
 		goto reset_window;
 
-	case K40:  // Up (NB: use Right arrow)
-	        // ??? Not sure what to do about this
+	case K40:  // Up
 		if (State2.digval < max - 1) {
 			State2.digval++;
 			if (! State2.local && State2.digval == global_regs())
