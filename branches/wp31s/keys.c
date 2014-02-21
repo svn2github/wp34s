@@ -202,12 +202,6 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K51,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
 		};
 
-		if (c == K60 && shift == SHIFT_G) {
-			/*
-			 *  SHOW starts register browser
-			 */
-			return CATALOGUE_REGISTERS;
-		}
 #if 0
 		// conflicts with c# 002 and c# 003
 		if ((c == K52 || c == K53) && shift == SHIFT_N && State2.cmplx && State2.catalogue == CATALOGUE_NONE) {
@@ -993,10 +987,10 @@ static int process_hyp(const keycode c) {
  */
 static int process_arrow(const keycode c) {
 	static const unsigned short int op_map[][2] = {
-		{ OP_MON | OP_2DEG,  OP_MON | OP_2HMS },
-		{ OP_MON | OP_2RAD,  OP_MON | OP_HMS2 },
-		{ OP_MON | OP_HMS2,  STATE_UNFINISHED },
-		{ OP_MON | OP_2HMS,  OP_MON | OP_HMS2 }
+		{ OP_MON | OP_2DEG,  OP_MON | OP_2DEG },
+		{ OP_MON | OP_2RAD,  OP_MON | OP_2RAD },
+		{ OP_MON | OP_HMS2,  OP_MON | OP_HMS2 },
+		{ OP_MON | OP_2HMS,  OP_MON | OP_2HMS }
 	};
 	const int f = (reset_shift() == SHIFT_F);
 
