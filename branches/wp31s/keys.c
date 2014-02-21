@@ -218,6 +218,13 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			return CATALOGUE_NONE;
 		}
 
+		if (c == K40 && shift == SHIFT_F) {
+			/*
+			 *  SHOW starts register browser
+			 */
+			return CATALOGUE_REGISTERS;
+		}
+
 		/*
 		 *  Prepare search
 		 */
@@ -607,8 +614,8 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_NIL  | OP_P2R,      OP_NIL  | OP_P2R },						// ->REC
 		{ OP_MON  | OP_LOG,      OP_MON  | OP_LOG },						// LG
 		{ OP_MON  | OP_10POWX,   OP_MON  | OP_10POWX },						// 10^x
-		{ OP_MON | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCNT | NO_INT },	// %
-		{ OP_MON | OP_PERCHG   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },	// Delta%
+		{ OP_MON  | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCNT | NO_INT },	// %
+		{ OP_MON  | OP_PERCHG   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },	// Delta%
 		// Row 2
 		{ _RARG   | RARG_SWAPX,  _RARG   | RARG_SWAPX },					// x<>
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CONST Catalog
@@ -617,36 +624,36 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_MON | OP_ACOS      | NO_INT,   OP_MON | OP_ACOS   | NO_INT },	// ACOS
 		{ OP_MON | OP_ATAN      | NO_INT,   OP_MON | OP_ATAN   | NO_INT },	// ATAN
 		// Row 3
-		{ OP_NIL | OP_FILL,		   OP_NIL | OP_FILL            },			// FILL
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CONV Catalog
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// MODE Catalog
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// DISPL Catalog
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CLEAR Catalog
+		{ OP_NIL | OP_FILL,		   OP_NIL | OP_FILL            },	// FILL
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CONV Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MODE Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// DISPL Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CLEAR Catalog
 		// Row 4
-		{ OP_NIL  | OP_RUP,    	 OP_NIL  | OP_RUP },				        // Roll Up
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// MORE Catalog
-		{ OP_NIL  | OP_DEG,     OP_NIL  | OP_DEG },							// DEG Mode
-		{ OP_NIL  | OP_RAD,		   OP_NIL  | OP_RAD        },				// RAD Mode
-		{ OP_NIL  | OP_FLOAT,   OP_NIL | OP_FLOAT}, 						// H.d
+		{ OP_NIL  | OP_RUP,    	 OP_NIL  | OP_RUP },				// Roll Up
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MORE Catalog
+		{ OP_NIL  | OP_DEG,     OP_NIL  | OP_DEG },				// DEG Mode
+		{ OP_NIL  | OP_RAD,		   OP_NIL  | OP_RAD        },		// RAD Mode
+		{ OP_NIL  | OP_FLOAT,   OP_NIL | OP_FLOAT}, 				// H.d
 		// Row 5
-		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },							// SHOW as in vintage HP Calculators
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// STAT Catalog
+		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },				// SHOW as in vintage HP Calculators
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// STAT Catalog
 		{ OP_NIL | OP_statS     | NO_INT, OP_NIL | OP_statS     | NO_INT },	// Stats s
-		{ OP_NIL | OP_statR,			  OP_NIL | OP_statR              },	// Stats r
-		{ OP_NIL  | OP_HMS,     OP_NIL | OP_HMS  },							// H.MS
+		{ OP_NIL | OP_statR,			  OP_NIL | OP_statR  },		// Stats r
+		{ OP_NIL  | OP_HMS,     OP_NIL | OP_HMS  },				// H.MS
 		// Row 6
 		// SHIFT_F
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// f Shift placeholder
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// PROB Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// f Shift placeholder
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// PROB Catalog
 		{ OP_NIL | OP_statMEAN  | NO_INT, OP_NIL | OP_statMEAN  | NO_INT },	// Stats mean
 		{ OP_MON | OP_yhat      | NO_INT, OP_MON | OP_yhat      | NO_INT },	// Stats yhat
-		{ OP_DYA  | OP_HMSSUB,  OP_DYA | OP_HMSSUB },						// H.MS-
+		{ OP_DYA  | OP_HMSSUB,  OP_DYA | OP_HMSSUB },				// H.MS-
 		// Row 7
-		{ OP_NIL  | OP_OFF,		   OP_NIL  | OP_OFF	       },				// OFF
-		{ OP_MON  | OP_FACT,     OP_MON  | OP_FACT},						// x!
-		{ OP_NIL  | OP_FRACPROPER, OP_NIL  | OP_FRACPROPER },				// a b/c
-		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },				// Sigma-
-		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },				// H.MS+
+		{ OP_NIL  | OP_OFF,		   OP_NIL  | OP_OFF	       },	// OFF
+		{ OP_MON  | OP_FACT,     OP_MON  | OP_FACT},				// x!
+		{ OP_NIL  | OP_FRACPROPER, OP_NIL  | OP_FRACPROPER },			// a b/c
+		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },			// Sigma-
+		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },			// H.MS+
 	};
 
 	static const unsigned short int op_map2[] = {
@@ -2284,7 +2291,7 @@ static int process_registerlist(const keycode c) {
 	}
 
 	switch (c) {
-	case K50:
+	case K30:  // Down
 		if (State2.digval > 0) {
 			if (! State2.local && State2.digval == TOPREALREG)
 				State2.digval = global_regs();
@@ -2294,7 +2301,8 @@ static int process_registerlist(const keycode c) {
 			State2.digval = max - 1;
 		goto reset_window;
 
-	case K40:
+	case K40:  // Up (NB: use Right arrow)
+	        // ??? Not sure what to do about this
 		if (State2.digval < max - 1) {
 			State2.digval++;
 			if (! State2.local && State2.digval == global_regs())
