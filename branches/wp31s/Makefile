@@ -152,12 +152,12 @@ ifeq "$(SYSTEM)" "Ios"
 HOSTCC := gcc
 HOSTAR := ar
 HOSTRANLIB := ranlib
-HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD 
+HOSTCFLAGS := -Wall -O1 -g -DHOSTBUILD 
 else
 HOSTCC := $(CC)
 HOSTAR := $(AR)
 HOSTRANLIB := $(RANLIB)
-HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD 
+HOSTCFLAGS := -Wall -O1 -g -DHOSTBUILD 
 endif
 
 ifdef REALBUILD
