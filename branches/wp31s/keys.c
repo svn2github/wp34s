@@ -2039,15 +2039,15 @@ fin:
 static int process_confirm(const keycode c) {
 	// Optimization hint: a switch is shorter then a table of function pointers!
 	switch (c) {
-	case K52:			// Yes
+	case K52:			// Yes (K52 = Y is under the [2] key)
 		switch (State2.confirm) {
 		case confirm_clall:	 clrall();	break;
 		case confirm_reset:	 reset();	break;
 		case confirm_clprog:	 clrprog();	break;
 		case confirm_clpall:	 clpall();	break;
 		}
-	case K22:
-	case K24:			// No
+	case K22:			// No (K22 = N under the [+/-] key)
+	case K24:			// No (K24 = [<-] also means NO)
 		State2.confirm = 0;
 		State2.digval = 0;
 		break;
