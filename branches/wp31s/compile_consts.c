@@ -214,7 +214,6 @@ struct _constsml {
 #define CONV(n1, n2, op, val)		{ n1, op, val, n2 }
 
 struct _constsml constsml[] = {
-	CONSTANT("#",		"ZERO",		"0"),			// Zero & placeholder for small integers
 	CONSTANT("a",		"PC_a",		"365.2425"),		// Days in a Gregorian year
 	CONSTANT("a\270",	"PC_a0",	"5.2917721092E-11"),	// Bohr radius
 	CONSTANT("c",		"PC_C",		"299792458"),		// Speed of light in a vacuum
@@ -313,6 +312,7 @@ struct _constsml constsml[] = {
 	SYSCONST("\237",	"INF",		"inf"),
 	SYSCONST("-\237",	"NEGINF",	"-inf"),
 	SYSCONST("1/2",		"HALF",		"0.5"),
+	SYSCONST("#",		"ZERO",		"0"),			// Zero & placeholder for small integers
 	SYSCONST("1",		"ONE",		"1"),			// One
 	SYSCONST("\257",	"PI",		"3.14159265358979323846264338327950288419716939937510"),
 	SYSCONST("1/\003""5",	"RECIP_SQRT5",	"0.4472135954999579392818347337462552470881236719223"),

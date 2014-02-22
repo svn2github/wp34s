@@ -2304,7 +2304,7 @@ static void do_tst(int cmp, const enum tst_op op) {
 
 		xv = extract_value(getX_int(), &xs);
 		if (cmp >= CONST_REG_BASE) {
-			yv = cmp - CONST_REG_BASE - OP_ZERO;
+			yv = ((cmp - CONST_REG_BASE) == OP_ONE)?1:0;
 			ys = 0;
 		} else
 			yv = extract_value(get_reg_n_int(cmp), &ys);

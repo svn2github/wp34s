@@ -1717,13 +1717,9 @@ opcode current_catalogue(int n) {
 	unsigned p, q;
 
 	if (c == CATALOGUE_CONST) {
-		if (n == OP_ZERO)
-			return RARG_BASEOP(RARG_INTNUM);
 		return CONST(n);
 	}
 	if (c == CATALOGUE_COMPLEX_CONST) {
-		if (n == OP_ZERO)
-			return RARG_BASEOP(RARG_INTNUM_CMPLX);
 		return CONST_CMPLX(n);
 	}
 	if (c == CATALOGUE_CONV) {
