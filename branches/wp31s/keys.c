@@ -564,7 +564,7 @@ static int process_normal(const keycode c)
 #endif
 		process_cmdline_set_lift();
 		State2.arrow = 1;
-		set_shift(SHIFT_G);
+		set_shift(SHIFT_F);
 		break;
 
 	case K_CMPLX:
