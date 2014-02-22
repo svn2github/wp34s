@@ -415,8 +415,8 @@ static s_opcode displ_catalogue[] = {
 	NILIC(OP_RADCOM,	"RDX,")
 	NILIC(OP_RADDOT,	"RDX.")
 	RARGCMD(RARG_SCI,	"SCI")
-	NILIC(OP_THOUS_OFF,	"E3OFF")
-	NILIC(OP_THOUS_ON,	"E3ON")
+	NILIC(OP_THOUS_OFF,	"TSOFF")
+	NILIC(OP_THOUS_ON,	"TSON")
 };
 
 static s_opcode more_catalogue[] = {
