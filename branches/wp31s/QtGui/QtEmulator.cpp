@@ -56,7 +56,7 @@ QtEmulator::QtEmulator()
 
 	connect(this, SIGNAL(screenChanged()), backgroundImage, SLOT(updateScreen()));
 
-	setWindowTitle(QApplication::translate("wp34s", "WP34s"));
+	setWindowTitle(QApplication::translate("wp31s", "WP31s"));
 	currentEmulator = this;
 
 	loadMemory();

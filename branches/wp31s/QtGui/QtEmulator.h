@@ -28,8 +28,8 @@
 #include "QtSerialPort.h"
 #include "QtDebugger.h"
 
-#define ORGANIZATION_NAME "WP-34s"
-#define APPLICATION_NAME "WP34sEmulator"
+#define ORGANIZATION_NAME "WP-31s"
+#define APPLICATION_NAME "WP31sEmulator"
 #define WINDOWS_SETTINGS_GROUP "MainWindow"
 #define WINDOWS_POSITION_SETTING "Position"
 #define WINDOWS_TITLEBAR_VISIBLE_SETTING "Frameless"
