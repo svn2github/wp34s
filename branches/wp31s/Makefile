@@ -35,6 +35,8 @@ BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-exceptions
 OPT_CFLAGS := -Os -fira-region=one
 USE_CURSES := -DUSECURSES
 
+MODEL := 31s
+
 # Settings for Unix like environments with gcc
 # Creates the Console version of the emulator or the real thing
 # To build the GUI version on Windows use Microsoft Visual C++ (Express)
@@ -276,7 +278,7 @@ MAIN := $(OBJECTDIR)/main.o
 else
 MAIN := $(OBJECTDIR)/console.o
 endif
-OPCODES := $(TOOLS)/wp34s.op
+OPCODES := $(TOOLS)/wp$(MODEL).op
 
 # Targets and rules
 
@@ -522,20 +524,20 @@ qt_clean_all: qt_clean
 
 qt_clean_dist:
 	cd QtGui; $(MAKE) distclean
-	
+
 .PHONY: ios ios_lib ios_objs ios_clean
-	
+
 ios:
 	$(MAKE) SYSTEM=IosSimulator ios_lib
 	$(MAKE) SYSTEM=Ios ios_lib
 	lipo -create -arch armv7 Ios/obj/libCalculator.a -arch i386 IosSimulator/obj/libCalculator.a -output Ios/libCalculator.a
 	lipo -create -arch armv7 Ios/obj/libconsts.a -arch i386 IosSimulator/obj/libconsts.a -output Ios/libconsts.a
 	lipo -create -arch armv7 Ios/obj/libdecNum34s.a -arch i386 IosSimulator/obj/libdecNum34s.a -output Ios/libdecNum34s.a
-			
+
 ios_lib: ios_objs $(CALCLIB)
 
 ios_objs: $(DIRS) $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) $(LDCTRL) Makefile
 
 ios_clean:
 	rm -rf Ios IosSimulator
-	
+
