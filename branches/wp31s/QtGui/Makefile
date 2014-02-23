@@ -16,8 +16,9 @@
 # Settings for Unix like environments with gcc
 # Creates the Console version of the emulator or the real thing
 
-
 TOOLS=../tools
+
+MODEL := 31s
 
 SYSTEM := $(shell uname)
 ifeq "$(SYSTEM)" ""
@@ -55,39 +56,39 @@ DIRS := $(OUTPUTDIR)
 DISTPRINTERDIR := ../QtPrinterEmulator
 
 ifeq "$(SYSTEM)" "windows32"
-DISTDIR := $(SYSTEM)/dist/wp-34s
+DISTDIR := $(SYSTEM)/dist/wp-$(MODEL)
 ZIPCHANGEDIR := $(SYSTEM)/dist
-ZIPTOPDIR := wp-34s
-DISTFILE := wp-34s-emulator-windows.zip
+ZIPTOPDIR := wp-$(MODEL)
+DISTFILE := wp-$(MODEL)-emulator-windows.zip
 ZIPDISTFILE := ../../$(DISTFILE)
 RESOURCESDIR := $(DISTDIR)
 DISTPRINTEREXE := $(DISTPRINTERDIR)/windows32/HP-82240B.exe
 endif
 ifneq "$(LINUX)" ""
-DISTDIR := $(SYSTEM)/dist/wp-34s
+DISTDIR := $(SYSTEM)/dist/wp-$(MODEL)
 TARCHANGEDIR := $(SYSTEM)/dist
-TARTOPDIR := wp-34s
+TARTOPDIR := wp-$(MODEL)
 DISTPRINTEREXE := $(DISTPRINTERDIR)/$(LINUX)/HP-82240B
 ifeq "$(SYSTEM)" "Linux64"
-DISTFILE := wp-34s-emulator-linux64.tgz
+DISTFILE := wp-$(MODEL)-emulator-linux64.tgz
 else
-DISTFILE := wp-34s-emulator-linux.tgz
+DISTFILE := wp-$(MODEL)-emulator-linux.tgz
 endif
 RESOURCESDIR := $(DISTDIR)
-LINUX_EXTRA_FILES := README_Linux.txt icons/wp34s-logo.png $(DISTPRINTERDIR)/icons/HP-82240B.png
+LINUX_EXTRA_FILES := README_Linux.txt icons/wp$(MODEL)-logo.png $(DISTPRINTERDIR)/icons/HP-82240B.png
 endif
 ifeq "$(SYSTEM)" "Darwin"
 APPSDISTDIR := $(OUTPUTDIR)/apps
-DISTDIR := $(APPSDISTDIR)/WP-34s.app
+DISTDIR := $(APPSDISTDIR)/WP-$(MODEL).app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
-BUILTDMG := $(OUTPUTDIR)/WP-34s.dmg
-DISTDMG := ./wp-34s-emulator-macosx.dmg
-BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname WP-34s -srcfolder $(APPSDISTDIR) $(DISTDMG)
+BUILTDMG := $(OUTPUTDIR)/WP-$(MODEL).dmg
+DISTDMG := ./wp-$(MODEL)-emulator-macosx.dmg
+BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname WP-$(MODEL) -srcfolder $(APPSDISTDIR) $(DISTDMG)
 DISTPRINTERAPP :=$(DISTPRINTERDIR)/Darwin/app/HP-82240B.app
 endif
 DISTMEMORYDIR := $(RESOURCESDIR)/memory
-DISTMEMORYFILE := $(DISTMEMORYDIR)/wp34s-lib.dat
+DISTMEMORYFILE := $(DISTMEMORYDIR)/wp$(MODEL)-lib.dat
 # Warning the trailing / is mandatory
 QTLIBSDIR := c:/Qt/4.8.4/bin/
 QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll qtnetwork4.dll mingwm10.dll libgcc_s_dw2-1.dll)
@@ -99,15 +100,12 @@ WP34SSOLVERFILES :=  $(addprefix $(WP34SLIBDIR), TVM.wp34s)
 WP34STRIGOFACTOFILES :=  $(addprefix $(WP34SLIBDIR), TRIGON.wp34s PF.wp34s)
 WP34SLIB=$(TOOLS)/wp34s_lib.pl -d 0
 
-
 DOCFILENAME := Manual_wp_34s_3_1.pdf
 DOCDIR := ../../doc
 DOCFILE := $(DOCDIR)/$(DOCFILENAME)
 DISTDOCDIR := $(RESOURCESDIR)/doc
 DISTDOCDIR := $(RESOURCESDIR)/doc
 DISTDOCFILE := $(DISTDOCDIR)/$(DOCFILENAME)
-
-
 
 
 # we need the MAKE variable to be defined
@@ -141,7 +139,7 @@ DIRS_TO_CLEAN := $(DIRS) $(DISTDIR)
 EXTRA_FILES_TO_CLEAN := $(DISTFILE)
 ifeq "$(SYSTEM)" "windows32"
 DIRS_TO_CLEAN += debug release
-EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.WP-34s.debug object_script.WP-34s.release
+EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.WP-$(MODEL).debug object_script.WP-$(MODEL).release
 endif
 
 ifeq "$(NO_SERIAL)" ""
@@ -188,10 +186,10 @@ all: qtserial $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
 	$(MAKE) -f $(QTMAKEFILE) BASELIBS="$(BASELIBS)" OTHEROBJS="$(EXTRAOBJS) $(BASEOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIALLIB="$(SERIALLIB)" QTSERIAL_INCLUDE="$(QTSERIAL_INCLUDE)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 
 ifeq "$(SYSTEM)" "windows32"
-WP34SEXE := $(OUTPUTDIR)/WP-34s.exe
+WP31SEXE := $(OUTPUTDIR)/WP-$(MODEL).exe
 endif
 ifneq "$(LINUX)" ""
-WP34SEXE := $(OUTPUTDIR)/WP-34s
+WP31SEXE := $(OUTPUTDIR)/WP-$(MODEL)
 endif
 
 ifeq "$(HAS_SERIAL)" "0"
@@ -203,7 +201,7 @@ endif
 
 dist: distclean release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE) distprinter
 ifeq "$(SYSTEM)" "windows32"
-	$(CP) $(WP34SEXE) $(DISTDIR)
+	$(CP) $(WP31SEXE) $(DISTDIR)
 	$(MKDIR) $(DISTDIR)/skins
 	$(CPDIR) skins/* $(DISTDIR)/skins
 	$(MKDIR) $(DISTDIR)/images
@@ -226,7 +224,7 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(BUILDDMG)
 endif
 ifneq "$(LINUX)" ""
-	$(CP) $(WP34SEXE) $(DISTDIR)
+	$(CP) $(WP31SEXE) $(DISTDIR)
 	$(MKDIR) $(DISTDIR)/skins
 	$(CPDIR) skins/* $(DISTDIR)/skins
 	$(MKDIR) $(DISTDIR)/images
@@ -270,7 +268,7 @@ endif
 build_date: 
 	$(CC) -c $(CFLAGS) -o $(BUILDDATEOBJ) $(BUILDDATESRC)
 
-$(QTMAKEFILE): WP-34s.pro
+$(QTMAKEFILE): WP-31s.pro
 	$(MAKE) qtclean
 ifeq ($(SYSTEM),Darwin)
 	$(QMAKE) -makefile DESTDIR=$(APPSDISTDIR) MOC_DIR=$(OUTPUTDIR) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILE)
@@ -285,8 +283,8 @@ clean: qtclean
 	-$(RM) $(QTMAKEFILE) $(EXTRA_FILES_TO_CLEAN)
 	-$(RMDIR) $(DIRS_TO_CLEAN)
 
-test: $(WP34SEXE)
-	$(SYSTEM)/WP-34s -dev
+test: $(WP31SEXE)
+	$(SYSTEM)/WP-$(MODEL) -dev
 
 ifeq "$(QTMAKEFILE_EXISTS)" ""
 qtclean:
