@@ -402,7 +402,7 @@ static s_opcode cplx_catalogue[] = {
 static s_opcode clear_catalogue[] = {
 	NILIC(OP_CLALL,		"CLALL")
 	NILIC(OP_CLREG,		"CLREG")
-	NILIC(OP_SIGMACLEAR, "CL\221")
+	NILIC(OP_SIGMACLEAR, "\221CL")
 	NILIC(OP_RESET,		"RESET")
 //	NILIC(OP_CLSTK,		"CLSTK")
 };
@@ -484,6 +484,7 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_sigmaY,	"\221y")
 	NILIC(OP_sigmaY2,	"\221y\232")
 	NILIC(OP_sigmaYlnX,	"\221YlnX")
+	MON(OP_FACT,	"x!")
 };
 
 static s_opcode prob_catalogue[] = {

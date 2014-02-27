@@ -196,10 +196,10 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K21,     { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
 			{ K22,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
 			{ K23,     { CATALOGUE_DISPL,     CATALOGUE_DISPL,     CATALOGUE_DISPL         } },
-			{ K24,     { CATALOGUE_CLEAR,     CATALOGUE_CLEAR,     CATALOGUE_CLEAR         } },
 			{ K31,     { CATALOGUE_MORE,      CATALOGUE_NONE,      CATALOGUE_MORE          } },
 			{ K41,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
 			{ K51,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
+			{ K61,     { CATALOGUE_CLEAR,     CATALOGUE_CLEAR,     CATALOGUE_CLEAR         } },
 		};
 
 #if 0
@@ -298,13 +298,13 @@ static int keycode_to_alpha(const keycode c, unsigned int shift)
 		{ 'O',  'o',  0212, 0257, 'l',  0252,  },  // K23
 		{ 0000, 0000, 0000, 0000, 0000, 0000   },  // K24 <-
 
-		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30 RollDown
+		{ 0000, 0000, 0000, 0000, 0000, 0000,  },  // K30 Rollup
 		{ 'P',  'p',  'M',  '&',  'm',  0253,  },  // K31
 		{ 'Q',  'q',  'N',  '|',  'n',  0254,  },  // K32
 		{ 'R',  'r',  0227, 0013, 'o',  0267,  },  // K33
 		{ 'S',  's',  0217, '\\', 'p',  0257,  },  // K34
 
-		{ 0005, 0000, 0000, '!',  0000, 0000,  },  // K40 ->
+		{ 0000, 0000, 0000, '!',  0000, 0000,  },  // K40 Rolldown
 		{ 'T',  't',  0000, 0000, 'q',  0000,  },  // K41
 		{ 'U',  'u',  'R',  0000, 'r',  0260,  },  // K42
 		{ 'V',  'v',  0221, 0000, 's',  0261,  },  // K43
@@ -525,13 +525,13 @@ static int process_normal(const keycode c)
 		OP_SPEC | OP_EEX,	        // EEX
 		OP_SPEC | OP_CLX,	        // <-
 		// Row 4
-		OP_NIL  | OP_RDOWN,         // Roll Down
+		OP_NIL  | OP_RUP,	        // Roll Up
 		OP_SPEC | OP_7,				// 7
 		OP_SPEC | OP_8,				// 8
 		OP_SPEC | OP_9,				// 9
 		OP_DYA  | OP_DIV,			// Divide
 		// Row 5
-		STATE_UNFINISHED,			// ARROW
+		OP_NIL  | OP_RDOWN,			// Roll Down
 		OP_SPEC | OP_4,				// 4
 		OP_SPEC | OP_5,				// 5
 		OP_SPEC | OP_6,				// 6
@@ -554,19 +554,6 @@ static int process_normal(const keycode c)
 
 	// The switch handles all the special cases
 	switch (c) {
-	case K_ARROW:
-#ifdef INT_MODE_TEMPVIEW
-		if (intltr(14))
-			return op;
-#else
-		if (UState.intm)
-			return op;
-#endif
-		process_cmdline_set_lift();
-		State2.arrow = 1;
-		set_shift(SHIFT_F);
-		break;
-
 	case K_CMPLX:
 		if (UState.intm)
 			return op;
@@ -621,19 +608,19 @@ static int process_fg_shifted(const keycode c) {
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CONV Catalog
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MODE Catalog
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// DISPL Catalog
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CLEAR Catalog
+		{ OP_MON  | OP_FACT,     OP_MON  | OP_FACT },				// UNDO - Stubbed as x! for now
 		// Row 4
-		{ OP_NIL  | OP_RUP,    	 OP_NIL  | OP_RUP },				// Roll Up
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// ->
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MORE Catalog
-		{ OP_NIL  | OP_DEG,     OP_NIL  | OP_DEG },				// DEG Mode
+		{ OP_NIL  | OP_DEG,     OP_NIL  | OP_DEG },					// DEG Mode
 		{ OP_NIL  | OP_RAD,		   OP_NIL  | OP_RAD        },		// RAD Mode
 		{ OP_NIL  | OP_FLOAT,   OP_NIL | OP_FLOAT}, 				// H.d
 		// Row 5
-		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },				// SHOW as in vintage HP Calculators
+		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },					// SHOW as in vintage HP Calculators
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// STAT Catalog
 		{ OP_NIL | OP_statS     | NO_INT, OP_NIL | OP_statS     | NO_INT },	// Stats s
 		{ OP_NIL | OP_statR,			  OP_NIL | OP_statR  },		// Stats r
-		{ OP_NIL  | OP_HMS,     OP_NIL | OP_HMS  },				// H.MS
+		{ OP_NIL  | OP_HMS,     OP_NIL | OP_HMS  },					// H.MS
 		// Row 6
 		// SHIFT_F
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// f Shift placeholder
@@ -664,6 +651,20 @@ static int process_fg_shifted(const keycode c) {
 		op &= ~NO_INT;
 
 	switch (c) {
+	case K_ARROW:
+#ifdef INT_MODE_TEMPVIEW
+		if (intltr(14))
+			return op;
+#else
+		if (UState.intm)
+			return op;
+#endif
+		process_cmdline_set_lift();
+		State2.arrow = 1;
+		set_shift(SHIFT_F);
+		break;
+
+
 	case K12:
 		if (! UState.intm) {
 			State2.hyp = 1;
@@ -679,36 +680,6 @@ static int process_fg_shifted(const keycode c) {
 			return check_f_key(lc, op_map2[lc]);
 		}
 		break;
-
-// SV	case K20:				// Alpha
-//		if (shift == SHIFT_F) {
-//			process_cmdline_set_lift();
-//			State2.alphas = 1;
-//		}
-//		break;
-
-// SV	case K51:
-//		process_cmdline_set_lift();
-//		State2.test = op;
-//		return STATE_UNFINISHED;
-
-// SV	case K50:
-//#ifndef REALBUILD
-//		if (SHIFT_N != shift_down()) {
-//			State2.trace = (shift == SHIFT_F);
-//			return STATE_UNFINISHED;
-//		}
-//#endif
-//	case K52:
-//	case K53:
-//	case K63:
-//	case K64:
-//		if (op != (OP_NIL | OP_RTN)) {
-//			if (! (no_int && UState.intm))
-//				init_arg((enum rarg) op);
-//			return STATE_UNFINISHED;
-//		}
-//		break;
 
 	default:
 		break;
@@ -1817,18 +1788,13 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 			init_cat(CATALOGUE_NONE);
 			return STATE_UNFINISHED;
 
-		case K30:
+		case K40:
 			CmdLineLength = 0;
 			while (++pos < ctmax && is_multi && forbidden_alpha(pos));
 			if (pos >= ctmax)
 				pos = 0;
 			goto set_pos;
 
-		default:
-			break;
-		}
-	} else if (shift == SHIFT_F) {
-		switch (c) {
 		case K30:
 			CmdLineLength = 0;
 			if (pos == 0)
@@ -1836,6 +1802,19 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 			else
 				--pos;
 			goto set_pos;
+
+		default:
+			break;
+		}
+	} else if (shift == SHIFT_F) {
+		switch (c) {
+//		case K30:
+//			CmdLineLength = 0;
+//			if (pos == 0)
+//				goto set_max;
+//			else
+//				--pos;
+//			goto set_pos;
 		default:
 		    // Ignore anything else
 		    break;
