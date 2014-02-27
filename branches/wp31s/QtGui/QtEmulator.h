@@ -75,9 +75,9 @@
 #define IMAGE_DIRECTORY "images"
 #define DOCUMENTATION_FILE_TYPE "doc"
 #define DOCUMENTATION_DIRECTORY "doc"
-#define STATE_FILENAME "wp34s.dat"
-#define BACKUP_FILENAME "wp34s-backup.dat"
-#define LIBRARY_FILENAME "wp34s-lib.dat"
+#define STATE_FILENAME "wp31s.dat"
+#define BACKUP_FILENAME "wp31s-backup.dat"
+#define LIBRARY_FILENAME "wp31s-lib.dat"
 #define FONT_FILE_TYPE "font"
 #define FONTS_DIRECTORY "fonts"
 
