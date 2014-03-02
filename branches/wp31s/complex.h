@@ -62,7 +62,7 @@ extern void cmplxPowerReal(decNumber *rx, decNumber *ry,
 /* Conversion to and from polar representation */
 extern void cmplxArg(decNumber *arg, const decNumber *a, const decNumber *b);
 extern void cmplxR(decNumber *r, const decNumber *a, const decNumber *b);
-extern void cmplxFromPolar(decNumber *x, decNumber *y, const decNumber *r, const decNumber *t);
+//extern void cmplxFromPolar(decNumber *x, decNumber *y, const decNumber *r, const decNumber *t);
 extern void cmplxToPolar(decNumber *r, decNumber *t, const decNumber *x, const decNumber *y);
 
 

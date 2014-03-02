@@ -1453,13 +1453,15 @@ void op_r2p(enum nilop op) {
 }
 
 void op_p2r(enum nilop op) {
-	decNumber x, y, rx, ry;
+	decNumber x, y, t, range, angle;
 
-	getXY(&x, &ry);
-	cvt_2rad(&y, &ry, NULL, NULL, NULL, NULL);
-	cmplxFromPolar(&rx, &ry, &x, &y);
+	getXY(&range, &angle);
+	decNumberCos(&t, &angle);
+	dn_multiply(&x, &t, &range);
+	decNumberSin(&t, &angle);
+	dn_multiply(&y, &t, &range);
 	setlastX();
-	setXY(&rx, &ry);
+	setXY(&x, &y);
 #ifdef RP_PREFIX
 	RectPolConv = 2;
 #endif
