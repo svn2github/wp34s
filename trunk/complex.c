@@ -204,13 +204,13 @@ void cmplxR(decNumber *r, const decNumber *a, const decNumber *b) {
 	dn_sqrt(r, &s.n);
 }
 
-void cmplxFromPolar(decNumber *x, decNumber *y, const decNumber *r, const decNumber *t) {
-	decNumber s, c;
+//void cmplxFromPolar(decNumber *x, decNumber *y, const decNumber *r, const decNumber *t) {
+//	decNumber s, c
 
-	dn_sincos(t, &s, &c);
-	dn_multiply(x, r, &c);
-	dn_multiply(y, r, &s);
-}
+//	dn_sincos(t, &s, &c);
+//	dn_multiply(x, r, &c);
+//	dn_multiply(y, r, &s);
+//}
 
 void cmplxToPolar(decNumber *r, decNumber *t, const decNumber *x, const decNumber *y) {
 	do_atan2(t, y, x);
