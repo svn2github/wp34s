@@ -207,6 +207,12 @@ void QtEmulator::showDocumentation()
 		QUrl url=QUrl::fromLocalFile(documentationFile.fileName());
 		QDesktopServices::openUrl(url);
 	}
+	else 
+	{
+	    QString notFoundMsg("Unable to find WP-31s manual file: \n");
+	    notFoundMsg += DOCUMENTATION_FILENAME;
+	    QMessageBox::about(this, "Manual not found!", notFoundMsg);
+	}
 }
 
 void QtEmulator::toggleTitleBar()
