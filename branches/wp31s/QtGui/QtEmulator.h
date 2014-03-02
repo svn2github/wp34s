@@ -81,7 +81,7 @@
 #define FONT_FILE_TYPE "font"
 #define FONTS_DIRECTORY "fonts"
 
-#define DOCUMENTATION_FILENAME "Manual_wp_34s_3_1.pdf"
+#define DOCUMENTATION_FILENAME "Manual_wp_31s_1_1.pdf"
 #define WEBSITE_URL "http://wp34s.sourceforge.net/"
 
 #define DEBUG_OPTION "-debug"
@@ -91,7 +91,7 @@
 #define RESOURCES_DIR "/../Resources/"
 #else
 #ifdef Q_OS_UNIX
-#define RESOURCES_DIR "/../lib/WP-34s/"
+#define RESOURCES_DIR "/../lib/WP-31s/"
 #endif
 #endif
 
