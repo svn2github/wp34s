@@ -29,13 +29,13 @@
 //  ----------------------------------------------------------------------------
 
 #ifdef wp34s
-#define MANUAL "wp34s_Manual.pdf"
+#define MANUAL "wp31s_Manual.pdf"
 #define WEBSITE "http://wp34s.sourceforge.net/"
 #define REGKEY "wp34s"
 #else
 #define MANUAL "HP_20b_Online_Manual.pdf"
 #define WEBSITE "http://www.hp.com/calculators"
-#define WEBSITE 
+#define WEBSITE
 #define REGKEY "hp20b"
 #endif
 
@@ -49,10 +49,10 @@
 
 //#include "atlimage.h"
 
-// The compiler encountered a function that was marked with deprecated. 
-// The function may no longer be supported in a future release. 
+// The compiler encountered a function that was marked with deprecated.
+// The function may no longer be supported in a future release.
 // The warning has been disabled for fopen(...) function
-# pragma warning(disable : 4996) 
+# pragma warning(disable : 4996)
 # pragma warning(disable : 4800)
 
 # ifdef _DEBUG
@@ -95,37 +95,37 @@ public CDialog
   CString GetVersionInfo();
 };
 CAboutDlg::CAboutDlg(): CDialog(CAboutDlg::IDD)
-{ 
+{
   //{{AFX_DATA_INIT(CAboutDlg)
   //}}AFX_DATA_INIT
 }
 void CAboutDlg::DoDataExchange(CDataExchange *pDX)
-{ 
+{
   CDialog        ::DoDataExchange(pDX);
   //{{AFX_DATA_MAP(CAboutDlg)
   //}}AFX_DATA_MAP
 }
 /***************************************************************
-** 
+**
 ** This member function is called in response to the WM_INITDIALOG message.
-** 
+**
 ***************************************************************/
 //
 BOOL CAboutDlg::OnInitDialog()
-{ 
+{
   SetDlgItemText(IDC_STATIC_VER_INFO, GetVersionInfo());
   SetDlgItemText(IDC_STATIC_MY_NAME, MyName);
   return TRUE;
 }
 /***************************************************************
-** 
-**  Function to extract the build date from globally defined 
-**  variable BuildDate in Build.h 
-** 
+**
+**  Function to extract the build date from globally defined
+**  variable BuildDate in Build.h
+**
 ***************************************************************/
 //
 CString CAboutDlg::GetVersionInfo()
-{ 
+{
   CString ret_val;
   u64   b = BuildDate & (u64)0xfffffffffffffff;
 
@@ -135,7 +135,7 @@ CString CAboutDlg::GetVersionInfo()
 
   if ((b & 0xfff) != 0)
     b <<= 4;
-  
+
   m = (int)((b & (u64)0xff00000000000000) >> 56);
   d = (int)((b & (u64)0x00ff000000000000) >> 48);
   y = (int)((b & (u64)0x0000ffff00000000) >> 32);
@@ -154,7 +154,7 @@ CHP20b_cDlg::CHP20b_cDlg(CWnd *pParent        /*=NULL*/
 
 :
 CDialog(CHP20b_cDlg::IDD, pParent)
-{ 
+{
   //{{AFX_DATA_INIT(CHP20b_cDlg)
   m_nHP20bKeyDown = - 1;
   m_Touch_Base = NONE;
@@ -165,10 +165,10 @@ CDialog(CHP20b_cDlg::IDD, pParent)
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 CHP20b_cDlg::~CHP20b_cDlg()
-{ 
+{
 }
 void CHP20b_cDlg::DoDataExchange(CDataExchange *pDX)
-{ 
+{
   CDialog::DoDataExchange(pDX);
 
   //{{AFX_DATA_MAP(CHP20b_cDlg)
@@ -220,7 +220,7 @@ END_MESSAGE_MAP()
 
 LARGE_INTEGER PerformanceFrequency;
 int TestVoltage(int min, int max)
-{ 
+{
   return 30;
 }
 HANDLE Pipe = 0;
@@ -228,7 +228,7 @@ CHP20b_cDlg *dlg;
 HANDLE    KeyEvent;
 LARGE_INTEGER LastScreenUpdate;
 void UpdateDlgScreen(bool force)
-{ 
+{
   if (!force) {
     LARGE_INTEGER a;
 
@@ -239,12 +239,12 @@ void UpdateDlgScreen(bool force)
     LastScreenUpdate = a;
   }
   LastScreenUpdate.QuadPart = 0;
-  SendMessage(dlg->m_hWnd, WM_CHAR, '[', 0);   //used to force a screen refresh...        
+  SendMessage(dlg->m_hWnd, WM_CHAR, '[', 0);   //used to force a screen refresh...
 }
 int PeekChar();
 volatile  u32 *stacktrash;
 static void stackTrash()
-{ 
+{
   volatile  u32 table[2048];
 
   stacktrash = &table[0];
@@ -253,7 +253,7 @@ static void stackTrash()
 
 }
 int stackSize()
-{ 
+{
   volatile  u32 *a = stacktrash;
   int   s = 2048 *4;
 
@@ -263,7 +263,7 @@ int stackSize()
   return s;
 }
 static void retrashto(int largest)
-{ 
+{
   volatile  u32 *a = stacktrash;
 
   largest = 2048 - largest / 4;
@@ -272,7 +272,7 @@ static void retrashto(int largest)
 
 }
 unsigned long __stdcall CalculationThread(void *p)
-{ 
+{
   stackTrash();
 
   while (1) {
@@ -315,7 +315,7 @@ unsigned long __stdcall CalculationThread(void *p)
 bool CommunicationPipeConnected = false;
 HANDLE    ComunicationNamedPipe;
 unsigned long __stdcall CommunicationThread(void *p)
-{ 
+{
   while (true) {
     if (CommunicationPipeConnected) {
       if (!PeekNamedPipe(ComunicationNamedPipe, NULL, NULL, NULL, NULL, NULL)) {
@@ -355,7 +355,7 @@ unsigned long __stdcall CommunicationThread(void *p)
   }
 }
 bool Is40b()
-{ 
+{
 # ifndef HP20b
   return true;
 # else
@@ -364,7 +364,7 @@ bool Is40b()
 }
 
 u32 GetChars(u8 *b, u32 nb, u32 timeout)
-{ 
+{
   static int  p1 = 0, p2 = 0;
   static    u8 B[1024];
   LARGE_INTEGER t1, t2;
@@ -404,7 +404,7 @@ u32 GetChars(u8 *b, u32 nb, u32 timeout)
 
       continue;
     }
-    if (!ReadFile(ComunicationNamedPipe, &B[p1], bytes, &w, 
+    if (!ReadFile(ComunicationNamedPipe, &B[p1], bytes, &w,
             NULL))
       return nb;
 
@@ -416,7 +416,7 @@ u32 GetChars(u8 *b, u32 nb, u32 timeout)
 // before optim:                       690/s in 4:29 at 15609 io in/s and 15819 io out/s
 // after better force sent management: 761/s in 3:37 at 19336 io in/s and 19630 io out/s
 void SendChars(u8 const *d, u32 size, bool ForceSend)
-{ 
+{
   static int  p1 = 0, p2 = 0;
   static    u8 b[1024];
 
@@ -434,7 +434,7 @@ void SendChars(u8 const *d, u32 size, bool ForceSend)
       int s2 = p2 > p1
          ? 1024 - p2
          : p1 - p2;
-      WriteFile(ComunicationNamedPipe, &b[p2], s2, &w, 
+      WriteFile(ComunicationNamedPipe, &b[p2], s2, &w,
           NULL);
       p2 += w;
       if (p2 - 1024 >= 0)
@@ -470,18 +470,18 @@ void SendChars(u8 const *d, u32 size, bool ForceSend)
   }
 }
 void SendCharNoForce(u8 c)
-{ 
+{
   SendChars(&c, 1, false);
 }
 void SendChar(unsigned char c)
-{ 
+{
   SendChars(&c, 1, true);
 //  if (!CommunicationPipeConnected) return;
 //  DWORD w;
 //  WriteFile(ComunicationNamedPipe, &c, 1, &w, NULL);
 }
 int GetChar()
-{ 
+{
   u8    b;
 
   if (0 == GetChars(&b, 1, 0))
@@ -490,13 +490,13 @@ int GetChar()
   return - 1;
 }
 int PeekChar()
-{ 
+{
   if (!CommunicationPipeConnected)
     return - 1;
 
   DWORD   bytes;
 
-  if (!PeekNamedPipe(ComunicationNamedPipe, NULL, 1, &bytes, NULL, 
+  if (!PeekNamedPipe(ComunicationNamedPipe, NULL, 1, &bytes, NULL,
          NULL))
     return - 1;
 
@@ -506,7 +506,7 @@ int PeekChar()
   return max(bytes, 8192);
 }
 int GetChar2(u32 timeout)
-{ 
+{
   u8    C;
   int   c = GetChars(&C, 1, timeout);
 
@@ -518,7 +518,7 @@ int GetChar2(u32 timeout)
 #endif
 
 BOOL CHP20b_cDlg::OnInitDialog()
-{ 
+{
   QueryPerformanceFrequency(&PerformanceFrequency);
   LastScreenUpdate.QuadPart = 0;
   CDialog        ::OnInitDialog();
@@ -536,7 +536,7 @@ BOOL CHP20b_cDlg::OnInitDialog()
     strAboutMenu.LoadString(IDS_ABOUTBOX);
     if (!strAboutMenu.IsEmpty()) {
       pSysMenu->AppendMenu(MF_SEPARATOR);
-      pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX, 
+      pSysMenu->AppendMenu(MF_STRING, IDM_ABOUTBOX,
                strAboutMenu);
     }
   }
@@ -575,12 +575,12 @@ BOOL CHP20b_cDlg::OnInitDialog()
     else
       sprintf(name, "\\\\.\\pipe\\hp20b_%d", i);
 
-    ComunicationNamedPipe = CreateNamedPipe(name, 
-              PIPE_ACCESS_DUPLEX, 
-              PIPE_TYPE_BYTE | 
+    ComunicationNamedPipe = CreateNamedPipe(name,
+              PIPE_ACCESS_DUPLEX,
+              PIPE_TYPE_BYTE |
               PIPE_READMODE_BYTE
-              | PIPE_WAIT, 1, 
-              8192, 2048, 100, 
+              | PIPE_WAIT, 1,
+              8192, 2048, 100,
               NULL);
     i++;
   }
@@ -595,18 +595,18 @@ BOOL CHP20b_cDlg::OnInitDialog()
 
 #ifndef wp34s
 /***************************************************************
-** 
-** Function is responsible to remove Test System related menus  
-** 
+**
+** Function is responsible to remove Test System related menus
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::CheckMenuForManager()
-{ 
+{
 }
 #endif
 
 void CHP20b_cDlg::OnSysCommand(UINT nID, LPARAM lParam)
-{ 
+{
   if ((nID & 0xFFF0) == IDM_ABOUTBOX) {
     CAboutDlg dlgAbout;
 
@@ -621,14 +621,14 @@ void CHP20b_cDlg::OnSysCommand(UINT nID, LPARAM lParam)
   }
 }
 /***************************************************************
-** 
+**
 ** Override function to filter VK_F10 keystroke. Pressing F10 doesn't generate WM_KEYDOWN.
 ** F10 is a special key used to activate menu bar.
 **
 ***************************************************************/
 //
 BOOL CHP20b_cDlg::PreTranslateMessage(MSG *pMsg)
-{ 
+{
   if ((pMsg->wParam - VK_F1 + 1) == 10        /*VK_F10*/
   ) {
     if (pMsg->message == WM_SYSKEYDOWN)
@@ -657,13 +657,13 @@ BOOL CHP20b_cDlg::PreTranslateMessage(MSG *pMsg)
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
 void CHP20b_cDlg::OnPaint()
-{ 
+{
   if (IsIconic()) {
     CPaintDC  dc(this);
 
     // device context for painting
 
-    SendMessage(WM_ICONERASEBKGND, (WPARAM) dc.GetSafeHdc(), 
+    SendMessage(WM_ICONERASEBKGND, (WPARAM) dc.GetSafeHdc(),
           0);
     // Center icon in client rectangle
     int   cxIcon = GetSystemMetrics(SM_CXICON);
@@ -684,16 +684,16 @@ void CHP20b_cDlg::OnPaint()
 // The system calls this to obtain the cursor to display while the user drags
 //  the minimized window.
 HCURSOR CHP20b_cDlg::OnQueryDragIcon()
-{ 
+{
   return (HCURSOR) m_hIcon;
 }
 void CHP20b_cDlg::keypress(int a)
-{ 
+{
   //  if user has clicked the Off MyApplication key
   if (a == KEYON && GetFlag(shift) && ((System.KeyboardMap && (1 << KEYSHIFT)) == 0)) // On Key
   {
     ClearFlag(shift);
-    DestroyWindow();        // Close Application 
+    DestroyWindow();        // Close Application
     return;
   }
   m_VirtualLCD.hpStopTimerScrollLines();
@@ -706,7 +706,7 @@ void CHP20b_cDlg::keypress(int a)
   SetEvent(KeyEvent);
 }
 void CHP20b_cDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
-{ 
+{
   if (nChar != '[')
     keypress(nChar);
   else {
@@ -720,15 +720,15 @@ void CHP20b_cDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
   }
 }
 /***************************************************************
-** 
+**
 ** Responsible to add the virtual key code of the current pressed key,
-** and fire a WM_KEYUP message for the previous key which the user has 
+** and fire a WM_KEYUP message for the previous key which the user has
 ** not released.
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
-{ 
+{
   if (m_listKeyCode.size() > 0) {
     list< WPARAM >::iterator iter;
     bool already_exists = false;
@@ -740,11 +740,11 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
       }
     }
     if (!already_exists) {
-      for (iter = m_listKeyCode.begin(); iter != 
+      for (iter = m_listKeyCode.begin(); iter !=
             m_listKeyCode.end(); ) {
           if (*iter != VK_LSHIFT && *iter != VK_RSHIFT && *iter != VK_SHIFT
 #ifdef wp34s
-              && *iter != 'F' && *iter != 'G' && *iter != 'H'
+              && *iter != 'M' //&& *iter != 'G' && *iter != 'H'
 #endif
           )
 	    HP20bKeyUp(*iter);
@@ -759,18 +759,18 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
 }
 
 /***************************************************************
-** 
-** Responsible to trap keystrokes for non-system keys. Once trapped, 
+**
+** Responsible to trap keystrokes for non-system keys. Once trapped,
 ** calls the keypress(...) function
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
-{ 
+{
 #ifdef wp34s
-  if (wKeyCode == 'F' && System.KeyboardMap & 0x200
-   || wKeyCode == 'G' && System.KeyboardMap & 0x400
-   || wKeyCode == 'H' && System.KeyboardMap & 0x800 )
+  if (wKeyCode == 'F' && System.KeyboardMap & 0x200)
+   //|| wKeyCode == 'G' && System.KeyboardMap & 0x400
+   //|| wKeyCode == 'H' && System.KeyboardMap & 0x800 )
     return;
 #endif
   ForceHP20bKeyUp(wKeyCode);
@@ -787,7 +787,7 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
           InvertRgn(hDC, m_rgnPressedButton);
           ::ReleaseDC(m_Background.m_hWnd, hDC);
 #ifdef wp34s
-          if (wKeyCode == 'F' || wKeyCode == 'G' || wKeyCode == 'H') {
+          if (wKeyCode == 'F' ) { //|| wKeyCode == 'G' || wKeyCode == 'H') {
             return;
 	  }
 #endif
@@ -798,14 +798,14 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
   }
 }
 /***************************************************************
-** 
-** Responsible to trap keystrokes for non-system keys. Once trapped, 
+**
+** Responsible to trap keystrokes for non-system keys. Once trapped,
 ** calls the keypress(...) function
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
-{ 
+{
   LONG key;
   if (wKeyCode == VK_LSHIFT || wKeyCode == VK_RSHIFT || wKeyCode == VK_SHIFT) {
     m_bShiftKeyPressed = false;
@@ -829,13 +829,13 @@ void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
   m_Touch_Base = NONE;
 }
 /***************************************************************
-** 
+**
 **  Called to inform the CWnd object that it is being destroyed.
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::OnDestroy()
-{ 
+{
   CDialog::OnDestroy();
 
   WriteToRegistry();
@@ -846,15 +846,15 @@ void CHP20b_cDlg::OnDestroy()
   }
 }
 /***************************************************************
-** 
-** Called when the user releases the left mouse button on the button image 
-** displayed on the calculator. Function is responsible to invert the color 
+**
+** Called when the user releases the left mouse button on the button image
+** displayed on the calculator. Function is responsible to invert the color
 ** of the selected button image.
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::OnLButtonUp(UINT nFlags, CPoint point)
-{ 
+{
   if (NULL != m_rgnPressedButton && MOUSE == m_Touch_Base) {
     HDC   hDC =::GetDC(m_Background.m_hWnd);
 
@@ -874,26 +874,27 @@ void CHP20b_cDlg::OnLButtonUp(UINT nFlags, CPoint point)
   CDialog::OnLButtonUp(nFlags, point);
 }
 /***************************************************************
-** 
-**  Called when the user presses  the left mouse button on the button image 
-**  displayed on the calculator. Function is responsible to invert the color 
+**
+**  Called when the user presses  the left mouse button on the button image
+**  displayed on the calculator. Function is responsible to invert the color
 **  of the selected button image.
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
-{ 
+{
   if (m_Touch_Base == NONE) {
     m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
     if (NULL != m_rgnPressedButton) {
       if (m_nCurKeyPadNum >= 0) {
 #ifdef wp34s
-	if (m_nCurKeyPadNum >= 9 && m_nCurKeyPadNum <= 11) {
+//	if (m_nCurKeyPadNum >= 9 && m_nCurKeyPadNum <= 11) {
+	if (m_nCurKeyPadNum == 30) {
           DeleteObject(m_rgnPressedButton);
-	  for (int i = 9; i <= 11; ++i) {
+	  for (int i = 30; i <= 30; ++i) {
             // A shift key may still be down, unlock it
             if (System.KeyboardMap & (u64)1 << i) {
-	      HP20bKeyUp(i - 9 + 'F');
+	      HP20bKeyUp(i - 30 + 'M');
 	      if (i == m_nCurKeyPadNum)
 		return;
 	    }
@@ -933,8 +934,8 @@ void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
   CDialog::OnLButtonDown(nFlags, point);
 }
 /***************************************************************
-** 
-**  Called when the user releases the right mouse button on HP-Logo.  
+**
+**  Called when the user releases the right mouse button on HP-Logo.
 **  This function is responsible to display the short cut menu.
 **
 ***************************************************************/
@@ -943,7 +944,7 @@ UINT SkinListCounter;
 bool SkinList(_TCHAR *fullfilename, _TCHAR *filename, void *p);
 
 void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
-{ 
+{
   LONG code;
   HRGN r = Skin.hpGetKeyRegion(&point, &code);
   if (NULL != r && code == - 1) {
@@ -987,8 +988,8 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
       DeleteObject(r);
 #ifdef wp34s
       OnLButtonUp(nFlags, point);
-      if (code != 11)
-	HP20bKeyUp('H');
+      if (code != 30)
+	HP20bKeyUp('M');
 #endif
     }
 #ifndef wp34s
@@ -1000,9 +1001,9 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
   CDialog::OnRButtonUp(nFlags, point);
 }
 /***************************************************************
-** 
-**  Called when the user presses the right mouse button on GUI 
-**  except LCD Area.  
+**
+**  Called when the user presses the right mouse button on GUI
+**  except LCD Area.
 **  This function is responsible to sned SHIFT key to MYAPPLICATION firmware.
 **
 ***************************************************************/
@@ -1029,19 +1030,12 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
     if (r != NULL) {
       DeleteObject(r);
 #ifdef wp34s
-      if (code >= 9 && code <= 11 ) {
-        // RMB on f to h
-	for (int i = 9; i <= 11; ++i) {
-          if ( System.KeyboardMap & ((u64)1 << i) )
-            HP20bKeyUp('F' + i - 9);
-          else if (i == code)
-            HP20bKeyDown('F' + code - 9);
-	}
-      }
-      else {
-        // RMB on any other key: press g before
-        HP20bKeyDown('H');
-        OnLButtonDown(nFlags, point);
+      if (code != 30 ) {
+		// RMB on any other key: press Shift before
+		if (Skin.mright != - 1) {
+			keypress(Skin.mright);
+			OnLButtonDown(nFlags, point);
+		}
       }
 #endif
     }
@@ -1052,81 +1046,82 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
   }
   CDialog::OnRButtonDown(nFlags, point);
 }
+
 /***************************************************************
-** 
-**  Called when the user presses the right mouse button on GUI 
-**  except LCD Area.  
+**
+**  Called when the user presses the right mouse button on GUI
+**  except LCD Area.
 **  This function is responsible to sned SHIFT key to MYAPPLICATION firmware.
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::OnRButtonDblClk(UINT nFlags, CPoint point)
-{ 
-  if (Skin.mright != - 1)
-    keypress(Skin.mright);
+{
+//  if (Skin.mright != - 1)
+//    keypress(Skin.mright);
 
   CDialog::OnRButtonDblClk(nFlags, point);
 }
 /***************************************************************
-** 
+**
 **  Called when the mouse pointer leaves a window or hovers over a window for a specified amount of time
 **
 ***************************************************************/
 //
 
 LPARAM CHP20b_cDlg::OnMouseLeave(WPARAM wp, LPARAM lp)
-{ 
+{
   SendMessage(WM_LBUTTONUP, 0, 0);
   SendMessage(WM_RBUTTONUP, 0, 0);
   SendMessage(WM_MBUTTONUP, 0, 0);
   return 0;
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'On OFF' sub-menu
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::OnHP20bOnOFF()
-{ 
+{
   Reset(false);
   UpdateScreen(true);
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'CopyToClipboard' sub-menu
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::OnHP20bCopytoclipboard()
-{ 
+{
   m_VirtualLCD.hpCopyToClipboard();
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'Reset State' sub-menu
 **
 ***************************************************************/
 void CHP20b_cDlg::OnHP20bResetState()
-{ 
+{
   if (AfxMessageBox(
-        "Are you sure that you want to reset the calculator?", 
-        MB_YESNO | MB_ICONINFORMATION) == IDYES) 
+        "Are you sure that you want to reset the calculator?",
+        MB_YESNO | MB_ICONINFORMATION) == IDYES)
   {
     Reset(false);
     UpdateScreen(true);
   }
 }
 /***************************************************************
-** 
-**  Called when the user double-clicks the left mouse button on the button image 
-**  displayed on the calculator. Function is responsible to invert the color 
+**
+**  Called when the user double-clicks the left mouse button on the button image
+**  displayed on the calculator. Function is responsible to invert the color
 **  of the selected button image.
 **
 ***************************************************************/
 //
 void CHP20b_cDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
-{ 
+{
   m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
   if (NULL != m_rgnPressedButton) {
     m_Touch_Base = MOUSE;
@@ -1140,21 +1135,21 @@ void CHP20b_cDlg::OnLButtonDblClk(UINT nFlags, CPoint point)
   CDialog::OnLButtonDblClk(nFlags, point);
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'Exit' sub-menu
-**  
+**
 ***************************************************************/
 void CHP20b_cDlg::OnHP20bExit()
-{ 
+{
   SendMessage(WM_CLOSE, 0, 0);
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'Hide Titlebar' sub-menu
-**  
+**
 ***************************************************************/
 void CHP20b_cDlg::OnHP20bShowTitlebar()
-{ 
+{
   ShowHP20bTitlebar();
   // check/uncheck main menu
   CMenu *pMenu = GetMenu();
@@ -1166,30 +1161,30 @@ void CHP20b_cDlg::OnHP20bShowTitlebar()
 
 }
 /***************************************************************
-** 
-**  To show/hide the Title bar of the application window.     
-**  This is also responsible to set the window region.   
-**  
+**
+**  To show/hide the Title bar of the application window.
+**  This is also responsible to set the window region.
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::ShowHP20bTitlebar()
-{ 
+{
   if (m_bHideTitlebar) {
                   // Display title bar
     SetWindowLong(m_hWnd, GWL_STYLE, GetWindowLong(m_hWnd, GWL_STYLE) | WS_CAPTION);
     SetWindowRgn(NULL, true);
   }
   else {
-    // Remove title bar     
+    // Remove title bar
     HRGN rgn;
-    RECT r1 = { 0, 0, 0, 0}, 
-         r2 = { 0, 0, 0, 0}, 
+    RECT r1 = { 0, 0, 0, 0},
+         r2 = { 0, 0, 0, 0},
          r3 = { 0, 0, 0, 0};
-    AdjustWindowRectEx(&r3, GetWindowLong(m_hWnd, GWL_STYLE)&~WS_CAPTION, false, 
+    AdjustWindowRectEx(&r3, GetWindowLong(m_hWnd, GWL_STYLE)&~WS_CAPTION, false,
                        GetWindowLong(m_hWnd, GWL_EXSTYLE));
-    AdjustWindowRectEx(&r2, GetWindowLong(m_hWnd, GWL_STYLE), true, 
+    AdjustWindowRectEx(&r2, GetWindowLong(m_hWnd, GWL_STYLE), true,
                        GetWindowLong(m_hWnd, GWL_EXSTYLE));
-    AdjustWindowRectEx(&r1, GetWindowLong(m_hWnd, GWL_STYLE), false, 
+    AdjustWindowRectEx(&r1, GetWindowLong(m_hWnd, GWL_STYLE), false,
                        GetWindowLong(m_hWnd, GWL_EXSTYLE));
     int h = r1.top - r2.top + (r3.bottom - r3.top) / 2;
     int w = (r1.right - r1.left) / 2;
@@ -1210,21 +1205,21 @@ void CHP20b_cDlg::ShowHP20bTitlebar()
   m_bHideTitlebar = !m_bHideTitlebar;
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'About' sub-menu
-**  
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::OnHelpAboutbox()
-{ 
+{
   CAboutDlg dlg;
 
   dlg.DoModal();
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'HP 20b Business Consultant Help' sub-menu
-**  
+**
 ***************************************************************/
 //
 
@@ -1239,34 +1234,34 @@ void CHP20b_cDlg::OnHelpHp20bbusinessconsultant()
   system( buf );
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'Buy' sub-menu
-**  
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::OnBuy()
-{ 
+{
   // Open default web browser
   ShellExecute(NULL, "open", WEBSITE, NULL, NULL, SW_SHOWNORMAL);
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'Copy Number' sub-menu
-**  
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::OnEditCopyNumber()
-{ 
+{
   m_VirtualLCD.hpCopyToClipboard(GetBottomLine());
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'Copy Textline' sub-menu
-**  
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::OnEditCopyTextline()
-{ 
+{
 #ifdef wp34s
   m_VirtualLCD.hpCopyToClipboardUnicode(GetTopLineW());
 #else
@@ -1274,84 +1269,84 @@ void CHP20b_cDlg::OnEditCopyTextline()
 #endif
 }
 /***************************************************************
-** 
+**
 **  Called when the user presses 'Paste Number' sub-menu
-**  
+**
 ***************************************************************/
 //
 struct {
   char    c;
   unsigned int  keys;
 }
-const keydefs[] = 
+const keydefs[] =
 {
 #ifdef wp34s
-  { '0', KEY0}, 
-  { '1', KEY1}, 
-  { '2', KEY2}, 
-  { '3', KEY3}, 
-  { '4', KEY4}, 
-  { '5', KEY5}, 
-  { '6', KEY6}, 
-  { '7', KEY7}, 
-  { '8', KEY8}, 
-  { '9', KEY9}, 
-  { 'e', KEYEEX}, 
-  { 'E', KEYEEX}, 
-  { '-', KEYCHS}, 
-  { '.', KEYDOT}, 
-  { ',', KEYDOT}, 
-  { ' ', - 1}, 
+  { '0', KEY0},
+  { '1', KEY1},
+  { '2', KEY2},
+  { '3', KEY3},
+  { '4', KEY4},
+  { '5', KEY5},
+  { '6', KEY6},
+  { '7', KEY7},
+  { '8', KEY8},
+  { '9', KEY9},
+  { 'e', KEYEEX},
+  { 'E', KEYEEX},
+  { '-', KEYCHS},
+  { '.', KEYDOT},
+  { ',', KEYDOT},
+  { ' ', - 1},
 #else
-  { '0', KEY0}, 
-  { '1', KEY1}, 
-  { '2', KEY2}, 
-  { '3', KEY3}, 
-  { '4', KEY4}, 
-  { '5', KEY5}, 
-  { '6', KEY6}, 
-  { '7', KEY7}, 
-  { '8', KEY8}, 
-  { '9', KEY9}, 
-  { 'e', 134}, 
-  { 'E', 134}, 
-  { '-', KEYPLUSMOINS}, 
-  { '.', KEYDOT}, 
-  { '+', KEYPLUS}, 
-  { '*', KEYMUL}, 
-  { '/', KEYDIV}, 
-  { '(', KEYOPENP}, 
-  { ')', KEYCLOSEP}, 
-  { ' ', - 1}, 
-  { '%', KEYPERCENT}, 
-  { 'S', KEYSIN}, 
-  { 'C', KEYCOS}, 
-  { 'T', KEYTAN}, 
-  { 's', KEYSQRT}, 
-  { 'L', KEYLN}, 
-  { 'R', KEYRAND}, 
-  { '!', KEYFACT}, 
-  { '^', KEYPOW}, 
-  { 'P', KEYPERM}, 
-  { 'c', KEYCOMB}, 
-  { '=', KEYEQUAL}, 
-  { 'A', KEYANS}, 
+  { '0', KEY0},
+  { '1', KEY1},
+  { '2', KEY2},
+  { '3', KEY3},
+  { '4', KEY4},
+  { '5', KEY5},
+  { '6', KEY6},
+  { '7', KEY7},
+  { '8', KEY8},
+  { '9', KEY9},
+  { 'e', 134},
+  { 'E', 134},
+  { '-', KEYPLUSMOINS},
+  { '.', KEYDOT},
+  { '+', KEYPLUS},
+  { '*', KEYMUL},
+  { '/', KEYDIV},
+  { '(', KEYOPENP},
+  { ')', KEYCLOSEP},
+  { ' ', - 1},
+  { '%', KEYPERCENT},
+  { 'S', KEYSIN},
+  { 'C', KEYCOS},
+  { 'T', KEYTAN},
+  { 's', KEYSQRT},
+  { 'L', KEYLN},
+  { 'R', KEYRAND},
+  { '!', KEYFACT},
+  { '^', KEYPOW},
+  { 'P', KEYPERM},
+  { 'c', KEYCOMB},
+  { '=', KEYEQUAL},
+  { 'A', KEYANS},
 #endif
   { 0, 0}
 };
 void CHP20b_cDlg::OnEditPasteNumber()
-{ 
-  // retrieve clipboard data 
+{
+  // retrieve clipboard data
   CString val = m_VirtualLCD.hpCopyToHP20b();
   bool pushsign = false;
 
   val.Trim();
   if (!val.IsEmpty()) {
-    // fire keyboard events 
+    // fire keyboard events
     for (int i = 0; i < val.GetLength(); i++) {
       int oo = val.GetAt(i);
       int j = 0;
-      
+
       while (keydefs[j].c != 0 && keydefs[j].c != oo)
         j++;
 
@@ -1382,46 +1377,46 @@ void CHP20b_cDlg::OnEditPasteNumber()
   }
 }
 /***************************************************************
-** 
-**  Resonsible to create the registry key and write the window's current 
+**
+**  Resonsible to create the registry key and write the window's current
 **  coordinates and title bar visibility status to the registry.
-**  
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::WriteToRegistry()
-{ 
+{
   RECT    rect;
   HKEY    hKey, hkResult;
   char    pos[8];
 
   GetWindowRect(&rect);
   // Open/Create required registry and write values
-  if (RegOpenKeyEx(HKEY_CURRENT_USER, "SOFTWARE", 0, 
+  if (RegOpenKeyEx(HKEY_CURRENT_USER, "SOFTWARE", 0,
        KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
-    if (RegCreateKeyEx(hKey, "Hewlett-Packard", 0, NULL, 
-           REG_OPTION_NON_VOLATILE, 
-           KEY_ALL_ACCESS, NULL, &hkResult, 
+    if (RegCreateKeyEx(hKey, "Hewlett-Packard", 0, NULL,
+           REG_OPTION_NON_VOLATILE,
+           KEY_ALL_ACCESS, NULL, &hkResult,
            NULL) == ERROR_SUCCESS) {
       HKEY    hkResult1;
 
-      if (RegCreateKeyEx(hkResult, REGKEY, 0, NULL, 
-             REG_OPTION_NON_VOLATILE, 
+      if (RegCreateKeyEx(hkResult, REGKEY, 0, NULL,
+             REG_OPTION_NON_VOLATILE,
              KEY_ALL_ACCESS, NULL, &
-             hkResult1, NULL) == 
+             hkResult1, NULL) ==
           ERROR_SUCCESS) {
         itoa(rect.left, pos, 10);
-        RegSetValueEx(hkResult1, "left", 0, 
-                REG_SZ, (BYTE *) pos, 
+        RegSetValueEx(hkResult1, "left", 0,
+                REG_SZ, (BYTE *) pos,
                 lstrlen(pos) + 1);
         itoa(rect.top, pos, 10);
-        RegSetValueEx(hkResult1, "top", 0, 
-                REG_SZ, (BYTE *) pos, 
+        RegSetValueEx(hkResult1, "top", 0,
+                REG_SZ, (BYTE *) pos,
                 lstrlen(pos) + 1);
         sprintf(pos, "%d", m_bHideTitlebar);
-        RegSetValueEx(hkResult1, "Titlebar", 0, 
-                REG_SZ, (BYTE *) pos, 
+        RegSetValueEx(hkResult1, "Titlebar", 0,
+                REG_SZ, (BYTE *) pos,
                 lstrlen(pos) + 1);
-        RegSetValueEx(hkResult1, "Skin", 0, 
+        RegSetValueEx(hkResult1, "Skin", 0,
                 REG_SZ, (BYTE *) Skin.
                 filename, lstrlen(Skin.
                 filename) + 1);
@@ -1433,22 +1428,22 @@ void CHP20b_cDlg::WriteToRegistry()
   RegCloseKey(hKey);
 }
 /***************************************************************
-** 
-** Responsible to read retrieve left, top coordinates of the application 
+**
+** Responsible to read retrieve left, top coordinates of the application
 ** window and title bar visibility status from the registry.
-**  
+**
 ***************************************************************/
 //
 bool CHP20b_cDlg::ReadRegistry()
-{ 
+{
   int   left, top;
   HKEY    hKey;
   _TCHAR    data[MAX_PATH];
   DWORD   dwBufLen = 8; // 8 Bytes
 
   // read registy and reterive values
-  if (RegOpenKeyEx(HKEY_CURRENT_USER, 
-       "SOFTWARE\\Hewlett-Packard\\" REGKEY, 0, 
+  if (RegOpenKeyEx(HKEY_CURRENT_USER,
+       "SOFTWARE\\Hewlett-Packard\\" REGKEY, 0,
        KEY_QUERY_VALUE, &hKey) == ERROR_SUCCESS) {
     if (RegQueryValueEx(hKey, "left", NULL, NULL, (LPBYTE)
             data, &dwBufLen) == ERROR_SUCCESS)
@@ -1465,7 +1460,7 @@ bool CHP20b_cDlg::ReadRegistry()
 
     dwBufLen = 8;
     if (RegQueryValueEx(hKey, "Titlebar", NULL, NULL, (
-            LPBYTE) data, &dwBufLen) == 
+            LPBYTE) data, &dwBufLen) ==
         ERROR_SUCCESS)
       m_bHideTitlebar = atoi(data);
     else
@@ -1487,7 +1482,7 @@ bool CHP20b_cDlg::ReadRegistry()
     if (top < - (rect.bottom - rect.top))
       top = 0;
 
-    SetWindowPos(NULL, left, top, NULL, NULL, SWP_NOSIZE | 
+    SetWindowPos(NULL, left, top, NULL, NULL, SWP_NOSIZE |
            SWP_NOZORDER | SWP_SHOWWINDOW);
     m_bHideTitlebar = !m_bHideTitlebar;
     ShowHP20bTitlebar();
@@ -1495,10 +1490,10 @@ bool CHP20b_cDlg::ReadRegistry()
     CMenu   *pMenu = GetMenu();
 
     if (m_bHideTitlebar)
-      pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, 
+      pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION,
                MF_BYCOMMAND | MF_CHECKED);
     else
-      pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, 
+      pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION,
                MF_BYCOMMAND | MF_UNCHECKED);
 
     return true;
@@ -1506,13 +1501,13 @@ bool CHP20b_cDlg::ReadRegistry()
   return false;
 }
 /***************************************************************
-** 
+**
 **  Called when the user chooses 'Hide Titlebar' sub-menu from the main menu
-**  
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::OnHP20bShowcaptionMenu()
-{ 
+{
   ShowHP20bTitlebar();
   // check/uncheck main menu
   CMenu   *pMenu = GetMenu();
@@ -1525,22 +1520,22 @@ void CHP20b_cDlg::OnHP20bShowcaptionMenu()
   AfxMessageBox(
 #ifdef wp34s
           "Right click on the wp logo and uncheck 'Hide Titlebar'\r\nto display the titlebar again.\r\n"
-          "To close the calculator, turn it OFF with (blue) g + EXIT.", 
+          "To close the calculator, turn it OFF with (gold) f + EXIT.",
 #else
           "Right click on the HP logo and uncheck 'Hide Titlebar'\r\nto display the titlebar again.\r\n"
-          "To close the calculator, turn it OFF with (blue) shift + ON/CE.", 
+          "To close the calculator, turn it OFF with (blue) shift + ON/CE.",
 #endif
           MB_OK | MB_ICONINFORMATION);
 }
 /***************************************************************
-** 
-**  The framework calls this member function after the CWnd object 
+**
+**  The framework calls this member function after the CWnd object
 **      has been moved.
-**  
+**
 ***************************************************************/
 //
 void CHP20b_cDlg::OnMove(int x, int y)
-{ 
+{
   // Changed by MvC: broke minimize/restore from taskbar
   static int  oldYPos = 1;
 #if 0
@@ -1562,24 +1557,24 @@ void CHP20b_cDlg::OnMove(int x, int y)
   }
 }
 void CHP20b_cDlg::OnCalculatorAssignasdefaulthpcalculator()
-{ 
+{
 }
 void CHP20b_cDlg::OnCalculatorManagehpcalculatoremulators()
-{ 
+{
 }
 void CHP20b_cDlg::OnHelpHp20bemulatorhelp()
-{ 
+{
   HINSTANCE h = ShellExecute(NULL, "open", "20bHelpFile.chm", NULL, NULL, SW_SHOWNORMAL);
-  // Returns a value greater than 32 if successful, or an error value 
+  // Returns a value greater than 32 if successful, or an error value
   // that is less than or equal to 32 otherwise
   if ((int) h <= 32)
-    AfxMessageBox( "The help file 20bHelpFile.chm was not found", 
+    AfxMessageBox( "The help file 20bHelpFile.chm was not found",
             MB_OK | MB_ICONINFORMATION);
 
 // TODO: Add your command handler code here
 }
 void CHP20b_cDlg::LoadSkin(char *skin)
-{ 
+{
   Skin.SkinLoad(skin);
   if (Skin.error != 0) {
     char    b[300];
@@ -1598,12 +1593,12 @@ void CHP20b_cDlg::LoadSkin(char *skin)
   r2 = r1;
   r2.bottom = r2.top + Skin.size.y;
   r2.right = r2.left + Skin.size.x;
-  AdjustWindowRectEx(&r2, GetWindowLong(m_hWnd, GWL_STYLE), true, 
+  AdjustWindowRectEx(&r2, GetWindowLong(m_hWnd, GWL_STYLE), true,
                      GetWindowLong(m_hWnd, GWL_EXSTYLE));
   r1.bottom = r1.top + r2.bottom - r2.top;
   r1.right = r1.left + r2.right - r2.left;
  ::MoveWindow(m_Background.m_hWnd, 0, 0, Skin.size.x, Skin.size.y, true);
- ::MoveWindow(m_VirtualLCD.m_hWnd, Skin.screen.left, Skin.screen.top, 
+ ::MoveWindow(m_VirtualLCD.m_hWnd, Skin.screen.left, Skin.screen.top,
                 Skin.screen.right, Skin.screen.bottom, true);
   MoveWindow(&r1, true);
   m_bHideTitlebar = !m_bHideTitlebar;
@@ -1612,7 +1607,7 @@ void CHP20b_cDlg::LoadSkin(char *skin)
   UpdateDlgScreen(false);
 }
 bool SkinList(_TCHAR *fullfilename, _TCHAR *filename, void *p)
-{ 
+{
   CMenu *pSub = (CMenu *) p;
   MENUITEMINFO  mi;
 
@@ -1648,7 +1643,7 @@ bool SkinList(_TCHAR *fullfilename, _TCHAR *filename, void *p)
   return false;
 }
 void CHP20b_cDlg::UpdateSkinMenu()
-{ 
+{
   CMenu *pMenu = GetMenu();
 
   SkinListCounter = 65535;
@@ -1669,7 +1664,7 @@ void CHP20b_cDlg::UpdateSkinMenu()
   DrawMenuBar();
 }
 bool CHP20b_cDlg::SkinCommand(MSG *pMsg)
-{ 
+{
   // Remove "Special Keys"  menu
   CMenu *pMenu = GetMenu();
 
@@ -1691,7 +1686,7 @@ bool CHP20b_cDlg::SkinCommand(MSG *pMsg)
         mi.cch = MAX_PATH;
         pSub->GetMenuItemInfoA(i, &mi, true);
         if (mi.wID == pMsg->wParam) {
-          if ((mi.fState & MFS_CHECKED) == 
+          if ((mi.fState & MFS_CHECKED) ==
               0)
             LoadSkin(mi.dwTypeData);
 

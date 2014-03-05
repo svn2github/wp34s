@@ -82,7 +82,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	 *  Start the emulator
 	 */
 	start_emulator( hInstance, hPrevInstance, pCmdLine, nCmdShow,
-		        "wp34s Scientific Calculator " VERSION_STRING,
+		        "wp31s Scientific Calculator " VERSION_STRING,
 		        BuildDate | ( revision << 12 ),
 		        LcdData,
 		        Init, Reset, Shutdown,
