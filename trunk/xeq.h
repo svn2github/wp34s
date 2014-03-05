@@ -1072,6 +1072,7 @@ enum catalogues
         CATALOGUE_STATUS,
 };
 
+// annunciators() in display.c depends on SHIFT_[NFGH] having the values 0, 1, 2 and 3.
 enum shifts {
         SHIFT_N = 0,
         SHIFT_F, SHIFT_G, SHIFT_H,
@@ -1235,6 +1236,9 @@ extern void clr_user_flag(int);
 extern void *xcopy(void *, const void *, int);
 extern void *xset(void *, const char, int);
 extern char *find_char(const char *, const char);
+#if defined INCLUDE_YREG_CODE && defined INCLUDE_YREG_HMS
+extern void replace_char(char *str, const char from, const char to);
+#endif
 extern char *scopy(char *, const char *);               // copy string return pointer to *end*
 extern const char *sncopy(char *, const char *, int);   // copy string return pointer to *start*
 extern char *scopy_char(char *, const char *, const char);

@@ -445,6 +445,13 @@ static void carry_overflow(void) {
 		set_dig(base + 2*SEGS_PER_EXP_DIGIT, 'o');
 }
 
+static int set_x_fract(const decNumber *rgx, char *res);
+static void set_x_hms(const decNumber *rgx, char *res);
+#if !(defined INCLUDE_YREG_CODE && defined INCLUDE_YREG_HMS)
+// replace_char() isn't used or implemented unless HMS Y register display is enabled
+static void replace_char(char *a, char b, char c) { }
+#endif
+
 /* Display the annunicator text line.
  * Care needs to be taken to keep things aligned.
  * Spaces are 5 pixels wide, \006 is a single pixel space.
@@ -452,121 +459,62 @@ static void carry_overflow(void) {
 static void annunciators(void) {
 	char buf[42], *p = buf, *q;
 	int n;
+	static const char shift_chars[4] = " \021\022\023";
+	const char shift_char = shift_chars[cur_shift()];
+	// Constant variables and code branches depending on a constant variable
+	// that's set to 0 will be optimized away. This way it's easier to make a
+	// feature run-time configurable if needed.
+#ifdef INCLUDE_YREG_CODE
+#  ifdef YREG_DEPENDS_ON_FLAG_J
+	const int yreg_enabled = get_user_flag(regJ_idx);
+#  else
+	const int yreg_enabled = 1;
+#  endif
+#  ifdef INCLUDE_YREG_HMS
+	const int yreg_hms = 1;
+#  else
+	const int yreg_hms = 0;
+#  endif
+#  ifdef INCLUDE_YREG_FRACT
+	const int yreg_fract = 1;
+#  else
+	const int yreg_fract = 0;
+#  endif
+#else
+	const int yreg_enabled = 0;
+	const int yreg_hms = 0;
+	const int yreg_fract = 0;
+#endif
+#ifdef RP_PREFIX
+	const int rp_prefix = 1;
+#else
+	const int rp_prefix = 0;
+	const int RectPolConv = -1; // This variable doesn't exist without RP_PREFIX
+#endif
+// Indicates whether font escape code is compiled in.
+// This variable will always be set at compile time.
+#ifdef INCLUDE_FONT_ESCAPE
+	const int has_FONT_ESCAPE = 1;
+#else
+	const int has_FONT_ESCAPE = 0;
+#endif
 
 	xset(buf, '\0', sizeof(buf));
 
-	/* Set the shift key indicator */
-	switch (cur_shift()) {
-	default:
-	case SHIFT_N:
-#if defined(INCLUDE_YREG_CODE)
- 		if (State2.wascomplex) {
-			p = scopy(p, "i\006\006"); // makes complex answers look nicer! Two pixel spaces.
+	if (is_intmode()) {
+#ifdef SHOW_STACK_SIZE
+		if (shift_char == ' ') {
+			*p++ = '\007';
+			*p++ = '\346';
+			*p++ = (UState.stack_depth ? ':' : '.');
 		}
-#ifdef RP_PREFIX
-		else if (RectPolConv == 1) {
-			p = scopy(p, "<"); // spaceholder for angle: space provided elsewhere
-		}
-		else if (RectPolConv == 2) {
-			p = scopy(p, "y"); // spaceholder for y: space provided elsewhere
-		}
-#endif
- 		else if (is_dblmode()) {
- 			p = scopy(p, "D\006");
-		}
- 		else {
- 			p = scopy(p, "\006 "); // to match new i spacing; first character removed in set_status_d if small characters
-		}
-#ifdef RP_PREFIX
-		if ( (State2.wascomplex) || RectPolConv || ( get_user_flag(regJ_idx) && ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) ) ){ // don't do y-display in intmode
-#else
-		if ( (State2.wascomplex) || ( get_user_flag(regJ_idx) && ( ! ( State2.cmplx || State2.arrow ) && !is_intmode() ) ) ){ // don't do y-display in intmode
-#endif
-			decNumber y;
-			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
-			for (n=DISPLAY_DIGITS; n>1; n--) {
-				set_x_dn(&y, p, n);
-				if (pixel_length(buf, 1) <= BITMAP_WIDTH)
-					break;
-				xset(p, '\0', n+10);				
-			}
-			goto skip; // don't add anything to the display after the y-register
-		}
-#else
-#ifdef RP_PREFIX
-		if ( State2.wascomplex || RectPolConv ) {
-			decNumber y;
-	 		if (State2.wascomplex) {
-				p = scopy(p, "i\006\006"); // makes complex answers look nicer - two pixel spaces
-			}
-			else if (RectPolConv == 1) {
-				p = scopy(p, "<"); // spaceholder for angle - space added later
-			}
-			else if (RectPolConv == 2) {
-				p = scopy(p, "y"); // spaceholder for y - space added later
-			}
- 			else {
- 				p = scopy(p, "\006 "); // 6 or 6: to match new i spacing
-			}
-#else
-		if (State2.wascomplex) {
-			decNumber y;
-			p = scopy(p, "i\006");
-#endif
-			/* This is a bit convoluted.  ShowRegister is the real portion being shown.  Normally
-			 * ShowRegister+1 would contain the complex component, however if the register being
-			 * examined is on the stack and there is a command line present, the stack will be lifted
-			 * after we execute so we need to show ShowRegister instead.
-			 */
-			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()) ? ShowRegister : ShowRegister+1);
-			for (n=DISPLAY_DIGITS; n>1; n--) {
-				set_x_dn(&y, p, n);
-				if (pixel_length(buf, 1) <= BITMAP_WIDTH)
-					break;
-				xset(p, '\0', n+10);				
-			}
-			goto skip;
-		} else if (is_dblmode())
-			*p++ = 'D';
 		else
-			p = scopy(p, " \006");
 #endif
-		break;
-	case SHIFT_F:	p = scopy(p, "\021\006");	break;
-	case SHIFT_G:	p = scopy(p, "\022\006");	break;
-	case SHIFT_H:	p = scopy(p, "\023\006");	break;
-	}
-
-	if (State2.cmplx) {
-		*p++ = ' ';
-		*p++ = COMPLEX_PREFIX;
-		goto skip;
-	}
-
-	if (State2.arrow) {
-		*p++ = ' ';
-		*p++ = '\015';
-		goto skip;
-	}
-
-	if (!is_intmode()) {
-		switch (UState.date_mode) {
-#ifndef NO_DATEMODE_INDICATION
-#if defined(DEFAULT_DATEMODE) && (DEFAULT_DATEMODE != 0)
-		case DATE_DMY:	q = "d.my\006\006";	break;
-#endif
-#if ! defined(DEFAULT_DATEMODE) || (DEFAULT_DATEMODE != 1)
-		case DATE_YMD:	q = "y.md\006\006";	break;
-#endif
-#if ! defined(DEFAULT_DATEMODE) || (DEFAULT_DATEMODE != 2)
-		case DATE_MDY:	q = "m.dy\006\006";	break;
-#endif
-#endif
-		default:	q = "    \006";		break;
+		{
+			*p++ = shift_char;
+			*p++ = '\006';
 		}
-		p = scopy(p, q);
-		p = scopy(p, (get_trig_mode() == TRIG_GRAD)?"\006\006\007":" \006\006\006");
-	} else {
+
 		switch(int_mode()) {
 		default:
 		case MODE_2COMP:	q = "2c\006";		break;
@@ -590,7 +538,207 @@ static void annunciators(void) {
 			for (n = IntMaxWindow; n >= 0; n--)
 				*p++ = State2.window == n ? '|' : '\'';
 		}
+	}
+	else if (!yreg_enabled
+#ifdef SHIFT_AND_CMPLX_SUPPRESS_YREG
+		 || shift_char != ' ' || State2.cmplx
+#endif
+		 ) {
+// The stack size indicator is displayed on the right if date mode indication is enabled
+// because the 'D' in small font doesn't look good next to the date mode indicator.
+#if defined SHOW_STACK_SIZE && defined NO_DATEMODE_INDICATION
+		if (shift_char == ' ') {
+			*p++ = '\007';
+			*p++ = '\342';
+			*p++ = (UState.stack_depth ? ':' : '.');
+			*p++ = '\007';
+			*p++ = '\344';
+			*p++ = (is_dblmode() ? 'D' : ' ');
+		}
+		else
+#endif
+		if (shift_char != ' ' || !is_dblmode()) {
+			*p++ = shift_char;
+			*p++ = '\006';
+		}
+		else {
+			*p++ = 'D';
+		}
 
+		if (State2.cmplx) {
+			*p++ = ' ';
+			*p = '\024';
+			goto skip;
+		}
+		if (State2.arrow) {
+			*p++ = ' ';
+			*p = '\015';
+			goto skip;
+		}
+
+		if (shift_char == ' ' && (State2.wascomplex || (rp_prefix && RectPolConv))) {
+			if (State2.wascomplex) {
+				q = (has_FONT_ESCAPE ? "\007\207i" : "i\006");
+			}
+			else if (rp_prefix) {
+				if (RectPolConv == 1) {
+					q = "\007\306<";
+				}
+				else {
+					q = "\007\306y";
+				}
+			}
+			p = scopy(buf, q);
+
+			goto display_yreg;
+		}
+
+		switch (UState.date_mode) {
+#ifndef NO_DATEMODE_INDICATION
+#if defined(DEFAULT_DATEMODE) && (DEFAULT_DATEMODE != 0)
+		case DATE_DMY:	q = "d.my\006\006";	break;
+#endif
+#if ! defined(DEFAULT_DATEMODE) || (DEFAULT_DATEMODE != 1)
+		case DATE_YMD:	q = "y.md\006\006";	break;
+#endif
+#if ! defined(DEFAULT_DATEMODE) || (DEFAULT_DATEMODE != 2)
+		case DATE_MDY:	q = "m.dy\006\006";	break;
+#endif
+#endif
+		default:	q = (has_FONT_ESCAPE ? "\007\225\006" : "    \006");	break; // 21 pixels
+		}
+		p = scopy(p, q);
+#if !defined SHOW_STACK_SIZE || defined NO_DATEMODE_INDICATION
+		if (get_trig_mode() == TRIG_GRAD) {
+			scopy(p, (has_FONT_ESCAPE ? "\006\006\007\210\007" : "\006\006\007" ));
+		}
+#else
+		p = scopy(p, (get_trig_mode() == TRIG_GRAD ? "\006\006\007\210\007" : "  "));
+		*p++ = '\007';
+		*p++ = '\342';
+		*p =  (UState.stack_depth ? ':' : '.');
+#endif
+	}
+	else { // yreg_enabled
+#ifndef SHIFT_AND_CMPLX_SUPPRESS_YREG
+		if (State2.cmplx) {
+			*p++ = '\007';
+			*p++ = '\344';
+			*p++ = shift_char;
+			q = "\024";
+		}
+		else if (shift_char != ' ') {
+			*p++ = '\007';
+			*p++ = '\307';
+			*p++ = shift_char;
+			goto no_copy;
+		}
+		else
+#endif
+		if (State2.wascomplex) {
+			q = "\007\207i";
+		}
+		else if (rp_prefix && RectPolConv == 1) {
+			q = "\007\307<";
+		}
+		else if (rp_prefix && RectPolConv == 2) {
+			q = "\007\307y";
+		}
+#ifdef SHOW_GRADIAN_PREFIX
+		else if (get_trig_mode() == TRIG_GRAD) {
+			q = "\007\207\007";
+		}
+#endif
+		else {
+#ifndef SHOW_STACK_SIZE
+			q = (is_dblmode() ? "\007\307D" : "\007\207 ");
+#else
+			if (is_dblmode()) {
+				*p++ = '\007';
+				*p++ = '\342';
+				*p++ = (UState.stack_depth ? ':' : '.');
+				q = "\007\345D";
+			}
+			else {
+				q = (UState.stack_depth ? "\007\347:" : "\007\347.");
+			}
+#endif
+		}
+		p = scopy(p, q);
+	no_copy:
+
+		if (State2.arrow) {
+			scopy(p, "\007\204\006\015");
+		} else if (State2.runmode) {
+			decNumber y;
+display_yreg:
+			/* This is a bit convoluted.  ShowRegister is the real portion being shown.  Normally
+			 * ShowRegister+1 would contain the complex component, however if the register being
+			 * examined is on the stack and there is a command line present, the stack will be lifted
+			 * after we execute so we need to show ShowRegister instead.
+			 */
+			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()
+					 && !(yreg_enabled && !State2.state_lift) // unless stack lift is disabled...
+					) ? ShowRegister : ShowRegister+1);
+			if ((yreg_hms || yreg_fract) && !decNumberIsSpecial(&y)) {
+				if (yreg_hms && State2.hms) {
+					const int saved_nothousands = UState.nothousands;
+
+					xset(buf, '\0', sizeof(buf));
+					UState.nothousands = 1;
+					set_x_hms(&y, buf); // no prefix or alignment for HMS display
+					UState.nothousands = saved_nothousands;
+					// First replace the '@' character with the degree symbol
+					// Then, if the string doesn't fit in the dot matrix display, replace spaces with narrow spaces,
+					// then remove the second symbol (") and the overflow or underflow signs,
+					// then remove the fractional part of the seconds.
+					p = "@\005 \006\"\0.\0";
+					while (*p) {
+						replace_char(buf, p[0], p[1]);
+						if (pixel_length(buf, 1) <= BITMAP_WIDTH + 1) {
+							goto skip;
+						}
+						p += 2;
+					}
+					goto skip;
+				}
+				if (yreg_fract && UState.fract
+#ifndef SHIFT_AND_CMPLX_SUPPRESS_YREG
+				    && !State2.cmplx
+#endif
+#ifdef ANGLES_NOT_SHOWN_AS_FRACTIONS
+				    && !(rp_prefix && RectPolConv == 1)
+#endif
+				    && set_x_fract(&y, p)) {
+					char ltgteq;
+
+					q = find_char(buf, '\0') - 2;
+					// Replace Lt/Gt/= with </>/= in small font
+					ltgteq = *q;
+					switch (ltgteq) {
+					case 'G':	ltgteq = '>'; break;
+					case 'L':	ltgteq = '<'; break;
+					}
+					scopy(q, "\007\344?");
+					q[2] = ltgteq;
+
+					if (pixel_length(buf, 1) <= BITMAP_WIDTH + 1) {
+						goto skip;
+					}
+					q[-1] = '\0'; // Remove </>/= if string doesn't fit in the dot matrix display
+					if (pixel_length(buf, 1) <= BITMAP_WIDTH + 1) {
+						goto skip;
+					}
+					xset(p, '\0', sizeof(buf) - (p - buf));
+				}
+			}
+			for (n=DISPLAY_DIGITS; n>1; n--) {
+				set_x_dn(&y, p, n);
+				if (pixel_length(buf, 1) <= BITMAP_WIDTH + 1)
+					break;
+				xset(p, '\0', n+10);				
+			}
+		}
 	}
 
 skip:	set_status(buf);
@@ -912,7 +1060,7 @@ static void set_x_hms(const decNumber *rgx, char *res) {
 	dn_abs(&a, rgx);
 	if (decNumberIsNegative(&x)) {
 		if (res != NULL)
-			*res += '-';
+			*res++ += '-';
 		else
 			SET_MANT_SIGN;
 		dn_minus(&x, &x);
@@ -975,7 +1123,7 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 		return 0;
 	if (decNumberIsNegative(rgx)) {
 		if (res != NULL)
-			*res += '-';
+			*res++ += '-';
 		else
 			SET_MANT_SIGN;
 	}
@@ -2006,7 +2154,7 @@ nostk:	show_flags();
 		           && (! State2.registerlist || State2.smode == SDISP_SHOW || State2.disp_as_alpha);
 
 #if defined(INCLUDE_YREG_CODE)
-	if (annuc && ( (!State2.disp_temp) || State2.hms ) ) // makes sure that hms numbers appear (as decimals) in the dot-matrix display
+	if ((annuc && (! State2.disp_temp || State2.hms)) || State2.wascomplex) // makes sure that hms numbers appear in the dot-matrix display
  		annunciators();
  	State2.hms = 0;
 #else
@@ -2074,6 +2222,10 @@ static void set_status_graphic(const unsigned char *graphic) {
  */
 static void set_status_sized(const char *str, int smallp) {
 	unsigned short int posns[257];
+#ifdef INCLUDE_FONT_ESCAPE
+	// Mark posns as uninitialized, smallp must be 0 or 1 for this to work correctly.
+	int posns_state = 255;
+#endif
 	unsigned int x = 0;
 	int i, j;
 	const int offset = smallp ? 256 : 0;
@@ -2084,66 +2236,80 @@ static void set_status_sized(const char *str, int smallp) {
 #endif
 #ifndef REALBUILD
 	scopy(LastDisplayedText, str);
-	forceDispPlot=0;
-#endif
-#ifndef CONSOLE
-#ifdef INCLUDE_YREG_CODE
-	if (*str == '\006') { //this means that it's a space being displayed, not i or D or PR prefix
-		if (smallp) { // needed to make numbers start at pixel 6 so that they don't jump when prefixes go
-			x=3;
+#ifdef INCLUDE_FONT_ESCAPE
+	for (i = 0; LastDisplayedText[i] != '\0'; ) { // Remove 007 escapes
+		if (LastDisplayedText[i] == '\007' && LastDisplayedText[i + 1] != '\0') {
+			scopy(LastDisplayedText + i, LastDisplayedText + i + 2);
 		}
 		else {
-			x=0;
+			++i;
 		}
 	}
 #endif
+	forceDispPlot=0;
 #endif
 #ifdef RP_PREFIX
-	if ( smallp && (RectPolConv == 1) ) { // this code needed to get a large angle sign even in small mode
-		const int c = (unsigned char) (60);
-		int width;
-		unsigned char cmap[6];
-
-		findlengths (posns, 0);
-		
-		width = charlengths(c);
-		unpackchar(c, cmap, 0, posns);
-
-		for (i=0; i<6; i++)
-			for (j=0; j<width; j++) {
-				if (x+j >= BITMAP_WIDTH)
-					break;
-#ifndef CONSOLE
-				if (cmap[i] & (1 << j))
-					mat[i] |= 1LL << (x+j);
-#else
-				dot((x+j)*6+i+MATRIX_BASE, (cmap[i] & (1 << j))?1:0);
+	RectPolConv = 0;
 #endif
-			}
-		str++;
-		findlengths (posns, 1);
-		x = 6;
-		RectPolConv = 0;
-		}
-		else {
-			findlengths(posns, smallp);
-		}
-#else
-		findlengths(posns, smallp);
+#ifndef INCLUDE_FONT_ESCAPE
+	findlengths(posns, smallp);
 #endif
 	while (*str != '\0' && x <= BITMAP_WIDTH+1)  {
-		const int c = (unsigned char) *str++ + offset; //doesn't matter if c is 256 too big;
-		//const unsigned char *cmap;
+		int c;
 		int width;
 		unsigned char cmap[6];
+#ifdef INCLUDE_FONT_ESCAPE
+		int real_width;
+		int current_smallp;
+
+		// A 007 byte followed by a mode byte changes the way the following character is printed.
+		// Bit 7 (MSB) of the mode byte is currently unused and should be set to 1.
+		// Bits 6-5: 00 -> don't change font
+		//           01 -> (not used)
+		//           10 -> use big font
+		//           11 -> use small font
+		// Bits 4-0: character will be considered this wide
+		if (str[0] == '\007') {
+			width = str[1] & 0x1F;
+			switch (str[1] & 0x60) {
+			default:
+			case 0x00:	current_smallp = smallp;
+					break;
+			case 0x40:	current_smallp = 0;
+					break;
+			case 0x60:	current_smallp = 1;
+					break;
+			}
+			c = (unsigned char) str[2] + (current_smallp ? 256 : 0);
+			str += 3;
+
+			real_width = charlengths(c);
+		} else {
+			c = (unsigned char) *str++ + offset;
+			real_width = width = charlengths(c);
+			current_smallp = smallp;
+		}
+
+		if (x + real_width > BITMAP_WIDTH+1)
+			break;
+
+		if (posns_state != current_smallp) {
+			findlengths(posns, current_smallp);
+			posns_state = current_smallp;
+		}
+		unpackchar(c, cmap, current_smallp, posns);
+#else
+		c = (unsigned char) *str++ + offset; //doesn't matter if c is 256 too big;
 
 		//cmap = &charset[c][0];
 		width = charlengths(c);
+
 		if (x + width > BITMAP_WIDTH+1)
 			break;
 
 		/* Decode the packed character bytes */
 		unpackchar(c, cmap, smallp, posns);
+#endif
 
 		for (i=0; i<6; i++)
 			for (j=0; j<width; j++) {
@@ -2156,17 +2322,7 @@ static void set_status_sized(const char *str, int smallp) {
 				dot((x+j)*6+i+MATRIX_BASE, (cmap[i] & (1 << j))?1:0);
 #endif
 			}
-#ifdef RP_PREFIX
-			if ( (x==0) && (RectPolConv) ) {
-				x = 6;
-				RectPolConv = 0;
-			}
-			else {
-				x += width;
-			}
-#else
-				x += width;
-#endif
+		x += width;
 	}
 
 
@@ -2186,6 +2342,13 @@ int pixel_length(const char *s, int smallp)
 	int len = 0;
 	const int offset = smallp ? 256 : 0;
 	while (*s != '\0') {
+#ifdef INCLUDE_FONT_ESCAPE
+		if (s[0] == '\007') {
+			len += s[1] & 0x1F;
+			s += 3;
+			continue;
+		}
+#endif
 		len += charlengths( (unsigned char) *s++ + offset );
 	}
 	return len;

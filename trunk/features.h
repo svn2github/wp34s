@@ -154,6 +154,24 @@
 // Turn on constant y-register display (not just for complex results)
 //#define INCLUDE_YREG_CODE
 
+// Make y-register display configurable at run-time by user flag J
+//#define YREG_DEPENDS_ON_FLAG_J
+
+// Temporarily disable y-register display when a shift key or the CPX key is pressed 
+//#define SHIFT_AND_CMPLX_SUPPRESS_YREG
+
+// Use fractions in y-register display
+#define INCLUDE_YREG_FRACT
+
+// Don't show angles as fractions after a rectangular to polar coordinate conversion (also enables RP_PREFIX)
+#define ANGLES_NOT_SHOWN_AS_FRACTIONS
+
+// Use HMS mode in y-register display
+#define INCLUDE_YREG_HMS
+
+// Show prefix for gradian mode when y-register is displayed (without this gradian mode is indicated by neither the RAD nor the 360 annunciators being shown)
+#define SHOW_GRADIAN_PREFIX
+
 // Right-justify seven-segment exponent (007 rather than 7  )
 //#define INCLUDE_RIGHT_EXP
 
@@ -162,6 +180,9 @@
 
 // h ./, in DECM mode switches E3 separator on/off (instead of chnaging radix symbol)
 //#define MODIFY_K62_E3_SWITCH
+
+// Indicate four-level stack by a '.' and eight-level stack by a ':'
+//#define SHOW_STACK_SIZE
 
 // BEG annunciators indicates BIG stack size rather than beginning of program
 //#define MODIFY_BEG_SSIZE8
@@ -202,6 +223,14 @@
 
 #if defined(INCLUDE_PLOTTING) || defined(INFRARED)
 #define PAPER_WIDTH 166
+#endif
+
+#if defined(INCLUDE_YREG_CODE) && defined(INCLUDE_YREG_FRACT) && defined(ANGLES_NOT_SHOWN_AS_FRACTIONS)
+#define RP_PREFIX
+#endif
+
+#if defined(INCLUDE_YREG_CODE) || defined(RP_PREFIX) || defined(SHOW_STACK_SIZE)
+#define INCLUDE_FONT_ESCAPE
 #endif
 
 #endif  /* TINY_BUILD*/

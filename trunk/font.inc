@@ -99,6 +99,7 @@
 		}
 	},
 
+/* The grad symbol is also used as an escape character, see set_status_sized() in display.c */
 /*	  octal  name               sort  Unicode  Windows  Printer  UnicodeName */
 	{ 0007, "grad",            18000, 0x24bc,     0x00, 0x00,    CNULL,
 		{
