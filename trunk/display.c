@@ -732,11 +732,17 @@ display_yreg:
 					xset(p, '\0', sizeof(buf) - (p - buf));
 				}
 			}
-			for (n=DISPLAY_DIGITS; n>1; n--) {
-				set_x_dn(&y, p, n);
-				if (pixel_length(buf, 1) <= BITMAP_WIDTH + 1)
+			for (n=DISPLAY_DIGITS; n>1; ) {
+				int extra_pixels;
+
+				set_x_dn(&y, p, &n);
+				extra_pixels = pixel_length(buf, 1) - (BITMAP_WIDTH + 1);
+				if (extra_pixels <= 0)
 					break;
-				xset(p, '\0', n+10);				
+
+				xset(p, '\0', n+10);
+
+				n -= (extra_pixels + 3) / 4; // The maximum width of digits in the small font is 4 pixels.
 			}
 		}
 	}
@@ -1257,15 +1263,16 @@ static void show_x(char *x, int exp) {
  */
 static void set_x(const REGISTER *rgx, char *res, int dbl) {
 	decNumber z;
+	int digits = DISPLAY_DIGITS;
 
 	if (dbl)
 		decimal128ToNumber(&(rgx->d), &z);
 	else
 		decimal64ToNumber(&(rgx->s), &z);
-	set_x_dn(&z, res, DISPLAY_DIGITS);
+	set_x_dn(&z, res, &digits);
 }
 
-void set_x_dn(decNumber *z, char *res, int display_digits) {
+void set_x_dn(decNumber *z, char *res, int *display_digits) {
 	char x[50], *obp = x;
 	int odig = 0;
 	int show_exp = 0;
@@ -1286,13 +1293,13 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 	// Do not allow non ALL modes to produce more digits than we're being asked to display.
 #if defined(INCLUDE_SIGFIG_MODE)
 	if ( ( !get_user_flag(regI_idx)) && (mode == MODE_STD) ) { //normal ALL mode: putting dd=display digits fills the display
-		dd = display_digits;
+		dd = *display_digits;
 	}
-	if (dd > display_digits) // no more digits than we can display: no exclusion for ALL as dealt with above
-		dd = display_digits;
+	if (dd > *display_digits) // no more digits than we can display: no exclusion for ALL as dealt with above
+		dd = *display_digits;
 #else
-	if (mode != MODE_STD && dd > display_digits)
-		dd = display_digits;
+	if (mode != MODE_STD && dd > *display_digits)
+		dd = *display_digits;
 #endif
 		
 	set_separator_decimal_modes();
@@ -1365,7 +1372,7 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 		mode = std_round_fix(z);
 		if (mode == MODE_FIX)
 			trimzeros = 1;
-		dd = display_digits - 1;
+		dd = *display_digits - 1;
 	}
 #endif
 
@@ -1409,15 +1416,15 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 	}
 
 	if (mode == MODE_FIX) {
-		if (exp > (display_digits - 1) || exp < -dd)
+		if (exp > (*display_digits - 1) || exp < -dd)
 			mode = UState.fixeng?MODE_ENG:MODE_SCI;
 		else {
 			extra_digits = exp;
 			/* We might have push the fixed decimals off the
 			 * screen so adjust if so.
 			 */
-			if (extra_digits + dd > (display_digits - 1))
-				dd = (display_digits - 1) - extra_digits;
+			if (extra_digits + dd > (*display_digits - 1))
+				dd = (*display_digits - 1) - extra_digits;
 		}
 	}
 
@@ -1430,7 +1437,7 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 			for (r = mantissa; *r == '9'; *r++ = '0');
 			mantissa[0] = '1';
 			exp++;
-			if (mode == MODE_FIX && exp > (display_digits - 1)) {
+			if (mode == MODE_FIX && exp > (*display_digits - 1)) {
 				mode = UState.fixeng?MODE_ENG:MODE_SCI;
 				extra_digits = 0;
 			}
@@ -1448,11 +1455,11 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 	switch (mode) {
 	default:
 	case MODE_STD:   
-		for (count = display_digits; mantissa[count] == '0'; count--);
-		if (count != display_digits)
+		for (count = *display_digits; mantissa[count] == '0'; count--);
+		if (count != *display_digits)
 			count++;
 		// Too big or too small to fit on display
-		if (exp >= display_digits || exp < (count - display_digits)) {
+		if (exp >= *display_digits || exp < (count - *display_digits)) {
 			switch ((exp % 3) * UState.fixeng) {
 			case -1:
 			case 2:
@@ -1582,9 +1589,9 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 #endif	
 	/* Finally, send the output to the display */
 	*obp = '\0';
-	if (odig > display_digits)
-		odig = display_digits;
-	j = (display_digits - odig) * SEGS_PER_DIGIT;
+	if (odig > *display_digits)
+		odig = *display_digits;
+	j = (*display_digits - odig) * SEGS_PER_DIGIT;
 	if (negative) {
 		if (res) *res++ = '-';
 		else {
@@ -1618,7 +1625,8 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 		set_exp(exp, 0, res);
 #endif
 	if (obp[-1] == '.' && res == NULL)
-		set_decimal((display_digits - 1) * SEGS_PER_DIGIT, DecimalMode, res);
+		set_decimal((*display_digits - 1) * SEGS_PER_DIGIT, DecimalMode, res);
+	*display_digits = odig;
 }
 
 #if defined(QTGUI) || defined(IOS)
