@@ -31,7 +31,7 @@
 #ifdef wp34s
 #define MANUAL "wp31s_Manual.pdf"
 #define WEBSITE "http://wp34s.sourceforge.net/"
-#define REGKEY "wp34s"
+#define REGKEY "wp31s"
 #else
 #define MANUAL "HP_20b_Online_Manual.pdf"
 #define WEBSITE "http://www.hp.com/calculators"
@@ -744,7 +744,7 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
             m_listKeyCode.end(); ) {
           if (*iter != VK_LSHIFT && *iter != VK_RSHIFT && *iter != VK_SHIFT
 #ifdef wp34s
-              && *iter != 'M' //&& *iter != 'G' && *iter != 'H'
+              && *iter != 'M' 
 #endif
           )
 	    HP20bKeyUp(*iter);
@@ -769,8 +769,6 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
 {
 #ifdef wp34s
   if (wKeyCode == 'F' && System.KeyboardMap & 0x200)
-   //|| wKeyCode == 'G' && System.KeyboardMap & 0x400
-   //|| wKeyCode == 'H' && System.KeyboardMap & 0x800 )
     return;
 #endif
   ForceHP20bKeyUp(wKeyCode);
@@ -787,7 +785,7 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
           InvertRgn(hDC, m_rgnPressedButton);
           ::ReleaseDC(m_Background.m_hWnd, hDC);
 #ifdef wp34s
-          if (wKeyCode == 'F' ) { //|| wKeyCode == 'G' || wKeyCode == 'H') {
+          if (wKeyCode == 'F' ) { 
             return;
 	  }
 #endif
@@ -891,7 +889,7 @@ void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
 //	if (m_nCurKeyPadNum >= 9 && m_nCurKeyPadNum <= 11) {
 	if (m_nCurKeyPadNum == 30) {
           DeleteObject(m_rgnPressedButton);
-	  for (int i = 30; i <= 30; ++i) {
+		  for (int i = 30; i <= 30; ++i) {
             // A shift key may still be down, unlock it
             if (System.KeyboardMap & (u64)1 << i) {
 	      HP20bKeyUp(i - 30 + 'M');
@@ -1032,10 +1030,9 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
 #ifdef wp34s
       if (code != 30 ) {
 		// RMB on any other key: press Shift before
-		if (Skin.mright != - 1) {
-			keypress(Skin.mright);
-			OnLButtonDown(nFlags, point);
-		}
+		keypress(Skin.mright);
+		OnLButtonDown(nFlags, point);
+	    System.KeyboardMap &= ~((u64)1 << Skin.mright);
       }
 #endif
     }
