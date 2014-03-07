@@ -806,6 +806,10 @@ enum nilop {
         OP_POPLR,
         OP_MEMQ, OP_LOCRQ, OP_REGSQ, OP_FLASHQ,
 
+#ifdef ENABLE_REGISTER_BROWSER
+	OP_SHOWREGS,
+#endif 
+
 #ifdef INCLUDE_USER_IO
         OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
         OP_ALPHASEND, OP_ALPHARECV,
@@ -1387,6 +1391,10 @@ extern void cmdxarg(unsigned int, enum rarg);
 extern void cmdconverged(unsigned int, enum rarg);
 extern void cmdshuffle(unsigned int, enum rarg);
 extern void cmdmode(unsigned int, enum rarg);
+
+#ifdef ENABLE_REGISTER_BROWSER
+extern void browse_registers(enum nilop op);
+#endif
 
 extern int not_running(void);
 extern void set_running_off_sst(void);

@@ -242,6 +242,16 @@ void version(enum nilop op) {
 		display();
 }
 
+
+#ifdef ENABLE_REGISTER_BROWSER
+void browse_registers(enum nilop op)
+{
+    State2.registerlist = 1;
+    State2.digval = regX_idx;
+    State2.digval2 = 0;
+}
+#endif
+
 void cmd_off(enum nilop op) {
 	shutdown();
 }

@@ -180,6 +180,10 @@
  */
 //#define NO_DATEMODE_INDICATION
 
+/*
+ * This setting enables the register browser as a "MORE" command
+ */
+//#define ENABLE_REGISTER_BROWSER
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */

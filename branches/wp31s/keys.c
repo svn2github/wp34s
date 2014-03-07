@@ -2259,7 +2259,7 @@ static int process_registerlist(const keycode c) {
 	}
 
 	switch (c) {
-	case K50:  // Down
+	case K40:  // Down
 		if (State2.digval > 0) {
 			if (! State2.local && State2.digval == TOPREALREG)
 				State2.digval = global_regs();
@@ -2269,7 +2269,7 @@ static int process_registerlist(const keycode c) {
 			State2.digval = max - 1;
 		goto reset_window;
 
-	case K40:  // Up
+	case K30:  // Up
 		if (State2.digval < max - 1) {
 			State2.digval++;
 			if (! State2.local && State2.digval == global_regs())

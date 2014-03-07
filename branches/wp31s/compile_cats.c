@@ -442,6 +442,9 @@ static s_opcode more_catalogue[] = {
     DYA(OP_PARAL,       "||")
 	MON(OP_CUBERT,		"[^3][sqrt]")
 	NILIC(OP_2FRAC,		"DECOMP")
+#ifdef ENABLE_REGISTER_BROWSER
+	NILIC(OP_SHOWREGS,	"SHREGS")
+#endif
 };
 
 static s_opcode sums_catalogue[] = {

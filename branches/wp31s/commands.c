@@ -665,6 +665,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC1(OP_REGSQ,		&get_mem,		"REGS?",	CNULL)
 	FUNC1(OP_FLASHQ,	&get_mem,		"FLASH?",	CNULL)
 
+#ifdef ENABLE_REGISTER_BROWSER
+	FUNC0(OP_SHOWREGS,      &browse_registers,      "SHREGS",       CNULL)
+#endif
+
 #ifdef INCLUDE_USER_IO
 	FUNC0(OP_SEND1,		&send_byte,		"SEND1",	CNULL)
 	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN",	CNULL)
