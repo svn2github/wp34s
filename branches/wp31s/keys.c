@@ -1344,7 +1344,7 @@ static int process_arg(const keycode c) {
 			set_shift(previous_shift == SHIFT_F ? SHIFT_N : SHIFT_F);
 		break;
 
-// SV	case K_ARROW:		// arrow
+		// SV	case K_ARROW:		// arrow
 //		if (!State2.dot && argcmds[base].indirectokay) {
 //			State2.ind = ! State2.ind;
 //			if (! stack_reg)
