@@ -3503,6 +3503,10 @@ static long long int intResult(decNumber *r) {
 	return build_value(i, s);
 }
 
+
+#ifndef UNIVERSAL_DISPATCH
+
+
 /*
  *  Call a monadic function by reusing the decimal code for integer mode
  */
@@ -3796,6 +3800,298 @@ static void triadic(const opcode op) {
 	} else
 		illegal(op);
 }
+
+
+#else // UNIVERSAL_DISPATCH
+
+
+/*
+ *  Call functions by reusing the decimal code for integer mode
+ */
+static long long int universal_dispatch_int(long long int y, long long int x, unsigned int dyadic)
+{
+	int sx, sy;
+	unsigned long long int vx = extract_value(x, &sx);
+	unsigned long long int vy;
+	decNumber rx, ry, r;
+	unsigned int f = argKIND(XeqOpCode);
+	void (*function_pointer)(void);
+
+#ifdef SHORT_POINTERS
+	unsigned short compact_pointer;
+#  define COMPACT_POINTER_TYPE unsigned short
+#else
+	void (*compact_pointer)(void);
+#  define COMPACT_POINTER_TYPE void (*)(void)
+#endif
+
+	if (dyadic) {
+		vy = extract_value(y, &sy);
+		compact_pointer = (COMPACT_POINTER_TYPE)dyfuncs[f].dydreal;
+	}
+	else {
+		compact_pointer = (COMPACT_POINTER_TYPE)monfuncs[f].mondreal;
+	}
+	if (isNULL(compact_pointer)) {
+		bad_mode_error();
+	}
+	else {
+		function_pointer = (void (*)(void))EXPAND_ADDRESS(compact_pointer);
+#ifndef REALBUILD
+		if (check_for_xrom_address(function_pointer) != NULL) {
+			bad_mode_error();
+		}
+		else
+#endif
+		{
+			void *result;
+
+			ullint_to_dn(&rx, vx);		if (sx) dn_minus(&rx, &rx);
+			if (dyadic) {
+				ullint_to_dn(&ry, vy);		if (sy) dn_minus(&ry, &ry);
+				result = ((FP_DYADIC_REAL)function_pointer)(&r, &ry, &rx);
+			}
+			else {
+				result = ((FP_MONADIC_REAL)function_pointer)(&r, &rx);
+			}
+			if (NULL == result) {
+				err(ERR_DOMAIN);
+			}
+			else {
+				return intResult(&r);
+			}
+		}
+	}
+	return 0;
+#undef COMPACT_POINTER_TYPE
+}
+
+
+long long int intMonadic(long long int x)
+{
+	return universal_dispatch_int(0, x, 0);
+}
+
+long long int intDyadic(long long int y, long long int x)
+{
+	return universal_dispatch_int(y, x, 1);
+}
+
+
+/*
+ *  Universal dispatch function for niladic, monadic, dyadic and triadic functions, both real and complex variants.
+ */
+static void universal_dispatch(const opcode op, const unsigned int operands, const unsigned int complex)
+{
+	const int intmode = is_intmode();
+	volatile long long int ix; // declared volatile to avoid bogus warning about variable possibly being used uninitialized
+	const unsigned int f = argKIND(op);
+	void (*function_pointer)(void);
+
+#ifdef SHORT_POINTERS
+	unsigned short compact_pointer;
+#  define COMPACT_POINTER_TYPE unsigned short
+#else
+	void (*compact_pointer)(void);
+#  define COMPACT_POINTER_TYPE void (*)(void)
+#endif
+
+	process_cmdline();
+	if (operands != 0) {
+		set_lift();
+	}
+	switch (operands) {
+	default:
+	case 0:
+		if (f >= NUM_NILADIC) {
+illegal:
+			illegal(op);
+			goto finish_niladic;
+		}
+		if (intmode && NILADIC_NOTINT(niladics[f])) {
+			goto bad_mode;
+		}
+		compact_pointer = (COMPACT_POINTER_TYPE)niladics[f].niladicf;
+		break;
+
+	case 1:
+		if (f >= NUM_MONADIC)
+			goto illegal;
+		if (intmode)
+			compact_pointer = (COMPACT_POINTER_TYPE)monfuncs[f].monint;
+		else if (complex)
+			compact_pointer = (COMPACT_POINTER_TYPE)monfuncs[f].mondcmplx;
+		else
+			compact_pointer = (COMPACT_POINTER_TYPE)monfuncs[f].mondreal;
+		break;
+
+	case 2:
+		if (f >= NUM_DYADIC)
+			goto illegal;
+		if (intmode)
+			compact_pointer = (COMPACT_POINTER_TYPE)dyfuncs[f].dydint;
+		else if (complex)
+			compact_pointer = (COMPACT_POINTER_TYPE)dyfuncs[f].dydcmplx;
+		else
+			compact_pointer = (COMPACT_POINTER_TYPE)dyfuncs[f].dydreal;
+		break;
+
+	case 3:
+		if (f >= NUM_TRIADIC)
+			goto illegal;
+		if (intmode)
+			compact_pointer = (COMPACT_POINTER_TYPE)trifuncs[f].triint;
+		else
+			compact_pointer = (COMPACT_POINTER_TYPE)trifuncs[f].trireal;
+		break;
+	}
+	if (isNULL(compact_pointer)) {
+		if (operands != 0) {
+			// The original niladic() function doesn't invoke
+			// bad_mode_error() if the function pointer is null.
+			// TODO:  Verify that this behavior is really needed.
+bad_mode:
+			bad_mode_error();
+		}
+		goto finish_niladic;
+	}
+	function_pointer = (void (*)(void))EXPAND_ADDRESS(compact_pointer);
+	if (dispatch_xrom(function_pointer)) {
+		return;
+	}
+	if (operands == 0) {
+		switch (NILADIC_NUMRESULTS(niladics[f])) {
+		case 2:		lift_if_enabled(); // fall through
+		case 1:		lift_if_enabled(); break;
+		}
+		((FP_NILADIC)function_pointer)((enum nilop)f);
+finish_niladic:
+		// If an error occurred, we end up here even if a non-niladic function was called.
+		// set_lift() is always called for non-niladic functions so calling it again does no harm.
+		if (f != OP_rCLX) {
+			set_lift();
+		}
+	}
+	else if (intmode) {
+		long long int iy;
+		long long int iz;
+
+		ix = getX_int();
+		iy = get_reg_n_int(regY_idx);
+		switch (operands) {
+		default:
+		case 1:
+			ix = ((FP_MONADIC_INT)function_pointer)(ix);
+			break;
+
+		case 2:
+			ix = ((FP_DYADIC_INT)function_pointer)(iy, ix);
+			break;
+
+		case 3:
+			iz = get_reg_n_int(regZ_idx);
+			ix = ((FP_TRIADIC_INT)function_pointer)(iz, iy, ix);
+			break;
+		}
+		goto finish_x;
+	}
+	else {
+		decNumber x, y, z, t, r1;
+
+		if (operands + complex <= 2) {
+			getXY(&x, &y);
+		}
+		else {
+			getXYZT(&x, &y, &z, &t);
+		}
+
+		if (complex) {
+			decNumber r2;
+
+			if (operands == 1) {
+				((FP_MONADIC_CMPLX)function_pointer)(&r1, &r2, &x, &y);
+			}
+			else {
+				((FP_DYADIC_CMPLX)function_pointer)(&r1, &r2, &z, &t, &x, &y);
+			}
+			setlastXY();
+			if (operands != 1) {
+				lower2();
+			}
+			setXY(&r1, &r2);
+			set_was_complex();
+		}
+		else { // real
+			void *result;
+
+			switch (operands) {
+			default:
+			case 1:
+				result = ((FP_MONADIC_REAL)function_pointer)(&r1, &x);
+				break;
+
+			case 2:
+				result = ((FP_DYADIC_REAL)function_pointer)(&r1, &y, &x);
+				break;
+
+			case 3:
+				result = ((FP_TRIADIC_REAL)function_pointer)(&r1, &z, &y, &x);
+				break;
+			}
+			if (NULL == result) {
+				set_NaN(&r1);
+			}
+finish_x:
+			setlastX();
+			switch (operands) {
+			case 3:		lower(); // fall through
+			case 2:		lower(); break;
+			}
+			if (!intmode) {
+				setX(&r1);
+			}
+			else {
+				setX_int(ix);
+			}
+		}
+	}
+#undef COMPACT_POINTER_TYPE
+}
+
+
+static void niladic(const opcode op)
+{
+	universal_dispatch(op, 0, 0);
+}
+
+static void monadic(const opcode op)
+{
+	universal_dispatch(op, 1, 0);
+}
+
+static void monadic_cmplex(const opcode op)
+{
+	universal_dispatch(op, 1, 1);
+}
+
+static void dyadic(const opcode op)
+{
+	universal_dispatch(op, 2, 0);
+}
+
+static void dyadic_cmplex(const opcode op)
+{
+	universal_dispatch(op, 2, 1);
+}
+
+static void triadic(const opcode op)
+{
+	universal_dispatch(op, 3, 0);
+}
+
+
+#endif // UNIVERSAL_DISPATCH
+
 
 /*
  *  Helper to check the maximum allowed register number, 

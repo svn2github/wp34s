@@ -53,6 +53,12 @@
 // Include the CNSTS command to access constants via indirection
 #define INCLUDE_INDIRECT_CONSTS
 
+// Replace dispatch functions for calling niladic, monadic, dyadic and triadic
+// functions and their complex variants with one universal dispatch function.
+// It saves approximately 280 bytes in the firmware.
+// This is an EXPERIMENTAL FEATURE that hasn't yet received adequate testing.
+//#define UNIVERSAL_DISPATCH
+
 // Code to allow access to caller's local data from xIN-code
 // #define ENABLE_COPYLOCALS
 
