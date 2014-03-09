@@ -493,14 +493,6 @@ extern int current_catalogue_max(void);
 #define regK    (*((REGISTER *)(Regs+regK_idx)))
 #endif
 
-/*
- *  The various program regions
- */
-#define REGION_RAM      0
-#define REGION_LIBRARY  1
-#define REGION_BACKUP   2
-#define REGION_XROM     3
-
 /* Special return stack marker for local registers */
 #define LOCAL_MASK      (0xf000u)
 #define LOCAL_MARKER    (0x1000u)
@@ -511,20 +503,17 @@ extern int current_catalogue_max(void);
 #define LOCAL_LEVELS(s) ((s) & 0xfff)
 
 /* Macros to access flash library space and user program space */
-#define LIB_SHIFT       (14)
-#define LIB_MASK        (3 << LIB_SHIFT)
-#define LIB_ADDR_MASK   ((1 << LIB_SHIFT) - 1)
-#define isLIB(pc)       ((pc) & LIB_MASK)
-#define nLIB(pc)        ((pc) >> LIB_SHIFT)
-#define addrLIB(pc, n)  ((pc) | ((n) << LIB_SHIFT))
-#define startLIB(pc)    (((pc) & ~LIB_ADDR_MASK) + 1)
-#define offsetLIB(pc)   (((pc) & LIB_ADDR_MASK) - 1)
-
-#define isRAM(pc)       (((pc) & (LIB_MASK | LOCAL_MASK)) == 0)
+//#define LIB_SHIFT       (14)
+//#define LIB_MASK        (3 << LIB_SHIFT)
+//#define LIB_ADDR_MASK   ((1 << LIB_SHIFT) - 1)
+//#define isLIB(pc)       ((pc) & LIB_MASK)
+//#define nLIB(pc)        ((pc) >> LIB_SHIFT)
+//#define addrLIB(pc, n)  ((pc) | ((n) << LIB_SHIFT))
+//#define startLIB(pc)    (((pc) & ~LIB_ADDR_MASK) + 1)
+//#define offsetLIB(pc)   (((pc) & LIB_ADDR_MASK) - 1)
 
 /* Macros to access program ROM */
-#define isXROM(pc)      (nLIB(pc) == REGION_XROM)
-#define addrXROM(pc)    addrLIB(pc,REGION_XROM)
+//#define addrXROM(pc)    addrLIB(pc,REGION_XROM)
 
 /* Define the operation codes and various masks to simplify access to them all
  */
@@ -648,18 +637,8 @@ enum {
         OP_FACTOR,
 #endif
         OP_DATE_YEAR, OP_DATE_MONTH, OP_DATE_DAY,
-#ifdef INCLUDE_USER_IO
-        OP_RECV1,
-#endif
 #ifdef INCLUDE_MANTISSA
         OP_MANTISSA, OP_EXPONENT, OP_ULP,
-#endif
-        OP_MAT_ALL, OP_MAT_DIAG,
-        OP_MAT_TRN,
-        OP_MAT_RQ, OP_MAT_CQ, OP_MAT_IJ,
-        OP_MAT_DET,
-#ifdef MATRIX_LU_DECOMP
-        OP_MAT_LU,
 #endif
 #ifdef INCLUDE_XROM_DIGAMMA
         OP_DIGAMMA,
@@ -703,8 +682,6 @@ enum {
 #ifdef INCLUDE_XROOT
         OP_XROOT,
 #endif
-        OP_MAT_ROW, OP_MAT_COL,
-        OP_MAT_COPY,
 
 #ifdef INCLUDE_MANTISSA
         OP_NEIGHBOUR,
@@ -726,10 +703,6 @@ enum {
 #endif
         OP_PERMRR,
         OP_GEN_LAGUERRE,
-        OP_MAT_MUL,
-        OP_MAT_GADD,
-        OP_MAT_REG,
-        OP_MAT_LIN_EQN,
         OP_TO_DATE,
 
 #ifdef INCLUDE_INT_MODULO_OPS
@@ -758,9 +731,8 @@ enum nilop {
         OP_LINF, OP_EXPF, OP_PWRF, OP_LOGF, OP_BEST,
         OP_RANDOM, OP_STORANDOM,
         OP_DEG, OP_RAD, OP_GRAD,
-        OP_RTN, OP_RTNp1, OP_END,
-        OP_RS, OP_PROMPT,
-        OP_SIGMACLEAR, OP_CLREG, OP_rCLX, OP_CLSTK, OP_CLALL, OP_RESET, OP_CLPROG, OP_CLPALL, OP_CLFLAGS,
+        OP_RTN, OP_RTNp1, OP_END /* Do not remove! */,
+        OP_SIGMACLEAR, OP_CLREG, OP_rCLX, OP_CLSTK, OP_CLALL, OP_RESET, OP_CLFLAGS,
         OP_R2P, OP_P2R,
         OP_FRACDENOM, OP_2FRAC, OP_DENANY, OP_DENFIX, OP_DENFAC,
         OP_FRACIMPROPER, OP_FRACPROPER,
@@ -779,7 +751,7 @@ enum nilop {
         OP_CLRALPHA, OP_VIEWALPHA, OP_ALPHALEN,
         OP_ALPHATOX, OP_XTOALPHA, OP_ALPHAON, OP_ALPHAOFF,
         OP_REGCOPY, OP_REGSWAP, OP_REGCLR, OP_REGSORT,
-        OP_LOADA2D, OP_SAVEA2D, OP_GSBuser, OP_POPUSR,
+        OP_LOADA2D, OP_SAVEA2D,
         OP_XisInf, OP_XisNaN, OP_XisSpecial, OP_XisPRIME,
         OP_XisINT, OP_XisFRAC, OP_XisEVEN, OP_XisODD,
         OP_ENTRYP,
@@ -787,7 +759,6 @@ enum nilop {
         OP_QUAD, OP_NEXTPRIME,
         OP_SETEUR, OP_SETUK, OP_SETUSA, OP_SETIND, OP_SETCHN, OP_SETJPN,
         OP_WHO,
-        OP_XEQALPHA, OP_GTOALPHA,
         OP_ROUNDING,
         OP_SLOW, OP_FAST,
         OP_TOP,
@@ -795,32 +766,15 @@ enum nilop {
         OP_ISINT, OP_ISFLOAT,
         OP_Xeq_pos0, OP_Xeq_neg0,
 
-#ifdef MATRIX_ROWOPS
-        OP_MAT_ROW_SWAP, OP_MAT_ROW_MUL, OP_MAT_ROW_GADD,
-#endif
-        OP_MAT_CHECK_SQUARE,
-        OP_MAT_INVERSE,
-#ifdef SILLY_MATRIX_SUPPORT
-        OP_MAT_ZERO, OP_MAT_IDENT,
-#endif
         OP_POPLR,
-        OP_MEMQ, OP_LOCRQ, OP_REGSQ, OP_FLASHQ,
 
 #ifdef ENABLE_REGISTER_BROWSER
 	OP_SHOWREGS,
 #endif 
 
-#ifdef INCLUDE_USER_IO
-        OP_SEND1, OP_SERIAL_OPEN, OP_SERIAL_CLOSE,
-        OP_ALPHASEND, OP_ALPHARECV,
-#endif
-        OP_SENDP, OP_SENDR, OP_SENDsigma, OP_SENDA,
-
         // Not programmable     
-        OP_RECV,
         OP_SAVE, OP_LOAD,
         OP_LOADST, 
-        OP_LOADP, OP_PRCL, OP_PSTO,
 
         OP_LOADR, OP_LOADsigma, 
         OP_DBLON, OP_DBLOFF, OP_ISDBL, OP_cmplxI,
@@ -829,20 +783,6 @@ enum nilop {
 
         OP_DOTPROD, OP_CROSSPROD,
 
-        /* INFRARED commands */
-        OP_PRINT_PGM, OP_PRINT_REGS, OP_PRINT_STACK, OP_PRINT_SIGMA,
-        OP_PRINT_ALPHA, OP_PRINT_ALPHA_NOADV, OP_PRINT_ALPHA_JUST, OP_PRINT_ADV,
-        OP_PRINT_WIDTH,
-        /* end of INFRARED commands */
-
-        OP_QUERY_XTAL, OP_QUERY_PRINT,
-
-#ifdef INCLUDE_STOPWATCH
-        OP_STOPWATCH,
-#endif // INCLUDE_STOPWATCH
-#ifdef _DEBUG
-        OP_DEBUG,
-#endif
         NUM_NILADIC,    // Last entry defines number of operations
 
         // following are dummy operations for internal use
@@ -884,9 +824,7 @@ enum rarg {
         RARG_DEC, RARG_INC,
 
         /* These 8 must be sequential and in the same order as the DBL_ commands */
-        RARG_LBL, RARG_LBLP, RARG_XEQ, RARG_GTO,
-        RARG_SUM, RARG_PROD, RARG_SOLVE, RARG_DERIV, RARG_2DERIV,
-        RARG_INTG,
+        RARG_XEQ, RARG_GTO,
 
         RARG_STD, RARG_FIX, RARG_SCI, RARG_ENG, RARG_DISP,
 
@@ -904,13 +842,7 @@ enum rarg {
 
         RARG_CONV,
 
-        RARG_PAUSE, RARG_KEY,
-        RARG_ALPHAXEQ, RARG_ALPHAGTO,
-#ifdef INCLUDE_FLASH_RECALL
-        RARG_FLRCL, RARG_FLRCL_PL, RARG_FLRCL_MI, RARG_FLRCL_MU, RARG_FLRCL_DV,
-                        RARG_FLRCL_MIN, RARG_FLRCL_MAX,
-        RARG_FLCRCL, RARG_FLCRCL_PL, RARG_FLCRCL_MI, RARG_FLCRCL_MU, RARG_FLCRCL_DV,
-#endif
+        RARG_PAUSE,
         RARG_SLD, RARG_SRD,
 
         RARG_VIEW_REG,
@@ -920,8 +852,6 @@ enum rarg {
 #ifdef INCLUDE_USER_MODE
         RARG_STOM, RARG_RCLM,
 #endif
-        RARG_PUTKEY,
-        RARG_KEYTYPE,
         RARG_MESSAGE,
 
         RARG_LOCR,
@@ -942,23 +872,10 @@ enum rarg {
         RARG_IND_CONST,
         RARG_IND_CONST_CMPLX,
 #endif
-        /* INFRARED commands */
-        RARG_PRINT_REG, RARG_PRINT_BYTE, RARG_PRINT_CHAR, RARG_PRINT_TAB, 
-        RARG_PMODE, RARG_PDELAY,
-        RARG_PRINT_CMPLX,
-#ifdef INCLUDE_PLOTTING
-        RARG_PLOT_INIT, RARG_PLOT_DIM, 
-        RARG_PLOT_SETPIX, RARG_PLOT_CLRPIX, RARG_PLOT_FLIPPIX, RARG_PLOT_ISSET,
-        RARG_PLOT_DISPLAY, RARG_PLOT_PRINT,
-#endif
-        /* end of INFRARED commands */
 
         // Indirect SKIP/BACK 
         // Only the first of this group is used in XROM
         RARG_CASE, 
-#ifdef INCLUDE_INDIRECT_BRANCHES
-        RARG_iBACK, RARG_iBSF, RARG_iBSB,
-#endif
 
         RARG_CVIEW,
 
@@ -987,8 +904,6 @@ enum specials {
 
 // Double sized instructions
 enum multiops {
-        DBL_LBL=0, DBL_LBLP, DBL_XEQ, DBL_GTO,
-        DBL_SUM, DBL_PROD, DBL_SOLVE, DBL_DERIV, DBL_2DERIV, DBL_INTG,
         DBL_ALPHA,
 #ifdef XROM_LONG_BRANCH
         DBL_XBR,
@@ -1064,7 +979,6 @@ enum catalogues
         CATALOGUE_COMPLEX_CONST,
         CATALOGUE_CONV,
         CATALOGUE_SUMS,
-        //CATALOGUE_MATRIX,
 		CATALOGUE_CLEAR,
 		CATALOGUE_DISPL,
 		CATALOGUE_MORE,
@@ -1122,7 +1036,6 @@ extern int is_intmode(void);
 #endif
 extern int is_dblmode(void);
 extern int is_usrdblmode(void);
-extern int is_xrom(void);
 extern enum shifts cur_shift(void);
 extern enum shifts reset_shift(void);
 
@@ -1136,12 +1049,8 @@ extern void xeq_init_contexts(void);
 extern void process_keycode(int);
 extern void set_entry(void);
 
-#if 0
-extern unsigned int state_pc(void);
-#else
 #define state_pc() (State.pc)
-#endif
-extern int sizeLIB(int);
+
 extern void set_pc(unsigned int);
 extern unsigned int user_pc(unsigned int);
 extern unsigned int find_user_pc(unsigned int);
@@ -1154,20 +1063,18 @@ extern unsigned int global_regs_rarg(enum rarg op);
 extern int move_retstk(int distance);
 
 extern void clrretstk(void);
-extern void clrretstk_pc(void);
 
 extern opcode getprog(unsigned int n);
 extern const s_opcode *get_current_prog(void);
-extern void update_program_bounds(const int force);
 extern unsigned int do_inc(const unsigned int, int);
 extern unsigned int do_dec(unsigned int, int);
 extern int incpc(void);
 extern void decpc(void);
 #define FIND_OP_ERROR   1
 #define FIND_OP_ENDS    2
-extern unsigned int find_opcode_from(unsigned int pc, const opcode l, const int flags);
-extern unsigned int find_label_from(unsigned int, unsigned int, int);
-extern unsigned int findmultilbl(const opcode, int);
+//extern unsigned int find_opcode_from(unsigned int pc, const opcode l, const int flags);
+//extern unsigned int find_label_from(unsigned int, unsigned int, int);
+//extern unsigned int findmultilbl(const opcode, int);
 extern void fin_tst(const int);
 
 extern const char *prt(opcode, char *);
@@ -1269,10 +1176,6 @@ extern int keycode_to_row_column(const int c);
 int row_column_to_keycode(const int c);
 
 
-/* Control program execution */
-extern void xeq_sst_bst(int kind);
-
-
 /* Integer mode wrapper functions */
 extern long long int intMonadic(long long int x);
 extern long long int intDyadic(long long int y, long long int x);
@@ -1313,10 +1216,6 @@ extern void cmdstostk(unsigned int arg, enum rarg op);
 extern void cmdrclstk(unsigned int arg, enum rarg op);
 extern void cmdgtocommon(int gsb, unsigned int pc);
 extern void cmdgto(unsigned int arg, enum rarg op);
-extern void cmdalphagto(unsigned int arg, enum rarg op);
-extern void op_gtoalpha(enum nilop op);
-extern void op_xeqalpha(enum nilop op);
-extern void cmdmultigto(const opcode o, enum multiops mopr);
 extern void cmdlblp(unsigned int arg, enum rarg op);
 extern void cmdmultilblp(const opcode o, enum multiops mopr);
 extern void xromarg(unsigned int arg, enum rarg op);
@@ -1343,11 +1242,9 @@ extern void op_query_print(enum nilop op);
 extern void cmdpause(unsigned int arg, enum rarg op);
 extern void set_int_base(unsigned int arg, enum rarg op);
 extern void op_rtn(enum nilop op);
-extern void op_popusr(enum nilop op);
 extern void op_rs(enum nilop op);
 extern void op_prompt(enum nilop op);
 extern void store_a_to_d(enum nilop op);
-extern void do_usergsb(enum nilop op);
 extern void do_userclear(enum nilop op);
 extern void isTop(enum nilop op);
 extern void XisInt(enum nilop op);
@@ -1380,8 +1277,6 @@ extern void rarg_roundingmode(unsigned int arg, enum rarg op);
 extern void rarg_round(unsigned int arg, enum rarg op);
 extern void op_setspeed(enum nilop);
 extern void cmdkeyp(unsigned int arg, enum rarg op);
-extern void cmdputkey(unsigned int arg, enum rarg op);
-extern void cmdkeytype(unsigned int arg, enum rarg op);
 extern void cmdlocr(unsigned int arg, enum rarg op);
 extern void cmdlpop(enum nilop op);
 extern void cmdregs(unsigned int arg, enum rarg op);

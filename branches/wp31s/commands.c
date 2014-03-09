@@ -26,14 +26,6 @@
 #include "alpha.h"
 #include "lcd.h"
 #include "storage.h"
-#include "serial.h"
-#ifdef INFRARED
-#include "printer.h"
-#endif
-#include "matrix.h"
-#ifdef INCLUDE_STOPWATCH
-#include "stopwatch.h"
-#endif
 #endif
 
 /*
@@ -60,17 +52,6 @@
 #define XNIL(name)	(FP_NILADIC) XPTR(name)
 #define XARG(name)	(FP_RARG) XPTR(name)
 #define XMULTI(name)	(FP_MULTI) XPTR(name)
-
-
-/* Infrared command wrappers to maintain binary compatibility across images */
-#ifdef INFRARED
-#define IRN(x)		& (x)
-#define IRA(x)		& (x)
-#else
-#define IRN(x)		(FP_NILADIC) NOFN
-#define IRA(x)		NOFN
-#endif
-
 
 #ifdef SHORT_POINTERS
 #ifndef COMMANDS_PASS
@@ -297,16 +278,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT",		CNULL)
 	FUNC(OP_ULP,	  &decNumberULP,	NOFN,		XMI(int_ULP),	"ULP",		CNULL)
 #endif
-	FUNC(OP_MAT_ALL, &matrix_all,		NOFN,		NOFN,		"M-ALL",	CNULL)
-	FUNC(OP_MAT_DIAG, &matrix_diag,		NOFN,		NOFN,		"M-DIAG",	CNULL)
-	FUNC(OP_MAT_TRN, &matrix_transpose,	NOFN,		NOFN,		"TRANSP",	CNULL)
-	FUNC(OP_MAT_RQ,	&matrix_rowq,		NOFN,		NOFN,		"nROW",		CNULL)
-	FUNC(OP_MAT_CQ,	&matrix_colq,		NOFN,		NOFN,		"nCOL",		CNULL)
-	FUNC(OP_MAT_IJ,	&matrix_getrc,		NOFN,		NOFN,		"M.IJ",		CNULL)
-	FUNC(OP_MAT_DET, &matrix_determinant,	NOFN,		NOFN,		"DET",		CNULL)
-#ifdef MATRIX_LU_DECOMP
-	FUNC(OP_MAT_LU, &matrix_lu_decomp,	NOFN,		NOFN,		"M.LU",		CNULL)
-#endif
 #ifdef INCLUDE_XROM_DIGAMMA
 	FUNC(OP_DIGAMMA,XMR(DIGAMMA),		XMC(CPX_DIGAMMA),	NOFN,	"\226",		"DIGAMMA")
 #endif
@@ -392,9 +363,6 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #ifdef INCLUDE_XROOT
 	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intDyadic,	"\234\003y",	"XROOT")
 #endif
-	FUNC(OP_MAT_ROW, &matrix_row,		NOFN,		NOFN,		"M-ROW",	CNULL)
-	FUNC(OP_MAT_COL, &matrix_col,		NOFN,		NOFN,		"M-COL",	CNULL)
-	FUNC(OP_MAT_COPY, &matrix_copy,		NOFN,		NOFN,		"M.COPY",	CNULL)
 #ifdef INCLUDE_MANTISSA
 	FUNC(OP_NEIGHBOUR,&decNumberNeighbour,	NOFN,		NOFN,		"NEIGHB",	CNULL)
 #endif
@@ -437,10 +405,6 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 	FUNC(OP_PERMRR,		XTR(PERMMR),		(FP_TRIADIC_INT) NOFN,	"%MRR",		CNULL)
         FUNC(OP_GEN_LAGUERRE,   XTR(LaguerreLnA),	(FP_TRIADIC_INT) NOFN,	"L\275\240",	"LnAlpha")
 
-	FUNC(OP_MAT_MUL,	&matrix_multiply,	(FP_TRIADIC_INT) NOFN,	"M\034",	"M*")
-	FUNC(OP_MAT_GADD,	&matrix_genadd,		(FP_TRIADIC_INT) NOFN,	"M+\034",	"M+*")
-	FUNC(OP_MAT_REG,	&matrix_getreg,		(FP_TRIADIC_INT) NOFN,	"M.REG",	CNULL)
-	FUNC(OP_MAT_LIN_EQN,	&matrix_linear_eqn,	(FP_TRIADIC_INT) NOFN,	"LINEQS",	CNULL)
 	FUNC(OP_TO_DATE,	&dateFromYMD,		(FP_TRIADIC_INT) NOFN,	"\015DATE",	">DATE")
 #ifdef INCLUDE_INT_MODULO_OPS
 	FUNC(OP_MULMOD, 	(FP_TRIADIC_REAL) NOFN,	&intmodop,		"\034MOD",	CNULL)
@@ -534,16 +498,12 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_RTN,		&op_rtn,		"RTN",		CNULL)
 	FUNC0(OP_RTNp1,		&op_rtn,		"RTN+1",	CNULL)
 	FUNC0(OP_END,		&op_rtn,		"END",		CNULL)
-	FUNC0(OP_RS,		&op_rs,			"STOP",		CNULL)
-	FUNC0(OP_PROMPT,	&op_prompt,		"PROMPT",	CNULL)
 	FUNC0(OP_SIGMACLEAR,	&sigma_clear,		"\221CL",	"CLSUMS")
 	FUNC0(OP_CLREG,		&clrreg,		"CLREGS",	CNULL)
 	FUNC0(OP_rCLX,		&clrx,			"CLx",		CNULL)
 	FUNC0(OP_CLSTK,		&clrstk,		"CLSTK",	CNULL)
 	FUNC0(OP_CLALL,		NOFN,			"CLALL",	CNULL)
 	FUNC0(OP_RESET,		NOFN,			"RESET",	CNULL)
-	FUNC0(OP_CLPROG,	NOFN,			"CLPROG",	CNULL)
-	FUNC0(OP_CLPALL,	NOFN,			"CLPALL",	CNULL)
 	FUNC0(OP_CLFLAGS,	&clrflags,		"CFALL",	CNULL)
 	FN_I0(OP_R2P,		&op_r2p,		"\015POL",	">POL")
 	FN_I0(OP_P2R,		&op_p2r,		"\015REC",	">REC")
@@ -606,9 +566,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_LOADA2D,	&store_a_to_d,		"\015A..D",	CNULL)
 	FUNC0(OP_SAVEA2D,	&store_a_to_d,		"A..D\015",	CNULL)
 
-	FUNC0(OP_GSBuser,	&do_usergsb,		"XEQUSR",	CNULL)
-	FUNC0(OP_POPUSR,	&op_popusr,		"POPUSR",	CNULL)
-
 	FN_I0(OP_XisInf,	&isInfinite,		"\237?",	"INF?")
 	FN_I0(OP_XisNaN,	&isNan,			"NaN?",		CNULL)
 	FN_I0(OP_XisSpecial,	&isSpecial,		"SPEC?",	CNULL)
@@ -632,9 +589,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SETJPN,	XNIL(SETJAP),		"SETJPN",	CNULL)
 	FUNC0(OP_WHO,		XNIL(WHO),		"WHO",		CNULL)	
 
-	FUNC0(OP_XEQALPHA,	&op_gtoalpha,		"XEQ\240",	"XEQa")
-	FUNC0(OP_GTOALPHA,	&op_gtoalpha,		"GTO\240",	"GTOa")
-
 	FUNC1(OP_ROUNDING,	&op_roundingmode,	"RM?",		CNULL)
 	FUNC0(OP_SLOW,		&op_setspeed,		"SLOW",		CNULL)
 	FUNC0(OP_FAST,		&op_setspeed,		"FAST",		CNULL)
@@ -648,46 +602,15 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_Xeq_pos0,	&check_zero,		"x=+0?",	CNULL)
 	FUNC0(OP_Xeq_neg0,	&check_zero,		"x=-0?",	CNULL)
 
-#ifdef MATRIX_ROWOPS
-	FN_I0(OP_MAT_ROW_SWAP,	&matrix_rowops,		"MROW\027",	"MROW<>")
-	FN_I0(OP_MAT_ROW_MUL,	&matrix_rowops,		"MROW\034",	"MROW*")
-	FN_I0(OP_MAT_ROW_GADD,	&matrix_rowops,		"MROW+\034",	"MROW+*")
-#endif
-	FN_I0(OP_MAT_CHECK_SQUARE, &matrix_is_square,	"M.SQR?",	CNULL)
-	FN_I0(OP_MAT_INVERSE,	&matrix_inverse,	"M\235",	"M.INV")
-#ifdef SILLY_MATRIX_SUPPORT
-	FN_I0(OP_MAT_ZERO,	&matrix_create,		"M.ZERO",	CNULL)
-	FN_I0(OP_MAT_IDENT,	&matrix_create,		"M.IDEN",	CNULL)
-#endif
 	FUNC0(OP_POPLR,		&cmdlpop,		"PopLR",	CNULL)
-	FUNC1(OP_MEMQ,		&get_mem,		"MEM?",		CNULL)
-	FUNC1(OP_LOCRQ,		&get_mem,		"LocR?",	CNULL)
-	FUNC1(OP_REGSQ,		&get_mem,		"REGS?",	CNULL)
-	FUNC1(OP_FLASHQ,	&get_mem,		"FLASH?",	CNULL)
 
 #ifdef ENABLE_REGISTER_BROWSER
 	FUNC0(OP_SHOWREGS,      &browse_registers,      "SHREGS",       CNULL)
 #endif
 
-#ifdef INCLUDE_USER_IO
-	FUNC0(OP_SEND1,		&send_byte,		"SEND1",	CNULL)
-	FUNC0(OP_SERIAL_OPEN,	&serial_open,		"SOPEN",	CNULL)
-	FUNC0(OP_SERIAL_CLOSE,	&serial_close,		"SCLOSE",	CNULL)
-	FUNC0(OP_ALPHASEND,	&send_alpha,		"SEND\240",	"SENDa")
-	FUNC0(OP_ALPHARECV,	&recv_alpha,		"RECV\240",	"RECVa")
-#endif
-	FUNC0(OP_SENDP,		&send_program,		"SENDP",	CNULL)
-	FUNC0(OP_SENDR,		&send_registers,	"SENDR",	CNULL)
-	FUNC0(OP_SENDsigma,	&send_sigma,		"SEND\221",	"SENDSUMS")
-	FUNC0(OP_SENDA,		&send_all,		"SENDA",	CNULL)
-
-	FUNC0(OP_RECV,		&recv_any,		"RECV",		CNULL)
 	FUNC0(OP_SAVE,		&flash_backup,		"SAVE",		CNULL)
 	FUNC0(OP_LOAD,		&flash_restore,		"LOAD",		CNULL)
 	FUNC0(OP_LOADST,	&load_state,		"LOADSS",	CNULL)
-	FUNC0(OP_LOADP,		&load_program,		"LOADP",	CNULL)
-	FUNC0(OP_PRCL,		&recall_program,	"PRCL",		CNULL)
-	FUNC0(OP_PSTO,		&store_program,		"PSTO",		CNULL)
 
 	FUNC0(OP_LOADR,		&load_registers,	"LOADR",	CNULL)
 	FUNC0(OP_LOADsigma,	&load_sigma,		"LOAD\221",	"LOADSUMS")
@@ -702,28 +625,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 
 	FUNC0(OP_DOTPROD,	XNIL(cpx_DOT),		"\024DOT",	"cDOT")
 	FUNC0(OP_CROSSPROD,	XNIL(cpx_CROSS),	"\024CROSS",	"cCROSS")
-
-	/* INFRARED commands */
-	FUNC0(OP_PRINT_PGM,	IRN(print_program),	"\222PROG",	"P.PROG")
-	FUNC0(OP_PRINT_REGS,	IRN(print_registers),	"\222REGS",	"P.REGS")
-	FUNC0(OP_PRINT_STACK,	IRN(print_registers),	"\222STK",	"P.STK")
-	FUNC0(OP_PRINT_SIGMA,	IRN(print_sigma),	"\222\221",	"P.SUMS")
-	FUNC0(OP_PRINT_ALPHA,	IRN(print_alpha),	"\222\240",	"P.a")
-	FUNC0(OP_PRINT_ALPHA_NOADV, IRN(print_alpha),	"\222\240+",	"P.a+")
-	FUNC0(OP_PRINT_ALPHA_JUST,  IRN(print_alpha),	"\222+\240",	"P.+a")
-	FUNC0(OP_PRINT_ADV,	IRN(print_lf),		"\222ADV",	"P.ADV")
-	FUNC1(OP_PRINT_WIDTH,	IRN(cmdprintwidth),	"\222WIDTH",	"P.WIDTH")
-	/* end of INFRARED commands */
-
-	FUNC0(OP_QUERY_XTAL,	&op_query_xtal,		"XTAL?",	CNULL)
-	FUNC0(OP_QUERY_PRINT,	&op_query_print,	"\222?",	"PRT?")
-
-#ifdef INCLUDE_STOPWATCH
-	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW",	CNULL)
-#endif
-#ifdef _DEBUG
-	FUNC0(OP_DEBUG,		XNIL(DBG),		"DBG",		CNULL)
-#endif
 
 #undef FUNC
 #undef FUNC0
@@ -838,17 +739,8 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_DEC,	&cmdlincdec,				"DEC",		CNULL)
 	CMDstk(RARG_INC,	&cmdlincdec,				"INC",		CNULL)
 
-	CMDlblnI(RARG_LBL,	NOFN,					"LBL",		CNULL)
-	CMDlbl(RARG_LBLP,	&cmdlblp,				"LBL?",		CNULL)
 	CMDlbl(RARG_XEQ,	&cmdgto,				"XEQ",		CNULL)
 	CMDlbl(RARG_GTO,	&cmdgto,				"GTO",		CNULL)
-
-	CMDlbl(RARG_SUM,	XARG(SIGMA),				"\221",		"SUM")
-	CMDlbl(RARG_PROD,	XARG(PRODUCT),				"\217",		"PROD")
-	CMDlbl(RARG_SOLVE,	XARG(SOLVE),				"SLV",		CNULL)
-	CMDlbl(RARG_DERIV,	XARG(DERIV),				"f'(x)",	CNULL)
-	CMDlbl(RARG_2DERIV,	XARG(2DERIV),				"f\"(x)",	CNULL)
-	CMDlbl(RARG_INTG,	XARG(INTEGRATE),			"\004",		"INTG")
 
 	CMD(RARG_STD,		&cmddisp,	DISPLAY_DIGITS,		"ALL",		CNULL)
 	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX",		CNULL)
@@ -887,25 +779,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDnoI(RARG_CONV,	&cmdconv,	NUM_CONSTS_CONV*2,	"conv",		CNULL)
 
 	CMD(RARG_PAUSE,		&cmdpause,	100,			"PSE",		CNULL)
-	CMDstk(RARG_KEY,	&cmdkeyp,				"KEY?",		CNULL)
 
-	CMDstk(RARG_ALPHAXEQ,	&cmdalphagto,				"\240XEQ",	"aXEQ")
-	CMDstk(RARG_ALPHAGTO,	&cmdalphagto,				"\240GTO",	"aGTO")
-
-#ifdef INCLUDE_FLASH_RECALL
-	CMDstknL(RARG_FLRCL, 	  &cmdflashrcl,				"RCF",		CNULL)
-	CMDstknL(RARG_FLRCL_PL,   &cmdflashrcl,				"RCF+",		CNULL)
-	CMDstknL(RARG_FLRCL_MI,   &cmdflashrcl,				"RCF-",		CNULL)
-	CMDstknL(RARG_FLRCL_MU,   &cmdflashrcl,				"RCF\034",	"RCF*")
-	CMDstknL(RARG_FLRCL_DV,   &cmdflashrcl,				"RCF/",		CNULL)
-	CMDstknL(RARG_FLRCL_MIN,  &cmdflashrcl,				"RCF\017",	"RCFMIN")
-	CMDstknL(RARG_FLRCL_MAX,  &cmdflashrcl,				"RCF\020",	"RCFMAX")
-	CMDcstknL(RARG_FLCRCL, 	  &cmdflashcrcl,			"\024RCF",	"cRCF")
-	CMDcstknL(RARG_FLCRCL_PL, &cmdflashcrcl,			"\024RCF+",	"cRCF+")
-	CMDcstknL(RARG_FLCRCL_MI, &cmdflashcrcl,			"\024RCF-",	"cRCF-")
-	CMDcstknL(RARG_FLCRCL_MU, &cmdflashcrcl,			"\024RCF\034",	"cRCF*")
-	CMDcstknL(RARG_FLCRCL_DV, &cmdflashcrcl,			"\024RCF/",	"cRCF/")
-#endif
 	CMD(RARG_SLD,		&op_shift_digit, 256,			"SDL",		CNULL)
 	CMD(RARG_SRD,		&op_shift_digit, 256,			"SDR",		CNULL)
 
@@ -918,9 +792,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDstk(RARG_STOM,	&cmdsavem,				"STOM",		CNULL)
 	CMDstk(RARG_RCLM,	&cmdrestm,				"RCLM",		CNULL)
 #endif
-	CMDstk(RARG_PUTKEY,	&cmdputkey,				"PUTK",		CNULL)
-	CMDstk(RARG_KEYTYPE,	&cmdkeytype,				"KTP?",		CNULL)
-
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_MESSAGE,		"MSG",		CNULL)
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL + 1,		"LocR",		CNULL)
 	CMD(RARG_REGS,		&cmdregs,	TOPREALREG + 1,		"REGS",		CNULL)
@@ -945,33 +816,9 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMD(RARG_IND_CONST,	  &cmdconst,	NUM_CONSTS,		"CNST",		CNULL)
 	CMD(RARG_IND_CONST_CMPLX, &cmdconst,	NUM_CONSTS,		"\024CNST",	"cCNST")
 #endif
-	/* INFRARED commands */
-	CMDstk(RARG_PRINT_REG,	IRA(cmdprintreg),			"\222r",	"P.r")
-	CMD(RARG_PRINT_BYTE,	IRA(cmdprint),	256,			"\222#",	"P.#")
-	CMD(RARG_PRINT_CHAR,	IRA(cmdprint),	256,			"\222CHR",	"P.CHR")
-	CMD(RARG_PRINT_TAB,	IRA(cmdprint),	166,			"\222TAB",	"P.TAB")
-	CMD(RARG_PMODE,		IRA(cmdprintmode),  4,			"\222MODE",	"P.MODE")
-	CMD(RARG_PDELAY,	IRA(cmdprintmode),  32,			"\222DLAY",	"P.DLAY")
-	CMDcstk(RARG_PRINT_CMPLX, IRA(cmdprintcmplxreg),		"\222\024r\213\214",	"P.crect")
-	/* end of INFRARED commands */
-#ifdef INCLUDE_PLOTTING
-	CMDplt(RARG_PLOT_INIT,    &cmdplotinit,				"gDIM",		CNULL)
-	CMDplt(RARG_PLOT_DIM,     &cmdplotdim,				"gDIM?",	CNULL)
-	CMDplt(RARG_PLOT_SETPIX,  &cmdplotpixel,			"gSET",		CNULL)
-	CMDplt(RARG_PLOT_CLRPIX,  &cmdplotpixel,			"gCLR",		CNULL)
-	CMDplt(RARG_PLOT_FLIPPIX, &cmdplotpixel,			"gFLP",		CNULL)
-	CMDplt(RARG_PLOT_ISSET,   &cmdplotpixel,			"gPIX?",	CNULL)
-	CMDplt(RARG_PLOT_DISPLAY, &cmdplotdisplay,			"gPLOT",	CNULL)
-	CMDplt(RARG_PLOT_PRINT,   IRA(cmdplotprint),			"\222PLOT",	"P.PLOT")	/* INFRARED command */
-#endif
 
 	// Only the first of this group is used in XROM
 	CMDstk(RARG_CASE,	&cmdskip,				"CASE",		CNULL)
-#ifdef INCLUDE_INDIRECT_BRANCHES
-	CMD(RARG_iBACK,		&cmdback,				"iBACK",	CNULL)
-	CMD(RARG_iBSF,		&cmdskip,				"iBSRF",	CNULL)
-	CMD(RARG_iBSB,		&cmdback,				"iBSRB",	CNULL)
-#endif
 	CMDcstk(RARG_CVIEW,	&cmdview,				"\024VIEW",	"cVIEW")
 
 #undef CMDlbl
@@ -1005,16 +852,6 @@ CMDTAB const struct multicmd_cmdtab multicmds_ct[ NUM_MULTI ] = {
 #else
 const struct multicmd multicmds[ NUM_MULTI ] = {
 #endif
-	CMD(DBL_LBL,	NOFN,				"LBL",		CNULL)
-	CMD(DBL_LBLP,	&cmdmultilblp,			"LBL?",		CNULL)
-	CMD(DBL_XEQ,	&cmdmultigto,			"XEQ",		CNULL)
-	CMD(DBL_GTO,	&cmdmultigto,			"GTO",		CNULL)
-	CMD(DBL_SUM,	XMULTI(SIGMA),			"\221",		"SUM")
-	CMD(DBL_PROD,	XMULTI(PRODUCT),		"\217",		"PROD")
-	CMD(DBL_SOLVE,	XMULTI(SOLVE),			"SLV",		CNULL)
-	CMD(DBL_DERIV,	XMULTI(DERIV),			"f'(x)",	CNULL)
-	CMD(DBL_2DERIV,	XMULTI(2DERIV),			"f\"(x)",	CNULL)
-	CMD(DBL_INTG,	XMULTI(INTEGRATE),		"\004",		"INTG")
 	CMD(DBL_ALPHA,	&multialpha,			"\240",		"a")
 #undef CMD
 };

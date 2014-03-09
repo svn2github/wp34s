@@ -25,8 +25,6 @@
 #include "stats.h"
 #include "decn.h"
 #include "revision.h"
-#include "printer.h"
-#include "serial.h"
 
 static enum separator_modes { SEP_NONE, SEP_COMMA, SEP_DOT } SeparatorMode;
 static enum decimal_modes { DECIMAL_DOT, DECIMAL_COMMA } DecimalMode;
@@ -185,7 +183,7 @@ void error_message(const unsigned int e)
 	};
 #endif
 
-	if (e != ERR_NONE || Running) {
+	if (e != ERR_NONE || XromRunning) {
 		const char *p = error_table[e];
 		const char *q = find_char(p, '\0') + 1;
 		if (*q == '\0')
@@ -1510,138 +1508,6 @@ void format_reg(int index, char *buf) {
 		set_x(r, buf, UState.mode_double);
 }
 
-/* Display the status screen */
-static void show_status(void) {
-	int i, n;
-	int j = SEGS_EXP_BASE;
-	const int status = State2.status - 3;
-	char buf[16], *p = buf;
-	unsigned int pc;
-
-	if (status == -2) {
-		set_status("Free:");
-		p = num_arg(buf, free_mem());
-		p = scopy(p, " , FL. ");
-		p = num_arg(p, free_flash());
-		*p = '\0';
-		set_digits_string(buf, 0);
-	}
-	else if (status == -1) {
-		/* Top line */
-		p = scopy(buf, "Regs:");
-		if (SizeStatRegs)
-			p = scopy(p, " \221\006\006+");
-		*p = '\0';
-		set_status(buf);
-
-		/* Bottom line */
-		p = num_arg(buf, global_regs());
-		if (LocalRegs < 0) {
-			p = scopy(p, " , Loc. ");
-			p = num_arg(p, local_regs());
-		}
-		*p = '\0';
-		set_digits_string(buf, 0);
-	} else {
-		int base;
-		int end;
-		int group = 10;
-		int start = 0;
-		
-		if (status <= 9) {
-			base = 10 * status;
-			end = base >= 70 ? 99 : base + 29;
-			p = scopy(buf, "FL ");
-			p = num_arg_0(p, base, 2);
-			*p++ = '-';
-			p = num_arg_0(p, end, 2);
-			*p = '\0';
-			set_status(buf);
-		}
-		else if (status == 10) {
-			base = regX_idx;
-			end = regK_idx;
-			start = 3;
-			group = 4;
-			set_status("XYZT\006A:D\006LIJK");
-		}
-		else { // status == 11
-			base = LOCAL_FLAG_BASE;
-			end = LOCAL_FLAG_BASE + 15;
-			set_status("FL.00-.15");
-		}
-		j = start * SEGS_PER_DIGIT;
-		set_decimal(j, DECIMAL_DOT, CNULL);
-		j += SEGS_PER_DIGIT;
-		for (i = start; i < group + start; i++) {
-			int k = i + base - start;
-			int l = get_user_flag(k);
-			k += group;
-			if (end >= k) {
-				l |= (get_user_flag(k) << 1);
-				k += group;
-				if (end >= k)
-					l |= (get_user_flag(k) << 2);
-			}
-			set_dig(j, l);
-			set_decimal(j, DECIMAL_DOT, CNULL);
-			j += SEGS_PER_DIGIT;
-			if (i == 4) {
-				set_dig(j, 8);
-				set_decimal(j, DECIMAL_DOT, CNULL);
-				j += SEGS_PER_DIGIT;
-			}
-		}
-	}
-
-	j = SEGS_EXP_BASE;
-	pc = state_pc();
-	if (isXROM(pc))
-		pc = 1;
-	for (n=i=0; i<4; i++) {
-		if (find_label_from(pc, 100+i, FIND_OP_ENDS)) {
-			if (++n == 4) {
-				set_dig(SEGS_EXP_BASE + SEGS_PER_EXP_DIGIT, 'L');
-				set_dig(SEGS_EXP_BASE + 2*SEGS_PER_EXP_DIGIT, 'L');
-			} else {
-				set_dig(j, 'A'+i);
-				j += SEGS_PER_EXP_DIGIT;
-			}
-		}
-	}
-}
-
-
-/* Display the list of alpha labels */
-static void show_label(void) {
-	char buf[16];
-	unsigned short int pc = State2.digval;
-	unsigned int op = getprog(pc);
-	int n = nLIB(pc);
-	unsigned short int lblpc;
-
-	set_status(prt((opcode)op, buf));
-	set_digits_string(libname[n], 0);
-#ifndef REALBUILD
-	scopy(LastDisplayedNumber, libname_text[n]);
-#endif
-
-	if (op & OP_DBL) {
-		lblpc = findmultilbl(op, 0);
-		if (lblpc != pc) {
-			set_digits_string("CALLS", SEGS_PER_DIGIT * 7);
-			n = nLIB(lblpc);
-			if (n == REGION_RAM)
-				set_exp(lblpc, 1, CNULL);
-			else {
-				set_exp_digits_string(libname[n], CNULL);
-#ifndef REALBUILD
-				scopy(LastDisplayedNumber, libname_text[n]);
-#endif
-			}
-		}
-	}
-}
 
 /* Display a list of register contents */
 static void show_registers(void) {
@@ -1693,9 +1559,9 @@ static void set_annunciators(void)
 	 * browsing constants.
 	 */
 #ifdef MODIFY_BEG_SSIZE8
-	dot(BEG, UState.stack_depth && ! Running);
+	dot(BEG, UState.stack_depth && ! XromRunning);
 #else
-	dot(BEG, state_pc() <= 1 && ! Running);
+	dot(BEG, state_pc() <= 1 && ! XromRunning);
 #endif
 	dot(INPUT, State2.catalogue || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
@@ -1713,20 +1579,15 @@ static void set_annunciators(void)
  *  Toggle the little "=" sign
  */
 void set_IO_annunciator(void) {
-	int on = SerialOn
 #ifdef REALBUILD
-	  || DebugFlag
-#endif
-#ifdef INFRARED
-	  || PrinterColumn != 0
-#endif
-	;
+	int on = DebugFlag;
 
 	if (on != IoAnnunciator) {
 		dot(LIT_EQ, on);
 		IoAnnunciator = on;
 		finish_display();
 	}
+#endif
 }
 
 /*
@@ -1878,12 +1739,6 @@ void display(void) {
 				*bp++ = State2.digval2;
 		}
 		set_status(buf);
-	} else if (State2.status) {
-		show_status();
-		skip = 1;
-	} else if (State2.labellist) {
-		show_label();
-		skip = 1;
 	} else if (State2.registerlist) {
 		show_registers();
 		skip = 1;
@@ -1954,44 +1809,17 @@ void display(void) {
 	show_stack();
 nostk:	show_flags();
 	if (!skip) {
-		if (State2.runmode) {
-			p = get_cmdline();
-			if (p == NULL || cata) {
-				if (ShowRegister != -1) {
-					x_disp = (ShowRegister == regX_idx) && !State2.hms;
-					format_reg(ShowRegister, CNULL);
-				}
-				else
-					set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
-			} else {
-				disp_x(p);
-				x_disp = 1;
+		p = get_cmdline();
+		if (p == NULL || cata) {
+			if (ShowRegister != -1) {
+				x_disp = (ShowRegister == regX_idx) && !State2.hms;
+				format_reg(ShowRegister, CNULL);
 			}
+			else
+				set_digits_string(" ---", 4 * SEGS_PER_DIGIT);
 		} else {
-			unsigned int pc = state_pc();
-			unsigned int upc = user_pc(pc);
-			const int n = nLIB(pc);
-			xset(buf, '\0', sizeof(buf));
-			set_exp(ProgFree, 1, CNULL);
-			num_arg_0(scopy_spc(buf, n == 0 ? S7_STEP : libname[n]), 
-				  upc, 3 + (n & 1));  // 4 digits in ROM and Library
-			set_digits_string(buf, SEGS_PER_DIGIT);
-#ifndef REALBUILD
-			xset(buf, '\0', sizeof(buf));
-			set_exp(ProgFree, 1, CNULL);
-			num_arg_0(scopy_spc(buf, n == 0 ? S7_STEP_ShortText : libname_shorttext[n]),
-				  upc, 3 + (n & 1));  // 4 digits in ROM and Library
-      { // allow local declaration of b and l in C (not C++) on VisualStudio
-			  char *b=buf;
-			  char *l=LastDisplayedNumber;
-			  *l++=' ';
-			  while(*b) {
-				  *l++=*b++;
-				  *l++=' ';
-			  }
-			  *l=0;
-      }
-#endif
+			disp_x(p);
+			x_disp = 1;
 		}
 	}
 	set_annunciators();

@@ -37,9 +37,8 @@
 #define SLCDCMEM
 #define VOLATILE_RAM
 #define BACKUP_FLASH
-#define STATE_FILE "wp34s.dat"
-#define BACKUP_FILE "wp34s-backup.dat"
-#define LIBRARY_FILE "wp34s-lib.dat"
+#define STATE_FILE "wp31s.dat"
+#define BACKUP_FILE "wp31s-backup.dat"
 
 #endif
 
@@ -79,14 +78,6 @@ VOLATILE_RAM REGISTER XromA2D[4];
  */
 BACKUP_FLASH TPersistentRam BackupFlash;
 
-#ifndef REALBUILD
-/*
- *  We need to define the Library space here.
- *  On the device the linker takes care of this.
- */
-FLASH_REGION UserFlash;
-#endif
-
 /*
  *  The CCITT 16 bit CRC algorithm (X^16 + X^12 + X^5 + 1)
  */
@@ -123,16 +114,6 @@ static int test_checksum( const void *data, unsigned int length, unsigned short 
 
 
 /*
- *  Checksum the current program.
- */
-short unsigned int checksum_program( void )
-{
-	update_program_bounds( 1 );
-	return crc16( get_current_prog(), ProgEnd - ProgBegin + 1 );
-}
-
-
-/*
  *  Checksum the persistent RAM area
  *  Returns non zero value if failure
  */
@@ -155,80 +136,6 @@ int checksum_backup( void )
 
 
 /*
- *  Checksum a flash region
- *  Returns non zero value if failure
- */
-static int checksum_region( FLASH_REGION *fr, FLASH_REGION *header )
-{
-	unsigned int l = header->size * sizeof( s_opcode );
-	return l > sizeof( fr->prog ) || test_checksum( fr->prog, l, fr->crc, &(header->crc ) );
-}
-
-
-/*
- *  Helper to store final END in empty program space
- */
-static void stoend( void )
-{
-	ProgSize = 1;
-	Prog[ 0 ] = ( OP_NIL | OP_END );
-}
-
-
-/*
- *  Clear the program space
- */
-void clpall( void )
-{
-	clrretstk_pc();
-	stoend();
-}
-
-
-/*
- *  Sanity checks for program (step) deletion
- */
-static int check_delete_prog( unsigned int pc ) 
-{
-	if ( !isRAM( pc ) || ( pc == ProgSize && getprog( pc ) == ( OP_NIL | OP_END ) ) ) {
-		warn(ERR_READ_ONLY);
-	}
-	else {
-		return 0;
-	}
-	return 1;
-}
-
-
-/*
- *  Clear just the current program
- */
-void clrprog( void )
-{
-	update_program_bounds( 1 );
-	if ( nLIB( ProgBegin ) == REGION_LIBRARY ) {
-		/*
-		 *  Porgram is in flash
-		 */
-		flash_remove( ProgBegin, ProgEnd + 1 - ProgBegin );
-	}
-	else {
-		if ( check_delete_prog( ProgBegin ) ) {
-			return;
-		}
-		clrretstk();
-		xcopy( Prog_1 + ProgBegin, Prog + ProgEnd, ( ProgSize - ProgEnd ) << 1 );
-		ProgSize -= ( ProgEnd + 1 - ProgBegin );
-		if ( ProgSize == 0 ) {
-			stoend();
-		}
-	}
-	set_pc( ProgBegin - 1 );
-	update_program_bounds( 1 );
-}
- 
-
-/*
  *  Clear all - programs and registers
  */
 void clrall(void) 
@@ -239,7 +146,6 @@ void clrall(void)
 	clrstk( OP_CLSTK );
 	clralpha( OP_CLRALPHA );
 	clrflags( OP_CLFLAGS );
-	clpall();
 
 	reset_shift();
 	State2.test = TST_NONE;
@@ -264,116 +170,6 @@ void reset( void )
 	State.print_delay = 10;
 #endif
 	DispMsg = "Erased";
-}
-
-
-/*
- *  Store into program space.
- */
-void stoprog( opcode c ) {
-	const int off = isDBL( c ) ? 2 : 1;
-	int i;
-	unsigned int pc = state_pc();
-
-	if ( pc == ProgSize && c != ( OP_NIL | OP_END ) )
-		stoprog( OP_NIL | OP_END );
-
-	if ( !isRAM( pc ) ) {
-		warn( ERR_READ_ONLY );
-		return;
-	}
-	clrretstk();
-	xeq_init_contexts();
-	if ( ProgFree < off ) {
-		return;
-	}
-	ProgSize += off;
-	ProgEnd += off;
-	pc = do_inc( pc, 0 );	// Don't wrap on END
-	for ( i = ProgSize + 1; i > (int) pc; --i ) {
-		Prog_1[ i ] = Prog_1[ i - off ];
-	}
-	if (isDBL(c))
-		Prog_1[pc + 1] = c >> 16;
-	Prog_1[pc] = c;
-	State.pc = pc;
-}
-
-
-/*
- *  Delete the current step in the program
- */
-void delprog( void )
-{
-	int i;
-	const unsigned int pc = state_pc();
-	int off;
-
-	if ( check_delete_prog( pc ) )
-		return;
-	if ( pc == 0 )
-		return;
-
-	off = isDBL( Prog_1[ pc ]) ? 2 : 1;
-	ProgSize -= off;
-	ProgEnd -= off;
-	for ( i = pc; i <= (int) ProgSize; ++i )
-		Prog_1[ i ] = Prog_1[ i + off ];
-	decpc();
-}
-
-
-/*
- *  Helper to append a program in RAM.
- *  Returns non zero in case of an error.
- */
-int append_program( const s_opcode *source, int length )
-{
-	unsigned short pc;
-	int space_needed = length - ProgFree;
-
-	if ( ProgSize == 1 ) {
-		/*
-		 *  Only the default END statement is present
-		 */
-		--space_needed;
-		--ProgSize;
-	}
-	if ( length > NUMPROG_LIMIT ) {
-		return err( ERR_INVALID );
-	}
-	if ( length > NUMPROG_LIMIT - ProgSize ) {
-		return err( ERR_RAM_FULL );
-	}
-
-	/*
-	 *  Make room if needed
-	 */
-	clrretstk();
-	if ( space_needed > 0 && SizeStatRegs != 0 ) {
-		space_needed -= SizeStatRegs;
-		sigmaDeallocate();
-	}
-	if ( space_needed > 0 ) {
-		int regs;
-		if (is_dblmode())
-			regs = global_regs() - ( ( space_needed + 7 ) >> 3 );
-		else
-			regs = NumRegs - ( ( space_needed + 3 ) >> 2 );
-
-		if ( regs < 0 ) {
-			return err( ERR_RAM_FULL );
-		}
-		cmdregs( regs, RARG_REGS );
-	}
-	/*
-	 *  Append data
-	 */
-	pc = ProgSize + 1;
-	ProgSize += length;
-	xcopy( Prog_1 + pc, source, length << 1 );
-	set_pc( pc );
-	return 0;
 }
 
 
@@ -452,16 +248,16 @@ void sam_ba_boot(void)
 #else
 
 /*
- *  Emulate the flash in a file wp34s-lib.dat or wp34s-backup.dat
+ *  Emulate the flash in a file wp31s-backup.dat
  *  Page numbers are relative to the start of the user flash
  *  count is in pages, destination % PAGE_SIZE needs to be 0.
  */
 #if defined(QTGUI) || defined(IOS)
-extern char* get_region_path(int region);
+extern char* get_backup_path();
 #else
-static char* get_region_path(int region)
+static char* get_backup_path()
 {
-	return region == REGION_BACKUP ? BACKUP_FILE : LIBRARY_FILE;
+	return BACKUP_FILE;
 }
 #endif
 
@@ -478,21 +274,10 @@ static int program_flash( void *destination, void *source, int count )
 	memcpy( dest, source, count * PAGE_SIZE );
 
 	/*
-	 *  Update the correct region file
+	 *  Update the file
 	 */
-	if ( dest >= (char *) &BackupFlash && dest < (char *) &BackupFlash + sizeof( BackupFlash ) ) {
-		name = get_region_path( REGION_BACKUP );
-		offset = dest - (char *) &BackupFlash;
-	}
-	else if ( dest >= (char *) &UserFlash && dest < (char *) &UserFlash + sizeof( UserFlash ) ) {
-		name = get_region_path( REGION_LIBRARY );
-		offset = dest - (char *) &UserFlash;
-	}
-	else {
-		// Bad address
-		err( ERR_ILLEGAL );
-		return 1;
-	}
+	name = get_backup_path();
+    offset = dest - (char *) &BackupFlash;
 	f = fopen( name, "rb+" );
 	if ( f == NULL ) {
 		f = fopen( name, "wb+" );
@@ -511,91 +296,6 @@ static int program_flash( void *destination, void *source, int count )
 	return 0;
 }
 #endif
-
-
-/*
- *  Initialize the library to an empty state if it's not valid
- */
-void init_library( void )
-{
-	if ( checksum_region( &UserFlash, &UserFlash ) ) {
-		struct {
-			unsigned short crc;
-			unsigned short size;
-			s_opcode prog[ 126 ];
-		} lib;
-		lib.size = 0;
-		lib.crc = MAGIC_MARKER;
-		xset( lib.prog, 0xff, sizeof( lib.prog ) );
-		program_flash( &UserFlash, &lib, 1 );
-	}
-}
-
-
-/*
- *  Add data at the end of user flash memory.
- *  Update crc and counter when done.
- *  All sizes are given in steps.
- */
-static int flash_append( int destination_step, const s_opcode *source, int count, int size )
-{
-	char *dest = (char *) ( UserFlash.prog + destination_step );
-	char *src = (char *) source;
-#ifdef REALBUILD
-	int offset_in_page = (int) dest & 0xff;
-#else
-	int offset_in_page = ( dest - (char *) &UserFlash ) & 0xff;
-#endif
-	char buffer[ PAGE_SIZE ];
-	FLASH_REGION *fr = (FLASH_REGION *) buffer;
-	count <<= 1;
-
-	if ( offset_in_page != 0 ) {
-		/*
-		 *  We are not on a page boundary
-		 *  Assemble a buffer from existing and new data
-		 */
-		const int bytes = PAGE_SIZE - offset_in_page;
-		xcopy( buffer, dest - offset_in_page, offset_in_page );
-		xcopy( buffer + offset_in_page, src, bytes );
-		if ( program_flash( dest - offset_in_page, buffer, 1 ) ) {
-			return 1;
-		}
-		src += bytes;
-		dest += bytes;
-		count -= bytes;
-	}
-
-	if ( count > 0 ) {
-		/*
-		 *  Move multiples of complete pages
-		 */
-		count = ( count + ( PAGE_SIZE - 1 ) ) >> 8;
-		if ( program_flash( dest, src, count ) ) {
-			return 1;
-		}
-	}
-
-	/*
-	 *  Update the library header to fix the crc and size fields.
-	 */
-	xcopy( fr, &UserFlash, PAGE_SIZE );
-	fr->size = size;
-	checksum_region( &UserFlash, fr );
-	return program_flash( &UserFlash, fr, 1 );
-}
-
-
-/*
- *  Remove steps from user flash memory.
- */
-int flash_remove( int step_no, int count )
-{
-	const int size = UserFlash.size - count;
-	step_no = offsetLIB( step_no );
-	return flash_append( step_no, UserFlash.prog + step_no + count,
-			     size - step_no, size );
-}
 
 
 /*
@@ -632,26 +332,6 @@ void flash_restore( enum nilop op )
 			init_state();
 			DispMsg = "Restored";
 		}
-	}
-}
-
-
-/*
- *  Load the user program area from the backup.
- *  Called by PLOAD.
- */
-void load_program( enum nilop op )
-{
-	if ( not_running() ) {
-		if ( checksum_backup() ) {
-			/*
-			 *  Not a valid backup
-			 */
-			err( ERR_INVALID );
-			return;
-		}
-		clpall();
-		append_program( BackupFlash._prog, BackupFlash._prog_size );
 	}
 }
 
@@ -719,81 +399,7 @@ void load_state( enum nilop op )
 		}
 		xcopy( &RandS1, &BackupFlash._rand_s1, (char *) &Crc - (char *) &RandS1 );
 		init_state();
-		clrretstk_pc();
-	}
-}
-
-
-/*
- *  Save a user program to the library region. Called by PSTO.
- */
-void store_program( enum nilop op )
-{
-	opcode lbl; 
-	unsigned int pc;
-	int space_needed, count, free;
-
-	if ( not_running() ) {
-		/*
-		 *  Don't copy from library or XROM
-		 */
-		pc = nLIB( state_pc() );
-		if ( pc == REGION_LIBRARY || pc == REGION_XROM ) {
-			err( ERR_ILLEGAL );
-			return;
-		}
-		/*
-		 *  Check if program is labeled
-		 */
-		update_program_bounds( 1 );
-		lbl = getprog( ProgBegin );
-		if ( !isDBL(lbl) || opDBL(lbl) != DBL_LBL ) {
-			err( ERR_NO_LBL );
-			return;
-		}
-		/*
-		 *  Compute space needed
-		 */
-		count = space_needed = 1 + ProgEnd - ProgBegin;
-		free = NUMPROG_FLASH_MAX - UserFlash.size;
-
-		/*
-		 *  Find a duplicate label in the library and delete the program
-		 */
-		pc = find_opcode_from( addrLIB( 0, REGION_LIBRARY ), lbl, 0 );
-		if ( pc != 0 ) {
-			/*
-			 *  CLP in library
-			 */
-			unsigned int old_pc = state_pc();
-			set_pc( pc );
-			space_needed -= 1 + ProgEnd - ProgBegin;
-			if ( space_needed <= free ) {
-				clrprog();
-			}
-			set_pc( old_pc );
-		}
-		if ( space_needed > free ) {
-			err( ERR_FLASH_FULL );
-			return;
-		}
-		// 3. Append program
-		flash_append( UserFlash.size, get_current_prog(), count, UserFlash.size + count );
-	}
-}
-
-
-/*
- *  Load a user program from any region. Called by PRCL.
- */
-void recall_program( enum nilop op )
-{
-	if ( not_running() ) {
-		if ( state_pc() == 0 ) {
-			State.pc = 1;
-		}
-		update_program_bounds( 1 );
-		append_program( get_current_prog(), ProgEnd - ProgBegin + 1 );
+		clrretstk();
 	}
 }
 
@@ -842,12 +448,6 @@ void load_statefile( void )
 		// Emulate a backup
 		BackupFlash = PersistentRam;
 	}
-	f = fopen( LIBRARY_FILE, "rb" );
-	if ( f != NULL ) {
-		fread( &UserFlash, sizeof( UserFlash ), 1, f );
-		fclose( f );
-	}
-	init_library();
 }
 #endif
 

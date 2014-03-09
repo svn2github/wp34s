@@ -453,8 +453,7 @@ extern FLAG Xtal;
 extern volatile FLAG WaitForLcd;     // Sync with display refresh
 extern FLAG DebugFlag;		     // Set in Main
 extern volatile unsigned char Pause; // Count down for programmed pause
-extern FLAG Running, XromRunning;    // Program is active
-extern FLAG JustStopped;             // Set on program stop to ignore the next R/S key in the buffer
+extern FLAG XromRunning;             // Program is active
 extern SMALL_INT Error;	     	     // Did an error occur, if so what code?
 extern SMALL_INT ShowRegister;       // Temporary display (not X)
 extern FLAG PcWrapped;		     // decpc() or incpc() have wrapped around
@@ -468,7 +467,6 @@ extern s_opcode XeqOpCode;	     // Currently executed function
 extern FLAG GoFast;	 	     // Speed-up might be necessary
 extern unsigned short *RetStk;	     // Pointer to current top of return stack
 extern SMALL_INT RetStkSize;         // actual size of return stack
-extern SMALL_INT ProgFree;	     // Remaining program steps
 extern SMALL_INT SizeStatRegs;       // Size of summation register block
 extern REGISTER *StackBase;	     // Location of the RPN stack
 extern decContext Ctx;		     // decNumber library context

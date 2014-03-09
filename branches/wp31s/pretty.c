@@ -611,15 +611,10 @@ void dump_opcodes(FILE *f, int xref) {
 				continue;
 
 			case KIND_NIL:
-#ifdef INCLUDE_STOPWATCH
-				if (d == OP_STOPWATCH)
-					continue;
-#endif
-				if (d >= OP_CLALL && d <= OP_CLPALL) {
+				if (d >= OP_CLALL && d <= OP_RESET) {
 					continue;
 				}
-				if (d == OP_LOADA2D || d == OP_SAVEA2D ||
-						d == OP_GSBuser || d == OP_POPUSR) {
+				if (d == OP_LOADA2D || d == OP_SAVEA2D) {
 					dump_one_opcode(f, c, cn, E_CMD_CMD, cmdpretty, E_ALIAS, CNULL, E_ATTR_XROM, xref);
 					continue;
 				}

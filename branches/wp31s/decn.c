@@ -20,7 +20,6 @@
 #include "complex.h"
 #include "stats.h"
 #include "int.h"
-#include "serial.h"
 #include "lcd.h"
 
 // #define DUMP1

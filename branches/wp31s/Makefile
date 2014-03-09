@@ -26,7 +26,7 @@
 
 # Define to compile code for an IR transmitter on TIOA0
 ifdef QTGUI
-INFRARED = 1
+#INFRARED = 1
 else
 #INFRARED = 1
 endif
@@ -223,16 +223,13 @@ endif
 
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c consts.c alpha.c charmap.c \
-		commands.c string.c storage.c serial.c matrix.c \
-		stopwatch.c printer.c font.c 
-ifeq ($(SYSTEM),windows32)
-SRCS += winserial.c
-endif
+		commands.c string.c storage.c \
+	    font.c 
 
 HEADERS := alpha.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
-		stats.h xeq.h xrom.h storage.h serial.h matrix.h \
-		stopwatch.h printer.h
+		stats.h xeq.h xrom.h storage.h
+		
 
 XROM := $(wildcard xrom/*.wp34s) $(wildcard xrom/distributions/*.wp34s)
 
@@ -272,7 +269,7 @@ ATOBJS := $(ATSRCS:%.c=$(OBJECTDIR)/%.o)
 ATSRCS := $(ATSRCS:%.c=atmel/%.c)
 ATHDRS := $(ATSRCS:%.c=%.h) atmel/board.h atmel/at91sam7l128/AT91SAM7L128.h 
 
-LDCTRL := wp34s.lds
+LDCTRL := wp31s.lds
 LDFLAGS += -T $(LDCTRL) -Wl,--gc-sections,-Map=$(MAPFILE)
 MAIN := $(OBJECTDIR)/main.o
 else
@@ -333,7 +330,6 @@ $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRC
 	$(UTILITIES)/post_process$(EXE) $(OUTPUTDIR)/$(TARGET).tmp $@
 	@grep "^\.fixed"          $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	@grep "^\.revision"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
-	@grep "UserFlash"         $(MAPFILE) | tail -n 2 >> $(SUMMARY)
 	@grep "^\.backupflash"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.cmdtab"         $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.bss"            $(MAPFILE) | tail -n 1 >> $(SUMMARY)
@@ -342,20 +338,6 @@ $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRC
 	@grep "^\.persistentram"  $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@cat $(SUMMARY)
 
-# $(LDCTRL): wp34s.lds features.h Makefile
-#	$(HOSTCC) -E -P -x c wp34s.lds > $(LDCTRL)
-
-# include openocd/Makefile
-else
-
-# Target calc, console emulator
-
-$(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/xrom.o $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
-		$(MAIN) $(LDCTRL) Makefile
-	$(HOSTCC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(OBJECTDIR)/xrom.o $(LIBDN) $(LIBS)
-
-revision.h: $(UTILITIES)/create_revision$(EXE) $(HEADERS) $(SRCS) Makefile
-	$(UTILITIES)/create_revision$(EXE) >$@
 endif
 
 # Build generated files
@@ -436,9 +418,7 @@ $(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h errors.h data.h display.h lcdmap.h atmel/b
 		Makefile features.h
 $(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h errors.h data.h keys.h consts.h display.h lcd.h \
 		int.h xrom.h xrom_labels.h storage.h Makefile features.h
-$(OBJECTDIR)/matrix.o: matrix.c matrix.h xeq.h errors.h decn.h consts.h Makefile features.h
 $(OBJECTDIR)/prt.o: prt.c xeq.h errors.h data.h consts.h display.h Makefile features.h
-$(OBJECTDIR)/serial.o: serial.c xeq.h errors.h serial.h storage.h Makefile
 $(OBJECTDIR)/stats.o: stats.c xeq.h errors.h data.h decn.h stats.h consts.h int.h \
 		Makefile features.h
 $(OBJECTDIR)/string.o: string.c xeq.h errors.h data.h Makefile features.h
@@ -446,9 +426,6 @@ $(OBJECTDIR)/storage.o: storage.c xeq.h errors.h data.h storage.h Makefile featu
 $(OBJECTDIR)/xeq.o: xeq.c xeq.h errors.h data.h alpha.h decn.h complex.h int.h lcd.h stats.h \
 		display.h consts.h date.h storage.h xrom.h xrom_labels.h Makefile features.h
 $(OBJECTDIR)/xrom.o: xrom.c xrom.h xrom_labels.h xeq.h errors.h data.h consts.h Makefile features.h
-$(OBJECTDIR)/stopwatch.o: stopwatch.c stopwatch.h decn.h xeq.h errors.h consts.h alpha.h display.h keys.h \
-                Makefile features.h
-$(OBJECTDIR)/printer.o: printer.c printer.h xeq.h errors.h alpha.h serial.h Makefile features.h
 
 ifdef REALBUILD
 $(OBJECTDIR)/board_lowlevel.o: atmel/board_lowlevel.c atmel/board_lowlevel.h \
@@ -459,12 +436,6 @@ $(OBJECTDIR)/rtc.o: atmel/rtc.c atmel/rtc.h \
 		atmel/board.h Makefile
 
 $(OBJECTDIR)/main.o: main.c xeq.h errors.h data.h
-else
-$(OBJECTDIR)/console.o: console.c catalogues.h xeq.h errors.h data.h keys.h consts.h display.h lcd.h \
-		int.h xrom.h xrom_labels.h storage.h Makefile features.h pretty.c pretty.h
-ifeq ($(SYSTEM),windows32)
-$(OBJECTDIR)/winserial.o: winserial.c serial.h Makefile
-endif		
 endif
 
 

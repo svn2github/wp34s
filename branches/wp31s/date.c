@@ -138,7 +138,7 @@ static int day_of_week(int year, int month, int day, const char **msg) {
 				"Sunday\0Monday\0Tuesday\0Wednesday\0"
 				"Thursday\0Friday\0Saturday";
 	h = (JDN(year, month, day)+1) % 7;
-	if (msg != NULL && ! Running)
+	if (msg != NULL && ! XromRunning)
 		*msg = days + ((unsigned char *)days)[h];
 	return h != 0 ? h : 7;
 }

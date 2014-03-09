@@ -24,7 +24,6 @@
 #include "storage.h"
 #include "stats.h"
 #include "catalogues.h"
-#include "printer.h"
 
 #if defined(QTGUI) || defined(IOS)
 extern void changed_catalog_state();
@@ -59,12 +58,6 @@ enum confirmations {
 unsigned int OpCode;
 FLAG OpCodeDisplayPending;
 FLAG GoFast;
-FLAG NonProgrammable;
-
-/*
- *  Needed before definition
- */
-static unsigned int advance_to_next_label(unsigned int pc, int inc, int search_end);
 
 /*
  *  Return the shift state
@@ -357,11 +350,6 @@ static void init_cat(enum catalogues cat) {
 	State2.catalogue = CATALOGUE_NONE;
 
 	switch (cat) {
-	case CATALOGUE_LABELS:
-		// Label browser
-		State2.labellist = 1;
-		State2.digval = advance_to_next_label(ProgBegin, 0, 0);
-		break;
 
 	case CATALOGUE_REGISTERS:
 		// Register browser
@@ -404,11 +392,7 @@ void init_state(void) {
 	int k = LastKey;
 
 	CmdBase = 0;
-	// Removed: will clear any locals on power off
-	// clrretstk(0);
 
-	if (State2.runmode == 0)
-		update_program_bounds(1);
 	xset(&State2, 0, sizeof(State2));
 	State2.test = TST_NONE;
 	State2.runmode = 1;
@@ -452,20 +436,9 @@ void soft_init_state(void) {
 static int check_confirm(int op) {
 	if (opKIND(op) == KIND_NIL) {
 		const int nilop = argKIND(op);
-		if (nilop >= OP_CLALL && nilop <= OP_CLPALL) {
+		if (nilop >= OP_CLALL && nilop <= OP_RESET) {
 			State2.confirm = confirm_clall + (nilop - OP_CLALL);
 			return STATE_UNFINISHED;
-		}
-		if ((nilop >= OP_RECV && nilop <= OP_PSTO)
-#ifdef INFRARED
-			|| nilop == OP_PRINT_PGM
-#endif
-#ifdef INCLUDE_STOPWATCH
-			|| nilop == OP_STOPWATCH
-#endif
-		) {
-			// These commands are not programmable
-			NonProgrammable = 1;
 		}
 	}
 	return op;
@@ -473,19 +446,6 @@ static int check_confirm(int op) {
 
 static void set_smode(const enum single_disp d) {
 	State2.smode = (State2.smode == d)?SDISP_NORMAL:d;
-}
-
-static int check_f_key(int n, const int dflt) {
-	const int code = 100 + n;
-	unsigned int pc = state_pc();
-
-	if (State2.runmode) {
-		if (isXROM(pc))
-			pc = 1;
-		if (find_label_from(pc, code, FIND_OP_ENDS))
-			return RARG(RARG_XEQ, code);
-	}
-	return dflt;
 }
 
 
@@ -673,14 +633,6 @@ static int process_fg_shifted(const keycode c) {
 			return STATE_UNFINISHED;
 		}
 		// fall through
-	case K01:
-	case K02:
-	case K03:
-		if (UState.intm && shift == SHIFT_F) {
-			return check_f_key(lc, op_map2[lc]);
-		}
-		break;
-
 	default:
 		break;
 	}
@@ -769,14 +721,6 @@ static int process_h_shifted(const keycode c) {
 #else
 			if (UState.fraccomma) op = OP_NIL | OP_RADDOT;
 #endif
-		break;
-
-	case K63:					// Program<->Run mode
-		State2.runmode = 1 - State2.runmode;
-		process_cmdline_set_lift();
-		update_program_bounds(1);
-		if (! State2.runmode && state_pc() == 1 && ProgEnd == 1)
-			set_pc(0);
 		break;
 
 	default:
@@ -983,92 +927,6 @@ static int process_arrow(const keycode c) {
 }
 
 
-/* Process a GTO . sequence
- */
-static int gtodot_digit(const int n) {
-	const int val = State2.digval * 10 + n;
-	const int lib = nLIB(state_pc());
-
-	if (val > sizeLIB(lib) / 10)
-		return val;
-	if (++State2.numdigit == 3 + (lib & 1))
-		return val;
-	State2.digval = val;
-	return -1;
-}
-
-static int gtodot_fkey(int n) {
-	const int code = 100 + n;
-	unsigned int pc = state_pc();
-
-	if(isXROM(pc))
-		pc = 1;
-	pc = find_label_from(pc, code, FIND_OP_ERROR | FIND_OP_ENDS);
-	if (pc > 0)
-		return pc;
-	return state_pc();
-}
-
-static int process_gtodot(const keycode c) {
-	int pc = -1;
-	unsigned int rawpc = keycode_to_digit_or_register(c);
-
-	if (rawpc <= 9) {
-		// Digit 0 - 9
-		pc = gtodot_digit(rawpc);
-	}
-	else if (c >= K00 && c <= K03) {
-		// A - D
-		rawpc = gtodot_fkey(c - K00);
-		goto fin;
-	}
-	else if (c == K62) {
-		// .
-		rawpc = ProgSize;
-		goto fin;
-	}
-	else if (c == K20) {
-		// ENTER - short circuit processing
-		pc = State2.digval;
-	}
-	else if (c == K24) {
-		// backspace
-		if (State2.numdigit == 0) {
-			goto fin2;
-		} else {
-			State2.numdigit--;
-			State2.digval /= 10;
-		}
-	}
-	else if (c == K40) {
-		// up
-		rawpc = state_pc();
-		if (rawpc == 1)
-			rawpc = 0;
-		set_pc(do_dec(rawpc, 0));
-		update_program_bounds(1);
-		rawpc = ProgBegin;
-		goto fin;
-	}
-	else if (c == K50) {
-		// down
-		update_program_bounds(1);
-		rawpc = do_inc(ProgEnd, 0);
-		if (rawpc == 0 && ProgSize > 0)
-			rawpc = 1;
-		goto fin;
-	}
-	if (pc >= 0) {
-		rawpc = find_user_pc(pc);
-fin:		set_pc(rawpc);
-fin2:		State2.gtodot = 0;
-		State2.digval = 0;
-		State2.numdigit = 0;
-	}
-	return STATE_UNFINISHED;
-}
-
-
 /* Process a keystroke in alpha mode
  */
 static int process_alpha(const keycode c) {
@@ -1148,11 +1006,6 @@ static int process_alpha(const keycode c) {
 		else if (shift == SHIFT_N)
 			init_state();
 		return STATE_UNFINISHED;
-
-	case K63:
-		if (shift == SHIFT_F)
-			return OP_NIL | OP_RS;		// R/S
-		break;
 
 	default:
 		break;
@@ -1416,12 +1269,7 @@ static int process_arg(const keycode c) {
 
 	case K20:				// Enter is a short cut finisher but it also changes a few commands if it is first up
 		if (State2.numdigit == 0 && !State2.ind && !State2.dot) {
-			if (argcmds[base].label) {
-				init_arg((enum rarg)(base - RARG_LBL));
-				State2.multi = 1;
-				State2.alphashift = 0;
-				State2.rarg = 0;
-			} else if (base == RARG_SCI) {
+			if (base == RARG_SCI) {
 				reset_arg();
 				return OP_NIL | OP_FIXSCI;
 			} else if (base == RARG_ENG) {
@@ -1622,7 +1470,6 @@ int current_catalogue_max(void) {
 		NUM_CONSTS_CAT,
 		SIZE_conv_catalogue,
 		SIZE_sums_catalogue,
-		//SIZE_matrix_catalogue,
 		SIZE_clear_catalogue,
 		SIZE_displ_catalogue,
     	SIZE_more_catalogue,
@@ -1674,7 +1521,6 @@ opcode current_catalogue(int n) {
 		NULL,
 		NULL, //CONV
 		sums_catalogue,
-		//matrix_catalogue,
 		clear_catalogue,
 		displ_catalogue,
 		more_catalogue,
@@ -2018,8 +1864,6 @@ static int process_confirm(const keycode c) {
 		switch (State2.confirm) {
 		case confirm_clall:	 clrall();	break;
 		case confirm_reset:	 reset();	break;
-		case confirm_clprog:	 clrprog();	break;
-		case confirm_clpall:	 clpall();	break;
 		}
 	case K22:			// No (K22 = N under the [+/-] key)
 	case K24:			// No (K24 = [<-] also means NO)
@@ -2064,139 +1908,6 @@ static int process_status(const keycode c) {
 	State2.status = n + 3;
 
 	return STATE_UNFINISHED;
-}
-
-
-/*
- *  CAT helper
- */
-static int is_label_or_end_at(unsigned int pc, int search_end) {
-	const unsigned int op = getprog(pc);
-
-	return op == (OP_NIL | OP_END) || (!search_end && (isDBL(op) && opDBL(op) == DBL_LBL));
-}
-
-static unsigned int advance_to_next_label(unsigned int pc, int inc, int search_end) {
-	do {
-		for (;;) {
-			if (inc) {
-				pc = do_inc(pc, 0);
-				if (PcWrapped)
-					break;
-			}
-			else
-				inc = 1;
-			if (is_label_or_end_at(pc, search_end)) {
-				return pc;
-			}
-		}
-		pc = addrLIB(1, (nLIB(pc) + 1) & 3);
-	} while (! is_label_or_end_at(pc, search_end));
-	return pc;
-}
-
-static unsigned int advance_to_previous_label(unsigned int pc, int search_end) {
-	do {
-		for (;;) {
-			pc = do_dec(pc, 0);
-			if (PcWrapped)
-				break;
-			if (is_label_or_end_at(pc, search_end)) {
-				return pc;
-			}
-		}
-		pc = addrLIB(1, (nLIB(pc) - 1) & 3);
-		pc = do_dec(pc, 0);
-	} while (! is_label_or_end_at(pc, search_end));
-	return pc;
-}
-
-
-/*
- *  CAT command
- */
-static int process_labellist(const keycode c) {
-	unsigned int pc = State2.digval;
-	const unsigned int n = c == K62 ? REGION_XROM
-		                        : keycode_to_digit_or_register(c) & ~NO_SHORT;
-	const int opcode = getprog(pc);
-	const int label = isDBL(opcode) ? (getprog(pc) & 0xfffff0ff) : 0;
-	const int direct = State2.runmode;
-	const enum shifts shift = reset_shift();
-	int op = STATE_UNFINISHED;
-
-	if (n < REGION_XROM) {
-		// Digits take you to that segment
-		pc = addrLIB(1, n);
-		if (! is_label_or_end_at(pc, 0))
-			pc = advance_to_next_label(pc, 1, 0);
-		State2.digval = pc;
-		return STATE_UNFINISHED;
-	}
-
-	switch (c | (shift << 8)) {
-
-	case K40 | (SHIFT_F << 8):		// Find first label of previous program
-		pc = advance_to_previous_label(advance_to_previous_label(pc, 1), 1);
-		goto next;
-
-	case K50 | (SHIFT_F << 8):		// Find next program
-		pc = advance_to_next_label(pc, 0, 1);
-	case K50:				// Find next label
-	next:
-		State2.digval = advance_to_next_label(pc, 1, 0);
-		return STATE_UNFINISHED;
-
-	case K40:				// Find previous label
-		State2.digval = advance_to_previous_label(pc, 0);
-		return STATE_UNFINISHED;
-
-	case K24:				// <- exits
-		break;
-
-	case K20:				// ENTER^
-	set_pc_and_exit:
-		set_pc(pc);			// forced branch
-		break;
-
-	case K24 | (SHIFT_F << 8):		// CLP
-		op = (OP_NIL | OP_CLPROG);
-		goto set_pc_and_exit;
-
-	case K10:				// STO
-	case K11:				// RCL
-		op = c == K10 ? (OP_NIL | OP_PSTO) : (OP_NIL | OP_PRCL);
-		goto set_pc_and_exit;
-
-	case K30:				// XEQ
-		op = (DBL_XEQ << DBL_SHIFT) + label;
-		goto xeq_or_gto;
-
-	case K30 | (SHIFT_H << 8):		// GTO
-		op = (DBL_GTO << DBL_SHIFT) + label;
-	xeq_or_gto:
-		if (label)
-			break;
-		return STATE_UNFINISHED;
-
-	case K63:				// R/S
-		if (direct && label) {
-			cmdgtocommon(1, pc);	// set pc and push return address
-			op = STATE_RUNNING;	// quit the browser, start program
-			break;
-		}
-		return STATE_UNFINISHED;
-
-	case K63 | (SHIFT_H << 8):		// P/R
-		State2.runmode = 0;		// switch to program mode
-		goto set_pc_and_exit;
-
-	default:
-		return STATE_UNFINISHED;
-	}
-	State2.digval = 0;
-	State2.labellist = 0;
-	return check_confirm(op);
 }
 
 
@@ -2324,20 +2035,7 @@ static int process(const int c) {
 	const enum shifts shift = cur_shift();
 	enum catalogues cat;
 
-	if (Running || Pause) {
-		/*
-		 *  Abort a running program with R/S or EXIT
-		 */
-		if (c == K60 || c == K63) {
-			if (Pause && isXROM(state_pc()))
-				set_pc(0);
-			Pause = 0;
-			xeq_xrom();
-			set_running_off();
-			DispMsg = "Stopped";
-			State2.disp_freeze = 0;
-			return STATE_UNFINISHED;
-		}
+	if (XromRunning || Pause) {
 		if ( c != K_HEARTBEAT ) {
 			LastKey = (char) (c + 1);	// Store for KEY?
 			Pause = 0;			// leave PSE statement
@@ -2356,13 +2054,6 @@ static int process(const int c) {
 		return STATE_UNFINISHED;
 	}
 
-#ifndef CONSOLE
-	if (c == K63 && JustStopped) {
-		// Avoid an accidental restart with R/S
-		JustStopped = 0;
-		return STATE_IGNORE;
-	}
-#endif
 	/*  Handle the keyboard timeout for catalogue navigation
 	 *  Must be done early in the process to capture the shifts correctly
 	 */
@@ -2378,9 +2069,6 @@ static int process(const int c) {
 
 	if (State2.rarg)
 		return process_arg((const keycode)c);
-
-	if (State2.gtodot)
-		return process_gtodot((const keycode)c);
 
 	if (State2.hyp)
 		return process_hyp((const keycode)c);
@@ -2432,9 +2120,6 @@ static int process(const int c) {
 
 	if (State2.arrow)
 		return process_arrow((const keycode)c);
-
-	if (State2.labellist)
-		return process_labellist((const keycode)c);
 
 	if (State2.registerlist)
 		return process_registerlist((const keycode)c);
@@ -2500,13 +2185,8 @@ void process_keycode(int c)
 					 *  Show command to the user
 					 */
 					OpCodeDisplayPending = 0;
-					if (OpCode == (OP_NIL | OP_RS)) {
-						DispMsg = "RUN";
-					}
-					else {
-						scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
-						DispMsg = TraceBuffer;
-					}
+					scopy_char(TraceBuffer, prt(OpCode, TraceBuffer), '\0');
+					DispMsg = TraceBuffer;
 					display();
 					ShowRPN = 1;	// Off because of DispMsg setting
 				}
@@ -2531,19 +2211,10 @@ void process_keycode(int c)
 		 */
 		watchdog();
 
-#ifndef CONSOLE
-		/*
-		 *  If buffer is empty re-allow R/S to start a program
-		 */
-		if (JustStopped && !is_key_pressed()) {
-			JustStopped = 0;
-		}
-#endif
-
 		/*
 		 *  Do nothing if not running a program
 		 */
-		if (!Running && !Pause)
+		if (!XromRunning && !Pause)
 			return;
 	}
 	else {
@@ -2560,17 +2231,6 @@ void process_keycode(int c)
 			clr_dot(RPN);
 			finish_display();
 		}
-
-#ifndef CONSOLE
-		/*
-		 *  Reallow display refresh which is temporarily disabled after a stop
-		 *  All keys execpt R/S trigger this. The latter will only be reenabled
-		 *  from the heartbeat after the keybord buffer has become empty to avoid
-		 *  an accidental restart of the program.
-		 */
-		if (c != K63)
-			JustStopped = 0;
-#endif
 	}
 
 	/*
@@ -2585,13 +2245,9 @@ void process_keycode(int c)
 			c = OpCode;
 			OpCode = 0;
 
-			if (c == STATE_SST)
-				xeq_sst_bst(1);
-			else {
-				xeq(c);
-				if (Running || Pause)
-					xeqprog();
-			}
+			xeq(c);
+			if (XromRunning || Pause)
+				xeqprog();
 			dot(RPN, ShowRPN);
 		}
 		else {
@@ -2617,24 +2273,12 @@ void process_keycode(int c)
 		/*
 		 *  Decode the key
 		 */
-		ShowRPN = ! Running;	// Default behaviour, may be turned off later
+		ShowRPN = ! XromRunning;	// Default behaviour, may be turned off later
 
 		c = process(c);		// returns an op-code or state
 		switch (c) {
-		case STATE_SST:
-			OpCode = c;
-			OpCodeDisplayPending = 0;
-			xeq_sst_bst(0);
-			break;
-
-		case STATE_BST:
-			xeq_sst_bst(-1);
-			break;
-
 		case STATE_BACKSPACE:
-			if (! State2.runmode)
-				delprog();
-			else if (State2.alphas) {
+			if (State2.alphas) {
 				char *p = find_char(Alpha, '\0');
 				if (p > Alpha)
 					*--p = '\0';
@@ -2655,28 +2299,22 @@ void process_keycode(int c)
 			break;
 
 		default:
-			if (State2.runmode || NonProgrammable) {
-				NonProgrammable = 0;
-				if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F))
-					// Data entry key
-					xeq(c);
-				else {
-					// Save the op-code for execution on key-up
-					OpCode = c;
-					OpCodeDisplayPending = 1;
-				}
-			}
+			if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F))
+				// Data entry key
+				xeq(c);
 			else {
-				stoprog(c);
+				// Save the op-code for execution on key-up
+				OpCode = c;
+				OpCodeDisplayPending = 1;
 			}
 		}
 	}
 #ifndef CONSOLE
-	if (! Running && ! Pause && ! JustStopped && ! JustDisplayed && c != STATE_IGNORE) {
+	if (! XromRunning && ! Pause && ! JustDisplayed && c != STATE_IGNORE) {
 		display();
 	}
 #else
-	if (! Running && ! Pause && c != STATE_IGNORE && ! JustDisplayed) {
+	if (! XromRunning && ! Pause && c != STATE_IGNORE && ! JustDisplayed) {
 		display();
 	}
 #endif

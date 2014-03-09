@@ -729,12 +729,7 @@ static s_opcode prob_catalogue[] = {
 
 static s_opcode prog_catalogue[] = {
 #if 1
-	NILIC(OP_FLASHQ,	"FLASH?")
 	NILIC(OP_GETBASE,	"BASE?")
-	RARGCMD(RARG_KEYTYPE,	"KTP?")
-	NILIC(OP_LOCRQ,		"LocR?")
-	NILIC(OP_MEMQ,		"MEM?")
-	NILIC(OP_REGSQ,		"REGS?")
 	NILIC(OP_ROUNDING,	"RM?")
 	NILIC(OP_GETSIGN,	"SMODE?")
 	NILIC(OP_STKSIZE,	"SSIZE?")
@@ -831,16 +826,6 @@ static s_opcode prog_catalogue[] = {
 */
 	/* end of INFRARED commands */
 
-#ifdef INCLUDE_PLOTTING
-	RARGCMD(RARG_PLOT_INIT,     "gDIM")
-	RARGCMD(RARG_PLOT_DIM,      "gDIM?")
-	RARGCMD(RARG_PLOT_SETPIX,   "gSET")
-	RARGCMD(RARG_PLOT_CLRPIX,   "gCLR")
-	RARGCMD(RARG_PLOT_FLIPPIX,  "gFLP")
-	RARGCMD(RARG_PLOT_DISPLAY,  "gPLOT")
-	RARGCMD(RARG_PLOT_PRINT,    "\222PLOT")     /* INFRARED command */
-#endif
-
 #ifndef INCLUDE_INTERNAL_CATALOGUE
 	RARGCMD(RARG_CASE,	"CASE")
 	RARGCMD(RARG_BACK,	"BACK")
@@ -859,9 +844,6 @@ static s_opcode prog_catalogue[] = {
 
 #ifdef INCLUDE_INDIRECT_CONSTS
 	RARGCMD(RARG_IND_CONST, "CNST")
-#endif
-#ifdef _DEBUG
-	NILIC(OP_DEBUG,		"DBG")
 #endif
 #endif
 };

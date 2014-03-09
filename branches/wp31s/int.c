@@ -16,7 +16,6 @@
 
 #include "int.h"
 #include "xeq.h"
-#include "serial.h"
 
 static int check_intmode(void) {
 	if (! is_intmode())

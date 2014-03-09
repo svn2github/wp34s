@@ -105,10 +105,6 @@
 /*
  *  Include each routine here
  */
-#include "solve.wp34s"
-#include "integrate.wp34s"
-#include "derivative.wp34s"
-#include "prodsum.wp34s"
 #include "parallel.wp34s"
 #include "percent.wp34s"
 #include "agm.wp34s"
@@ -133,13 +129,3 @@
 
 #include "bessel.wp34s"
 #include "digamma.wp34s"
-
-// Test
-#ifdef _DEBUG
-	XLBL"DBG"
-	// Add xrom only commands to test here
-	xIN DYADIC
-	ERR 1
-	xOUT xOUT_NORMAL
-#endif
-

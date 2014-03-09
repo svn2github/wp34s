@@ -43,14 +43,8 @@ extern unsigned short int checksum_program(void);
 extern int checksum_ram(void);
 #define checksum_all() checksum_ram()
 extern int checksum_backup(void);
-extern void init_library(void);
-extern int append_program(const s_opcode *source, int length);
-extern void stoprog(opcode);
-extern void delprog(void);
 
 extern int init_34s(void);
-extern void clrprog(void);
-extern void clpall(void);
 extern void clrall(void);
 extern void reset(void);
 
@@ -58,13 +52,9 @@ extern void flash_backup(enum nilop op);
 extern void flash_restore(enum nilop op);
 extern int flash_remove( int step_no, int count );
 extern void sam_ba_boot(void);
-extern void save_program(enum nilop op);
-extern void load_program(enum nilop op);
 extern void load_registers(enum nilop op);
 extern void load_sigma(enum nilop op);
 extern void load_state(enum nilop op);
-extern void store_program(enum nilop op);
-extern void recall_program(enum nilop op);
 
 #if !defined(REALBUILD) && !defined (QTGUI) && !defined(IOS)
 extern void save_statefile(void);

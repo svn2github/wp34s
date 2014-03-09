@@ -29,13 +29,8 @@
 #include "builddate.h"
 #include "display.h"
 #include "storage.h"
-#include "serial.h"
 #include "data.h"
 #include "keys.h"
-#ifdef INCLUDE_STOPWATCH
-#include "stopwatch.h"
-#include "lcd.h"
-#endif
 
 /*
  *  Setup the LCD area, persistent RAM and not so persistent RAM
