@@ -457,7 +457,8 @@ static void replace_char(char *a, char b, char c) { }
  * Spaces are 5 pixels wide, \006 is a single pixel space.
  */
 static void annunciators(void) {
-	char buf[42], *p = buf, *q;
+	// We initialize q here to avoid uninitialized error messages by very strict compilers
+	char buf[42], *p = buf, *q="";
 	int n;
 	static const char shift_chars[4] = " \021\022\023";
 	const char shift_char = shift_chars[cur_shift()];
@@ -489,7 +490,7 @@ static void annunciators(void) {
 	const int rp_prefix = 1;
 #else
 	const int rp_prefix = 0;
-	const int RectPolConv = -1; // This variable doesn't exist without RP_PREFIX
+	int RectPolConv = -1; // This variable doesn't exist without RP_PREFIX
 #endif
 // Indicates whether font escape code is compiled in.
 // This variable will always be set at compile time.
