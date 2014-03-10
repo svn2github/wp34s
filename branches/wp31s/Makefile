@@ -340,6 +340,12 @@ $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRC
 
 endif
 
+# Target calc, console emulator
+$(OUTPUTDIR)/calc: $(OBJS) $(OBJECTDIR)/xrom.o $(OBJECTDIR)/libdecNum34s.a $(CNSTS) \
+		$(MAIN) $(LDCTRL) Makefile
+	$(HOSTCC) $(CFLAGS) $(LDFLAGS) -o $@ $(MAIN) $(OBJS) $(OBJECTDIR)/xrom.o $(LIBDN) $(LIBS)
+
+
 # Build generated files
 consts.c consts.h $(OBJECTDIR)/libconsts.a: $(UTILITIES)/compile_consts$(EXE) \
 		$(DNHDRS) Makefile
