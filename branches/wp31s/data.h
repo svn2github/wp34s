@@ -208,6 +208,7 @@ typedef struct _ram {
 } TPersistentRam;
 
 extern TPersistentRam PersistentRam;
+extern TPersistentRam UndoState, Undo2State;
 
 #define State		(PersistentRam._state)
 #define UState		(PersistentRam._ustate)

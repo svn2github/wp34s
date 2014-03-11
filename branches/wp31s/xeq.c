@@ -3500,11 +3500,11 @@ static void multi(const opcode op) {
  */
 void xeq(opcode op) 
 {
-	REGISTER save[STACK_SIZE+2];
-	const unsigned short flags = UserFlags[regA_idx >> 4];
-	const struct _ustate old = UState;
+	//REGISTER save[STACK_SIZE+2];
+	//const unsigned short flags = UserFlags[regA_idx >> 4];
+	//const struct _ustate old = UState;
 	const unsigned char lift = get_lift();
-	const int old_cl = *((int *)&CommandLine);
+	//const int old_cl = *((int *)&CommandLine);
 
 #ifdef CONSOLE
 	instruction_count++;
@@ -3521,7 +3521,7 @@ void xeq(opcode op)
 #endif
 	Busy = 0;
 	State2.wascomplex = 0;
-	xcopy(save, StackBase, sizeof(save));
+	//xcopy(save, StackBase, sizeof(save));
 	if (isDBL(op))
 		multi(op);
 	else if (isRARG(op))
@@ -3546,12 +3546,14 @@ void xeq(opcode op)
 		// Repair stack and state
 		// Clear return stack
 		Error = ERR_NONE;
-		xcopy(StackBase, save, sizeof(save));
-		UserFlags[regA_idx >> 4] = flags;
-		UState = old;
+		//xcopy(StackBase, save, sizeof(save));
+		//UserFlags[regA_idx >> 4] = flags;
+		//UState = old;
+		xcopy(&PersistentRam, &UndoState, sizeof(TPersistentRam));
+		xcopy(&UndoState, &Undo2State, sizeof(TPersistentRam));
 		State2.state_lift = lift;
 		set_pc(0);
-		*((int *)&CommandLine) = old_cl;
+		//*((int *)&CommandLine) = old_cl;
 		process_cmdline_set_lift();
 		if (XromRunning) {
 #ifndef REALBUILD

@@ -214,7 +214,7 @@ static const struct {
 	const char *const name;
 } xrom_entry_points[] = {
 #define XE(l)		{ XROM_ ## l, # l }
-	XE(2DERIV),			XE(F_DENANY),			XE(QF_WEIB),
+	XE(F_DENANY),			XE(QF_WEIB),
 	XE(AGM),			XE(F_DENFAC),			XE(QUAD),
 	XE(Bn),				XE(F_DENFIX),			XE(RADIANS),
 	XE(Bn_star),			XE(GRADIANS),			XE(RADIX_COM),
@@ -225,11 +225,11 @@ static const struct {
 	XE(CDFU_F),			XE(IDIV),			XE(SETEUR),
 	XE(CDFU_GEOM),			XE(IM_LZOFF),			XE(SETIND),
 	XE(CDFU_LOGIT),			XE(IM_LZON),			XE(SETJAP),
-	XE(CDFU_LOGNORMAL),		XE(INTEGRATE),			XE(SETUK),
+	XE(CDFU_LOGNORMAL),		XE(SETUK),
 	XE(CDFU_NORMAL),		XE(ISGN_1C),			XE(SETUSA),
-	XE(CDFU_POIS2),			XE(ISGN_2C),			XE(SIGMA),
+	XE(CDFU_POIS2),			XE(ISGN_2C),
 	XE(CDFU_POISSON),		XE(ISGN_SM),			XE(SIGN),
-	XE(CDFU_Q),			XE(ISGN_UN),			XE(SOLVE),
+	XE(CDFU_Q),			XE(ISGN_UN),
 	XE(CDFU_T),			XE(JG1582),			XE(STACK_4_LEVEL),
 	XE(CDFU_WEIB),			XE(JG1752),			XE(STACK_8_LEVEL),
 	XE(CDF_BINOMIAL),		XE(LaguerreLn),			XE(START),
@@ -257,10 +257,10 @@ static const struct {
 	XE(ChebychevTn),		XE(PERMARGIN),			XE(cpx_LOG2),
 	XE(ChebychevUn),		XE(PERMMR),			XE(cpx_LOGXY),
 	XE(DATE_ADD),			XE(PERTOT),			XE(cpx_POW10),
-	XE(DATE_DELTA),			XE(PRODUCT),			XE(cpx_POW2),
+	XE(DATE_DELTA),			XE(cpx_POW2),
 	XE(DATE_TO),			XE(QF_BINOMIAL),		XE(cpx_ROUND),
 	XE(DEGREES),			XE(QF_CAUCHY),			XE(cpx_SIGN),
-	XE(DERIV),			XE(QF_CHI2),			XE(cpx_TRUNC),
+	XE(QF_CHI2),			XE(cpx_TRUNC),
 	XE(D_DMY),			XE(QF_EXPON),			XE(cpx_beta),
 	XE(D_MDY),			XE(QF_F),			XE(cpx_gd),
 	XE(D_YMD),			XE(QF_GEOM),			XE(cpx_inv_gd),
@@ -275,114 +275,6 @@ static const struct {
 };
 #define num_xrom_entry_points	(sizeof(xrom_entry_points) / sizeof(*xrom_entry_points))
 	
-static const struct {
-	opcode op;
-	const char *const name;
-} xrom_labels[] = {
-#define X(op, n, s)	{ RARG(RARG_ ## op, (n) & RARG_MASK), s},
-#define XE(n, s)	X(ERROR, n, "Error: " # s)	X(MESSAGE, n, "Message: " # s)
-	XE(ERR_DOMAIN, "Domain Error")
-	XE(ERR_BAD_DATE, "Bad Date Error")
-	XE(ERR_PROG_BAD, "Undefined Op-code")
-	XE(ERR_INFINITY, "+infinity")
-	XE(ERR_MINFINITY, "-infinity")
-	XE(ERR_NO_LBL, "no such label")
-	XE(ERR_ILLEGAL, "Illegal operation")
-	XE(ERR_RANGE, "out of range error")
-	XE(ERR_DIGIT, "bad digit error")
-	XE(ERR_TOO_LONG, "too long error")
-	XE(ERR_RAM_FULL, "RTN stack full")
-	XE(ERR_STK_CLASH, "stack clash")
-	XE(ERR_BAD_MODE, "bad mode error")
-	XE(ERR_INT_SIZE, "word size too small")
-	XE(ERR_MORE_POINTS, "more data points required")
-	XE(ERR_BAD_PARAM, "invalid parameter")
-	XE(ERR_IO, "input / output problem")
-	XE(ERR_INVALID, "invalid data")
-	XE(ERR_READ_ONLY, "write protected")
-	XE(ERR_SOLVE, "solve failed")
-	XE(ERR_MATRIX_DIM, "matrix dimension mismatch")
-	XE(ERR_SINGULAR, "matrix singular")
-	XE(ERR_FLASH_FULL, "flash is full")
-	XE(MSG_INTEGRATE, "integration progress")
-#undef XE
-#undef X
-};
-#define num_xrom_labels		(sizeof(xrom_labels) / sizeof(*xrom_labels))
-
-static void dump_code(unsigned int pc, unsigned int max, int annotate) {
-	int dbl = 0, sngl = 0;
-
-	printf("ADDR  OPCODE     MNEMONIC%s\n\n", annotate?"\t\tComment":"");
-	do {
-		char instr[16];
-		const opcode op = getprog(pc);
-		const char *p = prt(op, instr);
-		int i;
-		if (isDBL(op)) {
-			dbl++;
-			printf("%04x: %04x %04x  ", pc, op & 0xffff, (op >> 16)&0xffff);
-		} else {
-			sngl++;
-			printf("%04x: %04x       ", pc, op);
-		}
-		//printf("%04x: %04x  ", pc, op);
-		if (op == RARG(RARG_ALPHA, ' '))
-			strcpy(instr+2, "[space]");
-
-		while (*p != '\0') {
-			char c = *p++;
-			const char *q = pretty(c);
-			if (q == NULL) putchar(c);
-			else if (strcmp("narrow-space", q) == 0 && *p == c) {
-				printf(" ");
-				p++;
-			} else printf("[%s]", q);
-		}
-		if (annotate) {
-			extern const unsigned short int xrom_targets[];
-			for (i=0; i<num_xrom_entry_points; i++)
-				if (addrXROM(xrom_entry_points[i].address) == pc)
-					printf("\t\t\tXLBL %s", xrom_entry_points[i].name);
-			for (i=0; i<num_xrom_labels; i++)
-				if (xrom_labels[i].op == op)
-					printf("\t\t\t%s", xrom_labels[i].name);
-			if (RARG_CMD(op) == RARG_SKIP || RARG_CMD(op) == RARG_BSF)
-				printf("\t\t-> %04x", pc + (op & 0xff) + 1);
-			else if (RARG_CMD(op) == RARG_BACK || RARG_CMD(op) == RARG_BSB)
-				printf("\t\t-> %04x", pc - (op & 0xff));
-			else if (RARG_CMD(op) == RARG_XEQ || RARG_CMD(op) == RARG_GTO)
-				printf("\t\t\t-> %04x", addrXROM(0) + xrom_targets[op & RARG_MASK]);
-		}
-		putchar('\n');
-		pc = do_inc(pc, 0);
-	} while (! PcWrapped);
-	if (annotate)
-		printf("%u XROM words\n%d single word instructions\n%d double word instructions\n", max-pc, sngl, dbl);
-}
-
-static void dump_xrom(void) {
-	dump_code(addrXROM(0), addrXROM(xrom_size), 1);
-}
-
-static void dump_ram(void) {
-	if (ProgSize > 0)
-		dump_code(1, ProgSize + 1, 0);
-	else
-		printf("no RAM program\n");
-}
-
-static void dump_prog(unsigned int n) {
-	unsigned int pc;
-	if (n > REGION_LIBRARY - 1)
-		printf("no such program region %u\n", n);
-	else if (sizeLIB(n+1) == 0)
-		printf("region %u empty\n", n);
-	else {
-		pc = addrLIB(0, n+1);
-		dump_code(pc, pc + sizeLIB(n+1), 0);
-	}
-}
 
 static void dump_registers(void) {
 	char buf[100];
@@ -563,18 +455,6 @@ int main(int argc, char *argv[]) {
 			}
 			if (strcmp(argv[1], "reg") == 0) {
 				dump_registers();
-				return 0;
-			}
-			if (strcmp(argv[1], "xrom") == 0) {
-				dump_xrom();
-				return 0;
-			}
-			if (strcmp(argv[1], "ram") == 0) {
-				dump_ram();
-				return 0;
-			}
-			if (argv[1][0] == 'p' && argv[1][1] == 'r' && argv[1][2] == 'o' && argv[1][3] == 'g' && isdigit(argv[1][4]) && argv[1][5] == '\0') {
-				dump_prog(argv[1][4] - '0');
 				return 0;
 			}
 			if (strcmp(argv[1], "wake") == 0) {

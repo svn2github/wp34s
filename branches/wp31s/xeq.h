@@ -898,7 +898,7 @@ enum specials {
 
         // These are pseudo ops that don't actually do anything outside the keyboard handler
         OP_WINDOWLEFT, OP_WINDOWRIGHT, OP_SHOW, OP_SST, OP_BST, OP_BACKSPACE,
-        OP_RUNNING, OP_IGNORE, OP_UNFINISHED, 
+        OP_RUNNING, OP_IGNORE, OP_UNFINISHED, OP_UNDO,
         NUM_SPECIAL
 };
 

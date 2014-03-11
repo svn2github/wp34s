@@ -54,6 +54,7 @@
  *  Setup the persistent RAM
  */
 PERSISTENT_RAM TPersistentRam PersistentRam;
+PERSISTENT_RAM TPersistentRam UndoState, Undo2State;
 
 /*
  *  Data that is saved in the SLCD controller during deep sleep

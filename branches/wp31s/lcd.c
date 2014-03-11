@@ -454,10 +454,6 @@ void show_flags(void) {
 		MOVE(10, FLAG_BASE+1);
 		PRINTF("[lift]");
 	}
-	if (Running) {
-		MOVE(18, FLAG_BASE+1);
-		PRINTF("[running]");
-	}
 	MOVE(70, 5);
 	PRINTF("iw = %u/%u", State2.window, IntMaxWindow);
 	MOVE(30, FLAG_BASE+1);

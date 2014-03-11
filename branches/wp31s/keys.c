@@ -38,6 +38,7 @@ extern void changed_catalog_state();
 #define STATE_WINDOWLEFT	(OP_SPEC | OP_WINDOWLEFT)
 #define STATE_WINDOWRIGHT	(OP_SPEC | OP_WINDOWRIGHT)
 //#define STATE_SHOW		(OP_SPEC | OP_SHOW)
+#define STATE_UNDO		(OP_SPEC | OP_UNDO)
 
 /* Define this if the key codes map rows sequentially */
 
@@ -568,7 +569,7 @@ static int process_fg_shifted(const keycode c) {
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CONV Catalog
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MODE Catalog
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// DISPL Catalog
-		{ OP_MON  | OP_FACT,     OP_MON  | OP_FACT },				// UNDO - Stubbed as x! for now
+		{ STATE_UNDO,     STATE_UNDO },				// UNDO - Stubbed as x! for now
 		// Row 4
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// ->
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MORE Catalog
@@ -594,13 +595,6 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_NIL  | OP_FRACPROPER, OP_NIL  | OP_FRACPROPER },			// a b/c
 		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },			// Sigma-
 		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },			// H.MS+
-	};
-
-	static const unsigned short int op_map2[] = {
-		STATE_UNFINISHED,
-		STATE_UNFINISHED,
-		OP_DYA  | OP_POW,
-		OP_MON  | OP_SQRT
 	};
 
 	enum shifts shift = reset_shift();
@@ -2245,6 +2239,8 @@ void process_keycode(int c)
 			c = OpCode;
 			OpCode = 0;
 
+			xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
+			xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
 			xeq(c);
 			if (XromRunning || Pause)
 				xeqprog();
@@ -2298,11 +2294,17 @@ void process_keycode(int c)
 		case STATE_IGNORE:
 			break;
 
+		case STATE_UNDO:
+			xcopy(&PersistentRam, &UndoState, sizeof(TPersistentRam));
+			break;
+
 		default:
-			if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F))
+			if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F)) {
 				// Data entry key
+				xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
+				xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
 				xeq(c);
-			else {
+		    } else {
 				// Save the op-code for execution on key-up
 				OpCode = c;
 				OpCodeDisplayPending = 1;
