@@ -28,7 +28,7 @@
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //  ----------------------------------------------------------------------------
 
-#ifdef wp34s
+#ifdef wp31s
 #define MANUAL "wp31s_Manual.pdf"
 #define WEBSITE "http://wp34s.sourceforge.net/"
 #define REGKEY "wp31s"
@@ -285,7 +285,7 @@ unsigned long __stdcall CalculationThread(void *p)
         KeyPress(k);
         continue;
       }
-#ifndef wp34s
+#ifndef wp31s
       LARGE_INTEGER a, b;
       if (CheckCommunication()) {
         // If we received something, we are WAY likely to receive some more
@@ -311,7 +311,7 @@ unsigned long __stdcall CalculationThread(void *p)
   }
 }
 
-#ifndef wp34s
+#ifndef wp31s
 bool CommunicationPipeConnected = false;
 HANDLE    ComunicationNamedPipe;
 unsigned long __stdcall CommunicationThread(void *p)
@@ -523,7 +523,7 @@ BOOL CHP20b_cDlg::OnInitDialog()
   LastScreenUpdate.QuadPart = 0;
   CDialog        ::OnInitDialog();
 
-#ifndef wp34s
+#ifndef wp31s
   CheckMenuForManager();
 #endif
   // IDM_ABOUTBOX must be in the system command range.
@@ -565,7 +565,7 @@ BOOL CHP20b_cDlg::OnInitDialog()
 
   CreateThread(NULL, 1024 *16, CalculationThread, NULL, 0, &id);
 
-#ifndef wp34s
+#ifndef wp31s
   int   i = 0;
   char    name[50];
 
@@ -593,7 +593,7 @@ BOOL CHP20b_cDlg::OnInitDialog()
   return TRUE;              // return TRUE  unless you set the focus to a control
 }
 
-#ifndef wp34s
+#ifndef wp31s
 /***************************************************************
 **
 ** Function is responsible to remove Test System related menus
@@ -699,7 +699,7 @@ void CHP20b_cDlg::keypress(int a)
   m_VirtualLCD.hpStopTimerScrollLines();
   m_VirtualLCD.hpStopTimerBlinkCur();
   System.KeyboardMap |= (u64)1 << a;
-#ifndef wp34s
+#ifndef wp31s
   SendChar(a);
 #endif
   AddKeyInBuffer(a);
@@ -742,11 +742,7 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
     if (!already_exists) {
       for (iter = m_listKeyCode.begin(); iter !=
             m_listKeyCode.end(); ) {
-          if (*iter != VK_LSHIFT && *iter != VK_RSHIFT && *iter != VK_SHIFT
-#ifdef wp34s
-              && *iter != 'M' 
-#endif
-          )
+          if (*iter != VK_LSHIFT && *iter != VK_RSHIFT && *iter != VK_SHIFT)
 	    HP20bKeyUp(*iter);
         iter = m_listKeyCode.erase(iter);
       }
@@ -767,10 +763,6 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
 //
 void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
 {
-#ifdef wp34s
-  if (wKeyCode == 'F' && System.KeyboardMap & 0x200)
-    return;
-#endif
   ForceHP20bKeyUp(wKeyCode);
   if (m_Touch_Base == NONE) {
     {
@@ -784,11 +776,6 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
 
           InvertRgn(hDC, m_rgnPressedButton);
           ::ReleaseDC(m_Background.m_hWnd, hDC);
-#ifdef wp34s
-          if (wKeyCode == 'F' ) { 
-            return;
-	  }
-#endif
           m_Touch_Base = KEYBOARD;
         }
       }
@@ -820,7 +807,7 @@ void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
     System.KeyboardMap &= ~((u64)1 << key);
     m_nHP20bKeyDown = - 1;
     m_rgnPressedButton = 0;
-#ifdef wp34s
+#ifdef wp31s
     keypress(98);
 #endif
   }
@@ -862,7 +849,7 @@ void CHP20b_cDlg::OnLButtonUp(UINT nFlags, CPoint point)
     System.KeyboardMap &= ~((u64)1 << m_nCurKeyPadNum);
     m_rgnPressedButton = NULL;
     m_nCurKeyPadNum = - 1;
-#ifdef wp34s
+#ifdef wp31s
     keypress( 98 );
 #endif
   }
@@ -885,21 +872,6 @@ void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
     m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
     if (NULL != m_rgnPressedButton) {
       if (m_nCurKeyPadNum >= 0) {
-#ifdef wp34s
-//	if (m_nCurKeyPadNum >= 9 && m_nCurKeyPadNum <= 11) {
-	if (m_nCurKeyPadNum == 30) {
-          DeleteObject(m_rgnPressedButton);
-		  for (int i = 30; i <= 30; ++i) {
-            // A shift key may still be down, unlock it
-            if (System.KeyboardMap & (u64)1 << i) {
-	      HP20bKeyUp(i - 30 + 'M');
-	      if (i == m_nCurKeyPadNum)
-		return;
-	    }
-	  }
-	  m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
-	}
-#endif
         keypress(m_nCurKeyPadNum);
         if (m_Background.m_hWnd == 0)
           return;
@@ -984,16 +956,9 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
   else {
     if (r != NULL) {
       DeleteObject(r);
-#ifdef wp34s
-      OnLButtonUp(nFlags, point);
-      if (code != 30)
-	HP20bKeyUp('M');
-#endif
     }
-#ifndef wp34s
     // Forcing to send SHIFT key to calculator firmware
     System.KeyboardMap &= ~((u64)1 << Skin.mright);
-#endif
     UpdateScreen(true);
   }
   CDialog::OnRButtonUp(nFlags, point);
@@ -1027,7 +992,7 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
   else {
     if (r != NULL) {
       DeleteObject(r);
-#ifdef wp34s
+#ifdef wp31s
       if (code != 30 ) {
 		// RMB on any other key: press Shift before
 		keypress(Skin.mright);
@@ -1036,7 +1001,7 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
       }
 #endif
     }
-#ifndef wp34s
+#ifndef wp31s
     if (Skin.mright != - 1)
       keypress(Skin.mright);
 #endif
@@ -1259,7 +1224,7 @@ void CHP20b_cDlg::OnEditCopyNumber()
 //
 void CHP20b_cDlg::OnEditCopyTextline()
 {
-#ifdef wp34s
+#ifdef wp31s
   m_VirtualLCD.hpCopyToClipboardUnicode(GetTopLineW());
 #else
   m_VirtualLCD.hpCopyToClipboard(GetTopLine());
@@ -1277,7 +1242,7 @@ struct {
 }
 const keydefs[] =
 {
-#ifdef wp34s
+#ifdef wp31s
   { '0', KEY0},
   { '1', KEY1},
   { '2', KEY2},
@@ -1515,7 +1480,7 @@ void CHP20b_cDlg::OnHP20bShowcaptionMenu()
     pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, MF_BYCOMMAND | MF_UNCHECKED);
 
   AfxMessageBox(
-#ifdef wp34s
+#ifdef wp31s
           "Right click on the wp logo and uncheck 'Hide Titlebar'\r\nto display the titlebar again.\r\n"
           "To close the calculator, turn it OFF with (gold) f + EXIT.",
 #else
@@ -1537,7 +1502,7 @@ void CHP20b_cDlg::OnMove(int x, int y)
   static int  oldYPos = 1;
 #if 0
   static FILE *trace;
-  if ( trace == NULL ) trace = fopen("wp34strace.dat","w");
+  if ( trace == NULL ) trace = fopen("wp31strace.dat","w");
   fprintf(trace,"(%d,%d)\n",x,y);
 #endif
   CDialog::OnMove(x, y);

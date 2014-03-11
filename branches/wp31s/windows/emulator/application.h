@@ -111,7 +111,7 @@ void ClearFlag(int flag);
 #ifndef _ARM_
 unsigned short GetOffset(void);
 char *GetBottomLine(void);
-#ifdef wp34s
+#ifdef wp31s
 wchar_t *GetTopLineW(void);
 #else
 char *GetTopLine(void);

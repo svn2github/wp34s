@@ -24,13 +24,6 @@
 #include "lcd.h"
 #include "keys.h"
 #include "storage.h"
-#include "serial.h"
-#ifdef INCLUDE_STOPWATCH
-#include "stopwatch.h"
-#endif
-#ifdef INFRARED
-#include "printer.h"
-#endif
 
 #ifndef at91sam7l128
 #define at91sam7l128 1
@@ -839,156 +832,147 @@ void set_speed( unsigned int speed )
                   32768 * ( 1 + PLLMUL_HALF ),
                   32768 * ( 1 + PLLMUL_FULL ) };
 
-        if ( !SerialOn
-#ifdef INFRARED
-             && IrPulse == 0
-#endif
-        ) {
+        if ( speed < SPEED_MEDIUM && ( DebugFlag || StartupTicks < 10 ) ) {
                 /*
-                 *  Speed changes not allowed while the serial port is active
-                 */
-                if ( speed < SPEED_MEDIUM && ( DebugFlag || StartupTicks < 10 ) ) {
-                        /*
-                         *  Allow JTAG debugging
-                         */
-                        speed = SPEED_MEDIUM;
-                }
+                        *  Allow JTAG debugging
+                        */
+                speed = SPEED_MEDIUM;
+        }
 
+        /*
+                *  If low voltage or requested by user reduce maximum speed
+                */
+        if ( speed == SPEED_HIGH ) {
+                if ( ( UState.slow_speed || Voltage <= LOW_VOLTAGE ) ) {
+                        speed = SPEED_HALF;
+                }
+        }
+        if ( speed == SpeedSetting ) {
                 /*
-                 *  If low voltage or requested by user reduce maximum speed
-                 */
-                if ( speed == SPEED_HIGH ) {
-                        if ( ( UState.slow_speed || Voltage <= LOW_VOLTAGE ) ) {
-                                speed = SPEED_HALF;
-                        }
-                }
-                if ( speed == SpeedSetting ) {
-                        /*
-                         *  No change.
-                         */
-                        goto idle_check;
-                }
+                        *  No change.
+                        */
+                goto idle_check;
+        }
 #ifdef SPEED_ANNUNCIATOR
-                if ( speed == SPEED_HIGH || SpeedSetting == SPEED_HIGH ) {
-                        dot( SPEED_ANNUNCIATOR, speed == SPEED_HIGH );
-                        finish_display();
-                }
+        if ( speed == SPEED_HIGH || SpeedSetting == SPEED_HIGH ) {
+                dot( SPEED_ANNUNCIATOR, speed == SPEED_HIGH );
+                finish_display();
+        }
 #endif
+        /*
+                *  Set new speed
+                */
+        lock();
+
+        if ( speed == SPEED_HIGH ) {
                 /*
-                 *  Set new speed
-                 */
-                lock();
+                        *  We need full voltage in the core
+                        */
+                SUPC_SetVoltageOutput( SUPC_VDD_180 );
 
-                if ( speed == SPEED_HIGH ) {
-                        /*
-                         *  We need full voltage in the core
-                         */
-                        SUPC_SetVoltageOutput( SUPC_VDD_180 );
+                /*
+                        *  At frequencies beyond 30 MHz, we need wait states for flash reads
+                        */
+                AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_2FWS;
+        }
 
-                        /*
-                         *  At frequencies beyond 30 MHz, we need wait states for flash reads
-                         */
-                        AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_2FWS;
-                }
+        switch ( speed ) {
 
-                switch ( speed ) {
+        case SPEED_IDLE:
+        case SPEED_SLOW:
+                /*
+                        *  Turn the clock almost off
+                        *  System will go idle from main loop
+                        */
+                enable_mclk();
+                set_mckr( AT91C_PMC_PRES_CLK_64, AT91C_PMC_CSS_MAIN_CLK );
 
-                case SPEED_IDLE:
-                case SPEED_SLOW:
-                        /*
-                         *  Turn the clock almost off
-                         *  System will go idle from main loop
-                         */
-                        enable_mclk();
-                        set_mckr( AT91C_PMC_PRES_CLK_64, AT91C_PMC_CSS_MAIN_CLK );
+                // Turn off the unused oscillators
+                disable_pll();
+                break;
 
-                        // Turn off the unused oscillators
-                        disable_pll();
-                        break;
+        case SPEED_MEDIUM:
+                /*
+                        *  2 MHz internal RC clock
+                        */
+                enable_mclk();
+                set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
 
-                case SPEED_MEDIUM:
-                        /*
-                         *  2 MHz internal RC clock
-                         */
+                // Turn off the PLL
+                disable_pll();
+
+                break;
+
+        case SPEED_HALF:
+                /*
+                        *  20 MHz PLL, used in case of low battery or user request
+                        *  Also when serial or infrared I/O is active
+                        */
+
+        case SPEED_HIGH:
+                /*
+                        *  37 MHz PLL, full speed
+                        */
+                if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS ) == AT91C_PMC_CSS_PLL_CLK ) {
+                        // Intermediate switch to main clock
                         enable_mclk();
                         set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
-
-                        // Turn off the PLL
-                        disable_pll();
-
-                        break;
-
-                case SPEED_HALF:
-                        /*
-                         *  20 MHz PLL, used in case of low battery or user request
-                         *  Also when serial or infrared I/O is active
-                         */
-
-                case SPEED_HIGH:
-                        /*
-                         *  37 MHz PLL, full speed
-                         */
-                        if ( ( AT91C_BASE_PMC->PMC_MCKR & AT91C_PMC_CSS ) == AT91C_PMC_CSS_PLL_CLK ) {
-                                // Intermediate switch to main clock
-                                enable_mclk();
-                                set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_MAIN_CLK );
-                        }
-                        if ( speed == SPEED_HALF ) {
-                                // Initialise PLL at 20MHz
-                                if ( Xtal ) {
-                                        pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_HALF << 16 ) | PLLDIV;
-                                }
-                                else {
-                                        pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_HALF_NX << 16 ) | PLLDIV;
-                                }
+                }
+                if ( speed == SPEED_HALF ) {
+                        // Initialise PLL at 20MHz
+                        if ( Xtal ) {
+                                pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_HALF << 16 ) | PLLDIV;
                         }
                         else {
-                                // Initialise PLL at 37MHz
-                                if ( Xtal ) {
-                                        pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_FULL << 16 ) | PLLDIV;
-                                }
-                                else {
-                                        pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_FULL_NX << 16 ) | PLLDIV;
-                                }
+                                pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_HALF_NX << 16 ) | PLLDIV;
                         }
-                        AT91C_BASE_PMC->PMC_PLLR = pll;
-                        while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
-
-                        // Switch to PLL
-                        set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_PLL_CLK );
-
-                        // Turn off main clock
-                        disable_mclk();
-
-                        break;
                 }
-
-                if ( speed < SPEED_HIGH ) {
-                        /*
-                         *  We can reduce the core voltage to save power
-                         */
-                        SUPC_SetVoltageOutput( SUPC_VDD_155 );
-
-                        /*
-                         *  No wait states for flash reads needed
-                         */
-                        AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
+                else {
+                        // Initialise PLL at 37MHz
+                        if ( Xtal ) {
+                                pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_FULL << 16 ) | PLLDIV;
+                        }
+                        else {
+                                pll = CKGR_PLL | PLLCOUNT | ( PLLMUL_FULL_NX << 16 ) | PLLDIV;
+                        }
                 }
+                AT91C_BASE_PMC->PMC_PLLR = pll;
+                while ( ( AT91C_BASE_PMC->PMC_SR & AT91C_PMC_LOCK ) == 0 );
+
+                // Switch to PLL
+                set_mckr( AT91C_PMC_PRES_CLK, AT91C_PMC_CSS_PLL_CLK );
+
+                // Turn off main clock
+                disable_mclk();
+
+                break;
+        }
+
+        if ( speed < SPEED_HIGH ) {
+                /*
+                        *  We can reduce the core voltage to save power
+                        */
+                SUPC_SetVoltageOutput( SUPC_VDD_155 );
 
                 /*
-                 *  Store new settings
-                 */
-                SpeedSetting = speed;
-                ClockSpeed = speeds[ speed ];
-                unlock();
+                        *  No wait states for flash reads needed
+                        */
+                AT91C_BASE_MC->MC_FMR = AT91C_MC_FWS_0FWS;
         }
+
+        /*
+                *  Store new settings
+                */
+        SpeedSetting = speed;
+        ClockSpeed = speeds[ speed ];
+        unlock();
 
 idle_check:
         if ( speed == SPEED_IDLE ) {
                 /*
                  *  Save power
                  */
-                if ( !Running ) {
+                if ( !XromRunning ) {
                         GoFast = 0;
                 }
                 go_idle();
@@ -1019,7 +1003,7 @@ void user_heartbeat( void )
                 /*
                  *  The PSE handler checks this value
                  */
-                if ( --Pause == 0 && Running ) {
+                if ( --Pause == 0 && XromRunning ) {
                         set_speed( SPEED_HIGH );
                 }
         }
@@ -1096,13 +1080,6 @@ void LCD_interrupt( void )
          */
         scan_keyboard();
 
-        /*
-         *  Check if a serial transfer has to be interrupted
-         */
-        if ( SerialOn && OnKeyPressed ) {
-                byte_received( R_BREAK );
-        }
-
         Heartbeats = ( Heartbeats + 1 ) & 0x7f;
         if ( Heartbeats & 1 ) {
                 /*
@@ -1169,29 +1146,6 @@ void SLCD_irq( void )
 
 #ifdef USE_SYSTEM_IRQ
 /*
- *  The DBGU interrupt
- */
-void DBGU_irq( void )
-{
-        // Test receiver
-        if ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_RXRDY ) ) {
-                int c = AT91C_BASE_DBGU->DBGU_RHR;
-                if ( AT91C_BASE_DBGU->DBGU_CSR & 0xE0 ) {
-                        // receiver error
-                        c = R_ERROR;
-                        AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RSTSTA;
-                }
-                byte_received( c );
-        }
-
-        // If transmitter is ready disable its interrupt
-        if ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_TXRDY ) ) {
-                AT91C_BASE_DBGU->DBGU_IDR = AT91C_US_TXRDY;
-        }
-}
-
-
-/*
  *  The system interrupt handler
  */
 void system_irq( void )
@@ -1204,44 +1158,7 @@ void system_irq( void )
          */
 
         // This part checks for itself
-        DBGU_irq();
-}
-#endif
-
-#ifdef INFRARED
-/*
- *  Timer/Counter 1 interrupt, used for infrared printing
- */
-void TC1_irq( void )
-{
-        SUPC_DisableDeepMode();
-
-        if ( AT91C_BASE_TC1->TC_SR & AT91C_TC_CPCS ) {
-                /*
-                 *  RC has reached its compare value.
-                 *  Now the signal on TCIO0 is low because the clock is gated.
-                 */
-                IrPulse >>= 1;
-                if ( IrPulse == 3 ) {
-                        /*
-                         *  We are done with this frame, stop the transmission.
-                         */
-                        AT91C_BASE_TC1->TC_IDR = AT91C_TC_CPCS;
-                        AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKDIS;
-                        AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKDIS;
-                        AT91C_BASE_TC0->TC_CMR = 0;
-                        AT91C_BASE_TC1->TC_CMR = 0;
-                        AT91C_BASE_PMC->PMC_PCDR = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
-                        IrPulse = 0;
-                }
-                else {
-                        /*
-                         *  Setup TC0 to emit (or not) a burst on the next active phase of TC1
-                         */
-                        AT91C_BASE_TC0->TC_CCR =  IrPulse & 1 ? AT91C_TC_CLKEN | AT91C_TC_SWTRG
-                                                              : AT91C_TC_CLKDIS;
-                }
-        }
+        // DBGU_irq();
 }
 #endif
 
@@ -1286,210 +1203,8 @@ void enable_interrupts()
          */
         SLCDC_EnableInterrupts( AT91C_SLCDC_ENDFRAME );
         UserHeartbeatCountDown = 5;
-
-#ifdef INFRARED
-        --prio;
-        /*
-         *  Tell the interrupt controller where to go
-         *  This is for the Timer/Counter 1
-         */
-        AIC_ConfigureIT( AT91C_ID_TC1,
-                         AT91C_AIC_SRCTYPE_INT_HIGH_LEVEL | prio,
-                         TC1_irq );
-        /*
-         *  Enable IRQ 13
-         */
-        AIC_EnableIT( AT91C_ID_TC1 );
-
-#endif
 }
 
-
-/*
- *  Open the DBGU port for transmission.
- *  The DBGU port is restricted in that it only supports 8 bits, 1 stop bit.
- *  7 bits is rejected, the number of stop bits is ignored.
- *  A non zero return indicates an error.
- */
-int open_port( int baud, int bits, int parity, int stopbits )
-{
-        int mode, div;
-
-#ifdef SLOW_SERIAL
-        set_speed( SPEED_HALF );
-#endif
-
-        // Assign I/O pins to DBGU, disable pull-ups
-        AT91C_BASE_PIOC->PIO_PDR   = DBGU_PIOC_MASK;
-        AT91C_BASE_PIOC->PIO_ASR   = DBGU_PIOC_MASK;
-        AT91C_BASE_PIOC->PIO_PPUDR = DBGU_PIOC_MASK;
-
-        // Reset & disable receiver and transmitter, disable interrupts
-        AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RSTRX | AT91C_US_RSTTX | AT91C_US_RSTSTA;
-        AT91C_BASE_DBGU->DBGU_IDR = 0xFFFFFFFF;
-
-        // The port provides only 8bit support
-        if ( bits != 8 ) return 1;
-        mode = parity == 'E' ? AT91C_US_PAR_EVEN
-             : parity == 'O' ? AT91C_US_PAR_ODD
-             : AT91C_US_PAR_NONE;
-        div = ClockSpeed / ( baud * 16 );
-        if ( div <= 1 ) {
-                return 1;
-        }
-
-        // Configure baud rate
-        AT91C_BASE_DBGU->DBGU_BRGR = div;
-
-        // Configure mode register
-        AT91C_BASE_DBGU->DBGU_MR = mode;
-
-        // Enable RX interrupt
-        AT91C_BASE_DBGU->DBGU_IER = AT91C_US_RXRDY;
-
-        // Enable receiver and transmitter
-        AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RXEN | AT91C_US_TXEN;
-
-        return 0;
-}
-
-
-/*
- *  Close the DBGU port after transmission is complete
- */
-extern void close_port( void )
-{
-        // Disable receiver and transmitter, disable interrupts
-        AT91C_BASE_DBGU->DBGU_CR = AT91C_US_RXDIS | AT91C_US_TXDIS;
-        AT91C_BASE_DBGU->DBGU_IDR = 0xFFFFFFFF;
-}
-
-
-/*
- *  Output a single byte to the serial
- */
-void put_byte( unsigned char byte )
-{
-        // Wait for the transmitter to be ready
-        while ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_TXRDY ) == 0 && !OnKeyPressed ) {
-                go_idle();
-        }
-        if ( OnKeyPressed ) {
-                return;
-        }
-
-        // Send character
-        AT91C_BASE_DBGU->DBGU_THR = byte;
-
-        // Enable transmitter interrupt
-        AT91C_BASE_DBGU->DBGU_IER = AT91C_US_TXRDY;
-}
-
-
-/*
- *  Force all remaining characters to be sent out
- */
-void flush_comm( void )
-{
-        while ( ( AT91C_BASE_DBGU->DBGU_CSR & AT91C_US_TXEMPTY ) == 0 && !OnKeyPressed ) {
-                go_idle();
-        }
-}
-
-
-#ifdef INFRARED
-/*
- *  Send a byte out to the IR transmitter
- */
-int put_ir( int c )
-{
-        unsigned int p;
-        int i;
-        int cc;
-
-        /*
-         *  Wait until the previous pattern is sent
-         */
-        while ( IrPulse ) {
-                go_idle();
-        }
-
-        set_IO_annunciator();
-
-        /*
-         *  We may have to wait for the printer
-         */
-        while ( PrintDelay ) {
-                if ( OnKeyPressed ) {
-                        return 1;
-                }
-                busy();
-                idle();
-        }
-        set_speed( SPEED_HALF );
-
-        /*
-         *  Assemble the half bit pattern:
-         *  start bit (3 times on), ECC (4 full bits), data (8 full bits), stop bit (3 times off)
-         */
-        // stop + terminating pattern for IRQ: 11000
-        p = 0x18;
-
-        // data: 16 half bits
-        for ( cc = c, i = 0; i < 8; ++i ) {
-                p <<= 2;
-                p |= ( cc & 1 ) ? 1 : 2;
-                cc >>= 1;
-        }
-
-        // ECC: 8 half bits
-        for ( i = 0; i < 4; ++i ) {
-                // ECC bit masks for bits 8 to 11
-                static const unsigned char mask[ 4 ] = { 0x8b, 0xd5, 0xe6, 0x78 };
-                p <<= 2;
-                p |= __builtin_parity( c & mask[ i ] ) ? 1 : 2;
-        }
-
-        // start
-        IrPulse = ( p << 3 ) | 7;
-
-        // Enable the peripheral clocks of TC0 and TC1
-        AT91C_BASE_PMC->PMC_PCER = ( 1 << AT91C_ID_TC0 ) | ( 1 << AT91C_ID_TC1 );
-
-        // Assign I/O pin PC7 to TIOA0, disable pull-ups
-        AT91C_BASE_PIOC->PIO_PDR   = AT91C_PC7_TIOA0;   // Disable PIO
-        AT91C_BASE_PIOC->PIO_BSR   = AT91C_PC7_TIOA0;   // Peripheral B is TC0
-        AT91C_BASE_PIOC->PIO_MDDR  = AT91C_PC7_TIOA0;   // No multi drive
-        AT91C_BASE_PIOC->PIO_PPUDR = AT91C_PC7_TIOA0;   // No pull-up
-
-        // TC0: 32768 Hz square wave, gated by TC1
-        AT91C_BASE_TC0->TC_CMR = AT91C_TC_CLKS_TIMER_DIV1_CLOCK | AT91C_TC_BURST_XC0
-                               | AT91C_TC_ACPA_TOGGLE
-                               | AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO;
-        AT91C_BASE_TC0->TC_RA = ( PLLMUL_HALF + 1 ) / 8;        //  75
-        AT91C_BASE_TC0->TC_RC = ( PLLMUL_HALF + 1 ) / 4;        // 150
-        AT91C_BASE_TC0->TC_CCR = AT91C_TC_CLKEN;
-
-        // TC1: (32768/14) Hz square wave
-        AT91C_BASE_TC1->TC_CMR = AT91C_TC_CLKS_TIMER_DIV2_CLOCK
-                               | AT91C_TC_ACPA_SET | AT91C_TC_ACPC_CLEAR
-                               | AT91C_TC_WAVE | AT91C_TC_WAVESEL_UP_AUTO;
-        AT91C_BASE_TC1->TC_RA = 14 * ( PLLMUL_HALF + 1 ) / 16;
-        AT91C_BASE_TC1->TC_RC = 14 * ( PLLMUL_HALF + 1 ) / 8;
-        AT91C_BASE_TC1->TC_CCR = AT91C_TC_CLKEN;
-
-        // We need to enable interrupts on RC compare of timer 1
-        AT91C_BASE_TC1->TC_IER = AT91C_TC_CPCS;
-
-        // TC1 gates clock of TC0 via signal XC0
-        AT91C_BASE_TCB->TCB_BMR = AT91C_TCB_TC0XC0S_TIOA1 | AT91C_TCB_TC1XC1S_NONE | AT91C_TCB_TC2XC2S_NONE;
-
-        // Go!
-        AT91C_BASE_TCB->TCB_BCR = AT91C_TCB_SYNC;
-
-        return 0;
-}
-#endif
 
 /*************************************************************************
  *  Entry points called from the application
@@ -1818,7 +1533,6 @@ NO_RETURN int main(void)
                                         flash_restore( OP_LOAD );
                                 }
                         }
-                        init_library();
                 }
                 else {
                         /*
@@ -1857,9 +1571,6 @@ NO_RETURN int main(void)
         finish_display();
 #endif
 
-#ifdef INCLUDE_STOPWATCH
-        StopWatchRunning = 0;
-#endif
         /*
          *  Wait for event and execute it
          */
@@ -1881,7 +1592,7 @@ NO_RETURN int main(void)
                         /*
                          *  Test if we can turn ourself completely off
                          */
-                        if ( !DebugFlag && !Running && !SerialOn
+                        if ( !DebugFlag && !XromRunning
 #ifdef INCLUDE_STOPWATCH
                              && KeyCallback == NULL && !StopWatchRunning
 #endif
@@ -1956,7 +1667,7 @@ NO_RETURN int main(void)
                                 }
                                 confirm_counter = 0;
                         }
-                        if ( OnKeyPressed && k != K60 && !Running ) {
+                        if ( OnKeyPressed && k != K60 && !XromRunning ) {
                                 /*
                                  *  Check for special key combinations.
                                  *  Critical keys have to be pressed twice.
@@ -2115,15 +1826,8 @@ NO_RETURN int main(void)
                                 k = -1;
                         }
                 }
-#if 0
-                if ( k == K_RELEASE /* ( k != K_HEARTBEAT && k != -1 ) */ || Running ) {
-                        /*
-                         *  Increase the speed of operation
-                         */
-                        set_speed( SPEED_HIGH );
-                }
-#endif
-                /*
+
+		/*
                  *  Take care of the low battery indicator
                  */
                 dot( BATTERY, Voltage <= LOW_VOLTAGE );
@@ -2139,20 +1843,16 @@ NO_RETURN int main(void)
                  */
                 if ( k != -1 ) {
                         process_keycode( k );
-                        if ( k != K_HEARTBEAT || JustStopped ) {
+                        if ( k != K_HEARTBEAT ) {
                                 /*
-                                 *  User has pressed a key or a program has just stopped: Avoid APD.
+                                 *  User has pressed a key: Avoid APD.
                                  */
                                 Keyticks = 0;
                                 confirm_counter = 0;
                         }
                 }
 
-#ifdef INCLUDE_STOPWATCH
-                if ( Voltage <= APD_VOLTAGE || ( !Running && KeyCallback==NULL && Keyticks >= APD_TICKS ) ) {
-#else
-                if ( Voltage <= APD_VOLTAGE || ( !Running && Keyticks >= APD_TICKS ) ) {
-#endif
+                if ( Voltage <= APD_VOLTAGE || ( !XromRunning && Keyticks >= APD_TICKS ) ) {
                         /*
                          *  We have a reason to power the device off
                          */

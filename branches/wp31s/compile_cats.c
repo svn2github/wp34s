@@ -145,11 +145,6 @@ static s_opcode program_xfcn[] = {
 #ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL, 	"RCF")
 #endif
-	RARGCMD(RARG_iRCL,	"iRCL")
-	RARGCMD(RARG_sRCL,	"sRCL")
-#ifndef INCLUDE_INTERNAL_CATALOGUE
-	RARGCMD(RARG_dRCL,	"dRCL")
-#endif
 #ifdef INCLUDE_MANTISSA
 	MON(OP_MANTISSA,	"MANT")
 	MON(OP_EXPONENT,	"EXPT")
@@ -312,11 +307,6 @@ static s_opcode catalogue[] = {
 	NILIC(OP_VOLTAGE,	"BATT")
 #ifdef INCLUDE_FLASH_RECALL
 	RARGCMD(RARG_FLRCL,	"RCF")
-#endif
-	RARGCMD(RARG_iRCL,	"iRCL")
-	RARGCMD(RARG_sRCL,	"sRCL")
-#ifndef INCLUDE_INTERNAL_CATALOGUE
-	RARGCMD(RARG_dRCL,	"dRCL")
 #endif
 
 #ifdef INCLUDE_MANTISSA
@@ -1335,8 +1325,8 @@ int main(int argc, char *argv[]) {
 
 	fprintf(stderr, "# $Rev$\n" );
 	fprintf(stderr, "version=%c%c\n", VERSION_STRING[0], VERSION_STRING[2]);
-        fprintf(stderr, "maxsteps=%d\n", NUMPROG_LIMIT);
-        fprintf(stderr, "maxlibsteps=%d\n", NUMPROG_FLASH);
+        fprintf(stderr, "maxsteps=%d\n", 1);
+        fprintf(stderr, "maxlibsteps=%d\n", 1);
 	dump_opcodes(stderr, 0);
 
 	printf( "/* Total number of catalogue entries %d\n"

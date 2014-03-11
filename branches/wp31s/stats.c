@@ -26,63 +26,31 @@
 
 #define DISCRETE_TOLERANCE	&const_0_1
 
-/*
- *  Define register block
- */
-STAT_DATA *StatRegs;
 
-#define sigmaN		(StatRegs->sN)
-#define sigmaX		(StatRegs->sX)
-#define sigmaY		(StatRegs->sY)
-#define sigmaX2		(StatRegs->sX2)
-#define sigmaY2		(StatRegs->sY2)
-#define sigmaXY		(StatRegs->sXY)
-#define sigmaX2Y	(StatRegs->sX2Y)
-#define sigmalnX	(StatRegs->slnX)
-#define sigmalnXlnX	(StatRegs->slnXlnX)
-#define sigmalnY	(StatRegs->slnY)
-#define sigmalnYlnY	(StatRegs->slnYlnY)
-#define sigmalnXlnY	(StatRegs->slnXlnY)
-#define sigmaXlnY	(StatRegs->sXlnY)
-#define sigmaYlnX	(StatRegs->sYlnX)
-
-/*
- *  Actual size of this block (may be zero)
- */
-SMALL_INT SizeStatRegs;
+#define sigmaN		(StatRegs.sN)
+#define sigmaX		(StatRegs.sX)
+#define sigmaY		(StatRegs.sY)
+#define sigmaX2		(StatRegs.sX2)
+#define sigmaY2		(StatRegs.sY2)
+#define sigmaXY		(StatRegs.sXY)
+#define sigmaX2Y	(StatRegs.sX2Y)
+#define sigmalnX	(StatRegs.slnX)
+#define sigmalnXlnX	(StatRegs.slnXlnX)
+#define sigmalnY	(StatRegs.slnY)
+#define sigmalnYlnY	(StatRegs.slnYlnY)
+#define sigmalnXlnY	(StatRegs.slnXlnY)
+#define sigmaXlnY	(StatRegs.sXlnY)
+#define sigmaYlnX	(StatRegs.sYlnX)
 
 /*
  *  Handle block (de)allocation
  */
 int sigmaCheck(void) {
-	if (SizeStatRegs == 0) {
+	if (sigmaN == 0) {
 		err(ERR_MORE_POINTS);
 		return 1;
 	}
-	StatRegs = (STAT_DATA *) ((unsigned short *)(Regs + TOPREALREG - NumRegs) - SizeStatRegs);
 	return 0;
-}
-
-static int sigmaAllocate(void)
-{
-	if (State.have_stats == 0) {
-		SizeStatRegs = sizeof(STAT_DATA) >> 1;	// in 16 bit words!
-		if (move_retstk(-SizeStatRegs)) {
-			SizeStatRegs = 0;
-			err(ERR_RAM_FULL);
-			return 1;
-		}
-		State.have_stats = 1;
-		sigmaCheck();
-		xset(StatRegs, 0, sizeof(STAT_DATA));
-	}
-	return sigmaCheck();
-}
-
-void sigmaDeallocate(void) {
-	move_retstk(SizeStatRegs);
-	SizeStatRegs = 0;
-	State.have_stats = 0;
 }
 
 /*
@@ -90,9 +58,7 @@ void sigmaDeallocate(void) {
  */
 int sigmaCopy(void *source)
 {
-	if (sigmaAllocate())
-		return 1;
-	xcopy(StatRegs, source, sizeof(STAT_DATA));
+	xcopy(&StatRegs, source, sizeof(STAT_DATA));
 	return 0;
 }
 
@@ -134,7 +100,7 @@ void stats_mode(enum nilop op) {
 }
 
 void sigma_clear(enum nilop op) {
-	sigmaDeallocate();
+	xset(&StatRegs, 0, sizeof(STAT_DATA)); 
 }
 
 
@@ -209,32 +175,17 @@ static void sigma_helper_xy(decNumber *(*op)(decNumber *, const decNumber *, con
 }
 
 void sigma_plus() {
-	if (sigmaAllocate())
-		return;
 	++sigmaN;
 	sigma_helper_xy(&dn_add);
 }
 
 void sigma_minus() {
-	if (sigmaAllocate())
+	if (sigmaCheck())
 		return;
 	sigma_helper_xy(&dn_subtract);
 	--sigmaN;
 }
 
-/*
- * Used by Stopwatch to compute round time averages
- */
-int sigma_plus_x( const decNumber *x) {
-	decNumber y;
-
-	if (sigmaAllocate())
-		return -1;
-	
-	ullint_to_dn(&y, ++sigmaN);
-	sigma_helper(&dn_add, x, &y);
-	return sigmaN;
-}
 
 /* Loop through the various modes and work out
  * which has the highest absolute correlation.
@@ -342,10 +293,6 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 void sigma_val(enum nilop op) {
 	REGISTER *const x = StackBase;
 	const int dbl = is_dblmode();
-	if (SizeStatRegs == 0) {
-		zero_X();
-		return;
-	}
 	sigmaCheck();
 	if (op == OP_sigmaN) {
 		if (sigmaN > 0)
@@ -371,14 +318,9 @@ void sigma_sum(enum nilop op) {
 	REGISTER *const x = StackBase;
 	REGISTER *const y = get_reg_n(regY_idx);
 
-	if (SizeStatRegs == 0) {
-		x->s = y->s = get_const(OP_ZERO, 0)->s;
-	}
-	else {
-		sigmaCheck();	// recompute pointer to StatRegs
-		x->s = sigmaX;
-		y->s = sigmaY;
-	}
+	sigmaCheck();	// recompute pointer to StatRegs
+	x->s = sigmaX;
+	y->s = sigmaY;
 	if (is_dblmode()) {
 		packed128_from_packed(&(x->d), &(x->s));
 		packed128_from_packed(&(y->d), &(y->s));

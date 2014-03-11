@@ -25,6 +25,8 @@
 #ifndef COMPILE_XROM
 #define MAGIC_MARKER 0xA53C
 
+#include "stats.h"
+
 #pragma pack(push)
 #pragma pack(4)
 
@@ -143,14 +145,9 @@ struct _state {
  *  The alignment is carefully chosen to just fill the available space.
  */
 typedef struct _ram {
-	/*
-	 *  Header information for the program space.
-	 */
-	unsigned short _prog_max;	// maximum size of program
-	unsigned short _prog_size;	// actual size of program
 
 	/*
-	 *  Define storage for the machine's program memory and return stack.
+	 *  Define storage for the machine's return stack.
 	 *  The program return stack is at the end of this area.
 	 */
 	s_opcode _prog[RET_STACK_SIZE];
@@ -158,18 +155,17 @@ typedef struct _ram {
 	/*
 	 *  Define storage for the machine's registers.
 	 */
-	decimal64 _regs[NUMREG];
+	decimal64 _regs[ALLOCATED_REGS];
+
+	/*
+	 *  Statisitical summations
+	 */
+	STAT_DATA _stat_regs;
 
 	/*
 	 *  Alpha register gets its own space
 	 */
-	char _alpha[NUMALPHA+1];	// 30 + 1
-
-	/*
-	 *  Number of currently allocated global registers
-	 *  Gives a nice alignment together with Alpha
-	 */
-	unsigned char _numregs;		// in single precision registers
+	char _alpha[NUMALPHA+2];	// 30 + 2 for alignment reasons
 
 	/*
 	 *  Random number seeds
@@ -189,16 +185,7 @@ typedef struct _ram {
 	 */
 	struct _ustate _ustate;
 
-	/*
-	 *  Begin and end of current program
-	 */
-	unsigned short int _prog_begin;
-	unsigned short int _prog_end;
-
-	/*
-	 *  Storage space for our user flags (7 short integers)
-	 */
-	unsigned short int _user_flags[(NUMFLG+15) >> 4];
+	unsigned short __align; // Force size divisible by 4
 
 	/*
 	 *  CRC or magic marker to detect failed RAM
@@ -212,17 +199,11 @@ extern TPersistentRam UndoState, Undo2State;
 
 #define State		(PersistentRam._state)
 #define UState		(PersistentRam._ustate)
-#define ProgMax		(PersistentRam._prog_max)
-#define ProgSize	(PersistentRam._prog_size)
 #define Alpha		(PersistentRam._alpha)
 #define Regs		(PersistentRam._regs)
-#define Prog		(PersistentRam._prog)
-#define Prog_1		(PersistentRam._prog - 1)
 #define RetStkBase	(PersistentRam._prog + RET_STACK_SIZE) // Point to end of stack
-#define ProgBegin	(PersistentRam._prog_begin)
-#define ProgEnd		(PersistentRam._prog_end)
-#define NumRegs		(PersistentRam._numregs)
-#define UserFlags	(PersistentRam._user_flags)
+#define NumRegs		MAX_REG_NUM // (PersistentRam._numregs)
+#define StatRegs        (PersistentRam._stat_regs)
 #define RetStkPtr	(PersistentRam._state.retstk_ptr)
 #define LocalRegs	(PersistentRam._state.local_regs)
 #define RandS1		(PersistentRam._rand_s1)
@@ -350,14 +331,8 @@ typedef struct _xrom_params
 {
 	union {
 		struct {
-#ifdef ENABLE_COPYLOCALS
-			unsigned int reserved : 7;	// room for generic local flags .00 to .06
-			                                // just a placeholder here, the flags are on RetStk
-			unsigned int copyLocals : 1;	// xIN has copied the local data from the user (for SLV)
-#else
 			unsigned int reserved : 8;	// room for generic local flags .00 to .07
 			                                // just a placeholder here, the flags are on RetStk
-#endif
 			unsigned int mode_int : 1;	// user was in integer mode
 			unsigned int state_lift_in : 1; // stack lift on entry
 			unsigned int stack_depth : 1;	// user stack size was 8
@@ -423,9 +398,6 @@ extern TXromLocal XromLocal;
 
 #else /* COMPILE_XROM */
 
-#ifdef ENABLE_COPYLOCALS
-#define Flag_copy_locals   .07  // If set, local data is copied back and forth
-#endif
 #define Flag_mode_int	   .08  // Read only!
 #define Flag_state_lift_in .09  // Read only!
 #define Flag_stack_depth   .10  // Read only!
@@ -468,7 +440,6 @@ extern s_opcode XeqOpCode;	     // Currently executed function
 extern FLAG GoFast;	 	     // Speed-up might be necessary
 extern unsigned short *RetStk;	     // Pointer to current top of return stack
 extern SMALL_INT RetStkSize;         // actual size of return stack
-extern SMALL_INT SizeStatRegs;       // Size of summation register block
 extern REGISTER *StackBase;	     // Location of the RPN stack
 extern decContext Ctx;		     // decNumber library context
 extern FLAG JustDisplayed;	     // Avoid duplicate calls to display();

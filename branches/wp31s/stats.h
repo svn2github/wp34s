@@ -40,7 +40,7 @@ typedef struct _stat_data {
 	signed int sN;		
 } STAT_DATA;
 
-extern STAT_DATA *StatRegs;
+//extern STAT_DATA *StatRegs;
 
 extern int  sigmaCheck(void);
 extern void sigmaDeallocate(void);

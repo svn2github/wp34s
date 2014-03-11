@@ -615,10 +615,6 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_LOADR,		&load_registers,	"LOADR",	CNULL)
 	FUNC0(OP_LOADsigma,	&load_sigma,		"LOAD\221",	"LOADSUMS")
 
-	FUNC0(OP_DBLON,		&op_double,		"DBLON",	CNULL)
-	FUNC0(OP_DBLOFF,	&op_double,		"DBLOFF",	CNULL)
-	FUNC0(OP_ISDBL,		&check_dblmode,		"DBL?",		CNULL)
-
 	FN_I2(OP_cmplxI,	XNIL(CPX_I),		"\024i",	"ci")
 
 	FUNC0(OP_DATE_TO,	XNIL(DATE_TO),		"DATE\015",	"DATE>")
@@ -794,11 +790,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 #endif
 	CMD(RARG_MESSAGE,	&cmdmsg,	MAX_MESSAGE,		"MSG",		CNULL)
 	CMD(RARG_LOCR,		&cmdlocr,	MAX_LOCAL + 1,		"LocR",		CNULL)
-	CMD(RARG_REGS,		&cmdregs,	TOPREALREG + 1,		"REGS",		CNULL)
 
-	CMDstk(RARG_iRCL,	&cmdircl,				"iRCL",		CNULL)
-	CMDstk(RARG_sRCL,	&cmdrrcl,				"sRCL",		CNULL)
-	CMDstk(RARG_dRCL,	&cmdrrcl,				"dRCL",		CNULL)
 	CMD(RARG_MODE_SET,	&cmdmode,	64,			"xMSET",	CNULL)
 	CMD(RARG_MODE_CLEAR,	&cmdmode,	64,			"xMCLR",	CNULL)
 

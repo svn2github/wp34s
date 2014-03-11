@@ -443,9 +443,7 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
-#define RET_STACK_SIZE  534      /* Combined return stack and program space */
-#define MINIMUM_RET_STACK_SIZE 6 /* Minimum headroom for program execution */
-#define NUMPROG_LIMIT   (RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE + TOPREALREG * 4) /* Absolute maximum for sanity checks */
+#define RET_STACK_SIZE  12       /* Return stack */
 
 #define STACK_SIZE      8       /* Maximum depth of RPN stack */
 #define EXTRA_REG       4
@@ -457,9 +455,11 @@ extern int current_catalogue_max(void);
 
 /* Stack lives in the register set */
 #define NUMREG          (TOPREALREG+STACK_SIZE+EXTRA_REG)/* Number of registers */
-#define TOPREALREG      (100)                           /* Non-stack last register */
-#define NUMSTATREG      (14)                            /* Summation registers */
-#define NUMFLG          NUMREG                          // These two must match!
+#define TOPREALREG      (100)                            /* Non-stack last register */
+#define NUMSTATREG      (14)                             /* Summation registers */
+#define MAX_REG_NUM     (10)                             /* Numerically addressed Registers */
+#define ALLOCATED_REGS  (MAX_REG_NUM+STACK_SIZE+EXTRA_REG) /* That's the allocated register space */
+#define NUMFLG          NUMREG                           // These two must match!
 
 #define REGNAMES        "XYZTABCDLIJK"
 
@@ -777,7 +777,7 @@ enum nilop {
         OP_LOADST, 
 
         OP_LOADR, OP_LOADsigma, 
-        OP_DBLON, OP_DBLOFF, OP_ISDBL, OP_cmplxI,
+        OP_cmplxI,
 
         OP_DATE_TO,
 
@@ -855,9 +855,6 @@ enum rarg {
         RARG_MESSAGE,
 
         RARG_LOCR,
-        RARG_REGS,
-
-        RARG_iRCL, RARG_sRCL, RARG_dRCL,
 
         RARG_MODE_SET, RARG_MODE_CLEAR,
         RARG_XROM_IN, RARG_XROM_OUT,
@@ -1057,10 +1054,7 @@ extern unsigned int find_user_pc(unsigned int);
 
 extern int local_levels(void);
 extern int local_regs(void);
-extern int local_regs_rarg(enum rarg op);
 extern unsigned int global_regs(void);
-extern unsigned int global_regs_rarg(enum rarg op);
-extern int move_retstk(int distance);
 
 extern void clrretstk(void);
 
@@ -1138,13 +1132,8 @@ extern void get_maxdenom(decNumber *);
 
 extern int get_user_flag(int);
 extern void put_user_flag(int n, int f);
-#if 0
-extern void set_user_flag(int);
-extern void clr_user_flag(int);
-#else
 #define set_user_flag(n) cmdflag(n, RARG_SF)
 #define clr_user_flag(n) cmdflag(n, RARG_CF)
-#endif
         
 extern void *xcopy(void *, const void *, int);
 extern void *xset(void *, const char, int);
@@ -1236,9 +1225,6 @@ extern void op_float(enum nilop op);
 extern void op_fract(enum nilop op);
 extern void op_trigmode(enum nilop op);
 extern void op_radix(enum nilop op);
-extern void op_double(enum nilop op);
-extern void op_query_xtal(enum nilop op);
-extern void op_query_print(enum nilop op);
 extern void cmdpause(unsigned int arg, enum rarg op);
 extern void set_int_base(unsigned int arg, enum rarg op);
 extern void op_rtn(enum nilop op);

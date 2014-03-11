@@ -1055,14 +1055,14 @@ static int arg_digit(int n) {
 			if (LocalRegs == 0)
 				return STATE_UNFINISHED;		// no local flags or registers
 			if (is_reg) {
-				lim = local_regs_rarg((enum rarg) base) - 1;
+				lim = local_regs() - 1;
 				if (lim >= MAX_LOCAL_DIRECT)
 					lim = MAX_LOCAL_DIRECT - 1;	// in case of more than 16 locals
 			}
 		}
 	}
 	else if (is_reg)						// normal register
-		lim = State2.runmode ? global_regs_rarg((enum rarg) base) - 1 : TOPREALREG - 1;
+		lim = State2.runmode ? global_regs() - 1 : TOPREALREG - 1;
 	else {
 		lim = (int) argcmds[base].lim;				// any other command
 		if (lim >= RARG_IND && argcmds[base].indirectokay)

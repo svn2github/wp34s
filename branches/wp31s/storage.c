@@ -141,7 +141,6 @@ int checksum_backup( void )
  */
 void clrall(void) 
 {
-	NumRegs = TOPREALREG;
 	xeq_init_contexts();
 	clrreg( OP_CLREG );
 	clrstk( OP_CLSTK );
@@ -355,9 +354,6 @@ void load_registers( enum nilop op )
 		// Don't clobber the stack in DP mode
 		count -= EXTRA_REG + STACK_SIZE;
 	}
-	if ( count > BackupFlash._numregs ) {
-		count = BackupFlash._numregs;
-	}
 	xcopy( get_reg_n(0), get_flash_reg_n(0), count << 3 );
 }
 
@@ -374,14 +370,7 @@ void load_sigma( enum nilop op )
 		err( ERR_INVALID );
 		return;
 	}
-	if ( ! BackupFlash._state.have_stats ) {
-		/*
-		 *  Backup has no data
-		 */
-		err( ERR_MORE_POINTS );
-		return;
-	}
-	sigmaCopy( ( (char *)( BackupFlash._regs + TOPREALREG - BackupFlash._numregs ) - sizeof( STAT_DATA ) ) );
+	sigmaCopy( &BackupFlash._stat_regs );
 }
 
 

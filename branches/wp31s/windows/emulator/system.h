@@ -142,7 +142,7 @@ void UpdateRS232();
 #define UpdateRS232()
 #endif
 
-#ifdef wp34s
+#ifdef wp31s
 #define KEYf 30
 #define KEYSHIFT KEYf
 #define KEYSIN 9

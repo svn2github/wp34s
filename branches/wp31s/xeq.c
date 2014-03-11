@@ -126,30 +126,6 @@ FLAG Tracing;
 SMALL_INT RectPolConv; // 1 - R->P just done; 2 - P->R just done
 #endif
 
-/*
- *  Shift the return stack.
- *  The distance is in levels.
- *  If argument is negative, return stack will shrink.
- *  Returns 1 if unsuccessful (error is set)
- */
-int move_retstk(int distance)
-{
-#ifndef REALBUILD
-	// Sanity check
-	if (XromFlags.xIN) {
-		err(ERR_ILLEGAL);
-		return 1;
-	}
-#endif
-	if (RetStkSize + RetStkPtr + distance < 0) {
-		err(ERR_RAM_FULL);
-		return 1;
-	}
-	xcopy(RetStk + RetStkPtr + distance, RetStk + RetStkPtr, (-RetStkPtr) << 1);
-	RetStk += distance;
-	RetStkSize += distance;
-	return 0;
-}
 
 /*
  *  How many stack levels with local data have we?
@@ -160,38 +136,22 @@ int local_levels(void) {
 
 /*
  *  How many local registers have we?
- *  The result depends on the RARG operation to allow for "alien" RCL commands
- */
-int local_regs_rarg(enum rarg op) {
-	const int dbl = op != RARG_sRCL && op != RARG_iRCL && (op == RARG_dRCL || is_dblmode()); 
-	return local_levels() >> (2 + dbl);
-}
-
-/*
- *  How many local registers have we?
  */
 int local_regs(void) {
-	return local_regs_rarg(RARG_RCL);
-}
-
-/*
- *  How many global registers have we?
- *  The result depends on the RARG operation to allow for "alien" RCL commands
- */
-unsigned int global_regs_rarg(enum rarg op) {
-	if (is_dblmode() || op == RARG_dRCL) {
-		const int num_regs = NumRegs - STACK_SIZE - EXTRA_REG;
-		return op == RARG_sRCL || op == RARG_iRCL ? num_regs : num_regs >> 1; 
-	}
-	else
-		return NumRegs;
+	const int dbl = is_dblmode(); 
+	return local_levels() >> (2 + dbl);
 }
 
 /*
  *  How many global registers have we?
  */
 unsigned int global_regs(void) {
-	return global_regs_rarg(RARG_RCL);
+	if (is_dblmode()) {
+		const int num_regs = NumRegs - STACK_SIZE - EXTRA_REG;
+		return num_regs >> 1; 
+	}
+	else
+		return NumRegs;
 }
 
 
@@ -906,18 +866,17 @@ REGISTER *get_reg_n(int n) {
 			n <<= 1;
 		return (REGISTER *) ((decimal64 *) (RetStk + (short)((LocalRegs + 2) & 0xfffe)) + n);
 	}
-	return (REGISTER *) reg_address(n, Regs + TOPREALREG - NumRegs, Regs + regX_idx);
+	return (REGISTER *) reg_address(n, Regs, Regs + MAX_REG_NUM);
 }
 
 
 REGISTER *get_flash_reg_n(int n) {
-	return (REGISTER *) reg_address(n, BackupFlash._regs + TOPREALREG - BackupFlash._numregs,
-					   BackupFlash._regs + regX_idx);
+	return (REGISTER *) reg_address(n, BackupFlash._regs, BackupFlash._regs + MAX_REG_NUM);
 }
 
 
 /*
- *  Get a constatnt by index and mode
+ *  Get a constant by index and mode
  *  In case of a conversion, a private copy is returned
  */
 REGISTER *get_const(int index, int dbl)
@@ -1391,25 +1350,12 @@ void cmdircl(unsigned int arg, enum rarg op) {
 
 // RCL of a single or double precision real value
 void cmdrrcl(unsigned int arg, enum rarg op) {
-	const int was_dbl = UState.mode_double;
-	const int rcl_dbl = (op == RARG_dRCL);
-
-	if (rcl_dbl && arg >= regX_idx && arg <= regK_idx) {
-		// dRCL is not valid for lettered registers
-		err(ERR_RANGE);
-		return;
-	}
-
-	UState.mode_double = rcl_dbl; // Force reading in requested format
 	if (is_intmode()) {
 		int_from_register(regX_idx, arg);
-		UState.mode_double = was_dbl;
 	}
 	else {
 		decNumber x;
 		getRegister(&x, arg);
-
-		UState.mode_double = was_dbl; // Force access in original mode
 		setX(&x);
 	}
 }
@@ -1644,6 +1590,8 @@ static void retstk_up(void)
 			}
 		}
 	}
+	if (RetStkPtr == 0)
+		XromRunning = 0;
 }
 
 
@@ -2131,7 +2079,7 @@ static unsigned short int *flag_word(int n, unsigned short int *mask) {
 		}
 	}
 	else
-		p = UserFlags;
+		return NULL;
 
 	if (mask != NULL)
 		*mask = 1 << (n & 15);
@@ -2142,7 +2090,7 @@ int get_user_flag(int n) {
 	unsigned short mask;
 	const unsigned short *const f = flag_word(n, &mask);
 
-	return (*f & mask)? 1 : 0;
+	return (f != NULL && *f & mask)? 1 : 0;
 }
 
 void put_user_flag(int n, int f) {
@@ -2150,26 +2098,10 @@ void put_user_flag(int n, int f) {
 	else	clr_user_flag(n);
 }
 
-#ifndef set_user_flag
-void set_user_flag(int n) {
-	unsigned short mask;
-	unsigned short *const f = flag_word(n, &mask);
-
-	*f |= mask;
-}
-
-void clr_user_flag(int n) {
-	unsigned short mask;
-	unsigned short *const f = flag_word(n, &mask);
-
-	*f &= ~mask;
-}
-#endif
-
 void cmdflag(unsigned int arg, enum rarg op) {
 	unsigned short mask;
 	unsigned short *const f = flag_word(arg, &mask);
-	int flg = *f & mask;
+	int flg = f != NULL ? *f & mask : 0;
 
 	switch (op) {
 	case RARG_SF:	flg = 1;			   break;
@@ -2191,22 +2123,27 @@ void cmdflag(unsigned int arg, enum rarg op) {
 		return;
 	}
 
+	if (f == NULL)
+		return;
+
 	// And write the value back
 	if (flg)
 		*f |= mask;
 	else
 		*f &= ~mask;
 
+#if 0
 	if ( arg == A_FLAG ) {
 		dot( BIG_EQ, flg );
 		finish_display();
 	}
+#endif
 }
 
 /* Reset all flags to off/false
  */
 void clrflags(enum nilop op) {
-	xset(UserFlags, 0, sizeof(UserFlags));
+	//xset(UserFlags, 0, sizeof(UserFlags));
 	if (LocalRegs < 0) {
 		* flag_word(LOCAL_REG_BASE, NULL) = 0;
 	}
@@ -2365,7 +2302,6 @@ void cmdsavem(unsigned int arg, enum rarg op) {
 }
 
 void cmdrestm(unsigned int arg, enum rarg op) {
-	const int dbl = is_dblmode();
 	const int intm = is_intmode();
 	xcopy( &UState, get_reg_n(arg), sizeof(unsigned long long int) );
 
@@ -2380,11 +2316,6 @@ void cmdrestm(unsigned int arg, enum rarg op) {
 			op_float(OP_FLOAT_RCLM);
 		else
 			switch_to_int();
-	}
-	if (! is_intmode() && dbl != is_dblmode()) {
-		// Switch back to double/single precision
-		UState.mode_double = dbl;
-		op_double(dbl ? OP_DBLOFF : OP_DBLON);
 	}
 }
 #endif
@@ -2641,6 +2572,7 @@ static void specials(const opcode op) {
 	}
 }
 
+
 enum trig_modes get_trig_mode(void) {
 	if (State2.cmplx || XromFlags.xIN)
 		return TRIG_RAD;
@@ -2648,48 +2580,6 @@ enum trig_modes get_trig_mode(void) {
 	return (enum trig_modes) UState.trigmode;
 }
 
-void op_double(enum nilop op) {
-	const int dbl = (op == OP_DBLON);
-	const int intm = is_intmode();
-	int i;
-
-	if (dbl != UState.mode_double) {
-		// Mode switch
-		if (dbl) {
-			if (NumRegs < STACK_SIZE + EXTRA_REG) {
-				// Need space for double precision stack
-				cmdregs(STACK_SIZE + EXTRA_REG, RARG_REGS);
-				if (Error) {
-					return;
-				}
-			}
-
-			UState.mode_double = 1;
-			if (! intm) {
-				// Convert X to K to double precision
-				// Avoid this in integer mode
-				for (i = 0; i < STACK_SIZE + EXTRA_REG; ++i)
-					packed128_from_packed(&(get_stack(i)->d), Regs + regX_idx + i);
-			}
-		}
-		else {
-			if (! intm) {
-				// Convert X to K to single precision
-				// Avoid this in integer mode
-				for (i = STACK_SIZE + EXTRA_REG - 1; i >= 0; --i)
-					packed_from_packed128(Regs + regX_idx + i, &(get_stack(i)->d));
-			}
-			UState.mode_double = 0;
-			if (NumRegs > TOPREALREG)
-				cmdregs(TOPREALREG, RARG_REGS);
-		}
-	}
-	StackBase = get_reg_n(regX_idx);
-	if (intm) {
-		// Do the necessary conversions from integer mode
-		op_float(OP_FLOAT_XIN);
-	}
-}
 
 void cmdpause(unsigned int arg, enum rarg op) {
 	display();
@@ -2813,7 +2703,7 @@ int reg_decode(int *s, int *n, int *d, int flash) {
 	num = rsrc % 100;		// nn
 	rsrc /= 100;			// sss
 
-	mx_src = flash ? BackupFlash._numregs
+	mx_src = flash ? MAX_REG_NUM
 	       : rsrc >= LOCAL_REG_BASE ? local_regs() + LOCAL_REG_BASE
 	       : rsrc >= regX_idx ? LOCAL_REG_BASE
 	       : global_regs();
@@ -3379,11 +3269,11 @@ static unsigned int get_reg_limit(unsigned int cmd, unsigned int arg)
 
 	if (arg < TOPREALREG) {
 		// Range checking for registers against variable boundary
-		lim = global_regs_rarg((enum rarg) cmd) - 1;
+		lim = global_regs() - 1;
 	}
 	else if (argcmds[cmd].local) {
 		// Range checking for local registers
-		lim = NUMREG - 1 + local_regs_rarg((enum rarg) cmd);
+		lim = NUMREG - 1 + local_regs();
 	}
 	if (argcmds[cmd].cmplx) {
 		// one short of the last avialable register for complex access
@@ -3500,9 +3390,6 @@ static void multi(const opcode op) {
  */
 void xeq(opcode op) 
 {
-	//REGISTER save[STACK_SIZE+2];
-	//const unsigned short flags = UserFlags[regA_idx >> 4];
-	//const struct _ustate old = UState;
 	const unsigned char lift = get_lift();
 	//const int old_cl = *((int *)&CommandLine);
 
@@ -3546,14 +3433,10 @@ void xeq(opcode op)
 		// Repair stack and state
 		// Clear return stack
 		Error = ERR_NONE;
-		//xcopy(StackBase, save, sizeof(save));
-		//UserFlags[regA_idx >> 4] = flags;
-		//UState = old;
 		xcopy(&PersistentRam, &UndoState, sizeof(TPersistentRam));
 		xcopy(&UndoState, &Undo2State, sizeof(TPersistentRam));
 		State2.state_lift = lift;
 		set_pc(0);
-		//*((int *)&CommandLine) = old_cl;
 		process_cmdline_set_lift();
 		if (XromRunning) {
 #ifndef REALBUILD
@@ -3564,10 +3447,6 @@ void xeq(opcode op)
 					RetStk = XromUserRetStk;
 					RetStkPtr = XromUserRetStkPtr;
 					// Restore private stack to normal stack
-					if (! XromFlags.mode_double && NumRegs < STACK_SIZE + EXTRA_REG) {
-						// Need space for double precision stack
-						cmdregs(STACK_SIZE + EXTRA_REG, RARG_REGS);
-					}
 					XromFlags.xIN = 0;		// Clear flag before get_reg_n!
 					if (Error == ERR_NONE) {
 						UState.mode_double = 1;
@@ -3590,12 +3469,10 @@ void xeq(opcode op)
 					RetStk = XromUserRetStk;
 					RetStkPtr = XromUserRetStkPtr;
 				}
-				while (XromRunning) {
+				while (XromRunning && RetStkPtr != 0) {
 					// Leave XROM
-					if (RetStkPtr != 0) {
-						retstk_up();
-						pc = RetStk[RetStkPtr - 1];
-					}
+					retstk_up();
+					pc = RetStk[RetStkPtr - 1];
 				}
 				set_pc(pc);
 #ifndef REALBUILD
@@ -3694,12 +3571,8 @@ void xeq_init_contexts(void) {
 	/*
 	 *  Compute the sizes of the various memory portions
 	 */
-	short int s;
-	SizeStatRegs = State.have_stats ? sizeof(STAT_DATA) >> 1 : 0;	// in 16 bit words!
-	s = ((TOPREALREG - NumRegs) << 2) - SizeStatRegs;		// additional register space
-	RetStk = RetStkBase + s;					// Move RetStk up or down
-	RetStkSize = s + RET_STACK_SIZE - ProgSize;
-	ProgMax = s + RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE;
+	RetStk = RetStkBase;
+	RetStkSize = RET_STACK_SIZE;
 	StackBase = get_reg_n(regX_idx);
 
 	/*
@@ -3842,11 +3715,6 @@ void cmdlocr(unsigned int arg, enum rarg op) {
 void cmdxin(unsigned int arg, enum rarg op) {
 
 	int i;
-#ifdef ENABLE_COPYLOCALS
-	REGISTER *previousLocals = NULL;
-	unsigned short previousFlags = 0;
-	int num_locals = 0;
-#endif
 #ifndef REALBUILD
 	/* This should never happen in a real build but it causes havoc writing
 	 * xrom code, so trap it here.
@@ -3871,39 +3739,20 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	XromFlags.state_lift = 1;
 	XromFlags.xIN = 1;
 
-#ifdef ENABLE_COPYLOCALS
-	// Save pointers to original local data
-	if ((arg & 0x80) != 0 && LocalRegs < 0) {
-		XromFlags.copyLocals = 1;
-		previousFlags = *flag_word(LOCAL_FLAG_BASE, NULL);
-		previousLocals = get_reg_n(LOCAL_REG_BASE);
-		num_locals = local_regs();
-	}
-#endif
 	// Establish local return stack
 	XromUserRetStk = RetStk;
 	XromUserRetStkPtr = RetStkPtr;
 
 	RetStk = XromRetStk;
-#ifdef ENABLE_COPYLOCALS
-	RetStkPtr = 0;			// Locals will be allocated later
-#else
 	LocalRegs = RetStkPtr = -2;	// Allocate just the local flags
 	XromRetStk[-2] = 2 | LOCAL_MARKER;
-#endif
 
 	// Parse the argument into fields
-#ifdef ENABLE_COPYLOCALS
-	XromFlags.setLastX = (arg & 0x20) != 0;
-	XromFlags.complex = (arg & 0x40) != 0;
-	XromIn = (arg & 0x1f) % 5;
-	XromOut = (arg & 0x1f) / 5;
-#else
 	XromFlags.setLastX = (arg & 0x40) != 0;
 	XromFlags.complex = (arg & 0x80) != 0;
 	XromIn = (arg & 0x7);
 	XromOut = ((arg >> 3) & 0x7);
-#endif
+
 	if (XromFlags.complex) {
 		// Complex arguments are always in pairs
 		XromIn <<= 1;
@@ -3912,20 +3761,10 @@ void cmdxin(unsigned int arg, enum rarg op) {
 
         UState.rounding_mode = 0;
 
-#ifdef ENABLE_COPYLOCALS
-	// Allocate the local frame
-	LocalRegs = 0;
-	UState.mode_double = 1;		// Needed to allocate enough registers
-	cmdlocr(num_locals, RARG_LOCR);
-	if (XromFlags.copyLocals)
-		*flag_word(LOCAL_FLAG_BASE, NULL) = previousFlags;
-#endif
 	// Switch to double precision mode
 	if (XromFlags.mode_int) {
 		// Convert integers to decimal128
-#ifndef ENABLE_COPYLOCALS
 		UState.mode_double = 1;
-#endif
 		op_float(OP_FLOAT_XIN);
 		// Do not copy the local registers because we don't use this case anyway
 	}
@@ -3933,25 +3772,12 @@ void cmdxin(unsigned int arg, enum rarg op) {
 		// No conversion necessary
 		xcopy(XromStack, StackBase, sizeof(XromStack));
 		StackBase = XromStack;
-#ifdef ENABLE_COPYLOCALS
-		if (XromFlags.copyLocals)
-			move_regs(get_reg_n(LOCAL_REG_BASE), previousLocals, num_locals);
-#endif
 	}
 	else {
 		// Convert decimal64 to decinal128
-#ifdef ENABLE_COPYLOCALS
-		UState.mode_double = 0;		// This was the original state before xIN
-		op_double(OP_DBLON);		// Now mode_double should be set again
-		if (XromFlags.copyLocals) {
-			decimal64  *src  = &(previousLocals->s);
-			decimal128 *dest = &(get_reg_n(LOCAL_REG_BASE)->d);
-			while (num_locals--)
-				packed128_from_packed(dest++, src++);
-		}
-#else
-		op_double(OP_DBLON);		// Now mode_double should be set again
-#endif
+		for (i = 0; i < STACK_SIZE + EXTRA_REG; ++i)
+			packed128_from_packed(&(XromStack[i].d), Regs + MAX_REG_NUM + i);
+		UState.mode_double = 1;
 	}
 
 	// Set stack size to 8 and turn on stack_lift
@@ -3985,11 +3811,6 @@ void cmdxin(unsigned int arg, enum rarg op) {
  */
 void cmdxout(unsigned int arg, enum rarg op) {
 	int i, dbl, intm;
-#ifdef ENABLE_COPYLOCALS
-	unsigned short flags = *flag_word(LOCAL_FLAG_BASE, NULL);
-	REGISTER *locals = get_reg_n(LOCAL_REG_BASE);
-	int num_locals = local_regs();
-#endif
 #ifndef REALBUILD
 	// shouldn't happen in final build
 	if (! XromFlags.xIN) {
@@ -4063,26 +3884,6 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	RetStk = XromUserRetStk;
 	RetStkPtr = XromUserRetStkPtr;
 
-#ifdef ENABLE_COPYLOCALS
-	// Copy back local data
-	if (XromFlags.copyLocals) {
-		i = local_regs();
-		num_locals = i < num_locals ? i : num_locals; 
-		*flag_word(LOCAL_FLAG_BASE, NULL) = flags;
-		if (intm) {
-			// not used
-		}
-		else if (dbl) {
-			move_regs(get_reg_n(LOCAL_REG_BASE), locals, num_locals);
-		}
-		else {
-			decimal64  *dest = &(get_reg_n(LOCAL_REG_BASE)->s);
-			decimal128 *src  = &(locals->d);
-			while (num_locals--)
-				packed_from_packed128(dest++, src++);
-		}
-	}
-#endif
 	// RTN or RTN+1 depending on bit 0 of argument
 	do_rtn(arg & 1);
 }
@@ -4210,46 +4011,6 @@ void cmdlpop(enum nilop op) {
 	RetStkPtr = LocalRegs;
 	retstk_up();
 	--RetStkPtr;
-}
-
-/*
- *  Reduce the number of global registers in favour of local data on the return stack
- */
-void cmdregs(unsigned int arg, enum rarg op) {
-	int distance;
-	int length;
-
-	if (is_dblmode()) {
-		// DP register length 16 bytes
-		length = (arg << 4); 
-		// We need additional room for lettered registers
-		arg = (arg << 1) + STACK_SIZE + EXTRA_REG;
-	}
-	else {
-		if (UState.mode_double && arg < STACK_SIZE + EXTRA_REG) {
-			// Special case: we're in int mode but came from DP
-			// We must not release the space needed for the DP lettered registers
-			err(ERR_RANGE);
-			return;
-		}
-		// register length 8 bytes
-		length = (arg << 3);
-	}
-	distance = NumRegs - arg;
-	
-	// Move return stack, check for room
-	if (move_retstk(distance << 2))
-		return;
-	
-	// Move register contents, including the statistics registers
-	xcopy((unsigned short *)(Regs + TOPREALREG - arg)     - SizeStatRegs,
-	      (unsigned short *)(Regs + TOPREALREG - NumRegs) - SizeStatRegs,
-	      length + (SizeStatRegs << 1));
-
-	// Clear the left space
-	if (distance < 0)
-		xset(Regs + TOPREALREG + distance, 0, -distance << 3);
-	NumRegs = arg;
 }
 
 

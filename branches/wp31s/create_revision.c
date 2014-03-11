@@ -127,7 +127,7 @@ int get_revision_num(char *vcs_cmd, char *vcs)
 	}
 
 	// Convert any LFs to spaces
-	for (i=0; i<strlen(buffer); i++)
+	for (i=0; i<(int)strlen(buffer); i++)
 	{
 	    if (buffer[i] == '\n')
 		buffer[i] = ' ';
