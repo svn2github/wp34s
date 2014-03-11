@@ -448,8 +448,6 @@ void show_flags(void) {
 		MOVE(71, FLAG_BASE+1);
 		PRINTF("[MULTI]");
 	}
-	MOVE(50, FLAG_BASE+1);
-	PRINTF("[RRS %03u]", ProgSize);
 	if (State2.state_lift) {
 		MOVE(10, FLAG_BASE+1);
 		PRINTF("[lift]");
