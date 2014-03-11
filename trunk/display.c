@@ -1109,7 +1109,7 @@ static void set_x_hms(const decNumber *rgx, char *res) {
 	if (dn_ge(&a, &const_9000)) {
 		res = set_dig_s(exp_last, 'o', res);
 	} else if (! dn_eq0(&a)) {
-		if (dn_lt(&a, &const_0_0000005)) {
+		if (dn_lt(&a, &const_hms_threshold)) {
 			res = set_dig_s(exp_last, 'u', res);
 		}
 	}
