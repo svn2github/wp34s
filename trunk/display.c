@@ -490,7 +490,7 @@ static void annunciators(void) {
 	const int rp_prefix = 1;
 #else
 	const int rp_prefix = 0;
-	int RectPolConv = -1; // This variable doesn't exist without RP_PREFIX
+	const int RectPolConv = -1; // This variable doesn't exist without RP_PREFIX
 #endif
 // Indicates whether font escape code is compiled in.
 // This variable will always be set at compile time.
@@ -577,7 +577,7 @@ static void annunciators(void) {
 			goto skip;
 		}
 
-		if (shift_char == ' ' && (State2.wascomplex || (rp_prefix && RectPolConv))) {
+		if (shift_char == ' ' && (State2.wascomplex || (rp_prefix && RectPolConv != 0))) {
 			if (State2.wascomplex) {
 				q = (has_FONT_ESCAPE ? "\007\207i" : "i\006");
 			}
