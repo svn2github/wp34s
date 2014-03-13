@@ -411,18 +411,18 @@ $(OBJECTDIR)/%.o: %.c
 $(OBJECTDIR)/alpha.o: alpha.c alpha.h xeq.h errors.h data.h decn.h int.h display.h consts.h \
 		Makefile features.h
 $(OBJECTDIR)/charmap.o: charmap.c xeq.h errors.h data.h Makefile features.h
-$(OBJECTDIR)/commands.o: commands.c xeq.h errors.h data.h storage.h serial.h Makefile \
+$(OBJECTDIR)/commands.o: commands.c xeq.h errors.h data.h storage.h Makefile \
 		features.h xrom.h xrom_labels.h
 $(OBJECTDIR)/complex.o: complex.c decn.h complex.h xeq.h errors.h data.h consts.h \
 		Makefile features.h
 $(OBJECTDIR)/consts.o: consts.c consts.h Makefile features.h
 $(OBJECTDIR)/date.o: date.c date.h consts.h decn.h xeq.h errors.h data.h alpha.h atmel/rtc.h \
 		Makefile features.h
-$(OBJECTDIR)/decn.o: decn.c decn.h xeq.h errors.h data.h consts.h complex.h int.h serial.h lcd.h Makefile features.h
+$(OBJECTDIR)/decn.o: decn.c decn.h xeq.h errors.h data.h consts.h complex.h int.h lcd.h Makefile features.h
 $(OBJECTDIR)/display.o: display.c xeq.h errors.h data.h display.h consts.h lcd.h int.h revision.h \
 		charset7.h decn.h alpha.h decn.h storage.h Makefile features.h
 $(OBJECTDIR)/font.o: font.c
-$(OBJECTDIR)/int.o: int.c int.h xeq.h errors.h data.h serial.h Makefile features.h
+$(OBJECTDIR)/int.o: int.c int.h xeq.h errors.h data.h Makefile features.h
 $(OBJECTDIR)/lcd.o: lcd.c lcd.h xeq.h errors.h data.h display.h lcdmap.h atmel/board.h \
 		Makefile features.h
 $(OBJECTDIR)/keys.o: keys.c catalogues.h xeq.h errors.h data.h keys.h consts.h display.h lcd.h \
