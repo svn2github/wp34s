@@ -229,7 +229,7 @@ SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 HEADERS := alpha.h charset7.h complex.h consts.h data.h \
 		date.h decn.h display.h features.h int.h keys.h lcd.h lcdmap.h \
 		stats.h xeq.h xrom.h storage.h
-		
+
 
 XROM := $(wildcard xrom/*.wp34s) $(wildcard xrom/distributions/*.wp34s)
 
@@ -315,13 +315,13 @@ $(DIRS):
 ifdef REALBUILD
 
 # Target flash
-$(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
+$(OUTPUTDIR)/$(TARGET).bin: asone.c main.c \
+		$(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNum34s.a \
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE) \
 		compile_cats.c xrom.wp34s $(XROM) $(OPCODES)
 	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h xrom.c
 	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 XTAL=$(XTAL) INFRARED=$(INFRARED) catalogues.h xrom.c
-	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/$(TARGET) $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s # -save-temps
 	$(NM) -n $(OUTPUTDIR)/$(TARGET) >$(SYMBOLS)
@@ -391,6 +391,9 @@ $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h data.h errors.h
 	$(HOSTCC) -E -P -x c -Ixrom -DCOMPILE_XROM xrom.wp34s > xrom_pre.wp34s
 	$(TOOLS)/wp34s_asm.pl -pp -op $(OPCODES) -c -o xrom.c xrom_pre.wp34s
+
+revision.h: $(UTILITIES)/create_revision$(EXE)
+	$(UTILITIES)/create_revision$(EXE) >revision.h
 
 xeq.h:
 	@touch xeq.h
