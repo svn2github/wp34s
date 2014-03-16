@@ -2237,7 +2237,8 @@ void op_float(enum nilop op) {
 			else if (is_dblmode()) {
 				// expand the other registers which have been left
 				// in decimal64 format by the integer mode switch
-				packed128_from_packed(&(get_reg_n(i)->d), Regs + i);
+				packed128_from_packed(&(get_reg_n(i)->d), 
+					              Regs - TOPREALREG + MAX_REG_NUM + i);
 			}
 		}
 	}
@@ -2263,7 +2264,7 @@ static void switch_to_int(void) {
 		}
 		else if (dbl) {
 			// compress the other registers to save them while integer mode is active
-			packed_from_packed128(Regs + i, &(get_reg_n(i)->d));
+			packed_from_packed128(Regs - TOPREALREG + MAX_REG_NUM + i, &(get_reg_n(i)->d));
 		}
 	}
 }
