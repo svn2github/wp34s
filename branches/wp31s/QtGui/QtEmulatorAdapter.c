@@ -15,13 +15,16 @@
  */
 
 #include "xeq.h"
-#include "stopwatch.h"
+// #include "stopwatch.h"
 #include "display.h"
 #include "data.h"
 #include "storage.h"
-#include "serial.h"
+// #include "serial.h"
 #include "keys.h"
 #include "lcd.h"
+
+#define REGION_BACKUP   2
+#define BACKUP_FILE "wp31s-backup.dat"
 
 extern const char SvnRevision[];
 extern int is_key_pressed_adapter();
@@ -218,10 +221,18 @@ void after_backup_load()
 {
 }
 
+char* get_backup_path()
+{
+	return BACKUP_FILE;
+}
+
+
+#if 0  /* ??? DELETE? */
 void after_library_load()
 {
 	init_library();
 }
+#endif
 
 int get_region_backup_index()
 {
@@ -274,10 +285,12 @@ char* get_formatted_displayed_number()
 	return buffer;
 }
 
+#if HAS_SERIAL
 int forward_byte_received(short byte)
 {
 	return byte_received(byte);
 }
+#endif
 
 #include "../translate.c"
 

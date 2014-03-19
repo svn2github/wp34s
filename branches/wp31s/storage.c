@@ -56,6 +56,14 @@
 PERSISTENT_RAM TPersistentRam PersistentRam;
 PERSISTENT_RAM TPersistentRam UndoState, Undo2State;
 
+#ifndef REALBUILD
+/*
+ *  We need to define the Library space here.
+ *  On the device the linker takes care of this.
+ */
+FLASH_REGION UserFlash;
+#endif
+
 /*
  *  Data that is saved in the SLCD controller during deep sleep
  */
@@ -277,7 +285,7 @@ static int program_flash( void *destination, void *source, int count )
 	 *  Update the file
 	 */
 	name = get_backup_path();
-    offset = dest - (char *) &BackupFlash;
+	offset = dest - (char *) &BackupFlash;
 	f = fopen( name, "rb+" );
 	if ( f == NULL ) {
 		f = fopen( name, "wb+" );

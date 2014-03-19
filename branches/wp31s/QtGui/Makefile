@@ -142,25 +142,25 @@ DIRS_TO_CLEAN += debug release
 EXTRA_FILES_TO_CLEAN += $(QTMAKEFILE).debug $(QTMAKEFILE).release object_script.WP-$(MODEL).debug object_script.WP-$(MODEL).release
 endif
 
-ifeq "$(NO_SERIAL)" ""
-	QTSERIALDIR=../QtSerial
-	HAS_SERIAL=1
-ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "Linux64" "windows32"), "")
-	SERIALLIB=
-	QTSERIALLIB=
-else
-	SERIALLIB=-L$(QTSERIALDIR)/$(SYSTEM) -lQtSerial -L$(QTSERIALDIR)/lib/$(SYSTEM) -lqextserialport
-	QTSERIALLIB=$(QTSERIALDIR)/$(SYSTEM)/libQtSerial.a
-endif
-	SERIAL_INCLUDE=$(QTSERIALDIR)/include
-	QTSERIAL_INCLUDE=$(QTSERIALDIR)
-else
+# ifeq "$(NO_SERIAL)" ""
+# 	QTSERIALDIR=../QtSerial
+# 	HAS_SERIAL=1
+# ifeq ($(findstring "$(SYSTEM)", "Darwin" "Linux" "Linux64" "windows32"), "")
+# 	SERIALLIB=
+# 	QTSERIALLIB=
+# else
+# 	SERIALLIB=-L$(QTSERIALDIR)/$(SYSTEM) -lQtSerial -L$(QTSERIALDIR)/lib/$(SYSTEM) -lqextserialport
+# 	QTSERIALLIB=$(QTSERIALDIR)/$(SYSTEM)/libQtSerial.a
+# endif
+# 	SERIAL_INCLUDE=$(QTSERIALDIR)/include
+# 	QTSERIAL_INCLUDE=$(QTSERIALDIR)
+# else
   SERIALLIB=
   QTSERIALLIB=
   SERIAL_INCLUDE=
   QTSERIAL_INCLUDE=
   HAS_SERIAL=0
-endif
+# endif
 
 $(OUTPUTDIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -I.. -o $@ $<
