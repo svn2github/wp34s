@@ -507,7 +507,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_CLFLAGS,	&clrflags,		"CFALL",	CNULL)
 	FN_I0(OP_R2P,		&op_r2p,		"\015POL",	">POL")
 	FN_I0(OP_P2R,		&op_p2r,		"\015REC",	">REC")
-	FN_I0(OP_FRACDENOM,	&op_fracdenom,		"DENMAX",	CNULL)
+	FN_I0(OP_FRACDENOM,	&op_fracdenom,		"DMAX",	CNULL)
 	FN_I1(OP_2FRAC,		&op_2frac,		"DECOMP",	CNULL)
 	FUNC0(OP_DENANY,	XNIL(F_DENANY),		"DENANY",	CNULL)
 	FUNC0(OP_DENFIX,	XNIL(F_DENFIX),		"DENFIX",	CNULL)
@@ -605,7 +605,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_POPLR,		&cmdlpop,		"PopLR",	CNULL)
 
 #ifdef ENABLE_REGISTER_BROWSER
-	FUNC0(OP_SHOWREGS,      &browse_registers,      "SHREGS",       CNULL)
+	FUNC0(OP_SHOWREGS,      &browse_registers,      "CATREG",       CNULL)
 #endif
 
 	FUNC0(OP_SAVE,		&flash_backup,		"SAVE",		CNULL)

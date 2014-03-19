@@ -426,6 +426,7 @@ static s_opcode more_catalogue[] = {
 	NILIC(OP_STKSIZE,   "SSIZE?")
 	NILIC(OP_VERSION,   "VERS")
 	MON(OP_DOWK,        "WDAY")
+	NILIC(OP_WHO,		"WHO")
 	DYA(OP_XROOT,		"\234\003y")
 	DYA(OP_DTDIF,       "\203DAYS")
 	TRI(OP_PERMRR,      "MRR")
@@ -433,7 +434,7 @@ static s_opcode more_catalogue[] = {
 	MON(OP_CUBERT,		"[^3][sqrt]")
 	NILIC(OP_2FRAC,		"DECOMP")
 #ifdef ENABLE_REGISTER_BROWSER
-	NILIC(OP_SHOWREGS,	"SHREGS")
+	NILIC(OP_SHOWREGS,	"CATREG")
 #endif
 };
 
@@ -882,7 +883,7 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_DENANY,	"DENANY")
 	NILIC(OP_DENFAC,	"DENFAC")
 	NILIC(OP_DENFIX,	"DENFIX")
-	NILIC(OP_FRACDENOM,	"DENMAX")
+	NILIC(OP_FRACDENOM,	"DMAX")
 	NILIC(OP_DATEDMY,	"D.MY")
 	NILIC(OP_EXPF,		"ExpF")
 	NILIC(OP_FRACIMPROPER,		"IMPFRC")

@@ -180,7 +180,7 @@
 /*
  * This setting enables the register browser as a "MORE" command
  */
-//#define ENABLE_REGISTER_BROWSER
+#define ENABLE_REGISTER_BROWSER
 
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */

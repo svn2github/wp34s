@@ -1,5 +1,5 @@
 # $Rev$
-version=11
+version=12
 maxsteps=1
 maxlibsteps=1
 0x0000	cmd	ENTER[^]
@@ -161,7 +161,7 @@ maxlibsteps=1
 0x0142	alias-c	>POL
 0x0143	cmd	[->]REC
 0x0143	alias-c	>REC
-0x0144	cmd	DENMAX
+0x0144	cmd	DMAX
 0x0145	cmd	DECOMP
 0x0146	cmd	DENANY
 0x0147	cmd	DENFIX
@@ -262,20 +262,21 @@ maxlibsteps=1
 0x0199	cmd	x=+0?
 0x019a	cmd	x=-0?
 0x019b	cmd	PopLR
-0x019c	cmd	SAVE
-0x019d	cmd	LOAD
-0x019e	cmd	LOADSS
-0x019f	cmd	LOADR
-0x01a0	cmd	LOAD[SIGMA]
-0x01a0	alias-c	LOADSUMS
-0x01a1	cmd	[cmplx]i
-0x01a1	alias-c	ci
-0x01a2	cmd	DATE[->]
-0x01a2	alias-c	DATE>
-0x01a3	cmd	[cmplx]DOT
-0x01a3	alias-c	cDOT
-0x01a4	cmd	[cmplx]CROSS
-0x01a4	alias-c	cCROSS
+0x019c	cmd	CATREG
+0x019d	cmd	SAVE
+0x019e	cmd	LOAD
+0x019f	cmd	LOADSS
+0x01a0	cmd	LOADR
+0x01a1	cmd	LOAD[SIGMA]
+0x01a1	alias-c	LOADSUMS
+0x01a2	cmd	[cmplx]i
+0x01a2	alias-c	ci
+0x01a3	cmd	DATE[->]
+0x01a3	alias-c	DATE>
+0x01a4	cmd	[cmplx]DOT
+0x01a4	alias-c	cDOT
+0x01a5	cmd	[cmplx]CROSS
+0x01a5	alias-c	cCROSS
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL

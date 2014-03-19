@@ -100,13 +100,13 @@ static void toggle_shift(enum shifts shift) {
 static int keycode_to_linear(const keycode c)
 {
 	static const unsigned char linear_key_map[ 7 * 6 - 1 ] = {
-		 0,  1,  2,  3,  4,  5,   // K00 - K05 WORKS
-		 6,  7,  8,  9, 10, 11,   // K10 - K15 WORKS
-		12, 13, 14, 15, 16,  0,   // K20 - K24 WORKS
-		17, 18, 19, 20, 21,  0,   // K30 - K34 WORKS
-		22, 23, 24, 25, 26,  0,   // K40 - K44 WORKS
-		37, 28, 29, 30, 31,  0,   // K50 - K54 WORKS
-		32, 33, 34, 35, 36        // K60 - K63 WORKS
+		 0,  1,  2,  3,  4,  5,   // K00 - K05 
+		 6,  7,  8,  9, 10, 11,   // K10 - K15 
+		12, 13, 14, 15, 16,  0,   // K20 - K24 
+		17, 18, 19, 20, 21,  0,   // K30 - K34 
+		22, 23, 24, 25, 26,  0,   // K40 - K44 
+		37, 28, 29, 30, 31,  0,   // K50 - K54 
+		32, 33, 34, 35, 36        // K60 - K63 
 	};
 	return linear_key_map[c];
 }
@@ -186,7 +186,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 *  Normal processing - Not alpha mode
 		 */
 		static const struct _map cmap[] = {
-			{ K11,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
+			{ K20,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
 			{ K21,     { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
 			{ K22,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
 			{ K23,     { CATALOGUE_DISPL,     CATALOGUE_DISPL,     CATALOGUE_DISPL         } },
@@ -558,18 +558,18 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_MON  | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCNT | NO_INT },	// %
 		{ OP_MON  | OP_PERCHG   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },	// Delta%
 		// Row 2
+		{ OP_NIL | OP_FILL,		   OP_NIL | OP_FILL            },			// FILL
 		{ _RARG   | RARG_SWAPX,  _RARG   | RARG_SWAPX },					// x<>
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },						// CONST Catalog
 		{ 1,                               0                           },   // HYP
 		{ OP_MON | OP_ASIN      | NO_INT,   OP_MON | OP_ASIN   | NO_INT },	// ASIN
 		{ OP_MON | OP_ACOS      | NO_INT,   OP_MON | OP_ACOS   | NO_INT },	// ACOS
 		{ OP_MON | OP_ATAN      | NO_INT,   OP_MON | OP_ATAN   | NO_INT },	// ATAN
 		// Row 3
-		{ OP_NIL | OP_FILL,		   OP_NIL | OP_FILL            },	// FILL
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CONST Catalog
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CONV Catalog
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MODE Catalog
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// DISPL Catalog
-		{ STATE_UNDO,     STATE_UNDO },				// UNDO - Stubbed as x! for now
+		{ STATE_UNDO,     STATE_UNDO },								// UNDO
 		// Row 4
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// ->
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MORE Catalog
@@ -590,11 +590,11 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_MON | OP_yhat      | NO_INT, OP_MON | OP_yhat      | NO_INT },	// Stats yhat
 		{ OP_DYA  | OP_HMSSUB,  OP_DYA | OP_HMSSUB },				// H.MS-
 		// Row 7
-		{ OP_NIL  | OP_OFF,		   OP_NIL  | OP_OFF	       },	// OFF
-		{ OP_MON  | OP_FACT,     OP_MON  | OP_FACT},				// x!
-		{ OP_NIL  | OP_FRACPROPER, OP_NIL  | OP_FRACPROPER },			// a b/c
-		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },			// Sigma-
-		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },			// H.MS+
+		{ OP_NIL  | OP_OFF,		   OP_NIL  | OP_OFF	       },		// OFF
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CLEAR Catalog
+		{ OP_NIL  | OP_FRACPROPER, OP_NIL  | OP_FRACPROPER },		// a b/c
+		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },		// Sigma-
+		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },		// H.MS+
 	};
 
 	enum shifts shift = reset_shift();
