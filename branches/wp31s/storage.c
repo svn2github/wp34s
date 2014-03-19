@@ -56,7 +56,7 @@
 PERSISTENT_RAM TPersistentRam PersistentRam;
 PERSISTENT_RAM TPersistentRam UndoState, Undo2State;
 
-#ifndef REALBUILD
+#ifdef QTGUI
 /*
  *  We need to define the Library space here.
  *  On the device the linker takes care of this.
