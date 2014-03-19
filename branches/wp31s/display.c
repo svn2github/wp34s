@@ -1074,10 +1074,13 @@ static void show_x(char *x, int exp) {
 	const int upper = dbl ? 6 : 4;
 	char *const p = find_char(x, '\0');
 	int i, j;
+	int left = 1;
 
 	xset(p, '0', x + 34 - p);
-	if (State2.window)
+	if (State2.window) {
 		x += 16;	// right half
+		left = 0;
+	    }
 	else {
 		if (dbl) {
 			if (exp < 0) {
@@ -1096,7 +1099,16 @@ static void show_x(char *x, int exp) {
 	for (i = 0, j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
 		set_dig_s(j, x[upper + i], CNULL);
 
-	x[upper] = '\0';
+	// Move the digits over and insert the radix after the leading digit
+	if (left) {
+	    for (i = upper; i > 1; --i) { x[i] = x[i-1]; }
+	    x[1] = DecimalMode == DECIMAL_DOT ? '.' : ',';
+	    x[upper+1] = '\0';
+	    }
+	else {
+	    x[upper] = '\0';
+	    }
+
 	set_status(x);
 }
 
@@ -1185,11 +1197,15 @@ void set_x_dn(decNumber *z, char *res, int display_digits) {
 	xset(x, '\0', sizeof(x));
 
 	if (dn_eq0(z)) {
-		if (decNumberIsNegative(z) && get_user_flag(NAN_FLAG)) {
-			x[0] = '-';
-			x[1] = '0';
-		} else
-			x[0] = '0';
+		if (decNumberIsNegative(z) && get_user_flag(NAN_FLAG))
+		{
+		    x[0] = '-';
+		    x[1] = '0';
+		}
+		else
+		{
+		    x[0] = '0';
+		}
 	} else
 		decNumberToString(z, x);
 
