@@ -1231,10 +1231,13 @@ static void show_x(char *x, int exp) {
 	const int upper = dbl ? 6 : 4;
 	char *const p = find_char(x, '\0');
 	int i, j;
+	int left = 1;
 
 	xset(p, '0', x + 34 - p);
-	if (State2.window)
+	if (State2.window) {
 		x += 16;	// right half
+		left = 0;
+	    }
 	else {
 		if (dbl) {
 			if (exp < 0) {
@@ -1253,7 +1256,13 @@ static void show_x(char *x, int exp) {
 	for (i = 0, j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
 		set_dig_s(j, x[upper + i], CNULL);
 
+	// Move the digits over one place and insert the radix
 	x[upper] = '\0';
+	if (left) {
+	    xcopy(x + 2, x + 1, upper);  // Copy end of string char too
+	    x[1] = DecimalMode == DECIMAL_DOT ? '.' : ',';
+	    }
+
 	set_status(x);
 }
 
