@@ -1099,14 +1099,11 @@ static void show_x(char *x, int exp) {
 	for (i = 0, j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
 		set_dig_s(j, x[upper + i], CNULL);
 
-	// Move the digits over and insert the radix after the leading digit
+	// Move the digits over one place and insert the radix
+	x[upper] = '\0';
 	if (left) {
-	    for (i = upper; i > 1; --i) { x[i] = x[i-1]; }
+	    xcopy(x + 2, x + 1, upper);  // Copy end of string char too
 	    x[1] = DecimalMode == DECIMAL_DOT ? '.' : ',';
-	    x[upper+1] = '\0';
-	    }
-	else {
-	    x[upper] = '\0';
 	    }
 
 	set_status(x);
