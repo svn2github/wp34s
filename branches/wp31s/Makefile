@@ -24,6 +24,9 @@
 # Define to use a crystal oscillator on slow clock after hardware modification
 #XTAL = 1
 
+# Define to use the space saving post processing step in the realbuild
+#SHORT_POINTERS = 1
+
 # Define to compile code for an IR transmitter on TIOA0
 ifdef QTGUI
 #INFRARED = 1
@@ -175,6 +178,9 @@ CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
 HOSTCFLAGS += -m32
 # endif
 HOSTCFLAGS += -DREALBUILD
+ifdef SHORT_POINTERS
+CFLAGS += -DSHORT_POINTERS
+endif
 ifdef NOWD
 CFLAGS += -DNOWD
 endif
@@ -316,10 +322,14 @@ $(DIRS):
 ifdef REALBUILD
 
 # Target flash
+ifdef SHORT_POINTERS		
+POST_PROCESS=$(UTILITIES)/post_process$(EXE)
+endif		
+
 $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c \
 		$(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNum34s.a \
-		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE) \
+		$(LDCTRL) Makefile $(UTILITIES)/create_revision$(EXE) $(POST_PROCESS) \
 		compile_cats.c xrom.wp34s $(XROM) $(OPCODES)
 	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h xrom.c
 	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 XTAL=$(XTAL) INFRARED=$(INFRARED) catalogues.h xrom.c
@@ -327,12 +337,18 @@ $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s # -save-temps
 	$(NM) -n $(OUTPUTDIR)/$(TARGET) >$(SYMBOLS)
 	$(NM) -S $(OUTPUTDIR)/$(TARGET) >>$(SYMBOLS)
+ifdef SHORT_POINTERS	
 	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/$(TARGET) $(OUTPUTDIR)/$(TARGET).tmp 
 	$(UTILITIES)/post_process$(EXE) $(OUTPUTDIR)/$(TARGET).tmp $@
+else
+	$(OBJCOPY) -O binary --gap-fill 0xff $(OUTPUTDIR)/$(TARGET) $@ 
+endif	
 	@grep "^\.fixed"          $(MAPFILE) | tail -n 1 >  $(SUMMARY)
 	@grep "^\.revision"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.backupflash"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+ifdef SHORT_POINTERS	
 	@grep "^\.cmdtab"         $(MAPFILE) | tail -n 1 >> $(SUMMARY)
+endif	
 	@grep "^\.bss"            $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.slcdcmem"       $(MAPFILE) | tail -n 1 >> $(SUMMARY)
 	@grep "^\.volatileram"    $(MAPFILE) | tail -n 1 >> $(SUMMARY)
@@ -386,8 +402,10 @@ $(UTILITIES)/genfont$(EXE): genfont.c font.inc font_alias.inc licence.h Makefile
 $(UTILITIES)/create_revision$(EXE): create_revision.c licence.h Makefile
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
+ifdef SHORT_POINTERS
 $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
+endif
 
 xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h data.h errors.h
 	$(HOSTCC) -E -P -x c -Ixrom -DCOMPILE_XROM xrom.wp34s > xrom_pre.wp34s

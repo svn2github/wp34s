@@ -114,7 +114,7 @@ typedef unsigned short int s_opcode;
 #if (defined(REALBUILD) || defined(POST_PROCESSING)) && !defined(COMPILE_CATALOGUES)
 #pragma pack(push)
 #pragma pack(2)
-#define SHORT_POINTERS
+//#define SHORT_POINTERS
 #endif
 
 /*
