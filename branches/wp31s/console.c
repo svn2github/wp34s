@@ -48,8 +48,6 @@ int view_instruction_counter = 0;
 static int remap(const int c) {
 	switch (c) {
 	case 'F':	return K_F;
-	case 'G':	return K_G;
-	case 'H':	return K_H;
 
 	case 'q':	return K00;
 	case 'w':	return K01;
@@ -64,9 +62,9 @@ static int remap(const int c) {
 	case 'a':	return K10;
 	case 's':	return K11;
 	case 'd':	return K12;
-	case 'f':	return K_F;
-	case 'g':	return K_G;
-	case 'h':	return K_H;
+	case 'f':	return K13;
+	case 'g':	return K14;
+	case 'h':	return K15;
 
 	case 'z':	return K20;
 	case 'x':	return K20;
@@ -91,7 +89,7 @@ static int remap(const int c) {
 	case '6':	return K43;
 	case '*':	return K44;
 
-	case 'm':	return K50;
+	case 'm':	return K_F;
 	case '1':	return K51;
 	case '2':	return K52;
 	case '3':	return K53;
@@ -209,71 +207,6 @@ static void dump_menu(const char *name, const char *prefix, const enum catalogue
 
 #include "xrom.h"
 #include "xrom_labels.h"
-static const struct {
-	unsigned int address;
-	const char *const name;
-} xrom_entry_points[] = {
-#define XE(l)		{ XROM_ ## l, # l }
-	XE(F_DENANY),			XE(QF_WEIB),
-	XE(AGM),			XE(F_DENFAC),			XE(QUAD),
-	XE(Bn),				XE(F_DENFIX),			XE(RADIANS),
-	XE(Bn_star),			XE(GRADIANS),			XE(RADIX_COM),
-	XE(CDFU_BINOMIAL),		XE(HR12),			XE(RADIX_DOT),
-	XE(CDFU_CAUCHY),		XE(HR24),			XE(SEPOFF),
-	XE(CDFU_CHI2),			XE(HermiteH),			XE(SEPON),
-	XE(CDFU_EXPON),			XE(HermiteHe),			XE(SETCHN),
-	XE(CDFU_F),			XE(IDIV),			XE(SETEUR),
-	XE(CDFU_GEOM),			XE(IM_LZOFF),			XE(SETIND),
-	XE(CDFU_LOGIT),			XE(IM_LZON),			XE(SETJAP),
-	XE(CDFU_LOGNORMAL),		XE(SETUK),
-	XE(CDFU_NORMAL),		XE(ISGN_1C),			XE(SETUSA),
-	XE(CDFU_POIS2),			XE(ISGN_2C),
-	XE(CDFU_POISSON),		XE(ISGN_SM),			XE(SIGN),
-	XE(CDFU_Q),			XE(ISGN_UN),
-	XE(CDFU_T),			XE(JG1582),			XE(STACK_4_LEVEL),
-	XE(CDFU_WEIB),			XE(JG1752),			XE(STACK_8_LEVEL),
-	XE(CDF_BINOMIAL),		XE(LaguerreLn),			XE(START),
-	XE(CDF_CAUCHY),			XE(LaguerreLnA),		XE(W0),
-	XE(CDF_CHI2),			XE(LegendrePn),			XE(W1),
-	XE(CDF_EXPON),			XE(MARGIN),			XE(WHO),
-	XE(CDF_F),			XE(NEXTPRIME),			XE(W_INVERSE),
-	XE(CDF_GEOM),			XE(PARL),			XE(ZETA),
-	XE(CDF_LOGIT),			XE(PDF_BINOMIAL),		XE(beta),
-	XE(CDF_LOGNORMAL),		XE(PDF_CAUCHY),			XE(cpx_ACOS),
-	XE(CDF_NORMAL),			XE(PDF_CHI2),			XE(cpx_ACOSH),
-	XE(CDF_POIS2),			XE(PDF_EXPON),			XE(cpx_ASIN),
-	XE(CDF_POISSON),		XE(PDF_F),			XE(cpx_ASINH),
-	XE(CDF_Q),			XE(PDF_GEOM),			XE(cpx_ATAN),
-	XE(CDF_T),			XE(PDF_LOGIT),			XE(cpx_ATANH),
-	XE(CDF_WEIB),			XE(PDF_LOGNORMAL),		XE(cpx_CONJ),
-	XE(CPX_AGM),			XE(PDF_NORMAL),			XE(cpx_CROSS),
-	XE(CPX_COMB),			XE(PDF_POIS2),			XE(cpx_DOT),
-	XE(CPX_FIB),			XE(PDF_POISSON),		XE(cpx_EXPM1),
-	XE(CPX_I),			XE(PDF_Q),			XE(cpx_FACT),
-	XE(CPX_PARL),			XE(PDF_T),			XE(cpx_FRAC),
-	XE(CPX_PERM),			XE(PDF_WEIB),			XE(cpx_IDIV),
-	XE(CPX_W0),			XE(PERCENT),			XE(cpx_LN1P),
-	XE(CPX_W_INVERSE),		XE(PERCHG),			XE(cpx_LOG10),
-	XE(ChebychevTn),		XE(PERMARGIN),			XE(cpx_LOG2),
-	XE(ChebychevUn),		XE(PERMMR),			XE(cpx_LOGXY),
-	XE(DATE_ADD),			XE(PERTOT),			XE(cpx_POW10),
-	XE(DATE_DELTA),			XE(cpx_POW2),
-	XE(DATE_TO),			XE(QF_BINOMIAL),		XE(cpx_ROUND),
-	XE(DEGREES),			XE(QF_CAUCHY),			XE(cpx_SIGN),
-	XE(QF_CHI2),			XE(cpx_TRUNC),
-	XE(D_DMY),			XE(QF_EXPON),			XE(cpx_beta),
-	XE(D_MDY),			XE(QF_F),			XE(cpx_gd),
-	XE(D_YMD),			XE(QF_GEOM),			XE(cpx_inv_gd),
-	XE(E3OFF),			XE(QF_LOGIT),			XE(cpx_lnbeta),
-	XE(E3ON),			XE(QF_LOGNORMAL),		XE(cpx_x2),
-	XE(ERF),			XE(QF_NORMAL),			XE(cpx_x3),
-	XE(ERFC),			XE(QF_POIS2),			XE(gd),
-	XE(FIB),			XE(QF_POISSON),			XE(int_ULP),
-	XE(FIXENG),			XE(QF_Q),			XE(inv_gd),
-	XE(FIXSCI),			XE(QF_T),
-#undef XE
-};
-#define num_xrom_entry_points	(sizeof(xrom_entry_points) / sizeof(*xrom_entry_points))
 	
 
 static void dump_registers(void) {
