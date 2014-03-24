@@ -65,30 +65,9 @@ static const char S7_INF_Text[] = " I n f i n i t y ";
 static const char S7_NEG_INF_Text[] = "-I n f i n i t y ";
 #endif
 
-static const char S7_STEP[] = "StEP ";		/* Step marker in program mode (lower line) */
-#ifndef REALBUILD
-static const char S7_STEP_ShortText[] = "STEP";
-#endif
-
 static const char S7_fract_EQ[] = " = ";	/* Exponent in fraction mode indicates low, equal or high */
 static const char S7_fract_LT[] = " Lt";
 static const char S7_fract_GT[] = " Gt";
-
-static const char libname[][5] = {
-	"rAMm", "Lib ", "Bup ",
-#ifndef REALBUILD
-	"roMm"
-#endif
-};
-
-#ifndef REALBUILD
-static const char libname_text[][10] = {
-	" R a m ", " L i b ", " B u p ",	" R o m "
-};
-static const char libname_shorttext[][5] = {
-	"Ram", "Lib", "Bup", "Rom"
-};
-#endif
 
 
 /* Set the separator and decimal mode globals
