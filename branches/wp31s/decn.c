@@ -1112,8 +1112,8 @@ static void cvt_2rad_sincos(decNumber *sin, decNumber *cos, const decNumber *xin
 		sincosTaylor(&y, swap?cos:sin, swap?sin:cos);
 	}
 
-	if (sneg) dn_minus(sin, sin);
-	if (cneg) dn_minus(cos, cos);
+	if ((sneg && !swap) || (cneg && swap)) dn_minus(sin, sin);
+	if ((cneg && !swap) || (sneg && swap)) dn_minus(cos, cos);
 }
 
 decNumber *decNumberSin(decNumber *res, const decNumber *x) {
