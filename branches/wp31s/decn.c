@@ -1058,7 +1058,7 @@ static void cvt_2rad_sincos(decNumber *sin, decNumber *cos, const decNumber *xin
 	static const decNumber * const gradians[4] = {
 		&const_50, &const_100, &const_200, &const_400
 	};
-	const decNumber * const * thresholds;
+	const decNumber * const * thresholds = NULL;
 	int sneg = 0, cneg = 0, swap = 0;
 
 	switch (get_trig_mode()) {
