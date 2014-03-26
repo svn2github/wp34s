@@ -191,8 +191,8 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K22,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
 			{ K23,     { CATALOGUE_DISPL,     CATALOGUE_DISPL,     CATALOGUE_DISPL         } },
 			{ K31,     { CATALOGUE_MORE,      CATALOGUE_NONE,      CATALOGUE_MORE          } },
-			{ K32,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
-			{ K33,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
+			{ K32,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
+			{ K33,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
 			{ K34,     { CATALOGUE_CLEAR,     CATALOGUE_CLEAR,     CATALOGUE_CLEAR         } },
 		};
 

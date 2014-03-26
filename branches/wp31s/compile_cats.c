@@ -478,7 +478,6 @@ static s_opcode stats_catalogue[] = {
 	NILIC(OP_sigmaY,	"\221y")
 	NILIC(OP_sigmaY2,	"\221y\232")
 	NILIC(OP_sigmaYlnX,	"\221YlnX")
-	MON(OP_FACT,	"x!")
 };
 
 static s_opcode prob_catalogue[] = {
