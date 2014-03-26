@@ -55,7 +55,7 @@ typedef enum {
 #define K_F		K50					// K_F is the Primary Shift Key in this Layout
 #define K_G		K71					// K_G is unused in this layout
 #define K_H		K72					// K_H is unused in this layout
-#define K_ARROW		K30				// K_ARROW is on Shifted position
+#define K_ARROW		K40				// K_ARROW is on Shifted position
 #define K_CMPLX		K73				// K_CMPLX is unused in this layout
 
 extern unsigned int keycode_to_digit_or_register(const keycode);

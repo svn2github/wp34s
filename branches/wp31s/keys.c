@@ -191,9 +191,9 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			{ K22,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
 			{ K23,     { CATALOGUE_DISPL,     CATALOGUE_DISPL,     CATALOGUE_DISPL         } },
 			{ K31,     { CATALOGUE_MORE,      CATALOGUE_NONE,      CATALOGUE_MORE          } },
-			{ K41,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
-			{ K51,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
-			{ K61,     { CATALOGUE_CLEAR,     CATALOGUE_CLEAR,     CATALOGUE_CLEAR         } },
+			{ K32,     { CATALOGUE_STATS,     CATALOGUE_NONE,      CATALOGUE_STATS         } },
+			{ K33,     { CATALOGUE_PROB,      CATALOGUE_NONE,      CATALOGUE_PROB          } },
+			{ K34,     { CATALOGUE_CLEAR,     CATALOGUE_CLEAR,     CATALOGUE_CLEAR         } },
 		};
 
 #if 0
@@ -555,7 +555,7 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_NIL  | OP_P2R,      OP_NIL  | OP_P2R },						// ->REC
 		{ OP_MON  | OP_LOG,      OP_MON  | OP_LOG },						// LG
 		{ OP_MON  | OP_10POWX,   OP_MON  | OP_10POWX },						// 10^x
-		{ OP_MON  | OP_PERCNT   | NO_INT,   OP_MON | OP_PERCNT | NO_INT },	// %
+		{ OP_MON  | OP_FACT,	 OP_MON  | OP_FACT },						// x!
 		{ OP_MON  | OP_PERCHG   | NO_INT,   OP_MON | OP_PERCHG | NO_INT },	// Delta%
 		// Row 2
 		{ OP_NIL | OP_FILL,		   OP_NIL | OP_FILL            },			// FILL
@@ -571,27 +571,26 @@ static int process_fg_shifted(const keycode c) {
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// DISPL Catalog
 		{ STATE_UNDO,     STATE_UNDO },								// UNDO
 		// Row 4
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// ->
+		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },					// SHOW as in vintage HP Calculators
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// MORE Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// DISTR Catalog (PROB)
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// STAT Catalog
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CLEAR Catalog
+		// Row 5
+		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// ->
 		{ OP_NIL  | OP_DEG,     OP_NIL  | OP_DEG },					// DEG Mode
 		{ OP_NIL  | OP_RAD,		   OP_NIL  | OP_RAD        },		// RAD Mode
 		{ OP_NIL  | OP_FLOAT,   OP_NIL | OP_FLOAT}, 				// H.d
-		// Row 5
-		{ STATE_WINDOWLEFT,     STATE_WINDOWLEFT },					// SHOW as in vintage HP Calculators
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// STAT Catalog
-		{ OP_NIL | OP_statS     | NO_INT, OP_NIL | OP_statS     | NO_INT },	// Stats s
-		{ OP_NIL | OP_statR,			  OP_NIL | OP_statR  },		// Stats r
 		{ OP_NIL  | OP_HMS,     OP_NIL | OP_HMS  },					// H.MS
 		// Row 6
-		// SHIFT_F
 		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// f Shift placeholder
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// PROB Catalog
 		{ OP_NIL | OP_statMEAN  | NO_INT, OP_NIL | OP_statMEAN  | NO_INT },	// Stats mean
 		{ OP_MON | OP_yhat      | NO_INT, OP_MON | OP_yhat      | NO_INT },	// Stats yhat
+		{ OP_NIL | OP_statR,			  OP_NIL | OP_statR  },		// Stats r
 		{ OP_DYA  | OP_HMSSUB,  OP_DYA | OP_HMSSUB },				// H.MS-
 		// Row 7
 		{ OP_NIL  | OP_OFF,		   OP_NIL  | OP_OFF	       },		// OFF
-		{ STATE_UNFINISHED,      STATE_UNFINISHED },				// CLEAR Catalog
+		{ OP_NIL | OP_statS     | NO_INT, OP_NIL | OP_statS     | NO_INT },	// Stats s
 		{ OP_NIL  | OP_FRACPROPER, OP_NIL  | OP_FRACPROPER },		// a b/c
 		{ OP_SPEC | OP_SIGMAMINUS, OP_SPEC | OP_SIGMAMINUS },		// Sigma-
 		{ OP_DYA  | OP_HMSADD,     OP_DYA | OP_HMSADD      },		// H.MS+
@@ -905,13 +904,13 @@ static int process_arrow(const keycode c) {
 
 	State2.arrow = 0;
 
-	if (c == K32 )				// ->DEG
+	if (c == K41 )				// ->DEG
 		return op_map[0][f];
 
-	if (c == K33 )				// ->RAD
+	if (c == K42 )				// ->RAD
 		return op_map[1][f];
 
-	if (c == K34 )				// ->HR
+	if (c == K43 )				// ->HR
 		return op_map[2][f];
 
 	if (c == K44 )				// ->H.MS
