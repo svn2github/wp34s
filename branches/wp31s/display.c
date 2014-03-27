@@ -1533,7 +1533,7 @@ static void show_registers(void) {
 			}
 		}
 		if (n < 100)
-			bp = num_arg_0(bp, n, 2);
+			bp = num_arg_0(bp, n, 1);
 		else
 			*bp++ = REGNAMES[n - regX_idx];
 		set_status(buf);
