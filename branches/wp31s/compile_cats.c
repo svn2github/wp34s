@@ -877,7 +877,6 @@ static s_opcode internal_catalogue[] = {
 #endif
 
 static s_opcode mode_catalogue[] = {
-	NILIC(OP_GRAD,	"GRAD")     
 	NILIC(OP_BEST,		"BestF")
 	NILIC(OP_DENANY,	"DENANY")
 	NILIC(OP_DENFAC,	"DENFAC")
