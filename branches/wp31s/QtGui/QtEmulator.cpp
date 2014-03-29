@@ -194,6 +194,48 @@ void QtEmulator::showAbout()
 	QMessageBox::about(this, "About WP-31s", aboutMessage);
 }
 
+void QtEmulator::showShortcuts()
+{
+	QString shortcuts("<h2>WP-31s QtGui Emulator Shortcuts</h2>\n");
+	shortcuts+="<h4>The following PC keys invoke the same key on the calculator:</h4>";
+	shortcuts+=QString::fromUtf8("&nbsp;&nbsp;&nbsp;&nbsp;All number keys<br/>\n");
+	shortcuts+=QString::fromUtf8("&nbsp;&nbsp;&nbsp;&nbsp; / - + <br/>\n");
+	shortcuts+="<h4>In the following shortcuts, the calculator keys are in brackets.</h4>\n";
+	shortcuts+="<ul>\n";
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u00D7]</b> press <b>*</b></li>\n");
+	shortcuts+="<li>for <b>[1/x]</b> press <b>Alt+/</b></li>\n";
+	shortcuts+="<li>for <b>[STO]</b> press <b>Ctrl+s</b></li>\n";
+	shortcuts+="<li>for <b>[RCL]</b> press <b>Ctrl+r</b></li>\n";
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u03C0]</b> press <b>Alt+p</b></li>\n");
+	shortcuts+="<li>for <b>[SIN]</b> press <b>Alt+s</b></li>\n";
+	shortcuts+="<li>for <b>[COS]</b> press <b>Alt+c</b></li>\n";
+	shortcuts+="<li>for <b>[TAN]</b> press <b>Alt+t</b></li>\n";
+	shortcuts+="<li>for <b>[Enter]</b> press <b>ENTER</b></li>\n";
+	shortcuts+=QString::fromUtf8("  <li>for <b>[x\u2277y]</b> press <b>&lt;</b> or <b>&gt;</b></li>\n");
+	shortcuts+="<li>for <b>[+/-]</b> press <b>Alt+-</b> or <b>Alt++</b></li>\n";
+	shortcuts+="<li>for <b>[EEX]</b> press <b>Alt+e;</b></li>\n";
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u2190]</b> press <b>Backspace</b> or <b>\u2190</b></li>\n");
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u25B2]</b> press <b>\u2191</b> or <b>PgUp</b></li>\n");
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u25BC]</b> press <b>\u2193</b> or <b>PgDn</b></li>\n");
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u2192]</b> press <b>\u2192</b>\n");
+	shortcuts+="<li>for <b>[f]</b> press <b>Tab</b> or <b>Alt+f</b></li>\n";
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u03A3+]</b> press <b>Insert</b> or <b>Ctrl+ENTER<b></li>\n");
+	shortcuts+="<li>for <b>[Exit]</b> press <b>Esc</b></li>\n";
+	shortcuts+="</ul>\n";
+	shortcuts+="There are also a few shortcuts for the Greek letters on a few of the lower keys (these work in the catalogs):\n";
+	shortcuts+="<ul>\n";
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u03B3]</b> (gamma) press <b>Ctrl+g<b></li>\n");
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u03BB]</b> (lambda) press <b>Ctrl+l<b></li>\n");
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u03BC]</b> (mu) press <b>Ctrl+m<b></li>\n");
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u03A3]</b> (Sigma) press <b>Ctrl+Shift+S<b></li>\n");
+	shortcuts+=QString::fromUtf8("<li>for <b>[\u03C6]</b> (phi) press <b>Ctrl+p<b></li>\n");
+	shortcuts+="</ul>\n";
+
+	shortcuts+="\nNote that shortcuts to shifted functions still require pressing the shift [f] key first!\n";
+	QMessageBox::about(this, "WP-31s Keyboard Shortcuts", shortcuts);
+}
+
+
 void QtEmulator::showWebSite()
 {
 	QDesktopServices::openUrl(QUrl(WEBSITE_URL, QUrl::TolerantMode));
@@ -436,8 +478,12 @@ void QtEmulator::buildHelpMenu()
 	aboutAction->setMenuRole(QAction::AboutRole);
 	helpContextMenu->addAction(aboutAction);
 
+	QAction* showShortcutsAction=helpMenu->addAction(SHOW_SHORTCUTS_TEXT, this, SLOT(showShortcuts()));
+	helpContextMenu->addAction(showShortcutsAction);
+
 	QAction* showWebsiteAction=helpMenu->addAction(SHOW_WEBSITE_ACTION_TEXT, this, SLOT(showWebSite()));
 	helpContextMenu->addAction(showWebsiteAction);
+
 	QAction* showDocumentationAction=helpMenu->addAction(SHOW_DOCUMENTATION_ACTION_TEXT, this, SLOT(showDocumentation()));
 	helpContextMenu->addAction(showDocumentationAction);
 }

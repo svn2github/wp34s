@@ -104,6 +104,7 @@
 #define HELP_MENU "Help"
 
 #define ABOUT_ACTION_TEXT "About"
+#define SHOW_SHORTCUTS_TEXT "Keyboard Shortcuts"
 #define PREFERENCES_ACTION_TEXT "Preferences"
 
 #define HIDE_TITLEBAR_ACTION_TEXT "Hide TitleBar"
@@ -152,6 +153,7 @@ public:
 private slots:
 	void editPreferences();
 	void showAbout();
+	void showShortcuts();
 	void toggleTitleBar();
 	void setTitleBarVisible(bool aTitleBarVisibleFlag);
 	void confirmReset();
