@@ -151,7 +151,10 @@
 // Change the fraction separator to the old Casio form _|
 //#define INCLUDE_CASIO_SEPARATOR
 
-// Make two successive decimals a..b enter an improper fraction a/b, not a 0/b
+// Switch the seven-segment display to fraction mode as soon as two decimal marks are entered
+//#define PRETTY_FRACTION_ENTRY
+
+// Make two successive decimals a..b enter an improper fraction a/b, not a 0/b (also enables PRETTY_FRACTION_ENTRY)
 //#define INCLUDE_DOUBLEDOT_FRACTIONS
 
 // Chamge ALL display mode to limited significant figures mode
@@ -211,6 +214,10 @@
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
+
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+#define PRETTY_FRACTION_ENTRY
+#endif
 
 #if defined(INCLUDE_COMPLEX_ZETA) && ! defined(INCLUDE_ZETA)
 /* Complex zeta implies real zeta */

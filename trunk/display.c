@@ -754,7 +754,7 @@ skip:	set_status(buf);
 static void disp_x(const char *p) {
 	int i;
 	int gotdot = -1;
-#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+#if defined(PRETTY_FRACTION_ENTRY)
 	int twodot = 0; // ND change
 	const char *q; // ND change
 #endif
@@ -773,7 +773,7 @@ static void disp_x(const char *p) {
 	} else {
 		set_separator_decimal_modes();
 
-#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+#if defined(PRETTY_FRACTION_ENTRY)
 		q = p; // ND change; scan ahead to count dots;
 		for (i=0; *q != '\0' && *q != 'E'; q++) {
 			if (*q == '.') twodot++;
@@ -784,7 +784,7 @@ static void disp_x(const char *p) {
 		if (*p == '.') {
 				if (gotdot == -1) 
 					gotdot = i;
-#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+#if defined(PRETTY_FRACTION_ENTRY)
 					if ( ( *(p+1) == '.' ) || ( i != gotdot ) ) {
 						set_dig(i, '/'); // put in a fraction separator
 						i += SEGS_PER_DIGIT;
