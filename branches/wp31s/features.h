@@ -53,6 +53,13 @@
 // Include the CNSTS command to access constants via indirection
 #define INCLUDE_INDIRECT_CONSTS
 
+// Replace dispatch functions for calling niladic, monadic, dyadic and triadic
+// functions and their complex variants with one universal dispatch function.
+// It saves approximately 280 bytes in the firmware.
+// This is an EXPERIMENTAL FEATURE that hasn't yet received adequate testing.
+//#define UNIVERSAL_DISPATCH
+
+
 #ifndef TINY_BUILD
 
 // Include the Mantissa and exponent function
@@ -142,7 +149,10 @@
 // Change the fraction separator to the old Casio form _|
 //#define INCLUDE_CASIO_SEPARATOR
 
-// Make two successive decimals a..b enter an improper fraction a/b, not a 0/b
+// Switch the seven-segment display to fraction mode as soon as two decimal marks are entered
+//#define PRETTY_FRACTION_ENTRY
+
+// Make two successive decimals a..b enter an improper fraction a/b, not a 0/b (also enables PRETTY_FRACTION_ENTRY)
 //#define INCLUDE_DOUBLEDOT_FRACTIONS
 
 // Chamge ALL display mode to limited significant figures mode
@@ -150,6 +160,24 @@
 
 // Turn on constant y-register display (not just for complex results)
 //#define INCLUDE_YREG_CODE
+
+// Make y-register display configurable at run-time by user flag J
+//#define YREG_DEPENDS_ON_FLAG_J
+
+// Temporarily disable y-register display when a shift key or the CPX key is pressed 
+//#define SHIFT_AND_CMPLX_SUPPRESS_YREG
+
+// Use fractions in y-register display
+#define INCLUDE_YREG_FRACT
+
+// Don't show angles as fractions after a rectangular to polar coordinate conversion (also enables RP_PREFIX)
+#define ANGLES_NOT_SHOWN_AS_FRACTIONS
+
+// Use HMS mode in y-register display
+#define INCLUDE_YREG_HMS
+
+// Show prefix for gradian mode when y-register is displayed (without this gradian mode is indicated by neither the RAD nor the 360 annunciators being shown)
+#define SHOW_GRADIAN_PREFIX
 
 // Right-justify seven-segment exponent (007 rather than 7  )
 //#define INCLUDE_RIGHT_EXP
@@ -159,6 +187,9 @@
 
 // h ./, in DECM mode switches E3 separator on/off (instead of chnaging radix symbol)
 //#define MODIFY_K62_E3_SWITCH
+
+// Indicate four-level stack by a '.' and eight-level stack by a ':'
+//#define SHOW_STACK_SIZE
 
 // BEG annunciators indicates BIG stack size rather than beginning of program
 //#define MODIFY_BEG_SSIZE8
@@ -186,6 +217,10 @@
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
 
+#if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+#define PRETTY_FRACTION_ENTRY
+#endif
+
 #if defined(INCLUDE_COMPLEX_ZETA) && ! defined(INCLUDE_ZETA)
 /* Complex zeta implies real zeta */
 #define INCLUDE_ZETA
@@ -203,6 +238,14 @@
 
 #if defined(INCLUDE_PLOTTING) || defined(INFRARED)
 #define PAPER_WIDTH 166
+#endif
+
+#if defined(INCLUDE_YREG_CODE) && defined(INCLUDE_YREG_FRACT) && defined(ANGLES_NOT_SHOWN_AS_FRACTIONS)
+#define RP_PREFIX
+#endif
+
+#if defined(INCLUDE_YREG_CODE) || defined(RP_PREFIX) || defined(SHOW_STACK_SIZE)
+#define INCLUDE_FONT_ESCAPE
 #endif
 
 #endif  /* TINY_BUILD*/

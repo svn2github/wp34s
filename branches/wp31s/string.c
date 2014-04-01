@@ -68,6 +68,17 @@ char *find_char(const char *s, const char c) {
         return NULL;
 }
 
+#if defined INCLUDE_YREG_CODE && defined INCLUDE_YREG_HMS
+void replace_char(char *str, const char from, const char to) {
+        while (*str) {
+                if (*str == from) {
+                        *str = to;
+                }
+                ++str;
+        }
+}
+#endif
+
 /* Copy a string across and return a pointer to the terminating null
  */
 char *scopy(char *d, const char *s) {

@@ -1668,6 +1668,8 @@ NO_RETURN int main(void)
                                 confirm_counter = 0;
                         }
                         if ( OnKeyPressed && k != K60 && !XromRunning ) {
+                                char contrast_str[13];
+
                                 /*
                                  *  Check for special key combinations.
                                  *  Critical keys have to be pressed twice.
@@ -1687,8 +1689,11 @@ NO_RETURN int main(void)
                                         // ON-"+" Increase contrast
                                         if ( UState.contrast != 15 ) {
                                                 ++UState.contrast;
-                                                message( "+Contrast", NULL );
                                         }
+                                      display_contrast:
+                                        scopy(contrast_str, "Contrast: ");
+                                        num_arg(contrast_str + 10, UState.contrast)[0] = '\0';
+                                        message( contrast_str, NULL );
                                         confirm_counter = 0;
                                         break;
 
@@ -1696,10 +1701,8 @@ NO_RETURN int main(void)
                                         // ON-"-" Decrease contrast
                                         if ( UState.contrast != 0 ) {
                                                 --UState.contrast;
-                                                message( "-Contrast", NULL );
                                         }
-                                        confirm_counter = 0;
-                                        break;
+                                        goto display_contrast;
 
                                 case K24:
                                         // ON + <-
