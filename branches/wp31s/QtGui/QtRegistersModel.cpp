@@ -31,7 +31,7 @@ QtRegistersModel::QtRegistersModel(QObject* aParent, bool aDisplayAsStack)
 	}
 	for(int i=0; i<get_maxnumregs(); i++)
 	{
-		displayedRegisters.append(QPair<QString, int>(QString("R")+QString("%1").arg(QString::number(i), 2, '0'), i));
+		displayedRegisters.append(QPair<QString, int>(QString("R")+QString("%1").arg(QString::number(i), 1, '0'), i));
 	}
 	lastRowCount=get_numregs();
 }
