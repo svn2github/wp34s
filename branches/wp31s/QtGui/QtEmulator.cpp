@@ -218,7 +218,7 @@ void QtEmulator::showShortcuts()
 	shortcuts+=QString::fromUtf8("<li>for <b>[\u25B2]</b> press <b>\u2191</b> or <b>PgUp</b></li>\n");
 	shortcuts+=QString::fromUtf8("<li>for <b>[\u25BC]</b> press <b>\u2193</b> or <b>PgDn</b></li>\n");
 	shortcuts+=QString::fromUtf8("<li>for <b>[\u2192]</b> press <b>\u2192</b>\n");
-	shortcuts+="<li>for <b>[f]</b> press <b>Tab</b> or <b>Alt+f</b></li>\n";
+	shortcuts+="<li>for <b>[f]</b> press <b>Ctrl+f</b> or <b>Alt+f</b></li>\n";
 	shortcuts+=QString::fromUtf8("<li>for <b>[\u03A3+]</b> press <b>Insert</b> or <b>Ctrl+ENTER<b></li>\n");
 	shortcuts+="<li>for <b>[Exit]</b> press <b>Esc</b></li>\n";
 	shortcuts+="</ul>\n";
