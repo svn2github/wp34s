@@ -61,7 +61,7 @@ struct _ustate {
 	unsigned int unused_3 :      1;	// free
 	unsigned int unused_2 :      1;	// free
 #endif
-	unsigned int unused_1 :      1;	// free
+	unsigned int show_y :        1;	// Show the Y register in the top line
 	unsigned int stack_depth :   1;	// Stack depth
 
 	unsigned int date_mode :     2;	// Date input/output format
@@ -103,7 +103,7 @@ struct _ustate {
 #define UState_unused_3       48 // 1	// free
 #define UState_unused_2       49 // 1	// free
 #endif
-#define UState_unused_1       50 // 1	// free
+#define UState_show_y         50 // 1	// Show the Y register in the top line
 #define UState_stack_depth    51 // 1	// Stack depth
 #define UState_date_mode1     52 // 1	// Date input/output format
 #define UState_date_mode2     53 // 1	// Date input/output format

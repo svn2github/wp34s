@@ -782,6 +782,7 @@ enum nilop {
         OP_DATE_TO,
 
         OP_DOTPROD, OP_CROSSPROD,
+	OP_SHOWY, OP_HIDEY,
 
         NUM_NILADIC,    // Last entry defines number of operations
 

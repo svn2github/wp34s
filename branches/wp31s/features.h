@@ -103,7 +103,7 @@
 // Include code to use a Ridder's method step after a bisection in the solver.
 // For some functions this seems to help a lot, for others there is limited
 // benefit.
-#define USE_RIDDERS
+//#define USE_RIDDERS
 
 // Include code to find integer factors
 // Space cost 480 bytes.
@@ -160,9 +160,6 @@
 
 // Turn on constant y-register display (not just for complex results)
 #define INCLUDE_YREG_CODE
-
-// Make y-register display configurable at run-time by user flag J
-//#define YREG_DEPENDS_ON_FLAG_J
 
 // Temporarily disable y-register display when a shift key or the CPX key is pressed 
 //#define SHIFT_AND_CMPLX_SUPPRESS_YREG

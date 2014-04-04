@@ -893,6 +893,8 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_STK4,		"SSIZE4")
 	NILIC(OP_STK8,		"SSIZE8")
 	NILIC(OP_DATEYMD,	"Y.MD")
+	NILIC(OP_SHOWY,		"YDON")
+	NILIC(OP_HIDEY,		"YDOFF")
 };
 
 static s_opcode alpha_catalogue[] = {
