@@ -152,7 +152,7 @@
 //#define INCLUDE_CASIO_SEPARATOR
 
 // Switch the seven-segment display to fraction mode as soon as two decimal marks are entered
-//#define PRETTY_FRACTION_ENTRY
+#define PRETTY_FRACTION_ENTRY
 
 // Make two successive decimals a..b enter an improper fraction a/b, not a 0/b (also enables PRETTY_FRACTION_ENTRY)
 //#define INCLUDE_DOUBLEDOT_FRACTIONS
@@ -161,10 +161,7 @@
 //#define INCLUDE_SIGFIG_MODE
 
 // Turn on constant y-register display (not just for complex results)
-//#define INCLUDE_YREG_CODE
-
-// Make y-register display configurable at run-time by user flag J
-//#define YREG_DEPENDS_ON_FLAG_J
+#define INCLUDE_YREG_CODE
 
 // Temporarily disable y-register display when a shift key or the CPX key is pressed 
 //#define SHIFT_AND_CMPLX_SUPPRESS_YREG
@@ -185,7 +182,7 @@
 //#define INCLUDE_RIGHT_EXP
 
 // Rectangular - Polar y-reg prefix change:
-//#define RP_PREFIX
+#define RP_PREFIX
 
 // h ./, in DECM mode switches E3 separator on/off (instead of chnaging radix symbol)
 //#define MODIFY_K62_E3_SWITCH

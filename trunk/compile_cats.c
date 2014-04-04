@@ -901,6 +901,8 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_DBLON,		"DBLON")
 	NILIC(OP_DBLOFF,	"DBLOFF")
 #endif
+	NILIC(OP_SHOWY, 	"YDON")
+	NILIC(OP_HIDEY,		"YDOFF")
 };
 
 static s_opcode alpha_catalogue[] = {

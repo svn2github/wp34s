@@ -832,6 +832,7 @@ enum nilop {
         /* end of INFRARED commands */
 
         OP_QUERY_XTAL, OP_QUERY_PRINT,
+	OP_SHOWY, OP_HIDEY,
 
 #ifdef INCLUDE_STOPWATCH
         OP_STOPWATCH,
