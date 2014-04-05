@@ -430,7 +430,7 @@ static int check_special(const decNumber *x) {
 
 
 int stack_size(void) {
-	if (! UState.stack_depth || (! XromFlags.xIN))
+	if (! UState.stack_depth || (XromRunning && ! XromFlags.xIN))
 		return 4;
 	return 8;
 }
