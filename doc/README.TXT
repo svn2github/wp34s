@@ -1,6 +1,6 @@
-February 4, 2014
+April 5, 2014
 
-WP 34S Version 3.2
+WP 34S Version 3.3
 ==================
 
 This is firmware for the WP 34S calculator. This is for HP's 20b
@@ -16,6 +16,9 @@ same cable that is used to update the firmware.
 
 Highlights of this release
 --------------------------
+
+* [3.3] Dot matrix shows Y register if enanbled by YDON. 
+  Some more UI enhancements.
 
 * Dynamic allocation of memory to registers, program and subroutine 
   levels,
