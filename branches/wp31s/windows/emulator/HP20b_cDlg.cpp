@@ -956,6 +956,9 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
   else {
     if (r != NULL) {
       DeleteObject(r);
+#ifdef wp31s
+      OnLButtonUp(nFlags, point);
+#endif
     }
     // Forcing to send SHIFT key to calculator firmware
     System.KeyboardMap &= ~((u64)1 << Skin.mright);
@@ -967,7 +970,7 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
 **
 **  Called when the user presses the right mouse button on GUI
 **  except LCD Area.
-**  This function is responsible to sned SHIFT key to MYAPPLICATION firmware.
+**  This function is responsible to send SHIFT key to firmware.
 **
 ***************************************************************/
 //

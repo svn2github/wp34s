@@ -1060,8 +1060,12 @@ static int arg_digit(int n) {
 			}
 		}
 	}
-	else if (is_reg)						// normal register
-		lim = State2.runmode ? global_regs() - 1 : TOPREALREG - 1;
+	else if (is_reg) {						// normal register
+ 		lim = State2.runmode ? global_regs() - 1 : TOPREALREG - 1;
+		if (n == 0) {
+			return arg_eval(val);
+		}
+	}
 	else {
 		lim = (int) argcmds[base].lim;				// any other command
 		if (lim >= RARG_IND && argcmds[base].indirectokay)
