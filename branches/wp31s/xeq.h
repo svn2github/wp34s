@@ -741,7 +741,6 @@ enum nilop {
         OP_2COMP, OP_1COMP, OP_UNSIGNED, OP_SIGNMANT,
         OP_FLOAT, OP_HMS, OP_FRACT,
         OP_LEAD0, OP_TRIM0,
-        OP_LJ, OP_RJ,
         OP_DBL_MUL,
         OP_RCLSIGMA,
         OP_DATEDMY, OP_DATEYMD, OP_DATEMDY, OP_JG1752, OP_JG1582,
@@ -831,15 +830,6 @@ enum rarg {
 
         RARG_SF, RARG_CF, RARG_FF, RARG_FS, RARG_FC,
         RARG_FSC, RARG_FSS, RARG_FSF, RARG_FCC, RARG_FCS, RARG_FCF,
-
-        RARG_WS,
-
-        RARG_RL, RARG_RR, RARG_RLC, RARG_RRC,
-        RARG_SL, RARG_SR, RARG_ASR,
-        RARG_SB, RARG_CB, RARG_FB, RARG_BS, RARG_BC,
-        RARG_MASKL, RARG_MASKR,
-
-        RARG_BASE,
 
         RARG_CONV,
 
@@ -964,7 +954,6 @@ enum catalogues
         CATALOGUE_PROB,
         //CATALOGUE_INT,
         CATALOGUE_PROG,
-        CATALOGUE_PROGXFCN,
         //CATALOGUE_TEST,
         CATALOGUE_MODE,
         CATALOGUE_ALPHA,
@@ -1029,7 +1018,7 @@ extern int num_arg_digits(int);
 extern const char *get_cmdline(void);
 
 #if 1
-#define is_intmode() (UState.intm)
+#define is_intmode() (0)
 #else
 extern int is_intmode(void);
 #endif

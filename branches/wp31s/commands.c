@@ -116,32 +116,32 @@ CMDTAB const struct monfunc_cmdtab monfuncs_ct[ NUM_MONADIC ] = {
 #else
 const struct monfunc monfuncs[ NUM_MONADIC ] = {
 #endif
-	FUNC(OP_FRAC,	&decNumberFrac,		XMC(cpx_FRAC),	&intFP,		"FP",		CNULL)
-	FUNC(OP_FLOOR,	&decNumberFloor,	NOFN,		&intIP,		"FLOOR",	CNULL)
-	FUNC(OP_CEIL,	&decNumberCeil,		NOFN,		&intIP,		"CEIL",		CNULL)
-	FUNC(OP_ROUND,	&decNumberRound,	NOFN,		&intIP,		"ROUNDI",	CNULL)
-	FUNC(OP_TRUNC,	&decNumberTrunc,	XMC(cpx_TRUNC),	&intIP,		"IP",		CNULL)
-	FUNC(OP_ABS,	&dn_abs,		&cmplxAbs,	&intAbs,	"ABS",		CNULL)
-	FUNC(OP_RND,	&decNumberRnd,		XMC(cpx_ROUND),	&intIP,		"ROUND",	CNULL)
-	FUNC(OP_SIGN,	XMR(SIGN),		XMC(cpx_SIGN),	&intSign,	"SIGN",		CNULL)
-	FUNC(OP_LN,	&dn_ln,			&cmplxLn,	&intMonadic,	"LN",		CNULL)
-	FUNC(OP_EXP,	&dn_exp,		&cmplxExp,	&intMonadic,	"e\234",	"EXP")
-	FUNC(OP_SQRT,	&dn_sqrt,		&cmplxSqrt,	&intSqrt,	"\003",		"SQRT")
+	FUNC(OP_FRAC,	&decNumberFrac,		XMC(cpx_FRAC),	NOFN,	  "FP", 	  CNULL)
+	FUNC(OP_FLOOR,	&decNumberFloor,	NOFN,		NOFN,	  "FLOOR",	  CNULL)
+	FUNC(OP_CEIL,	&decNumberCeil,		NOFN,		NOFN,	  "CEIL",	  CNULL)
+	FUNC(OP_ROUND,	&decNumberRound,	NOFN,		NOFN,	  "ROUNDI",	  CNULL)
+	FUNC(OP_TRUNC,	&decNumberTrunc,	XMC(cpx_TRUNC),	NOFN,	  "IP", 	  CNULL)
+	FUNC(OP_ABS,	&dn_abs,		&cmplxAbs,	NOFN,	"ABS",		CNULL)
+	FUNC(OP_RND,	&decNumberRnd,		XMC(cpx_ROUND),	NOFN,		"ROUND",	CNULL)
+	FUNC(OP_SIGN,	XMR(SIGN),		XMC(cpx_SIGN),	NOFN,	"SIGN",		CNULL)
+	FUNC(OP_LN,	&dn_ln,			&cmplxLn,	NOFN,	"LN",		CNULL)
+	FUNC(OP_EXP,	&dn_exp,		&cmplxExp,	NOFN,	"e\234",	"EXP")
+	FUNC(OP_SQRT,	&dn_sqrt,		&cmplxSqrt,	NOFN,	"\003",		"SQRT")
 	FUNC(OP_RECIP,	&decNumberRecip,	&cmplxRecip,	NOFN,		"1/x",		"INV")
-	FUNC(OP__1POW,	&decNumberPow_1,	&cmplx_1x,	&int_1pow,	"(-1)\234",	"(-1)^x")
-	FUNC(OP_LOG,	&dn_log10,		XMC(cpx_LOG10),	&intLog10,	"LOG\271\270",	"LG")
-	FUNC(OP_LG2,	&dn_log2,		XMC(cpx_LOG2),	&intLog2,	"LOG\272",	"LB")
-	FUNC(OP_2POWX,	&decNumberPow2,		XMC(cpx_POW2),	&int2pow,	"2\234",	"2^x")
-	FUNC(OP_10POWX,	&decNumberPow10,	XMC(cpx_POW10),	&int10pow,	"10\234",	"10^x")
+	FUNC(OP__1POW,	&decNumberPow_1,	&cmplx_1x,	NOFN,	"(-1)\234",	"(-1)^x")
+	FUNC(OP_LOG,	&dn_log10,		XMC(cpx_LOG10),	NOFN,	"LOG\271\270",	"LG")
+	FUNC(OP_LG2,	&dn_log2,		XMC(cpx_LOG2),	NOFN,	"LOG\272",	"LB")
+	FUNC(OP_2POWX,	&decNumberPow2,		XMC(cpx_POW2),	NOFN,	"2\234",	"2^x")
+	FUNC(OP_10POWX,	&decNumberPow10,	XMC(cpx_POW10),	NOFN,	"10\234",	"10^x")
 	FUNC(OP_LN1P,	&decNumberLn1p,		XMC(cpx_LN1P),	NOFN,		"LN1+x",	CNULL)
 	FUNC(OP_EXPM1,	&decNumberExpm1,	XMC(cpx_EXPM1),	NOFN,		"e\234-1",	"EXP-1")
 	FUNC(OP_LAMW,	XMR(W0),		XMC(CPX_W0),	NOFN,		"W\276",	"W0")
 	FUNC(OP_LAMW1,	XMR(W1),		NOFN,		NOFN,		"W\033",	"W1")
 	FUNC(OP_INVW,	XMR(W_INVERSE),		XMC(CPX_W_INVERSE),NOFN,	"W\235",	"INV-W")
-	FUNC(OP_SQR,	&decNumberSquare,	XMC(cpx_x2),	&intSqr,	"x\232",	"x^2")
-	FUNC(OP_CUBE,	&decNumberCube,		XMC(cpx_x3),	&intCube,	"x\200",	"x^3")
-	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	&intMonadic,	"\200\003",	"CROOT")
-	FUNC(OP_FIB,	XMR(FIB),		XMC(CPX_FIB),	&intFib,	"FIB",		CNULL)
+	FUNC(OP_SQR,	&decNumberSquare,	XMC(cpx_x2),	NOFN,	"x\232",	"x^2")
+	FUNC(OP_CUBE,	&decNumberCube,		XMC(cpx_x3),	NOFN,	"x\200",	"x^3")
+	FUNC(OP_CUBERT,	&decNumberCubeRoot,	&cmplxCubeRoot,	NOFN,	"\200\003",	"CROOT")
+	FUNC(OP_FIB,	XMR(FIB),		XMC(CPX_FIB),	NOFN,	"FIB",		CNULL)
 	FUNC(OP_2DEG,	&decNumberDRG,		NOFN,		NOFN,		"\015DEG",	">DEG")
 	FUNC(OP_2RAD,	&decNumberDRG,		NOFN,		NOFN,		"\015RAD",	">RAD")
 	FUNC(OP_2GRAD,	&decNumberDRG,		NOFN,		NOFN,		"\015GRAD",	">GRAD")
@@ -166,8 +166,8 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_INVGUD,	XMR(inv_gd),		XMC(cpx_inv_gd),NOFN,		"g\206\235",	"INV-GUD")
 #endif
 
-	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	&intMonadic,	"x!",		CNULL)
-	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	&intMonadic,	"\202",		"GAMMA")
+	FUNC(OP_FACT,	&decNumberFactorial,	XMC(cpx_FACT),	NOFN,	"x!",		CNULL)
+	FUNC(OP_GAMMA,	&decNumberGamma,	&cmplxGamma,	NOFN,	"\202",		"GAMMA")
 	FUNC(OP_LNGAMMA,&decNumberLnGamma,	&cmplxLnGamma,	NOFN,		"LN\202",	"LNGAMMA")
 	FUNC(OP_DEG2RAD,&decNumberD2R,		NOFN,		NOFN,		"\005\015rad",	"DEG>RAD")
 	FUNC(OP_RAD2DEG,&decNumberR2D,		NOFN,		NOFN,		"rad\015\005",	"RAD>DEG")
@@ -245,9 +245,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_PERTOT,	XMR(PERTOT),		NOFN,		NOFN,		"%T",		CNULL)
 	FUNC(OP_HMS2,	&decNumberHMS2HR,	NOFN,		NOFN,		"\015HR",	">HR")
 	FUNC(OP_2HMS,	&decNumberHR2HMS,	NOFN,		NOFN,		"\015H.MS",	">H.MS")
-	FUNC(OP_NOT,	&decNumberNot,		NOFN,		&intNot,	"NOT",		CNULL)
-	FUNC(OP_BITCNT,	NOFN,			NOFN,		&intNumBits,	"nBITS",	CNULL)
-	FUNC(OP_MIRROR,	NOFN,			NOFN,		&intMirror,	"MIRROR",	CNULL)
+	FUNC(OP_NOT,	&decNumberNot,		NOFN,		NOFN,	"NOT",		CNULL)
+	FUNC(OP_BITCNT,	NOFN,			NOFN,		NOFN,	"nBITS",	CNULL)
+	FUNC(OP_MIRROR,	NOFN,			NOFN,		NOFN,	"MIRROR",	CNULL)
 	FUNC(OP_DOWK,	&dateDayOfWeek,		NOFN,		NOFN,		"WDAY",		CNULL)
 	FUNC(OP_D2J,	&dateToJ,		NOFN,		NOFN,		"D\015J",	"D>J")
 	FUNC(OP_J2D,	&dateFromJ,		NOFN,		NOFN,		"J\015D",	"J>D")
@@ -265,18 +265,18 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_EASTER,	&dateEaster,		NOFN,		NOFN,		"EASTER",	CNULL)
 #endif
 #ifdef INCLUDE_FACTOR
-	FUNC(OP_FACTOR,	&decFactor,		NOFN,		&intFactor,	"FACTOR",	CNULL)
+	FUNC(OP_FACTOR,	&decFactor,		NOFN,		NOFN,	"FACTOR",	CNULL)
 #endif
 	FUNC(OP_DATE_YEAR, &dateExtraction,	NOFN,		NOFN,		"YEAR",		CNULL)
 	FUNC(OP_DATE_MONTH, &dateExtraction,	NOFN,		NOFN,		"MONTH",	CNULL)
 	FUNC(OP_DATE_DAY, &dateExtraction,	NOFN,		NOFN,		"DAY",		CNULL)
 #ifdef INCLUDE_USER_IO
-	FUNC(OP_RECV1,	&decRecv,		NOFN,		&intRecv,	"RECV1",	CNULL)
+	FUNC(OP_RECV1,	&decRecv,		NOFN,		NOFN,	"RECV1",	CNULL)
 #endif
 #ifdef INCLUDE_MANTISSA
 	FUNC(OP_MANTISSA, &decNumberMantissa,	NOFN,		NOFN,		"MANT",		CNULL)
 	FUNC(OP_EXPONENT, &decNumberExponent,	NOFN,		NOFN,		"EXPT",		CNULL)
-	FUNC(OP_ULP,	  &decNumberULP,	NOFN,		XMI(int_ULP),	"ULP",		CNULL)
+	FUNC(OP_ULP,	  &decNumberULP,	NOFN,		NOFN,	"ULP",		CNULL)
 #endif
 #ifdef INCLUDE_XROM_DIGAMMA
 	FUNC(OP_DIGAMMA,XMR(DIGAMMA),		XMC(CPX_DIGAMMA),	NOFN,	"\226",		"DIGAMMA")
@@ -306,21 +306,21 @@ CMDTAB const struct dyfunc_cmdtab dyfuncs_ct[ NUM_DYADIC ] = {
 #else
 const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 #endif
-	FUNC(OP_POW,	&dn_power,		&cmplxPower,	&intPower,	"y\234",	"y^x")
-	FUNC(OP_ADD,	&dn_add,		&cmplxAdd,	&intAdd,	"+",		CNULL)
-	FUNC(OP_SUB,	&dn_subtract,		&cmplxSubtract,	&intSubtract,	"-",		CNULL)
-	FUNC(OP_MUL,	&dn_multiply,		&cmplxMultiply,	&intMultiply,	"\034",		"*")
-	FUNC(OP_DIV,	&dn_divide,		&cmplxDivide,	&intDivide,	"/",		CNULL)
+	FUNC(OP_POW,	&dn_power,		&cmplxPower,	NOFN,	"y\234",	"y^x")
+	FUNC(OP_ADD,	&dn_add,		&cmplxAdd,	NOFN,	"+",		CNULL)
+	FUNC(OP_SUB,	&dn_subtract,		&cmplxSubtract,	NOFN,	"-",		CNULL)
+	FUNC(OP_MUL,	&dn_multiply,		&cmplxMultiply,	NOFN,	"\034",		"*")
+	FUNC(OP_DIV,	&dn_divide,		&cmplxDivide,	NOFN,	"/",		CNULL)
 #ifdef INCLUDE_INTEGER_DIVIDE
-	FUNC(OP_IDIV,	XDR(IDIV),		XDC(cpx_IDIV),	&intDivide,	"IDIV",		CNULL)
+	FUNC(OP_IDIV,	XDR(IDIV),		XDC(cpx_IDIV),	NOFN,	"IDIV",		CNULL)
 #endif
-	FUNC(OP_MOD,	&decNumberBigMod,	NOFN,		&intMod,	"RMDR",		CNULL)
+	FUNC(OP_MOD,	&decNumberBigMod,	NOFN,		NOFN,	"RMDR",		CNULL)
 #ifdef INCLUDE_MOD41
-	FUNC(OP_MOD41,	&decNumberBigMod,	NOFN,		&intMod,	"MOD",		CNULL)
+	FUNC(OP_MOD41,	&decNumberBigMod,	NOFN,		NOFN,	"MOD",		CNULL)
 #endif
-	FUNC(OP_LOGXY,	&decNumberLogxy,	XDC(cpx_LOGXY),	&intDyadic,	"LOG\213",	"LOGx")
-	FUNC(OP_MIN,	&dn_min,		NOFN,		&intMin,	"MIN",		CNULL)
-	FUNC(OP_MAX,	&dn_max,		NOFN,		&intMax,	"MAX",		CNULL)
+	FUNC(OP_LOGXY,	&decNumberLogxy,	XDC(cpx_LOGXY),	NOFN,	"LOG\213",	"LOGx")
+	FUNC(OP_MIN,	&dn_min,		NOFN,		NOFN,	"MIN",		CNULL)
+	FUNC(OP_MAX,	&dn_max,		NOFN,		NOFN,	"MAX",		CNULL)
 	FUNC(OP_ATAN2,	&decNumberArcTan2,	NOFN,		NOFN,		"ANGLE",	CNULL)
 	FUNC(OP_BETA,	XDR(beta),		XDC(cpx_beta),	NOFN,		"\241",		"BETA")
 	FUNC(OP_LNBETA,	&decNumberLnBeta,	XDC(cpx_lnbeta),NOFN,		"LN\241",	"LNBETA")
@@ -333,23 +333,23 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_CN,	&decNumberCN,		&cmplxCN,	NOFN,		"CN",		CNULL)
 	FUNC(OP_DN,	&decNumberDN,		&cmplxDN,	NOFN,		"DN",		CNULL)
 #endif
-	FUNC(OP_COMB,	&decNumberComb,		XDC(CPX_COMB),	&intDyadic,	"COMB",		CNULL)
-	FUNC(OP_PERM,	&decNumberPerm,		XDC(CPX_PERM),	&intDyadic,	"PERM",		CNULL)
+	FUNC(OP_COMB,	&decNumberComb,		XDC(CPX_COMB),	NOFN,	"COMB",		CNULL)
+	FUNC(OP_PERM,	&decNumberPerm,		XDC(CPX_PERM),	NOFN,	"PERM",		CNULL)
 	FUNC(OP_PERMG,	XDR(PERMARGIN),		NOFN,		NOFN,		"%+MG",		CNULL)
 	FUNC(OP_MARGIN,	XDR(MARGIN),		NOFN,		NOFN,		"%MG",		CNULL)
-	FUNC(OP_PARAL,	XDR(PARL),		XDC(CPX_PARL),	XDI(PARL),	"||",		CNULL)
+	FUNC(OP_PARAL,	XDR(PARL),		XDC(CPX_PARL),	NOFN,	"||",		CNULL)
 	FUNC(OP_AGM,	XDR(AGM),		XDC(CPX_AGM),	NOFN,		"AGM",		CNULL)
 	FUNC(OP_HMSADD,	&decNumberHMSAdd,	NOFN,		NOFN,		"H.MS+",	CNULL)
 	FUNC(OP_HMSSUB,	&decNumberHMSSub,	NOFN,		NOFN,		"H.MS-",	CNULL)
-	FUNC(OP_GCD,	&decNumberGCD,		NOFN,		&intGCD,	"GCD",		CNULL)
-	FUNC(OP_LCM,	&decNumberLCM,		NOFN,		&intLCM,	"LCM",		CNULL)
+	FUNC(OP_GCD,	&decNumberGCD,		NOFN,		NOFN,	"GCD",		CNULL)
+	FUNC(OP_LCM,	&decNumberLCM,		NOFN,		NOFN,	"LCM",		CNULL)
 
-	FUNC(OP_LAND,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"AND",		CNULL)
-	FUNC(OP_LOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"OR",		CNULL)
-	FUNC(OP_LXOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"XOR",		CNULL)
-	FUNC(OP_LNAND,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"NAND",		CNULL)
-	FUNC(OP_LNOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"NOR",		CNULL)
-	FUNC(OP_LXNOR,	&decNumberBooleanOp,	NOFN,		&intBooleanOp,	"XNOR",		CNULL)
+	FUNC(OP_LAND,	&decNumberBooleanOp,	NOFN,		NOFN,	"AND",		CNULL)
+	FUNC(OP_LOR,	&decNumberBooleanOp,	NOFN,		NOFN,	"OR",		CNULL)
+	FUNC(OP_LXOR,	&decNumberBooleanOp,	NOFN,		NOFN,	"XOR",		CNULL)
+	FUNC(OP_LNAND,	&decNumberBooleanOp,	NOFN,		NOFN,	"NAND",		CNULL)
+	FUNC(OP_LNOR,	&decNumberBooleanOp,	NOFN,		NOFN,	"NOR",		CNULL)
+	FUNC(OP_LXNOR,	&decNumberBooleanOp,	NOFN,		NOFN,	"XNOR",		CNULL)
 
 	FUNC(OP_DTADD,	XDR(DATE_ADD),		NOFN,		NOFN,		"DAYS+",	CNULL)
 	FUNC(OP_DTDIF,	XDR(DATE_DELTA),	NOFN,		NOFN,		"\203DAYS",	"DDAYS")
@@ -361,7 +361,7 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_HERMITE_HE,	XDR(HermiteHe),		NOFN,	NOFN,		"H\275",	"Hn")
 	FUNC(OP_HERMITE_H,	XDR(HermiteH),		NOFN,	NOFN,		"H\275\276",	"Hnp")
 #ifdef INCLUDE_XROOT
-	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	&intDyadic,	"\234\003y",	"XROOT")
+	FUNC(OP_XROOT,	&decNumberXRoot,	&cmplxXRoot,	NOFN,	"\234\003y",	"XROOT")
 #endif
 #ifdef INCLUDE_MANTISSA
 	FUNC(OP_NEIGHBOUR,&decNumberNeighbour,	NOFN,		NOFN,		"NEIGHB",	CNULL)
@@ -397,18 +397,18 @@ CMDTAB const struct trifunc_cmdtab trifuncs_ct[ NUM_TRIADIC ] = {
 const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #endif
 	FUNC(OP_BETAI,		&betai,			(FP_TRIADIC_INT) NOFN,	"I\241",	"IBETA")
-	FUNC(OP_DBL_DIV, 	(FP_TRIADIC_REAL) NOFN,	&intDblDiv,		"DBL/",		CNULL)
-	FUNC(OP_DBL_MOD, 	(FP_TRIADIC_REAL) NOFN,	&intDblRmdr,		"DBLR",		CNULL)
+	FUNC(OP_DBL_DIV, 	(FP_TRIADIC_REAL) NOFN,	NOFN,		"DBL/",		CNULL)
+	FUNC(OP_DBL_MOD, 	(FP_TRIADIC_REAL) NOFN,	NOFN,		"DBLR",		CNULL)
 #ifdef INCLUDE_MULADD
-	FUNC(OP_MULADD, 	&decNumberMAdd,		&intMAdd,		"\034+",	"*+")
+	FUNC(OP_MULADD, 	&decNumberMAdd,		NOFN,		"\034+",	"*+")
 #endif
 	FUNC(OP_PERMRR,		XTR(PERMMR),		(FP_TRIADIC_INT) NOFN,	"%MRR",		CNULL)
         FUNC(OP_GEN_LAGUERRE,   XTR(LaguerreLnA),	(FP_TRIADIC_INT) NOFN,	"L\275\240",	"LnAlpha")
 
 	FUNC(OP_TO_DATE,	&dateFromYMD,		(FP_TRIADIC_INT) NOFN,	"\015DATE",	">DATE")
 #ifdef INCLUDE_INT_MODULO_OPS
-	FUNC(OP_MULMOD, 	(FP_TRIADIC_REAL) NOFN,	&intmodop,		"\034MOD",	CNULL)
-	FUNC(OP_EXPMOD, 	(FP_TRIADIC_REAL) NOFN,	&intmodop,		"^MOD",		CNULL)
+	FUNC(OP_MULMOD, 	(FP_TRIADIC_REAL) NOFN,	NOFN,		"\034MOD",	CNULL)
+	FUNC(OP_EXPMOD, 	(FP_TRIADIC_REAL) NOFN,	NOFN,		"^MOD",		CNULL)
 #endif
 #undef FUNC
 };
@@ -531,9 +531,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_FRACT,		&op_fract,		"FRACT",	CNULL)
 	FUNC0(OP_LEAD0,		XNIL(IM_LZON),		"LZON",		CNULL)
 	FUNC0(OP_TRIM0,		XNIL(IM_LZOFF),		"LZOFF",	CNULL)
-	FUNC1(OP_LJ,		&int_justify,		"LJ",		CNULL)
-	FUNC1(OP_RJ,		&int_justify,		"RJ",		CNULL)
-	FUNC0(OP_DBL_MUL, 	&intDblMul,		"DBL\034",	"DBL*")
+	FUNC0(OP_DBL_MUL, 	NOFN,		"DBL\034",	"DBL*")
 	FN_I2(OP_RCLSIGMA,	&sigma_sum,		"SUM",		CNULL)
 	FUNC0(OP_DATEDMY,	XNIL(D_DMY),		"D.MY",		CNULL)
 	FUNC0(OP_DATEYMD,	XNIL(D_YMD),		"Y.MD",		CNULL)
@@ -757,22 +755,6 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDflg(RARG_FCC,	&cmdflag,				"FC?C",		CNULL)
 	CMDflg(RARG_FCS,	&cmdflag,				"FC?S",		CNULL)
 	CMDflg(RARG_FCF,	&cmdflag,				"FC?F",		CNULL)
-	CMD(RARG_WS,		&intws,		MAX_WORD_SIZE+1,	"WSIZE",	CNULL)
-	CMD(RARG_RL,		&introt,	MAX_WORD_SIZE,		"RL",		CNULL)
-	CMD(RARG_RR,		&introt,	MAX_WORD_SIZE,		"RR",		CNULL)
-	CMD(RARG_RLC,		&introt,	MAX_WORD_SIZE+1,	"RLC",		CNULL)
-	CMD(RARG_RRC,		&introt,	MAX_WORD_SIZE+1,	"RRC",		CNULL)
-	CMD(RARG_SL,		&introt,	MAX_WORD_SIZE+1,	"SL",		CNULL)
-	CMD(RARG_SR,		&introt,	MAX_WORD_SIZE+1,	"SR",		CNULL)
-	CMD(RARG_ASR,		&introt,	MAX_WORD_SIZE+1,	"ASR",		CNULL)
-	CMD(RARG_SB,		&intbits,	MAX_WORD_SIZE,		"SB",		CNULL)
-	CMD(RARG_CB,		&intbits,	MAX_WORD_SIZE,		"CB",		CNULL)
-	CMD(RARG_FB,		&intbits,	MAX_WORD_SIZE,		"FB",		CNULL)
-	CMD(RARG_BS,		&intbits,	MAX_WORD_SIZE,		"BS?",		CNULL)
-	CMD(RARG_BC,		&intbits,	MAX_WORD_SIZE,		"BC?",		CNULL)
-	CMD(RARG_MASKL,		&intmsks,	MAX_WORD_SIZE+1,	"MASKL",	CNULL)
-	CMD(RARG_MASKR,		&intmsks,	MAX_WORD_SIZE+1,	"MASKR",	CNULL)
-	CMD(RARG_BASE,		&set_int_base,	17,			"BASE",		CNULL)
 
 	CMDnoI(RARG_CONV,	&cmdconv,	NUM_CONSTS_CONV*2,	"conv",		CNULL)
 

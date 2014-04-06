@@ -654,12 +654,12 @@ void drop(enum nilop op) {
 
 #ifndef is_intmode
 int is_intmode(void) {
-	return UState.intm;
+	return 0;
 }
 #endif
 
 int is_dblmode(void) {
-	return (! UState.intm && UState.mode_double);
+	return (UState.mode_double);
 }
 
 int is_usrdblmode(void) {
@@ -758,11 +758,7 @@ void process_cmdline(void) {
 		set_lift();
 		CmdLineDot = 0;
 		CmdLineEex = 0;
-		if (is_intmode()) {
-			const int sgn = (cmdline[0] == '-')?1:0;
-			unsigned long long int x = s_to_ull(cmdline+sgn, int_base());
-			setX_int_sgn(x, sgn);
-		} else if (cmdlinedot == 2) {
+		if (cmdlinedot == 2) {
 			char *d0, *d1, *d2;
 			int neg;
 
@@ -1748,7 +1744,9 @@ void cmdconv(unsigned int arg, enum rarg op) {
  *  If it is zero, the test fails.
  */
 void fin_tst(const int a) {
-	if (! a && incpc())
+	if (! XromRunning)
+		DispMsg = a ? "Yes" : "No";
+	else if (! a && incpc())
 		decpc();
 }
 
@@ -2150,28 +2148,6 @@ void clrflags(enum nilop op) {
 }
 
 
-/* Integer word size
- */
-void intws(unsigned int arg, enum rarg op) {
-	if (is_intmode()) {
-		int i, ss = stack_size();
-		unsigned int oldlen = UState.int_len;
-		long long int v;
-
-		for (i=0; i<ss; i++) {
-			v = mask_value(get_reg_n_int(regX_idx + i));
-			UState.int_len = arg;
-			set_reg_n_int(regX_idx + i, mask_value(v));
-			UState.int_len = oldlen;
-		}
-		v = mask_value(get_reg_n_int(regL_idx));
-		UState.int_len = arg;
-		set_reg_n_int(regL_idx, mask_value(v));
-	} else
-	    UState.int_len = arg;
-}
-
-
 /* Convert from a real to a fraction
  */
 
@@ -2249,43 +2225,6 @@ void op_float(enum nilop op) {
 	StackBase = get_reg_n(regX_idx);
 }
 
-/*  Switch to integer mode.
- *  We convert the stack and LastX
- */
-static void switch_to_int(void) {
-	int i;
-	int mask = StackRegMask[UState.stack_depth];
-	const int dbl = is_dblmode();
-
-	for (i = regK_idx; i >= regX_idx; --i, mask <<= 1) {
-		if (mask & 0x800) {
-			// register belongs to stack
-			int_from_register(i, i);
-		}
-		else if (dbl) {
-			// compress the other registers to save them while integer mode is active
-			packed_from_packed128(Regs - TOPREALREG + MAX_REG_NUM + i, &(get_reg_n(i)->d));
-		}
-	}
-}
-
-static void set_base(unsigned int b) {
-	UState.int_base = b - 1;
-	if (!is_intmode())
-		switch_to_int();
-}
-
-void set_int_base(unsigned int arg, enum rarg op) {
-	if (arg < 2) {
-		if (arg == 0)
-			op_float(OP_FLOAT);
-		else
-			op_fract(OP_FRACT);
-	} else
-		set_base(arg);
-}
-
-
 void op_fract(enum nilop op) {
 	op_float(OP_FLOAT);
 	UState.fract = 1;
@@ -2303,21 +2242,11 @@ void cmdsavem(unsigned int arg, enum rarg op) {
 }
 
 void cmdrestm(unsigned int arg, enum rarg op) {
-	const int intm = is_intmode();
 	xcopy( &UState, get_reg_n(arg), sizeof(unsigned long long int) );
 
 	// Fix things
 	if ( UState.contrast == 0 )
 		UState.contrast = 6;
-
-	if (intm != is_intmode()) {
-		// Switch back to decimal or integer mode
-		UState.intm = intm;
-		if (intm)
-			op_float(OP_FLOAT_RCLM);
-		else
-			switch_to_int();
-	}
 }
 #endif
 
@@ -2939,100 +2868,7 @@ static int dispatch_xrom(void *fp)
 	return 1;
 }
 
-/*
- *  Return an integer result from a decimal value, setting flags properly
- */
-static long long int intResult(decNumber *r) {
-	unsigned long long int i;
-	int s;
-	decNumber ri, t;
-
-	decNumberRoundDigits(&t, r, 25, DEC_ROUND_HALF_EVEN);
-	decNumberTrunc(&ri, &t);
-	set_carry(dn_eq(&ri, &t) ? 0 : 1);
-
-	if (decNumberIsNaN(&t)) {
-		err(ERR_DOMAIN);
-		return 0;
-	}
-	if (decNumberIsSpecial(&t)) {
-		set_overflow(1);
-		return 0;
-	}
-	i = dn_to_ull(&ri, &s);
-	dn_abs(&t, &t);
-	set_overflow(check_overflow(i) || dn_ge(&t, &const_2pow64));
-	return build_value(i, s);
-}
-
-
 #ifndef UNIVERSAL_DISPATCH
-
-
-/*
- *  Call a monadic function by reusing the decimal code for integer mode
- */
-long long int intMonadic(long long int x) {
-	int s;
-	unsigned long long int vx = extract_value(x, &s);
-	decNumber rx, r;
-	unsigned int f = argKIND(XeqOpCode);
-
-	if (isNULL(monfuncs[f].mondreal))
-		bad_mode_error();
-	else {
-		FP_MONADIC_REAL fp = (FP_MONADIC_REAL) EXPAND_ADDRESS(monfuncs[f].mondreal);
-#ifndef REALBUILD
-		if (check_for_xrom_address(fp) != NULL)
-			bad_mode_error();
-		else 
-#endif
-		{
-			ullint_to_dn(&rx, vx);
-			if (s)
-				dn_minus(&rx, &rx);
-			if (NULL == fp(&r, &rx))
-				err(ERR_DOMAIN);
-			else
-				return intResult(&r);
-		}
-	}
-	return 0;
-}
-
-/*
- *  Call a dyadic function by reusing the decimal code for integer mode
- */
-long long int intDyadic(long long int y, long long int x) {
-	int sx, sy;
-	unsigned long long int vx = extract_value(x, &sx);
-	unsigned long long int vy = extract_value(y, &sy);
-	decNumber rx, ry, r;
-	unsigned int f = argKIND(XeqOpCode);
-
-	if (isNULL(dyfuncs[f].dydreal))
-		bad_mode_error();
-	else {
-		FP_DYADIC_REAL fp = (FP_DYADIC_REAL) EXPAND_ADDRESS(dyfuncs[f].dydreal);
-
-#ifndef REALBUILD
-		if (check_for_xrom_address(fp) != NULL)
-			bad_mode_error();
-		else 
-#endif
-		{
-			ullint_to_dn(&rx, vx);	if (sx) dn_minus(&rx, &rx);
-			ullint_to_dn(&ry, vy);	if (sy)	dn_minus(&ry, &ry);
-
-			if (NULL == fp(&r, &ry, &rx))
-				err(ERR_DOMAIN);
-			else
-				return intResult(&r);
-		}
-	}
-	return 0;
-}
-
 
 /* Dispatch routine for niladic functions.
  */
@@ -3760,7 +3596,6 @@ void xeq(opcode op)
 					// Restore state to before xIN
 					XromFlags.xIN = 0;
 					UState.mode_double = XromFlags.mode_double;
-					UState.intm = XromFlags.mode_int;
 					UState.stack_depth = XromFlags.stack_depth;
 					// Restore the global return stack
 					RetStk = XromUserRetStk;
@@ -4031,7 +3866,6 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	XromFlags.state_lift_in = get_lift();
 	XromFlags.stack_depth = UState.stack_depth;
 	XromFlags.mode_double = UState.mode_double;
-	XromFlags.mode_int = UState.intm;
         XromFlags.rounding_mode = UState.rounding_mode;
 	XromFlags.state_lift = 1;
 	XromFlags.xIN = 1;
@@ -4107,7 +3941,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
  *     bit 1 set - leave I alone even with a complex result
  */
 void cmdxout(unsigned int arg, enum rarg op) {
-	int i, dbl, intm;
+	int i, dbl;
 #ifndef REALBUILD
 	// shouldn't happen in final build
 	if (! XromFlags.xIN) {
@@ -4118,7 +3952,6 @@ void cmdxout(unsigned int arg, enum rarg op) {
 	// Switch back to user stack settings
 	XromFlags.xIN = 0;
 	dbl = UState.mode_double = XromFlags.mode_double;
-	intm = UState.intm = XromFlags.mode_int;
         UState.rounding_mode = XromFlags.rounding_mode;
 	UState.stack_depth = XromFlags.stack_depth;
 	StackBase = get_reg_n(regX_idx);
@@ -4162,14 +3995,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 
 	// Copy results
 	i = XromOut;
-	if (intm) {
-		while (i--) {
-			decNumber r;
-			decimal128ToNumber(&(XromStack[i].d), &r);
-			set_reg_n_int(regX_idx + i, intResult(&r));
-		}
-	}
-	else if (dbl) {
+	if (dbl) {
 		move_regs(StackBase, XromStack, i);
 	}
 	else {

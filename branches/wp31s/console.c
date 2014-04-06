@@ -425,7 +425,6 @@ int main(int argc, char *argv[]) {
 			dump_menu("alpha compares", "", CATALOGUE_ALPHA_COMPARES);
 			dump_menu("alpha arrows", "", CATALOGUE_ALPHA_ARROWS);
 			dump_menu("programming", "", CATALOGUE_PROG);
-			dump_menu("prog x.fcn", "", CATALOGUE_PROGXFCN);
 			dump_menu("modes", "", CATALOGUE_MODE);
 			//dump_menu("test", "", CATALOGUE_TEST);
 			dump_menu("conversions", "", CATALOGUE_CONV);
