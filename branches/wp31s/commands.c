@@ -240,9 +240,9 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_xhat,	&stats_xhat,		NOFN,		NOFN,		"\031",		"FCSTx")
 	FUNC(OP_yhat,	&stats_yhat,		NOFN,		NOFN,		"\032",		"FCSTy")
 	FUNC(OP_sigper,	&stats_sigper,		NOFN,		NOFN,		"%\221",	"%SUM")
-	FUNC(OP_PERCNT,	XMR(PERCENT),		NOFN,		NOFN,		"%",		CNULL)
-	FUNC(OP_PERCHG,	XMR(PERCHG),		NOFN,		NOFN,		"\203%",	"%CH")
-	FUNC(OP_PERTOT,	XMR(PERTOT),		NOFN,		NOFN,		"%T",		CNULL)
+	FUNC(OP_PERCNT,	&decNumberPercent,	NOFN,		NOFN,		"%",		CNULL)
+	FUNC(OP_PERCHG,	&decNumberPerchg,	NOFN,		NOFN,		"\203%",	"%CH")
+	FUNC(OP_PERTOT,	&decNumberPertot,	NOFN,		NOFN,		"%T",		CNULL)
 	FUNC(OP_HMS2,	&decNumberHMS2HR,	NOFN,		NOFN,		"\015HR",	">HR")
 	FUNC(OP_2HMS,	&decNumberHR2HMS,	NOFN,		NOFN,		"\015H.MS",	">H.MS")
 	FUNC(OP_NOT,	&decNumberNot,		NOFN,		NOFN,	"NOT",		CNULL)
@@ -402,7 +402,7 @@ const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #ifdef INCLUDE_MULADD
 	FUNC(OP_MULADD, 	&decNumberMAdd,		NOFN,		"\034+",	"*+")
 #endif
-	FUNC(OP_PERMRR,		XTR(PERMMR),		(FP_TRIADIC_INT) NOFN,	"%MRR",		CNULL)
+	FUNC(OP_PERMRR,		&decNumberPerMRR,	(FP_TRIADIC_INT) NOFN,	"%MRR",		CNULL)
         FUNC(OP_GEN_LAGUERRE,   XTR(LaguerreLnA),	(FP_TRIADIC_INT) NOFN,	"L\275\240",	"LnAlpha")
 
 	FUNC(OP_TO_DATE,	&dateFromYMD,		(FP_TRIADIC_INT) NOFN,	"\015DATE",	">DATE")

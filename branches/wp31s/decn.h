@@ -203,4 +203,9 @@ extern decNumber *dn_ln(decNumber *r, const decNumber *x);
 
 extern decNumber *decRecv(decNumber *r, const decNumber *x);
 
+extern decNumber *decNumberPercent(decNumber *, const decNumber *);
+extern decNumber *decNumberPerchg(decNumber *, const decNumber *);
+extern decNumber *decNumberPertot(decNumber *, const decNumber *);
+extern decNumber *decNumberPerMRR(decNumber *, const decNumber *, const decNumber *, const decNumber *);
+
 #endif
