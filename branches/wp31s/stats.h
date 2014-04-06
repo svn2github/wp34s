@@ -27,15 +27,15 @@ typedef struct _stat_data {
 	decimal128 sY2;		
 	decimal128 sXY;
 
-	decimal64 sX;		
-	decimal64 sY;		
-	decimal64 slnX;		
-	decimal64 slnXlnX;	
-	decimal64 slnY;		
-	decimal64 slnYlnY;	
-	decimal64 slnXlnY;	
-	decimal64 sXlnY;	
-	decimal64 sYlnX;
+	decimal128 sX;		
+	decimal128 sY;		
+	decimal128 slnX;		
+	decimal128 slnXlnX;	
+	decimal128 slnY;		
+	decimal128 slnYlnY;	
+	decimal128 slnXlnY;	
+	decimal128 sXlnY;	
+	decimal128 sYlnX;
 
 	signed int sN;		
 } STAT_DATA;

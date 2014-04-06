@@ -106,14 +106,6 @@ void sigma_clear(enum nilop op) {
 
 /* Accumulate sigma data.
  */
-static void sigop(decimal64 *r, const decNumber *a, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
-	decNumber t, u;
-
-	decimal64ToNumber(r, &t);
-	(*op)(&u, &t, a);
-	packed_from_number(r, &u);
-}
-
 static void sigop128(decimal128 *r, const decNumber *a, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
 	decNumber t, u;
 
@@ -125,12 +117,6 @@ static void sigop128(decimal128 *r, const decNumber *a, decNumber *(*op)(decNumb
 
 /* Multiply a pair of values and accumulate into the sigma data.
  */
-static void mulop(decimal64 *r, const decNumber *a, const decNumber *b, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
-	decNumber t;
-
-	sigop(r, dn_multiply(&t, a, b), op);
-}
-
 static void mulop128(decimal128 *r, const decNumber *a, const decNumber *b, decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
 	decNumber t;
 
@@ -143,8 +129,8 @@ static void mulop128(decimal128 *r, const decNumber *a, const decNumber *b, decN
 static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const decNumber *), const decNumber *x, const decNumber *y) {
 	decNumber lx, ly;
 
-	sigop(&sigmaX, x, op);
-	sigop(&sigmaY, y, op);
+	sigop128(&sigmaX, x, op);
+	sigop128(&sigmaY, y, op);
 	mulop128(&sigmaX2, x, x, op);
 	mulop128(&sigmaY2, y, y, op);
 	mulop128(&sigmaXY, x, y, op);
@@ -152,19 +138,16 @@ static void sigma_helper(decNumber *(*op)(decNumber *, const decNumber *, const 
 	decNumberSquare(&lx, x);
 	mulop128(&sigmaX2Y, &lx, y, op);
 
-//	if (UState.sigma_mode == SIGMA_LINEAR)
-//		return;
-
 	dn_ln(&lx, x);
 	dn_ln(&ly, y);
 
-	sigop(&sigmalnX, &lx, op);
-	sigop(&sigmalnY, &ly, op);
-	mulop(&sigmalnXlnX, &lx, &lx, op);
-	mulop(&sigmalnYlnY, &ly, &ly, op);
-	mulop(&sigmalnXlnY, &lx, &ly, op);
-	mulop(&sigmaXlnY, x, &ly, op);
-	mulop(&sigmaYlnX, y, &lx, op);
+	sigop128(&sigmalnX, &lx, op);
+	sigop128(&sigmalnY, &ly, op);
+	mulop128(&sigmalnXlnX, &lx, &lx, op);
+	mulop128(&sigmalnYlnY, &ly, &ly, op);
+	mulop128(&sigmalnXlnY, &lx, &ly, op);
+	mulop128(&sigmaXlnY, x, &ly, op);
+	mulop128(&sigmaYlnX, y, &lx, op);
 }
 
 static void sigma_helper_xy(decNumber *(*op)(decNumber *, const decNumber *, const decNumber *)) {
@@ -222,7 +205,7 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 					decNumber *sxx, decNumber *syy,
 					decNumber *sxy, enum sigma_modes mode) {
 	int lnx, lny;
-	decimal64 *xy = NULL;
+	decimal128 *xy = NULL;
 
 	if (mode == SIGMA_BEST)
 		mode = determine_best();
@@ -260,24 +243,24 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 	if (N != NULL)
 		int_to_dn(N, sigmaN);
 	if (sx != NULL)
-		decimal64ToNumber(lnx ? &sigmalnX : &sigmaX, sx);
+		decimal128ToNumber(lnx ? &sigmalnX : &sigmaX, sx);
 	if (sy != NULL)
-		decimal64ToNumber(lny ? &sigmalnY : &sigmaY, sy);
+		decimal128ToNumber(lny ? &sigmalnY : &sigmaY, sy);
 	if (sxx != NULL) {
 		if (lnx)
-			decimal64ToNumber(&sigmalnXlnX, sxx);
+			decimal128ToNumber(&sigmalnXlnX, sxx);
 		else
 			decimal128ToNumber(&sigmaX2, sxx);
 	}
 	if (syy != NULL) {
 		if (lny)
-			decimal64ToNumber(&sigmalnYlnY, syy);
+			decimal128ToNumber(&sigmalnYlnY, syy);
 		else
 			decimal128ToNumber(&sigmaY2, syy);
 	}
 	if (sxy != NULL) {
 		if (lnx || lny)
-			decimal64ToNumber(xy, sxy);
+			decimal128ToNumber(xy, sxy);
 		else
 			decimal128ToNumber(&sigmaXY, sxy);
 	}
@@ -288,7 +271,6 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 /*
  *  Return a summation register to the user.
  *  Opcodes have been reaaranged to move sigmaN to the end of the list.
- *  decimal64 values are grouped together, if decimal128 is used, regrouping is required
  */
 void sigma_val(enum nilop op) {
 	REGISTER *const x = StackBase;
@@ -300,17 +282,12 @@ void sigma_val(enum nilop op) {
 		else
 			setX_int_sgn( -sigmaN, 1);
 	}
-	else if (op < OP_sigmaX) {
+	else {
 		decimal128 *d = (&sigmaX2Y) + (op - OP_sigmaX2Y);
 		if (dbl)
 			x->d = *d;
 		else
 			packed_from_packed128(&(x->s), d);
-	}
-	else {
-		x->s = (&sigmaX)[op - OP_sigmaX];
-		if (dbl)
-			packed128_from_packed(&(x->d), &(x->s));
 	}
 }
 
@@ -319,11 +296,12 @@ void sigma_sum(enum nilop op) {
 	REGISTER *const y = get_reg_n(regY_idx);
 
 	sigmaCheck();	// recompute pointer to StatRegs
-	x->s = sigmaX;
-	y->s = sigmaY;
 	if (is_dblmode()) {
-		packed128_from_packed(&(x->d), &(x->s));
-		packed128_from_packed(&(y->d), &(y->s));
+		x->d = sigmaX;
+		y->d = sigmaY;
+	} else {
+		packed_from_packed128(&(x->s), &sigmaX);
+		packed_from_packed128(&(y->s), &sigmaY);
 	}
 }
 
