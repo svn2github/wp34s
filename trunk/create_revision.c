@@ -28,6 +28,9 @@ static char *Template =
 	"#endif\n"
 	"const char SvnRevision[ 4 ] = \"%-4d\";\n";
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 int main( int argc, char **argv )
 {
 	char buffer[ 100 ];
@@ -37,13 +40,11 @@ int main( int argc, char **argv )
 	char *p;
 
 // tmpnam is deprecated but switching to the cleaner mkstemp is too much work for no benefit
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 	if (tmpnam( tmpname ) == NULL) {
 		perror("Unable to create tempory file name");
 		return 1;
 	}
-#pragma GCC diagnostic pop
 
 	// Try to execute svnversion
 	sprintf( buffer, "svnversion -n >%s", tmpname );
@@ -93,3 +94,6 @@ int main( int argc, char **argv )
 
 	return 0;
 }
+
+#pragma GCC diagnostic pop
+
