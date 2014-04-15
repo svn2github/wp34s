@@ -443,7 +443,7 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
-#define RET_STACK_SIZE  12       /* Return stack */
+#define RET_STACK_SIZE  100     /* Return stack */
 
 #define STACK_SIZE      8       /* Maximum depth of RPN stack */
 #define EXTRA_REG       4
