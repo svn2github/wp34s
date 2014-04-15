@@ -1146,62 +1146,17 @@ static int storcl_op(unsigned short opr, int index, decNumber *r, int rev) {
 	return 0;
 }
 
-static int storcl_intop(unsigned short opr, int index, long long int *r, int rev) {
-	long long int x, y;
-
-	x = getX_int();
-	y = get_reg_n_int(index);
-
-	if (rev) {
-		const long long int t = x;
-		x = y;
-		y = t;
-	}
-
-	switch (opr) {
-	case 1:
-		*r = intAdd(y, x);
-		break;
-	case 2:
-		*r = intSubtract(y, x);
-		break;
-	case 3:
-		*r = intMultiply(y, x);
-		break;
-	case 4:
-		*r = intDivide(y, x);
-		break;
-	case 5:
-		*r = intMin(y, x);
-		break;
-	case 6:
-		*r = intMax(y, x);
-		break;
-	default:
-		return 1;
-	}
-	return 0;
-}
-
 /* We've got a STO operation to do.
  */
 void cmdsto(unsigned int arg, enum rarg op) {
 	if (op == RARG_STO) {
 		copyreg_n(arg, regX_idx);
 	} else {
-		if (is_intmode()) {
-			long long int r;
+		decNumber r;
 
-			if (storcl_intop(op - RARG_STO, arg, &r, 0))
-				illegal(op);
-			set_reg_n_int(arg, r);
-		} else {
-			decNumber r;
-
-			if (storcl_op(op - RARG_STO, arg, &r, 0))
-				illegal(op);
-			setRegister(arg, &r);
-		}
+		if (storcl_op(op - RARG_STO, arg, &r, 0))
+			illegal(op);
+		setRegister(arg, &r);
 	}
 }
 
@@ -1214,21 +1169,12 @@ static void do_rcl(int index, enum rarg op) {
 		lift_if_enabled();
 		copyreg(StackBase, &temp);
 	} else {
-		if (is_intmode()) {
-			long long int r;
+		decNumber r;
 
-			if (storcl_intop(op - RARG_RCL, index, &r, 1))
-				illegal(op);
-			setlastX();
-			setX_int(r);
-		} else {
-			decNumber r;
-
-			if (storcl_op(op - RARG_RCL, index, &r, 1))
-				illegal(op);
-			setlastX();
-			setX(&r);
-		}
+		if (storcl_op(op - RARG_RCL, index, &r, 1))
+			illegal(op);
+		setlastX();
+		setX(&r);
 	}
 }
 
