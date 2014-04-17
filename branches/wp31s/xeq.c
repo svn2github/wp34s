@@ -3853,7 +3853,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	else {
 		// Convert decimal64 to decinal128
 		for (i = 0; i < STACK_SIZE + EXTRA_REG; ++i)
-			packed128_from_packed(&(XromStack[i].d), &(get_stack(i)->s));
+			packed128_from_packed(&(XromStack[i].d), Regs + MAX_REG_NUM + i);
 		UState.mode_double = 1;
 	}
 
