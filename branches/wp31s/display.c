@@ -1829,7 +1829,7 @@ void display(void) {
 		*bp++ = '?';
 		set_status(buf);
 	} else if (cata) {
-		const opcode op = current_catalogue(State.catpos);
+		const opcode op = current_catalogue(State.catposition[State2.catalogue]);
 		char b2[16];
 		const char *p;
 

@@ -978,6 +978,8 @@ enum catalogues
         CATALOGUE_LABELS,
         CATALOGUE_REGISTERS,
         CATALOGUE_STATUS,
+
+	LAST_CATALOGUE
 };
 
 // annunciators() in display.c depends on SHIFT_[NFGH] having the values 0, 1, 2 and 3.

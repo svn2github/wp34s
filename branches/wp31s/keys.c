@@ -336,7 +336,7 @@ static void init_arg(const enum rarg base) {
 static void init_cat(enum catalogues cat) {
 	if (cat == CATALOGUE_NONE && State2.catalogue != CATALOGUE_NONE) {
 		// Save last catalogue for a later restore
-		State.last_cat = State2.catalogue;
+		//State.last_cat = State2.catalogue;
 		CmdLineLength = 0;
 	}
 	process_cmdline();
@@ -364,10 +364,10 @@ static void init_cat(enum catalogues cat) {
 		// Normal catalogue
 		State2.catalogue = cat;
 		State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST);
-		if (cat != CATALOGUE_NONE && State.last_cat != cat) {
+		//if (cat != CATALOGUE_NONE && State.last_cat != cat) {
 			// Different catalogue, reset position
-			State.catpos = 0;
-		}
+			//State.catpos = 0;
+		//}
 	}
 	reset_shift();
 #if defined(QTGUI) || defined(IOS)
@@ -1364,10 +1364,10 @@ static int forbidden_alpha(int pos) {
  *  Catalogue navigation
  */
 static int process_catalogue(const keycode c, const enum shifts shift, const int is_multi) {
-	int pos = State.catpos;
+	const enum catalogues cat = (enum catalogues) State2.catalogue;
+	int pos = State.catposition[cat];
 	int ch;
 	const int ctmax = current_catalogue_max();
-	const enum catalogues cat = (enum catalogues) State2.catalogue;
 
 	if (shift == SHIFT_N) {
 		switch (c) {
@@ -1519,7 +1519,7 @@ set_max:
 set_pos:
 	while (is_multi && pos && forbidden_alpha(pos))
 		--pos;
-	State.catpos = pos;
+	State.catposition[cat] = pos;
 	return STATE_UNFINISHED;
 }
 

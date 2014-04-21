@@ -119,8 +119,8 @@ struct _ustate {
  *  System state
  */
 struct _state {
-	unsigned int last_cat :    5;	// Most recent catalogue browsed
-	unsigned int catpos :      7;	// Position in said catalogue
+	//unsigned int last_cat :    5;	// Most recent catalogue browsed
+	//unsigned int catpos :      7;	// Position in said catalogue
 	unsigned int entryp :      1;	// Has the user entered something since the last program stop
 	unsigned int have_stats :  1;	// Statistics registers are allocated
 	unsigned int deep_sleep :  1;   // Used to wake up correctly
@@ -137,6 +137,8 @@ struct _state {
 	 */
 	unsigned short pc;		// XEQ internal - don't use
 	signed short retstk_ptr;	// XEQ internal - don't use
+
+	unsigned char catposition[LAST_CATALOGUE];
 };
 
 /*
