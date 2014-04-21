@@ -662,12 +662,6 @@ int is_dblmode(void) {
 	return (UState.mode_double);
 }
 
-int is_usrdblmode(void) {
-	if (XromFlags.xIN)
-		return XromFlags.mode_double;
-	return is_dblmode();
-}
-
 /* Convert a possibly signed string to an integer
  */
 int s_to_i(const char *s) {
