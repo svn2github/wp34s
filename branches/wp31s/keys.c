@@ -182,7 +182,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 *  Normal processing - Not alpha mode
 		 */
 		static const struct _map cmap[] = {
-			{ K20,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_COMPLEX_CONST } },
+			{ K20,     { CATALOGUE_CONST,     CATALOGUE_NONE,      CATALOGUE_NONE          } },
 			{ K21,     { CATALOGUE_CONV,      CATALOGUE_NONE,      CATALOGUE_CONV          } },
 			{ K22,     { CATALOGUE_MODE,      CATALOGUE_MODE,      CATALOGUE_MODE          } },
 			{ K23,     { CATALOGUE_DISPL,     CATALOGUE_DISPL,     CATALOGUE_DISPL         } },
@@ -363,7 +363,7 @@ static void init_cat(enum catalogues cat) {
 	default:
 		// Normal catalogue
 		State2.catalogue = cat;
-		State2.cmplx = (cat == CATALOGUE_COMPLEX || cat == CATALOGUE_COMPLEX_CONST);
+		State2.cmplx = 0;
 		//if (cat != CATALOGUE_NONE && State.last_cat != cat) {
 			// Different catalogue, reset position
 			//State.catpos = 0;
@@ -1226,8 +1226,7 @@ int current_catalogue_max(void) {
 	static const unsigned char catalogue_sizes[] =
 	{
 		0, // NONE
-		SIZE_catalogue,
-		SIZE_cplx_catalogue,
+		//SIZE_catalogue,
 		SIZE_stats_catalogue,
 		SIZE_prob_catalogue,
 		//SIZE_int_catalogue,
@@ -1241,9 +1240,9 @@ int current_catalogue_max(void) {
 		SIZE_alpha_letters,
 		SIZE_alpha_subscripts,
 		NUM_CONSTS_CAT,
-		NUM_CONSTS_CAT,
+		//NUM_CONSTS_CAT,
 		SIZE_conv_catalogue,
-		SIZE_sums_catalogue,
+		//SIZE_sums_catalogue,
 		SIZE_clear_catalogue,
 		SIZE_displ_catalogue,
     	SIZE_more_catalogue,
@@ -1276,8 +1275,7 @@ opcode current_catalogue(int n) {
 	static const void *catalogues[] =
 	{
 		NULL, // NONE
-		catalogue,
-		cplx_catalogue,
+		//catalogue,
 		stats_catalogue,
 		prob_catalogue,
 		//int_catalogue,
@@ -1290,10 +1288,10 @@ opcode current_catalogue(int n) {
 		alpha_arrows,
 		alpha_letters,
 		alpha_subscripts,
-		NULL,
-		NULL,
+		NULL,   // CONST
+		//NULL, // complex CONST
 		NULL, //CONV
-		sums_catalogue,
+		//sums_catalogue,
 		clear_catalogue,
 		displ_catalogue,
 		more_catalogue,
@@ -1308,9 +1306,6 @@ opcode current_catalogue(int n) {
 
 	if (c == CATALOGUE_CONST) {
 		return CONST(n);
-	}
-	if (c == CATALOGUE_COMPLEX_CONST) {
-		return CONST_CMPLX(n);
 	}
 	if (c == CATALOGUE_CONV) {
 		const int cnv = conv_catalogue[n];
@@ -1471,11 +1466,6 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 			// Handle alpha shift in alpha character catalogues
 			State2.alphashift = 1 - State2.alphashift;
 			return STATE_UNFINISHED;
-		}
-	} else if (shift == SHIFT_G) {
-		if (c == K24 && cat == CATALOGUE_SUMS) {
-			init_cat(CATALOGUE_NONE);
-			return OP_NIL | OP_SIGMACLEAR;
 		}
 	}
 

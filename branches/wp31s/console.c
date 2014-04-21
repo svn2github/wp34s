@@ -406,10 +406,8 @@ int main(int argc, char *argv[]) {
 				dump_constants();
 				return 0;
 			}
-			dump_menu("float", "", CATALOGUE_NORMAL);
-			dump_menu("complex", "[cmplx]", CATALOGUE_COMPLEX);
 			dump_menu("statistics", "", CATALOGUE_STATS);
-			dump_menu("summations", "", CATALOGUE_SUMS);
+			//dump_menu("summations", "", CATALOGUE_SUMS);
 			dump_menu("probability", "", CATALOGUE_PROB);
 			//dump_menu("integer", "", CATALOGUE_INT);
 			//dump_menu("matrix", "", CATALOGUE_MATRIX);
@@ -429,7 +427,6 @@ int main(int argc, char *argv[]) {
 			//dump_menu("test", "", CATALOGUE_TEST);
 			dump_menu("conversions", "", CATALOGUE_CONV);
 			dump_menu("constants", "# ", CATALOGUE_CONST);
-			dump_menu("complex constants", "[cmplx]# ", CATALOGUE_COMPLEX_CONST);
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 			dump_menu("internals", "", CATALOGUE_INTERNAL);
 #endif

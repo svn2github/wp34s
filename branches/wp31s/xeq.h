@@ -948,8 +948,7 @@ enum sigma_modes {
 enum catalogues 
 {
         CATALOGUE_NONE=0,
-        CATALOGUE_NORMAL,
-        CATALOGUE_COMPLEX,
+        //CATALOGUE_NORMAL,
         CATALOGUE_STATS,
         CATALOGUE_PROB,
         //CATALOGUE_INT,
@@ -963,9 +962,8 @@ enum catalogues
         CATALOGUE_ALPHA_LETTERS,
         CATALOGUE_ALPHA_SUBSCRIPTS,
         CATALOGUE_CONST,
-        CATALOGUE_COMPLEX_CONST,
         CATALOGUE_CONV,
-        CATALOGUE_SUMS,
+        //CATALOGUE_SUMS,
 		CATALOGUE_CLEAR,
 		CATALOGUE_DISPL,
 		CATALOGUE_MORE,

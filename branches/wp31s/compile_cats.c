@@ -34,197 +34,147 @@
 #define CONV(n, d, name)	RARG_BASEOP(RARG_CONV) + (n)*2 + (d),
 
 
-static s_opcode catalogue[] = {
-#ifdef INCLUDE_MOD41
-	DYA(OP_MOD41,		"MOD")
-#endif
-#ifdef INCLUDE_INTEGER_DIVIDE
-	DYA(OP_IDIV,		"IDIV")
-#endif
-	MON(OP__1POW,		"(-1)^x")
-	DYA(OP_PERMG,		"%+MG")
-	DYA(OP_MARGIN,		"%MG")
-	TRI(OP_PERMRR,		"%MRR")
-	MON(OP_PERTOT,		"%T")
-	MON(OP_sigper,		"%\221")
-	DYA(OP_ATAN2,		"ANGLE")
-	MON(OP_CEIL,		"CEIL")
-	MON(OP_CUBE,		"x[^3]")
-	MON(OP_CUBERT,		"[^3][sqrt]")
-	NILIC(OP_DROP,		"DROP")
-	MON(OP_D2J,		"D\015J")
-	MON(OP_DOWK,		"WDAY")
-	DYA(OP_DTADD,		"DAYS+")
-	NILIC(OP_2FRAC,		"DECOMP")
-	MON(OP_ERF,		"erf")
-	MON(OP_ERFC,		"erfc")
-	MON(OP_EXPM1,		"e^x-1")
-#ifdef INCLUDE_FACTOR
-	MON(OP_FACTOR,		"FACTOR")
-#endif 
-	MON(OP_FIB,		"FIB")
-	MON(OP_FLOOR,		"FLOOR")
-	DYA(OP_GCD,		"GCD")
-	DYA(OP_HMSADD,		"H.MS+")
-	DYA(OP_HMSSUB,		"H.MS-")
-	TRI(OP_BETAI,		"I\241")
-	DYA(OP_GAMMAg,		"[gamma][sub-x][sub-y]")
-	DYA(OP_GAMMAG,		"[GAMMA][sub-x][sub-y]")
-	DYA(OP_GAMMAP,		"I[GAMMA][sub-p]")
-	DYA(OP_GAMMAQ,		"I[GAMMA][sub-q]")
-	MON(OP_J2D,		"J\015D")
-	DYA(OP_LCM,		"LCM")
-	MON(OP_LN1P,		"LN1P")
-	DYA(OP_LNBETA,		"LN\241")
-	MON(OP_LNGAMMA,		"LN\202")
-	DYA(OP_MAX,		"MAX")
-	DYA(OP_MIN,		"MIN")
-	DYA(OP_LNAND,		"NAND")
-	DYA(OP_LNOR,		"NOR")
-	MON(OP_ROUND,		"ROUNDI")
-	RARGCMD(RARG_ROUND,	"RSD")
-	RARGCMD(RARG_ROUND_DEC,	"RDP")
-	MON(OP_SIGN,		"SIGN")
-	MON(OP_SINC,		"SINC")
-	RARGCMD(RARG_SLD,	"SDL")
-	RARGCMD(RARG_SRD,	"SDR")
-	NILIC(OP_VERSION,	"VERS")
-	NILIC(OP_WHO,		"WHO")
-	MON(OP_LAMW,		"W\276")
-	MON(OP_INVW,		"W\235")
-	MON(OP_LAMW1,		"W\033")
-	DYA(OP_LXNOR,		"XNOR")
-	NILIC(OP_ALPHADATE,	"\240DATE")
-	NILIC(OP_ALPHADAY,	"\240DAY")
-	RARGCMD(RARG_AIP,	"\240IP")
-	NILIC(OP_ALPHALEN,	"\240LENG")
-	NILIC(OP_ALPHAMONTH,	"\240MONTH")
-	RARGCMD(RARG_AREG,	"\240RC#")
-	RARGCMD(RARG_ARCL,	"\240RCL")
-	RARGCMD(RARG_ALRL,	"\240RL")
-	RARGCMD(RARG_ALRR,	"\240RR")
-	RARGCMD(RARG_ALSL,	"\240SL")
-	RARGCMD(RARG_ALSR,	"\240SR")
-	RARGCMD(RARG_ASTO,	"\240STO")
-	NILIC(OP_ALPHATIME,	"\240TIME")
-	NILIC(OP_XTOALPHA,	"x->\240")
-	NILIC(OP_ALPHATOX,	"\240->x")
-	DYA(OP_BETA,		"\241")
-	MON(OP_GAMMA,		"\202")
-	DYA(OP_DTDIF,		"\203DAYS")
-	DYA(OP_AGM,		"AGM")
-	MON(OP_DEG2,		"DED\015")
-	MON(OP_RAD2,		"RAD\015")
-	MON(OP_GRAD2,		"GRAD\015")
-#ifdef INCLUDE_MULADD
-	TRI(OP_MULADD,		"\034+")
-#endif
-#ifdef INCLUDE_EASTER
-	MON(OP_EASTER,		"EASTER")
-#endif
-	MON(OP_ZETA,		"\245")
-	MON(OP_Bn,		"B[sub-n]")
-	MON(OP_BnS,		"B[sub-n][super-*]")
-	NILIC(OP_QUAD,		"QUAD")
-	NILIC(OP_NEXTPRIME,	"NEXTP")
-
-	MON(OP_DATE_DAY,	"DAY")
-	MON(OP_DATE_MONTH,	"MONTH")
-	MON(OP_DATE_YEAR,	"YEAR")
-	TRI(OP_TO_DATE,		"\015DATE")
-	NILIC(OP_DATE_TO,	"DATE\015")
-
-	DYA(OP_LEGENDRE_PN,	"P\275")
-	DYA(OP_CHEBYCHEV_TN,	"T\275")
-	DYA(OP_CHEBYCHEV_UN,	"U\275")
-	DYA(OP_LAGUERRE,	"L\275")
-	TRI(OP_GEN_LAGUERRE,	"L\275\240")
-	DYA(OP_HERMITE_HE,	"HE\275")
-	DYA(OP_HERMITE_H,	"H\275")
-	NILIC(OP_VOLTAGE,	"BATT")
-#ifdef INCLUDE_FLASH_RECALL
-	RARGCMD(RARG_FLRCL,	"RCF")
-#endif
-
-#ifdef INCLUDE_MANTISSA
-	MON(OP_MANTISSA,	"MANT")
-	MON(OP_EXPONENT,	"EXPT")
-	MON(OP_ULP,		"ULP")
-	DYA(OP_NEIGHBOUR,	"NEIGHB")
-#endif
-#ifdef INCLUDE_XROOT
-	DYA(OP_XROOT,		"\234\003y")
-#endif
-#ifdef INCLUDE_GUDERMANNIAN
-	MON(OP_GUDER,		"gd")
-	MON(OP_INVGUD,		"gd[^-1]")
-#endif
-#ifdef INCLUDE_XROM_BESSEL
-	DYA(OP_BESJN,		"Jn")
-	DYA(OP_BESIN,		"In")
-	DYA(OP_BESYN,		"Yn")
-	DYA(OP_BESKN,		"Kn")
-#endif
-#ifdef INCLUDE_XROM_DIGAMMA
-	MON(OP_DIGAMMA,		"[PSI]")
-#endif
-
-	NILIC(OP_DATE,		"DATE")
-	NILIC(OP_TIME,		"TIME")
-#ifdef INCLUDE_STOPWATCH
-	NILIC(OP_STOPWATCH,	"STOPW")
-#endif
-};
-
-static s_opcode cplx_catalogue[] = {
-#ifdef INCLUDE_INTEGER_DIVIDE
-	CDYA(OP_IDIV,		"IDIV")
-#endif
-	CMON(OP__1POW,		"(-1)^x")
-/*	CMON(OP_CCONJ,		"CONJ")
-	CMON(OP_CUBE,		"x[^3]")
-	CMON(OP_CUBERT,		"[^3][sqrt]")
-	NILIC(OP_DROPXY,	"DROP")
-	CMON(OP_EXPM1,		"e^x-1")
-	CMON(OP_FIB,		"FIB")
-	CMON(OP_LN1P,		"LN1P")
-	CDYA(OP_LNBETA,		"LN\241")
-	CMON(OP_LNGAMMA,	"LN\202")
-	CMON(OP_SIGN,		"SIGN")
-	CMON(OP_SINC,		"SINC")
-	CMON(OP_LAMW,		"W\276")
-	CMON(OP_INVW,		"W\235")
-	CDYA(OP_BETA,		"\241")
-	CMON(OP_GAMMA,		"\202")
-	CDYA(OP_AGM,		"AGM")
-#ifdef INCLUDE_FLASH_RECALL
-	RARGCMD(RARG_FLCRCL, 	"\024RCF")
-#endif
-#ifdef INCLUDE_XROOT
-	CDYA(OP_XROOT,		"\234\003y")
-#endif
-#ifdef INCLUDE_GUDERMANNIAN
-	CMON(OP_GUDER,		"gd")
-	CMON(OP_INVGUD,		"gd[^-1]")
-#endif
-#ifdef INCLUDE_XROM_BESSEL
-	CDYA(OP_BESJN,		"Jn")
-	CDYA(OP_BESIN,		"In")
-	CDYA(OP_BESYN,		"Yn")
-	CDYA(OP_BESKN,		"Kn")
-#endif
-#ifdef INCLUDE_XROM_DIGAMMA
-	CMON(OP_DIGAMMA,	"[PSI]")
-#endif
-	NILIC(OP_DOTPROD,	"DOT")
-	NILIC(OP_CROSSPROD,	"CROSS")
-#ifndef INCLUDE_INTERNAL_CATALOGUE
-#ifdef INCLUDE_INDIRECT_CONSTS
-	RARGCMD(RARG_IND_CONST_CMPLX, "\024CNST")
-#endif
-#endif
-*/
-};
+// static s_opcode catalogue[] = {
+// #ifdef INCLUDE_MOD41
+// 	DYA(OP_MOD41,		"MOD")
+// #endif
+// #ifdef INCLUDE_INTEGER_DIVIDE
+// 	DYA(OP_IDIV,		"IDIV")
+// #endif
+// 	MON(OP__1POW,		"(-1)^x")
+// 	DYA(OP_PERMG,		"%+MG")
+// 	DYA(OP_MARGIN,		"%MG")
+// 	TRI(OP_PERMRR,		"%MRR")
+// 	MON(OP_PERTOT,		"%T")
+// 	MON(OP_sigper,		"%\221")
+// 	DYA(OP_ATAN2,		"ANGLE")
+// 	MON(OP_CEIL,		"CEIL")
+// 	MON(OP_CUBE,		"x[^3]")
+// 	MON(OP_CUBERT,		"[^3][sqrt]")
+// 	NILIC(OP_DROP,		"DROP")
+// 	MON(OP_D2J,		"D\015J")
+// 	MON(OP_DOWK,		"WDAY")
+// 	DYA(OP_DTADD,		"DAYS+")
+// 	NILIC(OP_2FRAC,		"DECOMP")
+// 	MON(OP_ERF,		"erf")
+// 	MON(OP_ERFC,		"erfc")
+// 	MON(OP_EXPM1,		"e^x-1")
+// #ifdef INCLUDE_FACTOR
+// 	MON(OP_FACTOR,		"FACTOR")
+// #endif 
+// 	MON(OP_FIB,		"FIB")
+// 	MON(OP_FLOOR,		"FLOOR")
+// 	DYA(OP_GCD,		"GCD")
+// 	DYA(OP_HMSADD,		"H.MS+")
+// 	DYA(OP_HMSSUB,		"H.MS-")
+// 	TRI(OP_BETAI,		"I\241")
+// 	DYA(OP_GAMMAg,		"[gamma][sub-x][sub-y]")
+// 	DYA(OP_GAMMAG,		"[GAMMA][sub-x][sub-y]")
+// 	DYA(OP_GAMMAP,		"I[GAMMA][sub-p]")
+// 	DYA(OP_GAMMAQ,		"I[GAMMA][sub-q]")
+// 	MON(OP_J2D,		"J\015D")
+// 	DYA(OP_LCM,		"LCM")
+// 	MON(OP_LN1P,		"LN1P")
+// 	DYA(OP_LNBETA,		"LN\241")
+// 	MON(OP_LNGAMMA,		"LN\202")
+// 	DYA(OP_MAX,		"MAX")
+// 	DYA(OP_MIN,		"MIN")
+// 	DYA(OP_LNAND,		"NAND")
+// 	DYA(OP_LNOR,		"NOR")
+// 	MON(OP_ROUND,		"ROUNDI")
+// 	RARGCMD(RARG_ROUND,	"RSD")
+// 	RARGCMD(RARG_ROUND_DEC,	"RDP")
+// 	MON(OP_SIGN,		"SIGN")
+// 	MON(OP_SINC,		"SINC")
+// 	RARGCMD(RARG_SLD,	"SDL")
+// 	RARGCMD(RARG_SRD,	"SDR")
+// 	NILIC(OP_VERSION,	"VERS")
+// 	NILIC(OP_WHO,		"WHO")
+// 	MON(OP_LAMW,		"W\276")
+// 	MON(OP_INVW,		"W\235")
+// 	MON(OP_LAMW1,		"W\033")
+// 	DYA(OP_LXNOR,		"XNOR")
+// 	NILIC(OP_ALPHADATE,	"\240DATE")
+// 	NILIC(OP_ALPHADAY,	"\240DAY")
+// 	RARGCMD(RARG_AIP,	"\240IP")
+// 	NILIC(OP_ALPHALEN,	"\240LENG")
+// 	NILIC(OP_ALPHAMONTH,	"\240MONTH")
+// 	RARGCMD(RARG_AREG,	"\240RC#")
+// 	RARGCMD(RARG_ARCL,	"\240RCL")
+// 	RARGCMD(RARG_ALRL,	"\240RL")
+// 	RARGCMD(RARG_ALRR,	"\240RR")
+// 	RARGCMD(RARG_ALSL,	"\240SL")
+// 	RARGCMD(RARG_ALSR,	"\240SR")
+// 	RARGCMD(RARG_ASTO,	"\240STO")
+// 	NILIC(OP_ALPHATIME,	"\240TIME")
+// 	NILIC(OP_XTOALPHA,	"x->\240")
+// 	NILIC(OP_ALPHATOX,	"\240->x")
+// 	DYA(OP_BETA,		"\241")
+// 	MON(OP_GAMMA,		"\202")
+// 	DYA(OP_DTDIF,		"\203DAYS")
+// 	DYA(OP_AGM,		"AGM")
+// 	MON(OP_DEG2,		"DED\015")
+// 	MON(OP_RAD2,		"RAD\015")
+// 	MON(OP_GRAD2,		"GRAD\015")
+// #ifdef INCLUDE_MULADD
+// 	TRI(OP_MULADD,		"\034+")
+// #endif
+// #ifdef INCLUDE_EASTER
+// 	MON(OP_EASTER,		"EASTER")
+// #endif
+// 	MON(OP_ZETA,		"\245")
+// 	MON(OP_Bn,		"B[sub-n]")
+// 	MON(OP_BnS,		"B[sub-n][super-*]")
+// 	NILIC(OP_QUAD,		"QUAD")
+// 	NILIC(OP_NEXTPRIME,	"NEXTP")
+// 
+// 	MON(OP_DATE_DAY,	"DAY")
+// 	MON(OP_DATE_MONTH,	"MONTH")
+// 	MON(OP_DATE_YEAR,	"YEAR")
+// 	TRI(OP_TO_DATE,		"\015DATE")
+// 	NILIC(OP_DATE_TO,	"DATE\015")
+// 
+// 	DYA(OP_LEGENDRE_PN,	"P\275")
+// 	DYA(OP_CHEBYCHEV_TN,	"T\275")
+// 	DYA(OP_CHEBYCHEV_UN,	"U\275")
+// 	DYA(OP_LAGUERRE,	"L\275")
+// 	TRI(OP_GEN_LAGUERRE,	"L\275\240")
+// 	DYA(OP_HERMITE_HE,	"HE\275")
+// 	DYA(OP_HERMITE_H,	"H\275")
+// 	NILIC(OP_VOLTAGE,	"BATT")
+// #ifdef INCLUDE_FLASH_RECALL
+// 	RARGCMD(RARG_FLRCL,	"RCF")
+// #endif
+// 
+// #ifdef INCLUDE_MANTISSA
+// 	MON(OP_MANTISSA,	"MANT")
+// 	MON(OP_EXPONENT,	"EXPT")
+// 	MON(OP_ULP,		"ULP")
+// 	DYA(OP_NEIGHBOUR,	"NEIGHB")
+// #endif
+// #ifdef INCLUDE_XROOT
+// 	DYA(OP_XROOT,		"\234\003y")
+// #endif
+// #ifdef INCLUDE_GUDERMANNIAN
+// 	MON(OP_GUDER,		"gd")
+// 	MON(OP_INVGUD,		"gd[^-1]")
+// #endif
+// #ifdef INCLUDE_XROM_BESSEL
+// 	DYA(OP_BESJN,		"Jn")
+// 	DYA(OP_BESIN,		"In")
+// 	DYA(OP_BESYN,		"Yn")
+// 	DYA(OP_BESKN,		"Kn")
+// #endif
+// #ifdef INCLUDE_XROM_DIGAMMA
+// 	MON(OP_DIGAMMA,		"[PSI]")
+// #endif
+// 
+// 	NILIC(OP_DATE,		"DATE")
+// 	NILIC(OP_TIME,		"TIME")
+// #ifdef INCLUDE_STOPWATCH
+// 	NILIC(OP_STOPWATCH,	"STOPW")
+// #endif
+// };
 
 static s_opcode clear_catalogue[] = {
 	NILIC(OP_CLALL,		"CLALL")
@@ -275,22 +225,22 @@ static s_opcode more_catalogue[] = {
 #endif
 };
 
-static s_opcode sums_catalogue[] = {
-	NILIC(OP_sigmaN,	"n\221")
-	NILIC(OP_sigmalnXlnX,	"\221ln\232X")
-	NILIC(OP_sigmalnYlnY,	"\221ln\232Y")
-	NILIC(OP_sigmalnX,	"\221lnX")
-	NILIC(OP_sigmalnXlnY,	"\221lnXY")
-	NILIC(OP_sigmalnY,	"\221lnY")
-	NILIC(OP_sigmaX,	"\221x")
-	NILIC(OP_sigmaX2,	"\221x\232")
-	NILIC(OP_sigmaXlnY,	"\221XlnY")
-	NILIC(OP_sigmaXY,	"\221xy")
-	NILIC(OP_sigmaX2Y,	"\221x\232y")
-	NILIC(OP_sigmaY,	"\221y")
-	NILIC(OP_sigmaY2,	"\221y\232")
-	NILIC(OP_sigmaYlnX,	"\221YlnX")
-};
+// static s_opcode sums_catalogue[] = {
+// 	NILIC(OP_sigmaN,	"n\221")
+// 	NILIC(OP_sigmalnXlnX,	"\221ln\232X")
+// 	NILIC(OP_sigmalnYlnY,	"\221ln\232Y")
+// 	NILIC(OP_sigmalnX,	"\221lnX")
+// 	NILIC(OP_sigmalnXlnY,	"\221lnXY")
+// 	NILIC(OP_sigmalnY,	"\221lnY")
+// 	NILIC(OP_sigmaX,	"\221x")
+// 	NILIC(OP_sigmaX2,	"\221x\232")
+// 	NILIC(OP_sigmaXlnY,	"\221XlnY")
+// 	NILIC(OP_sigmaXY,	"\221xy")
+// 	NILIC(OP_sigmaX2Y,	"\221x\232y")
+// 	NILIC(OP_sigmaY,	"\221y")
+// 	NILIC(OP_sigmaY2,	"\221y\232")
+// 	NILIC(OP_sigmaYlnX,	"\221YlnX")
+// };
 
 static s_opcode stats_catalogue[] = {
 	DYA(OP_PERM, "PERM")
@@ -1131,10 +1081,10 @@ int main(int argc, char *argv[]) {
 		printf("%d, ", opcode_breaks[i]);
 	printf("\n};\n\n");
 
-	CAT(catalogue);
-	CAT(cplx_catalogue);
+	//CAT(catalogue);
+	//CAT(cplx_catalogue);
 	CAT(stats_catalogue);
-	CAT(sums_catalogue);
+	//CAT(sums_catalogue);
 	CAT(prob_catalogue);
 	//CAT(int_catalogue);
 	//CAT(test_catalogue);

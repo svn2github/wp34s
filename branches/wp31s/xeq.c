@@ -4208,9 +4208,8 @@ int init_34s(void)
 		if (multicmds[i].n != i)
 			bad_table("multi command", i, multicmds[i].cmd, NAME_LEN);
 	check_const_cat();
-	check_cat(CATALOGUE_COMPLEX, "complex");
 	check_cat(CATALOGUE_STATS, "statistics");
-	check_cat(CATALOGUE_SUMS, "summations");
+	//check_cat(CATALOGUE_SUMS, "summations");
 	check_cat(CATALOGUE_PROB, "probability");
 	check_cat(CATALOGUE_PROG, "programme");
 	check_cat(CATALOGUE_MODE, "mode");
@@ -4227,7 +4226,7 @@ int init_34s(void)
 	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");
 	*/
 	check_cat(CATALOGUE_CONV, "conversion");
-	check_cat(CATALOGUE_NORMAL, "float");
+	//check_cat(CATALOGUE_NORMAL, "float");
 #ifdef INCLUDE_INTERNAL_CATALOGUE
 	check_cat(CATALOGUE_INTERNAL, "internal");
 #endif
