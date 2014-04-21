@@ -1876,31 +1876,16 @@ void cmdztest(unsigned int arg, enum rarg op) {
 }
 
 static int incdec(unsigned int arg, int inc) {
-	if (is_intmode()) {
-		long long int x = get_reg_n_int(arg);
-		int xs;
-		unsigned long long int xv;
+	decNumber x, y;
 
-		if (inc)
-			x = intAdd(x, 1LL);
-		else
-			x = intSubtract(x, 1LL);
-		set_reg_n_int(arg, x);
-
-		xv = extract_value(x, &xs);
-		return xv != 0;
-	} else {
-		decNumber x, y;
-
-		getRegister(&x, arg);
-		if (inc)
-			dn_inc(&x);
-		else
-			dn_dec(&x);
-		setRegister(arg, &x);
-		decNumberTrunc(&y, &x);
-		return ! dn_eq0(&y);
-	}
+	getRegister(&x, arg);
+	if (inc)
+		dn_inc(&x);
+	else
+		dn_dec(&x);
+	setRegister(arg, &x);
+	decNumberTrunc(&y, &x);
+	return ! dn_eq0(&y);
 }
 
 void cmdlincdec(unsigned int arg, enum rarg op) {
@@ -1912,70 +1897,47 @@ void cmdloopz(unsigned int arg, enum rarg op) {
 }
 
 void cmdloop(unsigned int arg, enum rarg op) {
-	if (is_intmode()) {
-		long long int x = get_reg_n_int(arg);
-		int xs;
-		unsigned long long int xv;
+	decNumber x, i, f, n, u;
 
-		if (op == RARG_ISG || op == RARG_ISE)
-			x = intAdd(x, 1LL);
+	getRegister(&x, arg);
+
+	// Break the number into the important bits
+	// nnnnn.fffii
+	dn_abs(&f, &x);
+	decNumberTrunc(&n, &f);			// n = nnnnn
+	dn_subtract(&u, &f, &n);		// u = .fffii
+	if (decNumberIsNegative(&x))
+		dn_minus(&n, &n);
+	dn_mulpow10(&i, &u, 3);			// i = fff.ii
+	decNumberTrunc(&f, &i);			// f = fff
+	dn_subtract(&i, &i, &f);		// i = .ii
+	dn_mul100(&x, &i);
+	decNumberTrunc(&i, &x);			// i = ii
+	if (dn_eq0(&i))
+		dn_1(&i);
+
+	if (op == RARG_ISG || op == RARG_ISE) {
+		dn_add(&n, &n, &i);
+		dn_compare(&x, &f, &n);
+		if (op == RARG_ISE)
+			fin_tst(dn_gt0(&x));
 		else
-			x = intSubtract(x, 1LL);
-		set_reg_n_int(arg, x);
-
-		xv = extract_value(x, &xs);
-		if (op == RARG_ISG)
-			fin_tst(! (xs == 0 && xv > 0));		// > 0
-		else if (op == RARG_DSE)
-			fin_tst(! (xs != 0 || xv == 0));	// <= 0
-		else if (op == RARG_ISE)
-			fin_tst(! (xs == 0 || xv == 0));	// >= 0
-		else // if (op == RARG_DSL)
-			fin_tst(! (xs != 0 && xv > 0));		// < 0
-		return;
+			fin_tst(dn_ge0(&x));
 	} else {
-		decNumber x, i, f, n, u;
-
-		getRegister(&x, arg);
-
-		// Break the number into the important bits
-		// nnnnn.fffii
-		dn_abs(&f, &x);
-		decNumberTrunc(&n, &f);			// n = nnnnn
-		dn_subtract(&u, &f, &n);		// u = .fffii
-		if (decNumberIsNegative(&x))
-			dn_minus(&n, &n);
-		dn_mulpow10(&i, &u, 3);			// i = fff.ii
-		decNumberTrunc(&f, &i);			// f = fff
-		dn_subtract(&i, &i, &f);		// i = .ii
-		dn_mul100(&x, &i);
-		decNumberTrunc(&i, &x);			// i = ii
-		if (dn_eq0(&i))
-			dn_1(&i);
-
-		if (op == RARG_ISG || op == RARG_ISE) {
-			dn_add(&n, &n, &i);
-			dn_compare(&x, &f, &n);
-			if (op == RARG_ISE)
-				fin_tst(dn_gt0(&x));
-			else
-				fin_tst(dn_ge0(&x));
-		} else {
-			dn_subtract(&n, &n, &i);
-			dn_compare(&x, &f, &n);
-			if (op == RARG_DSL)
-				fin_tst(dn_le0(&x));
-			else
-				fin_tst(dn_lt0(&x));
-		}
-
-		// Finally rebuild the result
-		if (decNumberIsNegative(&n)) {
-			dn_subtract(&x, &n, &u);
-		} else
-			dn_add(&x, &n, &u);
-		setRegister(arg, &x);
+		dn_subtract(&n, &n, &i);
+		dn_compare(&x, &f, &n);
+		if (op == RARG_DSL)
+			fin_tst(dn_le0(&x));
+		else
+			fin_tst(dn_lt0(&x));
 	}
+
+	// Finally rebuild the result
+	if (decNumberIsNegative(&n)) {
+		dn_subtract(&x, &n, &u);
+	} else
+		dn_add(&x, &n, &u);
+	setRegister(arg, &x);
 }
 
 
@@ -2373,10 +2335,7 @@ static void specials(const opcode op) {
 	case OP_CHS:
 		if (CmdLineLength)
 			cmdlinechs();
-		else if (is_intmode()) {
-			setX_int(intChs(getX_int()));
-			set_lift();
-		} else {
+		else {
 			decNumber x, r;
 
 			getX(&x);
