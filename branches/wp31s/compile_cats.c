@@ -52,6 +52,8 @@ static s_opcode displ_catalogue[] = {
 	RARGCMD(RARG_SCI,	"SCI")
 	NILIC(OP_THOUS_OFF,	"TSOFF")
 	NILIC(OP_THOUS_ON,	"TSON")
+	NILIC(OP_HIDEY,		"YDOFF")
+	NILIC(OP_SHOWY,		"YDON")
 };
 
 static s_opcode more_catalogue[] = {
@@ -75,6 +77,7 @@ static s_opcode more_catalogue[] = {
 	DYA(OP_XROOT,		"\234\003y")
 	DYA(OP_DTDIF,       "\203DAYS")
 	TRI(OP_PERMRR,      "MRR")
+	MON(OP_PERCNT,		"%")
     DYA(OP_PARAL,       "||")
 	MON(OP_CUBERT,		"[^3][sqrt]")
 	NILIC(OP_2FRAC,		"DECOMP")
@@ -445,39 +448,6 @@ static void emit_conv_catalogue(const char *name, s_opcode cat[], int num_cat) {
 	total_conv += num_cat;
 }
 
-
-static void emit_alpha(const char *name, unsigned char cat[], int num_cat) {
-	int i, j;
-	unsigned int c, c2[1000];
-
-	for (i=0; i<num_cat; i++)
-		c2[i] = cat[i];
-
-	for (i=0; i<num_cat; i++) {
-		unsigned int min = 0xffffff;
-		int mj = -1;
-		for (j=0; j<num_cat; j++) {
-			if (c2[j] == 0xffffff)
-				continue;
-			c = remap_chars(c2[j]);
-			if (c < min) {
-				min = c;
-				mj = j;
-			}
-		}
-		cat[i] = c2[mj];
-		c2[mj] = 0xffffff;
-	}
-
-	//qsort(cat, num_cat, 1, &alpha_compare);
-
-	printf("#define SIZE_%s %d\n", name, num_cat);
-	printf("static const char %s[] = {", name);
-	for (i=0; i<num_cat; i++)
-		printf("%s0%03o,", (i%8) == 0?"\n\t":" ", cat[i] & 0xff);
-	printf("\n};\n\n");
-        total_alpha += num_cat;
-}
 
 #include "pretty.c"
 
