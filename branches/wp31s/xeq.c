@@ -2685,7 +2685,7 @@ static void print_step(const opcode op) {
 	if (*p == '?')
 		*p = '\0';
 #ifdef DEBUG
-	trace( TraceBuffer );
+	wptrace( TraceBuffer );
 #else
 	State2.disp_small = 1;
 	DispMsg = TraceBuffer;
@@ -4151,7 +4151,7 @@ int init_34s(void)
 #include "pretty.c"
 #endif
 
-void trace( char *buff ) {
+void wptrace( char *buff ) {
 	char buffer[ 50 ];
 	char *p = buff - 1;
 	FILE *f = fopen( TRACE_FILE, "at" );
