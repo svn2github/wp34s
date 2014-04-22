@@ -495,7 +495,7 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_RTN,		&op_rtn,		"RTN",		CNULL)
 	FUNC0(OP_RTNp1,		&op_rtn,		"RTN+1",	CNULL)
 	FUNC0(OP_END,		&op_rtn,		"END",		CNULL)
-	FUNC0(OP_SIGMACLEAR,	&sigma_clear,		"\221CL",	"CLSUMS")
+	FUNC0(OP_SIGMACLEAR,	&sigma_clear,		"CL\221",	"CLSUMS")
 	FUNC0(OP_CLREG,		&clrreg,		"CLREGS",	CNULL)
 	FUNC0(OP_rCLX,		&clrx,			"CLx",		CNULL)
 	FUNC0(OP_CLSTK,		&clrstk,		"CLSTK",	CNULL)
