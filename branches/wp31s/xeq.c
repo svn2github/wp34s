@@ -2684,8 +2684,12 @@ static void print_step(const opcode op) {
 	scopy_char(p, prt(op, buf), '\0');
 	if (*p == '?')
 		*p = '\0';
+#ifdef DEBUG
+	trace( TraceBuffer );
+#else
 	State2.disp_small = 1;
 	DispMsg = TraceBuffer;
+#endif
 }
 #endif
 
@@ -3429,13 +3433,8 @@ void xeq(opcode op)
 	instruction_count++;
 #endif
 #ifndef REALBUILD
-	if (State2.trace && ! State2.sst) {
-		char buf[16];
-		if (XromRunning)
-			print_step(op);
-		else
-			sprintf(TraceBuffer, "%04X:%s", op, prt(op, buf));
-		DispMsg = TraceBuffer;
+	if (State2.trace) {
+		print_step(op);
 	}
 #endif
 	Busy = 0;
@@ -3471,44 +3470,22 @@ void xeq(opcode op)
 		set_pc(0);
 		process_cmdline_set_lift();
 		if (XromRunning) {
-#ifndef REALBUILD
-			if (State2.trace ) {
-				// Special handling for debug environment
-				if (XromFlags.xIN) {
-					// Restore the global return stack
-					RetStk = XromUserRetStk;
-					RetStkPtr = XromUserRetStkPtr;
-					// Restore private stack to normal stack
-					XromFlags.xIN = 0;		// Clear flag before get_reg_n!
-					if (Error == ERR_NONE) {
-						UState.mode_double = 1;
-						xcopy(get_reg_n(regX_idx), XromStack, sizeof(XromStack));
-					}
-					else
-						Error = ERR_NONE;	// Not enough RAM, can't restore
-				}
+			unsigned short int pc = state_pc();
+			if (XromFlags.xIN) {
+				// Restore state to before xIN
+				XromFlags.xIN = 0;
+				UState.mode_double = XromFlags.mode_double;
+				UState.stack_depth = XromFlags.stack_depth;
+				// Restore the global return stack
+				RetStk = XromUserRetStk;
+				RetStkPtr = XromUserRetStkPtr;
 			}
-			else {
-#endif
-				unsigned short int pc = state_pc();
-				if (XromFlags.xIN) {
-					// Restore state to before xIN
-					XromFlags.xIN = 0;
-					UState.mode_double = XromFlags.mode_double;
-					UState.stack_depth = XromFlags.stack_depth;
-					// Restore the global return stack
-					RetStk = XromUserRetStk;
-					RetStkPtr = XromUserRetStkPtr;
-				}
-				while (XromRunning && RetStkPtr != 0) {
-					// Leave XROM
-					retstk_up();
-					pc = RetStk[RetStkPtr - 1];
-				}
-				set_pc(pc);
-#ifndef REALBUILD
+			while (XromRunning && RetStkPtr != 0) {
+				// Leave XROM
+				retstk_up();
+				pc = RetStk[RetStkPtr - 1];
 			}
-#endif
+			set_pc(pc);
 			xeq_init_contexts();	// Repair any pointers clobberd by xIN
 			set_running_off();
 		}
@@ -3527,11 +3504,7 @@ static void xeq_single(void) {
 
 /* Continue execution trough xrom code
  */
-#ifdef REALBUILD
 void xeq_xrom(void) {
-#else
-static void xeq_xrom2(void) {
-#endif
 	int count = 0;
 	/* Now if we've stepped into the XROM area, keep going until
 	 * we break free.
@@ -3547,13 +3520,6 @@ static void xeq_xrom2(void) {
 	}
 }
 
-#ifndef REALBUILD
-void xeq_xrom(void) {
-	// We split the routine in two parts for debugging only
-	if (! State2.trace)
-		xeq_xrom2();
-}
-#endif
 
 /* Check to see if we're running a program and if so execute it
  * for a while.
@@ -3801,7 +3767,6 @@ void cmdxin(unsigned int arg, enum rarg op) {
 	else if (XromFlags.mode_double) {
 		// No conversion necessary
 		xcopy(XromStack, StackBase, sizeof(XromStack));
-		StackBase = XromStack;
 	}
 	else {
 		// Convert decimal64 to decinal128
@@ -3809,6 +3774,7 @@ void cmdxin(unsigned int arg, enum rarg op) {
 			packed128_from_packed(&(XromStack[i].d), Regs + MAX_REG_NUM + i);
 		UState.mode_double = 1;
 	}
+	StackBase = XromStack;
 
 	// Set stack size to 8 and turn on stack_lift
 	set_lift();
@@ -4174,6 +4140,34 @@ int init_34s(void)
 #endif
 	return cleared;
 }
+
+#ifdef TRACE_FILE
+/*
+ *  Qick & Dirty tracing for debug purposes
+ */
+#ifdef CONSOLE
+#include "pretty.h"
+#else
+#include "pretty.c"
+#endif
+
+void trace( char *buff ) {
+	char buffer[ 50 ];
+	char *p = buff - 1;
+	FILE *f = fopen( TRACE_FILE, "at" );
+	if ( f != NULL ) {
+		while ( *++p != '\0' )
+			if ( *p == '\006' )
+				*p = ' ';
+		prettify( buff, buffer, 1 );
+		fprintf( f, "%-15s", buffer );
+		xset( buffer, 0, 50 );
+		format_reg( regX_idx, buffer );
+		fprintf( f, "%c %s\n", is_dblmode() ? 'D' : ' ', buffer );
+	}
+	fclose( f );
+}
+#endif
 
 #ifdef GNUC_POP_ERROR
 #pragma GCC diagnostic pop

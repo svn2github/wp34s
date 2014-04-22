@@ -40,6 +40,7 @@
 #define STATE_FILE "wp31s.dat"
 #define BACKUP_FILE "wp31s-backup.dat"
 
+
 #endif
 
 #include "xeq.h"
@@ -176,6 +177,9 @@ void reset( void )
 #endif
 #ifdef INFRARED
 	State.print_delay = 10;
+#endif
+#ifdef DEBUG
+	State2.trace = 1;
 #endif
 	DispMsg = "Erased";
 }
@@ -446,6 +450,11 @@ void load_statefile( void )
 		// Emulate a backup
 		BackupFlash = PersistentRam;
 	}
+#ifdef DEBUG
+	State2.trace = 1;
+	remove( TRACE_FILE );
+#endif
+
 }
 #endif
 

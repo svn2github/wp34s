@@ -1301,5 +1301,8 @@ extern int is_test_mode(void);
 #define is_debug() 0
 #define is_test_mode() 0
 #endif
-
+#ifdef DEBUG
+#define TRACE_FILE "wp31s-trace.txt"
+extern void trace( char *buffer );
+#endif
 #endif

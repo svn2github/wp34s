@@ -36,6 +36,7 @@ extern int get_overflow(void);
 
 extern int check_overflow(long long int);
 
+#if 0
 extern long long int intAdd(long long int y, long long int x);
 extern long long int intSubtract(long long int y, long long int x);
 extern long long int intMultiply(long long int y, long long int x);
@@ -82,6 +83,7 @@ extern long long int intLog10(long long int x);
 extern long long int int10pow(long long int x);
 extern long long int intFib(long long int x);
 extern long long int int_1pow(long long int x);
+#endif 
 
 extern int isPrime(unsigned long long int x);
 

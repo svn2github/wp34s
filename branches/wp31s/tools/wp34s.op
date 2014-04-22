@@ -151,7 +151,7 @@ maxlibsteps=1
 0x0138	cmd	RTN
 0x0139	cmd	RTN+1
 0x013a	cmd	END
-0x013b	cmd	[SIGMA]CL
+0x013b	cmd	CL[SIGMA]
 0x013b	alias-c	CLSUMS
 0x013c	cmd	CLREGS
 0x013d	cmd	CLx
@@ -161,7 +161,7 @@ maxlibsteps=1
 0x0142	alias-c	>POL
 0x0143	cmd	[->]REC
 0x0143	alias-c	>REC
-0x0144	cmd	DMAX
+0x0144	cmd	DENMAX
 0x0145	cmd	DECOMP
 0x0146	cmd	DENANY
 0x0147	cmd	DENFIX
@@ -185,100 +185,98 @@ maxlibsteps=1
 0x0159	cmd	FRACT
 0x015a	cmd	LZON
 0x015b	cmd	LZOFF
-0x015c	cmd	LJ
-0x015d	cmd	RJ
-0x015e	cmd	DBL[times]
-0x015e	alias-c	DBL*
-0x015f	cmd	SUM
-0x0160	cmd	D.MY
-0x0161	cmd	Y.MD
-0x0162	cmd	M.DY
-0x0163	cmd	JG1752
-0x0164	cmd	JG1582
-0x0165	cmd	LEAP?
-0x0166	cmd	[alpha]DAY
-0x0166	alias-c	aDAY
-0x0167	cmd	[alpha]MONTH
-0x0167	alias-c	aMONTH
-0x0168	cmd	[alpha]DATE
-0x0168	alias-c	aDATE
-0x0169	cmd	[alpha]TIME
-0x0169	alias-c	aTIME
-0x016a	cmd	DATE
-0x016b	cmd	TIME
-0x016c	cmd	24H
-0x016d	cmd	12H
-0x016e	cmd	SETDAT
-0x016f	cmd	SETTIM
-0x0170	cmd	CL[alpha]
-0x0170	alias-c	CLa
-0x0171	cmd	VIEW[alpha]
-0x0171	alias-c	VIEWa
-0x0172	cmd	[alpha]LENG
-0x0172	alias-c	aLENG
-0x0173	cmd	[alpha][->]x
-0x0173	alias-c	a>x
-0x0174	cmd	x[->][alpha]
-0x0174	alias-c	x>a
-0x0175	cmd	[alpha]ON
-0x0175	alias-c	aON
-0x0176	cmd	[alpha]OFF
-0x0176	alias-c	aOFF
-0x0177	cmd	R-COPY
-0x0178	cmd	R-SWAP
-0x0179	cmd	R-CLR
-0x017a	cmd	R-SORT
-0x017b	cmd	[->]A..D	xrom
-0x017c	cmd	A..D[->]	xrom
-0x017d	cmd	[infinity]?
-0x017d	alias-c	INF?
-0x017e	cmd	NaN?
-0x017f	cmd	SPEC?
-0x0180	cmd	PRIME?
-0x0181	cmd	INT?
-0x0182	cmd	FP?
-0x0183	cmd	EVEN?
-0x0184	cmd	ODD?
-0x0185	cmd	ENTRY?
-0x0186	cmd	TICKS
-0x0187	cmd	BATT
-0x0188	cmd	SLVQ
-0x0189	cmd	NEXTP
-0x018a	cmd	SETEUR
-0x018b	cmd	SETUK
-0x018c	cmd	SETUSA
-0x018d	cmd	SETIND
-0x018e	cmd	SETCHN
-0x018f	cmd	SETJPN
-0x0190	cmd	WHO
-0x0191	cmd	RM?
-0x0192	cmd	SLOW
-0x0193	cmd	FAST
-0x0194	cmd	TOP?
-0x0195	cmd	BASE?
-0x0196	cmd	SMODE?
-0x0197	cmd	INTM?
-0x0198	cmd	REALM?
-0x0199	cmd	x=+0?
-0x019a	cmd	x=-0?
-0x019b	cmd	PopLR
-0x019c	cmd	CATREG
-0x019d	cmd	SAVE
-0x019e	cmd	LOAD
-0x019f	cmd	LOADSS
-0x01a0	cmd	LOADR
-0x01a1	cmd	LOAD[SIGMA]
-0x01a1	alias-c	LOADSUMS
-0x01a2	cmd	[cmplx]i
-0x01a2	alias-c	ci
-0x01a3	cmd	DATE[->]
-0x01a3	alias-c	DATE>
-0x01a4	cmd	[cmplx]DOT
-0x01a4	alias-c	cDOT
-0x01a5	cmd	[cmplx]CROSS
-0x01a5	alias-c	cCROSS
-0x01a6	cmd	YDON
-0x01a7	cmd	YDOFF
+0x015c	cmd	DBL[times]
+0x015c	alias-c	DBL*
+0x015d	cmd	SUM
+0x015e	cmd	D.MY
+0x015f	cmd	Y.MD
+0x0160	cmd	M.DY
+0x0161	cmd	JG1752
+0x0162	cmd	JG1582
+0x0163	cmd	LEAP?
+0x0164	cmd	[alpha]DAY
+0x0164	alias-c	aDAY
+0x0165	cmd	[alpha]MONTH
+0x0165	alias-c	aMONTH
+0x0166	cmd	[alpha]DATE
+0x0166	alias-c	aDATE
+0x0167	cmd	[alpha]TIME
+0x0167	alias-c	aTIME
+0x0168	cmd	DATE
+0x0169	cmd	TIME
+0x016a	cmd	24H
+0x016b	cmd	12H
+0x016c	cmd	SETDAT
+0x016d	cmd	SETTIM
+0x016e	cmd	CL[alpha]
+0x016e	alias-c	CLa
+0x016f	cmd	VIEW[alpha]
+0x016f	alias-c	VIEWa
+0x0170	cmd	[alpha]LENG
+0x0170	alias-c	aLENG
+0x0171	cmd	[alpha][->]x
+0x0171	alias-c	a>x
+0x0172	cmd	x[->][alpha]
+0x0172	alias-c	x>a
+0x0173	cmd	[alpha]ON
+0x0173	alias-c	aON
+0x0174	cmd	[alpha]OFF
+0x0174	alias-c	aOFF
+0x0175	cmd	R-COPY
+0x0176	cmd	R-SWAP
+0x0177	cmd	R-CLR
+0x0178	cmd	R-SORT
+0x0179	cmd	[->]A..D	xrom
+0x017a	cmd	A..D[->]	xrom
+0x017b	cmd	[infinity]?
+0x017b	alias-c	INF?
+0x017c	cmd	NaN?
+0x017d	cmd	SPEC?
+0x017e	cmd	PRIME?
+0x017f	cmd	INT?
+0x0180	cmd	FP?
+0x0181	cmd	EVEN?
+0x0182	cmd	ODD?
+0x0183	cmd	ENTRY?
+0x0184	cmd	TICKS
+0x0185	cmd	BATT
+0x0186	cmd	SLVQ
+0x0187	cmd	NEXTP
+0x0188	cmd	SETEUR
+0x0189	cmd	SETUK
+0x018a	cmd	SETUSA
+0x018b	cmd	SETIND
+0x018c	cmd	SETCHN
+0x018d	cmd	SETJPN
+0x018e	cmd	WHO
+0x018f	cmd	RM?
+0x0190	cmd	SLOW
+0x0191	cmd	FAST
+0x0192	cmd	TOP?
+0x0193	cmd	BASE?
+0x0194	cmd	SMODE?
+0x0195	cmd	INTM?
+0x0196	cmd	REALM?
+0x0197	cmd	x=+0?
+0x0198	cmd	x=-0?
+0x0199	cmd	PopLR
+0x019a	cmd	CATREG
+0x019b	cmd	SAVE
+0x019c	cmd	LOAD
+0x019d	cmd	LOADSS
+0x019e	cmd	LOADR
+0x019f	cmd	LOAD[SIGMA]
+0x019f	alias-c	LOADSUMS
+0x01a0	cmd	[cmplx]i
+0x01a0	alias-c	ci
+0x01a1	cmd	DATE[->]
+0x01a1	alias-c	DATE>
+0x01a2	cmd	[cmplx]DOT
+0x01a2	alias-c	cDOT
+0x01a3	cmd	[cmplx]CROSS
+0x01a3	alias-c	cCROSS
+0x01a4	cmd	YDON
+0x01a5	cmd	YDOFF
 0x0200	cmd	FP
 0x0201	cmd	FLOOR
 0x0202	cmd	CEIL
@@ -307,215 +305,203 @@ maxlibsteps=1
 0x0211	cmd	LN1+x
 0x0212	cmd	e[^x]-1
 0x0212	alias-c	EXP-1
-0x0213	cmd	W[sub-p]
-0x0213	alias-c	W0
-0x0214	cmd	W[sub-m]
-0x0214	alias-c	W1
-0x0215	cmd	W[^-1]
-0x0215	alias-c	INV-W
-0x0216	cmd	x[^2]
-0x0216	alias-c	x^2
-0x0217	cmd	x[^3]
-0x0217	alias-c	x^3
-0x0218	cmd	[^3][sqrt]
-0x0218	alias-c	CROOT
-0x0219	cmd	FIB
-0x021a	cmd	[->]DEG
-0x021a	alias-c	>DEG
-0x021b	cmd	[->]RAD
-0x021b	alias-c	>RAD
-0x021c	cmd	[->]GRAD
-0x021c	alias-c	>GRAD
-0x021d	cmd	DEG[->]
-0x021d	alias-c	DEG>
-0x021e	cmd	RAD[->]
-0x021e	alias-c	RAD>
-0x021f	cmd	GRAD[->]
-0x021f	alias-c	GRAD>
-0x0220	cmd	SIN
-0x0221	cmd	COS
-0x0222	cmd	TAN
-0x0223	cmd	ASIN
-0x0224	cmd	ACOS
-0x0225	cmd	ATAN
-0x0226	cmd	SINC
-0x0227	cmd	SINH
-0x0228	cmd	COSH
-0x0229	cmd	TANH
-0x022a	cmd	ASINH
-0x022b	cmd	ACOSH
-0x022c	cmd	ATANH
-0x022d	cmd	g[sub-d]
-0x022d	alias-c	GUD
-0x022e	cmd	g[sub-d][^-1]
-0x022e	alias-c	INV-GUD
-0x022f	cmd	x!
-0x0230	cmd	[GAMMA]
-0x0230	alias-c	GAMMA
-0x0231	cmd	LN[GAMMA]
-0x0231	alias-c	LNGAMMA
-0x0232	cmd	[degree][->]rad
-0x0232	alias-c	DEG>RAD
-0x0233	cmd	rad[->][degree]
-0x0233	alias-c	RAD>DEG
-0x0234	cmd	[degree][->]G
-0x0234	alias-c	DEG>GRAD
-0x0235	cmd	G[->][degree]
-0x0235	alias-c	GRAD>DEG
-0x0236	cmd	rad[->]G
-0x0236	alias-c	RAD>GRAD
-0x0237	cmd	G[->]rad
-0x0237	alias-c	GRAD>RAD
-0x023a	cmd	erf
-0x023b	cmd	erfc
-0x023c	cmd	[phi](x)
-0x023c	alias-c	phi(x)
-0x023d	cmd	[PHI](x)
-0x023d	alias-c	PHI(x)
-0x023e	cmd	[PHI][^-1](p)
-0x023e	alias-c	INV-PHI
-0x023f	cmd	[chi][^2][sub-p]
-0x023f	alias-c	chi2-p
-0x0240	cmd	[chi][^2]
-0x0240	alias-c	CHI2
-0x0241	cmd	[chi][^2]INV
-0x0241	alias-c	INV-CHI2
-0x0242	cmd	t[sub-p](x)
-0x0242	alias-c	t-p(x)
-0x0243	cmd	t(x)
-0x0244	cmd	t[^-1](p)
-0x0244	alias-c	INV-t
-0x0245	cmd	F[sub-p](x)
-0x0245	alias-c	F-p(x)
-0x0246	cmd	F(x)
-0x0247	cmd	F[^-1](p)
-0x0247	alias-c	INV-F
-0x0248	cmd	Weibl[sub-p]
-0x0248	alias-c	Weibl-p
-0x0249	cmd	Weibl
-0x024a	cmd	Weibl[^-1]
-0x024a	alias-c	INV-Weibl
-0x024b	cmd	Expon[sub-p]
-0x024b	alias-c	Expon-p
-0x024c	cmd	Expon
-0x024d	cmd	Expon[^-1]
-0x024d	alias-c	INV-Expon
-0x024e	cmd	Binom[sub-p]
-0x024e	alias-c	Binom-p
-0x024f	cmd	Binom
-0x0250	cmd	Binom[^-1]
-0x0250	alias-c	INV-Binom
-0x0251	cmd	Pois[lambda][sub-p]
-0x0251	alias-c	Pois-p
-0x0252	cmd	Pois[lambda]
-0x0252	alias-c	Pois
-0x0253	cmd	Pois[lambda][^-1]
-0x0253	alias-c	INV-Pois
-0x0254	cmd	Poiss[sub-p]
-0x0254	alias-c	Pois2-p
-0x0255	cmd	Poiss
-0x0255	alias-c	Pois2
-0x0256	cmd	Poiss[^-1]
-0x0256	alias-c	INV-Pois2
-0x0257	cmd	Geom[sub-p]
-0x0257	alias-c	Geom-p
-0x0258	cmd	Geom
-0x0259	cmd	Geom[^-1]
-0x0259	alias-c	INV-Geom
-0x025a	cmd	Norml[sub-p]
-0x025a	alias-c	Norml-p
-0x025b	cmd	Norml
-0x025c	cmd	Norml[^-1]
-0x025c	alias-c	INV-Norml
-0x025d	cmd	LgNrm[sub-p]
-0x025d	alias-c	LgNorm-p
-0x025e	cmd	LgNrm
-0x025f	cmd	LgNrm[^-1]
-0x025f	alias-c	INV-LgNorm
-0x0260	cmd	Logis[sub-p]
-0x0260	alias-c	Logis-p
-0x0261	cmd	Logis
-0x0262	cmd	Logis[^-1]
-0x0262	alias-c	INV-Logis
-0x0263	cmd	Cauch[sub-p]
-0x0263	alias-c	Cauch-p
-0x0264	cmd	Cauch
-0x0265	cmd	Cauch[^-1]
-0x0265	alias-c	INV-Cauch
-0x0266	cmd	[PHI][sub-u](x)
-0x0266	alias-c	Q-u
-0x0267	cmd	[chi][^2][sub-u]
-0x0267	alias-c	CHI2-u
-0x0268	cmd	t[sub-u](x)
-0x0268	alias-c	t-u
-0x0269	cmd	F[sub-u](x)
-0x0269	alias-c	F-u
-0x026a	cmd	Weibl[sub-u]
-0x026a	alias-c	Weibl-u
-0x026b	cmd	Expon[sub-u]
-0x026b	alias-c	Expon-u
-0x026c	cmd	Binom[sub-u]
-0x026c	alias-c	Binom-u
-0x026d	cmd	Pois[lambda][sub-u]
-0x026d	alias-c	Pois-u
-0x026e	cmd	Poiss[sub-u]
-0x026e	alias-c	Pois2-u
-0x026f	cmd	Geom[sub-u]
-0x026f	alias-c	Geom-u
-0x0270	cmd	Norml[sub-u]
-0x0270	alias-c	Norml-u
-0x0271	cmd	LgNrm[sub-u]
-0x0271	alias-c	LgNrm-u
-0x0272	cmd	Logis[sub-u]
-0x0272	alias-c	Logis-u
-0x0273	cmd	Cauch[sub-u]
-0x0273	alias-c	Cauch-u
-0x0274	cmd	[x-hat]
-0x0274	alias-c	FCSTx
-0x0275	cmd	[y-hat]
-0x0275	alias-c	FCSTy
-0x0276	cmd	%[SIGMA]
-0x0276	alias-c	%SUM
-0x0277	cmd	%
-0x0278	cmd	[DELTA]%
-0x0278	alias-c	%CH
-0x0279	cmd	%T
-0x027a	cmd	[->]HR
-0x027a	alias-c	>HR
-0x027b	cmd	[->]H.MS
-0x027b	alias-c	>H.MS
-0x027c	cmd	NOT
-0x027d	cmd	nBITS
-0x027e	cmd	MIRROR
-0x027f	cmd	WDAY
-0x0280	cmd	D[->]J
-0x0280	alias-c	D>J
-0x0281	cmd	J[->]D
-0x0281	alias-c	J>D
-0x0282	cmd	[degree]C[->][degree]F
-0x0282	alias-c	C>F
-0x0283	cmd	[degree]F[->][degree]C
-0x0283	alias-c	F>C
-0x0284	cmd	dB[->]ar.
-0x0284	alias-c	dB>ar.
-0x0285	cmd	ar.[->]dB
-0x0285	alias-c	ar.>dB
-0x0286	cmd	dB[->]pr.
-0x0286	alias-c	dB>pr.
-0x0287	cmd	pr.[->]dB
-0x0287	alias-c	pr.>dB
-0x0288	cmd	[zeta]
-0x0288	alias-c	ZETA
-0x0289	cmd	B[sub-n]
-0x0289	alias-c	Bn
-0x028a	cmd	B[sub-n][super-star]
-0x028a	alias-c	Bn*
-0x028b	cmd	YEAR
-0x028c	cmd	MONTH
-0x028d	cmd	DAY
-0x028e	cmd	MANT
-0x028f	cmd	EXPT
-0x0290	cmd	ULP
+0x0213	cmd	x[^2]
+0x0213	alias-c	x^2
+0x0214	cmd	x[^3]
+0x0214	alias-c	x^3
+0x0215	cmd	[^3][sqrt]
+0x0215	alias-c	CROOT
+0x0216	cmd	FIB
+0x0217	cmd	[->]DEG
+0x0217	alias-c	>DEG
+0x0218	cmd	[->]RAD
+0x0218	alias-c	>RAD
+0x0219	cmd	[->]GRAD
+0x0219	alias-c	>GRAD
+0x021a	cmd	DEG[->]
+0x021a	alias-c	DEG>
+0x021b	cmd	RAD[->]
+0x021b	alias-c	RAD>
+0x021c	cmd	GRAD[->]
+0x021c	alias-c	GRAD>
+0x021d	cmd	SIN
+0x021e	cmd	COS
+0x021f	cmd	TAN
+0x0220	cmd	ASIN
+0x0221	cmd	ACOS
+0x0222	cmd	ATAN
+0x0223	cmd	SINC
+0x0224	cmd	SINH
+0x0225	cmd	COSH
+0x0226	cmd	TANH
+0x0227	cmd	ASINH
+0x0228	cmd	ACOSH
+0x0229	cmd	ATANH
+0x022a	cmd	x!
+0x022b	cmd	[GAMMA]
+0x022b	alias-c	GAMMA
+0x022c	cmd	LN[GAMMA]
+0x022c	alias-c	LNGAMMA
+0x022d	cmd	[degree][->]rad
+0x022d	alias-c	DEG>RAD
+0x022e	cmd	rad[->][degree]
+0x022e	alias-c	RAD>DEG
+0x022f	cmd	[degree][->]G
+0x022f	alias-c	DEG>GRAD
+0x0230	cmd	G[->][degree]
+0x0230	alias-c	GRAD>DEG
+0x0231	cmd	rad[->]G
+0x0231	alias-c	RAD>GRAD
+0x0232	cmd	G[->]rad
+0x0232	alias-c	GRAD>RAD
+0x0235	cmd	erf
+0x0236	cmd	erfc
+0x0237	cmd	[phi](x)
+0x0237	alias-c	phi(x)
+0x0238	cmd	[PHI](x)
+0x0238	alias-c	PHI(x)
+0x0239	cmd	[PHI][^-1](p)
+0x0239	alias-c	INV-PHI
+0x023a	cmd	[chi][^2][sub-p]
+0x023a	alias-c	chi2-p
+0x023b	cmd	[chi][^2]
+0x023b	alias-c	CHI2
+0x023c	cmd	[chi][^2]INV
+0x023c	alias-c	INV-CHI2
+0x023d	cmd	t[sub-p](x)
+0x023d	alias-c	t-p(x)
+0x023e	cmd	t(x)
+0x023f	cmd	t[^-1](p)
+0x023f	alias-c	INV-t
+0x0240	cmd	F[sub-p](x)
+0x0240	alias-c	F-p(x)
+0x0241	cmd	F(x)
+0x0242	cmd	F[^-1](p)
+0x0242	alias-c	INV-F
+0x0243	cmd	Weibl[sub-p]
+0x0243	alias-c	Weibl-p
+0x0244	cmd	Weibl
+0x0245	cmd	Weibl[^-1]
+0x0245	alias-c	INV-Weibl
+0x0246	cmd	Expon[sub-p]
+0x0246	alias-c	Expon-p
+0x0247	cmd	Expon
+0x0248	cmd	Expon[^-1]
+0x0248	alias-c	INV-Expon
+0x0249	cmd	Binom[sub-p]
+0x0249	alias-c	Binom-p
+0x024a	cmd	Binom
+0x024b	cmd	Binom[^-1]
+0x024b	alias-c	INV-Binom
+0x024c	cmd	Pois[lambda][sub-p]
+0x024c	alias-c	Pois-p
+0x024d	cmd	Pois[lambda]
+0x024d	alias-c	Pois
+0x024e	cmd	Pois[lambda][^-1]
+0x024e	alias-c	INV-Pois
+0x024f	cmd	Poiss[sub-p]
+0x024f	alias-c	Pois2-p
+0x0250	cmd	Poiss
+0x0250	alias-c	Pois2
+0x0251	cmd	Poiss[^-1]
+0x0251	alias-c	INV-Pois2
+0x0252	cmd	Geom[sub-p]
+0x0252	alias-c	Geom-p
+0x0253	cmd	Geom
+0x0254	cmd	Geom[^-1]
+0x0254	alias-c	INV-Geom
+0x0255	cmd	Norml[sub-p]
+0x0255	alias-c	Norml-p
+0x0256	cmd	Norml
+0x0257	cmd	Norml[^-1]
+0x0257	alias-c	INV-Norml
+0x0258	cmd	LgNrm[sub-p]
+0x0258	alias-c	LgNorm-p
+0x0259	cmd	LgNrm
+0x025a	cmd	LgNrm[^-1]
+0x025a	alias-c	INV-LgNorm
+0x025b	cmd	Logis[sub-p]
+0x025b	alias-c	Logis-p
+0x025c	cmd	Logis
+0x025d	cmd	Logis[^-1]
+0x025d	alias-c	INV-Logis
+0x025e	cmd	Cauch[sub-p]
+0x025e	alias-c	Cauch-p
+0x025f	cmd	Cauch
+0x0260	cmd	Cauch[^-1]
+0x0260	alias-c	INV-Cauch
+0x0261	cmd	[PHI][sub-u](x)
+0x0261	alias-c	Q-u
+0x0262	cmd	[chi][^2][sub-u]
+0x0262	alias-c	CHI2-u
+0x0263	cmd	t[sub-u](x)
+0x0263	alias-c	t-u
+0x0264	cmd	F[sub-u](x)
+0x0264	alias-c	F-u
+0x0265	cmd	Weibl[sub-u]
+0x0265	alias-c	Weibl-u
+0x0266	cmd	Expon[sub-u]
+0x0266	alias-c	Expon-u
+0x0267	cmd	Binom[sub-u]
+0x0267	alias-c	Binom-u
+0x0268	cmd	Pois[lambda][sub-u]
+0x0268	alias-c	Pois-u
+0x0269	cmd	Poiss[sub-u]
+0x0269	alias-c	Pois2-u
+0x026a	cmd	Geom[sub-u]
+0x026a	alias-c	Geom-u
+0x026b	cmd	Norml[sub-u]
+0x026b	alias-c	Norml-u
+0x026c	cmd	LgNrm[sub-u]
+0x026c	alias-c	LgNrm-u
+0x026d	cmd	Logis[sub-u]
+0x026d	alias-c	Logis-u
+0x026e	cmd	Cauch[sub-u]
+0x026e	alias-c	Cauch-u
+0x026f	cmd	[x-hat]
+0x026f	alias-c	FCSTx
+0x0270	cmd	[y-hat]
+0x0270	alias-c	FCSTy
+0x0271	cmd	%[SIGMA]
+0x0271	alias-c	%SUM
+0x0272	cmd	%
+0x0273	cmd	[DELTA]%
+0x0273	alias-c	%CH
+0x0274	cmd	%T
+0x0275	cmd	[->]HR
+0x0275	alias-c	>HR
+0x0276	cmd	[->]H.MS
+0x0276	alias-c	>H.MS
+0x0277	cmd	NOT
+0x027a	cmd	WDAY
+0x027b	cmd	D[->]J
+0x027b	alias-c	D>J
+0x027c	cmd	J[->]D
+0x027c	alias-c	J>D
+0x027d	cmd	[degree]C[->][degree]F
+0x027d	alias-c	C>F
+0x027e	cmd	[degree]F[->][degree]C
+0x027e	alias-c	F>C
+0x027f	cmd	dB[->]ar.
+0x027f	alias-c	dB>ar.
+0x0280	cmd	ar.[->]dB
+0x0280	alias-c	ar.>dB
+0x0281	cmd	dB[->]pr.
+0x0281	alias-c	dB>pr.
+0x0282	cmd	pr.[->]dB
+0x0282	alias-c	pr.>dB
+0x0283	cmd	[zeta]
+0x0283	alias-c	ZETA
+0x0284	cmd	B[sub-n]
+0x0284	alias-c	Bn
+0x0285	cmd	B[sub-n][super-star]
+0x0285	alias-c	Bn*
+0x0286	cmd	YEAR
+0x0287	cmd	MONTH
+0x0288	cmd	DAY
+0x0289	cmd	MANT
+0x028a	cmd	EXPT
+0x028b	cmd	ULP
 0x0300	cmd	y[^x]
 0x0300	alias-c	y^x
 0x0301	cmd	+
@@ -620,59 +606,51 @@ maxlibsteps=1
 0x0511	alias-c	cLN1+x
 0x0512	cmd	[cmplx]e[^x]-1
 0x0512	alias-c	cEXP-1
-0x0513	cmd	[cmplx]W[sub-p]
-0x0513	alias-c	cW0
-0x0515	cmd	[cmplx]W[^-1]
-0x0515	alias-c	cINV-W
-0x0516	cmd	[cmplx]x[^2]
-0x0516	alias-c	cx^2
-0x0517	cmd	[cmplx]x[^3]
-0x0517	alias-c	cx^3
-0x0518	cmd	[cmplx][^3][sqrt]
-0x0518	alias-c	cCROOT
-0x0519	cmd	[cmplx]FIB
-0x0519	alias-c	cFIB
-0x0520	cmd	[cmplx]SIN
-0x0520	alias-c	cSIN
-0x0521	cmd	[cmplx]COS
-0x0521	alias-c	cCOS
-0x0522	cmd	[cmplx]TAN
-0x0522	alias-c	cTAN
-0x0523	cmd	[cmplx]ASIN
-0x0523	alias-c	cASIN
-0x0524	cmd	[cmplx]ACOS
-0x0524	alias-c	cACOS
-0x0525	cmd	[cmplx]ATAN
-0x0525	alias-c	cATAN
-0x0526	cmd	[cmplx]SINC
-0x0526	alias-c	cSINC
-0x0527	cmd	[cmplx]SINH
-0x0527	alias-c	cSINH
-0x0528	cmd	[cmplx]COSH
-0x0528	alias-c	cCOSH
-0x0529	cmd	[cmplx]TANH
-0x0529	alias-c	cTANH
-0x052a	cmd	[cmplx]ASINH
-0x052a	alias-c	cASINH
-0x052b	cmd	[cmplx]ACOSH
-0x052b	alias-c	cACOSH
-0x052c	cmd	[cmplx]ATANH
-0x052c	alias-c	cATANH
-0x052d	cmd	[cmplx]g[sub-d]
-0x052d	alias-c	cGUD
-0x052e	cmd	[cmplx]g[sub-d][^-1]
-0x052e	alias-c	cINV-GUD
-0x052f	cmd	[cmplx]x!
-0x052f	alias-c	cx!
-0x0530	cmd	[cmplx][GAMMA]
-0x0530	alias-c	cGAMMA
-0x0531	cmd	[cmplx]LN[GAMMA]
-0x0531	alias-c	cLNGAMMA
-0x0538	cmd	[cmplx]+/-
-0x0538	alias-c	c+/-
-0x0538	alias-c	cCHS
-0x0539	cmd	[cmplx]CONJ
-0x0539	alias-c	cCONJ
+0x0513	cmd	[cmplx]x[^2]
+0x0513	alias-c	cx^2
+0x0514	cmd	[cmplx]x[^3]
+0x0514	alias-c	cx^3
+0x0515	cmd	[cmplx][^3][sqrt]
+0x0515	alias-c	cCROOT
+0x0516	cmd	[cmplx]FIB
+0x0516	alias-c	cFIB
+0x051d	cmd	[cmplx]SIN
+0x051d	alias-c	cSIN
+0x051e	cmd	[cmplx]COS
+0x051e	alias-c	cCOS
+0x051f	cmd	[cmplx]TAN
+0x051f	alias-c	cTAN
+0x0520	cmd	[cmplx]ASIN
+0x0520	alias-c	cASIN
+0x0521	cmd	[cmplx]ACOS
+0x0521	alias-c	cACOS
+0x0522	cmd	[cmplx]ATAN
+0x0522	alias-c	cATAN
+0x0523	cmd	[cmplx]SINC
+0x0523	alias-c	cSINC
+0x0524	cmd	[cmplx]SINH
+0x0524	alias-c	cSINH
+0x0525	cmd	[cmplx]COSH
+0x0525	alias-c	cCOSH
+0x0526	cmd	[cmplx]TANH
+0x0526	alias-c	cTANH
+0x0527	cmd	[cmplx]ASINH
+0x0527	alias-c	cASINH
+0x0528	cmd	[cmplx]ACOSH
+0x0528	alias-c	cACOSH
+0x0529	cmd	[cmplx]ATANH
+0x0529	alias-c	cATANH
+0x052a	cmd	[cmplx]x!
+0x052a	alias-c	cx!
+0x052b	cmd	[cmplx][GAMMA]
+0x052b	alias-c	cGAMMA
+0x052c	cmd	[cmplx]LN[GAMMA]
+0x052c	alias-c	cLNGAMMA
+0x0533	cmd	[cmplx]+/-
+0x0533	alias-c	c+/-
+0x0533	alias-c	cCHS
+0x0534	cmd	[cmplx]CONJ
+0x0534	alias-c	cCONJ
 0x0600	cmd	[cmplx]y[^x]
 0x0600	alias-c	cy^x
 0x0601	cmd	[cmplx]+
@@ -1823,715 +1801,699 @@ maxlibsteps=1
 0x7100	arg	FC?C	max=128,indirect,stack
 0x7200	arg	FC?S	max=128,indirect,stack
 0x7300	arg	FC?F	max=128,indirect,stack
-0x7400	arg	WSIZE	max=65,indirect
-0x7500	arg	RL	max=64,indirect
-0x7600	arg	RR	max=64,indirect
-0x7700	arg	RLC	max=65,indirect
-0x7800	arg	RRC	max=65,indirect
-0x7900	arg	SL	max=65,indirect
-0x7a00	arg	SR	max=65,indirect
-0x7b00	arg	ASR	max=65,indirect
-0x7c00	arg	SB	max=64,indirect
-0x7d00	arg	CB	max=64,indirect
-0x7e00	arg	FB	max=64,indirect
-0x7f00	arg	BS?	max=64,indirect
-0x8000	arg	BC?	max=64,indirect
-0x8100	arg	MASKL	max=65,indirect
-0x8200	arg	MASKR	max=65,indirect
-0x8300	arg	BASE	max=17,indirect
-0x8400	cmd	kg[->]lb
-0x8400	alias-c	kg>lb
-0x8401	cmd	lb[->]kg
-0x8401	alias-c	lb>kg
-0x8402	cmd	kg[->]stone
-0x8402	alias-c	kg>stone
-0x8403	cmd	stone[->]kg
-0x8403	alias-c	stone>kg
-0x8404	cmd	kg[->]cwt
-0x8404	alias-c	kg>cwt
-0x8405	cmd	cwt[->]kg
-0x8405	alias-c	cwt>kg
-0x8406	cmd	kg[->]s.cwt
-0x8406	alias-c	kg>s.cwt
-0x8407	cmd	s.cwt[->]kg
-0x8407	alias-c	s.cwt>kg
-0x8408	cmd	g[->]oz
-0x8408	alias-c	g>oz
-0x8409	cmd	oz[->]g
-0x8409	alias-c	oz>g
-0x840a	cmd	g[->]tr.oz
-0x840a	alias-c	g>tr.oz
-0x840b	cmd	tr.oz[->]g
-0x840b	alias-c	tr.oz>g
-0x840c	cmd	l[->]galUK
-0x840c	alias-c	l>galUK
-0x840d	cmd	galUK[->]l
-0x840d	alias-c	galUK>l
-0x840e	cmd	l[->]galUS
-0x840e	alias-c	l>galUS
-0x840f	cmd	galUS[->]l
-0x840f	alias-c	galUS>l
-0x8410	cmd	l[->]cft
-0x8410	alias-c	l>cft
-0x8411	cmd	cft[->]l
-0x8411	alias-c	cft>l
-0x8412	cmd	ml[->]flozUK
-0x8412	alias-c	ml>flozUK
-0x8413	cmd	flozUK[->]ml
-0x8413	alias-c	flozUK>ml
-0x8414	cmd	ml[->]flozUS
-0x8414	alias-c	ml>flozUS
-0x8415	cmd	flozUS[->]ml
-0x8415	alias-c	flozUS>ml
-0x8416	cmd	cm[->]inches
-0x8416	alias-c	cm>inches
-0x8417	cmd	inches[->]cm
-0x8417	alias-c	inches>cm
-0x8418	cmd	m[->]fathom
-0x8418	alias-c	m>fathom
-0x8419	cmd	fathom[->]m
-0x8419	alias-c	fathom>m
-0x841a	cmd	m[->]feet
-0x841a	alias-c	m>feet
-0x841b	cmd	feet[->]m
-0x841b	alias-c	feet>m
-0x841c	cmd	m[->]feetUS
-0x841c	alias-c	m>feetUS
-0x841d	cmd	feetUS[->]m
-0x841d	alias-c	feetUS>m
-0x841e	cmd	m[->]yards
-0x841e	alias-c	m>yards
-0x841f	cmd	yards[->]m
-0x841f	alias-c	yards>m
-0x8420	cmd	km[->]miles
-0x8420	alias-c	km>miles
-0x8421	cmd	miles[->]km
-0x8421	alias-c	miles>km
-0x8422	cmd	km[->]l.y.
-0x8422	alias-c	km>l.y.
-0x8423	cmd	l.y.[->]km
-0x8423	alias-c	l.y.>km
-0x8424	cmd	km[->]pc
-0x8424	alias-c	km>pc
-0x8425	cmd	pc[->]km
-0x8425	alias-c	pc>km
-0x8426	cmd	km[->]AU
-0x8426	alias-c	km>AU
-0x8427	cmd	AU[->]km
-0x8427	alias-c	AU>km
-0x8428	cmd	km[->]nmi
-0x8428	alias-c	km>nmi
-0x8429	cmd	nmi[->]km
-0x8429	alias-c	nmi>km
-0x842a	cmd	ha[->]acres
-0x842a	alias-c	ha>acres
-0x842b	cmd	acres[->]ha
-0x842b	alias-c	acres>ha
-0x842c	cmd	ha[->]acreUS
-0x842c	alias-c	ha>acreUS
-0x842d	cmd	acreUS[->]ha
-0x842d	alias-c	acreUS>ha
-0x842e	cmd	N[->]lbf
-0x842e	alias-c	N>lbf
-0x842f	cmd	lbf[->]N
-0x842f	alias-c	lbf>N
-0x8430	cmd	J[->]Btu
-0x8430	alias-c	J>Btu
-0x8431	cmd	Btu[->]J
-0x8431	alias-c	Btu>J
-0x8432	cmd	J[->]cal
-0x8432	alias-c	J>cal
-0x8433	cmd	cal[->]J
-0x8433	alias-c	cal>J
-0x8434	cmd	J[->]kWh
-0x8434	alias-c	J>kWh
-0x8435	cmd	kWh[->]J
-0x8435	alias-c	kWh>J
-0x8436	cmd	Pa[->]atm
-0x8436	alias-c	Pa>atm
-0x8437	cmd	atm[->]Pa
-0x8437	alias-c	atm>Pa
-0x8438	cmd	Pa[->]bar
-0x8438	alias-c	Pa>bar
-0x8439	cmd	bar[->]Pa
-0x8439	alias-c	bar>Pa
-0x843a	cmd	Pa[->]mmHg
-0x843a	alias-c	Pa>mmHg
-0x843b	cmd	mmHg[->]Pa
-0x843b	alias-c	mmHg>Pa
-0x843c	cmd	Pa[->]psi
-0x843c	alias-c	Pa>psi
-0x843d	cmd	psi[->]Pa
-0x843d	alias-c	psi>Pa
-0x843e	cmd	Pa[->]inHg
-0x843e	alias-c	Pa>inHg
-0x843f	cmd	inHg[->]Pa
-0x843f	alias-c	inHg>Pa
-0x8440	cmd	Pa[->]torr
-0x8440	alias-c	Pa>torr
-0x8441	cmd	torr[->]Pa
-0x8441	alias-c	torr>Pa
-0x8442	cmd	W[->]hpUK
-0x8442	alias-c	W>hpUK
-0x8443	cmd	hpUK[->]W
-0x8443	alias-c	hpUK>W
-0x8444	cmd	W[->]hp
-0x8444	alias-c	W>hp
-0x8445	cmd	hp[->]W
-0x8445	alias-c	hp>W
-0x8446	cmd	W[->]PS(hp)
-0x8446	alias-c	W>PS(hp)
-0x8447	cmd	PS(hp)[->]W
-0x8447	alias-c	PS(hp)>W
-0x8448	cmd	W[->]HP[sub-e]
-0x8448	alias-c	W>HP[sub-e]
-0x8449	cmd	HP[sub-e][->]W
-0x8449	alias-c	HP[sub-e]>W
-0x844a	cmd	t[->]tons
-0x844a	alias-c	t>tons
-0x844b	cmd	tons[->]t
-0x844b	alias-c	tons>t
-0x844c	cmd	t[->]s.tons
-0x844c	alias-c	t>s.tons
-0x844d	cmd	s.tons[->]t
-0x844d	alias-c	s.tons>t
-0x8500	arg	PSE	max=100,indirect
-0x8600	arg	SDL	max=128,indirect
-0x8700	arg	SDR	max=128,indirect
-0x8800	arg	VW[alpha]+	max=128,indirect,stack
-0x8800	alias-a	VWa+	max=128,indirect,stack
-0x8900	arg	RM	max=7,indirect
-0x8a00	arg	RSD	max=35,indirect
-0x8b00	arg	RDP	max=100,indirect
-0x8c00	arg	STOM	max=128,indirect,stack
-0x8d00	arg	RCLM	max=128,indirect,stack
-0x8e00	arg	MSG	max=26,indirect
-0x8f00	arg	LocR	max=128,indirect
-0x9000	arg	xMSET	max=64,indirect,xrom
-0x9100	arg	xMCLR	max=64,indirect,xrom
-0x9200	arg	xIN	max=256,xrom
-0x9300	arg	xOUT	max=256,xrom
-0x9400	arg	CNVG?	max=32
-0x9500	cmd	[<->] XXXX
-0x9500	alias-c	<> XXXX
-0x9501	cmd	[<->] YXXX
-0x9501	alias-c	<> YXXX
-0x9502	cmd	[<->] ZXXX
-0x9502	alias-c	<> ZXXX
-0x9503	cmd	[<->] TXXX
-0x9503	alias-c	<> TXXX
-0x9504	cmd	[<->] XYXX
-0x9504	alias-c	<> XYXX
-0x9505	cmd	[<->] YYXX
-0x9505	alias-c	<> YYXX
-0x9506	cmd	[<->] ZYXX
-0x9506	alias-c	<> ZYXX
-0x9507	cmd	[<->] TYXX
-0x9507	alias-c	<> TYXX
-0x9508	cmd	[<->] XZXX
-0x9508	alias-c	<> XZXX
-0x9509	cmd	[<->] YZXX
-0x9509	alias-c	<> YZXX
-0x950a	cmd	[<->] ZZXX
-0x950a	alias-c	<> ZZXX
-0x950b	cmd	[<->] TZXX
-0x950b	alias-c	<> TZXX
-0x950c	cmd	[<->] XTXX
-0x950c	alias-c	<> XTXX
-0x950d	cmd	[<->] YTXX
-0x950d	alias-c	<> YTXX
-0x950e	cmd	[<->] ZTXX
-0x950e	alias-c	<> ZTXX
-0x950f	cmd	[<->] TTXX
-0x950f	alias-c	<> TTXX
-0x9510	cmd	[<->] XXYX
-0x9510	alias-c	<> XXYX
-0x9511	cmd	[<->] YXYX
-0x9511	alias-c	<> YXYX
-0x9512	cmd	[<->] ZXYX
-0x9512	alias-c	<> ZXYX
-0x9513	cmd	[<->] TXYX
-0x9513	alias-c	<> TXYX
-0x9514	cmd	[<->] XYYX
-0x9514	alias-c	<> XYYX
-0x9515	cmd	[<->] YYYX
-0x9515	alias-c	<> YYYX
-0x9516	cmd	[<->] ZYYX
-0x9516	alias-c	<> ZYYX
-0x9517	cmd	[<->] TYYX
-0x9517	alias-c	<> TYYX
-0x9518	cmd	[<->] XZYX
-0x9518	alias-c	<> XZYX
-0x9519	cmd	[<->] YZYX
-0x9519	alias-c	<> YZYX
-0x951a	cmd	[<->] ZZYX
-0x951a	alias-c	<> ZZYX
-0x951b	cmd	[<->] TZYX
-0x951b	alias-c	<> TZYX
-0x951c	cmd	[<->] XTYX
-0x951c	alias-c	<> XTYX
-0x951d	cmd	[<->] YTYX
-0x951d	alias-c	<> YTYX
-0x951e	cmd	[<->] ZTYX
-0x951e	alias-c	<> ZTYX
-0x951f	cmd	[<->] TTYX
-0x951f	alias-c	<> TTYX
-0x9520	cmd	[<->] XXZX
-0x9520	alias-c	<> XXZX
-0x9521	cmd	[<->] YXZX
-0x9521	alias-c	<> YXZX
-0x9522	cmd	[<->] ZXZX
-0x9522	alias-c	<> ZXZX
-0x9523	cmd	[<->] TXZX
-0x9523	alias-c	<> TXZX
-0x9524	cmd	[<->] XYZX
-0x9524	alias-c	<> XYZX
-0x9525	cmd	[<->] YYZX
-0x9525	alias-c	<> YYZX
-0x9526	cmd	[<->] ZYZX
-0x9526	alias-c	<> ZYZX
-0x9527	cmd	[<->] TYZX
-0x9527	alias-c	<> TYZX
-0x9528	cmd	[<->] XZZX
-0x9528	alias-c	<> XZZX
-0x9529	cmd	[<->] YZZX
-0x9529	alias-c	<> YZZX
-0x952a	cmd	[<->] ZZZX
-0x952a	alias-c	<> ZZZX
-0x952b	cmd	[<->] TZZX
-0x952b	alias-c	<> TZZX
-0x952c	cmd	[<->] XTZX
-0x952c	alias-c	<> XTZX
-0x952d	cmd	[<->] YTZX
-0x952d	alias-c	<> YTZX
-0x952e	cmd	[<->] ZTZX
-0x952e	alias-c	<> ZTZX
-0x952f	cmd	[<->] TTZX
-0x952f	alias-c	<> TTZX
-0x9530	cmd	[<->] XXTX
-0x9530	alias-c	<> XXTX
-0x9531	cmd	[<->] YXTX
-0x9531	alias-c	<> YXTX
-0x9532	cmd	[<->] ZXTX
-0x9532	alias-c	<> ZXTX
-0x9533	cmd	[<->] TXTX
-0x9533	alias-c	<> TXTX
-0x9534	cmd	[<->] XYTX
-0x9534	alias-c	<> XYTX
-0x9535	cmd	[<->] YYTX
-0x9535	alias-c	<> YYTX
-0x9536	cmd	[<->] ZYTX
-0x9536	alias-c	<> ZYTX
-0x9537	cmd	[<->] TYTX
-0x9537	alias-c	<> TYTX
-0x9538	cmd	[<->] XZTX
-0x9538	alias-c	<> XZTX
-0x9539	cmd	[<->] YZTX
-0x9539	alias-c	<> YZTX
-0x953a	cmd	[<->] ZZTX
-0x953a	alias-c	<> ZZTX
-0x953b	cmd	[<->] TZTX
-0x953b	alias-c	<> TZTX
-0x953c	cmd	[<->] XTTX
-0x953c	alias-c	<> XTTX
-0x953d	cmd	[<->] YTTX
-0x953d	alias-c	<> YTTX
-0x953e	cmd	[<->] ZTTX
-0x953e	alias-c	<> ZTTX
-0x953f	cmd	[<->] TTTX
-0x953f	alias-c	<> TTTX
-0x9540	cmd	[<->] XXXY
-0x9540	alias-c	<> XXXY
-0x9541	cmd	[<->] YXXY
-0x9541	alias-c	<> YXXY
-0x9542	cmd	[<->] ZXXY
-0x9542	alias-c	<> ZXXY
-0x9543	cmd	[<->] TXXY
-0x9543	alias-c	<> TXXY
-0x9544	cmd	[<->] XYXY
-0x9544	alias-c	<> XYXY
-0x9545	cmd	[<->] YYXY
-0x9545	alias-c	<> YYXY
-0x9546	cmd	[<->] ZYXY
-0x9546	alias-c	<> ZYXY
-0x9547	cmd	[<->] TYXY
-0x9547	alias-c	<> TYXY
-0x9548	cmd	[<->] XZXY
-0x9548	alias-c	<> XZXY
-0x9549	cmd	[<->] YZXY
-0x9549	alias-c	<> YZXY
-0x954a	cmd	[<->] ZZXY
-0x954a	alias-c	<> ZZXY
-0x954b	cmd	[<->] TZXY
-0x954b	alias-c	<> TZXY
-0x954c	cmd	[<->] XTXY
-0x954c	alias-c	<> XTXY
-0x954d	cmd	[<->] YTXY
-0x954d	alias-c	<> YTXY
-0x954e	cmd	[<->] ZTXY
-0x954e	alias-c	<> ZTXY
-0x954f	cmd	[<->] TTXY
-0x954f	alias-c	<> TTXY
-0x9550	cmd	[<->] XXYY
-0x9550	alias-c	<> XXYY
-0x9551	cmd	[<->] YXYY
-0x9551	alias-c	<> YXYY
-0x9552	cmd	[<->] ZXYY
-0x9552	alias-c	<> ZXYY
-0x9553	cmd	[<->] TXYY
-0x9553	alias-c	<> TXYY
-0x9554	cmd	[<->] XYYY
-0x9554	alias-c	<> XYYY
-0x9555	cmd	[<->] YYYY
-0x9555	alias-c	<> YYYY
-0x9556	cmd	[<->] ZYYY
-0x9556	alias-c	<> ZYYY
-0x9557	cmd	[<->] TYYY
-0x9557	alias-c	<> TYYY
-0x9558	cmd	[<->] XZYY
-0x9558	alias-c	<> XZYY
-0x9559	cmd	[<->] YZYY
-0x9559	alias-c	<> YZYY
-0x955a	cmd	[<->] ZZYY
-0x955a	alias-c	<> ZZYY
-0x955b	cmd	[<->] TZYY
-0x955b	alias-c	<> TZYY
-0x955c	cmd	[<->] XTYY
-0x955c	alias-c	<> XTYY
-0x955d	cmd	[<->] YTYY
-0x955d	alias-c	<> YTYY
-0x955e	cmd	[<->] ZTYY
-0x955e	alias-c	<> ZTYY
-0x955f	cmd	[<->] TTYY
-0x955f	alias-c	<> TTYY
-0x9560	cmd	[<->] XXZY
-0x9560	alias-c	<> XXZY
-0x9561	cmd	[<->] YXZY
-0x9561	alias-c	<> YXZY
-0x9562	cmd	[<->] ZXZY
-0x9562	alias-c	<> ZXZY
-0x9563	cmd	[<->] TXZY
-0x9563	alias-c	<> TXZY
-0x9564	cmd	[<->] XYZY
-0x9564	alias-c	<> XYZY
-0x9565	cmd	[<->] YYZY
-0x9565	alias-c	<> YYZY
-0x9566	cmd	[<->] ZYZY
-0x9566	alias-c	<> ZYZY
-0x9567	cmd	[<->] TYZY
-0x9567	alias-c	<> TYZY
-0x9568	cmd	[<->] XZZY
-0x9568	alias-c	<> XZZY
-0x9569	cmd	[<->] YZZY
-0x9569	alias-c	<> YZZY
-0x956a	cmd	[<->] ZZZY
-0x956a	alias-c	<> ZZZY
-0x956b	cmd	[<->] TZZY
-0x956b	alias-c	<> TZZY
-0x956c	cmd	[<->] XTZY
-0x956c	alias-c	<> XTZY
-0x956d	cmd	[<->] YTZY
-0x956d	alias-c	<> YTZY
-0x956e	cmd	[<->] ZTZY
-0x956e	alias-c	<> ZTZY
-0x956f	cmd	[<->] TTZY
-0x956f	alias-c	<> TTZY
-0x9570	cmd	[<->] XXTY
-0x9570	alias-c	<> XXTY
-0x9571	cmd	[<->] YXTY
-0x9571	alias-c	<> YXTY
-0x9572	cmd	[<->] ZXTY
-0x9572	alias-c	<> ZXTY
-0x9573	cmd	[<->] TXTY
-0x9573	alias-c	<> TXTY
-0x9574	cmd	[<->] XYTY
-0x9574	alias-c	<> XYTY
-0x9575	cmd	[<->] YYTY
-0x9575	alias-c	<> YYTY
-0x9576	cmd	[<->] ZYTY
-0x9576	alias-c	<> ZYTY
-0x9577	cmd	[<->] TYTY
-0x9577	alias-c	<> TYTY
-0x9578	cmd	[<->] XZTY
-0x9578	alias-c	<> XZTY
-0x9579	cmd	[<->] YZTY
-0x9579	alias-c	<> YZTY
-0x957a	cmd	[<->] ZZTY
-0x957a	alias-c	<> ZZTY
-0x957b	cmd	[<->] TZTY
-0x957b	alias-c	<> TZTY
-0x957c	cmd	[<->] XTTY
-0x957c	alias-c	<> XTTY
-0x957d	cmd	[<->] YTTY
-0x957d	alias-c	<> YTTY
-0x957e	cmd	[<->] ZTTY
-0x957e	alias-c	<> ZTTY
-0x957f	cmd	[<->] TTTY
-0x957f	alias-c	<> TTTY
-0x9580	cmd	[<->] XXXZ
-0x9580	alias-c	<> XXXZ
-0x9581	cmd	[<->] YXXZ
-0x9581	alias-c	<> YXXZ
-0x9582	cmd	[<->] ZXXZ
-0x9582	alias-c	<> ZXXZ
-0x9583	cmd	[<->] TXXZ
-0x9583	alias-c	<> TXXZ
-0x9584	cmd	[<->] XYXZ
-0x9584	alias-c	<> XYXZ
-0x9585	cmd	[<->] YYXZ
-0x9585	alias-c	<> YYXZ
-0x9586	cmd	[<->] ZYXZ
-0x9586	alias-c	<> ZYXZ
-0x9587	cmd	[<->] TYXZ
-0x9587	alias-c	<> TYXZ
-0x9588	cmd	[<->] XZXZ
-0x9588	alias-c	<> XZXZ
-0x9589	cmd	[<->] YZXZ
-0x9589	alias-c	<> YZXZ
-0x958a	cmd	[<->] ZZXZ
-0x958a	alias-c	<> ZZXZ
-0x958b	cmd	[<->] TZXZ
-0x958b	alias-c	<> TZXZ
-0x958c	cmd	[<->] XTXZ
-0x958c	alias-c	<> XTXZ
-0x958d	cmd	[<->] YTXZ
-0x958d	alias-c	<> YTXZ
-0x958e	cmd	[<->] ZTXZ
-0x958e	alias-c	<> ZTXZ
-0x958f	cmd	[<->] TTXZ
-0x958f	alias-c	<> TTXZ
-0x9590	cmd	[<->] XXYZ
-0x9590	alias-c	<> XXYZ
-0x9591	cmd	[<->] YXYZ
-0x9591	alias-c	<> YXYZ
-0x9592	cmd	[<->] ZXYZ
-0x9592	alias-c	<> ZXYZ
-0x9593	cmd	[<->] TXYZ
-0x9593	alias-c	<> TXYZ
-0x9594	cmd	[<->] XYYZ
-0x9594	alias-c	<> XYYZ
-0x9595	cmd	[<->] YYYZ
-0x9595	alias-c	<> YYYZ
-0x9596	cmd	[<->] ZYYZ
-0x9596	alias-c	<> ZYYZ
-0x9597	cmd	[<->] TYYZ
-0x9597	alias-c	<> TYYZ
-0x9598	cmd	[<->] XZYZ
-0x9598	alias-c	<> XZYZ
-0x9599	cmd	[<->] YZYZ
-0x9599	alias-c	<> YZYZ
-0x959a	cmd	[<->] ZZYZ
-0x959a	alias-c	<> ZZYZ
-0x959b	cmd	[<->] TZYZ
-0x959b	alias-c	<> TZYZ
-0x959c	cmd	[<->] XTYZ
-0x959c	alias-c	<> XTYZ
-0x959d	cmd	[<->] YTYZ
-0x959d	alias-c	<> YTYZ
-0x959e	cmd	[<->] ZTYZ
-0x959e	alias-c	<> ZTYZ
-0x959f	cmd	[<->] TTYZ
-0x959f	alias-c	<> TTYZ
-0x95a0	cmd	[<->] XXZZ
-0x95a0	alias-c	<> XXZZ
-0x95a1	cmd	[<->] YXZZ
-0x95a1	alias-c	<> YXZZ
-0x95a2	cmd	[<->] ZXZZ
-0x95a2	alias-c	<> ZXZZ
-0x95a3	cmd	[<->] TXZZ
-0x95a3	alias-c	<> TXZZ
-0x95a4	cmd	[<->] XYZZ
-0x95a4	alias-c	<> XYZZ
-0x95a5	cmd	[<->] YYZZ
-0x95a5	alias-c	<> YYZZ
-0x95a6	cmd	[<->] ZYZZ
-0x95a6	alias-c	<> ZYZZ
-0x95a7	cmd	[<->] TYZZ
-0x95a7	alias-c	<> TYZZ
-0x95a8	cmd	[<->] XZZZ
-0x95a8	alias-c	<> XZZZ
-0x95a9	cmd	[<->] YZZZ
-0x95a9	alias-c	<> YZZZ
-0x95aa	cmd	[<->] ZZZZ
-0x95aa	alias-c	<> ZZZZ
-0x95ab	cmd	[<->] TZZZ
-0x95ab	alias-c	<> TZZZ
-0x95ac	cmd	[<->] XTZZ
-0x95ac	alias-c	<> XTZZ
-0x95ad	cmd	[<->] YTZZ
-0x95ad	alias-c	<> YTZZ
-0x95ae	cmd	[<->] ZTZZ
-0x95ae	alias-c	<> ZTZZ
-0x95af	cmd	[<->] TTZZ
-0x95af	alias-c	<> TTZZ
-0x95b0	cmd	[<->] XXTZ
-0x95b0	alias-c	<> XXTZ
-0x95b1	cmd	[<->] YXTZ
-0x95b1	alias-c	<> YXTZ
-0x95b2	cmd	[<->] ZXTZ
-0x95b2	alias-c	<> ZXTZ
-0x95b3	cmd	[<->] TXTZ
-0x95b3	alias-c	<> TXTZ
-0x95b4	cmd	[<->] XYTZ
-0x95b4	alias-c	<> XYTZ
-0x95b5	cmd	[<->] YYTZ
-0x95b5	alias-c	<> YYTZ
-0x95b6	cmd	[<->] ZYTZ
-0x95b6	alias-c	<> ZYTZ
-0x95b7	cmd	[<->] TYTZ
-0x95b7	alias-c	<> TYTZ
-0x95b8	cmd	[<->] XZTZ
-0x95b8	alias-c	<> XZTZ
-0x95b9	cmd	[<->] YZTZ
-0x95b9	alias-c	<> YZTZ
-0x95ba	cmd	[<->] ZZTZ
-0x95ba	alias-c	<> ZZTZ
-0x95bb	cmd	[<->] TZTZ
-0x95bb	alias-c	<> TZTZ
-0x95bc	cmd	[<->] XTTZ
-0x95bc	alias-c	<> XTTZ
-0x95bd	cmd	[<->] YTTZ
-0x95bd	alias-c	<> YTTZ
-0x95be	cmd	[<->] ZTTZ
-0x95be	alias-c	<> ZTTZ
-0x95bf	cmd	[<->] TTTZ
-0x95bf	alias-c	<> TTTZ
-0x95c0	cmd	[<->] XXXT
-0x95c0	alias-c	<> XXXT
-0x95c1	cmd	[<->] YXXT
-0x95c1	alias-c	<> YXXT
-0x95c2	cmd	[<->] ZXXT
-0x95c2	alias-c	<> ZXXT
-0x95c3	cmd	[<->] TXXT
-0x95c3	alias-c	<> TXXT
-0x95c4	cmd	[<->] XYXT
-0x95c4	alias-c	<> XYXT
-0x95c5	cmd	[<->] YYXT
-0x95c5	alias-c	<> YYXT
-0x95c6	cmd	[<->] ZYXT
-0x95c6	alias-c	<> ZYXT
-0x95c7	cmd	[<->] TYXT
-0x95c7	alias-c	<> TYXT
-0x95c8	cmd	[<->] XZXT
-0x95c8	alias-c	<> XZXT
-0x95c9	cmd	[<->] YZXT
-0x95c9	alias-c	<> YZXT
-0x95ca	cmd	[<->] ZZXT
-0x95ca	alias-c	<> ZZXT
-0x95cb	cmd	[<->] TZXT
-0x95cb	alias-c	<> TZXT
-0x95cc	cmd	[<->] XTXT
-0x95cc	alias-c	<> XTXT
-0x95cd	cmd	[<->] YTXT
-0x95cd	alias-c	<> YTXT
-0x95ce	cmd	[<->] ZTXT
-0x95ce	alias-c	<> ZTXT
-0x95cf	cmd	[<->] TTXT
-0x95cf	alias-c	<> TTXT
-0x95d0	cmd	[<->] XXYT
-0x95d0	alias-c	<> XXYT
-0x95d1	cmd	[<->] YXYT
-0x95d1	alias-c	<> YXYT
-0x95d2	cmd	[<->] ZXYT
-0x95d2	alias-c	<> ZXYT
-0x95d3	cmd	[<->] TXYT
-0x95d3	alias-c	<> TXYT
-0x95d4	cmd	[<->] XYYT
-0x95d4	alias-c	<> XYYT
-0x95d5	cmd	[<->] YYYT
-0x95d5	alias-c	<> YYYT
-0x95d6	cmd	[<->] ZYYT
-0x95d6	alias-c	<> ZYYT
-0x95d7	cmd	[<->] TYYT
-0x95d7	alias-c	<> TYYT
-0x95d8	cmd	[<->] XZYT
-0x95d8	alias-c	<> XZYT
-0x95d9	cmd	[<->] YZYT
-0x95d9	alias-c	<> YZYT
-0x95da	cmd	[<->] ZZYT
-0x95da	alias-c	<> ZZYT
-0x95db	cmd	[<->] TZYT
-0x95db	alias-c	<> TZYT
-0x95dc	cmd	[<->] XTYT
-0x95dc	alias-c	<> XTYT
-0x95dd	cmd	[<->] YTYT
-0x95dd	alias-c	<> YTYT
-0x95de	cmd	[<->] ZTYT
-0x95de	alias-c	<> ZTYT
-0x95df	cmd	[<->] TTYT
-0x95df	alias-c	<> TTYT
-0x95e0	cmd	[<->] XXZT
-0x95e0	alias-c	<> XXZT
-0x95e1	cmd	[<->] YXZT
-0x95e1	alias-c	<> YXZT
-0x95e2	cmd	[<->] ZXZT
-0x95e2	alias-c	<> ZXZT
-0x95e3	cmd	[<->] TXZT
-0x95e3	alias-c	<> TXZT
-0x95e4	cmd	[<->] XYZT
-0x95e4	alias-c	<> XYZT
-0x95e5	cmd	[<->] YYZT
-0x95e5	alias-c	<> YYZT
-0x95e6	cmd	[<->] ZYZT
-0x95e6	alias-c	<> ZYZT
-0x95e7	cmd	[<->] TYZT
-0x95e7	alias-c	<> TYZT
-0x95e8	cmd	[<->] XZZT
-0x95e8	alias-c	<> XZZT
-0x95e9	cmd	[<->] YZZT
-0x95e9	alias-c	<> YZZT
-0x95ea	cmd	[<->] ZZZT
-0x95ea	alias-c	<> ZZZT
-0x95eb	cmd	[<->] TZZT
-0x95eb	alias-c	<> TZZT
-0x95ec	cmd	[<->] XTZT
-0x95ec	alias-c	<> XTZT
-0x95ed	cmd	[<->] YTZT
-0x95ed	alias-c	<> YTZT
-0x95ee	cmd	[<->] ZTZT
-0x95ee	alias-c	<> ZTZT
-0x95ef	cmd	[<->] TTZT
-0x95ef	alias-c	<> TTZT
-0x95f0	cmd	[<->] XXTT
-0x95f0	alias-c	<> XXTT
-0x95f1	cmd	[<->] YXTT
-0x95f1	alias-c	<> YXTT
-0x95f2	cmd	[<->] ZXTT
-0x95f2	alias-c	<> ZXTT
-0x95f3	cmd	[<->] TXTT
-0x95f3	alias-c	<> TXTT
-0x95f4	cmd	[<->] XYTT
-0x95f4	alias-c	<> XYTT
-0x95f5	cmd	[<->] YYTT
-0x95f5	alias-c	<> YYTT
-0x95f6	cmd	[<->] ZYTT
-0x95f6	alias-c	<> ZYTT
-0x95f7	cmd	[<->] TYTT
-0x95f7	alias-c	<> TYTT
-0x95f8	cmd	[<->] XZTT
-0x95f8	alias-c	<> XZTT
-0x95f9	cmd	[<->] YZTT
-0x95f9	alias-c	<> YZTT
-0x95fa	cmd	[<->] ZZTT
-0x95fa	alias-c	<> ZZTT
-0x95fb	cmd	[<->] TZTT
-0x95fb	alias-c	<> TZTT
-0x95fc	cmd	[<->] XTTT
-0x95fc	alias-c	<> XTTT
-0x95fd	cmd	[<->] YTTT
-0x95fd	alias-c	<> YTTT
-0x95fe	cmd	[<->] ZTTT
-0x95fe	alias-c	<> ZTTT
-0x95ff	cmd	[<->] TTTT
-0x95ff	alias-c	<> TTTT
-0x9600	arg	#	max=256
-0x9700	arg	[cmplx]#	max=256
-0x9700	alias-a	c#	max=256
-0x9800	arg	CNST	max=89,indirect
-0x9900	arg	[cmplx]CNST	max=89,indirect
-0x9900	alias-a	cCNST	max=89,indirect
-0x9a00	arg	CASE	max=128,indirect,stack
-0x9b00	arg	[cmplx]VIEW	max=128,indirect,stack,complex
-0x9b00	alias-a	cVIEW	max=128,indirect,stack,complex
+0x7400	cmd	kg[->]lb
+0x7400	alias-c	kg>lb
+0x7401	cmd	lb[->]kg
+0x7401	alias-c	lb>kg
+0x7402	cmd	kg[->]stone
+0x7402	alias-c	kg>stone
+0x7403	cmd	stone[->]kg
+0x7403	alias-c	stone>kg
+0x7404	cmd	kg[->]cwt
+0x7404	alias-c	kg>cwt
+0x7405	cmd	cwt[->]kg
+0x7405	alias-c	cwt>kg
+0x7406	cmd	kg[->]s.cwt
+0x7406	alias-c	kg>s.cwt
+0x7407	cmd	s.cwt[->]kg
+0x7407	alias-c	s.cwt>kg
+0x7408	cmd	g[->]oz
+0x7408	alias-c	g>oz
+0x7409	cmd	oz[->]g
+0x7409	alias-c	oz>g
+0x740a	cmd	g[->]tr.oz
+0x740a	alias-c	g>tr.oz
+0x740b	cmd	tr.oz[->]g
+0x740b	alias-c	tr.oz>g
+0x740c	cmd	l[->]galUK
+0x740c	alias-c	l>galUK
+0x740d	cmd	galUK[->]l
+0x740d	alias-c	galUK>l
+0x740e	cmd	l[->]galUS
+0x740e	alias-c	l>galUS
+0x740f	cmd	galUS[->]l
+0x740f	alias-c	galUS>l
+0x7410	cmd	l[->]cft
+0x7410	alias-c	l>cft
+0x7411	cmd	cft[->]l
+0x7411	alias-c	cft>l
+0x7412	cmd	ml[->]flozUK
+0x7412	alias-c	ml>flozUK
+0x7413	cmd	flozUK[->]ml
+0x7413	alias-c	flozUK>ml
+0x7414	cmd	ml[->]flozUS
+0x7414	alias-c	ml>flozUS
+0x7415	cmd	flozUS[->]ml
+0x7415	alias-c	flozUS>ml
+0x7416	cmd	cm[->]inches
+0x7416	alias-c	cm>inches
+0x7417	cmd	inches[->]cm
+0x7417	alias-c	inches>cm
+0x7418	cmd	m[->]fathom
+0x7418	alias-c	m>fathom
+0x7419	cmd	fathom[->]m
+0x7419	alias-c	fathom>m
+0x741a	cmd	m[->]feet
+0x741a	alias-c	m>feet
+0x741b	cmd	feet[->]m
+0x741b	alias-c	feet>m
+0x741c	cmd	m[->]feetUS
+0x741c	alias-c	m>feetUS
+0x741d	cmd	feetUS[->]m
+0x741d	alias-c	feetUS>m
+0x741e	cmd	m[->]yards
+0x741e	alias-c	m>yards
+0x741f	cmd	yards[->]m
+0x741f	alias-c	yards>m
+0x7420	cmd	km[->]miles
+0x7420	alias-c	km>miles
+0x7421	cmd	miles[->]km
+0x7421	alias-c	miles>km
+0x7422	cmd	km[->]l.y.
+0x7422	alias-c	km>l.y.
+0x7423	cmd	l.y.[->]km
+0x7423	alias-c	l.y.>km
+0x7424	cmd	km[->]pc
+0x7424	alias-c	km>pc
+0x7425	cmd	pc[->]km
+0x7425	alias-c	pc>km
+0x7426	cmd	km[->]AU
+0x7426	alias-c	km>AU
+0x7427	cmd	AU[->]km
+0x7427	alias-c	AU>km
+0x7428	cmd	km[->]nmi
+0x7428	alias-c	km>nmi
+0x7429	cmd	nmi[->]km
+0x7429	alias-c	nmi>km
+0x742a	cmd	ha[->]acres
+0x742a	alias-c	ha>acres
+0x742b	cmd	acres[->]ha
+0x742b	alias-c	acres>ha
+0x742c	cmd	ha[->]acreUS
+0x742c	alias-c	ha>acreUS
+0x742d	cmd	acreUS[->]ha
+0x742d	alias-c	acreUS>ha
+0x742e	cmd	N[->]lbf
+0x742e	alias-c	N>lbf
+0x742f	cmd	lbf[->]N
+0x742f	alias-c	lbf>N
+0x7430	cmd	J[->]Btu
+0x7430	alias-c	J>Btu
+0x7431	cmd	Btu[->]J
+0x7431	alias-c	Btu>J
+0x7432	cmd	J[->]cal
+0x7432	alias-c	J>cal
+0x7433	cmd	cal[->]J
+0x7433	alias-c	cal>J
+0x7434	cmd	J[->]kWh
+0x7434	alias-c	J>kWh
+0x7435	cmd	kWh[->]J
+0x7435	alias-c	kWh>J
+0x7436	cmd	Pa[->]atm
+0x7436	alias-c	Pa>atm
+0x7437	cmd	atm[->]Pa
+0x7437	alias-c	atm>Pa
+0x7438	cmd	Pa[->]bar
+0x7438	alias-c	Pa>bar
+0x7439	cmd	bar[->]Pa
+0x7439	alias-c	bar>Pa
+0x743a	cmd	Pa[->]mmHg
+0x743a	alias-c	Pa>mmHg
+0x743b	cmd	mmHg[->]Pa
+0x743b	alias-c	mmHg>Pa
+0x743c	cmd	Pa[->]psi
+0x743c	alias-c	Pa>psi
+0x743d	cmd	psi[->]Pa
+0x743d	alias-c	psi>Pa
+0x743e	cmd	Pa[->]inHg
+0x743e	alias-c	Pa>inHg
+0x743f	cmd	inHg[->]Pa
+0x743f	alias-c	inHg>Pa
+0x7440	cmd	Pa[->]torr
+0x7440	alias-c	Pa>torr
+0x7441	cmd	torr[->]Pa
+0x7441	alias-c	torr>Pa
+0x7442	cmd	W[->]hpUK
+0x7442	alias-c	W>hpUK
+0x7443	cmd	hpUK[->]W
+0x7443	alias-c	hpUK>W
+0x7444	cmd	W[->]hp
+0x7444	alias-c	W>hp
+0x7445	cmd	hp[->]W
+0x7445	alias-c	hp>W
+0x7446	cmd	W[->]PS(hp)
+0x7446	alias-c	W>PS(hp)
+0x7447	cmd	PS(hp)[->]W
+0x7447	alias-c	PS(hp)>W
+0x7448	cmd	W[->]HP[sub-e]
+0x7448	alias-c	W>HP[sub-e]
+0x7449	cmd	HP[sub-e][->]W
+0x7449	alias-c	HP[sub-e]>W
+0x744a	cmd	t[->]tons
+0x744a	alias-c	t>tons
+0x744b	cmd	tons[->]t
+0x744b	alias-c	tons>t
+0x744c	cmd	t[->]s.tons
+0x744c	alias-c	t>s.tons
+0x744d	cmd	s.tons[->]t
+0x744d	alias-c	s.tons>t
+0x7500	arg	PSE	max=100,indirect
+0x7600	arg	SDL	max=128,indirect
+0x7700	arg	SDR	max=128,indirect
+0x7800	arg	VW[alpha]+	max=128,indirect,stack
+0x7800	alias-a	VWa+	max=128,indirect,stack
+0x7900	arg	RM	max=7,indirect
+0x7a00	arg	RSD	max=35,indirect
+0x7b00	arg	RDP	max=100,indirect
+0x7c00	arg	STOM	max=128,indirect,stack
+0x7d00	arg	RCLM	max=128,indirect,stack
+0x7e00	arg	MSG	max=26,indirect
+0x7f00	arg	LocR	max=128,indirect
+0x8000	arg	xMSET	max=64,indirect,xrom
+0x8100	arg	xMCLR	max=64,indirect,xrom
+0x8200	arg	xIN	max=256,xrom
+0x8300	arg	xOUT	max=256,xrom
+0x8400	arg	CNVG?	max=32
+0x8500	cmd	[<->] XXXX
+0x8500	alias-c	<> XXXX
+0x8501	cmd	[<->] YXXX
+0x8501	alias-c	<> YXXX
+0x8502	cmd	[<->] ZXXX
+0x8502	alias-c	<> ZXXX
+0x8503	cmd	[<->] TXXX
+0x8503	alias-c	<> TXXX
+0x8504	cmd	[<->] XYXX
+0x8504	alias-c	<> XYXX
+0x8505	cmd	[<->] YYXX
+0x8505	alias-c	<> YYXX
+0x8506	cmd	[<->] ZYXX
+0x8506	alias-c	<> ZYXX
+0x8507	cmd	[<->] TYXX
+0x8507	alias-c	<> TYXX
+0x8508	cmd	[<->] XZXX
+0x8508	alias-c	<> XZXX
+0x8509	cmd	[<->] YZXX
+0x8509	alias-c	<> YZXX
+0x850a	cmd	[<->] ZZXX
+0x850a	alias-c	<> ZZXX
+0x850b	cmd	[<->] TZXX
+0x850b	alias-c	<> TZXX
+0x850c	cmd	[<->] XTXX
+0x850c	alias-c	<> XTXX
+0x850d	cmd	[<->] YTXX
+0x850d	alias-c	<> YTXX
+0x850e	cmd	[<->] ZTXX
+0x850e	alias-c	<> ZTXX
+0x850f	cmd	[<->] TTXX
+0x850f	alias-c	<> TTXX
+0x8510	cmd	[<->] XXYX
+0x8510	alias-c	<> XXYX
+0x8511	cmd	[<->] YXYX
+0x8511	alias-c	<> YXYX
+0x8512	cmd	[<->] ZXYX
+0x8512	alias-c	<> ZXYX
+0x8513	cmd	[<->] TXYX
+0x8513	alias-c	<> TXYX
+0x8514	cmd	[<->] XYYX
+0x8514	alias-c	<> XYYX
+0x8515	cmd	[<->] YYYX
+0x8515	alias-c	<> YYYX
+0x8516	cmd	[<->] ZYYX
+0x8516	alias-c	<> ZYYX
+0x8517	cmd	[<->] TYYX
+0x8517	alias-c	<> TYYX
+0x8518	cmd	[<->] XZYX
+0x8518	alias-c	<> XZYX
+0x8519	cmd	[<->] YZYX
+0x8519	alias-c	<> YZYX
+0x851a	cmd	[<->] ZZYX
+0x851a	alias-c	<> ZZYX
+0x851b	cmd	[<->] TZYX
+0x851b	alias-c	<> TZYX
+0x851c	cmd	[<->] XTYX
+0x851c	alias-c	<> XTYX
+0x851d	cmd	[<->] YTYX
+0x851d	alias-c	<> YTYX
+0x851e	cmd	[<->] ZTYX
+0x851e	alias-c	<> ZTYX
+0x851f	cmd	[<->] TTYX
+0x851f	alias-c	<> TTYX
+0x8520	cmd	[<->] XXZX
+0x8520	alias-c	<> XXZX
+0x8521	cmd	[<->] YXZX
+0x8521	alias-c	<> YXZX
+0x8522	cmd	[<->] ZXZX
+0x8522	alias-c	<> ZXZX
+0x8523	cmd	[<->] TXZX
+0x8523	alias-c	<> TXZX
+0x8524	cmd	[<->] XYZX
+0x8524	alias-c	<> XYZX
+0x8525	cmd	[<->] YYZX
+0x8525	alias-c	<> YYZX
+0x8526	cmd	[<->] ZYZX
+0x8526	alias-c	<> ZYZX
+0x8527	cmd	[<->] TYZX
+0x8527	alias-c	<> TYZX
+0x8528	cmd	[<->] XZZX
+0x8528	alias-c	<> XZZX
+0x8529	cmd	[<->] YZZX
+0x8529	alias-c	<> YZZX
+0x852a	cmd	[<->] ZZZX
+0x852a	alias-c	<> ZZZX
+0x852b	cmd	[<->] TZZX
+0x852b	alias-c	<> TZZX
+0x852c	cmd	[<->] XTZX
+0x852c	alias-c	<> XTZX
+0x852d	cmd	[<->] YTZX
+0x852d	alias-c	<> YTZX
+0x852e	cmd	[<->] ZTZX
+0x852e	alias-c	<> ZTZX
+0x852f	cmd	[<->] TTZX
+0x852f	alias-c	<> TTZX
+0x8530	cmd	[<->] XXTX
+0x8530	alias-c	<> XXTX
+0x8531	cmd	[<->] YXTX
+0x8531	alias-c	<> YXTX
+0x8532	cmd	[<->] ZXTX
+0x8532	alias-c	<> ZXTX
+0x8533	cmd	[<->] TXTX
+0x8533	alias-c	<> TXTX
+0x8534	cmd	[<->] XYTX
+0x8534	alias-c	<> XYTX
+0x8535	cmd	[<->] YYTX
+0x8535	alias-c	<> YYTX
+0x8536	cmd	[<->] ZYTX
+0x8536	alias-c	<> ZYTX
+0x8537	cmd	[<->] TYTX
+0x8537	alias-c	<> TYTX
+0x8538	cmd	[<->] XZTX
+0x8538	alias-c	<> XZTX
+0x8539	cmd	[<->] YZTX
+0x8539	alias-c	<> YZTX
+0x853a	cmd	[<->] ZZTX
+0x853a	alias-c	<> ZZTX
+0x853b	cmd	[<->] TZTX
+0x853b	alias-c	<> TZTX
+0x853c	cmd	[<->] XTTX
+0x853c	alias-c	<> XTTX
+0x853d	cmd	[<->] YTTX
+0x853d	alias-c	<> YTTX
+0x853e	cmd	[<->] ZTTX
+0x853e	alias-c	<> ZTTX
+0x853f	cmd	[<->] TTTX
+0x853f	alias-c	<> TTTX
+0x8540	cmd	[<->] XXXY
+0x8540	alias-c	<> XXXY
+0x8541	cmd	[<->] YXXY
+0x8541	alias-c	<> YXXY
+0x8542	cmd	[<->] ZXXY
+0x8542	alias-c	<> ZXXY
+0x8543	cmd	[<->] TXXY
+0x8543	alias-c	<> TXXY
+0x8544	cmd	[<->] XYXY
+0x8544	alias-c	<> XYXY
+0x8545	cmd	[<->] YYXY
+0x8545	alias-c	<> YYXY
+0x8546	cmd	[<->] ZYXY
+0x8546	alias-c	<> ZYXY
+0x8547	cmd	[<->] TYXY
+0x8547	alias-c	<> TYXY
+0x8548	cmd	[<->] XZXY
+0x8548	alias-c	<> XZXY
+0x8549	cmd	[<->] YZXY
+0x8549	alias-c	<> YZXY
+0x854a	cmd	[<->] ZZXY
+0x854a	alias-c	<> ZZXY
+0x854b	cmd	[<->] TZXY
+0x854b	alias-c	<> TZXY
+0x854c	cmd	[<->] XTXY
+0x854c	alias-c	<> XTXY
+0x854d	cmd	[<->] YTXY
+0x854d	alias-c	<> YTXY
+0x854e	cmd	[<->] ZTXY
+0x854e	alias-c	<> ZTXY
+0x854f	cmd	[<->] TTXY
+0x854f	alias-c	<> TTXY
+0x8550	cmd	[<->] XXYY
+0x8550	alias-c	<> XXYY
+0x8551	cmd	[<->] YXYY
+0x8551	alias-c	<> YXYY
+0x8552	cmd	[<->] ZXYY
+0x8552	alias-c	<> ZXYY
+0x8553	cmd	[<->] TXYY
+0x8553	alias-c	<> TXYY
+0x8554	cmd	[<->] XYYY
+0x8554	alias-c	<> XYYY
+0x8555	cmd	[<->] YYYY
+0x8555	alias-c	<> YYYY
+0x8556	cmd	[<->] ZYYY
+0x8556	alias-c	<> ZYYY
+0x8557	cmd	[<->] TYYY
+0x8557	alias-c	<> TYYY
+0x8558	cmd	[<->] XZYY
+0x8558	alias-c	<> XZYY
+0x8559	cmd	[<->] YZYY
+0x8559	alias-c	<> YZYY
+0x855a	cmd	[<->] ZZYY
+0x855a	alias-c	<> ZZYY
+0x855b	cmd	[<->] TZYY
+0x855b	alias-c	<> TZYY
+0x855c	cmd	[<->] XTYY
+0x855c	alias-c	<> XTYY
+0x855d	cmd	[<->] YTYY
+0x855d	alias-c	<> YTYY
+0x855e	cmd	[<->] ZTYY
+0x855e	alias-c	<> ZTYY
+0x855f	cmd	[<->] TTYY
+0x855f	alias-c	<> TTYY
+0x8560	cmd	[<->] XXZY
+0x8560	alias-c	<> XXZY
+0x8561	cmd	[<->] YXZY
+0x8561	alias-c	<> YXZY
+0x8562	cmd	[<->] ZXZY
+0x8562	alias-c	<> ZXZY
+0x8563	cmd	[<->] TXZY
+0x8563	alias-c	<> TXZY
+0x8564	cmd	[<->] XYZY
+0x8564	alias-c	<> XYZY
+0x8565	cmd	[<->] YYZY
+0x8565	alias-c	<> YYZY
+0x8566	cmd	[<->] ZYZY
+0x8566	alias-c	<> ZYZY
+0x8567	cmd	[<->] TYZY
+0x8567	alias-c	<> TYZY
+0x8568	cmd	[<->] XZZY
+0x8568	alias-c	<> XZZY
+0x8569	cmd	[<->] YZZY
+0x8569	alias-c	<> YZZY
+0x856a	cmd	[<->] ZZZY
+0x856a	alias-c	<> ZZZY
+0x856b	cmd	[<->] TZZY
+0x856b	alias-c	<> TZZY
+0x856c	cmd	[<->] XTZY
+0x856c	alias-c	<> XTZY
+0x856d	cmd	[<->] YTZY
+0x856d	alias-c	<> YTZY
+0x856e	cmd	[<->] ZTZY
+0x856e	alias-c	<> ZTZY
+0x856f	cmd	[<->] TTZY
+0x856f	alias-c	<> TTZY
+0x8570	cmd	[<->] XXTY
+0x8570	alias-c	<> XXTY
+0x8571	cmd	[<->] YXTY
+0x8571	alias-c	<> YXTY
+0x8572	cmd	[<->] ZXTY
+0x8572	alias-c	<> ZXTY
+0x8573	cmd	[<->] TXTY
+0x8573	alias-c	<> TXTY
+0x8574	cmd	[<->] XYTY
+0x8574	alias-c	<> XYTY
+0x8575	cmd	[<->] YYTY
+0x8575	alias-c	<> YYTY
+0x8576	cmd	[<->] ZYTY
+0x8576	alias-c	<> ZYTY
+0x8577	cmd	[<->] TYTY
+0x8577	alias-c	<> TYTY
+0x8578	cmd	[<->] XZTY
+0x8578	alias-c	<> XZTY
+0x8579	cmd	[<->] YZTY
+0x8579	alias-c	<> YZTY
+0x857a	cmd	[<->] ZZTY
+0x857a	alias-c	<> ZZTY
+0x857b	cmd	[<->] TZTY
+0x857b	alias-c	<> TZTY
+0x857c	cmd	[<->] XTTY
+0x857c	alias-c	<> XTTY
+0x857d	cmd	[<->] YTTY
+0x857d	alias-c	<> YTTY
+0x857e	cmd	[<->] ZTTY
+0x857e	alias-c	<> ZTTY
+0x857f	cmd	[<->] TTTY
+0x857f	alias-c	<> TTTY
+0x8580	cmd	[<->] XXXZ
+0x8580	alias-c	<> XXXZ
+0x8581	cmd	[<->] YXXZ
+0x8581	alias-c	<> YXXZ
+0x8582	cmd	[<->] ZXXZ
+0x8582	alias-c	<> ZXXZ
+0x8583	cmd	[<->] TXXZ
+0x8583	alias-c	<> TXXZ
+0x8584	cmd	[<->] XYXZ
+0x8584	alias-c	<> XYXZ
+0x8585	cmd	[<->] YYXZ
+0x8585	alias-c	<> YYXZ
+0x8586	cmd	[<->] ZYXZ
+0x8586	alias-c	<> ZYXZ
+0x8587	cmd	[<->] TYXZ
+0x8587	alias-c	<> TYXZ
+0x8588	cmd	[<->] XZXZ
+0x8588	alias-c	<> XZXZ
+0x8589	cmd	[<->] YZXZ
+0x8589	alias-c	<> YZXZ
+0x858a	cmd	[<->] ZZXZ
+0x858a	alias-c	<> ZZXZ
+0x858b	cmd	[<->] TZXZ
+0x858b	alias-c	<> TZXZ
+0x858c	cmd	[<->] XTXZ
+0x858c	alias-c	<> XTXZ
+0x858d	cmd	[<->] YTXZ
+0x858d	alias-c	<> YTXZ
+0x858e	cmd	[<->] ZTXZ
+0x858e	alias-c	<> ZTXZ
+0x858f	cmd	[<->] TTXZ
+0x858f	alias-c	<> TTXZ
+0x8590	cmd	[<->] XXYZ
+0x8590	alias-c	<> XXYZ
+0x8591	cmd	[<->] YXYZ
+0x8591	alias-c	<> YXYZ
+0x8592	cmd	[<->] ZXYZ
+0x8592	alias-c	<> ZXYZ
+0x8593	cmd	[<->] TXYZ
+0x8593	alias-c	<> TXYZ
+0x8594	cmd	[<->] XYYZ
+0x8594	alias-c	<> XYYZ
+0x8595	cmd	[<->] YYYZ
+0x8595	alias-c	<> YYYZ
+0x8596	cmd	[<->] ZYYZ
+0x8596	alias-c	<> ZYYZ
+0x8597	cmd	[<->] TYYZ
+0x8597	alias-c	<> TYYZ
+0x8598	cmd	[<->] XZYZ
+0x8598	alias-c	<> XZYZ
+0x8599	cmd	[<->] YZYZ
+0x8599	alias-c	<> YZYZ
+0x859a	cmd	[<->] ZZYZ
+0x859a	alias-c	<> ZZYZ
+0x859b	cmd	[<->] TZYZ
+0x859b	alias-c	<> TZYZ
+0x859c	cmd	[<->] XTYZ
+0x859c	alias-c	<> XTYZ
+0x859d	cmd	[<->] YTYZ
+0x859d	alias-c	<> YTYZ
+0x859e	cmd	[<->] ZTYZ
+0x859e	alias-c	<> ZTYZ
+0x859f	cmd	[<->] TTYZ
+0x859f	alias-c	<> TTYZ
+0x85a0	cmd	[<->] XXZZ
+0x85a0	alias-c	<> XXZZ
+0x85a1	cmd	[<->] YXZZ
+0x85a1	alias-c	<> YXZZ
+0x85a2	cmd	[<->] ZXZZ
+0x85a2	alias-c	<> ZXZZ
+0x85a3	cmd	[<->] TXZZ
+0x85a3	alias-c	<> TXZZ
+0x85a4	cmd	[<->] XYZZ
+0x85a4	alias-c	<> XYZZ
+0x85a5	cmd	[<->] YYZZ
+0x85a5	alias-c	<> YYZZ
+0x85a6	cmd	[<->] ZYZZ
+0x85a6	alias-c	<> ZYZZ
+0x85a7	cmd	[<->] TYZZ
+0x85a7	alias-c	<> TYZZ
+0x85a8	cmd	[<->] XZZZ
+0x85a8	alias-c	<> XZZZ
+0x85a9	cmd	[<->] YZZZ
+0x85a9	alias-c	<> YZZZ
+0x85aa	cmd	[<->] ZZZZ
+0x85aa	alias-c	<> ZZZZ
+0x85ab	cmd	[<->] TZZZ
+0x85ab	alias-c	<> TZZZ
+0x85ac	cmd	[<->] XTZZ
+0x85ac	alias-c	<> XTZZ
+0x85ad	cmd	[<->] YTZZ
+0x85ad	alias-c	<> YTZZ
+0x85ae	cmd	[<->] ZTZZ
+0x85ae	alias-c	<> ZTZZ
+0x85af	cmd	[<->] TTZZ
+0x85af	alias-c	<> TTZZ
+0x85b0	cmd	[<->] XXTZ
+0x85b0	alias-c	<> XXTZ
+0x85b1	cmd	[<->] YXTZ
+0x85b1	alias-c	<> YXTZ
+0x85b2	cmd	[<->] ZXTZ
+0x85b2	alias-c	<> ZXTZ
+0x85b3	cmd	[<->] TXTZ
+0x85b3	alias-c	<> TXTZ
+0x85b4	cmd	[<->] XYTZ
+0x85b4	alias-c	<> XYTZ
+0x85b5	cmd	[<->] YYTZ
+0x85b5	alias-c	<> YYTZ
+0x85b6	cmd	[<->] ZYTZ
+0x85b6	alias-c	<> ZYTZ
+0x85b7	cmd	[<->] TYTZ
+0x85b7	alias-c	<> TYTZ
+0x85b8	cmd	[<->] XZTZ
+0x85b8	alias-c	<> XZTZ
+0x85b9	cmd	[<->] YZTZ
+0x85b9	alias-c	<> YZTZ
+0x85ba	cmd	[<->] ZZTZ
+0x85ba	alias-c	<> ZZTZ
+0x85bb	cmd	[<->] TZTZ
+0x85bb	alias-c	<> TZTZ
+0x85bc	cmd	[<->] XTTZ
+0x85bc	alias-c	<> XTTZ
+0x85bd	cmd	[<->] YTTZ
+0x85bd	alias-c	<> YTTZ
+0x85be	cmd	[<->] ZTTZ
+0x85be	alias-c	<> ZTTZ
+0x85bf	cmd	[<->] TTTZ
+0x85bf	alias-c	<> TTTZ
+0x85c0	cmd	[<->] XXXT
+0x85c0	alias-c	<> XXXT
+0x85c1	cmd	[<->] YXXT
+0x85c1	alias-c	<> YXXT
+0x85c2	cmd	[<->] ZXXT
+0x85c2	alias-c	<> ZXXT
+0x85c3	cmd	[<->] TXXT
+0x85c3	alias-c	<> TXXT
+0x85c4	cmd	[<->] XYXT
+0x85c4	alias-c	<> XYXT
+0x85c5	cmd	[<->] YYXT
+0x85c5	alias-c	<> YYXT
+0x85c6	cmd	[<->] ZYXT
+0x85c6	alias-c	<> ZYXT
+0x85c7	cmd	[<->] TYXT
+0x85c7	alias-c	<> TYXT
+0x85c8	cmd	[<->] XZXT
+0x85c8	alias-c	<> XZXT
+0x85c9	cmd	[<->] YZXT
+0x85c9	alias-c	<> YZXT
+0x85ca	cmd	[<->] ZZXT
+0x85ca	alias-c	<> ZZXT
+0x85cb	cmd	[<->] TZXT
+0x85cb	alias-c	<> TZXT
+0x85cc	cmd	[<->] XTXT
+0x85cc	alias-c	<> XTXT
+0x85cd	cmd	[<->] YTXT
+0x85cd	alias-c	<> YTXT
+0x85ce	cmd	[<->] ZTXT
+0x85ce	alias-c	<> ZTXT
+0x85cf	cmd	[<->] TTXT
+0x85cf	alias-c	<> TTXT
+0x85d0	cmd	[<->] XXYT
+0x85d0	alias-c	<> XXYT
+0x85d1	cmd	[<->] YXYT
+0x85d1	alias-c	<> YXYT
+0x85d2	cmd	[<->] ZXYT
+0x85d2	alias-c	<> ZXYT
+0x85d3	cmd	[<->] TXYT
+0x85d3	alias-c	<> TXYT
+0x85d4	cmd	[<->] XYYT
+0x85d4	alias-c	<> XYYT
+0x85d5	cmd	[<->] YYYT
+0x85d5	alias-c	<> YYYT
+0x85d6	cmd	[<->] ZYYT
+0x85d6	alias-c	<> ZYYT
+0x85d7	cmd	[<->] TYYT
+0x85d7	alias-c	<> TYYT
+0x85d8	cmd	[<->] XZYT
+0x85d8	alias-c	<> XZYT
+0x85d9	cmd	[<->] YZYT
+0x85d9	alias-c	<> YZYT
+0x85da	cmd	[<->] ZZYT
+0x85da	alias-c	<> ZZYT
+0x85db	cmd	[<->] TZYT
+0x85db	alias-c	<> TZYT
+0x85dc	cmd	[<->] XTYT
+0x85dc	alias-c	<> XTYT
+0x85dd	cmd	[<->] YTYT
+0x85dd	alias-c	<> YTYT
+0x85de	cmd	[<->] ZTYT
+0x85de	alias-c	<> ZTYT
+0x85df	cmd	[<->] TTYT
+0x85df	alias-c	<> TTYT
+0x85e0	cmd	[<->] XXZT
+0x85e0	alias-c	<> XXZT
+0x85e1	cmd	[<->] YXZT
+0x85e1	alias-c	<> YXZT
+0x85e2	cmd	[<->] ZXZT
+0x85e2	alias-c	<> ZXZT
+0x85e3	cmd	[<->] TXZT
+0x85e3	alias-c	<> TXZT
+0x85e4	cmd	[<->] XYZT
+0x85e4	alias-c	<> XYZT
+0x85e5	cmd	[<->] YYZT
+0x85e5	alias-c	<> YYZT
+0x85e6	cmd	[<->] ZYZT
+0x85e6	alias-c	<> ZYZT
+0x85e7	cmd	[<->] TYZT
+0x85e7	alias-c	<> TYZT
+0x85e8	cmd	[<->] XZZT
+0x85e8	alias-c	<> XZZT
+0x85e9	cmd	[<->] YZZT
+0x85e9	alias-c	<> YZZT
+0x85ea	cmd	[<->] ZZZT
+0x85ea	alias-c	<> ZZZT
+0x85eb	cmd	[<->] TZZT
+0x85eb	alias-c	<> TZZT
+0x85ec	cmd	[<->] XTZT
+0x85ec	alias-c	<> XTZT
+0x85ed	cmd	[<->] YTZT
+0x85ed	alias-c	<> YTZT
+0x85ee	cmd	[<->] ZTZT
+0x85ee	alias-c	<> ZTZT
+0x85ef	cmd	[<->] TTZT
+0x85ef	alias-c	<> TTZT
+0x85f0	cmd	[<->] XXTT
+0x85f0	alias-c	<> XXTT
+0x85f1	cmd	[<->] YXTT
+0x85f1	alias-c	<> YXTT
+0x85f2	cmd	[<->] ZXTT
+0x85f2	alias-c	<> ZXTT
+0x85f3	cmd	[<->] TXTT
+0x85f3	alias-c	<> TXTT
+0x85f4	cmd	[<->] XYTT
+0x85f4	alias-c	<> XYTT
+0x85f5	cmd	[<->] YYTT
+0x85f5	alias-c	<> YYTT
+0x85f6	cmd	[<->] ZYTT
+0x85f6	alias-c	<> ZYTT
+0x85f7	cmd	[<->] TYTT
+0x85f7	alias-c	<> TYTT
+0x85f8	cmd	[<->] XZTT
+0x85f8	alias-c	<> XZTT
+0x85f9	cmd	[<->] YZTT
+0x85f9	alias-c	<> YZTT
+0x85fa	cmd	[<->] ZZTT
+0x85fa	alias-c	<> ZZTT
+0x85fb	cmd	[<->] TZTT
+0x85fb	alias-c	<> TZTT
+0x85fc	cmd	[<->] XTTT
+0x85fc	alias-c	<> XTTT
+0x85fd	cmd	[<->] YTTT
+0x85fd	alias-c	<> YTTT
+0x85fe	cmd	[<->] ZTTT
+0x85fe	alias-c	<> ZTTT
+0x85ff	cmd	[<->] TTTT
+0x85ff	alias-c	<> TTTT
+0x8600	arg	#	max=256
+0x8700	arg	[cmplx]#	max=256
+0x8700	alias-a	c#	max=256
+0x8800	arg	CNST	max=89,indirect
+0x8900	arg	[cmplx]CNST	max=89,indirect
+0x8900	alias-a	cCNST	max=89,indirect
+0x8a00	arg	CASE	max=128,indirect,stack
+0x8b00	arg	[cmplx]VIEW	max=128,indirect,stack,complex
+0x8b00	alias-a	cVIEW	max=128,indirect,stack,complex
 0xf000	mult	[alpha]
 0xf000	alias-m	a

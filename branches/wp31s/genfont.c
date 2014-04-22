@@ -306,12 +306,12 @@ static void gen_translate(FILE *f) {
 
 	fprintf(f,	"/* Tables to map to Unicode and Windows CP1252 (sort of)\n"
 			" */\n\n"
-			"const int unicode[256] = {\n");
+			"static const int unicode[256] = {\n");
 	for (i=0; i<256; i++) {
 		fprintf( f, "\t0x%04x,\t// %s\n", charset[i].unicode, charset[i].name );
 	}
 	fprintf(f,	"};\n\n"
-			"const unsigned char to_cp1252[256] = {\n");
+			"static const unsigned char to_cp1252[256] = {\n");
 	for (i=0; i<256; i++) {
 		int w = charset[i].windows;
 		fprintf( f, "\t0x%02x,\t// %s %s\n", w, charset[i].name, w == 0 ? "(undefined)" : "" );
@@ -321,12 +321,12 @@ static void gen_translate(FILE *f) {
 		t[w] = (unsigned char) i;
 	}
 	fprintf(f,	"};\n\n"
-			"const unsigned char from_cp1252[256] = {\n");
+			"static const unsigned char from_cp1252[256] = {\n");
 	for (i=0; i<256; i++) {
 		fprintf( f, "\t0x%02x,\t// %s\n", t[i], charset[t[i]].name );
 	}
 	fprintf(f,	"};\n\n"
-			"const char *charnames[256] = {\n");
+			"static const char *charnames[256] = {\n");
 	for (i=0; i<256; i++) {
 		fprintf( f, "\t\"%s\",\n", charset[i].uname ? charset[i].uname : charset[i].name );
 	}

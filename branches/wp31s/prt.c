@@ -151,7 +151,7 @@ int num_arg_digits(int cmd) {
 	return 3;
 }
 
-#ifdef COMPILE_CATALOGUES
+#if defined(COMPILE_CATALOGUES) || defined(DEBUG)
 #define SPACE_AFTER_CMD " "
 #else
 #define SPACE_AFTER_CMD "\006\006"
