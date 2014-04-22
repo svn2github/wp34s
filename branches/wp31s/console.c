@@ -427,9 +427,6 @@ int main(int argc, char *argv[]) {
 			//dump_menu("test", "", CATALOGUE_TEST);
 			dump_menu("conversions", "", CATALOGUE_CONV);
 			dump_menu("constants", "# ", CATALOGUE_CONST);
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-			dump_menu("internals", "", CATALOGUE_INTERNAL);
-#endif
 		}
 		for (c=0; c<65536; c++) {
 			if (isDBL(c) && (c & 0xff))	/* Don't show all multi-word instructions */

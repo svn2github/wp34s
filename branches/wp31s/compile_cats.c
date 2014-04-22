@@ -497,10 +497,6 @@ static s_opcode prob_catalogue[] = {
 #ifdef INCLUDE_PLOTTING
 	RARGCMD(RARG_PLOT_ISSET,    "gPIX?")
 #endif
-#ifndef INCLUDE_INTERNAL_CATALOGUE
-	NILIC(OP_ISDBL,		"DBL?")
-	RARGCMD(RARG_CONVERGED,	"CNVG?")
-#endif
 };
 */
 
@@ -603,65 +599,7 @@ static s_opcode prog_catalogue[] = {
 */
 	/* end of INFRARED commands */
 
-#ifndef INCLUDE_INTERNAL_CATALOGUE
-	RARGCMD(RARG_CASE,	"CASE")
-	RARGCMD(RARG_BACK,	"BACK")
-	RARGCMD(RARG_SKIP,	"SKIP")
-	NILIC(OP_RTNp1,		"RTN+1")
-	RARGCMD(RARG_SHUFFLE,	"[<->]")
-#ifdef INCLUDE_RELATIVE_CALLS
-	RARGCMD(RARG_BSF,	"BSRF")
-	RARGCMD(RARG_BSB,	"BSRB")
-#endif
-#ifdef INCLUDE_INDIRECT_BRANCHES
-	RARGCMD(RARG_iBSF,	"iBSRF")
-	RARGCMD(RARG_iBSB,	"iBSRB")
-	RARGCMD(RARG_iBACK,	"iBACK")
-#endif
-
-#ifdef INCLUDE_INDIRECT_CONSTS
-	RARGCMD(RARG_IND_CONST, "CNST")
-#endif
-#endif
 };
-
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-static s_opcode internal_catalogue[] = {
-#if 0
-	RARGCMD(RARG_MODE_SET,	"xMSET")
-	RARGCMD(RARG_MODE_CLEAR,"xMCLR")
-	NILIC(OP_LOADA2D,	"[->]A..D")
-	NILIC(OP_SAVEA2D,	"A..D[->]")
-#endif
-	RARGCMD(RARG_CASE,	"CASE")
-	RARGCMD(RARG_BACK,	"BACK")
-	RARGCMD(RARG_SKIP,	"SKIP")
-	NILIC(OP_RTNp1,		"RTN+1")
-	RARGCMD(RARG_SHUFFLE,	"[<->]")
-#ifdef INCLUDE_RELATIVE_CALLS
-	RARGCMD(RARG_BSF,	"BSRF")
-	RARGCMD(RARG_BSB,	"BSRB")
-#endif
-#ifdef INCLUDE_INDIRECT_BRANCHES
-	RARGCMD(RARG_iBSF,	"iBSRF")
-	RARGCMD(RARG_iBSB,	"iBSRB")
-	RARGCMD(RARG_iBACK,	"iBACK")
-#endif
-	NILIC(OP_DBLON,		"DBLON")
-	NILIC(OP_DBLOFF,	"DBLOFF")
-	NILIC(OP_ISDBL,		"DBL?")
-	RARGCMD(RARG_dRCL,	"dRCL")
-
-	RARGCMD(RARG_CONVERGED,	"CNVG?")
-#ifdef INCLUDE_INDIRECT_CONSTS
-	RARGCMD(RARG_IND_CONST, "CNST")
-	RARGCMD(RARG_IND_CONST_CMPLX, "\024CNST")
-#endif
-#ifdef _DEBUG
-	NILIC(OP_DEBUG,		"DBG")
-#endif
-};
-#endif
 
 static s_opcode mode_catalogue[] = {
 	NILIC(OP_BEST,		"BestF")
@@ -1096,9 +1034,6 @@ int main(int argc, char *argv[]) {
 	CAT(clear_catalogue);
 	CAT(displ_catalogue);
 	CAT(more_catalogue);
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-	CAT(internal_catalogue);
-#endif
 
 	ALPHA(alpha_symbols);
 	ALPHA(alpha_compares);

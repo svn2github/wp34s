@@ -1246,9 +1246,6 @@ int current_catalogue_max(void) {
 		SIZE_clear_catalogue,
 		SIZE_displ_catalogue,
     	SIZE_more_catalogue,
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-		SIZE_internal_catalogue,
-#endif
 	};
 #ifdef INCLUDE_USER_CATALOGUE
 	const int cat = State2.catalogue;
@@ -1295,9 +1292,6 @@ opcode current_catalogue(int n) {
 		clear_catalogue,
 		displ_catalogue,
 		more_catalogue,
-#ifdef INCLUDE_INTERNAL_CATALOGUE
-		internal_catalogue,
-#endif
 	};
 	const unsigned char *cat;
 	unsigned int c = State2.catalogue;
