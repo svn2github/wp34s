@@ -407,24 +407,11 @@ int main(int argc, char *argv[]) {
 				return 0;
 			}
 			dump_menu("statistics", "", CATALOGUE_STATS);
-			//dump_menu("summations", "", CATALOGUE_SUMS);
 			dump_menu("probability", "", CATALOGUE_PROB);
-			//dump_menu("integer", "", CATALOGUE_INT);
-			//dump_menu("matrix", "", CATALOGUE_MATRIX);
 			dump_menu("clear", "", CATALOGUE_CLEAR);
 			dump_menu("displ", "", CATALOGUE_DISPL);
 			dump_menu("more", "", CATALOGUE_MORE);
-			dump_menu("alpha", "", CATALOGUE_ALPHA);
-			dump_menu("alpha special letters upper", "", CATALOGUE_ALPHA_LETTERS);
-			State2.alphashift = 1;
-			dump_menu("alpha special letters lower", "", CATALOGUE_ALPHA_LETTERS);
-			dump_menu("alpha subscripts", "", CATALOGUE_ALPHA_SUBSCRIPTS);
-			dump_menu("alpha symbols", "", CATALOGUE_ALPHA_SYMBOLS);
-			dump_menu("alpha compares", "", CATALOGUE_ALPHA_COMPARES);
-			dump_menu("alpha arrows", "", CATALOGUE_ALPHA_ARROWS);
-			dump_menu("programming", "", CATALOGUE_PROG);
 			dump_menu("modes", "", CATALOGUE_MODE);
-			//dump_menu("test", "", CATALOGUE_TEST);
 			dump_menu("conversions", "", CATALOGUE_CONV);
 			dump_menu("constants", "# ", CATALOGUE_CONST);
 		}

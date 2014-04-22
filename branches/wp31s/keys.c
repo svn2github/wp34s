@@ -224,14 +224,14 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 *  All the alpha catalogues go here
 		 */
 		static const struct _map amap[] = {
-			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_ALPHA_ARROWS,  CATALOGUE_NONE              } },
-			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_ALPHA_LETTERS, CATALOGUE_MODE              } },
+			{ K_ARROW, { CATALOGUE_NONE, CATALOGUE_NONE,        CATALOGUE_NONE              } },
+			{ K_CMPLX, { CATALOGUE_NONE, CATALOGUE_NONE,        CATALOGUE_MODE              } },
 		//	{ K10,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_LABELS            } },
-			{ K12,     { CATALOGUE_NONE, CATALOGUE_NONE,	      CATALOGUE_ALPHA_SUBSCRIPTS  } },
+			{ K12,     { CATALOGUE_NONE, CATALOGUE_NONE,	      CATALOGUE_NONE  } },
 		//	{ K50,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_STATUS            } },
-			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_ALPHA_COMPARES    } },
-			{ K53,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_ALPHA             } },
-			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_ALPHA_SYMBOLS     } },
+			{ K51,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_NONE    } },
+			{ K53,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_NONE             } },
+			{ K62,     { CATALOGUE_NONE, CATALOGUE_NONE,          CATALOGUE_NONE     } },
 		};
 		static const char smap[] = { 0, 1, 0, 2 }; // Map shifts to columns;
 
@@ -252,7 +252,7 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 			break;
 		}
 	}
-	if (State2.multi && (cat < CATALOGUE_ALPHA_SYMBOLS || cat > CATALOGUE_ALPHA_SUBSCRIPTS)) {
+	if (State2.multi) {
 		// Ignore the non character catalogues in multi character mode
 		cat = CATALOGUE_NONE;
 	}
@@ -1226,23 +1226,11 @@ int current_catalogue_max(void) {
 	static const unsigned char catalogue_sizes[] =
 	{
 		0, // NONE
-		//SIZE_catalogue,
 		SIZE_stats_catalogue,
 		SIZE_prob_catalogue,
-		//SIZE_int_catalogue,
-		SIZE_prog_catalogue,
-		//SIZE_test_catalogue,
 		SIZE_mode_catalogue,
-		SIZE_alpha_catalogue,
-		SIZE_alpha_symbols,
-		SIZE_alpha_compares,
-		SIZE_alpha_arrows,
-		SIZE_alpha_letters,
-		SIZE_alpha_subscripts,
 		NUM_CONSTS_CAT,
-		//NUM_CONSTS_CAT,
 		SIZE_conv_catalogue,
-		//SIZE_sums_catalogue,
 		SIZE_clear_catalogue,
 		SIZE_displ_catalogue,
     	SIZE_more_catalogue,
@@ -1256,14 +1244,6 @@ int current_catalogue_max(void) {
 }
 
 
-/* Look up the character position in the given byte array and
- * build the alpha op-code for it.
- */
-static opcode alpha_code(int n, const char tbl[]) {
-	return RARG(RARG_ALPHA, tbl[n] & 0xff);
-}
-
-
 /* Return the opcode for entry n from the current catalogue
  */
 opcode current_catalogue(int n) {
@@ -1272,23 +1252,11 @@ opcode current_catalogue(int n) {
 	static const void *catalogues[] =
 	{
 		NULL, // NONE
-		//catalogue,
 		stats_catalogue,
 		prob_catalogue,
-		//int_catalogue,
-		prog_catalogue,
-		//test_catalogue,
 		mode_catalogue,
-		alpha_catalogue,
-		alpha_symbols,
-		alpha_compares,
-		alpha_arrows,
-		alpha_letters,
-		alpha_subscripts,
 		NULL,   // CONST
-		//NULL, // complex CONST
 		NULL, //CONV
-		//sums_catalogue,
 		clear_catalogue,
 		displ_catalogue,
 		more_catalogue,
@@ -1314,14 +1282,8 @@ opcode current_catalogue(int n) {
 		return build_user_cat() ? UserCat[n] : STATE_IGNORE;
 #endif
 
-	if (c == CATALOGUE_ALPHA_LETTERS && State2.alphashift)
-		cat = (const unsigned char *) alpha_letters_lower;
-	else
-		cat = (const unsigned char *) catalogues[c];
+    cat = (const unsigned char *) catalogues[c];
 
-	if (c >= CATALOGUE_ALPHA_SYMBOLS && c <= CATALOGUE_ALPHA_SUBSCRIPTS) {
-		return alpha_code(n, (const char *) cat);
-	}
 	if (c >= sizeof(catalogues) / sizeof(void *))
 		return OP_NIL | OP_NOP;
 
@@ -1470,10 +1432,6 @@ static int process_catalogue(const keycode c, const enum shifts shift, const int
 	reset_shift();
 	if (ch == '\0')
 		return STATE_UNFINISHED;
-	if (cat > CATALOGUE_ALPHA && cat < CATALOGUE_CONST) {
-		// No multi character search in alpha catalogues
-		CmdLineLength = 0;
-	}
 	if (CmdLineLength < 10)
 		Cmdline[CmdLineLength++] = ch;
 	/* Search for the current buffer in the catalogue */

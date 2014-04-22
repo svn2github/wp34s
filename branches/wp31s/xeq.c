@@ -4162,24 +4162,12 @@ int init_34s(void)
 			bad_table("multi command", i, multicmds[i].cmd, NAME_LEN);
 	check_const_cat();
 	check_cat(CATALOGUE_STATS, "statistics");
-	//check_cat(CATALOGUE_SUMS, "summations");
 	check_cat(CATALOGUE_PROB, "probability");
-	check_cat(CATALOGUE_PROG, "programme");
 	check_cat(CATALOGUE_MODE, "mode");
 	check_cat(CATALOGUE_CLEAR, "clear");
 	check_cat(CATALOGUE_DISPL, "displ");
 	check_cat(CATALOGUE_MORE, "more");
-	/*
-	check_cat(CATALOGUE_ALPHA, "alpha");
-	check_cat(CATALOGUE_ALPHA_LETTERS, "alpha special upper case letters");
-	// check_cat(CATALOGUE_ALPHA_LETTERS_LOWER, "alpha special lower letters");
-	check_cat(CATALOGUE_ALPHA_SUBSCRIPTS, "alpha subscripts");
-	check_cat(CATALOGUE_ALPHA_SYMBOLS, "alpha symbols");
-	check_cat(CATALOGUE_ALPHA_COMPARES, "alpha compares");
-	check_cat(CATALOGUE_ALPHA_ARROWS, "alpha arrows");
-	*/
 	check_cat(CATALOGUE_CONV, "conversion");
-	//check_cat(CATALOGUE_NORMAL, "float");
         if (sizeof(unsigned long long int) != sizeof(UState))
             error("sizeof register (%u) != sizeof user state (%u)\n", sizeof(unsigned long long int), sizeof(UState));
 	}
