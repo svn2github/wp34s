@@ -575,7 +575,6 @@ enum {
         OP_LN, OP_EXP, OP_SQRT, OP_RECIP, OP__1POW,
         OP_LOG, OP_LG2, OP_2POWX, OP_10POWX,
         OP_LN1P, OP_EXPM1,
-        OP_LAMW, OP_LAMW1, OP_INVW,
         OP_SQR,
         OP_CUBE, OP_CUBERT,
 
