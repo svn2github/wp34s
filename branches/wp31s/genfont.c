@@ -325,11 +325,11 @@ static void gen_translate(FILE *f) {
 	for (i=0; i<256; i++) {
 		fprintf( f, "\t0x%02x,\t// %s\n", t[i], charset[t[i]].name );
 	}
-	fprintf(f,	"};\n\n"
-			"static const char *charnames[256] = {\n");
-	for (i=0; i<256; i++) {
-		fprintf( f, "\t\"%s\",\n", charset[i].uname ? charset[i].uname : charset[i].name );
-	}
+//	fprintf(f,	"};\n\n"
+//			"static const char *charnames[256] = {\n");
+//	for (i=0; i<256; i++) {
+//		fprintf( f, "\t\"%s\",\n", charset[i].uname ? charset[i].uname : charset[i].name );
+//	}
 	fprintf(f,	"};\n\n");
 }
 
