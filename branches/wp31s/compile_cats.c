@@ -176,10 +176,12 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_DENANY,	"DENANY")
 	NILIC(OP_DENFAC,	"DENFAC")
 	NILIC(OP_DENFIX,	"DENFIX")
-	NILIC(OP_FRACDENOM,	"DMAX")
+	NILIC(OP_FRACDENOM,	"DENMAX")
 	NILIC(OP_DATEDMY,	"D.MY")
 	NILIC(OP_EXPF,		"ExpF")
 	NILIC(OP_FRACIMPROPER,		"IMPFRC")
+	NILIC(OP_JG1752,	"JG1752")
+	NILIC(OP_JG1582,	"JG1582")
 	NILIC(OP_LINF,		"LinF")
 	NILIC(OP_LOGF,		"LogF")
 	NILIC(OP_DATEMDY,	"M.DY")
@@ -188,26 +190,6 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_STK4,		"SSIZE4")
 	NILIC(OP_STK8,		"SSIZE8")
 	NILIC(OP_DATEYMD,	"Y.MD")
-	NILIC(OP_SHOWY,		"YDON")
-	NILIC(OP_HIDEY,		"YDOFF")
-};
-
-static s_opcode alpha_catalogue[] = {
-	NILIC(OP_ALPHADATE,	"\240DATE")
-/*	NILIC(OP_ALPHADAY,	"\240DAY")
-	RARGCMD(RARG_AIP,	"\240IP")
-	NILIC(OP_ALPHALEN,	"\240LENG")
-	NILIC(OP_ALPHAMONTH,	"\240MONTH")
-	RARGCMD(RARG_AREG,	"\240RC#")
-	RARGCMD(RARG_ALRL,	"\240RL")
-	RARGCMD(RARG_ALRR,	"\240RR")
-	RARGCMD(RARG_ALSL,	"\240SL")
-	RARGCMD(RARG_ALSR,	"\240SR")
-	NILIC(OP_ALPHATIME,	"\240TIME")
-	NILIC(OP_XTOALPHA,	"x->\240")
-	NILIC(OP_ALPHATOX,	"\240->x")
-	NILIC(OP_VERSION,	"VERS")
-	*/
 };
 
 static s_opcode conv_catalogue[] = {
@@ -471,7 +453,6 @@ int main(int argc, char *argv[]) {
 	CAT(stats_catalogue);
 	CAT(prob_catalogue);
 	CAT(mode_catalogue);
-	CAT(alpha_catalogue);
 	CONVERSION(conv_catalogue);
 	CAT(clear_catalogue);
 	CAT(displ_catalogue);
