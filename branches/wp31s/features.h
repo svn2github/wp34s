@@ -74,7 +74,7 @@
 
 // Include the Gudermannian functions and their inverses in the real
 // and complex domain.
-#define INCLUDE_GUDERMANNIAN
+//#define INCLUDE_GUDERMANNIAN
 
 // Include first and second order Bessel functions Jn, In, Yn and Kn for
 // both real and complex arguments.  These are implemented in XROM.
