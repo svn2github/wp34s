@@ -392,10 +392,9 @@ struct _constsml conversions[] = {
 	CONV("Pa",	"psi",		"Pa_psi",	"6894.757"),		// source: NIST pound-force per square inch
 	CONV("Pa",	"inHg",		"Pa_inhg",	"3386.389"),		// source: NIST inch of mercury conventional
 	CONV("Pa",	"torr",		"Pa_torr",	"133.3224"),		// source: NIST
-	CONV("W",	"hpUK",		"W_HPUK",	"745.70"),		// source: NIST horsepower UK
-	CONV("W",	"hp",		"W_HP550",	"745.6999"),		// source: NIST horsepower 550 ft . lb / s
-	CONV("W",	"PS(hp)",	"W_HP",		"735.4988"),		// source: NIST horsepower metric
-	CONV("W",	"HP\274",	"W_HPe",	"746"),			// source: NIST horsepower electric
+	CONV("W",	"hp(I)",	"W_HP550",	"745.6999"),		// source: NIST horsepower 550 ft . lb / s
+	CONV("W",	"hp(M)",	"W_HP",		"735.4988"),		// source: NIST horsepower metric
+	CONV("W",	"hp(E)",	"W_HPe",	"746"),			// source: NIST horsepower electric
 	CONV("t",	"tons",		"T_TON",	"1.016047"),		// source: NIST ton, long 2240lb
 	CONV("t",	"s.tons",	"T_SHTON",	"0.9071847"),		// source: NIST ton, short 2000lb
 
