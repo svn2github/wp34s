@@ -81,7 +81,7 @@
 #define FONT_FILE_TYPE "font"
 #define FONTS_DIRECTORY "fonts"
 
-#define DOCUMENTATION_FILENAME "Manual_wp_31s_1_1.pdf"
+#define DOCUMENTATION_FILENAME "Manual_wp_31s_1_2q.pdf"
 #define WEBSITE_URL "http://wp34s.sourceforge.net/"
 
 #define DEBUG_OPTION "-debug"
