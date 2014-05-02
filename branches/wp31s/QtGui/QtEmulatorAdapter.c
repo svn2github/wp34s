@@ -383,19 +383,22 @@ char get_complex_prefix()
 
 void execute_catpos(int aCatPos)
 {
-	State.catpos=aCatPos;
+	const enum catalogues cat = (enum catalogues) State2.catalogue;
+	State.catposition[cat]=aCatPos;
 	put_key_adapter(K20);
 	put_key_adapter(K_RELEASE);
 }
 
 int get_catpos()
 {
-	return State.catpos;
+	const enum catalogues cat = (enum catalogues) State2.catalogue;
+	return State.catposition[cat];
 }
 
 void forward_catalog_selection(int aCatPos)
 {
-	State.catpos=aCatPos;
+	const enum catalogues cat = (enum catalogues) State2.catalogue;
+	State.catposition[cat]=aCatPos;
 	display();
 }
 
