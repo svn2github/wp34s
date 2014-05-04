@@ -54,7 +54,7 @@
 			x>? K
 				JMP ret_0
 			GSB cdf_bin_beta_xform	// n-x x+1
-			z[<->] J		// n-x x+1 p  -- destructively however
+			RCL J			// p n-x x+1
 			I[sub-x]
 			xOUT xOUT_NORMAL
 #endif
@@ -73,7 +73,7 @@ cdf_binomial::		x<0?
 			GSB cdf_bin_beta_xform
 			_INT 1
 			RCL- J			// 1-p n-x x+1 x
-			[<->] ZYXT
+			[<->] XZYT		// 1-p x+1 n-x
 			I[sub-x]
 			RTN
 

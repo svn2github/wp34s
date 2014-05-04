@@ -825,7 +825,7 @@ static void betacf(decNumber *r, const decNumber *a, const decNumber *b, const d
 
 /* Regularised incomplete beta function Ix(a, b)
  */
-decNumber *betai(decNumber *r, const decNumber *x, const decNumber *b, const decNumber *a) {
+decNumber *betai(decNumber *r, const decNumber *b, const decNumber *a, const decNumber *x) {
 	decNumber t, u, v, w, y;
 	int limit = 0;
 
