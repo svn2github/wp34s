@@ -55,7 +55,7 @@
 				JMP ret_0
 			GSB cdf_bin_beta_xform	// n-x x+1
 			z[<->] J		// n-x x+1 p  -- destructively however
-			I[beta]
+			I[sub-x]
 			xOUT xOUT_NORMAL
 #endif
 			
@@ -74,7 +74,7 @@ cdf_binomial::		x<0?
 			_INT 1
 			RCL- J			// 1-p n-x x+1 x
 			[<->] ZYXT
-			I[beta]
+			I[sub-x]
 			RTN
 
 /* Figure out the second two parameters for the binomial conversion

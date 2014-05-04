@@ -355,8 +355,8 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_LNBETA,	&decNumberLnBeta,	XDC(cpx_lnbeta),NOFN,		"LN\241",	"LNBETA")
 	FUNC(OP_GAMMAg,	&decNumberGammap,	NOFN,		NOFN,		"\242\213\214",	"gammaxy")
 	FUNC(OP_GAMMAG,	&decNumberGammap,	NOFN,		NOFN,		"\202\213\214",	"GAMMAxy")
-	FUNC(OP_GAMMAP,	&decNumberGammap,	NOFN,		NOFN,		"I\202\276",	"IGAMMAP")
-	FUNC(OP_GAMMAQ,	&decNumberGammap,	NOFN,		NOFN,		"I\202\223",	"IGAMMAQ")
+	FUNC(OP_GAMMAP,	&decNumberGammap,	NOFN,		NOFN,		"\202\276",	"GAMMAP")
+	FUNC(OP_GAMMAQ,	&decNumberGammap,	NOFN,		NOFN,		"\202\223",	"GAMMAQ")
 #ifdef INCLUDE_ELLIPTIC
 	FUNC(OP_SN,	&decNumberSN,		&cmplxSN,	NOFN,		"SN",		CNULL)
 	FUNC(OP_CN,	&decNumberCN,		&cmplxCN,	NOFN,		"CN",		CNULL)
@@ -428,7 +428,7 @@ CMDTAB const struct trifunc_cmdtab trifuncs_ct[ NUM_TRIADIC ] = {
 #else
 const struct trifunc trifuncs[ NUM_TRIADIC ] = {
 #endif
-	FUNC(OP_BETAI,		&betai,			(FP_TRIADIC_INT) NOFN,	"I\241",	"IBETA")
+	FUNC(OP_BETAI,		&betai,			(FP_TRIADIC_INT) NOFN,	"I\213",	"IBETA")
 	FUNC(OP_DBL_DIV, 	(FP_TRIADIC_REAL) NOFN,	&intDblDiv,		"DBL/",		CNULL)
 	FUNC(OP_DBL_MOD, 	(FP_TRIADIC_REAL) NOFN,	&intDblRmdr,		"DBLR",		CNULL)
 #ifdef INCLUDE_MULADD
