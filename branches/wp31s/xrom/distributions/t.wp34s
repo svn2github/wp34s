@@ -150,7 +150,7 @@ dist_ret_half::		Num 1/2
 			JMP qf_q_loop
 
 					// estimate for low and moderate t
-qf_t_low_est::		XEQ qf_t_est	// get guess for the normal quantile
+qf_t_low_est::		XEQ qf_q_est	// get guess for the normal quantile
 			x[^2]
 			Num eE
 			RCL[times] J
@@ -213,36 +213,6 @@ qf_q_lp_com::		RCL Y		// x cdfu-p x x x
 qf_q_converged::	FS?C .00
 				+/-	// adjust sign
 			xOUT xOUT_NORMAL
-
-// This normal estimate code should more to normal.wp34s and be unified with
-// the code over there.
-			// input: p =< 0.5
-qf_t_est::		_INT 232	// output: Normal estimate > 0
-			SDR 003
-			x[<->] Y
-			x>? Y
-				JMP qf_q_mid_est
-			ENTER[^]    // Normal estimate for p up to 0.232
-			LN		// ln p p ?
-			STO+ X		// 2ln p p ?
-			+/-		// -2ln p p ?
-			ENTER[^]	// -2ln -2ln p p
-			DEC X		// -2ln-1 -2ln p p
-			Num [pi]	// pi -2ln-1 -2ln p
-			[times]		// pi(-2ln-1) -2ln p p
-			STO+ X		// 2pi(-2ln-1) -2ln p p
-			[sqrt]		// sqrt -2ln p p
-			RCL[times] Z
-			LN
-			STO+ X
-			+/-
-			[sqrt]
-			x[<->] Y
-			_INT 4
-			[times]
-			1/x
-			+
-			RTN
 
 t_param::		RCL J
 			[infinity]?

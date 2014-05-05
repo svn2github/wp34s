@@ -290,7 +290,7 @@ qf_q_int_est::	ENTER[^]
 		STO R_ABSZ
 		JMP qf_q_signfix
 
-qf_q_mid_est::	Num 1/2
+qf_q_mid::	Num 1/2
 		RCL- Y
 		Num [pi]
 		STO+ X
@@ -301,9 +301,6 @@ qf_q_mid_est::	Num 1/2
 		_INT 006
 		/
 		+
-		RTN
-
-qf_q_mid::	GSB qf_q_mid_est
 		STO R_ABSZ
 		_INT 004
 		SDR 002
