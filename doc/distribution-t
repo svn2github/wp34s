@@ -1,0 +1,252 @@
+I recently tried some improvements, especially with the solver. The
+following ideas refer to the Student distribution, but they should
+be applicable for the Chi^2 and Fisher cases as well. The following
+thoughts assume the quantile is >= 0 and p is the upper tail probability
+(i.e. p <= 0.5). As usual, the rest is done with a simple transformation,
+e.g. QF(1-p) = -QF(p).
+
+So, what can be done?
+
+1. Use a Halley solver. It converges very fast and it can be implemented
+easily since the second derivative is a function of the first (i.e. the
+pdf).
+
+Student:
+f"(x) = -(n+1)x / (n+x^2) * pdf
+
+Chi^2:
+f"(x) = (n-x-2)/(2x) * pdf
+
+Fisher:
+f"(x) = -(n(m(x-1)+2) + 2mx) / (2x(mx+n)) * pdf
+
+where n (resp. m and n) are the degrees of freedom.
+
+So f"(x) simply is the pdf times a factor. This way a Halley iteration
+e.g. for the Student case can be written as follows:
+
+r := (StudentUpperCDF(x) - p) / StudentPDF
+d := r / ( r * (n+1)x / 2(n+x^2) - 1 )
+x := x - d
+
+Due to the roughly cubic convergence, the iteration usually may quit as
+soon as |d| < 1E-10*x for 30+ digit accuracy. In my 34s program I tried
+a conservative CNVG 00 (i.e. rel. error < 1E-14) which usually returns
+results that are as good as a user code program gets when running in DP
+mode (approx 30-34 digits).
+
+The same idea can be used with the Chi^2 and Fisher quantile.
+
+2. I slightly modified the initial guess for the Chi^2 quantile and
+I tried a new approach in the Student case, based on a 1992 paper on
+bounds of various quantiles by Fujikoshi and Mukaihata. The idea is a
+simple transformation of the normal quantile z:
+
+t = [sqrt](n * (e^(a * z^2/n) - 1 ))
+
+Where a is close to 1 and a function of n (or simply 1 so that it can be
+omitted). I used a = 1 + 1/(e*n) which works very well with the Normal
+estimate I used (simply the one in the Normal quantile function).
+
+This works fine for the center but less so for the distribution tails. For
+all p < 12^-n I use a slight modification of the tail approximation
+suggested years ago:
+
+u = 2 * p * n * [sqrt](pi / (2 * n - 0.75))
+t = [sqrt](n) / u ^ (1 / n)
+
+The 0.75 originally was a 1, but changing this value improves the results
+for low n.
+
+Although the Student estimate originally was intended for n>=3 it
+also works well for n=2 or even n=1. Usually it converges within three
+iterations, here and there in maybe four. This means that the code for
+n=1 and n=2 (direct solutions) may be omitted.
+
+For x close to 0 (i.e. p near 0.5) the expression t_u(x) - p loses
+accuracy due to digit cancellation. So I used the same idea as in the
+Normal quantile routine and had this value calculated differently for
+small t, using the incomplete Beta function. Yes, that's why I found
+the bug discussed in this thread. ;-)
+
+
+    LBL 'TQF'  ' T Quantile Function
+    ENTER      ' probability in X, degrees of freedom in register J
+    +/-
+    INC X
+    MIN
+    CF 00
+    x!=? L
+    SF 00       ' set flag 00 if p > 0.5
+    CF 01       ' clear error flag
+    STO 00      ' save p in R00
+    # 005
+    STO 01      ' do not more than 5 iterations
+    # 012
+    RCL J
+    +/-
+    y^x
+    RCL 00
+    x>? Y
+    GTO 00
+    RCL J       ' estimate for small p
+    STO+ X
+    [times]
+    # pi
+    RCL L
+    # 1/2
+    x[^2]
+    RCL+ L    ' = 0.75
+    -
+    /
+    [sqrt]
+    [times]
+    RCL J
+    xrooty
+    RCL J
+    [sqrt]
+    x<> Y
+    /
+    GTO 01
+    LBL 00     ' estimate for low and moderate t
+    XEQ 'GNQ'  ' get guess for the normal quantile
+    x[^2]
+    # eE
+    RCL[times] J
+    1/x
+    INC X
+    [times]
+    RCL/ J
+    e^x-1
+    RCL[times] J
+    [sqrt]
+    LBL 01     ' iteration starts here
+    FILL
+    # 1/2
+    x>? Y
+    GTO 02
+    DROP
+    t_u(x)
+    RCL- 00
+    GTO 03
+    LBL 02
+    DROP
+    x[^2]
+    ENTER
+    RCL+ J
+    /
+    # 1/2
+    RCL[times] J
+    RCL L
+    IBeta
+    RCL[times] L
+    +/-
+    # 1/2
+    RCL- 00
+    +          ' cdf(t) - p = (0,5-p) - 1/2 IBeta(x=t^2/(n+t^2), a=1/2, b=n/2)
+    LBL 03
+    RCL T
+    t_p(x)
+    /
+    ENTER
+    RCL[times] T
+    RCL J
+    INC X
+    [times]
+    RCL T
+    x[^2]
+    RCL+ J
+    STO+ X
+    /
+    DEC X
+    /
+    -
+    CNVG? 00
+    SKIP 003
+    DSE 01
+    GTO 01
+    SF 01       ' Raise error flag if no convergence after 5 iterations
+    FS?C 00
+    +/-         ' adjust sign
+    FS?C 01
+    ERR 20      ' if error, display "no root found" and exit with last approximation
+    END
+
+    LBL 'GNQ'   ' input: p =< 0.5
+    # 232       ' output: Normal estimate > 0
+    SDR 003
+    x<>Y
+    x>? Y
+    GTO 00
+    FILL        'Normal estimate for p up to 0.232
+    LN
+    STO+ X
+    +/-
+    ENTER
+    DEC X
+    # pi
+    [times]
+    STO+ X
+    [sqrt]
+    RCL[times] T
+    LN
+    STO+ X
+    +/-
+    [sqrt]
+    x<>Y
+    # 004
+    [times]
+    1/x
+    +
+    RTN
+    LBL 00   ' Normal estimate for p close to the center
+    +/-
+    # 1/2
+    +
+    # pi
+    STO+ X
+    [sqrt]
+    [times]
+    ENTER
+    x[^3]
+    # 006
+    /
+    +
+    RTN
+    END
+
+For best accuracy this should run in DP mode. The program exits if the
+last two approximations agree in approx. 14 digits. At this point the
+result usually carries 30+ valid digits.
+
+Here are some examples:
+
+    10 STO J
+       0,1 XEQ"TQF" => -1,372183641110335627219156967662554 in 3,2 s
+       exact result:   -1,37218364111033562721915696766255392
+
+     1E-20 XEQ"TQF" => -256,4346993185261855315362349874343 in 3,1 s
+       exact result:   -256.434699318526185531536234987434334
+
+     0,5 ENTER 1E-16 -
+           XEQ"TQF" => -2,569978034930492409497513483729480 E-16 in 1,9 s
+       exact result:   -2,56997803493049240949751348372947856 E-16
+
+     1 STO J
+     0,05  XEQ"TQF" => -6,313751514675043098979464244768186 in 3 s
+       exact result:   -6,3137515146750430989794642447681860594
+
+     1E-10 XEQ"TQF" => -3183098861,837906715272955512330630 in 1,9 s
+       exact result:   -3183098861.837906715272955512330627466
+
+    100 STO J
+     0,025 XEQ"TQF" => -1,983971518523552286595184867990389 in 5,1 s
+       exact result:   -1,983971518523552286595184867990339165
+
+Please note that the results for n=1 are exact to 33 resp. 34 digits while
+the current implementation (that calculates the result directly) gets only
+32 resp. 24 (!) digits right. Either the internal tangent function is not
+that accurate or the current implementation does not evaluate the quantile
+as 1/tan(1E-10*180 degrees) which would yield a nearly perfect result. ;-)
+
+Dieter
