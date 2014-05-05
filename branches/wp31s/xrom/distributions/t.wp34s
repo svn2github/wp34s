@@ -106,6 +106,8 @@ dist_ret_half::		Num 1/2
 			GSB qf_check_probability
 			FS?C .00
 				JMP qf_q_xout
+			x=0?
+				JMP ret_neginf
 			Num 1/2
 			x[<->] Y
 			x=? Y
