@@ -126,7 +126,7 @@ the bug discussed in this thread. ;-)
     x>? Y
     GTO 02
     DROP
-    t_u(x)
+    t[sub-u](x)     // ***** XROM
     RCL- 00
     GTO 03
     LBL 02
@@ -138,15 +138,17 @@ the bug discussed in this thread. ;-)
     # 1/2
     RCL[times] J
     RCL L
-    IBeta
-    RCL[times] L
+    [<->] ZXYT
+    I[sub-x]
+    # 1/2
+    [times]
     +/-
     # 1/2
     RCL- 00
     +          ' cdf(t) - p = (0,5-p) - 1/2 IBeta(x=t^2/(n+t^2), a=1/2, b=n/2)
     LBL 03
     RCL T
-    t_p(x)
+    t[sub-p](x)     // ***** XROM
     /
     ENTER
     RCL[times] T
