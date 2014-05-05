@@ -28,20 +28,20 @@
 			GSB pdf_t
 			xOUT xOUT_NORMAL
 
-pdf_t::			RCL[times] X	// x^2 ? ? ?
+pdf_t::			x[^2]		// x^2 ? ? ?
 			Num 1/2
 			RCL[times] J	// v/2 x^2 ? ?
 			LN[GAMMA]	// LnG x^2 ? ?
 			Num 1/2
 			RCL+ L		// (v+1)/2 LnG x^2 ?
-			STO T		// (v+1)/2 LnG x^2 (v+1)/2
-			LN[GAMMA]	// LnG2 LnG x^2 (v+1)/2
+			STO I		// (v+1)/2 LnG x^2 ?
+			LN[GAMMA]	// LnG2 LnG x^2 ?
 			SWAP
-			-		// LnG-LnG2 x^2 (v+1)/2 ?
-			[<->] YZXT	// x^2 (v+1)/2 LnG-LnG2 ?
-			RCL/ J		// x^2/v (v+1)/2 LnG-LnG2 ?
+			-		// LnG2-LnG x^2 ? ?
+			x[<->] Y	// x^2 LnG2-LnG ? ?
+			RCL/ J		// x^2/v LnG2-LnG ? ?
 			LN1+x
-			[times]		// LN1+* LnG-LnG2 ?
+			RCL[times] I	//[times]		// LN1+* LnG2-LnG ?
 			-
 			e[^x]
 			Num [pi]
@@ -65,6 +65,7 @@ cdf_t_common::		GSB t_param
 			GSB cdf_t
 			xOUT xOUT_NORMAL
 
+cdfu_t::		+/-
 cdf_t::			[infinity]?
 				JMP cdf_t_infinite
 			x=0?
@@ -79,7 +80,7 @@ cdf_t_return::		RCL J		// v x ? ?
 			Num 1/2
 			Num 1/2
 			RCL[times] J	// v/2 .5 v/(v+x^2) ?
-			RCL Z		// v/(v+x^2) v/2 .5
+			[<->] ZXYT	// v/(v+x^2) v/2 .5 ?
 			I[sub-x]
 			Num 1/2
 			[times]
@@ -99,114 +100,143 @@ dist_ret_half::		Num 1/2
 			RTN
 
 
-		XLBL"QF_T"
+		XLBL"QF_T"		// T Quantile Function
 			xIN MONADIC
 			GSB t_param
 			GSB qf_check_probability
 			FS?C .00
 				JMP qf_q_xout
-			GSB qf_t_est
-			_INT DIST_T
-			XEQ qf_newton
-			xOUT xOUT_NORMAL
-
-qf_t_est::		LocR 003
-			STO .00
-			STO .02
+			LocR 002
+			ENTER[^]	// probability in X, degrees of freedom in register J
+			+/-		// -p p
+			INC X		// 1-p p
+			MIN
+			x!=? L
+			    SF .00	// set flag 00 if p > 0.5
+			STO .00		// save p in R00
+			_INT 5
+			STO .01		// do not more than 5 iterations
+			_INT 12
 			RCL J
-			x=1?
-				JMP qf_t1
-			_INT 2
-			x=? Y
-				JMP qf_t2
-
-			Num 1/2
-			RCL .00
-			x<? Y
-				JMP qf_t_lower
-			_INT 1
-			RCL- .00
-			STO .00
-			SF .00
-
-			/* Now do the estimate */
-qf_t_lower::		_INT 17
-			SDR 1
-			RCL[times] J
-			RCL .00
-			LN
 			+/-
-			x[>=]? Y
-				JMP qf_t_est2
+			y^x
 			RCL .00
-			GSB qf_q_est
-			STO .01
-			x[^3]
-			ENTER[^]
-			RCL+ .01	// x^3+x x^3
-			_INT 4		// 4 x^3+x x^3
-			RCL[times] J	// 4n x^3+x x^3
-			/		// u=(x^3+x)/4/n x^3
-			SWAP		// x^3 u
-			_INT 4
-			/		// x^3/4 u
-			RCL X		// x^3/4 x^3/4 u
-			RCL[times] .01	// x^4/4 x^3/4 u
-			RCL[times] .01	// x^5/4 x^3/4 u
-			_INT 3
-			/		// x^5/12 x^3/4 u
-			+		// x^5/12+x^3/4 u
-			RCL J
-			RCL[times] J
-			/
-			+
-			RCL+ .01
-			JMP qf_t_est_end
-
-qf_t_est2::		RCL J
-			[sqrt]
+			x>? Y
+				JMP qf_t_low_est
+			RCL J		// estimate for small p
+			STO+ X
+			[times]
 			Num [pi]
-			RCL J
-			RCL+ X		// 2n pi
-			DEC X		// 2n-1 pi sqrt(n)
-			/
-			[sqrt]		// sqrt(pi/(2n-1)) sqrt(n)
-			RCL[times] J
-			RCL+ X
-			RCL[times] .00
-			RCL J
-			[^x][sqrt]y
-			/
-			+/-
-
-qf_t_est_end::		FS? .00
-				+/-
-			RCL .02
-			RTN
-
-/* For one degree of freedom, we use an explicit formula */
-qf_t1::			RCL .00
+			RCL L
 			Num 1/2
+			x[^2]
+			RCL+ L		// = 0.75
 			-
-			Num [pi]
-			[times]
-			TAN
-			xOUT xOUT_NORMAL
-
-/* For two degrees of freedom, we use an explicit formula */
-qf_t2::			_INT 1
-			RCL- .00	// 1-p 2
-			RCL[times] .00	// p(1-p) 2
-			RCL+ X
-			1/x		// 2 / (4p(1-p))
+			/
 			[sqrt]
+			[times]
+			RCL J
+			XROOT
+			RCL J
+			[sqrt]
+			x[<->] Y
+			/
+			JMP qf_q_loop
+
+					// estimate for low and moderate t
+qf_t_low_est::		XEQ qf_t_est	// get guess for the normal quantile
+			x[^2]
+			Num eE
+			RCL[times] J
+			1/x
+			INC X
+			[times]
+			RCL/ J
+			EXP-1
+			RCL[times] J
+			[sqrt]
+
+qf_q_loop::		FILL		// iteration starts here
+			Num 1/2		// 1/2 x x x
+			x>? Y
+			    JMP qf_q_Ix
+			DROP		// x x x x
+			GSB cdfu_t	// cdfu x x x
+			RCL- .00	// cdfu-p x x x
+			JMP qf_q_lp_com
+
+qf_q_Ix::		DROP
+			x[^2]		// x^2 x x x
+			ENTER[^]
+			RCL+ J		// n+x^2 x^2 x x
+			/
+			Num 1/2
+			RCL[times] J	// n/2 x^2/(n+x^2) x x
+			Num 1/2
+			[<->] ZXYX	// x^2/(n+x^2) 1/2 n/2 1/2
+			I[sub-x]	// Ix 1/2 x x
+			[times]
+			+/-
 			Num 1/2
 			RCL- .00
-			[times]
-			RCL+ X
-			+/-
+			+		// cdf(t) - p = (0,5-p) - 1/2 IBeta(x=t^2/(n+t^2), a=1/2, b=n/2)
+
+qf_q_lp_com::		RCL Y		// x cdfu-p x x x
+			GSB pdf_t	// pdf cdfu-p x x x
+			/		// cdfu/pdf x x x
+			ENTER[^]	// cdfu/pdf cdfu/pdf x x
+			RCL[times] T	// x.cdfu/pdf cdfu/pdf x x
+			RCL J		// n x.cdfu/pdf cdfu/pdf x
+			INC X
+			[times]		// (n+1).x.cdfu/pdf cdfu/pdf x x
+			RCL T
+			x[^2]		// x^2 (n+1).x.cdfu/pdf cdfu/pdf x
+			RCL+ J
+			STO+ X
+			/
+			DEC X
+			/
+			-
+			CNVG? 00
+				JMP qf_q_converged
+			DSE .01
+				JMP qf_q_loop
+				// Raise error flag if no convergence after 5 iterations
+			ERR 20  // if error, display "no root found" and exit with last approximation
+
+qf_q_converged::	FS?C .00
+				+/-	// adjust sign
 			xOUT xOUT_NORMAL
 
+// This normal estimate code should more to normal.wp34s and be unified with
+// the code over there.
+			// input: p =< 0.5
+qf_t_est::		_INT 232	// output: Normal estimate > 0
+			SDR 003
+			x[<->] Y
+			x>? Y
+				JMP qf_q_mid_est
+			FILL	    // Normal estimate for p up to 0.232
+			LN		// ln p p p
+			STO+ X		// 2ln p p p
+			+/-		// -2ln p p p
+			ENTER[^]	// -2ln -2ln p p
+			DEC X		// -2ln-1 -2ln p p
+			Num [pi]	// pi -2ln-1 -2ln p
+			[times]		// pi(-2ln-1) -2ln p p
+			STO+ X		// 2pi(-2ln-1) -2ln p p
+			[sqrt]		// sqrt -2ln p p
+			RCL[times] T
+			LN
+			STO+ X
+			+/-
+			[sqrt]
+			x[<->] Y
+			_INT 4
+			[times]
+			1/x
+			+
+			RTN
 
 t_param::		RCL J
 			[infinity]?
