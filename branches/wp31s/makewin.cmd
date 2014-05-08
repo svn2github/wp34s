@@ -1,5 +1,4 @@
 @setlocal
-@cd trunk
 del catalogues.h xrom.c
 @cd windows
 call "%ProgramFiles%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
