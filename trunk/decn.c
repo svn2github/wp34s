@@ -2102,22 +2102,21 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 	decNumberCopy(&ap, a);
 	decNumberRecip(&sum, a);
 	decNumberCopy(&del, &sum);
-	for (i=0; i<500; i++) {
+	for (i=0; i<1000; i++) {
 		dn_inc(&ap);
 		dn_divide(&t, x, &ap);
 		dn_multiply(&del, &del, &t);
 		dn_add(&t, &sum, &del);
-		if (dn_eq(&t, &sum)) {
-			dn_ln(&t, x);
-			dn_multiply(&u, &t, a);
-			dn_subtract(&t, &u, x);
-			dn_subtract(&u, &t, gln);
-			dn_exp(&t, &u);
-			return dn_multiply(res, &sum, &t);
-		}
+		if (dn_eq(&t, &sum))
+			break;
 		decNumberCopy(&sum, &t);
 	}
-	return decNumberZero(res);
+	dn_ln(&t, x);
+	dn_multiply(&u, &t, a);
+	dn_subtract(&t, &u, x);
+	dn_subtract(&u, &t, gln);
+	dn_exp(&t, &u);
+	return dn_multiply(res, &sum, &t);
 }
 
 static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, const decNumber *gln) {
@@ -2130,7 +2129,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 	decNumberRecip(&d, &b);
 	decNumberCopy(&h, &d);
 	decNumberZero(&i);
-	for (n=0; n<500; n++) {
+	for (n=0; n<1000; n++) {
 		dn_inc(&i);
 		dn_subtract(&t, a, &i);		// t = a-i
 		dn_multiply(&an, &i, &t);		// an = -i (i-a)
