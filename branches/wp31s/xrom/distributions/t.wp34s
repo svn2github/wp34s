@@ -163,7 +163,7 @@ qf_t_low_est::		XEQ qf_q_est	// get guess for the normal quantile
 			[sqrt]
 
 qf_q_loop::		FILL		// iteration starts here
-			Num 1/2		// 1/2 x x x
+			Num 1/2		// 1/2 x x x x x x x
 			x>? Y
 			    JMP qf_q_Ix
 			DROP		// x x x x
@@ -177,9 +177,9 @@ qf_q_Ix::		DROP
 			RCL+ J		// n+x^2 x^2 x x
 			/
 			Num 1/2
-			RCL[times] J	// n/2 x^2/(n+x^2) x x
+			RCL[times] J	// n/2 x^2/(n+x^2) x x x x
 			Num 1/2
-			[<->] ZXYX	// x^2/(n+x^2) 1/2 n/2 1/2
+			[<->] ZXYX	// x^2/(n+x^2) 1/2 n/2 1/2 x x
 			I[sub-x]	// Ix 1/2 x x
 			[times]
 			+/-
