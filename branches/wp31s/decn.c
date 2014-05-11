@@ -2103,6 +2103,14 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 	return decNumberZero(res);
 }
 
+static void gcheckSmall(decNumber *v)
+{
+    const decNumber * const threshold = &const_1e_10000;
+
+    if (dn_abs_lt(v, threshold))
+			decNumberCopy(v, threshold);
+}
+
 static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, const decNumber *gln) {
 	decNumber an, b, c, d, h, t, u, v, i;
 	int n;
@@ -2120,14 +2128,11 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 		dn_p2(&b, &b);
 		dn_multiply(&t, &an, &d);
 		dn_add(&v, &t, &b);
-		if (dn_abs_lt(&v, &const_1e_37))
-			decNumberCopy(&d, &const_1e_37);
-		else
-			decNumberRecip(&d, &v);
+        gcheckSmall(&v);
+		decNumberRecip(&d, &v);
 		dn_divide(&t, &an, &c);
 		dn_add(&c, &b, &t);
-		if (dn_abs_lt(&c, &const_1e_37))
-			decNumberCopy(&c, &const_1e_37);
+        gcheckSmall(&c);
 		dn_multiply(&t, &d, &c);
 		dn_multiply(&u, &h, &t);
 		if (dn_eq(&h, &u))
