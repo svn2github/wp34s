@@ -2121,10 +2121,10 @@ static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, c
 
 static void gcheckSmall(decNumber *v)
 {
-    const decNumber * const threshold = &const_1e_10000;
+	const decNumber * const threshold = &const_1e_10000;
 
-    if (dn_abs_lt(v, threshold))
-			decNumberCopy(v, threshold);
+	if (dn_abs_lt(v, threshold))
+		decNumberCopy(v, threshold);
 }
 
 static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, const decNumber *gln) {
@@ -2144,11 +2144,11 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 		dn_p2(&b, &b);
 		dn_multiply(&t, &an, &d);
 		dn_add(&v, &t, &b);
-        gcheckSmall(&v);
+		gcheckSmall(&v);
 		decNumberRecip(&d, &v);
 		dn_divide(&t, &an, &c);
 		dn_add(&c, &b, &t);
-        gcheckSmall(&c);
+		gcheckSmall(&c);
 		dn_multiply(&t, &d, &c);
 		dn_multiply(&u, &h, &t);
 		if (dn_eq(&h, &u))
@@ -2189,11 +2189,14 @@ decNumber *decNumberGammap(decNumber *res, const decNumber *x, const decNumber *
 	else
 		decNumberZero(&lga);
 	if (decNumberIsNegative(&z)) {
+		/* Deal with a difficult case by using the other expansion */
+		if (dn_gt(a, &const_9000) && dn_gt(x, dn_multiply(&z, a, &const_0_995)))
+			goto use_cf;
 		gser(res, a, x, &lga);
 		if (upper)
 			goto invert;
 	} else {
-		gcf(res, a, x, &lga);
+use_cf:		gcf(res, a, x, &lga);
 		if (! upper)
 			goto invert;
 	}
