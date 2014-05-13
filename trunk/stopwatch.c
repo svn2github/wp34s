@@ -45,7 +45,7 @@
 
 #define STOPWATCH_MESSAGE "STOPWATCH"
 #define StopWatchKeyticks         (StateWhileOn._keyticks)
-#define STOPWATCH_APD_TICKS 1800 // 3 minutes
+#define STOPWATCH_APD_TICKS 216000 // 6 hours
 
 TStopWatchStatus StopWatchStatus; // ={ 0, 1, 0, 0, };
 
