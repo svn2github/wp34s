@@ -45,7 +45,7 @@
 
 #define STOPWATCH_MESSAGE "STOPWATCH"
 #define StopWatchKeyticks         (StateWhileOn._keyticks)
-#define STOPWATCH_APD_TICKS 216000 // 6 hours
+#define STOPWATCH_APD_TICKS 65535 // Largest unsigned short possible in 32 bits. 1 hour 49 min
 
 TStopWatchStatus StopWatchStatus; // ={ 0, 1, 0, 0, };
 
