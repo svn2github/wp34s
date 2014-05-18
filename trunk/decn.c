@@ -51,6 +51,7 @@ static void dump1(const decNumber *a, const char *msg) {
 
 #define MOD_DIGITS	450		/* Big enough for 1e384 mod small integer */
 #define BIGMOD_DIGITS	820		/* Big enough for maxreal mod minreal */
+#define SINCOS_DIGITS	51		/* Extra digits to give an accurate COS at pi/2 -- only needs to be 46 or 47 but this is the next even size up */
 
 
 /* Some basic conditional tests */
@@ -949,46 +950,56 @@ decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *
 
 /* Calculate sin and cos by Taylor series
  */
-void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c) {
-	decNumber a2, t, j, z;
-	int i, fins = 0, finc = 0;
+typedef struct {
+	decNumber n;
+	decNumberUnit extra[((SINCOS_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
+} sincosNumber;
 
-	dn_multiply(&a2, a, a);
-	dn_1(&j);
-	dn_1(&t);
-	if (s != NULL)
-		dn_1(s);
-	if (c != NULL)
-		dn_1(c);
+void sincosTaylor(const decNumber *a, decNumber *sout, decNumber *cout) {
+	sincosNumber a2, t, j, z, s, c;
+	int i, fins = sout == NULL, finc = cout == NULL;
+	const int digits = Ctx.digits;
+	Ctx.digits = SINCOS_DIGITS;
 
-	for (i=1; !fins && !finc && i < 1000; i++) {
-		dn_inc(&j);
-		dn_divide(&z, &a2, &j);
-		dn_multiply(&t, &t, &z);
-		if (!finc && c != NULL) {
-			decNumberCopy(&z, c);
-			if (i & 1)
-				dn_subtract(c, c, &t);
+	dn_multiply(&a2.n, a, a);
+	dn_1(&j.n);
+	dn_1(&t.n);
+	dn_1(&s.n);
+	dn_1(&c.n);
+
+	for (i=1; !(fins && finc) && i < 1000; i++) {
+		const int odd = i & 1;
+
+		dn_inc(&j.n);
+		dn_divide(&z.n, &a2.n, &j.n);
+		dn_multiply(&t.n, &t.n, &z.n);
+		if (!finc) {
+			decNumberCopy(&z.n, &c.n);
+			if (odd)
+				dn_subtract(&c.n, &c.n, &t.n);
 			else
-				dn_add(c, c, &t);
-			if (dn_eq(c, &z))
+				dn_add(&c.n, &c.n, &t.n);
+			if (dn_eq(&c.n, &z.n))
 				finc = 1;
 		}
 
-		dn_inc(&j);
-		dn_divide(&t, &t, &j);
-		if (!fins && s != NULL) {
-			decNumberCopy(&z, s);
-			if (i & 1)
-				dn_subtract(s, s, &t);
+		dn_inc(&j.n);
+		dn_divide(&t.n, &t.n, &j.n);
+		if (!fins) {
+			decNumberCopy(&z.n, &s.n);
+			if (odd)
+				dn_subtract(&s.n, &s.n, &t.n);
 			else
-				dn_add(s, s, &t);
-			if (dn_eq(s, &z))
+				dn_add(&s.n, &s.n, &t.n);
+			if (dn_eq(&s.n, &z.n))
 				fins = 1;
 		}
 	}
-	if (s != NULL)
-		dn_multiply(s, s, a);
+	Ctx.digits = digits;
+	if (sout != NULL)
+		dn_multiply(sout, &s.n, a);
+	if (cout != NULL)
+		dn_plus(cout, &c.n);
 }
 
 
@@ -1148,16 +1159,19 @@ decNumber *decNumberCos(decNumber *res, const decNumber *x) {
 }
 
 decNumber *decNumberTan(decNumber *res, const decNumber *x) {
-	decNumber x2, s, c;
+	sincosNumber x2, s, c;
 
 	if (decNumberIsSpecial(x))
 		return set_NaN(res);
 	else {
-		if (cvt_2rad(&x2, x, &const_0, &const_NaN, &const_0, &const_NaN)) {
-			sincosTaylor(&x2, &s, &c);
-			dn_divide(res, &s, &c);
-		} else
-			decNumberCopy(res, &x2);
+		const int digits = Ctx.digits;
+		Ctx.digits = SINCOS_DIGITS;
+		if (cvt_2rad(&x2.n, x, &const_0, &const_NaN, &const_0, &const_NaN)) {
+			sincosTaylor(&x2.n, &s.n, &c.n);
+			dn_divide(&x2.n, &s.n, &c.n);
+		}
+		Ctx.digits = digits;
+		dn_plus(res, &x2.n);
 	}
 	return res;
 }

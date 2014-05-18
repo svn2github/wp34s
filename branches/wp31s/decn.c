@@ -946,7 +946,10 @@ decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *
 }
 
 
-/* Calculate sin and cos by Taylor series
+/* Calculate sin and cos by Taylor series.
+ * This function isn't using the increased accuracy that is present in the
+ * 34S code.  This 31S only requires single precision results so the extra
+ * simply isn't required.
  */
 void sincosTaylor(const decNumber *a, decNumber *s, decNumber *c) {
 	decNumber a2, t, j, z;
@@ -1134,6 +1137,9 @@ decNumber *decNumberCos(decNumber *res, const decNumber *x) {
 	return res;
 }
 
+/* This function isn't using the extended accuracy that the 34S equivalent
+ * uses.  However, it does better range reduction.
+ */
 decNumber *decNumberTan(decNumber *res, const decNumber *x) {
 	decNumber s, c;
 
