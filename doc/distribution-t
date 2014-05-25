@@ -252,3 +252,346 @@ that accurate or the current implementation does not evaluate the quantile
 as 1/tan(1E-10*180 degrees) which would yield a nearly perfect result. ;-)
 
 Dieter
+
+
+
+*LBL'NQF' // Normal quantile function
+	XEQ'GNQ'
+	CF 00
+	x<0?
+	SF 00     // save sign in flag 00
+	x[<->] Y
+	STO 00    // store min(p, 1-p)
+	# 002
+	STO 01    // not more than 2 iterations are required
+	RCL Z
+	ABS
+	FILL
+	INC X
+	RSD 03
+	x[!=]1?
+		GTO 000
+	DEC 01    // estimate < 0.005 requires just one iteration
+	DROP
+	SDL 016
+	x>1?
+		GTO 000
+	DROP      // estimate < 5E-17 is already exact
+	GTO 004
+*LBL 000
+	DROP
+*LBL 001
+	FILL
+	x<1?      // any threshold between 0.254 and 1.28 should be ok
+		GTO 002
+	[PHI][sub-u](x)
+	RCL- 00
+	GTO 003   // large x: evaluate upper cdf(x) - p
+	*LBL 002
+	x[^2]     // small x: evaluate (0.5-p) minus integral from 0 to x
+	# 1/2     // by means of the incomplete Gamma function
+	[times]
+	# 1/2
+	I[GAMMA][sub-p]
+	RCL[times] L
+	+/-
+	# 1/2
+	RCL- 00
+	+
+*LBL 003
+	x[<->] Y
+	[phi](x)
+	/
+	ENTER[^]  // use extrapolation scheme as shown in Abramowitz & Stegun p. 954
+	x[^3]
+	RCL T
+	x[^2]
+	STO+ X
+	INC X
+	[times]
+	# 006
+	/
+	# 1/2
+	RCL[times] T
+	RCL[times] Z
+	RCL[times] Z
+	+
+	+
+	+
+	DSE 01
+		GTO 001
+	*LBL 004
+	FS?C 00   // adjust sign
+		+/-       // and exit
+	END
+
+*LBL'TQF' // Student's t quantile function
+	ENTER[^]
+	+/-
+	INC X
+	MIN
+	CF 00
+	x[!=]? L
+		SF 00     // save sign in flag 00
+	STO 00    // store min(p, 1-p)
+	# 006
+	STO 01    // do at most 6 iterations (usually 3 or 4)
+	# 012
+	RCL J
+	+/-
+	y[^x]
+	RCL 00
+	x>? Y    // threshold for tail estimate is p = 12^(-dof)
+		GTO 000
+	RCL J    // tail estimate for p close to 0 (or 1)
+	STO+ X
+	[times]
+	# [pi]
+	RCL L
+	# 1/2
+	x[^2]
+	DEC X
+	+
+	/
+	[sqrt]
+	[times]
+	RCL J
+	[^x][sqrt]y
+	RCL J
+	[sqrt]
+	x[<->] Y
+	/
+	GTO 001    // start iteration
+*LBL 000
+	XEQ'GNQ'   // estimate for all other p, *not* close to 0 or 1
+	x[^2]      // t is a tranformation of the Normal z-quantile
+	# eE
+	RCL[times] J
+	1/x
+	INC X
+	[times]
+	RCL/ J
+	e[^x]-1
+	RCL[times] J
+	[sqrt]
+*LBL 001
+FILL
+	# 1/2     // use different methods for evaluating cdf(t) - p
+	x>? Y     // for t close or not close to the center
+		GTO 002
+	DROP
+	t[sub-u](x)
+	RCL- 00
+	GTO 003
+*LBL 002
+	DROP
+	x[^2]     // for t close to the center
+	ENTER[^]  // evaluate cdf(t) - p by means of the incomplete Beta function
+	RCL+ J
+	/
+	# 1/2
+	RCL[times] J
+	RCL L
+	I[beta]   // IMPORTANT: newer 34s firmware requires different order of arguments!
+	RCL[times] L
+	+/-
+	# 1/2
+	RCL- 00
+	+
+*LBL 003
+	RCL T     // use Halley method for fast convergence
+	t[sub-p](x)
+	/
+	ENTER[^]
+	RCL[times] T
+	RCL J
+	INC X
+	[times]
+	RCL T
+	x[^2]
+	RCL+ J
+	STO+ X
+	/
+	DEC X
+	/
+	-
+	CNVG? 00  // if the last two approximations agree in 14 digits
+		SKIP 003  // the latest result can be considered converged
+	DSE 01
+		GTO 001
+	ERR 20    // quit with error if no convergence within 6 iterations
+	FS?C 00
+		+/-       // else set sign and exit
+	END
+
+*LBL'CQF' // Chi^2 quantile function
+	x=0?
+		RTN       // catch case p = 0
+	STO 00
+	# 006
+	STO 01    // do at most 6 iterations (usually 3...4)
+	# 019
+	SDR 001   // threshold for lower tail estimate is 1/pi * 1.9^-n
+	RCL J
+	x=1?
+		DEC X     // handle threshold for 1 dof separately (1/pi is fine)
+	+/-
+	y[^x]
+	# [pi]
+	/
+	RCL 00
+	x<? Y
+		GTO 000   // jump to lower tail estimate
+	XEQ'GNQ'  // else get correctly signed Normal quantile
+	# 222     // and do a Wilson-Hilferty transformation
+	SDR 003
+	RCL/ J
+	STO Z
+	[sqrt]
+	[times]
+	INC X
+	RCL- Y
+	x[^3]
+	RCL[times] J   // Wilson-Hilferty estimate
+	# eE           // is adjusted for p close to 1
+	RCL[times] J   // i.e. for Chi^2 > e*dof + 8
+	# 008
+	+
+	x[<->] Y
+	x<? Y          // Chi^2 not large?
+		GTO 001        // then start iteration
+	# 1/2          // otherwise adjust estimate
+	[times]
+	LN
+	# 1/2
+	RCL[times] J
+	DEC X
+	[times]
+	+/-
+	RCL 00
+	+/-
+	LN1+x
+	+
+	# 1/2
+	RCL[times] J
+	LN[GAMMA]
+	+
+	STO+ X
+	+/-
+	GTO 001
+*LBL 000   // lower tail estimate
+	RCL[times] J
+	# 1/2
+	[times]
+	LN
+	# 1/2
+	RCL[times] J
+	LN[GAMMA]
+	+
+	STO+ X
+	RCL/ J
+	e[^x]
+	STO+ X
+*LBL 001   // iteration starts here
+	FILL       // uses Halley method for f(x) = ln(cdf(chi^2) / p)
+	x[>=]? J   // with different methods for low and high Chi^2
+		GTO 002
+	[chi][^2]  // low Chi^2
+	ENTER[^]
+	RCL/ 00
+	LN
+	GTO 003    // provide lower cdf in Y and ln(cdf/p) in X
+*LBL 002
+	# 001
+	ENTER[^]
+	RCL- 00
+	RCL Z
+	[chi][^2][sub-u]
+	STO- Z    // Z := 1-Z, i.e. upper cdf => lower cdf
+	-
+	RCL/ 00   // provide lower cdf in Y and ln1+x((1-p) - upper_cdf) / p) in X
+	LN1+x     // the latter is mathematically equivalent to ln(lower_cdf/p)
+*LBL 003
+	x[<->] Y  // start Halley approximation
+	RCL Z
+	[chi][^2][sub-p]
+	x[<->] Y
+	/
+	STO Z
+	/
+	RCL J
+	DEC X
+	DEC X
+	RCL- T
+	RCL/ T
+	[<->] ZXYT  // all this can be done with four stack levels ;-)
+	STO+ X
+	-
+	# 004
+	/
+	RCL[times] Y
+	+/-
+	INC X
+	/
+	-
+	CNVG? 00  // if the last two approximations agree in 14 digits
+		SKIP 003  // the latest result can be considered converged
+	DSE 01
+		GTO 001
+	ERR 20    // quit with error if no convergence within 6 iterations
+	END       // else exit
+
+**LBL'GNQ'  // Provides a guess for the Normal quantile
+	ENTER[^]    // input: 0 < p < 1
+	+/-         // output: X = signed quantile, Y = min(p, 1-p)
+	INC X       // max. absolute and relative error < 0.006
+	MIN
+	CF 01
+	x[!=]? L
+		SF 01       // save sign in flag 01
+	# 002
+	SDR 001     // threshold is 0.2  (was 0.23 before)
+	x[<->] Y
+	x[>=]? Y    // use different estimates for p < or > 0.2
+		GTO 000
+	FILL        // tail estimate for p < 0.2 or > 0.8
+	LN
+	STO+ X
+	+/-
+	ENTER[^]
+	DEC X
+	# [pi]
+	[times]
+	STO+ X
+	[sqrt]
+	RCL[times] T
+	LN
+	STO+ X
+	+/-
+	[sqrt]
+	x[<->] Y
+	# 132
+	STO+ X
+	SDR 003     // 0.264  (was 0.254 in earlier versions)
+	x[<->] Y
+	/
+	+
+	GTO 001
+*LBL 000
+	ENTER[^]    // central estimate for 0.2 < p < 0.8
+	+/-
+	# 1/2
+	+
+	# [pi]
+	STO+ X
+	[sqrt]
+	[times]
+	ENTER[^]
+	x[^3]
+	# 005       // was 6 in earlier versions
+	/
+	+
+*LBL 001
+	FS?C 01   // adjust sign
+	+/-       // negative for p<0.5, positive for p>0.5
+	END
