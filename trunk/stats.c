@@ -616,10 +616,13 @@ static enum sigma_modes do_LR(decNumber *B, decNumber *A) {
 
 void stats_LR(enum nilop op) {
 	decNumber a, b;
+	enum sigma_modes m;
 
 	if (check_data(2))
 		return;
-	do_LR(&b, &a);
+	m = do_LR(&b, &a);
+	if (m == SIGMA_EXP || m == SIGMA_POWER || m == SIGMA_QUIET_POWER)
+		dn_exp(&b, &b);
 	setY(&a);
 	setX(&b);
 }
