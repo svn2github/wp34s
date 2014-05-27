@@ -2075,9 +2075,9 @@ void op_2frac(enum nilop op) {
 		if (dn_eq0(&n))
 			DispMsg = "y/x =";
 		else if (decNumberIsNegative(&n))
-			DispMsg = "y/x \017";
+			DispMsg = "y/x Lt";
 		else
-			DispMsg = "y/x \020";
+			DispMsg = "y/x Gt";
 	}
 }
 
