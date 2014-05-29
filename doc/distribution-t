@@ -375,7 +375,7 @@ Dieter
 	RCL[times] J
 	[sqrt]
 *LBL 001
-FILL
+    FILL
 	# 1/2     // use different methods for evaluating cdf(t) - p
 	x>? Y     // for t close or not close to the center
 		GTO 002
@@ -384,20 +384,21 @@ FILL
 	RCL- 00
 	GTO 003
 *LBL 002
-	DROP
-	x[^2]     // for t close to the center
-	ENTER[^]  // evaluate cdf(t) - p by means of the incomplete Beta function
-	RCL+ J
-	/
-	# 1/2
-	RCL[times] J
-	RCL L
-	I[beta]   // IMPORTANT: newer 34s firmware requires different order of arguments!
-	RCL[times] L
-	+/-
-	# 1/2
-	RCL- 00
-	+
+    RCL[times] J  // X was 1/2, so this is n/2
+    x[<->] Y
+    x[^2]
+    ENTER[^]
+    RCL+ J
+    /             // x = t^2/(t^2+n)
+    # 1/2
+    x[<->] Y      // stack now is  x  1/2  n/2  t
+    I[sub-x]
+    # 1/2
+    [times]
+    +/-
+    # 1/2
+    RCL- 00
+    +
 *LBL 003
 	RCL T     // use Halley method for fast convergence
 	t[sub-p](x)
