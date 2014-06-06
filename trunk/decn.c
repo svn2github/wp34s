@@ -1484,7 +1484,7 @@ void op_p2r(enum nilop op) {
 
 /* Hyperbolic functions.
  * We start with a utility routine that calculates sinh and cosh.
- * We do the sihn as (e^x - 1) / e^x + e^x - 1 for numerical stability
+ * We do the sihn as (e^x - 1) (e^x + 1) / (2 e^x) for numerical stability
  * reasons if the value of x is smallish.
  */
 void dn_sinhcosh(const decNumber *x, decNumber *sinhv, decNumber *coshv) {
