@@ -1114,6 +1114,11 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 	dn_compare(&t, &t, &w);
 	decNumberTrunc(&w, &x);		/* Extract the whole part */
 
+    if (dn_eq(&n, &d)) {
+        dn_inc(&w);
+        decNumberZero(&n);
+    }
+
 	if (!UState.improperfrac) {
 		if (!dn_eq0(&w)) {
 			p = num_arg(p, dn_to_int(&w));
