@@ -2078,8 +2078,6 @@ void decNumber2Fraction(decNumber *n, decNumber *d, const decNumber *x) {
 			dn_divide(d, d, &t);
 		}
 	}
-	if (neg)
-		dn_minus(n, n);
 }
 
 static decNumber *gser(decNumber *res, const decNumber *a, const decNumber *x, const decNumber *gln) {
