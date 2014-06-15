@@ -639,7 +639,9 @@ static void annunciators(void) {
 #endif
 		}
 		p = scopy(p, q);
+#ifndef SHIFT_AND_CMPLX_SUPPRESS_YREG
 	no_copy:
+#endif
 
 		if (State2.arrow) {
 			scopy(p, "\007\204\006\015");
