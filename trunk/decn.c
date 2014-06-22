@@ -939,7 +939,7 @@ decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *
 
 #ifdef INCLUDE_MOD41
 	decNumberPlus(res, &out.n, &Ctx);
-	if (XeqOpCode == (OP_DYA | OP_MOD41) && decNumberIsNegative(x) != decNumberIsNegative(y))
+	if (XeqOpCode == (OP_DYA | OP_MOD41) && decNumberIsNegative(x) != decNumberIsNegative(y) && !dn_eq0(res))
 		dn_add(res, res, y);
 	return res;
 #else

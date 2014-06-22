@@ -396,7 +396,8 @@ long long int intMod(long long int y, long long int x) {
 	r = yv % xv;
 #ifdef INCLUDE_MOD41
 	if (XeqOpCode == (OP_DYA | OP_MOD41) && sx != sy) {
-		r = xv - r;
+        if (r != 0)
+		    r = xv - r;
 		sy = sx;
 	}
 #endif
