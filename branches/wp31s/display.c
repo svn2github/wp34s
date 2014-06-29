@@ -1807,7 +1807,7 @@ void display(void) {
 		bp = scopy(bp, argcmds[CmdBase].cmd);
 		bp = scopy(bp, State2.ind?"\015" : "\006\006");
 		if (State2.dot) {
-			*bp++ = 's';
+			*bp++ = '\240';
 			*bp++ = '_';
 		} else if (shift == SHIFT_F) {
 			*bp++ = '\021';
