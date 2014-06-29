@@ -1053,7 +1053,7 @@ void clrreg(enum nilop op) {
 	process_cmdline_set_lift();
 
 	// erase register memory
-	zero_regs(get_reg_n(0), global_regs());\
+	zero_regs(get_reg_n(0), global_regs());
 
 	// Clear A, B, C & D if they aren't part of the stack
 	if (stack_size() != 8)
