@@ -4672,14 +4672,14 @@ void cmdplotpixel( unsigned int arg, enum rarg op )
 		 *  Get row from Y
 		 */
 		int sgn;
-		int row = (int) get_reg_n_int_sgn( regY_idx, &sgn );
+		unsigned int row = (unsigned int) get_reg_n_int_sgn( regY_idx, &sgn );
 		int pix = 0;
-		if ( sgn == 0 && ( row >> 3 ) < (int) p[ 1 ] ) {
+		if ( sgn == 0 && ( row >> 3 ) < (unsigned int) p[ 1 ] ) {
 			/*
 			 *  Row is OK, get column from X
 			 */
-			int width = (int) *p;
-			int column = (int) getX_int_sgn( &sgn );
+			unsigned int width = (unsigned int) *p;
+			unsigned int column = (unsigned int) getX_int_sgn( &sgn );
 			if ( sgn == 0 && column < width ) {
 				/*
 				 *  Modify the bit in the correct byte
