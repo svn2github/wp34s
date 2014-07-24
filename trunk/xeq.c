@@ -4496,7 +4496,7 @@ void xeq_sst_bst(int kind)
 #ifndef REALBUILD
 			State2.sst = 0;
 #endif
-			// xeq_xrom();  Already done by dispatch_xrom()
+			xeq_xrom();  // necessary for code called from XROM
 			set_running_off_sst();
 		}
 	}
