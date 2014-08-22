@@ -422,11 +422,10 @@ void init_state(void) {
 	// Removed: will clear any locals on power off
 	// clrretstk(0);
 
-	if (State2.runmode == 0)
-		update_program_bounds(1);
 	xset(&State2, 0, sizeof(State2));
 	State2.test = TST_NONE;
 	State2.runmode = 1;
+	update_program_bounds(1);
 	set_lift();
 
 	// Restore stuff that has been moved to State2 for space reasons
