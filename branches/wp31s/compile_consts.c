@@ -380,7 +380,7 @@ struct _constsml conversions[] = {
 	CONV("m",	"feetUS",	"M_FEETUS",	"0.3048006096"),		// source: Wikipedia etc
 	CONV("m",	"yards",	"M_YARD",	"0.9144"),		// source: NIST
 	CONV("km",	"miles",	"KM_MILE",	"1.609344"),		// source: NIST
-	CONV("km",	"l.y.",		"KM_LY",	"9.46073E12"),		// source: NIST
+	CONV("km",	"l.y.",		"KM_LY",	"9.4607304725808E12"),		// source: IAU
 	CONV("km",	"pc",		"KM_PC",	"3.085678E13"),		// source: NIST
 	CONV("km",	"AU",		"KM_AU",	"149597900"),		// source: NIST, IAU 2009 gives 1.49597870700E11
 	CONV("km",	"nmi",		"KM_NMI",	"1.852"),		// source: NIST
