@@ -2086,7 +2086,7 @@ static void branchtoalpha(int is_gsb, char buf[]) {
 }
 
 void cmdalphagto(unsigned int arg, enum rarg op) {
-	char buf[12];
+	char buf[14];
 
 	xset(buf, '\0', sizeof(buf));
 	branchtoalpha(op != RARG_ALPHAGTO, alpha_rcl_s(arg, buf));
