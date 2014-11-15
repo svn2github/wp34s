@@ -55,6 +55,8 @@ enum confirmations {
 	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog, confirm_clpall
 };
 
+FLAG WasDataEntry;
+
 /* Local data to this module */
 unsigned int OpCode;
 FLAG OpCodeDisplayPending;
@@ -2496,6 +2498,7 @@ static int process(const int c) {
 void process_keycode(int c)
 {
 	static int was_paused;
+	volatile int cmdline_empty; // volatile because it's uninitialized in some cases
 
 	if (was_paused && Pause == 0) {
 		/*
@@ -2622,8 +2625,13 @@ void process_keycode(int c)
 			dot(RPN, ShowRPN);
 #ifndef CONSOLE
 			if (! State2.disp_temp ) {
-				// This will get rid of the last displayed op-code
-				display();
+				if (!WasDataEntry) {
+					// This will get rid of the last displayed op-code
+					display();
+				}
+				else {
+					finish_display(); // Update the RPN annunciator
+				}
 			}
 #endif
 			return;
@@ -2640,6 +2648,7 @@ void process_keycode(int c)
 		/*
 		 *  Decode the key 
 		 */
+		WasDataEntry = 0;
 		ShowRPN = ! Running;	// Default behaviour, may be turned off later
 
 		c = process(c);		// returns an op-code or state
@@ -2680,13 +2689,19 @@ void process_keycode(int c)
 		default:
 			if (State2.runmode || NonProgrammable) {
 				NonProgrammable = 0;
-				if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F))
+				if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F)) {
 					// Data entry key
+					WasDataEntry = 1;
+					cmdline_empty = (CmdLineLength == 0);
 					xeq(c);
+					cmdline_empty |= (CmdLineLength == 0);
+				}
 				else {
 					// Save the op-code for execution on key-up
 					OpCode = c;
 					OpCodeDisplayPending = 1;
+					finish_display(); // Update the RPN annunciator
+					goto no_display; // No need to update the display before the command is executed
 				}
 			}
 			else {
@@ -2694,15 +2709,19 @@ void process_keycode(int c)
 			}
 		}
 	}
+	if (! Running && ! Pause
 #ifndef CONSOLE
-	if (! Running && ! Pause && ! JustStopped && ! JustDisplayed && c != STATE_IGNORE) {
-		display();
-	}
-#else
-	if (! Running && ! Pause && c != STATE_IGNORE && ! JustDisplayed) {
-		display();
-	}
+				 && ! JustStopped
 #endif
+						  && ! JustDisplayed && c != STATE_IGNORE) {
+		const int orig_WasDataEntry = WasDataEntry;
+
+		WasDataEntry &= !(c == (OP_SPEC | OP_ENTER) || cmdline_empty || State2.invalid_disp);
+		display();
+		WasDataEntry = orig_WasDataEntry;
+	}
+
+no_display:
         JustDisplayed = 0;
         watchdog();
 }

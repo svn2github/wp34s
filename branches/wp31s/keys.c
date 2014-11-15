@@ -55,6 +55,8 @@ enum confirmations {
 	confirm_none=0, confirm_clall, confirm_reset, confirm_clprog, confirm_clpall
 };
 
+FLAG WasDataEntry;
+
 /* Local data to this module */
 unsigned int OpCode;
 FLAG OpCodeDisplayPending;
@@ -1867,6 +1869,7 @@ static int process(const int c) {
 void process_keycode(int c)
 {
 	static int was_paused;
+	volatile int cmdline_empty; // volatile because it's uninitialized in some cases
 
 	if (was_paused && Pause == 0) {
 		/*
@@ -1966,8 +1969,13 @@ void process_keycode(int c)
 			dot(RPN, ShowRPN);
 #ifndef CONSOLE
 			if (! State2.disp_temp ) {
-				// This will get rid of the last displayed op-code
-				display();
+				if (!WasDataEntry) {
+					// This will get rid of the last displayed op-code
+					display();
+				}
+				else {
+					finish_display(); // Update the RPN annunciator
+				}
 			}
 #endif
 			return;
@@ -1984,6 +1992,7 @@ void process_keycode(int c)
 		/*
 		 *  Decode the key
 		 */
+		WasDataEntry = 0;
 		ShowRPN = ! XromRunning;	// Default behaviour, may be turned off later
 
 		c = process(c);		// returns an op-code or state
@@ -2018,23 +2027,27 @@ void process_keycode(int c)
 				// Data entry key
 				xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
 				xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
+				WasDataEntry = 1;
+				cmdline_empty = (CmdLineLength == 0);
 				xeq(c);
+				cmdline_empty |= (CmdLineLength == 0);
 		    } else {
 				// Save the op-code for execution on key-up
 				OpCode = c;
 				OpCodeDisplayPending = 1;
+				finish_display(); // Update the RPN annunciator
+				goto no_display; // No need to update the display before the command is executed
 			}
 		}
 	}
-#ifndef CONSOLE
 	if (! XromRunning && ! Pause && ! JustDisplayed && c != STATE_IGNORE) {
+		const int orig_WasDataEntry = WasDataEntry;
+
+		WasDataEntry &= !(c == (OP_SPEC | OP_ENTER) || cmdline_empty || State2.invalid_disp);
 		display();
+		WasDataEntry = orig_WasDataEntry;
 	}
-#else
-	if (! XromRunning && ! Pause && c != STATE_IGNORE && ! JustDisplayed) {
-		display();
-	}
-#endif
+no_display:
         JustDisplayed = 0;
         watchdog();
 }

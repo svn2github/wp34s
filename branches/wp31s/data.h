@@ -445,6 +445,7 @@ extern SMALL_INT RetStkSize;         // actual size of return stack
 extern REGISTER *StackBase;	     // Location of the RPN stack
 extern decContext Ctx;		     // decNumber library context
 extern FLAG JustDisplayed;	     // Avoid duplicate calls to display();
+extern FLAG WasDataEntry;	     // No need to update the display
 extern char TraceBuffer[];           // Display current instruction
 #ifndef REALBUILD
 extern char LastDisplayedText[NUMALPHA + 1];	   // This is for the emulator (clipboard)

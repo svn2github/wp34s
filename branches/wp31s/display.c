@@ -1767,6 +1767,22 @@ void display(void) {
 		return;
 	}
 
+	if (WasDataEntry) {
+#if defined(QTGUI) || defined(IOS)
+		xset(LastDisplayedNumber, ' ', NUMBER_LENGTH);
+		LastDisplayedNumber[NUMBER_LENGTH]=0;
+		xset(LastDisplayedExponent, ' ', EXPONENT_LENGTH);
+		LastDisplayedExponent[EXPONENT_LENGTH]=0;
+#endif
+		wait_for_display(); // Normally called from reset_disp()
+
+		// Erase 7-segment display
+		for (i = 0; i <= EXP_SIGN; ++i) {
+			clr_dot(i);
+		}
+		goto only_update_x;
+	}
+
 	// Clear display
 	reset_disp();
 
@@ -1961,6 +1977,7 @@ void display(void) {
 	show_stack();
 nostk:	show_flags();
 	if (!skip) {
+only_update_x:
 		p = get_cmdline();
 		if (p == NULL || cata) {
 			if (ShowRegister != -1) {
@@ -1972,6 +1989,9 @@ nostk:	show_flags();
 		} else {
 			disp_x(p);
 			x_disp = 1;
+		}
+		if (WasDataEntry) {
+			goto finish;
 		}
 	}
 	set_annunciators();
@@ -1994,6 +2014,7 @@ nostk:	show_flags();
 		annunciators();
 #endif
 
+finish:
 	State2.version = 0;
 	State2.disp_as_alpha = 0;
 	State2.smode = SDISP_NORMAL;
@@ -2209,6 +2230,7 @@ extern void message(const char *str1, const char *str2)
 {
 	State2.disp_freeze = 0;
 	State2.disp_small = 0;
+	WasDataEntry = 0;
 	if ( State2.invalid_disp && str2 == NULL ) {
 		// Complete redraw necessary
 		DispMsg = str1;
