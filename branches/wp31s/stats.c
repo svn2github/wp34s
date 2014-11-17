@@ -275,6 +275,10 @@ static enum sigma_modes get_sigmas(decNumber *N, decNumber *sx, decNumber *sy,
 void sigma_val(enum nilop op) {
 	REGISTER *const x = StackBase;
 	const int dbl = is_dblmode();
+	if (sigmaN == 0) {
+		zero_X();
+		return;
+	}
 	sigmaCheck();
 	if (op == OP_sigmaN) {
 		if (sigmaN > 0)
