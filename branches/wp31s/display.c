@@ -1208,42 +1208,99 @@ enum display_modes std_round_fix(const decNumber *z) {
  */
 static void show_x(char *x, int exp) {
 	const int dbl = is_dblmode();
-	const int upper = dbl ? 6 : 4;
-	char *const p = find_char(x, '\0');
+	char *p;
 	int i, j;
-	int left = 1;
+	char *upper_str;
+	enum separator_modes separator_mode;
+	char decimal_mark;
+	char thousands_sep;
+	int negative;
 
-	xset(p, '0', x + 34 - p);
-	if (State2.window) {
-		x += 16;	// right half
-		left = 0;
-	    }
+	if (x[0] == '-') {
+#ifdef INCLUDE_FONT_ESCAPE
+		static const char small_minus[4] = { '\007', '\302', '-', '\006' };
+
+		xcopy(x + 4, x + 1, 34);
+		xcopy(x, small_minus, 4);
+		x += 4;
+		negative = 4;
+#else
+		++x;
+		negative = 1;
+#endif
+	}
+	else negative = 0;
+
+	p = find_char(x, '\0');
+	xset(p, '0', 34 - (p - x));
+
+	if (DecimalMode == DECIMAL_DOT) {
+		separator_mode = SEP_COMMA;
+		decimal_mark = '.';
+		thousands_sep = ',';
+	}
 	else {
+		separator_mode = SEP_DOT;
+		decimal_mark = ',';
+		thousands_sep = '.';
+	}
+
+	if (State2.window) { // right half in double precision mode
+#ifdef INCLUDE_FONT_ESCAPE
+		static const char small_dots[13] = { '\007', '\341', ',', '\006',
+			'\007', '\341', ',', '\006', '\007', '\341', ',', '\006', '\006' };
+
+		upper_str = x + 3;
+		xcopy(upper_str, small_dots, 13);
+		xcopy(upper_str + 13 + 4, upper_str + 13 + 3, 19);
+		upper_str[13 + 3] = thousands_sep;
+		x += 3 + 13 + 7;
+#else
+		upper_str = x + 13;
+		xset(upper_str, '.', 3);
+		xcopy(upper_str + 7, upper_str + 6, 19);
+		upper_str[6] = thousands_sep;
+		x += 13 + 3 + 7;
+#endif
+		negative = 0;
+		i = 3 * SEGS_PER_DIGIT;
+	}
+	else {
+		xcopy(x + 2, x + 1, 16);
+		x[1] = decimal_mark;
+		xcopy(x + 6, x + 5, 13);
+		x[5] = thousands_sep;
+		upper_str = x;
+		x += 9;
 		if (dbl) {
 			if (exp < 0) {
-				x[16] = '-';
+				x[9] = '-';
 				exp = -exp;
 			}
 			else
-				x[16] = ' ';
+				x[9] = ' ';
 			j = exp / 1000;
-			x[17] = '0' + j;
+			x[10] = '0' + j;
 			exp -= 1000 * j;
 		}
+		else {
+			x[9] = '\0';
+			x[10] = '\0';
+		}
+		xcopy(x + 1, x, 11);
+		*x = 0;
 		set_exp(exp, 1, CNULL);
+		i = 1 * SEGS_PER_DIGIT;
+	}
+	for (; i <= 9 * SEGS_PER_DIGIT; i += 3 * SEGS_PER_DIGIT) {
+		set_separator(i, separator_mode, CNULL);
 	}
 
-	for (i = 0, j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
-		set_dig_s(j, x[upper + i], CNULL);
+	for (i = j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
+		set_dig(j, x[i]);
 
-	// Move the digits over one place and insert the radix
-	x[upper] = '\0';
-	if (left) {
-	    xcopy(x + 2, x + 1, upper);  // Copy end of string char too
-	    x[1] = DecimalMode == DECIMAL_DOT ? '.' : ',';
-	    }
-
-	set_status(x);
+	*x = '\0';
+	set_status(upper_str - negative);
 }
 
 
@@ -1323,7 +1380,6 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 		return;
 
 	if (State2.smode == SDISP_SHOW) {
-		dn_abs(z, z);
 		decNumberNormalize(z, z, &Ctx);
 		exp = z->exponent + z->digits - 1;
 		z->exponent = 0;
