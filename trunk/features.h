@@ -151,6 +151,12 @@
 // Change the fraction separator to the old Casio form _|
 //#define INCLUDE_CASIO_SEPARATOR
 
+// Group digits when viewing the full X register.
+#define FULL_NUMBER_GROUPING
+
+// When viewing the full X register, don't group digits if thousands separator is turned off (only applies if FULL_NUMBER_GROUPING is enabled).
+//#define FULL_NUMBER_GROUPING_TS
+
 // Switch the seven-segment display to fraction mode as soon as two decimal marks are entered
 #define PRETTY_FRACTION_ENTRY
 

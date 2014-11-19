@@ -1214,10 +1214,17 @@ static void show_x(char *x, int exp) {
 	enum separator_modes separator_mode;
 	char decimal_mark;
 	char thousands_sep;
+#if !defined(FULL_NUMBER_GROUPING)
+	const int grouping = 0;
+#elif defined(FULL_NUMBER_GROUPING_TS)
+	const int grouping = !UState.nothousands;
+#else
+	const int grouping = 1;
+#endif
 	int negative;
 
 	if (x[0] == '-') {
-#ifdef INCLUDE_FONT_ESCAPE
+#if defined(INCLUDE_FONT_ESCAPE) && defined(FULL_NUMBER_GROUPING)
 		static const char small_minus[4] = { '\007', '\302', '-', '\006' };
 
 		xcopy(x + 4, x + 1, 34);
@@ -1252,26 +1259,35 @@ static void show_x(char *x, int exp) {
 
 		upper_str = x + 3;
 		xcopy(upper_str, small_dots, 13);
-		xcopy(upper_str + 13 + 4, upper_str + 13 + 3, 19);
-		upper_str[13 + 3] = thousands_sep;
-		x += 3 + 13 + 7;
+		if (grouping) {
+			xcopy(upper_str + 13 + 4, upper_str + 13 + 3, 19);
+			upper_str[13 + 3] = thousands_sep;
+			x += 3 + 13 + 7;
+		}
+		else x += 3 + 13 + 6;
 #else
 		upper_str = x + 13;
 		xset(upper_str, '.', 3);
-		xcopy(upper_str + 7, upper_str + 6, 19);
-		upper_str[6] = thousands_sep;
-		x += 13 + 3 + 7;
+		if (grouping) {
+			xcopy(upper_str + 7, upper_str + 6, 19);
+			upper_str[6] = thousands_sep;
+			x += 13 + 3 + 7;
+		}
+		else x += 13 + 3 + 6;
 #endif
 		negative = 0;
 		i = 3 * SEGS_PER_DIGIT;
 	}
 	else {
+		upper_str = x;
 		xcopy(x + 2, x + 1, 16);
 		x[1] = decimal_mark;
-		xcopy(x + 6, x + 5, 13);
-		x[5] = thousands_sep;
-		upper_str = x;
-		x += 9;
+		if (grouping) {
+			xcopy(x + 6, x + 5, 13);
+			x[5] = thousands_sep;
+			x += 9;
+		}
+		else x += 8;
 		if (dbl) {
 			if (exp < 0) {
 				x[9] = '-';
@@ -1292,8 +1308,10 @@ static void show_x(char *x, int exp) {
 		set_exp(exp, 1, CNULL);
 		i = 1 * SEGS_PER_DIGIT;
 	}
-	for (; i <= 9 * SEGS_PER_DIGIT; i += 3 * SEGS_PER_DIGIT) {
-		set_separator(i, separator_mode, CNULL);
+	if (grouping) {
+		for (; i <= 9 * SEGS_PER_DIGIT; i += 3 * SEGS_PER_DIGIT) {
+			set_separator(i, separator_mode, CNULL);
+		}
 	}
 
 	for (i = j = 0; i < 12; ++i, j += SEGS_PER_DIGIT)
