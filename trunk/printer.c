@@ -557,8 +557,11 @@ void print_trace( opcode op, int phase )
 		}
 		else if (op >= (OP_SPEC | OP_EEX) && op <= (OP_SPEC | OP_F))
 			return;
-		else if (op == (OP_SPEC | OP_CLX))
+		else if (op == (OP_SPEC | OP_CLX)) {
+			if (CmdLineLength || (phase==1 && PrinterColumn==0))
+				return;
 			op = OP_NIL | OP_rCLX;
+		}
 		else if (! Running && isRARG(op) && RARG_CMD(op) == RARG_ALPHA )
 			return;
 
