@@ -4317,7 +4317,6 @@ void xeq(opcode op)
 		error_message( Error );
 		// Repair stack and state
 		// Clear return stack
-		Error = ERR_NONE;
 		xcopy(StackBase, save, sizeof(save));
 		UserFlags[regA_idx >> 4] = flags;
 		UState = old;
@@ -4325,6 +4324,9 @@ void xeq(opcode op)
 		raw_set_pc(old_pc);
 		*((int *)&CommandLine) = old_cl;
 		process_cmdline_set_lift();
+		// process_cmdline_set_lift() may set an error code if there was something
+		// wrong with the command line, e.g. it had a partially entered fraction
+		Error = ERR_NONE;
 		if (Running || XromRunning) {
 #ifndef REALBUILD
 			if (State2.trace ) {
