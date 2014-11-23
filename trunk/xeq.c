@@ -3169,9 +3169,21 @@ void XisEvenOrOdd(enum nilop op) {
 
 /* Test if a number is prime */
 void XisPrime(enum nilop op) {
+	unsigned long long int i;
 	int sgn;
 
-	fin_tst(isPrime(getX_int_sgn(&sgn)) && sgn == 0);
+	i = getX_int_sgn(&sgn);
+	if (!is_intmode()) {
+		decNumber x;
+
+		getX(&x);
+		if (decNumberIsSpecial(&x))
+			sgn = 1; // not prime
+		else if (dn_ge(&x, &const_2pow64))
+			// isPrime() reports domain error for numbers with bit 63 set
+			i = 0xFFFFFFFFFFFFFFFFull;
+	}
+	fin_tst(sgn == 0 && isPrime(i));
 }
 
 /* Test is a number is infinite.
