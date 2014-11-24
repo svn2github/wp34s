@@ -128,7 +128,7 @@ SMALL_INT Contrast;
 SMALL_INT LcdFadeOut;
 FLAG InIrq;
 FLAG DebugFlag;
-#ifndef XTAL
+#if !defined(DISABLE_XTAL) && !defined(XTAL)
 FLAG Xtal;
 #endif
 
@@ -1613,7 +1613,7 @@ void idle( void )
 
 
 
-#ifndef XTAL
+#if !defined(DISABLE_XTAL) && !defined(XTAL)
 /*
  *  Turn on crystal oscillator for better clock accuracy.
  *  Crystal must be installed, of course!
@@ -1708,7 +1708,7 @@ NO_RETURN int main(void)
         // Dummy access for optimiser
         xcopy( (void *) &command_info, &command_info, 0 );
 #endif
-#ifndef XTAL
+#if !defined(DISABLE_XTAL) && !defined(XTAL)
         /*
          *  Timing is dependent on the presence of a crystal
          */
@@ -2055,7 +2055,7 @@ NO_RETURN int main(void)
                                         confirm_counter = 0;
                                         break;
 
-#ifndef XTAL
+#if !defined(DISABLE_XTAL) && !defined(XTAL)
                                 case K02:
                                         // ON+C turn on Crystal
                                         if ( !Xtal ) {

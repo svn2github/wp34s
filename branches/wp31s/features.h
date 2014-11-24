@@ -27,6 +27,13 @@
 // Allow for any generic argument taking commands in XROM
 // #define XROM_RARG_COMMANDS
 
+// Permanently disable quartz crystal (cannot be enabled with ON+C)
+#define DISABLE_XTAL
+
+#ifdef DISABLE_XTAL
+#undef XTAL
+#endif
+
 // Define this to support a STOPWATCH function like the StopWatch on the HP-41C
 // Time Module or the HP-55
 #if !defined(REALBUILD) || (defined(XTAL) /* && !defined(INFRARED) */)

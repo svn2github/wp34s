@@ -419,7 +419,9 @@ extern TXromLocal XromLocal;
 typedef int FLAG;		     // int is most code efficient!
 typedef int SMALL_INT;		     // better then (unsigned) short
 
-#if defined(XTAL) || ! defined(REALBUILD)
+#ifdef DISABLE_XTAL
+#define Xtal (0)
+#elif defined(XTAL) || ! defined(REALBUILD)
 #define Xtal (1)
 #else
 extern FLAG Xtal;
