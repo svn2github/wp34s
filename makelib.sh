@@ -21,4 +21,5 @@ cd ../trunk/realbuild
 cat calc.bin $DAT > calc_full.bin
 cat calc_xtal.bin $DAT > calc_xtal_full.bin
 cat calc_ir.bin $DAT > calc_ir_full.bin
+test -f calc_noxtal.bin && cat calc_noxtal.bin $DAT > calc_noxtal_full.bin
 

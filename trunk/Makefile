@@ -21,6 +21,9 @@
 # Define to disable the watchdog
 #NOWD = 1
 
+# Disable support for the crystal oscillator (overrides XTAL)
+#DISABLE_XTAL = 1
+
 # Define to use a crystal oscillator on slow clock after hardware modification
 #XTAL = 1
 
@@ -176,12 +179,17 @@ HOSTCFLAGS += -DREALBUILD
 ifdef NOWD
 CFLAGS += -DNOWD
 endif
+ifdef DISABLE_XTAL
+CFLAGS += -DDISABLE_XTAL
+HOSTCFLAGS += -DDISABLE_XTAL
+else
 ifdef XTAL
 CFLAGS += -DXTAL
 HOSTCFLAGS += -DXTAL
 ifdef INFRARED
 CFLAGS += -DINFRARED
 HOSTCFLAGS += -DINFRARED
+endif
 endif
 endif
 CFLAGS += -DNO_BACKUP_INIT -DNO_RAM_COPY
@@ -246,6 +254,12 @@ DNSRCS := $(DNSRCS:%.c=decNumber/%.c)
 DNHDRS := $(DNSRCS:%.c=%.h) 
 
 ifdef REALBUILD
+ifdef DISABLE_XTAL
+TARGET=calc_noxtal
+MAPFILE := $(OUTPUTDIR)/mapfile_noxtal.txt
+SUMMARY := $(OUTPUTDIR)/summary_noxtal.txt
+SYMBOLS := $(OUTPUTDIR)/symbols_noxtal.txt
+else
 ifdef XTAL
 ifdef INFRARED
 TARGET=calc_ir
@@ -263,6 +277,7 @@ TARGET=calc
 MAPFILE := $(OUTPUTDIR)/mapfile.txt
 SUMMARY := $(OUTPUTDIR)/summary.txt
 SYMBOLS := $(OUTPUTDIR)/symbols.txt
+endif
 endif
 STARTUP := atmel/board_cstartup.S
 ATSRCS := board_lowlevel.c board_memories.c aic.c pmc.c rtc.c slcdc.c supc.c 
@@ -321,7 +336,7 @@ $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRC
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE) \
 		compile_cats.c xrom.wp34s $(XROM) $(OPCODES)
 	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h xrom.c
-	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 XTAL=$(XTAL) INFRARED=$(INFRARED) catalogues.h xrom.c
+	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 DISABLE_XTAL=$(DISABLE_XTAL) XTAL=$(XTAL) INFRARED=$(INFRARED) catalogues.h xrom.c
 	$(UTILITIES)/create_revision$(EXE) >revision.h
 	$(CC) $(CFLAGS) -IdecNumber -o $(OUTPUTDIR)/$(TARGET) $(LDFLAGS) \
 		$(STARTUP) asone.c $(LIBS) -fwhole-program -ldecNum34s # -save-temps

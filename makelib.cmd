@@ -29,6 +29,7 @@ cd ..\trunk\realbuild
 copy/b calc.bin+%DAT% calc_full.bin
 copy/b calc_xtal.bin+%DAT% calc_xtal_full.bin
 copy/b calc_ir.bin+%DAT% calc_ir_full.bin
+if exist calc_noxtal.bin copy/b calc_noxtal.bin+%DAT% calc_noxtal_full.bin
 @endlocal
 @goto exit
 
