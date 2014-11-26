@@ -15,22 +15,79 @@
  */
 
 /**************************************************************************/
-/* Very minimal routine to return the next prime in sequence
+/* Return the next prime in sequence
  */
 		XLBL"NEXTPRIME"
-			FLOOR
+			INTM?	/* Return truncated results in integer mode. */
+				JMP nextprime_xin
+			DBL?
+				JMP nextprime_xin
+			xIN MONADIC
+			/*
+			 * The largest prime that can be accurately represented
+			 * in single precision mode is 9999999999999937.
+			 * Without this check, we would return incorrectly
+			 * rounded results for 9999999999999937 <= X < 2^63.
+			 */
+			_INT 16
+			10[^x]
+			_INT 63
+			-
+			x[<=]? Y
+				ERR ERR_DOMAIN
+			x[<->] Y
+			JMP nextprime_skip_xin
+
+nextprime_xin::		xIN MONADIC
+nextprime_skip_xin::	FLOOR
 			x[<=]1?
 				JMP prime_2
 			PRIME?
 				INC X
 			EVEN?
-prime_loop::			INC X
+nextprime_loop::		INC X
 			PRIME?
-				RTN
+				xOUT xOUT_NORMAL
 			INC X
-			JMP prime_loop
+			/* PRIME? fails for numbers >= 2^63, an infinite loop isn't possible. */
+			JMP nextprime_loop
 
-prime_2::		CLx
-			_INT 2
-			RTN
+prime_2::		_INT 2
+			xOUT xOUT_NORMAL
 
+/**************************************************************************/
+/* $eturn the previous prime in sequence
+ */
+/****
+		XLBL"PREVPRIME"
+			INTM?
+				JMP prevprime_xin
+			DBL?
+				JMP prevprime_xin
+			xIN MONADIC
+
+			_INT 50
+			_INT 16
+			10[^x]
+			STO+ Y
+			RCL Z
+			x>? Z
+				ERR ERR_DOMAIN
+			MIN
+			JMP prevprime_skip_xin
+
+prevprime_xin::		xIN MONADIC
+prevprime_skip_xin::	CEIL
+			PRIME?
+				DEC X
+			x[<=]1?
+				ERR ERR_DOMAIN
+			EVEN?
+prevprime_loop::		DEC X
+			x[<=]1?
+				JMP prime_2
+			PRIME?
+				xOUT xOUT_NORMAL
+			DEC X
+			JMP prevprime_loop
+****/
