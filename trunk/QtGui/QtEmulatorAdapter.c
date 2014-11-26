@@ -34,6 +34,13 @@ extern void format_display(char *buf);
 extern void updateScreen();
 #endif
 
+#if INTERRUPT_XROM_TICKS > 0
+extern void increment_OnKeyTicks_adapter(void);
+
+extern volatile char OnKeyPressed;
+extern volatile unsigned int OnKeyTicks;
+#endif
+
 #define SVN_REVISION_SIZE 4
 static char SvnRevisionString[SVN_REVISION_SIZE+1]={ 0 };
 
@@ -120,6 +127,9 @@ void set_hshift_locked(int an_hshift_locked)
 void add_heartbeat()
 {
 	++Ticker;
+#if INTERRUPT_XROM_TICKS > 0
+	increment_OnKeyTicks_adapter();
+#endif
 	if(Pause)
 	{
 		--Pause;

@@ -31,6 +31,7 @@ class QtBackgroundImage;
 #define F_CODE 9
 #define G_CODE 10
 #define H_CODE 11
+#define ON_CODE 36
 
 
 #define DEFAULT_USE_HSHIFT_CLICK true
@@ -78,6 +79,7 @@ public:
 	void setShowToolTips(bool aShowToolTips);
 	QtKeyCode findKeyCode(const QKeyEvent& aKeyEvent) const;
 	void showCatalogMenu();
+	void increment_OnKeyTicks();
 
 private slots:
 	void onHShift();
@@ -95,6 +97,7 @@ private:
     void startHShiftTimer();
     void startAutoRepeatTimer();
     bool isAutoRepeat(const QtKeyCode& aKeyCode) const;
+	void update_OnKeyTicks(bool pressed);
 
 private:
     int hShiftHeight;

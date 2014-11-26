@@ -96,6 +96,10 @@ bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 	lastReleasedKeyCode=INVALID_KEY_CODE;
 	if(!aKeyEvent.isAutoRepeat())
 	{
+		QtKeyCode keyCode=findKeyCode(aKeyEvent);
+		if(keyCode.getCode() == ON_CODE) {
+			update_OnKeyTicks(false);
+		}
 		forward_key_released();
 		currentKeyCode=INVALID_KEY_CODE;
 	}
@@ -145,6 +149,9 @@ bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)
 		if(lastReleasedKeyCode.isValid() && lastReleasedKeyCode==keyCode)
 		{
 			processKeyCodePressed(lastReleasedKeyCode);
+		}
+		if(keyCode.getCode() == ON_CODE) {
+			update_OnKeyTicks(false);
 		}
 	}
 
@@ -332,6 +339,9 @@ void QtKeyboard::putKeyCode(const QtKeyCode& aKeyCode)
 
 void QtKeyboard::putKey(char aKey)
 {
+	if(aKey == ON_CODE) {
+		update_OnKeyTicks(true);
+	}
 	QMutexLocker mutexLocker(&mutex);
 	keyboardBuffer[keyboardBufferEnd]=aKey;
 	keyboardBufferEnd=(keyboardBufferEnd+1)%KEYBOARD_BUFFER_SIZE;
@@ -562,5 +572,39 @@ void add_heartbeat_adapter(int key)
 	currentEmulator->getKeyboard().putKeyIfBufferEmpty(key);
 }
 
+void increment_OnKeyTicks_adapter()
+{
+	currentEmulator->getKeyboard().increment_OnKeyTicks();
 }
 
+int get_key(void) // Used by xeq() to empty the keyboard buffer
+{
+	return currentEmulator->getKeyboard().getKey();
+}
+
+// These are defined in main.c but the Qt build doesn't use that file
+volatile char OnKeyPressed;
+volatile unsigned int OnKeyTicks;
+
+}
+
+void QtKeyboard::increment_OnKeyTicks()
+{
+	QMutexLocker mutexLocker(&mutex);
+	if (OnKeyPressed) {
+		++OnKeyTicks;
+	}
+}
+
+void QtKeyboard::update_OnKeyTicks(bool pressed)
+{
+	QMutexLocker mutexLocker(&mutex);
+	if(pressed) {
+		OnKeyPressed = 1;
+	}
+	else
+	{
+		OnKeyPressed = 0;
+		OnKeyTicks = 0;
+	}
+}
