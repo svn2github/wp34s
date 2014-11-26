@@ -31,5 +31,12 @@
 
 
 #define	MAX_ERROR		25
-#define MAX_MESSAGE		26
+
+#if INTERRUPT_XROM_TICKS > 0
+#define	ERR_INTERRUPTED		26
+#define	MAX_MESSAGE		27
+#else
+#define	MAX_MESSAGE		26
+#endif
+
 #endif

@@ -3396,6 +3396,14 @@ void xeq(opcode op)
 		default:	illegal(op);
 		}
 	}
+#if INTERRUPT_XROM_TICKS > 0
+	if (OnKeyTicks >= INTERRUPT_XROM_TICKS) {
+		err(ERR_INTERRUPTED);
+		while (get_key() >= 0) { } // Empty keyboard buffer
+		// The 31S would perform two undo operations most of the time without the following
+		OnKeyTicks = 0;
+	}
+#endif
 
 	if (Error != ERR_NONE) {
 		// deferred message

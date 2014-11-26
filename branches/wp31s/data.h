@@ -462,6 +462,9 @@ extern int view_instruction_counter;
 #ifdef RP_PREFIX
 extern SMALL_INT RectPolConv; // 1 - R->P just done; 2 - P->R just done
 #endif
+#if INTERRUPT_XROM_TICKS > 0
+extern volatile unsigned int OnKeyTicks; // ON (EXIT) key has been held down for this many ticks
+#endif
 
 
 #endif /* COMPILE_XROM */

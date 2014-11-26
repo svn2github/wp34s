@@ -4323,6 +4323,12 @@ void xeq(opcode op)
 		default:	illegal(op);
 		}
 	}
+#if INTERRUPT_XROM_TICKS > 0
+	if (OnKeyTicks >= INTERRUPT_XROM_TICKS) {
+		err(ERR_INTERRUPTED);
+		while (get_key() >= 0) { } // Empty keyboard buffer
+	}
+#endif
 
 	if (Error != ERR_NONE) {
 		// deferred message (matrix code needs too much stack!)

@@ -157,6 +157,9 @@ volatile SMALL_INT PrintDelay;
 signed char KeyBuffer[ KEY_BUFF_LEN ];
 volatile char KbRead, KbWrite, KbCount;
 volatile char OnKeyPressed;
+#if INTERRUPT_XROM_TICKS > 0
+volatile unsigned int OnKeyTicks; // Incremented once every 100ms, reset when ON key released
+#endif
 short int KbRepeatCount;
 long long KbData, KbDebounce, KbRepeatKey;
 short int BodThreshold;
@@ -263,12 +266,23 @@ void scan_keyboard( void )
                          *  Adjust the result
                          */
                         OnKeyPressed = 0 != ( k & KEY_ON_MASK );
+#if INTERRUPT_XROM_TICKS > 0
+                        if ( i == 6 && StartupTicks > 5 ) {
+                                if (OnKeyPressed) {
+#else
                         if ( i == 6 && OnKeyPressed && StartupTicks > 5 ) {
-                                /*
-                                 *  Add ON key to bit image.
-                                 *  Avoid registering ON directly on power up.
-                                 */
-                                k |= 1 << KEY_COLS_SHIFT;
+#endif
+                                        /*
+                                         *  Add ON key to bit image.
+                                         *  Avoid registering ON directly on power up.
+                                         */
+                                        k |= 1 << KEY_COLS_SHIFT;
+#if INTERRUPT_XROM_TICKS > 0
+                                        if (UserHeartbeatCountDown == 1) // 100 ms elapsed
+                                                OnKeyTicks++;
+                                }
+                                else OnKeyTicks = 0;
+#endif
                         }
 
                         /*

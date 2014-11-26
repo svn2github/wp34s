@@ -127,6 +127,9 @@ void error_message(const unsigned int e)
 		MSG2("Flash is", "FuLL"),
 		MSG2("No crystal", "InStaLLEd"),
 		MSG2("\004 \035", "X"),		// Integral ~
+#if INTERRUPT_XROM_TICKS > 0
+		MSG2("Interrupted", "X"),
+#endif
 	};
 #undef MSG1
 #undef MSG2
