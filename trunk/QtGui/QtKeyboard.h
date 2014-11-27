@@ -79,7 +79,7 @@ public:
 	void setShowToolTips(bool aShowToolTips);
 	QtKeyCode findKeyCode(const QKeyEvent& aKeyEvent) const;
 	void showCatalogMenu();
-	void increment_OnKeyTicks();
+	void incrementOnKeyTicks();
 
 private slots:
 	void onHShift();
@@ -97,7 +97,7 @@ private:
     void startHShiftTimer();
     void startAutoRepeatTimer();
     bool isAutoRepeat(const QtKeyCode& aKeyCode) const;
-	void update_OnKeyTicks(bool pressed);
+	void updateOnKeyTicks(bool pressed);
 
 private:
     int hShiftHeight;

@@ -38,7 +38,7 @@ extern void updateScreen();
 #endif
 
 #if INTERRUPT_XROM_TICKS > 0
-extern void increment_OnKeyTicks_adapter(void);
+extern void increment_on_key_ticks_adapter(void);
 
 extern volatile char OnKeyPressed;
 extern volatile unsigned int OnKeyTicks;
@@ -131,7 +131,7 @@ void add_heartbeat()
 {
 	++Ticker;
 #if INTERRUPT_XROM_TICKS > 0
-	increment_OnKeyTicks_adapter();
+	increment_on_key_ticks_adapter();
 #endif
 	if(Pause)
 	{

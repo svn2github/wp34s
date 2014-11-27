@@ -98,7 +98,7 @@ bool QtKeyboard::processKeyReleasedEvent(const QKeyEvent& aKeyEvent)
 	{
 		QtKeyCode keyCode=findKeyCode(aKeyEvent);
 		if(keyCode.getCode() == ON_CODE) {
-			update_OnKeyTicks(false);
+			updateOnKeyTicks(false);
 		}
 		forward_key_released();
 		currentKeyCode=INVALID_KEY_CODE;
@@ -151,7 +151,7 @@ bool QtKeyboard::processButtonReleasedEvent(const QMouseEvent& aMouseEvent)
 			processKeyCodePressed(lastReleasedKeyCode);
 		}
 		if(keyCode.getCode() == ON_CODE) {
-			update_OnKeyTicks(false);
+			updateOnKeyTicks(false);
 		}
 	}
 
@@ -340,7 +340,7 @@ void QtKeyboard::putKeyCode(const QtKeyCode& aKeyCode)
 void QtKeyboard::putKey(char aKey)
 {
 	if(aKey == ON_CODE) {
-		update_OnKeyTicks(true);
+		updateOnKeyTicks(true);
 	}
 	QMutexLocker mutexLocker(&mutex);
 	keyboardBuffer[keyboardBufferEnd]=aKey;
@@ -572,9 +572,9 @@ void add_heartbeat_adapter(int key)
 	currentEmulator->getKeyboard().putKeyIfBufferEmpty(key);
 }
 
-void increment_OnKeyTicks_adapter()
+void increment_on_key_ticks_adapter()
 {
-	currentEmulator->getKeyboard().increment_OnKeyTicks();
+	currentEmulator->getKeyboard().incrementOnKeyTicks();
 }
 
 int get_key(void) // Used by xeq() to empty the keyboard buffer
@@ -588,7 +588,7 @@ volatile unsigned int OnKeyTicks;
 
 }
 
-void QtKeyboard::increment_OnKeyTicks()
+void QtKeyboard::incrementOnKeyTicks()
 {
 	QMutexLocker mutexLocker(&mutex);
 	if (OnKeyPressed) {
@@ -596,7 +596,7 @@ void QtKeyboard::increment_OnKeyTicks()
 	}
 }
 
-void QtKeyboard::update_OnKeyTicks(bool pressed)
+void QtKeyboard::updateOnKeyTicks(bool pressed)
 {
 	QMutexLocker mutexLocker(&mutex);
 	if(pressed) {
