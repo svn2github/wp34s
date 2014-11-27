@@ -42,6 +42,8 @@ nextprime_xin::		xIN MONADIC
 nextprime_skip_xin::	FLOOR
 			x[<=]1?
 				JMP prime_2
+			[infinity]?
+				ERR ERR_DOMAIN
 			PRIME?
 				INC X
 			EVEN?
@@ -63,7 +65,7 @@ prime_2::		_INT 2
 			INTM?
 				JMP prevprime_xin
 			DBL?
-				JMP prevprime_xin
+				JMP prevprime_dbl
 			xIN MONADIC
 
 			_INT 50
@@ -76,6 +78,8 @@ prime_2::		_INT 2
 			MIN
 			JMP prevprime_skip_xin
 
+prevprime_dbl::		[infinity]?
+				ERR ERR_DOMAIN
 prevprime_xin::		xIN MONADIC
 prevprime_skip_xin::	CEIL
 			PRIME?
