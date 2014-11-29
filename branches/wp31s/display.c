@@ -364,38 +364,87 @@ static void set_exp_digits_string(const char *msg, char *res) {
 
 /* Force the exponent display */
 static void set_exp(int exp, int zerop, char *res) {
-	char buf[6];
-
-#if defined(INCLUDE_YREG_CODE)
-	if (res) { // this code chooses different exponent separators depending on the number of digits to squash more in!
-		if ( exp < -999 ) {
-//			No exponent separator for large -ve exponents;
-		}
-		else if ( exp > 999 ) {
-			*res++ = ':'; // separator for large +ve exponents;
-		}
-		else {
-			*res++ = 'e'; // normal separator;
-		}
-	}
+	union {
+		char buf[4];
+		int i;
+	} u;
+	int negative;
+#if SHOW_LARGE_EXPONENT > 0
+	int thousands;
+#  if SHOW_LARGE_EXPONENT == 3
+	const int show_large_exponent = !get_user_flag(regL_idx);
+#  elif SHOW_LARGE_EXPONENT == 2
+	const int show_large_exponent = get_user_flag(regL_idx);
+#  else
+	const int show_large_exponent = 1;
+#  endif
 #else
-	if (res) *res++ = 'e';
+	const int show_large_exponent = 0;
 #endif
+
 	if (exp < 0) {
-		if (res) *res++ = '-';
-		else SET_EXP_SIGN;
+		negative = 1;
 		exp = -exp;
 	}
-	if (res == NULL && exp > 999)
-		scopy(buf, "HIG");
-	else {
-		xset(buf, '\0', sizeof(buf));
-		if (zerop)
-			num_arg_0(buf, exp, 3);
-		else
-			num_arg(buf, exp);
+	else negative = 0;
+#if SHOW_LARGE_EXPONENT > 0
+	thousands = exp / 1000;
+#endif
+	if (res) {
+#ifdef INCLUDE_YREG_CODE
+#if SHOW_LARGE_EXPONENT > 0
+		if (thousands != 0) {
+#else
+		if (exp > 999) {
+#endif
+			if (!negative) *res++ = ':'; // Separator for large +ve exponents
+			// No exponent separator for large -ve exponents
+		}
+		else *res++ = 'e'; // Normal separator
+#else
+		*res++ = 'e';
+#endif
+		if (negative) *res++ = '-';
 	}
-	set_exp_digits_string(buf, res);
+	else {
+		if (negative) SET_EXP_SIGN;
+#if SHOW_LARGE_EXPONENT > 0
+		if (thousands != 0) {
+#else
+		if (exp > 999) {
+#endif
+			if (!show_large_exponent) {
+#ifdef REALBUILD
+				u.i = 'H' + 'I' * 0x100 + 'G' * 0x10000L; // Smaller ARM code
+#else
+				scopy(u.buf, "HIG"); // More portable code
+#endif
+				goto no_number;
+			}
+#if SHOW_LARGE_EXPONENT > 0
+			else {
+				exp -= thousands * 1000;
+				if (negative) {
+					CLR_EXP_SIGN;
+					set_dig(10 * SEGS_PER_DIGIT, '-');
+				}
+				set_dig(11 * SEGS_PER_DIGIT, thousands + '0');
+				zerop = 1;
+			}
+#endif
+		}
+	}
+#ifdef REALBUILD
+	u.i = 0; // Smaller ARM code
+#else
+	xset(u.buf, '\0', sizeof(u.buf)); // More portable code
+#endif
+	if (zerop)
+		num_arg_0(u.buf, exp, 3);
+	else
+		num_arg(u.buf, exp);
+no_number:
+	set_exp_digits_string(u.buf, res);
 }
 
 static void carry_overflow(void) {
@@ -1357,6 +1406,15 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 	int c;
 	int negative = 0;
 	int trimzeros = 0;
+#if SHOW_LARGE_EXPONENT <= 0
+	const int show_large_exponent = 0;
+#elif SHOW_LARGE_EXPONENT == 3
+	const int show_large_exponent = !get_user_flag(regL_idx);
+#elif SHOW_LARGE_EXPONENT == 2
+	const int show_large_exponent = get_user_flag(regL_idx);
+#else
+	const int show_large_exponent = 1;
+#endif
 
 	// Do not allow non ALL modes to produce more digits than we're being asked to display.
 #if defined(INCLUDE_SIGFIG_MODE)
@@ -1658,6 +1716,10 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 			odig--;
 		}
 #endif	
+	if (show_large_exponent && *display_digits > 10 && !res && (exp > 999 || exp < -999)) {
+		*display_digits = 10; // Make space for four-digit exponent and exponent sign
+		return set_x_dn(z, res, display_digits);
+	}
 	/* Finally, send the output to the display */
 	*obp = '\0';
 	if (odig > *display_digits)
