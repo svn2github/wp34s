@@ -1714,7 +1714,8 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 #endif	
 	if (show_large_exponent && *display_digits > 10 && !res && (exp > 999 || exp < -999)) {
 		*display_digits = 10; // Make space for four-digit exponent and exponent sign
-		return set_x_dn(z, res, display_digits);
+		set_x_dn(z, res, display_digits);
+		return;
 	}
 	/* Finally, send the output to the display */
 	*obp = '\0';
