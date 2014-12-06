@@ -804,10 +804,10 @@ skip:	set_status(buf);
 static void disp_x(const char *p) {
 	int i;
 	int gotdot = -1;
-#if defined(PRETTY_FRACTION_ENTRY)
-	int twodot = 0; // ND change
-	const char *q; // ND change
+#if !defined(PRETTY_FRACTION_ENTRY)
+	const
 #endif
+	      int segs_per_digit = SEGS_PER_DIGIT;
 
 	if (*p == '-') {
 		SET_MANT_SIGN;
@@ -823,48 +823,44 @@ static void disp_x(const char *p) {
 	} else {
 		set_separator_decimal_modes();
 
-#if defined(PRETTY_FRACTION_ENTRY)
-		q = p; // ND change; scan ahead to count dots;
-		for (i=0; *q != '\0' && *q != 'E'; q++) {
-			if (*q == '.') twodot++;
-		}
-#endif
-
 		for (i=0; *p != '\0' && *p != 'E'; p++) {
-		if (*p == '.') {
-				if (gotdot == -1) 
+			if (*p == '.') {
+				if (gotdot < 0)
 					gotdot = i;
 #if defined(PRETTY_FRACTION_ENTRY)
-					if ( ( *(p+1) == '.' ) || ( i != gotdot ) ) {
-						set_dig(i, '/'); // put in a fraction separator
-						i += SEGS_PER_DIGIT;
-						if ( *(p+1) == '.' ) {
-							p++;
-						}
+				if ( *(p+1) == '.' || ( i != gotdot ) ) {
+					set_dig(i, '/'); // put in a fraction separator
+					i += segs_per_digit;
+					if ( *(p+1) == '.' ) {
+						p++;
+					}
+				}
+				else {
+					if ( CmdLineDot > 1 ) {
+						i += segs_per_digit;
 					}
 					else {
-						if ( twodot > 1 ) {
-							i += SEGS_PER_DIGIT;
-						}
-						else {
-							set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
-//							i += SEGS_PER_DIGIT;
-						}
+						set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
+//						i += SEGS_PER_DIGIT;
 					}
-						
+				}
 #else
 				if (i > 0)
-					set_decimal(i - SEGS_PER_DIGIT, DecimalMode, CNULL);
+					set_decimal(i - segs_per_digit, DecimalMode, CNULL);
 				else {
 					set_dig(i, '0');
 					set_decimal(i, DecimalMode, CNULL);
-					i += SEGS_PER_DIGIT;	
-			}
+					i += segs_per_digit;
+				}
 #endif
-		} else {
+			} else {
 				set_dig(i, *p);
-				i += SEGS_PER_DIGIT;
+				i += segs_per_digit;
 			}
+#if defined(PRETTY_FRACTION_ENTRY)
+			if (i == SEGS_EXP_BASE)
+				segs_per_digit = SEGS_PER_EXP_DIGIT;
+#endif
 		}
 
 		/* Implement a floating comma */

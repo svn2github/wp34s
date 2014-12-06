@@ -2857,6 +2857,15 @@ static void digit(unsigned int c) {
 				break;
 			} else
 				j += is_digit(Cmdline[i]);
+#if defined(PRETTY_FRACTION_ENTRY)
+		if (CmdLineDot > 1) {
+#  if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+			lim += 1 + (find_char(Cmdline, '.')[1] == '.');
+#  else
+			lim++;
+#  endif
+		}
+#endif
 		if (j == lim) {
 			warn(ERR_TOO_LONG);
 			return;
@@ -2922,10 +2931,15 @@ static void specials(const opcode op) {
 	case OP_DOT:
 		if (is_intmode())
 			break;
-		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 12 + CmdLineDot) {
 #if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 13 + CmdLineDot) {
 			if (CmdLineLength == 0) // ND change: stop a zero being entered if two successive dots pressed
 #else
+#  if defined(PRETTY_FRACTION_ENTRY)
+		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 12 + 2*CmdLineDot) {
+#  else
+		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 12 + CmdLineDot) {
+#  endif
 			if (CmdLineLength == 0 || Cmdline[CmdLineLength-1] == '.')
 #endif
 				digit(0);
