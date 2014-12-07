@@ -172,6 +172,12 @@
 // Switch the seven-segment display to fraction mode as soon as two decimal marks are entered
 #define PRETTY_FRACTION_ENTRY
 
+// When entering fractions that don't fit into the 12 digit display, the first
+// digits disappear to the left, just like during normal fraction display,
+// instead of overflowing into the exponent field.
+// This only applies if PRETTY_FRACTION_ENTRY is enabled.
+#define FRACTION_ENTRY_OVERFLOW_LEFT
+
 // Make two successive decimals a..b enter an improper fraction a/b, not a 0/b (also enables PRETTY_FRACTION_ENTRY)
 //#define INCLUDE_DOUBLEDOT_FRACTIONS
 

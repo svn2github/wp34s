@@ -2851,24 +2851,29 @@ static void digit(unsigned int c) {
 			warn(ERR_DIGIT);
 			return;
 		}
-		for (i=j=0; i<(int)CmdLineLength; i++)
-			if (Cmdline[i] == 'E') {
-				lim++;
-				break;
-			} else
-				j += is_digit(Cmdline[i]);
-#if defined(PRETTY_FRACTION_ENTRY)
-		if (CmdLineDot > 1) {
-#  if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
-			lim += 1 + (find_char(Cmdline, '.')[1] == '.');
-#  else
-			lim++;
-#  endif
-		}
+#if defined(PRETTY_FRACTION_ENTRY) && defined(FRACTION_ENTRY_OVERFLOW_LEFT)
+		if (CmdLineDot != 2)
 #endif
-		if (j == lim) {
-			warn(ERR_TOO_LONG);
-			return;
+		{
+			for (i=j=0; i<(int)CmdLineLength; i++)
+				if (Cmdline[i] == 'E') {
+					lim++;
+					break;
+				} else
+					j += is_digit(Cmdline[i]);
+#if defined(PRETTY_FRACTION_ENTRY)
+			if (CmdLineDot > 1) {
+#  if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+				lim += 1 + (find_char(Cmdline, '.')[1] == '.');
+#  else
+				lim++;
+#  endif
+			}
+#endif
+			if (j == lim) {
+				warn(ERR_TOO_LONG);
+				return;
+			}
 		}
 	}
 

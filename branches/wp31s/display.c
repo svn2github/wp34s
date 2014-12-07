@@ -781,10 +781,13 @@ skip:	set_status(buf);
 static void disp_x(const char *p) {
 	int i;
 	int gotdot = -1;
-#if !defined(PRETTY_FRACTION_ENTRY)
+#if !defined(PRETTY_FRACTION_ENTRY) || defined(FRACTION_ENTRY_OVERFLOW_LEFT)
 	const
 #endif
 	      int segs_per_digit = SEGS_PER_DIGIT;
+#if defined(PRETTY_FRACTION_ENTRY) && defined(FRACTION_ENTRY_OVERFLOW_LEFT)
+	int overflow_to_left = 0;
+#endif
 
 	if (*p == '-') {
 		SET_MANT_SIGN;
@@ -800,17 +803,61 @@ static void disp_x(const char *p) {
 	} else {
 		set_separator_decimal_modes();
 
-		for (i=0; *p != '\0' && *p != 'E'; p++) {
+		i = 0;
+#if defined(PRETTY_FRACTION_ENTRY) && defined(FRACTION_ENTRY_OVERFLOW_LEFT)
+		if ( CmdLineDot > 1 ) {
+#  if !defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+			const
+#  endif
+			      int double_dot = 0;
+			int j;
+
+			for (j=0; p[j] != '\0'; j++) {
+				if (p[j] == '.' && gotdot < 0) {
+					gotdot = j;
+#  if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+					double_dot = (p[j+1] == '.');
+#  endif
+				}
+			}
+			j -= DISPLAY_DIGITS + double_dot;
+			if (j > 0) {
+				p += j + 1;
+				i = SEGS_PER_DIGIT;
+				if (gotdot <= j) {
+					gotdot = 0;
+					if (double_dot)
+						p++;
+				}
+				else if (*p == '.') {
+					gotdot = 0;
+					p++;
+					if (!double_dot)
+						i = 2*SEGS_PER_DIGIT;
+				}
+				else gotdot = -1;
+				set_dig(0, '<');
+				overflow_to_left = 1;
+			}
+			else gotdot = -1;
+		}
+#endif
+
+		for (; *p != '\0' && *p != 'E'; p++) {
 			if (*p == '.') {
 				if (gotdot < 0)
 					gotdot = i;
 #if defined(PRETTY_FRACTION_ENTRY)
+#  if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
 				if ( *(p+1) == '.' || ( i != gotdot ) ) {
-					set_dig(i, '/'); // put in a fraction separator
-					i += segs_per_digit;
 					if ( *(p+1) == '.' ) {
 						p++;
 					}
+#  else
+				if ( i != gotdot ) {
+#  endif
+					set_dig(i, '/'); // put in a fraction separator
+					i += segs_per_digit;
 				}
 				else {
 					if ( CmdLineDot > 1 ) {
@@ -834,7 +881,7 @@ static void disp_x(const char *p) {
 				set_dig(i, *p);
 				i += segs_per_digit;
 			}
-#if defined(PRETTY_FRACTION_ENTRY)
+#if defined(PRETTY_FRACTION_ENTRY) && !defined(FRACTION_ENTRY_OVERFLOW_LEFT)
 			if (i == SEGS_EXP_BASE)
 				segs_per_digit = SEGS_PER_EXP_DIGIT;
 #endif
@@ -847,6 +894,10 @@ static void disp_x(const char *p) {
 			gotdot -= 3 * SEGS_PER_DIGIT;
 			if (gotdot <= 0)			// MvC: was '<', caused crash
 				break;
+#if defined(PRETTY_FRACTION_ENTRY) && defined(FRACTION_ENTRY_OVERFLOW_LEFT)
+			if (overflow_to_left && gotdot == SEGS_PER_DIGIT)
+				break;
+#endif
 			set_separator(gotdot, SeparatorMode, CNULL);
 		}
 
