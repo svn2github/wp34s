@@ -2196,7 +2196,14 @@ static void digit(unsigned int c) {
 			return;
 		}
 #if defined(PRETTY_FRACTION_ENTRY) && defined(FRACTION_ENTRY_OVERFLOW_LEFT)
-		if (CmdLineDot != 2)
+		if (CmdLineDot == 2) {
+			// Make space for the minus sign
+			if (Cmdline[0] != '-' && CmdLineLength >= CMDLINELEN - 1) {
+				warn(ERR_TOO_LONG);
+				return;
+			}
+		}
+		else
 #endif
 		{
 			for (i=j=0; i<(int)CmdLineLength; i++)
