@@ -2260,6 +2260,333 @@ static void append_cmdline(char c) {
 	Cmdline[CmdLineLength] = '\0';
 }
 
+/* Make sure exponent stays within allowed limits.
+ * was_digit_entered: 0: sign was changed
+ *                    1: new digit was entered
+ */
+static void exponent_adjusted(int was_digit_entered)
+{
+	int i;
+	int emax;
+	char *p = &Cmdline[CmdLineEex + 1];
+#ifndef SHIFT_EXPONENT
+	int negative;
+#endif
+
+	/* Figure out the range limit for the exponent */
+	if (is_dblmode()) {
+		emax = 999;
+	}
+	else {
+#if SP_NEG_EXP_ENTRY_TYPE_DC == -1
+		const int neg_type_dc = get_reg_n_int_sgn(0, &i);
+#else
+		const int neg_type_dc = SP_NEG_EXP_ENTRY_TYPE_DC;
+#endif
+#if SP_NEG_EXP_ENTRY_LIMIT_DC == -1
+		const int neg_lim_dc = get_reg_n_int_sgn(1, &i);
+#else
+		const int neg_lim_dc = SP_NEG_EXP_ENTRY_LIMIT_DC;
+#endif
+#if SP_NEG_EXP_ENTRY_TYPE_DS == -1
+		const int neg_type_ds = get_reg_n_int_sgn(2, &i);
+#else
+		const int neg_type_ds = SP_NEG_EXP_ENTRY_TYPE_DS;
+#endif
+#if SP_NEG_EXP_ENTRY_LIMIT_DS == -1
+		const int neg_lim_ds = get_reg_n_int_sgn(3, &i);
+#else
+		const int neg_lim_ds = SP_NEG_EXP_ENTRY_LIMIT_DS;
+#endif
+#if SP_POS_EXP_ENTRY_TYPE_DC == -1
+		const int pos_type_dc = get_reg_n_int_sgn(4, &i);
+#else
+		const int pos_type_dc = SP_POS_EXP_ENTRY_TYPE_DC;
+#endif
+#if SP_POS_EXP_ENTRY_LIMIT_DC == -1
+		const int pos_lim_dc = get_reg_n_int_sgn(5, &i);
+#else
+		const int pos_lim_dc = SP_POS_EXP_ENTRY_LIMIT_DC;
+#endif
+#if SP_POS_EXP_ENTRY_TYPE_DS == -1
+		const int pos_type_ds = get_reg_n_int_sgn(6, &i);
+#else
+		const int pos_type_ds = SP_POS_EXP_ENTRY_TYPE_DS;
+#endif
+#if SP_POS_EXP_ENTRY_LIMIT_DS == -1
+		const int pos_lim_ds = get_reg_n_int_sgn(7, &i);
+#else
+		const int pos_lim_ds = SP_POS_EXP_ENTRY_LIMIT_DS;
+#endif
+#if SP_EXP_ENTRY_CHS_DC == -1
+		const int exp_chs_dc = get_reg_n_int_sgn(8, &i);
+#else
+		const int exp_chs_dc = SP_EXP_ENTRY_CHS_DC;
+#endif
+#if SP_EXP_ENTRY_CHS_DS == -1
+		const int exp_chs_ds = get_reg_n_int_sgn(9, &i);
+#else
+		const int exp_chs_ds = SP_EXP_ENTRY_CHS_DS;
+#endif
+#if SP_NEG_EXP_ENTRY_TYPE_DC == -1 || SP_NEG_EXP_ENTRY_TYPE_DC != SP_NEG_EXP_ENTRY_TYPE_DS \
+    || SP_NEG_EXP_ENTRY_LIMIT_DC == -1 || SP_NEG_EXP_ENTRY_LIMIT_DC != SP_NEG_EXP_ENTRY_LIMIT_DS \
+    || SP_POS_EXP_ENTRY_TYPE_DC == -1 || SP_POS_EXP_ENTRY_TYPE_DC != SP_POS_EXP_ENTRY_TYPE_DS \
+    || SP_POS_EXP_ENTRY_LIMIT_DC == -1 || SP_POS_EXP_ENTRY_LIMIT_DC != SP_POS_EXP_ENTRY_LIMIT_DS \
+    || SP_EXP_ENTRY_CHS_DC == -1 || SP_EXP_ENTRY_CHS_DC != SP_EXP_ENTRY_CHS_DS \
+    || SP_EXP_ENTRY_ZERO_DC == -1 || SP_EXP_ENTRY_ZERO_DC != SP_EXP_ENTRY_ZERO_DS
+		const int flag_D = get_user_flag(NAN_FLAG);
+#else
+		const int flag_D = 0;
+#endif
+		int emax_plus, emax_minus;
+		int dot = 0, first_nonzero = -1, last_nonzero = 0;
+
+		if ((neg_type_dc >= 1 && neg_type_dc <= 9)
+		    || (neg_type_ds >= 1 && neg_type_ds <= 9)
+		    || (pos_type_dc >= 1 && pos_type_dc <= 3)
+		    || (pos_type_ds >= 1 && pos_type_ds <= 3)) {
+			// Exponent limits have to be calculated at run-time
+
+			for (i = 0; i < CmdLineLength; ++i) {
+				if (Cmdline[i] == 'E')
+					break;
+				else if (Cmdline[i] == '.')
+					dot = i;
+				else if (Cmdline[i] != '0') {
+					last_nonzero = i - (dot != 0);
+					if (first_nonzero < 0)
+						first_nonzero = i - (dot != 0);
+				}
+			}
+			if (first_nonzero < 0) {
+#if SP_EXP_ENTRY_ZERO_DC == -1
+				const int zero_dc = get_user_flag(0);
+#else
+				const int zero_dc = SP_EXP_ENTRY_ZERO_DC;
+#endif
+#if SP_EXP_ENTRY_ZERO_DS == -1
+				const int zero_ds = get_user_flag(1);
+#else
+				const int zero_ds = SP_EXP_ENTRY_ZERO_DS;
+#endif
+
+				if ((zero_dc == 1 && zero_ds == 1)
+				    || (zero_dc == 1 && !flag_D)
+				    || (zero_ds == 1 && flag_D)) {
+					emax_plus = emax_minus = 999;
+					goto check_limits;
+				}
+				else {
+					first_nonzero = 0;
+					dot = 1;
+				}
+			}
+			else if (dot == 0)
+				dot = i;
+		}
+
+		if (flag_D && neg_type_dc != neg_type_ds) {
+			if (neg_type_ds >= 1 && neg_type_ds <= 3) {
+				// Don't allow denormal numbers
+				emax_minus = -DECIMAL64_Emin - 1 + dot - first_nonzero;
+			}
+			else if (neg_type_ds >= 4 && neg_type_ds <= 6) {
+				// No entered digit can be lost in denormal numbers
+				emax_minus = -DECIMAL64_Emin + DECIMAL64_Pmax - 2 - (last_nonzero - dot);
+			}
+			else if (neg_type_ds >= 7 && neg_type_ds <= 9) {
+				// At least one digit preserved in denormal numbers
+				emax_minus = -DECIMAL64_Emin + DECIMAL64_Pmax - 2 + dot - first_nonzero;
+			}
+			else {
+				// Fixed limit
+				emax_minus = neg_lim_ds;
+			}
+		}
+		else {
+			if (neg_type_dc >= 1 && neg_type_dc <= 3) {
+				// Don't allow denormal numbers
+				emax_minus = -DECIMAL64_Emin - 1 + dot - first_nonzero;
+			}
+			else if (neg_type_dc >= 4 && neg_type_dc <= 6) {
+				// No entered digit can be lost in denormal numbers
+				emax_minus = -DECIMAL64_Emin + DECIMAL64_Pmax - 2 - (last_nonzero - dot);
+			}
+			else if (neg_type_dc >= 7 && neg_type_dc <= 9) {
+				// At least one digit preserved in denormal numbers
+				emax_minus = -DECIMAL64_Emin + DECIMAL64_Pmax - 2 + dot - first_nonzero;
+			}
+			else {
+				// Fixed limit
+				emax_minus = neg_lim_dc;
+			}
+		}
+
+		if (flag_D && pos_type_dc != pos_type_ds) {
+			if (pos_type_ds >= 1 && pos_type_ds <= 3)
+				// Don't allow numbers that overflow to infinity
+				emax_plus = DECIMAL64_Emax + 1 - (dot - first_nonzero);
+			else
+				// Fixed limit
+				emax_plus = pos_lim_ds;
+		}
+		else {
+			if (pos_type_dc >= 1 && pos_type_dc <= 3)
+				// Don't allow numbers that overflow to infinity
+				emax_plus = DECIMAL64_Emax + 1 - (dot - first_nonzero);
+			else
+				// Fixed limit
+				emax_plus = pos_lim_dc;
+		}
+
+check_limits:
+		if (flag_D && (neg_type_dc != neg_type_ds || neg_lim_dc != neg_lim_ds)) {
+			if (neg_type_ds >= 1 && neg_type_ds <= 9) {
+				if (neg_type_ds % 3 == 2) { // low limit
+					if (emax_minus > neg_lim_ds)
+						emax_minus = neg_lim_ds;
+				}
+				else if (neg_type_ds % 3 == 0) { // high limit
+					if (emax_minus < neg_lim_ds)
+						emax_minus = neg_lim_ds;
+				}
+			}
+			if (neg_lim_ds < 0 && emax_minus < 0)
+				emax_minus = 0;
+		}
+		else {
+			if (neg_type_dc >= 1 && neg_type_dc <= 9) {
+				if (neg_type_dc % 3 == 2) { // low limit
+					if (emax_minus > neg_lim_dc)
+						emax_minus = neg_lim_dc;
+				}
+				else if (neg_type_dc % 3 == 0) { // high limit
+					if (emax_minus < neg_lim_dc)
+						emax_minus = neg_lim_dc;
+				}
+			}
+			if (neg_lim_dc < 0 && emax_minus < 0)
+				emax_minus = 0;
+		}
+
+		if (flag_D && (pos_type_dc != pos_type_ds || pos_lim_dc != pos_lim_ds)) {
+			if (pos_type_ds == 2) {
+				if (emax_plus < pos_lim_ds)
+					emax_plus = pos_lim_ds;
+			}
+			else if (pos_type_ds == 3) {
+				if (emax_plus > pos_lim_ds)
+					emax_plus = pos_lim_ds;
+			}
+			if (pos_lim_ds < 0 && emax_plus < 0)
+				emax_plus = 0;
+		}
+		else {
+			if (pos_type_dc == 2) {
+				if (emax_plus < pos_lim_dc)
+					emax_plus = pos_lim_dc;
+			}
+			else if (pos_type_dc == 3) {
+				if (emax_plus > pos_lim_dc)
+					emax_plus = pos_lim_dc;
+			}
+			if (pos_lim_dc < 0 && emax_plus < 0)
+				emax_plus = 0;
+		}
+
+		if (flag_D && exp_chs_dc != exp_chs_ds) {
+			if (exp_chs_ds == 0) {
+				// Limit exponents so sign change is always legal
+				if (emax_minus < emax_plus)
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+			else if (exp_chs_ds == 3) {
+				// Extend range of exponents so sign change is always legal
+				if (emax_minus > emax_plus)
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+			else {
+				if (exp_chs_ds == 2 && !was_digit_entered)
+					return;
+				if (*p == '-')
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+		}
+		else {
+			if (exp_chs_dc == 0) {
+				// Limit exponents so sign change is always legal
+				if (emax_minus < emax_plus)
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+			else if (exp_chs_dc == 3) {
+				// Extend range of exponents so sign change is always legal
+				if (emax_minus > emax_plus)
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+			else {
+				if (exp_chs_dc == 2 && !was_digit_entered)
+					return;
+				if (*p == '-')
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+		}
+	}
+
+#ifdef SHIFT_EXPONENT
+	if (*p == '-')
+		p++;
+	/* Check if the current exponent exceeds the range.
+	 * If so, shift it back until it doesn't.
+	 * Also remove leading zeros.
+	 */
+	while (s_to_i(p) > emax || *p == '0') {
+		for (i = 0; p[i] != '\0'; ++i)
+			p[i] = p[i + 1];
+		CmdLineLength--;
+	}
+#else
+	if (*p == '-') {
+		p++;
+		negative = 1;
+	}
+	else negative = 0;
+	if ((i = s_to_i(p)) > emax) {
+		if (was_digit_entered) {
+			CmdLineLength--;
+			if (i > 999) {
+				warn(ERR_TOO_LONG);
+				return;
+			}
+		}
+		else if (negative) {
+			scopy(p - 1, p);
+			CmdLineLength--;
+		}
+		else {
+			xcopy(p + 1, p, CMDLINELEN - 1 - CmdLineEex);
+			*p = '-';
+			CmdLineLength++;
+		}
+		if (negative)
+			warn(ERR_TOO_SMALL);
+		else
+			warn(ERR_TOO_BIG);
+	}
+#endif
+}
+
 /* We've encountered a CHS while entering the command line.
  */
 static void cmdlinechs(void) {
@@ -2277,6 +2604,9 @@ static void cmdlinechs(void) {
 			Cmdline[pos] = '-';
 			CmdLineLength++;
 		}
+#if SP_EXP_ENTRY_CHS_DC != 2 || SP_EXP_ENTRY_CHS_DS != 2
+		exponent_adjusted(0);
+#endif
 	} else {
 		if (Cmdline[0] == '-') {
 			if (CmdLineLength > 1)
@@ -2810,6 +3140,7 @@ void cmdrestm(unsigned int arg, enum rarg op) {
 
 /* Process a single digit.
  */
+#if 0 // unused
 static int is_digit(const char c) {
 	if (c >= '0' && c <= '9')
 		return 1;
@@ -2821,29 +3152,17 @@ static int is_xdigit(const char c) {
 		return 1;
 	return 0;
 }
+#endif
 
 static void digit(unsigned int c) {
 	const int intm = is_intmode();
-	int i, j;
-	int lim = 12;
+	int lim = DISPLAY_DIGITS;
 
-	if (CmdLineLength >= CMDLINELEN) {
-		warn(ERR_TOO_LONG);
-		return;
-	}
+	if (Cmdline[0] == '-')
+		lim++;
 	if (intm) {
 		if (c >= int_base()) {
 			warn(ERR_DIGIT);
-			return;
-		}
-		for (i=j=0; i<(int)CmdLineLength; i++)
-			j += is_xdigit(Cmdline[i]);
-		if (j == lim) {
-			warn(ERR_TOO_LONG);
-			return;
-		}
-		if (c >= 10) {
-			append_cmdline(c - 10 + 'A');
 			return;
 		}
 	} else {
@@ -2851,69 +3170,62 @@ static void digit(unsigned int c) {
 			warn(ERR_DIGIT);
 			return;
 		}
-#if defined(PRETTY_FRACTION_ENTRY) && defined(FRACTION_ENTRY_OVERFLOW_LEFT)
-		if (CmdLineDot == 2) {
-			// Make space for the minus sign
-			if (Cmdline[0] != '-' && CmdLineLength >= CMDLINELEN - 1) {
-				warn(ERR_TOO_LONG);
-				return;
+
+		if (CmdLineEex) {
+			lim = CMDLINELEN;
+#ifdef SHIFT_EXPONENT
+			if (CmdLineLength >= lim) {
+				char *p = &Cmdline[CmdLineEex + 1];
+
+				if (*p == '-')
+					p++;
+				while (p < &Cmdline[CMDLINELEN]) {
+					p[0] = p[1];
+					p++;
+				}
+				CmdLineLength--;
 			}
-		}
-		else
 #endif
-		{
-			for (i=j=0; i<(int)CmdLineLength; i++)
-				if (Cmdline[i] == 'E') {
-					lim++;
-					break;
-				} else
-					j += is_digit(Cmdline[i]);
-#if defined(PRETTY_FRACTION_ENTRY)
-			if (CmdLineDot > 1) {
-#  if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+		}
+		else {
+			lim += CmdLineDot;
+#ifdef PRETTY_FRACTION_ENTRY
+			if (CmdLineDot >= 2) {
+#  ifdef FRACTION_ENTRY_OVERFLOW_LEFT
+				// Make space for the minus sign
+				lim = CMDLINELEN - (Cmdline[0] != '-');
+#  elif defined(INCLUDE_DOUBLEDOT_FRACTIONS)
 				lim += 1 + (find_char(Cmdline, '.')[1] == '.');
 #  else
 				lim++;
 #  endif
 			}
 #endif
-			if (j == lim) {
-				warn(ERR_TOO_LONG);
-				return;
-			}
 		}
 	}
+	if (CmdLineLength >= lim
+	    || (DISPLAY_DIGITS + 5 > CMDLINELEN && CmdLineLength >= CMDLINELEN)) {
+		warn(ERR_TOO_LONG);
+		return;
+	}
 
-	append_cmdline(c + '0');
-
-	if (! intm && CmdLineEex) {
-		const int dblmode = is_dblmode();
-		char *p = &Cmdline[CmdLineEex + 1];
-		int emax = dblmode ? 999 : DECIMAL64_Emax;
-		int n;
-
-		/* Figure out the range limit for the exponent */
-		if (*p == '-') {
-			p++;
-			if (! dblmode)
-				emax = -(DECIMAL64_Emin);
+	if (c >= 10)
+		append_cmdline(c - 10 + 'A');
+	else {
+		// Leading zeros in the exponent aren't visible to the user,
+		// and they're removed automatically if digits are shifted,
+		// so it's more consistent if they can't be entered, either.
+		if (c == 0 && CmdLineEex) {
+			if (Cmdline[CmdLineLength-1] == 'E')
+				return;
+			if (Cmdline[CmdLineLength-1] == '-')
+				return;
 		}
 
-		/* Now, check if the current exponent exceeds the range.
-		 * If so, shift it back a digit and validate a second time
-		 * in case the first digit is too large.
-		 */
-		for (n=0; n<2; n++) {
-			if (s_to_i(p) > emax) {
-				int i;
+		append_cmdline(c + '0');
 
-				for (i=0; p[i] != '\0'; i++)
-					p[i] = p[i+1];
-				CmdLineLength--;
-				Cmdline[CmdLineLength] = '\0';
-			} else
-				break;
-		}
+		if (CmdLineEex)
+			exponent_adjusted(1);
 	}
 }
 
@@ -2945,14 +3257,15 @@ static void specials(const opcode op) {
 			break;
 #if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
 		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 13 + CmdLineDot) {
-			if (CmdLineLength == 0) // ND change: stop a zero being entered if two successive dots pressed
+			if (CmdLineLength == 0 || Cmdline[CmdLineLength-1] == '-') // ND change: stop a zero being entered if two successive dots pressed
 #else
 #  if defined(PRETTY_FRACTION_ENTRY)
 		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 12 + 2*CmdLineDot) {
 #  else
 		if (CmdLineDot < 2 && !CmdLineEex && CmdLineLength < 12 + CmdLineDot) {
 #  endif
-			if (CmdLineLength == 0 || Cmdline[CmdLineLength-1] == '.')
+			if (CmdLineLength == 0 || Cmdline[CmdLineLength-1] == '.'
+                            || Cmdline[CmdLineLength-1] == '-')
 #endif
 				digit(0);
 			CmdLineDot++;
@@ -2962,50 +3275,42 @@ static void specials(const opcode op) {
 
 	case OP_EEX:
 #if defined(INCLUDE_EEX_PI)
-	if ( get_user_flag(regL_idx) ) {
-		if ( is_intmode() ) // no exponent or pi in intmode
- 			break;
-		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
-			if ( (CmdLineLength == 0) ) // empty command line: enter pi
-			{
-				lift_if_enabled();
-				copyreg(StackBase, get_const(OP_PI, is_dblmode()));
-				set_lift();
+		if ( get_user_flag(regL_idx) ) {
+			if ( is_intmode() ) // no exponent or pi in intmode
+				break;
+			if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
+				if ( (CmdLineLength == 0) ) // empty command line: enter pi
+				{
+					lift_if_enabled();
+					copyreg(StackBase, get_const(OP_PI, is_dblmode()));
+					set_lift();
+				}
+				else if ( (CmdLineLength > 0) && (CmdLineDot > 1) ) // fraction entered (two dots); execute ENTER and enter pi
+				{
+					process_cmdline();
+					lift();
+					copyreg(StackBase, get_const(OP_PI, is_dblmode()));
+					set_lift();
+				}
+				else if ( (! UState.fract) || (CmdLineDot < 2) ) //enter E if the above don't apply and if it's not fraction mode OR if at most one dot has been entered
+				{
+					CmdLineEex = CmdLineLength;
+					append_cmdline('E');
+				}
 			}
-			else if ( (CmdLineLength > 0) && (CmdLineDot > 1) ) // fraction entered (two dots); execute ENTER and enter pi
-			{
-				process_cmdline();
-				lift();
-				copyreg(StackBase, get_const(OP_PI, is_dblmode()));
-				set_lift();
-			}
-			else if ( (! UState.fract) || (CmdLineDot < 2) ) //enter E if the above don't apply and if it's not fraction mode OR if at most one dot has been entered
-			{
+		}
+		else
+#endif
+		{
+			if (is_intmode() || UState.fract || CmdLineDot == 2)
+				break;
+			if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
+				if (CmdLineLength == 0)
+					digit(1);
 				CmdLineEex = CmdLineLength;
 				append_cmdline('E');
 			}
- 		}
-	}
-	else {
-		if (is_intmode() || UState.fract || CmdLineDot == 2)
-			break;
-		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
-			if (CmdLineLength == 0)
-				digit(1);
-			CmdLineEex = CmdLineLength;
-			append_cmdline('E');
 		}
-	}
-#else			
-		if (is_intmode() || UState.fract || CmdLineDot == 2)
-			break;
-		if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
-			if (CmdLineLength == 0)
-				digit(1);
-			CmdLineEex = CmdLineLength;
-			append_cmdline('E');
-		}
-#endif
 		break;
 
 	case OP_CHS:

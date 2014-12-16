@@ -182,6 +182,88 @@
 //          3:               large exponents displayed if flag L is cleared
 //#define SHOW_LARGE_EXPONENT 1
 
+// Rules about negative exponents in single precision mode with flag D cleared
+// Values: -1: Use value from register 0 (for debugging only!)
+//          0: Fixed limit
+//          1: Don't allow denormal numbers, without limit
+//          2: Don't allow denormal numbers, with low limit
+//          3: Don't allow denormal numbers, with high limit
+//          4: Allow denormal numbers if all entered digits can be stored, without limit
+//          5: Allow denormal numbers if all entered digits can be stored, with low limit
+//          6: Allow denormal numbers if all entered digits can be stored, with high limit
+//          7: Allow denormal numbers if at least one digit can be stored, without limit
+//          8: Allow denormal numbers if at least one digit can be stored, with low limit
+//          9: Allow denormal numbers if at least one digit can be stored, with high limit
+#define SP_NEG_EXP_ENTRY_TYPE_DC 0
+// Absolute value of negative exponent limit in single precision mode with flag D cleared
+// -1: Use value from register 1 (for debugging only!)
+#define SP_NEG_EXP_ENTRY_LIMIT_DC 383
+
+// Rules about negative exponents in single precision mode with flag D set
+// Values: -1: Use value from register 2 (for debugging only!)
+//         Other values same as above.
+#define SP_NEG_EXP_ENTRY_TYPE_DS 0
+// Absolute value of negative exponent limit in single precision mode with flag D set
+// -1: Use value from register 3 (for debugging only!)
+#define SP_NEG_EXP_ENTRY_LIMIT_DS 383
+
+// Rules about exponents when the mantissa is zero in single precision mode with flag D cleared
+// Values: -1: Use value from flag 0 (for debugging only!)
+//          0: Treat a zero as if it was a number with one significant digit
+//          1: Allow any exponent (within the above specified limits if any)
+#define SP_EXP_ENTRY_ZERO_DC 0
+
+// Rules about exponents when the mantissa is zero in single precision mode with flag D set
+// Values: -1: Use value from flag 1 (for debugging only!)
+//         Other values same as above.
+#define SP_EXP_ENTRY_ZERO_DS 0
+
+// Rules about positive exponents in single precision mode with flag D cleared
+// Values: -1: Use value from register 4 (for debugging only!)
+//          0: Fixed limit
+//          1: Don't allow numbers that overflow to infinity, without limit
+//          2: Don't allow numbers that overflow to infinity, with low limit
+//          3: Don't allow numbers that overflow to infinity, with high limit
+#define SP_POS_EXP_ENTRY_TYPE_DC 0
+// Positive exponent limit in single precision mode with flag D cleared
+// -1: Use value from register 5 (for debugging only!)
+#define SP_POS_EXP_ENTRY_LIMIT_DC 384
+
+// Rules about positive exponents in single precision mode with flag D set
+// Values: -1: Use value from register 6 (for debugging only!)
+//         Other values same as above.
+#define SP_POS_EXP_ENTRY_TYPE_DS 0
+// Positive exponent limit in single precision mode with flag D set
+// -1: Use value from register 7 (for debugging only!)
+#define SP_POS_EXP_ENTRY_LIMIT_DS 384
+
+// How to handle changing the sign of exponents in single precision mode with flag D cleared
+// Values: -1: Use value from register 8 (for debugging only!)
+//          0: Limit exponents so that changing the sign is always legal
+//          1: Changing the sign is not allowed if it would result in an illegal exponent
+//          2: Changing the sign is always allowed
+//          3: Extend the range of allowed exponents so changing the sign is always legal
+#define SP_EXP_ENTRY_CHS_DC 2
+
+// How to handle changing the sign of exponents in single precision mode with flag D set
+// Values: -1: Use value from register 9 (for debugging only!)
+//         Other values same as above.
+#define SP_EXP_ENTRY_CHS_DS 2
+
+// Shift exponent on illegal entry instead of showing a warning
+#define SHIFT_EXPONENT
+
+// Pad exponents with spaces instead of zeros
+//#define PAD_EXPONENTS_WITH_SPACES
+
+// Do not pad exponent during number entry.
+// You probably want padding if SHIFT_EXPONENT is enabled.
+//#define DONT_PAD_EXPONENT_ENTRY
+
+// Show warnings (bad digit, too long entry, too big or small number) in the
+// upper line only so the number being entered is never hidden.
+//#define WARNINGS_IN_UPPER_LINE_ONLY
+
 // Chamge ALL display mode to limited significant figures mode
 //#define INCLUDE_SIGFIG_MODE
 
@@ -203,7 +285,7 @@
 // Show prefix for gradian mode when y-register is displayed (without this gradian mode is indicated by neither the RAD nor the 360 annunciators being shown)
 #define SHOW_GRADIAN_PREFIX
 
-// Right-justify seven-segment exponent (007 rather than 7  )
+// Right-justify seven-segment exponent (007 or "  7" rather than "7  ")
 //#define INCLUDE_RIGHT_EXP
 
 // Rectangular - Polar y-reg prefix change:

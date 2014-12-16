@@ -117,7 +117,7 @@ static void set_separator_decimal_modes(void) {
  */
 void error_message(const unsigned int e) 
 {
-#define MSG1(top) top "\0" 
+#define MSG1(top) top "\0"
 #define MSG2(top,bottom) top "\0" bottom
 
 	// NB: this MUST be in the same order as the error #defines in errors.h
@@ -133,8 +133,13 @@ void error_message(const unsigned int e)
 		MSG2("No such", "LAbEL"),
 		MSG2("Illegal", "OPErAtion"),
 		MSG1("Out of range"),
+#ifdef WARNINGS_IN_UPPER_LINE_ONLY
+		MSG2("Bad digit", "1"),
+		MSG2("Too long", "1"),
+#else
 		MSG1("Bad digit"),
 		MSG1("Too long"),
+#endif
 		MSG2("RAM is", "FuLL"),
 		MSG2("Stack", "CLASH"),
 		MSG1("Bad mode"),
@@ -149,6 +154,23 @@ void error_message(const unsigned int e)
 		MSG1("Singular"),
 		MSG2("Flash is", "FuLL"),
 		MSG2("No crystal", "InStaLLEd"),
+#ifndef SHIFT_EXPONENT
+#  ifdef WARNINGS_IN_UPPER_LINE_ONLY
+#     ifdef INCLUDE_FONT_ESCAPE
+		MSG2("Too\007\304 small", "1"),
+#     else
+		MSG2("Too small", "1"),
+#     endif
+		MSG2("Too big", "1"),
+#  else
+#     ifdef INCLUDE_FONT_ESCAPE
+		MSG1("Too\007\304 small"),
+#     else
+		MSG1("Too small"),
+#     endif
+		MSG1("Too big"),
+#  endif
+#endif
 		MSG2("\004 \035", "X"),		// Integral ~
 #if INTERRUPT_XROM_TICKS > 0
 		MSG2("Interrupted", "X"),
@@ -184,6 +206,10 @@ void error_message(const unsigned int e)
 		"",
 		" F u l l ",
 		" I n s t a l l e d ",
+#ifndef SHIFT_EXPONENT
+		"",
+		"",
+#endif
 		"",
 	};
 #endif
@@ -198,6 +224,10 @@ void error_message(const unsigned int e)
 			frozen_display();
 		}
 		else {
+#ifdef WARNINGS_IN_UPPER_LINE_ONLY
+			if (*q == '1')
+				q = CNULL;
+#endif
 			message(p, q);
 			State2.disp_freeze = (e != ERR_NONE);
 #ifndef REALBUILD
@@ -385,8 +415,13 @@ static void set_exp_digits_string(const char *msg, char *res) {
 		res = set_dig_s(SEGS_EXP_BASE + i * SEGS_PER_EXP_DIGIT, msg[i], res);
 }
 
-/* Force the exponent display */
-static void set_exp(int exp, int zerop, char *res) {
+/* Force the exponent display
+ * Flags: Bit 0 (LSB): Zero pad.
+ *            1:       Exponent is negative (useful for negative zero).
+ *            2:       Pad with spaces. Overrides bit 0 if PAD_EXPONENTS_WITH_SPACES
+ *                     is enabled, otherwise it's the same as bit 0.
+ */
+static void set_exp(int exp, int flags, char *res) {
 	union {
 		char buf[4];
 		int i;
@@ -405,11 +440,11 @@ static void set_exp(int exp, int zerop, char *res) {
 	const int show_large_exponent = 0;
 #endif
 
+	negative = flags & 2;
 	if (exp < 0) {
 		negative = 1;
 		exp = -exp;
 	}
-	else negative = 0;
 #if SHOW_LARGE_EXPONENT > 0
 	thousands = exp / 1000;
 #endif
@@ -452,7 +487,7 @@ static void set_exp(int exp, int zerop, char *res) {
 					set_dig(10 * SEGS_PER_DIGIT, '-');
 				}
 				set_dig(11 * SEGS_PER_DIGIT, thousands + '0');
-				zerop = 1;
+				flags = 1;
 			}
 #endif
 		}
@@ -462,8 +497,26 @@ static void set_exp(int exp, int zerop, char *res) {
 #else
 	xset(u.buf, '\0', sizeof(u.buf)); // More portable code
 #endif
-	if (zerop)
+	if (flags & 5) {
 		num_arg_0(u.buf, exp, 3);
+#ifdef PAD_EXPONENTS_WITH_SPACES
+		if (flags & 4) { // Pad exponent with spaces instead of zeros
+			int i;
+
+			for (i = 0; i < 2; ++i) {
+				if (u.buf[i] == '0')
+					u.buf[i] = ' ';
+				else
+					break;
+			}
+			if (i != 0 && negative) {
+				// Move minus sign to right in front of exponent
+				CLR_EXP_SIGN;
+				u.buf[i - 1] = '-';
+			}
+		}
+#endif
+	}
 	else
 		num_arg(u.buf, exp);
 no_number:
@@ -926,13 +979,12 @@ static void disp_x(const char *p) {
 
 		if (*p == 'E') {
 			p++;
-			if (*p != '\0') {
-				if (*p == '-') {
-					SET_EXP_SIGN;
-					p++;
-				}
-			}
-			set_exp(s_to_i(p), 1, CNULL);
+			// set_exp() takes care of setting the exponent sign
+#ifdef DONT_PAD_EXPONENT_ENTRY
+			set_exp(s_to_i(p), 2 * (*p == '-'), CNULL);
+#else
+			set_exp(s_to_i(p), 4 + 2 * (*p == '-'), CNULL);
+#endif
 		} 
 	}
 }
@@ -1814,7 +1866,7 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 #if defined(INCLUDE_RIGHT_EXP)
 	if (show_exp) { // ND change: leading zeros in exponent in seven-segment display
 		if ( !res ) {
-				set_exp(exp, 1, res);
+				set_exp(exp, 4, res);
 		}
 		else {
 			set_exp(exp, 0, res);

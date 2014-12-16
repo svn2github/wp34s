@@ -27,16 +27,35 @@
 #define	ERR_FLASH_FULL		23
 #define ERR_NO_CRYSTAL		24
 
-#define MSG_INTEGRATE		25
+#ifdef SHIFT_EXPONENT
 
+#  define	MSG_INTEGRATE		25
 
-#define	MAX_ERROR		25
+#  define	MAX_ERROR		25
 
-#if INTERRUPT_XROM_TICKS > 0
-#define	ERR_INTERRUPTED		26
-#define	MAX_MESSAGE		27
+#  if INTERRUPT_XROM_TICKS > 0
+#    define	ERR_INTERRUPTED		26
+#    define	MAX_MESSAGE		27
+#  else
+#    define	MAX_MESSAGE		26
+#  endif
+
 #else
-#define	MAX_MESSAGE		26
+
+#  define	ERR_TOO_SMALL		25
+#  define	ERR_TOO_BIG		26
+
+#  define	MSG_INTEGRATE		27
+
+#  define	MAX_ERROR		27
+
+#  if INTERRUPT_XROM_TICKS > 0
+#    define	ERR_INTERRUPTED		28
+#    define	MAX_MESSAGE		29
+#  else
+#    define	MAX_MESSAGE		28
+#  endif
+
 #endif
 
 #endif
