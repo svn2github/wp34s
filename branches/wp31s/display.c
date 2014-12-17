@@ -476,7 +476,7 @@ static void set_exp(int exp, int flags, char *res) {
 #endif
 	if (flags & 5) {
 		num_arg_0(u.buf, exp, 3);
-#ifdef PAD_EXPONENTS_WITH_SPACES
+#if defined(PAD_EXPONENTS_WITH_SPACES) && !defined(DONT_PAD_EXPONENT_ENTRY)
 		if (flags & 4) { // Pad exponent with spaces instead of zeros
 			int i;
 

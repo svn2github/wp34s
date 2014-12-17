@@ -208,13 +208,14 @@
 #define SP_NEG_EXP_ENTRY_LIMIT_DS 383
 
 // Rules about exponents when the mantissa is zero in single precision mode with flag D cleared
-// Values: -1: Use value from flag 0 (for debugging only!)
+// Values: -1: Use value from flags 1 (MSB) and 0 (for debugging only!)
 //          0: Treat a zero as if it was a number with one significant digit
 //          1: Allow any exponent (within the above specified limits if any)
+//          2: Allow any exponent (ignore any limit specified above)
 #define SP_EXP_ENTRY_ZERO_DC 0
 
 // Rules about exponents when the mantissa is zero in single precision mode with flag D set
-// Values: -1: Use value from flag 1 (for debugging only!)
+// Values: -1: Use value from flag 3 (MSB) and 2 (for debugging only!)
 //         Other values same as above.
 #define SP_EXP_ENTRY_ZERO_DS 0
 

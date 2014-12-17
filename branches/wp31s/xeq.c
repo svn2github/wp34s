@@ -1827,12 +1827,12 @@ static void exponent_adjusted(int was_digit_entered)
 			}
 			if (first_nonzero < 0) {
 #if SP_EXP_ENTRY_ZERO_DC == -1
-				const int zero_dc = get_user_flag(0);
+				const int zero_dc = (get_user_flag(1) << 1) | get_user_flag(0);
 #else
 				const int zero_dc = SP_EXP_ENTRY_ZERO_DC;
 #endif
 #if SP_EXP_ENTRY_ZERO_DS == -1
-				const int zero_ds = get_user_flag(1);
+				const int zero_ds = (get_user_flag(3) << 1) | get_user_flag(2);
 #else
 				const int zero_ds = SP_EXP_ENTRY_ZERO_DS;
 #endif
@@ -1842,6 +1842,12 @@ static void exponent_adjusted(int was_digit_entered)
 				    || (zero_ds == 1 && flag_D)) {
 					emax_plus = emax_minus = 999;
 					goto check_limits;
+				}
+				else if ((zero_dc == 2 && zero_ds == 2)
+				         || (zero_dc == 2 && !flag_D)
+				         || (zero_ds == 2 && flag_D)) {
+					emax = 999;
+					goto do_not_check_limits;
 				}
 				else {
 					first_nonzero = 0;
@@ -2011,6 +2017,7 @@ check_limits:
 		}
 	}
 
+do_not_check_limits:
 #ifdef SHIFT_EXPONENT
 	if (*p == '-')
 		p++;
