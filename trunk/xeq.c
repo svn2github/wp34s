@@ -2358,7 +2358,7 @@ static void exponent_adjusted(int was_digit_entered)
 						first_nonzero = i - (dot != 0);
 				}
 			}
-			if (first_nonzero < 0) {
+			if (first_nonzero < 0) { // Mantissa is zero.
 #if SP_EXP_ENTRY_ZERO_DC == -1
 				const int zero_dc = (get_user_flag(1) << 1) | get_user_flag(0);
 #else
@@ -2373,16 +2373,19 @@ static void exponent_adjusted(int was_digit_entered)
 				if ((zero_dc == 1 && zero_ds == 1)
 				    || (zero_dc == 1 && !flag_D)
 				    || (zero_ds == 1 && flag_D)) {
+					// Allow any exponent within configured limits if any.
 					emax_plus = emax_minus = 999;
 					goto check_limits;
 				}
 				else if ((zero_dc == 2 && zero_ds == 2)
 				         || (zero_dc == 2 && !flag_D)
 				         || (zero_ds == 2 && flag_D)) {
+					// Allow any exponent even outside of configured limits.
 					emax = 999;
 					goto do_not_check_limits;
 				}
 				else {
+					// Treat zero as if it had one significant digit.
 					first_nonzero = 0;
 					dot = 1;
 				}
@@ -2476,11 +2479,11 @@ check_limits:
 		}
 
 		if (flag_D && (pos_type_dc != pos_type_ds || pos_lim_dc != pos_lim_ds)) {
-			if (pos_type_ds == 2) {
+			if (pos_type_ds == 2) { // low limit
 				if (emax_plus < pos_lim_ds)
 					emax_plus = pos_lim_ds;
 			}
-			else if (pos_type_ds == 3) {
+			else if (pos_type_ds == 3) { // high limit
 				if (emax_plus > pos_lim_ds)
 					emax_plus = pos_lim_ds;
 			}
@@ -2488,11 +2491,11 @@ check_limits:
 				emax_plus = 0;
 		}
 		else {
-			if (pos_type_dc == 2) {
+			if (pos_type_dc == 2) { // low limit
 				if (emax_plus < pos_lim_dc)
 					emax_plus = pos_lim_dc;
 			}
-			else if (pos_type_dc == 3) {
+			else if (pos_type_dc == 3) { // high limit
 				if (emax_plus > pos_lim_dc)
 					emax_plus = pos_lim_dc;
 			}
@@ -2569,6 +2572,7 @@ do_not_check_limits:
 		negative = 1;
 	}
 	else negative = 0;
+	// Display a warning if the exponent is out of range.
 	if ((i = s_to_i(p)) > emax) {
 		if (was_digit_entered) {
 			CmdLineLength--;
@@ -2611,7 +2615,8 @@ static void cmdlinechs(void) {
 			Cmdline[pos] = '-';
 			CmdLineLength++;
 		}
-#if SP_EXP_ENTRY_CHS_DC != 2 || SP_EXP_ENTRY_CHS_DS != 2
+#if SP_EXP_ENTRY_CHS_DC == -1 || SP_EXP_ENTRY_CHS_DC == 1 \
+    || SP_EXP_ENTRY_CHS_DS == -1 || SP_EXP_ENTRY_CHS_DS == 1
 		exponent_adjusted(0);
 #endif
 	} else {
