@@ -397,6 +397,9 @@ static void set_exp_digits_string(const char *msg, char *res) {
  *            1:       Exponent is negative (useful for negative zero).
  *            2:       Pad with spaces. Overrides bit 0 if PAD_EXPONENTS_WITH_SPACES
  *                     is enabled, otherwise it's the same as bit 0.
+ *            3:       Exponent is being entered. Show all four digits if
+ *                     LARGE_EXPONENT_ENTRY is enabled;
+ *            4:       The mantissa is too long, cut off the last three digits.
  */
 static void set_exp(int exp, int flags, char *res) {
 	union {
@@ -414,6 +417,9 @@ static void set_exp(int exp, int flags, char *res) {
 	const int show_large_exponent = 1;
 #  endif
 #else
+#  ifdef LARGE_EXPONENT_ENTRY
+	int thousands;
+#  endif
 	const int show_large_exponent = 0;
 #endif
 
@@ -422,12 +428,12 @@ static void set_exp(int exp, int flags, char *res) {
 		negative = 1;
 		exp = -exp;
 	}
-#if SHOW_LARGE_EXPONENT > 0
+#if SHOW_LARGE_EXPONENT > 0 || defined(LARGE_EXPONENT_ENTRY)
 	thousands = exp / 1000;
 #endif
 	if (res) {
 #ifdef INCLUDE_YREG_CODE
-#if SHOW_LARGE_EXPONENT > 0
+#if SHOW_LARGE_EXPONENT > 0 || defined(LARGE_EXPONENT_ENTRY)
 		if (thousands != 0) {
 #else
 		if (exp > 999) {
@@ -443,12 +449,16 @@ static void set_exp(int exp, int flags, char *res) {
 	}
 	else {
 		if (negative) SET_EXP_SIGN;
-#if SHOW_LARGE_EXPONENT > 0
+#if SHOW_LARGE_EXPONENT > 0 || defined(LARGE_EXPONENT_ENTRY)
 		if (thousands != 0) {
 #else
 		if (exp > 999) {
 #endif
-			if (!show_large_exponent) {
+			if (!show_large_exponent
+#ifdef LARGE_EXPONENT_ENTRY
+			                         && (flags & 8) == 0
+#endif
+			                                            ) {
 #ifdef REALBUILD
 				u.i = 'H' + 'I' * 0x100 + 'G' * 0x10000L; // Smaller ARM code
 #else
@@ -456,9 +466,20 @@ static void set_exp(int exp, int flags, char *res) {
 #endif
 				goto no_number;
 			}
-#if SHOW_LARGE_EXPONENT > 0
+#if SHOW_LARGE_EXPONENT > 0 || defined(LARGE_EXPONENT_ENTRY)
 			else {
 				exp -= thousands * 1000;
+#  ifdef LARGE_EXPONENT_ENTRY
+				if (flags & 16) {
+					// Cut off the last three digits of the mantissa.
+					int i;
+
+					for (i = 9 * SEGS_PER_DIGIT - 2; i < 11 * SEGS_PER_DIGIT; ++i)
+						// Clear digits and separators
+						clr_dot(i);
+					set_dig(9 * SEGS_PER_DIGIT, '>');
+				}
+#  endif
 				if (negative) {
 					CLR_EXP_SIGN;
 					set_dig(10 * SEGS_PER_DIGIT, '-');
@@ -896,7 +917,11 @@ static void disp_x(const char *p) {
 		}
 #endif
 
-		for (; *p != '\0' && *p != 'E'; p++) {
+		for (; *p != '\0' && *p != 'E'
+#ifdef LARGE_EXPONENT_ENTRY
+		                               && *p != 'D'
+#endif
+		                                           ; p++) {
 			if (*p == '.') {
 				if (gotdot < 0)
 					gotdot = i;
@@ -954,15 +979,31 @@ static void disp_x(const char *p) {
 			set_separator(gotdot, SeparatorMode, CNULL);
 		}
 
+#ifdef LARGE_EXPONENT_ENTRY
+		if (*p == 'E' || *p == 'D') {
+#  ifdef DONT_PAD_EXPONENT_ENTRY
+			int flags = 8;
+#  else
+			int flags = 12;
+#  endif
+
+			if (*p == 'D')
+				flags |= 2;
+			if (i > 10 * SEGS_PER_DIGIT)
+				flags |= 16;
+			set_exp(s_to_i(p+1), flags, CNULL);
+		}
+#else
 		if (*p == 'E') {
 			p++;
 			// set_exp() takes care of setting the exponent sign
-#ifdef DONT_PAD_EXPONENT_ENTRY
+#  ifdef DONT_PAD_EXPONENT_ENTRY
 			set_exp(s_to_i(p), 2 * (*p == '-'), CNULL);
-#else
+#  else
 			set_exp(s_to_i(p), 4 + 2 * (*p == '-'), CNULL);
-#endif
+#  endif
 		} 
+#endif
 	}
 }
 
@@ -1608,8 +1649,17 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 	mantissa[sizeof(mantissa)-1] = '\0';
 
 	q = find_char(x, 'E');
+#ifdef LARGE_EXPONENT_ENTRY
+	if (q == NULL) q = find_char(x, 'D');
+	if (q == NULL) exp = 0;
+	else {
+		exp = s_to_i(q+1);
+		if (*q == 'D') exp = -exp;
+	}
+#else
 	if (q == NULL) exp = 0;
 	else exp = s_to_i(q+1);
+#endif
 
 	// Skip leading spaces and zeros.  Also grab the sign if it is there
 	for (q=x; *q == ' '; q++);
@@ -1871,6 +1921,13 @@ void format_display(char *buf) {
 			format_reg(regX_idx, buf);
 		} else {
 			scopy(buf, p);
+#  ifdef LARGE_EXPONENT_ENTRY
+			if (CmdLineEex != 0 && Cmdline[CmdLineEex] == 'D') {
+				scopy(buf + CmdLineEex + 2, p + CmdLineEex + 1);
+				buf[CmdLineEex] = 'E';
+				buf[CmdLineEex+1] = '-';
+			}
+#  endif
 		}
 	}
 	else {

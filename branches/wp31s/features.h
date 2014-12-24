@@ -182,6 +182,9 @@
 //          3:               large exponents displayed if flag L is cleared
 //#define SHOW_LARGE_EXPONENT 1
 
+// Allow entering four-digit exponents in double precision mode
+//#define LARGE_EXPONENT_ENTRY
+
 // Rules about negative exponents in single precision mode with flag D cleared
 // Values: -1: Use value from register 0 (for debugging only!)
 //          0: Fixed limit
@@ -250,6 +253,26 @@
 // Values: -1: Use value from register 9 (for debugging only!)
 //         Other values same as above.
 #define SP_EXP_ENTRY_CHS_DS 2
+
+// Rules about exponent entry in double precision mode.
+// Only applies if LARGE_EXPONENT_ENTRY is enabled,
+// without it the -999..999 range is unconditionally allowed.
+// Values are the same as above, except -1 isn't available for debugging.
+#define DP_NEG_EXP_ENTRY_TYPE_DC 0
+#define DP_NEG_EXP_ENTRY_LIMIT_DC 6143
+#define DP_NEG_EXP_ENTRY_TYPE_DS 0
+#define DP_NEG_EXP_ENTRY_LIMIT_DS 6143
+
+#define DP_EXP_ENTRY_ZERO_DC 0
+#define DP_EXP_ENTRY_ZERO_DS 0
+
+#define DP_POS_EXP_ENTRY_TYPE_DC 0
+#define DP_POS_EXP_ENTRY_LIMIT_DC 6144
+#define DP_POS_EXP_ENTRY_TYPE_DS 0
+#define DP_POS_EXP_ENTRY_LIMIT_DS 6144
+
+#define DP_EXP_ENTRY_CHS_DC 2
+#define DP_EXP_ENTRY_CHS_DS 2
 
 // Shift exponent on illegal entry instead of showing a warning
 #define SHIFT_EXPONENT

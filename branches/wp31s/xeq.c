@@ -736,16 +736,30 @@ void process_cmdline(void) {
 
 	if (CmdLineLength) {
 		const unsigned int cmdlinedot = CmdLineDot;
+#ifdef LARGE_EXPONENT_ENTRY
+		char cmdline[CMDLINELEN + 2];
+#else
 		char cmdline[CMDLINELEN + 1];
+#endif
 
 		xcopy(cmdline, Cmdline, CMDLINELEN + 1);
 
 		cmdline[CmdLineLength] = '\0';
 		if (!is_intmode()) {
+#ifdef LARGE_EXPONENT_ENTRY
+			if (cmdline[CmdLineLength-1] == 'E' || cmdline[CmdLineLength-1] == 'D')
+				cmdline[CmdLineLength-1] = '\0';
+			else if (cmdline[CmdLineEex] == 'D') {
+				xcopy(cmdline + CmdLineEex + 2, cmdline + CmdLineEex + 1, CMDLINELEN - 1 - CmdLineEex);
+				cmdline[CmdLineEex] = 'E';
+				cmdline[CmdLineEex + 1] = '-';
+			}
+#else
 			if (cmdline[CmdLineLength-1] == 'E')
 				cmdline[CmdLineLength-1] = '\0';
 			else if (CmdLineLength > 1 && cmdline[CmdLineLength-2] == 'E' && cmdline[CmdLineLength-1] == '-')
 				cmdline[CmdLineLength-2] = '\0';
+#endif
 		}
 		CmdLineLength = 0;
 		lift_if_enabled();
@@ -1733,89 +1747,123 @@ static void append_cmdline(char c) {
  */
 static void exponent_adjusted(int was_digit_entered)
 {
+	const int dbl = is_dblmode();
 	int i;
-	int emax;
-	char *p = &Cmdline[CmdLineEex + 1];
-#ifndef SHIFT_EXPONENT
-	int negative;
-#endif
-
-	/* Figure out the range limit for the exponent */
-	if (is_dblmode()) {
-		emax = 999;
-	}
-	else {
 #if SP_NEG_EXP_ENTRY_TYPE_DC == -1
-		const int neg_type_dc = get_reg_n_int_sgn(0, &i);
+	const int neg_type_dc = get_reg_n_int_sgn(0, &i);
 #else
-		const int neg_type_dc = SP_NEG_EXP_ENTRY_TYPE_DC;
+	const int neg_type_dc = SP_NEG_EXP_ENTRY_TYPE_DC;
 #endif
 #if SP_NEG_EXP_ENTRY_LIMIT_DC == -1
-		const int neg_lim_dc = get_reg_n_int_sgn(1, &i);
+	const int neg_lim_dc = get_reg_n_int_sgn(1, &i);
 #else
-		const int neg_lim_dc = SP_NEG_EXP_ENTRY_LIMIT_DC;
+	const int neg_lim_dc = SP_NEG_EXP_ENTRY_LIMIT_DC;
 #endif
 #if SP_NEG_EXP_ENTRY_TYPE_DS == -1
-		const int neg_type_ds = get_reg_n_int_sgn(2, &i);
+	const int neg_type_ds = get_reg_n_int_sgn(2, &i);
 #else
-		const int neg_type_ds = SP_NEG_EXP_ENTRY_TYPE_DS;
+	const int neg_type_ds = SP_NEG_EXP_ENTRY_TYPE_DS;
 #endif
 #if SP_NEG_EXP_ENTRY_LIMIT_DS == -1
-		const int neg_lim_ds = get_reg_n_int_sgn(3, &i);
+	const int neg_lim_ds = get_reg_n_int_sgn(3, &i);
 #else
-		const int neg_lim_ds = SP_NEG_EXP_ENTRY_LIMIT_DS;
+	const int neg_lim_ds = SP_NEG_EXP_ENTRY_LIMIT_DS;
 #endif
 #if SP_POS_EXP_ENTRY_TYPE_DC == -1
-		const int pos_type_dc = get_reg_n_int_sgn(4, &i);
+	const int pos_type_dc = get_reg_n_int_sgn(4, &i);
 #else
-		const int pos_type_dc = SP_POS_EXP_ENTRY_TYPE_DC;
+	const int pos_type_dc = SP_POS_EXP_ENTRY_TYPE_DC;
 #endif
 #if SP_POS_EXP_ENTRY_LIMIT_DC == -1
-		const int pos_lim_dc = get_reg_n_int_sgn(5, &i);
+	const int pos_lim_dc = get_reg_n_int_sgn(5, &i);
 #else
-		const int pos_lim_dc = SP_POS_EXP_ENTRY_LIMIT_DC;
+	const int pos_lim_dc = SP_POS_EXP_ENTRY_LIMIT_DC;
 #endif
 #if SP_POS_EXP_ENTRY_TYPE_DS == -1
-		const int pos_type_ds = get_reg_n_int_sgn(6, &i);
+	const int pos_type_ds = get_reg_n_int_sgn(6, &i);
 #else
-		const int pos_type_ds = SP_POS_EXP_ENTRY_TYPE_DS;
+	const int pos_type_ds = SP_POS_EXP_ENTRY_TYPE_DS;
 #endif
 #if SP_POS_EXP_ENTRY_LIMIT_DS == -1
-		const int pos_lim_ds = get_reg_n_int_sgn(7, &i);
+	const int pos_lim_ds = get_reg_n_int_sgn(7, &i);
 #else
-		const int pos_lim_ds = SP_POS_EXP_ENTRY_LIMIT_DS;
+	const int pos_lim_ds = SP_POS_EXP_ENTRY_LIMIT_DS;
 #endif
 #if SP_EXP_ENTRY_CHS_DC == -1
-		const int exp_chs_dc = get_reg_n_int_sgn(8, &i);
+	const int exp_chs_dc = get_reg_n_int_sgn(8, &i);
 #else
-		const int exp_chs_dc = SP_EXP_ENTRY_CHS_DC;
+	const int exp_chs_dc = SP_EXP_ENTRY_CHS_DC;
 #endif
 #if SP_EXP_ENTRY_CHS_DS == -1
-		const int exp_chs_ds = get_reg_n_int_sgn(9, &i);
+	const int exp_chs_ds = get_reg_n_int_sgn(9, &i);
 #else
-		const int exp_chs_ds = SP_EXP_ENTRY_CHS_DS;
+	const int exp_chs_ds = SP_EXP_ENTRY_CHS_DS;
+#endif
+	const int dp_neg_type_dc = DP_NEG_EXP_ENTRY_TYPE_DC;
+	const int dp_neg_lim_dc = DP_NEG_EXP_ENTRY_LIMIT_DC;
+	const int dp_neg_type_ds = DP_NEG_EXP_ENTRY_TYPE_DS;
+	const int dp_neg_lim_ds = DP_NEG_EXP_ENTRY_LIMIT_DS;
+	const int dp_pos_type_dc = DP_POS_EXP_ENTRY_TYPE_DC;
+	const int dp_pos_lim_dc = DP_POS_EXP_ENTRY_LIMIT_DC;
+	const int dp_pos_type_ds = DP_POS_EXP_ENTRY_TYPE_DS;
+	const int dp_pos_lim_ds = DP_POS_EXP_ENTRY_LIMIT_DS;
+	const int dp_exp_chs_dc = DP_EXP_ENTRY_CHS_DC;
+	const int dp_exp_chs_ds = DP_EXP_ENTRY_CHS_DS;
+#ifdef LARGE_EXPONENT_ENTRY
+	const int large_exp_entry = 1;
+	char *p = &Cmdline[CmdLineEex];
+#else
+	const int large_exp_entry = 0;
+	char *p = &Cmdline[CmdLineEex + 1];
 #endif
 #if SP_NEG_EXP_ENTRY_TYPE_DC == -1 || SP_NEG_EXP_ENTRY_TYPE_DC != SP_NEG_EXP_ENTRY_TYPE_DS \
     || SP_NEG_EXP_ENTRY_LIMIT_DC == -1 || SP_NEG_EXP_ENTRY_LIMIT_DC != SP_NEG_EXP_ENTRY_LIMIT_DS \
     || SP_POS_EXP_ENTRY_TYPE_DC == -1 || SP_POS_EXP_ENTRY_TYPE_DC != SP_POS_EXP_ENTRY_TYPE_DS \
     || SP_POS_EXP_ENTRY_LIMIT_DC == -1 || SP_POS_EXP_ENTRY_LIMIT_DC != SP_POS_EXP_ENTRY_LIMIT_DS \
     || SP_EXP_ENTRY_CHS_DC == -1 || SP_EXP_ENTRY_CHS_DC != SP_EXP_ENTRY_CHS_DS \
-    || SP_EXP_ENTRY_ZERO_DC == -1 || SP_EXP_ENTRY_ZERO_DC != SP_EXP_ENTRY_ZERO_DS
-		const int flag_D = get_user_flag(NAN_FLAG);
+    || SP_EXP_ENTRY_ZERO_DC == -1 || SP_EXP_ENTRY_ZERO_DC != SP_EXP_ENTRY_ZERO_DS \
+    || ((DP_NEG_EXP_ENTRY_TYPE_DC != DP_NEG_EXP_ENTRY_TYPE_DS \
+         || DP_NEG_EXP_ENTRY_LIMIT_DC != DP_NEG_EXP_ENTRY_LIMIT_DS \
+         || DP_POS_EXP_ENTRY_TYPE_DC != DP_POS_EXP_ENTRY_TYPE_DS \
+         || DP_POS_EXP_ENTRY_LIMIT_DC != DP_POS_EXP_ENTRY_LIMIT_DS \
+         || DP_EXP_ENTRY_CHS_DC != DP_EXP_ENTRY_CHS_DS \
+         || DP_EXP_ENTRY_ZERO_DC != DP_EXP_ENTRY_ZERO_DS) && defined(LARGE_EXPONENT_ENTRY))
+	const int flag_D = get_user_flag(NAN_FLAG);
 #else
-		const int flag_D = 0;
+	const int flag_D = 0;
 #endif
+#ifndef SHIFT_EXPONENT
+	int negative;
+#endif
+	int emax;
+
+	/* Figure out the range limit for the exponent */
+	if (!large_exp_entry && dbl) {
+		emax = 999;
+	}
+	else {
 		int emax_plus, emax_minus;
 		int dot = 0, first_nonzero = -1, last_nonzero = 0;
 
 		if ((neg_type_dc >= 1 && neg_type_dc <= 9)
 		    || (neg_type_ds >= 1 && neg_type_ds <= 9)
 		    || (pos_type_dc >= 1 && pos_type_dc <= 3)
-		    || (pos_type_ds >= 1 && pos_type_ds <= 3)) {
+		    || (pos_type_ds >= 1 && pos_type_ds <= 3)
+#ifdef LARGE_EXPONENT_ENTRY
+		    || (dp_neg_type_dc >= 1 && dp_neg_type_dc <= 9)
+		    || (dp_neg_type_ds >= 1 && dp_neg_type_ds <= 9)
+		    || (dp_pos_type_dc >= 1 && dp_pos_type_dc <= 3)
+		    || (dp_pos_type_ds >= 1 && dp_pos_type_ds <= 3)
+#endif
+		   ) {
 			// Exponent limits have to be calculated at run-time
 
 			for (i = 0; i < CmdLineLength; ++i) {
+#ifdef LARGE_EXPONENT_ENTRY
+				if (Cmdline[i] == 'E' || Cmdline[i] == 'D')
+#else
 				if (Cmdline[i] == 'E')
+#endif
 					break;
 				else if (Cmdline[i] == '.')
 					dot = i;
@@ -1836,7 +1884,28 @@ static void exponent_adjusted(int was_digit_entered)
 #else
 				const int zero_ds = SP_EXP_ENTRY_ZERO_DS;
 #endif
+				const int dp_zero_dc = DP_EXP_ENTRY_ZERO_DC;
+				const int dp_zero_ds = DP_EXP_ENTRY_ZERO_DS;
 
+				if (large_exp_entry && dbl) {
+					if ((dp_zero_dc == 1 && dp_zero_ds == 1)
+					    || (dp_zero_dc == 1 && !flag_D)
+					    || (dp_zero_ds == 1 && flag_D)) {
+						// Double precision: Allow any exponent
+						// within configured limits if any.
+						emax_plus = emax_minus = 9999;
+						goto check_limits;
+					}
+					else if ((dp_zero_dc == 2 && dp_zero_ds == 2)
+					         || (dp_zero_dc == 2 && !flag_D)
+					         || (dp_zero_ds == 2 && flag_D)) {
+						// Double precision: Allow any exponent
+						// even outside of configured limits.
+						emax = 9999;
+						goto do_not_check_limits;
+					}
+					goto zero_has_one_significant_digit;
+				}
 				if ((zero_dc == 1 && zero_ds == 1)
 				    || (zero_dc == 1 && !flag_D)
 				    || (zero_ds == 1 && flag_D)) {
@@ -1852,6 +1921,7 @@ static void exponent_adjusted(int was_digit_entered)
 					goto do_not_check_limits;
 				}
 				else {
+zero_has_one_significant_digit:
 					// Treat zero as if it had one significant digit.
 					first_nonzero = 0;
 					dot = 1;
@@ -1859,6 +1929,65 @@ static void exponent_adjusted(int was_digit_entered)
 			}
 			else if (dot == 0)
 				dot = i;
+		}
+
+		if (large_exp_entry && dbl) {
+			// Double precision mode
+			if (flag_D && dp_neg_type_dc != dp_neg_type_ds) {
+				if (dp_neg_type_ds >= 1 && dp_neg_type_ds <= 3) {
+					// Don't allow denormal numbers
+					emax_minus = -DECIMAL128_Emin - 1 + dot - first_nonzero;
+				}
+				else if (dp_neg_type_ds >= 4 && dp_neg_type_ds <= 6) {
+					// No entered digit can be lost in denormal numbers
+					emax_minus = -DECIMAL128_Emin + DECIMAL128_Pmax - 2 - (last_nonzero - dot);
+				}
+				else if (dp_neg_type_ds >= 7 && dp_neg_type_ds <= 9) {
+					// At least one digit preserved in denormal numbers
+					emax_minus = -DECIMAL128_Emin + DECIMAL128_Pmax - 2 + dot - first_nonzero;
+				}
+				else {
+					// Fixed limit
+					emax_minus = dp_neg_lim_ds;
+				}
+			}
+			else {
+				if (dp_neg_type_dc >= 1 && dp_neg_type_dc <= 3) {
+					// Don't allow denormal numbers
+					emax_minus = -DECIMAL128_Emin - 1 + dot - first_nonzero;
+				}
+				else if (dp_neg_type_dc >= 4 && dp_neg_type_dc <= 6) {
+					// No entered digit can be lost in denormal numbers
+					emax_minus = -DECIMAL128_Emin + DECIMAL128_Pmax - 2 - (last_nonzero - dot);
+				}
+				else if (dp_neg_type_dc >= 7 && dp_neg_type_dc <= 9) {
+					// At least one digit preserved in denormal numbers
+					emax_minus = -DECIMAL128_Emin + DECIMAL128_Pmax - 2 + dot - first_nonzero;
+				}
+				else {
+					// Fixed limit
+					emax_minus = dp_neg_lim_dc;
+				}
+			}
+
+			if (flag_D && dp_pos_type_dc != dp_pos_type_ds) {
+				if (dp_pos_type_ds >= 1 && dp_pos_type_ds <= 3)
+					// Don't allow numbers that overflow to infinity
+					emax_plus = DECIMAL128_Emax + 1 - (dot - first_nonzero);
+				else
+					// Fixed limit
+					emax_plus = dp_pos_lim_ds;
+			}
+			else {
+				if (dp_pos_type_dc >= 1 && dp_pos_type_dc <= 3)
+					// Don't allow numbers that overflow to infinity
+					emax_plus = DECIMAL128_Emax + 1 - (dot - first_nonzero);
+				else
+					// Fixed limit
+					emax_plus = dp_pos_lim_dc;
+			}
+
+			goto check_limits;
 		}
 
 		if (flag_D && neg_type_dc != neg_type_ds) {
@@ -1916,7 +2045,40 @@ static void exponent_adjusted(int was_digit_entered)
 		}
 
 check_limits:
-		if (flag_D && (neg_type_dc != neg_type_ds || neg_lim_dc != neg_lim_ds)) {
+		if (large_exp_entry && dbl && flag_D
+		    && (dp_neg_type_dc != dp_neg_type_ds || dp_neg_lim_dc != dp_neg_lim_ds)
+		    && (dp_neg_type_ds != neg_type_ds || dp_neg_lim_ds != neg_lim_ds)) {
+			if (dp_neg_type_ds >= 1 && dp_neg_type_ds <= 9) {
+				if (dp_neg_type_ds % 3 == 2) { // low limit
+					if (emax_minus > dp_neg_lim_ds)
+						emax_minus = dp_neg_lim_ds;
+				}
+				else if (dp_neg_type_ds % 3 == 0) { // high limit
+					if (emax_minus < dp_neg_lim_ds)
+						emax_minus = dp_neg_lim_ds;
+				}
+			}
+			if (dp_neg_lim_ds < 0 && emax_minus < 0)
+				emax_minus = 0;
+		}
+		else if (large_exp_entry && dbl
+		         && (!flag_D || (dp_neg_type_dc == dp_neg_type_ds
+		                         && dp_neg_lim_dc == dp_neg_lim_ds))
+		         && (dp_neg_type_dc != neg_type_dc || dp_neg_lim_dc != neg_lim_dc)) {
+			if (dp_neg_type_dc >= 1 && dp_neg_type_dc <= 9) {
+				if (dp_neg_type_dc % 3 == 2) { // low limit
+					if (emax_minus > dp_neg_lim_dc)
+						emax_minus = dp_neg_lim_dc;
+				}
+				else if (dp_neg_type_dc % 3 == 0) { // high limit
+					if (emax_minus < dp_neg_lim_dc)
+						emax_minus = dp_neg_lim_dc;
+				}
+			}
+			if (dp_neg_lim_dc < 0 && emax_minus < 0)
+				emax_minus = 0;
+		}
+		else if (flag_D && (neg_type_dc != neg_type_ds || neg_lim_dc != neg_lim_ds)) {
 			if (neg_type_ds >= 1 && neg_type_ds <= 9) {
 				if (neg_type_ds % 3 == 2) { // low limit
 					if (emax_minus > neg_lim_ds)
@@ -1945,7 +2107,36 @@ check_limits:
 				emax_minus = 0;
 		}
 
-		if (flag_D && (pos_type_dc != pos_type_ds || pos_lim_dc != pos_lim_ds)) {
+		if (large_exp_entry && dbl && flag_D
+		    && (dp_pos_type_dc != dp_pos_type_ds || dp_pos_lim_dc != dp_pos_lim_ds)
+		    && (dp_pos_type_ds != pos_type_ds || dp_pos_lim_ds != pos_lim_ds)) {
+			if (dp_pos_type_ds == 2) { // low limit
+				if (emax_plus < dp_pos_lim_ds)
+					emax_plus = dp_pos_lim_ds;
+			}
+			else if (dp_pos_type_ds == 3) { // high limit
+				if (emax_plus > dp_pos_lim_ds)
+					emax_plus = dp_pos_lim_ds;
+			}
+			if (dp_pos_lim_ds < 0 && emax_plus < 0)
+				emax_plus = 0;
+		}
+		else if (large_exp_entry && dbl
+		         && (!flag_D || (dp_pos_type_dc == dp_pos_type_ds
+		                         && dp_pos_lim_dc == dp_pos_lim_ds))
+		         && (dp_pos_type_dc != pos_type_dc || dp_pos_lim_dc != pos_lim_dc)) {
+			if (dp_pos_type_dc == 2) { // low limit
+				if (emax_plus < dp_pos_lim_dc)
+					emax_plus = dp_pos_lim_dc;
+			}
+			else if (dp_pos_type_dc == 3) { // high limit
+				if (emax_plus > dp_pos_lim_dc)
+					emax_plus = dp_pos_lim_dc;
+			}
+			if (dp_pos_lim_dc < 0 && emax_plus < 0)
+				emax_plus = 0;
+		}
+		else if (flag_D && (pos_type_dc != pos_type_ds || pos_lim_dc != pos_lim_ds)) {
 			if (pos_type_ds == 2) { // low limit
 				if (emax_plus < pos_lim_ds)
 					emax_plus = pos_lim_ds;
@@ -1970,7 +2161,59 @@ check_limits:
 				emax_plus = 0;
 		}
 
-		if (flag_D && exp_chs_dc != exp_chs_ds) {
+		if (large_exp_entry && dbl && flag_D
+		    && (dp_exp_chs_dc != dp_exp_chs_ds)
+		    && (dp_exp_chs_ds != exp_chs_ds)) {
+			if (dp_exp_chs_ds == 0) {
+				// Limit exponents so sign change is always legal
+				if (emax_minus < emax_plus)
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+			else if (dp_exp_chs_ds == 3) {
+				// Extend range of exponents so sign change is always legal
+				if (emax_minus > emax_plus)
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+			else {
+				if (dp_exp_chs_ds == 2 && !was_digit_entered)
+					return;
+				if (*p == 'D')
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+		}
+		else if (large_exp_entry && dbl
+		         && (!flag_D || dp_exp_chs_dc == dp_exp_chs_ds)
+		         && (dp_exp_chs_dc != exp_chs_dc)) {
+			if (dp_exp_chs_dc == 0) {
+				// Limit exponents so sign change is always legal
+				if (emax_minus < emax_plus)
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+			else if (dp_exp_chs_dc == 3) {
+				// Extend range of exponents so sign change is always legal
+				if (emax_minus > emax_plus)
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+			else {
+				if (dp_exp_chs_dc == 2 && !was_digit_entered)
+					return;
+				if (*p == 'D')
+					emax = emax_minus;
+				else
+					emax = emax_plus;
+			}
+		}
+		else if (flag_D && exp_chs_dc != exp_chs_ds) {
 			if (exp_chs_ds == 0) {
 				// Limit exponents so sign change is always legal
 				if (emax_minus < emax_plus)
@@ -1988,7 +2231,11 @@ check_limits:
 			else {
 				if (exp_chs_ds == 2 && !was_digit_entered)
 					return;
+#ifdef LARGE_EXPONENT_ENTRY
+				if (*p == 'D')
+#else
 				if (*p == '-')
+#endif
 					emax = emax_minus;
 				else
 					emax = emax_plus;
@@ -2012,7 +2259,11 @@ check_limits:
 			else {
 				if (exp_chs_dc == 2 && !was_digit_entered)
 					return;
+#ifdef LARGE_EXPONENT_ENTRY
+				if (*p == 'D')
+#else
 				if (*p == '-')
+#endif
 					emax = emax_minus;
 				else
 					emax = emax_plus;
@@ -2022,8 +2273,12 @@ check_limits:
 
 do_not_check_limits:
 #ifdef SHIFT_EXPONENT
+#  ifdef LARGE_EXPONENT_ENTRY
+	p++;
+#  else
 	if (*p == '-')
 		p++;
+#  endif
 	/* Check if the current exponent exceeds the range.
 	 * If so, shift it back until it doesn't.
 	 * Also remove leading zeros.
@@ -2034,20 +2289,33 @@ do_not_check_limits:
 		CmdLineLength--;
 	}
 #else
+#  ifdef LARGE_EXPONENT_ENTRY
+	negative = (*p == 'D');
+	p++;
+#  else
 	if (*p == '-') {
 		p++;
 		negative = 1;
 	}
 	else negative = 0;
+#  endif
 	// Display a warning if the exponent is out of range.
 	if ((i = s_to_i(p)) > emax) {
 		if (was_digit_entered) {
 			CmdLineLength--;
-			if (i > 999) {
+			if (large_exp_entry && dbl ? i > 9999 : i > 999) {
 				warn(ERR_TOO_LONG);
 				return;
 			}
 		}
+#  ifdef LARGE_EXPONENT_ENTRY
+		else if (('D' | 1) == 'E')
+			Cmdline[CmdLineEex] ^= 1;
+		else if (Cmdline[CmdLineEex] == 'E')
+			Cmdline[CmdLineEex] = 'D';
+		else
+			Cmdline[CmdLineEex] = 'E';
+#  else
 		else if (negative) {
 			scopy(p - 1, p);
 			CmdLineLength--;
@@ -2057,6 +2325,7 @@ do_not_check_limits:
 			*p = '-';
 			CmdLineLength++;
 		}
+#  endif
 		if (negative)
 			warn(ERR_TOO_SMALL);
 		else
@@ -2069,6 +2338,16 @@ do_not_check_limits:
  */
 static void cmdlinechs(void) {
 	if (CmdLineEex) {
+#ifdef LARGE_EXPONENT_ENTRY
+		// 'D' instead of 'E' indicates a negative exponent.
+		// Four-digit exponents wouldn't fit into Cmdline if we used 'E-'.
+		if (('D' | 1) == 'E')
+			Cmdline[CmdLineEex] ^= 1;
+		else if (Cmdline[CmdLineEex] == 'E')
+			Cmdline[CmdLineEex] = 'D';
+		else
+			Cmdline[CmdLineEex] = 'E';
+#else
 		const unsigned int pos = CmdLineEex + 1;
 		if (CmdLineLength <= pos) {
 			if (CmdLineLength < CMDLINELEN)
@@ -2082,8 +2361,10 @@ static void cmdlinechs(void) {
 			Cmdline[pos] = '-';
 			CmdLineLength++;
 		}
+#endif
 #if SP_EXP_ENTRY_CHS_DC == -1 || SP_EXP_ENTRY_CHS_DC == 1 \
-    || SP_EXP_ENTRY_CHS_DS == -1 || SP_EXP_ENTRY_CHS_DS == 1
+    || SP_EXP_ENTRY_CHS_DS == -1 || SP_EXP_ENTRY_CHS_DS == 1 \
+    || ((DP_EXP_ENTRY_CHS_DC == 1 || DP_EXP_ENTRY_CHS_DS == 1) && defined(LARGE_EXPONENT_ENTRY))
 		exponent_adjusted(0);
 #endif
 	} else {
@@ -2574,8 +2855,13 @@ static void digit(unsigned int c) {
 		if (c == 0 && CmdLineEex) {
 			if (Cmdline[CmdLineLength-1] == 'E')
 				return;
+#ifdef LARGE_EXPONENT_ENTRY
+			if (Cmdline[CmdLineLength-1] == 'D')
+				return;
+#else
 			if (Cmdline[CmdLineLength-1] == '-')
 				return;
+#endif
 		}
 
 		append_cmdline(c + '0');
@@ -2686,6 +2972,12 @@ static void specials(const opcode op) {
 		if (XromRunning)
 			illegal(op);
 		else if (CmdLineLength) {
+#ifdef LARGE_EXPONENT_ENTRY
+			if (CmdLineEex != 0 && Cmdline[CmdLineLength-1] == 'D') {
+				Cmdline[CmdLineLength-1] = 'E';
+				break;
+			}
+#endif
 			CmdLineLength--;
 			if (Cmdline[CmdLineLength] == 'E')
 				CmdLineEex = 0;
