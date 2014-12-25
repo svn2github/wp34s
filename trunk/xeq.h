@@ -1435,6 +1435,9 @@ extern int is_test_mode(void);
 #define idle()
 #define is_debug() 0
 #define is_test_mode() 0
+#ifdef WINGUI
+extern void winsleep( int ms );
+#endif
 #endif
 
 #endif

@@ -31,6 +31,7 @@
  */
 #define COMM_BUFF_SIZE 256
 HANDLE CommHandle;
+HANDLE CommMutex;
 DWORD CommError;
 int CommTxCount;
 unsigned char CommTxBuffer[ COMM_BUFF_SIZE ];
@@ -63,7 +64,7 @@ static void set_comm_timeouts( DWORD ri, DWORD rtm, DWORD rtc,
 void insert_data( short data )
 {
 	while ( byte_received( data ) ) {
-		Sleep( 10 );
+		Sleep( 1 );
 	}
 }
 
@@ -129,6 +130,7 @@ unsigned long __stdcall CommThread( void *p )
 			insert_data( c );
 		}
 	}
+
 	CommThreadId = 0;
 	return 0;
 }
@@ -147,6 +149,11 @@ int open_port( int baud, int bits, int parity, int stopbits )
 	char *p = NULL;
 	BOOL res;
 	DCB dcb;
+
+	CommMutex = CreateMutex( NULL, FALSE, "WP34S.CommMutex" );
+	if ( CommMutex == NULL ) {
+		goto open_error;
+	}
 
 	if ( f != NULL ) {
 		p = fgets( buffer, sizeof( name ) - 5, f );
@@ -168,6 +175,12 @@ int open_port( int baud, int bits, int parity, int stopbits )
 	if ( CommHandle == INVALID_HANDLE_VALUE ) {
 		goto open_error;
 	}
+
+	/*
+	 *  Set buffer sizes
+	 */
+	res = SetupComm( CommHandle, 2200, 32 );
+	if ( res == 0 ) goto fail;
 
 	/*
 	 *  Set up DCB
@@ -211,7 +224,7 @@ int open_port( int baud, int bits, int parity, int stopbits )
 	dcb.fOutxCtsFlow = FALSE;
 
 	/*
-	 *  Setze the paraeters
+	 *  Setze the parameters
 	 */
 	res = SetCommState( CommHandle, &dcb );
 	if ( res == 0 ) goto fail;
@@ -257,6 +270,8 @@ extern void close_port( void )
 		SerialOn = 0;
 		Sleep( 200 );
 		CloseHandle( CommHandle );
+		CloseHandle( CommMutex );
+		CommMutex = NULL;
 	}
 }
 
@@ -288,5 +303,23 @@ void flush_comm( void )
 		}
 		FlushFileBuffers( CommHandle );
 		CommTxCount = 0;
+	}
+}
+
+
+/*
+ *  Locking
+ */
+void serial_lock( void )
+{
+	if ( CommMutex != NULL ) {
+		WaitForSingleObject( CommMutex, 2000 );
+	}
+}
+
+void serial_unlock( void )
+{
+	if ( CommMutex != NULL ) {
+		ReleaseMutex( CommMutex );
 	}
 }

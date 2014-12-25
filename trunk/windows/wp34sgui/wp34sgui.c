@@ -271,3 +271,12 @@ void shutdown( void )
 	ExitEmulator();
 }
 
+
+/*
+ *  sleep a while (in ms)
+ */
+void winsleep( int ms )
+{
+    Sleep( ms );
+}
+

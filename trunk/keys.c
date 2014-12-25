@@ -2498,7 +2498,8 @@ static int process(const int c) {
 void process_keycode(int c)
 {
 	static int was_paused;
-	volatile int cmdline_empty; // volatile because it's uninitialized in some cases
+	//volatile int cmdline_empty; // volatile because it's uninitialized in some cases
+    int cmdline_empty = 0;        // Visual studio chokes in debug mode over the above
 
 	if (was_paused && Pause == 0) {
 		/*

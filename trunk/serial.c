@@ -40,7 +40,7 @@
 
 #define SERIAL_ANNUNCIATOR LIT_EQ
 
-#if defined(QTGUI) || defined(IOS)
+#if defined(QTGUI) || defined(IOS) || defined(WINGUI)
 extern void serial_lock(void);
 extern void serial_unlock(void);
 #undef lock
@@ -52,7 +52,7 @@ extern void serial_unlock(void);
 /*
  *  Flags and hardware buffer for received data
  */
-short InBuffer[ IN_BUFF_LEN ];
+volatile short InBuffer[ IN_BUFF_LEN ];
 volatile char InRead, InWrite, InCount;
 char SerialOn;
 
@@ -125,13 +125,13 @@ int byte_received( short byte )
 		return 1;
 #endif
 	}
-#if defined(QTGUI) || defined(IOS)
+#if defined(QTGUI) || defined(IOS) || defined(WINGUI)
 	lock();
 #endif
 	InBuffer[ (int) InWrite ] = byte;
 	InWrite = ( InWrite + 1 ) & IN_BUFF_MASK;
 	++InCount;
-#if defined(QTGUI) || defined(IOS)
+#if defined(QTGUI) || defined(IOS) || defined(WINGUI)
 	unlock();
 #endif
 	return 0;
@@ -351,23 +351,29 @@ void recv_any( enum nilop op )
 
 		tag = get_word();
 
-		if ( tag < 0 ) goto err;
+		if ( tag < 0 ) 
+			goto err;
 
 		length = get_word();
-		if ( length < 0 || length > DATA_LEN ) goto err;
+		if ( length < 0 || length > DATA_LEN ) 
+			goto err;
 
 		crc = get_word();
-		if ( crc < 0 ) goto err;
+		if ( crc < 0 ) 
+			goto err;
 
 		for ( i = 0; i < length; ++i ) {
 			c = get_byte();
-			if ( c < 0 ) goto err;
+			if ( c < 0 ) 
+				goto err;
 			buffer[ i ] = c;
 		}
 		c = get_byte();
-		if ( c != ETX ) goto err;
+		if ( c != ETX ) 
+			goto err;
 
-		if ( crc != ( crc16( buffer, length ) ^ tag ) ) goto err;
+		if ( crc != ( crc16( buffer, length ) ^ tag ) ) 
+			goto err;
 
 		/*
 		 *  Check the tag value and copy the data if valid
