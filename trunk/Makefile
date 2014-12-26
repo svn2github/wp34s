@@ -334,7 +334,7 @@ ifdef REALBUILD
 $(OUTPUTDIR)/$(TARGET).bin: asone.c main.c $(HEADERS) $(SRCS) $(STARTUP) $(ATSRCS) $(ATHDRS) \
 		$(DNHDRS) $(OBJECTDIR)/libconsts.a $(OBJECTDIR)/libdecNum34s.a \
 		$(LDCTRL) Makefile $(UTILITIES)/post_process$(EXE) $(UTILITIES)/create_revision$(EXE) \
-		compile_cats.c xrom.wp34s $(XROM) $(OPCODES)
+		compile_cats.c xrom.wp34s $(XROM) # $(OPCODES)
 	rm -f $(UTILITIES)/compile_cats$(EXE) catalogues.h xrom.c
 	$(MAKE) HOSTCC=$(HOSTCC) REALBUILD=1 DISABLE_XTAL=$(DISABLE_XTAL) XTAL=$(XTAL) INFRARED=$(INFRARED) catalogues.h xrom.c
 	$(UTILITIES)/create_revision$(EXE) >revision.h
