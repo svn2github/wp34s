@@ -714,8 +714,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_QUERY_XTAL,	&op_query_xtal,		"XTAL?",	CNULL)
 	FUNC0(OP_QUERY_PRINT,	&op_query_print,	"\222?",	"PRT?")
 
+#if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
 	FUNC0(OP_SHOWY,		XNIL(SHOW_Y_REG),	"YDON",		CNULL)
 	FUNC0(OP_HIDEY,		XNIL(HIDE_Y_REG),	"YDOFF",	CNULL)
+#endif
 
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW",	CNULL)

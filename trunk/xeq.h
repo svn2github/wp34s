@@ -832,7 +832,9 @@ enum nilop {
         /* end of INFRARED commands */
 
         OP_QUERY_XTAL, OP_QUERY_PRINT,
+#if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
 	OP_SHOWY, OP_HIDEY,
+#endif
 
 #ifdef INCLUDE_STOPWATCH
         OP_STOPWATCH,

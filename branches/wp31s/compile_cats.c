@@ -52,8 +52,10 @@ static s_opcode displ_catalogue[] = {
 	RARGCMD(RARG_SCI,	"SCI")
 	NILIC(OP_THOUS_OFF,	"TSOFF")
 	NILIC(OP_THOUS_ON,	"TSON")
+#if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
 	NILIC(OP_HIDEY,		"YDOFF")
 	NILIC(OP_SHOWY,		"YDON")
+#endif
 };
 
 static s_opcode more_catalogue[] = {

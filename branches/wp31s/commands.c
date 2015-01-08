@@ -617,8 +617,10 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_DOTPROD,	XNIL(cpx_DOT),		"\024DOT",	"cDOT")
 	FUNC0(OP_CROSSPROD,	XNIL(cpx_CROSS),	"\024CROSS",	"cCROSS")
 
+#if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
 	FUNC0(OP_SHOWY,         XNIL(SHOW_Y_REG),       "YDON",         CNULL)
 	FUNC0(OP_HIDEY,         XNIL(HIDE_Y_REG),       "YDOFF",        CNULL)
+#endif
 #undef FUNC
 #undef FUNC0
 #undef FUNC1

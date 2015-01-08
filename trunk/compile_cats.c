@@ -901,8 +901,10 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_DBLON,		"DBLON")
 	NILIC(OP_DBLOFF,	"DBLOFF")
 #endif
+#if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
 	NILIC(OP_SHOWY, 	"YDON")
 	NILIC(OP_HIDEY,		"YDOFF")
+#endif
 };
 
 static s_opcode alpha_catalogue[] = {

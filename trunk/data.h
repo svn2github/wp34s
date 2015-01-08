@@ -59,7 +59,11 @@ struct _ustate {
 	unsigned int unused_3 :      1;	// free
 	unsigned int unused_2 :      1;	// free
 #endif
+#if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
 	unsigned int show_y :        1;	// Show the Y register in the top line
+#else
+	unsigned int unused_1 :      1;	// free
+#endif
 	unsigned int stack_depth :   1;	// Stack depth
 
 	unsigned int date_mode :     2;	// Date input/output format

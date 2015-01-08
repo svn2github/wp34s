@@ -780,7 +780,9 @@ enum nilop {
         OP_DATE_TO,
 
         OP_DOTPROD, OP_CROSSPROD,
+#if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
 	OP_SHOWY, OP_HIDEY,
+#endif
 
         NUM_NILADIC,    // Last entry defines number of operations
 

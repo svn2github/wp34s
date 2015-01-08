@@ -569,7 +569,11 @@ static void annunciators(void) {
 	// that's set to 0 will be optimized away. This way it's easier to make a
 	// feature run-time configurable if needed.
 #ifdef INCLUDE_YREG_CODE
+#  ifdef YREG_ALWAYS_ON
+	const int yreg_enabled = 1;
+#  else
 	const int yreg_enabled = UState.show_y;
+#  endif
 #  ifdef INCLUDE_YREG_HMS
 	const int yreg_hms = 1;
 #  else

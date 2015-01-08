@@ -298,8 +298,11 @@
 // Chamge ALL display mode to limited significant figures mode
 //#define INCLUDE_SIGFIG_MODE
 
-// Turn on constant y-register display (not just for complex results)
+// Enable Y-register display (not just for complex results)
 #define INCLUDE_YREG_CODE
+
+// Y register is always displayed (cannot be turned off)
+//#define YREG_ALWAYS_ON
 
 // Temporarily disable y-register display when a shift key or the CPX key is pressed 
 //#define SHIFT_AND_CMPLX_SUPPRESS_YREG
