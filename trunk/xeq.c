@@ -4916,6 +4916,7 @@ void xeq(opcode op)
 	int tracing;
 #endif
 
+	xcopy(save, StackBase, sizeof(save));
 #ifdef CONSOLE
 	instruction_count++;
 #endif
@@ -4940,7 +4941,6 @@ void xeq(opcode op)
 #endif
 	Busy = 0;
 	State2.wascomplex = 0;
-	xcopy(save, StackBase, sizeof(save));
 	if (isDBL(op))
 		multi(op);
 	else if (isRARG(op))
