@@ -1300,7 +1300,6 @@ void clrx(enum nilop op) {
  */
 void clrstk(enum nilop op) {
 	zero_regs(StackBase, stack_size());
-	CmdLineLength = 0;
 	set_lift();
 }
 
@@ -4915,6 +4914,14 @@ void xeq(opcode op)
 #ifdef INFRARED
 	int tracing;
 #endif
+
+	if (op == (OP_NIL | OP_rCLX) || op == (OP_NIL | OP_CLSTK)) {
+		// Make sure that if the command line isn't empty, it contains
+		// valid input so no error message will be generated.
+		CmdLineDot = 0;
+		Cmdline[0] = '0';
+		Cmdline[1] = '\0';
+	}
 
 	xcopy(save, StackBase, sizeof(save));
 #ifdef CONSOLE
