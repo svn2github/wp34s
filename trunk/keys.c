@@ -350,6 +350,8 @@ static int keycode_to_alpha(const keycode c, unsigned int shift)
 }
 
 static void init_arg(const enum rarg base) {
+	if (is_bad_cmdline())
+		return;
 	CmdBase = base;
 	State2.ind = 0;
 	State2.digval = 0;
@@ -584,6 +586,8 @@ static int process_normal(const keycode c)
 		if (UState.intm)
 			return op;
 #endif
+		if (is_bad_cmdline())
+			return STATE_UNFINISHED;
 		process_cmdline_set_lift();
 		State2.arrow = 1;
 		set_shift(SHIFT_G);
@@ -702,12 +706,16 @@ static int process_fg_shifted(const keycode c) {
 
 	case K20:				// Alpha
 		if (shift == SHIFT_F) {
+			if (is_bad_cmdline())
+				return STATE_UNFINISHED;
 			process_cmdline_set_lift();
 			State2.alphas = 1;
 		}
 		break;
 
 	case K51:
+		if (is_bad_cmdline())
+			return STATE_UNFINISHED;
 		process_cmdline_set_lift();
 		State2.test = op;
 		return STATE_UNFINISHED;
@@ -724,8 +732,9 @@ static int process_fg_shifted(const keycode c) {
 	case K63:
 	case K64:
 		if (op != (OP_NIL | OP_RTN)) {
-			if (! (no_int && UState.intm))
+			if (! (no_int && UState.intm)) {
 				init_arg((enum rarg) op);
+			}
 			return STATE_UNFINISHED;
 		}
 		break;
@@ -812,6 +821,8 @@ static int process_h_shifted(const keycode c) {
 		break;
 
 	case K63:					// Program<->Run mode
+		if (is_bad_cmdline())
+			return STATE_UNFINISHED;
 		State2.runmode = 1 - State2.runmode;
 		process_cmdline_set_lift();
 		update_program_bounds(1);
@@ -916,6 +927,8 @@ static int process_cmplx(const keycode c) {
 
 		case K51:
 			if (op != STATE_UNFINISHED) {
+				if (is_bad_cmdline())
+					return STATE_UNFINISHED;
 				process_cmdline_set_lift();
 				State2.cmplx = 1;
 				State2.test = op;
@@ -2443,6 +2456,8 @@ static int process(const int c) {
 	 */
 	cat = keycode_to_cat((keycode)c, shift);
 	if ( cat != CATALOGUE_NONE ) {
+		if (is_bad_cmdline())
+			return STATE_UNFINISHED;
 		init_cat( CATALOGUE_NONE );
 		init_cat( cat );
 		State2.arrow = 0;
@@ -2615,9 +2630,11 @@ void process_keycode(int c)
 			if (c == STATE_SST)
 				xeq_sst_bst(1);
 			else {
-				xeq(c);
-				if (Running || Pause)
-					xeqprog();
+				if (c == (OP_NIL | OP_OFF) || c == (OP_NIL | OP_rCLX) || !is_bad_cmdline()) {
+					xeq(c);
+					if (Running || Pause)
+						xeqprog();
+				}
 			}
 			dot(RPN, ShowRPN);
 		}
@@ -2680,7 +2697,8 @@ void process_keycode(int c)
 
 		case STATE_WINDOWRIGHT:
 		case STATE_WINDOWLEFT:
-			set_window(c);
+			if (!is_bad_cmdline())
+				set_window(c);
 			break;
 
 		case STATE_UNFINISHED:
@@ -2691,11 +2709,13 @@ void process_keycode(int c)
 			if (State2.runmode || NonProgrammable) {
 				NonProgrammable = 0;
 				if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F)) {
-					// Data entry key
-					WasDataEntry = 1;
-					cmdline_empty = (CmdLineLength == 0);
-					xeq(c);
-					cmdline_empty |= (CmdLineLength == 0);
+					if (c != (OP_SPEC | OP_ENTER) || !is_bad_cmdline()) {
+						// Data entry key
+						WasDataEntry = 1;
+						cmdline_empty = (CmdLineLength == 0);
+						xeq(c);
+						cmdline_empty |= (CmdLineLength == 0);
+					}
 				}
 				else {
 					// Save the op-code for execution on key-up

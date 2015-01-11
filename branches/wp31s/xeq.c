@@ -719,7 +719,7 @@ const char *get_cmdline(void) {
 	return NULL;
 }
 
-
+#if 0
 static int fract_convert_number(decNumber *x, const char *s) {
 	if (*s == '\0') {
 		err(ERR_DOMAIN);
@@ -728,13 +728,43 @@ static int fract_convert_number(decNumber *x, const char *s) {
 	decNumberFromString(x, s, &Ctx);
 	return check_special(x);
 }
+#endif
+
+/* Return 1 if the command line contains an error and also set an appropriate
+ * error message.
+ */
+int is_bad_cmdline(void)
+{
+#ifndef IGNORE_INVALID_FRACTIONS
+	if (CmdLineDot == 2) {
+		char *p;
+
+		// Check if there's a non-zero digit after the last decimal mark
+		p = Cmdline + CmdLineLength;
+		for (;;) {
+			p--;
+			if (*p >= '1' && *p <= '9')
+				return 0;
+			if (*p == '.')
+				break;
+		}
+
+		reset_shift();
+		error_message(ERR_DOMAIN);
+		State2.invalid_disp = 1;
+		return 1;
+	}
+#endif
+	return 0;
+}
 
 /* Process the command line if any
  */
 void process_cmdline(void) {
-	decNumber a, b, x, t, z;
+	decNumber a, b, x, t;
 
 	if (CmdLineLength) {
+		const int bad_cmdline = is_bad_cmdline();
 		const unsigned int cmdlinedot = CmdLineDot;
 #ifdef LARGE_EXPONENT_ENTRY
 		char cmdline[CMDLINELEN + 2];
@@ -771,6 +801,8 @@ void process_cmdline(void) {
 			int neg;
 
 			UState.fract = 1;
+			if (bad_cmdline)
+				return;
 			if (cmdline[0] == '-') {
 				neg = 1;
 				d0 = cmdline+1;
@@ -782,34 +814,21 @@ void process_cmdline(void) {
 			*d1++ = '\0';
 			d2 = find_char(d1, '.');
 			*d2++ = '\0';
-			if (fract_convert_number(&b, d2))
-				return;
-			if (dn_eq0(&b)) {
-				err(ERR_DOMAIN);
-				return;
-			}
-			if (fract_convert_number(&z, d0))	return;
+			decNumberFromString(&b, d2, &Ctx);
+			decNumberFromString(&x, d0, &Ctx);
 #if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
 			if (d2 == d1+1) { // ND change starts here; if dots are adjacent...
-				decNumberCopy(&a, &z); // put z (integer part) into a (numerator) ...
-				decNumberZero(&z); // and zero z
+				decNumberCopy(&a, &x); // put x (integer part) into a (numerator) ...
+				decNumberZero(&x); // and zero x
 			}
-			else if (fract_convert_number(&a, d1)) {
-				return;
-			}
-#else
-			if (fract_convert_number(&a, d1))	return;
+			else
 #endif
-			if (cmdlinedot == 2) {
-				dn_divide(&t, &a, &b);
-				dn_add(&x, &z, &t);
-			} else {
-				if (dn_eq0(&a)) {
-					err(ERR_DOMAIN);
-					return;
-				}
-				dn_divide(&x, &z, &a);
-			}
+			     decNumberFromString(&a, d1, &Ctx);
+			dn_divide(&t, &a, &b);
+#ifdef IGNORE_INVALID_FRACTIONS
+			if (!decNumberIsSpecial(&t))
+#endif
+				dn_add(&x, &x, &t);
 			if (neg)
 				dn_minus(&x, &x);
 			setX(&x);
@@ -4002,6 +4021,7 @@ void xeq(opcode op)
 	const unsigned char lift = get_lift();
 	//const int old_cl = *((int *)&CommandLine);
 
+#ifndef IGNORE_INVALID_FRACTIONS
 	if (op == (OP_NIL | OP_rCLX) || op == (OP_NIL | OP_CLSTK)) {
 		// Make sure that if the command line isn't empty, it contains
 		// valid input so no error message will be generated.
@@ -4009,6 +4029,7 @@ void xeq(opcode op)
 		Cmdline[0] = '0';
 		Cmdline[1] = '\0';
 	}
+#endif
 
 #ifdef CONSOLE
 	instruction_count++;

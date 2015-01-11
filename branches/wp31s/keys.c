@@ -325,6 +325,8 @@ static int keycode_to_alpha(const keycode c, unsigned int shift)
 }
 
 static void init_arg(const enum rarg base) {
+	if (is_bad_cmdline())
+		return;
 	CmdBase = base;
 	State2.ind = 0;
 	State2.digval = 0;
@@ -590,6 +592,8 @@ static int process_fg_shifted(const keycode c) {
 
 	switch (c) {
 	case K_ARROW:
+		if (is_bad_cmdline())
+			return STATE_UNFINISHED;
 		process_cmdline_set_lift();
 		State2.arrow = 1;
 		set_shift(SHIFT_F);
@@ -1823,6 +1827,8 @@ static int process(const int c) {
 	 */
 	cat = keycode_to_cat((keycode)c, shift);
 	if ( cat != CATALOGUE_NONE ) {
+		if (is_bad_cmdline())
+			return STATE_UNFINISHED;
 		init_cat( CATALOGUE_NONE );
 		init_cat( cat );
 		State2.arrow = 0;
@@ -1957,11 +1963,13 @@ void process_keycode(int c)
 			c = OpCode;
 			OpCode = 0;
 
-			xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
-			xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
-			xeq(c);
-			if (XromRunning || Pause)
-				xeqprog();
+			if (c == (OP_NIL | OP_OFF) || !is_bad_cmdline()) {
+				xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
+				xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
+				xeq(c);
+				if (XromRunning || Pause)
+					xeqprog();
+			}
 			dot(RPN, ShowRPN);
 		}
 		else {
@@ -2011,7 +2019,8 @@ void process_keycode(int c)
 
 		case STATE_WINDOWRIGHT:
 		case STATE_WINDOWLEFT:
-			set_window(c);
+			if (!is_bad_cmdline())
+				set_window(c);
 			break;
 
 		case STATE_UNFINISHED:
@@ -2024,13 +2033,15 @@ void process_keycode(int c)
 
 		default:
 			if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F)) {
-				// Data entry key
-				xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
-				xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
-				WasDataEntry = 1;
-				cmdline_empty = (CmdLineLength == 0);
-				xeq(c);
-				cmdline_empty |= (CmdLineLength == 0);
+				if (c != (OP_SPEC | OP_ENTER) || !is_bad_cmdline()) {
+					// Data entry key
+					xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
+					xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
+					WasDataEntry = 1;
+					cmdline_empty = (CmdLineLength == 0);
+					xeq(c);
+					cmdline_empty |= (CmdLineLength == 0);
+				}
 		    } else {
 				// Save the op-code for execution on key-up
 				OpCode = c;

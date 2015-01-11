@@ -181,6 +181,13 @@
 // Make two successive decimals a..b enter an improper fraction a/b, not a 0/b (also enables PRETTY_FRACTION_ENTRY)
 //#define INCLUDE_DOUBLEDOT_FRACTIONS
 
+// Ignore invalid fraction entry instead of treating it as an error.
+// If the denominator is missing or is zero, only the integer part will
+// be parsed. If a.b.0 is entered, it's interpreted as the integer a, and
+// with INCLUDE_DOUBLEDOT_FRACTIONS enabled, a..0 is interpreted as zero.
+// This saves approximately 252 bytes in the firmware.
+//#define IGNORE_INVALID_FRACTIONS
+
 // Show four-digit exponents instead of the HIG symbol in double precision mode
 // and display only 10 digits of the mantissa if necessary.
 // Values:  0 or undefined:  large exponents never displayed

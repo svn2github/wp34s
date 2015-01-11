@@ -1219,6 +1219,7 @@ extern void setX_int_sgn(unsigned long long int val, int sgn);
 
 extern void lift(void);
 extern void lift_if_enabled(void);
+extern int is_bad_cmdline(void);
 extern void process_cmdline_set_lift(void);
 extern void process_cmdline(void);
 extern void set_lift(void);
