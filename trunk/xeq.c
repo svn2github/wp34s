@@ -5675,8 +5675,18 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		return;
 	}
 #endif
-	// Switch back to user stack settings
+	// End special handling
 	XromFlags.xIN = 0;
+
+	// Restore the global return stack
+	RetStk = XromUserRetStk;
+	RetStkPtr = XromUserRetStkPtr;
+	LocalRegs = UserLocalRegs;	// set by dispatch_xrom()
+
+	// RTN or RTN+1 depending on bit 0 of argument
+	do_rtn(arg & 1);
+
+	// Switch back to user stack settings
 	dbl = UState.mode_double = XromFlags.mode_double;
 	intm = UState.intm = XromFlags.mode_int;
         UState.rounding_mode = XromFlags.rounding_mode;
@@ -5710,7 +5720,7 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		}
 	}
 	if (i > 0) {
-	// more to push back then to consume
+		// more to push back then to consume
 		if (! XromFlags.state_lift_in)
 			--i;
 		while (i > 0) {
@@ -5737,11 +5747,6 @@ void cmdxout(unsigned int arg, enum rarg op) {
 			packed_from_packed128(&(get_stack(i)->s), &(XromStack[i].d));
 	}
 
-	// Restore the global return stack
-	RetStk = XromUserRetStk;
-	RetStkPtr = XromUserRetStkPtr;
-	LocalRegs = UserLocalRegs;	// set by dispatch_xrom()
-
 #ifdef ENABLE_COPYLOCALS
 	// Copy back local data
 	if (XromFlags.copyLocals) {
@@ -5762,8 +5767,6 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		}
 	}
 #endif
-	// RTN or RTN+1 depending on bit 0 of argument
-	do_rtn(arg & 1);
 }
 
 #ifdef XROM_RARG_COMMANDS
