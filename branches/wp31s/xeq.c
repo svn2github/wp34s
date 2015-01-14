@@ -4424,8 +4424,17 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		return;
 	}
 #endif
-	// Switch back to user stack settings
+	// End special handling
 	XromFlags.xIN = 0;
+
+	// Restore the global return stack
+	RetStk = XromUserRetStk;
+	RetStkPtr = XromUserRetStkPtr;
+
+	// RTN or RTN+1 depending on bit 0 of argument
+	do_rtn(arg & 1);
+
+	// Switch back to user stack settings
 	dbl = UState.mode_double = XromFlags.mode_double;
         UState.rounding_mode = XromFlags.rounding_mode;
 	UState.stack_depth = XromFlags.stack_depth;
@@ -4477,13 +4486,6 @@ void cmdxout(unsigned int arg, enum rarg op) {
 		while (i--)
 			packed_from_packed128(&(get_stack(i)->s), &(XromStack[i].d));
 	}
-
-	// Restore the global return stack
-	RetStk = XromUserRetStk;
-	RetStkPtr = XromUserRetStkPtr;
-
-	// RTN or RTN+1 depending on bit 0 of argument
-	do_rtn(arg & 1);
 }
 
 #ifdef XROM_RARG_COMMANDS
