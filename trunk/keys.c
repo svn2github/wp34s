@@ -244,9 +244,9 @@ static enum catalogues keycode_to_cat(const keycode c, enum shifts shift)
 		 */
 		cp = cmap;
 #ifndef WINGUI
-		col = State2.cmplx || shift_down() == SHIFT_H ? 2 : UState.intm ? 1 : 0;
+		col = UState.intm ? 1 : State2.cmplx || shift_down() == SHIFT_H ? 2 : 0;
 #else
-		col = State2.cmplx ? 2 : UState.intm ? 1 : 0;
+		col = UState.intm ? 1 : State2.cmplx ? 2 : 0;
 #endif
 		max = sizeof(cmap) / sizeof(cmap[0]);
 	}
