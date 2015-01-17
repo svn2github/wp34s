@@ -653,7 +653,7 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_DYA | OP_COMB,                OP_DYA | OP_PERM            },
 		{ OP_MON | OP_cdf_Q    | NO_INT,   OP_MON | OP_qf_Q   | NO_INT },
 		{ OP_NIL | OP_statMEAN | NO_INT,   OP_NIL | OP_statS  | NO_INT },
-		{ OP_MON | OP_yhat     | NO_INT,   OP_NIL | OP_statR           },
+		{ OP_MON | OP_yhat     | NO_INT,   OP_NIL | OP_statR  | NO_INT },
 		{ OP_MON | OP_SQRT,		   OP_MON | OP_SQR             },
 		// Row 6
 		{ RARG_SF,                         RARG_CF                     },
