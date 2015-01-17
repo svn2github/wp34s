@@ -634,9 +634,9 @@ static int process_fg_shifted(const keycode c) {
 		{ OP_NIL | OP_P2R      | NO_INT,   OP_NIL | OP_R2P    | NO_INT },
 		{ OP_NIL | OP_FRACPROPER,	   OP_NIL | OP_FRACIMPROPER    }, // CPX
 		// Row 2
-		{ OP_NIL | OP_HMS,                 OP_NIL | OP_DEG             },
-		{ OP_NIL | OP_FLOAT,               OP_NIL | OP_RAD             },
-		{ OP_NIL | OP_RANDOM,              OP_NIL | OP_GRAD            },
+		{ OP_NIL | OP_HMS,                 OP_NIL | OP_DEG    | NO_INT },
+		{ OP_NIL | OP_FLOAT,               OP_NIL | OP_RAD    | NO_INT },
+		{ OP_NIL | OP_RANDOM,              OP_NIL | OP_GRAD   | NO_INT },
 		// Row 3
 		{ STATE_UNFINISHED,		   OP_NIL | OP_FILL            }, // ENTER
 		{ STATE_WINDOWLEFT,   		   STATE_WINDOWRIGHT   	       },
