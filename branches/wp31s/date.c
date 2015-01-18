@@ -197,12 +197,14 @@ decNumber *dateFromYMD(decNumber *res, const decNumber *z, const decNumber *y, c
 static int extract_date(const decNumber *x, int *year, int *month, int *day) {
 	int ip, fp, y, m, d;
 	decNumber z, a;
+    int neg = 1;
 
 	if (is_intmode())
 		return 1;
 
 	if (decNumberIsNegative(x)) {
 		dn_minus(&z, x);
+        neg = -1;
 	} else {
 		decNumberCopy(&z, x);
 	}
@@ -238,6 +240,7 @@ year:		dn_mulpow10(&a, &z, 4);
 	}
 	/* Make sense of things
 	 */
+    y *= neg;
 	if (year != NULL)
 		*year = y;
 	if (month != NULL)
