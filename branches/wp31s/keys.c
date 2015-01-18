@@ -2037,7 +2037,9 @@ void process_keycode(int c)
 					// Data entry key
 					xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
 					xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
+#ifndef CONSOLE
 					WasDataEntry = 1;
+#endif
 					cmdline_empty = (CmdLineLength == 0);
 					xeq(c);
 					cmdline_empty |= (CmdLineLength == 0);

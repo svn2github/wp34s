@@ -2711,7 +2711,9 @@ void process_keycode(int c)
 				if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F)) {
 					if (c != (OP_SPEC | OP_ENTER) || !is_bad_cmdline()) {
 						// Data entry key
+#ifndef CONSOLE
 						WasDataEntry = 1;
+#endif
 						cmdline_empty = (CmdLineLength == 0);
 						xeq(c);
 						cmdline_empty |= (CmdLineLength == 0);
