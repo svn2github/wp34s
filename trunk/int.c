@@ -912,7 +912,7 @@ static long long int intASR(long long int x) {
 
 	set_carry(x & 1);
 	if (mode == MODE_SGNMANT)
-		return ((x & ~tbm) >> 1) | tbm;
+		return ((x & ~tbm) >> 1) | (x & tbm);
 
 	y = x >> 1;
 	if (mode != MODE_UNSIGNED && (x & tbm) != 0)
