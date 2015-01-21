@@ -175,7 +175,7 @@ static decNumber *build_date(decNumber *res, int year, int month, int day) {
 	}
 	int_to_dn(res, r * sign);
 	dn_mulpow10(res, res, shift);
-	day_of_week(year, month, day, &DispMsg);
+	day_of_week(sign * year, month, day, &DispMsg);
 	return res;
 }
 
@@ -422,7 +422,7 @@ err:		set_NaN(res);
 }
 
 decNumber *dateFromJ(decNumber *res, const decNumber *x) {
-	if (decNumberIsSpecial(x))
+	if (decNumberIsSpecial(x) || dn_lt0(x))
 		set_NaN(res);
 	else {
 		const int j = dn_to_int(x);
