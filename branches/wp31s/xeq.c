@@ -2968,7 +2968,7 @@ static void specials(const opcode op) {
 				if (eex_pi) {
 					// fraction entered (two dots); execute ENTER and enter pi
 					if (is_bad_cmdline()) {
-						if (Running || XromRunning)
+						if (XromRunning)
 							err(ERR_DOMAIN);
 						break;
 					}
