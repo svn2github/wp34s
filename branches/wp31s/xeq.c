@@ -790,6 +790,15 @@ void process_cmdline(void) {
 			else if (CmdLineLength > 1 && cmdline[CmdLineLength-2] == 'E' && cmdline[CmdLineLength-1] == '-')
 				cmdline[CmdLineLength-2] = '\0';
 #endif
+			if (0
+#if (FRACTION_MODE_INPUT & 3) == 3
+			    || CmdLineEex
+#endif
+#if FRACTION_MODE_INPUT & 4
+			    || cmdlinedot == 1
+#endif
+			   )
+				UState.fract = 0;
 		}
 		CmdLineLength = 0;
 		lift_if_enabled();
@@ -800,9 +809,11 @@ void process_cmdline(void) {
 			char *d0, *d1, *d2;
 			int neg;
 
-			UState.fract = 1;
 			if (bad_cmdline)
 				return;
+#if !(FRACTION_MODE_INPUT & 8)
+			UState.fract = 1;
+#endif
 			if (cmdline[0] == '-') {
 				neg = 1;
 				d0 = cmdline+1;
@@ -820,10 +831,18 @@ void process_cmdline(void) {
 			if (d2 == d1+1) { // ND change starts here; if dots are adjacent...
 				decNumberCopy(&a, &x); // put x (integer part) into a (numerator) ...
 				decNumberZero(&x); // and zero x
+#if FRACTION_MODE_INPUT & 32
+				UState.improperfrac = 1;
+#endif
 			}
 			else
 #endif
-			     decNumberFromString(&a, d1, &Ctx);
+			{
+				decNumberFromString(&a, d1, &Ctx);
+#if (FRACTION_MODE_INPUT & 16) && defined(INCLUDE_DOUBLEDOT_FRACTIONS)
+				UState.improperfrac = 0;
+#endif
+			}
 			dn_divide(&t, &a, &b);
 #ifdef IGNORE_INVALID_FRACTIONS
 			if (!decNumberIsSpecial(&t))
@@ -2934,42 +2953,49 @@ static void specials(const opcode op) {
 		break;
 
 	case OP_EEX:
-#if defined(INCLUDE_EEX_PI)
-		if ( get_user_flag(regL_idx) ) {
-			if ( is_intmode() ) // no exponent or pi in intmode
-				break;
-			if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
-				if ( (CmdLineLength == 0) ) // empty command line: enter pi
-				{
-					lift_if_enabled();
-					copyreg(StackBase, get_const(OP_PI, is_dblmode()));
-					set_lift();
-				}
-				else if ( (CmdLineLength > 0) && (CmdLineDot > 1) ) // fraction entered (two dots); execute ENTER and enter pi
-				{
+		if (is_intmode())
+			break;
+		else {
+#if INCLUDE_EEX_PI == 2
+			const int eex_pi = 1;
+#elif INCLUDE_EEX_PI == 1
+			const int eex_pi = get_user_flag(regL_idx);
+#else
+			const int eex_pi = 0;
+#endif
+
+			if (CmdLineDot == 2) {
+				if (eex_pi) {
+					// fraction entered (two dots); execute ENTER and enter pi
+					if (is_bad_cmdline()) {
+						if (Running || XromRunning)
+							err(ERR_DOMAIN);
+						break;
+					}
 					process_cmdline();
 					lift();
 					copyreg(StackBase, get_const(OP_PI, is_dblmode()));
 					set_lift();
 				}
-				else if ( (! UState.fract) || (CmdLineDot < 2) ) //enter E if the above don't apply and if it's not fraction mode OR if at most one dot has been entered
-				{
-					CmdLineEex = CmdLineLength;
-					append_cmdline('E');
-				}
-			}
-		}
-		else
-#endif
-		{
-			if (is_intmode() || UState.fract || CmdLineDot == 2)
 				break;
-			if (!CmdLineEex && CmdLineLength < CMDLINELEN) {
-				if (CmdLineLength == 0)
-					digit(1);
-				CmdLineEex = CmdLineLength;
-				append_cmdline('E');
 			}
+			if (CmdLineEex || CmdLineLength >= CMDLINELEN)
+				break;
+			if (eex_pi && CmdLineLength == 0) {
+				// empty command line: enter pi
+				lift_if_enabled();
+				copyreg(StackBase, get_const(OP_PI, is_dblmode()));
+				set_lift();
+				break;
+			}
+#if !(FRACTION_MODE_INPUT & 1)
+			if (UState.fract)
+				break;
+#endif
+			if (CmdLineLength == 0)
+				digit(1);
+			CmdLineEex = CmdLineLength;
+			append_cmdline('E');
 		}
 		break;
 

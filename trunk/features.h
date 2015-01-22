@@ -158,7 +158,10 @@
 #define INCLUDE_INTEGER_DIVIDE
 
 // Make EEX key enter PI if pressed when command line empty
-//#define INCLUDE_EEX_PI
+// Values:  0 or undefined:  feature disabled
+//          1:               feature enabled if user flag L is set
+//          2:               feature always enabled
+//#define INCLUDE_EEX_PI 2
 
 // Change the fraction separator to the old Casio form _|
 //#define INCLUDE_CASIO_SEPARATOR
@@ -177,6 +180,17 @@
 // instead of overflowing into the exponent field.
 // This only applies if PRETTY_FRACTION_ENTRY is enabled.
 #define FRACTION_ENTRY_OVERFLOW_LEFT
+
+// Configure how to handle EEX in fraction mode and whether fraction mode is
+// automatically entered or exited.
+// Bits:    0 (LSB):  EEX enabled in fraction mode
+//          1:        EEX exits fraction mode
+//          2:        decimal fractions exit fraction mode
+//          3:        fractions do NOT automatically switch to fraction mode
+//        The following only applies if INCLUDE_DOUBLEDOT_FRACTIONS is enabled:
+//          4:        mixed/proper fractions (a.b.c) enable proper fractions
+//          5:        simple/improper fractions (a..b) enable improper fractions
+#define FRACTION_MODE_INPUT 0
 
 // Make two successive decimals a..b enter an improper fraction a/b, not a 0/b (also enables PRETTY_FRACTION_ENTRY)
 //#define INCLUDE_DOUBLEDOT_FRACTIONS
