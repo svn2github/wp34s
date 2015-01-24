@@ -120,7 +120,7 @@ static int isleap(int year) {
 static int check_date(int year, int month, int day) {
 	int y, m, d;
 
-	if (year < -4799 || year > 9999)
+	if (year < -4712 || year > 9999)
 		return -1;
 	JDN2(JDN(year, month, day), &y, &m, &d);
 	if (year == y && month == m && day == d)
