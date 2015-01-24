@@ -2735,9 +2735,15 @@ void op_2frac(enum nilop op) {
 		if (dn_eq0(&n))
 			DispMsg = "y/x =";
 		else if (decNumberIsNegative(&n))
-			DispMsg = "y/x Lt";
+#ifdef INCLUDE_FONT_ESCAPE
+			DispMsg = "y/x \007\344<";
 		else
-			DispMsg = "y/x Gt";
+			DispMsg = "y/x \007\344>";
+#else
+			DispMsg = "y/x <";
+		else
+			DispMsg = "y/x >";
+#endif
 	}
 }
 
