@@ -1019,9 +1019,11 @@ static int process_arrow(const keycode c) {
 		{ SDISP_OCT, SDISP_BIN },
 		{ SDISP_HEX, SDISP_DEC }
 	};
-	const int f = (reset_shift() == SHIFT_F);
+	const int shift = reset_shift();
+	const int f = (shift == SHIFT_F);
 
 	State2.arrow = 0;
+	if (shift == SHIFT_N) return STATE_UNFINISHED;
 	
 	if (c >= K10 && c <= K12)
 		return op_map[c - K10][f];
@@ -2442,6 +2444,7 @@ static int process(const int c) {
 	}
 	if (c == K_H) {
 		toggle_shift(SHIFT_H);
+		State2.arrow = 0;
 		return STATE_UNFINISHED;
 	}
 
