@@ -2452,6 +2452,9 @@ static int process(const int c) {
 	 *  The handlers in this block need to call reset_shift somewhere
 	 */
 
+	if (State2.arrow)
+		return process_arrow((const keycode)c);
+
 	/*
 	 * Here the keys are mapped to catalogues
 	 * The position of this code decides where catalogue switching
@@ -2463,7 +2466,6 @@ static int process(const int c) {
 			return STATE_UNFINISHED;
 		init_cat( CATALOGUE_NONE );
 		init_cat( cat );
-		State2.arrow = 0;
 		return STATE_UNFINISHED;
 	}
 
@@ -2472,9 +2474,6 @@ static int process(const int c) {
 	 */
 	if (State2.multi)
 		return process_multi((const keycode)c);
-
-	if (State2.arrow)
-		return process_arrow((const keycode)c);
 
 	if (State2.labellist)
 		return process_labellist((const keycode)c);
