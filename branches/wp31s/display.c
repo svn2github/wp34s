@@ -1565,13 +1565,13 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 	if ( ( !get_user_flag(regI_idx)) && (mode == MODE_STD) ) { //normal ALL mode: putting dd=display digits fills the display
 		dd = *display_digits;
 	}
-	if (dd > *display_digits) // no more digits than we can display: no exclusion for ALL as dealt with above
-		dd = *display_digits;
+	if (dd >= *display_digits) // no more digits than we can display: no exclusion for ALL as dealt with above
+		dd = *display_digits - 1;
 #else
-	if (mode != MODE_STD && dd > *display_digits)
-		dd = *display_digits;
+	if (mode != MODE_STD && dd >= *display_digits)
+		dd = *display_digits - 1;
 #endif
-		
+
 	set_separator_decimal_modes();
 #if defined(INCLUDE_YREG_CODE)
 	if ( !res ) { // no hms or fraction displays for the dot matrix display
@@ -1879,6 +1879,8 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 	if (odig > *display_digits)
 		odig = *display_digits;
 	j = (*display_digits - odig) * SEGS_PER_DIGIT;
+	if (show_large_exponent && j > 0 && exp < -999)
+		j -= SEGS_PER_DIGIT; // add a space before the sign of the exponent
 	if (negative) {
 		if (res) *res++ = '-';
 		else {
