@@ -46,8 +46,8 @@ ifeq "$(findstring Ios,$(SYSTEM))" "Ios"
 ifeq "$(SYSTEM)" "Ios"
     ARCH=armv7
     DEVICE=OS
-    CC_FLAGS=-arch $(ARCH) -I$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE)6.1.sdk/usr/include 
-    BASE_LDFLAGS=-L$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE)6.1.sdk/usr/lib
+    CC_FLAGS=-arch $(ARCH) -I$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk/usr/include 
+    BASE_LDFLAGS=-L$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk/usr/lib
     CFLAGS_FLAGS=-mcpu=cortex-a8 -marm
 endif
 ifeq "$(SYSTEM)" "IosSimulator"
@@ -58,9 +58,9 @@ endif
 # Warning: calling these variables DEVROOT & SDKROOT breaks compilation with some OSX gcc version as HOSTCC starts to behave like CC
 IOS_XCODE_ROOT := /Applications/Xcode.app/Contents/Developer
 IOS_DEVROOT := $(IOS_XCODE_ROOT)/Platforms/iPhone$(DEVICE).platform/Developer
-IOS_SDKROOT := $(IOS_DEVROOT)/SDKs/iPhone$(DEVICE)7.1.sdk
+IOS_SDKROOT := $(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk
 CC=$(IOS_XCODE_ROOT)/usr/bin/gcc $(CC_FLAGS)
-BASE_CFLAGS += -isysroot ${IOS_SDKROOT} -Iheaders $(CFLAGS_FLAGS) -DIOS
+BASE_CFLAGS += -isysroot ${IOS_SDKROOT} -Iheaders $(CFLAGS_FLAGS) -DIOS -miphoneos-version-min=7.0
 USE_CURSES :=
 else
 SYSTEM := $(shell uname)
