@@ -2155,11 +2155,53 @@ void op_gtoalpha(enum nilop op) {
 	do_branchalpha((op == OP_GTOALPHA) ? 0 : 1);
 }
 
+#ifdef INCLUDE_SIGFIG_MODE
+int get_dispmode_digs(int *pdigs)
+{
+	int dispmode = UState.dispmode;
+	int dispdigs = UState.dispdigs;
+
+	if (dispdigs >= 12) {
+		dispdigs -= 12;
+		dispmode += 4;
+		if (dispmode >= 6) {
+			dispmode -= 2;
+			dispdigs += 4;
+		}
+	}
+	*pdigs = dispdigs;
+	return dispmode;
+}
+
+void set_dispmode_digs(int dispmode, int dispdigs)
+{
+	if (dispmode >= 4) {
+		dispmode -= 4;
+		dispdigs += 12;
+		if (dispdigs >= 16) {
+			dispdigs -= 4;
+			dispmode += 2;
+		}
+	}
+	UState.dispmode = dispmode;
+	UState.dispdigs = dispdigs;
+}
+#endif
 
 void cmddisp(unsigned int arg, enum rarg op) {
+#ifdef INCLUDE_SIGFIG_MODE
+	int dispdigs;
+	int dispmode = get_dispmode_digs(&dispdigs);
+
+	if (op != RARG_DISP)
+		dispmode = (op - RARG_STD) + MODE_STD;
+	dispdigs = arg;
+	set_dispmode_digs(dispmode, dispdigs);
+#else
 	UState.dispdigs = arg;
 	if (op != RARG_DISP)
 		UState.dispmode = (op - RARG_STD) + MODE_STD;
+#endif
 	op_float(OP_FLOAT);
 }
 

@@ -738,9 +738,17 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDlbl(RARG_GTO,	&cmdgto,				"GTO",		CNULL)
 
 	CMD(RARG_STD,		&cmddisp,	DISPLAY_DIGITS,		"ALL",		CNULL)
+#ifdef INCLUDE_SIGFIG_MODE
+	CMD(RARG_SCI,		&cmddisp,	DISPLAY_DIGITS,		"SCI",		CNULL)
+	CMD(RARG_ENG,		&cmddisp,	DISPLAY_DIGITS,		"ENG",		CNULL)
+	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX",		CNULL)
+	CMD(RARG_SIG,		&cmddisp,	8,			"SIG",		CNULL)
+	CMD(RARG_SIG0,		&cmddisp,	8,			"SIG0",		CNULL)
+#else
 	CMD(RARG_FIX,		&cmddisp,	DISPLAY_DIGITS,		"FIX",		CNULL)
 	CMD(RARG_SCI,		&cmddisp,	DISPLAY_DIGITS,		"SCI",		CNULL)
 	CMD(RARG_ENG,		&cmddisp,	DISPLAY_DIGITS,		"ENG",		CNULL)
+#endif
 	CMD(RARG_DISP,		&cmddisp,	DISPLAY_DIGITS,		"DISP",		CNULL)
 
 	CMDflg(RARG_SF,		&cmdflag,				"SF",		CNULL)

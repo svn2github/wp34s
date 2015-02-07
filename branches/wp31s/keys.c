@@ -860,7 +860,7 @@ static int arg_digit(int n) {
 
 	State2.digval = val;
 	++State2.numdigit;
-	if ((int) val * 10 > lim || State2.numdigit == num_arg_digits(base)) {
+	if ((int) val * 10 > lim || State2.numdigit >= num_arg_digits(base)) {
 		int result = arg_eval(val);
 		if ( result == STATE_UNFINISHED ) {
 			--State2.numdigit;

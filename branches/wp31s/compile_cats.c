@@ -50,6 +50,10 @@ static s_opcode displ_catalogue[] = {
 	NILIC(OP_RADCOM,	"RDX,")
 	NILIC(OP_RADDOT,	"RDX.")
 	RARGCMD(RARG_SCI,	"SCI")
+#ifdef INCLUDE_SIGFIG_MODE
+	RARGCMD(RARG_SIG,	"SIG")
+	RARGCMD(RARG_SIG0,	"SIG0")
+#endif
 	NILIC(OP_THOUS_OFF,	"TSOFF")
 	NILIC(OP_THOUS_ON,	"TSON")
 #if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)

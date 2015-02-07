@@ -1353,32 +1353,34 @@ static int set_x_fract(const decNumber *rgx, char *res) {
 }
 
 #if defined(INCLUDE_SIGFIG_MODE)
-enum display_modes std_round_fix(const decNumber *z, int *dd) {
+enum display_modes std_round_fix(const decNumber *z, int *dd, int mode, int dispdigs) {
 	decNumber c;
 	int true_exp, x=0;
 	int min_pos_exp, max_neg_exp;
 
-	if ( get_user_flag(regI_idx) ) {
+	if ( mode != MODE_STD ) {
 		min_pos_exp = 9;
-		max_neg_exp = -4;}
+		max_neg_exp = -5;
+	}
 	else {
 		min_pos_exp = 12;
-		max_neg_exp = 0 - UState.dispdigs;
+		max_neg_exp = -1 - dispdigs;
 	}
- 
+
 	dn_abs(&c, z); // c is abs(z)
 	true_exp = c.exponent + c.digits - 1;
 
-	if (get_user_flag(regK_idx) && UState.dispdigs < 10 ) {//trailing zeros display: flag K ignored if dispdigs > 9
+	if (mode == MODE_SIG0) { //trailing zeros display
 		x = *dd;
 	}
 
-	if ((true_exp < x) && (true_exp > max_neg_exp)) { // decimals needed; *dd adjusted to provide correct number
+	if ((true_exp < x) && (true_exp > max_neg_exp)) {
+		// decimals needed; *dd adjusted to provide correct number
 		*dd += -true_exp;
- 		return MODE_FIX; 
+		return MODE_FIX;
 	}
 
-	if ((true_exp <= max_neg_exp) || (true_exp >= min_pos_exp)) {
+	if ((mode != MODE_STD) && (true_exp <= max_neg_exp || true_exp >= min_pos_exp)) {
 		return UState.fixeng?MODE_ENG:MODE_SCI; // force ENG/SCI mode for big / small numbers
 	}
 	else {
@@ -1545,8 +1547,14 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 	const char *q;
 	int count, i;
 	int extra_digits = 0;
+#ifdef INCLUDE_SIGFIG_MODE
+	int dd;
+	int dispdigs;
+	int mode = get_dispmode_digs(&dispdigs);
+#else
 	int dd = UState.dispdigs;
 	int mode = UState.dispmode;
+#endif
 	int c;
 	int negative = 0;
 	int trimzeros = 0;
@@ -1558,18 +1566,6 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 	const int show_large_exponent = get_user_flag(regL_idx);
 #else
 	const int show_large_exponent = 1;
-#endif
-
-	// Do not allow non ALL modes to produce more digits than we're being asked to display.
-#if defined(INCLUDE_SIGFIG_MODE)
-	if ( ( !get_user_flag(regI_idx)) && (mode == MODE_STD) ) { //normal ALL mode: putting dd=display digits fills the display
-		dd = *display_digits;
-	}
-	if (dd >= *display_digits) // no more digits than we can display: no exclusion for ALL as dealt with above
-		dd = *display_digits - 1;
-#else
-	if (mode != MODE_STD && dd >= *display_digits)
-		dd = *display_digits - 1;
 #endif
 
 	set_separator_decimal_modes();
@@ -1628,25 +1624,31 @@ void set_x_dn(decNumber *z, char *res, int *display_digits) {
 		return;
 	}
 
-#if defined(INCLUDE_SIGFIG_MODE)
-	if (mode == MODE_STD) {
-		mode = std_round_fix(z, &dd); // modified function called
-		if (mode != MODE_STD) { // allow zeros to be trimmed
-			if ( get_user_flag(regK_idx) && UState.dispdigs < 10 ) { // flag K set gives zeros, but only for < 10 digits. So dispdigs=11 turns off any effect.
-				trimzeros = 0;
-			}
-			else {
-				trimzeros = 1;
-			}
-		}
+#ifdef INCLUDE_SIGFIG_MODE
+	if (mode == MODE_STD || dispdigs >= *display_digits)
+		//  ALL mode: fill the display
+		dd = *display_digits - 1;
+	else
+		dd = dispdigs;
+
+	if (mode == MODE_STD || mode >= MODE_SIG) {
+		int orig_mode = mode;
+
+		mode = std_round_fix(z, &dd, mode, dispdigs); // modified function called
+		if (orig_mode != MODE_SIG0)
+			// allow zeros to be trimmed
+			trimzeros = 1;
+		if (orig_mode == MODE_STD)
+			dd = *display_digits - 1;
  	}
 #else
 	if (mode == MODE_STD) {
 		mode = std_round_fix(z);
-		if (mode == MODE_FIX)
-			trimzeros = 1;
+		trimzeros = 1;
 		dd = *display_digits - 1;
-	}
+	} else if (dd >= *display_digits)
+		// Do not allow non ALL modes to produce more digits than we're being asked to display.
+		dd = *display_digits - 1;
 #endif
 
 	xset(mantissa, '0', sizeof(mantissa)-1);

@@ -887,7 +887,11 @@ enum rarg {
         RARG_SUM, RARG_PROD, RARG_SOLVE, RARG_DERIV, RARG_2DERIV,
         RARG_INTG,
 
+#ifdef INCLUDE_SIGFIG_MODE
+        RARG_STD, RARG_SCI, RARG_ENG, RARG_FIX, RARG_SIG, RARG_SIG0, RARG_DISP,
+#else
         RARG_STD, RARG_FIX, RARG_SCI, RARG_ENG, RARG_DISP,
+#endif
 
         RARG_SF, RARG_CF, RARG_FF, RARG_FS, RARG_FC,
         RARG_FSC, RARG_FSS, RARG_FSF, RARG_FCC, RARG_FCS, RARG_FCF,
@@ -1008,7 +1012,13 @@ enum integer_bases {
 
 // Display modes
 enum display_modes {
+#ifdef INCLUDE_SIGFIG_MODE
+        MODE_STD=0,     MODE_SCI,       MODE_ENG,
+        // Code in display.c and keys.c depends on this order of the modes
+        MODE_FIX,       MODE_SIG,       MODE_SIG0
+#else
         MODE_STD=0,     MODE_FIX,       MODE_SCI,       MODE_ENG
+#endif
 };
 
 // Single action display modes
@@ -1260,7 +1270,7 @@ extern unsigned long long int s_to_ull(const char *, unsigned int);
 
 extern void do_conv(decNumber *, unsigned int, const decNumber *);
 #if defined(INCLUDE_SIGFIG_MODE)
-extern enum display_modes std_round_fix(const decNumber *, int *);
+extern enum display_modes std_round_fix(const decNumber *, int *, int, int);
 #else
 extern enum display_modes std_round_fix(const decNumber *);
 #endif
@@ -1322,6 +1332,10 @@ extern void cmdlblp(unsigned int arg, enum rarg op);
 extern void cmdmultilblp(const opcode o, enum multiops mopr);
 extern void xromarg(unsigned int arg, enum rarg op);
 extern void multixromarg(const opcode o, enum multiops mopr);
+#ifdef INCLUDE_SIGFIG_MODE
+extern int get_dispmode_digs(int *pdigs);
+extern void set_dispmode_digs(int dispmode, int dispdigs);
+#endif
 extern void cmddisp(unsigned int arg, enum rarg op);
 extern void cmdskip(unsigned int arg, enum rarg op);
 extern void cmdback(unsigned int arg, enum rarg op);

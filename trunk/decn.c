@@ -1991,9 +1991,14 @@ decNumber *decNumberRoundDigits(decNumber *res, const decNumber *x, const int di
  *  Round to display accuracy
  */
 decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
-	int numdig = UState.dispdigs + 1;
 	decNumber t, u;
+#if defined(INCLUDE_SIGFIG_MODE)
+	int numdig;
+	enum display_modes dmode;
+#else
+	int numdig = UState.dispdigs + 1;
 	enum display_modes dmode = (enum display_modes) UState.dispmode;
+#endif
 
 	if (decNumberIsSpecial(x))
 		return decNumberCopy(res, x);
@@ -2003,9 +2008,13 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		return dn_divide(res, &t, &u);
 	}
 
-#if defined(INCLUDE_SIGFIG_MODE)	
- 	if (dmode == MODE_STD) {
-		dmode = std_round_fix(x, &numdig); // to fit new definition of std_round_fix in display.c
+#if defined(INCLUDE_SIGFIG_MODE)
+	dmode = get_dispmode_digs(&numdig);
+	numdig++;
+	if (dmode == MODE_STD) {
+		// to fit new definition of std_round_fix in display.c
+		dmode = std_round_fix(x, &numdig, dmode, numdig-1);
+		numdig = DISPLAY_DIGITS;
  	}
 #else	
 	if (dmode == MODE_STD) {
@@ -2018,7 +2027,7 @@ decNumber *decNumberRnd(decNumber *res, const decNumber *x) {
 		/* FIX is different since the number of digits changes */
 		return decNumberRoundDecimals(res, x, numdig-1, DEC_ROUND_HALF_UP);
 
-	return decNumberRoundDigits(res, x, numdig, DEC_ROUND_HALF_UP); 
+	return decNumberRoundDigits(res, x, numdig, DEC_ROUND_HALF_UP);
 }
 
 decNumber *decNumberRoundDecimals(decNumber *r, const decNumber *x, const int n, const enum rounding round) {

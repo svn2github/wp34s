@@ -1278,7 +1278,7 @@ static int arg_digit(int n) {
 
 	State2.digval = val;
 	++State2.numdigit;
-	if ((int) val * 10 > lim || State2.numdigit == num_arg_digits(base)) {
+	if ((int) val * 10 > lim || State2.numdigit >= num_arg_digits(base)) {
 		int result = arg_eval(val);
 		if ( result == STATE_UNFINISHED ) {
 			--State2.numdigit;
@@ -1384,6 +1384,23 @@ static int process_arg(const keycode c) {
 		// row column shorthand addressing
 		return arg_eval(keycode_to_row_column(c));
 
+#ifdef INCLUDE_SIGFIG_MODE
+	if (base >= RARG_FIX && base <= RARG_SIG0) {
+		switch ((int)c) {
+		case K40:	// up arrow
+			if (--base < RARG_FIX)
+				base = RARG_SIG0;
+			break;
+
+		case K50:	// down arrow
+		case K01:	// B
+			if (++base > RARG_SIG0)
+				base = RARG_FIX;
+			break;
+		}
+		CmdBase = base;
+	}
+#endif
 	/*
 	 *  So far, we've got the digits and some special label addressing keys
 	 *  Handle the rest here.
