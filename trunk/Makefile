@@ -50,8 +50,19 @@ ifeq "$(SYSTEM)" "Ios"
     BASE_LDFLAGS=-L$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk/usr/lib
     CFLAGS_FLAGS=-mcpu=cortex-a8 -marm
 endif
+ifeq "$(SYSTEM)" "Ios64"
+    ARCH=arm64
+    DEVICE=OS
+    CC_FLAGS=-arch $(ARCH) -I$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk/usr/include -DFIX_64_BITS 
+    BASE_LDFLAGS=-L$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk/usr/lib
+endif
 ifeq "$(SYSTEM)" "IosSimulator"
     ARCH=i386
+    CC_FLAGS=-arch $(ARCH)
+    DEVICE=Simulator
+endif
+ifeq "$(SYSTEM)" "IosSimulator64"
+    ARCH=x86_64
     CC_FLAGS=-arch $(ARCH)
     DEVICE=Simulator
 endif
@@ -151,7 +162,8 @@ RANLIB=ranlib
 LDFLAGS := $(BASE_LDFLAGS)
 LDCTRL :=
 
-ifeq "$(SYSTEM)" "Ios"
+# Matches both SYSTEM=iOS and SYSTEM=iOS64
+ifeq (Ios, $(subst 64,,$(SYSTEM)))
 HOSTCC := gcc
 HOSTAR := ar
 HOSTRANLIB := ranlib
@@ -542,15 +554,17 @@ qt_clean_dist:
 	
 ios:
 	$(MAKE) SYSTEM=IosSimulator ios_lib
+	$(MAKE) SYSTEM=IosSimulator64 ios_lib
 	$(MAKE) SYSTEM=Ios ios_lib
-	lipo -create -arch armv7 Ios/obj/libCalculator.a -arch i386 IosSimulator/obj/libCalculator.a -output Ios/libCalculator.a
-	lipo -create -arch armv7 Ios/obj/libconsts.a -arch i386 IosSimulator/obj/libconsts.a -output Ios/libconsts.a
-	lipo -create -arch armv7 Ios/obj/libdecNum34s.a -arch i386 IosSimulator/obj/libdecNum34s.a -output Ios/libdecNum34s.a
+	$(MAKE) SYSTEM=Ios64 ios_lib
+	lipo -create -arch armv7 Ios/obj/libCalculator.a  -arch arm64 Ios64/obj/libCalculator.a -arch i386 IosSimulator/obj/libCalculator.a -arch x86_64 IosSimulator64/obj/libCalculator.a -output Ios/libCalculator.a
+	lipo -create -arch armv7 Ios/obj/libconsts.a -arch arm64 Ios64/obj/libconsts.a -arch i386 IosSimulator/obj/libconsts.a -arch x86_64 IosSimulator64/obj/libconsts.a -output Ios/libconsts.a
+	lipo -create -arch armv7 Ios/obj/libdecNum34s.a -arch arm64 Ios64/obj/libdecNum34s.a -arch i386 IosSimulator/obj/libdecNum34s.a -arch x86_64 IosSimulator64/obj/libdecNum34s.a -output Ios/libdecNum34s.a
 			
 ios_lib: ios_objs $(CALCLIB)
 
 ios_objs: $(DIRS) $(OBJS) $(OBJECTDIR)/libdecNum34s.a $(CNSTS) $(LDCTRL) Makefile
 
 ios_clean:
-	rm -rf Ios IosSimulator
+	rm -rf Ios Ios64 IosSimulator IosSimulator64
 	
