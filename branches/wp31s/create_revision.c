@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "licence.h"
 
 static char *Template =
@@ -39,7 +40,7 @@ int main( int argc, char **argv )
     rev = get_revision_num("svnversion -n >%s", "subversion");
     if (rev < 0)
     {
-	rev = get_revision_num("git svn find-rev `git rev-parse master` >%s", "subversion");
+	rev = get_revision_num("git svn find-rev `git rev-parse master` >%s", "git");
     }
 
     // If neither svn nor git can give us an answer, just assume 0
@@ -84,9 +85,9 @@ int get_revision_num(char *vcs_cmd, char *vcs)
 	return -1;
     }
 
-    // Try to execute VCS command
+    // Try to execute the VCS command
     sprintf( buffer, vcs_cmd, tmpname );
-    fprintf( stderr, "    Executing %s\n", buffer );
+    fprintf( stderr, "    Executing '%s'\n", buffer );
     result = system(buffer);
     if (result == -1)
     {
@@ -122,7 +123,7 @@ int get_revision_num(char *vcs_cmd, char *vcs)
 	if ((strlen(buffer) == 0) ||
 	    (strncmp(buffer, "exported", 100) == 0))
 	{
-	    fprintf(stderr, "    No revision number obtained from %s \n", vcs);
+	    fprintf(stderr, "    No revision number obtained from %s (empty)\n", vcs);
 	    return -1;
 	}
 
@@ -131,9 +132,16 @@ int get_revision_num(char *vcs_cmd, char *vcs)
 	{
 	    if (buffer[i] == '\n')
 		buffer[i] = ' ';
+	    else if (strchr(":MSP", buffer[i]) != NULL) {
+		// ignore extra characters from svnversion
+		}
+	    else if (!isdigit(buffer[i])) {
+		fprintf(stderr, "    No revision number obtained from %s (invalid)\n", vcs);
+		return -1;
+		}
 	}
 
-	fprintf(stderr, "    %s Revision number(s): %s\n", vcs, buffer);
+	fprintf(stderr, "    %s revision number(s): %s\n", vcs, buffer);
     }
 
     // Determine the revision number
