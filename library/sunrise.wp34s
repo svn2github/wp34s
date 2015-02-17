@@ -1,0 +1,256 @@
+/*
+This file is part of 34S.
+
+34S is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+34S is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+
+
+Original program by Jeff O.
+See: http://www.hpmuseum.org/forum/thread-452.html
+
+Included here with permission.
+*/
+
+LBL'RS'
+	LocR 016       // allocate 16 local registers
+	DEG            // Set degrees mode (used throughout)
+	STO .00        // store input date
+	YEAR           // get year of input date
+	FILL           // fill stack
+	# 011          // enter 11, for November
+	XEQ 01         // calculate j-day for last Sunday in October
+	# 007          // enter 7
+	+              // add 7 for US DST end 1st Sunday in November
+	x<> Y          // get year of input date back
+	# 003          // enter 3, for March
+	XEQ 01         // calculate j-day for last Sunday in February
+	# 014          // enter 14
+	+              // add 14 for US DST start 2nd Sunday in March
+	RCL .00        // recall input date
+	D[->]J         // get j-day of input date
+	SF A           // set DST flag
+	x[>=]? Y       // IF date < first DST day
+	x[>=]? Z       // OR date >= first standard time day
+	CF A           // THEN clear DST flag
+	RCL .00        // Recall input date
+	ENTER          // Copy input date into Y, could use RCL X, etc.
+	YEAR           // year of input date
+	DEC X          // previous year
+	# 12           // enter 12
+	# 31           // enter 31
+	[->]DATE       // create last day of previous year in current date mode.
+	x<> Y
+	[DELTA]DAYS    // days from beginning of year
+	STO .04
+	5              // Offset from UTC (-5 represents EST)
+	+/-            // Offset from UTC (-5 represents EST)
+	FS?C A         // If flag A set, DST in effect for input date
+	INC X          // If flag A set, increment offset from UTC
+	STO .03        // Local time offset from UTC
+	9
+	0
+	.
+	5
+	[->]HR         // 90.83333333333333 entered for degrees from zenith at
+        	       // Sunrise/sunset (fewer steps than direct entry)
+	STO .05        // degrees from zenith for Sunrise.  May be changed if
+        	       // twilight times or other solar elevation times are desired (e.g.
+        	       // enter 50 to find times when sun is at 40 degrees altitude.)
+	3              // Latitude
+	5              // Latitude
+	.              // Latitude
+	1              // Latitude
+	2              // Latitude
+	3              // Latitude
+	4              // Latitude
+	5              // Latitude
+	STO .01        // 35.12345 for example (decimal)
+	9              // Longitude
+	0              // Longitude
+	.              // Longitude
+	5              // Longitude
+	4              // Longitude
+	3              // Longitude
+	2              // Longitude
+	1              // Longitude
+	+/-            // Longitude
+	STO .02        // -90.54321 for example (decimal)
+	# 015          // 15 Degrees per hour
+	STO .09        // Store for later use
+	/
+	STO .06        // Longitude hour value (lngHour)
+	# 018
+	XEQ 05         // Calculate approximate time for sunset
+	XEQ 06
+	STO .13        // Done calculating sunset.  Store the result
+	6              // Calculate sunrise
+	XEQ 05
+	RCL .14        // Recall 360
+	RCL- Y
+	XEQ 06
+	RCL .13        // Recall sunset.  Push sunrise to Y.
+	CL[alpha]      // clear alpha register for new text message
+	"Rise-Set"
+	VIEW[alpha]    // Display text
+	PSE 25
+	CL[alpha]      // clear alpha register for new text message
+	[alpha]RC# Y   // copy Y register value to alpha register
+	VW[alpha]+ X   // view alpha (sunrise) in dot-matrix, sunset time in X register.
+	STOP
+	[cmplx]STO Z   // store sunrise and sunset times in Z and T
+	x<> Y
+	H.MS-          // subtract sunrise from sunset for day length
+	CL[alpha]
+	"Day Length"
+	VW[alpha]+ X   // Display text and day length
+	RTN            // done
+
+LBL 05                 // Subroutine for large common section
+	RCL- .06
+	# 024          // enter 24
+	/
+	RCL+ .04
+	STO .07        // Approximate sunset time
+	.
+	9
+	8
+	5
+	6              // enter 0.9856
+	[times]
+	3
+	.
+	2
+	8
+	9              // enter 3.289
+	-
+	STO .08        // Sun's mean anomaly
+	SIN            // Calculate sun's true longitude
+	1
+	.
+	9
+	1
+	6              // enter 1.916
+	[times]
+	RCL+ .08
+	2
+	RCL[times] .08
+	SIN
+	# 002
+	SDR 002        // enter 0.02
+	[times]
+	+
+	3
+	RCL[times] .08
+	SIN
+	3
+	SDR 004        // enter 0.0003
+	[times]
+	+
+	2
+	8
+	2
+	.
+	6
+	3
+	4              // enter 282.634
+	+
+	# 36
+	SDL 001        // enter 360
+	STO .14
+	MOD
+	STO .08        // Sun's true longitude
+	TAN            // Calculate sun's Right Ascension
+	.
+	9
+	1
+	7
+	6
+	4              // enter 0.91764
+	[times]
+	ATAN
+	RCL .14        // enter 360
+	MOD
+	STO .10        // Sun's Right Ascension
+	RCL .08
+	# 090          // enter 90
+	STO .15        // Store for later use
+	/
+	FLOOR
+	RCL[times] .15 // Recall 90 and multiply
+	+
+	RCL .10
+	RCL/ .15       // Recall 90 and divide
+	FLOOR
+	RCL[times] .15 // Recall 90 and multiply
+	-
+	RCL/ .09       // Recall 15 and divide
+	STO .10        // Sun's Right Ascension converted into hours
+	RCL .08
+	SIN
+	.
+	3
+	9
+	7
+	8
+	2              // enter 0.39782
+	[times]
+	STO .11        // sinDec for sunset
+	ASIN
+	COS
+	STO .12        // cosDec for sunset
+	RCL .05
+	COS
+	RCL .01
+	SIN
+	RCL[times] .11
+	-
+	RCL .01
+	COS
+	RCL[times] .12
+	/              // Sun's local Hour Angle (cosH)
+	ACOS
+	RTN
+
+LBL 06                 // Subroutine for another common section
+	RCL/ .09       // Recall 15 and divide
+	RCL+ .10
+	.
+	0
+	6
+	5
+	7
+	1              // enter 0.06571
+	RCL[times] .07
+	-
+	6
+	.
+	6
+	2
+	2              // enter 6.622
+	-
+	# 024          // enter 24
+	MOD
+	RCL- .06
+	RCL+ .03
+	[->]H.MS
+	RTN
+
+LBL 01                 // Subroutine to calculate last Sunday of prior month.
+	# 001
+	[->]DATE       // = 1 March resp. 1 November
+	D[->]J
+	# 007
+	IDIV
+	RCL[times] L   //  Monday on or before 1 March resp. 1 November
+	DEC X          //  last Sunday of February resp. October
+	END
