@@ -137,9 +137,6 @@
 // Include iBACK, etc. as user visible commands
 // #define INCLUDE_INDIRECT_BRANCHES
 
-// Include the upper tail cumulative distribution functions
-#define INCLUDE_CDFU
-
 // Include code to support the 41/42's MOD operation
 #define INCLUDE_MOD41
 

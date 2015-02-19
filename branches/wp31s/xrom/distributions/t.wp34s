@@ -28,6 +28,7 @@
 			GSB pdf_t
 			xOUT xOUT_NORMAL
 
+/* The core implementation, uses two stack levels */
 pdf_t::			x[^2]		// x^2 ? ? ?
 			Num 1/2
 			RCL[times] J	// v/2 x^2 ? ?
@@ -50,12 +51,10 @@ pdf_t::			x[^2]		// x^2 ? ? ?
 			/
 			RTN
 
-#ifdef INCLUDE_CDFU
 		XLBL"CDFU_T"
 			xIN MONADIC
 			+/-
 			JMP cdf_t_common
-#endif
 
 		XLBL"CDF_T"
 			xIN MONADIC
@@ -100,57 +99,63 @@ dist_ret_half::		Num 1/2
 			RTN
 
 
+#define R_00	.00
+#define R_LOOPS	.01
+
+#define F_NEG	.00
+
 		XLBL"QF_T"		// T Quantile Function
 			xIN MONADIC
 			GSB t_param
 			GSB qf_check_probability
 			FS?C .00
-				JMP qf_q_xout
+				JMP qf_t_exit
 			x=0?
 				JMP ret_neginf
-			Num 1/2
-			x[<->] Y
-			x=? Y
-				JMP ret_0
+
 			LocR 002
-			ENTER[^]	// probability in X, degrees of freedom in register J
-			+/-		// -p p
-			INC X		// 1-p p
+			ENTER[^]
+			+/-
+			INC X
 			MIN
-			x!=? L
-			    SF .00	// set flag 00 if p > 0.5
-			STO .00		// save p in R00
-			_INT 5
-			STO .01		// do not more than 5 iterations
-			_INT 12
+			x[!=]? L
+				SF F_NEG
+			STO R_00
+			RCL J
+			[sqrt]
+			_INT 007
+			STO R_LOOPS
+			+
 			RCL J
 			+/-
-			y^x
-			RCL .00
+			y[^x]
+			_INT 004
+			/
+			STO A
+			RCL R_00
 			x>? Y
-				JMP qf_t_low_est
-			RCL J		// estimate for small p
+				JMP qf_t_tail
+			RCL J
 			STO+ X
 			[times]
 			Num [pi]
 			RCL L
 			Num 1/2
 			x[^2]
-			RCL+ L		// = 0.75
-			-
+			DEC X
+			+
 			/
 			[sqrt]
 			[times]
 			RCL J
-			XROOT
+			[^x][sqrt]y
 			RCL J
 			[sqrt]
 			x[<->] Y
 			/
-			JMP qf_q_loop
+			JMP qf_t_loop
 
-					// estimate for low and moderate t
-qf_t_low_est::		XEQ qf_q_est	// get guess for the normal quantile
+qf_t_tail::		GSB qf_q_int_est
 			x[^2]
 			Num eE
 			RCL[times] J
@@ -158,61 +163,67 @@ qf_t_low_est::		XEQ qf_q_est	// get guess for the normal quantile
 			INC X
 			[times]
 			RCL/ J
-			EXP-1
+			e[^x]-1
 			RCL[times] J
 			[sqrt]
 
-qf_q_loop::		FILL		// iteration starts here
-			Num 1/2		// 1/2 x x x x x x x
-			x>? Y
-			    JMP qf_q_Ix
-			DROP		// x x x x
-			GSB cdfu_t	// cdfu x x x
-			RCL- .00	// cdfu-p x x x
-			JMP qf_q_lp_com
+qf_t_loop::		FILL
+			x[^2]
+			x<1?
+				JMP qf_t_small
+			x[<->] L
+			GSB cdfu_t
+			RCL- R_00
+			JMP qf_t_step
 
-qf_q_Ix::		DROP
-			x[^2]		// x^2 x x x
-			ENTER[^]
-			RCL+ J		// n+x^2 x^2 x x
+qf_t_small::		ENTER[^]
+			RCL+ J
 			/
 			Num 1/2
-			RCL[times] J	// n/2 x^2/(n+x^2) x x x x
+			ENTER[^]
+			RCL[times] J
+			x[<->] Z
+			I[sub-x]
 			Num 1/2
-			[<->] ZXYX	// x^2/(n+x^2) 1/2 n/2 1/2 x x
-			I[sub-x]	// Ix 1/2 x x
 			[times]
 			+/-
 			Num 1/2
-			RCL- .00
-			+		// cdf(t) - p = (0,5-p) - 1/2 IBeta(x=t^2/(n+t^2), a=1/2, b=n/2)
+			RCL- R_00
+			+
 
-qf_q_lp_com::		RCL Y		// x cdfu-p x x x
-			GSB pdf_t	// pdf cdfu-p x x x
-			/		// cdfu/pdf x x x
-			ENTER[^]	// cdfu/pdf cdfu/pdf x x
-			RCL[times] T	// x.cdfu/pdf cdfu/pdf x x
-			RCL J		// n x.cdfu/pdf cdfu/pdf x
+qf_t_step::		RCL T
+			GSB pdf_t
+			/
+			ENTER[^]
+			RCL[times] T
+			RCL J
 			INC X
-			[times]		// (n+1).x.cdfu/pdf cdfu/pdf x x
+			[times]
 			RCL T
-			x[^2]		// x^2 (n+1).x.cdfu/pdf cdfu/pdf x
+			x[^2]
 			RCL+ J
 			STO+ X
 			/
 			DEC X
 			/
-			-
+			+/-
+			+
+			SHOW_CONVERGENCE
 			CNVG? 00
-				JMP qf_q_converged
-			DSE .01
-				JMP qf_q_loop
-				// Raise error flag if no convergence after 5 iterations
-			ERR 20  // if error, display "no root found" and exit with last approximation
+				JMP qf_t_exit
+			DSE R_LOOPS
+				JMP qf_t_loop
 
-qf_q_converged::	FS?C .00
-				+/-	// adjust sign
+			ERR 20
+qf_t_exit::		FS? F_NEG
+				+/-
 			xOUT xOUT_NORMAL
+
+#undef R_00
+#undef R_LOOPS
+
+#undef F_NEG
+
 
 t_param::		RCL J
 			[infinity]?

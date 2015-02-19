@@ -218,7 +218,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_pdf_C,	XMR(PDF_CAUCHY),	NOFN,		NOFN,		"Cauch\276",	"Cauch-p")
 	FUNC(OP_cdf_C,	XMR(CDF_CAUCHY),	NOFN,		NOFN,		"Cauch",	CNULL)
 	FUNC(OP_qf_C,	XMR(QF_CAUCHY),		NOFN,		NOFN,		"Cauch\235",	"INV-Cauch")
-#ifdef INCLUDE_CDFU
 	FUNC(OP_cdfu_Q,	XMR(CDFU_Q),		NOFN,		NOFN,		"\224\277(x)",	"Q-u")
 	FUNC(OP_cdfu_chi2, XMR(CDFU_CHI2),	NOFN,		NOFN,		"\265\232\277",	"CHI2-u")
 	FUNC(OP_cdfu_T,	XMR(CDFU_T),		NOFN,		NOFN,		"t\277(x)",	"t-u")
@@ -233,7 +232,6 @@ const struct monfunc monfuncs[ NUM_MONADIC ] = {
 	FUNC(OP_cdfu_LN, XMR(CDFU_LOGNORMAL),	NOFN,		NOFN,		"LgNrm\277",	"LgNrm-u")
 	FUNC(OP_cdfu_LG, XMR(CDFU_LOGIT),	NOFN,		NOFN,		"Logis\277",	"Logis-u")
 	FUNC(OP_cdfu_C,	XMR(CDFU_CAUCHY),	NOFN,		NOFN,		"Cauch\277",	"Cauch-u")
-#endif
 	FUNC(OP_xhat,	&stats_xhat,		NOFN,		NOFN,		"\031",		"FCSTx")
 	FUNC(OP_yhat,	&stats_yhat,		NOFN,		NOFN,		"\032",		"FCSTy")
 	FUNC(OP_sigper,	&stats_sigper,		NOFN,		NOFN,		"%\221",	"%SUM")

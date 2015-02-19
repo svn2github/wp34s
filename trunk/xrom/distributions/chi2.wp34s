@@ -18,6 +18,8 @@
 /* Chi-squared distribution
  * One parameters:
  *	n positive integer
+ * Some gymnastics are done here to preserve the higher stack levels,
+ * still three levels are used.
  */
 		XLBL"PDF_CHI2"
 			xIN MONADIC
@@ -29,39 +31,43 @@ pdf_chi2::		x[<=]0?
 				JMP dist_ret_0
 			Num 1/2
 			RCL[times] J	// k/2 x ? ?
-			[<->] YXXX	// x k/2 k/2 k/2
-			LN		// LNx k/2 k/2 k/2
+			RCL X		// k/2 x ? ?
+			[<->] ZXYT	// x k/2 k/2 ?
+			LN		// LNx k/2 k/2 ?
 			Num 1/2
-			RCL[times] L	// x/2 LNx k/2 ?
-			+/-		// -x/2 LNx k/2 ?
-			[<->] ZYXZ	// k/2 LNx -x/2 k/2
+			RCL[times] L	// x/2 LNx k/2 k/2
+			+/-		// -x/2 LNx k/2 k/2
+			[<->] ZYXT	// k/2 LNx -x/2 k/2
 			DEC X
 			[times]		// (k/2-1)LNx -x/2 k/2 ?
 			+		// sum k/2 ? ?
-			[<->] YXYY	// k/2 sum k/2 k/2
-			LN[GAMMA]
-			-		// sum k/2 k/2 ?
-			Num LN2
-			RCL[times] Z
+			RCL Y		// k/2 sum k/2 ?
+			LN[GAMMA]	// LG(k/2) sum k/2 ?
+			-		// sum- k/2 ? ?
+			Num LN2		// ln2 sum- k/2 ?
+			[<->] ZXYT	// k/2 ln2 sum- ?
+			[times]		// k.ln2/2 sum- ? ?
 			-
 			e[^x]
 			RTN
 
-#ifdef INCLUDE_CDFU
 		XLBL"CDFU_CHI2"
 			xIN MONADIC
 			GSB chi2_param
-			x[<=]0?
-				JMP ret_1
+			GSB cdfu_chi2
+			xOUT xOUT_NORMAL
+
+
+cdfu_chi2::		x[<=]0?
+				JMP dist_ret_1
 			[infinity]?
-				JMP ret_0
+				JMP dist_ret_0
 			Num 1/2
 			[times]
 			Num 1/2
 			RCL[times] J
 			[GAMMA][sub-q]
-			xOUT xOUT_NORMAL
-#endif
+			RTN
 
 		XLBL"CDF_CHI2"
 			xIN MONADIC
@@ -87,78 +93,136 @@ chi2_param::		RCL J
 			DROP
 			RTN
 				
+#define R_00	.00
+#define R_LOOPS	.01
+
+#define F_HALF	.00
+
 		XLBL"QF_CHI2"
 			xIN MONADIC
 			GSB chi2_param
 			GSB qf_check_probability
-			GSB qf_chi2_est
-			_INT DIST_CHI2
-			XEQ qf_newton
-			xOUT xOUT_NORMAL
-
-#define R_P	.00
-#define R_T	.01
-qf_chi2_est::		LocR 2
-			STO R_P
-			_INT 15
-			x<? J
-				JMP qf_chi2_est_ll
-			_INT 1
-			JMP qf_chi2_est_ld
-qf_chi2_est_ll::	_INT 85
-			SDR 2
-qf_chi2_est_ld::	+/-
+			x=0?
+				xOUT xOUT_NORMAL
+			LocR 002
+			STO R_00
+			_INT 006
+			STO R_LOOPS
+			_INT 019
+			SDR 001
+			RCL J
+			x=1?
+				DEC X
+			+/-
+			y[^x]
+			Num [pi]
+			/
+			RCL R_00
+			x<? Y
+				JMP chi2_q_low
+			GSB qf_q_int_est
+			_INT 222
+			SDR 003
+			RCL/ J
+			STO Z
+			[sqrt]
+			[times]
+			INC X
+			RCL- Y
+			x[^3]
 			RCL[times] J
-			e[^x]
-			x[<=]? R_P
-				JMP qf_chi2_large
+			Num eE
+			RCL[times] J
+			_INT 008
+			+
+			x[<->] Y
+			x<? Y
+				JMP chi2_q_refine
+			Num 1/2
+			[times]
+			LN
 			Num 1/2
 			RCL[times] J
-			ENTER[^]	// n/2 n/2 ? ?
-			LN[GAMMA]
-			RCL/ Y
-			e[^x]
-			RCL Y		// n/2 exp n/2 ?
-			RCL[times] R_P	// pn/2 exp n/2 ?
-			RCL Z
-			[^x][sqrt]y	// xroot exp n/2
+			DEC X
 			[times]
-			RCL+ X
-			JMP qf_chi2_est_exit
-
-qf_chi2_large::		RCL R_P
-			GSB qf_q_est
-			_INT 97
-			SDR 2
-			[times]		// .97q
-			Num Chi2	// 0.2214
-			RCL/ J		// .2214/n .97q
-			ENTER[^]	// .2214/N .2214/N .97q
-			[sqrt]
-			RCL[times] Z	// sqrt(.2214/N)*.97q .2214/N .97q
-			RCL- Y		// sqrt(.2214/N)*.97q-.2214/N .2214/N .97q
-			INC X
-			x[^3]
-			RCL[times] J	// ch3 .2214/N .97q
-			_INT 6
-			RCL[times] J
-			_INT 16
+			+/-
+			RCL R_00
+			+/-
+			LN1+x
 			+
-			SWAP
-			x[<=]? Y
-				JMP qf_chi2_est_exit
-			RCL R_P
-			GSB log1m
-			_INT 150
+			Num 1/2
 			RCL[times] J
-			/
-			INC X
+			LN[GAMMA]
+			+
+			STO+ X
+			+/-
+			JMP chi2_q_refine
+
+chi2_q_low::		RCL[times] J
+			Num 1/2
 			[times]
+			LN
+			Num 1/2
+			RCL[times] J
+			LN[GAMMA]
+			+
+			STO+ X
+			RCL/ J
+			e[^x]
+			STO+ X
 
-qf_chi2_est_exit::	RCL R_P
-			RTN
+chi2_q_refine::		FILL
+			x[>=]? J
+				JMP chi2_q_big
+			GSB cdf_chi2
+			ENTER[^]
+			RCL/ R_00
+			LN
+			JMP chi2_q_common
 
-#undef R_P
-#undef R_T
+chi2_q_big::		_INT 001
+			ENTER[^]
+			RCL- R_00
+			RCL Z
+			GSB cdfu_chi2
+			STO- Z
+			-
+			RCL/ R_00
+			LN1+x
+
+chi2_q_common::		x[<->] Y
+			RCL Z
+			GSB pdf_chi2
+			x[<->] Y
+			/
+			STO Z
+			/
+			RCL J
+			DEC X
+			DEC X
+			RCL- T
+			RCL/ T
+			[<->] ZXYT
+			STO+ X
+			-
+			_INT 004
+			/
+			RCL[times] Y
+			+/-
+			INC X
+			/
+			+/-
+			+
+			SHOW_CONVERGENCE
+			CNVG? 00
+				xOUT xOUT_NORMAL
+			DSE R_LOOPS
+				JMP chi2_q_refine
+			ERR 20
+
+#undef R_00
+#undef R_LOOPS
+
+#undef F_HALF
 
 

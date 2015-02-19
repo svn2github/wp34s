@@ -158,7 +158,6 @@ static s_opcode prob_catalogue[] = {
 	MON(OP_cdf_chi2,	"\225\232")
 	MON(OP_qf_chi2,		"\225\232INV")
 //	MON(OP_pdf_Q,		"\224p(x)")
-#ifdef INCLUDE_CDFU
 //	MON(OP_cdfu_Q,		"\224\277(x)")
 	MON(OP_cdfu_chi2,	"\225\232\277")
 	MON(OP_cdfu_T,		"t\277(x)")
@@ -173,7 +172,6 @@ static s_opcode prob_catalogue[] = {
 //	MON(OP_cdfu_LN,		"LgNrm\277")
 	MON(OP_cdfu_LG,		"Logis\277")
 	MON(OP_cdfu_C,		"Cauch\277")
-#endif
 };
 
 

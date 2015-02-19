@@ -188,7 +188,7 @@ static void dump_menu(const char *name, const char *prefix, const enum catalogue
 		if (cati == RARG(RARG_ALPHA, ' '))
 			strcpy(cmd+2, "[space]");
 
-		printf("\t%d\t%s", i+1, prefix);
+		printf("\t%d\t%04x\t%s", i+1, (unsigned int)cati, prefix);
 		for (p=buf; *p != '\0'; p++) {
 			const unsigned char c = 0xff & *p;
 			m = pretty(c);

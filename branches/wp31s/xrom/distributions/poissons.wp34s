@@ -54,7 +54,6 @@ pdf_poisson_xout::	FP?
 			/
 			xOUT xOUT_NORMAL
 
-#ifdef INCLUDE_CDFU
 		XLBL"CDFU_POISSON"
 			xIN MONADIC
 			GSB poission1_param
@@ -67,7 +66,6 @@ cdfu_poisson_xout::	CEIL
 			SWAP
 			[GAMMA][sub-p]
 			xOUT xOUT_NORMAL
-#endif
 
 		XLBL"CDF_POISSON"
 			xIN MONADIC
@@ -119,12 +117,10 @@ poission1_param::	x[<->] J
 			GSB poisson2_param
 			JMP pdf_poisson_xout
 
-#ifdef INCLUDE_CDFU
 		XLBL"CDFU_POIS2"
 			xIN MONADIC
 			GSB poisson2_param
 			JMP cdfu_poisson_xout
-#endif
 
 		XLBL"CDF_POIS2"
 			xIN MONADIC

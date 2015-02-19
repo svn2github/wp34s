@@ -34,7 +34,6 @@
 			RCL[times] J
 			xOUT xOUT_NORMAL
 
-#ifdef INCLUDE_CDFU
 		XLBL"CDFU_GEOM"
 			xIN MONADIC
 			GSB geom_param
@@ -48,7 +47,6 @@
 			SWAP
 			y[^x]
 			xOUT xOUT_NORMAL
-#endif
 			
 		XLBL"CDF_GEOM"
 			xIN MONADIC

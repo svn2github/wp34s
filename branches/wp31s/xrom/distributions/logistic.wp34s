@@ -37,7 +37,6 @@
 			1/x
 			xOUT xOUT_NORMAL
 
-#ifdef INCLUDE_CDFU
 		XLBL"CDFU_LOGIT"
 			xIN MONADIC
 			GSB logistic_param
@@ -47,7 +46,6 @@
 				JMP ret_0
 			+/-
 			JMP cdf_logit_common			
-#endif
 
 		XLBL"CDF_LOGIT"		/* (1 + tanh( (x-J) / 2K)) / 2 */
 			xIN MONADIC
