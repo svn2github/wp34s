@@ -2590,6 +2590,8 @@ static void set_status_sized(const char *str, int smallp) {
 	for (i = 0; LastDisplayedText[i] != '\0'; ) { // Remove 007 escapes
 		if (LastDisplayedText[i] == '\007' && LastDisplayedText[i + 1] != '\0') {
 			scopy(LastDisplayedText + i, LastDisplayedText + i + 2);
+			if (LastDisplayedText[i] != '\0')
+				++i;
 		}
 		else {
 			++i;
