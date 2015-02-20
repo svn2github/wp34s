@@ -242,7 +242,7 @@ endif
 SRCS := keys.c display.c xeq.c prt.c decn.c complex.c stats.c \
 		lcd.c int.c date.c consts.c alpha.c charmap.c \
 		commands.c string.c storage.c serial.c matrix.c \
-		stopwatch.c printer.c font.c 
+		stopwatch.c printer.c font.c data.c
 ifeq ($(SYSTEM),windows32)
 SRCS += winserial.c
 endif
