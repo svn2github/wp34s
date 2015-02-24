@@ -8,6 +8,11 @@
 // These methods used to be in the iOS App code but due to a compiler bug,
 // they are better here to prevent over-agressive optimization of access to catpos for instance
 
+void set_catpos(int catpos)
+{
+	State.catpos = catpos;
+}
+
 int get_catpos()
 {
 	return State.catpos;
