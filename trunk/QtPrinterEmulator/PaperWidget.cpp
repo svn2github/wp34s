@@ -359,6 +359,15 @@ void PaperWidget::processNormalChar(int aChar)
 				++x;
 			}
 		}
+		bool lastChar=(x==LINE_WIDTH-1);
+		if(!lastChar)
+		{
+			for(int i=0; i<expanded; ++i)
+			{
+				drawUnderline();
+				++x;
+			}
+		}
 	}
 }
 
