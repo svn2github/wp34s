@@ -23,6 +23,7 @@ extern "C"
 #include "QtEmulator.h"
 #include "QtEmulatorAdapter.h"
 #include "QtTextPainter.h"
+#include "QtScreen.h"
 
 extern "C"
 {
@@ -271,7 +272,7 @@ void QtScreen::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEve
 
 		while(*displayedNumber!=0)
 		{
-			char c=*displayedNumber;
+			char c=convertCharInDisplayedNumber(*displayedNumber);
 			if(specialDigitIndexes.contains(c)) {
 				specialDigitPainter->paint(painter, QPoint(x, numberOrigin.y()), getdig(c));
 			}
@@ -298,6 +299,19 @@ void QtScreen::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEve
 			x+=painter.fontMetrics().width(*displayedExponent);
 			displayedExponent++;
 		}
+	}
+}
+
+char QtScreen::convertCharInDisplayedNumber(char c) const
+{
+	// Used to display a degree symbol in HMS mode
+	if(c=='@')
+	{
+		return 0xB0;
+	}
+	else
+	{
+		return c;
 	}
 }
 

@@ -45,6 +45,7 @@ public:
 
 private:
 	bool shouldUseFonts() const;
+	char convertCharInDisplayedNumber(char c) const;
 
 private:
 	QRect screenRectangle;
