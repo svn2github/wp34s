@@ -29,8 +29,12 @@ static char *Template =
 	"#endif\n"
 	"const char SvnRevision[ 4 ] = \"%-4d\";\n";
 
-int get_revision_num(char *vcs_cmd, char *vcs);
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 
+int get_revision_num(char *vcs_cmd, char *vcs);
 
 int main( int argc, char **argv )
 {
