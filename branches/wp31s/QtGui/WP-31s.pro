@@ -30,9 +30,9 @@ HEADERS = QtEmulator.h QtBackgroundImage.h QtKey.h QtKeyCode.h QtSkin.h QtScreen
 	QtPrinterSymbolTextPainter.h QtSpecialDigitPainter.h QtCatalogMenuItem.h QtCatalogMenu.h
 
 win32 {
-	RC_FILE = WP-34s.rc
+	RC_FILE = WP-31s.rc
 }
 
 macx {
-ICON = icons/wp34s-logo.icns
+ICON = icons/wp31s-logo.icns
 }
