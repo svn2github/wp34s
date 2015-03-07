@@ -53,7 +53,6 @@ LINUX := $(findstring "$(SYSTEM)", "Linux" "Linux64")
 
 OUTPUTDIR := $(SYSTEM)
 DIRS := $(OUTPUTDIR)
-DISTPRINTERDIR := ../QtPrinterEmulator
 
 ifeq "$(SYSTEM)" "windows32"
 DISTDIR := $(SYSTEM)/dist/wp-$(MODEL)
@@ -62,20 +61,18 @@ ZIPTOPDIR := wp-$(MODEL)
 DISTFILE := wp-$(MODEL)-emulator-windows.zip
 ZIPDISTFILE := ../../$(DISTFILE)
 RESOURCESDIR := $(DISTDIR)
-DISTPRINTEREXE := $(DISTPRINTERDIR)/windows32/HP-82240B.exe
 endif
 ifneq "$(LINUX)" ""
 DISTDIR := $(SYSTEM)/dist/wp-$(MODEL)
 TARCHANGEDIR := $(SYSTEM)/dist
 TARTOPDIR := wp-$(MODEL)
-DISTPRINTEREXE := $(DISTPRINTERDIR)/$(LINUX)/HP-82240B
 ifeq "$(SYSTEM)" "Linux64"
 DISTFILE := wp-$(MODEL)-emulator-linux64.tgz
 else
 DISTFILE := wp-$(MODEL)-emulator-linux.tgz
 endif
 RESOURCESDIR := $(DISTDIR)
-LINUX_EXTRA_FILES := README_Linux.txt icons/wp$(MODEL)-logo.png $(DISTPRINTERDIR)/icons/HP-82240B.png
+LINUX_EXTRA_FILES := README_Linux.txt icons/wp$(MODEL)-logo.png
 endif
 ifeq "$(SYSTEM)" "Darwin"
 APPSDISTDIR := $(OUTPUTDIR)/apps
@@ -85,23 +82,14 @@ MACDEPLOYQT := macdeployqt
 BUILTDMG := $(OUTPUTDIR)/WP-$(MODEL).dmg
 DISTDMG := ./wp-$(MODEL)-emulator-macosx.dmg
 BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname WP-$(MODEL) -srcfolder $(APPSDISTDIR) $(DISTDMG)
-DISTPRINTERAPP :=$(DISTPRINTERDIR)/Darwin/app/HP-82240B.app
 endif
-DISTMEMORYDIR := $(RESOURCESDIR)/memory
-DISTMEMORYFILE := $(DISTMEMORYDIR)/wp$(MODEL)-lib.dat
 # Warning the trailing / is mandatory
 QTLIBSDIR := c:/Qt/4.8.4/bin/
 QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll qtnetwork4.dll mingwm10.dll libgcc_s_dw2-1.dll)
 
-# Warning the trailing / is mandatory
-WP34SLIBDIR=../../library/
-WP34SMATRIXFILES :=  $(addprefix $(WP34SLIBDIR), matrix.wp34s matrixedit.wp34s vectors.wp34s)
-WP34SSOLVERFILES :=  $(addprefix $(WP34SLIBDIR), TVM.wp34s)
-WP34STRIGOFACTOFILES :=  $(addprefix $(WP34SLIBDIR), TRIGON.wp34s PF.wp34s)
-WP34SLIB=$(TOOLS)/wp34s_lib.pl -d 0
 
-DOCFILENAME := Manual_wp_31s_1_1.pdf
-DOCDIR := ../../doc
+DOCFILENAME := Manual_wp_31s_1_2q.pdf
+DOCDIR := ../docs
 DOCFILE := $(DOCDIR)/$(DOCFILENAME)
 DISTDOCDIR := $(RESOURCESDIR)/doc
 DISTDOCDIR := $(RESOURCESDIR)/doc
@@ -199,7 +187,7 @@ qtserial:
 	cd $(QTSERIALDIR); $(MAKE)
 endif
 
-dist: distclean release $(DISTDIR) $(DISTMEMORYDIR) $(DISTMEMORYFILE) $(DISTDOCDIR) $(DISTDOCFILE) distprinter
+dist: distclean release $(DISTDIR) $(DISTDOCDIR) $(DISTDOCFILE)
 ifeq "$(SYSTEM)" "windows32"
 	$(CP) $(WP31SEXE) $(DISTDIR)
 	$(MKDIR) $(DISTDIR)/skins
@@ -209,7 +197,6 @@ ifeq "$(SYSTEM)" "windows32"
 	$(MKDIR) $(DISTDIR)/fonts
 	$(CPDIR) fonts/* $(DISTDIR)/fonts
 	$(CP) $(QTLIBS) $(DISTDIR)
-	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
 	cd $(ZIPCHANGEDIR); $(ZIP) $(ZIPDISTFILE) $(ZIPTOPDIR)
 endif
 ifeq "$(SYSTEM)" "Darwin"
@@ -219,7 +206,6 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(CPDIR) images/* $(RESOURCESDIR)/images
 	$(MKDIR) $(RESOURCESDIR)/fonts
 	$(CPDIR) fonts/* $(RESOURCESDIR)/fonts
-	$(CPDIR) $(DISTPRINTERAPP) $(APPSDISTDIR)
 	$(MACDEPLOYQT) $(DISTDIR)
 	$(BUILDDMG)
 endif
@@ -232,23 +218,11 @@ ifneq "$(LINUX)" ""
 	$(MKDIR) $(DISTDIR)/fonts
 	$(CPDIR) fonts/* $(DISTDIR)/fonts
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)
-	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
 	$(TAR) $(DISTFILE) $(TARTOPDIR)
 endif
 
-distprinter:
-	cd $(DISTPRINTERDIR); $(MAKE) dist
-
 $(DISTDIR):
 	$(MKDIR) $(DISTDIR)
-
-$(DISTMEMORYDIR): 
-	$(MKDIR) $(DISTMEMORYDIR)
-
-$(DISTMEMORYFILE): $(WP34SMATRIXFILES) $(WP34SSOLVERFILES) $(WP34STRIGOFACTOFILES)
-	$(WP34SLIB) -pp $(PPDIR) $(WP34SMATRIXFILES) -olib $(DISTMEMORYFILE)
-	$(WP34SLIB) $(WP34SSOLVERFILES) -ilib $(DISTMEMORYFILE)	-olib $(DISTMEMORYFILE)
-	$(WP34SLIB) -pp $(PPDIR) $(WP34STRIGOFACTOFILES) -ilib $(DISTMEMORYFILE)	-olib $(DISTMEMORYFILE)
 
 $(DISTDOCDIR): 
 	$(MKDIR) $(DISTDOCDIR)
