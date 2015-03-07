@@ -47,9 +47,9 @@
 #define CUSTOM_DIRECTORY_NAME_SETTING "CustomDirectoryName"
 
 #define KEYBOARD_SETTINGS_GROUP "Keyboard"
-#define USE_HSHIFT_CLICK_SETTING "UseHShiftClick"
-#define ALWAYS_USE_HSHIFT_CLICK_SETTING "AlwaysUseHShiftClick"
-#define HSHIFT_DELAY_SETTING "HShiftDelay"
+#define USE_FSHIFT_CLICK_SETTING "UseFShiftClick"
+#define ALWAYS_USE_FSHIFT_CLICK_SETTING "AlwaysUseFShiftClick"
+#define FSHIFT_DELAY_SETTING "FShiftDelay"
 #define SHOW_TOOLTIPS_SETTING "ShowToolTips"
 #define DEFAULT_SHOW_TOOLTIPS_SETTING true
 
@@ -233,9 +233,9 @@ private:
      QActionGroup* skinsActionGroup;
      SkinMap skins;
      QString currentSkinName;
-     bool useHShiftClick;
-     bool alwaysUseHShiftClick;
-     int hShiftDelay;
+     bool useFShiftClick;
+     bool alwaysUseFShiftClick;
+     int fShiftDelay;
      bool showToolTips;
      bool useFonts;
      bool showCatalogMenus;

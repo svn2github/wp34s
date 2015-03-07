@@ -107,9 +107,9 @@ int is_not_shifted()
 	return cur_shift()==SHIFT_N;
 }
 
-int is_hshifted()
+int is_fshifted()
 {
-	return cur_shift()==SHIFT_H;
+	return cur_shift()==SHIFT_F;
 }
 
 void set_fshift_locked(int a_fshift_locked)

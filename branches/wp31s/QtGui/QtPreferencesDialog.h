@@ -27,17 +27,17 @@
 #define SHOW_CATALOG_MENUS_LABEL_TEXT "Use real menus to display catalogs"
 #define CLOSE_CATALOG_MENUS_LABEL_TEXT "Close catalog after menu"
 #define DISPLAY_AS_STACK_LABEL_TEXT "Display as Stack in Debug (X at bottom)"
-#define HSHIFT_DELAY_LABEL_TEXT "H-Shift Delay"
-#define USE_H_CLICK_TEXT "Use H-shift click"
-#define ALWAYS_USE_H_CLICK_TEXT "Always use H-shift click"
+#define FSHIFT_DELAY_LABEL_TEXT "F-Shift Delay"
+#define USE_F_CLICK_TEXT "Use F-shift click"
+#define ALWAYS_USE_F_CLICK_TEXT "Always use F-shift click"
 #define USE_TOOLTIPS_LABEL_TEXT "Show Tooltips"
 #define SERIAL_PORT_TAB_NAME "Serial Port"
 #define SERIAL_PORT_NAME_LABEL_TEXT "Serial Port Name"
 #define USE_CUSTOM_DIRECTORY_TEXT "Use a custom directory for memory files"
 #define CHOOSE_DIRECTORY_TEXT "Choose"
 
-#define HSHIFT_DELAY_MAX 999
-#define HSHIFT_DELAY_BOX_LENGTH 3
+#define FSHIFT_DELAY_MAX 999
+#define FSHIFT_DELAY_BOX_LENGTH 3
 
 #define DIRECTORY_NAME_DEFAULT_WIDTH 60
 #define DIRECTORY_NAME_DEFAULT_CHAR 'x'
@@ -51,9 +51,9 @@ class QtPreferencesDialog: public QDialog
 public:
 	QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 			const QString& aCustomDirectoryName,
-			bool anUseHShiftClickFlag,
-			bool anAlwaysUseHShiftFlag,
-			int anHShiftDelay,
+			bool anUseFShiftClickFlag,
+			bool anAlwaysUseFShiftFlag,
+			int anFShiftDelay,
 			bool aShowToolTipFlag,
 			bool anUseFontsFlag,
 			bool aShowCatalogMenusFlag,
@@ -66,36 +66,36 @@ public:
 public:
 	bool isCustomDirectoryActive() const;
 	QString getCustomDirectoryName() const;
-	bool isUseHShiftClickActive() const;
-	bool isAlwaysUseHShiftClickActive() const;
+	bool isUseFShiftClickActive() const;
+	bool isAlwaysUseFShiftClickActive() const;
 	bool isShowToolTips() const;
 	bool isUseFonts() const;
 	bool isShowCatalogMenus() const;
 	bool isSCloseCatalogMenus() const;
 	bool isDisplayAsStack() const;
-	int getHShiftDelay() const;
+	int getFShiftDelay() const;
 	QString getSerialPortName() const;
 
 private slots:
 	void customDirectoryToggled(bool aButtonChecked);
 	void chooseDirectory();
 	void serialPortChanged(const QString& aSerialPortName);
-	void useHShiftClickToggled(bool aButtonChecked);
+	void useFShiftClickToggled(bool aButtonChecked);
 
 private:
 	void buildComponents(bool aCustomDirectoryActiveFlag,
 			const QString& aCustomDirectoryName,
-			bool anUseHShiftClickFlag,
-			bool anAlwaysUseHShiftClickFlag,
+			bool anUseFShiftClickFlag,
+			bool anAlwaysUseFShiftClickFlag,
 			bool aShowToolTipFlag,
 			bool anUseFontsFlag,
 			bool aShowCatalogMenusFlag,
 			bool aCloseCatalogMenusFlag,
 			bool aDisplayAsStackFlag,
-			int anHShiftDelay,
+			int anFShiftDelay,
 			const QString& aSerialPortName);
 	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName);
-	QWidget* buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay, bool aShowToolTipFlag);
+	QWidget* buildKeyboardTab(bool anUseFShiftClickFlag, bool anAlwaysUseFShiftClickFlag, int anFShiftDelay, bool aShowToolTipFlag);
 	QWidget* buildDisplayTab(bool anUseFontsFlag, bool aShowCatalogMenusFlag, bool aCloseCatalogMenusFlag, bool aDisplayAsStackFlag);
 	QWidget* buildSerialTab(const QString& aSerialPortName);
 	void fillSerialPorts(QListWidget& aListWidget);
@@ -104,14 +104,14 @@ private:
 	QRadioButton* useCustomDirectoryButton;
 	QLineEdit* directoryNameEdit;
 	QPushButton* chooseButton;
-	QCheckBox *useHShiftClickButton;
-	QCheckBox *alwaysUseHShiftClickButton;
+	QCheckBox *useFShiftClickButton;
+	QCheckBox *alwaysUseFShiftClickButton;
 	QCheckBox *showToolTipsClickButton;
 	QCheckBox *useFontsClickButton;
 	QCheckBox *showCatalogMenusClickButton;
 	QCheckBox *closeCatalogMenusClickButton;
 	QCheckBox *displayAsStackClickButton;
-	QSpinBox* hShiftDelayBox;
+	QSpinBox* fShiftDelayBox;
 	QLineEdit* serialPortNameEdit;
 };
 

@@ -28,7 +28,7 @@ static const PainterHandlers painterHandlers;
 
 
 QtSkin::QtSkin(QFile& aFile) throw (QtSkinException)
-		: pictureSize(-1, -1), screenRectangle(-1, -1, -1, -1), screenForeground(), screenBackground(), hShiftHeight(0),
+		: pictureSize(-1, -1), screenRectangle(-1, -1, -1, -1), screenForeground(), screenBackground(), fShiftHeight(0),
 		  numberFontSize(-1), exponentFontSize(-1), fontSize(-1), smallFontSize(-1),
 		  keys(MAX_KEY_CODE, NULL), dotPainters(DOT_PAINTERS_COUNT, NULL), pastePainters(PASTE_PAINTERS_COUNT, NULL),
 		  insertedKeys(0), insertedDotPainters(0), insertedPastePainters(0)
@@ -142,9 +142,9 @@ const QColor& QtSkin::getSCreenBackground() const
 	return screenBackground;
 }
 
-int QtSkin::getHShiftHeight() const
+int QtSkin::getFShiftHeight() const
 {
-	return hShiftHeight;
+	return fShiftHeight;
 }
 
 QPoint QtSkin::getNumberPosition() const
@@ -638,7 +638,7 @@ bool QtSkin::startBackground(const QString& aName, const QXmlAttributes& theAttr
 }
 
 
-bool QtSkin::startHShift(const QString& aName, const QXmlAttributes& theAttributes)
+bool QtSkin::startFShift(const QString& aName, const QXmlAttributes& theAttributes)
 {
 	Q_UNUSED(aName)
 
@@ -651,7 +651,7 @@ bool QtSkin::startHShift(const QString& aName, const QXmlAttributes& theAttribut
 	}
 	else
 	{
-		if(!convertStringToInteger(theAttributes.value(heightIndex), hShiftHeight))
+		if(!convertStringToInteger(theAttributes.value(heightIndex), fShiftHeight))
 		{
 			setErrorMessage("Invalid height "+theAttributes.value(heightIndex));
 			return false;
@@ -1249,7 +1249,7 @@ SkinHandlers::SkinHandlers()
 	(*this)[QString("screen")]=TagHandler(&QtSkin::startScreen, NULL, NULL);
 	(*this)[QString("foreground")]=TagHandler(&QtSkin::startForeground, NULL, NULL);
 	(*this)[QString("background")]=TagHandler(&QtSkin::startBackground, NULL, NULL);
-	(*this)[QString("hshift")]=TagHandler(&QtSkin::startHShift, NULL, NULL);
+	(*this)[QString("hshift")]=TagHandler(&QtSkin::startFShift, NULL, NULL);
 	(*this)[QString("number")]=TagHandler(&QtSkin::startNumber, NULL, NULL);
 	(*this)[QString("exponent")]=TagHandler(&QtSkin::startExponent, NULL, NULL);
 	(*this)[QString("text")]=TagHandler(&QtSkin::startText, NULL, NULL);

@@ -17,18 +17,18 @@
 #include "QtKeyCode.h"
 
 QtKeyCode::QtKeyCode()
-: valid(false), code(-1), hShifted(false)
+: valid(false), code(-1), fShifted(false)
 {
 }
 
-QtKeyCode::QtKeyCode(int aCode, bool anHShiftedFlag)
-: valid(aCode>=0), code(aCode), hShifted(anHShiftedFlag)
+QtKeyCode::QtKeyCode(int aCode, bool anFShiftedFlag)
+: valid(aCode>=0), code(aCode), fShifted(anFShiftedFlag)
 {
 }
 
 bool QtKeyCode::operator ==(const QtKeyCode& aQtKeyCode) const
 {
-	return valid==aQtKeyCode.isValid() && code==aQtKeyCode.getCode() && isHShifted()==aQtKeyCode.isHShifted();
+	return valid==aQtKeyCode.isValid() && code==aQtKeyCode.getCode() && isFShifted()==aQtKeyCode.isFShifted();
 }
 
 bool QtKeyCode::operator !=(const QtKeyCode& aQtKeyCode) const
@@ -46,7 +46,7 @@ int QtKeyCode::getCode() const
 	return code;
 }
 
-bool QtKeyCode::isHShifted() const
+bool QtKeyCode::isFShifted() const
 {
-	return hShifted;
+	return fShifted;
 }

@@ -19,9 +19,9 @@
 
 QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 		const QString& aCustomDirectoryName,
-		bool anUseHShiftClickFlag,
-		bool anAlwaysUseHShiftClickFlag,
-		int anHShiftDelay,
+		bool anUseFShiftClickFlag,
+		bool anAlwaysUseFShiftClickFlag,
+		int anFShiftDelay,
 		bool aShowToolTipFlag,
 		bool anUseFontFlag,
 		bool aShowCatalogMenusFlag,
@@ -34,14 +34,14 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 	setWindowTitle(PREFERENCES_TITLE);
 	buildComponents(aCustomDirectoryActiveFlag,
 			aCustomDirectoryName,
-			anUseHShiftClickFlag,
-			anAlwaysUseHShiftClickFlag,
+			anUseFShiftClickFlag,
+			anAlwaysUseFShiftClickFlag,
 			aShowToolTipFlag,
 			anUseFontFlag,
 			aShowCatalogMenusFlag,
 			aCloseCatalogMenusFlag,
 			aDisplayAsStackClickFlag,
-			anHShiftDelay,
+			anFShiftDelay,
 			aSerialPortName);
 }
 
@@ -51,14 +51,14 @@ QtPreferencesDialog::~QtPreferencesDialog()
 
 void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 		const QString& aCustomDirectoryName,
-		bool anUseHShiftClickFlag,
-		bool anAlwaysUseHShiftClickFlag,
+		bool anUseFShiftClickFlag,
+		bool anAlwaysUseFShiftClickFlag,
 		bool aShowToolTipFlag,
 		bool anUseFontFlag,
 		bool aShowCatalogMenusFlag,
 		bool aCloseCatalogMenusFlag,
 		bool aDisplayAsStackFlag,
-		int anHShiftDelay,
+		int anFShiftDelay,
 		const QString& aSerialPortName)
 {
 	QVBoxLayout* dialogLayout=new QVBoxLayout;
@@ -68,7 +68,7 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 
 	QTabWidget* tabWidget = new QTabWidget;
 	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), MEMORY_TAB_NAME);
-	tabWidget->addTab(buildKeyboardTab(anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, anHShiftDelay, aShowToolTipFlag), KEYBOARD_TAB_NAME);
+	tabWidget->addTab(buildKeyboardTab(anUseFShiftClickFlag, anAlwaysUseFShiftClickFlag, anFShiftDelay, aShowToolTipFlag), KEYBOARD_TAB_NAME);
 	tabWidget->addTab(buildDisplayTab(anUseFontFlag, aShowCatalogMenusFlag, aCloseCatalogMenusFlag, aDisplayAsStackFlag), DISPLAY_TAB_NAME);
 	tabWidget->addTab(buildSerialTab(aSerialPortName), SERIAL_PORT_TAB_NAME);
 
@@ -111,35 +111,35 @@ QWidget* QtPreferencesDialog::buildMemoryTab(bool aCustomDirectoryActiveFlag, co
 	return memoryTab;
 }
 
-QWidget* QtPreferencesDialog::buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay, bool aShowToolTipFlag)
+QWidget* QtPreferencesDialog::buildKeyboardTab(bool anUseFShiftClickFlag, bool anAlwaysUseFShiftClickFlag, int anFShiftDelay, bool aShowToolTipFlag)
 {
 	QWidget* keyboardTab=new QWidget;
 	QVBoxLayout* keyboardLayout=new QVBoxLayout;
 
-	useHShiftClickButton=new QCheckBox(USE_H_CLICK_TEXT);
-	connect(useHShiftClickButton, SIGNAL(toggled(bool)), this, SLOT(useHShiftClickToggled(bool)));
-	keyboardLayout->addWidget(useHShiftClickButton);
+	useFShiftClickButton=new QCheckBox(USE_F_CLICK_TEXT);
+	connect(useFShiftClickButton, SIGNAL(toggled(bool)), this, SLOT(useFShiftClickToggled(bool)));
+	keyboardLayout->addWidget(useFShiftClickButton);
 
-	alwaysUseHShiftClickButton=new QCheckBox(ALWAYS_USE_H_CLICK_TEXT);
-	keyboardLayout->addWidget(alwaysUseHShiftClickButton);
+	alwaysUseFShiftClickButton=new QCheckBox(ALWAYS_USE_F_CLICK_TEXT);
+	keyboardLayout->addWidget(alwaysUseFShiftClickButton);
 
-	QHBoxLayout* hShiftDelayLayout=new QHBoxLayout;
-	hShiftDelayLayout->setSpacing(HORIZONTAL_SPACING);
+	QHBoxLayout* fShiftDelayLayout=new QHBoxLayout;
+	fShiftDelayLayout->setSpacing(HORIZONTAL_SPACING);
 
-	QLabel* hShiftDelayLabel=new QLabel(HSHIFT_DELAY_LABEL_TEXT);
-	hShiftDelayLayout->addWidget(hShiftDelayLabel);
+	QLabel* fShiftDelayLabel=new QLabel(FSHIFT_DELAY_LABEL_TEXT);
+	fShiftDelayLayout->addWidget(fShiftDelayLabel);
 
-	hShiftDelayBox=new QSpinBox;
-	hShiftDelayBox->setRange(0, HSHIFT_DELAY_MAX);
-	hShiftDelayBox->setValue(anHShiftDelay);
-	hShiftDelayLayout->addWidget(hShiftDelayBox);
+	fShiftDelayBox=new QSpinBox;
+	fShiftDelayBox->setRange(0, FSHIFT_DELAY_MAX);
+	fShiftDelayBox->setValue(anFShiftDelay);
+	fShiftDelayLayout->addWidget(fShiftDelayBox);
 
-	hShiftDelayLayout->addStretch();
-	keyboardLayout->addItem(hShiftDelayLayout);
+	fShiftDelayLayout->addStretch();
+	keyboardLayout->addItem(fShiftDelayLayout);
 
-	useHShiftClickButton->setChecked(anUseHShiftClickFlag);
-	alwaysUseHShiftClickButton->setChecked(anAlwaysUseHShiftClickFlag);
-	useHShiftClickToggled(isUseHShiftClickActive());
+	useFShiftClickButton->setChecked(anUseFShiftClickFlag);
+	alwaysUseFShiftClickButton->setChecked(anAlwaysUseFShiftClickFlag);
+	useFShiftClickToggled(isUseFShiftClickActive());
 
 	showToolTipsClickButton=new QCheckBox(USE_TOOLTIPS_LABEL_TEXT);
 	showToolTipsClickButton->setChecked(aShowToolTipFlag);
@@ -266,24 +266,24 @@ bool QtPreferencesDialog::isDisplayAsStack() const
 	return displayAsStackClickButton->isChecked();
 }
 
-void QtPreferencesDialog::useHShiftClickToggled(bool aButtonChecked)
+void QtPreferencesDialog::useFShiftClickToggled(bool aButtonChecked)
 {
-	alwaysUseHShiftClickButton->setEnabled(aButtonChecked);
+	alwaysUseFShiftClickButton->setEnabled(aButtonChecked);
 }
 
-bool QtPreferencesDialog::isUseHShiftClickActive() const
+bool QtPreferencesDialog::isUseFShiftClickActive() const
 {
-	return useHShiftClickButton->isChecked();
+	return useFShiftClickButton->isChecked();
 }
 
-bool QtPreferencesDialog::isAlwaysUseHShiftClickActive() const
+bool QtPreferencesDialog::isAlwaysUseFShiftClickActive() const
 {
-	return alwaysUseHShiftClickButton->isChecked();
+	return alwaysUseFShiftClickButton->isChecked();
 }
 
-int QtPreferencesDialog::getHShiftDelay() const
+int QtPreferencesDialog::getFShiftDelay() const
 {
-	return hShiftDelayBox->value();
+	return fShiftDelayBox->value();
 }
 
 bool QtPreferencesDialog::isShowToolTips() const

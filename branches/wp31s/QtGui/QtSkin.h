@@ -77,7 +77,7 @@ public: // getters for Skin fields
     const QRect& getPasteRectangle() const;
     const QColor& getSCreenForeground() const;
     const QColor& getSCreenBackground() const;
-    int getHShiftHeight() const;
+    int getFShiftHeight() const;
     QPoint getNumberPosition() const;
     int getNumberFontSize() const;
     int getNumberFontStretch() const;
@@ -110,7 +110,7 @@ public: // Parsing methods
     bool startScreen(const QString& aName, const QXmlAttributes& theAttributes);
     bool startForeground(const QString& aName, const QXmlAttributes& theAttributes);
     bool startBackground(const QString& aName, const QXmlAttributes& theAttributes);
-    bool startHShift(const QString& aName, const QXmlAttributes& theAttributes);
+    bool startFShift(const QString& aName, const QXmlAttributes& theAttributes);
     bool startNumber(const QString& aName, const QXmlAttributes& theAttributes);
     bool startExponent(const QString& aName, const QXmlAttributes& theAttributes);
     bool startText(const QString& aName, const QXmlAttributes& theAttributes);
@@ -145,7 +145,7 @@ private: // Skin fields
 	QRect pasteRectangle;
     QColor screenForeground;
     QColor screenBackground;
-    int hShiftHeight;
+    int fShiftHeight;
     QPoint numberPosition;
     int numberFontSize;
     int numberFontStretch;

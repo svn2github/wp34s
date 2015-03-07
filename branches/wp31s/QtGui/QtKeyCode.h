@@ -22,19 +22,19 @@ class QtKeyCode
 {
 public:
 	QtKeyCode();
-	QtKeyCode(int aCode, bool anHShiftedFlag=false);
+	QtKeyCode(int aCode, bool anFShiftedFlag=false);
 
 public:
 	bool operator ==(const QtKeyCode& aQtKeyCode) const;
 	bool operator !=(const QtKeyCode& aQtKeyCode) const;
 	bool isValid() const;
 	int getCode() const;
-	bool isHShifted() const;
+	bool isFShifted() const;
 
 private:
 	bool valid;
 	int code;
-	bool hShifted;
+	bool fShifted;
 };
 
 #endif /* QTKEYCODE_H_ */

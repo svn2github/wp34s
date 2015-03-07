@@ -28,15 +28,13 @@
 class QtBackgroundImage;
 
 #define KEYBOARD_BUFFER_SIZE 16
-#define F_CODE 9
-#define G_CODE 10
-#define H_CODE 11
+#define F_CODE 30
 #define ON_CODE 36
 
 
-#define DEFAULT_USE_HSHIFT_CLICK true
-#define DEFAULT_ALWAYS_USE_HSHIFT_CLICK false
-#define DEFAULT_HSHIFT_DELAY 200
+#define DEFAULT_USE_FSHIFT_CLICK true
+#define DEFAULT_ALWAYS_USE_FSHIFT_CLICK false
+#define DEFAULT_FSHIFT_DELAY 200
 #define DEFAULT_DISPLAY_AS_STACK false
 
 #define AUTOREPEAT_FIRST_DELAY 500
@@ -47,7 +45,7 @@ class QtKeyboard: public QObject
 	Q_OBJECT
 
 public:
-	QtKeyboard(const QtSkin& aSkin, bool anUseHShiftClick, bool anAlwaysUseHShiftClick, int anHShiftDelay, bool aShowToolTips);
+	QtKeyboard(const QtSkin& aSkin, bool anUseFShiftClick, bool anAlwaysUseFShiftClick, int anFShiftDelay, bool aShowToolTips);
 	virtual ~QtKeyboard();
 
 public:
@@ -69,12 +67,12 @@ public:
 	void paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEvent);
 	void invertKeycode(int aCode, QtBackgroundImage& aBackgroundImage);
 	void invertKey(const QtKey* aKey, QtBackgroundImage& aBackgroundImage);
-	bool isUseHShiftClick();
-	void setUseHShiftClick(bool anUseHShiftClick);
-	bool isAlwaysUseHShiftClick();
-	void setAlwaysUseHShiftClick(bool anAlwaysUseHShiftClick);
-	int getHShiftDelay();
-	void setHShiftDelay(int anHShiftDelay);
+	bool isUseFShiftClick();
+	void setUseFShiftClick(bool anUseFShiftClick);
+	bool isAlwaysUseFShiftClick();
+	void setAlwaysUseFShiftClick(bool anAlwaysUseFShiftClick);
+	int getFShiftDelay();
+	void setFShiftDelay(int anFShiftDelay);
 	bool isShowToolTips();
 	void setShowToolTips(bool aShowToolTips);
 	QtKeyCode findKeyCode(const QKeyEvent& aKeyEvent) const;
@@ -82,7 +80,7 @@ public:
 	void incrementOnKeyTicks();
 
 private slots:
-	void onHShift();
+	void onFShift();
 	void onAutoRepeat();
 
 signals:
@@ -94,13 +92,13 @@ private:
 	bool isShowCatalogKey(const QKeyEvent& aKeyEvent) const;
 	QtKeyCode findKeyCode(const QPoint& aPoint) const;
     const QtKey* findKey(const QtKeyCode& aKeyCode) const;
-    void startHShiftTimer();
+    void startFShiftTimer();
     void startAutoRepeatTimer();
     bool isAutoRepeat(const QtKeyCode& aKeyCode) const;
 	void updateOnKeyTicks(bool pressed);
 
 private:
-    int hShiftHeight;
+    int fShiftHeight;
     QtKeyList keys;
     KeySequenceList catalogMenuKeys;
     QMutex mutex;
@@ -109,14 +107,14 @@ private:
     volatile int keyboardBufferBegin, keyboardBufferEnd;
     QtKeyCode currentKeyCode;
     QtKeyCode lastReleasedKeyCode;
-    bool useHShiftClick;
-    bool alwaysUseHShiftClick;
-    int hShiftDelay;
+    bool useFShiftClick;
+    bool alwaysUseFShiftClick;
+    int fShiftDelay;
     bool showToolTips;
-    bool currentKeyHShifted;
+    bool currentKeyFShifted;
     bool autoRepeat;
-    bool fShiftLocked, gShiftLocked, hShiftLocked;
-    QTimer* hShiftTimer;
+    bool fShiftLocked;
+    QTimer* fShiftTimer;
     QTimer* autoRepeatTimer;
     QHash<int, const QtKey*> keysByCode;
 };

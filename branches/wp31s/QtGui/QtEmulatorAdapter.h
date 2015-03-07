@@ -47,7 +47,7 @@ extern void set_fshift_locked(int);
 extern void set_gshift_locked(int);
 extern void set_hshift_locked(int);
 extern int is_not_shifted();
-extern int is_hshifted();
+extern int is_fshifted();
 #if HAS_SERIAL
 extern int forward_byte_received(short);
 #endif

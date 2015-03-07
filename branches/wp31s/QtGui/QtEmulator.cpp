@@ -132,9 +132,9 @@ void QtEmulator::editPreferences()
 {
 	QtPreferencesDialog preferencesDialog(customDirectoryActive,
 			customDirectory.path(),
-			keyboard->isUseHShiftClick(),
-			keyboard->isAlwaysUseHShiftClick(),
-			keyboard->getHShiftDelay(),
+			keyboard->isUseFShiftClick(),
+			keyboard->isAlwaysUseFShiftClick(),
+			keyboard->getFShiftDelay(),
 			keyboard->isShowToolTips(),
 			screen->isUseFonts(),
 			backgroundImage->isShowCatalogMenu(),
@@ -149,9 +149,9 @@ void QtEmulator::editPreferences()
 		checkCustomDirectory();
 		saveCustomDirectorySettings();
 
-		keyboard->setUseHShiftClick(preferencesDialog.isUseHShiftClickActive());
-		keyboard->setAlwaysUseHShiftClick(preferencesDialog.isAlwaysUseHShiftClickActive());
-		keyboard->setHShiftDelay(preferencesDialog.getHShiftDelay());
+		keyboard->setUseFShiftClick(preferencesDialog.isUseFShiftClickActive());
+		keyboard->setAlwaysUseFShiftClick(preferencesDialog.isAlwaysUseFShiftClickActive());
+		keyboard->setFShiftDelay(preferencesDialog.getFShiftDelay());
 		keyboard->setShowToolTips(preferencesDialog.isShowToolTips());
 		saveKeyboardSettings();
 
@@ -498,7 +498,7 @@ void QtEmulator::buildComponents(const QtSkin& aSkin)
 {
 	centralWidget=new QWidget;
 	screen=new QtScreen(aSkin, useFonts);
-	keyboard=new QtKeyboard(aSkin, useHShiftClick, alwaysUseHShiftClick, hShiftDelay, showToolTips);
+	keyboard=new QtKeyboard(aSkin, useFShiftClick, alwaysUseFShiftClick, fShiftDelay, showToolTips);
 	backgroundImage=new QtBackgroundImage(aSkin, *screen, *keyboard, showCatalogMenus, closeCatalogMenus);
 	connect(this, SIGNAL(catalogStateChanged()), backgroundImage, SLOT(onCatalogStateChanged()), Qt::BlockingQueuedConnection);
 	QBoxLayout* layout = new QHBoxLayout();
@@ -660,9 +660,9 @@ void QtEmulator::loadUserInterfaceSettings()
 void QtEmulator::loadKeyboardSettings()
 {
 	settings.beginGroup(KEYBOARD_SETTINGS_GROUP);
-	useHShiftClick=settings.value(USE_HSHIFT_CLICK_SETTING, DEFAULT_USE_HSHIFT_CLICK).toBool();
-	alwaysUseHShiftClick=settings.value(ALWAYS_USE_HSHIFT_CLICK_SETTING, DEFAULT_ALWAYS_USE_HSHIFT_CLICK).toBool();
-	hShiftDelay=settings.value(HSHIFT_DELAY_SETTING, DEFAULT_HSHIFT_DELAY).toInt();
+	useFShiftClick=settings.value(USE_FSHIFT_CLICK_SETTING, DEFAULT_USE_FSHIFT_CLICK).toBool();
+	alwaysUseFShiftClick=settings.value(ALWAYS_USE_FSHIFT_CLICK_SETTING, DEFAULT_ALWAYS_USE_FSHIFT_CLICK).toBool();
+	fShiftDelay=settings.value(FSHIFT_DELAY_SETTING, DEFAULT_FSHIFT_DELAY).toInt();
 	showToolTips=settings.value(SHOW_TOOLTIPS_SETTING, DEFAULT_SHOW_TOOLTIPS_SETTING).toBool();
 	settings.endGroup();
 }
@@ -721,9 +721,9 @@ void QtEmulator::saveUserInterfaceSettings()
 void QtEmulator::saveKeyboardSettings()
 {
     settings.beginGroup(KEYBOARD_SETTINGS_GROUP);
-    settings.setValue(USE_HSHIFT_CLICK_SETTING, keyboard->isUseHShiftClick());
-    settings.setValue(ALWAYS_USE_HSHIFT_CLICK_SETTING, keyboard->isAlwaysUseHShiftClick());
-    settings.setValue(HSHIFT_DELAY_SETTING, keyboard->getHShiftDelay());
+    settings.setValue(USE_FSHIFT_CLICK_SETTING, keyboard->isUseFShiftClick());
+    settings.setValue(ALWAYS_USE_FSHIFT_CLICK_SETTING, keyboard->isAlwaysUseFShiftClick());
+    settings.setValue(FSHIFT_DELAY_SETTING, keyboard->getFShiftDelay());
     settings.setValue(SHOW_TOOLTIPS_SETTING, keyboard->isShowToolTips());
     settings.endGroup();
 }
