@@ -415,6 +415,7 @@ void save_statefile( void )
 	init_state();
 	checksum_all();
 	fwrite( &PersistentRam, sizeof( PersistentRam ), 1, f );
+	fwrite( &UndoState, sizeof( UndoState ), 1, f );
 	fclose( f );
 #ifdef DEBUG
 	printf( "sizeof struct _state = %d\n", (int)sizeof( struct _state ) );
@@ -436,6 +437,7 @@ void load_statefile( void )
 	FILE *f = fopen( STATE_FILE, "rb" );
 	if ( f != NULL ) {
 		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
+		fread( &UndoState, sizeof( UndoState ), 1, f );
 		fclose( f );
 	}
 	f = fopen( BACKUP_FILE, "rb" );

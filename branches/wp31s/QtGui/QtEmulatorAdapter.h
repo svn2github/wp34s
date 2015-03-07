@@ -23,6 +23,7 @@ extern void init_calculator();
 extern void forward_keycode(int);
 extern void forward_key_released();
 extern char* get_memory();
+extern char* get_undo_memory();
 extern int get_memory_size();
 extern char* get_backup();
 extern int get_backup_size();

@@ -774,15 +774,19 @@ void QtEmulator::loadState()
 	}
 
 	int memorySize=get_memory_size();
-	if(memoryFile.size()!=memorySize)
+	if(memoryFile.size()!=memorySize && memoryFile.size()!=2*memorySize)
 	{
-		memoryWarning(memoryFile.fileName()+" expected size is "+QString::number(memorySize)
+		memoryWarning(memoryFile.fileName()+" expected size is "+QString::number(2*memorySize)
 		+" but file size is "+QString::number(memoryFile.size()));
 		return;
 	}
 
 	QDataStream dataStream(&memoryFile);
 	int reallyRead=dataStream.readRawData(get_memory(), memorySize);
+	if(reallyRead==memorySize && memoryFile.size()==2*memorySize)
+	{
+		reallyRead=dataStream.readRawData(get_undo_memory(), memorySize);
+	}
 	if(reallyRead!=memorySize)
 	{
 		memoryWarning("Error whilst reading "+memoryFile.fileName());
@@ -834,6 +838,10 @@ void QtEmulator::saveState()
 	QDataStream dataStream(&memoryFile);
 	int memorySize=get_memory_size();
 	int reallyWritten=dataStream.writeRawData(get_memory(), memorySize);
+	if (reallyWritten==memorySize)
+	{
+		reallyWritten=dataStream.writeRawData(get_undo_memory(), memorySize);
+	}
 	if(reallyWritten!=memorySize)
 	{
 		memoryWarning("Cannot write "+memoryFile.fileName());

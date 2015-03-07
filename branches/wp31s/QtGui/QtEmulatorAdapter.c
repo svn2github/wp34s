@@ -186,6 +186,11 @@ char* get_memory()
 	return (char*) &PersistentRam;
 }
 
+char* get_undo_memory()
+{
+       return (char*) &UndoState;
+}
+
 int get_memory_size()
 {
 	return sizeof(PersistentRam);

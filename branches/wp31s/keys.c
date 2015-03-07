@@ -1964,6 +1964,7 @@ void process_keycode(int c)
 			OpCode = 0;
 
 			if (c == (OP_NIL | OP_OFF) || !is_bad_cmdline()) {
+				process_cmdline();
 				xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
 				xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
 				xeq(c);
@@ -2028,19 +2029,28 @@ void process_keycode(int c)
 			break;
 
 		case STATE_UNDO:
-			xcopy(&PersistentRam, &UndoState, sizeof(TPersistentRam));
+			if (CmdLineLength)
+				CmdLineLength = CmdLineEex = CmdLineDot = 0;
+			else {
+				xcopy(&Undo2State, &PersistentRam, sizeof(TPersistentRam));
+				xcopy(&PersistentRam, &UndoState, sizeof(TPersistentRam));
+				xcopy(&UndoState, &Undo2State, sizeof(TPersistentRam));
+			}
 			break;
 
 		default:
 			if (c >= (OP_SPEC | OP_ENTER) && c <= (OP_SPEC | OP_F)) {
 				if (c != (OP_SPEC | OP_ENTER) || !is_bad_cmdline()) {
 					// Data entry key
-					xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
-					xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
+					cmdline_empty = (CmdLineLength == 0);
+					if (c == (OP_SPEC | OP_ENTER) || (CmdLineLength == 0 && c == (OP_SPEC | OP_CLX))) {
+						process_cmdline();
+						xcopy(&Undo2State, &UndoState, sizeof(TPersistentRam));
+						xcopy(&UndoState, &PersistentRam, sizeof(TPersistentRam));
+					}
 #ifndef CONSOLE
 					WasDataEntry = 1;
 #endif
-					cmdline_empty = (CmdLineLength == 0);
 					xeq(c);
 					cmdline_empty |= (CmdLineLength == 0);
 				}
