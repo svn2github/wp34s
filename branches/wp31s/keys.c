@@ -2029,13 +2029,10 @@ void process_keycode(int c)
 			break;
 
 		case STATE_UNDO:
-			if (CmdLineLength)
-				CmdLineLength = CmdLineEex = CmdLineDot = 0;
-			else {
-				xcopy(&Undo2State, &PersistentRam, sizeof(TPersistentRam));
-				xcopy(&PersistentRam, &UndoState, sizeof(TPersistentRam));
-				xcopy(&UndoState, &Undo2State, sizeof(TPersistentRam));
-			}
+			CmdLineLength = CmdLineEex = CmdLineDot = 0;
+			xcopy(&Undo2State, &PersistentRam, sizeof(TPersistentRam));
+			xcopy(&PersistentRam, &UndoState, sizeof(TPersistentRam));
+			xcopy(&UndoState, &Undo2State, sizeof(TPersistentRam));
 			break;
 
 		default:
