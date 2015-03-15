@@ -1248,10 +1248,15 @@ static int arg_eval(unsigned int val) {
 }
 
 static int arg_digit(int n) {
+	int lim;
+#ifdef INCLUDE_SIGFIG_MODE
+	int dispmode = get_dispmode_digs(&lim);
+	const unsigned int base = (State2.runmode && CmdBase == RARG_DISP && (dispmode == MODE_SIG || dispmode == MODE_SIG0) ? RARG_SIG : CmdBase);
+#else
 	const unsigned int base = CmdBase;
+#endif
 	const unsigned int val = State2.digval * 10 + n;
 	const int is_reg = argcmds[base].reg || State2.ind;
-	int lim;
 	
 	if (State2.local) {
 		// Handle local registers and flags

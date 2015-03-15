@@ -1692,8 +1692,11 @@ void cmddisp(unsigned int arg, enum rarg op) {
 
 	if (op != RARG_DISP)
 		dispmode = (op - RARG_STD) + MODE_STD;
-	dispdigs = arg;
-	set_dispmode_digs(dispmode, dispdigs);
+	else if ((dispmode == MODE_SIG || dispmode == MODE_SIG0) && arg >= 8) {
+		err(ERR_RANGE);
+		return;
+	}
+	set_dispmode_digs(dispmode, arg);
 #else
 	UState.dispdigs = arg;
 	if (op != RARG_DISP)
