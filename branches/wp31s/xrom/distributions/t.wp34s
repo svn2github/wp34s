@@ -71,25 +71,40 @@ cdf_t::			[infinity]?
 				JMP dist_ret_half
 			x>0?
 				JMP cdf_t_invert
-cdf_t_return::		RCL J		// v x ? ?
-			SWAP		// x v ? ?
-			x[^2]		// x^2 v ? ?
-			RCL+ J		// v+x^2 v ? ?
-			/		// v/(v+x^2) ? ? ?
-			Num 1/2
-			Num 1/2
-			RCL[times] J	// v/2 .5 v/(v+x^2) ?
-			[<->] ZXYT	// v/(v+x^2) v/2 .5 ?
-			I[sub-x]
-			Num 1/2
-			[times]
-			RTN
+cdf_t_return::          x[^2]
+			x<1?
+                        	JMP cdf_t_small
+                        RCL J
+                        SWAP 
+                        RCL+ J
+                        /
+                        Num 1/2
+                        RCL[times] J
+                        Num 1/2
+                        x[<->] Z
+                        I[sub-x]
+                        Num 1/2
+                        [times]
+                        RTN
 
-cdf_t_invert::		GSB cdf_t_return
-			_INT 1
-			SWAP
-			-
-			RTN
+cdf_t_small::           ENTER[^]
+                        RCL+ J
+                        /
+                        Num 1/2
+                        ENTER[^]
+                        RCL[times] J
+                        x[<->] Z
+                        I[sub-x]
+                        Num 1/2
+                        [times]
+                        +/-
+                        RCL+ L
+                        RTN
+
+cdf_t_invert::          GSB cdf_t_return
+                        +/-  
+                        INC X
+                        RTN
 
 cdf_t_infinite::	x<0?
 				JMP dist_ret_0

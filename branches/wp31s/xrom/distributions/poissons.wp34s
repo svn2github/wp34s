@@ -44,14 +44,14 @@ normal_moment_approx::	LocR 003
 pdf_poisson_xout::	FP?
 				JMP ret_0
 			RCL J
+			LN
+			RCL[times] Y
+			RCL- J
 			SWAP
-			y[^x]
-			RCL L
-			x!
-			/
-			RCL J
+			INC X
+			LN[GAMMA]
+			- 	// ln(PDF) = x*ln(lambda) - lambda - lngamma(x+1)
 			e[^x]
-			/
 			xOUT xOUT_NORMAL
 
 		XLBL"CDFU_POISSON"
