@@ -2129,7 +2129,7 @@ static decNumber *gcf(decNumber *res, const decNumber *a, const decNumber *x, co
 	int n;
 
 	dn_p1(&t, x);
-	dn_subtract(&b, &t, a);			// b = (x-1) a
+	gcheckSmall(dn_subtract(&b, &t, a));		// b = (x+1) - a
 	set_inf(&c);
 	decNumberRecip(&d, &b);
 	decNumberCopy(&h, &d);
