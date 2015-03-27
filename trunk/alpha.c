@@ -100,29 +100,35 @@ void multialpha(opcode op, enum multiops mopr) {
 /* Append integer value to Alpha
  */
 void alpha_ip(unsigned int arg, enum rarg op) {
-	unsigned int n;
-	char tbuf[16], *p;
-	int sgn;
+	char tbuf[NUMALPHA + 4], *p;
+	decNumber x, y;
+	int i, sgn;
 
 	if (is_intmode()) {
-		n = (unsigned int) extract_value(get_reg_n_int(arg), &sgn);
 		// should convert this using the current display mode...
+		unsigned long long int n = extract_value(get_reg_n_int(arg), &sgn);
+		ullint_to_dn(&x, n);
+		if (sgn)
+			dn_minus(&x, &x);
 	} else {
-		decNumber x;
-		int z;
-
-		getRegister(&x, arg);
-		z = dn_to_int(&x);
-		sgn = z < 0;
-		n = sgn ? -z : z;
+		if (decNumberIsNegative(getRegister(&y, arg)))
+			dn_minus(&y, &y);
+		decNumberFloor(&x, &y);
 	}
 
-	p = tbuf;
-	if (sgn)
-		*p++ = '-';
-	p = num_arg(p, n);
+	p = tbuf + sizeof(tbuf) - 1;
 	*p = '\0';
-	add_string(tbuf);
+
+	for (i=0; i<NUMALPHA; i++) {
+		decNumberMod(&y, &x, &const_10);
+		*--p = '0' + dn_to_int(&y);
+		decNumberFloor(&x, dn_divide(&y, &x, &const_10));
+		if (dn_eq0(&x))
+			break;
+	}
+	if (sgn)
+		*--p = '-';
+	add_string(p);
 }
 
 
