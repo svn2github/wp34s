@@ -31,6 +31,8 @@
 
 #define COMPLEX_PREFIX	'\024'
 
+extern const char DIGITS[];
+
 extern int setuptty(int reset);
 extern void display(void);
 extern void frozen_display(void);

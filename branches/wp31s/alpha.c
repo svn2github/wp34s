@@ -101,31 +101,37 @@ void multialpha(opcode op, enum multiops mopr) {
  */
 void alpha_ip(unsigned int arg, enum rarg op) {
 	char tbuf[NUMALPHA + 4], *p;
-	decNumber x, y;
 	int i, sgn;
-
-	if (is_intmode()) {
-		// should convert this using the current display mode...
-		unsigned long long int n = extract_value(get_reg_n_int(arg), &sgn);
-		ullint_to_dn(&x, n);
-		if (sgn)
-			dn_minus(&x, &x);
-	} else {
-		if (decNumberIsNegative(getRegister(&y, arg)))
-			dn_minus(&y, &y);
-		decNumberFloor(&x, &y);
-	}
 
 	p = tbuf + sizeof(tbuf) - 1;
 	*p = '\0';
 
-	for (i=0; i<NUMALPHA; i++) {
-		decNumberMod(&y, &x, &const_10);
-		*--p = '0' + dn_to_int(&y);
-		decNumberFloor(&x, dn_divide(&y, &x, &const_10));
-		if (dn_eq0(&x))
-			break;
+	if (is_intmode()) {
+		// should convert this using the current display mode...
+		unsigned long long int n = extract_value(get_reg_n_int(arg), &sgn);
+		unsigned int base = int_base();
+		for (i=0; i<NUMALPHA; i++) {
+			unsigned int r = n % base;
+			n /= base;
+			*--p = DIGITS[r];
+			if (n == 0)
+				break;
+		}
+	} else {
+		decNumber x, y;
+		sgn = decNumberIsNegative(getRegister(&y, arg));
+		if (sgn)
+			dn_minus(&y, &y);
+		decNumberFloor(&x, &y);
+		for (i=0; i<NUMALPHA; i++) {
+			decNumberMod(&y, &x, &const_10);
+			*--p = '0' + dn_to_int(&y);
+			decNumberFloor(&x, dn_divide(&y, &x, &const_10));
+			if (dn_eq0(&x))
+				break;
+		}
 	}
+
 	if (sgn)
 		*--p = '-';
 	add_string(p);

@@ -1034,7 +1034,7 @@ static void disp_x(const char *p) {
 	}
 }
 
-static const char DIGITS[] = "0123456789ABCDEF";
+const char DIGITS[] = "0123456789ABCDEF";
 
 static void set_int_x(const long long int value, char *res) {
 	const int ws = word_size();
