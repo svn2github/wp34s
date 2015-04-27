@@ -60,6 +60,8 @@ static struct pair {
 	DIG('i',		D_BL),
 	DIG('J',		D_TR | D_BL | D_BR | D_BOTTOM),
 	DIG('j',		D_TR | D_BL | D_BR | D_BOTTOM),
+	DIG('K',		D_TL | D_BL | D_BR),
+	DIG('k',		D_TL | D_BL | D_BR),
 	DIG('L',		D_TL | D_BL | D_BOTTOM),
 	DIG('l',		D_TL | D_BL | D_BOTTOM),
 	DIG('M',		D_TOP | D_TL | D_TR | D_BL),		// left half of M
