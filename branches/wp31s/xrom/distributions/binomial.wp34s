@@ -47,9 +47,9 @@
 			xIN MONADIC
 			GSB binomial_param
 			CEIL
-			DEC X
 			x[<=]0?
 				JMP ret_1
+			DEC X
 			x>? K
 				JMP ret_0
 			GSB cdf_bin_beta_xform	// n-x x+1
