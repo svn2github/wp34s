@@ -1,0 +1,54 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+  Prim-Faktor-Zerlegung (Prime Factorization)
+
+  Input:  X:n (positive integer)
+  Output: X:pf1 [R/S] pf2 [R/S] ... [R/S] 0 (L:n)
+  Used:   XYZT, IK
+*/
+
+001 LBL'PF'
+002 INT?
+003 x<1?
+004 RTN
+005 STO K
+006 2
+007 RCL Y
+008 [sqrt]
+009 IP
+010 STO I
+011 DROP
+012 x>? I
+013 SKIP 011
+014 [cmplx]ENTER
+015 RMDR
+016 x=0?
+017 SKIP 003
+018 DROP
+019 NEXTP
+020 BACK 008
+021 DROP
+022 STOP
+023 STO/ Y
+024 BACK 017
+025 DROP
+026 STOP
+027 CLSTK
+028 x[<->] K
+029 [times]
+030 END

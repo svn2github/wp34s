@@ -1,0 +1,159 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* This program is based on Jean-Marc Baillard's HP-41 digamma code:
+ *	http://hp41programs.yolasite.com/gamma.php
+ */
+
+	LBL'[PSI]'
+		LocR 4
+		STOM .03
+		SSIZE4
+		x<0?
+			SF .00
+		ABS
+		STO .02
+		# 8
+		x[<->] Y
+		LBL 00
+		1/x
+		STO+ .00
+		x[<->] L
+		INC X
+		x<? Y
+		GTO 00
+		1/x
+		STO .01
+		x[^2]
+		STO Y
+		# 5
+		%
+		# 21
+		1/x
+		-
+		[times]
+		# 1
+		SDR 1
+		+
+		[times]
+		DEC X
+		[times]
+		# 12
+		/
+		RCL .01
+		LN
+		RCL L
+		# 2
+		/
+		+
+		-
+		RCL- .00
+		RCLM .03
+		FC? .00
+			RTN
+		RCL .02
+		1/x
+		+
+		# [pi]
+		RCL .02
+		RCL .02
+		ROUNDI
+		-
+		# [pi]
+		[times]
+		RAD[->]
+		TAN
+		/
+		+
+		RTN
+
+	LBL'[cmplx][PSI]'
+		LocR 7
+		STOM .06
+		[cmplx]STO .01
+		SSIZE4
+		LBL 01
+		# 10
+		RCL .01
+		x>? Y
+			GTO 02
+		[cmplx]RCL .01
+		[->]POL
+		1/x
+		[cmplx]CONJ
+		[->]REC
+		[cmplx]STO+ .03
+		INC .01
+		GTO 01
+		LBL 02
+		[cmplx]RCL .01
+		[->]POL
+		x[^2]
+		STO .00
+		1/x
+		x[<->] Y
+		STO+ X
+		STO .05
+		+/-
+		x[<->] Y
+		# 21
+		/
+		[->]REC
+		# 1
+		SDR 1
+		-
+		[->]POL
+		RCL/ .00
+		x[<->] Y
+		RCL- .05
+		x[<->] Y
+		[->]REC
+		INC X
+		[->]POL
+		# 12
+		/
+		[cmplx]RCL .01
+		[->]POL
+		R[v]
+		STO- Z
+		x[<->] T
+		/
+		[->]REC
+		# 2
+		1/x
+		+
+		[->]POL
+		[cmplx]RCL .01
+		[->]POL
+		R[v]
+		STO- Z
+		x[<->] T
+		/
+		[->]REC
+		[cmplx]RCL .01
+		RAD
+		[->]POL
+		LN
+		R[^]
+		STO- Z
+		x[<->] T
+		-
+		RCL .04
+		STO- Z
+		x[<->] .03
+		-
+		RCLM .06
+		END

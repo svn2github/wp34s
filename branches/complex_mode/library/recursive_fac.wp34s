@@ -1,0 +1,12 @@
+LBL'FAC'
+	IP
+	x>1?
+	SKIP 002
+	1
+	RTN
+	LocR 01
+	STO .00
+	DEC X
+	XEQ'FAC'
+	RCL[times] .00
+	END

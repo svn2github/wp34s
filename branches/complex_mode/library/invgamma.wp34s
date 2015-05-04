@@ -1,0 +1,59 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* This program was written by Gerson W. Barbosa based on an algorithm
+ * by Angel Martin as part of a discussion thread on the Museum of HP
+ * Calculators entitled "SandMath routine of the week: Inverse Gamma
+ * Function" from March 2013.
+ */
+
+	LBL'[GAMMA][^-1]'
+		# [pi]
+		# 86
+		/
+		RCL+ Y
+		# [pi]
+		STO+ X
+		SQRT
+		/
+		LN
+		[<->] XXYY
+		# eE
+		/
+		W[sub-p]
+		/
+		# 1/2
+		+
+		LBL 00
+			[<->] XZZX
+			GAMMA
+			/
+			+/-
+			INC X
+                        RCL Z
+                        LN
+                        RCL* L
+                        STO+ X
+                        DEC X
+                        RCL/ T
+                        /
+                        STO+ X
+			[<->] XZZY
+			-
+			CNVG? 03
+				RTN
+		GTO 00
+	END

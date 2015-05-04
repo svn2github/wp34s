@@ -1,0 +1,178 @@
+/* Program originally by Valentin Albillo for the HP-41 series.
+ * Converted ftoor the 34S by Miguel Toro.
+ *
+ * Here is a version for the WP 34S of Albillo's original program for
+ * the HP 41. I would like to thank Angel Martin for helping me with
+ * lot of information, documentation and his own version for the 41z.
+ * Porting the program was very straightforward. The only real difference
+ * I found between commands was with the SIGN function that behaves
+ * like it does in the 3Xs family rather than it does in the 41 and
+ * 42 calculators, so I have to replace it in my code.
+ * 
+ * The program has been tested with version 2.2 rev. 1782. Just copy
+ * it in a file and assemble it to try in the emulator and the calculator
+ * 
+ * Testing the examples from the article on the calculator, I obtained
+ * the same results, with the following time:
+ * 
+ * Example 1) 5 seconds:
+ *
+ * (2+8i)z^6 + (3+0i)z^5 + (-1+2i)z^4 + (0+2i)z^3 +
+ *				(-3-3i)z^2 + (1+2i)z + (-2+3i) = 0
+ *
+ * Example 2) 3,5 seconds:
+ *
+ * 5x^6 + 4x^5 + 3x^4 + 8x^3 + 8x^2 + 2x + 7 = 0
+ *
+ * Note: You can delete the STOP just before pr06. It is there just for testing.
+ */
+		LBL'PRT'
+		SSIZE4
+		FIX 00
+		CL[alpha]
+		"N?"
+		PROMPT
+		STO 00
+		STO 03
+		STO+ X
+		9
+		.
+		0
+		0
+		8
+		0
+		2
+		+
+		STO 01
+		STO 05
+		CLx
+
+pr05::		CL[alpha]
+		"IM[^]RE "
+		[alpha]IP 03
+		"?"
+		PROMPT
+		[cmplx]STO[->]05
+		DEC 03
+		DSE 05
+			JMP pr05
+		RCL 03
+		STOP			/* Delete me */
+
+pr06::		CF A
+		+/-
+		STO 04
+		FIX 02
+		ROUND
+		FIX 06
+		x[!=]0?
+			JMP pr01
+		1
+		STO 04
+
+pr01::		RCL 00
+		STO 08
+		SF 01
+		XEQ pr11
+		[->]POL
+		1/x
+		STO 07
+		x[<->] Y
+		+/-
+		STO 08
+		CF 01
+		XEQ pr11
+		[cmplx]ENTER
+		[cmplx]RCL 07
+		[->]REC
+		[cmplx][times]
+		[cmplx]STO- 03
+		[cmplx]ROUND
+		[cmplx]x[!=]0?
+			JMP pr01
+		SF A
+		XEQ pr11
+		2
+		STO+ 05
+		SDR 03
+		STO+ 01
+		RCL 04
+		RCL 03
+		[cmplx]STO[->]05
+		x[<->] Y
+		DSE 00
+			JMP pr06
+		RCL 01
+		IP
+		1
+		0
+		-
+		SDR 03
+		STO- 05
+		FIX 07
+
+pr10::		INC 00
+		CL[alpha]
+		"RT "
+		[alpha]IP 00
+		VIEW[alpha]
+		PSE 15
+		CL[alpha]
+		"RE"
+		[cmplx]RCL[->]05
+		PROMPT
+		CL[alpha]
+		"IM"
+		x[<->] Y
+		PROMPT
+		DSE 05
+			JMP pr10
+		CLx
+		CF A
+		RTN
+
+pr11::		RCL 01
+		STO 05
+		FC? 01
+			JMP pr13
+		2
+		SDR 03
+		STO+ 05
+
+pr13::		[cmplx]RCL[->]05
+		FC? 01
+			JMP pr02
+		RCL 08
+		STO[times] Z
+		[times]
+		DSE 08
+			JMP pr02
+		RTN
+
+pr00::		[cmplx]ENTER
+		[cmplx]RCL 03
+		[cmplx][times]
+		RCL[->]05
+		FS? 01
+			RCL[times] 08
+		+
+		FS? A
+			STO[->]05
+		x[<->] Y
+		INC 05
+		RCL[->]05
+		FS? 01
+			RCL 08
+		FS? 01
+			[times]
+		+
+		FS? A
+			STO[->]05
+		DEC 05
+		x[<->] Y
+		FS? 01
+			DSE 08
+
+pr02::		DSE 05
+			JMP pr00
+		END

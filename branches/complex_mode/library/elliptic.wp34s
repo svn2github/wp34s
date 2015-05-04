@@ -1,0 +1,79 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ * Given x in (0,1)
+ * (x = excentricity of an ellipse with major semiaxis a=1)
+ * XEQ'EI2' evaluates the elliptic integral of the second kind
+ * int_0^1 sqrt((1-x^2*t^2)/(1-t^2))dt
+ * (that is, the arclength of a quadrant of the ellipse)
+ * using Adlaj's recursive formulas:
+ *	http://www.ams.org/notices/201208/rtx120801094p.pdf
+ *
+ * Note that, although the function takes and returns a single parameter,
+ * the top stack level is lost (the implementation uses two stack levels).
+ *
+ * Not also, that the 'MAG' subroutine is required.  This can be found in
+ * the modified-AGM.wp34s file.
+ *
+ * Program by Eduardo Duenez.
+ */
+
+	LBL'EI2'    // Elliptic integral of the second kind with given parameter x
+	LocR 001
+	x[^2]
+	# 001
+	x[<->] Y
+	-
+	STO .00    // Parameter beta^2 = 1-x^2
+	[sqrt]     // Parameter beta
+	# 001
+	AGM	   // AGM(1,beta)
+	x[<->] .00
+	# 001
+	XEQ'MAG'   // MAGM(1,beta^2)
+	RCL/ .00   // MAGM(1,beta^2)/AGM(1,beta)
+	# [pi]
+	[times]
+	# 002
+	/	   // ... times (pi/2)
+	END
+
+/*
+  Given positive semiaxis lengths x,y
+  XEQ'ELC' returns the circumference of an ellipse with those semiaxes.
+ */
+
+	LBL'ELC'    // Perimeter of ellipse given semiaxes x,y
+	LocR 002
+	x<? Y
+	x[<->] Y
+	STO .01     // Major semiaxis a
+	/
+	STO .00     // beta = Aspect ratio = minor/major semiaxis
+	# 001
+	AGM
+	x[<->] .00
+	x[^2]	    // beta^2
+	# 001
+	XEQ'MAG'
+	RCL/ .00    // MAGM(1,beta^2)/AGM(1,beta) ...
+	RCL[times] .01
+	# [pi]
+	[times]
+	# 002
+	[times]     // ... times (2*pi*a)
+	END

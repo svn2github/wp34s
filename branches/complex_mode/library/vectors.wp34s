@@ -1,0 +1,249 @@
+/*
+This file is part of 34S.
+
+34S is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+34S is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
+This is a basic suite of three dimensional vector operations for the WP 34S.
+
+
+As a rule a vector occupies a triple of stack registers usually X, Y & Z or
+T, A & B.  Scalars occupy one stack level.  Operations save their first
+argument to last X (L for scalars and L, I & J for vectors).
+*/
+
+// ====================================================================
+// XXX This preprocessor-ready example program requires that it be
+//     assembled with the '-pp' switch.
+//     See post-processed output in wp34s_pp.lst file
+// ====================================================================
+
+/*
+  Here is a short application stub that makes the functions available
+  form the keyboard. Makes use of the new one letter labels
+*/
+LBL'Vec'
+SSIZE8
+CL[alpha]
+"Vector"
+VIEW[alpha]
+Vec_Stop:: STOP
+JMP Vec_Stop
+
+LBL A      // Absolute value
+GTO'VAB'
+
+LBL B      // Unit vector (couldn't find a better key)
+GTO'Vun'
+
+LBL C      // Cross product
+GTO'V[times]V'
+
+LBL D      // Dot product
+GTO'V.V'
+
+LBL 32     // Exchange (on x<>y key)
+GTO'V[<->]V'
+
+LBL 33     // Sign change (on +/- key)
+GTO'V+-'
+
+LBL 34     // L, Last X
+GTO'VLx'
+
+LBL 55     // Scalar multiply on multiplication key
+GTO'V[times]S'
+
+LBL 65     // Subtraction on -
+GTO'V-V'
+
+LBL 75     // Addition on +
+GTO'V+V'
+
+/*
+The functions provided here are:
+
+V.V
+  Vector dot product.  Input vectors in X,Y,Z and T,A,B.
+  Output scalar in X.  Second vector unchanged in Y,Z,T and
+  the first vector in L,I,J.
+
+  result = X*T + Y*A + Z*B
+*/
+001 ***LBL'V.V'
+002 [cmplx]R[v]
+003 STO J
+004 RCL[times] T
+005 R[^]
+006 STO I
+007 RCL[times] T
+008 +
+009 R[^]
+010 ENTER[^]
+011 RCL[times] T
+012 RCL+ Z
+013 STO Z
+014 DROP
+015 STO L
+016 DROP
+017 RTN
+
+/* V+V
+  Vector addition.  Input vectors in X,Y,Z and T,A,B.
+  Output vector in X,Y,Z.  Second vector unchanged in T,A,B.
+  The first vector is saved in L,I,J.
+*/
+018 ***LBL'V+V'
+019 [cmplx]R[v]
+020 STO J
+021 RCL+ T
+022 R[^]
+023 STO I
+024 RCL+ T
+025 R[^]
+026 RCL+ T
+027 RTN
+
+/* V-V
+  Vector subtraction.  Behaviour as for V+.
+*/
+028 ***LBL'V-V'
+029 [cmplx]R[v]
+030 STO J
+031 +/-
+032 RCL+ T
+033 R[^]
+034 STO I
+035 +/-
+036 RCL+ T
+037 R[^]
+038 +/-
+039 RCL+ T
+040 RCL L
+041 +/-
+042 STO L
+043 DROP
+044 RTN
+
+/* V<->V
+  Vector swap.  Swaps X,Y,Z with T,A,B.
+*/
+045 ***LBL'V[<->]V'
+046 [cmplx]R[v]
+047 x[<->] T
+048 [cmplx]R[^]
+049 [cmplx]x[<->] L
+050 RTN
+
+/* Vun
+  Unit vector from vector.  Replaces X,Y,Z with the equivalent
+  unit vector.  Saves the recprocal of the vectors length in L.
+  To undo this operation:
+    RCL L
+    1/x
+    V*S
+*/
+051 ***LBL'Vun'
+052 XEQ Vec_Magnitude
+053 1/x
+
+/* V[times]S
+  Vector multipled by scalar.  Vector in Y,Z,T and scalar in X.
+  Saves the scalar in L.
+*/
+054 ***LBL'V[times]S'
+055 STO[times] Y
+056 STO[times] Z
+057 STO[times] T
+058 STO L
+059 DROP
+060 RTN
+
+/* VAB
+  Vector absolute value (modulus).  Vector in Y,Z,T.  Returns
+  the length in X (dropping the vector).  The original vector
+  is saved in L,I,J.
+*/
+061 ***LBL'VAB'
+062 XEQ Vec_Magnitude
+063 x[<->] T
+064 STO J
+065 DROP
+066 [cmplx]STO L
+067 [cmplx]DROP
+068 RTN
+
+// Subroutine used by several functions.
+070 Vec_Magnitude:: ENTER[^]
+071 x[^2]
+072 RCL Z
+073 RCL[times] T
+074 +
+075 RCL T
+076 x[^2]
+077 +
+078 [sqrt]
+079 RTN
+
+/* V+-
+  Vector change sign.  Replaces the vector in X,Y,Z with its
+  negative.  The original vector is saved in L,I,J.
+*/
+080 ***LBL'V+-'
+081 [cmplx]R[v]
+082 STO J
+083 +/-
+084 [cmplx]R[^]
+085 [cmplx]+/-
+086 RTN
+
+/* VLx
+  Vector equivalent of LastX.  Pushes a vector stored in L,I,J onto
+  the stack.
+*/
+087 ***LBL'VLx'
+088 RCL J
+089 [cmplx]RCL L
+090 RTN
+
+/* V[times]V
+  Vector cross product.  Input vectors in X,Y,Z and T,A,B.
+  Output vector in X,Y,Z.  Second vector unchanged in T,A,B and
+  the first vector saved in L,I,J.  Uses stack registers C & D
+  for temporaty storage.
+*/
+091 ***LBL'V[times]V'
+092 STO C
+093 RCL[times] B
+094 RCL T
+095 RCL[times] T
+096 -
+097 x[<->] Y
+098 STO I
+099 RCL[times] T
+100 RCL A
+101 RCL[times] D
+102 -
+103 x[<->] Z
+104 STO J
+105 RCL[times] A
+106 RCL B
+107 RCL[times] I
+108 -
+109 R[^]
+110 STO L
+111 R[v]
+112 END
+

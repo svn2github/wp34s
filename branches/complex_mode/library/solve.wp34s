@@ -1,0 +1,479 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* The exposed functions in this file don't use the normal prologue/epilogue
+ * and do not operate in double precision.  They call back to user code and
+ * manage the stack, input, output and locals themselves.
+ *
+ * Changes to this will likely cause breakage.
+ */
+
+/**************************************************************************/
+/* Solve code.
+ *
+ * On entry the stack looks like:
+ *	Y	Guess a
+ *	X	Guess b
+ *
+ * On return the stack looks like:
+ *	L	0
+ *
+ *	T	0
+ *	Z	f(X)
+ *	Y	previous root estimate
+ *	X	root estimate
+ */
+
+/* Register use:
+ *	.00			a = lower bound
+ *	.01			b = upper bound
+ *	.02			c = next guess
+ *	.03			function evaluated at a
+ *	.04			function evaluated at b
+ *	.05			Iteration counter
+
+ *	.06			function evaluated at c
+ *	.07			temporaries -- must be next to each other
+ *	.08					and on a complex boundary
+ */
+
+/* Flag use:
+ *	.00			The two estaimtes a and b bracket a solution
+ *	.01			The function is constant
+ *	.02			Can perform a Ridder's step
+ *	.03			Do a secant step instead of quadratic or Ridder's
+ */
+
+
+		LBL'SV'			/* Entry: SOLVE */
+			LocR 09			/* Need 5 registers and flags */
+			x[approx]? Y
+				INC Y
+			x[approx]? Y
+				SDR 01
+			x>? Y
+				x[<->] Y
+			[cmplx]STO .00
+			FILL
+			XEQ'F'
+			STO .03
+			x[approx]0?
+				GTO slv_initial1_perfect
+			RCL .01
+			FILL
+			XEQ'F'
+			STO .04
+			x[approx]0?
+				GTO slv_initial2_perfect
+
+			/* Initialise everything for the solver
+			 */
+			RCL[times] .03
+			x[>=]0?
+				GTO slvi_same_sign
+			SF .00
+			XEQ slv_secant
+			[cmplx]RCL .00
+			XEQ slv_bracket
+				XEQ slv_bisect
+			GTO slvi_done_init
+
+slvi_same_sign::	RCL .03			/* Both estaimtes have the same sign */
+			x=? .04
+				SF .01	/* Both estimates identical function values */
+			XEQ slv_bisect		/* Trust the user's initial estimates and bisect */
+
+slvi_done_init::	STO .02
+
+/* The main solver loop.
+ * Evaluate at the current guess and update.
+ */
+slv_loop::		RCL .02
+			FILL
+			XEQ'F'
+			x[approx]0?
+				GTO slv_success
+			STO .06
+
+/* Figure out our next estimate.  Use a variety of methods and guard conditions
+ * to try to keep things sane.
+ */
+			INC .05
+			FC? .00
+				GTO slv_not_bracket
+			/* Solution is bracketed by the estimates */
+			# 250
+			x<? .05
+				GTO slv_failed
+slv_newly_bracket::	FC?C .02
+				GTO slv_skip_ridders
+			XEQ slv_ridders
+				GTO slv_br_update
+slv_skip_ridders::	XEQ slv_quadratic
+				SF .03
+slv_br_update::		STO .07
+
+			/* Update the interval appropriately */
+			RCL .06
+			SIGN
+			RCL .04
+			SIGN
+			x=? Y
+				GTO slv_br_same_sign
+			RCL .02
+			STO .00
+			RCL .06
+			STO .03
+			RCL .01
+			GTO slv_br_check
+
+slv_br_same_sign::	RCL .02
+			STO .01
+			RCL .06
+			STO .04
+			RCL .00
+
+slv_br_check::		STO .08
+			FS?C .03
+				XEQ slv_secant
+			RCL .07			/* est	?	?	? */
+			RCL .08			/* y	est	?	? */
+//			/* Try to prevent short jumps */
+//			# 3			/* 3	est	?	? */
+//			RCL[times] .08		/* 3y	est	?	? */
+//			RCL+ .02
+//			# 4
+//			/
+			RCL .02			/* c	y	est	? */
+			XEQ slv_bracket
+				XEQ slv_bisect
+
+/* Common exit code to check for equal estimates.
+ * New estimate in X
+ */
+slv_est_fin::		STO .02
+
+			/* Check for convergence but not zero with 5 ULP is good enough */
+			RCL .01
+			RCL- .00
+			ABS
+			RCL .01
+			ABS
+			RCL .00
+			ABS
+			MIN
+			ULP
+			# 5
+			[times]
+			x>? Y
+				GTO slv_fin
+
+			GTO slv_loop
+
+
+/* Estimates don't bracket the solution.
+ * Deal with this and the constant case.
+ */
+slv_not_bracket::	RCL .06
+			SIGN
+			RCL .04
+			SIGN
+			x=? Y
+				GTO slv_nb_still
+
+			/* We're bracketed finally */
+			# 0
+			STO .05
+			SF .00
+			GTO slv_newly_bracket
+
+/* The new function value is still one sided */
+slv_nb_still::		FS? .01
+				GTO slv_const
+			# 100
+			x<? .05
+				GTO slv_failed
+slv_newly_oneside::	XEQ slv_quadratic
+				SF .03
+			STO .07
+			RCL .04
+			ABS
+			RCL .03
+			ABS
+			x>? Y
+				GTO slv_nb_1
+			RCL .02
+			STO .00
+			RCL .06
+			STO .03
+			GTO slv_nb_0
+slv_nb_1::		RCL .02
+			STO .01
+			RCL .06
+			STO .04
+slv_nb_0::		RCL .01
+			x[>=]? .00
+				GTO slv_nb_maybe_secant
+			x[<->] .00
+			STO .01
+			RCL .04
+			x[<->] .03
+			STO .04
+
+slv_nb_maybe_secant::	FS?C .03
+				XEQ slv_secant
+
+/* Limit the dsitance a new estimate can be to within 100 times the distance between the
+ * existing x values.  Either the current estimate or the new limited estimate should be in X
+ * on return.
+ */
+slv_nb_limit::		RCL .07
+			RCL .01
+			RCL- .00		/* a-b	est	?	? */
+			ABS
+			SDL 02		/* |a-b| est	?	? */
+			RCL .00		/* a	||	est	? */
+			RCL- Y		/* a-||	||	est	? */
+			x[>=]? Z
+				GTO slv_est_fin
+			DROP
+			RCL+ .01		/* b+||	est	?	? */
+			x[<=]? Y
+				GTO slv_est_fin
+			x[<->] Y
+			GTO slv_est_fin
+			
+
+/* The function looks constant so far.
+ */
+slv_const::		# 20
+			x<? .05
+				GTO slv_failed
+			RCL .06
+			x=? .04
+				GTO slv_still_const
+			# 0
+			STO .05
+			CF .01
+			GTO slv_newly_oneside
+
+/* Still constant */
+slv_still_const::	RCL .05
+			EVEN?
+				GTO slv_const_even
+
+/* Move the lower end & replace the higher */
+			RCL .02
+			STO .01
+			RCL .06
+			STO .04
+			RCL .00
+			x<0?
+				GTO slv_const_1
+			# 2
+			/
+			GTO slv_const_0
+slv_const_1::		RCL+ X
+slv_const_0::		# 10
+			-
+			GTO slv_est_fin
+
+/* Move the higher end & replace the lower */
+slv_const_even::	RCL .02
+			STO .00
+			RCL .06
+			STO .03
+			RCL .01
+			x<0?
+				GTO slv_const_3
+			RCL+ X
+			GTO slv_const_4
+slv_const_3::		# 2
+			/
+slv_const_4::		# 10
+			+
+			GTO slv_est_fin
+
+
+/* Solver estimates converged.
+ * Clean up and exit
+ */
+slv_fin::		# 0
+			STO L
+			RCL T
+			RCL .01
+			RCL .02
+			RTN
+
+slv_failed::		RCL .03
+			ABS
+			RCL .04
+			ABS
+			x<? Y
+				GTO slv_fail_BltA
+			RCL T			/* Return the better estimate being A */
+			STO L
+			# 0
+			x[<->] Y
+			RCL .00
+			RCL .02
+			GTO slv_fail_common
+
+slv_fail_BltA::		RCL T
+			STO L
+			# 0
+			x[<->] Y
+			RCL .01
+			RCL .02
+
+slv_fail_common::	TOP?
+				ERR 20		/* Sovler error */
+			RTN+1
+
+slv_success::		# 0
+			STO L
+			RCL Z
+			RCL .01
+			RCL .02
+			RTN
+
+slv_initial2_perfect::	RCL .04
+			RCL .01
+			GTO slv_initial_common
+
+slv_initial1_perfect::	RCL .03
+			RCL .00
+
+slv_initial_common::	RCL X
+			# 0
+			STO L
+			[cmplx]x[<->] Z
+			RTN
+
+
+/* Check if the estimate in Z is within the interval bounded by a and b in (X & Y).  If so return
+ * with a skip, if not do a plain return.  Either way the value that was in Z must end up in X.
+ * We do this to avoid leaving the interval containing the solution.
+ *
+ * Uses registers .07 & .08 for temporary storage
+ */
+slv_bracket::		ENTER[^]	/* a	a	b	x	*/
+			RCL[v] Z	/* min	a	b	x	*/
+			[<->] YZXT	/* a	b	min	x	*/
+			MAX		/* max	min	x	x	*/
+			[cmplx]x[<->] Z	/* x	x	max	min	*/
+			x[<=]? T
+				RTN
+			x[>=]? Z
+				RTN
+			RTN+1
+
+/* Perform a bisection step and return the new x value on the stack. */
+slv_bisect::		RCL .00
+			RCL+ .01
+			# 2
+			/
+			SF .02
+			RTN
+
+/* Perform a secant step and return the new x value on the stack and
+ * in register .07.
+ */
+slv_secant::		RCL .01		/* b	?	?	? */
+			ENTER[^]	/* b	b	?	? */
+			RCL- .00		/* b-a	b	?	? */
+			RCL .04		/* Fb	b-a	b	? */
+			RCL- .03	/* Fb-Fa  b-a	b	? */
+			/		/* R	b	?	? */
+			RCL[times] .04	/* Fb*R	b	?	? */
+			-		/* b - Fb*R  ?	?	? */
+			STO .07
+			RTN
+
+
+
+
+/* Perform a quadratic interpolation step.  Return with a skip and the estimate in X if good.
+ * If not good return with without skip.
+ *
+ * Uses registers .07 & .08 for temporary storage
+ */
+slv_quadratic::		RCL .00
+			RCL .04
+			RCL .06
+			RCL .03
+			XEQ slv_q_step
+				RTN
+			STO .07
+			RCL .04
+			RCL .03
+			RCL .06
+			RCL .04
+			XEQ slv_q_step
+				RTN
+			STO+ .07
+			RCL .02
+			RCL .03
+			RCL .04
+			RCL .06
+			XEQ slv_q_step
+				RTN
+			RCL+ .07
+			RTN+1
+
+/* A third of the inverse quadratic interpolation step.
+ * Return without skipping if one of the denominators is zero.
+ *
+ * Uses register D for temporary storage
+ */
+slv_q_step::		R[v]		/* f2	f3	x	f1 */
+			STO .08
+			R[v]		/* f3	x	f1	f2 */
+			STO[times] .08
+			[cmplx]R[^]	/* f1	f2	f3	x */
+			STO- Y		/* f1	f2-f1	f3	x */
+			STO- Z		/* f1	f2-f1	f3-f1	x */
+			DROP		/* d21	d31	x	x */
+			[times]		/* xprod  x	x	x */
+			x=0?
+				RTN
+			/		/* x / xprod x	x	x */
+			RCL[times] .08
+			RTN+1
+
+/* Perform a Ridder's method step.  Return with the estimate in X if good.
+ * If not good return with a skip.
+ *
+ * https://en.wikipedia.org/wiki/Ridders%27_method
+ */
+slv_ridders::		[cmplx]RCL .03		/* a b ? ? */
+			RCL .09			/* c a b ? */
+			[<->] XZXY		/* c b c a */
+			[cmplx][times]		/* c^ - ab */
+			x[<=]0?
+				RTN+1
+			[sqrt]
+			1/x
+			RCL .03
+			RCL- .04
+			SIGN
+			RCL[times] .06
+			[times]
+			RCL .02
+			RCL- .00
+			[times]
+			RCL+ .02
+			END

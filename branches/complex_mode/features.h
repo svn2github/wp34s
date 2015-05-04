@@ -48,7 +48,7 @@
 //#define INTERRUPT_XROM_TICKS 10
 
 // Include the pixel plotting commands
-#define INCLUDE_PLOTTING
+// #define INCLUDE_PLOTTING
 
 // Build a tiny version of the device
 // #define TINY_BUILD
@@ -69,7 +69,7 @@
 // functions and their complex variants with one universal dispatch function.
 // It saves approximately 280 bytes in the firmware.
 // This is an EXPERIMENTAL FEATURE that hasn't yet received adequate testing.
-//#define UNIVERSAL_DISPATCH
+#define UNIVERSAL_DISPATCH
 
 // Code to allow access to caller's local data from xIN-code
 // #define ENABLE_COPYLOCALS
