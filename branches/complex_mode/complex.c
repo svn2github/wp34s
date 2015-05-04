@@ -166,6 +166,46 @@ void cmplxMultiply(decNumber *rx, decNumber *ry,
 	complexResult(rx, ry, &x, &y, save);
 }
 
+#ifdef INCLUDE_C_LOCK
+
+// (a + i b) . (c + i d) = (a * c) + i (b * d)
+void cpx_dot(decNumber *rx, decNumber *ry,
+		const decNumber *a, const decNumber *b,
+		const decNumber *c, const decNumber *d) {
+	complexNumber x, y;
+
+	const int save = setComplexContext();
+	dn_multiply(&x.n, a, c);
+	dn_multiply(&y.n, b, d);
+
+	complexResult(rx, ry, &x, &y, save);
+}
+
+// (a + i b) ./ (c + i d) = (a / c) + i (b / d)
+void cpx_dotdiv(decNumber *rx, decNumber *ry,
+		const decNumber *a, const decNumber *b,
+		const decNumber *c, const decNumber *d) {
+	complexNumber x, y;
+
+	const int save = setComplexContext();
+	if (dn_eq0(c)) {
+		dn_divide(&x.n, a, &const_1);
+	}
+	else {
+		dn_divide(&x.n, a, c);
+	}
+	if (dn_eq0(d)) {
+		dn_divide(&y.n, b, &const_1);
+	}
+	else {
+		dn_divide(&y.n, b, d);
+	}
+
+	complexResult(rx, ry, &x, &y, save);
+}
+
+#endif
+
 // (a + i b) / (c + i d) = (a*c + b*d) / (c*c + d*d) + i (b*c - a*d) / (c*c + d*d)
 void cmplxDivide(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,

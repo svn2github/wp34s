@@ -402,6 +402,10 @@ const struct dyfunc dyfuncs[ NUM_DYADIC ] = {
 	FUNC(OP_BESYN,	XDR(BES_YN),		XDC(CPX_YN),	NOFN,		"Yn",		CNULL)
 	FUNC(OP_BESKN,	XDR(BES_KN),		XDC(CPX_KN),	NOFN,		"Kn",		CNULL)
 #endif
+#ifdef INCLUDE_C_LOCK
+	FUNC(OP_CDOT,	NOFN,		&cpx_dot,	NOFN,	"c.",		CNULL)
+	FUNC(OP_CDOTDIV,	NOFN,		&cpx_dotdiv,	NOFN,	"c/",		CNULL)
+#endif
 #undef FUNC
 };
 
@@ -716,6 +720,21 @@ const struct niladic niladics[ NUM_NILADIC ] = {
 	FUNC0(OP_SHOWY,		XNIL(SHOW_Y_REG),	"YDON",		CNULL)
 	FUNC0(OP_HIDEY,		XNIL(HIDE_Y_REG),	"YDOFF",	CNULL)
 #endif
+#ifdef INCLUDE_C_LOCK
+	FUNC0(OP_CNOP,		&cpx_nop,	"CPX",		CNULL)
+	FUNC0(OP_C_ON,		&cpx_nop,	"C_LK",		CNULL)
+	FUNC0(OP_C_OFF,		&cpx_nop,	"UNLK",		CNULL)
+	FUNC0(OP_C_MIM,		&cpx_nop,	"-IM",		CNULL)
+	FUNC0(OP_C_MRE,		&cpx_nop,	"-RE",		CNULL)
+	FUNC0(OP_C_RE,		&cpx_nop,	"REAL",		CNULL)
+	FUNC0(OP_C_IM,		&cpx_nop,	"IMAG",		CNULL)
+	FUNC0(OP_PIA,		&cpx_pi,	"->PI",		CNULL)
+	FUNC0(OP_PIB,		&cpx_pi,	"*PI",		CNULL)
+	FUNC0(OP_CPXI,		&cpx_nop,	"CPXI",		CNULL)
+	FUNC0(OP_CPXJ,		&cpx_nop,	"CPXJ",		CNULL)
+	FUNC0(OP_CYES,		&cpx_nop,	"CPXYES",		CNULL)
+	FUNC0(OP_CNO,		&cpx_nop,	"CPXNO",		CNULL)
+#endif
 
 #ifdef INCLUDE_STOPWATCH
 	FUNC0(OP_STOPWATCH,	&stopwatch,		"STOPW",	CNULL)
@@ -874,6 +893,7 @@ const struct argcmd argcmds[ NUM_RARG ] = {
 	CMDflg(RARG_FCC,	&cmdflag,				"FC?C",		CNULL)
 	CMDflg(RARG_FCS,	&cmdflag,				"FC?S",		CNULL)
 	CMDflg(RARG_FCF,	&cmdflag,				"FC?F",		CNULL)
+
 	CMD(RARG_WS,		&intws,		MAX_WORD_SIZE+1,	"WSIZE",	CNULL)
 	CMD(RARG_RL,		&introt,	MAX_WORD_SIZE,		"RL",		CNULL)
 	CMD(RARG_RR,		&introt,	MAX_WORD_SIZE,		"RR",		CNULL)

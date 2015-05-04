@@ -93,7 +93,7 @@
 
 // Include the Gudermannian functions and their inverses in the real
 // and complex domain.
-#define INCLUDE_GUDERMANNIAN
+//#define INCLUDE_GUDERMANNIAN
 
 // Include first and second order Bessel functions Jn, In, Yn and Kn for
 // both real and complex arguments.  These are implemented in XROM.
@@ -319,6 +319,9 @@
 // Enable Y-register display (not just for complex results)
 #define INCLUDE_YREG_CODE
 
+// Enable complex lock mode. Requires RP_PREFIX, INCLUDE_YREG_CODE, INCLUDE_YREG_HMS, and EXTRA_FLAGS
+#define INCLUDE_C_LOCK
+
 // Y register is always displayed (cannot be turned off)
 //#define YREG_ALWAYS_ON
 
@@ -329,7 +332,7 @@
 #define INCLUDE_YREG_FRACT
 
 // Don't show angles as fractions after a rectangular to polar coordinate conversion (also enables RP_PREFIX)
-#define ANGLES_NOT_SHOWN_AS_FRACTIONS
+//#define ANGLES_NOT_SHOWN_AS_FRACTIONS
 
 // Use HMS mode in y-register display
 #define INCLUDE_YREG_HMS
@@ -342,6 +345,10 @@
 
 // Rectangular - Polar y-reg prefix change:
 #define RP_PREFIX
+
+// Reduces RAM program steps by 2 and provides 4 bytes of extra flags
+// in persistent RAM. About 10 of these are used by C_LOCK_MODE but there are others!
+#define EXTRA_FLAGS
 
 // h ./, in DECM mode switches E3 separator on/off (instead of chnaging radix symbol)
 //#define MODIFY_K62_E3_SWITCH
@@ -370,6 +377,13 @@
 /*******************************************************************/
 /* Below here are the automatic defines depending on other defines */
 /*******************************************************************/
+
+#if defined(INCLUDE_C_LOCK)
+#define RP_PREFIX
+#define INCLUDE_YREG_CODE
+#define INCLUDE_YREG_HMS
+#define EXTRA_FLAGS
+#endif
 
 #if defined(INCLUDE_DOUBLEDOT_FRACTIONS)
 #define PRETTY_FRACTION_ENTRY

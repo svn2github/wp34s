@@ -1459,8 +1459,19 @@ void op_r2p(enum nilop op) {
 	getXY(&x, &y);
 	cmplxToPolar(&rx, &ry, &x, &y);
 	cvt_rad2(&y, &ry);
+#ifdef INCLUDE_C_LOCK
+	if (op == OP_R2P) { // direct call from keyboard
+		setlastX();
+		setXY(&rx, &y);
+	}
+	else { // called by polar display code from display.c
+		setRegister(regJ_idx, &rx);
+		setRegister(regK_idx, &y);
+	}
+#else
 	setlastX();
 	setXY(&rx, &y);
+#endif
 #ifdef RP_PREFIX
 	RectPolConv = 1;
 #endif
@@ -1470,16 +1481,19 @@ void op_p2r(enum nilop op) {
 	decNumber x, y, t, range, angle;
 
 	getXY(&range, &angle);
+
 	decNumberCos(&t, &angle);
 	dn_multiply(&x, &t, &range);
 	decNumberSin(&t, &angle);
 	dn_multiply(&y, &t, &range);
+
 	setlastX();
 	setXY(&x, &y);
+
 #ifdef RP_PREFIX
 	RectPolConv = 2;
 #endif
-}	
+}
 
 
 /* Hyperbolic functions.

@@ -443,7 +443,11 @@ extern int current_catalogue_max(void);
 /* Allow the number of registers and the size of the stack to be changed
  * relatively easily.
  */
+#ifdef EXTRA_FLAGS
+#define RET_STACK_SIZE  532      /* Combined return stack and program space reduced by two words for flag space (reducing by odd no.of words ruins alignment) */
+#else
 #define RET_STACK_SIZE  534      /* Combined return stack and program space */
+#endif
 #define MINIMUM_RET_STACK_SIZE 6 /* Minimum headroom for program execution */
 #define NUMPROG_LIMIT   (RET_STACK_SIZE - MINIMUM_RET_STACK_SIZE + TOPREALREG * 4) /* Absolute maximum for sanity checks */
 
@@ -711,7 +715,9 @@ enum {
 #ifdef INCLUDE_XROM_BESSEL
         OP_BESJN, OP_BESIN, OP_BESYN, OP_BESKN,
 #endif
-
+#ifdef INCLUDE_C_LOCK
+		OP_CDOT, OP_CDOTDIV,
+#endif
         NUM_DYADIC      // Last entry defines number of operations
 };
 
@@ -832,6 +838,12 @@ enum nilop {
         OP_QUERY_XTAL, OP_QUERY_PRINT,
 #if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
 	OP_SHOWY, OP_HIDEY,
+#endif
+
+#ifdef INCLUDE_C_LOCK
+		OP_CNOP, OP_C_ON, OP_C_OFF, OP_C_MIM, OP_C_MRE, OP_C_RE, OP_C_IM, OP_PIA, OP_PIB, 
+		OP_CPXI, OP_CPXJ,
+		OP_CYES, OP_CNO,
 #endif
 
 #ifdef INCLUDE_STOPWATCH
@@ -1244,7 +1256,7 @@ extern void clr_user_flag(int);
 #define set_user_flag(n) cmdflag(n, RARG_SF)
 #define clr_user_flag(n) cmdflag(n, RARG_CF)
 #endif
-        
+
 extern void *xcopy(void *, const void *, int);
 extern void *xset(void *, const char, int);
 extern char *find_char(const char *, const char);
@@ -1294,6 +1306,11 @@ extern void cmdmsg(unsigned int arg, enum rarg op);
 extern void cpx_roll_down(enum nilop op);
 extern void cpx_roll_up(enum nilop op);
 extern void cpx_enter(enum nilop op);
+#ifdef INCLUDE_C_LOCK
+extern void cpx_nop(enum nilop op);
+extern void cpx_pi(enum nilop op);
+extern void convert_regK ( enum trig_modes i );
+#endif
 extern void cpx_fill(enum nilop op);
 extern void fill(enum nilop op);
 extern void drop(enum nilop op);

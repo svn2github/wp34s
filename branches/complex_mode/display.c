@@ -171,6 +171,9 @@ void error_message(const unsigned int e)
 		MSG1("Too big"),
 #  endif
 #endif
+#ifdef INCLUDE_C_LOCK
+		MSG2("Use even reg","for CoMmPLEH"),
+#endif
 		MSG2("\004 \035", "X"),		// Integral ~
 #if INTERRUPT_XROM_TICKS > 0
 		MSG2("Interrupted", "X"),
@@ -208,6 +211,9 @@ void error_message(const unsigned int e)
 		" I n s t a l l e d ",
 #ifndef SHIFT_EXPONENT
 		"",
+		"",
+#endif
+#ifdef INCLUDE_C_LOCK
 		"",
 #endif
 		"",
@@ -666,7 +672,11 @@ static void annunciators(void) {
 				*p++ = State2.window == n ? '|' : '\'';
 		}
 	}
+#ifdef INCLUDE_C_LOCK
+	else if ( (!yreg_enabled && !C_LOCKED) // force y-reg display in complex lock mode
+#else
 	else if (!yreg_enabled
+#endif
 #ifdef SHIFT_AND_CMPLX_SUPPRESS_YREG
 		 || shift_char != ' ' || State2.cmplx
 #endif
@@ -762,12 +772,31 @@ static void annunciators(void) {
 		}
 		else
 #endif
+#ifdef INCLUDE_C_LOCK
+		if ( (REAL_FLAG || IMAG_FLAG) && C_LOCKED ) {
+			if ( POLAR_DISPLAY ) {
+				q = (REAL_FLAG ? "Length:" : "Angle:");
+			}
+			else {
+				q = (REAL_FLAG ? "Real:" : "Imag:");
+			}
+			scopy(p, q);
+			goto skip;
+		}
+		else if ((rp_prefix && RectPolConv == 1) || (C_LOCKED && POLAR_DISPLAY)) {
+			q = "\007\307<";
+		}
+		else if (State2.wascomplex || C_LOCKED) {
+			q = CPX_J ? "\007\207j" : "\007\207i";
+		}
+#else
 		if (State2.wascomplex) {
 			q = "\007\207i";
 		}
 		else if (rp_prefix && RectPolConv == 1) {
 			q = "\007\307<";
 		}
+#endif
 		else if (rp_prefix && RectPolConv == 2) {
 			q = "\007\307y";
 		}
@@ -806,11 +835,26 @@ display_yreg:
 			 * examined is on the stack and there is a command line present, the stack will be lifted
 			 * after we execute so we need to show ShowRegister instead.
 			 */
+#ifdef INCLUDE_C_LOCK
+			if ( C_LOCKED && POLAR_DISPLAY && !POLAR_FORM_NOT_READY) {
+				getRegister(&y, regK_idx);
+			}
+			else {
+				getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()
+					 && !(yreg_enabled && !State2.state_lift) // unless stack lift is disabled...
+					) ? ShowRegister : ShowRegister+1);
+			}
+#else
 			getRegister(&y, (ShowRegister >= regX_idx && ShowRegister < regX_idx + stack_size() && get_cmdline()
 					 && !(yreg_enabled && !State2.state_lift) // unless stack lift is disabled...
 					) ? ShowRegister : ShowRegister+1);
+#endif
 			if ((yreg_hms || yreg_fract) && !decNumberIsSpecial(&y)) {
+#ifdef INCLUDE_C_LOCK
+				if (yreg_hms && State2.hms && ( !C_LOCKED || ( C_LOCKED && (POLAR_DISPLAY && ((enum trig_modes) UState.trigmode) == TRIG_DEG) ) ) ){
+#else
 				if (yreg_hms && State2.hms) {
+#endif
 					const int saved_nothousands = UState.nothousands;
 
 					xset(buf, '\0', sizeof(buf));
@@ -2170,6 +2214,9 @@ static void set_annunciators(void)
 #else
 	dot(BEG, state_pc() <= 1 && ! Running);
 #endif
+#ifdef INCLUDE_C_LOCK
+	dot(LIT_EQ, C_LOCKED);
+#endif
 	dot(INPUT, State2.catalogue || State2.alphas || State2.confirm);
 	dot(DOWN_ARR, (State2.alphas || State2.multi) && State2.alphashift);
 	dot(BIG_EQ, get_user_flag(A_FLAG));
@@ -2214,8 +2261,6 @@ void display(void) {
 	int skip = 0;
 	int x_disp = 0;
 	const int shift = cur_shift();
-
-
 
 	if (State2.disp_freeze) {
 		State2.disp_freeze = 0;
@@ -2452,8 +2497,30 @@ only_update_x:
 			p = get_cmdline();
 			if (p == NULL || cata) {
 				if (ShowRegister != -1) {
+#ifdef INCLUDE_C_LOCK
+					if ( C_LOCKED && POLAR_DISPLAY && !(REAL_FLAG || IMAG_FLAG) ) {
+						if ( POLAR_FORM_NOT_READY ) {
+							op_r2p(OP_NOP); // note: argument not being OP_R2P signals to function that results go to J, K
+							SET_POLAR_READY;
+						}
+						if (State2.hms) { // no hms display for mod, only arg
+							State2.hms = 0;
+							format_reg(regJ_idx, CNULL);
+							State2.hms = 1;
+						}
+						else {
+							format_reg(regJ_idx, CNULL);
+						}
+						x_disp = 1;
+					}
+					else {
+						x_disp = (ShowRegister == regX_idx) && !State2.hms;
+						format_reg(ShowRegister, CNULL);
+					}
+#else
 					x_disp = (ShowRegister == regX_idx) && !State2.hms;
 					format_reg(ShowRegister, CNULL);
+#endif
 				}
 				else
 					set_digits_string(" ---", 4 * SEGS_PER_DIGIT);

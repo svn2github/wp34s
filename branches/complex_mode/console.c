@@ -262,14 +262,26 @@ static const struct {
 	XE(DEGREES),			XE(QF_CAUCHY),			XE(cpx_SIGN),
 	XE(DERIV),			XE(QF_CHI2),			XE(cpx_TRUNC),
 	XE(D_DMY),			XE(QF_EXPON),			XE(cpx_beta),
-	XE(D_MDY),			XE(QF_F),			XE(cpx_gd),
-	XE(D_YMD),			XE(QF_GEOM),			XE(cpx_inv_gd),
+	XE(D_MDY),			XE(QF_F),			
+#ifdef INCLUDE_GUDERMANNIAN	
+	XE(cpx_gd),
+#endif
+	XE(D_YMD),			XE(QF_GEOM),			
+#ifdef INCLUDE_GUDERMANNIAN	
+	XE(cpx_inv_gd),
+#endif
 	XE(E3OFF),			XE(QF_LOGIT),			XE(cpx_lnbeta),
 	XE(E3ON),			XE(QF_LOGNORMAL),		XE(cpx_x2),
 	XE(ERF),			XE(QF_NORMAL),			XE(cpx_x3),
-	XE(ERFC),			XE(QF_POIS2),			XE(gd),
+	XE(ERFC),			XE(QF_POIS2),			
+#ifdef INCLUDE_GUDERMANNIAN
+	XE(gd),
+#endif
 	XE(FIB),			XE(QF_POISSON),			XE(int_ULP),
-	XE(FIXENG),			XE(QF_Q),			XE(inv_gd),
+	XE(FIXENG),			XE(QF_Q),			
+#ifdef INCLUDE_GUDERMANNIAN
+	XE(inv_gd),
+#endif
 	XE(FIXSCI),			XE(QF_T),
 #undef XE
 };

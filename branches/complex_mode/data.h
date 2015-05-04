@@ -141,6 +141,23 @@ struct _state {
 	signed short retstk_ptr;	// XEQ internal - don't use
 };
 
+#ifdef EXTRA_FLAGS
+
+typedef struct extra_flags { // total 32 bits - either use the "unused" or delete the c_lock stuff if you don't want it
+		unsigned int c_lock_on :	1;
+		unsigned int real_entry :	1;
+		unsigned int imag_entry :	1;
+		unsigned int init_stack_size :	1;
+		unsigned int init_lift :	1;
+		unsigned int cpx_ij :	1;
+		unsigned int cpx_enabled :	1;
+		unsigned int polar_display :	1;
+		unsigned int polar_form :	1;
+		unsigned int unused : 23;
+	} extra_flag_structure;
+	
+#endif
+
 /*
  *  This data is stored in battery backed up SRAM.
  *  The total size is limited to 2 KB.
@@ -163,6 +180,10 @@ typedef struct _ram {
 	 *  Define storage for the machine's registers.
 	 */
 	decimal64 _regs[NUMREG];
+
+#ifdef EXTRA_FLAGS
+	extra_flag_structure _extra_flags; // 32 bits - 2 words
+#endif
 
 	/*
 	 *  Alpha register gets its own space
@@ -498,6 +519,57 @@ extern SMALL_INT RectPolConv; // 1 - R->P just done; 2 - P->R just done
 extern volatile unsigned int OnKeyTicks; // ON (EXIT) key has been held down for this many ticks
 #endif
 
+#ifdef INCLUDE_C_LOCK
+
+#define CLflags PersistentRam._extra_flags
+
+#define C_LOCK_ON CLflags.c_lock_on
+#define C_LOCKED (C_LOCK_ON && CPX_ENABLED)
+#define LOCK_C C_LOCK_ON = 1
+#define UNLOCK_C C_LOCK_ON = 0
+
+#define REAL_FLAG CLflags.real_entry
+#define SET_REAL REAL_FLAG = 1
+#define CLEAR_REAL REAL_FLAG = 0
+
+#define IMAG_FLAG CLflags.imag_entry
+#define SET_IMAG IMAG_FLAG = 1
+#define CLEAR_IMAG IMAG_FLAG = 0
+
+#define INIT_STACK_SIZE CLflags.init_stack_size
+#define INIT_4 INIT_STACK_SIZE = 0
+#define INIT_8 INIT_STACK_SIZE = 1
+#define TRUE_8 INIT_STACK_SIZE
+
+#define INIT_LIFT CLflags.init_lift
+#define SET_INIT_LIFT INIT_LIFT = 1
+#define CLEAR_INIT_LIFT INIT_LIFT = 0
+
+#define CPX_J CLflags.cpx_ij
+#define SET_CPX_I CPX_J = 0
+#define SET_CPX_J CPX_J = 1
+
+#define CPX_ENABLED CLflags.cpx_enabled
+#define SET_CPX_YES CPX_ENABLED = 1
+#define SET_CPX_NO CPX_ENABLED = 0
+
+#define POLAR_DISPLAY CLflags.polar_display
+#define SET_POLAR_DISPLAY POLAR_DISPLAY = 1
+#define SET_RECTANGULAR_DISPLAY POLAR_DISPLAY = 0
+
+/*
+Polar form flag: stack always contains rectangular form of complex numbers.
+When this flag is clear the polar form is available in J and K;
+when set, it isn't and polar form needs to be worked out.
+The flag should be set by any routine that changes what's in x and y.
+It is tested (when POLAR_DISPLAY is true) in display() in display.c
+*/
+#define POLAR_FORM CLflags.polar_form
+#define POLAR_FORM_NOT_READY POLAR_FORM
+#define CLEAR_POLAR_READY POLAR_FORM = 1
+#define SET_POLAR_READY POLAR_FORM = 0
+
+#endif
 
 #endif /* COMPILE_XROM */
 #endif /* DATA_H_ */

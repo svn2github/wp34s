@@ -903,6 +903,12 @@ static s_opcode mode_catalogue[] = {
 	NILIC(OP_SHOWY, 	"YDON")
 	NILIC(OP_HIDEY,		"YDOFF")
 #endif
+#ifdef INCLUDE_C_LOCK
+	NILIC(OP_CPXI, "CPXI")
+	NILIC(OP_CPXJ, "CPXJ")
+	NILIC(OP_CYES, "CPXYES")
+	NILIC(OP_CNO, "CPXNO")
+#endif
 };
 
 static s_opcode alpha_catalogue[] = {

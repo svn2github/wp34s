@@ -40,6 +40,15 @@ extern void cmplxXRoot(decNumber *rx, decNumber *ry,
 		const decNumber *a, const decNumber *b,
 		const decNumber *c, const decNumber *d);
 
+#ifdef INCLUDE_C_LOCK
+extern void cpx_dot(decNumber *rx, decNumber *ry,
+		const decNumber *a, const decNumber *b,
+		const decNumber *c, const decNumber *d);
+extern void cpx_dotdiv(decNumber *rx, decNumber *ry,
+		const decNumber *a, const decNumber *b,
+		const decNumber *c, const decNumber *d);
+#endif
+
 /* And some shortcuts to the above for one argument real */
 #if 0
 extern void cmplxDivideReal(decNumber *rx, decNumber *ry,
