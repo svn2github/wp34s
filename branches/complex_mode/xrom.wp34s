@@ -1,0 +1,145 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/*
+ *  This is to be preprocessed !
+ */
+#define Num #
+#define _INT #
+
+#include "features.h"
+#include "data.h"		// for user state bit positions and XROM flags
+#include "errors.h"		// for error numbers
+#include "user_consts.h"
+
+/*
+ * Define some utility macros to assist with xIN
+ */
+#ifdef ENABLE_COPYLOCALS
+#define xIN_INARGS(n)	(n & 7)
+#define xIN_OUTARGS(n)	((n & 7) * 5)
+#define xIN_ARGS(i, o)	(xIN_INARGS(i) + xIN_OUTARGS(o))
+#define xIN_LASTX	(32)
+#define xIN_COMPLEX	(64)
+#define xIN_COPYLOCALS	(128)
+#else
+#define xIN_INARGS(n)	(n & 7)
+#define xIN_OUTARGS(n)	((n & 7) << 3)
+#define xIN_ARGS(i, o)	(xIN_INARGS(i) | xIN_OUTARGS(o))
+#define xIN_LASTX	(64)
+#define xIN_COMPLEX	(128)
+#endif
+
+/*
+ * Define some utility macros to assist with xOUT
+ */
+#define xOUT_NORMAL	(0)
+#define xOUT_RET_SKIP	(1)
+#define xOUT_NO_LASTY   (2)
+
+/*
+ *  Defines for some argument combinations for xIN
+ */										
+#define NILADIC_0		(xIN_ARGS(0, 0))			
+#define NILADIC_1		(xIN_ARGS(0, 1))			
+#define NILADIC_2		(xIN_ARGS(0, 2))			
+#define NILADIC_1_COMPLEX	(NILADIC_1 | xIN_COMPLEX)		
+#define NILADIC_2_COMPLEX	(NILADIC_2 | xIN_COMPLEX)		
+
+#define MONADIC			(xIN_ARGS(1, 1) | xIN_LASTX)		
+#define DYADIC			(xIN_ARGS(2, 1) | xIN_LASTX)		
+#define TRIADIC			(xIN_ARGS(3, 1) | xIN_LASTX)		
+
+#define MONADIC_COMPLEX		(MONADIC | xIN_COMPLEX)
+#define DYADIC_COMPLEX		(DYADIC  | xIN_COMPLEX)
+
+/*
+ * Defines for the stack shuffling command
+ */
+#define DROPY			[<->] XZTT
+#define DROPZ			[<->] XYTT
+
+#define SWAP			x[<->] Y
+#define CSWAP			[cmplx]x[<->] Z
+
+
+/*
+ * Defines for the reserved flags using by xIN & xOUT
+ *
+ * No need to define them here, see data.h (look for #define Flag_...)
+ */
+
+
+/*
+ * Defined for the convergence test command
+ */
+#define CVG_RELATIVE			03	/* relative, chosen tolerance */
+#define CVG_ABSOLUTE			07	/* absolute, chosen tolerance */
+#define CVG_COMPLEX			11	/* complex, chosen tolerance  */
+#define CVG_RELATIVE_DBL		02	/* relative, chosen tolerance */
+#define CVG_ABSOLUTE_DBL		06	/* absolute, chosen tolerance */
+#define CVG_COMPLEX_DBL			10	/* complex, chosen tolerance  */
+#define CVG_SPECIAL_CONTINUE		16	/* continue if NaN or infinite */
+
+/* Mode setting macros since they are more efficient than calling the xrom
+ * subroutines to do the same thing.
+ */
+#define SSIZE4	xMCLR UState_stack_depth
+#define SSIZE8	xMSET UState_stack_depth
+
+
+	XLBL"START"		// generate XROM_START symbol
+/*
+ *  Include each routine here
+ */
+#include "solve.wp34s"
+#include "integrate.wp34s"
+#include "derivative.wp34s"
+#include "prodsum.wp34s"
+#include "parallel.wp34s"
+#include "percent.wp34s"
+#include "agm.wp34s"
+#include "permutations.wp34s"
+#include "lambert_w.wp34s"
+#include "beta.wp34s"
+#include "gudermannian.wp34s"
+#include "error-function.wp34s"
+#include "distributions.wp34s"
+#include "orthopolys.wp34s"
+#include "common.wp34s"
+#include "next_prime.wp34s"
+#include "date.wp34s"
+#include "modes.wp34s"
+#include "who.wp34s"
+#include "fibonacci.wp34s"
+#include "quadratic.wp34s"
+
+#include "zeta.wp34s"
+#include "complex.wp34s"
+#include "integer.wp34s"
+
+#include "bessel.wp34s"
+#include "digamma.wp34s"
+
+// Test
+#ifdef _DEBUG
+	XLBL"DBG"
+	// Add xrom only commands to test here
+	xIN DYADIC
+	ERR 1
+	xOUT xOUT_NORMAL
+#endif
+

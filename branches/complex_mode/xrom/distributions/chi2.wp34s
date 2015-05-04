@@ -1,0 +1,228 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* Chi-squared distribution
+ * One parameters:
+ *	n positive integer
+ * Some gymnastics are done here to preserve the higher stack levels,
+ * still three levels are used.
+ */
+		XLBL"PDF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB pdf_chi2
+			xOUT xOUT_NORMAL
+
+pdf_chi2::		x[<=]0?
+				JMP dist_ret_0
+			Num 1/2
+			RCL[times] J	// k/2 x ? ?
+			RCL X		// k/2 x ? ?
+			[<->] ZXYT	// x k/2 k/2 ?
+			LN		// LNx k/2 k/2 ?
+			Num 1/2
+			RCL[times] L	// x/2 LNx k/2 k/2
+			+/-		// -x/2 LNx k/2 k/2
+			[<->] ZYXT	// k/2 LNx -x/2 k/2
+			DEC X
+			[times]		// (k/2-1)LNx -x/2 k/2 ?
+			+		// sum k/2 ? ?
+			RCL Y		// k/2 sum k/2 ?
+			LN[GAMMA]	// LG(k/2) sum k/2 ?
+			-		// sum- k/2 ? ?
+			Num LN2		// ln2 sum- k/2 ?
+			[<->] ZXYT	// k/2 ln2 sum- ?
+			[times]		// k.ln2/2 sum- ? ?
+			-
+			e[^x]
+			RTN
+
+		XLBL"CDFU_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB cdfu_chi2
+			xOUT xOUT_NORMAL
+
+
+cdfu_chi2::		x[<=]0?
+				JMP dist_ret_1
+			[infinity]?
+				JMP dist_ret_0
+			Num 1/2
+			[times]
+			Num 1/2
+			RCL[times] J
+			[GAMMA][sub-q]
+			RTN
+
+		XLBL"CDF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB cdf_chi2
+			xOUT xOUT_NORMAL
+
+cdf_chi2::		x[<=]0?
+				JMP dist_ret_0
+			[infinity]?
+				JMP dist_ret_1
+			Num 1/2
+			[times]
+			Num 1/2
+			RCL[times] J
+			[GAMMA][sub-p]
+			RTN
+
+chi2_param::		RCL J
+			GSB check_special_notneg
+			FP?
+				ERR ERR_BAD_PARAM
+			DROP
+			RTN
+				
+#define R_00	.00
+#define R_LOOPS	.01
+
+#define F_HALF	.00
+
+		XLBL"QF_CHI2"
+			xIN MONADIC
+			GSB chi2_param
+			GSB qf_check_probability
+			x=0?
+				xOUT xOUT_NORMAL
+			LocR 002
+			STO R_00
+			_INT 006
+			STO R_LOOPS
+			_INT 019
+			SDR 001
+			RCL J
+			x=1?
+				DEC X
+			+/-
+			y[^x]
+			Num [pi]
+			/
+			RCL R_00
+			x<? Y
+				JMP chi2_q_low
+			GSB qf_q_int_est
+			_INT 222
+			SDR 003
+			RCL/ J
+			STO Z
+			[sqrt]
+			[times]
+			INC X
+			RCL- Y
+			x[^3]
+			RCL[times] J
+			Num eE
+			RCL[times] J
+			_INT 008
+			+
+			x[<->] Y
+			x<? Y
+				JMP chi2_q_refine
+			Num 1/2
+			[times]
+			LN
+			Num 1/2
+			RCL[times] J
+			DEC X
+			[times]
+			+/-
+			RCL R_00
+			+/-
+			LN1+x
+			+
+			Num 1/2
+			RCL[times] J
+			LN[GAMMA]
+			+
+			STO+ X
+			+/-
+			JMP chi2_q_refine
+
+chi2_q_low::		RCL[times] J
+			Num 1/2
+			[times]
+			LN
+			Num 1/2
+			RCL[times] J
+			LN[GAMMA]
+			+
+			STO+ X
+			RCL/ J
+			e[^x]
+			STO+ X
+
+chi2_q_refine::		FILL
+			x[>=]? J
+				JMP chi2_q_big
+			GSB cdf_chi2
+			ENTER[^]
+			RCL/ R_00
+			LN
+			JMP chi2_q_common
+
+chi2_q_big::		_INT 001
+			ENTER[^]
+			RCL- R_00
+			RCL Z
+			GSB cdfu_chi2
+			STO- Z
+			-
+			RCL/ R_00
+			LN1+x
+
+chi2_q_common::		x[<->] Y
+			RCL Z
+			GSB pdf_chi2
+			x[<->] Y
+			/
+			STO Z
+			/
+			RCL J
+			DEC X
+			DEC X
+			RCL- T
+			RCL/ T
+			[<->] ZXYT
+			STO+ X
+			-
+			_INT 004
+			/
+			RCL[times] Y
+			+/-
+			INC X
+			/
+			+/-
+			+
+			SHOW_CONVERGENCE
+			CNVG? 00
+				xOUT xOUT_NORMAL
+			DSE R_LOOPS
+				JMP chi2_q_refine
+			ERR 20
+
+#undef R_00
+#undef R_LOOPS
+
+#undef F_HALF
+
+

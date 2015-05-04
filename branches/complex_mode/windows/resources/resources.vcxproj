@@ -1,0 +1,254 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Test|Win32">
+      <Configuration>Test</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{ADA618B6-B975-491D-A635-B6F8A26AB354}</ProjectGuid>
+    <RootNamespace>resources</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|Win32'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Test|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IncludePath>../../atmel;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IncludePath>../../atmel;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Test|Win32'">
+    <OutDir>$(ProjectDir)$(Configuration)\</OutDir>
+    <IncludePath>../../atmel;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <PreprocessorDefinitions>__GNUC__;at91sam7l128;__attribute__(x)=</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>__GNUC__;at91sam7l128;__attribute__(x)=</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Test|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <StructMemberAlignment>4Bytes</StructMemberAlignment>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>__GNUC__;at91sam7l128;__attribute__(x)=</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\..\..\artwork\HP\HP20b_c.ico" />
+    <None Include="..\..\..\artwork\HP\HP20b_compact.bmp" />
+    <None Include="..\..\..\artwork\HP\HP20b_large.bmp" />
+    <None Include="..\..\..\artwork\HP\HP20b_medium.bmp" />
+    <None Include="..\..\..\artwork\HP\HP20b_small.bmp" />
+    <None Include="..\..\..\artwork\HP\VirtualLCDBitmap.bmp" />
+    <None Include="..\..\..\artwork\wp.png" />
+    <None Include="..\..\..\artwork\wp34s.ico" />
+    <None Include="..\..\..\artwork\wp34s_compact+LED.xcf" />
+    <None Include="..\..\..\artwork\wp34s_compact.bmp" />
+    <None Include="..\..\..\artwork\wp34s_LED.bmp" />
+    <None Include="..\..\..\artwork\wp34s_medium.bmp" />
+    <None Include="..\..\..\artwork\wp34s_medium.xcf" />
+    <None Include="..\..\..\artwork\wp34s_v3_medium.bmp" />
+    <None Include="..\..\..\artwork\wp34s_v3_medium.png" />
+    <None Include="..\..\..\doc\constants.txt" />
+    <None Include="..\..\..\doc\flash.txt" />
+    <None Include="..\..\..\doc\formulas" />
+    <None Include="..\..\..\doc\layout" />
+    <None Include="..\..\..\doc\Manual_wp_34s_2_2.pdf" />
+    <None Include="..\..\..\doc\Manual_wp_34s_3_0.pdf" />
+    <None Include="..\..\..\doc\tvm-formulas" />
+    <None Include="..\..\..\doc\WP34s_Assembler_Disassembler.pdf" />
+    <None Include="..\..\..\library\8queens.wp34s" />
+    <None Include="..\..\..\library\8queens_pp.wp34s" />
+    <None Include="..\..\..\library\code_breaker.wp34s" />
+    <None Include="..\..\..\library\code_breaker_pp.wp34s" />
+    <None Include="..\..\..\library\derivative.wp34s" />
+    <None Include="..\..\..\library\fibonacci.wp34s" />
+    <None Include="..\..\..\library\HHC2010_Challenge.wp34s" />
+    <None Include="..\..\..\library\integrate.wp34s" />
+    <None Include="..\..\..\library\matrix.wp34s" />
+    <None Include="..\..\..\library\matrixedit.wp34s" />
+    <None Include="..\..\..\library\PF.wp34s" />
+    <None Include="..\..\..\library\primesieve.wp34s" />
+    <None Include="..\..\..\library\primesieve_pp.wp34s" />
+    <None Include="..\..\..\library\product.wp34s" />
+    <None Include="..\..\..\library\quadratic.wp34s" />
+    <None Include="..\..\..\library\quaternions.txt" />
+    <None Include="..\..\..\library\quaternions.wp34s" />
+    <None Include="..\..\..\library\README" />
+    <None Include="..\..\..\library\README_ASM" />
+    <None Include="..\..\..\library\savage.wp34s" />
+    <None Include="..\..\..\library\solver.wp34s" />
+    <None Include="..\..\..\library\sum.wp34s" />
+    <None Include="..\..\..\library\temp.wp34s" />
+    <None Include="..\..\..\library\TRIGON.wp34s" />
+    <None Include="..\..\..\library\TVM.wp34s" />
+    <None Include="..\..\..\library\vectors.wp34s" />
+    <None Include="..\..\..\library\vectors_pp.wp34s" />
+    <None Include="..\..\..\release\makezip.cmd" />
+    <None Include="..\..\..\release\upload.sh" />
+    <None Include="..\..\..\release\wp34s.zip" />
+    <None Include="..\..\..\revision.txt" />
+    <None Include="..\..\atmel\board_cstartup.S" />
+    <None Include="..\..\COPYING" />
+    <None Include="..\..\decNumber\decnumber.pdf" />
+    <None Include="..\..\linux-build-arm" />
+    <None Include="..\..\mac-build-arm" />
+    <None Include="..\..\Makefile" />
+    <None Include="..\..\openocd\at91sam7l128-program-flash.cfg" />
+    <None Include="..\..\openocd\at91sam7l128-server.cfg" />
+    <None Include="..\..\openocd\at91sam7l128.cfg" />
+    <None Include="..\..\openocd\Makefile" />
+    <None Include="..\..\openocd\olimex-arm-usb-ocd.cfg" />
+    <None Include="..\..\realbuild\calc" />
+    <None Include="..\..\realbuild\calc.bin" />
+    <None Include="..\..\realbuild\calc_full.bin" />
+    <None Include="..\..\realbuild\calc_ir" />
+    <None Include="..\..\realbuild\calc_ir.bin" />
+    <None Include="..\..\realbuild\calc_xtal" />
+    <None Include="..\..\realbuild\calc_xtal.bin" />
+    <None Include="..\..\realbuild\calc_xtal_full.bin" />
+    <None Include="..\..\realbuild\join.cmd" />
+    <None Include="..\..\realbuild\mapfile.txt" />
+    <None Include="..\..\realbuild\mapfile_xtal.txt" />
+    <None Include="..\..\realbuild\summary.txt" />
+    <None Include="..\..\realbuild\summary_ir.txt" />
+    <None Include="..\..\realbuild\summary_xtal.txt" />
+    <None Include="..\..\realbuild\symbols.txt" />
+    <None Include="..\..\realbuild\symbols_ir.txt" />
+    <None Include="..\..\realbuild\symbols_xtal.txt" />
+    <None Include="..\..\tools\command-alias.csv" />
+    <None Include="..\..\tools\wp34s.op" />
+    <None Include="..\..\tools\wp34s_asm.pl" />
+    <None Include="..\..\tools\wp34s_conv.pl" />
+    <None Include="..\..\tools\wp34s_lib.pl" />
+    <None Include="..\..\tools\wp34s_pp.pl" />
+    <None Include="..\..\unused\matrix.c-high" />
+    <None Include="..\bin\emulator.dll" />
+    <None Include="..\bin\emulator_d.dll" />
+    <None Include="..\bin\emulator_d.exp" />
+    <None Include="..\bin\emulator_d.pdb" />
+    <None Include="..\bin\wp34s.exe" />
+    <None Include="..\bin\wp34sgui.exe" />
+    <None Include="..\bin\wp34stest.exe" />
+    <None Include="..\bin\wp34s_Manual.pdf" />
+    <None Include="..\winreadme.txt" />
+    <None Include="..\wp34sgui\wp34s.ini" />
+    <None Include="..\wp34s_express.sln" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\asone.c" />
+    <ClCompile Include="..\..\atmel\aic.c" />
+    <ClCompile Include="..\..\atmel\board_lowlevel.c" />
+    <ClCompile Include="..\..\atmel\board_memories.c" />
+    <ClCompile Include="..\..\atmel\dbgu.c" />
+    <ClCompile Include="..\..\atmel\pmc.c" />
+    <ClCompile Include="..\..\atmel\rtc.c" />
+    <ClCompile Include="..\..\atmel\slcdc.c" />
+    <ClCompile Include="..\..\atmel\supc.c" />
+    <ClCompile Include="..\..\genchars7.c" />
+    <ClCompile Include="..\..\main.c" />
+    <ClCompile Include="..\..\lcdgen.c" />
+    <ClCompile Include="..\..\post_process.c" />
+    <ClCompile Include="..\..\unused\agm.c" />
+    <ClCompile Include="..\..\unused\beta.c" />
+    <ClCompile Include="..\..\unused\complex.c" />
+    <ClCompile Include="..\..\unused\date.c" />
+    <ClCompile Include="..\..\unused\distributions.c" />
+    <ClCompile Include="..\..\unused\error-function.c" />
+    <ClCompile Include="..\..\unused\fibonacci.c" />
+    <ClCompile Include="..\..\unused\lambertW.c" />
+    <ClCompile Include="..\..\unused\orthopolys.c" />
+    <ClCompile Include="..\..\unused\parallel.c" />
+    <ClCompile Include="..\..\unused\percent.c" />
+    <ClCompile Include="..\..\unused\permutations.c" />
+    <ClCompile Include="..\..\unused\stats-cont-discrete.c" />
+    <ClCompile Include="..\..\unused\stats-uppertail-cdf.c" />
+    <ClCompile Include="..\..\unused\zeta.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\bin\emulator_d.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\atmel\aic.h" />
+    <ClInclude Include="..\..\atmel\at91sam7l128\AT91SAM7L128.h" />
+    <ClInclude Include="..\..\atmel\board.h" />
+    <ClInclude Include="..\..\atmel\board_lowlevel.h" />
+    <ClInclude Include="..\..\atmel\board_memories.h" />
+    <ClInclude Include="..\..\atmel\dbgu.h" />
+    <ClInclude Include="..\..\atmel\pmc.h" />
+    <ClInclude Include="..\..\atmel\rtc.h" />
+    <ClInclude Include="..\..\atmel\slcdc.h" />
+    <ClInclude Include="..\..\atmel\supc.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

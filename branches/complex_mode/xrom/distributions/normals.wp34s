@@ -1,0 +1,325 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* Log Normal distribution
+ */
+ 		XLBL"PDF_LOGNORMAL"
+			xIN MONADIC
+				LocR 01
+				STO .00
+				LN
+				GSB pdf_normal
+				RCL/ .00
+			xOUT xOUT_NORMAL
+
+		XLBL"CDFU_LOGNORMAL"
+			xIN MONADIC
+				SPEC?
+					JMP cdf_infinite
+				x[<=]0?
+					JMP ret_1
+				LN
+				JMP cdfu_normal
+
+		XLBL"CDF_LOGNORMAL"
+			xIN MONADIC
+				SPEC?
+					JMP cdf_infinite
+				x[<=]0?
+					JMP ret_0
+				LN
+				JMP cdf_normal
+
+		XLBL"QF_LOGNORMAL"
+			xIN MONADIC
+				x=0?
+					xOUT xOUT_NORMAL
+				GSB qf_normal
+				e[^x]
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Normal distribution
+ */
+ 		XLBL"PDF_NORMAL"
+			xIN MONADIC
+				GSB pdf_normal
+			xOUT xOUT_NORMAL
+
+pdf_normal::		GSB normal_param
+			GSB pdf_q
+			RCL/ K
+			RTN
+
+		XLBL"CDFU_NORMAL"
+			xIN MONADIC
+cdfu_normal::		SF .00
+			JMP cdf_norm_common
+
+		XLBL"CDF_NORMAL"
+			xIN MONADIC
+cdf_norm_common::	SPEC?
+				JMP cdf_infinite
+cdf_normal::		GSB normal_param
+			FS?C .00
+				+/-
+			JMP cdf_q_xout
+
+normal_param::		RCL J
+			GSB check_special
+			-
+			RCL K
+			GSB check_special_pos
+			/
+			RTN
+
+		XLBL"QF_NORMAL"
+			xIN MONADIC
+				GSB qf_normal
+			xOUT xOUT_NORMAL
+
+qf_normal::		GSB qf_q
+			RCL K
+			GSB check_special_pos
+			[times]
+			RCL J
+			GSB check_special
+			+
+			RTN
+#undef X
+
+
+/**************************************************************************/
+/* Standard Normal distribution
+ */
+		XLBL"PDF_Q"
+			xIN MONADIC
+pdf_q_xout::		GSB pdf_q
+			xOUT xOUT_NORMAL
+
+/* Standard entry point.  Uses one stack level and no last X */
+pdf_q::			x[^2]
+			Num 1/2
+			[times]
+			+/-
+			e[^x]
+			Num [sqrt]2[pi]
+			/
+			RTN
+
+/*
+ * For x > 0:
+ * 
+ * Lower Tail Normal CDF = 0.5*(1 + gammap(0.5*x^2, 0.5))
+ * Upper Tail Normal CDF = 0.5*gammaq(0.5*x^2, 0.5)
+ */
+
+		XLBL"CDFU_Q"
+			xIN MONADIC
+			GSB cdfu_q
+			xOUT xOUT_NORMAL
+
+cdfu_q::		x<0?
+				JMP cdfu_q_flip
+cdf_q_flip::		x[^2]
+			Num 1/2
+			STO[times] Y
+			[GAMMA][sub-x][sub-y]
+			RCL[times] L
+			Num 1/[sqrt][pi]
+			[times]
+			RTN
+
+		XLBL"CDF_Q"
+			xIN MONADIC
+cdf_q_xout::		GSB cdf_q
+			xOUT xOUT_NORMAL
+
+/* Standard entry point.  Use one stack level.
+ */
+cdf_q::			x<0?
+				JMP cdf_q_flip
+cdfu_q_flip::		x[^2]
+			Num 1/2
+			STO[times] Y
+			[gamma][sub-x][sub-y]
+			Num 1/[sqrt][pi]
+			[times]
+			INC X
+			Num 1/2
+			[times]
+			RTN
+
+
+		XLBL"QF_Q"
+			xIN MONADIC
+qf_q_xout::		GSB qf_q
+			xOUT xOUT_NORMAL
+
+/* Dieter's code for the standard normal quantile function.
+ *
+ * Registers:
+ * 	R00: 0.5 
+ * 	R01: q = min(p, 1-p)
+ * 	R02: |z|
+ * 
+ * Flags:
+ * 	F00: Set for p < 0.5, else clear
+ * 	F01: Set if a second iteration is required, else clear
+ */
+
+#define R_00	.00
+#define R_LOOPS	.01
+
+#define F_HALF	.00
+#define F_SMALL	.01
+
+qf_q::		GSB qf_check_probability
+                LocR 002
+		GSB qf_q_int_est
+		x<0?
+			SF F_HALF
+		x[<->] Y
+		STO R_00
+		_INT 002
+		STO R_LOOPS
+		RCL Z
+		ABS
+		FILL
+		INC X
+		RSD 03
+		x[!=]1?
+			JMP qf_q_calc
+		DEC R_LOOPS
+		DROP
+		SDL 016
+		x>1?
+			JMP qf_q_calc
+		DROP
+		JMP qf_q_out
+
+qf_q_calc::	DROP
+qf_q_refine::	FILL
+		x<1?
+			JMP qf_q_small
+		GSB cdfu_q
+		RCL- R_00
+		JMP qf_q_common
+
+qf_q_small::	x[^2]
+		Num 1/2
+		[times]
+		Num 1/2
+		[GAMMA][sub-p]
+		RCL[times] L
+		+/-
+		Num 1/2
+		RCL- R_00
+		+
+		
+qf_q_common::   x[<->] Y
+		GSB pdf_q
+		/
+		ENTER[^]
+		x[^3]
+		RCL T
+		x[^2]
+		STO+ X
+		INC X
+		[times]
+		_INT 006
+		/
+		Num 1/2
+		RCL[times] T
+		RCL[times] Z
+		RCL[times] Z
+		+
+		+
+		+
+		SHOW_CONVERGENCE
+		DSE R_LOOPS
+			JMP qf_q_refine
+
+qf_q_out::	FS?C F_HALF
+			+/-
+		RTN
+
+
+/* This routine that returns a signed guess for the Normal quantile.
+ * GNQ takes any 0 < p < 1 and returns a positive or negative estimate
+ * for the Normal quantile.
+ */
+qf_q_est::	LocR 000
+qf_q_int_est::	ENTER[^]
+		+/-
+		INC X
+		MIN
+		x[!=]? L
+			SF F_SMALL
+		_INT 002
+		SDR 001
+		x[<->] Y
+		x[>=]? Y
+			JMP qf_q_mid
+		FILL
+		LN
+		STO+ X
+		+/-
+		ENTER[^]
+		DEC X
+		Num [pi]
+		[times]
+		STO+ X
+		[sqrt]
+		RCL[times] T
+		LN
+		STO+ X
+		+/-
+		[sqrt]
+		x[<->] Y
+		_INT 132
+		STO+ X
+		SDR 003
+		x[<->] Y
+		/
+		+
+		JMP qf_q_signfix
+
+qf_q_mid::	ENTER[^]
+		+/-
+		Num 1/2
+		+
+		Num [pi]
+		STO+ X
+		[sqrt]
+		[times]
+		ENTER[^]
+		x[^3]
+		_INT 005
+		/
+		+
+qf_q_signfix::	FS?C F_SMALL
+			+/-
+		RTN
+
+#undef R_00
+#undef R_LOOPS
+
+#undef F_HALF
+#undef F_SMALL
+

@@ -1,0 +1,97 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* Return the next prime in sequence
+ */
+		XLBL"NEXTPRIME"
+			INTM?	/* Return truncated results in integer mode. */
+				JMP nextprime_xin
+			DBL?
+				JMP nextprime_xin
+			xIN MONADIC
+			/*
+			 * The largest prime that can be accurately represented
+			 * in single precision mode is 9999999999999937.
+			 * Without this check, we would return incorrectly
+			 * rounded results for 9999999999999937 <= X < 2^63.
+			 */
+			_INT 16
+			10[^x]
+			_INT 63
+			-
+			x[<=]? Y
+				ERR ERR_DOMAIN
+			x[<->] Y
+			JMP nextprime_skip_xin
+
+nextprime_xin::		xIN MONADIC
+nextprime_skip_xin::	FLOOR
+			x[<=]1?
+				JMP prime_2
+			[infinity]?
+				ERR ERR_DOMAIN
+			PRIME?
+				INC X
+			EVEN?
+nextprime_loop::		INC X
+			PRIME?
+				xOUT xOUT_NORMAL
+			INC X
+			/* PRIME? fails for numbers >= 2^63, an infinite loop isn't possible. */
+			JMP nextprime_loop
+
+prime_2::		_INT 2
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* $eturn the previous prime in sequence
+ */
+/****
+		XLBL"PREVPRIME"
+			INTM?
+				JMP prevprime_xin
+			DBL?
+				JMP prevprime_dbl
+			xIN MONADIC
+
+			_INT 50
+			_INT 16
+			10[^x]
+			STO+ Y
+			RCL Z
+			x>? Z
+				ERR ERR_DOMAIN
+			MIN
+			JMP prevprime_skip_xin
+
+prevprime_dbl::		[infinity]?
+				ERR ERR_DOMAIN
+prevprime_xin::		xIN MONADIC
+prevprime_skip_xin::	CEIL
+			PRIME?
+				DEC X
+			x[<=]1?
+				ERR ERR_DOMAIN
+			EVEN?
+prevprime_loop::		DEC X
+			x[<=]1?
+				JMP prime_2
+			PRIME?
+				xOUT xOUT_NORMAL
+			DEC X
+			JMP prevprime_loop
+****/

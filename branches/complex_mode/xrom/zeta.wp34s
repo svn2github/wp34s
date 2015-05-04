@@ -1,0 +1,175 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+#define BERN_SAVEX	I
+		XLBL"Bn_star"			/* Bernoulli number Bn* = +/- Bn(2 n) */
+			xIN MONADIC
+			FP?
+				ERR ERR_DOMAIN
+			x[<=]0?
+				ERR ERR_DOMAIN
+			STO BERN_SAVEX
+			STO+ X
+			GSB bernoulli
+			STO+ X
+			ABS
+			xOUT xOUT_NORMAL
+
+		XLBL"Bn"			/* Bernoulli number Bn = -n zeta(1-n), n>=0 */
+			xIN MONADIC
+			FP?
+				ERR ERR_DOMAIN
+			x<0?
+				ERR ERR_DOMAIN
+			x=0?
+				JMP Bn_0
+			x=1?
+				JMP zeta_0
+			ODD?
+				JMP Bn_odd
+			STO BERN_SAVEX
+			GSB bernoulli
+			xOUT xOUT_NORMAL
+
+bernoulli::		DEC X
+			+/-
+			GSB zeta_int
+			RCL[times] BERN_SAVEX
+			+/-
+			RTN
+#undef BERN_SAVEX
+
+Bn_odd::		Num 0
+			xOUT xOUT_NORMAL
+
+Bn_0::			Num 1
+			xOUT xOUT_NORMAL
+
+zeta_0::		Num 1/2
+			+/-
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* Zeta function implementation based on Jean-Marc Baillard's from:
+ *	http://hp41programs.yolasite.com/zeta.php
+ * This is the same algorithm as the C version uses, just with fewer terms and
+ * with the constants computed on the fly.
+ */
+		XLBL"ZETA"			/* Zeta function */
+			xIN MONADIC
+			x=0?
+				JMP zeta_0
+			GSB zeta_int
+			xOUT xOUT_NORMAL
+
+zeta_int::		LocR 08
+			STO .01
+			STO .07
+			Num 1/2
+			x[<=]? Y
+				JMP zeta_calc
+
+zeta_neg::		GSB sign
+			x[<->] Y
+			-
+			STO .01
+			GSB zeta_calc
+			Num 1
+			ASIN
+			RCL[times] .07
+			SIN
+			[times]
+			Num [pi]		// Num Num [pi]
+			STO/ Y
+			STO+ X
+			RCL .07
+			y[^x]
+			[times]
+			x[<->] .01
+			[GAMMA]
+			RCL[times] .01
+			RTN
+
+zeta_calc::		_INT 22
+			FS? Flag_mode_double
+				STO+ X
+			STO .00
+			STO .03
+			GSB sign
+			STO .04
+			STO .05
+			+/-
+			STO .06
+			Num 0
+zeta_loop::		RCL .05
+			RCL .00
+			RCL .01
+			+/-
+			y[^x]
+			[times]
+			RCL .06
+			+/-
+			STO .06
+			[times]
+			+
+			RCL .00
+			ENTER[^]
+			STO+ Y
+			STO[times] Y
+			-
+			RCL[times] .04
+			RCL .03
+			x[^2]
+			RCL .00
+			DEC X
+			x[^2]
+			-
+			STO+ X
+			/
+			STO .04
+			STO+ .05
+			x[<->] Y
+			DSE .00
+				JMP zeta_loop
+
+			RCL/ .05
+			_INT 2
+			LN
+			Num 1
+			RCL- .01
+			[times]
+			e[^x]-1
+			/
+			RTN
+
+		XLBL"SIGN"
+			xIN MONADIC
+			GSB sign
+			xOUT xOUT_NORMAL
+
+sign::			x=0?
+				RTN
+			x<0?
+				JMP sign_negative
+			DROP
+			Num 1
+			RTN
+
+sign_negative::		DROP
+			Num 1
+			+/-
+			RTN

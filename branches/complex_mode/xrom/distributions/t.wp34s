@@ -1,0 +1,254 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* Student's T distribution
+ * One parameter:
+ *	J = degrees of freedom (real > 0)
+ */
+		XLBL"PDF_T"
+			xIN MONADIC
+			GSB t_param
+			FS?C .00
+				JMP pdf_q_xout
+			GSB pdf_t
+			xOUT xOUT_NORMAL
+
+/* The core implementation, uses two stack levels */
+pdf_t::			x[^2]		// x^2 ? ? ?
+			Num 1/2
+			RCL[times] J	// v/2 x^2 ? ?
+			LN[GAMMA]	// LnG x^2 ? ?
+			Num 1/2
+			RCL+ L		// (v+1)/2 LnG x^2 ?
+			STO I		// (v+1)/2 LnG x^2 ?
+			LN[GAMMA]	// LnG2 LnG x^2 ?
+			SWAP
+			-		// LnG2-LnG x^2 ? ?
+			x[<->] Y	// x^2 LnG2-LnG ? ?
+			RCL/ J		// x^2/v LnG2-LnG ? ?
+			LN1+x
+			RCL[times] I	//[times]		// LN1+* LnG2-LnG ?
+			-
+			e[^x]
+			Num [pi]
+			RCL[times] J
+			[sqrt]
+			/
+			RTN
+
+		XLBL"CDFU_T"
+			xIN MONADIC
+			+/-
+			JMP cdf_t_common
+
+		XLBL"CDF_T"
+			xIN MONADIC
+cdf_t_common::		GSB t_param
+			FS?C .00
+				JMP cdf_q_xout
+			GSB cdf_t
+			xOUT xOUT_NORMAL
+
+cdfu_t::		+/-
+cdf_t::			[infinity]?
+				JMP cdf_t_infinite
+			x=0?
+				JMP dist_ret_half
+			x>0?
+				JMP cdf_t_invert
+cdf_t_return::          x[^2]
+			x<1?
+                        	JMP cdf_t_small
+                        RCL J
+                        SWAP 
+                        RCL+ J
+                        /
+                        Num 1/2
+                        RCL[times] J
+                        Num 1/2
+                        x[<->] Z
+                        I[sub-x]
+                        Num 1/2
+                        [times]
+                        RTN
+
+cdf_t_small::           ENTER[^]
+                        RCL+ J
+                        /
+                        Num 1/2
+                        ENTER[^]
+                        RCL[times] J
+                        x[<->] Z
+                        I[sub-x]
+                        Num 1/2
+                        [times]
+                        +/-
+                        RCL+ L
+                        RTN
+
+cdf_t_invert::          GSB cdf_t_return
+                        +/-  
+                        INC X
+                        RTN
+
+cdf_t_infinite::	x<0?
+				JMP dist_ret_0
+			JMP dist_ret_1
+
+dist_ret_half::		Num 1/2
+			RTN
+
+
+#define R_00	.00
+#define R_LOOPS	.01
+
+#define F_NEG	.00
+
+		XLBL"QF_T"		// T Quantile Function
+			xIN MONADIC
+			GSB t_param
+			GSB qf_check_probability
+			FS?C .00
+				JMP qf_t_exit
+			x=0?
+				JMP ret_neginf
+
+			LocR 002
+			ENTER[^]
+			+/-
+			INC X
+			MIN
+			x[!=]? L
+				SF F_NEG
+			STO R_00
+			RCL J
+			[sqrt]
+			_INT 007
+			STO R_LOOPS
+			+
+			RCL J
+			+/-
+			y[^x]
+			_INT 004
+			/
+			STO A
+			RCL R_00
+			x>? Y
+				JMP qf_t_tail
+			RCL J
+			STO+ X
+			[times]
+			Num [pi]
+			RCL L
+			Num 1/2
+			x[^2]
+			DEC X
+			+
+			/
+			[sqrt]
+			[times]
+			RCL J
+			[^x][sqrt]y
+			RCL J
+			[sqrt]
+			x[<->] Y
+			/
+			JMP qf_t_loop
+
+qf_t_tail::		GSB qf_q_int_est
+			x[^2]
+			Num eE
+			RCL[times] J
+			1/x
+			INC X
+			[times]
+			RCL/ J
+			e[^x]-1
+			RCL[times] J
+			[sqrt]
+
+qf_t_loop::		FILL
+			x[^2]
+			x<1?
+				JMP qf_t_small
+			x[<->] L
+			GSB cdfu_t
+			RCL- R_00
+			JMP qf_t_step
+
+qf_t_small::		ENTER[^]
+			RCL+ J
+			/
+			Num 1/2
+			ENTER[^]
+			RCL[times] J
+			x[<->] Z
+			I[sub-x]
+			Num 1/2
+			[times]
+			+/-
+			Num 1/2
+			RCL- R_00
+			+
+
+qf_t_step::		RCL T
+			GSB pdf_t
+			/
+			ENTER[^]
+			RCL[times] T
+			RCL J
+			INC X
+			[times]
+			RCL T
+			x[^2]
+			RCL+ J
+			STO+ X
+			/
+			DEC X
+			/
+			+/-
+			+
+			SHOW_CONVERGENCE
+			CNVG? 00
+				JMP qf_t_exit
+			DSE R_LOOPS
+				JMP qf_t_loop
+
+			ERR 20
+qf_t_exit::		FS? F_NEG
+				+/-
+			xOUT xOUT_NORMAL
+
+#undef R_00
+#undef R_LOOPS
+
+#undef F_NEG
+
+
+t_param::		RCL J
+			[infinity]?
+				JMP t_param_inf
+			GSB check_special_pos
+t_drop_rtn::		DROP
+			RTN
+
+t_param_inf::		x<0?
+				ERR ERR_BAD_PARAM
+			SF .00
+			JMP t_drop_rtn
+

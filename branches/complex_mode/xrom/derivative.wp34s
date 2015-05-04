@@ -1,0 +1,234 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/* The exposed functions in this file don't use the normal prologue/epilogue
+ * and do not operate in double precision.  They call back to user code and
+ * manage the stack, input, output and locals themselves.
+ *
+ * Changes to this will likely cause breakage.
+ */
+
+/**************************************************************************/
+/* Numerical differentiation
+ * Register use:
+ * 0	E3
+ * 1	E2
+ * 2	E1
+ * 3	X
+ * 4	H
+ *
+ * Flag use:
+ * 0	second derivative
+ */
+		XLBL"2DERIV"			/* Entry: SECOND DERIVATIVE */
+			INTM?
+				ERR ERR_BAD_MODE
+			LocR 05				/* Registers .00 to .04 */
+			SPEC?
+				JMP deriv_bad_input
+			SF .00
+			GSB deriv_default_h
+			Num 1
+			GSB deriv_eval_func		/* f(x+h) + f(x-h)*/
+				JMP deriv_bad_input
+			_INT 16
+			[times]
+			STO .01				/* order four estimate*/
+			_INT 42
+			SDL 03
+			RCL[times] .00
+			STO .02				/* order ten estimate*/
+			Num 0
+			GSB deriv_eval_func		/* f(x)*/
+				JMP deriv_bad_input
+			_INT 30
+			[times]
+			STO- .01
+			7
+			3
+			7
+			6
+			6
+			RCL[times] .00
+			STO- .02
+
+			_INT 2
+			GSB deriv_eval_func		/* f(x+2h) + f(x-2h)*/
+				JMP deriv_bad_input
+			STO- .01
+			_INT 6
+			SDL 03
+			[times]
+			STO- .02
+
+			_INT 3
+			GSB deriv_eval_func		/* f(x+3h) + f(x-3h)*/
+				JMP deriv2_4point
+			SDL 03
+			STO+ .02
+
+			_INT 4
+			GSB deriv_eval_func		/* f(x+4h) + f(x-4h)*/
+				JMP deriv2_4point
+			_INT 125
+			[times]
+			STO- .02
+
+			_INT 5
+			GSB deriv_eval_func		/* f(x+5h) + f(x-5h)*/
+				JMP deriv2_4point
+			_INT 8
+			[times]
+			RCL+ .02
+			_INT 252
+			SDL 02				/* * 100 = 25200*/
+			RCL[times] .04
+			RCL[times] .04
+			/
+			JMP deriv_return
+
+deriv_bad_input::	Num NaN
+			JMP deriv_return
+
+deriv2_4point::		_INT 12
+			RCL[times] .04
+			RCL[times] .04
+			1/x
+			STO[times] .01
+
+deriv_6point::		RCL .01
+			JMP deriv_return
+
+
+		XLBL"DERIV"				/* Entry: DERIVATIVE */
+			INTM?
+				ERR ERR_BAD_MODE
+			LocR 05				/* Registers .00 to .04 */
+			SPEC?
+				JMP deriv_bad_input
+			CF .00
+			GSB deriv_default_h
+			Num 1
+			GSB deriv_eval_func		/* f(x+h) - f(x-h)*/
+				JMP deriv_bad_input
+			STO .01
+
+			_INT 2
+			GSB deriv_eval_func		/* f(x+2h) - f(x-2h)*/
+				JMP deriv_bad_input
+			STO .02
+
+			/* At this point we can do a four point estimate if something goes awry */
+			_INT 3
+			GSB deriv_eval_func		/* f(x+3h)-f(x-3h)*/
+				JMP deriv_4point
+
+			/* At this point we can do the six point estimate - calculate it now */
+			_INT 45
+			RCL[times] .01
+			_INT 9
+			RCL[times] .02
+			-
+			+
+			_INT 60
+			RCL[times] .04
+			/
+			x[<->] .01			/* Six point stimate in E2 & start ten point estimate*/
+			_INT 21
+			SDL 02				/* * 100 = 2100*/
+			[times]
+			_INT 6
+			SDL 02				/* * 100 = 600*/
+			RCL[times] .02
+			-
+			_INT 150
+			RCL[times] .00
+			+				/* Ten point estimate to end up in E1*/
+
+			STO .02
+			_INT 4
+			GSB deriv_eval_func		/* f(x+4h) - f(x-4h)*/
+				JMP deriv_6point
+			_INT 25
+			[times]
+			STO- .02
+
+			_INT 5
+			GSB deriv_eval_func		/* f(x+5h) - f(x-5h)*/
+				JMP deriv_6point
+			RCL+ .00
+			RCL+ .02
+			_INT 252
+			SDL 01
+			RCL[times] .04
+			/
+			JMP deriv_return
+
+			/* Eval f(X + k h) k on stack */
+deriv_eval_func::	STO .00
+			RCL[times] .04
+			RCL+ .03
+			XEQUSR				/* f(x + k h)*/
+			POPUSR
+			SPEC?
+				RTN
+			x[<->] .00
+			x=0?
+				JMP deriv_skip_midpoint
+			+/-
+			RCL[times] .04
+			RCL+ .03
+			XEQUSR				/* f(x - k h)*/
+			POPUSR
+			SPEC?
+				RTN
+			FS? .00
+			+/-
+			STO- .00
+
+deriv_skip_midpoint::	RCL .00
+			RTN+1
+
+deriv_4point::		_INT 8
+			RCL[times] .01
+			RCL- .02
+			_INT 12
+			RCL[times] .04
+			/
+
+deriv_return::		STO L
+			Num 0
+			FILL
+			RCL .03
+			x[<->] L
+			RTN
+
+deriv_default_h::	STO .03
+			FILL
+			XEQ'[delta]x'
+				JMP deriv_found_lbl
+			XEQ'[delta]X'
+				JMP deriv_found_lbl
+			XEQ'[DELTA]x'
+				JMP deriv_found_lbl
+			XEQ'[DELTA]X'
+				JMP deriv_found_lbl
+			Num 1
+			SDR 01				/* default h = 0.1 */
+			JMP deltaX_return
+deriv_found_lbl::	POPUSR
+deltaX_return::		STO .04
+			RTN

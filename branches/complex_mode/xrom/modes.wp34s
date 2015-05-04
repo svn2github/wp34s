@@ -1,0 +1,185 @@
+F/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**************************************************************************/
+/* Locale setting commands
+ */
+
+		XLBL"SETEUR"		// European
+			GSB locale_common
+			GSB mode_comma
+			JMP jg1582
+
+		XLBL"SETUK"		// UK/Australia
+			GSB locale_common
+			JMP hr12
+
+		XLBL"SETUSA"		// USA
+			GSB locale_common
+			GSB hr12
+			JMP date_mdy
+
+		XLBL"SETIND"		// India
+			GSB locale_common
+			JMP e3off
+
+		XLBL"SETCHN"		// China
+			GSB locale_common
+			GSB e3off
+			JMP date_ymd
+
+		XLBL"SETJAP"		// Japan
+			GSB locale_common
+			JMP date_ymd
+
+
+locale_common::		GSB mode_dot
+			GSB e3on
+			GSB hr24
+			GSB jg1752
+			JMP date_dmy
+
+/* Set the radix mode */
+		XLBL"RADIX_COM"
+mode_comma::		xMSET UState_fraccomma
+			JMP mode_nofract
+		XLBL"RADIX_DOT"
+mode_dot::		xMCLR UState_fraccomma
+mode_nofract::		xMCLR UState_fract
+			RTN
+
+
+/* Set the trig angle mode */
+		XLBL"DEGREES"
+mode_deg::		xMCLR UState_trigmode1
+			JMP mode_trigc
+		XLBL"RADIANS"
+mode_rad::		xMSET UState_trigmode1
+mode_trigc::		xMCLR UState_trigmode2
+			RTN
+		XLBL"GRADIANS"
+mode_grad::		xMCLR UState_trigmode1
+			xMSET UState_trigmode2
+			RTN
+
+/* Julian Gregorian chance over year setting */
+		XLBL"JG1582"
+jg1582::		xMSET UState_jg1582
+			RTN
+		XLBL"JG1752"
+jg1752::		xMCLR UState_jg1582
+			RTN
+
+/* 12 or 24 hour mode */
+		XLBL"HR12"
+hr12::			xMSET UState_t12
+			RTN
+		XLBL"HR24"
+hr24::			xMCLR UState_t12
+			RTN
+
+/* Date format */
+		XLBL"D_DMY"
+date_dmy::		xMCLR UState_date_mode1
+			JMP date_common
+		XLBL"D_YMD"
+date_ymd::		xMSET UState_date_mode1
+date_common::		xMCLR UState_date_mode2
+			RTN
+		XLBL"D_MDY"
+date_mdy::		xMCLR UState_date_mode1
+			xMSET UState_date_mode2
+			RTN
+
+/* Thousands separator */
+		XLBL"E3ON"
+e3on::			xMCLR UState_nothousands
+			RTN
+		XLBL"E3OFF"
+e3off::			xMSET UState_nothousands
+			RTN
+
+/* Integer byte/digit separator */
+		XLBL"SEPON"
+intsepon::		xMCLR UState_nointseparator
+			RTN
+		XLBL"SEPOFF"
+intsepoff::		xMSET UState_nointseparator
+			RTN
+
+/* Integer sign mode */
+		XLBL"ISGN_2C"
+			xMCLR UState_int_mode1
+isgn_clr2::		xMCLR UState_int_mode2
+			RTN
+		XLBL"ISGN_1C"
+			xMSET UState_int_mode1
+			JMP isgn_clr2
+		XLBL"ISGN_UN"
+			xMCLR UState_int_mode1
+			JMP isgn_set2
+		XLBL"ISGN_SM"
+			xMSET UState_int_mode1
+isgn_set2::		xMSET UState_int_mode2
+			RTN
+
+/* Integer mode leading zeros */
+		XLBL"IM_LZON"
+			xMSET UState_leadzero
+			RTN
+		XLBL"IM_LZOFF"
+			xMCLR UState_leadzero
+			RTN
+			
+/* FIXSCI and FIXENG overflow mode setting */
+		XLBL"FIXSCI"
+			xMCLR UState_fixeng
+			JMP fixsci_nofrac
+		XLBL"FIXENG"
+			xMSET UState_fixeng
+fixsci_nofrac::		xMCLR UState_fract
+			RTN
+
+/* Fractions denominator mode */
+		XLBL"F_DENANY"
+			xMCLR UState_denom_mode1
+			JMP denom_common
+		XLBL"F_DENFIX"
+			xMSET UState_denom_mode1
+denom_common::		xMCLR UState_denom_mode2
+			RTN
+		XLBL"F_DENFAC"
+			xMCLR UState_denom_mode1
+			xMSET UState_denom_mode2
+			RTN
+
+/* Stack size 4 or 8 levels */
+		XLBL"STACK_4_LEVEL"
+			SSIZE4
+			RTN
+		XLBL"STACK_8_LEVEL"
+			SSIZE8
+			RTN
+
+#if defined(INCLUDE_YREG_CODE) && !defined(YREG_ALWAYS_ON)
+/* Y display on or off */
+		XLBL"SHOW_Y_REG"
+			xMSET UState_show_y
+			RTN
+		XLBL"HIDE_Y_REG"
+			xMCLR UState_show_y
+			RTN
+#endif

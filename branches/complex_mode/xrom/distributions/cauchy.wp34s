@@ -1,0 +1,81 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* Cauchy distribution
+ * Two parameters:
+ *	J = location (real)
+ *	K = scale > 0
+ * Formulas:
+ *	pdf = (PI K (1 + ((x-J) / K)^2) )^-1
+ *	cdf = arctan((x-J) / K) / PI + 1/2
+ *	qf = J + K TAN(PI (p - 1/2))
+ */
+		XLBL"PDF_CAUCHY"
+			xIN MONADIC
+			GSB cauchy_xform
+			SPEC?
+				JMP ret_0	/* Can only be infinite which has zero probability */
+			RCL[times] X
+			INC X
+			RCL[times] K
+			Num [pi]
+			[times]
+			1/x
+			xOUT xOUT_NORMAL
+
+		XLBL"CDFU_CAUCHY"
+			xIN MONADIC
+			SF .00
+			JMP cdf_cauchy_common
+
+		XLBL"CDF_CAUCHY"
+			xIN MONADIC
+cdf_cauchy_common::	GSB cauchy_xform
+			SPEC?
+				JMP cdf_infinite
+			ATAN
+			Num [pi]
+			/
+			FS? .00
+				+/-
+			Num 1/2
+			+
+			xOUT xOUT_NORMAL
+
+cauchy_xform::		RCL- J
+			GSB check_special
+			RCL K
+			GSB check_special_pos
+			/
+			RTN
+
+		XLBL"QF_CAUCHY"
+			xIN MONADIC
+			GSB qf_check_probability
+			Num 1/2
+			-
+			Num [pi]
+			[times]
+			TAN
+			RCL K
+			GSB check_special_pos
+			[times]
+			RCL+ J
+			GSB check_special
+			xOUT xOUT_NORMAL
+

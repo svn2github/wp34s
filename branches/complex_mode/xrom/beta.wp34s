@@ -1,0 +1,84 @@
+/* This file is part of 34S.
+ * 
+ * 34S is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * 34S is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+/**************************************************************************/
+/* The real beta function.
+ *	B(x, y) = Gamma(x) Gamma (y) / Gamma(x+y)
+ */
+		XLBL"beta"
+			xIN DYADIC
+			[GAMMA]
+			RCL L
+			RCL+ Z
+			[GAMMA]
+			/
+			x[<->] Y
+			[GAMMA]
+			[times]
+			xOUT xOUT_NORMAL
+
+/**************************************************************************/
+/* The real log beta function is used by the statistical functions.
+ *	B(x, y) = log Gamma(x) + log Gamma (y) - log Gamma(x+y)
+ */
+#if 0
+ 		XLBL"lnbeta"
+			xIN DYADIC
+			LN[GAMMA]
+			RCL L
+			RCL+ Z
+			LN[GAMMA]
+			-
+			x[<->] Y
+			LN[GAMMA]
+			+
+			xOUT xOUT_NORMAL
+#endif
+
+
+/**************************************************************************/
+/* The complex beta function.
+ *	B(x, y) = Gamma(x) Gamma (y) / Gamma(x+y)
+ */
+		XLBL"cpx_beta"
+			xIN DYADIC_COMPLEX
+			[cmplx][GAMMA]
+			[cmplx]RCL L
+			[cmplx]RCL+ A
+			[cmplx][GAMMA]
+			[cmplx]/
+			[cmplx]x[<->] Z
+			[cmplx][GAMMA]
+			[cmplx][times]
+			xOUT xOUT_NORMAL
+
+
+/**************************************************************************/
+/* The complex log beta function.
+ *	B(x, y) = log Gamma(x) + log Gamma (y) - log Gamma(x+y)
+ */
+		XLBL"cpx_lnbeta"
+			xIN DYADIC_COMPLEX
+			[cmplx]LN[GAMMA]
+			[cmplx]RCL L
+			[cmplx]RCL+ A
+			[cmplx]LN[GAMMA]
+			[cmplx]-
+			[cmplx]x[<->] Z
+			[cmplx]LN[GAMMA]
+			[cmplx]+
+			xOUT xOUT_NORMAL
