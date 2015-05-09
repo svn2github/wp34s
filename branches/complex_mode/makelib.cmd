@@ -9,7 +9,7 @@ set ASM=%TOOLS%\wp34s_asm.pl
 set LIB=%TOOLS%\wp34s_lib.pl -d %DEBUG%
 set PP=%TOOLS%\wp34s_pp.pl
 
-set DAT=wp34s-lib.dat
+set DAT=wp34c-lib.dat
 
 echo on
 %LIB% -pp matrix.wp34s matrixedit.wp34s vectors.wp34s digamma.wp34s invgamma.wp34s coordinates.wp34s modified-AGM.wp34s elliptic.wp34s -olib %DAT%

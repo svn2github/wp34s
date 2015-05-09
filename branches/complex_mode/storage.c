@@ -37,9 +37,9 @@
 #define SLCDCMEM
 #define VOLATILE_RAM
 #define BACKUP_FLASH
-#define STATE_FILE "wp34s.dat"
-#define BACKUP_FILE "wp34s-backup.dat"
-#define LIBRARY_FILE "wp34s-lib.dat"
+#define STATE_FILE "wp34c.dat"
+#define BACKUP_FILE "wp34c-backup.dat"
+#define LIBRARY_FILE "wp34c-lib.dat"
 
 #endif
 

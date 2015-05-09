@@ -205,7 +205,7 @@ my $FLASH_LENGTH = 512;
 my $DEFAULT_FLASH_BLANK_INSTR = $PADDING_FILL_VALUE;
 my $user_flash_blank_fill = "";
 
-my $DEFAULT_OPCODE_MAP_FILE = "wp34s.op";
+my $DEFAULT_OPCODE_MAP_FILE = "wp34c.op";
 my $opcode_map_file = "";
 
 # These are markers indicating the region of the opcode map where the multi-character

@@ -72,6 +72,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\..\tools\wp34c.op" />
     <None Include="..\..\xrom.wp34s">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)compile_xrom.cmd</Command>
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Compiling XROM</Message>
@@ -107,9 +108,6 @@
     <ClInclude Include="..\..\data.h" />
     <ClInclude Include="..\..\errors.h" />
     <ClInclude Include="..\..\features.h" />
-    <ClInclude Include="..\..\tools\wp34s.op">
-      <FileType>Document</FileType>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\xrom\agm.wp34s" />

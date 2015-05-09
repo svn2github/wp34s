@@ -303,7 +303,7 @@ MAIN := $(OBJECTDIR)/main.o
 else
 MAIN := $(OBJECTDIR)/console.o
 endif
-OPCODES := $(TOOLS)/wp34s.op
+OPCODES := $(TOOLS)/wp34c.op
 
 # Targets and rules
 
