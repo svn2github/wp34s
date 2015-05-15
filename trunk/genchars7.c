@@ -42,6 +42,7 @@ static struct pair {
 
 	DIG('A',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BL | D_BR),
 	DIG('a',		D_TOP | D_TL | D_TR | D_MIDDLE | D_BL | D_BR),
+	//DIG('a',		D_TOP | D_TR | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
 	DIG('B',		D_TL | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
 	DIG('b',		D_TL | D_MIDDLE | D_BL | D_BR | D_BOTTOM),
 	DIG('C',		D_TOP | D_TL | D_BL | D_BOTTOM),
@@ -91,7 +92,7 @@ static struct pair {
 	DIG('\'',		D_TL),					// minute
 	DIG('"',		D_TL | D_TR),				// second
 #if defined(INCLUDE_CASIO_SEPARATOR)
-	DIG('/',		D_BOTTOM | D_BR),		// fraction vinculum; CASIO version
+	DIG('/',		D_BOTTOM | D_BR),			// fraction vinculum; CASIO version
 #else
 	DIG('/',		D_TR | D_MIDDLE | D_BL),		// fraction vinculum
 #endif
