@@ -22,7 +22,7 @@
 
 
 #define DIG(ch, bits) { ch, # bits }
-;
+
 static struct pair {
 	unsigned char ch;
 	const char * segs;
