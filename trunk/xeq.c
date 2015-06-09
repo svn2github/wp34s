@@ -878,11 +878,11 @@ void fill(enum nilop op) {
 }
 
 void drop(enum nilop op) {
-	lower();
 	if (op == OP_DROPXY) {
-		lower();
+		lower2();
 		set_was_complex();
-	}
+	} else
+		lower();
 }
 
 #ifndef is_intmode
