@@ -120,7 +120,7 @@ void matrix_is_square(enum nilop op) {
 	getX(&x);
 	if (matrix_decompose(&x, &r, &c, NULL) < 0)
 		return;
-	fin_tst(r != c);
+	fin_tst(r == c);
 }
 
 #ifdef SILLY_MATRIX_SUPPORT
