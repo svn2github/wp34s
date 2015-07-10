@@ -1800,7 +1800,7 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
 
 // The log gamma function.
 decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin) {
-	decNumber x, s, t, u;
+	decNumber x, t, u;
 	int reflec = 0;
 
 	// Check for special cases
@@ -1826,10 +1826,10 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin) {
 	// Finally invert if we started with a negative argument
 	if (reflec) {
 		// Figure out S * PI mod 2PI
-		decNumberMod(&u, &s, &const_2);
+		decNumberMod(&u, xin, &const_2);
 		dn_mulPI(&t, &u);
-		sincosTaylor(&t, &s, &u);
-		dn_divide(&u, &const_PI, &s);
+		sincosTaylor(&t, &x, NULL);
+		dn_divide(&u, &const_PI, &x);
 		dn_ln(&t, &u);
 		dn_subtract(res, &t, res);
 	}
