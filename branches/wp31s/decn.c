@@ -1851,11 +1851,13 @@ decNumber *decNumberLnBeta(decNumber *res, const decNumber *x, const decNumber *
 	return res;
 }
 
-decNumber *decNumberHMS2HR(decNumber *res, const decNumber *x) {
-	decNumber m, s, t;
+decNumber *decNumberHMS2HR(decNumber *res, const decNumber *xin) {
+	decNumber m, s, t, x;
+	const int neg = decNumberIsNegative(xin);
 
 	// decode hhhh.mmss...
-	decNumberFrac(&t, x);			// t = .mmss
+	dn_abs(&x, xin);
+	decNumberFrac(&t, &x);			// t = .mmss
 	dn_mul100(&s, &t);			// s = mm.ss
 	decNumberTrunc(&m, &s);			// m = mm
 	decNumberFrac(&t, &s);			// t = .ss
@@ -1863,22 +1865,25 @@ decNumber *decNumberHMS2HR(decNumber *res, const decNumber *x) {
 	dn_mulpow10(&s, &s, 2);
 	dn_add(&t, &m, &s);			// s = mm + ss.sss / 60
 	dn_multiply(&m, &t, &const_1on60);
-	decNumberTrunc(&s, x);			// s = hh
+	decNumberTrunc(&s, &x);			// s = hh
 	dn_add(res, &m, &s);
+	if (neg) dn_minus(res, res);
 	return res;
 }
 
-decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x) {
-	decNumber m, s, t;
+decNumber *decNumberHR2HMS(decNumber *res, const decNumber *xin) {
+	decNumber m, s, t, x;
+	const int neg = decNumberIsNegative(xin);
 
-	decNumberFrac(&t, x);			// t = .mmssss
+	dn_abs(&x, xin);
+	decNumberFrac(&t, &x);			// t = .mmssss
 	dn_multiply(&s, &t, &const_60);		// s = mm.ssss
 	decNumberTrunc(&m, &s);			// m = mm
 	decNumberFrac(&t, &s);			// t = .ssss
 	dn_multiply(&s, &t, &const_0_6);	// scale down by 60/100
 	dn_add(&t, &s, &m);			// t = mm.ss
 	dn_mulpow10(&m, &t, -2);		// t = .mmss
-	decNumberTrunc(&s, x);			// s = hh
+	decNumberTrunc(&s, &x);			// s = hh
 	dn_add(&t, &m, &s);			// t = hh.mmss = result
 
 	// Round to the appropriate number of digits for the result
@@ -1893,6 +1898,7 @@ decNumber *decNumberHR2HMS(decNumber *res, const decNumber *x) {
 	decNumberFrac(&m, res);
 	if (dn_ge(&m, &const_0_6))
 		dn_add(res, res, &const_0_4);
+	if (neg) dn_minus(res, res);
 	return res;
 }
 

@@ -358,6 +358,7 @@ static s_opcode cplx_catalogue[] = {
 	CMON(OP_CUBE,		"x[^3]")
 	CMON(OP_CUBERT,		"[^3][sqrt]")
 	NILIC(OP_DROPXY,	"DROP")
+	RARGCMD(RARG_CSWAPZ,	"z[<->]")
 	CMON(OP_EXPM1,		"e^x-1")
 	CMON(OP_FIB,		"FIB")
 	CMON(OP_LN1P,		"LN1P")
