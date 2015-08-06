@@ -120,7 +120,7 @@ void QtBackgroundImage::showCatalogMenu(bool force)
 		QFont& font=screen.getCatalogMenuFont();
 		QFont& fontLower=screen.getCatalogMenuFontLower();
 		int width=screen.getCatalogMenuWidth()+2*screen.getCatalogMenuMargin();
-		int height=font.pixelSize();
+		int height=QFontMetrics(font).height();
 		QPixmap* pixmaps[last];
 		QPixmap* highlightedPixmaps[last];
 		QString* menuText[last];
