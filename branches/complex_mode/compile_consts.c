@@ -216,65 +216,66 @@ struct _constsml {
 #define CONV(n1, n2, op, val)		{ n1, op, val, n2 }
 
 struct _constsml constsml[] = {
+	/* from CODATA 2014 recommended values 25 June 2015 */
 	CONSTANT("#",		"ZERO",		"0"),			// Zero & placeholder for small integers
 	CONSTANT("a",		"PC_a",		"365.2425"),		// Days in a Gregorian year
-	CONSTANT("a\270",	"PC_a0",	"5.2917721092E-11"),	// Bohr radius
+	CONSTANT("a\270",	"PC_a0",	"5.2917721067E-11"),	// Bohr radius
 	CONSTANT("c",		"PC_C",		"299792458"),		// Speed of light in a vacuum
-	CONSTANT("c\271",	"PC_C1",	"3.74177153E-16"),	// First radiation constant
-	CONSTANT("c\272",	"PC_C2",	"1.438770E-2"),		// Second radiation constant
-	CONSTANT("F",		"PC_F",		"96485.3365"),		// Faraday's constant
+	CONSTANT("c\271",	"PC_C1",	"3.741771790E-16"),	// First radiation constant
+	CONSTANT("c\272",	"PC_C2",	"1.43877736E-2"),		// Second radiation constant
+	CONSTANT("F",		"PC_F",		"96485.33289"),		// Faraday's constant
 	CONSTANT("g",		"PC_g",		"9.80665"),		// Standard Earth acceleration
-	CONSTANT("G",		"PC_G",		"6.67384E-11"),		// NIST 2010, IAU 2009 gives 6.67428E-11
-	CONSTANT("G\270",	"PC_Go",	"7.7480917346E-5"),	// Conductace quantum
-	CONSTANT("g\274",	"PC_Ge",	"-2.00231930436153"),	// Lande's electon g-factor
-	CONSTANT("k",		"PC_k",		"1.3806488E-23"),	// Boltzmann constant
-	CONSTANT("Kj",		"PC_Jk",	"483597.870E9"),	// Josephson constant
-	CONSTANT("N\327",	"PC_Na",	"6.02214129E23"),	// Avogadro's number
+	CONSTANT("G",		"PC_G",		"6.67408E-11"),		// NIST 2010, IAU 2009 gives 6.67428E-11
+	CONSTANT("G\270",	"PC_Go",	"7.7480917310E-5"),	// Conductace quantum
+	CONSTANT("g\274",	"PC_Ge",	"-2.00231930436182"),	// Lande's electon g-factor
+	CONSTANT("k",		"PC_k",		"1.38064852E-23"),	// Boltzmann constant
+	CONSTANT("Kj",		"PC_Jk",	"483597.8525E9"),	// Josephson constant
+	CONSTANT("N\327",	"PC_Na",	"6.022140857E23"),	// Avogadro's number
 	CONSTANT("p\270",	"PC_atm",	"101325"),		// Standard atmospheric pressure
-	CONSTANT("R",		"PC_R",		"8.3144621"),		// Molar gas constant
-	CONSTANT("R\367",	"PC_Rk",	"25812.8074434"),	// von Klitzing's constant
-	CONSTANT("R\233",	"PC_Rinf",	"10973731.568539"),	// Rydberg constant
+	CONSTANT("R",		"PC_R",		"8.3144598"),		// Molar gas constant
+	CONSTANT("R\367",	"PC_Rk",	"25812.8074555"),	// von Klitzing's constant
+	CONSTANT("R\233",	"PC_Rinf",	"10973731.568508"),	// Rydberg constant
 	CONSTANT("T\270",	"PC_t",		"273.15"),		// 0 degree celcus, standard temperature
-	CONSTANT("V\033",	"PC_Vm",	"22.413968E-3"),	// Molar volume of an ideal gas at STP
-	CONSTANT("Z\270",	"PC_Zo",	"376.73031346177065546819840042031930826862350835241864672"),	// Characteristic impedance of vacuum
-	CONSTANT("\240",	"PC_alpha",	"7.2973525698E-3"),	// Fine-structure constant
-	CONSTANT("\242\276",	"PC_gamP",	"2.675222005E8"),	// Proton gyromagnetic ratio
+	CONSTANT("V\033",	"PC_Vm",	"22.413962E-3"),	// Molar volume of an ideal gas at STP
+	CONSTANT("Z\270",	"PC_Zo",	"376.73031346177065546819840042031930826862350835241865523"),	// Characteristic impedance of vacuum
+	CONSTANT("\240",	"PC_alpha",	"7.2973525664E-3"),	// Fine-structure constant
+	CONSTANT("\242\276",	"PC_gamP",	"2.675221900E8"),	// Proton gyromagnetic ratio
 	CONSTANT("\244\270",	"PC_eps0",	"8.8541878176203898505365630317107502606083701665994498E-12"),	// Electric constant, vacuum permittivity
 	CONSTANT("\253\270",	"PC_mu0",	"12.566370614359172953850573533118011536788677597500423E-7"),	// Magnetic constant
-	CONSTANT("\253\230",	"PC_muB",	"927.400968E-26"),	// Bohr's magneton
-	CONSTANT("\253\277",	"PC_mu_u",	"5.05078353E-27"),	// Nuclear magneton
-	CONSTANT("\261\230",	"PC_sigma",	"5.670373E-8"),		// Stefan Boltzmann constant
-	CONSTANT("\224\270",	"PC_phi0",	"2.067833758E-15"),	// Magnetic flux quantum
+	CONSTANT("\253\230",	"PC_muB",	"927.4009994E-26"),	// Bohr's magneton
+	CONSTANT("\253\277",	"PC_mu_u",	"5.050783699E-27"),	// Nuclear magneton
+	CONSTANT("\261\230",	"PC_sigma",	"5.670367E-8"),		// Stefan Boltzmann constant
+	CONSTANT("\224\270",	"PC_phi0",	"2.067833831E-15"),	// Magnetic flux quantum
 
 	/* Plank related constants */
-	CONSTANT("h",		"PC_PLANK",	"6.62606957E-34"),	// Planck's constant
-	CONSTANT("\236",	"PC_hon2PI",	"1.054571726E-34"),	// Planck's constant over 2 pi.
-	CONSTANT("l\276",	"PC_PlanckL",	"1.616199E-35"),	// Base Planck unit of length
-	CONSTANT("M\276",	"PC_PlanckM",	"2.17651E-8"),		// Base Planck unit of mass
-/**/	CONSTANT("q\276",	"PC_PlanckQ",	"1.8755459e-18"),	// Base Planck unit of charge
-	CONSTANT("T\276",	"PC_PlanckTh",	"1.416833E32"),		// Base Planck unit of temperature
-	CONSTANT("t\276",	"PC_tp",	"5.39106E-44"),		// Base Planck unit of time
+	CONSTANT("h",		"PC_PLANK",	"6.626070040E-34"),	// Planck's constant
+	CONSTANT("\236",	"PC_hon2PI",	"1.054571800E-34"),	// Planck's constant over 2 pi.
+	CONSTANT("l\276",	"PC_PlanckL",	"1.616229E-35"),	// Base Planck unit of length
+	CONSTANT("M\276",	"PC_PlanckM",	"2.176470E-8"),		// Base Planck unit of mass
+/**/	CONSTANT("q\276",	"PC_PlanckQ",	"1.8755460e-18"),	// Base Planck unit of charge
+	CONSTANT("T\276",	"PC_PlanckTh",	"1.416808E32"),		// Base Planck unit of temperature
+	CONSTANT("t\276",	"PC_tp",	"5.39116E-44"),		// Base Planck unit of time
 
 	/* Atomic constants */
-	CONSTANT("e",		"PC_eV",	"1.602176565E-19"),	// Electron Charge
-	CONSTANT("r\274",	"PC_Re",	"2.8179403267E-15"),	// Classical electron radius
-	CONSTANT("m\274",	"PC_me",	"9.10938291E-31"),	// Electron mass
-	CONSTANT("m\275",	"PC_mn",	"1.674927351E-27"),	// Neutron mass
-	CONSTANT("m\276",	"PC_mp",	"1.672621777E-27"),	// Proton mass
-	CONSTANT("m\277",	"PC_mu",	"1.660538921E-27"),	// Atomic mass unit
-	CONSTANT("m\231",	"PC_mMu",	"1.883531475E-28"),	// Muon mass
-//	CONSTANT("m\274c\232",	"PC_mec2",	"8.18710506E-14"),	// Electron mass by c^2
-//	CONSTANT("m\275c\232",	"PC_mnc2",	"1.505349631E-10"),	// Neutron mass by c^2
-//	CONSTANT("m\276c\232",	"PC_mpc2",	"1.503277484E-10"),	// Proton mass by c^2
-	CONSTANT("m\277c\232",	"PC_muc2",	"1.492417954E-10"),	// Atomic mass unit by c^2
-//	CONSTANT("m\231c\232",	"PC_mMuc2",	"1.692833667E-11"),	// Muon mass by c^2
-	CONSTANT("\252\273",	"PC_lamC",	"2.4263102389E-12"),	// Compton wavelength of the electron
-	CONSTANT("\252\273\275","PC_lamCn",	"1.3195909068E-15"),	// Compton wavelength of the neutron
-	CONSTANT("\252\273\276","PC_lamCp",	"1.32140985623E-15"),	// Compton wavelength of the proton
-	CONSTANT("\253\274",	"PC_muE",	"-928.476430E-26"),	// Electron magnetic moment
-	CONSTANT("\253\275",	"PC_mun",	"-0.96623647E-26"),	// Neutron magnetic moment
-	CONSTANT("\253\276",	"PC_muP",	"1.410606743E-26"),	// Proton magnetic moment
-	CONSTANT("\253\231",	"PC_mumu",	"-4.49044807E-26"),	// Muon magnetic moment
+	CONSTANT("e",		"PC_eV",	"1.6021766208E-19"),	// Electron Charge
+	CONSTANT("r\274",	"PC_Re",	"2.8179403227E-15"),	// Classical electron radius
+	CONSTANT("m\274",	"PC_me",	"9.10938356E-31"),	// Electron mass
+	CONSTANT("m\275",	"PC_mn",	"1.674927471E-27"),	// Neutron mass
+	CONSTANT("m\276",	"PC_mp",	"1.672621898E-27"),	// Proton mass
+	CONSTANT("m\277",	"PC_mu",	"1.660539040E-27"),	// Atomic mass unit
+	CONSTANT("m\231",	"PC_mMu",	"1.883531594E-28"),	// Muon mass
+//	CONSTANT("m\274c\232",	"PC_mec2",	"8.18710565E-14"),	// Electron mass by c^2
+//	CONSTANT("m\275c\232",	"PC_mnc2",	"1.505349739E-10"),	// Neutron mass by c^2
+//	CONSTANT("m\276c\232",	"PC_mpc2",	"1.503277593E-10"),	// Proton mass by c^2
+	CONSTANT("m\277c\232",	"PC_muc2",	"1.492418062E-10"),	// Atomic mass unit by c^2
+//	CONSTANT("m\231c\232",	"PC_mMuc2",	"1.692833774E-11"),	// Muon mass by c^2
+	CONSTANT("\252\273",	"PC_lamC",	"2.4263102367E-12"),	// Compton wavelength of the electron
+	CONSTANT("\252\273\275","PC_lamCn",	"1.31959090481E-15"),	// Compton wavelength of the neutron
+	CONSTANT("\252\273\276","PC_lamCp",	"1.32140985396E-15"),	// Compton wavelength of the proton
+	CONSTANT("\253\274",	"PC_muE",	"-928.4764620E-26"),	// Electron magnetic moment
+	CONSTANT("\253\275",	"PC_mun",	"-0.96623650E-26"),	// Neutron magnetic moment
+	CONSTANT("\253\276",	"PC_muP",	"1.4106067873E-26"),	// Proton magnetic moment
+	CONSTANT("\253\231",	"PC_mumu",	"-4.49044826E-26"),	// Muon magnetic moment
 
 	/* Mathematical constants */
 	CONSTANT("NaN",		"NAN",		"NaN"),
