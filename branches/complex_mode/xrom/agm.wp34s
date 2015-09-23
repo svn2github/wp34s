@@ -21,6 +21,11 @@
  */
 	XLBL"AGM"
 		xIN DYADIC
+		x<0?
+			ERR ERR_DOMAIN
+		x[<->] Y
+		x<0?
+			ERR ERR_DOMAIN
 agm_loop::	RCL[times] Y
 		x[<->] Y
 		RCL+ L
