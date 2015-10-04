@@ -338,7 +338,7 @@
 #define SHOW_GRADIAN_PREFIX
 
 // Show complex named registers as cX, cY, cZ, cT, cL and cJ (instead of X, Z, A, C, L and J)
-// #define SHOW_COMPLEX_REGS
+#define SHOW_COMPLEX_REGS
 
 // Right-justify seven-segment exponent (007 or "  7" rather than "7  ")
 //#define INCLUDE_RIGHT_EXP
