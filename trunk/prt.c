@@ -223,7 +223,17 @@ static const char *prt_rargs(const opcode op, char *instr) {
 
 	print_reg:
 		if (arg >= regX_idx && arg <= regK_idx && (ind || argcmds[cmd].stckreg))
+#ifdef SHOW_COMPLEX_REGS
+			if (*instr == COMPLEX_PREFIX) {
+				*p++ = COMPLEX_PREFIX;
+				*p = COMPLEX_REGNAMES[arg - regX_idx];
+			}
+			else {
+				*p = REGNAMES[arg - regX_idx];
+			}
+#else
 			*p = REGNAMES[arg - regX_idx];
+#endif
 		else {
 			if (arg >= LOCAL_REG_BASE && (ind || argcmds[cmd].local)) {
 				arg -= LOCAL_REG_BASE;

@@ -7,7 +7,7 @@
 setlocal
 set lang=en
 set TZ=UTC
-set dest=..\..\..\revision.txt
+set dest=..\..\revision.txt
 set config=%1
 if "%config%"=="" set config=Release
 copy revision.txt.template %dest%

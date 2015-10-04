@@ -462,6 +462,9 @@ extern int current_catalogue_max(void);
 #define NUMFLG          NUMREG                          // These two must match!
 
 #define REGNAMES        "XYZTABCDLIJK"
+#ifdef SHOW_COMPLEX_REGS
+#define COMPLEX_REGNAMES "X?Y?Z?T?L?J?"
+#endif
 
 #define regX_idx        (TOPREALREG)
 #define regY_idx        (TOPREALREG+1)

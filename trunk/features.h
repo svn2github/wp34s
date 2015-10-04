@@ -337,6 +337,9 @@
 // Show prefix for gradian mode when y-register is displayed (without this gradian mode is indicated by neither the RAD nor the 360 annunciators being shown)
 #define SHOW_GRADIAN_PREFIX
 
+// Show complex named registers as cX, cY, cZ, cT, cL and cJ (instead of X, Z, A, C, L and J)
+// #define SHOW_COMPLEX_REGS
+
 // Right-justify seven-segment exponent (007 or "  7" rather than "7  ")
 //#define INCLUDE_RIGHT_EXP
 

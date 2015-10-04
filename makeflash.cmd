@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 setlocal
 rem PATH C:\APPS\netX-ARM-GCC\bin;%PATH%
 rem PATH C:\APPS\yagarto-4.5.2\bin;%PATH%

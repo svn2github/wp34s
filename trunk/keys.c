@@ -1226,18 +1226,30 @@ static void reset_arg(void) {
 
 static int arg_eval(unsigned int val) {
 	const unsigned int base = CmdBase;
-	const int r = RARG(base, val 
-				 + (State2.ind ? RARG_IND : 0) 
-		                 + (State2.local ? LOCAL_REG_BASE : 0));
+	int r = RARG(base, val 
+		 	   + (State2.ind ? RARG_IND : 0) 
+		           + (State2.local ? LOCAL_REG_BASE : 0));
 	const unsigned int ssize = (! UState.stack_depth || ! State2.runmode ) ? 4 : 8;
 
 	if (! State2.ind) {
 		/*
 		 *  Central argument checking for some commands
 		 */
+#ifdef SHOW_COMPLEX_REGS
+		if (argcmds[base].cmplx && val > TOPREALREG - 2 ) {
+			// remap complex registers cY->T, cZ->A, cT->C
+			                     // 99,   X,   Y,   Z,   T,   A,   B,   C,   D,   L,   I,   J,   K
+			static char remap[] = {  0, 100, 102, 104, 106,   0,   0,   0,   0, 108,   0, 110,   0 };
+			val = (unsigned int) remap[ val - (TOPREALREG - 1) ];
+			if ( val == 0 )
+				return STATE_UNFINISHED;
+			r = RARG(base, val);
+		}
+#else
 		if (argcmds[base].cmplx && (val > TOPREALREG - 2 && (val & 1)))
 			// Disallow odd complex register > 98
 			return STATE_UNFINISHED;
+#endif
 		if ((base == RARG_STOSTK || base == RARG_RCLSTK) && (val > TOPREALREG - ssize))
 			// Avoid stack clash for STOS/RCLS
 			return STATE_UNFINISHED;
