@@ -1797,6 +1797,14 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
 		return set_NaN(res);
 	}
 
+	// Handle x approximately zero case
+	if (dn_abs_lt(xin, &const_1e_24)) {
+		if (dn_eq0(xin))
+			return set_NaN(res);
+		decNumberRecip(&x, xin);
+		return dn_subtract(res, &x, &const_egamma);
+	}
+
 	// Correct our argument and begin the inversion if it is negative
 	if (dn_le0(xin)) {
 		reflec = 1;
@@ -1847,6 +1855,15 @@ decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin) {
 		if (decNumberIsInfinite(xin) && !decNumberIsNegative(xin))
 			return set_inf(res);
 		return set_NaN(res);
+	}
+
+	// Handle x approximately zero case
+	if (dn_abs_lt(xin, &const_1e_24)) {
+		if (dn_eq0(xin))
+			return set_NaN(res);
+		decNumberRecip(&x, xin);
+		dn_subtract(&t, &x, &const_egamma);
+		return dn_ln(res, &t);
 	}
 
 	// Correct out argument and begin the inversion if it is negative
