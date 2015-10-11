@@ -1779,15 +1779,9 @@ static void dn_LnGamma(decNumber *res, const decNumber *x) {
 #endif
 }
 
-decNumber *decNumberFactorial(decNumber *res, const decNumber *xin) {
-	decNumber x;
-
-	dn_p1(&x, xin);
-	return decNumberGamma(res, &x);
-}
-
-decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
-	decNumber x, s, t, u;
+// common code for the [GAMMA] and LN[GAMMA]
+static decNumber *Gamma_LnGamma(decNumber *res, const decNumber *xin, const int ln) {
+	decNumber x, t;
 	int reflec = 0;
 
 	// Check for special cases
@@ -1802,16 +1796,18 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
 		if (dn_eq0(xin))
 			return set_NaN(res);
 		decNumberRecip(&x, xin);
-		return dn_subtract(res, &x, &const_egamma);
+		dn_subtract(res, &x, &const_egamma);
+		if (ln) 
+			return dn_ln(res, res);
+		return res;
 	}
 
 	// Correct our argument and begin the inversion if it is negative
 	if (dn_le0(xin)) {
 		reflec = 1;
 		dn_1m(&t, xin);
-		if (is_int(&t)) {
+		if (is_int(&t))
 			return set_NaN(res);
-		}
 		dn_m1(&x, &t);
 	} else {
 		dn_m1(&x, xin);
@@ -1825,71 +1821,48 @@ decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
 				dn_multiply(res, res, &x);
 				dn_m1(&x, &x);
 			}
+			if (ln)
+				return dn_ln(res, res);
 			return res;
 		}
 #endif
 	}
 
-	dn_LnGamma(&t, &x);
-	dn_exp(res, &t);
+	dn_LnGamma(res, &x);
+	if (!ln) dn_exp(res, res);
 
 	// Finally invert if we started with a negative argument
 	if (reflec) {
 		// figure out xin * PI mod 2PI
-		decNumberMod(&s, xin, &const_2);
-		dn_mulPI(&t, &s);
-		sincosTaylor(&t, &s, &u);
-		dn_multiply(&u, &s, res);
-		dn_divide(res, &const_PI, &u);
+		decNumberMod(&t, xin, &const_2);
+		dn_mulPI(&t, &t);
+		sincosTaylor(&t, &x, NULL);
+		if (ln) {
+			dn_divide(&t, &const_PI, &x);
+			dn_ln(&t, &t);
+			dn_subtract(res, &t, res);
+		} else {
+			dn_multiply(&t, &x, res);
+			dn_divide(res, &const_PI, &t);
+		}
 	}
 	return res;
 }
 
+decNumber *decNumberFactorial(decNumber *res, const decNumber *xin) {
+	decNumber x;
+
+	dn_p1(&x, xin);
+	return decNumberGamma(res, &x);
+}
+
+decNumber *decNumberGamma(decNumber *res, const decNumber *xin) {
+	return Gamma_LnGamma(res, xin, 0);
+}
+
 // The log gamma function.
 decNumber *decNumberLnGamma(decNumber *res, const decNumber *xin) {
-	decNumber x, t, u;
-	int reflec = 0;
-
-	// Check for special cases
-	if (decNumberIsSpecial(xin)) {
-		if (decNumberIsInfinite(xin) && !decNumberIsNegative(xin))
-			return set_inf(res);
-		return set_NaN(res);
-	}
-
-	// Handle x approximately zero case
-	if (dn_abs_lt(xin, &const_1e_24)) {
-		if (dn_eq0(xin))
-			return set_NaN(res);
-		decNumberRecip(&x, xin);
-		dn_subtract(&t, &x, &const_egamma);
-		return dn_ln(res, &t);
-	}
-
-	// Correct out argument and begin the inversion if it is negative
-	if (dn_le0(xin)) {
-		reflec = 1;
-		dn_1m(&t, xin);
-		if (is_int(&t)) {
-			return set_NaN(res);
-		}
-		dn_m1(&x, &t);
-	} else
-		dn_m1(&x, xin);
-
-	dn_LnGamma(res, &x);
-
-	// Finally invert if we started with a negative argument
-	if (reflec) {
-		// Figure out S * PI mod 2PI
-		decNumberMod(&u, xin, &const_2);
-		dn_mulPI(&t, &u);
-		sincosTaylor(&t, &x, NULL);
-		dn_divide(&u, &const_PI, &x);
-		dn_ln(&t, &u);
-		dn_subtract(res, &t, res);
-	}
-	return res;
+	return Gamma_LnGamma(res, xin, 1);
 }
 
 // lnBeta(x, y) = lngamma(x) + lngamma(y) - lngamma(x+y)

@@ -542,8 +542,7 @@ static void c_lg(decNumber *rx, decNumber *ry, const decNumber *x, const decNumb
 }
 #endif
 
-
-void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNumber *y) {
+static void cmplxGamma_LnGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNumber *y, const int ln) {
 #ifndef TINY_BUILD
 	decNumber x, s1, s2, t1, t2, u1, u2;
 	int reflec = 0;
@@ -583,69 +582,31 @@ void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNum
 		dn_m1(&x, xin);
 
 	// Sum the series
-	c_lg(&s1, &s2, &x, y);
-	cmplxExp(rx, ry, &s1, &s2);
+	c_lg(rx, ry, &x, y);
+	if (!ln)
+		cmplxExp(rx, ry, rx, ry);
 
 	// Finally invert if we started with a negative argument
 	if (reflec) {
 		cmplxMultiplyReal(&t1, &t2, xin, y, &const_PI);
 		cmplxSin(&s1, &s2, &t1, &t2);
-		cmplxMultiply(&u1, &u2, &s1, &s2, rx, ry);
-		cmplxDivideRealBy(rx, ry, &const_PI, &u1, &u2);
+		if (ln) {
+			cmplxMultiply(&u1, &u2, &s1, &s2, rx, ry);
+			cmplxDivideRealBy(rx, ry, &const_PI, &u1, &u2);
+		} else {
+			cmplxDivideRealBy(&u1, &u2, &const_PI, &s1, &s2);
+			cmplxLn(&t1, &t2, &u1, &u2);
+			cmplxSubtract(rx, ry, &t1, &t2, rx, ry);
+		}
 	}
 #endif
 }
 
-void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *xin, const decNumber *y) {
-#ifndef TINY_BUILD
-	decNumber x, s1, s2, t1, t2, u1, u2;
-	int reflec = 0;
+void cmplxGamma(decNumber *rx, decNumber *ry, const decNumber *x, const decNumber *y) {
+	cmplxGamma_LnGamma(rx, ry, x, y, 0);
+}
 
-	// Check for special cases
-	if (decNumberIsSpecial(xin) || decNumberIsSpecial(y)) {
-		if (decNumberIsNaN(xin) || decNumberIsNaN(y))
-			cmplx_NaN(rx, ry);
-		else {
-			if (decNumberIsInfinite(xin)) {
-				if (decNumberIsInfinite(y))
-					cmplx_NaN(rx, ry);
-				else if (decNumberIsNegative(xin))
-					cmplx_NaN(rx, ry);
-				else {
-					set_inf(rx);
-					decNumberZero(ry);
-				}
-			} else {
-				decNumberZero(rx);
-				decNumberZero(ry);
-			}
-		}
-		return;
-	}
-
-
-	// Correct out argument and begin the inversion if it is negative
-	if (decNumberIsNegative(xin)) {
-		reflec = 1;
-		dn_1m(&t1, xin);
-		if (dn_eq0(y) && is_int(&t1)) {
-			cmplx_NaN(rx, ry);
-			return;
-		}
-		dn_m1(&x, &t1);
-	} else
-		dn_m1(&x, xin);
-
-	c_lg(rx, ry, &x, y);
-
-	// Finally invert if we started with a negative argument
-	if (reflec) {
-		cmplxMultiplyReal(&t1, &t2, xin, y, &const_PI);
-		cmplxSin(&s1, &s2, &t1, &t2);
-		cmplxDivideRealBy(&u1, &u2, &const_PI, &s1, &s2);
-		cmplxLn(&t1, &t2, &u1, &u2);
-		cmplxSubtract(rx, ry, &t1, &t2, rx, ry);
-	}
-#endif
+void cmplxLnGamma(decNumber *rx, decNumber *ry, const decNumber *x, const decNumber *y) {
+	cmplxGamma_LnGamma(rx, ry, x, y, 1);
 }
 
