@@ -22,6 +22,10 @@
 #include "serial.h"
 #include "keys.h"
 #include "lcd.h"
+#include "int.h"
+
+// We should include <stdlib.h> but it does not compile on every platform
+extern unsigned long long strtoull(const char *, char **, int);
 
 extern const char SvnRevision[];
 extern int is_key_pressed_adapter();

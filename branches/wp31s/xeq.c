@@ -4858,6 +4858,56 @@ void wptrace( char *buff ) {
 }
 #endif
 
+#ifndef REALBUILD
+void paste_raw_x(const char *p)
+{
+	process_cmdline();
+	lift_if_enabled();
+	if (is_intmode()) {
+		int sgn = p[0] == '-' ? 1 : 0;
+
+		setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));
+	} else {
+		decNumber x;
+
+		setX(decNumberFromString(&x, p, &Ctx));
+	}
+	display();
+}
+
+char* fill_buffer_from_raw_x(char *buffer)
+{
+	process_cmdline();
+	if (is_intmode()) {
+		int sgn;
+		unsigned long long int x = extract_value(get_reg_n_int(regX_idx), &sgn);
+		const int base = int_base();
+		char *p = buffer + (sizeof(buffer)-1);
+
+		*p-- = '\0';
+		if (x == 0)
+			*p-- = '0'; 
+		else {
+			while (x != 0) {
+				const int n = x % base;
+				x /= base;
+				*p-- = n["0123456789ABCDEF"];
+			}
+		}
+		if (sgn)
+			*p = '-';
+		else
+			p++;
+		return p;
+	} else {
+		decNumber x;
+		decNumberToString(getX(&x), buffer);
+		return buffer;
+	}
+}
+
+#endif
+
 #ifdef GNUC_POP_ERROR
 #pragma GCC diagnostic pop
 #endif

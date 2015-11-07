@@ -346,6 +346,21 @@ void QtEmulator::pasteNumber()
 	QtNumberPaster::paste(qApp->clipboard()->text(), *keyboard);
 }
 
+void QtEmulator::copyRawX()
+{
+	char buffer[66];
+	char* p = fill_buffer_from_raw_x(buffer);
+	if(p!=NULL)
+	{
+		qApp->clipboard()->setText(QString(p));
+	}
+}
+
+void QtEmulator::pasteRawX()
+{
+	paste_raw_x(qApp->clipboard()->text().toStdString().c_str());
+}
+
 void QtEmulator::selectSkin(QAction* anAction)
 {
 	QString savedSkinName=currentSkinName;
@@ -415,12 +430,16 @@ void QtEmulator::buildEditMenu()
 
 	QAction* copyNumberAction=editMenu->addAction(COPY_NUMBER_ACTION_TEXT, this, SLOT(copyNumber()), QKeySequence::Copy);
 	editContextMenu->addAction(copyNumberAction);
+	QAction* copyRawXAction=editMenu->addAction(COPY_RAW_X_ACTION_TEXT, this, SLOT(copyRawX()));
+	editContextMenu->addAction(copyRawXAction);
 	QAction* copyTextLineAction=editMenu->addAction(COPY_TEXTLINE_ACTION_TEXT, this, SLOT(copyTextLine()));
 	editContextMenu->addAction(copyTextLineAction);
 	QAction* copyImageAction=editMenu->addAction(COPY_IMAGE_ACTION_TEXT, this, SLOT(copyImage()));
 	editContextMenu->addAction(copyImageAction);
 	QAction* pasteNumberAction=editMenu->addAction(PASTE_NUMBER_ACTION_TEXT, this, SLOT(pasteNumber()), QKeySequence::Paste);
 	editContextMenu->addAction(pasteNumberAction);
+	QAction* pasteRawXAction=editMenu->addAction(PASTE_RAW_X_ACTION_TEXT, this, SLOT(pasteRawX()));
+	editContextMenu->addAction(pasteRawXAction);
 
 #ifndef Q_WS_MAC
 	editMenu->addSeparator();

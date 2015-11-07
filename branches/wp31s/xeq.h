@@ -1320,4 +1320,6 @@ extern int is_test_mode(void);
 #define TRACE_FILE "wp31s-trace.txt"
 extern void wptrace( char *buffer );
 #endif
+extern char* fill_buffer_from_raw_x(char *buffer);
+extern void paste_raw_x(const char *p);
 #endif

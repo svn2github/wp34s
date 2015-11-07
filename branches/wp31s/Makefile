@@ -121,7 +121,7 @@ CFLAGS += -DINFRARED
 HOSTCFLAGS += -DINFRARED
 endif
 ifeq "$(SYSTEM)" "Darwin"
-CFLAGS += -DFIX_64_BITS
+CFLAGS += -DFIX_64_BITS -mmacosx-version-min=10.5
 endif 
 else
 CFLAGS += -O0 -DDEBUG $(USE_CURSES)
