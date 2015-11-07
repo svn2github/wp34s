@@ -78,6 +78,10 @@ extern int backspace_code();
 extern int forward_set_IO_annunciator();
 extern int getdig(int ch);
 extern char isForcedDispPlot();
+
+/* Defined in xeq.h but neeeded in QtEmulator.cpp */
+extern char* fill_buffer_from_raw_x(char *buffer);
+extern void paste_raw_x(const char *p);
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */

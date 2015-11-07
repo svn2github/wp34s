@@ -24,11 +24,11 @@
 #include "lcd.h"
 #include "int.h"
   
-// We should include <stdlib.h> but it does not compile on every platform
-extern unsigned long long strtoull(const char *, char **, int);
-
 #define REGION_BACKUP   2
 #define BACKUP_FILE "wp31s-backup.dat"
+
+// We should include <stdlib.h> but it does not compile on every platform
+extern unsigned long long strtoull(const char *, char **, int);
 
 extern const char SvnRevision[];
 extern int is_key_pressed_adapter();
