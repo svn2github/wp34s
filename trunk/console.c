@@ -21,6 +21,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "xeq.h" 
 #include "keys.h"
@@ -38,6 +39,8 @@
 #define CH_FLAGS	'F'
 #define CH_ICOUNT	'C'
 #define CH_REFRESH	12	/* ^L */
+#define CH_COPY		'X'
+#define CH_PASTE	'V'
 
 unsigned long long int instruction_count = 0;
 int view_instruction_counter = 0;
@@ -676,6 +679,18 @@ skipargs:
 				instruction_count = 0;
 				view_instruction_counter = 1 - view_instruction_counter;
 				display();
+			} else if (c == CH_PASTE) {
+				paste_raw_x("123.14159265358979323846264338327950");
+				c = K_UNKNOWN;
+				clear();
+				display();
+			} else if (c == CH_COPY) {
+				char buffer[66];
+				const char *p = fill_buffer_from_raw_x(buffer);
+				printf("%s\n", p);
+				fflush(NULL);
+				sleep(1);
+				c = K_UNKNOWN;
 			} else
 #endif
 			c=remap(c);
