@@ -14,6 +14,11 @@ OBJS = $(SRCS:%.c=$(OBJECTDIR)/%.o)
 
 gpath = $(OBJECTDIR)
 
+SYSTEM := $(shell uname)
+ifeq "$(SYSTEM)" "Darwin"
+CFLAGS += -mmacosx-version-min=10.5
+endif 
+
 all: $(OBJECTDIR) $(OBJECTDIR)/$(LIB)
 
 

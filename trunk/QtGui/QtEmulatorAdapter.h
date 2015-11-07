@@ -41,6 +41,8 @@ extern int* get_displayed_text();
 extern char* get_last_displayed();
 extern char* get_last_displayed_number();
 extern char* get_last_displayed_exponent();
+extern char* fill_buffer_from_raw_x(char *buffer);
+extern void paste_raw_x(const char *p);
 extern int is_small_font(char *p);
 extern void set_fshift_locked(int);
 extern void set_gshift_locked(int);
