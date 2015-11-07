@@ -24,7 +24,7 @@
 #include <sys/time.h>
 #endif
 #include <stdio.h>   // (s)printf
-#if !defined(WIN32)
+#if defined(QTGUI)
 extern unsigned long long strtoull(const char *, char **, int);
 #endif
 #endif // REALBUILD
