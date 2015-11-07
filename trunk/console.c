@@ -21,7 +21,6 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "xeq.h" 
 #include "keys.h"
@@ -689,7 +688,6 @@ skipargs:
 				const char *p = fill_buffer_from_raw_x(buffer);
 				printf("%s\n", p);
 				fflush(NULL);
-				sleep(1);
 				c = K_UNKNOWN;
 			} else
 #endif
