@@ -356,8 +356,6 @@ void paste_raw_x(const char *p)
 
 char* fill_buffer_from_raw_x(char *buffer)
 {
-	int len = 0;
-
 	process_cmdline();
 	if (is_intmode()) {
 		int sgn;
@@ -366,26 +364,25 @@ char* fill_buffer_from_raw_x(char *buffer)
 		char *p = buffer + (sizeof(buffer)-1);
 
 		*p-- = '\0';
-		if (x == 0) { *p-- = '0'; len = 1; }
+		if (x == 0)
+			*p-- = '0'; 
 		else {
 			while (x != 0) {
 				const int n = x % base;
 				x /= base;
 				*p-- = n["0123456789ABCDEF"];
-				len++;
 			}
-			if (sgn) {
-				*p = '-';
-				len++;
-			} else p++;
-			return p;
 		}
+		if (sgn)
+			*p = '-';
+		else
+			p++;
+		return p;
 	} else {
 		decNumber x;
 		decNumberToString(getX(&x), buffer);
 		return buffer;
 	}
-	return NULL;
 }
 
 int is_small_font(char *p)
