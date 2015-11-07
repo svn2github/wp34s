@@ -24,7 +24,11 @@
 #include <sys/time.h>
 #endif
 #include <stdio.h>   // (s)printf
+#if defined( _WIN32 ) && !defined( QTGUI )
+#define strtoull _strtoui64
+#else
 extern unsigned long long strtoull(const char *, char **, int);
+#endif
 #endif // REALBUILD
 #ifdef IOS
 #include <stdarg.h>

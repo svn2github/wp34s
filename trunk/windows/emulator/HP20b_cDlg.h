@@ -97,9 +97,11 @@ protected:
 	afx_msg void OnHelpAboutbox();
 	afx_msg void OnHelpHp20bbusinessconsultant();
 	afx_msg void OnBuy();
-	afx_msg void OnEditCopyNumber();
 	afx_msg void OnEditCopyTextline();
+	afx_msg void OnEditCopyNumber();
+	afx_msg void OnEditCopyRawX();
 	afx_msg void OnEditPasteNumber();
+	afx_msg void OnEditPasteRawX();
 	afx_msg void OnHP20bShowcaptionMenu();
 	afx_msg void OnMove(int x, int y);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);

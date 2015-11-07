@@ -66,17 +66,11 @@ extern "C" {
 #define LastIsShiftOperation 131072 // Set to true if the last operation was a shifted one...
 #define ScreenValid 8388608 // true if the screen is valid and does not need to be redisplayed...
 #define VirtualKey 16777216 // true if the currently executed key comes from serial port... this is used to remove pauses in testing
-#define OffsetNoScroll 0xffff
 
 /*
  *  Definition of persistent RAM area
  */
-#ifdef _ARM_
-#include "board.h"
-#define PERSISTENT_RAM_SIZE AT91C_ISRAM_2_SIZE
-#else
 #define PERSISTENT_RAM_SIZE 2048
-#endif
 
 #ifndef T_PERSISTENT_RAM_DEFINED
 typedef struct _ram {
@@ -84,11 +78,7 @@ typedef struct _ram {
 } TPersistentRam;
 #endif
 
-#ifdef _ARM_
-static TPersistentRam *const PersistentRam = (TPersistenRam *) AT91C_ISRAM_2;
-#else
 #undef EXPORT
-#endif
 
 #define MagicMarker 0x12BC67D9FE3954AF // stored in RAM to check if RAM is still valid after a reboot
 
@@ -103,21 +93,13 @@ void Shutdown(void);           // turn off, save state
 void KeyPress(int i);        // call when the user presses a key to get action. returns true if calc needs to be turned off
 void InternalKeyPress(int key); // same as above, but does not handle shifts...
 void UpdateScreen(bool forceUpdate);
-bool ScrollTopLine(void);  // function to be called every 200 ms when the screen needs scrolling... returns true if it needs to continue scrolling
 bool GetFlag(int flag);
 void SetFlag(int flag);
 void SetFlag2(int flag, bool setclear);
 void ClearFlag(int flag);
-#ifndef _ARM_
-unsigned short GetOffset(void);
-char *GetBottomLine(void);
-#ifdef wp34s
 wchar_t *GetTopLineW(void);
-#else
-char *GetTopLine(void);
-#endif
-#endif
-void SendString(char const *s);
+char *GetBottomLine(bool);
+void SetBottomLine(const char *);
 bool CheckCommunication(void);
 void SendChar(u8 c);
 void SendCharNoForce(u8 c);
@@ -127,14 +109,6 @@ int GetChar(); // imediate return with -1 if no chr were present...
 int GetChar2(u32 timeout);
 void SendBinary(u8 code, u32 size, u8 const *d);
 int GetBinary(u8 *b);
-
-#ifdef _ARM_
-// restart the watchdog
-#define Watchdog() (AT91C_BASE_WDTC->WDTC_WDCR=0xA5000001)
-void watchdog(); // same function as above, but not inlined...
-#else
-#define Watchdog()
-#endif
 
 #ifdef __cplusplus
 }

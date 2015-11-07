@@ -45,9 +45,6 @@
 #include "stdafx.h"
 
 
-#define TIME_SCROLLING		600 //ms
-#define TIME_SCROLL_LINES	100 //ms
-
 // CVirtualLCD
 class CVirtualLCD : public CStatic
 {
@@ -85,9 +82,6 @@ public:
 	void hpStartTimerBlinkCur(void);
 	void hpStopTimerBlinkCur(void);
 
-	void hpStartTimerScrollLines(int ms);
-	void hpStopTimerScrollLines();
-	
 	int	 hpGetXPos();
 	int  hpGetYPos();
 	int	 hpGetWidth();
@@ -104,9 +98,8 @@ private:
 	
 	#define DEF_TIMER_BLINK_CUR		500			// 500 ms
 	#define DEF_TIMER_SCRL_LINES	200			// 200 ms
-	typedef enum TIMER_ID { TIMER_DISABLED = 0, TIMER_ID_BLINK_CUR, TIMER_ID_SCROLL_LINES } ;
+	typedef enum TIMER_ID { TIMER_DISABLED = 0, TIMER_ID_BLINK_CUR } ;
 	UINT m_nDefTimerBlinkCur	;				//Timer
-	UINT m_nDefTimerScrollLines	;				//Timer
 
 
 	afx_msg void OnTimer(UINT_PTR nIDEvent);

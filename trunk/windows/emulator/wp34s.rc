@@ -7,10 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-//#include "afxres.h"
-#include "WinNT.rh"
-#include "windows.h"
-#define IDC_STATIC              (-1)     // all static controls
+#include "afxres.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -172,20 +169,22 @@ BEGIN
         MENUITEM "Hide Titlebar",               ID_HP20b_SHOWCAPTION
         POPUP "Help"
         BEGIN
-            MENUITEM "About",                   ID_HELP_ABOUTBOX
-            MENUITEM "Manual",                  ID_HELP_MANUAL
-            MENUITEM "Website",                 ID_HELP_WEBSITE
+            MENUITEM "About",                       ID_HELP_ABOUTBOX
+            MENUITEM "Manual",                      ID_HELP_MANUAL
+            MENUITEM "Website",                     ID_HELP_WEBSITE
         END
         POPUP "Skins"
         BEGIN
-            MENUITEM "Skins go here",           ID_HP20b_COPYTOCLIPBOARD
+            MENUITEM "Skins go here",               ID_HP20b_COPYTOCLIPBOARD
         END
         MENUITEM SEPARATOR
         MENUITEM "Reset",                       ID_HP20b_RESETSTATE
-        MENUITEM "Copy Number",                 ID_EDIT_COPY_NUMBER
+        MENUITEM "Copy Screen",                 ID_HP20b_COPYTOCLIPBOARD
         MENUITEM "Copy Textline",               ID_EDIT_COPY_TEXTLINE
+        MENUITEM "Copy Number",                 ID_EDIT_COPY_NUMBER
+        MENUITEM "Copy Number (Raw X)",         ID_EDIT_COPY_RAW_X
         MENUITEM "Paste Number",                ID_EDIT_PASTE_NUMBER
-        MENUITEM "Copy Screen To Clipboard",    ID_HP20b_COPYTOCLIPBOARD
+        MENUITEM "Paste Number (Raw X)",        ID_EDIT_PASTE_RAW_X
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        ID_HP20b_EXIT
     END
@@ -206,10 +205,12 @@ BEGIN
     END
     POPUP "Edit"
     BEGIN
-        MENUITEM "Copy Number",                 ID_EDIT_COPY_NUMBER
+        MENUITEM "Copy Screen",                 ID_HP20b_COPYTOCLIPBOARD
         MENUITEM "Copy Textline",               ID_EDIT_COPY_TEXTLINE
+        MENUITEM "Copy Number",                 ID_EDIT_COPY_NUMBER
+        MENUITEM "Copy Number (Raw X)",         ID_EDIT_COPY_RAW_X
         MENUITEM "Paste Number",                ID_EDIT_PASTE_NUMBER
-        MENUITEM "Copy Screen To Clipboard",    ID_HP20b_COPYTOCLIPBOARD
+        MENUITEM "Paste Number (Raw X)",        ID_EDIT_PASTE_RAW_X
     END
     POPUP "Help"
     BEGIN
@@ -252,7 +253,7 @@ LANGUAGE 9, 1
 #pragma code_page(1252)
 #endif //_WIN32
 //#include "res\HP20b_c.rc2"  // non-Microsoft Visual C++ edited resources
-//#include "afxres.rc"         // Standard components
+#include "afxres.rc"         // Standard components
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

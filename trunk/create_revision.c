@@ -43,13 +43,17 @@ int main( int argc, char **argv )
 
 // tmpnam is deprecated but switching to the cleaner mkstemp is too much work for no benefit
 
-	if (tmpnam( tmpname ) == NULL) {
+	if ((p = tmpnam( tmpname )) == NULL) {
 		perror("Unable to create tempory file name");
 		return 1;
 	}
-
+#ifdef _WIN32
+	if ( tmpname[ 0 ] == '\\' ) {
+		++p;
+	}
+#endif
 	// Try to execute svnversion
-	sprintf( buffer, "svnversion -n >%s", tmpname );
+	sprintf( buffer, "svnversion -n >%s", p );
 	fprintf( stderr, "Executing %s\n", buffer );
 	if (system( buffer ) == -1) {
 		perror("unable to run subversion command");
@@ -58,7 +62,7 @@ int main( int argc, char **argv )
 	}
 
 	// Read result
-	f = fopen( tmpname, "r" );
+	f = fopen( p, "r" );
 	if ( f == NULL ) {
 		fprintf( stderr, "Revision number is unknown\n" );
 		strcpy( buffer, "0000" );
