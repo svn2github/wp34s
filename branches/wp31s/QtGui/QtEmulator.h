@@ -113,11 +113,11 @@
 #define QUIT_ACTION_TEXT "Quit"
 
 #define COPY_NUMBER_ACTION_TEXT "Copy Number"
-#define COPY_RAW_X_ACTION_TEXT "Copy Raw X"
+#define COPY_RAW_X_ACTION_TEXT "Copy Raw"
 #define COPY_TEXTLINE_ACTION_TEXT "Copy Textline"
 #define COPY_IMAGE_ACTION_TEXT "Copy Screen Image"
 #define PASTE_NUMBER_ACTION_TEXT "Paste Number"
-#define PASTE_RAW_X_ACTION_TEXT "Paste Raw X"
+#define PASTE_RAW_X_ACTION_TEXT "Paste Raw"
 
 #define HIDE_DEBUGGER_ACTION_TEXT "Hide Debugger"
 #define SHOW_DEBUGGER_ACTION_TEXT "Show Debugger"
