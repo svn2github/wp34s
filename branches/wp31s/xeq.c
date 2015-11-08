@@ -24,7 +24,7 @@
 #include <sys/time.h>
 #endif
 #include <stdio.h>   // (s)printf
-extern unsigned long long strtoull(const char *, char **, int);
+#include <stdlib.h>
 #endif // REALBUILD
 #ifdef IOS
 #include <stdarg.h>

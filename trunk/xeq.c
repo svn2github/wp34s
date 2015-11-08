@@ -27,11 +27,12 @@ extern unsigned long long strtoull(const char *, char **, int);
 #endif
 #include <stdio.h>   // (s)printf
 #include <string.h>
+#include <stdlib.h>
 #endif // REALBUILD
 #ifdef IOS
 #include <stdarg.h>
 #endif
-#endif
+
 
 #if __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
 #define GNUC_POP_ERROR

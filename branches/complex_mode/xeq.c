@@ -27,6 +27,7 @@ extern unsigned long long strtoull(const char *, char **, int);
 #endif
 #include <stdio.h>   // (s)printf
 #include <string.h>
+#include <stdlib.h>
 #endif // REALBUILD
 #ifdef IOS
 #include <stdarg.h>
