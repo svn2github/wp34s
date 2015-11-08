@@ -4860,18 +4860,38 @@ void wptrace( char *buff ) {
 #endif
 
 #ifndef REALBUILD
-void paste_raw_x(const char *p)
+
+#include "string.h"
+
+void paste_raw_x(const char *in)
 {
-	process_cmdline();
-	lift_if_enabled();
-	if (is_intmode()) {
-		int sgn = p[0] == '-' ? 1 : 0;
+	char *buffer = strdup( in );
 
-		setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));
-	} else {
-		decNumber x;
-
-		setX(decNumberFromString(&x, p, &Ctx));
+	if ( buffer ) {
+		static const char *delim = "\r\n\t :;";
+		char *p = strtok( buffer, delim );
+		process_cmdline();
+		while ( p ) {
+			char *pp = strchr( p, ',' );
+			if ( pp ) {
+				*pp = '.';
+			}
+			lift_if_enabled();
+			if (is_intmode()) {
+				int sgn = p[0] == '-' ? 1 : 0;
+				setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));
+			} else {
+				decNumber x;
+				if (UState.fraccomma) {
+					char *q = strchr(p, ',');
+					if (q != NULL)
+						*q = '.';
+				}
+				setX(decNumberFromString(&x, p, &Ctx));
+			}
+			p = strtok( NULL, delim );
+		}
+		free( buffer );
 	}
 	display();
 }
@@ -4903,6 +4923,12 @@ char* fill_buffer_from_raw_x(char *buffer)
 	} else {
 		decNumber x;
 		decNumberToString(getX(&x), buffer);
+		if (UState.fraccomma) {
+			char *p = strchr(buffer, '.');
+			if (p != NULL)
+				*p = ',';
+		}
+
 		return buffer;
 	}
 }

@@ -6195,6 +6195,11 @@ void paste_raw_x(const char *in)
 				setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));
 			} else {
 				decNumber x;
+				if (UState.fraccomma) {
+					char *q = strchr(p, ',');
+					if (q != NULL)
+						*q = '.';
+				}
 				setX(decNumberFromString(&x, p, &Ctx));
 			}
 			p = strtok( NULL, delim );
@@ -6231,6 +6236,12 @@ char* fill_buffer_from_raw_x(char *buffer)
 	} else {
 		decNumber x;
 		decNumberToString(getX(&x), buffer);
+		if (UState.fraccomma) {
+			char *p = strchr(buffer, '.');
+			if (p != NULL)
+				*p = ',';
+		}
+
 		return buffer;
 	}
 }
