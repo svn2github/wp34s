@@ -19,12 +19,14 @@
 #include <stdlib.h>  // sleep
 #include "win32.h"
 #define sleep _sleep
+#define strtoull _strtoui64
 #else
 #include <unistd.h>
 #include <sys/time.h>
+extern unsigned long long strtoull(const char *, char **, int);
 #endif
 #include <stdio.h>   // (s)printf
-extern unsigned long long strtoull(const char *, char **, int);
+#include <string.h>
 #endif // REALBUILD
 #ifdef IOS
 #include <stdarg.h>
@@ -6340,8 +6342,6 @@ int init_34s(void)
 
 #ifndef REALBUILD
 
-#include "string.h"
-
 void paste_raw_x(const char *in)
 {
 	char *buffer = strdup( in );
@@ -6361,11 +6361,6 @@ void paste_raw_x(const char *in)
 				setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));
 			} else {
 				decNumber x;
-				if (UState.fraccomma) {
-					char *q = strchr(p, ',');
-					if (q != NULL)
-						*q = '.';
-				}
 				setX(decNumberFromString(&x, p, &Ctx));
 			}
 			p = strtok( NULL, delim );

@@ -100,8 +100,7 @@ protected:
 	afx_msg void OnEditCopyTextline();
 	afx_msg void OnEditCopyNumber();
 	afx_msg void OnEditCopyRawX();
-	afx_msg void OnEditPasteNumber();
-	afx_msg void OnEditPasteRawX();
+	afx_msg void OnEditPasteNumbers();
 	afx_msg void OnHP20bShowcaptionMenu();
 	afx_msg void OnMove(int x, int y);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
@@ -154,9 +153,6 @@ private:
 	
 	
 	afx_msg void OnRButtonDblClk(UINT nFlags, CPoint point);
-  afx_msg void OnCalculatorAssignasdefaulthpcalculator();
-  afx_msg void OnCalculatorManagehpcalculatoremulators();
-  afx_msg void OnHelpHp20bemulatorhelp();
 };
 
 //{{AFX_INSERT_LOCATION}}

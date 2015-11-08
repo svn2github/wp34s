@@ -4,8 +4,8 @@
  *  This is the include file for using HP's HP20b emulator kernel as a DLL
  *  
  *  In WinMain, call
- *  init_emulator( name, init, KeyPress, updatescreen, ScrollTopLine, 
- *                 GetFlag, SetFlag, ClearFlag, GetOffset, GetBottomLine,
+ *  init_emulator( name, init, KeyPress, updatescreen,
+ *                 GetFlag, SetFlag, ClearFlag, GetBottomLine );
  *                 CheckCommmunication );
  *  NULLs are valid pointers and are replaced by default behaviour.
  *
@@ -31,14 +31,12 @@ void Reset(bool KeepTestMode); // reset everything to zero (except the test syst
 void Shutdown(void);           // turn off, save state
 void KeyPress(int i);        // call when the user presses a key to get action. returns true if calc needs to be turned off
 void UpdateScreen(bool forceUpdate);
-bool ScrollTopLine(void);  // function to be called every 200 ms when the screen needs scrolling... returns true if it needs to continue scrolling
 bool GetFlag(int flag);
 void SetFlag(int flag);
 void ClearFlag(int flag);
-unsigned short GetOffset(void);
 wchar_t *GetTopLineW(void);
-char *GetBottomLine(void);
-bool CheckCommunication(void);
+char *GetBottomLine(bool raw);
+void SetBottomLine(const char *);
 
 // Our stuff
 
@@ -57,14 +55,12 @@ int EXPORT start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR p
 			   void *p_Shutdown,
 			   void *p_KeyPress,
 			   void *p_UpdateScreen,
-			   void *p_ScrollTopLine,
 			   void *p_GetFlag,
 			   void *p_SetFlag,
 			   void *p_ClearFlag,
-			   void *p_GetOffset,
 			   void *p_GetTopLineW,
 			   void *p_GetBottomLine,
-			   void *p_CheckCommunication );
+			   void *p_SetBottomLine );
 
 void EXPORT UpdateDlgScreen(int force);
 

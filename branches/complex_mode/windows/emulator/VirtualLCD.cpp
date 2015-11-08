@@ -60,8 +60,7 @@ CVirtualLCD::CVirtualLCD()
   m_hMyDC=NULL;
   m_hBrush=NULL;
   m_hBrushRepaint=NULL;
-	hpInitBitmap();
-	m_nDefTimerScrollLines = m_nDefTimerScrollLines  = TIMER_DISABLED;
+  hpInitBitmap();
 }
 
 CVirtualLCD::~CVirtualLCD()
@@ -321,12 +320,6 @@ void CVirtualLCD::OnTimer(UINT_PTR nIDEvent)
 	if(m_nDefTimerBlinkCur == TIMER_ID_BLINK_CUR)
 		On0p5secondTimer();	
 
-	if(m_nDefTimerScrollLines == TIMER_ID_SCROLL_LINES)
-	{
-		hpStopTimerScrollLines();
-		if (On0p2firstTimer()) hpStartTimerScrollLines(TIME_SCROLL_LINES);
-	}
-	
 	CStatic::OnTimer(nIDEvent);
 }
 
@@ -352,28 +345,6 @@ void CVirtualLCD::hpStopTimerBlinkCur()
 {
 	if(m_nDefTimerBlinkCur)		{	KillTimer(m_nDefTimerBlinkCur);		m_nDefTimerBlinkCur    = TIMER_DISABLED; }
 	
-}
-
-/***************************************************************
-** 
-** Start timer for Scrolling
-**
-***************************************************************/
-//
-void CVirtualLCD::hpStartTimerScrollLines(int ms)
-{
-	if(!m_nDefTimerScrollLines) m_nDefTimerScrollLines  =	SetTimer(TIMER_ID_SCROLL_LINES,ms,0);
-}
-
-/***************************************************************
-** 
-** Stop timer for Scrolling
-**
-***************************************************************/
-//
-void CVirtualLCD::hpStopTimerScrollLines()
-{
-	if(m_nDefTimerScrollLines)	{	KillTimer(m_nDefTimerScrollLines);	m_nDefTimerScrollLines = TIMER_DISABLED; }
 }
 
 
@@ -526,15 +497,14 @@ void CVirtualLCD::UpdateScreenContent()
 
 void CVirtualLCD::On0p5secondTimer()
 {
-	WindowsSwapBuffers();
-	UpdateScreenContent();
+  WindowsSwapBuffers();
+  UpdateScreenContent();
 }
 
 bool CVirtualLCD::On0p2firstTimer()
 {
-  bool r= ScrollTopLine();
-	UpdateScreenContent();
-  return r;
+  UpdateScreenContent();
+  return false;
 }
 
 void CVirtualLCD::WindowsSwapBuffers()

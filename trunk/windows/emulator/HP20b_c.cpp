@@ -57,7 +57,6 @@ BEGIN_MESSAGE_MAP(CHP20b_cApp, CWinApp)
                 //    DO NOT EDIT what you see in these blocks of generated code!
         //}}AFX_MSG
         //ON_COMMAND(ID_HELP, CWinApp::OnHelp)
-  ON_COMMAND(ID_CALCULATOR_MANAGEHPCALCULATOREMULATORS, CHP20b_cApp::OnCalculatorManagehpcalculatoremulators)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -130,7 +129,3 @@ BOOL CHP20b_cApp::ProcessMessageFilter(int code, LPMSG lpMsg)
         return CWinApp::ProcessMessageFilter(code, lpMsg);
 }
 
-void CHP20b_cApp::OnCalculatorManagehpcalculatoremulators()
-{
-  // TODO: Add your command handler code here
-}

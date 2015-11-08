@@ -19,19 +19,18 @@
 #include <stdlib.h>  // sleep
 #include "win32.h"
 #define sleep _sleep
+#define strtoull _strtoui64
 #else
 #include <unistd.h>
 #include <sys/time.h>
-#endif
-#include <stdio.h>   // (s)printf
-#if defined( _WIN32 ) && !defined( QTGUI )
-#define strtoull _strtoui64
-#else
 extern unsigned long long strtoull(const char *, char **, int);
 #endif
+#include <stdio.h>   // (s)printf
+#include <string.h>
 #endif // REALBUILD
 #ifdef IOS
 #include <stdarg.h>
+#endif
 #endif
 
 #if __GNUC__ >= 4 && __GNUC_MINOR__ >= 6
@@ -6195,11 +6194,6 @@ void paste_raw_x(const char *in)
 				setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));
 			} else {
 				decNumber x;
-				if (UState.fraccomma) {
-					char *q = strchr(p, ',');
-					if (q != NULL)
-						*q = '.';
-				}
 				setX(decNumberFromString(&x, p, &Ctx));
 			}
 			p = strtok( NULL, delim );

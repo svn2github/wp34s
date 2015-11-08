@@ -28,6 +28,7 @@
 
 #include "builddate.h"
 #include "display.h"
+#include "xeq.h"
 #include "storage.h"
 #include "serial.h"
 #include "data.h"
@@ -82,17 +83,15 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	 *  Start the emulator
 	 */
 	start_emulator( hInstance, hPrevInstance, pCmdLine, nCmdShow,
-		        "wp34s Scientific Calculator " VERSION_STRING,
+		        "WP 34C Scientific Calculator " VERSION_STRING,
 		        BuildDate | ( revision << 12 ),
 		        LcdData,
 		        Init, Reset, Shutdown,
 		        KeyPress, UpdateScreen, 
-		        NULL,
 		        GetFlag, SetFlag, ClearFlag,
-		        NULL,
 			GetTopLineW,
 		        GetBottomLine,
-		        NULL );
+			SetBottomLine );
 }
 
 /*
@@ -194,13 +193,23 @@ wchar_t *GetTopLineW( void )
 }
 
 
-char *GetBottomLine( void )
+char *GetBottomLine( bool raw )
 {
-	static char buffer[ 30 ];
+	static char buffer[ 100 ];
 	xset( buffer, '\0', sizeof( buffer ) );
-//	decimal64ToString( &regX, buffer );
-	format_reg( regX_idx, buffer );
+	if ( raw ) {
+		fill_buffer_from_raw_x( buffer );
+	}
+	else {
+		format_reg( regX_idx, buffer );
+	}
 	return buffer;
+}
+
+
+void SetBottomLine( const char *buffer )
+{
+	paste_raw_x( buffer );
 }
 
 

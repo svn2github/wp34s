@@ -71,12 +71,12 @@ int main( int argc, char **argv )
 		if (fgets( buffer, sizeof( buffer ) - 1, f ) == NULL) {
 			perror("unable to read revision");
 			fclose( f );
-			remove( tmpname );
+			remove( p );
 			return 1;
 		}
 		fprintf( stderr, "Revision number(s): %s\n", buffer );
 		fclose( f );
-		remove( tmpname );
+		remove( p );
 	}
 
 	// Determine the revision number

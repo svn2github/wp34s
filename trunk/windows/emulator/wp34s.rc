@@ -73,12 +73,12 @@ IDR_MAINFRAME           ICON                    "wp34s.ico"
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 235, 81
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "About wp34s Scientific Calculator"
+CAPTION "About WP 34S Scientific Calculator"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    ICON            IDR_MAINFRAME,IDC_STATIC,4,11,21,20
+    ICON            IDR_MAINFRAME,IDC_STATIC,4,11,20,20
     LTEXT           "Parts (c) 2008 Hewlett-Packard development L.L.P",IDC_STATIC,33,36,186,8
-    LTEXT           "wp34s scientific calculator",IDC_STATIC_MY_NAME,33,15,158,8,SS_NOPREFIX
+    LTEXT           "WP 34S Scientific Calculator",IDC_STATIC_MY_NAME,33,15,158,8,SS_NOPREFIX
     LTEXT           "by Pauli, Walter & Marcus",IDC_STATIC,33,25,158,8,SS_NOPREFIX
     LTEXT           "Ver Info",IDC_STATIC_VER_INFO,33,47,119,8,SS_NOPREFIX
     DEFPUSHBUTTON   "OK",IDOK,178,58,50,14,WS_GROUP
@@ -87,7 +87,7 @@ END
 IDD_HP20b_C_DIALOG DIALOGEX 0, 0, 284, 505
 STYLE DS_SETFONT | DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_APPWINDOW
-CAPTION "HP 20b Emulator"
+CAPTION "WP 34S Emulator"
 MENU IDR_MENU2
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -118,13 +118,13 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "FileDescription", "HP20b Emulator adapted for wp34s"
-            VALUE "FileVersion", "1.15.0.0"
+            VALUE "FileDescription", "HP20b Emulator adapted for WP 34S"
+            VALUE "FileVersion", "3.3.0.0"
             VALUE "InternalName", "wp34s"
             VALUE "LegalCopyright", "Copyright (C) 2008 Hewlett-Packard LLP"
             VALUE "OriginalFilename", "wp34sgui.exe"
-            VALUE "ProductName", "wp34s Emulator"
-            VALUE "ProductVersion", "1.15.0.0"
+            VALUE "ProductName", "WP 34S Emulator"
+            VALUE "ProductVersion", "3.3.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -179,12 +179,15 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Reset",                       ID_HP20b_RESETSTATE
-        MENUITEM "Copy Screen",                 ID_HP20b_COPYTOCLIPBOARD
-        MENUITEM "Copy Textline",               ID_EDIT_COPY_TEXTLINE
-        MENUITEM "Copy Number",                 ID_EDIT_COPY_NUMBER
-        MENUITEM "Copy Number (Raw)",           ID_EDIT_COPY_RAW_X
-        MENUITEM "Paste Number",                ID_EDIT_PASTE_NUMBER
-        MENUITEM "Paste Number(s) (Raw)",       ID_EDIT_PASTE_RAW_X
+        MENUITEM SEPARATOR
+        POPUP "Copy"
+        BEGIN
+            MENUITEM "Number (raw)",                ID_EDIT_COPY_RAW_X
+            MENUITEM "Number (as shown)",           ID_EDIT_COPY_NUMBER
+            MENUITEM "Textline",                    ID_EDIT_COPY_TEXTLINE
+            MENUITEM "Screen Image",                ID_EDIT_COPY_SCREEN
+        END
+        MENUITEM "Paste Number(s)",             ID_EDIT_PASTE_NUNBERS
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        ID_HP20b_EXIT
     END
@@ -205,12 +208,14 @@ BEGIN
     END
     POPUP "Edit"
     BEGIN
-        MENUITEM "Copy Screen",                 ID_HP20b_COPYTOCLIPBOARD
-        MENUITEM "Copy Textline",               ID_EDIT_COPY_TEXTLINE
-        MENUITEM "Copy Number",                 ID_EDIT_COPY_NUMBER
-        MENUITEM "Copy Number (Raw)",           ID_EDIT_COPY_RAW_X
-        MENUITEM "Paste Number",                ID_EDIT_PASTE_NUMBER
-        MENUITEM "Paste Number(s) (Raw)",       ID_EDIT_PASTE_RAW_X
+        POPUP "Copy"
+        BEGIN
+            MENUITEM "Number (raw)",                ID_EDIT_COPY_RAW_X
+            MENUITEM "Number (as shown)",           ID_EDIT_COPY_NUMBER
+            MENUITEM "Textline",                    ID_EDIT_COPY_TEXTLINE
+            MENUITEM "Screen Image",                ID_EDIT_COPY_SCREEN
+        END
+        MENUITEM "Paste Number(s)",             ID_EDIT_PASTE_NUMBERS
     END
     POPUP "Help"
     BEGIN
@@ -228,8 +233,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ABOUTBOX            "&About wp34s Scientific Calculator"
-    IDS_STRING102           "wp34s Scientific Calculator"
+    IDS_ABOUTBOX            "&About WP 34S Scientific Calculator"
+    IDS_STRING102           "WP 34S Scientific Calculator"
 END
 
 #endif    // Englisch (USA) resources

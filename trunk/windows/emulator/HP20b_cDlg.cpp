@@ -182,33 +182,24 @@ ON_WM_RBUTTONUP()
 ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
 ON_COMMAND(ID_HP20b_RESETSTATE, CHP20b_cDlg::OnHP20bResetState)
 //}}AFX_MSG_MAP
-ON_COMMAND(ID_HP20b_COPYTOCLIPBOARD, CHP20b_cDlg::
-     OnHP20bCopytoclipboard)
+ON_COMMAND(ID_EDIT_COPY_SCREEN, CHP20b_cDlg::OnHP20bCopytoclipboard)
 ON_WM_ACTIVATE()
 ON_WM_LBUTTONDBLCLK()
 ON_COMMAND(ID_HP20b_EXIT, CHP20b_cDlg::OnHP20bExit)
 ON_COMMAND(ID_HP20b_SHOWCAPTION, CHP20b_cDlg::OnHP20bShowTitlebar)
 //ON_WM_NCLBUTTONUP()
 ON_COMMAND(ID_HELP_ABOUTBOX, CHP20b_cDlg::OnHelpAboutbox)
-ON_COMMAND(ID_HELP_MANUAL, CHP20b_cDlg::
-     OnHelpHp20bbusinessconsultant)
+ON_COMMAND(ID_HELP_MANUAL, CHP20b_cDlg::OnHelpHp20bbusinessconsultant)
 ON_COMMAND(ID_HELP_WEBSITE, CHP20b_cDlg::OnBuy)
 ON_COMMAND(ID_EDIT_COPY_TEXTLINE, CHP20b_cDlg::OnEditCopyTextline)
 ON_COMMAND(ID_EDIT_COPY_NUMBER, CHP20b_cDlg::OnEditCopyNumber)
 ON_COMMAND(ID_EDIT_COPY_RAW_X, CHP20b_cDlg::OnEditCopyRawX)
-ON_COMMAND(ID_EDIT_PASTE_NUMBER, CHP20b_cDlg::OnEditPasteNumber)
-ON_COMMAND(ID_EDIT_PASTE_RAW_X, CHP20b_cDlg::OnEditPasteRawX)
+ON_COMMAND(ID_EDIT_PASTE_NUMBERS, CHP20b_cDlg::OnEditPasteNumbers)
 ON_COMMAND(ID_HP20b_SHOWCAPTION_MENU, CHP20b_cDlg::
      OnHP20bShowcaptionMenu)
 ON_WM_MOVE()
 ON_WM_RBUTTONDOWN()
 ON_WM_RBUTTONDBLCLK()
-ON_COMMAND(ID_CALCULATOR_ASSIGNASDEFAULTHPCALCULATOR, CHP20b_cDlg::
-     OnCalculatorAssignasdefaulthpcalculator)
-ON_COMMAND(ID_CALCULATOR_MANAGEHPCALCULATOREMULATORS, CHP20b_cDlg::
-     OnCalculatorManagehpcalculatoremulators)
-ON_COMMAND(ID_HELP_HP20BEMULATORHELP, CHP20b_cDlg::
-     OnHelpHp20bemulatorhelp)
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CHP20b_cDlg message handlers
@@ -974,77 +965,10 @@ void CHP20b_cDlg::OnEditCopyTextline()
 }
 /***************************************************************
 ** 
-**  Called when the user presses 'Paste Number' sub-menu
+**  Called when the user presses 'Paste Number(s)' sub-menu
 **  
 ***************************************************************/
-//
-struct {
-  char    c;
-  unsigned int  keys;
-}
-const keydefs[] = 
-{
-  { '0', KEY0}, 
-  { '1', KEY1}, 
-  { '2', KEY2}, 
-  { '3', KEY3}, 
-  { '4', KEY4}, 
-  { '5', KEY5}, 
-  { '6', KEY6}, 
-  { '7', KEY7}, 
-  { '8', KEY8}, 
-  { '9', KEY9}, 
-  { 'e', KEYEEX}, 
-  { 'E', KEYEEX}, 
-  { '-', KEYCHS}, 
-  { '.', KEYDOT}, 
-  { ',', KEYDOT}, 
-  { ' ', - 1}, 
-  { 0, 0}
-};
-void CHP20b_cDlg::OnEditPasteNumber()
-{ 
-  // retrieve clipboard data 
-  CString val = m_VirtualLCD.hpCopyToHP20b();
-  bool pushsign = false;
-
-  val.Trim();
-  if (!val.IsEmpty()) {
-    // fire keyboard events 
-    for (int i = 0; i < val.GetLength(); i++) {
-      int oo = val.GetAt(i);
-      int j = 0;
-      
-      while (keydefs[j].c != 0 && keydefs[j].c != oo)
-        j++;
-
-      if (keydefs[j].c == oo) {
-        int k = keydefs[j].keys;
-
-        while (k > 0) {
-          if ((k & 0xff) > KEYSHIFTPLAN) {
-            k = k - KEYSHIFTPLAN;
-            AddKeyInBuffer(KEYSHIFT);
-          }
-	  if ((k & 0xff) == KEYCHS && i == 0) {
-            pushsign = true;
-	  }
-          else {
-            AddKeyInBuffer(k & 0xff);
-            if (pushsign) {
-              pushsign = false;
-              AddKeyInBuffer(KEYCHS);
-	    }
-            SetEvent(KeyEvent);
-	  }
-          k >>= 8;
-        }
-      }
-    }
-    UpdateScreen(true);
-  }
-}
-void CHP20b_cDlg::OnEditPasteRawX()
+void CHP20b_cDlg::OnEditPasteNumbers()
 { 
   // retrieve clipboard data 
   CString val = m_VirtualLCD.hpCopyToHP20b();
@@ -1234,23 +1158,6 @@ void CHP20b_cDlg::OnMove(int x, int y)
     }
     oldYPos = y;
   }
-}
-void CHP20b_cDlg::OnCalculatorAssignasdefaulthpcalculator()
-{ 
-}
-void CHP20b_cDlg::OnCalculatorManagehpcalculatoremulators()
-{ 
-}
-void CHP20b_cDlg::OnHelpHp20bemulatorhelp()
-{ 
-  HINSTANCE h = ShellExecute(NULL, "open", "20bHelpFile.chm", NULL, NULL, SW_SHOWNORMAL);
-  // Returns a value greater than 32 if successful, or an error value 
-  // that is less than or equal to 32 otherwise
-  if ((int) h <= 32)
-    AfxMessageBox( "The help file 20bHelpFile.chm was not found", 
-            MB_OK | MB_ICONINFORMATION);
-
-// TODO: Add your command handler code here
 }
 void CHP20b_cDlg::LoadSkin(char *skin)
 { 

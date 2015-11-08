@@ -68,8 +68,6 @@ public:
 	DECLARE_MESSAGE_MAP()
 public:
 	virtual BOOL ProcessMessageFilter(int code, LPMSG lpMsg);
-public:
-  afx_msg void OnCalculatorManagehpcalculatoremulators();
 };
 
 

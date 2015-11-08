@@ -28,16 +28,9 @@
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //  ----------------------------------------------------------------------------
 
-#ifdef wp34s
 #define MANUAL "wp34s_Manual.pdf"
 #define WEBSITE "http://wp34s.sourceforge.net/"
 #define REGKEY "wp34s"
-#else
-#define MANUAL "HP_20b_Online_Manual.pdf"
-#define WEBSITE "http://www.hp.com/calculators"
-#define WEBSITE 
-#define REGKEY "hp20b"
-#endif
 
 # include "stdafx.h"
 # include "HP20b_c.h"
@@ -189,31 +182,24 @@ ON_WM_RBUTTONUP()
 ON_MESSAGE(WM_MOUSELEAVE, OnMouseLeave)
 ON_COMMAND(ID_HP20b_RESETSTATE, CHP20b_cDlg::OnHP20bResetState)
 //}}AFX_MSG_MAP
-ON_COMMAND(ID_HP20b_COPYTOCLIPBOARD, CHP20b_cDlg::
-     OnHP20bCopytoclipboard)
+ON_COMMAND(ID_EDIT_COPY_SCREEN, CHP20b_cDlg::OnHP20bCopytoclipboard)
 ON_WM_ACTIVATE()
 ON_WM_LBUTTONDBLCLK()
 ON_COMMAND(ID_HP20b_EXIT, CHP20b_cDlg::OnHP20bExit)
 ON_COMMAND(ID_HP20b_SHOWCAPTION, CHP20b_cDlg::OnHP20bShowTitlebar)
 //ON_WM_NCLBUTTONUP()
 ON_COMMAND(ID_HELP_ABOUTBOX, CHP20b_cDlg::OnHelpAboutbox)
-ON_COMMAND(ID_HELP_MANUAL, CHP20b_cDlg::
-     OnHelpHp20bbusinessconsultant)
+ON_COMMAND(ID_HELP_MANUAL, CHP20b_cDlg::OnHelpHp20bbusinessconsultant)
 ON_COMMAND(ID_HELP_WEBSITE, CHP20b_cDlg::OnBuy)
-ON_COMMAND(ID_EDIT_COPY_NUMBER, CHP20b_cDlg::OnEditCopyNumber)
 ON_COMMAND(ID_EDIT_COPY_TEXTLINE, CHP20b_cDlg::OnEditCopyTextline)
-ON_COMMAND(ID_EDIT_PASTE_NUMBER, CHP20b_cDlg::OnEditPasteNumber)
+ON_COMMAND(ID_EDIT_COPY_NUMBER, CHP20b_cDlg::OnEditCopyNumber)
+ON_COMMAND(ID_EDIT_COPY_RAW_X, CHP20b_cDlg::OnEditCopyRawX)
+ON_COMMAND(ID_EDIT_PASTE_NUMBERS, CHP20b_cDlg::OnEditPasteNumbers)
 ON_COMMAND(ID_HP20b_SHOWCAPTION_MENU, CHP20b_cDlg::
      OnHP20bShowcaptionMenu)
 ON_WM_MOVE()
 ON_WM_RBUTTONDOWN()
 ON_WM_RBUTTONDBLCLK()
-ON_COMMAND(ID_CALCULATOR_ASSIGNASDEFAULTHPCALCULATOR, CHP20b_cDlg::
-     OnCalculatorAssignasdefaulthpcalculator)
-ON_COMMAND(ID_CALCULATOR_MANAGEHPCALCULATOREMULATORS, CHP20b_cDlg::
-     OnCalculatorManagehpcalculatoremulators)
-ON_COMMAND(ID_HELP_HP20BEMULATORHELP, CHP20b_cDlg::
-     OnHelpHp20bemulatorhelp)
 END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CHP20b_cDlg message handlers
@@ -285,25 +271,6 @@ unsigned long __stdcall CalculationThread(void *p)
         KeyPress(k);
         continue;
       }
-#ifndef wp34s
-      LARGE_INTEGER a, b;
-      if (CheckCommunication()) {
-        // If we received something, we are WAY likely to receive some more
-        QueryPerformanceCounter(&a);
-        while (true) {
-          // so, we loop, waiting for stuff until we have a clear line for 100ms...
-          if ( CheckCommunication()) {
-            QueryPerformanceCounter(&a);
-            continue;
-          }
-          QueryPerformanceCounter(&b);
-          if (b.QuadPart - a.QuadPart > PerformanceFrequency.QuadPart / 8)
-            break;
-
-        }
-        continue;
-      }
-#endif
       break;
     }
     LastScreenUpdate.QuadPart = 0;
@@ -311,211 +278,6 @@ unsigned long __stdcall CalculationThread(void *p)
   }
 }
 
-#ifndef wp34s
-bool CommunicationPipeConnected = false;
-HANDLE    ComunicationNamedPipe;
-unsigned long __stdcall CommunicationThread(void *p)
-{ 
-  while (true) {
-    if (CommunicationPipeConnected) {
-      if (!PeekNamedPipe(ComunicationNamedPipe, NULL, NULL, NULL, NULL, NULL)) {
-        DWORD er = GetLastError();
-
-        if (er = 109)
-           CommunicationPipeConnected = false;
-
-      }
-    }
-    if (!CommunicationPipeConnected) {
-      CommunicationPipeConnected = ConnectNamedPipe( ComunicationNamedPipe, NULL);
-      if (!CommunicationPipeConnected) {
-        DWORD   er = GetLastError();
-
-        if (er == ERROR_PIPE_CONNECTED)
-          CommunicationPipeConnected = true;
-
-        if (er == ERROR_NO_DATA)
-          DisconnectNamedPipe( ComunicationNamedPipe);
-
-      }
-    }
-    if (!CommunicationPipeConnected) {
-      Sleep(100);
-      continue;
-    }
-    DWORD bytes;
-    if (!PeekNamedPipe(ComunicationNamedPipe, NULL, 1, &bytes, NULL, NULL))
-      continue;
-
-    if (bytes == 0) {
-      Sleep(100);
-      continue;
-    }
-    SetEvent(KeyEvent);
-  }
-}
-bool Is40b()
-{ 
-# ifndef HP20b
-  return true;
-# else
-  return false;
-# endif
-}
-
-u32 GetChars(u8 *b, u32 nb, u32 timeout)
-{ 
-  static int  p1 = 0, p2 = 0;
-  static    u8 B[1024];
-  LARGE_INTEGER t1, t2;
-
-  if (timeout != 0) {
-    QueryPerformanceCounter(&t1);
-    t1.QuadPart = t1.QuadPart + timeout *PerformanceFrequency.QuadPart / 1000;
-  }
-  while (nb != 0) {
-    while (p1 != p2) {
-      *b++ = B[p2];
-      p2 = (p2 + 1) % 1024;
-      if (--nb == 0)
-        return nb;
-    }
-    if (!CommunicationPipeConnected)
-      return nb;
-
-    DWORD   bytes, w;
-
-    if (p1 < p2)
-      w = p2 - p1;
-    else
-      w = 1024 - p1;
-
-    if (!PeekNamedPipe(ComunicationNamedPipe, NULL, w, &bytes, NULL, NULL))
-      return nb;
-
-    if (bytes == 0) {
-      if (timeout == 0)
-        return nb;
-
-      Sleep(1);
-      QueryPerformanceCounter(&t2);
-      if (t2.QuadPart > t1.QuadPart)
-        return nb;
-
-      continue;
-    }
-    if (!ReadFile(ComunicationNamedPipe, &B[p1], bytes, &w, 
-            NULL))
-      return nb;
-
-    p1 = (p1 + w) % 1024;
-  }
-  return 0;
-}
-// running the first 20% of test system
-// before optim:                       690/s in 4:29 at 15609 io in/s and 15819 io out/s
-// after better force sent management: 761/s in 3:37 at 19336 io in/s and 19630 io out/s
-void SendChars(u8 const *d, u32 size, bool ForceSend)
-{ 
-  static int  p1 = 0, p2 = 0;
-  static    u8 b[1024];
-
-  while (size) {
-    if (!CommunicationPipeConnected) {
-      p1 = 0, p2 = 0;
-      return;
-    }
-    int s = min((p1 >= p2)
-        ? 1024 - p1
-        : p2 - p1 - 1, (int) size);
-    if (s == 0) {
-      DWORD   w;
-
-      int s2 = p2 > p1
-         ? 1024 - p2
-         : p1 - p2;
-      WriteFile(ComunicationNamedPipe, &b[p2], s2, &w, 
-          NULL);
-      p2 += w;
-      if (p2 - 1024 >= 0)
-        p2 -= 1024;
-
-    }
-    memcpy(&b[p1], d, s);
-    d += s;
-    size -= s;
-    p1 += s;
-    if (p1 - 1024 >= 0)
-      p1 -= 1024;
-
-  }
-  while (ForceSend) {
-    if (!CommunicationPipeConnected) {
-      p1 = 0, p2 = 0;
-      return;
-    }
-    int s = (p1 >= p2)
-      ? p1 - p2
-      : 1024 - p2;
-    if (s == 0)
-      return;
-
-    DWORD   w;
-
-    WriteFile(ComunicationNamedPipe, &b[p2], s, &w, NULL);
-    p2 += w;
-    if (p2 - 1024 >= 0)
-      p2 -= 1024;
-
-  }
-}
-void SendCharNoForce(u8 c)
-{ 
-  SendChars(&c, 1, false);
-}
-void SendChar(unsigned char c)
-{ 
-  SendChars(&c, 1, true);
-//  if (!CommunicationPipeConnected) return;
-//  DWORD w;
-//  WriteFile(ComunicationNamedPipe, &c, 1, &w, NULL);
-}
-int GetChar()
-{ 
-  u8    b;
-
-  if (0 == GetChars(&b, 1, 0))
-    return b;
-
-  return - 1;
-}
-int PeekChar()
-{ 
-  if (!CommunicationPipeConnected)
-    return - 1;
-
-  DWORD   bytes;
-
-  if (!PeekNamedPipe(ComunicationNamedPipe, NULL, 1, &bytes, NULL, 
-         NULL))
-    return - 1;
-
-  if (bytes == 0)
-    return - 1;
-
-  return max(bytes, 8192);
-}
-int GetChar2(u32 timeout)
-{ 
-  u8    C;
-  int   c = GetChars(&C, 1, timeout);
-
-  if (c != 0) {
-    return - 1;
-  }
-  return C;
-}
-#endif
 
 BOOL CHP20b_cDlg::OnInitDialog()
 { 
@@ -523,9 +285,6 @@ BOOL CHP20b_cDlg::OnInitDialog()
   LastScreenUpdate.QuadPart = 0;
   CDialog        ::OnInitDialog();
 
-#ifndef wp34s
-  CheckMenuForManager();
-#endif
   // IDM_ABOUTBOX must be in the system command range.
   ASSERT((IDM_ABOUTBOX & 0xFFF0) == IDM_ABOUTBOX);
   ASSERT(IDM_ABOUTBOX < 0xF000);
@@ -551,10 +310,6 @@ BOOL CHP20b_cDlg::OnInitDialog()
   ((CHP20b_cApp *) AfxGetApp())->m_hwndDialog = m_hWnd;
   initKeyBuffer();
   Init();
-# ifdef HP40b
-  initFlashCache();
-  initEvaluatorData();
-# endif
   if (!ReadRegistry())
     LoadSkin(NULL);
                   // load skins
@@ -565,45 +320,8 @@ BOOL CHP20b_cDlg::OnInitDialog()
 
   CreateThread(NULL, 1024 *16, CalculationThread, NULL, 0, &id);
 
-#ifndef wp34s
-  int   i = 0;
-  char    name[50];
-
-  do {
-    if (i == 0)
-      strcpy(name, "\\\\.\\pipe\\hp20b");
-    else
-      sprintf(name, "\\\\.\\pipe\\hp20b_%d", i);
-
-    ComunicationNamedPipe = CreateNamedPipe(name, 
-              PIPE_ACCESS_DUPLEX, 
-              PIPE_TYPE_BYTE | 
-              PIPE_READMODE_BYTE
-              | PIPE_WAIT, 1, 
-              8192, 2048, 100, 
-              NULL);
-    i++;
-  }
-  while (INVALID_HANDLE_VALUE == ComunicationNamedPipe)
-    ;
-
-  CreateThread(NULL, 0, CommunicationThread, NULL, 0, &id);
-#endif
-
   return TRUE;              // return TRUE  unless you set the focus to a control
 }
-
-#ifndef wp34s
-/***************************************************************
-** 
-** Function is responsible to remove Test System related menus  
-** 
-***************************************************************/
-//
-void CHP20b_cDlg::CheckMenuForManager()
-{ 
-}
-#endif
 
 void CHP20b_cDlg::OnSysCommand(UINT nID, LPARAM lParam)
 { 
@@ -696,12 +414,8 @@ void CHP20b_cDlg::keypress(int a)
     DestroyWindow();        // Close Application 
     return;
   }
-  m_VirtualLCD.hpStopTimerScrollLines();
   m_VirtualLCD.hpStopTimerBlinkCur();
   System.KeyboardMap |= (u64)1 << a;
-#ifndef wp34s
-  SendChar(a);
-#endif
   AddKeyInBuffer(a);
   SetEvent(KeyEvent);
 }
@@ -711,12 +425,6 @@ void CHP20b_cDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     keypress(nChar);
   else {
     m_VirtualLCD.UpdateScreenContent();   // copy the graphics on the PC screen
-    if (GetOffset() != OffsetNoScroll)
-      m_VirtualLCD.hpStartTimerScrollLines(
-                   TIME_SCROLLING);
-    else
-      m_VirtualLCD.hpStopTimerScrollLines();
-
   }
 }
 /***************************************************************
@@ -743,9 +451,7 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
       for (iter = m_listKeyCode.begin(); iter != 
             m_listKeyCode.end(); ) {
           if (*iter != VK_LSHIFT && *iter != VK_RSHIFT && *iter != VK_SHIFT
-#ifdef wp34s
               && *iter != 'F' && *iter != 'G' && *iter != 'H'
-#endif
           )
 	    HP20bKeyUp(*iter);
         iter = m_listKeyCode.erase(iter);
@@ -767,12 +473,10 @@ void CHP20b_cDlg::ForceHP20bKeyUp(WPARAM wKeyCode)
 //
 void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
 { 
-#ifdef wp34s
   if (wKeyCode == 'F' && System.KeyboardMap & 0x200
    || wKeyCode == 'G' && System.KeyboardMap & 0x400
    || wKeyCode == 'H' && System.KeyboardMap & 0x800 )
     return;
-#endif
   ForceHP20bKeyUp(wKeyCode);
   if (m_Touch_Base == NONE) {
     {
@@ -786,11 +490,9 @@ void CHP20b_cDlg::HP20bKeyDown(WPARAM wKeyCode)
 
           InvertRgn(hDC, m_rgnPressedButton);
           ::ReleaseDC(m_Background.m_hWnd, hDC);
-#ifdef wp34s
           if (wKeyCode == 'F' || wKeyCode == 'G' || wKeyCode == 'H') {
             return;
 	  }
-#endif
           m_Touch_Base = KEYBOARD;
         }
       }
@@ -822,9 +524,7 @@ void CHP20b_cDlg::HP20bKeyUp(WPARAM wKeyCode)
     System.KeyboardMap &= ~((u64)1 << key);
     m_nHP20bKeyDown = - 1;
     m_rgnPressedButton = 0;
-#ifdef wp34s
     keypress(98);
-#endif
   }
   m_Touch_Base = NONE;
 }
@@ -864,9 +564,7 @@ void CHP20b_cDlg::OnLButtonUp(UINT nFlags, CPoint point)
     System.KeyboardMap &= ~((u64)1 << m_nCurKeyPadNum);
     m_rgnPressedButton = NULL;
     m_nCurKeyPadNum = - 1;
-#ifdef wp34s
     keypress( 98 );
-#endif
   }
   if (MOUSE == m_Touch_Base)
     m_Touch_Base = NONE;
@@ -887,7 +585,6 @@ void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
     m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
     if (NULL != m_rgnPressedButton) {
       if (m_nCurKeyPadNum >= 0) {
-#ifdef wp34s
 	if (m_nCurKeyPadNum >= 9 && m_nCurKeyPadNum <= 11) {
           DeleteObject(m_rgnPressedButton);
 	  for (int i = 9; i <= 11; ++i) {
@@ -900,7 +597,6 @@ void CHP20b_cDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	  }
 	  m_rgnPressedButton = Skin.hpGetKeyRegion(&point, &m_nCurKeyPadNum);
 	}
-#endif
         keypress(m_nCurKeyPadNum);
         if (m_Background.m_hWnd == 0)
           return;
@@ -985,16 +681,10 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
   else {
     if (r != NULL) {
       DeleteObject(r);
-#ifdef wp34s
       OnLButtonUp(nFlags, point);
       if (code != 11)
 	HP20bKeyUp('H');
-#endif
     }
-#ifndef wp34s
-    // Forcing to send SHIFT key to calculator firmware
-    System.KeyboardMap &= ~((u64)1 << Skin.mright);
-#endif
     UpdateScreen(true);
   }
   CDialog::OnRButtonUp(nFlags, point);
@@ -1028,7 +718,6 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
   else {
     if (r != NULL) {
       DeleteObject(r);
-#ifdef wp34s
       if (code >= 9 && code <= 11 ) {
         // RMB on f to h
 	for (int i = 9; i <= 11; ++i) {
@@ -1043,12 +732,7 @@ void CHP20b_cDlg::OnRButtonDown(UINT nFlags, CPoint point)
         HP20bKeyDown('H');
         OnLButtonDown(nFlags, point);
       }
-#endif
     }
-#ifndef wp34s
-    if (Skin.mright != - 1)
-      keypress(Skin.mright);
-#endif
   }
   CDialog::OnRButtonDown(nFlags, point);
 }
@@ -1257,7 +941,17 @@ void CHP20b_cDlg::OnBuy()
 //
 void CHP20b_cDlg::OnEditCopyNumber()
 { 
-  m_VirtualLCD.hpCopyToClipboard(GetBottomLine());
+  m_VirtualLCD.hpCopyToClipboard(GetBottomLine(false));
+}
+/***************************************************************
+** 
+**  Called when the user presses 'Copy Number' sub-menu
+**  
+***************************************************************/
+//
+void CHP20b_cDlg::OnEditCopyRawX()
+{ 
+  m_VirtualLCD.hpCopyToClipboard(GetBottomLine(true));
 }
 /***************************************************************
 ** 
@@ -1267,117 +961,26 @@ void CHP20b_cDlg::OnEditCopyNumber()
 //
 void CHP20b_cDlg::OnEditCopyTextline()
 { 
-#ifdef wp34s
   m_VirtualLCD.hpCopyToClipboardUnicode(GetTopLineW());
-#else
-  m_VirtualLCD.hpCopyToClipboard(GetTopLine());
-#endif
 }
 /***************************************************************
 ** 
-**  Called when the user presses 'Paste Number' sub-menu
+**  Called when the user presses 'Paste Number(s)' sub-menu
 **  
 ***************************************************************/
-//
-struct {
-  char    c;
-  unsigned int  keys;
-}
-const keydefs[] = 
-{
-#ifdef wp34s
-  { '0', KEY0}, 
-  { '1', KEY1}, 
-  { '2', KEY2}, 
-  { '3', KEY3}, 
-  { '4', KEY4}, 
-  { '5', KEY5}, 
-  { '6', KEY6}, 
-  { '7', KEY7}, 
-  { '8', KEY8}, 
-  { '9', KEY9}, 
-  { 'e', KEYEEX}, 
-  { 'E', KEYEEX}, 
-  { '-', KEYCHS}, 
-  { '.', KEYDOT}, 
-  { ',', KEYDOT}, 
-  { ' ', - 1}, 
-#else
-  { '0', KEY0}, 
-  { '1', KEY1}, 
-  { '2', KEY2}, 
-  { '3', KEY3}, 
-  { '4', KEY4}, 
-  { '5', KEY5}, 
-  { '6', KEY6}, 
-  { '7', KEY7}, 
-  { '8', KEY8}, 
-  { '9', KEY9}, 
-  { 'e', 134}, 
-  { 'E', 134}, 
-  { '-', KEYPLUSMOINS}, 
-  { '.', KEYDOT}, 
-  { '+', KEYPLUS}, 
-  { '*', KEYMUL}, 
-  { '/', KEYDIV}, 
-  { '(', KEYOPENP}, 
-  { ')', KEYCLOSEP}, 
-  { ' ', - 1}, 
-  { '%', KEYPERCENT}, 
-  { 'S', KEYSIN}, 
-  { 'C', KEYCOS}, 
-  { 'T', KEYTAN}, 
-  { 's', KEYSQRT}, 
-  { 'L', KEYLN}, 
-  { 'R', KEYRAND}, 
-  { '!', KEYFACT}, 
-  { '^', KEYPOW}, 
-  { 'P', KEYPERM}, 
-  { 'c', KEYCOMB}, 
-  { '=', KEYEQUAL}, 
-  { 'A', KEYANS}, 
-#endif
-  { 0, 0}
-};
-void CHP20b_cDlg::OnEditPasteNumber()
+void CHP20b_cDlg::OnEditPasteNumbers()
 { 
   // retrieve clipboard data 
   CString val = m_VirtualLCD.hpCopyToHP20b();
-  bool pushsign = false;
-
   val.Trim();
   if (!val.IsEmpty()) {
-    // fire keyboard events 
-    for (int i = 0; i < val.GetLength(); i++) {
-      int oo = val.GetAt(i);
-      int j = 0;
-      
-      while (keydefs[j].c != 0 && keydefs[j].c != oo)
-        j++;
-
-      if (keydefs[j].c == oo) {
-        int k = keydefs[j].keys;
-
-        while (k > 0) {
-          if ((k & 0xff) > KEYSHIFTPLAN) {
-            k = k - KEYSHIFTPLAN;
-            AddKeyInBuffer(KEYSHIFT);
-          }
-	  if ((k & 0xff) == KEYCHS && i == 0) {
-            pushsign = true;
-	  }
-          else {
-            AddKeyInBuffer(k & 0xff);
-            if (pushsign) {
-              pushsign = false;
-              AddKeyInBuffer(KEYCHS);
-	    }
-            SetEvent(KeyEvent);
-	  }
-          k >>= 8;
-        }
-      }
+    char buffer[ 100 ];
+    int i;
+    for (i = 0; i < val.GetLength() && i < sizeof buffer - 1; i++) {
+      buffer[i] = val.GetAt(i);
     }
+    buffer[i] = '\0';
+    SetBottomLine(buffer);
     UpdateScreen(true);
   }
 }
@@ -1523,13 +1126,8 @@ void CHP20b_cDlg::OnHP20bShowcaptionMenu()
     pMenu->CheckMenuItem(ID_HP20b_SHOWCAPTION, MF_BYCOMMAND | MF_UNCHECKED);
 
   AfxMessageBox(
-#ifdef wp34s
           "Right click on the wp logo and uncheck 'Hide Titlebar'\r\nto display the titlebar again.\r\n"
           "To close the calculator, turn it OFF with (blue) g + EXIT.", 
-#else
-          "Right click on the HP logo and uncheck 'Hide Titlebar'\r\nto display the titlebar again.\r\n"
-          "To close the calculator, turn it OFF with (blue) shift + ON/CE.", 
-#endif
           MB_OK | MB_ICONINFORMATION);
 }
 /***************************************************************
@@ -1560,23 +1158,6 @@ void CHP20b_cDlg::OnMove(int x, int y)
     }
     oldYPos = y;
   }
-}
-void CHP20b_cDlg::OnCalculatorAssignasdefaulthpcalculator()
-{ 
-}
-void CHP20b_cDlg::OnCalculatorManagehpcalculatoremulators()
-{ 
-}
-void CHP20b_cDlg::OnHelpHp20bemulatorhelp()
-{ 
-  HINSTANCE h = ShellExecute(NULL, "open", "20bHelpFile.chm", NULL, NULL, SW_SHOWNORMAL);
-  // Returns a value greater than 32 if successful, or an error value 
-  // that is less than or equal to 32 otherwise
-  if ((int) h <= 32)
-    AfxMessageBox( "The help file 20bHelpFile.chm was not found", 
-            MB_OK | MB_ICONINFORMATION);
-
-// TODO: Add your command handler code here
 }
 void CHP20b_cDlg::LoadSkin(char *skin)
 { 
