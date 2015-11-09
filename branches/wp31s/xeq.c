@@ -4877,6 +4877,7 @@ void paste_raw_x(const char *in)
 				*pp = '.';
 			}
 			lift_if_enabled();
+			set_lift();
 			if (is_intmode()) {
 				int sgn = p[0] == '-' ? 1 : 0;
 				setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));

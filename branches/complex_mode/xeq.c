@@ -6359,12 +6359,14 @@ void paste_raw_x(const char *in)
 			if (is_intmode()) {
 				int sgn = p[0] == '-' ? 1 : 0;
 				lift_if_enabled();
+				set_lift();
 				setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));
 			} else {
 				decNumber x;
 				decNumberFromString(&x, p, &Ctx);
 				if (! check_special(&x)) {	/* This correctly deals with infinities and NaN based on flag D */
 					lift_if_enabled();
+					set_lift();
 					setX(&x);
 				}
 				else {
