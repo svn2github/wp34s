@@ -6356,13 +6356,22 @@ void paste_raw_x(const char *in)
 			if ( pp ) {
 				*pp = '.';
 			}
-			lift_if_enabled();
 			if (is_intmode()) {
 				int sgn = p[0] == '-' ? 1 : 0;
+				lift_if_enabled();
 				setX_int(build_value(strtoull(p + sgn, NULL, int_base()), sgn));
 			} else {
 				decNumber x;
-				setX(decNumberFromString(&x, p, &Ctx));
+				decNumberFromString(&x, p, &Ctx);
+				if (! check_special(&x)) {	/* This correctly deals with infinities and NaN based on flag D */
+					lift_if_enabled();
+					setX(&x);
+				}
+				else {
+					error_message(Error);
+					Error = 0;
+					break;
+				}
 			}
 			p = strtok( NULL, delim );
 		}
