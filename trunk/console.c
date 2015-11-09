@@ -679,7 +679,9 @@ skipargs:
 				view_instruction_counter = 1 - view_instruction_counter;
 				display();
 			} else if (c == CH_PASTE) {
-				paste_raw_x("123.14159265358979323846264338327950");
+				paste_raw_x("123.14159265358979323846264338327950\n"
+						"9.876543210987654321e123;"
+						"1.1111111111111111111111111111111 ");
 				c = K_UNKNOWN;
 				clear();
 				display();
