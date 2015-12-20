@@ -275,9 +275,18 @@ void cmplxPower(decNumber *rx, decNumber *ry,
 #ifndef TINY_BUILD
 	decNumber e1, e2, f1, f2;
 
-	cmplxLn(&e1, &e2, a, b);
-	cmplxMultiply(&f1, &f2, &e1, &e2, c, d);
-	cmplxExp(rx, ry, &f1, &f2);
+	if (dn_eq0(a) && dn_eq0(b)) {
+		if (dn_eq0(c) && dn_eq0(d))
+			cmplx_NaN(rx, ry);
+		else {
+			dn_1(rx);
+			decNumberZero(ry);
+		}
+	} else {
+		cmplxLn(&e1, &e2, a, b);
+		cmplxMultiply(&f1, &f2, &e1, &e2, c, d);
+		cmplxExp(rx, ry, &f1, &f2);
+	}
 #endif
 }
 
