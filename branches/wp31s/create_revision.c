@@ -88,9 +88,15 @@ int get_revision_num(char *vcs_cmd, char *vcs)
 	perror("Unable to create tempory file name");
 	return -1;
     }
+    p = tmpname;
+#ifdef _WIN32
+    if ( tmpname[ 0 ] == '\\' ) {
+	++p;
+    }
+#endif
 
     // Try to execute the VCS command
-    sprintf( buffer, vcs_cmd, tmpname );
+    sprintf( buffer, vcs_cmd, p );
     fprintf( stderr, "    Executing '%s'\n", buffer );
     result = system(buffer);
     if (result == -1)
@@ -98,12 +104,12 @@ int get_revision_num(char *vcs_cmd, char *vcs)
 	// The VCS call failed
 	sprintf(errmsg, "Unable to run %s command", vcs);
 	perror(errmsg);
-	remove( tmpname );
+	remove( p );
 	return -1;
     }
 
     // Read result
-    f = fopen( tmpname, "r" );
+    f = fopen( p, "r" );
     if ( f == NULL )
     {
 	sprintf(errmsg, "Opening the %s output file failed!", vcs);
@@ -117,7 +123,7 @@ int get_revision_num(char *vcs_cmd, char *vcs)
 	    sprintf(errmsg, "Unable to read %s revision from temporary output file", vcs);
 	    perror(errmsg);
 	    fclose(f);
-	    remove(tmpname);
+	    remove(p);
 	    return -1;
 	}
 	fclose(f);

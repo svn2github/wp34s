@@ -19,6 +19,7 @@
 #include <stdlib.h>  // sleep
 #include "win32.h"
 #define sleep _sleep
+#define strtoull _strtoui64
 #else
 #include <unistd.h>
 #include <sys/time.h>
