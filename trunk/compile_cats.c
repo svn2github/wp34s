@@ -16,7 +16,6 @@
 
 #define COMPILE_CATALOGUES
 #define NOCURSES 1
-// #undef REALBUILD
 
 #include "consts.h"
 #include "xeq.h"
@@ -1304,6 +1303,9 @@ int main(int argc, char *argv[]) {
 		printf("%d, ", opcode_breaks[i]);
 	printf("\n};\n\n");
 
+#ifdef INCLUDE_STOPWATCH
+	printf("/* With STOPW */\n");
+#endif
 	CAT(catalogue);
 	CAT(program_xfcn);
 	CAT(cplx_catalogue);

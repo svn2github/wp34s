@@ -127,7 +127,7 @@ int get_revision_num(char *vcs_cmd, char *vcs)
 	    return -1;
 	}
 	fclose(f);
-	remove(tmpname );
+	remove(p);
 
 	// Make sure we received something!
 	if ((strlen(buffer) == 0) ||

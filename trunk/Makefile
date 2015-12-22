@@ -36,7 +36,7 @@ endif
 
 BASE_CFLAGS := -Wall -Werror -g -fno-common -fno-exceptions 
 OPT_CFLAGS := -Os -fira-region=one
-USE_CURSES := -DUSECURSES
+USE_CURSES := -DUSECURSES=1
 
 # Settings for Unix like environments with gcc
 # Creates the Console version of the emulator or the real thing
@@ -53,7 +53,7 @@ endif
 ifeq "$(SYSTEM)" "Ios64"
     ARCH=arm64
     DEVICE=OS
-    CC_FLAGS=-arch $(ARCH) -I$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk/usr/include -DFIX_64_BITS 
+    CC_FLAGS=-arch $(ARCH) -I$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk/usr/include -DFIX_64_BITS=1 
     BASE_LDFLAGS=-L$(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk/usr/lib
 endif
 ifeq "$(SYSTEM)" "IosSimulator"
@@ -71,7 +71,7 @@ IOS_XCODE_ROOT := /Applications/Xcode.app/Contents/Developer
 IOS_DEVROOT := $(IOS_XCODE_ROOT)/Platforms/iPhone$(DEVICE).platform/Developer
 IOS_SDKROOT := $(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk
 CC=$(IOS_XCODE_ROOT)/usr/bin/gcc $(CC_FLAGS)
-BASE_CFLAGS += -isysroot ${IOS_SDKROOT} -Iheaders $(CFLAGS_FLAGS) -DIOS -miphoneos-version-min=7.0
+BASE_CFLAGS += -isysroot ${IOS_SDKROOT} -Iheaders $(CFLAGS_FLAGS) -DIOS=1 -miphoneos-version-min=7.0
 USE_CURSES :=
 else
 SYSTEM := $(shell uname)
@@ -113,20 +113,20 @@ endif
 
 CFLAGS = $(BASE_CFLAGS)
 ifdef QTGUI
-CFLAGS += -O0 -DDEBUG -DQTGUI
+CFLAGS += -O0 -DDEBUG=1 -DQTGUI=1
 ifdef INFRARED
-CFLAGS += -DINFRARED
-HOSTCFLAGS += -DINFRARED
+CFLAGS += -DINFRARED=1
+HOSTCFLAGS += -DINFRARED=1
 endif
 ifeq "$(SYSTEM)" "Darwin"
-CFLAGS += -DFIX_64_BITS -mmacosx-version-min=10.5
+CFLAGS += -DFIX_64_BITS=1 -mmacosx-version-min=10.5
 endif 
 else
-CFLAGS += -O0 -DDEBUG $(USE_CURSES)
+CFLAGS += -O0 -DDEBUG=1 $(USE_CURSES)
 endif
 
 ifeq "$(SYSTEM)" "Linux64"
-CFLAGS += -DFIX_64_BITS -DFIX_LINUX_64_BITS
+CFLAGS += -DFIX_64_BITS=1 -DFIX_LINUX_64_BITS=1
 endif 
 
 ifndef REALBUILD
@@ -167,12 +167,12 @@ ifeq (Ios, $(subst 64,,$(SYSTEM)))
 HOSTCC := gcc
 HOSTAR := ar
 HOSTRANLIB := ranlib
-HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD 
+HOSTCFLAGS := -Wall -Werror -O1 -g -DHOSTBUILD=1
 else
 HOSTCC := $(CC)
 HOSTAR := $(AR)
 HOSTRANLIB := $(RANLIB)
-HOSTCFLAGS := -Wall -O1 -g -DHOSTBUILD 
+HOSTCFLAGS := -Wall -O1 -g -DHOSTBUILD=1
 endif
 
 ifdef REALBUILD
@@ -181,30 +181,30 @@ ifdef REALBUILD
 # MinGW will do nicely
 
 CFLAGS := -mthumb -mcpu=arm7tdmi $(OPT_CFLAGS) $(BASE_CFLAGS)
-CFLAGS += -DREALBUILD -Dat91sam7l128 -Iatmel
+CFLAGS += -DREALBUILD=1 -Dat91sam7l128=1 -Iatmel
 
 # ifeq ($(SYSTEM),Darwin)
 # MacOS - uses 32 bits pointer or code won't compile
 HOSTCFLAGS += -m32
 # endif
-HOSTCFLAGS += -DREALBUILD
+HOSTCFLAGS += -DREALBUILD=1
 ifdef NOWD
-CFLAGS += -DNOWD
+CFLAGS += -DNOWD=1
 endif
 ifdef DISABLE_XTAL
-CFLAGS += -DDISABLE_XTAL
-HOSTCFLAGS += -DDISABLE_XTAL
+CFLAGS += -DDISABLE_XTAL=1
+HOSTCFLAGS += -DDISABLE_XTAL=1
 else
 ifdef XTAL
-CFLAGS += -DXTAL
-HOSTCFLAGS += -DXTAL
+CFLAGS += -DXTAL=1
+HOSTCFLAGS += -DXTAL=1
 ifdef INFRARED
-CFLAGS += -DINFRARED
-HOSTCFLAGS += -DINFRARED
+CFLAGS += -DINFRARED=1
+HOSTCFLAGS += -DINFRARED=1
 endif
 endif
 endif
-CFLAGS += -DNO_BACKUP_INIT -DNO_RAM_COPY
+CFLAGS += -DNO_BACKUP_INIT=1 -DNO_RAM_COPY=1
 LDFLAGS := -nostartfiles 
 CROSS_COMPILE := arm-none-eabi-
 CC := $(CROSS_COMPILE)gcc
@@ -234,7 +234,7 @@ UTILITIES := $(SYSTEM)
 endif
 OBJECTDIR := $(OUTPUTDIR)/obj
 DIRS := $(OBJECTDIR) $(OUTPUTDIR)
-DNOPTS := -DNEED_D128TOSTRING
+DNOPTS := -DNEED_D128TOSTRING=1
 endif
 
 # Files and libraries
@@ -404,7 +404,7 @@ pretty.h font.c charmap.c translate.c: $(UTILITIES)/genfont$(EXE) Makefile
 
 $(UTILITIES)/compile_consts$(EXE): compile_consts.c $(DNSRCS) Makefile features.h \
 		licence.h charmap.c pretty.h pretty.c translate.c font_alias.inc
-	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -DNEED_D64FROMSTRING -DNEED_D128FROMSTRING -o $@ $< $(DNSRCS)
+	$(HOSTCC) $(HOSTCFLAGS) -IdecNumber -DNEED_D64FROMSTRING=1 -DNEED_D128FROMSTRING=1 -o $@ $< $(DNSRCS)
 
 $(UTILITIES)/compile_cats$(EXE): compile_cats.c consts.h xeq.h charmap.c \
 		licence.h commands.c string.c prt.c consts.c pretty.c pretty.h Makefile features.h
@@ -426,7 +426,7 @@ $(UTILITIES)/post_process$(EXE): post_process.c Makefile features.h xeq.h
 	$(HOSTCC) $(HOSTCFLAGS) -o $@ $<
 
 xrom.c xrom_labels.h: xrom.wp34s $(XROM) $(OPCODES) Makefile features.h data.h errors.h
-	$(HOSTCC) -E -P -x c -Ixrom -DCOMPILE_XROM xrom.wp34s > xrom_pre.wp34s
+	$(HOSTCC) -E -P -x c -Ixrom -DCOMPILE_XROM=1 xrom.wp34s > xrom_pre.wp34s
 	$(TOOLS)/wp34s_asm.pl -pp -op $(OPCODES) -c -o xrom.c xrom_pre.wp34s
 
 xeq.h:
