@@ -1,6 +1,6 @@
-// wp34s_asm.pl: Source file(s): .__0.32305908203125.tmp
-// wp34s_pp.pl: Command line: -m  235  -cat  .__0.720306396484375.tmp  -v3  -e2so  -sd  4  -colour_mode  0
-// wp34s_pp.pl: Source file(s): .__0.720306396484375.tmp
+// wp34s_asm.pl: Source file(s): .__0.08544921875.tmp
+// wp34s_pp.pl: Command line: -m  235  -cat  .__0.865478515625.tmp  -v3  -e2so  -sd  4  -colour_mode  0
+// wp34s_pp.pl: Source file(s): .__0.865478515625.tmp
 // wp34s_pp.pl: Preprocessor revision: $Rev: 2956 $ 
 0001 /*    */ ****LBL'EI2'
 0002 /*    */ LocR 001
@@ -524,41 +524,60 @@
 // Label Step
 // 0 LBLs used.
 0001 /*            */ ****LBL'PF'
-0002 /*            */ INT?
-0003 /*            */ x<1?
-0004 /*            */ RTN
-0005 /*            */ STO K
-0006 /*            */ 2
-0007 /*            */ RCL Y
-0008 /*            */ [sqrt]
-0009 /*            */ IP
-0010 /*            */ STO I
-0011 /*            */ DROP
-0012 /*            */ x>? I
-0013 /*            */ SKIP 011
-0014 /*            */ [cmplx]ENTER
-0015 /*            */ RMDR
-0016 /*            */ x=0?
-0017 /*            */ SKIP 003
-0018 /*            */ DROP
-0019 /*            */ NEXTP
-0020 /*            */ BACK 008
-0021 /*            */ DROP
-0022 /*            */ STOP
-0023 /*            */ STO/ Y
-0024 /*            */ BACK 017
-0025 /*            */ DROP
-0026 /*            */ STOP
-0027 /*            */ CLSTK
-0028 /*            */ x[<->] K
-0029 /*            */ [times]
-0030 /*            */ END
+0002 /*            */ LocR 004
+0003 /*            */ INT?
+0004 /*            */ x<1?
+0005 /*            */ RTN
+0006 /*            */ STO .00
+0007 /*            */ # 002
+0008 /*            */ RCL Y
+0009 /*            */ [sqrt]
+0010 /*            */ IP
+0011 /*            */ STO .03
+0012 /*            */ DROP
+0013 /*            */ x>? .03
+0014 /*            */ SKIP 013
+0015 /*            */ [cmplx]ENTER
+0016 /*            */ MOD
+0017 /*            */ x=0?
+0018 /*            */ SKIP 005
+0019 /*            */ DROP
+0020 /*            */ INC X
+0021 /*            */ EVEN?
+0022 /*            */ INC X
+0023 /*            */ BACK 010
+0024 /*            */ DROP
+0025 /*            */ XEQ 00
+0026 /*            */ STO/ Y
+0027 /*            */ BACK 019
+0028 /*            */ DROP
+0029 /*            */ XEQ 00
+0030 /*            */ CLSTK
+0031 /*            */ RCL .00
+0032 /*            */ **LBL 00
+0033 /* __LBL_00:: */ x[!=]? .01
+0034 /*            */ SKIP 002
+0035 /*            */ INC .02
+0036 /*            */ SKIP 011
+0037 /*            */ # 001
+0038 /*            */ RCL Y
+0039 /*            */ [cmplx]x[<->] .01
+0040 /*            */ x=0?
+0041 /*            */ SKIP 005
+0042 /*            */ CL[alpha]
+0043 /*            */ [alpha] ^
+0044 /*            */ [alpha]IP Y
+0045 /*            */ PROMPT
+0046 /*            */ CL[alpha]
+0047 /*            */ [cmplx]DROP
+0048 /*            */ END
 // Max SKIP offset: 094
 // Max BACK offset: 091
 // Max BSRB offset: 0
 // Max BSRF offset: 0
 // Label Step
-// 0 LBLs used.
+//  00 => 33
+// 1 LBLs used.
 0001 /*            */ ****LBL'TRI'
 0002 /*            */ CL[alpha]
 0003 /*            */ [alpha]'Tri'

@@ -15,40 +15,61 @@
  */
 
 /*
-  Prim-Faktor-Zerlegung (Prime Factorization)
+  Prime Factorization: list of 'true' prime factors (1<pf<n)
 
   Input:  X:n (positive integer)
-  Output: X:pf1 [R/S] pf2 [R/S] ... [R/S] 0 (L:n)
-  Used:   XYZT, IK
+  Output: X:pf1 (primefactor1) Alpha:^exp1 (exponent1)
+   [R/S]  X:pf2 (primefactor2) Alpha:^exp2 (exponent2)
+   [R/S]  .....
+   [R/S]  n
+  Used:   XYZT
 */
 
-001 LBL'PF'
-002 INT?
-003 x<1?
-004 RTN
-005 STO K
-006 2
-007 RCL Y
-008 [sqrt]
-009 IP
-010 STO I
-011 DROP
-012 x>? I
-013 SKIP 011
-014 [cmplx]ENTER
-015 RMDR
-016 x=0?
-017 SKIP 003
-018 DROP
-019 NEXTP
-020 BACK 008
-021 DROP
-022 STOP
-023 STO/ Y
-024 BACK 017
-025 DROP
-026 STOP
-027 CLSTK
-028 x[<->] K
-029 [times]
-030 END
+0001 LBL'PF'
+0002 LocR 004
+0003 INT?
+0004 x<1?
+0005 RTN
+0006 STO .00
+0007 # 002
+0008 RCL Y
+0009 [sqrt]
+0010 IP
+0011 STO .03
+0012 DROP
+0013 x>? .03
+0014 SKIP 013
+0015 [cmplx]ENTER
+0016 MOD
+0017 x=0?
+0018 SKIP 005
+0019 DROP
+0020 INC X
+0021 EVEN?
+0022 INC X
+0023 BACK 010
+0024 DROP
+0025 XEQ 00
+0026 STO/ Y
+0027 BACK 019
+0028 DROP
+0029 XEQ 00
+0030 CLSTK
+0031 RCL .00
+0032 LBL 00
+0033 x[!=]? .01
+0034 SKIP 002
+0035 INC .02
+0036 SKIP 011
+0037 # 001
+0038 RCL Y
+0039 [cmplx]x[<->] .01
+0040 x=0?
+0041 SKIP 005
+0042 CL[alpha]
+0043 [alpha] ^
+0044 [alpha]IP Y
+0045 PROMPT
+0046 CL[alpha]
+0047 [cmplx]DROP
+0048 END
