@@ -279,7 +279,7 @@ void cmplxPower(decNumber *rx, decNumber *ry,
 		if (dn_eq0(c) && dn_eq0(d))
 			cmplx_NaN(rx, ry);
 		else {
-			dn_1(rx);
+			decNumberZero(rx);
 			decNumberZero(ry);
 		}
 	} else {
