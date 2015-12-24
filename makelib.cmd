@@ -10,6 +10,7 @@ set LIB=%TOOLS%\wp34s_lib.pl -d %DEBUG%
 set PP=%TOOLS%\wp34s_pp.pl
 
 set DAT=wp34s-lib.dat
+set DAT_IR=wp34s-lib_ir.dat
 
 echo on
 %LIB% -pp matrix.wp34s matrixedit.wp34s vectors.wp34s digamma.wp34s invgamma.wp34s coordinates.wp34s modified-AGM.wp34s elliptic.wp34s -olib %DAT%
@@ -18,17 +19,19 @@ echo on
 %LIB% TVM.wp34s -ilib %DAT% -olib %DAT%
 @if errorlevel 1 goto exit
 :
-%LIB% -pp TRIGON.wp34s PF.wp34s -ilib %DAT% -olib %DAT%
+%LIB% -pp CSV.wp34s TRIGON.wp34s PF.wp34s -ilib %DAT% -olib %DAT_IR%
+%LIB% -pp polyroot.wp34s CSV.wp34s TRIGON.wp34s PF.wp34s -ilib %DAT% -olib %DAT%
 @if errorlevel 1 goto exit
 :
 %LIB% -cat -ilib %DAT% >library.cat
 copy %DAT% ..\trunk\windows\wp34sgui
 copy %DAT% ..\trunk\realbuild
+copy %DAT_IR% ..\trunk\realbuild
 @setlocal
 cd ..\trunk\realbuild
 copy/b calc.bin+%DAT% calc_full.bin
 copy/b calc_xtal.bin+%DAT% calc_xtal_full.bin
-copy/b calc_ir.bin+%DAT% calc_ir_full.bin
+copy/b calc_ir.bin+%DAT_IR% calc_ir_full.bin
 if exist calc_noxtal.bin copy/b calc_noxtal.bin+%DAT% calc_noxtal_full.bin
 @endlocal
 @goto exit

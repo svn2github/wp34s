@@ -1,0 +1,332 @@
+﻿/*
+* CSV, an Ostrowski-Traub based complex solver
+*
+*   v1.4 (20151222) by M. César Rodríguez GGPL
+*
+* Usage:
+*   Input:
+*     XY: contains an initial root estimation. X is the real part, Y the
+*         imaginary one
+*     alpha: contains the name of the program to be solved. This program
+*         is called with the stack (an SSIZE8 one) filled with a complex
+*         estimation of the root. The program must return a complex
+*         number in XY (X real, Y imaginary)
+*
+*   Output:
+*     XY: the root found or the value of the last estimation for the
+*         root. X real, Y imaginary
+*     ZT: the value of the program to be solved evaluated at the
+*         returned complex value in XY. Z real, T imaginary
+*     LI: the input XY value
+*
+*     If the user interrupts the program ([<-] key), or the program to
+*       be solved evaluates to infinity or NaN, or the solver reaches
+*       its maximum iteration number (800 iterations), it ends with the
+*       message "No root Found"
+*
+*   The user can interrupt the program pressing the [<-] key. If the
+*     user interrupts the program with [EXIT] or [R/S], the values in
+*     the stack, ABCD, L & I registers and flag D are not defined. Also,
+*     the size of the stack will be 8
+*
+*   Register usage:
+*     ABCD are cleared (no matter if the user works in SSIZE4 or SSIZE8)
+*     Stack size is forced to 8 levels, but it is restored to the value
+*       prior to calling the solver upon program end
+*     Flag D is set (so function to be solved returns infinite or NaN
+*       instead of reporting errors). This flag is restored to the value
+*        prior to calling the solver upon program end
+*
+* Algorithm:
+*   The Ostrowski-Traub algorithm has 4th order convergence into
+*     single roots. Requires 3 function evaluations on each iteration.
+*     See, for example, [1]
+*
+*   For each root estimate z_i, a new estimate is computed with:
+*       w_i = z_i - f(z_i)/f'(z_i)    (this is a Newton iteration)
+*
+*     where here the derivative f'(z_i) is estimated with:
+*       f'(z_i) ~ (f(z_i + e_i) - f(z_i))/e_i
+*
+*   Thus, the expression used here to get the w_i estimate is:
+*       w_i = z_i + e_i/(1 - f(z_i + e_i)/f(z_i))
+*
+*   Then, such estimate is refined with:
+*       z_{i+1} = w_i - f(w_i)(z_i - w_i)/(f(z_i) - 2f(w_i))
+*
+*     which  is implemented here as:
+*       z_{i+1} = w_i + (z_i - w_i)/(2 - f(z_i)/f(w_i))
+*
+*   After each iteration, |z_{i+1} - z_i| is checked to be smaller
+*     than max(|z_i|/10^4, 10^-8). If so, a flag is set signaling that
+*     the algorithm is "converging". This flag remains set until
+*     program end
+*
+*   After each iteration and if the algorithm is "converging",
+*     |z_{i+1} - z_i| is compared to |z_i - z_{i-1}|, being greater the
+*     algorithm is supposed to had converged and z_i (not z_{i+1}) is
+*     declared a root. This stopping algorithm is, basically, the Ward's
+*     criterion [2]
+*
+*   The program will also exit with a root found (hopefully) if:
+*     - evaluating the program to be solved returns 0 + 0j
+*     - f(z_i + e_i) = f(z_i)
+*     - z_{i+1} = z_i
+*
+*   The program will exit with error message "No root Found" if:
+*     - evaluating the program to be solved returns Infinite or NaN
+*     - the algorithm reaches 800 iterations (in DBLOFF mode and with
+*         single roots, the algorithm many times needs only 3 iterations
+*         to converge)
+*     - the user interrupts the program pressing [<-]
+*
+*   When a root is found, it is "beautified" by:
+*     - changing numbers like 1.124999999973587 or 1.125000000032518
+*       to 1.125. The code for this is adapted from the PRS polynomial
+*       solver for the wp34s by Franz Huber
+*     - numbers with an imaginary (real) part much smaller than its
+*       real (imaginary) part, are converted to real (imaginary) ones
+*       zeroing the smaller part
+*     Then, the function to be solved is evaluated at this new,
+*     beautified, root and it the value of the function is closer
+*     (or equally close) to 0, then the beautified root is returned as
+*     the root
+*
+*   When estimating the value of the derivative f'(z_i) with:
+*     (f(z_i + e_i) - f(z_i))/e_i, the increment e_i is:
+*     - if z_i is real, then
+*         e_i = |z_i - z_{i-1}|/10^3
+*     - otherwise
+*         e_i = |z_i - z_{i-1}|/10^3·exp(j·ai), with a_i a random
+*         angle between 0 and 2·pi
+*     Thus, if the function to be solved is real valued for real
+*     arguments and the initial root estimate is real, the program
+*     will only search for real roots
+*
+* When called from another program, this solver will behave like a
+*   test, executing next program step when a root is found, or
+*   skipping it when not found
+*
+* This solver does also work in DBLON mode
+*
+* References:
+*   [1] Wei-hong, B.I., Qing-biao, W.U., Hong-min R. "Convergence ball
+*     and error analysis of Ostrowski-Traub’s method." Appl. Math. J.
+*     Chinese Univ. 2010, 25(3): 374-378
+*
+*   [2] Ward, R.C. "The QR algorithm and Hyman’s method on vector
+*     computers." Mathematics of Computation 01/1976; 30(133): 132-132
+*
+*/
+
+          LBL'CSV'          // Complex SolVer
+            LocR 16         // Local registers and flags:
+                            //  .00       mode
+                            //  .01       |d_i| (that's |z_i - z_{i-1}|)
+                            //  .02-03    z_i
+                            //  .04-05    e_i
+                            //  .06-07    f(z_i)
+                            //  .08-09    z_0
+                            //  .10       iteration counter
+                            //  .11       fname
+                            //  .12-13    w_i
+                            //  .14-15    arg, argument for program to
+                            //            solve, also beautified zi
+                            //  F.00      no convergence, or f evaluates
+                            //            to special, or user interrupt
+                            //            ([<-])
+                            //  F.01      algorithm is converging
+
+            STOM .00        // STOM mode. Mode is restored at exit
+            SSIZE8
+            SF D            // specials are not errors here
+            aSTO .11        // aSTO fname. Name of function to solve
+            cSTO .08        // cSTO z0. Initial guess
+            cSTO .02        // cSTO zi. Estimate
+            cABS            // |z0|
+            x=? Y           // |z0| = 0?
+              # 001
+            SDR 005         // |d0| = |z0| / 10^5, or 10^-5 if |z0| = 0
+            STO .01         // STO |di|
+            # 080
+            SDL 001         // 800, maximum iter #
+            STO .10         // STO counter
+
+            // first pass, Newton's estimate
+CSV_mloop:: cRCL .02        // cRCL zi
+            GSB CSV_eval    // eval function, check for special or root
+              JMP CSV_exit  // if result is special or root, exit
+            cSTO .06        // cSTO f(zi)
+
+            // compute e_i to estimate derivative
+            RCL .03         // RCL Im(zi)
+            # 000
+            x=? Y           // zi is real?
+              JMP CSV_noai  // yes, e_i must also be real
+            ACOS            // no. pi/2 (or 90º or 100 grad)
+            # 004
+            *
+            RAN#
+            *               // ai, random angle between 0 and 2pi
+CSV_noai::  RCL .01         // RCL |di|. ai or 0 in Y
+            SDR 003         // |di|/10^3
+            >REC
+            cSTO .04        // cSTO ei
+
+            // estimate derivative
+            cRCL+ .02       // RCL+ zi. zi + ei
+            GSB CSV_eval    // f(zi + ei)
+              JMP CSV_exit  // if result is special or root, exit
+            cRCL/ .06       // cRCL/ f(zi). f(zi + ei)/f(zi)
+            cCHS            // -f(zi + ei)/f(zi)
+            INC X           // 1 - f(zi + ei)/f(zi)
+            cx=0?           // f(zi + ei) = f(zi)?
+              JMP CSV_exit  // then exit (converged)
+            cRCL .04        // cRCL ei
+            cRCL/ Z         // ei/(1 - f(zi + ei)/f(zi))
+            cRCL+ .02       // cRCL+ zi. zi + ei/(1 - f(zi + ei)/f(zi))
+            cSTO .12        // cSTO wi. New wi
+
+            // 2nd pass, Ostroswki's refine
+            GSB CSV_eval    // f(wi)
+              JMP CSV_exit  // if result is special or root, exit
+            cRCL .06        // cRCL f(zi)
+            cRCL/ Z         // f(zi)/f(wi)
+            DEC X
+            DEC X           // f(zi)/f(wi) - 2
+            cRCL .12        // cRCL wi
+            cRCL- .02       // cRCL- zi. wi - zi
+            cRCL/ Z         // (wi - zi)/(f(zi)/f(wi) - 2)
+            cRCL+ .12       // wi + (zi - wi)/(2 - f(zi)/f(wi)) (zi+1)
+
+            // compute new |di| for next derivative estimation and check
+            // convergence
+            cFILL           // stack filled with zi+1
+            cRCL- .02       // cRCL- zi. zi+1 - zi
+            cABS            // |zi+1 - zi| (|d_{i+1}|)
+            x=0?            // zi+1 = zi?
+              JMP CSV_exit  // then exit (converged)
+            cRCL .02        // cRCL zi
+            cABS            // |zi|
+            SDR 004         // |zi|/10^4
+            # 001
+            SDR 008         // 10^-8
+            MAX             // max(|zi|/10^4, 10^-8)
+            x>? Z           // |zi+1 - zi| < max(|zi|/10^4, 10^-8)?
+              SF .01        // yes, algorithm is converging
+            x<> Z           // |zi+1 - zi|
+            FC? .01         // converging?
+              JMP CSV_updt  // no, skip convergence test
+            x>? .01         // converged?
+              JMP CSV_exit  // then exit (converged)
+CSV_updt::  STO .01         // STO |di|
+            cRCL A          // cRCL zi+1
+            cSTO .02        // cSTO zi
+
+            // check user interrupt
+            KEY? X          // any key?
+              JMP CSV_nok   // no, continue
+            # 035           // keycode for <-
+            x=? Y           // key is [<-]?
+              JMP CSV_flag  // yes, mark as no root found and exit
+
+            // check iteration limit #
+CSV_nok::   DSZ .10         // DSZ counter
+            JMP CSV_mloop   // goto main loop
+CSV_flag::  SF .00          // flag no root found
+
+            // root found (F.00 reset) or not (F.00 set)
+CSV_exit::  FS? .00         // no root?
+              JMP CSV_nopp  // no root, skip post process
+
+            // beautify x.xx...999999xxxx and x.xx...000000xxxx roots
+            cRCL .02        // cRCL zi
+            cSTO .14        // save zi in arg
+            RSD 11          // Re(zi) rounded to 11 digits
+            x<> .14
+            RSD 09          // Re(zi) rounded to 9 digits
+            x!=? .14        // rounded to 11 digits != rounded to 9?
+              RCL L         // yes, keep Re(zi) untouched
+            STO .14         // otherwise, use new, beautified, value
+            RCL .15         // RCL Im(zi)
+            RSD 11          // Im(zi) rounded to 11 digits
+            x<> .15
+            RSD 09          // Im(zi) rounded to 9 digits
+            x!=? .15        // rounded to 11 digits != rounded to 9?
+              RCL L         // yes, keep Im(zi) untouched
+            STO .15         // otherwise, use new, beautified, value
+
+            // beautify almost real/imaginary roots
+            cRCL .14        // cRCL zi (partially beautified)
+            EXPT
+            x<> Y
+            EXPT
+            -               // orders of magnitude between Re and Im
+            # 011
+            x<? Y           // almost real?
+              JMP CSV_real  // yes, convert to real
+            CHS
+            x<? Y           // almost imaginary?
+              JMP CSV_chkb  // no, keep intact. Check new zi
+            # 000           // here if almost imaginary, clear Re
+            STO .14
+            JMP CSV_chkb    // zi beautified, check it
+CSV_real::  # 000           // here if almost real, clear Im
+            STO .15
+
+            // check if beautified zi is a better root
+CSV_chkb::  cRCL .14        // cRCL zi (beautified)
+            cx=? .02        // beautified zi = zi?
+              JMP CSV_nopp  // yes, no need to check, skip
+            GSB CSV_eval    // compute f(zi) for beautified zi
+              JMP CSV_nopp  // beautified zi lets f(zi) special, skip...
+                            // or is a true root, also skip
+            cENTER
+            cABS            // abs(f(zi)) with zi beautified
+            cRCL .06
+            cABS            // abs(f(zi)) with zi non-beautified
+            x<? Z           // the beautified zi is no better?
+              JMP CSV_nopp  // yes, keep root intact
+            cRCL A          // yes, root is the new zi. cRCL f(zi)
+            cSTO .06        // cSTO f(zi)
+            cRCL .14        // cRCL zi (beautified)
+            cSTO .02        // cSTO zi (beautified)
+
+            // build return stack
+CSV_nopp::  cRCL .08        // cRCL z0
+            cSTO L          // input argument copied to LI
+            CLSTK           // tidy stack (A-D lost)
+            RCLM .00        // RCLM mode, restore user mode
+            cRCL .06        // cRCL f(zi)
+            cRCL .02        // cRCL zi. Now f(zi), zi on stack
+            cVIEW .02       // cVIEW zi, show root in complex form
+            FC? .00         // root found?
+              RTN           // yes, that's enough
+            MSG 20          // no, report it
+          RTN+1             // to behave like a test
+
+            // wrapper for program to be solved. Saves the argument,
+            // fills the stack and checks return value. Behaves like
+            // a test. The test returns false if the return value is
+            // neither special nor zero. Returns true otherwise,
+            // setting flag .00 if return value is special or storing
+            // 0+0j in f(zi) and the argument in zi if the argument is
+            // a root
+CSV_eval::  cSTO .14        // cSTO arg. Save argument
+            cFILL
+            aXEQ .11        // evaluate f
+            SF .00
+            SPEC?           // Re(f) is special?
+              RTN           // yes, test returns true & F.00 set
+            x<> Y
+            SPEC?           // Im(f) is special?
+              RTN           // yes, test returns true & F.00 set
+            x<> Y
+            CF .00
+            cx!=0?          // argument is not a root?
+              RTN+1         // not a root, test returns false
+            cSTO .06        // cSTO f(zi). Is a root, save 0+0j in f(zi)
+            cRCL .14        // cRCL arg
+            cSTO .02        // cSTO zi. Store the root in zi
+            RTN             // test returns true & F.00 reset
+        END
