@@ -87,11 +87,11 @@ extern u64 BuildDate;
 #endif
 
 bool IsShift(void);
-void Init(void);                   // initialization of the calculator keeps memory if possible.. 
-void Reset(bool KeepTestMode); // reset everything to zero (except the test system ON/OFF if KeepTestMode=true
-void Shutdown(void);           // turn off, save state
-void KeyPress(int i);        // call when the user presses a key to get action. returns true if calc needs to be turned off
-void InternalKeyPress(int key); // same as above, but does not handle shifts...
+void Init(char *filename);         // initialization of the calculator keeps memory if possible.. 
+void Reset(void);                  // reset everything to zero
+void Shutdown(void);               // turn off, save state
+void KeyPress(int i);              // call when the user presses a key to get action.
+void InternalKeyPress(int key);    // same as above, but does not handle shifts...
 void UpdateScreen(bool forceUpdate);
 bool GetFlag(int flag);
 void SetFlag(int flag);

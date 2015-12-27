@@ -797,11 +797,22 @@ void recall_program( enum nilop op )
 
 #if !defined(REALBUILD) && !defined(QTGUI) && !defined(IOS)
 /*
- *  Save/Load state to a file (only for emulator(s))
+ *  Filesystem access for emulator
  */
-void save_statefile( void )
+char StateFile[ FILENAME_MAX ] = STATE_FILE;
+char ComPort[ FILENAME_MAX ] = "COM1";
+char Tools[ FILENAME_MAX ] = "..\tools";
+
+/*
+ *  Save/Load state to a file
+ */
+void save_statefile( char *filename )
 {
-	FILE *f = fopen( STATE_FILE, "wb" );
+	FILE *f;
+	if ( filename != NULL && *filename != '\0' ) {
+		strncpy( StateFile, filename, FILENAME_MAX );
+	}
+	f = fopen( StateFile, "wb" );
 	if ( f == NULL ) return;
 	process_cmdline_set_lift();
 	init_state();
@@ -823,9 +834,16 @@ void save_statefile( void )
 /*
  *  Load both the RAM file and the flash emulation images
  */
-void load_statefile( void )
+void load_statefile( char *filename )
 {
-	FILE *f = fopen( STATE_FILE, "rb" );
+	FILE *f;
+	char *p;
+	char buffer[ FILENAME_MAX ];
+
+	if ( filename != NULL && *filename != '\0' ) {
+		strncpy( StateFile, filename, FILENAME_MAX );
+	}
+	f = fopen( StateFile, "rb" );
 	if ( f != NULL ) {
 		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
 		fclose( f );
@@ -845,7 +863,37 @@ void load_statefile( void )
 		fclose( f );
 	}
 	init_library();
+
+	/*
+	 *  Load the configuration:
+	 *  1st line: COM port
+	 *  2nd line: Tools directory
+	 */
+	f = fopen( "wp34s.ini", "rt" );
+	if ( f != NULL ) {
+		p = fgets( buffer, FILENAME_MAX, f );
+		if ( p != NULL ) {
+			strtok( buffer, "#:\r\n\t " );
+			if ( *buffer != '\0' ) {
+				strncpy( ComPort, buffer, FILENAME_MAX );
+			}
+		}
+		p = fgets( buffer, FILENAME_MAX, f );
+		if ( p != NULL ) {
+			strtok( buffer, "#\r\n\t " );
+			if ( *buffer != '\0' ) {
+				strncpy( Tools, buffer, FILENAME_MAX - strlen( "\\wp34s_asm.exe" ) );
+				p = Tools + strlen( Tools );
+				if ( *(--p) == '\\' ) {
+					*p = '\0';
+				}
+			}
+		}
+		fclose( f );
+	}
 }
+
+
 #endif
 
 

@@ -309,7 +309,7 @@ BOOL CHP20b_cDlg::OnInitDialog()
   dlg = this;
   ((CHP20b_cApp *) AfxGetApp())->m_hwndDialog = m_hWnd;
   initKeyBuffer();
-  Init();
+  Init( NULL );
   if (!ReadRegistry())
     LoadSkin(NULL);
                   // load skins
@@ -773,7 +773,7 @@ LPARAM CHP20b_cDlg::OnMouseLeave(WPARAM wp, LPARAM lp)
 //
 void CHP20b_cDlg::OnHP20bOnOFF()
 { 
-  Reset(false);
+  Reset();
   UpdateScreen(true);
 }
 /***************************************************************
@@ -797,7 +797,7 @@ void CHP20b_cDlg::OnHP20bResetState()
         "Are you sure that you want to reset the calculator?", 
         MB_YESNO | MB_ICONINFORMATION) == IDYES) 
   {
-    Reset(false);
+    Reset();
     UpdateScreen(true);
   }
 }

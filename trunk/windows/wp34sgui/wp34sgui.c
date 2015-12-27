@@ -75,6 +75,14 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	revision = atoi( buffer );
 
 	/*
+	 *  Extract the state file name from the command line
+	 */
+	strtok( pCmdLine, " " );
+	if ( *pCmdLine != '\0' ) {
+		strncpy( StateFile, pCmdLine, FILENAME_MAX );
+	}
+
+	/*
 	 *  Create the heartbeat at 100ms
 	 */
 	CreateThread( NULL, 1024 * 16, HeartbeatThread, NULL, 0, &id );
@@ -97,15 +105,15 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 /*
  *  Load/Reset/Save state
  */
-void Init( void )
+void Init( char *filename )
 {
-	load_statefile();
+	load_statefile( filename );
 	DispMsg = NULL;
 	init_34s();
 	display();
 }
 
-void Reset( bool keep )
+void Reset( void )
 {
 	memset( &PersistentRam, 0, sizeof( PersistentRam ) );
 	init_34s();
@@ -114,7 +122,7 @@ void Reset( bool keep )
 
 void Shutdown( void )
 {
-	save_statefile();
+	save_statefile( NULL );
 }
 
 /*

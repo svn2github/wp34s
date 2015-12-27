@@ -1,14 +1,8 @@
 /*
  *  emulator_dll.c
  *
- *  This is the include file for using HP's HP20b emulator kernel as a DLL
+ *  This is the include file for using the modified HP20b emulator kernel as a DLL
  *  
- *  In WinMain, call
- *  init_emulator( name, init, KeyPress, updatescreen,
- *                 GetFlag, SetFlag, ClearFlag, GetBottomLine );
- *                 CheckCommmunication );
- *  NULLs are valid pointers and are replaced by default behaviour.
- *
  *  Written by Marcus von Cube
  */
 #ifdef __cplusplus
@@ -24,19 +18,19 @@ extern "C" {
 #undef shutdown
 
 // Some defines and decalrations from old "application.h"
-#define shift 16            // shift state on?
+#define shift 16               // shift state on?
 
-void Init(void);                   // initialization of the calculator keeps memory if possible.. 
-void Reset(bool KeepTestMode); // reset everything to zero (except the test system ON/OFF if KeepTestMode=true
-void Shutdown(void);           // turn off, save state
-void KeyPress(int i);        // call when the user presses a key to get action. returns true if calc needs to be turned off
-void UpdateScreen(bool forceUpdate);
-bool GetFlag(int flag);
-void SetFlag(int flag);
-void ClearFlag(int flag);
-wchar_t *GetTopLineW(void);
-char *GetBottomLine(bool raw);
-void SetBottomLine(const char *);
+void Init( char *filename );   // initialization of the calculator keeps memory if possible.. 
+void Reset( void );            // reset everything to zero
+void Shutdown( void );         // turn off, save state
+void KeyPress( int i );        // call when the user presses a key to get action
+void UpdateScreen( bool forceUpdate );
+bool GetFlag( int flag );
+void SetFlag( int flag );
+void ClearFlag( int flag );
+wchar_t *GetTopLineW( void );
+char *GetBottomLine( bool raw );
+void SetBottomLine( const char * );
 
 // Our stuff
 
@@ -62,21 +56,21 @@ int EXPORT start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR p
 			   void *p_GetBottomLine,
 			   void *p_SetBottomLine );
 
-void EXPORT UpdateDlgScreen(int force);
+void EXPORT UpdateDlgScreen( int force );
 
-void EXPORT AddKey(int k,bool ifnotfull);
+void EXPORT AddKey( int k, bool ifnotfull );
 
-int  EXPORT KeyBuffEmpty(void);
+int  EXPORT KeyBuffEmpty( void );
 
-int  EXPORT KeyBuffGetKey(void);
+int  EXPORT KeyBuffGetKey( void );
 
-int  EXPORT AddKeyInBuffer(int k);
+int  EXPORT AddKeyInBuffer( int k );
 
-int  EXPORT GetLastKey(void);
+int  EXPORT GetLastKey( void );
 
-long long EXPORT GetKeyboardMap(void);
+long long EXPORT GetKeyboardMap( void );
 
-void EXPORT ExitEmulator(void);
+void EXPORT ExitEmulator( void );
 #ifdef __cplusplus
 }
 #endif

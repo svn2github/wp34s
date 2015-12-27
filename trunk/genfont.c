@@ -346,10 +346,31 @@ static int sanity_check(void) {
 }
 
 int main(int argc, char *argv[]) {
-	FILE * f_pretty = fopen("pretty.h", "w");
-	FILE * f_charset = fopen("font.c", "w");
-	FILE * f_charmap = fopen("charmap.c", "w");
-	FILE * f_translate = fopen("translate.c", "w");
+	FILE * f_pretty;
+	FILE * f_charset;
+	FILE * f_charmap;
+	FILE * f_translate;
+
+	f_pretty = fopen("pretty.h", "w");
+	if ( f_pretty == NULL ) {
+		perror( "pretty.h" );
+		exit( 2 );
+	}
+	f_charset = fopen("font.c", "w");
+	if ( f_charset == NULL ) {
+		perror( "font.c" );
+		exit( 2 );
+	}
+	f_charmap = fopen("charmap.c", "w");
+	if ( f_charmap == NULL ) {
+		perror( "charmap.c" );
+		exit( 2 );
+	}
+	f_translate = fopen("translate.c", "w");
+	if ( f_translate == NULL ) {
+		perror( "translate.c" );
+		exit( 2 );
+	}
 
 	gen_pretty(f_pretty);
 	fclose(f_pretty);
