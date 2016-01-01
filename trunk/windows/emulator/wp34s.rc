@@ -167,6 +167,18 @@ BEGIN
     POPUP "wp34s"
     BEGIN
         MENUITEM "Hide Titlebar",               ID_HP20b_SHOWCAPTION
+        MENUITEM "Reset",                       ID_HP20b_RESETSTATE
+        MENUITEM SEPARATOR
+        POPUP "File"
+        BEGIN
+            MENUITEM "Reload",                      ID_FILE_RELOAD
+            MENUITEM "Open...",                     ID_FILE_OPEN
+            MENUITEM "Save",                        ID_FILE_SAVE
+            MENUITEM "Save as...",                  ID_FILE_SAVEAS
+            MENUITEM SEPARATOR
+            MENUITEM "Import...",                   ID_FILE_IMPORT
+            MENUITEM "Export...",                   ID_FILE_EXPORT
+        END
         POPUP "Help"
         BEGIN
             MENUITEM "About",                       ID_HELP_ABOUTBOX
@@ -177,8 +189,6 @@ BEGIN
         BEGIN
             MENUITEM "Skins go here",               ID_HP20b_COPYTOCLIPBOARD
         END
-        MENUITEM SEPARATOR
-        MENUITEM "Reset",                       ID_HP20b_RESETSTATE
         MENUITEM SEPARATOR
         POPUP "Copy"
         BEGIN
@@ -199,6 +209,14 @@ BEGIN
     BEGIN
         MENUITEM "Hide Titlebar",               ID_HP20b_SHOWCAPTION_MENU
         MENUITEM "Reset",                       ID_HP20b_RESETSTATE
+        MENUITEM SEPARATOR
+        MENUITEM "Reload",                      ID_FILE_RELOAD
+        MENUITEM "Open...",                     ID_FILE_OPEN
+        MENUITEM "Save",                        ID_FILE_SAVE
+        MENUITEM "Save as...",                  ID_FILE_SAVEAS
+        MENUITEM SEPARATOR
+        MENUITEM "Import...",                   32850
+        MENUITEM "Export...",                   ID_FILE_EXPORT
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        ID_HP20b_EXIT
     END

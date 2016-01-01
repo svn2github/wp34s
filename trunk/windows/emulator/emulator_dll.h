@@ -22,7 +22,9 @@ extern "C" {
 
 void Init( char *filename );   // initialization of the calculator keeps memory if possible.. 
 void Reset( void );            // reset everything to zero
-void Shutdown( void );         // turn off, save state
+void Save( char *filename );   // save state
+void Import( char *filename ); // import code
+void Export( char *filename ); // export code
 void KeyPress( int i );        // call when the user presses a key to get action
 void UpdateScreen( bool forceUpdate );
 bool GetFlag( int flag );
@@ -46,7 +48,9 @@ int EXPORT start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR p
 			   unsigned int *p_LcdData,
 			   void *p_Init,
 			   void *p_Reset,
-			   void *p_Shutdown,
+			   void *p_Save,
+			   void *p_Import,
+			   void *p_Export,
 			   void *p_KeyPress,
 			   void *p_UpdateScreen,
 			   void *p_GetFlag,

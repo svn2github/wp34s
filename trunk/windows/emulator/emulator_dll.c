@@ -20,7 +20,9 @@ unsigned int *LcdData;
 
 static void  (*P_Init)( char * );
 static void  (*P_Reset)( void );
-static void  (*P_Shutdown)( void );
+static void  (*P_Save)( char * );
+static void  (*P_Import)( char * );
+static void  (*P_Export)( char * );
 static void  (*P_KeyPress)( int );
 static void  (*P_UpdateScreen)( bool );
 static bool  (*P_GetFlag)( int );
@@ -40,7 +42,9 @@ int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 		    unsigned int *p_LcdData,
 		    void *p_Init,
 		    void *p_Reset,
-		    void *p_Shutdown,
+		    void *p_Save,
+		    void *p_Import,
+		    void *p_Export,
 		    void *p_KeyPress,
 		    void *p_UpdateScreen,
 		    void *p_GetFlag,
@@ -56,7 +60,9 @@ int start_emulator( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 
 	P_Init               = (void (*)( char * ))     p_Init;
 	P_Reset              = (void (*)( void ))     	p_Reset;
-	P_Shutdown           = (void (*)( void ))     	p_Shutdown;
+	P_Save               = (void (*)( char * ))   	p_Save;
+	P_Import             = (void (*)( char * ))   	p_Import;
+	P_Export             = (void (*)( char * ))   	p_Export;
 	P_KeyPress           = (void (*)( int ))      	p_KeyPress;
 	P_UpdateScreen       = (void (*)( bool ))     	p_UpdateScreen;
 	P_GetFlag            = (bool (*)( int ))      	p_GetFlag;
@@ -78,9 +84,19 @@ void Init( char *filename )
 	if ( P_Init ) P_Init( filename );
 }
 
-void Shutdown( void )
+void Save( char *filename )
 {
-	if ( P_Shutdown ) P_Shutdown();
+	if ( P_Save ) P_Save( filename );
+}
+
+void Import( char *filename )
+{
+	if ( P_Import ) P_Import( filename );
+}
+
+void Export( char *filename )
+{
+	if ( P_Export ) P_Export( filename );
 }
 
 void Reset( void )

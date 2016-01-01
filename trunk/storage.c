@@ -32,6 +32,12 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdarg.h>
+#ifdef WINGUI
+#define shutdown _shutdown
+#include <windows.h>
+#undef shutdown
+#endif
 
 #define PERSISTENT_RAM
 #define SLCDCMEM
@@ -40,7 +46,6 @@
 #define STATE_FILE "wp34s.dat"
 #define BACKUP_FILE "wp34s-backup.dat"
 #define LIBRARY_FILE "wp34s-lib.dat"
-
 #endif
 
 #include "xeq.h"
@@ -804,6 +809,25 @@ char ComPort[ FILENAME_MAX ] = "COM1";
 char Tools[ FILENAME_MAX ] = "..\tools";
 
 /*
+ *  Show (GUI) message
+ */
+static void ShowMessage( const char *title, const char *format, ... )
+{
+	va_list args;
+#ifdef WINGUI
+	char msg[ 10000 ];
+	va_start( args, format );
+	vsprintf( msg, format, args );
+	MessageBox( NULL, msg, title, MB_OK );
+#else
+	va_start( args, format );
+	fprintf( stderr, "%s:\n", title );
+	vfprintf( stderr, format, args );
+	fputc( '\n', stderr );
+#endif
+}
+
+/*
  *  Save/Load state to a file
  */
 void save_statefile( char *filename )
@@ -813,7 +837,10 @@ void save_statefile( char *filename )
 		strncpy( StateFile, filename, FILENAME_MAX );
 	}
 	f = fopen( StateFile, "wb" );
-	if ( f == NULL ) return;
+	if ( f == NULL ) {
+		ShowMessage( "Save Error", strerror( errno ) );
+		return;
+	}
 	process_cmdline_set_lift();
 	init_state();
 	checksum_all();
@@ -893,6 +920,159 @@ void load_statefile( char *filename )
 	}
 }
 
+/*
+ *  Import text file
+ */
+static void show_log( char *logname, int rc )
+{
+	char msg[ 10000 ] = "";
+	FILE *f = fopen( logname, "rt" );
+	if ( f != NULL ) {
+		int size = fread( msg, 1, sizeof( msg ) - 1, f );
+		if ( size >= 0 ) {
+			msg[ size ] = 0;
+		}
+		fclose( f );
+	}
+	remove( logname );
+	if ( *msg == '\0' ) {
+		sprintf( msg, "Cannot execute tool, RC=%d", rc );
+	}
+	ShowMessage( rc == 0 ? "Import Result" : "Import Failed", msg );
+}
+
+void import_textfile( char *filename )
+{
+	char buffer[ 10000 ];
+	char tempfile[ FILENAME_MAX ];
+	char logfile[ FILENAME_MAX ];
+	char *tempname, *logname;
+	char *ext = ".pl";
+	int retry = 2;
+	int rc = 999;
+
+	tempname = tmpnam( tempfile );
+	if ( *tempname == '\\' ) {
+		++tempname;
+	}
+	logname = tmpnam( logfile );
+	if ( *logname == '\\' ) {
+		++logname;
+	}
+	while ( rc >= 2 && retry-- ) {
+		sprintf( buffer, "%s\\wp34s_asm%s -pp %s -o %s 1>%s 2>&1", Tools, ext, filename, tempname, logname );
+		rc = system( buffer );
+		ext = ".exe";
+	}
+	show_log( logname, rc );
+	if ( rc == 0 ) {
+		// Assembly successful
+		FILE *f = fopen( tempname, "rb" );
+		int size, words = 0;
+
+		if ( f == NULL ) {
+			ShowMessage( "Import Failed", "Tool output file error: %s", strerror( errno ) );
+		}
+		else {
+			size = (int) fread( buffer, 2, sizeof( buffer ) / 2, f );
+			fclose( f );
+			if ( size >= 2 ) {
+				words = (unsigned char) buffer[ 3 ] * 256 + (unsigned char) buffer[ 2 ];
+			}
+			if ( words != size - 3 ) {
+				// Bad file size
+				ShowMessage( "Import Failed", "Bad tool output file size %d", size );
+			}
+			else {
+				append_program( (s_opcode *) ( buffer + 4 ), words );
+			}
+		}
+	}
+	remove( tempname );
+}
+
+/*
+ *  Export: Print current program to text file
+ */
+#include "pretty.h"
+
+static const char *pretty( unsigned char z ) {
+	if ( z < 32 ) {
+		return map32[ z & 0x1f ];
+	}
+	if (z >= 127) {
+		return maptop[ z - 127 ];
+	}
+	return CNULL;
+}
+
+
+static void write_pretty( const char *in, FILE *f ) {
+	const char *p;
+	char c;
+
+	while ( *in != '\0' ) {
+		c = *in++;
+		if ( c == 0x06 ) {
+			c = ' ';
+			if ( *in == 0x06 ) {
+				++in;
+			}
+		}
+		p = pretty( c );
+		if ( p == NULL ) {
+			fputc( c, f );
+		}
+		else {
+			fputc( '[', f );
+			while ( *p != '\0' ) {
+				fputc( *p++, f );
+			}
+			fputc( ']', f );
+		}
+	}
+	fputc( '\n', f );
+}
+
+
+extern void export_textfile( char *filename )
+{
+	FILE *f;
+	unsigned int pc = state_pc();
+	int runmode = State2.runmode;
+	int numlen = isRAM( pc ) ? 3 : 4;
+
+	f = fopen( filename, "wt" );
+	if ( f == NULL ) return;
+
+	if ( runmode ) {
+		// current program
+		pc = ProgBegin;
+	}
+	else {
+		// complete program memory
+		pc = 1;
+		numlen = 3;
+	}
+	if ( pc == 0 ) {
+		++pc;
+	}
+
+	PcWrapped = 0;
+	while ( !PcWrapped ) {
+		char buffer[ 16 ];
+		const char *p;
+		opcode op = getprog( pc );
+		unsigned int upc = user_pc( pc );
+		*num_arg_0( buffer, upc, numlen ) = '\0';
+		fprintf( f, "%s ", buffer );
+		p = prt( op, buffer );
+		write_pretty( buffer, f );
+		pc = do_inc( pc, runmode );
+	}
+
+	fclose( f );
+}
 
 #endif
 

@@ -188,6 +188,12 @@ ON_WM_LBUTTONDBLCLK()
 ON_COMMAND(ID_HP20b_EXIT, CHP20b_cDlg::OnHP20bExit)
 ON_COMMAND(ID_HP20b_SHOWCAPTION, CHP20b_cDlg::OnHP20bShowTitlebar)
 //ON_WM_NCLBUTTONUP()
+ON_COMMAND(ID_FILE_RELOAD,CHP20b_cDlg::OnFileReload)
+ON_COMMAND(ID_FILE_OPEN,CHP20b_cDlg::OnFileOpen)
+ON_COMMAND(ID_FILE_SAVE,CHP20b_cDlg::OnFileSave)
+ON_COMMAND(ID_FILE_SAVEAS,CHP20b_cDlg::OnFileSaveAs)
+ON_COMMAND(ID_FILE_IMPORT,CHP20b_cDlg::OnFileImport)
+ON_COMMAND(ID_FILE_EXPORT,CHP20b_cDlg::OnFileExport)
 ON_COMMAND(ID_HELP_ABOUTBOX, CHP20b_cDlg::OnHelpAboutbox)
 ON_COMMAND(ID_HELP_MANUAL, CHP20b_cDlg::OnHelpHp20bbusinessconsultant)
 ON_COMMAND(ID_HELP_WEBSITE, CHP20b_cDlg::OnBuy)
@@ -195,8 +201,7 @@ ON_COMMAND(ID_EDIT_COPY_TEXTLINE, CHP20b_cDlg::OnEditCopyTextline)
 ON_COMMAND(ID_EDIT_COPY_NUMBER, CHP20b_cDlg::OnEditCopyNumber)
 ON_COMMAND(ID_EDIT_COPY_RAW_X, CHP20b_cDlg::OnEditCopyRawX)
 ON_COMMAND(ID_EDIT_PASTE_NUMBERS, CHP20b_cDlg::OnEditPasteNumbers)
-ON_COMMAND(ID_HP20b_SHOWCAPTION_MENU, CHP20b_cDlg::
-     OnHP20bShowcaptionMenu)
+ON_COMMAND(ID_HP20b_SHOWCAPTION_MENU, CHP20b_cDlg::OnHP20bShowcaptionMenu)
 ON_WM_MOVE()
 ON_WM_RBUTTONDOWN()
 ON_WM_RBUTTONDBLCLK()
@@ -209,7 +214,6 @@ int TestVoltage(int min, int max)
 { 
   return 30;
 }
-HANDLE Pipe = 0;
 CHP20b_cDlg *dlg;
 HANDLE    KeyEvent;
 LARGE_INTEGER LastScreenUpdate;
@@ -539,11 +543,7 @@ void CHP20b_cDlg::OnDestroy()
   CDialog::OnDestroy();
 
   WriteToRegistry();
-  Shutdown();
-  if (Pipe != NULL) {
-    CloseHandle(Pipe);
-    Pipe = NULL;
-  }
+  Save(NULL);
 }
 /***************************************************************
 ** 
@@ -693,7 +693,7 @@ void CHP20b_cDlg::OnRButtonUp(UINT nFlags, CPoint point)
 ** 
 **  Called when the user presses the right mouse button on GUI 
 **  except LCD Area.  
-**  This function is responsible to sned SHIFT key to MYAPPLICATION firmware.
+**  This function is responsible to send SHIFT key to MYAPPLICATION firmware.
 **
 ***************************************************************/
 //
@@ -1301,6 +1301,67 @@ void AddKey(int k, bool ifnotfull)
 void ExitEmulator(void)
 {
   SendMessage(dlg->m_hWnd, WM_CLOSE, 0, 0);
+}
+
+// File menu functions (MvC, Jan 1, 2016)
+
+#define FILTER_STATE_FILES "State Files (*.dat)|*.dat|All Files (*.*)|*.*||"
+#define FILTER_TEXT_FILES "Text Files (*.wp34s;*.txt)|*.wp34s;*.txt|All Files (*.*)|*.*||"
+ 
+LPCSTR GetFileName( const char *filter, const char *ext = NULL )
+{
+	static char filename[ FILENAME_MAX ];
+	CFileDialog dlgFile( ext == NULL, ext, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, filter );
+
+	dlgFile.GetOFN().lpstrFile = filename;
+	dlgFile.GetOFN().nMaxFile = FILENAME_MAX;
+
+	if ( IDOK == dlgFile.DoModal() ) {
+		return filename;
+	}
+	return NULL;
+}
+
+void CHP20b_cDlg::OnFileReload()
+{
+	Init( NULL );
+}
+
+void CHP20b_cDlg::OnFileOpen()
+{
+	char *filename = (char *) GetFileName( FILTER_STATE_FILES );
+	if ( filename != NULL ) {
+		Init( filename );
+	}
+}
+
+void CHP20b_cDlg::OnFileSave()
+{
+	Save( NULL );
+}
+
+void CHP20b_cDlg::OnFileSaveAs()
+{
+	char *filename = (char *) GetFileName( FILTER_STATE_FILES, "dat" );
+	if ( filename != NULL ) {
+		Save( filename );
+	}
+}
+
+void CHP20b_cDlg::OnFileImport()
+{
+	char *filename = (char *) GetFileName( FILTER_TEXT_FILES );
+	if ( filename != NULL ) {
+		Import( filename );
+	}
+}
+
+void CHP20b_cDlg::OnFileExport()
+{
+	char *filename = (char *) GetFileName( FILTER_TEXT_FILES, "wp34s" );
+	if ( filename != NULL ) {
+		Export( filename );
+	}
 }
 
 

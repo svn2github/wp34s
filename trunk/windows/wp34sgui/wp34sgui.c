@@ -94,7 +94,7 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 		        "WP 34S Scientific Calculator " VERSION_STRING,
 		        BuildDate | ( revision << 12 ),
 		        LcdData,
-		        Init, Reset, Shutdown,
+		        Init, Reset, Save, Import, Export,
 		        KeyPress, UpdateScreen, 
 		        GetFlag, SetFlag, ClearFlag,
 			GetTopLineW,
@@ -120,9 +120,27 @@ void Reset( void )
 	display();
 }
 
-void Shutdown( void )
+void Save( char *filename )
 {
-	save_statefile( NULL );
+	save_statefile( filename );
+}
+
+/*
+ *  Import and export as text
+ */
+void Import( char *filename )
+{
+	import_textfile( filename );
+	if ( Error ) {
+		State2.runmode = 1;
+		error_message( Error );
+	}
+	display();
+}
+
+void Export( char *filename )
+{
+	export_textfile( filename );
 }
 
 /*

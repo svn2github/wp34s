@@ -24,7 +24,7 @@ echo on
 @if errorlevel 1 goto exit
 :
 %LIB% -cat -ilib %DAT% >library.cat
-copy %DAT% ..\trunk\windows\wp34sgui
+copy %DAT% ..\trunk\windows\bin
 copy %DAT% ..\trunk\realbuild
 copy %DAT_IR% ..\trunk\realbuild
 @setlocal

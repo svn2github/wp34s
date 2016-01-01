@@ -72,6 +72,8 @@ extern char ComPort[];
 extern char Tools[];
 extern void save_statefile( char *filename );
 extern void load_statefile( char *filename );
+extern void import_textfile( char *filename );
+extern void export_textfile( char *filename );
 #endif
 
 #endif
