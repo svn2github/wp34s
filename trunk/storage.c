@@ -958,7 +958,7 @@ void import_textfile( char *filename )
 
 	f = fopen( Assembler, "rb" );
 	if ( f == NULL ) {
-		ShowMessage( "Assembler %s not found", Assembler );
+		ShowMessage( "Import Failed", "Assembler \"%s\" not found", Assembler );
 		return;
 	}
 	else {
@@ -1000,6 +1000,7 @@ void import_textfile( char *filename )
 		}
 	}
 	remove( tempname );
+	remove( "wp34s_pp.lst" );
 }
 
 /*
