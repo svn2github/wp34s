@@ -69,7 +69,7 @@ extern void recall_program(enum nilop op);
 #if !defined(REALBUILD) && !defined (QTGUI) && !defined(IOS)
 extern char StateFile[];
 extern char ComPort[];
-extern char Tools[];
+extern char Assembler[];
 extern void save_statefile( char *filename );
 extern void load_statefile( char *filename );
 extern void import_textfile( char *filename );

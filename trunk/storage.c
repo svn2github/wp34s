@@ -804,9 +804,15 @@ void recall_program( enum nilop op )
 /*
  *  Filesystem access for emulator
  */
-char StateFile[ FILENAME_MAX ] = STATE_FILE;
-char ComPort[ FILENAME_MAX ] = "COM1";
-char Tools[ FILENAME_MAX ] = "..\tools";
+#ifdef _WIN32
+#define ASSEMBLER "..\\tools\\wp34s_asm.exe"
+#else
+#define 
+#define ASSEMBLER "../tools/wp34s_asm.pl"
+#endif
+char StateFile[ FILENAME_MAX + 1 ] = STATE_FILE;
+char ComPort[ FILENAME_MAX + 1 ] = "COM1";
+char Assembler[ FILENAME_MAX + 1 ] = "..\\tools\\wp34s_asm.exe";
 
 /*
  *  Show (GUI) message
@@ -909,12 +915,9 @@ void load_statefile( char *filename )
 		if ( p != NULL ) {
 			strtok( buffer, "#\r\n\t" );
 			if ( *buffer != '\0' ) {
-				strncpy( Tools, buffer, FILENAME_MAX - strlen( "\\wp34s_asm.exe" ) );
-				p = Tools + strlen( Tools );
+				strncpy( Assembler, buffer, FILENAME_MAX );
+				p = Assembler + strlen( Assembler );
 				while ( p[-1] == ' ' ) {
-					*(--p) = '\0';
-				}
-				if ( p[ -1 ] == '\\' ) {
 					*(--p) = '\0';
 				}
 			}
@@ -939,7 +942,7 @@ static void show_log( char *logname, int rc )
 	}
 	remove( logname );
 	if ( *msg == '\0' ) {
-		sprintf( msg, "Cannot execute tool, RC=%d", rc );
+		sprintf( msg, "Cannot execute assembler %s, RC=%d", Assembler, rc );
 	}
 	ShowMessage( rc == 0 ? "Import Result" : "Import Failed", msg );
 }
@@ -950,10 +953,17 @@ void import_textfile( char *filename )
 	char tempfile[ FILENAME_MAX ];
 	char logfile[ FILENAME_MAX ];
 	char *tempname, *logname;
-	char *ext = ".pl";
-	int retry = 2;
-	int rc = 999;
+	int rc = -1;
+	FILE *f;
 
+	f = fopen( Assembler, "rb" );
+	if ( f == NULL ) {
+		ShowMessage( "Assembler %s not found", Assembler );
+		return;
+	}
+	else {
+		fclose( f );
+	}
 	tempname = tmpnam( tempfile );
 	if ( *tempname == '\\' ) {
 		++tempname;
@@ -962,19 +972,17 @@ void import_textfile( char *filename )
 	if ( *logname == '\\' ) {
 		++logname;
 	}
-	while ( rc >= 2 && retry-- ) {
-		sprintf( buffer, "%s\\wp34s_asm%s -pp %s -o %s 1>%s 2>&1", Tools, ext, filename, tempname, logname );
-		rc = system( buffer );
-		ext = ".exe";
-	}
+
+	sprintf( buffer, "%s -pp %s -o %s 1>%s 2>&1", Assembler, filename, tempname, logname );
+	rc = system( buffer );
 	show_log( logname, rc );
 	if ( rc == 0 ) {
 		// Assembly successful
-		FILE *f = fopen( tempname, "rb" );
 		int size, words = 0;
+		f = fopen( tempname, "rb" );
 
 		if ( f == NULL ) {
-			ShowMessage( "Import Failed", "Tool output file error: %s", strerror( errno ) );
+			ShowMessage( "Import Failed", "Assembler output file error: %s", strerror( errno ) );
 		}
 		else {
 			size = (int) fread( buffer, 2, sizeof( buffer ) / 2, f );
@@ -984,7 +992,7 @@ void import_textfile( char *filename )
 			}
 			if ( words != size - 3 ) {
 				// Bad file size
-				ShowMessage( "Import Failed", "Bad tool output file size %d", size );
+				ShowMessage( "Import Failed", "Bad assembler output file size %d", size );
 			}
 			else {
 				append_program( (s_opcode *) ( buffer + 4 ), words );
