@@ -907,12 +907,15 @@ void load_statefile( char *filename )
 		}
 		p = fgets( buffer, FILENAME_MAX, f );
 		if ( p != NULL ) {
-			strtok( buffer, "#\r\n\t " );
+			strtok( buffer, "#\r\n\t" );
 			if ( *buffer != '\0' ) {
 				strncpy( Tools, buffer, FILENAME_MAX - strlen( "\\wp34s_asm.exe" ) );
 				p = Tools + strlen( Tools );
-				if ( *(--p) == '\\' ) {
-					*p = '\0';
+				while ( p[-1] == ' ' ) {
+					*(--p) = '\0';
+				}
+				if ( p[ -1 ] == '\\' ) {
+					*(--p) = '\0';
 				}
 			}
 		}
