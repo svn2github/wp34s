@@ -1113,7 +1113,7 @@ extern void export_textfile( char *filename )
 		*num_arg_0( buffer, upc, numlen ) = '\0';
 		fprintf( f, "%s ", buffer );
 		p = prt( op, buffer );
-		write_pretty( buffer, f );
+		write_pretty( p, f );
 		pc = do_inc( pc, runmode );
 	}
 
