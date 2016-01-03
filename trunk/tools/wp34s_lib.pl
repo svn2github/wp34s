@@ -457,7 +457,7 @@ sub catalogue_binary {
 
     # XXX This (and many other lines) cannot deal with a program that starts with one of
     #     the hotkey labels.
-    if ($first_line =~ /^\s*\*{0,}LBL\'(.+)\'/) {
+    if ($first_line =~ /^\s*\*{0,}LBL(.+)/) {
       $prog_name = $1;
 
     # This will effectively scrub any non-program from the catalogue. This would
@@ -784,7 +784,7 @@ sub run_prog {
   my $prog = shift;
   my $cmd_line = shift;
   my @output = ();
-  
+
   my ($location, $cmd);
 
   # Look in the current directory.
@@ -1069,7 +1069,7 @@ sub print_prog_name {
   my $prog_line = shift;
   my $ln = shift;
   my $prog_name = "";
-  if ($prog_line =~ /^\s*\*{0,}LBL\'(.+)\'/) {
+  if ($prog_line =~ /^\s*\*{0,}LBL(.+)/) {
     $prog_name = $1;
     print "${leader}Source: $src_id, Program name: $prog_name, Line number: $ln\n";
   } elsif ($prog_line =~ /^\s*END(\s+|$)/) {
