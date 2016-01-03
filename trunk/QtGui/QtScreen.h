@@ -78,6 +78,7 @@ private:
 extern "C"
 {
 	extern void updateScreen();
+	extern void showMessage(const char* title, const char* message);
 }
 
 #endif /* QTSCREEN_H_ */

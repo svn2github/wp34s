@@ -109,6 +109,13 @@
 #define HIDE_TITLEBAR_ACTION_TEXT "Hide TitleBar"
 #define SHOW_TITLEBAR_ACTION_TEXT "Show TitleBar"
 #define RESET_ACTION_TEXT "Reset Memory"
+#define RELOAD_ACTION_TEXT "Reload State"
+#define OPEN_ACTION_TEXT "Load State..."
+#define SAVE_ACTION_TEXT "Save State"
+#define SAVE_AS_ACTION_TEXT "Save State As..."
+#define IMPORT_ACTION_TEXT "Import Program..."
+#define EXPORT_ACTION_TEXT "Export Program..."
+
 #define QUIT_ACTION_TEXT "Quit"
 
 #define COPY_NUMBER_ACTION_TEXT "Copy Number"
@@ -126,6 +133,9 @@
 // Manual could be change to "Documentation" if we can generate it in HTML for instance
 #define SHOW_DOCUMENTATION_ACTION_TEXT "Manual"
 
+#define STATE_FILE_FILTER "State Files (*.dat *.*)"
+#define IMPORT_FILE_FILTER "Text Files (*.wp34s *.txt)"
+#define EXPORT_FILE_FILTER "Text Files (*.wp34s)"
 
 typedef QMap<QString, QString> SkinMap;
 
@@ -150,6 +160,7 @@ public:
      void resetUserMemory();
      void onCatalogStateChanged();
      void showCatalogMenu();
+     void showMessage(const char* title, const char* message);
 
 private slots:
 	void editPreferences();
@@ -168,6 +179,12 @@ private slots:
 	void showWebSite();
 	void showDocumentation();
 	void showContextMenu(const QPoint& aPoint);
+	void reload();
+	void open();
+	void save();
+	void saveAs();
+	void importState();
+	void exportState();
 
 private:
      void setPaths();
@@ -191,6 +208,7 @@ private:
      void loadDisplaySettings();
      void loadCustomDirectorySettings();
      void loadSerialPortSettings();
+     void loadToolsSettings();
      void saveSettings();
      void saveUserInterfaceSettings();
      void saveKeyboardSettings();

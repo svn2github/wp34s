@@ -364,8 +364,29 @@ void QtEmulator::buildMainMenu()
 
 	QAction* resetAction=mainMenu->addAction(RESET_ACTION_TEXT, this, SLOT(confirmReset()));
 	mainContextMenu->addAction(resetAction);
+	mainContextMenu->addSeparator();
+
+	mainMenu->addSeparator();
+
+	QAction* reloadAction=mainMenu->addAction(RELOAD_ACTION_TEXT, this, SLOT(reload()));
+	mainContextMenu->addAction(reloadAction);
+	QAction* openAction=mainMenu->addAction(OPEN_ACTION_TEXT, this, SLOT(save()));
+	mainContextMenu->addAction(openAction);
+	QAction* saveAction=mainMenu->addAction(SAVE_ACTION_TEXT, this, SLOT(save()));
+	mainContextMenu->addAction(saveAction);
+	QAction* saveAsAction=mainMenu->addAction(SAVE_AS_ACTION_TEXT, this, SLOT(saveAs()));
+	mainContextMenu->addAction(saveAsAction);
+
+	mainMenu->addSeparator();
+	mainContextMenu->addSeparator();
+
+	QAction* exportAction=mainMenu->addAction(EXPORT_ACTION_TEXT, this, SLOT(exportState()));
+	mainContextMenu->addAction(exportAction);
+	QAction* importAction=mainMenu->addAction(IMPORT_ACTION_TEXT, this, SLOT(importState()));
+	mainContextMenu->addAction(importAction);
 
 	mainContextMenu->addSeparator();
+
 
 #ifndef Q_WS_MAC
 	mainMenu->addSeparator();
@@ -607,7 +628,7 @@ void QtEmulator::loadSettings()
 	loadDisplaySettings();
 	loadCustomDirectorySettings();
 	loadSerialPortSettings();
-
+	loadToolsSettings();
 	checkCustomDirectory();
 }
 
@@ -660,6 +681,23 @@ void QtEmulator::loadSerialPortSettings()
 	serialPort->setSerialPortName(serialPortName);
 	settings.endGroup();
 }
+
+void QtEmulator::loadToolsSettings()
+{
+	QDir dir = QDir(QCoreApplication::applicationDirPath());
+#ifdef Q_WS_MAC
+	dir.cdUp();
+	dir.cd("Resources");
+#endif
+	dir.cd("tools");
+#ifdef Q_WS_WIN
+	QString assembler("wp34s_asm.exe");
+#else
+	QString assembler("wp34s_asm.pl");
+#endif
+	set_assembler(dir.absoluteFilePath(assembler).toStdString().c_str());
+}
+
 
 void QtEmulator::saveSettings()
 {
@@ -1032,6 +1070,61 @@ void QtEmulator::showCatalogMenu()
 {
 	backgroundImage->showCatalogMenu(true);
 }
+
+void QtEmulator::showMessage(const char* title, const char* message)
+{
+	QMessageBox messageBox;
+	messageBox.setWindowTitle(title);
+	messageBox.setText(message);
+	messageBox.exec();
+}
+
+void QtEmulator::reload()
+{
+	init_calculator(0);
+}
+
+void QtEmulator::open()
+{
+	QString filename=QFileDialog::getOpenFileName(this, "Load State File As", QString(), STATE_FILE_FILTER);
+	if(!filename.isEmpty())
+	{
+		init_calculator(filename.toStdString().c_str());
+	}
+}
+
+void QtEmulator::save()
+{
+	forward_save(0);
+}
+
+void QtEmulator::saveAs()
+{
+	QString filename=QFileDialog::getSaveFileName(this, "Save State File As", QString(), STATE_FILE_FILTER);
+	if(!filename.isEmpty())
+	{
+		forward_save(filename.toStdString().c_str());
+	}
+}
+
+void QtEmulator::importState()
+{
+	QString filename=QFileDialog::getOpenFileName(this, "Import", QString(), IMPORT_FILE_FILTER);
+	if(!filename.isEmpty())
+	{
+		forward_import(filename.toStdString().c_str());
+	}
+}
+
+void QtEmulator::exportState()
+{
+	QString filename=QFileDialog::getSaveFileName(this, "Export", QString(), EXPORT_FILE_FILTER);
+	if(!filename.isEmpty())
+	{
+		forward_export(filename.toStdString().c_str());
+	}
+}
+
 
 extern "C"
 {

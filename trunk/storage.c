@@ -38,6 +38,10 @@
 #include <windows.h>
 #undef shutdown
 #endif
+#ifdef QTGUI
+#include <errno.h>
+#include <unistd.h>
+#endif
 
 #define PERSISTENT_RAM
 #define SLCDCMEM
@@ -800,27 +804,31 @@ void recall_program( enum nilop op )
 }
 
 
-#if !defined(REALBUILD) && !defined(QTGUI) && !defined(IOS)
+#if !defined(REALBUILD) && !defined(IOS)
 /*
  *  Filesystem access for emulator
  */
 #ifdef _WIN32
 #define ASSEMBLER "..\\tools\\wp34s_asm.exe"
 #else
-#define 
 #define ASSEMBLER "../tools/wp34s_asm.pl"
 #endif
 char CurrentDir[ FILENAME_MAX + 1 ];
 char StateFile[ FILENAME_MAX + 1 ] = STATE_FILE;
 char ComPort[ FILENAME_MAX + 1 ] = "COM1";
-char Assembler[ FILENAME_MAX + 1 ] = "..\\tools\\wp34s_asm.exe";
+char Assembler[ FILENAME_MAX + 1 ] = ASSEMBLER;
 
 /*
  *  Show (GUI) message
  */
+#ifdef QTGUI
+extern void showMessage(const char* title, const char* message);
+#endif
+
 static void ShowMessage( const char *title, const char *format, ... )
 {
 	va_list args;
+#ifndef QTGUI
 #ifdef WINGUI
 	char msg[ 10000 ];
 	va_start( args, format );
@@ -832,12 +840,18 @@ static void ShowMessage( const char *title, const char *format, ... )
 	vfprintf( stderr, format, args );
 	fputc( '\n', stderr );
 #endif
+#else
+	char msg[ 10000 ];
+	va_start( args, format );
+	vsprintf( msg, format, args );
+	showMessage(title, msg);
+#endif
 }
 
 /*
  *  Save/Load state to a file
  */
-void save_statefile( char *filename )
+void save_statefile( const char *filename )
 {
 	FILE *f;
 	if ( filename != NULL && *filename != '\0' ) {
@@ -876,7 +890,7 @@ void save_statefile( char *filename )
 #define SEPARATOR '/'
 #endif
 
-static char *expand_filename( char *buffer, char *filename )
+static char *expand_filename( char *buffer, const char *filename )
 {
 	char *p;
 	size_t l;
@@ -907,11 +921,13 @@ static char *expand_filename( char *buffer, char *filename )
 /*
  *  Load both the RAM file and the flash emulation images
  */
-void load_statefile( char *filename )
+void load_statefile(const char *filename )
 {
 	FILE *f;
-	char *p;
 	char buffer[ FILENAME_MAX + 1 ];
+#if !defined(QTGUI) && !defined(IOS)
+	char *p;
+#endif
 
 	if ( filename != NULL && *filename != '\0' ) {
 		expand_filename( StateFile, filename );
@@ -937,6 +953,7 @@ void load_statefile( char *filename )
 	}
 	init_library();
 
+#if !defined(QTGUI) && !defined(IOS)
 	/*
 	 *  Load the configuration
 	 *  1st line: COM port
@@ -966,6 +983,7 @@ void load_statefile( char *filename )
 		}
 		fclose( f );
 	}
+#endif
 }
 
 /*
@@ -989,25 +1007,42 @@ static void show_log( char *logname, int rc )
 	ShowMessage( rc == 0 ? "Import Result" : "Import Failed", msg );
 }
 
-void import_textfile( char *filename )
+static char* mktmpname(char* name)
 {
-	char buffer[ 10000 ];
+#ifdef QTGUI
+	strcpy(name, "wp34stmp_XXXXXX");
+	mkstemp(name);
+	return name;
+#else
+	return tmpname(name);
+#endif
+}
+
+#define IMPORT_BUFFER_SIZE 10000
+void import_textfile( const char *filename )
+{
+	char buffer[ IMPORT_BUFFER_SIZE ];
+	char previousDir[ IMPORT_BUFFER_SIZE ];
 	char tempfile[ FILENAME_MAX ];
 	char logfile[ FILENAME_MAX ];
 	char *tempname, *logname;
 	int rc = -1;
 	FILE *f;
 
-	tempname = tmpnam( tempfile );
+	tempname = mktmpname( tempfile );
 	if ( *tempname == '\\' ) {
 		++tempname;
 	}
-	logname = tmpnam( logfile );
+	logname = mktmpname( logfile );
 	if ( *logname == '\\' ) {
 		++logname;
 	}
 
 	sprintf( buffer, "%s -pp \"%s\" -o %s 1>%s 2>&1", Assembler, filename, tempname, logname );
+#ifdef QTGUI
+	getcwd(previousDir, IMPORT_BUFFER_SIZE);
+	chdir(P_tmpdir);
+#endif
 	rc = system( buffer );
 	show_log( logname, rc );
 	if ( rc == 0 ) {
@@ -1035,6 +1070,9 @@ void import_textfile( char *filename )
 	}
 	remove( tempname );
 	remove( "wp34s_pp.lst" );
+#ifdef QTGUI
+	chdir(previousDir);
+#endif
 }
 
 /*
@@ -1081,7 +1119,7 @@ static void write_pretty( const char *in, FILE *f ) {
 }
 
 
-extern void export_textfile( char *filename )
+extern void export_textfile( const char *filename )
 {
 	FILE *f;
 	unsigned int pc = state_pc();

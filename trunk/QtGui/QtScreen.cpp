@@ -361,4 +361,9 @@ extern "C"
 	{
 		currentEmulator->updateScreen();
 	}
+
+	void showMessage(const char* title, const char* message)
+	{
+		currentEmulator->showMessage(title, message);
+	}
 }

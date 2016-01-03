@@ -1117,7 +1117,6 @@ enum shifts {
 extern int err(const unsigned int);
 extern int warn(const unsigned int);
 extern void bad_mode_error(void);
-extern const char *pretty(unsigned char);
 extern void prettify(const char *in, char *out, int no_brackets);
 extern int num_arg_digits(int);
 

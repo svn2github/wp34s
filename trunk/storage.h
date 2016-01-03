@@ -66,14 +66,14 @@ extern void load_state(enum nilop op);
 extern void store_program(enum nilop op);
 extern void recall_program(enum nilop op);
 
-#if !defined(REALBUILD) && !defined (QTGUI) && !defined(IOS)
+#if !defined(REALBUILD) && !defined(IOS)
 extern char StateFile[];
 extern char ComPort[];
 extern char Assembler[];
-extern void save_statefile( char *filename );
-extern void load_statefile( char *filename );
-extern void import_textfile( char *filename );
-extern void export_textfile( char *filename );
+extern void save_statefile( const char *filename );
+extern void load_statefile( const char *filename );
+extern void import_textfile( const char *filename );
+extern void export_textfile( const char *filename );
 #endif
 
 #endif

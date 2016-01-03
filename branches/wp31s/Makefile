@@ -73,7 +73,7 @@ IOS_XCODE_ROOT := /Applications/Xcode.app/Contents/Developer
 IOS_DEVROOT := $(IOS_XCODE_ROOT)/Platforms/iPhone$(DEVICE).platform/Developer
 IOS_SDKROOT := $(IOS_DEVROOT)/SDKs/iPhone$(DEVICE).sdk
 CC=$(IOS_XCODE_ROOT)/usr/bin/gcc $(CC_FLAGS)
-BASE_CFLAGS += -isysroot ${IOS_SDKROOT} -Iheaders $(CFLAGS_FLAGS) -DIOS=1 -miphoneos-version-min=7.0
+BASE_CFLAGS += -isysroot ${IOS_SDKROOT} -Iheaders $(CFLAGS_FLAGS) -DIOS=1 -miphoneos-version-min=6.0
 USE_CURSES :=
 else
 SYSTEM := $(shell uname)
