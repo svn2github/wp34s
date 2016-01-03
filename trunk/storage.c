@@ -810,6 +810,7 @@ void recall_program( enum nilop op )
 #define 
 #define ASSEMBLER "../tools/wp34s_asm.pl"
 #endif
+char CurrentDir[ FILENAME_MAX + 1 ];
 char StateFile[ FILENAME_MAX + 1 ] = STATE_FILE;
 char ComPort[ FILENAME_MAX + 1 ] = "COM1";
 char Assembler[ FILENAME_MAX + 1 ] = "..\\tools\\wp34s_asm.exe";
@@ -865,23 +866,62 @@ void save_statefile( char *filename )
 
 
 /*
+ *  Helper to expand filenames with startup directory
+ */
+#ifdef _WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#define SEPARATOR '\\'
+#else
+#define SEPARATOR '/'
+#endif
+
+static char *expand_filename( char *buffer, char *filename )
+{
+	char *p;
+	size_t l;
+
+	if ( *CurrentDir == '\0' ) {
+		// Determine current directory on first call
+		getcwd( CurrentDir, FILENAME_MAX );
+		p = CurrentDir + strlen( CurrentDir );
+		if ( p != CurrentDir && p[ -1 ] != SEPARATOR ) {
+			*p = SEPARATOR;
+			p[ 1 ] = '\0';
+		}
+	}
+	if ( *filename == SEPARATOR || filename[ 1 ] == ':' ) {
+		// Absolute path left unchanged
+		strncpy( buffer, filename, FILENAME_MAX );
+	}
+	else {
+		// Prepend CurrentDir
+		strncpy( buffer, CurrentDir, FILENAME_MAX );
+		l = strlen( buffer );
+		strncpy( buffer + l, filename, FILENAME_MAX - l );
+	}
+	return buffer;
+}
+
+
+/*
  *  Load both the RAM file and the flash emulation images
  */
 void load_statefile( char *filename )
 {
 	FILE *f;
 	char *p;
-	char buffer[ FILENAME_MAX ];
+	char buffer[ FILENAME_MAX + 1 ];
 
 	if ( filename != NULL && *filename != '\0' ) {
-		strncpy( StateFile, filename, FILENAME_MAX );
+		expand_filename( StateFile, filename );
 	}
 	f = fopen( StateFile, "rb" );
 	if ( f != NULL ) {
 		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
 		fclose( f );
 	}
-	f = fopen( BACKUP_FILE, "rb" );
+	f = fopen( expand_filename( buffer, BACKUP_FILE ), "rb" );
 	if ( f != NULL ) {
 		fread( &BackupFlash, sizeof( BackupFlash ), 1, f );
 		fclose( f );
@@ -890,7 +930,7 @@ void load_statefile( char *filename )
 		// Emulate a backup
 		BackupFlash = PersistentRam;
 	}
-	f = fopen( LIBRARY_FILE, "rb" );
+	f = fopen( expand_filename( buffer, LIBRARY_FILE ), "rb" );
 	if ( f != NULL ) {
 		fread( &UserFlash, sizeof( UserFlash ), 1, f );
 		fclose( f );
@@ -898,12 +938,13 @@ void load_statefile( char *filename )
 	init_library();
 
 	/*
-	 *  Load the configuration:
+	 *  Load the configuration
 	 *  1st line: COM port
 	 *  2nd line: Tools directory
 	 */
-	f = fopen( "wp34s.ini", "rt" );
+	f = fopen( expand_filename( buffer, "wp34s.ini" ), "rt" );
 	if ( f != NULL ) {
+		// COM port
 		p = fgets( buffer, FILENAME_MAX, f );
 		if ( p != NULL ) {
 			strtok( buffer, "#:\r\n\t " );
@@ -911,15 +952,16 @@ void load_statefile( char *filename )
 				strncpy( ComPort, buffer, FILENAME_MAX );
 			}
 		}
+		// Assembler
 		p = fgets( buffer, FILENAME_MAX, f );
 		if ( p != NULL ) {
 			strtok( buffer, "#\r\n\t" );
 			if ( *buffer != '\0' ) {
-				strncpy( Assembler, buffer, FILENAME_MAX );
-				p = Assembler + strlen( Assembler );
-				while ( p[-1] == ' ' ) {
+				p = buffer + strlen( buffer );
+				while ( p != buffer && p[-1] == ' ' ) {
 					*(--p) = '\0';
 				}
+				expand_filename( Assembler, buffer );
 			}
 		}
 		fclose( f );
@@ -956,14 +998,6 @@ void import_textfile( char *filename )
 	int rc = -1;
 	FILE *f;
 
-	f = fopen( Assembler, "rb" );
-	if ( f == NULL ) {
-		ShowMessage( "Import Failed", "Assembler \"%s\" not found", Assembler );
-		return;
-	}
-	else {
-		fclose( f );
-	}
 	tempname = tmpnam( tempfile );
 	if ( *tempname == '\\' ) {
 		++tempname;
@@ -973,7 +1007,7 @@ void import_textfile( char *filename )
 		++logname;
 	}
 
-	sprintf( buffer, "%s -pp %s -o %s 1>%s 2>&1", Assembler, filename, tempname, logname );
+	sprintf( buffer, "%s -pp \"%s\" -o %s 1>%s 2>&1", Assembler, filename, tempname, logname );
 	rc = system( buffer );
 	show_log( logname, rc );
 	if ( rc == 0 ) {
