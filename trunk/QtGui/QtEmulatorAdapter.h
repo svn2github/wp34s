@@ -84,7 +84,7 @@ extern void forward_save(const char* filename);
 extern void forward_export(const char* filename);
 extern void forward_import(const char* filename);
 
-extern void set_assembler(const char* toolsDir);
+extern void forward_set_assembler(const char* toolsDir);
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */

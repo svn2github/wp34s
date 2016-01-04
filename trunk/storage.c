@@ -1018,6 +1018,11 @@ static char* mktmpname(char* name)
 #endif
 }
 
+void set_assembler(const char* toolsDir)
+{
+	strncpy(Assembler, toolsDir, FILENAME_MAX);
+}
+
 #define IMPORT_BUFFER_SIZE 10000
 void import_textfile( const char *filename )
 {

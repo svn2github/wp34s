@@ -695,7 +695,7 @@ void QtEmulator::loadToolsSettings()
 #else
 	QString assembler("wp34s_asm.pl");
 #endif
-	set_assembler(dir.absoluteFilePath(assembler).toStdString().c_str());
+	forward_set_assembler(dir.absoluteFilePath(assembler).toStdString().c_str());
 }
 
 
