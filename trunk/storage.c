@@ -1012,8 +1012,7 @@ static char* mktmpname(char* name)
 {
 #ifdef QTGUI
 	strcpy(name, "wp34stmp_XXXXXX");
-	mkstemp(name);
-	return name;
+	return mktemp(name);
 #else
 	return tmpname(name);
 #endif
