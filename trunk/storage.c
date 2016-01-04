@@ -1008,10 +1008,12 @@ static void show_log( char *logname, int rc )
 	ShowMessage( rc == 0 ? "Import Result" : "Import Failed", msg );
 }
 
-static char* mktmpname(char* name)
+static char* mktmpname(char* name, const char* prefix)
 {
 #ifdef QTGUI
-	strcpy(name, "wp34stmp_XXXXXX");
+	strcpy(name, "wp34s");
+	strcat(name, prefix);
+	strcat(name, "_XXXXXX");
 	return mktemp(name);
 #else
 	return tmpnam(name);
@@ -1022,6 +1024,26 @@ void set_assembler(const char* toolsDir)
 {
 	strncpy(Assembler, toolsDir, FILENAME_MAX);
 }
+
+#ifdef QTGUI
+static char* getTmpDir()
+{
+#ifdef _WIN32
+	return getenv("TMP");
+#else
+	char *tmp = getenv("TMPDIR");
+	if(tmp==NULL || *tmp==0)
+	{
+		tmp = P_tmpdir;
+	}
+	if(tmp==NULL || *tmp==0)
+	{
+		tmp="/tmp";
+	}
+	return tmp;
+#endif
+}
+#endif
 
 #define IMPORT_BUFFER_SIZE 10000
 void import_textfile( const char *filename )
@@ -1036,11 +1058,11 @@ void import_textfile( const char *filename )
 	int rc = -1;
 	FILE *f;
 
-	tempname = mktmpname( tempfile );
+	tempname = mktmpname( tempfile, "tmp" );
 	if ( *tempname == '\\' ) {
 		++tempname;
 	}
-	logname = mktmpname( logfile );
+	logname = mktmpname( logfile, "log" );
 	if ( *logname == '\\' ) {
 		++logname;
 	}
@@ -1048,7 +1070,7 @@ void import_textfile( const char *filename )
 	sprintf( buffer, "%s -pp \"%s\" -o %s 1>%s 2>&1", Assembler, filename, tempname, logname );
 #ifdef QTGUI
 	getcwd(previousDir, IMPORT_BUFFER_SIZE);
-	chdir(P_tmpdir);
+	chdir(getTmpDir());
 #endif
 	rc = system( buffer );
 	show_log( logname, rc );
