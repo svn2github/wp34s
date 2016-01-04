@@ -380,10 +380,10 @@ void QtEmulator::buildMainMenu()
 	mainMenu->addSeparator();
 	mainContextMenu->addSeparator();
 
-	QAction* exportAction=mainMenu->addAction(EXPORT_ACTION_TEXT, this, SLOT(exportState()));
-	mainContextMenu->addAction(exportAction);
 	QAction* importAction=mainMenu->addAction(IMPORT_ACTION_TEXT, this, SLOT(importState()));
 	mainContextMenu->addAction(importAction);
+	QAction* exportAction=mainMenu->addAction(EXPORT_ACTION_TEXT, this, SLOT(exportState()));
+	mainContextMenu->addAction(exportAction);
 
 	mainContextMenu->addSeparator();
 
