@@ -144,7 +144,6 @@ unsigned long __stdcall CommThread( void *p )
 int open_port( int baud, int bits, int parity, int stopbits )
 {
 	char name[ FILENAME_MAX ];
-	char *p = NULL;
 	BOOL res;
 	DCB dcb;
 
