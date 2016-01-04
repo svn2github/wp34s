@@ -23,8 +23,6 @@
 #include "keys.h"
 #include "lcd.h"
 #include "int.h"
-#include <stdio.h>
-#include <string.h>
 
 extern const char SvnRevision[];
 extern int is_key_pressed_adapter();
