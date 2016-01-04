@@ -537,6 +537,8 @@ void finish_display(void) {
 /* Take a string and cleanse all non-printing characters from it.
  * Replace them with the usual [xxx] sequences.
  */
+extern const char *pretty(unsigned char);
+
 static char *cleanse(const char *s) {
         static char res[50];
         char *p;

@@ -1014,7 +1014,7 @@ static char* mktmpname(char* name)
 	strcpy(name, "wp34stmp_XXXXXX");
 	return mktemp(name);
 #else
-	return tmpname(name);
+	return tmpnam(name);
 #endif
 }
 
@@ -1026,8 +1026,10 @@ void set_assembler(const char* toolsDir)
 #define IMPORT_BUFFER_SIZE 10000
 void import_textfile( const char *filename )
 {
-	char buffer[ IMPORT_BUFFER_SIZE ];
+#ifdef QTGUI
 	char previousDir[ IMPORT_BUFFER_SIZE ];
+#endif
+	char buffer[ IMPORT_BUFFER_SIZE ];
 	char tempfile[ FILENAME_MAX ];
 	char logfile[ FILENAME_MAX ];
 	char *tempname, *logname;
@@ -1070,6 +1072,7 @@ void import_textfile( const char *filename )
 			}
 			else {
 				append_program( (s_opcode *) ( buffer + 4 ), words );
+				update_program_bounds( 1 );
 			}
 		}
 	}
