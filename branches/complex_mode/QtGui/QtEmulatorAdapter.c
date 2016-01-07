@@ -59,8 +59,9 @@ static void memfill(void* aPointer, char aValue, int aSize)
 	}
 }
 
-void init_calculator()
+void init_calculator(const char* filename)
 {
+	load_statefile(filename);
 	DispMsg = NULL;
 	init_34s();
 	display();
@@ -425,4 +426,24 @@ void forward_set_IO_annunciator()
 char isForcedDispPlot()
 {
 	return forceDispPlot;
+}
+
+void forward_save(const char* filename)
+{
+	save_statefile(filename);
+}
+
+void forward_export(const char* filename)
+{
+	export_textfile(filename);
+}
+
+void forward_import(const char* filename)
+{
+	import_textfile(filename);
+}
+
+void forward_set_assembler(const char* toolsDir)
+{
+	set_assembler(toolsDir);
 }

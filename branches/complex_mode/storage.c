@@ -32,15 +32,25 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdarg.h>
+#ifdef WINGUI
+#define shutdown _shutdown
+#include <windows.h>
+#undef shutdown
+#endif
+#ifdef QTGUI
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+#endif
 
 #define PERSISTENT_RAM
 #define SLCDCMEM
 #define VOLATILE_RAM
 #define BACKUP_FLASH
-#define STATE_FILE "wp34c.dat"
-#define BACKUP_FILE "wp34c-backup.dat"
-#define LIBRARY_FILE "wp34c-lib.dat"
-
+#define STATE_FILE "wp34s.dat"
+#define BACKUP_FILE "wp34s-backup.dat"
+#define LIBRARY_FILE "wp34s-lib.dat"
 #endif
 
 #include "xeq.h"
@@ -795,14 +805,64 @@ void recall_program( enum nilop op )
 }
 
 
-#if !defined(REALBUILD) && !defined(QTGUI) && !defined(IOS)
+#if !defined(REALBUILD) && !defined(IOS)
 /*
- *  Save/Load state to a file (only for emulator(s))
+ *  Filesystem access for emulator
  */
-void save_statefile( void )
+#ifdef _WIN32
+#define ASSEMBLER "..\\tools\\wp34s_asm.exe"
+#else
+#define ASSEMBLER "../tools/wp34s_asm.pl"
+#endif
+char CurrentDir[ FILENAME_MAX + 1 ];
+char StateFile[ FILENAME_MAX + 1 ] = STATE_FILE;
+char ComPort[ FILENAME_MAX + 1 ] = "COM1";
+char Assembler[ FILENAME_MAX + 1 ] = ASSEMBLER;
+
+/*
+ *  Show (GUI) message
+ */
+#ifdef QTGUI
+extern void showMessage(const char* title, const char* message);
+#endif
+
+static void ShowMessage( const char *title, const char *format, ... )
 {
-	FILE *f = fopen( STATE_FILE, "wb" );
-	if ( f == NULL ) return;
+	va_list args;
+#ifndef QTGUI
+#ifdef WINGUI
+	char msg[ 10000 ];
+	va_start( args, format );
+	vsprintf( msg, format, args );
+	MessageBox( NULL, msg, title, MB_OK );
+#else
+	va_start( args, format );
+	fprintf( stderr, "%s:\n", title );
+	vfprintf( stderr, format, args );
+	fputc( '\n', stderr );
+#endif
+#else
+	char msg[ 10000 ];
+	va_start( args, format );
+	vsprintf( msg, format, args );
+	showMessage(title, msg);
+#endif
+}
+
+/*
+ *  Save/Load state to a file
+ */
+void save_statefile( const char *filename )
+{
+	FILE *f;
+	if ( filename != NULL && *filename != '\0' ) {
+		strncpy( StateFile, filename, FILENAME_MAX );
+	}
+	f = fopen( StateFile, "wb" );
+	if ( f == NULL ) {
+		ShowMessage( "Save Error", strerror( errno ) );
+		return;
+	}
 	process_cmdline_set_lift();
 	init_state();
 	checksum_all();
@@ -821,16 +881,64 @@ void save_statefile( void )
 
 
 /*
+ *  Helper to expand filenames with startup directory
+ */
+#ifdef _WIN32
+#include <direct.h>
+#define getcwd _getcwd
+#define SEPARATOR '\\'
+#else
+#define SEPARATOR '/'
+#endif
+
+static char *expand_filename( char *buffer, const char *filename )
+{
+	char *p;
+	size_t l;
+
+	if ( *CurrentDir == '\0' ) {
+		// Determine current directory on first call
+		getcwd( CurrentDir, FILENAME_MAX );
+		p = CurrentDir + strlen( CurrentDir );
+		if ( p != CurrentDir && p[ -1 ] != SEPARATOR ) {
+			*p = SEPARATOR;
+			p[ 1 ] = '\0';
+		}
+	}
+	if ( *filename == SEPARATOR || filename[ 1 ] == ':' ) {
+		// Absolute path left unchanged
+		strncpy( buffer, filename, FILENAME_MAX );
+	}
+	else {
+		// Prepend CurrentDir
+		strncpy( buffer, CurrentDir, FILENAME_MAX );
+		l = strlen( buffer );
+		strncpy( buffer + l, filename, FILENAME_MAX - l );
+	}
+	return buffer;
+}
+
+
+/*
  *  Load both the RAM file and the flash emulation images
  */
-void load_statefile( void )
+void load_statefile(const char *filename )
 {
-	FILE *f = fopen( STATE_FILE, "rb" );
+	FILE *f;
+	char buffer[ FILENAME_MAX + 1 ];
+#if !defined(QTGUI) && !defined(IOS)
+	char *p;
+#endif
+
+	if ( filename != NULL && *filename != '\0' ) {
+		expand_filename( StateFile, filename );
+	}
+	f = fopen( StateFile, "rb" );
 	if ( f != NULL ) {
 		fread( &PersistentRam, sizeof( PersistentRam ), 1, f );
 		fclose( f );
 	}
-	f = fopen( BACKUP_FILE, "rb" );
+	f = fopen( expand_filename( buffer, BACKUP_FILE ), "rb" );
 	if ( f != NULL ) {
 		fread( &BackupFlash, sizeof( BackupFlash ), 1, f );
 		fclose( f );
@@ -839,13 +947,247 @@ void load_statefile( void )
 		// Emulate a backup
 		BackupFlash = PersistentRam;
 	}
-	f = fopen( LIBRARY_FILE, "rb" );
+	f = fopen( expand_filename( buffer, LIBRARY_FILE ), "rb" );
 	if ( f != NULL ) {
 		fread( &UserFlash, sizeof( UserFlash ), 1, f );
 		fclose( f );
 	}
 	init_library();
+
+#if !defined(QTGUI) && !defined(IOS)
+	/*
+	 *  Load the configuration
+	 *  1st line: COM port
+	 *  2nd line: Tools directory
+	 */
+	f = fopen( expand_filename( buffer, "wp34s.ini" ), "rt" );
+	if ( f != NULL ) {
+		// COM port
+		p = fgets( buffer, FILENAME_MAX, f );
+		if ( p != NULL ) {
+			strtok( buffer, "#:\r\n\t " );
+			if ( *buffer != '\0' ) {
+				strncpy( ComPort, buffer, FILENAME_MAX );
+			}
+		}
+		// Assembler
+		p = fgets( buffer, FILENAME_MAX, f );
+		if ( p != NULL ) {
+			strtok( buffer, "#\r\n\t" );
+			if ( *buffer != '\0' ) {
+				p = buffer + strlen( buffer );
+				while ( p != buffer && p[-1] == ' ' ) {
+					*(--p) = '\0';
+				}
+				expand_filename( Assembler, buffer );
+			}
+		}
+		fclose( f );
+	}
+#endif
 }
+
+/*
+ *  Import text file
+ */
+static void show_log( char *logname, int rc )
+{
+	char msg[ 10000 ] = "";
+	FILE *f = fopen( logname, "rt" );
+	if ( f != NULL ) {
+		int size = fread( msg, 1, sizeof( msg ) - 1, f );
+		if ( size >= 0 ) {
+			msg[ size ] = 0;
+		}
+		fclose( f );
+	}
+	remove( logname );
+	if ( *msg == '\0' ) {
+		sprintf( msg, "Cannot execute assembler %s, RC=%d", Assembler, rc );
+	}
+	ShowMessage( rc == 0 ? "Import Result" : "Import Failed", msg );
+}
+
+static char* mktmpname(char* name, const char* prefix)
+{
+#ifdef QTGUI
+	strcpy(name, "wp34s");
+	strcat(name, prefix);
+	strcat(name, "_XXXXXX");
+	return mktemp(name);
+#else
+	return tmpnam(name);
+#endif
+}
+
+void set_assembler(const char* toolsDir)
+{
+	strncpy(Assembler, toolsDir, FILENAME_MAX);
+}
+
+#ifdef QTGUI
+static char* getTmpDir()
+{
+#ifdef _WIN32
+	return getenv("TMP");
+#else
+	char *tmp = getenv("TMPDIR");
+	if(tmp==NULL || *tmp==0)
+	{
+		tmp = P_tmpdir;
+	}
+	if(tmp==NULL || *tmp==0)
+	{
+		tmp="/tmp";
+	}
+	return tmp;
+#endif
+}
+#endif
+
+#define IMPORT_BUFFER_SIZE 10000
+void import_textfile( const char *filename )
+{
+#ifdef QTGUI
+	char previousDir[ IMPORT_BUFFER_SIZE ];
+#endif
+	char buffer[ IMPORT_BUFFER_SIZE ];
+	char tempfile[ FILENAME_MAX ];
+	char logfile[ FILENAME_MAX ];
+	char *tempname, *logname;
+	int rc = -1;
+	FILE *f;
+
+	tempname = mktmpname( tempfile, "tmp" );
+	if ( *tempname == '\\' ) {
+		++tempname;
+	}
+	logname = mktmpname( logfile, "log" );
+	if ( *logname == '\\' ) {
+		++logname;
+	}
+
+	sprintf( buffer, "%s -pp \"%s\" -o %s 1>%s 2>&1", Assembler, filename, tempname, logname );
+#ifdef QTGUI
+	getcwd(previousDir, IMPORT_BUFFER_SIZE);
+	chdir(getTmpDir());
+#endif
+	rc = system( buffer );
+	show_log( logname, rc );
+	if ( rc == 0 ) {
+		// Assembly successful
+		int size, words = 0;
+		f = fopen( tempname, "rb" );
+
+		if ( f == NULL ) {
+			ShowMessage( "Import Failed", "Assembler output file error: %s", strerror( errno ) );
+		}
+		else {
+			size = (int) fread( buffer, 2, sizeof( buffer ) / 2, f );
+			fclose( f );
+			if ( size >= 2 ) {
+				words = (unsigned char) buffer[ 3 ] * 256 + (unsigned char) buffer[ 2 ];
+			}
+			if ( words != size - 3 ) {
+				// Bad file size
+				ShowMessage( "Import Failed", "Bad assembler output file size %d", size );
+			}
+			else {
+				append_program( (s_opcode *) ( buffer + 4 ), words );
+				update_program_bounds( 1 );
+			}
+		}
+	}
+	remove( tempname );
+	remove( "wp34s_pp.lst" );
+#ifdef QTGUI
+	chdir(previousDir);
+#endif
+}
+
+/*
+ *  Export: Print current program to text file
+ */
+#include "pretty.h"
+
+static const char *pretty( unsigned char z ) {
+	if ( z < 32 ) {
+		return map32[ z & 0x1f ];
+	}
+	if (z >= 127) {
+		return maptop[ z - 127 ];
+	}
+	return CNULL;
+}
+
+
+static void write_pretty( const char *in, FILE *f ) {
+	const char *p;
+	char c;
+
+	while ( *in != '\0' ) {
+		c = *in++;
+		if ( c == 0x06 ) {
+			c = ' ';
+			if ( *in == 0x06 ) {
+				++in;
+			}
+		}
+		p = pretty( c );
+		if ( p == NULL ) {
+			fputc( c, f );
+		}
+		else {
+			fputc( '[', f );
+			while ( *p != '\0' ) {
+				fputc( *p++, f );
+			}
+			fputc( ']', f );
+		}
+	}
+	fputc( '\n', f );
+}
+
+
+extern void export_textfile( const char *filename )
+{
+	FILE *f;
+	unsigned int pc = state_pc();
+	int runmode = State2.runmode;
+	int numlen = isRAM( pc ) ? 3 : 4;
+
+	f = fopen( filename, "wt" );
+	if ( f == NULL ) return;
+
+	if ( runmode ) {
+		// current program
+		pc = ProgBegin;
+	}
+	else {
+		// complete program memory
+		pc = 1;
+		numlen = 3;
+	}
+	if ( pc == 0 ) {
+		++pc;
+	}
+
+	PcWrapped = 0;
+	while ( !PcWrapped ) {
+		char buffer[ 16 ];
+		const char *p;
+		opcode op = getprog( pc );
+		unsigned int upc = user_pc( pc );
+		*num_arg_0( buffer, upc, numlen ) = '\0';
+		fprintf( f, "%s ", buffer );
+		p = prt( op, buffer );
+		write_pretty( p, f );
+		pc = do_inc( pc, runmode );
+	}
+
+	fclose( f );
+}
+
 #endif
 
 

@@ -46,6 +46,10 @@
 #define CUSTOM_DIRECTORY_ACTIVE_SETTING "CustomDirectoryActive"
 #define CUSTOM_DIRECTORY_NAME_SETTING "CustomDirectoryName"
 
+#define TOOLS_SETTINGS_GROUP "Tools"
+#define TOOLS_ACTIVE_SETTING "ToolsActive"
+#define TOOLS_NAME_SETTING "ToolsName"
+
 #define KEYBOARD_SETTINGS_GROUP "Keyboard"
 #define USE_HSHIFT_CLICK_SETTING "UseHShiftClick"
 #define ALWAYS_USE_HSHIFT_CLICK_SETTING "AlwaysUseHShiftClick"
@@ -189,6 +193,8 @@ private slots:
 private:
      void setPaths();
      void checkCustomDirectory();
+     void checkToolsDirectory();
+     void forwardToolsSettings();
      void buildMenus();
      void buildContextMenu();
      void buildMainMenu();
@@ -215,6 +221,7 @@ private:
      void saveDisplaySettings();
      void saveCustomDirectorySettings();
      void saveSerialPortSettings();
+     void saveToolsSettings();
      void loadMemory();
      void loadState();
      void loadBackup();
@@ -250,6 +257,8 @@ private:
      QByteArray currentRegionPath;
      bool customDirectoryActive;
      QDir customDirectory;
+     bool toolsActive;
+     QDir tools;
      QActionGroup* skinsActionGroup;
      SkinMap skins;
      QString currentSkinName;

@@ -140,7 +140,10 @@ void QtEmulator::editPreferences()
 			backgroundImage->isShowCatalogMenu(),
 			backgroundImage->isCloseCatalogMenu(),
 			debugger->isDisplayAsStack(),
-			serialPort->getSerialPortName(), this);
+			serialPort->getSerialPortName(),
+			toolsActive,
+			tools.path(),
+			this);
 	int result=preferencesDialog.exec();
 	if(result==QDialog::Accepted)
 	{
@@ -167,6 +170,12 @@ void QtEmulator::editPreferences()
 		serialPort->setSerialPortName(serialPortName);
 		saveSerialPortSettings();
 
+		toolsActive=preferencesDialog.isToolsActive();
+		tools.setPath(preferencesDialog.getToolsName());
+		checkToolsDirectory();
+		saveToolsSettings();
+		forwardToolsSettings();
+
 		settings.sync();
 		setPaths();
 	}
@@ -180,6 +189,16 @@ void QtEmulator::checkCustomDirectory()
 		memoryWarning("Cannot find or read custom directory "+customDirectory.path(), false);
 	}
 }
+
+void QtEmulator::checkToolsDirectory()
+{
+	if(toolsActive && (!tools.exists() || !tools.isReadable()))
+	{
+		toolsActive=false;
+		memoryWarning("Cannot find or read tools directory "+tools.path(), false);
+	}
+}
+
 
 void QtEmulator::showAbout()
 {
@@ -684,12 +703,31 @@ void QtEmulator::loadSerialPortSettings()
 
 void QtEmulator::loadToolsSettings()
 {
-	QDir dir = QDir(QCoreApplication::applicationDirPath());
+	settings.beginGroup(TOOLS_SETTINGS_GROUP);
+	toolsActive=settings.value(TOOLS_ACTIVE_SETTING, false).toBool();
+	tools.setPath(settings.value(TOOLS_NAME_SETTING, "").toString());
+	settings.endGroup();
+	forwardToolsSettings();
+}
+
+void QtEmulator::forwardToolsSettings()
+{
+	QDir dir;
+
+	if(toolsActive)
+	{
+		dir=tools;
+	}
+	else
+	{
+		dir = QDir(QCoreApplication::applicationDirPath());
 #ifdef Q_WS_MAC
-	dir.cdUp();
-	dir.cd("Resources");
+		dir.cdUp();
+		dir.cd("Resources");
 #endif
-	dir.cd("tools");
+		dir.cd("tools");
+	}
+
 #ifdef Q_WS_WIN
 	QString assembler("wp34s_asm.exe");
 #else
@@ -697,7 +735,6 @@ void QtEmulator::loadToolsSettings()
 #endif
 	forward_set_assembler(dir.absoluteFilePath(assembler).toStdString().c_str());
 }
-
 
 void QtEmulator::saveSettings()
 {
@@ -759,6 +796,14 @@ void QtEmulator::saveSerialPortSettings()
     settings.setValue(SERIAL_PORT_NAME_SETTING, serialPortName);
     serialPort->setSerialPortName(serialPortName);
     settings.endGroup();
+}
+
+void QtEmulator::saveToolsSettings()
+{
+	settings.beginGroup(TOOLS_SETTINGS_GROUP);
+	settings.setValue(TOOLS_ACTIVE_SETTING, toolsActive);
+	settings.setValue(TOOLS_NAME_SETTING, tools.path());
+	settings.endGroup();
 }
 
 void QtEmulator::loadMemory()

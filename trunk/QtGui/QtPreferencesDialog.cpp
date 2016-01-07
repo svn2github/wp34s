@@ -20,14 +20,16 @@
 QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 		const QString& aCustomDirectoryName,
 		bool anUseHShiftClickFlag,
-		bool anAlwaysUseHShiftClickFlag,
+		bool anAlwaysUseHShiftFlag,
 		int anHShiftDelay,
 		bool aShowToolTipFlag,
-		bool anUseFontFlag,
+		bool anUseFontsFlag,
 		bool aShowCatalogMenusFlag,
-		bool aCloseCatalogMenusFlag,
-		bool aDisplayAsStackClickFlag,
+		bool aCloseatalogMenusFlag,
+		bool aDisplayAsStackFlag,
 		const QString& aSerialPortName,
+		bool aCustomToolsActiveFlag,
+		const QString& aCustomToolsName,
 		QWidget* aParent)
 : QDialog(aParent)
 {
@@ -35,14 +37,16 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 	buildComponents(aCustomDirectoryActiveFlag,
 			aCustomDirectoryName,
 			anUseHShiftClickFlag,
-			anAlwaysUseHShiftClickFlag,
+			anAlwaysUseHShiftFlag,
 			aShowToolTipFlag,
-			anUseFontFlag,
+			anUseFontsFlag,
 			aShowCatalogMenusFlag,
-			aCloseCatalogMenusFlag,
-			aDisplayAsStackClickFlag,
+			aCloseatalogMenusFlag,
+			aDisplayAsStackFlag,
 			anHShiftDelay,
-			aSerialPortName);
+			aSerialPortName,
+			aCustomToolsActiveFlag,
+			aCustomToolsName);
 }
 
 QtPreferencesDialog::~QtPreferencesDialog()
@@ -54,12 +58,14 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 		bool anUseHShiftClickFlag,
 		bool anAlwaysUseHShiftClickFlag,
 		bool aShowToolTipFlag,
-		bool anUseFontFlag,
+		bool anUseFontsFlag,
 		bool aShowCatalogMenusFlag,
 		bool aCloseCatalogMenusFlag,
 		bool aDisplayAsStackFlag,
 		int anHShiftDelay,
-		const QString& aSerialPortName)
+		const QString& aSerialPortName,
+		bool aCustomToolsActiveFlag,
+		const QString& aCustomToolsName)
 {
 	QVBoxLayout* dialogLayout=new QVBoxLayout;
 	dialogLayout->setSizeConstraint(QLayout::SetFixedSize);
@@ -69,8 +75,9 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 	QTabWidget* tabWidget = new QTabWidget;
 	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), MEMORY_TAB_NAME);
 	tabWidget->addTab(buildKeyboardTab(anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, anHShiftDelay, aShowToolTipFlag), KEYBOARD_TAB_NAME);
-	tabWidget->addTab(buildDisplayTab(anUseFontFlag, aShowCatalogMenusFlag, aCloseCatalogMenusFlag, aDisplayAsStackFlag), DISPLAY_TAB_NAME);
+	tabWidget->addTab(buildDisplayTab(anUseFontsFlag, aShowCatalogMenusFlag, aCloseCatalogMenusFlag, aDisplayAsStackFlag), DISPLAY_TAB_NAME);
 	tabWidget->addTab(buildSerialTab(aSerialPortName), SERIAL_PORT_TAB_NAME);
+	tabWidget->addTab(buildToolsTab(aCustomToolsActiveFlag, aCustomToolsName), TOOLS_TAB_NAME);
 
 	dialogLayout->addWidget(tabWidget);
 
@@ -215,6 +222,37 @@ void QtPreferencesDialog::fillSerialPorts(QListWidget& aListWidget)
 #endif
 }
 
+QWidget* QtPreferencesDialog::buildToolsTab(bool aCustomToolsActiveFlag, const QString& aCustomToolsName)
+{
+	QWidget* toolsTab=new QWidget;
+	QVBoxLayout* toolsTabLayout=new QVBoxLayout;
+
+	useCustomToolsButton=new QRadioButton(USE_CUSTOM_TOOLS_TEXT);
+	connect(useCustomToolsButton, SIGNAL(toggled(bool)), this, SLOT(customToolsToggled(bool)));
+	toolsTabLayout->addWidget(useCustomToolsButton);
+
+	QHBoxLayout* toolsLayout=new QHBoxLayout;
+	toolsLayout->setSpacing(HORIZONTAL_SPACING);
+
+	toolsNameEdit=new QLineEdit;
+	int minimumWidth=directoryNameEdit->fontMetrics().width(DIRECTORY_NAME_DEFAULT_CHAR)*DIRECTORY_NAME_DEFAULT_WIDTH;
+	toolsNameEdit->setMinimumWidth(minimumWidth);
+	toolsLayout->addWidget(toolsNameEdit);
+
+	chooseToolsButton=new QPushButton(CHOOSE_DIRECTORY_TEXT);
+	toolsLayout->addWidget(chooseToolsButton);
+	connect(chooseToolsButton, SIGNAL(clicked(bool)), this, SLOT(chooseTools()));
+
+	useCustomToolsButton->setChecked(aCustomToolsActiveFlag);
+	toolsNameEdit->setText(aCustomToolsName);
+	customToolsToggled(isToolsActive());
+
+	toolsTabLayout->addItem(toolsLayout);
+	toolsTab->setLayout(toolsTabLayout);
+
+	return toolsTab;
+}
+
 bool QtPreferencesDialog::isCustomDirectoryActive() const
 {
 	return useCustomDirectoryButton->isChecked();
@@ -291,7 +329,6 @@ bool QtPreferencesDialog::isShowToolTips() const
 	return showToolTipsClickButton->isChecked();
 }
 
-
 QString QtPreferencesDialog::getSerialPortName() const
 {
 	return serialPortNameEdit->text();
@@ -300,4 +337,35 @@ QString QtPreferencesDialog::getSerialPortName() const
 void QtPreferencesDialog::serialPortChanged(const QString& aSerialPortName)
 {
 	serialPortNameEdit->setText(aSerialPortName);
+}
+
+bool QtPreferencesDialog::isToolsActive() const
+{
+	return useCustomToolsButton->isChecked();
+}
+
+QString QtPreferencesDialog::getToolsName() const
+{
+	return toolsNameEdit->text();
+}
+
+void QtPreferencesDialog::customToolsToggled(bool aButtonChecked)
+{
+	toolsNameEdit->setReadOnly(!aButtonChecked);
+	chooseToolsButton->setEnabled(aButtonChecked);
+}
+
+void QtPreferencesDialog::chooseTools()
+{
+	QFileDialog fileDialog(this);
+	fileDialog.setFileMode(QFileDialog::Directory);
+	fileDialog.setOption(QFileDialog::ShowDirsOnly, true);
+	if (fileDialog.exec())
+	{
+		QStringList filenames = fileDialog.selectedFiles();
+		if(filenames.count()==1)
+		{
+			toolsNameEdit->setText(filenames[0]);
+		}
+	}
 }

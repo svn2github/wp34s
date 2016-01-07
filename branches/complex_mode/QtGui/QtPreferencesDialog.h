@@ -23,6 +23,7 @@
 #define MEMORY_TAB_NAME "Memory"
 #define DISPLAY_TAB_NAME "Display"
 #define KEYBOARD_TAB_NAME "Keyboard"
+#define TOOLS_TAB_NAME "Tools"
 #define USE_FONTS_LABEL_TEXT "Use real fonts"
 #define SHOW_CATALOG_MENUS_LABEL_TEXT "Use real menus to display catalogs"
 #define CLOSE_CATALOG_MENUS_LABEL_TEXT "Close catalog after menu"
@@ -35,6 +36,7 @@
 #define SERIAL_PORT_NAME_LABEL_TEXT "Serial Port Name"
 #define USE_CUSTOM_DIRECTORY_TEXT "Use a custom directory for memory files"
 #define CHOOSE_DIRECTORY_TEXT "Choose"
+#define USE_CUSTOM_TOOLS_TEXT "Use a custom directory for tools"
 
 #define HSHIFT_DELAY_MAX 999
 #define HSHIFT_DELAY_BOX_LENGTH 3
@@ -60,6 +62,8 @@ public:
 			bool aCloseatalogMenusFlag,
 			bool aDisplayAsStackFlag,
 			const QString& aSerialPortName,
+			bool aCustomToolsActiveFlag,
+			const QString& aCustomToolsName,
 			QWidget* aParent=NULL);
 	~QtPreferencesDialog();
 
@@ -75,12 +79,16 @@ public:
 	bool isDisplayAsStack() const;
 	int getHShiftDelay() const;
 	QString getSerialPortName() const;
+	bool isToolsActive() const;
+	QString getToolsName() const;
 
 private slots:
 	void customDirectoryToggled(bool aButtonChecked);
 	void chooseDirectory();
 	void serialPortChanged(const QString& aSerialPortName);
 	void useHShiftClickToggled(bool aButtonChecked);
+	void customToolsToggled(bool aButtonChecked);
+	void chooseTools();
 
 private:
 	void buildComponents(bool aCustomDirectoryActiveFlag,
@@ -93,11 +101,14 @@ private:
 			bool aCloseCatalogMenusFlag,
 			bool aDisplayAsStackFlag,
 			int anHShiftDelay,
-			const QString& aSerialPortName);
+			const QString& aSerialPortName,
+			bool aCustomToolsActiveFlag,
+			const QString& aCustomToolsName);
 	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName);
 	QWidget* buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay, bool aShowToolTipFlag);
 	QWidget* buildDisplayTab(bool anUseFontsFlag, bool aShowCatalogMenusFlag, bool aCloseCatalogMenusFlag, bool aDisplayAsStackFlag);
 	QWidget* buildSerialTab(const QString& aSerialPortName);
+	QWidget* buildToolsTab(bool aCustomToolsActiveFlag, const QString& aCustomToolsName);
 	void fillSerialPorts(QListWidget& aListWidget);
 
 private:
@@ -113,6 +124,9 @@ private:
 	QCheckBox *displayAsStackClickButton;
 	QSpinBox* hShiftDelayBox;
 	QLineEdit* serialPortNameEdit;
+	QRadioButton* useCustomToolsButton;
+	QLineEdit* toolsNameEdit;
+	QPushButton* chooseToolsButton;
 };
 
 #endif /* QTPREFERENCESDIALOG_H_ */
