@@ -21,6 +21,7 @@
 #include <windows.h>
 #undef shutdown
 #include "serial.h"
+#include "storage.h"
 #ifdef WINGUI
 #include "emulator_dll.h"
 #include "keys.h"
@@ -138,15 +139,11 @@ unsigned long __stdcall CommThread( void *p )
 
 /*
  *  Open a COM port for transmission
- *  The name is fetched from the file wp34s.ini
- *  If no name can be found, "COM1:" is assumed.
+ *  The name is fetched from the file wp34s.ini (see storage.c)
  */
 int open_port( int baud, int bits, int parity, int stopbits )
 {
-	char name[ 20 ];
-	char buffer[ 80 ];
-	FILE *f = fopen( "wp34s.ini", "rt" );
-	char *p = NULL;
+	char name[ FILENAME_MAX ];
 	BOOL res;
 	DCB dcb;
 
@@ -155,15 +152,7 @@ int open_port( int baud, int bits, int parity, int stopbits )
 		goto open_error;
 	}
 
-	if ( f != NULL ) {
-		p = fgets( buffer, sizeof( name ) - 5, f );
-		strtok( buffer, ":\r\n\t " );
-		fclose( f );
-	}
-	if ( p == NULL || *buffer == '\0' ) {
-		strcpy( buffer, "COM1" );
-	}
-	sprintf( name, "\\\\.\\%s", buffer );
+	sprintf( name, "\\\\.\\%s", ComPort );
 	CommHandle = CreateFile( name,
                                  GENERIC_READ | GENERIC_WRITE,
                                  0,    /* EXCLUSIVE */
@@ -224,7 +213,7 @@ int open_port( int baud, int bits, int parity, int stopbits )
 	dcb.fOutxCtsFlow = FALSE;
 
 	/*
-	 *  Setze the parameters
+	 *  Set the parameters
 	 */
 	res = SetCommState( CommHandle, &dcb );
 	if ( res == 0 ) goto fail;
@@ -252,7 +241,8 @@ open_error:
 	CommError = GetLastError();
 #ifdef WINGUI
 	{
-		sprintf( buffer, "Cannot open serial device '%s', error = %d", name, CommError );
+		char buffer[ 500 ];
+		sprintf( buffer, "Cannot open serial device '%s', error = %d", ComPort, CommError );
 		MessageBox( NULL, buffer, "Communication Error", MB_OK ); 
 	}
 #endif

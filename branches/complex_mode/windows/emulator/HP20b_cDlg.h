@@ -87,11 +87,13 @@ protected:
 	afx_msg void OnHP20bCopytoclipboard();
 	afx_msg LPARAM OnMouseLeave(WPARAM wp, LPARAM lp);
 	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
-	afx_msg void OnHP20bPccalc1();
 	afx_msg void OnMenu();
-	afx_msg void OnHP20bPccalc3();
-	afx_msg void OnHP20bPccalc4();
-	afx_msg void OnHP20bPccalc5();
+	afx_msg void OnFileReload();
+	afx_msg void OnFileOpen();
+	afx_msg void OnFileSave();
+	afx_msg void OnFileSaveAs();
+	afx_msg void OnFileImport();
+	afx_msg void OnFileExport();
 	afx_msg void OnHP20bExit();
 	afx_msg void OnHP20bShowTitlebar();
 	afx_msg void OnHelpAboutbox();

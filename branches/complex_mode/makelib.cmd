@@ -22,7 +22,7 @@ echo on
 @if errorlevel 1 goto exit
 :
 %LIB% -cat -ilib %DAT% >library.cat
-copy %DAT% ..\windows\wp34sgui
+copy %DAT% ..\windows\bin
 copy %DAT% ..\realbuild
 @setlocal
 cd ..\realbuild
@@ -41,12 +41,12 @@ set SRC=%SRC% HHC2010_Challenge.wp34s savage.wp34s
 
 %ASM% -pp %SRC% -o %DAT%
 if errorlevel 1 goto exit
-copy %DAT% ..\windows\wp34sgui
+copy %DAT% ..\windows\bin
 copy %DAT% ..\realbuild
 
 %ASM% matrixtestAM01.wp34s matrixtestAM02.wp34s matrixtestAM03.wp34s -o %DAT%
 if errorlevel 1 goto exit
-copy %DAT% ..\windows\wp34sgui
+copy %DAT% ..\windows\bin
 copy %DAT% ..\realbuild
 
 :exit

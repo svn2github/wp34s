@@ -75,6 +75,14 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	revision = atoi( buffer );
 
 	/*
+	 *  Extract the state file name from the command line
+	 */
+	strtok( pCmdLine, " " );
+	if ( *pCmdLine != '\0' ) {
+		strncpy( StateFile, pCmdLine, FILENAME_MAX );
+	}
+
+	/*
 	 *  Create the heartbeat at 100ms
 	 */
 	CreateThread( NULL, 1024 * 16, HeartbeatThread, NULL, 0, &id );
@@ -83,10 +91,10 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 	 *  Start the emulator
 	 */
 	start_emulator( hInstance, hPrevInstance, pCmdLine, nCmdShow,
-		        "WP 34C Scientific Calculator " VERSION_STRING,
+		        "WP 34S Scientific Calculator " VERSION_STRING,
 		        BuildDate | ( revision << 12 ),
 		        LcdData,
-		        Init, Reset, Shutdown,
+		        Init, Reset, Save, Import, Export,
 		        KeyPress, UpdateScreen, 
 		        GetFlag, SetFlag, ClearFlag,
 			GetTopLineW,
@@ -97,24 +105,42 @@ int WINAPI WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine
 /*
  *  Load/Reset/Save state
  */
-void Init( void )
+void Init( char *filename )
 {
-	load_statefile();
+	load_statefile( filename );
 	DispMsg = NULL;
 	init_34s();
 	display();
 }
 
-void Reset( bool keep )
+void Reset( void )
 {
 	memset( &PersistentRam, 0, sizeof( PersistentRam ) );
 	init_34s();
 	display();
 }
 
-void Shutdown( void )
+void Save( char *filename )
 {
-	save_statefile();
+	save_statefile( filename );
+}
+
+/*
+ *  Import and export as text
+ */
+void Import( char *filename )
+{
+	import_textfile( filename );
+	if ( Error ) {
+		State2.runmode = 1;
+		error_message( Error );
+	}
+	display();
+}
+
+void Export( char *filename )
+{
+	export_textfile( filename );
 }
 
 /*

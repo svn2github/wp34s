@@ -120,9 +120,9 @@ BEGIN
         BEGIN
             VALUE "FileDescription", "HP20b Emulator adapted for WP 34C"
             VALUE "FileVersion", "3.3.0.0"
-            VALUE "InternalName", "wp34s"
+            VALUE "InternalName", "wp34c"
             VALUE "LegalCopyright", "Copyright (C) 2008 Hewlett-Packard LLP"
-            VALUE "OriginalFilename", "wp34sgui.exe"
+            VALUE "OriginalFilename", "wp34cgui.exe"
             VALUE "ProductName", "WP 34C Emulator"
             VALUE "ProductVersion", "3.3.0.0"
         END
@@ -164,9 +164,21 @@ END
 
 IDR_MENU1 MENU
 BEGIN
-    POPUP "wp34s"
+    POPUP "wp34c"
     BEGIN
         MENUITEM "Hide Titlebar",               ID_HP20b_SHOWCAPTION
+        MENUITEM "Reset",                       ID_HP20b_RESETSTATE
+        MENUITEM SEPARATOR
+        POPUP "File"
+        BEGIN
+            MENUITEM "Reload State",                ID_FILE_RELOAD
+            MENUITEM "Load State...",               ID_FILE_OPEN
+            MENUITEM "Save State",                  ID_FILE_SAVE
+            MENUITEM "Save State as...",            ID_FILE_SAVEAS
+            MENUITEM SEPARATOR
+            MENUITEM "Import Program...",           ID_FILE_IMPORT
+            MENUITEM "Export Program...",           ID_FILE_EXPORT
+        END
         POPUP "Help"
         BEGIN
             MENUITEM "About",                       ID_HELP_ABOUTBOX
@@ -177,8 +189,6 @@ BEGIN
         BEGIN
             MENUITEM "Skins go here",               ID_HP20b_COPYTOCLIPBOARD
         END
-        MENUITEM SEPARATOR
-        MENUITEM "Reset",                       ID_HP20b_RESETSTATE
         MENUITEM SEPARATOR
         POPUP "Copy"
         BEGIN
@@ -199,6 +209,14 @@ BEGIN
     BEGIN
         MENUITEM "Hide Titlebar",               ID_HP20b_SHOWCAPTION_MENU
         MENUITEM "Reset",                       ID_HP20b_RESETSTATE
+        MENUITEM SEPARATOR
+        MENUITEM "Reload State",                ID_FILE_RELOAD
+        MENUITEM "Load State...",               ID_FILE_OPEN
+        MENUITEM "Save State",                  ID_FILE_SAVE
+        MENUITEM "Save State as...",            ID_FILE_SAVEAS
+        MENUITEM SEPARATOR
+        MENUITEM "Import Program...",           32850
+        MENUITEM "Export Program...",           ID_FILE_EXPORT
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        ID_HP20b_EXIT
     END

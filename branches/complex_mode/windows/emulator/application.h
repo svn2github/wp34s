@@ -87,11 +87,13 @@ extern u64 BuildDate;
 #endif
 
 bool IsShift(void);
-void Init(void);                   // initialization of the calculator keeps memory if possible.. 
-void Reset(bool KeepTestMode); // reset everything to zero (except the test system ON/OFF if KeepTestMode=true
-void Shutdown(void);           // turn off, save state
-void KeyPress(int i);        // call when the user presses a key to get action. returns true if calc needs to be turned off
-void InternalKeyPress(int key); // same as above, but does not handle shifts...
+void Init(char *filename);         // initialization of the calculator keeps memory if possible.. 
+void Reset(void);                  // reset everything to zero
+void Import(char *filename);       // import code
+void Export(char *filename);       // export code
+void Save(char *filename);         // save state
+void KeyPress(int i);              // call when the user presses a key to get action.
+void InternalKeyPress(int key);    // same as above, but does not handle shifts...
 void UpdateScreen(bool forceUpdate);
 bool GetFlag(int flag);
 void SetFlag(int flag);
@@ -107,8 +109,8 @@ void SendChars(u8 const *b, u32 size, bool ForceSend);
 u32 GetChars(u8 *b, u32 nb, u32 timeoutms); // return the number of chars that were NOT read!!!! ie, return of 0 indicate ALL chars were read
 int GetChar(); // imediate return with -1 if no chr were present...
 int GetChar2(u32 timeout);
-void SendBinary(u8 code, u32 size, u8 const *d);
-int GetBinary(u8 *b);
+//void SendBinary(u8 code, u32 size, u8 const *d);
+//int GetBinary(u8 *b);
 
 #ifdef __cplusplus
 }

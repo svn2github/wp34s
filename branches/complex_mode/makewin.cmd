@@ -5,7 +5,7 @@ del catalogues.h xrom.c
 call "%ProgramFiles%\Microsoft Visual Studio 10.0\VC\vcvarsall.bat"
 @echo on
 @set log=..\win-build.log
-MSBuild wp34s_Express.sln /property:Configuration=Release > %log%
+MSBuild wp34c_Express.sln /property:Configuration=Release > %log%
 @find "Warning" < %log%
 @find "Warnung" < %log%
 @find "Error"   < %log%

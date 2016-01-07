@@ -494,7 +494,7 @@ void shutdown( void )
 {
 	checksum_all();
 	setuptty( 1 );
-	save_statefile();
+	save_statefile( NULL );
 	exit( 0 );
 }
 
@@ -568,7 +568,7 @@ int main(int argc, char *argv[]) {
 	int warm = 0;
 
 	xeq_init_contexts();
-	load_statefile();
+	load_statefile( NULL );
 	if (argc > 1) {
 		if (argc == 2) {
 			if (strcmp(argv[1], "commands") == 0) {

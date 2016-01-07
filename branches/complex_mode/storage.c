@@ -48,9 +48,9 @@
 #define SLCDCMEM
 #define VOLATILE_RAM
 #define BACKUP_FLASH
-#define STATE_FILE "wp34s.dat"
-#define BACKUP_FILE "wp34s-backup.dat"
-#define LIBRARY_FILE "wp34s-lib.dat"
+#define STATE_FILE "wp34c.dat"
+#define BACKUP_FILE "wp34c-backup.dat"
+#define LIBRARY_FILE "wp34c-lib.dat"
 #endif
 
 #include "xeq.h"
@@ -960,7 +960,7 @@ void load_statefile(const char *filename )
 	 *  1st line: COM port
 	 *  2nd line: Tools directory
 	 */
-	f = fopen( expand_filename( buffer, "wp34s.ini" ), "rt" );
+	f = fopen( expand_filename( buffer, "wp34c.ini" ), "rt" );
 	if ( f != NULL ) {
 		// COM port
 		p = fgets( buffer, FILENAME_MAX, f );
