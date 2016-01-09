@@ -219,6 +219,7 @@ void QtScreen::paint(QtBackgroundImage& aBackgroundImage, QPaintEvent& aPaintEve
 	painter.fillRect(screenRectangle, screenBackground);
 	painter.setPen(screenForeground);
 	painter.setBrush(QBrush(screenForeground));
+	painter.setRenderHint(QPainter::Antialiasing);
 	painter.translate(screenRectangle.topLeft());
 
 	for(int row=0; row<SCREEN_ROW_COUNT; row++)
@@ -335,6 +336,7 @@ void QtScreen::copy(QtBackgroundImage& aBackgroundImage, QClipboard& aClipboard)
 	painter.fillRect(pixmap.rect(), screenBackground);
 	painter.setPen(screenForeground);
 	painter.setBrush(QBrush(screenForeground));
+	painter.setRenderHint(QPainter::Antialiasing);
 
 	for(int row=0; row<SCREEN_ROW_COUNT; row++)
 	{

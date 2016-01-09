@@ -345,6 +345,11 @@ void QtEmulator::selectSkin(QAction* anAction)
 		{
 			skinError(exception.what(), false);
 			setSkin(savedSkinName);
+			for(QVector<QAction*>::const_iterator i=skinActions.constBegin(); i!=skinActions.constEnd(); ++i)
+			{
+				QAction* action = *i;
+				action->setChecked(action->text()==currentSkinName);
+			}
 		}
 		catch(QtSkinException& exception)
 		{
@@ -464,6 +469,8 @@ void QtEmulator::buildSkinsMenu()
 	skinsActionGroup=new QActionGroup(this);
 	skinsActionGroup->setExclusive(true);
 
+	skinActions.clear();
+
 	for(SkinMap::const_iterator skinIterator=skins.constBegin(); skinIterator!=skins.constEnd(); ++skinIterator)
 	{
 		QAction* skinAction=skinsMenu->addAction(skinIterator.key());
@@ -474,6 +481,7 @@ void QtEmulator::buildSkinsMenu()
 		{
 			skinAction->setChecked(true);
 		}
+		skinActions.append(skinAction);
 	}
 	connect(skinsMenu, SIGNAL(triggered(QAction*)), this, SLOT(selectSkin(QAction*)));
 }
