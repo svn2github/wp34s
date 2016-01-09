@@ -1111,6 +1111,9 @@ void import_textfile( const char *filename )
 #include "pretty.h"
 
 static const char *pretty( unsigned char z ) {
+	if ( z == 32 ) {
+		return "space";
+	}
 	if ( z < 32 ) {
 		return map32[ z & 0x1f ];
 	}
@@ -1123,17 +1126,25 @@ static const char *pretty( unsigned char z ) {
 
 static void write_pretty( const char *in, FILE *f ) {
 	const char *p;
+	const char *delim;
 	char c;
 
+	delim = strchr( in, '\'' );
+	if ( delim == NULL ) {
+		delim = strchr( in, 0x06 );
+	}
 	while ( *in != '\0' ) {
-		c = *in++;
-		if ( c == 0x06 ) {
-			c = ' ';
-			if ( *in == 0x06 ) {
+		c = *in;
+		p = NULL;
+		if ( in++ == delim ) {
+			if ( c == 0x06 ) {
 				++in;
+				c = ' ';
 			}
 		}
-		p = pretty( c );
+		else {
+			p = pretty( c );
+		}
 		if ( p == NULL ) {
 			fputc( c, f );
 		}
