@@ -280,6 +280,7 @@ private:
      QAction* toggleDebuggerAction;
      QMenu* contextMenu;
      Qt::WindowFlags titleBarVisibleFlags;
+     QVector<QAction*> skinActions;
 
 signals:
 	void screenChanged();
