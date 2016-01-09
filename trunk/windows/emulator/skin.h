@@ -68,8 +68,11 @@ public:
   bool SkinLoad(_TCHAR *filename);
   void SkinDelete();
   void SkinList(TSkinListCallBack *SkinListCallBack, void *p);
+  bool GetNumber(char **b, DWORD *s, bool hex, LONG *numb, bool *NEG=NULL);
+  bool GetPoly(char **f, DWORD *s, int *nbpoly, TPolys **p);
 
   _TCHAR *filename;
+  LONG factor;
   POINT size;
   RECT screen;
   POINT HighResScreen; // size of the high res screen
