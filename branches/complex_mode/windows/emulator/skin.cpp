@@ -6,6 +6,7 @@
 CSkin Skin;
 CSkin::CSkin()
 {
+  factor=1;
   size.x=0; size.y= 0;
   screen.bottom=0; screen.left=0; screen.right=0; screen.top=0;
   HighResScreen.x=0; HighResScreen.y=0; // size of the high res screen
@@ -68,8 +69,9 @@ static bool cmp(char **b, DWORD *size, char const *val)
   return false;
 }
 
-static bool GetNumber(char **b, DWORD *s, bool hex, LONG *numb, bool *NEG=NULL)
+bool CSkin::GetNumber(char **b, DWORD *s, bool hex, LONG *numb, bool *NEG)
 {
+  LONG factor = this->factor;
   *numb= 0;
   skipwhite(b, s);
   if (!*s) return false;
@@ -88,6 +90,7 @@ static bool GetNumber(char **b, DWORD *s, bool hex, LONG *numb, bool *NEG=NULL)
       else if (**b>='A' && **b<='F') *numb= ((*numb)*16)+*(*b)++-'A'+10, (*s)--;
       else if (**b>='a' && **b<='f') *numb= ((*numb)*16)+*(*b)++-'a'+10, (*s)--;
   if (neg) *numb= -*numb;
+  if (factor > 1) *numb *= factor;
   skipwhite(b, s);
   if (*s && **b==',') (*b)++, (*s)--;
   skipwhite(b, s);
@@ -97,13 +100,14 @@ static bool GetNumber(char **b, DWORD *s, bool hex, LONG *numb, bool *NEG=NULL)
 // n,{x1,y1,x2,y2,...xn,yn}[,{x1,y1,x2,y2,...xn,yn}]+ and updating a list of polygon structure
 // placing the given polygon at location n in the TPolys table and updating nbpoly.
 // the code is blody inefficient, but I could not be bothered at this point, sorry...
-static bool GetPoly(char **f, DWORD *s, int *nbpoly, TPolys **p)
+bool CSkin::GetPoly(char **f, DWORD *s, int *nbpoly, TPolys **p)
 {
   LONG id;
   void *m;
   bool neg;
   if (!GetNumber(f, s, false, &id, &neg)) return false;
   if (neg) id= -id;
+  if (factor>1) id /= factor;
   if (id>=*nbpoly)
   {
     m= realloc(*p, (id+1)*sizeof(TPolys));
@@ -196,6 +200,12 @@ bool CSkin::SkinLoad(_TCHAR *filename)
   {
     if (*f<=' ') { f++; s--; continue; }
     if (*f=='#') { f++; s--; while (s-- && *f++!=10); continue; }
+    if (cmp(&f, &s, "factor="))
+    {
+      factor = 1;
+      if (!GetNumber(&f, &s, false, &factor)) Error(2)
+      continue;
+    }
     if (cmp(&f, &s, "picture="))
     {
       char b[MAX_PATH]; _tcscpy(b, path); char *bb= &b[strlen(b)];
@@ -253,11 +263,13 @@ bool CSkin::SkinLoad(_TCHAR *filename)
     if (cmp(&f, &s, "screenfore="))
     {
       if (!GetNumber(&f, &s, true, &screenfore)) Error(10)
+      if (factor>1) screenfore /= factor;
       continue;
     }
     if (cmp(&f, &s, "screenback="))
     {
       if (!GetNumber(&f, &s, true, &screenback)) Error(11)
+      if (factor>1) screenback /= factor;
       continue;
     }
     if (cmp(&f, &s, "key="))
@@ -271,6 +283,7 @@ bool CSkin::SkinLoad(_TCHAR *filename)
       }
       for (int i=0; i<NbKeyCodeInKey; i++) Keys[NbKeys].keycodes[i]= -1;
       if (!GetNumber(&f, &s, false, &Keys[NbKeys].code)) Error(16)
+      if (factor>1) Keys[NbKeys].code /= factor;
       if (!GetNumber(&f, &s, false, &Keys[NbKeys].r.left)) Error(17)
       if (!GetNumber(&f, &s, false, &Keys[NbKeys].r.top)) Error(18)
       if (!GetNumber(&f, &s, false, &Keys[NbKeys].r.right)) Error(19)
