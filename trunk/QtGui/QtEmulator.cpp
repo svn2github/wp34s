@@ -394,7 +394,7 @@ void QtEmulator::buildMainMenu()
 
 	QAction* reloadAction=mainMenu->addAction(RELOAD_ACTION_TEXT, this, SLOT(reload()));
 	mainContextMenu->addAction(reloadAction);
-	QAction* openAction=mainMenu->addAction(OPEN_ACTION_TEXT, this, SLOT(save()));
+	QAction* openAction=mainMenu->addAction(OPEN_ACTION_TEXT, this, SLOT(open()));
 	mainContextMenu->addAction(openAction);
 	QAction* saveAction=mainMenu->addAction(SAVE_ACTION_TEXT, this, SLOT(save()));
 	mainContextMenu->addAction(saveAction);

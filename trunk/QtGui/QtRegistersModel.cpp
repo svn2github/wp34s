@@ -130,7 +130,7 @@ QVariant QtRegistersModel::prototypeData(int aColumn) const
 	}
 	else if (aColumn == 1)
 	{
-		return tr("8888888888888888");
+		return tr("8888888888888888e888");
 	}
 	else
 	{
