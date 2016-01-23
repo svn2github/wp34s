@@ -29,20 +29,13 @@
 #define ID_EDIT_PASTE_NUNBERS           32831
 #define ID_EDIT_PASTE_NUMBERS           32839
 #define ID_WP34S_FILE                   32840
-#define ID_FILE_OPEN32841               32841
-#define ID_FILE_SAVE32842               32842
+#define ID_STATEFILE_OPEN               32841
+#define ID_STATEFILE_SAVE               32842
 #define ID_Menu                         32843
-#define ID_FILE_SAVEAS                  32844
-#define ID_FILE_RELOAD                  32845
-#define ID_CALCULATOR_OPEN              32846
-#define ID_CALCULATOR_RELOAD            32847
-#define ID_CALCULATOR_SAVE              32848
-#define ID_CALCULATOR_SAVEAS            32849
-#define ID_FILE_IMPORT                  32850
-#define ID_CALCULATOR_EXPORT            32851
-#define ID_FILE_EXPORT                  32852
-#define ID_FILE_IMPORT32853             32853
-#define ID_FILE_EXPORT32854             32854
+#define ID_STATEFILE_SAVEAS             32844
+#define ID_STATEFILE_RELOAD             32845
+#define ID_PROGRAM_IMPORT               32850
+#define ID_PROGRAM_EXPORT               32852
 
 // Next default values for new objects
 // 

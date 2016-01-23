@@ -7,7 +7,10 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "afxres.h"
+//#include "afxres.h"
+#include "WinNT.rh"
+#include "windows.h"
+#define IDC_STATIC              (-1)     // all static controls
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -32,7 +35,10 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include ""afxres.h""\r\n"
+    "//#include ""afxres.h""\r\n"
+	"#include ""WinNT.rh""\r\n"
+	"#include ""windows.h""\r\n"
+    "#define IDC_STATIC              (-1)     // all static controls\r\n"
     "\0"
 END
 
@@ -49,7 +55,7 @@ BEGIN
     "#pragma code_page(1252)\r\n"
     "#endif //_WIN32\r\n"
     "//#include ""res\\HP20b_c.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
-    "#include ""afxres.rc""         // Standard components\r\n"
+    "//#include ""afxres.rc""         // Standard components\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -171,13 +177,13 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "File"
         BEGIN
-            MENUITEM "Reload State",                ID_FILE_RELOAD
-            MENUITEM "Load State...",               ID_FILE_OPEN
-            MENUITEM "Save State",                  ID_FILE_SAVE
-            MENUITEM "Save State as...",            ID_FILE_SAVEAS
+            MENUITEM "Reload State",                ID_STATEFILE_RELOAD
+            MENUITEM "Load State...",               ID_STATEFILE_OPEN
+            MENUITEM "Save State",                  ID_STATEFILE_SAVE
+            MENUITEM "Save State as...",            ID_STATEFILE_SAVEAS
             MENUITEM SEPARATOR
-            MENUITEM "Import Program...",           ID_FILE_IMPORT
-            MENUITEM "Export Program...",           ID_FILE_EXPORT
+            MENUITEM "Import Program...",           ID_PROGRAM_IMPORT
+            MENUITEM "Export Program...",           ID_PROGRAM_EXPORT
         END
         POPUP "Help"
         BEGIN
@@ -210,13 +216,13 @@ BEGIN
         MENUITEM "Hide Titlebar",               ID_HP20b_SHOWCAPTION_MENU
         MENUITEM "Reset",                       ID_HP20b_RESETSTATE
         MENUITEM SEPARATOR
-        MENUITEM "Reload State",                ID_FILE_RELOAD
-        MENUITEM "Load State...",               ID_FILE_OPEN
-        MENUITEM "Save State",                  ID_FILE_SAVE
-        MENUITEM "Save State as...",            ID_FILE_SAVEAS
+        MENUITEM "Reload State",                ID_STATEFILE_RELOAD
+        MENUITEM "Load State...",               ID_STATEFILE_OPEN
+        MENUITEM "Save State",                  ID_STATEFILE_SAVE
+        MENUITEM "Save State as...",            ID_STATEFILE_SAVEAS
         MENUITEM SEPARATOR
-        MENUITEM "Import Program...",           32850
-        MENUITEM "Export Program...",           ID_FILE_EXPORT
+        MENUITEM "Import Program...",           ID_PROGRAM_IMPORT
+        MENUITEM "Export Program...",           ID_PROGRAM_EXPORT
         MENUITEM SEPARATOR
         MENUITEM "Exit",                        ID_HP20b_EXIT
     END
@@ -251,8 +257,8 @@ END
 
 STRINGTABLE
 BEGIN
-    IDS_ABOUTBOX            "&About WP 34C Scientific Calculator"
-    IDS_STRING102           "WP 34C Scientific Calculator"
+    IDS_ABOUTBOX            "&About WP 34S Scientific Calculator"
+    IDS_STRING102           "WP 34S Scientific Calculator"
 END
 
 #endif    // Englisch (USA) resources
@@ -276,7 +282,7 @@ LANGUAGE 9, 1
 #pragma code_page(1252)
 #endif //_WIN32
 //#include "res\HP20b_c.rc2"  // non-Microsoft Visual C++ edited resources
-#include "afxres.rc"         // Standard components
+//#include "afxres.rc"         // Standard components
 #endif
 
 /////////////////////////////////////////////////////////////////////////////
