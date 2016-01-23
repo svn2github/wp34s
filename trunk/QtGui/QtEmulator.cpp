@@ -24,7 +24,7 @@
 QtEmulator* currentEmulator;
 
 QtEmulator::QtEmulator()
-: calculatorThread(NULL), heartBeatThread(NULL), debugger(NULL), skinsActionGroup(NULL), titleBarVisible(true), debuggerVisible(false)
+: calculatorThread(NULL), heartBeatThread(NULL), debugger(NULL), skinsActionGroup(NULL), titleBarVisible(true), debuggerVisible(false), lastMemoryFileActive(false)
 {
 	debug=qApp->arguments().contains(DEBUG_OPTION);
 	development=qApp->arguments().contains(DEVELOPMENT_OPTION);
@@ -824,7 +824,15 @@ void QtEmulator::loadMemory()
 
 void QtEmulator::loadState()
 {
-	QFile memoryFile(QString(MEMORY_FILE_TYPE)+':'+STATE_FILENAME);
+	QFile memoryFile;
+	if(lastMemoryFileActive)
+	{
+		memoryFile.setFileName(lastMemoryFile);
+	}
+	else
+	{
+		memoryFile.setFileName(QString(MEMORY_FILE_TYPE)+':'+STATE_FILENAME);
+	}
 	if(!memoryFile.exists() || !memoryFile.open(QIODevice::ReadOnly))
 	{
 		memoryWarning("Cannot find or cannot open "+memoryFile.fileName());
@@ -908,7 +916,11 @@ void QtEmulator::saveLibrary()
 
 QString QtEmulator::getMemoryPath(const QString& aMemoryFilename) const
 {
-	if(customDirectoryActive)
+	if(lastMemoryFileActive)
+	{
+		return lastMemoryFile;
+	}
+	else if(customDirectoryActive)
 	{
 		return customDirectory.path()+'/'+aMemoryFilename;
 	}
@@ -989,8 +1001,14 @@ void QtEmulator::memoryWarning(const QString& aMessage, bool aResetFlag)
 {
 	QMessageBox messageBox;
 	messageBox.setIcon(QMessageBox::Warning);
-	messageBox.setText("Error with memory files");
-	messageBox.setInformativeText(aMessage);
+	messageBox.setText("Error with memory file");
+	QString message=aMessage;
+	if(lastMemoryFileActive && !aResetFlag)
+	{
+		message += "\nCannot use " + lastMemoryFile;
+		lastMemoryFileActive=false;
+	}
+	messageBox.setInformativeText(message);
 	if(aResetFlag)
 	{
 		messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Reset);
@@ -1134,7 +1152,8 @@ void QtEmulator::showMessage(const char* title, const char* message)
 
 void QtEmulator::reload()
 {
-	init_calculator(0);
+	loadMemory();
+	init_calculator();
 }
 
 void QtEmulator::open()
@@ -1142,13 +1161,15 @@ void QtEmulator::open()
 	QString filename=QFileDialog::getOpenFileName(this, "Load State File As", QString(), STATE_FILE_FILTER);
 	if(!filename.isEmpty())
 	{
-		init_calculator(filename.toStdString().c_str());
+		setLastMemoryFile(filename);
+		loadMemory();
+		init_calculator();
 	}
 }
 
 void QtEmulator::save()
 {
-	forward_save(0);
+	saveMemory();
 }
 
 void QtEmulator::saveAs()
@@ -1156,7 +1177,8 @@ void QtEmulator::saveAs()
 	QString filename=QFileDialog::getSaveFileName(this, "Save State File As", QString(), STATE_FILE_FILTER);
 	if(!filename.isEmpty())
 	{
-		forward_save(filename.toStdString().c_str());
+		setLastMemoryFile(filename);
+		saveMemory();
 	}
 }
 
@@ -1176,6 +1198,12 @@ void QtEmulator::exportState()
 	{
 		forward_export(filename.toStdString().c_str());
 	}
+}
+
+void QtEmulator::setLastMemoryFile(QString& aFilename)
+{
+	lastMemoryFileActive=true;
+	lastMemoryFile=aFilename;
 }
 
 

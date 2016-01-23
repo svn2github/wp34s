@@ -30,7 +30,7 @@ QtCalculatorThread::QtCalculatorThread(QtEmulator& anEmulator)
 
 void QtCalculatorThread::run()
 {
-	init_calculator(0);
+	init_calculator();
 	QtKeyboard& keyboard=emulator.getKeyboard();
 	while(!isEnded())
 	{

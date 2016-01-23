@@ -240,6 +240,7 @@ private:
      void skinError(const QString& aMessage, bool aFatalFlag);
      void setTransparency(bool enabled);
      void setDebuggerVisible(bool aDebuggerVisible);
+     void setLastMemoryFile(QString& aFilename);
 
 private:
      QtKeyboard* keyboard;
@@ -257,6 +258,8 @@ private:
      QByteArray currentRegionPath;
      bool customDirectoryActive;
      QDir customDirectory;
+     bool lastMemoryFileActive;
+     QString lastMemoryFile;
      bool toolsActive;
      QDir tools;
      QActionGroup* skinsActionGroup;

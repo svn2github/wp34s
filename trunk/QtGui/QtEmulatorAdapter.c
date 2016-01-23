@@ -59,9 +59,8 @@ static void memfill(void* aPointer, char aValue, int aSize)
 	}
 }
 
-void init_calculator(const char* filename)
+void init_calculator()
 {
-	load_statefile(filename);
 	DispMsg = NULL;
 	init_34s();
 	display();
@@ -426,11 +425,6 @@ void forward_set_IO_annunciator()
 char isForcedDispPlot()
 {
 	return forceDispPlot;
-}
-
-void forward_save(const char* filename)
-{
-	save_statefile(filename);
 }
 
 void forward_export(const char* filename)

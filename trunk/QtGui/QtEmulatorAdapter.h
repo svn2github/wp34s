@@ -19,7 +19,7 @@
 
 extern "C"
 {
-extern void init_calculator(const char*);
+extern void init_calculator();
 extern void forward_keycode(int);
 extern void forward_key_released();
 extern char* get_memory();
@@ -80,7 +80,6 @@ extern char isForcedDispPlot();
 extern char* fill_buffer_from_raw_x(char *buffer);
 extern void paste_raw_x(const char *p);
 
-extern void forward_save(const char* filename);
 extern void forward_export(const char* filename);
 extern void forward_import(const char* filename);
 
