@@ -45,6 +45,9 @@
 #define CUSTOM_DIRECTORY_SETTINGS_GROUP "CustomDirectory"
 #define CUSTOM_DIRECTORY_ACTIVE_SETTING "CustomDirectoryActive"
 #define CUSTOM_DIRECTORY_NAME_SETTING "CustomDirectoryName"
+#define LAST_MEMORYFILE_SETTINGS_GROUP "LastMemoryFile"
+#define LAST_MEMORYFILE_ACTIVE_SETTING "LastMemoryFile"
+#define LAST_MEMORYFILE_SETTING "LastMemoryFileName"
 
 #define TOOLS_SETTINGS_GROUP "Tools"
 #define TOOLS_ACTIVE_SETTING "ToolsActive"
@@ -119,6 +122,7 @@
 #define SAVE_AS_ACTION_TEXT "Save State As..."
 #define IMPORT_ACTION_TEXT "Import Program..."
 #define EXPORT_ACTION_TEXT "Export Program..."
+#define USE_DEFAULT_MEMORY_TEXT "Use Default State"
 
 #define QUIT_ACTION_TEXT "Quit"
 
@@ -189,6 +193,7 @@ private slots:
 	void saveAs();
 	void importState();
 	void exportState();
+	void useDefaultState();
 
 private:
      void setPaths();
@@ -213,6 +218,7 @@ private:
      void loadKeyboardSettings();
      void loadDisplaySettings();
      void loadCustomDirectorySettings();
+     void loadLastMemoryFileSettings();
      void loadSerialPortSettings();
      void loadToolsSettings();
      void saveSettings();
@@ -220,6 +226,7 @@ private:
      void saveKeyboardSettings();
      void saveDisplaySettings();
      void saveCustomDirectorySettings();
+     void saveLastMemoryFileSettings();
      void saveSerialPortSettings();
      void saveToolsSettings();
      void loadMemory();
@@ -260,6 +267,7 @@ private:
      QDir customDirectory;
      bool lastMemoryFileActive;
      QString lastMemoryFile;
+     QString currentMemoryFile;
      bool toolsActive;
      QDir tools;
      QActionGroup* skinsActionGroup;

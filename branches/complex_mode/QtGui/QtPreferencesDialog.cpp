@@ -30,6 +30,7 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 		const QString& aSerialPortName,
 		bool aCustomToolsActiveFlag,
 		const QString& aCustomToolsName,
+		const QString& aCurrentMemoryFile,
 		QWidget* aParent)
 : QDialog(aParent)
 {
@@ -46,7 +47,8 @@ QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 			anHShiftDelay,
 			aSerialPortName,
 			aCustomToolsActiveFlag,
-			aCustomToolsName);
+			aCustomToolsName,
+			aCurrentMemoryFile);
 }
 
 QtPreferencesDialog::~QtPreferencesDialog()
@@ -65,7 +67,8 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 		int anHShiftDelay,
 		const QString& aSerialPortName,
 		bool aCustomToolsActiveFlag,
-		const QString& aCustomToolsName)
+		const QString& aCustomToolsName,
+		const QString& aCurrentMemoryFile)
 {
 	QVBoxLayout* dialogLayout=new QVBoxLayout;
 	dialogLayout->setSizeConstraint(QLayout::SetFixedSize);
@@ -73,7 +76,7 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 
 
 	QTabWidget* tabWidget = new QTabWidget;
-	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName), MEMORY_TAB_NAME);
+	tabWidget->addTab(buildMemoryTab(aCustomDirectoryActiveFlag, aCustomDirectoryName, aCurrentMemoryFile), MEMORY_TAB_NAME);
 	tabWidget->addTab(buildKeyboardTab(anUseHShiftClickFlag, anAlwaysUseHShiftClickFlag, anHShiftDelay, aShowToolTipFlag), KEYBOARD_TAB_NAME);
 	tabWidget->addTab(buildDisplayTab(anUseFontsFlag, aShowCatalogMenusFlag, aCloseCatalogMenusFlag, aDisplayAsStackFlag), DISPLAY_TAB_NAME);
 	tabWidget->addTab(buildSerialTab(aSerialPortName), SERIAL_PORT_TAB_NAME);
@@ -87,7 +90,7 @@ void QtPreferencesDialog::buildComponents(bool aCustomDirectoryActiveFlag,
 	dialogLayout->addWidget(buttonBox);
 }
 
-QWidget* QtPreferencesDialog::buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName)
+QWidget* QtPreferencesDialog::buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, const QString& aCurrentMemoryFile)
 {
 	QWidget* memoryTab=new QWidget;
 	QVBoxLayout* memoryTabLayout=new QVBoxLayout;
@@ -111,10 +114,19 @@ QWidget* QtPreferencesDialog::buildMemoryTab(bool aCustomDirectoryActiveFlag, co
 	useCustomDirectoryButton->setChecked(aCustomDirectoryActiveFlag);
 	directoryNameEdit->setText(aCustomDirectoryName);
 	customDirectoryToggled(isCustomDirectoryActive());
-
 	memoryTabLayout->addItem(directoryLayout);
-	memoryTab->setLayout(memoryTabLayout);
 
+	memoryTabLayout->addStretch();
+
+	QLabel* label=new QLabel(CURRENT_MEMORY_FILE_TEXT);
+	memoryTabLayout->addWidget(label);
+	QLineEdit* currentMemoryFileDisplay=new QLineEdit;
+	currentMemoryFileDisplay->setMinimumWidth(minimumWidth);
+	currentMemoryFileDisplay->setText(aCurrentMemoryFile);
+	currentMemoryFileDisplay->setReadOnly(true);
+	memoryTabLayout->addWidget(currentMemoryFileDisplay);
+
+	memoryTab->setLayout(memoryTabLayout);
 	return memoryTab;
 }
 

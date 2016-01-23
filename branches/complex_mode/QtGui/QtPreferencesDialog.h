@@ -37,6 +37,7 @@
 #define USE_CUSTOM_DIRECTORY_TEXT "Use a custom directory for memory files"
 #define CHOOSE_DIRECTORY_TEXT "Choose"
 #define USE_CUSTOM_TOOLS_TEXT "Use a custom directory for tools"
+#define CURRENT_MEMORY_FILE_TEXT "Current memory file"
 
 #define HSHIFT_DELAY_MAX 999
 #define HSHIFT_DELAY_BOX_LENGTH 3
@@ -64,6 +65,7 @@ public:
 			const QString& aSerialPortName,
 			bool aCustomToolsActiveFlag,
 			const QString& aCustomToolsName,
+			const QString& aCurrentMemoryFileName,
 			QWidget* aParent=NULL);
 	~QtPreferencesDialog();
 
@@ -103,8 +105,9 @@ private:
 			int anHShiftDelay,
 			const QString& aSerialPortName,
 			bool aCustomToolsActiveFlag,
-			const QString& aCustomToolsName);
-	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName);
+			const QString& aCustomToolsName,
+			const QString& aCurrentMemoryFileName);
+	QWidget* buildMemoryTab(bool aCustomDirectoryActiveFlag, const QString& aCustomDirectoryName, const QString& aCurrentMemoryFileName);
 	QWidget* buildKeyboardTab(bool anUseHShiftClickFlag, bool anAlwaysUseHShiftClickFlag, int anHShiftDelay, bool aShowToolTipFlag);
 	QWidget* buildDisplayTab(bool anUseFontsFlag, bool aShowCatalogMenusFlag, bool aCloseCatalogMenusFlag, bool aDisplayAsStackFlag);
 	QWidget* buildSerialTab(const QString& aSerialPortName);

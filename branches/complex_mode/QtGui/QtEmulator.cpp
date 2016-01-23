@@ -143,6 +143,7 @@ void QtEmulator::editPreferences()
 			serialPort->getSerialPortName(),
 			toolsActive,
 			tools.path(),
+			currentMemoryFile,
 			this);
 	int result=preferencesDialog.exec();
 	if(result==QDialog::Accepted)
@@ -394,12 +395,15 @@ void QtEmulator::buildMainMenu()
 
 	QAction* reloadAction=mainMenu->addAction(RELOAD_ACTION_TEXT, this, SLOT(reload()));
 	mainContextMenu->addAction(reloadAction);
-	QAction* openAction=mainMenu->addAction(OPEN_ACTION_TEXT, this, SLOT(save()));
+	QAction* openAction=mainMenu->addAction(OPEN_ACTION_TEXT, this, SLOT(open()));
 	mainContextMenu->addAction(openAction);
 	QAction* saveAction=mainMenu->addAction(SAVE_ACTION_TEXT, this, SLOT(save()));
 	mainContextMenu->addAction(saveAction);
 	QAction* saveAsAction=mainMenu->addAction(SAVE_AS_ACTION_TEXT, this, SLOT(saveAs()));
 	mainContextMenu->addAction(saveAsAction);
+
+	QAction* useDefaultAction=mainMenu->addAction(USE_DEFAULT_MEMORY_TEXT, this, SLOT(useDefaultState()));
+	mainContextMenu->addAction(useDefaultAction);
 
 	mainMenu->addSeparator();
 	mainContextMenu->addSeparator();
@@ -654,6 +658,7 @@ void QtEmulator::loadSettings()
 	loadKeyboardSettings();
 	loadDisplaySettings();
 	loadCustomDirectorySettings();
+	loadLastMemoryFileSettings();
 	loadSerialPortSettings();
 	loadToolsSettings();
 	checkCustomDirectory();
@@ -698,6 +703,14 @@ void QtEmulator::loadCustomDirectorySettings()
 	settings.beginGroup(CUSTOM_DIRECTORY_SETTINGS_GROUP);
 	customDirectoryActive=settings.value(CUSTOM_DIRECTORY_ACTIVE_SETTING, false).toBool();
 	customDirectory.setPath(settings.value(CUSTOM_DIRECTORY_NAME_SETTING, "").toString());
+	settings.endGroup();
+}
+
+void QtEmulator::loadLastMemoryFileSettings()
+{
+	settings.beginGroup(LAST_MEMORYFILE_SETTINGS_GROUP);
+	lastMemoryFileActive=settings.value(LAST_MEMORYFILE_ACTIVE_SETTING, false).toBool();
+	lastMemoryFile=settings.value(LAST_MEMORYFILE_SETTING, "").toString();
 	settings.endGroup();
 }
 
@@ -750,6 +763,7 @@ void QtEmulator::saveSettings()
     saveKeyboardSettings();
     saveDisplaySettings();
     saveCustomDirectorySettings();
+    saveLastMemoryFileSettings();
     saveSerialPortSettings();
 
 	settings.sync();
@@ -797,6 +811,14 @@ void QtEmulator::saveCustomDirectorySettings()
 	settings.endGroup();
 }
 
+void QtEmulator::saveLastMemoryFileSettings()
+{
+	settings.beginGroup(LAST_MEMORYFILE_SETTINGS_GROUP);
+	settings.setValue(LAST_MEMORYFILE_ACTIVE_SETTING, lastMemoryFileActive);
+	settings.setValue(LAST_MEMORYFILE_SETTING, lastMemoryFile);
+	settings.endGroup();
+}
+
 void QtEmulator::saveSerialPortSettings()
 {
     settings.beginGroup(SERIAL_PORT_SETTINGS_GROUP);
@@ -824,7 +846,20 @@ void QtEmulator::loadMemory()
 
 void QtEmulator::loadState()
 {
-	QFile memoryFile(QString(MEMORY_FILE_TYPE)+':'+STATE_FILENAME);
+	QFile memoryFile;
+	if(lastMemoryFileActive)
+	{
+		memoryFile.setFileName(lastMemoryFile);
+	}
+	else
+	{
+		memoryFile.setFileName(QString(MEMORY_FILE_TYPE)+':'+STATE_FILENAME);
+	}
+	currentMemoryFile=QFileInfo(memoryFile).canonicalFilePath();
+	if(currentMemoryFile.isEmpty())
+	{
+		currentMemoryFile=getMemoryPath(STATE_FILENAME);
+	}
 	if(!memoryFile.exists() || !memoryFile.open(QIODevice::ReadOnly))
 	{
 		memoryWarning("Cannot find or cannot open "+memoryFile.fileName());
@@ -908,7 +943,11 @@ void QtEmulator::saveLibrary()
 
 QString QtEmulator::getMemoryPath(const QString& aMemoryFilename) const
 {
-	if(customDirectoryActive)
+	if(lastMemoryFileActive)
+	{
+		return lastMemoryFile;
+	}
+	else if(customDirectoryActive)
 	{
 		return customDirectory.path()+'/'+aMemoryFilename;
 	}
@@ -989,8 +1028,14 @@ void QtEmulator::memoryWarning(const QString& aMessage, bool aResetFlag)
 {
 	QMessageBox messageBox;
 	messageBox.setIcon(QMessageBox::Warning);
-	messageBox.setText("Error with memory files");
-	messageBox.setInformativeText(aMessage);
+	messageBox.setText("Error with memory file");
+	QString message=aMessage;
+	if(lastMemoryFileActive && !aResetFlag)
+	{
+		message += "\nCannot use " + lastMemoryFile;
+		lastMemoryFileActive=false;
+	}
+	messageBox.setInformativeText(message);
 	if(aResetFlag)
 	{
 		messageBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Reset);
@@ -1134,7 +1179,8 @@ void QtEmulator::showMessage(const char* title, const char* message)
 
 void QtEmulator::reload()
 {
-	init_calculator(0);
+	loadMemory();
+	init_calculator();
 }
 
 void QtEmulator::open()
@@ -1142,13 +1188,15 @@ void QtEmulator::open()
 	QString filename=QFileDialog::getOpenFileName(this, "Load State File As", QString(), STATE_FILE_FILTER);
 	if(!filename.isEmpty())
 	{
-		init_calculator(filename.toStdString().c_str());
+		setLastMemoryFile(filename);
+		loadMemory();
+		init_calculator();
 	}
 }
 
 void QtEmulator::save()
 {
-	forward_save(0);
+	saveMemory();
 }
 
 void QtEmulator::saveAs()
@@ -1156,7 +1204,8 @@ void QtEmulator::saveAs()
 	QString filename=QFileDialog::getSaveFileName(this, "Save State File As", QString(), STATE_FILE_FILTER);
 	if(!filename.isEmpty())
 	{
-		forward_save(filename.toStdString().c_str());
+		setLastMemoryFile(filename);
+		saveMemory();
 	}
 }
 
@@ -1176,6 +1225,19 @@ void QtEmulator::exportState()
 	{
 		forward_export(filename.toStdString().c_str());
 	}
+}
+
+void QtEmulator::useDefaultState()
+{
+	lastMemoryFileActive=false;
+	loadMemory();
+	init_calculator();
+}
+
+void QtEmulator::setLastMemoryFile(QString& aFilename)
+{
+	lastMemoryFileActive=true;
+	lastMemoryFile=aFilename;
 }
 
 
