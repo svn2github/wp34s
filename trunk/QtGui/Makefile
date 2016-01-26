@@ -211,7 +211,10 @@ ifeq "$(SYSTEM)" "windows32"
 	$(MKDIR) $(DISTDIR)/fonts
 	$(CPDIR) fonts/* $(DISTDIR)/fonts
 	$(MKDIR) $(DISTDIR)/tools
-	$(CPDIR) ../tools/* $(DISTDIR)/tools
+	$(CP) ../tools/*.exe $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.pl $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.op $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.csv $(RESOURCESDIR)/tools
 	$(CP) $(QTLIBS) $(DISTDIR)
 	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
 	cd $(ZIPCHANGEDIR); $(ZIP) $(ZIPDISTFILE) $(ZIPTOPDIR)
@@ -224,7 +227,9 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(MKDIR) $(RESOURCESDIR)/fonts
 	$(CPDIR) fonts/* $(RESOURCESDIR)/fonts
 	$(MKDIR) $(RESOURCESDIR)/tools
-	$(CPDIR) ../tools/* $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.pl $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.op $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.csv $(RESOURCESDIR)/tools
 	$(CPDIR) $(DISTPRINTERAPP) $(APPSDISTDIR)
 	$(MACDEPLOYQT) $(DISTDIR)
 	$(BUILDDMG)
@@ -238,7 +243,9 @@ ifneq "$(LINUX)" ""
 	$(MKDIR) $(DISTDIR)/fonts
 	$(CPDIR) fonts/* $(DISTDIR)/fonts
 	$(MKDIR) $(DISTDIR)/tools
-	$(CPDIR) ../tools/* $(DISTDIR)/tools
+	$(CP) ../tools/*.pl $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.op $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.csv $(RESOURCESDIR)/tools
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)
 	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
 	$(TAR) $(DISTFILE) $(TARTOPDIR)

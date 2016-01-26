@@ -55,35 +55,35 @@ DIRS := $(OUTPUTDIR)
 DISTPRINTERDIR := ../QtPrinterEmulator
 
 ifeq "$(SYSTEM)" "windows32"
-DISTDIR := $(SYSTEM)/dist/wp-34s
+DISTDIR := $(SYSTEM)/dist/wp-34sc
 ZIPCHANGEDIR := $(SYSTEM)/dist
-ZIPTOPDIR := wp-34s
-DISTFILE := wp-34s-emulator-windows.zip
+ZIPTOPDIR := wp-34sc
+DISTFILE := wp-34sc-emulator-windows.zip
 ZIPDISTFILE := ../../$(DISTFILE)
 RESOURCESDIR := $(DISTDIR)
 DISTPRINTEREXE := $(DISTPRINTERDIR)/windows32/HP-82240B.exe
 endif
 ifneq "$(LINUX)" ""
-DISTDIR := $(SYSTEM)/dist/wp-34s
+DISTDIR := $(SYSTEM)/dist/wp-34sc
 TARCHANGEDIR := $(SYSTEM)/dist
-TARTOPDIR := wp-34s
+TARTOPDIR := wp-34sc
 DISTPRINTEREXE := $(DISTPRINTERDIR)/$(LINUX)/HP-82240B
 ifeq "$(SYSTEM)" "Linux64"
-DISTFILE := wp-34s-emulator-linux64.tgz
+DISTFILE := wp-34sc-emulator-linux64.tgz
 else
-DISTFILE := wp-34s-emulator-linux.tgz
+DISTFILE := wp-34sc-emulator-linux.tgz
 endif
 RESOURCESDIR := $(DISTDIR)
 LINUX_EXTRA_FILES := README_Linux.txt icons/wp34s-logo.png $(DISTPRINTERDIR)/icons/HP-82240B.png
 endif
 ifeq "$(SYSTEM)" "Darwin"
 APPSDISTDIR := $(OUTPUTDIR)/apps
-DISTDIR := $(APPSDISTDIR)/WP-34s.app
+DISTDIR := $(APPSDISTDIR)/WP-34sc.app
 RESOURCESDIR := $(DISTDIR)/Contents/Resources
 MACDEPLOYQT := macdeployqt
-BUILTDMG := $(OUTPUTDIR)/WP-34s.dmg
-DISTDMG := ./wp-34s-emulator-macosx.dmg
-BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname WP-34s -srcfolder $(APPSDISTDIR) $(DISTDMG)
+BUILTDMG := $(OUTPUTDIR)/WP-34sc.dmg
+DISTDMG := ./wp-34sc-emulator-macosx.dmg
+BUILDDMG :=  hdiutil create -format UDBZ -quiet -volname WP-34sc -srcfolder $(APPSDISTDIR) $(DISTDMG)
 DISTPRINTERAPP :=$(DISTPRINTERDIR)/Darwin/app/HP-82240B.app
 endif
 DISTMEMORYDIR := $(RESOURCESDIR)/memory
@@ -93,7 +93,7 @@ QTLIBSDIR := c:/Qt/4.8.4/bin/
 QTLIBS := $(addprefix $(QTLIBSDIR), qtcore4.dll qtgui4.dll qtxml4.dll qtnetwork4.dll mingwm10.dll libgcc_s_dw2-1.dll)
 
 # Warning the trailing / is mandatory
-WP34SLIBDIR=../../library/
+WP34SLIBDIR=../../../library/
 WP34SMATRIXFILES :=  $(addprefix $(WP34SLIBDIR), matrix.wp34s matrixedit.wp34s vectors.wp34s)
 WP34SSOLVERFILES :=  $(addprefix $(WP34SLIBDIR), TVM.wp34s)
 WP34STRIGOFACTOFILES :=  $(addprefix $(WP34SLIBDIR), TRIGON.wp34s PF.wp34s)
@@ -101,7 +101,7 @@ WP34SLIB=$(TOOLS)/wp34s_lib.pl -d 0
 
 
 DOCFILENAME := Manual_wp_34s_3_1.pdf
-DOCDIR := ../../doc
+DOCDIR := ../../../doc
 DOCFILE := $(DOCDIR)/$(DOCFILENAME)
 DISTDOCDIR := $(RESOURCESDIR)/doc
 DISTDOCDIR := $(RESOURCESDIR)/doc
@@ -188,10 +188,10 @@ all: qtserial $(QTMAKEFILE) $(DIRS) $(EXTRAOBJS)
 	$(MAKE) -f $(QTMAKEFILE) BASELIBS="$(BASELIBS)" OTHEROBJS="$(EXTRAOBJS) $(BASEOBJS)" HAS_SERIAL="HAS_SERIAL=$(HAS_SERIAL)" SERIALLIB="$(SERIALLIB)" QTSERIAL_INCLUDE="$(QTSERIAL_INCLUDE)" SERIAL_INCLUDE="$(SERIAL_INCLUDE)" CC=$(CC) CXX=$(CXX) LINK=$(LINK)
 
 ifeq "$(SYSTEM)" "windows32"
-WP34SEXE := $(OUTPUTDIR)/WP-34s.exe
+WP34SEXE := $(OUTPUTDIR)/WP-34sc.exe
 endif
 ifneq "$(LINUX)" ""
-WP34SEXE := $(OUTPUTDIR)/WP-34s
+WP34SEXE := $(OUTPUTDIR)/WP-34sc
 endif
 
 ifeq "$(HAS_SERIAL)" "0"
@@ -211,7 +211,10 @@ ifeq "$(SYSTEM)" "windows32"
 	$(MKDIR) $(DISTDIR)/fonts
 	$(CPDIR) fonts/* $(DISTDIR)/fonts
 	$(MKDIR) $(DISTDIR)/tools
-	$(CPDIR) ../tools/* $(DISTDIR)/tools
+	$(CP) ../tools/*.exe $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.pl $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.op $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.csv $(RESOURCESDIR)/tools
 	$(CP) $(QTLIBS) $(DISTDIR)
 	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
 	cd $(ZIPCHANGEDIR); $(ZIP) $(ZIPDISTFILE) $(ZIPTOPDIR)
@@ -224,7 +227,9 @@ ifeq "$(SYSTEM)" "Darwin"
 	$(MKDIR) $(RESOURCESDIR)/fonts
 	$(CPDIR) fonts/* $(RESOURCESDIR)/fonts
 	$(MKDIR) $(RESOURCESDIR)/tools
-	$(CPDIR) ../tools/* $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.pl $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.op $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.csv $(RESOURCESDIR)/tools	
 	$(CPDIR) $(DISTPRINTERAPP) $(APPSDISTDIR)
 	$(MACDEPLOYQT) $(DISTDIR)
 	$(BUILDDMG)
@@ -238,7 +243,9 @@ ifneq "$(LINUX)" ""
 	$(MKDIR) $(DISTDIR)/fonts
 	$(CPDIR) fonts/* $(DISTDIR)/fonts
 	$(MKDIR) $(DISTDIR)/tools
-	$(CPDIR) ../tools/* $(DISTDIR)/tools
+	$(CP) ../tools/*.pl $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.op $(RESOURCESDIR)/tools
+	$(CP) ../tools/*.csv $(RESOURCESDIR)/tools
 	$(CP) $(LINUX_EXTRA_FILES) $(DISTDIR)
 	$(CP) $(DISTPRINTEREXE) $(DISTDIR)
 	$(TAR) $(DISTFILE) $(TARTOPDIR)
@@ -276,7 +283,7 @@ endif
 build_date: 
 	$(CC) -c $(CFLAGS) -o $(BUILDDATEOBJ) $(BUILDDATESRC)
 
-$(QTMAKEFILE): WP-34s.pro
+$(QTMAKEFILE): WP-34sc.pro
 	$(MAKE) qtclean
 ifeq ($(SYSTEM),Darwin)
 	$(QMAKE) -makefile DESTDIR=$(APPSDISTDIR) MOC_DIR=$(OUTPUTDIR) OBJECTS_DIR=$(OUTPUTDIR) -o $(QTMAKEFILE)

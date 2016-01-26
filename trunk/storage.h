@@ -74,7 +74,7 @@ extern void save_statefile( const char *filename );
 extern void load_statefile( const char *filename );
 extern void import_textfile( const char *filename );
 extern void export_textfile( const char *filename );
-extern void set_assembler(const char* toolsDir);
+extern void set_assembler(const char* assembler);
 #endif
 
 #endif

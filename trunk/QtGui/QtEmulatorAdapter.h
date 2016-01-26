@@ -83,7 +83,7 @@ extern void paste_raw_x(const char *p);
 extern void forward_export(const char* filename);
 extern void forward_import(const char* filename);
 
-extern void forward_set_assembler(const char* toolsDir);
+extern void forward_set_assembler(const char* assembler);
 }
 
 #endif /* QTEMULATOR_ADAPTER_H_ */

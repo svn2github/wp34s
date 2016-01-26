@@ -437,7 +437,7 @@ void forward_import(const char* filename)
 	import_textfile(filename);
 }
 
-void forward_set_assembler(const char* toolsDir)
+void forward_set_assembler(const char* assembler)
 {
-	set_assembler(toolsDir);
+	set_assembler(assembler);
 }

@@ -29,7 +29,7 @@
 #include "QtDebugger.h"
 
 #define ORGANIZATION_NAME "WP-34s"
-#define APPLICATION_NAME "WP34sEmulator"
+#define APPLICATION_NAME "WP34scEmulator"
 #define WINDOWS_SETTINGS_GROUP "MainWindow"
 #define WINDOWS_POSITION_SETTING "Position"
 #define WINDOWS_TITLEBAR_VISIBLE_SETTING "Frameless"
@@ -82,9 +82,9 @@
 #define IMAGE_DIRECTORY "images"
 #define DOCUMENTATION_FILE_TYPE "doc"
 #define DOCUMENTATION_DIRECTORY "doc"
-#define STATE_FILENAME "wp34s.dat"
-#define BACKUP_FILENAME "wp34s-backup.dat"
-#define LIBRARY_FILENAME "wp34s-lib.dat"
+#define STATE_FILENAME "wp34c.dat"
+#define BACKUP_FILENAME "wp34c-backup.dat"
+#define LIBRARY_FILENAME "wp34c-lib.dat"
 #define FONT_FILE_TYPE "font"
 #define FONTS_DIRECTORY "fonts"
 

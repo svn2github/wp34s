@@ -814,6 +814,7 @@ void recall_program( enum nilop op )
 #else
 #define ASSEMBLER "../tools/wp34s_asm.pl"
 #endif
+#define ASSEMBLER_OPTIONS ""
 char CurrentDir[ FILENAME_MAX + 1 ];
 char StateFile[ FILENAME_MAX + 1 ] = STATE_FILE;
 char ComPort[ FILENAME_MAX + 1 ] = "COM1";
@@ -1020,9 +1021,9 @@ static char* mktmpname(char* name, const char* prefix)
 #endif
 }
 
-void set_assembler(const char* toolsDir)
+void set_assembler(const char* assembler)
 {
-	strncpy(Assembler, toolsDir, FILENAME_MAX);
+	strncpy(Assembler, assembler, FILENAME_MAX);
 }
 
 #ifdef QTGUI
@@ -1067,7 +1068,7 @@ void import_textfile( const char *filename )
 		++logname;
 	}
 
-	sprintf( buffer, "%s -pp \"%s\" -o %s 1>%s 2>&1", Assembler, filename, tempname, logname );
+	sprintf( buffer, "%s %s -pp \"%s\" -o %s 1>%s 2>&1", Assembler, ASSEMBLER_OPTIONS, filename, tempname, logname );
 #ifdef QTGUI
 	getcwd(previousDir, IMPORT_BUFFER_SIZE);
 	chdir(getTmpDir());
