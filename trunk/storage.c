@@ -38,7 +38,7 @@
 #include <windows.h>
 #undef shutdown
 #endif
-#ifdef QTGUI
+#if defined(QTGUI) || defined(USECURSES)
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -1011,7 +1011,7 @@ static void show_log( char *logname, int rc )
 
 static char* mktmpname(char* name, const char* prefix)
 {
-#ifdef QTGUI
+#if defined(QTGUI) || defined(USECURSES)
 	strcpy(name, "wp34s");
 	strcat(name, prefix);
 	strcat(name, "_XXXXXX");
