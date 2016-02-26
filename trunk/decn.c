@@ -53,6 +53,10 @@ static void dump1(const decNumber *a, const char *msg) {
 #define BIGMOD_DIGITS	820		/* Big enough for maxreal mod minreal */
 #define SINCOS_DIGITS	51		/* Extra digits to give an accurate COS at pi/2 -- only needs to be 46 or 47 but this is the next even size up */
 
+typedef struct {
+	decNumber n;
+	decNumberUnit extra[((SINCOS_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
+} sincosNumber;
 
 /* Some basic conditional tests */
 int dn_lt0(const decNumber *x) {
@@ -68,8 +72,8 @@ int dn_eq0(const decNumber *x) {
 }
 
 int dn_eq(const decNumber *x, const decNumber *y) {
-	decNumber a;
-	return decNumberIsZero(dn_compare(&a, x, y));
+	sincosNumber a;
+	return decNumberIsZero(dn_compare(&a.n, x, y));
 }
 
 int dn_eq1(const decNumber *x) {
@@ -77,8 +81,8 @@ int dn_eq1(const decNumber *x) {
 }
 
 int dn_lt(const decNumber *x, const decNumber *y) {
-	decNumber a;
-	return dn_lt0(dn_compare(&a, x, y));
+	sincosNumber a;
+	return dn_lt0(dn_compare(&a.n, x, y));
 }
 
 int dn_abs_lt(const decNumber *x, const decNumber *tol) {
@@ -950,11 +954,6 @@ decNumber *decNumberBigMod(decNumber *res, const decNumber *x, const decNumber *
 
 /* Calculate sin and cos by Taylor series
  */
-typedef struct {
-	decNumber n;
-	decNumberUnit extra[((SINCOS_DIGITS-DECNUMDIGITS+DECDPUN-1)/DECDPUN)];
-} sincosNumber;
-
 void sincosTaylor(const decNumber *a, decNumber *sout, decNumber *cout) {
 	sincosNumber a2, t, j, z, s, c;
 	int i, fins = sout == NULL, finc = cout == NULL;
@@ -1062,6 +1061,9 @@ void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv)
 	}
 }
 
+/* Have to be careful here to ensure that every function we call can handle
+ * the increased size of the numbers we're using.
+ */
 static void cvt_2rad_sincos(decNumber *sin, decNumber *cos, const decNumber *xin) {
 	sincosNumber x, y;
 	static const decNumber * const degrees[4] = {
@@ -1146,6 +1148,9 @@ decNumber *decNumberCos(decNumber *res, const decNumber *x) {
 	return res;
 }
 
+/* Have to be careful here to ensure that every function we call can handle
+ * the increased size of the numbers we're using.
+ */
 decNumber *decNumberTan(decNumber *res, const decNumber *x) {
 	sincosNumber x2, s, c;
 
