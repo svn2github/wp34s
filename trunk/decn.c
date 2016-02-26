@@ -1063,7 +1063,7 @@ void dn_sincos(const decNumber *v, decNumber *sinv, decNumber *cosv)
 }
 
 static void cvt_2rad_sincos(decNumber *sin, decNumber *cos, const decNumber *xin) {
-	decNumber x, y;
+	sincosNumber x, y;
 	static const decNumber * const degrees[4] = {
 		&const_45, &const_90, &const_180, &const_360
 	};
@@ -1075,8 +1075,8 @@ static void cvt_2rad_sincos(decNumber *sin, decNumber *cos, const decNumber *xin
 
 	switch (get_trig_mode()) {
 	case TRIG_RAD:
-		decNumberMod(&x, xin, &const_2PI);
-		sincosTaylor(&x, sin, cos);
+		decNumberMod(&x.n, xin, &const_2PI);
+		sincosTaylor(&x.n, sin, cos);
 		return;
 
 	case TRIG_GRAD:
@@ -1091,37 +1091,37 @@ static void cvt_2rad_sincos(decNumber *sin, decNumber *cos, const decNumber *xin
 	// sin(-x) = -sin(x), cos(-x) = cos(x)
 	if (decNumberIsNegative(xin)) {
 		sneg = 1;
-		dn_minus(&x, xin);
+		dn_minus(&x.n, xin);
 	} else
-		decNumberCopy(&x, xin);
+		decNumberCopy(&x.n, xin);
 
-	decNumberMod(&x, &x, thresholds[3]);
+	decNumberMod(&x.n, &x.n, thresholds[3]);
 
 	// sin(180+x) = -sin(x), cos(180+x) = -cos(x)
-	if (dn_ge(&x, thresholds[2])) {
-		dn_subtract(&x, &x, thresholds[2]);
+	if (dn_ge(&x.n, thresholds[2])) {
+		dn_subtract(&x.n, &x.n, thresholds[2]);
 		sneg = !sneg;
 		cneg = !cneg;
 	}
 
 	// sin(90+x) = cos(x), cos(90+x) = -sin(x)
-	if (dn_ge(&x, thresholds[1])) {
-		dn_subtract(&x, &x, thresholds[1]);
+	if (dn_ge(&x.n, thresholds[1])) {
+		dn_subtract(&x.n, &x.n, thresholds[1]);
 		swap = 1;
 		cneg = !cneg;
 	}
 
 	// sin(90-x) = cos(x), cos(90-x) = sin(x)
-	if (dn_eq(&x, thresholds[0])) {
+	if (dn_eq(&x.n, thresholds[0])) {
 		decNumberCopy(sin, &const_root2on2);
 		decNumberCopy(cos, &const_root2on2);
 	} else {
-		if (dn_gt(&x, thresholds[0])) {
-			dn_subtract(&x, thresholds[1], &x);
+		if (dn_gt(&x.n, thresholds[0])) {
+			dn_subtract(&x.n, thresholds[1], &x.n);
 			swap = !swap;
 		}
-		decNumberDRG_internal(&y, &x, OP_2RAD);
-		sincosTaylor(&y, swap?cos:sin, swap?sin:cos);
+		decNumberDRG_internal(&y.n, &x.n, OP_2RAD);
+		sincosTaylor(&y.n, swap?cos:sin, swap?sin:cos);
 	}
 
     if (sneg) dn_minus(sin, sin);
