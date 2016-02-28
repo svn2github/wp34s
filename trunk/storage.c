@@ -38,7 +38,7 @@
 #include <windows.h>
 #undef shutdown
 #endif
-#if defined(QTGUI) || defined(USECURSES)
+#if defined(QTGUI) || ( defined(USECURSES) && !defined(WIN32) )
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -1011,7 +1011,7 @@ static void show_log( char *logname, int rc )
 
 static char* mktmpname(char* name, const char* prefix)
 {
-#if defined(QTGUI) || defined(USECURSES)
+#if defined(QTGUI) || ( defined(USECURSES) && ! defined(WIN32) )
 	strcpy(name, "wp34s");
 	strcat(name, prefix);
 	strcat(name, "_XXXXXX");
@@ -1146,7 +1146,7 @@ static void write_pretty( const char *in, FILE *f ) {
 		else {
 			p = pretty( c );
 		}
-		if ( p == NULL ) {
+		if ( p == CNULL ) {
 			fputc( c, f );
 		}
 		else {

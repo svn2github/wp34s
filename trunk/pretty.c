@@ -20,6 +20,7 @@
 
 #include "pretty.h"
 #include "xeq.h"		// This helps the syntax checker
+#include "display.h"		// This too
 
 #include "translate.c"		// unicode[]
 #include "font_alias.inc"	// more character aliases
