@@ -371,7 +371,7 @@ struct _constsml conversions[] = {
 	CONV("g",	"oz",		"G_OZ",		"28.34952"),		// source: NIST
 	CONV("g",	"tr.oz",	"G_TOZ",	"31.10348"),		// source: NIST
 	CONV("l",	"galUK",	"L_GALUK",	"4.54609"),		// source: NIST
-	CONV("l",	"galUS",	"L_GALUS",	"3.785412"),		// source: NIST
+	CONV("l",	"galUS",	"L_GALUS",	"3.785411784"),		// derived: 231 in^3, yd^3 is exactly 0.9144m
 	CONV("l",	"cft",		"L_CUBFT",	"28.31685"),		// source: NIST
 	CONV("ml",	"flozUK",	"ML_FLOZUK",	"28.41306"),		// source: NIST oz UK fluid
 	CONV("ml",	"flozUS",	"ML_FLOZUS",	"29.57353"),		// source: NIST oz US fluid
