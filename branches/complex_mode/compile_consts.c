@@ -1,4 +1,5 @@
 /* This file is part of 34S.
+/* This file is part of 34S.
  * 
  * 34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -95,10 +96,14 @@ static struct {
 	{ DFLT,  "20",			"20"		},
 	{ DFLT,  "21",			"21"		},
 	{ DFLT,  "32",			"32"		},
+	{ DFLT,  "45",			"45"		},
+	{ DFLT,  "50",			"50"		},
 	{ DFLT,  "60",			"60"		},
 	{ DFLT,  "90",			"90"		},
 	{ DFLT,  "100",			"100"		},
 	{ DFLT,  "150",			"150"		},
+	{ DFLT,  "180",			"180"		},
+	{ DFLT,  "200",			"200"		},
 	{ DFLT,  "256",			"256"		},
 	{ DFLT,  "300",			"300"		},
 	{ DFLT,  "360",			"360"		},
@@ -356,50 +361,48 @@ struct _constsml constsml[] = {
 
 /* Imperial/metric conversions.
  * Data taken from http://physics.nist.gov/Pubs/SP811/appenB9.html
- * In general, the values are rounded to 6 or 7 digits even though
- * more accurate values are known for many of these.
+ * and other sources specified in the comments below.
+ * In general, the values are either exact or rounded to 16 sigificant digits.
  */
 struct _constsml conversions[] = {
-	CONV("kg",	"lb",		"KG_LBM",	"0.4535924"),		// source: NIST
-	CONV("kg",	"stone",	"KG_STONE",	"6.3502936"),		// derived: 14 lbs to a stone
-	CONV("kg",	"cwt",		"KG_CWT",	"50.8023488"),		// derived: 112lb to a long cwt
-	CONV("kg",	"s.cwt",	"KG_SHCWT",	"45.35924"),		// source: NIST hundredweight, short 100lb
-	CONV("g",	"oz",		"G_OZ",		"28.34952"),		// source: NIST
-	CONV("g",	"tr.oz",	"G_TOZ",	"31.10348"),		// source: NIST
-	CONV("l",	"galUK",	"L_GALUK",	"4.54609"),		// source: NIST
-	CONV("l",	"galUS",	"L_GALUS",	"3.785411784"),		// derived: 231 in^3, yd^3 is exactly 0.9144m
-	CONV("l",	"cft",		"L_CUBFT",	"28.31685"),		// source: NIST
-	CONV("ml",	"flozUK",	"ML_FLOZUK",	"28.41306"),		// source: NIST oz UK fluid
-	CONV("ml",	"flozUS",	"ML_FLOZUS",	"29.57353"),		// source: NIST oz US fluid
-	CONV("cm",	"inches",	"CM_INCH",	"2.54"),		// source: NIST
-	CONV("m",	"fathom",	"M_FATHOM",	"1.8288"),		// derived: 6 feet
-	CONV("m",	"feet",		"M_FEET",	"0.3048"),		// source: NIST
-	CONV("m",	"feetUS",	"M_FEETUS",	"0.3048006096"),		// source: Wikipedia etc
-	CONV("m",	"yards",	"M_YARD",	"0.9144"),		// source: NIST
-	CONV("km",	"miles",	"KM_MILE",	"1.609344"),		// source: NIST
-	CONV("km",	"l.y.",		"KM_LY",	"9.4607304725808E12"),		// source: IAU (see http://www.hpmuseum.org/forum/thread-2262.html)
-	CONV("km",	"pc",		"KM_PC",	"3.085678E13"),		// source: NIST
-	CONV("km",	"AU",		"KM_AU",	"149597900"),		// source: NIST, IAU 2009 gives 1.49597870700E11
-	CONV("km",	"nmi",		"KM_NMI",	"1.852"),		// source: NIST
-//	CONV("m\232",	"square",	"M_SQUARE",	"9.290304"),		// derived: 
-//	CONV("m\232",	"perch",	"M_PERCH",	"25.29285264"),		// derived: 
-	CONV("ha",	"acres",	"HA_ACREUK",	"0.40468564224"),	// derived: 43560 square feet
-	CONV("ha",	"acreUS",	"HA_ACREUS",	"0.4046873"),		// source: NIST
-	CONV("N",	"lbf",		"N_LBF",	"4.448222"),		// source: NIST
-	CONV("J",	"Btu",		"J_BTU",	"1055.056"),		// source: NIST BTUit
-	CONV("J",	"cal",		"J_CAL",	"4.1868"),		// source: NIST calorie it
-	CONV("J",	"kWh",		"J_kWh",	"3600000"),		// source: NIST
-	CONV("Pa",	"atm",		"Pa_ATM",	"101325"),		// source: NIST atmosphere standard
-	CONV("Pa",	"bar",		"Pa_bar",	"100000"),		// source: NIST
-	CONV("Pa",	"mmHg",		"Pa_mmHg",	"133.3224"),		// source: NIST cm mercury conventional
-	CONV("Pa",	"psi",		"Pa_psi",	"6894.757"),		// source: NIST pound-force per square inch
-	CONV("Pa",	"inHg",		"Pa_inhg",	"3386.389"),		// source: NIST inch of mercury conventional
-	CONV("Pa",	"torr",		"Pa_torr",	"133.3224"),		// source: NIST
-	CONV("W",	"hp(I)",	"W_HP550",	"745.6999"),		// source: NIST horsepower 550 ft . lb / s
-	CONV("W",	"hp(M)",	"W_HP",		"735.4988"),		// source: NIST horsepower metric
-	CONV("W",	"hp(E)",	"W_HPe",	"746"),			// source: NIST horsepower electric
-	CONV("t",	"tons",		"T_TON",	"1.016047"),		// source: NIST ton, long 2240lb
-	CONV("t",	"s.tons",	"T_SHTON",	"0.9071847"),		// source: NIST ton, short 2000lb
+	CONV("kg",	"lb",		"KG_LBM",	"0.45359237"),		// source: NIST; exact
+	CONV("kg",	"stone",	"KG_STONE",	"6.35029318"),		// derived: 14 lbs to a stone using exact lb; exact
+	CONV("kg",	"cwt",		"KG_CWT",	"50.80234544"),		// derived: 112lb to a long cwt using exact lb;exact
+	CONV("kg",	"s.cwt",	"KG_SHCWT",	"45.359237"),		// source: NIST hundredweight, short 100lb using exact lb; exact
+	CONV("g",	"oz",		"G_OZ",		"28.349523125"),		// source: NIST; 16oz to 1 lb using exact lb
+	CONV("g",	"tr.oz",	"G_TOZ",	"31.1034768"),		// source: NIST; 1 tr.oz = 480 grains; 1 lb = 7000 grains exactly; exact
+	CONV("l",	"galUK",	"L_GALUK",	"4.54609"),		// source: NIST; also UK Weights and Measures act 1985; exact
+	CONV("l",	"galUS",	"L_GALUS",	"3.785411784"),		// source: NIST handbook 44 2017 appendix C; exact
+	CONV("l",	"cft",		"L_CUBFT",	"28.316846592"),		// source: 1 inch = 0.0254 m; exact
+	CONV("ml",	"flozUK",	"ML_FLOZUK",	"28.4130625"),		// source: 1 ukgallon = 8 pints; 1 pint = 20 flozuk; see above for exact ukgallon; exact
+	CONV("ml",	"flozUS",	"ML_FLOZUS",	"29.5735295625"),		// source: NIST handbook 44 2017 appendix C; 1 floz = 1.8046875 in^3; exact
+	CONV("cm",	"inches",	"CM_INCH",	"2.54"),		// source: NIST; exact already
+	CONV("m",	"fathom",	"M_FATHOM",	"1.8288"),		// derived: 6 feet; exact
+	CONV("m",	"feet",		"M_FEET",	"0.3048"),		// source: NIST; exact
+	CONV("m",	"feetUS",	"M_FEETUS",	"0.3048006096012192"),		// source: Wikipedia etc; usfoot = survey foot = 1200/3937 m exactly; number given is correct to 16sf
+	CONV("m",	"yards",	"M_YARD",	"0.9144"),		// source: NIST; exact
+	CONV("km",	"miles",	"KM_MILE",	"1.609344"),		// source: NIST; exact
+	CONV("km",	"l.y.",		"KM_LY",	"9.4607304725808E12"),		// source: IAU (see http://www.hpmuseum.org/forum/thread-2262.html); exact
+	CONV("km",	"pc",		"KM_PC",	"3.085677581491367E13"),		// source: August 2015 IAU Resolution B2 defines parsec as 648000/pi AU; uses AU below; correct to 16sf
+	CONV("km",	"AU",		"KM_AU",	"149597870.7"),		// source: NIST, IAU 2009 gives 1.49597870700E11; value changed to this exact definition
+	CONV("km",	"nmi",		"KM_NMI",	"1.852"),		// source: NIST; exact
+	CONV("ha",	"acres",	"HA_ACREUK",	"0.40468564224"),	// derived: 43560 square feet; exact
+	CONV("ha",	"acreUS",	"HA_ACREUS",	"0.4046872609874252"),		// source: NIST; using exact definition of survey foot correct to 16sf
+	CONV("N",	"lbf",		"N_LBF",	"4.4482216152605"),		// source: using g (standard) = 9.80665 N/kg from NIST constants and exact value for mass of 1lb; exact
+	CONV("J",	"Btu",		"J_BTU",	"1055.05585262"),		// source: NIST; 1BTU = heat needed to raise temp of 1 lb water by 1 degF; using exact pound and calorie values gives result above
+	CONV("J",	"cal",		"J_CAL",	"4.1868"),		// source: NIST calorie it (International Steam Table calorie); exact
+	CONV("J",	"kWh",		"J_kWh",	"3600000"),		// source: NIST; exact
+	CONV("Pa",	"atm",		"Pa_ATM",	"101325"),		// source: NIST atmosphere standard; exact
+	CONV("Pa",	"bar",		"Pa_bar",	"100000"),		// source: NIST; exact
+	CONV("Pa",	"mmHg",		"Pa_mmHg",	"133.322387415"),		// source: calculated from Note 2 on this NPL page: http://www.npl.co.uk/reference/faqs/pressure-units; exact
+	CONV("Pa",	"psi",		"Pa_psi",	"6894.757293168361"),		// source: NIST pound-force per square inch; uses value for lbF above; correct to 16sf
+	CONV("Pa",	"inHg",		"Pa_inhg",	"3386.388640341"),		// source: NIST inch of mercury conventional; see mmHg above; exact
+	CONV("Pa",	"torr",		"Pa_torr",	"133.3223684210526"),		// source: NIST; 101325/760 is exact value; also see Note 4 on npl page referred to above; correct to 16sf
+	CONV("W",	"hp(I)",	"W_HP550",	"745.6998715822702"),		// source: NIST horsepower 550 ft . lb / s; using standard g; correct to 16sf
+	CONV("W",	"hp(M)",	"W_HP",		"735.49875"),		// source: NIST horsepower metric (lifting 75kg 1m in 1s) using standard g; exact
+	CONV("W",	"hp(E)",	"W_HPe",	"746"),			// source: NIST horsepower electric; exact
+	CONV("t",	"tons",		"T_TON",	"1.0160469088"),		// source: NIST ton, long 2240lb; using exact lb; exact
+	CONV("t",	"s.tons",	"T_SHTON",	"0.90718474"),		// source: NIST ton, short 2000lb; using exact lb; exact
 
 	CONV(NULL, NULL, NULL, NULL)
 };
