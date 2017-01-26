@@ -1,5 +1,4 @@
 /* This file is part of 34S.
-/* This file is part of 34S.
  * 
  * 34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
