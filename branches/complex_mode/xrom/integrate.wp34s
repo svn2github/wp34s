@@ -174,9 +174,12 @@ int_no_error::		DSE r_ui2
 			JMP int_next_size
 
 /* Two matches in a row is goodness. */
-int_done::		[cmplx]RCL cr_limits
+int_done::		STO- Y
+			x[<->] Y
+			ABS
+			[cmplx]RCL cr_limits
 			STO L
-			[cmplx]x[<->] Z
+			[<->] TZXY
 			TOP?
 				MSG MSG_INTEGRATE
 			RTN
