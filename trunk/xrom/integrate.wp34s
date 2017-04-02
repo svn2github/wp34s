@@ -21,180 +21,431 @@
  * Changes to this will likely cause breakage.
  */
 
-/**************************************************************************/
-/* Integrate code
- * This routine is based on the PPC 'IG' routine which was ported to the 34S
- * by Les Wright and slightly modified for inclusion in the firmware.
- */
+// Double Exponential Integration for the wp34s calculator
+//
+// v1.3x-398 (20170104) by M. César Rodríguez GGPL
+//
+// USAGE:
+//  Inputs:
+//    - integration limits in X (upper limit) and Y (lower limit)
+//  Outputs:
+//    - approximate value of integral in X
+//    - estimated error in Y
+//    - upper integration limit in Z
+//    - lower integration limit in T
+//    - updates L (with upper limit)
+//    - in SSIZE8 mode, all ABCD will be corrupted
+//
+//  Remarks:
+//    - accepts +Infinite and -Infinite as integration limits. If none
+//      of the limits is infinite, the method applied is the tanh-sinh
+//      one. If both are infinite then the sinh-sinh method is selected.
+//      Otherwise the exp-sinh method is used
+//    - the program tries to get all displayed digits correct, so
+//      increasing the number of displayed digits will (hopefully) give
+//      closer approximations (needing more time). But, in DBLON mode, the
+//      program ignores the number of displayed digits and does its best
+//      to get as much correct digits as possible
+//    - during program execution the succesive aproximations are
+//      displayed (as with the built-in integration program). Pressing
+//      [<-] will interrupt the program & the last approximation
+//      will be returned. The estimated error will be 0 in this case
+//    - if the computed error estimation is not much smaller than the computed
+//      result, it is assumed that all digits of the result are corrupted by
+//      roundoff. In such cases, the reported result is 0 and the reported
+//      error estimation equals the sum of the absolute values of the computed
+//      result and error. This usually happens when the integral evaluates to 0
+//    - if the user has set the D flag, many errors when evaluating the
+//      integrand (say 0/0 or 1/0, overflows or ...) will not raise an error,
+//      but return infinite or NaN instead. Such conditions will be detected
+//      by this program that will continue the computation simply ignoring
+//      the offending point
+//    - keep in mind that, when both integration limits are infinite (or
+//      one is infinite and the other 0) the integrand may be evaluated
+//      at really bigs/small points (up to 1e±199 in DBLOFF mode and
+//      1e±3088 in DBLON mode). Ensure that your integrand program
+//      behaves as expected for such arguments (you may consider to set
+//      flag D in some circumstances)
+//    - the double exponential method relies on the function to be
+//      integrated being analytic over the integration interval, except,
+//      perhaps, at the interval ends. Thus, if it is known that the
+//      integrand, _or any of its derivatives_, has a discontinuity at some
+//      point inside the integration interval, it is advised to break the
+//      interval at such point and compute two separate integrals, one
+//      at each side of the problematic point. Better results will be
+//      get this way. Thus, beware of abs, fp, ip and such non analytic
+//      functions inside the integrand program. Other methods (Romberg)
+//      may behave better in this respect, but, on the other side, the
+//      double exponential method manages discontinuities (of the
+//      integrand or its derivatives) at the interval edges better and
+//      is usually way faster that the Romberg method
+//    - as many other quadrature methods (Romberg included), the
+//      double exponential algorithm does not manage well highly
+//      oscillatory integrands. Here, highly oscillatory means that the
+//      integrand changes sign many (or infinite) times along the
+//      integration interval
+//
+//  Method used:
+//    The algorith used here is adapted from that described in:
+//      H. Takahasi and M. Mori. "Double Exponential Formulas for Numerical
+//      Integration." Publications of RIMS, Kyoto University 9 (1974),
+//      721-741.
+//    Another useful reference may be:
+//      David H. Bailey, Xiaoye S. Li and Karthik Jeyabalan, "A comparison
+//      of three high-precision quadrature schemes," Experimental
+//      Mathematics, vol. 14 (2005), no. 3, pg 317-329.
+//
+// 263 steps
+// 16 local registers
 
-/* Registers */
-#define r_k		.00		/* counter */
-#define r_ui		.01		/* Ui */
-#define r_ui2		.02		/* 1 - Ui ^ 2 */
-#define r_deltau	.03		/* 2 ^ (1-k) */
-#define r_Sk		.04		/* Sk */
-#define r_ba4		.05		/* (b-a) / 4 */
-#define r_middle	.06		/* (b+a) / 2 */
-#define cr_limits	.07		/* lower and upper limits in .07 and .08 */
-#define r_SkAbs		.09		/* Sum Abs Sk */
-#define r_base		.10
+              XLBL"INTEGRATE" // Double-Exponential Integration
+                INTM?       // check for invalid mode
+                  ERR ERR_BAD_MODE
+                LocR 16     // Local registers and flags:
 
-/* Flags */
-#define f_force		.00		/* Force initial iteration even if it looks like convergence*/
-#define f_final		.01		/* Force a final iteration when an almost zero result appears */
+// local registers
+#define XB    .00   // backup of X (b)
+#define YB    .01   // backup of Y (a)
+#define bma2  .02   // (b - a)/2, a & b are the integration limits
+#define bpa2  .03   // (b + 2)/2
+#define eps   .04   // epsilon
+#define thr   .05   // convergence threshold
+#define lvl   .06   // level counter
+#define tm    .07   // maximum abscissa in the t domain
+#define h     .08   // space between abscissas in the t domain
+#define ssp   .09   // partial sum at each level
+#define j     .10   // abscissa counter
+#define ch    .11   // cosh(t)
+#define w     .12   // weight
+#define rp    .13   // abscissa (r) or fplus + fminus (p)
+#define ss    .14   // value of integral
+#define ss1   .15   // previous ss
 
+// local flags
+#define DF    .00   // backup of D flag
+#define rev   .01   // b is < a
+#define ES    .02   // expsinh mode
+#define bpa2z .03   // bpa2 is zero in sinhsinh or expsinh modes
+#define left  .04   // expsinh case with -Infinite limit
+#define TS    .05   // tanhsinh mode
+#define lg0   .06   // true if level > 0
 
-int_bad_range::		[cmplx]RCL cr_limits
-			Num NaN
-			ENTER[^]
-			STO L
-			RTN
+                FS?S D      // backup & set flag D, specials are not errors here
+                  SF DF
+                cSTO XB     // save XY (ba)
+                // check arguments  ************************************
+                NaN?        // check for invalid limits
+                  JMP DEI_bad_rng   // b is NaN, exit
+                x<>y
+                NaN?
+                  JMP DEI_bad_rng   // a is NaN, exit
+                x=? Y       // check for equal limits
+                  JMP DEI_0         // a == b, return 0
+                // set mode flags, bma2 and bpa2  **********************
+                x>? Y       // a > b?
+                  SF rev    // yes, flag it
+                INF?        // a == ±inf?
+                  SF ES     // yes, flag it (temporarily in ES)
+                x<>y
+                INF?        // b == ±inf?
+                  SF bpa2z  // yes, flag it (temporarily in bpa2z)
+                // set the ES, bpa2z, left & TS flags according to the
+                // a & b values ++++++++++++++++++++++++++++++++++++++++
+                FS? ES      // was a == ±inf?
+                  FC? bpa2z // was b != ±inf?
+                    JMP DEI_inf_1   // skip if a != ±inf or b != ±inf
+                _INT 000    // here in the sinhsinh case  --------------
+                _INT 002    // 2*bpa2 = 0, 2*bma2 = 2
+                CF ES       // as this flag was dirty
+                JMP DEI_ba2_rdy     // done with sinhsinh
+DEI_inf_1::     FC? ES      // was a != ±inf?
+                  FS? bpa2z // was b == ±inf?
+                    JMP DEI_inf_2   // skip if a == ±inf or b == ±inf
+                cENTER      // here in the tanhsinh case  --------------
+                +           // 2*bpa2 ready
+                x<> Z
+                -
+                ABS         // 2*bma2 ready
+                SF TS       // flag the tanhsinh case
+                JMP DEI_ba2_rdy     // done with tanhsinh
+DEI_inf_2::     INF?        // here in the expsinh case ----------------
+                  x<>y      // now X is the finite limit
+                x>? Y       // finite limit > infinite one?
+                  SF left   // yes, left case
+                RCL+ X      // 2*bpa2 ready
+                CF bpa2z    // as this flag was dirty
+                x=0?        // finite limit == 0?
+                  SF bpa2z  // yes, flag it
+                SF ES       // flag the expsinh case
+                _INT 002    // 2*bma2 ready
+DEI_ba2_rdy::   _INT 002    // here with 2*bpa & 2*bma2 on stack
+                /           // and mode flags ready
+                STO bma2    // save bma2
+                x<>y
+                RCL/ L
+                STO bpa2    // save bpa2
+                // done with mode flags, bpa2 and bma2  ****************
+                // compute precision parameters ************************
+                _INT 034    // 34 digits in DBLON mode
+                +/-
+                DBL?        // in DBL mode use all digits
+                  JMP DEI_dbl
+                _INT 009    // otherwise use displayed digits + 3,
+                1/x         // let's get the number of displayed digits
+                ROUND
+                RCL- L
+                EXPT        // now X is -(number of displayed digits + 1)
+                _INT 002
+                -           // -(the number of displayed digits + 3)
+DEI_dbl::       ENTER       // here X = -(number of displayed + 3) (or -34)
+                10^x
+                STO eps     // save epsilon
+                SQRT        // compute the convergence threshold, thr,
+                SDL 001     // = 10*sqrt(epsilon)
+                STO thr     // save the convergence threshold
+                DROP
+                ABS         // compute the maximum level
+                LB
+                ROUNDI
+                _INT 002
+                +           // maxlevel = round(log2(digits)) + 2
+                STO lvl     // save level
+                FC? bpa2z   // the sinhsinh case and the expsinh case
+                  JMP DEI_tanhsinh  // when the finite limit == 0 can use a
+                _INT 001    // smaller epsilon
+                _INT 000
+                NEIGHB
+                STO eps     // save epsilon for such cases
+                // precision parameters (epsilon, thr, level) ready ****
+                // compute maximum t value (tm) ************************
+                // tm is computed in such a way that all abscissas are
+                // representable at the given precision and that the
+                // integrand is never evaluated at the limits
+DEI_tanhsinh::  FC? TS      // tanhsinh mode?
+                  JMP DEI_ss_es     // no, check other modes
+                _INT 001    // start tm computation for tanh-sinh mode
+                RCLMIN bma2
+                RCL+ X      // X = 2*MIN(1, bma2)
+                JMP DEI_cont        // goto remaining tm calculation
+DEI_ss_es::     FS? bpa2z   // neither SS nor ES with 0 limit?
+                  JMP DEI_ss_es0    // no, must be SS or ES with 0 limit
+                _INT 1/2    // start tm computation for ES with != 0 limit
+                RCL/ bpa2
+                ABS         // X = ABS(1/(2*bpa2))
+                JMP DEI_cont        // goto remaining tm calculation
+DEI_ss_es0::    RCL eps     // start tm computation for SS & ES0 cases
+                SQRT        // X = SQRT(eps)
+DEI_cont::      RCL/ eps    // continue tm computation for all cases
+                LN
+                FC? TS      // not in TS mode?
+                  RCL+ X    // 2*ln(...) for all cases except TS
+                RCL+ X      // 4*ln(...) for all cases except TS (2*LN(...))
+                PI
+                /
+                LN
+                STO tm      // tm done
+                // maximum t (tm) ready ********************************
+                // level loop ******************************************
+                _INT 002
+                STO h       // h = 2
+DEI_lvl_loop::  _INT 000
+                STO ssp     // ssp = 0
+                _INT 001
+                STO j       // j = 1
+                _INT 002
+                STO/ h      // h /= 2
+                RCL h       // X = t
+                // j loop ++++++++++++++++++++++++++++++++++++++++++++++
+                // compute abscissas and weights  ----------------------
+DEI_j_loop::    COSH        // cosh(t) (cosh is much faster than sinh/tanh)
+                STO ch      // save for later
+                x^2
+                DEC X
+                SQRT
+                Num PIon2
+                *           // pi/2*sqrt(cosh(t)^2 - 1) = pi/2*sinh(t)
+                FS? ES      // ES mode?
+                  EXP       // yes, want EXP
+                FC? ES
+                  COSH      // no, want COSH
+                FILL
+                FC? TS      // TS mode?
+                  JMP DEI_not_ts    // no, done with w (for ES, SS cases)
+                x^2         // end weight computation for TS mode
+                1/x
+DEI_not_ts::    STO w       // save weight
+                DROP        // stack filled with exp/cosh of pi/2*sinh(t)
+                FS? ES      // ES mode?
+                  JMP DEI_es_skip   // yes, skip this part
+                x^2         // no ES mode, get r (the abscissa in the
+                DEC X       // normalized domain)
+                SQRT
+DEI_es_skip::   FS? TS      // TS mode?
+                  RCL/ Y    // yes, adjust r
+                FS? left    // ES mode -infinity?
+                  +/-       // yes, adjust r
+                STO rp      // save normalized abscissa
+                // done with abscissas and weights  --------------------
+                // evaluate integrand ----------------------------------
+                RCL* bma2   // r*(b - a)/2
+                RCL+ bpa2   // (b + a)/2 + r*(b - a)/2
+                GSB DEI_xeq_user    // f(bpa2 + bma2*r)
+                RCL* w      // fplus*w
+                x<> rp      // p = fplus*w stored, r in X
+                RCL bpa2    // (b + a)/2
+                RCL bma2    // (b - a)/2
+                FS? ES      // ES mode?
+                  JMP DEI_es_mode
+                RCL* Z      // no ES mode, "normal" abscissa
+                -
+                JMP DEI_call_usr_m
+DEI_es_mode::   RCL/ Z      // ES mode, "inverse" abscissa
+                +           // X = (b + a)/2 ± (b - a)/2*(r or 1/r)
+DEI_call_usr_m:: GSB DEI_xeq_user   // f(bpa2 ± bma2*(r or 1/r))
+                FS? ES      // ES mode?
+                  RCL/ w    // ES mode, inverse weight, fminus/w
+                FC? ES
+                  RCL* w    // no ES mode, normal weight, fminus*w
+                RCL+ rp     // p = fplus*w + fminus*(w or 1/w)
+                RCL* ch     // X = ch*p
+                SPEC?
+                  _INT 000  // safety check for weight
+                STO+ ssp    // ssp += p
+                // done with integrand  --------------------------------
+                // level 0 is special ----------------------------------
+                FC? lg0     // is level == 0?
+                  JMP DEI_updte_j   // yes, go to next level
+                INC j       // no, sweep odd abscissas, j += 1
+                ABS         // X = ABS(p)
+                RCL ssp
+                RCL* eps
+                ABS         // X = ABS(ssp*eps), Y = ABS(p)
+                x>=? Y      // ABS(p) <= ABS(eps*eps)?
+                  JMP DEI_j_exit    // then done with level
+                // and check user interrupt ............................
+                KEY? Y      // any key?
+                  JMP DEI_updte_j   // no, continue
+                _INT 035    // yes, check keycode for [<-]
+                x!=? Z      // key is not [<-]?
+                  JMP DEI_updte_j   // it is not [<-], continue
+                RCL ss1     // it is, recall the last computation
+                JMP DEI_chk_bad     // and exit (checking big error results)
+                // call user's function  -------------------------------
+DEI_xeq_user::    SPEC?     // abscissa is good?
+                    JMP DEI_bad_absc  // no, skip point
+                  FC? DF    // honour the user's D flag setting
+                    CF D
+                  XEQUSR
+                  POPUSR
+                  SPEC?     // do not stop in error (if flag D was set)
+                    _INT 0
+                  SF D      // set flag D for internal calculations
+                RTN
+DEI_bad_absc::    _INT 000
+                RTN
+                // if level > 0 done  ----------------------------------
+DEI_updte_j::   INC j       // j += 1
+                RCL j       // X = j
+                RCL* h      // X = t = j*h
+                x<=? tm     // t <= tm?
+                  JMP DEI_j_loop    // yes, continue j loop
+                // done with j loop ++++++++++++++++++++++++++++++++++++
+DEI_j_exit::    RCL ssp     // no, update ss. X = ssp
+                STO+ ss     // ss += ssp
+                FS? lg0     // is level > 0 ----------------------------
+                  JMP DEI_chk_conv  // yes, progress to next level
+                _INT 001    // no, add 1st series term
+                FS? left    // left?
+                  +/-
+                RCL bpa2    // (b + a)/2
+                FS? ES      // ES mode?
+                  +
+                GSB DEI_xeq_user    // f(bpa2 (+/-1 in ES mode))
+                STO+ ss     // ss += f(bpa2)
+                // done with level 0  ----------------------------------
+                // apply constant coeffs to sum ------------------------
+DEI_chk_conv::  RCL ss
+                RCL* bma2 // ss*bma2
+                RCL* h    // ss*bma2*h
+                Num PIon2
+                *         // ss*bma2*h*pi/2
+                FS? rev   // reverse?
+                  +/-     // yes,so change sign
+                // done with constant coeffs  --------------------------
+                // show progress  --------------------------------------
+                TOP?        // show value of approximation
+                  MSG MSG_INTEGRATE
+                // check convergence  ----------------------------------
+                RCL ssp
+                RCL+ X      // 2*ssp
+                RCL- ss     // 2*ssp - ss
+                ABS         // ABS(2*ssp - ss)
+                RCL thr
+                RCL* ss     // thr*ss
+                ABS         // ABS(thr*ss)
+                x>? Y       // ABS(2*ssp - ss) < ABS(thr*ss)?
+                  JMP DEI_fin       // yes, computation done
+                z<> ss1     // no, save ss (with all coeffs applied)
+                SF lg0      // mark level 0 done,
+                DSL lvl     // update level &...
+                  JMP DEI_lvl_loop  // loop.
+DEI_fin::       RCL Z       // recall result
+                // done with level loop ********************************
+                // compute error estimation and check for bad results **
+                // here with result in X
+DEI_chk_bad::   RCL X       // stack: ss-ss-?-?
+                ABS         // stack: |ss|-ss-?-?
+                RCL Y       // stack: ss-|ss|-ss-?
+                RCL- ss1    // stack: (ss-ss1)-|ss|-ss-?
+                ABS         // stack: err-|ss|-ss-?
+                RCL X       // stack: err-err-|ss|-ss
+                SDL 001     // stack: 10*err-err-|ss|-ss
+                x<? Z       // 10*err < |ss|?
+                  JMP DEI_res_okay  // yes, assume result is OK
+                x<> Z       // no, bad result. stack: |ss|-err-10*err-ss
+                +           // stack: new_err-10*err-ss-ss
+                _INT 000    // stack: 0-new_err-10*err-ss
+                STO T       // stack: 0-new_err-10*err-0
+DEI_res_okay::  x<> T       // stack: 0-err-... or ss-err-...
+                // done with bad results  ******************************
+                //  exit  **********************************************
+DEI_exit::      TOP?        // show new computed value (0)
+                  MSG MSG_INTEGRATE
+                cRCL XB     // stack: b-a-s-ss1
+                STO L       // b into L
+                cx<> Z      // stack: s-ss1-b-a
+                FC? DF      // restore user's D flag (DF)
+                  CF D
+              RTN           // bye
+                // exit cause a == b  **********************************
+DEI_0::         _INT 000    // error & result both 0
+                JMP DEI_dup_exit
+                // exit cause a or b is NaN ****************************
+DEI_bad_rng::   Num NaN     // error & result both NaN
+DEI_dup_exit::  RCL X
+                JMP DEI_exit        // exit
 
-int_zero_interval::	[cmplx]RCL cr_limits
-			Num 0
-			ENTER[^]
-			STO L
-			RTN
+#undef XB
+#undef YB
+#undef bma2
+#undef bpa2
+#undef eps
+#undef thr
+#undef lvl
+#undef tm
+#undef h
+#undef ssp
+#undef j
+#undef ch
+#undef w
+#undef rp
+#undef ss
+#undef ss1
 
-
-			XLBL"INTEGRATE"
-			INTM?
-				ERR ERR_BAD_MODE
-			LocR 23				/* Need registers .00 to .22 */
-			[cmplx]STO cr_limits
-			SPEC?
-				JMP int_bad_range
-			x[<->] Y
-			SPEC?
-				JMP int_bad_range
-			x=? Y				/* Check if range is zero*/
-				JMP int_zero_interval
-			x[<->] Y
-
-			STO r_middle
-			x[<->] Y
-			-
-			_INT 4
-			/
-			STO r_ba4
-			STO- r_middle
-			STO- r_middle
-			Num 0
-			STO r_Sk
-			STO r_k
-			STO r_base
-			SF f_force
-
-int_next_size::		Num 1
-			_INT 2
-			STO r_deltau
-			RCL r_k
-			+/-
-			y[^x]
-			STO[times] r_deltau
-			Num 1
-			-
-
-int_inner::		STO r_ui
-			x[^2]
-			-
-			STO r_ui2
-			_INT 2
-			+
-			RCL[times] r_ui
-			RCL[times] r_ba4
-			RCL+ r_middle
-
-			/* Call the user's subroutine */
-			XEQUSR
-			POPUSR
-			SPEC?
-				JMP int_bad_range
-
-			RCL[times] r_ui2
-			STO+ r_Sk
-			ABS
-			STO+ r_SkAbs
-			Num 1
-			RCL r_ui
-			RCL+ r_deltau
-			x<1?
-				JMP int_inner
-
-			RCL r_k
-			STO r_ui2
-			Num [integral]RgB
-			STO r_ui
-			Num 1
-			INC r_k
-			RCL r_Sk
-			RCL r_ba4
-			_INT 15
-			SDR 001
-			[times]
-			[times]
-			RCL[times] r_deltau
-
-int_row_update::	R[^]
-			_INT 4
-			[times]
-			ENTER[^]
-			DSE Y
-				x[<->] Z
-			ENTER[^]
-			x[<->][->]r_ui
-			STO- Y
-			x[<->] Z
-			/
-			RCL+[->]r_ui
-			ISG r_ui
-				JMP int_no_error
-
-			/* Out of registers, can't get a better result */
-			JMP int_done
-
-int_no_error::		DSE r_ui2
-				JMP int_row_update
-			STO[->]r_ui
-			FS?C f_force
-				JMP int_next_size
-			TOP?
-				MSG MSG_INTEGRATE
-			FC?C f_final		/* final iteration done? */
-			x[approx]? Y		/* or convergence? */
-				JMP int_done
-			RCL/ r_SkAbs
-			RCL/ r_deltau
-            RCL/ r_ba4
-			ABS
-			Num 1
-			SDR 015
-			x>? Y			/* integral close to zero? */
-				SF f_final	/* Force a final iteration */
-			JMP int_next_size
-
-/* Two matches in a row is goodness. */
-int_done::		STO- Y
-			x[<->] Y
-			ABS
-			[cmplx]RCL cr_limits
-			STO L
-			[<->] TZXY
-			TOP?
-				MSG MSG_INTEGRATE
-			RTN
-
-
-#undef r_k
-#undef r_ui
-#undef r_ui2
-#undef r_deltau
-#undef r_Sk
-#undef r_ba4
-#undef r_middle
-#undef cr_limits
-#undef r_SkAbs
-#undef r_base
-
-#undef f_force
-#undef f_final
+#undef DF
+#undef rev
+#undef ES
+#undef bpa2z
+#undef left
+#undef TS
+#undef lg0
