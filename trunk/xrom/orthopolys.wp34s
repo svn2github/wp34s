@@ -161,14 +161,14 @@ ortho_default::	SSIZE4
 		STO A		// a = 2x
 		RTN
 
-poly_t1::	RCL rT1
-		xOUT xOUT_NORMAL
-
 /**************************************************************************/
 /* Common evaluation code
  * Everything is assumed properly set up at this point.
-  */
-ortho_common::	RCL rT1
+ */
+ortho_common::	RCL rN
+		x=1?
+			JMP ortho_exit
+ortho_loop::	RCL rT1
 		RCL[times] A
 		RCL rT0
 		RCL[times] B
@@ -188,7 +188,7 @@ ortho_noA::	RCL incB
 		STO+ B
 		ISG I
 			JMP ortho_common
-		RCL rT1
+ortho_exit::	RCL rT1
 		xOUT xOUT_NORMAL
 
 
