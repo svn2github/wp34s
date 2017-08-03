@@ -79,11 +79,10 @@ zeta_0::		Num 1/2
 zeta_int::		LocR 08
 			STO .01
 			STO .07
-			Num 1/2
-			x[<=]? Y
+			x>? 0
 				JMP zeta_calc
 
-zeta_neg::		GSB sign
+zeta_neg::		Num 1
 			x[<->] Y
 			-
 			STO .01
