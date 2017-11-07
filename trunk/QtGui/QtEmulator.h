@@ -19,6 +19,7 @@
 
 #include <QtGui>
 #include <QMainWindow>
+#include <QLabel>
 #include "QtSkin.h"
 #include "QtBackgroundImage.h"
 #include "QtKeyboard.h"

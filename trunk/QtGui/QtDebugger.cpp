@@ -17,7 +17,8 @@
 #include "QtDebugger.h"
 #include "QtRegistersModel.h"
 #include "QtEmulator.h"
-
+#include <QScrollBar>
+#include <QHeaderView>
 
 QtDebugger::QtDebugger(QWidget* aParent, bool aDisplayAsStack)
 : QTableView(aParent)

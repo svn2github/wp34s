@@ -16,6 +16,14 @@
 
 #include "QtPreferencesDialog.h"
 #include "QtSerialPort.h"
+#include <QVBoxLayout>
+#include <QLayout>
+#include <QDialogButtonBox>
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
+#include <QFileDialog>
+
 
 QtPreferencesDialog::QtPreferencesDialog(bool aCustomDirectoryActiveFlag,
 		const QString& aCustomDirectoryName,

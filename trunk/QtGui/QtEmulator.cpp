@@ -14,6 +14,11 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QApplication>
+#include <QMessageBox>
+#include <QMenuBar>
+#include <QBoxLayout>
+#include <QFileDialog>
 #include <string.h>
 #include "QtEmulator.h"
 #include "QtEmulatorAdapter.h"
@@ -960,7 +965,7 @@ QString QtEmulator::getMemoryPath(const QString& aMemoryFilename) const
 char* QtEmulator::getRegionPath(int aRegionIndex)
 {
 	QString regionPath(getMemoryPath(getRegionFileName(aRegionIndex)));
-	currentRegionPath=regionPath.toAscii();
+	currentRegionPath=regionPath.toLatin1();
 	return currentRegionPath.data();
 }
 

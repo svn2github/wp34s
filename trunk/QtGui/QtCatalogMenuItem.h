@@ -18,6 +18,8 @@
 #define QTCATALOGMENUITEM_H_
 
 #include "QtGui"
+#include <QLabel>
+#include <QWidgetAction>
 
 class QtCatalogMenuItem: public QWidgetAction
 {

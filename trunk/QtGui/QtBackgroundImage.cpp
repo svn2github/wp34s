@@ -14,6 +14,8 @@
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QApplication>
+#include <QDesktopWidget>
 #include "QtBackgroundImage.h"
 #include "QtEmulator.h"
 #include "QtEmulatorAdapter.h"

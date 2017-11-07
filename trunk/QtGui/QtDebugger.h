@@ -18,6 +18,7 @@
 #define QTDEBUGGER_H_
 
 #include <QtGui>
+#include <QTableView>
 
 class QtDebugger: public QTableView
 {

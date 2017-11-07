@@ -108,6 +108,19 @@ public:
 		return style->generatedIconPixmap(mode, pixmap, option);
 	}
 
+    QIcon standardIcon(StandardPixmap standardIcon, const QStyleOption *option = 0,
+                       const QWidget *widget = 0) const
+    {
+    	return QIcon();
+    }
+
+    int layoutSpacing(QSizePolicy::ControlType control1,
+                      QSizePolicy::ControlType control2, Qt::Orientation orientation,
+                      const QStyleOption *option = 0, const QWidget *widget = 0) const
+    {
+    	return 0;
+    }
+
 private:
 	QStyle* style;
 	QtCatalogMenu* menu;

@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = 
+TARGET = HP-82240B
 DEPENDPATH += .
 QT += network
 

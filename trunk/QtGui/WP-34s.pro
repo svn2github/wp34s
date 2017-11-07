@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = 
+TARGET = wp-34s
 DEPENDPATH += .
 QMAKE_PRE_LINK = $(MAKE) build_date 
 LIBS += $(OTHEROBJS) $(BASELIBS) $(SERIALLIB)
@@ -15,7 +15,7 @@ win32 {
   LIBS += -lsetupapi
 }
 
-QT += xml network
+QT += xml network widgets
 
 SOURCES = QtGuiMain.cpp QtEmulator.cpp QtBackgroundImage.cpp QtKey.cpp QtKeyCode.cpp QtSkin.cpp QtScreenPainter.cpp \
 	QtKeyboard.cpp QtSerialPort.cpp QtScreen.cpp QtCalculatorThread.cpp QtHeartBeatThread.cpp QtPreferencesDialog.cpp \

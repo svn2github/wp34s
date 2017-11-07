@@ -1,6 +1,6 @@
 TEMPLATE = lib
 CONFIG += staticlib
-TARGET = 
+TARGET = qtserial
 DEPENDPATH += .
 INCLUDEPATH += $(SERIAL_INCLUDE)
 

@@ -20,6 +20,8 @@
 
 #include <QtGui>
 #include <QLinkedList>
+#include <QWidgetAction>
+#include <QMenu>
 #include "QtCatalogMenuItem.h"
 
 class QtCatalogMenu: public QMenu

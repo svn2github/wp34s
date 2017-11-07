@@ -15,6 +15,8 @@
  */
 
 #include <QtGui>
+#include <QApplication>
+#include <QMessageBox>
 #include "QtEmulator.h"
 
 int main(int argc, char **argv)

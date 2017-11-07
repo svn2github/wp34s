@@ -18,6 +18,11 @@
 #define QTPREFERENCESDIALOG_H_
 
 #include <QtGui>
+#include <QDialog>
+#include <QListWidget>
+#include <QRadioButton>
+#include <QCheckBox>
+#include <QSpinBox>
 
 #define PREFERENCES_TITLE "Preferences"
 #define MEMORY_TAB_NAME "Memory"

@@ -74,7 +74,7 @@ Original file created by Cyrille de Brebisson
 struct
 {
   QChar c;
-  unsigned int  keys;
+  int  keys;
 }
 const keydefs[] =
 {
@@ -109,7 +109,7 @@ void QtNumberPaster::paste(const QString& aString, QtKeyboard& aKeyboard)
 			QChar currentChar = toPaste.at(i);
 			int j = 0;
 
-			while (keydefs[j].c != 0 && keydefs[j].c != currentChar)
+			while (keydefs[j].c.unicode() != 0 && keydefs[j].c != currentChar)
 			{
 				j++;
 			}

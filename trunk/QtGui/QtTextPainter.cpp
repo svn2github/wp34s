@@ -30,7 +30,7 @@
 #define B(c) new QtBoldTextPainter(c)
 
 static struct _specialChars {
-	char code;
+	unsigned char code;
 	QtTextPainter *painter;
 } specialChars[] = {
 		// 0033, sub-m does not exists
