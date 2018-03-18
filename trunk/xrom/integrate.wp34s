@@ -1,15 +1,15 @@
 /* This file is part of 34S.
- * 
+ *
  * 34S is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * 34S is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with 34S.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -23,7 +23,7 @@
 
 // Double Exponential Integration for the wp34s calculator
 //
-// v1.3x-398 (20170104) by M. César Rodríguez GGPL
+// v1.4x-412 (20180312) by M. César Rodríguez GGPL
 //
 // USAGE:
 //  Inputs:
@@ -95,7 +95,7 @@
 //      of three high-precision quadrature schemes," Experimental
 //      Mathematics, vol. 14 (2005), no. 3, pg 317-329.
 //
-// 263 steps
+// 264 steps
 // 16 local registers
 
               XLBL"INTEGRATE" // Double-Exponential Integration
@@ -199,7 +199,7 @@ DEI_ba2_rdy::   _INT 002    // here with 2*bpa & 2*bma2 on stack
                 -           // -(the number of displayed digits + 3)
 DEI_dbl::       ENTER       // here X = -(number of displayed + 3) (or -34)
                 10^x
-                STO eps     // save epsilon
+                STO eps     // save epsilon = 10^-(number_of_disp_digits + 3) or 10^-34
                 SQRT        // compute the convergence threshold, thr,
                 SDL 001     // = 10*sqrt(epsilon)
                 STO thr     // save the convergence threshold
@@ -246,9 +246,11 @@ DEI_cont::      RCL/ eps    // continue tm computation for all cases
                 STO tm      // tm done
                 // maximum t (tm) ready ********************************
                 // level loop ******************************************
+                cRCL ss     // to let Z = ss (which here is 0)
                 _INT 002
                 STO h       // h = 2
-DEI_lvl_loop::  _INT 000
+DEI_lvl_loop::  z<> ss1     // update ss1
+                _INT 000
                 STO ssp     // ssp = 0
                 _INT 001
                 STO j       // j = 1
@@ -316,6 +318,7 @@ DEI_call_usr_m:: GSB DEI_xeq_user   // f(bpa2 ± bma2*(r or 1/r))
                 FC? lg0     // is level == 0?
                   JMP DEI_updte_j   // yes, go to next level
                 INC j       // no, sweep odd abscissas, j += 1
+                // early test (mainly) for the sinhsinh case
                 ABS         // X = ABS(p)
                 RCL ssp
                 RCL* eps
@@ -385,7 +388,6 @@ DEI_chk_conv::  RCL ss
                 ABS         // ABS(thr*ss)
                 x>? Y       // ABS(2*ssp - ss) < ABS(thr*ss)?
                   JMP DEI_fin       // yes, computation done
-                z<> ss1     // no, save ss (with all coeffs applied)
                 SF lg0      // mark level 0 done,
                 DSL lvl     // update level &...
                   JMP DEI_lvl_loop  // loop.
